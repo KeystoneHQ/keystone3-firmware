@@ -1,0 +1,13 @@
+[package]
+name = "app_wallets"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+third_party = { path = "../../third_party" }
+app_utils = {path = "../../apps/utils"}
+keystore = {path="../../keystore"}
+app_xrp = {path="../../apps/xrp"}
+rust_tools = {path="../../tools"}

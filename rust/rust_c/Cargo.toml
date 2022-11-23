@@ -1,0 +1,30 @@
+[package]
+name = "rust_c"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+keystore = { path = "../keystore", default-features = false }
+app_bitcoin = { path = "../apps/bitcoin" }
+app_wallets = { path = "../apps/wallets" }
+app_ethereum = { path = "../apps/ethereum" }
+app_cardano = {path = "../apps/cardano"}
+app_tron = { path = "../apps/tron" }
+app_solana = { path = "../apps/solana" }
+app_near = { path = "../apps/near" }
+app_xrp = {path = "../apps/xrp"}
+app_cosmos = {path = "../apps/cosmos", default-features = false}
+app_aptos = {path = "../apps/aptos", default-features = false}
+third_party = { path = "../third_party" }
+app_utils = { path = "../apps/utils" }
+rust_tools = {path="../tools"}
+cty = "0.2.2"
+cstr_core = "0.2.6"
+
+[lib]
+crate-type = ["staticlib"]
+
+[dev-dependencies]
+keystore = { path = "../keystore"}

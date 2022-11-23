@@ -1,0 +1,18 @@
+[package]
+name = "app_aptos"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+keystore = { path = "../../keystore", default-features = false }
+third_party = { path = "../../third_party" }
+bcs = { git = "https://github.com/KeystoneHQ/bcs.git", tag = "0.1.1" }
+serde_json = { version = "1.0.95", default-features = false, features = ['alloc'] }
+serde = { version = "1.0.139", default-features = false }
+serde_bytes = { version = "0.11.5", default-features = false, features = ["alloc"] }
+ref-cast = "1.0.16"
+
+[dev-dependencies]
+keystore = { path = "../../keystore" }

@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+package protocol;
+
+// AccountId, (name, address) use name, (null, address) use address, (name, null) use name,
+message AccountId {
+  bytes name = 1;
+  bytes address = 2;
+}
+
+message authority {
+  AccountId account = 1;
+  bytes permission_name = 2;
+}
+
+message Transaction {
+  message Contract {
+    enum ContractType {
+      AccountCreateContract = 0;
+      TransferContract = 1;
+      TransferAssetContract = 2;
+      TriggerSmartContract = 31;
+    }
+    ContractType type = 1;
+    google.protobuf.Any parameter = 2;
+    bytes provider = 3;
+    bytes ContractName = 4;
+    int32 Permission_id = 5;
+  }
+
+  message raw {
+    bytes ref_block_bytes = 1;
+    int64 ref_block_num = 3;
+    bytes ref_block_hash = 4;
+    int64 expiration = 8;
+    repeated authority auths = 9;
+    // data not used
+    bytes data = 10;
+    //only support size = 1,  repeated list here for extension
+    repeated Contract contract = 11;
+    // scripts not used
+    bytes scripts = 12;
+    int64 timestamp = 14;
+    int64 fee_limit = 18;
+  }
+
+  raw raw_data = 1;
+  // only support size = 1,  repeated list here for muti-sig extension
+  repeated bytes signature = 2;
+}

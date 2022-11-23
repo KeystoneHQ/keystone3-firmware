@@ -1,0 +1,6 @@
+[submodule "rust-crypto-core"]
+	path = rust-crypto-core
+	url = git@github.com:KeystoneHQ/rust-crypto-core.git
+[submodule "external/ctaes"]
+	path = external/ctaes
+	url = https://github.com/bitcoin-core/ctaes

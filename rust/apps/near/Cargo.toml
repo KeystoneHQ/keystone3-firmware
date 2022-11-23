@@ -1,0 +1,17 @@
+[package]
+name = "app_near"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+keystore = { path = "../../keystore", default-features = false }
+third_party = { path = "../../third_party" }
+app_utils = {path="../utils"}
+borsh = { version = "0.9", default-features = false }
+serde = { version = "1.0.139", default-features = false }
+primitive-types = { version = "0.10", default-features = false }
+
+[dev-dependencies]
+keystore = { path = "../../keystore"}

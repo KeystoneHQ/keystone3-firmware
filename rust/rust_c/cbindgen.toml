@@ -1,0 +1,5 @@
+include_guard = "_LIBRUST_C_H"
+
+[parse]
+expand = ["rust_c"]
+parse_deps = false

@@ -1,0 +1,18 @@
+# Whether to build a library
+# If this is false, will just include dlg.c as source in the
+# meson dependency (making this still usable as suproject)
+option('buildlib', type: 'boolean', value: true)
+
+option('sample', type: 'boolean', value: false) # build the sample?
+option('tests', type: 'boolean', value: false) # build the tests?
+
+# If set to true, the default output handler will always use color,
+# and not only when stdout is a tty and dlg_win_init_ansi returns true.
+option('default_output_always_color', type: 'boolean', value: false)
+
+# - Only relevant on windows -
+# Whether to handle the windows console correctly (in terms of color/style).
+# Allows apps to print utf-8 and use color on the windows command line.
+# When setting this to true, on wsl dlg_win_init_ansi will return false
+# since then the default handles will be files.
+option('win_console', type: 'boolean', value: true)

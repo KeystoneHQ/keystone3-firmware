@@ -1,0 +1,17 @@
+os: linux
+dist: bionic
+language: python
+
+matrix:
+  include:
+    - env: CC=gcc
+    - env: CC=clang
+
+install:
+  - pip3 install meson ninja
+  - sudo apt-get -y install valgrind
+
+script:
+  - meson build -Dtests=true -Dsample=true
+  - ninja -C build
+  - meson test -C build --wrapper 'valgrind --leak-check=full --error-exitcode=1' --print-errorlogs

@@ -1,0 +1,37 @@
+image: Visual Studio 2019
+
+environment:
+  matrix:
+    - arch: x64
+      compiler: mingw
+    - arch: x86
+      compiler: msvc2019
+    - arch: x64
+      compiler: msvc2019
+
+platform:
+  - x64
+
+install:
+    # install mingw 7.1
+  - cmd: if %compiler%==mingw (appveyor-retry appveyor DownloadFile http://downloads.sourceforge.net/mingw-w64/x86_64-7.1.0-release-posix-seh-rt_v5-rev0.7z)
+  - cmd: if %compiler%==mingw (7z x x86_64-7.1.0-release-posix-seh-rt_v5-rev0.7z -oc:\mingw > nul)
+    # init msvc
+  - cmd: if %compiler%==msvc2019 ( call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %arch% )
+    # install ninja
+  - appveyor-retry appveyor DownloadFile "https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-win.zip" -FileName ninja.zip
+  - 7z x ninja.zip -oC:\ninja > nul
+    # update the path and show information; TODO: 64 bit python?
+  - set PATH=C:\ninja;C:\mingw\mingw64\bin;C:\Python36\scripts;C:Python36;%PATH%
+  - ninja --version
+    # install meson
+  - pip3 install meson
+
+build_script:
+    # TODO: possible to automate non-ninja backend?
+  - echo Building on %arch% with %compiler%
+  - meson --backend=ninja --default-library=both -Dtests=true -Dsample=true build
+  - ninja -C build
+
+test_script:
+  - meson test -C build --print-errorlogs

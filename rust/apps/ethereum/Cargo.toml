@@ -1,0 +1,23 @@
+[package]
+name = "app_ethereum"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bytes = {version = "1.4.0", default-features = false}
+ethereum-types = {version = "0.14.1", default-features = false, features = ["rlp", "codec"]}
+hex-literal = "0.4.1"
+rlp = {version = "0.5.2", default-features = false}
+sha3 = {version = "0.10.7", default-features = false}
+keystore = { path = "../../keystore", default-features = false }
+third_party = { path = "../../third_party" }
+ethabi = {version = "18.0.0", default-features= false, features=["serde"]}
+app_utils = {path = "../utils"}
+serde = { version = "1.0.139", default-features = false }
+rust_tools = {path = "../../tools"}
+unicode-xid = {version = "0.2", default-features = false, features = ["no_std"]}
+
+[dev-dependencies]
+keystore = { path = "../../keystore" }

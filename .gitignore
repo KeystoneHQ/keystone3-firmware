@@ -1,0 +1,7 @@
+/personal
+/build
+/.vscode
+/.vs
+.DS_Store
+**/.idea
+**/.cache

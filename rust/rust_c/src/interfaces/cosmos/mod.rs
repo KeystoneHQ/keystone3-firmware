@@ -200,6 +200,7 @@ pub extern "C" fn cosmos_parse_tx(
             let data_type = match sign_request.get_data_type() {
                 DataType::Amino => app_cosmos::transaction::structs::DataType::Amino,
                 DataType::Direct => app_cosmos::transaction::structs::DataType::Direct,
+                DataType::Message => app_cosmos::transaction::structs::DataType::Amino,
                 _ => {
                     return TransactionParseResult::from(CosmosError::SignFailure(
                         "unsupported cosmos sign request data type".to_string(),

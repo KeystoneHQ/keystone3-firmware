@@ -7,6 +7,7 @@
 #include "gui_keyboard.h"
 #include "gui_create_wallet_widgets.h"
 #include "gui_status_bar.h"
+#include "gui_lock_device_widgets.h"
 
 static lv_obj_t *g_hintBox = NULL;
 static lv_obj_t **g_hintParam = NULL;
@@ -129,6 +130,8 @@ void CloseCurrentParentAndCloseViewHandler(lv_event_t *e)
         lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
         GuiCLoseCurrentWorkingView();
         GuiLockScreenTurnOn(&single);
+        ResetSuccess();
+        GuiModelWriteLastLockDeviceTime(0);
     }
 }
 

@@ -108,6 +108,10 @@ static void SetPinEventHandler(lv_event_t *e)
                 --item->currentNum;
                 PassCodeLedStatus(item->numLed[item->currentNum], PASSCODE_LED_OFF);
                 g_pinBuf[item->currentNum] = '\0';
+            } else {
+                for (int i = 0; i < CREATE_PIN_NUM; i++) {
+                    PassCodeLedStatus(item->numLed[i], PASSCODE_LED_OFF);
+                }
             }
             if (!lv_obj_has_flag(item->errLabel, LV_OBJ_FLAG_HIDDEN)) {
                 lv_obj_add_flag(item->errLabel, LV_OBJ_FLAG_HIDDEN);
@@ -776,10 +780,12 @@ void GuiEnterPassCodeStatus(GuiEnterPasscodeItem_t *item, bool en)
             for (int i = 0; i < CREATE_PIN_NUM; i++) {
                 PassCodeLedStatus(item->numLed[i], PASSCODE_LED_OFF);
             }
+            item->currentNum = 0;
         }
         lv_obj_add_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
         lv_obj_add_flag(item->errLabel, LV_OBJ_FLAG_HIDDEN);
     }
+    memset(g_pinBuf, 0, sizeof(g_pinBuf));
 }
 
 void GuiFingerPrintStatus(GuiEnterPasscodeItem_t *item, bool en, uint8_t errCnt)

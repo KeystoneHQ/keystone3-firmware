@@ -10,5 +10,7 @@ void GuiEthereumReceiveDeInit(void);
 void GuiEthereumReceiveRefresh(void);
 void GuiEthereumReceivePrevTile(void);
 void AddressLongModeCut(char *out, const char *address);
+void GuiResetCurrentEthAddressIndex(void);
+void GuiResetAllEthAddressIndex(void);
 #endif
 

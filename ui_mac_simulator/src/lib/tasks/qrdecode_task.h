@@ -1,0 +1,1 @@
+../../../../tasks/qrdecode_task.h

@@ -28,16 +28,20 @@ static uint32_t g_motorPer = 0;
 static uint32_t g_motorTick = 0;
 static uint32_t g_motorTimerCnt = 0;
 static uint32_t g_motorLevel = 0;
-static uint32_t g_motorCnt = 0;
 
 static void MotorTimerFunc(void *argument);
 static void MotorAsGpio(bool set);
 static void MotorAsPwm(uint32_t pwm);
 
+#define MOTOR_WORK_PWM
 
 void MotorInit(void)
 {
+#ifdef MOTOR_WORK_PWM
+    g_motorTimer = osTimerNew(MotorTimerFunc, osTimerOnce, NULL, NULL);
+#else
     g_motorTimer = osTimerNew(MotorTimerFunc, osTimerPeriodic, NULL, NULL);
+#endif
 }
 
 /// @brief Control the motor to run for a specified time.
@@ -53,15 +57,22 @@ void MotorCtrl(uint32_t level, uint32_t tick)
         MotorAsGpio(false);
         osTimerStop(g_motorTimer);
     }
+#ifdef MOTOR_WORK_PWM
+    MotorAsPwm(level);
+    osTimerStart(g_motorTimer, tick);
+#else
     g_motorTimerCnt = 0;
     g_motorTick = tick / 10;
     MotorAsGpio(true);
-    g_motorCnt++;
     osTimerStart(g_motorTimer, 10);
+#endif
 }
 
 static void MotorTimerFunc(void *argument)
 {
+#ifdef MOTOR_WORK_PWM
+    MotorAsGpio(false);
+#else
     g_motorTimerCnt++;
     // if (g_motorTimerCnt % 3 == 0) {
     //     MotorAsGpio(false);
@@ -96,7 +107,7 @@ static void MotorTimerFunc(void *argument)
     } else {
         // MotorAsPwm(g_motorLevel);
     }
-    // TIM_Cmd(TIMM0, MOTOR_PWM_TIM, DISABLE);
+#endif
 }
 
 

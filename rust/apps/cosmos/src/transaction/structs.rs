@@ -25,6 +25,7 @@ pub enum CosmosTxDisplayType {
     WithdrawReward,
     Unknown,
     Multiple,
+    Message,
 }
 
 impl ToString for CosmosTxDisplayType {
@@ -39,6 +40,7 @@ impl ToString for CosmosTxDisplayType {
             CosmosTxDisplayType::Unknown => "Unknown".to_string(),
             CosmosTxDisplayType::Multiple => "Multiple".to_string(),
             CosmosTxDisplayType::Vote => "Vote".to_string(),
+            CosmosTxDisplayType::Message => "Message".to_string(),
         }
     }
 }

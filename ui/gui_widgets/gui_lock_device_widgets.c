@@ -5,7 +5,12 @@
 #include "gui_lock_device_widgets.h"
 #include "gui_model.h"
 #include "keystore.h"
+#include "gui_lock_widgets.h"
+#include "screen_manager.h"
 
+#ifdef COMPILE_MAC_SIMULATOR
+#include "simulator_model.h"
+#endif
 
 typedef struct {
     uint16_t leftErrorCode;
@@ -26,6 +31,7 @@ static void GuiLockedDeviceCountDownDestruct(void *obj, void* param);
 static void WipeDeviceHandler(lv_event_t *e);
 static void WipeDevice(void);
 static uint32_t CalculateLockDeiceTime(void);
+static void ForgetHandler(lv_event_t *e);
 
 static lv_obj_t *g_cont;
 static lv_timer_t *g_countDownTimer;
@@ -36,6 +42,9 @@ static uint32_t needLockTime;
 
 static void *pageParam = NULL;
 
+static bool g_resetSuccessful = false;
+
+void OpenForgetPasswordHandler(lv_event_t *e);
 
 static bool IsLockTimePage()
 {
@@ -95,13 +104,13 @@ void GuiLockDeviceInit(void *param)
     } else {
         lv_obj_set_style_text_color(label, lv_color_hex(0xc4c4c4), LV_PART_MAIN);
 
-        // lv_obj_t *btn = GuiCreateBtn(cont, "Forget Password?");
-        // lv_obj_set_size(btn, 302, 66);
-        // lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 622 - 96);
-        // lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_STATE_DEFAULT);
-        // lv_obj_set_style_text_align(btn, LV_TEXT_ALIGN_CENTER, 0);
+        lv_obj_t *btn = GuiCreateBtn(cont, "Forget Password?");
+        lv_obj_set_size(btn, 302, 66);
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 622 - 96);
+        lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_STATE_DEFAULT);
+        lv_obj_set_style_text_align(btn, LV_TEXT_ALIGN_CENTER, 0);
+        lv_obj_add_event_cb(btn, ForgetHandler, LV_EVENT_CLICKED, &g_lockDeviceView);
 
-        // lv_obj_add_event_cb(btn, OpenForgetPasswordHandler, LV_EVENT_CLICKED, NULL);
         needLockTime = CalculateLockDeiceTime();
         startTime = GetCurrentStampTime();
         g_countDownTimer = lv_timer_create(CountDownTimerLockTimeHandler, 1000, NULL);
@@ -115,14 +124,28 @@ void GuiLockDeviceRefresh(void)
     GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     GuiNvsBarSetLeftCb(NVS_LEFT_BUTTON_BUTT, NULL, NULL);
     GuiNvsBarSetMidCb(NVS_MID_BUTTON_BUTT, NULL, NULL);
+
+    uint32_t currentTime = GetCurrentStampTime();
+    if (currentTime - startTime >= needLockTime) {
+        GuiLockedDeviceCountDownDestruct(NULL, NULL);
+        GuiModelWriteLastLockDeviceTime(0);
+        GuiCLoseCurrentWorkingView();
+        SetLockDeviceAlive(false);
+        if (!g_resetSuccessful) {
+            static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
+            GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
+        }
+    }
 }
 
 void GuiLockDeviceDeInit(void)
 {
+    g_resetSuccessful = false;
     if (g_cont != NULL) {
         lv_obj_del(g_cont);
         g_cont = NULL;
     }
+    SetLockTimeState(false);
 }
 
 
@@ -157,15 +180,17 @@ static void CountDownTimerWipeDeviceHandler(lv_timer_t *timer)
 static void CountDownTimerLockTimeHandler(lv_timer_t *timer)
 {
     uint32_t currentTime = GetCurrentStampTime();
-    //printf("call CountDownTimerLockTimeHandler left %d needLockTime is %d\n", (currentTime - startTime), needLockTime);
     if (currentTime - startTime >= needLockTime) {
         if (GuiCheckIfTopView(&g_lockDeviceView)) {
             GuiCLoseCurrentWorkingView();
-            GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "Passcode or Fingerprint");
+            if (!g_resetSuccessful) {
+                static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
+                GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
+            }
         }
         GuiLockedDeviceCountDownDestruct(NULL, NULL);
-        SetLockTimeState(false);
         GuiModelWriteLastLockDeviceTime(0);
+        SetLockDeviceAlive(false);
     }
 }
 
@@ -238,4 +263,25 @@ static uint32_t CalculateLockDeiceTime(void)
     }
     printf("originLockTime need to lock %ds\n", originLockTime);
     return originLockTime;
+}
+
+static void ForgetHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        OpenForgetPasswordHandler(e);
+        SetLockDeviceAlive(true);
+    }
+}
+
+void ResetSuccess(void)
+{
+    g_resetSuccessful = true;
+    needLockTime = 0;
+}
+
+void GuiClearAllTop(void)
+{
+    GuiCloseToTargetView(&g_lockDeviceView);
 }

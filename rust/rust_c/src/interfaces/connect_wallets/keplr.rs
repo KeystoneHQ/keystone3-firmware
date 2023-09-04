@@ -3,12 +3,13 @@ use crate::interfaces::connect_wallets::structs::KeplrAccount;
 use crate::interfaces::ffi::CSliceFFI;
 use crate::interfaces::types::{PtrBytes, PtrT};
 use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
-use crate::interfaces::utils::recover_c_array;
+use crate::interfaces::utils::{recover_c_array, recover_c_char};
 use alloc::format;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use app_wallets::keplr::{generate_sync_ur, sync_info::SyncInfo};
 use cty::uint32_t;
+use keystore::algorithms::secp256k1::derive_extend_public_key;
 use third_party::ur_registry::error::URError;
 use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 use third_party::ur_registry::traits::RegistryItem;
@@ -33,8 +34,28 @@ pub extern "C" fn get_connect_keplr_wallet_ur(
     };
     unsafe {
         let accounts: &[KeplrAccount] = recover_c_array(keplr_accounts);
-        let sync_infos: Vec<SyncInfo> =
-            accounts.into_iter().map(|account| account.into()).collect();
+        let sync_infos: Vec<SyncInfo> = accounts
+            .into_iter()
+            .map(|account| {
+                let hd_path = recover_c_char(account.path);
+                let path_parts: Vec<&str> = hd_path.split("/").collect();
+                let path_len = path_parts.len();
+                SyncInfo {
+                    name: recover_c_char(account.name),
+                    hd_path: hd_path.clone(),
+                    xpub: derive_extend_public_key(
+                        &recover_c_char(account.xpub),
+                        &format!(
+                            "m/{}/{}",
+                            path_parts[path_len - 2],
+                            path_parts[path_len - 1]
+                        ),
+                    )
+                    .map(|e| e.to_string())
+                    .unwrap_or("".to_string()),
+                }
+            })
+            .collect();
         let result = generate_sync_ur(mfp, &sync_infos);
         match result.map(|v| v.try_into()) {
             Ok(v) => match v {

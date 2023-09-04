@@ -6,8 +6,11 @@ use crate::proto_wrapper::msg::msg::{
 use crate::transaction::structs::CosmosTxDisplayType;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{from_value, Value};
+use third_party::base64;
+
+use super::utils::{get_chain_id_by_address, get_network_by_chain_id};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct OverviewSend {
@@ -208,6 +211,54 @@ impl TryFrom<MsgVote> for OverviewVote {
     }
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct MsgSignData {
+    pub data: String,
+    pub signer: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct OverviewMessage {
+    #[serde(rename(serialize = "Method"))]
+    pub method: String,
+    #[serde(rename(serialize = "Network"))]
+    pub network: String,
+    #[serde(rename(serialize = "Signer"))]
+    pub signer: String,
+    #[serde(rename(serialize = "Message"))]
+    pub message: String,
+    #[serde(rename(serialize = "Chain ID"))]
+    pub chain_id: String,
+}
+
+impl TryFrom<MsgSignData> for OverviewMessage {
+    type Error = CosmosError;
+
+    fn try_from(msg: MsgSignData) -> Result<Self> {
+        let message = match base64::decode(&msg.data) {
+            Ok(bytes) => match String::from_utf8(bytes) {
+                Ok(utf8_message) => {
+                    if app_utils::is_cjk(&utf8_message) {
+                        msg.data.clone()
+                    } else {
+                        utf8_message
+                    }
+                }
+                Err(_e) => msg.data.clone(),
+            },
+            Err(_e) => msg.data.clone(),
+        };
+        let chain_id = get_chain_id_by_address(&msg.signer);
+        Ok(Self {
+            method: "Message".to_string(),
+            network: get_network_by_chain_id(&chain_id).unwrap_or("Cosmos Hub".to_string()),
+            signer: msg.signer,
+            message,
+            chain_id,
+        })
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(untagged)]
 pub enum MsgOverview {
@@ -218,6 +269,7 @@ pub enum MsgOverview {
     WithdrawReward(OverviewWithdrawReward),
     Transfer(OverviewTransfer),
     Vote(OverviewVote),
+    Message(OverviewMessage),
 }
 
 #[derive(Debug, Clone)]
@@ -271,6 +323,10 @@ impl CosmosTxOverview {
                 "MsgVote" => {
                     let msg = from_value::<MsgVote>(each["value"].clone())?;
                     kind.push(MsgOverview::Vote(OverviewVote::try_from(msg)?));
+                }
+                "MsgSignData" => {
+                    let msg = from_value::<MsgSignData>(each["value"].clone())?;
+                    kind.push(MsgOverview::Message(OverviewMessage::try_from(msg)?));
                 }
                 _ => {}
             };

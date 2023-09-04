@@ -47,6 +47,9 @@ int32_t GuiLockDeviceViewEventProcess(void *self, uint16_t usEvent, void *param,
     case SIG_SETTING_DEL_WALLET_PASS_SETUP:
         GuiDelALLWalletSetup();
         break;
+    case SIG_LOCK_VIEW_SCREEN_CLEAR_ALL_TOP:
+        GuiClearAllTop();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

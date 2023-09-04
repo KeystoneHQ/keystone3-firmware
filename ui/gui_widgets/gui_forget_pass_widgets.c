@@ -16,8 +16,14 @@
 #include "slip39.h"
 #include "gui_forget_pass_widgets.h"
 #include "gui_setting_widgets.h"
-#include "sha256.h"
+
 #include "gui_mnemonic_input.h"
+
+#ifndef COMPILE_MAC_SIMULATOR
+#include "sha256.h"
+#else
+#include "simulator_model.h"
+#endif
 
 #define DEVICE_SETTING_PASS_MAX_LEN                                 16
 #define DEVICE_SETTING_RIGHT_LABEL_MAX_LEN                          DEVICE_SETTING_PASS_MAX_LEN
@@ -64,6 +70,7 @@ static void GuiQuitHandler(lv_event_t *e)
         printf("g_prevView ID = %d\n", g_prevView->id);
         if (g_prevView->id == SCREEN_LOCK) {
             GuiLockScreenUpdatePassCode();
+            GuiLockScreenFpRecognize();
         }
         GuiCLoseCurrentWorkingView();
     }
@@ -123,10 +130,12 @@ void GuiForgetAnimContDel(int errCode)
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -124);
         lv_obj_t *desc = GuiCreateNoticeLabel(g_waitAnimCont, _("Writing Secure Element..."));
         lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -76);
+        lv_obj_add_flag(g_waitAnimCont, LV_OBJ_FLAG_CLICKABLE);
     } else {
         g_waitAnimCont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
         lv_obj_t *title = GuiCreateTextLabel(g_waitAnimCont, _("seed_check_wait_verify"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -76);
+        lv_obj_add_flag(g_waitAnimCont, LV_OBJ_FLAG_CLICKABLE);
     }
 }
 
@@ -221,6 +230,7 @@ static void ResetClearImportHandler(lv_event_t * e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         ClearMnemonicKeyboard(g_recoveryMkb, &g_recoveryMkb->currentId);
+        GuiClearKeyBoard(g_recoveryPhraseKb);
     }
 }
 
@@ -409,11 +419,13 @@ int8_t GuiForgetPassNextTile(uint8_t tileIndex)
 {
     switch (g_forgetPassTileView.currentTile) {
     case FORGET_PASSWORD_ENTRANCE:
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
-        GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _("Seed Phrase Check"));
         if (CHECK_BATTERY_LOW_POWER()) {
             g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox);
             return ERR_GUI_ERROR;
+        }
+        else {
+            GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
+            GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _("Seed Phrase Check"));
         }
         break;
     case FORGET_PASSWORD_METHOD_SELECT:

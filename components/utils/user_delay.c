@@ -5,6 +5,8 @@
  * Create: 2023-1-18
  ************************************************************************************************/
 
+#ifndef COMPILE_MAC_SIMULATOR
+
 #include "user_delay.h"
 #include "cmsis_os.h"
 #include "mhscpu.h"
@@ -48,3 +50,4 @@ void PretendDoingSomething(uint32_t i)
     }
 }
 
+#endif

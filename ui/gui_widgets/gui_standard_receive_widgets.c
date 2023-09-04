@@ -12,6 +12,8 @@
 #include "user_utils.h"
 #include "inttypes.h"
 #include "gui_home_widgets.h"
+#include "gui_fullscreen_mode.h"
+#include "keystore.h"
 
 #define GENERAL_ADDRESS_INDEX_MAX 999999999
 #define LEDGER_LIVE_ADDRESS_INDEX_MAX 9
@@ -78,18 +80,20 @@ static void GuiCreateSwitchAccountButtons(lv_obj_t *parent);
 static void RefreshQrCode(void);
 static void RefreshSwitchAccount(void);
 static int GetMaxAddressIndex(void);
-const char* GetAttentionText(void);
+static void GetAttentionText(char* text);
 
 static void CloseAttentionHandler(lv_event_t *e);
 static void MoreHandler(lv_event_t *e);
 static void TutorialHandler(lv_event_t *e);
 static void LeftBtnHandler(lv_event_t *e);
 static void RightBtnHandler(lv_event_t *e);
+static bool IsAccountSwitchable();
+static bool HasMoreBtn();
 static void SwitchAddressHandler(lv_event_t *e);
 static void SelectAddressHandler(lv_event_t *e);
 static void AddressLongModeCut(char *out, const char *address);
 
-static void ModelGetAddress(int index, AddressDataItem_t *item);
+static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
 
 static StandardReceiveWidgets_t g_standardReceiveWidgets;
 static StandardReceiveTile g_StandardReceiveTileNow;
@@ -97,8 +101,7 @@ static HOME_WALLET_CARD_ENUM g_chainCard;
 
 // to do: stored.
 static uint32_t g_showIndex;
-static uint32_t g_selectIndex;
-static bool g_firstAttention = false;
+static uint32_t g_selectIndex[3] = {0};
 
 void GuiStandardReceiveInit(uint8_t chain)
 {
@@ -110,9 +113,11 @@ void GuiStandardReceiveInit(uint8_t chain)
     lv_obj_set_style_bg_opa(g_standardReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
     g_standardReceiveWidgets.tileQrCode = lv_tileview_add_tile(g_standardReceiveWidgets.tileView, RECEIVE_TILE_QRCODE, 0, LV_DIR_HOR);
     GuiCreateQrCodeWidget(g_standardReceiveWidgets.tileQrCode);
-    g_standardReceiveWidgets.tileSwitchAccount = lv_tileview_add_tile(g_standardReceiveWidgets.tileView, RECEIVE_TILE_SWITCH_ACCOUNT, 0, LV_DIR_HOR);
-    GuiCreateSwitchAccountWidget(g_standardReceiveWidgets.tileSwitchAccount);
-    GuiCreateSwitchAccountButtons(g_standardReceiveWidgets.tileSwitchAccount);
+    if (IsAccountSwitchable()) {
+        g_standardReceiveWidgets.tileSwitchAccount = lv_tileview_add_tile(g_standardReceiveWidgets.tileView, RECEIVE_TILE_SWITCH_ACCOUNT, 0, LV_DIR_HOR);
+        GuiCreateSwitchAccountWidget(g_standardReceiveWidgets.tileSwitchAccount);
+        GuiCreateSwitchAccountButtons(g_standardReceiveWidgets.tileSwitchAccount);
+    }
     lv_obj_clear_flag(g_standardReceiveWidgets.tileView, LV_OBJ_FLAG_SCROLLABLE);
 }
 
@@ -123,6 +128,7 @@ void GuiStandardReceiveDeInit(void)
     GUI_DEL_OBJ(g_standardReceiveWidgets.cont)
 
     CLEAR_OBJECT(g_standardReceiveWidgets);
+    GuiFullscreenModeCleanUp();
 }
 
 void GuiStandardReceiveRefresh(void)
@@ -132,15 +138,15 @@ void GuiStandardReceiveRefresh(void)
     case RECEIVE_TILE_QRCODE:
         snprintf(title, sizeof(title), "Receive %s", GetCoinCardByIndex(g_chainCard)->coin);
         GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
-        GuiNvsSetCoinWallet(CHAIN_TRX, title);
-        GuiNvsBarSetRightCb(NVS_BAR_MORE_INFO, MoreHandler, NULL);
+        GuiNvsSetCoinWallet(g_chainCard, title);
+        GuiNvsBarSetRightCb(HasMoreBtn() ? NVS_BAR_MORE_INFO : NVS_RIGHT_BUTTON_BUTT, MoreHandler, NULL);
         RefreshQrCode();
         break;
     case RECEIVE_TILE_SWITCH_ACCOUNT:
         GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
         GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "Switch Account");
         GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-        g_showIndex = g_selectIndex / 5 * 5;
+        g_showIndex = g_selectIndex[GetCurrentAccountIndex()] / 5 * 5;
         if (g_showIndex < 5) {
             lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);
             lv_obj_set_style_img_opa(g_standardReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
@@ -191,6 +197,14 @@ static void GuiStandardReceiveGotoTile(StandardReceiveTile tile)
     lv_obj_set_tile_id(g_standardReceiveWidgets.tileView, g_StandardReceiveTileNow, 0, LV_ANIM_OFF);
 }
 
+lv_obj_t* CreateStandardReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h) {
+    lv_obj_t* qrcode = lv_qrcode_create(parent, w, BLACK_COLOR, WHITE_COLOR);
+    lv_obj_add_flag(qrcode, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(qrcode, GuiFullscreenModeHandler, LV_EVENT_CLICKED, NULL);
+    lv_qrcode_update(qrcode, "", 0);
+    return qrcode;
+}
+
 static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 {
     lv_obj_t *tempObj;
@@ -202,7 +216,10 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_radius(g_standardReceiveWidgets.qrCodeCont, 24, LV_PART_MAIN);
 
     yOffset += 36;
-    g_standardReceiveWidgets.qrCode = lv_qrcode_create(g_standardReceiveWidgets.qrCodeCont, 336, BLACK_COLOR, WHITE_COLOR);
+    g_standardReceiveWidgets.qrCode = CreateStandardReceiveQRCode(g_standardReceiveWidgets.qrCodeCont, 336, 336);
+    GuiFullscreenModeInit(480, 800, WHITE_COLOR);
+    GuiFullscreenModeCreateObject(CreateStandardReceiveQRCode, 420, 420);
+
     lv_obj_align(g_standardReceiveWidgets.qrCode, LV_ALIGN_TOP_MID, 0, yOffset);
     yOffset += 336;
 
@@ -223,19 +240,23 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_border_width(g_standardReceiveWidgets.addressButton, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_outline_width(g_standardReceiveWidgets.addressButton, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(g_standardReceiveWidgets.addressButton, 0, LV_PART_MAIN);
-    lv_obj_add_event_cb(g_standardReceiveWidgets.addressButton, SelectAddressHandler, LV_EVENT_CLICKED, NULL);
-    tempObj = GuiCreateImg(g_standardReceiveWidgets.addressButton, &imgArrowRight);
-    lv_obj_set_style_img_opa(tempObj, LV_OPA_56, LV_PART_MAIN);
-    lv_obj_align(tempObj, LV_ALIGN_CENTER, 150, 0);
+    if (IsAccountSwitchable()) {
+        lv_obj_add_event_cb(g_standardReceiveWidgets.addressButton, SelectAddressHandler, LV_EVENT_CLICKED, NULL);
+        tempObj = GuiCreateImg(g_standardReceiveWidgets.addressButton, &imgArrowRight);
+        lv_obj_set_style_img_opa(tempObj, LV_OPA_56, LV_PART_MAIN);
+        lv_obj_align(tempObj, LV_ALIGN_CENTER, 150, 0);
+    }
 
-    if (g_firstAttention == false) {
-        g_firstAttention = true;
+    const char* coin = GetCoinCardByIndex(g_chainCard)->coin;
+    if (!GetFirstReceive(coin)) {
         g_standardReceiveWidgets.attentionCont = GuiCreateHintBox(parent, 480, 386, false);
         tempObj = GuiCreateImg(g_standardReceiveWidgets.attentionCont, &imgInformation);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
         tempObj = GuiCreateLittleTitleLabel(g_standardReceiveWidgets.attentionCont, "Attention");
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
-        tempObj = GuiCreateLabelWithFont(g_standardReceiveWidgets.attentionCont, GetAttentionText(), &openSans_20);
+        char attentionText[150];
+        GetAttentionText(attentionText);
+        tempObj = GuiCreateLabelWithFont(g_standardReceiveWidgets.attentionCont, attentionText, &openSans_20);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
         tempObj = GuiCreateBtn(g_standardReceiveWidgets.attentionCont, "Got It");
         lv_obj_set_size(tempObj, 122, 66);
@@ -243,16 +264,22 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
         lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_add_event_cb(tempObj, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
+        SetFirstReceive(coin, true);
     }
 }
 
-const char* GetAttentionText(void)
+void GetAttentionText(char* text)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TRX:
-        return "This address is only for TRX, TRC-20 tokens and TRC-10 tokens, other digital assets sent to this address will be lost.";
+        strcpy(text, "This address is only for TRX, TRC-20 tokens and TRC-10 tokens, other digital assets sent to this address will be lost.");
+        break;
     default:
-        return "";
+        if (IsCosmosChain(g_chainCard)) {
+            sprintf(text, "This address is only for %s, other digital assets sent to this address will be lost.", GetCoinCardByIndex(g_chainCard)->coin);
+        } else {
+            strcpy(text, "");
+        }
     }
 }
 
@@ -334,8 +361,12 @@ static void RefreshQrCode(void)
 {
     AddressDataItem_t addressDataItem;
 
-    ModelGetAddress(g_selectIndex, &addressDataItem);
+    ModelGetAddress(g_selectIndex[GetCurrentAccountIndex()], &addressDataItem);
     lv_qrcode_update(g_standardReceiveWidgets.qrCode, addressDataItem.address, strlen(addressDataItem.address));
+    lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
+    if (fullscreen_qrcode) {
+        lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strlen(addressDataItem.address));
+    }
     lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressDataItem.address);
     lv_label_set_text_fmt(g_standardReceiveWidgets.addressCountLabel, "Account-%u", (addressDataItem.index + 1));
 }
@@ -364,7 +395,7 @@ static void RefreshSwitchAccount(void)
         lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkBox, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-        if (index == g_selectIndex) {
+        if (index == g_selectIndex[GetCurrentAccountIndex()]) {
             lv_obj_add_state(g_standardReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
             lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
@@ -443,6 +474,28 @@ static void RightBtnHandler(lv_event_t *e)
     }
 }
 
+static bool IsAccountSwitchable()
+{
+    switch (g_chainCard) {
+    case HOME_WALLET_CARD_TRX:
+        return true;
+
+    default:
+        return false;
+    }
+}
+
+static bool HasMoreBtn()
+{
+    switch (g_chainCard) {
+    case HOME_WALLET_CARD_TRX:
+        return true;
+
+    default:
+        return false;
+    }
+}
+
 static void SwitchAddressHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -455,7 +508,7 @@ static void SwitchAddressHandler(lv_event_t *e)
                 lv_obj_add_state(g_standardReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-                g_selectIndex = g_showIndex + i;
+                g_selectIndex[GetCurrentAccountIndex()] = g_showIndex + i;
             } else {
                 lv_obj_clear_state(g_standardReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
@@ -504,7 +557,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 
 #else
 
-static void ModelGetAddress(int index, AddressDataItem_t *item)
+static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {
     char *xPub, hdPath[128];
     SimpleResponse_c_char *result;
@@ -517,8 +570,17 @@ static void ModelGetAddress(int index, AddressDataItem_t *item)
         break;
 
     default:
-        printf("Standard Receive ModelGetAddress cannot match %d\r\n", index);
-        return;
+        if (IsCosmosChain(g_chainCard)) {
+            char rootPath[128];
+            const CosmosChain_t *chain = GuiGetCosmosChain(g_chainCard);
+            sprintf(rootPath, "M/44'/%u'/0'", chain->coinType);
+            sprintf(hdPath, "%s/0/%u", rootPath, index);
+            xPub = GetCurrentAccountPublicKey(chain->xpubType);
+            result = cosmos_get_address(hdPath, xPub, rootPath, (char*)chain->prefix);
+        } else {
+            printf("Standard Receive ModelGetAddress cannot match %d\r\n", index);
+            return;
+        }
     }
     ASSERT(xPub);
 
@@ -532,3 +594,13 @@ static void ModelGetAddress(int index, AddressDataItem_t *item)
 }
 
 #endif
+
+void GuiResetCurrentStandardAddressIndex(void)
+{
+    g_selectIndex[GetCurrentAccountIndex()] = 0;
+}
+
+void GuiResetAllStandardAddressIndex(void)
+{
+    memset(g_selectIndex, 0, sizeof(g_selectIndex));
+}

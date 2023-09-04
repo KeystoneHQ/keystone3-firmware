@@ -20,5 +20,6 @@ void SetLockTimeState(bool enable);
 bool IsPreviousLockScreenEnable(void);
 void ClearLockScreenTime(void);
 void SetLockTimeOut(uint32_t timeOut);
+void SetLockDeviceAlive(bool alive);
 
 #endif

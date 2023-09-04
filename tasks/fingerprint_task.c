@@ -25,6 +25,7 @@ osTimerId_t g_fpTimeoutTimer = NULL;
 void FpTimeoutHandle(void *argument);
 void FpUpdateFirmwareSend(uint16_t cmd, uint8_t passwd);
 void FpResponseHandleStop(void);
+bool GuiNeedFpRecognize(void);
 
 void CreateFingerprintTask(void)
 {
@@ -50,7 +51,9 @@ void FpGetAesStateHandle(void *argument)
 void FpRecognizeHandle(void *argument)
 {
     printf("%s %d\n", __func__, __LINE__);
-    FpRecognize(RECOGNIZE_UNLOCK);
+    if (GuiNeedFpRecognize()) {
+        FpRecognize(RECOGNIZE_UNLOCK);
+    }
 }
 
 static void FingerprintTask(void *pvParameter)

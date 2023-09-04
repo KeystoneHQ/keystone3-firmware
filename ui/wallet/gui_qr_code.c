@@ -1,8 +1,11 @@
 #include "gui_qr_code.h"
 
+typedef lv_res_t *UpdateFunc(lv_obj_t * qrcode, const void * data, uint32_t data_len);
+
 static lv_timer_t *g_timer;
 static UREncodeResult *g_result;
 static lv_obj_t *g_qr;
+static UpdateFunc *g_updateFunc;
 
 static bool g_qrcodeSuspend = false;
 
@@ -22,7 +25,7 @@ static void QRTimerHandler(lv_timer_t *timer)
             if (multiResult->error_code == 0) {
                 char *data = multiResult->data;
                 uint16_t dataLen = strlen(data);
-                lv_qrcode_update(g_qr, data, dataLen);
+                g_updateFunc(g_qr, data, dataLen);
                 free_ur_encode_muilt_result(multiResult);
             }
         }
@@ -30,23 +33,33 @@ static void QRTimerHandler(lv_timer_t *timer)
 #endif
 }
 
-void ShowQrCode(GetUR func, lv_obj_t *qr)
+void UpdateQrCode(GetUR func, lv_obj_t *qr, UpdateFunc updateFunc)
 {
+    if (updateFunc == NULL) {
+        g_updateFunc = lv_qrcode_update;
+    } else {
+        g_updateFunc = updateFunc;
+    }
     g_result = func();
     if (g_result -> error_code == 0) {
         if (g_result->is_multi_part) {
             char *data = g_result->data;
             uint16_t dataLen = strlen(data);
-            lv_qrcode_update(qr, data, dataLen);
+            g_updateFunc(qr, data, dataLen);
             g_qr = qr;
             g_timer = lv_timer_create(QRTimerHandler, 200, NULL);
         } else {
             char *data = g_result->data;
             uint16_t dataLen = strlen(data);
-            lv_qrcode_update(qr, data, dataLen);
+            updateFunc(qr, data, dataLen);
             CloseQRTimer();
         }
     }
+}
+
+void ShowQrCode(GetUR func, lv_obj_t *qr)
+{
+    UpdateQrCode(func, qr, lv_qrcode_update);
 }
 
 void CloseQRTimer(void)

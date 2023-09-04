@@ -26,10 +26,10 @@
 #include "drv_rtc.h"
 #include "drv_sdcard.h"
 #include "log.h"
-#include "gui_qr_code.h"
 #else
 #include "simulator_model.h"
 #endif
+#include "gui_animating_qrcode.h"
 
 #define MAX_LOGIN_PASSWORD_ERROR_COUNT  10
 #define MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX 4
@@ -49,7 +49,7 @@ typedef struct {
 
 typedef struct {
     uint8_t iconIndex;
-    char name[32];
+    char name[64];
 } WalletDesc_t;
 
 typedef struct PasswordVerifyResult {
@@ -78,7 +78,7 @@ void GuiModelSlip39ForgetPassword(Slip39Data_t slip39);
 void GuiModelWriteLastLockDeviceTime(uint32_t time);
 void GuiModelCalculateWebAuthCode(void *webAuthData);
 void GuiModelCopySdCardOta(void);
-// void GuiModelURGenerateQRCode(GetUR func);
+void GuiModelURGenerateQRCode(GenerateUR func);
 void GuiModelURUpdate(void);
 void GuiModelURClear(void);
 

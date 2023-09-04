@@ -16,17 +16,18 @@
 #include "slip39.h"
 #include "version.h"
 #include "gui_menmonic_test.h"
-#include "sha256.h"
 #include "presetting.h"
 #include "assert.h"
 #include "gui_qr_hintbox.h"
 #include "firmware_update.h"
 #include "gui_mnemonic_input.h"
 #include "motor_manager.h"
-#ifndef COMPILE_SIMULATOR
 #include "fingerprint_process.h"
+#ifndef COMPILE_SIMULATOR
+#include "sha256.h"
 #include "keystore.h"
 #else
+#include "simulator_model.h"
 #define FP_SUCCESS_CODE             0
 #define RECOGNIZE_UNLOCK            0
 #define RECOGNIZE_OPEN_SIGN         1
@@ -119,6 +120,7 @@ static lv_obj_t *g_labelSignFailed = NULL;
 static lv_timer_t *g_fpRecognizeTimer;
 static uint8_t g_fpEnSignCnt = 0;
 static lv_obj_t *g_fpUpdateCont = NULL;
+static lv_obj_t *g_fpAddCont = NULL;
 
 static lv_obj_t *g_passphraseLearnMoreCont = NULL;
 
@@ -194,6 +196,7 @@ static void ResetClearImportHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         ClearMnemonicKeyboard(g_recoveryMkb, &g_recoveryMkb->currentId);
+        GuiClearKeyBoard(g_recoveryPhraseKb);
     }
 }
 
@@ -233,6 +236,7 @@ static void GuiWalletSetWidget(lv_obj_t *parent)
     }
     memset(mfp, 0, sizeof(mfp));
     lv_obj_t *label = GuiCreateTextLabel(parent, GuiNvsBarGetWalletName());
+    lv_obj_set_style_text_font(label, &openSansButton, LV_PART_MAIN);
     lv_obj_t *mfpLabel = GuiCreateNoticeLabel(parent, tempBuf);
     g_mfpLabel = mfpLabel;
     g_walletSetLabel = label;
@@ -602,6 +606,7 @@ void GuiFingerRegisterDestruct(void *obj, void *param)
 
 void GuiFingerAddDestruct(void *obj, void *param)
 {
+    g_fpAddCont = NULL;
     GUI_DEL_OBJ(g_imgFinger)
     GUI_DEL_OBJ(g_arcProgress)
     GUI_DEL_OBJ(g_fpRegLabel)
@@ -635,8 +640,9 @@ static void GuiWalletFingerAddWidget(lv_obj_t *parent)
 {
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
-
+    g_fpAddCont = parent;
     lv_obj_t *label = NULL;
+    g_fpAddCont = parent;
     label = GuiCreateTitleLabel(parent, "Add Fingerprint");
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
 
@@ -1070,6 +1076,7 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
             g_waitAnimWidget.cont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
             g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("seed_check_wait_verify"));
             lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
+            lv_obj_add_flag(g_waitAnimWidget.cont, LV_OBJ_FLAG_CLICKABLE);
             GuiModelSettingWritePassphrase();
         } else {
             delayFlag = true;
@@ -1350,8 +1357,9 @@ static void UpdateWalletDescHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_READY) {
         WalletDesc_t wallet = {
-            .iconIndex = GuiGetEmojiIconIndex(),
+            .iconIndex = GuiSearchIconIndex(g_walletIcon),
         };
+        GuiSetEmojiIconIndex(wallet.iconIndex);
         strcpy(wallet.name, lv_textarea_get_text(g_settingKb->ta));
         GuiModelSettingSaveWalletDesc(&wallet);
     }
@@ -2023,7 +2031,7 @@ void GuiChangeWalletDesc(bool result)
         // walletIndex = DEVICE_SETTING_ADD_WALLET_NAME_WALLET;
         walletIndex = DEVICE_SETTING_ADD_WALLET_LIMIT;
     } else {
-        if (g_settingKb->ta != NULL) {
+        if (g_settingKb != NULL && g_settingKb->ta != NULL) {
             const char *name = lv_textarea_get_text(g_settingKb->ta);
             GuiNvsBarSetWalletName(name);
             SetStatusBarEmojiIndex(GuiGetEmojiIconIndex());
@@ -2528,6 +2536,9 @@ static void ModelSetPassphraseQuickAccess(bool enable)
 
 void GuiSettingFingerRegisterSuccess(void *param)
 {
+    if (g_fpAddCont == NULL) {
+        return;
+    }
     uint8_t step = *(uint8_t *)param;
     lv_arc_set_value(g_arcProgress, step);
     lv_img_set_src(g_imgFinger, &imgYellowFinger);
@@ -2541,6 +2552,9 @@ void GuiSettingFingerRegisterSuccess(void *param)
 
 void GuiSettingFingerRegisterFail(void *param)
 {
+    if (g_fpAddCont == NULL) {
+        return;
+    }
     if (param == NULL) {
         uint8_t walletIndex = DEVICE_SETTING_FINGER_ADD_OUT_LIMIT;
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));

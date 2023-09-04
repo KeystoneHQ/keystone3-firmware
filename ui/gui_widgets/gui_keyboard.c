@@ -395,6 +395,17 @@ void GuiSetEmojiIconIndex(uint8_t index)
     g_currEmojiIndex = index;
 }
 
+uint8_t GuiSearchIconIndex(lv_obj_t *icon)
+{
+    const void *img = lv_img_get_src(icon);
+    for (uint8_t i = 0; i < sizeof(g_emojiMatrix) / sizeof(g_emojiMatrix[0]); i++) {
+        if (g_emojiMatrix[i] == img) {
+            return i;
+        }
+    }
+    return 0;
+}
+
 uint8_t GuiGetEmojiIconIndex(void)
 {
     return g_currEmojiIndex;

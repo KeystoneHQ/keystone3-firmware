@@ -8,4 +8,6 @@ void GuiStandardReceiveInit(uint8_t chain);
 void GuiStandardReceiveDeInit(void);
 void GuiStandardReceiveRefresh(void);
 void GuiStandardReceivePrevTile(void);
+void GuiResetCurrentStandardAddressIndex(void);
+void GuiResetAllStandardAddressIndex(void);
 #endif

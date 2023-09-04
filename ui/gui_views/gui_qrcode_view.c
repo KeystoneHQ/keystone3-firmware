@@ -10,12 +10,10 @@
 #include "gui_model.h"
 #include "gui_views.h"
 #include "gui_qrcode_widgets.h"
-#include "screen_manager.h"
 #include "gui_lock_widgets.h"
 
 static int32_t GuiQrCodeViewInit(void)
 {
-    SetPageLockScreen(false);
     GuiQrCodeScreenInit();
     return SUCCESS_CODE;
 }
@@ -23,7 +21,6 @@ static int32_t GuiQrCodeViewInit(void)
 static int32_t GuiQrCodeViewDeInit(void)
 {
     GuiQrCodeDeInit();
-    SetPageLockScreen(true);
     return SUCCESS_CODE;
 }
 

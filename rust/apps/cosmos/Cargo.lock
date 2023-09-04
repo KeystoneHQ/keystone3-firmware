@@ -29,6 +29,7 @@ checksum = "7de8ce5e0f9f8d88245311066a578d72b7af3e7088f32783804676302df237e4"
 name = "app_cosmos"
 version = "0.1.0"
 dependencies = [
+ "app_utils",
  "keystore",
  "prost",
  "prost-types",
@@ -36,6 +37,14 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "tendermint-proto",
+ "third_party",
+]
+
+[[package]]
+name = "app_utils"
+version = "0.1.0"
+dependencies = [
+ "paste",
  "third_party",
 ]
 

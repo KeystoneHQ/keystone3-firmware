@@ -36,7 +36,7 @@ const ProtocolServiceCallbackFunc_t g_deviceInfoServiceFunc[] = {
 static uint8_t *ServiceDeviceInfoBasic(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
     Tlv_t tlvArray[4] = {0};
-    char model[] = "Keystone 3 Pro";
+    char model[] = "Kv3A";
     char serialNumber[SERIAL_NUMBER_MAX_LEN];
     char version[32];
     FrameHead_t sendHead = {0};

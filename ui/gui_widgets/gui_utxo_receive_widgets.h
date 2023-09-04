@@ -15,5 +15,7 @@ void GuiReceiveInit(uint8_t chain);
 void GuiReceiveDeInit(void);
 void GuiReceiveRefresh(void);
 void GuiReceivePrevTile(void);
+void GuiResetCurrentUtxoAddressIndex(void);
+void GuiResetAllUtxoAddressIndex(void);
 #endif
 

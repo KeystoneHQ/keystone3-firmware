@@ -12,6 +12,8 @@
 #include "user_utils.h"
 #include "inttypes.h"
 #include "gui_tutorial_widgets.h"
+#include "gui_fullscreen_mode.h"
+#include "keystore.h"
 
 #define GENERAL_ADDRESS_INDEX_MAX               999999999
 #define LEDGER_LIVE_ADDRESS_INDEX_MAX               9
@@ -103,17 +105,16 @@ void AddressLongModeCut(char *out, const char *address);
 static EthereumReceiveWidgets_t g_ethereumReceiveWidgets;
 static EthereumReceiveTile g_EthereumReceiveTileNow;
 static const PathItem_t g_paths[] = {
-    {"BIP 44 Standard",          "",            "m/44'/60'/0'"},
-    {"Ledger Live",             "",           "m/44'/60'" },
-    {"Ledger Legacy",        "",            "m/44'/60'/0'"},
+    {"BIP 44 Standard",     "",     "m/44'/60'/0'"  },
+    {"Ledger Live",         "",     "m/44'/60'"     },
+    {"Ledger Legacy",       "",     "m/44'/60'/0'"  },
 };
 static lv_obj_t *g_addressLabel[2];
 
 //to do: stored.
 static uint32_t g_showIndex;
-static uint32_t g_selectIndex;
-static uint32_t g_pathIndex = 0;
-static bool g_firstAttention = false;
+static uint32_t g_selectIndex[3] = {0};
+static uint32_t g_pathIndex[3] = {0};
 
 void GuiEthereumReceiveInit(void)
 {
@@ -140,6 +141,7 @@ void GuiEthereumReceiveDeInit(void)
 
     CLEAR_OBJECT(g_ethereumReceiveWidgets);
     g_EthereumReceiveTileNow = 0;
+    GuiFullscreenModeCleanUp();
 }
 
 void GuiEthereumReceiveRefresh(void)
@@ -155,7 +157,7 @@ void GuiEthereumReceiveRefresh(void)
         GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
         GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "Switch Account");
         GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-        g_showIndex = g_selectIndex / 5 * 5;
+        g_showIndex = g_selectIndex[GetCurrentAccountIndex()] / 5 * 5;
         if (g_showIndex < 5) {
             lv_obj_set_style_img_opa(g_ethereumReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);
             lv_obj_set_style_img_opa(g_ethereumReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
@@ -224,6 +226,13 @@ static void GuiEthereumReceiveGotoTile(EthereumReceiveTile tile)
     lv_obj_set_tile_id(g_ethereumReceiveWidgets.tileView, g_EthereumReceiveTileNow, 0, LV_ANIM_OFF);
 }
 
+lv_obj_t* CreateEthereumReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h) {
+    lv_obj_t* qrcode = lv_qrcode_create(parent, w, BLACK_COLOR, WHITE_COLOR);
+    lv_obj_add_flag(qrcode, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(qrcode, GuiFullscreenModeHandler, LV_EVENT_CLICKED, NULL);
+    return qrcode;
+}
+
 static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 {
     lv_obj_t *tempObj;
@@ -235,7 +244,9 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_radius(g_ethereumReceiveWidgets.qrCodeCont, 24, LV_PART_MAIN);
 
     yOffset += 36;
-    g_ethereumReceiveWidgets.qrCode = lv_qrcode_create(g_ethereumReceiveWidgets.qrCodeCont, 336, BLACK_COLOR, WHITE_COLOR);
+    g_ethereumReceiveWidgets.qrCode = CreateEthereumReceiveQRCode(g_ethereumReceiveWidgets.qrCodeCont, 336, 336);
+    GuiFullscreenModeInit(480, 800, WHITE_COLOR);
+    GuiFullscreenModeCreateObject(CreateEthereumReceiveQRCode, 420, 420);
     lv_obj_align(g_ethereumReceiveWidgets.qrCode, LV_ALIGN_TOP_MID, 0, yOffset);
     yOffset += 336;
 
@@ -261,8 +272,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_img_opa(tempObj, LV_OPA_56, LV_PART_MAIN);
     lv_obj_align(tempObj, LV_ALIGN_CENTER, 150, 0);
 
-    if (g_firstAttention == false) {
-        g_firstAttention = true;
+    if (!GetFirstReceive("ETH")) {
         g_ethereumReceiveWidgets.attentionCont = GuiCreateHintBox(parent, 480, 386, false);
         tempObj = GuiCreateImg(g_ethereumReceiveWidgets.attentionCont, &imgInformation);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
@@ -276,6 +286,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
         lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_add_event_cb(tempObj, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
+        SetFirstReceive("ETH", true);
     }
 }
 
@@ -396,8 +407,8 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
         lv_obj_align(g_ethereumReceiveWidgets.changePathWidgets[i].uncheckedImg, LV_ALIGN_CENTER, 162, 0);
         lv_obj_clear_flag(g_ethereumReceiveWidgets.changePathWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
     }
-    lv_obj_clear_flag(g_ethereumReceiveWidgets.changePathWidgets[g_pathIndex].checkedImg, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_add_flag(g_ethereumReceiveWidgets.changePathWidgets[g_pathIndex].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clear_flag(g_ethereumReceiveWidgets.changePathWidgets[g_pathIndex[GetCurrentAccountIndex()]].checkedImg, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(g_ethereumReceiveWidgets.changePathWidgets[g_pathIndex[GetCurrentAccountIndex()]].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
 
 
     cont = GuiCreateContainerWithParent(parent, 408, 186);
@@ -441,8 +452,12 @@ static void RefreshQrCode(void)
 {
     AddressDataItem_t addressDataItem;
 
-    ModelGetEthAddress(g_selectIndex, &addressDataItem);
+    ModelGetEthAddress(g_selectIndex[GetCurrentAccountIndex()], &addressDataItem);
     lv_qrcode_update(g_ethereumReceiveWidgets.qrCode, addressDataItem.address, strlen(addressDataItem.address));
+    lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
+    if (fullscreen_qrcode) {
+        lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strlen(addressDataItem.address));
+    }
     lv_label_set_text(g_ethereumReceiveWidgets.addressLabel, addressDataItem.address);
     lv_label_set_text_fmt(g_ethereumReceiveWidgets.addressCountLabel, "Account-%u", (addressDataItem.index + 1));
 }
@@ -471,7 +486,7 @@ static void RefreshSwitchAccount(void)
         lv_obj_clear_flag(g_ethereumReceiveWidgets.switchAddressWidgets[i].checkBox, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_ethereumReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_ethereumReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-        if (index == g_selectIndex) {
+        if (index == g_selectIndex[GetCurrentAccountIndex()]) {
             lv_obj_add_state(g_ethereumReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
             lv_obj_clear_flag(g_ethereumReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(g_ethereumReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
@@ -504,7 +519,7 @@ static void RefreshDefaultAddress(void)
 
 static int GetMaxAddressIndex(void)
 {
-    switch (g_pathIndex) {
+    switch (g_pathIndex[GetCurrentAccountIndex()]) {
     case 0:
     case 2:
         return GENERAL_ADDRESS_INDEX_MAX;
@@ -606,9 +621,10 @@ static void ChangePathCheckHandler(lv_event_t *e)
                 lv_obj_add_state(g_ethereumReceiveWidgets.changePathWidgets[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_clear_flag(g_ethereumReceiveWidgets.changePathWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(g_ethereumReceiveWidgets.changePathWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-                if (g_pathIndex != i) {
-                    g_pathIndex = i;
-                    g_selectIndex = 0;
+                if (g_pathIndex[GetCurrentAccountIndex()] != i) {
+                    g_pathIndex[GetCurrentAccountIndex()] = i;
+                    g_selectIndex[GetCurrentAccountIndex()] = 0;
+                    g_showIndex = 0;
                     RefreshDefaultAddress();
                 }
             } else {
@@ -632,7 +648,7 @@ static void SwitchAddressHandler(lv_event_t *e)
                 lv_obj_add_state(g_ethereumReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_clear_flag(g_ethereumReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(g_ethereumReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-                g_selectIndex = g_showIndex + i;
+                g_selectIndex[GetCurrentAccountIndex()] = g_showIndex + i;
             } else {
                 lv_obj_clear_state(g_ethereumReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_add_flag(g_ethereumReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
@@ -687,15 +703,15 @@ void AddressLongModeCut(char *out, const char *address)
 
 static void GetHdPath(char *hdPath, int index)
 {
-    switch (g_pathIndex) {
+    switch (g_pathIndex[GetCurrentAccountIndex()]) {
     case 0:
-        sprintf(hdPath, "%s/0/%u", g_paths[g_pathIndex].path, index);
+        sprintf(hdPath, "%s/0/%u", g_paths[g_pathIndex[GetCurrentAccountIndex()]].path, index);
         break;
     case 1:
-        sprintf(hdPath, "%s/%u'/0/0", g_paths[g_pathIndex].path, index);
+        sprintf(hdPath, "%s/%u'/0/0", g_paths[g_pathIndex[GetCurrentAccountIndex()]].path, index);
         break;
     case 2:
-        sprintf(hdPath, "%s/%u", g_paths[g_pathIndex].path, index);
+        sprintf(hdPath, "%s/%u", g_paths[g_pathIndex[GetCurrentAccountIndex()]].path, index);
         break;
     default:
         break;
@@ -704,15 +720,15 @@ static void GetHdPath(char *hdPath, int index)
 
 static void GetRootPath(char *rootPath, int index)
 {
-    switch (g_pathIndex) {
+    switch (g_pathIndex[GetCurrentAccountIndex()]) {
     case 0:
-        sprintf(rootPath, "%s", g_paths[g_pathIndex].path);
+        sprintf(rootPath, "%s", g_paths[g_pathIndex[GetCurrentAccountIndex()]].path);
         break;
     case 1:
-        sprintf(rootPath, "%s/%u'", g_paths[g_pathIndex].path, index);
+        sprintf(rootPath, "%s/%u'", g_paths[g_pathIndex[GetCurrentAccountIndex()]].path, index);
         break;
     case 2:
-        sprintf(rootPath, "%s", g_paths[g_pathIndex].path);
+        sprintf(rootPath, "%s", g_paths[g_pathIndex[GetCurrentAccountIndex()]].path);
         break;
     default:
         break;
@@ -721,7 +737,7 @@ static void GetRootPath(char *rootPath, int index)
 
 static char *GetXpub(int index)
 {
-    switch (g_pathIndex) {
+    switch (g_pathIndex[GetCurrentAccountIndex()]) {
     case 0:
         return GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
     case 1:
@@ -741,7 +757,7 @@ static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item)
 {
     char hdPath[128];
     //sprintf(hdPath, "m/44'/0'/0'/0/%u", index);
-    sprintf(hdPath, "%s/0/%u", g_paths[g_pathIndex].path, index);
+    sprintf(hdPath, "%s/0/%u", g_paths[g_pathIndex[GetCurrentAccountIndex()]].path, index);
     printf("hdPath=%s\r\n", hdPath);
     item->index = index;
     sprintf(item->address, "tb1qkcp7vdhczgk5eh59d2l0dxvmpzhx%010u", index);
@@ -769,3 +785,14 @@ static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item)
 
 #endif
 
+void GuiResetCurrentEthAddressIndex(void)
+{
+    g_selectIndex[GetCurrentAccountIndex()] = 0;
+    g_pathIndex[GetCurrentAccountIndex()] = 0;
+}
+
+void GuiResetAllEthAddressIndex(void)
+{
+    memset(g_selectIndex, 0, sizeof(g_selectIndex));
+    memset(g_pathIndex, 0, sizeof(g_pathIndex));
+}

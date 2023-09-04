@@ -244,6 +244,16 @@ impl From<&ParsedCosmosTx> for DisplayCosmosTxOverview {
                     };
                 }
             }
+            CosmosTxDisplayType::Message => {
+                if let MsgOverview::Message(overview) = &value.overview.kind[0] {
+                    return Self {
+                        display_type,
+                        method: convert_c_char(overview.method.clone()),
+                        network: convert_c_char(overview.network.clone()),
+                        ..DisplayCosmosTxOverview::default()
+                    };
+                }
+            }
         }
         DisplayCosmosTxOverview::default()
     }

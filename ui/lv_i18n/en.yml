@@ -23,6 +23,14 @@ en:
   connect_bw_qr_title: BlueWallet
   connect_bw_t: Tutorial
   connect_bw_title: BlueWallet
+  connect_keplr_desc: Please use your laptop or mobile to open the link below for
+    detailed tutorials on how to use Keystone with certain chain specific companion
+    software wallet.
+  connect_keplr_link: https://keyst.one/t/3rd/keplr
+  connect_keplr_qr_link: https://keyst.one/t/3rd/keplr
+  connect_keplr_qr_title: Keplr (Extension)
+  connect_keplr_t: Tutorial
+  connect_keplr_title: Keplr (Extension)
   connect_keyst_app_desc: Please use your laptop or mobile to open the link below
     for detailed tutorials on how to use Keystone with certain chain specific companion
     software wallet.

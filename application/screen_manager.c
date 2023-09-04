@@ -12,7 +12,6 @@
 #include "gui_views.h"
 #include "qrdecode_task.h"
 #include "low_power.h"
-#include "cmsis_os.h"
 #include "keystore.h"
 #include "gui_power_option_widgets.h"
 #include "fingerprint_task.h"
@@ -38,6 +37,7 @@ static volatile uint32_t g_lockScreenTick;
 static volatile uint32_t g_lockTimeOut;
 
 static volatile bool g_lockTimeState = false;
+static volatile bool g_lockDeivceTimeAlive = false;
 
 void ScreenManagerInit(void)
 {
@@ -84,6 +84,11 @@ void SetLockTimeOut(uint32_t timeOut)
     ClearLockScreenTime();
 }
 
+void SetLockDeviceAlive(bool alive)
+{
+    g_lockDeivceTimeAlive = alive;
+}
+
 static void ShortPressHandler(void)
 {
 
@@ -123,6 +128,11 @@ static void LockScreen(void)
         LogoutCurrentAccount();
         GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_UNLOCK);
         GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
+    }
+
+    if (g_lockDeivceTimeAlive) {
+        printf("lock device page is alive\n");
+        GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_CLEAR_ALL_TOP, NULL, 0);
     }
 
     if (!FpModuleIsExist()) {

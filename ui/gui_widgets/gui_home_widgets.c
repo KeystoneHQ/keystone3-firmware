@@ -30,6 +30,36 @@ static bool g_isManageOpen = false;
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_BTC, false, "BTC"},
     {HOME_WALLET_CARD_ETH, false, "ETH"},
+    {HOME_WALLET_CARD_ATOM, false, "ATOM"},
+    {HOME_WALLET_CARD_OSMO, false, "OSMO"},
+    {HOME_WALLET_CARD_SCRT, false, "SCRT"},
+    {HOME_WALLET_CARD_AKT, false, "AKT"},
+    {HOME_WALLET_CARD_CRO, false, "CRO"},
+    {HOME_WALLET_CARD_IOV, false, "IOV"},
+    {HOME_WALLET_CARD_ROWAN, false, "ROWAN"},
+    {HOME_WALLET_CARD_CTK, false, "CTK"},
+    {HOME_WALLET_CARD_IRIS, false, "IRIS"},
+    {HOME_WALLET_CARD_REGEN, false, "REGEN"},
+    {HOME_WALLET_CARD_XPRT, false, "XPRT"},
+    {HOME_WALLET_CARD_DVPN, false, "DVPN"},
+    {HOME_WALLET_CARD_IXO, false, "IXO"},
+    {HOME_WALLET_CARD_NGM, false, "NGM"},
+    {HOME_WALLET_CARD_BLD, false, "BLD"},
+    {HOME_WALLET_CARD_BOOT, false, "BOOT"},
+    {HOME_WALLET_CARD_JUNO, false, "JUNO"},
+    {HOME_WALLET_CARD_STARS, false, "STARS"},
+    {HOME_WALLET_CARD_AXL, false, "AXL"},
+    {HOME_WALLET_CARD_SOMM, false, "SOMM"},
+    {HOME_WALLET_CARD_UMEE, false, "UMEE"},
+    {HOME_WALLET_CARD_GRAV, false, "GRAV"},
+    {HOME_WALLET_CARD_TGD, false, "TGD"},
+    {HOME_WALLET_CARD_STRD, false, "STRD"},
+    {HOME_WALLET_CARD_EVMOS, false, "EVMOS"},
+    {HOME_WALLET_CARD_INJ, false, "INJ"},
+    {HOME_WALLET_CARD_KAVA, false, "KAVA"},
+    {HOME_WALLET_CARD_QCK, false, "QCK"},
+    {HOME_WALLET_CARD_LUNA, false, "LUNA"},
+    {HOME_WALLET_CARD_LUNC, false, "LUNC"},
     {HOME_WALLET_CARD_BNB, false, "BNB"},
     {HOME_WALLET_CARD_SOL, false, "SOL"},
     {HOME_WALLET_CARD_DOT, false, "DOT"},
@@ -53,6 +83,186 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "ETH",
         .chain = "Ethereum",
         .icon = &coinEth,
+    },
+    {
+        .index = HOME_WALLET_CARD_ATOM,
+        .coin = "ATOM",
+        .chain = "Cosmos Hub",
+        .icon = &coinAtom,
+    },
+    {
+        .index = HOME_WALLET_CARD_OSMO,
+        .coin = "OSMO",
+        .chain = "Osmosis",
+        .icon = &coinOsmo,
+    },
+    {
+        .index = HOME_WALLET_CARD_SCRT,
+        .coin = "SCRT",
+        .chain = "Secret Network",
+        .icon = &coinScrt,
+    },
+    {
+        .index = HOME_WALLET_CARD_AKT,
+        .coin = "AKT",
+        .chain = "Akash",
+        .icon = &coinAkt,
+    },
+    {
+        .index = HOME_WALLET_CARD_CRO,
+        .coin = "CRO",
+        .chain = "Crypto.org",
+        .icon = &coinCro,
+    },
+    {
+        .index = HOME_WALLET_CARD_IOV,
+        .coin = "IOV",
+        .chain = "Starname",
+        .icon = &coinIov,
+    },
+    {
+        .index = HOME_WALLET_CARD_ROWAN,
+        .coin = "ROWAN",
+        .chain = "Sifchain",
+        .icon = &coinRowan,
+    },
+    {
+        .index = HOME_WALLET_CARD_CTK,
+        .coin = "CTK",
+        .chain = "Shentu",
+        .icon = &coinCtk,
+    },
+    {
+        .index = HOME_WALLET_CARD_IRIS,
+        .coin = "IRIS",
+        .chain = "IRISnet",
+        .icon = &coinIris,
+    },
+    {
+        .index = HOME_WALLET_CARD_REGEN,
+        .coin = "REGEN",
+        .chain = "Regen",
+        .icon = &coinRegen,
+    },
+    {
+        .index = HOME_WALLET_CARD_XPRT,
+        .coin = "XPRT",
+        .chain = "Persistence",
+        .icon = &coinXprt,
+    },
+    {
+        .index = HOME_WALLET_CARD_DVPN,
+        .coin = "DVPN",
+        .chain = "Sentinel",
+        .icon = &coinDvpn,
+    },
+    {
+        .index = HOME_WALLET_CARD_IXO,
+        .coin = "IXO",
+        .chain = "ixo",
+        .icon = &coinIxo,
+    },
+    {
+        .index = HOME_WALLET_CARD_NGM,
+        .coin = "NGM",
+        .chain = "e-Money",
+        .icon = &coinNgm,
+    },
+    {
+        .index = HOME_WALLET_CARD_BLD,
+        .coin = "BLD",
+        .chain = "Agoric",
+        .icon = &coinBld,
+    },
+    {
+        .index = HOME_WALLET_CARD_BOOT,
+        .coin = "BOOT",
+        .chain = "Bostrom",
+        .icon = &coinBoot,
+    },
+    {
+        .index = HOME_WALLET_CARD_JUNO,
+        .coin = "JUNO",
+        .chain = "Juno",
+        .icon = &coinJuno,
+    },
+    {
+        .index = HOME_WALLET_CARD_STARS,
+        .coin = "STARS",
+        .chain = "Stargaze",
+        .icon = &coinStars,
+    },
+    {
+        .index = HOME_WALLET_CARD_AXL,
+        .coin = "AXL",
+        .chain = "Axelar",
+        .icon = &coinAxl,
+    },
+    {
+        .index = HOME_WALLET_CARD_SOMM,
+        .coin = "SOMM",
+        .chain = "Sommelier",
+        .icon = &coinSomm,
+    },
+    {
+        .index = HOME_WALLET_CARD_UMEE,
+        .coin = "UMEE",
+        .chain = "Umee",
+        .icon = &coinUmee,
+    },
+    {
+        .index = HOME_WALLET_CARD_GRAV,
+        .coin = "GRAV",
+        .chain = "Gravity Bridge",
+        .icon = &coinGrav,
+    },
+    {
+        .index = HOME_WALLET_CARD_TGD,
+        .coin = "TGD",
+        .chain = "Tgrade",
+        .icon = &coinTgd,
+    },
+    {
+        .index = HOME_WALLET_CARD_STRD,
+        .coin = "STRD",
+        .chain = "Stride",
+        .icon = &coinStrd,
+    },
+    {
+        .index = HOME_WALLET_CARD_EVMOS,
+        .coin = "EVMOS",
+        .chain = "Evmos",
+        .icon = &coinEvmos,
+    },
+    {
+        .index = HOME_WALLET_CARD_INJ,
+        .coin = "INJ",
+        .chain = "Injective",
+        .icon = &coinInj,
+    },
+    {
+        .index = HOME_WALLET_CARD_KAVA,
+        .coin = "KAVA",
+        .chain = "Kava",
+        .icon = &coinKava,
+    },
+    {
+        .index = HOME_WALLET_CARD_QCK,
+        .coin = "QCK",
+        .chain = "Quicksilver",
+        .icon = &coinQck,
+    },
+    {
+        .index = HOME_WALLET_CARD_LUNA,
+        .coin = "LUNA",
+        .chain = "Terra",
+        .icon = &coinLuna,
+    },
+    {
+        .index = HOME_WALLET_CARD_LUNC,
+        .coin = "LUNC",
+        .chain = "Terra Classic",
+        .icon = &coinLunc,
     },
     {
         .index = HOME_WALLET_CARD_BNB,
@@ -191,7 +401,6 @@ static bool IsUtxoCoin(HOME_WALLET_CARD_ENUM coin)
     default:
         return false;
     }
-
 }
 
 static void CoinDealHandler(lv_event_t *e)
@@ -206,7 +415,7 @@ static void CoinDealHandler(lv_event_t *e)
             GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
         } else if (coin == HOME_WALLET_CARD_ETH) {
             GuiFrameOpenView(&g_ethereumReceiveView);
-        } else if (coin == HOME_WALLET_CARD_TRX) {
+        } else {
             GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
         }
     }
@@ -336,12 +545,12 @@ static void OpenManageAssetsHandler(lv_event_t *e)
         g_manageWalletLabel = label;
 
         // ** temporary add.
-        lv_obj_t *line = GuiCreateDividerLine(g_manageCont);
-        lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 216);
+        lv_obj_t *line = GuiCreateDividerLine(checkBoxCont);
+        lv_obj_align(line, LV_ALIGN_DEFAULT, 0, HOME_WALLET_CARD_BNB * 96);
 
-        label = GuiCreateIllustrateLabel(g_manageCont, "Please upgrade to the latest version for access to expanded crypto compatibility.");
+        label = GuiCreateIllustrateLabel(checkBoxCont, "Please upgrade to the latest version for access to expanded crypto compatibility.");
         lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 32, 241);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 32, HOME_WALLET_CARD_BNB * 96 + 25);
         // **
         UpdateManageWalletState(false);
 
@@ -368,6 +577,7 @@ void GuiHomeAreaInit(void)
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
     g_homeViewCont = cont;
+    lv_obj_add_flag(g_homeViewCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_t *walletCardCont = GuiCreateContainerWithParent(cont, lv_obj_get_width(lv_scr_act()),
                                lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_align(walletCardCont, LV_ALIGN_DEFAULT);

@@ -161,9 +161,9 @@ unsigned __stdcall UITaskEntry(void *param)
     GuiStyleInit();
 
     uiThreadId = GetCurrentThreadId();
-    // GuiFrameOpenView(&g_initView);
+    GuiFrameOpenView(&g_initView);
     // lv_example_textarea_1();
-    gui_keyboard_example_1();
+    // gui_keyboard_example_1();
     // gui_setting_view_open();
     // lv_example_tabview_1();
     // gui_file_vfs_example_1();

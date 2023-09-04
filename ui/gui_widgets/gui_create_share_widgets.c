@@ -362,7 +362,7 @@ static void GuiShareBackupWidget(lv_obj_t *parent)
 {
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
     // lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("Confirm Your Seed"));
+    lv_obj_t *label = GuiCreateTitleLabel(parent, _("Backup Your Phrase"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(parent, _("shamir_phrase_backup_desc"));

@@ -5,6 +5,7 @@
 #include "gui_setting_widgets.h"
 #include "gui_enter_passcode.h"
 #include "gui_lock_widgets.h"
+#include "gui_qr_code.h"
 
 static int32_t GuiSettingViewInit(void)
 {
@@ -59,6 +60,8 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
         } else {
             return ERR_GUI_ERROR;
         }
+        //temporary fix sign tx qrcode not animating;
+        QRCodeControl(false);
         GuiDevSettingPassCode(true, tileIndex);
         break;
     case SIG_VERIFY_PASSWORD_FAIL:

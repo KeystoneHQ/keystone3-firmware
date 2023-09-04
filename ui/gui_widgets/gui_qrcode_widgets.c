@@ -18,9 +18,12 @@
 #include "gui_qr_hintbox.h"
 #include "motor_manager.h"
 #include "gui_lock_widgets.h"
+#include "screen_manager.h"
 #ifndef COMPILE_SIMULATOR
 #include "fingerprint_process.h"
+#include "gui_fullscreen_mode.h"
 #include "keystore.h"
+
 #else
 #define FP_SUCCESS_CODE             0
 #define RECOGNIZE_UNLOCK            0
@@ -47,6 +50,12 @@ typedef struct QrCodeWidget {
     KeyBoard_t *kb;
 } QrCodeWidget_t;
 
+typedef enum {
+    PAGE_PHASE_SCAN_QR,
+    PAGE_PHASE_TRANSACTION_DETAIL,
+    PAGE_PHASE_SIGNATURE
+} PagePhase;
+
 void OpenForgetPasswordHandler(lv_event_t *e);
 
 static QrCodeWidget_t g_qrCodeWidgetView;
@@ -70,6 +79,7 @@ static void GuiHintBoxToLockSreen(void);
 static void GuiCountDownDestruct(void *obj, void *param);
 static lv_timer_t *g_fpRecognizeTimer;
 
+static PagePhase g_pagePhase;
 void GuiQrCodeScreenCorner(void)
 {
     if (g_qrCodeWidgetView.cont != NULL) {
@@ -117,6 +127,8 @@ void GuiQrCodeScreenCorner(void)
 void GuiQrCodeScreenInit(void *param)
 {
     g_qrCodeWidgetView.kb = NULL;
+    g_pagePhase = PAGE_PHASE_SCAN_QR;
+    SetPageLockScreen(false);
 }
 
 static void UpdatePassPhraseHandler(lv_event_t *e)
@@ -148,9 +160,12 @@ static void ForgetHandler(lv_event_t *e)
     }
 }
 
-static void SignByPasswordCb(void)
+static void SignByPasswordCb(bool cancel)
 {
     GUI_DEL_OBJ(g_fingerSingContainer)
+    if (cancel) {
+        FpCancelCurOperate();
+    }
 
     g_noticeHintBox = GuiCreateHintBox(g_qrCodeWidgetView.cont, 480, 576, true);
     lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
@@ -198,7 +213,7 @@ static void SignByPasswordCbHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        SignByPasswordCb();
+        SignByPasswordCb(true);
     }
 }
 
@@ -263,7 +278,7 @@ void CheckSliderProcessHandler(lv_event_t *e)
             if ((GetCurrentAccountIndex() < 3) && GetFingerSignFlag() && g_fingerSignCount < 3) {
                 SignByFinger();
             } else {
-                SignByPasswordCb();
+                SignByPasswordCb(false);
             }
             lv_slider_set_value(lv_event_get_target(e), 0, LV_ANIM_OFF);
         } else {
@@ -292,6 +307,9 @@ static GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
         return CHAIN_ETH;
     case TronTx:
         return CHAIN_TRX;
+    case CosmosTx:
+    case CosmosEvmTx:
+        return GuiGetCosmosTxChain();
     default:
         return CHAIN_BUTT;
     }
@@ -342,12 +360,14 @@ void GuiQrCodeScanResult(bool result, void *param)
         g_qrCodeWidgetView.analysis = GuiTemplateReload(g_qrCodeWidgetView.cont, g_qrcodeViewType);
         if (g_qrCodeWidgetView.analysis != NULL) {
             g_fingerSignCount = 0;
-            if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData) {
+            if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData || IsCosmosMsg(g_qrcodeViewType)) {
                 GuiNvsSetCoinWallet(g_chainType, "Confirm Message");
             } else {
                 GuiNvsSetCoinWallet(g_chainType, NULL);
             }
             GuiCreateConfirmSlider(g_qrCodeWidgetView.cont, CheckSliderProcessHandler);
+            g_pagePhase = PAGE_PHASE_TRANSACTION_DETAIL;
+            SetPageLockScreen(true);
         } else {
             GuiDealScanErrorResult(0);
         }
@@ -357,8 +377,30 @@ void GuiQrCodeScanResult(bool result, void *param)
     }
 }
 
+lv_obj_t* GuiCreateQRCode(lv_obj_t* parent, uint16_t w, uint16_t h) {
+    lv_obj_t* qrcode = lv_qrcode_create(parent, w, BLACK_COLOR, WHITE_COLOR);
+    lv_obj_add_flag(qrcode, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(qrcode, GuiFullscreenModeHandler, LV_EVENT_CLICKED, NULL);
+    return qrcode;
+}
+
+lv_res_t UpdateQrCodeAndFullscreenVersion(lv_obj_t * qrcode, const void * data, uint32_t data_len)
+{
+    lv_qrcode_update(qrcode, data, data_len);
+    lv_obj_t* fullScreenQrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
+    if (fullScreenQrcode) {
+        lv_qrcode_update(fullScreenQrcode, data, data_len);
+    }
+}
+
+void GuiShowQrCode(GetUR func, lv_obj_t *qr)
+{
+    UpdateQrCode(func, qr, UpdateQrCodeAndFullscreenVersion);
+}
+
 void GuiQrCodeShowQrMessage(lv_obj_t *parent)
 {
+    g_pagePhase = PAGE_PHASE_SIGNATURE;
     lv_obj_t *cont = GuiCreateContainerWithParent(parent, lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_align(cont, LV_ALIGN_DEFAULT);
 
@@ -366,7 +408,9 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
     lv_obj_align(qrCont, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_style_bg_color(qrCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_radius(qrCont, 24, LV_PART_MAIN);
-    lv_obj_t *qrcode = lv_qrcode_create(qrCont, 336, BLACK_COLOR, WHITE_COLOR);
+    lv_obj_t *qrcode = GuiCreateQRCode(qrCont, 336, 336);
+    GuiFullscreenModeInit(480, 800, WHITE_COLOR);
+    GuiFullscreenModeCreateObject(GuiCreateQRCode, 420, 420);
 
     char *data = NULL;
     switch (g_qrcodeViewType) {
@@ -377,19 +421,27 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
     case LtcTx:
     case DashTx:
     case BchTx:
-        ShowQrCode(GuiGetSignQrCodeData, qrcode);
+        GuiShowQrCode(GuiGetSignQrCodeData, qrcode);
         break;
     case EthTx:
     case EthPersonalMessage:
     case EthTypedData:
-        ShowQrCode(GuiGetEthSignQrCodeData, qrcode);
+        GuiShowQrCode(GuiGetEthSignQrCodeData, qrcode);
         break;
     case TronTx:
-        ShowQrCode(GuiGetTrxSignQrCodeData, qrcode);
+        GuiShowQrCode(GuiGetTrxSignQrCodeData, qrcode);
+        break;
+    case CosmosTx:
+    case CosmosEvmTx:
+        GuiShowQrCode(GuiGetCosmosSignQrCodeData, qrcode);
         break;
     default:
         data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
         lv_qrcode_update(qrcode, data, strlen(data));
+        lv_obj_t* fullScreenQrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
+        if (fullScreenQrcode) {
+            lv_qrcode_update(fullScreenQrcode, data, strlen(data));
+        }
         break;
     }
 
@@ -430,16 +482,28 @@ void GuiQrCodeRefresh(void)
     GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseTimerCurrentViewHandler, NULL);
     GuiNvsBarSetMidCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-    if (g_qrCodeWidgetView.kb == NULL) {
+    switch (g_pagePhase) {
+    case PAGE_PHASE_SCAN_QR:
         g_noticeHintBox = NULL;
         GuiQrCodeScreenCorner();
         GuiModeControlQrDecode(true);
-    } else {
-        if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData) {
+        break;
+    case PAGE_PHASE_TRANSACTION_DETAIL:
+        if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData || IsCosmosMsg(g_qrcodeViewType)) {
             GuiNvsSetCoinWallet(g_chainType, "Confirm Message");
         } else {
             GuiNvsSetCoinWallet(g_chainType, NULL);
         }
+        break;
+    case PAGE_PHASE_SIGNATURE:
+        if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData) {
+            GuiNvsSetCoinWallet(g_chainType, "Broadcast Message");
+        } else {
+            GuiNvsSetCoinWallet(g_chainType, NULL);
+        }
+        break;
+    default:
+        break;
     }
 }
 
@@ -453,11 +517,15 @@ void GuiQrCodeDeInit(void)
     g_qrCodeWidgetView.cont = NULL;
     g_qrCodeWidgetView.kb = NULL;
     g_chainType = CHAIN_BUTT;
+    g_pagePhase = PAGE_PHASE_SCAN_QR;
 
     //for learn more hintbox in eth contract data block;
     if (GuiQRHintBoxIsActive()) {
         GuiQRHintBoxRemove();
     }
+
+    GuiFullscreenModeCleanUp();
+    SetPageLockScreen(true);
 }
 
 static void RecognizeFailHandler(lv_timer_t *timer)
@@ -479,6 +547,9 @@ void GuiQrCodeDealFingerRecognize(void *param)
 {
     uint8_t errCode = *(uint8_t *)param;
     static uint16_t passCodeType = ENTER_PASSCODE_VERIFY_PASSWORD;
+    if (g_fingerSingContainer == NULL) {
+        return;
+    }
     if (errCode == FP_SUCCESS_CODE) {
         lv_img_set_src(g_fpErrorImg, &imgYellowFinger);
         GuiModelVerifyAmountPassWord(&passCodeType);
@@ -496,7 +567,7 @@ void GuiQrCodeDealFingerRecognize(void *param)
             FpRecognize(RECOGNIZE_SIGN);
             g_fpRecognizeTimer = lv_timer_create(RecognizeFailHandler, 1000, NULL);
         } else {
-            SignByPasswordCb();
+            SignByPasswordCb(false);
         }
         printf("g_fingerSignErrCount.... = %d\n", g_fingerSignErrCount);
         if (g_fingerSignErrCount >= FINGERPRINT_SING_DISABLE_ERR_TIMES) {

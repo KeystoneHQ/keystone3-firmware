@@ -71,6 +71,13 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_ETH_LEDGER_LIVE_8,          "eth_ledger_live_8",        "M/44'/60'/8'"      },
     {XPUB_TYPE_ETH_LEDGER_LIVE_9,          "eth_ledger_live_9",        "M/44'/60'/9'"      },
     {XPUB_TYPE_TRX,                        "trx",                      "M/44'/195'/0'"     },
+    {XPUB_TYPE_COSMOS,                     "cosmos",                   "M/44'/118'/0'"     },
+    {XPUB_TYPE_SCRT,                       "scrt",                     "M/44'/529'/0'"     },
+    {XPUB_TYPE_CRO,                        "cro",                      "M/44'/394'/0'"     },
+    {XPUB_TYPE_IOV,                        "iov",                      "M/44'/234'/0'"     },
+    {XPUB_TYPE_BLD,                        "bld",                      "M/44'/564'/0'"     },
+    {XPUB_TYPE_KAVA,                       "kava",                     "M/44'/459'/0'"     },
+    {XPUB_TYPE_TERRA,                      "terra",                    "M/44'/330'/0'"     },
 };
 
 void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
@@ -99,7 +106,7 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
         rootJson = cJSON_CreateObject();
         for (int i = 0; i < count; i++) {
             jsonItem = cJSON_CreateObject();
-            cJSON_AddItemToObject(jsonItem, "firstRecv", cJSON_CreateBool(true));
+            cJSON_AddItemToObject(jsonItem, "firstRecv", cJSON_CreateBool(false));
             if (!strcmp(walletList[i].name, "BTC") || !strcmp(walletList[i].name, "ETH")) {
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
             } else {
@@ -157,7 +164,13 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
     SRAM_FREE(jsonString);
     for (int i = 0; i < count; i++) {
         cJSON *item = cJSON_GetObjectItem(rootJson, walletList[i].name);
-        if (item != NULL) {
+        if (item == NULL) {
+            item = cJSON_CreateObject();
+            cJSON_AddItemToObject(item, "firstRecv", cJSON_CreateBool(false));
+            cJSON_AddItemToObject(item, "manage", cJSON_CreateBool(walletList[i].state));
+            cJSON_AddItemToObject(rootJson, walletList[i].name, item);
+            needUpdate = true;
+        } else {
             cJSON *manage = cJSON_GetObjectItem(item, "manage");
             bool state = manage->valueint;
             if (state != walletList[i].state) {
@@ -536,4 +549,73 @@ static void GetStringValue(cJSON *obj, const char *key, char *value, uint32_t ma
     } else {
         strcpy(value, "");
     }
+}
+
+bool GetFirstReceive(const char* chainName)
+{
+    int32_t ret = SUCCESS_CODE;
+    uint32_t addr, size;
+    char *jsonString = NULL;
+
+    uint8_t account = GetCurrentAccountIndex();
+    ASSERT(account < 3);
+    addr = SPI_FLASH_ADDR_USER1_MUTABLE_DATA + account * SPI_FLASH_ADDR_EACH_SIZE;
+    ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
+    ASSERT(ret == 4);
+
+    jsonString = SRAM_MALLOC(size + 1);
+    ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
+    ASSERT(ret == size);
+    jsonString[size] = 0;
+
+    cJSON *rootJson = cJSON_Parse(jsonString);
+    SRAM_FREE(jsonString);
+    cJSON *item = cJSON_GetObjectItem(rootJson, chainName);
+    bool state = false;
+    if (item == NULL) {
+        printf("GetFirstReceive cannot get %s\r\n", chainName);
+    } else {
+        cJSON *firstRecv = cJSON_GetObjectItem(item, "firstRecv");
+        state = firstRecv->valueint;
+    }
+    cJSON_Delete(rootJson);
+    return state;
+}
+
+void SetFirstReceive(const char* chainName, bool isFirst)
+{
+    int32_t ret = SUCCESS_CODE;
+    uint32_t addr, size, eraseAddr;
+    char *jsonString = NULL;
+
+    uint8_t account = GetCurrentAccountIndex();
+    ASSERT(account < 3);
+    addr = SPI_FLASH_ADDR_USER1_MUTABLE_DATA + account * SPI_FLASH_ADDR_EACH_SIZE;
+    ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
+    ASSERT(ret == 4);
+
+    jsonString = SRAM_MALLOC(size + 1);
+    ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
+    ASSERT(ret == size);
+    jsonString[size] = 0;
+
+    cJSON *rootJson = cJSON_Parse(jsonString);
+    SRAM_FREE(jsonString);
+    cJSON *item = cJSON_GetObjectItem(rootJson, chainName);
+    if (item == NULL) {
+        printf("SetFirstReceive cannot get %s\r\n", chainName);
+        cJSON_Delete(rootJson);
+        return;
+    }
+    cJSON_ReplaceItemInObject(item, "firstRecv", cJSON_CreateBool(isFirst));
+
+    for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_MUTABLE_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
+        Gd25FlashSectorErase(eraseAddr);
+    }
+    jsonString = cJSON_Print(rootJson);
+    cJSON_Delete(rootJson);
+    RemoveFormatChar(jsonString);
+    size = strlen(jsonString);
+    Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
+    Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
 }

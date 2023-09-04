@@ -44,6 +44,8 @@ void *GuiGetTrxData(void)
     } while (0);
     free_TransactionCheckResult(result);
     return g_parseResult;
+#else
+    return NULL;
 #endif
 }
 

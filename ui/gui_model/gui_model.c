@@ -28,12 +28,13 @@
 #include "ui_display_task.h"
 #include "motor_manager.h"
 #include "gui_animating_qrcode.h"
+#include "screen_manager.h"
+#include "keystore.h"
 #ifndef COMPILE_SIMULATOR
 #include "rust.h"
 #include "user_msg.h"
 #include "general_msg.h"
 #include "cmsis_os.h"
-#include "keystore.h"
 #include "fingerprint_process.h"
 #include "user_delay.h"
 #include "user_fatfs.h"
@@ -731,6 +732,17 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
     int32_t ret;
     ret = DestroyAccount(GetCurrentAccountIndex());
     if (ret == SUCCESS_CODE) {
+        // reset address index in receive page
+        {
+            void GuiResetCurrentUtxoAddressIndex(void);
+            void GuiResetCurrentEthAddressIndex(void);
+            void GuiResetCurrentStandardAddressIndex(void);
+
+            GuiResetCurrentUtxoAddressIndex();
+            GuiResetCurrentEthAddressIndex();
+            GuiResetCurrentStandardAddressIndex();
+        }
+
         uint8_t accountNum;
         GetExistAccountNum(&accountNum);
         if (accountNum == 0) {

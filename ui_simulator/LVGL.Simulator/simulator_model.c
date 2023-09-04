@@ -13,7 +13,7 @@ bool fingerRegisterState[3] = {true, false, false};
 bool g_reboot = false;
 void OpenUsb()
 {
-    
+
 }
 
 void CloseUsb()
@@ -354,7 +354,7 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
 
     if (LV_FS_RES_OK != lv_fs_open(&fd, ACCOUNT_PUBLIC_HOME_COIN_PATH, LV_FS_MODE_RD | LV_FS_MODE_WR)) {
         printf("lv_fs_open failed %s\n", ACCOUNT_PUBLIC_HOME_COIN_PATH);
-        return NULL;
+        return;
     }
 
     if (0) {
@@ -377,7 +377,7 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
         cJSON_Delete(rootJson);
         if (LV_FS_RES_OK != lv_fs_write(&fd, retStr, strlen(retStr), &size)) {
             printf("lv_fs_write failed %s\n", ACCOUNT_PUBLIC_HOME_COIN_PATH);
-            return NULL;
+            return;
         }
     }
     lv_fs_read(&fd, buf, JSON_MAX_LEN, &size);
@@ -406,7 +406,7 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
 
     if (LV_FS_RES_OK != lv_fs_open(&fd, ACCOUNT_PUBLIC_HOME_COIN_PATH, LV_FS_MODE_RD)) {
         printf("lv_fs_open failed %s\n", ACCOUNT_PUBLIC_HOME_COIN_PATH);
-        return NULL;
+        return;
     }
 
     lv_fs_read(&fd, buf, JSON_MAX_LEN, &size);
@@ -429,12 +429,12 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
         char *retStr = cJSON_Print(rootJson);
         if (LV_FS_RES_OK != lv_fs_open(&fd, ACCOUNT_PUBLIC_HOME_COIN_PATH, LV_FS_MODE_RD | LV_FS_MODE_WR)) {
             printf("lv_fs_open failed %s\n", ACCOUNT_PUBLIC_HOME_COIN_PATH);
-            return NULL;
+            return;
         }
         if (LV_FS_RES_OK != lv_fs_write(&fd, retStr, strlen(retStr), &size)) {
             lv_fs_close(&fd);
             printf("lv_fs_write failed %s\n", ACCOUNT_PUBLIC_HOME_COIN_PATH);
-            return NULL;
+            return;
         }
 
         lv_fs_read(&fd, buf, JSON_MAX_LEN, &size);
@@ -517,7 +517,7 @@ void free_ptr_string(PtrString ptr)
 
 }
 
-PtrString calculate_auth_code(PtrUR web_auth_data,
+PtrString calculate_auth_code(ConstPtrUR web_auth_data,
                               PtrBytes rsa_key_n,
                               uint32_t rsa_key_n_len,
                               PtrBytes rsa_key_d,

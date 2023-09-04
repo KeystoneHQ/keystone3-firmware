@@ -37,6 +37,7 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_ETH_PERSONAL_MESSAGE, GuiSetEthUrData},
     {REMAPVIEW_ETH_TYPEDDATA, GuiSetEthUrData},
     {REMAPVIEW_TRX, GuiSetTrxUrData},
+    {REMAPVIEW_COSMOS, GuiSetCosmosUrData},
 };
 
 osThreadId_t g_qrDecodeTaskHandle;
@@ -128,8 +129,6 @@ void ProcessQr(uint32_t count)
     int32_t ret = QrDecodeProcess(qrString, QR_DECODE_STRING_LEN, testProgress);
 
     if (ret > 0) {
-        printf("QRSTring=%s\r\n", qrString);
-
         if (firstQrFlag == true) {
             struct URParseResult *urResult = parse_ur(qrString);
             if (urResult->error_code == 0) {
@@ -200,6 +199,8 @@ void handleURResult(void *urResult, UrViewType_t urViewType, bool is_multi)
         StopQrDecode();
         UserDelay(500);
         GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
+    } else {
+        printf("unhandled viewType=%d\r\n", urViewType.viewType);
     }
 }
 

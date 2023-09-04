@@ -14,6 +14,7 @@ serde_derive = { version = "1.0.159"}
 prost = { version = "0.11", default-features = false }
 prost-types = { version = "0.11", default-features = false }
 tendermint-proto = "0.32"
+app_utils = {path = "../utils"}
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }

@@ -11,8 +11,12 @@
 
 #define SOFTWARE_VERSION_MAJOR              0
 #define SOFTWARE_VERSION_MINOR              8
-#define SOFTWARE_VERSION_BUILD              8
+#define SOFTWARE_VERSION_BUILD              11
 #define SOFTWARE_VERSION                    (SOFTWARE_VERSION_MAJOR * 10000 + SOFTWARE_VERSION_MINOR * 100 + SOFTWARE_VERSION_BUILD)
+
+#if SOFTWARE_VERSION_MAJOR > 99 || SOFTWARE_VERSION_MINOR > 99 || SOFTWARE_VERSION_BUILD > 99
+#error "Invalid software version"
+#endif
 
 void GetSoftWareVersion(char *version);
 void GetSoftWareVersionNumber(char *version);

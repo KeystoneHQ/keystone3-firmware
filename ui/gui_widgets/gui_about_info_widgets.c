@@ -12,6 +12,11 @@
 #include "version.h"
 #include "err_code.h"
 
+#ifdef COMPILE_MAC_SIMULATOR
+#include "simulator_model.h"
+#include "fingerprint_process.h"
+#endif
+
 static void GuiAboutNVSBarInit();
 static void GuiAboutInfoEntranceWidget(lv_obj_t *parent);
 static void UnHandler(lv_event_t *e);

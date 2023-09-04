@@ -368,7 +368,7 @@ void FpSetAesKeyRecv(char *indata, uint8_t len)
             printf("set aes key failed\n");
             GetFpErrorMessage(result);
         }
-    } else if (len == 0){
+    } else if (len == 0) {
         FpResponseHandle(FINGERPRINT_CMD_SET_AES_KEY);
     }
 }
@@ -423,7 +423,7 @@ void FpGetAesKeyState(char *indata, uint8_t len)
     printf("%s %d\n", __func__, __LINE__);
     uint8_t state = 0;
     uint8_t fpAesState = 0;
-    
+
     if (len == 0) {
         FpResponseHandle(FINGERPRINT_CMD_GET_AES_KEY_STATE);
     } else {

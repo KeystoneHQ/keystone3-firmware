@@ -34,7 +34,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_BTC,
 #ifndef COMPILE_SIMULATOR
-        "{\"name\":\"btc_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,144],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Amount\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text\":\"Fee\",\"pos\":[24,98],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtTotalOutAmount\",\"pos\":[24,50],\"text_color\":16090890,\"font\":\"openSansEnLittleTitle\"},{\"type\":\"label\",\"text_func\":\"GetPsbtFeeAmount\",\"pos\":[73,98],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetPsbtTotalOutSat\",\"pos\":[24,50],\"aflag\":1,\"text_color\":16090890,\"font\":\"openSansEnLittleTitle\"},{\"type\":\"label\",\"text_func\":\"GetPsbtFeeSat\",\"pos\":[73,98],\"text_color\":16777215,\"aflag\":1,\"font\":\"openSansEnIllustrate\"},{\"type\":\"img\",\"default\":[-4,-5],\"hidden\":[-2,-3],\"aflag\":2,\"cb\":\"SwitchHidden\",\"is_show\":15}]},{\"type\":\"container\",\"pos\":[0,168],\"size\":[408,62],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtNetWork\",\"pos\":[120,16],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,250],\"size_func\":\"GetPsbtOverviewSize\",\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"align\":2,\"pos\":[0,54],\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetPsbtInputData\",\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[0,5],\"align_to\":-2,\"align\":13,\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"align_to\":-2,\"align\":13,\"pos\":[0,5],\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetPsbtOutputData\",\"font\":\"openSansEnIllustrate\"}]}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,62],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtNetWork\",\"pos\":[120,16],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,100],\"size\":[408,138],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Input Value\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtDetailInputValue\",\"pos\":[20,0],\"text_color\":16777215,\"align_to\":-2,\"align\":20,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Output Value\",\"pos\":[24,54],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtDetailOutputValue\",\"pos\":[20,0],\"text_color\":16777215,\"align_to\":-2,\"align\":20,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Fee\",\"pos\":[24,92],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtDetailFee\",\"pos\":[20,0],\"text_color\":16777215,\"align_to\":-2,\"align\":20,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,250],\"size_func\":\"GetPsbtDetailSize\",\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"align\":2,\"pos\":[0,54],\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetPsbtInputDetailData\",\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[0,5],\"align_to\":-2,\"align\":13,\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"pos\":[0,5],\"align_to\":-2,\"align\":13,\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetPsbtOutputDetailData\",\"font\":\"openSansEnIllustrate\"}]}]}]}",
+        "{\"name\":\"btc_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,144],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Amount\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text\":\"Fee\",\"pos\":[24,98],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtTotalOutAmount\",\"pos\":[24,50],\"text_color\":16090890,\"font\":\"openSansEnLittleTitle\"},{\"type\":\"label\",\"text_func\":\"GetPsbtFeeAmount\",\"pos\":[73,98],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetPsbtTotalOutSat\",\"pos\":[24,50],\"aflag\":1,\"text_color\":16090890,\"font\":\"openSansEnLittleTitle\"},{\"type\":\"label\",\"text_func\":\"GetPsbtFeeSat\",\"pos\":[73,98],\"text_color\":16777215,\"aflag\":1,\"font\":\"openSansEnIllustrate\"},{\"type\":\"img\",\"default\":[-4,-5],\"hidden\":[-2,-3],\"align\":8,\"pos\":[-24,0],\"aflag\":2,\"cb\":\"SwitchHidden\",\"img_src\":\"imgConversion\",\"is_show\":15}]},{\"type\":\"container\",\"pos\":[0,168],\"size\":[408,62],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtNetWork\",\"pos\":[120,16],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,250],\"size_func\":\"GetPsbtOverviewSize\",\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"align\":2,\"pos\":[0,54],\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetPsbtInputData\",\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[0,5],\"align_to\":-2,\"align\":13,\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"align_to\":-2,\"align\":13,\"pos\":[0,5],\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetPsbtOutputData\",\"font\":\"openSansEnIllustrate\"}]}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,62],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtNetWork\",\"pos\":[120,16],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,100],\"size\":[408,138],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Input Value\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtDetailInputValue\",\"pos\":[20,0],\"text_color\":16777215,\"align_to\":-2,\"align\":20,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Output Value\",\"pos\":[24,54],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtDetailOutputValue\",\"pos\":[20,0],\"text_color\":16777215,\"align_to\":-2,\"align\":20,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Fee\",\"pos\":[24,92],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtDetailFee\",\"pos\":[20,0],\"text_color\":16777215,\"align_to\":-2,\"align\":20,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,250],\"size_func\":\"GetPsbtDetailSize\",\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"align\":2,\"pos\":[0,54],\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetPsbtInputDetailData\",\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[0,5],\"align_to\":-2,\"align\":13,\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"pos\":[0,5],\"align_to\":-2,\"align\":13,\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetPsbtOutputDetailData\",\"font\":\"openSansEnIllustrate\"}]}]}]}",
 #else
         PC_SIMULATOR_PATH"/page_btc.json",
 #endif
@@ -87,6 +87,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         GuiGetTrxData,
         NULL,
         FreeTrxMemory,
+    },
+    {
+        REMAPVIEW_COSMOS,
+#ifndef COMPILE_SIMULATOR
+        "{\"table\":{\"tx\":{\"name\":\"cosmos_tx_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"list\",\"exist_func\":\"GetCosmosMsgListExist\",\"len_func\":\"GetCosmosMsgLen\",\"item_key_func\":\"GetCosmosMsgKey\",\"item_map\":{\"default\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,402],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Value\",\"pos\":[24,96],\"text_color\":16090890,\"font\":\"openSansEnLittleTitle\"},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,144],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,144],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,182],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"From\",\"text_width\":360,\"pos\":[24,220],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,288],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,326],\"font\":\"openSansEnIllustrate\"}]},\"Undelegate\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,402],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Value\",\"pos\":[24,96],\"text_color\":16090890,\"font\":\"openSansEnLittleTitle\"},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,144],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,144],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Validator\",\"pos\":[24,182],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Validator\",\"text_width\":360,\"pos\":[24,220],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,288],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,326],\"font\":\"openSansEnIllustrate\"}]},\"Re-delegate\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,402],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Value\",\"pos\":[24,96],\"text_color\":16090890,\"font\":\"openSansEnLittleTitle\"},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,144],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,144],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,182],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,220],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"New Validator\",\"pos\":[24,288],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"New Validator\",\"text_width\":360,\"pos\":[24,326],\"font\":\"openSansEnIllustrate\"}]},\"Withdraw Reward\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,320],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,62],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,100],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,138],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Validator\",\"pos\":[24,206],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Validator\",\"text_width\":360,\"pos\":[24,244],\"font\":\"openSansEnIllustrate\"}]},\"Vote\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,290],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Proposal\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Proposal\",\"pos\":[123,62],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Voted\",\"pos\":[24,100],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Voted\",\"pos\":[95,100],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,138],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,138],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Voter\",\"pos\":[24,176],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Voter\",\"pos\":[24,214],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]}}},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,106],\"bg_opa\":31,\"radius\":24,\"exist_func\":\"GetCosmosValueExist\",\"children\":[{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosValue\",\"pos\":[24,50],\"text_color\":16090890,\"font\":\"openSansEnLittleTitle\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,106],\"bg_opa\":31,\"radius\":24,\"exist_func\":\"GetCosmosVoteExist\",\"children\":[{\"type\":\"label\",\"text\":\"Proposal\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosProposal\",\"pos\":[123,16],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Voted\",\"pos\":[24,54],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosVoted\",\"pos\":[95,54],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,62],\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosNetwork\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,62],\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"exist_func\":\"GetCosmosMethodExist\",\"children\":[{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosMethod\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size_func\":\"GetCosmosOverviewAddrSize\",\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"exist_func\":\"GetCosmosAddrExist\",\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosAddress1Label\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosAddress1Value\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetCosmosAddress2Label\",\"pos\":[24,130],\"text_opa\":144,\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosAddress2Exist\"},{\"type\":\"label\",\"text_func\":\"GetCosmosAddress2Value\",\"text_width\":360,\"pos\":[0,8],\"align_to\":-2,\"align\":13,\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosAddress2Exist\"}]}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"list\",\"exist_func\":\"GetCosmosMsgListExist\",\"len_func\":\"GetCosmosMsgLen\",\"item_key_func\":\"GetCosmosMsgKey\",\"item_map\":{\"default\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,358],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Value\",\"pos\":[92,62],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,100],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,100],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,138],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"From\",\"text_width\":360,\"pos\":[24,176],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,244],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,282],\"font\":\"openSansEnIllustrate\"}]},\"IBC Transfer\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,396],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Value\",\"pos\":[92,62],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,100],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,100],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,138],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"From\",\"text_width\":360,\"pos\":[24,176],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,244],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,282],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Source Channel\",\"pos\":[24,350],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Source Channel\",\"text_width\":360,\"pos\":[187,350],\"font\":\"openSansEnIllustrate\"}]},\"Undelegate\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,358],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Value\",\"pos\":[92,62],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,100],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,100],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Validator\",\"pos\":[24,138],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Validator\",\"text_width\":360,\"pos\":[24,176],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,244],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,282],\"font\":\"openSansEnIllustrate\"}]},\"Re-delegate\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,464],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Value\",\"pos\":[92,62],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,100],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,100],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,138],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,176],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Old Validator\",\"pos\":[24,244],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Old Validator\",\"text_width\":360,\"pos\":[24,282],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"New Validator\",\"pos\":[24,350],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"New Validator\",\"text_width\":360,\"pos\":[24,388],\"font\":\"openSansEnIllustrate\"}]},\"Withdraw Reward\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,322],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,62],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,100],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,138],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Validator\",\"pos\":[24,206],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Validator\",\"text_width\":360,\"pos\":[24,244],\"font\":\"openSansEnIllustrate\"}]},\"Vote\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,290],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Proposal\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Proposal\",\"pos\":[123,62],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Voted\",\"pos\":[24,100],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Voted\",\"pos\":[95,100],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,138],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,138],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Voter\",\"pos\":[24,176],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Voter\",\"pos\":[24,214],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]}}},{\"type\":\"container\",\"pos\":[0,16],\"size_func\":\"GetCosmosDetailMsgSize\",\"exist_func\":\"GetCosmosMethodExist\",\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144,\"exist_func\":\"GetCosmosValueExist\"},{\"type\":\"label\",\"text_func\":\"GetCosmosValue\",\"pos\":[92,16],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosValueExist\"},{\"type\":\"label\",\"text\":\"Proposal\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144,\"exist_func\":\"GetCosmosVoteExist\"},{\"type\":\"label\",\"text_func\":\"GetCosmosProposal\",\"pos\":[123,16],\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosVoteExist\"},{\"type\":\"label\",\"text\":\"Voted\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144,\"exist_func\":\"GetCosmosVoteExist\"},{\"type\":\"label\",\"text_func\":\"GetCosmosVoted\",\"pos\":[95,62],\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosVoteExist\"},{\"type\":\"label\",\"text\":\"Method\",\"pos_func\":\"GetCosmosDetailMethodLabelPos\",\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosMethod\",\"pos_func\":\"GetCosmosDetailMethodValuePos\",\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetCosmosAddress1Label\",\"pos_func\":\"GetCosmosDetailAddress1LabelPos\",\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosAddress1Value\",\"text_width\":360,\"pos_func\":\"GetCosmosDetailAddress1ValuePos\",\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Old Validator\",\"pos\":[24,222],\"text_opa\":144,\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosOldValidatorExist\"},{\"type\":\"label\",\"text_func\":\"GetCosmosOldValidator\",\"text_width\":360,\"pos\":[24,260],\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosOldValidatorExist\"},{\"type\":\"label\",\"text_func\":\"GetCosmosAddress2Label\",\"pos_func\":\"GetCosmosDetailAddress2LabelPos\",\"text_opa\":144,\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosAddress2Exist\"},{\"type\":\"label\",\"text_func\":\"GetCosmosAddress2Value\",\"text_width\":360,\"pos_func\":\"GetCosmosDetailAddress2ValuePos\",\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosAddress2Exist\"},{\"type\":\"label\",\"text\":\"Source Channel\",\"pos\":[24,336],\"text_opa\":144,\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosChannelExist\"},{\"type\":\"label\",\"text_func\":\"GetCosmosChannel\",\"pos\":[187,336],\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosChannelExist\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,170],\"bg_opa\":31,\"radius\":24,\"align\":13,\"align_to\":-2,\"children\":[{\"type\":\"label\",\"text\":\"Max Fee\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosMaxFee\",\"pos\":[118,16],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"  ·  Max Fee Price * Gas Limit\",\"pos\":[24,54],\"font\":\"openSansDesc\",\"text_opa\":144},{\"type\":\"label\",\"text\":\"Fee\",\"pos\":[24,86],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosFee\",\"pos\":[73,86],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Gas Limit\",\"pos\":[24,124],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosGasLimit\",\"pos\":[127,124],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,100],\"bg_opa\":31,\"radius\":24,\"align\":13,\"align_to\":-2,\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosNetwork\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Chain ID\",\"pos\":[24,54],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosChainId\",\"pos\":[120,54],\"font\":\"openSansEnIllustrate\"}]}]}]},\"unknown\":{\"name\":\"cosmos_unknown_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,600],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"pos\":[0,80],\"size\":[408,170],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Max Fee\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosDetailItemValue\",\"text_key\":\"Max Fee\",\"pos\":[118,16],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"  ·  Max Fee Price * Gas Limit\",\"pos\":[24,54],\"font\":\"openSansDesc\",\"text_opa\":144},{\"type\":\"label\",\"text\":\"Fee\",\"pos\":[24,86],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosDetailItemValue\",\"text_key\":\"Fee\",\"pos\":[73,86],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Gas Limit\",\"pos\":[24,124],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosDetailItemValue\",\"text_key\":\"Gas Limit\",\"pos\":[127,124],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,62],\"bg_opa\":31,\"radius\":24,\"align\":13,\"align_to\":-2,\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosDetailItemValue\",\"text_key\":\"Network\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,62],\"bg_opa\":31,\"radius\":24,\"align\":13,\"align_to\":-2,\"children\":[{\"type\":\"label\",\"text\":\"Message\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosDetailItemValue\",\"text_key\":\"Message\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16105777}]}]},\"msg\":{\"name\":\"cosmos_msg_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,600],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,62],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosDetailItemValue\",\"text_key\":\"Network\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,130],\"bg_opa\":31,\"radius\":24,\"align\":13,\"align_to\":-2,\"children\":[{\"type\":\"label\",\"text\":\"Signer\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosDetailItemValue\",\"text_key\":\"Signer\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,250],\"bg_opa\":31,\"radius\":24,\"align\":13,\"align_to\":-2,\"children\":[{\"type\":\"label\",\"text\":\"Message\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosDetailItemValue\",\"text_key\":\"Message\",\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}}}",
+#else
+        PC_SIMULATOR_PATH"/page_eth.json",
+#endif
+        GuiGetCosmosData,
+        GuiGetCosmosTmpType,
+        FreeCosmosMemory,
     }
 };
 
@@ -142,6 +153,16 @@ GetContSizeFunc GetEthContainerSize(char *type)
     return NULL;
 }
 
+GetContSizeFunc GetCosmosContainerSize(char *type)
+{
+    if (!strcmp(type, "GetCosmosDetailMsgSize")) {
+        return GetCosmosDetailMsgSize;
+    } else if (!strcmp(type, "GetCosmosOverviewAddrSize")) {
+        return GetCosmosOverviewAddrSize;
+    }
+    return NULL;
+}
+
 GetContSizeFunc GuiTemplateSizeFuncGet(char *type)
 {
     switch (g_reMapIndex) {
@@ -149,11 +170,49 @@ GetContSizeFunc GuiTemplateSizeFuncGet(char *type)
         return GetPsbtContainerSize(type);
     case REMAPVIEW_ETH:
         return GetEthContainerSize(type);
+    case REMAPVIEW_COSMOS:
+        return GetCosmosContainerSize(type);
     default:
         return NULL;
     }
 
     return NULL;
+}
+
+GetListLenFunc GetCosmosListLen(char *type)
+{
+    if (!strcmp(type, "GetCosmosMsgLen")) {
+        return GetCosmosMsgLen;
+    }
+    return NULL;
+}
+
+GetListLenFunc GuiTemplateListLenFuncGet(char *type)
+{
+    switch (g_reMapIndex) {
+    case REMAPVIEW_COSMOS:
+        return GetCosmosListLen(type);
+    default:
+        return NULL;
+    }
+}
+
+GetListItemKeyFunc GetCosmosListItemKey(char *type)
+{
+    if (!strcmp(type, "GetCosmosMsgKey")) {
+        return GetCosmosMsgKey;
+    }
+    return NULL;
+}
+
+GetListItemKeyFunc GuiTemplateListItemKeyFuncGet(char *type)
+{
+    switch (g_reMapIndex) {
+    case REMAPVIEW_COSMOS:
+        return GetCosmosListItemKey(type);
+    default:
+        return NULL;
+    }
 }
 
 GetContSizeFunc GetEthObjPos(char *type)
@@ -164,12 +223,32 @@ GetContSizeFunc GetEthObjPos(char *type)
     return NULL;
 }
 
+GetContSizeFunc GetCosmosObjPos(char *type)
+{
+    if (!strcmp(type, "GetCosmosDetailMethodLabelPos")) {
+        return GetCosmosDetailMethodLabelPos;
+    } else if (!strcmp(type, "GetCosmosDetailMethodValuePos")) {
+        return GetCosmosDetailMethodValuePos;
+    } else if (!strcmp(type, "GetCosmosDetailAddress1LabelPos")) {
+        return GetCosmosDetailAddress1LabelPos;
+    } else if (!strcmp(type, "GetCosmosDetailAddress1ValuePos")) {
+        return GetCosmosDetailAddress1ValuePos;
+    } else if (!strcmp(type, "GetCosmosDetailAddress2LabelPos")) {
+        return GetCosmosDetailAddress2LabelPos;
+    } else if (!strcmp(type, "GetCosmosDetailAddress2ValuePos")) {
+        return GetCosmosDetailAddress2ValuePos;
+    }
+    return NULL;
+}
+
 GetContSizeFunc GuiTemplatePosFuncGet(char *type)
 {
     switch (g_reMapIndex) {
     case REMAPVIEW_BTC:
     case REMAPVIEW_ETH:
         return GetEthObjPos(type);
+    case REMAPVIEW_COSMOS:
+        return GetCosmosObjPos(type);
     default:
         return NULL;
     }
@@ -314,6 +393,48 @@ GetLabelDataFunc GuiTrxTextFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataFunc GuiCosmosTextFuncGet(char *type)
+{
+    if (!strcmp(type, "GetCosmosValue")) {
+        return GetCosmosValue;
+    } else if (!strcmp(type, "GetCosmosNetwork")) {
+        return GetCosmosNetwork;
+    } else if (!strcmp(type, "GetCosmosMethod")) {
+        return GetCosmosMethod;
+    } else if (!strcmp(type, "GetCosmosAddress1Label")) {
+        return GetCosmosAddress1Label;
+    } else if (!strcmp(type, "GetCosmosAddress1Value")) {
+        return GetCosmosAddress1Value;
+    } else if (!strcmp(type, "GetCosmosAddress2Label")) {
+        return GetCosmosAddress2Label;
+    } else if (!strcmp(type, "GetCosmosAddress2Value")) {
+        return GetCosmosAddress2Value;
+    } else if (!strcmp(type, "GetCosmosMaxFee")) {
+        return GetCosmosMaxFee;
+    } else if (!strcmp(type, "GetCosmosFee")) {
+        return GetCosmosFee;
+    } else if (!strcmp(type, "GetCosmosGasLimit")) {
+        return GetCosmosGasLimit;
+    } else if (!strcmp(type, "GetCosmosChainId")) {
+        return GetCosmosChainId;
+    } else if (!strcmp(type, "GetCosmosChannel")) {
+        return GetCosmosChannel;
+    } else if (!strcmp(type, "GetCosmosOldValidator")) {
+        return GetCosmosOldValidator;
+    } else if (!strcmp(type, "GetCosmosProposal")) {
+        return GetCosmosProposal;
+    } else if (!strcmp(type, "GetCosmosVoted")) {
+        return GetCosmosVoted;
+    } else if (!strcmp(type, "GetCosmosIndex")) {
+        return GetCosmosIndex;
+    } else if (!strcmp(type, "GetCosmosTextOfKind")) {
+        return GetCosmosTextOfKind;
+    } else if (!strcmp(type, "GetCosmosDetailItemValue")) {
+        return GetCosmosDetailItemValue;
+    }
+    return NULL;
+}
+
 GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
 {
     switch (g_reMapIndex) {
@@ -327,6 +448,8 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
         return GuiEthTypedDataTextFuncGet(type);
     case REMAPVIEW_TRX:
         return GuiTrxTextFuncGet(type);
+    case REMAPVIEW_COSMOS:
+        return GuiCosmosTextFuncGet(type);
     default:
         return NULL;
     }
@@ -359,6 +482,9 @@ const void *GetImgSrc(char *type)
     if (!strcmp(type, "imgQrcodeTurquoise")) {
         return &imgQrcodeTurquoise;
     }
+    if (!strcmp(type, "imgConversion")) {
+        return &imgConversion;
+    }
     return &imgSwitch;
 }
 
@@ -378,6 +504,22 @@ GetObjStateFunc GuiTemplateStateFuncGet(char *type)
         return GetTrxContractExist;
     } else if (!strcmp(type, "GetTrxTokenExist")) {
         return GetTrxTokenExist;
+    } else if (!strcmp(type, "GetCosmosChannelExist")) {
+        return GetCosmosChannelExist;
+    } else if (!strcmp(type, "GetCosmosOldValidatorExist")) {
+        return GetCosmosOldValidatorExist;
+    } else if (!strcmp(type, "GetCosmosValueExist")) {
+        return GetCosmosValueExist;
+    } else if (!strcmp(type, "GetCosmosVoteExist")) {
+        return GetCosmosVoteExist;
+    } else if (!strcmp(type, "GetCosmosAddress2Exist")) {
+        return GetCosmosAddress2Exist;
+    } else if (!strcmp(type, "GetCosmosMsgListExist")) {
+        return GetCosmosMsgListExist;
+    } else if (!strcmp(type, "GetCosmosMethodExist")) {
+        return GetCosmosMethodExist;
+    } else if (!strcmp(type, "GetCosmosAddrExist")) {
+        return GetCosmosAddrExist;
     }
 
     return NULL;
@@ -572,6 +714,10 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
     item = cJSON_GetObjectItem(json, "text_func");
     if (item != NULL) {
         pFunc = GuiTemplateTextFuncGet(item->valuestring);
+        item = cJSON_GetObjectItem(json, "text_key");
+        if (item != NULL) {
+            strcpy(text, item->valuestring);
+        }
     }
 
     item = cJSON_GetObjectItem(json, "text_opa");
@@ -621,6 +767,46 @@ void *GuiWidgetContainer(lv_obj_t *parent, cJSON *json)
     return obj;
 }
 
+void GuiWidgetList(lv_obj_t *parent, cJSON *json)
+{
+    GetListLenFunc lenFunc = NULL;
+    GetListItemKeyFunc keyFunc = NULL;
+    cJSON *item = cJSON_GetObjectItem(json, "len_func");
+    uint8_t len = 0;
+    if (item != NULL) {
+        lenFunc = GuiTemplateListLenFuncGet(item->valuestring);
+        lenFunc(&len, g_totalData);
+    } else {
+        item = cJSON_GetObjectItem(json, "len");
+        len = item->valueint;
+    }
+    if (len != 0) {
+        cJSON *itemMap = cJSON_GetObjectItem(json, "item_map");
+        cJSON *itemDefault = itemMap == NULL ? NULL : cJSON_GetObjectItem(itemMap, "default");
+        cJSON *itemKeyFunc = cJSON_GetObjectItem(json, "item_key_func");
+        cJSON *child = cJSON_GetObjectItem(json, "item");
+        keyFunc = GuiTemplateListItemKeyFuncGet(itemKeyFunc->valuestring);
+        char *key = SRAM_MALLOC(50);
+        for (uint8_t i = 0; i < len; i++)
+        {
+            if (itemKeyFunc != NULL) {
+                keyFunc(key, g_totalData);
+            }
+            if (itemMap != NULL) {
+                child = cJSON_GetObjectItem(itemMap, key);
+                if (child == NULL) {
+                    if (itemDefault != NULL) {
+                        child = itemDefault;
+                    } else {
+                        printf("key %s not found!\r\n", key);
+                    }
+                }
+            }
+            GuiWidgetFactoryCreate(parent, child);
+        }
+        SRAM_FREE(key);
+    }
+}
 
 void *GuiWidgetTable(lv_obj_t *parent, cJSON *json)
 {
@@ -794,11 +980,7 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
             g_analyzeArray[g_reMapIndex].typeFunc(typeBuf, g_totalData);
             item = cJSON_GetObjectItem(item, typeBuf);
             if (item != NULL) {
-                printf("typeBuf = %s start\n", typeBuf);
-                obj = GuiWidgetContainer(parent, json);
-                GuiWidgetBaseInit(obj, item);
-                printf("typeBuf = %s end\n", typeBuf);
-                return obj;
+                return GuiWidgetFactoryCreate(parent, item);
             }
         } else {
             return NULL;
@@ -818,6 +1000,10 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
         }
     }
 
+    if (0 == strcmp(type, "list")) {
+        GuiWidgetList(parent, json);
+        return NULL;
+    }
     if (0 == strcmp(type, "container")) {
         obj = GuiWidgetContainer(parent, json);
     } else if (0 == strcmp(type, "img")) {
@@ -910,6 +1096,9 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_ETH_TYPEDDATA;
     case TronTx:
         return REMAPVIEW_TRX;
+    case CosmosTx:
+    case CosmosEvmTx:
+        return REMAPVIEW_COSMOS;
     default:
         return REMAPVIEW_BUTT;
     }
@@ -981,6 +1170,7 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
 
 void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
 {
+    g_tableView = NULL;
     g_analyzeTabview.tabviewIndex = 0;
     g_reMapIndex = ViewTypeReMap(index);
     if (g_reMapIndex == REMAPVIEW_BUTT) {
@@ -998,7 +1188,7 @@ void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
     //     lv_obj_del(g_templateContainer);
     //     return NULL;
     // }
-    if (g_reMapIndex == REMAPVIEW_ETH_PERSONAL_MESSAGE || g_reMapIndex == REMAPVIEW_ETH_TYPEDDATA) {
+    if (g_tableView == NULL) {
         return g_templateContainer;
     }
     GuiAnalyzeViewInit(parent);

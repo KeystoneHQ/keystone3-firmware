@@ -7,14 +7,13 @@
 #include "user_memory.h"
 #include "gui_chain.h"
 #include "presetting.h"
+
 static UREncodeResult *g_urEncode = NULL;
 
 #ifdef COMPILE_SIMULATOR
 struct UREncodeResult *get_connect_blue_wallet_ur(uint8_t *master_fingerprint,
-        uint32_t length,
-        PtrString legacy_x_pub,
-        PtrString nested_x_pub,
-        PtrString native_x_pub)
+                                                  uint32_t length,
+                                                  PtrT_CSliceFFI_ExtendedPublicKey public_keys)
 {
     struct UREncodeResult *result = malloc(sizeof(struct UREncodeResult));
     result->is_multi_part = 0;
@@ -108,6 +107,49 @@ UREncodeResult *GuiGetMetamaskData(void)
     g_urEncode = get_connect_metamask_ur(mfp, sizeof(mfp), accountType, public_keys);
     CHECK_CHAIN_PRINT(g_urEncode);
     SRAM_FREE(public_keys);
+    return g_urEncode;
+#else
+    const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+    return (void *)data;
+#endif
+}
+
+UREncodeResult *GuiGetKeplrData(void)
+{
+#ifndef COMPILE_SIMULATOR
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_KeplrAccount publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_KeplrAccount));
+    GuiChainCoinType chains[8] = {
+        CHAIN_ATOM,
+        CHAIN_SCRT,
+        CHAIN_CRO,
+        CHAIN_IOV,
+        CHAIN_BLD,
+        CHAIN_KAVA,
+        CHAIN_EVMOS,
+        CHAIN_LUNA,
+    };
+    KeplrAccount keys[8];
+    publicKeys->data = keys;
+    publicKeys->size = 8;
+
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        const CosmosChain_t *chain = GuiGetCosmosChain(chains[i]);
+        keys[i].xpub = GetCurrentAccountPublicKey(chain->xpubType);
+        keys[i].name = "Account-1";
+        keys[i].path = SRAM_MALLOC(sizeof(char) * 32);
+        sprintf(keys[i].path, "M/44'/%u'/0'/0/0", chain->coinType);
+    }
+
+    g_urEncode = get_connect_keplr_wallet_ur(mfp, sizeof(mfp), publicKeys);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        SRAM_FREE(keys[i].path);
+    }
+    SRAM_FREE(publicKeys);
     return g_urEncode;
 #else
     const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";

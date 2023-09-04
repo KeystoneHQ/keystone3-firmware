@@ -15,7 +15,12 @@
 #include "gui_api.h"
 
 #ifdef COMPILE_SIMULATOR
-#include <Windows.h>
+    #ifndef COMPILE_MAC_SIMULATOR
+        #include <Windows.h>
+    #else
+        #include <stdlib.h>
+        #include <string.h>
+    #endif
 #else
 #include <stdlib.h>
 #include <string.h>
@@ -35,9 +40,11 @@ int32_t GuiApiEmitSignal(uint16_t signal, void *param, uint16_t usLen)
     if (param != NULL) {
         memcpy(msg->param, param, usLen);
     }
+    #ifndef COMPILE_MAC_SIMULATOR
     if (!PostThreadMessage(GetUiThreadId(), signal, (WPARAM)msg, (LPARAM)(sizeof(GuiEmitMsg_t) + usLen))) {
         printf("post message failed, errno:%d\n", GetLastError());
     }
+    #endif
 #else
     GuiEmitMsg_t *msg = (GuiEmitMsg_t *)SRAM_MALLOC(sizeof(GuiEmitMsg_t) + usLen);
     msg->signal = signal;

@@ -1,6 +1,14 @@
 #ifndef _GUI_ANIMATING_QRCODE_H
 #define _GUI_ANIMATING_QRCODE_H
 
+#define QR_SIZE_FULL 420
+#define QR_SIZE_REGULAR 294
+#define QR_BG_COLOR WHITE_COLOR
+#define QR_FG_COLOR BLACK_COLOR
+#define TIMER_UPDATE_INTERVAL 200
+#define SCREEN_WIDTH 480
+#define SCREEN_HEIGHT 800
+
 #include "rust.h"
 
 typedef UREncodeResult *(*GenerateUR)(void);

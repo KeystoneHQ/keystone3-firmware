@@ -29,10 +29,10 @@ enum {
 };
 #else
 
+#endif
+
 int32_t GuiApiEmitSignal(uint16_t signal, void *param, uint16_t usLen);
 int32_t GuiApiEmitSignalWithValue(uint16_t signal, uint32_t value);
-
-#endif
 
 typedef struct {
     uint16_t signal;

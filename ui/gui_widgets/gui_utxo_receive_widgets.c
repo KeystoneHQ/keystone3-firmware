@@ -21,6 +21,8 @@
 #include "gui_button.h"
 #include "gui_model.h"
 #include "gui_tutorial_widgets.h"
+#include "gui_fullscreen_mode.h"
+#include "keystore.h"
 
 #define ADDRESS_INDEX_MAX 999999999
 
@@ -123,8 +125,6 @@ static void CloseGotoAddressHandler(lv_event_t *e);
 static void AddressLongModeCut(char *out, const char *address);
 static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item);
 
-static bool IsFirstAttention();
-static void SetFirstAttention();
 static void GetHint(char *hint);
 static uint32_t GetCurrentSelectIndex();
 static void SetCurrentSelectIndex(uint32_t selectIndex);
@@ -153,22 +153,19 @@ static uint32_t g_showIndex;
 static uint32_t g_selectIndex;
 
 // to do: stored.
-static uint32_t g_btcSelectIndex;
-static uint32_t g_addressSettingsIndex = 0;
-static uint32_t g_ltcSelectIndex;
-static uint32_t g_dashSelectIndex;
-static uint32_t g_bchSelectIndex;
-
-static bool g_btcFirstAttention = false;
-static bool g_ltcFirstAttention = false;
-static bool g_dashFirstAttention = false;
-static bool g_bchFirstAttention = false;
+static uint32_t g_btcSelectIndex[3] = {0};
+static uint32_t g_addressSettingsIndex[3] = {0};
+static uint32_t g_ltcSelectIndex[3] = {0};
+static uint32_t g_dashSelectIndex[3] = {0};
+static uint32_t g_bchSelectIndex[3] = {0};
+static uint8_t g_currentAccountIndex = 0;
 
 static HOME_WALLET_CARD_ENUM g_chainCard;
 
 void GuiReceiveInit(uint8_t chain)
 {
     g_chainCard = chain;
+    g_currentAccountIndex = GetCurrentAccountIndex();
     g_selectIndex = GetCurrentSelectIndex();
     g_utxoReceiveWidgets.cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
     lv_obj_align(g_utxoReceiveWidgets.cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
@@ -201,10 +198,12 @@ void GuiReceiveDeInit(void)
         lv_obj_del(g_utxoReceiveWidgets.inputAddressCont);
         g_utxoReceiveWidgets.inputAddressCont = NULL;
     }
+
     SetCurrentSelectIndex(g_selectIndex);
     lv_obj_del(g_utxoReceiveWidgets.cont);
     CLEAR_OBJECT(g_utxoReceiveWidgets);
     g_utxoReceiveTileNow = 0;
+    GuiFullscreenModeCleanUp();
 }
 
 void GuiReceiveRefresh(void)
@@ -332,6 +331,14 @@ static void GuiBitcoinReceiveGotoTile(UtxoReceiveTile tile)
     lv_obj_set_tile_id(g_utxoReceiveWidgets.tileView, g_utxoReceiveTileNow, 0, LV_ANIM_OFF);
 }
 
+lv_obj_t* CreateUTXOReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h) {
+    lv_obj_t* qrcode = lv_qrcode_create(parent, w, BLACK_COLOR, WHITE_COLOR);
+    lv_obj_add_flag(qrcode, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(qrcode, GuiFullscreenModeHandler, LV_EVENT_CLICKED, NULL);
+    lv_qrcode_update(qrcode, "", 0);
+    return qrcode;
+}
+
 static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 {
     lv_obj_t *tempObj;
@@ -343,7 +350,10 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_radius(g_utxoReceiveWidgets.qrCodeCont, 24, LV_PART_MAIN);
 
     yOffset += 36;
-    g_utxoReceiveWidgets.qrCode = lv_qrcode_create(g_utxoReceiveWidgets.qrCodeCont, 336, BLACK_COLOR, WHITE_COLOR);
+    g_utxoReceiveWidgets.qrCode = CreateUTXOReceiveQRCode(g_utxoReceiveWidgets.qrCodeCont, 336, 336);
+    GuiFullscreenModeInit(480, 800, WHITE_COLOR);
+    GuiFullscreenModeCreateObject(CreateUTXOReceiveQRCode, 420, 420);
+
     lv_obj_align(g_utxoReceiveWidgets.qrCode, LV_ALIGN_TOP_MID, 0, yOffset);
     yOffset += 336;
 
@@ -400,8 +410,8 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -24);
 
-    if (IsFirstAttention()) {
-        SetFirstAttention();
+    const char* coin = GetCoinCardByIndex(g_chainCard)->coin;
+    if (!GetFirstReceive(coin)) {
         g_utxoReceiveWidgets.attentionCont = GuiCreateHintBox(parent, 480, 386, false);
         tempObj = GuiCreateImg(g_utxoReceiveWidgets.attentionCont, &imgInformation);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
@@ -416,6 +426,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
         lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_add_event_cb(tempObj, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
+        SetFirstReceive(coin, true);
     }
 }
 
@@ -439,75 +450,37 @@ static void GetHint(char *hint)
     }
 }
 
-static bool IsFirstAttention()
-{
-    switch (g_chainCard) {
-    case HOME_WALLET_CARD_BTC:
-        return !g_btcFirstAttention;
-    case HOME_WALLET_CARD_LTC:
-        return !g_ltcFirstAttention;
-    case HOME_WALLET_CARD_DASH:
-        return !g_dashFirstAttention;
-    case HOME_WALLET_CARD_BCH:
-        return !g_bchFirstAttention;
-    default:
-        break;
-    }
-
-    return false;
-}
-
-static void SetFirstAttention()
-{
-    switch (g_chainCard) {
-    case HOME_WALLET_CARD_BTC:
-        g_btcFirstAttention = true;
-        break;
-    case HOME_WALLET_CARD_LTC:
-        g_ltcFirstAttention = true;
-        break;
-    case HOME_WALLET_CARD_DASH:
-        g_dashFirstAttention = true;
-        break;
-    case HOME_WALLET_CARD_BCH:
-        g_bchFirstAttention = true;
-        break;
-    default:
-        break;
-    }
-}
-
 static uint32_t GetCurrentSelectIndex()
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
-        return g_btcSelectIndex;
+        return g_btcSelectIndex[g_currentAccountIndex];
     case HOME_WALLET_CARD_LTC:
-        return g_ltcSelectIndex;
+        return g_ltcSelectIndex[g_currentAccountIndex];
     case HOME_WALLET_CARD_DASH:
-        return g_dashSelectIndex;
+        return g_dashSelectIndex[g_currentAccountIndex];
     case HOME_WALLET_CARD_BCH:
-        return g_bchSelectIndex;
+        return g_bchSelectIndex[g_currentAccountIndex];
     default:
         break;
     }
-    return g_btcSelectIndex;
+    return g_btcSelectIndex[g_currentAccountIndex];
 }
 
 static void SetCurrentSelectIndex(uint32_t selectIndex)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
-        g_btcSelectIndex = selectIndex;
+        g_btcSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
     case HOME_WALLET_CARD_LTC:
-        g_ltcSelectIndex = selectIndex;
+        g_ltcSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
     case HOME_WALLET_CARD_DASH:
-        g_dashSelectIndex = selectIndex;
+        g_dashSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
     case HOME_WALLET_CARD_BCH:
-        g_bchSelectIndex = selectIndex;
+        g_bchSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
     default:
         break;
@@ -627,8 +600,8 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
         lv_obj_align(g_utxoReceiveWidgets.addressSettingsWidgets[i].uncheckedImg, LV_ALIGN_CENTER, 162, 0);
         lv_obj_clear_flag(g_utxoReceiveWidgets.addressSettingsWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
     }
-    lv_obj_clear_flag(g_utxoReceiveWidgets.addressSettingsWidgets[g_addressSettingsIndex].checkedImg, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_add_flag(g_utxoReceiveWidgets.addressSettingsWidgets[g_addressSettingsIndex].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clear_flag(g_utxoReceiveWidgets.addressSettingsWidgets[g_addressSettingsIndex[g_currentAccountIndex]].checkedImg, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(g_utxoReceiveWidgets.addressSettingsWidgets[g_addressSettingsIndex[g_currentAccountIndex]].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
 }
 
 static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
@@ -686,9 +659,13 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
 static void RefreshQrCode(void)
 {
     AddressDataItem_t addressDataItem;
-
     ModelGetUtxoAddress(g_selectIndex, &addressDataItem);
+    
     lv_qrcode_update(g_utxoReceiveWidgets.qrCode, addressDataItem.address, strlen(addressDataItem.address));
+    lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
+    if (fullscreen_qrcode) {
+        lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strlen(addressDataItem.address));
+    }
     lv_label_set_text(g_utxoReceiveWidgets.addressLabel, addressDataItem.address);
     lv_label_set_text_fmt(g_utxoReceiveWidgets.addressCountLabel, "Address-%u", addressDataItem.index);
     lv_label_set_text(g_utxoReceiveWidgets.pathLabel, addressDataItem.path);
@@ -821,8 +798,8 @@ static void AddressSettingsCheckHandler(lv_event_t *e)
                 lv_obj_add_state(g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_clear_flag(g_utxoReceiveWidgets.addressSettingsWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(g_utxoReceiveWidgets.addressSettingsWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-                if (g_addressSettingsIndex != i) {
-                    g_addressSettingsIndex = i;
+                if (g_addressSettingsIndex[g_currentAccountIndex] != i) {
+                    g_addressSettingsIndex[g_currentAccountIndex] = i;
                     g_selectIndex = 0;
                 }
             } else {
@@ -1041,7 +1018,7 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
 {
     char hdPath[128];
     // sprintf(hdPath, "m/44'/0'/0'/0/%u", index);
-    sprintf(hdPath, "%s/0/%u", g_addressSettings[g_addressSettingsIndex].path, index);
+    sprintf(hdPath, "%s/0/%u", g_addressSettings[g_addressSettingsIndex[g_currentAccountIndex]].path, index);
     item->index = index;
     sprintf(item->address, "tb1qkcp7vdhczgk5eh59d2l0dxvmpzhx%010u", index);
     strcpy(item->path, hdPath);
@@ -1079,7 +1056,7 @@ static void GetRootHdPath(char *hdPath)
 
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
-        sprintf(hdPath, "%s", g_addressSettings[g_addressSettingsIndex].path);
+        sprintf(hdPath, "%s", g_addressSettings[g_addressSettingsIndex[g_currentAccountIndex]].path);
         break;
     case HOME_WALLET_CARD_LTC:
         sprintf(hdPath, "%s", g_chainPathItems[1].path);
@@ -1099,7 +1076,7 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
 {
     char *xPub, rootPath[128], hdPath[128];
     ChainType chainType;
-    chainType = GetChanTypeByIndex(g_addressSettingsIndex);
+    chainType = GetChanTypeByIndex(g_addressSettingsIndex[g_currentAccountIndex]);
     xPub = GetCurrentAccountPublicKey(chainType);
     ASSERT(xPub);
     SimpleResponse_c_char *result;
@@ -1116,3 +1093,21 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
 }
 
 #endif
+
+void GuiResetCurrentUtxoAddressIndex(void)
+{
+    g_btcSelectIndex[GetCurrentAccountIndex()] = 0;
+    g_ltcSelectIndex[GetCurrentAccountIndex()] = 0;
+    g_dashSelectIndex[GetCurrentAccountIndex()] = 0;
+    g_bchSelectIndex[GetCurrentAccountIndex()] = 0;
+    g_addressSettingsIndex[GetCurrentAccountIndex()] = 0;
+}
+
+void GuiResetAllUtxoAddressIndex(void)
+{
+    memset(g_btcSelectIndex, 0, sizeof(g_btcSelectIndex));
+    memset(g_ltcSelectIndex, 0, sizeof(g_ltcSelectIndex));
+    memset(g_dashSelectIndex, 0, sizeof(g_dashSelectIndex));
+    memset(g_bchSelectIndex, 0, sizeof(g_bchSelectIndex));
+    memset(g_addressSettingsIndex, 0, sizeof(g_addressSettingsIndex));
+}

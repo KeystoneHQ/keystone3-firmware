@@ -28,41 +28,34 @@ static void SensorRegPrint(char *regName, uint32_t *regAddr);
 
 void SensorInit(void)
 {
-    SENSOR_EXTInitTypeDef Sensor_InitStruct;
     SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_BPU, ENABLE);
 
-    SENSOR_EXTCmd(DISABLE);
+    uint32_t SENSOR_ANA;
+    SENSOR_EXTInitTypeDef SENSOR_EXTInitStruct;
+    memset(&SENSOR_EXTInitStruct, 0, sizeof(SENSOR_EXTInitStruct));
+    SENSOR_EXTInitStruct.SENSOR_Port_Dynamic = SENSOR_Port_S01 | SENSOR_Port_S23 | SENSOR_Port_S45 | SENSOR_Port_S67;
+    SENSOR_EXTInitStruct.SENSOR_DynamicFrequency = SENSOR_DynamicFrequency_1s;//SENSOR_DynamicFrequency_31_25ms;̫��Ӱ���ͷ
+    SENSOR_EXTInitStruct.SENSOR_Dynamic_Sample = SENSOR_DYNAMIC_SAMPLE_2;
+
+    SENSOR_EXTInitStruct.SENSOR_GlitchEnable = ENABLE;
+    SENSOR_EXTInitStruct.SENSOR_Port_Enable = ENABLE;
+
     SENSOR_ClearITPendingBit();
 
-    //SensorNvicConfiguration();
-    SSC_SENSORAttackRespMode(SSC_SENSOR_Interrupt);
+    SENSOR_ANA = SENSOR_ANA_VOL_HIGH | SENSOR_ANA_VOL_LOW | SENSOR_ANA_TEMPER_HIGH | SENSOR_ANA_TEMPER_LOW | SENSOR_ANA_MESH | SENSOR_ANA_XTAL32K | SENSOR_ANA_VOLGLITCH;
 
-    Sensor_InitStruct.SENSOR_Port_Pull = EXT_SENSOR_PORT;
-#if (EXT_SENSOR_PORT_MODE == EXT_SENSOR_DYNAMIC)
-    Sensor_InitStruct.SENSOR_Port_Static = 0;
-    Sensor_InitStruct.SENSOR_Port_Dynamic = EXT_SENSOR_PORT;
-#else
-    GPIO_InitTypeDef GPIO_InitStruct;
-    GPIO_InitStruct.GPIO_Pin = EXT_GPIO_PIN;
-    GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
-    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_Init(EXT_GPIO_PORT, &GPIO_InitStruct);
-    GPIO_ResetBits(EXT_GPIO_PORT, EXT_GPIO_PIN);
+    SENSOR_EXTCmd(DISABLE);
+    SENSOR_Soft_Enable();
+    SENSOR->SEN_VG_DETECT &= ~0X04;
 
-    Sensor_InitStruct.SENSOR_Port_Static = EXT_SENSOR_PORT;
-    Sensor_InitStruct.SENSOR_Port_Dynamic = 0;
-#endif
-    Sensor_InitStruct.SENSOR_Port_Enable = ENABLE;
-    Sensor_InitStruct.SENSOR_GlitchEnable = ENABLE;
-    Sensor_InitStruct.SENSOR_PUPU_Frequency = SENSOR_PUPU_Frequency_Default;
-    Sensor_InitStruct.SENSOR_PUPU_DetectTime = 0;
-    Sensor_InitStruct.SENSOR_PUPU_HoldTime = SENSOR_PUPU_HoldTime_Default;
-    Sensor_InitStruct.SENSOR_PUPU_Enable = DISABLE;
-    Sensor_InitStruct.SENSOR_Trig_Hold_Enable = DISABLE;
-    Sensor_InitStruct.SENSOR_Dynamic_Sample = SENSOR_DynamicFrequency_Default;
-    Sensor_InitStruct.SENSOR_Static_Sample = SENSOR_STATIC_SAMPLE_Default;
-    SENSOR_EXTInit(&Sensor_InitStruct);
-    //SENSOR_EXTCmd(ENABLE);
+    while (SET == SENSOR_EXTIsRuning());
+
+    SENSOR_EXTInit(&SENSOR_EXTInitStruct);
+    SENSOR_AttackRespMode(SENSOR_Interrupt);
+
+    NVIC_ClearPendingIRQ(SENSOR_IRQn);
+    SENSOR_EXTCmd(DISABLE);
+    SENSOR_ANACmd(SENSOR_ANA, DISABLE);
 }
 
 void SensorRegDebug(void)

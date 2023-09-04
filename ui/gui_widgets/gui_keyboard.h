@@ -72,6 +72,7 @@ void GuiKeyBoardSetMode(KeyBoard_t *keyBoard);
 void *GuiCreateNumKeyboard(lv_obj_t *parent, lv_event_cb_t cb, NUM_KEYBOARD_ENUM numMode, void *param);
 void *GuiEmojiKeyBoard(lv_obj_t *parent, lv_obj_t *img);
 uint8_t GuiGetEmojiIconIndex(void);
+uint8_t GuiSearchIconIndex(lv_obj_t *icon);
 void GuiUpdateShareKb(lv_obj_t *btnm, uint8_t memberCnt);
 void *GuiCreateFullKeyBoard(lv_obj_t *parent, lv_event_cb_t kbCb, lv_keyboard_user_mode_t keyMode, void *param);
 void *GuiCreateLetterKeyBoard(lv_obj_t *parent, lv_event_cb_t cb, bool bip39, void *param);

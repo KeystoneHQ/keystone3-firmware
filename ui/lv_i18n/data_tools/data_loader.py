@@ -10,5 +10,5 @@ with open("./data.csv", newline="") as csvfile:
         text = row['en']
         en[id]=text
 
-    with open("en.yml", 'w', encoding='utf-8') as f:
+    with open("../en.yml", 'w', encoding='utf-8') as f:
         yaml.dump({'en': en}, f, default_flow_style=False)

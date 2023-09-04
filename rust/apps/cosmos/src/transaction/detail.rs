@@ -4,6 +4,7 @@ use crate::proto_wrapper::msg::msg::{
     MsgBeginRedelegate, MsgDelegate, MsgSend, MsgTransfer, MsgUndelegate, MsgVote,
 };
 pub use crate::transaction::overview::OverviewDelegate as DetailDelegate;
+pub use crate::transaction::overview::OverviewMessage as DetailMessage;
 pub use crate::transaction::overview::OverviewSend as DetailSend;
 pub use crate::transaction::overview::OverviewUndelegate as DetailUndelegate;
 pub use crate::transaction::overview::OverviewVote as DetailVote;
@@ -14,6 +15,8 @@ use alloc::vec::Vec;
 use serde;
 use serde::Serialize;
 use serde_json::{from_value, Value};
+
+use super::overview::MsgSignData;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct DetailRedelegate {
@@ -89,6 +92,7 @@ pub enum MsgDetail {
     WithdrawReward(DetailWithdrawReward),
     Transfer(DetailTransfer),
     Vote(DetailVote),
+    Message(DetailMessage),
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -168,6 +172,10 @@ impl CosmosTxDetail {
                 "MsgVote" => {
                     let msg = from_value::<MsgVote>(each["value"].clone())?;
                     kind.push(MsgDetail::Vote(msg.try_into()?));
+                }
+                "MsgSignData" => {
+                    let msg = from_value::<MsgSignData>(each["value"].clone())?;
+                    kind.push(MsgDetail::Message(msg.try_into()?));
                 }
                 _ => {}
             };

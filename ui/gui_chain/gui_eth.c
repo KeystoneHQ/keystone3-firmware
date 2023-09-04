@@ -5,6 +5,8 @@
 #include "keystore.h"
 #include "gui_model.h"
 #include "gui_qr_hintbox.h"
+#include "screen_manager.h"
+#include "user_sqlite3.h"
 
 void decodeEthContractData(void *parseResult);
 
@@ -334,6 +336,8 @@ void *GuiGetEthTypeData(void)
     } while (0);
     free_TransactionCheckResult(result);
     return g_parseResult;
+#else
+    return NULL;
 #endif
 }
 

@@ -4,6 +4,33 @@
 
 Artifacts has been uploaded to s3 bucket ```keystone-g3-firmware```, search in 1P ```AWS S3 Access``` to got permission for downloading.
 
+# Developing Environment
+
+## MacOS
+
+### Setup
+
+#### 1. Install GCC
+- Auto install: `brew install armmbed/formulae/arm-none-eabi-gcc` may have unpredictable bugs
+- Mannual install: https://developer.arm.com/downloads/-/gnu-rm, select `9-2020-q2-update`, download and config it to your $PATH
+
+#### 2. Install Rust
+- https://www.rust-lang.org/tools/install
+- `rustup install nightly-2023-06-26`
+- `rustup target add thumbv7em-none-eabihf`
+
+## [TBD]WINDOWS
+
+
+## Code Formating
+
+### Download AStyle
+`brew install astyle`
+
+### Command
+
+```cd tools && astyle -A3nrUpHcQ --exclude=../cm_backtrace/Languages --exclude=../components/sqlite3/sqlite3.h --exclude=../components/sqlite3/sqlite3.c --exclude=../external --exclude=../rust "../*.c" "../*.h" "../*.cpp" && cd ..```
+
 ## Build Bin Artifacts
 
 ### Build bin on local

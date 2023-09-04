@@ -12,6 +12,8 @@
 #include "gui_firmware_update_deny_widgets.h"
 #include "gui_firmware_update_widgets.h"
 #include "gui_lock_widgets.h"
+#include "presetting.h"
+#include "anti_tamper.h"
 
 void GuiFingerUpdateProcess(void *param);
 

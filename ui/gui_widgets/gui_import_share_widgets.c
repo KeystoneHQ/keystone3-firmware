@@ -16,10 +16,15 @@
 #include "user_memory.h"
 #include "gui_model.h"
 #include "secret_cache.h"
-#include "sha256.h"
 #include "gui_lock_widgets.h"
 #include "gui_single_phrase_widgets.h"
 #include "gui_mnemonic_input.h"
+
+#ifndef COMPILE_MAC_SIMULATOR
+#include "sha256.h"
+#else
+#include "simulator_model.h"
+#endif
 
 typedef enum {
     IMPORT_SHARE_SSB_INPUT = 0,
@@ -89,6 +94,7 @@ static void ConfirmClearHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         ClearMnemonicKeyboard(g_importMkb, &g_importMkb->currentId);
+        GuiClearKeyBoard(g_ssbImportKb);
     }
 }
 

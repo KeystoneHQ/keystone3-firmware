@@ -40,6 +40,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_ZAPPER, &walletListZapper},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn},
     {WALLET_LIST_SUSHISWAP, &walletListSushi},
+    {WALLET_LIST_KEPLR, &walletListKeplr},
 };
 
 typedef struct ConnectWalletWidget {
@@ -125,6 +126,17 @@ static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {
     &coinBtc,
 };
 
+static const lv_img_dsc_t *g_keplrCoinArray[8] = {
+    &coinAtom,
+    &coinOsmo,
+    &coinBld,
+    &coinAkt,
+    &coinXprt,
+    &coinAxl,
+    &coinBoot,
+    &coinCro,
+};
+
 static ConnectWalletWidget_t g_connectWalletTileView;
 static CoinState_t g_defaultCompanionAppState[COMPANION_APP_COINS_BUTT] = {
     {BTC, true},
@@ -163,6 +175,7 @@ static void OpenMoreHandler(lv_event_t *e);
 static void AddMetaMaskCoins(void);
 static void AddBlueWalletCoins(void);
 static void AddCompanionAppCoins(void);
+static void AddKeplrCoins(void);
 
 CoinState_t g_companionAppcoinState[COMPANION_APP_COINS_BUTT];
 static char g_derivationPathAddr[LedgerLegacy + 1][DERIVATION_PATH_EG_LEN][64];
@@ -333,11 +346,11 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
 
     // ** temporary add.
     lv_obj_t *line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 9 * 107 + 8);
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, NUMBER_OF_ARRAYS(g_walletListArray) * 107 + 8);
 
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, "Please upgrade to the latest version for access to expanded software wallet compatibility.");
     lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 32, 9 * 107 + 8 + 8);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 32, NUMBER_OF_ARRAYS(g_walletListArray) * 107 + 8 + 8);
     // **
 }
 
@@ -480,6 +493,25 @@ static void AddBlueWalletCoins(void)
     }
 }
 
+static void AddKeplrCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0; i < 8; i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_keplrCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+
+    lv_obj_t *img = GuiCreateImg(g_coinCont, &imgMore);
+    lv_img_set_zoom(img, 150);
+    lv_img_set_pivot(img, 0, 0);
+    lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 256, 2);
+}
+
 void GuiConnectWalletInit(void)
 {
     lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
@@ -548,6 +580,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_SUB:
         break;
     case WALLET_LIST_SOLFARE:
+        break;
+    case WALLET_LIST_KEPLR:
+        func = GuiGetKeplrData;
+        AddKeplrCoins();
         break;
     default:
         return;

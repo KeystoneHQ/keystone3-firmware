@@ -4,6 +4,7 @@
 #include "gui_btc.h"
 #include "gui_eth.h"
 #include "gui_trx.h"
+#include "gui_cosmos.h"
 
 #define LABEL_MAX_BUFF_LEN                                      (512)
 
@@ -13,6 +14,36 @@ typedef void (*SetChainDataFunc)(void *indata, bool multi);
 typedef enum {
     CHAIN_BTC,
     CHAIN_ETH,
+    CHAIN_ATOM,
+    CHAIN_OSMO,
+    CHAIN_SCRT,
+    CHAIN_AKT,
+    CHAIN_CRO,
+    CHAIN_IOV,
+    CHAIN_ROWAN,
+    CHAIN_CTK,
+    CHAIN_IRIS,
+    CHAIN_REGEN,
+    CHAIN_XPRT,
+    CHAIN_DVPN,
+    CHAIN_IXO,
+    CHAIN_NGM,
+    CHAIN_BLD,
+    CHAIN_BOOT,
+    CHAIN_JUNO,
+    CHAIN_STARS,
+    CHAIN_AXL,
+    CHAIN_SOMM,
+    CHAIN_UMEE,
+    CHAIN_GRAV,
+    CHAIN_TGD,
+    CHAIN_STRD,
+    CHAIN_EVMOS,
+    CHAIN_INJ,
+    CHAIN_KAVA,
+    CHAIN_QCK,
+    CHAIN_LUNA,
+    CHAIN_LUNC,
     CHAIN_BNB,
     CHAIN_SOL,
     CHAIN_DOT,
@@ -32,6 +63,7 @@ typedef enum {
     REMAPVIEW_ETH_PERSONAL_MESSAGE,
     REMAPVIEW_ETH_TYPEDDATA,
     REMAPVIEW_TRX,
+    REMAPVIEW_COSMOS,
     REMAPVIEW_WEB_AUTH,
 
     REMAPVIEW_BUTT,

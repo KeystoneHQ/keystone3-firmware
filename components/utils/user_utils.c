@@ -7,6 +7,7 @@
 **********************************************************************/
 
 #include "user_utils.h"
+#include "lvgl.h"
 
 uint32_t StrToHex(uint8_t *pbDest, const char *pbSrc)
 {

@@ -32,6 +32,7 @@ LV_IMG_DECLARE(imgChange);
 LV_IMG_DECLARE(imgPath);
 LV_IMG_DECLARE(imgMessageSelect);
 LV_IMG_DECLARE(imgSwitch);
+LV_IMG_DECLARE(imgConversion);
 LV_IMG_DECLARE(imgArrowDownS);
 LV_IMG_DECLARE(imgArrowLeft);
 LV_IMG_DECLARE(imgWalletSetting);
@@ -144,7 +145,36 @@ LV_IMG_DECLARE(coinXrp);
 LV_IMG_DECLARE(coinLtc);
 LV_IMG_DECLARE(coinBch);
 LV_IMG_DECLARE(coinDash);
-
+LV_IMG_DECLARE(coinAtom);
+LV_IMG_DECLARE(coinOsmo);
+LV_IMG_DECLARE(coinScrt);
+LV_IMG_DECLARE(coinAkt);
+LV_IMG_DECLARE(coinCro);
+LV_IMG_DECLARE(coinIov);
+LV_IMG_DECLARE(coinRowan);
+LV_IMG_DECLARE(coinCtk);
+LV_IMG_DECLARE(coinIris);
+LV_IMG_DECLARE(coinRegen);
+LV_IMG_DECLARE(coinXprt);
+LV_IMG_DECLARE(coinDvpn);
+LV_IMG_DECLARE(coinIxo);
+LV_IMG_DECLARE(coinNgm);
+LV_IMG_DECLARE(coinBld);
+LV_IMG_DECLARE(coinBoot);
+LV_IMG_DECLARE(coinJuno);
+LV_IMG_DECLARE(coinStars);
+LV_IMG_DECLARE(coinAxl);
+LV_IMG_DECLARE(coinSomm);
+LV_IMG_DECLARE(coinUmee);
+LV_IMG_DECLARE(coinGrav);
+LV_IMG_DECLARE(coinTgd);
+LV_IMG_DECLARE(coinStrd);
+LV_IMG_DECLARE(coinEvmos);
+LV_IMG_DECLARE(coinInj);
+LV_IMG_DECLARE(coinKava);
+LV_IMG_DECLARE(coinQck);
+LV_IMG_DECLARE(coinLuna);
+LV_IMG_DECLARE(coinLunc);
 
 // wallet
 LV_IMG_DECLARE(walletKeystone);
@@ -159,6 +189,7 @@ LV_IMG_DECLARE(walletSafe);
 LV_IMG_DECLARE(walletZapper);
 LV_IMG_DECLARE(walletYearn);
 LV_IMG_DECLARE(walletSushi);
+LV_IMG_DECLARE(walletKeplr);
 
 
 //wallet list
@@ -174,6 +205,7 @@ LV_IMG_DECLARE(walletListBlockWallet);
 LV_IMG_DECLARE(walletListZapper);
 LV_IMG_DECLARE(walletListYearn);
 LV_IMG_DECLARE(walletListSushi);
+LV_IMG_DECLARE(walletListKeplr);
 
 // font
 LV_FONT_DECLARE(openSans_20);

@@ -10,6 +10,7 @@
 #include "gui_qrcode_widgets.h"
 #include "gui_web_auth_widgets.h"
 #include "gui_web_auth_result_widgets.h"
+#include "screen_manager.h"
 
 static void *g_web_auth_data;
 static bool g_isMulti = false;

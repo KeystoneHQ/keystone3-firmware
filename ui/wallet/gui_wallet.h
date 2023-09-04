@@ -4,7 +4,7 @@
 #include "rust.h"
 
 UREncodeResult *GuiGetBlueWalletBtcData(void);
-
+UREncodeResult *GuiGetKeplrData(void);
 UREncodeResult *GuiGetCompanionAppData(void);
 UREncodeResult *GuiGetMetamaskData(void);
 UREncodeResult *GuiGetOkxWalletData(void);

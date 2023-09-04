@@ -6,13 +6,15 @@ mod utils;
 use crate::errors::Result;
 use crate::proto_wrapper::fee::format_fee_from_value;
 use crate::proto_wrapper::sign_doc::SignDoc;
-use crate::transaction::detail::{CommonDetail, CosmosTxDetail, DetailUnknown};
+use crate::transaction::detail::{CommonDetail, CosmosTxDetail, DetailMessage, DetailUnknown};
 use crate::transaction::overview::{CommonOverview, CosmosTxOverview, MsgOverview};
 use crate::transaction::structs::{CosmosTxDisplayType, DataType, ParsedCosmosTx};
 use crate::transaction::utils::get_network_by_chain_id;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use serde_json::{from_slice, from_str, Value};
+
+use self::detail::MsgDetail;
 
 impl ParsedCosmosTx {
     pub fn build(data: &Vec<u8>, data_type: DataType) -> Result<Self> {
@@ -37,6 +39,7 @@ impl ParsedCosmosTx {
             MsgOverview::WithdrawReward(_) => CosmosTxDisplayType::WithdrawReward,
             MsgOverview::Transfer(_) => CosmosTxDisplayType::Transfer,
             MsgOverview::Vote(_) => CosmosTxDisplayType::Vote,
+            MsgOverview::Message(_) => CosmosTxDisplayType::Message,
             // _ => CosmosTxDisplayType::Unknown,
         }
     }
@@ -65,6 +68,9 @@ impl ParsedCosmosTx {
             return Ok(serde_json::to_string::<DetailUnknown>(
                 &common.to_unknown(),
             )?);
+        }
+        if let MsgDetail::Message(msg) = &kind[0] {
+            return Ok(serde_json::to_string::<DetailMessage>(msg)?);
         }
         let detail = serde_json::to_string::<CosmosTxDetail>(&CosmosTxDetail { common, kind })?;
         Ok(detail)

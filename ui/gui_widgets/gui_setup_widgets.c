@@ -243,6 +243,7 @@ void GuiSetupAreaRefresh(void)
 {
     if (g_setupTileView.currentTile == SETUP_WELCOME) {
         GuiNvsBarSetLeftCb(NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+        GuiNvsBarSetMidCb(NVS_MID_BUTTON_BUTT, NULL, NULL);
         GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         GuiNvsBarSetWalletIcon(NULL);
         GuiNvsBarSetWalletName("");

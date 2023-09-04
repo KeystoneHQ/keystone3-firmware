@@ -60,6 +60,7 @@ if "%1" == "release" (
 	pushd %MAKE_OAT_FILE_PATH%
 	echo generating pillar.bin file...
 	call make_ota_file.bat %CD%\build\pillar.bin
+	call make_ota_file.bat %CD%\build\keystone3.bin
 	popd
 	@REM call %PACK_PATH%
 )

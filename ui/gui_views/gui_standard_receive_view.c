@@ -18,7 +18,6 @@ static int32_t GuiStandardReceiveViewDeInit(void)
 
 int32_t GuiStandardReceiveViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
-    printf("GuiStandardReceiveViewEventProcess usEvent=%d\r\n", usEvent);
     uint8_t chain = 0;
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:

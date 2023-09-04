@@ -136,7 +136,7 @@ void ScreenShotTouch(void)
         }
         if (osKernelGetTickCount() - lastTick > SCREEN_SHOT_LONG_TOUCH_TICK) {
             printf("long press detected\n");
-            MotorCtrl(100, 300);
+            MotorCtrl(MOTOR_LEVEL_HIGH, 300);
             lastTick = 0;
             PubValueMsg(UI_MSG_SCREEN_SHOT, 0);
         }

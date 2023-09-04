@@ -73,6 +73,7 @@ dependencies = [
 name = "app_cosmos"
 version = "0.1.0"
 dependencies = [
+ "app_utils",
  "keystore",
  "prost",
  "prost-types",

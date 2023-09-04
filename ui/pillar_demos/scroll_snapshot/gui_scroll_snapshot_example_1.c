@@ -10,7 +10,6 @@
 #include <stdint.h>
 
 #include "gui.h"
-#include "gui_scroll_snapshot.h"
 #include "gui_keyboard.h"
 
 static lv_obj_t *g_cont1 = NULL;
@@ -35,7 +34,7 @@ void gui_scroll_snapshot_example_1(void)
 #endif
     KeyBoard_t *g_keyBoard = GuiCreateMnemonicKeyBoard(g_cont1, NULL,
                              KEY_STONE_MNEMONIC_24, mnemonicList);
-    GuiCreateScrollSnapShot(g_keyBoard->kb);
+    // GuiCreateScrollSnapShot(g_keyBoard->kb);
 
 #if 0
     lv_obj_t *g_cont2 = GuiCreateContainer(480, 1000);

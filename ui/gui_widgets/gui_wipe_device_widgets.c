@@ -8,6 +8,7 @@
 #include "user_memory.h"
 #include "presetting.h"
 #include "gui_wipe_device_widgets.h"
+#include "screen_manager.h"
 
 static lv_obj_t *g_cont;
 static lv_obj_t *g_wipeDeviceHintBox = NULL;

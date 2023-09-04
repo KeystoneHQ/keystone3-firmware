@@ -68,18 +68,18 @@ static void MicroVibration(void)
 }
 static void SlightVibration(void)
 {
-    MotorCtrl(40, 200);
+    MotorCtrl(MOTOR_LEVEL_LOW, MOTOR_SHAKE_SHORT_TIME);
 }
 static void ShortVibration(void)
 {
-    MotorCtrl(80, 200);
+    MotorCtrl(MOTOR_LEVEL_MIDDLE, MOTOR_SHAKE_SHORT_TIME);
 }
 static void LongVibration(void)
 {
-    MotorCtrl(80, 500);
+    MotorCtrl(MOTOR_LEVEL_MIDDLE, MOTOR_SHAKE_LONG_TIME);
 
 }
 static void SuperLongVibration(void)
 {
-    MotorCtrl(80, 1000);
+    MotorCtrl(MOTOR_LEVEL_MIDDLE, MOTOR_SHAKE_ULTRA_LONG_TIME);
 }

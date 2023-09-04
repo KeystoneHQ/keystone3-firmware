@@ -81,6 +81,13 @@ void GuiLockScreenClearFirstUnlock(void)
     g_firstUnlock = false;
 }
 
+void GuiLockScreenFpRecognize(void)
+{
+    if (g_fpErrorCount < FINGERPRINT_EN_SING_ERR_TIMES) {
+        FpRecognize(RECOGNIZE_UNLOCK);
+    }
+}
+
 bool GuiLockScreenIsFirstUnlock(void)
 {
     return g_firstUnlock;
@@ -107,6 +114,7 @@ void OpenForgetPasswordHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         GUI_VIEW *view = (GUI_VIEW *)lv_event_get_user_data(e);
+        FpCancelCurOperate();
         lv_obj_add_flag(g_lockScreenCont, LV_OBJ_FLAG_HIDDEN);
         GuiFrameOpenViewWithParam(&g_forgetPassView, view, sizeof(view));
     }
@@ -175,6 +183,7 @@ void GuiLockScreenPassCode(bool en)
     GuiEnterPassCodeStatus(g_verifyLock, en);
     if (en) {
         g_fpErrorCount = 0;
+        FpCancelCurOperate();
         if (ModelGetPassphraseQuickAccess()) {
             if (g_passphraseView.isActive) {
                 GuiLockScreenTurnOff();
@@ -219,6 +228,7 @@ void GuiLockScreenErrorCount(void *param)
             if (passwordVerifyResult->errorCount == MAX_LOGIN_PASSWORD_ERROR_COUNT) {
                 // GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_lockDeviceView);
+                FpCancelCurOperate();
             }
         } else {
             sprintf(hint, "Incorrect password, you have #F55831 %d# chances left", (MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX - passwordVerifyResult->errorCount));

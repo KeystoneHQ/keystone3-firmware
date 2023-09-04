@@ -15,6 +15,7 @@
 #include "drv_trng.h"
 #include "sha256.h"
 #include "drv_otp.h"
+#include "assert.h"
 
 //#define ATECC608B_TEST_MODE
 
@@ -250,12 +251,17 @@ static int32_t Atecc608bBinding(void)
             if (!isLock) {
                 printf("err,OTP key exist,SE unlock\r\n");
                 ret = ERR_ATECC608B_BIND;
+            } else {
+                // normal start up, for none frist start.
+                ret = 0;
             }
         } else {
             //OTP key doesn't exist
             if (!isLock) {
+                // first binding logic
                 TrngGet(keys, sizeof(keys));
                 WriteOtpData(OTP_ADDR_ATECC608B, keys, sizeof(keys));
+                //  return 0 for writing config successfully
                 ret = Atecc608bWriteConfig();
             } else {
                 printf("err,OTP key doesn't exist,SE lock\r\n");
@@ -265,6 +271,7 @@ static int32_t Atecc608bBinding(void)
     } while (0);
     CLEAR_ARRAY(keys);
 
+    assert(ret == 0);
     return ret;
 #endif
 }
@@ -383,7 +390,7 @@ static int32_t Atecc608bWriteConfig(void)
 
 
     //slot
-    //8/13/14  user data,currently not used.   slot config=0x42C2, key config=0x005C, lockable=0, encrypt write/read.
+    //8/13/  user data,currently not used.   slot config=0x42C2, key config=0x005C, lockable=0, encrypt write/read.
 
     const uint16_t slotConfig[] = {  0x8080, 0x8080, 0x8080, 0x42A0, 0x20A0, 0x42A0, 0x42A0, 0x20A0,
                                      0x42C2, 0x42A0, 0x42A0, 0x20A0, 0x42A0, 0x42C2, 0x0083, 0x42C2

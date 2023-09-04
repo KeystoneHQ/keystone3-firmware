@@ -285,6 +285,7 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
     entropy = SecretCacheGetEntropy(&entropyLen);
     MODEL_WRITE_SE_HEAD
     ret = SaveNewEntropy(newAccount, entropy, entropyLen, SecretCacheGetNewPassword());
+    ClearAccountPassphrase(newAccount);
     CHECK_ERRCODE_BREAK("save entropy error", ret);
     MODEL_WRITE_SE_END
 #else
@@ -330,6 +331,7 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     }
     ret = SaveNewEntropy(newAccount, entropy, (uint8_t)entropyOutLen, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("save entropy error", ret);
+    ClearAccountPassphrase(newAccount);
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("login error", ret);
     if (bip39Data->forget) {
@@ -575,6 +577,7 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     MODEL_WRITE_SE_HEAD
     ret = SaveNewSlip39Entropy(newAccount, ems, entropy, 32, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetIteration());
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
+    ClearAccountPassphrase(newAccount);
     MODEL_WRITE_SE_END
 
 #endif
@@ -629,6 +632,7 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     }
     ret = SaveNewSlip39Entropy(newAccount, emsBak, entropy, entropyLen, SecretCacheGetNewPassword(), id, ie);
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
+    ClearAccountPassphrase(newAccount);
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("login error", ret);
     if (slip39->forget) {
@@ -711,7 +715,6 @@ static int32_t ModelSaveWalletDesc(const void *inData, uint32_t inDataLen)
     WalletDesc_t *wallet = (WalletDesc_t *)inData;
     SetWalletName(wallet->name);
     SetWalletIconIndex(wallet->iconIndex);
-
 
     GuiApiEmitSignal(SIG_SETTING_CHANGE_WALLET_DESC_PASS, NULL, 0);
 #else

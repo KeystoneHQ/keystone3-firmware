@@ -13,7 +13,7 @@ bool fingerRegisterState[3] = {true, false, false};
 bool g_reboot = false;
 void OpenUsb()
 {
-    
+
 }
 
 void CloseUsb()

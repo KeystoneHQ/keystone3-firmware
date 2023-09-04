@@ -148,9 +148,12 @@ static void ForgetHandler(lv_event_t *e)
     }
 }
 
-static void SignByPasswordCb(void)
+static void SignByPasswordCb(bool cancel)
 {
     GUI_DEL_OBJ(g_fingerSingContainer)
+    if (cancel) {
+        FpCancelCurOperate();
+    }
 
     g_noticeHintBox = GuiCreateHintBox(g_qrCodeWidgetView.cont, 480, 576, true);
     lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
@@ -198,7 +201,7 @@ static void SignByPasswordCbHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        SignByPasswordCb();
+        SignByPasswordCb(true);
     }
 }
 
@@ -263,7 +266,7 @@ void CheckSliderProcessHandler(lv_event_t *e)
             if ((GetCurrentAccountIndex() < 3) && GetFingerSignFlag() && g_fingerSignCount < 3) {
                 SignByFinger();
             } else {
-                SignByPasswordCb();
+                SignByPasswordCb(false);
             }
             lv_slider_set_value(lv_event_get_target(e), 0, LV_ANIM_OFF);
         } else {
@@ -479,6 +482,9 @@ void GuiQrCodeDealFingerRecognize(void *param)
 {
     uint8_t errCode = *(uint8_t *)param;
     static uint16_t passCodeType = ENTER_PASSCODE_VERIFY_PASSWORD;
+    if (g_fingerSingContainer == NULL) {
+        return;
+    }
     if (errCode == FP_SUCCESS_CODE) {
         lv_img_set_src(g_fpErrorImg, &imgYellowFinger);
         GuiModelVerifyAmountPassWord(&passCodeType);
@@ -496,7 +502,7 @@ void GuiQrCodeDealFingerRecognize(void *param)
             FpRecognize(RECOGNIZE_SIGN);
             g_fpRecognizeTimer = lv_timer_create(RecognizeFailHandler, 1000, NULL);
         } else {
-            SignByPasswordCb();
+            SignByPasswordCb(false);
         }
         printf("g_fingerSignErrCount.... = %d\n", g_fingerSignErrCount);
         if (g_fingerSignErrCount >= FINGERPRINT_SING_DISABLE_ERR_TIMES) {

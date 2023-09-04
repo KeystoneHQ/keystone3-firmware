@@ -64,6 +64,7 @@ static void GuiQuitHandler(lv_event_t *e)
         printf("g_prevView ID = %d\n", g_prevView->id);
         if (g_prevView->id == SCREEN_LOCK) {
             GuiLockScreenUpdatePassCode();
+            GuiLockScreenFpRecognize();
         }
         GuiCLoseCurrentWorkingView();
     }

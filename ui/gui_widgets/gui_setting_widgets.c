@@ -119,6 +119,7 @@ static lv_obj_t *g_labelSignFailed = NULL;
 static lv_timer_t *g_fpRecognizeTimer;
 static uint8_t g_fpEnSignCnt = 0;
 static lv_obj_t *g_fpUpdateCont = NULL;
+static lv_obj_t *g_fpAddCont = NULL;
 
 static lv_obj_t *g_passphraseLearnMoreCont = NULL;
 
@@ -602,6 +603,7 @@ void GuiFingerRegisterDestruct(void *obj, void *param)
 
 void GuiFingerAddDestruct(void *obj, void *param)
 {
+    g_fpAddCont = NULL;
     GUI_DEL_OBJ(g_imgFinger)
     GUI_DEL_OBJ(g_arcProgress)
     GUI_DEL_OBJ(g_fpRegLabel)
@@ -635,7 +637,7 @@ static void GuiWalletFingerAddWidget(lv_obj_t *parent)
 {
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
-
+    g_fpAddCont = parent;
     lv_obj_t *label = NULL;
     label = GuiCreateTitleLabel(parent, "Add Fingerprint");
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
@@ -2528,6 +2530,9 @@ static void ModelSetPassphraseQuickAccess(bool enable)
 
 void GuiSettingFingerRegisterSuccess(void *param)
 {
+    if (g_fpAddCont == NULL) {
+        return;
+    }
     uint8_t step = *(uint8_t *)param;
     lv_arc_set_value(g_arcProgress, step);
     lv_img_set_src(g_imgFinger, &imgYellowFinger);
@@ -2541,6 +2546,9 @@ void GuiSettingFingerRegisterSuccess(void *param)
 
 void GuiSettingFingerRegisterFail(void *param)
 {
+    if (g_fpAddCont == NULL) {
+        return;
+    }
     if (param == NULL) {
         uint8_t walletIndex = DEVICE_SETTING_FINGER_ADD_OUT_LIMIT;
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));

@@ -81,12 +81,12 @@ void GuiConnectionEntranceWidget(lv_obj_t *parent)
     lv_obj_t *tittlelabel = GuiCreateTextLabel(parent, "Data transfer with USB");
 
     lv_obj_t *contentLabel = lv_label_create(parent);
-    lv_label_set_text(contentLabel, "When disabled, the usb can only be used for charing battery");
-    lv_obj_set_style_text_font(contentLabel, g_defTextFont, LV_PART_MAIN);
+    lv_label_set_text(contentLabel, "When disabled, the usb can only be used for charging battery");
+    lv_obj_set_style_text_font(contentLabel, g_defIllustrateFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(contentLabel, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_opa(contentLabel, LV_OPA_56, LV_PART_MAIN);
     lv_label_set_long_mode(contentLabel, LV_LABEL_LONG_WRAP);
-    lv_obj_set_width(contentLabel, 340);
+    lv_obj_set_width(contentLabel, 346);
 
 
     GuiButton_t table[] = {

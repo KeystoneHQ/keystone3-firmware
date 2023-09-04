@@ -103,9 +103,9 @@ void AddressLongModeCut(char *out, const char *address);
 static EthereumReceiveWidgets_t g_ethereumReceiveWidgets;
 static EthereumReceiveTile g_EthereumReceiveTileNow;
 static const PathItem_t g_paths[] = {
-    {"BIP 44 Standard",          "",            "m/44'/60'/0'"},
-    {"Ledger Live",             "",           "m/44'/60'" },
-    {"Ledger Legacy",        "",            "m/44'/60'/0'"},
+    {"BIP 44 Standard",     "",     "m/44'/60'/0'"  },
+    {"Ledger Live",         "",     "m/44'/60'"     },
+    {"Ledger Legacy",       "",     "m/44'/60'/0'"  },
 };
 static lv_obj_t *g_addressLabel[2];
 
@@ -609,6 +609,7 @@ static void ChangePathCheckHandler(lv_event_t *e)
                 if (g_pathIndex != i) {
                     g_pathIndex = i;
                     g_selectIndex = 0;
+                    g_showIndex = 0;
                     RefreshDefaultAddress();
                 }
             } else {

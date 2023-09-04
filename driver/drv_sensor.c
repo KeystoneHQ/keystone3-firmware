@@ -28,6 +28,37 @@ static void SensorRegPrint(char *regName, uint32_t *regAddr);
 
 void SensorInit(void)
 {
+#if 1
+    SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_BPU, ENABLE);
+
+    //===========================================================
+    SENSOR_EXTInitTypeDef SENSOR_EXTInitStruct;
+    uint32_t SENSOR_ANA;
+    memset(&SENSOR_EXTInitStruct, 0, sizeof(SENSOR_EXTInitStruct));
+    SENSOR_EXTInitStruct.SENSOR_Port_Dynamic = SENSOR_Port_S01 | SENSOR_Port_S23 | SENSOR_Port_S45 | SENSOR_Port_S67;
+    SENSOR_EXTInitStruct.SENSOR_DynamicFrequency = SENSOR_DynamicFrequency_1s;//SENSOR_DynamicFrequency_31_25ms;̫��Ӱ���ͷ
+    SENSOR_EXTInitStruct.SENSOR_Dynamic_Sample = SENSOR_DYNAMIC_SAMPLE_2;
+
+    SENSOR_EXTInitStruct.SENSOR_GlitchEnable = ENABLE;
+    SENSOR_EXTInitStruct.SENSOR_Port_Enable = ENABLE;
+
+    SENSOR_ClearITPendingBit();
+
+    SENSOR_ANA = SENSOR_ANA_VOL_HIGH | SENSOR_ANA_VOL_LOW | SENSOR_ANA_TEMPER_HIGH | SENSOR_ANA_TEMPER_LOW | SENSOR_ANA_MESH | SENSOR_ANA_XTAL32K | SENSOR_ANA_VOLGLITCH;
+
+    SENSOR_EXTCmd(DISABLE);
+    SENSOR_Soft_Enable();
+    SENSOR->SEN_VG_DETECT &= ~0X04;
+
+    while (SET == SENSOR_EXTIsRuning());
+
+    SENSOR_EXTInit(&SENSOR_EXTInitStruct);
+    SENSOR_AttackRespMode(SENSOR_Interrupt);
+
+    NVIC_ClearPendingIRQ(SENSOR_IRQn);
+    SENSOR_EXTCmd(DISABLE);
+    SENSOR_ANACmd(SENSOR_ANA, DISABLE);
+#else
     SENSOR_EXTInitTypeDef Sensor_InitStruct;
     SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_BPU, ENABLE);
 
@@ -62,7 +93,8 @@ void SensorInit(void)
     Sensor_InitStruct.SENSOR_Dynamic_Sample = SENSOR_DynamicFrequency_Default;
     Sensor_InitStruct.SENSOR_Static_Sample = SENSOR_STATIC_SAMPLE_Default;
     SENSOR_EXTInit(&Sensor_InitStruct);
-    //SENSOR_EXTCmd(ENABLE);
+    // SENSOR_EXTCmd(ENABLE);
+#endif
 }
 
 void SensorRegDebug(void)

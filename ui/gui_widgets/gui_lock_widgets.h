@@ -38,6 +38,7 @@ void GuiLockScreenPasscodeSwitch(bool isPin);
 void GuiLockScreenErrorCount(void *param);
 void GuiLockScreenToHome(void);
 void GuiJumpToLockDevicePage(void);
+void GuiLockScreenFpRecognize(void);
 
 #endif /* _GUI_LOCK_WIDGETS_H */
 

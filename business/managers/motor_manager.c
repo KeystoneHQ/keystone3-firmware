@@ -2,7 +2,7 @@
 #include "motor_manager.h"
 #include "drv_motor.h"
 #include "device_setting.h"
-#include "hardware_interface.h"
+#include "motor_interface.h"
 
 void Vibrate(VIBRATION_STRENGTH strength)
 {

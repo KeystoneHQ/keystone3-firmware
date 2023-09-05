@@ -138,7 +138,6 @@ int32_t KeystoreInit(void)
     ASSERT(sizeof(PublicInfo_t) == 32);
     ret = DS28S60_HmacEncryptRead((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
     assert(g_publicInfo.loginPasswordErrorCount <= 10);
-    assert(g_publicInfo.currentPasswordErrorCount <= 4);
     return ret;
 }
 

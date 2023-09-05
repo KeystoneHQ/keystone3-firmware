@@ -75,10 +75,10 @@ void r61581_init(void)
 void r61581_flush(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const lv_color_t * color_p)
 {
     /*Return if the area is out the screen*/
-    if(x2 < 0) return;
-    if(y2 < 0) return;
-    if(x1 > R61581_HOR_RES - 1) return;
-    if(y1 > R61581_VER_RES - 1) return;
+    if (x2 < 0) return;
+    if (y2 < 0) return;
+    if (x1 > R61581_HOR_RES - 1) return;
+    if (y1 > R61581_VER_RES - 1) return;
 
     /*Truncate the area to the screen*/
     int32_t act_x1 = x1 < 0 ? 0 : x1;
@@ -109,14 +109,14 @@ void r61581_flush(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const lv_color
 
 #if LV_COLOR_DEPTH == 16
     uint16_t act_w = act_x2 - act_x1 + 1;
-    for(i = act_y1; i <= act_y2; i++) {
+    for (i = act_y1; i <= act_y2; i++) {
         LV_DRV_DISP_PAR_WR_ARRAY((uint16_t *)color_p, act_w);
         color_p += full_w;
     }
 #else
     int16_t j;
-    for(i = act_y1; i <= act_y2; i++) {
-        for(j = 0; j <= act_x2 - act_x1 + 1; j++) {
+    for (i = act_y1; i <= act_y2; i++) {
+        for (j = 0; j <= act_x2 - act_x1 + 1; j++) {
             LV_DRV_DISP_PAR_WR_WORD(lv_color_to16(color_p[j]));
             color_p += full_w;
         }
@@ -129,10 +129,10 @@ void r61581_flush(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const lv_color
 void r61581_fill(int32_t x1, int32_t y1, int32_t x2, int32_t y2, lv_color_t color)
 {
     /*Return if the area is out the screen*/
-    if(x2 < 0) return;
-    if(y2 < 0) return;
-    if(x1 > R61581_HOR_RES - 1) return;
-    if(y1 > R61581_VER_RES - 1) return;
+    if (x2 < 0) return;
+    if (y2 < 0) return;
+    if (x1 > R61581_HOR_RES - 1) return;
+    if (y1 > R61581_VER_RES - 1) return;
 
     /*Truncate the area to the screen*/
     int32_t act_x1 = x1 < 0 ? 0 : x1;
@@ -160,7 +160,7 @@ void r61581_fill(int32_t x1, int32_t y1, int32_t x2, int32_t y2, lv_color_t colo
     uint16_t color16 = lv_color_to16(color);
     uint32_t size = (act_x2 - act_x1 + 1) * (act_y2 - act_y1 + 1);
     uint32_t i;
-    for(i = 0; i < size; i++) {
+    for (i = 0; i < size; i++) {
         LV_DRV_DISP_PAR_WR_WORD(color16);
     }
 }
@@ -168,10 +168,10 @@ void r61581_fill(int32_t x1, int32_t y1, int32_t x2, int32_t y2, lv_color_t colo
 void r61581_map(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const lv_color_t * color_p)
 {
     /*Return if the area is out the screen*/
-    if(x2 < 0) return;
-    if(y2 < 0) return;
-    if(x1 > R61581_HOR_RES - 1) return;
-    if(y1 > R61581_VER_RES - 1) return;
+    if (x2 < 0) return;
+    if (y2 < 0) return;
+    if (x1 > R61581_HOR_RES - 1) return;
+    if (y1 > R61581_VER_RES - 1) return;
 
     /*Truncate the area to the screen*/
     int32_t act_x1 = x1 < 0 ? 0 : x1;
@@ -202,14 +202,14 @@ void r61581_map(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const lv_color_t
 
 #if LV_COLOR_DEPTH == 16
     uint16_t act_w = act_x2 - act_x1 + 1;
-    for(i = act_y1; i <= act_y2; i++) {
+    for (i = act_y1; i <= act_y2; i++) {
         LV_DRV_DISP_PAR_WR_ARRAY((uint16_t *)color_p, act_w);
         color_p += full_w;
     }
 #else
     int16_t j;
-    for(i = act_y1; i <= act_y2; i++) {
-        for(j = 0; j <= act_x2 - act_x1 + 1; j++) {
+    for (i = act_y1; i <= act_y2; i++) {
+        for (j = 0; j <= act_x2 - act_x1 + 1; j++) {
             LV_DRV_DISP_PAR_WR_WORD(lv_color_to16(color_p[j]));
             color_p += full_w;
         }
@@ -330,7 +330,7 @@ static void r61581_set_tft_spec(void)
 
 
     r61581_cmd(0x36);
-    if(R61581_ORI == 0) r61581_data(0xE0);
+    if (R61581_ORI == 0) r61581_data(0xE0);
     else r61581_data(0x20);
 
     r61581_cmd(0x0C);
@@ -386,7 +386,7 @@ static void r61581_set_tft_spec(void)
  */
 static inline void r61581_cmd_mode(void)
 {
-    if(cmd_mode == false) {
+    if (cmd_mode == false) {
         LV_DRV_DISP_CMD_DATA(R61581_CMD_MODE)
         cmd_mode = true;
     }
@@ -397,7 +397,7 @@ static inline void r61581_cmd_mode(void)
  */
 static inline void r61581_data_mode(void)
 {
-    if(cmd_mode != false) {
+    if (cmd_mode != false) {
         LV_DRV_DISP_CMD_DATA(R61581_DATA_MODE);
         cmd_mode = false;
     }

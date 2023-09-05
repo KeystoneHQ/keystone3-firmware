@@ -422,8 +422,7 @@ int8_t GuiForgetPassNextTile(uint8_t tileIndex)
         if (CHECK_BATTERY_LOW_POWER()) {
             g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox);
             return ERR_GUI_ERROR;
-        }
-        else {
+        } else {
             GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
             GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _("Seed Phrase Check"));
         }

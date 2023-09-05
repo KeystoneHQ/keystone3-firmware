@@ -21,7 +21,7 @@
  *       DEFINES
  **********************/
 
- #define WINDOW_STYLE (WS_OVERLAPPEDWINDOW & ~(WS_SIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME))
+#define WINDOW_STYLE (WS_OVERLAPPEDWINDOW & ~(WS_SIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME))
 
 /**********************
  *      TYPEDEFS
@@ -80,20 +80,19 @@ HWND windrv_init(void)
     wc.cbClsExtra    = 0;
     wc.cbWndExtra    = 0;
     wc.hInstance     = GetModuleHandle(NULL);
-    lvgl_icon        = (HICON) LoadImage( NULL, "lvgl_icon.bmp", IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
+    lvgl_icon        = (HICON) LoadImage(NULL, "lvgl_icon.bmp", IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
 
-    if(lvgl_icon == NULL)
+    if (lvgl_icon == NULL)
         lvgl_icon = LoadIcon(NULL, IDI_APPLICATION);
 
     wc.hIcon         = lvgl_icon;
     wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wc.lpszMenuName  = NULL;
     wc.lpszClassName = g_szClassName;
     wc.hIconSm       = lvgl_icon;
 
-    if(!RegisterClassEx(&wc))
-    {
+    if (!RegisterClassEx(&wc)) {
         return NULL;
     }
 
@@ -105,15 +104,14 @@ HWND windrv_init(void)
     OffsetRect(&winrect, -winrect.left, -winrect.top);
     // Step 2: Creating the Window
     hwnd = CreateWindowEx(
-        WS_EX_CLIENTEDGE,
-        g_szClassName,
-        "LVGL Simulator",
-        WINDOW_STYLE,
-        CW_USEDEFAULT, CW_USEDEFAULT, winrect.right, winrect.bottom,
-        NULL, NULL, GetModuleHandle(NULL), NULL);
+               WS_EX_CLIENTEDGE,
+               g_szClassName,
+               "LVGL Simulator",
+               WINDOW_STYLE,
+               CW_USEDEFAULT, CW_USEDEFAULT, winrect.right, winrect.bottom,
+               NULL, NULL, GetModuleHandle(NULL), NULL);
 
-    if(hwnd == NULL)
-    {
+    if (hwnd == NULL) {
         return NULL;
     }
 
@@ -171,31 +169,27 @@ static void msg_handler(void *param)
 
     MSG msg;
     BOOL bRet;
-    if( (bRet = PeekMessage( &msg, NULL, 0, 0, TRUE )) != 0)
-    {
-        if (bRet == -1)
-        {
+    if ((bRet = PeekMessage(&msg, NULL, 0, 0, TRUE)) != 0) {
+        if (bRet == -1) {
             return;
-        }
-        else
-        {
+        } else {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
-        if(msg.message == WM_QUIT)
+        if (msg.message == WM_QUIT)
             lv_win_exit_flag = true;
     }
 }
 
- static void win_drv_read(lv_indev_t *drv, lv_indev_data_t * data)
+static void win_drv_read(lv_indev_t *drv, lv_indev_data_t * data)
 {
     data->state = mouse_pressed ? LV_INDEV_STATE_PR : LV_INDEV_STATE_REL;
     data->point.x = mouse_x;
     data->point.y = mouse_y;
 }
 
- static void on_paint(void)
- {
+static void on_paint(void)
+{
     HBITMAP bmp = CreateBitmap(WINDOW_HOR_RES, WINDOW_VER_RES, 1, 32, fbp);
     PAINTSTRUCT ps;
 
@@ -237,11 +231,9 @@ static void win_drv_flush(lv_disp_t *drv, lv_area_t *area, const lv_color_t * co
  */
 static void win_drv_map(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const lv_color_t * color_p)
 {
-    for(int y = y1; y <= y2; y++)
-    {
-        for(int x = x1; x <= x2; x++)
-        {
-            fbp[y*WINDOW_HOR_RES+x] = lv_color_to32(*color_p);
+    for (int y = y1; y <= y2; y++) {
+        for (int x = x1; x <= x2; x++) {
+            fbp[y * WINDOW_HOR_RES + x] = lv_color_to32(*color_p);
             color_p++;
         }
     }
@@ -253,10 +245,10 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 {
     HDC hdc;
     PAINTSTRUCT ps;
-    switch(msg) {
+    switch (msg) {
     case WM_CREATE:
-        fbp = malloc(4*WINDOW_HOR_RES*WINDOW_VER_RES);
-        if(fbp == NULL)
+        fbp = malloc(4 * WINDOW_HOR_RES * WINDOW_VER_RES);
+        if (fbp == NULL)
             return 1;
         SetTimer(hwnd, 0, 10, (TIMERPROC)lv_task_handler);
         SetTimer(hwnd, 1, 25, NULL);
@@ -267,7 +259,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_LBUTTONUP:
         mouse_x = GET_X_LPARAM(lParam);
         mouse_y = GET_Y_LPARAM(lParam);
-        if(msg == WM_LBUTTONDOWN || msg == WM_LBUTTONUP) {
+        if (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONUP) {
             mouse_pressed = (msg == WM_LBUTTONDOWN);
         }
         return 0;

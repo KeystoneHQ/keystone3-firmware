@@ -43,25 +43,25 @@ extern "C" {
  *      TYPEDEFS
  **********************/
 typedef enum {
-  LIBINPUT_CAPABILITY_NONE     = 0,
-  LIBINPUT_CAPABILITY_KEYBOARD = 1U << 0,
-  LIBINPUT_CAPABILITY_POINTER  = 1U << 1,
-  LIBINPUT_CAPABILITY_TOUCH    = 1U << 2
+    LIBINPUT_CAPABILITY_NONE     = 0,
+    LIBINPUT_CAPABILITY_KEYBOARD = 1U << 0,
+    LIBINPUT_CAPABILITY_POINTER  = 1U << 1,
+    LIBINPUT_CAPABILITY_TOUCH    = 1U << 2
 } libinput_capability;
 
 typedef struct {
-  int fd;
-  struct pollfd fds[1];
+    int fd;
+    struct pollfd fds[1];
 
-  int button;
-  int key_val;
-  lv_point_t most_recent_touch_point;
+    int button;
+    int key_val;
+    lv_point_t most_recent_touch_point;
 
-  struct libinput *libinput_context;
-  struct libinput_device *libinput_device;
+    struct libinput *libinput_context;
+    struct libinput_device *libinput_device;
 
 #if USE_XKB
-  xkb_drv_state_t xkb_state;
+    xkb_drv_state_t xkb_state;
 #endif /* USE_XKB */
 } libinput_drv_state_t;
 

@@ -87,11 +87,11 @@ bool ft5406ee8_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
     bool valid = true;
 
     valid = ft5406ee8_get_touch_num();
-    if(valid == true) {
+    if (valid == true) {
         valid = ft5406ee8_read_finger1(&x, &y);
     }
 
-    if(valid == true) {
+    if (valid == true) {
         x = (uint32_t)((uint32_t)x * 320) / 2048;
         y = (uint32_t)((uint32_t)y * 240) / 2048;
 
@@ -126,7 +126,7 @@ static bool ft5406ee8_get_touch_num(void)
     t_num = LV_DRV_INDEV_I2C_READ(0);
 
     /* Error if not touched or too much finger */
-    if(t_num > FT5406EE8_FINGER_MAX || t_num == 0) {
+    if (t_num > FT5406EE8_FINGER_MAX || t_num == 0) {
         ok = false;
     }
 
@@ -156,7 +156,7 @@ static bool ft5406ee8_read_finger1(int16_t * x, int16_t * y)
     temp_yL = LV_DRV_INDEV_I2C_READ(1);
 
     /*The upper two bit must be 2 on valid press*/
-    if(((temp_yH >> 6) & 0xFF) != 2) {
+    if (((temp_yH >> 6) & 0xFF) != 2) {
         (void) LV_DRV_INDEV_I2C_READ(0);   /*Dummy read to close read sequence*/
         *x = 0;
         *y = 0;

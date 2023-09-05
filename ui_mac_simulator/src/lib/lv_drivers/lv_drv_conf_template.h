@@ -327,11 +327,11 @@
  *  FreeBSD frame buffer device (/dev/fbx)
  *.........................................*/
 #ifndef USE_BSD_FBDEV
-#  define USE_BSD_FBDEV		0
+#  define USE_BSD_FBDEV     0
 #endif
 
 #if USE_BSD_FBDEV
-# define FBDEV_PATH		"/dev/fb0"
+# define FBDEV_PATH     "/dev/fb0"
 #endif
 
 /*-----------------------------------------
@@ -343,7 +343,7 @@
 
 #if USE_DRM
 #  define DRM_CARD          "/dev/dri/card0"
-#  define DRM_CONNECTOR_ID  -1	/* -1 for the first connected one */
+#  define DRM_CONNECTOR_ID  -1  /* -1 for the first connected one */
 #endif
 
 /*********************

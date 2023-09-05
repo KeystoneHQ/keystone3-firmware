@@ -72,7 +72,7 @@ typedef struct {
 #else
     uint32_t * tft_fb;
 #endif
-}monitor_t;
+} monitor_t;
 
 /**********************
  *  STATIC PROTOTYPES
@@ -150,7 +150,7 @@ void sdl_display_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
 //    printf("x1:%d,y1:%d,x2:%d,y2:%d\n", area->x1, area->y1, area->x2, area->y2);
 
     /*Return if the area is out the screen*/
-    if(area->x2 < 0 || area->y2 < 0 || area->x1 > hres - 1 || area->y1 > vres - 1) {
+    if (area->x2 < 0 || area->y2 < 0 || area->x1 > hres - 1 || area->y1 > vres - 1) {
         lv_disp_flush_ready(disp_drv);
         return;
     }
@@ -162,8 +162,8 @@ void sdl_display_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
     int32_t y;
 #if LV_COLOR_DEPTH != 24 && LV_COLOR_DEPTH != 32    /*32 is valid but support 24 for backward compatibility too*/
     int32_t x;
-    for(y = area->y1; y <= area->y2 && y < vres; y++) {
-        for(x = area->x1; x <= area->x2; x++) {
+    for (y = area->y1; y <= area->y2 && y < vres; y++) {
+        for (x = area->x1; x <= area->x2; x++) {
             monitor.tft_fb[y * hres + x] = lv_color_to32(*color_p);
             color_p++;
         }
@@ -171,7 +171,7 @@ void sdl_display_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
     }
 #else
     uint32_t w = lv_area_get_width(area);
-    for(y = area->y1; y <= area->y2 && y < vres; y++) {
+    for (y = area->y1; y <= area->y2 && y < vres; y++) {
         memcpy(&monitor.tft_fb[y * hres + area->x1], color_p, w * sizeof(lv_color_t));
         color_p += w;
     }
@@ -182,7 +182,7 @@ void sdl_display_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
 
     /* TYPICALLY YOU DO NOT NEED THIS
      * If it was the last part to refresh update the texture of the window.*/
-    if(lv_disp_flush_is_last(disp_drv)) {
+    if (lv_disp_flush_is_last(disp_drv)) {
         monitor_sdl_refr(NULL);
     }
 
@@ -206,7 +206,7 @@ void sdl_display_flush2(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_col
     const lv_coord_t vres = disp_drv->physical_ver_res == -1 ? disp_drv->ver_res : disp_drv->physical_ver_res;
 
     /*Return if the area is out the screen*/
-    if(area->x2 < 0 || area->y2 < 0 || area->x1 > hres - 1 || area->y1 > vres - 1) {
+    if (area->x2 < 0 || area->y2 < 0 || area->x1 > hres - 1 || area->y1 > vres - 1) {
         lv_disp_flush_ready(disp_drv);
         return;
     }
@@ -223,8 +223,8 @@ void sdl_display_flush2(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_col
     int32_t y;
 #if LV_COLOR_DEPTH != 24 && LV_COLOR_DEPTH != 32    /*32 is valid but support 24 for backward compatibility too*/
     int32_t x;
-    for(y = area->y1; y <= area->y2 && y < vres; y++) {
-        for(x = area->x1; x <= area->x2; x++) {
+    for (y = area->y1; y <= area->y2 && y < vres; y++) {
+        for (x = area->x1; x <= area->x2; x++) {
             monitor2.tft_fb[y * hres + x] = lv_color_to32(*color_p);
             color_p++;
         }
@@ -232,7 +232,7 @@ void sdl_display_flush2(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_col
     }
 #else
     uint32_t w = lv_area_get_width(area);
-    for(y = area->y1; y <= area->y2 && y < vres; y++) {
+    for (y = area->y1; y <= area->y2 && y < vres; y++) {
         memcpy(&monitor2.tft_fb[y * hres + area->x1], color_p, w * sizeof(lv_color_t));
         color_p += w;
     }
@@ -242,7 +242,7 @@ void sdl_display_flush2(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_col
 
     /* TYPICALLY YOU DO NOT NEED THIS
      * If it was the last part to refresh update the texture of the window.*/
-    if(lv_disp_flush_is_last(disp_drv)) {
+    if (lv_disp_flush_is_last(disp_drv)) {
         monitor_sdl_refr(NULL);
     }
 
@@ -268,30 +268,30 @@ static void sdl_event_handler(lv_timer_t * t)
 
     /*Refresh handling*/
     SDL_Event event;
-    while(SDL_PollEvent(&event)) {
+    while (SDL_PollEvent(&event)) {
         mouse_handler(&event);
         mousewheel_handler(&event);
         keyboard_handler(&event);
 
-        if((&event)->type == SDL_WINDOWEVENT) {
-            switch((&event)->window.event) {
+        if ((&event)->type == SDL_WINDOWEVENT) {
+            switch ((&event)->window.event) {
 #if SDL_VERSION_ATLEAST(2, 0, 5)
-                case SDL_WINDOWEVENT_TAKE_FOCUS:
+            case SDL_WINDOWEVENT_TAKE_FOCUS:
 #endif
-                case SDL_WINDOWEVENT_EXPOSED:
-                    window_update(&monitor);
+            case SDL_WINDOWEVENT_EXPOSED:
+                window_update(&monitor);
 #if SDL_DUAL_DISPLAY
-                    window_update(&monitor2);
+                window_update(&monitor2);
 #endif
-                    break;
-                default:
-                    break;
+                break;
+            default:
+                break;
             }
         }
     }
 
     /*Run until quit event not arrives*/
-    if(sdl_quit_qry) {
+    if (sdl_quit_qry) {
         monitor_sdl_clean_up();
         exit(0);
     }
@@ -307,13 +307,13 @@ static void monitor_sdl_refr(lv_timer_t * t)
     (void)t;
 
     /*Refresh handling*/
-    if(monitor.sdl_refr_qry != false) {
+    if (monitor.sdl_refr_qry != false) {
         monitor.sdl_refr_qry = false;
         window_update(&monitor);
     }
 
 #if SDL_DUAL_DISPLAY
-    if(monitor2.sdl_refr_qry != false) {
+    if (monitor2.sdl_refr_qry != false) {
         monitor2.sdl_refr_qry = false;
         window_update(&monitor2);
     }
@@ -345,12 +345,12 @@ static void window_create(monitor_t * m)
 #endif
 
     m->window = SDL_CreateWindow("TFT Simulator",
-                              SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                              SDL_HOR_RES * SDL_ZOOM, SDL_VER_RES * SDL_ZOOM, flag);       /*last param. SDL_WINDOW_BORDERLESS to hide borders*/
+                                 SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                                 SDL_HOR_RES * SDL_ZOOM, SDL_VER_RES * SDL_ZOOM, flag);       /*last param. SDL_WINDOW_BORDERLESS to hide borders*/
 
     m->renderer = SDL_CreateRenderer(m->window, -1, SDL_RENDERER_SOFTWARE);
     m->texture = SDL_CreateTexture(m->renderer,
-                                SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, SDL_HOR_RES, SDL_VER_RES);
+                                   SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, SDL_HOR_RES, SDL_VER_RES);
     SDL_SetTextureBlendMode(m->texture, SDL_BLENDMODE_BLEND);
 
     /*Initialize the frame buffer to gray (77 is an empirical value) */
@@ -370,15 +370,18 @@ static void window_update(monitor_t * m)
 #if SDL_DOUBLE_BUFFERED == 0
     SDL_UpdateTexture(m->texture, NULL, m->tft_fb, SDL_HOR_RES * sizeof(uint32_t));
 #else
-    if(m->tft_fb_act == NULL) return;
+    if (m->tft_fb_act == NULL) return;
     SDL_UpdateTexture(m->texture, NULL, m->tft_fb_act, SDL_HOR_RES * sizeof(uint32_t));
 #endif
     SDL_RenderClear(m->renderer);
     lv_disp_t * d = _lv_refr_get_disp_refreshing();
-    if(d->driver->screen_transp) {
+    if (d->driver->screen_transp) {
         SDL_SetRenderDrawColor(m->renderer, 0xff, 0, 0, 0xff);
         SDL_Rect r;
-        r.x = 0; r.y = 0; r.w = SDL_HOR_RES; r.h = SDL_VER_RES;
+        r.x = 0;
+        r.y = 0;
+        r.w = SDL_HOR_RES;
+        r.h = SDL_VER_RES;
         SDL_RenderDrawRect(m->renderer, &r);
     }
 

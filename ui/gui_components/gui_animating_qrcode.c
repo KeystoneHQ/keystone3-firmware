@@ -28,7 +28,8 @@ void GuiAnimatingQRCodeControl(bool pause)
     }
 }
 
-lv_obj_t* CreateQRCode(lv_obj_t* parent, uint16_t w, uint16_t h) {
+lv_obj_t* CreateQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)
+{
     lv_obj_t* qrcode = lv_qrcode_create(parent, w, QR_FG_COLOR, QR_BG_COLOR);
     lv_obj_add_flag(qrcode, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(qrcode, GuiFullscreenModeHandler, LV_EVENT_CLICKED, NULL);

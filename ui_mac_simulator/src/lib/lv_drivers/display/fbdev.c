@@ -45,15 +45,15 @@
  *      STRUCTURES
  **********************/
 
-struct bsd_fb_var_info{
+struct bsd_fb_var_info {
     uint32_t xoffset;
     uint32_t yoffset;
     uint32_t xres;
     uint32_t yres;
     int bits_per_pixel;
- };
+};
 
-struct bsd_fb_fix_info{
+struct bsd_fb_fix_info {
     long int line_length;
     long int smem_len;
 };
@@ -92,7 +92,7 @@ void fbdev_init(void)
 {
     // Open the file for reading and writing
     fbfd = open(FBDEV_PATH, O_RDWR);
-    if(fbfd == -1) {
+    if (fbfd == -1) {
         perror("Error: cannot open framebuffer device");
         return;
     }
@@ -130,13 +130,13 @@ void fbdev_init(void)
 #else /* USE_BSD_FBDEV */
 
     // Get fixed screen information
-    if(ioctl(fbfd, FBIOGET_FSCREENINFO, &finfo) == -1) {
+    if (ioctl(fbfd, FBIOGET_FSCREENINFO, &finfo) == -1) {
         perror("Error reading fixed information");
         return;
     }
 
     // Get variable screen information
-    if(ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo) == -1) {
+    if (ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo) == -1) {
         perror("Error reading variable information");
         return;
     }
@@ -145,11 +145,11 @@ void fbdev_init(void)
     LV_LOG_INFO("%dx%d, %dbpp", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel);
 
     // Figure out the size of the screen in bytes
-    screensize =  finfo.smem_len; //finfo.line_length * vinfo.yres;    
+    screensize =  finfo.smem_len; //finfo.line_length * vinfo.yres;
 
     // Map the device to memory
     fbp = (char *)mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);
-    if((intptr_t)fbp == -1) {
+    if ((intptr_t)fbp == -1) {
         perror("Error: failed to map framebuffer device to memory");
         return;
     }
@@ -174,7 +174,7 @@ void fbdev_exit(void)
  */
 void fbdev_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_p)
 {
-    if(fbp == NULL ||
+    if (fbp == NULL ||
             area->x2 < 0 ||
             area->y2 < 0 ||
             area->x1 > (int32_t)vinfo.xres - 1 ||
@@ -196,42 +196,42 @@ void fbdev_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color
     unsigned char bit_location = 0;
 
     /*32 or 24 bit per pixel*/
-    if(vinfo.bits_per_pixel == 32 || vinfo.bits_per_pixel == 24) {
+    if (vinfo.bits_per_pixel == 32 || vinfo.bits_per_pixel == 24) {
         uint32_t * fbp32 = (uint32_t *)fbp;
         int32_t y;
-        for(y = act_y1; y <= act_y2; y++) {
+        for (y = act_y1; y <= act_y2; y++) {
             location = (act_x1 + vinfo.xoffset) + (y + vinfo.yoffset) * finfo.line_length / 4;
             memcpy(&fbp32[location], (uint32_t *)color_p, (act_x2 - act_x1 + 1) * 4);
             color_p += w;
         }
     }
     /*16 bit per pixel*/
-    else if(vinfo.bits_per_pixel == 16) {
+    else if (vinfo.bits_per_pixel == 16) {
         uint16_t * fbp16 = (uint16_t *)fbp;
         int32_t y;
-        for(y = act_y1; y <= act_y2; y++) {
+        for (y = act_y1; y <= act_y2; y++) {
             location = (act_x1 + vinfo.xoffset) + (y + vinfo.yoffset) * finfo.line_length / 2;
             memcpy(&fbp16[location], (uint32_t *)color_p, (act_x2 - act_x1 + 1) * 2);
             color_p += w;
         }
     }
     /*8 bit per pixel*/
-    else if(vinfo.bits_per_pixel == 8) {
+    else if (vinfo.bits_per_pixel == 8) {
         uint8_t * fbp8 = (uint8_t *)fbp;
         int32_t y;
-        for(y = act_y1; y <= act_y2; y++) {
+        for (y = act_y1; y <= act_y2; y++) {
             location = (act_x1 + vinfo.xoffset) + (y + vinfo.yoffset) * finfo.line_length;
             memcpy(&fbp8[location], (uint32_t *)color_p, (act_x2 - act_x1 + 1));
             color_p += w;
         }
     }
     /*1 bit per pixel*/
-    else if(vinfo.bits_per_pixel == 1) {
+    else if (vinfo.bits_per_pixel == 1) {
         uint8_t * fbp8 = (uint8_t *)fbp;
         int32_t x;
         int32_t y;
-        for(y = act_y1; y <= act_y2; y++) {
-            for(x = act_x1; x <= act_x2; x++) {
+        for (y = act_y1; y <= act_y2; y++) {
+            for (x = act_x1; x <= act_x2; x++) {
                 location = (x + vinfo.xoffset) + (y + vinfo.yoffset) * vinfo.xres;
                 byte_location = location / 8; /* find the byte we need to change */
                 bit_location = location % 8; /* inside the byte found, find the bit we need to change */
@@ -252,7 +252,8 @@ void fbdev_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color
     lv_disp_flush_ready(drv);
 }
 
-void fbdev_get_sizes(uint32_t *width, uint32_t *height, uint32_t *dpi) {
+void fbdev_get_sizes(uint32_t *width, uint32_t *height, uint32_t *dpi)
+{
     if (width)
         *width = vinfo.xres;
 
@@ -263,7 +264,8 @@ void fbdev_get_sizes(uint32_t *width, uint32_t *height, uint32_t *dpi) {
         *dpi = DIV_ROUND_UP(vinfo.xres * 254, vinfo.width * 10);
 }
 
-void fbdev_set_offset(uint32_t xoffset, uint32_t yoffset) {
+void fbdev_set_offset(uint32_t xoffset, uint32_t yoffset)
+{
     vinfo.xoffset = xoffset;
     vinfo.yoffset = yoffset;
 }

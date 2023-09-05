@@ -84,7 +84,7 @@ void sdl_keyboard_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
         data->state = LV_INDEV_STATE_RELEASED;
         data->continue_reading = len > 0;
     }
-        /*Send the pressed character*/
+    /*Send the pressed character*/
     else if (len > 0) {
         dummy_read = true;
         data->state = LV_INDEV_STATE_PRESSED;
@@ -102,7 +102,7 @@ int quit_filter(void * userdata, SDL_Event * event)
 {
     (void)userdata;
 
-    if(event->type == SDL_QUIT) {
+    if (event->type == SDL_QUIT) {
         sdl_quit_qry = true;
     }
 
@@ -111,37 +111,37 @@ int quit_filter(void * userdata, SDL_Event * event)
 
 void mouse_handler(SDL_Event * event)
 {
-    switch(event->type) {
-        case SDL_MOUSEBUTTONUP:
-            if(event->button.button == SDL_BUTTON_LEFT)
-                left_button_down = false;
-            break;
-        case SDL_MOUSEBUTTONDOWN:
-            if(event->button.button == SDL_BUTTON_LEFT) {
-                left_button_down = true;
-                last_x = event->motion.x / SDL_ZOOM;
-                last_y = event->motion.y / SDL_ZOOM;
-            }
-            break;
-        case SDL_MOUSEMOTION:
+    switch (event->type) {
+    case SDL_MOUSEBUTTONUP:
+        if (event->button.button == SDL_BUTTON_LEFT)
+            left_button_down = false;
+        break;
+    case SDL_MOUSEBUTTONDOWN:
+        if (event->button.button == SDL_BUTTON_LEFT) {
+            left_button_down = true;
             last_x = event->motion.x / SDL_ZOOM;
             last_y = event->motion.y / SDL_ZOOM;
-            break;
+        }
+        break;
+    case SDL_MOUSEMOTION:
+        last_x = event->motion.x / SDL_ZOOM;
+        last_y = event->motion.y / SDL_ZOOM;
+        break;
 
-        case SDL_FINGERUP:
-            left_button_down = false;
-            last_x = LV_HOR_RES * event->tfinger.x / SDL_ZOOM;
-            last_y = LV_VER_RES * event->tfinger.y / SDL_ZOOM;
-            break;
-        case SDL_FINGERDOWN:
-            left_button_down = true;
-            last_x = LV_HOR_RES * event->tfinger.x / SDL_ZOOM;
-            last_y = LV_VER_RES * event->tfinger.y / SDL_ZOOM;
-            break;
-        case SDL_FINGERMOTION:
-            last_x = LV_HOR_RES * event->tfinger.x / SDL_ZOOM;
-            last_y = LV_VER_RES * event->tfinger.y / SDL_ZOOM;
-            break;
+    case SDL_FINGERUP:
+        left_button_down = false;
+        last_x = LV_HOR_RES * event->tfinger.x / SDL_ZOOM;
+        last_y = LV_VER_RES * event->tfinger.y / SDL_ZOOM;
+        break;
+    case SDL_FINGERDOWN:
+        left_button_down = true;
+        last_x = LV_HOR_RES * event->tfinger.x / SDL_ZOOM;
+        last_y = LV_VER_RES * event->tfinger.y / SDL_ZOOM;
+        break;
+    case SDL_FINGERMOTION:
+        last_x = LV_HOR_RES * event->tfinger.x / SDL_ZOOM;
+        last_y = LV_VER_RES * event->tfinger.y / SDL_ZOOM;
+        break;
     }
 
 }
@@ -153,30 +153,30 @@ void mouse_handler(SDL_Event * event)
  */
 void mousewheel_handler(SDL_Event * event)
 {
-    switch(event->type) {
-        case SDL_MOUSEWHEEL:
-            // Scroll down (y = -1) means positive encoder turn,
-            // so invert it
+    switch (event->type) {
+    case SDL_MOUSEWHEEL:
+        // Scroll down (y = -1) means positive encoder turn,
+        // so invert it
 #ifdef __EMSCRIPTEN__
-            /*Escripten scales it wrong*/
-            if(event->wheel.y < 0) wheel_diff++;
-            if(event->wheel.y > 0) wheel_diff--;
+        /*Escripten scales it wrong*/
+        if (event->wheel.y < 0) wheel_diff++;
+        if (event->wheel.y > 0) wheel_diff--;
 #else
-            wheel_diff = -event->wheel.y;
+        wheel_diff = -event->wheel.y;
 #endif
-            break;
-        case SDL_MOUSEBUTTONDOWN:
-            if(event->button.button == SDL_BUTTON_MIDDLE) {
-                wheel_state = LV_INDEV_STATE_PRESSED;
-            }
-            break;
-        case SDL_MOUSEBUTTONUP:
-            if(event->button.button == SDL_BUTTON_MIDDLE) {
-                wheel_state = LV_INDEV_STATE_RELEASED;
-            }
-            break;
-        default:
-            break;
+        break;
+    case SDL_MOUSEBUTTONDOWN:
+        if (event->button.button == SDL_BUTTON_MIDDLE) {
+            wheel_state = LV_INDEV_STATE_PRESSED;
+        }
+        break;
+    case SDL_MOUSEBUTTONUP:
+        if (event->button.button == SDL_BUTTON_MIDDLE) {
+            wheel_state = LV_INDEV_STATE_RELEASED;
+        }
+        break;
+    default:
+        break;
     }
 }
 
@@ -188,28 +188,26 @@ void mousewheel_handler(SDL_Event * event)
 void keyboard_handler(SDL_Event * event)
 {
     /* We only care about SDL_KEYDOWN and SDL_TEXTINPUT events */
-    switch(event->type) {
-        case SDL_KEYDOWN:                       /*Button press*/
-        {
-            const uint32_t ctrl_key = keycode_to_ctrl_key(event->key.keysym.sym);
-            if (ctrl_key == '\0')
-                return;
-            const size_t len = strlen(buf);
-            if (len < KEYBOARD_BUFFER_SIZE - 1) {
-                buf[len] = ctrl_key;
-                buf[len + 1] = '\0';
-            }
-            break;
+    switch (event->type) {
+    case SDL_KEYDOWN: {                     /*Button press*/
+        const uint32_t ctrl_key = keycode_to_ctrl_key(event->key.keysym.sym);
+        if (ctrl_key == '\0')
+            return;
+        const size_t len = strlen(buf);
+        if (len < KEYBOARD_BUFFER_SIZE - 1) {
+            buf[len] = ctrl_key;
+            buf[len + 1] = '\0';
         }
-        case SDL_TEXTINPUT:                     /*Text input*/
-        {
-            const size_t len = strlen(buf) + strlen(event->text.text);
-            if (len < KEYBOARD_BUFFER_SIZE - 1)
-                strcat(buf, event->text.text);
-        }
-            break;
-        default:
-            break;
+        break;
+    }
+    case SDL_TEXTINPUT: {                   /*Text input*/
+        const size_t len = strlen(buf) + strlen(event->text.text);
+        if (len < KEYBOARD_BUFFER_SIZE - 1)
+            strcat(buf, event->text.text);
+    }
+    break;
+    default:
+        break;
 
     }
 }
@@ -223,48 +221,48 @@ void keyboard_handler(SDL_Event * event)
 uint32_t keycode_to_ctrl_key(SDL_Keycode sdl_key)
 {
     /*Remap some key to LV_KEY_... to manage groups*/
-    
+
     SDL_Keymod mode = SDL_GetModState();
-    
-    switch(sdl_key) {
-        case SDLK_RIGHT:
-        case SDLK_KP_PLUS:
-            return LV_KEY_RIGHT;
 
-        case SDLK_LEFT:
-        case SDLK_KP_MINUS:
-            return LV_KEY_LEFT;
+    switch (sdl_key) {
+    case SDLK_RIGHT:
+    case SDLK_KP_PLUS:
+        return LV_KEY_RIGHT;
 
-        case SDLK_UP:
-            return LV_KEY_UP;
+    case SDLK_LEFT:
+    case SDLK_KP_MINUS:
+        return LV_KEY_LEFT;
 
-        case SDLK_DOWN:
-            return LV_KEY_DOWN;
+    case SDLK_UP:
+        return LV_KEY_UP;
 
-        case SDLK_ESCAPE:
-            return LV_KEY_ESC;
+    case SDLK_DOWN:
+        return LV_KEY_DOWN;
 
-        case SDLK_BACKSPACE:
-            return LV_KEY_BACKSPACE;
+    case SDLK_ESCAPE:
+        return LV_KEY_ESC;
 
-        case SDLK_DELETE:
-            return LV_KEY_DEL;
+    case SDLK_BACKSPACE:
+        return LV_KEY_BACKSPACE;
 
-        case SDLK_KP_ENTER:
-        case '\r':
-            return LV_KEY_ENTER;
+    case SDLK_DELETE:
+        return LV_KEY_DEL;
 
-        case SDLK_TAB:
-            return (mode & KMOD_SHIFT)? LV_KEY_PREV: LV_KEY_NEXT;
-            
-        case SDLK_PAGEDOWN:
-            return LV_KEY_NEXT;
+    case SDLK_KP_ENTER:
+    case '\r':
+        return LV_KEY_ENTER;
 
-        case SDLK_PAGEUP:
-            return LV_KEY_PREV;
+    case SDLK_TAB:
+        return (mode & KMOD_SHIFT) ? LV_KEY_PREV : LV_KEY_NEXT;
 
-        default:
-            return '\0';
+    case SDLK_PAGEDOWN:
+        return LV_KEY_NEXT;
+
+    case SDLK_PAGEUP:
+        return LV_KEY_PREV;
+
+    default:
+        return '\0';
     }
 }
 

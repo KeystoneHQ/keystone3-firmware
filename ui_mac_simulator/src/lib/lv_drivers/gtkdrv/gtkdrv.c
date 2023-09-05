@@ -31,15 +31,15 @@
  **********************/
 static void gtkdrv_handler(void * p);
 static gboolean mouse_pressed(GtkWidget *widget, GdkEventButton *event,
-    gpointer user_data);
+                              gpointer user_data);
 static gboolean mouse_released(GtkWidget *widget, GdkEventButton *event,
-    gpointer user_data);
+                               gpointer user_data);
 static gboolean mouse_motion(GtkWidget *widget, GdkEventMotion *event,
-    gpointer user_data);
+                             gpointer user_data);
 static gboolean keyboard_press(GtkWidget *widget, GdkEventKey *event,
-    gpointer user_data);
+                               gpointer user_data);
 static gboolean keyboard_release(GtkWidget *widget, GdkEventKey *event,
-    gpointer user_data);
+                                 gpointer user_data);
 
 static void quit_handler(void);
 
@@ -78,11 +78,11 @@ void gtkdrv_init(void)
     /* Or just set up the widgets in code */
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_default_size(GTK_WINDOW(window), LV_HOR_RES_MAX, LV_VER_RES_MAX);
-    gtk_window_set_resizable (GTK_WINDOW(window), FALSE);
+    gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
     output_image = gtk_image_new();
-    event_box = gtk_event_box_new (); // Use event_box around image, otherwise mouse position output in broadway is offset
-    gtk_container_add(GTK_CONTAINER (event_box), output_image);
-    gtk_container_add(GTK_CONTAINER (window), event_box);
+    event_box = gtk_event_box_new();  // Use event_box around image, otherwise mouse position output in broadway is offset
+    gtk_container_add(GTK_CONTAINER(event_box), output_image);
+    gtk_container_add(GTK_CONTAINER(window), event_box);
 
     gtk_widget_add_events(event_box, GDK_BUTTON_PRESS_MASK);
     gtk_widget_add_events(event_box, GDK_SCROLL_MASK);
@@ -100,8 +100,7 @@ void gtkdrv_init(void)
     gtk_widget_show_all(window);
 
     pixbuf = gdk_pixbuf_new_from_data((guchar*)fb, GDK_COLORSPACE_RGB, false, 8, LV_HOR_RES_MAX, LV_VER_RES_MAX, LV_HOR_RES_MAX * 3, NULL, NULL);
-    if (pixbuf == NULL)
-    {
+    if (pixbuf == NULL) {
         fprintf(stderr, "Creating pixbuf failed\n");
         return;
     }
@@ -115,7 +114,7 @@ void gtkdrv_init(void)
 uint32_t gtkdrv_tick_get(void)
 {
     static uint64_t start_ms = 0;
-    if(start_ms == 0) {
+    if (start_ms == 0) {
         struct timeval tv_start;
         gettimeofday(&tv_start, NULL);
         start_ms = (tv_start.tv_sec * 1000000 + tv_start.tv_usec) / 1000;
@@ -145,7 +144,7 @@ void gtkdrv_flush_cb(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_
 
 
     /*Return if the area is out the screen*/
-    if(area->x2 < 0 || area->y2 < 0 || area->x1 > hres - 1 || area->y1 > vres - 1) {
+    if (area->x2 < 0 || area->y2 < 0 || area->x1 > hres - 1 || area->y1 > vres - 1) {
 
         lv_disp_flush_ready(disp_drv);
         return;
@@ -154,9 +153,9 @@ void gtkdrv_flush_cb(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_
     int32_t y;
     int32_t x;
     int32_t p;
-    for(y = area->y1; y <= area->y2 && y < disp_drv->ver_res; y++) {
+    for (y = area->y1; y <= area->y2 && y < disp_drv->ver_res; y++) {
         p = (y * disp_drv->hor_res + area->x1) * 3;
-        for(x = area->x1; x <= area->x2 && x < disp_drv->hor_res; x++) {
+        for (x = area->x1; x <= area->x2 && x < disp_drv->hor_res; x++) {
             fb[p] = color_p->ch.red;
             fb[p + 1] = color_p->ch.green;
             fb[p + 2] = color_p->ch.blue;
@@ -194,7 +193,7 @@ void gtkdrv_keyboard_read_cb(lv_indev_drv_t * drv, lv_indev_data_t * data)
 
 static void gtkdrv_handler(void * p)
 {
-    while(1) {
+    while (1) {
         gtk_image_set_from_pixbuf(GTK_IMAGE(output_image), pixbuf); // Test code
 
         /* Real code should: call gdk_pixbuf_new_from_data () with pointer to frame buffer
@@ -207,12 +206,12 @@ static void gtkdrv_handler(void * p)
         buffer updates with GTK. It is perhaps also possible to just call gtk_main(), but not
         sure how sync will work then
         */
-        usleep(1*1000);
+        usleep(1 * 1000);
     }
 }
 
 static gboolean mouse_pressed(GtkWidget *widget, GdkEventButton *event,
-    gpointer user_data)
+                              gpointer user_data)
 {
     mouse_btn = LV_INDEV_STATE_PR;
     // Important, if this function returns TRUE the window cannot be moved around inside the browser
@@ -222,7 +221,7 @@ static gboolean mouse_pressed(GtkWidget *widget, GdkEventButton *event,
 
 
 static gboolean mouse_released(GtkWidget *widget, GdkEventButton *event,
-    gpointer user_data)
+                               gpointer user_data)
 {
     mouse_btn = LV_INDEV_STATE_REL;
     // Important, if this function returns TRUE the window cannot be moved around inside the browser
@@ -233,7 +232,7 @@ static gboolean mouse_released(GtkWidget *widget, GdkEventButton *event,
 /*****************************************************************************/
 
 static gboolean mouse_motion(GtkWidget *widget, GdkEventMotion *event,
-    gpointer user_data)
+                             gpointer user_data)
 {
     mouse_x = event->x;
     mouse_y = event->y;
@@ -244,74 +243,74 @@ static gboolean mouse_motion(GtkWidget *widget, GdkEventMotion *event,
 
 
 static gboolean keyboard_press(GtkWidget *widget, GdkEventKey *event,
-    gpointer user_data)
+                               gpointer user_data)
 {
 
     uint32_t ascii_key = event->keyval;
     /*Remap some key to LV_KEY_... to manage groups*/
-    switch(event->keyval) {
-        case GDK_KEY_rightarrow:
-        case GDK_KEY_Right:
-            ascii_key =  LV_KEY_RIGHT;
-            break;
+    switch (event->keyval) {
+    case GDK_KEY_rightarrow:
+    case GDK_KEY_Right:
+        ascii_key =  LV_KEY_RIGHT;
+        break;
 
-        case GDK_KEY_leftarrow:
-        case GDK_KEY_Left:
-            ascii_key =  LV_KEY_LEFT;
-            break;
+    case GDK_KEY_leftarrow:
+    case GDK_KEY_Left:
+        ascii_key =  LV_KEY_LEFT;
+        break;
 
-        case GDK_KEY_uparrow:
-        case GDK_KEY_Up:
-            ascii_key =  LV_KEY_UP;
-            break;
+    case GDK_KEY_uparrow:
+    case GDK_KEY_Up:
+        ascii_key =  LV_KEY_UP;
+        break;
 
-        case GDK_KEY_downarrow:
-        case GDK_KEY_Down:
-            ascii_key =  LV_KEY_DOWN;
-            break;
+    case GDK_KEY_downarrow:
+    case GDK_KEY_Down:
+        ascii_key =  LV_KEY_DOWN;
+        break;
 
-        case GDK_KEY_Escape:
-            ascii_key =  LV_KEY_ESC;
-            break;
+    case GDK_KEY_Escape:
+        ascii_key =  LV_KEY_ESC;
+        break;
 
-        case GDK_KEY_BackSpace:
-            ascii_key =  LV_KEY_BACKSPACE;
-            break;
+    case GDK_KEY_BackSpace:
+        ascii_key =  LV_KEY_BACKSPACE;
+        break;
 
-        case GDK_KEY_Delete:
-            ascii_key = LV_KEY_DEL;
-            break;
+    case GDK_KEY_Delete:
+        ascii_key = LV_KEY_DEL;
+        break;
 
-        case GDK_KEY_Tab:
-            ascii_key = LV_KEY_NEXT;
-            break;
+    case GDK_KEY_Tab:
+        ascii_key = LV_KEY_NEXT;
+        break;
 
-        case GDK_KEY_KP_Enter:
-        case GDK_KEY_Return:
-        case '\r':
-            ascii_key = LV_KEY_ENTER;
-            break;
+    case GDK_KEY_KP_Enter:
+    case GDK_KEY_Return:
+    case '\r':
+        ascii_key = LV_KEY_ENTER;
+        break;
 
-        default:
-            break;
+    default:
+        break;
 
     }
 
-     last_key = ascii_key;
-     last_key_state = LV_INDEV_STATE_PR;
-     // For other codes refer to https://developer.gnome.org/gdk3/stable/gdk3-Event-Structures.html#GdkEventKey
+    last_key = ascii_key;
+    last_key_state = LV_INDEV_STATE_PR;
+    // For other codes refer to https://developer.gnome.org/gdk3/stable/gdk3-Event-Structures.html#GdkEventKey
 
-     return TRUE;
+    return TRUE;
 }
 
 static gboolean keyboard_release(GtkWidget *widget, GdkEventKey *event,
-    gpointer user_data)
+                                 gpointer user_data)
 {
-     last_key = 0;
-     last_key_state = LV_INDEV_STATE_REL;
-     // For other codes refer to https://developer.gnome.org/gdk3/stable/gdk3-Event-Structures.html#GdkEventKey
+    last_key = 0;
+    last_key_state = LV_INDEV_STATE_REL;
+    // For other codes refer to https://developer.gnome.org/gdk3/stable/gdk3-Event-Structures.html#GdkEventKey
 
-     return TRUE;
+    return TRUE;
 }
 
 static void quit_handler(void)

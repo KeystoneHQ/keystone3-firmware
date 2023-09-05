@@ -331,7 +331,8 @@ static void GuiBitcoinReceiveGotoTile(UtxoReceiveTile tile)
     lv_obj_set_tile_id(g_utxoReceiveWidgets.tileView, g_utxoReceiveTileNow, 0, LV_ANIM_OFF);
 }
 
-lv_obj_t* CreateUTXOReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h) {
+lv_obj_t* CreateUTXOReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)
+{
     lv_obj_t* qrcode = lv_qrcode_create(parent, w, BLACK_COLOR, WHITE_COLOR);
     lv_obj_add_flag(qrcode, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(qrcode, GuiFullscreenModeHandler, LV_EVENT_CLICKED, NULL);
@@ -660,7 +661,7 @@ static void RefreshQrCode(void)
 {
     AddressDataItem_t addressDataItem;
     ModelGetUtxoAddress(g_selectIndex, &addressDataItem);
-    
+
     lv_qrcode_update(g_utxoReceiveWidgets.qrCode, addressDataItem.address, strlen(addressDataItem.address));
     lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
     if (fullscreen_qrcode) {

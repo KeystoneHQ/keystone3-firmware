@@ -6,11 +6,11 @@
 
 int main(void)
 {
-	lv_init();
+    lv_init();
 
-	hal_setup();
+    hal_setup();
 
-	GuiFrameOpenView(&g_initView);
+    GuiFrameOpenView(&g_initView);
 
-	hal_loop();
+    hal_loop();
 }

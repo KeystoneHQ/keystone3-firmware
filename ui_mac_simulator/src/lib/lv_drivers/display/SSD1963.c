@@ -151,10 +151,10 @@ void ssd1963_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t 
 {
 
     /*Return if the area is out the screen*/
-    if(area->x2 < 0) return;
-    if(area->y2 < 0) return;
-    if(area->x1 > SSD1963_HOR_RES - 1) return;
-    if(area->y1 > SSD1963_VER_RES - 1) return;
+    if (area->x2 < 0) return;
+    if (area->y2 < 0) return;
+    if (area->x1 > SSD1963_HOR_RES - 1) return;
+    if (area->y1 > SSD1963_VER_RES - 1) return;
 
     /*Truncate the area to the screen*/
     int32_t act_x1 = area->x1 < 0 ? 0 : area->x1;
@@ -183,15 +183,15 @@ void ssd1963_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t 
     LV_DRV_DISP_PAR_CS(0);
 #if LV_COLOR_DEPTH == 16
     uint16_t act_w = act_x2 - act_x1 + 1;
-    for(i = act_y1; i <= act_y2; i++) {
+    for (i = act_y1; i <= act_y2; i++) {
         LV_DRV_DISP_PAR_WR_ARRAY((uint16_t *)color_p, act_w);
         color_p += full_w;
     }
     LV_DRV_DISP_PAR_CS(1);
 #else
     int16_t j;
-    for(i = act_y1; i <= act_y2; i++) {
-        for(j = 0; j <= act_x2 - act_x1 + 1; j++) {
+    for (i = act_y1; i <= act_y2; i++) {
+        for (j = 0; j <= act_x2 - act_x1 + 1; j++) {
             LV_DRV_DISP_PAR_WR_WORD(color_p[j]);
             color_p += full_w;
         }
@@ -244,7 +244,7 @@ static void ssd1963_reset(void)
  */
 static inline void ssd1963_cmd_mode(void)
 {
-    if(cmd_mode == false) {
+    if (cmd_mode == false) {
         LV_DRV_DISP_CMD_DATA(SSD1963_CMD_MODE);
         cmd_mode = true;
     }
@@ -255,7 +255,7 @@ static inline void ssd1963_cmd_mode(void)
  */
 static inline void ssd1963_data_mode(void)
 {
-    if(cmd_mode != false) {
+    if (cmd_mode != false) {
         LV_DRV_DISP_CMD_DATA(SSD1963_DATA_MODE);
         cmd_mode = false;
     }

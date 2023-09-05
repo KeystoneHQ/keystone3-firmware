@@ -333,7 +333,7 @@ void ili9341_init(void)
 
 void ili9341_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_p)
 {
-    if(area->x2 < 0 || area->y2 < 0 || area->x1 > (ILI9341_HOR_RES - 1) || area->y1 > (ILI9341_VER_RES - 1)) {
+    if (area->x2 < 0 || area->y2 < 0 || area->x1 > (ILI9341_HOR_RES - 1) || area->y1 > (ILI9341_VER_RES - 1)) {
         lv_disp_flush_ready(drv);
         return;
     }
@@ -367,7 +367,7 @@ void ili9341_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
 
     ili9341_write(ILI9341_CMD_MODE, ILI9341_RAMWR);
 
-    for(y = act_y1; y <= act_y2; y++) {
+    for (y = act_y1; y <= act_y2; y++) {
         ili9341_write_array(ILI9341_DATA_MODE, (uint8_t *)color_p, len);
         color_p += w;
     }
@@ -379,12 +379,12 @@ void ili9341_rotate(int degrees, bool bgr)
 {
     uint8_t color_order = MADCTL_RGB;
 
-    if(bgr)
+    if (bgr)
         color_order = MADCTL_BGR;
 
     ili9341_write(ILI9341_CMD_MODE, ILI9341_MADCTL);
 
-    switch(degrees) {
+    switch (degrees) {
     case 270:
         ili9341_write(ILI9341_DATA_MODE, MADCTL_MV | color_order);
         break;
@@ -395,7 +395,7 @@ void ili9341_rotate(int degrees, bool bgr)
         ili9341_write(ILI9341_DATA_MODE, MADCTL_MX | MADCTL_MY | MADCTL_MV | color_order);
         break;
     case 0:
-        /* fall-through */
+    /* fall-through */
     default:
         ili9341_write(ILI9341_DATA_MODE, MADCTL_MX | color_order);
         break;

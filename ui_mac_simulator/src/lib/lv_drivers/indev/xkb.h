@@ -39,8 +39,8 @@ extern "C" {
 struct xkb_rule_names;
 
 typedef struct {
-  struct xkb_keymap *keymap;
-  struct xkb_state *state;
+    struct xkb_keymap *keymap;
+    struct xkb_state *state;
 } xkb_drv_state_t;
 
 /**********************

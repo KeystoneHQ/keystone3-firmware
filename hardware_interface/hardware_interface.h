@@ -1,0 +1,4 @@
+#ifndef _HARDWARE_INTERFACE_H_
+#define _HARDWARE_INTERFACE_H_
+
+#endif

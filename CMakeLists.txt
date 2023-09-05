@@ -124,7 +124,10 @@ if(COMPILE_MAIN)
         mh1903_lib/Device/MegaHunt/mhscpu/Include 
         mh1903_lib/CMSIS/Include 
         mh1903_lib/MHSCPU_Driver/inc/cryptlib 
-        mh1903_lib/MHSCPU_Driver/inc/emvlib 
+        mh1903_lib/MHSCPU_Driver/inc/emvlib
+        business
+        business/managers 
+        hardware_interface
         lvgl
         lvgl/src
         lvgl/src/core

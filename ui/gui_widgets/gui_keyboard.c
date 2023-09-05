@@ -13,8 +13,8 @@
 
 #pragma GCC optimize ("O0")
 
-#define LV_KB_BTN(width)                                    LV_BTNMATRIX_CTRL_POPOVER | width
-#define LV_KB_RECOLOR_BTN(width)                            LV_BTNMATRIX_CTRL_RECOLOR | width
+#define LV_KB_BTN(width)                                    LV_BTNMATRIX_CTRL_POPOVER | LV_BTNMATRIX_CTRL_NO_REPEAT | width
+#define LV_KB_RECOLOR_BTN(width)                            LV_BTNMATRIX_CTRL_RECOLOR | LV_BTNMATRIX_CTRL_NO_REPEAT | width
 #define MNEMONIC_KB_12WORD_HEIGHT                           290
 #define MNEMONIC_KB_18WORD_HEIGHT                           462
 #define MNEMONIC_KB_20WORD_HEIGHT                           540
@@ -254,7 +254,7 @@ static lv_btnmatrix_ctrl_t g_keyStoneFullCtrlMap[] = {
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
     LV_BTNMATRIX_CTRL_HIDDEN | 2, LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),  LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_BTNMATRIX_CTRL_HIDDEN | 2,
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(6),
-    LV_BTNMATRIX_CTRL_CUSTOM_1 | LV_KB_BTN(2), LV_KB_BTN(6), LV_KB_BTN(2),
+    LV_BTNMATRIX_CTRL_CUSTOM_1 | LV_KB_BTN(2), LV_KB_BTN(6), LV_KB_BTN(2) | LV_BTNMATRIX_CTRL_NO_REPEAT,
     // LV_BTNMATRIX_CTRL_CUSTOM_1 | LV_KB_BTN(2), LV_KB_BTN(6), LV_KB_BTN(2) | LV_BTNMATRIX_CTRL_DISABLED
 };
 
@@ -263,7 +263,7 @@ static const lv_btnmatrix_ctrl_t g_keyStoneFullCtrlBak[] = {
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
     LV_BTNMATRIX_CTRL_HIDDEN | 2, LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),  LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_BTNMATRIX_CTRL_HIDDEN | 2,
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(6),
-    LV_KB_BTN(2), LV_KB_BTN(6), LV_KB_BTN(2) | LV_BTNMATRIX_CTRL_DISABLED
+    LV_KB_BTN(2), LV_KB_BTN(6), LV_KB_BTN(2) | LV_BTNMATRIX_CTRL_DISABLED | LV_BTNMATRIX_CTRL_NO_REPEAT
 };
 
 static lv_btnmatrix_ctrl_t g_keyStoneSymbolCtrlMap[] = {

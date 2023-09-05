@@ -124,11 +124,11 @@ static void MnemonicConfirmHandler(lv_event_t * e)
     }
 
     if (code == LV_EVENT_CLICKED) {
-        Vibrate(SLIGHT);
         uint32_t currentId = lv_btnmatrix_get_selected_btn(obj);
         if (currentId >= 0xff) {
             return;
         }
+        Vibrate(SLIGHT);
         for (i = 0 ; i < g_currId; i++) {
             if (g_pressedBtn[i] == currentId + 1) {
                 break;

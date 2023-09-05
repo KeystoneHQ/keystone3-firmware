@@ -95,6 +95,7 @@ void *GuiCreateAnimHintBox(lv_obj_t *parent, uint16_t w, uint16_t h, uint16_t an
     lv_obj_set_style_bg_color(downCont, DARK_BG_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align(downCont, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_set_style_border_width(downCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_add_flag(downCont, LV_OBJ_FLAG_CLICKABLE);
 
     lv_obj_t *img = GuiCreateImg(downCont, &ring);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, animHeight - 60);

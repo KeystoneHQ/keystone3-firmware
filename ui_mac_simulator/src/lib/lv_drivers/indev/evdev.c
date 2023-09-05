@@ -73,33 +73,33 @@ void evdev_init(void)
  *         false: the device file doesn't exist current system
  */
 bool evdev_set_file(char* dev_name)
-{ 
-     if(evdev_fd != -1) {
+{
+    if (evdev_fd != -1) {
         close(evdev_fd);
-     }
+    }
 #if USE_BSD_EVDEV
-     evdev_fd = open(dev_name, O_RDWR | O_NOCTTY);
+    evdev_fd = open(dev_name, O_RDWR | O_NOCTTY);
 #else
-     evdev_fd = open(dev_name, O_RDWR | O_NOCTTY | O_NDELAY);
+    evdev_fd = open(dev_name, O_RDWR | O_NOCTTY | O_NDELAY);
 #endif
 
-     if(evdev_fd == -1) {
+    if (evdev_fd == -1) {
         perror("unable to open evdev interface:");
         return false;
-     }
+    }
 
 #if USE_BSD_EVDEV
-     fcntl(evdev_fd, F_SETFL, O_NONBLOCK);
+    fcntl(evdev_fd, F_SETFL, O_NONBLOCK);
 #else
-     fcntl(evdev_fd, F_SETFL, O_ASYNC | O_NONBLOCK);
+    fcntl(evdev_fd, F_SETFL, O_ASYNC | O_NONBLOCK);
 #endif
 
-     evdev_root_x = 0;
-     evdev_root_y = 0;
-     evdev_key_val = 0;
-     evdev_button = LV_INDEV_STATE_REL;
+    evdev_root_x = 0;
+    evdev_root_y = 0;
+    evdev_key_val = 0;
+    evdev_button = LV_INDEV_STATE_REL;
 
-     return true;
+    return true;
 }
 /**
  * Get the current position and state of the evdev
@@ -109,92 +109,92 @@ void evdev_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
 {
     struct input_event in;
 
-    while(read(evdev_fd, &in, sizeof(struct input_event)) > 0) {
-        if(in.type == EV_REL) {
-            if(in.code == REL_X)
-				#if EVDEV_SWAP_AXES
-					evdev_root_y += in.value;
-				#else
-					evdev_root_x += in.value;
-				#endif
-            else if(in.code == REL_Y)
-				#if EVDEV_SWAP_AXES
-					evdev_root_x += in.value;
-				#else
-					evdev_root_y += in.value;
-				#endif
-        } else if(in.type == EV_ABS) {
-            if(in.code == ABS_X)
-				#if EVDEV_SWAP_AXES
-					evdev_root_y = in.value;
-				#else
-					evdev_root_x = in.value;
-				#endif
-            else if(in.code == ABS_Y)
-				#if EVDEV_SWAP_AXES
-					evdev_root_x = in.value;
-				#else
-					evdev_root_y = in.value;
-				#endif
-            else if(in.code == ABS_MT_POSITION_X)
-                                #if EVDEV_SWAP_AXES
-                                        evdev_root_y = in.value;
-                                #else
-                                        evdev_root_x = in.value;
-                                #endif
-            else if(in.code == ABS_MT_POSITION_Y)
-                                #if EVDEV_SWAP_AXES
-                                        evdev_root_x = in.value;
-                                #else
-                                        evdev_root_y = in.value;
-                                #endif
-            else if(in.code == ABS_MT_TRACKING_ID) {
-                                if(in.value == -1)
-                                    evdev_button = LV_INDEV_STATE_REL;
-                                else if(in.value == 0)
-                                    evdev_button = LV_INDEV_STATE_PR;
-            }
-        } else if(in.type == EV_KEY) {
-            if(in.code == BTN_MOUSE || in.code == BTN_TOUCH) {
-                if(in.value == 0)
+    while (read(evdev_fd, &in, sizeof(struct input_event)) > 0) {
+        if (in.type == EV_REL) {
+            if (in.code == REL_X)
+#if EVDEV_SWAP_AXES
+                evdev_root_y += in.value;
+#else
+                evdev_root_x += in.value;
+#endif
+            else if (in.code == REL_Y)
+#if EVDEV_SWAP_AXES
+                evdev_root_x += in.value;
+#else
+                evdev_root_y += in.value;
+#endif
+        } else if (in.type == EV_ABS) {
+            if (in.code == ABS_X)
+#if EVDEV_SWAP_AXES
+                evdev_root_y = in.value;
+#else
+                evdev_root_x = in.value;
+#endif
+            else if (in.code == ABS_Y)
+#if EVDEV_SWAP_AXES
+                evdev_root_x = in.value;
+#else
+                evdev_root_y = in.value;
+#endif
+            else if (in.code == ABS_MT_POSITION_X)
+#if EVDEV_SWAP_AXES
+                evdev_root_y = in.value;
+#else
+                evdev_root_x = in.value;
+#endif
+            else if (in.code == ABS_MT_POSITION_Y)
+#if EVDEV_SWAP_AXES
+                evdev_root_x = in.value;
+#else
+                evdev_root_y = in.value;
+#endif
+            else if (in.code == ABS_MT_TRACKING_ID) {
+                if (in.value == -1)
                     evdev_button = LV_INDEV_STATE_REL;
-                else if(in.value == 1)
+                else if (in.value == 0)
                     evdev_button = LV_INDEV_STATE_PR;
-            } else if(drv->type == LV_INDEV_TYPE_KEYPAD) {
+            }
+        } else if (in.type == EV_KEY) {
+            if (in.code == BTN_MOUSE || in.code == BTN_TOUCH) {
+                if (in.value == 0)
+                    evdev_button = LV_INDEV_STATE_REL;
+                else if (in.value == 1)
+                    evdev_button = LV_INDEV_STATE_PR;
+            } else if (drv->type == LV_INDEV_TYPE_KEYPAD) {
 #if USE_XKB
                 data->key = xkb_process_key(in.code, in.value != 0);
 #else
-                switch(in.code) {
-                    case KEY_BACKSPACE:
-                        data->key = LV_KEY_BACKSPACE;
-                        break;
-                    case KEY_ENTER:
-                        data->key = LV_KEY_ENTER;
-                        break;
-                    case KEY_PREVIOUS:
-                        data->key = LV_KEY_PREV;
-                        break;
-                    case KEY_NEXT:
-                        data->key = LV_KEY_NEXT;
-                        break;
-                    case KEY_UP:
-                        data->key = LV_KEY_UP;
-                        break;
-                    case KEY_LEFT:
-                        data->key = LV_KEY_LEFT;
-                        break;
-                    case KEY_RIGHT:
-                        data->key = LV_KEY_RIGHT;
-                        break;
-                    case KEY_DOWN:
-                        data->key = LV_KEY_DOWN;
-                        break;
-                    case KEY_TAB:
-                        data->key = LV_KEY_NEXT;
-                        break;
-                    default:
-                        data->key = 0;
-                        break;
+                switch (in.code) {
+                case KEY_BACKSPACE:
+                    data->key = LV_KEY_BACKSPACE;
+                    break;
+                case KEY_ENTER:
+                    data->key = LV_KEY_ENTER;
+                    break;
+                case KEY_PREVIOUS:
+                    data->key = LV_KEY_PREV;
+                    break;
+                case KEY_NEXT:
+                    data->key = LV_KEY_NEXT;
+                    break;
+                case KEY_UP:
+                    data->key = LV_KEY_UP;
+                    break;
+                case KEY_LEFT:
+                    data->key = LV_KEY_LEFT;
+                    break;
+                case KEY_RIGHT:
+                    data->key = LV_KEY_RIGHT;
+                    break;
+                case KEY_DOWN:
+                    data->key = LV_KEY_DOWN;
+                    break;
+                case KEY_TAB:
+                    data->key = LV_KEY_NEXT;
+                    break;
+                default:
+                    data->key = 0;
+                    break;
                 }
 #endif /* USE_XKB */
                 if (data->key != 0) {
@@ -208,13 +208,13 @@ void evdev_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
         }
     }
 
-    if(drv->type == LV_INDEV_TYPE_KEYPAD) {
+    if (drv->type == LV_INDEV_TYPE_KEYPAD) {
         /* No data retrieved */
         data->key = evdev_key_val;
         data->state = evdev_button;
         return;
     }
-    if(drv->type != LV_INDEV_TYPE_POINTER)
+    if (drv->type != LV_INDEV_TYPE_POINTER)
         return ;
     /*Store the collected data*/
 
@@ -228,14 +228,14 @@ void evdev_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
 
     data->state = evdev_button;
 
-    if(data->point.x < 0)
-      data->point.x = 0;
-    if(data->point.y < 0)
-      data->point.y = 0;
-    if(data->point.x >= drv->disp->driver->hor_res)
-      data->point.x = drv->disp->driver->hor_res - 1;
-    if(data->point.y >= drv->disp->driver->ver_res)
-      data->point.y = drv->disp->driver->ver_res - 1;
+    if (data->point.x < 0)
+        data->point.x = 0;
+    if (data->point.y < 0)
+        data->point.y = 0;
+    if (data->point.x >= drv->disp->driver->hor_res)
+        data->point.x = drv->disp->driver->hor_res - 1;
+    if (data->point.y >= drv->disp->driver->ver_res)
+        data->point.y = drv->disp->driver->ver_res - 1;
 
     return ;
 }
@@ -245,7 +245,7 @@ void evdev_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
  **********************/
 int map(int x, int in_min, int in_max, int out_min, int out_max)
 {
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 #endif

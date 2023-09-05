@@ -539,17 +539,13 @@ uint8_t GuiGetCosmosTxChain(void)
     } else {
         GetCosmosDetailCommon(chain_id, parseResult->data, "Chain ID");
     }
-    if (chain_id != NULL)
-    {
-        for (uint8_t i = 0; i < COSMOS_CHAINS_LEN; i++)
-        {
-            if (strcmp(chain_id, g_cosmosChains[i].chainId) == 0)
-            {
+    if (chain_id != NULL) {
+        for (uint8_t i = 0; i < COSMOS_CHAINS_LEN; i++) {
+            if (strcmp(chain_id, g_cosmosChains[i].chainId) == 0) {
                 return g_cosmosChains[i].index;
             }
         }
-        if (strcmp(chain_id, "evmos_9000-4") == 0)
-        {
+        if (strcmp(chain_id, "evmos_9000-4") == 0) {
             return CHAIN_EVMOS;
         }
     }

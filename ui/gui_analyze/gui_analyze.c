@@ -787,8 +787,7 @@ void GuiWidgetList(lv_obj_t *parent, cJSON *json)
         cJSON *child = cJSON_GetObjectItem(json, "item");
         keyFunc = GuiTemplateListItemKeyFuncGet(itemKeyFunc->valuestring);
         char *key = SRAM_MALLOC(50);
-        for (uint8_t i = 0; i < len; i++)
-        {
+        for (uint8_t i = 0; i < len; i++) {
             if (itemKeyFunc != NULL) {
                 keyFunc(key, g_totalData);
             }

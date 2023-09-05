@@ -68,7 +68,7 @@ bool xpt2046_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 
     uint8_t irq = LV_DRV_INDEV_IRQ_READ;
 
-    if(irq == 0) {
+    if (irq == 0) {
         LV_DRV_INDEV_SPI_CS(0);
 
         LV_DRV_INDEV_SPI_XCHG_BYTE(CMD_X_READ);         /*Start x read*/
@@ -92,14 +92,14 @@ bool xpt2046_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 
         last_x = x;
         last_y = y;
-		data->state = LV_INDEV_STATE_PR;
+        data->state = LV_INDEV_STATE_PR;
 
         LV_DRV_INDEV_SPI_CS(1);
     } else {
         x = last_x;
         y = last_y;
         avg_last = 0;
-		data->state = LV_INDEV_STATE_REL;
+        data->state = LV_INDEV_STATE_REL;
     }
 
     data->point.x = x;
@@ -120,10 +120,10 @@ static void xpt2046_corr(int16_t * x, int16_t * y)
     *y = swap_tmp;
 #endif
 
-    if((*x) > XPT2046_X_MIN)(*x) -= XPT2046_X_MIN;
+    if ((*x) > XPT2046_X_MIN)(*x) -= XPT2046_X_MIN;
     else(*x) = 0;
 
-    if((*y) > XPT2046_Y_MIN)(*y) -= XPT2046_Y_MIN;
+    if ((*y) > XPT2046_Y_MIN)(*y) -= XPT2046_Y_MIN;
     else(*y) = 0;
 
     (*x) = (uint32_t)((uint32_t)(*x) * XPT2046_HOR_RES) /
@@ -148,7 +148,7 @@ static void xpt2046_avg(int16_t * x, int16_t * y)
 {
     /*Shift out the oldest data*/
     uint8_t i;
-    for(i = XPT2046_AVG - 1; i > 0 ; i--) {
+    for (i = XPT2046_AVG - 1; i > 0 ; i--) {
         avg_buf_x[i] = avg_buf_x[i - 1];
         avg_buf_y[i] = avg_buf_y[i - 1];
     }
@@ -156,12 +156,12 @@ static void xpt2046_avg(int16_t * x, int16_t * y)
     /*Insert the new point*/
     avg_buf_x[0] = *x;
     avg_buf_y[0] = *y;
-    if(avg_last < XPT2046_AVG) avg_last++;
+    if (avg_last < XPT2046_AVG) avg_last++;
 
     /*Sum the x and y coordinates*/
     int32_t x_sum = 0;
     int32_t y_sum = 0;
-    for(i = 0; i < avg_last ; i++) {
+    for (i = 0; i < avg_last ; i++) {
         x_sum += avg_buf_x[i];
         y_sum += avg_buf_y[i];
     }

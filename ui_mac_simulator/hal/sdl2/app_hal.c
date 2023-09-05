@@ -17,7 +17,7 @@ static int tick_thread(void * data)
 {
     (void)data;
 
-    while(1) {
+    while (1) {
         SDL_Delay(5);   /*Sleep for 5 millisecond*/
         lv_tick_inc(5); /*Tell LittelvGL that 5 milliseconds were elapsed*/
     }
@@ -30,9 +30,9 @@ void hal_setup(void)
 {
     // Workaround for sdl2 `-m32` crash
     // https://bugs.launchpad.net/ubuntu/+source/libsdl2/+bug/1775067/comments/7
-    #ifndef WIN32
-        setenv("DBUS_FATAL_WARNINGS", "0", 1);
-    #endif
+#ifndef WIN32
+    setenv("DBUS_FATAL_WARNINGS", "0", 1);
+#endif
 
     /* Add a display
      * Use the 'monitor' driver which creates window on PC's monitor to simulate a display*/
@@ -69,7 +69,7 @@ void hal_setup(void)
 
 void hal_loop(void)
 {
-    while(1) {
+    while (1) {
         SDL_Delay(5);
         lv_task_handler();
     }

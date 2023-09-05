@@ -12,8 +12,8 @@ static UREncodeResult *g_urEncode = NULL;
 
 #ifdef COMPILE_SIMULATOR
 struct UREncodeResult *get_connect_blue_wallet_ur(uint8_t *master_fingerprint,
-                                                  uint32_t length,
-                                                  PtrT_CSliceFFI_ExtendedPublicKey public_keys)
+        uint32_t length,
+        PtrT_CSliceFFI_ExtendedPublicKey public_keys)
 {
     struct UREncodeResult *result = malloc(sizeof(struct UREncodeResult));
     result->is_multi_part = 0;
@@ -134,8 +134,7 @@ UREncodeResult *GuiGetKeplrData(void)
     publicKeys->data = keys;
     publicKeys->size = 8;
 
-    for (uint8_t i = 0; i < 8; i++)
-    {
+    for (uint8_t i = 0; i < 8; i++) {
         const CosmosChain_t *chain = GuiGetCosmosChain(chains[i]);
         keys[i].xpub = GetCurrentAccountPublicKey(chain->xpubType);
         keys[i].name = "Account-1";
@@ -145,8 +144,7 @@ UREncodeResult *GuiGetKeplrData(void)
 
     g_urEncode = get_connect_keplr_wallet_ur(mfp, sizeof(mfp), publicKeys);
     CHECK_CHAIN_PRINT(g_urEncode);
-    for (uint8_t i = 0; i < 8; i++)
-    {
+    for (uint8_t i = 0; i < 8; i++) {
         SRAM_FREE(keys[i].path);
     }
     SRAM_FREE(publicKeys);

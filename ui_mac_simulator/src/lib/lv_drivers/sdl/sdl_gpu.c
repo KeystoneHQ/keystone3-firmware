@@ -49,7 +49,7 @@ typedef struct {
     lv_draw_sdl_drv_param_t drv_param;
     SDL_Window * window;
     SDL_Texture * texture;
-}monitor_t;
+} monitor_t;
 
 /**********************
  *  STATIC PROTOTYPES
@@ -118,14 +118,14 @@ void sdl_display_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
 //    printf("x1:%d,y1:%d,x2:%d,y2:%d\n", area->x1, area->y1, area->x2, area->y2);
 
     /*Return if the area is out the screen*/
-    if(area->x2 < 0 || area->y2 < 0 || area->x1 > hres - 1 || area->y1 > vres - 1) {
+    if (area->x2 < 0 || area->y2 < 0 || area->x1 > hres - 1 || area->y1 > vres - 1) {
         lv_disp_flush_ready(disp_drv);
         return;
     }
 
     /* TYPICALLY YOU DO NOT NEED THIS
      * If it was the last part to refresh update the texture of the window.*/
-    if(lv_disp_flush_is_last(disp_drv)) {
+    if (lv_disp_flush_is_last(disp_drv)) {
         window_update(disp_drv, color_p);
     }
 
@@ -169,58 +169,58 @@ static void sdl_event_handler(lv_timer_t * t)
 
     /*Refresh handling*/
     SDL_Event event;
-    while(SDL_PollEvent(&event)) {
+    while (SDL_PollEvent(&event)) {
         mouse_handler(&event);
         mousewheel_handler(&event);
         keyboard_handler(&event);
 
         switch (event.type) {
-            case SDL_WINDOWEVENT: {
-                SDL_Window * window = SDL_GetWindowFromID(event.window.windowID);
-                switch (event.window.event) {
+        case SDL_WINDOWEVENT: {
+            SDL_Window * window = SDL_GetWindowFromID(event.window.windowID);
+            switch (event.window.event) {
 #if SDL_VERSION_ATLEAST(2, 0, 5)
-                    case SDL_WINDOWEVENT_TAKE_FOCUS:
+            case SDL_WINDOWEVENT_TAKE_FOCUS:
 #endif
-                    case SDL_WINDOWEVENT_EXPOSED:
-                        for (lv_disp_t *cur = lv_disp_get_next(NULL); cur; cur = lv_disp_get_next(cur)) {
-                            window_update(cur->driver, cur->driver->draw_buf->buf_act);
-                        }
-                        break;
-                    case SDL_WINDOWEVENT_SIZE_CHANGED: {
-                        for (lv_disp_t *cur = lv_disp_get_next(NULL); cur; cur = lv_disp_get_next(cur)) {
-                            lv_draw_sdl_drv_param_t *param = cur->driver->user_data;
-                            SDL_Renderer *renderer = SDL_GetRenderer(window);
-                            if (param->renderer != renderer) continue;
-                            int w, h;
-                            SDL_GetWindowSize(window, &w, &h);
-                            sdl_display_resize(cur, w, h);
-                        }
-                        break;
-                    }
-                    case SDL_WINDOWEVENT_CLOSE: {
-                        for (lv_disp_t *cur = lv_disp_get_next(NULL); cur; ) {
-                            lv_disp_t * tmp = cur;
-                            cur = lv_disp_get_next(tmp);
-                            monitor_t * m = tmp->driver->user_data;
-                            SDL_Renderer *renderer = SDL_GetRenderer(window);
-                            if (m->drv_param.renderer != renderer) continue;
-                            SDL_DestroyTexture(tmp->driver->draw_buf->buf1);
-                            SDL_DestroyRenderer(m->drv_param.renderer);
-                            lv_disp_remove(tmp);
-                        }
-
-                        break;
-                    }
-                    default:
-                        break;
+            case SDL_WINDOWEVENT_EXPOSED:
+                for (lv_disp_t *cur = lv_disp_get_next(NULL); cur; cur = lv_disp_get_next(cur)) {
+                    window_update(cur->driver, cur->driver->draw_buf->buf_act);
+                }
+                break;
+            case SDL_WINDOWEVENT_SIZE_CHANGED: {
+                for (lv_disp_t *cur = lv_disp_get_next(NULL); cur; cur = lv_disp_get_next(cur)) {
+                    lv_draw_sdl_drv_param_t *param = cur->driver->user_data;
+                    SDL_Renderer *renderer = SDL_GetRenderer(window);
+                    if (param->renderer != renderer) continue;
+                    int w, h;
+                    SDL_GetWindowSize(window, &w, &h);
+                    sdl_display_resize(cur, w, h);
                 }
                 break;
             }
+            case SDL_WINDOWEVENT_CLOSE: {
+                for (lv_disp_t *cur = lv_disp_get_next(NULL); cur;) {
+                    lv_disp_t * tmp = cur;
+                    cur = lv_disp_get_next(tmp);
+                    monitor_t * m = tmp->driver->user_data;
+                    SDL_Renderer *renderer = SDL_GetRenderer(window);
+                    if (m->drv_param.renderer != renderer) continue;
+                    SDL_DestroyTexture(tmp->driver->draw_buf->buf1);
+                    SDL_DestroyRenderer(m->drv_param.renderer);
+                    lv_disp_remove(tmp);
+                }
+
+                break;
+            }
+            default:
+                break;
+            }
+            break;
+        }
         }
     }
 
     /*Run until quit event not arrives*/
-    if(sdl_quit_qry) {
+    if (sdl_quit_qry) {
         monitor_sdl_clean_up();
         exit(0);
     }
@@ -228,7 +228,7 @@ static void sdl_event_handler(lv_timer_t * t)
 
 static void monitor_sdl_clean_up(void)
 {
-    for (lv_disp_t *cur = lv_disp_get_next(NULL); cur; ) {
+    for (lv_disp_t *cur = lv_disp_get_next(NULL); cur;) {
         lv_disp_t * tmp = cur;
         monitor_t * m = tmp->driver->user_data;
         SDL_DestroyTexture(tmp->driver->draw_buf->buf1);
@@ -244,8 +244,8 @@ static void window_create(monitor_t * m)
 {
 //    SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1");
     m->window = SDL_CreateWindow("TFT Simulator",
-                              SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                              SDL_HOR_RES * SDL_ZOOM, SDL_VER_RES * SDL_ZOOM, SDL_WINDOW_RESIZABLE);
+                                 SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                                 SDL_HOR_RES * SDL_ZOOM, SDL_VER_RES * SDL_ZOOM, SDL_WINDOW_RESIZABLE);
 
     m->drv_param.renderer = SDL_CreateRenderer(m->window, -1, SDL_RENDERER_ACCELERATED);
 
@@ -263,7 +263,10 @@ static void window_update(lv_disp_drv_t *disp_drv, void * buf)
 #if LV_COLOR_SCREEN_TRANSP
     SDL_SetRenderDrawColor(renderer, 0xff, 0, 0, 0xff);
     SDL_Rect r;
-    r.x = 0; r.y = 0; r.w = SDL_HOR_RES; r.h = SDL_VER_RES;
+    r.x = 0;
+    r.y = 0;
+    r.w = SDL_HOR_RES;
+    r.h = SDL_VER_RES;
     SDL_RenderDrawRect(renderer, &r);
 #endif
 

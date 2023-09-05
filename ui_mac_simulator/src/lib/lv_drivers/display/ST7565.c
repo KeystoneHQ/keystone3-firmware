@@ -136,10 +136,10 @@ void st7565_init(void)
 void st7565_flush(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const lv_color_t * color_p)
 {
     /*Return if the area is out the screen*/
-    if(x2 < 0) return;
-    if(y2 < 0) return;
-    if(x1 > ST7565_HOR_RES - 1) return;
-    if(y1 > ST7565_VER_RES - 1) return;
+    if (x2 < 0) return;
+    if (y2 < 0) return;
+    if (x1 > ST7565_HOR_RES - 1) return;
+    if (y1 > ST7565_VER_RES - 1) return;
 
     /*Truncate the area to the screen*/
     int32_t act_x1 = x1 < 0 ? 0 : x1;
@@ -152,9 +152,9 @@ void st7565_flush(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const lv_color
     /*Set the first row in */
 
     /*Refresh frame buffer*/
-    for(y = act_y1; y <= act_y2; y++) {
-        for(x = act_x1; x <= act_x2; x++) {
-            if(lv_color_to1(*color_p) != 0) {
+    for (y = act_y1; y <= act_y2; y++) {
+        for (x = act_x1; x <= act_x2; x++) {
+            if (lv_color_to1(*color_p) != 0) {
                 lcd_fb[x + (y / 8)*ST7565_HOR_RES] &= ~(1 << (7 - (y % 8)));
             } else {
                 lcd_fb[x + (y / 8)*ST7565_HOR_RES] |= (1 << (7 - (y % 8)));
@@ -174,10 +174,10 @@ void st7565_flush(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const lv_color
 void st7565_fill(int32_t x1, int32_t y1, int32_t x2, int32_t y2, lv_color_t color)
 {
     /*Return if the area is out the screen*/
-    if(x2 < 0) return;
-    if(y2 < 0) return;
-    if(x1 > ST7565_HOR_RES - 1) return;
-    if(y1 > ST7565_VER_RES - 1) return;
+    if (x2 < 0) return;
+    if (y2 < 0) return;
+    if (x1 > ST7565_HOR_RES - 1) return;
+    if (y1 > ST7565_VER_RES - 1) return;
 
     /*Truncate the area to the screen*/
     int32_t act_x1 = x1 < 0 ? 0 : x1;
@@ -189,9 +189,9 @@ void st7565_fill(int32_t x1, int32_t y1, int32_t x2, int32_t y2, lv_color_t colo
     uint8_t white = lv_color_to1(color);
 
     /*Refresh frame buffer*/
-    for(y = act_y1; y <= act_y2; y++) {
-        for(x = act_x1; x <= act_x2; x++) {
-            if(white != 0) {
+    for (y = act_y1; y <= act_y2; y++) {
+        for (x = act_x1; x <= act_x2; x++) {
+            if (white != 0) {
                 lcd_fb[x + (y / 8)*ST7565_HOR_RES] |= (1 << (7 - (y % 8)));
             } else {
                 lcd_fb[x + (y / 8)*ST7565_HOR_RES] &= ~(1 << (7 - (y % 8)));
@@ -205,10 +205,10 @@ void st7565_fill(int32_t x1, int32_t y1, int32_t x2, int32_t y2, lv_color_t colo
 void st7565_map(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const lv_color_t * color_p)
 {
     /*Return if the area is out the screen*/
-    if(x2 < 0) return;
-    if(y2 < 0) return;
-    if(x1 > ST7565_HOR_RES - 1) return;
-    if(y1 > ST7565_VER_RES - 1) return;
+    if (x2 < 0) return;
+    if (y2 < 0) return;
+    if (x1 > ST7565_HOR_RES - 1) return;
+    if (y1 > ST7565_VER_RES - 1) return;
 
     /*Truncate the area to the screen*/
     int32_t act_x1 = x1 < 0 ? 0 : x1;
@@ -221,9 +221,9 @@ void st7565_map(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const lv_color_t
     /*Set the first row in */
 
     /*Refresh frame buffer*/
-    for(y = act_y1; y <= act_y2; y++) {
-        for(x = act_x1; x <= act_x2; x++) {
-            if(lv_color_to1(*color_p) != 0) {
+    for (y = act_y1; y <= act_y2; y++) {
+        for (x = act_x1; x <= act_x2; x++) {
+            if (lv_color_to1(*color_p) != 0) {
                 lcd_fb[x + (y / 8)*ST7565_HOR_RES] &= ~(1 << (7 - (y % 8)));
             } else {
                 lcd_fb[x + (y / 8)*ST7565_HOR_RES] |= (1 << (7 - (y % 8)));
@@ -252,13 +252,13 @@ static void st7565_sync(int32_t x1, int32_t y1, int32_t x2, int32_t y2)
     LV_DRV_DISP_SPI_CS(0);
 
     uint8_t c, p;
-    for(p = y1 / 8; p <= y2 / 8; p++) {
+    for (p = y1 / 8; p <= y2 / 8; p++) {
         st7565_command(CMD_SET_PAGE | pagemap[p]);
         st7565_command(CMD_SET_COLUMN_LOWER | (x1 & 0xf));
         st7565_command(CMD_SET_COLUMN_UPPER | ((x1 >> 4) & 0xf));
         st7565_command(CMD_RMW);
 
-        for(c = x1; c <= x2; c++) {
+        for (c = x1; c <= x2; c++) {
             st7565_data(lcd_fb[(ST7565_HOR_RES * p) + c]);
         }
     }

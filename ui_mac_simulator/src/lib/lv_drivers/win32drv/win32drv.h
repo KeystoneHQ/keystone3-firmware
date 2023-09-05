@@ -23,7 +23,7 @@
 #include <Windows.h>
 
 #if _MSC_VER >= 1200
- // Disable compilation warnings.
+// Disable compilation warnings.
 #pragma warning(push)
 // nonstandard extension used : bit field types other than int
 #pragma warning(disable:4214)

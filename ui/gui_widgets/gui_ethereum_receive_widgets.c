@@ -226,7 +226,8 @@ static void GuiEthereumReceiveGotoTile(EthereumReceiveTile tile)
     lv_obj_set_tile_id(g_ethereumReceiveWidgets.tileView, g_EthereumReceiveTileNow, 0, LV_ANIM_OFF);
 }
 
-lv_obj_t* CreateEthereumReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h) {
+lv_obj_t* CreateEthereumReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)
+{
     lv_obj_t* qrcode = lv_qrcode_create(parent, w, BLACK_COLOR, WHITE_COLOR);
     lv_obj_add_flag(qrcode, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(qrcode, GuiFullscreenModeHandler, LV_EVENT_CLICKED, NULL);

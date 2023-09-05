@@ -275,7 +275,18 @@ if(COMPILE_MAIN)
 		"ui/wallet/*"
     )
 
+    file(GLOB_RECURSE hardware_interface
+        "hardware_interface/*.c"
+    )
+
+    file(GLOB_RECURSE business
+        "business/*.c"
+        "business/managers/*.c"
+    )
+
     set(objsrc ${mh1903_driver} 
+        ${business}
+        ${hardware_interface}
         ${freertos} 
         ${driver} 
         ${usb}

@@ -90,8 +90,8 @@ if(COMPILE_MAIN)
         src/config
         tasks
         test
-        driver
-        driver/usb
+        src/driver
+        src/driver/usb
         external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/msc/inc
         external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/cdc/inc
         external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_OTG_Driver/inc
@@ -164,7 +164,7 @@ if(COMPILE_MAIN)
     set_property(SOURCE external/mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s PROPERTY LANGUAGE C)
     set_property(SOURCE src/cm_backtrace/fault_handler/gcc/cmb_fault.s PROPERTY LANGUAGE C)
     aux_source_directory(external/mh1903_lib/MHSCPU_Driver/src/ mh1903_driver)
-    aux_source_directory(driver/ driver)
+    aux_source_directory(src/driver/ driver)
     aux_source_directory(test/ test)
     aux_source_directory(src/cm_backtrace/ cm_backtrace)
     aux_source_directory(tasks/ tasks)
@@ -176,7 +176,7 @@ if(COMPILE_MAIN)
     aux_source_directory(src/webusb_protocol/services webusb_protocol_services)
     
     file(GLOB_RECURSE usb
-        "driver/usb/*.c"
+        "src/driver/usb/*.c"
         "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Core/src/*.c"
         "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/msc/src/*.c"
         "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/cdc/src/*.c"

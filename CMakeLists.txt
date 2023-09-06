@@ -117,7 +117,7 @@ if(COMPILE_MAIN)
         src/firmware 
         src/msg 
         src/ram 
-        hardware_interface
+        src/hardware_interface
         ui/lv_demos
         ui/pillar_demos
         ui/gui_views
@@ -133,8 +133,8 @@ if(COMPILE_MAIN)
         ui/wallet
         utils
         utils/log
-        protocol
-        protocol/services
+        src/webusb_protocol
+        src/webusb_protocol/services
         external
         external/ctaes
         external/fatfs
@@ -172,8 +172,8 @@ if(COMPILE_MAIN)
     aux_source_directory(crypto/bips bips)
     aux_source_directory(crypto/checksum checksum)
     aux_source_directory(crypto/utils crypto_utils)
-    aux_source_directory(protocol/ protocol)
-    aux_source_directory(protocol/services protocol_services)
+    aux_source_directory(src/webusb_protocol/ webusb_protocol)
+    aux_source_directory(src/webusb_protocol/services webusb_protocol_services)
     
     file(GLOB_RECURSE usb
         "driver/usb/*.c"
@@ -267,10 +267,6 @@ if(COMPILE_MAIN)
 		"ui/wallet/*"
     )
 
-    file(GLOB_RECURSE hardware_interface
-        "hardware_interface/*.c"
-    )
-
     file(GLOB_RECURSE src
         "src/*.c"
         "src/utils/*.c"
@@ -280,12 +276,12 @@ if(COMPILE_MAIN)
         "src/firmware/*.c"
         "src/msg/*.c"
         "src/ram/*.c"
+        "src/hardware_interface/*.c"
         "src/config/*"
     )
 
     set(objsrc ${mh1903_driver} 
         ${src}
-        ${hardware_interface}
         ${freertos} 
         ${driver} 
         ${usb}
@@ -300,8 +296,8 @@ if(COMPILE_MAIN)
         ${crypto_utils}
         ${lvgl}
         ${gui}
-        ${protocol}
-        ${protocol_services}
+        ${webusb_protocol}
+        ${webusb_protocol_services}
         external/mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s
         src/cm_backtrace/fault_handler/gcc/cmb_fault.s)
 

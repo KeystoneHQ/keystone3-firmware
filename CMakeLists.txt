@@ -109,14 +109,14 @@ if(COMPILE_MAIN)
         external/mh1903_lib/CMSIS/Include 
         external/mh1903_lib/MHSCPU_Driver/inc/cryptlib 
         external/mh1903_lib/MHSCPU_Driver/inc/emvlib
-        business
-        business/utils
-        business/utils/log
-        business/managers 
-        business/error_codes 
-        business/firmware 
-        business/msg 
-        business/ram 
+        src
+        src/utils
+        src/utils/log
+        src/managers 
+        src/error_codes 
+        src/firmware 
+        src/msg 
+        src/ram 
         hardware_interface
         ui/lv_demos
         ui/pillar_demos
@@ -272,19 +272,19 @@ if(COMPILE_MAIN)
         "hardware_interface/*.c"
     )
 
-    file(GLOB_RECURSE business
-        "business/*.c"
-        "business/utils/*.c"
-        "business/utils/log/*.c"
-        "business/managers/*.c"
-        "business/error_codes/*.c"
-        "business/firmware/*.c"
-        "business/msg/*.c"
-        "business/ram/*.c"
+    file(GLOB_RECURSE src
+        "src/*.c"
+        "src/utils/*.c"
+        "src/utils/log/*.c"
+        "src/managers/*.c"
+        "src/error_codes/*.c"
+        "src/firmware/*.c"
+        "src/msg/*.c"
+        "src/ram/*.c"
     )
 
     set(objsrc ${mh1903_driver} 
-        ${business}
+        ${src}
         ${hardware_interface}
         ${freertos} 
         ${driver} 

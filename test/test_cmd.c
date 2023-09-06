@@ -23,7 +23,7 @@
 #include "qrdecode_task.h"
 #include "hmac.h"
 #include "user_fatfs.h"
-#include "user_param.h"
+// #include "user_param.h"
 #include "crc.h"
 #include "user_msg.h"
 #include "bip39.h"
@@ -96,8 +96,8 @@ static void FatfsFileMd5Func(int argc, char *argv[]);
 static void FatfsFileWriteFunc(int argc, char *argv[]);
 static void FatfsFileDeleteFunc(int argc, char *argv[]);
 static void FatfsFileCopyFunc(int argc, char *argv[]);
-static void ParamReadFunc(int argc, char *argv[]);
-static void ParamWriteFunc(int argc, char *argv[]);
+// static void ParamReadFunc(int argc, char *argv[]);
+// static void ParamWriteFunc(int argc, char *argv[]);
 static void ReadAddrFunc(int argc, char *argv[]);
 static void GetCurrentTimeFunc(int argc, char *argv[]);
 static void SetCurrentTimeFunc(int argc, char *argv[]);
@@ -221,8 +221,8 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"md5:", FatfsFileMd5Func},
     {"copy:", FatfsFileCopyFunc},
     {"copy ota", FatfsCopyFunc},
-    {"param read:", ParamReadFunc},
-    {"param write:", ParamWriteFunc},
+    // {"param read:", ParamReadFunc},
+    // {"param write:", ParamWriteFunc},
     {"read addr:", ReadAddrFunc},
     {"get time", GetCurrentTimeFunc},
     {"set time:", SetCurrentTimeFunc},
@@ -788,21 +788,21 @@ static void FatfsFileCopyFunc(int argc, char *argv[])
     FatfsFileCopy(argv[0], argv[1]);
 }
 
-static void ParamReadFunc(int argc, char *argv[])
-{
-    uint32_t id;
-    VALUE_CHECK(argc, 1);
-    sscanf(argv[0], "%d", &id);
-    ParamPrintf(id);
-}
+// static void ParamReadFunc(int argc, char *argv[])
+// {
+//     uint32_t id;
+//     VALUE_CHECK(argc, 1);
+//     sscanf(argv[0], "%d", &id);
+//     ParamPrintf(id);
+// }
 
-static void ParamWriteFunc(int argc, char *argv[])
-{
-    uint32_t id;
-    VALUE_CHECK(argc, 2);
-    sscanf(argv[0], "%d", &id);
-    ParamWriteParamBuf(id, argv[1]);
-}
+// static void ParamWriteFunc(int argc, char *argv[])
+// {
+//     uint32_t id;
+//     VALUE_CHECK(argc, 2);
+//     sscanf(argv[0], "%d", &id);
+//     ParamWriteParamBuf(id, argv[1]);
+// }
 
 static void ReadAddrFunc(int argc, char *argv[])
 {

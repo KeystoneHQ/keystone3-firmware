@@ -111,8 +111,6 @@ if(COMPILE_MAIN)
         components/ram
         components/log
         components/quicklz
-        components/firmware
-        components/msg
         components/param
         components/checksum
         components/utils
@@ -128,6 +126,8 @@ if(COMPILE_MAIN)
         business/utils/log
         business/managers 
         business/error_codes 
+        business/firmware 
+        business/msg 
         hardware_interface
         lvgl
         lvgl/src
@@ -156,9 +156,11 @@ if(COMPILE_MAIN)
         utils/log
         protocol
         protocol/services
+        external
         external/ctaes
         external/fatfs
         external/ccan
+        external/cjson
         external/cryptoauthlib/lib
         build/rust-builds
         ${CMAKE_CURRENT_BINARY_DIR}
@@ -248,6 +250,7 @@ if(COMPILE_MAIN)
 
     file(GLOB_RECURSE external
         "external/fatfs/*.c"
+        "external/cjson/*.c"
     )
 
     file(GLOB_RECURSE cryptoauthlib
@@ -291,6 +294,8 @@ if(COMPILE_MAIN)
         "business/utils/log/*.c"
         "business/managers/*.c"
         "business/error_codes/*.c"
+        "business/firmware/*.c"
+        "business/msg/*.c"
     )
 
     set(objsrc ${mh1903_driver} 

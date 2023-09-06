@@ -118,21 +118,19 @@ if(COMPILE_MAIN)
         src/msg 
         src/ram 
         src/hardware_interface
-        ui/lv_demos
-        ui/pillar_demos
-        ui/gui_views
-        ui/gui_assets
-        ui/gui_assets/abi
-        ui/gui_frame
-        ui/gui_widgets
-        ui/lv_i18n
-        ui/gui_model
-        ui/gui_analyze
-        ui/gui_chain
-        ui/gui_components
-        ui/wallet
-        utils
-        utils/log
+        src/ui/lv_demos
+        src/ui/pillar_demos
+        src/ui/gui_views
+        src/ui/gui_assets
+        src/ui/gui_assets/abi
+        src/ui/gui_frame
+        src/ui/gui_widgets
+        src/ui/lv_i18n
+        src/ui/gui_model
+        src/ui/gui_analyze
+        src/ui/gui_chain
+        src/ui/gui_components
+        src/ui/wallet
         src/webusb_protocol
         src/webusb_protocol/services
         external
@@ -252,19 +250,19 @@ if(COMPILE_MAIN)
     )
 
     file(GLOB_RECURSE gui
-        "ui/gui_assets/*.c"
-        "ui/gui_assets/font/*.c"
-        "ui/gui_assets/abi/*.c"
-        "ui/gui_frame/*.c"
-        "ui/gui_views/*.c"
-        "ui/gui_widgets/*.c"
-        "ui/pillar_demos/qrcode_sign/*.c"
-        "ui/lv_i18n/*.c"
-        "ui/gui_model/*.c"
-		"ui/gui_analyze/gui_analyze.c"
-		"ui/gui_chain/*"
-		"ui/gui_components/*"
-		"ui/wallet/*"
+        "src/ui/gui_assets/*.c"
+        "src/ui/gui_assets/font/*.c"
+        "src/ui/gui_assets/abi/*.c"
+        "src/ui/gui_frame/*.c"
+        "src/ui/gui_views/*.c"
+        "src/ui/gui_widgets/*.c"
+        "src/ui/pillar_demos/qrcode_sign/*.c"
+        "src/ui/lv_i18n/*.c"
+        "src/ui/gui_model/*.c"
+		"src/ui/gui_analyze/gui_analyze.c"
+		"src/ui/gui_chain/*"
+		"src/ui/gui_components/*"
+		"src/ui/wallet/*"
     )
 
     file(GLOB_RECURSE src

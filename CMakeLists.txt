@@ -108,14 +108,6 @@ if(COMPILE_MAIN)
         crypto/utils
         crypto/slip39
         crypto/slip39/trezor-crypto
-        components/ram
-        components/log
-        components/quicklz
-        components/param
-        components/checksum
-        components/utils
-        components/sqlite3
-        components/ringbuff
         mh1903_lib/MHSCPU_Driver/inc 
         mh1903_lib/Device/MegaHunt/mhscpu/Include 
         mh1903_lib/CMSIS/Include 
@@ -128,6 +120,7 @@ if(COMPILE_MAIN)
         business/error_codes 
         business/firmware 
         business/msg 
+        business/ram 
         hardware_interface
         lvgl
         lvgl/src
@@ -161,6 +154,8 @@ if(COMPILE_MAIN)
         external/fatfs
         external/ccan
         external/cjson
+        external/quicklz
+        external/sqlite3
         external/cryptoauthlib/lib
         build/rust-builds
         ${CMAKE_CURRENT_BINARY_DIR}
@@ -186,12 +181,6 @@ if(COMPILE_MAIN)
     )
 
     file(GLOB_RECURSE components
-        "components/log/*.c"
-        "components/quicklz/*.c"
-        "components/msg/*.c"
-        "components/firmware/*.c"
-        "components/param/*.c"
-        "components/ram/*.c"
         "components/utils/*.c"
         "components/ringbuff/*.c"
         ${sqlite3}
@@ -248,11 +237,6 @@ if(COMPILE_MAIN)
         "external/ccan/*.c"
     )
 
-    file(GLOB_RECURSE external
-        "external/fatfs/*.c"
-        "external/cjson/*.c"
-    )
-
     file(GLOB_RECURSE cryptoauthlib
         "external/cryptoauthlib/lib/atca_basic.c"
         "external/cryptoauthlib/lib/atca_cfgs.c"
@@ -266,6 +250,16 @@ if(COMPILE_MAIN)
         "external/cryptoauthlib/lib/crypto/*.c"
         "external/cryptoauthlib/lib/crypto/hashes/*.c"
         "external/cryptoauthlib/lib/hal/*.c"
+    )
+
+    file(GLOB_RECURSE external
+        "external/fatfs/*.c"
+        "external/cjson/*.c"
+        "external/quicklz/*.c"
+        "external/sqlite3/*.c"
+        ${ccan}
+        ${cryptoauthlib}
+        ${ctaes}
     )
 
     file(GLOB_RECURSE gui
@@ -296,6 +290,7 @@ if(COMPILE_MAIN)
         "business/error_codes/*.c"
         "business/firmware/*.c"
         "business/msg/*.c"
+        "business/ram/*.c"
     )
 
     set(objsrc ${mh1903_driver} 
@@ -304,8 +299,6 @@ if(COMPILE_MAIN)
         ${freertos} 
         ${driver} 
         ${usb}
-        ${components} 
-        ${cryptoauthlib} 
         ${external}
         ${cm_backtrace} 
         ${tasks} 
@@ -315,9 +308,7 @@ if(COMPILE_MAIN)
         ${bips}
         ${checksum}
         ${crypto_utils}
-        ${lvgl} 
-        ${ctaes} 
-        ${ccan}
+        ${lvgl}
         ${gui}
         ${core}
         ${protocol}

@@ -87,7 +87,7 @@ if(COMPILE_MAIN)
 
     include_directories(
         Inc
-        core
+        src/config
         tasks
         test
         driver
@@ -172,7 +172,6 @@ if(COMPILE_MAIN)
     aux_source_directory(crypto/bips bips)
     aux_source_directory(crypto/checksum checksum)
     aux_source_directory(crypto/utils crypto_utils)
-    aux_source_directory(core/ core)
     aux_source_directory(protocol/ protocol)
     aux_source_directory(protocol/services protocol_services)
     
@@ -281,6 +280,7 @@ if(COMPILE_MAIN)
         "src/firmware/*.c"
         "src/msg/*.c"
         "src/ram/*.c"
+        "src/config/*"
     )
 
     set(objsrc ${mh1903_driver} 
@@ -300,7 +300,6 @@ if(COMPILE_MAIN)
         ${crypto_utils}
         ${lvgl}
         ${gui}
-        ${core}
         ${protocol}
         ${protocol_services}
         external/mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s

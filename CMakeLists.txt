@@ -92,11 +92,11 @@ if(COMPILE_MAIN)
         test
         driver
         driver/usb
-        mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/msc/inc
-        mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/cdc/inc
-        mh1903_lib/SCPU_USB_Lib/SCPU_USB_OTG_Driver/inc
-        mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Core/inc
-        mh1903_lib/USB-ESL
+        external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/msc/inc
+        external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/cdc/inc
+        external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_OTG_Driver/inc
+        external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Core/inc
+        external/mh1903_lib/USB-ESL
         cm_backtrace
         crypto
         crypto/bips
@@ -104,11 +104,11 @@ if(COMPILE_MAIN)
         crypto/utils
         crypto/slip39
         crypto/slip39/trezor-crypto
-        mh1903_lib/MHSCPU_Driver/inc 
-        mh1903_lib/Device/MegaHunt/mhscpu/Include 
-        mh1903_lib/CMSIS/Include 
-        mh1903_lib/MHSCPU_Driver/inc/cryptlib 
-        mh1903_lib/MHSCPU_Driver/inc/emvlib
+        external/mh1903_lib/MHSCPU_Driver/inc 
+        external/mh1903_lib/Device/MegaHunt/mhscpu/Include 
+        external/mh1903_lib/CMSIS/Include 
+        external/mh1903_lib/MHSCPU_Driver/inc/cryptlib 
+        external/mh1903_lib/MHSCPU_Driver/inc/emvlib
         business
         business/utils
         business/utils/log
@@ -161,9 +161,9 @@ if(COMPILE_MAIN)
         ${CMAKE_CURRENT_BINARY_DIR}
     )
 
-    set_property(SOURCE mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s PROPERTY LANGUAGE C)
+    set_property(SOURCE external/mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s PROPERTY LANGUAGE C)
     set_property(SOURCE cm_backtrace/fault_handler/gcc/cmb_fault.s PROPERTY LANGUAGE C)
-    aux_source_directory(mh1903_lib/MHSCPU_Driver/src/ mh1903_driver)
+    aux_source_directory(external/mh1903_lib/MHSCPU_Driver/src/ mh1903_driver)
     aux_source_directory(driver/ driver)
     aux_source_directory(test/ test)
     aux_source_directory(cm_backtrace/ cm_backtrace)
@@ -178,11 +178,11 @@ if(COMPILE_MAIN)
     
     file(GLOB_RECURSE usb
         "driver/usb/*.c"
-        "mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Core/src/*.c"
-        "mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/msc/src/*.c"
-        "mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/cdc/src/*.c"
-        "mh1903_lib/SCPU_USB_Lib/SCPU_USB_OTG_Driver/src/*.c"
-        "mh1903_lib/USB-ESL/CircularBuffer.c"    
+        "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Core/src/*.c"
+        "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/msc/src/*.c"
+        "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/cdc/src/*.c"
+        "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_OTG_Driver/src/*.c"
+        "external/mh1903_lib/USB-ESL/CircularBuffer.c"    
     )
     
     file(GLOB_RECURSE cryptoslip39
@@ -303,7 +303,7 @@ if(COMPILE_MAIN)
         ${core}
         ${protocol}
         ${protocol_services}
-        mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s
+        external/mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s
         cm_backtrace/fault_handler/gcc/cmb_fault.s)
 
     set(CMAKE_EXE_LINKER_FLAGS " -T ${LINKER_SCRIPT} -Wl,-Map=mh1903.map -lm -mcpu=${MCU} --specs=nano.specs -specs=nosys.specs -nostartfiles -Wl,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref -Wl,--gc-sections ")
@@ -312,7 +312,7 @@ if(COMPILE_MAIN)
     add_dependencies(${PROJECT_NAME}.elf rust_c)
 
     target_link_libraries(${PROJECT_NAME}.elf 
-        ${CMAKE_CURRENT_SOURCE_DIR}/mh1903_lib/MHSCPU_Driver/lib/MH1903_QRDecodeLib.a
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/mh1903_lib/MHSCPU_Driver/lib/MH1903_QRDecodeLib.a
         m
         ${CMAKE_BINARY_DIR}/rust-builds/librust_c.a
     )

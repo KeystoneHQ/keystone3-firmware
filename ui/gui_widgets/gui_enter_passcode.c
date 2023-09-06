@@ -216,8 +216,10 @@ static void SetPassWordHandler(lv_event_t *e)
                 GuiEmitSignal(SIG_SETTING_REPEAT_PIN, (char *)currText, strlen(currText));
             } else if ((item->mode == ENTER_PASSCODE_VERIFY_PASSWORD)) {
                 g_userParam = g_passParam.userParam;
-                SecretCacheSetPassword((char *)currText);
-                GuiModelVerifyAmountPassWord(g_userParam);
+                if (strlen(currText) > 0) {
+                    SecretCacheSetPassword((char *)currText);
+                    GuiModelVerifyAmountPassWord(g_userParam);
+                }
             }
             lv_textarea_set_text(ta, "");
         }

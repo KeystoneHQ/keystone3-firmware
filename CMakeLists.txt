@@ -98,10 +98,6 @@ if(COMPILE_MAIN)
         mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Core/inc
         mh1903_lib/USB-ESL
         cm_backtrace
-        FreeRTOS/Source/include
-        FreeRTOS
-        FreeRTOS/Source/portable/GCC/ARM_CM4F
-        FreeRTOS/CMSIS_RTOS_V2
         crypto
         crypto/bips
         crypto/checksum
@@ -122,16 +118,6 @@ if(COMPILE_MAIN)
         business/msg 
         business/ram 
         hardware_interface
-        lvgl
-        lvgl/src
-        lvgl/src/core
-        lvgl/src/draw
-        lvgl/src/extra
-        lvgl/src/font
-        lvgl/src/hal
-        lvgl/src/misc
-        lvgl/src/widgets
-        lvgl/src/core
         ui/lv_demos
         ui/pillar_demos
         ui/gui_views
@@ -157,6 +143,20 @@ if(COMPILE_MAIN)
         external/quicklz
         external/sqlite3
         external/cryptoauthlib/lib
+        external/FreeRTOS
+        external/FreeRTOS/Source/include
+        external/FreeRTOS/Source/portable/GCC/ARM_CM4F
+        external/FreeRTOS/CMSIS_RTOS_V2
+        external/lvgl
+        external/lvgl/src
+        external/lvgl/src/core
+        external/lvgl/src/draw
+        external/lvgl/src/extra
+        external/lvgl/src/font
+        external/lvgl/src/hal
+        external/lvgl/src/misc
+        external/lvgl/src/widgets
+        external/lvgl/src/core
         build/rust-builds
         ${CMAKE_CURRENT_BINARY_DIR}
     )
@@ -175,16 +175,6 @@ if(COMPILE_MAIN)
     aux_source_directory(core/ core)
     aux_source_directory(protocol/ protocol)
     aux_source_directory(protocol/services protocol_services)
-    
-    file (GLOB_RECURSE sqlite3
-        "components/sqlite3/*.c"
-    )
-
-    file(GLOB_RECURSE components
-        "components/utils/*.c"
-        "components/ringbuff/*.c"
-        ${sqlite3}
-    )
     
     file(GLOB_RECURSE usb
         "driver/usb/*.c"
@@ -206,27 +196,27 @@ if(COMPILE_MAIN)
     )
     
     file(GLOB_RECURSE freertos
-        FreeRTOS/Source/croutine.c
-        FreeRTOS/Source/event_groups.c
-        FreeRTOS/Source/list.c
-        FreeRTOS/Source/queue.c
-        FreeRTOS/Source/stream_buffer.c
-        FreeRTOS/Source/tasks.c
-        FreeRTOS/Source/timers.c
-        FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
-        FreeRTOS/CMSIS_RTOS_V2/cmsis_os2.c
-        FreeRTOS/Source/portable/MemMang/heap_4.c
-        FreeRTOS/rtos_expand.c
+        external/FreeRTOS/Source/croutine.c
+        external/FreeRTOS/Source/event_groups.c
+        external/FreeRTOS/Source/list.c
+        external/FreeRTOS/Source/queue.c
+        external/FreeRTOS/Source/stream_buffer.c
+        external/FreeRTOS/Source/tasks.c
+        external/FreeRTOS/Source/timers.c
+        external/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
+        external/FreeRTOS/CMSIS_RTOS_V2/cmsis_os2.c
+        external/FreeRTOS/Source/portable/MemMang/heap_4.c
+        external/FreeRTOS/rtos_expand.c
     )
 
     file(GLOB_RECURSE lvgl
-        "lvgl/src/core/*.c"
-        "lvgl/src/draw/*.c"
-        "lvgl/src/hal/*.c"
-        "lvgl/src/misc/*.c"
-        "lvgl/src/widgets/*.c"
-        "lvgl/src/extra/*.c"
-        "lvgl/src/font/*.c"
+        "external/lvgl/src/core/*.c"
+        "external/lvgl/src/draw/*.c"
+        "external/lvgl/src/hal/*.c"
+        "external/lvgl/src/misc/*.c"
+        "external/lvgl/src/widgets/*.c"
+        "external/lvgl/src/extra/*.c"
+        "external/lvgl/src/font/*.c"
     )
 
     file(GLOB_RECURSE ctaes

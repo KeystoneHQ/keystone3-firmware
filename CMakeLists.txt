@@ -109,7 +109,6 @@ if(COMPILE_MAIN)
         crypto/slip39
         crypto/slip39/trezor-crypto
         components/ram
-        components/fatfs
         components/log
         components/quicklz
         components/firmware
@@ -125,6 +124,8 @@ if(COMPILE_MAIN)
         mh1903_lib/MHSCPU_Driver/inc/cryptlib 
         mh1903_lib/MHSCPU_Driver/inc/emvlib
         business
+        business/utils
+        business/utils/log
         business/managers 
         business/error_codes 
         hardware_interface
@@ -151,9 +152,12 @@ if(COMPILE_MAIN)
         ui/gui_chain
         ui/gui_components
         ui/wallet
+        utils
+        utils/log
         protocol
         protocol/services
         external/ctaes
+        external/fatfs
         external/ccan
         external/cryptoauthlib/lib
         build/rust-builds
@@ -180,7 +184,6 @@ if(COMPILE_MAIN)
     )
 
     file(GLOB_RECURSE components
-        "components/fatfs/*.c"
         "components/log/*.c"
         "components/quicklz/*.c"
         "components/msg/*.c"
@@ -243,6 +246,10 @@ if(COMPILE_MAIN)
         "external/ccan/*.c"
     )
 
+    file(GLOB_RECURSE external
+        "external/fatfs/*.c"
+    )
+
     file(GLOB_RECURSE cryptoauthlib
         "external/cryptoauthlib/lib/atca_basic.c"
         "external/cryptoauthlib/lib/atca_cfgs.c"
@@ -280,6 +287,8 @@ if(COMPILE_MAIN)
 
     file(GLOB_RECURSE business
         "business/*.c"
+        "business/utils/*.c"
+        "business/utils/log/*.c"
         "business/managers/*.c"
         "business/error_codes/*.c"
     )
@@ -292,6 +301,7 @@ if(COMPILE_MAIN)
         ${usb}
         ${components} 
         ${cryptoauthlib} 
+        ${external}
         ${cm_backtrace} 
         ${tasks} 
         ${test}

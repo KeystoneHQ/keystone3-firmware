@@ -88,7 +88,7 @@ if(COMPILE_MAIN)
     include_directories(
         Inc
         src/config
-        tasks
+        src/tasks
         test
         src/driver
         src/driver/usb
@@ -167,7 +167,7 @@ if(COMPILE_MAIN)
     aux_source_directory(src/driver/ driver)
     aux_source_directory(test/ test)
     aux_source_directory(src/cm_backtrace/ cm_backtrace)
-    aux_source_directory(tasks/ tasks)
+    aux_source_directory(src/tasks/ tasks)
     aux_source_directory(src/crypto crypto)
     aux_source_directory(src/crypto/bips bips)
     aux_source_directory(src/crypto/checksum checksum)

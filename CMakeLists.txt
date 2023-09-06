@@ -97,7 +97,7 @@ if(COMPILE_MAIN)
         external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_OTG_Driver/inc
         external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Core/inc
         external/mh1903_lib/USB-ESL
-        cm_backtrace
+        src/cm_backtrace
         crypto
         crypto/bips
         crypto/checksum
@@ -162,11 +162,11 @@ if(COMPILE_MAIN)
     )
 
     set_property(SOURCE external/mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s PROPERTY LANGUAGE C)
-    set_property(SOURCE cm_backtrace/fault_handler/gcc/cmb_fault.s PROPERTY LANGUAGE C)
+    set_property(SOURCE src/cm_backtrace/fault_handler/gcc/cmb_fault.s PROPERTY LANGUAGE C)
     aux_source_directory(external/mh1903_lib/MHSCPU_Driver/src/ mh1903_driver)
     aux_source_directory(driver/ driver)
     aux_source_directory(test/ test)
-    aux_source_directory(cm_backtrace/ cm_backtrace)
+    aux_source_directory(src/cm_backtrace/ cm_backtrace)
     aux_source_directory(tasks/ tasks)
     aux_source_directory(crypto crypto)
     aux_source_directory(crypto/bips bips)
@@ -303,7 +303,7 @@ if(COMPILE_MAIN)
         ${protocol}
         ${protocol_services}
         external/mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s
-        cm_backtrace/fault_handler/gcc/cmb_fault.s)
+        src/cm_backtrace/fault_handler/gcc/cmb_fault.s)
 
     set(CMAKE_EXE_LINKER_FLAGS " -T ${LINKER_SCRIPT} -Wl,-Map=mh1903.map -lm -mcpu=${MCU} --specs=nano.specs -specs=nosys.specs -nostartfiles -Wl,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref -Wl,--gc-sections ")
 

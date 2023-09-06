@@ -126,6 +126,7 @@ if(COMPILE_MAIN)
         mh1903_lib/MHSCPU_Driver/inc/emvlib
         business
         business/managers 
+        business/error_codes 
         hardware_interface
         lvgl
         lvgl/src
@@ -280,6 +281,7 @@ if(COMPILE_MAIN)
     file(GLOB_RECURSE business
         "business/*.c"
         "business/managers/*.c"
+        "business/error_codes/*.c"
     )
 
     set(objsrc ${mh1903_driver} 

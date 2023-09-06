@@ -98,12 +98,12 @@ if(COMPILE_MAIN)
         external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Core/inc
         external/mh1903_lib/USB-ESL
         src/cm_backtrace
-        crypto
-        crypto/bips
-        crypto/checksum
-        crypto/utils
-        crypto/slip39
-        crypto/slip39/trezor-crypto
+        src/crypto
+        src/crypto/bips
+        src/crypto/checksum
+        src/crypto/utils
+        src/crypto/slip39
+        src/crypto/slip39/trezor-crypto
         external/mh1903_lib/MHSCPU_Driver/inc 
         external/mh1903_lib/Device/MegaHunt/mhscpu/Include 
         external/mh1903_lib/CMSIS/Include 
@@ -168,10 +168,10 @@ if(COMPILE_MAIN)
     aux_source_directory(test/ test)
     aux_source_directory(src/cm_backtrace/ cm_backtrace)
     aux_source_directory(tasks/ tasks)
-    aux_source_directory(crypto crypto)
-    aux_source_directory(crypto/bips bips)
-    aux_source_directory(crypto/checksum checksum)
-    aux_source_directory(crypto/utils crypto_utils)
+    aux_source_directory(src/crypto crypto)
+    aux_source_directory(src/crypto/bips bips)
+    aux_source_directory(src/crypto/checksum checksum)
+    aux_source_directory(src/crypto/utils crypto_utils)
     aux_source_directory(src/webusb_protocol/ webusb_protocol)
     aux_source_directory(src/webusb_protocol/services webusb_protocol_services)
     
@@ -185,13 +185,13 @@ if(COMPILE_MAIN)
     )
     
     file(GLOB_RECURSE cryptoslip39
-        "crypto/slip39/gf256.c"
-        "crypto/slip39/rs1024.c"
-        "crypto/slip39/slip39.c"
-        "crypto/slip39/trezor-crypto/memzero.c"
-        "crypto/slip39/trezor-crypto/sha2.c"
-        "crypto/slip39/trezor-crypto/rand.c"
-        "crypto/slip39/trezor-crypto/pbkdf2.c"
+        "src/crypto/slip39/gf256.c"
+        "src/crypto/slip39/rs1024.c"
+        "src/crypto/slip39/slip39.c"
+        "src/crypto/slip39/trezor-crypto/memzero.c"
+        "src/crypto/slip39/trezor-crypto/sha2.c"
+        "src/crypto/slip39/trezor-crypto/rand.c"
+        "src/crypto/slip39/trezor-crypto/pbkdf2.c"
     )
     
     file(GLOB_RECURSE freertos

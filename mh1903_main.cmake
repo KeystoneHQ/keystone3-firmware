@@ -2,25 +2,25 @@ add_definitions(-DUSE_STDPERIPH_DRIVER -DUSE_FULL_ASSERT -DLV_CONF_INCLUDE_SIMPL
 
 include_directories(
     Inc 
-    core 
+    src/config 
     drv 
     cm_backtrace
-    mh1903_lib/MHSCPU_Driver/inc 
-    mh1903_lib/Device/MegaHunt/mhscpu/Include 
-    mh1903_lib/CMSIS/Include 
-    mh1903_lib/MHSCPU_Driver/inc/cryptlib 
-    mh1903_lib/MHSCPU_Driver/inc/emvlib 
+    external/mh1903_lib/MHSCPU_Driver/inc 
+    external/mh1903_lib/Device/MegaHunt/mhscpu/Include 
+    external/mh1903_lib/CMSIS/Include 
+    external/mh1903_lib/MHSCPU_Driver/inc/cryptlib 
+    external/mh1903_lib/MHSCPU_Driver/inc/emvlib 
     mid/utils
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-file(GLOB_RECURSE SRC_DIR_LIST "mh1903_lib/MHSCPU_Driver/src/*.c" "drv/*.c" "core/*.c")
+file(GLOB_RECURSE SRC_DIR_LIST "external/mh1903_lib/MHSCPU_Driver/src/*.c" "drv/*.c" "core/*.c")
 message(STATUS ${SRC_DIR_LIST})
 
 set(mh1903_driver 
-mh1903_lib/MHSCPU_Driver/src/misc.c
-mh1903_lib/MHSCPU_Driver/src/mhscpu_gpio.c
-mh1903_lib/MHSCPU_Driver/src/mhscpu_uart.c
-mh1903_lib/MHSCPU_Driver/src/mhscpu_sysctrl.c
-mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s
+external/mh1903_lib/MHSCPU_Driver/src/misc.c
+external/mh1903_lib/MHSCPU_Driver/src/mhscpu_gpio.c
+external/mh1903_lib/MHSCPU_Driver/src/mhscpu_uart.c
+external/mh1903_lib/MHSCPU_Driver/src/mhscpu_sysctrl.c
+external/mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s
 )

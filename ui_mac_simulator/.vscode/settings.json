@@ -28,6 +28,9 @@
         "fingerprint_process.h": "c",
         "firmware_update.h": "c",
         "cstdlib": "c",
-        "user_memory.h": "c"
+        "user_memory.h": "c",
+        "gui_qr_hintbox.h": "c",
+        "gui_web_auth_widgets.h": "c",
+        "gui_button.h": "c"
     }
 }

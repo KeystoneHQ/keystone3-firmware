@@ -1,1 +1,1 @@
-../../../../crypto/slip39/slip39.h
+../../../../src/crypto/slip39/slip39.h

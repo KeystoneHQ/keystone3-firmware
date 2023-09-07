@@ -1,1 +1,1 @@
-../../../../core/version.h
+../../../../src/config/version.h

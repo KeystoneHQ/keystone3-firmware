@@ -1,1 +1,1 @@
-../../../../components/firmware/firmware_update.h
+../../../../src/firmware/firmware_update.h

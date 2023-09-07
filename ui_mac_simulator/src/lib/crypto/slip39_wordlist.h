@@ -1,1 +1,1 @@
-../../../../crypto/slip39/slip39_wordlist.h
+../../../../src/crypto/slip39/slip39_wordlist.h

@@ -1,1 +1,1 @@
-../../../../components/msg/general_msg.h
+../../../../src/msg/general_msg.h

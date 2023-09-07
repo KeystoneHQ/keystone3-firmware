@@ -1,1 +1,1 @@
-../../../../application/device_setting.h
+../../../../src/device_setting.h

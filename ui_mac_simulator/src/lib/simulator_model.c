@@ -20,6 +20,10 @@ void CloseUsb()
 {
 }
 
+void SetLockDeviceAlive(bool alive)
+{
+    
+}
 
 int Slip39OneSliceCheck(char *wordsList, uint8_t wordCnt, uint16_t id, uint8_t ie, uint8_t *threshold)
 {

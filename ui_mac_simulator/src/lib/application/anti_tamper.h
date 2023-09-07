@@ -1,1 +1,1 @@
-../../../../application/anti_tamper.h
+../../../../src/hardware_interface/anti_tamper.h

@@ -1,1 +1,1 @@
-../../../../crypto/bips/bip39.h
+../../../../src/crypto/bips/bip39.h

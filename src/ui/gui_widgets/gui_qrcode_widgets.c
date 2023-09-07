@@ -19,9 +19,9 @@
 #include "motor_manager.h"
 #include "gui_lock_widgets.h"
 #include "screen_manager.h"
-#ifndef COMPILE_SIMULATOR
 #include "fingerprint_process.h"
 #include "gui_fullscreen_mode.h"
+#ifndef COMPILE_SIMULATOR
 #include "keystore.h"
 
 #else

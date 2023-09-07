@@ -162,7 +162,7 @@ static void OpenNoticeHandler(lv_event_t *e)
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 584);
 
         lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, USR_SYMBOL_CHECK);
-        lv_obj_add_event_cb(btn, CloseParentAndNextHandler, LV_EVENT_ALL, &g_noticeHintBox);
+        lv_obj_add_event_cb(btn, CloseParentAndNextHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
         lv_obj_align(btn, LV_ALIGN_DEFAULT, 348, 710);
     }
 }

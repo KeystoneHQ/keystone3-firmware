@@ -480,7 +480,6 @@ int8_t GuiCreateShareNextTile(void)
         GuiNvsBarSetRightCb(NVS_BAR_WORD_RESET, ResetBtnHandler, NULL);
         GuiNvsBarSetRightBtnLabel(NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Reset");
         lv_obj_add_flag(g_shareBackupTile.nextCont, LV_OBJ_FLAG_HIDDEN);
-        GuiUpdateMnemonicKeyBoard(g_shareBackupTile.keyBoard, SecretCacheGetSlip39Mnemonic(g_createShareTileView.currentSlice), true);
         break;
     case CREATE_SHARE_CONFIRM:
         GuiNvsBarSetLeftCb(NVS_LEFT_BUTTON_BUTT, NULL, NULL);

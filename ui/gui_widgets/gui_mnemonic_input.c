@@ -42,7 +42,6 @@ char *GuiMnemonicGetTrueWord(const char *word, char *trueWord)
     return trueWord;
 }
 
-static int iii = 0;
 void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
 {
     // todo slice==0 clear
@@ -51,7 +50,6 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
             memset(g_sliceSha256[i], 0, 32);
         }
         memset(g_sliceHeadWords, 0, sizeof(g_sliceHeadWords));
-        iii = 0;
     }
     mkb->currentId = 0;
     bool isSame = false;
@@ -71,19 +69,7 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
     } else {
         mnemonic[strlen(mnemonic) - 1] = '\0';
     }
-    // if (mkb->intputType == MNEMONIC_INPUT_IMPORT_VIEW) {
-    //     if (iii == 0) {
-    //         strcpy(mnemonic, "making disaster academic acne bracelet verdict reject satisfy main extra carpet pacific quantity sniff society earth havoc declare strategy cards");
-    //     }
-    //     if (iii == 1) {
-    //         strcpy(mnemonic, "making disaster academic agree capital medal video tactics unkind large clothes enjoy birthday visual work romantic capital again staff beam");
-    //     }
-    //     if (iii == 2) {
-    //         strcpy(mnemonic, "making disaster academic amazing adapt screw float pancake failure trial estate demand album fawn coastal anatomy lair emperor evening quantity");
-    //     }
-    //     iii++;
-    // }
-    printf("mnemonic = ..%s..\n", mnemonic);
+
     uint8_t threShold = 0;
     do {
         int ret;
@@ -116,7 +102,6 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                     }
                     strcat(g_sliceHeadWords, " ");
                 }
-                printf("g_sliceHeadWords = ..%s..\n", g_sliceHeadWords);
             } else {
                 uint8_t tempHash[32];
                 sha256((struct sha256 *)tempHash, mnemonic, strlen(mnemonic));
@@ -195,11 +180,9 @@ void ImportSinglePhraseWords(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
             GuiMnemonicGetTrueWord(lv_btnmatrix_get_btn_text(mkb->btnm, k), trueBuf);
             strcat(mnemonic, trueBuf);
             strcat(mnemonic, " ");
-            printf("true = ..%s..\n", mnemonic);
         }
     }
     mnemonic[strlen(mnemonic) - 1] = '\0';
-    printf("mnemonic = ..%s..\n", mnemonic);
 
     SecretCacheSetMnemonic(mnemonic);
     if (mkb->intputType == MNEMONIC_INPUT_IMPORT_VIEW) {
@@ -266,14 +249,11 @@ static void GuiMnemonicUpdateNextBtn(MnemonicKeyBoard_t *mkb, KeyBoard_t *letter
         currentId = lv_btnmatrix_get_selected_btn(obj);
         const char *currText = lv_btnmatrix_get_btn_text(obj, currentId);
         GuiMnemonicGetTrueWord(currText, trueText);
-        printf("%s %d trueText = %s..\n", __func__, __LINE__, trueText);
         if (strlen(trueText) > 0 && GuiWordsWhole(trueText)) {
             needNext = true;
         }
     }
 
-    printf("mkb->currentID = %d\n", mkb->currentId);
-    printf("mkb->wordCnt = %d\n", mkb->wordCnt);
     GuiClearKeyBoard(letterKb);
     if (needNext) {
         if (mkb->currentId < mkb->wordCnt) {
@@ -284,16 +264,12 @@ static void GuiMnemonicUpdateNextBtn(MnemonicKeyBoard_t *mkb, KeyBoard_t *letter
         currentId = lv_btnmatrix_get_selected_btn(obj);
         const char *nextText = lv_btnmatrix_get_btn_text(obj, currentId);
         GuiMnemonicGetTrueWord(nextText, trueText);
-        printf("%s %d trueText = %s..\n", __func__, __LINE__, trueText);
         if (searchTrie(rootTree, trueText) == 1) {// 完整的单词
             GuiSetLetterBoardNext(letterKb);
         }
     }
 
-    printf("%d word = %s\n", __LINE__, word);
     lv_obj_scroll_to_y(mkb->cont, (mkb->currentId / 3 - 1) * 72, LV_ANIM_ON);
-    printf("mkb->currentid = %d\n", mkb->currentId);
-    printf("mkb->wordCnt = %d\n", mkb->wordCnt);
     GuiMnemonicInputCheck(mkb, letterKb);
 }
 
@@ -326,9 +302,7 @@ void GuiMnemonicInputHandler(lv_event_t *e)
 
         // 1.Determine if the current word is complete
         const char *currText = lv_btnmatrix_get_btn_text(obj, currentId);
-        printf("currText = %s..\n", currText);
         GuiMnemonicGetTrueWord(currText, trueText);
-        printf("%s %d trueText = %s..\n", __func__, __LINE__, trueText);
         GuiSetMnemonicCache(letterKb, trueText);
         if (strlen(trueText) > 0 && GuiWordsWhole(trueText)) {
             GuiSetLetterBoardNext(letterKb);
@@ -390,7 +364,6 @@ void GuiMnemonicInputHandler(lv_event_t *e)
                     }
                     strcat(tempBuf, " ");
                 }
-                printf("tempBuf = ..%s..\n", tempBuf);
                 if (mkb->threShold != 0xff) {
                     if (strcmp(tempBuf, g_sliceHeadWords)) {
                         g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 416, &imgFailed, "Incorrect Share",
@@ -413,10 +386,6 @@ void GuiMnemonicInputHandler(lv_event_t *e)
                 isClick--;
             }
             return;
-        }
-        printf("word = %s whole = %d\n", word, GuiSingleWordsWhole(word));
-        for (int i = 0; i < 3; i++) {
-            printf("g word %d = %s\n", i, g_wordBuf[i]);
         }
 
         if (strlen(word) > 0 && GuiSingleWordsWhole(word)) {

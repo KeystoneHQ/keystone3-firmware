@@ -888,6 +888,7 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
         if (SIG_LOCK_VIEW_VERIFY_PIN == *param || SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS == *param) {
             g_passwordVerifyResult.errorCount = GetLoginPasswordErrorCount();
             printf("gui model get login error count %d \n", g_passwordVerifyResult.errorCount);
+            assert(g_passwordVerifyResult.errorCount <= MAX_LOGIN_PASSWORD_ERROR_COUNT);
             if (g_passwordVerifyResult.errorCount == MAX_LOGIN_PASSWORD_ERROR_COUNT) {
                 UnlimitedVibrate(SUPER_LONG);
             } else {
@@ -896,6 +897,7 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
         } else {
             g_passwordVerifyResult.errorCount = GetCurrentPasswordErrorCount();
             printf("gui model get current error count %d \n", g_passwordVerifyResult.errorCount);
+            assert(g_passwordVerifyResult.errorCount <= MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX);
             if (g_passwordVerifyResult.errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
                 UnlimitedVibrate(SUPER_LONG);
             } else {

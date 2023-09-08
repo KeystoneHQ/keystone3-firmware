@@ -143,7 +143,7 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
         GuiSettingFingerRegisterFail(NULL);
         break;
     case SIG_FINGER_DELETE_SUCCESS:
-        GuiSettingFingerDeleteSuccess();
+        GuiDevSettingPrevTile(0);
         break;
     case SIG_FINGER_RECOGNIZE_RESPONSE:
         GuiSettingDealFingerRecognize(param);

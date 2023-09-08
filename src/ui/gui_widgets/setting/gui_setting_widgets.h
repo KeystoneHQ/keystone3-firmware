@@ -117,7 +117,6 @@ void OpenSinglePhraseHandler(lv_event_t *e);
 void OpenSharePhraseHandler(lv_event_t *e);
 void GuiSettingFingerRegisterSuccess(void *param);
 void GuiSettingFingerRegisterFail(void *param);
-void GuiSettingFingerDeleteSuccess(void);
 void GuiSettingDealFingerRecognize(void *param);
 //forget passcode share logic;
 void GuiSettingCloseSelectAmountHintBox();
@@ -144,6 +143,7 @@ void CancelVerifyFingerHandler(lv_event_t *e);
 void CancelCurFingerHandler(lv_event_t *e);
 void FingerSignHandler(lv_event_t *e);
 void GuiFingerManagerDestruct(void *obj, void *param);
+void GuiFpVerifyDestruct(void);
 
 #endif /* _GUI_SETTING_WIDGETS_H */
 

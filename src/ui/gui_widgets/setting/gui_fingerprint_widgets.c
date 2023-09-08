@@ -99,6 +99,11 @@ void GuiFingerManagerDestruct(void *obj, void *param)
     ClearSecretCache();
 }
 
+void GuiFpVerifyDestruct(void)
+{
+    GUI_DEL_OBJ(g_verifyFingerCont)
+}
+
 void FingerSignHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);

@@ -15,8 +15,6 @@
 #include "presetting.h"
 #include "anti_tamper.h"
 
-void GuiFingerUpdateProcess(void *param);
-
 static int32_t GuiInitViewInit(void)
 {
     LanguageInit();
@@ -118,9 +116,6 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         break;
     case SIG_INIT_SD_CARD_OTA_COPY_FAIL:
         GuiFirmwareSdCardCopyResult(false);
-        break;
-    case SIG_INIT_FINGER_UPDATE:
-        GuiFingerUpdateProcess(param);
         break;
     case SIG_INIT_SD_CARD_OTA_COPY:
         GuiFirmwareSdCardCopy();

@@ -94,7 +94,9 @@ void GuiSettingRefresh(void);
 int8_t GuiDevSettingPrevTile(uint8_t tileIndex);
 int8_t GuiDevSettingNextTile(uint8_t tileIndex);
 
+void WalletSettingHandler(lv_event_t *e);
 void GuiSettingCloseToTargetTileView(uint8_t targetIndex);
+void GuiShowKeyboardHandler(lv_event_t *e);
 
 void GuiDevSettingPassCode(bool result, uint8_t tileIndex);
 void GuiSettingSetPinPass(const char* buf);
@@ -128,6 +130,20 @@ void GuiVerifyCurrentPasswordErrorCount(void *param);
 void *GuiWalletNameWallet(lv_obj_t *parent, uint8_t tile);
 void GuiWalletNameWalletDestruct(void);
 void GuiWalletSettingSetIconLabel(const lv_img_dsc_t *src, const char *name);
+
+// fp and passcode setting
+void GuiWalletSetFingerPassCodeWidget(lv_obj_t *parent);
+void GuiWalletFingerAddWidget(lv_obj_t *parent);
+uint8_t GuiGetFingerSettingIndex(void);
+void GuiFingerAddDestruct(void *obj, void *param);
+void GuiWalletFingerAddFpWidget(lv_obj_t *parent, bool success);
+void GuiWalletFingerDeleteWidget(lv_obj_t *parent);
+void GuiWalletFingerManagerWidget(lv_obj_t *parent);
+void GuiFingerMangerStructureCb(void *obj, void *param);
+void CancelVerifyFingerHandler(lv_event_t *e);
+void CancelCurFingerHandler(lv_event_t *e);
+void FingerSignHandler(lv_event_t *e);
+void GuiFingerManagerDestruct(void *obj, void *param);
 
 #endif /* _GUI_SETTING_WIDGETS_H */
 

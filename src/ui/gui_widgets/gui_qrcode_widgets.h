@@ -8,6 +8,8 @@ void GuiQrCodeScanResult(bool result, void *errCode);
 void GuiQrCodeVerifyPasswordResult(bool result);
 void GuiQrCodeDealFingerRecognize(void *param);
 void GuiQrCodeVerifyPasswordErrorCount(void *param);
+void GuiClearQrcodeSignCnt(void);
+
 #endif /* _GUI_QRCODE_WIDGETS_H */
 
 

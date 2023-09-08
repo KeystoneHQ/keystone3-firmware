@@ -29,15 +29,6 @@
 #include "keystore.h"
 #else
 #include "simulator_model.h"
-#define FP_SUCCESS_CODE             0
-#define RECOGNIZE_UNLOCK            0
-#define RECOGNIZE_OPEN_SIGN         1
-#define RECOGNIZE_SIGN              2
-
-#define NO_ENCRYPTION 0
-#define AES_KEY_ENCRYPTION 1
-#define RESET_AES_KEY_ENCRYPTION 2
-#define FINGERPRINT_EN_SING_ERR_TIMES           (5)
 #endif
 
 #define DEVICE_SETTING_PASS_MAX_LEN 16

@@ -31,20 +31,12 @@
 #endif
 
 static bool ModelGetPassphraseQuickAccess(void);
-static void GuiShowPasswordErrorHintBox(void);
-static void UnlockDeviceHandler(lv_event_t *e);
-static void CountDownTimerWipeDeviceHandler(lv_timer_t *timer);
-static void GuiHintBoxToLockSreen(void);
-static void GuiCountDownDestruct(void *obj, void *param);
 static void GuiPassowrdToLockTimePage(uint16_t errorCount);
 void GuiLockScreenClearModal(lv_obj_t *cont);
 static char* GuiJudgeTitle();
 
 static GuiEnterPasscodeItem_t *g_verifyLock = NULL;
 static lv_obj_t *g_lockScreenCont;
-static lv_obj_t *g_errorHintBox;
-static lv_timer_t *g_countDownTimer;
-static int8_t countDown = 5;
 static bool g_firstUnlock = true;
 static uint8_t g_fpErrorCount = 0;
 static LOCK_SCREEN_PURPOSE_ENUM g_purpose = LOCK_SCREEN_PURPOSE_UNLOCK;
@@ -239,18 +231,10 @@ void GuiLockScreenErrorCount(void *param)
             lv_label_set_text(g_verifyLock->errLabel, hint);
             GuiPassowrdToLockTimePage(MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount);
             if (passwordVerifyResult->errorCount == MAX_LOGIN_PASSWORD_ERROR_COUNT) {
-                // GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_lockDeviceView);
                 FpCancelCurOperate();
             }
-        } else {
-            sprintf(hint, "Incorrect password, you have #F55831 %d# chances left", (MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX - passwordVerifyResult->errorCount));
-            lv_label_set_text(g_verifyLock->errLabel, hint);
-            printf("GuiLockScreenErrorCount  errorcount is %d sig is %d \n", passwordVerifyResult->errorCount, *(uint16_t *)passwordVerifyResult->signal);
-            if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
-                GuiShowPasswordErrorHintBox();
-            }
-        }
+        } 
     }
 }
 
@@ -259,84 +243,8 @@ static void GuiPassowrdToLockTimePage(uint16_t leftErrorCount)
     static uint16_t staticLeftErrorCount;
     if (leftErrorCount < 5 && leftErrorCount > 0) {
         staticLeftErrorCount = leftErrorCount;
-        // GuiCLoseCurrentWorkingView();
         GuiFrameOpenViewWithParam(&g_lockDeviceView, &staticLeftErrorCount, sizeof(staticLeftErrorCount));
         GuiModelWriteLastLockDeviceTime(GetCurrentStampTime());
-    }
-}
-
-static void GuiShowPasswordErrorHintBox(void)
-{
-    if (g_errorHintBox == NULL) {
-        g_errorHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgFailed,
-                                                "Attempt Limit Exceeded", "Device lock imminent. Please unlock to access the device.",
-                                                NULL, DARK_GRAY_COLOR, "Unlock Device (5s)", DARK_GRAY_COLOR);
-    }
-
-    if (g_errorHintBox != NULL) {
-        lv_obj_set_parent(g_errorHintBox, lv_scr_act());
-        if (lv_obj_has_flag(g_errorHintBox, LV_OBJ_FLAG_HIDDEN)) {
-            lv_obj_clear_flag(g_errorHintBox, LV_OBJ_FLAG_HIDDEN);
-        }
-        lv_obj_t *btn = GuiGetHintBoxRightBtn(g_errorHintBox);
-        lv_label_set_text(lv_obj_get_child(btn, 0), "Unlock Device (5s)");
-
-        lv_obj_remove_event_cb(btn, UnlockDeviceHandler);
-        lv_obj_add_event_cb(btn, UnlockDeviceHandler, LV_EVENT_CLICKED, NULL);
-        g_countDownTimer = lv_timer_create(CountDownTimerWipeDeviceHandler, 1000, btn);
-    }
-}
-
-static void CountDownTimerWipeDeviceHandler(lv_timer_t *timer)
-{
-    lv_obj_t *obj = (lv_obj_t *)timer->user_data;
-    char buf[32] = {0};
-    --countDown;
-    if (countDown > 0) {
-        sprintf(buf, "Unlock Device (%ds)", countDown);
-    } else {
-        strcpy(buf, "Unlock Device");
-    }
-    lv_label_set_text(lv_obj_get_child(obj, 0), buf);
-    if (countDown <= 0) {
-        GuiHintBoxToLockSreen();
-        GuiCountDownDestruct(NULL, NULL);
-    }
-}
-
-static void UnlockDeviceHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiHintBoxToLockSreen();
-        GuiCountDownDestruct(NULL, NULL);
-    }
-}
-
-static void GuiHintBoxToLockSreen(void)
-{
-    static uint16_t sig = SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS;
-    GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_UNLOCK);
-    GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &sig, sizeof(sig));
-    if (g_verifyLock != NULL) {
-        if (!lv_obj_has_flag(g_verifyLock->errLabel, LV_OBJ_FLAG_HIDDEN)) {
-            lv_obj_add_flag(g_verifyLock->errLabel, LV_OBJ_FLAG_HIDDEN);
-        }
-    }
-    if (g_errorHintBox != NULL) {
-        if (!lv_obj_has_flag(g_errorHintBox, LV_OBJ_FLAG_HIDDEN)) {
-            lv_obj_add_flag(g_errorHintBox, LV_OBJ_FLAG_HIDDEN);
-        }
-    }
-}
-
-static void GuiCountDownDestruct(void *obj, void *param)
-{
-    if (g_countDownTimer != NULL) {
-        countDown = 5;
-        lv_timer_del(g_countDownTimer);
-        g_countDownTimer = NULL;
-        UNUSED(g_countDownTimer);
     }
 }
 
@@ -352,6 +260,7 @@ void GuiLockScreenTurnOnHandler(lv_event_t *e)
         GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, GuiLockScreenTurnOffHandler, NULL);
     }
 }
+
 
 void GuiLockScreenInit(void *param)
 {

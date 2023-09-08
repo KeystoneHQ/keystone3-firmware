@@ -119,5 +119,7 @@ void GuiSettingCloseSelectAmountHintBox();
 void GuiSettingRecoveryCheck(void);
 void CloseToSubtopViewHandler(lv_event_t *e);
 
+void GuiVerifyCurrentPasswordErrorCount(void *param);
+
 #endif /* _GUI_SETTING_WIDGETS_H */
 

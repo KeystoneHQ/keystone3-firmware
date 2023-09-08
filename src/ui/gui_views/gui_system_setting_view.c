@@ -45,7 +45,7 @@ int32_t GuiSystemSettingViewEventProcess(void *self, uint16_t usEvent, void *par
                 return SUCCESS_CODE;
             }
         }
-        GuiSystemSettingVerifyPasswordResult(true);
+        GuiSystemSettingVerifyPasswordSuccess();
         break;
     case SIG_VERIFY_PASSWORD_FAIL:
         if (param != NULL) {
@@ -57,8 +57,6 @@ int32_t GuiSystemSettingViewEventProcess(void *self, uint16_t usEvent, void *par
                 return SUCCESS_CODE;
             }
         }
-        GuiSystemSettingVerifyPasswordResult(false);
-        GuiLockScreenPassCode(false);
         GuiSystemSettingVerifyPasswordErrorCount(param);
         break;
     default:

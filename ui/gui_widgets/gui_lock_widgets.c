@@ -184,7 +184,8 @@ void GuiLockScreenPassCode(bool en)
     if (en) {
         g_fpErrorCount = 0;
         FpCancelCurOperate();
-        if (ModelGetPassphraseQuickAccess()) {
+        // if (ModelGetPassphraseQuickAccess()) {
+        if (0) {
             if (g_passphraseView.isActive) {
                 GuiLockScreenTurnOff();
             } else {

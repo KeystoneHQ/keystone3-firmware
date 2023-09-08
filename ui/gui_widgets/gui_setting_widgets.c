@@ -2068,6 +2068,7 @@ void GuiDelWallet(bool result)
     GuiCLoseCurrentWorkingView();
     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
     LogoutCurrentAccount();
+    GuiLockScreenSetFirstUnlock();
     GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_VERIFY);
     GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
 }

@@ -732,6 +732,7 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
     SetLockScreen(false);
 #ifndef COMPILE_SIMULATOR
     int32_t ret;
+    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     ret = DestroyAccount(GetCurrentAccountIndex());
     if (ret == SUCCESS_CODE) {
         uint8_t accountNum;

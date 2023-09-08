@@ -145,5 +145,8 @@ void FingerSignHandler(lv_event_t *e);
 void GuiFingerManagerDestruct(void *obj, void *param);
 void GuiFpVerifyDestruct(void);
 
+// set passphrase
+void GuiWalletPassphrase(lv_obj_t *parent);
+
 #endif /* _GUI_SETTING_WIDGETS_H */
 

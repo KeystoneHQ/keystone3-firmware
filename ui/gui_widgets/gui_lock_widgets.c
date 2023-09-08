@@ -222,9 +222,12 @@ void GuiLockScreenErrorCount(void *param)
     printf("GuiLockScreenErrorCount  errorcount is %d\n", passwordVerifyResult->errorCount);
     if (g_verifyLock != NULL) {
         char hint[128];
+        int leftCount = 0;
 
         if (*(uint16_t *)passwordVerifyResult->signal == SIG_LOCK_VIEW_VERIFY_PIN
                 || *(uint16_t *)passwordVerifyResult->signal == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
+            leftCount = MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount;
+            assert(leftCount >= 0);
             sprintf(hint, "Incorrect password, you have #F55831 %d# chances left", (MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount));
             lv_label_set_text(g_verifyLock->errLabel, hint);
             GuiPassowrdToLockTimePage(MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount);

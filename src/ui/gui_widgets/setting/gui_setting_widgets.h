@@ -97,6 +97,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex);
 void WalletSettingHandler(lv_event_t *e);
 void GuiSettingCloseToTargetTileView(uint8_t targetIndex);
 void GuiShowKeyboardHandler(lv_event_t *e);
+void GuiSettingAnimSetLabel(const char *text);
 
 void GuiDevSettingPassCode(bool result, uint8_t tileIndex);
 void GuiSettingSetPinPass(const char* buf);

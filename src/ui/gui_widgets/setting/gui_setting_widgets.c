@@ -114,6 +114,14 @@ void WalletSettingHandler(lv_event_t *e)
     }
 }
 
+void GuiSettingAnimSetLabel(const char *text)
+{
+    g_waitAnimWidget.cont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
+    g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, text);
+    lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
+    lv_obj_add_flag(g_waitAnimWidget.cont, LV_OBJ_FLAG_CLICKABLE);
+}
+
 static void ResetClearImportHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -1522,6 +1530,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
         GuiWalletPassphraseEnter(tile);
         strcpy(midLabel, _("wallet_setting_passphrase"));
         break;
+
     // RECOVERY PHRASE CHECK
     case DEVICE_SETTING_RECOVERY_METHOD_CHECK:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);

@@ -48,7 +48,7 @@ int32_t GuiQrCodeViewEventProcess(void *self, uint16_t usEvent, void *param, uin
                 return SUCCESS_CODE;
             }
         }
-        GuiQrCodeVerifyPasswordResult(true);
+        GuiQrCodeVerifyPasswordSuccess();
         break;
     case SIG_VERIFY_PASSWORD_FAIL:
         if (param != NULL) {
@@ -60,7 +60,6 @@ int32_t GuiQrCodeViewEventProcess(void *self, uint16_t usEvent, void *param, uin
                 return SUCCESS_CODE;
             }
         }
-        GuiQrCodeVerifyPasswordResult(false);
         GuiLockScreenPassCode(false);
         GuiQrCodeVerifyPasswordErrorCount(param);
         break;

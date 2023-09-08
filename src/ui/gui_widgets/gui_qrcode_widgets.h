@@ -5,7 +5,7 @@ void GuiQrCodeScreenInit();
 void GuiQrCodeRefresh(void);
 void GuiQrCodeDeInit(void);
 void GuiQrCodeScanResult(bool result, void *errCode);
-void GuiQrCodeVerifyPasswordResult(bool result);
+void GuiQrCodeVerifyPasswordSuccess(void);
 void GuiQrCodeDealFingerRecognize(void *param);
 void GuiQrCodeVerifyPasswordErrorCount(void *param);
 void GuiClearQrcodeSignCnt(void);

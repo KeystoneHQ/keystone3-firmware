@@ -21,6 +21,7 @@
 #include "screen_manager.h"
 #include "fingerprint_process.h"
 #include "gui_fullscreen_mode.h"
+#include "gui_keyboard_hintbox.h"
 #ifndef COMPILE_SIMULATOR
 #include "keystore.h"
 
@@ -46,8 +47,6 @@
 typedef struct QrCodeWidget {
     lv_obj_t *cont;
     lv_obj_t *analysis;
-    lv_obj_t *errLabel;
-    KeyBoard_t *kb;
 } QrCodeWidget_t;
 
 typedef enum {
@@ -65,20 +64,13 @@ static lv_obj_t *g_fpErrorImg = NULL;
 static lv_obj_t *g_fpErrorLabel = NULL;
 static uint32_t g_fingerSignCount = FINGER_SIGN_MAX_COUNT;
 static uint32_t g_fingerSignErrCount = 0;
-static lv_obj_t *g_noticeHintBox = NULL;
+static lv_obj_t *g_scanErrorHintBox = NULL;
 
-static lv_obj_t *g_errorHintBox = NULL;
-static lv_timer_t *g_countDownTimer;
-static int8_t countDown = 5;
 static uint8_t g_chainType = CHAIN_BUTT;
 
-static void UnlockDeviceHandler(lv_event_t *e);
-static void GuiShowPasswordErrorHintBox(void);
-static void CountDownTimerWipeDeviceHandler(lv_timer_t *timer);
-static void GuiHintBoxToLockSreen(void);
-static void GuiCountDownDestruct(void *obj, void *param);
 static lv_timer_t *g_fpRecognizeTimer;
 
+static KeyboardWidget_t *g_keyboardWidget = NULL;
 static PagePhase g_pagePhase;
 void GuiQrCodeScreenCorner(void)
 {
@@ -126,42 +118,11 @@ void GuiQrCodeScreenCorner(void)
 
 void GuiQrCodeScreenInit(void *param)
 {
-    g_qrCodeWidgetView.kb = NULL;
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
     g_pagePhase = PAGE_PHASE_SCAN_QR;
     SetPageLockScreen(false);
 }
 
-static void UpdatePassPhraseHandler(lv_event_t *e)
-{
-    // static bool delayFlag = false;
-    static uint16_t passCodeType = ENTER_PASSCODE_VERIFY_PASSWORD;
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_READY) {
-        const char *currText = lv_textarea_get_text(g_qrCodeWidgetView.kb->ta);
-        if (strlen(currText) > 0) {
-            SecretCacheSetPassword((char *)currText);
-            GuiModelVerifyAmountPassWord(&passCodeType);
-            lv_textarea_set_text(g_qrCodeWidgetView.kb->ta, "");
-        }
-    }
-
-    if (code == LV_EVENT_VALUE_CHANGED) {
-        if (!lv_obj_has_flag(g_qrCodeWidgetView.errLabel, LV_OBJ_FLAG_HIDDEN)) {
-            lv_obj_add_flag(g_qrCodeWidgetView.errLabel, LV_OBJ_FLAG_HIDDEN);
-        }
-        Vibrate(SLIGHT);
-    }
-}
-
-static void ForgetHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeHintBox)
-        OpenForgetPasswordHandler(e);
-    }
-}
 
 static void SignByPasswordCb(bool cancel)
 {
@@ -170,46 +131,8 @@ static void SignByPasswordCb(bool cancel)
         FpCancelCurOperate();
     }
 
-    g_noticeHintBox = GuiCreateHintBox(g_qrCodeWidgetView.cont, 480, 576, true);
-    lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-    lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeHintBox, _("Please Enter Passcode"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 254);
-
-    lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgClose);
-    lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, NULL);
-    GuiButton_t table[] = {
-        {.obj = img, .align = LV_ALIGN_CENTER, .position = {0, 0},},
-    };
-    lv_obj_t *button = GuiCreateButton(g_noticeHintBox, 36, 36, table, NUMBER_OF_ARRAYS(table),
-                                       CloseHintBoxHandler, &g_noticeHintBox);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 408, 251);
-
-    g_qrCodeWidgetView.kb = GuiCreateFullKeyBoard(g_noticeHintBox, UpdatePassPhraseHandler, KEY_STONE_FULL_L, NULL);
-    GuiSetKeyBoardMinTaLen(g_qrCodeWidgetView.kb, 0);
-    lv_obj_t *ta = g_qrCodeWidgetView.kb->ta;
-    lv_textarea_set_placeholder_text(ta, _("Enter Passcode"));
-    lv_obj_set_size(ta, 352, 100);
-    lv_obj_align(ta, LV_ALIGN_DEFAULT, 36, 332);
-    lv_obj_set_style_text_opa(ta, LV_OPA_100, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(ta, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_textarea_set_password_mode(ta, true);
-    lv_textarea_set_max_length(ta, GUI_DEFINE_MAX_PASSCODE_LEN);
-    lv_textarea_set_one_line(ta, true);
-
-    img = GuiCreateImg(g_noticeHintBox, &imgEyeOff);
-    lv_obj_align(img, LV_ALIGN_DEFAULT, 411, 332);
-    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, ta);
-
-    button = GuiCreateImgLabelButton(g_noticeHintBox, _("FORGET"), &imgLock, ForgetHandler, &g_qrCodeView);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 333, 439);
-
-    label = GuiCreateIllustrateLabel(g_noticeHintBox, _("Password does not match"));
-    lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 390);
-    lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
-    g_qrCodeWidgetView.errLabel = label;
-    lv_label_set_recolor(g_qrCodeWidgetView.errLabel, true);
+    g_keyboardWidget = GuiCreateKeyboardWidget(g_qrCodeWidgetView.cont);
+    SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
 }
 
 static void SignByPasswordCbHandler(lv_event_t *e)
@@ -324,24 +247,24 @@ void CloseScanErrorDataHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeHintBox)
+        GUI_DEL_OBJ(g_scanErrorHintBox)
         GuiQrCodeRefresh();
     }
 }
 
 static void GuiDealScanErrorResult(int errorType)
 {
-    g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
-    lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgFailed);
+    g_scanErrorHintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_scanErrorHintBox, &imgFailed);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
 
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("Invalid QR Code"));
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_scanErrorHintBox, _("Invalid QR Code"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
 
-    label = GuiCreateIllustrateLabel(g_noticeHintBox, _("QR code data not recognized. Please try again."));
+    label = GuiCreateIllustrateLabel(g_scanErrorHintBox, _("QR code data not recognized. Please try again."));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
-    lv_obj_t *btn = GuiCreateBtnWithFont(g_noticeHintBox, _("OK"), &openSansEnText);
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_scanErrorHintBox, _("OK"), &openSansEnText);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_add_event_cb(btn, CloseScanErrorDataHandler, LV_EVENT_CLICKED, NULL);
 }
@@ -464,31 +387,23 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
     }
 }
 
-void GuiQrCodeVerifyPasswordResult(bool result)
+void GuiQrCodeVerifyPasswordSuccess(void)
 {
-    if (result) {
-        lv_obj_del(g_qrCodeWidgetView.analysis);
-        GUI_DEL_OBJ(g_fingerSingContainer)
-        g_qrCodeWidgetView.analysis = NULL;
-        GUI_DEL_OBJ(g_noticeHintBox)
-        GuiQrCodeShowQrMessage(g_qrCodeWidgetView.cont);
-    } else {
-        lv_obj_clear_flag(g_qrCodeWidgetView.errLabel, LV_OBJ_FLAG_HIDDEN);
-        if (g_qrCodeWidgetView.kb != NULL) {
-            lv_textarea_set_text(g_qrCodeWidgetView.kb->ta, "");
-        }
-    }
+    lv_obj_del(g_qrCodeWidgetView.analysis);
+    GUI_DEL_OBJ(g_fingerSingContainer)
+    GUI_DEL_OBJ(g_scanErrorHintBox)
+    g_qrCodeWidgetView.analysis = NULL;
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
+    GuiQrCodeShowQrMessage(g_qrCodeWidgetView.cont);
 }
 
 void GuiQrCodeRefresh(void)
 {
-    g_noticeHintBox = NULL;
     GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseTimerCurrentViewHandler, NULL);
     GuiNvsBarSetMidCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     switch (g_pagePhase) {
     case PAGE_PHASE_SCAN_QR:
-        g_noticeHintBox = NULL;
         GuiQrCodeScreenCorner();
         GuiModeControlQrDecode(true);
         break;
@@ -513,13 +428,14 @@ void GuiQrCodeRefresh(void)
 
 void GuiQrCodeDeInit(void)
 {
-    GUI_DEL_OBJ(g_noticeHintBox)
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
+    GUI_DEL_OBJ(g_scanErrorHintBox)
     GUI_DEL_OBJ(g_fingerSingContainer)
     GuiTemplateClosePage();
     CloseQRTimer();
     lv_obj_del(g_qrCodeWidgetView.cont);
     g_qrCodeWidgetView.cont = NULL;
-    g_qrCodeWidgetView.kb = NULL;
+
     g_chainType = CHAIN_BUTT;
     g_pagePhase = PAGE_PHASE_SCAN_QR;
 
@@ -585,89 +501,5 @@ void GuiQrCodeDealFingerRecognize(void *param)
 void GuiQrCodeVerifyPasswordErrorCount(void *param)
 {
     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-    printf("GuiQrCodeVerifyPasswordErrorCount  errorcount is %d\n", passwordVerifyResult->errorCount);
-
-    if (g_qrCodeWidgetView.errLabel != NULL) {
-        char hint[128];
-        sprintf(hint, "Incorrect password, you have #F55831 %d# chances left", (MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX - passwordVerifyResult->errorCount));
-        lv_label_set_text(g_qrCodeWidgetView.errLabel, hint);
-        if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
-            GuiShowPasswordErrorHintBox();
-        }
-    }
-}
-
-static void GuiShowPasswordErrorHintBox(void)
-{
-    if (g_errorHintBox == NULL) {
-        g_errorHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgFailed,
-                                                "Attempt Limit Exceeded", "Device lock imminent. Please unlock to access the device.",
-                                                NULL, DARK_GRAY_COLOR, "Unlock Device (5s)", DARK_GRAY_COLOR);
-    }
-
-    if (g_errorHintBox != NULL) {
-        lv_obj_set_parent(g_errorHintBox, lv_scr_act());
-        if (lv_obj_has_flag(g_errorHintBox, LV_OBJ_FLAG_HIDDEN)) {
-            lv_obj_clear_flag(g_errorHintBox, LV_OBJ_FLAG_HIDDEN);
-        }
-        lv_obj_t *btn = GuiGetHintBoxRightBtn(g_errorHintBox);
-        lv_label_set_text(lv_obj_get_child(btn, 0), "Unlock Device (5s)");
-
-        lv_obj_remove_event_cb(btn, UnlockDeviceHandler);
-        lv_obj_add_event_cb(btn, UnlockDeviceHandler, LV_EVENT_CLICKED, NULL);
-        g_countDownTimer = lv_timer_create(CountDownTimerWipeDeviceHandler, 1000, btn);
-    }
-}
-
-static void UnlockDeviceHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiHintBoxToLockSreen();
-        GuiCountDownDestruct(NULL, NULL);
-    }
-}
-
-static void GuiHintBoxToLockSreen(void)
-{
-    static uint16_t sig = SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS;
-    GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_UNLOCK);
-    GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &sig, sizeof(sig));
-
-    if (!lv_obj_has_flag(g_qrCodeWidgetView.errLabel, LV_OBJ_FLAG_HIDDEN)) {
-        lv_obj_add_flag(g_qrCodeWidgetView.errLabel, LV_OBJ_FLAG_HIDDEN);
-    }
-
-    if (g_errorHintBox != NULL) {
-        if (!lv_obj_has_flag(g_errorHintBox, LV_OBJ_FLAG_HIDDEN)) {
-            lv_obj_add_flag(g_errorHintBox, LV_OBJ_FLAG_HIDDEN);
-        }
-    }
-}
-
-static void GuiCountDownDestruct(void *obj, void *param)
-{
-    if (g_countDownTimer != NULL) {
-        countDown = 5;
-        lv_timer_del(g_countDownTimer);
-        g_countDownTimer = NULL;
-        UNUSED(g_countDownTimer);
-    }
-}
-
-static void CountDownTimerWipeDeviceHandler(lv_timer_t *timer)
-{
-    lv_obj_t *obj = (lv_obj_t *)timer->user_data;
-    char buf[32] = {0};
-    --countDown;
-    if (countDown > 0) {
-        sprintf(buf, "Unlock Device (%ds)", countDown);
-    } else {
-        strcpy(buf, "Unlock Device");
-    }
-    lv_label_set_text(lv_obj_get_child(obj, 0), buf);
-    if (countDown <= 0) {
-        GuiHintBoxToLockSreen();
-        GuiCountDownDestruct(NULL, NULL);
-    }
+    GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
 }

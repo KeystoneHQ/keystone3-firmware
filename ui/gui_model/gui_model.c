@@ -338,6 +338,7 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
         SetWalletName(accountInfo.walletName);
         SetWalletIconIndex(accountInfo.iconIndex);
     }
+    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     GetExistAccountNum(&accountCnt);
     printf("after accountCnt = %d\n", accountCnt);
 }
@@ -639,6 +640,7 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
         SetWalletName(accountInfo.walletName);
         SetWalletIconIndex(accountInfo.iconIndex);
     }
+    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     CLEAR_ARRAY(ems);
     CLEAR_ARRAY(emsBak);
     GetExistAccountNum(&accountCnt);
@@ -804,6 +806,7 @@ static int32_t ModelChangeAmountPass(const void *inData, uint32_t inDataLen)
 
     ret = VerifyCurrentAccountPassword(SecretCacheGetPassword());
     ret = ChangePassword(GetCurrentAccountIndex(), SecretCacheGetNewPassword(), SecretCacheGetPassword());
+    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     if (ret == SUCCESS_CODE) {
         GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_PASS, NULL, 0);
     } else {

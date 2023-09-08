@@ -213,6 +213,19 @@ static void RecoveryPassphraseHandler(lv_event_t *e)
         }
     }
 }
+
+static void OpenPassphraseHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        g_noticeHintBox = GuiCreateHintBox(lv_event_get_user_data(e), 480, 132, true);
+        lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+        lv_obj_t *label = GuiCreateTextLabel(g_noticeHintBox, _("Coming soon..."));
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 716);
+    }
+}
+
 // wallet setting
 static void GuiWalletSetWidget(lv_obj_t *parent)
 {
@@ -285,7 +298,7 @@ static void GuiWalletSetWidget(lv_obj_t *parent)
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     table[0].obj = label;
     table[1].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 84, table, 2, WalletSettingHandler, &walletSetting[2]);
+    button = GuiCreateButton(parent, 456, 84, table, 2, OpenPassphraseHandler, &walletSetting[2]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 383 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateTextLabel(parent, _("wallet_setting_seed_phrase"));

@@ -125,6 +125,7 @@ if(COMPILE_MAIN)
         src/ui/gui_assets/abi
         src/ui/gui_frame
         src/ui/gui_widgets
+        src/ui/gui_widgets/setting
         src/ui/lv_i18n
         src/ui/gui_model
         src/ui/gui_analyze
@@ -256,6 +257,7 @@ if(COMPILE_MAIN)
         "src/ui/gui_frame/*.c"
         "src/ui/gui_views/*.c"
         "src/ui/gui_widgets/*.c"
+        "src/ui/gui_widgets/setting/*.c"
         "src/ui/pillar_demos/qrcode_sign/*.c"
         "src/ui/lv_i18n/*.c"
         "src/ui/gui_model/*.c"

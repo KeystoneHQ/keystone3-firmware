@@ -84,15 +84,13 @@ typedef struct ContLabelWidget_t {
 } ContLabelWidget_t;
 static ContLabelWidget_t g_waitAnimWidget;
 
-static KeyBoard_t *g_settingKb = NULL;         // setting keyboard
+static KeyBoard_t *g_setPassPhraseKb = NULL;         // setting keyboard
 static lv_obj_t *g_delWalletHintbox = NULL;    // del wallet hintbox
 static lv_obj_t *g_selectAmountHintbox = NULL; // select amount hintbox
 static lv_obj_t *g_noticeHintBox = NULL;       // notice hintbox
-static bool g_addWalletStatus;                 // add wallet status
 static bool g_delWalletStatus;                 // delete wallet status
 static lv_timer_t *g_countDownTimer;           // count down timer
 static lv_obj_t *g_resetingCont;               // resetting container
-static lv_obj_t *g_walletIcon;                 // wallet icon
 static lv_obj_t *g_walletSetIcon;              // wallet setting icon
 static lv_obj_t *g_walletSetLabel;             // wallet setting label
 static lv_obj_t *g_mfpLabel;                   // wallet setting label
@@ -138,6 +136,13 @@ static void OpenPassphraseLearnMoreHandler(lv_event_t *e);
 void RebootHandler(lv_event_t *e);
 void GuiClearQrcodeSignCnt(void);
 static void GuiShowKeyboardHandler(lv_event_t *e);
+
+void GuiSettingCloseToTargetTileView(uint8_t targetIndex)
+{
+    for (int i = g_deviceSetTileView.currentTile; i > targetIndex; i--) {
+        GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
+    }
+}
 
 static void WalletSettingHandler(lv_event_t *e)
 {
@@ -221,6 +226,18 @@ static void RecoveryPassphraseHandler(lv_event_t *e)
         }
     }
 }
+
+void GuiWalletSettingSetIconLabel(const lv_img_dsc_t *src, const char *name)
+{
+    if (g_walletSetIcon != NULL) {
+        lv_img_set_src(g_walletSetIcon, GuiGetEmojiIconImg());
+    }
+
+    if (g_walletSetLabel != NULL) {
+        lv_label_set_text(g_walletSetLabel, name);
+    }
+}
+
 // wallet setting
 static void GuiWalletSetWidget(lv_obj_t *parent)
 {
@@ -349,7 +366,6 @@ static void GuiShowKeyboardHandler(lv_event_t *e)
 
 static void GuiWalletSetFingerPassCodeWidget(lv_obj_t *parent)
 {
-    g_addWalletStatus = false;
     static uint32_t walletSetting[2] = {
         DEVICE_SETTING_FINGER_SETTING,
         DEVICE_SETTING_RESET_PASSCODE
@@ -858,17 +874,17 @@ static void SetKeyboardTaHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         lv_obj_t *ta = lv_event_get_user_data(e);
         if (ta == g_passphraseWidget.repeatTA) {
-            GuiSetFullKeyBoardConfirm(g_settingKb, true);
+            GuiSetFullKeyBoardConfirm(g_setPassPhraseKb, true);
         } else {
-            GuiSetFullKeyBoardConfirm(g_settingKb, false);
+            GuiSetFullKeyBoardConfirm(g_setPassPhraseKb, false);
         }
-        GuiSetFullKeyBoardTa(g_settingKb, ta);
+        GuiSetFullKeyBoardTa(g_setPassPhraseKb, ta);
 
         lv_obj_add_flag(g_passphraseWidget.lenOverLabel, LV_OBJ_FLAG_HIDDEN);
     } else if (code == KEY_STONE_KEYBOARD_CHANGE) {
         lv_keyboard_user_mode_t *keyMode = lv_event_get_param(e);
-        g_settingKb->mode = *keyMode;
-        GuiKeyBoardSetMode(g_settingKb);
+        g_setPassPhraseKb->mode = *keyMode;
+        GuiKeyBoardSetMode(g_setPassPhraseKb);
     }
 }
 
@@ -1183,9 +1199,9 @@ static void GuiWalletPassphraseEnter(lv_obj_t *parent)
     lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, repeatTa);
     g_passphraseWidget.repeatTA = repeatTa;
 
-    g_settingKb = GuiCreateFullKeyBoard(parent, UpdatePassPhraseHandler, KEY_STONE_FULL_L, NULL);
-    GuiSetKeyBoardMinTaLen(g_settingKb, 0);
-    GuiSetFullKeyBoardTa(g_settingKb, ta);
+    g_setPassPhraseKb = GuiCreateFullKeyBoard(parent, UpdatePassPhraseHandler, KEY_STONE_FULL_L, NULL);
+    GuiSetKeyBoardMinTaLen(g_setPassPhraseKb, 0);
+    GuiSetFullKeyBoardTa(g_setPassPhraseKb, ta);
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("Passphrase does not match"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 304 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
@@ -1297,7 +1313,6 @@ static void OpenPassphraseLearnMoreHandler(lv_event_t *e)
 
 static void GuiWalletPassphrase(lv_obj_t *parent)
 {
-    g_addWalletStatus = false;
     static uint16_t walletSetting = DEVICE_SETTING_PASSPHRASE_VERIFY;
 
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
@@ -1351,103 +1366,9 @@ static void GuiWalletPassphrase(lv_obj_t *parent)
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 254 - GUI_MAIN_AREA_OFFSET);
 }
 
-static void OpenEmojiKbHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiEmojiKeyBoard(lv_scr_act(), g_walletIcon);
-    }
-}
-
-static void GotoAddWalletHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_READY) {
-        lv_obj_add_flag(g_settingKb->cont, LV_OBJ_FLAG_HIDDEN);
-        const char *name = lv_textarea_get_text(g_settingKb->ta);
-        GuiNvsBarSetWalletName(name);
-        GuiNvsBarSetWalletIcon(GuiGetEmojiIconImg());
-        GuiFrameOpenView(&g_singlePhraseView);
-    }
-}
-
-static void UpdateWalletDescHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_READY) {
-        WalletDesc_t wallet = {
-            .iconIndex = GuiSearchIconIndex(g_walletIcon),
-        };
-        GuiSetEmojiIconIndex(wallet.iconIndex);
-        strcpy(wallet.name, lv_textarea_get_text(g_settingKb->ta));
-        GuiModelSettingSaveWalletDesc(&wallet);
-    }
-}
-
-static void *GuiWalletNameWallet(lv_obj_t *parent, uint8_t tile)
-{
-    lv_event_cb_t cb = NULL;
-    if (tile == DEVICE_SETTING_CHANGE_WALLET_DESC) {
-        g_addWalletStatus = false;
-        cb = UpdateWalletDescHandler;
-    } else if (tile == DEVICE_SETTING_ADD_WALLET_NAME_WALLET) {
-        g_addWalletStatus = true;
-        cb = GotoAddWalletHandler;
-    }
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_backup_namewallet_title"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
-
-    label = GuiCreateIllustrateLabel(parent, _("single_backup_namewallet_desc"));
-    lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
-
-    g_settingKb = GuiCreateFullKeyBoard(parent, cb, KEY_STONE_FULL_L, NULL);
-    GuiSetKeyBoardMinTaLen(g_settingKb, 0);
-    lv_obj_set_size(g_settingKb->ta, 300, 60);
-    lv_obj_set_style_text_opa(g_settingKb->ta, LV_OPA_100, 0);
-    lv_obj_align(g_settingKb->ta, LV_ALIGN_DEFAULT, 126, 320 - GUI_MAIN_AREA_OFFSET);
-    lv_textarea_set_max_length(g_settingKb->ta, 16);
-    lv_textarea_set_placeholder_text(g_settingKb->ta, "Wallet Name");
-    lv_obj_set_style_text_opa(g_settingKb->ta, LV_OPA_50, LV_PART_TEXTAREA_PLACEHOLDER);
-    lv_obj_set_style_border_color(g_settingKb->ta, ORANGE_COLOR, LV_PART_CURSOR | LV_STATE_FOCUSED);
-    lv_textarea_set_text(g_settingKb->ta, GuiNvsBarGetWalletName());
-
-    char tempBuf[16] = {0};
-    sprintf(tempBuf, "%d/16", strlen(GuiNvsBarGetWalletName()));
-    GuiSetEmojiIconIndex(GUI_KEYBOARD_EMOJI_CANCEL_NEW_INDEX);
-    lv_obj_t *progresslabel = GuiCreateNoticeLabel(parent, tempBuf);
-    lv_obj_align(progresslabel, LV_ALIGN_DEFAULT, 402, 384 - GUI_MAIN_AREA_OFFSET);
-    GuiSetEnterProgressLabel(progresslabel);
-    lv_obj_t *img = GuiCreateImg(parent, GuiGetEmojiIconImg());
-    g_walletIcon = img;
-
-    lv_obj_t *arrowDownImg = GuiCreateImg(parent, &imgArrowDownS);
-
-    GuiButton_t table[2] = {
-        {
-            .obj = img,
-            .align = LV_ALIGN_LEFT_MID,
-            .position = {15, 0},
-        },
-        {
-            .obj = arrowDownImg,
-            .align = LV_ALIGN_LEFT_MID,
-            .position = {59, 0},
-        },
-    };
-    lv_obj_t *button = GuiCreateButton(parent, 100, 70, table, NUMBER_OF_ARRAYS(table), OpenEmojiKbHandler, parent);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 312 - GUI_MAIN_AREA_OFFSET);
-
-    return progresslabel;
-}
-
 void GuiSettingFullKeyBoardDestruct(void *obj, void *param)
 {
-    lv_obj_del(g_settingKb->cont);
-    g_settingKb = NULL;
-    g_walletIcon = NULL;
-    GuiDelEnterProgressLabel();
+    GuiWalletNameWalletDestruct();
 }
 
 static void GuiWalletAddLimit(lv_obj_t *parent)
@@ -1812,7 +1733,6 @@ void GuiWalletRecoveryDestruct(void *obj, void *param)
     lv_obj_add_flag(g_buttonCont, LV_OBJ_FLAG_HIDDEN);
     // lv_obj_del((lv_obj_t *)obj);
     g_recoveryPhraseKb = NULL;
-    g_walletIcon = NULL;
     lv_obj_del(g_recoveryMkb->nextButton);
     g_buttonCont = NULL;
     // lv_obj_del(obj);
@@ -2025,53 +1945,17 @@ static void GuiResettingWriteSe(void)
 void GuiSettingRepeatPinPass(const char *buf)
 {
     uint8_t accountIndex = 0;
-    if (g_addWalletStatus == true) {
+    if (!strcmp(buf, g_deviceSetTileView.pass)) {
+        GuiResettingWriteSe();
         SecretCacheSetNewPassword((char *)buf);
-        static uint8_t walletIndex = DEVICE_SETTING_ADD_WALLET_REPEATPASS;
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
+        GuiModelChangeAmountPassWord(accountIndex);
     } else {
-        if (!strcmp(buf, g_deviceSetTileView.pass)) {
-            GuiResettingWriteSe();
-            SecretCacheSetNewPassword((char *)buf);
-            GuiModelChangeAmountPassWord(accountIndex);
-        } else {
-            GuiEnterPassCodeStatus(g_repeatPassCode, false);
-        }
+        GuiEnterPassCodeStatus(g_repeatPassCode, false);
     }
-}
-
-void GuiChangeWalletDesc(bool result)
-{
-    static uint8_t walletIndex = 0;
-    if (g_addWalletStatus == true) {
-        // walletIndex = DEVICE_SETTING_ADD_WALLET_NAME_WALLET;
-        walletIndex = DEVICE_SETTING_ADD_WALLET_LIMIT;
-    } else {
-        if (g_settingKb != NULL && g_settingKb->ta != NULL) {
-            const char *name = lv_textarea_get_text(g_settingKb->ta);
-            GuiNvsBarSetWalletName(name);
-            SetStatusBarEmojiIndex(GuiGetEmojiIconIndex());
-            if (g_walletIcon != NULL) {
-                GuiNvsBarSetWalletIcon(GuiGetEmojiIconImg());
-            }
-
-            if (g_walletSetIcon != NULL) {
-                lv_img_set_src(g_walletSetIcon, GuiGetEmojiIconImg());
-            }
-
-            if (g_walletSetLabel != NULL) {
-                lv_label_set_text(g_walletSetLabel, name);
-            }
-        }
-        CloseToTargetTileView(g_deviceSetTileView.currentTile, DEVICE_SETTING_WALLET_SETTING);
-        return;
-    }
-    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
 }
 
 void GuiDelWallet(bool result)
 {
-    // GuiStopCircleAroundAnimation();
     GuiDeleteAnimHintBox();
     g_waitAnimWidget.cont = NULL;
     GuiCLoseCurrentWorkingView();

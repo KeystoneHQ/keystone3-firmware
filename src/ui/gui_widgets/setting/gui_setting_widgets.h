@@ -93,6 +93,9 @@ void GuiSettingInit(void);
 void GuiSettingRefresh(void);
 int8_t GuiDevSettingPrevTile(uint8_t tileIndex);
 int8_t GuiDevSettingNextTile(uint8_t tileIndex);
+
+void GuiSettingCloseToTargetTileView(uint8_t targetIndex);
+
 void GuiDevSettingPassCode(bool result, uint8_t tileIndex);
 void GuiSettingSetPinPass(const char* buf);
 void GuiSettingRepeatPinPass(const char* buf);
@@ -120,6 +123,11 @@ void GuiSettingRecoveryCheck(void);
 void CloseToSubtopViewHandler(lv_event_t *e);
 
 void GuiVerifyCurrentPasswordErrorCount(void *param);
+
+// wallet name and icon setting
+void *GuiWalletNameWallet(lv_obj_t *parent, uint8_t tile);
+void GuiWalletNameWalletDestruct(void);
+void GuiWalletSettingSetIconLabel(const lv_img_dsc_t *src, const char *name);
 
 #endif /* _GUI_SETTING_WIDGETS_H */
 

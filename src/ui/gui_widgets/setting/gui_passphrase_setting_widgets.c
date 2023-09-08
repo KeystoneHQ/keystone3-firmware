@@ -220,10 +220,7 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
         const char *repeat = lv_textarea_get_text(g_passphraseWidget.repeatTA);
         if (!strcmp(input, repeat)) {
             SecretCacheSetPassphrase((char *)repeat);
-            g_waitAnimWidget.cont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
-            g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("seed_check_wait_verify"));
-            lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
-            lv_obj_add_flag(g_waitAnimWidget.cont, LV_OBJ_FLAG_CLICKABLE);
+            GuiSettingAnimSetLabel(_("seed_check_wait_verify"));
             GuiModelSettingWritePassphrase();
         } else {
             delayFlag = true;

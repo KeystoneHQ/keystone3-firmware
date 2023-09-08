@@ -16,46 +16,30 @@
 #include "device_setting.h"
 #include "motor_manager.h"
 #include "gui_lock_widgets.h"
+#include "gui_keyboard_hintbox.h"
 #ifdef COMPILE_SIMULATOR
 #else
 #include "drv_battery.h"
 #endif
+
 static lv_obj_t *container;
-typedef struct KeyBoardBundle {
-    lv_obj_t *errLabel;
-    KeyBoard_t *kb;
-} KeyBoardBundle_t;
-
-static KeyBoardBundle_t g_keyBoardBundle;
-
-static lv_obj_t *g_noticeHintBox = NULL;
-static lv_obj_t *g_errorHintBox = NULL;
-static lv_timer_t *g_countDownTimer;
-static int8_t countDown = 5;
-
 static lv_obj_t *vibrationSw;
+
+static KeyboardWidget_t *g_keyboardWidget = NULL;
 
 void GuiSystemSettingNVSBarInit();
 void GuiSystemSettingEntranceWidget(lv_obj_t *parent);
 static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e);
 static void GuiShowKeyBoardDialog(lv_obj_t *parent);
-static void VerifyPasswordHandler(lv_event_t *e);
-static void UnlockDeviceHandler(lv_event_t *e);
-static void GuiShowPasswordErrorHintBox(void);
-static void CountDownTimerWipeDeviceHandler(lv_timer_t *timer);
-static void GuiHintBoxToLockSreen(void);
-static void GuiCountDownDestruct(void *obj, void *param);
 static void DispalyHandler(lv_event_t *e);
 
 static void VibrationHandler(lv_event_t *e);
 static void VibrationSwitchHandler(lv_event_t * e);
-static void ForgetHandler(lv_event_t *e);
 
 void OpenForgetPasswordHandler(lv_event_t *e);
 
 void GuiSystemSettingAreaInit()
 {
-    GuiSystemSettingNVSBarInit();
     if (container != NULL) {
         lv_obj_del(container);
         container = NULL;
@@ -165,8 +149,8 @@ void GuiSystemSettingNVSBarInit()
 
 void GuiSystemSettingAreaDeInit()
 {
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
     if (container != NULL) {
-        GUI_DEL_OBJ(g_noticeHintBox)
         lv_obj_del(container);
         container = NULL;
     }
@@ -174,8 +158,7 @@ void GuiSystemSettingAreaDeInit()
 
 void GuiSystemSettingAreaRefresh()
 {
-    GuiSystemSettingAreaDeInit();
-    GuiSystemSettingAreaInit();
+    GuiSystemSettingNVSBarInit();
 }
 
 
@@ -196,189 +179,26 @@ static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e)
 
 static void GuiShowKeyBoardDialog(lv_obj_t *parent)
 {
-
-    g_noticeHintBox = GuiCreateHintBox(parent, 480, 576, true);
-    lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-    lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeHintBox, _("Please Enter Passcode"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 254);
-
-    lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgClose);
-    lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, NULL);
-    GuiButton_t table[] = {
-        {
-            .obj = img,
-            .align = LV_ALIGN_CENTER,
-            .position = {0, 0},
-        },
-    };
-    lv_obj_t *button = GuiCreateButton(g_noticeHintBox, 36, 36, table, NUMBER_OF_ARRAYS(table),
-                                       CloseHintBoxHandler, &g_noticeHintBox);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 408, 251);
-
-    g_keyBoardBundle.kb = GuiCreateFullKeyBoard(g_noticeHintBox, VerifyPasswordHandler, KEY_STONE_FULL_L, NULL);
-    GuiSetKeyBoardMinTaLen(g_keyBoardBundle.kb, 0);
-    lv_obj_t *ta = g_keyBoardBundle.kb->ta;
-    lv_textarea_set_placeholder_text(ta, _("Enter Passcode"));
-    lv_obj_set_size(ta, 352, 100);
-    lv_obj_align(ta, LV_ALIGN_DEFAULT, 36, 332);
-    lv_obj_set_style_text_opa(ta, LV_OPA_100, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(ta, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_textarea_set_password_mode(ta, true);
-    lv_textarea_set_max_length(ta, GUI_DEFINE_MAX_PASSCODE_LEN);
-    lv_textarea_set_one_line(ta, true);
-
-    img = GuiCreateImg(g_noticeHintBox, &imgEyeOff);
-    lv_obj_align(img, LV_ALIGN_DEFAULT, 411, 332);
-    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, ta);
-
-    button = GuiCreateImgLabelButton(g_noticeHintBox, _("FORGET"), &imgLock, ForgetHandler, &g_systemSettingView);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 333, 439);
-
-    label = GuiCreateIllustrateLabel(g_noticeHintBox, _("Password does not match"));
-    lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 390);
-    lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
-    g_keyBoardBundle.errLabel = label;
-    lv_label_set_recolor(g_keyBoardBundle.errLabel, true);
-
+    g_keyboardWidget = GuiCreateKeyboardWidget(parent);
+    SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
 }
 
-static void ForgetHandler(lv_event_t *e)
+
+void GuiSystemSettingVerifyPasswordSuccess(void)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeHintBox)
-        OpenForgetPasswordHandler(e);
-    }
-}
-
-static void VerifyPasswordHandler(lv_event_t *e)
-{
-    static uint16_t passCodeType = ENTER_PASSCODE_VERIFY_PASSWORD;
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_READY) {
-        const char *currText = lv_textarea_get_text(g_keyBoardBundle.kb->ta);
-        SecretCacheSetPassword((char *)currText);
-        GuiModelVerifyAmountPassWord(&passCodeType);
-    }
-
-    if (code == LV_EVENT_VALUE_CHANGED) {
-        Vibrate(SLIGHT);
-        if (!lv_obj_has_flag(g_keyBoardBundle.errLabel, LV_OBJ_FLAG_HIDDEN)) {
-            lv_obj_add_flag(g_keyBoardBundle.errLabel, LV_OBJ_FLAG_HIDDEN);
-        }
-    }
-}
-
-void GuiSystemSettingVerifyPasswordResult(bool result)
-{
-    if (result) {
-        printf(" password is right\n");
-        GUI_DEL_OBJ(g_noticeHintBox)
-        GuiFrameOpenView(&g_wipeDeviceView);
-    } else {
-        printf(" password is error\n");
-        lv_obj_clear_flag(g_keyBoardBundle.errLabel, LV_OBJ_FLAG_HIDDEN);
-        lv_textarea_set_text(g_keyBoardBundle.kb->ta, "");
-    }
+    printf("password is right\n");
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
+    GuiFrameOpenView(&g_wipeDeviceView);
 }
 
 void GuiSystemSettingVerifyPasswordErrorCount(void *param)
 {
     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-    printf("GuiSystemSettingVerifyPasswordErrorCount  errorcount is %d\n", passwordVerifyResult->errorCount);
-
-    if (g_keyBoardBundle.errLabel != NULL) {
-        char hint[128];
-        sprintf(hint, "Incorrect password, you have #F55831 %d# chances left", (MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX - passwordVerifyResult->errorCount));
-        lv_label_set_text(g_keyBoardBundle.errLabel, hint);
-        if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
-            GuiShowPasswordErrorHintBox();
-        }
-    }
-}
-
-static void GuiShowPasswordErrorHintBox(void)
-{
-    if (g_errorHintBox == NULL) {
-        g_errorHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgFailed,
-                                                "Attempt Limit Exceeded", "Device lock imminent. Please unlock to access the device.",
-                                                NULL, DARK_GRAY_COLOR, "Unlock Device (5s)", DARK_GRAY_COLOR);
-    }
-
-    if (g_errorHintBox != NULL) {
-        lv_obj_set_parent(g_errorHintBox, lv_scr_act());
-        if (lv_obj_has_flag(g_errorHintBox, LV_OBJ_FLAG_HIDDEN)) {
-            lv_obj_clear_flag(g_errorHintBox, LV_OBJ_FLAG_HIDDEN);
-        }
-        lv_obj_t *btn = GuiGetHintBoxRightBtn(g_errorHintBox);
-        lv_label_set_text(lv_obj_get_child(btn, 0), "Unlock Device (5s)");
-
-        lv_obj_remove_event_cb(btn, UnlockDeviceHandler);
-        lv_obj_add_event_cb(btn, UnlockDeviceHandler, LV_EVENT_CLICKED, NULL);
-        g_countDownTimer = lv_timer_create(CountDownTimerWipeDeviceHandler, 1000, btn);
-    }
-}
-
-
-static void UnlockDeviceHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiHintBoxToLockSreen();
-        GuiCountDownDestruct(NULL, NULL);
-    }
-}
-
-static void GuiHintBoxToLockSreen(void)
-{
-    static uint16_t sig = SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS;
-    GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_UNLOCK);
-    GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &sig, sizeof(sig));
-
-    if (!lv_obj_has_flag(g_keyBoardBundle.errLabel, LV_OBJ_FLAG_HIDDEN)) {
-        lv_obj_add_flag(g_keyBoardBundle.errLabel, LV_OBJ_FLAG_HIDDEN);
-    }
-
-    if (g_errorHintBox != NULL) {
-        if (!lv_obj_has_flag(g_errorHintBox, LV_OBJ_FLAG_HIDDEN)) {
-            lv_obj_add_flag(g_errorHintBox, LV_OBJ_FLAG_HIDDEN);
-        }
-    }
-}
-
-static void GuiCountDownDestruct(void *obj, void *param)
-{
-    if (g_countDownTimer != NULL) {
-        countDown = 5;
-        lv_timer_del(g_countDownTimer);
-        g_countDownTimer = NULL;
-        UNUSED(g_countDownTimer);
-    }
-}
-
-static void CountDownTimerWipeDeviceHandler(lv_timer_t *timer)
-{
-    lv_obj_t *obj = (lv_obj_t *)timer->user_data;
-    char buf[32] = {0};
-    --countDown;
-    if (countDown > 0) {
-        sprintf(buf, "Unlock Device (%ds)", countDown);
-    } else {
-        strcpy(buf, "Unlock Device");
-    }
-    lv_label_set_text(lv_obj_get_child(obj, 0), buf);
-    if (countDown <= 0) {
-        GuiHintBoxToLockSreen();
-        GuiCountDownDestruct(NULL, NULL);
-    }
+    GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
 }
 
 static void DispalyHandler(lv_event_t *e)
 {
-
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
@@ -398,7 +218,6 @@ static void VibrationHandler(lv_event_t *e)
         }
         lv_event_send(vibrationSw, LV_EVENT_VALUE_CHANGED, NULL);
     }
-
 }
 
 static void VibrationSwitchHandler(lv_event_t * e)

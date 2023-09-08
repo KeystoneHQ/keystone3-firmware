@@ -23,6 +23,7 @@
 #include "gui_mnemonic_input.h"
 #include "motor_manager.h"
 #include "fingerprint_process.h"
+#include "gui_keyboard_hintbox.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "keystore.h"
@@ -124,6 +125,9 @@ static lv_obj_t *g_fpAddCont = NULL;
 
 static lv_obj_t *g_passphraseLearnMoreCont = NULL;
 
+static KeyboardWidget_t *g_keyboardWidget = NULL;
+
+
 static void ImportPhraseWordsHandler(lv_event_t *e);
 static lv_obj_t *g_passphraseQuickAccessSwitch;
 
@@ -133,6 +137,7 @@ static void ModelSetPassphraseQuickAccess(bool enable);
 static void OpenPassphraseLearnMoreHandler(lv_event_t *e);
 void RebootHandler(lv_event_t *e);
 void GuiClearQrcodeSignCnt(void);
+static void GuiShowKeyboardHandler(lv_event_t *e);
 
 static void WalletSettingHandler(lv_event_t *e)
 {
@@ -209,9 +214,10 @@ static void RecoveryPassphraseHandler(lv_event_t *e)
             GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &recoveryMethod, sizeof(recoveryMethod));
         } else {
             static uint16_t recoveryMethod = DEVICE_SETTING_RECOVERY_PHRASE_VERIFY;
-            GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_VERIFY);
-            GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &recoveryMethod, sizeof(recoveryMethod));
-            GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, GuiLockScreenTurnOffHandler, NULL);
+            GuiDeleteKeyboardWidget(g_keyboardWidget);
+            g_keyboardWidget = GuiCreateKeyboardWidget(lv_obj_get_parent(g_deviceSetTileView.cont));
+            SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+            SetKeyboardWidgetSig(g_keyboardWidget, &recoveryMethod);
         }
     }
 }
@@ -304,7 +310,7 @@ static void GuiWalletSetWidget(lv_obj_t *parent)
     label = GuiCreateTextLabel(parent, _("+ Add Wallet"));
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
     table[0].obj = label;
-    button = GuiCreateButton(parent, 456, 84, table, 1, GuiLockScreenTurnOnHandler, &walletSetting[4]);
+    button = GuiCreateButton(parent, 456, 84, table, 1, GuiShowKeyboardHandler, &walletSetting[4]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 588 - GUI_MAIN_AREA_OFFSET);
 }
 
@@ -325,6 +331,20 @@ void GuiSettingStructureCb(void *obj, void *param)
     }
     memset(mfp, 0, sizeof(mfp));
     lv_label_set_text(g_mfpLabel, tempBuf);
+}
+
+
+static void GuiShowKeyboardHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+     if (code == LV_EVENT_CLICKED) {
+        uint16_t *walletSetIndex = lv_event_get_user_data(e);
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+        g_keyboardWidget = GuiCreateKeyboardWidget(lv_obj_get_parent(g_deviceSetTileView.cont));
+        SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+        SetKeyboardWidgetSig(g_keyboardWidget, walletSetIndex);
+    }
 }
 
 static void GuiWalletSetFingerPassCodeWidget(lv_obj_t *parent)
@@ -353,7 +373,7 @@ static void GuiWalletSetFingerPassCodeWidget(lv_obj_t *parent)
         },
     };
     lv_obj_t *button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                                       GuiLockScreenTurnOnHandler, &walletSetting[0]);
+                                       GuiShowKeyboardHandler, &walletSetting[0]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 144 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
@@ -363,7 +383,7 @@ static void GuiWalletSetFingerPassCodeWidget(lv_obj_t *parent)
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     table[0].obj = label;
     table[1].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 84, table, 2, GuiLockScreenTurnOnHandler, &walletSetting[1]);
+    button = GuiCreateButton(parent, 456, 84, table, 2, GuiShowKeyboardHandler, &walletSetting[1]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 253 - GUI_MAIN_AREA_OFFSET);
 }
 
@@ -1298,7 +1318,7 @@ static void GuiWalletPassphrase(lv_obj_t *parent)
             .position = {376, 0},
         },
     };
-    lv_obj_t *button = GuiCreateButton(parent, 456, 84, table, 2, GuiLockScreenTurnOnHandler, &walletSetting);
+    lv_obj_t *button = GuiCreateButton(parent, 456, 84, table, 2, GuiShowKeyboardHandler, &walletSetting);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 144 - GUI_MAIN_AREA_OFFSET);
 
     g_passphraseQuickAccessSwitch = lv_switch_create(parent);
@@ -1871,10 +1891,8 @@ static void DelWalletHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
-        GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_VERIFY);
-        GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &walletIndex, sizeof(walletIndex));
-        GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, GuiLockScreenTurnOffHandler, NULL);
         g_delWalletHintbox = NULL;
+        GuiShowKeyboardHandler(e);
     }
 }
 
@@ -1981,11 +1999,9 @@ void GuiDevSettingPassCode(bool result, uint8_t tileIndex)
     }
 
     if (result) {
-        GuiLockScreenTurnOff();
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
-    } else {
-        GuiLockScreenPassCode(false);
-    }
+    } 
 }
 
 void GuiSettingSetPinPass(const char *buf)
@@ -2174,6 +2190,7 @@ void GuiSettingInit(void)
 void GuiSettingDeInit(void)
 {
     g_delWalletStatus = false;
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
     GUI_DEL_OBJ(g_delWalletHintbox)
     GUI_DEL_OBJ(g_noticeHintBox)
     GUI_DEL_OBJ(g_selectAmountHintbox)
@@ -2454,7 +2471,7 @@ int8_t GuiDevSettingPrevTile(uint8_t tileIndex)
     switch (rightBtn) {
     case NVS_BAR_QUESTION_MARK:
     case NVS_BAR_MORE_INFO:
-        GuiNvsBarSetRightCb(rightBtn, rightCb, NULL);
+        GuiNvsBarSetRightCb(rightBtn, rightCb, g_deviceSettingArray[currentTile].tile);
         break;
     case NVS_BAR_WORD_RESET:
         rightCb = ResetClearImportHandler;
@@ -2662,4 +2679,10 @@ void GuiSettingRecoveryCheck(void)
     g_waitAnimWidget.cont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
     g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("seed_check_wait_verify"));
     lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
+}
+
+void GuiVerifyCurrentPasswordErrorCount(void *param)
+{
+    PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
+    GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
 }

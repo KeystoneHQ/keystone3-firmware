@@ -1534,16 +1534,7 @@ void GuiSettingInit(void)
                                         GUI_MAIN_AREA_OFFSET);
     lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
 
-    lv_obj_t *tileView = lv_tileview_create(cont);
-    lv_obj_clear_flag(tileView, LV_OBJ_FLAG_SCROLLABLE);
-    if (GuiDarkMode()) {
-        lv_obj_set_style_bg_color(tileView, BLACK_COLOR, LV_PART_MAIN);
-    } else {
-        lv_obj_set_style_bg_color(tileView, WHITE_COLOR, LV_PART_MAIN);
-    }
-    lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
-    lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
-
+    lv_obj_t *tileView = GuiCreateTileView(cont);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, DEVICE_SETTING, 0, LV_DIR_HOR);
     GuiSettingEntranceWidget(tile);
 
@@ -1571,7 +1562,7 @@ void GuiSettingDeInit(void)
     GUI_DEL_OBJ(g_noticeHintBox)
     GUI_DEL_OBJ(g_selectAmountHintbox)
     GUI_DEL_OBJ(g_passphraseLearnMoreCont)
-    // GUI_DEL_OBJ(g_verifyFingerCont) // todo
+    GuiFpVerifyDestruct();
     // if (g_recoveryMkb->cont != NULL) {
     //     GUI_DEL_OBJ(g_recoveryMkb->cont)
     // }
@@ -1811,6 +1802,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
 
     return SUCCESS_CODE;
 }
+
 int8_t GuiDevSettingPrevTile(uint8_t tileIndex)
 {
     uint8_t currentTile = g_deviceSetTileView.currentTile;
@@ -1904,7 +1896,7 @@ static void PassphraseQuickAccessHandler(lv_event_t *e)
         } else {
             lv_obj_add_state(switchBox, LV_STATE_CHECKED);
         }
-        ModelSetPassphraseQuickAccess(!en);
+        SetPassphraseQuickAccess(!en);
         lv_event_send(switchBox, LV_EVENT_VALUE_CHANGED, NULL);
     }
 }
@@ -1916,19 +1908,6 @@ static bool ModelGetPassphraseQuickAccess(void)
 #else
     return GetPassphraseQuickAccess();
 #endif
-}
-
-static void ModelSetPassphraseQuickAccess(bool enable)
-{
-#ifdef COMPILE_SIMULATOR
-#else
-    return SetPassphraseQuickAccess(enable);
-#endif
-}
-
-void GuiSettingFingerDeleteSuccess(void)
-{
-    GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
 }
 
 void GuiSettingRecoveryCheck(void)

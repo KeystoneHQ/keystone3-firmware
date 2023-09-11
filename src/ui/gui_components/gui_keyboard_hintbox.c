@@ -35,8 +35,11 @@ static void KeyboardConfirmHandler(lv_event_t *e)
 
     if (code == LV_EVENT_READY) {
         const char *currText = GuiGetKeyboardInput(keyboardWidget);
-        SecretCacheSetPassword((char *)currText);
-        GuiModelVerifyAmountPassWord(keyboardWidget->sig);
+        if (strlen(currText) > 0) {
+            SecretCacheSetPassword((char *)currText);
+            GuiModelVerifyAmountPassWord(keyboardWidget->sig);
+            GuiClearKeyboardInput(keyboardWidget);
+        }
     }
 
     if (code == LV_EVENT_VALUE_CHANGED) {

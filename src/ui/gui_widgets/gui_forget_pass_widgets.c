@@ -16,19 +16,12 @@
 #include "slip39.h"
 #include "gui_forget_pass_widgets.h"
 #include "gui_setting_widgets.h"
-
 #include "gui_mnemonic_input.h"
-
 #ifndef COMPILE_MAC_SIMULATOR
 #include "sha256.h"
 #else
 #include "simulator_model.h"
 #endif
-
-#define DEVICE_SETTING_PASS_MAX_LEN                                 16
-#define DEVICE_SETTING_RIGHT_LABEL_MAX_LEN                          DEVICE_SETTING_PASS_MAX_LEN
-#define DEVICE_SETTING_MID_LABEL_MAX_LEN                            32
-#define DEVICE_SETTING_LEVEL_MAX                                    8
 
 typedef struct {
     uint8_t     currentTile;                                    // current x tile
@@ -51,9 +44,9 @@ typedef enum {
 // static void ImportPhraseWords(void);
 
 static char g_pinBuf[GUI_DEFINE_MAX_PASSCODE_LEN + 1];
-static MnemonicKeyBoard_t *g_recoveryMkb;
-static KeyBoard_t *g_recoveryPhraseKb;
+static KeyBoard_t *g_forgetPhraseKb;
 static lv_obj_t *g_enterMnemonicCont;
+static MnemonicKeyBoard_t *g_forgetMkb;
 static uint8_t g_phraseCnt = 33;
 static GuiEnterPasscodeItem_t *g_setPassCode = NULL;
 static GuiEnterPasscodeItem_t *g_repeatPassCode = NULL;
@@ -82,7 +75,7 @@ static void ContinueStopCreateHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         if (lv_event_get_user_data(e) != NULL) {
-            g_recoveryMkb->currentSlice = 0;
+            g_forgetMkb->currentSlice = 0;
             GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
             CloseToTargetTileView(g_forgetPassTileView.currentTile, FORGET_PASSWORD_METHOD_SELECT);
         }
@@ -177,16 +170,16 @@ void GuiForgetPassRepeatPinPass(const char* buf)
         SecretCacheSetNewPassword((char *)buf);
         memset(g_pinBuf, 0, sizeof(g_pinBuf));
         GuiForgetAnimContDel(0);
-        if (g_recoveryMkb->wordCnt == 33 || g_recoveryMkb->wordCnt == 20) {
+        if (g_forgetMkb->wordCnt == 33 || g_forgetMkb->wordCnt == 20) {
             Slip39Data_t slip39 = {
-                .threShold = g_recoveryMkb->threShold,
-                .wordCnt = g_recoveryMkb->wordCnt,
+                .threShold = g_forgetMkb->threShold,
+                .wordCnt = g_forgetMkb->wordCnt,
                 .forget = true,
             };
             GuiModelSlip39CalWriteSe(slip39);
         } else {
             Bip39Data_t bip39 = {
-                .wordCnt = g_recoveryMkb->wordCnt,
+                .wordCnt = g_forgetMkb->wordCnt,
                 .forget = true,
             };
             GuiModelBip39CalWriteSe(bip39);
@@ -212,7 +205,7 @@ static void ImportPhraseWordsHandler(lv_event_t* e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        ImportSinglePhraseWords(g_recoveryMkb, g_recoveryPhraseKb);
+        ImportSinglePhraseWords(g_forgetMkb, g_forgetPhraseKb);
     }
 }
 
@@ -221,7 +214,7 @@ static void ImportShareNextSliceHandler(lv_event_t* e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        ImportShareNextSlice(g_recoveryMkb, g_recoveryPhraseKb);
+        ImportShareNextSlice(g_forgetMkb, g_forgetPhraseKb);
     }
 }
 
@@ -229,8 +222,8 @@ static void ResetClearImportHandler(lv_event_t * e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        ClearMnemonicKeyboard(g_recoveryMkb, &g_recoveryMkb->currentId);
-        GuiClearKeyBoard(g_recoveryPhraseKb);
+        ClearMnemonicKeyboard(g_forgetMkb, &g_forgetMkb->currentId);
+        GuiClearKeyBoard(g_forgetPhraseKb);
     }
 }
 
@@ -240,72 +233,72 @@ static void *GuiWalletRecoverySinglePhrase(uint8_t wordAmount)
     bool bip39 = true;
     g_phraseCnt = wordAmount;
 
-    g_recoveryMkb = GuiCreateMnemonicKeyBoard(g_enterMnemonicCont, GuiMnemonicInputHandler, kbMode, NULL);
-    g_recoveryMkb->intputType = MNEMONIC_INPUT_FORGET_VIEW;
+    g_forgetMkb = GuiCreateMnemonicKeyBoard(g_enterMnemonicCont, GuiMnemonicInputHandler, kbMode, NULL);
+    g_forgetMkb->intputType = MNEMONIC_INPUT_FORGET_VIEW;
     g_nextCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 114);
     lv_obj_set_align(g_nextCont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_opa(g_nextCont, LV_OPA_0, 0);
-    g_recoveryMkb->nextButton = GuiCreateBtn(g_nextCont, "");
-    lv_obj_t *img = GuiCreateImg(g_recoveryMkb->nextButton, &imgArrowNext);
+    g_forgetMkb->nextButton = GuiCreateBtn(g_nextCont, "");
+    lv_obj_t *img = GuiCreateImg(g_forgetMkb->nextButton, &imgArrowNext);
     lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_align(g_recoveryMkb->nextButton, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
+    lv_obj_align(g_forgetMkb->nextButton, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
 
     if (wordAmount == 20 || wordAmount == 33) {
-        g_recoveryMkb->stepLabel = GuiCreateNoticeLabel(g_nextCont, "");
-        lv_obj_align(g_recoveryMkb->stepLabel, LV_ALIGN_TOP_LEFT, 36, 39);
+        g_forgetMkb->stepLabel = GuiCreateNoticeLabel(g_nextCont, "");
+        lv_obj_align(g_forgetMkb->stepLabel, LV_ALIGN_TOP_LEFT, 36, 39);
 
-        g_recoveryMkb->titleLabel = GuiCreateTitleLabel(g_enterMnemonicCont, _(""));
-        lv_obj_align(g_recoveryMkb->titleLabel, LV_ALIGN_DEFAULT, 36, 12);
-        lv_label_set_recolor(g_recoveryMkb->titleLabel, true);
+        g_forgetMkb->titleLabel = GuiCreateTitleLabel(g_enterMnemonicCont, _(""));
+        lv_obj_align(g_forgetMkb->titleLabel, LV_ALIGN_DEFAULT, 36, 12);
+        lv_label_set_recolor(g_forgetMkb->titleLabel, true);
 
-        g_recoveryMkb->descLabel = GuiCreateIllustrateLabel(g_enterMnemonicCont, _(""));
-        lv_label_set_recolor(g_recoveryMkb->descLabel, true);
-        lv_obj_align(g_recoveryMkb->descLabel, LV_ALIGN_DEFAULT, 36, 72);
-        lv_obj_add_event_cb(g_recoveryMkb->nextButton, ImportShareNextSliceHandler, LV_EVENT_CLICKED, NULL);
+        g_forgetMkb->descLabel = GuiCreateIllustrateLabel(g_enterMnemonicCont, _(""));
+        lv_label_set_recolor(g_forgetMkb->descLabel, true);
+        lv_obj_align(g_forgetMkb->descLabel, LV_ALIGN_DEFAULT, 36, 72);
+        lv_obj_add_event_cb(g_forgetMkb->nextButton, ImportShareNextSliceHandler, LV_EVENT_CLICKED, NULL);
 
-        lv_label_set_text_fmt(g_recoveryMkb->stepLabel, "%d of %d", g_recoveryMkb->currentSlice + 1, g_recoveryMkb->threShold);
-        lv_label_set_text_fmt(g_recoveryMkb->titleLabel, "%s #F5870A %d#", _("import_wallet_ssb_title"), g_recoveryMkb->currentSlice + 1);
-        lv_label_set_text_fmt(g_recoveryMkb->descLabel, "Write down your #F5870A %d#-words seed phrase of\nshare #F5870A %d#in the blanks below",
-                              g_recoveryMkb->wordCnt, g_recoveryMkb->currentSlice + 1);
+        lv_label_set_text_fmt(g_forgetMkb->stepLabel, "%d of %d", g_forgetMkb->currentSlice + 1, g_forgetMkb->threShold);
+        lv_label_set_text_fmt(g_forgetMkb->titleLabel, "%s #F5870A %d#", _("import_wallet_ssb_title"), g_forgetMkb->currentSlice + 1);
+        lv_label_set_text_fmt(g_forgetMkb->descLabel, "Write down your #F5870A %d#-words seed phrase of\nshare #F5870A %d#in the blanks below",
+                              g_forgetMkb->wordCnt, g_forgetMkb->currentSlice + 1);
         bip39 = false;
         GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
     } else {
-        g_recoveryMkb->titleLabel = GuiCreateTitleLabel(g_enterMnemonicCont, _("seed_check_single_phrase_title"));
-        lv_obj_align(g_recoveryMkb->titleLabel, LV_ALIGN_DEFAULT, 36, 12);
-        g_recoveryMkb->descLabel = GuiCreateIllustrateLabel(g_enterMnemonicCont, _("seed_check_share_phrase_title"));
-        lv_obj_set_style_text_opa(g_recoveryMkb->descLabel, LV_OPA_60, LV_PART_MAIN);
-        lv_obj_align(g_recoveryMkb->descLabel, LV_ALIGN_DEFAULT, 36, 72);
-        lv_obj_add_event_cb(g_recoveryMkb->nextButton, ImportPhraseWordsHandler, LV_EVENT_CLICKED, NULL);
+        g_forgetMkb->titleLabel = GuiCreateTitleLabel(g_enterMnemonicCont, _("seed_check_single_phrase_title"));
+        lv_obj_align(g_forgetMkb->titleLabel, LV_ALIGN_DEFAULT, 36, 12);
+        g_forgetMkb->descLabel = GuiCreateIllustrateLabel(g_enterMnemonicCont, _("seed_check_share_phrase_title"));
+        lv_obj_set_style_text_opa(g_forgetMkb->descLabel, LV_OPA_60, LV_PART_MAIN);
+        lv_obj_align(g_forgetMkb->descLabel, LV_ALIGN_DEFAULT, 36, 72);
+        lv_obj_add_event_cb(g_forgetMkb->nextButton, ImportPhraseWordsHandler, LV_EVENT_CLICKED, NULL);
         GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
     }
 
-    lv_obj_set_size(g_recoveryMkb->cont, 408, 236);
-    lv_obj_align_to(g_recoveryMkb->cont, g_recoveryMkb->descLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
-    lv_btnmatrix_set_selected_btn(g_recoveryMkb->btnm, g_recoveryMkb->currentId);
+    lv_obj_set_size(g_forgetMkb->cont, 408, 236);
+    lv_obj_align_to(g_forgetMkb->cont, g_forgetMkb->descLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
+    lv_btnmatrix_set_selected_btn(g_forgetMkb->btnm, g_forgetMkb->currentId);
 
     g_letterKbCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 242);
     lv_obj_set_align(g_letterKbCont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_opa(g_letterKbCont, LV_OPA_0, 0);
-    g_recoveryPhraseKb = GuiCreateLetterKeyBoard(g_letterKbCont, NULL, bip39, g_recoveryMkb);
-    g_recoveryMkb->letterKb = g_recoveryPhraseKb;
-    g_recoveryMkb->currentId = 0;
+    g_forgetPhraseKb = GuiCreateLetterKeyBoard(g_letterKbCont, NULL, bip39, g_forgetMkb);
+    g_forgetMkb->letterKb = g_forgetPhraseKb;
+    g_forgetMkb->currentId = 0;
 
     return g_enterMnemonicCont;
 }
 
 void GuiWalletRecoverySinglePhraseClear(void)
 {
-    if (g_recoveryMkb != NULL) {
-        lv_obj_del(g_recoveryMkb->cont);
-        g_recoveryMkb = NULL;
+    if (g_forgetMkb != NULL) {
+        lv_obj_del(g_forgetMkb->cont);
+        g_forgetMkb = NULL;
     }
-    g_recoveryMkb->currentSlice = 0;
-    g_recoveryMkb->threShold = 0xff;
-    CLEAR_OBJECT(g_recoveryMkb);
+    g_forgetMkb->currentSlice = 0;
+    g_forgetMkb->threShold = 0xff;
+    CLEAR_OBJECT(g_forgetMkb);
 
-    if (g_recoveryPhraseKb != NULL) {
-        lv_obj_del(g_recoveryPhraseKb->cont);
-        g_recoveryPhraseKb = NULL;
+    if (g_forgetPhraseKb != NULL) {
+        lv_obj_del(g_forgetPhraseKb->cont);
+        g_forgetPhraseKb = NULL;
     }
 
     lv_obj_clean(g_enterMnemonicCont);
@@ -494,8 +487,8 @@ int8_t GuiForgetPassPrevTile(uint8_t tileIndex)
         break;
     case FORGET_PASSWORD_ENTER_MNEMONIC:
         GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
-        g_recoveryMkb->currentId = 0;
-        g_recoveryMkb->currentSlice = 0;
+        g_forgetMkb->currentId = 0;
+        g_forgetMkb->currentSlice = 0;
         GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _("Seed Phrase Check"));
         GuiWalletRecoverySinglePhraseClear();

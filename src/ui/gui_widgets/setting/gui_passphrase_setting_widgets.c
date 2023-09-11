@@ -15,7 +15,6 @@
 #include "bip39.h"
 #include "slip39.h"
 #include "version.h"
-#include "gui_menmonic_test.h"
 #include "presetting.h"
 #include "assert.h"
 #include "gui_qr_hintbox.h"

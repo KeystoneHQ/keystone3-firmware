@@ -22,7 +22,6 @@
 #include "slip39.h"
 #include "user_memory.h"
 #include "drv_otp.h"
-#include "gui_menmonic_test.h"
 #include "librust_c.h"
 #include "account_public_info.h"
 #include "drv_rtc.h"

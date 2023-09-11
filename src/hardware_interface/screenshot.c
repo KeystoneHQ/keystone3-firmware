@@ -72,6 +72,7 @@ void ScreenShot(uint8_t *imgData)
     }
     printf("start snap screen\r\n");
     //memset(screenBuffer, 0, fileSize);
+    MotorCtrl(MOTOR_LEVEL_MIDDLE, 300);
     pFileHead = (BitMapFileHead_t *)screenBuffer;
     pFfileInfo = (BitMapInfoHead_t *)(screenBuffer + sizeof(BitMapFileHead_t));
     memset(pFileHead, 0, sizeof(BitMapFileHead_t));

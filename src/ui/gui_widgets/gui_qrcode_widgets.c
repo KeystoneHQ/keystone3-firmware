@@ -138,8 +138,11 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_READY) {
         const char *currText = lv_textarea_get_text(g_qrCodeWidgetView.kb->ta);
-        SecretCacheSetPassword((char *)currText);
-        GuiModelVerifyAmountPassWord(&passCodeType);
+        if (strlen(currText) > 0) {
+            SecretCacheSetPassword((char *)currText);
+            GuiModelVerifyAmountPassWord(&passCodeType);
+            lv_textarea_set_text(g_qrCodeWidgetView.kb->ta, "");
+        }
     }
 
     if (code == LV_EVENT_VALUE_CHANGED) {

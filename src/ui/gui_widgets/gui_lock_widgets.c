@@ -93,6 +93,18 @@ void GuiLockScreenClearFirstUnlock(void)
     g_firstUnlock = false;
 }
 
+void GuiLockScreenSetFirstUnlock(void)
+{
+    g_firstUnlock = true;
+}
+
+void GuiLockScreenFpRecognize(void)
+{
+    if (g_fpErrorCount < FINGERPRINT_EN_SING_ERR_TIMES) {
+        FpRecognize(RECOGNIZE_UNLOCK);
+    }
+}
+
 bool GuiLockScreenIsFirstUnlock(void)
 {
     return g_firstUnlock;
@@ -221,12 +233,15 @@ void GuiLockScreenErrorCount(void *param)
     printf("GuiLockScreenErrorCount  errorcount is %d\n", passwordVerifyResult->errorCount);
     if (g_verifyLock != NULL) {
         char hint[128];
+        int leftCount = 0;
 
         if (*(uint16_t *)passwordVerifyResult->signal == SIG_LOCK_VIEW_VERIFY_PIN
                 || *(uint16_t *)passwordVerifyResult->signal == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS
                 // TODO: limit the params usage
                 // 12 = DEVICE_SETTING_RESET_PASSCODE in gui_setting_widgets.h
                 || *(uint16_t *)passwordVerifyResult->signal == 12) {
+            leftCount = MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount;
+            assert(leftCount >= 0);
             sprintf(hint, "Incorrect password, you have #F55831 %d# chances left", (MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount));
             lv_label_set_text(g_verifyLock->errLabel, hint);
             GuiPassowrdToLockTimePage(MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount);

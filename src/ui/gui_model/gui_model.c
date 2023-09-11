@@ -286,6 +286,7 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
     entropy = SecretCacheGetEntropy(&entropyLen);
     MODEL_WRITE_SE_HEAD
     ret = SaveNewEntropy(newAccount, entropy, entropyLen, SecretCacheGetNewPassword());
+    ClearAccountPassphrase(newAccount);
     CHECK_ERRCODE_BREAK("save entropy error", ret);
     MODEL_WRITE_SE_END
 #else
@@ -331,12 +332,14 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     }
     ret = SaveNewEntropy(newAccount, entropy, (uint8_t)entropyOutLen, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("save entropy error", ret);
+    ClearAccountPassphrase(newAccount);
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("login error", ret);
     if (bip39Data->forget) {
         SetWalletName(accountInfo.walletName);
         SetWalletIconIndex(accountInfo.iconIndex);
     }
+    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     GetExistAccountNum(&accountCnt);
     printf("after accountCnt = %d\n", accountCnt);
 }
@@ -576,6 +579,7 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     MODEL_WRITE_SE_HEAD
     ret = SaveNewSlip39Entropy(newAccount, ems, entropy, 32, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetIteration());
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
+    ClearAccountPassphrase(newAccount);
     MODEL_WRITE_SE_END
 
 #endif
@@ -630,12 +634,14 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     }
     ret = SaveNewSlip39Entropy(newAccount, emsBak, entropy, entropyLen, SecretCacheGetNewPassword(), id, ie);
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
+    ClearAccountPassphrase(newAccount);
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("login error", ret);
     if (slip39->forget) {
         SetWalletName(accountInfo.walletName);
         SetWalletIconIndex(accountInfo.iconIndex);
     }
+    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     CLEAR_ARRAY(ems);
     CLEAR_ARRAY(emsBak);
     GetExistAccountNum(&accountCnt);
@@ -713,7 +719,6 @@ static int32_t ModelSaveWalletDesc(const void *inData, uint32_t inDataLen)
     SetWalletName(wallet->name);
     SetWalletIconIndex(wallet->iconIndex);
 
-
     GuiApiEmitSignal(SIG_SETTING_CHANGE_WALLET_DESC_PASS, NULL, 0);
 #else
     WalletDesc_t *wallet = (char *)inData;
@@ -730,6 +735,7 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
     SetLockScreen(false);
 #ifndef COMPILE_SIMULATOR
     int32_t ret;
+    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     ret = DestroyAccount(GetCurrentAccountIndex());
     if (ret == SUCCESS_CODE) {
         // reset address index in receive page
@@ -812,6 +818,7 @@ static int32_t ModelChangeAmountPass(const void *inData, uint32_t inDataLen)
 
     ret = VerifyCurrentAccountPassword(SecretCacheGetPassword());
     ret = ChangePassword(GetCurrentAccountIndex(), SecretCacheGetNewPassword(), SecretCacheGetPassword());
+    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     if (ret == SUCCESS_CODE) {
         GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_PASS, NULL, 0);
     } else {
@@ -893,6 +900,7 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
         if (SIG_LOCK_VIEW_VERIFY_PIN == *param || SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS == *param) {
             g_passwordVerifyResult.errorCount = GetLoginPasswordErrorCount();
             printf("gui model get login error count %d \n", g_passwordVerifyResult.errorCount);
+            assert(g_passwordVerifyResult.errorCount <= MAX_LOGIN_PASSWORD_ERROR_COUNT);
             if (g_passwordVerifyResult.errorCount == MAX_LOGIN_PASSWORD_ERROR_COUNT) {
                 UnlimitedVibrate(SUPER_LONG);
             } else {
@@ -901,6 +909,7 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
         } else {
             g_passwordVerifyResult.errorCount = GetCurrentPasswordErrorCount();
             printf("gui model get current error count %d \n", g_passwordVerifyResult.errorCount);
+            assert(g_passwordVerifyResult.errorCount <= MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX);
             if (g_passwordVerifyResult.errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
                 UnlimitedVibrate(SUPER_LONG);
             } else {

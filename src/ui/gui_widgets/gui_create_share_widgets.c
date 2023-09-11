@@ -295,8 +295,11 @@ static void MnemonicConfirmHandler(lv_event_t * e)
     }
 
     if (code == LV_EVENT_CLICKED) {
-        Vibrate(SLIGHT);
         uint32_t currentId = lv_btnmatrix_get_selected_btn(obj);
+        if (currentId >= 0xff) {
+            return;
+        }
+        Vibrate(SLIGHT);
         for (i = 0 ; i < g_currId; i++) {
             if (g_pressedBtn[i] == currentId + 1) {
                 break;
@@ -477,7 +480,6 @@ int8_t GuiCreateShareNextTile(void)
         GuiNvsBarSetRightCb(NVS_BAR_WORD_RESET, ResetBtnHandler, NULL);
         GuiNvsBarSetRightBtnLabel(NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Reset");
         lv_obj_add_flag(g_shareBackupTile.nextCont, LV_OBJ_FLAG_HIDDEN);
-        GuiUpdateMnemonicKeyBoard(g_shareBackupTile.keyBoard, SecretCacheGetSlip39Mnemonic(g_createShareTileView.currentSlice), true);
         break;
     case CREATE_SHARE_CONFIRM:
         GuiNvsBarSetLeftCb(NVS_LEFT_BUTTON_BUTT, NULL, NULL);

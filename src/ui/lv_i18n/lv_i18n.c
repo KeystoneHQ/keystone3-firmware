@@ -133,7 +133,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"create_wallet_generating_title", "Creating Wallet, Keep Screen ON"},
     {"device_setting_about_desc", "M-1.2.0"},
     {"device_setting_about_title", "About"},
-    {"device_setting_connection_desc", "USB / Bluetooth / SD Card..."},
+    {"device_setting_connection_desc", "USB Accessibility"},
     {"device_setting_connection_title", "Connection"},
     {"device_setting_mid_btn", "Device Settings"},
     {"device_setting_system_setting_desc", "Language / Screen / Reset..."},

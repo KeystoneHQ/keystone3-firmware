@@ -50,9 +50,9 @@ pub extern "C" fn get_connect_blue_wallet_ur(
         let key2 = keys.get(1);
         let key3 = keys.get(2);
         return if let (Some(k1), Some(k2), Some(k3)) = (key1, key2, key3) {
-            let legacy_x_pub = recover_c_char(k1.xpub);
+            let native_x_pub = recover_c_char(k1.xpub);
             let nested_x_pub = recover_c_char(k2.xpub);
-            let native_x_pub = recover_c_char(k3.xpub);
+            let legacy_x_pub = recover_c_char(k3.xpub);
             let extended_public_keys = [
                 native_x_pub.trim(),
                 legacy_x_pub.trim(),

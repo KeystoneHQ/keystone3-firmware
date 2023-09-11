@@ -98,13 +98,6 @@ void GuiLockScreenSetFirstUnlock(void)
     g_firstUnlock = true;
 }
 
-void GuiLockScreenFpRecognize(void)
-{
-    if (g_fpErrorCount < FINGERPRINT_EN_SING_ERR_TIMES) {
-        FpRecognize(RECOGNIZE_UNLOCK);
-    }
-}
-
 bool GuiLockScreenIsFirstUnlock(void)
 {
     return g_firstUnlock;

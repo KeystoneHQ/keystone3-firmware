@@ -11,7 +11,6 @@
 #include "keystore.h"
 #include "gui_setting_widgets.h"
 #include "gui_lock_widgets.h"
-#include "gui_menmonic_test.h"
 #include "presetting.h"
 #include "assert.h"
 #include "gui_qr_hintbox.h"

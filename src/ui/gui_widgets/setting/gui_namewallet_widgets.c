@@ -15,7 +15,6 @@
 #include "bip39.h"
 #include "slip39.h"
 #include "version.h"
-#include "gui_menmonic_test.h"
 #include "presetting.h"
 #include "assert.h"
 #include "gui_qr_hintbox.h"
@@ -28,15 +27,6 @@
 #include "keystore.h"
 #else
 #include "simulator_model.h"
-#define FP_SUCCESS_CODE             0
-#define RECOGNIZE_UNLOCK            0
-#define RECOGNIZE_OPEN_SIGN         1
-#define RECOGNIZE_SIGN              2
-
-#define NO_ENCRYPTION 0
-#define AES_KEY_ENCRYPTION 1
-#define RESET_AES_KEY_ENCRYPTION 2
-#define FINGERPRINT_EN_SING_ERR_TIMES           (5)
 #endif
 
 static KeyBoard_t *g_setNameKb = NULL;         // setting keyboard

@@ -16,7 +16,6 @@
 #include "gui_model.h"
 #include "secret_cache.h"
 #include "background_task.h"
-#include "gui_menmonic_test.h"
 #include "gui_import_phrase_widgets.h"
 #include "gui_single_phrase_widgets.h"
 #include "gui_mnemonic_input.h"

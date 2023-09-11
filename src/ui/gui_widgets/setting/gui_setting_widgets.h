@@ -18,6 +18,9 @@
 #ifndef _GUI_SETTING_WIDGETS_H
 #define _GUI_SETTING_WIDGETS_H
 
+#define DEVICE_SETTING_RIGHT_LABEL_MAX_LEN                      16
+#define DEVICE_SETTING_MID_LABEL_MAX_LEN                        32
+#define DEVICE_SETTING_LEVEL_MAX                                8
 
 typedef enum {
     DEVICE_SETTING = 0,
@@ -148,6 +151,16 @@ void GuiFpVerifyDestruct(void);
 
 // set passphrase
 void GuiWalletPassphrase(lv_obj_t *parent);
+void GuiWalletPassphraseEnter(lv_obj_t *parent);
+
+// seed check
+void GuiWalletRecoveryMethodCheck(lv_obj_t *parent);
+void ResetSeedCheckImportHandler(lv_event_t *e);
+void GuiWalletSeedCheckClearKb(void);
+void GuiWalletSeedCheckClearObject(void);
+void *GuiWalletRecoverySinglePhrase(lv_obj_t *parent, uint8_t wordAmount);
+void GuiWalletRecoveryDestruct(void *obj, void *param);
+void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount);
 
 #endif /* _GUI_SETTING_WIDGETS_H */
 

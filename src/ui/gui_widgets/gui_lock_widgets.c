@@ -229,10 +229,7 @@ void GuiLockScreenErrorCount(void *param)
         int leftCount = 0;
 
         if (*(uint16_t *)passwordVerifyResult->signal == SIG_LOCK_VIEW_VERIFY_PIN
-                || *(uint16_t *)passwordVerifyResult->signal == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS
-                // TODO: limit the params usage
-                // 12 = DEVICE_SETTING_RESET_PASSCODE in gui_setting_widgets.h
-                || *(uint16_t *)passwordVerifyResult->signal == 12) {
+                || *(uint16_t *)passwordVerifyResult->signal == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
             leftCount = MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount;
             assert(leftCount >= 0);
             sprintf(hint, "Incorrect password, you have #F55831 %d# chances left", (MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount));

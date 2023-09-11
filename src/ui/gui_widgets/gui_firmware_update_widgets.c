@@ -18,6 +18,7 @@
 #include "background_task.h"
 #include "firmware_update.h"
 #include "keystore.h"
+#include "gui_keyboard_hintbox.h"
 
 
 typedef enum {
@@ -57,6 +58,9 @@ static const char g_firmwareSdUpdateUrl[] = "https://keyst.one/firmware";
 static lv_obj_t *g_waitAnimCont = NULL;
 static void *g_param = NULL;
 static lv_obj_t *g_noticeHintBox = NULL;
+
+static KeyboardWidget_t *g_keyboardWidget = NULL;
+
 
 void GuiCreateSdCardUpdateHintbox(char *version)
 {
@@ -140,6 +144,7 @@ void GuiFirmwareSdCardCopyResult(bool en)
 
 void GuiFirmwareUpdateDeInit(void)
 {
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
     g_param = NULL;
     printf("GuiFirmwareUpdateDeInit\n");
     GUI_DEL_OBJ(g_noticeHintBox)
@@ -339,7 +344,9 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
                 GuiFirmwareSdCardCopy();
                 GuiModelCopySdCardOta();
             } else {
-                GuiLockScreenTurnOnHandler(e);
+                GuiDeleteKeyboardWidget(g_keyboardWidget);
+                g_keyboardWidget = GuiCreateKeyboardWidget(g_firmwareUpdateWidgets.cont);
+                SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
             }
         } else {
             g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
@@ -453,4 +460,10 @@ static void CloseQrcodeHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_firmwareUpdateWidgets.qrCodeCont)
     }
+}
+
+void GuiFirmwareUpdateVerifyPasswordErrorCount(void *param)
+{
+    PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
+    GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
 }

@@ -13,7 +13,6 @@
 #include "usbd_desc.h"
 #include "log_print.h"
 
-
 #define USB_COMPOSITE_CONFIG_DESC_MAX_SIZE 192
 
 static uint8_t CompositeInit(void *pdev, uint8_t cfgidx);
@@ -36,7 +35,7 @@ __ALIGN_BEGIN static uint8_t CompositeConfigDescriptor[USB_COMPOSITE_CONFIG_DESC
     0x00,                              /* */
     0x00,                              /*bNumInterfaces: X interface*/
     0x01,                              /*bConfigurationValue: Configuration value*/
-    0x00,                              /*iConfiguration: Index of string descriptor describing the configuration*/
+    USBD_IDX_CONFIG_STR,                              /*iConfiguration: Index of string descriptor describing the configuration*/
     0xE0,                              /*bmAttributes: bus powered and Support Remote Wake-up */
     0xC8,                              /*MaxPower 400 mA: this current is used for detecting Vbus*/
 
@@ -77,7 +76,9 @@ USBD_Class_cb_TypeDef USBCompositeCb = {
 
 static uint8_t CompositeInit(void *pdev, uint8_t cfgidx)
 {
+#ifdef USBD_ENABLE_MSC
     USBD_MSC_cb.Init(pdev, cfgidx);
+#endif
     USBD_CDC_cb.Init(pdev, cfgidx);
     return USBD_OK;
 }
@@ -85,7 +86,9 @@ static uint8_t CompositeInit(void *pdev, uint8_t cfgidx)
 
 static uint8_t CompositeDeInit(void *pdev, uint8_t cfgidx)
 {
+#ifdef USBD_ENABLE_MSC
     USBD_MSC_cb.DeInit(pdev, cfgidx);
+#endif
     USBD_CDC_cb.DeInit(pdev, cfgidx);
     return USBD_OK;
 }
@@ -151,6 +154,7 @@ static uint8_t *GetCompositeConfigDescriptor(uint8_t speed, uint16_t *length)
     g_interfaceCount = 0;
     *length = 9;
 
+#ifdef USBD_ENABLE_MSC
     //MSC
     descriptor = USBD_MSC_cb.GetConfigDescriptor(speed, &descriptorSize);
     descriptorSize -= 9;
@@ -159,6 +163,7 @@ static uint8_t *GetCompositeConfigDescriptor(uint8_t speed, uint16_t *length)
     memcpy(CompositeConfigDescriptor + *length, descriptor + 9, descriptorSize);
     *length += descriptorSize;
     g_interfaceCount++;
+#endif
 
     //CDC
     descriptor = USBD_CDC_cb.GetConfigDescriptor(speed, &descriptorSize);
@@ -166,10 +171,9 @@ static uint8_t *GetCompositeConfigDescriptor(uint8_t speed, uint16_t *length)
     descriptor[9 + 2] = interfaceIndex;
     memcpy(CompositeConfigDescriptor + *length, descriptor + 9, descriptorSize);
     *length += descriptorSize;
-    g_interfaceCount += 1;
+    g_interfaceCount++;
 
-    CompositeConfigDescriptor[2] = LOBYTE(*length);
-    CompositeConfigDescriptor[3] = HIBYTE(*length);
+    CompositeConfigDescriptor[2] = *length;
     CompositeConfigDescriptor[4] = g_interfaceCount;
     //printf("length=%d\r\n", *length);
     //PrintArray("Descriptor", CompositeConfigDescriptor, *length);

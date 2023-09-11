@@ -67,7 +67,9 @@ static void UiDisplayTask(void *argument)
     static lv_indev_drv_t indevDrv;
     Message_t rcvMsg;
     osStatus_t ret;
-    // uint8_t *screenData;
+#ifdef ENABLE_SCREEN_SHOT
+    uint8_t *screenData;
+#endif
 
     lv_init();
     lv_disp_drv_init(&dispDrv);

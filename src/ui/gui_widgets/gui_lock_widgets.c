@@ -234,7 +234,7 @@ void GuiLockScreenErrorCount(void *param)
                 GuiFrameOpenView(&g_lockDeviceView);
                 FpCancelCurOperate();
             }
-        } 
+        }
     }
 }
 

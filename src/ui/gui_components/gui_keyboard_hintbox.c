@@ -67,7 +67,8 @@ static void CloseKeyBoardWidgetHandler(lv_event_t *e)
     }
 }
 
-static KeyboardWidget_t *CreateKeyboardWidget() {
+static KeyboardWidget_t *CreateKeyboardWidget()
+{
 
     KeyboardWidget_t *keyboardWidget = SRAM_MALLOC(sizeof(KeyboardWidget_t));
     keyboardWidget->keyboardHintBox = NULL;
@@ -80,7 +81,7 @@ static KeyboardWidget_t *CreateKeyboardWidget() {
     keyboardWidget->errHintBox = NULL;
     keyboardWidget->errHintBoxBtn = NULL;
     keyboardWidget->self = NULL;
-    return keyboardWidget; 
+    return keyboardWidget;
 }
 
 void SetKeyboardWidgetSig(KeyboardWidget_t *keyboardWidget, uint16_t *sig)
@@ -156,12 +157,11 @@ void GuiDeleteKeyboardWidget(KeyboardWidget_t *keyboardWidget)
             lv_obj_del(keyboardWidget->keyboardHintBox);
             keyboardWidget->keyboardHintBox = NULL;
         }
-        if (keyboardWidget->errHintBox != NULL && lv_obj_is_valid(keyboardWidget->errHintBox))
-        {
+        if (keyboardWidget->errHintBox != NULL && lv_obj_is_valid(keyboardWidget->errHintBox)) {
             lv_obj_del(keyboardWidget->errHintBox);
             keyboardWidget->errHintBox = NULL;
         }
-        
+
         GuiCountDownDestruct(keyboardWidget);
 
         if (keyboardWidget->timerCounter != NULL) {
@@ -226,10 +226,10 @@ void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t
 
 static void GuiShowPasswordErrorHintBox(KeyboardWidget_t *keyboardWidget)
 {
-    
+
     lv_obj_t *errHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgFailed,
-                                                "Attempt Limit Exceeded", "Device lock imminent. Please unlock to access the device.",
-                                                NULL, DARK_GRAY_COLOR, "Unlock Device (5s)", DARK_GRAY_COLOR);
+                           "Attempt Limit Exceeded", "Device lock imminent. Please unlock to access the device.",
+                           NULL, DARK_GRAY_COLOR, "Unlock Device (5s)", DARK_GRAY_COLOR);
 
     lv_obj_t *btn = GuiGetHintBoxRightBtn(errHintBox);
     lv_label_set_text(lv_obj_get_child(btn, 0), "Unlock Device (5s)");
@@ -286,10 +286,9 @@ static void GuiCountDownDestruct(KeyboardWidget_t *keyboardWidget)
         keyboardWidget->countDownTimer = NULL;
     }
 
-    if (keyboardWidget != NULL && lv_obj_is_valid(keyboardWidget->errHintBox))
-    {
+    if (keyboardWidget != NULL && lv_obj_is_valid(keyboardWidget->errHintBox)) {
         lv_obj_del(keyboardWidget->errHintBox);
         keyboardWidget->errHintBox = NULL;
     }
-    
+
 }

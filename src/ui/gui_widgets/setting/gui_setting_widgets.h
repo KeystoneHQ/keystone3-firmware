@@ -96,25 +96,19 @@ void GuiSettingInit(void);
 void GuiSettingRefresh(void);
 int8_t GuiDevSettingPrevTile(uint8_t tileIndex);
 int8_t GuiDevSettingNextTile(uint8_t tileIndex);
-
+lv_obj_t *GuiSettingGetCurrentCont(void);
 void WalletSettingHandler(lv_event_t *e);
 void GuiSettingCloseToTargetTileView(uint8_t targetIndex);
 void GuiShowKeyboardHandler(lv_event_t *e);
 void GuiSettingAnimSetLabel(const char *text);
-
 void GuiDevSettingPassCode(bool result, uint8_t tileIndex);
 void GuiSettingSetPinPass(const char* buf);
 void GuiSettingRepeatPinPass(const char* buf);
 void GuiResettingPassWordSuccess(void);
 void GuiAddWalletPasswordRepeat(bool result);
 void GuiChangeWalletDesc(bool result);
-void GuiDelWallet(bool result);
 void GuiWritePassphrase(bool result);
-void GuiChangePassWord(bool result);
-void GuiAddWalletAmountLimit(void);
 void GuiWalletRecoveryWriteSe(bool result);
-void GuiDelWalletSetup(void);
-void GuiAddWalletCreateOrImport(uint8_t walletAmount);
 void GuiAddWalletGetWalletAmount(uint8_t walletAmount);
 void GuiSettingDeInit(void);
 void OpenSinglePhraseHandler(lv_event_t *e);
@@ -122,12 +116,35 @@ void OpenSharePhraseHandler(lv_event_t *e);
 void GuiSettingFingerRegisterSuccess(void *param);
 void GuiSettingFingerRegisterFail(void *param);
 void GuiSettingDealFingerRecognize(void *param);
+void GuiWalletResetPassWordHintBox(void);
+void GuiWalletSelectAddWallet(lv_obj_t *parent);
+
 //forget passcode share logic;
 void GuiSettingCloseSelectAmountHintBox();
 void GuiSettingRecoveryCheck(void);
 void CloseToSubtopViewHandler(lv_event_t *e);
 
 void GuiVerifyCurrentPasswordErrorCount(void *param);
+
+// wallet setting
+void GuiSettingDestruct(void *obj, void *param);
+void GuiSettingStructureCb(void *obj, void *param);
+void GuiShowKeyboardDestruct(void);
+void GuiWalletSetWidget(lv_obj_t *parent);
+void GuiAddWalletAmountLimit(void);
+void GuiDelWalletSetup(void);
+void GuiResettingWriteSe(void);
+void GuiChangePassWord(bool result);
+void GuiDelWallet(bool result);
+void GuiWalletRepeatPinWidget(lv_obj_t *parent);
+void GuiSetPinDestruct(void *obj, void *param);
+void GuiRepeatDestruct(void *obj, void *param);
+void DelCurrCloseToSubtopViewHandler(lv_event_t *e);
+bool GuiSettingGetDeleteFlag(void);
+void GuiWalletDelWalletConfirm(lv_obj_t *parent);
+void GuiWalletSetPinWidget(lv_obj_t *parent, uint8_t tile);
+void GuiSettingCountDownDestruct(void *obj, void *param);
+void GuiWalletAddWalletNotice(lv_obj_t *parent);
 
 // wallet name and icon setting
 void *GuiWalletNameWallet(lv_obj_t *parent, uint8_t tile);

@@ -23,9 +23,9 @@ static void CloseKeyBoardWidgetHandler(lv_event_t *e);
 
 static void GuiShowPasswordErrorHintBox(KeyboardWidget_t *keyboardWidget);
 static void LockDeviceHandler(lv_event_t *e);
-static void GuiHintBoxToLockSreen(KeyboardWidget_t *keyboardWidget);
+static void GuiHintBoxToLockSreen(void);
 static void CountDownHandler(lv_timer_t *timer);
-static void GuiCountDownDestruct(KeyboardWidget_t *keyboardWidget);
+static void GuiCountDownTimerDestruct(KeyboardWidget_t *keyboardWidget);
 
 
 static void KeyboardConfirmHandler(lv_event_t *e)
@@ -162,7 +162,7 @@ void GuiDeleteKeyboardWidget(KeyboardWidget_t *keyboardWidget)
             keyboardWidget->errHintBox = NULL;
         }
         
-        GuiCountDownDestruct(keyboardWidget);
+        GuiCountDownTimerDestruct(keyboardWidget);
 
         if (keyboardWidget->timerCounter != NULL) {
             SRAM_FREE(keyboardWidget->timerCounter);
@@ -247,12 +247,12 @@ static void LockDeviceHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
-        GuiCountDownDestruct(keyboardWidget);
-        GuiHintBoxToLockSreen(keyboardWidget);
+        GuiHintBoxToLockSreen();
+        GuiDeleteKeyboardWidget(keyboardWidget);
     }
 }
 
-static void GuiHintBoxToLockSreen(KeyboardWidget_t *keyboardWidget)
+static void GuiHintBoxToLockSreen(void)
 {
     static uint16_t sig = SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS;
     GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_UNLOCK);
@@ -274,22 +274,15 @@ static void CountDownHandler(lv_timer_t *timer)
     lv_label_set_text(lv_obj_get_child(keyboardWidget->errHintBoxBtn, 0), buf);
 
     if (*keyboardWidget->timerCounter <= 0) {
-        GuiHintBoxToLockSreen(keyboardWidget);
-        GuiCountDownDestruct(keyboardWidget);
+        GuiHintBoxToLockSreen();
+        GuiDeleteKeyboardWidget(keyboardWidget);
     }
 }
 
-static void GuiCountDownDestruct(KeyboardWidget_t *keyboardWidget)
+static void GuiCountDownTimerDestruct(KeyboardWidget_t *keyboardWidget)
 {
     if (keyboardWidget != NULL && keyboardWidget->countDownTimer != NULL) {
         lv_timer_del(keyboardWidget->countDownTimer);
         keyboardWidget->countDownTimer = NULL;
     }
-
-    if (keyboardWidget != NULL && lv_obj_is_valid(keyboardWidget->errHintBox))
-    {
-        lv_obj_del(keyboardWidget->errHintBox);
-        keyboardWidget->errHintBox = NULL;
-    }
-    
 }

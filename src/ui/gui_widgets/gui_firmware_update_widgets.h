@@ -26,6 +26,7 @@ void GuiFirmwareUpdatePrevTile(void);
 void GuiFirmwareSdCardCopy(void);
 void GuiCreateSdCardUpdateHintbox(char *version);
 void GuiFirmwareSdCardCopyResult(bool en);
+void GuiFirmwareUpdateVerifyPasswordErrorCount(void *param);
 
 #endif
 

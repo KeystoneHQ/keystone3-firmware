@@ -10,6 +10,8 @@
 #include "gui_views.h"
 #include "gui_firmware_update_widgets.h"
 #include "gui_status_bar.h"
+#include "gui_model.h"
+#include "gui_lock_widgets.h"
 
 static int32_t GuiFirmwareUpdateViewInit(void *param)
 {
@@ -44,7 +46,26 @@ int32_t GuiFirmwareUpdateViewEventProcess(void *self, uint16_t usEvent, void *pa
         GuiFirmwareUpdatePrevTile();
         break;
     case SIG_VERIFY_PASSWORD_PASS:
+        if (param != NULL) {
+            uint16_t sig = *(uint16_t *)param;
+            if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
+                GuiLockScreenToHome();
+                return SUCCESS_CODE;
+            }
+        }
         GuiFirmwareSdCardCopy();
+        break;
+    case SIG_VERIFY_PASSWORD_FAIL:
+        if (param != NULL) {
+            PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
+            uint16_t sig = *(uint16_t *) passwordVerifyResult->signal;
+            if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
+                GuiLockScreenPassCode(false);
+                GuiLockScreenErrorCount(param);
+                return SUCCESS_CODE;
+            }
+        }
+        GuiFirmwareUpdateVerifyPasswordErrorCount(param);
         break;
     case SIG_INIT_SD_CARD_OTA_COPY_SUCCESS:
         GuiFirmwareSdCardCopyResult(true);

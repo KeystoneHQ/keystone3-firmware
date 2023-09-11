@@ -227,7 +227,7 @@ static void ResetClearImportHandler(lv_event_t * e)
     }
 }
 
-static void *GuiWalletRecoverySinglePhrase(uint8_t wordAmount)
+static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
 {
     lv_keyboard_user_mode_t kbMode = GuiGetMnemonicKbType(wordAmount);
     bool bip39 = true;
@@ -427,19 +427,19 @@ int8_t GuiForgetPassNextTile(uint8_t tileIndex)
         if (tileIndex != 0) {
             switch (tileIndex) {
             case DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_12WORDS:
-                GuiWalletRecoverySinglePhrase(12);
+                GuiWalletForgetSinglePhrase(12);
                 break;
             case DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_18WORDS:
-                GuiWalletRecoverySinglePhrase(18);
+                GuiWalletForgetSinglePhrase(18);
                 break;
             case DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_24WORDS:
-                GuiWalletRecoverySinglePhrase(24);
+                GuiWalletForgetSinglePhrase(24);
                 break;
             case DEVICE_SETTING_RECOVERY_SHARE_PHRASE_20WORDS:
-                GuiWalletRecoverySinglePhrase(20);
+                GuiWalletForgetSinglePhrase(20);
                 break;
             case DEVICE_SETTING_RECOVERY_SHARE_PHRASE_33WORDS:
-                GuiWalletRecoverySinglePhrase(33);
+                GuiWalletForgetSinglePhrase(33);
                 break;
             }
         }

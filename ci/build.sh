@@ -6,7 +6,7 @@ source ci/env
 
 image=623147552995.dkr.ecr.eu-central-1.amazonaws.com/keystone3_project_pillar_firmware:latest
 
-docker run -v $(pwd):/project-pillar-firmware $image python3 build.py -e ${ENVIRONMENT} -p ${PURPOSE}
+docker run -v $(pwd):/project-pillar-firmware $image python3 build.py -e ${ENVIRONMENT} -p ${PURPOSE} -o ${OPTIONS}
 
 if [ "$PURPOSE" == "debug" ]; then
 	echo -e "\033[1;31m firmware without signature"

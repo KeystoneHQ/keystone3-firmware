@@ -1,6 +1,6 @@
 - label: ":ecr: :docker: Release base docker image"
   command: "ci/release.sh"
-  if: build.message =~ /release-base-image/
+  if: build.message == "release-base-image"
   agents:
     queue: keystone-production:build
   concurrency: 1
@@ -12,7 +12,7 @@
 
 - label: ":shipit: Release firmware"
   command: "ci/build.sh"
-  if: build.message =~ /release-firmware-dev/
+  if: build.message == "release-firmware-dev"
   agents:
     queue: keystone-g3/production-test-build
   env:
@@ -28,7 +28,7 @@
 
 - label: ":shipit: Release firmware"
   command: "ci/build.sh"
-  if: build.message =~ /release-firmware-production/
+  if: build.message == "release-firmware-production"
   agents:
     queue: keystone-g3/production-test-build
   concurrency: 1
@@ -44,7 +44,7 @@
 
 - label: ":shipit: Debug firmware"
   command: "ci/build.sh"
-  if: build.message =~ /debug-firmware-dev/
+  if: build.message == "debug-firmware-dev"
   agents:
     queue: keystone-g3/production-test-build
   env:
@@ -60,9 +60,28 @@
     - artifacts#v1.9.0:
         upload: [ "build/mh1903.*", "build/keystone3.bin" ]
 
+- label: ":shipit: Debug firmware ScreenShot"
+  command: "ci/build.sh"
+  if: build.message == "debug-firmware-dev-screenshot"
+  agents:
+    queue: keystone-g3/production-test-build
+  env:
+    ENVIRONMENT: dev
+    PURPOSE: debug
+    OPTIONS: screenshot
+    AWS_DEFAULT_REGION: eu-central-1
+  concurrency: 1
+  concurrency_group: "keystone3-project-pillar-firmware/release-firmware"
+  plugins:
+    - ecr#v2.3.0:
+        login: true
+        region: "eu-central-1"
+    - artifacts#v1.9.0:
+        upload: [ "build/mh1903.*", "build/keystone3.bin" ]
+
 - label: ":shipit: Debug firmware"
   command: "ci/build.sh"
-  if: build.message =~ /debug-firmware-production/
+  if: build.message == "debug-firmware-production"
   agents:
     queue: keystone-g3/production-test-build
   concurrency: 1

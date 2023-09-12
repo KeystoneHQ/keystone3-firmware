@@ -38,7 +38,7 @@ static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_TGD, "tgrade", 118, XPUB_TYPE_COSMOS, "tgrade-mainnet-1"},
     {CHAIN_STRD, "stride", 118, XPUB_TYPE_COSMOS, "stride-1"},
     {CHAIN_EVMOS, "evmos", 60, XPUB_TYPE_ETH_BIP44_STANDARD, "evmos_9001-2"},
-    {CHAIN_INJ, "inj", 118, XPUB_TYPE_COSMOS, "injective-1"},
+    {CHAIN_INJ, "inj", 60, XPUB_TYPE_ETH_BIP44_STANDARD, "injective-1"},
     {CHAIN_KAVA, "kava", 459, XPUB_TYPE_KAVA, "kava_2222-10"},
     {CHAIN_QCK, "quick", 118, XPUB_TYPE_COSMOS, "quicksilver-1"},
     {CHAIN_LUNA, "terra", 330, XPUB_TYPE_TERRA, "phoenix-1"},

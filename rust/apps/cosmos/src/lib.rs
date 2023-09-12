@@ -42,7 +42,7 @@ fn generate_general_address(key: PublicKey, prefix: &str) -> Result<String> {
 }
 
 fn generate_address(key: PublicKey, prefix: &str) -> Result<String> {
-    if prefix.to_lowercase().eq("evmos") {
+    if prefix.to_lowercase().eq("evmos") || prefix.to_lowercase().eq("inj") {
         return generate_evmos_address(key, prefix);
     }
     return generate_general_address(key, prefix);

@@ -60,8 +60,8 @@ static void GuiQuitHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        printf("g_prevView ID = %d\n", g_prevView->id);
-        if (g_prevView->id == SCREEN_LOCK) {
+        // printf("g_prevView ID = %d\n", g_prevView->id);
+        if (g_prevView != NULL && g_prevView->id == SCREEN_LOCK) {
             GuiLockScreenUpdatePassCode();
             GuiLockScreenFpRecognize();
         }

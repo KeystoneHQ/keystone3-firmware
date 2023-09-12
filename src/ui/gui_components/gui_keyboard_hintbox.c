@@ -53,8 +53,8 @@ static void ForgetHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        static uint16_t sig = SIG_LOCK_VIEW_VERIFY_PIN;
-        GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &sig, sizeof(sig));
+
+        GuiFrameOpenView(&g_forgetPassView);
     }
 }
 

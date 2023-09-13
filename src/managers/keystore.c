@@ -25,6 +25,8 @@
 #include "librust_c.h"
 #include "account_public_info.h"
 #include "drv_rtc.h"
+#include "se_interface.h"
+#include "se_manager.h"
 
 #define KEYSTORE_DEBUG          0
 
@@ -34,8 +36,6 @@
 #else
 #define KEYSTORE_PRINT_ARRAY(fmt, args...)
 #endif
-
-#define SHA256_COUNT                            3
 
 #define AES_BLOCK_SIZE                          16
 
@@ -55,34 +55,8 @@
 
 #define PASSPHRASE_MAX_LEN                      128
 
-//DS28S60 page map
-#define PAGE_NUM_PER_ACCOUNT                    12
-#define PAGE_INDEX_IV                           0
-#define PAGE_INDEX_ENTROPY                      1
-#define PAGE_INDEX_SEED_H32                     2
-#define PAGE_INDEX_SEED_L32                     3
-//page 4/5 reserved
-#define PAGE_INDEX_SLIP39_EMS                   4
-#define PAGE_INDEX_RESERVED                     5
-#define PAGE_INDEX_HMAC                         6
-#define PAGE_INDEX_KEY_PIECE                    7
-#define PAGE_INDEX_PASSWORD_HASH                8
-#define PAGE_INDEX_PARAM                        9
-
-//page 76~85 encrypted password
-#define PAGE_PF_ENCRYPTED_PASSWORD              72
-#define PAGE_PF_AES_KEY                         82
-#define PAGE_PF_RESET_KEY                       83
-#define PAGE_PF_INFO                            84
 
 #define PAGE_PUBLIC_INFO                        88
-
-
-typedef struct {
-    uint8_t auth;
-    uint8_t rollKdf;
-    uint8_t hostKdf;
-} AccountSlot_t;
 
 typedef struct {
     uint8_t entropy[ENTROPY_MAX_LEN];
@@ -116,12 +90,7 @@ static PassphraseInfo_t g_passphraseInfo[3] = {0};
 
 static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *accountSecret, const char *password, bool newAccount);
 static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountSecret, const char *password);
-static void GetAtecc608bAccountSlot(AccountSlot_t *accountSlot, uint8_t accountIndex);
-static int32_t GetKeyPieceFromAtecc608b(uint8_t accountIndex, uint8_t *piece, const char *password);
-static int32_t SetNewKeyPieceToAtecc608b(uint8_t accountIndex, uint8_t *piece, const char *password);
 
-static int32_t GetKeyPieceFromDs28s60(uint8_t accountIndex, uint8_t *piece, const char *password);
-static int32_t SetNewKeyPieceToDs28s60(uint8_t accountIndex, uint8_t *piece, const char *password);
 static void CombineInnerAesKey(uint8_t *aesKey);
 static int32_t GetCurrentAccountInfo(void);
 static int32_t SaveCurrentAccountInfo(void);
@@ -135,8 +104,7 @@ int32_t KeystoreInit(void)
     int32_t ret;
     ASSERT(sizeof(AccountInfo_t) == 32);
     ASSERT(sizeof(PublicInfo_t) == 32);
-    ret = DS28S60_HmacEncryptRead((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
-    assert(g_publicInfo.loginPasswordErrorCount <= 10);
+    ret = SE_HmacEncryptRead((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
     return ret;
 }
 
@@ -153,20 +121,20 @@ int32_t GenerateEntropy(uint8_t *entropy, uint8_t entropyLen, const char *passwo
 
     do {
         HashWithSalt(tempEntropy, (uint8_t *)password, strlen(password), "generate entropy");
-        TrngGet(readBuffer, ENTROPY_MAX_LEN);
+        SE_GetTRng(readBuffer, ENTROPY_MAX_LEN);
         KEYSTORE_PRINT_ARRAY("trng", readBuffer, ENTROPY_MAX_LEN);
         for (i = 0; i < ENTROPY_MAX_LEN; i++) {
             tempEntropy[i] ^= readBuffer[i];
         }
         KEYSTORE_PRINT_ARRAY("tempEntropy", tempEntropy, ENTROPY_MAX_LEN);
-        ret = DS28S60_GetRng(readBuffer, ENTROPY_MAX_LEN);
+        ret = SE_GetDS28S60Rng(readBuffer, ENTROPY_MAX_LEN);
         CHECK_ERRCODE_BREAK("get ds28s60 trng", ret);
         KEYSTORE_PRINT_ARRAY("ds28s60 rng", readBuffer, ENTROPY_MAX_LEN);
         for (i = 0; i < ENTROPY_MAX_LEN; i++) {
             tempEntropy[i] ^= readBuffer[i];
         }
         KEYSTORE_PRINT_ARRAY("tempEntropy", tempEntropy, ENTROPY_MAX_LEN);
-        ret = Atecc608bGetRng(readBuffer, ENTROPY_MAX_LEN);
+        ret = SE_GetAtecc608bRng(readBuffer, ENTROPY_MAX_LEN);
         CHECK_ERRCODE_BREAK("get 608b trng", ret);
         KEYSTORE_PRINT_ARRAY("608b rng", readBuffer, ENTROPY_MAX_LEN);
         for (i = 0; i < ENTROPY_MAX_LEN; i++) {
@@ -211,7 +179,7 @@ int32_t SaveNewEntropy(uint8_t accountIndex, const uint8_t *entropy, uint8_t ent
         ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
         CHECK_ERRCODE_BREAK("SaveAccountSecret", ret);
         HashWithSalt(passwordHash, (const uint8_t *)password, strlen(password), "password hash");
-        ret = DS28S60_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
+        ret = SE_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
         CHECK_ERRCODE_BREAK("write password hash", ret);
         ret = SaveCurrentAccountInfo();
         CHECK_ERRCODE_BREAK("save current account info", ret);
@@ -253,7 +221,7 @@ int32_t SaveNewSlip39Entropy(uint8_t accountIndex, const uint8_t *ems, const uin
         ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
         CHECK_ERRCODE_BREAK("SaveAccountSecret", ret);
         HashWithSalt(passwordHash, (const uint8_t *)password, strlen(password), "password hash");
-        ret = DS28S60_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
+        ret = SE_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
         CHECK_ERRCODE_BREAK("write password hash", ret);
         memcpy(g_currentAccountInfo.slip39Id, &id, 2);
         memcpy(g_currentAccountInfo.slip39Ie, &ie, 1);
@@ -364,7 +332,7 @@ int32_t ChangePassword(uint8_t accountIndex, const char *newPassword, const char
         ret = SaveAccountSecret(accountIndex, &accountSecret, newPassword, false);
         CHECK_ERRCODE_BREAK("save account secret", ret);
         HashWithSalt(passwordHash, (const uint8_t *)newPassword, strlen(newPassword), "password hash");
-        ret = DS28S60_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
+        ret = SE_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
         CHECK_ERRCODE_BREAK("write password hash", ret);
     } while (0);
     CLEAR_OBJECT(accountSecret);
@@ -382,7 +350,7 @@ int32_t VerifyPassword(uint8_t *accountIndex, const char *password)
     int32_t ret, i;
 
     for (i = 0; i < 3; i++) {
-        ret = DS28S60_HmacEncryptRead(passwordHashStore, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
+        ret = SE_HmacEncryptRead(passwordHashStore, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
         CHECK_ERRCODE_BREAK("read password hash", ret);
         HashWithSalt(passwordHashClac, (const uint8_t *)password, strlen(password), "password hash");
         if (memcmp(passwordHashStore, passwordHashClac, 32) == 0) {
@@ -416,7 +384,7 @@ int32_t VerifyCurrentAccountPassword(const char *password)
             ret = ERR_KEYSTORE_NOT_LOGIN;
             break;
         }
-        ret = DS28S60_HmacEncryptRead(passwordHashStore, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
+        ret = SE_HmacEncryptRead(passwordHashStore, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
         CHECK_ERRCODE_BREAK("read password hash", ret);
         HashWithSalt(passwordHashClac, (const uint8_t *)password, strlen(password), "password hash");
         if (memcmp(passwordHashStore, passwordHashClac, 32) == 0) {
@@ -426,7 +394,7 @@ int32_t VerifyCurrentAccountPassword(const char *password)
             g_publicInfo.currentPasswordErrorCount++;
             ret = ERR_KEYSTORE_PASSWORD_ERR;
         }
-        DS28S60_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+        SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
     } while (0);
 
     CLEAR_ARRAY(passwordHashStore);
@@ -439,7 +407,7 @@ int32_t ClearCurrentPasswordErrorCount(void)
     printf("clear current password error count\r\n");
     g_publicInfo.loginPasswordErrorCount = 0;
     g_publicInfo.currentPasswordErrorCount = 0;
-    DS28S60_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+    SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
     return SUCCESS_CODE;
 }
 
@@ -473,7 +441,7 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
     } else {
         g_publicInfo.loginPasswordErrorCount++;
     }
-    DS28S60_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+    SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
     return ret;
 }
 
@@ -527,7 +495,7 @@ int32_t GetExistAccountNum(uint8_t *accountNum)
     uint8_t data[32], count = 0;
 
     for (uint8_t i = 0; i < 3; i++) {
-        ret = DS28S60_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
+        ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
         CHECK_ERRCODE_BREAK("read iv", ret);
         if (CheckEntropy(data, 32)) {
             count++;
@@ -551,7 +519,7 @@ int32_t GetBlankAccountIndex(uint8_t *accountIndex)
     uint8_t data[32];
 
     for (uint8_t i = 0; i < 3; i++) {
-        ret = DS28S60_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
+        ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
         CHECK_ERRCODE_BREAK("read iv", ret);
         if (CheckEntropy(data, 32) == false) {
             *accountIndex = i;
@@ -578,7 +546,7 @@ int32_t DestroyAccount(uint8_t accountIndex)
     ASSERT(accountIndex <= 2);
     for (uint8_t i = 0; i < PAGE_NUM_PER_ACCOUNT; i++) {
         printf("erase index=%d\n", i);
-        ret = DS28S60_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + i);
+        ret = SE_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + i);
         CHECK_ERRCODE_BREAK("ds28s60 write", ret);
     }
     DeleteAccountPublicInfo(accountIndex);
@@ -802,7 +770,7 @@ uint32_t GetLastLockDeviceTime(void)
 void SetLastLockDeviceTime(uint32_t timeStamp)
 {
     g_publicInfo.lastLockDeviceTime = timeStamp;
-    DS28S60_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+    SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
 }
 
 
@@ -836,125 +804,6 @@ bool PassphraseExist(uint8_t accountIndex)
     return (strlen(g_passphraseInfo[accountIndex].passphrase) > 0);
 }
 
-
-/// @brief Set the fingerprint encrypted password, store in SE.
-/// @param[in] index
-/// @param[in] encryptedPassword 32 bytes.
-/// @return err code.
-int32_t SetFpEncryptedPassword(uint32_t index, const uint8_t *encryptedPassword)
-{
-    ASSERT(index < 10);
-    return DS28S60_HmacEncryptWrite(encryptedPassword, PAGE_PF_ENCRYPTED_PASSWORD + index);
-}
-
-
-/// @brief Get the fingerprint encrypted password which stored in SE.
-/// @param[in] index
-/// @param[out] encryptedPassword 32 bytes.
-/// @return err code.
-int32_t GetFpEncryptedPassword(uint32_t index, uint8_t *encryptedPassword)
-{
-    ASSERT(index < 10);
-    return DS28S60_HmacEncryptRead(encryptedPassword, PAGE_PF_ENCRYPTED_PASSWORD + index);
-}
-
-
-/// @brief Set the fingerprint communication AES key.
-/// @param[in] aesKey length 16bytes.
-/// @return err code.
-int32_t SetFpCommAesKey(const uint8_t *aesKey)
-{
-    return DS28S60_HmacEncryptWrite(aesKey, PAGE_PF_AES_KEY);
-}
-
-
-/// @brief Get the fingerprint communication AES key.
-/// @param[out] aesKey length 16bytes.
-/// @return err code.
-int32_t GetFpCommAesKey(uint8_t *aesKey)
-{
-    return DS28S60_HmacEncryptRead(aesKey, PAGE_PF_AES_KEY);
-}
-
-
-/// @brief Set the fingerprint reset AES key.
-/// @param[in] resetKey length 16bytes.
-/// @return err code.
-int32_t SetFpResetKey(const uint8_t *resetKey)
-{
-    return DS28S60_HmacEncryptWrite(resetKey, PAGE_PF_RESET_KEY);
-}
-
-
-/// @brief Get the fingerprint reset AES key.
-/// @param[out] resetKey length 16bytes.
-/// @return err code.
-int32_t GetFpResetKey(uint8_t *resetKey)
-{
-    return DS28S60_HmacEncryptRead(resetKey, PAGE_PF_RESET_KEY);
-}
-
-
-/// @brief Get whether the fingerprint AES key exists.
-/// @return true - exists.
-bool FpAesKeyExist(void)
-{
-    uint8_t key[32];
-    bool ret;
-
-    if (DS28S60_HmacEncryptRead(key, PAGE_PF_AES_KEY) != SUCCESS_CODE) {
-        return false;
-    }
-    ret = CheckEntropy(key, 32);
-    CLEAR_ARRAY(key);
-    return ret;
-}
-
-/// @brief Get whether the fingerprint reset key exists.
-/// @return true - exists.
-bool FpResetKeyExist(void)
-{
-    uint8_t key[32];
-    bool ret;
-
-    if (DS28S60_HmacEncryptRead(key, PAGE_PF_RESET_KEY) != SUCCESS_CODE) {
-        return false;
-    }
-    ret = CheckEntropy(key, 32);
-    CLEAR_ARRAY(key);
-    return ret;
-}
-
-
-/// @brief Set the fingerprint state info.
-/// @param[in] info 32 byte info.
-/// @return err code.
-int32_t SetFpStateInfo(uint8_t *info)
-{
-    uint8_t data[32] = {0};
-    int32_t ret;
-
-    memcpy(data, info, 32);
-    ret = DS28S60_HmacEncryptWrite(data, PAGE_PF_INFO);
-    return ret;
-}
-
-
-/// @brief Get the fingerprint state info.
-/// @param[out] info 32 byte info.
-/// @return err code.
-int32_t GetFpStateInfo(uint8_t *info)
-{
-    uint8_t data[32];
-    int32_t ret;
-
-    ret = DS28S60_HmacEncryptRead(data, PAGE_PF_INFO);
-    CHECK_ERRCODE_RETURN_INT(ret);
-    memcpy(info, data, 32);
-    return ret;
-}
-
-
 /// @brief Get the specific account info.
 /// @param[in] accountIndex
 /// @param[out] pInfo
@@ -963,7 +812,7 @@ int32_t GetAccountInfo(uint8_t accountIndex, AccountInfo_t *pInfo)
 {
     int32_t ret;
     ASSERT(accountIndex <= 2);
-    ret = DS28S60_HmacEncryptRead((uint8_t *)pInfo, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
+    ret = SE_HmacEncryptRead((uint8_t *)pInfo, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
     return ret;
 }
 
@@ -973,7 +822,7 @@ int32_t GetAccountInfo(uint8_t accountIndex, AccountInfo_t *pInfo)
 int32_t ErasePublicInfo(void)
 {
     CLEAR_OBJECT(g_publicInfo);
-    return DS28S60_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+    return SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
 }
 
 
@@ -1003,12 +852,8 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
     encryptReservedData = slip39Ems + SLIP39_EMS_LEN;
     hmac = encryptReservedData + SE_DATA_RESERVED_LEN;
     do {
-        ret = SetNewKeyPieceToAtecc608b(accountIndex, pieces, password);
-        CHECK_ERRCODE_BREAK("Set key to 608b", ret);
-        KEYSTORE_PRINT_ARRAY("608 piece", pieces, 32);
-        ret = SetNewKeyPieceToDs28s60(accountIndex, pieces + KEY_PIECE_LEN, password);
-        CHECK_ERRCODE_BREAK("Set key to ds28s60", ret);
-        KEYSTORE_PRINT_ARRAY("ds28s60 piece", pieces + KEY_PIECE_LEN, 32);
+        ret = SetNewKeyPieceToSE(accountIndex, pieces, password);
+        CHECK_ERRCODE_BREAK("set key to se", ret);
         HashWithSalt(hash, pieces, sizeof(pieces), "combine two pieces");
         KEYSTORE_PRINT_ARRAY("pieces hash", hash, sizeof(hash));
         sha512((struct sha512 *)sha512Hash, hash, sizeof(hash));
@@ -1030,19 +875,19 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
         KEYSTORE_PRINT_ARRAY("accountEncryptData", accountEncryptData, ACCOUNT_TOTAL_LEN);
         KEYSTORE_PRINT_ARRAY("authKey", authKey, AUTH_KEY_LEN);
         //param[0] = accountSecret->entropyLen;
-        ret = DS28S60_HmacEncryptWrite(iv, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
+        ret = SE_HmacEncryptWrite(iv, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
         CHECK_ERRCODE_BREAK("write iv", ret);
-        ret = DS28S60_HmacEncryptWrite(encryptEntropy, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY);
+        ret = SE_HmacEncryptWrite(encryptEntropy, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY);
         CHECK_ERRCODE_BREAK("write encrypt entropy", ret);
-        ret = DS28S60_HmacEncryptWrite(encryptSeed, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_H32);
+        ret = SE_HmacEncryptWrite(encryptSeed, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_H32);
         CHECK_ERRCODE_BREAK("write encrypt seed h32", ret);
-        ret = DS28S60_HmacEncryptWrite(encryptSeed + 32, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_L32);
+        ret = SE_HmacEncryptWrite(encryptSeed + 32, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_L32);
         CHECK_ERRCODE_BREAK("write encrypt seed l32", ret);
-        ret = DS28S60_HmacEncryptWrite(slip39Ems, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS);
+        ret = SE_HmacEncryptWrite(slip39Ems, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS);
         CHECK_ERRCODE_BREAK("write slip39 ems", ret);
-        ret = DS28S60_HmacEncryptWrite(encryptReservedData, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_RESERVED);
+        ret = SE_HmacEncryptWrite(encryptReservedData, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_RESERVED);
         CHECK_ERRCODE_BREAK("write encrypt reserved data", ret);
-        ret = DS28S60_HmacEncryptWrite(hmac, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC);
+        ret = SE_HmacEncryptWrite(hmac, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC);
         CHECK_ERRCODE_BREAK("write hmac", ret);
         if (newAccount) {
             g_currentAccountInfo.entropyLen = accountSecret->entropyLen;
@@ -1063,7 +908,7 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
             PrintArray("masterFingerprint", masterFingerprint, 4);
             memcpy(g_currentAccountInfo.mfp, masterFingerprint, 4);
             free_simple_response_u8(simpleResponse);
-            ret = DS28S60_HmacEncryptWrite((uint8_t *)&g_currentAccountInfo, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
+            ret = SE_HmacEncryptWrite((uint8_t *)&g_currentAccountInfo, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
             CHECK_ERRCODE_BREAK("write param", ret);
         }
     } while (0);
@@ -1102,32 +947,27 @@ static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountS
     encryptReservedData = slip39Ems + SLIP39_EMS_LEN;
     hmac = encryptReservedData + SE_DATA_RESERVED_LEN;
     do {
-        ret = GetKeyPieceFromAtecc608b(accountIndex, pieces, password);
-        CHECK_ERRCODE_BREAK("Get key from 608b", ret);
-        KEYSTORE_PRINT_ARRAY("608 piece", pieces, 32);
-        ret = GetKeyPieceFromDs28s60(accountIndex, pieces + KEY_PIECE_LEN, password);
-        CHECK_ERRCODE_BREAK("Get key from ds28s60", ret);
-        KEYSTORE_PRINT_ARRAY("ds28s60 piece", pieces + KEY_PIECE_LEN, 32);
+        ret = GetKeyPieceFromSE(accountIndex, pieces, password);
         HashWithSalt(hash, pieces, sizeof(pieces), "combine two pieces");
         KEYSTORE_PRINT_ARRAY("pieces hash", hash, sizeof(hash));
         sha512((struct sha512 *)sha512Hash, hash, sizeof(hash));
         KEYSTORE_PRINT_ARRAY("sha512Hash", sha512Hash, 64);
 
-        ret = DS28S60_HmacEncryptRead(iv, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
+        ret = SE_HmacEncryptRead(iv, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
         CHECK_ERRCODE_BREAK("read iv", ret);
-        ret = DS28S60_HmacEncryptRead(encryptEntropy, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY);
+        ret = SE_HmacEncryptRead(encryptEntropy, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY);
         CHECK_ERRCODE_BREAK("read encrypt entropy", ret);
-        ret = DS28S60_HmacEncryptRead(encryptSeed, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_H32);
+        ret = SE_HmacEncryptRead(encryptSeed, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_H32);
         CHECK_ERRCODE_BREAK("read encrypt seed h32", ret);
-        ret = DS28S60_HmacEncryptRead(encryptSeed + 32, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_L32);
+        ret = SE_HmacEncryptRead(encryptSeed + 32, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_L32);
         CHECK_ERRCODE_BREAK("read encrypt seed l32", ret);
-        ret = DS28S60_HmacEncryptRead(slip39Ems, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS);
+        ret = SE_HmacEncryptRead(slip39Ems, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS);
         CHECK_ERRCODE_BREAK("read slip39 ems", ret);
-        ret = DS28S60_HmacEncryptRead(encryptReservedData, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_RESERVED);
+        ret = SE_HmacEncryptRead(encryptReservedData, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_RESERVED);
         CHECK_ERRCODE_BREAK("read encrypt reserved data", ret);
-        ret = DS28S60_HmacEncryptRead(hmac, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC);
+        ret = SE_HmacEncryptRead(hmac, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC);
         CHECK_ERRCODE_BREAK("read hmac", ret);
-        ret = DS28S60_HmacEncryptRead(param, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
+        ret = SE_HmacEncryptRead(param, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
         CHECK_ERRCODE_BREAK("read param", ret);
         hmac_sha256(authKey, AUTH_KEY_LEN, accountEncryptData, ACCOUNT_TOTAL_LEN - HMAC_LEN, hmacCalc);
         KEYSTORE_PRINT_ARRAY("accountEncryptData", accountEncryptData, ACCOUNT_TOTAL_LEN);
@@ -1190,148 +1030,6 @@ static void GetAtecc608bAccountSlot(AccountSlot_t *accountSlot, uint8_t accountI
     }
 }
 
-/// @brief Get the key piece which is generated by password and 608b kdf.
-/// @param[in] accountIndex Account index, 0~2.
-/// @param[out] piece Key piece.
-/// @param[in] password Password string.
-/// @return err code.
-static int32_t GetKeyPieceFromAtecc608b(uint8_t accountIndex, uint8_t *piece, const char *password)
-{
-    uint8_t authKey[32], hostRandom[32], inData[32], outData[32];
-    int32_t ret;
-    AccountSlot_t accountSlot;
-
-    ASSERT(accountIndex <= 2);
-    do {
-        HashWithSalt(authKey, (uint8_t *)password, strlen(password), "auth_key");
-        HashWithSalt(outData, (uint8_t *)password, strlen(password), "password_atecc608b");
-        memcpy(inData, outData, 32);
-
-        GetAtecc608bAccountSlot(&accountSlot, accountIndex);
-        ret = Atecc608bKdf(accountSlot.rollKdf, authKey, inData, 32, outData);
-        CHECK_ERRCODE_BREAK("kdf", ret);
-        memcpy(inData, outData, 32);
-        ret = Atecc608bKdf(accountSlot.hostKdf, authKey, inData, 32, outData);
-        CHECK_ERRCODE_BREAK("kdf", ret);
-        for (uint32_t i = 0; i < SHA256_COUNT; i++) {
-            memcpy(inData, outData, 32);
-            sha256((struct sha256 *)outData, inData, 32);
-        }
-        memcpy(piece, outData, 32);
-    } while (0);
-    CLEAR_ARRAY(authKey);
-    CLEAR_ARRAY(hostRandom);
-    CLEAR_ARRAY(inData);
-    CLEAR_ARRAY(outData);
-
-    return ret;
-}
-
-
-
-/// @brief Set a new key piece which is generated by password and 608b kdf.
-/// @param[in] accountIndex Account index, 0~2.
-/// @param[out] piece New key piece.
-/// @param[in] password Password string.
-/// @return err code.
-static int32_t SetNewKeyPieceToAtecc608b(uint8_t accountIndex, uint8_t *piece, const char *password)
-{
-    uint8_t authKey[32], hostRandom[32], inData[32], outData[32];
-    int32_t ret;
-    AccountSlot_t accountSlot;
-
-    ASSERT(accountIndex <= 2);
-    do {
-        HashWithSalt(authKey, (uint8_t *)password, strlen(password), "auth_key");
-        GetAtecc608bAccountSlot(&accountSlot, accountIndex);
-        //new kdf
-        ret = Atecc608bEncryptWrite(accountSlot.auth, 0, authKey);
-        CHECK_ERRCODE_BREAK("write auth", ret);
-        ret = Atecc608bDeriveKey(accountSlot.rollKdf, authKey);
-        CHECK_ERRCODE_BREAK("derive key", ret);
-        TrngGet(hostRandom, 32);
-        ret = Atecc608bEncryptWrite(accountSlot.hostKdf, 0, hostRandom);
-        CHECK_ERRCODE_BREAK("write kdf", ret);
-
-        HashWithSalt(outData, (uint8_t *)password, strlen(password), "password_atecc608b");
-        memcpy(inData, outData, 32);
-        ret = Atecc608bKdf(accountSlot.rollKdf, authKey, inData, 32, outData);
-        CHECK_ERRCODE_BREAK("kdf", ret);
-        memcpy(inData, outData, 32);
-        ret = Atecc608bKdf(accountSlot.hostKdf, authKey, inData, 32, outData);
-        CHECK_ERRCODE_BREAK("kdf", ret);
-        for (uint32_t i = 0; i < SHA256_COUNT; i++) {
-            memcpy(inData, outData, 32);
-            sha256((struct sha256 *)outData, inData, 32);
-        }
-        memcpy(piece, outData, 32);
-    } while (0);
-    CLEAR_ARRAY(authKey);
-    CLEAR_ARRAY(hostRandom);
-    CLEAR_ARRAY(inData);
-    CLEAR_ARRAY(outData);
-
-    return ret;
-}
-
-
-
-/// @brief  Get the key piece which is generated before.
-/// @param[in] accountIndex Account index, 0~2.
-/// @param[out] piece Key piece.
-/// @param[in] password Password string.
-/// @return err code.
-static int32_t GetKeyPieceFromDs28s60(uint8_t accountIndex, uint8_t *piece, const char *password)
-{
-    uint8_t passwordHash[32], xData[32];
-    int32_t ret;
-
-    ASSERT(accountIndex <= 2);
-    HashWithSalt(passwordHash, (uint8_t *)password, strlen(password), "ds28s60 digest");
-    do {
-        ret = DS28S60_HmacEncryptRead(xData, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_KEY_PIECE);
-        CHECK_ERRCODE_BREAK("write xData", ret);
-        for (uint32_t i = 0; i < 32; i++) {
-            piece[i] = passwordHash[i] ^ xData[i];
-        }
-    } while (0);
-    CLEAR_ARRAY(passwordHash);
-    CLEAR_ARRAY(xData);
-
-    return ret;
-}
-
-
-/// @brief Set a new key piece which is generated by password and random key.
-/// @param[in] accountIndex Account index, 0~2.
-/// @param[out] piece New key piece.
-/// @param[in] password Password string.
-/// @return err code.
-static int32_t SetNewKeyPieceToDs28s60(uint8_t accountIndex, uint8_t *piece, const char *password)
-{
-    uint8_t passwordHash[32], randomKey[32], xData[32];
-    int32_t ret;
-
-    ASSERT(accountIndex <= 2);
-    HashWithSalt(passwordHash, (uint8_t *)password, strlen(password), "ds28s60 digest");
-    TrngGet(randomKey, 32);
-    for (uint32_t i = 0; i < 32; i++) {
-        xData[i] = passwordHash[i] ^ randomKey[i];
-    }
-    do {
-        ret = DS28S60_HmacEncryptWrite(xData, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_KEY_PIECE);
-        CHECK_ERRCODE_BREAK("write xData", ret);
-        memcpy(piece, randomKey, 32);
-    } while (0);
-    CLEAR_ARRAY(passwordHash);
-    CLEAR_ARRAY(randomKey);
-    CLEAR_ARRAY(xData);
-
-    return ret;
-}
-
-
-
 /// @brief Combine with the internal AES KEY of MCU.
 /// @param[inout] aesKey
 /// @return
@@ -1361,7 +1059,7 @@ static int32_t GetCurrentAccountInfo(void)
 
     accountIndex = GetCurrentAccountIndex();
     ASSERT(accountIndex <= 2);
-    ret = DS28S60_HmacEncryptRead(param, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
+    ret = SE_HmacEncryptRead(param, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
     if (ret == SUCCESS_CODE) {
         memcpy(&g_currentAccountInfo, pAccountInfo, sizeof(AccountInfo_t));
     }
@@ -1380,7 +1078,7 @@ static int32_t SaveCurrentAccountInfo(void)
     accountIndex = GetCurrentAccountIndex();
     ASSERT(accountIndex <= 2);
     memcpy(pAccountInfo, &g_currentAccountInfo, sizeof(AccountInfo_t));
-    ret = DS28S60_HmacEncryptWrite(param, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
+    ret = SE_HmacEncryptWrite(param, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
     return ret;
 }
 
@@ -1418,33 +1116,7 @@ static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char
     return ret;
 }
 
-/// @brief Get the device public key
-/// @param pubkey
-/// @return
-int32_t GetDevicePublicKey(uint8_t *pubkey)
-{
-    int32_t ret;
-    uint8_t pubkeyXY[64] = {0};
-    do {
-        ret = Atecc608bGenDevicePubkey(pubkeyXY);
-        PrintArray("608B pubkey1", pubkeyXY, 64);
-        CHECK_ERRCODE_BREAK("get device pubkey error", ret);
-        pubkey[0] = 0x04;
-        memcpy(pubkey + 1, pubkeyXY, 64);
-        PrintArray("608B pubkey2", pubkey, 65);
-    } while (0);
-    return ret;
-}
-
-int32_t SignMessageWithDeviceKey(uint8_t *messageHash, uint8_t *signaure)
-{
-    int32_t ret;
-    do {
-        ret = Atecc608bSignMessageWithDeviceKey(messageHash, signaure);
-        CHECK_ERRCODE_BREAK("get device pubkey error", ret);
-    } while (0);
-    return ret;
-}
+#ifndef BUILD_PRODUCTION
 
 /// @brief
 /// @param argc Test arg count.
@@ -1689,3 +1361,5 @@ void KeyStoreTest(int argc, char *argv[])
         printf("keystore cmd err\r\n");
     }
 }
+
+#endif

@@ -88,21 +88,13 @@ uint32_t GetLastLockDeviceTime(void);
 void SetLastLockDeviceTime(uint32_t timeStamp);
 uint32_t GetCurrentAccountEntropyLen(void);
 bool PassphraseExist(uint8_t accountIndex);
-int32_t SetFpEncryptedPassword(uint32_t index, const uint8_t *encryptedPassword);
-int32_t GetFpEncryptedPassword(uint32_t index, uint8_t *encryptedPassword);
-int32_t SetFpCommAesKey(const uint8_t *aesKey);
-int32_t GetFpCommAesKey(uint8_t *aesKey);
-int32_t SetFpResetKey(const uint8_t *resetKey);
-int32_t GetFpResetKey(uint8_t *resetKey);
-bool FpAesKeyExist(void);
-bool FpResetKeyExist(void);
-int32_t SetFpStateInfo(uint8_t *info);
-int32_t GetFpStateInfo(uint8_t *info);
+
 int32_t GetAccountInfo(uint8_t accountIndex, AccountInfo_t *pInfo);
-int32_t GetDevicePublicKey(uint8_t *pubkey);
-int32_t SignMessageWithDeviceKey(uint8_t *messageHash, uint8_t *signaure);
 int32_t ErasePublicInfo(void);
 int32_t ClearCurrentPasswordErrorCount(void);
+
+#ifndef BUILD_PRODUCTION
 void KeyStoreTest(int argc, char *argv[]);
+#endif
 
 #endif

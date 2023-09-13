@@ -29,7 +29,7 @@ Artifacts has been uploaded to s3 bucket ```keystone-g3-firmware```, search in 1
 
 ### Command
 
-```cd tools && astyle -A3nrUpHcQ --exclude=../cm_backtrace/Languages --exclude=../components/sqlite3/sqlite3.h --exclude=../components/sqlite3/sqlite3.c --exclude=../external --exclude=../rust "../*.c" "../*.h" "../*.cpp" && cd ..```
+```cd tools && astyle -A3nrUpHcQ --exclude=../src/cm_backtrace/Languages --exclude=../external --exclude=../rust "../*.c" "../*.h" "../*.cpp" && cd ..```
 
 ## Build Bin Artifacts
 

@@ -13,7 +13,8 @@
 #include "stdbool.h"
 #include "err_code.h"
 
-#define LOW_BATTERY_PERCENT                  20
+#define LOW_BATTERY_PERCENT                     20
+#define DEVICE_WIPE_FLAG_MAGIC_NUM              0x1234ABCD                  
 
 void DeviceSettingsInit(void);
 void SaveDeviceSettings(void);

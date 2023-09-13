@@ -1,7 +1,14 @@
+#include <stdio.h>
+#include <string.h>
+#include "mhscpu.h"
 #include "err_code.h"
 #include "drv_gd25qxx.h"
+#include "flash_address.h"
+#include "device_setting.h"
 #include "user_memory.h"
 #include "assert.h"
+#include "fingerprint_process.h"
+#include "keystore.h"
 
 #define GD25_FLASH_ID               (0xC84018)
 #define PY25_FLASH_ID               (0x852018)
@@ -32,4 +39,17 @@ void PowerOnSelfCheck(void)
     }
     EXT_FREE(data);
     assert(ret == SUCCESS_CODE);
+
+    // check after wipe device
+    uint32_t wipeFlag = 0;
+    Gd25FlashReadBuffer(SPI_FLASH_ADDR_PROTECT_PARAM, (uint8_t *)&wipeFlag, sizeof(wipeFlag));
+    if (wipeFlag == DEVICE_WIPE_FLAG_MAGIC_NUM) {
+        FpWipeManageInfo();
+        DestroyAccount(0);
+        DestroyAccount(1);
+        DestroyAccount(2);
+        ErasePublicInfo();
+        Gd25FlashChipErase();
+        NVIC_SystemReset();
+    }
 }

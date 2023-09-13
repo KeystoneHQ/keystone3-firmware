@@ -30,6 +30,8 @@
 #define DEFAULT_KB_CONT_HEIGHT                              310
 #define DEFAULT_KB_CONT_WIDTH                               480
 
+static void KbTextAreaHandler(lv_event_t *e);
+
 static const char *g_numBtnmMap[] = {
     "1", "2", "3", "\n",
     "4", "5", "6", "\n",
@@ -190,7 +192,7 @@ char g_wordBuf[3][32];
 static char g_wordChange[32];
 extern TrieSTPtr rootTree;
 
-static const char *const g_keyStoneFullKbLcMap[] = {
+static const char *const g_fullKbLcMap[] = {
     "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "\n",
     "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "\n",
     " ", "a", "s", "d", "f", "g", "h", "j", "k", "l", " ", "\n",
@@ -198,7 +200,7 @@ static const char *const g_keyStoneFullKbLcMap[] = {
     "#@", USR_SYMBOL_SPACE, USR_SYMBOL_KB_NEXT, '\0'
 };
 
-static const char *const g_keyStoneFullKbLcConfirmMap[] = {
+static const char *const g_fullKbLcConfirmMap[] = {
     "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "\n",
     "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "\n",
     " ", "a", "s", "d", "f", "g", "h", "j", "k", "l", " ", "\n",
@@ -206,7 +208,7 @@ static const char *const g_keyStoneFullKbLcConfirmMap[] = {
     "#@", USR_SYMBOL_SPACE, USR_SYMBOL_KB_NEXT, '\0'
 };
 
-static const char *const g_keyStoneFullKbUcMap[] = {
+static const char *const g_fullKbUcMap[] = {
     "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "\n",   // 9
     "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "\n",   // 19
     " ", "A", "S", "D", "F", "G", "H", "J", "K", "L", " ", "\n",  // 30
@@ -214,7 +216,7 @@ static const char *const g_keyStoneFullKbUcMap[] = {
     "#@", USR_SYMBOL_SPACE, USR_SYMBOL_KB_NEXT, '\0'
 };
 
-static const char *const g_keyStoneFullKbucConfirmMap[] = {
+static const char *const g_fullKbUcConfirmMap[] = {
     "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "\n",   // 9
     "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "\n",   // 19
     " ", "A", "S", "D", "F", "G", "H", "J", "K", "L", " ", "\n",  // 30
@@ -222,7 +224,7 @@ static const char *const g_keyStoneFullKbucConfirmMap[] = {
     "#@", USR_SYMBOL_SPACE, USR_SYMBOL_CONFIRM, '\0'
 };
 
-static const char *const g_keyStoneSymbolMap[] = {
+static const char *const g_symbolMap[] = {
     "[", "]", "{", "}", "#", "%", "^", "*", "+", "=", "\n",
     "_", "\\", "|", "~", "<", ">", "€", "£", "¥", "·", "\n",
     " ", "-", "/", ":", ";", "(", ")", "$", "&", "\"", " ", "\n",
@@ -237,19 +239,19 @@ const static uint8_t g_KeyMatchTable[] = {
     6, 25,  1,     23,  5, 22, 29, 21   // u v w   x y z check del
 };
 
-static const char *const g_keyStoneLetterLcMap[] = {
+static const char *const g_letterLcMap[] = {
     "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "\n",
     " ", "a", "s", "d", "f", "g", "h", "j", "k", "l", " ", "\n",  // 20
     USR_SYMBOL_DELETE, "z", "x", "c", "v", "b", "n", "m", USR_SYMBOL_KB_NEXT, "\0"
 };
 
-static const char *const g_keyStoneLetterConfirmMap[] = {
+static const char *const g_letterConfirmMap[] = {
     "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "\n",
     " ", "a", "s", "d", "f", "g", "h", "j", "k", "l", " ", "\n",  // 20
     USR_SYMBOL_DELETE, "z", "x", "c", "v", "b", "n", "m", USR_SYMBOL_CHECK, "\0"
 };
 
-static lv_btnmatrix_ctrl_t g_keyStoneFullCtrlMap[] = {
+static lv_btnmatrix_ctrl_t g_fullCtrlMap[] = {
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
     LV_BTNMATRIX_CTRL_HIDDEN | 2, LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),  LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_BTNMATRIX_CTRL_HIDDEN | 2,
@@ -258,7 +260,7 @@ static lv_btnmatrix_ctrl_t g_keyStoneFullCtrlMap[] = {
     // LV_BTNMATRIX_CTRL_CUSTOM_1 | LV_KB_BTN(2), LV_KB_BTN(6), LV_KB_BTN(2) | LV_BTNMATRIX_CTRL_DISABLED
 };
 
-static const lv_btnmatrix_ctrl_t g_keyStoneFullCtrlBak[] = {
+static const lv_btnmatrix_ctrl_t g_fullCtrlBak[] = {
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
     LV_BTNMATRIX_CTRL_HIDDEN | 2, LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),  LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_BTNMATRIX_CTRL_HIDDEN | 2,
@@ -266,7 +268,7 @@ static const lv_btnmatrix_ctrl_t g_keyStoneFullCtrlBak[] = {
     LV_KB_BTN(2), LV_KB_BTN(6), LV_KB_BTN(2) | LV_BTNMATRIX_CTRL_DISABLED | LV_BTNMATRIX_CTRL_NO_REPEAT
 };
 
-static lv_btnmatrix_ctrl_t g_keyStoneSymbolCtrlMap[] = {
+static lv_btnmatrix_ctrl_t g_symbolCtrlMap[] = {
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
     LV_BTNMATRIX_CTRL_HIDDEN | 2, LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),  LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_BTNMATRIX_CTRL_HIDDEN | 1,
@@ -274,27 +276,35 @@ static lv_btnmatrix_ctrl_t g_keyStoneSymbolCtrlMap[] = {
     LV_KB_BTN(2), LV_KB_BTN(6), LV_KB_BTN(2) | LV_BTNMATRIX_CTRL_CHECKED
 };
 
-static lv_btnmatrix_ctrl_t g_keyStoneLetterCtrlMap[] = {
+static lv_btnmatrix_ctrl_t g_letterCtrlMap[] = {
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
     LV_BTNMATRIX_CTRL_HIDDEN | 2, LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),  LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_BTNMATRIX_CTRL_HIDDEN | 1,
     LV_KB_BTN(5), LV_KB_BTN(4), LV_KB_BTN(4) | LV_BTNMATRIX_CTRL_DISABLED, LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(5) | LV_BTNMATRIX_CTRL_CHECKED | LV_BTNMATRIX_CTRL_DISABLED
 };
 
-static const lv_btnmatrix_ctrl_t g_keyStoneLetterCtrlMapBak[] = {
+static const lv_btnmatrix_ctrl_t g_letterCtrlMapBak[] = {
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
     LV_BTNMATRIX_CTRL_HIDDEN | 2, LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),  LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_BTNMATRIX_CTRL_HIDDEN | 1,
     LV_KB_BTN(5), LV_KB_BTN(4), LV_KB_BTN(4) | LV_BTNMATRIX_CTRL_DISABLED, LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(5) | LV_BTNMATRIX_CTRL_CHECKED | LV_BTNMATRIX_CTRL_DISABLED
+};
+
+static lv_btnmatrix_ctrl_t g_passPhraseSymbolCtrlMap[] = {
+    LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
+    LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4) | LV_BTNMATRIX_CTRL_DISABLED, LV_KB_BTN(4) | LV_BTNMATRIX_CTRL_DISABLED, LV_KB_BTN(4) | LV_BTNMATRIX_CTRL_DISABLED, LV_KB_BTN(4) | LV_BTNMATRIX_CTRL_DISABLED,
+    LV_BTNMATRIX_CTRL_HIDDEN | 2, LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),  LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_BTNMATRIX_CTRL_HIDDEN | 1,
+    LV_BTNMATRIX_CTRL_HIDDEN | 5, LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(6),
+    LV_KB_BTN(2), LV_KB_BTN(6), LV_KB_BTN(2) | LV_BTNMATRIX_CTRL_CHECKED
 };
 
 #if 0
-static const lv_btnmatrix_ctrl_t g_keyStoneMnemonic12CtrlMap[] = {
+static const lv_btnmatrix_ctrl_t g_mnemonic12CtrlMap[] = {
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4)
 };
 
-static const lv_btnmatrix_ctrl_t g_keyStoneMnemonic24CtrlMap[] = {
+static const lv_btnmatrix_ctrl_t g_mnemonic24CtrlMap[] = {
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
     LV_KB_BTN(4), LV_KB_BTN(4), LV_KB_BTN(4),
@@ -307,32 +317,30 @@ static const lv_btnmatrix_ctrl_t g_keyStoneMnemonic24CtrlMap[] = {
 #endif
 
 static const char **g_kbConfirmMap[2] = {
-    (const char **)g_keyStoneFullKbLcConfirmMap,
-    (const char **)g_keyStoneFullKbucConfirmMap,
+    (const char **)g_fullKbLcConfirmMap,
+    (const char **)g_fullKbUcConfirmMap,
 };
 
 static char **g_kbMap[4] = {
-    (char **)g_keyStoneFullKbLcMap,
-    (char **)g_keyStoneFullKbUcMap,
-    (char **)g_keyStoneSymbolMap,
-    (char **)g_keyStoneLetterLcMap,
+    (char **)g_fullKbLcMap,
+    (char **)g_fullKbUcMap,
+    (char **)g_symbolMap,
+    (char **)g_letterLcMap,
 };
 
 static lv_btnmatrix_ctrl_t *g_kbCtrl[4] = {
-    g_keyStoneFullCtrlMap,
-    g_keyStoneFullCtrlMap,
-    g_keyStoneSymbolCtrlMap,
-    g_keyStoneLetterCtrlMap,
+    g_fullCtrlMap,
+    g_fullCtrlMap,
+    g_symbolCtrlMap,
+    g_letterCtrlMap,
 };
 
 static const BtnMatrixCtl_t g_kbCtrlBak[4] = {
-    {g_keyStoneFullCtrlBak, sizeof(g_keyStoneFullCtrlBak)},
-    {g_keyStoneFullCtrlBak, sizeof(g_keyStoneFullCtrlBak)},
-    {g_keyStoneSymbolCtrlMap, sizeof(g_keyStoneSymbolCtrlMap)},
-    {g_keyStoneLetterCtrlMapBak, sizeof(g_keyStoneLetterCtrlMapBak)},
+    {g_fullCtrlBak, sizeof(g_fullCtrlBak)},
+    {g_fullCtrlBak, sizeof(g_fullCtrlBak)},
+    {g_symbolCtrlMap, sizeof(g_symbolCtrlMap)},
+    {g_letterCtrlMapBak, sizeof(g_letterCtrlMapBak)},
 };
-
-void KbTextAreaHandler(lv_event_t *e);
 
 static void EmojiDrawEventHandler(lv_event_t * e)
 {
@@ -421,7 +429,7 @@ void SetStatusBarEmojiIndex(uint8_t index)
     g_statusBarEmojiIndex = index;
 }
 
-void *GuiEmojiKeyBoard(lv_obj_t *parent, lv_obj_t *icon)
+void *GuiCreateEmojiKeyBoard(lv_obj_t *parent, lv_obj_t *icon)
 {
     g_walletIcon = icon;
     lv_obj_t *hintbox = GuiCreateHintBox(parent, 480, 534, true);
@@ -498,7 +506,7 @@ void *GuiCreateNumKeyboard(lv_obj_t *parent, lv_event_cb_t cb, NUM_KEYBOARD_ENUM
     return btnm;
 }
 
-void GuiUpdateShareKb(lv_obj_t *btnm, uint8_t memberCnt)
+void GuiUpdateSsbKeyBoard(lv_obj_t *btnm, uint8_t memberCnt)
 {
     lv_btnmatrix_set_map(btnm, (const char **)g_selectSliceVariableBtnmMap[memberCnt - 2]);
     if (memberCnt < 6) {
@@ -888,12 +896,19 @@ void GuiSetLetterBoardNext(KeyBoard_t *keyBoard)
     GuiKeyBoardSetMode(keyBoard);
 }
 
+void GuiUpdatePassPhraseKb(KeyBoard_t *keyBoard)
+{
+    lv_keyboard_set_map(keyBoard->kb, KEY_STONE_SYMBOL, (const char **)g_symbolMap,
+                        g_passPhraseSymbolCtrlMap);
+    lv_keyboard_set_mode(keyBoard->kb, keyBoard->mode);
+}
+
 void GuiKeyBoardSetMode(KeyBoard_t *keyBoard)
 {
     if (keyBoard->mode == KEY_STONE_LETTER) {
         if (g_letterConfirm != 0) {
             g_kbCtrl[keyBoard->mode - KEY_STONE_FULL_L][g_KeyMatchTable[26]] &= ~LV_BTNMATRIX_CTRL_DISABLED; // check
-            lv_keyboard_set_map(keyBoard->kb, KEY_STONE_LETTER, (const char **)g_keyStoneLetterConfirmMap,
+            lv_keyboard_set_map(keyBoard->kb, KEY_STONE_LETTER, (const char **)g_letterConfirmMap,
                                 g_kbCtrl[keyBoard->mode - KEY_STONE_FULL_L]);
         } else {
             lv_keyboard_set_map(keyBoard->kb, KEY_STONE_LETTER, (const char **)g_kbMap[keyBoard->mode - KEY_STONE_FULL_L],

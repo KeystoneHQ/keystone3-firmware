@@ -189,6 +189,9 @@ static void SetKeyboardTaHandler(lv_event_t *e)
         lv_keyboard_user_mode_t *keyMode = lv_event_get_param(e);
         g_setPassPhraseKb->mode = *keyMode;
         GuiKeyBoardSetMode(g_setPassPhraseKb);
+        if (*keyMode == KEY_STONE_SYMBOL) {
+            GuiUpdatePassPhraseKb(g_setPassPhraseKb);
+        }
     }
 }
 

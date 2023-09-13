@@ -216,6 +216,9 @@ static void SetKeyboardTaHandler(lv_event_t *e)
         lv_keyboard_user_mode_t *keyMode = lv_event_get_param(e);
         g_passphraseWidgets.keyboard->mode = *keyMode;
         GuiKeyBoardSetMode(g_passphraseWidgets.keyboard);
+        if (*keyMode == KEY_STONE_SYMBOL) {
+            GuiUpdatePassPhraseKb(g_passphraseWidgets.keyboard);
+        }
     }
 }
 

@@ -57,7 +57,7 @@ static void DelWalletConfirmHandler(lv_event_t *e)
         g_waitAnimWidget.cont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
         g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("Deleting"));
         lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
-        GuiModelSettingDelWalletDesc(); 
+        GuiModelSettingDelWalletDesc();
     }
 }
 

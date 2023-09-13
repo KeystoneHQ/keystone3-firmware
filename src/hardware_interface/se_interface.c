@@ -4,6 +4,7 @@
 #include "user_utils.h"
 #include "cryptoauthlib.h"
 #include "assert.h"
+#include "drv_trng.h"
 
 
 //START: Atecc608b
@@ -37,7 +38,7 @@ int32_t SE_GetDS28S60Rng(uint8_t *rngArray, uint32_t num)
     return DS28S60_GetRng(rngArray, num);
 }
 
-int32_t SE_GetTRng(void *buf, uint32_t len)
+void SE_GetTRng(void *buf, uint32_t len)
 {
     return TrngGet(buf, len);
 }

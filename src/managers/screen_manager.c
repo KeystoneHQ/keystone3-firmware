@@ -19,6 +19,8 @@
 #include "device_setting.h"
 #include "power_manager.h"
 #include "gui_lock_widgets.h"
+#include "account_manager.h"
+#include "fingerprint_process.h"
 
 #define LOCK_SCREEN_TICK                                    1000
 #define LOCK_SCREEN_TIME_OUT                                60 * 1000

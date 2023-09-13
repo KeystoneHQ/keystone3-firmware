@@ -21,6 +21,8 @@
 #include "gui_home_widgets.h"
 #include "sha256.h"
 #include "se_manager.h"
+#include "account_manager.h"
+
 
 #define PUB_KEY_MAX_LENGTH                  256
 #define VERSION_MAX_LENGTH                  64

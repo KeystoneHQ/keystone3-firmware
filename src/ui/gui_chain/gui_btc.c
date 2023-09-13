@@ -6,6 +6,7 @@
 #include "version.h"
 #include "secret_cache.h"
 #include "screen_manager.h"
+#include "account_manager.h"
 
 #define CHECK_FREE_PARSE_RESULT(result)                             \
     if (result != NULL) {                                           \

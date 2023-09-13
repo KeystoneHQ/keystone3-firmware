@@ -30,6 +30,7 @@
 #include "gui_animating_qrcode.h"
 #include "screen_manager.h"
 #include "keystore.h"
+#include "account_manager.h"
 #ifndef COMPILE_SIMULATOR
 #include "rust.h"
 #include "user_msg.h"
@@ -285,7 +286,7 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
 
     entropy = SecretCacheGetEntropy(&entropyLen);
     MODEL_WRITE_SE_HEAD
-    ret = SaveNewEntropy(newAccount, entropy, entropyLen, SecretCacheGetNewPassword());
+    ret = CreateNewAccount(newAccount, entropy, entropyLen, SecretCacheGetNewPassword());
     ClearAccountPassphrase(newAccount);
     CHECK_ERRCODE_BREAK("save entropy error", ret);
     MODEL_WRITE_SE_END
@@ -330,7 +331,7 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     if (bip39Data->forget) {
         GetAccountInfo(newAccount, &accountInfo);
     }
-    ret = SaveNewEntropy(newAccount, entropy, (uint8_t)entropyOutLen, SecretCacheGetNewPassword());
+    ret = CreateNewAccount(newAccount, entropy, (uint8_t)entropyOutLen, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("save entropy error", ret);
     ClearAccountPassphrase(newAccount);
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
@@ -577,7 +578,7 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     entropy = SecretCacheGetEntropy(&entropyLen);
 
     MODEL_WRITE_SE_HEAD
-    ret = SaveNewSlip39Entropy(newAccount, ems, entropy, 32, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetIteration());
+    ret = CreateNewSlip39Account(newAccount, ems, entropy, 32, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetIteration());
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
     ClearAccountPassphrase(newAccount);
     MODEL_WRITE_SE_END
@@ -632,7 +633,7 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     if (slip39->forget) {
         GetAccountInfo(newAccount, &accountInfo);
     }
-    ret = SaveNewSlip39Entropy(newAccount, emsBak, entropy, entropyLen, SecretCacheGetNewPassword(), id, ie);
+    ret = CreateNewSlip39Account(newAccount, emsBak, entropy, entropyLen, SecretCacheGetNewPassword(), id, ie);
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
     ClearAccountPassphrase(newAccount);
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());

@@ -16,6 +16,7 @@
 #include "gui_setting_widgets.h"
 #include "gui_lock_widgets.h"
 #include "motor_manager.h"
+#include "account_manager.h"
 
 typedef enum {
     PASSCODE_LED_ON,

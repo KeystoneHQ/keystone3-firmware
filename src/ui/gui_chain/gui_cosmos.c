@@ -6,6 +6,7 @@
 #include "screen_manager.h"
 #include "cjson/cJSON.h"
 #include "user_memory.h"
+#include "account_manager.h"
 
 static bool g_isMulti = false;
 static void *g_urResult = NULL;

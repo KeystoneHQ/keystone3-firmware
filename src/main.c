@@ -53,6 +53,7 @@
 #include "device_setting.h"
 #include "anti_tamper.h"
 #include "power_on_self_check.h"
+#include "account_manager.h"
 
 
 int main(void)
@@ -91,8 +92,8 @@ int main(void)
     MountSdFatfs();
     UserSqlite3Init();
     ScreenManagerInit();
-    KeystoreInit();
     PowerOnSelfCheck();
+    AccountManagerInit();
 
     PrintSystemInfo();
     osKernelInitialize();

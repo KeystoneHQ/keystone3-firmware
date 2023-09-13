@@ -44,6 +44,7 @@
 #include "gui_framework.h"
 #include "secret_cache.h"
 #include "anti_tamper.h"
+#include "account_manager.h"
 #ifndef EXCLUDE_RUSTC
 #include "librust_c.h"
 #endif

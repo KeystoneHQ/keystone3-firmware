@@ -181,6 +181,7 @@ void FingerprintIsrRecvProcess(uint8_t byte);
 void SendPackFingerMsg(uint16_t cmd, uint8_t *data, uint16_t frameId, uint32_t len, Encryption_Type isEncrypt);
 void FingerTest(int argc, char *argv[]);
 void InitFingerManagerInfo(void);
+bool FpModuleIsExist(void);
 
 int32_t RegisterFp(uint8_t index);
 int32_t DeleteFp(uint8_t index);

@@ -28,6 +28,8 @@
 #define PAGE_WALLET2_PUB_KEY_HASH               86
 #define PAGE_WALLET3_PUB_KEY_HASH               87
 
+#define PAGE_PUBLIC_INFO                        88
+
 typedef struct {
     uint8_t auth;
     uint8_t rollKdf;

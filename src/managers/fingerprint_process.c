@@ -11,6 +11,7 @@
 #include "log_print.h"
 #include "ctaes.h"
 #include "keystore.h"
+#include "account_manager.h"
 #include "gui_views.h"
 #include "gui_api.h"
 #include "secret_cache.h"
@@ -25,6 +26,7 @@
 #include "user_delay.h"
 #include "screen_manager.h"
 #include "low_power.h"
+#include "se_manager.h"
 
 extern osTimerId_t g_fpTimeoutTimer;
 static osMutexId_t g_fpResponseMutex;
@@ -69,7 +71,7 @@ void FpSetAesKeyRecv(char *indata, uint8_t len);
 void FpDeleteAllRecv(char *indata, uint8_t len);
 void FpResponseHandleStop(void);
 void FpUpdateFirmwareSend(uint16_t cmd, uint8_t passwd);
-bool FpModuleIsExist(void);
+
 int32_t SetFpStartOta(void);
 void FpDelayMsgSend(void);
 

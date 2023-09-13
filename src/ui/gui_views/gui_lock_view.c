@@ -15,6 +15,7 @@
 #include "gui_qr_code.h"
 #include "gui_animating_qrcode.h"
 #include "gui_status_bar.h"
+#include "account_manager.h"
 
 static int32_t GuiLockViewInit(void *param)
 {

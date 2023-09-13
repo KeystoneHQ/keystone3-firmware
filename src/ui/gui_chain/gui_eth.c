@@ -7,6 +7,7 @@
 #include "gui_qr_hintbox.h"
 #include "screen_manager.h"
 #include "user_sqlite3.h"
+#include "account_manager.h"
 
 void decodeEthContractData(void *parseResult);
 

@@ -20,6 +20,7 @@
 #include "background_task.h"
 #include "gui_lock_widgets.h"
 #include "motor_manager.h"
+#include "user_delay.h"
 
 #define SINGLE_PHRASE_MAX_WORDS         24
 typedef enum {
@@ -99,7 +100,7 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 24);
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_KB_NEXT);
     lv_obj_align(btn, LV_ALIGN_DEFAULT, 348, 24);
-    lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_ALL, cont);
+    lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, cont);
     GuiNvsBarSetRightBtnLabel(NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12    "USR_SYMBOL_DOWN : "24    "USR_SYMBOL_DOWN);
 }
 
@@ -124,8 +125,11 @@ static void MnemonicConfirmHandler(lv_event_t * e)
     }
 
     if (code == LV_EVENT_CLICKED) {
-        Vibrate(SLIGHT);
         uint32_t currentId = lv_btnmatrix_get_selected_btn(obj);
+        if (currentId >= 0xff) {
+            return;
+        }
+        Vibrate(SLIGHT);
         for (i = 0 ; i < g_currId; i++) {
             if (g_pressedBtn[i] == currentId + 1) {
                 break;
@@ -340,6 +344,9 @@ int8_t GuiSinglePhraseNextTile(void)
         GuiNvsBarSetRightBtnLabel(NVS_BAR_WORD_RESET, USR_SYMBOL_RESET"Reset");
         g_confirmPhraseKb->wordCnt = g_phraseCnt;
         lv_obj_add_flag(g_changeCont, LV_OBJ_FLAG_HIDDEN);
+        while (!SecretCacheGetMnemonic()) {
+            UserDelay(10);
+        }
         ArrayRandom(SecretCacheGetMnemonic(), g_randomBuff, g_phraseCnt);
         GuiUpdateMnemonicKeyBoard(g_confirmPhraseKb, g_randomBuff, true);
         break;
@@ -358,7 +365,8 @@ int8_t GuiSinglePhrasePrevTile(void)
 {
     switch (g_singlePhraseTileView.currentTile) {
     case SINGLE_PHRASE_RANDOM_PHRASE:
-        break;
+        GuiCLoseCurrentWorkingView();
+        return SUCCESS_CODE;
     case SINGLE_PHRASE_CONFIRM_PHRASE:
         ResetConfirmInput();
         lv_obj_clear_flag(g_changeCont, LV_OBJ_FLAG_HIDDEN);

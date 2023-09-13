@@ -14,6 +14,10 @@
 #include "usbd_ioreq.h"
 #include "CircularBuffer.h"
 
+#ifndef BUILD_PRODUCTION
+#define USBD_ENABLE_MSC
+#endif
+
 #ifndef CONFIG_USB_DEVICE_VCP
 /* VCP default Config Start */
 #define CDC_IN_EP                0x83

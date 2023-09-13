@@ -82,6 +82,10 @@ if(COMPILE_MAIN)
         add_compile_definitions(BUILD_PRODUCTION)
     endif()
 
+    if(ENABLE_SCREEN_SHOT)
+        add_compile_definitions(ENABLE_SCREEN_SHOT)
+    endif()
+
     print_firmware_info()
     #include(mh1903_main.cmake)
 

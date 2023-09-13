@@ -30,6 +30,8 @@ if "%1" == "copy" (
 pushd build
 if "%2"=="production" (
 	cmake -G "Unix Makefiles" -DBUILD_PRODUCTION=true ..
+) else if "%2"=="screen" (
+	cmake -G "Unix Makefiles" -DENABLE_SCREEN_SHOT=true ..
 ) else (
 	cmake -G "Unix Makefiles" ..
 )

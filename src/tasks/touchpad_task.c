@@ -74,7 +74,9 @@ static void TouchPadTask(void *argument)
         ActivateUiTaskLoop();
         QrDecodeTouchQuit();
 #ifndef BUILD_PRODUCTION
-        // ScreenShotTouch();
+#ifdef ENABLE_SCREEN_SHOT
+        ScreenShotTouch();
+#endif
 #endif
     }
 }

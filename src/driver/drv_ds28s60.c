@@ -22,7 +22,7 @@
 #include "user_delay.h"
 #include "drv_otp.h"
 #include "err_code.h"
-
+#include "assert.h"
 
 //#define DS28S60_TEST_MODE
 //#define DS28S60_FORCE_BINDING
@@ -31,7 +31,6 @@
 #define DS28S60_HARDWARE_EVT0           1
 
 #define DS28S60_HARDWARE_CFG            DS28S60_HARDWARE_EVT0
-
 
 //EVB
 #if (DS28S60_HARDWARE_CFG == DS28S60_HARDWARE_EVB)
@@ -74,7 +73,6 @@
 #define BINDING_DATA_PAGE               91
 
 #define VALUE_CHECK(value, expect)          {if (value != expect) {printf("input err!\r\n"); return; }}
-
 
 DS28S60_Info_t g_ds28s60Info;
 
@@ -125,11 +123,11 @@ static int32_t ConfirmBlockSettings(void);
 static int32_t DS28S60_SendCmdAndGetResult(uint8_t cmd, uint8_t *para, uint8_t paraLen, uint8_t expectedLen, uint8_t *resultArray);
 static int32_t DS28S60_TrySendCmdAndGetResult(uint8_t cmd, uint8_t *para, uint8_t paraLen, uint8_t expectedLen, uint8_t *resultArray);
 static int32_t DS28S60_Binding(void);
+static int32_t DS28S60_SetProctection_From_Index(uint8_t index);
 static void DS28S60_PrintInfo(void);
 static void GetMasterSecret(uint8_t *masterSecret);
 static void GetBindingPageData(uint8_t *bindingPageData);
 static void GetPartialSecret(uint8_t *partialSecret);
-
 
 void DS28S60_Init(void)
 {
@@ -152,7 +150,6 @@ void DS28S60_Init(void)
     DS28S60_Binding();
 }
 
-
 void DS28S60_Open(void)
 {
     GPIO_InitTypeDef gpioInit = {0};
@@ -171,7 +168,6 @@ void DS28S60_Open(void)
     DS28S60_PDWN_SET;
 }
 
-
 static int32_t DS28S60_GetInfo(void)
 {
     uint8_t data[32];
@@ -189,7 +185,6 @@ static int32_t DS28S60_GetInfo(void)
     return DS28S60_SUCCESS;
 }
 
-
 static int32_t DS28S60_GetBlockProtection(DS28S60_BlockProtection_t *blockProtection, uint8_t block)
 {
     int32_t ret;
@@ -203,7 +198,6 @@ static int32_t DS28S60_GetBlockProtection(DS28S60_BlockProtection_t *blockProtec
     blockProtection->Prot.byte = result[1];
     return DS28S60_SUCCESS;
 }
-
 
 static int32_t DS28S60_SetBlockProtection(const DS28S60_BlockProtection_t *blockProtection, uint8_t block)
 {
@@ -219,7 +213,6 @@ static int32_t DS28S60_SetBlockProtection(const DS28S60_BlockProtection_t *block
     }
     return DS28S60_SUCCESS;
 }
-
 
 static void DS28S60_GetHmacKey(uint8_t *key, const DS28S60_Info_t *info, uint8_t pg, uint8_t cmd)
 {
@@ -242,7 +235,6 @@ static void DS28S60_GetHmacKey(uint8_t *key, const DS28S60_Info_t *info, uint8_t
     CLEAR_ARRAY(bindingPageData);
     CLEAR_ARRAY(partialSecret);
 }
-
 
 static int32_t DS28S60_WriteSecret(void)
 {
@@ -282,8 +274,7 @@ static int32_t DS28S60_WriteSecret(void)
     return ret;
 }
 
-
-static int32_t DS28S60_Setup(void)
+static int32_t DS28S60_SetProctection_From_Index(uint8_t index)
 {
     int32_t ret;
     uint8_t block;
@@ -296,7 +287,7 @@ static int32_t DS28S60_Setup(void)
         blockProtection.Secret.b.ID = DS28S60_SECRET_KEY_A;
         blockProtection.Prot.b.APH = 1;
         blockProtection.Prot.b.EPH = 1;
-        for (block = 0; block <= MAX_USER_BLOCK; block++) {
+        for (block = index; block <= MAX_USER_BLOCK; block++) {
             ret = DS28S60_SetBlockProtection(&blockProtection, block);
             CHECK_ERRCODE_BREAK("set block", ret);
             UserDelay(50);
@@ -306,37 +297,52 @@ static int32_t DS28S60_Setup(void)
     return ret;
 }
 
+static int32_t DS28S60_Setup(void)
+{
+    return DS28S60_SetProctection_From_Index(0);
+}
 
 static int32_t ConfirmBlockSettings(void)
 {
     int32_t ret;
-    uint8_t block;
+    uint8_t block = MAX_USER_BLOCK;
     DS28S60_BlockProtection_t blockProtection;
-    //Confirm block settings from the last block.
-    block = MAX_USER_BLOCK;
-    while (1) {
+    // Confirm block settings
+    // 99% case, first check the last block
+    do {
         UserDelay(50);
         ret = DS28S60_GetBlockProtection(&blockProtection, block);
         CHECK_ERRCODE_BREAK("get block protection", ret);
         if (blockProtection.Prot.b.APH == 1) {
             printf("confirm over,block=%d\r\n", block);
+            ret = 0;
             break;
+        } else {
+            // find the first none protected block
+            uint8_t left = 0;
+            uint8_t right = MAX_USER_BLOCK;
+            uint8_t mid;
+
+            while (left < right) {
+                mid = left + (right - left) / 2;
+
+                UserDelay(50);
+                ret = DS28S60_GetBlockProtection(&blockProtection, mid);
+                CHECK_ERRCODE_BREAK("get block protection", ret);
+                if (blockProtection.Prot.b.APH == 1) {
+                    printf("confirm over,block=%d\r\n", mid);
+                    left = mid + 1;
+                } else {
+                    right = mid;
+                }
+            }
+            ret = DS28S60_SetProctection_From_Index(left);
         }
-        blockProtection.Secret.b.ID = DS28S60_SECRET_KEY_A;
-        blockProtection.Prot.b.APH = 1;
-        blockProtection.Prot.b.EPH = 1;
-        UserDelay(50);
-        printf("setup others,block=%d\r\n", block);
-        ret = DS28S60_SetBlockProtection(&blockProtection, block);
-        CHECK_ERRCODE_BREAK("set block", ret);
-        if (block == 0) {
-            break;
-        }
-        block--;
-    }
+
+    } while (0);
+
     return ret;
 }
-
 
 //resultArray does not contain len-byte and result-byte.
 static int32_t DS28S60_SendCmdAndGetResult(uint8_t cmd, uint8_t *para, uint8_t paraLen, uint8_t expectedLen, uint8_t *resultArray)
@@ -350,9 +356,9 @@ static int32_t DS28S60_SendCmdAndGetResult(uint8_t cmd, uint8_t *para, uint8_t p
         }
         printf("retry %d\r\n", tryCount);
     }
+    assert(ret == 0);
     return ret;
 }
-
 
 static int32_t DS28S60_TrySendCmdAndGetResult(uint8_t cmd, uint8_t *para, uint8_t paraLen, uint8_t expectedLen, uint8_t *resultArray)
 {
@@ -397,7 +403,6 @@ static int32_t DS28S60_TrySendCmdAndGetResult(uint8_t cmd, uint8_t *para, uint8_
     }
 }
 
-
 /// @brief Try to bind SE chip, return a err code if SE chip already binded.
 /// @return err code.
 static int32_t DS28S60_Binding(void)
@@ -426,7 +431,7 @@ static int32_t DS28S60_Binding(void)
 #endif
             } else {
                 printf("confirm block settings\r\n");
-                ConfirmBlockSettings();
+                ret = ConfirmBlockSettings();
             }
         } else {
             //OTP key doesn't exist
@@ -442,17 +447,17 @@ static int32_t DS28S60_Binding(void)
         }
     } while (0);
     CLEAR_ARRAY(keys);
+    // assert if binding error
+    assert(ret == 0);
 
     return ret;
 #endif
 }
 
-
 int32_t DS28S60_ReadPage(uint8_t *data, uint8_t page)
 {
     return DS28S60_SendCmdAndGetResult(DS28S60_CMD_READ_MEM, &page, 1, 32, data);
 }
-
 
 int32_t DS28S60_WritePage(uint8_t *data, uint8_t page)
 {
@@ -461,7 +466,6 @@ int32_t DS28S60_WritePage(uint8_t *data, uint8_t page)
     memcpy(&sendBuf[1], data, 32);
     return DS28S60_SendCmdAndGetResult(DS28S60_CMD_WRITE_MEM, sendBuf, 33, 0, NULL);
 }
-
 
 int32_t DS28S60_GetRng(uint8_t *rngArray, uint32_t num)
 {
@@ -479,7 +483,6 @@ int32_t DS28S60_GetRng(uint8_t *rngArray, uint32_t num)
     CLEAR_ARRAY(buffer);
     return ret;
 }
-
 
 int32_t DS28S60_HmacAuthentication(uint8_t page)
 {
@@ -532,7 +535,6 @@ int32_t DS28S60_HmacAuthentication(uint8_t page)
     return DS28S60_SUCCESS;
 }
 
-
 int32_t DS28S60_HmacEncryptRead(uint8_t *data, uint8_t page)
 {
     uint8_t buf[40];
@@ -569,7 +571,6 @@ int32_t DS28S60_HmacEncryptRead(uint8_t *data, uint8_t page)
 
     return ret;
 }
-
 
 int32_t DS28S60_HmacEncryptWrite(const uint8_t *data, uint8_t page)
 {
@@ -627,7 +628,6 @@ int32_t DS28S60_HmacEncryptWrite(const uint8_t *data, uint8_t page)
     return ret;
 }
 
-
 static void DS28S60_PrintInfo(void)
 {
     int32_t ret;
@@ -654,7 +654,6 @@ static void DS28S60_PrintInfo(void)
     }
 }
 
-
 /// @brief Get master secret from MCU OTP.
 /// @param[out] masterSecret master secret, 32 bytes.
 static void GetMasterSecret(uint8_t *masterSecret)
@@ -667,7 +666,6 @@ static void GetMasterSecret(uint8_t *masterSecret)
 #endif
 }
 
-
 /// @brief Get binding page data from MCU OTP.
 /// @param[out] bindingPageData binding page data, 32 bytes.
 static void GetBindingPageData(uint8_t *bindingPageData)
@@ -679,7 +677,6 @@ static void GetBindingPageData(uint8_t *bindingPageData)
     memcpy(bindingPageData, (uint8_t *)BINDING_PAGE_DATA_ADDR, 32);
 #endif
 }
-
 
 /// @brief Get partial secret from MCU OTP.
 /// @param[out] partialSecret partial secret, 32 bytes.
@@ -798,4 +795,3 @@ void DS28S60_Test(int argc, char *argv[])
         printf("DS28S60_Setup=%d\r\n", ret);
     }
 }
-

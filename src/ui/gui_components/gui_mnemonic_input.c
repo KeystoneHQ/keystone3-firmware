@@ -74,6 +74,7 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
     } else {
         mnemonic[strlen(mnemonic) - 1] = '\0';
     }
+
     uint8_t threShold = 0;
     do {
         int ret;

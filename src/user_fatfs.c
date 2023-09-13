@@ -507,14 +507,14 @@ int FatfsMount(void)
     for (uint8_t i = 0; i < NUMBER_OF_ARRAYS(g_fsMountParamArray); i++) {
         fs = &g_fsMountParamArray[i];
         res = f_mount(fs->fs, fs->volume, fs->opt);
-        if (res == FR_NO_FILESYSTEM) {
-            BYTE work[FF_MAX_SS];
-            f_mkfs(fs->volume, 0, work, sizeof work);
-            f_mount(NULL, fs->volume, fs->opt);
-            res = f_mount(fs->fs, fs->volume, fs->opt);
-            printf("%s:", fs->name);
-            FatfsError(res);
-        }
+        // if (res == FR_NO_FILESYSTEM) {
+        //     BYTE work[FF_MAX_SS];
+        //     f_mkfs(fs->volume, 0, work, sizeof work);
+        //     f_mount(NULL, fs->volume, fs->opt);
+        //     res = f_mount(fs->fs, fs->volume, fs->opt);
+        //     printf("%s:", fs->name);
+        //     FatfsError(res);
+        // }
         printf("%s:", fs->name);
         FatfsError(res);
     }
@@ -527,14 +527,14 @@ int MountUsbFatfs(void)
     FRESULT res;
     FatfsMountParam_t *fs = &g_fsMountParamArray[DEV_USB];
     res = f_mount(fs->fs, fs->volume, fs->opt);
-    if (res == FR_NO_FILESYSTEM) {
-        BYTE work[FF_MAX_SS];
-        f_mkfs(fs->volume, 0, work, sizeof work);
-        f_mount(NULL, fs->volume, fs->opt);
-        res = f_mount(fs->fs, fs->volume, fs->opt);
-        printf("%s:", fs->name);
-        FatfsError(res);
-    }
+    // if (res == FR_NO_FILESYSTEM) {
+    //     BYTE work[FF_MAX_SS];
+    //     f_mkfs(fs->volume, 0, work, sizeof work);
+    //     f_mount(NULL, fs->volume, fs->opt);
+    //     res = f_mount(fs->fs, fs->volume, fs->opt);
+    //     printf("%s:", fs->name);
+    //     FatfsError(res);
+    // }
     printf("%s:", fs->name);
     FatfsError(res);
     return res;
@@ -546,14 +546,14 @@ int MountSdFatfs(void)
     FRESULT res;
     FatfsMountParam_t *fs = &g_fsMountParamArray[DEV_MMC];
     res = f_mount(fs->fs, fs->volume, fs->opt);
-    if (res == FR_NO_FILESYSTEM) {
-        BYTE work[FF_MAX_SS];
-        f_mkfs(fs->volume, 0, work, sizeof work);
-        f_mount(NULL, fs->volume, fs->opt);
-        res = f_mount(fs->fs, fs->volume, fs->opt);
-        printf("%s:", fs->name);
-        FatfsError(res);
-    }
+    // if (res == FR_NO_FILESYSTEM) {
+    //     BYTE work[FF_MAX_SS];
+    //     f_mkfs(fs->volume, 0, work, sizeof work);
+    //     f_mount(NULL, fs->volume, fs->opt);
+    //     res = f_mount(fs->fs, fs->volume, fs->opt);
+    //     printf("%s:", fs->name);
+    //     FatfsError(res);
+    // }
     printf("%s:", fs->name);
     FatfsError(res);
     return res;

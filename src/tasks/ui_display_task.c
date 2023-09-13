@@ -117,9 +117,11 @@ static void UiDisplayTask(void *argument)
             }
             case UI_MSG_SCREEN_SHOT: {
 #ifndef BUILD_PRODUCTION
-                // screenData = GetActSnapShot();
-                // ScreenShot(screenData);
-                // EXT_FREE(screenData);
+#ifdef ENABLE_SCREEN_SHOT
+                screenData = GetActSnapShot();
+                ScreenShot(screenData);
+                EXT_FREE(screenData);
+#endif
 #endif
             }
             break;

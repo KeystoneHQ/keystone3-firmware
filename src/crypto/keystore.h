@@ -66,6 +66,7 @@ int32_t GetExistAccountNum(uint8_t *accountNum);
 int32_t GetBlankAccountIndex(uint8_t *accountIndex);
 int32_t DestroyAccount(uint8_t accountIndex);
 int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *password);
+void ClearAccountPassphrase(uint8_t accountIndex);
 void GetMasterFingerPrint(uint8_t *mfp);
 PasscodeType GetPasscodeType(void);
 MnemonicType GetMnemonicType(void);

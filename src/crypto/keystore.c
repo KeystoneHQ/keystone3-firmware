@@ -102,6 +102,7 @@ typedef struct {
 
 typedef struct {
     char passphrase[PASSPHRASE_MAX_LEN + 1];
+    bool passphraseExist;
     uint8_t mfp[4];
 } PassphraseInfo_t;
 
@@ -135,6 +136,7 @@ int32_t KeystoreInit(void)
     ASSERT(sizeof(AccountInfo_t) == 32);
     ASSERT(sizeof(PublicInfo_t) == 32);
     ret = DS28S60_HmacEncryptRead((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+    assert(g_publicInfo.loginPasswordErrorCount <= 10);
     return ret;
 }
 
@@ -580,6 +582,7 @@ int32_t DestroyAccount(uint8_t accountIndex)
         CHECK_ERRCODE_BREAK("ds28s60 write", ret);
     }
     DeleteAccountPublicInfo(accountIndex);
+    ClearAccountPassphrase(accountIndex);
     CLEAR_ARRAY(data);
 
     return ret;
@@ -617,7 +620,12 @@ int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *
         uint8_t *masterFingerprint = simpleResponse->data;
         memcpy(g_passphraseInfo[accountIndex].mfp, masterFingerprint, 4);
         free_simple_response_u8(simpleResponse);
-        strcpy(g_passphraseInfo[accountIndex].passphrase, passphrase);
+        if (strlen(passphrase) > 0) {
+            strcpy(g_passphraseInfo[accountIndex].passphrase, passphrase);
+            g_passphraseInfo[accountIndex].passphraseExist = true;
+        } else {
+            ClearAccountPassphrase(accountIndex);
+        }
         ret = TempAccountPublicInfo(accountIndex, password, true);
         SetPassphraseMark(passphrase[0] != '\0');
     } while (0);
@@ -805,6 +813,15 @@ uint32_t GetCurrentAccountEntropyLen(void)
     return g_currentAccountInfo.entropyLen;
 }
 
+void ClearAccountPassphrase(uint8_t accountIndex)
+{
+    if (accountIndex > 2) {
+        return;
+    }
+    memset(g_passphraseInfo[accountIndex].passphrase, 0, sizeof(g_passphraseInfo[accountIndex].passphrase));
+    memset(g_passphraseInfo[accountIndex].mfp, 0, sizeof(g_passphraseInfo[accountIndex].mfp));
+    g_passphraseInfo[accountIndex].passphraseExist = false;
+}
 
 /// @brief Get if the passphrase exist.
 /// @param accountIndex
@@ -814,6 +831,8 @@ bool PassphraseExist(uint8_t accountIndex)
     if (accountIndex > 2) {
         return false;
     }
+
+    assert(g_passphraseInfo[accountIndex].passphraseExist == (strlen(g_passphraseInfo[accountIndex].passphrase) > 0));
     return (strlen(g_passphraseInfo[accountIndex].passphrase) > 0);
 }
 

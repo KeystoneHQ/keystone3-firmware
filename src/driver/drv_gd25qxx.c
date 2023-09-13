@@ -61,7 +61,6 @@ static osMutexId_t g_flashMutex;
 
 static uint8_t Gd25FlashSendByte(uint8_t byte);
 static void Gd25FlashSendData(uint32_t length, const uint8_t *sendData, uint8_t *rcvData);
-static uint32_t Gd25FlashReadID(void);
 static void Gd25FlashWriteEnable(void);
 static uint32_t Gd25FlashReadStatus(void);
 static uint32_t Gd25FlashReadData(uint32_t addr, uint8_t *buffer, uint32_t size);
@@ -92,11 +91,6 @@ void Gd25FlashInit(void)
     GPIO_SetBits(FLASH_HOLD_PORT, FLASH_HOLD_PIN);
 
     FLASH_CS_HIGH();
-    flashId = Gd25FlashReadID();
-    while (flashId == GD25_FLASH_ID || flashId == GD25_FLASH_ID) {
-        ;
-    }
-    printf("spi flash id = %#x\n", Gd25FlashReadID());
 #if (FLASH_USE_MUTEX)
     g_flashMutex = osMutexNew(NULL);
 #endif
@@ -129,7 +123,7 @@ void Gd25FlashOpen(void)
 }
 
 
-static uint32_t Gd25FlashReadID(void)
+uint32_t Gd25FlashReadID(void)
 {
     FLASH_CS_LOW();
 

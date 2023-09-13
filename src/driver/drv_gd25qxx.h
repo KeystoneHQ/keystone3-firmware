@@ -43,6 +43,7 @@ typedef enum {
 
 void Gd25FlashInit(void);
 void Gd25FlashOpen(void);
+uint32_t Gd25FlashReadID(void);
 int32_t Gd25FlashSectorErase(uint32_t addr);
 int32_t Gd25FlashChipErase(void);
 int32_t Gd25FlashReadBuffer(uint32_t addr, uint8_t *buffer, uint32_t size);

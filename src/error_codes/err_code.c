@@ -39,6 +39,7 @@ static const ErrCodeDesc_t g_faults[] = {
 
     {ERR_GD25_BAD_PARAM, "GD25 Bad Param"},
     {ERR_GD25_WEL_FAILED, "GD25 GET WEL State Failed"},
+    {ERR_PSRAM_OPERATE_FAILED, "PSRAM operate Failed"},
 
     {ERR_GUI_ERROR, "GUI Error"},
     {ERR_GUI_UNHANDLED, "GUI Unhandled"},

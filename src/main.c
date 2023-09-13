@@ -43,10 +43,6 @@
 #include "usb_task.h"
 #include "user_fatfs.h"
 #include "user_sqlite3.h"
-// #include "user_param_enum.h"
-// #include "param_tb.h"
-// #include "param_def.inc"
-// #include "param_undef.h"
 #include "screen_manager.h"
 #include "keystore.h"
 #include "log.h"
@@ -56,6 +52,7 @@
 #include "draw_on_lcd.h"
 #include "device_setting.h"
 #include "anti_tamper.h"
+#include "power_on_self_check.h"
 
 
 int main(void)
@@ -95,6 +92,7 @@ int main(void)
     UserSqlite3Init();
     ScreenManagerInit();
     KeystoreInit();
+    PowerOnSelfCheck();
 
     PrintSystemInfo();
     osKernelInitialize();

@@ -15,6 +15,8 @@
 #include "gui_lock_widgets.h"
 #include "keystore.h"
 #include "usb_task.h"
+#include "user_memory.h"
+
 #ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
 #else
@@ -594,4 +596,383 @@ void GuiStatusBarSetBattery(uint8_t percent, bool charging)
         lv_obj_clear_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
         lv_obj_set_size(g_guiStatusBar.batteryPad, percent / 10 * 2, 10);
     }
+}
+
+
+static lv_obj_t *CreateReturnBtn(lv_obj_t *navBar)
+{
+    lv_obj_t *btn, *img;
+
+    btn = GuiCreateBtn(navBar, "");
+    lv_obj_set_size(btn, 64, 64);
+    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
+
+    img = GuiCreateImg(btn, &imgArrowLeft);
+    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
+
+    return btn;
+}
+
+static lv_obj_t *CreateCloseBtn(lv_obj_t *navBar)
+{
+    lv_obj_t *btn, *img;
+
+    btn = GuiCreateBtn(navBar, "");
+    lv_obj_set_size(btn, 64, 64);
+    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
+
+    img = GuiCreateImg(btn, &imgClose);
+    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
+
+    return btn;
+}
+
+static lv_obj_t *CreateManageBtn(lv_obj_t *navBar)
+{
+    lv_obj_t *btn, *img;
+
+    btn = GuiCreateBtn(navBar, "");
+    lv_obj_set_size(btn, 64, 64);
+    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
+
+    img = GuiCreateImg(btn, &imgManage);
+    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
+
+    return btn;
+}
+
+static lv_obj_t *CreateMidLabel(lv_obj_t *navBar)
+{
+    lv_obj_t *label;
+
+    label = GuiCreateTextLabel(navBar, "");
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+
+    return label;
+}
+
+static lv_obj_t *CreateMidWordCntSelect(lv_obj_t *navBar)
+{
+    lv_obj_t *btn;
+
+    btn = GuiCreateBtnWithFont(navBar, "20    " USR_SYMBOL_DOWN, &openSans_20);
+    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 268, 0);
+    lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
+    lv_obj_set_size(btn, 69, 42);
+    lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
+
+    return btn;
+}
+
+static lv_obj_t *CreateCoinBtn(lv_obj_t *navBar)
+{
+    lv_obj_t *btn;
+
+    btn = GuiCreateStatusCoinButton(navBar, _("Connect BlueWallet"), &walletBluewallet);
+    lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
+
+    return btn;
+}
+
+static lv_obj_t *CreateWordCntSelect(lv_obj_t *navBar)
+{
+    lv_obj_t *btn;
+
+    btn = GuiCreateBtnWithFont(navBar, "24    " USR_SYMBOL_DOWN, &openSans_20);
+    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 387, 0);
+    lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
+    lv_obj_set_size(btn, 69, 42);
+    lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
+
+    return btn;
+}
+
+static lv_obj_t *CreateResetButton(lv_obj_t *navBar)
+{
+    lv_obj_t *btn;
+
+    btn = GuiCreateBtnWithFont(navBar, _("single_phrase_reset"), &openSansEnIllustrate);
+    lv_obj_set_size(btn, 106, 42);
+    lv_obj_align(btn, LV_ALIGN_DEFAULT, 350, 27);
+    lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
+
+    return btn;
+}
+
+static lv_obj_t *CreateQuestion(lv_obj_t *navBar)
+{
+    lv_obj_t *btn, *img;
+
+    btn = GuiCreateBtn(navBar, "");
+    img = GuiCreateImg(btn, &imgQuestion);
+    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_set_size(btn, 106, 42);
+    lv_obj_align(btn, LV_ALIGN_DEFAULT, 380, 27);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
+
+    return btn;
+}
+
+static lv_obj_t *CreateMoreInfo(lv_obj_t *navBar)
+{
+    lv_obj_t *btn, *img;
+
+    btn = GuiCreateBtn(navBar, "");
+    lv_obj_set_size(btn, 64, 64);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
+    img = GuiCreateImg(btn, &imgMore);
+    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
+
+    return btn;
+}
+
+static lv_obj_t *CreateSkip(lv_obj_t *navBar)
+{
+    lv_obj_t *btn, *img;
+
+    btn = GuiCreateBtn(navBar, "");
+    lv_obj_set_size(btn, 64, 64);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
+    img = GuiCreateImg(btn, &imgSkip);
+    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
+
+    return btn;
+}
+
+static lv_obj_t *CreateSearch(lv_obj_t *navBar)
+{
+    lv_obj_t *btn, *img;
+
+    btn = GuiCreateBtn(navBar, "");
+    lv_obj_set_size(btn, 64, 64);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
+    img = GuiCreateImg(btn, &imgSearch);
+    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
+
+    return btn;
+}
+
+static lv_obj_t *CreateNewSkip(lv_obj_t *navBar)
+{
+    lv_obj_t *btn, *textLabel;
+
+    btn = lv_label_create(navBar);
+    lv_label_set_text(btn, "");
+    lv_obj_set_size(btn, 63, 42);
+    lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(btn, GRAY_COLOR, 0);
+    lv_obj_add_flag(btn, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED | LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_10 + LV_OPA_2, LV_STATE_PRESSED | LV_PART_MAIN);
+
+    textLabel = lv_label_create(btn);
+    lv_label_set_text(textLabel, "Skip");
+    lv_obj_set_style_text_font(textLabel, &openSans_20, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(textLabel, LV_OPA_90, LV_PART_MAIN);
+    lv_label_set_long_mode(textLabel, LV_LABEL_LONG_WRAP);
+    lv_obj_set_style_bg_opa(textLabel, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_set_align(textLabel, LV_ALIGN_CENTER);
+    lv_obj_align(textLabel, LV_ALIGN_CENTER, 0, 2);
+    lv_obj_set_style_text_color(textLabel, WHITE_COLOR, LV_PART_MAIN);
+
+    return btn;
+}
+
+
+
+NavBarWidget_t *CreateNavBarWidget(lv_obj_t *navBar)
+{
+
+    NavBarWidget_t *navBarWidget = SRAM_MALLOC(sizeof(NavBarWidget_t));
+
+    navBarWidget->navBar = navBar;
+    navBarWidget->leftBtn = NULL;
+    navBarWidget->midBtn = NULL;
+    navBarWidget->rightBtn = NULL;
+
+    return navBarWidget;
+}
+
+void DestoryNavBarWidget(NavBarWidget_t *navBarWidget)
+{
+    if (navBarWidget != NULL)
+    {
+        if (navBarWidget->navBar != NULL && lv_obj_is_valid(navBarWidget->navBar))
+        {
+            lv_obj_del(navBarWidget->navBar);
+        }
+
+        SRAM_FREE(navBarWidget);
+    }
+}
+
+
+void SetNavBarLeftBtn(NavBarWidget_t *navBarWidget, NVS_LEFT_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param)
+{
+    if (navBarWidget->leftBtn != NULL && lv_obj_is_valid(navBarWidget->leftBtn)) {
+        lv_obj_del(navBarWidget->leftBtn);
+        navBarWidget->leftBtn = NULL;
+    }
+    lv_event_cb_t leftButtonCb = NULL;
+    switch (button) {
+    case NVS_BAR_RETURN:
+        navBarWidget->leftBtn = CreateReturnBtn(navBarWidget->navBar);
+        leftButtonCb = eventCb;
+        break;
+    case NVS_BAR_CLOSE:
+        navBarWidget->leftBtn = CreateCloseBtn(navBarWidget->navBar);
+        leftButtonCb = eventCb;
+        break;
+    case NVS_BAR_MANAGE:
+        navBarWidget->leftBtn = CreateManageBtn(navBarWidget->navBar);
+        leftButtonCb = eventCb;
+        break;
+    default:
+        return;
+    }
+    lv_obj_clear_flag(navBarWidget->leftBtn, LV_OBJ_FLAG_HIDDEN);
+    if (leftButtonCb != NULL) {
+        lv_obj_add_event_cb(navBarWidget->leftBtn, leftButtonCb, LV_EVENT_CLICKED, param);
+    }
+}
+
+
+void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param)
+{
+    if (navBarWidget->midBtn != NULL && lv_obj_is_valid(navBarWidget->midBtn)) {
+        lv_obj_del(navBarWidget->midBtn);
+        navBarWidget->midBtn = NULL;
+    }
+    lv_event_cb_t midButtonCb = NULL;
+    switch (button) {
+    case NVS_BAR_MID_WORD_SELECT:
+        navBarWidget->midBtn = CreateMidWordCntSelect(navBarWidget->navBar);
+        midButtonCb = eventCb;
+        break;
+    case NVS_BAR_MID_LABEL:
+        navBarWidget->midBtn = CreateMidLabel(navBarWidget->navBar);
+        midButtonCb = eventCb;
+        break;
+    case NVS_BAR_MID_COIN:
+        navBarWidget->midBtn = CreateCoinBtn(navBarWidget->navBar);
+        return;
+    default:
+        return;
+    }
+    lv_obj_clear_flag(navBarWidget->midBtn, LV_OBJ_FLAG_HIDDEN);
+    if (midButtonCb != NULL) {
+        lv_obj_add_event_cb(navBarWidget->midBtn, midButtonCb, LV_EVENT_CLICKED, param);
+    }
+}
+
+
+void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index, const char *name)
+{
+    if (navBarWidget->midBtn == NULL)
+    {
+       SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
+    }
+    
+    navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, (name != NULL) ? name : g_coinWalletBtn[index].name,
+                          g_coinWalletBtn[index].icon);
+}
+
+void SetMidBtnLabel(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, const char *text)
+{
+    if (navBarWidget->midBtn == NULL) {
+        SetNavBarMidBtn(navBarWidget, button, NULL, NULL);
+    }
+    switch (button) {
+    case NVS_BAR_MID_WORD_SELECT:
+        lv_label_set_text(lv_obj_get_child(navBarWidget->midBtn, 0), text);
+        break;
+    case NVS_BAR_MID_LABEL:
+        lv_label_set_text(navBarWidget->midBtn, text);
+        lv_obj_clear_flag(navBarWidget->midBtn, LV_OBJ_FLAG_HIDDEN);
+        // GuiNvsBarSetMidCb(NVS_BAR_MID_LABEL, NULL, NULL);
+        break;
+    default:
+        return;
+    }
+}
+
+void SetNavBarRightBtn(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param)
+{
+
+    if (navBarWidget->rightBtn != NULL && lv_obj_is_valid(navBarWidget->rightBtn)) {
+        lv_obj_del(navBarWidget->rightBtn);
+        navBarWidget->rightBtn = NULL;
+    }
+    lv_event_cb_t rightButtonCb = NULL;
+    switch (button) {
+    case NVS_BAR_WORD_SELECT:
+        navBarWidget->rightBtn = CreateWordCntSelect(navBarWidget->navBar);
+        rightButtonCb = eventCb;
+        break;
+    case NVS_BAR_WORD_RESET:
+        navBarWidget->rightBtn = CreateResetButton(navBarWidget->navBar);
+        rightButtonCb = eventCb;
+        break;
+    case NVS_BAR_QUESTION_MARK:
+        navBarWidget->rightBtn = CreateQuestion(navBarWidget->navBar);
+        rightButtonCb = eventCb;
+        break;
+    case NVS_BAR_MORE_INFO:
+        navBarWidget->rightBtn = CreateMoreInfo(navBarWidget->navBar);
+        rightButtonCb = eventCb;
+        break;
+    case NVS_BAR_SKIP:
+        navBarWidget->rightBtn = CreateSkip(navBarWidget->navBar);
+        rightButtonCb = eventCb;
+        break;
+    case NVS_BAR_SEARCH:
+        navBarWidget->rightBtn = CreateSearch(navBarWidget->navBar);
+        rightButtonCb = eventCb;
+        break;
+    case NVS_BAR_NEW_SKIP:
+        navBarWidget->rightBtn = CreateNewSkip(navBarWidget->navBar);
+        rightButtonCb = eventCb;
+        break;
+    default:        
+        return;
+    }
+    lv_obj_clear_flag(navBarWidget->rightBtn, LV_OBJ_FLAG_HIDDEN);
+    if (rightButtonCb != NULL) {
+        lv_obj_add_event_cb(navBarWidget->rightBtn, rightButtonCb, LV_EVENT_CLICKED, param);
+    }
+}
+
+void HideSingleInstanceNavBar(void)
+{
+    lv_obj_add_flag(g_guiNavBar.cont, LV_OBJ_FLAG_HIDDEN);
+}
+
+void ShowSingleInstanceNavBar(void)
+{
+    lv_obj_set_parent(g_guiNavBar.cont, lv_scr_act());
+    lv_obj_clear_flag(g_guiNavBar.cont, LV_OBJ_FLAG_HIDDEN);
 }

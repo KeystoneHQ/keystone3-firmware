@@ -129,6 +129,7 @@ void CloseCurrentParentAndCloseViewHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
         GuiCLoseCurrentWorkingView();
+        GuiLockScreenFpRecognize();
         GuiLockScreenTurnOn(&single);
         ResetSuccess();
         GuiModelWriteLastLockDeviceTime(0);

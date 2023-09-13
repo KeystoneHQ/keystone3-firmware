@@ -14,8 +14,9 @@ build_path = source_path + '/' + build_dir
 argParser = argparse.ArgumentParser()
 argParser.add_argument("-e", "--environment", help="please specific which enviroment you are building, dev or production")
 argParser.add_argument("-p", "--purpose", help="please specific what purpose you are building, set it to `debug` for building unsigned firmware.")
+argParser.add_argument("-o", "--options", nargs="?", help="specify the required features you are building")
 
-def build_firmware(environment):
+def build_firmware(environment, options):
     is_release = environment == "production"
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
@@ -32,6 +33,14 @@ def build_firmware(environment):
         cmd = 'cmake -G "Unix Makefiles" .. -DLIB_RUST_C=ON'
     if is_release:
         cmd += ' -DBUILD_PRODUCTION=true'
+
+
+    for option in options:
+        if option == "screenshot":
+            cmd += ' -DENABLE_SCREEN_SHOT=true'
+        # add more option here.
+
+
     cmd_result = os.system(cmd)
     if cmd_result != 0:
         return cmd_result
@@ -56,11 +65,16 @@ if __name__ == '__main__':
     print("=============================================")
     print("--")
     print(f"Building firmware for { args.environment if args.environment else 'dev'}")
+    if args.options: 
+        print(f"Options: {args.options}")
     print("--")
     print("=============================================")
     env = args.environment
+    options = []
+    if args.options:
+        options = args.options.split(",")
     shutil.rmtree(build_path, ignore_errors=True)
-    build_result = build_firmware(env)
+    build_result = build_firmware(env, options)
     if build_result != 0:
         exit(1)
     if platform.system() == 'Darwin':

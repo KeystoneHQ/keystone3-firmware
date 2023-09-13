@@ -117,14 +117,6 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
     case SIG_SETTING_DEL_WALLET_PASS_SETUP:
         GuiDelWalletSetup();
         break;
-    case SIG_SETTING_ADD_WALLET_CREATE_OR_IMPORT:
-        if (param != NULL) {
-            walletCnt = *(uint8_t *)param;
-        } else {
-            return ERR_GUI_ERROR;
-        }
-        GuiAddWalletCreateOrImport(walletCnt);
-        break;
     case SIG_INIT_GET_ACCOUNT_NUMBER:
         if (param != NULL) {
             walletCnt = *(uint8_t *)param;

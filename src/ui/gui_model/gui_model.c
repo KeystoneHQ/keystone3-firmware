@@ -938,7 +938,6 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
             GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
         }
     } else {
-        // GuiEmitSignal(SIG_SETTING_ADD_WALLET_CREATE_OR_IMPORT, &walletAmount, sizeof(walletAmount));
         if (!strcmp(SecretCacheGetPassword(), "999999")) {
             GuiApiEmitSignal(SIG_VERIFY_PASSWORD_FAIL, param, sizeof(*param));
         } else {

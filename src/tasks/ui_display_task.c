@@ -69,7 +69,7 @@ static void UiDisplayTask(void *argument)
     osStatus_t ret;
 #ifdef ENABLE_SCREEN_SHOT
     uint8_t *screenData;
-#endif    
+#endif
 
     lv_init();
     lv_disp_drv_init(&dispDrv);

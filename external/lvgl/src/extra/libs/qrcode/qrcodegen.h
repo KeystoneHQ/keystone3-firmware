@@ -312,7 +312,7 @@ int qrcodegen_version2size(int version);
 /*
  * Returns the min version of the data that can be stored. Returns -1 on failure
  */
-int qrcodegen_getMinFitVersion(enum qrcodegen_Ecc ecl, size_t dataLen);
+int qrcodegen_getMinFitVersion(enum qrcodegen_Ecc ecl, size_t dataLen, enum qrcodegen_Mode mode);
 
 #ifdef __cplusplus
 }

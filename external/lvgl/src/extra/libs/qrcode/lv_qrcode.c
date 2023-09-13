@@ -86,7 +86,14 @@ lv_res_t lv_qrcode_update(lv_obj_t * qrcode, const void * data, uint32_t data_le
 
     lv_img_dsc_t * imgdsc = lv_canvas_get_img(qrcode);
 
-    int32_t qr_version = qrcodegen_getMinFitVersion(qrcodegen_Ecc_LOW, data_len);
+    enum qrcodegen_Mode qr_mode = qrcodegen_Mode_BYTE;
+    if (qrcodegen_isNumeric(data)) {
+        qr_mode = qrcodegen_Mode_NUMERIC;
+    } else if (qrcodegen_isAlphanumeric(data)) {
+        qr_mode = qrcodegen_Mode_ALPHANUMERIC;
+    }
+
+    int32_t qr_version = qrcodegen_getMinFitVersion(qrcodegen_Ecc_LOW, data_len, qr_mode);
     if (qr_version <= 0) return LV_RES_INV;
     int32_t qr_size = qrcodegen_version2size(qr_version);
     if (qr_size <= 0) return LV_RES_INV;
@@ -107,7 +114,7 @@ lv_res_t lv_qrcode_update(lv_obj_t * qrcode, const void * data, uint32_t data_le
     LV_ASSERT_MALLOC(data_tmp);
     lv_memcpy(data_tmp, data, data_len);
 
-    bool ok = qrcodegen_encodeBinary(data_tmp, data_len,
+    bool ok = qrcodegen_encodeText(data, data_tmp,
                                      qr0, qrcodegen_Ecc_LOW,
                                      qr_version, qr_version,
                                      qrcodegen_Mask_AUTO, true);

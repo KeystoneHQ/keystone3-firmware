@@ -1079,10 +1079,10 @@ static int numCharCountBits(enum qrcodegen_Mode mode, int version)
     }
 }
 
-int qrcodegen_getMinFitVersion(enum qrcodegen_Ecc ecl, size_t dataLen)
+int qrcodegen_getMinFitVersion(enum qrcodegen_Ecc ecl, size_t dataLen, enum qrcodegen_Mode mode)
 {
     struct qrcodegen_Segment seg;
-    seg.mode = qrcodegen_Mode_BYTE;
+    seg.mode = mode;
     seg.bitLength = calcSegmentBitLength(seg.mode, dataLen);
     seg.numChars = (int)dataLen;
 

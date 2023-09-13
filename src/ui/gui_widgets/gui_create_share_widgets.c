@@ -184,7 +184,7 @@ static void NumSelectSliceHandler(lv_event_t * e)
         if (obj == g_selectSliceTile.memberCntKb) {
             g_selectSliceTile.memberCnt = currentId + 2;
             lv_btnmatrix_set_selected_btn(g_selectSliceTile.memberThresholdKb, g_selectSliceTile.memberThreshold - 2);
-            GuiUpdateShareKb(g_selectSliceTile.memberThresholdKb, g_selectSliceTile.memberCnt);
+            GuiUpdateSsbKeyBoard(g_selectSliceTile.memberThresholdKb, g_selectSliceTile.memberCnt);
             if (g_selectSliceTile.memberThreshold > g_selectSliceTile.memberCnt) {
                 g_selectSliceTile.memberThreshold = g_selectSliceTile.memberCnt;
                 lv_btnmatrix_set_selected_btn(g_selectSliceTile.memberThresholdKb, g_selectSliceTile.memberCnt - 2);
@@ -221,7 +221,7 @@ static void GuiShareSelectSliceWidget(lv_obj_t *parent)
     lv_obj_align(btnm, LV_ALIGN_DEFAULT, 36, 480 - GUI_MAIN_AREA_OFFSET);
     lv_btnmatrix_set_selected_btn(btnm, g_selectSliceTile.memberThreshold - 2);
     g_selectSliceTile.memberThresholdKb = btnm;
-    GuiUpdateShareKb(g_selectSliceTile.memberThresholdKb, g_selectSliceTile.memberCnt);
+    GuiUpdateSsbKeyBoard(g_selectSliceTile.memberThresholdKb, g_selectSliceTile.memberCnt);
 
     lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 114);
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);

@@ -5,7 +5,8 @@
  * Create: 2023-6-29
  ************************************************************************************************/
 
-#include "protocol_parse.h"
+#include "internal_protocol_parser.h"
+#include "apdu_protocol_parser.h"
 #include "stdio.h"
 #include "string.h"
 #include "user_utils.h"
@@ -13,6 +14,7 @@
 #include "crc.h"
 #include "service_device_info.h"
 #include "service_file_trans.h"
+#include "service_sign_tx.h"
 #include "cmsis_os.h"
 #include "user_memory.h"
 #include "log_print.h"
@@ -22,6 +24,7 @@
 
 uint8_t g_protocolRcvBuffer[PROTOCOL_MAX_LENGTH];
 
+struct ProtocolParser* currentParser = NULL;
 
 static uint8_t *ExecuteService(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 
@@ -36,54 +39,127 @@ typedef struct {
 static const ProtocolService_t g_ProtocolServiceList[] = {
     {SERVICE_ID_DEVICE_INFO,        COMMAND_ID_DEVICE_INFO_MAX,     g_deviceInfoServiceFunc},
     {SERVICE_ID_FILE_TRANS,         COMMAND_ID_FILE_TRANS_MAX,      g_fileTransInfoServiceFunc},
+    {SERVICE_ID_SIGN_TX,            COMMAND_ID_SIGN_TX_MAX,         g_signTxServiceFunc},
 };
-
 
 void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbackFunc_t sendFunc)
 {
-    static uint32_t lastTick = 0, rcvCount = 0, rcvLen = 0;
     uint32_t tick, i, outLen;
     uint8_t *sendBuf;
 
     tick = osKernelGetTickCount();
-    if (rcvCount != 0) {
-        if (tick - lastTick > PROTOCOL_PARSE_OVERTIME) {
-            printf("protocol over time, rcvCount=%d\n", rcvCount);
-            PrintArray("g_protocolRcvBuffer", g_protocolRcvBuffer, rcvCount);
-            rcvCount = 0;
-        }
-    }
-    lastTick = tick;
 
     for (i = 0; i < len; i++) {
-        if (rcvCount == 0) {
-            if (data[i] == PROTOCOL_HEADER) {
-                g_protocolRcvBuffer[rcvCount] = data[i];
-                rcvCount++;
-                printf("head\n");
+        if (currentParser == NULL) {
+            if (data[i] == INTERNAL_PROTOCOL_HEADER) {
+                currentParser = (struct ProtocolParser*)NewInternalProtocolParser();
+            } else if (data[i] == APDU_PROTOCOL_HEADER) {
+                currentParser = (struct ProtocolParser*)NewApduProtocolParser();
+            } else {
+                continue;
             }
-        } else if (rcvCount == 9) {
-            //length
-            g_protocolRcvBuffer[rcvCount] = data[i];
-            rcvCount++;
-            rcvLen = ((uint32_t)g_protocolRcvBuffer[9] << 8) + g_protocolRcvBuffer[8];
-            printf("rcvLen=%d\n", rcvLen);
-        } else if (rcvCount == rcvLen + 13) {
-            g_protocolRcvBuffer[rcvCount] = data[i];
-            rcvCount = 0;
-            printf("full frame,len=%d\n", rcvLen + 14);
-            sendBuf = ProtocolParse(g_protocolRcvBuffer, rcvLen + 14, &outLen);
+        }
+
+        currentParser->parse(data + i, 1);
+
+        if (currentParser->isFullFrameReceived()) {
+            sendBuf = currentParser->getProcessedData(&outLen);
             if (sendBuf) {
                 PrintArray("sendBuf", sendBuf, outLen);
                 sendFunc(sendBuf, outLen);
                 SRAM_FREE(sendBuf);
             }
-        } else {
-            g_protocolRcvBuffer[rcvCount] = data[i];
-            rcvCount++;
+            currentParser->reset();
+            free(currentParser);
+            currentParser = NULL;
         }
     }
 }
+
+void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbackFunc_t sendFunc)
+{
+    uint32_t tick, i, outLen;
+    uint8_t *sendBuf;
+    static struct ApduProtocolParser *currentParser = NULL;
+
+    tick = osKernelGetTickCount();
+
+    for (i = 0; i < len; i++) {
+        if (currentParser == NULL) {
+            if (data[i] == INTERNAL_PROTOCOL_HEADER) {
+                currentParser = NewInternalProtocolParser();
+                currentParser->base.parse(data + i, 1);
+            }
+            else if (data[i] == APDU_PROTOCOL_HEADER) {
+                currentParser = NewApduProtocolParser();
+                currentParser->base.parse(data + i, 1);
+            }
+            else {
+                continue;
+            }
+        } else {
+            currentParser->base.parse(data + i, 1);
+        }
+
+        if (currentParser->base.isFullFrameReceived()) {
+            sendBuf = currentParser->base.getProcessedData(&outLen);
+            if (sendBuf) {
+                PrintArray("sendBuf", sendBuf, outLen);
+                sendFunc(sendBuf, outLen);
+                SRAM_FREE(sendBuf);
+            }
+            currentParser->base.reset();
+            SRAM_FREE(currentParser);
+            currentParser = NULL;
+        }
+    }
+}
+
+// void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbackFunc_t sendFunc)
+// {
+//     static uint32_t lastTick = 0, rcvCount = 0, rcvLen = 0;
+//     uint32_t tick, i, outLen;
+//     uint8_t *sendBuf;
+
+//     tick = osKernelGetTickCount();
+//     if (rcvCount != 0) {
+//         if (tick - lastTick > PROTOCOL_PARSE_OVERTIME) {
+//             printf("protocol over time, rcvCount=%d\n", rcvCount);
+//             PrintArray("g_protocolRcvBuffer", g_protocolRcvBuffer, rcvCount);
+//             rcvCount = 0;
+//         }
+//     }
+//     lastTick = tick;
+
+//     for (i = 0; i < len; i++) {
+//         if (rcvCount == 0) {
+//             if (data[i] == PROTOCOL_HEADER) {
+//                 g_protocolRcvBuffer[rcvCount] = data[i];
+//                 rcvCount++;
+//                 printf("head\n");
+//             }
+//         } else if (rcvCount == 9) {
+//             //length
+//             g_protocolRcvBuffer[rcvCount] = data[i];
+//             rcvCount++;
+//             rcvLen = ((uint32_t)g_protocolRcvBuffer[9] << 8) + g_protocolRcvBuffer[8];
+//             printf("rcvLen=%d\n", rcvLen);
+//         } else if (rcvCount == rcvLen + 13) {
+//             g_protocolRcvBuffer[rcvCount] = data[i];
+//             rcvCount = 0;
+//             printf("full frame,len=%d\n", rcvLen + 14);
+//             sendBuf = ProtocolParse(g_protocolRcvBuffer, rcvLen + 14, &outLen);
+//             if (sendBuf) {
+//                 PrintArray("sendBuf", sendBuf, outLen);
+//                 sendFunc(sendBuf, outLen);
+//                 SRAM_FREE(sendBuf);
+//             }
+//         } else {
+//             g_protocolRcvBuffer[rcvCount] = data[i];
+//             rcvCount++;
+//         }
+//     }
+// }
 
 
 uint8_t *ProtocolParse(const uint8_t *inData, uint32_t inLen, uint32_t *outLen)

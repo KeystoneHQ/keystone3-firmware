@@ -21,15 +21,6 @@ enum {
     SERVICE_ID_MAX
 };
 
-struct ProtocolParser
-{
-    void (*parse)(const uint8_t *data, uint32_t len);
-    void (*reset)();
-    bool (*isFullFrameReceived)();
-    uint8_t* (*getProcessedData)(uint32_t* outLen);
-    char *name;
-};
-
 #define TYPE_GENERAL_RESULT_ACK             0xFF
 
 
@@ -37,5 +28,13 @@ typedef uint8_t *(*ProtocolServiceCallbackFunc_t)(FrameHead_t *head, const uint8
 typedef void (*ProtocolSendCallbackFunc_t)(const uint8_t *data, uint32_t len);
 
 void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbackFunc_t sendFunc);
+
+struct ProtocolParser
+{
+    char *name;
+    uint32_t rcvCount;
+    void (*parse)(const uint8_t *data, uint32_t len);
+    void (*registerSendFunc)(ProtocolSendCallbackFunc_t *sendFunc);
+};
 
 #endif

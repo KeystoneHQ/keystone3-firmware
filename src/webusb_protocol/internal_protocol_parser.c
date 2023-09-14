@@ -5,78 +5,100 @@
 #include "service_sign_tx.h"
 #include "user_memory.h"
 
-static struct InternalProtocolParser* global_parser = NULL;
+static struct ProtocolParser *global_parser = NULL;
+static ProtocolSendCallbackFunc_t *g_sendFunc = NULL;
+uint8_t g_protocolRcvBuffer[PROTOCOL_MAX_LENGTH];
 
 static uint8_t *ExecuteService(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *ProtocolParse(const uint8_t *inData, uint32_t inLen, uint32_t *outLen);
 
-typedef struct {
+typedef struct
+{
     uint8_t serviceId;
     uint8_t commandIdNum;
-    //uint8_t funcNum;
+    // uint8_t funcNum;
     const ProtocolServiceCallbackFunc_t *func;
 } ProtocolService_t;
 
 static const ProtocolService_t g_ProtocolServiceList[] = {
-    {SERVICE_ID_DEVICE_INFO,        COMMAND_ID_DEVICE_INFO_MAX,     g_deviceInfoServiceFunc},
-    {SERVICE_ID_FILE_TRANS,         COMMAND_ID_FILE_TRANS_MAX,      g_fileTransInfoServiceFunc},
-    {SERVICE_ID_SIGN_TX,            COMMAND_ID_SIGN_TX_MAX,         g_signTxServiceFunc},
+    {SERVICE_ID_DEVICE_INFO, COMMAND_ID_DEVICE_INFO_MAX, g_deviceInfoServiceFunc},
+    {SERVICE_ID_FILE_TRANS, COMMAND_ID_FILE_TRANS_MAX, g_fileTransInfoServiceFunc},
+    {SERVICE_ID_SIGN_TX, COMMAND_ID_SIGN_TX_MAX, g_signTxServiceFunc},
 };
 
 void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
 {
-    uint32_t i;
+    printf("InternalProtocol_Parse start\n");
+    if (g_sendFunc == NULL)
+    {
+        printf("err, g_sendFunc == NULL\n");
+        return;
+    }
 
-    for (i = 0; i < len; i++) {
-        if (global_parser->rcvCount == 0) {
-            if (data[i] == INTERNAL_PROTOCOL_HEADER) {
-                global_parser->g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
+    static rcvLen = 0;
+    uint32_t i, outLen;
+    uint8_t *sendBuf;
+
+    PrintArray("data", data, len);
+    for (i = 0; i < len; i++)
+    {
+        printf("i=%d,rcvCount=%d\n", i, global_parser->rcvCount);
+        if (global_parser->rcvCount == 0)
+        {
+            printf("loop head\n");
+            if (data[i] == PROTOCOL_HEADER)
+            {
+                g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
                 global_parser->rcvCount++;
+                printf("head\n");
             }
-        } else if (global_parser->rcvCount == 9) {
-            global_parser->g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
+        }
+        else if (global_parser->rcvCount == 9)
+        {
+            printf("loop length\n");
+            // length
+            g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
             global_parser->rcvCount++;
-            global_parser->rcvLen = ((uint32_t)global_parser->g_protocolRcvBuffer[9] << 8) + global_parser->g_protocolRcvBuffer[8];
-        } else if (global_parser->rcvCount == global_parser->rcvLen + 13) {
-            global_parser->g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
+            rcvLen = ((uint32_t)g_protocolRcvBuffer[9] << 8) + g_protocolRcvBuffer[8];
+            printf("rcvLen=%d\n", rcvLen);
+        }
+        else if (global_parser->rcvCount == rcvLen + 13)
+        {
+            printf("loop crc\n");
+            g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
             global_parser->rcvCount = 0;
-            global_parser->fullFrameReceived = true;
-        } else {
-            global_parser->g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
+            printf("full frame,len=%d\n", rcvLen + 14);
+            sendBuf = ProtocolParse(g_protocolRcvBuffer, rcvLen + 14, &outLen);
+            if (sendBuf)
+            {
+                PrintArray("sendBuf", sendBuf, outLen);
+                (*g_sendFunc)(sendBuf, outLen);
+                SRAM_FREE(sendBuf);
+            }
+        }
+        else
+        {
+            g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
             global_parser->rcvCount++;
         }
     }
+    printf("InternalProtocol_Parse end\n");
 }
 
-void InternalProtocol_Reset()
+static void RegisterSendFunc(ProtocolSendCallbackFunc_t *sendFunc)
 {
-    global_parser->rcvCount = 0;
-    global_parser->rcvLen = 0;
-    global_parser->fullFrameReceived = false;
+    g_sendFunc = sendFunc;
 }
 
-bool InternalProtocol_IsFullFrameReceived()
+struct ProtocolParser *NewInternalProtocolParser()
 {
-    return global_parser->fullFrameReceived;
-}
-
-uint8_t* InternalProtocol_GetProcessedData(uint32_t* outLen)
-{
-    *outLen = global_parser->rcvLen;
-    uint8_t *processedData = ProtocolParse(global_parser->g_protocolRcvBuffer, global_parser->rcvLen, &outLen);
-    PrintArray("InternalProtocol_GetProcessedData: ", processedData, *outLen);
-    return processedData;
-}
-
-struct InternalProtocolParser* NewInternalProtocolParser()
-{
-    if (!global_parser) {
-        global_parser = (struct InternalProtocolParser*)SRAM_MALLOC(sizeof(struct InternalProtocolParser));
-        global_parser->base.parse = InternalProtocol_Parse;
-        global_parser->base.reset = InternalProtocol_Reset;
-        global_parser->base.isFullFrameReceived = InternalProtocol_IsFullFrameReceived;
-        global_parser->base.getProcessedData = InternalProtocol_GetProcessedData;
-        global_parser->base.name = "InternalProtocolParser";
+    if (!global_parser)
+    {
+        global_parser = (struct ProtocolParser *)SRAM_MALLOC(sizeof(struct ProtocolParser));
+        global_parser->name = INTERNAL_PROTOCOL_PARSER_NAME;
+        global_parser->parse = InternalProtocol_Parse;
+        global_parser->registerSendFunc = RegisterSendFunc;
+        global_parser->rcvCount = 0;
     }
     return global_parser;
 }
@@ -87,33 +109,40 @@ static uint8_t *ProtocolParse(const uint8_t *inData, uint32_t inLen, uint32_t *o
     FrameHead_t *pHead;
     uint32_t receivedCrc, calculatedCrc;
 
-    do {
+    do
+    {
         *outLen = 0;
-        if (inData == NULL || inLen < sizeof(FrameHead_t) + 4) {
+        if (inData == NULL || inLen < sizeof(FrameHead_t) + 4)
+        {
             printf("invalid inData\n");
             break;
         }
         pHead = (FrameHead_t *)inData;
-        if (pHead->head != PROTOCOL_HEADER) {
+        if (pHead->head != PROTOCOL_HEADER)
+        {
             printf("invalid head\n");
             break;
         }
-        if (pHead->protocolVersion != 0) {
+        if (pHead->protocolVersion != 0)
+        {
             printf("invalid version\n");
             break;
         }
-        if (pHead->protocolVersion != 0) {
+        if (pHead->protocolVersion != 0)
+        {
             printf("invalid version\n");
             break;
         }
-        if (pHead->length + sizeof(FrameHead_t) + 4 != inLen) {
+        if (pHead->length + sizeof(FrameHead_t) + 4 != inLen)
+        {
             printf("inLen err\n");
             break;
         }
         PrintFrameHead(pHead);
         memcpy(&receivedCrc, inData + inLen - 4, 4);
         calculatedCrc = crc32_ieee(0, inData, inLen - 4);
-        if (receivedCrc != calculatedCrc) {
+        if (receivedCrc != calculatedCrc)
+        {
             printf("crc err,receivedCrc=0x%08X,calculatedCrc=0x%08X\n", receivedCrc, calculatedCrc);
             break;
         }
@@ -123,18 +152,21 @@ static uint8_t *ProtocolParse(const uint8_t *inData, uint32_t inLen, uint32_t *o
     return outData;
 }
 
-
 static uint8_t *ExecuteService(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
     uint32_t i;
 
-    for (i = 0; i < sizeof(g_ProtocolServiceList) / sizeof(g_ProtocolServiceList[0]); i++) {
-        if (g_ProtocolServiceList[i].serviceId == head->serviceId) {
-            if (g_ProtocolServiceList[i].func[head->commandId] == NULL) {
+    for (i = 0; i < sizeof(g_ProtocolServiceList) / sizeof(g_ProtocolServiceList[0]); i++)
+    {
+        if (g_ProtocolServiceList[i].serviceId == head->serviceId)
+        {
+            if (g_ProtocolServiceList[i].func[head->commandId] == NULL)
+            {
                 printf("err, no func\n");
                 return NULL;
             }
-            if (head->commandId >= g_ProtocolServiceList[i].commandIdNum) {
+            if (head->commandId >= g_ProtocolServiceList[i].commandIdNum)
+            {
                 printf("err,head->commandId=%d,commandIdNum=%d\n", head->commandId, g_ProtocolServiceList[i].commandIdNum);
                 return NULL;
             }

@@ -135,8 +135,6 @@ static lv_obj_t* GuiCreateSlider(lv_obj_t *parent)
 
 void GuiDisplayEntranceWidget(lv_obj_t *parent)
 {
-
-
     lv_obj_t *label = GuiCreateTextLabel(parent, "Brightness");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 36);
 
@@ -150,7 +148,12 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
     lv_obj_align(rightImg, LV_ALIGN_CENTER, 0, 0);
 
     lv_obj_t *slider = GuiCreateSlider(parent);
-    uint32_t brightness = (uint32_t)((GetBright() - 4) * 100 / (float)96);
+    int brightness = (GetBright() - MIN_BRIGHT) * 100 / (MAX_BRIGHT - MIN_BRIGHT);
+    if (brightness < 0) {
+        brightness = 0;
+    } else if (brightness > 100) {
+        brightness = 100;
+    }
     lv_slider_set_value(slider, brightness, LV_ANIM_OFF);
     lv_obj_add_event_cb(slider, SliderEventCb, LV_EVENT_VALUE_CHANGED, NULL);
 
@@ -268,7 +271,7 @@ static void SetHighestBrightness(lv_event_t *e)
 static void SliderEventCb(lv_event_t * e)
 {
     lv_obj_t * slider = lv_event_get_target(e);
-    int brightness = 4 + 96 * ((float)lv_slider_get_value(slider) / 100);
+    int brightness = MIN_BRIGHT + (MAX_BRIGHT - MIN_BRIGHT) * ((float)lv_slider_get_value(slider) / 100);
     SetBright(brightness);
     if (g_delayTaskTimer != NULL) {
         lv_timer_del(g_delayTaskTimer);

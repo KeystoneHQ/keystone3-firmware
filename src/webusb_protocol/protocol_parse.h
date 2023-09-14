@@ -17,9 +17,17 @@
 enum {
     SERVICE_ID_DEVICE_INFO              = 1,
     SERVICE_ID_FILE_TRANS,
+    SERVICE_ID_SIGN_TX,
     SERVICE_ID_MAX
 };
 
+struct ProtocolParser
+{
+    void (*parse)(const uint8_t *data, uint32_t len);
+    void (*reset)();
+    bool (*isFullFrameReceived)();
+    uint8_t* (*getProcessedData)(uint32_t* outLen);
+};
 
 #define TYPE_GENERAL_RESULT_ACK             0xFF
 

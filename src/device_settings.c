@@ -201,6 +201,7 @@ void SetUSBSwitch(uint32_t usbSwitch)
 /// @brief Wipe device.
 void WipeDevice(void)
 {
+    int ret = 0;
     // reset all account address index in receive page
     {
         void GuiResetAllUtxoAddressIndex(void);
@@ -211,6 +212,9 @@ void WipeDevice(void)
         GuiResetAllEthAddressIndex();
         GuiResetAllStandardAddressIndex();
     }
+
+    uint32_t wipeFlag = DEVICE_WIPE_FLAG_MAGIC_NUM;
+    ret = Gd25FlashWriteBuffer(SPI_FLASH_ADDR_PROTECT_PARAM, (uint8_t *)&wipeFlag, sizeof(wipeFlag));
     SetShowPowerOffPage(false);
     FpWipeManageInfo();
     DestroyAccount(0);

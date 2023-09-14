@@ -15,6 +15,8 @@
 
 #define LOW_BATTERY_PERCENT                     20
 #define DEVICE_WIPE_FLAG_MAGIC_NUM              0x1234ABCD                  
+#define MIN_BRIGHT                              4
+#define MAX_BRIGHT                              50
 
 void DeviceSettingsInit(void);
 void SaveDeviceSettings(void);

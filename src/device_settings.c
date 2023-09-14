@@ -38,7 +38,7 @@
 #define KEY_USB_SWITCH                  "usb_switch"
 
 #define DEFAULT_SETUP_STEP              0
-#define DEFAULT_BRIGHT                  70
+#define DEFAULT_BRIGHT                  15
 #define DEFAULT_AUTO_LOCK_SCREEN        60
 #define DEFAULT_AUTO_POWER_OFF          0
 #define DEFAULT_VIBRATION               1

@@ -1,31 +1,27 @@
+#include "stdio.h"
 #include "apdu_protocol_parser.h"
+
+static ProtocolSendCallbackFunc_t *g_sendFunc = NULL;
+static struct ProtocolParser *global_parser = NULL;
 
 void ApduProtocol_Parse(const uint8_t *data, uint32_t len)
 {
-    // ... put your original parsing logic here ...
 }
 
-void ApduProtocol_Reset()
+static void RegisterSendFunc(ProtocolSendCallbackFunc_t *sendFunc)
 {
-    // ... reset all the fields to their initial state ...
+    g_sendFunc = sendFunc;
 }
 
-bool ApduProtocol_IsFullFrameReceived()
+struct ProtocolParser *NewApduProtocolParser()
 {
-    // ... return whether a full frame is received ...
-}
-
-uint8_t* ApduProtocol_GetProcessedData(uint32_t* outLen)
-{
-    // ... return the processed data and its length ...
-}
-
-struct ApduProtocolParser* NewApduProtocolParser()
-{
-    struct ApduProtocolParser* parser = (struct ApduProtocolParser*)malloc(sizeof(struct ApduProtocolParser));
-    parser->base.parse = ApduProtocol_Parse;
-    parser->base.reset = ApduProtocol_Reset;
-    parser->base.isFullFrameReceived = ApduProtocol_IsFullFrameReceived;
-    parser->base.getProcessedData = ApduProtocol_GetProcessedData;
-    return parser;
+    if (!global_parser)
+    {
+        global_parser = (struct ProtocolParser *)malloc(sizeof(struct ProtocolParser));
+        global_parser->name = APDU_PROTOCOL_PARSER_NAME;
+        global_parser->parse = ApduProtocol_Parse;
+        global_parser->registerSendFunc = RegisterSendFunc;
+        global_parser->rcvCount = 0;
+    }
+    return global_parser;
 }

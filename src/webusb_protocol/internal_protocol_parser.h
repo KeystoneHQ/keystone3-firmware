@@ -4,17 +4,8 @@
 #include "protocol_parse.h"
 
 #define INTERNAL_PROTOCOL_HEADER             0x6B
+#define INTERNAL_PROTOCOL_PARSER_NAME        "internal_protocol_parser"
 
-struct InternalProtocolParser
-{
-    struct ProtocolParser base;
-    uint32_t lastTick;
-    uint32_t rcvCount;
-    uint32_t rcvLen;
-    bool fullFrameReceived;
-    uint8_t g_protocolRcvBuffer[1024];
-};
-
-struct InternalProtocolParser* NewInternalProtocolParser();
+struct ProtocolParser* NewInternalProtocolParser();
 
 #endif

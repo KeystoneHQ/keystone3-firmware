@@ -4,15 +4,8 @@
 #include "protocol_parse.h"
 
 #define APDU_PROTOCOL_HEADER             0x00
+#define APDU_PROTOCOL_PARSER_NAME        "apdu_protocol_parser"
 
-struct ApduProtocolParser
-{
-    struct ProtocolParser base;
-    uint32_t rcvCount;
-    uint32_t rcvLen;
-    uint8_t g_protocolRcvBuffer[1024];
-};
-
-struct ApduProtocolParser* NewApduProtocolParser();
+struct ProtocolParser* NewApduProtocolParser();
 
 #endif

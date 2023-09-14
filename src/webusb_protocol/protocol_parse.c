@@ -16,51 +16,38 @@
 #include "user_memory.h"
 #include "log_print.h"
 
-
-#define PROTOCOL_PARSE_OVERTIME             500
+#define PROTOCOL_PARSE_OVERTIME 500
 
 uint8_t g_protocolRcvBuffer[PROTOCOL_MAX_LENGTH];
 
-struct ProtocolParser* currentParser = NULL;
+struct ProtocolParser *currentParser = NULL;
 
 void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbackFunc_t sendFunc)
 {
-    uint32_t tick, i, outLen;
-    uint8_t *sendBuf;
-    static struct ApduProtocolParser *currentParser = NULL;
+    static uint32_t lastTick = 0;
+    uint32_t tick;
+    static struct ProtocolParser *currentParser = NULL;
 
     tick = osKernelGetTickCount();
 
-    for (i = 0; i < len; i++) {
-        if (currentParser == NULL) {
-            if (data[i] == INTERNAL_PROTOCOL_HEADER) {
-                currentParser = NewInternalProtocolParser();
-                currentParser->base.parse(data + i, 1);
-            }
-            else if (data[i] == APDU_PROTOCOL_HEADER) {
-                currentParser = NewApduProtocolParser();
-                currentParser->base.parse(data + i, 1);
-            }
-            else {
-                continue;
-            }
-            if (currentParser) {
-                printf("current parser: %s\n", currentParser->base.name);
-            }
-        } else {
-            currentParser->base.parse(data + i, 1);
-        }
+    if (currentParser == NULL)
+    {
+        currentParser = NewInternalProtocolParser();
+    }
+    printf("ProtocolReceivedData start\n");
 
-        if (currentParser->base.isFullFrameReceived()) {
-            sendBuf = currentParser->base.getProcessedData(&outLen);
-            if (sendBuf) {
-                PrintArray("sendBuffer: ", sendBuf, outLen);
-                sendFunc(sendBuf, outLen);
-                SRAM_FREE(sendBuf);
-            }
-            currentParser->base.reset();
-            SRAM_FREE(currentParser);
-            currentParser = NULL;
+    if (currentParser->rcvCount != 0)
+    {
+        if (tick - lastTick > PROTOCOL_PARSE_OVERTIME)
+        {
+            currentParser->rcvCount = 0;
         }
     }
+    lastTick = tick;
+    printf("registerSendFunc start\n");
+
+    currentParser->registerSendFunc(&sendFunc);
+    printf("registerSendFunc end\n");
+
+    currentParser->parse(data, len);
 }

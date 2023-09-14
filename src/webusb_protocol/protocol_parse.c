@@ -30,10 +30,15 @@ void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbac
 
     tick = osKernelGetTickCount();
 
-    if (currentParser == NULL)
+    if (data[0] == APDU_PROTOCOL_HEADER)
+    {
+        currentParser = NewApduProtocolParser();
+    }
+    else
     {
         currentParser = NewInternalProtocolParser();
     }
+
     printf("ProtocolReceivedData start\n");
 
     if (currentParser->rcvCount != 0)

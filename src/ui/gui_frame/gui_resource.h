@@ -49,6 +49,7 @@ LV_IMG_DECLARE(imgQuestion);
 LV_IMG_DECLARE(imgMore);
 LV_IMG_DECLARE(imgManage);
 LV_IMG_DECLARE(imgConnect);
+LV_IMG_DECLARE(imgCosmosTag);
 LV_IMG_DECLARE(imgSettings);
 LV_IMG_DECLARE(imgSearch);
 LV_IMG_DECLARE(imgEdit);

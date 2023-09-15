@@ -708,6 +708,8 @@ void SetMnemonicType(MnemonicType type)
 void SetPassphraseQuickAccess(bool enable)
 {
     g_currentAccountInfo.passphraseQuickAccess = enable ? 1 : 0;
+    // should only show quick access after restart.
+    SetPassphraseMark(false);
     SaveCurrentAccountInfo();
 }
 

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "stdlib.h"
 #include "se_manager.h"
 #include "se_interface.h"
@@ -221,6 +222,58 @@ int32_t GetFpStateInfo(uint8_t *info)
     return ret;
 }
 
+/// @brief Set the wallet data hash.
+/// @param[in] index
+/// @param[in] info 32 byte info.
+/// @return err code.
+int32_t SetWalletDataHash(uint8_t index, uint8_t *info)
+{
+    uint8_t data[32] = {0};
+    int32_t ret;
+
+    ASSERT(index <= 2);
+
+    memcpy(data, info, 32);
+    ret = SE_HmacEncryptWrite(data, PAGE_WALLET1_PUB_KEY_HASH + index);
+    return ret;
+}
+
+
+/// @brief Get the wallet data hash.
+/// @param[in] index
+/// @param[out] info 32 byte info.
+/// @return err code.
+int32_t GetWalletDataHash(uint8_t index, uint8_t *info)
+{
+    uint8_t data[32];
+    int32_t ret;
+
+    ASSERT(index <= 2);
+
+    ret = SE_HmacEncryptRead(data, PAGE_WALLET1_PUB_KEY_HASH + index);
+    CHECK_ERRCODE_RETURN_INT(ret);
+    memcpy(info, data, 32);
+    return ret;
+}
+
+/// @brief verify the wallet data hash.
+/// @param[in] index
+/// @param[in] info 32 byte info.
+/// @return result of verify.
+bool VerifyWalletDataHash(uint8_t index, uint8_t *info)
+{
+    uint8_t data[32];
+    int32_t ret;
+
+    ASSERT(index <= 2);
+
+    ret = SE_HmacEncryptRead(data, PAGE_WALLET1_PUB_KEY_HASH + index);
+    if (ret == SUCCESS_CODE && !memcmp(data, info, 32)) {
+        return true;
+    } else {
+        return false;
+    }
+}
 
 /// @brief Get the fingerprint encrypted password which stored in SE.
 /// @param[in] index

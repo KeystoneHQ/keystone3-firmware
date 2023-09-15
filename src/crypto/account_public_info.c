@@ -19,7 +19,8 @@
 #include "assert.h"
 #include "gui.h"
 #include "gui_home_widgets.h"
-
+#include "sha256.h"
+#include "se_manager.h"
 
 #define PUB_KEY_MAX_LENGTH                  256
 #define VERSION_MAX_LENGTH                  64
@@ -201,6 +202,7 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     int32_t ret = SUCCESS_CODE;
     bool regeneratePubKey = newKey;
     uint8_t seed[64];
+    uint8_t hash[32];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
 
     ASSERT(accountIndex < 3);
@@ -222,6 +224,9 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
         ASSERT(ret == size);
         jsonString[size] = 0;
+        sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
+        ASSERT(true == VerifyWalletDataHash(accountIndex, hash));
+        CLEAR_ARRAY(hash);
         if (GetPublicKeyFromJsonString(jsonString) == false) {
             printf("GetPublicKeyFromJsonString false, need regenerate\r\n");
             printf("err jsonString=%s\r\n", jsonString);
@@ -265,6 +270,9 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         }
         printf("erase done\n");
         jsonString = GetJsonStringFromPublicKey();
+        sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
+        SetWalletDataHash(accountIndex, hash);
+        CLEAR_ARRAY(hash);
         size = strlen(jsonString);
         Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
         Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);

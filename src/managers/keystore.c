@@ -551,6 +551,8 @@ int32_t DestroyAccount(uint8_t accountIndex)
     }
     DeleteAccountPublicInfo(accountIndex);
     ClearAccountPassphrase(accountIndex);
+    SetWalletDataHash(accountIndex, data);
+
     CLEAR_ARRAY(data);
 
     return ret;

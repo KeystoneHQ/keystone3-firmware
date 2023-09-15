@@ -515,6 +515,7 @@ static void OpenManageAssetsHandler(lv_event_t *e)
         lv_obj_t *chainLabel;
         lv_obj_t *icon;
         lv_obj_t *checkbox;
+        lv_obj_t *tag;
 
         //only show btc eth now;
         for (int i = 0; i < HOME_WALLET_CARD_BNB; i++) {
@@ -523,13 +524,23 @@ static void OpenManageAssetsHandler(lv_event_t *e)
             icon = GuiCreateImg(checkBoxCont, g_coinCardArray[i].icon);
             checkbox = GuiCreateMultiCheckBox(checkBoxCont, _(""));
             g_walletState[i].checkBox = checkbox;
-            GuiButton_t table[4] = {
+            uint8_t tableLen = 4;
+            GuiButton_t table[5] = {
                 {.obj = icon, .align = LV_ALIGN_LEFT_MID, .position = {24, 0},},
                 {.obj = coinLabel, .align = LV_ALIGN_DEFAULT, .position = {100, 13},},
                 {.obj = chainLabel, .align = LV_ALIGN_DEFAULT, .position = {100, 53},},
                 {.obj = checkbox, .align = LV_ALIGN_TOP_MID, .position = {0, 32},},
             };
-            lv_obj_t *button = GuiCreateButton(checkBoxCont, 456, 96, table, NUMBER_OF_ARRAYS(table),
+            if (IsCosmosChain(g_coinCardArray[i].index)) {
+                tag = GuiCreateImg(checkBoxCont, &imgCosmosTag);
+                table[4] = table[3];
+                table[3].obj = tag;
+                table[3].align = LV_ALIGN_LEFT_MID;
+                GuiPosition_t p = {272, 0};
+                table[3].position = p;
+                tableLen = 5;
+            }
+            lv_obj_t *button = GuiCreateButton(checkBoxCont, 456, 96, table, tableLen,
                                                ManageCoinChainHandler, &g_walletState[i]);
             lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 96 * i);
         }

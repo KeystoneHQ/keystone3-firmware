@@ -18,6 +18,7 @@
 #include "gui_ethereum_receive_widgets.h"
 #include "gui_animating_qrcode.h"
 #include "gui_page.h"
+#include "keystore.h"
 
 #define DERIVATION_PATH_EG_LEN 2
 
@@ -182,7 +183,7 @@ static void AddKeplrCoins(void);
 CoinState_t g_companionAppcoinState[COMPANION_APP_COINS_BUTT];
 static char g_derivationPathAddr[LedgerLegacy + 1][DERIVATION_PATH_EG_LEN][64];
 static lv_obj_t *g_derivationCheck[LedgerLegacy + 1];
-static ETHAccountType g_currentPathIndex = Bip44Standard;
+static ETHAccountType g_currentPathIndex[3] = {Bip44Standard, Bip44Standard, Bip44Standard};
 static ETHAccountType g_currentBakPathIndex = Bip44Standard;
 static lv_obj_t *g_egAddress[DERIVATION_PATH_EG_LEN];
 static CoinState_t g_tempCompanionAppcoinState[COMPANION_APP_COINS_BUTT];
@@ -630,7 +631,7 @@ static void initCompanionAppCoinsConfig(void)
 
 ETHAccountType GetMetamaskAccountType(void)
 {
-    return g_currentPathIndex;
+    return g_currentPathIndex[GetCurrentAccountIndex()];
 }
 
 static lv_obj_t *g_derivationPathCont = NULL;
@@ -640,10 +641,10 @@ static void CloseDerivationHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        if (g_currentBakPathIndex != g_currentPathIndex) {
+        if (g_currentBakPathIndex != GetMetamaskAccountType()) {
             GuiAnimatingQRCodeDestroyTimer();
             GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
-            g_currentBakPathIndex = g_currentPathIndex;
+            g_currentBakPathIndex = GetMetamaskAccountType();
         } else {
             QRCodePause(false);
         }
@@ -699,7 +700,7 @@ static void SelectDerivationHandler(lv_event_t *e)
         for (int i = 0; i < 3; i++) {
             if (newCheckBox == g_derivationCheck[i]) {
                 lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
-                g_currentPathIndex = i;
+                g_currentPathIndex[GetCurrentAccountIndex()] = i;
                 UpdateEthEgAddress(i);
             } else {
                 lv_obj_clear_state(g_derivationCheck[i], LV_STATE_CHECKED);
@@ -738,7 +739,7 @@ static void OpenDerivationPath()
         lv_obj_t *checkBox = GuiCreateSingleCheckBox(cont, _(""));
         lv_obj_set_size(checkBox, 36, 36);
         g_derivationCheck[i] = checkBox;
-        if (i == g_currentPathIndex) {
+        if (i == GetMetamaskAccountType()) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
         GuiButton_t table[] = {
@@ -789,7 +790,7 @@ static void OpenDerivationPath()
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 48, 144);
     g_egAddress[1] = label;
     GetEthEgAddress();
-    UpdateEthEgAddress(g_currentPathIndex);
+    UpdateEthEgAddress(GetMetamaskAccountType());
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Change Derivation Path"));
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseDerivationHandler, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);

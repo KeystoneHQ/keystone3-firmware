@@ -283,6 +283,13 @@ void GuiQrCodeScanResult(bool result, void *param)
             }
             return;
         }
+        uint8_t accountNum = 0;
+        GetExistAccountNum(&accountNum);
+        if (accountNum <= 0) {
+            GuiQrCodeScreenCorner();
+            GuiDealScanErrorResult(0);
+            return;
+        }
         g_qrCodeWidgetView.analysis = GuiTemplateReload(g_qrCodeWidgetView.cont, g_qrcodeViewType);
         if (g_qrCodeWidgetView.analysis != NULL) {
             g_fingerSignCount = 0;

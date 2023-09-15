@@ -55,6 +55,7 @@ static void ForgetHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
 
         GuiFrameOpenView(&g_forgetPassView);
+        CloseKeyBoardWidgetHandler(e);
     }
 }
 
@@ -139,7 +140,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, ta);
 
-    button = GuiCreateImgLabelButton(keyboardHintBox, _("FORGET"), &imgLock, ForgetHandler, NULL);
+    button = GuiCreateImgLabelButton(keyboardHintBox, _("FORGET"), &imgLock, ForgetHandler, keyboardWidget);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 333, 439);
 
     label = GuiCreateIllustrateLabel(keyboardHintBox, _("Password does not match"));

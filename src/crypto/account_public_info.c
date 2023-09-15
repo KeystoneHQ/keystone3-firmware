@@ -331,6 +331,8 @@ void DeleteAccountPublicInfo(uint8_t accountIndex)
     for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_MUTABLE_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
         Gd25FlashSectorErase(eraseAddr);
     }
+    //remove current publickey info to avoid accident reading.
+    FreePublicKeyRam();
 }
 
 

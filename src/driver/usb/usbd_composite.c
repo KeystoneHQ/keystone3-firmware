@@ -124,10 +124,6 @@ static uint8_t CompositeDataIn(void *pdev, uint8_t epnum)
     {
         return USBD_MSC_cb.DataIn(pdev, epnum);
     }
-    else if (epnum == APDU_EP_NUM)
-    {
-        return USBD_CDC_cb.DataIn(pdev, epnum);
-    }
     else
     {
         return USBD_CDC_cb.DataIn(pdev, epnum);
@@ -140,10 +136,6 @@ static uint8_t CompositeDataOut(void *pdev, uint8_t epnum)
     if (epnum == MSC_EP_NUM)
     {
         return USBD_MSC_cb.DataOut(pdev, epnum);
-    }
-    else if (epnum == APDU_EP_NUM)
-    {
-        return USBD_CDC_cb.DataOut(pdev, epnum);
     }
     else
     {

@@ -514,7 +514,11 @@ void SetNavBarLeftBtn(NavBarWidget_t *navBarWidget, NVS_LEFT_BUTTON_ENUM button,
     }
     lv_obj_clear_flag(navBarWidget->leftBtn, LV_OBJ_FLAG_HIDDEN);
     if (leftButtonCb != NULL) {
-        lv_obj_add_event_cb(navBarWidget->leftBtn, leftButtonCb, LV_EVENT_CLICKED, param);
+        if (button != NVS_BAR_MANAGE) {
+            lv_obj_add_event_cb(navBarWidget->leftBtn, leftButtonCb, LV_EVENT_CLICKED, param);
+        } else {
+            lv_obj_add_event_cb(navBarWidget->leftBtn, leftButtonCb, LV_EVENT_SHORT_CLICKED, param);
+        }
     }
 }
 

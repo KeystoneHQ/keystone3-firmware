@@ -228,6 +228,8 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         if (!VerifyWalletDataHash(accountIndex, hash)) {
             CLEAR_ARRAY(hash);
             return ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH;
+        } else {
+            ret = SUCCESS_CODE;
         }
         CLEAR_ARRAY(hash);
         if (GetPublicKeyFromJsonString(jsonString) == false) {

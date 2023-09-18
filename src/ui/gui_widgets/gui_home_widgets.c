@@ -502,7 +502,7 @@ static void OpenManageAssetsHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_SHORT_CLICKED) {
         memcpy(&g_walletBakState, &g_walletState, sizeof(g_walletState));
         g_manageCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
                                           GUI_MAIN_AREA_OFFSET);
@@ -618,7 +618,6 @@ void GuiHomeRestart(void)
 
 void GuiHomeRefresh(void)
 {
-    printf("%s %d\n", __func__, __LINE__);
     if (GetCurrentAccountIndex() > 2) {
         return;
     }

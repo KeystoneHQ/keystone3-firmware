@@ -9,6 +9,7 @@
 #include "presetting.h"
 #include "gui_about_terms_widgets.h"
 #include "version.h"
+#include "gui_page.h"
 
 static void GuiAboutNVSBarInit();
 static void GuiAboutTermsEntranceWidget(lv_obj_t *parent);
@@ -21,16 +22,13 @@ static lv_obj_t *g_cont;
 
 static const char g_termsWebSiteUrl[] = "https://keyst.one/terms";
 static lv_obj_t *g_qrCodeCont;
+static PageWidget_t *g_pageWidget;
 
 
 void GuiAboutTermsWidgetsInit()
 {
-    GuiAboutNVSBarInit();
-
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
     lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_remove_style(cont,  NULL, LV_PART_SCROLLBAR);
 
@@ -44,6 +42,10 @@ void GuiAboutTermsWidgetsDeInit()
         GUI_DEL_OBJ(g_qrCodeCont)
         lv_obj_del(g_cont);
         g_cont = NULL;
+    }
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
     }
 }
 
@@ -61,9 +63,8 @@ void GuiAboutTermsWidgetsRestart()
 
 static void GuiAboutNVSBarInit()
 {
-    GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "Terms of Use");
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Terms of Use");
 }
 
 

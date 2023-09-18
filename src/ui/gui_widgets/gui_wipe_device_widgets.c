@@ -9,10 +9,12 @@
 #include "presetting.h"
 #include "gui_wipe_device_widgets.h"
 #include "screen_manager.h"
+#include "gui_page.h"
 
 static lv_obj_t *g_cont;
 static lv_obj_t *g_wipeDeviceHintBox = NULL;
 static lv_timer_t *g_countDownTimer;
+static PageWidget_t *g_pageWidget;
 
 static void GuiWipeDeviceNVSBarInit();
 static void GuiWipeDeviceEntranceWidget(lv_obj_t *parent);
@@ -27,13 +29,8 @@ static void GuiCountDownDestruct(void *obj, void* param);
 
 void GuiWipeDeviceWidgetsInit()
 {
-    GuiWipeDeviceNVSBarInit();
-
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
-
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
     g_cont = cont;
     lv_obj_t *img = GuiCreateImg(cont, &imgWipeDevice);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 36);
@@ -47,6 +44,10 @@ void GuiWipeDeviceWidgetsDeInit()
     if (g_cont != NULL) {
         lv_obj_del(g_cont);
         g_cont = NULL;
+    }
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
     }
 }
 
@@ -62,9 +63,7 @@ void GuiWipeDeviceWidgetsRestart()
 
 static void GuiWipeDeviceNVSBarInit()
 {
-    GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    GuiNvsBarSetMidCb(NVS_MID_BUTTON_BUTT, NULL, NULL);
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
 }
 
 

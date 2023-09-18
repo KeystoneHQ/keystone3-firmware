@@ -23,6 +23,7 @@
 #include "gui_tutorial_widgets.h"
 #include "gui_fullscreen_mode.h"
 #include "keystore.h"
+#include "gui_page.h"
 
 #define ADDRESS_INDEX_MAX 999999999
 
@@ -161,14 +162,15 @@ static uint32_t g_bchSelectIndex[3] = {0};
 static uint8_t g_currentAccountIndex = 0;
 
 static HOME_WALLET_CARD_ENUM g_chainCard;
+static PageWidget_t *g_pageWidget;
 
 void GuiReceiveInit(uint8_t chain)
 {
     g_chainCard = chain;
     g_currentAccountIndex = GetCurrentAccountIndex();
     g_selectIndex = GetCurrentSelectIndex();
-    g_utxoReceiveWidgets.cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(g_utxoReceiveWidgets.cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
+    g_pageWidget = CreatePageWidget();
+    g_utxoReceiveWidgets.cont = g_pageWidget->contentZone;
     g_utxoReceiveWidgets.tileView = lv_tileview_create(g_utxoReceiveWidgets.cont);
     lv_obj_set_style_bg_opa(g_utxoReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR & LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(g_utxoReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
@@ -204,6 +206,11 @@ void GuiReceiveDeInit(void)
     CLEAR_OBJECT(g_utxoReceiveWidgets);
     g_utxoReceiveTileNow = 0;
     GuiFullscreenModeCleanUp();
+
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
 void GuiReceiveRefresh(void)
@@ -211,11 +218,11 @@ void GuiReceiveRefresh(void)
     printf("g_utxoReceiveTileNow=%d\r\n", g_utxoReceiveTileNow);
     switch (g_utxoReceiveTileNow) {
     case UTXO_RECEIVE_TILE_QRCODE:
-        GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
         TittleItem_t tittleItem;
         GetCurrentTittle(&tittleItem);
-        GuiNvsSetCoinWallet(tittleItem.type, tittleItem.tittle);
-        GuiNvsBarSetRightCb(NVS_BAR_MORE_INFO, MoreHandler, NULL);
+        SetCoinWallet(g_pageWidget->navBarWidget, tittleItem.type, tittleItem.tittle);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, MoreHandler, NULL);
         RefreshQrCode();
         if (g_selectIndex == ADDRESS_INDEX_MAX) {
             lv_obj_set_style_img_opa(g_utxoReceiveWidgets.changeImg, LV_OPA_60, LV_PART_MAIN);
@@ -226,9 +233,9 @@ void GuiReceiveRefresh(void)
         }
         break;
     case UTXO_RECEIVE_TILE_SWITCH_ACCOUNT:
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
-        GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "Switch Address");
-        GuiNvsBarSetRightCb(NVS_BAR_SKIP, GotoAddressHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Switch Account");
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SKIP, GotoAddressHandler, NULL);
         g_showIndex = g_selectIndex / 5 * 5;
         if (g_showIndex < 5) {
             lv_obj_set_style_img_opa(g_utxoReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);
@@ -242,9 +249,9 @@ void GuiReceiveRefresh(void)
         }
         break;
     case UTXO_RECEIVE_TILE_ADDRESS_SETTINGS:
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
-        GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "Address Settings");
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Address Settings");
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         break;
     default:
         break;

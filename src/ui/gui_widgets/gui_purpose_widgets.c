@@ -13,14 +13,16 @@
 #include "gui_lock_widgets.h"
 #include "gui_web_auth_widgets.h"
 #include "gui_setup_widgets.h"
+#include "gui_page.h"
 
 static lv_obj_t *container;
+static PageWidget_t *g_pageWidget;
 
 void GuiPurposeAreaInit()
 {
-    container = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                   GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(container, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
+    g_pageWidget = CreatePageWidget();
+    container = g_pageWidget->contentZone;
+
     lv_obj_t *label = GuiCreateTitleLabel(container, _("purpose_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
@@ -73,21 +75,20 @@ void GuiPurposeAreaInit()
     lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -26);
     lv_obj_set_scrollbar_mode(container, LV_SCROLLBAR_MODE_OFF);
 
-    // GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    // GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-
-
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
 }
 void GuiPurposeAreaDeInit()
 {
     lv_obj_del(container);
     container = NULL;
-    GuiNvsBarSetLeftCb(NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 void GuiPurposeAreaRefresh()
 {
-    GuiNvsBarClear();
-    GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
 
     GuiSetSetupPhase(SETUP_PAHSE_CREATE_WALLET);
     if (g_reboot) {

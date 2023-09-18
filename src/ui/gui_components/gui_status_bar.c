@@ -37,29 +37,6 @@ typedef struct StatusBar {
 } StatusBar_t;
 static StatusBar_t g_guiStatusBar;
 
-typedef struct NavBar {
-    lv_obj_t *cont;
-    // left
-    lv_obj_t *returnBtn;
-    lv_obj_t *closeBtn;
-    lv_obj_t *manageBtn;
-
-    // mid
-    lv_obj_t *midLabel;
-    lv_obj_t *midWordCntSelect;
-    lv_obj_t *coinBtn;
-
-    // right
-    lv_obj_t *wordCntSelect;
-    lv_obj_t *resetButton;
-    lv_obj_t *question;
-    lv_obj_t *moreInfo;
-    lv_obj_t *skip;
-    lv_obj_t *search;
-    lv_obj_t *newSkip;
-} NavBar_t;
-static NavBar_t g_guiNavBar;
-
 typedef struct {
     GuiChainCoinType index;
     const char *name;
@@ -124,166 +101,6 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_SUSHISWAP, "Connect SushiSwap", &walletSushi},
     {WALLET_LIST_KEPLR, "Connect Keplr", &walletKeplr},
 };
-
-void GuiNvsBarSetLeftCb(NVS_LEFT_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param)
-{
-    static lv_obj_t *leftButton = NULL;
-    static lv_event_cb_t leftButtonCb = NULL;
-    // if (leftButton != NULL && leftButtonCb != NULL) {
-    if (leftButton != NULL) {
-        lv_obj_remove_event_cb(leftButton, leftButtonCb);
-        leftButtonCb = NULL;
-        lv_obj_add_flag(leftButton, LV_OBJ_FLAG_HIDDEN);
-        leftButton = NULL;
-    }
-
-    switch (button) {
-    case NVS_BAR_RETURN:
-        leftButton = g_guiNavBar.returnBtn;
-        leftButtonCb = eventCb;
-        break;
-    case NVS_BAR_CLOSE:
-        leftButton = g_guiNavBar.closeBtn;
-        leftButtonCb = eventCb;
-        break;
-    case NVS_BAR_MANAGE:
-        leftButton = g_guiNavBar.manageBtn;
-        leftButtonCb = eventCb;
-        break;
-    default:
-        return;
-    }
-    lv_obj_clear_flag(leftButton, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_add_event_cb(leftButton, leftButtonCb, LV_EVENT_CLICKED, param);
-}
-
-void GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param)
-{
-    static lv_obj_t *rightButton = NULL;
-    static lv_event_cb_t rightButtonCb = NULL;
-    if (rightButton != NULL) {
-        lv_obj_remove_event_cb(rightButton, rightButtonCb);
-        rightButtonCb = NULL;
-        lv_obj_add_flag(rightButton, LV_OBJ_FLAG_HIDDEN);
-        rightButton = NULL;
-    }
-
-    switch (button) {
-    case NVS_BAR_WORD_SELECT:
-        rightButton = g_guiNavBar.wordCntSelect;
-        rightButtonCb = eventCb;
-        break;
-    case NVS_BAR_WORD_RESET:
-        rightButton = g_guiNavBar.resetButton;
-        rightButtonCb = eventCb;
-        break;
-    case NVS_BAR_QUESTION_MARK:
-        rightButton = g_guiNavBar.question;
-        rightButtonCb = eventCb;
-        break;
-    case NVS_BAR_MORE_INFO:
-        rightButton = g_guiNavBar.moreInfo;
-        rightButtonCb = eventCb;
-        break;
-    case NVS_BAR_SKIP:
-        rightButton = g_guiNavBar.skip;
-        rightButtonCb = eventCb;
-        break;
-    case NVS_BAR_SEARCH:
-        rightButton = g_guiNavBar.search;
-        rightButtonCb = eventCb;
-        break;
-    case NVS_BAR_NEW_SKIP:
-        rightButton = g_guiNavBar.newSkip;
-        rightButtonCb = eventCb;
-        break;
-    default:
-        return;
-    }
-    lv_obj_clear_flag(rightButton, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_add_event_cb(rightButton, rightButtonCb, LV_EVENT_CLICKED, param);
-}
-
-void GuiNvsBarSetRightBtnLabel(NVS_RIGHT_BUTTON_ENUM button, const char *text)
-{
-    switch (button) {
-    case NVS_BAR_WORD_SELECT:
-        lv_label_set_text(lv_obj_get_child(g_guiNavBar.wordCntSelect, 0), text);
-        break;
-    case NVS_BAR_WORD_RESET:
-        lv_label_set_text(lv_obj_get_child(g_guiNavBar.resetButton, 0), text);
-        break;
-    default:
-        return;
-    }
-}
-
-void GuiNvsBarSetMidCb(NVS_MID_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param)
-{
-    static lv_obj_t *midButton = NULL;
-    static lv_event_cb_t midButtonCb = NULL;
-    // if (midButton != NULL && midButtonCb != NULL) {
-    if (midButton != NULL) {
-        lv_obj_remove_event_cb(midButton, midButtonCb);
-        midButtonCb = NULL;
-        lv_obj_add_flag(midButton, LV_OBJ_FLAG_HIDDEN);
-        midButton = NULL;
-    }
-
-    switch (button) {
-    case NVS_BAR_MID_WORD_SELECT:
-        midButton = g_guiNavBar.midWordCntSelect;
-        midButtonCb = eventCb;
-        break;
-    case NVS_BAR_MID_LABEL:
-        midButton = g_guiNavBar.midLabel;
-        midButtonCb = eventCb;
-        break;
-    case NVS_BAR_MID_COIN:
-        midButton = g_guiNavBar.coinBtn;
-        lv_obj_clear_flag(midButton, LV_OBJ_FLAG_HIDDEN);
-        return;
-    default:
-        return;
-    }
-    lv_obj_clear_flag(midButton, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_add_event_cb(midButton, midButtonCb, LV_EVENT_CLICKED, param);
-}
-
-void GuiNvsBarSetMidBtnLabel(NVS_MID_BUTTON_ENUM button, const char *text)
-{
-    switch (button) {
-    case NVS_BAR_MID_WORD_SELECT:
-        lv_label_set_text(lv_obj_get_child(g_guiNavBar.midWordCntSelect, 0), text);
-        break;
-    case NVS_BAR_MID_LABEL:
-        lv_label_set_text(g_guiNavBar.midLabel, text);
-        lv_obj_clear_flag(g_guiNavBar.midLabel, LV_OBJ_FLAG_HIDDEN);
-        GuiNvsBarSetMidCb(NVS_BAR_MID_LABEL, NULL, NULL);
-        break;
-    default:
-        return;
-    }
-}
-
-void GuiNvsSetCoinWallet(GuiChainCoinType index, const char *name)
-{
-    g_guiNavBar.coinBtn = GuiUpdateStatusCoinButton(g_guiNavBar.coinBtn, (name != NULL) ? name : g_coinWalletBtn[index].name,
-                          g_coinWalletBtn[index].icon);
-    GuiNvsBarSetMidCb(NVS_BAR_MID_COIN, NULL, NULL);
-}
-
-void GuiNvsSetWallet(WALLET_LIST_INDEX_ENUM index, const char *name)
-{
-    if (name == NULL) {
-        g_guiNavBar.coinBtn = GuiUpdateStatusCoinButton(g_guiNavBar.coinBtn, g_walletBtn[index].name,
-                              g_walletBtn[index].icon);
-    } else {
-        g_guiNavBar.coinBtn = GuiUpdateStatusCoinButton(g_guiNavBar.coinBtn, name,
-                              g_walletBtn[index].icon);
-    }
-    GuiNvsBarSetMidCb(NVS_BAR_MID_COIN, NULL, NULL);
-}
 
 void GuiNvsBarSetWalletName(const char *name)
 {
@@ -367,168 +184,9 @@ void GuiStatusBarInit(void)
     g_guiStatusBar.usbImg = img;
     lv_obj_align_to(g_guiStatusBar.usbImg, g_guiStatusBar.sdCardImg, LV_ALIGN_OUT_LEFT_MID, -10, 0);
     lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
-
-    cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), GUI_NAV_BAR_HEIGHT);
-    lv_obj_align_to(cont, g_guiStatusBar.cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT);
-    lv_obj_set_style_radius(cont, 0, 0);
-    g_guiNavBar.cont = cont;
-
-    //returnbtn
-    lv_obj_t *btn = GuiCreateBtn(cont, "");
-    lv_obj_set_size(btn, 64, 64);
-    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
-
-    img = GuiCreateImg(btn, &imgArrowLeft);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-    g_guiNavBar.returnBtn = btn;
-
-    //closebtn
-    btn = GuiCreateBtn(cont, "");
-    lv_obj_set_size(btn, 64, 64);
-    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
-
-    img = GuiCreateImg(btn, &imgClose);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-    g_guiNavBar.closeBtn = btn;
-
-    //managebtn
-    btn = GuiCreateBtn(cont, "");
-    lv_obj_set_size(btn, 64, 64);
-    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
-
-    img = GuiCreateImg(btn, &imgManage);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-    g_guiNavBar.manageBtn = btn;
-
-    btn = GuiCreateBtnWithFont(cont, "24    " USR_SYMBOL_DOWN, &openSans_20);
-    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 387, 0);
-    lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
-    lv_obj_set_size(btn, 69, 42);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
-    g_guiNavBar.wordCntSelect = btn;
-
-    label = GuiCreateTextLabel(cont, "");
-    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
-    g_guiNavBar.midLabel = label;
-
-    btn = GuiCreateBtnWithFont(cont, "20    " USR_SYMBOL_DOWN, &openSans_20);
-    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 268, 0);
-    lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
-    lv_obj_set_size(btn, 69, 42);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
-    g_guiNavBar.midWordCntSelect = btn;
-
-    btn = GuiCreateStatusCoinButton(cont, _("Connect BlueWallet"), &walletBluewallet);
-    lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
-    g_guiNavBar.coinBtn = btn;
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
-
-    btn = GuiCreateBtnWithFont(cont, _("single_phrase_reset"), &openSansEnIllustrate);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_set_size(btn, 106, 42);
-    lv_obj_align(btn, LV_ALIGN_DEFAULT, 350, 27);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-    g_guiNavBar.resetButton = btn;
-
-    btn = GuiCreateBtn(cont, "");
-    img = GuiCreateImg(btn, &imgQuestion);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_size(btn, 106, 42);
-    lv_obj_align(btn, LV_ALIGN_DEFAULT, 380, 27);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-    g_guiNavBar.question = btn;
-
-    btn = GuiCreateBtn(cont, "");
-    lv_obj_set_size(btn, 64, 64);
-    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-    img = GuiCreateImg(btn, &imgMore);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-    g_guiNavBar.moreInfo = btn;
-
-    btn = GuiCreateBtn(cont, "");
-    lv_obj_set_size(btn, 64, 64);
-    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-    img = GuiCreateImg(btn, &imgSkip);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-    g_guiNavBar.skip = btn;
-
-    btn = GuiCreateBtn(cont, "");
-    lv_obj_set_size(btn, 64, 64);
-    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-    img = GuiCreateImg(btn, &imgSearch);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-    g_guiNavBar.search = btn;
-
-
-    btn = lv_label_create(cont);
-    lv_label_set_text(btn, "");
-    lv_obj_set_size(btn, 63, 42);
-    lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, GRAY_COLOR, 0);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED | LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_10 + LV_OPA_2, LV_STATE_PRESSED | LV_PART_MAIN);
-
-    lv_obj_t *textLabel = lv_label_create(btn);
-    lv_label_set_text(textLabel, "Skip");
-    lv_obj_set_style_text_font(textLabel, &openSans_20, LV_PART_MAIN);
-    lv_obj_set_style_text_opa(textLabel, LV_OPA_90, LV_PART_MAIN);
-    lv_label_set_long_mode(textLabel, LV_LABEL_LONG_WRAP);
-    lv_obj_set_style_bg_opa(textLabel, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_align(textLabel, LV_ALIGN_CENTER);
-    lv_obj_align(textLabel, LV_ALIGN_CENTER, 0, 2);
-    lv_obj_set_style_text_color(textLabel, WHITE_COLOR, LV_PART_MAIN);
-
-    g_guiNavBar.newSkip = btn;
-
 #ifdef COMPILE_SIMULATOR
     GuiStatusBarSetBattery(88, true);
 #endif
-}
-
-void GuiNvsBarClear(void)
-{
-    GuiNvsBarSetLeftCb(NVS_LEFT_BUTTON_BUTT, NULL, NULL);
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "");
 }
 
 void GuiStatusBarSetSdCard(bool connected)
@@ -892,20 +550,26 @@ void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, l
 
 void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index, const char *name)
 {
-    if (navBarWidget->midBtn == NULL)
-    {
-       SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
-    }
-    
+    SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
     navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, (name != NULL) ? name : g_coinWalletBtn[index].name,
                           g_coinWalletBtn[index].icon);
 }
 
+void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const char *name)
+{
+    SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
+    if (name == NULL) {
+        navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, g_walletBtn[index].name,
+                              g_walletBtn[index].icon);
+    } else {
+        navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, name,
+                              g_walletBtn[index].icon);
+    }
+}
+
 void SetMidBtnLabel(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, const char *text)
 {
-    if (navBarWidget->midBtn == NULL) {
-        SetNavBarMidBtn(navBarWidget, button, NULL, NULL);
-    }
+    SetNavBarMidBtn(navBarWidget, button, NULL, NULL);
     switch (button) {
     case NVS_BAR_MID_WORD_SELECT:
         lv_label_set_text(lv_obj_get_child(navBarWidget->midBtn, 0), text);
@@ -920,9 +584,28 @@ void SetMidBtnLabel(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, co
     }
 }
 
+void SetRightBtnLabel(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM button, const char *text)
+{
+    SetNavBarRightBtn(navBarWidget, button, NULL, NULL);
+    switch (button) {
+    case NVS_BAR_WORD_SELECT:
+        lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 0), text);
+        break;
+    case NVS_BAR_WORD_RESET:
+        lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 0), text);
+        break;
+    default:
+        return;
+    }
+}
+
+void SetRightBtnCb(NavBarWidget_t *navBarWidget, lv_event_cb_t eventCb, void *param)
+{
+    lv_obj_add_event_cb(navBarWidget->rightBtn, eventCb, LV_EVENT_CLICKED, param);
+}
+
 void SetNavBarRightBtn(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param)
 {
-
     if (navBarWidget->rightBtn != NULL && lv_obj_is_valid(navBarWidget->rightBtn)) {
         lv_obj_del(navBarWidget->rightBtn);
         navBarWidget->rightBtn = NULL;
@@ -964,15 +647,4 @@ void SetNavBarRightBtn(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM butto
     if (rightButtonCb != NULL) {
         lv_obj_add_event_cb(navBarWidget->rightBtn, rightButtonCb, LV_EVENT_CLICKED, param);
     }
-}
-
-void HideSingleInstanceNavBar(void)
-{
-    lv_obj_add_flag(g_guiNavBar.cont, LV_OBJ_FLAG_HIDDEN);
-}
-
-void ShowSingleInstanceNavBar(void)
-{
-    lv_obj_set_parent(g_guiNavBar.cont, lv_scr_act());
-    lv_obj_clear_flag(g_guiNavBar.cont, LV_OBJ_FLAG_HIDDEN);
 }

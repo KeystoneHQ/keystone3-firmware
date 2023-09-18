@@ -19,6 +19,7 @@
 #include "gui_lock_device_widgets.h"
 #include "fingerprint_process.h"
 #include "device_setting.h"
+#include "gui_page.h"
 #ifdef COMPILE_SIMULATOR
 #define FINGERPRINT_EN_SING_ERR_TIMES           (5)
 #define FINGERPRINT_SING_ERR_TIMES              (3)
@@ -41,6 +42,7 @@ static lv_obj_t *g_lockScreenCont;
 static bool g_firstUnlock = true;
 static uint8_t g_fpErrorCount = 0;
 static LOCK_SCREEN_PURPOSE_ENUM g_purpose = LOCK_SCREEN_PURPOSE_UNLOCK;
+static PageWidget_t *g_pageWidget;
 
 void GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_ENUM purpose)
 {
@@ -60,12 +62,12 @@ void GuiFpRecognizeResult(bool en)
 {
     if (en) {
         g_fpErrorCount = 0;
-        GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "");
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "");
         ClearCurrentPasswordErrorCount();
     } else {
         g_fpErrorCount++;
         if (g_fpErrorCount < FINGERPRINT_EN_SING_ERR_TIMES) {
-            GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "Try Again");
+            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Try Again");
             FpRecognize(RECOGNIZE_UNLOCK);
         } else {
             char* title;
@@ -74,7 +76,7 @@ void GuiFpRecognizeResult(bool en)
             } else {
                 title = "Use Password";
             }
-            GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, title);
+            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, title);
         }
     }
     GuiEnterPassCodeStatus(g_verifyLock, true);
@@ -134,7 +136,7 @@ void GuiLockScreenWipeDevice(void)
                                         GUI_STATUS_BAR_HEIGHT);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT);
-    
+
     lv_obj_t *img = GuiCreateImg(cont, &imgWarn);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 180 - GUI_STATUS_BAR_HEIGHT);
 
@@ -165,16 +167,16 @@ void GuiLockScreenWipeDevice(void)
 
 bool GuiLockScreenIsTop(void)
 {
-    if (g_lockScreenCont != NULL) {
-        return !lv_obj_has_flag(g_lockScreenCont, LV_OBJ_FLAG_HIDDEN);
+    if (g_pageWidget != NULL && g_pageWidget->page != NULL) {
+        return !lv_obj_has_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
     }
     return false;
 }
 
 void GuiLockScreenHidden(void)
 {
-    if (g_lockScreenCont != NULL) {
-        lv_obj_add_flag(g_lockScreenCont, LV_OBJ_FLAG_HIDDEN);
+    if (g_pageWidget->page != NULL) {
+        lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
     }
 }
 
@@ -185,7 +187,7 @@ void OpenForgetPasswordHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         GUI_VIEW *view = (GUI_VIEW *)lv_event_get_user_data(e);
         FpCancelCurOperate();
-        lv_obj_add_flag(g_lockScreenCont, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
         GuiFrameOpenViewWithParam(&g_forgetPassView, view, sizeof(view));
     }
 }
@@ -197,9 +199,9 @@ void GuiLockScreenTurnOn(void *param)
         GuiNvsBarSetWalletIcon(NULL);
         GuiNvsBarSetWalletName("");
     }
-    lv_obj_clear_flag(g_lockScreenCont, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clear_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
     // g_lockView.isActive = true;
-    lv_obj_set_parent(g_lockScreenCont, lv_scr_act());
+    lv_obj_set_parent(g_pageWidget->page, lv_scr_act());
     GuiUpdateEnterPasscodeParam(g_verifyLock, single);
     GuilockScreenRefresh();
 }
@@ -208,7 +210,7 @@ static uint8_t g_oldWalletIndex = 0xFF;
 void GuiLockScreenTurnOff(void)
 {
     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
-    lv_obj_add_flag(g_lockScreenCont, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
     GuiModeGetWalletDesc();
     GuiEnterPassCodeStatus(g_verifyLock, true);
 
@@ -234,7 +236,7 @@ void GuiUpdateOldAccountIndex(void)
 
 void GuiLockScreenToHome(void)
 {
-    lv_obj_add_flag(g_lockScreenCont, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
     GuiModeGetWalletDesc();
     GuiEnterPassCodeStatus(g_verifyLock, true);
     GuiCloseToTargetView(&g_homeView);
@@ -268,8 +270,8 @@ void GuiLockScreenPassCode(bool en)
             printf("g_forgetPassView.isActive\r\n");
             GuiLockScreenTurnOff();
         } else {
-            lv_obj_add_flag(g_lockScreenCont, LV_OBJ_FLAG_HIDDEN);
-            GuiNvsBarSetMidCb(NVS_MID_BUTTON_BUTT, NULL, NULL);
+            lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
+            SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
             GuiFrameOpenView(&g_homeView);
             if (g_oldWalletIndex == 0xFF) {
                 g_oldWalletIndex = GetCurrentAccountIndex();
@@ -322,16 +324,16 @@ void GuiLockScreenTurnOnHandler(lv_event_t *e)
         uint16_t *walletSetIndex = lv_event_get_user_data(e);
         single = *walletSetIndex;
         GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
-        GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, GuiLockScreenTurnOffHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, GuiLockScreenTurnOffHandler, NULL);
     }
 }
 
 
 void GuiLockScreenInit(void *param)
 {
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
+
     g_lockScreenCont = cont;
     GuiEnterPasscodeItem_t *item = GuiCreateEnterPasscode(cont, NULL, param, ENTER_PASSCODE_VERIFY_PIN);
     g_verifyLock = item;
@@ -362,7 +364,7 @@ void GuiJumpToLockDevicePage(void)
 
 void GuiLockScreenPasscodeSwitch(bool isPin)
 {
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, GuiJudgeTitle());
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, GuiJudgeTitle());
 }
 
 static char* GuiJudgeTitle()
@@ -395,17 +397,17 @@ static char* GuiJudgeTitle()
 
 void GuilockScreenRefresh(void)
 {
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-    GuiNvsBarSetLeftCb(NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
     GuiFingerPrintStatus(g_verifyLock, true, g_fpErrorCount);
     if (GuiCheckIfTopView(&g_lockDeviceView)) {
-        GuiNvsBarSetMidCb(NVS_MID_BUTTON_BUTT, NULL, NULL);
-        GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "");
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "");
     } else {
-        GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, GuiJudgeTitle());
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, GuiJudgeTitle());
     }
-    if (g_lockScreenCont != NULL) {
-        lv_obj_clear_flag(g_lockScreenCont, LV_OBJ_FLAG_HIDDEN);
+    if (g_pageWidget->page != NULL) {
+        lv_obj_clear_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
     }
 }
 

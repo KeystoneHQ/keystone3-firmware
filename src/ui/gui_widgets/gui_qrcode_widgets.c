@@ -22,6 +22,7 @@
 #include "fingerprint_process.h"
 #include "gui_fullscreen_mode.h"
 #include "gui_keyboard_hintbox.h"
+#include "gui_page.h"
 #ifndef COMPILE_SIMULATOR
 #include "keystore.h"
 
@@ -72,14 +73,12 @@ static lv_timer_t *g_fpRecognizeTimer;
 
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static PagePhase g_pagePhase;
+static PageWidget_t *g_pageWidget;
+
 void GuiQrCodeScreenCorner(void)
 {
-    if (g_qrCodeWidgetView.cont != NULL) {
-        lv_obj_del(g_qrCodeWidgetView.cont);
-        g_qrCodeWidgetView.cont = NULL;
-    }
-    g_qrCodeWidgetView.cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(g_qrCodeWidgetView.cont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
+    UpdatePageContentZone(g_pageWidget);
+    g_qrCodeWidgetView.cont = g_pageWidget->contentZone;
     lv_obj_t *cont = g_qrCodeWidgetView.cont;
     printf("qrcode refresh...\n");
     static lv_point_t topLinePoints[2] = {{0, 0}, {322, 0}};
@@ -118,6 +117,11 @@ void GuiQrCodeScreenCorner(void)
 
 void GuiQrCodeScreenInit(void *param)
 {
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
+    g_pageWidget = CreatePageWidget();
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     g_pagePhase = PAGE_PHASE_SCAN_QR;
     SetPageLockScreen(false);
@@ -294,9 +298,9 @@ void GuiQrCodeScanResult(bool result, void *param)
         if (g_qrCodeWidgetView.analysis != NULL) {
             g_fingerSignCount = 0;
             if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData || IsCosmosMsg(g_qrcodeViewType)) {
-                GuiNvsSetCoinWallet(g_chainType, "Confirm Message");
+                SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, "Confirm Message");
             } else {
-                GuiNvsSetCoinWallet(g_chainType, NULL);
+                SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
             }
             GuiCreateConfirmSlider(g_qrCodeWidgetView.cont, CheckSliderProcessHandler);
             g_pagePhase = PAGE_PHASE_TRANSACTION_DETAIL;
@@ -390,7 +394,7 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
 
     uint8_t chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
     if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData) {
-        GuiNvsSetCoinWallet(chainType, "Broadcast Message");
+        SetCoinWallet(g_pageWidget->navBarWidget, chainType, "Broadcast Message");
     }
 }
 
@@ -406,9 +410,9 @@ void GuiQrCodeVerifyPasswordSuccess(void)
 
 void GuiQrCodeRefresh(void)
 {
-    GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseTimerCurrentViewHandler, NULL);
-    GuiNvsBarSetMidCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseTimerCurrentViewHandler, NULL);
+    SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     switch (g_pagePhase) {
     case PAGE_PHASE_SCAN_QR:
         GuiQrCodeScreenCorner();
@@ -416,16 +420,16 @@ void GuiQrCodeRefresh(void)
         break;
     case PAGE_PHASE_TRANSACTION_DETAIL:
         if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData || IsCosmosMsg(g_qrcodeViewType)) {
-            GuiNvsSetCoinWallet(g_chainType, "Confirm Message");
+            SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, "Confirm Message");
         } else {
-            GuiNvsSetCoinWallet(g_chainType, NULL);
+            SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
         }
         break;
     case PAGE_PHASE_SIGNATURE:
         if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData) {
-            GuiNvsSetCoinWallet(g_chainType, "Broadcast Message");
+            SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, "Broadcast Message");
         } else {
-            GuiNvsSetCoinWallet(g_chainType, NULL);
+            SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
         }
         break;
     default:
@@ -442,7 +446,10 @@ void GuiQrCodeDeInit(void)
     CloseQRTimer();
     lv_obj_del(g_qrCodeWidgetView.cont);
     g_qrCodeWidgetView.cont = NULL;
-
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
     g_chainType = CHAIN_BUTT;
     g_pagePhase = PAGE_PHASE_SCAN_QR;
 

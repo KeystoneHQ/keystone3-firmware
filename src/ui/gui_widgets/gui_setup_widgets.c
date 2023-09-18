@@ -14,6 +14,7 @@
 #include "gui_web_auth_widgets.h"
 #include "gui_web_auth_result_widgets.h"
 #include "device_setting.h"
+#include "gui_page.h"
 
 typedef enum {
     SETUP_ENGLISH = 0,
@@ -60,6 +61,7 @@ static void ResetClickCountHandler(lv_timer_t *timer);
 static void DestroyTimer(void);
 
 SETUP_PHASE_ENUM lastShutDownPage;
+static PageWidget_t *g_pageWidget;
 
 static void GuiWelcomeWidget(lv_obj_t *parent)
 {
@@ -162,9 +164,8 @@ static void GuiSetLanguageWidget(lv_obj_t *parent)
 
 void GuiSetupAreaInit(void)
 {
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
 
     lv_obj_t *tileView = lv_tileview_create(cont);
     lv_obj_clear_flag(tileView, LV_OBJ_FLAG_SCROLLABLE);
@@ -197,7 +198,7 @@ uint8_t GuiSetupNextTile(void)
 {
     switch (g_setupTileView.currentTile) {
     case SETUP_WELCOME:
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         break;
     case SETUP_SET_LANGUAGE:
         return SUCCESS_CODE;
@@ -225,7 +226,7 @@ uint8_t GuiSetupPrevTile(void)
     case SETUP_WELCOME:
         return SUCCESS_CODE;
     case SETUP_SET_LANGUAGE:
-        GuiNvsBarSetLeftCb(NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
         break;
     }
     g_setupTileView.currentTile--;
@@ -237,14 +238,18 @@ void GuiSetupAreaDeInit(void)
 {
     lv_obj_del(g_setupTileView.cont);
     g_setupTileView.cont = NULL;
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
 void GuiSetupAreaRefresh(void)
 {
     if (g_setupTileView.currentTile == SETUP_WELCOME) {
-        GuiNvsBarSetLeftCb(NVS_LEFT_BUTTON_BUTT, NULL, NULL);
-        GuiNvsBarSetMidCb(NVS_MID_BUTTON_BUTT, NULL, NULL);
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         GuiNvsBarSetWalletIcon(NULL);
         GuiNvsBarSetWalletName("");
         if (g_reboot) {
@@ -260,7 +265,7 @@ void GuiSetupAreaRefresh(void)
         }
     } else {
         GuiSetSetupPhase(SETUP_PAHSE_LANGUAGE);
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     }
 }
 

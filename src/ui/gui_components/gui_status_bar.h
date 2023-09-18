@@ -63,10 +63,11 @@ void DestoryNavBarWidget(NavBarWidget_t *navBarWidget);
 void SetNavBarLeftBtn(NavBarWidget_t *navBarWidget, NVS_LEFT_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param);
 void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param);
 void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index, const char *name);
+void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const char *name);
 void SetMidBtnLabel(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, const char *text);
 void SetNavBarRightBtn(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param);
-void HideSingleInstanceNavBar(void);
-void ShowSingleInstanceNavBar(void);
+void SetRightBtnLabel(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM button, const char *text);
+void SetRightBtnCb(NavBarWidget_t *navBarWidget, lv_event_cb_t eventCb, void *param);
 
 #endif /* _GUI_STATUS_BAR_H */
 

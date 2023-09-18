@@ -14,6 +14,7 @@
 #include "gui_tutorial_widgets.h"
 #include "gui_fullscreen_mode.h"
 #include "keystore.h"
+#include "gui_page.h"
 
 #define GENERAL_ADDRESS_INDEX_MAX               999999999
 #define LEDGER_LIVE_ADDRESS_INDEX_MAX               9
@@ -115,11 +116,12 @@ static lv_obj_t *g_addressLabel[2];
 static uint32_t g_showIndex;
 static uint32_t g_selectIndex[3] = {0};
 static uint32_t g_pathIndex[3] = {0};
+static PageWidget_t *g_pageWidget;
 
 void GuiEthereumReceiveInit(void)
 {
-    g_ethereumReceiveWidgets.cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(g_ethereumReceiveWidgets.cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
+    g_pageWidget = CreatePageWidget();
+    g_ethereumReceiveWidgets.cont = g_pageWidget->contentZone;
     g_ethereumReceiveWidgets.tileView = lv_tileview_create(g_ethereumReceiveWidgets.cont);
     lv_obj_set_style_bg_opa(g_ethereumReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR & LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(g_ethereumReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
@@ -142,21 +144,25 @@ void GuiEthereumReceiveDeInit(void)
     CLEAR_OBJECT(g_ethereumReceiveWidgets);
     g_EthereumReceiveTileNow = 0;
     GuiFullscreenModeCleanUp();
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
 void GuiEthereumReceiveRefresh(void)
 {
     switch (g_EthereumReceiveTileNow) {
     case RECEIVE_TILE_QRCODE:
-        GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
-        GuiNvsSetCoinWallet(CHAIN_ETH, "Receive ETH");
-        GuiNvsBarSetRightCb(NVS_BAR_MORE_INFO, MoreHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
+        SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_ETH, "Receive ETH");
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, MoreHandler, NULL);
         RefreshQrCode();
         break;
     case RECEIVE_TILE_SWITCH_ACCOUNT:
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
-        GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "Switch Account");
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Switch Account");
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_showIndex = g_selectIndex[GetCurrentAccountIndex()] / 5 * 5;
         if (g_showIndex < 5) {
             lv_obj_set_style_img_opa(g_ethereumReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);
@@ -170,9 +176,9 @@ void GuiEthereumReceiveRefresh(void)
         }
         break;
     case RECEIVE_TILE_CHANGE_PATH:
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
-        GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "Change Derivation Path");
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Change Derivation Path");
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         break;
     default:
         break;

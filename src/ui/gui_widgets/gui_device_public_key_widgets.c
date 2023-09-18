@@ -11,8 +11,10 @@
 #include "device_setting.h"
 #include "keystore.h"
 #include "user_utils.h"
+#include "gui_page.h"
 
 static lv_obj_t *g_cont;
+static PageWidget_t *g_pageWidget;
 
 
 static void GuiDevicePublicKeyNVSBarInit(void);
@@ -20,12 +22,8 @@ static void GuiDevicePublicKeyEntranceWidget(lv_obj_t *parent);
 
 void GuiDevicePublicKeyWidgetsInit()
 {
-    GuiDevicePublicKeyNVSBarInit();
-
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
     g_cont = cont;
     GuiDevicePublicKeyEntranceWidget(cont);
 }
@@ -35,6 +33,10 @@ void GuiDevicePublicKeyWidgetsDeInit()
     if (g_cont != NULL) {
         lv_obj_del(g_cont);
         g_cont = NULL;
+    }
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
     }
 }
 
@@ -50,9 +52,8 @@ void GuiDevicePublicKeyWidgetsRestart()
 
 static void GuiDevicePublicKeyNVSBarInit()
 {
-    GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "Device UID");
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Device UID");
 }
 
 

@@ -12,7 +12,7 @@ typedef struct PageWidget {
 } PageWidget_t;
 
 PageWidget_t *CreatePageWidget(void);
-
+void UpdatePageContentZone(PageWidget_t *pageWidget);
 void DestroyPageWidget(PageWidget_t *pageWidget);
 
 

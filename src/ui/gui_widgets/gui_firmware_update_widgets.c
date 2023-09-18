@@ -19,6 +19,7 @@
 #include "firmware_update.h"
 #include "keystore.h"
 #include "gui_keyboard_hintbox.h"
+#include "gui_page.h"
 
 
 typedef enum {
@@ -60,6 +61,7 @@ static void *g_param = NULL;
 static lv_obj_t *g_noticeHintBox = NULL;
 
 static KeyboardWidget_t *g_keyboardWidget = NULL;
+static PageWidget_t *g_pageWidget;
 
 
 void GuiCreateSdCardUpdateHintbox(char *version)
@@ -90,8 +92,8 @@ void GuiFirmwareUpdateInit(void *param)
     g_param = param;
     lv_obj_t *tileView;
     CLEAR_OBJECT(g_firmwareUpdateWidgets);
-    g_firmwareUpdateWidgets.cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(g_firmwareUpdateWidgets.cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
+    g_pageWidget = CreatePageWidget();
+    g_firmwareUpdateWidgets.cont = g_pageWidget->contentZone;
     tileView = lv_tileview_create(g_firmwareUpdateWidgets.cont);
     g_firmwareUpdateWidgets.tileView = tileView;
     if (GuiDarkMode()) {
@@ -151,17 +153,21 @@ void GuiFirmwareUpdateDeInit(void)
     GUI_DEL_OBJ(g_waitAnimCont)
     lv_obj_del(g_firmwareUpdateWidgets.cont);
     CLEAR_OBJECT(g_firmwareUpdateWidgets);
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
 
 void GuiFirmwareUpdateRefresh(void)
 {
-    GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "");
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "");
     if (GetEntryEnum() == FIRMWARE_UPDATE_ENTRY_SETUP && g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_SELECT) {
-        GuiNvsBarSetRightCb(NVS_BAR_NEW_SKIP, OpenViewHandler, &g_purposeView);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_NEW_SKIP, OpenViewHandler, &g_purposeView);
     } else {
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     }
 
     if (GetEntryEnum() == FIRMWARE_UPDATE_ENTRY_SETUP) {

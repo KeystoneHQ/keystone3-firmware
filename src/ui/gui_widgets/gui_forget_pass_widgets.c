@@ -17,6 +17,7 @@
 #include "gui_forget_pass_widgets.h"
 #include "gui_setting_widgets.h"
 #include "gui_mnemonic_input.h"
+#include "gui_page.h"
 #ifndef COMPILE_MAC_SIMULATOR
 #include "sha256.h"
 #else
@@ -55,6 +56,7 @@ static lv_obj_t *g_repeatPinTile;
 static lv_obj_t *g_nextCont;
 static lv_obj_t *g_letterKbCont;
 static lv_obj_t *g_noticeHintBox = NULL;
+static PageWidget_t *g_pageWidget;
 
 static void GuiQuitHandler(lv_event_t *e)
 {
@@ -76,7 +78,7 @@ static void ContinueStopCreateHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         if (lv_event_get_user_data(e) != NULL) {
             g_forgetMkb->currentSlice = 0;
-            GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
             CloseToTargetTileView(g_forgetPassTileView.currentTile, FORGET_PASSWORD_METHOD_SELECT);
         }
         GUI_DEL_OBJ(g_noticeHintBox)
@@ -135,7 +137,7 @@ void GuiForgetAnimContDel(int errCode)
 void GuiForgetPassVerifyResult(bool en, int errCode)
 {
     if (en) {
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         GuiForgetPassNextTile(0);
     } else {
         g_noticeHintBox = GuiCreateErrorCodeHintbox(errCode, &g_noticeHintBox);
@@ -261,7 +263,7 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
         lv_label_set_text_fmt(g_forgetMkb->descLabel, "Write down your #F5870A %d#-words seed phrase of\nshare #F5870A %d#in the blanks below",
                               g_forgetMkb->wordCnt, g_forgetMkb->currentSlice + 1);
         bip39 = false;
-        GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
     } else {
         g_forgetMkb->titleLabel = GuiCreateTitleLabel(g_enterMnemonicCont, _("seed_check_single_phrase_title"));
         lv_obj_align(g_forgetMkb->titleLabel, LV_ALIGN_DEFAULT, 36, 12);
@@ -269,7 +271,7 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
         lv_obj_set_style_text_opa(g_forgetMkb->descLabel, LV_OPA_60, LV_PART_MAIN);
         lv_obj_align(g_forgetMkb->descLabel, LV_ALIGN_DEFAULT, 36, 72);
         lv_obj_add_event_cb(g_forgetMkb->nextButton, ImportPhraseWordsHandler, LV_EVENT_CLICKED, NULL);
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     }
 
     lv_obj_set_size(g_forgetMkb->cont, 408, 236);
@@ -359,9 +361,8 @@ void GuiForgetPassEnterMnemonic(void *parent)
 void GuiForgetPassInit(void *param)
 {
     g_prevView = param;
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
 
     lv_obj_t *tileView = GuiCreateTileView(cont);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, FORGET_PASSWORD_ENTRANCE, 0, LV_DIR_HOR);
@@ -406,6 +407,10 @@ void GuiForgetPassDeInit(void)
 
     GUI_DEL_OBJ(g_forgetPassTileView.cont)
     GuiSettingCloseSelectAmountHintBox();
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
 int8_t GuiForgetPassNextTile(uint8_t tileIndex)
@@ -416,14 +421,14 @@ int8_t GuiForgetPassNextTile(uint8_t tileIndex)
             g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox);
             return ERR_GUI_ERROR;
         } else {
-            GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
-            GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _("Seed Phrase Check"));
+            SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Seed Phrase Check"));
         }
         break;
     case FORGET_PASSWORD_METHOD_SELECT:
-        GuiNvsBarSetMidCb(NVS_MID_BUTTON_BUTT, NULL, NULL);
-        GuiNvsBarSetRightBtnLabel(NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
-        GuiNvsBarSetRightCb(NVS_BAR_WORD_RESET, ResetClearImportHandler, NULL);
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
+        SetRightBtnCb(g_pageWidget->navBarWidget, ResetClearImportHandler, NULL);
         if (tileIndex != 0) {
             switch (tileIndex) {
             case DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_12WORDS:
@@ -445,11 +450,11 @@ int8_t GuiForgetPassNextTile(uint8_t tileIndex)
         }
         break;
     case FORGET_PASSWORD_ENTER_MNEMONIC:
-        GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
         lv_obj_add_flag(g_nextCont, LV_OBJ_FLAG_HIDDEN);
         break;
     case FORGET_PASSWORD_SETPIN:
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         if (g_repeatPassCode == NULL) {
             g_repeatPassCode = GuiCreateEnterPasscode(g_repeatPinTile, NULL, NULL,
                                g_setPassCode->mode + 2);
@@ -470,27 +475,27 @@ int8_t GuiForgetPassPrevTile(uint8_t tileIndex)
     case FORGET_PASSWORD_ENTRANCE:
         return SUCCESS_CODE;
     case FORGET_PASSWORD_METHOD_SELECT:
-        GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _(""));
-        GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, GuiQuitHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _(""));
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, GuiQuitHandler, NULL);
         break;
     case FORGET_PASSWORD_SETPIN:
-        GuiNvsBarSetMidCb(NVS_MID_BUTTON_BUTT, NULL, NULL);
-        GuiNvsBarSetRightBtnLabel(NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
-        GuiNvsBarSetRightCb(NVS_BAR_WORD_RESET, ResetClearImportHandler, NULL);
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
+        SetRightBtnCb(g_pageWidget->navBarWidget, ResetClearImportHandler, NULL);
         break;
     case FORGET_PASSWORD_REPEATPIN:
-        GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
         GuiDelEnterPasscode(g_repeatPassCode, NULL);
         g_repeatPassCode = NULL;
         GuiDelEnterPasscode(g_setPassCode, NULL);
         g_setPassCode = GuiCreateEnterPasscode(g_setPinTile, NULL, NULL, ENTER_PASSCODE_SET_PIN);
         break;
     case FORGET_PASSWORD_ENTER_MNEMONIC:
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         g_forgetMkb->currentId = 0;
         g_forgetMkb->currentSlice = 0;
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-        GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _("Seed Phrase Check"));
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Seed Phrase Check"));
         GuiWalletRecoverySinglePhraseClear();
         break;
     }
@@ -502,11 +507,11 @@ int8_t GuiForgetPassPrevTile(uint8_t tileIndex)
 
 void GuiForgetPassRefresh(void)
 {
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _(""));
-    GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, GuiQuitHandler, NULL);
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _(""));
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, GuiQuitHandler, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     if (g_forgetPassTileView.currentTile == FORGET_PASSWORD_ENTER_MNEMONIC && (g_phraseCnt == 33 || g_phraseCnt == 20)) {
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, StopCreateViewHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, StopCreateViewHandler, NULL);
     }
 
 }

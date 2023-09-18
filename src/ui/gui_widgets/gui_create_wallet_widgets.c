@@ -18,6 +18,7 @@
 #include "gui_enter_passcode.h"
 #include "motor_manager.h"
 #include "gui_tutorial_widgets.h"
+#include "gui_page.h"
 
 typedef enum {
     CREATE_WALLET_SETPIN = 0,
@@ -52,6 +53,9 @@ static lv_obj_t *g_setPinTile = NULL;
 static lv_obj_t *g_repeatPinTile = NULL;
 static lv_obj_t *g_noticeHintBox = NULL;
 static char g_pinBuf[GUI_DEFINE_MAX_PASSCODE_LEN + 1];
+
+static PageWidget_t *g_pageWidget;
+
 static void GuiRefreshNavBar(void);
 
 static void GuiCreateSetpinWidget(lv_obj_t *parent)
@@ -387,9 +391,8 @@ void GuiCreateWalletInit(uint8_t walletMethod)
 {
     CLEAR_OBJECT(g_createWalletTileView);
 
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
 
     lv_obj_t *tileView = lv_tileview_create(cont);
     if (GuiDarkMode()) {
@@ -529,23 +532,26 @@ void GuiCreateWalletDeInit(void)
     g_createWalletTileView.currentTile = 0;
     CLEAR_OBJECT(g_createWalletTileView);
     ClearSecretCache();
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
 static void GuiRefreshNavBar(void)
 {
-    GuiNvsBarClear();
-    GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     if (CREATE_WALLET_BACKUPFROM == g_createWalletTileView.currentTile) {
-        GuiNvsBarSetRightCb(NVS_BAR_QUESTION_MARK, QuestionMarkEventCb, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, QuestionMarkEventCb, NULL);
     }
     if (CREATE_WALLET_SETPIN == g_createWalletTileView.currentTile) {
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     }
     if (CREATE_WALLET_BACKUPFROM == g_createWalletTileView.currentTile) {
-        GuiNvsBarSetRightCb(NVS_BAR_QUESTION_MARK, QuestionMarkEventCb, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, QuestionMarkEventCb, NULL);
     }
-    GuiNvsBarSetMidCb(NVS_MID_BUTTON_BUTT, NULL, NULL);
+    SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
 }
 
 void GuiCreateWalletRefresh(void)

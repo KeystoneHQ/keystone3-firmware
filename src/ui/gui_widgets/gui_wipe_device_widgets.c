@@ -25,7 +25,6 @@ static void WipeDevice(void);
 static void CountDownTimerHandler(lv_timer_t *timer);
 static void GuiCountDownDestruct(void *obj, void* param);
 
-
 void GuiWipeDeviceWidgetsInit()
 {
     GuiWipeDeviceNVSBarInit();

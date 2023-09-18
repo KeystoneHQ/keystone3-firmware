@@ -874,8 +874,11 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
     uint16_t *param = (uint16_t *)inData;
 
     if (SIG_LOCK_VIEW_VERIFY_PIN == *param || SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS == *param) {
-        ret = VerifyPassword(&accountIndex, SecretCacheGetPassword());
-        ret += VerifyPasswordAndLogin(&accountIndex, SecretCacheGetPassword());
+        ret = VerifyPasswordAndLogin(&accountIndex, SecretCacheGetPassword());
+        if (ret == ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH) {
+            GuiEmitSignal(SIG_EXTENDED_PUBLIC_KEY_NOT_MATCH, NULL, 0);
+            return ret;
+        }
     } else {
         ret = VerifyCurrentAccountPassword(SecretCacheGetPassword());
     }

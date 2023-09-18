@@ -18,6 +18,7 @@
 #include "keystore.h"
 #include "gui_lock_device_widgets.h"
 #include "fingerprint_process.h"
+#include "device_setting.h"
 #ifdef COMPILE_SIMULATOR
 #define FINGERPRINT_EN_SING_ERR_TIMES           (5)
 #define FINGERPRINT_SING_ERR_TIMES              (3)
@@ -101,6 +102,65 @@ void GuiLockScreenSetFirstUnlock(void)
 bool GuiLockScreenIsFirstUnlock(void)
 {
     return g_firstUnlock;
+}
+
+static void LockViewWipeDeviceHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
+                                            GUI_STATUS_BAR_HEIGHT);
+        lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT);
+        GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
+
+        lv_obj_t *label = GuiCreateTextLabel(cont, "Resetting Device");
+        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 355);
+
+        label = GuiCreateNoticeLabel(cont, "Erasing Secure Element...");
+        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 410);
+
+        label = GuiCreateNoticeLabel(cont, "Do not power off your device while the installation process is underway");
+        lv_obj_set_width(label, 408);
+        lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 612);
+        GuiModelLockedDeviceDelAllWalletDesc();
+    }
+}
+
+void GuiLockScreenWipeDevice(void)
+{
+    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
+                                        GUI_STATUS_BAR_HEIGHT);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT);
+    
+    lv_obj_t *img = GuiCreateImg(cont, &imgWarn);
+    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 180 - GUI_STATUS_BAR_HEIGHT);
+
+    lv_obj_t *label= GuiCreateTextLabel(cont, "Unknown Error");
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 284 - GUI_STATUS_BAR_HEIGHT);
+
+    lv_obj_t *desc = GuiCreateNoticeLabel(cont, "There is an unknown problem with the device and it is unavailable. Please erase the device to try to restart the device. If the problem still exists, please contact our customer service team.");
+    lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+    lv_obj_align(desc, LV_ALIGN_TOP_MID, 0, 336 - GUI_STATUS_BAR_HEIGHT);
+
+    label = GuiCreateIllustrateLabel(cont, "support@keyst.one");
+    lv_obj_set_style_text_color(label, LIGHT_BLUE_COLOR, LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 570 - GUI_STATUS_BAR_HEIGHT);
+
+    char tempBuf[32] = {0};
+    char showString[64] = {0};
+    GetSerialNumber(tempBuf);
+    sprintf(showString, "SN:%s", tempBuf);
+    label = GuiCreateNoticeLabel(cont, showString);
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 620 - GUI_STATUS_BAR_HEIGHT);
+
+    lv_obj_t *btn = GuiCreateBtn(cont, _("Wipe Device"));
+    lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
+    lv_obj_set_size(btn, 408, 66);
+    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 690 - GUI_STATUS_BAR_HEIGHT);
+    lv_obj_add_event_cb(btn, LockViewWipeDeviceHandler, LV_EVENT_CLICKED, NULL);
 }
 
 bool GuiLockScreenIsTop(void)

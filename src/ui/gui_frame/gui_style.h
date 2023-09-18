@@ -23,7 +23,8 @@
 #define BLUE_GREEN_COLOR                    lv_color_hex(0x1BE0C6)
 #define GREEN_COLOR                         lv_color_hex(0x2EA374)
 #define DARK_GRAY_COLOR                     lv_color_hex(0x666666)
-#define DEEP_ORANGE_COLOR                   lv_color_hex(0xf55831)
+#define DEEP_ORANGE_COLOR                   lv_color_hex(0xF55831)
+#define LIGHT_BLUE_COLOR                    lv_color_hex(0x1BE0C6)
 
 typedef struct GuiFontDesc {
     uint8_t langIndex;

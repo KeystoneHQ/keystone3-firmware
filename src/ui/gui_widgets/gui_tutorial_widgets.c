@@ -7,6 +7,7 @@
 #include "gui_tutorial_widgets.h"
 #include "gui_qr_hintbox.h"
 #include "user_memory.h"
+#include "gui_page.h"
 
 typedef struct Tutorial {
     const char *title;
@@ -30,6 +31,7 @@ typedef struct GuiTurorialWidget {
 
 static GuiTurorialWidget_t g_tutorialWidget;
 static bool g_tutorialInitialized = false;
+static PageWidget_t *g_pageWidget = NULL;
 
 static void TutorialsInit()
 {
@@ -102,11 +104,13 @@ void GuiTutorialInit(TUTORIAL_LIST_INDEX_ENUM tutorialIndex)
     lv_obj_t *cont, *label, *img, *parent;
     cont = NULL;
 
-    parent = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
+    g_pageWidget = CreatePageWidget();
+    parent = g_pageWidget->contentZone;
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_align(parent, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
     g_tutorialWidget.cont = parent;
 
     TutorialList_t *tutorialList = &g_tutorials[tutorialIndex];
@@ -165,8 +169,7 @@ void GuiTutorialInit(TUTORIAL_LIST_INDEX_ENUM tutorialIndex)
 
 void GuiTutorialRefresh()
 {
-    GuiNvsBarClear();
-    GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, CloseCurrentViewHandler, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseCurrentViewHandler, NULL);
 }
 
 void GuiTutorialDeInit()
@@ -174,5 +177,9 @@ void GuiTutorialDeInit()
     GUI_DEL_OBJ(g_tutorialWidget.cont);
     if (GuiQRHintBoxIsActive()) {
         GuiQRHintBoxRemove();
+    }
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
     }
 }

@@ -20,6 +20,7 @@
 #include "background_task.h"
 #include "user_utils.h"
 #include "motor_manager.h"
+#include "gui_page.h"
 
 typedef enum {
     CREATE_SHARE_SELECT_SLICE = 0,
@@ -76,6 +77,7 @@ static uint8_t g_pressedBtnFlag[SLIP39_MNEMONIC_WORDS_MAX + 1];
 static uint8_t g_currId = 0;
 static char g_randomBuff[512];
 static lv_obj_t *g_noticeHintBox = NULL;
+static PageWidget_t *g_pageWidget;
 
 static void ShareUpdateTileHandler(lv_event_t *e)
 {
@@ -404,9 +406,8 @@ static void GuiShareConfirmWidget(lv_obj_t *parent)
 
 void GuiCreateShareInit(void)
 {
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
 
     lv_obj_t *tileView = GuiCreateTileView(cont);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, CREATE_SHARE_SELECT_SLICE, 0, LV_DIR_HOR);
@@ -452,7 +453,7 @@ int8_t GuiCreateShareNextSlice(void)
     g_createShareTileView.currentTile = CREATE_SHARE_CUSTODIAN;
     ResetBtnTest();
     GuiUpdateMnemonicKeyBoard(g_shareBackupTile.keyBoard, SecretCacheGetSlip39Mnemonic(g_createShareTileView.currentSlice), false);
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     lv_obj_set_tile_id(g_createShareTileView.tileView, g_createShareTileView.currentTile, 0, LV_ANIM_OFF);
     ArrayRandom(SecretCacheGetSlip39Mnemonic(g_createShareTileView.currentSlice), g_randomBuff, g_phraseCnt);
     GuiUpdateMnemonicKeyBoard(g_shareConfirmTile.keyBoard, g_randomBuff, true);
@@ -470,20 +471,20 @@ int8_t GuiCreateShareNextTile(void)
     case CREATE_SHARE_SELECT_SLICE:
         GuiModelSlip39UpdateMnemonic(slip39);
         lv_label_set_text_fmt(g_custodianTile.titleLabel, "Share #F5870A %d#/%d", g_createShareTileView.currentSlice + 1, g_selectSliceTile.memberCnt);
-        GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
         lv_obj_add_flag(g_selectSliceTile.stepCont, LV_OBJ_FLAG_HIDDEN);
         break;
     case CREATE_SHARE_CUSTODIAN:
         lv_obj_clear_flag(g_shareBackupTile.nextCont, LV_OBJ_FLAG_HIDDEN);
         break;
     case CREATE_SHARE_BACKUPFROM:
-        GuiNvsBarSetRightCb(NVS_BAR_WORD_RESET, ResetBtnHandler, NULL);
-        GuiNvsBarSetRightBtnLabel(NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Reset");
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, ResetBtnHandler, NULL);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Reset");
         lv_obj_add_flag(g_shareBackupTile.nextCont, LV_OBJ_FLAG_HIDDEN);
         break;
     case CREATE_SHARE_CONFIRM:
-        GuiNvsBarSetLeftCb(NVS_LEFT_BUTTON_BUTT, NULL, NULL);
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         GuiModelSlip39WriteSe();
         break;
     }
@@ -529,23 +530,27 @@ void GuiCreateShareDeInit(void)
     GUI_DEL_OBJ(g_selectSliceTile.stepCont)
     GUI_DEL_OBJ(g_createShareTileView.cont)
     CLEAR_OBJECT(g_createShareTileView);
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
 void GuiCreateShareRefresh(void)
 {
-    GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     if (g_createShareTileView.currentTile == CREATE_SHARE_SELECT_SLICE) {
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     } else if (g_createShareTileView.currentTile == CREATE_SHARE_BACKUPFROM) {
-        GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     } else if (g_createShareTileView.currentTile == CREATE_SHARE_CONFIRM) {
-        GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
-        GuiNvsBarSetRightCb(NVS_BAR_WORD_RESET, ResetBtnHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, ResetBtnHandler, NULL);
     } else if (g_createShareTileView.currentTile == CREATE_SHARE_WRITE_SE) {
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     }
-    GuiNvsBarSetMidCb(NVS_MID_BUTTON_BUTT, NULL, NULL);
+    SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
 }
 

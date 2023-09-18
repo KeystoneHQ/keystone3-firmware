@@ -9,6 +9,7 @@
 #include "presetting.h"
 #include "gui_display_widgets.h"
 #include "device_setting.h"
+#include "gui_page.h"
 
 typedef enum {
     FIFTEEN_SECONDS = 0,
@@ -42,6 +43,7 @@ static lv_obj_t *g_autoShutdownCheck[AUTO_SHUTDOWN_BUTT];
 static uint32_t g_currentShutdownIndex = 2;
 
 static lv_timer_t *g_delayTaskTimer;
+static PageWidget_t *g_pageWidget;
 
 static void GuiDisplayNVSBarInit(void);
 static void GuiDisplayEntranceWidget(lv_obj_t *parent);
@@ -67,12 +69,8 @@ static char* GetAutoShutdownTimeDescByLockTime(void);
 
 void GuiDisplayWidgetsInit()
 {
-    GuiDisplayNVSBarInit();
-
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
     g_cont = cont;
     GuiDisplayEntranceWidget(cont);
 }
@@ -99,9 +97,9 @@ void GuiDisplayWidgetsRestart()
 
 static void GuiDisplayNVSBarInit()
 {
-    GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "Display & Lock Screen");
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Display & Lock Screen");
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
 }
 
 

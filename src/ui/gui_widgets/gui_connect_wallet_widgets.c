@@ -17,6 +17,7 @@
 #include "rust.h"
 #include "gui_ethereum_receive_widgets.h"
 #include "gui_animating_qrcode.h"
+#include "gui_page.h"
 
 #define DERIVATION_PATH_EG_LEN 2
 
@@ -161,6 +162,7 @@ const static ChangeDerivationItem_t g_changeDerivationList[] = {
 };
 
 static lv_obj_t *g_coinListCont = NULL;
+static PageWidget_t *g_pageWidget;
 
 static void GetEthEgAddress(void);
 static void initCompanionAppCoinsConfig(void);
@@ -209,8 +211,8 @@ static void ReturnShowQRHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
-        GuiNvsBarSetRightCb(NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
         GUI_DEL_OBJ(g_coinListCont)
     }
 }
@@ -241,8 +243,8 @@ static void ConfirmSelectCompanionAppCoinsHandler(lv_event_t *e)
         g_isCoinReselected = true;
         memcpy(g_companionAppcoinState, g_tempCompanionAppcoinState, sizeof(g_tempCompanionAppcoinState));
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
-        GuiNvsBarSetRightCb(NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
         GUI_DEL_OBJ(g_coinListCont)
     }
 }
@@ -327,9 +329,9 @@ static void GuiCreateSelectCompanionAppCoinWidget()
     lv_obj_add_event_cb(btn, ConfirmSelectCompanionAppCoinsHandler, LV_EVENT_ALL, NULL);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
 
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _("Select Network"));
-    GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnShowQRHandler, cont);
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Select Network"));
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnShowQRHandler, cont);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
 }
 
 static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
@@ -514,9 +516,8 @@ static void AddKeplrCoins(void)
 
 void GuiConnectWalletInit(void)
 {
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
 
     lv_obj_t *tileView = lv_tileview_create(cont);
     lv_obj_clear_flag(tileView, LV_OBJ_FLAG_SCROLLABLE);
@@ -544,7 +545,7 @@ void GuiConnectWalletInit(void)
 void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
 {
 #ifndef COMPILE_SIMULATOR
-    GuiNvsSetWallet(index, NULL);
+    SetWallet(g_pageWidget->navBarWidget, index, NULL);
     GenerateUR func = NULL;
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
@@ -647,9 +648,9 @@ static void CloseDerivationHandler(lv_event_t *e)
             QRCodePause(false);
         }
         GUI_DEL_OBJ(g_derivationPathCont);
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
-        GuiNvsSetWallet(g_connectWalletTileView.walletIndex, NULL);
-        GuiNvsBarSetRightCb(NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+        SetWallet(g_pageWidget->navBarWidget, g_connectWalletTileView.walletIndex, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
     }
 }
 
@@ -789,9 +790,9 @@ static void OpenDerivationPath()
     g_egAddress[1] = label;
     GetEthEgAddress();
     UpdateEthEgAddress(g_currentPathIndex);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _("Change Derivation Path"));
-    GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseDerivationHandler, NULL);
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Change Derivation Path"));
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseDerivationHandler, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     GUI_DEL_OBJ(g_openMoreHintBox);
     g_derivationPathCont = bgCont;
 }
@@ -867,8 +868,8 @@ int8_t GuiConnectWalletNextTile(void)
 {
     switch (g_connectWalletTileView.currentTile) {
     case CONNECT_WALLET_SELECT_WALLET:
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
-        GuiNvsBarSetRightCb(NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         break;
     case CONNECT_WALLET_QRCODE:
@@ -884,12 +885,12 @@ int8_t GuiConnectWalletPrevTile(void)
 {
     switch (g_connectWalletTileView.currentTile) {
     case CONNECT_WALLET_SELECT_WALLET:
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         break;
     case CONNECT_WALLET_QRCODE:
-        GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
-        GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _("Choose Wallet"));
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Choose Wallet"));
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         GuiAnimatingQRCodeDestroyTimer();
         break;
     }
@@ -902,14 +903,14 @@ void GuiConnectWalletRefresh(void)
 {
     switch (g_connectWalletTileView.currentTile) {
     case CONNECT_WALLET_SELECT_WALLET:
-        GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
-        GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _("Choose Wallet"));
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Choose Wallet"));
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         break;
     case CONNECT_WALLET_QRCODE:
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
-        GuiNvsBarSetRightCb(NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
-        GuiNvsSetWallet(g_connectWalletTileView.walletIndex, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
+        SetWallet(g_pageWidget->navBarWidget, g_connectWalletTileView.walletIndex, NULL);
         if (g_coinListCont != NULL) {
             GUI_DEL_OBJ(g_coinListCont)
             GuiCreateSelectCompanionAppCoinWidget();
@@ -930,4 +931,8 @@ void GuiConnectWalletDeInit(void)
 
     CloseToTargetTileView(g_connectWalletTileView.currentTile, CONNECT_WALLET_SELECT_WALLET);
     GUI_DEL_OBJ(g_connectWalletTileView.cont)
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }

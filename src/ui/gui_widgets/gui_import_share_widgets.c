@@ -19,6 +19,7 @@
 #include "gui_lock_widgets.h"
 #include "gui_single_phrase_widgets.h"
 #include "gui_mnemonic_input.h"
+#include "gui_page.h"
 
 #ifndef COMPILE_MAC_SIMULATOR
 #include "sha256.h"
@@ -47,6 +48,7 @@ static KeyBoard_t *g_ssbImportKb;
 static MnemonicKeyBoard_t *g_importMkb;
 static uint8_t g_phraseCnt = 33;
 static lv_obj_t *g_noticeHintBox = NULL;
+static PageWidget_t *g_pageWidget;
 
 static void ContinueStopCreateHandler(lv_event_t *e)
 {
@@ -55,7 +57,7 @@ static void ContinueStopCreateHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         if (lv_event_get_user_data(e) != NULL) {
             g_importMkb->currentSlice = 0;
-            GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
             GuiCLoseCurrentWorkingView();
         }
         GUI_DEL_OBJ(g_noticeHintBox)
@@ -177,9 +179,8 @@ static void GuiShareSsbInputWidget(lv_obj_t *parent)
 void GuiImportShareInit(uint8_t wordsCnt)
 {
     g_phraseCnt = wordsCnt;
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
 
     lv_obj_t *tileView = GuiCreateTileView(cont);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, IMPORT_SHARE_SSB_INPUT, 0, LV_DIR_HOR);
@@ -206,8 +207,8 @@ int8_t GuiImportShareNextTile(void)
     };
     switch (g_importShareTileView.currentTile) {
     case IMPORT_SHARE_SSB_INPUT:
-        GuiNvsBarSetLeftCb(NVS_LEFT_BUTTON_BUTT, NULL, NULL);
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
         GuiModelSlip39CalWriteSe(slip39);
         lv_obj_add_flag(g_nextCont, LV_OBJ_FLAG_HIDDEN);
@@ -239,18 +240,22 @@ void GuiImportShareDeInit(void)
     lv_obj_del(g_ssbImportKb->cont);
     lv_obj_del(g_importShareTileView.cont);
     CLEAR_OBJECT(g_ssbImportKb);
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
 void GuiImportShareRefresh(void)
 {
     if (g_importShareTileView.currentTile == IMPORT_SHARE_SSB_INPUT) {
-        GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
-        GuiNvsBarSetRightBtnLabel(NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
-        GuiNvsBarSetRightCb(NVS_BAR_WORD_RESET, ConfirmClearHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, ConfirmClearHandler, NULL);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
     } else {
-        GuiNvsBarSetLeftCb(NVS_LEFT_BUTTON_BUTT, NULL, NULL);
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     }
-    GuiNvsBarSetMidCb(NVS_MID_BUTTON_BUTT, NULL, NULL);
+    SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
 }
 

@@ -7,6 +7,7 @@
 #include "keystore.h"
 #include "gui_lock_widgets.h"
 #include "screen_manager.h"
+#include "gui_page.h"
 
 #ifdef COMPILE_MAC_SIMULATOR
 #include "simulator_model.h"
@@ -43,6 +44,7 @@ static uint32_t needLockTime;
 static void *pageParam = NULL;
 
 static bool g_resetSuccessful = false;
+static PageWidget_t *g_pageWidget;
 
 void OpenForgetPasswordHandler(lv_event_t *e);
 
@@ -53,11 +55,12 @@ static bool IsLockTimePage()
 void GuiLockDeviceInit(void *param)
 {
     pageParam = param;
-
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
     g_cont = cont;
     lv_obj_t *img = GuiCreateImg(cont, &imgLockedDevice);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 139 - 96);
@@ -121,10 +124,6 @@ void GuiLockDeviceInit(void *param)
 
 void GuiLockDeviceRefresh(void)
 {
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-    GuiNvsBarSetLeftCb(NVS_LEFT_BUTTON_BUTT, NULL, NULL);
-    GuiNvsBarSetMidCb(NVS_MID_BUTTON_BUTT, NULL, NULL);
-
     uint32_t currentTime = GetCurrentStampTime();
     if (currentTime - startTime >= needLockTime) {
         GuiLockedDeviceCountDownDestruct(NULL, NULL);
@@ -144,6 +143,10 @@ void GuiLockDeviceDeInit(void)
     if (g_cont != NULL) {
         lv_obj_del(g_cont);
         g_cont = NULL;
+    }
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
     }
     SetLockTimeState(false);
 }
@@ -209,6 +212,10 @@ static void WipeDevice(void)
         lv_obj_del(g_cont);
         g_cont = NULL;
     }
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
     SetPageLockScreen(false);
     g_cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
                                 GUI_STATUS_BAR_HEIGHT);
@@ -236,9 +243,6 @@ void GuiDelALLWalletSetup(void)
 {
     GuiStopCircleAroundAnimation();
     GuiCloseToTargetView(&g_setupView);
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-    GuiNvsBarSetLeftCb(NVS_LEFT_BUTTON_BUTT, NULL, NULL);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "");
 }
 
 uint16_t GuiGetLockTimeByLeftErrorCount(uint16_t leftErrorCount)

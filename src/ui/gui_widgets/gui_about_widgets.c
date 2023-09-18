@@ -11,8 +11,10 @@
 #include "version.h"
 #include "err_code.h"
 #include "firmware_update.h"
+#include "gui_page.h"
 
 static lv_obj_t *g_cont;
+static PageWidget_t *g_pageWidget;
 
 static void GuiAboutNVSBarInit();
 static void GuiAboutEntranceWidget(lv_obj_t *parent);
@@ -20,12 +22,9 @@ static void GuiAboutEntranceWidget(lv_obj_t *parent);
 
 void GuiAboutWidgetsInit()
 {
-    GuiAboutNVSBarInit();
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
 
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
     g_cont = cont;
     lv_obj_t *img = GuiCreateImg(cont, &imgAboutIcon);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 45);
@@ -35,6 +34,10 @@ void GuiAboutWidgetsInit()
 void GuiAboutWidgetsDeInit()
 {
     GUI_DEL_OBJ(g_cont)
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
 void GuiAboutWidgetsRefresh()
@@ -48,9 +51,8 @@ void GuiAboutWidgetsRestart()
 
 static void GuiAboutNVSBarInit()
 {
-    GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _("device_setting_about_title"));
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("device_setting_about_title"));
 }
 
 

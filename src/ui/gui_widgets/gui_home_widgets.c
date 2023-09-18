@@ -17,6 +17,7 @@
 #include "gui_web_auth_widgets.h"
 #include "gui_setup_widgets.h"
 #include "keystore.h"
+#include "gui_page.h"
 
 // static uint8_t g_manageWalletNum = 2;
 static lv_obj_t *g_manageWalletLabel = NULL;
@@ -26,6 +27,7 @@ static lv_obj_t *g_scanImg = NULL;
 static lv_obj_t *g_manageCont = NULL;
 static lv_obj_t *g_moreHintbox = NULL;
 static bool g_isManageOpen = false;
+static PageWidget_t *g_pageWidget;
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_BTC, false, "BTC"},
@@ -565,11 +567,11 @@ static void OpenManageAssetsHandler(lv_event_t *e)
         // **
         UpdateManageWalletState(false);
 
-        GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _("Manage Assets"));
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnManageWalletHandler, g_manageCont);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Manage Assets"));
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, g_manageCont);
         // TODO: add search
         // GuiNvsBarSetRightCb(NVS_BAR_SEARCH, NULL, NULL);
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     }
 }
 
@@ -583,13 +585,10 @@ void GuiHomeSetWalletDesc(WalletDesc_t *wallet)
 
 void GuiHomeAreaInit(void)
 {
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
-    g_homeViewCont = cont;
-    lv_obj_add_flag(g_homeViewCont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_t *walletCardCont = GuiCreateContainerWithParent(cont, lv_obj_get_width(lv_scr_act()),
+    g_pageWidget = CreatePageWidget();
+    g_homeViewCont = g_pageWidget->contentZone;
+
+    lv_obj_t *walletCardCont = GuiCreateContainerWithParent(g_homeViewCont, lv_obj_get_width(lv_scr_act()),
                                lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_align(walletCardCont, LV_ALIGN_DEFAULT);
     lv_obj_add_flag(walletCardCont, LV_OBJ_FLAG_SCROLLABLE);
@@ -625,15 +624,15 @@ void GuiHomeRefresh(void)
     }
     GuiSetSetupPhase(SETUP_PAHSE_DONE);
     if (g_manageCont != NULL) {
-        GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _("Manage Assets"));
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnManageWalletHandler, g_manageCont);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Manage Assets"));
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, g_manageCont);
         // TODO: add search
         // GuiNvsBarSetRightCb(NVS_BAR_SEARCH, NULL, NULL);
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     } else {
-        GuiNvsBarSetLeftCb(NVS_BAR_MANAGE, OpenManageAssetsHandler, NULL);
-        GuiNvsBarSetMidCb(NVS_MID_BUTTON_BUTT, NULL, NULL);
-        GuiNvsBarSetRightCb(NVS_BAR_MORE_INFO, OpenMoreSettingHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_MANAGE, OpenManageAssetsHandler, NULL);
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreSettingHandler, NULL);
     }
     if (g_homeWalletCardCont != NULL) {
         lv_obj_clear_flag(g_homeWalletCardCont, LV_OBJ_FLAG_HIDDEN);

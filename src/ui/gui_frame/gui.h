@@ -16,6 +16,7 @@
 #define GUI_STATUS_BAR_HEIGHT               (48)
 #define GUI_NAV_BAR_HEIGHT                  (96)
 #define GUI_MAIN_AREA_OFFSET                (GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT)
+#define GUI_MAIN_AREA_OFFSET_NEW            GUI_STATUS_BAR_HEIGHT
 
 #define GUI_DEL_OBJ(obj)                    if (obj != NULL) { \
     lv_obj_del(obj);                        \

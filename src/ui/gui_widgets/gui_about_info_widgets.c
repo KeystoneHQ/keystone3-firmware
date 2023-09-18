@@ -11,6 +11,7 @@
 #include "gui_about_info_widgets.h"
 #include "version.h"
 #include "err_code.h"
+#include "gui_page.h"
 
 #ifdef COMPILE_MAC_SIMULATOR
 #include "simulator_model.h"
@@ -24,16 +25,12 @@ static void LogExportHandler(lv_event_t *e);
 
 static lv_obj_t *g_noticeHintBox = NULL;                                // notice hintbox
 static lv_obj_t *g_cont;
+static PageWidget_t *g_pageWidget;
 
 void GuiAboutInfoWidgetsInit()
 {
-    GuiAboutNVSBarInit();
-
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
-
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
     g_cont = cont;
     GuiAboutInfoEntranceWidget(cont);
 }
@@ -44,6 +41,10 @@ void GuiAboutInfoWidgetsDeInit()
     if (g_cont != NULL) {
         lv_obj_del(g_cont);
         g_cont = NULL;
+    }
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
     }
 }
 
@@ -59,9 +60,8 @@ void GuiAboutInfoWidgetsRestart()
 
 static void GuiAboutNVSBarInit()
 {
-    GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "Device Info");
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Device Info");
 }
 
 

@@ -20,6 +20,7 @@
 #include "keystore.h"
 #include "gui_keyboard.h"
 #include "motor_manager.h"
+#include "gui_page.h"
 
 typedef struct {
     lv_obj_t *cont;
@@ -43,14 +44,15 @@ static void UpdatePassPhraseHandler(lv_event_t *e);
 
 static PassphraseWidgets_t g_passphraseWidgets;
 static ContLabelWidget_t g_waitAnimWidget;
+static PageWidget_t *g_pageWidget;
 
 void GuiPassphraseInit(void)
 {
     lv_obj_t *label, *btn, *ta, *img, *line, *baffle;
     static lv_point_t points[2] =  {{0, 0}, {408, 0}};
 
-    g_passphraseWidgets.cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_STATUS_BAR_HEIGHT);
-    lv_obj_align(g_passphraseWidgets.cont, LV_ALIGN_TOP_LEFT, 0, GUI_STATUS_BAR_HEIGHT);
+    g_pageWidget = CreatePageWidget();
+    g_passphraseWidgets.cont = g_pageWidget->contentZone;
     g_passphraseWidgets.passphraseInputCont = GuiCreateHintBox(g_passphraseWidgets.cont, 480, 614, false);
     label = GuiCreateIllustrateLabel(g_passphraseWidgets.passphraseInputCont, "Passphrase");
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 216);
@@ -154,12 +156,17 @@ void GuiPassphraseDeInit(void)
     GUI_DEL_OBJ(g_passphraseWidgets.cont)
     printf("GuiPassphraseDeInit!\r\n");
     CLEAR_OBJECT(g_passphraseWidgets);
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
 
 void GuiPassphraseRefresh(void)
 {
-
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_setting_passphrase"));
 }
 
 
@@ -179,7 +186,6 @@ void GuiPassphraseDone(void)
     if (g_homeView.isActive) {
         GuiLockScreenTurnOff();
     } else {
-        GuiNvsBarSetMidCb(NVS_MID_BUTTON_BUTT, NULL, NULL);
         GuiFrameOpenView(&g_homeView);
     }
 }

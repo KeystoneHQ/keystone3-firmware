@@ -14,6 +14,7 @@
 #include "gui_home_widgets.h"
 #include "gui_fullscreen_mode.h"
 #include "keystore.h"
+#include "gui_page.h"
 
 #define GENERAL_ADDRESS_INDEX_MAX 999999999
 #define LEDGER_LIVE_ADDRESS_INDEX_MAX 9
@@ -102,12 +103,13 @@ static HOME_WALLET_CARD_ENUM g_chainCard;
 // to do: stored.
 static uint32_t g_showIndex;
 static uint32_t g_selectIndex[3] = {0};
+static PageWidget_t *g_pageWidget;
 
 void GuiStandardReceiveInit(uint8_t chain)
 {
     g_chainCard = chain;
-    g_standardReceiveWidgets.cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(g_standardReceiveWidgets.cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
+    g_pageWidget = CreatePageWidget();
+    g_standardReceiveWidgets.cont = g_pageWidget->contentZone;
     g_standardReceiveWidgets.tileView = lv_tileview_create(g_standardReceiveWidgets.cont);
     lv_obj_set_style_bg_opa(g_standardReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR & LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(g_standardReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
@@ -129,6 +131,10 @@ void GuiStandardReceiveDeInit(void)
 
     CLEAR_OBJECT(g_standardReceiveWidgets);
     GuiFullscreenModeCleanUp();
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
 void GuiStandardReceiveRefresh(void)
@@ -137,15 +143,15 @@ void GuiStandardReceiveRefresh(void)
     switch (g_StandardReceiveTileNow) {
     case RECEIVE_TILE_QRCODE:
         snprintf(title, sizeof(title), "Receive %s", GetCoinCardByIndex(g_chainCard)->coin);
-        GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
-        GuiNvsSetCoinWallet(g_chainCard, title);
-        GuiNvsBarSetRightCb(HasMoreBtn() ? NVS_BAR_MORE_INFO : NVS_RIGHT_BUTTON_BUTT, MoreHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
+        SetCoinWallet(g_pageWidget->navBarWidget, g_chainCard, title);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, HasMoreBtn() ? NVS_BAR_MORE_INFO : NVS_RIGHT_BUTTON_BUTT, MoreHandler, NULL);
         RefreshQrCode();
         break;
     case RECEIVE_TILE_SWITCH_ACCOUNT:
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
-        GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "Switch Account");
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Switch Account");
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_showIndex = g_selectIndex[GetCurrentAccountIndex()] / 5 * 5;
         if (g_showIndex < 5) {
             lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);

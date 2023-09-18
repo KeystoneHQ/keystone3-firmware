@@ -13,6 +13,7 @@
 #include "gui_firmware_update_widgets.h"
 #include "gui_setup_widgets.h"
 #include "gui_qr_hintbox.h"
+#include "gui_page.h"
 
 static const char g_webAuthUrl[] = "https://keyst.one/auth";
 
@@ -29,6 +30,7 @@ static WebAuthWidget_t g_webAuthWidget;
 
 static uint8_t g_webAuthEntry = WEB_AUTH_ENTRY_BUTT;
 static uint8_t g_firmwareWareEntry = FIRMWARE_UPDATE_ENTRY_SETUP;
+static PageWidget_t *g_pageWidget;
 
 void GuiWebAuthSetEntry(uint8_t entry)
 {
@@ -111,10 +113,8 @@ void GuiWebAuthIntroWidget(lv_obj_t *parent)
 
 void GuiWebAuthAreaInit()
 {
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
     if (GuiDarkMode()) {
         lv_obj_set_style_bg_color(cont, BLACK_COLOR, LV_PART_MAIN);
     } else {
@@ -131,9 +131,12 @@ void GuiWebAuthAreaDeInit()
 {
     GUI_DEL_OBJ(g_webAuthWidget.cont)
     g_webAuthEntry = WEB_AUTH_ENTRY_BUTT;
-    GuiNvsBarClear();
     if (GuiQRHintBoxIsActive()) {
         GuiQRHintBoxRemove();
+    }
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
     }
 }
 
@@ -161,12 +164,11 @@ void GuiWebAuthAreaRestart()
 
 void GuiWebAuthInitNVSBar()
 {
-    GuiNvsBarClear();
     if (g_webAuthEntry == WEB_AUTH_ENTRY_SETUP) {
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-        GuiNvsBarSetRightCb(NVS_BAR_NEW_SKIP, GuiGoToFirmwareUpdateViewHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_NEW_SKIP, GuiGoToFirmwareUpdateViewHandler, NULL);
     } else {
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     }
 }
 

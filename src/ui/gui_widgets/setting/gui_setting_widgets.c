@@ -16,6 +16,7 @@
 #include "presetting.h"
 #include "assert.h"
 #include "firmware_update.h"
+#include "gui_page.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "keystore.h"
@@ -52,6 +53,7 @@ static lv_obj_t *g_selectAmountHintbox = NULL; // select amount hintbox
 static lv_obj_t *g_noticeHintBox = NULL;       // notice hintbox
 static GuiEnterPasscodeItem_t *g_verifyCode = NULL;
 static lv_obj_t *g_passphraseLearnMoreCont = NULL;
+static PageWidget_t *g_pageWidget;
 
 static void OpenPassphraseLearnMoreHandler(lv_event_t *e);
 void GuiShowKeyboardHandler(lv_event_t *e);
@@ -150,9 +152,9 @@ static void CloseCurrentPage(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_passphraseLearnMoreCont)
         lv_obj_clear_flag(g_deviceSettingArray[g_deviceSetTileView.currentTile].tile, LV_OBJ_FLAG_HIDDEN);
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, ReturnHandler, NULL);
-        GuiNvsBarSetRightCb(NVS_BAR_QUESTION_MARK, OpenPassphraseLearnMoreHandler, NULL);
-        GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _("wallet_setting_passphrase"));
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenPassphraseLearnMoreHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_setting_passphrase"));
     }
 }
 
@@ -224,9 +226,10 @@ static void GuiOpenPassphraseLearnMore()
     lv_obj_t *img = GuiCreateImg(cont, &imgQrcodeTurquoise);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 120, 3);
 
-    GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, CloseCurrentPage, NULL);
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "");
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseCurrentPage, NULL);
+
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "");
 
 }
 
@@ -619,9 +622,8 @@ void GuiResettingPassWordSuccess(void)
 void GuiSettingInit(void)
 {
     CLEAR_OBJECT(g_deviceSetTileView);
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
 
     lv_obj_t *tileView = GuiCreateTileView(cont);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, DEVICE_SETTING, 0, LV_DIR_HOR);
@@ -640,7 +642,7 @@ void GuiSettingInit(void)
     g_deviceSettingArray[g_deviceSetTileView.currentTile].leftCb = ReturnHandler;
 
     lv_obj_set_tile_id(g_deviceSetTileView.tileView, g_deviceSetTileView.currentTile, 0, LV_ANIM_OFF);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, g_deviceSettingArray[g_deviceSetTileView.currentTile].midLabel);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, g_deviceSettingArray[g_deviceSetTileView.currentTile].midLabel);
 }
 
 void GuiSettingDeInit(void)
@@ -661,6 +663,10 @@ void GuiSettingDeInit(void)
     CLEAR_OBJECT(g_deviceSetTileView);
     if (GuiQRHintBoxIsActive()) {
         GuiQRHintBoxRemove();
+    }
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
     }
 }
 
@@ -777,7 +783,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
 
     // del wallet
     case DEVICE_SETTING_DEL_WALLET:
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         currTileIndex = DEVICE_SETTING_DEL_WALLET;
         strcpy(midLabel, _("change_passcode_mid_btn"));
@@ -858,22 +864,21 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
     switch (rightBtn) {
     case NVS_BAR_QUESTION_MARK:
     case NVS_BAR_MORE_INFO:
-        GuiNvsBarSetRightCb(rightBtn, rightCb, tile);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, rightBtn, rightCb, tile);
         break;
     case NVS_BAR_WORD_RESET:
         rightCb = ResetSeedCheckImportHandler;
-        GuiNvsBarSetRightBtnLabel(NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
-        GuiNvsBarSetRightCb(NVS_BAR_WORD_RESET, rightCb, NULL);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
+        SetRightBtnCb(g_pageWidget->navBarWidget, rightCb, NULL);
         break;
     case NVS_RIGHT_BUTTON_BUTT:
-        GuiNvsBarSetRightBtnLabel(NVS_BAR_WORD_RESET, "");
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         break;
     default:
         break;
     }
-    GuiNvsBarSetLeftCb(leftBtn, leftCb, NULL);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, midLabel);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, leftBtn, leftCb, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, midLabel);
 
     g_deviceSetTileView.currentTile = currentTile;
     lv_obj_set_tile_id(g_deviceSetTileView.tileView, currentTile, 0, LV_ANIM_OFF);
@@ -926,22 +931,21 @@ int8_t GuiDevSettingPrevTile(uint8_t tileIndex)
     switch (rightBtn) {
     case NVS_BAR_QUESTION_MARK:
     case NVS_BAR_MORE_INFO:
-        GuiNvsBarSetRightCb(rightBtn, rightCb, g_deviceSettingArray[currentTile].tile);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, rightBtn, rightCb, g_deviceSettingArray[currentTile].tile);
         break;
     case NVS_BAR_WORD_RESET:
         rightCb = ResetSeedCheckImportHandler;
-        GuiNvsBarSetRightBtnLabel(NVS_BAR_WORD_RESET, rightLabel);
-        GuiNvsBarSetRightCb(NVS_BAR_WORD_RESET, ResetSeedCheckImportHandler, NULL);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, rightLabel);
+        SetRightBtnCb(g_pageWidget->navBarWidget, ResetSeedCheckImportHandler, NULL);
         break;
     case NVS_RIGHT_BUTTON_BUTT:
-        GuiNvsBarSetRightBtnLabel(NVS_BAR_WORD_RESET, "");
-        GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         break;
     default:
         break;
     }
-    GuiNvsBarSetLeftCb(leftBtn, ReturnHandler, NULL);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, midLabel);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, leftBtn, ReturnHandler, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, midLabel);
     lv_obj_set_tile_id(g_deviceSetTileView.tileView, currentTile, 0, LV_ANIM_OFF);
 
     return SUCCESS_CODE;
@@ -950,9 +954,9 @@ int8_t GuiDevSettingPrevTile(uint8_t tileIndex)
 void GuiSettingRefresh(void)
 {
     DeviceSettingItem_t *item = &g_deviceSettingArray[g_deviceSetTileView.currentTile];
-    GuiNvsBarSetLeftCb(item->leftBtn, item->leftCb, NULL);
-    GuiNvsBarSetRightCb(item->rightBtn, item->rightCb, NULL);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, item->midLabel);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, item->leftBtn, item->leftCb, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, item->rightBtn, item->rightCb, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, item->midLabel);
     if (g_passphraseLearnMoreCont != NULL) {
         GUI_DEL_OBJ(g_passphraseLearnMoreCont);
         GuiOpenPassphraseLearnMore();

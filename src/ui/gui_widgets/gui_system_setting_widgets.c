@@ -17,6 +17,7 @@
 #include "motor_manager.h"
 #include "gui_lock_widgets.h"
 #include "gui_keyboard_hintbox.h"
+#include "gui_page.h"
 #ifdef COMPILE_SIMULATOR
 #else
 #include "drv_battery.h"
@@ -26,6 +27,7 @@ static lv_obj_t *container;
 static lv_obj_t *vibrationSw;
 
 static KeyboardWidget_t *g_keyboardWidget = NULL;
+static PageWidget_t *g_pageWidget;
 
 void GuiSystemSettingNVSBarInit();
 void GuiSystemSettingEntranceWidget(lv_obj_t *parent);
@@ -40,14 +42,9 @@ void OpenForgetPasswordHandler(lv_event_t *e);
 
 void GuiSystemSettingAreaInit()
 {
-    if (container != NULL) {
-        lv_obj_del(container);
-        container = NULL;
-    }
-    container = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                   GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(container, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
-    lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
+    g_pageWidget = CreatePageWidget();
+    container = g_pageWidget->contentZone;
+
     if (GuiDarkMode()) {
         lv_obj_set_style_bg_color(container, BLACK_COLOR, LV_PART_MAIN);
     } else {
@@ -143,8 +140,8 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
 
 void GuiSystemSettingNVSBarInit()
 {
-    GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _("device_setting_system_setting_title"));
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("device_setting_system_setting_title"));
 }
 
 void GuiSystemSettingAreaDeInit()
@@ -153,6 +150,10 @@ void GuiSystemSettingAreaDeInit()
     if (container != NULL) {
         lv_obj_del(container);
         container = NULL;
+    }
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
     }
 }
 

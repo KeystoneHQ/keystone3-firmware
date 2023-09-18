@@ -11,11 +11,13 @@
 #include "gui_web_auth_widgets.h"
 #include "gui_web_auth_result_widgets.h"
 #include "screen_manager.h"
+#include "gui_page.h"
 
 static void *g_web_auth_data;
 static bool g_isMulti = false;
 static void *g_urResult = NULL;
 static char *g_authCode = NULL;
+static PageWidget_t *g_pageWidget;
 
 typedef struct WebAuthResultWidget {
     uint8_t currentTile;
@@ -199,9 +201,8 @@ void GuiWebAuthResultFailedWidget(lv_obj_t *parent)
 
 void GuiWebAuthResultAreaInit()
 {
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
 
     lv_obj_t *tileView = lv_tileview_create(cont);
     lv_obj_clear_flag(tileView, LV_OBJ_FLAG_SCROLLABLE);
@@ -250,6 +251,10 @@ void GuiWebAuthResultAreaDeInit()
         }
         g_urResult = NULL;
     }
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
 // Unlock, Return from QRCode, Return from Purpose(in setup)
@@ -266,8 +271,7 @@ void GuiWebAuthResultAreaRestart()
 
 void GuiWebAuthResultInitNVSBar()
 {
-    GuiNvsBarClear();
-    GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
 }
 
 uint32_t GuiWebAuthResultPrevTile()
@@ -277,7 +281,7 @@ uint32_t GuiWebAuthResultPrevTile()
     case WEB_AUTH_RESULT_CODE:
         return SUCCESS_CODE;
     case WEB_AUTH_RESULT_FAILED:
-        GuiNvsBarSetLeftCb(NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
         break;
     }
     g_WebAuthResultTileView.currentTile--;
@@ -289,7 +293,7 @@ uint32_t GuiWebAuthResultNextTile()
 {
     switch (g_WebAuthResultTileView.currentTile) {
     case WEB_AUTH_RESULT_CODE:
-        GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, ReturnHandler, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, ReturnHandler, NULL);
         break;
     case WEB_AUTH_RESULT_FAILED:
         return SUCCESS_CODE;

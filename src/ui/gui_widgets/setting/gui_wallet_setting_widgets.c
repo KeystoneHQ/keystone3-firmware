@@ -359,9 +359,6 @@ void GuiDelWalletSetup(void)
     GuiFrameCLoseView(&g_setupView);
     // open new g_setupView
     GuiFrameOpenView(&g_setupView);
-    GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-    GuiNvsBarSetLeftCb(NVS_LEFT_BUTTON_BUTT, NULL, NULL);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, "");
 }
 
 void GuiShowKeyboardDestruct(void)

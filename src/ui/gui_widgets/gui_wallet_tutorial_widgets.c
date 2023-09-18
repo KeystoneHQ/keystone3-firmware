@@ -7,6 +7,7 @@
 #include "gui_connect_wallet_widgets.h"
 #include "gui_wallet_tutorial_widgets.h"
 #include "gui_qr_hintbox.h"
+#include "gui_page.h"
 
 typedef struct WalletTutorialItem {
     const char *walletName;
@@ -31,6 +32,7 @@ typedef struct GuiWalletTutorialWidget {
 static GuiWalletTurorialWidget_t g_walletTutorialWidget;
 static void GuiWalletTutorialQrcodeHandler(lv_event_t *e);
 static bool g_tutorialsInitialized = false;
+static PageWidget_t *g_pageWidget = NULL;
 
 static void WalletTutorialsInit()
 {
@@ -154,9 +156,12 @@ void GuiWalletTutorialInit(WALLET_LIST_INDEX_ENUM tutorialIndex)
     WalletTutorial_t *tutorial = &g_tutorials[tutorialIndex];
 
     lv_obj_t *cont, *label, *img, *lastTarget;
-    cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                              GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT + GUI_NAV_BAR_HEIGHT);
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
+    g_pageWidget = CreatePageWidget();
+    cont = g_pageWidget->contentZone;
     g_walletTutorialWidget.cont = cont;
     label = GuiCreateIllustrateLabel(cont, tutorial->desc);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
@@ -188,9 +193,8 @@ void GuiWalletTutorialInit(WALLET_LIST_INDEX_ENUM tutorialIndex)
 
 void GuiWalletTutorialRefresh()
 {
-    GuiNvsBarClear();
-    GuiNvsBarSetLeftCb(NVS_BAR_CLOSE, CloseCurrentViewHandler, NULL);
-    GuiNvsBarSetMidBtnLabel(NVS_BAR_MID_LABEL, _("connect_block_t"));
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseCurrentViewHandler, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("connect_block_t"));
 }
 
 void GuiWalletTutorialDeInit()
@@ -198,6 +202,10 @@ void GuiWalletTutorialDeInit()
     GUI_DEL_OBJ(g_walletTutorialWidget.cont);
     if (GuiQRHintBoxIsActive()) {
         GuiQRHintBoxRemove();
+    }
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
     }
 }
 

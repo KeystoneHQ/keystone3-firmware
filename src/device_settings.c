@@ -23,7 +23,6 @@
 #include "fingerprint_process.h"
 #include "screen_manager.h"
 #include "power_manager.h"
-#include "user_delay.h"
 
 #define VERSION_MAX_LENGTH      32
 
@@ -217,29 +216,12 @@ void WipeDevice(void)
     uint32_t wipeFlag = DEVICE_WIPE_FLAG_MAGIC_NUM;
     ret = Gd25FlashWriteBuffer(SPI_FLASH_ADDR_PROTECT_PARAM, (uint8_t *)&wipeFlag, sizeof(wipeFlag));
     SetShowPowerOffPage(false);
-    printf("wipe device fingerprint start\r\n");
     FpWipeManageInfo();
-    printf("wipe device fingerprint end\r\n");
-    UserDelay(2000);
-    printf("wipe device destrory account %d start\r\n", 0);
     DestroyAccount(0);
-    printf("wipe device destrory account %d end\r\n", 0);
-    UserDelay(2000);
-    printf("wipe device destrory account %d start\r\n", 1);
     DestroyAccount(1);
-    printf("wipe device destrory account %d end\r\n", 1);
-    UserDelay(2000);
-    printf("wipe device destrory account %d start\r\n", 2);
     DestroyAccount(2);
-    printf("wipe device destrory account %d end\r\n", 2);
-    UserDelay(2000);
-    printf("wipe device erase public info start\r\n");
     ErasePublicInfo();
-    printf("wipe device erase public info end\r\n");
-    UserDelay(2000);
-    printf("wipe device erase flash info start\r\n");
     Gd25FlashChipErase();
-    printf("wipe device erase flash info end\r\n");
 }
 
 

@@ -436,7 +436,10 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
             TempAccountPublicInfo(g_currentAccountIndex, password, false);
         } else {
             printf("passphrase not exist, info switch\r\n");
-            AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
+            ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
+            if (ret == ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH) {
+                return ret;
+            }
         }
     } else {
         g_publicInfo.loginPasswordErrorCount++;

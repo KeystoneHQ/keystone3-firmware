@@ -94,6 +94,9 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case SIG_PASSCODE_SWITCH_TO_PASSWORD:
         GuiLockScreenPasscodeSwitch(false);
         break;
+    case SIG_EXTENDED_PUBLIC_KEY_NOT_MATCH:
+        GuiLockScreenWipeDevice();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

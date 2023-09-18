@@ -36,6 +36,7 @@ static const ErrCodeDesc_t g_faults[] = {
     {ERR_KEYSTORE_SAVE_LOW_POWER, "keystore save low power"},
     {ERR_KEYSTORE_MNEMONIC_INVALID, "Keystore Mnemonic Invalid"},
     {ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET, "Keystore Mnemonic not match"},
+    {ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH, "Keystore extend public key not match"},
 
     {ERR_GD25_BAD_PARAM, "GD25 Bad Param"},
     {ERR_GD25_WEL_FAILED, "GD25 GET WEL State Failed"},

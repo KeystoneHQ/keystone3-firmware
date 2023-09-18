@@ -77,6 +77,7 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case SIG_VERIFY_PASSWORD_FAIL:
         GuiLockScreenPassCode(false);
         GuiLockScreenErrorCount(param);
+        GuiFirmwareUpdateVerifyPasswordErrorCount(param);
         break;
     case SIG_LOCK_VIEW_SCREEN_OFF:
         GuiLockScreenTurnOff();

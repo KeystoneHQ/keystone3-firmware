@@ -271,7 +271,12 @@ bool VerifyWalletDataHash(uint8_t index, uint8_t *info)
     if (ret == SUCCESS_CODE && !memcmp(data, info, 32)) {
         return true;
     } else {
-        return false;
+        if (CheckAllFF(data, 32) || CheckAllZero(data, 32)) {
+            SetWalletDataHash(index, data);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 

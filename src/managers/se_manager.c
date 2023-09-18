@@ -268,10 +268,16 @@ bool VerifyWalletDataHash(uint8_t index, uint8_t *info)
     ASSERT(index <= 2);
 
     ret = SE_HmacEncryptRead(data, PAGE_WALLET1_PUB_KEY_HASH + index);
+    PrintArray("data", data, 32);
     if (ret == SUCCESS_CODE && !memcmp(data, info, 32)) {
         return true;
     } else {
-        return false;
+        if (CheckAllFF(data, 32) || CheckAllZero(data, 32)) {
+            SetWalletDataHash(index, data);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 

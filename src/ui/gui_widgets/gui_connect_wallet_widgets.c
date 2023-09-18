@@ -31,8 +31,8 @@ typedef enum {
 
 WalletListItem_t g_walletListArray[] = {
     // {WALLET_LIST_KEYSTONE, &walletListKeyStone},
-    {WALLET_LIST_METAMASK, &walletListMetaMask},
     {WALLET_LIST_OKX, &walletListOkx},
+    {WALLET_LIST_METAMASK, &walletListMetaMask},
     {WALLET_LIST_BLUE, &walletListBlue},
     // { WALLET_LIST_SUB, &walletListSub},
     // { WALLET_LIST_SOLFARE, &walletListSolfare},
@@ -929,6 +929,7 @@ void GuiConnectWalletDeInit(void)
 {
     GUI_DEL_OBJ(g_openMoreHintBox)
     GUI_DEL_OBJ(g_coinCont)
+    GUI_DEL_OBJ(g_derivationPathCont)
 
     CloseToTargetTileView(g_connectWalletTileView.currentTile, CONNECT_WALLET_SELECT_WALLET);
     GUI_DEL_OBJ(g_connectWalletTileView.cont)

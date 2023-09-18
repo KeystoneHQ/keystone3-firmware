@@ -9,11 +9,15 @@
 #include "assert.h"
 #include "fingerprint_process.h"
 #include "keystore.h"
+#include "draw_on_lcd.h"
 
 #define GD25_FLASH_ID               (0xC84018)
 #define PY25_FLASH_ID               (0x852018)
 #define SRAM_TEST_LEN               (1024)
 #define SRAM_TEST_CHAR              (0xAC)
+
+LV_FONT_DECLARE(openSans_20);
+LV_FONT_DECLARE(openSans_24);
 
 void PowerOnSelfCheck(void)
 {
@@ -44,6 +48,9 @@ void PowerOnSelfCheck(void)
     uint32_t wipeFlag = 0;
     Gd25FlashReadBuffer(SPI_FLASH_ADDR_PROTECT_PARAM, (uint8_t *)&wipeFlag, sizeof(wipeFlag));
     if (wipeFlag == DEVICE_WIPE_FLAG_MAGIC_NUM) {
+        DrawStringOnLcd(190, 408, "Loading...", 0xFFFF, &openSans_24);
+        uint32_t c = 0x666666;
+        DrawStringOnLcd(170, 456, "About 1 minute", (uint16_t)(((c & 0xF80000) >> 16) | ((c & 0xFC00) >> 13) | ((c & 0x1C00) << 3) | ((c & 0xF8) << 5)), &openSans_20);
         FpWipeManageInfo();
         DestroyAccount(0);
         DestroyAccount(1);

@@ -15,6 +15,12 @@ typedef enum {
 };
 
 typedef struct {
+    uint32_t command;
+    uint32_t length;
+    uint8_t *data;
+} CommandResponse;
+
+typedef struct {
     uint8_t cla; // Class
     uint8_t ins; // Instruction (CommandEnum)
     uint8_t p1; // Parameter 1 (Packet number for multi-packet commands)

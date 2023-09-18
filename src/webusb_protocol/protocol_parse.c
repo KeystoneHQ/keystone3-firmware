@@ -50,7 +50,6 @@ void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbac
     }
     lastTick = tick;
     printf("registerSendFunc start\n");
-
     currentParser->registerSendFunc(&sendFunc);
     printf("registerSendFunc end\n");
 

@@ -18,7 +18,7 @@
 #include "user_utils.h"
 #include "drv_parallel8080.h"
 
-uint8_t g_c7param = 0x36;
+uint8_t g_c7param = 0x44;
 
 static void Ili9806WriteCmd(uint8_t cmd);
 static void Ili9806WriteData(uint8_t data);

@@ -17,6 +17,7 @@ static void *g_web_auth_data;
 static bool g_isMulti = false;
 static void *g_urResult = NULL;
 static char *g_authCode = NULL;
+static lv_obj_t *g_hintBox = NULL;
 static PageWidget_t *g_pageWidget;
 
 typedef struct WebAuthResultWidget {
@@ -136,7 +137,11 @@ static void WebAuthWipeDeviceHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        WebAuthWipeDevice();
+        if (CHECK_BATTERY_LOW_POWER()) {
+            g_hintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
+        } else {
+            WebAuthWipeDevice();
+        }
     }
 }
 
@@ -236,6 +241,7 @@ void GuiWebAuthResultAreaInit()
 void GuiWebAuthResultAreaDeInit()
 {
     lv_obj_del(g_WebAuthResultTileView.cont);
+    GUI_DEL_OBJ(g_hintBox)
     g_WebAuthResultTileView.cont = NULL;
     g_webAuthSuccessCb = NULL;
     GuiWebAuthResultHidePending();

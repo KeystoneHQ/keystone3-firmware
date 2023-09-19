@@ -27,7 +27,9 @@ static lv_obj_t *g_scanImg = NULL;
 static lv_obj_t *g_manageCont = NULL;
 static lv_obj_t *g_moreHintbox = NULL;
 static bool g_isManageOpen = false;
+static bool g_isManageClick = true;
 static PageWidget_t *g_pageWidget;
+static lv_timer_t *g_countDownTimer = NULL;           // count down timer
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_BTC, false, "BTC"},
@@ -318,6 +320,7 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
 
 static void CoinDealHandler(lv_event_t *e);
 static bool IsUtxoCoin(HOME_WALLET_CARD_ENUM coin);
+static void AddFlagCountDownTimerHandler(lv_timer_t *timer);
 void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count);
 void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count);
 
@@ -443,6 +446,12 @@ void ScanQrCodeHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
+        g_isManageClick = false;
+        if (g_countDownTimer != NULL) {
+            lv_timer_del(g_countDownTimer);
+            g_countDownTimer = NULL;
+        }
+
         GuiFrameOpenView(lv_event_get_user_data(e));
     }
 }
@@ -502,7 +511,10 @@ static void OpenManageAssetsHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_SHORT_CLICKED) {
+    if (code == LV_EVENT_CLICKED) {
+        if (g_isManageClick == false) {
+            return;
+        }
         memcpy(&g_walletBakState, &g_walletState, sizeof(g_walletState));
         g_manageCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
                                           GUI_MAIN_AREA_OFFSET);
@@ -610,6 +622,14 @@ void GuiHomeDisActive(void)
     }
 }
 
+static void AddFlagCountDownTimerHandler(lv_timer_t *timer)
+{
+    g_isManageClick = true;
+    lv_timer_del(timer);
+    g_countDownTimer = NULL;
+    UNUSED(g_countDownTimer);
+}
+
 void GuiHomeRestart(void)
 {
     GUI_DEL_OBJ(g_manageCont)
@@ -621,6 +641,7 @@ void GuiHomeRefresh(void)
     if (GetCurrentAccountIndex() > 2) {
         return;
     }
+    g_countDownTimer = lv_timer_create(AddFlagCountDownTimerHandler, 500, NULL);
     GuiSetSetupPhase(SETUP_PAHSE_DONE);
     if (g_manageCont != NULL) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Manage Assets"));

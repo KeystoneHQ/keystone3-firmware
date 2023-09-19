@@ -9,16 +9,17 @@
 enum { OFFSET_CLA = 0, OFFSET_INS, OFFSET_P1, OFFSET_P2, OFFSET_LC, OFFSET_CDATA };
 
 typedef enum {
-    SIGN_ETH_TX = 0x00000001,
+    ECHO_TEST = 0x00000001,
+    SIGN_ETH_TX,
     //
     MAX_COMMAND = 0xFFFFFFFF,
 };
 
 typedef struct {
-    uint32_t command;
-    uint32_t length;
     uint8_t *data;
-} CommandResponse;
+    uint16_t length;
+    uint32_t error_code;
+} Response;
 
 typedef struct {
     uint8_t cla; // Class

@@ -3,43 +3,49 @@
 #include "apdu_protocol_parser.h"
 #include "librust_c.h"
 #include "keystore.h"
+#include "service_eth_sign.h"
 
 static ProtocolSendCallbackFunc_t *g_sendFunc = NULL;
 static struct ProtocolParser *global_parser = NULL;
 
 #define MAX_PACKETS 8
 #define MAX_PACKETS_LENGTH 64
+#define MAX_PACKETS_DATA_LENGTH 59
+#define MAX_APDU_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA)
 
 uint8_t g_protocolRcvBuffer[MAX_PACKETS][MAX_PACKETS_LENGTH];
 uint8_t g_packetLengths[MAX_PACKETS];
 uint8_t g_receivedPackets[MAX_PACKETS];
 uint8_t g_totalPackets = 0;
 
-static CommandResponse *ProcessEthereumTransactionSignature(uint8_t *data, uint16_t dataLen)
+static void send_apdu_response(uint8_t cla, uint8_t ins, uint8_t *data, uint16_t dataLen)
 {
-    CommandResponse *response = (CommandResponse *)malloc(sizeof(CommandResponse));
-    response->command = SIGN_ETH_TX;
-    response->length = 0;
-    response->data = NULL;
+    uint8_t packet[MAX_PACKETS_LENGTH];
+    uint8_t totalPackets = (dataLen + MAX_APDU_DATA_SIZE - 1) / MAX_APDU_DATA_SIZE;
+    uint8_t packetIndex = 0;
+    uint16_t offset = 0;
 
-    UREncodeResult *encodeResult;
-    uint8_t seed[64];
-    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-    GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-    struct URParseResult *urResult = parse_ur(data);
-    encodeResult = eth_sign_tx(urResult->data, seed, len);
-    printf("encodeResult->data: %s\n", encodeResult->data);
-    printf("encodeResult->data length: %d\n", strlen(encodeResult->data)); 
-    (*g_sendFunc)(encodeResult->data, strlen(encodeResult->data));
+    while (dataLen > 0)
+    {
+        uint8_t packetDataSize = dataLen > MAX_APDU_DATA_SIZE ? MAX_APDU_DATA_SIZE : dataLen;
 
-    return response;
+        packet[OFFSET_CLA] = cla;
+        packet[OFFSET_INS] = ins;
+        packet[OFFSET_P1] = totalPackets;
+        packet[OFFSET_P2] = packetIndex;
+        packet[OFFSET_LC] = packetDataSize;
+        memcpy(packet + OFFSET_CDATA, data + offset, packetDataSize);
+        (*g_sendFunc)(packet, OFFSET_CDATA + packetDataSize);
+        offset += packetDataSize;
+        dataLen -= packetDataSize;
+        packetIndex++;
+    }
 }
 
 static void reset()
 {
     g_totalPackets = 0;
     memset(g_receivedPackets, 0, sizeof(g_receivedPackets));
-    // reset g_packetLengths and g_protocolRcvBuffer
     memset(g_packetLengths, 0, sizeof(g_packetLengths));
     memset(g_protocolRcvBuffer, 0, sizeof(g_protocolRcvBuffer));
 }
@@ -54,17 +60,11 @@ static void parse_apdu(const uint8_t *frame, uint32_t len)
     }
 
     uint8_t cla = frame[OFFSET_CLA];
-    // uint8_t ins = frame[OFFSET_INS];
     uint8_t p1 = frame[OFFSET_P1]; // total number of packets
     uint8_t p2 = frame[OFFSET_P2]; // index of the current packet
     uint8_t lc = frame[OFFSET_LC];
     uint8_t *data = frame + OFFSET_CDATA;
     uint8_t dataLen = len - OFFSET_CDATA;
-    printf("\n");
-    PrintArray("APDU data", data, dataLen);
-    printf("\n");
-    PrintArray("APDU frame", frame, len);
-    printf("\n");
 
     if (p1 > MAX_PACKETS || p2 >= p1)
     {
@@ -81,7 +81,6 @@ static void parse_apdu(const uint8_t *frame, uint32_t len)
     }
     else if (p1 != g_totalPackets)
     { // total number of packets should be the same in all packets
-        printf("p1: %d, g_totalPackets: %d\n", p1, g_totalPackets);
         printf("Inconsistent total number of packets\n");
         reset();
         return;
@@ -107,47 +106,38 @@ static void parse_apdu(const uint8_t *frame, uint32_t len)
         }
     }
 
-    printf("All packets have arrived. Received %d packets.\n", g_totalPackets);
-
-    // Print all received packets
-    printf("Received data: ");
-
-    // uint8_t *fullData = NULL;
-
     uint16_t fullDataLen = 0;
     for (uint16_t i = 0; i < g_totalPackets; i++)
     {
         fullDataLen += g_packetLengths[i];
-        printf("g_packetLengths[i]: %d \n", g_packetLengths[i]);
     }
-    printf("fullDataLen: %d\n", fullDataLen);
     uint8_t *fullData = (uint8_t *)malloc(fullDataLen + 1);
     uint16_t offset = 0;
     for (uint16_t i = 0; i < g_totalPackets; i++)
     {
         memcpy(fullData + offset, g_protocolRcvBuffer[i], g_packetLengths[i]);
         offset += g_packetLengths[i];
-        PrintArray("---fullData---", fullData, offset);
     }
     fullData[fullDataLen] = '\0';
-    printf("data char : %s\n", (char *)fullData);
 
-    CommandResponse *result = (CommandResponse *)malloc(sizeof(CommandResponse));
+    Response *result = (Response *)malloc(sizeof(Response));
     switch (frame[OFFSET_INS])
     {
-    case SIGN_ETH_TX:
-        printf("Processing SIGN_ETH_TX command\n");
-        result = ProcessEthereumTransactionSignature(fullData, fullDataLen);
-        free(fullData);
+    case ECHO_TEST:
+        send_apdu_response(APDU_PROTOCOL_HEADER, ECHO_TEST, fullData, fullDataLen);
         break;
-
+    case SIGN_ETH_TX:
+        result = ProcessEthereumTransactionSignature(fullData, fullDataLen);
+        send_apdu_response(APDU_PROTOCOL_HEADER, SIGN_ETH_TX, result->data, result->length);
+        break;
     default:
         printf('Invalid command\n');
         break;
     }
 
-    g_totalPackets = 0;
-    memset(g_receivedPackets, 0, sizeof(g_receivedPackets));
+    free(fullData);
+    free(result);
+    reset();
 }
 
 void ApduProtocol_Parse(const uint8_t *frame, uint32_t len)

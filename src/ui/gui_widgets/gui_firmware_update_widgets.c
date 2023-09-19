@@ -338,6 +338,7 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
     char fileVersion[16] = {0};
     GUI_DEL_OBJ(g_noticeHintBox)
     lv_event_code_t code = lv_event_get_code(e);
+    uint16_t *walletSetIndex = lv_event_get_user_data(e);
     if (code == LV_EVENT_CLICKED) {
         if (CHECK_BATTERY_LOW_POWER()) {
             g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox);
@@ -353,6 +354,7 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
                 GuiDeleteKeyboardWidget(g_keyboardWidget);
                 g_keyboardWidget = GuiCreateKeyboardWidget(g_firmwareUpdateWidgets.cont);
                 SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+                SetKeyboardWidgetSig(g_keyboardWidget, walletSetIndex);
             }
         } else {
             g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
@@ -471,5 +473,7 @@ static void CloseQrcodeHandler(lv_event_t *e)
 void GuiFirmwareUpdateVerifyPasswordErrorCount(void *param)
 {
     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-    GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
+    if (g_keyboardWidget != NULL) {
+        GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
+    }
 }

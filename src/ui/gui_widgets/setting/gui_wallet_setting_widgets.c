@@ -342,6 +342,7 @@ void GuiResettingWriteSe(void)
 
 void GuiAddWalletAmountLimit(void)
 {
+    GuiShowKeyboardDestruct();
     GuiLockScreenTurnOff();
     static uint8_t walletIndex = DEVICE_SETTING_ADD_WALLET_LIMIT;
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));

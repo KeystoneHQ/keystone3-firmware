@@ -15,8 +15,6 @@
 #include "gui_qr_hintbox.h"
 #include "gui_page.h"
 
-static const char g_webAuthUrl[] = "https://keyst.one/auth";
-
 static void GuiWebAuthQrcodeHandler(lv_event_t *e);
 void GuiWebAuthHidePending();
 void GuiWebAuthRenderAuthCode(lv_obj_t *parent);

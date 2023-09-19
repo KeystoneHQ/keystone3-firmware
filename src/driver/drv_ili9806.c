@@ -18,7 +18,7 @@
 #include "user_utils.h"
 #include "drv_parallel8080.h"
 
-
+uint8_t g_c7param = 0x44;
 
 static void Ili9806WriteCmd(uint8_t cmd);
 static void Ili9806WriteData(uint8_t data);
@@ -161,7 +161,7 @@ static void Ili9806InitSequence(void)
     Ili9806WriteData(0x22);
 
     Ili9806WriteCmd(0xC7); // VCOM Control
-    Ili9806WriteData(0x36);
+    Ili9806WriteData(g_c7param);
 
     Ili9806WriteCmd(0xED); // EN_volt_reg  VGMP / VGMN /VGSP / VGSN voltage to output
     Ili9806WriteData(0x7F);
@@ -271,3 +271,13 @@ static void Ili9806InitSequence(void)
     UserDelay(20);
 }
 
+void Ili9806bTest(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 1);
+    char *endptr;
+    printf("argv = %s\n", argv[0]);
+    g_c7param = (uint8_t)strtol(argv[0], &endptr, 16);
+    printf("g_c7param = %#x\n", g_c7param);
+    Ili9806WriteCmd(0xC7);
+    Ili9806WriteData(g_c7param);
+}

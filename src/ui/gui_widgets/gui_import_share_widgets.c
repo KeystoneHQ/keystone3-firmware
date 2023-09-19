@@ -250,8 +250,8 @@ void GuiImportShareRefresh(void)
 {
     if (g_importShareTileView.currentTile == IMPORT_SHARE_SSB_INPUT) {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, ConfirmClearHandler, NULL);
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
+        SetRightBtnCb(g_pageWidget->navBarWidget, ConfirmClearHandler, NULL);
     } else {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);

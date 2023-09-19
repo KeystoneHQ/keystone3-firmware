@@ -478,8 +478,8 @@ int8_t GuiCreateShareNextTile(void)
         lv_obj_clear_flag(g_shareBackupTile.nextCont, LV_OBJ_FLAG_HIDDEN);
         break;
     case CREATE_SHARE_BACKUPFROM:
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, ResetBtnHandler, NULL);
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Reset");
+        SetRightBtnCb(g_pageWidget->navBarWidget, ResetBtnHandler, NULL);
         lv_obj_add_flag(g_shareBackupTile.nextCont, LV_OBJ_FLAG_HIDDEN);
         break;
     case CREATE_SHARE_CONFIRM:

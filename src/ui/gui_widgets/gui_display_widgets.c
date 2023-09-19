@@ -83,6 +83,10 @@ void GuiDisplayWidgetsDeInit()
         lv_obj_del(g_cont);
         g_cont = NULL;
     }
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
 void GuiDisplayWidgetsRefresh()

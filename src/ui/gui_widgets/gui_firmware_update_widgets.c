@@ -55,7 +55,6 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent);
 static void FirmwareSdcardUpdateHandler(lv_event_t *e);
 
 static FirmwareUpdateWidgets_t g_firmwareUpdateWidgets;
-static const char g_firmwareUpdateUrl[] = "https://keyst.one/webusb";
 static const char g_firmwareSdUpdateUrl[] = "https://keyst.one/firmware";
 static lv_obj_t *g_waitAnimCont = NULL;
 static void *g_param = NULL;

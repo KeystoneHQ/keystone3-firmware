@@ -115,6 +115,7 @@ static void UiDisplayTask(void *argument)
             case UI_MSG_CLOSE_CURRENT_VIEW: {
                 GuiCLoseCurrentWorkingView();
             }
+            break;
             case UI_MSG_SCREEN_SHOT: {
 #ifndef BUILD_PRODUCTION
 #ifdef ENABLE_SCREEN_SHOT

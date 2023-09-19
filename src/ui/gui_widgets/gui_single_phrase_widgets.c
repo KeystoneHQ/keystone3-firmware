@@ -104,6 +104,7 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_align(btn, LV_ALIGN_DEFAULT, 348, 24);
     lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, cont);
     SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12    "USR_SYMBOL_DOWN : "24    "USR_SYMBOL_DOWN);
+    SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
 }
 
 
@@ -279,10 +280,12 @@ static void SelectCheckBoxHandler(lv_event_t* e)
     if (!strcmp(currText, "12 Words")) {
         g_phraseCnt = 12;
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "12    "USR_SYMBOL_DOWN);
+        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         GuiModelBip39UpdateMnemonic(g_phraseCnt);
     } else if (!strcmp(currText, "24 Words")) {
         g_phraseCnt = 24;
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "24    "USR_SYMBOL_DOWN);
+        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         GuiModelBip39UpdateMnemonic(g_phraseCnt);
     }
     lv_obj_scroll_to_y(g_randomPhraseKb->cont, 0, LV_ANIM_ON);
@@ -341,8 +344,8 @@ int8_t GuiSinglePhraseNextTile(void)
         return SUCCESS_CODE;
     case SINGLE_PHRASE_RANDOM_PHRASE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, ResetBtnHandler, NULL);
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET"Reset");
+        SetRightBtnCb(g_pageWidget->navBarWidget, ResetBtnHandler, NULL);
         g_confirmPhraseKb->wordCnt = g_phraseCnt;
         lv_obj_add_flag(g_changeCont, LV_OBJ_FLAG_HIDDEN);
         while (!SecretCacheGetMnemonic()) {
@@ -400,6 +403,10 @@ void GuiSinglePhraseDeInit(void)
     lv_obj_del(g_confirmPhraseKb->cont);
     GUI_DEL_OBJ(g_singlePhraseTileView.cont)
     memset(g_randomBuff, 0, 512);
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
 void GuiSinglePhraseRefresh(void)

@@ -30,6 +30,7 @@ osSemaphoreId_t g_touchPadSem = NULL;
 TouchStatus_t g_touchStatus[TOUCH_RING_BUFFER_SIZE];
 volatile bool g_touchPress;
 static uint8_t g_touchWriteIndex, g_touchReadIndex;
+TouchStatus_t g_latestTouchStatus;
 
 void CreateTouchPadTask(void)
 {
@@ -67,6 +68,7 @@ static void TouchPadTask(void *argument)
                 g_touchWriteIndex = 0;
             }
             memcpy(&g_touchStatus[g_touchWriteIndex], &touchStatus, sizeof(TouchStatus_t));
+            memcpy(&g_latestTouchStatus, &touchStatus, sizeof(TouchStatus_t));
         }
         lastTouch = touchStatus.touch;
 #endif
@@ -97,6 +99,11 @@ TouchStatus_t *GetTouchStatus(void)
         g_touchStatus[index].continueReading = false;
     }
     return &g_touchStatus[index];
+}
+
+TouchStatus_t *GetLatestTouchStatus(void)
+{
+    return &g_latestTouchStatus;
 }
 
 

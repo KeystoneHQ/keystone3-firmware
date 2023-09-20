@@ -199,7 +199,7 @@ void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount)
     lv_obj_set_style_text_color(label, DARK_GRAY_COLOR, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 72);
     lv_label_set_recolor(label, true);
-    lv_label_set_text_fmt(label, "Write down the #F5870A %d#-words seed phrase of your first share in the blanks below", g_inputWordsCnt);
+    // lv_label_set_text_fmt(label, "Write down the #F5870A %d#-words seed phrase of your first share in the blanks below", g_inputWordsCnt);
 
     lv_obj_set_size(g_recoveryMkb->cont, 408, 236);
     lv_obj_align_to(g_recoveryMkb->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);

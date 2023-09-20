@@ -123,12 +123,18 @@ static void parse_apdu(const uint8_t *frame, uint32_t len)
     Response *result = (Response *)malloc(sizeof(Response));
     switch (frame[OFFSET_INS])
     {
-    case ECHO_TEST:
-        send_apdu_response(APDU_PROTOCOL_HEADER, ECHO_TEST, fullData, fullDataLen);
+    case CMD_ECHO_TEST:
+        send_apdu_response(APDU_PROTOCOL_HEADER, CMD_ECHO_TEST, fullData, fullDataLen);
         break;
-    case SIGN_ETH_TX:
+    case CMD_SIGN_ETH_TX:
         result = ProcessEthereumTransactionSignature(fullData, fullDataLen);
-        send_apdu_response(APDU_PROTOCOL_HEADER, SIGN_ETH_TX, result->data, result->length);
+        send_apdu_response(APDU_PROTOCOL_HEADER, CMD_SIGN_ETH_TX, result->data, result->length);
+        break;
+    case CMD_CHECK_LOCK_STATUS:
+        result->data = (uint8_t *)malloc(1);
+        result->data[0] = GuiLockScreenIsTop();
+        result->length = 1;
+        send_apdu_response(APDU_PROTOCOL_HEADER, CMD_CHECK_LOCK_STATUS, result->data, result->length);
         break;
     default:
         printf('Invalid command\n');

@@ -9,11 +9,12 @@
 enum { OFFSET_CLA = 0, OFFSET_INS, OFFSET_P1, OFFSET_P2, OFFSET_LC, OFFSET_CDATA };
 
 typedef enum {
-    ECHO_TEST = 0x00000001,
-    SIGN_ETH_TX,
+    CMD_ECHO_TEST = 0x00000001,    // Command to test echo
+    CMD_SIGN_ETH_TX,               // Command to sign Ethereum transaction
+    CMD_CHECK_LOCK_STATUS,         // Command to check lock status
     //
-    MAX_COMMAND = 0xFFFFFFFF,
-};
+    CMD_MAX_VALUE = 0xFFFFFFFF,    // The maximum value for command
+} CommandType;
 
 typedef struct {
     uint8_t *data;

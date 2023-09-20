@@ -215,11 +215,17 @@ int FatfsFileCopy(const TCHAR* source, const TCHAR* dest)
         res = f_open(&fpSource, source, FA_OPEN_EXISTING | FA_READ);
         if (res) {
             FatfsError(res);
+            if (res != FR_OK) {
+                return res;
+            }
             break;
         }
         res = f_open(&fpDest, dest, FA_CREATE_ALWAYS | FA_WRITE);
         if (res) {
             FatfsError(res);
+            if (res != FR_OK) {
+                return res;
+            }
             break;
         }
         fileSize = f_size(&fpSource);

@@ -30,6 +30,7 @@ osSemaphoreId_t g_touchPadSem = NULL;
 TouchStatus_t g_touchStatus[TOUCH_RING_BUFFER_SIZE];
 volatile bool g_touchPress;
 static uint8_t g_touchWriteIndex, g_touchReadIndex;
+TouchStatus_t g_touchStatusG;
 
 void CreateTouchPadTask(void)
 {
@@ -62,11 +63,12 @@ static void TouchPadTask(void *argument)
         LcdDraw(touchStatus.x, touchStatus.y, touchStatus.x, touchStatus.y, &testColor);
 #else
         if (lastTouch) {
-            g_touchWriteIndex++;
-            if (g_touchWriteIndex >= TOUCH_RING_BUFFER_SIZE) {
-                g_touchWriteIndex = 0;
-            }
-            memcpy(&g_touchStatus[g_touchWriteIndex], &touchStatus, sizeof(TouchStatus_t));
+            // g_touchWriteIndex++;
+            // if (g_touchWriteIndex >= TOUCH_RING_BUFFER_SIZE) {
+            //     g_touchWriteIndex = 0;
+            // }
+            // memcpy(&g_touchStatus[g_touchWriteIndex], &touchStatus, sizeof(TouchStatus_t));
+            memcpy(&g_touchStatusG, &touchStatus, sizeof(TouchStatus_t));
         }
         lastTouch = touchStatus.touch;
 #endif
@@ -83,20 +85,20 @@ static void TouchPadTask(void *argument)
 
 TouchStatus_t *GetTouchStatus(void)
 {
-    uint8_t index;
+    // uint8_t index;
 
-    index = g_touchReadIndex;
-    //printf("index=%d\r\n", index);
-    if (g_touchReadIndex != g_touchWriteIndex) {
-        g_touchReadIndex++;
-        if (g_touchReadIndex >= TOUCH_RING_BUFFER_SIZE) {
-            g_touchReadIndex = 0;
-        }
-        g_touchStatus[index].continueReading = true;
-    } else {
-        g_touchStatus[index].continueReading = false;
-    }
-    return &g_touchStatus[index];
+    // index = g_touchReadIndex;
+    // //printf("index=%d\r\n", index);
+    // if (g_touchReadIndex != g_touchWriteIndex) {
+    //     g_touchReadIndex++;
+    //     if (g_touchReadIndex >= TOUCH_RING_BUFFER_SIZE) {
+    //         g_touchReadIndex = 0;
+    //     }
+    //     g_touchStatus[index].continueReading = true;
+    // } else {
+    //     g_touchStatus[index].continueReading = false;
+    // }
+    return &g_touchStatusG;
 }
 
 

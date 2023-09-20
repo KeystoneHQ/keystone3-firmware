@@ -397,6 +397,7 @@ static void GuiShareConfirmWidget(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateNoticeLabel(parent, _("shamir_phrase_confirm_desc"));
+    lv_label_set_recolor(label, true);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
     g_shareConfirmTile.noticeLabel = label;
 
@@ -446,9 +447,9 @@ int8_t GuiCreateShareNextSlice(void)
         return SUCCESS_CODE;
     }
     lv_label_set_text_fmt(g_custodianTile.titleLabel, "Share #F5870A %d#/%d", g_createShareTileView.currentSlice + 1, g_selectSliceTile.memberCnt);
-    lv_label_set_text_fmt(g_custodianTile.noticeLabel, "Please confirm you are the custodian of the\nshare #%d", g_createShareTileView.currentSlice + 1);
-    lv_label_set_text_fmt(g_shareBackupTile.noticeLabel, "Write down your share #F5870A %d# phrase and keep \nit properly.", g_createShareTileView.currentSlice + 1);
-    lv_label_set_text_fmt(g_shareConfirmTile.noticeLabel, "Select words below in the order of your\nshare #%d phrase to confirm that you have\nkept it properly.", g_createShareTileView.currentSlice + 1);
+    lv_label_set_text_fmt(g_custodianTile.noticeLabel, "Please confirm you are the custodian of the\nShare %d", g_createShareTileView.currentSlice + 1);
+    lv_label_set_text_fmt(g_shareBackupTile.noticeLabel, "Write down your Share #F5870A %d# phrase and keep \nit properly.", g_createShareTileView.currentSlice + 1);
+    lv_label_set_text_fmt(g_shareConfirmTile.noticeLabel, "Select words below in the order of your\nShare %d phrase to confirm that you have\nkept it properly.", g_createShareTileView.currentSlice + 1);
 
     g_createShareTileView.currentTile = CREATE_SHARE_CUSTODIAN;
     ResetBtnTest();

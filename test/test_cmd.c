@@ -1530,7 +1530,7 @@ static void RustTestGetAddressSolanaSucceed(int argc, char *argv[])
     // get publickey
     uint8_t seed[64];
     GetAccountSeed(index, seed, argv[1]);
-    SimpleResponse_c_char *pubkey = get_extended_pubkey_by_seed(seed, sizeof(seed), argv[2]);
+    SimpleResponse_c_char *pubkey = get_ed25519_pubkey_by_seed(seed, sizeof(seed), argv[2]);
     char *pubkeyStr = pubkey->data;
     printf("pubkey: %s\r\n", pubkey->data);
     SimpleResponse_c_char *result = solana_get_address(pubkeyStr);

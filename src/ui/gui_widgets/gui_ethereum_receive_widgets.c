@@ -15,6 +15,7 @@
 #include "gui_fullscreen_mode.h"
 #include "keystore.h"
 #include "gui_page.h"
+#include "user_memory.h"
 
 #define GENERAL_ADDRESS_INDEX_MAX               999999999
 #define LEDGER_LIVE_ADDRESS_INDEX_MAX               9
@@ -118,8 +119,23 @@ static uint32_t g_selectIndex[3] = {0};
 static uint32_t g_pathIndex[3] = {0};
 static PageWidget_t *g_pageWidget;
 
+static char* *g_derivationPathDescs = NULL;
+static lv_obj_t *g_derivationPathDescLabel = NULL;
+
+static void InitDerivationPathDescs()
+{
+    if(g_derivationPathDescs == NULL)
+    {
+        g_derivationPathDescs = SRAM_MALLOC(3*128);
+        g_derivationPathDescs[Bip44Standard] = _("Recommended. Widely adopted across numerous software wallets.");
+        g_derivationPathDescs[LedgerLive] = _("Choose this path if you intend to import a seed phrase from Ledger Live.");
+        g_derivationPathDescs[LedgerLegacy] = _("Choose this path if you are managing your digital assets with Ledger Legacy.");
+    }
+}
+
 void GuiEthereumReceiveInit(void)
 {
+    InitDerivationPathDescs();
     g_pageWidget = CreatePageWidget();
     g_ethereumReceiveWidgets.cont = g_pageWidget->contentZone;
     g_ethereumReceiveWidgets.tileView = lv_tileview_create(g_ethereumReceiveWidgets.cont);
@@ -427,6 +443,7 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
     lv_obj_set_size(labelHint, 360, 60);
     lv_obj_set_style_text_opa(labelHint, LV_OPA_56, LV_PART_MAIN);
     lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 24, 12);
+    g_derivationPathDescLabel = labelHint;
 
     labelHint = GuiCreateIllustrateLabel(cont, "Addresses eg.");
     lv_obj_set_size(labelHint, 129, 30);
@@ -633,6 +650,7 @@ static void ChangePathCheckHandler(lv_event_t *e)
                     g_selectIndex[GetCurrentAccountIndex()] = 0;
                     g_showIndex = 0;
                     RefreshDefaultAddress();
+                    lv_label_set_text(g_derivationPathDescLabel, g_derivationPathDescs[g_pathIndex[GetCurrentAccountIndex()]]);
                 }
             } else {
                 lv_obj_clear_state(g_ethereumReceiveWidgets.changePathWidgets[i].checkBox, LV_STATE_CHECKED);

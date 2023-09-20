@@ -282,6 +282,7 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
     lv_obj_set_align(g_letterKbCont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_opa(g_letterKbCont, LV_OPA_0, 0);
     g_forgetPhraseKb = GuiCreateLetterKeyBoard(g_letterKbCont, NULL, bip39, g_forgetMkb);
+    g_forgetPhraseKb->btnm = g_forgetMkb->btnm;
     g_forgetMkb->letterKb = g_forgetPhraseKb;
     g_forgetMkb->currentId = 0;
 

@@ -112,6 +112,7 @@ static void GuiInputPhraseWidget(lv_obj_t *parent)
     lv_obj_set_align(g_importPhraseKbCont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_opa(g_importPhraseKbCont, LV_OPA_0, 0);
     g_importPhraseKb = GuiCreateLetterKeyBoard(g_importPhraseKbCont, NULL, true, g_importMkb);
+    g_importPhraseKb->btnm = g_importMkb->btnm;
     g_importMkb->letterKb = g_importPhraseKb;
     g_importMkb->currentId = 0;
 }

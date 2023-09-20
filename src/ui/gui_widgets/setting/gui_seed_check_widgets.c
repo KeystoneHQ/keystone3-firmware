@@ -173,6 +173,7 @@ void *GuiWalletRecoverySinglePhrase(lv_obj_t *parent, uint8_t wordAmount)
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_opa(cont, LV_OPA_0, 0);
     g_recoveryPhraseKb = GuiCreateLetterKeyBoard(cont, NULL, true, g_recoveryMkb);
+    g_recoveryPhraseKb->btnm = g_recoveryMkb->btnm;
     g_recoveryMkb->letterKb = g_recoveryPhraseKb;
 
     return cont;
@@ -222,6 +223,7 @@ void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount)
     lv_obj_set_style_bg_opa(cont, LV_OPA_0, 0);
 
     g_recoveryPhraseKb = GuiCreateLetterKeyBoard(cont, NULL, false, g_recoveryMkb);
+    g_recoveryPhraseKb->btnm = g_recoveryMkb->btnm;
     g_recoveryMkb->letterKb = g_recoveryPhraseKb;
 
     return cont;

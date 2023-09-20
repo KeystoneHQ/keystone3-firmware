@@ -183,7 +183,6 @@ static const lv_img_dsc_t *g_emojiMatrix[16] = {
     &emojiMusic,   &emojiHeart,     &emojiCompass,  &emojiGame,
 };
 
-static MnemonicKeyBoard_t *g_importPhraseKb = NULL;
 static lv_obj_t *g_walletIcon = NULL;
 static lv_obj_t *g_enterProgressLabel = NULL;
 static uint8_t g_currEmojiIndex = 0;
@@ -769,11 +768,11 @@ void GuiDelMnemonicKeyBoard(MnemonicKeyBoard_t * mnemonicKeyBoard)
     for (int i = 0; i < 44; i++) {
         // SRAM_FREE(mnemonicKeyBoard->mnemonicWord[i]);
     }
-    if (g_importPhraseKb != NULL) {
-        lv_obj_del(g_importPhraseKb->btnm);
-        g_importPhraseKb->btnm = NULL;
-        g_importPhraseKb = NULL;
-    }
+    // if (g_importPhraseKb != NULL) {
+    //     lv_obj_del(g_importPhraseKb->btnm);
+    //     g_importPhraseKb->btnm = NULL;
+    //     g_importPhraseKb = NULL;
+    // }
 }
 
 void GuiUpdateMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard, char *mnemonic, bool confirm)
@@ -1040,9 +1039,7 @@ static void LetterKbAssociateHandler(lv_event_t *e)
     char buf[1] = {0};
     if (code == LV_EVENT_CLICKED) {
         strcpy(g_wordChange, text);
-        if (g_importPhraseKb != NULL) {
-            lv_event_send(g_importPhraseKb->btnm, LV_EVENT_READY, g_wordChange);
-        }
+        lv_event_send(keyBoard->btnm, LV_EVENT_READY, g_wordChange);
         lv_textarea_set_text(keyBoard->ta, "");
         for (int i = 0; i < 3; i++) {
             lv_label_set_text(keyBoard->associateLabel[i], "");
@@ -1058,9 +1055,7 @@ static void CloseLetterKbHandler(lv_event_t *e)
     KeyBoard_t *keyBoard = lv_event_get_user_data(e);
     if (code == LV_EVENT_CLICKED) {
         if (keyBoard->mode == KEY_STONE_LETTER) {
-            if (g_importPhraseKb != NULL) {
-                lv_event_send(g_importPhraseKb->btnm, KEY_STONE_KEYBOARD_HIDDEN, NULL);
-            }
+            lv_event_send(keyBoard->btnm, KEY_STONE_KEYBOARD_HIDDEN, NULL);
         }
         lv_obj_add_flag(keyBoard->cont, LV_OBJ_FLAG_HIDDEN);
     }
@@ -1123,9 +1118,7 @@ void KbTextAreaHandler(lv_event_t * e)
             return;
         }
         if (keyBoard->mode == KEY_STONE_LETTER) {
-            if (g_importPhraseKb != NULL) {
-                lv_event_send(g_importPhraseKb->btnm, KEY_STONE_KEYBOARD_VALUE_CHANGE, (void *)currText);
-            }
+            lv_event_send(keyBoard->btnm, KEY_STONE_KEYBOARD_VALUE_CHANGE, (void *)currText);
             UpdateKeyBoard(rootTree, currText, keyBoard);
         } else {
             if (keyBoard->mode == KEY_STONE_FULL_L || keyBoard->mode == KEY_STONE_FULL_U) {
@@ -1141,9 +1134,7 @@ void KbTextAreaHandler(lv_event_t * e)
         }
     } else if (code == LV_EVENT_READY) {
         if (keyBoard->mode == KEY_STONE_LETTER) {
-            if (g_importPhraseKb != NULL) {
-                lv_event_send(g_importPhraseKb->btnm, LV_EVENT_READY, (void *)currText);
-            }
+            lv_event_send(keyBoard->btnm, LV_EVENT_READY, (void *)currText);
         } else {
             UpdateFullKeyBoard("", keyBoard);
         }
@@ -1156,9 +1147,7 @@ void KbTextAreaHandler(lv_event_t * e)
                     lv_label_set_text(keyBoard->associateLabel[i], "");
                 }
             }
-            if (g_importPhraseKb != NULL) {
-                lv_event_send(g_importPhraseKb->btnm, LV_EVENT_CANCEL, (void *)currText);
-            }
+            lv_event_send(keyBoard->btnm, LV_EVENT_CANCEL, (void *)currText);
             UpdateKeyBoard(rootTree, currText, keyBoard);
         } else {
             // if (keyBoard->mode == KEY_STONE_FULL_L || keyBoard->mode == KEY_STONE_FULL_U) {
@@ -1184,12 +1173,6 @@ void KbTextAreaHandler(lv_event_t * e)
 void *GuiCreateLetterKeyBoard(lv_obj_t *parent, lv_event_cb_t cb, bool bip39, void *param)
 {
     static lv_point_t linePoints[2] = {{0, 0}, {0, 40}};
-
-    if (param != NULL) {
-        g_importPhraseKb = param;
-        g_importPhraseKb->btnm = ((MnemonicKeyBoard_t*)param)->btnm;
-    }
-
     UpdateRootTree(bip39);
 
     KeyBoard_t *keyBoard = GuiCreateKeyBoard(parent, cb, KEY_STONE_LETTER, NULL);

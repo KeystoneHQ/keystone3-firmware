@@ -247,6 +247,7 @@ static void GuiMnemonicUpdateNextBtn(MnemonicKeyBoard_t *mkb, KeyBoard_t *letter
     uint32_t currentId = 0;
     char trueText[12] = {0};
     int wordcnt = searchTrie(rootTree, word);
+    printf("wordcnt = %d\n", wordcnt);
     if (wordcnt == 1 || GuiWordsWhole(word)) {
         GuiInputMnemonicKeyBoard(mkb, g_wordBuf[0], mkb->currentId, 1);
         needNext = true;
@@ -345,6 +346,7 @@ void GuiMnemonicInputHandler(lv_event_t *e)
         }
 
         char *word = lv_event_get_param(e);
+        printf("%s %d word: %s\n", __func__, __LINE__, word);
         GuiMnemonicUpdateNextBtn(mkb, letterKb, obj, word);
 
         if (mkb->currentId == mkb->wordCnt) {

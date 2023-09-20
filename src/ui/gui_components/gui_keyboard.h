@@ -20,6 +20,7 @@ typedef struct {
     lv_obj_t *kb;
     lv_obj_t *associateLabel[3];
     lv_obj_t *ta;
+    lv_obj_t *btnm;
     lv_keyboard_user_mode_t mode;
     uint8_t taMinLen;
 } KeyBoard_t;

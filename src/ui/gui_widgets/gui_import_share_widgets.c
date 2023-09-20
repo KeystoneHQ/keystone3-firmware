@@ -172,6 +172,7 @@ static void GuiShareSsbInputWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(cont, LV_OPA_0, 0);
 
     g_ssbImportKb = GuiCreateLetterKeyBoard(cont, NULL, false, g_importMkb);
+    g_ssbImportKb->btnm = g_importMkb->btnm;
     g_importMkb->letterKb = g_ssbImportKb;
     g_importMkb->currentId = 0;
 }

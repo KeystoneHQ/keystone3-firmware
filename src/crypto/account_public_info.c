@@ -34,9 +34,14 @@ typedef struct {
     int32_t current;
 } AccountPublicKeyItem_t;
 
+typedef enum {
+    ED25519,
+    SECP256K1,
+} Curve_t;
 
 typedef struct {
     ChainType chain;
+    Curve_t curve;
     char *name;
     char *path;
 } ChainItem_t;
@@ -55,32 +60,53 @@ static uint8_t g_tempPublicKeyAccountIndex = INVALID_ACCOUNT_INDEX;
 static const char g_xpubInfoVersion[] = "1.0.0";
 
 static const ChainItem_t g_chainTable[] = {
-    {XPUB_TYPE_BTC,                        "btc",                      "M/49'/0'/0'"       },
-    {XPUB_TYPE_BTC_LEGACY,                 "btc_legacy",               "M/44'/0'/0'"       },
-    {XPUB_TYPE_BTC_NATIVE_SEGWIT,          "btc_nested_segwit",        "M/84'/0'/0'"       },
-    {XPUB_TYPE_LTC,                        "ltc",                      "M/49'/2'/0'"       },
-    {XPUB_TYPE_DASH,                       "dash",                     "M/44'/5'/0'"       },
-    {XPUB_TYPE_BCH,                        "bch",                      "M/44'/145'/0'"     },
-    {XPUB_TYPE_ETH_BIP44_STANDARD,         "eth_bip44_standard",       "M/44'/60'/0'"      },
-    {XPUB_TYPE_ETH_LEDGER_LEGACY,          "eth_ledger_legacy",        "M/44'/60'/0'"      },
-    {XPUB_TYPE_ETH_LEDGER_LIVE_0,          "eth_ledger_live_0",        "M/44'/60'/0'"      },
-    {XPUB_TYPE_ETH_LEDGER_LIVE_1,          "eth_ledger_live_1",        "M/44'/60'/1'"      },
-    {XPUB_TYPE_ETH_LEDGER_LIVE_2,          "eth_ledger_live_2",        "M/44'/60'/2'"      },
-    {XPUB_TYPE_ETH_LEDGER_LIVE_3,          "eth_ledger_live_3",        "M/44'/60'/3'"      },
-    {XPUB_TYPE_ETH_LEDGER_LIVE_4,          "eth_ledger_live_4",        "M/44'/60'/4'"      },
-    {XPUB_TYPE_ETH_LEDGER_LIVE_5,          "eth_ledger_live_5",        "M/44'/60'/5'"      },
-    {XPUB_TYPE_ETH_LEDGER_LIVE_6,          "eth_ledger_live_6",        "M/44'/60'/6'"      },
-    {XPUB_TYPE_ETH_LEDGER_LIVE_7,          "eth_ledger_live_7",        "M/44'/60'/7'"      },
-    {XPUB_TYPE_ETH_LEDGER_LIVE_8,          "eth_ledger_live_8",        "M/44'/60'/8'"      },
-    {XPUB_TYPE_ETH_LEDGER_LIVE_9,          "eth_ledger_live_9",        "M/44'/60'/9'"      },
-    {XPUB_TYPE_TRX,                        "trx",                      "M/44'/195'/0'"     },
-    {XPUB_TYPE_COSMOS,                     "cosmos",                   "M/44'/118'/0'"     },
-    {XPUB_TYPE_SCRT,                       "scrt",                     "M/44'/529'/0'"     },
-    {XPUB_TYPE_CRO,                        "cro",                      "M/44'/394'/0'"     },
-    {XPUB_TYPE_IOV,                        "iov",                      "M/44'/234'/0'"     },
-    {XPUB_TYPE_BLD,                        "bld",                      "M/44'/564'/0'"     },
-    {XPUB_TYPE_KAVA,                       "kava",                     "M/44'/459'/0'"     },
-    {XPUB_TYPE_TERRA,                      "terra",                    "M/44'/330'/0'"     },
+    {XPUB_TYPE_BTC,                   SECP256K1,    "btc",                      "M/49'/0'/0'"       },
+    {XPUB_TYPE_BTC_LEGACY,            SECP256K1,    "btc_legacy",               "M/44'/0'/0'"       },
+    {XPUB_TYPE_BTC_NATIVE_SEGWIT,     SECP256K1,    "btc_nested_segwit",        "M/84'/0'/0'"       },
+    {XPUB_TYPE_LTC,                   SECP256K1,    "ltc",                      "M/49'/2'/0'"       },
+    {XPUB_TYPE_DASH,                  SECP256K1,    "dash",                     "M/44'/5'/0'"       },
+    {XPUB_TYPE_BCH,                   SECP256K1,    "bch",                      "M/44'/145'/0'"     },
+    {XPUB_TYPE_ETH_BIP44_STANDARD,    SECP256K1,    "eth_bip44_standard",       "M/44'/60'/0'"      },
+    {XPUB_TYPE_ETH_LEDGER_LEGACY,     SECP256K1,    "eth_ledger_legacy",        "M/44'/60'/0'"      },
+    {XPUB_TYPE_ETH_LEDGER_LIVE_0,     SECP256K1,    "eth_ledger_live_0",        "M/44'/60'/0'"      },
+    {XPUB_TYPE_ETH_LEDGER_LIVE_1,     SECP256K1,    "eth_ledger_live_1",        "M/44'/60'/1'"      },
+    {XPUB_TYPE_ETH_LEDGER_LIVE_2,     SECP256K1,    "eth_ledger_live_2",        "M/44'/60'/2'"      },
+    {XPUB_TYPE_ETH_LEDGER_LIVE_3,     SECP256K1,    "eth_ledger_live_3",        "M/44'/60'/3'"      },
+    {XPUB_TYPE_ETH_LEDGER_LIVE_4,     SECP256K1,    "eth_ledger_live_4",        "M/44'/60'/4'"      },
+    {XPUB_TYPE_ETH_LEDGER_LIVE_5,     SECP256K1,    "eth_ledger_live_5",        "M/44'/60'/5'"      },
+    {XPUB_TYPE_ETH_LEDGER_LIVE_6,     SECP256K1,    "eth_ledger_live_6",        "M/44'/60'/6'"      },
+    {XPUB_TYPE_ETH_LEDGER_LIVE_7,     SECP256K1,    "eth_ledger_live_7",        "M/44'/60'/7'"      },
+    {XPUB_TYPE_ETH_LEDGER_LIVE_8,     SECP256K1,    "eth_ledger_live_8",        "M/44'/60'/8'"      },
+    {XPUB_TYPE_ETH_LEDGER_LIVE_9,     SECP256K1,    "eth_ledger_live_9",        "M/44'/60'/9'"      },
+    {XPUB_TYPE_TRX,                   SECP256K1,    "trx",                      "M/44'/195'/0'"     },
+    {XPUB_TYPE_COSMOS,                SECP256K1,    "cosmos",                   "M/44'/118'/0'"     },
+    {XPUB_TYPE_SCRT,                  SECP256K1,    "scrt",                     "M/44'/529'/0'"     },
+    {XPUB_TYPE_CRO,                   SECP256K1,    "cro",                      "M/44'/394'/0'"     },
+    {XPUB_TYPE_IOV,                   SECP256K1,    "iov",                      "M/44'/234'/0'"     },
+    {XPUB_TYPE_BLD,                   SECP256K1,    "bld",                      "M/44'/564'/0'"     },
+    {XPUB_TYPE_KAVA,                  SECP256K1,    "kava",                     "M/44'/459'/0'"     },
+    {XPUB_TYPE_TERRA,                 SECP256K1,    "terra",                    "M/44'/330'/0'"     },
+    {XPUB_TYPE_SOL_BIP44_0,           ED25519,      "sol_bip44_0",              "M/44'/501'/0'"     },
+    {XPUB_TYPE_SOL_BIP44_1,           ED25519,      "sol_bip44_1",              "M/44'/501'/1'"     },
+    {XPUB_TYPE_SOL_BIP44_2,           ED25519,      "sol_bip44_2",              "M/44'/501'/2'"     },
+    {XPUB_TYPE_SOL_BIP44_3,           ED25519,      "sol_bip44_3",              "M/44'/501'/3'"     },
+    {XPUB_TYPE_SOL_BIP44_4,           ED25519,      "sol_bip44_4",              "M/44'/501'/4'"     },
+    {XPUB_TYPE_SOL_BIP44_5,           ED25519,      "sol_bip44_5",              "M/44'/501'/5'"     },
+    {XPUB_TYPE_SOL_BIP44_6,           ED25519,      "sol_bip44_6",              "M/44'/501'/6'"     },
+    {XPUB_TYPE_SOL_BIP44_7,           ED25519,      "sol_bip44_7",              "M/44'/501'/7'"     },
+    {XPUB_TYPE_SOL_BIP44_8,           ED25519,      "sol_bip44_8",              "M/44'/501'/8'"     },
+    {XPUB_TYPE_SOL_BIP44_9,           ED25519,      "sol_bip44_9",              "M/44'/501'/9'"     },
+    {XPUB_TYPE_SOL_BIP44_ROOT,        ED25519,      "sol_bip44_root",           "M/44'/501'"        },
+    {XPUB_TYPE_SOL_BIP44_CHANGE_0,    ED25519,      "sol_bip44_change_0",       "M/44'/501'/0'/0'"  },
+    {XPUB_TYPE_SOL_BIP44_CHANGE_1,    ED25519,      "sol_bip44_change_1",       "M/44'/501'/1'/0'"  },
+    {XPUB_TYPE_SOL_BIP44_CHANGE_2,    ED25519,      "sol_bip44_change_2",       "M/44'/501'/2'/0'"  },
+    {XPUB_TYPE_SOL_BIP44_CHANGE_3,    ED25519,      "sol_bip44_change_3",       "M/44'/501'/3'/0'"  },
+    {XPUB_TYPE_SOL_BIP44_CHANGE_4,    ED25519,      "sol_bip44_change_4",       "M/44'/501'/4'/0'"  },
+    {XPUB_TYPE_SOL_BIP44_CHANGE_5,    ED25519,      "sol_bip44_change_5",       "M/44'/501'/5'/0'"  },
+    {XPUB_TYPE_SOL_BIP44_CHANGE_6,    ED25519,      "sol_bip44_change_6",       "M/44'/501'/6'/0'"  },
+    {XPUB_TYPE_SOL_BIP44_CHANGE_7,    ED25519,      "sol_bip44_change_7",       "M/44'/501'/7'/0'"  },
+    {XPUB_TYPE_SOL_BIP44_CHANGE_8,    ED25519,      "sol_bip44_change_8",       "M/44'/501'/8'/0'"  },
+    {XPUB_TYPE_SOL_BIP44_CHANGE_9,    ED25519,      "sol_bip44_change_9",       "M/44'/501'/9'/0'"  },
 };
 
 void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
@@ -200,7 +226,7 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
 {
     uint32_t addr, size, i, eraseAddr;
     char *jsonString = NULL;
-    SimpleResponse_c_char *xPubResult;
+    SimpleResponse_c_char *xPubResult = NULL;
     int32_t ret = SUCCESS_CODE;
     bool regeneratePubKey = newKey;
     uint8_t seed[64];
@@ -254,7 +280,19 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         ret = GetAccountSeed(accountIndex, seed, password);
         CHECK_ERRCODE_BREAK("get seed", ret);
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
-            xPubResult = get_extended_pubkey_by_seed(seed, len, g_chainTable[i].path);
+            switch (g_chainTable[i].curve) {
+            case SECP256K1:
+                xPubResult = get_extended_pubkey_by_seed(seed, len, g_chainTable[i].path);
+                break;
+            case ED25519:
+                xPubResult = get_ed25519_pubkey_by_seed(seed, len, g_chainTable[i].path);
+                break;
+            default:
+                xPubResult = NULL;
+                printf("unsupported curve type: %d\r\n", g_chainTable[i].curve);
+                break;
+            }
+            ASSERT(xPubResult);
             if (xPubResult->error_code != 0) {
                 printf("get_extended_pubkey error\r\n");
                 if (xPubResult->error_message != NULL) {
@@ -309,7 +347,19 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
         ret = GetAccountSeed(accountIndex, seed, password);
         CHECK_ERRCODE_RETURN_INT(ret);
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
-            xPubResult = get_extended_pubkey_by_seed(seed, len, g_chainTable[i].path);
+           switch (g_chainTable[i].curve) {
+            case SECP256K1:
+                xPubResult = get_extended_pubkey_by_seed(seed, len, g_chainTable[i].path);
+                break;
+            case ED25519:
+                xPubResult = get_ed25519_pubkey_by_seed(seed, len, g_chainTable[i].path);
+                break;
+            default:
+                xPubResult = NULL;
+                printf("unsupported curve type: %d\r\n", g_chainTable[i].curve);
+                break;
+            }
+            ASSERT(xPubResult);
             if (xPubResult->error_code != 0) {
                 printf("get_extended_pubkey error\r\n");
                 if (xPubResult->error_message != NULL) {

@@ -278,15 +278,19 @@ static void SelectCheckBoxHandler(lv_event_t* e)
 
     const char *currText = lv_checkbox_get_text(actCb);
     if (!strcmp(currText, "12 Words")) {
-        g_phraseCnt = 12;
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "12    "USR_SYMBOL_DOWN);
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
-        GuiModelBip39UpdateMnemonic(g_phraseCnt);
+        if (g_phraseCnt != 12) {
+            g_phraseCnt = 12;
+            GuiModelBip39UpdateMnemonic(g_phraseCnt);
+        }
     } else if (!strcmp(currText, "24 Words")) {
-        g_phraseCnt = 24;
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "24    "USR_SYMBOL_DOWN);
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
-        GuiModelBip39UpdateMnemonic(g_phraseCnt);
+        if (g_phraseCnt != 24) {
+            g_phraseCnt = 24;
+            GuiModelBip39UpdateMnemonic(g_phraseCnt);
+        }    
     }
     lv_obj_scroll_to_y(g_randomPhraseKb->cont, 0, LV_ANIM_ON);
     GUI_DEL_OBJ(g_noticeHintBox)
@@ -296,6 +300,7 @@ static void SelectPhraseCntHandler(lv_event_t *e)
 {
     static uint32_t currentIndex = 0;
     lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *checkBox = NULL;
 
     if (code == LV_EVENT_CLICKED) {
         g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 282, true);
@@ -310,17 +315,15 @@ static void SelectPhraseCntHandler(lv_event_t *e)
         lv_obj_align(button, LV_ALIGN_DEFAULT, 407, 550);
 
         if (g_phraseCnt == 24) {
-            lv_obj_t *checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("single_phrase_24words"));
-            lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
-            lv_obj_add_state(checkBox, LV_STATE_CHECKED);
-            currentIndex = lv_obj_get_child_cnt(g_noticeHintBox) - 1;
             checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("single_phrase_12words"));
             lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
+            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("single_phrase_24words"));
+            lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
+            lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         } else {
-            lv_obj_t *checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("single_phrase_12words"));
+            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("single_phrase_12words"));
             lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
-            currentIndex = lv_obj_get_child_cnt(g_noticeHintBox) - 1;
             checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("single_phrase_24words"));
             lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
         }

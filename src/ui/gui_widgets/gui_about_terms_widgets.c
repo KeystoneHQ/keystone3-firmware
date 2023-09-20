@@ -148,12 +148,6 @@ void GuiAboutTermsEntranceWidget(lv_obj_t *parent)
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = "No Retrieval of Sensitive Information";
-    text = "We do not store your sensitive information like passwords or seed phrases. Keep your credentials safe.";
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
-    lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
-    dy += (height + 24);
-
     tittle = "Risks";
     text = "Be aware of the risks associated with cryptocurrencies and technology vulnerabilities.";
     itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
@@ -174,12 +168,6 @@ void GuiAboutTermsEntranceWidget(lv_obj_t *parent)
 
     tittle = "Ownership & Proprietary Rights";
     text = "You are responsible for your actions while using the Products and Services.";
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
-    lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
-    dy += (height + 24);
-
-    tittle = "Indemnity";
-    text = "You must be 18 years old or above to access and use our Products or Services.";
     itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);

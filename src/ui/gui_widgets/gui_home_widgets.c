@@ -575,7 +575,7 @@ static void OpenManageAssetsHandler(lv_event_t *e)
         lv_obj_t *line = GuiCreateDividerLine(checkBoxCont);
         lv_obj_align(line, LV_ALIGN_DEFAULT, 0, HOME_WALLET_CARD_BNB * 96);
 
-        label = GuiCreateIllustrateLabel(checkBoxCont, "Please upgrade to the latest version for access to expanded crypto compatibility.");
+        label = GuiCreateIllustrateLabel(checkBoxCont, "Please update to the latest version to access expanded software wallet compatibility.");
         lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
         lv_obj_align(label, LV_ALIGN_DEFAULT, 32, HOME_WALLET_CARD_BNB * 96 + 25);
         // **

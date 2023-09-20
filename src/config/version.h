@@ -9,8 +9,8 @@
 #ifndef _VERSION_H
 #define _VERSION_H
 
-#define SOFTWARE_VERSION_MAJOR              0
-#define SOFTWARE_VERSION_MINOR              9
+#define SOFTWARE_VERSION_MAJOR              1
+#define SOFTWARE_VERSION_MINOR              0
 #define SOFTWARE_VERSION_BUILD              0
 #define SOFTWARE_VERSION                    (SOFTWARE_VERSION_MAJOR * 10000 + SOFTWARE_VERSION_MINOR * 100 + SOFTWARE_VERSION_BUILD)
 

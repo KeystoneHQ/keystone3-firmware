@@ -1,0 +1,25 @@
+[package]
+name = "app_sui"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+keystore = { path = "../../keystore", default-features = false }
+third_party = { path = "../../third_party", default-features = false }
+serde_json = { version = "1.0.95", default-features = false, features = ['alloc'] }
+serde = { version = "1.0.139", default-features = false }
+serde_derive = { version = "1.0.159"}
+app_utils = {path = "../utils"}
+blake2 = { version = "0.10.6", default-features = false }
+
+[dev-dependencies]
+keystore = { path = "../../keystore" }
+
+[features]
+default = ["std"]
+std = []
+
+[lib]
+doctest = false

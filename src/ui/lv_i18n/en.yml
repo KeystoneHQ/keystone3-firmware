@@ -213,9 +213,14 @@ en:
     wallets
   derivation_path_select_eth: "Select the derivation path you\u2019d like to use for\
     \ Ethereum"
+  derivation_path_select_sol: "Select the derivation path you\u2019d like to use for\
+    \ Solana"
+  derivation_path_sol_1_desc: ''
+  derivation_path_sol_2_desc: ''
+  derivation_path_sol_3_desc: ''
   device_info_title: Device Info
   device_setting_about_title: About
-  device_setting_connection_desc: USB / Bluetooth / MicroSD Card...
+  device_setting_connection_desc: USB / MicroSD Card...
   device_setting_connection_title: Connection
   device_setting_mid_btn: Device Settings
   device_setting_system_setting_desc: Language / Screen / Reset...
@@ -402,27 +407,36 @@ en:
   receive_btc_alert_title: Attention
   receive_btc_more_address_settings: Address Settings
   receive_btc_more_t: Tutorial
-  receive_btc_more_t_desc1: "Bitcoin (BTC) uses three address formats for receiving\
-    \ funds:\r\n1. Native SegWit is the most efficient and secure Bitcoin address\
-    \ format. It provides cost savings and improved security compared to other traditional\
-    \ address formats,typically starting with \"bc1\"\r\n2. Legacy address format\
-    \ is one of the earliest versions of Bitcoin, typically starting with \"1\"\r\n\
-    3. Nested SegWit is a solution designed to facilitate the transition to Native\
-    \ SegWit in a smooth manner, typically starting with \"3\""
+  receive_btc_more_t_desc1: 'Bitcoin (BTC) uses three address formats for receiving
+    funds:
+
+    1. Native SegWit is the most efficient and secure Bitcoin address format. It provides
+    cost savings and improved security compared to other traditional address formats,typically
+    starting with "bc1"
+
+    2. Legacy address format is one of the earliest versions of Bitcoin, typically
+    starting with "1"
+
+    3. Nested SegWit is a solution designed to facilitate the transition to Native
+    SegWit in a smooth manner, typically starting with "3"'
   receive_btc_more_t_desc2: "Yes, the three distinct Bitcoin address formats can be\
     \ used for transferring funds among each other. However, it\u2019s important to\
-    \ keep in mind the following aspects:\r\n1. Differing transaction fees: The choice\
+    \ keep in mind the following aspects:\n1. Differing transaction fees: The choice\
     \ of address format can influence transaction fees, with Native SegWit addresses\
-    \ generally having lower fees.\r\n2. Wallet and exchange compatibility: Make sure\
+    \ generally having lower fees.\n2. Wallet and exchange compatibility: Make sure\
     \ that the wallet or exchange you are using supports your chosen address format.\
     \ Some wallets may only be compatible with specific address formats."
-  receive_btc_more_t_desc3: "1. Privacy: Reusing addresses increases transaction traceability,\
-    \ endangering privacy. New addresses help maintain transaction privacy.\r\n2.\
-    \ Transaction Efficiency: Multiple UTXOs linked to one address can raise costs\
-    \ for consolidation, impacting wallet efficiency.\r\n3. Security: Repeated address\
-    \ use heightens the risk of private key exposure, potentially leading to losses\
-    \ if compromised.\r\nIn short, not reusing addresses safeguards privacy, optimizes\
-    \ transactions, and reduces security risks within the UTXO model."
+  receive_btc_more_t_desc3: '1. Privacy: Reusing addresses increases transaction traceability,
+    endangering privacy. New addresses help maintain transaction privacy.
+
+    2. Transaction Efficiency: Multiple UTXOs linked to one address can raise costs
+    for consolidation, impacting wallet efficiency.
+
+    3. Security: Repeated address use heightens the risk of private key exposure,
+    potentially leading to losses if compromised.
+
+    In short, not reusing addresses safeguards privacy, optimizes transactions, and
+    reduces security risks within the UTXO model.'
   receive_btc_more_t_link1: Learn More
   receive_btc_more_t_link2: Learn More
   receive_btc_more_t_link3: Learn More
@@ -461,24 +475,30 @@ en:
   receive_eth_more_derivation_path_title: Change Derivation Path
   receive_eth_more_derivation_path_title2: 'Accounts eg:'
   receive_eth_more_t: Tutorial
-  receive_eth_more_t_desc1: "1. Standard Path: This path is widely employed by numerous\
-    \ software wallets for address generation. Examples of such wallets encompass\
-    \ MetaMask, Rabby, BitKeep, and Core Wallet.\r\n2. Ledger Live: Choose this path\
-    \ if you intend to import a seed phrase from Ledger Live. Please note that Keystone\
-    \ supports synchronizing only the initial 10 addresses using this format.\r\n\
-    3. Ledger Legacy: Transition to this path if you manage your digital assets with\
-    \ Ledger Legacy"
+  receive_eth_more_t_desc1: '1. Standard Path: This path is widely employed by numerous
+    software wallets for address generation. Examples of such wallets encompass MetaMask,
+    Rabby, BitKeep, and Core Wallet.
+
+    2. Ledger Live: Choose this path if you intend to import a seed phrase from Ledger
+    Live. Please note that Keystone supports synchronizing only the initial 10 addresses
+    using this format.
+
+    3. Ledger Legacy: Transition to this path if you manage your digital assets with
+    Ledger Legacy'
   receive_eth_more_t_link1: Learn More
   receive_eth_more_t_qr_link1: https://keyst.one/t/3rd/faq
   receive_eth_more_t_qr_title1: 'Exploring Differences: Standard, Ledger Live, and
     Legacy Derivation Paths in Ethereum'
-  receive_eth_more_t_title1: "1. Standard Path: This path is widely employed by numerous\
-    \ software wallets for address generation. Examples of such wallets encompass\
-    \ MetaMask, Rabby, BitKeep, and Core Wallet.\r\n2. Ledger Live: Choose this path\
-    \ if you intend to import a seed phrase from Ledger Live. Please note that Keystone\
-    \ supports synchronizing only the initial 10 addresses using this format.\r\n\
-    3. Ledger Legacy: Transition to this path if you manage your digital assets with\
-    \ Ledger Legacy"
+  receive_eth_more_t_title1: '1. Standard Path: This path is widely employed by numerous
+    software wallets for address generation. Examples of such wallets encompass MetaMask,
+    Rabby, BitKeep, and Core Wallet.
+
+    2. Ledger Live: Choose this path if you intend to import a seed phrase from Ledger
+    Live. Please note that Keystone supports synchronizing only the initial 10 addresses
+    using this format.
+
+    3. Ledger Legacy: Transition to this path if you manage your digital assets with
+    Ledger Legacy'
   receive_eth_receive_main_button: Generate New Address
   receive_eth_receive_main_title: Receive ETH
   receive_generate_new_address: Generate New Address
@@ -659,7 +679,7 @@ en:
   tx_details_eth_decoding_qr_title: Decoding DeFi Transactions
   tx_details_general_tab_title1: Overview
   tx_details_general_tab_title2: Details
-  unlock_device_attempts_left_times_fmt: 'Incorrect password, you have #F55831 d%#
+  unlock_device_attempts_left_times_fmt: 'Incorrect password, you have #F55831 %d#
     chances left'
   unlock_device_button1: PASSWORD
   unlock_device_button2: PIN CODE
@@ -695,9 +715,9 @@ en:
   usb_connection_title: Connection
   verification_code_desc: Input this verification code on the Device Verification
     page of Keystone's official website to authenticate the device.
-  verification_code_failed_desc: Your device has potentially been breached, putting
-    your sensitive data and digital assets at risk. For safety, erase all personal
-    data and contact our Customer Service team immediately.
+  verification_code_failed_desc: "Your device has potentially been breached, putting\
+    \ your sensitive data and digital assets at risk. \LFor safety, erase all personal\
+    \ data and contact our Customer Service team immediately."
   verification_code_failed_link: support@keyst.one
   verification_code_failed_title: Unauthorized breach attempt detected!
   verification_code_title: Verification Code

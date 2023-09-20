@@ -194,10 +194,10 @@ void GuiClearKeyboardInput(KeyboardWidget_t *keyboardWidget)
 
 void GuiSetErrorLabel(KeyboardWidget_t *keyboardWidget, char *errorMessage)
 {
-    assert(keyboardWidget);
-    assert(keyboardWidget->errLabel);
-    lv_label_set_text(keyboardWidget->errLabel, errorMessage);
-    lv_obj_clear_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN);
+    if (keyboardWidget != NULL && keyboardWidget->errLabel != NULL) {
+        lv_label_set_text(keyboardWidget->errLabel, errorMessage);
+        lv_obj_clear_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN);
+    } 
 }
 
 void GuiShowErrorLabel(KeyboardWidget_t *keyboardWidget)

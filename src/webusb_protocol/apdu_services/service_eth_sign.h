@@ -4,4 +4,7 @@
 #include "librust_c.h"
 #include "keystore.h"
 
-Response *ProcessEthereumTransactionSignature(uint8_t *data, uint16_t dataLen);
+typedef void ResponseHandler(uint8_t cla, uint8_t ins, uint8_t *data, uint32_t dataLen);
+static ResponseHandler *g_handleURCallback = NULL;
+
+void *ProcessEthereumTransactionSignature(uint8_t *data, uint32_t dataLen, ResponseHandler *sendResponse);

@@ -9,11 +9,17 @@ typedef struct
     uint8_t urType;
 } UrViewType_t;
 
-Response *ProcessEthereumTransactionSignature(uint8_t *data, uint16_t dataLen)
+static void HandleSuccessFunc(const void * data, uint32_t data_len)
 {
-    Response *response = (Response *)malloc(sizeof(Response));
-    response->length = 0;
-    response->data = NULL;
+    if (g_handleURCallback != NULL)
+    {
+        g_handleURCallback(APDU_PROTOCOL_HEADER, CMD_SIGN_ETH_TX, (uint8_t *)data, data_len);
+    }
+};
+
+void *ProcessEthereumTransactionSignature(uint8_t *data, uint32_t dataLen, ResponseHandler *sendResponse)
+{
+    g_handleURCallback = sendResponse;
 
     UREncodeResult *encodeResult;
     uint8_t seed[64];
@@ -23,15 +29,7 @@ Response *ProcessEthereumTransactionSignature(uint8_t *data, uint16_t dataLen)
     UrViewType_t urViewType = {0, 0};
     urViewType.viewType = urResult->t;
     urViewType.urType = urResult->ur_type;
-
-    GuiFrameOpenView(&g_qrCodeView);
+    GuiFrameOpenViewWithParam(&g_USBTransportView, HandleSuccessFunc, sizeof(HandleSuccessFunc));
+    UserDelay(500);
     handleURResult(urResult, urViewType, false);
-
-    UserDelay(5000);
-    // TODO: check error / multiple ur / define error code
-    encodeResult = eth_sign_tx(urResult->data, seed, len);
-    response->data = encodeResult->data;
-    response->length = strlen(encodeResult->data);
-    response->error_code = encodeResult->error_code;
-    return response;
 }

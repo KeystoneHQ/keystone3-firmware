@@ -5,7 +5,7 @@
 #include "keystore.h"
 #include "service_eth_sign.h"
 
-static ProtocolSendCallbackFunc_t *g_sendFunc = NULL;
+static ProtocolSendCallbackFunc_t g_sendFunc = NULL;
 static struct ProtocolParser *global_parser = NULL;
 
 #define MAX_PACKETS 8
@@ -18,13 +18,12 @@ uint8_t g_packetLengths[MAX_PACKETS];
 uint8_t g_receivedPackets[MAX_PACKETS];
 uint8_t g_totalPackets = 0;
 
-static void send_apdu_response(uint8_t cla, uint8_t ins, uint8_t *data, uint16_t dataLen)
+static void send_apdu_response(uint8_t cla, uint8_t ins, uint8_t *data, uint32_t dataLen)
 {
     uint8_t packet[MAX_PACKETS_LENGTH];
     uint8_t totalPackets = (dataLen + MAX_APDU_DATA_SIZE - 1) / MAX_APDU_DATA_SIZE;
     uint8_t packetIndex = 0;
-    uint16_t offset = 0;
-
+    uint32_t offset = 0;
     while (dataLen > 0)
     {
         uint8_t packetDataSize = dataLen > MAX_APDU_DATA_SIZE ? MAX_APDU_DATA_SIZE : dataLen;
@@ -35,7 +34,7 @@ static void send_apdu_response(uint8_t cla, uint8_t ins, uint8_t *data, uint16_t
         packet[OFFSET_P2] = packetIndex;
         packet[OFFSET_LC] = packetDataSize;
         memcpy(packet + OFFSET_CDATA, data + offset, packetDataSize);
-        (*g_sendFunc)(packet, OFFSET_CDATA + packetDataSize);
+        g_sendFunc(packet, OFFSET_CDATA + packetDataSize);
         offset += packetDataSize;
         dataLen -= packetDataSize;
         packetIndex++;
@@ -106,14 +105,14 @@ static void parse_apdu(const uint8_t *frame, uint32_t len)
         }
     }
 
-    uint16_t fullDataLen = 0;
+    uint32_t fullDataLen = 0;
     for (uint16_t i = 0; i < g_totalPackets; i++)
     {
         fullDataLen += g_packetLengths[i];
     }
     uint8_t *fullData = (uint8_t *)malloc(fullDataLen + 1);
-    uint16_t offset = 0;
-    for (uint16_t i = 0; i < g_totalPackets; i++)
+    uint32_t offset = 0;
+    for (uint32_t i = 0; i < g_totalPackets; i++)
     {
         memcpy(fullData + offset, g_protocolRcvBuffer[i], g_packetLengths[i]);
         offset += g_packetLengths[i];
@@ -127,8 +126,7 @@ static void parse_apdu(const uint8_t *frame, uint32_t len)
         send_apdu_response(APDU_PROTOCOL_HEADER, CMD_ECHO_TEST, fullData, fullDataLen);
         break;
     case CMD_SIGN_ETH_TX:
-        result = ProcessEthereumTransactionSignature(fullData, fullDataLen);
-        send_apdu_response(APDU_PROTOCOL_HEADER, CMD_SIGN_ETH_TX, result->data, result->length);
+        ProcessEthereumTransactionSignature(fullData, fullDataLen, send_apdu_response);
         break;
     case CMD_CHECK_LOCK_STATUS:
         result->data = (uint8_t *)malloc(1);
@@ -151,9 +149,12 @@ void ApduProtocol_Parse(const uint8_t *frame, uint32_t len)
     parse_apdu(frame, len);
 }
 
-static void RegisterSendFunc(ProtocolSendCallbackFunc_t *sendFunc)
+static void RegisterSendFunc(ProtocolSendCallbackFunc_t sendFunc)
 {
-    g_sendFunc = sendFunc;
+    if (g_sendFunc == NULL)
+    {
+        g_sendFunc = sendFunc;
+    }
 }
 
 struct ProtocolParser *NewApduProtocolParser()

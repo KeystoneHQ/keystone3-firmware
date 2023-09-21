@@ -39,8 +39,6 @@ void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbac
         currentParser = NewInternalProtocolParser();
     }
 
-    printf("ProtocolReceivedData start\n");
-
     if (currentParser->rcvCount != 0)
     {
         if (tick - lastTick > PROTOCOL_PARSE_OVERTIME)
@@ -49,9 +47,7 @@ void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbac
         }
     }
     lastTick = tick;
-    printf("registerSendFunc start\n");
-    currentParser->registerSendFunc(&sendFunc);
-    printf("registerSendFunc end\n");
+    currentParser->registerSendFunc(sendFunc);
 
     currentParser->parse(data, len);
 }

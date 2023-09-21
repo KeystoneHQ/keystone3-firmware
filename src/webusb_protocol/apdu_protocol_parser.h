@@ -18,7 +18,7 @@ typedef enum {
 
 typedef struct {
     uint8_t *data;
-    uint16_t length;
+    uint32_t length;
     uint32_t error_code;
 } Response;
 

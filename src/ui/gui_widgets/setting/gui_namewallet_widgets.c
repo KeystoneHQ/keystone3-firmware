@@ -113,7 +113,12 @@ void *GuiWalletNameWallet(lv_obj_t *parent, uint8_t tile)
     lv_obj_t *progresslabel = GuiCreateNoticeLabel(parent, tempBuf);
     lv_obj_align(progresslabel, LV_ALIGN_DEFAULT, 402, 384 - GUI_MAIN_AREA_OFFSET);
     GuiSetEnterProgressLabel(progresslabel);
-    lv_obj_t *img = GuiCreateImg(parent, GuiGetEmojiIconImg());
+    lv_obj_t *img;
+    if (GuiNavBarGetWalletIcon() == NULL) {
+        img = GuiCreateImg(parent, GuiGetEmojiIconImg());
+    } else {
+        img = GuiCreateImg(parent, GuiNavBarGetWalletIcon());
+    }
     g_walletIcon = img;
 
     lv_obj_t *arrowDownImg = GuiCreateImg(parent, &imgArrowDownS);

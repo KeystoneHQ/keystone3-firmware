@@ -140,6 +140,9 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
     case SIG_FINGER_RECOGNIZE_RESPONSE:
         GuiSettingDealFingerRecognize(param);
         break;
+    case GUI_EVENT_UPDATE_KEYBOARD:
+        GuiWalletRecoveryUpdateKeyboard();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

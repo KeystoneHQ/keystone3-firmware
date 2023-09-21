@@ -288,6 +288,11 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
     return g_enterMnemonicCont;
 }
 
+void GuiForgetPassUpdateKeyboard(void)
+{
+    GuiKeyBoardSetMode(g_forgetPhraseKb);
+}
+
 void GuiWalletRecoverySinglePhraseClear(void)
 {
     if (g_forgetMkb != NULL) {

@@ -556,7 +556,9 @@ int32_t DestroyAccount(uint8_t accountIndex)
     DeleteAccountPublicInfo(accountIndex);
     ClearAccountPassphrase(accountIndex);
     SetWalletDataHash(accountIndex, data);
+    LogoutCurrentAccount();
 
+    CLEAR_OBJECT(g_currentAccountInfo);
     CLEAR_ARRAY(data);
 
     return ret;
@@ -614,11 +616,14 @@ int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *
 void GetMasterFingerPrint(uint8_t *mfp)
 {
     uint8_t accountIndex = GetCurrentAccountIndex();
-    ASSERT(accountIndex <= 2);
-    if (PassphraseExist(accountIndex)) {
-        memcpy(mfp, g_passphraseInfo[accountIndex].mfp, 4);
+    if (accountIndex > 2) {
+        memset(mfp, 0, 4);
     } else {
-        memcpy(mfp, g_currentAccountInfo.mfp, 4);
+        if (PassphraseExist(accountIndex)) {
+            memcpy(mfp, g_passphraseInfo[accountIndex].mfp, 4);
+        } else {
+            memcpy(mfp, g_currentAccountInfo.mfp, 4);
+        }
     }
 }
 

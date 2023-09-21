@@ -949,6 +949,25 @@ void GuiClearKeyBoard(KeyBoard_t *keyBoard)
     }
 }
 
+// When the letter mnemonic is entered as proof, the keyboard will be disabled and all keyboard letters will be marked as disabled.
+bool GuiLetterKbStatusError(void)
+{
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_letterCtrlMap); i++) {
+        if (i == 10 || i == 20 || i == 21 || i == 29) {
+            continue;
+        }
+        if ((g_letterCtrlMap[i] & LV_BTNMATRIX_CTRL_DISABLED) != LV_BTNMATRIX_CTRL_DISABLED) {
+            return false;
+        }
+    }
+
+    memcpy(g_kbCtrl[KEY_STONE_LETTER - KEY_STONE_FULL_L], g_kbCtrlBak[KEY_STONE_LETTER - KEY_STONE_FULL_L].btnMatrixCtl,
+           g_kbCtrlBak[KEY_STONE_LETTER - KEY_STONE_FULL_L].size);
+    GuiEmitSignal(GUI_EVENT_UPDATE_KEYBOARD, NULL, 0);
+
+    return true;
+}
+
 bool GuiSingleWordsWhole(const char *text)
 {
     int wordcnt = searchTrie(rootTree, text);

@@ -217,10 +217,10 @@ void WipeDevice(void)
     ret = Gd25FlashWriteBuffer(SPI_FLASH_ADDR_PROTECT_PARAM, (uint8_t *)&wipeFlag, sizeof(wipeFlag));
     SetShowPowerOffPage(false);
     FpWipeManageInfo();
+    ErasePublicInfo();
     DestroyAccount(0);
     DestroyAccount(1);
     DestroyAccount(2);
-    ErasePublicInfo();
     Gd25FlashChipErase();
 }
 

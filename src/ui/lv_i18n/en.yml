@@ -196,7 +196,7 @@ en:
   import_wallet_ssb_cancel_desc: You will be required to re-enter all the Shares after
     canceling.
   import_wallet_ssb_cancel_title: Cancel Import Wallet?
-  import_wallet_ssb_desc: Input the 20-word seed phrase for Share 1 in the blanks
+  import_wallet_ssb_desc: Input the 20-word seed phrase for Share %d in the blanks
     provided below.
   import_wallet_ssb_incorrect_title: Incorrect Share
   import_wallet_ssb_notbelong_desc: The Share you entered is not belong to this backup.

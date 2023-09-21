@@ -980,6 +980,10 @@ static int32_t ModeGetWalletDesc(const void *inData, uint32_t inDataLen)
     SetLockScreen(false);
     static WalletDesc_t wallet;
 #ifndef COMPILE_SIMULATOR
+    if (GetCurrentAccountIndex() > 2) {
+        SetLockScreen(enable);
+        return SUCCESS_CODE;
+    }
     wallet.iconIndex = GetWalletIconIndex();
     strcpy(wallet.name, GetWalletName());
     GuiApiEmitSignal(SIG_INIT_GET_CURRENT_WALLET_DESC, &wallet, sizeof(wallet));

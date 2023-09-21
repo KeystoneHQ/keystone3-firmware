@@ -1000,6 +1000,7 @@ void UpdateKeyBoard(TrieSTPtr root, const char *str, KeyBoard_t *keyBoard)
     }
     TrieSTPtr tmp = rootTree;
     int i = 0;
+    bool allDisabled = true;
     uint8_t enable[CHAR_LENGTH + 2] = {0};
     while (str[i] != '\0') {
         if (tmp->next[str[i] - 'a'] != NULL) {
@@ -1011,7 +1012,12 @@ void UpdateKeyBoard(TrieSTPtr root, const char *str, KeyBoard_t *keyBoard)
     for (int j = 0; j <= 'z' - 'a'; j++) {
         if (tmp->next[j] == NULL) {
             enable[j] = LV_BTNMATRIX_CTRL_DISABLED;
+        } else {
+            allDisabled = false;
         }
+    }
+    if (allDisabled == true) {
+        memset(enable, 0, 'z' - 'a');
     }
 
     if (searchTrie(rootTree, str) != 1) {
@@ -1039,6 +1045,9 @@ static void LetterKbAssociateHandler(lv_event_t *e)
     char *text = lv_label_get_text(lv_obj_get_child(lv_event_get_target(e), 0));
     char buf[1] = {0};
     if (code == LV_EVENT_CLICKED) {
+        if (strlen(text) <= 0) {
+            return;
+        }
         strcpy(g_wordChange, text);
         if (g_importPhraseKb != NULL) {
             lv_event_send(g_importPhraseKb->btnm, LV_EVENT_READY, g_wordChange);

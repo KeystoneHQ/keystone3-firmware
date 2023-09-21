@@ -25,6 +25,7 @@
 #define GD25QXX_CMD_PAGE_PROGRAM          0x02
 #define GD25QXX_CMD_CHIP_ERASE            0xC7
 #define GD25QXX_CMD_SECTOR_ERASE          0x20
+#define GD25QXX_CMD_BLOCK_ERASE           0xD8
 #define GD25QXX_CMD_POWER_DOWN            0xB9
 #define GD25QXX_CMD_RELEASE_POWER_DOWN    0xAB
 
@@ -46,6 +47,7 @@ void Gd25FlashOpen(void);
 uint32_t Gd25FlashReadID(void);
 int32_t Gd25FlashSectorErase(uint32_t addr);
 int32_t Gd25FlashChipErase(void);
+int32_t Gd25FlashBlockErase(uint32_t addr);
 int32_t Gd25FlashReadBuffer(uint32_t addr, uint8_t *buffer, uint32_t size);
 int32_t Gd25FlashWriteBuffer(uint32_t addr, const uint8_t *buffer, uint32_t size);
 

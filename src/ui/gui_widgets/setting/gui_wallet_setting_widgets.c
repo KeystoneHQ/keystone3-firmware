@@ -200,7 +200,7 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
     lv_obj_set_size(led, 6, 6);
     lv_led_set_color(led, ORANGE_COLOR);
 
-    label = GuiCreateNoticeLabel(parent, _("Keystone support at most 3 wallets"));
+    label = GuiCreateNoticeLabel(parent, _("Keystone supports at most 3 wallets"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 228 - GUI_MAIN_AREA_OFFSET);
 
     led = lv_led_create(parent);

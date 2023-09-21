@@ -286,7 +286,7 @@ void *GuiCreateErrorCodeHintbox(int32_t errCode, lv_obj_t **param)
     case ERR_UPDATE_FIRMWARE_NOT_DETECTED:
         height = 400;
         titleText = "Firmware Not Detected";
-        descText = "Please ensure that you have inserted a microSD card formatted in FAT32 that contains the firmware.";
+        descText = "Please ensure that you have inserted a MicroSD card formatted in FAT32 that contains the firmware.";
         break;
     }
 

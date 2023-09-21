@@ -57,6 +57,9 @@ int32_t GuiImportPhraseViewEventProcess(void *self, uint16_t usEvent, void *para
         }
         GuiImportPhraseWriteSe(false, ret);
         break;
+    case GUI_EVENT_UPDATE_KEYBOARD:
+        GuiImportPhraseUpdateKeyboard();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

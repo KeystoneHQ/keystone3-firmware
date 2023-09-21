@@ -25,7 +25,7 @@
 #include "anti_tamper.h"
 #include "screenshot.h"
 
-#define LVGL_FAST_TICK_MS                   1
+#define LVGL_FAST_TICK_MS                   5
 #define LVGL_IDLE_TICK_MS                   100
 #define LVGL_GRAM_PIXEL         LCD_DISPLAY_WIDTH * 450
 
@@ -133,6 +133,7 @@ static void UiDisplayTask(void *argument)
         }
         if (lvglHandlerEnable) {
             lv_timer_handler();
+            GuiLetterKbStatusError();
         }
     }
 }

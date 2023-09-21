@@ -14,6 +14,7 @@ int8_t GuiImportPhraseNextTile(void);
 int8_t GuiImportPhrasePrevTile(void);
 void GuiImportPhraseWriteSe(bool en, int32_t errCode);
 void GuiImportPhraseRefresh(void);
+void GuiImportPhraseUpdateKeyboard(void);
 
 #endif /* _GUI_IMPORT_PHRASE_WIDGETS_H */
 

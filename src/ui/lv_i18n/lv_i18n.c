@@ -175,7 +175,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"import_wallet_phrase_words_title", "Phrase Words Amount"},
     {"import_wallet_ssb_cancel_desc", "You will be required to re-enter all the Shares after canceling."},
     {"import_wallet_ssb_cancel_title", "Cancel Import Wallet?"},
-    {"import_wallet_ssb_desc_fmt", "Input the 20-word seed phrase for Share %d in the blanks provided below."},
+    {"import_wallet_ssb_desc_fmt", "Input the #F5870A %d#-words seed phrase for Share #F5870A %d# in the blanks provided below."},
     {"import_wallet_ssb_incorrect_title", "Incorrect Share"},
     {"import_wallet_ssb_notbelong_desc", "The Share you entered is not belong to this backup. Please check your backup and try again."},
     {"import_wallet_ssb_repeat_desc", "The Share already entered, please enter a different Share."},

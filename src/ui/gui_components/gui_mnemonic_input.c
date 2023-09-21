@@ -130,6 +130,7 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                 if (mkb->intputType == MNEMONIC_INPUT_SETTING_VIEW) {
                     mkb->currentSlice++;
                     lv_label_set_text_fmt(mkb->titleLabel, "%s #F5870A %d#", _("import_wallet_ssb_title"), mkb->currentSlice + 1);
+                    lv_label_set_text_fmt(mkb->descLabel, _("import_wallet_ssb_desc_fmt"), mkb->wordCnt, mkb->currentSlice + 1);
                     g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgSuccess, "Verify Successful",
                                       "This share of your seed phrase matches your wallet.", "Continue", DARK_GRAY_COLOR, "Done", ORANGE_COLOR);
                     lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeHintBox);
@@ -160,7 +161,7 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                             lv_label_set_text_fmt(mkb->titleLabel, "%s #F5870A %d#", _("import_wallet_ssb_title"), mkb->currentSlice + 1);
                         }
                         if (mkb->descLabel != NULL) {
-                            lv_label_set_text_fmt(mkb->descLabel, "Write down your #F5870A %d#-words seed phrase of\nshare #F5870A %d# in the blanks below",
+                            lv_label_set_text_fmt(mkb->descLabel, _("import_wallet_ssb_desc_fmt"),
                                                   mkb->wordCnt, mkb->currentSlice + 1);
                         }
                     }

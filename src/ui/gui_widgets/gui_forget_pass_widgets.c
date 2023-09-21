@@ -260,7 +260,7 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
 
         lv_label_set_text_fmt(g_forgetMkb->stepLabel, "%d of %d", g_forgetMkb->currentSlice + 1, g_forgetMkb->threShold);
         lv_label_set_text_fmt(g_forgetMkb->titleLabel, "%s #F5870A %d#", _("import_wallet_ssb_title"), g_forgetMkb->currentSlice + 1);
-        lv_label_set_text_fmt(g_forgetMkb->descLabel, "Write down your #F5870A %d#-words seed phrase of\nshare #F5870A %d# in the blanks below",
+        lv_label_set_text_fmt(g_forgetMkb->descLabel, _("import_wallet_ssb_desc_fmt"),
                               g_forgetMkb->wordCnt, g_forgetMkb->currentSlice + 1);
         bip39 = false;
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);

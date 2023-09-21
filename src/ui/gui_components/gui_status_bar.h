@@ -49,6 +49,7 @@ void GuiNvsBarSetMidBtnLabel(NVS_MID_BUTTON_ENUM button, const char* text);
 void GuiStatusBarInit(void);
 void GuiStatusBarSetBattery(uint8_t percent, bool charging);
 void GuiNvsBarSetWalletIcon(const void *src);
+lv_img_dsc_t *GuiNavBarGetWalletIcon();
 void GuiNvsBarSetWalletName(const char *name);
 const char *GuiNvsBarGetWalletName(void);
 void GuiNvsSetCoinWallet(GuiChainCoinType index, const char *name);

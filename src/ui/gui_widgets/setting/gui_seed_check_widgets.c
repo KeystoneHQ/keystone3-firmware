@@ -179,6 +179,11 @@ void *GuiWalletRecoverySinglePhrase(lv_obj_t *parent, uint8_t wordAmount)
     return cont;
 }
 
+void GuiWalletRecoveryUpdateKeyboard(void)
+{
+    GuiKeyBoardSetMode(g_recoveryPhraseKb);
+}
+
 // share phrase
 void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount)
 {

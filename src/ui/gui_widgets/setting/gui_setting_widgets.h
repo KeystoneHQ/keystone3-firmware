@@ -178,6 +178,7 @@ void GuiWalletSeedCheckClearObject(void);
 void *GuiWalletRecoverySinglePhrase(lv_obj_t *parent, uint8_t wordAmount);
 void GuiWalletRecoveryDestruct(void *obj, void *param);
 void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount);
+void GuiWalletRecoveryUpdateKeyboard(void);
 
 #endif /* _GUI_SETTING_WIDGETS_H */
 

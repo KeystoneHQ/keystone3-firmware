@@ -116,6 +116,11 @@ static void GuiInputPhraseWidget(lv_obj_t *parent)
     g_importMkb->currentId = 0;
 }
 
+void GuiImportPhraseUpdateKeyboard(void)
+{
+    GuiKeyBoardSetMode(g_importPhraseKb);
+}
+
 void GuiImportPhraseInit(uint8_t num)
 {
     g_inputWordsCnt = num;

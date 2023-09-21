@@ -89,6 +89,9 @@ int32_t GuiForgetViewEventProcess(void *self, uint16_t usEvent, void *param, uin
         }
         GuiForgetPassVerifyResult(false, ret);
         break;
+    case GUI_EVENT_UPDATE_KEYBOARD:
+        GuiForgetPassUpdateKeyboard();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

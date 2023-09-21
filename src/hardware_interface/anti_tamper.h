@@ -19,5 +19,6 @@ void TamperBackgroundHandler(void);
 bool Tampered(void);
 
 void TamperTest(int argc, char *argv[]);
+void ClearTamperFlag(void);
 
 #endif

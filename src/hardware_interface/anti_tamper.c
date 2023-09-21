@@ -137,3 +137,9 @@ static void TamperEraseInfo(void)
     printf("erase over\n");
 }
 
+
+void ClearTamperFlag(void)
+{
+    uint8_t pageData[32] = {0};
+    Atecc608bEncryptWrite(15, 0, pageData);
+}

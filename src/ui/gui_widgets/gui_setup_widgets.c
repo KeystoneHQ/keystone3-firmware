@@ -5,6 +5,8 @@
  * author     : stone wang
  * data       : 2023-01-09 17:07
  **********************************************************************/
+#include <string.h>
+#include <stdlib.h>
 #include "gui_views.h"
 #include "gui_status_bar.h"
 #include "gui_button.h"
@@ -15,6 +17,7 @@
 #include "gui_web_auth_result_widgets.h"
 #include "device_setting.h"
 #include "gui_page.h"
+#include "anti_tamper.h"
 
 typedef enum {
     SETUP_ENGLISH = 0,
@@ -83,6 +86,49 @@ static void GuiWelcomeWidget(lv_obj_t *parent)
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -96);
     lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_ALL, NULL);
 }
+
+static void ClearTamperHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        printf("clicked btn\n");
+        ClearTamperFlag();
+        printf("clear the flag\n");
+        GuiEmitSignal(GUI_EVENT_RESTART, NULL, 0);
+        printf("restart view\n");
+    }
+}
+
+static void GUIClearTamperWidget(lv_obj_t *parent)
+{
+    lv_obj_t *img = GuiCreateImg(parent, &imgLogoGraphL);
+    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 84 - GUI_NAV_BAR_HEIGHT);
+    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
+
+    lv_obj_t *label = GuiCreateTitleLabel(parent, "KEYSTONE");
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 268 - GUI_NAV_BAR_HEIGHT);
+
+    label = GuiCreateNoticeLabel(parent, GetSoftwareVersionString());
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 328 - GUI_NAV_BAR_HEIGHT);
+
+    char perfix[14] = "Tampered:";
+    char status[2] = "N";
+    if (Tampered()) {
+        strcpy(status, "Y");
+    }
+    strcat(perfix, status);
+    printf("prefix is,%s\n", perfix);
+    lv_obj_t *label2 = GuiCreateTitleLabel(parent, perfix);
+    lv_obj_align(label2, LV_ALIGN_TOP_MID, 0, 388 - GUI_NAV_BAR_HEIGHT);
+
+    lv_obj_t *btn = GuiCreateBtn(parent, USR_SYMBOL_RESET);
+    lv_obj_set_size(btn, 96, 96);
+    lv_obj_set_style_radius(btn, LV_RADIUS_CIRCLE, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -96);
+    lv_obj_add_event_cb(btn, ClearTamperHandler, LV_EVENT_ALL, NULL);
+}
+
 
 static void SelectLanguageHandler(lv_event_t *e)
 {
@@ -179,7 +225,7 @@ void GuiSetupAreaInit(void)
 
     lv_obj_t *tile = lv_tileview_add_tile(tileView, SETUP_WELCOME, 0, LV_DIR_RIGHT);
     g_setupTileView.welcome = tile;
-    GuiWelcomeWidget(tile);
+    GUIClearTamperWidget(tile);
 
     tile = lv_tileview_add_tile(tileView, SETUP_SET_LANGUAGE, 0, LV_DIR_HOR);
     g_setupTileView.setLanguage = tile;

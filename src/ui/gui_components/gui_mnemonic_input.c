@@ -160,7 +160,7 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                             lv_label_set_text_fmt(mkb->titleLabel, "%s #F5870A %d#", _("import_wallet_ssb_title"), mkb->currentSlice + 1);
                         }
                         if (mkb->descLabel != NULL) {
-                            lv_label_set_text_fmt(mkb->descLabel, "Write down your #F5870A %d#-words seed phrase of\nshare #F5870A %d#in the blanks below",
+                            lv_label_set_text_fmt(mkb->descLabel, "Write down your #F5870A %d#-words seed phrase of\nshare #F5870A %d# in the blanks below",
                                                   mkb->wordCnt, mkb->currentSlice + 1);
                         }
                     }

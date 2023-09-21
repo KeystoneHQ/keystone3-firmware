@@ -241,6 +241,37 @@ int32_t Gd25FlashSectorErase(uint32_t addr)
     return SUCCESS_CODE;
 }
 
+int32_t Gd25FlashBlockErase(uint32_t addr)
+{
+#if (FLASH_USE_MUTEX)
+    osMutexAcquire(g_flashMutex, osWaitForever);
+#endif
+
+    if (addr >= GD25QXX_FLASH_SIZE) {
+        return ERR_GD25_BAD_PARAM;
+    }
+
+    Gd25FlashWriteEnable();
+    if (GD25QXX_FLASH_STATUS_WEL != Gd25FlashReadStatus()) {
+        return ERR_GD25_WEL_FAILED;
+    }
+
+    FLASH_CS_LOW();
+
+    Gd25FlashSendByte(GD25QXX_CMD_BLOCK_ERASE);
+    Gd25FlashSendByte((addr >> 16) & 0xFF);
+    Gd25FlashSendByte((addr >> 8) & 0xFF);
+    Gd25FlashSendByte(addr & 0xFF);
+
+    FLASH_CS_HIGH();
+
+    while (Gd25FlashReadStatus() & GD25QXX_FLASH_STATUS_WIP);
+#if (FLASH_USE_MUTEX)
+    osMutexRelease(g_flashMutex);
+#endif
+    return SUCCESS_CODE;
+}
+
 /***********************************************************************
  flash supports fatfs, use with caution
 ***********************************************************************/

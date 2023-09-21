@@ -33,7 +33,7 @@ static lv_obj_t *g_buttonCont = NULL;           // next buton cont
 static uint8_t g_inputWordsCnt = 0;
 static MnemonicKeyBoard_t *g_recoveryMkb;       // recovery mnemonic keyboard
 static KeyBoard_t *g_recoveryPhraseKb;          // recovery keyboard
-static lv_obj_t *g_recoveryTitle; // recovery title label
+// static lv_obj_t *g_recoveryTitle; // recovery title label
 
 void ResetSeedCheckImportHandler(lv_event_t *e)
 {
@@ -189,21 +189,22 @@ void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount)
 
     g_recoveryMkb = GuiCreateMnemonicKeyBoard(parent, GuiMnemonicInputHandler, kbMode, NULL);
     g_recoveryMkb->intputType = MNEMONIC_INPUT_SETTING_VIEW;
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("import_wallet_ssb_title"));
+    lv_obj_t *label = GuiCreateTitleLabel(parent, "");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
     lv_label_set_recolor(label, true);
+    lv_label_set_text_fmt(label, "%s #F5870A %d#", _("import_wallet_ssb_title"), g_recoveryMkb->currentSlice + 1);
     g_recoveryMkb->titleLabel = label;
 
-    label = GuiCreateIllustrateLabel(parent, _("import_wallet_ssb_desc"));
+    label = GuiCreateIllustrateLabel(parent, _("import_wallet_ssb_desc_fmt"));
     lv_obj_set_style_text_color(label, DARK_GRAY_COLOR, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 72);
     lv_label_set_recolor(label, true);
-    // lv_label_set_text_fmt(label, "Write down the #F5870A %d#-words seed phrase of your first share in the blanks below", g_inputWordsCnt);
+    lv_label_set_text_fmt(label, _("import_wallet_ssb_desc_fmt"), g_recoveryMkb->currentSlice + 1);
 
     lv_obj_set_size(g_recoveryMkb->cont, 408, 236);
     lv_obj_align_to(g_recoveryMkb->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
     lv_btnmatrix_set_selected_btn(g_recoveryMkb->btnm, g_recoveryMkb->currentId);
-    lv_label_set_text_fmt(g_recoveryTitle, "%s #F5870A %d#", _("import_wallet_ssb_title"), g_recoveryMkb->currentSlice + 1);
+    // lv_label_set_text_fmt(g_recoveryTitle, "%s #F5870A %d#", _("import_wallet_ssb_title"), g_recoveryMkb->currentSlice + 1);
 
     lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 114);
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);

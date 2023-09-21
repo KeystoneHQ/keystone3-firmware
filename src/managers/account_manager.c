@@ -446,7 +446,6 @@ int32_t GetBlankAccountIndex(uint8_t *accountIndex)
     return ret;
 }
 
-
 /// @brief Destroy the specified account.
 /// @param[in] accountIndex Account index, 0~2.
 /// @return err code.
@@ -463,6 +462,10 @@ int32_t DestroyAccount(uint8_t accountIndex)
     }
     DeleteAccountPublicInfo(accountIndex);
     ClearAccountPassphrase(accountIndex);
+    SetWalletDataHash(accountIndex, data);
+    LogoutCurrentAccount();
+
+    CLEAR_OBJECT(g_currentAccountInfo);
     CLEAR_ARRAY(data);
 
     return ret;

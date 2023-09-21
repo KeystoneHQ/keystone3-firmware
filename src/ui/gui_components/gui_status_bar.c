@@ -102,8 +102,6 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_KEPLR, "Connect Keplr", &walletKeplr},
 };
 
-static lv_img_dsc_t *g_currentWalletIcon = NULL;
-
 void GuiNvsBarSetWalletName(const char *name)
 {
     lv_label_set_text(g_guiStatusBar.walletNameLabel, name);
@@ -123,16 +121,10 @@ void GuiNvsBarSetWalletIcon(const void *src)
     if (src == NULL) {
         return;
     }
-    g_currentWalletIcon = (lv_img_dsc_t *)src;
     g_guiStatusBar.walletIcon = lv_img_create(g_guiStatusBar.cont);
     lv_img_set_src(g_guiStatusBar.walletIcon, src);
     lv_img_set_zoom(g_guiStatusBar.walletIcon, 200);
     lv_obj_align(g_guiStatusBar.walletIcon, LV_ALIGN_LEFT_MID, 26, 0);
-}
-
-lv_img_dsc_t *GuiNavBarGetWalletIcon()
-{
-    return g_currentWalletIcon;
 }
 
 void GuiStatusBarInit(void)

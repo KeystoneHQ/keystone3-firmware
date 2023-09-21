@@ -34,7 +34,7 @@ struct ProtocolParser
     char *name;
     uint32_t rcvCount;
     void (*parse)(const uint8_t *data, uint32_t len);
-    void (*registerSendFunc)(ProtocolSendCallbackFunc_t *sendFunc);
+    void (*registerSendFunc)(ProtocolSendCallbackFunc_t sendFunc);
 };
 
 #endif

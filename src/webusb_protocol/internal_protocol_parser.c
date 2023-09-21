@@ -83,7 +83,7 @@ void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
     printf("InternalProtocol_Parse end\n");
 }
 
-static void RegisterSendFunc(ProtocolSendCallbackFunc_t *sendFunc)
+static void RegisterSendFunc(ProtocolSendCallbackFunc_t sendFunc)
 {
     g_sendFunc = sendFunc;
 }

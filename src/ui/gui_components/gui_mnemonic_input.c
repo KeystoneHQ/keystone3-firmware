@@ -301,6 +301,7 @@ void GuiMnemonicInputHandler(lv_event_t *e)
     }
 
     if (code == LV_EVENT_CLICKED) {
+        printf("%s %d..........\n", __func__, __LINE__);
         lv_obj_set_height(mkb->cont, 236);
         uint32_t currentId = lv_btnmatrix_get_selected_btn(obj);
         lv_obj_scroll_to_y(mkb->cont, (currentId / 3 - 1) * 72, LV_ANIM_ON);
@@ -309,11 +310,11 @@ void GuiMnemonicInputHandler(lv_event_t *e)
         // 1.Determine if the current word is complete
         const char *currText = lv_btnmatrix_get_btn_text(obj, currentId);
         GuiMnemonicGetTrueWord(currText, trueText);
-        GuiSetMnemonicCache(letterKb, trueText);
+        // GuiSetMnemonicCache(letterKb, trueText);
+        GuiClearKeyBoard(letterKb);
         if (strlen(trueText) > 0 && GuiWordsWhole(trueText)) {
             GuiSetLetterBoardNext(letterKb);
         }
-        // GuiClearKeyBoard(letterKb);
         isClick = 2;
 
         // 2.first determine whether the previous word is complete or not
@@ -323,7 +324,6 @@ void GuiMnemonicInputHandler(lv_event_t *e)
             }
             memset(trueText, 0, sizeof(trueText));
             const char *lastText = lv_btnmatrix_get_btn_text(obj, i);
-            // const char *lastText = lv_btnmatrix_get_btn_text(obj, mkb->currentId);
             GuiMnemonicGetTrueWord(lastText, trueText);
             if (strlen(trueText) > 0 && !GuiWordsWhole(trueText)) {
                 char buf[32] = { 0 };
@@ -335,6 +335,7 @@ void GuiMnemonicInputHandler(lv_event_t *e)
         mkb->currentId = currentId;
         GuiMnemonicInputCheck(mkb, letterKb);
     } else if (code == LV_EVENT_READY) {
+        printf("%s %d..........\n", __func__, __LINE__);
         if (mkb->currentId == mkb->wordCnt) {
             GuiSetLetterBoardConfirm(letterKb, 1);
             if (mkb->wordCnt == 33 || mkb->wordCnt == 20) {
@@ -389,19 +390,22 @@ void GuiMnemonicInputHandler(lv_event_t *e)
         char *word = lv_event_get_param(e);
         if ((strlen(word) == 0 && code == KEY_STONE_KEYBOARD_VALUE_CHANGE)) {
             // if (isClick || (strlen(word) == 0 && code == KEY_STONE_KEYBOARD_VALUE_CHANGE)) {
+            printf("%s %d word = ...%s........\n", __func__, __LINE__, word);
             if (isClick > 0) {
                 isClick--;
+            } else {
+                UpdateKeyBoard(rootTree, "", letterKb);
             }
             return;
         }
 
         if (strlen(word) > 0 && GuiSingleWordsWhole(word)) {
+            GuiClearKeyBoard(letterKb);
             GuiInputMnemonicKeyBoard(mkb, word, mkb->currentId, 1);
             if (mkb->currentId < mkb->wordCnt) {
                 mkb->currentId++;
             }
             lv_btnmatrix_set_selected_btn(mkb->btnm, mkb->currentId);
-            GuiSetMnemonicCache(letterKb, word);
         } else if (strlen(word) >= 3) {
             int wordcnt = searchTrie(rootTree, word);
             if (wordcnt <= 1) {
@@ -418,11 +422,22 @@ void GuiMnemonicInputHandler(lv_event_t *e)
         } else {
             GuiInputMnemonicKeyBoard(mkb, word, mkb->currentId, 1);
         }
+        
         if (mkb->currentId == mkb->wordCnt) {
             GuiSetLetterBoardConfirm(letterKb, 1);
         } else {
             GuiSetLetterBoardConfirm(letterKb, 0);
         }
+
+        // const char *currText = lv_btnmatrix_get_btn_text(obj, mkb->currentId);
+        // printf("currText = ...%s.........\n", currText);
+        // GuiMnemonicGetTrueWord(currText, trueText);
+        // printf("trueText = ...%s.........\n", trueText);
+        // printf("strlenText = %d..\n", strlen(trueText));
+        // if (strlen(trueText) == 0) {
+        //     printf("%s %d word = ...%s........\n", __func__, __LINE__, word);
+        //     GuiClearKeyBoard(letterKb);
+        // }
     } else if (code == KEY_STONE_KEYBOARD_HIDDEN) {
         lv_obj_set_height(mkb->cont, 400);
     }

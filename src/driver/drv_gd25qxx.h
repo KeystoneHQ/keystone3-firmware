@@ -25,6 +25,7 @@
 #define GD25QXX_CMD_PAGE_PROGRAM          0x02
 #define GD25QXX_CMD_CHIP_ERASE            0xC7
 #define GD25QXX_CMD_SECTOR_ERASE          0x20
+#define GD25QXX_CMD_BLOCK_ERASE           0xD8
 #define GD25QXX_CMD_POWER_DOWN            0xB9
 #define GD25QXX_CMD_RELEASE_POWER_DOWN    0xAB
 

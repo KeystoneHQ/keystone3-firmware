@@ -45,8 +45,10 @@ void PowerOnSelfCheck(void)
     assert(ret == SUCCESS_CODE);
 
     // check after wipe device
-    uint32_t wipeFlag = 0;
-    Gd25FlashReadBuffer(SPI_FLASH_ADDR_PROTECT_PARAM, (uint8_t *)&wipeFlag, sizeof(wipeFlag));
+    uint32_t wipeFlag = 0xFFFFFFFF;
+    int32_t readSize = Gd25FlashReadBuffer(SPI_FLASH_ADDR_PROTECT_PARAM, (uint8_t *)&wipeFlag, sizeof(wipeFlag));
+    assert(readSize == sizeof(wipeFlag));
+    printf("wipeFlag = %#x\n", wipeFlag);
     if (wipeFlag == DEVICE_WIPE_FLAG_MAGIC_NUM) {
         DrawStringOnLcd(190, 408, "Loading...", 0xFFFF, &openSans_24);
         uint32_t c = 0x666666;
@@ -56,7 +58,10 @@ void PowerOnSelfCheck(void)
         DestroyAccount(1);
         DestroyAccount(2);
         ErasePublicInfo();
-        Gd25FlashChipErase();
+        for (uint32_t addr = 0; addr < GD25QXX_FLASH_SIZE; addr += 1024 * 64) {
+            Gd25FlashBlockErase(addr);
+            printf("flash erase address: %#x\n", addr);
+        }
         NVIC_SystemReset();
     }
 }

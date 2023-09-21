@@ -3,7 +3,7 @@
 #include "apdu_protocol_parser.h"
 #include "librust_c.h"
 #include "keystore.h"
-#include "service_eth_sign.h"
+#include "service_resolve_ur.h"
 
 static ProtocolSendCallbackFunc_t g_sendFunc = NULL;
 static struct ProtocolParser *global_parser = NULL;
@@ -125,8 +125,8 @@ static void parse_apdu(const uint8_t *frame, uint32_t len)
     case CMD_ECHO_TEST:
         send_apdu_response(APDU_PROTOCOL_HEADER, CMD_ECHO_TEST, fullData, fullDataLen);
         break;
-    case CMD_SIGN_ETH_TX:
-        ProcessEthereumTransactionSignature(fullData, fullDataLen, send_apdu_response);
+    case CMD_RESOLVE_UR:
+        ProcessUREvents(fullData, fullDataLen, send_apdu_response);
         break;
     case CMD_CHECK_LOCK_STATUS:
         result->data = (uint8_t *)malloc(1);

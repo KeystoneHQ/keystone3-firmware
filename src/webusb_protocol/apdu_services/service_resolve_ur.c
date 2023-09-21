@@ -1,4 +1,4 @@
-#include "service_eth_sign.h";
+#include "service_resolve_ur.h";
 #include "user_delay.h";
 #include "gui_chain.h";
 #include "gui_views.h";
@@ -13,11 +13,11 @@ static void HandleSuccessFunc(const void * data, uint32_t data_len)
 {
     if (g_handleURCallback != NULL)
     {
-        g_handleURCallback(APDU_PROTOCOL_HEADER, CMD_SIGN_ETH_TX, (uint8_t *)data, data_len);
+        g_handleURCallback(APDU_PROTOCOL_HEADER, CMD_RESOLVE_UR, (uint8_t *)data, data_len);
     }
 };
 
-void *ProcessEthereumTransactionSignature(uint8_t *data, uint32_t dataLen, ResponseHandler *sendResponse)
+void *ProcessUREvents(uint8_t *data, uint32_t dataLen, ResponseHandler *sendResponse)
 {
     g_handleURCallback = sendResponse;
 

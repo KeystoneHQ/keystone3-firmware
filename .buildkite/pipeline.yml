@@ -97,17 +97,40 @@
     - artifacts#v1.9.0:
         upload: [ "build/mh1903.*", "build/keystone3.bin" ]
 
-- block: ":rocket: Ready to Create Github Release?"
-  branches: "release/v*"
-  if: build.message == "debug-firmware-production"
+- block: ":rocket: Ready to Release to Staging?"
+  if: build.branch =~ /^release\/v*/ && build.message == "debug-firmware-production"
+
+- label: "Release to Staging"
+  if: build.branch =~ /^release\/v*/ && build.message == "debug-firmware-production"
+  command: "ci/keystone-release.sh"
+  agents:
+    queue: keystone-staging:deploy
+  concurrency: 1
+  concurrency_group: "keystone-staging/publish"
+  env:
+    AWS_DEFAULT_REGION: eu-west-1
+    ENV: staging
+
+- block: ":rocket: Ready to Release to Production?"
+  if: build.branch =~ /^release\/v*/ && build.message == "debug-firmware-production"
 
 - label: "Create Github Release"
-  branches: "release/v*"
-  if: build.message == "debug-firmware-production"
+  if: build.branch =~ /^release\/v*/ && build.message == "debug-firmware-production"
   command: "ci/github-release.sh"
   agents:
-    queue: keystone-g3/production-test-build
+    queue: keystone-production:deploy
   concurrency: 1
-  concurrency_group: "keystone3-project-pillar-firmware/release-firmware"
+  concurrency_group: "keystone-production/publish"
   env:
     AWS_DEFAULT_REGION: eu-central-1
+
+- label: "Release to Production"
+  if: build.branch =~ /^release\/v*/ && build.message == "debug-firmware-production"
+  command: "ci/keystone-release.sh"
+  agents:
+    queue: keystone-production:deploy
+  concurrency: 1
+  concurrency_group: "keystone-production/publish"
+  env:
+    AWS_DEFAULT_REGION: eu-central-1
+    ENV: production

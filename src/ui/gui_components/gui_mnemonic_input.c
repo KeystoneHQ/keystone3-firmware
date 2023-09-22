@@ -218,8 +218,6 @@ bool GuiMnemonicInputCheck(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
 {
     char trueText[12] = {0};
     if (mkb->currentId != mkb->wordCnt) {
-        // lv_obj_clear_flag(mkb->nextButton, LV_OBJ_FLAG_CLICKABLE);
-        GuiSetLetterBoardConfirm(letterKb, 0);
         return false;
     }
 
@@ -228,8 +226,6 @@ bool GuiMnemonicInputCheck(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
         const char *text = lv_btnmatrix_get_btn_text(mkb->btnm, i);
         GuiMnemonicGetTrueWord(text, trueText);
         if (strlen(trueText) > 0 && !GuiWordsWhole(trueText)) {
-            GuiSetLetterBoardConfirm(letterKb, 0);
-            // lv_obj_clear_flag(mkb->nextButton, LV_OBJ_FLAG_CLICKABLE);
             return false;
         }
     }
@@ -432,9 +428,9 @@ void GuiMnemonicInputHandler(lv_event_t *e)
 
 void GuiSetMnemonicCache(KeyBoard_t *keyBoard, char *word)
 {
+    lv_textarea_set_text(keyBoard->ta, "");
     GuiKeyBoardRestoreDefault(keyBoard);
     GuiKeyBoardSetMode(keyBoard);
-    lv_textarea_set_text(keyBoard->ta, "");
     for (int i = 0; i < 3; i++) {
         memset(g_wordBuf[i], 0, sizeof(g_wordBuf[i]));
         lv_label_set_text(keyBoard->associateLabel[i], "");

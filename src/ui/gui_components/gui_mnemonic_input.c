@@ -387,7 +387,6 @@ void GuiMnemonicInputHandler(lv_event_t *e)
         }
         uint32_t currentId = lv_btnmatrix_get_selected_btn(obj);
         lv_obj_scroll_to_y(mkb->cont, (currentId / 3 - 1) * 72, LV_ANIM_ON);
-        lv_obj_clear_flag(letterKb->cont, LV_OBJ_FLAG_HIDDEN);
 
         char *word = lv_event_get_param(e);
         if ((strlen(word) == 0 && code == KEY_STONE_KEYBOARD_VALUE_CHANGE)) {

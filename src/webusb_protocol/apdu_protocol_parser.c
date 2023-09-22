@@ -18,25 +18,25 @@ uint8_t g_packetLengths[MAX_PACKETS];
 uint8_t g_receivedPackets[MAX_PACKETS];
 uint8_t g_totalPackets = 0;
 
-static void send_apdu_response(uint8_t cla, uint8_t ins, uint8_t *data, uint32_t dataLen)
+static void SendApduResponse(uint8_t cla, CommandType ins, APDUResponsePayload_t *payload)
 {
     uint8_t packet[MAX_PACKETS_LENGTH];
-    uint8_t totalPackets = (dataLen + MAX_APDU_DATA_SIZE - 1) / MAX_APDU_DATA_SIZE;
+    uint8_t totalPackets = (payload->dataLen + MAX_APDU_DATA_SIZE - 1) / MAX_APDU_DATA_SIZE;
     uint8_t packetIndex = 0;
     uint32_t offset = 0;
-    while (dataLen > 0)
+    while (payload->dataLen > 0)
     {
-        uint8_t packetDataSize = dataLen > MAX_APDU_DATA_SIZE ? MAX_APDU_DATA_SIZE : dataLen;
+        uint8_t packetDataSize = payload->dataLen > MAX_APDU_DATA_SIZE ? MAX_APDU_DATA_SIZE : payload->dataLen;
 
         packet[OFFSET_CLA] = cla;
         packet[OFFSET_INS] = ins;
         packet[OFFSET_P1] = totalPackets;
         packet[OFFSET_P2] = packetIndex;
         packet[OFFSET_LC] = packetDataSize;
-        memcpy(packet + OFFSET_CDATA, data + offset, packetDataSize);
+        memcpy(packet + OFFSET_CDATA, payload->data + offset, packetDataSize);
         g_sendFunc(packet, OFFSET_CDATA + packetDataSize);
         offset += packetDataSize;
-        dataLen -= packetDataSize;
+        payload->dataLen -= packetDataSize;
         packetIndex++;
     }
 }
@@ -49,7 +49,38 @@ static void reset()
     memset(g_protocolRcvBuffer, 0, sizeof(g_protocolRcvBuffer));
 }
 
-static void parse_apdu(const uint8_t *frame, uint32_t len)
+static void ApduRequestHandler(APDURequestPayload_t *request, CommandType command)
+{
+    APDUResponsePayload_t *result = (APDUResponsePayload_t *)malloc(sizeof(APDUResponsePayload_t));
+    switch (command)
+    {
+    case CMD_ECHO_TEST:
+        result->data = (uint8_t *)malloc(request->dataLen);
+        memcpy(result->data, request->data, request->dataLen);
+        result->dataLen = request->dataLen;
+        result->status = RSP_SUCCESS_CODE;
+        SendApduResponse(APDU_PROTOCOL_HEADER, CMD_ECHO_TEST, result);
+        break;
+    case CMD_RESOLVE_UR:
+        ProcessUREvents(request, SendApduResponse);
+        break;
+    case CMD_CHECK_LOCK_STATUS:
+        result->data = (uint8_t *)malloc(1);
+        result->data[0] = GuiLockScreenIsTop();
+        result->dataLen = 1;
+        result->status = RSP_SUCCESS_CODE;
+        SendApduResponse(APDU_PROTOCOL_HEADER, CMD_CHECK_LOCK_STATUS, result);
+        break;
+    default:
+        printf('Invalid command\n');
+        break;
+    }
+
+    free(result->data);
+    free(result);
+}
+
+static void FrameParser(const uint8_t *frame, uint32_t len)
 {
     if (len < 4)
     {
@@ -119,34 +150,19 @@ static void parse_apdu(const uint8_t *frame, uint32_t len)
     }
     fullData[fullDataLen] = '\0';
 
-    Response *result = (Response *)malloc(sizeof(Response));
-    switch (frame[OFFSET_INS])
-    {
-    case CMD_ECHO_TEST:
-        send_apdu_response(APDU_PROTOCOL_HEADER, CMD_ECHO_TEST, fullData, fullDataLen);
-        break;
-    case CMD_RESOLVE_UR:
-        ProcessUREvents(fullData, fullDataLen, send_apdu_response);
-        break;
-    case CMD_CHECK_LOCK_STATUS:
-        result->data = (uint8_t *)malloc(1);
-        result->data[0] = GuiLockScreenIsTop();
-        result->length = 1;
-        send_apdu_response(APDU_PROTOCOL_HEADER, CMD_CHECK_LOCK_STATUS, result->data, result->length);
-        break;
-    default:
-        printf('Invalid command\n');
-        break;
-    }
+    APDURequestPayload_t *request = (APDURequestPayload_t *)malloc(sizeof(APDURequestPayload_t));
+    request->data = fullData;
+    request->dataLen = fullDataLen;
+    ApduRequestHandler(request, frame[OFFSET_INS]);
 
     free(fullData);
-    free(result);
+    free(request);
     reset();
 }
 
-void ApduProtocol_Parse(const uint8_t *frame, uint32_t len)
+void ApduProtocolParse(const uint8_t *frame, uint32_t len)
 {
-    parse_apdu(frame, len);
+    FrameParser(frame, len);
 }
 
 static void RegisterSendFunc(ProtocolSendCallbackFunc_t sendFunc)
@@ -163,7 +179,7 @@ struct ProtocolParser *NewApduProtocolParser()
     {
         global_parser = (struct ProtocolParser *)malloc(sizeof(struct ProtocolParser));
         global_parser->name = APDU_PROTOCOL_PARSER_NAME;
-        global_parser->parse = ApduProtocol_Parse;
+        global_parser->parse = ApduProtocolParse;
         global_parser->registerSendFunc = RegisterSendFunc;
         global_parser->rcvCount = 0;
     }

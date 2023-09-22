@@ -8,11 +8,10 @@ edition = "2021"
 [dependencies]
 keystore = { path = "../../keystore", default-features = false }
 third_party = { path = "../../third_party", default-features = false }
-serde_json = { version = "1.0.95", default-features = false, features = ['alloc'] }
+app_utils = {path = "../utils"}
+sui-types = { git = "https://github.com/KeystoneHQ/sui.git", tag = "0.1.1", package = "sui-types" }
 serde = { version = "1.0.139", default-features = false }
 serde_derive = { version = "1.0.159"}
-app_utils = {path = "../utils"}
-blake2 = { version = "0.10.6", default-features = false }
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }

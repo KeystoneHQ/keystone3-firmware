@@ -1,6 +1,6 @@
 use alloc::string::{String, ToString};
 use keystore::errors::KeystoreError;
-use third_party::{hex, thiserror, base58};
+use third_party::{hex, thiserror, base58, serde_json, bcs};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -44,5 +44,11 @@ impl From<serde_json::Error> for SuiError {
 impl From<base58::Error> for SuiError {
     fn from(value: base58::Error) -> Self {
         Self::InvalidXPub(value.to_string())
+    }
+}
+
+impl From<bcs::Error> for SuiError {
+    fn from(value: bcs::Error) -> Self {
+        Self::InvalidData(value.to_string())
     }
 }

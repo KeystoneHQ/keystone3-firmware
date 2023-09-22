@@ -23,3 +23,5 @@ itertools = { version = "0.10.5", default-features = false, features = ["use_all
 serde_json = { version = "1.0.95", default-features = false, features = ['alloc'] }
 base64 = { version = "0.11", default-features = false, features = ['alloc'] }
 unicode-blocks = "0.1.6"
+bcs = {git = "https://github.com/KeystoneHQ/bcs.git", tag = "0.1.1"}
+blake2 = { version = "0.10.6", default-features = false }

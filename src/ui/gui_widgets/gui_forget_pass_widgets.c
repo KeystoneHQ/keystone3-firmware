@@ -103,7 +103,7 @@ static void StopCreateViewHandler(lv_event_t *e)
         lv_obj_set_size(btn, 162, 66);
         lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, NULL);
 
-        btn = GuiCreateBtn(g_noticeHintBox, _("shamir_phrase_cancel_create_btn"));
+        btn = GuiCreateBtn(g_noticeHintBox, _("Cancel Forget"));
         lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
         lv_obj_align(btn, LV_ALIGN_DEFAULT, 229, 710);
         lv_obj_set_size(btn, 215, 66);

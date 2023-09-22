@@ -253,7 +253,7 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
         lv_obj_align(g_forgetMkb->titleLabel, LV_ALIGN_DEFAULT, 36, 12);
         lv_label_set_recolor(g_forgetMkb->titleLabel, true);
 
-        g_forgetMkb->descLabel = GuiCreateIllustrateLabel(g_enterMnemonicCont, _(""));
+        g_forgetMkb->descLabel = GuiCreateIllustrateLabel(g_enterMnemonicCont, _("import_wallet_ssb_desc_fmt"));
         lv_label_set_recolor(g_forgetMkb->descLabel, true);
         lv_obj_align(g_forgetMkb->descLabel, LV_ALIGN_DEFAULT, 36, 72);
         lv_obj_add_event_cb(g_forgetMkb->nextButton, ImportShareNextSliceHandler, LV_EVENT_CLICKED, NULL);

@@ -213,6 +213,7 @@ int8_t GuiImportShareNextTile(void)
         GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
         GuiModelSlip39CalWriteSe(slip39);
         lv_obj_add_flag(g_nextCont, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_ssbImportKb->cont, LV_OBJ_FLAG_HIDDEN);
         break;
     }
     g_importShareTileView.currentTile++;

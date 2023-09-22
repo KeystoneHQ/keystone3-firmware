@@ -4,7 +4,7 @@
 #include "librust_c.h"
 #include "keystore.h"
 
-typedef void ResponseHandler(uint8_t cla, uint8_t ins, uint8_t *data, uint32_t dataLen);
+typedef void ResponseHandler(uint8_t cla, uint8_t ins, APDUResponsePayload_t *payload);
 static ResponseHandler *g_handleURCallback = NULL;
 
-void *ProcessUREvents(uint8_t *data, uint32_t dataLen, ResponseHandler *sendResponse);
+void *ProcessUREvents(APDURequestPayload_t *payload, ResponseHandler *sendResponse);

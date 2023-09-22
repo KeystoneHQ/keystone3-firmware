@@ -16,11 +16,25 @@ typedef enum {
     CMD_MAX_VALUE = 0xFFFFFFFF,    // The maximum value for command
 } CommandType;
 
-typedef struct {
+typedef enum {
+    RSP_SUCCESS_CODE = 0x00000000, // Response success code
+    RSP_FAILURE_CODE,              // Response failure code
+    //
+    RSP_MAX_VALUE = 0xFFFFFFFF,
+} StatusEnum;
+
+typedef struct
+{
     uint8_t *data;
-    uint32_t length;
-    uint32_t error_code;
-} Response;
+    uint32_t dataLen;
+} APDURequestPayload_t;
+
+typedef struct
+{
+    uint8_t *data;
+    uint32_t dataLen;
+    StatusEnum status;
+} APDUResponsePayload_t;
 
 typedef struct {
     uint8_t cla; // Class

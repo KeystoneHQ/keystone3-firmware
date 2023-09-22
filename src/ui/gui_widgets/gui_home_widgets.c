@@ -438,7 +438,7 @@ static void ManageCoinChainHandler(lv_event_t *e)
         bool state = lv_obj_has_state(lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 1), LV_STATE_CHECKED);
         g_walletBakState[wallet->index].state = state;
 
-        lv_obj_scroll_to_y(lv_obj_get_parent(parent), (wallet->index - 2) * 96, LV_ANIM_ON);
+        // lv_obj_scroll_to_y(lv_obj_get_parent(parent), (wallet->index - 2) * 96, LV_ANIM_ON);
         UpdateManageWalletState(false);
     }
 }
@@ -539,13 +539,15 @@ static void OpenManageAssetsHandler(lv_event_t *e)
             chainLabel = GuiCreateNoticeLabel(checkBoxCont, g_coinCardArray[i].chain);
             icon = GuiCreateImg(checkBoxCont, g_coinCardArray[i].icon);
             checkbox = GuiCreateMultiCheckBox(checkBoxCont, _(""));
+            lv_obj_set_style_pad_top(checkbox, 32, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_size(checkbox, 446, 96);
             g_walletState[i].checkBox = checkbox;
             uint8_t tableLen = 4;
             GuiButton_t table[5] = {
                 {.obj = icon, .align = LV_ALIGN_LEFT_MID, .position = {24, 0},},
                 {.obj = coinLabel, .align = LV_ALIGN_DEFAULT, .position = {100, 13},},
                 {.obj = chainLabel, .align = LV_ALIGN_DEFAULT, .position = {100, 53},},
-                {.obj = checkbox, .align = LV_ALIGN_TOP_MID, .position = {0, 32},},
+                {.obj = checkbox, .align = LV_ALIGN_TOP_MID, .position = {-10, 0},},
             };
             if (IsCosmosChain(g_coinCardArray[i].index)) {
                 tag = GuiCreateImg(checkBoxCont, &imgCosmosTag);

@@ -940,9 +940,9 @@ void GuiKeyBoardRestoreDefault(KeyBoard_t *keyBoard)
 
 void GuiClearKeyBoard(KeyBoard_t *keyBoard)
 {
+    lv_textarea_set_text(keyBoard->ta, "");
     GuiKeyBoardRestoreDefault(keyBoard);
     GuiKeyBoardSetMode(keyBoard);
-    lv_textarea_set_text(keyBoard->ta, "");
     for (int i = 0; i < 3; i++) {
         memset(g_wordBuf[i], 0, sizeof(g_wordBuf[i]));
         lv_label_set_text(keyBoard->associateLabel[i], "");
@@ -1151,10 +1151,13 @@ void KbTextAreaHandler(lv_event_t * e)
             return;
         }
         if (keyBoard->mode == KEY_STONE_LETTER) {
-            if (g_importPhraseKb != NULL) {
+            if (g_importPhraseKb != NULL && strlen(currText)) {
                 lv_event_send(g_importPhraseKb->btnm, KEY_STONE_KEYBOARD_VALUE_CHANGE, (void *)currText);
+                if (GuiSingleWordsWhole(currText)) {
+                    GuiClearKeyBoard(keyBoard);
+                }
+                UpdateKeyBoard(rootTree, currText, keyBoard);
             }
-            UpdateKeyBoard(rootTree, currText, keyBoard);
         } else {
             if (keyBoard->mode == KEY_STONE_FULL_L || keyBoard->mode == KEY_STONE_FULL_U) {
                 UpdateFullKeyBoard(currText, keyBoard);

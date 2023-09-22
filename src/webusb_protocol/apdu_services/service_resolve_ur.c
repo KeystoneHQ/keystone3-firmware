@@ -21,10 +21,6 @@ void *ProcessUREvents(uint8_t *data, uint32_t dataLen, ResponseHandler *sendResp
 {
     g_handleURCallback = sendResponse;
 
-    UREncodeResult *encodeResult;
-    uint8_t seed[64];
-    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-    GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
     struct URParseResult *urResult = parse_ur(data);
     UrViewType_t urViewType = {0, 0};
     urViewType.viewType = urResult->t;

@@ -7,6 +7,7 @@
  **********************************************************************/
 #include <string.h>
 #include <stdlib.h>
+#include "mhscpu.h"
 #include "gui_views.h"
 #include "gui_status_bar.h"
 #include "gui_button.h"
@@ -94,9 +95,10 @@ static void ClearTamperHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         printf("clicked btn\n");
         ClearTamperFlag();
+        UserDelay(200);
         printf("clear the flag\n");
-        GuiEmitSignal(GUI_EVENT_RESTART, NULL, 0);
-        printf("restart view\n");
+        printf("restart the device\n");
+        NVIC_SystemReset();
     }
 }
 

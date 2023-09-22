@@ -21,17 +21,17 @@ static int32_t GuiInitViewInit(void)
     GuiEnterPassLabelInit();
     GuiStyleInit();
     GuiStatusBarInit();
-    if (GetFactoryResult() == false) {
-        GuiFrameOpenView(&g_inactiveView);
-        return SUCCESS_CODE;
-    }
-    if (Tampered()) {
-        GuiFrameOpenView(&g_selfDestructView);
-        return SUCCESS_CODE;
-    }
-    GuiModeGetAmount();
+    // if (GetFactoryResult() == false) {
+    //     GuiFrameOpenView(&g_inactiveView);
+    //     return SUCCESS_CODE;
+    // }
+    // if (Tampered()) {
+    //     GuiFrameOpenView(&g_selfDestructView);
+    //     return SUCCESS_CODE;
+    // }
+    // GuiModeGetAmount();
     // GuiFrameOpenView(&g_settingView);
-    // GuiFrameOpenView(&g_connectWalletView);
+    GuiFrameOpenView(&g_setupView);
     return SUCCESS_CODE;
 }
 

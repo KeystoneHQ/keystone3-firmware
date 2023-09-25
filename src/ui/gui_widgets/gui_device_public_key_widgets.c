@@ -54,7 +54,7 @@ void GuiDevicePublicKeyWidgetsRestart()
 static void GuiDevicePublicKeyNVSBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Device UID");
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("about_info_device_uid"));
 }
 
 

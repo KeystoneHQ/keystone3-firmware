@@ -56,9 +56,6 @@
 
 #define PASSPHRASE_MAX_LEN                      128
 
-
-
-
 typedef struct {
     uint8_t entropy[ENTROPY_MAX_LEN];
     uint8_t seed[SEED_LEN];
@@ -74,7 +71,6 @@ typedef struct {
 } PassphraseInfo_t;
 
 static PassphraseInfo_t g_passphraseInfo[3] = {0};
-
 
 static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *accountSecret, const char *password, bool newAccount);
 static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountSecret, const char *password);

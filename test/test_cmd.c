@@ -792,7 +792,7 @@ static void FatfsFileCopyFunc(int argc, char *argv[])
 }
 
 static void LcdChangeParamFunc(int argc, char *argv[])
-{    
+{
     Ili9806bTest(argc, argv);
 }
 

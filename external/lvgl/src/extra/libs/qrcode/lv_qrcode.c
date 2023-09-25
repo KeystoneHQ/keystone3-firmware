@@ -115,9 +115,9 @@ lv_res_t lv_qrcode_update(lv_obj_t * qrcode, const void * data, uint32_t data_le
     lv_memcpy(data_tmp, data, data_len);
 
     bool ok = qrcodegen_encodeText(data, data_tmp,
-                                     qr0, qrcodegen_Ecc_LOW,
-                                     qr_version, qr_version,
-                                     qrcodegen_Mask_AUTO, true);
+                                   qr0, qrcodegen_Ecc_LOW,
+                                   qr_version, qr_version,
+                                   qrcodegen_Mask_AUTO, true);
 
     if (!ok) {
         lv_mem_free(qr0);

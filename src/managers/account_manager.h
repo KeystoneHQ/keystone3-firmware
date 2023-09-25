@@ -6,14 +6,12 @@
 #include "stdlib.h"
 #include "stdio.h"
 
-typedef enum
-{
+typedef enum {
     PASSCODE_TYPE_PIN,
     PASSCODE_TYPE_PASSWORD,
 } PasscodeType;
 
-typedef enum
-{
+typedef enum {
     MNEMONIC_TYPE_BIP39,
     MNEMONIC_TYPE_SLIP39,
 } MnemonicType;
@@ -23,8 +21,7 @@ typedef enum
 //     ERR_KEYSTORE_608B_GENPUBERROR = 0x0100,
 // } Keystone_ERROR_CODE;
 
-typedef struct
-{
+typedef struct {
     uint8_t entropyLen;
     PasscodeType passcodeType       : 1;
     MnemonicType mnemonicType       : 1;

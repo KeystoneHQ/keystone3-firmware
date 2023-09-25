@@ -6,7 +6,7 @@ PageWidget_t *CreatePageWidget(void)
     PageWidget_t *pageWidget = SRAM_MALLOC(sizeof(PageWidget_t));
 
     lv_obj_t *page = GuiCreateContainerWithParent(lv_scr_act(), lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET_NEW);
+                     GUI_MAIN_AREA_OFFSET_NEW);
     lv_obj_align(page, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET_NEW);
     lv_obj_add_flag(page, LV_OBJ_FLAG_CLICKABLE);
     pageWidget->page = page;
@@ -51,7 +51,7 @@ void DestroyPageWidget(PageWidget_t *pageWidget)
             lv_obj_del(pageWidget->page);
             pageWidget->page = NULL;
         }
-        
+
         SRAM_FREE(pageWidget);
     }
 

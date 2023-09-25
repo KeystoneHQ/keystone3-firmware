@@ -62,7 +62,7 @@ pub fn get_chain_id_by_address(address: &str) -> String {
     map.insert("akash", "akashnet-2");
     map.insert("cro", "crypto-org-chain-mainnet-1");
     map.insert("sif", "sifchain-1");
-    map.insert("certik", "shentu-2.2");
+    map.insert("shentu", "shentu-2.2");
     map.insert("iaa", "irishub-1");
     map.insert("regen", "regen-1");
     map.insert("persistence", "core-1");

@@ -266,7 +266,7 @@ static void SelectImportShareHandler(lv_event_t* e)
         static uint8_t wordsAmount[] = {33, 20};
         g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 282, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-        lv_obj_t *label = GuiCreateNoticeLabel(g_noticeHintBox, _("Phrase Words Amount"));
+        lv_obj_t *label = GuiCreateNoticeLabel(g_noticeHintBox, _("import_wallet_phrase_words_title"));
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -222);
 
         lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgClose);
@@ -276,11 +276,11 @@ static void SelectImportShareHandler(lv_event_t* e)
 
         for (int i = 0; i < 2; i++) {
             GuiButton_t table[] = {
-                {.obj = GuiCreateTextLabel(g_noticeHintBox, _("33 Words Per Share")), .align = LV_ALIGN_LEFT_MID, .position = {24, 0},},
+                {.obj = GuiCreateTextLabel(g_noticeHintBox, _("import_wallet_phrase_33words_per_share")), .align = LV_ALIGN_LEFT_MID, .position = {24, 0},},
                 {.obj = GuiCreateImg(g_noticeHintBox, &imgArrowRight), .align = LV_ALIGN_RIGHT_MID, .position = {-24, 0},},
             };
             if (i == 1) {
-                lv_label_set_text(table[0].obj, _("20 Words Per Share"));
+                lv_label_set_text(table[0].obj, _("import_wallet_phrase_20words_per_share"));
             }
             lv_obj_t *button = GuiCreateButton(g_noticeHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table), OpenImportShareHandler, &wordsAmount[i]);
             lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -12 - 96 * i);
@@ -342,19 +342,19 @@ static void GuiCreateBackupWidget(lv_obj_t *parent)
 
 static void GuiImportBackupWidget(lv_obj_t *parent)
 {
-    lv_obj_t *label = GuiCreateTitleLabel(parent, "Choose Import Method");
+    lv_obj_t *label = GuiCreateTitleLabel(parent, _("import_wallet_choose_method"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateIllustrateLabel(parent, "Recover your wallet with the specific\nseed phrase");
+    label = GuiCreateIllustrateLabel(parent, _("import_wallet_single_backup_desc"));
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *img = GuiCreateImg(parent, &imgSingleBackup);
 
-    label = GuiCreateLittleTitleLabel(parent, "Single Secret Phrase");
+    label = GuiCreateLittleTitleLabel(parent, _("import_wallet_single_phrase"));
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
 
-    lv_obj_t *labelNotice = GuiCreateIllustrateLabel(parent, "You'll need a 12/18/24 seed phrase\nto recover your wallet.");
+    lv_obj_t *labelNotice = GuiCreateIllustrateLabel(parent, _("import_wallet_single_phrase_desc"));
     lv_obj_set_style_text_opa(labelNotice, LV_OPA_60, LV_PART_MAIN);
 
     lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRightO);
@@ -371,9 +371,9 @@ static void GuiImportBackupWidget(lv_obj_t *parent)
     lv_obj_t *line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 515 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateLittleTitleLabel(parent, "Shamir Backup");
+    label = GuiCreateLittleTitleLabel(parent, _("import_wallet_shamir_backup"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    labelNotice = GuiCreateNoticeLabel(parent, "You'll need a couple of seed phrase\nshares to recover your wallet");
+    labelNotice = GuiCreateNoticeLabel(parent, _("import_wallet_shamir_backup_desc"));
     table[0].obj = label;
     table[0].position.x = 24;
     table[0].position.y = 24;
@@ -458,7 +458,6 @@ int8_t GuiCreateWalletNextTile(void)
 
 int8_t GuiCreateWalletPrevTile(void)
 {
-    printf("g_createWalletTileView.currentTile = %d\n", g_createWalletTileView.currentTile);
     switch (g_createWalletTileView.currentTile) {
     case CREATE_WALLET_SETPIN:
         return SUCCESS_CODE;

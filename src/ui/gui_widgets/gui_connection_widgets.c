@@ -59,7 +59,7 @@ void GuiConnectionWidgetsRestart()
 static void GuiConnectionNVSBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Connection");
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("usb_connection_title"));
 }
 
 
@@ -79,10 +79,10 @@ void GuiConnectionEntranceWidget(lv_obj_t *parent)
         lv_obj_clear_state(usbConnectionSw, LV_STATE_CHECKED);
     }
 
-    lv_obj_t *tittlelabel = GuiCreateTextLabel(parent, "Data transfer with USB");
+    lv_obj_t *tittlelabel = GuiCreateTextLabel(parent, _("usb_connection_subtitle"));
 
     lv_obj_t *contentLabel = lv_label_create(parent);
-    lv_label_set_text(contentLabel, "When disabled, the usb can only be used for charging battery");
+    lv_label_set_text(contentLabel, _("usb_connection_desc"));
     lv_obj_set_style_text_font(contentLabel, g_defIllustrateFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(contentLabel, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_opa(contentLabel, LV_OPA_56, LV_PART_MAIN);

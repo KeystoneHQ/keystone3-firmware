@@ -20,7 +20,7 @@ use crate::interfaces::ethereum::structs::{
 use crate::interfaces::structs::{TransactionCheckResult, TransactionParseResult};
 use crate::interfaces::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
-use crate::interfaces::utils::recover_c_char;
+use crate::interfaces::utils::{convert_c_char, recover_c_char};
 use crate::interfaces::KEYSTONE;
 
 mod abi;
@@ -60,6 +60,35 @@ pub extern "C" fn eth_check(
         return TransactionCheckResult::new().c_ptr();
     } else {
         return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn eth_get_root_path(ptr: PtrUR) -> PtrString
+{
+    let eth_sign_request = extract_ptr_with_type!(ptr, EthSignRequest);
+    let derivation_path: third_party::ur_registry::crypto_key_path::CryptoKeyPath =
+        eth_sign_request.get_derivation_path();
+    if let Some(path) = derivation_path.get_path() {
+        if let Some(root_path) = parse_eth_root_path(path) {
+            return convert_c_char(root_path);
+        }
+    }
+    return convert_c_char("".to_string())
+}
+
+fn parse_eth_root_path(path: String) -> Option<String> {
+    let root_path = "44'/60'/";
+    match path.strip_prefix(root_path) {
+        Some(path) => {
+            if let Some(index) = path.find("/") {
+                let sub_path = &path[..index];
+                Some(format!("{}{}", root_path, sub_path))
+            } else {
+                None
+            }
+        }
+        None => None,
     }
 }
 

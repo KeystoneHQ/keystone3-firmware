@@ -261,6 +261,8 @@ const static EvmNetwork_t NETWORKS[] = {
 #include "gui_constants.h"
 extern const ABIItem_t ethereum_abi_map[];
 
+static uint8_t GetEthPublickeyIndex(char* rootPath);
+
 void GuiSetEthUrData(void *data, bool multi)
 {
 #ifndef COMPILE_SIMULATOR
@@ -325,13 +327,14 @@ void *GuiGetEthTypeData(void)
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
-    char *ethStandardXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
+    char *rootPath = eth_get_root_path(data);
+    char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
     GetMasterFingerPrint(mfp);
     TransactionCheckResult *result = NULL;
     do {
         result = eth_check(data, mfp, sizeof(mfp));
         CHECK_CHAIN_BREAK(result);
-        PtrT_TransactionParseResult_DisplayETHTypedData parseResult = eth_parse_typed_data(data, ethStandardXpub);
+        PtrT_TransactionParseResult_DisplayETHTypedData parseResult = eth_parse_typed_data(data, ethXpub);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
@@ -396,13 +399,14 @@ void *GuiGetEthPersonalMessage(void)
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
-    char *ethStandardXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
+    char *rootPath = eth_get_root_path(data);
+    char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
     GetMasterFingerPrint(mfp);
     TransactionCheckResult *result = NULL;
     do {
         result = eth_check(data, mfp, sizeof(mfp));
         CHECK_CHAIN_BREAK(result);
-        PtrT_TransactionParseResult_DisplayETHPersonalMessage parseResult = eth_parse_personal_message(data, ethStandardXpub);
+        PtrT_TransactionParseResult_DisplayETHPersonalMessage parseResult = eth_parse_personal_message(data, ethXpub);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
@@ -464,6 +468,20 @@ void GetMessageRaw(void *indata, void *param)
     // sprintf((char *)indata, "%s%s", message->raw_message, "\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
 }
 
+static uint8_t GetEthPublickeyIndex(char* rootPath)
+{
+    if(strcmp(rootPath, "44'/60'/0'") == 0) return XPUB_TYPE_ETH_BIP44_STANDARD;
+    if(strcmp(rootPath, "44'/60'/1'") == 0) return XPUB_TYPE_ETH_LEDGER_LIVE_1;
+    if(strcmp(rootPath, "44'/60'/2'") == 0) return XPUB_TYPE_ETH_LEDGER_LIVE_2;
+    if(strcmp(rootPath, "44'/60'/3'") == 0) return XPUB_TYPE_ETH_LEDGER_LIVE_3;
+    if(strcmp(rootPath, "44'/60'/4'") == 0) return XPUB_TYPE_ETH_LEDGER_LIVE_4;
+    if(strcmp(rootPath, "44'/60'/5'") == 0) return XPUB_TYPE_ETH_LEDGER_LIVE_5;
+    if(strcmp(rootPath, "44'/60'/6'") == 0) return XPUB_TYPE_ETH_LEDGER_LIVE_6;
+    if(strcmp(rootPath, "44'/60'/7'") == 0) return XPUB_TYPE_ETH_LEDGER_LIVE_7;
+    if(strcmp(rootPath, "44'/60'/8'") == 0) return XPUB_TYPE_ETH_LEDGER_LIVE_8;
+    if(strcmp(rootPath, "44'/60'/9'") == 0) return XPUB_TYPE_ETH_LEDGER_LIVE_9;
+}
+
 // pase result
 void *GuiGetEthData(void)
 {
@@ -474,13 +492,14 @@ void *GuiGetEthData(void)
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
-    char *ethStandardXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
+    char *rootPath = eth_get_root_path(data);
+    char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
     GetMasterFingerPrint(mfp);
     TransactionCheckResult *result = NULL;
     do {
         result = eth_check(data, mfp, sizeof(mfp));
         CHECK_CHAIN_BREAK(result);
-        PtrT_TransactionParseResult_DisplayETH parseResult = eth_parse(data, ethStandardXpub);
+        PtrT_TransactionParseResult_DisplayETH parseResult = eth_parse(data, ethXpub);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
         g_fromEnsExist = GetEnsName((const char *)parseResult->data->overview->from, g_fromEthEnsName);

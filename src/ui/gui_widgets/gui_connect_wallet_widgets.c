@@ -215,9 +215,9 @@ static void InitDerivationPathDescs()
     if(g_derivationPathDescs == NULL)
     {
         g_derivationPathDescs = SRAM_MALLOC(3*128);
-        g_derivationPathDescs[Bip44Standard] = _("Recommended. Widely adopted across numerous software wallets.");
-        g_derivationPathDescs[LedgerLive] = _("Choose this path if you intend to import a seed phrase from Ledger Live.");
-        g_derivationPathDescs[LedgerLegacy] = _("Choose this path if you are managing your digital assets with Ledger Legacy.");
+        g_derivationPathDescs[Bip44Standard] = _("derivation_path_eth_standard_desc");
+        g_derivationPathDescs[LedgerLive] = _("derivation_path_eth_ledger_live_desc");
+        g_derivationPathDescs[LedgerLegacy] = _("derivation_path_eth_ledger_legacy_desc");
     }
 }
 
@@ -310,7 +310,7 @@ static void GuiCreateSelectCompanionAppCoinWidget()
     lv_obj_add_flag(coinListCont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_scrollbar_mode(coinListCont, LV_SCROLLBAR_MODE_OFF);
 
-    lv_obj_t *labelHint = GuiCreateIllustrateLabel(coinListCont, _("Select networks you’d like to manage in the software wallet"));
+    lv_obj_t *labelHint = GuiCreateIllustrateLabel(coinListCont, _("connect_wallet_keystone_hint"));
     lv_obj_set_style_text_opa(labelHint, LV_OPA_56, LV_PART_MAIN);
     lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 0, 0);
 
@@ -371,7 +371,7 @@ static void GuiCreateSelectCompanionAppCoinWidget()
     lv_obj_add_event_cb(btn, ConfirmSelectCompanionAppCoinsHandler, LV_EVENT_ALL, NULL);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
 
-    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Select Network"));
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("connect_wallet_select_network"));
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnShowQRHandler, cont);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
 }
@@ -393,7 +393,7 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
     lv_obj_t *line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, NUMBER_OF_ARRAYS(g_walletListArray) * 107 + 8);
 
-    lv_obj_t *label = GuiCreateIllustrateLabel(parent, "Please upgrade to the latest version for access to expanded software wallet compatibility.");
+    lv_obj_t *label = GuiCreateIllustrateLabel(parent, "connect_wallet_upgrade_hint");
     lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 32, NUMBER_OF_ARRAYS(g_walletListArray) * 107 + 8 + 8);
     // **
@@ -401,7 +401,7 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
 
 static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 {
-    lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("Scan the QR code with your software wallet"));
+    lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("connect_wallet_scan"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 152 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
 
@@ -428,7 +428,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_color(g_bottomCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(g_bottomCont, LV_OPA_0, LV_STATE_DEFAULT | LV_PART_MAIN);
 
-    label = GuiCreateNoticeLabel(g_bottomCont, _("Supported Networks"));
+    label = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_networks"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
     lv_obj_add_event_cb(g_bottomCont, JumpSelectCoinPageHandler, LV_EVENT_CLICKED, NULL);
 
@@ -800,7 +800,7 @@ static void OpenDerivationPath()
     lv_obj_t *bgCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
                                           GUI_MAIN_AREA_OFFSET);
     lv_obj_align(bgCont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
-    lv_obj_t *label = GuiCreateNoticeLabel(bgCont, "Select the derivation path you’d like to use for Ethereum");
+    lv_obj_t *label = GuiCreateNoticeLabel(bgCont, _("derivation_path_select_eth"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
 
     lv_obj_t *cont = GuiCreateContainerWithParent(bgCont, 408, 308);
@@ -858,7 +858,7 @@ static void OpenDerivationPath()
     label = GuiCreateNoticeLabel(egCont, g_derivationPathDescs[g_currentPathIndex[GetCurrentAccountIndex()]]);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
     g_derivationPathDescLabel = label;
-    label = GuiCreateNoticeLabel(egCont, _("Addresses eg."));
+    label = GuiCreateNoticeLabel(egCont, _("derivation_path_address_eg"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 76);
     lv_obj_t *index = GuiCreateNoticeLabel(egCont, _("0"));
     lv_obj_align(index, LV_ALIGN_TOP_LEFT, 24, 110);
@@ -872,7 +872,7 @@ static void OpenDerivationPath()
     g_egAddress[1] = label;
     GetEthEgAddress();
     UpdateEthEgAddress(GetMetamaskAccountType());
-    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Change Derivation Path"));
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseDerivationHandler, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     GUI_DEL_OBJ(g_openMoreHintBox);
@@ -919,7 +919,7 @@ static void OpenMoreHandler(lv_event_t *e)
         }
         g_openMoreHintBox = GuiCreateHintBox(lv_scr_act(), 480, hintboxHeight, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
-        lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, "Tutorial");
+        lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, _("common_tutorial"));
         lv_obj_t *img = GuiCreateImg(g_openMoreHintBox, &imgTutorial);
 
         GuiButton_t table[] =
@@ -939,9 +939,8 @@ static void OpenMoreHandler(lv_event_t *e)
                                         OpenTutorialHandler, wallet);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 
-        if (IsEVMChain(*wallet))
-        {
-            label = GuiCreateTextLabel(g_openMoreHintBox, "Change Derivation Path");
+        if (IsEVMChain(*wallet)) {
+            label = GuiCreateTextLabel(g_openMoreHintBox, _("derivation_path_change"));
             img = GuiCreateImg(g_openMoreHintBox, &imgPath);
             table[0].obj = img;
             table[1].obj = label;
@@ -979,7 +978,7 @@ int8_t GuiConnectWalletPrevTile(void)
         break;
     case CONNECT_WALLET_QRCODE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Choose Wallet"));
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("connect_wallet_choose_wallet"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         GuiAnimatingQRCodeDestroyTimer();
         break;
@@ -995,7 +994,7 @@ void GuiConnectWalletRefresh(void)
     {
     case CONNECT_WALLET_SELECT_WALLET:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Choose Wallet"));
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("connect_wallet_choose_wallet"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         break;
     case CONNECT_WALLET_QRCODE:

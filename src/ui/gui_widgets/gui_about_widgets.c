@@ -59,7 +59,7 @@ static void GuiAboutNVSBarInit()
 void GuiAboutEntranceWidget(lv_obj_t *parent)
 {
     //about ketystone
-    lv_obj_t *label = GuiCreateTextLabel(parent, "About Keystone");
+    lv_obj_t *label = GuiCreateTextLabel(parent, _("about_keystone_title"));
     lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRight);
     uint8_t memberCnt = 2;
 
@@ -84,7 +84,7 @@ void GuiAboutEntranceWidget(lv_obj_t *parent)
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 297);
 
     //terms of use
-    label = GuiCreateTextLabel(parent, "Terms of Use");
+    label = GuiCreateTextLabel(parent, _("about_terms_title"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
 
     table[0].obj = label;
@@ -98,7 +98,7 @@ void GuiAboutEntranceWidget(lv_obj_t *parent)
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 398);
 
     //device info
-    label = GuiCreateTextLabel(parent, "Device Info");
+    label = GuiCreateTextLabel(parent, _("device_info_title"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
 
     table[0].obj = label;

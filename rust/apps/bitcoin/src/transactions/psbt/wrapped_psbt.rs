@@ -78,7 +78,7 @@ impl WrappedPsbt {
             if !tx_in.previous_output.txid.eq(&prev_tx.txid()) {
                 return Err(BitcoinError::InvalidInput);
             }
-            let prevout = unsigned_tx.output.get(tx_in.previous_output.vout as usize);
+            let prevout = prev_tx.output.get(tx_in.previous_output.vout as usize);
             match prevout {
                 Some(out) => {
                     value = out.value;

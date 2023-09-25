@@ -194,7 +194,7 @@ static void SetPassWordHandler(lv_event_t *e)
         if (strlen(currText) < 6 && item->mode == ENTER_PASSCODE_SET_PASSWORD) {
             UnlimitedVibrate(LONG);
             if (lenLabel == NULL) {
-                lenLabel = GuiCreateIllustrateLabel(lv_obj_get_parent(lv_obj_get_parent(kb)), "Password should be at least 6 characters");
+                lenLabel = GuiCreateIllustrateLabel(lv_obj_get_parent(lv_obj_get_parent(kb)), _("password_error_too_short"));
                 lv_obj_align(lenLabel, LV_ALIGN_TOP_MID, 0, 375 - GUI_MAIN_AREA_OFFSET);
                 lv_obj_set_style_text_color(lenLabel, RED_COLOR, LV_PART_MAIN);
                 delayFlag = true;
@@ -361,7 +361,7 @@ void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *pa
         lv_obj_add_style(btnm, &g_enterPassBtnmStyle, LV_PART_ITEMS);
         lv_obj_add_style(btnm, &g_enterPressBtnmStyle, LV_STATE_PRESSED | LV_PART_ITEMS);
         item->btnm = btnm;
-        label = GuiCreateIllustrateLabel(pinCont, _("FORGET"));
+        label = GuiCreateIllustrateLabel(pinCont, _("common_forget"));
         img = GuiCreateImg(pinCont, &imgLock);
         table[0].obj = img;
         table[0].align = LV_ALIGN_LEFT_MID;
@@ -377,14 +377,14 @@ void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *pa
         lv_obj_align(btnm, LV_ALIGN_BOTTOM_MID, 0, -84);
         lv_obj_set_style_bg_color(btnm, BLACK_COLOR, LV_PART_MAIN);
 
-        label = GuiCreateIllustrateLabel(pinCont, _("passcode not match"));
+        label = GuiCreateIllustrateLabel(pinCont, _("password_error_not_match"));
         lv_obj_set_style_text_color(label, lv_color_hex(0x8f8f8f), LV_PART_MAIN);
         lv_label_set_recolor(label, true);
         lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 12);
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
         item->errLabel = label;
 
-        label = GuiCreateNoticeLabel(pinCont, _("Couldn’t verify fingerprint"));
+        label = GuiCreateNoticeLabel(pinCont, _("password_error_cannot_verify_fingerprint"));
         lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
         item->fpErrLabel = label;
@@ -395,7 +395,7 @@ void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *pa
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
         item->repeatLabel = label;
 
-        label = GuiCreateIllustrateLabel(pinCont, _("PASSWORD"));
+        label = GuiCreateIllustrateLabel(pinCont, _("password_label"));
         img = GuiCreateImg(pinCont, &imgSwitch);
         table[0].obj = img;
         table[0].align = LV_ALIGN_LEFT_MID;
@@ -414,7 +414,7 @@ void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *pa
     lv_obj_set_size(kb->ta, 352, 60);
     lv_obj_set_style_text_opa(kb->ta, LV_OPA_100, 0);
     lv_obj_align(kb->ta, LV_ALIGN_DEFAULT, 36, 292 - GUI_MAIN_AREA_OFFSET);
-    lv_textarea_set_placeholder_text(kb->ta, "Input your password");
+    lv_textarea_set_placeholder_text(kb->ta, _("password_input_desc"));
     lv_textarea_set_max_length(kb->ta, GUI_DEFINE_MAX_PASSCODE_LEN);
     lv_textarea_set_one_line(kb->ta, true);
     lv_textarea_set_password_mode(kb->ta, true);
@@ -429,7 +429,7 @@ void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *pa
     lv_obj_t *line = (lv_obj_t *)GuiCreateLine(passWdCont, points, 2);
     lv_obj_align_to(line, kb->ta, LV_ALIGN_BOTTOM_MID, 0, 0);
 
-    label = GuiCreateIllustrateLabel(passWdCont, _("FORGET"));
+    label = GuiCreateIllustrateLabel(passWdCont, _("common_forget"));
     img = GuiCreateImg(passWdCont, &imgLock);
     table[0].obj = img;
     table[0].align = LV_ALIGN_LEFT_MID;
@@ -443,7 +443,7 @@ void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *pa
                                        OpenForgetPasswordHandler, &g_lockView);
     lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -32, -27);
 
-    label = GuiCreateIllustrateLabel(passWdCont, _("PIN CODE"));
+    label = GuiCreateIllustrateLabel(passWdCont, _("common_pin_code"));
     img = GuiCreateImg(passWdCont, &imgSwitch);
     table[0].obj = img;
     table[0].align = LV_ALIGN_LEFT_MID;
@@ -487,7 +487,7 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
         button = GuiCreateButton(pinCont, 179, 36, table, NUMBER_OF_ARRAYS(table), PassWordPinSwitchHandler, passCodeParam);
         lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 449 - GUI_MAIN_AREA_OFFSET);
 
-        label = GuiCreateIllustrateLabel(pinCont, _("Duplicate PIN code detected. Please use a different one"));
+        label = GuiCreateIllustrateLabel(pinCont, _("password_error_duplicated_pincode"));
         lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 378 - GUI_MAIN_AREA_OFFSET);
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
@@ -504,7 +504,7 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
         lv_obj_set_size(kb->ta, 352, 60);
         lv_obj_set_style_text_opa(kb->ta, LV_OPA_100, 0);
         lv_obj_align(kb->ta, LV_ALIGN_DEFAULT, 36, 308 - GUI_MAIN_AREA_OFFSET);
-        lv_textarea_set_placeholder_text(kb->ta, "Set a strong password");
+        lv_textarea_set_placeholder_text(kb->ta, _("password_error_too_weak"));
         lv_textarea_set_password_mode(kb->ta, true);
         lv_textarea_set_max_length(kb->ta, GUI_DEFINE_MAX_PASSCODE_LEN);
         lv_textarea_set_one_line(kb->ta, true);
@@ -551,7 +551,7 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
         item->scoreLevel = label;
 
-        label = GuiCreateIllustrateLabel(passWdCont, "The input cannot exceed 128 characters");
+        label = GuiCreateIllustrateLabel(passWdCont, _("password_error_too_long"));
         lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
         lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 415 - GUI_MAIN_AREA_OFFSET);
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
@@ -566,7 +566,7 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
         lv_obj_set_size(kb->ta, 352, 60);
         lv_obj_set_style_text_opa(kb->ta, LV_OPA_100, 0);
         lv_obj_align(kb->ta, LV_ALIGN_DEFAULT, 36, 308 - GUI_MAIN_AREA_OFFSET);
-        lv_textarea_set_placeholder_text(kb->ta, "Set a strong password");
+        lv_textarea_set_placeholder_text(kb->ta, _("password_error_weak"));
         lv_textarea_set_password_mode(kb->ta, true);
         lv_textarea_set_max_length(kb->ta, GUI_DEFINE_MAX_PASSCODE_LEN);
         lv_textarea_set_one_line(kb->ta, true);
@@ -580,7 +580,7 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
     lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateIllustrateLabel(pinCont, _("passcode not match"));
+    label = GuiCreateIllustrateLabel(pinCont, _("password_error_not_match"));
     lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 378 - GUI_MAIN_AREA_OFFSET);
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
@@ -605,13 +605,13 @@ void GuiCreateEnterPassWord(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *
     lv_obj_set_size(kb->ta, 352, 60);
     lv_obj_set_style_text_opa(kb->ta, LV_OPA_100, 0);
     lv_obj_align(kb->ta, LV_ALIGN_DEFAULT, 36, 308 - GUI_MAIN_AREA_OFFSET);
-    lv_textarea_set_placeholder_text(kb->ta, "Set a strong password");
+    lv_textarea_set_placeholder_text(kb->ta, _("password_error_too_weak"));
     lv_textarea_set_password_mode(kb->ta, true);
     lv_textarea_set_max_length(kb->ta, GUI_DEFINE_MAX_PASSCODE_LEN);
     lv_textarea_set_one_line(kb->ta, true);
     item->kb = kb;
 
-    label = GuiCreateIllustrateLabel(passWdCont, _("passcode not match"));
+    label = GuiCreateIllustrateLabel(passWdCont, _("password_error_not_match"));
     lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 378 - GUI_MAIN_AREA_OFFSET);
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
@@ -623,7 +623,7 @@ void GuiCreateEnterPassWord(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
     item->repeatLabel = label;
 
-    label = GuiCreateIllustrateLabel(passWdCont, "The input cannot exceed 128 characters");
+    label = GuiCreateIllustrateLabel(passWdCont, _("password_error_too_long"));
     lv_obj_set_style_text_color(label, GREEN_COLOR, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 415 - GUI_MAIN_AREA_OFFSET);
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
@@ -800,9 +800,9 @@ void GuiFingerPrintStatus(GuiEnterPasscodeItem_t *item, bool en, uint8_t errCnt)
         lv_obj_align(item->fpErrLabel, LV_ALIGN_TOP_MID, 0, 0);
         lv_obj_set_style_text_align(item->fpErrLabel, LV_TEXT_ALIGN_CENTER, 0);
         if (errCnt < 5) {
-            lv_label_set_text(item->fpErrLabel, "Couldn’t verify fingerprint");
+            lv_label_set_text(item->fpErrLabel, _("password_error_cannot_verify_fingerprint"));
         } else {
-            lv_label_set_text(item->fpErrLabel, "Too many unsuccessful attempts. Please enter your passcode");
+            lv_label_set_text(item->fpErrLabel, _("password_error_fingerprint_attempts_exceed"));
             lv_label_set_long_mode(item->fpErrLabel, LV_LABEL_LONG_WRAP);
             lv_obj_set_width(item->fpErrLabel, 408);
         }

@@ -17,6 +17,7 @@
 #include "assert.h"
 #include "gui_qr_hintbox.h"
 #include "firmware_update.h"
+#include "account_manager.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "keystore.h"

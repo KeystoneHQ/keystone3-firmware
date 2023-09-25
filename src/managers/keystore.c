@@ -27,6 +27,7 @@
 #include "drv_rtc.h"
 #include "se_interface.h"
 #include "se_manager.h"
+#include "account_manager.h"
 
 #define KEYSTORE_DEBUG          0
 
@@ -55,9 +56,6 @@
 
 #define PASSPHRASE_MAX_LEN                      128
 
-
-#define PAGE_PUBLIC_INFO                        88
-
 typedef struct {
     uint8_t entropy[ENTROPY_MAX_LEN];
     uint8_t seed[SEED_LEN];
@@ -67,48 +65,18 @@ typedef struct {
 } AccountSecret_t;
 
 typedef struct {
-    uint8_t loginPasswordErrorCount;
-    uint8_t currentPasswordErrorCount;
-    uint8_t reserved1[2];
-    uint32_t lastLockDeviceTime;
-    uint8_t reserved2[24];               //byte 1~31 reserved.
-} PublicInfo_t;
-
-typedef struct {
     char passphrase[PASSPHRASE_MAX_LEN + 1];
     bool passphraseExist;
     uint8_t mfp[4];
 } PassphraseInfo_t;
 
-
-static uint8_t g_currentAccountIndex = ACCOUNT_INDEX_LOGOUT;
-static uint8_t g_lastAccountIndex = ACCOUNT_INDEX_LOGOUT;
-static AccountInfo_t g_currentAccountInfo = {0};
-static PublicInfo_t g_publicInfo = {0};
 static PassphraseInfo_t g_passphraseInfo[3] = {0};
-
 
 static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *accountSecret, const char *password, bool newAccount);
 static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountSecret, const char *password);
 
 static void CombineInnerAesKey(uint8_t *aesKey);
-static int32_t GetCurrentAccountInfo(void);
-static int32_t SaveCurrentAccountInfo(void);
 static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char *passphrase, const char *password);
-
-
-/// @brief Keystore init, secret self test.
-/// @return err code.
-int32_t KeystoreInit(void)
-{
-    int32_t ret;
-    ASSERT(sizeof(AccountInfo_t) == 32);
-    ASSERT(sizeof(PublicInfo_t) == 32);
-    ret = SE_HmacEncryptRead((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
-    assert(g_publicInfo.loginPasswordErrorCount <= 10);
-    return ret;
-}
-
 
 /// @brief Generate 32 byte entropy from SE and mcu TRNG.
 /// @param[out] entropy
@@ -174,17 +142,13 @@ int32_t SaveNewEntropy(uint8_t accountIndex, const uint8_t *entropy, uint8_t ent
         ret = bip39_mnemonic_to_seed(mnemonic, NULL, accountSecret.seed, SEED_LEN, NULL);
         CHECK_ERRCODE_BREAK("bip39_mnemonic_to_seed", ret);
         SRAM_FREE(mnemonic);
-        DestroyAccount(accountIndex);
-        CLEAR_OBJECT(g_currentAccountInfo);
-        g_currentAccountIndex = accountIndex;
+
         ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
         CHECK_ERRCODE_BREAK("SaveAccountSecret", ret);
         HashWithSalt(passwordHash, (const uint8_t *)password, strlen(password), "password hash");
         ret = SE_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
         CHECK_ERRCODE_BREAK("write password hash", ret);
-        ret = SaveCurrentAccountInfo();
-        CHECK_ERRCODE_BREAK("save current account info", ret);
-        ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
+
     } while (0);
 
     CLEAR_ARRAY(passwordHash);
@@ -213,10 +177,7 @@ int32_t SaveNewSlip39Entropy(uint8_t accountIndex, const uint8_t *ems, const uin
         CHECK_ERRCODE_BREAK("check repeat password", ret);
         memcpy(accountSecret.entropy, entropy, entropyLen);
         accountSecret.entropyLen = entropyLen;
-        DestroyAccount(accountIndex);
-        CLEAR_OBJECT(g_currentAccountInfo);
-        g_currentAccountIndex = accountIndex;
-        g_currentAccountInfo.mnemonicType = MNEMONIC_TYPE_SLIP39;
+
         memcpy(accountSecret.seed, entropy, entropyLen);
         memcpy(accountSecret.slip39Ems, ems, entropyLen);
         ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
@@ -224,11 +185,7 @@ int32_t SaveNewSlip39Entropy(uint8_t accountIndex, const uint8_t *ems, const uin
         HashWithSalt(passwordHash, (const uint8_t *)password, strlen(password), "password hash");
         ret = SE_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
         CHECK_ERRCODE_BREAK("write password hash", ret);
-        memcpy(g_currentAccountInfo.slip39Id, &id, 2);
-        memcpy(g_currentAccountInfo.slip39Ie, &ie, 1);
-        ret = SaveCurrentAccountInfo();
-        CHECK_ERRCODE_BREAK("save current account info", ret);
-        ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
+
     } while (0);
 
     CLEAR_ARRAY(passwordHash);
@@ -371,92 +328,6 @@ int32_t VerifyPassword(uint8_t *accountIndex, const char *password)
 }
 
 
-/// @brief Verify password for the account that was login. PasswordErrorCount++ if err.
-/// @param[in] password Password string.
-/// @return err code.
-int32_t VerifyCurrentAccountPassword(const char *password)
-{
-    uint8_t accountIndex, passwordHashClac[32], passwordHashStore[32];
-    int32_t ret;
-
-    do {
-        accountIndex = GetCurrentAccountIndex();
-        if (accountIndex > 2) {
-            ret = ERR_KEYSTORE_NOT_LOGIN;
-            break;
-        }
-        ret = SE_HmacEncryptRead(passwordHashStore, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
-        CHECK_ERRCODE_BREAK("read password hash", ret);
-        HashWithSalt(passwordHashClac, (const uint8_t *)password, strlen(password), "password hash");
-        if (memcmp(passwordHashStore, passwordHashClac, 32) == 0) {
-            g_publicInfo.currentPasswordErrorCount = 0;
-            ret = SUCCESS_CODE;
-        } else {
-            g_publicInfo.currentPasswordErrorCount++;
-            ret = ERR_KEYSTORE_PASSWORD_ERR;
-        }
-        SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
-    } while (0);
-
-    CLEAR_ARRAY(passwordHashStore);
-    CLEAR_ARRAY(passwordHashClac);
-    return ret;
-}
-
-int32_t ClearCurrentPasswordErrorCount(void)
-{
-    printf("clear current password error count\r\n");
-    g_publicInfo.loginPasswordErrorCount = 0;
-    g_publicInfo.currentPasswordErrorCount = 0;
-    SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
-    return SUCCESS_CODE;
-}
-
-/// @brief Verify password, if password verify success, set current account id. PasswordErrorCount++ if err.
-/// @param[out] accountIndex If password verify success, account index would be set here. Can be NULL if not needed.
-/// @param password Password string.
-/// @return err code.
-int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
-{
-    int32_t ret;
-    uint8_t tempIndex;
-
-    ret = VerifyPassword(&tempIndex, password);
-    if (ret == SUCCESS_CODE) {
-        g_currentAccountIndex = tempIndex;
-        g_lastAccountIndex = tempIndex;
-        if (accountIndex) {
-            *accountIndex = tempIndex;
-        }
-        ret = GetCurrentAccountInfo();
-        g_publicInfo.loginPasswordErrorCount = 0;
-        g_publicInfo.currentPasswordErrorCount = 0;
-        if (PassphraseExist(g_currentAccountIndex)) {
-            //passphrase exist.
-            printf("passphrase exist\r\n");
-            TempAccountPublicInfo(g_currentAccountIndex, password, false);
-        } else {
-            printf("passphrase not exist, info switch\r\n");
-            ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
-            if (ret == ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH) {
-                return ret;
-            }
-        }
-    } else {
-        g_publicInfo.loginPasswordErrorCount++;
-    }
-    SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
-    return ret;
-}
-
-
-/// @brief Logout current account.
-void LogoutCurrentAccount(void)
-{
-    g_currentAccountIndex = ACCOUNT_INDEX_LOGOUT;
-}
-
-
 /// @brief Check if password repeat with existing others.
 /// @param[in] password Password string.
 /// @param[in] excludeIndex exclude account index, if do not need exclude any account, set excludeIndex to 255.
@@ -477,90 +348,8 @@ int32_t CheckPasswordExisted(const char *password, uint8_t excludeIndex)
 }
 
 
-/// @brief Get current account index.
-/// @return current account index.return 255 if not currently authenticated.
-uint8_t GetCurrentAccountIndex(void)
-{
-    return g_currentAccountIndex;
-}
-
-/// @brief Set last account index.
-void SetCurrentAccountIndex(void)
-{
-    g_currentAccountIndex = g_lastAccountIndex;
-}
-
-/// @brief Get exist account number.
-/// @param[out] accountNum 1~3
-/// @return err code.
-int32_t GetExistAccountNum(uint8_t *accountNum)
-{
-    int32_t ret;
-    uint8_t data[32], count = 0;
-
-    for (uint8_t i = 0; i < 3; i++) {
-        ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
-        CHECK_ERRCODE_BREAK("read iv", ret);
-        if (CheckEntropy(data, 32)) {
-            count++;
-        }
-    }
-    CLEAR_ARRAY(data);
-    if (ret == SUCCESS_CODE) {
-        *accountNum = count;
-    }
-
-    return ret;
-}
 
 
-/// @brief Get a blank account index.
-/// @param[out] accountIndex If there is a blank account, it would be set here.
-/// @return err code.
-int32_t GetBlankAccountIndex(uint8_t *accountIndex)
-{
-    int32_t ret;
-    uint8_t data[32];
-
-    for (uint8_t i = 0; i < 3; i++) {
-        ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
-        CHECK_ERRCODE_BREAK("read iv", ret);
-        if (CheckEntropy(data, 32) == false) {
-            *accountIndex = i;
-            break;
-        }
-        if (i == 2) {
-            *accountIndex = 255;
-        }
-    }
-    CLEAR_ARRAY(data);
-
-    return ret;
-}
-
-
-/// @brief Destroy the specified account.
-/// @param[in] accountIndex Account index, 0~2.
-/// @return err code.
-int32_t DestroyAccount(uint8_t accountIndex)
-{
-    int32_t ret;
-    uint8_t data[32] = {0};
-
-    ASSERT(accountIndex <= 2);
-    for (uint8_t i = 0; i < PAGE_NUM_PER_ACCOUNT; i++) {
-        printf("erase index=%d\n", i);
-        ret = SE_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + i);
-        CHECK_ERRCODE_BREAK("ds28s60 write", ret);
-    }
-    DeleteAccountPublicInfo(accountIndex);
-    ClearAccountPassphrase(accountIndex);
-    SetWalletDataHash(accountIndex, data);
-
-    CLEAR_ARRAY(data);
-
-    return ret;
-}
 
 
 /// @brief Set passphrase
@@ -618,176 +407,12 @@ void GetMasterFingerPrint(uint8_t *mfp)
     if (PassphraseExist(accountIndex)) {
         memcpy(mfp, g_passphraseInfo[accountIndex].mfp, 4);
     } else {
-        memcpy(mfp, g_currentAccountInfo.mfp, 4);
+        AccountInfo_t accountInfo;
+        GetAccountInfo(accountIndex, &accountInfo);
+        memcpy(mfp, accountInfo.mfp, 4);
     }
 }
 
-
-/// @brief Get passcode type of the current account.
-/// @return Passcode type.
-PasscodeType GetPasscodeType(void)
-{
-    return g_currentAccountInfo.passcodeType;
-}
-
-
-/// @brief Get mnemonic type of the current account.
-/// @return Mnemonic type.
-MnemonicType GetMnemonicType(void)
-{
-    return g_currentAccountInfo.mnemonicType;
-}
-
-
-/// @brief Get slip39 idrandom identifier of the current account.
-/// @return idrandom identifier.
-uint16_t GetSlip39Id(void)
-{
-    uint16_t id;
-    memcpy(&id, g_currentAccountInfo.slip39Id, 2);
-    return id;
-}
-
-
-/// @brief Get slip39 iteration exponent of the current account.
-/// @return iteration exponent.
-uint8_t GetSlip39Ie(void)
-{
-    uint8_t ie;
-    memcpy(&ie, g_currentAccountInfo.slip39Ie, 1);
-    return ie;
-}
-
-
-/// @brief Get a boolean representing whether passphrase exists for the current account.
-/// @return passphrase exists.
-bool GetPassphraseQuickAccess(void)
-{
-    return g_currentAccountInfo.passphraseQuickAccess != 0;
-}
-
-
-/// @brief Get a boolean representing whether passphrase mark enable for the current account.
-/// @return passphrase exists.
-bool GetPassphraseMark(void)
-{
-    return g_currentAccountInfo.passphraseMark != 0;
-}
-
-
-/// @brief Get wallet icon index of the current account.
-/// @return wallet icon index.
-uint8_t GetWalletIconIndex(void)
-{
-    return g_currentAccountInfo.iconIndex;
-}
-
-
-/// @brief Get wallet name of the current account.
-/// @return wallet name string.
-char *GetWalletName(void)
-{
-    return g_currentAccountInfo.walletName;
-}
-
-
-/// @brief Set passcode type for the current account.
-/// @param[in] type Passcode type.
-void SetPasscodeType(PasscodeType type)
-{
-    g_currentAccountInfo.passcodeType = type;
-    SaveCurrentAccountInfo();
-}
-
-
-/// @brief Set mnemonic type for the current account.
-/// @param[in] type Mnemonic type.
-void SetMnemonicType(MnemonicType type)
-{
-    g_currentAccountInfo.mnemonicType = type;
-    SaveCurrentAccountInfo();
-}
-
-
-/// @brief Set passphrase quick access enable for the current account.
-/// @param[in] enable Quick access enable.
-void SetPassphraseQuickAccess(bool enable)
-{
-    g_currentAccountInfo.passphraseQuickAccess = enable ? 1 : 0;
-    // should only show quick access after restart.
-    SetPassphraseMark(false);
-    SaveCurrentAccountInfo();
-}
-
-
-/// @brief Set passphrase mark enable for the current account.
-/// @param[in] enable Mark enable.
-void SetPassphraseMark(bool enable)
-{
-    g_currentAccountInfo.passphraseMark = enable ? 1 : 0;
-    SaveCurrentAccountInfo();
-}
-
-
-/// @brief Set wallet icon index for the current account.
-/// @param[in] iconIndex
-void SetWalletIconIndex(uint8_t iconIndex)
-{
-    g_currentAccountInfo.iconIndex = iconIndex;
-    SaveCurrentAccountInfo();
-}
-
-
-/// @brief Set wallet name for the current account.
-/// @param[in] walletName
-void SetWalletName(const char *walletName)
-{
-    memset(g_currentAccountInfo.walletName, 0, sizeof(g_currentAccountInfo.walletName));
-    strcpy(g_currentAccountInfo.walletName, walletName);
-    SaveCurrentAccountInfo();
-}
-
-
-/// @brief Get password err count for login.
-/// @return password err count.
-uint8_t GetLoginPasswordErrorCount(void)
-{
-    return g_publicInfo.loginPasswordErrorCount;
-}
-
-
-/// @brief Get password err count for current account verify.
-/// @return password err count.
-uint8_t GetCurrentPasswordErrorCount(void)
-{
-    return g_publicInfo.currentPasswordErrorCount;
-}
-
-
-/// @brief
-/// @param
-/// @return
-uint32_t GetLastLockDeviceTime(void)
-{
-    return g_publicInfo.lastLockDeviceTime;
-}
-
-
-/// @brief
-/// @param timeStamp
-void SetLastLockDeviceTime(uint32_t timeStamp)
-{
-    g_publicInfo.lastLockDeviceTime = timeStamp;
-    SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
-}
-
-
-/// @brief Get the current account entropy length.
-/// @return Entropy length, also represents the seed length when SLIP39 used.
-uint32_t GetCurrentAccountEntropyLen(void)
-{
-    return g_currentAccountInfo.entropyLen;
-}
 
 void ClearAccountPassphrase(uint8_t accountIndex)
 {
@@ -812,26 +437,6 @@ bool PassphraseExist(uint8_t accountIndex)
     return (strlen(g_passphraseInfo[accountIndex].passphrase) > 0);
 }
 
-/// @brief Get the specific account info.
-/// @param[in] accountIndex
-/// @param[out] pInfo
-/// @return err code.
-int32_t GetAccountInfo(uint8_t accountIndex, AccountInfo_t *pInfo)
-{
-    int32_t ret;
-    ASSERT(accountIndex <= 2);
-    ret = SE_HmacEncryptRead((uint8_t *)pInfo, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
-    return ret;
-}
-
-
-/// @brief Erase public info in SE.
-/// @return err code.
-int32_t ErasePublicInfo(void)
-{
-    CLEAR_OBJECT(g_publicInfo);
-    return SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
-}
 
 
 /// @brief Save account secret, including entropy/seed/reservedData.
@@ -898,7 +503,7 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
         ret = SE_HmacEncryptWrite(hmac, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC);
         CHECK_ERRCODE_BREAK("write hmac", ret);
         if (newAccount) {
-            g_currentAccountInfo.entropyLen = accountSecret->entropyLen;
+            SetCurrentAccountEntropyLen(accountSecret->entropyLen);
             seedLen = GetMnemonicType() == MNEMONIC_TYPE_SLIP39 ? accountSecret->entropyLen : sizeof(accountSecret->seed);
             SimpleResponse_u8 *simpleResponse = get_master_fingerprint((PtrBytes)accountSecret->seed, seedLen);
             if (simpleResponse == NULL) {
@@ -914,9 +519,9 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
             CHECK_ERRCODE_BREAK("get_master_fingerprint", simpleResponse->error_code);
             uint8_t *masterFingerprint = simpleResponse->data;
             PrintArray("masterFingerprint", masterFingerprint, 4);
-            memcpy(g_currentAccountInfo.mfp, masterFingerprint, 4);
+            SetCurrentAccountMfp(masterFingerprint);
             free_simple_response_u8(simpleResponse);
-            ret = SE_HmacEncryptWrite((uint8_t *)&g_currentAccountInfo, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
+            SaveCurrentAccountInfo();
             CHECK_ERRCODE_BREAK("write param", ret);
         }
     } while (0);
@@ -1006,38 +611,6 @@ static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountS
     return ret;
 }
 
-
-/// @brief Get 608b seed slot numbers by seed index.
-/// @param[out] accountSlot
-/// @param[in] accountIndex Account index, 0~2.
-/// @return
-static void GetAtecc608bAccountSlot(AccountSlot_t *accountSlot, uint8_t accountIndex)
-{
-    ASSERT(accountIndex <= 2);
-    switch (accountIndex) {
-    case 0: {
-        accountSlot->auth = SLOT_AUTH_KEY_1;
-        accountSlot->rollKdf = SLOT_ROLL_KDF_KEY_1;
-        accountSlot->hostKdf = SLOT_HOST_KDF_KEY_1;
-    }
-    break;
-    case 1: {
-        accountSlot->auth = SLOT_AUTH_KEY_2;
-        accountSlot->rollKdf = SLOT_ROLL_KDF_KEY_2;
-        accountSlot->hostKdf = SLOT_HOST_KDF_KEY_2;
-    }
-    break;
-    case 2: {
-        accountSlot->auth = SLOT_AUTH_KEY_3;
-        accountSlot->rollKdf = SLOT_ROLL_KDF_KEY_3;
-        accountSlot->hostKdf = SLOT_HOST_KDF_KEY_3;
-    }
-    break;
-    default:
-        break;
-    }
-}
-
 /// @brief Combine with the internal AES KEY of MCU.
 /// @param[inout] aesKey
 /// @return
@@ -1054,40 +627,6 @@ static void CombineInnerAesKey(uint8_t *aesKey)
     for (uint32_t i = 0; i < AES_KEY_LEN; i++) {
         aesKey[i] ^= aesPiece[i];
     }
-}
-
-
-/// @brief Get current account info from SE, and copy info to g_currentAccountInfo.
-/// @return err code.
-static int32_t GetCurrentAccountInfo(void)
-{
-    uint8_t accountIndex, param[32];
-    AccountInfo_t *pAccountInfo = (AccountInfo_t *)param;
-    int32_t ret;
-
-    accountIndex = GetCurrentAccountIndex();
-    ASSERT(accountIndex <= 2);
-    ret = SE_HmacEncryptRead(param, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
-    if (ret == SUCCESS_CODE) {
-        memcpy(&g_currentAccountInfo, pAccountInfo, sizeof(AccountInfo_t));
-    }
-    return ret;
-}
-
-
-/// @brief Save g_currentAccountInfo to SE.
-/// @return err code.
-static int32_t SaveCurrentAccountInfo(void)
-{
-    uint8_t accountIndex, param[32];
-    AccountInfo_t *pAccountInfo = (AccountInfo_t *)param;
-    int32_t ret;
-
-    accountIndex = GetCurrentAccountIndex();
-    ASSERT(accountIndex <= 2);
-    memcpy(pAccountInfo, &g_currentAccountInfo, sizeof(AccountInfo_t));
-    ret = SE_HmacEncryptWrite(param, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
-    return ret;
 }
 
 
@@ -1143,8 +682,8 @@ void KeyStoreTest(int argc, char *argv[])
         entropyLen = tempI32;
         GenerateEntropy(entropy, entropyLen, argv[3]);
         PrintArray("entropy", entropy, entropyLen);
-        ret = SaveNewEntropy(index, entropy, entropyLen, argv[3]);
-        printf("SaveNewEntropy=%d\r\n", ret);
+        ret = CreateNewAccount(index, entropy, entropyLen, argv[3]);
+        printf("CreateNewAccount=%d\r\n", ret);
     } else if (strcmp(argv[0], "new_slip39_entropy") == 0) {
         VALUE_CHECK(argc, 4);
         sscanf(argv[1], "%d", &index);
@@ -1152,8 +691,8 @@ void KeyStoreTest(int argc, char *argv[])
         entropyLen = tempI32;
         GenerateEntropy(entropy, entropyLen, argv[3]);
         PrintArray("entropy", entropy, entropyLen);
-        ret = SaveNewSlip39Entropy(index, ems, entropy, entropyLen, argv[3], 4543, 0);
-        printf("SaveNewEntropy=%d\r\n", ret);
+        ret = CreateNewSlip39Account(index, ems, entropy, entropyLen, argv[3], 4543, 0);
+        printf("CreateNewSlip39Account=%d\r\n", ret);
     } else if (strcmp(argv[0], "save_slip39_entropy") == 0) {
         VALUE_CHECK(argc, 5);
         sscanf(argv[1], "%d", &index);
@@ -1165,8 +704,8 @@ void KeyStoreTest(int argc, char *argv[])
         }
         PrintArray("entropy", entropy, entropyLen);
         uint8_t ems[32] = {0};
-        ret = SaveNewSlip39Entropy(index, ems, entropy, entropyLen, argv[4], 1234, 0);
-        printf("SaveNewEntropy=%d\r\n", ret);
+        ret = CreateNewSlip39Account(index, ems, entropy, entropyLen, argv[4], 1234, 0);
+        printf("CreateNewSlip39Account=%d\r\n", ret);
     } else if (strcmp(argv[0], "get_entropy") == 0) {
         VALUE_CHECK(argc, 3);
         sscanf(argv[1], "%d", &index);
@@ -1185,8 +724,8 @@ void KeyStoreTest(int argc, char *argv[])
             printf("input length err\r\n");
         }
         PrintArray("entropy", entropy, 32);
-        ret = SaveNewEntropy(index, entropy, entropyLen, argv[4]);
-        printf("SaveNewEntropy=%d\r\n", ret);
+        ret = CreateNewAccount(index, entropy, entropyLen, argv[4]);
+        printf("CreateNewAccount=%d\r\n", ret);
     } else if (strcmp(argv[0], "get_seed") == 0) {
         VALUE_CHECK(argc, 3);
         sscanf(argv[1], "%d", &index);

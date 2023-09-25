@@ -20,6 +20,7 @@
 #include "keystore.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
+#include "account_manager.h"
 
 
 typedef enum {

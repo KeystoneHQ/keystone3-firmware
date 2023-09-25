@@ -18,6 +18,7 @@
 #include "gui_setup_widgets.h"
 #include "keystore.h"
 #include "gui_page.h"
+#include "account_manager.h"
 
 // static uint8_t g_manageWalletNum = 2;
 static lv_obj_t *g_manageWalletLabel = NULL;

@@ -20,6 +20,8 @@
 #include "fingerprint_process.h"
 #include "device_setting.h"
 #include "gui_page.h"
+#include "account_manager.h"
+
 #ifdef COMPILE_SIMULATOR
 #define FINGERPRINT_EN_SING_ERR_TIMES           (5)
 #define FINGERPRINT_SING_ERR_TIMES              (3)
@@ -140,7 +142,7 @@ void GuiLockScreenWipeDevice(void)
     lv_obj_t *img = GuiCreateImg(cont, &imgWarn);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 180 - GUI_STATUS_BAR_HEIGHT);
 
-    lv_obj_t *label= GuiCreateTextLabel(cont, "Unknown Error");
+    lv_obj_t *label = GuiCreateTextLabel(cont, "Unknown Error");
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 284 - GUI_STATUS_BAR_HEIGHT);
 
     lv_obj_t *desc = GuiCreateNoticeLabel(cont, "There is an unknown problem with the device and it is unavailable. Please erase the device to try to restart the device. If the problem still exists, please contact our customer service team.");

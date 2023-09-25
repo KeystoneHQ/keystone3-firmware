@@ -6,6 +6,7 @@
 #include "version.h"
 #include "secret_cache.h"
 #include "screen_manager.h"
+#include "account_manager.h"
 
 static bool g_isMulti = false;
 static void *g_urResult = NULL;

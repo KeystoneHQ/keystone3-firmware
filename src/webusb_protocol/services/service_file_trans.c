@@ -25,6 +25,7 @@
 #include "drv_battery.h"
 #include "keystore.h"
 #include "device_setting.h"
+#include "account_manager.h"
 
 
 #define TYPE_FILE_INFO_FILE_NAME                        1

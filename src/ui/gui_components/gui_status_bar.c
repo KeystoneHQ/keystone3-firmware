@@ -477,10 +477,8 @@ NavBarWidget_t *CreateNavBarWidget(lv_obj_t *navBar)
 
 void DestoryNavBarWidget(NavBarWidget_t *navBarWidget)
 {
-    if (navBarWidget != NULL)
-    {
-        if (navBarWidget->navBar != NULL && lv_obj_is_valid(navBarWidget->navBar))
-        {
+    if (navBarWidget != NULL) {
+        if (navBarWidget->navBar != NULL && lv_obj_is_valid(navBarWidget->navBar)) {
             lv_obj_del(navBarWidget->navBar);
         }
 
@@ -556,7 +554,7 @@ void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index, const c
 {
     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
     navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, (name != NULL) ? name : g_coinWalletBtn[index].name,
-                          g_coinWalletBtn[index].icon);
+                           g_coinWalletBtn[index].icon);
 }
 
 void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const char *name)
@@ -564,10 +562,10 @@ void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const
     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
     if (name == NULL) {
         navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, g_walletBtn[index].name,
-                              g_walletBtn[index].icon);
+                               g_walletBtn[index].icon);
     } else {
         navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, name,
-                              g_walletBtn[index].icon);
+                               g_walletBtn[index].icon);
     }
 }
 
@@ -644,7 +642,7 @@ void SetNavBarRightBtn(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM butto
         navBarWidget->rightBtn = CreateNewSkip(navBarWidget->navBar);
         rightButtonCb = eventCb;
         break;
-    default:        
+    default:
         return;
     }
     lv_obj_clear_flag(navBarWidget->rightBtn, LV_OBJ_FLAG_HIDDEN);

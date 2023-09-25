@@ -35,7 +35,7 @@ typedef enum {
 
 typedef struct NavBarWidget {
     lv_obj_t *navBar;
-    
+
     lv_obj_t *leftBtn;
     lv_obj_t *midBtn;
     lv_obj_t *rightBtn;

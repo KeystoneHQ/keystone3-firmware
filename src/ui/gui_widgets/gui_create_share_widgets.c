@@ -233,7 +233,7 @@ static void GuiShareSelectSliceWidget(lv_obj_t *parent)
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 24);
     g_selectSliceTile.stepLabel = label;
-    label = GuiCreateIllustrateLabel(cont, _("Shamir Backup"));
+    label = GuiCreateIllustrateLabel(cont, _("common_shamir_backup"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 60);
 
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_CHECK);
@@ -352,7 +352,7 @@ static void MnemonicConfirmHandler(lv_event_t * e)
                 lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 574);
                 label = GuiCreateIllustrateLabel(g_noticeHintBox, _("shamir_phrase_not_match_desc"));
                 lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 626);
-                lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, "OK");
+                lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("common_ok"));
                 lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
                 lv_obj_align(btn, LV_ALIGN_DEFAULT, 345, 710);
                 lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
@@ -367,7 +367,7 @@ static void GuiShareBackupWidget(lv_obj_t *parent)
 {
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
     // lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("Backup Your Phrase"));
+    lv_obj_t *label = GuiCreateTitleLabel(parent, _("shamir_phrase_backup_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(parent, _("shamir_phrase_backup_desc"));
@@ -446,10 +446,10 @@ int8_t GuiCreateShareNextSlice(void)
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
         return SUCCESS_CODE;
     }
-    lv_label_set_text_fmt(g_custodianTile.titleLabel, "Share #F5870A %d#/%d", g_createShareTileView.currentSlice + 1, g_selectSliceTile.memberCnt);
-    lv_label_set_text_fmt(g_custodianTile.noticeLabel, "Please confirm you are the custodian of the\nShare %d", g_createShareTileView.currentSlice + 1);
-    lv_label_set_text_fmt(g_shareBackupTile.noticeLabel, "Write down your Share #F5870A %d# phrase and keep \nit properly.", g_createShareTileView.currentSlice + 1);
-    lv_label_set_text_fmt(g_shareConfirmTile.noticeLabel, "Select words below in the order of your\nShare %d phrase to confirm that you have\nkept it properly.", g_createShareTileView.currentSlice + 1);
+    lv_label_set_text_fmt(g_custodianTile.titleLabel, _("shamir_phrase_share_number_fmt"), g_createShareTileView.currentSlice + 1, g_selectSliceTile.memberCnt);
+    lv_label_set_text_fmt(g_custodianTile.noticeLabel, _("shamir_phrase_share_notice_fmt"), g_createShareTileView.currentSlice + 1);
+    lv_label_set_text_fmt(g_shareBackupTile.noticeLabel, _("shamir_phrase_share_backup_notice_fmt"), g_createShareTileView.currentSlice + 1);
+    lv_label_set_text_fmt(g_shareConfirmTile.noticeLabel, _("shamir_phrase_share_confirm_notice_fmt"), g_createShareTileView.currentSlice + 1);
 
     g_createShareTileView.currentTile = CREATE_SHARE_CUSTODIAN;
     ResetBtnTest();
@@ -471,7 +471,7 @@ int8_t GuiCreateShareNextTile(void)
     switch (g_createShareTileView.currentTile) {
     case CREATE_SHARE_SELECT_SLICE:
         GuiModelSlip39UpdateMnemonic(slip39);
-        lv_label_set_text_fmt(g_custodianTile.titleLabel, "Share #F5870A %d#/%d", g_createShareTileView.currentSlice + 1, g_selectSliceTile.memberCnt);
+        lv_label_set_text_fmt(g_custodianTile.titleLabel, _("shamir_phrase_share_number_fmt"), g_createShareTileView.currentSlice + 1, g_selectSliceTile.memberCnt);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
         lv_obj_add_flag(g_selectSliceTile.stepCont, LV_OBJ_FLAG_HIDDEN);
         break;

@@ -14,7 +14,7 @@
 static void GuiAboutNVSBarInit();
 static void GuiAboutTermsEntranceWidget(lv_obj_t *parent);
 static int GetLvObjHeight(lv_obj_t *obj);
-static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, char *tittle, char *content, int *height);
+static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, char *title, char *content, int *height);
 static void GuiQrcodeHandler(lv_event_t *e);
 static void CloseQrcodeHandler(lv_event_t *e);
 
@@ -73,7 +73,7 @@ static void GuiAboutNVSBarInit()
 }
 
 
-static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, char *tittle, char *content, int *height)
+static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, char *title, char *content, int *height)
 {
 
     lv_obj_t *cont = lv_obj_create(parent);
@@ -90,11 +90,11 @@ static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, char *tittle, char *
         lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
     }
 
-    lv_obj_t *tittleLabel;
-    tittleLabel = GuiCreateLittleTitleLabel(cont, tittle);
-    lv_label_set_long_mode(tittleLabel, LV_LABEL_LONG_WRAP);
-    lv_obj_align(tittleLabel, LV_ALIGN_DEFAULT, 0, 0);
-    int16_t tittleHight = GetLvObjHeight(tittleLabel);
+    lv_obj_t *titleLabel;
+    titleLabel = GuiCreateLittleTitleLabel(cont, title);
+    lv_label_set_long_mode(titleLabel, LV_LABEL_LONG_WRAP);
+    lv_obj_align(titleLabel, LV_ALIGN_DEFAULT, 0, 0);
+    int16_t titleHight = GetLvObjHeight(titleLabel);
 
 
     lv_obj_t *contentLabel = lv_label_create(cont);
@@ -104,10 +104,10 @@ static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, char *tittle, char *
     lv_obj_set_style_text_opa(contentLabel, LV_OPA_56, LV_PART_MAIN);
     lv_label_set_long_mode(contentLabel, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(contentLabel, 410);
-    lv_obj_align(contentLabel, LV_ALIGN_DEFAULT, 0, 4 + tittleHight);
+    lv_obj_align(contentLabel, LV_ALIGN_DEFAULT, 0, 4 + titleHight);
     int16_t contentHeight = GetLvObjHeight(contentLabel);
 
-    *height = tittleHight + contentHeight + 4;
+    *height = titleHight + contentHeight + 4;
 
     lv_obj_set_height(cont, *height);
 
@@ -141,69 +141,69 @@ void GuiAboutTermsEntranceWidget(lv_obj_t *parent)
     int dy = 195;
     int height = 0;
 
-    char *tittle = _("about_terms_eligibility");
+    char *title = _("about_terms_eligibility");
     char *text = _("about_terms_eligibility_desc");
-    lv_obj_t *itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    lv_obj_t *itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = _("about_terms_product_and_services");
+    title = _("about_terms_product_and_services");
     text = _("about_terms_product_and_services_desc");
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = _("about_terms_risks");
+    title = _("about_terms_risks");
     text = _("about_terms_risks_desc");
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = _("about_terms_limitation");
+    title = _("about_terms_limitation");
     text = _("about_terms_limitation_desc");
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = _("about_terms_prohibited_conduct");
+    title = _("about_terms_prohibited_conduct");
     text = _("about_terms_prohibited_product_desc");
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = _("about_terms_ownership");
+    title = _("about_terms_ownership");
     text = _("about_terms_ownership_desc");
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = _("about_terms_discontinuance_service");
+    title = _("about_terms_discontinuance_service");
     text = _("about_terms_discontinuance_service_desc");
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = _("about_terms_disclaimers");
+    title = _("about_terms_disclaimers");
     text = _("about_terms_disclaimers_desc");
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = _("about_terms_law");
+    title = _("about_terms_law");
     text = _("about_terms_law_desc");
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = _("about_terms_contact_us");
+    title = _("about_terms_contact_us");
     text = _("about_terms_contact_us_desc");
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = _("about_terms_modification");
+    title = _("about_terms_modification");
     text = _("about_terms_modification_desc");
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 

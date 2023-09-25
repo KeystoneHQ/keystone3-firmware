@@ -79,7 +79,7 @@ void GuiConnectionEntranceWidget(lv_obj_t *parent)
         lv_obj_clear_state(usbConnectionSw, LV_STATE_CHECKED);
     }
 
-    lv_obj_t *tittlelabel = GuiCreateTextLabel(parent, _("usb_connection_subtitle"));
+    lv_obj_t *titlelabel = GuiCreateTextLabel(parent, _("usb_connection_subtitle"));
 
     lv_obj_t *contentLabel = lv_label_create(parent);
     lv_label_set_text(contentLabel, _("usb_connection_desc"));
@@ -92,7 +92,7 @@ void GuiConnectionEntranceWidget(lv_obj_t *parent)
 
     GuiButton_t table[] = {
         {
-            .obj = tittlelabel,
+            .obj = titlelabel,
             .align = LV_ALIGN_DEFAULT,
             .position = {24, 24},
         },

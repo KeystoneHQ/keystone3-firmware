@@ -84,7 +84,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
 
     lv_obj_t *tittleLable, *contentLable, *line, *button;
 
-    tittleLable = GuiCreateTextLabel(parent, "Firmware Version");
+    tittleLable = GuiCreateTextLabel(parent, _("about_info_firmware_version"));
     contentLable = GuiCreateNoticeLabel(parent, versionStr);
     GuiGetFpVersion(&fpVersion[1]);
 
@@ -107,7 +107,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 138);
 
-    tittleLable = GuiCreateTextLabel(parent, "Serial Number");
+    tittleLable = GuiCreateTextLabel(parent, _("about_info_serial_number"));
     contentLable = GuiCreateNoticeLabel(parent, serialNumber);
 
     table[0].obj = tittleLable;
@@ -119,7 +119,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 273);
 
-    tittleLable = GuiCreateTextLabel(parent, "Export System Log");
+    tittleLable = GuiCreateTextLabel(parent, _("about_info_export_log"));
     lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRight);
 
     table[0].obj = tittleLable;
@@ -132,7 +132,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -189);
 
 
-    tittleLable = GuiCreateTextLabel(parent, "Device UID");
+    tittleLable = GuiCreateTextLabel(parent, _("about_info_device_uid"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
 
     table[0].obj = tittleLable;
@@ -144,7 +144,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
                              OpenViewHandler, &g_DevicePublicKeyView);
     lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -290);
 
-    tittleLable = GuiCreateTextLabel(parent, "Fingerprint Firmware Version");
+    tittleLable = GuiCreateTextLabel(parent, _("about_info_fingerprint_firnware_version"));
     contentLable = GuiCreateNoticeLabel(parent, fpVersion);
 
     table[0].obj = tittleLable;
@@ -169,20 +169,20 @@ void GuiAboutWidgetsLogExport(bool en, int32_t errCode)
     const void *src;
     lv_color_t rightColor;
     if (en) {
-        title = "Export Successful";
-        desc = "Your system log has been export to MicoSD card successfully.";
+        title = _("about_info_result_export_successful");
+        desc = _("about_info_result_export_successful_desc");
         src = &imgSuccess;
         rightColor = ORANGE_COLOR;
-        right = "Done";
+        right = _("common_done");
     } else {
-        title = "Export Failed";
+        title = _("about_info_result_export_failed");
         src = &imgFailed;
         rightColor = DARK_GRAY_COLOR;
-        right = "OK";
+        right = _("common_ok");
         if (errCode == ERROR_LOG_HAVE_NO_SD_CARD) {
-            desc = "Please make sure you have installed a FAT32 Format MicroSD card.";
+            desc = _("about_info_result_export_failed_desc_no_sdcard");
         } else if (errCode == ERROR_LOG_NOT_ENOUGH_SPACE) {
-            desc = "Please make sure your MicroSD card has enough memory.";
+            desc = _("about_info_result_export_failed_desc_no_space");
         }
     }
     printf("errcode = %d\n", errCode);
@@ -220,7 +220,7 @@ static void LogExportHandler(lv_event_t *e)
         sprintf(logName, "Log_%s_%d.bin", sn, GetCurrentStampTime());
         strcat(buf, logName);
         g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgSdCardL,
-                          "Export Log to SD Card", buf, "Cancel", DARK_GRAY_COLOR, "Export", ORANGE_COLOR);
+                          _("about_info_export_to_sdcard"), buf, _("common_cancel"), DARK_GRAY_COLOR, _("common_export"), ORANGE_COLOR);
         lv_obj_t *descLabel = lv_obj_get_child(g_noticeHintBox, 1);
         lv_obj_set_style_text_opa(descLabel, LV_OPA_100, LV_PART_MAIN);
         lv_obj_set_style_text_color(descLabel, ORANGE_COLOR, LV_PART_MAIN);

@@ -136,8 +136,8 @@ mod tests {
             let root_path = "44'/118'/0'";
             let root_xpub = "xpub6DGzViq8bmgMLYdVZ3xnLVEdKwzBnGdzzJZ4suG8kVb9TTLAbrwv8YdKBb8FWKdBNinaHKmBv7JpQvqBYx4rxch7WnHzNFzSVrMf8hQepTP";
             let hd_path = "44'/118'/0'/0/0";
-            let address = derive_address(hd_path, root_xpub, root_path, "certik").unwrap();
-            assert_eq!("certik19rl4cm2hmr8afy4kldpxz3fka4jguq0amg3277", address);
+            let address = derive_address(hd_path, root_xpub, root_path, "shentu").unwrap();
+            assert_eq!("shentu19rl4cm2hmr8afy4kldpxz3fka4jguq0a55fydg", address);
         }
         {
             //general address CRO-0

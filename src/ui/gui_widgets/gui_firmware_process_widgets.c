@@ -34,11 +34,11 @@ static void GuiFirmwareProcessInit(void)
     container = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
     lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
 
-    label = GuiCreateTextLabel(container, "Updating");
+    label = GuiCreateTextLabel(container, _("common_updating"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 403);
-    label = GuiCreateNoticeLabel(container, "Approximately 3 minutes");
+    label = GuiCreateNoticeLabel(container, _("firmware_update_updating_desc"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 457);
-    label = GuiCreateNoticeLabel(container, "Do not unplug the USB cable while the installation process is underway");
+    label = GuiCreateNoticeLabel(container, _("firmware_update_usb_updating_hint"));
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_width(label, 360);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 660);

@@ -69,14 +69,14 @@ void GuiFpRecognizeResult(bool en)
     } else {
         g_fpErrorCount++;
         if (g_fpErrorCount < FINGERPRINT_EN_SING_ERR_TIMES) {
-            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Try Again");
+            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("try_again"));
             FpRecognize(RECOGNIZE_UNLOCK);
         } else {
             char* title;
             if (g_verifyLock->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN || g_verifyLock->mode == ENTER_PASSCODE_VERIFY_PIN) {
-                title = "Use PIN";
+                title = _("unlock_device_use_pin");
             } else {
-                title = "Use Password";
+                title = _("unlock_device_use_password");
             }
             SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, title);
         }

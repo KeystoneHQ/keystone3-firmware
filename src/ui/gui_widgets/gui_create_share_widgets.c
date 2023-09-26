@@ -233,7 +233,7 @@ static void GuiShareSelectSliceWidget(lv_obj_t *parent)
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 24);
     g_selectSliceTile.stepLabel = label;
-    label = GuiCreateIllustrateLabel(cont, _("common_shamir_backup"));
+    label = GuiCreateIllustrateLabel(cont, _("shamir_backup"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 60);
 
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_CHECK);

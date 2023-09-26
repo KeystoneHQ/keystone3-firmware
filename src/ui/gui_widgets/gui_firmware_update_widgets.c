@@ -85,7 +85,7 @@ void GuiCreateSdCardUpdateHintbox(char *version)
     char desc[150] = {0};
     sprintf(desc, _("firmware_update_sd_dialog_desc"));
     g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 416, &imgFirmwareUp, _("firmware_update_sd_dialog_title"),
-                      desc, _("common_not_now"), DARK_GRAY_COLOR, _("common_update"), ORANGE_COLOR);
+                      desc, _("not_now"), DARK_GRAY_COLOR, _("Update"), ORANGE_COLOR);
     lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeHintBox);
     lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
 

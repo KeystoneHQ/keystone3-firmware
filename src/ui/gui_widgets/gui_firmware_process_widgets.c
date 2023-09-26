@@ -34,7 +34,7 @@ static void GuiFirmwareProcessInit(void)
     container = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
     lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
 
-    label = GuiCreateTextLabel(container, _("common_updating"));
+    label = GuiCreateTextLabel(container, _("Updating"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 403);
     label = GuiCreateNoticeLabel(container, _("firmware_update_updating_desc"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 457);

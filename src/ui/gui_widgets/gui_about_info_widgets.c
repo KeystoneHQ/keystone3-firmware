@@ -220,7 +220,7 @@ static void LogExportHandler(lv_event_t *e)
         sprintf(logName, "Log_%s_%d.bin", sn, GetCurrentStampTime());
         strcat(buf, logName);
         g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgSdCardL,
-                          _("about_info_export_to_sdcard"), buf, _("common_cancel"), DARK_GRAY_COLOR, _("common_export"), ORANGE_COLOR);
+                          _("about_info_export_to_sdcard"), buf, _("Cancel"), DARK_GRAY_COLOR, _("Export"), ORANGE_COLOR);
         lv_obj_t *descLabel = lv_obj_get_child(g_noticeHintBox, 1);
         lv_obj_set_style_text_opa(descLabel, LV_OPA_100, LV_PART_MAIN);
         lv_obj_set_style_text_color(descLabel, ORANGE_COLOR, LV_PART_MAIN);

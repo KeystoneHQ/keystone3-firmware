@@ -361,7 +361,7 @@ void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *pa
         lv_obj_add_style(btnm, &g_enterPassBtnmStyle, LV_PART_ITEMS);
         lv_obj_add_style(btnm, &g_enterPressBtnmStyle, LV_STATE_PRESSED | LV_PART_ITEMS);
         item->btnm = btnm;
-        label = GuiCreateIllustrateLabel(pinCont, _("common_forget"));
+        label = GuiCreateIllustrateLabel(pinCont, _("FORGET"));
         img = GuiCreateImg(pinCont, &imgLock);
         table[0].obj = img;
         table[0].align = LV_ALIGN_LEFT_MID;
@@ -429,7 +429,7 @@ void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *pa
     lv_obj_t *line = (lv_obj_t *)GuiCreateLine(passWdCont, points, 2);
     lv_obj_align_to(line, kb->ta, LV_ALIGN_BOTTOM_MID, 0, 0);
 
-    label = GuiCreateIllustrateLabel(passWdCont, _("common_forget"));
+    label = GuiCreateIllustrateLabel(passWdCont, _("FORGET"));
     img = GuiCreateImg(passWdCont, &imgLock);
     table[0].obj = img;
     table[0].align = LV_ALIGN_LEFT_MID;
@@ -443,7 +443,7 @@ void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *pa
                                        OpenForgetPasswordHandler, &g_lockView);
     lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -32, -27);
 
-    label = GuiCreateIllustrateLabel(passWdCont, _("common_pin_code"));
+    label = GuiCreateIllustrateLabel(passWdCont, _("pin_code"));
     img = GuiCreateImg(passWdCont, &imgSwitch);
     table[0].obj = img;
     table[0].align = LV_ALIGN_LEFT_MID;

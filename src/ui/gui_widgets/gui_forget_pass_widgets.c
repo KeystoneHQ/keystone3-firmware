@@ -93,7 +93,7 @@ static void StopCreateViewHandler(lv_event_t *e)
         g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 416, false);
         lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgWarn);
         lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 432);
-        lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("Cancel forget password?"));
+        lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("forget_password_cancel"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 528);
         label = GuiCreateIllustrateLabel(g_noticeHintBox, _("import_wallet_ssb_cancel_desc"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 580);
@@ -121,9 +121,9 @@ void GuiForgetAnimContDel(int errCode)
     if (errCode == 0) {
         g_waitAnimCont = GuiCreateAnimHintBox(lv_scr_act(), 480, 326, 82);
         printf("g_waitAnimCont = %p\n", g_waitAnimCont);
-        lv_obj_t *title = GuiCreateTextLabel(g_waitAnimCont, _("Resetting, Keep Screen ON"));
+        lv_obj_t *title = GuiCreateTextLabel(g_waitAnimCont, _("change_passcode_reset_title"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -124);
-        lv_obj_t *desc = GuiCreateNoticeLabel(g_waitAnimCont, _("Writing Secure Element..."));
+        lv_obj_t *desc = GuiCreateNoticeLabel(g_waitAnimCont, _("change_passcode_reset_desc"));
         lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -76);
         lv_obj_add_flag(g_waitAnimCont, LV_OBJ_FLAG_CLICKABLE);
     } else {
@@ -150,8 +150,8 @@ void GuiForgetPassVerifyResult(bool en, int errCode)
 
 void GuiForgetPassResetPass(bool en, int errCode)
 {
-    lv_obj_t *cont = GuiCreateResultHintbox(lv_scr_act(), 356, &imgSuccess, "Reset Successful",
-                                            "Your passcode has been reset successfully.", NULL, DARK_GRAY_COLOR, "Done", ORANGE_COLOR);
+    lv_obj_t *cont = GuiCreateResultHintbox(lv_scr_act(), 356, &imgSuccess, _("change_passcode_reset_success_title"),
+                                            _("change_passcode_reset_success_desc"), NULL, DARK_GRAY_COLOR, _("common_done"), ORANGE_COLOR);
     lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(cont);
     lv_obj_add_event_cb(rightBtn, CloseCurrentParentAndCloseViewHandler, LV_EVENT_CLICKED, NULL);
     if (g_waitAnimCont != NULL) {
@@ -258,10 +258,9 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
         lv_obj_align(g_forgetMkb->descLabel, LV_ALIGN_DEFAULT, 36, 72);
         lv_obj_add_event_cb(g_forgetMkb->nextButton, ImportShareNextSliceHandler, LV_EVENT_CLICKED, NULL);
 
-        lv_label_set_text_fmt(g_forgetMkb->stepLabel, "%d of %d", g_forgetMkb->currentSlice + 1, g_forgetMkb->threShold);
-        lv_label_set_text_fmt(g_forgetMkb->titleLabel, "%s #F5870A %d#", _("import_wallet_ssb_title"), g_forgetMkb->currentSlice + 1);
-        lv_label_set_text_fmt(g_forgetMkb->descLabel, _("import_wallet_ssb_desc_fmt"),
-                              g_forgetMkb->wordCnt, g_forgetMkb->currentSlice + 1);
+        lv_label_set_text_fmt(g_forgetMkb->stepLabel, _("import_wallet_ssb_step_fmt"), g_forgetMkb->currentSlice + 1, g_forgetMkb->threShold);
+        lv_label_set_text_fmt(g_forgetMkb->titleLabel, _("import_wallet_ssb_title_fmt"), g_forgetMkb->currentSlice + 1);
+        lv_label_set_text_fmt(g_forgetMkb->descLabel, _("import_wallet_ssb_desc_fmt"), g_forgetMkb->wordCnt, g_forgetMkb->currentSlice + 1);
         bip39 = false;
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
     } else {
@@ -269,7 +268,7 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
         lv_obj_align(g_forgetMkb->titleLabel, LV_ALIGN_DEFAULT, 36, 12);
         g_forgetMkb->descLabel = GuiCreateIllustrateLabel(g_enterMnemonicCont, _("seed_check_share_phrase_title"));
         lv_obj_set_style_text_opa(g_forgetMkb->descLabel, LV_OPA_60, LV_PART_MAIN);
-        lv_obj_align(g_forgetMkb->descLabel, LV_ALIGN_DEFAULT, 36, 72);
+        lv_obj_align(g_forgetMkb->descLabel, LV_ALIGN_DEFAULT, 36, 72); 
         lv_obj_add_event_cb(g_forgetMkb->nextButton, ImportPhraseWordsHandler, LV_EVENT_CLICKED, NULL);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     }
@@ -318,14 +317,14 @@ void GuiForgetPassEntranceWidget(void *parent)
     lv_obj_t *img = GuiCreateImg(parent, &imgForget);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 204 - GUI_MAIN_AREA_OFFSET);
 
-    lv_obj_t *label = GuiCreateLittleTitleLabel(parent, _("Forget Password"));
+    lv_obj_t *label = GuiCreateLittleTitleLabel(parent, _("forgot_password_reset_passcode_intro_title"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 284 - GUI_MAIN_AREA_OFFSET);
 
-    lv_obj_t *desc = GuiCreateNoticeLabel(parent, _("You have to verify the seed phrase of this wallet to reset the passcode."));
+    lv_obj_t *desc = GuiCreateNoticeLabel(parent, _("forgot_password_reset_passcode_intro_desc"));
     lv_obj_align(desc, LV_ALIGN_TOP_MID, 0, 336 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("Reset Passcode"));
+    lv_obj_t *btn = GuiCreateBtn(parent, _("forgot_password_reset_passcode_intro_button"));
     lv_obj_set_size(btn, 233, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -64);
     lv_obj_set_style_bg_color(btn, BLACK_COLOR, LV_PART_MAIN);
@@ -427,7 +426,7 @@ int8_t GuiForgetPassNextTile(uint8_t tileIndex)
             return ERR_GUI_ERROR;
         } else {
             SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Seed Phrase Check"));
+            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_setting_seed_phrase"));
         }
         break;
     case FORGET_PASSWORD_METHOD_SELECT:
@@ -500,7 +499,7 @@ int8_t GuiForgetPassPrevTile(uint8_t tileIndex)
         g_forgetMkb->currentId = 0;
         g_forgetMkb->currentSlice = 0;
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Seed Phrase Check"));
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_setting_seed_phrase"));
         GuiWalletRecoverySinglePhraseClear();
         break;
     }

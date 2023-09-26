@@ -180,7 +180,7 @@ static void MnemonicConfirmHandler(lv_event_t * e)
                 lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 574);
                 label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_phrase_not_match_desc"));
                 lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 626);
-                lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, "OK");
+                lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("OK"));
                 lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
                 lv_obj_align(btn, LV_ALIGN_DEFAULT, 345, 710);
                 lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
@@ -276,15 +276,15 @@ static void SelectCheckBoxHandler(lv_event_t* e)
     lv_obj_add_state(actCb, LV_STATE_CHECKED);
     *active_id = lv_obj_get_index(actCb);
 
+    //TODO: use id to identity position
     const char *currText = lv_checkbox_get_text(actCb);
-    if (!strcmp(currText, "12 Words")) {
+    if (!strcmp(currText, _("single_phrase_12words"))) {
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "12    "USR_SYMBOL_DOWN);
-        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 12) {
             g_phraseCnt = 12;
             GuiModelBip39UpdateMnemonic(g_phraseCnt);
         }
-    } else if (!strcmp(currText, "24 Words")) {
+    } else if (!strcmp(currText, _("single_phrase_24words"))) {
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "24    "USR_SYMBOL_DOWN);
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 24) {
@@ -305,7 +305,7 @@ static void SelectPhraseCntHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 282, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-        lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeHintBox, "Phrase Words Amount");
+        lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_phrase_word_amount_select"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 560);
         lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
         lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgClose);

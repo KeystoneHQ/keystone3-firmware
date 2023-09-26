@@ -13,6 +13,7 @@
 
 void SensorInit(void);
 void SensorRegDebug(void);
+bool SensorTamperStatus(void);
 
 #endif /* _DRV_SENSOR_H */
 

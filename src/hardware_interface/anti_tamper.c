@@ -21,6 +21,7 @@
 #include "user_utils.h"
 #include "drv_battery.h"
 #include "background_task.h"
+#include "drv_sensor.h"
 
 
 #define TAMPER_MARK                 0x5A
@@ -32,7 +33,7 @@ static void TamperEraseInfo(void);
 /// @brief Called when startup.
 void TamperStartup(void)
 {
-    if (ReadTamperInput()) {
+    if (ReadTamperInput() && SensorTamperStatus()) {
         printf("tamper ok\r\n");
     } else {
         printf("tamper detected!!!\r\n");

@@ -37,6 +37,7 @@
 #include "drv_power.h"
 #include "drv_tamper.h"
 #include "drv_aw32001.h"
+#include "drv_bpk.h"
 #include "ctaes.h"
 #include "hash_and_salt.h"
 #include "sha512.h"
@@ -196,6 +197,7 @@ static void RustTestParseAptosTx(int argc, char *argv[]);
 static void ScreenShotFunc(int argc, char *argv[]);
 static void FatfsCopyFunc(int argc, char *argv[]);
 static void LcdChangeParamFunc(int argc, char *argv[]);
+static void BpkPrintFunc(int argc, char *argv[]);
 
 const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"test", TestFunc},
@@ -360,6 +362,7 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"device settings test:", DeviceSettingsTestFunc},
     {"screen shot", ScreenShotFunc},
     {"lcd set:", LcdChangeParamFunc},
+    {"bpk print:", BpkPrintFunc},
 };
 
 bool CompareAndRunTestCmd(const char *inputString)
@@ -796,6 +799,11 @@ static void LcdChangeParamFunc(int argc, char *argv[])
     Ili9806bTest(argc, argv);
 }
 
+static void BpkPrintFunc(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 1);
+    PrintBpkValue(argv[0]);
+}
 // static void ParamReadFunc(int argc, char *argv[])
 // {
 //     uint32_t id;

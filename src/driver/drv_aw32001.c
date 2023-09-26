@@ -59,6 +59,7 @@
 #define PARM_EN_ICC_DIVD                            (0x00 << 7)
 #define PARM_ICC                                    (0x38 << 0)
 #define PARM_ITERM                                  (0x01 << 0)
+#define PARM_ITERM_31MA                             (0x0f << 0)
 #define PARM_TJ_REG                                 (0x03 << 4)
 
 /********************AW320XX Set config end*******************/
@@ -330,7 +331,7 @@ static void Aw32001RegValueInit(void)
     Aw32001WriteRegBits(AW320XX_REG4_CVR, AW320XX_BIT_CVR_VRECH_MASK, PARM_VRECH);                  //PARM_VRECH 200mV
     Aw32001WriteRegBits(AW320XX_REGB_CCR3, AW320XX_BIT_CCR3_EN_ICC_DIVD_MASK, PARM_EN_ICC_DIVD);    //EN_ICC_DIVD Keep the current value of REG02[5:0] configuration.
     Aw32001WriteRegBits(AW320XX_REG2_CCR, AW320XX_BIT_CCR_ICC_MASK, PARM_ICC);                      //ICC 456mA
-    Aw32001WriteRegBits(AW320XX_REG3_CCR2, AW320XX_BIT_CCR2_ITERM_MASK, PARM_ITERM);                //ITERM 3mA
+    Aw32001WriteRegBits(AW320XX_REG3_CCR2, AW320XX_BIT_CCR2_ITERM_MASK, PARM_ITERM_31MA);                //ITERM 3mA
     Aw32001WriteRegBits(AW320XX_REG7_SVCR, AW320XX_BIT_SVCR_TJ_REG_MASK, PARM_TJ_REG);              //Thermal regulation threshold 120℃
     //Disable watchdog timer
     Aw32001WriteRegBits(AW320XX_REG5_TIMCR, AW320XX_BIT_TIMCR_WD_CFG_MASK, AW320XX_BIT_TIMCR_WD_CFG_DISABLE);

@@ -14,6 +14,7 @@ typedef void (*SetChainDataFunc)(void *indata, bool multi);
 typedef enum {
     CHAIN_BTC,
     CHAIN_ETH,
+    CHAIN_SOL,
     CHAIN_ATOM,
     CHAIN_OSMO,
     CHAIN_SCRT,
@@ -45,7 +46,6 @@ typedef enum {
     CHAIN_LUNA,
     CHAIN_LUNC,
     CHAIN_BNB,
-    CHAIN_SOL,
     CHAIN_DOT,
     CHAIN_XRP,
     CHAIN_LTC,

@@ -67,7 +67,7 @@
     <ClInclude Include="..\..\ui\gui_widgets\gui_create_share_widgets.h" />
     <ClInclude Include="..\..\ui\gui_widgets\gui_create_wallet_widgets.h" />
     <ClInclude Include="..\..\ui\gui_widgets\gui_enter_passcode.h" />
-    <ClInclude Include="..\..\ui\gui_widgets\gui_ethereum_receive_widgets.h" />
+    <ClInclude Include="..\..\ui\gui_widgets\gui_multi_path_coin_receive_widgets.h" />
     <ClInclude Include="..\..\ui\gui_widgets\gui_firmware_process_widgets.h" />
     <ClInclude Include="..\..\ui\gui_widgets\gui_firmware_update_deny_widgets.h" />
     <ClInclude Include="..\..\ui\gui_widgets\gui_firmware_update_widgets.h" />

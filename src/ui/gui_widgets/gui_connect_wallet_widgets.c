@@ -15,7 +15,7 @@
 #include "gui_connect_wallet_widgets.h"
 #include "account_public_info.h"
 #include "rust.h"
-#include "gui_ethereum_receive_widgets.h"
+#include "gui_multi_path_coin_receive_widgets.h"
 #include "gui_animating_qrcode.h"
 #include "gui_page.h"
 #include "keystore.h"

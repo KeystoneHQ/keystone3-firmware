@@ -85,8 +85,8 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
         }
         if (ret < 0) {
             if (ret == SLIP39_NOT_BELONG_THIS_WALLET && mkb->intputType == MNEMONIC_INPUT_SETTING_VIEW) { // recovery
-                g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 356, &imgFailed, "Verify Failed",
-                                  "Seed phrase does’t match. Please try again.", NULL, DARK_GRAY_COLOR, "OK", DARK_GRAY_COLOR);
+                g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 356, &imgFailed, _("seed_check_verify_not_match_title"),
+                                  _("seed_check_verify_not_match_desc"), NULL, DARK_GRAY_COLOR, _("OK"), DARK_GRAY_COLOR);
                 lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeHintBox);
                 lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
             } else {

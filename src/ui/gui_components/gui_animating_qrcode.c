@@ -50,7 +50,7 @@ void GuiAnimatingQRCodeInit(lv_obj_t* parent, GenerateUR dataFunc, bool showPend
     g_showPending = showPending;
 
     if (showPending) {
-        GuiPendingHintBoxOpen(_("Pending"), _("Generating QR Codes"));
+        GuiPendingHintBoxOpen(_("Pending"), _("generating_qr_codes"));
     }
 }
 

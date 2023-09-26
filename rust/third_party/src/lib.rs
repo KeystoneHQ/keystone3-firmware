@@ -19,3 +19,5 @@ pub use thiserror;
 pub use unicode_blocks;
 pub use ur_parse_lib;
 pub use ur_registry;
+pub use bcs;
+pub use blake2;

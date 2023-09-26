@@ -7,6 +7,7 @@ use app_cosmos::errors::CosmosError;
 use app_ethereum::errors::EthereumError;
 use app_near::errors::NearError;
 use app_solana::errors::SolanaError;
+use app_sui::errors::SuiError;
 use app_tron::errors::TronError;
 use app_xrp::errors::XRPError;
 use keystore::errors::KeystoreError;
@@ -141,6 +142,11 @@ pub enum ErrorCodes {
     AptosKeystoreError,
     AptosInvalidData,
     AptosParseTxError,
+
+    // Sui
+    SuiSignFailure = 1100,
+    SuiInvalidData,
+    SuiParseTxError,
 }
 
 impl ErrorCodes {
@@ -333,6 +339,17 @@ impl From<&XRPError> for ErrorCodes {
             XRPError::SignFailure(_) => Self::XRPSignFailure,
             XRPError::InvalidData(_) => Self::XRPInvalidData,
             XRPError::ParseTxError(_) => Self::XRPParseTxError,
+        }
+    }
+}
+
+impl From<&SuiError> for ErrorCodes {
+    fn from(value: &SuiError) -> Self {
+        match value {
+            SuiError::SignFailure(_) => Self::SuiSignFailure,
+            SuiError::InvalidData(_) => Self::SuiInvalidData,
+            SuiError::ParseTxError(_) => Self::SuiParseTxError,
+            SuiError::InvalidXPub(_) => Self::InvalidXPub,
         }
     }
 }

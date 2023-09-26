@@ -509,7 +509,7 @@ static void GuiQrcodeHandler(lv_event_t *e)
             lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
             lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -114);
 
-            button = GuiCreateBtn(parent, _("common_ok"));
+            button = GuiCreateBtn(parent, _("OK"));
             lv_obj_set_size(button, 94, 66);
             lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
             lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);

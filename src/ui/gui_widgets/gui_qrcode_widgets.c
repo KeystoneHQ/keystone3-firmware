@@ -161,7 +161,7 @@ void SignByFinger(void)
 
     g_fingerSingContainer = GuiCreateHintBox(lv_scr_act(), 480, 428, true);
     lv_obj_t *cont = g_fingerSingContainer;
-    lv_obj_t *label = GuiCreateNoticeLabel(cont, "Verify Fingerprint");
+    lv_obj_t *label = GuiCreateNoticeLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 402);
 
     lv_obj_t *img = GuiCreateImg(cont, &imgClose);
@@ -178,12 +178,12 @@ void SignByFinger(void)
     lv_obj_set_style_arc_opa(arc, LV_OPA_10, LV_PART_MAIN);
     lv_obj_align(arc, LV_ALIGN_BOTTOM_MID, 0, -154);
 
-    g_fpErrorLabel = GuiCreateLabel(cont, "Verify failed. Please try again!");
+    g_fpErrorLabel = GuiCreateLabel(cont, _("scan_qr_code_sign_unsigned_content_fingerprint_failed_desc"));
     lv_obj_set_style_text_color(g_fpErrorLabel, RED_COLOR, LV_PART_MAIN);
     lv_obj_align(g_fpErrorLabel, LV_ALIGN_BOTTOM_MID, 0, -100);
     lv_obj_add_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN);
 
-    label = GuiCreateNoticeLabel(cont, "Enter Password");
+    label = GuiCreateNoticeLabel(cont, _("scan_qr_code_sign_fingerprint_enter_passcode"));
     img = GuiCreateImg(cont, &imgLockedLock);
     table[0].obj = label;
     table[0].align = LV_ALIGN_DEFAULT;
@@ -262,10 +262,10 @@ static void GuiDealScanErrorResult(int errorType)
     lv_obj_t *img = GuiCreateImg(g_scanErrorHintBox, &imgFailed);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
 
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_scanErrorHintBox, _("Invalid QR Code"));
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_scanErrorHintBox, _("scan_qr_code_error_invalid_qrcode"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
 
-    label = GuiCreateIllustrateLabel(g_scanErrorHintBox, _("QR code data not recognized. Please try again."));
+    label = GuiCreateIllustrateLabel(g_scanErrorHintBox, _("scan_qr_code_error_invalid_qrcode_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
     lv_obj_t *btn = GuiCreateBtnWithFont(g_scanErrorHintBox, _("OK"), &openSansEnText);
@@ -298,7 +298,7 @@ void GuiQrCodeScanResult(bool result, void *param)
         if (g_qrCodeWidgetView.analysis != NULL) {
             g_fingerSignCount = 0;
             if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData || IsCosmosMsg(g_qrcodeViewType)) {
-                SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, "Confirm Message");
+                SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_confirm_message"));
             } else {
                 SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
             }
@@ -374,7 +374,7 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
         GuiShowQrCode(GuiGetCosmosSignQrCodeData, qrcode);
         break;
     default:
-        data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+        data = "";
         lv_qrcode_update(qrcode, data, strlen(data));
         lv_obj_t* fullScreenQrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
         if (fullScreenQrcode) {
@@ -384,7 +384,7 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
     }
 
     lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 36);
-    lv_obj_t *label = GuiCreateNoticeLabel(cont, _("Scan the QR code with your software wallet"));
+    lv_obj_t *label = GuiCreateNoticeLabel(cont, _("transaction_parse_scan_by_software"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 576 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *btn = GuiCreateBtn(cont, _("Done"));
@@ -394,7 +394,7 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
 
     uint8_t chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
     if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData) {
-        SetCoinWallet(g_pageWidget->navBarWidget, chainType, "Broadcast Message");
+        SetCoinWallet(g_pageWidget->navBarWidget, chainType, _("transaction_parse_broadcast_message"));
     }
 }
 
@@ -420,14 +420,14 @@ void GuiQrCodeRefresh(void)
         break;
     case PAGE_PHASE_TRANSACTION_DETAIL:
         if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData || IsCosmosMsg(g_qrcodeViewType)) {
-            SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, "Confirm Message");
+            SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_confirm_message"));
         } else {
             SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
         }
         break;
     case PAGE_PHASE_SIGNATURE:
         if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData) {
-            SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, "Broadcast Message");
+            SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_broadcast_message"));
         } else {
             SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
         }

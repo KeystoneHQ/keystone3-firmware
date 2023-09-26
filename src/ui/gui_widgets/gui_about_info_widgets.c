@@ -178,7 +178,7 @@ void GuiAboutWidgetsLogExport(bool en, int32_t errCode)
         title = _("about_info_result_export_failed");
         src = &imgFailed;
         rightColor = DARK_GRAY_COLOR;
-        right = _("common_ok");
+        right = _("OK");
         if (errCode == ERROR_LOG_HAVE_NO_SD_CARD) {
             desc = _("about_info_result_export_failed_desc_no_sdcard");
         } else if (errCode == ERROR_LOG_NOT_ENOUGH_SPACE) {

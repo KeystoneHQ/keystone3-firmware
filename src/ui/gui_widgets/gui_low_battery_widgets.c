@@ -39,7 +39,7 @@ static void GuiLowBatteryInit(void)
         lv_obj_set_width(label, 408);
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -130);
 
-        button = GuiCreateBtnWithFont(g_lowBatteryHintBox, _("common_ok"), g_defTextFont);
+        button = GuiCreateBtnWithFont(g_lowBatteryHintBox, _("OK"), g_defTextFont);
         lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_set_size(button, 94, 66);
         lv_obj_set_style_bg_color(button, DARK_GRAY_COLOR, LV_PART_MAIN);

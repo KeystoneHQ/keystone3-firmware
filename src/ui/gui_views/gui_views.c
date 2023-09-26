@@ -242,7 +242,7 @@ void GuiWriteSeResult(bool en, int32_t errCode)
 
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
         g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, height, false);
-        lv_obj_t *btn = GuiCreateBtn(g_hintBox, _("common_ok"));
+        lv_obj_t *btn = GuiCreateBtn(g_hintBox, _("OK"));
         lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
         lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, NULL);
@@ -292,7 +292,7 @@ void *GuiCreateErrorCodeHintbox(int32_t errCode, lv_obj_t **param)
     }
 
     lv_obj_t *cont = GuiCreateHintBox(lv_scr_act(), 480, height, false);
-    lv_obj_t *btn = GuiCreateBtn(cont, _("common_ok"));
+    lv_obj_t *btn = GuiCreateBtn(cont, _("OK"));
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
     lv_obj_add_event_cb(btn, CloseWaringPageHandler, LV_EVENT_CLICKED, cont);

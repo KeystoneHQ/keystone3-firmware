@@ -39,7 +39,6 @@ static int32_t ReadCurrentAccountInfo(void)
     return ret;
 }
 
-
 /// @brief Keystore init, secret self test.
 /// @return err code.
 int32_t AccountManagerInit(void)
@@ -57,6 +56,11 @@ int32_t AccountManagerInit(void)
 PasscodeType GetPasscodeType(void)
 {
     return g_currentAccountInfo.passcodeType;
+}
+
+uint8_t *GetCurrentAccountMfp()
+{
+    return g_currentAccountInfo.mfp;
 }
 
 

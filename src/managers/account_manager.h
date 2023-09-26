@@ -70,6 +70,7 @@ uint32_t GetLastLockDeviceTime(void);
 void SetLastLockDeviceTime(uint32_t timeStamp);
 uint32_t GetCurrentAccountEntropyLen(void);
 
+uint8_t *GetCurrentAccountMfp(void);
 int32_t GetAccountInfo(uint8_t accountIndex, AccountInfo_t *pInfo);
 int32_t ErasePublicInfo(void);
 int32_t ClearCurrentPasswordErrorCount(void);

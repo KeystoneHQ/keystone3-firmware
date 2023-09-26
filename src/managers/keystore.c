@@ -404,7 +404,7 @@ void GetMasterFingerPrint(uint8_t *mfp)
         if (PassphraseExist(accountIndex)) {
             memcpy(mfp, g_passphraseInfo[accountIndex].mfp, 4);
         } else {
-            memcpy(mfp, g_currentAccountInfo.mfp, 4);
+            memcpy(mfp, GetCurrentAccountMfp(), 4);
         }
     }
 }

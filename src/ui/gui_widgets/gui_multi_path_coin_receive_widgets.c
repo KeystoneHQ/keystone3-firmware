@@ -148,6 +148,9 @@ static const PathItem_t g_solPaths[] = {
     {"Phantom / Exodus",        "",     "m/44'/501'"  },
 };
 static lv_obj_t *g_addressLabel[2];
+static lv_obj_t *g_addressLabelOrder;
+static lv_obj_t *g_goToAddressIcon;
+
 static uint32_t g_showIndex;
 static uint32_t g_selectIndex;
 static uint8_t g_currentAccountIndex = 0;
@@ -349,7 +352,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     tempObj = GuiCreateImg(g_multiPathCoinReceiveWidgets.addressButton, &imgArrowRight);
     lv_obj_set_style_img_opa(tempObj, LV_OPA_56, LV_PART_MAIN);
     lv_obj_align(tempObj, LV_ALIGN_CENTER, 150, 0);
-
+    g_goToAddressIcon = tempObj;
     const char* coin = GetCoinCardByIndex(g_chainCard)->coin;
 
     if (!GetFirstReceive(coin)) {
@@ -570,6 +573,7 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
 
     g_addressLabel[0] = defaultLable1;
     g_addressLabel[1] = defaultLable2;
+    g_addressLabelOrder = labelHint;
     RefreshDefaultAddress();
 }
 
@@ -636,9 +640,18 @@ static void RefreshDefaultAddress(void)
     AddressLongModeCut(string, addressDataItem.address);
     lv_label_set_text(g_addressLabel[0], string);
 
-    ModelGetAddress(1, &addressDataItem);
-    AddressLongModeCut(string, addressDataItem.address);
-    lv_label_set_text(g_addressLabel[1], string);
+    if (GetMaxAddressIndex() == 0) {
+        lv_obj_add_flag(g_addressLabel[1], LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_addressLabelOrder, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_goToAddressIcon, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        ModelGetAddress(1, &addressDataItem);
+        AddressLongModeCut(string, addressDataItem.address);
+        lv_label_set_text(g_addressLabel[1], string);
+        lv_obj_clear_flag(g_addressLabel[1], LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_addressLabelOrder, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_goToAddressIcon, LV_OBJ_FLAG_HIDDEN);
+    }
 }
 
 static int GetEthMaxAddressIndex(void)

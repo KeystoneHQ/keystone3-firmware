@@ -15,20 +15,20 @@ use alloc::{string::{String, ToString}, vec::Vec};
 use errors::SuiError;
 use serde_derive::{Deserialize, Serialize};
 use sui_types::{message::PersonalMessage, transaction::TransactionData};
-use third_party::blake2::{
+use third_party::{blake2::{
     digest::{Update, VariableOutput},
     Blake2bVar,
-};
+}, serde_json};
 use third_party::{base58, bcs, hex};
-use types::intent::IntentMessage;
+use types::{intent::IntentMessage, msg::PersonalMessageUtf8};
 
 pub mod errors;
-mod types;
+pub mod types;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Intent {
     TransactionData(IntentMessage<TransactionData>),
-    PersonalMessage(IntentMessage<PersonalMessage>),
+    PersonalMessage(IntentMessage<PersonalMessageUtf8>),
 }
 
 pub fn generate_address(xpub: &str) -> Result<String> {
@@ -49,12 +49,21 @@ pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
         IntentScope::TransactionData => {
             let tx: IntentMessage<TransactionData> =
                 bcs::from_bytes(&intent).map_err(|err| SuiError::from(err))?;
-            return Ok(Intent::TransactionData(tx));
+            Ok(Intent::TransactionData(tx))
         }
         IntentScope::PersonalMessage => {
             let msg: IntentMessage<PersonalMessage> =
                 bcs::from_bytes(&intent).map_err(|err| SuiError::from(err))?;
-            return Ok(Intent::PersonalMessage(msg));
+            let m = match decode_utf8(&msg.value.message) {
+                Ok(m) => m,
+                Err(_) => serde_json::to_string(&msg.value.message)?,
+            };
+            Ok(Intent::PersonalMessage(IntentMessage::<PersonalMessageUtf8> {
+                intent: msg.intent,
+                value: PersonalMessageUtf8 {
+                    message: m
+                }
+            }))
         }
         _ => {
             return Err(SuiError::InvalidData(String::from("unsupported intent")));
@@ -75,7 +84,7 @@ pub fn decode_utf8(msg: &[u8]) -> Result<String> {
     }
 }
 
-pub fn sign(seed: &[u8], path: &String, intent: &[u8]) -> Result<[u8; 64]> {
+pub fn sign_intent(seed: &[u8], path: &String, intent: &[u8]) -> Result<[u8; 64]> {
     let mut hasher = Blake2bVar::new(32).unwrap();
     hasher.update(intent);
     let mut hash = [0u8; 32];
@@ -129,7 +138,7 @@ mod tests {
         let bytes = hex::decode("0300000a48656c6c6f2c20537569").unwrap();
 
         let intent = parse_intent(&bytes);
-        assert_eq!(json!(intent.unwrap()).to_string(), "{\"PersonalMessage\":{\"intent\":{\"app_id\":\"Sui\",\"scope\":\"PersonalMessage\",\"version\":\"V0\"},\"value\":{\"message\":[72,101,108,108,111,44,32,83,117,105]}}}");
+        assert_eq!(json!(intent.unwrap()).to_string(), "{\"PersonalMessage\":{\"intent\":{\"app_id\":\"Sui\",\"scope\":\"PersonalMessage\",\"version\":\"V0\"},\"value\":{\"message\":\"Hello, Sui\"}}}");
     }
 
     #[test]
@@ -145,7 +154,7 @@ mod tests {
         let seed = hex::decode("a33b2bdc2dc3c53d24081e5ed2273e6e8e0e43f8b26c746fbd1db2b8f1d4d8faa033545d3ec9303d36e743a4574b80b124353d380535532bb69455dc0ee442c4").unwrap();
         let hd_path = "m/44'/784'/0'/0'/0'".to_string();
         let msg =  hex::decode("00000000000200201ff915a5e9e32fdbe0135535b6c69a00a9809aaf7f7c0275d3239ca79db20d6400081027000000000000020200010101000101020000010000ebe623e33b7307f1350f8934beb3fb16baef0fc1b3f1b92868eec3944093886901a2e3e42930675d9571a467eb5d4b22553c93ccb84e9097972e02c490b4e7a22ab73200000000000020176c4727433105da34209f04ac3f22e192a2573d7948cb2fabde7d13a7f4f149ebe623e33b7307f1350f8934beb3fb16baef0fc1b3f1b92868eec39440938869e803000000000000640000000000000000").unwrap();
-        let signature = sign(&seed, &hd_path, &msg).unwrap();
+        let signature = sign_intent(&seed, &hd_path, &msg).unwrap();
         let expected_signature = hex::decode("f4b79835417490958c72492723409289b444f3af18274ba484a9eeaca9e760520e453776e5975df058b537476932a45239685f694fc6362fe5af6ba714da6505").unwrap();
         assert_eq!(expected_signature, signature);
     }

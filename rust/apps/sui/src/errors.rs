@@ -1,5 +1,4 @@
 use alloc::string::{String, ToString};
-use keystore::errors::KeystoreError;
 use third_party::{hex, thiserror, base58, serde_json, bcs};
 use thiserror::Error;
 
@@ -9,12 +8,6 @@ pub enum SuiError {
     ParseTxError(String),
     #[error("sign failed, reason: {0}")]
     SignFailure(String),
-    #[error("Invalid hd_Path: {0}")]
-    InvalidHDPath(String),
-    #[error("KeystoreError: {0}")]
-    KeystoreError(String),
-    #[error("Invalid Address: {0}")]
-    InvalidAddressError(String),
     #[error("Meet invalid data when reading `{0}`")]
     InvalidData(String),
     #[error("Invalid xpub: `{0}`")]
@@ -22,12 +15,6 @@ pub enum SuiError {
 }
 
 pub type Result<T> = core::result::Result<T, SuiError>;
-
-impl From<KeystoreError> for SuiError {
-    fn from(value: KeystoreError) -> Self {
-        Self::KeystoreError(value.to_string())
-    }
-}
 
 impl From<hex::FromHexError> for SuiError {
     fn from(value: hex::FromHexError) -> Self {

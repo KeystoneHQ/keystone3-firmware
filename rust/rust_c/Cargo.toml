@@ -17,6 +17,7 @@ app_near = { path = "../apps/near" }
 app_xrp = {path = "../apps/xrp"}
 app_cosmos = {path = "../apps/cosmos", default-features = false}
 app_aptos = {path = "../apps/aptos", default-features = false}
+app_sui = {path = "../apps/sui"}
 third_party = { path = "../third_party" }
 app_utils = { path = "../apps/utils" }
 rust_tools = {path="../tools"}

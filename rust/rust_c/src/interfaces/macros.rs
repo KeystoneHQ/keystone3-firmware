@@ -117,6 +117,12 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+
+        impl From<app_sui::errors::SuiError> for $name {
+            fn from(value: app_sui::errors::SuiError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
     };
 
     ($name:ident<$t:ident>) => {
@@ -208,6 +214,12 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+
+        impl<$t: Free> From<app_sui::errors::SuiError> for $name<$t> {
+            fn from(value: app_sui::errors::SuiError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
     };
 }
 
@@ -274,6 +286,11 @@ macro_rules! impl_simple_new_error {
         }
         impl<$t> From<app_cosmos::errors::CosmosError> for $name<$t> {
             fn from(value: app_cosmos::errors::CosmosError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        impl<$t> From<app_sui::errors::SuiError> for $name<$t> {
+            fn from(value: app_sui::errors::SuiError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }

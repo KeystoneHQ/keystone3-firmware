@@ -22,6 +22,7 @@ mod macros;
 mod near;
 mod solana;
 mod structs;
+mod sui;
 mod test_cmds;
 mod tron;
 mod types;
@@ -30,7 +31,6 @@ mod ur_ext;
 mod utils;
 mod web_auth;
 mod xrp;
-mod sui;
 
 pub static KEYSTONE: &str = "keystone";
 

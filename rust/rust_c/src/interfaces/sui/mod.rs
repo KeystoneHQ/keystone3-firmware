@@ -1,3 +1,4 @@
+use self::structs::DisplaySuiIntentMessage;
 use crate::extract_ptr_with_type;
 use crate::interfaces::errors::RustCError;
 use crate::interfaces::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
@@ -5,13 +6,12 @@ use crate::interfaces::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::interfaces::utils::{convert_c_char, recover_c_char};
 use alloc::string::ToString;
-use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
-use third_party::ur_registry::sui::sui_signature::SuiSignature;
+use app_sui::errors::SuiError;
 use core::slice;
 use cty::c_char;
+use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
+use third_party::ur_registry::sui::sui_signature::SuiSignature;
 use third_party::ur_registry::traits::RegistryItem;
-use app_sui::errors::SuiError;
-use self::structs::DisplaySuiIntentMessage;
 
 pub mod structs;
 
@@ -43,9 +43,7 @@ pub extern "C" fn sui_check_request(
 }
 
 #[no_mangle]
-pub extern "C" fn sui_generate_address(
-    x_pub: PtrString,
-) -> *mut SimpleResponse<c_char> {
+pub extern "C" fn sui_generate_address(x_pub: PtrString) -> *mut SimpleResponse<c_char> {
     let x_pub = recover_c_char(x_pub);
     let address = app_sui::generate_address(&x_pub);
     match address {
@@ -61,9 +59,7 @@ pub extern "C" fn sui_parse_intent(
     let sign_request = extract_ptr_with_type!(ptr, SuiSignRequest);
     let sign_data = sign_request.get_intent_message();
     match app_sui::parse_intent(&sign_data.to_vec()) {
-        Ok(v) => {
-            TransactionParseResult::success(DisplaySuiIntentMessage::from(v).c_ptr()).c_ptr()
-        },
+        Ok(v) => TransactionParseResult::success(DisplaySuiIntentMessage::from(v).c_ptr()).c_ptr(),
         Err(e) => TransactionParseResult::from(e).c_ptr(),
     }
 }
@@ -82,14 +78,18 @@ pub extern "C" fn sui_sign_intent(
         None => {
             return UREncodeResult::from(SuiError::SignFailure(
                 "invalid derivation path".to_string(),
-            )).c_ptr()
+            ))
+            .c_ptr()
         }
     };
     let signature = match app_sui::sign_intent(seed, &path, &sign_data.to_vec()) {
         Ok(v) => v,
-        Err(e) => {
-            return UREncodeResult::from(e).c_ptr()
-        }
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
-    UREncodeResult::encode(signature.to_vec(), SuiSignature::get_registry_type().get_type(), FRAGMENT_MAX_LENGTH_DEFAULT).c_ptr()
+    UREncodeResult::encode(
+        signature.to_vec(),
+        SuiSignature::get_registry_type().get_type(),
+        FRAGMENT_MAX_LENGTH_DEFAULT,
+    )
+    .c_ptr()
 }

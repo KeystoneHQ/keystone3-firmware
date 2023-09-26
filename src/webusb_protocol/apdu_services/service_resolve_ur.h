@@ -5,6 +5,5 @@
 #include "keystore.h"
 
 typedef void ResponseHandler(uint8_t cla, uint8_t ins, APDUResponsePayload_t *payload);
-static ResponseHandler *g_handleURCallback = NULL;
-
-void *ProcessUREvents(APDURequestPayload_t *payload, ResponseHandler *sendResponse);
+void *ProcessUREvents(APDURequestPayload_t *payload);
+void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, bool isSuccess);

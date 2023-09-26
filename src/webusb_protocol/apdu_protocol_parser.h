@@ -47,5 +47,6 @@ typedef struct {
 } APDUFrame;
 
 struct ProtocolParser* NewApduProtocolParser();
+void SendApduResponse(uint8_t cla, CommandType ins, APDUResponsePayload_t *payload);
 
 #endif

@@ -340,7 +340,7 @@ static void UpdateManageWalletState(bool needUpdate)
             lv_obj_clear_state(g_walletState[i].checkBox, LV_STATE_CHECKED);
         }
     }
-    sprintf(tempBuf, "#F5870A %d#/%d", selectCnt, HOME_WALLET_CARD_BNB);
+    sprintf(tempBuf, _("home_select_coin_count_fmt"), selectCnt, HOME_WALLET_CARD_BNB);
     lv_label_set_text(g_manageWalletLabel, tempBuf);
     if (needUpdate) {
         if (memcmp(g_walletState, g_walletBakState, sizeof(g_walletState))) {
@@ -577,13 +577,13 @@ static void OpenManageAssetsHandler(lv_event_t *e)
         lv_obj_t *line = GuiCreateDividerLine(checkBoxCont);
         lv_obj_align(line, LV_ALIGN_DEFAULT, 0, HOME_WALLET_CARD_BNB * 96);
 
-        label = GuiCreateIllustrateLabel(checkBoxCont, "Please update to the latest version to access expanded software wallet compatibility.");
+        label = GuiCreateIllustrateLabel(checkBoxCont, _("home_upgrade_hint"));
         lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
         lv_obj_align(label, LV_ALIGN_DEFAULT, 32, HOME_WALLET_CARD_BNB * 96 + 25);
         // **
         UpdateManageWalletState(false);
 
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Manage Assets"));
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("home_manage_assets"));
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, g_manageCont);
         // TODO: add search
         // GuiNvsBarSetRightCb(NVS_BAR_SEARCH, NULL, NULL);
@@ -648,7 +648,7 @@ void GuiHomeRefresh(void)
     g_countDownTimer = lv_timer_create(AddFlagCountDownTimerHandler, 500, NULL);
     GuiSetSetupPhase(SETUP_PAHSE_DONE);
     if (g_manageCont != NULL) {
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Manage Assets"));
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("home_manage_assets"));
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, g_manageCont);
         // TODO: add search
         // GuiNvsBarSetRightCb(NVS_BAR_SEARCH, NULL, NULL);

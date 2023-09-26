@@ -18,7 +18,7 @@ uint8_t g_packetLengths[MAX_PACKETS];
 uint8_t g_receivedPackets[MAX_PACKETS];
 uint8_t g_totalPackets = 0;
 
-static void SendApduResponse(uint8_t cla, CommandType ins, APDUResponsePayload_t *payload)
+void SendApduResponse(uint8_t cla, CommandType ins, APDUResponsePayload_t *payload)
 {
     uint8_t packet[MAX_PACKETS_LENGTH];
     uint8_t totalPackets = (payload->dataLen + MAX_APDU_DATA_SIZE - 1) / MAX_APDU_DATA_SIZE;
@@ -62,7 +62,7 @@ static void ApduRequestHandler(APDURequestPayload_t *request, CommandType comman
         SendApduResponse(APDU_PROTOCOL_HEADER, CMD_ECHO_TEST, result);
         break;
     case CMD_RESOLVE_UR:
-        ProcessUREvents(request, SendApduResponse);
+        ProcessUREvents(request);
         break;
     case CMD_CHECK_LOCK_STATUS:
         result->data = (uint8_t *)malloc(1);

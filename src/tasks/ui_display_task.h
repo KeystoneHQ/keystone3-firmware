@@ -11,6 +11,13 @@
 #include "stdint.h"
 #include "stdbool.h"
 
+typedef int32_t (*UIDisplayFunc_t)(const void *inData, uint32_t inDataLen);
+typedef struct {
+    UIDisplayFunc_t func;
+    void *inData;
+    uint32_t inDataLen;
+} UIDisplay_t;
+
 void CreateUiDisplayTask(void);
 void SetLvglHandlerAndSnapShot(bool enable);
 void LvglCloseCurrentView(void);

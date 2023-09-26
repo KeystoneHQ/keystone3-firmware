@@ -802,7 +802,7 @@ static void LcdChangeParamFunc(int argc, char *argv[])
 static void BpkPrintFunc(int argc, char *argv[])
 {
     VALUE_CHECK(argc, 1);
-    PrintBpkValue(argv[0]);
+    PrintBpkValue(atoi(argv[0]));
 }
 // static void ParamReadFunc(int argc, char *argv[])
 // {

@@ -22,6 +22,7 @@
 #include "drv_battery.h"
 #include "background_task.h"
 #include "drv_sensor.h"
+#include "drv_bpk.h"
 
 
 #define TAMPER_MARK                 0x5A
@@ -41,6 +42,7 @@ void TamperStartup(void)
 #ifdef BUILD_PRODUCTION
 #endif
         DisableAllHardware();
+        ClearBpkValue(0);
         SetGpioLow(GPIOE, GPIO_Pin_11);         //reset fp.
         //Set all ext int float
         SetGpioFloat(GPIOA, GPIO_Pin_2);

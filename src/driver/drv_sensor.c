@@ -121,7 +121,10 @@ bool SensorTamperStatus(void)
     for (int i = 0; i < BPK_KEY_LENGTH; i++) {
         data[i] = i;
     }
-    GetBpkValue(dataBak, BPK_KEY_LENGTH, 0);
+    ErrorStatus ret = GetBpkValue(dataBak, BPK_KEY_LENGTH, 0);
+    if (ret == ERROR) {
+        return false;
+    }
     if (0 == memcmp(data, dataBak, BPK_KEY_LENGTH)) {
         return false;
     } else {
@@ -137,7 +140,10 @@ void SENSOR_IRQHandler(void)
         for (int i = 0; i < BPK_KEY_LENGTH; i++) {
             data[i] = i;
         }
-        SetBpkValue(data, BPK_KEY_LENGTH, 0);
+        ErrorStatus ret = SetBpkValue(data, BPK_KEY_LENGTH, 0);
+        if (ret != SUCCESS) {
+            SetBpkValue(data, BPK_KEY_LENGTH, 0);
+        }
     } 
     SENSOR->SEN_STATE = 0;
     NVIC_ClearPendingIRQ(SENSOR_IRQn);

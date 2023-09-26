@@ -1,3 +1,23 @@
+## 1.0.0 (2023-09-26)
+
+### Features
+
+1. Added support for the Cosmos blockchain.
+2. Introduced Passphrase functionality.
+3. Implemented hardware self-check during startup.
+4. Added the ability to zoom in on QR codes.
+5. Enhanced QR code scanning to improve scanning speed and reliability in certain scenarios.
+
+### Bug Fixes
+
+1. Optimized the data interface logic for transaction amounts, resulting in more accurate displays.
+2. Expanded the hotzone range on the wallet settings page.
+3. Improved the user experience with the keyboard.
+4. Resolved issues related to PIN code attempts exceeding specific limits.
+5. Addressed problems occurring when clicking on the scan code interface.
+6. Fixed abnormal scenarios triggered during MicroSD card upgrades.
+
+
 ## 0.8.8 (2023-08-18)
 
 ### Features

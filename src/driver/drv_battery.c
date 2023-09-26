@@ -31,13 +31,12 @@
 
 #define BATTERY_LOG_PERCENT_INTERVAL                    1
 #define BATTERY_LOG_DETAIL                              1
-
-#define BATTERY_ADC_TIMES       100
-
+#define BATTERY_ADC_TIMES                               100
 #define BATTERY_PCT_CHANGE_MIN_TICK_DISCHARGE           (120 * 1000)
 #define BATTERY_PCT_CHANGE_MIN_TICK_CHARGING            (80 * 1000)
-
 #define BATTERY_INVALID_PERCENT_VALUE                   101
+#define BATTERY_CHANNEL                                 ADC_CHANNEL_4
+#define RTC_BAT_CHANNEL                                 ADC_CHANNEL_3
 
 static uint8_t LoadBatteryPercent(void);
 static void SaveBatteryPercent(uint8_t percent);
@@ -98,17 +97,35 @@ const uint16_t chargingCurve[100] = {
 static uint8_t g_batterPercent = BATTERY_INVALID_PERCENT_VALUE;
 static uint32_t g_batteryFlashAddress = SPI_FLASH_ADDR_BATTERY_INFO;
 
+void RtcBatAdcDetEnable(void)
+{
+    GPIO_SetBits(GPIOE, GPIO_Pin_0);
+}
+
+void RtcBatAdcDetDisable(void)
+{
+    GPIO_ResetBits(GPIOE, GPIO_Pin_0);
+}
+
+
 /// @brief Battery init, ADC init, load FLASH value.
 /// @param
 void BatteryInit(void)
 {
     ADC_InitTypeDef ADC_InitStruct;
+    GPIO_InitTypeDef gpioInit;
 
     SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_GPIO | SYSCTRL_APBPeriph_ADC, ENABLE);
     SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_ADC, ENABLE);
 
-    GPIO_PinRemapConfig(GPIOC, GPIO_Pin_4, GPIO_Remap_2);
-    GPIO_PullUpCmd(GPIOC, GPIO_Pin_4, DISABLE);
+    GPIO_PinRemapConfig(GPIOC, GPIO_Pin_3 | GPIO_Pin_4, GPIO_Remap_2);
+    GPIO_PullUpCmd(GPIOC, GPIO_Pin_3 | GPIO_Pin_4, DISABLE);
+
+    gpioInit.GPIO_Mode = GPIO_Mode_Out_PP;
+    gpioInit.GPIO_Pin = GPIO_Pin_0;
+    gpioInit.GPIO_Remap = GPIO_Remap_1;
+    GPIO_Init(GPIOE, &gpioInit);
+    RtcBatAdcDetDisable();
 
     ADC_InitStruct.ADC_Channel = ADC_CHANNEL_4;
     ADC_InitStruct.ADC_SampSpeed = ADC_SpeedPrescaler_2;
@@ -152,6 +169,7 @@ uint32_t GetBatteryMilliVolt(void)
     max = 0;
     min = 0xFFF;
     ADC_StartCmd(ENABLE);
+    ADC_ChannelSwitch(BATTERY_CHANNEL);
     for (i = 0; i < BATTERY_ADC_TIMES; i++) {
         do {
             UserDelay(1);
@@ -176,6 +194,53 @@ uint32_t GetBatteryMilliVolt(void)
     BATTERY_PRINTF("adcAver=%d\r\n", adcAver);
 
     return ADC_CalVoltage(adcAver, 6200);
+}
+
+uint32_t GetRtcBatteryMilliVolt(void)
+{
+    int32_t i, adcAver, temp, max, min;//, temps[BATTERY_ADC_TIMES];
+    uint64_t adcSum = 0;
+    uint32_t vol;
+
+    RtcBatAdcDetEnable();
+    UserDelay(10);
+    max = 0;
+    min = 0xFFF;
+    ADC_StartCmd(ENABLE);
+    ADC_ChannelSwitch(RTC_BAT_CHANNEL);
+    for (i = 0; i < BATTERY_ADC_TIMES; i++) {
+        do {
+            UserDelay(1);
+            temp = ADC_GetResult();
+        } while (temp >= 0xFF0);
+        adcSum += temp;
+        if (temp > max) {
+            max = temp;
+        }
+        if (temp < min) {
+            min = temp;
+        }
+    }
+    ADC_StartCmd(DISABLE);
+    adcSum -= max;
+    adcSum -= min;
+    adcAver = adcSum / (BATTERY_ADC_TIMES - 2);
+    vol = ADC_CalVoltage(adcAver, 1880);
+    temp = vol;
+    if (adcAver > 2420) {
+        vol = vol * 285 / 100;
+    } else if (adcAver > 2070) {
+        vol = vol * 29 / 10;
+    } else if (adcAver < 2020) {
+        vol = vol * 27 / 10;
+    } else if ((adcAver >= 2020) && (adcAver < 2038)) {
+        vol = vol * 28 / 10;
+    } else {
+        vol = vol * 284 / 100;
+    }
+
+    RtcBatAdcDetDisable();
+    return vol;
 }
 
 
@@ -342,7 +407,8 @@ void BatteryTest(int argc, char *argv[])
     if (strcmp(argv[0], "info") == 0) {
         milliVolt = GetBatteryMilliVolt();
         percent = GetBatteryPercentByMilliVolt(milliVolt, GetUsbPowerState() == USB_POWER_STATE_DISCONNECT);
-        printf("milliVolt=%d,percent=%d,showPercent=%d\n", milliVolt, percent, GetBatterPercent());
+        printf("milliVolt=%d, percent=%d, showPercent=%d\n", milliVolt, percent, GetBatterPercent());
+        printf("rtc voltage=%d\n", GetRtcBatteryMilliVolt());
     } else if (strcmp(argv[0], "set_percent") == 0) {
         VALUE_CHECK(argc, 2);
         sscanf(argv[1], "%d", &temp32);

@@ -115,7 +115,7 @@ extern GUI_VIEW g_connectWalletView;
 extern GUI_VIEW g_qrCodeView;
 extern GUI_VIEW g_passphraseView;
 extern GUI_VIEW g_utxoReceiveView;
-extern GUI_VIEW g_ethereumReceiveView;
+extern GUI_VIEW g_multiPathCoinReceiveView;
 extern GUI_VIEW g_standardReceiveView;
 extern GUI_VIEW g_forgetPassView;
 extern GUI_VIEW g_lockDeviceView;

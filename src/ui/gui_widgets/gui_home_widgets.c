@@ -33,6 +33,7 @@ static PageWidget_t *g_pageWidget;
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_BTC, false, "BTC"},
     {HOME_WALLET_CARD_ETH, false, "ETH"},
+    {HOME_WALLET_CARD_SOL, false, "SOL"},
     {HOME_WALLET_CARD_ATOM, false, "ATOM"},
     {HOME_WALLET_CARD_OSMO, false, "OSMO"},
     {HOME_WALLET_CARD_SCRT, false, "SCRT"},
@@ -64,7 +65,6 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_LUNA, false, "LUNA"},
     {HOME_WALLET_CARD_LUNC, false, "LUNC"},
     {HOME_WALLET_CARD_BNB, false, "BNB"},
-    {HOME_WALLET_CARD_SOL, false, "SOL"},
     {HOME_WALLET_CARD_DOT, false, "DOT"},
     {HOME_WALLET_CARD_XRP, false, "XRP"},
     {HOME_WALLET_CARD_LTC, false, "LTC"},
@@ -86,6 +86,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "ETH",
         .chain = "Ethereum",
         .icon = &coinEth,
+    },
+    {
+        .index = HOME_WALLET_CARD_SOL,
+        .coin = "SOL",
+        .chain = "Solana",
+        .icon = &coinSol,
     },
     {
         .index = HOME_WALLET_CARD_ATOM,
@@ -274,12 +280,6 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .icon = &coinBnb,
     },
     {
-        .index = HOME_WALLET_CARD_SOL,
-        .coin = "SOL",
-        .chain = "Solana",
-        .icon = &coinSol,
-    },
-    {
         .index = HOME_WALLET_CARD_TRX,
         .coin = "TRX",
         .chain = "TRON",
@@ -416,8 +416,9 @@ static void CoinDealHandler(lv_event_t *e)
 
         if (IsUtxoCoin(coin)) {
             GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
-        } else if (coin == HOME_WALLET_CARD_ETH) {
-            GuiFrameOpenView(&g_ethereumReceiveView);
+        } else if (coin == HOME_WALLET_CARD_ETH || coin == HOME_WALLET_CARD_SOL) {
+            // GuiFrameOpenView(&g_multiPathCoinReceiveView);
+            GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
         } else {
             GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
         }

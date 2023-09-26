@@ -5,10 +5,10 @@
 #include "stdint.h"
 #include "stdbool.h"
 
-void GuiEthereumReceiveInit(void);
-void GuiEthereumReceiveDeInit(void);
-void GuiEthereumReceiveRefresh(void);
-void GuiEthereumReceivePrevTile(void);
+void GuiMultiPathCoinReceiveInit(uint8_t chain);
+void GuiMultiPathCoinReceiveDeInit(void);
+void GuiMultiPathCoinReceiveRefresh(void);
+void GuiMultiPathCoinReceivePrevTile(void);
 void AddressLongModeCut(char *out, const char *address);
 void GuiResetCurrentEthAddressIndex(void);
 void GuiResetAllEthAddressIndex(void);

@@ -11,6 +11,50 @@ bool fingerRegisterState[3] = {true, false, false};
 #define ACCOUNT_PUBLIC_HOME_COIN_PATH "C:/assets/coin.json"
 
 bool g_reboot = false;
+
+void SetPassphraseQuickAccess(bool exist)
+{
+
+}
+
+void UserDelay(uint32_t ms)
+{
+
+}
+
+void SetFirstReceive(const char* chainName, bool isFirst)
+{
+
+}
+
+bool GetFirstReceive(const char* chainName)
+{
+    return false;
+}
+
+void SetLockDeviceAlive(bool alive)
+{
+    
+}
+
+uint8_t *GuiGetFpVersion(uint8_t *version)
+{
+    for (int i = 0; i < 4; i++) {
+        version[2 * i] = 1 + '0';
+        if (i == 3) {
+            break;
+        }
+        version[2 * i + 1] = '.';
+    }
+    return version;
+}
+
+void ShowAssert(const char* file, uint32_t len)
+{
+    printf("assert,file=%s\r\nline=%d\r\n", file, len);
+    while (1);
+}
+
 void OpenUsb()
 {
 
@@ -144,21 +188,6 @@ bool CheckOtaBinVersion(char *version)
 {
     strcpy(version, "1.1.1");
     return true;
-}
-
-void GuiQRCodeHintBoxOpen(char *qrdata, char *title, char *subtitle)
-{
-
-}
-
-void GuiQRHintBoxRemove()
-{
-
-}
-
-bool GuiQRHintBoxIsActive()
-{
-    return false;
 }
 
 void LogSetLogName(char *name)

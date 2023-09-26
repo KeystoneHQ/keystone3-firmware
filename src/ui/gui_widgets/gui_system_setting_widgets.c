@@ -69,7 +69,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
 {
     lv_obj_t *label, *imgArrow, *button;
 
-    label = GuiCreateTextLabel(parent, "Display & Lock Screen");
+    label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_title"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     GuiButton_t table[] = {
         {
@@ -87,7 +87,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
                              DispalyHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 0);
 
-    label = GuiCreateTextLabel(parent, "Vibration");
+    label = GuiCreateTextLabel(parent, _("system_settings_vabiration"));
     vibrationSw = lv_switch_create(parent);
     lv_obj_add_event_cb(vibrationSw, VibrationSwitchHandler, LV_EVENT_ALL, NULL);
     lv_obj_set_style_bg_color(vibrationSw, ORANGE_COLOR, LV_STATE_CHECKED | LV_PART_INDICATOR);
@@ -126,7 +126,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
     lv_obj_t *line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 301);
 
-    label = GuiCreateTextLabel(parent, "Wipe Device");
+    label = GuiCreateTextLabel(parent, _("wipe_device"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     table[0].obj = label;
     table[1].obj = imgArrow;

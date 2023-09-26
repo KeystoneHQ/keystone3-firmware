@@ -95,8 +95,8 @@ typedef struct {
 
 typedef struct {
     GuiChainCoinType type;
-    char tittle[32];
-} TittleItem_t;
+    char title[32];
+} TitleItem_t;
 
 static void GuiCreateMoreWidgets(lv_obj_t *parent);
 static void GuiBitcoinReceiveGotoTile(UtxoReceiveTile tile);
@@ -129,7 +129,7 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item);
 static void GetHint(char *hint);
 static uint32_t GetCurrentSelectIndex();
 static void SetCurrentSelectIndex(uint32_t selectIndex);
-static void GetCurrentTittle(TittleItem_t *tittleItem);
+static void GetCurrentTitle(TitleItem_t *titleItem);
 static void SetKeyboardValid(bool);
 
 static UtxoReceiveWidgets_t g_utxoReceiveWidgets;
@@ -219,9 +219,9 @@ void GuiReceiveRefresh(void)
     switch (g_utxoReceiveTileNow) {
     case UTXO_RECEIVE_TILE_QRCODE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
-        TittleItem_t tittleItem;
-        GetCurrentTittle(&tittleItem);
-        SetCoinWallet(g_pageWidget->navBarWidget, tittleItem.type, tittleItem.tittle);
+        TitleItem_t titleItem;
+        GetCurrentTitle(&titleItem);
+        SetCoinWallet(g_pageWidget->navBarWidget, titleItem.type, titleItem.title);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, MoreHandler, NULL);
         RefreshQrCode();
         if (g_selectIndex == ADDRESS_INDEX_MAX) {
@@ -234,7 +234,7 @@ void GuiReceiveRefresh(void)
         break;
     case UTXO_RECEIVE_TILE_SWITCH_ACCOUNT:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Switch Account");
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SKIP, GotoAddressHandler, NULL);
         g_showIndex = g_selectIndex / 5 * 5;
         if (g_showIndex < 5) {
@@ -250,7 +250,7 @@ void GuiReceiveRefresh(void)
         break;
     case UTXO_RECEIVE_TILE_ADDRESS_SETTINGS:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Address Settings");
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("receive_btc_more_address_settings"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         break;
     default:
@@ -263,24 +263,24 @@ void GuiReceivePrevTile(void)
     GuiBitcoinReceiveGotoTile(UTXO_RECEIVE_TILE_QRCODE);
 }
 
-static void GetCurrentTittle(TittleItem_t *tittleItem)
+static void GetCurrentTitle(TitleItem_t *titleItem)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
-        tittleItem->type = CHAIN_BTC;
-        sprintf(tittleItem->tittle, "%s", "Receive BTC");
+        titleItem->type = CHAIN_BTC;
+        sprintf(titleItem->title, _("receive_coin_fmt"), "BTC");
         break;
     case HOME_WALLET_CARD_LTC:
-        tittleItem->type = CHAIN_LTC;
-        sprintf(tittleItem->tittle, "%s", "Receive LTC");
+        titleItem->type = CHAIN_LTC;
+        sprintf(titleItem->title, _("receive_coin_fmt"), "LTC");
         break;
     case HOME_WALLET_CARD_DASH:
-        tittleItem->type = CHAIN_DASH;
-        sprintf(tittleItem->tittle, "%s", "Receive DASH");
+        titleItem->type = CHAIN_DASH;
+        sprintf(titleItem->title, _("receive_coin_fmt"), "DASH");
         break;
     case HOME_WALLET_CARD_BCH:
-        tittleItem->type = CHAIN_BCH;
-        sprintf(tittleItem->tittle, "%s", "Receive BCH");
+        titleItem->type = CHAIN_BCH;
+        sprintf(titleItem->title, _("receive_coin_fmt"), "BCH");
         break;
     default:
         break;
@@ -310,7 +310,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
         lv_obj_add_event_cb(btn, AddressSettingsHandler, LV_EVENT_CLICKED, NULL);
         img = GuiCreateImg(btn, &imgAddressType);
         lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-        label = GuiCreateLabelWithFont(btn, "Address Settings", &openSans_24);
+        label = GuiCreateLabelWithFont(btn, _("receive_btc_more_address_settings"), &openSans_24);
         lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
         break;
     default:
@@ -327,7 +327,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, TutorialHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgTutorial);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, "Tutorial", &openSans_24);
+    label = GuiCreateLabelWithFont(btn, _("Tutorial"), &openSans_24);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 }
 
@@ -402,7 +402,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_add_event_cb(g_utxoReceiveWidgets.changeButton, ChangeAddressHandler, LV_EVENT_CLICKED, NULL);
 
     g_utxoReceiveWidgets.changeImg = GuiCreateImg(g_utxoReceiveWidgets.changeButton, &imgChange);
-    g_utxoReceiveWidgets.changeLabel = GuiCreateTextLabel(parent, "Generate New Address");
+    g_utxoReceiveWidgets.changeLabel = GuiCreateTextLabel(parent, _("receive_generate_new_address"));
 
     GuiButton_t table[2];
     table[0].obj = g_utxoReceiveWidgets.changeImg;
@@ -423,13 +423,13 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         g_utxoReceiveWidgets.attentionCont = GuiCreateHintBox(parent, 480, 386, false);
         tempObj = GuiCreateImg(g_utxoReceiveWidgets.attentionCont, &imgInformation);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
-        tempObj = GuiCreateLittleTitleLabel(g_utxoReceiveWidgets.attentionCont, "Attention");
+        tempObj = GuiCreateLittleTitleLabel(g_utxoReceiveWidgets.attentionCont, _("Attention"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
         char hint[256];
         GetHint(hint);
         tempObj = GuiCreateLabelWithFont(g_utxoReceiveWidgets.attentionCont, hint, &openSans_20);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
-        tempObj = GuiCreateBtn(g_utxoReceiveWidgets.attentionCont, "Got It");
+        tempObj = GuiCreateBtn(g_utxoReceiveWidgets.attentionCont, _("got_it"));
         lv_obj_set_size(tempObj, 122, 66);
         lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
         lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
@@ -442,16 +442,16 @@ static void GetHint(char *hint)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
-        strcpy(hint, "This address is exclusively for BTC transactions only. Sending other types of digital assets to this address will result in their loss.");
+        strcpy(hint, _("receive_btc_alert_desc"));
         break;
     case HOME_WALLET_CARD_LTC:
-        strcpy(hint, "This address is only for LTC, other digital assets sent to this address will be lost.");
+        sprintf(hint, _("receive_coin_hint_fmt"), "LTC");
         break;
     case HOME_WALLET_CARD_DASH:
-        strcpy(hint, "This address is only for DASH, other digital assets sent to this address will be lost.");
+        sprintf(hint, _("receive_coin_hint_fmt"), "DASH");
         break;
     case HOME_WALLET_CARD_BCH:
-        strcpy(hint, "This address is only for BCH, other digital assets sent to this address will be lost.");
+        sprintf(hint, _("receive_coin_hint_fmt"), "BCH");
         break;
     default:
         break;
@@ -623,7 +623,7 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
         lv_obj_add_event_cb(lv_obj_get_child(g_utxoReceiveWidgets.inputAddressCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_utxoReceiveWidgets.inputAddressCont);
         cont = g_utxoReceiveWidgets.inputAddressCont;
 
-        label = GuiCreateLabelWithFont(cont, "Go to", &openSans_20);
+        label = GuiCreateLabelWithFont(cont, _("receive_btc_receive_change_address_title"), &openSans_20);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 30 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
         label = GuiCreateLabelWithFont(cont, "Address-", &openSans_24);
@@ -631,7 +631,7 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
         lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
         g_utxoReceiveWidgets.inputAddressLabel = GuiCreateLabelWithFont(cont, "", &openSans_24);
         lv_obj_align(g_utxoReceiveWidgets.inputAddressLabel, LV_ALIGN_TOP_LEFT, 38 + lv_obj_get_self_width(label), 108 + 270);
-        label = GuiCreateLabelWithFont(cont, "Cannot exceed 999,999,999", &openSans_20);
+        label = GuiCreateLabelWithFont(cont, _("receive_btc_receive_change_address_limit"), &openSans_20);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 170 + 270);
         lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);

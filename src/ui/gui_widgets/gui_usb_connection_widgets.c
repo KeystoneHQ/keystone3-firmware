@@ -52,12 +52,12 @@ static void GuiUsbConnectionInit(void)
         label = GuiCreateIllustrateLabel(g_usbConnectionHintBox, _("firmware_update_usb_connect_info_desc"));
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -130);
 
-        button = GuiCreateBtnWithFont(g_usbConnectionHintBox, "Not Now", g_defTextFont);
+        button = GuiCreateBtnWithFont(g_usbConnectionHintBox, _("not_now"), g_defTextFont);
         lv_obj_align(button, LV_ALIGN_BOTTOM_LEFT, 36, -24);
         lv_obj_set_size(button, 192, 66);
         lv_obj_set_style_bg_color(button, DARK_GRAY_COLOR, LV_PART_MAIN);
         lv_obj_add_event_cb(button, NotNowHandler, LV_EVENT_CLICKED, NULL);
-        button = GuiCreateBtnWithFont(g_usbConnectionHintBox, "Approve", g_defTextFont);
+        button = GuiCreateBtnWithFont(g_usbConnectionHintBox, _("Approve"), g_defTextFont);
         lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_set_size(button, 192, 66);
         lv_obj_set_style_bg_color(button, ORANGE_COLOR, LV_PART_MAIN);

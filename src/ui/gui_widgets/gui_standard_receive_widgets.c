@@ -142,7 +142,7 @@ void GuiStandardReceiveRefresh(void)
     char title[30];
     switch (g_StandardReceiveTileNow) {
     case RECEIVE_TILE_QRCODE:
-        snprintf(title, sizeof(title), "Receive %s", GetCoinCardByIndex(g_chainCard)->coin);
+        snprintf(title, sizeof(title), _("receive_coin_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainCard, title);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, HasMoreBtn() ? NVS_BAR_MORE_INFO : NVS_RIGHT_BUTTON_BUTT, MoreHandler, NULL);
@@ -150,7 +150,7 @@ void GuiStandardReceiveRefresh(void)
         break;
     case RECEIVE_TILE_SWITCH_ACCOUNT:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Switch Account");
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_showIndex = g_selectIndex[GetCurrentAccountIndex()] / 5 * 5;
         if (g_showIndex < 5) {
@@ -192,7 +192,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, TutorialHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgTutorial);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, "Tutorial", &openSans_24);
+    label = GuiCreateLabelWithFont(btn, _("Tutorial"), &openSans_24);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 }
 
@@ -259,13 +259,13 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         g_standardReceiveWidgets.attentionCont = GuiCreateHintBox(parent, 480, 386, false);
         tempObj = GuiCreateImg(g_standardReceiveWidgets.attentionCont, &imgInformation);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
-        tempObj = GuiCreateLittleTitleLabel(g_standardReceiveWidgets.attentionCont, "Attention");
+        tempObj = GuiCreateLittleTitleLabel(g_standardReceiveWidgets.attentionCont, _("Attention"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
         char attentionText[150];
         GetAttentionText(attentionText);
         tempObj = GuiCreateLabelWithFont(g_standardReceiveWidgets.attentionCont, attentionText, &openSans_20);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
-        tempObj = GuiCreateBtn(g_standardReceiveWidgets.attentionCont, "Got It");
+        tempObj = GuiCreateBtn(g_standardReceiveWidgets.attentionCont, _("got_it"));
         lv_obj_set_size(tempObj, 122, 66);
         lv_obj_set_style_radius(tempObj, 24, LV_PART_MAIN);
         lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
@@ -279,11 +279,11 @@ void GetAttentionText(char* text)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TRX:
-        strcpy(text, "This address is only for TRX, TRC-20 tokens and TRC-10 tokens, other digital assets sent to this address will be lost.");
+        strcpy(text, _("receive_trx_hint"));
         break;
     default:
         if (IsCosmosChain(g_chainCard)) {
-            sprintf(text, "This address is only for %s, other digital assets sent to this address will be lost.", GetCoinCardByIndex(g_chainCard)->coin);
+            sprintf(text, _("receive_coin_hint_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
         } else {
             strcpy(text, "");
         }

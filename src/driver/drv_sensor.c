@@ -59,9 +59,9 @@ void SensorInit(void)
     SENSOR_EXTCmd(DISABLE);
     SENSOR_ANACmd(SENSOR_ANA, DISABLE);
 
-	SENSOR->SEN_ANA0 |= 0x7 << 3;
-	SENSOR->SEN_ANA0 |= 0xF << 6;
-	SENSOR_ANACmd(SENSOR_ANA_TEMPER_HIGH | SENSOR_ANA_TEMPER_LOW, ENABLE);
+    SENSOR->SEN_ANA0 |= 0x7 << 3;
+    SENSOR->SEN_ANA0 |= 0xF << 6;
+    SENSOR_ANACmd(SENSOR_ANA_TEMPER_HIGH | SENSOR_ANA_TEMPER_LOW, ENABLE);
     SensorNvicConfiguration();
 }
 
@@ -104,14 +104,14 @@ static void SensorRegPrint(char *regName, uint32_t *regAddr)
 
 static void SensorNvicConfiguration(void)
 {
-   NVIC_InitTypeDef NVIC_InitStructure;
-   NVIC_SetPriorityGrouping(NVIC_PriorityGroup_3);
+    NVIC_InitTypeDef NVIC_InitStructure;
+    NVIC_SetPriorityGrouping(NVIC_PriorityGroup_3);
 
-   NVIC_InitStructure.NVIC_IRQChannel = SENSOR_IRQn;
-   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-   NVIC_Init(&NVIC_InitStructure);
+    NVIC_InitStructure.NVIC_IRQChannel = SENSOR_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
 }
 
 bool SensorTamperStatus(void)
@@ -144,7 +144,7 @@ void SENSOR_IRQHandler(void)
         if (ret != SUCCESS) {
             SetBpkValue(data, BPK_KEY_LENGTH, 0);
         }
-    } 
+    }
     SENSOR->SEN_STATE = 0;
     NVIC_ClearPendingIRQ(SENSOR_IRQn);
     // todo prevent demolition

@@ -42,7 +42,6 @@ void TamperStartup(void)
 #ifdef BUILD_PRODUCTION
 #endif
         DisableAllHardware();
-        ClearBpkValue(0);
         SetGpioLow(GPIOE, GPIO_Pin_11);         //reset fp.
         //Set all ext int float
         SetGpioFloat(GPIOA, GPIO_Pin_2);
@@ -51,6 +50,7 @@ void TamperStartup(void)
         SetGpioFloat(GPIOF, GPIO_Pin_1 | GPIO_Pin_15);
         SetGpioPullUp(GPIOF, GPIO_Pin_14);
         TamperEraseInfo();
+        ClearBpkValue(0);
         BatteryOpen();
         if (GetBatteryMilliVolt() < 3400) {
             printf("battery low, do not startup\n");

@@ -21,7 +21,7 @@ static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_CRO, "cro", 394, XPUB_TYPE_CRO, "crypto-org-chain-mainnet-1"},
     {CHAIN_IOV, "star", 234, XPUB_TYPE_IOV, "iov-mainnet-ibc"},
     {CHAIN_ROWAN, "sif", 118, XPUB_TYPE_COSMOS, "sifchain-1"},
-    {CHAIN_CTK, "certik", 118, XPUB_TYPE_COSMOS, "shentu-2.2"},
+    {CHAIN_CTK, "shentu", 118, XPUB_TYPE_COSMOS, "shentu-2.2"},
     {CHAIN_IRIS, "iaa", 118, XPUB_TYPE_COSMOS, "irishub-1"},
     {CHAIN_REGEN, "regen", 118, XPUB_TYPE_COSMOS, "regen-1"},
     {CHAIN_XPRT, "persistence", 118, XPUB_TYPE_COSMOS, "core-1"},

@@ -37,6 +37,7 @@ static void ForgetHandler(lv_event_t *e);
 static lv_obj_t *g_cont;
 static lv_timer_t *g_countDownTimer;
 static int8_t countDown = 15;
+static lv_obj_t *g_hintBox = NULL;
 
 static uint32_t startTime;
 static uint32_t needLockTime;
@@ -140,6 +141,7 @@ void GuiLockDeviceRefresh(void)
 void GuiLockDeviceDeInit(void)
 {
     g_resetSuccessful = false;
+    GUI_DEL_OBJ(g_hintBox)
     if (g_cont != NULL) {
         lv_obj_del(g_cont);
         g_cont = NULL;
@@ -175,7 +177,11 @@ static void CountDownTimerWipeDeviceHandler(lv_timer_t *timer)
     }
     lv_label_set_text(lv_obj_get_child(obj, 0), buf);
     if (countDown <= 0) {
-        WipeDevice();
+        if (CHECK_BATTERY_LOW_POWER()) {
+            g_hintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
+        } else {
+            WipeDevice();
+        }
         GuiLockedDeviceCountDownDestruct(NULL, NULL);
     }
 }
@@ -201,8 +207,12 @@ static void WipeDeviceHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        WipeDevice();
-        GuiLockedDeviceCountDownDestruct(NULL, NULL);
+        if (CHECK_BATTERY_LOW_POWER()) {
+            g_hintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
+        } else {
+            WipeDevice();
+            GuiLockedDeviceCountDownDestruct(NULL, NULL);
+        }
     }
 }
 

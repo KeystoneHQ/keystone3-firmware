@@ -103,7 +103,7 @@ static void StopCreateViewHandler(lv_event_t *e)
         lv_obj_set_size(btn, 162, 66);
         lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, NULL);
 
-        btn = GuiCreateBtn(g_noticeHintBox, _("shamir_phrase_cancel_create_btn"));
+        btn = GuiCreateBtn(g_noticeHintBox, _("Cancel Forget"));
         lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
         lv_obj_align(btn, LV_ALIGN_DEFAULT, 229, 710);
         lv_obj_set_size(btn, 215, 66);
@@ -253,14 +253,14 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
         lv_obj_align(g_forgetMkb->titleLabel, LV_ALIGN_DEFAULT, 36, 12);
         lv_label_set_recolor(g_forgetMkb->titleLabel, true);
 
-        g_forgetMkb->descLabel = GuiCreateIllustrateLabel(g_enterMnemonicCont, _(""));
+        g_forgetMkb->descLabel = GuiCreateIllustrateLabel(g_enterMnemonicCont, _("import_wallet_ssb_desc_fmt"));
         lv_label_set_recolor(g_forgetMkb->descLabel, true);
         lv_obj_align(g_forgetMkb->descLabel, LV_ALIGN_DEFAULT, 36, 72);
         lv_obj_add_event_cb(g_forgetMkb->nextButton, ImportShareNextSliceHandler, LV_EVENT_CLICKED, NULL);
 
         lv_label_set_text_fmt(g_forgetMkb->stepLabel, "%d of %d", g_forgetMkb->currentSlice + 1, g_forgetMkb->threShold);
         lv_label_set_text_fmt(g_forgetMkb->titleLabel, "%s #F5870A %d#", _("import_wallet_ssb_title"), g_forgetMkb->currentSlice + 1);
-        lv_label_set_text_fmt(g_forgetMkb->descLabel, "Write down your #F5870A %d#-words seed phrase of\nshare #F5870A %d#in the blanks below",
+        lv_label_set_text_fmt(g_forgetMkb->descLabel, _("import_wallet_ssb_desc_fmt"),
                               g_forgetMkb->wordCnt, g_forgetMkb->currentSlice + 1);
         bip39 = false;
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
@@ -286,6 +286,11 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
     g_forgetMkb->currentId = 0;
 
     return g_enterMnemonicCont;
+}
+
+void GuiForgetPassUpdateKeyboard(void)
+{
+    GuiKeyBoardSetMode(g_forgetPhraseKb);
 }
 
 void GuiWalletRecoverySinglePhraseClear(void)

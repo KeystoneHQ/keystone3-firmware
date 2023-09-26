@@ -940,13 +940,32 @@ void GuiKeyBoardRestoreDefault(KeyBoard_t *keyBoard)
 
 void GuiClearKeyBoard(KeyBoard_t *keyBoard)
 {
+    lv_textarea_set_text(keyBoard->ta, "");
     GuiKeyBoardRestoreDefault(keyBoard);
     GuiKeyBoardSetMode(keyBoard);
-    lv_textarea_set_text(keyBoard->ta, "");
     for (int i = 0; i < 3; i++) {
         memset(g_wordBuf[i], 0, sizeof(g_wordBuf[i]));
         lv_label_set_text(keyBoard->associateLabel[i], "");
     }
+}
+
+// When the letter mnemonic is entered as proof, the keyboard will be disabled and all keyboard letters will be marked as disabled.
+bool GuiLetterKbStatusError(void)
+{
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_letterCtrlMap); i++) {
+        if (i == 10 || i == 20 || i == 21 || i == 29) {
+            continue;
+        }
+        if ((g_letterCtrlMap[i] & LV_BTNMATRIX_CTRL_DISABLED) != LV_BTNMATRIX_CTRL_DISABLED) {
+            return false;
+        }
+    }
+
+    memcpy(g_kbCtrl[KEY_STONE_LETTER - KEY_STONE_FULL_L], g_kbCtrlBak[KEY_STONE_LETTER - KEY_STONE_FULL_L].btnMatrixCtl,
+           g_kbCtrlBak[KEY_STONE_LETTER - KEY_STONE_FULL_L].size);
+    GuiEmitSignal(GUI_EVENT_UPDATE_KEYBOARD, NULL, 0);
+
+    return true;
 }
 
 bool GuiSingleWordsWhole(const char *text)
@@ -1000,6 +1019,7 @@ void UpdateKeyBoard(TrieSTPtr root, const char *str, KeyBoard_t *keyBoard)
     }
     TrieSTPtr tmp = rootTree;
     int i = 0;
+    bool allDisabled = true;
     uint8_t enable[CHAR_LENGTH + 2] = {0};
     while (str[i] != '\0') {
         if (tmp->next[str[i] - 'a'] != NULL) {
@@ -1011,7 +1031,12 @@ void UpdateKeyBoard(TrieSTPtr root, const char *str, KeyBoard_t *keyBoard)
     for (int j = 0; j <= 'z' - 'a'; j++) {
         if (tmp->next[j] == NULL) {
             enable[j] = LV_BTNMATRIX_CTRL_DISABLED;
+        } else {
+            allDisabled = false;
         }
+    }
+    if (allDisabled == true) {
+        memset(enable, 0, 'z' - 'a');
     }
 
     if (searchTrie(rootTree, str) != 1) {
@@ -1039,6 +1064,9 @@ static void LetterKbAssociateHandler(lv_event_t *e)
     char *text = lv_label_get_text(lv_obj_get_child(lv_event_get_target(e), 0));
     char buf[1] = {0};
     if (code == LV_EVENT_CLICKED) {
+        if (strlen(text) <= 0) {
+            return;
+        }
         strcpy(g_wordChange, text);
         if (g_importPhraseKb != NULL) {
             lv_event_send(g_importPhraseKb->btnm, LV_EVENT_READY, g_wordChange);
@@ -1123,10 +1151,13 @@ void KbTextAreaHandler(lv_event_t * e)
             return;
         }
         if (keyBoard->mode == KEY_STONE_LETTER) {
-            if (g_importPhraseKb != NULL) {
+            if (g_importPhraseKb != NULL && strlen(currText)) {
                 lv_event_send(g_importPhraseKb->btnm, KEY_STONE_KEYBOARD_VALUE_CHANGE, (void *)currText);
+                if (GuiSingleWordsWhole(currText)) {
+                    GuiClearKeyBoard(keyBoard);
+                }
+                UpdateKeyBoard(rootTree, currText, keyBoard);
             }
-            UpdateKeyBoard(rootTree, currText, keyBoard);
         } else {
             if (keyBoard->mode == KEY_STONE_FULL_L || keyBoard->mode == KEY_STONE_FULL_U) {
                 UpdateFullKeyBoard(currText, keyBoard);

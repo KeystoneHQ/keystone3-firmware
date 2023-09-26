@@ -25,7 +25,7 @@
 #include "anti_tamper.h"
 #include "screenshot.h"
 
-#define LVGL_FAST_TICK_MS                   1
+#define LVGL_FAST_TICK_MS                   5
 #define LVGL_IDLE_TICK_MS                   100
 #define LVGL_GRAM_PIXEL         LCD_DISPLAY_WIDTH * 450
 
@@ -115,6 +115,7 @@ static void UiDisplayTask(void *argument)
             case UI_MSG_CLOSE_CURRENT_VIEW: {
                 GuiCLoseCurrentWorkingView();
             }
+            break;
             case UI_MSG_SCREEN_SHOT: {
 #ifndef BUILD_PRODUCTION
 #ifdef ENABLE_SCREEN_SHOT

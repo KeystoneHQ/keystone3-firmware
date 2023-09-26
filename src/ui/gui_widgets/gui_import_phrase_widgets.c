@@ -116,6 +116,11 @@ static void GuiInputPhraseWidget(lv_obj_t *parent)
     g_importMkb->currentId = 0;
 }
 
+void GuiImportPhraseUpdateKeyboard(void)
+{
+    GuiKeyBoardSetMode(g_importPhraseKb);
+}
+
 void GuiImportPhraseInit(uint8_t num)
 {
     g_inputWordsCnt = num;
@@ -180,8 +185,8 @@ void GuiImportPhraseRefresh(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     }
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
-    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, ResetClearImportHandler, NULL);
     SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
+    SetRightBtnCb(g_pageWidget->navBarWidget, ResetClearImportHandler, NULL);
 }
 
 void GuiImportPhraseDeInit(void)

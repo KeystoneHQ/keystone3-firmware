@@ -104,6 +104,7 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_align(btn, LV_ALIGN_DEFAULT, 348, 24);
     lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, cont);
     SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12    "USR_SYMBOL_DOWN : "24    "USR_SYMBOL_DOWN);
+    SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
 }
 
 
@@ -277,13 +278,19 @@ static void SelectCheckBoxHandler(lv_event_t* e)
 
     const char *currText = lv_checkbox_get_text(actCb);
     if (!strcmp(currText, "12 Words")) {
-        g_phraseCnt = 12;
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "12    "USR_SYMBOL_DOWN);
-        GuiModelBip39UpdateMnemonic(g_phraseCnt);
+        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
+        if (g_phraseCnt != 12) {
+            g_phraseCnt = 12;
+            GuiModelBip39UpdateMnemonic(g_phraseCnt);
+        }
     } else if (!strcmp(currText, "24 Words")) {
-        g_phraseCnt = 24;
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "24    "USR_SYMBOL_DOWN);
-        GuiModelBip39UpdateMnemonic(g_phraseCnt);
+        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
+        if (g_phraseCnt != 24) {
+            g_phraseCnt = 24;
+            GuiModelBip39UpdateMnemonic(g_phraseCnt);
+        }    
     }
     lv_obj_scroll_to_y(g_randomPhraseKb->cont, 0, LV_ANIM_ON);
     GUI_DEL_OBJ(g_noticeHintBox)
@@ -293,6 +300,7 @@ static void SelectPhraseCntHandler(lv_event_t *e)
 {
     static uint32_t currentIndex = 0;
     lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *checkBox = NULL;
 
     if (code == LV_EVENT_CLICKED) {
         g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 282, true);
@@ -307,17 +315,15 @@ static void SelectPhraseCntHandler(lv_event_t *e)
         lv_obj_align(button, LV_ALIGN_DEFAULT, 407, 550);
 
         if (g_phraseCnt == 24) {
-            lv_obj_t *checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("single_phrase_24words"));
-            lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
-            lv_obj_add_state(checkBox, LV_STATE_CHECKED);
-            currentIndex = lv_obj_get_child_cnt(g_noticeHintBox) - 1;
             checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("single_phrase_12words"));
             lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
+            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("single_phrase_24words"));
+            lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
+            lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         } else {
-            lv_obj_t *checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("single_phrase_12words"));
+            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("single_phrase_12words"));
             lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
-            currentIndex = lv_obj_get_child_cnt(g_noticeHintBox) - 1;
             checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("single_phrase_24words"));
             lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
         }
@@ -341,8 +347,8 @@ int8_t GuiSinglePhraseNextTile(void)
         return SUCCESS_CODE;
     case SINGLE_PHRASE_RANDOM_PHRASE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, ResetBtnHandler, NULL);
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET"Reset");
+        SetRightBtnCb(g_pageWidget->navBarWidget, ResetBtnHandler, NULL);
         g_confirmPhraseKb->wordCnt = g_phraseCnt;
         lv_obj_add_flag(g_changeCont, LV_OBJ_FLAG_HIDDEN);
         while (!SecretCacheGetMnemonic()) {
@@ -372,10 +378,12 @@ int8_t GuiSinglePhrasePrevTile(void)
         ResetConfirmInput();
         lv_obj_clear_flag(g_changeCont, LV_OBJ_FLAG_HIDDEN);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, SelectPhraseCntHandler, NULL);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12    "USR_SYMBOL_DOWN : "24    "USR_SYMBOL_DOWN);
+        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         break;
     case SINGLE_PHRASE_WRITE_SE:
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, ResetBtnHandler, NULL);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET"Reset");
+        SetRightBtnCb(g_pageWidget->navBarWidget, ResetBtnHandler, NULL);
         ResetConfirmInput();
         break;
     }
@@ -400,16 +408,22 @@ void GuiSinglePhraseDeInit(void)
     lv_obj_del(g_confirmPhraseKb->cont);
     GUI_DEL_OBJ(g_singlePhraseTileView.cont)
     memset(g_randomBuff, 0, 512);
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
 void GuiSinglePhraseRefresh(void)
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     if (g_singlePhraseTileView.currentTile == SINGLE_PHRASE_RANDOM_PHRASE) {
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, SelectPhraseCntHandler, NULL);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12    "USR_SYMBOL_DOWN : "24    "USR_SYMBOL_DOWN);
+        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     } else if (g_singlePhraseTileView.currentTile == SINGLE_PHRASE_CONFIRM_PHRASE) {
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, ResetBtnHandler, NULL);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET"Reset");
+        SetRightBtnCb(g_pageWidget->navBarWidget, ResetBtnHandler, NULL);
     }
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
 }

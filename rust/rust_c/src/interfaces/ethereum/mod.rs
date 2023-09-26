@@ -1,5 +1,5 @@
 use alloc::boxed::Box;
-use alloc::string::ToString;
+use alloc::string::{String, ToString};
 use alloc::{format, slice};
 
 use app_ethereum::errors::EthereumError;
@@ -7,7 +7,6 @@ use app_ethereum::{
     parse_fee_market_tx, parse_legacy_tx, parse_personal_message, parse_typed_data_message,
 };
 use keystore::algorithms::secp256k1::derive_public_key;
-use third_party::hex;
 use third_party::ur_registry::ethereum::eth_sign_request::EthSignRequest;
 use third_party::ur_registry::ethereum::eth_signature::EthSignature;
 use third_party::ur_registry::traits::RegistryItem;
@@ -21,7 +20,7 @@ use crate::interfaces::ethereum::structs::{
 use crate::interfaces::structs::{TransactionCheckResult, TransactionParseResult};
 use crate::interfaces::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
-use crate::interfaces::utils::recover_c_char;
+use crate::interfaces::utils::{convert_c_char, recover_c_char};
 use crate::interfaces::KEYSTONE;
 
 mod abi;
@@ -65,29 +64,74 @@ pub extern "C" fn eth_check(
 }
 
 #[no_mangle]
+pub extern "C" fn eth_get_root_path(ptr: PtrUR) -> PtrString
+{
+    let eth_sign_request = extract_ptr_with_type!(ptr, EthSignRequest);
+    let derivation_path: third_party::ur_registry::crypto_key_path::CryptoKeyPath =
+        eth_sign_request.get_derivation_path();
+    if let Some(path) = derivation_path.get_path() {
+        if let Some(root_path) = parse_eth_root_path(path) {
+            return convert_c_char(root_path);
+        }
+    }
+    return convert_c_char("".to_string())
+}
+
+fn parse_eth_root_path(path: String) -> Option<String> {
+    let root_path = "44'/60'/";
+    match path.strip_prefix(root_path) {
+        Some(path) => {
+            if let Some(index) = path.find("/") {
+                let sub_path = &path[..index];
+                Some(format!("{}{}", root_path, sub_path))
+            } else {
+                None
+            }
+        }
+        None => None,
+    }
+}
+
+fn parse_eth_sub_path(path: String) -> Option<String> {
+    let root_path = "44'/60'/";
+    match path.strip_prefix(root_path) {
+        Some(path) => {
+            if let Some(index) = path.find("/") {
+                Some(path[index + 1..].to_string())
+            } else {
+                None
+            }
+        }
+        None => None,
+    }
+}
+
+fn try_get_eth_public_key(
+    xpub: String,
+    eth_sign_request: EthSignRequest,
+) -> Result<third_party::secp256k1::PublicKey, RustCError> {
+    match eth_sign_request.get_derivation_path().get_path() {
+        None => Err(RustCError::InvalidHDPath),
+        Some(path) => {
+            let _path = path.clone();
+            if let Some(sub_path) = parse_eth_sub_path(_path) {
+                derive_public_key(&xpub, &format!("m/{}", sub_path))
+                    .map_err(|e| RustCError::UnexpectedError(format!("unable to derive pubkey")))
+            } else {
+                Err(RustCError::InvalidHDPath)
+            }
+        }
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn eth_parse(
     ptr: PtrUR,
     xpub: PtrString,
 ) -> PtrT<TransactionParseResult<DisplayETH>> {
     let crypto_eth = extract_ptr_with_type!(ptr, EthSignRequest);
-    let pubkey = match crypto_eth.get_derivation_path().get_path() {
-        None => {
-            return TransactionParseResult::from(RustCError::InvalidHDPath).c_ptr();
-        }
-        Some(path) => {
-            let xpub = recover_c_char(xpub);
-            let mut _path = path.clone();
-            let root_path = "44'/60'/0'/";
-            let sub_path = match _path.strip_prefix(root_path) {
-                Some(path) => path,
-                None => {
-                    return TransactionParseResult::from(RustCError::InvalidHDPath).c_ptr();
-                }
-            };
-            derive_public_key(&xpub, &format!("m/{}", sub_path))
-        }
-    };
-
+    let xpub = recover_c_char(xpub);
+    let pubkey = try_get_eth_public_key(xpub, crypto_eth.clone());
     let transaction_type = TransactionType::from(crypto_eth.get_data_type());
 
     match (pubkey, transaction_type) {
@@ -142,23 +186,8 @@ pub extern "C" fn eth_parse_personal_message(
     xpub: PtrString,
 ) -> PtrT<TransactionParseResult<DisplayETHPersonalMessage>> {
     let crypto_eth = extract_ptr_with_type!(ptr, EthSignRequest);
-    let pubkey = match crypto_eth.get_derivation_path().get_path() {
-        None => {
-            return TransactionParseResult::from(RustCError::InvalidHDPath).c_ptr();
-        }
-        Some(path) => {
-            let xpub = recover_c_char(xpub);
-            let mut _path = path.clone();
-            let root_path = "44'/60'/0'/";
-            let sub_path = match _path.strip_prefix(root_path) {
-                Some(path) => path,
-                None => {
-                    return TransactionParseResult::from(RustCError::InvalidHDPath).c_ptr();
-                }
-            };
-            derive_public_key(&xpub, &format!("m/{}", sub_path))
-        }
-    };
+    let xpub = recover_c_char(xpub);
+    let pubkey = try_get_eth_public_key(xpub, crypto_eth.clone());
 
     let transaction_type = TransactionType::from(crypto_eth.get_data_type());
 
@@ -189,23 +218,8 @@ pub extern "C" fn eth_parse_typed_data(
     xpub: PtrString,
 ) -> PtrT<TransactionParseResult<DisplayETHTypedData>> {
     let crypto_eth = extract_ptr_with_type!(ptr, EthSignRequest);
-    let pubkey = match crypto_eth.get_derivation_path().get_path() {
-        None => {
-            return TransactionParseResult::from(RustCError::InvalidHDPath).c_ptr();
-        }
-        Some(path) => {
-            let xpub = recover_c_char(xpub);
-            let mut _path = path.clone();
-            let root_path = "44'/60'/0'/";
-            let sub_path = match _path.strip_prefix(root_path) {
-                Some(path) => path,
-                None => {
-                    return TransactionParseResult::from(RustCError::InvalidHDPath).c_ptr();
-                }
-            };
-            derive_public_key(&xpub, &format!("m/{}", sub_path))
-        }
-    };
+    let xpub = recover_c_char(xpub);
+    let pubkey = try_get_eth_public_key(xpub, crypto_eth.clone());
 
     let transaction_type = TransactionType::from(crypto_eth.get_data_type());
 
@@ -290,11 +304,27 @@ pub extern "C" fn eth_sign_tx(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT
 #[cfg(test)]
 mod tests {
     extern crate std;
+
     use std::println;
+
     #[test]
     fn test() {
         let p = "m/44'/60'/0'/0/0";
         let prefix = "m/44'/60'/0'/";
         println!("{:?}", p.strip_prefix(prefix))
+    }
+
+    #[test]
+    fn test_test() {
+        let _path = "44'/60'/1'/0/0";
+        let root_path = "44'/60'/";
+        let sub_path = match _path.strip_prefix(root_path) {
+            Some(path) => {
+                if let Some(index) = path.find("/") {
+                    println!("{}", &path[index..]);
+                }
+            }
+            None => {}
+        };
     }
 }

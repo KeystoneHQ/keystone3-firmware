@@ -231,7 +231,7 @@ void QrDecodeTouchQuit(void)
     if (g_qrDecodeState == QR_DECODE_STATE_OFF) {
         return;
     }
-    pStatus = GetTouchStatus();
+    pStatus = GetLatestTouchStatus();
     if (pStatus->touch) {
         if (pStatus->x >= QUIT_AREA_X_START && pStatus->x <= QUIT_AREA_X_END &&
                 pStatus->y >= QUIT_AREA_Y_START && pStatus->y <= QUIT_AREA_Y_END) {

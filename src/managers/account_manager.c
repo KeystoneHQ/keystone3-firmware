@@ -39,7 +39,6 @@ static int32_t ReadCurrentAccountInfo(void)
     return ret;
 }
 
-
 /// @brief Keystore init, secret self test.
 /// @return err code.
 int32_t AccountManagerInit(void)
@@ -57,6 +56,11 @@ int32_t AccountManagerInit(void)
 PasscodeType GetPasscodeType(void)
 {
     return g_currentAccountInfo.passcodeType;
+}
+
+uint8_t *GetCurrentAccountMfp()
+{
+    return g_currentAccountInfo.mfp;
 }
 
 
@@ -446,7 +450,6 @@ int32_t GetBlankAccountIndex(uint8_t *accountIndex)
     return ret;
 }
 
-
 /// @brief Destroy the specified account.
 /// @param[in] accountIndex Account index, 0~2.
 /// @return err code.
@@ -463,6 +466,10 @@ int32_t DestroyAccount(uint8_t accountIndex)
     }
     DeleteAccountPublicInfo(accountIndex);
     ClearAccountPassphrase(accountIndex);
+    SetWalletDataHash(accountIndex, data);
+    LogoutCurrentAccount();
+
+    CLEAR_OBJECT(g_currentAccountInfo);
     CLEAR_ARRAY(data);
 
     return ret;

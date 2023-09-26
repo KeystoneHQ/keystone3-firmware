@@ -28,7 +28,9 @@ static lv_obj_t *g_scanImg = NULL;
 static lv_obj_t *g_manageCont = NULL;
 static lv_obj_t *g_moreHintbox = NULL;
 static bool g_isManageOpen = false;
+static bool g_isManageClick = true;
 static PageWidget_t *g_pageWidget;
+static lv_timer_t *g_countDownTimer = NULL;           // count down timer
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_BTC, false, "BTC"},
@@ -319,6 +321,7 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
 
 static void CoinDealHandler(lv_event_t *e);
 static bool IsUtxoCoin(HOME_WALLET_CARD_ENUM coin);
+static void AddFlagCountDownTimerHandler(lv_timer_t *timer);
 void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count);
 void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count);
 
@@ -435,7 +438,7 @@ static void ManageCoinChainHandler(lv_event_t *e)
         bool state = lv_obj_has_state(lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 1), LV_STATE_CHECKED);
         g_walletBakState[wallet->index].state = state;
 
-        lv_obj_scroll_to_y(lv_obj_get_parent(parent), (wallet->index - 2) * 96, LV_ANIM_ON);
+        // lv_obj_scroll_to_y(lv_obj_get_parent(parent), (wallet->index - 2) * 96, LV_ANIM_ON);
         UpdateManageWalletState(false);
     }
 }
@@ -445,6 +448,12 @@ void ScanQrCodeHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
+        g_isManageClick = false;
+        if (g_countDownTimer != NULL) {
+            lv_timer_del(g_countDownTimer);
+            g_countDownTimer = NULL;
+        }
+
         GuiFrameOpenView(lv_event_get_user_data(e));
     }
 }
@@ -504,7 +513,10 @@ static void OpenManageAssetsHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_SHORT_CLICKED) {
+    if (code == LV_EVENT_CLICKED) {
+        if (g_isManageClick == false) {
+            return;
+        }
         memcpy(&g_walletBakState, &g_walletState, sizeof(g_walletState));
         g_manageCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
                                           GUI_MAIN_AREA_OFFSET);
@@ -527,13 +539,15 @@ static void OpenManageAssetsHandler(lv_event_t *e)
             chainLabel = GuiCreateNoticeLabel(checkBoxCont, g_coinCardArray[i].chain);
             icon = GuiCreateImg(checkBoxCont, g_coinCardArray[i].icon);
             checkbox = GuiCreateMultiCheckBox(checkBoxCont, _(""));
+            lv_obj_set_style_pad_top(checkbox, 32, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_size(checkbox, 446, 96);
             g_walletState[i].checkBox = checkbox;
             uint8_t tableLen = 4;
             GuiButton_t table[5] = {
                 {.obj = icon, .align = LV_ALIGN_LEFT_MID, .position = {24, 0},},
                 {.obj = coinLabel, .align = LV_ALIGN_DEFAULT, .position = {100, 13},},
                 {.obj = chainLabel, .align = LV_ALIGN_DEFAULT, .position = {100, 53},},
-                {.obj = checkbox, .align = LV_ALIGN_TOP_MID, .position = {0, 32},},
+                {.obj = checkbox, .align = LV_ALIGN_TOP_MID, .position = {-10, 0},},
             };
             if (IsCosmosChain(g_coinCardArray[i].index)) {
                 tag = GuiCreateImg(checkBoxCont, &imgCosmosTag);
@@ -563,7 +577,7 @@ static void OpenManageAssetsHandler(lv_event_t *e)
         lv_obj_t *line = GuiCreateDividerLine(checkBoxCont);
         lv_obj_align(line, LV_ALIGN_DEFAULT, 0, HOME_WALLET_CARD_BNB * 96);
 
-        label = GuiCreateIllustrateLabel(checkBoxCont, "Please upgrade to the latest version for access to expanded crypto compatibility.");
+        label = GuiCreateIllustrateLabel(checkBoxCont, "Please update to the latest version to access expanded software wallet compatibility.");
         lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
         lv_obj_align(label, LV_ALIGN_DEFAULT, 32, HOME_WALLET_CARD_BNB * 96 + 25);
         // **
@@ -612,6 +626,14 @@ void GuiHomeDisActive(void)
     }
 }
 
+static void AddFlagCountDownTimerHandler(lv_timer_t *timer)
+{
+    g_isManageClick = true;
+    lv_timer_del(timer);
+    g_countDownTimer = NULL;
+    UNUSED(g_countDownTimer);
+}
+
 void GuiHomeRestart(void)
 {
     GUI_DEL_OBJ(g_manageCont)
@@ -623,6 +645,7 @@ void GuiHomeRefresh(void)
     if (GetCurrentAccountIndex() > 2) {
         return;
     }
+    g_countDownTimer = lv_timer_create(AddFlagCountDownTimerHandler, 500, NULL);
     GuiSetSetupPhase(SETUP_PAHSE_DONE);
     if (g_manageCont != NULL) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Manage Assets"));

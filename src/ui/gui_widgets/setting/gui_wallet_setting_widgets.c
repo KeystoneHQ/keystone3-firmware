@@ -200,7 +200,7 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
     lv_obj_set_size(led, 6, 6);
     lv_led_set_color(led, ORANGE_COLOR);
 
-    label = GuiCreateNoticeLabel(parent, _("Keystone support at most 3 wallets"));
+    label = GuiCreateNoticeLabel(parent, _("Keystone supports at most 3 wallets"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 228 - GUI_MAIN_AREA_OFFSET);
 
     led = lv_led_create(parent);
@@ -316,6 +316,7 @@ void GuiDelWallet(bool result)
     GuiCLoseCurrentWorkingView();
     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
     LogoutCurrentAccount();
+    GuiLockScreenSetFirstUnlock();
     GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_VERIFY);
     GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
 }
@@ -342,6 +343,7 @@ void GuiResettingWriteSe(void)
 
 void GuiAddWalletAmountLimit(void)
 {
+    GuiShowKeyboardDestruct();
     GuiLockScreenTurnOff();
     static uint8_t walletIndex = DEVICE_SETTING_ADD_WALLET_LIMIT;
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));

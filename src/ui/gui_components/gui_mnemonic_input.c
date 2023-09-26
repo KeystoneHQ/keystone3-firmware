@@ -130,6 +130,7 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                 if (mkb->intputType == MNEMONIC_INPUT_SETTING_VIEW) {
                     mkb->currentSlice++;
                     lv_label_set_text_fmt(mkb->titleLabel, "%s #F5870A %d#", _("import_wallet_ssb_title"), mkb->currentSlice + 1);
+                    lv_label_set_text_fmt(mkb->descLabel, _("import_wallet_ssb_desc_fmt"), mkb->wordCnt, mkb->currentSlice + 1);
                     g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgSuccess, "Verify Successful",
                                       "This share of your seed phrase matches your wallet.", "Continue", DARK_GRAY_COLOR, "Done", ORANGE_COLOR);
                     lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeHintBox);
@@ -160,7 +161,7 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                             lv_label_set_text_fmt(mkb->titleLabel, "%s #F5870A %d#", _("import_wallet_ssb_title"), mkb->currentSlice + 1);
                         }
                         if (mkb->descLabel != NULL) {
-                            lv_label_set_text_fmt(mkb->descLabel, "Write down your #F5870A %d#-words seed phrase of\nshare #F5870A %d#in the blanks below",
+                            lv_label_set_text_fmt(mkb->descLabel, _("import_wallet_ssb_desc_fmt"),
                                                   mkb->wordCnt, mkb->currentSlice + 1);
                         }
                     }
@@ -217,8 +218,6 @@ bool GuiMnemonicInputCheck(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
 {
     char trueText[12] = {0};
     if (mkb->currentId != mkb->wordCnt) {
-        // lv_obj_clear_flag(mkb->nextButton, LV_OBJ_FLAG_CLICKABLE);
-        GuiSetLetterBoardConfirm(letterKb, 0);
         return false;
     }
 
@@ -227,8 +226,6 @@ bool GuiMnemonicInputCheck(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
         const char *text = lv_btnmatrix_get_btn_text(mkb->btnm, i);
         GuiMnemonicGetTrueWord(text, trueText);
         if (strlen(trueText) > 0 && !GuiWordsWhole(trueText)) {
-            GuiSetLetterBoardConfirm(letterKb, 0);
-            // lv_obj_clear_flag(mkb->nextButton, LV_OBJ_FLAG_CLICKABLE);
             return false;
         }
     }
@@ -384,6 +381,9 @@ void GuiMnemonicInputHandler(lv_event_t *e)
             memset(g_wordBuf[i], 0, sizeof(g_wordBuf[i]));
             lv_label_set_text(letterKb->associateLabel[i], "");
         }
+        uint32_t currentId = lv_btnmatrix_get_selected_btn(obj);
+        lv_obj_scroll_to_y(mkb->cont, (currentId / 3 - 1) * 72, LV_ANIM_ON);
+
         char *word = lv_event_get_param(e);
         if ((strlen(word) == 0 && code == KEY_STONE_KEYBOARD_VALUE_CHANGE)) {
             // if (isClick || (strlen(word) == 0 && code == KEY_STONE_KEYBOARD_VALUE_CHANGE)) {
@@ -428,9 +428,9 @@ void GuiMnemonicInputHandler(lv_event_t *e)
 
 void GuiSetMnemonicCache(KeyBoard_t *keyBoard, char *word)
 {
+    lv_textarea_set_text(keyBoard->ta, "");
     GuiKeyBoardRestoreDefault(keyBoard);
     GuiKeyBoardSetMode(keyBoard);
-    lv_textarea_set_text(keyBoard->ta, "");
     for (int i = 0; i < 3; i++) {
         memset(g_wordBuf[i], 0, sizeof(g_wordBuf[i]));
         lv_label_set_text(keyBoard->associateLabel[i], "");

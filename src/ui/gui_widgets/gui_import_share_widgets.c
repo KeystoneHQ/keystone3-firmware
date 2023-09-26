@@ -131,16 +131,17 @@ static void GuiShareSsbInputWidget(lv_obj_t *parent)
 
     g_importMkb = GuiCreateMnemonicKeyBoard(parent, GuiMnemonicInputHandler, g_phraseCnt == 33 ? KEY_STONE_MNEMONIC_33 : KEY_STONE_MNEMONIC_20, NULL);
     g_importMkb->intputType = MNEMONIC_INPUT_IMPORT_VIEW;
-    label = GuiCreateTitleLabel(parent, _("import_wallet_ssb_title"));
+    label = GuiCreateTitleLabel(parent, "");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
     lv_label_set_recolor(label, true);
     lv_label_set_text_fmt(label, "%s #F5870A %d#", _("import_wallet_ssb_title"), g_importMkb->currentSlice + 1);
     g_importMkb->titleLabel = label;
 
-    label = GuiCreateIllustrateLabel(parent, _("import_wallet_ssb_desc"));
+    label = GuiCreateIllustrateLabel(parent, _("import_wallet_ssb_desc_fmt"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 72);
     lv_label_set_recolor(label, true);
     lv_obj_set_style_text_color(label, DARK_GRAY_COLOR, LV_PART_MAIN);
+    lv_label_set_text_fmt(label, _("import_wallet_ssb_desc_fmt"), g_importMkb->wordCnt, g_importMkb->currentSlice + 1);
     g_importMkb->descLabel = label;
 
     lv_obj_set_size(g_importMkb->cont, 408, 236);
@@ -212,6 +213,7 @@ int8_t GuiImportShareNextTile(void)
         GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
         GuiModelSlip39CalWriteSe(slip39);
         lv_obj_add_flag(g_nextCont, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_ssbImportKb->cont, LV_OBJ_FLAG_HIDDEN);
         break;
     }
     g_importShareTileView.currentTile++;
@@ -250,8 +252,8 @@ void GuiImportShareRefresh(void)
 {
     if (g_importShareTileView.currentTile == IMPORT_SHARE_SSB_INPUT) {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, ConfirmClearHandler, NULL);
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
+        SetRightBtnCb(g_pageWidget->navBarWidget, ConfirmClearHandler, NULL);
     } else {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);

@@ -33,13 +33,13 @@ static void GuiLowBatteryInit(void)
         img = GuiCreateImg(g_lowBatteryHintBox, &imgWarn);
         lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 36, -296);
 
-        label = GuiCreateLittleTitleLabel(g_lowBatteryHintBox, "Low Battery");
+        label = GuiCreateLittleTitleLabel(g_lowBatteryHintBox, _("low_battery_pop_up_title"));
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -232);
-        label = GuiCreateIllustrateLabel(g_lowBatteryHintBox, "For the process to continue, ensure that the device has a minimum of 20% battery power.");
+        label = GuiCreateIllustrateLabel(g_lowBatteryHintBox, _("low_battery_pop_up_desc"));
         lv_obj_set_width(label, 408);
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -130);
 
-        button = GuiCreateBtnWithFont(g_lowBatteryHintBox, "OK", g_defTextFont);
+        button = GuiCreateBtnWithFont(g_lowBatteryHintBox, _("common_ok"), g_defTextFont);
         lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_set_size(button, 94, 66);
         lv_obj_set_style_bg_color(button, DARK_GRAY_COLOR, LV_PART_MAIN);

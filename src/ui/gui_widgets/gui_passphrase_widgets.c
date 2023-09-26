@@ -54,10 +54,10 @@ void GuiPassphraseInit(void)
     g_pageWidget = CreatePageWidget();
     g_passphraseWidgets.cont = g_pageWidget->contentZone;
     g_passphraseWidgets.passphraseInputCont = GuiCreateHintBox(g_passphraseWidgets.cont, 480, 614, false);
-    label = GuiCreateIllustrateLabel(g_passphraseWidgets.passphraseInputCont, "Passphrase");
+    label = GuiCreateIllustrateLabel(g_passphraseWidgets.passphraseInputCont, _("wallet_setting_passphrase"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 216);
     lv_obj_set_style_text_opa(label, LV_OPA_70, LV_PART_MAIN);
-    btn = GuiCreateBtn(g_passphraseWidgets.passphraseInputCont, "Skip");
+    btn = GuiCreateBtn(g_passphraseWidgets.passphraseInputCont, _("common_skip"));
     lv_obj_set_size(btn, 63, 42);
     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
@@ -77,7 +77,7 @@ void GuiPassphraseInit(void)
     lv_obj_set_align(ta, LV_ALIGN_CENTER);
     lv_obj_set_size(ta, 352, 60);
     lv_textarea_set_password_mode(ta, true);
-    lv_textarea_set_placeholder_text(ta, _("Input passphrase"));
+    lv_textarea_set_placeholder_text(ta, _("passphrase_enter_input"));
     lv_obj_set_style_bg_color(ta, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_color(ta, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_border_opa(ta, LV_OPA_0, LV_PART_MAIN);
@@ -106,7 +106,7 @@ void GuiPassphraseInit(void)
     lv_obj_set_align(ta, LV_ALIGN_CENTER);
     lv_obj_set_size(ta, 352, 60);
     lv_textarea_set_password_mode(ta, true);
-    lv_textarea_set_placeholder_text(ta, _("Repeat passphrase"));
+    lv_textarea_set_placeholder_text(ta, _("passphrase_enter_repeat"));
     lv_obj_set_style_bg_color(ta, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_color(ta, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_border_opa(ta, LV_OPA_0, LV_PART_MAIN);
@@ -131,13 +131,13 @@ void GuiPassphraseInit(void)
     GuiSetKeyBoardMinTaLen(g_passphraseWidgets.keyboard, 0);
     GuiSetFullKeyBoardTa(g_passphraseWidgets.keyboard, g_passphraseWidgets.inputTa);
 
-    label = GuiCreateIllustrateLabel(g_passphraseWidgets.passphraseInputCont, _("Passphrase does not match"));
+    label = GuiCreateIllustrateLabel(g_passphraseWidgets.passphraseInputCont, _("passphrase_error_not_match"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 436);
     lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
     g_passphraseWidgets.errLabel = label;
 
-    label = GuiCreateIllustrateLabel(g_passphraseWidgets.passphraseInputCont, _("input length cannot exceed 128 characters"));
+    label = GuiCreateIllustrateLabel(g_passphraseWidgets.passphraseInputCont, _("passphrase_error_too_long"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 436);
     lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);

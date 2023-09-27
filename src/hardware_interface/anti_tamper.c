@@ -21,6 +21,8 @@
 #include "user_utils.h"
 #include "drv_battery.h"
 #include "background_task.h"
+#include "drv_sensor.h"
+#include "drv_bpk.h"
 
 
 #define TAMPER_MARK                 0x5A
@@ -32,7 +34,7 @@ static void TamperEraseInfo(void);
 /// @brief Called when startup.
 void TamperStartup(void)
 {
-    if (ReadTamperInput()) {
+    if (ReadTamperInput() && SensorTamperStatus()) {
         printf("tamper ok\r\n");
     } else {
         printf("tamper detected!!!\r\n");
@@ -48,6 +50,7 @@ void TamperStartup(void)
         SetGpioFloat(GPIOF, GPIO_Pin_1 | GPIO_Pin_15);
         SetGpioPullUp(GPIOF, GPIO_Pin_14);
         TamperEraseInfo();
+        ClearBpkValue(0);
         BatteryOpen();
         if (GetBatteryMilliVolt() < 3400) {
             printf("battery low, do not startup\n");

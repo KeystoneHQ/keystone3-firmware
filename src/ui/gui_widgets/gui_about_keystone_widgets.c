@@ -12,8 +12,7 @@
 #include "gui_page.h"
 
 
-typedef struct
-{
+typedef struct {
     const char *url;
     const char *title;
     const lv_img_dsc_t *icon;
@@ -33,8 +32,7 @@ static void GuiCloseQrcodeHandler(lv_event_t *e);
 
 void ContactItemsInit()
 {
-    if(g_contactItems == NULL)
-    {
+    if (g_contactItems == NULL) {
         g_contactItems = SRAM_MALLOC(4 * sizeof(ContactItem_t));
         g_contactItems[0].url = _("about_keystone_website_url");
         g_contactItems[0].title = _("about_keystone_website");
@@ -70,13 +68,11 @@ void GuiAboutKeystoneWidgetsInit()
 
 void GuiAboutKeystoneWidgetsDeInit()
 {
-    if (g_cont != NULL)
-    {
+    if (g_cont != NULL) {
         lv_obj_del(g_cont);
         g_cont = NULL;
     }
-    if (g_pageWidget != NULL)
-    {
+    if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
@@ -103,14 +99,12 @@ void GuiAboutKeystoneEntranceWidget(lv_obj_t *parent)
 {
 
     lv_obj_t *imgIcon, *label, *imgQr;
-    for (int i = 0; i < NUMBER_OF_ARRAYS(g_contactItems); i++)
-    {
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_contactItems); i++) {
         imgIcon = GuiCreateImg(parent, g_contactItems[i].icon);
         label = GuiCreateLabel(parent, g_contactItems[i].url);
         imgQr = GuiCreateImg(parent, g_contactItems[i].qrIcon);
 
-        GuiButton_t table[] =
-        {
+        GuiButton_t table[] = {
             {
                 .obj = imgIcon,
                 .align = LV_ALIGN_LEFT_MID,
@@ -140,8 +134,7 @@ static void ShowQRDialogHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *parent, *button, *qrCodeCont, *qrCode, *label;
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         ContactItem_t *contactItem = (ContactItem_t*)lv_event_get_user_data(e);
 
         g_qrCodeCont = GuiCreateHintBox(g_cont, 480, 656, true);
@@ -179,10 +172,8 @@ static void ShowQRDialogHandler(lv_event_t *e)
 static void GuiCloseQrcodeHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
-        if (g_qrCodeCont != NULL)
-        {
+    if (code == LV_EVENT_CLICKED) {
+        if (g_qrCodeCont != NULL) {
             lv_obj_del(g_qrCodeCont);
             g_qrCodeCont = NULL;
         }

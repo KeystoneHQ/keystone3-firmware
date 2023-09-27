@@ -23,8 +23,7 @@
 #include "account_manager.h"
 
 
-typedef enum
-{
+typedef enum {
     FIRMWARE_UPDATE_SELECT = 0,
     FIRMWARE_UPDATE_USB_INSTRUCTION,
     FIRMWARE_UPDATE_SD_INSTRUCTION,
@@ -34,8 +33,7 @@ typedef enum
     FIRMWARE_UPDATE_BUTT,
 } CREATE_WALLET_ENUM;
 
-typedef struct
-{
+typedef struct {
     uint8_t currentTile;
     lv_obj_t *cont;
     lv_obj_t *tileView;
@@ -68,12 +66,10 @@ static PageWidget_t *g_pageWidget;
 
 static void UrlInit()
 {
-    if (g_firmwareUpdateUrl == NULL)
-    {
+    if (g_firmwareUpdateUrl == NULL) {
         g_firmwareUpdateUrl = _("firmware_update_usb_qr_link");
     }
-    if (g_firmwareSdUpdateUrl == NULL)
-    {
+    if (g_firmwareSdUpdateUrl == NULL) {
         g_firmwareSdUpdateUrl = _("firmware_update_sd_desc2_link");
     }
 }
@@ -95,8 +91,7 @@ void GuiCreateSdCardUpdateHintbox(char *version)
 
 static int GetEntryEnum(void)
 {
-    if (g_param != NULL)
-    {
+    if (g_param != NULL) {
         return *(int *)g_param;
     }
     return FIRMWARE_UPDATE_ENTRY_BUTT;
@@ -112,12 +107,9 @@ void GuiFirmwareUpdateInit(void *param)
     g_firmwareUpdateWidgets.cont = g_pageWidget->contentZone;
     tileView = lv_tileview_create(g_firmwareUpdateWidgets.cont);
     g_firmwareUpdateWidgets.tileView = tileView;
-    if (GuiDarkMode())
-    {
+    if (GuiDarkMode()) {
         lv_obj_set_style_bg_color(tileView, BLACK_COLOR, LV_PART_MAIN);
-    }
-    else
-    {
+    } else {
         lv_obj_set_style_bg_color(tileView, WHITE_COLOR, LV_PART_MAIN);
     }
     lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
@@ -138,8 +130,7 @@ void GuiFirmwareUpdateInit(void *param)
 
 void GuiFirmwareSdCardCopy(void)
 {
-    if (GuiCheckIfViewOpened(&g_lockView))
-    {
+    if (GuiCheckIfViewOpened(&g_lockView)) {
         GuiLockScreenTurnOff();
     }
     GUI_DEL_OBJ(g_waitAnimCont)
@@ -156,12 +147,9 @@ void GuiFirmwareSdCardCopy(void)
 void GuiFirmwareSdCardCopyResult(bool en)
 {
     GUI_DEL_OBJ(g_waitAnimCont)
-    if (en)
-    {
+    if (en) {
         printf("copy success\n");
-    }
-    else
-    {
+    } else {
         printf("copy failed\n");
         g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
     }
@@ -176,8 +164,7 @@ void GuiFirmwareUpdateDeInit(void)
     GUI_DEL_OBJ(g_waitAnimCont)
     lv_obj_del(g_firmwareUpdateWidgets.cont);
     CLEAR_OBJECT(g_firmwareUpdateWidgets);
-    if (g_pageWidget != NULL)
-    {
+    if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
@@ -188,26 +175,18 @@ void GuiFirmwareUpdateRefresh(void)
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "");
-    if (GetEntryEnum() == FIRMWARE_UPDATE_ENTRY_SETUP && g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_SELECT)
-    {
+    if (GetEntryEnum() == FIRMWARE_UPDATE_ENTRY_SETUP && g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_SELECT) {
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_NEW_SKIP, OpenViewHandler, &g_purposeView);
-    }
-    else
-    {
+    } else {
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     }
 
-    if (GetEntryEnum() == FIRMWARE_UPDATE_ENTRY_SETUP)
-    {
+    if (GetEntryEnum() == FIRMWARE_UPDATE_ENTRY_SETUP) {
         GuiSetSetupPhase(SETUP_PAHSE_FIRMWARE_UPDATE);
-        if (g_reboot)
-        {
-            if (!GuiJudgeCurrentPahse(SETUP_PAHSE_FIRMWARE_UPDATE))
-            {
+        if (g_reboot) {
+            if (!GuiJudgeCurrentPahse(SETUP_PAHSE_FIRMWARE_UPDATE)) {
                 GuiFrameOpenView(&g_purposeView);
-            }
-            else
-            {
+            } else {
                 g_reboot = false;
             }
         }
@@ -218,8 +197,7 @@ void GuiFirmwareUpdateRefresh(void)
 
 void GuiFirmwareUpdatePrevTile(void)
 {
-    switch (g_firmwareUpdateWidgets.currentTile)
-    {
+    switch (g_firmwareUpdateWidgets.currentTile) {
     case FIRMWARE_UPDATE_SELECT:
         GuiCLoseCurrentWorkingView();
         return;
@@ -232,8 +210,7 @@ void GuiFirmwareUpdatePrevTile(void)
         return;
     }
     lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, g_firmwareUpdateWidgets.currentTile, 0, LV_ANIM_OFF);
-    if (g_firmwareUpdateWidgets.tileView == FIRMWARE_UPDATE_SELECT)
-    {
+    if (g_firmwareUpdateWidgets.tileView == FIRMWARE_UPDATE_SELECT) {
         GuiCreateSelectTile(g_firmwareUpdateWidgets.tileSelect);
     }
     GuiFirmwareUpdateRefresh();
@@ -254,8 +231,7 @@ static void GuiCreateSelectTile(lv_obj_t *parent)
     img = GuiCreateImg(parent, &imgMicroSd);
     label = GuiCreateLittleTitleLabel(parent, _("firmware_update_via_sd"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    GuiButton_t table1[4] =
-    {
+    GuiButton_t table1[4] = {
         {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 40},},
         {.obj = label, .align = LV_ALIGN_DEFAULT, .position = {76, 40},},
         {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 40},},
@@ -279,8 +255,7 @@ static void GuiCreateSelectTile(lv_obj_t *parent)
     img = GuiCreateImg(parent, &imgUsbConnection);
     label = GuiCreateLittleTitleLabel(parent, _("firmware_update_via_usb"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    GuiButton_t table2[] =
-    {
+    GuiButton_t table2[] = {
         {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 40},},
         {.obj = label, .align = LV_ALIGN_DEFAULT, .position = {76, 40},},
         {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 40},},
@@ -300,8 +275,7 @@ static void GuiViaSdCardHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         g_firmwareUpdateWidgets.currentTile = FIRMWARE_UPDATE_SD_INSTRUCTION;
         lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, g_firmwareUpdateWidgets.currentTile, 0, LV_ANIM_OFF);
         GuiFirmwareUpdateRefresh();
@@ -312,8 +286,7 @@ static void GuiViaUsbHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         g_firmwareUpdateWidgets.currentTile = FIRMWARE_UPDATE_USB_INSTRUCTION;
         lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, g_firmwareUpdateWidgets.currentTile, 0, LV_ANIM_OFF);
         GuiFirmwareUpdateRefresh();
@@ -377,35 +350,24 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
     GUI_DEL_OBJ(g_noticeHintBox)
     lv_event_code_t code = lv_event_get_code(e);
     uint16_t *walletSetIndex = lv_event_get_user_data(e);
-    if (code == LV_EVENT_CLICKED)
-    {
-        if (CHECK_BATTERY_LOW_POWER())
-        {
+    if (code == LV_EVENT_CLICKED) {
+        if (CHECK_BATTERY_LOW_POWER()) {
             g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox);
-        }
-        else if (!SdCardInsert())
-        {
+        } else if (!SdCardInsert()) {
             g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
-        }
-        else if (CheckOtaBinVersion(fileVersion))
-        {
+        } else if (CheckOtaBinVersion(fileVersion)) {
             uint8_t accountCnt = 0;
             GetExistAccountNum(&accountCnt);
-            if (accountCnt == 0)
-            {
+            if (accountCnt == 0) {
                 GuiFirmwareSdCardCopy();
                 GuiModelCopySdCardOta();
-            }
-            else
-            {
+            } else {
                 GuiDeleteKeyboardWidget(g_keyboardWidget);
                 g_keyboardWidget = GuiCreateKeyboardWidget(g_firmwareUpdateWidgets.cont);
                 SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
                 SetKeyboardWidgetSig(g_keyboardWidget, walletSetIndex);
             }
-        }
-        else
-        {
+        } else {
             g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
         }
     }
@@ -467,10 +429,8 @@ static void GuiQrcodeHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *parent, *button, *qrCodeCont, *qrCode, *label;
 
-    if (code == LV_EVENT_CLICKED)
-    {
-        if (g_firmwareUpdateWidgets.qrCodeCont == NULL)
-        {
+    if (code == LV_EVENT_CLICKED) {
+        if (g_firmwareUpdateWidgets.qrCodeCont == NULL) {
             g_firmwareUpdateWidgets.qrCodeCont = GuiCreateHintBox(g_firmwareUpdateWidgets.tileUsbInstruction, 480, 654, true);
             parent = g_firmwareUpdateWidgets.qrCodeCont;
 
@@ -487,23 +447,17 @@ static void GuiQrcodeHandler(lv_event_t *e)
 
             qrCode = lv_qrcode_create(qrCodeCont, 360, BLACK_COLOR, WHITE_COLOR);
             lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
-            if (g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_USB_INSTRUCTION)
-            {
+            if (g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_USB_INSTRUCTION) {
                 lv_qrcode_update(qrCode, _("firmware_update_usb_qr_link"), (uint32_t)strlen(_("firmware_update_usb_qr_link")));
-            }
-            else
-            {
+            } else {
                 lv_qrcode_update(qrCode, g_firmwareSdUpdateUrl, (uint32_t)strlen(g_firmwareSdUpdateUrl));
             }
 
             label = GuiCreateLittleTitleLabel(parent, _("firmware_update_usb_qr_title"));
             lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -156);
-            if (g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_USB_INSTRUCTION)
-            {
+            if (g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_USB_INSTRUCTION) {
                 label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_qr_link"));
-            }
-            else
-            {
+            } else {
                 label = GuiCreateIllustrateLabel(parent, g_firmwareSdUpdateUrl);
             }
             lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
@@ -522,8 +476,7 @@ static void GuiQrcodeHandler(lv_event_t *e)
 static void CloseQrcodeHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_firmwareUpdateWidgets.qrCodeCont)
     }
 }
@@ -531,8 +484,7 @@ static void CloseQrcodeHandler(lv_event_t *e)
 void GuiFirmwareUpdateVerifyPasswordErrorCount(void *param)
 {
     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-    if (g_keyboardWidget != NULL)
-    {
+    if (g_keyboardWidget != NULL) {
         GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
     }
 }

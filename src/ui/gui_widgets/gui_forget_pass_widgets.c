@@ -268,7 +268,7 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
         lv_obj_align(g_forgetMkb->titleLabel, LV_ALIGN_DEFAULT, 36, 12);
         g_forgetMkb->descLabel = GuiCreateIllustrateLabel(g_enterMnemonicCont, _("seed_check_share_phrase_title"));
         lv_obj_set_style_text_opa(g_forgetMkb->descLabel, LV_OPA_60, LV_PART_MAIN);
-        lv_obj_align(g_forgetMkb->descLabel, LV_ALIGN_DEFAULT, 36, 72); 
+        lv_obj_align(g_forgetMkb->descLabel, LV_ALIGN_DEFAULT, 36, 72);
         lv_obj_add_event_cb(g_forgetMkb->nextButton, ImportPhraseWordsHandler, LV_EVENT_CLICKED, NULL);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     }

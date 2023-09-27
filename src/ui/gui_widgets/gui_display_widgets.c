@@ -11,8 +11,7 @@
 #include "device_setting.h"
 #include "gui_page.h"
 
-typedef enum
-{
+typedef enum {
     FIFTEEN_SECONDS = 0,
     THIRTY_SECONDS,
     ONE_MINUTE,
@@ -22,8 +21,7 @@ typedef enum
     AUTO_LOCK_TIME_BUTT,
 } AUTO_LOCK_TIME_ENUM;
 
-typedef enum
-{
+typedef enum {
     ONE_HOUR = 0,
     SIX_HOUR,
     TWELVE_HOUR,
@@ -81,8 +79,7 @@ void GuiDisplayWidgetsDeInit()
 {
     GUI_DEL_OBJ(g_autoLockHintBox);
     GUI_DEL_OBJ(g_autoShutdownHintBox);
-    if (g_cont != NULL)
-    {
+    if (g_cont != NULL) {
         lv_obj_del(g_cont);
         g_cont = NULL;
     }
@@ -154,12 +151,9 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
 
     lv_obj_t *slider = GuiCreateSlider(parent);
     int brightness = (GetBright() - MIN_BRIGHT) * 100 / (MAX_BRIGHT - MIN_BRIGHT);
-    if (brightness < 0)
-    {
+    if (brightness < 0) {
         brightness = 0;
-    }
-    else if (brightness > 100)
-    {
+    } else if (brightness > 100) {
         brightness = 100;
     }
     lv_slider_set_value(slider, brightness, LV_ANIM_OFF);
@@ -177,8 +171,7 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_color(rightContainer, WHITE_COLOR, LV_STATE_PRESSED | LV_PART_MAIN);
     lv_obj_set_style_bg_opa(rightContainer, LV_OPA_10 + LV_OPA_2, LV_STATE_PRESSED | LV_PART_MAIN);
 
-    GuiButton_t brightnessTable[] =
-    {
+    GuiButton_t brightnessTable[] = {
         {
             .obj = leftContainer,
             .align = LV_ALIGN_DEFAULT,
@@ -206,8 +199,7 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
     char *currentLockTime = GetAutoLockTimeDescByLockTime();
     autoLockAutoLockLabel = GuiCreateNoticeLabel(parent, currentLockTime);
 
-    GuiButton_t table[] =
-    {
+    GuiButton_t table[] = {
         {
             .obj = label,
             .align = LV_ALIGN_DEFAULT,
@@ -251,8 +243,7 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
 static void UnHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
     }
 }
 
@@ -260,8 +251,7 @@ static void SetLowestBrightness(lv_event_t *e)
 {
 
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         lv_obj_t * slider = (lv_obj_t *)lv_event_get_user_data(e);
         lv_slider_set_value(slider, 0, LV_ANIM_OFF);
         lv_event_send(slider, LV_EVENT_VALUE_CHANGED, NULL);
@@ -272,8 +262,7 @@ static void SetLowestBrightness(lv_event_t *e)
 static void SetHighestBrightness(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         lv_obj_t * slider = (lv_obj_t *)lv_event_get_user_data(e);
         lv_slider_set_value(slider, 100, LV_ANIM_OFF);
         lv_event_send(slider, LV_EVENT_VALUE_CHANGED, NULL);
@@ -286,8 +275,7 @@ static void SliderEventCb(lv_event_t * e)
     lv_obj_t * slider = lv_event_get_target(e);
     int brightness = MIN_BRIGHT + (MAX_BRIGHT - MIN_BRIGHT) * ((float)lv_slider_get_value(slider) / 100);
     SetBright(brightness);
-    if (g_delayTaskTimer != NULL)
-    {
+    if (g_delayTaskTimer != NULL) {
         lv_timer_del(g_delayTaskTimer);
         g_delayTaskTimer = NULL;
         UNUSED(g_delayTaskTimer);
@@ -307,8 +295,7 @@ static void ChooseAutoLockTimeHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
 
         g_autoLockHintBox = GuiCreateHintBox(lv_scr_act(), 480, 570, true);
 
@@ -326,14 +313,12 @@ static void ChooseAutoLockTimeHandler(lv_event_t *e)
         label = GuiCreateTextLabel(g_autoLockHintBox, _("system_settings_screen_lock_auto_lock_15secs"));
         lv_obj_t *checkBox = GuiCreateSingleCheckBox(g_autoLockHintBox, "");
         GetAutoLockTimeDescByLockTime();
-        if (g_currentAutoLockIndex == 0)
-        {
+        if (g_currentAutoLockIndex == 0) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
 
         g_autoLockCheck[0] = checkBox;
-        GuiButton_t tables[2] =
-        {
+        GuiButton_t tables[2] = {
             {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {24, 0},},
             {.obj = checkBox, .align = LV_ALIGN_TOP_MID, .position = {0, 24},},
         };
@@ -344,8 +329,7 @@ static void ChooseAutoLockTimeHandler(lv_event_t *e)
 
         label = GuiCreateTextLabel(g_autoLockHintBox, _("system_settings_screen_lock_auto_lock_30secs"));
         checkBox = GuiCreateSingleCheckBox(g_autoLockHintBox, "");
-        if (g_currentAutoLockIndex == 1)
-        {
+        if (g_currentAutoLockIndex == 1) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
         g_autoLockCheck[1] = checkBox;
@@ -356,8 +340,7 @@ static void ChooseAutoLockTimeHandler(lv_event_t *e)
 
         label = GuiCreateTextLabel(g_autoLockHintBox, _("system_settings_screen_lock_auto_lock_1min"));
         checkBox = GuiCreateSingleCheckBox(g_autoLockHintBox, "");
-        if (g_currentAutoLockIndex == 2)
-        {
+        if (g_currentAutoLockIndex == 2) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
         g_autoLockCheck[2] = checkBox;
@@ -368,8 +351,7 @@ static void ChooseAutoLockTimeHandler(lv_event_t *e)
 
         label = GuiCreateTextLabel(g_autoLockHintBox, _("system_settings_screen_lock_auto_lock_5mins"));
         checkBox = GuiCreateSingleCheckBox(g_autoLockHintBox, "");
-        if (g_currentAutoLockIndex == 3)
-        {
+        if (g_currentAutoLockIndex == 3) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
         g_autoLockCheck[3] = checkBox;
@@ -380,8 +362,7 @@ static void ChooseAutoLockTimeHandler(lv_event_t *e)
 
         label = GuiCreateTextLabel(g_autoLockHintBox, _("system_settings_screen_lock_auto_lock_10mins"));
         checkBox = GuiCreateSingleCheckBox(g_autoLockHintBox, "");
-        if (g_currentAutoLockIndex == 4)
-        {
+        if (g_currentAutoLockIndex == 4) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
         g_autoLockCheck[4] = checkBox;
@@ -397,8 +378,7 @@ static void CloseChooseAutoLockTimeHandler(lv_event_t* e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_autoLockHintBox)
     }
 }
@@ -407,26 +387,21 @@ static void SelectAutoLockTimeHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
-        for (int i = 0; i < AUTO_LOCK_TIME_BUTT; i++)
-        {
+    if (code == LV_EVENT_CLICKED) {
+        for (int i = 0; i < AUTO_LOCK_TIME_BUTT; i++) {
             lv_obj_clear_state(g_autoLockCheck[i], LV_STATE_CHECKED);
         }
 
         int newCheckIndex = 0;
         lv_obj_t *newCheckBox = lv_event_get_user_data(e);
-        for (int i = FIFTEEN_SECONDS; i < AUTO_LOCK_TIME_BUTT; i++)
-        {
-            if (newCheckBox == g_autoLockCheck[i])
-            {
+        for (int i = FIFTEEN_SECONDS; i < AUTO_LOCK_TIME_BUTT; i++) {
+            if (newCheckBox == g_autoLockCheck[i]) {
                 newCheckIndex = i;
                 break;
             }
         }
         lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
-        if (g_currentAutoLockIndex != newCheckIndex)
-        {
+        if (g_currentAutoLockIndex != newCheckIndex) {
             uint32_t lockTime = GetAutoLockTimeByEnum(newCheckIndex);
             SetAutoLockScreen(lockTime);
             SaveDeviceSettings();
@@ -440,8 +415,7 @@ static void SelectAutoLockTimeHandler(lv_event_t *e)
 
 static uint32_t GetAutoLockTimeByEnum(AUTO_LOCK_TIME_ENUM lock_time_enum)
 {
-    switch (lock_time_enum)
-    {
+    switch (lock_time_enum) {
     case FIFTEEN_SECONDS:
         return 15;
     case THIRTY_SECONDS:
@@ -462,8 +436,7 @@ static char* GetAutoLockTimeDescByLockTime()
 {
     uint32_t currentAutoLockTime = GetAutoLockScreen();
 
-    switch (currentAutoLockTime)
-    {
+    switch (currentAutoLockTime) {
     case 15:
         g_currentAutoLockIndex = 0;
         return _("system_settings_screen_lock_auto_lock_15secs");
@@ -489,8 +462,7 @@ static void ChooseAutoShutdownHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
 
         g_autoShutdownHintBox = GuiCreateHintBox(lv_scr_act(), 480, 570, true);
 
@@ -508,13 +480,11 @@ static void ChooseAutoShutdownHandler(lv_event_t *e)
         label = GuiCreateTextLabel(g_autoShutdownHintBox, _("system_settings_screen_lock_auto_power_off_1h"));
         lv_obj_t *checkBox = GuiCreateSingleCheckBox(g_autoShutdownHintBox, "");
         GetAutoShutdownTimeDescByLockTime();
-        if (g_currentShutdownIndex == 0)
-        {
+        if (g_currentShutdownIndex == 0) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
         g_autoShutdownCheck[0] = checkBox;
-        GuiButton_t tables[2] =
-        {
+        GuiButton_t tables[2] = {
             {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {24, 0},},
             {.obj = checkBox, .align = LV_ALIGN_TOP_MID, .position = {0, 24},},
         };
@@ -525,8 +495,7 @@ static void ChooseAutoShutdownHandler(lv_event_t *e)
 
         label = GuiCreateTextLabel(g_autoShutdownHintBox, _("system_settings_screen_lock_auto_power_off_6h"));
         checkBox = GuiCreateSingleCheckBox(g_autoShutdownHintBox, "");
-        if (g_currentShutdownIndex == 1)
-        {
+        if (g_currentShutdownIndex == 1) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
         g_autoShutdownCheck[1] = checkBox;
@@ -537,8 +506,7 @@ static void ChooseAutoShutdownHandler(lv_event_t *e)
 
         label = GuiCreateTextLabel(g_autoShutdownHintBox, _("system_settings_screen_lock_auto_power_off_12h"));
         checkBox = GuiCreateSingleCheckBox(g_autoShutdownHintBox, "");
-        if (g_currentShutdownIndex == 2)
-        {
+        if (g_currentShutdownIndex == 2) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
         g_autoShutdownCheck[2] = checkBox;
@@ -549,8 +517,7 @@ static void ChooseAutoShutdownHandler(lv_event_t *e)
 
         label = GuiCreateTextLabel(g_autoShutdownHintBox, _("system_settings_screen_lock_auto_power_off_1d"));
         checkBox = GuiCreateSingleCheckBox(g_autoShutdownHintBox, "");
-        if (g_currentShutdownIndex == 3)
-        {
+        if (g_currentShutdownIndex == 3) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
         g_autoShutdownCheck[3] = checkBox;
@@ -561,8 +528,7 @@ static void ChooseAutoShutdownHandler(lv_event_t *e)
 
         label = GuiCreateTextLabel(g_autoShutdownHintBox, _("system_settings_screen_lock_auto_power_off_never"));
         checkBox = GuiCreateSingleCheckBox(g_autoShutdownHintBox, "");
-        if (g_currentShutdownIndex == 4)
-        {
+        if (g_currentShutdownIndex == 4) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
         g_autoShutdownCheck[4] = checkBox;
@@ -578,8 +544,7 @@ static void CloseChooseAutoShutdownHandler(lv_event_t* e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_autoShutdownHintBox)
     }
 }
@@ -589,25 +554,20 @@ static void SelectAutoShutdownHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
-        for (int i = 0; i < AUTO_SHUTDOWN_BUTT; i++)
-        {
+    if (code == LV_EVENT_CLICKED) {
+        for (int i = 0; i < AUTO_SHUTDOWN_BUTT; i++) {
             lv_obj_clear_state(g_autoShutdownCheck[i], LV_STATE_CHECKED);
         }
         int newCheckIndex = 0;
         lv_obj_t *newCheckBox = lv_event_get_user_data(e);
-        for (int i = ONE_HOUR; i < AUTO_SHUTDOWN_BUTT; i++)
-        {
-            if (newCheckBox == g_autoShutdownCheck[i])
-            {
+        for (int i = ONE_HOUR; i < AUTO_SHUTDOWN_BUTT; i++) {
+            if (newCheckBox == g_autoShutdownCheck[i]) {
                 newCheckIndex = i;
                 break;
             }
         }
         lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
-        if (g_currentShutdownIndex != newCheckIndex)
-        {
+        if (g_currentShutdownIndex != newCheckIndex) {
             uint32_t powerOffTime = GetAutoShutdownTimeByEnum(newCheckIndex);
             SetAutoPowerOff(powerOffTime);
             SaveDeviceSettings();
@@ -620,8 +580,7 @@ static void SelectAutoShutdownHandler(lv_event_t *e)
 
 static uint32_t GetAutoShutdownTimeByEnum(AUTO_SHUTDOWN_ENUM shutdownTime)
 {
-    switch (shutdownTime)
-    {
+    switch (shutdownTime) {
     case ONE_HOUR:
         return 1;
     case SIX_HOUR:
@@ -641,8 +600,7 @@ static char* GetAutoShutdownTimeDescByLockTime(void)
 {
     uint32_t currentPowerOff = GetAutoPowerOff();
 
-    switch (currentPowerOff)
-    {
+    switch (currentPowerOff) {
     case 1:
         g_currentShutdownIndex = 0;
         return _("system_settings_screen_lock_auto_power_off_1h");

@@ -205,6 +205,10 @@ en:
   create_wallet_generating_title: Creating Wallet, Keep Screen ON
   derivation_path_address_eg: Addresses eg.
   derivation_path_change: Change Derivation Path
+  derivation_path_eth_ledger_legacy_desc: Choose this path if you are managing your
+    digital assets with Ledger Legacy.
+  derivation_path_eth_ledger_live_desc: Choose this path if you intend to import a
+    seed phrase from Ledger Live.
   derivation_path_eth_standard_desc: Recommended. Widely adopted across numerous software
     wallets
   derivation_path_select_eth: "Select the derivation path you\u2019d like to use for\
@@ -447,8 +451,8 @@ en:
   receive_eth_alert_title: Attention
   receive_eth_more_derivation_path: Change Derivation Path
   receive_eth_more_derivation_path_bip: BIP 44 Standard
-  receive_eth_more_derivation_path_desc: "Select the derivation path you\u2019d like\
-    \ to use for Ethereum"
+  receive_eth_more_derivation_path_desc: Recommend. Most commonly used in many software
+    wallets.
   receive_eth_more_derivation_path_desc2: Select this path for Ledger Live asset management.
   receive_eth_more_derivation_path_desc3: Select this path for Ledger Legacy asset
     management.

@@ -197,7 +197,7 @@ void GuiSetErrorLabel(KeyboardWidget_t *keyboardWidget, char *errorMessage)
     if (keyboardWidget != NULL && keyboardWidget->errLabel != NULL) {
         lv_label_set_text(keyboardWidget->errLabel, errorMessage);
         lv_obj_clear_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN);
-    } 
+    }
 }
 
 void GuiShowErrorLabel(KeyboardWidget_t *keyboardWidget)

@@ -1,3 +1,12 @@
+/*********************************************************************
+ * Copyright (c) keyst.one. 2020-2025. All rights reserved.
+ * name       : gui_wallet_setting_widgets.c
+ * Description:
+ * author     : stone wang
+ * data       : 2023-09-28 13:18
+**********************************************************************/
+
+/* INCLUDES */
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_status_bar.h"
@@ -6,16 +15,16 @@
 #include "gui_hintbox.h"
 #include "gui_enter_passcode.h"
 #include "gui_model.h"
-#include "user_memory.h"
-#include "secret_cache.h"
-#include "keystore.h"
 #include "gui_setting_widgets.h"
 #include "gui_lock_widgets.h"
 #include "gui_keyboard_hintbox.h"
+#include "gui_qr_hintbox.h"
+#include "secret_cache.h"
+#include "keystore.h"
 #include "version.h"
 #include "presetting.h"
 #include "assert.h"
-#include "gui_qr_hintbox.h"
+#include "user_memory.h"
 #include "firmware_update.h"
 #include "account_manager.h"
 #ifndef COMPILE_SIMULATOR
@@ -25,41 +34,36 @@
 #include "simulator_model.h"
 #endif
 
+/* DEFINES */
+
+/* TYPEDEFS */
 typedef struct ContLabelWidget_t {
     lv_obj_t *label;
     lv_obj_t *cont;
 } ContLabelWidget_t;
-static ContLabelWidget_t g_waitAnimWidget;
 
+/* FUNC DECLARATION*/
 static void RecoveryPassphraseHandler(lv_event_t *e);
+static void DelWalletConfirmHandler(lv_event_t *e);
 
-static lv_obj_t *g_walletSetIcon = NULL;                // wallet setting icon
-static lv_obj_t *g_walletSetLabel = NULL;               // wallet setting label
-static lv_obj_t *g_mfpLabel = NULL;                     // wallet setting label
-static KeyboardWidget_t *g_keyboardWidget = NULL;
-static lv_obj_t *g_resetingCont = NULL;                 // resetting container
+/* STATIC VARIABLES */
+static bool g_delWalletStatus = false;                      // delete wallet status
 static char g_passCode[GUI_DEFINE_MAX_PASSCODE_LEN + 1];    // passcode
+static uint8_t g_walletAmount;
+static ContLabelWidget_t g_waitAnimWidget;
+static KeyboardWidget_t *g_keyboardWidget = NULL;
 static GuiEnterPasscodeItem_t *g_repeatPassCode = NULL;
 static GuiEnterPasscodeItem_t *g_setPassCode = NULL;
-static bool g_delWalletStatus = false;                 // delete wallet status
-static lv_timer_t *g_countDownTimer = NULL;           // count down timer
-static uint8_t g_walletAmount;
+static lv_obj_t *g_walletSetIcon = NULL;                    // wallet setting icon
+static lv_obj_t *g_walletSetLabel = NULL;                   // wallet setting label
+static lv_obj_t *g_mfpLabel = NULL;                         // wallet setting label
+static lv_obj_t *g_resetingCont = NULL;                     // resetting container
+static lv_timer_t *g_countDownTimer = NULL;                 // count down timer
 
+/* FUNC */
 void GuiAddWalletGetWalletAmount(uint8_t walletAmount)
 {
     g_walletAmount = walletAmount + 1;
-}
-
-static void DelWalletConfirmHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        g_waitAnimWidget.cont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
-        g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("wallet_settings_delete_laoding_title"));
-        lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
-        GuiModelSettingDelWalletDesc();
-    }
 }
 
 bool GuiSettingGetDeleteFlag(void)
@@ -82,7 +86,6 @@ void GuiSetPinDestruct(void *obj, void *param)
         g_setPassCode = NULL;
     }
 }
-
 
 void GuiSettingRecoveryCheck(void)
 {
@@ -511,23 +514,6 @@ void GuiSettingDestruct(void *obj, void *param)
     g_mfpLabel = NULL;
 }
 
-static void RecoveryPassphraseHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (PassphraseExist(GetCurrentAccountIndex()) == true) {
-            static uint16_t recoveryMethod = DEVICE_SETTING_RECOVERY_METHOD_CHECK;
-            GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &recoveryMethod, sizeof(recoveryMethod));
-        } else {
-            static uint16_t recoveryMethod = DEVICE_SETTING_RECOVERY_PHRASE_VERIFY;
-            GuiDeleteKeyboardWidget(g_keyboardWidget);
-            g_keyboardWidget = GuiCreateKeyboardWidget(GuiSettingGetCurrentCont());
-            SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
-            SetKeyboardWidgetSig(g_keyboardWidget, &recoveryMethod);
-        }
-    }
-}
-
 void GuiWalletDelWalletConfirm(lv_obj_t *parent)
 {
     g_delWalletStatus = true;
@@ -558,4 +544,34 @@ void GuiWalletDelWalletConfirm(lv_obj_t *parent)
     lv_obj_set_style_text_color(lv_obj_get_child(btn, 0), RED_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), g_defTextFont, LV_PART_MAIN);
     lv_obj_add_event_cb(btn, DelWalletConfirmHandler, LV_EVENT_CLICKED, NULL);
+}
+
+/* STATIC FUNC */
+static void DelWalletConfirmHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        g_waitAnimWidget.cont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
+        g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("wallet_settings_delete_laoding_title"));
+        lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
+        GuiModelSettingDelWalletDesc();
+    }
+}
+
+static void RecoveryPassphraseHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        if (PassphraseExist(GetCurrentAccountIndex()) == true) {
+            static uint16_t recoveryMethod = DEVICE_SETTING_RECOVERY_METHOD_CHECK;
+            GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &recoveryMethod, sizeof(recoveryMethod));
+        } else {
+            static uint16_t recoveryMethod = DEVICE_SETTING_RECOVERY_PHRASE_VERIFY;
+            GuiDeleteKeyboardWidget(g_keyboardWidget);
+            g_keyboardWidget = GuiCreateKeyboardWidget(GuiSettingGetCurrentCont());
+            SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+            SetKeyboardWidgetSig(g_keyboardWidget, &recoveryMethod);
+        }
+    }
 }

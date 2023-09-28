@@ -1,3 +1,12 @@
+/*********************************************************************
+ * Copyright (c) keyst.one. 2020-2025. All rights reserved.
+ * name       : gui_wallet_setting_widgets.c
+ * Description:
+ * author     : stone wang
+ * data       : 2023-09-28 13:28
+**********************************************************************/
+
+/* INCLUDES */
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_status_bar.h"
@@ -6,17 +15,17 @@
 #include "gui_hintbox.h"
 #include "gui_enter_passcode.h"
 #include "gui_model.h"
+#include "gui_setting_widgets.h"
+#include "gui_lock_widgets.h"
+#include "gui_qr_hintbox.h"
+#include "gui_qrcode_widgets.h"
 #include "user_memory.h"
 #include "secret_cache.h"
 #include "keystore.h"
-#include "gui_setting_widgets.h"
-#include "gui_lock_widgets.h"
 #include "presetting.h"
 #include "assert.h"
-#include "gui_qr_hintbox.h"
 #include "motor_manager.h"
 #include "fingerprint_process.h"
-#include "gui_qrcode_widgets.h"
 #include "account_manager.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
@@ -33,6 +42,14 @@
 #define FINGERPRINT_EN_SING_ERR_TIMES                                               (5)
 #endif
 
+
+/* DEFINES */
+
+
+/* TYPEDEFS */
+
+
+/* FUNC DECLARATION*/
 static void RecognizeSuccussHandler(lv_timer_t *timer);
 static void RecognizeFailHandler(lv_timer_t *timer);
 static void FingerButtonHandler(lv_event_t *e);
@@ -41,6 +58,8 @@ static void FingerDeleteDialogsHandler(lv_event_t *e);
 static void FingerDeleteHandler(lv_event_t *e);
 static void FingerCancelDeleteHandler(lv_event_t *e);
 
+
+/* STATIC VARIABLES */
 static lv_obj_t *g_fpAddCont = NULL;
 static lv_obj_t *g_imgFinger = NULL;
 static lv_obj_t *g_arcProgress = NULL;
@@ -56,6 +75,8 @@ static bool g_firstAddFingerFlag = false;
 static uint8_t g_fpEnSignCnt = 0;
 static uint8_t g_deleteFingerIndex = 0;
 
+
+/* FUNC */
 uint8_t GuiGetFingerSettingIndex(void)
 {
     if (GetRegisteredFingerNum() == 0) {
@@ -170,44 +191,6 @@ void GuiSettingDealFingerRecognize(void *param)
     }
 }
 
-static void ClearFingerErrorStateView(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-        lv_arc_set_value(g_arcProgress, 0);
-        lv_img_set_src(g_imgFinger, &imgWhiteFinger);
-        lv_obj_set_style_arc_color(g_arcProgress, WHITE_COLOR, LV_PART_INDICATOR);
-        lv_label_set_text(g_fpRegLabel, "");
-        for (int i = 0; i < 3; i++) {
-            if (GetFingerRegisteredStatus(i) == 0) {
-                RegisterFp(i);
-                break;
-            }
-        }
-    }
-}
-
-static void FirstAddFingerToManagerView(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiSettingCloseToTargetTileView(2);
-        uint8_t walletIndex = DEVICE_SETTING_FINGER_MANAGER;
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
-    }
-}
-
-static void AddFingerToManagerView(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiSettingCloseToTargetTileView(3);
-    }
-}
 
 void GuiWalletFingerAddFpWidget(lv_obj_t *parent, bool success)
 {
@@ -531,6 +514,46 @@ void GuiWalletSetFingerPassCodeWidget(lv_obj_t *parent)
     table[1].obj = imgArrow;
     button = GuiCreateButton(parent, 456, 84, table, 2, GuiShowKeyboardHandler, &walletSetting[1]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 253 - GUI_MAIN_AREA_OFFSET);
+}
+
+/* STATIC FUNC */
+static void ClearFingerErrorStateView(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
+        lv_arc_set_value(g_arcProgress, 0);
+        lv_img_set_src(g_imgFinger, &imgWhiteFinger);
+        lv_obj_set_style_arc_color(g_arcProgress, WHITE_COLOR, LV_PART_INDICATOR);
+        lv_label_set_text(g_fpRegLabel, "");
+        for (int i = 0; i < 3; i++) {
+            if (GetFingerRegisteredStatus(i) == 0) {
+                RegisterFp(i);
+                break;
+            }
+        }
+    }
+}
+
+static void FirstAddFingerToManagerView(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        GuiSettingCloseToTargetTileView(2);
+        uint8_t walletIndex = DEVICE_SETTING_FINGER_MANAGER;
+        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
+    }
+}
+
+static void AddFingerToManagerView(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        GuiSettingCloseToTargetTileView(3);
+    }
 }
 
 static void FingerButtonHandler(lv_event_t *e)

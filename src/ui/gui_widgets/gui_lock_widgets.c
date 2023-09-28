@@ -21,6 +21,7 @@
 #include "device_setting.h"
 #include "gui_page.h"
 #include "account_manager.h"
+#include "user_memory.h"
 
 #ifdef COMPILE_SIMULATOR
 #define FINGERPRINT_EN_SING_ERR_TIMES           (5)

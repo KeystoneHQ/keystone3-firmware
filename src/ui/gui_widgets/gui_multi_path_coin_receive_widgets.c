@@ -17,6 +17,7 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_home_widgets.h"
+#include "gui_global_resources.h"
 
 #define GENERAL_ADDRESS_INDEX_MAX               999999999
 #define ETH_LEDGER_LIVE_ADDRESS_INDEX_MAX               9
@@ -107,7 +108,7 @@ static void ChangePathCheckHandler(lv_event_t *e);
 static void SwitchAddressHandler(lv_event_t *e);
 static void SelectAddressHandler(lv_event_t *e);
 
-static void GetPathItemSubTittle(char* subTittle, int index);
+static void GetPathItemSubTitle(char* subTitle, int index);
 static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item);
 static void GetEthHdPath(char *hdPath, int index);
 static void GetSolHdPath(char *hdPath, int index);
@@ -131,8 +132,7 @@ static uint32_t GetCurrentSelectIndex();
 static void GetHint(char *hint);
 static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item);
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
-static void GetSolPathItemSubTittle(char* subTittle, int index);
-static void GetSolPathItemSubTittle(char* subTittle, int index);
+static void GetSolPathItemSubTitle(char* subTitle, int index);
 
 static MultiPathCoinReceiveWidgets_t g_multiPathCoinReceiveWidgets;
 static EthereumReceiveTile g_multiPathCoinReceiveTileNow;
@@ -157,10 +157,27 @@ static uint32_t g_ethPathIndex[3] = {0};
 static uint32_t g_solPathIndex[3] = {0};
 static PageWidget_t *g_pageWidget;
 static HOME_WALLET_CARD_ENUM g_chainCard;
+static lv_obj_t *g_derivationPathDescLabel = NULL;
+static char * *g_derivationPathDescs = NULL;
 
+static void InitDerivationPathDesc(uint8_t chain)
+{
+    switch (chain)
+    {
+    case HOME_WALLET_CARD_ETH:
+        g_derivationPathDescs = GetDerivationPathDescs(ETH_DERIVATION_PATH_DESC);
+        break;
+    case HOME_WALLET_CARD_SOL:
+        g_derivationPathDescs = GetDerivationPathDescs(SOL_DERIVATION_PATH_DESC);
+        break;
+    default:
+        break;
+    }    
+}
 
 void GuiMultiPathCoinReceiveInit(uint8_t chain)
 {
+    InitDerivationPathDesc(chain);
     g_chainCard = chain;
     g_currentAccountIndex = GetCurrentAccountIndex();
     g_selectIndex = GetCurrentSelectIndex();
@@ -360,10 +377,10 @@ static void GetHint(char *hint)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
-        strcpy(hint, "This address is only for ETH and EVM ERC-20 tokens, other digital assets sent to this address will be lost.");
+        strcpy(hint, _("receive_eth_alert_desc"));
         break;
     case HOME_WALLET_CARD_SOL:
-        strcpy(hint, "This address is only for Solana, other digital assets sent to this address will be lost.");
+        sprintf(hint, _("receive_coin_hint_fmt"), "SOL");
         break;
     default:
         break;
@@ -448,10 +465,10 @@ static void GetChangePathLabelHint(char* hint)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
-        sprintf(hint, _("Select the derivation path you’d like to use for Ethereum"));
+        sprintf(hint, _("derivation_path_select_eth"));
         return;
     case HOME_WALLET_CARD_SOL:
-        sprintf(hint, "Select the derivation path you’d like to use for Solana");
+        sprintf(hint, _("derivation_path_select_sol"));
         return;
     default:
         break;
@@ -490,7 +507,7 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
 
         label = GuiCreateLabelWithFont(cont, GetChangePathItemTitle(i), &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
-        GetPathItemSubTittle(string, i);
+        GetPathItemSubTitle(string, i);
         label = GuiCreateLabelWithFontAndTextColor(cont, string, g_defIllustrateFont, 0x919191);
         lv_label_set_recolor(label, true);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
@@ -524,12 +541,13 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_color(cont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
 
-    labelHint = GuiCreateIllustrateLabel(cont, "Recommend. Most commonly used in many software wallets.");
+    labelHint = GuiCreateIllustrateLabel(cont, g_derivationPathDescs[GetPathIndex()]);
     lv_obj_set_size(labelHint, 360, 60);
     lv_obj_set_style_text_opa(labelHint, LV_OPA_56, LV_PART_MAIN);
     lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 24, 12);
+    g_derivationPathDescLabel = labelHint;
 
-    labelHint = GuiCreateIllustrateLabel(cont, "Addresses eg.");
+    labelHint = GuiCreateIllustrateLabel(cont, _("derivation_path_address_eg"));
     lv_obj_set_size(labelHint, 129, 30);
     lv_obj_set_style_text_opa(labelHint, LV_OPA_56, LV_PART_MAIN);
     lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 24, 76);
@@ -786,6 +804,7 @@ static void ChangePathCheckHandler(lv_event_t *e)
                     g_selectIndex = 0;
                     g_showIndex = 0;
                     RefreshDefaultAddress();
+                    lv_label_set_text(g_derivationPathDescLabel, g_derivationPathDescs[GetPathIndex()]);
                 }
             } else {
                 lv_obj_clear_state(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox, LV_STATE_CHECKED);
@@ -833,48 +852,48 @@ static void SelectAddressHandler(lv_event_t *e)
 
 
 
-static void GetEthPathItemSubTittle(char* subTittle, int index)
+static void GetEthPathItemSubTittle(char* subTitle, int index)
 {
     switch (index) {
     case 0:
-        sprintf(subTittle, "m/44'/60'/0'/0/#F5870A X#");
+        sprintf(subTitle, "m/44'/60'/0'/0/#F5870A X#");
         break;
     case 1:
-        sprintf(subTittle, "m/44'/60'/#F5870A X#'/0/0");
+        sprintf(subTitle, "m/44'/60'/#F5870A X#'/0/0");
         break;
     case 2:
-        sprintf(subTittle, "m/44'/60'/0'/#F5870A X#");
+        sprintf(subTitle, "m/44'/60'/0'/#F5870A X#");
         break;
     default:
         break;
     }
 }
 
-static void GetSolPathItemSubTittle(char* subTittle, int index)
+static void GetSolPathItemSubTitle(char* subTitle, int index)
 {
     switch (index) {
     case 0:
-        sprintf(subTittle, "m/44'/501'/#F5870A X#'");
+        sprintf(subTitle, "m/44'/501'/#F5870A X#'");
         break;
     case 1:
-        sprintf(subTittle, "m/44'/501'");
+        sprintf(subTitle, "m/44'/501'");
         break;
     case 2:
-        sprintf(subTittle, "m/44'/501'/#F5870A X#'/0'");
+        sprintf(subTitle, "m/44'/501'/#F5870A X#'/0'");
         break;
     default:
         break;
     }
 }
 
-static void GetPathItemSubTittle(char* subTittle, int index)
+static void GetPathItemSubTitle(char* subTitle, int index)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
-        GetEthPathItemSubTittle(subTittle, index);
+        GetEthPathItemSubTittle(subTitle, index);
         break;
     case HOME_WALLET_CARD_SOL:
-        GetSolPathItemSubTittle(subTittle, index);
+        GetSolPathItemSubTitle(subTitle, index);
         break;
     default:
         break;

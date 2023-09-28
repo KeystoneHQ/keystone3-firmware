@@ -19,6 +19,7 @@
 #include "gui_animating_qrcode.h"
 #include "gui_page.h"
 #include "keystore.h"
+#include "gui_global_resources.h"
 
 #define DERIVATION_PATH_EG_LEN 2
 
@@ -197,13 +198,30 @@ static char * *g_derivationPathDescs = NULL;
 
 static void QRCodePause(bool);
 
-static void InitDerivationPathDescs()
+static bool IsEVMChain(int walletIndex)
 {
-    if (g_derivationPathDescs == NULL) {
-        g_derivationPathDescs = SRAM_MALLOC(3 * 128);
-        g_derivationPathDescs[Bip44Standard] = _("derivation_path_eth_standard_desc");
-        g_derivationPathDescs[LedgerLive] = _("derivation_path_eth_ledger_live_desc");
-        g_derivationPathDescs[LedgerLegacy] = _("derivation_path_eth_ledger_legacy_desc");
+    switch (walletIndex) {
+    case WALLET_LIST_METAMASK:
+    case WALLET_LIST_RABBY:
+    case WALLET_LIST_SAFE:
+    case WALLET_LIST_BLOCK_WALLET:
+    case WALLET_LIST_ZAPPER:
+    case WALLET_LIST_YEARN_FINANCE:
+    case WALLET_LIST_SUSHISWAP:
+        return true;
+    default:
+        return false;
+    }
+}
+
+static bool IsSOL(int walletIndex)
+{
+    switch (walletIndex)
+    {
+    case WALLET_LIST_SOLFARE:
+        return true;
+    default:
+        return false;
     }
 }
 
@@ -214,6 +232,12 @@ static void OpenQRCodeHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         WalletListItem_t *wallet = lv_event_get_user_data(e);
         g_connectWalletTileView.walletIndex = wallet->index;
+        if(IsEVMChain(g_connectWalletTileView.walletIndex)) {
+            g_derivationPathDescs = GetDerivationPathDescs(ETH_DERIVATION_PATH_DESC);
+        }
+        if(IsSOL(g_connectWalletTileView.walletIndex)) {
+            g_derivationPathDescs = GetDerivationPathDescs(SOL_DERIVATION_PATH_DESC);
+        }
         g_isCoinReselected = false;
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
     }
@@ -529,7 +553,6 @@ static void AddKeplrCoins(void)
 
 void GuiConnectWalletInit(void)
 {
-    InitDerivationPathDescs();
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 
@@ -822,21 +845,7 @@ static void ChangeDerivationPathHandler(lv_event_t *e)
     }
 }
 
-static bool IsEVMChain(int walletIndex)
-{
-    switch (walletIndex) {
-    case WALLET_LIST_METAMASK:
-    case WALLET_LIST_RABBY:
-    case WALLET_LIST_SAFE:
-    case WALLET_LIST_BLOCK_WALLET:
-    case WALLET_LIST_ZAPPER:
-    case WALLET_LIST_YEARN_FINANCE:
-    case WALLET_LIST_SUSHISWAP:
-        return true;
-    default:
-        return false;
-    }
-}
+
 
 static void OpenMoreHandler(lv_event_t *e)
 {

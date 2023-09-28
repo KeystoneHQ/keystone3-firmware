@@ -15,7 +15,7 @@ use third_party::{
     },
 };
 
-use crate::{common::get_path_component, ExtendedPublicKey, DEVICE_TYPE};
+use crate::{common::get_path_component, ExtendedPublicKey, DEVICE_TYPE, DEVICE_VERSION};
 
 fn get_device_id(serial_number: &str) -> String {
     use third_party::cryptoxide::hashing::sha256;
@@ -82,6 +82,7 @@ pub fn generate_crypto_multi_accounts(
         keys,
         Some(DEVICE_TYPE.to_string()),
         Some(device_id),
+        Some(DEVICE_VERSION.to_string()),
     ))
 }
 

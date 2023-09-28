@@ -145,12 +145,12 @@ fn generate_eth_ledger_live_key(
     );
     Ok(CryptoHDKey::new_extended_key(
         Some(false),
-        xpub.public_key.serialize().to_vec(),
+        _target_key.public_key.serialize().to_vec(),
         None,
         None,
         Some(key_path),
         None,
-        Some(xpub.parent_fingerprint.to_bytes()),
+        Some(_target_key.parent_fingerprint.to_bytes()),
         Some("Keystone".to_string()),
         note,
     ))

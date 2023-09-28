@@ -1207,7 +1207,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.14#1758b4af3a281353d40d332b994974ea6a35fd6d"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.16#f02cf720c42651e9d4b967d9a4092e7964f36d2e"
 dependencies = [
  "hex",
  "ur",
@@ -1217,7 +1217,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.14#1758b4af3a281353d40d332b994974ea6a35fd6d"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.16#f02cf720c42651e9d4b967d9a4092e7964f36d2e"
 dependencies = [
  "bs58",
  "core2",

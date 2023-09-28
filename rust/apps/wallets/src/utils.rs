@@ -63,5 +63,6 @@ pub fn generate_crypto_multi_accounts_sync_ur(
         keys,
         Some(DEVICE_TYPE.to_string()),
         None,
+        None,
     ))
 }

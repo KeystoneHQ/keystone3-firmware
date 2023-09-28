@@ -1215,6 +1215,7 @@ void KbTextAreaHandler(lv_event_t * e)
 void *GuiCreateLetterKeyBoard(lv_obj_t *parent, lv_event_cb_t cb, bool bip39, void *param)
 {
     static lv_point_t linePoints[2] = {{0, 0}, {0, 40}};
+    memcpy(g_letterCtrlMap, g_letterCtrlMapBak, sizeof(g_letterCtrlMapBak));
 
     if (param != NULL) {
         g_importPhraseKb = param;

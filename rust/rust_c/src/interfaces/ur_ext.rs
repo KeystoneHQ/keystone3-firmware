@@ -17,6 +17,7 @@ use third_party::ur_registry::pb::protoc;
 use third_party::ur_registry::pb::protoc::Base;
 
 use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
+use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
 
 pub trait InferViewType {
     fn infer(&self) -> Result<ViewType, URError> {
@@ -57,6 +58,12 @@ impl InferViewType for CosmosSignRequest {
 impl InferViewType for EvmSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::CosmosEvmTx)
+    }
+}
+
+impl InferViewType for SuiSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::SuiTx)
     }
 }
 

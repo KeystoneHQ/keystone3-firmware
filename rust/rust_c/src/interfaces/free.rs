@@ -18,6 +18,7 @@ use cty::c_char;
 
 use super::ethereum::structs::DisplayContractData;
 use super::structs::Response;
+use super::sui::structs::DisplaySuiIntentMessage;
 
 pub trait Free {
     fn free(&self);
@@ -111,6 +112,7 @@ make_free_method!(TransactionParseResult<DisplayXrpTx>);
 make_free_method!(TransactionParseResult<DisplayETHPersonalMessage>);
 make_free_method!(TransactionParseResult<DisplaySolanaMessage>);
 make_free_method!(TransactionParseResult<DisplayETHTypedData>);
+make_free_method!(TransactionParseResult<DisplaySuiIntentMessage>);
 make_free_method!(TransactionCheckResult);
 
 #[no_mangle]

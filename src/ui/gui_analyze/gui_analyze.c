@@ -98,6 +98,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         GuiGetCosmosData,
         GuiGetCosmosTmpType,
         FreeCosmosMemory,
+    },
+    {
+        REMAPVIEW_SUI,
+#ifndef COMPILE_SIMULATOR
+        "",
+#else
+        PC_SIMULATOR_PATH"/page_eth.json",
+#endif
+        GuiGetSuiData,
+        NULL,
+        FreeSuiMemory,
     }
 };
 
@@ -1098,6 +1109,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
     case CosmosTx:
     case CosmosEvmTx:
         return REMAPVIEW_COSMOS;
+    case SuiTx:
+        return REMAPVIEW_SUI;
     default:
         return REMAPVIEW_BUTT;
     }

@@ -14,19 +14,24 @@
 static void GuiAboutNVSBarInit();
 static void GuiAboutTermsEntranceWidget(lv_obj_t *parent);
 static int GetLvObjHeight(lv_obj_t *obj);
-static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, char *tittle, char *content, int *height);
+static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, char *title, char *content, int *height);
 static void GuiQrcodeHandler(lv_event_t *e);
 static void CloseQrcodeHandler(lv_event_t *e);
 
 static lv_obj_t *g_cont;
 
-static const char g_termsWebSiteUrl[] = "https://keyst.one/terms";
+static char *g_termsWebSiteUrl = NULL;
 static lv_obj_t *g_qrCodeCont;
 static PageWidget_t *g_pageWidget;
 
+void TermWebSiteInit()
+{
+    g_termsWebSiteUrl = _("about_terms_website_url");
+}
 
 void GuiAboutTermsWidgetsInit()
 {
+    TermWebSiteInit();
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
     lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
@@ -64,11 +69,11 @@ void GuiAboutTermsWidgetsRestart()
 static void GuiAboutNVSBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Terms of Use");
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("about_terms_title"));
 }
 
 
-static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, char *tittle, char *content, int *height)
+static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, char *title, char *content, int *height)
 {
 
     lv_obj_t *cont = lv_obj_create(parent);
@@ -85,11 +90,11 @@ static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, char *tittle, char *
         lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
     }
 
-    lv_obj_t *tittleLabel;
-    tittleLabel = GuiCreateLittleTitleLabel(cont, tittle);
-    lv_label_set_long_mode(tittleLabel, LV_LABEL_LONG_WRAP);
-    lv_obj_align(tittleLabel, LV_ALIGN_DEFAULT, 0, 0);
-    int16_t tittleHight = GetLvObjHeight(tittleLabel);
+    lv_obj_t *titleLabel;
+    titleLabel = GuiCreateLittleTitleLabel(cont, title);
+    lv_label_set_long_mode(titleLabel, LV_LABEL_LONG_WRAP);
+    lv_obj_align(titleLabel, LV_ALIGN_DEFAULT, 0, 0);
+    int16_t titleHight = GetLvObjHeight(titleLabel);
 
 
     lv_obj_t *contentLabel = lv_label_create(cont);
@@ -99,10 +104,10 @@ static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, char *tittle, char *
     lv_obj_set_style_text_opa(contentLabel, LV_OPA_56, LV_PART_MAIN);
     lv_label_set_long_mode(contentLabel, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(contentLabel, 410);
-    lv_obj_align(contentLabel, LV_ALIGN_DEFAULT, 0, 4 + tittleHight);
+    lv_obj_align(contentLabel, LV_ALIGN_DEFAULT, 0, 4 + titleHight);
     int16_t contentHeight = GetLvObjHeight(contentLabel);
 
-    *height = tittleHight + contentHeight + 4;
+    *height = titleHight + contentHeight + 4;
 
     lv_obj_set_height(cont, *height);
 
@@ -114,10 +119,10 @@ void GuiAboutTermsEntranceWidget(lv_obj_t *parent)
 
 
     lv_obj_t *label, *img;
-    label = GuiCreateLittleTitleLabel(parent, "Keystone Terms of Use");
+    label = GuiCreateLittleTitleLabel(parent, _("about_terms_subtitle"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 22, 13);
 
-    label = GuiCreateLabel(parent, "To access the full version of the TERMS OF USE, please visit the following link:");
+    label = GuiCreateLabel(parent, _("about_terms_desc"));
     lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 22, 77);
 
@@ -136,69 +141,69 @@ void GuiAboutTermsEntranceWidget(lv_obj_t *parent)
     int dy = 195;
     int height = 0;
 
-    char *tittle = "Eligibility";
-    char *text = "You must be 18 years old or above to access and use our Products or Services.";
-    lv_obj_t *itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    char *title = _("about_terms_eligibility");
+    char *text = _("about_terms_eligibility_desc");
+    lv_obj_t *itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = "Keystone Product & Services";
-    text = "Our hardware wallet securely manages cryptocurrencies.";
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    title = _("about_terms_product_and_services");
+    text = _("about_terms_product_and_services_desc");
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = "Risks";
-    text = "Be aware of the risks associated with cryptocurrencies and technology vulnerabilities.";
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    title = _("about_terms_risks");
+    text = _("about_terms_risks_desc");
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = "Limitation of Liability & Disclaimer of Warranties";
-    text = "We provide our Services \"as is\" without warranties. We are not liable for any losses incurred while using our Products or Services.";
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    title = _("about_terms_limitation");
+    text = _("about_terms_limitation_desc");
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = "Prohibited Conduct";
-    text = "Our Products and Services are protected by intellectual property laws.";
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    title = _("about_terms_prohibited_conduct");
+    text = _("about_terms_prohibited_product_desc");
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = "Ownership & Proprietary Rights";
-    text = "You are responsible for your actions while using the Products and Services.";
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    title = _("about_terms_ownership");
+    text = _("about_terms_ownership_desc");
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = "Discontinuance of Services";
-    text = "We may modify or discontinue our services. Remember to back up your seed phrase to access your cryptocurrencies.";
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    title = _("about_terms_discontinuance_service");
+    text = _("about_terms_discontinuance_service_desc");
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = "DISCLAIMERS";
-    text = "The information provided is not financial advice. Seek professional advice before making any decisions.";
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    title = _("about_terms_disclaimers");
+    text = _("about_terms_disclaimers_desc");
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = "Governing Law and Dispute Resolution";
-    text = "The Terms are governed by Hong Kong SAR laws, and any dispute must be filed within one year.";
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    title = _("about_terms_law");
+    text = _("about_terms_law_desc");
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = "Contact Us";
-    text = "If you have any questions or concerns, please email us at support@keyst.one.";
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    title = _("about_terms_contact_us");
+    text = _("about_terms_contact_us_desc");
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    tittle = "Modification of these Terms";
-    text = "We reserve the right to change these Terms at our discretion.";
-    itemObj = GuiGetTermsItemContainer(g_cont, tittle, text, &height);
+    title = _("about_terms_modification");
+    text = _("about_terms_modification_desc");
+    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
@@ -242,13 +247,13 @@ static void GuiQrcodeHandler(lv_event_t *e)
             lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
             lv_qrcode_update(qrCode, g_termsWebSiteUrl, (uint32_t)strlen(g_termsWebSiteUrl));
 
-            label = GuiCreateLittleTitleLabel(parent, "Terms of Use");
+            label = GuiCreateLittleTitleLabel(parent, _("about_terms_title"));
             lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -156);
             label = GuiCreateIllustrateLabel(parent, g_termsWebSiteUrl);
             lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
             lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -114);
 
-            button = GuiCreateBtn(parent, "OK");
+            button = GuiCreateBtn(parent, _("OK"));
             lv_obj_set_size(button, 94, 66);
             lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
             lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);

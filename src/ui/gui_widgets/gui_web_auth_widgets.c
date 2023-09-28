@@ -103,7 +103,7 @@ void GuiWebAuthIntroWidget(lv_obj_t *parent)
     label = GuiCreateIllustrateLabel(parent, _("verify_cont3"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 60, 554 - GUI_MAIN_AREA_OFFSET);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("Scan QR Code"));
+    lv_obj_t *btn = GuiCreateBtn(parent, _("verify_scan_qr_code"));
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_size(btn, 408, 66);
     lv_obj_add_event_cb(btn, GuiWebAuthScanQRCodeHandler, LV_EVENT_CLICKED, NULL);

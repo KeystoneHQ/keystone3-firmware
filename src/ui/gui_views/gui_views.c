@@ -222,27 +222,27 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         lv_obj_t *desc = NULL;
         lv_obj_t *title = NULL;
         lv_event_cb_t cb = CloseCurrentUserDataHandler;
-        char *titleText = (char *)_("Invalid Seed Phrase");
-        char *descText = (char *)_("The phrase you typed is invalid. Please check your backup and try again");
+        char *titleText = (char *)_("error_box_invalid_seed_phrase");
+        char *descText = (char *)_("error_box_invalid_seed_phrase_desc");
         switch (errCode) {
         case ERR_KEYSTORE_MNEMONIC_REPEAT:
             height = 400;
-            titleText = "Duplicate Seed Phrase";
-            descText = "This phrase you typed is already used in a wallet account, please use another mnemonic to import.";
+            titleText = _("error_box_duplicated_seed_phrase");
+            descText = _("error_box_duplicated_seed_phrase_desc");
             cb = DuplicateShareHandler;
             break;
         case ERR_KEYSTORE_MNEMONIC_INVALID:
             break;
         case ERR_KEYSTORE_SAVE_LOW_POWER:
             height = 400;
-            titleText = "Low Power";
-            descText = "The device requires at least 20% power to continue the process";
+            titleText = _("error_box_low_power");
+            descText = _("error_box_low_power_desc");
             break;
         }
 
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
         g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, height, false);
-        lv_obj_t *btn = GuiCreateBtn(g_hintBox, "OK");
+        lv_obj_t *btn = GuiCreateBtn(g_hintBox, _("OK"));
         lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
         lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, NULL);
@@ -264,35 +264,35 @@ void *GuiCreateErrorCodeHintbox(int32_t errCode, lv_obj_t **param)
     int height = 370;
     lv_obj_t *desc = NULL;
     lv_obj_t *title = NULL;
-    char *titleText = (char *)_("Invalid Seed Phrase");
-    char *descText = (char *)_("The phrase you typed is invalid. Please check your backup and try again");
+    char *titleText = (char *)_("error_box_invalid_seed_phrase");
+    char *descText = (char *)_("error_box_invalid_seed_phrase_desc");
     switch (errCode) {
     case ERR_KEYSTORE_MNEMONIC_REPEAT:
         height = 400;
-        titleText = "Duplicate Seed Phrase";
-        descText = "This phrase you typed is already used in a wallet account, please use another mnemonic to import.";
+        titleText = _("error_box_duplicated_seed_phrase");
+        descText = _("error_box_duplicated_seed_phrase_desc");
         break;
     case ERR_KEYSTORE_MNEMONIC_INVALID:
         break;
     case ERR_KEYSTORE_SAVE_LOW_POWER:
         height = 400;
-        titleText = "Low Power";
-        descText = "The device requires at least 20% power to continue the process";
+        titleText = _("error_box_low_power");
+        descText = _("error_box_low_power_desc");
         break;
     case ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET:
         height = 400;
-        titleText = (char *)_("Verification Failed");
-        descText = (char *)_("This seed phrase does not match the current wallet’s. Please check it and try again.");
+        titleText = (char *)_("error_box_mnemonic_not_match_wallet");
+        descText = (char *)_("error_box_mnemonic_not_match_wallet_desc");
         break;
     case ERR_UPDATE_FIRMWARE_NOT_DETECTED:
         height = 400;
-        titleText = "Firmware Not Detected";
-        descText = "Please ensure that you have inserted a MicroSD card formatted in FAT32 that contains the firmware.";
+        titleText = _("error_box_firmware_not_detected");
+        descText = _("error_box_firmware_not_detected_desc");
         break;
     }
 
     lv_obj_t *cont = GuiCreateHintBox(lv_scr_act(), 480, height, false);
-    lv_obj_t *btn = GuiCreateBtn(cont, "OK");
+    lv_obj_t *btn = GuiCreateBtn(cont, _("OK"));
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
     lv_obj_add_event_cb(btn, CloseWaringPageHandler, LV_EVENT_CLICKED, cont);

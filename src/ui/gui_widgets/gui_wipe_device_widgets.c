@@ -69,15 +69,15 @@ static void GuiWipeDeviceNVSBarInit()
 
 void GuiWipeDeviceEntranceWidget(lv_obj_t *parent)
 {
-    lv_obj_t *label = GuiCreateLittleTitleLabel(parent, "Wipe Device");
+    lv_obj_t *label = GuiCreateLittleTitleLabel(parent, _("wipe_device"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 140);
 
-    label = GuiCreateNoticeLabel(parent, "All data stored on this device, including all of your wallets, will be permanently deleted.");
+    label = GuiCreateNoticeLabel(parent, _("system_settings_wipe_device_wipe_desc"));
     lv_obj_set_width(label, 406);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 192);
 
-    label = GuiCreateTextLabel(parent, "Wipe Device Now");
+    label = GuiCreateTextLabel(parent, _("system_settings_wipe_device_wipe_button"));
     lv_obj_set_style_text_color(label, lv_color_hex(0xf55831), LV_PART_MAIN);
 
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 541);
@@ -123,17 +123,17 @@ static void GuiShowWipeDeviceHintBox(void)
         img = GuiCreateImg(g_wipeDeviceHintBox, &imgWarn);
         lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 36, -296);
 
-        label = GuiCreateLittleTitleLabel(g_wipeDeviceHintBox, "Wipe Device");
+        label = GuiCreateLittleTitleLabel(g_wipeDeviceHintBox, _("wipe_device"));
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -232);
-        label = GuiCreateIllustrateLabel(g_wipeDeviceHintBox, "Please double confirm that by continue all data stored on this device, including all of your wallets, will be permanently deleted.");
+        label = GuiCreateIllustrateLabel(g_wipeDeviceHintBox, _("system_settings_wipe_device_wipe_alert_desc"));
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -130);
 
-        button = GuiCreateBtnWithFont(g_wipeDeviceHintBox, "Not Now", g_defTextFont);
+        button = GuiCreateBtnWithFont(g_wipeDeviceHintBox, _("not_now"), g_defTextFont);
         lv_obj_align(button, LV_ALIGN_BOTTOM_LEFT, 36, -24);
         lv_obj_set_size(button, 192, 66);
         lv_obj_set_style_bg_color(button, DARK_GRAY_COLOR, LV_PART_MAIN);
         lv_obj_add_event_cb(button, NotNowHandler, LV_EVENT_CLICKED, NULL);
-        button = GuiCreateBtnWithFont(g_wipeDeviceHintBox, "Wipe(5)", g_defTextFont);
+        button = GuiCreateBtnWithFont(g_wipeDeviceHintBox, _("system_settings_wipe_device_wipe_start_text"), g_defTextFont);
         lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_set_size(button, 192, 66);
         lv_obj_set_style_bg_color(button, ORANGE_COLOR, LV_PART_MAIN);
@@ -204,9 +204,9 @@ static void CountDownTimerHandler(lv_timer_t *timer)
     char buf[16] = {0};
     --countDown;
     if (countDown > 0) {
-        sprintf(buf, "Wipe(%d)", countDown);
+        sprintf(buf, _("system_settings_wipe_device_wipe_fmt"), countDown);
     } else {
-        strcpy(buf, "Wipe");
+        strcpy(buf, _("system_settings_wipe_device_wipe_end_text"));
     }
     // lv_label_set_text(obj, buf);
     lv_label_set_text(lv_obj_get_child(obj, 0), buf);

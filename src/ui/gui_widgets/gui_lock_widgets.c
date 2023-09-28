@@ -21,6 +21,7 @@
 #include "device_setting.h"
 #include "gui_page.h"
 #include "account_manager.h"
+#include "user_memory.h"
 
 #ifdef COMPILE_SIMULATOR
 #define FINGERPRINT_EN_SING_ERR_TIMES           (5)
@@ -69,14 +70,14 @@ void GuiFpRecognizeResult(bool en)
     } else {
         g_fpErrorCount++;
         if (g_fpErrorCount < FINGERPRINT_EN_SING_ERR_TIMES) {
-            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Try Again");
+            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("try_again"));
             FpRecognize(RECOGNIZE_UNLOCK);
         } else {
             char* title;
             if (g_verifyLock->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN || g_verifyLock->mode == ENTER_PASSCODE_VERIFY_PIN) {
-                title = "Use PIN";
+                title = _("unlock_device_use_pin");
             } else {
-                title = "Use Password";
+                title = _("unlock_device_use_password");
             }
             SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, title);
         }
@@ -118,13 +119,13 @@ static void LockViewWipeDeviceHandler(lv_event_t *e)
         lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT);
         GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
 
-        lv_obj_t *label = GuiCreateTextLabel(cont, "Resetting Device");
+        lv_obj_t *label = GuiCreateTextLabel(cont, _("system_settings_wipe_device_generating_title"));
         lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 355);
 
-        label = GuiCreateNoticeLabel(cont, "Erasing Secure Element...");
+        label = GuiCreateNoticeLabel(cont, _("system_settings_wipe_device_generating_desc1"));
         lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 410);
 
-        label = GuiCreateNoticeLabel(cont, "Do not power off your device while the installation process is underway");
+        label = GuiCreateNoticeLabel(cont, _("system_settings_wipe_device_generating_desc2"));
         lv_obj_set_width(label, 408);
         lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
         lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 612);
@@ -142,14 +143,14 @@ void GuiLockScreenWipeDevice(void)
     lv_obj_t *img = GuiCreateImg(cont, &imgWarn);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 180 - GUI_STATUS_BAR_HEIGHT);
 
-    lv_obj_t *label = GuiCreateTextLabel(cont, "Unknown Error");
+    lv_obj_t *label = GuiCreateTextLabel(cont, _("error_unknown_error"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 284 - GUI_STATUS_BAR_HEIGHT);
 
-    lv_obj_t *desc = GuiCreateNoticeLabel(cont, "There is an unknown problem with the device and it is unavailable. Please erase the device to try to restart the device. If the problem still exists, please contact our customer service team.");
+    lv_obj_t *desc = GuiCreateNoticeLabel(cont, _("error_unknown_error_desc"));
     lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_align(desc, LV_ALIGN_TOP_MID, 0, 336 - GUI_STATUS_BAR_HEIGHT);
 
-    label = GuiCreateIllustrateLabel(cont, "support@keyst.one");
+    label = GuiCreateIllustrateLabel(cont, _("support_link"));
     lv_obj_set_style_text_color(label, LIGHT_BLUE_COLOR, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 570 - GUI_STATUS_BAR_HEIGHT);
 
@@ -160,7 +161,7 @@ void GuiLockScreenWipeDevice(void)
     label = GuiCreateNoticeLabel(cont, showString);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 620 - GUI_STATUS_BAR_HEIGHT);
 
-    lv_obj_t *btn = GuiCreateBtn(cont, _("Wipe Device"));
+    lv_obj_t *btn = GuiCreateBtn(cont, _("wipe_device"));
     lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 690 - GUI_STATUS_BAR_HEIGHT);
@@ -296,7 +297,7 @@ void GuiLockScreenErrorCount(void *param)
                 || *(uint16_t *)passwordVerifyResult->signal == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
             leftCount = MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount;
             assert(leftCount >= 0);
-            sprintf(hint, "Incorrect password, you have #F55831 %d# chances left", (MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount));
+            sprintf(hint, _("unlock_device_attempts_left_times_fmt"), (MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount));
             lv_label_set_text(g_verifyLock->errLabel, hint);
             GuiPassowrdToLockTimePage(MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount);
             if (passwordVerifyResult->errorCount == MAX_LOGIN_PASSWORD_ERROR_COUNT) {
@@ -375,24 +376,26 @@ static char* GuiJudgeTitle()
     //no fingerprint presents
     if (g_fpErrorCount >= FINGERPRINT_EN_SING_ERR_TIMES || (GetRegisteredFingerNum() < 1) || GuiLockScreenIsFirstUnlock()) {
         if (g_verifyLock->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN || g_verifyLock->mode == ENTER_PASSCODE_VERIFY_PIN) {
-            title = "Use PIN";
+            title = _("unlock_device_use_pin");
         } else {
-            title = "Use Password";
+            title = _("unlock_device_use_password");
         }
         return title;
     }
     if (GetFingerUnlockFlag() && g_purpose == LOCK_SCREEN_PURPOSE_UNLOCK) {
+        title = SRAM_MALLOC(64);
+        memset(title, 0, 64);
         if (g_verifyLock->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN || g_verifyLock->mode == ENTER_PASSCODE_VERIFY_PIN) {
-            title = "Use PIN or Use Fingerprint";
+            sprintf(title, _("unlock_device_title_fmt"), _("unlock_device_use_pin"), _("unlock_device_use_fingerprint"));
         } else {
-            title = "Use Password or Use Fingerprint";
+            sprintf(title, _("unlock_device_title_fmt"), _("unlock_device_use_password"), _("unlock_device_use_fingerprint"));
         }
         return title;
     }
     if (g_verifyLock->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN || g_verifyLock->mode == ENTER_PASSCODE_VERIFY_PIN) {
-        title = "Use PIN";
+        title = _("unlock_device_use_pin");
     } else {
-        title = "Use Password";
+        title = _("unlock_device_use_password");
     }
     return title;
 }

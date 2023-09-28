@@ -9,15 +9,103 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
-static inline uint32_t op_i(uint32_t val) { return val; }
+static inline uint32_t op_n(int32_t val)
+{
+    return (uint32_t)(val < 0 ? -val : val);
+}
+static inline uint32_t op_i(uint32_t val)
+{
+    return val;
+}
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
-static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
-static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
-static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_v(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_w(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_f(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_t(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
 
 static lv_i18n_phrase_t en_singulars[] = {
+    {"Approve", "Approve"},
+    {"Attention", "Attention"},
+    {"Cancel", "Cancel"},
+    {"Done", "Done"},
+    {"Export", "Export"},
+    {"FORGET", "FORGET"},
+    {"Failed", "Failed"},
+    {"Keystone", "Keystone"},
+    {"OK", "OK"},
+    {"Pending", "Pending"},
+    {"Restart", "Restart"},
+    {"Skip", "Skip"},
+    {"Success", "Success"},
+    {"Tutorial", "Tutorial"},
+    {"Update", "Update"},
+    {"Updating", "Updating"},
+    {"about_info_device_uid", "Device UID"},
+    {"about_info_export_log", "Export System Log"},
+    {"about_info_export_to_sdcard", "Export Log to SD Card"},
+    {"about_info_fingerprint_firnware_version", "Fingerprint Firmware Version"},
+    {"about_info_firmware_version", "Firmware Version"},
+    {"about_info_result_export_failed", "Export Failed"},
+    {"about_info_result_export_failed_desc_no_sdcard", "Please make sure you have installed a FAT32 Format MicroSD card."},
+    {"about_info_result_export_failed_desc_no_space", "Please make sure your MicroSD card has enough memory."},
+    {"about_info_result_export_successful", "Export Successful"},
+    {"about_info_result_export_successful_desc", "Your system log has been export to MicoSD card successfully."},
+    {"about_info_serial_number", "Serial Number"},
+    {"about_keystone_discord", "Discord"},
+    {"about_keystone_discord_url", "keyst.one/discord"},
+    {"about_keystone_telegram", "Telegram"},
+    {"about_keystone_telegram_url", "t.me/keystonewallet"},
+    {"about_keystone_title", "About Keystone"},
+    {"about_keystone_twitter", "Twitter"},
+    {"about_keystone_twitter_url", "twitter.com/KeystoneWallet"},
+    {"about_keystone_website", "WebSite"},
+    {"about_keystone_website_url", "keyst.one"},
+    {"about_terms_contact_us", "Contact Us"},
+    {"about_terms_contact_us_desc", "If you have any questions or concerns, please email us at support@keyst.one."},
+    {"about_terms_desc", "To access the full version of the TERMS OF USE, please visit the following link:"},
+    {"about_terms_disclaimers", "DISCLAIMERS"},
+    {"about_terms_disclaimers_desc", "The information provided is not financial advice. Seek professional advice before making any decisions."},
+    {"about_terms_discontinuance_service", "Discontinuance of Service"},
+    {"about_terms_discontinuance_service_desc", "We may modify or discontinue our services. Remember to back up your seed phrase to access your cryptocurrencies."},
+    {"about_terms_eligibility", "Eligibility"},
+    {"about_terms_eligibility_desc", "You must be 18 years old or above to access and use our Products or Services."},
+    {"about_terms_indemnity", "Indemnity"},
+    {"about_terms_indemnity_desc", "You must be 18 years old or above to access and use our Products or Services."},
+    {"about_terms_law", "Governing Law and Dispute Resolution"},
+    {"about_terms_law_desc", "The Terms are governed by Hong Kong SAR laws, and any dispute must be filed within one year."},
+    {"about_terms_limitation", "Limitation of Liability & Disclaimer of Warranties"},
+    {"about_terms_limitation_desc", "We provide our Services \"as is\" without warranties. We are not liable for any losses incurred while using our Products or Services."},
+    {"about_terms_modification", "Modification of these Terms"},
+    {"about_terms_modification_desc", "We reserve the right to change these Terms at our discretion."},
+    {"about_terms_no_sensitive_information", "No Retrieval of Sensitive Information"},
+    {"about_terms_no_sensitive_information_desc", "We do not store your sensitive information like passwords or seed phrases. Keep your credentials safe."},
+    {"about_terms_ownership", "Ownership & Proprietary Rights"},
+    {"about_terms_ownership_desc", "You are responsible for your actions while using the Products and Services."},
+    {"about_terms_product_and_services", "Keystone Product & Services"},
+    {"about_terms_product_and_services_desc", "Our hardware wallet securely manages cryptocurrencies."},
+    {"about_terms_prohibited_conduct", "Prohibited Conduct"},
+    {"about_terms_prohibited_product_desc", "Our Products and Services are protected by intellectual property laws."},
+    {"about_terms_risks", "Risks"},
+    {"about_terms_risks_desc", "Be aware of the risks associated with cryptocurrencies and technology vulnerabilities."},
+    {"about_terms_subtitle", "Keystone Terms of Use"},
+    {"about_terms_title", "Terms of Use"},
+    {"about_terms_website_url", "https://keyst.one/terms"},
     {"change_passcode_mid_btn", "Enter Passcode"},
     {"change_passcode_reset_desc", "Writing Secure Element..."},
     {"change_passcode_reset_success_desc", "Your passcode has been reset successfully."},
@@ -58,7 +146,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"connect_mm_qr_title2", "MetaMask Mobile"},
     {"connect_mm_t", "Tutorial"},
     {"connect_mm_title", "MetaMask (Extension)"},
-    {"connect_mm_title2", "MetaMask Mobile"},
+    {"connect_mm_title2", "MetaMask (Mobile)"},
     {"connect_okx_desc", "Please use your laptop or mobile to open the link below for detailed tutorials on how to use Keystone with certain chain specific companion software wallet."},
     {"connect_okx_link", "https://keyst.one/t/3rd/okx"},
     {"connect_okx_link2", "https://keyst.one/t/3rd/okxm"},
@@ -91,8 +179,14 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"connect_sushi_qr_title", "SushiSwap"},
     {"connect_sushi_t", "Tutorial"},
     {"connect_sushi_title", "SushiSwap"},
+    {"connect_wallet_choose_wallet", "Choose Wallet"},
     {"connect_wallet_desc", "Scan the QR code with your software wallet"},
+    {"connect_wallet_keystone_hint", "Select networks you’d like to manage in the software wallet"},
+    {"connect_wallet_scan", "Scan the QR code with your software wallet"},
+    {"connect_wallet_select_network", "Select Network"},
+    {"connect_wallet_supported_networks", "Supported Networks"},
     {"connect_wallet_title", "Connect Wallet"},
+    {"connect_wallet_upgrade_hint", "Please upgrade to the latest version for access to expanded software wallet compatibility."},
     {"connect_wallet_xpub_addresstype", "Address Type"},
     {"connect_wallet_xpub_qrformat", "QR Code Format"},
     {"connect_yearn_desc", "Please use your laptop or mobile to open the link below for detailed tutorials on how to use Keystone with certain chain specific companion software wallet."},
@@ -109,9 +203,15 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"connect_zapper_title", "Zapper"},
     {"create_wallet_generating_desc", "Writing Secure Element..."},
     {"create_wallet_generating_title", "Creating Wallet, Keep Screen ON"},
-    {"device_setting_about_desc", "M-1.2.0"},
+    {"derivation_path_address_eg", "Addresses eg."},
+    {"derivation_path_change", "Change Derivation Path"},
+    {"derivation_path_eth_ledger_legacy_desc", "Choose this path if you are managing your digital assets with Ledger Legacy."},
+    {"derivation_path_eth_ledger_live_desc", "Choose this path if you intend to import a seed phrase from Ledger Live."},
+    {"derivation_path_eth_standard_desc", "Recommended. Widely adopted across numerous software wallets"},
+    {"derivation_path_select_eth", "Select the derivation path you’d like to use for Ethereum"},
+    {"device_info_title", "Device Info"},
     {"device_setting_about_title", "About"},
-    {"device_setting_connection_desc", "USB / Bluetooth / MicroSD Card"},
+    {"device_setting_connection_desc", "USB / Bluetooth / MicroSD Card..."},
     {"device_setting_connection_title", "Connection"},
     {"device_setting_mid_btn", "Device Settings"},
     {"device_setting_system_setting_desc", "Language / Screen / Reset..."},
@@ -121,9 +221,25 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"device_settings_connection_desc1", "When disabled, the usb can only be used for charging battery"},
     {"device_settings_connection_sub_title1", "Data transfer with USB"},
     {"device_settings_connection_title1", "Connection"},
+    {"enter_passcode", "Please Enter Passcode"},
+    {"error_box_duplicated_seed_phrase", "Duplicate Seed Phrase"},
+    {"error_box_duplicated_seed_phrase_desc", "This phrase you typed is already used in a wallet account, please use another mnemonic to import."},
+    {"error_box_firmware_not_detected", "Firmware Not Detected"},
+    {"error_box_firmware_not_detected_desc", "Please ensure that you have inserted a MicroSD card formatted in FAT32 that contains the firmware."},
+    {"error_box_invalid_seed_phrase", "Invalid Seed Phrase"},
+    {"error_box_invalid_seed_phrase_desc", "The phrase you typed is invalid. Please check your backup and try again"},
+    {"error_box_low_power", "Low Power"},
+    {"error_box_low_power_desc", "The device requires at least 20% power to continue the process"},
+    {"error_box_mnemonic_not_match_wallet", "Verification Failed"},
+    {"error_box_mnemonic_not_match_wallet_desc", "This seed phrase does not match the current wallet’s. Please check it and try again."},
+    {"error_unknown_error", "Unknown Error"},
+    {"error_unknown_error_desc", "There is an unknown problem with the device and it is unavailable. Please erase the device to try to restart the device. If the problem still exists, please contact our customer service team."},
     {"fingerprint_passcode_fingerprint_setting", "Fingerprint Settings"},
     {"fingerprint_passcode_mid_btn", "Fingerprint & Passcode"},
     {"fingerprint_passcode_reset_passcode", "Reset Passcode"},
+    {"firmware_update_deny_desc", "You need to unlock your device to upgrade the firmware version."},
+    {"firmware_update_deny_input_password", "Input Password"},
+    {"firmware_update_deny_title", "Unlock Device Required"},
     {"firmware_update_desc", "To take advantage of the latest features, make sure to update your firmware to the most recent version."},
     {"firmware_update_sd_copying_desc", "The copying process of the latest firmware from the MicroSD card may take 15 to 45 seconds."},
     {"firmware_update_sd_copying_title", "Copying"},
@@ -142,6 +258,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"firmware_update_sd_updating_desc", "Takes around 5 seconds"},
     {"firmware_update_sd_updating_title", "Updating"},
     {"firmware_update_title", "Firmware Update"},
+    {"firmware_update_updating_desc", "Approximately 3 minutes"},
     {"firmware_update_usb_connect_info_desc", "Once connected, the external device will have the necessary authorization to transfer data to your Keystone."},
     {"firmware_update_usb_connect_info_title", "Connect to This Device?"},
     {"firmware_update_usb_desc1", "Ensure that your Keystone has at least 20% battery life remaining."},
@@ -154,32 +271,47 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"firmware_update_usb_qr_title", "Firmware Update"},
     {"firmware_update_usb_title", "Update via USB"},
     {"firmware_update_usb_title2", "#F5870A Caution#"},
-    {"firmware_update_usb_updating_desc", "Takes around 5 seconds"},
     {"firmware_update_usb_updating_hint", "Do not unplug the USB cable while the installation process is underway."},
-    {"firmware_update_usb_updating_title", "Updating"},
+    {"firmware_update_via_sd", "Via MicroSD Card"},
+    {"firmware_update_via_usb", "Via USB"},
+    {"forget_password_cancel", "Cancel forget password?"},
     {"forgot_password_reset_passcode_intro_button", "Reset Passcode"},
     {"forgot_password_reset_passcode_intro_desc", "You have to verify the seed phrase of this wallet to reset the passcode."},
     {"forgot_password_reset_passcode_intro_title", "Forgot passcode?"},
+    {"generating_qr_codes", "Generating QR Codes"},
+    {"got_it", "Got It"},
+    {"home_manage_assets", "Manage Assets"},
     {"home_more_connect_wallet", "Connect Software Wallet"},
     {"home_more_device_setting", "Device Settings"},
+    {"home_select_coin_count_fmt", "#F5870A %d#/%d"},
+    {"home_upgrade_hint", "Please upgrade to the latest version for access to expanded crypto compatibility."},
+    {"import_wallet_choose_method", "Choose Import Method"},
     {"import_wallet_invalid_phrase_desc", "The phrase you typed is invalid. Please check your backup and try again"},
     {"import_wallet_invalid_phrase_title", "Invalid Seed Phrase"},
     {"import_wallet_phrase_12words", "12 Words"},
     {"import_wallet_phrase_18words", "18 Words"},
     {"import_wallet_phrase_20words", "20 Words"},
+    {"import_wallet_phrase_20words_per_share", "20 Words Per Share"},
     {"import_wallet_phrase_24words", "24 Words"},
     {"import_wallet_phrase_33words", "33 Words"},
+    {"import_wallet_phrase_33words_per_share", "33 Words Per Share"},
     {"import_wallet_phrase_clear_btn", "Clear"},
     {"import_wallet_phrase_desc", "Input the seed phrase in the blanks provided below."},
     {"import_wallet_phrase_title", "Import Your Phrase"},
     {"import_wallet_phrase_words_title", "Phrase Words Amount"},
+    {"import_wallet_shamir_backup", "Shamir Backup"},
+    {"import_wallet_shamir_backup_desc", "You'll need a couple of seed phrase\\nshares to recover your wallet"},
+    {"import_wallet_single_backup_desc", "Recover your wallet with the specific\\nseed phrase"},
+    {"import_wallet_single_phrase", "Single Secret Phrase"},
+    {"import_wallet_single_phrase_desc", "You'll need a 12/18/24 seed phrase\\nto recover your wallet."},
     {"import_wallet_ssb_cancel_desc", "You will be required to re-enter all the Shares after canceling."},
     {"import_wallet_ssb_cancel_title", "Cancel Import Wallet?"},
     {"import_wallet_ssb_desc_fmt", "Input the #F5870A %d#-words seed phrase for Share #F5870A %d# in the blanks provided below."},
     {"import_wallet_ssb_incorrect_title", "Incorrect Share"},
     {"import_wallet_ssb_notbelong_desc", "The Share you entered is not belong to this backup. Please check your backup and try again."},
     {"import_wallet_ssb_repeat_desc", "The Share already entered, please enter a different Share."},
-    {"import_wallet_ssb_title", "Share"},
+    {"import_wallet_ssb_step_fmt", "%d of %d"},
+    {"import_wallet_ssb_title_fmt", "Share #F5870A %d#"},
     {"language_desc", "Select your language"},
     {"language_option1", "English"},
     {"language_option2", "简体中文"},
@@ -187,13 +319,16 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"language_option4", "Español"},
     {"language_option5", "한국인"},
     {"language_title", "Language"},
-    {"low_battery_pop_up_desc", "The device needs a minimum of 20% battery life to continue the process"},
+    {"low_battery_pop_up_desc", "For the process to continue, ensure that the device has a minimum of 20% battery power."},
     {"low_battery_pop_up_title", "Low Battery"},
+    {"not_now", "Not Now"},
     {"passphrase_access_switch_desc", "Display a shortcut entry for Passphrase when powered on"},
     {"passphrase_access_switch_title", "Passphrase Quick Access"},
     {"passphrase_enter_input", "Input passphrase"},
     {"passphrase_enter_passcode", "Passphrase"},
     {"passphrase_enter_repeat", "Repeat passphrase"},
+    {"passphrase_error_not_match", "Passphrase does not match"},
+    {"passphrase_error_too_long", "input length cannot exceed 128 characters"},
     {"passphrase_learn_more_desc1", "The passphrase is an additional layer of security on top of your backup."},
     {"passphrase_learn_more_desc2", "Entering a different passphrase will always generate a different wallet."},
     {"passphrase_learn_more_desc3", "To recover your wallet, both the passphrase and seed phrase are required."},
@@ -202,6 +337,17 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"passphrase_learn_more_qr_link", "https://keyst.one/t/3rd/passphrase"},
     {"passphrase_learn_more_qr_title", "What is Passphrase?"},
     {"passphrase_learn_more_title", "What is Passphrase?"},
+    {"password_error_cannot_verify_fingerprint", "Couldn’t verify fingerprint"},
+    {"password_error_duplicated_pincode", "Duplicate PIN code detected. Please use a different one"},
+    {"password_error_fingerprint_attempts_exceed", "Too many unsuccessful attempts. Please enter your passcode"},
+    {"password_error_not_match", "passcode not match"},
+    {"password_error_too_long", "The input cannot exceed 128 characters"},
+    {"password_error_too_short", "Password should be at least 6 characters"},
+    {"password_error_too_weak", "Set a strong password"},
+    {"password_input_desc", "Input your password"},
+    {"password_label", "PASSWORD"},
+    {"pin_code", "PIN CODE"},
+    {"power_off", "Power Off"},
     {"purpose_desc", "Create a new wallet or import an existing wallet using it's seed phrase."},
     {"purpose_import_wallet", "Import Wallet"},
     {"purpose_new_wallet", "Create Wallet"},
@@ -209,8 +355,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"receive_btc_alert_button", "Got It"},
     {"receive_btc_alert_desc", "This address is exclusively for BTC transactions only. Sending other types of digital assets to this address will result in their loss."},
     {"receive_btc_alert_title", "Attention"},
-    {"receive_btc_more_address_settings", "Address Settigns"},
-    {"receive_btc_more_export_extended", "Export Extended Public Key"},
+    {"receive_btc_more_address_settings", "Address Settings"},
     {"receive_btc_more_t", "Tutorial"},
     {"receive_btc_more_t_desc1", "Bitcoin (BTC) uses three address formats for receiving funds:\r\n1. Native SegWit is the most efficient and secure Bitcoin address format. It provides cost savings and improved security compared to other traditional address formats,typically starting with \"bc1\"\r\n2. Legacy address format is one of the earliest versions of Bitcoin, typically starting with \"1\"\r\n3. Nested SegWit is a solution designed to facilitate the transition to Native SegWit in a smooth manner, typically starting with \"3\""},
     {"receive_btc_more_t_desc2", "Yes, the three distinct Bitcoin address formats can be used for transferring funds among each other. However, it’s important to keep in mind the following aspects:\r\n1. Differing transaction fees: The choice of address format can influence transaction fees, with Native SegWit addresses generally having lower fees.\r\n2. Wallet and exchange compatibility: Make sure that the wallet or exchange you are using supports your chosen address format. Some wallets may only be compatible with specific address formats."},
@@ -232,13 +377,16 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"receive_btc_receive_main_button", "Generate New Address"},
     {"receive_btc_receive_main_title", "Receive BTC"},
     {"receive_btc_receive_switch_title", "Switch Address"},
+    {"receive_coin_fmt", "Receive %s"},
+    {"receive_coin_hint_fmt", "This address is only for %s, other digital assets sent to this address will be lost."},
     {"receive_eth_alert_button", "Got It"},
     {"receive_eth_alert_desc", "This address is only for ETH and EVM ERC-20 tokens, other digital assets sent to this address will be lost."},
     {"receive_eth_alert_title", "Attention"},
     {"receive_eth_more_derivation_path", "Change Derivation Path"},
     {"receive_eth_more_derivation_path_bip", "BIP 44 Standard"},
-    {"receive_eth_more_derivation_path_desc", "Select the derivation path you’d like to use for Ethereum"},
-    {"receive_eth_more_derivation_path_desc2", "Recommend. Most commonly used in many software wallets."},
+    {"receive_eth_more_derivation_path_desc", "Recommend. Most commonly used in many software wallets."},
+    {"receive_eth_more_derivation_path_desc2", "Select this path for Ledger Live asset management."},
+    {"receive_eth_more_derivation_path_desc3", "Select this path for Ledger Legacy asset management."},
     {"receive_eth_more_derivation_path_ledger_legacy", "Ledger Legacy"},
     {"receive_eth_more_derivation_path_ledger_live", "Ledger Live"},
     {"receive_eth_more_derivation_path_title", "Change Derivation Path"},
@@ -248,13 +396,15 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"receive_eth_more_t_link1", "Learn More"},
     {"receive_eth_more_t_qr_link1", "https://keyst.one/t/3rd/faq"},
     {"receive_eth_more_t_qr_title1", "Exploring Differences: Standard, Ledger Live, and Legacy Derivation Paths in Ethereum"},
-    {"receive_eth_more_t_title1", "Exploring Differences: Standard, Ledger Live, and Legacy Derivation Paths in Ethereum"},
+    {"receive_eth_more_t_title1", "1. Standard Path: This path is widely employed by numerous software wallets for address generation. Examples of such wallets encompass MetaMask, Rabby, BitKeep, and Core Wallet.\r\n2. Ledger Live: Choose this path if you intend to import a seed phrase from Ledger Live. Please note that Keystone supports synchronizing only the initial 10 addresses using this format.\r\n3. Ledger Legacy: Transition to this path if you manage your digital assets with Ledger Legacy"},
     {"receive_eth_receive_main_button", "Generate New Address"},
     {"receive_eth_receive_main_title", "Receive ETH"},
+    {"receive_generate_new_address", "Generate New Address"},
+    {"receive_trx_hint", "This address is only for TRX, TRC-20 tokens and TRC-10 tokens, other digital assets sent to this address will be lost."},
     {"repeat_passcode_desc", "Repeat and confirm the PIN code you’ve just typed."},
     {"repeat_passcode_title", "Repeat the PIN Code"},
-    {"scan_qr_code_invalid_a_desc", "Unable to recognize QR code information"},
-    {"scan_qr_code_invalid_a_title", "Invalid QR Code"},
+    {"scan_qr_code_error_invalid_qrcode", "Invalid QR Code"},
+    {"scan_qr_code_error_invalid_qrcode_desc", "Unable to recognize QR code information"},
     {"scan_qr_code_invalid_b_desc", "The transaction does not belong to the current wallet. Please use the correct wallet to sign the transaction."},
     {"scan_qr_code_invalid_b_title", "Unauthorized to Sign"},
     {"scan_qr_code_invalid_c_desc", "Keystone does not support transaction signing for the address path. Please try signing with a different address path."},
@@ -274,9 +424,12 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"seed_check_verify_not_match_desc", "Invalid seed phrase. Please try again."},
     {"seed_check_verify_not_match_title", "Verify Failed"},
     {"seed_check_wait_verify", "Verifying"},
+    {"self_destruction_desc", "Physical attack detected, all sensitive information on this device has been completely erased and this device can no longer be usable."},
+    {"self_destruction_hint", "Contact us if any questions:"},
+    {"self_destruction_title", "Device No Longer Usable"},
     {"set_passcode_desc", "This PIN code will be used to unlock your wallet and sign transactions."},
     {"set_passcode_title", "Set a PIN Code"},
-    {"shamir_phrase _desc", "Shamir Backup"},
+    {"shamir_backup", "Shamir Backup"},
     {"shamir_phrase_backup_desc", "Write down your Share 1 phrase and keep it properly."},
     {"shamir_phrase_backup_title", "Backup Your Phrase"},
     {"shamir_phrase_cancel_create_btn", "Cancel Create"},
@@ -287,12 +440,17 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"shamir_phrase_continue_btn", "Continue"},
     {"shamir_phrase_custodian_desc", "Please confirm you are the custodian of the Share"},
     {"shamir_phrase_custodian_title", "Share"},
+    {"shamir_phrase_desc", "Shamir Backup"},
     {"shamir_phrase_not_match_desc", "The phrase order is incorrect. Please check your backup and try again"},
     {"shamir_phrase_not_match_title", "Phrase does not match"},
-    {"shamir_phrase_notice_desc1", "Anyone with your seed phrase has full access to your cryptocurrency. "},
-    {"shamir_phrase_notice_desc2", "Please make sure there are no onlookers or cameras when you record your seed phrase."},
+    {"shamir_phrase_notice_desc1", "Never share your seed phrase with anyone else, as it grants access to your assets."},
+    {"shamir_phrase_notice_desc2", "Ensure there are no onlookers or cameras when recording your seed phrase."},
     {"shamir_phrase_notice_title", "Check Your Surroundings"},
     {"shamir_phrase_number", "Number of Shares"},
+    {"shamir_phrase_share_backup_notice_fmt", "Write down your share #F5870A %d# phrase and keep \\nit properly."},
+    {"shamir_phrase_share_confirm_notice_fmt", "Select words below in the order of your\\nshare #%d phrase to confirm that you have\\nkept it properly."},
+    {"shamir_phrase_share_notice_fmt", "Please confirm you are the custodian of the\\nshare #%d"},
+    {"shamir_phrase_share_number_fmt", "Share #F5870A %d#/%d"},
     {"shamir_phrase_threold", "Threshold"},
     {"shamir_phrase_verify_success_desc1", "The seed phrase of this Share is verified successfully, now proceed to the next share. "},
     {"shamir_phrase_verify_success_desc2", "Tap the button below and hand it over to the second share custodian who keeps Share 2."},
@@ -328,7 +486,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"single_backup_single_phrase_title", "Standard Seed Phrase"},
     {"single_phrase_12words", "12 Words"},
     {"single_phrase_24words", "24 Words"},
-    {"single_phrase_confirm_desc", "Tap words below in the order of your Seed phrase to confirm that you have kept it properly."},
+    {"single_phrase_confirm_desc", "Tap words below orderly to confirm that you have kept your seed phrase properly."},
     {"single_phrase_confirm_title", "Confirm Your Phrase"},
     {"single_phrase_desc", "Write down your seed phrase in the card and keep it properly"},
     {"single_phrase_low_battery_desc", "The device needs a minimum of 20% battery life to continue the process"},
@@ -338,37 +496,41 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"single_phrase_reset", "Reset"},
     {"single_phrase_title", "Backup Your Phrase"},
     {"single_phrase_word_amount_select", "Phrase Words Amount"},
-    {"system_settings_button1", "Language"},
-    {"system_settings_button2", "Display & Lock Screen"},
-    {"system_settings_button3", "Dark Mode"},
-    {"system_settings_button4", "Vibration"},
-    {"system_settings_button5", "Verify Your Device"},
-    {"system_settings_button6", "Wipe Device"},
-    {"system_settings_screen_lock_auto_lock_desc1", "15 seconds"},
-    {"system_settings_screen_lock_auto_lock_desc2", "30 seconds"},
-    {"system_settings_screen_lock_auto_lock_desc3", "1 minute"},
-    {"system_settings_screen_lock_auto_lock_desc4", "5 minutes"},
-    {"system_settings_screen_lock_auto_lock_desc5", "10 minutes"},
+    {"support_link", "support@keyst.one"},
+    {"switch_account", "Switch Account"},
+    {"system_settings_screen_lock_auto_lock", "Auto Lock"},
+    {"system_settings_screen_lock_auto_lock_10mins", "10 minutes"},
+    {"system_settings_screen_lock_auto_lock_15secs", "15 seconds"},
+    {"system_settings_screen_lock_auto_lock_1min", "1 minute"},
+    {"system_settings_screen_lock_auto_lock_30secs", "30 seconds"},
+    {"system_settings_screen_lock_auto_lock_5mins", "5 minutes"},
     {"system_settings_screen_lock_auto_lock_title", "Timeout Duration"},
-    {"system_settings_screen_lock_auto_power_off_desc1", "1 hour"},
-    {"system_settings_screen_lock_auto_power_off_desc2", "6 hours"},
-    {"system_settings_screen_lock_auto_power_off_desc3", "12 hours"},
-    {"system_settings_screen_lock_auto_power_off_desc4", "1 day"},
-    {"system_settings_screen_lock_auto_power_off_desc5", "Never"},
+    {"system_settings_screen_lock_auto_power_off_12h", "12 hours"},
+    {"system_settings_screen_lock_auto_power_off_1d", "1 day"},
+    {"system_settings_screen_lock_auto_power_off_1h", "1 hour"},
+    {"system_settings_screen_lock_auto_power_off_6h", "6 hours"},
+    {"system_settings_screen_lock_auto_power_off_never", "Never"},
     {"system_settings_screen_lock_auto_power_off_title", "Auto Shutdown"},
-    {"system_settings_screen_lock_sub_title1", "Brightness"},
-    {"system_settings_screen_lock_sub_title2", "Auto Lock"},
-    {"system_settings_screen_lock_sub_title3", "Auto Shutdown"},
+    {"system_settings_screen_lock_auto_shutdown", "Auto Shutdown"},
+    {"system_settings_screen_lock_brightness", "Brightness"},
     {"system_settings_screen_lock_title", "Display & Lock Screen"},
     {"system_settings_title", "System Settings"},
+    {"system_settings_vabiration", "Vibration"},
     {"system_settings_wipe_device_generating_desc1", "Erasing Secure Element..."},
     {"system_settings_wipe_device_generating_desc2", "Do not power off your device while the installation process is underway"},
     {"system_settings_wipe_device_generating_title", "Resetting Device"},
-    {"system_settings_wipe_device_wipe_alert_desc", "Please double confirm that by continue\r\nall data stored on this device, including all of your wallets, will be permanently deleted."},
+    {"system_settings_wipe_device_wipe_alert_desc", "Please confirm that continuing will permanently delete all data, including wallets, on this device."},
     {"system_settings_wipe_device_wipe_alert_title", "Wipe Device"},
     {"system_settings_wipe_device_wipe_button", "Wipe Device Now"},
     {"system_settings_wipe_device_wipe_desc", "All data stored on this device, including all of your wallets, will be permanently deleted."},
+    {"system_settings_wipe_device_wipe_end_text", "Wipe"},
+    {"system_settings_wipe_device_wipe_fmt", "Wipe(%d)"},
+    {"system_settings_wipe_device_wipe_start_text", "Wipe(5)"},
     {"system_settings_wipe_device_wipe_title", "Wipe Device"},
+    {"transaction_parse_broadcast_message", "Broadcast Message"},
+    {"transaction_parse_confirm_message", "Confirm Message"},
+    {"transaction_parse_scan_by_software", "Scan the QR code with your software wallet"},
+    {"try_again", "Try Again"},
     {"tx_details_btc_change_desc", "BTC transactions, based on the UTXO mechanism, allocate some assets to a change address during transfers. This address is generated by the software wallet for anonymity and privacy purposes. You don't need to worry since the change address belongs to your own account, and its amount will be used automatically in subsequent transactions."},
     {"tx_details_btc_change_link", "Learn More"},
     {"tx_details_btc_change_title", "Change Address"},
@@ -377,37 +539,53 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"tx_details_eth_decoding_qr_title", "Decoding DeFi Transactions"},
     {"tx_details_general_tab_title1", "Overview"},
     {"tx_details_general_tab_title2", "Details"},
+    {"unlock_device_attempts_left_times_fmt", "Incorrect password, you have #F55831 d%# chances left"},
     {"unlock_device_button1", "PASSWORD"},
     {"unlock_device_button2", "PIN CODE"},
     {"unlock_device_button3", "FORGET"},
+    {"unlock_device_error_attempts_exceed", "Attempt Limit Exceeded"},
+    {"unlock_device_error_attempts_exceed_desc", "Device lock imminent. Please unlock to access the device."},
+    {"unlock_device_error_btn_end_text", "Unlock Device"},
+    {"unlock_device_error_btn_start_text", "Unlock Device (5s)"},
+    {"unlock_device_error_btn_text_fmt", "Unlock Device (%ds)"},
     {"unlock_device_fingerprint_pin_device_locked_btn", "Wipe Device Now"},
+    {"unlock_device_fingerprint_pin_device_locked_btn_fmt", "Wipe Device Now (%d)"},
+    {"unlock_device_fingerprint_pin_device_locked_btn_start_text", "Wipe Device Now (15)"},
     {"unlock_device_fingerprint_pin_device_locked_desc", "All the data on this device will be erased after wiped"},
     {"unlock_device_fingerprint_pin_device_locked_title", "Device Locked"},
     {"unlock_device_fingerprint_pin_error1_desc", "Couldn’t verify fingerprint"},
     {"unlock_device_fingerprint_pin_error1_title", "Try Again"},
-    {"unlock_device_fingerprint_pin_error2_desc1", "Incorrect PIN, you have #F55831 d%# chances left"},
     {"unlock_device_fingerprint_pin_error2_title", "Use PIN or Fingerprint"},
     {"unlock_device_fingerprint_pin_error_max_desc", "Too many unsuccessful attempts. Please enter your passcode"},
     {"unlock_device_fingerprint_pin_error_max_title", "Enter PIN"},
     {"unlock_device_fingerprint_pin_title", "Use PIN or Fingerprint"},
     {"unlock_device_time_limited_error_max_desc", "Please unlock your device in 1 minute"},
+    {"unlock_device_time_limited_error_max_desc_fmt", "Please unlock your device in %d minutes"},
     {"unlock_device_time_limited_error_max_title", "Device Unavailable"},
-    {"verification_code_button1", "Unsuccessful"},
-    {"verification_code_button2", "Successful"},
+    {"unlock_device_title_fmt", "%s or %s"},
+    {"unlock_device_use_fingerprint", "Use Fingerprint"},
+    {"unlock_device_use_password", "Use Password"},
+    {"unlock_device_use_pin", "Use PIN"},
+    {"usb_connection_desc", "When disabled, the usb can only be used for charging battery"},
+    {"usb_connection_subtitle", "Data transfer with USB"},
+    {"usb_connection_title", "Connection"},
     {"verification_code_desc", "Input this verification code on the Device Verification page of Keystone's official website to authenticate the device."},
     {"verification_code_failed_desc", "Your device has potentially been breached, putting your sensitive data and digital assets at risk. For safety, erase all personal data and contact our Customer Service team immediately."},
     {"verification_code_failed_link", "support@keyst.one"},
     {"verification_code_failed_title", "Unauthorized breach attempt detected!"},
     {"verification_code_title", "Verification Code"},
+    {"verification_failed", "Unsuccessful"},
+    {"verification_success", "Successful"},
     {"verify_cont1", "Please access the link stated below. Click the #F5870A Verify Device# button to initiate the process."},
     {"verify_cont1_link", "https://keyst.one/verify"},
     {"verify_cont2", "Scan the QR code generated on the website to obtain your device verification code."},
     {"verify_cont3", "Enter the code on the website to check whether the device has been compromised or not."},
     {"verify_desc", "This procedure is to verify that the Keystone device or firmware has not been tampered with."},
+    {"verify_modal_desc", "Calculating Auth Code..."},
+    {"verify_modal_title", "Verifing"},
     {"verify_qr_link", "https://keyst.one/verify"},
     {"verify_qr_title", "Verify Your Device"},
-    {"verify_scan_invalid_a_desc", "Unable to recognize QR code information"},
-    {"verify_scan_invalid_a_title", "Invalid QR Code"},
+    {"verify_scan_qr_code", "Scan QR Code"},
     {"verify_title", "Verify Your Device"},
     {"wallet_setting_add_wallet", "Add Wallet"},
     {"wallet_setting_passcode", "Fingerprint & Passcode"},
@@ -425,8 +603,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"wallet_settings_delete_laoding_desc", "Erasing Secure Element..."},
     {"wallet_settings_delete_laoding_title", "Deleting"},
     {"wallet_settings_mid_btn", "Wallet Settings"},
-    {"welcome_brand", "Keystone"},
-    {"welcome_version", "v0.9.0"},
+    {"wipe_device", "Wipe Device"},
     {NULL, NULL} // End mark
 };
 
@@ -434,9 +611,12 @@ static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
-    uint32_t i = op_i(n); UNUSED(i);
-    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t n = op_n(num);
+    UNUSED(n);
+    uint32_t i = op_i(n);
+    UNUSED(i);
+    uint32_t v = op_v(n);
+    UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -477,8 +657,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if(langs == NULL) return -1;
-    if(langs[0] == NULL) return -1;
+    if (langs == NULL) return -1;
+    if (langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -491,13 +671,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if(current_lang_pack == NULL) return -1;
+    if (current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for(i = 0; current_lang_pack[i] != NULL; i++) {
+    for (i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -510,10 +690,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for(i = 0; trans[i].msg_id != NULL; i++) {
-        if(strcmp(trans[i].msg_id, msg_id) == 0) {
+    for (i = 0; trans[i].msg_id != NULL; i++) {
+        if (strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if(trans[i].translation) return trans[i].translation;
+            if (trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -528,23 +708,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if(current_lang == NULL) return msg_id;
+    if (current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if(lang->singulars != NULL) {
+    if (lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if(lang == current_lang_pack[0]) return msg_id;
+    if (lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if(lang->singulars != NULL) {
+    if (lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -560,31 +740,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if(current_lang == NULL) return msg_id;
+    if (current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if(lang->locale_plural_fn != NULL) {
+    if (lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if(lang->plurals[ptype] != NULL) {
+        if (lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if(lang == current_lang_pack[0]) return msg_id;
+    if (lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if(lang->locale_plural_fn != NULL) {
+    if (lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if(lang->plurals[ptype] != NULL) {
+        if (lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -599,6 +779,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if(!current_lang) return NULL;
+    if (!current_lang) return NULL;
     return current_lang->locale_name;
 }

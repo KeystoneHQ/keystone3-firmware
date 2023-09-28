@@ -14,6 +14,7 @@
 #include "gui_lock_widgets.h"
 #include "presetting.h"
 #include "anti_tamper.h"
+#include "gui_global_resources.h"
 
 static int32_t GuiInitViewInit(void)
 {
@@ -21,6 +22,7 @@ static int32_t GuiInitViewInit(void)
     GuiEnterPassLabelInit();
     GuiStyleInit();
     GuiStatusBarInit();
+    GlobalResourcesInit();
     if (GetFactoryResult() == false) {
         GuiFrameOpenView(&g_inactiveView);
         return SUCCESS_CODE;

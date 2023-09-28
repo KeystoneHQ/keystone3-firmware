@@ -84,13 +84,13 @@ void GuiWebAuthResultCodeWidget(lv_obj_t *parent)
     label = GuiCreateIllustrateLabel(parent, _("verification_code_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 352 - GUI_MAIN_AREA_OFFSET);
 
-    btn = GuiCreateBtn(parent, _("Failed"));
+    btn = GuiCreateBtn(parent, _("verification_failed"));
     lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
     lv_obj_set_size(btn, 192, 66);
     lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_ALL, NULL);
 
-    btn = GuiCreateBtn(parent, _("Success"));
+    btn = GuiCreateBtn(parent, _("verification_success"));
     lv_obj_set_style_bg_color(btn, GREEN_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 252, -24);
     lv_obj_set_size(btn, 192, 66);
@@ -158,13 +158,13 @@ static void WebAuthWipeDevice(void)
     lv_obj_set_size(g_cont, lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
                     GUI_STATUS_BAR_HEIGHT);
 
-    lv_obj_t *label = GuiCreateTextLabel(g_cont, "Resetting Device");
+    lv_obj_t *label = GuiCreateTextLabel(g_cont, _("system_settings_wipe_device_generating_title"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 355);
 
-    label = GuiCreateNoticeLabel(g_cont, "Erasing Secure Element...");
+    label = GuiCreateNoticeLabel(g_cont, _("system_settings_wipe_device_generating_desc1"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 410);
 
-    label = GuiCreateNoticeLabel(g_cont, "Do not power off your device while the installation process is underway");
+    label = GuiCreateNoticeLabel(g_cont, _("system_settings_wipe_device_generating_desc2"));
     lv_obj_set_width(label, 408);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 612);
@@ -195,7 +195,7 @@ void GuiWebAuthResultFailedWidget(lv_obj_t *parent)
     lv_label_set_recolor(label, true);
 
     char erase[64] = {0};
-    sprintf(erase, "#F55831 %s#", _("Wipe Device"));
+    sprintf(erase, "#F55831 %s#", _("wipe_device"));
 
     label = GuiCreateTextLabel(parent, erase);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -64);
@@ -314,9 +314,9 @@ static lv_obj_t *g_WebAuthResultPendingCont;
 void GuiWebAuthResultShowPending()
 {
     g_WebAuthResultPendingCont = GuiCreateAnimHintBox(lv_scr_act(), 480, 326, 82);
-    lv_obj_t *title = GuiCreateTextLabel(g_WebAuthResultPendingCont, _("Verifing"));
+    lv_obj_t *title = GuiCreateTextLabel(g_WebAuthResultPendingCont, _("verify_modal_title"));
     lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -124);
-    lv_obj_t *desc = GuiCreateNoticeLabel(g_WebAuthResultPendingCont, _("Calculating Auth Code..."));
+    lv_obj_t *desc = GuiCreateNoticeLabel(g_WebAuthResultPendingCont, _("verify_modal_desc"));
     lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -76);
 }
 

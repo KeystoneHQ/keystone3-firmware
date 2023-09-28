@@ -33,13 +33,13 @@ static void GuiFirmwareUpdateDenyInit(void)
         img = GuiCreateImg(g_firmwareUpdateDenyHintBox, &imgWarn);
         lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 36, -266);
 
-        label = GuiCreateLittleTitleLabel(g_firmwareUpdateDenyHintBox, "Unlock Device Required");
+        label = GuiCreateLittleTitleLabel(g_firmwareUpdateDenyHintBox, _("firmware_update_deny_title"));
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -202);
-        label = GuiCreateIllustrateLabel(g_firmwareUpdateDenyHintBox, "You need to unlock your device to upgrade the firmware version.");
+        label = GuiCreateIllustrateLabel(g_firmwareUpdateDenyHintBox, _("firmware_update_deny_desc"));
         lv_obj_set_width(label, 408);
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -130);
 
-        button = GuiCreateBtnWithFont(g_firmwareUpdateDenyHintBox, "Input Password", g_defTextFont);
+        button = GuiCreateBtnWithFont(g_firmwareUpdateDenyHintBox, _("firmware_update_deny_input_password"), g_defTextFont);
         lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_set_size(button, 234, 66);
         lv_obj_set_style_bg_color(button, DARK_GRAY_COLOR, LV_PART_MAIN);

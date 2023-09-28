@@ -106,7 +106,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
 
     lv_obj_add_event_cb(lv_obj_get_child(keyboardHintBox, 0), CloseKeyBoardWidgetHandler, LV_EVENT_CLICKED, keyboardWidget);
 
-    lv_obj_t *label = GuiCreateIllustrateLabel(keyboardHintBox, _("Please Enter Passcode"));
+    lv_obj_t *label = GuiCreateIllustrateLabel(keyboardHintBox, _("enter_passcode"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 254);
 
     lv_obj_t *img = GuiCreateImg(keyboardHintBox, &imgClose);
@@ -142,7 +142,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
     button = GuiCreateImgLabelButton(keyboardHintBox, _("FORGET"), &imgLock, ForgetHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 333, 439);
 
-    label = GuiCreateIllustrateLabel(keyboardHintBox, _("Password does not match"));
+    label = GuiCreateIllustrateLabel(keyboardHintBox, _("password_error_not_match"));
     lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 390);
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
@@ -197,7 +197,7 @@ void GuiSetErrorLabel(KeyboardWidget_t *keyboardWidget, char *errorMessage)
     if (keyboardWidget != NULL && keyboardWidget->errLabel != NULL) {
         lv_label_set_text(keyboardWidget->errLabel, errorMessage);
         lv_obj_clear_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN);
-    } 
+    }
 }
 
 void GuiShowErrorLabel(KeyboardWidget_t *keyboardWidget)
@@ -219,7 +219,7 @@ void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t
 {
     printf("GuiShowErrorNumber error count is %d\n", passwordVerifyResult->errorCount);
     char hint[128];
-    sprintf(hint, "Incorrect password, you have #F55831 %d# chances left", (MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX - passwordVerifyResult->errorCount));
+    sprintf(hint, _("unlock_device_attempts_left_times_fmt"), (MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX - passwordVerifyResult->errorCount));
     GuiSetErrorLabel(keyboardWidget, hint);
     if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
         GuiShowPasswordErrorHintBox(keyboardWidget);
@@ -230,11 +230,11 @@ static void GuiShowPasswordErrorHintBox(KeyboardWidget_t *keyboardWidget)
 {
 
     lv_obj_t *errHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgFailed,
-                           "Attempt Limit Exceeded", "Device lock imminent. Please unlock to access the device.",
-                           NULL, DARK_GRAY_COLOR, "Unlock Device (5s)", DARK_GRAY_COLOR);
+                           _("unlock_device_error_attempts_exceed"), _("unlock_device_error_attempts_exceed_desc"),
+                           NULL, DARK_GRAY_COLOR, _("unlock_device_error_btn_start_text"), DARK_GRAY_COLOR);
 
     lv_obj_t *btn = GuiGetHintBoxRightBtn(errHintBox);
-    lv_label_set_text(lv_obj_get_child(btn, 0), "Unlock Device (5s)");
+    lv_label_set_text(lv_obj_get_child(btn, 0), _("unlock_device_error_btn_start_text"));
     lv_obj_add_event_cb(btn, LockDeviceHandler, LV_EVENT_CLICKED, keyboardWidget);
     lv_timer_t *countDownTimer = lv_timer_create(CountDownHandler, 1000, keyboardWidget);
 
@@ -269,9 +269,9 @@ static void CountDownHandler(lv_timer_t *timer)
     char buf[32] = {0};
     --(*keyboardWidget->timerCounter);
     if (*keyboardWidget->timerCounter > 0) {
-        sprintf(buf, "Unlock Device (%ds)", *keyboardWidget->timerCounter);
+        sprintf(buf, _("unlock_device_error_btn_text_fmt"), *keyboardWidget->timerCounter);
     } else {
-        strcpy(buf, "Unlock Device");
+        strcpy(buf, _("unlock_device_error_btn_end_text"));
     }
     lv_label_set_text(lv_obj_get_child(keyboardWidget->errHintBoxBtn, 0), buf);
 

@@ -69,22 +69,22 @@ void GuiLockDeviceInit(void *param)
     char lockHint[128];
 
     if (!IsLockTimePage()) {
-        sprintf(lockHint, "%s", "Device Locked");
+        sprintf(lockHint, "%s", _("unlock_device_fingerprint_pin_device_locked_title"));
     } else {
-        sprintf(lockHint, "%s", "Device Unavailable");
+        sprintf(lockHint, "%s", _("unlock_device_time_limited_error_max_title"));
     }
 
     lv_obj_t *label =  GuiCreateLabelWithFont(cont, lockHint, &openSansEnLittleTitle);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 236 - 96);
 
     if (!IsLockTimePage()) {
-        sprintf(lockHint, "%s", "Please wipe your device. All the data on this device will be erased after wiped");
+        sprintf(lockHint, "%s", _("unlock_device_fingerprint_pin_device_locked_desc"));
     } else {
         uint16_t time = GuiGetLockTimeByLeftErrorCount(*(uint16_t*)pageParam) / 60;
         if (time == 1) {
-            sprintf(lockHint, "Please unlock your device in #F55831 %d# minute", time);
+            sprintf(lockHint, "%s", _("unlock_device_time_limited_error_max_desc"));
         } else {
-            sprintf(lockHint, "Please unlock your device in #F55831 %d# minutes", time);
+            sprintf(lockHint, _("unlock_device_time_limited_error_max_desc_fmt"), time);
         }
     }
 
@@ -96,7 +96,7 @@ void GuiLockDeviceInit(void *param)
 
     if (!IsLockTimePage()) {
         lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
-        lv_obj_t *btn = GuiCreateBtn(cont, "Wipe Device Now (15)");
+        lv_obj_t *btn = GuiCreateBtn(cont, _("unlock_device_fingerprint_pin_device_locked_btn_start_text"));
         lv_obj_set_size(btn, 302, 66);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 622 - 96);
         lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_STATE_DEFAULT);
@@ -107,8 +107,7 @@ void GuiLockDeviceInit(void *param)
         g_countDownTimer = lv_timer_create(CountDownTimerWipeDeviceHandler, 1000, btn);
     } else {
         lv_obj_set_style_text_color(label, lv_color_hex(0xc4c4c4), LV_PART_MAIN);
-
-        lv_obj_t *btn = GuiCreateBtn(cont, "Forget Password?");
+        lv_obj_t *btn = GuiCreateBtn(cont, _("forgot_password_reset_passcode_intro_title"));
         lv_obj_set_size(btn, 302, 66);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 622 - 96);
         lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_STATE_DEFAULT);
@@ -171,9 +170,9 @@ static void CountDownTimerWipeDeviceHandler(lv_timer_t *timer)
     char buf[32] = {0};
     --countDown;
     if (countDown > 0) {
-        sprintf(buf, "Wipe Device Now (%d)", countDown);
+        sprintf(buf, _("unlock_device_fingerprint_pin_device_locked_btn_fmt"), countDown);
     } else {
-        strcpy(buf, "Wipe Device Now");
+        strcpy(buf, _("unlock_device_fingerprint_pin_device_locked_btn"));
     }
     lv_label_set_text(lv_obj_get_child(obj, 0), buf);
     if (countDown <= 0) {
@@ -235,13 +234,13 @@ static void WipeDevice(void)
     lv_obj_set_size(g_cont, lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
                     GUI_STATUS_BAR_HEIGHT);
 
-    lv_obj_t *label = GuiCreateTextLabel(g_cont, "Resetting Device");
+    lv_obj_t *label = GuiCreateTextLabel(g_cont, _("system_settings_wipe_device_generating_title"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 355);
 
-    label = GuiCreateNoticeLabel(g_cont, "Erasing Secure Element...");
+    label = GuiCreateNoticeLabel(g_cont, _("system_settings_wipe_device_generating_desc1"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 410);
 
-    label = GuiCreateNoticeLabel(g_cont, "Do not power off your device while the installation process is underway");
+    label = GuiCreateNoticeLabel(g_cont, _("system_settings_wipe_device_generating_desc2"));
     lv_obj_set_width(label, 408);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 612);

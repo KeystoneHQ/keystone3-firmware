@@ -64,12 +64,12 @@ static void GuiPowerOptionInit(void)
     lv_obj_set_align(img, LV_ALIGN_CENTER);
     lv_obj_add_event_cb(btn, RebootHandler, LV_EVENT_CLICKED, NULL);
 
-    label = GuiCreateNoticeLabel(container, "Power Off");
+    label = GuiCreateNoticeLabel(container, _("power_off"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 296);
-    label = GuiCreateNoticeLabel(container, "Restart");
+    label = GuiCreateNoticeLabel(container, _("Restart"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 486);
 
-    btn = GuiCreateBtn(container, "Cancel");
+    btn = GuiCreateBtn(container, _("Cancel"));
     label = lv_obj_get_child(btn, 0);
     lv_obj_set_style_text_font(label, g_defTextFont, LV_PART_MAIN);
     lv_obj_set_size(btn, 135, 66);

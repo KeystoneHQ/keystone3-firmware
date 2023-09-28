@@ -426,7 +426,7 @@ static void lv_btnmatrix_event(const lv_obj_class_t * class_p, lv_event_t * e)
                     return;
                 }
             }
-            
+
             /*Handle the case where there is no button there*/
             if (btn_pr != LV_BTNMATRIX_BTN_NONE) {
                 if (button_is_inactive(btnm->ctrl_bits[btn_pr]) == false &&

@@ -55,7 +55,8 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent);
 static void FirmwareSdcardUpdateHandler(lv_event_t *e);
 
 static FirmwareUpdateWidgets_t g_firmwareUpdateWidgets;
-static const char g_firmwareSdUpdateUrl[] = "https://keyst.one/firmware";
+static char *g_firmwareUpdateUrl = NULL;
+static char *g_firmwareSdUpdateUrl = NULL;
 static lv_obj_t *g_waitAnimCont = NULL;
 static void *g_param = NULL;
 static lv_obj_t *g_noticeHintBox = NULL;
@@ -63,15 +64,24 @@ static lv_obj_t *g_noticeHintBox = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static PageWidget_t *g_pageWidget;
 
+static void UrlInit()
+{
+    if (g_firmwareUpdateUrl == NULL) {
+        g_firmwareUpdateUrl = _("firmware_update_usb_qr_link");
+    }
+    if (g_firmwareSdUpdateUrl == NULL) {
+        g_firmwareSdUpdateUrl = _("firmware_update_sd_desc2_link");
+    }
+}
 
 void GuiCreateSdCardUpdateHintbox(char *version)
 {
     GUI_DEL_OBJ(g_noticeHintBox)
     static uint32_t param = SIG_INIT_SD_CARD_OTA_COPY;
     char desc[150] = {0};
-    sprintf(desc, "A new firmware version is available. Do you want to update your device's firmware to the latest version?");
-    g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 416, &imgFirmwareUp, "Update Available",
-                      desc, "Not Now", DARK_GRAY_COLOR, "Update", ORANGE_COLOR);
+    sprintf(desc, _("firmware_update_sd_dialog_desc"));
+    g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 416, &imgFirmwareUp, _("firmware_update_sd_dialog_title"),
+                      desc, _("not_now"), DARK_GRAY_COLOR, _("Update"), ORANGE_COLOR);
     lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeHintBox);
     lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
 
@@ -89,6 +99,7 @@ static int GetEntryEnum(void)
 
 void GuiFirmwareUpdateInit(void *param)
 {
+    UrlInit();
     g_param = param;
     lv_obj_t *tileView;
     CLEAR_OBJECT(g_firmwareUpdateWidgets);
@@ -126,9 +137,9 @@ void GuiFirmwareSdCardCopy(void)
     GUI_DEL_OBJ(g_noticeHintBox)
 
     g_waitAnimCont = GuiCreateAnimHintBox(lv_scr_act(), 480, 386, 82);
-    lv_obj_t *title = GuiCreateTextLabel(g_waitAnimCont, _("Copying"));
+    lv_obj_t *title = GuiCreateTextLabel(g_waitAnimCont, _("firmware_update_sd_copying_title"));
     lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
-    lv_obj_t *desc = GuiCreateNoticeLabel(g_waitAnimCont, _("The copying process of the latest firmware from the MicroSD card may take 15 to 45 seconds."));
+    lv_obj_t *desc = GuiCreateNoticeLabel(g_waitAnimCont, _("firmware_update_sd_copying_desc"));
     lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -86);
     lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, 0);
 }
@@ -211,14 +222,14 @@ static void GuiCreateSelectTile(lv_obj_t *parent)
     lv_obj_clean(parent);
     uint8_t memberCnt = 3;
     lv_obj_t *label, *img, *button, *imgArrow, *line;
-    label = GuiCreateTitleLabel(parent, "Firmware update");
+    label = GuiCreateTitleLabel(parent, _("firmware_update_title"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
-    label = GuiCreateNoticeLabel(parent, "Update your firmware to the latest version to leverage the newly added features in Keystone.");
+    label = GuiCreateNoticeLabel(parent, _("firmware_update_desc"));
     lv_obj_set_width(label, 408);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 72);
 
     img = GuiCreateImg(parent, &imgMicroSd);
-    label = GuiCreateLittleTitleLabel(parent, "Via MicroSD Card");
+    label = GuiCreateLittleTitleLabel(parent, _("firmware_update_via_sd"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     GuiButton_t table1[4] = {
         {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 40},},
@@ -242,7 +253,7 @@ static void GuiCreateSelectTile(lv_obj_t *parent)
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 210);
 
     img = GuiCreateImg(parent, &imgUsbConnection);
-    label = GuiCreateLittleTitleLabel(parent, "Via USB");
+    label = GuiCreateLittleTitleLabel(parent, _("firmware_update_via_usb"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     GuiButton_t table2[] = {
         {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 40},},
@@ -367,7 +378,7 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
     static uint32_t param = SIG_INIT_SD_CARD_OTA_COPY;
     lv_obj_t *label, *img;
 
-    label = GuiCreateTitleLabel(parent, "Update via MicroSD");
+    label = GuiCreateTitleLabel(parent, _("firmware_update_sd_title"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
 
     label = GuiCreateIllustrateLabel(parent, "#F5870A 1#");
@@ -452,7 +463,7 @@ static void GuiQrcodeHandler(lv_event_t *e)
             lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
             lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -114);
 
-            button = GuiCreateBtn(parent, "OK");
+            button = GuiCreateBtn(parent, _("OK"));
             lv_obj_set_size(button, 94, 66);
             lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
             lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);

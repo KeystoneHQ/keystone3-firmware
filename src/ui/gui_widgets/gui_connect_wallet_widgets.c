@@ -216,8 +216,7 @@ static bool IsEVMChain(int walletIndex)
 
 static bool IsSOL(int walletIndex)
 {
-    switch (walletIndex)
-    {
+    switch (walletIndex) {
     case WALLET_LIST_SOLFARE:
         return true;
     default:
@@ -232,10 +231,10 @@ static void OpenQRCodeHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         WalletListItem_t *wallet = lv_event_get_user_data(e);
         g_connectWalletTileView.walletIndex = wallet->index;
-        if(IsEVMChain(g_connectWalletTileView.walletIndex)) {
+        if (IsEVMChain(g_connectWalletTileView.walletIndex)) {
             g_derivationPathDescs = GetDerivationPathDescs(ETH_DERIVATION_PATH_DESC);
         }
-        if(IsSOL(g_connectWalletTileView.walletIndex)) {
+        if (IsSOL(g_connectWalletTileView.walletIndex)) {
             g_derivationPathDescs = GetDerivationPathDescs(SOL_DERIVATION_PATH_DESC);
         }
         g_isCoinReselected = false;

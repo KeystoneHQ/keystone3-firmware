@@ -162,8 +162,7 @@ static char * *g_derivationPathDescs = NULL;
 
 static void InitDerivationPathDesc(uint8_t chain)
 {
-    switch (chain)
-    {
+    switch (chain) {
     case HOME_WALLET_CARD_ETH:
         g_derivationPathDescs = GetDerivationPathDescs(ETH_DERIVATION_PATH_DESC);
         break;
@@ -172,7 +171,7 @@ static void InitDerivationPathDesc(uint8_t chain)
         break;
     default:
         break;
-    }    
+    }
 }
 
 void GuiMultiPathCoinReceiveInit(uint8_t chain)

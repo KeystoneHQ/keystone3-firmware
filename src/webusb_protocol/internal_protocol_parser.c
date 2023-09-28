@@ -5,7 +5,7 @@
 #include "user_memory.h"
 
 static struct ProtocolParser *global_parser = NULL;
-static ProtocolSendCallbackFunc_t *g_sendFunc = NULL;
+static ProtocolSendCallbackFunc_t g_sendFunc = NULL;
 uint8_t g_protocolRcvBuffer[PROTOCOL_MAX_LENGTH];
 
 static uint8_t *ExecuteService(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
@@ -70,7 +70,7 @@ void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
             if (sendBuf)
             {
                 PrintArray("sendBuf", sendBuf, outLen);
-                (*g_sendFunc)(sendBuf, outLen);
+                g_sendFunc(sendBuf, outLen);
                 SRAM_FREE(sendBuf);
             }
         }
@@ -85,7 +85,10 @@ void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
 
 static void RegisterSendFunc(ProtocolSendCallbackFunc_t sendFunc)
 {
-    g_sendFunc = sendFunc;
+    if (g_sendFunc == NULL)
+    {
+        g_sendFunc = sendFunc;
+    }
 }
 
 struct ProtocolParser *NewInternalProtocolParser()

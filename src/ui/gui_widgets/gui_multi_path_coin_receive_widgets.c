@@ -201,8 +201,7 @@ void GuiMultiPathCoinReceiveRefresh(void)
     switch (g_multiPathCoinReceiveTileNow) {
     case RECEIVE_TILE_QRCODE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
-        switch (g_chainCard)
-        {
+        switch (g_chainCard) {
         case HOME_WALLET_CARD_ETH:
             SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_ETH, "Receive ETH");
             break;

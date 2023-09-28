@@ -290,7 +290,7 @@ static void SelectCheckBoxHandler(lv_event_t* e)
         if (g_phraseCnt != 24) {
             g_phraseCnt = 24;
             GuiModelBip39UpdateMnemonic(g_phraseCnt);
-        }    
+        }
     }
     lv_obj_scroll_to_y(g_randomPhraseKb->cont, 0, LV_ANIM_ON);
     GUI_DEL_OBJ(g_noticeHintBox)

@@ -24,6 +24,7 @@ void BatteryOpen(void);
 /// @param
 /// @return Battery voltage, in millivolts.
 uint32_t GetBatteryMilliVolt(void);
+uint32_t GetRtcBatteryMilliVolt(void);
 
 bool BatteryIntervalHandler(void);
 uint8_t GetBatterPercent(void);

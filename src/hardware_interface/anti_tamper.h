@@ -17,6 +17,7 @@ void TamperStartup(void);
 void TamperIntHandler(void);
 void TamperBackgroundHandler(void);
 bool Tampered(void);
+void TamperDetectedHandler(void);
 
 void TamperTest(int argc, char *argv[]);
 

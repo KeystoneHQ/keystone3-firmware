@@ -22,16 +22,14 @@
 
 #define DERIVATION_PATH_EG_LEN 2
 
-typedef enum
-{
+typedef enum {
     CONNECT_WALLET_SELECT_WALLET = 0,
     CONNECT_WALLET_QRCODE,
 
     CONNECT_WALLET_BUTT,
 } CONNECT_WALLET_ENUM;
 
-WalletListItem_t g_walletListArray[] =
-{
+WalletListItem_t g_walletListArray[] = {
     // {WALLET_LIST_KEYSTONE, &walletListKeyStone},
     {WALLET_LIST_OKX, &walletListOkx},
     {WALLET_LIST_METAMASK, &walletListMetaMask},
@@ -47,8 +45,7 @@ WalletListItem_t g_walletListArray[] =
     {WALLET_LIST_KEPLR, &walletListKeplr},
 };
 
-typedef struct ConnectWalletWidget
-{
+typedef struct ConnectWalletWidget {
     uint8_t currentTile;
     lv_obj_t *cont;
     lv_obj_t *tileView;
@@ -56,15 +53,13 @@ typedef struct ConnectWalletWidget
     lv_obj_t *qrCode;
 } ConnectWalletWidget_t;
 
-typedef struct
-{
+typedef struct {
     COMPANION_APP_COINS_ENUM index;
     const char *coin;
     const lv_img_dsc_t *icon;
 } ComapanionCoinCard_t;
 
-static const ComapanionCoinCard_t g_companionCoinCardArray[COMPANION_APP_COINS_BUTT] =
-{
+static const ComapanionCoinCard_t g_companionCoinCardArray[COMPANION_APP_COINS_BUTT] = {
     {
         .index = BTC,
         .coin = "Bitcoin",
@@ -107,24 +102,21 @@ static const ComapanionCoinCard_t g_companionCoinCardArray[COMPANION_APP_COINS_B
     },
 };
 
-static const lv_img_dsc_t *g_metaMaskCoinArray[4] =
-{
+static const lv_img_dsc_t *g_metaMaskCoinArray[4] = {
     &coinEth,
     &coinBnb,
     &coinAva,
     &coinMatic,
 };
 
-static const lv_img_dsc_t *g_ethWalletCoinArray[4] =
-{
+static const lv_img_dsc_t *g_ethWalletCoinArray[4] = {
     &coinEth,
     &coinBnb,
     &coinAva,
     &coinMatic,
 };
 
-static const lv_img_dsc_t *g_okxWalletCoinArray[5] =
-{
+static const lv_img_dsc_t *g_okxWalletCoinArray[5] = {
     &coinBtc,
     &coinEth,
     &coinBnb,
@@ -132,13 +124,11 @@ static const lv_img_dsc_t *g_okxWalletCoinArray[5] =
     &coinOkb,
 };
 
-static const lv_img_dsc_t *g_blueWalletCoinArray[4] =
-{
+static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {
     &coinBtc,
 };
 
-static const lv_img_dsc_t *g_keplrCoinArray[8] =
-{
+static const lv_img_dsc_t *g_keplrCoinArray[8] = {
     &coinAtom,
     &coinOsmo,
     &coinBld,
@@ -150,8 +140,7 @@ static const lv_img_dsc_t *g_keplrCoinArray[8] =
 };
 
 static ConnectWalletWidget_t g_connectWalletTileView;
-static CoinState_t g_defaultCompanionAppState[COMPANION_APP_COINS_BUTT] =
-{
+static CoinState_t g_defaultCompanionAppState[COMPANION_APP_COINS_BUTT] = {
     {BTC, true},
     {ETH, true},
     {BCH, true},
@@ -162,14 +151,12 @@ static CoinState_t g_defaultCompanionAppState[COMPANION_APP_COINS_BUTT] =
     {DOT, true},
 };
 
-typedef struct
-{
+typedef struct {
     const char *accountType;
     const char *path;
 } ChangeDerivationItem_t;
 
-const static ChangeDerivationItem_t g_changeDerivationList[] =
-{
+const static ChangeDerivationItem_t g_changeDerivationList[] = {
     {"BIP 44 Standard", "#8E8E8E m/44'/60'/0'/0/##F5870A X#"},
     {"Ledger Live", "#8E8E8E m/44'/60'/##F5870A X##8E8E8E '/0/0#"},
     {"Ledger Legacy", "#8E8E8E m/44'/60'/0'/##F5870A X#"},
@@ -206,15 +193,14 @@ static lv_obj_t *g_bottomCont = NULL;
 static lv_obj_t *g_manageImg = NULL;
 static bool g_isCoinReselected = false;
 static lv_obj_t *g_derivationPathDescLabel = NULL;
-static char* *g_derivationPathDescs = NULL;
+static char * *g_derivationPathDescs = NULL;
 
 static void QRCodePause(bool);
 
 static void InitDerivationPathDescs()
 {
-    if(g_derivationPathDescs == NULL)
-    {
-        g_derivationPathDescs = SRAM_MALLOC(3*128);
+    if (g_derivationPathDescs == NULL) {
+        g_derivationPathDescs = SRAM_MALLOC(3 * 128);
         g_derivationPathDescs[Bip44Standard] = _("Recommended. Widely adopted across numerous software wallets.");
         g_derivationPathDescs[LedgerLive] = _("Choose this path if you intend to import a seed phrase from Ledger Live.");
         g_derivationPathDescs[LedgerLegacy] = _("Choose this path if you are managing your digital assets with Ledger Legacy.");
@@ -225,8 +211,7 @@ static void OpenQRCodeHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         WalletListItem_t *wallet = lv_event_get_user_data(e);
         g_connectWalletTileView.walletIndex = wallet->index;
         g_isCoinReselected = false;
@@ -237,8 +222,7 @@ static void OpenQRCodeHandler(lv_event_t *e)
 static void ReturnShowQRHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
@@ -249,21 +233,16 @@ static void ReturnShowQRHandler(lv_event_t *e)
 static void UpdateCompanionAppCoinStateHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         CoinState_t *coinState = lv_event_get_user_data(e);
         lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
         bool state = lv_obj_has_state(lv_obj_get_child(parent, 2), LV_STATE_CHECKED);
         g_tempCompanionAppcoinState[coinState->index].state = state;
 
-        for (int i = 0; i < COMPANION_APP_COINS_BUTT; i++)
-        {
-            if (g_tempCompanionAppcoinState[i].state)
-            {
+        for (int i = 0; i < COMPANION_APP_COINS_BUTT; i++) {
+            if (g_tempCompanionAppcoinState[i].state) {
                 lv_obj_add_state(g_defaultCompanionAppState[i].checkBox, LV_STATE_CHECKED);
-            }
-            else
-            {
+            } else {
                 lv_obj_clear_state(g_defaultCompanionAppState[i].checkBox, LV_STATE_CHECKED);
             }
         }
@@ -273,8 +252,7 @@ static void UpdateCompanionAppCoinStateHandler(lv_event_t *e)
 static void ConfirmSelectCompanionAppCoinsHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         g_isCoinReselected = true;
         memcpy(g_companionAppcoinState, g_tempCompanionAppcoinState, sizeof(g_tempCompanionAppcoinState));
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
@@ -287,8 +265,7 @@ static void ConfirmSelectCompanionAppCoinsHandler(lv_event_t *e)
 static void JumpSelectCoinPageHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
 #ifndef COMPILE_SIMULATOR
         GuiAnimatingQRCodeDestroyTimer();
 #endif
@@ -318,24 +295,19 @@ static void GuiCreateSelectCompanionAppCoinWidget()
     lv_obj_t *icon;
     lv_obj_t *checkbox;
 
-    for (int i = 0; i < COMPANION_APP_COINS_BUTT; i++)
-    {
+    for (int i = 0; i < COMPANION_APP_COINS_BUTT; i++) {
         coinLabel = GuiCreateTextLabel(coinListCont, g_companionCoinCardArray[i].coin);
         icon = GuiCreateScaleImg(coinListCont, g_companionCoinCardArray[i].icon, 118);
         checkbox = GuiCreateMultiCheckBox(coinListCont, _(""));
         g_defaultCompanionAppState[i].checkBox = checkbox;
 
-        if (g_tempCompanionAppcoinState[i].state)
-        {
+        if (g_tempCompanionAppcoinState[i].state) {
             lv_obj_add_state(g_defaultCompanionAppState[i].checkBox, LV_STATE_CHECKED);
-        }
-        else
-        {
+        } else {
             lv_obj_clear_state(g_defaultCompanionAppState[i].checkBox, LV_STATE_CHECKED);
         }
 
-        GuiButton_t table[4] =
-        {
+        GuiButton_t table[4] = {
             {
                 .obj = coinLabel,
                 .align = LV_ALIGN_DEFAULT,
@@ -353,8 +325,7 @@ static void GuiCreateSelectCompanionAppCoinWidget()
             },
         };
         int buttonNum = 3;
-        if (i == ETH)
-        {
+        if (i == ETH) {
             buttonNum = 4;
             lv_obj_t *bnb = GuiCreateScaleImg(coinListCont, &coinBnb, 118);
             table[3].obj = bnb;
@@ -380,8 +351,7 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
 {
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_MOMENTUM);
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
-    for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++)
-    {
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
         lv_obj_t *img = GuiCreateImg(parent, g_walletListArray[i].img);
         lv_obj_align(img, LV_ALIGN_TOP_MID, 0, i * 107);
         lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
@@ -445,17 +415,13 @@ static void AddCompanionAppCoins()
 {
     lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_clear_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
-    if (lv_obj_get_child_cnt(g_coinCont) > 0)
-    {
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
         lv_obj_clean(g_coinCont);
     }
     int count = 0;
-    for (int i = 0; i < COMPANION_APP_COINS_BUTT; i++)
-    {
-        if (g_companionAppcoinState[i].state)
-        {
-            if (count < 8)
-            {
+    for (int i = 0; i < COMPANION_APP_COINS_BUTT; i++) {
+        if (g_companionAppcoinState[i].state) {
+            if (count < 8) {
                 lv_obj_t *img = GuiCreateImg(g_coinCont, g_companionCoinCardArray[g_companionAppcoinState[i].index].icon);
                 lv_img_set_zoom(img, 110);
                 lv_img_set_pivot(img, 0, 0);
@@ -465,8 +431,7 @@ static void AddCompanionAppCoins()
         }
     }
     // add more icon
-    if (count > 8)
-    {
+    if (count > 8) {
         lv_obj_t *img = GuiCreateImg(g_coinCont, &imgMore);
         lv_img_set_zoom(img, 150);
         lv_img_set_pivot(img, 0, 0);
@@ -477,12 +442,10 @@ static void AddCompanionAppCoins()
 
 static void AddMetaMaskCoins(void)
 {
-    if (lv_obj_get_child_cnt(g_coinCont) > 0)
-    {
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
         lv_obj_clean(g_coinCont);
     }
-    for (int i = 0; i < 4; i++)
-    {
+    for (int i = 0; i < 4; i++) {
         lv_obj_t *img = GuiCreateImg(g_coinCont, g_metaMaskCoinArray[i]);
         lv_img_set_zoom(img, 110);
         lv_img_set_pivot(img, 0, 0);
@@ -498,12 +461,10 @@ static void AddMetaMaskCoins(void)
 
 static void AddEthWalletCoins(void)
 {
-    if (lv_obj_get_child_cnt(g_coinCont) > 0)
-    {
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
         lv_obj_clean(g_coinCont);
     }
-    for (int i = 0; i < 4; i++)
-    {
+    for (int i = 0; i < 4; i++) {
         lv_obj_t *img = GuiCreateImg(g_coinCont, g_ethWalletCoinArray[i]);
         lv_img_set_zoom(img, 110);
         lv_img_set_pivot(img, 0, 0);
@@ -518,12 +479,10 @@ static void AddEthWalletCoins(void)
 
 static void AddOkxWalletCoins(void)
 {
-    if (lv_obj_get_child_cnt(g_coinCont) > 0)
-    {
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
         lv_obj_clean(g_coinCont);
     }
-    for (int i = 0; i < 5; i++)
-    {
+    for (int i = 0; i < 5; i++) {
         lv_obj_t *img = GuiCreateImg(g_coinCont, g_okxWalletCoinArray[i]);
         lv_img_set_zoom(img, 110);
         lv_img_set_pivot(img, 0, 0);
@@ -538,12 +497,10 @@ static void AddOkxWalletCoins(void)
 
 static void AddBlueWalletCoins(void)
 {
-    if (lv_obj_get_child_cnt(g_coinCont) > 0)
-    {
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
         lv_obj_clean(g_coinCont);
     }
-    for (int i = 0; i < 1; i++)
-    {
+    for (int i = 0; i < 1; i++) {
         lv_obj_t *img = GuiCreateImg(g_coinCont, g_blueWalletCoinArray[i]);
         lv_img_set_zoom(img, 110);
         lv_img_set_pivot(img, 0, 0);
@@ -553,12 +510,10 @@ static void AddBlueWalletCoins(void)
 
 static void AddKeplrCoins(void)
 {
-    if (lv_obj_get_child_cnt(g_coinCont) > 0)
-    {
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
         lv_obj_clean(g_coinCont);
     }
-    for (int i = 0; i < 8; i++)
-    {
+    for (int i = 0; i < 8; i++) {
         lv_obj_t *img = GuiCreateImg(g_coinCont, g_keplrCoinArray[i]);
         lv_img_set_zoom(img, 110);
         lv_img_set_pivot(img, 0, 0);
@@ -580,12 +535,9 @@ void GuiConnectWalletInit(void)
 
     lv_obj_t *tileView = lv_tileview_create(cont);
     lv_obj_clear_flag(tileView, LV_OBJ_FLAG_SCROLLABLE);
-    if (GuiDarkMode())
-    {
+    if (GuiDarkMode()) {
         lv_obj_set_style_bg_color(tileView, BLACK_COLOR, LV_PART_MAIN);
-    }
-    else
-    {
+    } else {
         lv_obj_set_style_bg_color(tileView, WHITE_COLOR, LV_PART_MAIN);
     }
     lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR & LV_STATE_SCROLLED);
@@ -611,11 +563,9 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     GenerateUR func = NULL;
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
-    switch (index)
-    {
+    switch (index) {
     case WALLET_LIST_KEYSTONE:
-        if (!g_isCoinReselected)
-        {
+        if (!g_isCoinReselected) {
             initCompanionAppCoinsConfig();
         }
         func = GuiGetCompanionAppData;
@@ -653,8 +603,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     default:
         return;
     }
-    if (func)
-    {
+    if (func) {
         GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
     }
 #endif
@@ -679,8 +628,7 @@ void ConnectWalletReturnHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
 #ifndef COMPILE_SIMULATOR
         // CloseQRTimer();
 #endif
@@ -705,16 +653,12 @@ static void CloseDerivationHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
-        if (g_currentBakPathIndex != GetMetamaskAccountType())
-        {
+    if (code == LV_EVENT_CLICKED) {
+        if (g_currentBakPathIndex != GetMetamaskAccountType()) {
             GuiAnimatingQRCodeDestroyTimer();
             GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
             g_currentBakPathIndex = GetMetamaskAccountType();
-        }
-        else
-        {
+        } else {
             QRCodePause(false);
         }
         GUI_DEL_OBJ(g_derivationPathCont);
@@ -764,20 +708,15 @@ static void SelectDerivationHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         lv_obj_t *newCheckBox = lv_event_get_user_data(e);
-        for (int i = 0; i < 3; i++)
-        {
-            if (newCheckBox == g_derivationCheck[i])
-            {
+        for (int i = 0; i < 3; i++) {
+            if (newCheckBox == g_derivationCheck[i]) {
                 lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
                 g_currentPathIndex[GetCurrentAccountIndex()] = i;
                 lv_label_set_text(g_derivationPathDescLabel, g_derivationPathDescs[g_currentPathIndex[GetCurrentAccountIndex()]]);
                 UpdateEthEgAddress(i);
-            }
-            else
-            {
+            } else {
                 lv_obj_clear_state(g_derivationCheck[i], LV_STATE_CHECKED);
             }
         }
@@ -787,8 +726,7 @@ static void OpenTutorialHandler(lv_event_t *e)
 {
     QRCodePause(true);
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
         GuiFrameOpenViewWithParam(&g_walletTutorialView, wallet, sizeof(wallet));
         GUI_DEL_OBJ(g_openMoreHintBox);
@@ -808,20 +746,17 @@ static void OpenDerivationPath()
     lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
-    for (int i = 0; i < 3; i++)
-    {
+    for (int i = 0; i < 3; i++) {
         lv_obj_t *accountType = GuiCreateTextLabel(cont, g_changeDerivationList[i].accountType);
         lv_obj_t *path = GuiCreateIllustrateLabel(cont, g_changeDerivationList[i].path);
         lv_label_set_recolor(path, true);
         lv_obj_t *checkBox = GuiCreateSingleCheckBox(cont, _(""));
         lv_obj_set_size(checkBox, 36, 36);
         g_derivationCheck[i] = checkBox;
-        if (i == GetMetamaskAccountType())
-        {
+        if (i == GetMetamaskAccountType()) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
-        GuiButton_t table[] =
-        {
+        GuiButton_t table[] = {
             {
                 .obj = accountType,
                 .align = LV_ALIGN_DEFAULT,
@@ -841,8 +776,7 @@ static void OpenDerivationPath()
         lv_obj_t *button = GuiCreateButton(cont, 408, 102, table, NUMBER_OF_ARRAYS(table),
                                            SelectDerivationHandler, g_derivationCheck[i]);
         lv_obj_align(button, LV_ALIGN_TOP_MID, 0, i * 102);
-        if (i != 0)
-        {
+        if (i != 0) {
             static lv_point_t points[2] = {{0, 0}, {360, 0}};
             lv_obj_t *line = (lv_obj_t *)GuiCreateLine(cont, points, 2);
             lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, i * 102);
@@ -882,8 +816,7 @@ static void OpenDerivationPath()
 static void ChangeDerivationPathHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         OpenDerivationPath();
         QRCodePause(true);
     }
@@ -891,8 +824,7 @@ static void ChangeDerivationPathHandler(lv_event_t *e)
 
 static bool IsEVMChain(int walletIndex)
 {
-    switch (walletIndex)
-    {
+    switch (walletIndex) {
     case WALLET_LIST_METAMASK:
     case WALLET_LIST_RABBY:
     case WALLET_LIST_SAFE:
@@ -909,12 +841,10 @@ static bool IsEVMChain(int walletIndex)
 static void OpenMoreHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         int hintboxHeight = 132;
         WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
-        if (IsEVMChain(*wallet))
-        {
+        if (IsEVMChain(*wallet)) {
             hintboxHeight = 228;
         }
         g_openMoreHintBox = GuiCreateHintBox(lv_scr_act(), 480, hintboxHeight, true);
@@ -922,8 +852,7 @@ static void OpenMoreHandler(lv_event_t *e)
         lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, "Tutorial");
         lv_obj_t *img = GuiCreateImg(g_openMoreHintBox, &imgTutorial);
 
-        GuiButton_t table[] =
-        {
+        GuiButton_t table[] = {
             {
                 .obj = img,
                 .align = LV_ALIGN_LEFT_MID,
@@ -939,8 +868,7 @@ static void OpenMoreHandler(lv_event_t *e)
                                         OpenTutorialHandler, wallet);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 
-        if (IsEVMChain(*wallet))
-        {
+        if (IsEVMChain(*wallet)) {
             label = GuiCreateTextLabel(g_openMoreHintBox, "Change Derivation Path");
             img = GuiCreateImg(g_openMoreHintBox, &imgPath);
             table[0].obj = img;
@@ -954,8 +882,7 @@ static void OpenMoreHandler(lv_event_t *e)
 
 int8_t GuiConnectWalletNextTile(void)
 {
-    switch (g_connectWalletTileView.currentTile)
-    {
+    switch (g_connectWalletTileView.currentTile) {
     case CONNECT_WALLET_SELECT_WALLET:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
@@ -972,8 +899,7 @@ int8_t GuiConnectWalletNextTile(void)
 
 int8_t GuiConnectWalletPrevTile(void)
 {
-    switch (g_connectWalletTileView.currentTile)
-    {
+    switch (g_connectWalletTileView.currentTile) {
     case CONNECT_WALLET_SELECT_WALLET:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         break;
@@ -991,8 +917,7 @@ int8_t GuiConnectWalletPrevTile(void)
 
 void GuiConnectWalletRefresh(void)
 {
-    switch (g_connectWalletTileView.currentTile)
-    {
+    switch (g_connectWalletTileView.currentTile) {
     case CONNECT_WALLET_SELECT_WALLET:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Choose Wallet"));
@@ -1002,15 +927,13 @@ void GuiConnectWalletRefresh(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
         SetWallet(g_pageWidget->navBarWidget, g_connectWalletTileView.walletIndex, NULL);
-        if (g_coinListCont != NULL)
-        {
+        if (g_coinListCont != NULL) {
             GUI_DEL_OBJ(g_coinListCont)
             GuiCreateSelectCompanionAppCoinWidget();
         }
         QRCodePause(false);
     }
-    if (g_derivationPathCont != NULL)
-    {
+    if (g_derivationPathCont != NULL) {
         GUI_DEL_OBJ(g_derivationPathCont);
         OpenDerivationPath();
     }
@@ -1025,8 +948,7 @@ void GuiConnectWalletDeInit(void)
 
     CloseToTargetTileView(g_connectWalletTileView.currentTile, CONNECT_WALLET_SELECT_WALLET);
     GUI_DEL_OBJ(g_connectWalletTileView.cont)
-    if (g_pageWidget != NULL)
-    {
+    if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }

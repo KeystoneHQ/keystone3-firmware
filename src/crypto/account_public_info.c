@@ -347,7 +347,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
         ret = GetAccountSeed(accountIndex, seed, password);
         CHECK_ERRCODE_RETURN_INT(ret);
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
-           switch (g_chainTable[i].curve) {
+            switch (g_chainTable[i].curve) {
             case SECP256K1:
                 xPubResult = get_extended_pubkey_by_seed(seed, len, g_chainTable[i].path);
                 break;

@@ -100,6 +100,12 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case SIG_EXTENDED_PUBLIC_KEY_NOT_MATCH:
         GuiLockScreenWipeDevice();
         break;
+    case SIG_START_GENERATE_XPUB:
+        GuiShowGenerateXPubLoading();
+        break;
+    case SIG_END_GENERATE_XPUB:
+        GuiHideGenerateXPubLoading();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

@@ -97,6 +97,7 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                 lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
             }
         } else {
+            ClearMnemonicKeyboard(mkb, &mkb->currentId);
             if (mkb->threShold == 0xff) {
                 mkb->threShold = threShold;
                 for (int i = 0; i < 3; i++) {
@@ -169,7 +170,6 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
             }
         }
     } while (0);
-    ClearMnemonicKeyboard(mkb, &mkb->currentId);
     GuiSetLetterBoardConfirm(letterKb, 0);
     memset(mnemonic, 0, strlen(mnemonic));
     SRAM_FREE(mnemonic);

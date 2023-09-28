@@ -5,20 +5,23 @@
  * Create: 2023-1-6
  ************************************************************************************************/
 
-#include "drv_battery.h"
-#include "mhscpu.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "user_delay.h"
-#include "drv_aw32001.h"
+#include "mhscpu.h"
 #include "cmsis_os.h"
-#include "log.h"
-#include "flash_address.h"
-#include "user_memory.h"
-#include "drv_gd25qxx.h"
 #include "assert.h"
+#include "log.h"
+#include "drv_battery.h"
+#include "drv_aw32001.h"
+#include "drv_gd25qxx.h"
+#include "drv_otp.h"
+#include "drv_rtc.h"
+#include "flash_address.h"
+#include "user_delay.h"
+#include "user_memory.h"
 #include "user_utils.h"
 #include "user_msg.h"
+#include "anti_tamper.h"
 
 
 #define BATTERY_DEBUG          0
@@ -37,6 +40,8 @@
 #define BATTERY_INVALID_PERCENT_VALUE                   101
 #define BATTERY_CHANNEL                                 ADC_CHANNEL_4
 #define RTC_BAT_CHANNEL                                 ADC_CHANNEL_3
+#define RTC_LOW_BATTERY_VALUE                           2800
+#define RTC_LOW_BATTERY_TIME_INTERVAL                   (3600 * 24 * 180) // 3600 sec * 24 hour * 180 days
 
 static uint8_t LoadBatteryPercent(void);
 static void SaveBatteryPercent(uint8_t percent);
@@ -96,6 +101,7 @@ const uint16_t chargingCurve[100] = {
 
 static uint8_t g_batterPercent = BATTERY_INVALID_PERCENT_VALUE;
 static uint32_t g_batteryFlashAddress = SPI_FLASH_ADDR_BATTERY_INFO;
+bool RtcLowBatteryCheck(void);
 
 void RtcBatAdcDetEnable(void)
 {
@@ -114,6 +120,8 @@ void BatteryInit(void)
 {
     ADC_InitTypeDef ADC_InitStruct;
     GPIO_InitTypeDef gpioInit;
+    uint32_t rtcVol = 0;
+    uint32_t timeStamp = 0;
 
     SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_GPIO | SYSCTRL_APBPeriph_ADC, ENABLE);
     SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_ADC, ENABLE);
@@ -134,6 +142,27 @@ void BatteryInit(void)
 
     ADC_Init(&ADC_InitStruct);
     g_batterPercent = LoadBatteryPercent();
+
+    memcpy(&rtcVol, (uint8_t *)OTP_ADDR_RTC_VOL, 4);
+    memcpy(&timeStamp, (uint8_t *)OTP_ADDR_RTC_VOL_TIME, 4);
+    if ((rtcVol & 0xFFFF) == 0xFFFF) {
+        uint16_t sumVol = 0, tempVol = 0;
+        for (int i = 0; i < 10; i++) {
+            sumVol += GetRtcBatteryMilliVolt();
+        }
+        tempVol = sumVol / 10;
+        WriteOtpData(OTP_ADDR_RTC_VOL, (uint8_t *)&tempVol, 4);
+        timeStamp = GetCurrentStampTime();
+        WriteOtpData(OTP_ADDR_RTC_VOL_TIME, (uint8_t *)&timeStamp, 4);
+        if (timeStamp == 0xFFFFFFFF) {
+            timeStamp = GetCurrentStampTime();
+            WriteOtpData(OTP_ADDR_RTC_VOL_TIME, (uint8_t *)&timeStamp, 4);
+        }
+    }
+
+    if (RtcLowBatteryCheck() == false && !Tampered()) {
+        TamperDetectedHandler();
+    }
 }
 
 
@@ -398,6 +427,28 @@ static uint8_t GetBatteryPercentByMilliVolt(uint32_t milliVolt, bool discharge)
     return percent;
 }
 
+bool RtcLowBatteryCheck(void)
+{
+    uint32_t rtcVol = 0;
+    uint16_t sumVol = 0, tempVol = 0;
+    uint32_t timeStamp = 0;
+    memcpy(&rtcVol, (uint8_t *)OTP_ADDR_RTC_VOL, 4);
+    rtcVol &= 0xFFFF;
+    memcpy(&timeStamp, (uint8_t *)OTP_ADDR_RTC_VOL_TIME, 4);
+    for (int i = 0; i < 10; i++) {
+        sumVol += GetRtcBatteryMilliVolt();
+    }
+    tempVol = sumVol / 10;
+    printf("tempVol = %d\n", tempVol);
+    if (tempVol <= RTC_LOW_BATTERY_VALUE) {
+        if (GetCurrentStampTime() - timeStamp >= RTC_LOW_BATTERY_TIME_INTERVAL) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
 
 void BatteryTest(int argc, char *argv[])
 {

@@ -20,6 +20,8 @@
 #define OTP_ADDR_AES_KEY            OTP_ADDR_SALT + 32
 #define OTP_ADDR_ATECC608B          OTP_ADDR_SALT + 64
 #define OTP_ADDR_DS28S60            OTP_ADDR_ATECC608B + 96
+#define OTP_ADDR_RTC_VOL            OTP_ADDR_DS28S60 + 96
+#define OTP_ADDR_RTC_VOL_TIME       OTP_ADDR_RTC_VOL + 4
 
 #define OTP_ADDR_SN                 0x40009700
 
@@ -32,7 +34,7 @@
 #endif
 
 
-#if (OTP_ADDR_DS28S60 + 96 - OTP_ADDR_BASE > 256)
+#if (OTP_ADDR_RTC_VOL_TIMER + 4 - OTP_ADDR_BASE > 512)
 #error "OTP overlap"
 #endif
 

@@ -184,6 +184,15 @@ int32_t SetUpdatePubKey(const uint8_t *pubKey)
     return ERR_UPDATE_PUB_KEY_NO_SPACE;
 }
 
+int GetRtcVolAndTimeStamp(void)
+{
+    uint32_t rtcVol = 0;
+    uint32_t timeStamp = 0;
+    memcpy(&rtcVol, (uint8_t *)OTP_ADDR_RTC_VOL, 4);
+    memcpy(&timeStamp, (uint8_t *)OTP_ADDR_RTC_VOL_TIME, 4);
+    printf("rtc vol = %d\n", rtcVol & 0xFFFF);
+    printf("rtc time stamp = %d\n", timeStamp);
+}
 
 void PresettingTest(int argc, char *argv[])
 {
@@ -256,6 +265,8 @@ void PresettingTest(int argc, char *argv[])
         SRAM_FREE(data);
     } else if (strcmp(argv[0], "set_factory_result") == 0) {
         SetFactoryResult();
+    } else if (strcmp(argv[0], "get_rtc_vol")) {
+        GetRtcVolAndTimeStamp();
     } else {
         printf("presetting cmd err\r\n");
     }

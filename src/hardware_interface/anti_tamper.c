@@ -30,17 +30,25 @@
 
 static void TamperEraseInfo(void);
 
-
-/// @brief Called when startup.
-void TamperStartup(void)
+void TamperDetectedHandler(void)
 {
-    if (ReadTamperInput() && SensorTamperStatus()) {
-        printf("tamper ok\r\n");
-    } else {
-        printf("tamper detected!!!\r\n");
-        SYSCTRL_PLLConfig(SYSCTRL_PLL_108MHz);
+    printf("tamper detected!!!\r\n");
+    SYSCTRL_PLLConfig(SYSCTRL_PLL_108MHz);
 #ifdef BUILD_PRODUCTION
 #endif
+    DisableAllHardware();
+    SetGpioLow(GPIOE, GPIO_Pin_11);         //reset fp.
+    //Set all ext int float
+    SetGpioFloat(GPIOA, GPIO_Pin_2);
+    SetGpioPullUp(GPIOD, GPIO_Pin_7);
+    SetGpioPullUp(GPIOE, GPIO_Pin_14);
+    SetGpioFloat(GPIOF, GPIO_Pin_1 | GPIO_Pin_15);
+    SetGpioPullUp(GPIOF, GPIO_Pin_14);
+    TamperEraseInfo();
+    ClearBpkValue(0);
+    BatteryOpen();
+    if (GetBatteryMilliVolt() < 3400) {
+        printf("battery low, do not startup\n");
         DisableAllHardware();
         SetGpioLow(GPIOE, GPIO_Pin_11);         //reset fp.
         //Set all ext int float
@@ -49,23 +57,20 @@ void TamperStartup(void)
         SetGpioPullUp(GPIOE, GPIO_Pin_14);
         SetGpioFloat(GPIOF, GPIO_Pin_1 | GPIO_Pin_15);
         SetGpioPullUp(GPIOF, GPIO_Pin_14);
-        TamperEraseInfo();
-        ClearBpkValue(0);
-        BatteryOpen();
-        if (GetBatteryMilliVolt() < 3400) {
-            printf("battery low, do not startup\n");
-            DisableAllHardware();
-            SetGpioLow(GPIOE, GPIO_Pin_11);         //reset fp.
-            //Set all ext int float
-            SetGpioFloat(GPIOA, GPIO_Pin_2);
-            SetGpioPullUp(GPIOD, GPIO_Pin_7);
-            SetGpioPullUp(GPIOE, GPIO_Pin_14);
-            SetGpioFloat(GPIOF, GPIO_Pin_1 | GPIO_Pin_15);
-            SetGpioPullUp(GPIOF, GPIO_Pin_14);
-            while (1) {
-                EnterDeepSleep();
-            }
+        while (1) {
+            EnterDeepSleep();
         }
+    }
+}
+
+
+/// @brief Called when startup.
+void TamperStartup(void)
+{
+    if (ReadTamperInput() && SensorTamperStatus()) {
+        printf("tamper ok\r\n");
+    } else {
+        TamperDetectedHandler();
     }
 }
 

@@ -43,9 +43,9 @@ pub extern "C" fn sui_check_request(
 }
 
 #[no_mangle]
-pub extern "C" fn sui_generate_address(x_pub: PtrString) -> *mut SimpleResponse<c_char> {
-    let x_pub = recover_c_char(x_pub);
-    let address = app_sui::generate_address(&x_pub);
+pub extern "C" fn sui_generate_address(pub_key: PtrString) -> *mut SimpleResponse<c_char> {
+    let pub_key = recover_c_char(pub_key);
+    let address = app_sui::generate_address(&pub_key);
     match address {
         Ok(result) => SimpleResponse::success(convert_c_char(result) as *mut c_char).simple_c_ptr(),
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),

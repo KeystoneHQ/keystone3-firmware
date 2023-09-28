@@ -107,6 +107,16 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_SOL_BIP44_CHANGE_7,    ED25519,      "sol_bip44_change_7",       "M/44'/501'/7'/0'"  },
     {XPUB_TYPE_SOL_BIP44_CHANGE_8,    ED25519,      "sol_bip44_change_8",       "M/44'/501'/8'/0'"  },
     {XPUB_TYPE_SOL_BIP44_CHANGE_9,    ED25519,      "sol_bip44_change_9",       "M/44'/501'/9'/0'"  },
+    {XPUB_TYPE_SUI_0,                 ED25519,      "sui_0",                    "M/44'/784'/0'/0'/0'"},
+    {XPUB_TYPE_SUI_1,                 ED25519,      "sui_1",                    "M/44'/784'/1'/0'/0'"},
+    {XPUB_TYPE_SUI_2,                 ED25519,      "sui_2",                    "M/44'/784'/2'/0'/0'"},
+    {XPUB_TYPE_SUI_3,                 ED25519,      "sui_3",                    "M/44'/784'/3'/0'/0'"},
+    {XPUB_TYPE_SUI_4,                 ED25519,      "sui_4",                    "M/44'/784'/4'/0'/0'"},
+    {XPUB_TYPE_SUI_5,                 ED25519,      "sui_5",                    "M/44'/784'/5'/0'/0'"},
+    {XPUB_TYPE_SUI_6,                 ED25519,      "sui_6",                    "M/44'/784'/6'/0'/0'"},
+    {XPUB_TYPE_SUI_7,                 ED25519,      "sui_7",                    "M/44'/784'/7'/0'/0'"},
+    {XPUB_TYPE_SUI_8,                 ED25519,      "sui_8",                    "M/44'/784'/8'/0'/0'"},
+    {XPUB_TYPE_SUI_9,                 ED25519,      "sui_9",                    "M/44'/784'/9'/0'/0'"},
 };
 
 void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)

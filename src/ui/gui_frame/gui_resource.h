@@ -141,6 +141,7 @@ LV_IMG_DECLARE(coinKsm);
 LV_IMG_DECLARE(coinMatic);
 LV_IMG_DECLARE(coinOkb);
 LV_IMG_DECLARE(coinSol);
+LV_IMG_DECLARE(coinSui);
 LV_IMG_DECLARE(coinTrx);
 LV_IMG_DECLARE(coinXrp);
 LV_IMG_DECLARE(coinLtc);

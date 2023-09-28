@@ -46,6 +46,8 @@ typedef struct {
 const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_BTC, "Confirm Transaction", &coinBtc},
     {CHAIN_ETH, "Confirm Transaction", &coinEth},
+    {CHAIN_SOL, "Confirm Transaction", &coinSol},
+    {CHAIN_SUI, "Confirm Transaction", &coinSui},
     {CHAIN_ATOM, "Confirm Transaction", &coinAtom},
     {CHAIN_OSMO, "Confirm Transaction", &coinOsmo},
     {CHAIN_SCRT, "Confirm Transaction", &coinScrt},
@@ -77,7 +79,6 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_LUNA, "Confirm Transaction", &coinLuna},
     {CHAIN_LUNC, "Confirm Transaction", &coinLunc},
     {CHAIN_BNB, "Confirm Transaction", &coinBnb},
-    {CHAIN_SOL, "Confirm Transaction", &coinSol},
     {CHAIN_DOT, "Confirm Transaction", &coinDot},
     {CHAIN_XRP, "Confirm Transaction", &coinXrp},
     {CHAIN_LTC, "Confirm Transaction", &coinLtc},

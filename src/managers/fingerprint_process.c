@@ -302,7 +302,6 @@ void FpRecognizeSend(uint16_t cmd, uint8_t passwd)
     // SendPackFingerMsg(FINGERPRINT_CMD_RECOGNIZE, &passwd, 0, 1, AES_KEY_ENCRYPTION);
 }
 
-static uint8_t g_recognizeCnt = 0;
 // A7FF RECV
 void FpRecognizeRecv(char *indata, uint8_t len)
 {
@@ -311,12 +310,14 @@ void FpRecognizeRecv(char *indata, uint8_t len)
     ClearLockScreenTime();
     if (result == FP_SUCCESS_CODE) {
         MotorCtrl(MOTOR_LEVEL_MIDDLE, MOTOR_SHAKE_SHORT_TIME);
-        g_recognizeCnt = 0;
         printf("recognize score is %d\n", indata[i++]);
         if (len == 38) {
             if (g_fingerRecognizeType == RECOGNIZE_OPEN_SIGN) {
                 printf("open sign\n");
-                FingerSetInfoToSE((uint8_t *)&indata[6], 0, GetCurrentAccountIndex(), SecretCacheGetPassword());
+                if (GetCurrentAccountIndex() != 0xFF) {
+                    FingerSetInfoToSE((uint8_t *)&indata[6], 0, GetCurrentAccountIndex(), SecretCacheGetPassword());
+                    return;
+                }
             } else {
                 uint8_t encryptedPassword[32] = {0};
                 char decryptPasscode[128] = {0};
@@ -335,10 +336,8 @@ void FpRecognizeRecv(char *indata, uint8_t len)
         }
     } else {
         MotorCtrl(MOTOR_LEVEL_MIDDLE, MOTOR_SHAKE_LONG_TIME);
-        g_recognizeCnt++;
         GetFpErrorMessage(result);
         printf("recognize failed\n");
-        printf("g_recognizeCnt = %d\n", g_recognizeCnt);
         if (GuiLockScreenIsTop() && g_fpManager.unlockFlag) {
             GuiApiEmitSignal(SIG_VERIFY_FINGER_FAIL, NULL, 0);
         } else {
@@ -429,13 +428,9 @@ void FpGetAesKeyState(char *indata, uint8_t len)
     if (len == 0) {
         FpResponseHandle(FINGERPRINT_CMD_GET_AES_KEY_STATE);
     } else {
-        uint8_t key[32] = {0};
         printf("aes key %s\n", indata[0] ? "has been set" : "not set");
         state = indata[0];
-        printf("indate[0] = %d\n", indata[0]);
-        printf("state = %d\n", state);
         fpAesState = FpAesKeyExist();
-        printf("fpAesState = %d\n", fpAesState);
         assert(!!state == !!fpAesState);
         if (fpAesState == 0) {
             FpSetAesKeySend(0, 0);

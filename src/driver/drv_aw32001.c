@@ -245,7 +245,22 @@ void RegisterChangerInsertCallback(ChangerInsertIntCallbackFunc_t func)
 
 int32_t Aw32001PowerOff(void)
 {
-    return Aw32001WriteRegBits(AW320XX_REG6_MCR, AW320XX_BIT_MCR_FET_DIS_MASK, AW320XX_BIT_MCR_FET_DIS_OFF);
+    uint8_t byte;
+    int32_t ret;
+    do {
+        ret = Aw32001WriteRegBits(AW320XX_REG6_MCR, AW320XX_BIT_MCR_FET_DIS_MASK, AW320XX_BIT_MCR_FET_DIS_OFF);
+        if (ret != SUCCESS_CODE) {
+            continue;
+        }
+        ret = Aw32001ReadReg(AW320XX_REG6_MCR, &byte, 1);
+        printf("AW320XX_REG6_MCR byte=0x%X\n", byte);
+        printf("AW320XX_REG6_MCR ship power = %#x\n", byte & AW320XX_BIT_MCR_FET_DIS_OFF);
+        if ((ret == SUCCESS_CODE) && ((byte & AW320XX_BIT_MCR_FET_DIS_OFF) == AW320XX_BIT_MCR_FET_DIS_OFF)) {
+            printf("power off success\n");
+            return ret;
+        }
+    } while (1);
+    return ret;
 }
 
 
@@ -256,7 +271,7 @@ int32_t Aw32001RefreshState(void)
     do {
         ret = Aw32001ReadReg(AW320XX_REG8_STATR, &byte, 1);
         CHECK_ERRCODE_BREAK("read aw32001 reg", ret);
-        //printf("byte=0x%X", byte);
+        printf("byte=0x%X\n", byte);
         g_powerChangeState.chargeState = (ChargeState)((byte >> 3) & 0x03);
         g_powerChangeState.userPowerState = (UsbPowerState)((byte >> 1) & 0x01);
     } while (0);

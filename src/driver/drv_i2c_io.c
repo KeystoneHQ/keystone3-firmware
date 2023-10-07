@@ -97,14 +97,14 @@ static void I2CIO_WriteByte(const I2CIO_Cfg_t *cfg, uint8_t byte)
 
     for (i = 0; i < 8; i++) {
         GPIO_ResetBits(cfg->SCL_PORT, cfg->SCL_PIN);
-        I2CIO_Delay(10);
+        I2CIO_Delay(100);
         if (0x80 & byte) {
             GPIO_SetBits(cfg->SDA_PORT, cfg->SDA_PIN);
         } else {
             GPIO_ResetBits(cfg->SDA_PORT, cfg->SDA_PIN);
         }
         byte <<= 1;
-        I2CIO_Delay(10);
+        I2CIO_Delay(100);
         GPIO_SetBits(cfg->SCL_PORT, cfg->SCL_PIN);
         I2CIO_Delay(100);
     }

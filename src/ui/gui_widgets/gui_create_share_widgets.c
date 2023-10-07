@@ -170,10 +170,13 @@ static void NumSelectSliceHandler(lv_event_t * e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
+    uint32_t currentId = lv_btnmatrix_get_selected_btn(obj);
     if (code == LV_EVENT_DRAW_PART_BEGIN) {
+        if (currentId >= 0xFFFF) {
+            return;
+        }
         lv_obj_draw_part_dsc_t * dsc = lv_event_get_draw_part_dsc(e);
         if (dsc->class_p == &lv_btnmatrix_class && dsc->type == LV_BTNMATRIX_DRAW_PART_BTN) {
-            uint32_t currentId = lv_btnmatrix_get_selected_btn(obj);
             if (currentId == dsc->id) {
                 dsc->rect_dsc->border_color = ORANGE_COLOR;
             } else {
@@ -182,7 +185,11 @@ static void NumSelectSliceHandler(lv_event_t * e)
         }
     } else if (code == LV_EVENT_CLICKED) {
         Vibrate(SLIGHT);
-        uint32_t currentId = lv_btnmatrix_get_selected_btn(obj);
+        if (currentId >= 0xFFFF) {
+            lv_btnmatrix_set_selected_btn(g_selectSliceTile.memberThresholdKb, g_selectSliceTile.memberThreshold - 2);
+            lv_btnmatrix_set_selected_btn(g_selectSliceTile.memberCntKb, g_selectSliceTile.memberCnt - 2);
+            return;
+        }
         if (obj == g_selectSliceTile.memberCntKb) {
             g_selectSliceTile.memberCnt = currentId + 2;
             lv_btnmatrix_set_selected_btn(g_selectSliceTile.memberThresholdKb, g_selectSliceTile.memberThreshold - 2);

@@ -12,11 +12,11 @@ void GuiSetSuiUrData(void *data, bool multi)
 #endif
 }
 
-#define CHECK_FREE_PARSE_RESULT(result)                                                                        \
-    if (result != NULL)                                                                                        \
-    {                                                                                                          \
+#define CHECK_FREE_PARSE_RESULT(result)                                                                                   \
+    if (result != NULL)                                                                                                   \
+    {                                                                                                                     \
         free_TransactionParseResult_DisplaySuiIntentMessage((PtrT_TransactionParseResult_DisplaySuiIntentMessage)result); \
-        result = NULL;                                                                                         \
+        result = NULL;                                                                                                    \
     }
 
 void *GuiGetSuiData(void)
@@ -29,9 +29,9 @@ void *GuiGetSuiData(void)
     TransactionCheckResult *result = NULL;
     do {
         URType urType = g_isMulti ? ((URParseMultiResult *)g_urResult)->ur_type : ((URParseResult *)g_urResult)->ur_type;
-        result = cosmos_check_tx(data, urType, mfp, sizeof(mfp));
+        result = sui_check_request(data, mfp, sizeof(mfp));
         CHECK_CHAIN_BREAK(result);
-        PtrT_TransactionParseResult_DisplaySuiIntentMessage parseResult = cosmos_parse_tx(data, urType);
+        PtrT_TransactionParseResult_DisplaySuiIntentMessage parseResult = sui_parse_intent(data);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
@@ -48,4 +48,10 @@ void FreeSuiMemory(void)
     CHECK_FREE_UR_RESULT(g_urResult, g_isMulti);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
 #endif
+}
+
+void GetSuiDetail(void *indata, void *param)
+{
+    DisplaySuiIntentMessage *tx = (DisplaySuiIntentMessage *)param;
+    sprintf((char *)indata, "%s", tx->detail);
 }

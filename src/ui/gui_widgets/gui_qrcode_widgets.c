@@ -240,6 +240,8 @@ static GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     case CosmosTx:
     case CosmosEvmTx:
         return GuiGetCosmosTxChain();
+    case SuiTx:
+        return CHAIN_SUI;
     default:
         return CHAIN_BUTT;
     }

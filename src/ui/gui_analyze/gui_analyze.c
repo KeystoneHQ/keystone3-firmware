@@ -102,7 +102,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_SUI,
 #ifndef COMPILE_SIMULATOR
-        "",
+        "{\"type\":\"container\",\"pos\":[36,16],\"size\":[408,500],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetSuiDetail\",\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}",
 #else
         PC_SIMULATOR_PATH"/page_eth.json",
 #endif
@@ -446,6 +446,14 @@ GetLabelDataFunc GuiCosmosTextFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataFunc GuiSuiTextFuncGet(char *type)
+{
+    if (!strcmp(type, "GetSuiDetail")) {
+        return GetSuiDetail;
+    }
+    return NULL;
+}
+
 GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
 {
     switch (g_reMapIndex) {
@@ -461,6 +469,8 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
         return GuiTrxTextFuncGet(type);
     case REMAPVIEW_COSMOS:
         return GuiCosmosTextFuncGet(type);
+    case REMAPVIEW_SUI:
+        return GuiSuiTextFuncGet(type);
     default:
         return NULL;
     }

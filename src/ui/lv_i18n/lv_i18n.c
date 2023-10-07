@@ -193,7 +193,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"derivation_path_sol_3_desc", ""},
     {"device_info_title", "Device Info"},
     {"device_setting_about_title", "About"},
-    {"device_setting_connection_desc", "USB / MicroSD Card..."},
+    {"device_setting_connection_desc", "USB / MicroSD Card"},
     {"device_setting_connection_title", "Connection"},
     {"device_setting_mid_btn", "Device Settings"},
     {"device_setting_system_setting_desc", "Language / Screen / Reset..."},

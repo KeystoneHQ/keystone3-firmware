@@ -130,9 +130,9 @@ void GuiFirmwareUpdateInit(void *param)
 
 void GuiFirmwareSdCardCopy(void)
 {
-    if (GuiCheckIfViewOpened(&g_lockView)) {
-        GuiLockScreenTurnOff();
-    }
+    // if (GuiCheckIfViewOpened(&g_lockView)) {
+    //     GuiLockScreenTurnOff();
+    // }
     GUI_DEL_OBJ(g_waitAnimCont)
     GUI_DEL_OBJ(g_noticeHintBox)
 

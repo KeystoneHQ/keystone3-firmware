@@ -25,7 +25,13 @@ HardwareVersion GetHardwareVersion(void)
         //Get the current hardware version by measuring the ver_det pin voltage.
         adcValue = GetVerDetAdcValue();
         printf("ver_det adc=%d\r\n", adcValue);
-        if (adcValue < 2300) {
+        if (adcValue < 1500) {
+            version = VERSION_V3_1;//   adc : 1112
+            printf("hardware version:DVT1\r\n");
+        } else if (adcValue < 2000) {
+            version = VERSION_V3_0;//   adc : 1874
+            printf("hardware version:DVT1\r\n");
+        } else if (adcValue < 2300) {
             version = VERSION_DVT2;
             printf("hardware version:DVT2\r\n");
         } else if (adcValue < 2500) {
@@ -58,6 +64,10 @@ char *GetHardwareVersionString(void)
         return "DVT1";
     } else if (version == VERSION_DVT2) {
         return "DVT2";
+    } else if (version == VERSION_V3_0) {
+        return "Verion 3.0";
+    } else if (version == VERSION_V3_1) {
+        return "Verion 3.1";
     } else {
         return "NONE";
     }

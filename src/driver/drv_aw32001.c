@@ -12,6 +12,7 @@
 #include "err_code.h"
 #include "log_print.h"
 #include "drv_battery.h"
+#include "hardware_version.h"
 
 
 #define AW32001_SCL_PORT                            GPIOE
@@ -278,7 +279,11 @@ UsbPowerState GetUsbPowerState(void)
 
 bool GetUsbDetectState(void)
 {
-    return GPIO_ReadInputDataBit(USB_DET_INT_PORT, USB_DET_INT_PIN) == Bit_SET;
+    BitAction state = Bit_SET;
+    if (GetHardwareVersion() >= VERSION_V3_1) {
+        state = Bit_RESET;
+    }
+    return GPIO_ReadInputDataBit(USB_DET_INT_PORT, USB_DET_INT_PIN) == state;
 }
 
 

@@ -1824,6 +1824,7 @@ dependencies = [
  "keystore",
  "rust_tools",
  "third_party",
+ "transport",
 ]
 
 [[package]]
@@ -2386,6 +2387,10 @@ name = "tracing-core"
 version = "0.1.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0955b8137a1df6f1a2e9a37d8a6656291ff0297c1a97c24e0d8425fe2312f79a"
+
+[[package]]
+name = "transport"
+version = "0.1.0"
 
 [[package]]
 name = "typenum"

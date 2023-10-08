@@ -33,6 +33,7 @@ mod ur_ext;
 mod utils;
 mod web_auth;
 mod xrp;
+mod transport;
 
 pub static KEYSTONE: &str = "keystone";
 

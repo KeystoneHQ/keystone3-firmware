@@ -55,3 +55,30 @@ void GetSuiDetail(void *indata, void *param)
     DisplaySuiIntentMessage *tx = (DisplaySuiIntentMessage *)param;
     sprintf((char *)indata, "%s", tx->detail);
 }
+
+UREncodeResult *GuiGetSuiSignQrCodeData(void)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+#ifndef COMPILE_SIMULATOR
+    UREncodeResult *encodeResult;
+    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    do {
+        uint8_t seed[64];
+        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        encodeResult = sui_sign_intent(data, seed, sizeof(seed));
+        ClearSecretCache();
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+    SetLockScreen(enable);
+    return encodeResult;
+#else
+    UREncodeResult *encodeResult = NULL;
+    encodeResult->is_multi_part = 0;
+    encodeResult->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+    encodeResult->encoder = NULL;
+    encodeResult->error_code = 0;
+    encodeResult->error_message = NULL;
+    return encodeResult;
+#endif
+}

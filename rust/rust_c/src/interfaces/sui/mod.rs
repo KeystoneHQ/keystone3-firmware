@@ -5,8 +5,11 @@ use crate::interfaces::structs::{SimpleResponse, TransactionCheckResult, Transac
 use crate::interfaces::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::interfaces::utils::{convert_c_char, recover_c_char};
-use alloc::string::ToString;
+use alloc::format;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
 use app_sui::errors::SuiError;
+use app_utils::normalize_path;
 use core::slice;
 use cty::c_char;
 use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
@@ -14,6 +17,21 @@ use third_party::ur_registry::sui::sui_signature::SuiSignature;
 use third_party::ur_registry::traits::RegistryItem;
 
 pub mod structs;
+
+fn get_public_key(seed: &[u8], path: &String) -> Result<Vec<u8>, SuiError> {
+    let path = normalize_path(path);
+    let public_key =
+        match keystore::algorithms::ed25519::slip10_ed25519::get_public_key_by_seed(seed, &path) {
+            Ok(pub_key) => pub_key,
+            Err(e) => {
+                return Err(SuiError::SignFailure(format!(
+                    "derive public key failed {:?}",
+                    e
+                )))
+            }
+        };
+    Ok(public_key.to_vec())
+}
 
 #[no_mangle]
 pub extern "C" fn sui_check_request(
@@ -86,8 +104,21 @@ pub extern "C" fn sui_sign_intent(
         Ok(v) => v,
         Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
-    UREncodeResult::encode(
+    let pub_key = match get_public_key(seed, &path) {
+        Ok(v) => v,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
+    let sig = SuiSignature::new(
+        sign_request.get_request_id(),
         signature.to_vec(),
+        Some(pub_key),
+    );
+    let sig_data: Vec<u8> = match sig.try_into() {
+        Ok(v) => v,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
+    UREncodeResult::encode(
+        sig_data,
         SuiSignature::get_registry_type().get_type(),
         FRAGMENT_MAX_LENGTH_DEFAULT,
     )

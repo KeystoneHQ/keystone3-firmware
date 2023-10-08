@@ -375,6 +375,9 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
     case CosmosEvmTx:
         GuiShowQrCode(GuiGetCosmosSignQrCodeData, qrcode);
         break;
+    case SuiTx:
+        GuiShowQrCode(GuiGetSuiSignQrCodeData, qrcode);
+        break;
     default:
         data = "";
         lv_qrcode_update(qrcode, data, strlen(data));

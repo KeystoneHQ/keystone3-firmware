@@ -97,7 +97,6 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                 lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
             }
         } else {
-            ClearMnemonicKeyboard(mkb, &mkb->currentId);
             if (mkb->threShold == 0xff) {
                 mkb->threShold = threShold;
                 for (int i = 0; i < 3; i++) {
@@ -122,6 +121,7 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                     }
                 }
             }
+            ClearMnemonicKeyboard(mkb, &mkb->currentId);
             if (!isSame) {
                 sha256((struct sha256 *)g_sliceSha256[mkb->currentSlice], mnemonic, strlen(mnemonic));
                 if (mkb->intputType != MNEMONIC_INPUT_SETTING_VIEW) {

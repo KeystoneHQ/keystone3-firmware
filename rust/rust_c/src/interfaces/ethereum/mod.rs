@@ -64,8 +64,7 @@ pub extern "C" fn eth_check(
 }
 
 #[no_mangle]
-pub extern "C" fn eth_get_root_path(ptr: PtrUR) -> PtrString
-{
+pub extern "C" fn eth_get_root_path(ptr: PtrUR) -> PtrString {
     let eth_sign_request = extract_ptr_with_type!(ptr, EthSignRequest);
     let derivation_path: third_party::ur_registry::crypto_key_path::CryptoKeyPath =
         eth_sign_request.get_derivation_path();
@@ -74,7 +73,7 @@ pub extern "C" fn eth_get_root_path(ptr: PtrUR) -> PtrString
             return convert_c_char(root_path);
         }
     }
-    return convert_c_char("".to_string())
+    return convert_c_char("".to_string());
 }
 
 fn parse_eth_root_path(path: String) -> Option<String> {

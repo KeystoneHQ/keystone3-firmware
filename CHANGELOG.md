@@ -1,3 +1,10 @@
+## 1.0.4 (2023-10-08)
+
+### Features
+
+1. Implemented Web USB upgrade support.
+
+
 ## 1.0.0 (2023-09-26)
 
 ### Features

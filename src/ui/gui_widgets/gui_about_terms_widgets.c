@@ -159,12 +159,6 @@ void GuiAboutTermsEntranceWidget(lv_obj_t *parent)
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);
 
-    title = _("about_terms_limitation");
-    text = _("about_terms_limitation_desc");
-    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
-    lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
-    dy += (height + 24);
-
     title = _("about_terms_prohibited_conduct");
     text = _("about_terms_prohibited_product_desc");
     itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
@@ -185,12 +179,6 @@ void GuiAboutTermsEntranceWidget(lv_obj_t *parent)
 
     title = _("about_terms_disclaimers");
     text = _("about_terms_disclaimers_desc");
-    itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
-    lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
-    dy += (height + 24);
-
-    title = _("about_terms_law");
-    text = _("about_terms_law_desc");
     itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);

@@ -374,12 +374,16 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
 {
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_MOMENTUM);
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
-    for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+
+    lv_obj_t *img = GuiCreateImg(parent, g_walletListArray[0].img);
+    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 0);
+    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED, &g_walletListArray[0]);
+    for (int i = 1; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
         lv_obj_t *img = GuiCreateImg(parent, g_walletListArray[i].img);
-        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, i * 107);
+        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 136 + (i - 1) * 107);
         lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED, &g_walletListArray[i]);
-        lv_obj_add_style(img, &g_generalBtnPressStyle, LV_STATE_PRESSED);
     }
 
     // ** temporary add.
@@ -552,6 +556,7 @@ static void AddKeplrCoins(void)
 
 void GuiConnectWalletInit(void)
 {
+    InitDerivationPathDescs();
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 
@@ -843,7 +848,6 @@ static void ChangeDerivationPathHandler(lv_event_t *e)
         QRCodePause(true);
     }
 }
-
 
 
 static void OpenMoreHandler(lv_event_t *e)

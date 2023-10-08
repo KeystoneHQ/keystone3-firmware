@@ -9,35 +9,13 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val)
-{
-    return (uint32_t)(val < 0 ? -val : val);
-}
-static inline uint32_t op_i(uint32_t val)
-{
-    return val;
-}
+static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
+static inline uint32_t op_i(uint32_t val) { return val; }
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_w(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_f(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_t(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
+static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
+static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
 static lv_i18n_phrase_t en_singulars[] = {
     {"Approve", "Approve"},
@@ -209,9 +187,13 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"derivation_path_eth_ledger_live_desc", "Choose this path if you intend to import a seed phrase from Ledger Live."},
     {"derivation_path_eth_standard_desc", "Recommended. Widely adopted across numerous software wallets"},
     {"derivation_path_select_eth", "Select the derivation path you’d like to use for Ethereum"},
+    {"derivation_path_select_sol", "Select the derivation path you’d like to use for Solana"},
+    {"derivation_path_sol_1_desc", ""},
+    {"derivation_path_sol_2_desc", ""},
+    {"derivation_path_sol_3_desc", ""},
     {"device_info_title", "Device Info"},
     {"device_setting_about_title", "About"},
-    {"device_setting_connection_desc", "USB / Bluetooth / MicroSD Card..."},
+    {"device_setting_connection_desc", "USB / MicroSD Card"},
     {"device_setting_connection_title", "Connection"},
     {"device_setting_mid_btn", "Device Settings"},
     {"device_setting_system_setting_desc", "Language / Screen / Reset..."},
@@ -357,9 +339,9 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"receive_btc_alert_title", "Attention"},
     {"receive_btc_more_address_settings", "Address Settings"},
     {"receive_btc_more_t", "Tutorial"},
-    {"receive_btc_more_t_desc1", "Bitcoin (BTC) uses three address formats for receiving funds:\r\n1. Native SegWit is the most efficient and secure Bitcoin address format. It provides cost savings and improved security compared to other traditional address formats,typically starting with \"bc1\"\r\n2. Legacy address format is one of the earliest versions of Bitcoin, typically starting with \"1\"\r\n3. Nested SegWit is a solution designed to facilitate the transition to Native SegWit in a smooth manner, typically starting with \"3\""},
-    {"receive_btc_more_t_desc2", "Yes, the three distinct Bitcoin address formats can be used for transferring funds among each other. However, it’s important to keep in mind the following aspects:\r\n1. Differing transaction fees: The choice of address format can influence transaction fees, with Native SegWit addresses generally having lower fees.\r\n2. Wallet and exchange compatibility: Make sure that the wallet or exchange you are using supports your chosen address format. Some wallets may only be compatible with specific address formats."},
-    {"receive_btc_more_t_desc3", "1. Privacy: Reusing addresses increases transaction traceability, endangering privacy. New addresses help maintain transaction privacy.\r\n2. Transaction Efficiency: Multiple UTXOs linked to one address can raise costs for consolidation, impacting wallet efficiency.\r\n3. Security: Repeated address use heightens the risk of private key exposure, potentially leading to losses if compromised.\r\nIn short, not reusing addresses safeguards privacy, optimizes transactions, and reduces security risks within the UTXO model."},
+    {"receive_btc_more_t_desc1", "Bitcoin (BTC) uses three address formats for receiving funds:\n1. Native SegWit is the most efficient and secure Bitcoin address format. It provides cost savings and improved security compared to other traditional address formats,typically starting with \"bc1\"\n2. Legacy address format is one of the earliest versions of Bitcoin, typically starting with \"1\"\n3. Nested SegWit is a solution designed to facilitate the transition to Native SegWit in a smooth manner, typically starting with \"3\""},
+    {"receive_btc_more_t_desc2", "Yes, the three distinct Bitcoin address formats can be used for transferring funds among each other. However, it’s important to keep in mind the following aspects:\n1. Differing transaction fees: The choice of address format can influence transaction fees, with Native SegWit addresses generally having lower fees.\n2. Wallet and exchange compatibility: Make sure that the wallet or exchange you are using supports your chosen address format. Some wallets may only be compatible with specific address formats."},
+    {"receive_btc_more_t_desc3", "1. Privacy: Reusing addresses increases transaction traceability, endangering privacy. New addresses help maintain transaction privacy.\n2. Transaction Efficiency: Multiple UTXOs linked to one address can raise costs for consolidation, impacting wallet efficiency.\n3. Security: Repeated address use heightens the risk of private key exposure, potentially leading to losses if compromised.\nIn short, not reusing addresses safeguards privacy, optimizes transactions, and reduces security risks within the UTXO model."},
     {"receive_btc_more_t_link1", "Learn More"},
     {"receive_btc_more_t_link2", "Learn More"},
     {"receive_btc_more_t_link3", "Learn More"},
@@ -392,11 +374,11 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"receive_eth_more_derivation_path_title", "Change Derivation Path"},
     {"receive_eth_more_derivation_path_title2", "Accounts eg:"},
     {"receive_eth_more_t", "Tutorial"},
-    {"receive_eth_more_t_desc1", "1. Standard Path: This path is widely employed by numerous software wallets for address generation. Examples of such wallets encompass MetaMask, Rabby, BitKeep, and Core Wallet.\r\n2. Ledger Live: Choose this path if you intend to import a seed phrase from Ledger Live. Please note that Keystone supports synchronizing only the initial 10 addresses using this format.\r\n3. Ledger Legacy: Transition to this path if you manage your digital assets with Ledger Legacy"},
+    {"receive_eth_more_t_desc1", "1. Standard Path: This path is widely employed by numerous software wallets for address generation. Examples of such wallets encompass MetaMask, Rabby, BitKeep, and Core Wallet.\n2. Ledger Live: Choose this path if you intend to import a seed phrase from Ledger Live. Please note that Keystone supports synchronizing only the initial 10 addresses using this format.\n3. Ledger Legacy: Transition to this path if you manage your digital assets with Ledger Legacy"},
     {"receive_eth_more_t_link1", "Learn More"},
     {"receive_eth_more_t_qr_link1", "https://keyst.one/t/3rd/faq"},
     {"receive_eth_more_t_qr_title1", "Exploring Differences: Standard, Ledger Live, and Legacy Derivation Paths in Ethereum"},
-    {"receive_eth_more_t_title1", "1. Standard Path: This path is widely employed by numerous software wallets for address generation. Examples of such wallets encompass MetaMask, Rabby, BitKeep, and Core Wallet.\r\n2. Ledger Live: Choose this path if you intend to import a seed phrase from Ledger Live. Please note that Keystone supports synchronizing only the initial 10 addresses using this format.\r\n3. Ledger Legacy: Transition to this path if you manage your digital assets with Ledger Legacy"},
+    {"receive_eth_more_t_title1", "1. Standard Path: This path is widely employed by numerous software wallets for address generation. Examples of such wallets encompass MetaMask, Rabby, BitKeep, and Core Wallet.\n2. Ledger Live: Choose this path if you intend to import a seed phrase from Ledger Live. Please note that Keystone supports synchronizing only the initial 10 addresses using this format.\n3. Ledger Legacy: Transition to this path if you manage your digital assets with Ledger Legacy"},
     {"receive_eth_receive_main_button", "Generate New Address"},
     {"receive_eth_receive_main_title", "Receive ETH"},
     {"receive_generate_new_address", "Generate New Address"},
@@ -539,7 +521,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"tx_details_eth_decoding_qr_title", "Decoding DeFi Transactions"},
     {"tx_details_general_tab_title1", "Overview"},
     {"tx_details_general_tab_title2", "Details"},
-    {"unlock_device_attempts_left_times_fmt", "Incorrect password, you have #F55831 d%# chances left"},
+    {"unlock_device_attempts_left_times_fmt", "Incorrect password, you have #F55831 %d# chances left"},
     {"unlock_device_button1", "PASSWORD"},
     {"unlock_device_button2", "PIN CODE"},
     {"unlock_device_button3", "FORGET"},
@@ -570,7 +552,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"usb_connection_subtitle", "Data transfer with USB"},
     {"usb_connection_title", "Connection"},
     {"verification_code_desc", "Input this verification code on the Device Verification page of Keystone's official website to authenticate the device."},
-    {"verification_code_failed_desc", "Your device has potentially been breached, putting your sensitive data and digital assets at risk. For safety, erase all personal data and contact our Customer Service team immediately."},
+    {"verification_code_failed_desc", "Your device has potentially been breached, putting your sensitive data and digital assets at risk.  For safety, erase all personal data and contact our Customer Service team immediately."},
     {"verification_code_failed_link", "support@keyst.one"},
     {"verification_code_failed_title", "Unauthorized breach attempt detected!"},
     {"verification_code_title", "Verification Code"},
@@ -611,12 +593,9 @@ static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -657,8 +636,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if (langs == NULL) return -1;
-    if (langs[0] == NULL) return -1;
+    if(langs == NULL) return -1;
+    if(langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -671,13 +650,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if (current_lang_pack == NULL) return -1;
+    if(current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for (i = 0; current_lang_pack[i] != NULL; i++) {
+    for(i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -690,10 +669,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for (i = 0; trans[i].msg_id != NULL; i++) {
-        if (strcmp(trans[i].msg_id, msg_id) == 0) {
+    for(i = 0; trans[i].msg_id != NULL; i++) {
+        if(strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if (trans[i].translation) return trans[i].translation;
+            if(trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -708,23 +687,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -740,31 +719,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -779,6 +758,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if (!current_lang) return NULL;
+    if(!current_lang) return NULL;
     return current_lang->locale_name;
 }

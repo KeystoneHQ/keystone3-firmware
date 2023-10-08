@@ -1,9 +1,11 @@
 #![no_std]
 
 pub use base64;
+pub use bcs;
 pub use bitcoin;
 pub use bitcoin::base58;
 pub use bitcoin::secp256k1;
+pub use blake2;
 pub use core2;
 pub use cryptoxide;
 pub use cstr_core;
@@ -19,5 +21,3 @@ pub use thiserror;
 pub use unicode_blocks;
 pub use ur_parse_lib;
 pub use ur_registry;
-pub use bcs;
-pub use blake2;

@@ -133,6 +133,7 @@ static void UiDisplayTask(void *argument)
         }
         if (lvglHandlerEnable) {
             lv_timer_handler();
+            GuiLetterKbStatusError();
         }
     }
 }

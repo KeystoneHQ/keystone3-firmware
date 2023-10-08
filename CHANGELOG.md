@@ -2,7 +2,7 @@
 
 ### Features
 
-1. Implemented Web USB upgrade support.
+1. Implemented WebUSB upgrade support.
 
 
 ## 1.0.0 (2023-09-26)

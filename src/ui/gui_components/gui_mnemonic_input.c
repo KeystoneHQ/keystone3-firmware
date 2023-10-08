@@ -91,8 +91,8 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                 lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
             } else {
                 g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgFailed,
-                                  "Invalid Seed Phrase", "The phrase you typed is invalid. Please check your backup and try again.",
-                                  NULL, DARK_GRAY_COLOR, "OK", DARK_GRAY_COLOR);
+                                  _("import_wallet_invalid_phrase_title"), _("import_wallet_invalid_phrase_desc"),
+                                  NULL, DARK_GRAY_COLOR, _("OK"), DARK_GRAY_COLOR);
                 lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeHintBox);
                 lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
             }
@@ -113,8 +113,8 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                 sha256((struct sha256 *)tempHash, mnemonic, strlen(mnemonic));
                 for (int i = 0; i < mkb->currentSlice; i++) {
                     if (!memcmp(tempHash, g_sliceSha256[i], 32)) {
-                        g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgFailed, "Duplicate Share",
-                                          "You’ve already checked this share, please use another share to continue.", NULL, DARK_GRAY_COLOR, "Ok", DARK_GRAY_COLOR);
+                        g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgFailed, _("import_wallet_duplicated_share_title"),
+                                          _("import_wallet_duplicated_share_desc"), NULL, DARK_GRAY_COLOR, _("OK"), DARK_GRAY_COLOR);
                         lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeHintBox);
                         lv_obj_add_event_cb(rightBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
                         isSame = true;
@@ -130,10 +130,10 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
 
                 if (mkb->intputType == MNEMONIC_INPUT_SETTING_VIEW) {
                     mkb->currentSlice++;
-                    lv_label_set_text_fmt(mkb->titleLabel, "%s #F5870A %d#", _("import_wallet_ssb_title"), mkb->currentSlice + 1);
+                    lv_label_set_text_fmt(mkb->titleLabel, _("import_wallet_ssb_title_fmt"), mkb->currentSlice + 1);
                     lv_label_set_text_fmt(mkb->descLabel, _("import_wallet_ssb_desc_fmt"), mkb->wordCnt, mkb->currentSlice + 1);
-                    g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgSuccess, "Verify Successful",
-                                      "This share of your seed phrase matches your wallet.", "Continue", DARK_GRAY_COLOR, "Done", ORANGE_COLOR);
+                    g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgSuccess, _("shamir_phrase_verify_success_title"),
+                                      _("import_wallet_share_success_desc"), _("Continue"), DARK_GRAY_COLOR, _("Done"), ORANGE_COLOR);
                     lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeHintBox);
                     lv_obj_add_event_cb(rightBtn, CloseToSubtopViewHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
                     lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeHintBox);
@@ -156,10 +156,10 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                     } else {
                         mkb->currentSlice++;
                         if (mkb->stepLabel != NULL) {
-                            lv_label_set_text_fmt(mkb->stepLabel, "%d of %d", mkb->currentSlice + 1, mkb->threShold);
+                            lv_label_set_text_fmt(mkb->stepLabel, _("import_wallet_ssb_step_fmt"), mkb->currentSlice + 1, mkb->threShold);
                         }
                         if (mkb->titleLabel != NULL) {
-                            lv_label_set_text_fmt(mkb->titleLabel, "%s #F5870A %d#", _("import_wallet_ssb_title"), mkb->currentSlice + 1);
+                            lv_label_set_text_fmt(mkb->titleLabel, _("import_wallet_ssb_title_fmt"), mkb->currentSlice + 1);
                         }
                         if (mkb->descLabel != NULL) {
                             lv_label_set_text_fmt(mkb->descLabel, _("import_wallet_ssb_desc_fmt"),
@@ -368,8 +368,8 @@ void GuiMnemonicInputHandler(lv_event_t *e)
                 }
                 if (mkb->threShold != 0xff) {
                     if (strcmp(tempBuf, g_sliceHeadWords)) {
-                        g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 416, &imgFailed, "Incorrect Share",
-                                          "The share you entered is not belong to this backup. Please check your backup and try again.", NULL, DARK_GRAY_COLOR, "OK", DARK_GRAY_COLOR);
+                        g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 416, &imgFailed, _("import_wallet_ssb_incorrect_title"),
+                                          _("import_wallet_ssb_notbelong_desc"), NULL, DARK_GRAY_COLOR, _("OK"), DARK_GRAY_COLOR);
                         lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeHintBox);
                         lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
                     }

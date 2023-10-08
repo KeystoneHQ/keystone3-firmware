@@ -134,7 +134,7 @@ static void GuiShareSsbInputWidget(lv_obj_t *parent)
     label = GuiCreateTitleLabel(parent, "");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
     lv_label_set_recolor(label, true);
-    lv_label_set_text_fmt(label, "%s #F5870A %d#", _("import_wallet_ssb_title"), g_importMkb->currentSlice + 1);
+    lv_label_set_text_fmt(label, _("import_wallet_ssb_title_fmt"), g_importMkb->currentSlice + 1);
     g_importMkb->titleLabel = label;
 
     label = GuiCreateIllustrateLabel(parent, _("import_wallet_ssb_desc_fmt"));

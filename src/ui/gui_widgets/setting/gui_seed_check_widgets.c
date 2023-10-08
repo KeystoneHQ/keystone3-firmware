@@ -198,7 +198,7 @@ void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount)
     lv_obj_t *label = GuiCreateTitleLabel(parent, "");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
     lv_label_set_recolor(label, true);
-    lv_label_set_text_fmt(label, "%s #F5870A %d#", _("import_wallet_ssb_title"), g_recoveryMkb->currentSlice + 1);
+    lv_label_set_text_fmt(label, _("import_wallet_ssb_title_fmt"), g_recoveryMkb->currentSlice + 1);
     g_recoveryMkb->titleLabel = label;
 
     label = GuiCreateIllustrateLabel(parent, _("import_wallet_ssb_desc_fmt"));

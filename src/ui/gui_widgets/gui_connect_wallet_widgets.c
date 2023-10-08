@@ -556,7 +556,6 @@ static void AddKeplrCoins(void)
 
 void GuiConnectWalletInit(void)
 {
-    InitDerivationPathDescs();
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 

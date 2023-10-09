@@ -198,6 +198,9 @@ static void ScreenShotFunc(int argc, char *argv[]);
 static void FatfsCopyFunc(int argc, char *argv[]);
 static void LcdChangeParamFunc(int argc, char *argv[]);
 static void BpkPrintFunc(int argc, char *argv[]);
+static void RustTestSuiParseTx(int argc, char *argv[]);
+static void RustTestSuiCheckTx(int argc, char *argv[]);
+static void RustTestSuiSignTx(int argc, char *argv[]);
 
 const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"test", TestFunc},
@@ -341,6 +344,9 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust test cardano tx:",                           testCardanoTx                       },
     {"rust test get eth address",                       RustGetEthAddress                   },
     {"rust test parse aptos tx",                        RustTestParseAptosTx                },
+    {"rust test sui check tx:",                         RustTestSuiCheckTx                  },
+    {"rust test sui parse tx:",                         RustTestSuiParseTx                  },
+    {"rust test sui sign tx:",                          RustTestSuiSignTx                   },
 
 #endif
     {"log test:", LogTestFunc},
@@ -1941,6 +1947,69 @@ static void testSolanaParseTx(int argc, char *argv[])
     printf("solana parse result detail: %s\r\n", result->data->detail);
     free_ur_parse_result(ur);
     free_TransactionParseResult_DisplaySolanaTx(result);
+    PrintRustMemoryStatus();
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
+}
+
+static void RustTestSuiCheckTx(int argc, char *argv[])
+{
+    // Example:
+    // #rust test sui check tx: a501d825507afd5e09926743fba02e08c4a09417ec0258dc00000000000200201ff915a5e9e32fdbe0135535b6c69a00a9809aaf7f7c0275d3239ca79db20d6400081027000000000000020200010101000101020000010000ebe623e33b7307f1350f8934beb3fb16baef0fc1b3f1b92868eec3944093886901a2e3e42930675d9571a467eb5d4b22553c93ccb84e9097972e02c490b4e7a22ab73200000000000020176c4727433105da34209f04ac3f22e192a2573d7948cb2fabde7d13a7f4f149ebe623e33b7307f1350f8934beb3fb16baef0fc1b3f1b92868eec39440938869e8030000000000006400000000000000000381d90130a2018a182cf5190310f500f500f500f5021a5274470304815820504886c9ec43bff70af37f55865094cc3a799cb54479f252d30cd3717f15ecdc056a5375692057616c6c6574
+    URParseResult *crypto_bytes = test_get_sui_sign_request(argv[0]);
+    // check failed
+    uint8_t failed_mfp[4] = {0x52, 0x74, 0x47, 0x00};
+    TransactionCheckResult *failed_result = sui_check_request(crypto_bytes->data, failed_mfp, sizeof(failed_mfp));
+    printf("transaction check failed result : %d\r\n", failed_result->error_code);
+    printf("transaction check failed error_message, %s\r\n", failed_result->error_message);
+    // check succeed
+    uint8_t succeed_mfp[4] = {0x52, 0x74, 0x47, 0x03};
+    TransactionCheckResult *succeed_result = sui_check_request(crypto_bytes->data, succeed_mfp, sizeof(succeed_mfp));
+    printf("transaction check succeed result : %d\r\n", succeed_result->error_code);
+    free_TransactionCheckResult(failed_result);
+    free_TransactionCheckResult(succeed_result);
+    free_ur_parse_result(crypto_bytes);
+    PrintRustMemoryStatus();
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
+}
+
+static void RustTestSuiParseTx(int argc, char *argv[])
+{
+    // Example:
+    // #rust test sui parse tx: a501d825507afd5e09926743fba02e08c4a09417ec0258dc00000000000200201ff915a5e9e32fdbe0135535b6c69a00a9809aaf7f7c0275d3239ca79db20d6400081027000000000000020200010101000101020000010000ebe623e33b7307f1350f8934beb3fb16baef0fc1b3f1b92868eec3944093886901a2e3e42930675d9571a467eb5d4b22553c93ccb84e9097972e02c490b4e7a22ab73200000000000020176c4727433105da34209f04ac3f22e192a2573d7948cb2fabde7d13a7f4f149ebe623e33b7307f1350f8934beb3fb16baef0fc1b3f1b92868eec39440938869e8030000000000006400000000000000000381d90130a2018a182cf5190310f500f500f500f5021a5274470304815820504886c9ec43bff70af37f55865094cc3a799cb54479f252d30cd3717f15ecdc056a5375692057616c6c6574
+    printf("RustTestSuiTx\r\n");
+    URParseResult *ur = test_get_sui_sign_request(argv[0]);
+    void *crypto_bytes = ur->data;
+    printf("RustTestSuiTx crypto_bytes: %s\r\n", crypto_bytes);
+    ViewType view_type = ur->t;
+    printf("RustTestSuiTx view_type: %d\r\n", view_type);
+    TransactionParseResult_DisplaySuiIntentMessage *result = sui_parse_intent(crypto_bytes);
+    printf("error_code: %d\r\n", result->error_code);
+    if (result->error_message != NULL) {
+        printf("error_message, %s\r\n", result->error_message);
+    }
+    printf("sui parse result detail: %s\r\n", result->data->detail);
+    free_ur_parse_result(ur);
+    free_TransactionParseResult_DisplaySuiIntentMessage(result);
+    PrintRustMemoryStatus();
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
+}
+
+static void RustTestSuiSignTx(int argc, char *argv[])
+{
+    // Example:
+    // #rust test sui sign tx: 0 111111 a501d825507afd5e09926743fba02e08c4a09417ec0258dc00000000000200201ff915a5e9e32fdbe0135535b6c69a00a9809aaf7f7c0275d3239ca79db20d6400081027000000000000020200010101000101020000010000ebe623e33b7307f1350f8934beb3fb16baef0fc1b3f1b92868eec3944093886901a2e3e42930675d9571a467eb5d4b22553c93ccb84e9097972e02c490b4e7a22ab73200000000000020176c4727433105da34209f04ac3f22e192a2573d7948cb2fabde7d13a7f4f149ebe623e33b7307f1350f8934beb3fb16baef0fc1b3f1b92868eec39440938869e8030000000000006400000000000000000381d90130a2018a182cf5190310f500f500f500f5021a5274470304815820504886c9ec43bff70af37f55865094cc3a799cb54479f252d30cd3717f15ecdc056a5375692057616c6c6574
+    int32_t index;
+    VALUE_CHECK(argc, 3);
+    sscanf(argv[0], "%d", &index);
+    URParseResult *crypto_bytes = test_get_sui_sign_request(argv[2]);
+    uint8_t seed[64];
+    GetAccountSeed(index, seed, argv[1]);
+    // sign result
+    UREncodeResult *sign_result = sui_sign_intent(crypto_bytes->data, seed, sizeof(seed));
+    printf("sign result error_code: %d\r\n", sign_result->error_code);
+    printf("sign result data: %s\r\n", sign_result->data);
+    free_ur_parse_result(crypto_bytes);
+    free_ur_encode_result(sign_result);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }

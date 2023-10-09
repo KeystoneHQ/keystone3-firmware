@@ -293,6 +293,9 @@ fn free_ur(ur_type: &URType, data: PtrUR) {
         URType::EvmSignRequest => {
             free_ptr_with_type!(data, EvmSignRequest);
         }
+        URType::SuiSignRequest => {
+            free_ptr_with_type!(data, SuiSignRequest);
+        }
         _ => {}
     }
 }

@@ -102,7 +102,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_SUI,
 #ifndef COMPILE_SIMULATOR
-        "{\"type\":\"container\",\"pos\":[36,16],\"size\":[408,500],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetSuiDetail\",\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}",
+        "{\"type\":\"container\",\"pos\":[36,16],\"size\":[408,500],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetSuiDetail\",\"text_len_func\":\"GetSuiDetailLen\",\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}",
 #else
         PC_SIMULATOR_PATH"/page_eth.json",
 #endif
@@ -454,6 +454,24 @@ GetLabelDataFunc GuiSuiTextFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataLenFunc GuiSuiTextLenFuncGet(char *type)
+{
+    if (!strcmp(type, "GetSuiDetailLen")) {
+        return GetSuiDetailLen;
+    }
+    return NULL;
+}
+
+GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
+{
+    switch (g_reMapIndex) {
+    case REMAPVIEW_SUI:
+        return GuiSuiTextLenFuncGet(type);
+    default:
+        return NULL;
+    }
+}
+
 GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
 {
     switch (g_reMapIndex) {
@@ -702,10 +720,19 @@ void GuiWidgetBaseInit(lv_obj_t *obj, cJSON *json)
 void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
 {
     GetLabelDataFunc pFunc = NULL;
+    GetLabelDataLenFunc lenFunc = NULL;
     int textWidth = 0;
-    char *text = EXT_MALLOC(LABEL_MAX_BUFF_LEN);
+    int bufLen = LABEL_MAX_BUFF_LEN;
+    cJSON *item = cJSON_GetObjectItem(json, "text_len_func");
+    if (item != NULL) {
+        lenFunc = GuiTemplateTextLenFuncGet(item->valuestring);
+        if (lenFunc != NULL) {
+            bufLen = lenFunc(g_totalData) + 1;
+        }
+    }
+    char *text = EXT_MALLOC(bufLen);
     lv_obj_t *obj = lv_label_create(parent);
-    cJSON *item = cJSON_GetObjectItem(json, "text");
+    item = cJSON_GetObjectItem(json, "text");
     if (item != NULL) {
         lv_label_set_text(obj, item->valuestring);
     } else {

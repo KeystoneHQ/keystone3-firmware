@@ -15,6 +15,7 @@ use third_party::ur_registry::crypto_psbt::CryptoPSBT;
 use third_party::ur_registry::ethereum::eth_sign_request::{DataType, EthSignRequest};
 use third_party::ur_registry::near::near_sign_request::NearSignRequest;
 use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
+use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
 use third_party::ur_registry::traits::RegistryItem;
 
 use crate::interfaces::connect_wallets::get_connect_blue_wallet_ur;
@@ -273,6 +274,13 @@ pub extern "C" fn test_get_sol_sign_message(cbor: *mut c_char) -> *mut URParseRe
         sol_sign_message,
     )
     .c_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn test_get_sui_sign_request(cbor: *mut c_char) -> *mut URParseResult {
+    let cbor_str = recover_c_char(cbor);
+    let sign_request = SuiSignRequest::try_from(hex::decode(cbor_str).unwrap()).unwrap();
+    URParseResult::single(ViewType::SuiTx, URType::SuiSignRequest, sign_request).c_ptr()
 }
 
 #[no_mangle]

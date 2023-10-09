@@ -50,6 +50,12 @@ void FreeSuiMemory(void)
 #endif
 }
 
+int GetSuiDetailLen(void *param)
+{
+    DisplaySuiIntentMessage *tx = (DisplaySuiIntentMessage *)param;
+    return strlen(tx->detail);
+}
+
 void GetSuiDetail(void *indata, void *param)
 {
     DisplaySuiIntentMessage *tx = (DisplaySuiIntentMessage *)param;

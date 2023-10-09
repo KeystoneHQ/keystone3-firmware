@@ -173,7 +173,7 @@ void GuiAboutWidgetsLogExport(bool en, int32_t errCode)
         desc = _("about_info_result_export_successful_desc");
         src = &imgSuccess;
         rightColor = ORANGE_COLOR;
-        right = _("common_done");
+        right = _("Done");
     } else {
         title = _("about_info_result_export_failed");
         src = &imgFailed;

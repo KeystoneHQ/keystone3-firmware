@@ -151,7 +151,7 @@ void GuiForgetPassVerifyResult(bool en, int errCode)
 void GuiForgetPassResetPass(bool en, int errCode)
 {
     lv_obj_t *cont = GuiCreateResultHintbox(lv_scr_act(), 356, &imgSuccess, _("change_passcode_reset_success_title"),
-                                            _("change_passcode_reset_success_desc"), NULL, DARK_GRAY_COLOR, _("common_done"), ORANGE_COLOR);
+                                            _("change_passcode_reset_success_desc"), NULL, DARK_GRAY_COLOR, _("Done"), ORANGE_COLOR);
     lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(cont);
     lv_obj_add_event_cb(rightBtn, CloseCurrentParentAndCloseViewHandler, LV_EVENT_CLICKED, NULL);
     if (g_waitAnimCont != NULL) {

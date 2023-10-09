@@ -390,7 +390,7 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
     lv_obj_t *line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, NUMBER_OF_ARRAYS(g_walletListArray) * 107 + 8);
 
-    lv_obj_t *label = GuiCreateIllustrateLabel(parent, "connect_wallet_upgrade_hint");
+    lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("connect_wallet_upgrade_hint"));
     lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 32, NUMBER_OF_ARRAYS(g_walletListArray) * 107 + 8 + 8);
     // **

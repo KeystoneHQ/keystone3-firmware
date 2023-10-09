@@ -20,7 +20,7 @@ Verify Your Device,verify_title,Verify Your Device,P2,,
 ,verification_success,Successful,P0,,
 ,verification_code_desc,Input this verification code on the Device Verification page of Keystone's official website to authenticate the device.,P2,,
 ,verification_code_failed_title,Unauthorized breach attempt detected!,P2,,
-,verification_code_failed_desc,"Your device has potentially been breached, putting your sensitive data and digital assets at risk.  For safety, erase all personal data and contact our Customer Service team immediately.",P2,,
+,verification_code_failed_desc,"Your device has potentially been breached, putting your sensitive data and digital assets at risk. For safety, erase all personal data and contact our Customer Service team immediately.",P2,,
 ,verification_code_failed_link,support@keyst.one,P2,,
 ,verify_qr_title,Verify Your Device,P2,,
 ,verify_qr_link,https://keyst.one/verify,P2,,
@@ -134,9 +134,13 @@ Please confirm you are the custodian of the share #3，
 ,shamir_phrase_cancel_create_desc,Are you sure you want to cancel the process? The confirmed Shares will be lost after canceling.,P2,,
 ,shamir_phrase_continue_btn,Continue,P2,,
 ,shamir_phrase_share_number_fmt,Share #F5870A %d#/%d,,,e.g. Share 1/5
-,shamir_phrase_share_notice_fmt,Please confirm you are the custodian of the\nshare #%d,,,
-,shamir_phrase_share_backup_notice_fmt,Write down your share #F5870A %d# phrase and keep \nit properly.,,,
-,shamir_phrase_share_confirm_notice_fmt,Select words below in the order of your\nshare #%d phrase to confirm that you have\nkept it properly.,,,
+,shamir_phrase_share_notice_fmt,"Please confirm you are the custodian of the
+share #%d",,,
+,shamir_phrase_share_backup_notice_fmt,"Write down your share #F5870A %d# phrase and keep 
+it properly.",,,
+,shamir_phrase_share_confirm_notice_fmt,"Select words below in the order of your
+share #%d phrase to confirm that you have
+kept it properly.",,,
 ,shamir_phrase_cancel_create_btn,Cancel Create,P2,,
 import wallet/single import,import_wallet_phrase_words_title,Phrase Words Amount,P2,,
 ,import_wallet_phrase_12words,12 Words,P2,,
@@ -149,13 +153,19 @@ import wallet/single import,import_wallet_phrase_words_title,Phrase Words Amount
 ,import_wallet_phrase_title,Import Your Phrase,P2,,
 ,import_wallet_phrase_desc,Input the seed phrase in the blanks provided below.,P2,,
 ,import_wallet_phrase_clear_btn,Clear,P2,,
+,import_wallet_duplicated_share_title,Duplicate Share,,,
+,import_wallet_duplicated_share_desc,"You’ve already checked this share, please use another share to continue.",,,
+,import_wallet_share_success_desc,This share of your seed phrase matches your wallet.,,,
 ,import_wallet_invalid_phrase_title,Invalid Seed Phrase,P2,,
 ,import_wallet_choose_method,Choose Import Method,,,
-,import_wallet_single_backup_desc,Recover your wallet with the specific\nseed phrase,,,
+,import_wallet_single_backup_desc,"Recover your wallet with the specific
+seed phrase",,,
 ,import_wallet_single_phrase,Single Secret Phrase,,,
-,import_wallet_single_phrase_desc,You'll need a 12/18/24 seed phrase\nto recover your wallet.,,,
+,import_wallet_single_phrase_desc,"You'll need a 12/18/24 seed phrase
+to recover your wallet.",,,
 ,import_wallet_shamir_backup,Shamir Backup,,,
-,import_wallet_shamir_backup_desc,You'll need a couple of seed phrase\nshares to recover your wallet,,,
+,import_wallet_shamir_backup_desc,"You'll need a couple of seed phrase
+shares to recover your wallet",,,
 ,import_wallet_invalid_phrase_desc,The phrase you typed is invalid. Please check your backup and try again,P2,,
 import wallet/SSB,import_wallet_ssb_title_fmt,Share #F5870A %d#,P2,新增修改,Share 1
 ,import_wallet_ssb_step_fmt,%d of %d,,,1 of 2
@@ -191,7 +201,7 @@ device setting,device_setting_mid_btn,Device Settings,P2,,
 ,device_setting_system_setting_title,System Settings,P2,,
 ,device_setting_system_setting_desc,Language / Screen / Reset...,P2,,
 ,device_setting_connection_title,Connection,P2,,
-,device_setting_connection_desc,USB / MicroSD Card...,P2,新增修改,
+,device_setting_connection_desc,USB / MicroSD Card,P2,新增修改,
 ,device_setting_about_title,About,P2,,
 ,wallet_settings_mid_btn,Wallet Settings,P2,,
 ,wallet_setting_passcode,Fingerprint & Passcode,P2,,
@@ -511,6 +521,7 @@ Common,OK,OK,,,
 ,Failed,Failed,,,
 ,Success,Success,,,
 ,Pending,Pending,,,
+,Continue,Continue,,,
 ,support_link,support@keyst.one,,,
 About Info,about_info_firmware_version,Firmware Version,,,
 ,about_info_serial_number,Serial Number,,,

@@ -57,6 +57,9 @@ static void FingerUnlockDeviceHandler(lv_event_t *e);
 static void FingerDeleteDialogsHandler(lv_event_t *e);
 static void FingerDeleteHandler(lv_event_t *e);
 static void FingerCancelDeleteHandler(lv_event_t *e);
+static void FirstAddFingerToManagerView(lv_event_t *e);
+static void AddFingerToManagerView(lv_event_t *e);
+static void ClearFingerErrorStateView(lv_event_t *e);
 
 
 /* STATIC VARIABLES */

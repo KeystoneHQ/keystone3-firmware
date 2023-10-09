@@ -65,7 +65,8 @@ void GuiWalletRecoveryDestruct(void *obj, void *param)
     lv_obj_add_flag(g_buttonCont, LV_OBJ_FLAG_HIDDEN);
     // lv_obj_del((lv_obj_t *)obj);
     g_recoveryPhraseKb = NULL;
-    lv_obj_del(g_recoveryMkb->nextButton);
+    // TODO: how to remove this
+    // GUI_DEL_OBJ(g_recoveryMkb->nextButton);
     g_buttonCont = NULL;
     // lv_obj_del(obj);
 }
@@ -167,9 +168,9 @@ void *GuiWalletRecoverySinglePhrase(lv_obj_t *parent, uint8_t wordAmount)
     lv_obj_t *img = GuiCreateImg(btn, &imgArrowNext);
     lv_obj_set_align(img, LV_ALIGN_CENTER);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
+    g_buttonCont = cont;
     g_recoveryMkb->nextButton = btn;
     lv_obj_add_event_cb(btn, ImportPhraseWordsHandler, LV_EVENT_CLICKED, NULL);
-    // g_recoveryPhraseKb.buttonCont = cont;
     cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 242);
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_opa(cont, LV_OPA_0, 0);

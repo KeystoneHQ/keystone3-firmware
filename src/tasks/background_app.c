@@ -16,15 +16,18 @@
 static void ChangerInsertIntCallback(void);
 static void MinuteTimerFunc(void *argument);
 static void BatteryTimerFunc(void *argument);
+static void CheckRtcTimerFunc(void *argument);
 
-static osTimerId_t g_minuteTimer, g_batteryTimer;
+static osTimerId_t g_minuteTimer, g_batteryTimer, g_checkRtcTimer;
 
 void BackGroundAppInit(void)
 {
     RegisterChangerInsertCallback(ChangerInsertIntCallback);
     g_minuteTimer = osTimerNew(MinuteTimerFunc, osTimerPeriodic, NULL, NULL);
     g_batteryTimer = osTimerNew(BatteryTimerFunc, osTimerPeriodic, NULL, NULL);
+    g_checkRtcTimer = osTimerNew(CheckRtcTimerFunc, osTimerPeriodic, NULL, NULL);
     osTimerStart(g_minuteTimer, 60 * 1000);
+    osTimerStart(g_checkRtcTimer, 20 * 1000);
     osTimerStart(g_batteryTimer, GetBatteryInterval());
     ChangerRefreshState();
     PubValueMsg(BACKGROUND_MSG_BATTERY_INTERVAL, 0);
@@ -77,6 +80,14 @@ static void ChangerInsertIntCallback(void)
 static void MinuteTimerFunc(void *argument)
 {
     PubValueMsg(BACKGROUND_MSG_MINUTE, 0);
+}
+
+
+static void CheckRtcTimerFunc(void *argument)
+{
+    if (RtcLowBatteryCheck() == false && !Tampered()) {
+        TamperDetectedHandler();
+    }
 }
 
 

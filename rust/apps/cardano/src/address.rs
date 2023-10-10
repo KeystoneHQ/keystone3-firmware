@@ -1,7 +1,9 @@
 use crate::errors::{CardanoError, R};
 use alloc::string::{String, ToString};
 
-use cardano_serialization_lib::address::{BaseAddress, RewardAddress, StakeCredential};
+use cardano_serialization_lib::address::{
+    BaseAddress, EnterpriseAddress, RewardAddress, StakeCredential,
+};
 use cardano_serialization_lib::crypto::Ed25519KeyHash;
 
 use third_party::cryptoxide::hashing::blake2b_224;
@@ -11,11 +13,14 @@ use third_party::hex;
 pub enum AddressType {
     Base,
     Stake,
+    Enterprise,
 }
 
 pub fn derive_address(
     xpub: String,
+    change: u32,
     index: u32,
+    stake_key_index: u32,
     address_type: AddressType,
     network: u8,
 ) -> R<String> {
@@ -25,13 +30,13 @@ pub fn derive_address(
     match address_type {
         AddressType::Base => {
             let payment_key = xpub
-                .derive(DerivationScheme::V2, 0)?
+                .derive(DerivationScheme::V2, change)?
                 .derive(DerivationScheme::V2, index.clone())?
                 .public_key();
             let payment_key_hash = blake2b_224(&payment_key);
             let stake_key = xpub
                 .derive(DerivationScheme::V2, 2)?
-                .derive(DerivationScheme::V2, index.clone())?
+                .derive(DerivationScheme::V2, stake_key_index.clone())?
                 .public_key();
             let stake_key_hash = blake2b_224(&stake_key);
             let address = BaseAddress::new(
@@ -47,12 +52,27 @@ pub fn derive_address(
         AddressType::Stake => {
             let stake_key = xpub
                 .derive(DerivationScheme::V2, 2)?
-                .derive(DerivationScheme::V2, index.clone())?
+                .derive(DerivationScheme::V2, stake_key_index.clone())?
                 .public_key();
             let stake_key_hash = blake2b_224(&stake_key);
             let address = RewardAddress::new(
                 network,
                 &StakeCredential::from_keyhash(&Ed25519KeyHash::from(stake_key_hash)),
+            );
+            address
+                .to_address()
+                .to_bech32(None)
+                .map_err(|e| CardanoError::AddressEncodingError(e.to_string()))
+        }
+        AddressType::Enterprise => {
+            let payment_key = xpub
+                .derive(DerivationScheme::V2, 0)?
+                .derive(DerivationScheme::V2, index.clone())?
+                .public_key();
+            let payment_key_hash = blake2b_224(&payment_key);
+            let address = EnterpriseAddress::new(
+                network,
+                &StakeCredential::from_keyhash(&Ed25519KeyHash::from(payment_key_hash)),
             );
             address
                 .to_address()
@@ -124,12 +144,13 @@ mod tests {
             )
             .unwrap();
         {
-            let spend_address = derive_address(xpub.to_string(), 0, AddressType::Base, 1).unwrap();
+            let spend_address =
+                derive_address(xpub.to_string(), 0, 0, 0, AddressType::Base, 1).unwrap();
             assert_eq!("addr1qy8ac7qqy0vtulyl7wntmsxc6wex80gvcyjy33qffrhm7sh927ysx5sftuw0dlft05dz3c7revpf7jx0xnlcjz3g69mq4afdhv", spend_address)
         }
         {
             let reward_address =
-                derive_address(xpub.to_string(), 0, AddressType::Stake, 1).unwrap();
+                derive_address(xpub.to_string(), 0, 0, 0, AddressType::Stake, 1).unwrap();
             assert_eq!(
                 "stake1u8j40zgr2gy4788kl54h6x3gu0pukq5lfr8nflufpg5dzaskqlx2l",
                 reward_address

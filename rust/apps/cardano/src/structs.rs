@@ -140,7 +140,12 @@ struct Delegation {
 
 impl ParsedCardanoTx {
     pub fn from_cardano_tx(tx: Transaction, context: ParseContext) -> R<Self> {
-        let parsed_inputs = Self::parse_inputs(&tx, &context)?;
+        let network_id = Self::judge_network_id(&tx);
+        let network = match network_id {
+            1 => "Cardano Mainnet".to_string(),
+            _ => "Cardano Testnet".to_string(),
+        };
+        let parsed_inputs = Self::parse_inputs(&tx, &context, network_id)?;
         let parsed_outputs = Self::parse_outputs(&tx)?;
         let cert_actions = Self::parse_certs(&tx)?;
         let stake_actions = Self::parse_stake_actions(&tx, &cert_actions)?;
@@ -183,14 +188,6 @@ impl ParsedCardanoTx {
                 _list.push(value)
             }
             _list
-        };
-
-        let network = match tx.body().network_id() {
-            None => "Cardano Mainnet".to_string(),
-            Some(id) => match id.kind() {
-                NetworkIdKind::Mainnet => "Cardano Mainnet".to_string(),
-                NetworkIdKind::Testnet => "Cardano Testnet".to_string(),
-            },
         };
 
         let fee = normalize_coin(fee);
@@ -298,6 +295,19 @@ impl ParsedCardanoTx {
             network: network.clone(),
             method: method.to_string(),
         })
+    }
+
+    fn judge_network_id(tx: &Transaction) -> u8 {
+        match tx.body().network_id() {
+            None => match tx.body().outputs().get(0).address().network_id() {
+                Ok(id) => id,
+                Err(_) => 1,
+            },
+            Some(id) => match id.kind() {
+                NetworkIdKind::Mainnet => 1,
+                NetworkIdKind::Testnet => 0,
+            },
+        }
     }
 
     fn get_from_list(inputs: Vec<ParsedCardanoInput>) -> BTreeMap<String, CardanoFrom> {
@@ -413,7 +423,8 @@ impl ParsedCardanoTx {
     }
 
     pub fn verify(tx: Transaction, context: ParseContext) -> R<()> {
-        let parsed_inputs = Self::parse_inputs(&tx, &context)?;
+        let network_id = Self::judge_network_id(&tx);
+        let parsed_inputs = Self::parse_inputs(&tx, &context, network_id)?;
         if parsed_inputs
             .iter()
             .filter(|v| v.address.is_some())
@@ -428,7 +439,11 @@ impl ParsedCardanoTx {
         Ok(())
     }
 
-    fn parse_inputs(tx: &Transaction, context: &ParseContext) -> R<Vec<ParsedCardanoInput>> {
+    fn parse_inputs(
+        tx: &Transaction,
+        context: &ParseContext,
+        network_id: u8,
+    ) -> R<Vec<ParsedCardanoInput>> {
         let inputs_len = tx.body().inputs().len();
         let mut parsed_inputs = vec![];
         for i in 0..inputs_len {
@@ -441,23 +456,47 @@ impl ParsedCardanoTx {
             match m {
                 //known utxo
                 Some(utxo) => {
-                    let index =
-                        match utxo
-                            .path
-                            .into_iter()
-                            .last()
-                            .ok_or(CardanoError::DerivationError(
-                                "invalid derivation path".to_string(),
-                            ))? {
-                            Normal { index: i } => i,
-                            Hardened { index: i } => i,
-                        };
+                    let mut iter = utxo.path.into_iter();
+                    let _root = match iter.next() {
+                        Some(Hardened { index: 1852 }) => Ok(1852u32),
+                        _ => Err(CardanoError::DerivationError(
+                            "invalid derivation path".to_string(),
+                        )),
+                    }?;
+                    let _coin_type = match iter.next() {
+                        Some(Hardened { index: 1815 }) => Ok(1815u32),
+                        _ => Err(CardanoError::DerivationError(
+                            "invalid derivation path".to_string(),
+                        )),
+                    }?;
+                    let _account = match iter.next() {
+                        Some(Hardened { index: _i }) => Ok(_i),
+                        _ => Err(CardanoError::DerivationError(
+                            "invalid derivation path".to_string(),
+                        )),
+                    }?;
+                    let change = match iter.next() {
+                        Some(Normal { index: _i }) => Ok(_i),
+                        _ => Err(CardanoError::DerivationError(
+                            "invalid derivation path".to_string(),
+                        )),
+                    }?;
+                    let index = match iter.next() {
+                        Some(Normal { index: _i }) => Ok(_i),
+                        _ => Err(CardanoError::DerivationError(
+                            "invalid derivation path".to_string(),
+                        )),
+                    }?;
 
                     let address = derive_address(
                         context.get_cardano_xpub(),
+                        change.clone(),
                         index.clone(),
+                        // TODO: get stake_key_index from storage if we integration with Cardano wallet which support multi-delegation
+                        // stakeKey is m/1852'/1815'/X'/2/0 in most cases. except LACE wallet.
+                        0,
                         AddressType::Base,
-                        1,
+                        network_id,
                     )?;
 
                     parsed_inputs.push(ParsedCardanoInput {
@@ -695,7 +734,7 @@ impl ParsedCardanoTx {
     }
 }
 
-static DIVIDER: f64 = 1_000_000_00f64;
+static DIVIDER: f64 = 1_000_000f64;
 
 fn normalize_coin(value: u64) -> String {
     format!("{} ADA", (value as f64).div(DIVIDER))

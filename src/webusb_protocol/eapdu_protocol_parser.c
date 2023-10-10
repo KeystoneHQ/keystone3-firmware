@@ -1,6 +1,6 @@
 #include "stdio.h"
 #include "stdlib.h"
-#include "apdu_protocol_parser.h"
+#include "eapdu_protocol_parser.h"
 #include "librust_c.h"
 #include "keystore.h"
 #include "service_resolve_ur.h"
@@ -11,22 +11,22 @@ static struct ProtocolParser *global_parser = NULL;
 #define MAX_PACKETS 8
 #define MAX_PACKETS_LENGTH 64
 #define MAX_PACKETS_DATA_LENGTH 59
-#define MAX_APDU_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA)
+#define MAX_EAPDU_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA)
 
 uint8_t g_protocolRcvBuffer[MAX_PACKETS][MAX_PACKETS_LENGTH];
 uint8_t g_packetLengths[MAX_PACKETS];
 uint8_t g_receivedPackets[MAX_PACKETS];
 uint8_t g_totalPackets = 0;
 
-void SendApduResponse(uint8_t cla, CommandType ins, APDUResponsePayload_t *payload)
+void SendEApduResponse(uint8_t cla, CommandType ins, EAPDUResponsePayload_t *payload)
 {
     uint8_t packet[MAX_PACKETS_LENGTH];
-    uint8_t totalPackets = (payload->dataLen + MAX_APDU_DATA_SIZE - 1) / MAX_APDU_DATA_SIZE;
+    uint8_t totalPackets = (payload->dataLen + MAX_EAPDU_DATA_SIZE - 1) / MAX_EAPDU_DATA_SIZE;
     uint8_t packetIndex = 0;
     uint32_t offset = 0;
     while (payload->dataLen > 0)
     {
-        uint8_t packetDataSize = payload->dataLen > MAX_APDU_DATA_SIZE ? MAX_APDU_DATA_SIZE : payload->dataLen;
+        uint8_t packetDataSize = payload->dataLen > MAX_EAPDU_DATA_SIZE ? MAX_EAPDU_DATA_SIZE : payload->dataLen;
 
         packet[OFFSET_CLA] = cla;
         packet[OFFSET_INS] = ins;
@@ -49,9 +49,9 @@ static void reset()
     memset(g_protocolRcvBuffer, 0, sizeof(g_protocolRcvBuffer));
 }
 
-static void ApduRequestHandler(APDURequestPayload_t *request, CommandType command)
+static void EApduRequestHandler(EAPDURequestPayload_t *request, CommandType command)
 {
-    APDUResponsePayload_t *result = (APDUResponsePayload_t *)malloc(sizeof(APDUResponsePayload_t));
+    EAPDUResponsePayload_t *result = (EAPDUResponsePayload_t *)malloc(sizeof(EAPDUResponsePayload_t));
     switch (command)
     {
     case CMD_ECHO_TEST:
@@ -59,7 +59,7 @@ static void ApduRequestHandler(APDURequestPayload_t *request, CommandType comman
         memcpy(result->data, request->data, request->dataLen);
         result->dataLen = request->dataLen;
         result->status = RSP_SUCCESS_CODE;
-        SendApduResponse(APDU_PROTOCOL_HEADER, CMD_ECHO_TEST, result);
+        SendEApduResponse(EAPDU_PROTOCOL_HEADER, CMD_ECHO_TEST, result);
         break;
     case CMD_RESOLVE_UR:
         ProcessUREvents(request);
@@ -69,7 +69,7 @@ static void ApduRequestHandler(APDURequestPayload_t *request, CommandType comman
         result->data[0] = GuiLockScreenIsTop();
         result->dataLen = 1;
         result->status = RSP_SUCCESS_CODE;
-        SendApduResponse(APDU_PROTOCOL_HEADER, CMD_CHECK_LOCK_STATUS, result);
+        SendEApduResponse(EAPDU_PROTOCOL_HEADER, CMD_CHECK_LOCK_STATUS, result);
         break;
     default:
         printf('Invalid command\n');
@@ -84,7 +84,7 @@ static void FrameParser(const uint8_t *frame, uint32_t len)
 {
     if (len < 4)
     {
-        printf("Invalid APDU data\n");
+        printf("Invalid EAPDU data\n");
         reset();
         return;
     }
@@ -150,17 +150,17 @@ static void FrameParser(const uint8_t *frame, uint32_t len)
     }
     fullData[fullDataLen] = '\0';
 
-    APDURequestPayload_t *request = (APDURequestPayload_t *)malloc(sizeof(APDURequestPayload_t));
+    EAPDURequestPayload_t *request = (EAPDURequestPayload_t *)malloc(sizeof(EAPDURequestPayload_t));
     request->data = fullData;
     request->dataLen = fullDataLen;
-    ApduRequestHandler(request, frame[OFFSET_INS]);
+    EApduRequestHandler(request, frame[OFFSET_INS]);
 
     free(fullData);
     free(request);
     reset();
 }
 
-void ApduProtocolParse(const uint8_t *frame, uint32_t len)
+void EApduProtocolParse(const uint8_t *frame, uint32_t len)
 {
     FrameParser(frame, len);
 }
@@ -173,13 +173,13 @@ static void RegisterSendFunc(ProtocolSendCallbackFunc_t sendFunc)
     }
 }
 
-struct ProtocolParser *NewApduProtocolParser()
+struct ProtocolParser *NewEApduProtocolParser()
 {
     if (!global_parser)
     {
         global_parser = (struct ProtocolParser *)malloc(sizeof(struct ProtocolParser));
-        global_parser->name = APDU_PROTOCOL_PARSER_NAME;
-        global_parser->parse = ApduProtocolParse;
+        global_parser->name = EAPDU_PROTOCOL_PARSER_NAME;
+        global_parser->parse = EApduProtocolParse;
         global_parser->registerSendFunc = RegisterSendFunc;
         global_parser->rcvCount = 0;
     }

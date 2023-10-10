@@ -6,7 +6,7 @@
  ************************************************************************************************/
 
 #include "internal_protocol_parser.h"
-#include "apdu_protocol_parser.h"
+#include "eapdu_protocol_parser.h"
 #include "stdio.h"
 #include "string.h"
 #include "user_utils.h"
@@ -30,9 +30,9 @@ void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbac
 
     tick = osKernelGetTickCount();
 
-    if (data[0] == APDU_PROTOCOL_HEADER)
+    if (data[0] == EAPDU_PROTOCOL_HEADER)
     {
-        currentParser = NewApduProtocolParser();
+        currentParser = NewEApduProtocolParser();
     }
     else
     {

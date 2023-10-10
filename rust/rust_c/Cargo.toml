@@ -20,7 +20,6 @@ app_aptos = {path = "../apps/aptos", default-features = false}
 app_sui = {path = "../apps/sui"}
 third_party = { path = "../third_party" }
 app_utils = { path = "../apps/utils" }
-transport = { path = "../apps/transport" }
 rust_tools = {path="../tools"}
 cty = "0.2.2"
 cstr_core = "0.2.6"

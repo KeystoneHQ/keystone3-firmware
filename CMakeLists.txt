@@ -138,7 +138,7 @@ if(COMPILE_MAIN)
         src/ui/wallet
         src/webusb_protocol
         src/webusb_protocol/services
-        src/webusb_protocol/apdu_services
+        src/webusb_protocol/eapdu_services
         external
         external/ctaes
         external/fatfs
@@ -178,7 +178,7 @@ if(COMPILE_MAIN)
     aux_source_directory(src/crypto/utils crypto_utils)
     aux_source_directory(src/webusb_protocol/ webusb_protocol)
     aux_source_directory(src/webusb_protocol/services webusb_protocol_services)
-    aux_source_directory(src/webusb_protocol/apdu_services webusb_protocol_apdu_services)
+    aux_source_directory(src/webusb_protocol/eapdu_services webusb_protocol_eapdu_services)
     
     file(GLOB_RECURSE usb
         "src/driver/usb/*.c"
@@ -304,7 +304,7 @@ if(COMPILE_MAIN)
         ${gui}
         ${webusb_protocol}
         ${webusb_protocol_services}
-        ${webusb_protocol_apdu_services}
+        ${webusb_protocol_eapdu_services}
         external/mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s
         src/cm_backtrace/fault_handler/gcc/cmb_fault.s)
 

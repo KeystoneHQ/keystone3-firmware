@@ -12,11 +12,11 @@ typedef struct
 
 static void BasicHandlerFunc(const void *data, uint32_t data_len, StatusEnum status)
 {
-    APDUResponsePayload_t *payload = (APDUResponsePayload_t *)malloc(sizeof(APDUResponsePayload_t));
+    EAPDUResponsePayload_t *payload = (EAPDUResponsePayload_t *)malloc(sizeof(EAPDUResponsePayload_t));
     payload->data = (uint8_t *)data;
     payload->dataLen = data_len;
     payload->status = status;
-    SendApduResponse(APDU_PROTOCOL_HEADER, CMD_RESOLVE_UR, payload);
+    SendEApduResponse(EAPDU_PROTOCOL_HEADER, CMD_RESOLVE_UR, payload);
     free(payload);
 };
 
@@ -35,12 +35,12 @@ void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, bool isSucces
     isSuccess ? HandleSuccessFunc(data, data_len) : HandleFailureFunc(data, data_len);
 };
 
-static uint8_t *DataParser(APDURequestPayload_t *payload)
+static uint8_t *DataParser(EAPDURequestPayload_t *payload)
 {
     return payload->data;
 }
 
-void *ProcessUREvents(APDURequestPayload_t *payload)
+void *ProcessUREvents(EAPDURequestPayload_t *payload)
 {
     struct URParseResult *urResult = parse_ur(DataParser(payload));
     UrViewType_t urViewType = {0, 0};

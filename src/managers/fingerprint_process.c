@@ -316,6 +316,7 @@ void FpRecognizeRecv(char *indata, uint8_t len)
                 printf("open sign\n");
                 if (GetCurrentAccountIndex() != 0xFF) {
                     FingerSetInfoToSE((uint8_t *)&indata[6], 0, GetCurrentAccountIndex(), SecretCacheGetPassword());
+                } else {
                     return;
                 }
             } else {

@@ -3,14 +3,13 @@
 #include "eapdu_protocol_parser.h"
 #include "librust_c.h"
 #include "keystore.h"
-#include "service_resolve_ur.h"
+#include "eapdu_services/service_resolve_ur.h"
 
 static ProtocolSendCallbackFunc_t g_sendFunc = NULL;
 static struct ProtocolParser *global_parser = NULL;
 
-#define MAX_PACKETS 8
+#define MAX_PACKETS 32
 #define MAX_PACKETS_LENGTH 64
-#define MAX_PACKETS_DATA_LENGTH 59
 #define MAX_EAPDU_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA)
 
 uint8_t g_protocolRcvBuffer[MAX_PACKETS][MAX_PACKETS_LENGTH];
@@ -18,21 +17,30 @@ uint8_t g_packetLengths[MAX_PACKETS];
 uint8_t g_receivedPackets[MAX_PACKETS];
 uint8_t g_totalPackets = 0;
 
+static uint16_t extract_16bit_value(const uint8_t *frame, int offset) {
+    return ((uint16_t)frame[offset] << 8) | frame[offset + 1];
+}
+
+static void insert_16bit_value(uint8_t *frame, int offset, uint16_t value) {
+    frame[offset] = (uint8_t)(value >> 8);
+    frame[offset + 1] = (uint8_t)(value & 0xFF);
+}
+
 void SendEApduResponse(uint8_t cla, CommandType ins, EAPDUResponsePayload_t *payload)
 {
     uint8_t packet[MAX_PACKETS_LENGTH];
-    uint8_t totalPackets = (payload->dataLen + MAX_EAPDU_DATA_SIZE - 1) / MAX_EAPDU_DATA_SIZE;
-    uint8_t packetIndex = 0;
+    uint16_t totalPackets = (payload->dataLen + MAX_EAPDU_DATA_SIZE - 1) / MAX_EAPDU_DATA_SIZE;
+    uint16_t packetIndex = 0;
     uint32_t offset = 0;
     while (payload->dataLen > 0)
     {
-        uint8_t packetDataSize = payload->dataLen > MAX_EAPDU_DATA_SIZE ? MAX_EAPDU_DATA_SIZE : payload->dataLen;
+        uint16_t packetDataSize = payload->dataLen > MAX_EAPDU_DATA_SIZE ? MAX_EAPDU_DATA_SIZE : payload->dataLen;
 
         packet[OFFSET_CLA] = cla;
-        packet[OFFSET_INS] = ins;
-        packet[OFFSET_P1] = totalPackets;
-        packet[OFFSET_P2] = packetIndex;
-        packet[OFFSET_LC] = packetDataSize;
+        insert_16bit_value(packet, OFFSET_INS, ins);
+        insert_16bit_value(packet, OFFSET_P1, totalPackets);
+        insert_16bit_value(packet, OFFSET_P2, packetIndex);
+        insert_16bit_value(packet, OFFSET_LC, packetDataSize);
         memcpy(packet + OFFSET_CDATA, payload->data + offset, packetDataSize);
         g_sendFunc(packet, OFFSET_CDATA + packetDataSize);
         offset += packetDataSize;
@@ -41,7 +49,7 @@ void SendEApduResponse(uint8_t cla, CommandType ins, EAPDUResponsePayload_t *pay
     }
 }
 
-static void reset()
+static void free_parser()
 {
     g_totalPackets = 0;
     memset(g_receivedPackets, 0, sizeof(g_receivedPackets));
@@ -51,7 +59,7 @@ static void reset()
 
 static void EApduRequestHandler(EAPDURequestPayload_t *request, CommandType command)
 {
-    EAPDUResponsePayload_t *result = (EAPDUResponsePayload_t *)malloc(sizeof(EAPDUResponsePayload_t));
+    EAPDUResponsePayload_t *result = (EAPDUResponsePayload_t *)calloc(1, sizeof(EAPDUResponsePayload_t));
     switch (command)
     {
     case CMD_ECHO_TEST:
@@ -62,7 +70,7 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request, CommandType comm
         SendEApduResponse(EAPDU_PROTOCOL_HEADER, CMD_ECHO_TEST, result);
         break;
     case CMD_RESOLVE_UR:
-        ProcessUREvents(request);
+        ProcessUREvents(*request);
         break;
     case CMD_CHECK_LOCK_STATUS:
         result->data = (uint8_t *)malloc(1);
@@ -76,55 +84,75 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request, CommandType comm
         break;
     }
 
-    free(result->data);
+    if (result->data != NULL)
+    {
+        free(result->data);
+    }
     free(result);
 }
 
-static void FrameParser(const uint8_t *frame, uint32_t len)
+static ParserStatusEnum CheckFrameValidity(EAPDUFrame_t *eapduFrame)
+{
+    if (eapduFrame->p1 > MAX_PACKETS)
+    {
+        printf("Invalid packet index or total number of packets\n");
+        free_parser();
+        return FRAME_TOTAL_ERROR;
+    }
+    else if (eapduFrame->p2 >= eapduFrame->p1)
+    {
+        printf("Invalid packet index or total number of packets\n");
+        free_parser();
+        return FRAME_INDEX_ERROR;
+    }
+    else if (g_receivedPackets[eapduFrame->p2])
+    { // duplicate packet
+        printf("Duplicate frame\n");
+        return DUPLICATE_FRAME;
+    }
+
+    return FRAME_CHECKSUM_OK;
+}
+
+static EAPDUFrame_t* FrameParser(const uint8_t *frame, uint32_t len)
+{
+    EAPDUFrame_t *eapduFrame = (EAPDUFrame_t *)malloc(sizeof(EAPDUFrame_t));
+    eapduFrame->cla = frame[OFFSET_CLA];
+    eapduFrame->ins = extract_16bit_value(frame, OFFSET_INS);
+    eapduFrame->p1 = extract_16bit_value(frame, OFFSET_P1);
+    eapduFrame->p2 = extract_16bit_value(frame, OFFSET_P2);
+    eapduFrame->lc = extract_16bit_value(frame, OFFSET_LC);
+    eapduFrame->data = frame + OFFSET_CDATA;
+    eapduFrame->dataLen = len - OFFSET_CDATA;
+    return eapduFrame;
+}
+
+void EApduProtocolParse(const uint8_t *frame, uint32_t len)
 {
     if (len < 4)
     {
         printf("Invalid EAPDU data\n");
-        reset();
+        free_parser();
         return;
     }
 
-    uint8_t cla = frame[OFFSET_CLA];
-    uint8_t p1 = frame[OFFSET_P1]; // total number of packets
-    uint8_t p2 = frame[OFFSET_P2]; // index of the current packet
-    uint8_t lc = frame[OFFSET_LC];
-    uint8_t *data = frame + OFFSET_CDATA;
-    uint8_t dataLen = len - OFFSET_CDATA;
+    EAPDUFrame_t *eapduFrame = FrameParser(frame, len);
 
-    if (p1 > MAX_PACKETS || p2 >= p1)
+    if (CheckFrameValidity(eapduFrame) != FRAME_CHECKSUM_OK)
     {
-        printf("Invalid packet index or total number of packets\n");
-        reset();
         return;
     }
 
-    if (p2 == 0 && g_totalPackets == 0)
+    if (eapduFrame->p2 == 0 && g_totalPackets == 0)
     { // the first packet
-        g_totalPackets = p1;
+        g_totalPackets = eapduFrame->p1;
         printf("Total number of packets: %d\n", g_totalPackets);
         memset(g_receivedPackets, 0, sizeof(g_receivedPackets));
     }
-    else if (p1 != g_totalPackets)
-    { // total number of packets should be the same in all packets
-        printf("Inconsistent total number of packets\n");
-        reset();
-        return;
-    }
 
-    if (g_receivedPackets[p2])
-    { // duplicate packet
-        printf("Duplicate packet\n");
-        return;
-    }
-
-    memcpy(g_protocolRcvBuffer[p2], data, dataLen);
-    g_packetLengths[p2] = dataLen;
-    g_receivedPackets[p2] = 1;
+    memcpy(g_protocolRcvBuffer[eapduFrame->p2], eapduFrame->data, eapduFrame->dataLen);
+    g_packetLengths[eapduFrame->p2] = eapduFrame->dataLen;
+    g_receivedPackets[eapduFrame->p2] = 1;
 
     // check if all packets have arrived
     for (uint8_t i = 0; i < g_totalPackets; i++)
@@ -153,16 +181,12 @@ static void FrameParser(const uint8_t *frame, uint32_t len)
     EAPDURequestPayload_t *request = (EAPDURequestPayload_t *)malloc(sizeof(EAPDURequestPayload_t));
     request->data = fullData;
     request->dataLen = fullDataLen;
-    EApduRequestHandler(request, frame[OFFSET_INS]);
+    EApduRequestHandler(request, eapduFrame->ins);
 
+    free(eapduFrame);
     free(fullData);
     free(request);
-    reset();
-}
-
-void EApduProtocolParse(const uint8_t *frame, uint32_t len)
-{
-    FrameParser(frame, len);
+    free_parser();
 }
 
 static void RegisterSendFunc(ProtocolSendCallbackFunc_t sendFunc)

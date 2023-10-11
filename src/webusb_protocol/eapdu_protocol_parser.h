@@ -6,7 +6,7 @@
 #define EAPDU_PROTOCOL_HEADER             0x00
 #define EAPDU_PROTOCOL_PARSER_NAME        "eapdu_protocol_parser"
 
-enum { OFFSET_CLA = 0, OFFSET_INS, OFFSET_P1, OFFSET_P2, OFFSET_LC, OFFSET_CDATA };
+enum { OFFSET_CLA = 0, OFFSET_INS = 1, OFFSET_P1 = 3, OFFSET_P2 = 5, OFFSET_LC = 7, OFFSET_CDATA = 9 };
 
 typedef enum {
     CMD_ECHO_TEST = 0x00000001,    // Command to test echo
@@ -22,6 +22,26 @@ typedef enum {
     //
     RSP_MAX_VALUE = 0xFFFFFFFF,
 } StatusEnum;
+
+typedef enum {
+    FRAME_INVALID_LENGTH,
+    UNKNOWN_COMMAND,
+    FRAME_INDEX_ERROR,
+    FRAME_TOTAL_ERROR,
+    DUPLICATE_FRAME,
+    FRAME_CHECKSUM_OK,
+} ParserStatusEnum;
+
+typedef struct
+{
+    uint8_t cla;
+    CommandType ins;
+    uint16_t p1;
+    uint16_t p2;
+    uint16_t lc;
+    uint8_t *data;
+    uint32_t dataLen;
+} EAPDUFrame_t;
 
 typedef struct
 {

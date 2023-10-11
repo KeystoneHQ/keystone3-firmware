@@ -40,9 +40,9 @@ static uint8_t *DataParser(EAPDURequestPayload_t *payload)
     return payload->data;
 }
 
-void *ProcessUREvents(EAPDURequestPayload_t *payload)
+void *ProcessUREvents(EAPDURequestPayload_t payload)
 {
-    struct URParseResult *urResult = parse_ur(DataParser(payload));
+    struct URParseResult *urResult = parse_ur(DataParser(&payload));
     UrViewType_t urViewType = {0, 0};
     urViewType.viewType = urResult->t;
     urViewType.urType = urResult->ur_type;

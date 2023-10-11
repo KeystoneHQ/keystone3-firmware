@@ -42,7 +42,16 @@ static uint8_t *DataParser(EAPDURequestPayload_t *payload)
 
 void *ProcessURService(EAPDURequestPayload_t payload)
 {
+    if (GuiLockScreenIsTop()) {
+        const char *data = "Device is locked";
+        HandleURResultViaUSBFunc(data, strlen(data), false);
+        return NULL;
+    }
     struct URParseResult *urResult = parse_ur(DataParser(&payload));
+    if (urResult->error_code != 0) {
+        HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), false);
+        return NULL;
+    }
     UrViewType_t urViewType = {0, 0};
     urViewType.viewType = urResult->t;
     urViewType.urType = urResult->ur_type;

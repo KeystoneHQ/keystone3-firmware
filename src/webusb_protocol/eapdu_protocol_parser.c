@@ -4,24 +4,30 @@
 #include "librust_c.h"
 #include "keystore.h"
 #include "eapdu_services/service_resolve_ur.h"
+#include "eapdu_services/service_check_lock.h"
+#include "eapdu_services/service_echo_test.h"
 
 static ProtocolSendCallbackFunc_t g_sendFunc = NULL;
 static struct ProtocolParser *global_parser = NULL;
 
+#define EAPDU_RESPONSE_STATUS_LENGTH 2
 #define MAX_PACKETS 32
 #define MAX_PACKETS_LENGTH 64
 #define MAX_EAPDU_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA)
+#define MEX_EAPDU_RESPONSE_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA - EAPDU_RESPONSE_STATUS_LENGTH)
 
 uint8_t g_protocolRcvBuffer[MAX_PACKETS][MAX_PACKETS_LENGTH];
 uint8_t g_packetLengths[MAX_PACKETS];
 uint8_t g_receivedPackets[MAX_PACKETS];
 uint8_t g_totalPackets = 0;
 
-static uint16_t extract_16bit_value(const uint8_t *frame, int offset) {
+static uint16_t extract_16bit_value(const uint8_t *frame, int offset)
+{
     return ((uint16_t)frame[offset] << 8) | frame[offset + 1];
 }
 
-static void insert_16bit_value(uint8_t *frame, int offset, uint16_t value) {
+static void insert_16bit_value(uint8_t *frame, int offset, uint16_t value)
+{
     frame[offset] = (uint8_t)(value >> 8);
     frame[offset + 1] = (uint8_t)(value & 0xFF);
 }
@@ -29,12 +35,12 @@ static void insert_16bit_value(uint8_t *frame, int offset, uint16_t value) {
 void SendEApduResponse(uint8_t cla, CommandType ins, EAPDUResponsePayload_t *payload)
 {
     uint8_t packet[MAX_PACKETS_LENGTH];
-    uint16_t totalPackets = (payload->dataLen + MAX_EAPDU_DATA_SIZE - 1) / MAX_EAPDU_DATA_SIZE;
+    uint16_t totalPackets = (payload->dataLen + MEX_EAPDU_RESPONSE_DATA_SIZE - 1) / MEX_EAPDU_RESPONSE_DATA_SIZE;
     uint16_t packetIndex = 0;
     uint32_t offset = 0;
     while (payload->dataLen > 0)
     {
-        uint16_t packetDataSize = payload->dataLen > MAX_EAPDU_DATA_SIZE ? MAX_EAPDU_DATA_SIZE : payload->dataLen;
+        uint16_t packetDataSize = payload->dataLen > MEX_EAPDU_RESPONSE_DATA_SIZE ? MEX_EAPDU_RESPONSE_DATA_SIZE : payload->dataLen;
 
         packet[OFFSET_CLA] = cla;
         insert_16bit_value(packet, OFFSET_INS, ins);
@@ -42,7 +48,8 @@ void SendEApduResponse(uint8_t cla, CommandType ins, EAPDUResponsePayload_t *pay
         insert_16bit_value(packet, OFFSET_P2, packetIndex);
         insert_16bit_value(packet, OFFSET_LC, packetDataSize);
         memcpy(packet + OFFSET_CDATA, payload->data + offset, packetDataSize);
-        g_sendFunc(packet, OFFSET_CDATA + packetDataSize);
+        insert_16bit_value(packet, OFFSET_CDATA + packetDataSize, payload->status);
+        g_sendFunc(packet, OFFSET_CDATA + packetDataSize + EAPDU_RESPONSE_STATUS_LENGTH);
         offset += packetDataSize;
         payload->dataLen -= packetDataSize;
         packetIndex++;
@@ -59,36 +66,21 @@ static void free_parser()
 
 static void EApduRequestHandler(EAPDURequestPayload_t *request, CommandType command)
 {
-    EAPDUResponsePayload_t *result = (EAPDUResponsePayload_t *)calloc(1, sizeof(EAPDUResponsePayload_t));
     switch (command)
     {
     case CMD_ECHO_TEST:
-        result->data = (uint8_t *)malloc(request->dataLen);
-        memcpy(result->data, request->data, request->dataLen);
-        result->dataLen = request->dataLen;
-        result->status = RSP_SUCCESS_CODE;
-        SendEApduResponse(EAPDU_PROTOCOL_HEADER, CMD_ECHO_TEST, result);
+        EchoService(*request);
         break;
     case CMD_RESOLVE_UR:
-        ProcessUREvents(*request);
+        ProcessURService(*request);
         break;
     case CMD_CHECK_LOCK_STATUS:
-        result->data = (uint8_t *)malloc(1);
-        result->data[0] = GuiLockScreenIsTop();
-        result->dataLen = 1;
-        result->status = RSP_SUCCESS_CODE;
-        SendEApduResponse(EAPDU_PROTOCOL_HEADER, CMD_CHECK_LOCK_STATUS, result);
+        CheckDeviceLockStatusService(*request);
         break;
     default:
         printf('Invalid command\n');
         break;
     }
-
-    if (result->data != NULL)
-    {
-        free(result->data);
-    }
-    free(result);
 }
 
 static ParserStatusEnum CheckFrameValidity(EAPDUFrame_t *eapduFrame)
@@ -114,7 +106,7 @@ static ParserStatusEnum CheckFrameValidity(EAPDUFrame_t *eapduFrame)
     return FRAME_CHECKSUM_OK;
 }
 
-static EAPDUFrame_t* FrameParser(const uint8_t *frame, uint32_t len)
+static EAPDUFrame_t *FrameParser(const uint8_t *frame, uint32_t len)
 {
     EAPDUFrame_t *eapduFrame = (EAPDUFrame_t *)malloc(sizeof(EAPDUFrame_t));
     eapduFrame->cla = frame[OFFSET_CLA];

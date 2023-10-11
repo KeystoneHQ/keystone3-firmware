@@ -5,7 +5,7 @@ use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
 use app_utils::{impl_internal_struct, impl_public_struct};
-use cardano_serialization_lib::address::RewardAddress;
+use cardano_serialization_lib::address::{EnterpriseAddress, RewardAddress};
 
 use cardano_serialization_lib::utils::from_bignum;
 use cardano_serialization_lib::{CertificateKind, NetworkId, NetworkIdKind, Transaction};
@@ -488,7 +488,7 @@ impl ParsedCardanoTx {
                         )),
                     }?;
 
-                    let address = derive_address(
+                    let mut address = derive_address(
                         context.get_cardano_xpub(),
                         change.clone(),
                         index.clone(),
@@ -498,6 +498,25 @@ impl ParsedCardanoTx {
                         AddressType::Base,
                         network_id,
                     )?;
+
+                    // maybe Enterprise address
+                    if !address.eq(&utxo.address) {
+                        address = derive_address(
+                            context.get_cardano_xpub(),
+                            change.clone(),
+                            index.clone(),
+                            // TODO: get stake_key_index from storage if we integration with Cardano wallet which support multi-delegation
+                            // stakeKey is m/1852'/1815'/X'/2/0 in most cases. except LACE wallet.
+                            0,
+                            AddressType::Enterprise,
+                            network_id,
+                        )?;
+                        if !address.eq(&utxo.address) {
+                            return Err(CardanoError::InvalidTransaction(
+                                "invalid address".to_string(),
+                            ));
+                        }
+                    }
 
                     parsed_inputs.push(ParsedCardanoInput {
                         transaction_hash: utxo.transaction_hash.clone(),

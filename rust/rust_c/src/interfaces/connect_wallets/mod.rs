@@ -1,4 +1,5 @@
-mod aptos;
+pub mod aptos;
+pub mod sui;
 pub mod keplr;
 pub mod okx;
 pub mod solana;

@@ -1,4 +1,11 @@
-#include "gui_sui.h"
+#include "rust.h"
+#include "keystore.h"
+#include "user_memory.h"
+#include "gui_chain.h"
+#include "screen_manager.h"
+#include "keystore.h"
+#include "account_manager.h"
+#include "secret_cache.h"
 
 static bool g_isMulti = false;
 static void *g_urResult = NULL;
@@ -28,7 +35,6 @@ void *GuiGetSuiData(void)
     GetMasterFingerPrint(mfp);
     TransactionCheckResult *result = NULL;
     do {
-        URType urType = g_isMulti ? ((URParseMultiResult *)g_urResult)->ur_type : ((URParseResult *)g_urResult)->ur_type;
         result = sui_check_request(data, mfp, sizeof(mfp));
         CHECK_CHAIN_BREAK(result);
         PtrT_TransactionParseResult_DisplaySuiIntentMessage parseResult = sui_parse_intent(data);

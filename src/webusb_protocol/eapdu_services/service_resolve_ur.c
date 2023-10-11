@@ -13,7 +13,7 @@ typedef struct
 static void BasicHandlerFunc(const void *data, uint32_t data_len, StatusEnum status)
 {
     EAPDUResponsePayload_t *payload = (EAPDUResponsePayload_t *)malloc(sizeof(EAPDUResponsePayload_t));
-    payload->data = (uint8_t *)data;
+    payload->data = data;
     payload->dataLen = data_len;
     payload->status = status;
     SendEApduResponse(EAPDU_PROTOCOL_HEADER, CMD_RESOLVE_UR, payload);
@@ -40,7 +40,7 @@ static uint8_t *DataParser(EAPDURequestPayload_t *payload)
     return payload->data;
 }
 
-void *ProcessUREvents(EAPDURequestPayload_t payload)
+void *ProcessURService(EAPDURequestPayload_t payload)
 {
     struct URParseResult *urResult = parse_ur(DataParser(&payload));
     UrViewType_t urViewType = {0, 0};

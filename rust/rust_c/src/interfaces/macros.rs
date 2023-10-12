@@ -100,12 +100,6 @@ macro_rules! impl_new_error {
             }
         }
 
-        impl From<CardanoError> for $name {
-            fn from(value: CardanoError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-
         impl From<app_cosmos::errors::CosmosError> for $name {
             fn from(value: app_cosmos::errors::CosmosError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
@@ -120,6 +114,12 @@ macro_rules! impl_new_error {
 
         impl From<app_sui::errors::SuiError> for $name {
             fn from(value: app_sui::errors::SuiError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+
+        impl From<app_cardano::errors::CardanoError> for $name {
+            fn from(value: app_cardano::errors::CardanoError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
@@ -163,12 +163,6 @@ macro_rules! impl_new_error {
 
         impl<$t: Free> From<KeystoreError> for $name<$t> {
             fn from(value: KeystoreError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-
-        impl<$t: Free> From<CardanoError> for $name<$t> {
-            fn from(value: CardanoError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
@@ -217,6 +211,12 @@ macro_rules! impl_new_error {
 
         impl<$t: Free> From<app_sui::errors::SuiError> for $name<$t> {
             fn from(value: app_sui::errors::SuiError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+
+        impl<$t: Free> From<app_cardano::errors::CardanoError> for $name<$t> {
+            fn from(value: app_cardano::errors::CardanoError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
@@ -291,6 +291,11 @@ macro_rules! impl_simple_new_error {
         }
         impl<$t> From<app_sui::errors::SuiError> for $name<$t> {
             fn from(value: app_sui::errors::SuiError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        impl<$t> From<app_cardano::errors::CardanoError> for $name<$t> {
+            fn from(value: app_cardano::errors::CardanoError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }

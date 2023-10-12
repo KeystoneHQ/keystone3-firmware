@@ -19,6 +19,7 @@ use third_party::ur_registry::crypto_key_path::CryptoKeyPath;
 use third_party::ur_registry::registry_types::CARDANO_SIGNATURE;
 
 pub mod structs;
+pub mod address;
 
 #[no_mangle]
 pub extern "C" fn cardano_check_tx(
@@ -65,15 +66,17 @@ pub extern "C" fn cardano_sign_tx(
     cardano_xpub: PtrString,
     entropy: PtrBytes,
     entropy_len: u32,
+    passphrase: PtrString,
 ) -> PtrT<UREncodeResult> {
     let cardano_sign_reqeust = extract_ptr_with_type!(ptr, CardanoSignRequest);
     let tx_hex = cardano_sign_reqeust.get_sign_data();
     let parse_context =
         prepare_parse_context(&cardano_sign_reqeust, master_fingerprint, cardano_xpub);
     let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
+    let passphrase = recover_c_char(passphrase);
     match parse_context {
         Ok(parse_context) => {
-            let sign_result = app_cardano::transaction::sign_tx(tx_hex, parse_context, entropy)
+            let sign_result = app_cardano::transaction::sign_tx(tx_hex, parse_context, entropy, passphrase.as_bytes())
                 .map(|v| {
                     CardanoSignature::new(cardano_sign_reqeust.get_request_id(), v).try_into()
                 });

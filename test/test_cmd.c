@@ -201,6 +201,7 @@ static void BpkPrintFunc(int argc, char *argv[]);
 static void RustTestSuiParseTx(int argc, char *argv[]);
 static void RustTestSuiCheckTx(int argc, char *argv[]);
 static void RustTestSuiSignTx(int argc, char *argv[]);
+static void RustADATest(int argc, char *argv[]);
 
 const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"test", TestFunc},
@@ -347,6 +348,7 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust test sui check tx:",                         RustTestSuiCheckTx                  },
     {"rust test sui parse tx:",                         RustTestSuiParseTx                  },
     {"rust test sui sign tx:",                          RustTestSuiSignTx                   },
+    {"rust ada test",                                   RustADATest                         },
 
 #endif
     {"log test:", LogTestFunc},
@@ -2014,6 +2016,23 @@ static void RustTestSuiSignTx(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
+static void RustADATest(int argc, char *argv[])
+{
+    printf("ADA test\r\n");
+    printf("ADA get xpub\r\n");
+    uint8_t entropy[64];
+    uint8_t accountIndex = GetCurrentAccountIndex();
+    GetAccountEntropy(accountIndex, entropy, GetCurrentAccountEntropyLen(), "123456");
+    SimpleResponse_c_char* result = get_bip32_ed25519_extended_pubkey(entropy, GetCurrentAccountEntropyLen(), GetPassphrase(accountIndex), "m/1852'/1815'/0'");
+    printf("get result \r\n");
+    printf("xpub 0: %s\r\n", result->data);
+    free_simple_response_c_char(result);
+    result = get_bip32_ed25519_extended_pubkey(entropy, GetCurrentAccountEntropyLen(), GetPassphrase(accountIndex), "m/1852'/1815'/10'");
+    printf("get result \r\n");
+    printf("xpub 10: %s\r\n", result->data);
+    free_simple_response_c_char(result);
+}
+
 static void testNearParseTx(int argc, char *argv[])
 {
     printf("RustTestNearParseTx\r\n");
@@ -2168,7 +2187,7 @@ static void testCardanoTx(int argc, char *argv[])
     uint8_t entropy[64];
     uint8_t entropyLen = sizeof(entropy);
     GetAccountEntropy(index, entropy, &entropyLen, argv[1]);
-    UREncodeResult *sign_result = cardano_sign_tx(result->data, mfp, xpub, entropy, sizeof(entropy));
+    UREncodeResult *sign_result = cardano_sign_tx(result->data, mfp, xpub, entropy, sizeof(entropy), "");
     if (sign_result->error_code == 0) {
         printf("sign result: %s \r\n", sign_result->data);
     } else {

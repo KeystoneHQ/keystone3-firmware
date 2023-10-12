@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use alloc::{str::FromStr, string::String, vec::Vec};
 use serde::{Deserialize, Serialize};
-use alloc::{str::FromStr, vec::Vec, string::String};
 use third_party::{bcs, hex};
 
 use crate::errors::{Result, SuiError};
@@ -17,7 +17,8 @@ pub enum IntentVersion {
 
 impl TryFrom<u8> for IntentVersion {
     fn try_from(value: u8) -> Result<Self> {
-        bcs::from_bytes(&[value]).map_err(|_| SuiError::InvalidData(String::from("Invalid IntentVersion")))
+        bcs::from_bytes(&[value])
+            .map_err(|_| SuiError::InvalidData(String::from("Invalid IntentVersion")))
     }
 
     type Error = SuiError;
@@ -65,7 +66,8 @@ pub enum IntentScope {
 
 impl TryFrom<u8> for IntentScope {
     fn try_from(value: u8) -> Result<Self> {
-        bcs::from_bytes(&[value]).map_err(|_| SuiError::InvalidData(String::from("Invalid IntentScope")))
+        bcs::from_bytes(&[value])
+            .map_err(|_| SuiError::InvalidData(String::from("Invalid IntentScope")))
     }
 
     type Error = SuiError;
@@ -85,7 +87,8 @@ pub struct Intent {
 
 impl FromStr for Intent {
     fn from_str(s: &str) -> Result<Self> {
-        let s: Vec<u8> = hex::decode(s).map_err(|_| SuiError::InvalidData(String::from("Invalid Intent")))?;
+        let s: Vec<u8> =
+            hex::decode(s).map_err(|_| SuiError::InvalidData(String::from("Invalid Intent")))?;
         if s.len() != 3 {
             return Err(SuiError::InvalidData(String::from("Invalid Intent")));
         }

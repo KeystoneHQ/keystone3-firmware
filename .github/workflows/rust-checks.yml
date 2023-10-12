@@ -64,6 +64,8 @@ jobs:
         run: cd rust/apps/cosmos && cargo +nightly-2023-06-26 fmt --check
       - name: Run rust/apps/aptos
         run: cd rust/apps/aptos && cargo +nightly-2023-06-26 fmt --check
+      - name: Run rust/apps/sui
+        run: cd rust/apps/sui && cargo +nightly-2023-06-26 fmt --check
       - name: Run rust/apps/utils
         run: cd rust/apps/utils && cargo +nightly-2023-06-26 fmt --check
       - name: Run rust/apps/wallets
@@ -109,6 +111,8 @@ jobs:
         run: cd rust/apps/cosmos && cargo +nightly-2023-06-26 test
       - name: Run rust/apps/aptos
         run: cd rust/apps/aptos && cargo +nightly-2023-06-26 test
+      - name: Run rust/apps/sui
+        run: cd rust/apps/sui && cargo +nightly-2023-06-26 test
       - name: Run rust/apps/utils
         run: cd rust/apps/utils && cargo +nightly-2023-06-26 test
       - name: Run rust/apps/wallets

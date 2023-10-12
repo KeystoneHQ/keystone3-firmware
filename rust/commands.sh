@@ -25,12 +25,14 @@ test () {
     done
 }
 
-if [ $command == "format" ];
-then
-    format
-elif [ $command == "test" ];
-then 
-    test
-else
-    echo "invalid command ${command}"
-fi
+case $command in
+    format)
+        format
+        ;;
+    test)
+        test
+        ;;
+    *)
+        echo "invalid command ${command}"
+        ;;
+esac

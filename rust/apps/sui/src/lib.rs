@@ -11,15 +11,21 @@ extern crate core;
 extern crate std;
 
 use crate::{errors::Result, types::intent::IntentScope};
-use alloc::{string::{String, ToString}, vec::Vec};
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
 use errors::SuiError;
 use serde_derive::{Deserialize, Serialize};
 use sui_types::{message::PersonalMessage, transaction::TransactionData};
-use third_party::{blake2::{
-    digest::{Update, VariableOutput},
-    Blake2bVar,
-}, serde_json};
 use third_party::{bcs, hex};
+use third_party::{
+    blake2::{
+        digest::{Update, VariableOutput},
+        Blake2bVar,
+    },
+    serde_json,
+};
 use types::{intent::IntentMessage, msg::PersonalMessageUtf8};
 
 pub mod errors;
@@ -56,11 +62,11 @@ pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
                 Ok(m) => m,
                 Err(_) => serde_json::to_string(&msg.value.message)?,
             };
-            Ok(Intent::PersonalMessage(IntentMessage::<PersonalMessageUtf8> {
+            Ok(Intent::PersonalMessage(IntentMessage::<
+                PersonalMessageUtf8,
+            > {
                 intent: msg.intent,
-                value: PersonalMessageUtf8 {
-                    message: m
-                }
+                value: PersonalMessageUtf8 { message: m },
             }))
         }
         _ => {
@@ -78,7 +84,7 @@ pub fn decode_utf8(msg: &[u8]) -> Result<String> {
                 Ok(utf8_msg)
             }
         }
-        Err(e) => Err(errors::SuiError::InvalidData(e.to_string()))
+        Err(e) => Err(errors::SuiError::InvalidData(e.to_string())),
     }
 }
 
@@ -142,7 +148,7 @@ mod tests {
     #[test]
     fn test_decode_utf8() {
         let bytes = hex::decode("48656c6c6f2c20537569").unwrap();
-        
+
         let msg_str = decode_utf8(&bytes);
         assert_eq!(msg_str.unwrap(), "Hello, Sui");
     }

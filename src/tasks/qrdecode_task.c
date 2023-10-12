@@ -39,6 +39,8 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_TRX, GuiSetTrxUrData},
     {REMAPVIEW_COSMOS, GuiSetCosmosUrData},
     {REMAPVIEW_SUI, GuiSetSuiUrData},
+    {REMAPVIEW_SOL, GuiSetSolUrData},
+    {REMAPVIEW_SOL_MESSAGE, GuiSetSolUrData},
 };
 
 osThreadId_t g_qrDecodeTaskHandle;

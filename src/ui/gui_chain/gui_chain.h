@@ -6,6 +6,7 @@
 #include "gui_trx.h"
 #include "gui_cosmos.h"
 #include "gui_sui.h"
+#include "gui_sol.h"
 
 #define LABEL_MAX_BUFF_LEN                                      (512)
 
@@ -67,6 +68,8 @@ typedef enum {
     REMAPVIEW_TRX,
     REMAPVIEW_COSMOS,
     REMAPVIEW_SUI,
+    REMAPVIEW_SOL,
+    REMAPVIEW_SOL_MESSAGE,
     REMAPVIEW_WEB_AUTH,
 
     REMAPVIEW_BUTT,

@@ -6,7 +6,7 @@ use crate::interfaces::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::interfaces::utils::{convert_c_char, recover_c_char};
 use alloc::format;
-use alloc::string::ToString;
+use alloc::string::{String, ToString};
 use app_solana::errors::SolanaError;
 use app_solana::parse_message;
 use cty::c_char;
@@ -125,4 +125,14 @@ pub extern "C" fn solana_parse_message(
         Ok(t) => TransactionParseResult::success(DisplaySolanaMessage::from(t).c_ptr()).c_ptr(),
         Err(e) => TransactionParseResult::from(e).c_ptr(),
     }
+}
+
+#[no_mangle]
+pub extern "C" fn sol_get_path(ptr: PtrUR) -> PtrString {
+    let sol_sign_request = extract_ptr_with_type!(ptr, SolSignRequest);
+    let derivation_path = sol_sign_request.get_derivation_path();
+    if let Some(path) = derivation_path.get_path() {
+        return convert_c_char(path);
+    }
+    return convert_c_char("".to_string());
 }

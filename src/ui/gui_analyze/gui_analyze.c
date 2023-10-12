@@ -102,7 +102,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_SUI,
 #ifndef COMPILE_SIMULATOR
-        "{\"type\":\"container\",\"pos\":[36,16],\"size\":[408,500],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetSuiDetail\",\"text_len_func\":\"GetSuiDetailLen\",\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}",
+        "{\"type\":\"container\",\"pos\":[36,16],\"size\":[408,500],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetSuiDetail\",\"text_len_func\":\"GetSuiDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}",
 #else
         PC_SIMULATOR_PATH"/page_eth.json",
 #endif

@@ -292,15 +292,8 @@ void GetAttentionText(char* text)
     case HOME_WALLET_CARD_TRX:
         strcpy(text, _("receive_trx_hint"));
         break;
-    case HOME_WALLET_CARD_SUI:
-        strcpy(text, "This address is only for SUI, other digital assets sent to this address will be lost.");
-        break;
     default:
-        if (IsCosmosChain(g_chainCard)) {
-            sprintf(text, _("receive_coin_hint_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
-        } else {
-            strcpy(text, "");
-        }
+        sprintf(text, _("receive_coin_hint_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
     }
 }
 
@@ -594,7 +587,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TRX:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
-        sprintf(hdPath, "M/44'/195'/0'/0/%u", index);
+        sprintf(hdPath, "m/44'/195'/0'/0/%u", index);
         result = tron_get_address(hdPath, xPub);
         break;
     case HOME_WALLET_CARD_SUI:

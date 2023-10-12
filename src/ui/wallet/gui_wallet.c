@@ -167,7 +167,6 @@ UREncodeResult *GuiGetFewchaData(void)
     for (uint8_t i = 0; i < 10; i++) {
         keys[i].path = SRAM_MALLOC(sizeof(char) * 32);
         sprintf(keys[i].path, "M/44'/784'/%u'/0'/0'", i);
-        printf("%s\r\n", keys[i].path);
         keys[i].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_SUI_0 + i);
     }
     g_urEncode = get_connect_sui_wallet_ur(mfp, sizeof(mfp), publicKeys);

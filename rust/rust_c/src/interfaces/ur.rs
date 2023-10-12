@@ -27,8 +27,8 @@ use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts
 use third_party::ur_registry::near::near_sign_request::NearSignRequest;
 use third_party::ur_registry::registry_types::URType as InnerURType;
 use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
-use third_party::ur_registry::traits::RegistryItem;
 use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
+use third_party::ur_registry::traits::RegistryItem;
 
 use crate::interfaces::errors::{ErrorCodes, RustCError};
 use crate::interfaces::free::Free;

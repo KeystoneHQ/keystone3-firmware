@@ -15,6 +15,8 @@
 #include "gui_fullscreen_mode.h"
 #include "keystore.h"
 #include "gui_page.h"
+#include "gui.h"
+#include "gui_tutorial_widgets.h"
 
 #define GENERAL_ADDRESS_INDEX_MAX 999999999
 #define LEDGER_LIVE_ADDRESS_INDEX_MAX 9
@@ -212,12 +214,21 @@ lv_obj_t* CreateStandardReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)
     return qrcode;
 }
 
+static uint16_t GetAddrYExtend(void)
+{
+    if (g_chainCard == HOME_WALLET_CARD_SUI) {
+        return 30;
+    }
+    return 0;
+}
+
 static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 {
     lv_obj_t *tempObj;
     uint16_t yOffset = 0;
+    uint16_t addrYExtend = GetAddrYExtend();
 
-    g_standardReceiveWidgets.qrCodeCont = GuiCreateContainerWithParent(parent, 408, 524);
+    g_standardReceiveWidgets.qrCodeCont = GuiCreateContainerWithParent(parent, 408, 524 + addrYExtend);
     lv_obj_align(g_standardReceiveWidgets.qrCodeCont, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_style_bg_color(g_standardReceiveWidgets.qrCodeCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_radius(g_standardReceiveWidgets.qrCodeCont, 24, LV_PART_MAIN);
@@ -238,11 +249,11 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 
     yOffset += 16;
     g_standardReceiveWidgets.addressCountLabel = GuiCreateIllustrateLabel(g_standardReceiveWidgets.qrCodeCont, "");
-    lv_obj_align(g_standardReceiveWidgets.addressCountLabel, LV_ALIGN_TOP_LEFT, 36, yOffset);
+    lv_obj_align(g_standardReceiveWidgets.addressCountLabel, LV_ALIGN_TOP_LEFT, 36, yOffset + addrYExtend);
 
     g_standardReceiveWidgets.addressButton = lv_btn_create(g_standardReceiveWidgets.qrCodeCont);
     lv_obj_set_size(g_standardReceiveWidgets.addressButton, 336, 36);
-    lv_obj_align(g_standardReceiveWidgets.addressButton, LV_ALIGN_TOP_MID, 0, 464);
+    lv_obj_align(g_standardReceiveWidgets.addressButton, LV_ALIGN_TOP_MID, 0, 464 + addrYExtend);
     lv_obj_set_style_bg_opa(g_standardReceiveWidgets.addressButton, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_border_width(g_standardReceiveWidgets.addressButton, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_outline_width(g_standardReceiveWidgets.addressButton, 0, LV_PART_MAIN);
@@ -282,11 +293,7 @@ void GetAttentionText(char* text)
         strcpy(text, _("receive_trx_hint"));
         break;
     default:
-        if (IsCosmosChain(g_chainCard)) {
-            sprintf(text, _("receive_coin_hint_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
-        } else {
-            strcpy(text, "");
-        }
+        sprintf(text, _("receive_coin_hint_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
     }
 }
 
@@ -420,6 +427,9 @@ static void RefreshSwitchAccount(void)
 
 static int GetMaxAddressIndex(void)
 {
+    if (g_chainCard == HOME_WALLET_CARD_SUI) {
+        return 10;
+    }
     return GENERAL_ADDRESS_INDEX_MAX;
 }
 
@@ -448,6 +458,10 @@ static void TutorialHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
+        GUI_DEL_OBJ(g_standardReceiveWidgets.moreCont);
+
+        TUTORIAL_LIST_INDEX_ENUM index = TUTORIAL_ETH_RECEIVE;
+        GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
     }
 }
 
@@ -485,6 +499,7 @@ static bool IsAccountSwitchable()
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TRX:
+    case HOME_WALLET_CARD_SUI:
         return true;
 
     default:
@@ -574,6 +589,11 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
         sprintf(hdPath, "m/44'/195'/0'/0/%u", index);
         result = tron_get_address(hdPath, xPub);
+        break;
+    case HOME_WALLET_CARD_SUI:
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_SUI_0 + index);
+        sprintf(hdPath, "M/44'/784'/%u'/0'/0'", index);
+        result = sui_generate_address(xPub);
         break;
 
     default:

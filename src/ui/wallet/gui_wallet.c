@@ -155,6 +155,33 @@ UREncodeResult *GuiGetKeplrData(void)
 #endif
 }
 
+UREncodeResult *GuiGetFewchaData(void)
+{
+#ifndef COMPILE_SIMULATOR
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    ExtendedPublicKey keys[10];
+    publicKeys->data = keys;
+    publicKeys->size = 10;
+    for (uint8_t i = 0; i < 10; i++) {
+        keys[i].path = SRAM_MALLOC(sizeof(char) * 32);
+        sprintf(keys[i].path, "M/44'/784'/%u'/0'/0'", i);
+        keys[i].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_SUI_0 + i);
+    }
+    g_urEncode = get_connect_sui_wallet_ur(mfp, sizeof(mfp), publicKeys);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    for (uint8_t i = 0; i < 10; i++) {
+        SRAM_FREE(keys[i].path);
+    }
+    SRAM_FREE(publicKeys);
+    return g_urEncode;
+#else
+    const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+    return (void *)data;
+#endif
+}
+
 UREncodeResult *GuiGetCompanionAppData(void)
 {
     extern CoinState_t g_companionAppcoinState[COMPANION_APP_COINS_BUTT];

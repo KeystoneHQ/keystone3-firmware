@@ -9,6 +9,7 @@ extern "C" {
 #include "gui.h"
 
 typedef void (*GetLabelDataFunc)(void *indata, void *param);
+typedef int (*GetLabelDataLenFunc)(void *param);
 typedef bool (*GetObjStateFunc)(void *indata, void *param);
 typedef void (*GetContSizeFunc)(uint16_t *width, uint16_t *height, void *param);
 typedef void *(*GetChainDataFunc)(void);

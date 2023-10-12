@@ -240,6 +240,8 @@ static GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     case CosmosTx:
     case CosmosEvmTx:
         return GuiGetCosmosTxChain();
+    case SuiTx:
+        return CHAIN_SUI;
     default:
         return CHAIN_BUTT;
     }
@@ -372,6 +374,9 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
     case CosmosTx:
     case CosmosEvmTx:
         GuiShowQrCode(GuiGetCosmosSignQrCodeData, qrcode);
+        break;
+    case SuiTx:
+        GuiShowQrCode(GuiGetSuiSignQrCodeData, qrcode);
         break;
     default:
         data = "";

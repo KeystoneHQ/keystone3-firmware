@@ -1,8 +1,9 @@
-mod aptos;
+pub mod aptos;
 pub mod keplr;
 pub mod okx;
 pub mod solana;
 pub mod structs;
+pub mod sui;
 mod utils;
 pub mod xrp_toolkit;
 

@@ -19,7 +19,7 @@ use third_party::{blake2::{
     digest::{Update, VariableOutput},
     Blake2bVar,
 }, serde_json};
-use third_party::{base58, bcs, hex};
+use third_party::{bcs, hex};
 use types::{intent::IntentMessage, msg::PersonalMessageUtf8};
 
 pub mod errors;
@@ -31,11 +31,9 @@ pub enum Intent {
     PersonalMessage(IntentMessage<PersonalMessageUtf8>),
 }
 
-pub fn generate_address(xpub: &str) -> Result<String> {
+pub fn generate_address(pub_key: &str) -> Result<String> {
     let mut hasher = Blake2bVar::new(32).unwrap();
-    let mut xpub_buf = base58::decode(xpub)?;
-    let len = xpub_buf.len();
-    let mut buf: Vec<u8> = xpub_buf.drain(len - 4 - 32..len - 4).collect();
+    let mut buf: Vec<u8> = hex::decode(pub_key)?;
     // insert flag, ed25519 is 0, secp256k1 is 1, secp256r1 is 2, multi sign is 3.
     buf.insert(0, 0);
     hasher.update(&buf);
@@ -101,10 +99,10 @@ mod tests {
 
     #[test]
     fn test_generate_address() {
-        let xpub = "xpub6FpeLDgZhZfkYXMwMZtxLqNDzWfNyPQKoLAQE9re4Qcv3zZmKWiwfkg8HEGstz1uNoKtYqCXJzWMuQhYw7EYKLzqty13z1SE4yrjYSuTcPd";
-        let address = generate_address(xpub).unwrap();
+        let pub_key = "edbe1b9b3b040ff88fbfa4ccda6f5f8d404ae7ffe35f9b220dec08679d5c336f";
+        let address = generate_address(pub_key).unwrap();
         assert_eq!(
-            "0xf195b51c63745071891b1f53170cac2cab2a49da6ee1fe8eabe50989234c8119",
+            "0x504886c9ec43bff70af37f55865094cc3a799cb54479f252d30cd3717f15ecdc",
             address
         );
     }

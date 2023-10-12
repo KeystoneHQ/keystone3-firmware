@@ -141,6 +141,7 @@ LV_IMG_DECLARE(coinKsm);
 LV_IMG_DECLARE(coinMatic);
 LV_IMG_DECLARE(coinOkb);
 LV_IMG_DECLARE(coinSol);
+LV_IMG_DECLARE(coinSui);
 LV_IMG_DECLARE(coinTrx);
 LV_IMG_DECLARE(coinXrp);
 LV_IMG_DECLARE(coinLtc);
@@ -191,6 +192,7 @@ LV_IMG_DECLARE(walletZapper);
 LV_IMG_DECLARE(walletYearn);
 LV_IMG_DECLARE(walletSushi);
 LV_IMG_DECLARE(walletKeplr);
+LV_IMG_DECLARE(walletFewcha);
 
 
 //wallet list
@@ -207,6 +209,7 @@ LV_IMG_DECLARE(walletListZapper);
 LV_IMG_DECLARE(walletListYearn);
 LV_IMG_DECLARE(walletListSushi);
 LV_IMG_DECLARE(walletListKeplr);
+LV_IMG_DECLARE(walletListFewcha);
 
 // font
 LV_FONT_DECLARE(openSans_20);

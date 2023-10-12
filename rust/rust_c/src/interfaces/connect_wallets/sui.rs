@@ -13,11 +13,11 @@ use crate::interfaces::structs::ExtendedPublicKey;
 use crate::interfaces::types::PtrT;
 use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::interfaces::utils::{recover_c_array, recover_c_char};
-use app_wallets::aptos::generate_sync_ur;
+use app_wallets::sui::generate_sync_ur;
 use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 
 #[no_mangle]
-pub extern "C" fn get_connect_aptos_wallet_ur(
+pub extern "C" fn get_connect_sui_wallet_ur(
     master_fingerprint: *mut u8,
     length: u32,
     public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,

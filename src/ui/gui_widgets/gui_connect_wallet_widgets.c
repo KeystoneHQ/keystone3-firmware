@@ -40,6 +40,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_RABBY, &walletListRabby},
     {WALLET_LIST_SAFE, &walletListSafe},
     {WALLET_LIST_BLOCK_WALLET, &walletListBlockWallet},
+    {WALLET_LIST_FEWCHA, &walletListFewcha},
     {WALLET_LIST_ZAPPER, &walletListZapper},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn},
     {WALLET_LIST_SUSHISWAP, &walletListSushi},
@@ -138,6 +139,11 @@ static const lv_img_dsc_t *g_keplrCoinArray[8] = {
     &coinAxl,
     &coinBoot,
     &coinCro,
+};
+
+static const lv_img_dsc_t *g_fewchaCoinArray[1] =
+{
+    &coinSui,
 };
 
 static ConnectWalletWidget_t g_connectWalletTileView;
@@ -554,6 +560,21 @@ static void AddKeplrCoins(void)
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 256, 2);
 }
 
+static void AddFewchaCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0)
+    {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0; i < 1; i++)
+    {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_fewchaCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+}
+
 void GuiConnectWalletInit(void)
 {
     g_pageWidget = CreatePageWidget();
@@ -625,6 +646,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_KEPLR:
         func = GuiGetKeplrData;
         AddKeplrCoins();
+        break;
+    case WALLET_LIST_FEWCHA:
+        func = GuiGetFewchaData;
+        AddFewchaCoins();
         break;
     default:
         return;

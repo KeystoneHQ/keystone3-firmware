@@ -20,18 +20,12 @@ typedef enum {
 typedef enum {
     RSP_SUCCESS_CODE = 0x00000000, // Response success code
     RSP_FAILURE_CODE,              // Response failure code
-    //
+    // Resolve UR response status
+    PRS_PARSING_REJECTED,
+    PRS_PARSING_ERROR,
+    PRS_PARSING_DISALLOWED,
     RSP_MAX_VALUE = 0xFFFFFFFF,
 } StatusEnum;
-
-typedef enum {
-    FRAME_INVALID_LENGTH,
-    UNKNOWN_COMMAND,
-    FRAME_INDEX_ERROR,
-    FRAME_TOTAL_ERROR,
-    DUPLICATE_FRAME,
-    FRAME_CHECKSUM_OK,
-} ParserStatusEnum;
 
 typedef struct
 {

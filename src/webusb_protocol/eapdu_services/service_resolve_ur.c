@@ -13,26 +13,23 @@ typedef struct
 static void BasicHandlerFunc(const void *data, uint32_t data_len, StatusEnum status)
 {
     EAPDUResponsePayload_t *payload = (EAPDUResponsePayload_t *)malloc(sizeof(EAPDUResponsePayload_t));
-    payload->data = data;
-    payload->dataLen = data_len;
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "payload", (char *)data);
+    char *json_str = cJSON_Print(root);
+    cJSON_Delete(root);
+    payload->data = (uint8_t *)json_str;
+    payload->dataLen = strlen((char *)payload->data);
     payload->status = status;
+
     SendEApduResponse(EAPDU_PROTOCOL_HEADER, CMD_RESOLVE_UR, payload);
+
     free(payload);
 };
 
-static void HandleSuccessFunc(const void *data, uint32_t data_len)
+void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, StatusEnum status)
 {
-    BasicHandlerFunc(data, data_len, RSP_SUCCESS_CODE);
-};
-
-static void HandleFailureFunc(const void *data, uint32_t data_len)
-{
-    BasicHandlerFunc(data, data_len, RSP_FAILURE_CODE);
-};
-
-void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, bool isSuccess)
-{
-    isSuccess ? HandleSuccessFunc(data, data_len) : HandleFailureFunc(data, data_len);
+    BasicHandlerFunc(data, data_len, status);
 };
 
 static uint8_t *DataParser(EAPDURequestPayload_t *payload)
@@ -44,12 +41,12 @@ void *ProcessURService(EAPDURequestPayload_t payload)
 {
     if (GuiLockScreenIsTop()) {
         const char *data = "Device is locked";
-        HandleURResultViaUSBFunc(data, strlen(data), false);
+        HandleURResultViaUSBFunc(data, strlen(data), PRS_PARSING_DISALLOWED);
         return NULL;
     }
     struct URParseResult *urResult = parse_ur(DataParser(&payload));
     if (urResult->error_code != 0) {
-        HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), false);
+        HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), PRS_PARSING_ERROR);
         return NULL;
     }
     UrViewType_t urViewType = {0, 0};

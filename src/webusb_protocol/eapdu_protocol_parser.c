@@ -21,6 +21,15 @@ uint8_t g_packetLengths[MAX_PACKETS];
 uint8_t g_receivedPackets[MAX_PACKETS];
 uint8_t g_totalPackets = 0;
 
+typedef enum {
+    FRAME_INVALID_LENGTH,
+    UNKNOWN_COMMAND,
+    FRAME_INDEX_ERROR,
+    FRAME_TOTAL_ERROR,
+    DUPLICATE_FRAME,
+    FRAME_CHECKSUM_OK,
+} ParserStatusEnum;
+
 static uint16_t extract_16bit_value(const uint8_t *frame, int offset)
 {
     return ((uint16_t)frame[offset] << 8) | frame[offset + 1];

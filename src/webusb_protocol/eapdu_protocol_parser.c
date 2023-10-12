@@ -117,7 +117,7 @@ static ParserStatusEnum CheckFrameValidity(EAPDUFrame_t *eapduFrame)
 
 static EAPDUFrame_t *FrameParser(const uint8_t *frame, uint32_t len)
 {
-    EAPDUFrame_t *eapduFrame = (EAPDUFrame_t *)malloc(sizeof(EAPDUFrame_t));
+    EAPDUFrame_t *eapduFrame = (EAPDUFrame_t *)SRAM_MALLOC(sizeof(EAPDUFrame_t));
     eapduFrame->cla = frame[OFFSET_CLA];
     eapduFrame->ins = extract_16bit_value(frame, OFFSET_INS);
     eapduFrame->p1 = extract_16bit_value(frame, OFFSET_P1);
@@ -170,7 +170,7 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
     {
         fullDataLen += g_packetLengths[i];
     }
-    uint8_t *fullData = (uint8_t *)malloc(fullDataLen + 1);
+    uint8_t *fullData = (uint8_t *)SRAM_MALLOC(fullDataLen + 1);
     uint32_t offset = 0;
     for (uint32_t i = 0; i < g_totalPackets; i++)
     {
@@ -179,14 +179,14 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
     }
     fullData[fullDataLen] = '\0';
 
-    EAPDURequestPayload_t *request = (EAPDURequestPayload_t *)malloc(sizeof(EAPDURequestPayload_t));
+    EAPDURequestPayload_t *request = (EAPDURequestPayload_t *)SRAM_MALLOC(sizeof(EAPDURequestPayload_t));
     request->data = fullData;
     request->dataLen = fullDataLen;
     EApduRequestHandler(request, eapduFrame->ins);
 
-    free(eapduFrame);
-    free(fullData);
-    free(request);
+    SRAM_FREE(eapduFrame);
+    SRAM_FREE(fullData);
+    SRAM_FREE(request);
     free_parser();
 }
 
@@ -202,7 +202,7 @@ struct ProtocolParser *NewEApduProtocolParser()
 {
     if (!global_parser)
     {
-        global_parser = (struct ProtocolParser *)malloc(sizeof(struct ProtocolParser));
+        global_parser = (struct ProtocolParser *)SRAM_MALLOC(sizeof(struct ProtocolParser));
         global_parser->name = EAPDU_PROTOCOL_PARSER_NAME;
         global_parser->parse = EApduProtocolParse;
         global_parser->registerSendFunc = RegisterSendFunc;

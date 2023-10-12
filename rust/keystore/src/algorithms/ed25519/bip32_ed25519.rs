@@ -11,12 +11,12 @@ use third_party::ed25519_bip32_core::{DerivationScheme, XPrv, XPub};
 
 use crate::errors::{KeystoreError, Result};
 
-pub fn get_extended_public_key_by_entropy(path: &String, entropy: &[u8], passphrase: &[u8]) -> Result<XPub> {
-    let xprv = get_extended_private_key_by_entropy(path, entropy, passphrase)?;
+pub fn get_extended_public_key_by_entropy(entropy: &[u8], passphrase: &[u8], path: &String) -> Result<XPub> {
+    let xprv = get_extended_private_key_by_entropy(entropy, passphrase, path)?;
     Ok(xprv.public())
 }
 
-pub fn get_extended_private_key_by_entropy(path: &String, entropy: &[u8], passphrase: &[u8]) -> Result<XPrv> {
+pub fn get_extended_private_key_by_entropy(entropy: &[u8], passphrase: &[u8], path: &String) -> Result<XPrv> {
     let icarus_master_key = get_icarus_master_key_by_entropy(entropy, passphrase)?;
     let path = normalize_path(path);
     let derivation_path = DerivationPath::from_str(path.as_str())
@@ -31,8 +31,8 @@ pub fn get_extended_private_key_by_entropy(path: &String, entropy: &[u8], passph
     Ok(key)
 }
 
-pub fn sign_message_by_entropy(message: &[u8], path: &String, entropy: &[u8], passphrase: &[u8]) -> Result<[u8; 64]> {
-    let xprv = get_extended_private_key_by_entropy(path, entropy, passphrase)?;
+pub fn sign_message_by_entropy(entropy: &[u8], passphrase: &[u8], message: &[u8], path: &String) -> Result<[u8; 64]> {
+    let xprv = get_extended_private_key_by_entropy(entropy, passphrase, path)?;
     let sig = xprv.sign::<Vec<u8>>(message);
     Ok(*sig.to_bytes())
 }
@@ -84,7 +84,7 @@ mod tests {
     fn test_get_extended_private_key() {
         {
             let entropy = hex::decode("00000000000000000000000000000000").unwrap();
-            let key = get_extended_private_key_by_entropy(&"m/0'".to_string(), entropy.as_slice(), b"")
+            let key = get_extended_private_key_by_entropy(entropy.as_slice(), b"", &"m/0'".to_string())
                 .unwrap();
             assert_eq!("8872ff61b06281da05205ffb765c256175cc2aaab52cd7176b5d80286c0e6f539e936c7b5f018c935544e3dff339dfe739c47ae8b364330a3162f028c658257b35a473378343fcc479fd326bc2c2a23f183ce682d514bd5a5b1d9a14ff8297cf",
                        key.to_string())

@@ -4,6 +4,7 @@ use alloc::string::ToString;
 use core::slice;
 use cty::c_char;
 use third_party::hex;
+use third_party::hex::ToHex;
 
 use crate::interfaces::types::{PtrBytes, PtrString};
 use crate::interfaces::utils::{convert_c_char, recover_c_char};
@@ -74,6 +75,25 @@ pub extern "C" fn get_ed25519_pubkey_by_seed(
         keystore::algorithms::ed25519::slip10_ed25519::get_public_key_by_seed(&seed, &path);
     match extended_key {
         Ok(result) => SimpleResponse::success(convert_c_char(hex::encode(result))).simple_c_ptr(),
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn get_bip32_ed25519_extended_pubkey(
+    entropy: PtrBytes,
+    entropy_len: u32,
+    passphrase: PtrString,
+    path: PtrString,
+) -> *mut SimpleResponse<c_char>
+{
+    let entropy = unsafe { slice::from_raw_parts(entropy, entropy_len as usize) };
+    let path = recover_c_char(path);
+    let passphrase = recover_c_char(passphrase);
+    let extended_key =
+        keystore::algorithms::ed25519::bip32_ed25519::get_extended_public_key_by_entropy(&entropy, passphrase.as_bytes(), &path);
+    match extended_key {
+        Ok(result) => SimpleResponse::success(convert_c_char(result.encode_hex())).simple_c_ptr(),
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
     }
 }

@@ -3,6 +3,7 @@
 
 #include "protocol_parse.h"
 #include "cJSON.h"
+#include "user_memory.h"
 
 #define EAPDU_PROTOCOL_HEADER             0x00
 #define EAPDU_PROTOCOL_PARSER_NAME        "eapdu_protocol_parser"

@@ -12,7 +12,7 @@ typedef struct
 
 static void BasicHandlerFunc(const void *data, uint32_t data_len, StatusEnum status)
 {
-    EAPDUResponsePayload_t *payload = (EAPDUResponsePayload_t *)malloc(sizeof(EAPDUResponsePayload_t));
+    EAPDUResponsePayload_t *payload = (EAPDUResponsePayload_t *)SRAM_MALLOC(sizeof(EAPDUResponsePayload_t));
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddStringToObject(root, "payload", (char *)data);
@@ -24,7 +24,7 @@ static void BasicHandlerFunc(const void *data, uint32_t data_len, StatusEnum sta
 
     SendEApduResponse(EAPDU_PROTOCOL_HEADER, CMD_RESOLVE_UR, payload);
 
-    free(payload);
+    SRAM_FREE(payload);
 };
 
 void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, StatusEnum status)

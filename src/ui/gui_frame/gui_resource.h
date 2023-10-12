@@ -98,6 +98,7 @@ LV_IMG_DECLARE(imgBrightnessLow);
 LV_IMG_DECLARE(imgBrightnessHigh);
 LV_IMG_DECLARE(imgFirmwareUp);
 LV_IMG_DECLARE(imgUsb);
+LV_IMG_DECLARE(imgUnknown);
 
 // connect to do refresh
 LV_IMG_DECLARE(circular);

@@ -242,6 +242,9 @@ static GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
         return GuiGetCosmosTxChain();
     case SuiTx:
         return CHAIN_SUI;
+    case SolanaTx:
+    case SolanaMessage:
+        return CHAIN_SOL;
     default:
         return CHAIN_BUTT;
     }
@@ -377,6 +380,10 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
         break;
     case SuiTx:
         GuiShowQrCode(GuiGetSuiSignQrCodeData, qrcode);
+        break;
+    case SolanaTx:
+    case SolanaMessage:
+        GuiShowQrCode(GuiGetSolSignQrCodeData, qrcode);
         break;
     default:
         data = "";

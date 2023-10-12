@@ -58,7 +58,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_ETH_PERSONAL_MESSAGE,
 #ifndef COMPILE_SIMULATOR
-        "{\"table\":{\"utf8_message\":{\"type\":\"container\",\"pos\":[0,39],\"size\":[408,500],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetMessageFrom\",\"pos\":[24,54],\"text_width\":360,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Message\",\"pos\":[24,130],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"container\",\"pos\":[24,168],\"size\":[360,332],\"align\":1,\"aflag\":16,\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text_func\":\"GetMessageUtf8\",\"pos\":[0,0],\"text_width\":360,\"font\":\"openSansEnIllustrate\",\"text_color\":16777215}]}]},\"raw_message\":{\"type\":\"container\",\"pos\":[0,39],\"size\":[408,500],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"UTF-8\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"container\",\"pos\":[24,54],\"size\":[360,332],\"align\":1,\"aflag\":16,\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text_func\":\"GetMessageRaw\",\"pos\":[0,0],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]}]}}}",
+        "{\"table\":{\"utf8_message\":{\"type\":\"container\",\"pos\":[0,39],\"size\":[408,500],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetMessageFrom\",\"pos\":[24,54],\"text_width\":360,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Message\",\"pos\":[24,130],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"container\",\"pos\":[24,168],\"size\":[360,332],\"align\":1,\"aflag\":16,\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text_func\":\"GetMessageUtf8\",\"pos\":[0,0],\"text_width\":360,\"font\":\"openSansEnIllustrate\",\"text_color\":16777215}]}]},\"raw_message\":{\"type\":\"container\",\"pos\":[0,39],\"size\":[408,500],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Raw Message\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"container\",\"pos\":[24,54],\"size\":[360,450],\"align\":1,\"aflag\":16,\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text_func\":\"GetMessageRaw\",\"pos\":[0,0],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]}]}}}",
 #else
         PC_SIMULATOR_PATH"/page_eth_person.json",
 #endif
@@ -109,6 +109,28 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         GuiGetSuiData,
         NULL,
         FreeSuiMemory,
+    },
+    {
+        REMAPVIEW_SOL,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"sol_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSolTxOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSolTxDetail\"}]}]}",
+#else
+        PC_SIMULATOR_PATH"/page_eth.json",
+#endif
+        GuiGetSolData,
+        NULL,
+        FreeSolMemory,
+    },
+    {
+        REMAPVIEW_SOL_MESSAGE,
+#ifndef COMPILE_SIMULATOR
+        "{\"table\":{\"utf8_message\":{\"type\":\"container\",\"pos\":[0,39],\"size\":[408,500],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetSolMessageFrom\",\"pos\":[24,54],\"text_width\":360,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Message\",\"pos\":[24,130],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"container\",\"pos\":[24,168],\"size\":[360,332],\"align\":1,\"aflag\":16,\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text_func\":\"GetSolMessageUtf8\",\"pos\":[0,0],\"text_width\":360,\"font\":\"openSansEnIllustrate\",\"text_color\":16777215}]}]},\"raw_message\":{\"type\":\"container\",\"pos\":[0,39],\"size\":[408,500],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Raw Message\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"container\",\"pos\":[24,54],\"size\":[360,450],\"align\":1,\"aflag\":16,\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text_func\":\"GetSolMessageRaw\",\"pos\":[0,0],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]}]}}}",
+#else
+        PC_SIMULATOR_PATH"/page_eth.json",
+#endif
+        GuiGetSolMessageData,
+        GetSolMessageType,
+        FreeSolMemory,
     }
 };
 
@@ -342,6 +364,18 @@ GetLabelDataFunc GuiEthPersonalMessageTextFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataFunc GuiSolMessageTextFuncGet(char *type)
+{
+    if (!strcmp(type, "GetSolMessageFrom")) {
+        return GetSolMessageFrom;
+    } else if (!strcmp(type, "GetSolMessageUtf8")) {
+        return GetSolMessageUtf8;
+    } else if (!strcmp(type, "GetSolMessageRaw")) {
+        return GetSolMessageRaw;
+    }
+    return NULL;
+}
+
 GetLabelDataFunc GuiEthTypedDataTextFuncGet(char *type)
 {
     if (!strcmp(type, "GetEthTypedDataDomianName")) {
@@ -489,6 +523,8 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
         return GuiCosmosTextFuncGet(type);
     case REMAPVIEW_SUI:
         return GuiSuiTextFuncGet(type);
+    case REMAPVIEW_SOL_MESSAGE:
+        return GuiSolMessageTextFuncGet(type);
     default:
         return NULL;
     }
@@ -815,6 +851,36 @@ void *GuiWidgetContainer(lv_obj_t *parent, cJSON *json)
     return obj;
 }
 
+GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
+{
+    if (!strcmp(funcName, "GuiShowSolTxOverview")) {
+        return GuiShowSolTxOverview;
+    } else if (!strcmp(funcName, "GuiShowSolTxDetail")) {
+        return GuiShowSolTxDetail;
+    }
+    return NULL;
+}
+
+void *GuiWidgetCustomContainer(lv_obj_t *parent, cJSON *json)
+{
+    lv_obj_t *obj = lv_obj_create(parent);
+    lv_obj_set_style_outline_width(obj, 0, LV_STATE_DEFAULT | LV_PART_MAIN);
+    lv_obj_set_style_border_width(obj, 0, LV_STATE_DEFAULT | LV_PART_MAIN);
+    lv_obj_set_style_border_side(obj, 0, LV_STATE_DEFAULT | LV_PART_MAIN);
+    lv_obj_set_style_shadow_width(obj, 0, LV_STATE_DEFAULT | LV_PART_MAIN);
+    lv_obj_set_style_pad_all(obj, 0, LV_STATE_DEFAULT | LV_PART_MAIN);
+
+    GetCustomContainerFunc func = NULL;
+    cJSON *item = cJSON_GetObjectItem(json, "custom_show_func");
+    if (item != NULL) {
+        func = GuiTemplateCustomFunc(item->valuestring);
+        if (func != NULL) {
+            func(obj, g_totalData);
+        }
+    }
+    return obj;
+}
+
 void GuiWidgetList(lv_obj_t *parent, cJSON *json)
 {
     GetListLenFunc lenFunc = NULL;
@@ -1063,6 +1129,8 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
         obj = GuiWidgetTabView(parent, json);
     } else if (0 == strcmp(type, "tabview_child")) {
         obj = GuiWidgetTabViewChild(parent, json);
+    } else if (0 == strcmp(type, "custom_container")) {
+        obj = GuiWidgetCustomContainer(parent, json);
     } else {
         printf("json type is %s\n", type);
         return NULL;
@@ -1148,6 +1216,10 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_COSMOS;
     case SuiTx:
         return REMAPVIEW_SUI;
+    case SolanaTx:
+        return REMAPVIEW_SOL;
+    case SolanaMessage:
+        return REMAPVIEW_SOL_MESSAGE;
     default:
         return REMAPVIEW_BUTT;
     }

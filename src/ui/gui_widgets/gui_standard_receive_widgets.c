@@ -132,6 +132,7 @@ void GuiStandardReceiveDeInit(void)
     GUI_DEL_OBJ(g_standardReceiveWidgets.cont)
 
     CLEAR_OBJECT(g_standardReceiveWidgets);
+    g_StandardReceiveTileNow = 0;
     GuiFullscreenModeCleanUp();
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);

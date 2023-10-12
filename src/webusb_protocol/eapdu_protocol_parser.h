@@ -24,6 +24,8 @@ typedef enum {
     PRS_PARSING_REJECTED,
     PRS_PARSING_ERROR,
     PRS_PARSING_DISALLOWED,
+    
+    // 0xA0000001 (268435457 in decimal) and beyond are client error codes
     RSP_MAX_VALUE = 0xFFFFFFFF,
 } StatusEnum;
 

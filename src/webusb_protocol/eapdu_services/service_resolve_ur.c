@@ -37,15 +37,27 @@ static uint8_t *DataParser(EAPDURequestPayload_t *payload)
     return payload->data;
 }
 
-void *ProcessURService(EAPDURequestPayload_t payload)
+static bool CheckURAcceptable()
 {
-    if (GuiLockScreenIsTop()) {
+    if (GuiLockScreenIsTop())
+    {
         const char *data = "Device is locked";
         HandleURResultViaUSBFunc(data, strlen(data), PRS_PARSING_DISALLOWED);
+        return false;
+    }
+    // TODO: Only allow URL parsing on specific pages
+    return true;
+}
+
+void *ProcessURService(EAPDURequestPayload_t payload)
+{
+    if (!CheckURAcceptable())
+    {
         return NULL;
     }
     struct URParseResult *urResult = parse_ur(DataParser(&payload));
-    if (urResult->error_code != 0) {
+    if (urResult->error_code != 0)
+    {
         HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), PRS_PARSING_ERROR);
         return NULL;
     }

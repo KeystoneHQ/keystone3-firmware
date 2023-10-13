@@ -16,7 +16,12 @@ pub fn check_tx(tx: Vec<u8>, context: ParseContext) -> R<()> {
     ParsedCardanoTx::verify(cardano_tx, context)
 }
 
-pub fn sign_tx(tx: Vec<u8>, context: ParseContext, entropy: &[u8], passphrase: &[u8]) -> R<Vec<u8>> {
+pub fn sign_tx(
+    tx: Vec<u8>,
+    context: ParseContext,
+    entropy: &[u8],
+    passphrase: &[u8],
+) -> R<Vec<u8>> {
     let cardano_tx = cardano_serialization_lib::Transaction::from_bytes(tx)?;
     let hash = blake2b_256(cardano_tx.body().to_bytes().as_ref());
     let mut witness_set = cardano_serialization_lib::TransactionWitnessSet::new();

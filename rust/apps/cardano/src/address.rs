@@ -104,14 +104,16 @@ mod tests {
         let entropy = hex::decode("00000000000000000000000000000000").unwrap();
         let spend_key =
             keystore::algorithms::ed25519::bip32_ed25519::get_extended_public_key_by_entropy(
-                &path.to_string(),
                 entropy.as_slice(),
+                b"",
+                &path.to_string(),
             )
             .unwrap();
         let stake_key =
             keystore::algorithms::ed25519::bip32_ed25519::get_extended_public_key_by_entropy(
-                &path2.to_string(),
                 entropy.as_slice(),
+                b"",
+                &path2.to_string(),
             )
             .unwrap();
         let spend = blake2b_224(spend_key.public_key_bytes());
@@ -139,8 +141,9 @@ mod tests {
         let entropy = hex::decode("00000000000000000000000000000000").unwrap();
         let xpub =
             keystore::algorithms::ed25519::bip32_ed25519::get_extended_public_key_by_entropy(
-                &path.to_string(),
                 entropy.as_slice(),
+                b"",
+                &path.to_string(),
             )
             .unwrap();
         {

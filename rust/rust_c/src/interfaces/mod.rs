@@ -1,3 +1,4 @@
+use crate::interfaces::errors::RustCError;
 use crate::interfaces::structs::SimpleResponse;
 use alloc::boxed::Box;
 use alloc::string::ToString;
@@ -5,7 +6,6 @@ use core::slice;
 use cty::c_char;
 use third_party::hex;
 use third_party::hex::ToHex;
-use crate::interfaces::errors::RustCError;
 
 use crate::interfaces::types::{PtrBytes, PtrString};
 use crate::interfaces::utils::{convert_c_char, recover_c_char};
@@ -86,13 +86,16 @@ pub extern "C" fn get_bip32_ed25519_extended_pubkey(
     entropy_len: u32,
     passphrase: PtrString,
     path: PtrString,
-) -> *mut SimpleResponse<c_char>
-{
+) -> *mut SimpleResponse<c_char> {
     let entropy = unsafe { slice::from_raw_parts(entropy, entropy_len as usize) };
     let path = recover_c_char(path);
     let passphrase = recover_c_char(passphrase);
     let extended_key =
-        keystore::algorithms::ed25519::bip32_ed25519::get_extended_public_key_by_entropy(&entropy, passphrase.as_bytes(), &path);
+        keystore::algorithms::ed25519::bip32_ed25519::get_extended_public_key_by_entropy(
+            &entropy,
+            passphrase.as_bytes(),
+            &path,
+        );
     match extended_key {
         Ok(result) => SimpleResponse::success(convert_c_char(result.encode_hex())).simple_c_ptr(),
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
@@ -104,12 +107,13 @@ pub extern "C" fn get_icarus_master_key(
     entropy: PtrBytes,
     entropy_len: u32,
     passphrase: PtrString,
-) -> *mut SimpleResponse<c_char>
-{
+) -> *mut SimpleResponse<c_char> {
     let entropy = unsafe { slice::from_raw_parts(entropy, entropy_len as usize) };
     let passphrase = recover_c_char(passphrase);
-    let master_key =
-        keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(&entropy, passphrase.as_bytes());
+    let master_key = keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(
+        &entropy,
+        passphrase.as_bytes(),
+    );
     match master_key {
         Ok(result) => SimpleResponse::success(convert_c_char(result.encode_hex())).simple_c_ptr(),
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
@@ -128,13 +132,13 @@ pub extern "C" fn derive_bip32_ed25519_extended_pubkey(
             let master_key =
                 keystore::algorithms::ed25519::bip32_ed25519::derive_extended_pubkey_by_icarus_master_key(&root, &path);
             match master_key {
-                Ok(result) => SimpleResponse::success(convert_c_char(result.encode_hex())).simple_c_ptr(),
+                Ok(result) => {
+                    SimpleResponse::success(convert_c_char(result.encode_hex())).simple_c_ptr()
+                }
                 Err(e) => SimpleResponse::from(e).simple_c_ptr(),
             }
         }
-        Err(e) => {
-            SimpleResponse::from(e).simple_c_ptr()
-        }
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
     }
 }
 

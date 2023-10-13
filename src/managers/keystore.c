@@ -28,6 +28,7 @@
 #include "se_interface.h"
 #include "se_manager.h"
 #include "account_manager.h"
+#include "librust_c.h"
 
 #define KEYSTORE_DEBUG          0
 
@@ -433,7 +434,14 @@ bool PassphraseExist(uint8_t accountIndex)
     return (strlen(g_passphraseInfo[accountIndex].passphrase) > 0);
 }
 
+char* GetPassphrase(uint8_t accountIndex)
+{
+    if (accountIndex > 2) {
+        return false;
+    }
 
+    return g_passphraseInfo[accountIndex].passphrase;
+}
 
 /// @brief Save account secret, including entropy/seed/reservedData.
 /// @param[in] accountIndex Account index, 0~2.

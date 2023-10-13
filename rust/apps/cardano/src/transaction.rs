@@ -16,7 +16,12 @@ pub fn check_tx(tx: Vec<u8>, context: ParseContext) -> R<()> {
     ParsedCardanoTx::verify(cardano_tx, context)
 }
 
-pub fn sign_tx(tx: Vec<u8>, context: ParseContext, entropy: &[u8]) -> R<Vec<u8>> {
+pub fn sign_tx(
+    tx: Vec<u8>,
+    context: ParseContext,
+    entropy: &[u8],
+    passphrase: &[u8],
+) -> R<Vec<u8>> {
     let cardano_tx = cardano_serialization_lib::Transaction::from_bytes(tx)?;
     let hash = blake2b_256(cardano_tx.body().to_bytes().as_ref());
     let mut witness_set = cardano_serialization_lib::TransactionWitnessSet::new();
@@ -31,15 +36,17 @@ pub fn sign_tx(tx: Vec<u8>, context: ParseContext, entropy: &[u8]) -> R<Vec<u8>>
         .map(|v| {
             let pubkey =
                 keystore::algorithms::ed25519::bip32_ed25519::get_extended_public_key_by_entropy(
-                    &v.get_path().to_string(),
                     entropy,
+                    passphrase,
+                    &v.get_path().to_string(),
                 )
                 .map(|v| v.public_key())
                 .map_err(|e| CardanoError::SigningFailed(e.to_string()));
             let signature = keystore::algorithms::ed25519::bip32_ed25519::sign_message_by_entropy(
+                entropy,
+                passphrase,
                 &hash,
                 &v.get_path().to_string(),
-                entropy,
             )
             .map_err(|e| CardanoError::SigningFailed(e.to_string()));
             pubkey.and_then(|_pubkey| signature.map(|_signature| (_pubkey, _signature)))
@@ -55,15 +62,17 @@ pub fn sign_tx(tx: Vec<u8>, context: ParseContext, entropy: &[u8]) -> R<Vec<u8>>
         .map(|v| {
             let pubkey =
                 keystore::algorithms::ed25519::bip32_ed25519::get_extended_public_key_by_entropy(
-                    &v.get_path().to_string(),
                     entropy,
+                    passphrase,
+                    &v.get_path().to_string(),
                 )
                 .map(|v| v.public_key())
                 .map_err(|e| CardanoError::SigningFailed(e.to_string()));
             let signature = keystore::algorithms::ed25519::bip32_ed25519::sign_message_by_entropy(
+                entropy,
+                passphrase,
                 &hash,
                 &v.get_path().to_string(),
-                entropy,
             )
             .map_err(|e| CardanoError::SigningFailed(e.to_string()));
             pubkey.and_then(|v| signature.map(|_v| (v, _v)))

@@ -14,6 +14,8 @@ typedef enum {
     CMD_ECHO_TEST = 0x00000001,    // Command to test echo
     CMD_RESOLVE_UR,                // Command to resolve UR
     CMD_CHECK_LOCK_STATUS,         // Command to check lock status
+    CMD_EXPORT_ADDRESS,            // Command to export address
+    CMD_EXPORT_ADDRESSES,          // Command to export addresses
     //
     CMD_MAX_VALUE = 0xFFFFFFFF,    // The maximum value for command
 } CommandType;
@@ -25,7 +27,10 @@ typedef enum {
     PRS_PARSING_REJECTED,
     PRS_PARSING_ERROR,
     PRS_PARSING_DISALLOWED,
-    
+    PRS_UNSUPPORTED_CHAIN,
+    PRS_EXPORT_ADDRESS_INVALID_PARAMS,
+    PRS_EXPORT_ADDRESS_ERROR,
+    PRS_EXPORT_ADDRESS_DISALLOWED,
     // 0xA0000001 and beyond are client error codes
     RSP_MAX_VALUE = 0xFFFFFFFF,
 } StatusEnum;
@@ -56,5 +61,6 @@ typedef struct
 
 struct ProtocolParser* NewEApduProtocolParser();
 void SendEApduResponse(uint8_t cla, CommandType ins, EAPDUResponsePayload_t *payload);
+void SendEApduResponseError(uint8_t cla, CommandType ins, StatusEnum status, char *error);
 
 #endif

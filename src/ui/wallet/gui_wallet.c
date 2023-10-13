@@ -78,10 +78,8 @@ UREncodeResult *GuiGetBlueWalletBtcData(void)
 }
 
 // copy from gui_btc, need to use real data
-UREncodeResult *GuiGetMetamaskData(void)
+UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType)
 {
-#ifndef COMPILE_SIMULATOR
-    ETHAccountType accountType = GetMetamaskAccountType();
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
@@ -108,6 +106,13 @@ UREncodeResult *GuiGetMetamaskData(void)
     CHECK_CHAIN_PRINT(g_urEncode);
     SRAM_FREE(public_keys);
     return g_urEncode;
+}
+
+UREncodeResult *GuiGetMetamaskData(void)
+{
+#ifndef COMPILE_SIMULATOR
+    ETHAccountType accountType = GetMetamaskAccountType();
+    return GetMetamaskDataForAccountType(accountType);
 #else
     const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
     return (void *)data;

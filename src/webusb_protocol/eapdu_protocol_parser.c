@@ -6,6 +6,7 @@
 #include "eapdu_services/service_resolve_ur.h"
 #include "eapdu_services/service_check_lock.h"
 #include "eapdu_services/service_echo_test.h"
+#include "eapdu_services/service_export_address.h"
 
 static ProtocolSendCallbackFunc_t g_sendFunc = NULL;
 static struct ProtocolParser *global_parser = NULL;
@@ -65,6 +66,20 @@ void SendEApduResponse(uint8_t cla, CommandType ins, EAPDUResponsePayload_t *pay
     }
 }
 
+void SendEApduResponseError(uint8_t cla, CommandType ins, StatusEnum status, char *error)
+{
+    EAPDUResponsePayload_t *result = (EAPDUResponsePayload_t *)SRAM_MALLOC(sizeof(EAPDUResponsePayload_t));
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "payload", error);
+    char *json_str = cJSON_Print(root);
+    cJSON_Delete(root);
+    result->data = (uint8_t *)json_str;
+    result->dataLen = strlen(result->data);
+    result->status = status;
+    SendEApduResponse(cla, ins, result);
+    SRAM_FREE(result);
+}
+
 static void free_parser()
 {
     g_totalPackets = 0;
@@ -85,6 +100,9 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request, CommandType comm
         break;
     case CMD_CHECK_LOCK_STATUS:
         CheckDeviceLockStatusService(*request);
+        break;
+    case CMD_EXPORT_ADDRESS:
+        ExportAddressService(*request);
         break;
     default:
         printf('Invalid command\n');

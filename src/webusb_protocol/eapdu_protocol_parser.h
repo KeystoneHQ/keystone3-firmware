@@ -23,6 +23,8 @@ typedef enum {
 typedef enum {
     RSP_SUCCESS_CODE = 0x00000000, // Response success code
     RSP_FAILURE_CODE,              // Response failure code
+    PRS_INVALID_TOTAL_PACKETS,
+    PRS_INVALID_INDEX,
     // Resolve UR response status
     PRS_PARSING_REJECTED,
     PRS_PARSING_ERROR,

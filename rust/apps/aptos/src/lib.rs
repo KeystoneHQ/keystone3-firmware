@@ -1,6 +1,8 @@
 #![no_std]
 #![feature(error_in_core)]
 
+#[allow(unused_imports)]
+#[macro_use]
 extern crate alloc;
 extern crate core;
 
@@ -11,10 +13,21 @@ extern crate std;
 use crate::parser::Parser;
 use alloc::string::String;
 use alloc::vec::Vec;
+use third_party::cryptoxide::hashing::sha3::Sha3_256;
+use third_party::hex;
+
+use crate::errors::Result;
 
 mod aptos_type;
 pub mod errors;
 mod parser;
+
+pub fn generate_address(pub_key: &str) -> Result<String> {
+    let mut buf: Vec<u8> = hex::decode(pub_key)?;
+    buf.push(0);
+    let addr = Sha3_256::new().update(&buf).finalize();
+    Ok(format!("0x{}", hex::encode(addr)))
+}
 
 pub fn parse(data: &Vec<u8>) -> crate::errors::Result<String> {
     let tx = Parser::parse(data)?;

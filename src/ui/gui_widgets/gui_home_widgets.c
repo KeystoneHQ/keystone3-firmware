@@ -38,6 +38,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
     {HOME_WALLET_CARD_ETH, false, "ETH"},
     {HOME_WALLET_CARD_SOL, false, "SOL"},
     {HOME_WALLET_CARD_SUI, false, "SUI"},
+    {HOME_WALLET_CARD_APT, false, "APT"},
     {HOME_WALLET_CARD_ADA, false, "ADA"},
     {HOME_WALLET_CARD_ATOM, false, "ATOM"},
     {HOME_WALLET_CARD_OSMO, false, "OSMO"},
@@ -104,6 +105,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =
         .coin = "SUI",
         .chain = "Sui",
         .icon = &coinSui,
+    },
+    {
+        .index = HOME_WALLET_CARD_APT,
+        .coin = "APT",
+        .chain = "Aptos",
+        .icon = &coinApt,
     },
     {
         .index = HOME_WALLET_CARD_ADA,

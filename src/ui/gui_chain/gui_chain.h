@@ -18,6 +18,7 @@ typedef enum {
     CHAIN_ETH,
     CHAIN_SOL,
     CHAIN_SUI,
+    CHAIN_APT,
     CHAIN_ADA,
     CHAIN_ATOM,
     CHAIN_OSMO,

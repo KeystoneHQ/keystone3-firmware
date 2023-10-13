@@ -299,6 +299,11 @@ macro_rules! impl_simple_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+        impl<$t> From<RustCError> for $name<$t> {
+            fn from(value: RustCError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
     };
 }
 

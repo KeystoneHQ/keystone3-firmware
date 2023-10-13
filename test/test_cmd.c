@@ -69,7 +69,8 @@
 
 typedef void (*UartTestCmdFunc_t)(int argc, char *argv[]);
 
-typedef struct {
+typedef struct
+{
     const char *cmdString;  // 命令字符串，用于对比
     UartTestCmdFunc_t func; // 对应命令的测试函数
 } UartTestCmdItem_t;
@@ -203,7 +204,8 @@ static void RustTestSuiCheckTx(int argc, char *argv[]);
 static void RustTestSuiSignTx(int argc, char *argv[]);
 static void RustADATest(int argc, char *argv[]);
 
-const static UartTestCmdItem_t g_uartTestCmdTable[] = {
+const static UartTestCmdItem_t g_uartTestCmdTable[] =
+{
     {"test", TestFunc},
     {"all task info", AllTaskInfoFunc},
     {"clr cpu per", ClrCpuPercentFunc},
@@ -380,19 +382,25 @@ bool CompareAndRunTestCmd(const char *inputString)
     bool content = false;
 
     tableSize = sizeof(g_uartTestCmdTable) / sizeof(g_uartTestCmdTable[0]);
-    for (uint32_t i = 0; i < tableSize; i++) {
+    for (uint32_t i = 0; i < tableSize; i++)
+    {
         inputHead = strstr(g_uartTestCmdTable[i].cmdString, ":");
-        if (inputHead != NULL) {
+        if (inputHead != NULL)
+        {
             // partial compare
             inputHead++;
             compareLen = inputHead - g_uartTestCmdTable[i].cmdString;
-            if (strncmp(inputString, g_uartTestCmdTable[i].cmdString, compareLen) == 0) {
+            if (strncmp(inputString, g_uartTestCmdTable[i].cmdString, compareLen) == 0)
+            {
                 inputHead = (char *)inputString + compareLen;
                 argc = 0;
-                for (uint32_t j = 0;; j++) {
-                    if (content) {
+                for (uint32_t j = 0;; j++)
+                {
+                    if (content)
+                    {
                         // content mode, finding space.
-                        if (inputHead[j] == ' ' || inputHead[j] == 0) {
+                        if (inputHead[j] == ' ' || inputHead[j] == 0)
+                        {
                             argvLen = &inputHead[j] - argvHead + 1; // including zero tail.
                             argv[argc] = SRAM_MALLOC(argvLen);
                             strncpy(argv[argc], argvHead, argvLen - 1);
@@ -400,26 +408,34 @@ bool CompareAndRunTestCmd(const char *inputString)
                             argc++;
                             content = false;
                         }
-                    } else {
+                    }
+                    else
+                    {
                         // space mode, finding content.
-                        if (inputHead[j] != ' ') {
+                        if (inputHead[j] != ' ')
+                        {
                             argvHead = &inputHead[j];
                             content = true;
                         }
                     }
-                    if (inputHead[j] == 0) {
+                    if (inputHead[j] == 0)
+                    {
                         break;
                     }
                 }
                 g_uartTestCmdTable[i].func(argc, argv);
-                for (uint32_t j = 0; j < argc; j++) {
+                for (uint32_t j = 0; j < argc; j++)
+                {
                     SRAM_FREE(argv[j]);
                 }
                 return true;
             }
-        } else {
+        }
+        else
+        {
             // full compare
-            if (strcmp(inputString, g_uartTestCmdTable[i].cmdString) == 0) {
+            if (strcmp(inputString, g_uartTestCmdTable[i].cmdString) == 0)
+            {
                 g_uartTestCmdTable[i].func(0, NULL);
                 return true;
             }
@@ -493,30 +509,35 @@ static void MemoryTestFunc(int argc, char *argv[])
 
     printf("Prepare running %d bytes * %d times memory test\r\n", byteNum, times);
     sramAddr = SRAM_MALLOC(byteNum);
-    if (sramAddr == NULL) {
+    if (sramAddr == NULL)
+    {
         printf("malloc err\r\n");
         return;
     }
     sramAddrSource = SRAM_MALLOC(byteNum);
-    if (sramAddrSource == NULL) {
+    if (sramAddrSource == NULL)
+    {
         printf("malloc2 err\r\n");
         return;
     }
 
     psramAddr = EXT_MALLOC(byteNum);
-    if (psramAddr == NULL) {
+    if (psramAddr == NULL)
+    {
         printf("malloc3 err\r\n");
         return;
     }
     psramAddrSource = EXT_MALLOC(byteNum);
-    if (psramAddrSource == NULL) {
+    if (psramAddrSource == NULL)
+    {
         printf("malloc4 err\r\n");
         return;
     }
 
     printf("\r\nstart SRAM to SRAM test:\r\n");
     startTick = osKernelGetTickCount();
-    for (i = 0; i < times; i++) {
+    for (i = 0; i < times; i++)
+    {
         memcpy(sramAddr, sramAddrSource, byteNum);
     }
     endTick = osKernelGetTickCount();
@@ -525,7 +546,8 @@ static void MemoryTestFunc(int argc, char *argv[])
     printf("\r\nstart QSPI FLASH to SRAM test:\r\n");
     tempAddr = (uint8_t *)(0x01010000);
     startTick = osKernelGetTickCount();
-    for (i = 0; i < times; i++) {
+    for (i = 0; i < times; i++)
+    {
         memcpy(sramAddr, tempAddr, byteNum);
     }
     endTick = osKernelGetTickCount();
@@ -534,7 +556,8 @@ static void MemoryTestFunc(int argc, char *argv[])
     printf("\r\nstart QSPI FLASH to PSRAM test:\r\n");
     tempAddr = (uint8_t *)(0x01010000);
     startTick = osKernelGetTickCount();
-    for (i = 0; i < times; i++) {
+    for (i = 0; i < times; i++)
+    {
         memcpy(psramAddr, tempAddr, byteNum);
     }
     endTick = osKernelGetTickCount();
@@ -542,7 +565,8 @@ static void MemoryTestFunc(int argc, char *argv[])
 
     printf("\r\nstart SRAM to PSRAM test:\r\n");
     startTick = osKernelGetTickCount();
-    for (i = 0; i < times; i++) {
+    for (i = 0; i < times; i++)
+    {
         memcpy(psramAddr, sramAddrSource, byteNum);
     }
     endTick = osKernelGetTickCount();
@@ -550,7 +574,8 @@ static void MemoryTestFunc(int argc, char *argv[])
 
     printf("\r\nstart PSRAM to SRAM test:\r\n");
     startTick = osKernelGetTickCount();
-    for (i = 0; i < times; i++) {
+    for (i = 0; i < times; i++)
+    {
         memcpy(sramAddr, psramAddrSource, byteNum);
     }
     endTick = osKernelGetTickCount();
@@ -558,7 +583,8 @@ static void MemoryTestFunc(int argc, char *argv[])
 
     printf("\r\nstart PSRAM to PSRAM test:\r\n");
     startTick = osKernelGetTickCount();
-    for (i = 0; i < times; i++) {
+    for (i = 0; i < times; i++)
+    {
         memcpy(psramAddr, psramAddrSource, byteNum);
     }
     endTick = osKernelGetTickCount();
@@ -581,14 +607,19 @@ static void PsramTestFunc(int argc, char *argv[])
     TrngGet(memSram, byteNum);
     memcpy(mem, memSram, byteNum);
     PrintArray("mem", mem, byteNum);
-    for (i = 0; i < byteNum; i++) {
-        if (mem[i] != memSram[i]) {
+    for (i = 0; i < byteNum; i++)
+    {
+        if (mem[i] != memSram[i])
+        {
             break;
         }
     }
-    if (i == byteNum) {
+    if (i == byteNum)
+    {
         printf("PSRAM test succ\r\n");
-    } else {
+    }
+    else
+    {
         printf("PSRAM test fault, i=%d\r\n", i);
     }
 }
@@ -600,7 +631,8 @@ static void TrngTestFunc(int argc, char *argv[])
     VALUE_CHECK(argc, 1);
     sscanf(argv[0], "%d", &byteNum);
     mem = SRAM_MALLOC(byteNum);
-    if (mem == NULL) {
+    if (mem == NULL)
+    {
         printf("malloc err\r\n");
         return;
     }
@@ -617,8 +649,10 @@ static void HardfaultFunc(int argc, char *argv[])
     VALUE_CHECK(argc, 1);
     sscanf(argv[0], "%d", &type);
     printf("going to hardfault,type=%d\r\n", type);
-    switch (type) {
-    case 0: {
+    switch (type)
+    {
+    case 0:
+    {
         errAddr = (uint32_t *)0x1001000;
         *errAddr = 0x12345678;
         printf("*errAddr=0x%08X\r\n", *errAddr);
@@ -650,9 +684,12 @@ static void QrDecodeStateFunc(int argc, char *argv[])
     VALUE_CHECK(argc, 1);
     sscanf(argv[0], "%d", &state);
     printf("state=%d\r\n", state);
-    if (state == 1) {
+    if (state == 1)
+    {
         StartQrDecode();
-    } else if (state == 0) {
+    }
+    else if (state == 0)
+    {
         StopQrDecode();
     }
 }
@@ -669,9 +706,11 @@ static void Gd25FlashOperateFunc(int argc, char *argv[])
     sscanf(argv[1], "%x", &addr);
 
     // tempBuf[strlen(tempBuf) - 4]  = '\0';
-    switch (opearte) {
+    switch (opearte)
+    {
     case GD25_FLASH_ERASE:
-        if (SUCCESS_CODE == Gd25FlashSectorErase(addr)) {
+        if (SUCCESS_CODE == Gd25FlashSectorErase(addr))
+        {
             printf("erase %#x success\r\n", addr);
         }
         break;
@@ -679,11 +718,13 @@ static void Gd25FlashOperateFunc(int argc, char *argv[])
         size = atoi(argv[2]);
         printf("size=%d\r\n", size);
         readBuf = SRAM_MALLOC(size);
-        if (readBuf == NULL) {
+        if (readBuf == NULL)
+        {
             printf("malloc err\r\n");
             return;
         }
-        if (size == Gd25FlashReadBuffer(addr, (uint8_t *)readBuf, size)) {
+        if (size == Gd25FlashReadBuffer(addr, (uint8_t *)readBuf, size))
+        {
             printf("read %#x success\r\n", addr);
         }
         PrintArray("data", (uint8_t *)readBuf, size);
@@ -692,7 +733,8 @@ static void Gd25FlashOperateFunc(int argc, char *argv[])
     case GD25_FLASH_WRITE:
         Gd25FlashSectorErase(addr);
         size = strlen(argv[2]);
-        if (size == Gd25FlashWriteBuffer(addr, (uint8_t *)argv[2], size)) {
+        if (size == Gd25FlashWriteBuffer(addr, (uint8_t *)argv[2], size))
+        {
             printf("write %#x success\r\n", addr);
         }
         break;
@@ -703,19 +745,22 @@ static void Gd25FlashOperateFunc(int argc, char *argv[])
 
 static void Sha256TestFunc(int argc, char *argv[])
 {
-    uint8_t privateKey[] = {
+    uint8_t privateKey[] =
+    {
         0x29, 0x71, 0x7E, 0x8C, 0xB4, 0x55, 0xA4, 0x46,
         0xA4, 0x35, 0x16, 0x86, 0x3A, 0x43, 0xD4, 0x57,
         0xD0, 0x91, 0x58, 0x8C, 0xE3, 0xD0, 0x31, 0xA5,
         0x9B, 0x05, 0x7E, 0x90, 0xA8, 0x9B, 0x16, 0x1C
     };
-    uint8_t msg[] = {
+    uint8_t msg[] =
+    {
         0x0F, 0x5C, 0x83, 0xC6, 0x76, 0xE0, 0x88, 0x63,
         0x55, 0x2E, 0xD9, 0xA7, 0x01, 0x01, 0x1C, 0x83,
         0x18, 0x00, 0x00, 0x4B
     };
     uint8_t hmac[32] = {0};
-    uint8_t encryptData[] = {
+    uint8_t encryptData[] =
+    {
         0x5C, 0x24, 0x23, 0xB6, 0x03, 0x78, 0xD0, 0xF4,
         0x88, 0x5D, 0xB3, 0xC9, 0x27, 0xEF, 0x39, 0x40,
         0x8F, 0x8B, 0x96, 0xED, 0x0F, 0x7E, 0x34, 0x14,
@@ -725,7 +770,8 @@ static void Sha256TestFunc(int argc, char *argv[])
     printf("sha256 test!\r\n");
     hmac_sha256(privateKey, 32, msg, sizeof(msg), hmac);
     PrintArray("mac", hmac, 32);
-    for (uint32_t i = 0; i < 32; i++) {
+    for (uint32_t i = 0; i < 32; i++)
+    {
         decryptData[i] = encryptData[i] ^ hmac[i];
     }
     PrintArray("decryptData", decryptData, 32);
@@ -867,9 +913,12 @@ static void GetMnemonicTestFunc(int argc, char *argv[])
     char *mnemonic = NULL;
     ret = bip39_mnemonic_from_bytes(NULL, entropy, entropyByte, &mnemonic);
     printf("bip39_mnemonic_from_bytes=%d\r\n", ret);
-    if (mnemonic == NULL) {
+    if (mnemonic == NULL)
+    {
         printf("Get mnemonic err.\r\n");
-    } else {
+    }
+    else
+    {
         // PrintArray("mnemonics", mnemonic, strlen(mnemonic));
         printf("mnemonic:\r\n%s\r\n", mnemonic);
     }
@@ -945,9 +994,12 @@ static void AesEncryptTestFunc(int argc, char *argv[])
     AES256_CBC_decrypt(&ctx, 2, decrypted, encrpyted);
     PrintArray("decrypted", decrypted, sizeof(decrypted));
 
-    if (memcmp(plain, decrypted, 32) == 0) {
+    if (memcmp(plain, decrypted, 32) == 0)
+    {
         printf("aes test succ\r\n");
-    } else {
+    }
+    else
+    {
         printf("aes test err\r\n");
     }
 }
@@ -990,14 +1042,16 @@ static void GuiFrameDebugTestFunc(int argc, char *argv[])
 
 static void RustTestK1SignMeessageByKey(int argc, char *argv[])
 {
-    uint8_t privateKey[] = {
+    uint8_t privateKey[] =
+    {
         0xf2, 0x54, 0xb0, 0x30, 0xd0, 0x4c, 0xdd, 0x90,
         0x2e, 0x92, 0x19, 0xd8, 0x39, 0x0e, 0x1d, 0xeb,
         0x5a, 0x58, 0x5f, 0x3c, 0x25, 0xba, 0xcf, 0x5c,
         0x74, 0xbd, 0x07, 0x80, 0x3a, 0x8d, 0xd8, 0x73
     };
 
-    uint8_t msg[] = {
+    uint8_t msg[] =
+    {
         0x0D, 0x94, 0xD0, 0x45, 0xA7, 0xE0, 0xD4, 0x54,
         0x7E, 0x16, 0x1A, 0xC3, 0x60, 0xC7, 0x35, 0x81,
         0xA9, 0x53, 0x83, 0x43, 0x5A, 0x48, 0xD8, 0x86,
@@ -1013,14 +1067,16 @@ static void RustTestK1SignMeessageByKey(int argc, char *argv[])
 
 static void RustTestK1VerifySignature(int argc, char *argv[])
 {
-    uint8_t msg[] = {
+    uint8_t msg[] =
+    {
         0x0D, 0x94, 0xD0, 0x45, 0xA7, 0xE0, 0xD4, 0x54,
         0x7E, 0x16, 0x1A, 0xC3, 0x60, 0xC7, 0x35, 0x81,
         0xA9, 0x53, 0x83, 0x43, 0x5A, 0x48, 0xD8, 0x86,
         0x9A, 0xB0, 0x8F, 0xF3, 0x4A, 0x8D, 0xB5, 0xE7
     };
 
-    uint8_t pubkey[] = {
+    uint8_t pubkey[] =
+    {
         0x04, 0xb5, 0xc8, 0xd5, 0xf8, 0xde, 0xfd, 0x3b,
         0xe0, 0x89, 0xc0, 0xed, 0xda, 0xfc, 0xb2, 0x75,
         0xa5, 0xab, 0x15, 0xa4, 0xf7, 0x1b, 0xc4, 0x0f,
@@ -1032,7 +1088,8 @@ static void RustTestK1VerifySignature(int argc, char *argv[])
         0x02
     };
 
-    uint8_t sig[] = {
+    uint8_t sig[] =
+    {
         0x26, 0x93, 0x70, 0xa9, 0x76, 0xb8, 0x27, 0xaa,
         0xa6, 0x31, 0x6a, 0x01, 0xbc, 0xbb, 0x7e, 0x41,
         0xbe, 0xdf, 0xbc, 0x45, 0xba, 0xea, 0xe0, 0x7a,
@@ -1084,11 +1141,13 @@ static void RustTestParseCryptoPSBT(int argc, char *argv[])
     TransactionParseResult_DisplayTx *result = btc_parse_psbt(crypto_psbt, mfp, sizeof(mfp), public_keys);
     VecFFI_DisplayTxDetailInput *inputs = result->data->detail->from;
     VecFFI_DisplayTxOverviewOutput *overview_to = result->data->overview->to;
-    for (size_t i = 0; i < result->data->overview->from->size; i++) {
+    for (size_t i = 0; i < result->data->overview->from->size; i++)
+    {
         printf("result: overview output #%d\r\n", i);
         printf("result: overview output address %s\r\n", overview_to->data[i].address);
     }
-    for (size_t i = 0; i < result->data->detail->to->size; i++) {
+    for (size_t i = 0; i < result->data->detail->to->size; i++)
+    {
         printf("result: input #%d\r\n", i);
         printf("result: input address %s\r\n", inputs->data[i].address);
         printf("result: input amount %s\r\n", inputs->data[i].amount);
@@ -1114,11 +1173,13 @@ static void RustTestParseBTCCompanionApp(int argc, char *argv[])
     printf("RustTestParseBTCCompanionApp 22\r\n");
     VecFFI_DisplayTxDetailInput *inputs = result->data->detail->from;
     VecFFI_DisplayTxOverviewOutput *overview_to = result->data->overview->to;
-    for (size_t i = 0; i < result->data->overview->to->size; i++) {
+    for (size_t i = 0; i < result->data->overview->to->size; i++)
+    {
         printf("result: overview output #%d\r\n", i);
         printf("result: overview output address %s\r\n", overview_to->data[i].address);
     }
-    for (size_t i = 0; i < result->data->detail->from->size; i++) {
+    for (size_t i = 0; i < result->data->detail->from->size; i++)
+    {
         printf("result: input #%d\r\n", i);
         printf("result: input address %s\r\n", inputs->data[i].address);
         printf("result: input amount %s\r\n", inputs->data[i].amount);
@@ -1180,12 +1241,14 @@ static void RustTestParseLTCCompanionApp(int argc, char *argv[])
     VecFFI_DisplayTxDetailInput *inputs = result->data->detail->from;
     VecFFI_DisplayTxOverviewOutput *overview_to = result->data->overview->to;
     printf("RustTestParseLTCCompanionApp to->size %d\r\n", result->data->overview->to->size);
-    for (size_t i = 0; i < result->data->overview->to->size; i++) {
+    for (size_t i = 0; i < result->data->overview->to->size; i++)
+    {
         printf("result: overview output #%d\r\n", i);
         printf("result: overview output address %s\r\n", overview_to->data[i].address);
     }
     printf("RustTestParseLTCCompanionApp from->size %d\r\n", result->data->detail->from->size);
-    for (size_t i = 0; i < result->data->detail->from->size; i++) {
+    for (size_t i = 0; i < result->data->detail->from->size; i++)
+    {
         printf("result: input #%d\r\n", i);
         printf("result: input address %s\r\n", inputs->data[i].address);
         printf("result: input amount %s\r\n", inputs->data[i].amount);
@@ -1307,9 +1370,12 @@ static void RustTestCosmosSignTx(int argc, char *argv[])
     printf("RustTestCosmosSignTx ur_type, %s\r\n", crypto_bytes->ur_type);
     UREncodeResult *sign_result = cosmos_sign_tx(crypto_bytes->data, crypto_bytes->
                                   ur_type, seed, sizeof(seed));
-    if (sign_result->error_message != NULL) {
+    if (sign_result->error_message != NULL)
+    {
         printf("error_message, %s\r\n", sign_result->error_message);
-    } else {
+    }
+    else
+    {
         printf("Cosmos sign result error_code: %d\r\n", sign_result->error_code);
         printf("Cosmos sign result data: %s\r\n", sign_result->data);
     }
@@ -1335,9 +1401,12 @@ static void RustTestCosmosEvmSignTx(int argc, char *argv[])
     printf("RustTestCosmosEvmSignTx ur_type, %d\r\n", crypto_bytes->ur_type);
     UREncodeResult *sign_result = cosmos_sign_tx(crypto_bytes->data, crypto_bytes->
                                   ur_type, seed, sizeof(seed));
-    if (sign_result->error_message != NULL) {
+    if (sign_result->error_message != NULL)
+    {
         printf("error_message, %s\r\n", sign_result->error_message);
-    } else {
+    }
+    else
+    {
         printf("Cosmos sign result error_code: %d\r\n", sign_result->error_code);
         printf("Cosmos sign result data: %s\r\n", sign_result->data);
     }
@@ -1366,12 +1435,14 @@ static void RustTestParseBCHCompanionApp(int argc, char *argv[])
     printf("RustTestParseBCHCompanionApp detail->total_input_amount %s\r\n", result->data->detail->total_input_amount);
     printf("RustTestParseBCHCompanionApp detail->total_output_amount %s\r\n", result->data->detail->total_output_amount);
     printf("RustTestParseBCHCompanionApp detail->fee_amount %s\r\n", result->data->detail->fee_amount);
-    for (size_t i = 0; i < result->data->overview->to->size; i++) {
+    for (size_t i = 0; i < result->data->overview->to->size; i++)
+    {
         printf("result: overview output #%d\r\n", i);
         printf("result: overview output address %s\r\n", overview_to->data[i].address);
     }
     printf("RustTestParseBCHCompanionApp from->size %d\r\n", result->data->detail->from->size);
-    for (size_t i = 0; i < result->data->detail->from->size; i++) {
+    for (size_t i = 0; i < result->data->detail->from->size; i++)
+    {
         printf("result: input #%d\r\n", i);
         printf("result: input address %s\r\n", inputs->data[i].address);
         printf("result: input amount %s\r\n", inputs->data[i].amount);
@@ -1399,12 +1470,14 @@ static void RustTestParseDASHCompanionApp(int argc, char *argv[])
     VecFFI_DisplayTxDetailInput *inputs = result->data->detail->from;
     VecFFI_DisplayTxOverviewOutput *overview_to = result->data->overview->to;
     printf("RustTestParseDASHCompanionApp to->size %d\r\n", result->data->overview->to->size);
-    for (size_t i = 0; i < result->data->overview->to->size; i++) {
+    for (size_t i = 0; i < result->data->overview->to->size; i++)
+    {
         printf("result: overview output #%d\r\n", i);
         printf("result: overview output address %s\r\n", overview_to->data[i].address);
     }
     printf("RustTestParseDASHCompanionApp from->size %d\r\n", result->data->detail->from->size);
-    for (size_t i = 0; i < result->data->detail->from->size; i++) {
+    for (size_t i = 0; i < result->data->detail->from->size; i++)
+    {
         printf("result: input #%d\r\n", i);
         printf("result: input address %s\r\n", inputs->data[i].address);
         printf("result: input amount %s\r\n", inputs->data[i].amount);
@@ -1721,10 +1794,13 @@ static void RustGetConnectKeplrUR(int argc, char *argv[])
     keplr_accounts->data = accounts;
     UREncodeResult *ur = get_connect_keplr_wallet_ur(mfp, sizeof(mfp), keplr_accounts);
     printf("encode ur\r\n");
-    if (ur->error_code == 0) {
+    if (ur->error_code == 0)
+    {
         printf("Keplr is_multi_part is %d\r\n", ur->is_multi_part);
         printf("Keplr data is %s\r\n", ur->data);
-    } else {
+    }
+    else
+    {
         printf("Keplr error_code is %s\r\n", ur->error_code);
         printf("Keplr error_message is %s\r\n", ur->error_message);
     }
@@ -1742,10 +1818,13 @@ static void RustGetConnectXrpToolKitUR(int argc, char *argv[])
     char *root_path = "44'/144'/0'";
     UREncodeResult *ur = get_connect_xrp_toolkit_ur(hd_path, root_x_pub, root_path);
     printf("encode ur\r\n");
-    if (ur->error_code == 0) {
+    if (ur->error_code == 0)
+    {
         printf("XrpToolkit is_multi_part is %d\r\n", ur->is_multi_part);
         printf("XrpToolkit data is %s\r\n", ur->data);
-    } else {
+    }
+    else
+    {
         printf("XrpToolkit error_code is %s\r\n", ur->error_code);
         printf("XrpToolkit error_message is %s\r\n", ur->error_message);
     }
@@ -1910,34 +1989,44 @@ static void testSolanaParseTx(int argc, char *argv[])
     printf("RustTestSolanaParseTx view_type %d\r\n", view_type);
     TransactionParseResult_DisplaySolanaTx *result = solana_parse_tx(crypto_bytes);
     printf("error_code: %d\r\n", result->error_code);
-    if (result->error_message != NULL) {
+    if (result->error_message != NULL)
+    {
         printf("error_message, %s\r\n", result->error_message);
     }
     printf("solana parse result overview: \r\n");
     printf("solana parse result overview display_type: %s\r\n", result->data->overview->display_type);
-    if (result->data->overview->transfer_value != NULL) {
+    if (result->data->overview->transfer_value != NULL)
+    {
         printf("solana parse result overview transfer_value: %s\r\n", result->data->overview->transfer_value);
     }
-    if (result->data->overview->transfer_from != NULL) {
+    if (result->data->overview->transfer_from != NULL)
+    {
         printf("solana parse result overview transfer_from: %s\r\n", result->data->overview->transfer_from);
     }
-    if (result->data->overview->transfer_to != NULL) {
+    if (result->data->overview->transfer_to != NULL)
+    {
         printf("solana parse result overview transfer_to: %s\r\n", result->data->overview->transfer_to);
     }
-    if (result->data->overview->main_action != NULL) {
+    if (result->data->overview->main_action != NULL)
+    {
         printf("solana parse result overview main_action: %s\r\n", result->data->overview->main_action);
     }
-    if (result->data->overview->votes_on != NULL) {
-        for (size_t i = 0; i < result->data->overview->votes_on->size; i++) {
+    if (result->data->overview->votes_on != NULL)
+    {
+        for (size_t i = 0; i < result->data->overview->votes_on->size; i++)
+        {
             printf("solana parse result: overview votes on #%d\r\n", i);
             printf("solana parse result: overview votes on %s\r\n", result->data->overview->votes_on->data[i].slot);
         }
     }
-    if (result->data->overview->vote_account != NULL) {
+    if (result->data->overview->vote_account != NULL)
+    {
         printf("solana parse result overview vote_account: %s\r\n", result->data->overview->vote_account);
     }
-    if (result->data->overview->general != NULL) {
-        for (size_t i = 0; i < result->data->overview->general->size; i++) {
+    if (result->data->overview->general != NULL)
+    {
+        for (size_t i = 0; i < result->data->overview->general->size; i++)
+        {
             printf("solana parse result: overview general #%d\r\n", i);
             printf("solana parse result: overview general program %s\r\n",
                    result->data->overview->general->data[i].program);
@@ -1986,7 +2075,8 @@ static void RustTestSuiParseTx(int argc, char *argv[])
     printf("RustTestSuiTx view_type: %d\r\n", view_type);
     TransactionParseResult_DisplaySuiIntentMessage *result = sui_parse_intent(crypto_bytes);
     printf("error_code: %d\r\n", result->error_code);
-    if (result->error_message != NULL) {
+    if (result->error_message != NULL)
+    {
         printf("error_message, %s\r\n", result->error_message);
     }
     printf("sui parse result detail: %s\r\n", result->data->detail);
@@ -2022,15 +2112,50 @@ static void RustADATest(int argc, char *argv[])
     printf("ADA get xpub\r\n");
     uint8_t entropy[64];
     uint8_t accountIndex = GetCurrentAccountIndex();
+    char* paths[24] =
+    {
+        "m/1852'/1815'/0'",
+        "m/1852'/1815'/1'",
+        "m/1852'/1815'/2'",
+        "m/1852'/1815'/3'",
+        "m/1852'/1815'/4'",
+        "m/1852'/1815'/5'",
+        "m/1852'/1815'/6'",
+        "m/1852'/1815'/7'",
+        "m/1852'/1815'/8'",
+        "m/1852'/1815'/9'",
+        "m/1852'/1815'/10'",
+        "m/1852'/1815'/11'",
+        "m/1852'/1815'/12'",
+        "m/1852'/1815'/13'",
+        "m/1852'/1815'/14'",
+        "m/1852'/1815'/15'",
+        "m/1852'/1815'/16'",
+        "m/1852'/1815'/17'",
+        "m/1852'/1815'/18'",
+        "m/1852'/1815'/19'",
+        "m/1852'/1815'/20'",
+        "m/1852'/1815'/21'",
+        "m/1852'/1815'/22'",
+        "m/1852'/1815'/23'",
+    };
     GetAccountEntropy(accountIndex, entropy, GetCurrentAccountEntropyLen(), "123456");
-    SimpleResponse_c_char* result = get_bip32_ed25519_extended_pubkey(entropy, GetCurrentAccountEntropyLen(), GetPassphrase(accountIndex), "m/1852'/1815'/0'");
-    printf("get result \r\n");
-    printf("xpub 0: %s\r\n", result->data);
-    free_simple_response_c_char(result);
-    result = get_bip32_ed25519_extended_pubkey(entropy, GetCurrentAccountEntropyLen(), GetPassphrase(accountIndex), "m/1852'/1815'/10'");
-    printf("get result \r\n");
-    printf("xpub 10: %s\r\n", result->data);
-    free_simple_response_c_char(result);
+    char* rootKey;
+
+    SimpleResponse_c_char* root = get_icarus_master_key(entropy, GetCurrentAccountEntropyLen(), GetPassphrase(accountIndex));
+    printf("get root key \r\n");
+    printf("root key: %s\r\n", root->data);
+    rootKey = root->data;
+
+    for (size_t i = 0; i < 24; i++)
+    {
+        SimpleResponse_c_char* result = derive_bip32_ed25519_extended_pubkey(rootKey, paths[i]);
+        printf("get result \r\n");
+        printf("xpub %d: %s\r\n", i, result->data);
+        free_simple_response_c_char(result);
+    }
+
+    free_simple_response_c_char(root);
 }
 
 static void testNearParseTx(int argc, char *argv[])
@@ -2043,25 +2168,32 @@ static void testNearParseTx(int argc, char *argv[])
     printf("RustTestNearParseTx view_type %d\r\n", view_type);
     TransactionParseResult_DisplayNearTx *result = near_parse_tx(crypto_bytes);
     printf("error_code: %d\r\n", result->error_code);
-    if (result->error_message != NULL) {
+    if (result->error_message != NULL)
+    {
         printf("error_message, %s\r\n", result->error_message);
     }
     printf("near parse result overview: \r\n");
     printf("near parse result overview display_type: %s\r\n", result->data->overview->display_type);
-    if (result->data->overview->transfer_value != NULL) {
+    if (result->data->overview->transfer_value != NULL)
+    {
         printf("near parse result overview transfer_value: %s\r\n", result->data->overview->transfer_value);
     }
-    if (result->data->overview->transfer_from != NULL) {
+    if (result->data->overview->transfer_from != NULL)
+    {
         printf("near parse result overview transfer_from: %s\r\n", result->data->overview->transfer_from);
     }
-    if (result->data->overview->transfer_to != NULL) {
+    if (result->data->overview->transfer_to != NULL)
+    {
         printf("near parse result overview transfer_to: %s\r\n", result->data->overview->transfer_to);
     }
-    if (result->data->overview->main_action != NULL) {
+    if (result->data->overview->main_action != NULL)
+    {
         printf("near parse result overview main_action: %s\r\n", result->data->overview->main_action);
     }
-    if (result->data->overview->action_list != NULL) {
-        for (size_t i = 0; i < result->data->overview->action_list->size; i++) {
+    if (result->data->overview->action_list != NULL)
+    {
+        for (size_t i = 0; i < result->data->overview->action_list->size; i++)
+        {
             printf("near parse result: overview action #%d\r\n", i);
             printf("solana parse result: overview action %s\r\n", result->data->overview->action_list->data[i].action);
         }
@@ -2118,9 +2250,12 @@ static void testCosmosGetAddress(int argc, char *argv[])
     char *pubkeyStr = pubkey->data;
     SimpleResponse_c_char *result = cosmos_get_address(argv[2], pubkeyStr, argv[3], argv[4]);
     printf("get address \r\n");
-    if (result->error_code == 0) {
+    if (result->error_code == 0)
+    {
         printf("cosmos address is %s\r\n", result->data);
-    } else {
+    }
+    else
+    {
         printf("error_code is %s\r\n", result->error_code);
         printf("error_message is %s\r\n", result->error_message);
     }
@@ -2188,9 +2323,12 @@ static void testCardanoTx(int argc, char *argv[])
     uint8_t entropyLen = sizeof(entropy);
     GetAccountEntropy(index, entropy, &entropyLen, argv[1]);
     UREncodeResult *sign_result = cardano_sign_tx(result->data, mfp, xpub, entropy, sizeof(entropy), "");
-    if (sign_result->error_code == 0) {
+    if (sign_result->error_code == 0)
+    {
         printf("sign result: %s \r\n", sign_result->data);
-    } else {
+    }
+    else
+    {
         printf("error_code is %s\r\n", sign_result->error_code);
         printf("error_message is %s\r\n", sign_result->error_message);
     }
@@ -2207,9 +2345,12 @@ static void RustGetEthAddress(int argc, char *argv[])
 
     SimpleResponse_c_char *result = eth_get_address(standardHdPath, rootXPub, rootPath);
 
-    if (result->error_code == 0) {
+    if (result->error_code == 0)
+    {
         printf("bip44 standard address is %s\r\n", result->data);
-    } else {
+    }
+    else
+    {
         printf("error_code is %s\r\n", result->error_code);
         printf("error_message is %s\r\n", result->error_message);
     }
@@ -2218,9 +2359,12 @@ static void RustGetEthAddress(int argc, char *argv[])
     char *ledgerLegacyHdPath = "44'/60'/0'/0";
     SimpleResponse_c_char *result1 = eth_get_address(ledgerLegacyHdPath, rootXPub, rootPath);
 
-    if (result1->error_code == 0) {
+    if (result1->error_code == 0)
+    {
         printf("ledger legacy address is %s\r\n", result1->data);
-    } else {
+    }
+    else
+    {
         printf("error_code is %s\r\n", result1->error_code);
         printf("error_message is %s\r\n", result1->error_message);
     }
@@ -2231,9 +2375,12 @@ static void RustGetEthAddress(int argc, char *argv[])
     char *root_x_pub1 = "xpub6BtigCpsVJrCJZsM7fwcwCX8dhAn5Drg5QnMQY1wgzX1BMHGHPHB9qjmvnqgK6BECXyVTkGdr4CTyNyhaMXKdSmEVkSd4w7ePqaBvzjMxJ9";
     SimpleResponse_c_char *result2 = eth_get_address(ledgerLiveHdPath, root_x_pub1, root_path1);
 
-    if (result2->error_code == 0) {
+    if (result2->error_code == 0)
+    {
         printf("ledger live address is %s\r\n", result2->data);
-    } else {
+    }
+    else
+    {
         printf("error_code is %s\r\n", result2->error_code);
         printf("error_message is %s\r\n", result2->error_message);
     }
@@ -2242,9 +2389,12 @@ static void RustGetEthAddress(int argc, char *argv[])
     // error case
     SimpleResponse_c_char *result3 = eth_get_address(ledgerLiveHdPath, root_x_pub1, rootPath);
 
-    if (result3->error_code == 0) {
+    if (result3->error_code == 0)
+    {
         printf("ledger live address is %s\r\n", result3->data);
-    } else {
+    }
+    else
+    {
         printf("error_code is %s\r\n", result3->error_code);
         printf("error_message is %s\r\n", result3->error_message);
     }
@@ -2259,9 +2409,12 @@ static void RustTestParseAptosTx(int argc, char *argv[])
 
     SimpleResponse_c_char *result = test_aptos_parse();
 
-    if (result->error_code == 0) {
+    if (result->error_code == 0)
+    {
         printf("json is %s\r\n", result->data);
-    } else {
+    }
+    else
+    {
         printf("error_code is %s\r\n", result->error_code);
         printf("error_message is %s\r\n", result->error_message);
     }
@@ -2310,10 +2463,12 @@ static void RustParseEthContractData(int argc, char* argv[])
     char* contract_abi = "{\"name\":\"UniversalRouter\",\"address\":\"0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"permit2\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"weth9\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"seaportV1_5\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"seaportV1_4\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"openseaConduit\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftxZap\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"x2y2\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"foundation\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"sudoswap\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"elementMarket\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft20Zap\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"cryptopunks\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"looksRareV2\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"routerRewardsDistributor\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"looksRareRewardsDistributor\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"looksRareToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"v2Factory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"v3Factory\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"pairInitCodeHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"poolInitCodeHash\",\"type\":\"bytes32\"}],\"internalType\":\"struct RouterParameters\",\"name\":\"params\",\"type\":\"tuple\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"BalanceTooLow\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"BuyPunkFailed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ContractLocked\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ETHNotAccepted\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"commandIndex\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"ExecutionFailed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FromAddressIsNotOwner\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InsufficientETH\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InsufficientToken\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidBips\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"commandType\",\"type\":\"uint256\"}],\"name\":\"InvalidCommandType\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOwnerERC1155\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOwnerERC721\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidPath\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidReserves\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidSpender\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"LengthMismatch\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SliceOutOfBounds\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"TransactionDeadlinePassed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"UnableToClaim\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"UnsafeCast\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"V2InvalidPath\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"V2TooLittleReceived\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"V2TooMuchRequested\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"V3InvalidAmountOut\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"V3InvalidCaller\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"V3InvalidSwap\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"V3TooLittleReceived\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"V3TooMuchRequested\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"RewardsSent\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"looksRareClaim\",\"type\":\"bytes\"}],\"name\":\"collectRewards\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"commands\",\"type\":\"bytes\"},{\"internalType\":\"bytes[]\",\"name\":\"inputs\",\"type\":\"bytes[]\"}],\"name\":\"execute\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"commands\",\"type\":\"bytes\"},{\"internalType\":\"bytes[]\",\"name\":\"inputs\",\"type\":\"bytes[]\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"}],\"name\":\"execute\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC1155BatchReceived\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC1155Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC721Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"int256\",\"name\":\"amount0Delta\",\"type\":\"int256\"},{\"internalType\":\"int256\",\"name\":\"amount1Delta\",\"type\":\"int256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"uniswapV3SwapCallback\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}]}},\"version\":1,\"checkPoints\":[]}";
     Response_DisplayContractData *display_contract_data = eth_parse_contract_data(tx_input_data, contract_abi);
 
-    if (display_contract_data->error_code == 0) {
+    if (display_contract_data->error_code == 0)
+    {
         printf("contract name: %s\r\n", display_contract_data->data->contract_name);
         printf("method name: %s\r\n", display_contract_data->data->method_name);
-        for (size_t i = 0; i < display_contract_data->data->params->size; i++) {
+        for (size_t i = 0; i < display_contract_data->data->params->size; i++)
+        {
             printf("param name: %s\r\n", display_contract_data->data->params->data[i].name);
             printf("param value: %s\r\n", display_contract_data->data->params->data[i].value);
         }
@@ -2332,7 +2487,8 @@ static void ETHDBContractsTest(int argc, char* argv[])
 {
     char functionABI[2000];
     char name[64];
-    if (GetDBContract(argv[0], argv[1], 1, functionABI, name)) {
+    if (GetDBContract(argv[0], argv[1], 1, functionABI, name))
+    {
         printf("functionABI: %s\r\n", functionABI);
         printf("name: %s\r\n", name);
     }
@@ -2432,9 +2588,12 @@ static void testXRPGetAddress(int argc, char *argv[])
 
     SimpleResponse_c_char *result = xrp_get_address(argv[0], rootXPub, rootPath);
 
-    if (result->error_code == 0) {
+    if (result->error_code == 0)
+    {
         printf("xrp address is %s\r\n", result->data);
-    } else {
+    }
+    else
+    {
         printf("error_code is %d\r\n", result->error_code);
         printf("error_message is %s\r\n", result->error_message);
     }
@@ -2484,9 +2643,12 @@ static void testXRPSignTx(int argc, char *argv[])
     GetAccountSeed(index, seed, argv[1]);
     UREncodeResult *result = xrp_sign_tx(ur->data, hd_paths, seed, sizeof(seed));
 
-    if (result->error_code == 0) {
+    if (result->error_code == 0)
+    {
         printf("xrp sign result is %s\r\n", result->data);
-    } else {
+    }
+    else
+    {
         printf("error_code is %d\r\n", result->error_code);
         printf("error_message is %s\r\n", result->error_message);
     }
@@ -2514,27 +2676,34 @@ static void testXrpParseTx(int argc, char *argv[])
     printf("testXrpParseTx view_type %d\r\n", view_type);
     TransactionParseResult_DisplayXrpTx *result = xrp_parse_tx(crypto_bytes);
     printf("error_code: %d\r\n", result->error_code);
-    if (result->error_message != NULL) {
+    if (result->error_message != NULL)
+    {
         printf("error_message, %s\r\n", result->error_message);
     }
     printf("xrp parse result overview: \r\n");
     printf("xrp parse result overview display_type: %s\r\n", result->data->overview->display_type);
-    if (result->data->overview->value != NULL) {
+    if (result->data->overview->value != NULL)
+    {
         printf("xrp parse result overview transfer_value: %s\r\n", result->data->overview->value);
     }
-    if (result->data->overview->from != NULL) {
+    if (result->data->overview->from != NULL)
+    {
         printf("xrp parse result overview transfer_from: %s\r\n", result->data->overview->from);
     }
-    if (result->data->overview->to != NULL) {
+    if (result->data->overview->to != NULL)
+    {
         printf("xrp parse result overview transfer_to: %s\r\n", result->data->overview->to);
     }
-    if (result->data->overview->transaction_type != NULL) {
+    if (result->data->overview->transaction_type != NULL)
+    {
         printf("xrp parse result overview transaction_type: %s\r\n", result->data->overview->transaction_type);
     }
-    if (result->data->overview->fee != NULL) {
+    if (result->data->overview->fee != NULL)
+    {
         printf("xrp parse result overview fee: %s\r\n", result->data->overview->fee);
     }
-    if (result->data->overview->sequence != NULL) {
+    if (result->data->overview->sequence != NULL)
+    {
         printf("xrp parse result overview sequence: %s\r\n", result->data->overview->sequence);
     }
     printf("xrp parse result network: %s\r\n", result->data->network);
@@ -2600,64 +2769,83 @@ static void RustTestCosmosParseTx(int argc, char *argv[])
     printf("RustTestCosmosParseTx view_type %d\r\n", view_type);
     TransactionParseResult_DisplayCosmosTx *result = cosmos_parse_tx(crypto_bytes, ur->ur_type);
     printf("error_code: %d\r\n", result->error_code);
-    if (result->error_message != NULL) {
+    if (result->error_message != NULL)
+    {
         printf("error_message, %s\r\n", result->error_message);
     }
     printf("cosmos parse result overview: \r\n");
     printf("cosmos parse result overview display_type: %s\r\n", result->data->overview->display_type);
-    if (result->data->overview->send_value != NULL) {
+    if (result->data->overview->send_value != NULL)
+    {
         printf("cosmos parse result overview send_value: %s\r\n", result->data->overview->send_value);
     }
-    if (result->data->overview->send_from != NULL) {
+    if (result->data->overview->send_from != NULL)
+    {
         printf("cosmos parse result overview send_from: %s\r\n", result->data->overview->send_from);
     }
-    if (result->data->overview->send_to != NULL) {
+    if (result->data->overview->send_to != NULL)
+    {
         printf("cosmos parse result overview send_to: %s\r\n", result->data->overview->send_to);
     }
-    if (result->data->overview->delegate_value != NULL) {
+    if (result->data->overview->delegate_value != NULL)
+    {
         printf("cosmos parse result overview delegate_value: %s\r\n", result->data->overview->delegate_value);
     }
-    if (result->data->overview->delegate_from != NULL) {
+    if (result->data->overview->delegate_from != NULL)
+    {
         printf("cosmos parse result overview delegate_from: %s\r\n", result->data->overview->delegate_from);
     }
-    if (result->data->overview->delegate_to != NULL) {
+    if (result->data->overview->delegate_to != NULL)
+    {
         printf("cosmos parse result overview delegate_to: %s\r\n", result->data->overview->delegate_to);
     }
-    if (result->data->overview->undelegate_value != NULL) {
+    if (result->data->overview->undelegate_value != NULL)
+    {
         printf("cosmos parse result overview undelegate_value: %s\r\n", result->data->overview->undelegate_value);
     }
-    if (result->data->overview->undelegate_to != NULL) {
+    if (result->data->overview->undelegate_to != NULL)
+    {
         printf("cosmos parse result overview undelegate_to: %s\r\n", result->data->overview->undelegate_to);
     }
-    if (result->data->overview->undelegate_validator != NULL) {
+    if (result->data->overview->undelegate_validator != NULL)
+    {
         printf("cosmos parse result overview undelegate_validator: %s\r\n", result->data->overview->undelegate_validator);
     }
-    if (result->data->overview->redelegate_value != NULL) {
+    if (result->data->overview->redelegate_value != NULL)
+    {
         printf("cosmos parse result overview redelegate_value: %s\r\n", result->data->overview->redelegate_value);
     }
-    if (result->data->overview->redelegate_to != NULL) {
+    if (result->data->overview->redelegate_to != NULL)
+    {
         printf("cosmos parse result overview redelegate_to: %s\r\n", result->data->overview->redelegate_to);
     }
-    if (result->data->overview->redelegate_new_validator != NULL) {
+    if (result->data->overview->redelegate_new_validator != NULL)
+    {
         printf("cosmos parse result overview redelegate_new_validator: %s\r\n", result->data->overview->redelegate_new_validator);
     }
-    if (result->data->overview->vote_voted != NULL) {
+    if (result->data->overview->vote_voted != NULL)
+    {
         printf("cosmos parse result overview vote_voted: %s\r\n", result->data->overview->vote_voted);
     }
-    if (result->data->overview->vote_proposal != NULL) {
+    if (result->data->overview->vote_proposal != NULL)
+    {
         printf("cosmos parse result overview vote_proposal: %s\r\n", result->data->overview->vote_proposal);
     }
-    if (result->data->overview->vote_voter != NULL) {
+    if (result->data->overview->vote_voter != NULL)
+    {
         printf("cosmos parse result overview vote_voter: %s\r\n", result->data->overview->vote_voter);
     }
 
-    if (result->data->overview->withdraw_reward_to != NULL) {
+    if (result->data->overview->withdraw_reward_to != NULL)
+    {
         printf("cosmos parse result overview withdraw_reward_to: %s\r\n", result->data->overview->withdraw_reward_to);
     }
-    if (result->data->overview->withdraw_reward_validator != NULL) {
+    if (result->data->overview->withdraw_reward_validator != NULL)
+    {
         printf("cosmos parse result overview withdraw_reward_validator: %s\r\n", result->data->overview->withdraw_reward_validator);
     }
-    if (result->data->overview->overview_list != NULL) {
+    if (result->data->overview->overview_list != NULL)
+    {
         printf("cosmos parse result overview overview_list: %s\r\n", result->data->overview->overview_list);
     }
     printf("cosmos parse result detail: %s\r\n", result->data->detail);
@@ -2699,10 +2887,13 @@ static void RustGetConnectSolanaWalletUR(int argc, char *argv[])
 
     UREncodeResult *ur = get_connect_solana_wallet_ur(mfp, sizeof(mfp), public_keys);
     printf("encode ur\r\n");
-    if (ur->error_code == 0) {
+    if (ur->error_code == 0)
+    {
         printf("solana is_multi_part is %d\r\n", ur->is_multi_part);
         printf("solana data is %s\r\n", ur->data);
-    } else {
+    }
+    else
+    {
         printf("solana error_code is %s\r\n", ur->error_code);
         printf("solana error_message is %s\r\n", ur->error_message);
     }
@@ -2732,10 +2923,13 @@ static void RustGetConnectAptosWalletUR(int argc, char *argv[])
 
     UREncodeResult *ur = get_connect_aptos_wallet_ur(mfp, sizeof(mfp), public_keys);
     printf("encode ur\r\n");
-    if (ur->error_code == 0) {
+    if (ur->error_code == 0)
+    {
         printf("aptos is_multi_part is %d\r\n", ur->is_multi_part);
         printf("aptos data is %s\r\n", ur->data);
-    } else {
+    }
+    else
+    {
         printf("aptos error_code is %s\r\n", ur->error_code);
         printf("aptos error_message is %s\r\n", ur->error_message);
     }
@@ -2752,9 +2946,12 @@ static void RustSolanaMessage(int argc, char *argv[])
     char *pubkey = "e671e524ef43ccc5ef0006876f9a2fd66681d5abc5871136b343a3e4b073efde";
 
     PtrT_TransactionParseResult_DisplaySolanaMessage sol_msg = solana_parse_message(result->data, pubkey);
-    if (sol_msg->error_message != NULL) {
+    if (sol_msg->error_message != NULL)
+    {
         printf("error_message, %s\r\n", sol_msg->error_message);
-    } else {
+    }
+    else
+    {
         printf("RustSolanaMessage parse result raw message: %s\r\n", sol_msg->data->raw_message);
         printf("RustSolanaMessage parse result utf8_message : %s\r\n", sol_msg->data->utf8_message);
         printf("RustSolanaMessage parse result from: %s\r\n", sol_msg->data->from);
@@ -2765,10 +2962,13 @@ static void RustSolanaMessage(int argc, char *argv[])
     uint8_t seed[64];
     GetAccountSeed(index, seed, argv[1]);
     UREncodeResult *sign_result = solana_sign_tx(result->data, seed, sizeof(seed));
-    if (sign_result->error_message != NULL) {
+    if (sign_result->error_message != NULL)
+    {
         printf("RustSolanaMessage sign result error_code: %d\r\n", sign_result->error_code);
         printf("RustSolanaMessage sign result error_message: %s\r\n", sign_result->error_message);
-    } else {
+    }
+    else
+    {
         printf("RustSolanaMessage sign result data: %s\r\n", sign_result->data);
     }
     free_TransactionParseResult_DisplaySolanaMessage(sol_msg);

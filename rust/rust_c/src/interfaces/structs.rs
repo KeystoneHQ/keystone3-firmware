@@ -5,7 +5,6 @@ use alloc::string::{String, ToString};
 use core::ptr::null_mut;
 
 use app_bitcoin::errors::BitcoinError;
-use app_cardano::errors::CardanoError;
 use app_ethereum::errors::EthereumError;
 
 use cstr_core::CString;

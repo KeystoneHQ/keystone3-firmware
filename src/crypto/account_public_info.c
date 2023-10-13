@@ -345,12 +345,32 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         {
             break;
         }
+        char* icarusMasterKey = NULL;
         printf("regenerate pub key!\r\n");
         FreePublicKeyRam();
         ret = GetAccountSeed(accountIndex, seed, password);
         CHECK_ERRCODE_BREAK("get seed", ret);
         ret = GetAccountEntropy(accountIndex, entropy, GetCurrentAccountEntropyLen(), password);
         CHECK_ERRCODE_BREAK("get entropy", ret);
+        SimpleResponse_c_char* response = NULL;
+        // should setup ADA;
+        if(!isSlip39)
+        {
+            response = get_icarus_master_key(entropy, GetCurrentAccountEntropyLen(), GetPassphrase(accountIndex));
+            ASSERT(response);
+            if (response->error_code != 0)
+            {
+                printf("get_extended_pubkey error\r\n");
+                if (response->error_message != NULL)
+                {
+                    printf("error code = %d\r\nerror msg is: %s\r\n", response->error_code, response->error_message);
+                }
+                free_simple_response_c_char(response);
+                ret = response->error_code;
+                break;
+            }
+            icarusMasterKey = response -> data;
+        }
 
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++)
         {
@@ -369,7 +389,8 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
                 xPubResult = get_ed25519_pubkey_by_seed(seed, len, g_chainTable[i].path);
                 break;
             case BIP32_ED25519:
-                xPubResult = get_bip32_ed25519_extended_pubkey(entropy, GetCurrentAccountEntropyLen(), GetPassphrase(accountIndex), g_chainTable[i].path);
+                ASSERT(icarusMasterKey);
+                xPubResult = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, g_chainTable[i].path);
                 break;
             default:
                 xPubResult = NULL;
@@ -394,6 +415,9 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
             strcpy(g_accountPublicKey[i].pubKey, xPubResult->data);
             printf("xPubResult=%s\r\n", xPubResult->data);
             free_simple_response_c_char(xPubResult);
+        }
+        if(response != NULL){
+            free_simple_response_c_char(response);
         }
         printf("erase user data:0x%X\n", addr);
         for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_ADDR_EACH_SIZE; eraseAddr += GD25QXX_SECTOR_SIZE)
@@ -436,11 +460,34 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     }
     else
     {
+        char* icarusMasterKey = NULL;
         FreePublicKeyRam();
         ret = GetAccountSeed(accountIndex, seed, password);
         CHECK_ERRCODE_RETURN_INT(ret);
         ret = GetAccountEntropy(accountIndex, entropy, GetCurrentAccountEntropyLen(), password);
         CHECK_ERRCODE_RETURN_INT(ret);
+        SimpleResponse_c_char* response;
+
+        // should setup ADA;
+        if(!isSlip39)
+        {
+            response = get_icarus_master_key(entropy, GetCurrentAccountEntropyLen(), GetPassphrase(accountIndex));
+            ASSERT(response);
+            if (response->error_code != 0)
+            {
+                printf("get_extended_pubkey error\r\n");
+                if (response->error_message != NULL)
+                {
+                    printf("error code = %d\r\nerror msg is: %s\r\n", response->error_code, response->error_message);
+                }
+                free_simple_response_c_char(response);
+                ret = response->error_code;
+                CLEAR_ARRAY(seed);
+                return ret;
+            }
+            icarusMasterKey = response->data;
+        }
+
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++)
         {
             // SLIP32 wallet does not support ADA
@@ -457,7 +504,8 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
                 xPubResult = get_ed25519_pubkey_by_seed(seed, len, g_chainTable[i].path);
                 break;
             case BIP32_ED25519:
-                xPubResult = get_bip32_ed25519_extended_pubkey(entropy, GetCurrentAccountEntropyLen(), GetPassphrase(accountIndex), g_chainTable[i].path);
+                ASSERT(icarusMasterKey);
+                xPubResult = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, g_chainTable[i].path);
                 break;
             default:
                 xPubResult = NULL;
@@ -482,6 +530,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             printf("xPubResult=%s\r\n", xPubResult->data);
             free_simple_response_c_char(xPubResult);
         }
+        free_simple_response_c_char(response);
         g_tempPublicKeyAccountIndex = accountIndex;
     }
     CLEAR_ARRAY(seed);

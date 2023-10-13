@@ -10,6 +10,8 @@ extern crate core;
 #[macro_use]
 extern crate std;
 
+use core::str::FromStr;
+
 use crate::{errors::Result, types::intent::IntentScope};
 use alloc::{
     string::{String, ToString},
@@ -56,8 +58,21 @@ pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
             Ok(Intent::TransactionData(tx))
         }
         IntentScope::PersonalMessage => {
-            let msg: IntentMessage<PersonalMessage> =
-                bcs::from_bytes(&intent).map_err(|err| SuiError::from(err))?;
+            let msg: IntentMessage<PersonalMessage> = match bcs::from_bytes(&intent) {
+                Ok(msg) => msg,
+                Err(_) => {
+                    if intent.len() < 4 {
+                        return Err(SuiError::InvalidData(String::from("message too short")));
+                    }
+                    let intent_bytes = intent[..3].to_vec();
+                    IntentMessage::<PersonalMessage>::new(
+                        types::intent::Intent::from_str(hex::encode(&intent_bytes).as_str())?,
+                        PersonalMessage {
+                            message: intent[3..].to_vec(),
+                        },
+                    )
+                }
+            };
             let m = match decode_utf8(&msg.value.message) {
                 Ok(m) => m,
                 Err(_) => serde_json::to_string(&msg.value.message)?,
@@ -143,6 +158,14 @@ mod tests {
 
         let intent = parse_intent(&bytes);
         assert_eq!(json!(intent.unwrap()).to_string(), "{\"PersonalMessage\":{\"intent\":{\"app_id\":\"Sui\",\"scope\":\"PersonalMessage\",\"version\":\"V0\"},\"value\":{\"message\":\"Hello, Sui\"}}}");
+    }
+
+    #[test]
+    fn test_parse_msg_not_bcs() {
+        let bytes = hex::decode("030000506C656173652C20766572696679206F776E657273686970206279207369676E696E672074686973206D6573736167652E").unwrap();
+
+        let intent = parse_intent(&bytes);
+        assert_eq!(json!(intent.unwrap()).to_string(), "{\"PersonalMessage\":{\"intent\":{\"app_id\":\"Sui\",\"scope\":\"PersonalMessage\",\"version\":\"V0\"},\"value\":{\"message\":\"Please, verify ownership by signing this message.\"}}}");
     }
 
     #[test]

@@ -114,13 +114,15 @@ static ParserStatusEnum CheckFrameValidity(EAPDUFrame_t *eapduFrame)
 {
     if (eapduFrame->p1 > MAX_PACKETS)
     {
-        printf("Invalid packet index or total number of packets\n");
+        printf("Invalid total number of packets\n");
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, eapduFrame->ins, PRS_INVALID_TOTAL_PACKETS, "Invalid total number of packets");
         free_parser();
         return FRAME_TOTAL_ERROR;
     }
     else if (eapduFrame->p2 >= eapduFrame->p1)
     {
-        printf("Invalid packet index or total number of packets\n");
+        printf("Invalid packet index\n");
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, eapduFrame->ins, PRS_INVALID_INDEX, "Invalid packet index");
         free_parser();
         return FRAME_INDEX_ERROR;
     }

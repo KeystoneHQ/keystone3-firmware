@@ -136,6 +136,7 @@ extern GUI_VIEW g_displayView;
 extern GUI_VIEW g_tutorialView;
 extern GUI_VIEW g_connectionView;
 extern GUI_VIEW g_DevicePublicKeyView;
+extern GUI_VIEW g_multiAccountsReceiveView;
 
 void OpenImportWalletHandler(lv_event_t *e);
 void OpenCreateWalletHandler(lv_event_t *e);

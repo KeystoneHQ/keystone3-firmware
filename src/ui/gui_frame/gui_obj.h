@@ -50,6 +50,7 @@ typedef int32_t(*GuiEventProcessFunc)(void *self, uint16_t usEvent, void *param,
     add(SCREEN_DISPLAY)         \
     add(SCREEN_TUTORIAL)        \
     add(SCREEN_CONNECTION)      \
+    add(SCREEN_MULTI_ACCOUNTS_RECEIVE)      \
     add(SCREEN_DEVICE_PUB_KEY)
 
 typedef enum {

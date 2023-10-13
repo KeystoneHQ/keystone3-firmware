@@ -37,7 +37,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_METAMASK, &walletListMetaMask},
     {WALLET_LIST_BLUE, &walletListBlue},
     // { WALLET_LIST_SUB, &walletListSub},
-    // { WALLET_LIST_SOLFARE, &walletListSolfare},
+    {WALLET_LIST_SOLFARE, &walletListSolfare},
     {WALLET_LIST_RABBY, &walletListRabby},
     {WALLET_LIST_SAFE, &walletListSafe},
     {WALLET_LIST_BLOCK_WALLET, &walletListBlockWallet},
@@ -147,6 +147,10 @@ static const lv_img_dsc_t *g_fewchaCoinArray[1] =
     &coinSui,
 };
 
+static const lv_img_dsc_t *g_solfareCoinArray[1] = {
+    &coinSol,
+};
+
 static ConnectWalletWidget_t g_connectWalletTileView;
 static CoinState_t g_defaultCompanionAppState[COMPANION_APP_COINS_BUTT] = {
     {BTC, true},
@@ -170,9 +174,17 @@ const static ChangeDerivationItem_t g_changeDerivationList[] = {
     {"Ledger Legacy", "#8E8E8E m/44'/60'/0'/##F5870A X#"},
 };
 
+const static ChangeDerivationItem_t g_solChangeDerivationList[] = {
+    {"Solflare", "#8E8E8E m/44'/501'/##F5870A X##8E8E8E '#"},
+    {"Sollet / MathWallet", "#8E8E8E m/44'/501'#"},
+    {"Phantom / Exodus", "#8E8E8E m/44'/501'/##F5870A X##8E8E8E '/0'#"},
+};
+
 static lv_obj_t *g_coinListCont = NULL;
 static PageWidget_t *g_pageWidget;
 
+static void UpdategAddress(void);
+static void GetEgAddress(void);
 static void GetEthEgAddress(void);
 static void initCompanionAppCoinsConfig(void);
 static void OpenQRCodeHandler(lv_event_t *e);
@@ -187,12 +199,17 @@ static void AddMetaMaskCoins(void);
 static void AddBlueWalletCoins(void);
 static void AddCompanionAppCoins(void);
 static void AddKeplrCoins(void);
+static void AddSolflareCoins(void);
 
 CoinState_t g_companionAppcoinState[COMPANION_APP_COINS_BUTT];
 static char g_derivationPathAddr[LedgerLegacy + 1][DERIVATION_PATH_EG_LEN][64];
+static char g_solDerivationPathAddr[SOLBip44Change + 1][DERIVATION_PATH_EG_LEN][64];
+
 static lv_obj_t *g_derivationCheck[LedgerLegacy + 1];
 static ETHAccountType g_currentPathIndex[3] = {Bip44Standard, Bip44Standard, Bip44Standard};
 static ETHAccountType g_currentBakPathIndex = Bip44Standard;
+static SOLAccountType g_currentSOLPathIndex[3] = {SOLBip44, SOLBip44, SOLBip44};
+
 static lv_obj_t *g_egAddress[DERIVATION_PATH_EG_LEN];
 static CoinState_t g_tempCompanionAppcoinState[COMPANION_APP_COINS_BUTT];
 static lv_obj_t *g_coinCont = NULL;
@@ -576,6 +593,19 @@ static void AddFewchaCoins(void)
     }
 }
 
+static void AddSolflareCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0; i < 1; i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_solfareCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+}
+
 void GuiConnectWalletInit(void)
 {
     g_pageWidget = CreatePageWidget();
@@ -643,6 +673,8 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_SUB:
         break;
     case WALLET_LIST_SOLFARE:
+        func = GuiGetSolflareData;
+        AddSolflareCoins();
         break;
     case WALLET_LIST_KEPLR:
         func = GuiGetKeplrData;
@@ -699,6 +731,22 @@ ETHAccountType GetMetamaskAccountType(void)
     return g_currentPathIndex[GetCurrentAccountIndex()];
 }
 
+SOLAccountType GetSolflareAccountType(void)
+{
+    return g_currentSOLPathIndex[GetCurrentAccountIndex()];
+}
+
+static int GetAccountType(void)
+{
+    switch (g_connectWalletTileView.walletIndex)
+    {
+    case WALLET_LIST_SOLFARE:
+        return GetSolflareAccountType();
+    default:
+        return GetMetamaskAccountType();
+    }
+}
+
 static lv_obj_t *g_derivationPathCont = NULL;
 
 static void CloseDerivationHandler(lv_event_t *e)
@@ -750,11 +798,70 @@ static void GetEthEgAddress(void)
 #endif
 }
 
+static void GetSolEgAddress(void)
+{
+#ifndef COMPILE_SIMULATOR
+    SimpleResponse_c_char *result;
+    result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_0));
+    AddressLongModeCut(g_solDerivationPathAddr[SOLBip44][0], result->data);
+    free_simple_response_c_char(result);
+
+    result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_1));
+    AddressLongModeCut(g_solDerivationPathAddr[SOLBip44][1], result->data);
+    free_simple_response_c_char(result);
+
+    result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_ROOT));
+    AddressLongModeCut(g_solDerivationPathAddr[SOLBip44ROOT][0], result->data);
+    free_simple_response_c_char(result);
+
+    result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_CHANGE_0));
+    AddressLongModeCut(g_solDerivationPathAddr[SOLBip44Change][0], result->data);
+    free_simple_response_c_char(result);
+
+    result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_CHANGE_1));
+    AddressLongModeCut(g_solDerivationPathAddr[SOLBip44Change][1], result->data);
+    free_simple_response_c_char(result);
+#endif
+}
+
+static void GetEgAddress(void)
+{
+    switch (g_connectWalletTileView.walletIndex)
+    {
+    case WALLET_LIST_SOLFARE:
+        GetSolEgAddress();
+        break;
+    default:
+        GetEthEgAddress();
+        break;
+    }
+}
+
 static void UpdateEthEgAddress(uint8_t index)
 {
     lv_label_set_text(g_egAddress[0], (const char *)g_derivationPathAddr[index][0]);
     lv_label_set_text(g_egAddress[1], (const char *)g_derivationPathAddr[index][1]);
 }
+
+static void UpdateSolEgAddress(uint8_t index)
+{
+    lv_label_set_text(g_egAddress[0], (const char *)g_solDerivationPathAddr[index][0]);
+    lv_label_set_text(g_egAddress[1], (const char *)g_solDerivationPathAddr[index][1]);
+}
+
+static void UpdategAddress(void)
+{
+    switch (g_connectWalletTileView.walletIndex)
+    {
+    case WALLET_LIST_SOLFARE:
+        UpdateSolEgAddress(GetSolflareAccountType());
+        break;
+    default:
+        UpdateEthEgAddress(GetMetamaskAccountType());
+        break;
+    }
+}
+
 
 static void SelectDerivationHandler(lv_event_t *e)
 {
@@ -765,9 +872,12 @@ static void SelectDerivationHandler(lv_event_t *e)
         for (int i = 0; i < 3; i++) {
             if (newCheckBox == g_derivationCheck[i]) {
                 lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
+                //todo change text
                 g_currentPathIndex[GetCurrentAccountIndex()] = i;
+                g_currentSOLPathIndex[GetCurrentAccountIndex()] = i;
                 lv_label_set_text(g_derivationPathDescLabel, g_derivationPathDescs[g_currentPathIndex[GetCurrentAccountIndex()]]);
-                UpdateEthEgAddress(i);
+                // UpdateEthEgAddress(i);
+                UpdategAddress();
             } else {
                 lv_obj_clear_state(g_derivationCheck[i], LV_STATE_CHECKED);
             }
@@ -785,12 +895,45 @@ static void OpenTutorialHandler(lv_event_t *e)
     }
 }
 
+static char *GetDerivationPathSelectDes(void)
+{
+    switch (g_connectWalletTileView.walletIndex)
+    {
+    case WALLET_LIST_SOLFARE:
+        return _("derivation_path_select_sol");
+    default:
+        return _("derivation_path_select_eth");
+    }
+}
+
+static char *GetChangeDerivationAccountType(int i)
+{
+    switch (g_connectWalletTileView.walletIndex)
+    {
+    case WALLET_LIST_SOLFARE:
+        return g_solChangeDerivationList[i].accountType;
+    default:
+        return g_changeDerivationList[i].accountType;
+    }
+}
+
+static char *GetChangeDerivationPath(int i)
+{
+    switch (g_connectWalletTileView.walletIndex)
+    {
+    case WALLET_LIST_SOLFARE:
+        return g_solChangeDerivationList[i].path;
+    default:
+        return g_changeDerivationList[i].path;
+    }
+}
+
 static void OpenDerivationPath()
 {
     lv_obj_t *bgCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
                                           GUI_MAIN_AREA_OFFSET);
     lv_obj_align(bgCont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
-    lv_obj_t *label = GuiCreateNoticeLabel(bgCont, _("derivation_path_select_eth"));
+    lv_obj_t *label = GuiCreateNoticeLabel(bgCont, GetDerivationPathSelectDes());
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
 
     lv_obj_t *cont = GuiCreateContainerWithParent(bgCont, 408, 308);
@@ -799,13 +942,13 @@ static void OpenDerivationPath()
     lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
     for (int i = 0; i < 3; i++) {
-        lv_obj_t *accountType = GuiCreateTextLabel(cont, g_changeDerivationList[i].accountType);
-        lv_obj_t *path = GuiCreateIllustrateLabel(cont, g_changeDerivationList[i].path);
+        lv_obj_t *accountType = GuiCreateTextLabel(cont, GetChangeDerivationAccountType(i));
+        lv_obj_t *path = GuiCreateIllustrateLabel(cont, GetChangeDerivationPath(i));
         lv_label_set_recolor(path, true);
         lv_obj_t *checkBox = GuiCreateSingleCheckBox(cont, _(""));
         lv_obj_set_size(checkBox, 36, 36);
         g_derivationCheck[i] = checkBox;
-        if (i == GetMetamaskAccountType()) {
+        if (i == GetAccountType()) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
         GuiButton_t table[] = {
@@ -834,19 +977,29 @@ static void OpenDerivationPath()
             lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, i * 102);
         }
     }
-
-    lv_obj_t *egCont = GuiCreateContainerWithParent(bgCont, 408, 186);
+    int height = 186;
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_SOLFARE)
+    {
+       height = height + 30;
+    }
+    lv_obj_t *prevLabel = NULL;
+    lv_obj_t *egCont = GuiCreateContainerWithParent(bgCont, 408, height);
     lv_obj_align(egCont, LV_ALIGN_BOTTOM_MID, 0, -54);
     lv_obj_set_style_bg_color(egCont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(egCont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(egCont, 24, LV_PART_MAIN);
-
+    //todo  change text
     label = GuiCreateNoticeLabel(egCont, g_derivationPathDescs[g_currentPathIndex[GetCurrentAccountIndex()]]);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
     g_derivationPathDescLabel = label;
+
     label = GuiCreateNoticeLabel(egCont, _("derivation_path_address_eg"));
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 76);
+    lv_obj_align_to(label, g_derivationPathDescLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    prevLabel = label;
+    //lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 76);
     lv_obj_t *index = GuiCreateNoticeLabel(egCont, _("0"));
+    lv_obj_align_to(label, g_derivationPathDescLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+
     lv_obj_align(index, LV_ALIGN_TOP_LEFT, 24, 110);
     label = GuiCreateIllustrateLabel(egCont, "");
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 48, 110);
@@ -856,8 +1009,10 @@ static void OpenDerivationPath()
     label = GuiCreateIllustrateLabel(egCont, "");
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 48, 144);
     g_egAddress[1] = label;
-    GetEthEgAddress();
-    UpdateEthEgAddress(GetMetamaskAccountType());
+    //GetEthEgAddress();
+    GetEgAddress();
+    // UpdateEthEgAddress(GetMetamaskAccountType());
+    UpdategAddress();
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseDerivationHandler, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
@@ -881,7 +1036,7 @@ static void OpenMoreHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         int hintboxHeight = 132;
         WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
-        if (IsEVMChain(*wallet)) {
+        if (IsEVMChain(*wallet) || IsSOL(*wallet)) {
             hintboxHeight = 228;
         }
         g_openMoreHintBox = GuiCreateHintBox(lv_scr_act(), 480, hintboxHeight, true);
@@ -905,7 +1060,7 @@ static void OpenMoreHandler(lv_event_t *e)
                                         OpenTutorialHandler, wallet);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 
-        if (IsEVMChain(*wallet)) {
+        if (IsEVMChain(*wallet) || IsSOL(*wallet)) {
             label = GuiCreateTextLabel(g_openMoreHintBox, _("derivation_path_change"));
             img = GuiCreateImg(g_openMoreHintBox, &imgPath);
             table[0].obj = img;

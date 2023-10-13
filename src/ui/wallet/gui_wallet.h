@@ -9,5 +9,5 @@ UREncodeResult *GuiGetCompanionAppData(void);
 UREncodeResult *GuiGetMetamaskData(void);
 UREncodeResult *GuiGetOkxWalletData(void);
 UREncodeResult *GuiGetFewchaData(void);
-
+UREncodeResult *GuiGetSolflareData(void);
 #endif

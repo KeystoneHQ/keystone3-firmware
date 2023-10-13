@@ -531,8 +531,8 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
         lv_obj_align(g_multiPathCoinReceiveWidgets.changePathWidgets[i].uncheckedImg, LV_ALIGN_CENTER, 162, 0);
         lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
     }
-    lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[g_ethPathIndex[g_currentAccountIndex]].checkedImg, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_add_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[g_ethPathIndex[g_currentAccountIndex]].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[GetPathIndex()].checkedImg, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[GetPathIndex()].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
 
 
     cont = GuiCreateContainerWithParent(parent, 408, 186);
@@ -715,6 +715,17 @@ static void ChangePathHandler(lv_event_t *e)
     }
 }
 
+static TUTORIAL_LIST_INDEX_ENUM GetTutorialIndex()
+{
+    switch (g_chainCard) {
+    case HOME_WALLET_CARD_ETH:
+        return TUTORIAL_ETH_RECEIVE;
+    case HOME_WALLET_CARD_SOL:
+        return TUTORIAL_SOL_RECEIVE;
+    default:
+        break;
+    }
+}
 
 static void TutorialHandler(lv_event_t *e)
 {
@@ -722,7 +733,7 @@ static void TutorialHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_multiPathCoinReceiveWidgets.moreCont);
 
-        TUTORIAL_LIST_INDEX_ENUM index = TUTORIAL_ETH_RECEIVE;
+        TUTORIAL_LIST_INDEX_ENUM index = GetTutorialIndex();
         GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
     }
 }

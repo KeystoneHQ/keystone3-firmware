@@ -65,6 +65,7 @@ typedef struct
     lv_obj_t *overflowLabel;
     lv_obj_t *inputAccountCont;
     lv_obj_t *inputAccountKeyboard;
+    lv_obj_t *addressDetailCont;
     SwitchAddressWidgetsItem_t switchAddressWidgets[5];
 } MultiAccountsReceiveWidgets_t;
 
@@ -88,6 +89,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent);
 static void GuiCreateSwitchAccountWidget(lv_obj_t *parent);
 static void GuiCreateSwitchAccountButtons(lv_obj_t *parent);
 static void GuiCreateInputAccountWidgets(lv_obj_t *parent);
+static void GuiCreateAddressDetailWidgets(lv_obj_t *parent);
 
 static void RefreshQrCode(void);
 static void RefreshSwitchAddress(void);
@@ -106,9 +108,10 @@ static bool IsAddressSwitchable();
 static bool HasMoreBtn();
 static void SwitchAddressHandler(lv_event_t *e);
 static void SelectAddressHandler(lv_event_t *e);
+static void ShowAddressDetailHandler(lv_event_t *e);
 static void AddressLongModeCut(char *out, const char *address, uint32_t targetLen);
 
-static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
+static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type);
 
 static MultiAccountsReceiveWidgets_t g_multiAccountsReceiveWidgets;
 static MultiAccountsReceiveTile g_multiAccountsReceiveTileNow;
@@ -202,13 +205,13 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
 {
     lv_obj_t *cont, *btn, *img, *label;
 
-    g_multiAccountsReceiveWidgets.moreCont = GuiCreateHintBox(parent, 480, 228, true);
+    g_multiAccountsReceiveWidgets.moreCont = GuiCreateHintBox(parent, 480, 324, true);
     lv_obj_add_event_cb(lv_obj_get_child(g_multiAccountsReceiveWidgets.moreCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_multiAccountsReceiveWidgets.moreCont);
     cont = g_multiAccountsReceiveWidgets.moreCont;
 
     btn = lv_btn_create(cont);
     lv_obj_set_size(btn, 456, 84);
-    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 120 + 572);
+    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 216 + 476);
     lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
@@ -221,7 +224,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
 
     btn = lv_btn_create(cont);
     lv_obj_set_size(btn, 456, 84);
-    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 24 + 572);
+    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 120 + 476);
     lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
@@ -229,7 +232,20 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, SwitchAccountHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgTutorial);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, _("SwitchAccount"), &openSans_24);
+    label = GuiCreateLabelWithFont(btn, _("switch_account"), &openSans_24);
+    lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
+
+    btn = lv_btn_create(cont);
+    lv_obj_set_size(btn, 456, 84);
+    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 24 + 476);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
+    lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
+    lv_obj_add_event_cb(btn, ShowAddressDetailHandler, LV_EVENT_CLICKED, NULL);
+    img = GuiCreateImg(btn, &imgTutorial);
+    lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
+    label = GuiCreateLabelWithFont(btn, _("receive_ada_show_address_detail"), &openSans_24);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 }
 
@@ -414,7 +430,7 @@ static void RefreshQrCode(void)
 {
     AddressDataItem_t addressDataItem;
 
-    ModelGetAddress(g_selectIndex[GetCurrentAccountIndex()], &addressDataItem);
+    ModelGetAddress(g_selectIndex[GetCurrentAccountIndex()], &addressDataItem, 0);
     lv_qrcode_update(g_multiAccountsReceiveWidgets.qrCode, addressDataItem.address, strlen(addressDataItem.address));
     lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
     if (fullscreen_qrcode)
@@ -435,7 +451,7 @@ static void RefreshSwitchAddress(void)
     bool end = false;
     for (uint32_t i = 0; i < 5; i++)
     {
-        ModelGetAddress(index, &addressDataItem);
+        ModelGetAddress(index, &addressDataItem, 0);
         lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "Address-%u", (addressDataItem.index + 1));
         AddressLongModeCut(string, addressDataItem.address, 24);
         lv_label_set_text(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
@@ -493,7 +509,70 @@ static void SwitchAccountHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED)
     {
         GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
-        GuiCreateInputAccountWidgets(g_multiAccountsReceiveWidgets.tileSwitchAccount);
+        GuiCreateInputAccountWidgets(g_multiAccountsReceiveWidgets.tileQrCode);
+    }
+}
+
+static void ShowAddressDetailHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED)
+    {
+        GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
+        GuiCreateAddressDetailWidgets(g_multiAccountsReceiveWidgets.tileQrCode);
+    }
+}
+
+static void GuiCreateAddressDetailWidgets(lv_obj_t* parent)
+{
+    lv_obj_t *cont, *label, *last;
+
+    if(g_multiAccountsReceiveWidgets.addressDetailCont == NULL)
+    {
+        g_multiAccountsReceiveWidgets.addressDetailCont = GuiCreateHintBox(parent, 480, 530, true);
+        lv_obj_add_event_cb(lv_obj_get_child(g_multiAccountsReceiveWidgets.addressDetailCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_multiAccountsReceiveWidgets.addressDetailCont);
+        cont = g_multiAccountsReceiveWidgets.addressDetailCont;
+
+        label = GuiCreateTextLabel(cont, _("receive_ada_address_detail"));
+        lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 24 + 270);
+        last = label;
+
+        AddressDataItem_t addressDataItem;
+        ModelGetAddress(g_selectIndex[GetCurrentAccountIndex()], &addressDataItem, 0);
+
+        label = GuiCreateIllustrateLabel(cont, addressDataItem.path);
+        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+        last = label;
+
+        label = GuiCreateTextLabel(cont, _("receive_ada_base_address"));
+        lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+        last = label;
+
+        label = GuiCreateIllustrateLabel(cont, addressDataItem.address);
+        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+        last = label;
+
+        label = GuiCreateTextLabel(cont, _("receive_ada_enterprise_address"));
+        lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+        last = label;
+
+        ModelGetAddress(g_selectIndex[GetCurrentAccountIndex()], &addressDataItem, 1);
+        label = GuiCreateIllustrateLabel(cont, addressDataItem.address);
+        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+        last = label;
+
+        label = GuiCreateTextLabel(cont, _("receive_ada_stake_address"));
+        lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+        last = label;
+
+        //we only show stake key at m/1852'/1815'/X'/0/0
+        ModelGetAddress(0, &addressDataItem, 2);
+        label = GuiCreateIllustrateLabel(cont, addressDataItem.address);
+        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     }
 }
 
@@ -520,7 +599,7 @@ static void GuiCreateInputAccountWidgets(lv_obj_t *parent)
         label = GuiCreateLabelWithFont(cont, _("receive_ada_change_account_title"), &openSans_20);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 30 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
-        label = GuiCreateLabelWithFont(cont, "Address-", &openSans_24);
+        label = GuiCreateLabelWithFont(cont, "Account-", &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 108 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
         g_multiAccountsReceiveWidgets.inputAccountLabel = GuiCreateLabelWithFont(cont, "", &openSans_24);
@@ -819,19 +898,30 @@ static void AddressLongModeCut(char *out, const char *address, uint32_t targetLe
 
 #ifdef COMPILE_SIMULATOR
 
-static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
+static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
 {
     char hdPath[128];
     sprintf(hdPath, "m/1852'/1815'/%u'/0/%u", g_selectedAccount[GetCurrentAccountIndex()], index);
     printf("hdPath=%s\r\n", hdPath);
     item->index = index;
-    sprintf(item->address, "addr1q95l5x7exwzhgupzs0v0ku0censcx8p75jz52cl4uszr463n5nclg6z9gazt9lekgje2k7w53em2xxrljqh73gdul2ks9zxj4d", index);
+    switch (type)
+        {
+        case 1:
+            sprintf(item->address, "addr1vxg88k7kzt95q9vhpj4a9eewx3afe759a3rq9ggdhsetstgwkxsea", index);
+            break;
+        case 2:
+            sprintf(item->address, "stake1u9vtx6ry4e8zculweg3racrnzdgja3yr2neayqnm8zwhd0qj5ln0l", index);
+            break;
+        default:
+            sprintf(item->address, "addr1q95l5x7exwzhgupzs0v0ku0censcx8p75jz52cl4uszr463n5nclg6z9gazt9lekgje2k7w53em2xxrljqh73gdul2ks9zxj4d", index);
+            break;
+        }
     strcpy(item->path, hdPath);
 }
 
 #else
 
-static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
+static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
 {
     char *xPub, hdPath[128];
     SimpleResponse_c_char *result;
@@ -845,7 +935,18 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         sprintf(hdPath, "m/1852'/1815'/%u'/0/%u", currentAccount, index);
         //cardano mainnet;
         uint8_t network = 1;
-        result = cardano_get_base_address(xPub, index, 1);
+        switch (type)
+        {
+        case 1:
+            result = cardano_get_enterprise_address(xPub, index, 1);
+            break;
+        case 2:
+            result = cardano_get_stake_address(xPub, index, 1);
+            break;
+        default:
+            result = cardano_get_base_address(xPub, index, 1);
+            break;
+        }
         break;
     default:
         break;

@@ -429,7 +429,7 @@ static void RefreshSwitchAccount(void)
 
 static int GetMaxAddressIndex(void)
 {
-    if (g_chainCard == HOME_WALLET_CARD_SUI) {
+    if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT) {
         return 10;
     }
     return GENERAL_ADDRESS_INDEX_MAX;

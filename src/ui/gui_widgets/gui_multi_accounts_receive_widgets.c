@@ -20,6 +20,7 @@
 #include "account_manager.h"
 
 #define GENERAL_ADDRESS_INDEX_MAX 999999999
+#define ACCOUNT_INDEX_MAX 24
 
 typedef enum
 {
@@ -51,7 +52,6 @@ typedef struct
     lv_obj_t *tileView;
     lv_obj_t *tileQrCode;
     lv_obj_t *tileSwitchAccount;
-    lv_obj_t *tileChangePath;
     lv_obj_t *attentionCont;
     lv_obj_t *qrCodeCont;
     lv_obj_t *qrCode;
@@ -61,8 +61,10 @@ typedef struct
     lv_obj_t *addressButton;
     lv_obj_t *leftBtnImg;
     lv_obj_t *rightBtnImg;
-    lv_obj_t *inputAddressLabel;
+    lv_obj_t *inputAccountLabel;
     lv_obj_t *overflowLabel;
+    lv_obj_t *inputAccountCont;
+    lv_obj_t *inputAccountKeyboard;
     SwitchAddressWidgetsItem_t switchAddressWidgets[5];
 } MultiAccountsReceiveWidgets_t;
 
@@ -85,22 +87,26 @@ static void GuiMultiAccountsReceiveGotoTile(MultiAccountsReceiveTile tile);
 static void GuiCreateQrCodeWidget(lv_obj_t *parent);
 static void GuiCreateSwitchAccountWidget(lv_obj_t *parent);
 static void GuiCreateSwitchAccountButtons(lv_obj_t *parent);
+static void GuiCreateInputAccountWidgets(lv_obj_t *parent);
 
 static void RefreshQrCode(void);
-static void RefreshSwitchAccount(void);
+static void RefreshSwitchAddress(void);
 static int GetMaxAddressIndex(void);
 static void GetAttentionText(char* text);
+static void SetKeyboardValid(bool);
 
 static void CloseAttentionHandler(lv_event_t *e);
 static void MoreHandler(lv_event_t *e);
 static void TutorialHandler(lv_event_t *e);
+static void SwitchAccountHandler(lv_event_t *e);
+static void InputAccountKeyboardHandler(lv_event_t *e);
 static void LeftBtnHandler(lv_event_t *e);
 static void RightBtnHandler(lv_event_t *e);
-static bool IsAccountSwitchable();
+static bool IsAddressSwitchable();
 static bool HasMoreBtn();
 static void SwitchAddressHandler(lv_event_t *e);
 static void SelectAddressHandler(lv_event_t *e);
-static void AddressLongModeCut(char *out, const char *address);
+static void AddressLongModeCut(char *out, const char *address, uint32_t targetLen);
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
 
@@ -113,6 +119,7 @@ static uint32_t g_showIndex;
 static uint32_t g_selectIndex[3] = {0};
 static uint32_t g_selectedAccount[3] = {0};
 static PageWidget_t *g_pageWidget;
+static bool g_inputAccountValid = true;
 
 void GuiMultiAccountsReceiveInit(uint8_t chain)
 {
@@ -124,7 +131,7 @@ void GuiMultiAccountsReceiveInit(uint8_t chain)
     lv_obj_set_style_bg_opa(g_multiAccountsReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
     g_multiAccountsReceiveWidgets.tileQrCode = lv_tileview_add_tile(g_multiAccountsReceiveWidgets.tileView, RECEIVE_TILE_QRCODE, 0, LV_DIR_HOR);
     GuiCreateQrCodeWidget(g_multiAccountsReceiveWidgets.tileQrCode);
-    if (IsAccountSwitchable())
+    if (IsAddressSwitchable())
     {
         g_multiAccountsReceiveWidgets.tileSwitchAccount = lv_tileview_add_tile(g_multiAccountsReceiveWidgets.tileView, RECEIVE_TILE_SWITCH_ACCOUNT, 0, LV_DIR_HOR);
         GuiCreateSwitchAccountWidget(g_multiAccountsReceiveWidgets.tileSwitchAccount);
@@ -219,7 +226,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
-    lv_obj_add_event_cb(btn, TutorialHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(btn, SwitchAccountHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgTutorial);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
     label = GuiCreateLabelWithFont(btn, _("SwitchAccount"), &openSans_24);
@@ -287,7 +294,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_border_width(g_multiAccountsReceiveWidgets.addressButton, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_outline_width(g_multiAccountsReceiveWidgets.addressButton, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(g_multiAccountsReceiveWidgets.addressButton, 0, LV_PART_MAIN);
-    if (IsAccountSwitchable())
+    if (IsAddressSwitchable())
     {
         lv_obj_add_event_cb(g_multiAccountsReceiveWidgets.addressButton, SelectAddressHandler, LV_EVENT_CLICKED, NULL);
         tempObj = GuiCreateImg(g_multiAccountsReceiveWidgets.addressButton, &imgArrowRight);
@@ -321,9 +328,6 @@ void GetAttentionText(char* text)
 {
     switch (g_chainCard)
     {
-    case HOME_WALLET_CARD_TRX:
-        strcpy(text, _("receive_trx_hint"));
-        break;
     default:
         sprintf(text, _("receive_coin_hint_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
     }
@@ -372,7 +376,7 @@ static void GuiCreateSwitchAccountWidget(lv_obj_t *parent)
 
         index++;
     }
-    RefreshSwitchAccount();
+    RefreshSwitchAddress();
 }
 
 static void GuiCreateSwitchAccountButtons(lv_obj_t *parent)
@@ -417,11 +421,13 @@ static void RefreshQrCode(void)
     {
         lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strlen(addressDataItem.address));
     }
-    lv_label_set_text(g_multiAccountsReceiveWidgets.addressLabel, addressDataItem.address);
-    lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.addressCountLabel, "Account-%u", (addressDataItem.index + 1));
+    char string[128];
+    AddressLongModeCut(string, addressDataItem.address, 24);
+    lv_label_set_text(g_multiAccountsReceiveWidgets.addressLabel, string);
+    lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.addressCountLabel, "Address-%u", (addressDataItem.index + 1));
 }
 
-static void RefreshSwitchAccount(void)
+static void RefreshSwitchAddress(void)
 {
     AddressDataItem_t addressDataItem;
     char string[128];
@@ -430,8 +436,8 @@ static void RefreshSwitchAccount(void)
     for (uint32_t i = 0; i < 5; i++)
     {
         ModelGetAddress(index, &addressDataItem);
-        lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "Account-%u", (addressDataItem.index + 1));
-        AddressLongModeCut(string, addressDataItem.address);
+        lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "Address-%u", (addressDataItem.index + 1));
+        AddressLongModeCut(string, addressDataItem.address, 24);
         lv_label_set_text(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end)
         {
@@ -481,6 +487,179 @@ static void CloseAttentionHandler(lv_event_t *e)
     }
 }
 
+static void SwitchAccountHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED)
+    {
+        GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
+        GuiCreateInputAccountWidgets(g_multiAccountsReceiveWidgets.tileSwitchAccount);
+    }
+}
+
+static void CloseSwitchAccountHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED)
+    {
+        lv_obj_add_flag(g_multiAccountsReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+static void GuiCreateInputAccountWidgets(lv_obj_t *parent)
+{
+    lv_obj_t *cont, *label, *line, *closeBtn, *closeImg;
+    static lv_point_t points[2] = {{0, 0}, {408, 0}};
+    g_inputAccountValid = false;
+
+    if (g_multiAccountsReceiveWidgets.inputAccountCont == NULL) {
+        g_multiAccountsReceiveWidgets.inputAccountCont = GuiCreateHintBox(parent, 480, 530, true);
+        lv_obj_add_event_cb(lv_obj_get_child(g_multiAccountsReceiveWidgets.inputAccountCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_multiAccountsReceiveWidgets.inputAccountCont);
+        cont = g_multiAccountsReceiveWidgets.inputAccountCont;
+
+        label = GuiCreateLabelWithFont(cont, _("receive_ada_change_account_title"), &openSans_20);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 30 + 270);
+        lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
+        label = GuiCreateLabelWithFont(cont, "Address-", &openSans_24);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 108 + 270);
+        lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
+        g_multiAccountsReceiveWidgets.inputAccountLabel = GuiCreateLabelWithFont(cont, "", &openSans_24);
+        lv_obj_align(g_multiAccountsReceiveWidgets.inputAccountLabel, LV_ALIGN_TOP_LEFT, 38 + lv_obj_get_self_width(label), 108 + 270);
+        label = GuiCreateLabelWithFont(cont, _("receive_ada_change_account_limit"), &openSans_20);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 170 + 270);
+        lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
+        lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
+        g_multiAccountsReceiveWidgets.overflowLabel = label;
+
+        line = GuiCreateLine(cont, points, 2);
+        lv_obj_align(line, LV_ALIGN_TOP_MID, 0, 160 + 270);
+
+        lv_obj_t *keyboard = GuiCreateNumKeyboard(cont, InputAccountKeyboardHandler, NUM_KEYBOARD_NORMAL, NULL);
+        lv_obj_align(keyboard, LV_ALIGN_BOTTOM_MID, 0, -2);
+        lv_obj_add_style(keyboard, &g_numBtnmStyle, LV_PART_ITEMS);
+        lv_obj_add_style(keyboard, &g_enterPressBtnmStyle, LV_STATE_PRESSED | LV_PART_ITEMS);
+        lv_btnmatrix_set_btn_ctrl(keyboard, 11, LV_BTNMATRIX_CTRL_DISABLED);
+        g_multiAccountsReceiveWidgets.inputAccountKeyboard = keyboard;
+
+        closeBtn = lv_btn_create(cont);
+        lv_obj_set_size(closeBtn, 36, 36);
+        lv_obj_align(closeBtn, LV_ALIGN_TOP_RIGHT, -36, 27 + 270);
+        lv_obj_set_style_bg_opa(closeBtn, LV_OPA_TRANSP, LV_PART_MAIN);
+        lv_obj_set_style_border_width(closeBtn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_outline_width(closeBtn, 0, LV_PART_MAIN);
+        lv_obj_set_style_shadow_width(closeBtn, 0, LV_PART_MAIN);
+        lv_obj_add_event_cb(closeBtn, CloseSwitchAccountHandler, LV_EVENT_CLICKED, NULL);
+        closeImg = GuiCreateImg(closeBtn, &imgClose);
+        lv_obj_align(closeImg, LV_ALIGN_CENTER, 0, 0);
+    } else {
+        lv_label_set_text(g_multiAccountsReceiveWidgets.inputAccountLabel, "");
+        lv_obj_clear_flag(g_multiAccountsReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_multiAccountsReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+static void InputAccountKeyboardHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *obj = lv_event_get_target(e);
+    uint32_t id = lv_btnmatrix_get_selected_btn(obj);
+    lv_obj_draw_part_dsc_t *dsc;
+    const char *txt;
+    char input[16];
+    uint32_t len;
+    uint64_t longInt;
+
+    if (code == LV_EVENT_CLICKED) {
+        txt = lv_btnmatrix_get_btn_text(obj, id);
+        strcpy(input, lv_label_get_text(g_multiAccountsReceiveWidgets.inputAccountLabel));
+        if (strcmp(txt, LV_SYMBOL_OK) == 0) {
+            if (g_inputAccountValid) {
+                sscanf(input, "%u", &g_selectedAccount[GetCurrentAccountIndex()]);
+                RefreshQrCode();
+                lv_obj_add_flag(g_multiAccountsReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
+                g_inputAccountValid = false;
+            }
+        } else if (strcmp(txt, "-") == 0) {
+            len = strlen(input);
+            if (len >= 1) {
+                input[len - 1] = '\0';
+                lv_label_set_text(g_multiAccountsReceiveWidgets.inputAccountLabel, input);
+                lv_obj_add_flag(g_multiAccountsReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
+                if (strlen(input) >= 1) {
+                    g_inputAccountValid = true;
+                } else {
+                    g_inputAccountValid = false;
+                }
+            }
+        } else if (strlen(input) < 15) {
+            strcat(input, txt);
+            longInt = strtol(input, NULL, 10);
+            if (longInt >= ACCOUNT_INDEX_MAX) {
+                input[0] = '2';
+                input[1] = '3';
+                input[2] = '\0';
+                lv_obj_clear_flag(g_multiAccountsReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
+            } else {
+                lv_obj_add_flag(g_multiAccountsReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
+            }
+            if (longInt > 0) {
+                if (input[0] == '0') {
+                    lv_label_set_text(g_multiAccountsReceiveWidgets.inputAccountLabel, input + 1);
+                } else {
+                    lv_label_set_text(g_multiAccountsReceiveWidgets.inputAccountLabel, input);
+                }
+            } else {
+                lv_label_set_text(g_multiAccountsReceiveWidgets.inputAccountLabel, "0");
+            }
+            g_inputAccountValid = true;
+        } else {
+            g_inputAccountValid = false;
+            printf("input to long\r\n");
+        }
+        SetKeyboardValid(g_inputAccountValid);
+    } else if (code == LV_EVENT_DRAW_PART_BEGIN) {
+        dsc = lv_event_get_draw_part_dsc(e);
+        if (dsc->class_p == &lv_btnmatrix_class && dsc->type == LV_BTNMATRIX_DRAW_PART_BTN) {
+            /*Change the draw descriptor of the 12th button*/
+            if (dsc->id == 9) {
+                dsc->label_dsc->opa = LV_OPA_TRANSP;
+            } else if (dsc->id == 11) {
+                dsc->rect_dsc->bg_color = ORANGE_COLOR;
+                dsc->label_dsc->opa = LV_OPA_TRANSP;
+            } else {
+                dsc->rect_dsc->bg_color = DARK_GRAY_COLOR;
+            }
+        }
+    } else if (code == LV_EVENT_DRAW_PART_END) {
+        dsc = lv_event_get_draw_part_dsc(e);
+        /*When the button matrix draws the buttons...*/
+        if (dsc->class_p == &lv_btnmatrix_class && dsc->type == LV_BTNMATRIX_DRAW_PART_BTN) {
+            /*Add custom content to the 4th button when the button itself was drawn*/
+            if (dsc->id == 9 || dsc->id == 11) {
+                lv_img_header_t header;
+                lv_draw_img_dsc_t img_draw_dsc;
+                lv_area_t a;
+                const lv_img_dsc_t *imgDsc;
+                lv_res_t res;
+                imgDsc = dsc->id == 9 ? &imgBackspace : &imgCheck;
+                res = lv_img_decoder_get_info(imgDsc, &header);
+                if (res != LV_RES_OK)
+                    return;
+                a.x1 = dsc->draw_area->x1 + (lv_area_get_width(dsc->draw_area) - header.w) / 2;
+                a.x2 = a.x1 + header.w - 1;
+                a.y1 = dsc->draw_area->y1 + (lv_area_get_height(dsc->draw_area) - header.h) / 2;
+                a.y2 = a.y1 + header.h - 1;
+                lv_draw_img_dsc_init(&img_draw_dsc);
+                img_draw_dsc.recolor = lv_color_black();
+                if (lv_btnmatrix_get_selected_btn(obj) == dsc->id)
+                    img_draw_dsc.recolor_opa = LV_OPA_30;
+
+                lv_draw_img(dsc->draw_ctx, &img_draw_dsc, &a, imgDsc);
+            }
+        }
+    }
+}
+
 static void MoreHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -510,6 +689,21 @@ static void TutorialHandler(lv_event_t *e)
     }
 }
 
+static void SetKeyboardValid(bool validation)
+{
+    if (validation) {
+        if (lv_btnmatrix_has_btn_ctrl(g_multiAccountsReceiveWidgets.inputAccountKeyboard, 11, LV_BTNMATRIX_CTRL_DISABLED)) {
+            lv_btnmatrix_clear_btn_ctrl(g_multiAccountsReceiveWidgets.inputAccountKeyboard, 11, LV_BTNMATRIX_CTRL_DISABLED);
+        }
+        lv_btnmatrix_set_btn_ctrl(g_multiAccountsReceiveWidgets.inputAccountKeyboard, 11, LV_BTNMATRIX_CTRL_CHECKED);
+    } else {
+        if (lv_btnmatrix_has_btn_ctrl(g_multiAccountsReceiveWidgets.inputAccountKeyboard, 11, LV_BTNMATRIX_CTRL_CHECKED)) {
+            lv_btnmatrix_clear_btn_ctrl(g_multiAccountsReceiveWidgets.inputAccountKeyboard, 11, LV_BTNMATRIX_CTRL_CHECKED);
+        }
+        lv_btnmatrix_set_btn_ctrl(g_multiAccountsReceiveWidgets.inputAccountKeyboard, 11, LV_BTNMATRIX_CTRL_DISABLED);
+    }
+}
+
 static void LeftBtnHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -519,7 +713,7 @@ static void LeftBtnHandler(lv_event_t *e)
         if (g_showIndex >= 5)
         {
             g_showIndex -= 5;
-            RefreshSwitchAccount();
+            RefreshSwitchAddress();
         }
         if (g_showIndex < 5)
         {
@@ -537,7 +731,7 @@ static void RightBtnHandler(lv_event_t *e)
         if (g_showIndex < GetMaxAddressIndex() - 5)
         {
             g_showIndex += 5;
-            RefreshSwitchAccount();
+            RefreshSwitchAddress();
         }
         if (g_showIndex >= GetMaxAddressIndex() - 5)
         {
@@ -546,7 +740,7 @@ static void RightBtnHandler(lv_event_t *e)
     }
 }
 
-static bool IsAccountSwitchable()
+static bool IsAddressSwitchable()
 {
     switch (g_chainCard)
     {
@@ -561,7 +755,7 @@ static bool HasMoreBtn()
 {
     switch (g_chainCard)
     {
-    case HOME_WALLET_CARD_TRX:
+    case HOME_WALLET_CARD_ADA:
         return true;
 
     default:
@@ -603,24 +797,24 @@ static void SelectAddressHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED)
     {
         GuiMultiAccountsReceiveGotoTile(RECEIVE_TILE_SWITCH_ACCOUNT);
-        RefreshSwitchAccount();
+        RefreshSwitchAddress();
     }
 }
 
-static void AddressLongModeCut(char *out, const char *address)
+static void AddressLongModeCut(char *out, const char *address, uint32_t targetLen)
 {
     uint32_t len;
 
     len = strlen(address);
-    if (len <= 24)
+    if (len <= targetLen)
     {
         strcpy(out, address);
         return;
     }
-    strncpy(out, address, 12);
-    out[12] = 0;
+    strncpy(out, address, targetLen / 2);
+    out[targetLen/2] = 0;
     strcat(out, "...");
-    strcat(out, address + len - 12);
+    strcat(out, address + len - targetLen / 2);
 }
 
 #ifdef COMPILE_SIMULATOR
@@ -628,10 +822,10 @@ static void AddressLongModeCut(char *out, const char *address)
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {
     char hdPath[128];
-    sprintf(hdPath, "m/44'/195'/0'/0/%u", index);
+    sprintf(hdPath, "m/1852'/1815'/%u'/0/%u", g_selectedAccount[GetCurrentAccountIndex()], index);
     printf("hdPath=%s\r\n", hdPath);
     item->index = index;
-    sprintf(item->address, "TUEZSdKsoDHQMeZwihtdoBiN46zxhGWYdH%010u", index);
+    sprintf(item->address, "addr1q95l5x7exwzhgupzs0v0ku0censcx8p75jz52cl4uszr463n5nclg6z9gazt9lekgje2k7w53em2xxrljqh73gdul2ks9zxj4d", index);
     strcpy(item->path, hdPath);
 }
 
@@ -648,10 +842,10 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     {
     case HOME_WALLET_CARD_ADA:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0 + currentAccount);
-        sprintf(hdPath, "m/1852'/1815'/%u'/0/%u", currentAccount, currentIndex);
+        sprintf(hdPath, "m/1852'/1815'/%u'/0/%u", currentAccount, index);
         //cardano mainnet;
         uint8_t network = 1;
-        result = cardano_get_base_address(xPub, currentIndex, 1);
+        result = cardano_get_base_address(xPub, index, 1);
         break;
     default:
         break;

@@ -17,6 +17,7 @@
 #include "gui_page.h"
 #include "gui.h"
 #include "gui_tutorial_widgets.h"
+#include "account_manager.h"
 
 #define GENERAL_ADDRESS_INDEX_MAX 999999999
 #define LEDGER_LIVE_ADDRESS_INDEX_MAX 9

@@ -516,3 +516,13 @@ void SetCurrentAccountIndex(void)
 {
 
 }
+
+void SetPassphraseQuickAccess(bool exist)
+{
+
+}
+
+void UserDelay(uint32_t ms)
+{
+    
+}

@@ -263,9 +263,9 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_radius(g_multiAccountsReceiveWidgets.qrCodeCont, 24, LV_PART_MAIN);
 
     yOffset += 36;
-    g_multiAccountsReceiveWidgets.qrCode = CreateStandardReceiveQRCode(g_multiAccountsReceiveWidgets.qrCodeCont, 336, 336);
+    g_multiAccountsReceiveWidgets.qrCode = CreateMultiAccountsReceiveQRCode(g_multiAccountsReceiveWidgets.qrCodeCont, 336, 336);
     GuiFullscreenModeInit(480, 800, WHITE_COLOR);
-    GuiFullscreenModeCreateObject(CreateStandardReceiveQRCode, 420, 420);
+    GuiFullscreenModeCreateObject(CreateMultiAccountsReceiveQRCode, 420, 420);
 
     lv_obj_align(g_multiAccountsReceiveWidgets.qrCode, LV_ALIGN_TOP_MID, 0, yOffset);
     yOffset += 336;

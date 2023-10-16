@@ -10,6 +10,7 @@
 #define SCREEN_HEIGHT 800
 
 #include "rust.h"
+#include "lvgl.h"
 
 typedef UREncodeResult *(*GenerateUR)(void);
 

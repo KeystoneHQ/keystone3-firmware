@@ -13,6 +13,7 @@
 #include "user_utils.h"
 #include "gui_page.h"
 #include "account_manager.h"
+#include "se_manager.h"
 
 static lv_obj_t *g_cont;
 static PageWidget_t *g_pageWidget;

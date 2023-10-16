@@ -19,6 +19,7 @@
 #include "gui_animating_qrcode.h"
 #include "gui_page.h"
 #include "keystore.h"
+#include "account_manager.h"
 #include "gui_global_resources.h"
 
 #define DERIVATION_PATH_EG_LEN 2

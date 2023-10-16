@@ -34,6 +34,7 @@ void GuiLockScreenClearFirstUnlock(void);
 bool GuiLockScreenIsFirstUnlock(void);
 void GuiFpRecognizeResult(bool en);
 void GuiLockScreenPasscodeSwitch(bool isPin);
+void GuiLockScreenSetFirstUnlock(void);
 
 void GuiLockScreenErrorCount(void *param);
 void GuiLockScreenToHome(void);

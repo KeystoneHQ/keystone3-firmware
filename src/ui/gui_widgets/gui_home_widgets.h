@@ -9,6 +9,7 @@
 #define _GUI_HOME_WIDGETS_H
 
 #include "gui_model.h"
+#include "lvgl.h"
 
 typedef enum {
     HOME_WALLET_CARD_BTC,

@@ -24,6 +24,7 @@
 #include "gui_fullscreen_mode.h"
 #include "keystore.h"
 #include "gui_page.h"
+#include "account_manager.h"
 
 #define ADDRESS_INDEX_MAX 999999999
 

@@ -162,6 +162,8 @@ static PageWidget_t *g_pageWidget;
 static HOME_WALLET_CARD_ENUM g_chainCard;
 static lv_obj_t *g_derivationPathDescLabel = NULL;
 static char * *g_derivationPathDescs = NULL;
+static lv_obj_t *g_egCont = NULL;
+
 
 static void InitDerivationPathDesc(uint8_t chain)
 {
@@ -489,6 +491,71 @@ static char* GetChangePathItemTitle(uint32_t i)
     }
 }
 
+
+static void ShowEgAddressCont(lv_obj_t *egCont)
+{
+   
+    if (egCont == NULL) {
+        printf("egCont is NULL, cannot show eg address\n");
+        return;
+    }
+    
+    lv_obj_clean(egCont);
+
+    lv_obj_t *prevLabel, *label;
+
+    int egContHeight = 12;
+    label = GuiCreateNoticeLabel(egCont, g_derivationPathDescs[GetPathIndex()]);
+    lv_obj_set_width(label, 360);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
+    lv_obj_update_layout(label);
+    egContHeight += lv_obj_get_height(label);
+    g_derivationPathDescLabel = label;
+    prevLabel = label;
+
+    char *desc = "Address";
+    if (!(g_chainCard == HOME_WALLET_CARD_SOL && g_solPathIndex[g_currentAccountIndex] == 1)) {
+        desc = _("derivation_path_address_eg");
+    }
+    label = GuiCreateNoticeLabel(egCont, desc);
+    lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_obj_update_layout(label);
+    egContHeight =  egContHeight + 4 + lv_obj_get_height(label);
+    prevLabel = label;
+
+    lv_obj_t *index = GuiCreateNoticeLabel(egCont, _("0"));
+    lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);
+    lv_obj_update_layout(index);
+    egContHeight =  egContHeight + 4 + lv_obj_get_height(index);
+    prevLabel = index;
+
+    label = GuiCreateIllustrateLabel(egCont, "");
+    lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+    g_addressLabel[0] = label;
+
+    if (!(g_chainCard == HOME_WALLET_CARD_SOL && g_solPathIndex[g_currentAccountIndex] == 1))
+    {
+        index = GuiCreateNoticeLabel(egCont, _("1"));
+        lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+        lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);
+        lv_obj_update_layout(index);
+        egContHeight =  egContHeight + 4 + lv_obj_get_height(index);
+        prevLabel = index;
+
+        label = GuiCreateIllustrateLabel(egCont, "");
+        lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+        g_addressLabel[1] = label;
+    }
+    egContHeight += 12;
+    lv_obj_set_height(egCont, egContHeight);
+
+    RefreshDefaultAddress();
+}
+
+
 static void GuiCreateChangePathWidget(lv_obj_t *parent)
 {
     lv_obj_t *cont, *line, *label;
@@ -502,7 +569,8 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
 
     cont = GuiCreateContainerWithParent(parent, 408, 308);
     lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 84);
-    lv_obj_set_style_bg_color(cont, DARK_BG_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
 
     for (uint32_t i = 0; i < 3; i++) {
@@ -537,44 +605,13 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
     lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[GetPathIndex()].checkedImg, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[GetPathIndex()].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
 
-
-    cont = GuiCreateContainerWithParent(parent, 408, 186);
-    lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 416);
-    lv_obj_set_style_bg_color(cont, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
-
-    labelHint = GuiCreateIllustrateLabel(cont, g_derivationPathDescs[GetPathIndex()]);
-    lv_obj_set_size(labelHint, 360, 60);
-    lv_obj_set_style_text_opa(labelHint, LV_OPA_56, LV_PART_MAIN);
-    lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 24, 12);
-    g_derivationPathDescLabel = labelHint;
-
-    labelHint = GuiCreateIllustrateLabel(cont, _("derivation_path_address_eg"));
-    lv_obj_set_size(labelHint, 129, 30);
-    lv_obj_set_style_text_opa(labelHint, LV_OPA_56, LV_PART_MAIN);
-    lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 24, 76);
-
-    labelHint = GuiCreateIllustrateLabel(cont, "0");
-    lv_obj_set_style_text_opa(labelHint, LV_OPA_56, LV_PART_MAIN);
-    lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 24, 110);
-
-    lv_obj_t *defaultLable1 = GuiCreateIllustrateLabel(cont, "");
-    lv_obj_set_style_text_opa(defaultLable1, LV_OPA_90, LV_PART_MAIN);
-    lv_obj_align(defaultLable1, LV_ALIGN_TOP_LEFT, 48, 110);
-
-    labelHint = GuiCreateIllustrateLabel(cont, "1");
-    lv_obj_set_style_text_opa(labelHint, LV_OPA_56, LV_PART_MAIN);
-    lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 24, 144);
-
-
-    lv_obj_t *defaultLable2 = GuiCreateIllustrateLabel(cont, "");
-    lv_obj_set_style_text_opa(defaultLable2, LV_OPA_90, LV_PART_MAIN);
-    lv_obj_align(defaultLable2, LV_ALIGN_TOP_LEFT, 48, 144);
-
-    g_addressLabel[0] = defaultLable1;
-    g_addressLabel[1] = defaultLable2;
-    g_addressLabelOrder = labelHint;
-    RefreshDefaultAddress();
+    lv_obj_t *egCont = GuiCreateContainerWithParent(parent, 408, 186);
+    lv_obj_align_to(egCont, cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
+    lv_obj_set_style_bg_color(egCont, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(egCont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
+    lv_obj_set_style_radius(egCont, 24, LV_PART_MAIN);
+    g_egCont = egCont;
+    ShowEgAddressCont(g_egCont);
 }
 
 static void RefreshQrCode(void)
@@ -640,17 +677,13 @@ static void RefreshDefaultAddress(void)
     AddressLongModeCut(string, addressDataItem.address);
     lv_label_set_text(g_addressLabel[0], string);
 
-    if (GetMaxAddressIndex() == 0) {
-        lv_obj_add_flag(g_addressLabel[1], LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(g_addressLabelOrder, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(g_goToAddressIcon, LV_OBJ_FLAG_HIDDEN);
-    } else {
+    if (GetMaxAddressIndex() != 0) {
         ModelGetAddress(1, &addressDataItem);
         AddressLongModeCut(string, addressDataItem.address);
         lv_label_set_text(g_addressLabel[1], string);
-        lv_obj_clear_flag(g_addressLabel[1], LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(g_addressLabelOrder, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_goToAddressIcon, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(g_goToAddressIcon, LV_OBJ_FLAG_HIDDEN);
     }
 }
 
@@ -826,8 +859,7 @@ static void ChangePathCheckHandler(lv_event_t *e)
                     SetPathIndex(i);
                     g_selectIndex = 0;
                     g_showIndex = 0;
-                    RefreshDefaultAddress();
-                    lv_label_set_text(g_derivationPathDescLabel, g_derivationPathDescs[GetPathIndex()]);
+                    ShowEgAddressCont(g_egCont);
                 }
             } else {
                 lv_obj_clear_state(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox, LV_STATE_CHECKED);

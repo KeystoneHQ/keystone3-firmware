@@ -100,7 +100,7 @@ static void AddressLongModeCut(char *out, const char *address);
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
 
 static StandardReceiveWidgets_t g_standardReceiveWidgets;
-static StandardReceiveTile g_multiAccountsReceiveTileNow;
+static StandardReceiveTile g_StandardReceiveTileNow;
 static HOME_WALLET_CARD_ENUM g_chainCard;
 
 // to do: stored.

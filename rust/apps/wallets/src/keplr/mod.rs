@@ -64,6 +64,7 @@ pub fn generate_sync_ur(
         keys,
         Some(DEVICE_TYPE.to_string()),
         None,
+        None,
     ))
 }
 

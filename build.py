@@ -53,7 +53,11 @@ def build_firmware(environment, options):
 def ota_maker():
     os.chdir(source_path)
     if platform.system() == 'Darwin':
-        args = ("./tools/mac/ota-maker", "--source", "./build/mh1903.bin", "--destination", "./build/keystone3.bin")
+        cpu = platform.processor()
+        if cpu == "arm":
+            args = ("./tools/mac_arm/ota-maker", "--source", "./build/mh1903.bin", "--destination", "./build/keystone3.bin")
+        else:
+            args = ("./tools/mac/ota-maker", "--source", "./build/mh1903.bin", "--destination", "./build/keystone3.bin")
     else:
         args = ("./tools/ubuntu/ota-maker", "--source", "./build/mh1903.bin", "--destination", "./build/keystone3.bin")
     popen = subprocess.Popen(args, stdout=subprocess.PIPE)

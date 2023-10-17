@@ -15,7 +15,6 @@ typedef enum {
     CMD_RESOLVE_UR,                // Command to resolve UR
     CMD_CHECK_LOCK_STATUS,         // Command to check lock status
     CMD_EXPORT_ADDRESS,            // Command to export address
-    CMD_EXPORT_ADDRESSES,          // Command to export addresses
     //
     CMD_MAX_VALUE = 0xFFFFFFFF,    // The maximum value for command
 } CommandType;

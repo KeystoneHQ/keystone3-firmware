@@ -81,12 +81,12 @@ static void TutorialsInit()
 
         //TUTORIAL_SOL_RECEIVE
         g_tutorials[TUTORIAL_SOL_RECEIVE].len = 1;
-        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].title =  _("receive_eth_more_t_title1");
-        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].desc =  _("receive_eth_more_t_desc1");
-        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].link =  _("receive_eth_more_t_link1");
-        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].qrTitle =  _("receive_eth_more_t_qr_title1");
-        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].qrSubtitle =  _("receive_eth_more_t_qr_link1");
-        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].qrCode =  _("receive_eth_more_t_qr_link1");
+        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].title =  _("receive_sol_more_t_title1");
+        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].desc =  _("receive_sol_more_t_desc1");
+        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].link =  _("receive_sol_more_t_link1");
+        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].qrTitle =  _("receive_sol_more_t_qr_title1");
+        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].qrSubtitle =  _("receive_sol_more_t_qr_link1");
+        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].qrCode =  _("receive_sol_more_t_qr_link1");
 
         g_tutorialInitialized = true;
     }

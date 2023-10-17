@@ -3,6 +3,7 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::ptr::null_mut;
+use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 
 use app_bitcoin::errors::BitcoinError;
 use app_cardano::errors::CardanoError;
@@ -169,6 +170,7 @@ pub enum ViewType {
     CosmosTx,
     CosmosEvmTx,
     SuiTx,
+    AptosTx,
     WebAuthResult,
     ViewTypeUnKnown,
 }
@@ -186,6 +188,7 @@ pub enum URType {
     CosmosSignRequest,
     EvmSignRequest,
     SuiSignRequest,
+    AptosSignRequest,
 }
 
 impl URType {
@@ -200,6 +203,7 @@ impl URType {
             InnerURType::CosmosSignRequest(_) => Ok(URType::CosmosSignRequest),
             InnerURType::EvmSignRequest(_) => Ok(URType::EvmSignRequest),
             InnerURType::SuiSignRequest(_) => Ok(URType::SuiSignRequest),
+            InnerURType::AptosSignRequest(_) => Ok(URType::AptosSignRequest),
             _ => Err(URError::NotSupportURTypeError(value.get_type_str())),
         }
     }
@@ -295,6 +299,9 @@ fn free_ur(ur_type: &URType, data: PtrUR) {
         }
         URType::SuiSignRequest => {
             free_ptr_with_type!(data, SuiSignRequest);
+        }
+        URType::AptosSignRequest => {
+            free_ptr_with_type!(data, AptosSignRequest);
         }
         _ => {}
     }
@@ -423,6 +430,7 @@ pub fn decode_ur(ur: String) -> URParseResult {
         URType::CosmosSignRequest => _decode_ur::<CosmosSignRequest>(ur, ur_type),
         URType::EvmSignRequest => _decode_ur::<EvmSignRequest>(ur, ur_type),
         URType::SuiSignRequest => _decode_ur::<SuiSignRequest>(ur, ur_type),
+        URType::AptosSignRequest => _decode_ur::<AptosSignRequest>(ur, ur_type),
         URType::URTypeUnKnown => URParseResult::from(URError::NotSupportURTypeError(
             "UnKnown ur type".to_string(),
         )),
@@ -477,6 +485,7 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         URType::CosmosSignRequest => _receive_ur::<CosmosSignRequest>(ur, ur_type, decoder),
         URType::EvmSignRequest => _receive_ur::<EvmSignRequest>(ur, ur_type, decoder),
         URType::SuiSignRequest => _receive_ur::<SuiSignRequest>(ur, ur_type, decoder),
+        URType::AptosSignRequest => _receive_ur::<AptosSignRequest>(ur, ur_type, decoder),
         URType::URTypeUnKnown => URParseMultiResult::from(URError::NotSupportURTypeError(
             "UnKnown ur type".to_string(),
         )),

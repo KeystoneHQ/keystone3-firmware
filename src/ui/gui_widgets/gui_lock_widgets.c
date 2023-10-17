@@ -22,6 +22,8 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "user_memory.h"
+#include "presetting.h"
+#include "assert.h"
 
 #ifdef COMPILE_SIMULATOR
 #define FINGERPRINT_EN_SING_ERR_TIMES           (5)
@@ -296,7 +298,7 @@ void GuiLockScreenErrorCount(void *param)
         if (*(uint16_t *)passwordVerifyResult->signal == SIG_LOCK_VIEW_VERIFY_PIN
                 || *(uint16_t *)passwordVerifyResult->signal == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
             leftCount = MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount;
-            assert(leftCount >= 0);
+            ASSERT(leftCount >= 0);
             sprintf(hint, _("unlock_device_attempts_left_times_fmt"), (MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount));
             lv_label_set_text(g_verifyLock->errLabel, hint);
             GuiPassowrdToLockTimePage(MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount);

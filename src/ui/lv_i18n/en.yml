@@ -429,6 +429,13 @@ en:
   purpose_import_wallet: Import Wallet
   purpose_new_wallet: Create Wallet
   purpose_title: New Wallet
+  receive_ada_address_detail: Address Detail
+  receive_ada_base_address: Base Address
+  receive_ada_change_account_limit: Account should be from 0 to 23
+  receive_ada_change_account_title: Change Account (from 0 to 23)
+  receive_ada_enterprise_address: Enterprise Address
+  receive_ada_show_address_detail: Show Address Detail
+  receive_ada_stake_address: Reward Address
   receive_btc_alert_button: Got It
   receive_btc_alert_desc: This address is exclusively for BTC transactions only. Sending
     other types of digital assets to this address will result in their loss.

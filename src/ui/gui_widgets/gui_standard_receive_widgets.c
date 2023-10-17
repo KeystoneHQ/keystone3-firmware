@@ -17,6 +17,7 @@
 #include "gui_page.h"
 #include "gui.h"
 #include "gui_tutorial_widgets.h"
+#include "account_manager.h"
 
 #define GENERAL_ADDRESS_INDEX_MAX 999999999
 #define LEDGER_LIVE_ADDRESS_INDEX_MAX 9
@@ -99,7 +100,7 @@ static void AddressLongModeCut(char *out, const char *address);
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
 
 static StandardReceiveWidgets_t g_standardReceiveWidgets;
-static StandardReceiveTile g_StandardReceiveTileNow;
+static StandardReceiveTile g_multiAccountsReceiveTileNow;
 static HOME_WALLET_CARD_ENUM g_chainCard;
 
 // to do: stored.
@@ -143,7 +144,7 @@ void GuiStandardReceiveDeInit(void)
 void GuiStandardReceiveRefresh(void)
 {
     char title[30];
-    switch (g_StandardReceiveTileNow) {
+    switch (g_multiAccountsReceiveTileNow) {
     case RECEIVE_TILE_QRCODE:
         snprintf(title, sizeof(title), _("receive_coin_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
@@ -201,9 +202,9 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
 
 static void GuiStandardReceiveGotoTile(StandardReceiveTile tile)
 {
-    g_StandardReceiveTileNow = tile;
+    g_multiAccountsReceiveTileNow = tile;
     GuiStandardReceiveRefresh();
-    lv_obj_set_tile_id(g_standardReceiveWidgets.tileView, g_StandardReceiveTileNow, 0, LV_ANIM_OFF);
+    lv_obj_set_tile_id(g_standardReceiveWidgets.tileView, g_multiAccountsReceiveTileNow, 0, LV_ANIM_OFF);
 }
 
 lv_obj_t* CreateStandardReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)

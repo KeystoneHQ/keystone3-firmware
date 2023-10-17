@@ -11,6 +11,7 @@
 
 #include "stdint.h"
 #include "stdbool.h"
+#include "gui_home_widgets.h"
 typedef struct {
     int32_t addressType;
     int32_t addressIndex;
@@ -111,6 +112,7 @@ uint8_t SpecifiedXPubExist(const char *xPub);
 void AccountPublicInfoTest(int argc, char *argv[]);
 bool GetFirstReceive(const char* chainName);
 void SetFirstReceive(const char* chainName, bool isFirst);
+void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count);
 
 #endif
 

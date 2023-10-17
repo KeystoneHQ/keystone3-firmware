@@ -1,6 +1,6 @@
 
-#ifndef _GUI_ETH_RECEIVE_WIDGETS_H
-#define _GUI_ETH_RECEIVE_WIDGETS_H
+#ifndef _GUI_MULTI_PATH_COIN_RECEIVE_WIDGETS_H
+#define _GUI_MULTI_PATH_COIN_RECEIVE_WIDGETS_H
 
 #include "stdint.h"
 #include "stdbool.h"

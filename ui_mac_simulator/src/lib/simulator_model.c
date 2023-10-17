@@ -8,7 +8,7 @@ bool g_fingerUnlockDeviceFlag = true;
 bool g_fingerSingTransitionsFlag = false;
 bool fingerRegisterState[3] = {true, false, false};
 #define JSON_MAX_LEN (1024 * 100)
-#define ACCOUNT_PUBLIC_HOME_COIN "{\"BTC\":{\"firstRecv\":true,\"manage\":true},\"ETH\":{\"firstRecv\":true,\"manage\":true},\"BNB\":{\"firstRecv\":true,\"manage\":false},\"SOL\":{\"firstRecv\":true,\"manage\":false},\"DOT\":{\"firstRecv\":true,\"manage\":false},\"XRP\":{\"firstRecv\":true,\"manage\":false},\"LTC\":{\"firstRecv\":true,\"manage\":false},\"DASH\":{\"firstRecv\":true,\"manage\":true},\"BCH\":{\"firstRecv\":true,\"manage\":true}}"
+#define ACCOUNT_PUBLIC_HOME_COIN "{\"BTC\":{\"firstRecv\":true,\"manage\":true},\"ETH\":{\"firstRecv\":true,\"manage\":true},\"ADA\":{\"firstRecv\":true,\"manage\":true},\"BNB\":{\"firstRecv\":true,\"manage\":false},\"SOL\":{\"firstRecv\":true,\"manage\":false},\"DOT\":{\"firstRecv\":true,\"manage\":false},\"XRP\":{\"firstRecv\":true,\"manage\":false},\"LTC\":{\"firstRecv\":true,\"manage\":false},\"DASH\":{\"firstRecv\":true,\"manage\":true},\"BCH\":{\"firstRecv\":true,\"manage\":true}}"
 
 bool g_reboot = false;
 void OpenUsb()
@@ -513,6 +513,16 @@ int32_t AsyncExecuteWithPtr(void *func, const void *inData)
 }
 
 void SetCurrentAccountIndex(void)
+{
+
+}
+
+void SetPassphraseQuickAccess(bool exist)
+{
+
+}
+
+void UserDelay(uint32_t ms)
 {
 
 }

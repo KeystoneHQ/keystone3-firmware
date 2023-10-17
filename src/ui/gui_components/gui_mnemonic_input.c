@@ -18,6 +18,7 @@
 #include "gui_forget_pass_widgets.h"
 #include "gui_setting_widgets.h"
 #include "keystore.h"
+#include "account_manager.h"
 
 #ifndef COMPILE_MAC_SIMULATOR
 #include "sha256.h"

@@ -16,6 +16,7 @@
 #include "keystore.h"
 #include "usb_task.h"
 #include "user_memory.h"
+#include "account_manager.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"

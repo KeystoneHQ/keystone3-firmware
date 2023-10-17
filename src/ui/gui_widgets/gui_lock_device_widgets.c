@@ -8,6 +8,8 @@
 #include "gui_lock_widgets.h"
 #include "screen_manager.h"
 #include "gui_page.h"
+#include "account_manager.h"
+#include "gui_hintbox.h"
 
 #ifdef COMPILE_MAC_SIMULATOR
 #include "simulator_model.h"

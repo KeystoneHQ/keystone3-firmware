@@ -23,6 +23,7 @@
 #include "gui_fullscreen_mode.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
+#include "account_manager.h"
 #ifndef COMPILE_SIMULATOR
 #include "keystore.h"
 

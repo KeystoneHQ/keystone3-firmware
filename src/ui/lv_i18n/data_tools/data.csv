@@ -363,6 +363,11 @@ In short, not reusing addresses safeguards privacy, optimizes transactions, and 
 ,receive_ada_show_address_detail,Show Address Detail,,,
 ,receive_coin_hint_fmt,"This address is only for %s, other digital assets sent to this address will be lost.",,,
 ,receive_generate_new_address,Generate New Address,,,
+,receive_sol_more_t,Tutorial,,,
+,receive_sol_more_t_title1,Exploring Solana Path Options,,,
+,receive_sol_more_t_desc1,"1. Solflare: Widely adopted across numerous Solana wallets. An example of such a wallet is Solflare.
+2. Sollet / MathWallet: Choose this path if you intend to import a seed phrase from Sollet / MathWallet. Please note that Keystone supports synchronizing only the initial 10 addresses using this format.
+3. Phantom / Exodus: Transition to this path if you manage your digital assets with software wallets like Phantom / Exodus.",,,
 Connect,connect_bw_t,Tutorial,P2,,
 ,connect_bw_desc,Please use your laptop or mobile to open the link below for detailed tutorials on how to use Keystone with certain chain specific companion software wallet.,P2,,
 ,connect_bw_title,BlueWallet (Mobile),P2,,

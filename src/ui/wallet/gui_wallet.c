@@ -360,3 +360,52 @@ UREncodeResult *GuiGetOkxWalletData(void)
     return (void *)data;
 #endif
 }
+
+UREncodeResult *GuiGetSolflareData(void)
+{
+#ifndef COMPILE_SIMULATOR
+    SOLAccountType accountType = GetSolflareAccountType();
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    ExtendedPublicKey keys[10];
+    public_keys->data = keys;
+
+    if (accountType == SOLBip44) {
+        public_keys->size = 10;
+        for (int i = XPUB_TYPE_SOL_BIP44_0; i <= XPUB_TYPE_SOL_BIP44_9; i++) {
+            char *path = SRAM_MALLOC(sizeof(char) * 32);
+            sprintf(path, "m/44'/501'/%d'", i - XPUB_TYPE_SOL_BIP44_0); 
+            keys[i - XPUB_TYPE_SOL_BIP44_0].path = path;
+            keys[i - XPUB_TYPE_SOL_BIP44_0].xpub = GetCurrentAccountPublicKey(i);
+        }
+    } else if (accountType == SOLBip44ROOT) {
+        public_keys->size = 1;
+        char *path = SRAM_MALLOC(sizeof(char) * 32);
+        sprintf(path, "m/44'/501'");
+        keys[0].path = path;
+        keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_ROOT);
+    } else if (accountType == SOLBip44Change) {
+        public_keys->size = 10;
+        for (int i = XPUB_TYPE_SOL_BIP44_CHANGE_0; i <= XPUB_TYPE_SOL_BIP44_CHANGE_9; i++) {
+            char *path = SRAM_MALLOC(sizeof(char) * 32);
+            sprintf(path, "m/44'/501'/%d'/0'", i - XPUB_TYPE_SOL_BIP44_CHANGE_0);
+            keys[i - XPUB_TYPE_SOL_BIP44_CHANGE_0].path = path;
+            keys[i - XPUB_TYPE_SOL_BIP44_CHANGE_0].xpub = GetCurrentAccountPublicKey(i);
+        }
+    }
+    g_urEncode = get_connect_solana_wallet_ur(mfp, sizeof(mfp), public_keys);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    for (int i = 0; i < public_keys->size; i++) {
+        SRAM_FREE(public_keys->data[i].path);
+    }
+    SRAM_FREE(public_keys);
+    return g_urEncode;
+#else
+    const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+    return (void *)data;
+#endif
+
+
+}

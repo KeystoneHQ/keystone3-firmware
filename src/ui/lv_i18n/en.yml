@@ -537,6 +537,17 @@ en:
   receive_eth_receive_main_button: Generate New Address
   receive_eth_receive_main_title: Receive ETH
   receive_generate_new_address: Generate New Address
+  receive_sol_more_t: Tutorial
+  receive_sol_more_t_desc1: '1. Solflare: Widely adopted across numerous Solana wallets.
+    An example of such a wallet is Solflare.
+
+    2. Sollet / MathWallet: Choose this path if you intend to import a seed phrase
+    from Sollet / MathWallet. Please note that Keystone supports synchronizing only
+    the initial 10 addresses using this format.
+
+    3. Phantom / Exodus: Transition to this path if you manage your digital assets
+    with software wallets like Phantom / Exodus.'
+  receive_sol_more_t_title1: Exploring Solana Path Options
   receive_trx_hint: This address is only for TRX, TRC-20 tokens and TRC-10 tokens,
     other digital assets sent to this address will be lost.
   repeat_passcode_desc: "Repeat and confirm the PIN code you\u2019ve just typed."

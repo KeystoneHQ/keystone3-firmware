@@ -46,6 +46,12 @@ typedef enum {
     COMPANION_APP_COINS_BUTT,
 } COMPANION_APP_COINS_ENUM;
 
+typedef enum SOLAccountType {
+  SOLBip44,
+  SOLBip44ROOT,
+  SOLBip44Change,
+} SOLAccountType;
+
 typedef struct {
     COMPANION_APP_COINS_ENUM   index;
     bool                    state;
@@ -61,6 +67,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index);
 ETHAccountType GetMetamaskAccountType(void);
 void GuiConnectWalletHandleURGenerate(char *data, uint16_t len);
 void GuiConnectWalletHandleURUpdate(char *data, uint16_t len);
-
+SOLAccountType GetSolflareAccountType(void);
 #endif /* _GUI_CONNECT_WALLET_WIDGETS_H */
 

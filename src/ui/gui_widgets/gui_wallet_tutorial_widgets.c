@@ -81,6 +81,14 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_KEYSTONE].items[0].qrTitle = _("connect_keyst_app_qr_title");
         g_tutorials[WALLET_LIST_KEYSTONE].items[0].qrUrl = _("connect_keyst_app_qr_link");
 
+        //WALLET_LIST_SOLFARE
+        g_tutorials[WALLET_LIST_SOLFARE].len = 1;
+        g_tutorials[WALLET_LIST_SOLFARE].desc = _("connect_solflare_desc");
+        g_tutorials[WALLET_LIST_SOLFARE].items[0].walletName = _("connect_solflare_qr_title");
+        g_tutorials[WALLET_LIST_SOLFARE].items[0].url = _("connect_solflare_link");
+        g_tutorials[WALLET_LIST_SOLFARE].items[0].qrTitle = _("connect_solflare_qr_title");
+        g_tutorials[WALLET_LIST_SOLFARE].items[0].qrUrl = _("connect_solflare_qr_link");
+
         //WALLET_LIST_RABBY
         g_tutorials[WALLET_LIST_RABBY].len = 1;
         g_tutorials[WALLET_LIST_RABBY].desc = _("connect_rabby_desc");

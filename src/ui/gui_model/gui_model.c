@@ -31,6 +31,7 @@
 #include "screen_manager.h"
 #include "keystore.h"
 #include "account_manager.h"
+#include "qrdecode_task.h"
 #ifndef COMPILE_SIMULATOR
 #include "rust.h"
 #include "user_msg.h"

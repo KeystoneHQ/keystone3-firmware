@@ -1,7 +1,7 @@
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_views.h"
-#include "gui_multi_accounts_receive_widgets.h"
+#include "gui_key_derivation_request_widgets.h"
 
 static int32_t GuiKeyDerivationRequestViewInit()
 {
@@ -22,8 +22,6 @@ int32_t GuiKeyDerivationRequestViewEventProcess(void *self, uint16_t usEvent, vo
         return GuiKeyDerivationRequestViewInit();
     case GUI_EVENT_OBJ_DEINIT:
         return GuiKeyDerivationRequestViewDeInit();
-    case GUI_EVENT_DISACTIVE:
-        break;
     case GUI_EVENT_REFRESH:
         GuiKeyDerivationRequestRefresh();
         break;

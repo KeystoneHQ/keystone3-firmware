@@ -56,6 +56,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"about_keystone_website", "WebSite"},
     {"about_keystone_website_url", "keyst.one"},
     {"about_terms_contact_us", "Contact Us"},
+    {"connect_wallet_key_request_fmt", "%s Wallet wants to get your public key on your Keystone: "},
     {"about_terms_contact_us_desc", "If you have any questions or concerns, please email us at support@keyst.one."},
     {"about_terms_desc", "To access the full version of the TERMS OF USE, please visit the following link:"},
     {"about_terms_disclaimers", "DISCLAIMERS"},

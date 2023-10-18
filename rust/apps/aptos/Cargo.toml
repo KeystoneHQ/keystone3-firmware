@@ -9,6 +9,7 @@ edition = "2021"
 keystore = { path = "../../keystore", default-features = false }
 third_party = { path = "../../third_party" }
 bcs = { git = "https://github.com/KeystoneHQ/bcs.git", tag = "0.1.1" }
+app_utils = {path = "../utils"}
 serde_json = { version = "1.0.95", default-features = false, features = ['alloc'] }
 serde = { version = "1.0.139", default-features = false }
 serde_bytes = { version = "0.11.5", default-features = false, features = ["alloc"] }

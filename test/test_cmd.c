@@ -2141,12 +2141,13 @@ static void RustTestAptosParseTx(int argc, char *argv[])
     printf("RustTestAptosTx crypto_bytes: %s\r\n", crypto_bytes);
     ViewType view_type = ur->t;
     printf("RustTestAptosTx view_type: %d\r\n", view_type);
-    TransactionParseResult_DisplayAptosTx *result = aptos_parse_tx(crypto_bytes);
+    TransactionParseResult_DisplayAptosTx *result = aptos_parse(crypto_bytes);
     printf("error_code: %d\r\n", result->error_code);
     if (result->error_message != NULL) {
         printf("error_message, %s\r\n", result->error_message);
     }
     printf("aptos parse result detail: %s\r\n", result->data->detail);
+    printf("aptos parse result is_msg: %d\r\n", result->data->is_msg);
     free_ur_parse_result(ur);
     free_TransactionParseResult_DisplayAptosTx(result);
     PrintRustMemoryStatus();

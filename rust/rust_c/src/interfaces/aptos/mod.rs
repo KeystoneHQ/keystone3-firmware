@@ -2,11 +2,14 @@ use crate::extract_ptr_with_type;
 use crate::interfaces::structs::SimpleResponse;
 use crate::interfaces::utils::convert_c_char;
 use alloc::slice;
+use alloc::string::ToString;
 use alloc::vec::Vec;
 use app_aptos;
+use app_aptos::errors::AptosError;
+use app_aptos::parser::is_tx;
 use cty::c_char;
 use third_party::hex::FromHex;
-use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
+use third_party::ur_registry::aptos::aptos_sign_request::{AptosSignRequest, SignType};
 
 use self::structs::DisplayAptosTx;
 
@@ -55,12 +58,33 @@ pub extern "C" fn aptos_check_request(
 }
 
 #[no_mangle]
-pub extern "C" fn aptos_parse_tx(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayAptosTx>> {
+pub extern "C" fn aptos_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayAptosTx>> {
     let sign_request = extract_ptr_with_type!(ptr, AptosSignRequest);
     let sign_data = sign_request.get_sign_data();
-    match app_aptos::parse_tx(&sign_data.to_vec()) {
-        Ok(v) => TransactionParseResult::success(DisplayAptosTx::from(v).c_ptr()).c_ptr(),
-        Err(e) => TransactionParseResult::from(e).c_ptr(),
+    let sign_type = match sign_request.get_sign_type() {
+        SignType::Single => {
+            if is_tx(&sign_data) {
+                SignType::Single
+            } else {
+                SignType::Message
+            }
+        }
+        SignType::Multi => SignType::Multi,
+        SignType::Message => SignType::Message,
+    };
+    match sign_type {
+        SignType::Single => match app_aptos::parse_tx(&sign_data.to_vec()) {
+            Ok(v) => TransactionParseResult::success(DisplayAptosTx::from(v).c_ptr()).c_ptr(),
+            Err(e) => TransactionParseResult::from(e).c_ptr(),
+        },
+        SignType::Multi => {
+            TransactionParseResult::from(AptosError::ParseTxError("not support".to_string()))
+                .c_ptr()
+        }
+        SignType::Message => match app_aptos::parse_msg(&sign_data.to_vec()) {
+            Ok(v) => TransactionParseResult::success(DisplayAptosTx::from(v).c_ptr()).c_ptr(),
+            Err(e) => TransactionParseResult::from(e).c_ptr(),
+        },
     }
 }
 

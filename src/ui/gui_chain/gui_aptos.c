@@ -37,7 +37,7 @@ void *GuiGetAptosData(void)
     do {
         result = aptos_check_request(data, mfp, sizeof(mfp));
         CHECK_CHAIN_BREAK(result);
-        PtrT_TransactionParseResult_DisplayAptosTx parseResult = aptos_parse_tx(data);
+        PtrT_TransactionParseResult_DisplayAptosTx parseResult = aptos_parse(data);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
@@ -66,7 +66,15 @@ void GetAptosDetail(void *indata, void *param)
 {
     DisplayAptosTx *tx = (DisplayAptosTx *)param;
     sprintf((char *)indata, "%s", tx->detail);
-    printf("tx->detail: %s\n", tx->detail);
+}
+
+bool IsAptosMsg(ViewType viewType)
+{
+    if (viewType != AptosTx) {
+        return false;
+    }
+    DisplayAptosTx *tx = ((PtrT_TransactionParseResult_DisplayAptosTx)g_parseResult)->data;
+    return tx->is_msg;
 }
 
 UREncodeResult *GuiGetAptosSignQrCodeData(void)

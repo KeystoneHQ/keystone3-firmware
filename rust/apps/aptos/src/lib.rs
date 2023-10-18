@@ -34,6 +34,10 @@ pub fn parse_tx(data: &Vec<u8>) -> crate::errors::Result<AptosTx> {
     Ok(Parser::parse_tx(data)?)
 }
 
+pub fn parse_msg(data: &Vec<u8>) -> crate::errors::Result<String> {
+    Ok(Parser::parse_msg(data)?)
+}
+
 #[cfg(test)]
 mod tests {
     extern crate std;

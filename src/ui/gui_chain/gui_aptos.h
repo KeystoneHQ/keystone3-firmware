@@ -7,5 +7,6 @@ void FreeAptosMemory(void);
 int GetAptosDetailLen(void *param);
 void GetAptosDetail(void *indata, void *param);
 UREncodeResult *GuiGetAptosSignQrCodeData(void);
+bool IsAptosMsg(ViewType viewType);
 
 #endif

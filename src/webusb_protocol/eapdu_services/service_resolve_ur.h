@@ -5,4 +5,5 @@
 #include "keystore.h"
 
 void *ProcessURService(EAPDURequestPayload_t payload);
-void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, StatusEnum status);
+void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status);
+uint16_t GetCurrentUSParsingRequestID();

@@ -2,11 +2,16 @@
 
 void *EchoService(EAPDURequestPayload_t payload)
 {
-    EAPDUResponsePayload_t *result = (EAPDUResponsePayload_t *)calloc(1, sizeof(EAPDUResponsePayload_t));
+    EAPDUResponsePayload_t *result = (EAPDUResponsePayload_t *)SRAM_MALLOC(sizeof(EAPDUResponsePayload_t));
+
     result->data = &payload.data;
     result->dataLen = payload.dataLen;
     result->status = RSP_SUCCESS_CODE;
-    SendEApduResponse(EAPDU_PROTOCOL_HEADER, CMD_ECHO_TEST, result);
+    result->cla = EAPDU_PROTOCOL_HEADER;
+    result->commandType = CMD_ECHO_TEST;
+    result->requestID = payload.requestID;
 
-    free(result);
+    SendEApduResponse(result);
+
+    SRAM_FREE(result);
 }

@@ -49,19 +49,25 @@ typedef struct
 
 typedef struct
 {
+    uint8_t cla;
     uint8_t *data;
     uint32_t dataLen;
+    uint16_t requestID; // lc
+    CommandType commandType; // ins
 } EAPDURequestPayload_t;
 
 typedef struct
 {
+    uint8_t cla;
     uint8_t *data;
     uint32_t dataLen;
     StatusEnum status;
+    uint16_t requestID; // lc
+    CommandType commandType; // ins
 } EAPDUResponsePayload_t;
 
 struct ProtocolParser* NewEApduProtocolParser();
-void SendEApduResponse(uint8_t cla, CommandType ins, EAPDUResponsePayload_t *payload);
-void SendEApduResponseError(uint8_t cla, CommandType ins, StatusEnum status, char *error);
+void SendEApduResponse(EAPDUResponsePayload_t *payload);
+void SendEApduResponseError(uint8_t cla, CommandType ins, uint16_t requestID, StatusEnum status, char *error);
 
 #endif

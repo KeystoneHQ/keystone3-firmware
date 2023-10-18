@@ -42,7 +42,7 @@ static void insert_16bit_value(uint8_t *frame, int offset, uint16_t value)
     frame[offset + 1] = (uint8_t)(value & 0xFF);
 }
 
-void SendEApduResponse(uint8_t cla, CommandType ins, EAPDUResponsePayload_t *payload)
+void SendEApduResponse(EAPDUResponsePayload_t *payload)
 {
     uint8_t packet[MAX_PACKETS_LENGTH];
     uint16_t totalPackets = (payload->dataLen + MEX_EAPDU_RESPONSE_DATA_SIZE - 1) / MEX_EAPDU_RESPONSE_DATA_SIZE;
@@ -52,11 +52,11 @@ void SendEApduResponse(uint8_t cla, CommandType ins, EAPDUResponsePayload_t *pay
     {
         uint16_t packetDataSize = payload->dataLen > MEX_EAPDU_RESPONSE_DATA_SIZE ? MEX_EAPDU_RESPONSE_DATA_SIZE : payload->dataLen;
 
-        packet[OFFSET_CLA] = cla;
-        insert_16bit_value(packet, OFFSET_INS, ins);
+        packet[OFFSET_CLA] = payload->cla;
+        insert_16bit_value(packet, OFFSET_INS, payload->commandType);
         insert_16bit_value(packet, OFFSET_P1, totalPackets);
         insert_16bit_value(packet, OFFSET_P2, packetIndex);
-        insert_16bit_value(packet, OFFSET_LC, packetDataSize);
+        insert_16bit_value(packet, OFFSET_LC, payload->requestID);
         memcpy(packet + OFFSET_CDATA, payload->data + offset, packetDataSize);
         insert_16bit_value(packet, OFFSET_CDATA + packetDataSize, payload->status);
         g_sendFunc(packet, OFFSET_CDATA + packetDataSize + EAPDU_RESPONSE_STATUS_LENGTH);
@@ -66,7 +66,7 @@ void SendEApduResponse(uint8_t cla, CommandType ins, EAPDUResponsePayload_t *pay
     }
 }
 
-void SendEApduResponseError(uint8_t cla, CommandType ins, StatusEnum status, char *error)
+void SendEApduResponseError(uint8_t cla, CommandType ins, uint16_t requestID, StatusEnum status, char *error)
 {
     EAPDUResponsePayload_t *result = (EAPDUResponsePayload_t *)SRAM_MALLOC(sizeof(EAPDUResponsePayload_t));
     cJSON *root = cJSON_CreateObject();
@@ -76,7 +76,10 @@ void SendEApduResponseError(uint8_t cla, CommandType ins, StatusEnum status, cha
     result->data = (uint8_t *)json_str;
     result->dataLen = strlen(result->data);
     result->status = status;
-    SendEApduResponse(cla, ins, result);
+    result->cla = cla;
+    result->commandType = ins;
+    result->requestID = requestID;
+    SendEApduResponse(result);
     SRAM_FREE(result);
 }
 
@@ -88,9 +91,9 @@ static void free_parser()
     memset(g_protocolRcvBuffer, 0, sizeof(g_protocolRcvBuffer));
 }
 
-static void EApduRequestHandler(EAPDURequestPayload_t *request, CommandType command)
+static void EApduRequestHandler(EAPDURequestPayload_t *request)
 {
-    switch (command)
+    switch (request->commandType)
     {
     case CMD_ECHO_TEST:
         EchoService(*request);
@@ -115,14 +118,14 @@ static ParserStatusEnum CheckFrameValidity(EAPDUFrame_t *eapduFrame)
     if (eapduFrame->p1 > MAX_PACKETS)
     {
         printf("Invalid total number of packets\n");
-        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, eapduFrame->ins, PRS_INVALID_TOTAL_PACKETS, "Invalid total number of packets");
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, eapduFrame->ins, eapduFrame->lc, PRS_INVALID_TOTAL_PACKETS, "Invalid total number of packets");
         free_parser();
         return FRAME_TOTAL_ERROR;
     }
     else if (eapduFrame->p2 >= eapduFrame->p1)
     {
         printf("Invalid packet index\n");
-        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, eapduFrame->ins, PRS_INVALID_INDEX, "Invalid packet index");
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, eapduFrame->ins, eapduFrame->lc, PRS_INVALID_INDEX, "Invalid packet index");
         free_parser();
         return FRAME_INDEX_ERROR;
     }
@@ -202,7 +205,10 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
     EAPDURequestPayload_t *request = (EAPDURequestPayload_t *)SRAM_MALLOC(sizeof(EAPDURequestPayload_t));
     request->data = fullData;
     request->dataLen = fullDataLen;
-    EApduRequestHandler(request, eapduFrame->ins);
+    request->requestID = eapduFrame->lc;
+    request->commandType = eapduFrame->ins;
+    request->cla = eapduFrame->cla;
+    EApduRequestHandler(request);
 
     SRAM_FREE(eapduFrame);
     SRAM_FREE(fullData);

@@ -4,13 +4,16 @@
 #include "gui_views.h";
 #include "user_msg.h";
 
+#define REQUEST_ID_IDLE 0
+static uint16_t g_requestID = REQUEST_ID_IDLE;
+
 typedef struct
 {
     uint8_t viewType;
     uint8_t urType;
 } UrViewType_t;
 
-static void BasicHandlerFunc(const void *data, uint32_t data_len, StatusEnum status)
+static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
 {
     EAPDUResponsePayload_t *payload = (EAPDUResponsePayload_t *)SRAM_MALLOC(sizeof(EAPDUResponsePayload_t));
 
@@ -21,15 +24,24 @@ static void BasicHandlerFunc(const void *data, uint32_t data_len, StatusEnum sta
     payload->data = (uint8_t *)json_str;
     payload->dataLen = strlen((char *)payload->data);
     payload->status = status;
+    payload->cla = EAPDU_PROTOCOL_HEADER;
+    payload->commandType = CMD_RESOLVE_UR;
+    payload->requestID = requestID;
 
-    SendEApduResponse(EAPDU_PROTOCOL_HEADER, CMD_RESOLVE_UR, payload);
+    SendEApduResponse(payload);
 
+    g_requestID = REQUEST_ID_IDLE;
     SRAM_FREE(payload);
 };
 
-void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, StatusEnum status)
+uint16_t GetCurrentUSParsingRequestID()
 {
-    BasicHandlerFunc(data, data_len, status);
+    return g_requestID;
+};
+
+void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
+{
+    BasicHandlerFunc(data, data_len, requestID, status);
 };
 
 static uint8_t *DataParser(EAPDURequestPayload_t *payload)
@@ -42,7 +54,7 @@ static bool CheckURAcceptable()
     if (GuiLockScreenIsTop())
     {
         const char *data = "Device is locked";
-        HandleURResultViaUSBFunc(data, strlen(data), PRS_PARSING_DISALLOWED);
+        HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
         return false;
     }
     // TODO: Only allow URL parsing on specific pages
@@ -51,6 +63,17 @@ static bool CheckURAcceptable()
 
 void *ProcessURService(EAPDURequestPayload_t payload)
 {
+    if (g_requestID != REQUEST_ID_IDLE)
+    {
+        const char *data = "Previous request is not finished";
+        HandleURResultViaUSBFunc(data, strlen(data), payload.requestID, PRS_PARSING_DISALLOWED);
+        return NULL;
+    }
+    else
+    {
+        g_requestID = payload.requestID;
+    }
+
     if (!CheckURAcceptable())
     {
         return NULL;
@@ -58,7 +81,7 @@ void *ProcessURService(EAPDURequestPayload_t payload)
     struct URParseResult *urResult = parse_ur(DataParser(&payload));
     if (urResult->error_code != 0)
     {
-        HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), PRS_PARSING_ERROR);
+        HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), g_requestID, PRS_PARSING_ERROR);
         return NULL;
     }
     UrViewType_t urViewType = {0, 0};

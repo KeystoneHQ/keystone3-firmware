@@ -2,6 +2,7 @@ use alloc::boxed::Box;
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use third_party::ur_registry::extend::qr_hardware_call::QRHardwareCall;
 use core::ptr::null_mut;
 use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 
@@ -172,6 +173,7 @@ pub enum ViewType {
     SuiTx,
     AptosTx,
     WebAuthResult,
+    KeyDerivationRequest,
     ViewTypeUnKnown,
 }
 
@@ -183,12 +185,13 @@ pub enum URType {
     EthSignRequest,
     SolSignRequest,
     NearSignRequest,
-    URTypeUnKnown,
     CardanoSignRequest,
     CosmosSignRequest,
     EvmSignRequest,
     SuiSignRequest,
     AptosSignRequest,
+    QRHardwareCall,
+    URTypeUnKnown,
 }
 
 impl URType {
@@ -204,6 +207,7 @@ impl URType {
             InnerURType::EvmSignRequest(_) => Ok(URType::EvmSignRequest),
             InnerURType::SuiSignRequest(_) => Ok(URType::SuiSignRequest),
             InnerURType::AptosSignRequest(_) => Ok(URType::AptosSignRequest),
+            InnerURType::QRHardwareCall(_) => Ok(URType::QRHardwareCall),
             _ => Err(URError::NotSupportURTypeError(value.get_type_str())),
         }
     }
@@ -234,6 +238,7 @@ impl URParseResult {
             error_message: null_mut(),
         }
     }
+
     pub fn single<T>(t: ViewType, ur_type: URType, data: T) -> Self {
         let _self = Self::new();
         let data = Box::into_raw(Box::new(data)) as PtrUR;
@@ -302,6 +307,9 @@ fn free_ur(ur_type: &URType, data: PtrUR) {
         }
         URType::AptosSignRequest => {
             free_ptr_with_type!(data, AptosSignRequest);
+        }
+        URType::QRHardwareCall => {
+            free_ptr_with_type!(data, QRHardwareCall);
         }
         _ => {}
     }
@@ -431,6 +439,7 @@ pub fn decode_ur(ur: String) -> URParseResult {
         URType::EvmSignRequest => _decode_ur::<EvmSignRequest>(ur, ur_type),
         URType::SuiSignRequest => _decode_ur::<SuiSignRequest>(ur, ur_type),
         URType::AptosSignRequest => _decode_ur::<AptosSignRequest>(ur, ur_type),
+        URType::QRHardwareCall => _decode_ur::<QRHardwareCall>(ur, ur_type),
         URType::URTypeUnKnown => URParseResult::from(URError::NotSupportURTypeError(
             "UnKnown ur type".to_string(),
         )),
@@ -486,6 +495,7 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         URType::EvmSignRequest => _receive_ur::<EvmSignRequest>(ur, ur_type, decoder),
         URType::SuiSignRequest => _receive_ur::<SuiSignRequest>(ur, ur_type, decoder),
         URType::AptosSignRequest => _receive_ur::<AptosSignRequest>(ur, ur_type, decoder),
+        URType::QRHardwareCall => _receive_ur::<QRHardwareCall>(ur, ur_type, decoder),
         URType::URTypeUnKnown => URParseMultiResult::from(URError::NotSupportURTypeError(
             "UnKnown ur type".to_string(),
         )),

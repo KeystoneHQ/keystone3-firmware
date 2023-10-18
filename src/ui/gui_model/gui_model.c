@@ -1029,7 +1029,9 @@ static int32_t ModeControlQrDecode(const void *inData, uint32_t inDataLen)
     }
 #else
     static uint8_t urRet = 0;
-    GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urRet, sizeof(urRet));
+    UrViewType_t urViewType = { KeyDerivationRequest, QRHardwareCall };
+    printf("here\r\n");
+    GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
     // GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_FAIL, &urRet, sizeof(urRet));
 #endif
     SetLockScreen(enable);

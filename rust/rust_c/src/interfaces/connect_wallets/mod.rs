@@ -11,6 +11,7 @@ use alloc::format;
 use alloc::string::String;
 use alloc::string::ToString;
 use alloc::vec::Vec;
+use third_party::ur_registry::extend::qr_hardware_call::QRHardwareCall;
 use core::slice;
 
 use app_wallets::metamask::ETHAccountTypeApp;
@@ -24,12 +25,19 @@ use third_party::ur_registry::error::URError;
 use third_party::ur_registry::traits::RegistryItem;
 
 use crate::extract_array;
+use crate::extract_ptr_with_type;
 use crate::interfaces::errors::RustCError;
 use crate::interfaces::ffi::CSliceFFI;
 use crate::interfaces::structs::ExtendedPublicKey;
 use crate::interfaces::types::{PtrBytes, PtrString, PtrT};
 use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::interfaces::utils::{recover_c_array, recover_c_char};
+
+use self::structs::QRHardwareCallData;
+
+use super::structs::Response;
+use super::types::Ptr;
+use super::types::PtrUR;
 
 #[no_mangle]
 pub extern "C" fn get_connect_blue_wallet_ur(
@@ -259,5 +267,18 @@ pub extern "C" fn get_connect_metamask_ur(
                 }
             }
         }
+    }
+}
+
+
+#[no_mangle]
+pub extern "C" fn parse_qr_hardware_call(
+    ur: PtrUR,
+) -> Ptr<Response<QRHardwareCallData>> {
+    let qr_hardware_call = extract_ptr_with_type!(ur, QRHardwareCall);
+    let data = QRHardwareCallData::try_from(qr_hardware_call);
+    match data {
+        Ok(_data) => Response::success(_data).c_ptr(),
+        Err(_e) => Response::from(_e).c_ptr()
     }
 }

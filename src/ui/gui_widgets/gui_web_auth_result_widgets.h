@@ -2,6 +2,7 @@
 #define _GUI_WEB_AUTH_RESULT_WIDGETS_H
 
 typedef void (*WebAuthSuccessCb)(void);
+#include "stdint.h"
 
 void GuiWebAuthResultAreaInit();
 void GuiWebAuthResultAreaDeInit();

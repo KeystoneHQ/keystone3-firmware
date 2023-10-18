@@ -12,6 +12,7 @@ use third_party::ur_registry::error::URError;
 use third_party::ur_registry::ethereum::eth_sign_request;
 use third_party::ur_registry::ethereum::eth_sign_request::EthSignRequest;
 use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+use third_party::ur_registry::extend::qr_hardware_call::{QRHardwareCall, CallType};
 use third_party::ur_registry::near::near_sign_request::NearSignRequest;
 use third_party::ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
 use third_party::ur_registry::pb::protoc;
@@ -148,6 +149,14 @@ impl InferViewType for NearSignRequest {
 impl InferViewType for CardanoSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::CardanoTx)
+    }
+}
+
+impl InferViewType for QRHardwareCall {
+    fn infer(&self) -> Result<ViewType, URError> {
+        match self.get_call_type() {
+            CallType::KeyDerivation => Ok(ViewType::KeyDerivationRequest)
+        }
     }
 }
 

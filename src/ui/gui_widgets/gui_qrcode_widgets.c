@@ -388,6 +388,9 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
     case SolanaMessage:
         GuiShowQrCode(GuiGetSolSignQrCodeData, qrcode);
         break;
+    case AptosTx:
+        GuiShowQrCode(GuiGetAptosSignQrCodeData, qrcode);
+        break;
     default:
         data = "";
         lv_qrcode_update(qrcode, data, strlen(data));

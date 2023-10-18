@@ -7,6 +7,8 @@
 #include "account_manager.h"
 #include "secret_cache.h"
 
+static uint8_t GetAptosPublickeyIndex(char* rootPath);
+
 static bool g_isMulti = false;
 static void *g_urResult = NULL;
 static void *g_parseResult = NULL;
@@ -87,7 +89,10 @@ UREncodeResult *GuiGetAptosSignQrCodeData(void)
     do {
         uint8_t seed[64];
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        encodeResult = sui_sign_intent(data, seed, sizeof(seed));
+        char *path = aptos_get_path(data);
+        char pubkeyIndex = GetAptosPublickeyIndex(path);
+        char *pubKey = GetCurrentAccountPublicKey(pubkeyIndex);
+        encodeResult = aptos_sign_tx(data, seed, sizeof(seed), pubKey);
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
@@ -102,4 +107,19 @@ UREncodeResult *GuiGetAptosSignQrCodeData(void)
     encodeResult->error_message = NULL;
     return encodeResult;
 #endif
+}
+
+static uint8_t GetAptosPublickeyIndex(char* rootPath)
+{
+    if (strcmp(rootPath, "44'/637'/0'/0'/0'") == 0) return XPUB_TYPE_APT_0;
+    if (strcmp(rootPath, "44'/637'/1'/0'/0'") == 0) return XPUB_TYPE_APT_1;
+    if (strcmp(rootPath, "44'/637'/2'/0'/0'") == 0) return XPUB_TYPE_APT_2;
+    if (strcmp(rootPath, "44'/637'/3'/0'/0'") == 0) return XPUB_TYPE_APT_3;
+    if (strcmp(rootPath, "44'/637'/4'/0'/0'") == 0) return XPUB_TYPE_APT_4;
+    if (strcmp(rootPath, "44'/637'/5'/0'/0'") == 0) return XPUB_TYPE_APT_5;
+    if (strcmp(rootPath, "44'/637'/6'/0'/0'") == 0) return XPUB_TYPE_APT_6;
+    if (strcmp(rootPath, "44'/637'/7'/0'/0'") == 0) return XPUB_TYPE_APT_7;
+    if (strcmp(rootPath, "44'/637'/8'/0'/0'") == 0) return XPUB_TYPE_APT_8;
+    if (strcmp(rootPath, "44'/637'/9'/0'/0'") == 0) return XPUB_TYPE_APT_9;
+    ASSERT(0);
 }

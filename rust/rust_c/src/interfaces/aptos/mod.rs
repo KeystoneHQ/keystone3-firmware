@@ -1,6 +1,8 @@
 use crate::extract_ptr_with_type;
 use crate::interfaces::structs::SimpleResponse;
+use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::interfaces::utils::convert_c_char;
+use alloc::format;
 use alloc::slice;
 use alloc::string::ToString;
 use alloc::vec::Vec;
@@ -8,8 +10,11 @@ use app_aptos;
 use app_aptos::errors::AptosError;
 use app_aptos::parser::is_tx;
 use cty::c_char;
+use third_party::hex;
 use third_party::hex::FromHex;
 use third_party::ur_registry::aptos::aptos_sign_request::{AptosSignRequest, SignType};
+use third_party::ur_registry::aptos::aptos_signature::AptosSignature;
+use third_party::ur_registry::traits::RegistryItem;
 
 use self::structs::DisplayAptosTx;
 
@@ -19,6 +24,30 @@ use super::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use super::utils::recover_c_char;
 
 pub mod structs;
+
+fn build_sign_result(
+    ptr: PtrUR,
+    seed: &[u8],
+    pub_key: PtrString,
+) -> app_aptos::errors::Result<AptosSignature> {
+    let sign_request = extract_ptr_with_type!(ptr, AptosSignRequest);
+    let pub_key = recover_c_char(pub_key);
+    let mut path = sign_request.get_authentication_key_derivation_paths()[0]
+        .get_path()
+        .ok_or(AptosError::InvalidData(
+            "invalid derivation path".to_string(),
+        ))?;
+    if !path.starts_with("m/") {
+        path = format!("m/{}", path);
+    }
+    let signature = app_aptos::sign(sign_request.get_sign_data().to_vec(), &path, seed)?;
+    let buf: Vec<u8> = hex::decode(pub_key)?;
+    Ok(AptosSignature::new(
+        sign_request.get_request_id(),
+        signature.to_vec(),
+        buf,
+    ))
+}
 
 #[no_mangle]
 pub extern "C" fn aptos_generate_address(pub_key: PtrString) -> *mut SimpleResponse<c_char> {
@@ -86,6 +115,44 @@ pub extern "C" fn aptos_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<Display
             Err(e) => TransactionParseResult::from(e).c_ptr(),
         },
     }
+}
+
+#[no_mangle]
+pub extern "C" fn aptos_sign_tx(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+    pub_key: PtrString,
+) -> PtrT<UREncodeResult> {
+    let seed = unsafe { alloc::slice::from_raw_parts(seed, seed_len as usize) };
+    build_sign_result(ptr, seed, pub_key)
+        .map(|v| v.try_into())
+        .map_or_else(
+            |e| UREncodeResult::from(e).c_ptr(),
+            |v| {
+                v.map_or_else(
+                    |e| UREncodeResult::from(e).c_ptr(),
+                    |data| {
+                        UREncodeResult::encode(
+                            data,
+                            AptosSignature::get_registry_type().get_type(),
+                            FRAGMENT_MAX_LENGTH_DEFAULT,
+                        )
+                        .c_ptr()
+                    },
+                )
+            },
+        )
+}
+
+#[no_mangle]
+pub extern "C" fn aptos_get_path(ptr: PtrUR) -> PtrString {
+    let aptos_sign_request = extract_ptr_with_type!(ptr, AptosSignRequest);
+    let derivation_path = &aptos_sign_request.get_authentication_key_derivation_paths()[0];
+    if let Some(path) = derivation_path.get_path() {
+        return convert_c_char(path);
+    }
+    return convert_c_char("".to_string());
 }
 
 #[no_mangle]

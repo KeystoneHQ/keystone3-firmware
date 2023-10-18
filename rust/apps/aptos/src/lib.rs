@@ -11,7 +11,8 @@ extern crate core;
 extern crate std;
 
 use crate::parser::Parser;
-use alloc::string::String;
+use alloc::format;
+use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use parser::AptosTx;
 use third_party::cryptoxide::hashing::sha3::Sha3_256;
@@ -38,6 +39,11 @@ pub fn parse_msg(data: &Vec<u8>) -> crate::errors::Result<String> {
     Ok(Parser::parse_msg(data)?)
 }
 
+pub fn sign(message: Vec<u8>, hd_path: &String, seed: &[u8]) -> errors::Result<[u8; 64]> {
+    keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(&seed, hd_path, &message)
+        .map_err(|e| errors::AptosError::KeystoreError(format!("sign failed {:?}", e.to_string())))
+}
+
 #[cfg(test)]
 mod tests {
     extern crate std;
@@ -45,6 +51,7 @@ mod tests {
     use super::*;
 
     use third_party::hex::FromHex;
+    use third_party::hex::ToHex;
 
     #[test]
     fn test() {
@@ -53,5 +60,14 @@ mod tests {
         let buf_message = Vec::from_hex(data).unwrap();
         let parse_result = parse_tx(&buf_message).unwrap();
         assert_eq!(json_str, parse_result.get_result().unwrap());
+    }
+
+    #[test]
+    fn test_aptos_sign() {
+        let hd_path = "m/44'/637'/0'/0'/0'".to_string();
+        let tx_hex =  Vec::from_hex("b5e97db07fa0bd0e5598aa3643a9bc6f6693bddc1a9fec9e674a461eaa00b193f007dbb60994463db95b80fad4259ec18767a5bb507f9e048da84b75ea793ef500000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e740e7472616e736665725f636f696e73010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e000220f007dbb60994463db95b80fad4259ec18767a5bb507f9e048da84b75ea793ef50800000000000000000a00000000000000640000000000000061242e650000000002").unwrap();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let signature = sign(tx_hex, &hd_path, seed.as_slice()).unwrap();
+        assert_eq!("ff2c5e05557c30d1cddd505b26836747eaf28f25b2816b1e702bd40236be674eaaef10e4bd940b85317bede537cad22365eb7afca7456b90dcc2807cbbdcaa0a", signature.encode_hex::<String>());
     }
 }

@@ -44,7 +44,7 @@ impl AptosTx {
 
     pub fn get_formatted_json(&self) -> Result<Value> {
         match serde_json::to_string_pretty(&self.tx) {
-            Ok(v) => Ok(json!(v)),
+            Ok(v) => Ok(Value::String(v)),
             Err(e) => Err(AptosError::ParseTxError(format!(
                 "to json failed {}",
                 e.to_string()

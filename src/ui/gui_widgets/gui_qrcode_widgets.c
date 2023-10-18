@@ -246,6 +246,8 @@ static GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     case SolanaTx:
     case SolanaMessage:
         return CHAIN_SOL;
+    case AptosTx:
+        return CHAIN_APT;
     default:
         return CHAIN_BUTT;
     }

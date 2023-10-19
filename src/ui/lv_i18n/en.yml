@@ -1,4 +1,6 @@
 en:
+  ? ''
+  : ''
   Approve: Approve
   Attention: Attention
   Cancel: Cancel
@@ -138,7 +140,7 @@ en:
   connect_mm_qr_link: https://keyst.one/t/3rd/mm
   connect_mm_qr_link2: https://keyst.one/t/3rd/mmm
   connect_mm_qr_title: MetaMask (Extension)
-  connect_mm_qr_title2: MetaMask Mobile
+  connect_mm_qr_title2: MetaMask (Mobile)
   connect_mm_t: Tutorial
   connect_mm_title: MetaMask (Extension)
   connect_mm_title2: MetaMask (Mobile)
@@ -154,6 +156,14 @@ en:
   connect_okx_t: Tutorial
   connect_okx_title: OKX Wallet (Extension)
   connect_okx_title2: OKX Wallet (Mobile)
+  connect_petra_desc: Please use your laptop or mobile to open the link below for
+    detailed tutorials on how to use Keystone with certain chain specific companion
+    software wallet.
+  connect_petra_link: https://keyst.one/t/3rd/petra
+  connect_petra_qr_link: https://keyst.one/t/3rd/petra
+  connect_petra_qr_title: Petra (Extension)
+  connect_petra_t: Tutorial
+  connect_petra_title: Petra (Extension)
   connect_rabby_desc: Please use your laptop or mobile to open the link below for
     detailed tutorials on how to use Keystone with certain chain specific companion
     software wallet.
@@ -192,6 +202,8 @@ en:
   connect_sushi_title: SushiSwap
   connect_wallet_choose_wallet: Choose Wallet
   connect_wallet_desc: Scan the QR code with your software wallet
+  connect_wallet_key_request_fmt: '%s Wallet wants to get your public key on your
+    Keystone: '
   connect_wallet_keystone_hint: "Select networks you\u2019d like to manage in the\
     \ software wallet"
   connect_wallet_scan: Scan the QR code with your software wallet
@@ -522,8 +534,7 @@ en:
     Ledger Legacy'
   receive_eth_more_t_link1: Learn More
   receive_eth_more_t_qr_link1: https://keyst.one/t/3rd/faq
-  receive_eth_more_t_qr_title1: 'Exploring Differences: Standard, Ledger Live, and
-    Legacy Derivation Paths in Ethereum'
+  receive_eth_more_t_qr_title1: Exploring Solana Path Options
   receive_eth_more_t_title1: '1. Standard Path: This path is widely employed by numerous
     software wallets for address generation. Examples of such wallets encompass MetaMask,
     Rabby, BitKeep, and Core Wallet.

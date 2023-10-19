@@ -16,6 +16,7 @@ use crate::interfaces::xrp::structs::DisplayXrpTx;
 use crate::make_free_method;
 use cty::c_char;
 
+use super::aptos::structs::DisplayAptosTx;
 use super::ethereum::structs::DisplayContractData;
 use super::structs::Response;
 use super::sui::structs::DisplaySuiIntentMessage;
@@ -113,6 +114,7 @@ make_free_method!(TransactionParseResult<DisplayETHPersonalMessage>);
 make_free_method!(TransactionParseResult<DisplaySolanaMessage>);
 make_free_method!(TransactionParseResult<DisplayETHTypedData>);
 make_free_method!(TransactionParseResult<DisplaySuiIntentMessage>);
+make_free_method!(TransactionParseResult<DisplayAptosTx>);
 make_free_method!(TransactionCheckResult);
 
 #[no_mangle]

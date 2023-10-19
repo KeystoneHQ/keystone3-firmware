@@ -42,6 +42,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_SAFE, &walletListSafe},
     {WALLET_LIST_BLOCK_WALLET, &walletListBlockWallet},
     {WALLET_LIST_FEWCHA, &walletListFewcha},
+    {WALLET_LIST_PETRA, &walletListPetra},
     {WALLET_LIST_ZAPPER, &walletListZapper},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn},
     {WALLET_LIST_SUSHISWAP, &walletListSushi},
@@ -145,6 +146,11 @@ static const lv_img_dsc_t *g_keplrCoinArray[8] = {
 static const lv_img_dsc_t *g_fewchaCoinArray[1] =
 {
     &coinSui,
+};
+
+static const lv_img_dsc_t *g_petraCoinArray[1] =
+{
+    &coinApt,
 };
 
 static const lv_img_dsc_t *g_solfareCoinArray[1] = {
@@ -598,6 +604,21 @@ static void AddFewchaCoins(void)
     }
 }
 
+static void AddPetraCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0)
+    {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0; i < 1; i++)
+    {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_petraCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+}
+
 static void AddSolflareCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -688,6 +709,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_FEWCHA:
         func = GuiGetFewchaData;
         AddFewchaCoins();
+        break;
+    case WALLET_LIST_PETRA:
+        func = GuiGetPetraData;
+        AddPetraCoins();
         break;
     default:
         return;

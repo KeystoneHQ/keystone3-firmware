@@ -131,7 +131,18 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         GuiGetSolMessageData,
         GetSolMessageType,
         FreeSolMemory,
-    }
+    },
+    {
+        REMAPVIEW_APT,
+#ifndef COMPILE_SIMULATOR
+        "{\"type\":\"container\",\"pos\":[36,16],\"size\":[408,500],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetAptosDetail\",\"text_len_func\":\"GetAptosDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}",
+#else
+        PC_SIMULATOR_PATH"/page_eth.json",
+#endif
+        GuiGetAptosData,
+        NULL,
+        FreeAptosMemory,
+    },
 };
 
 void *GuiTemplateReload(lv_obj_t *parent, uint8_t index);
@@ -496,11 +507,29 @@ GetLabelDataLenFunc GuiSuiTextLenFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataFunc GuiAptosTextFuncGet(char *type)
+{
+    if (!strcmp(type, "GetAptosDetail")) {
+        return GetAptosDetail;
+    }
+    return NULL;
+}
+
+GetLabelDataLenFunc GuiAptosTextLenFuncGet(char *type)
+{
+    if (!strcmp(type, "GetAptosDetailLen")) {
+        return GetAptosDetailLen;
+    }
+    return NULL;
+}
+
 GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
 {
     switch (g_reMapIndex) {
     case REMAPVIEW_SUI:
         return GuiSuiTextLenFuncGet(type);
+    case REMAPVIEW_APT:
+        return GuiAptosTextLenFuncGet(type);
     default:
         return NULL;
     }
@@ -525,6 +554,8 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
         return GuiSuiTextFuncGet(type);
     case REMAPVIEW_SOL_MESSAGE:
         return GuiSolMessageTextFuncGet(type);
+    case REMAPVIEW_APT:
+        return GuiAptosTextFuncGet(type);
     default:
         return NULL;
     }
@@ -1220,6 +1251,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_SOL;
     case SolanaMessage:
         return REMAPVIEW_SOL_MESSAGE;
+    case AptosTx:
+        return REMAPVIEW_APT;
     default:
         return REMAPVIEW_BUTT;
     }

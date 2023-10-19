@@ -202,6 +202,8 @@ static void BpkPrintFunc(int argc, char *argv[]);
 static void RustTestSuiParseTx(int argc, char *argv[]);
 static void RustTestSuiCheckTx(int argc, char *argv[]);
 static void RustTestSuiSignTx(int argc, char *argv[]);
+static void RustTestAptosCheckTx(int argc, char *argv[]);
+static void RustTestAptosParseTx(int argc, char *argv[]);
 static void RustADATest(int argc, char *argv[]);
 
 const static UartTestCmdItem_t g_uartTestCmdTable[] =
@@ -350,6 +352,8 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] =
     {"rust test sui check tx:",                         RustTestSuiCheckTx                  },
     {"rust test sui parse tx:",                         RustTestSuiParseTx                  },
     {"rust test sui sign tx:",                          RustTestSuiSignTx                   },
+    {"rust test aptos check tx:",                       RustTestAptosCheckTx                },
+    {"rust test aptos parse tx:",                       RustTestAptosParseTx                },
     {"rust ada test",                                   RustADATest                         },
 
 #endif
@@ -2102,6 +2106,50 @@ static void RustTestSuiSignTx(int argc, char *argv[])
     printf("sign result data: %s\r\n", sign_result->data);
     free_ur_parse_result(crypto_bytes);
     free_ur_encode_result(sign_result);
+    PrintRustMemoryStatus();
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
+}
+
+static void RustTestAptosCheckTx(int argc, char *argv[])
+{
+    // Example:
+    // #rust test aptos check tx: a601d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d0258208e53e7b10656816de70824e3016fc1a277e77825e12825dc4f239f418ab2e04e0381d90130a2018a182cf519027df500f500f500f5021a5274470304815820aa7420c68c16645775ecf69a5e2fdaa4f89d3293aee0dd280e2d97ad7b879650056b6170746f7357616c6c65740601
+    URParseResult *crypto_bytes = test_get_aptos_sign_request(argv[0]);
+    // check failed
+    uint8_t failed_mfp[4] = {0x52, 0x74, 0x47, 0x00};
+    TransactionCheckResult *failed_result = aptos_check_request(crypto_bytes->data, failed_mfp, sizeof(failed_mfp));
+    printf("transaction check failed result: %d\r\n", failed_result->error_code);
+    printf("transaction check failed error_message: %s\r\n", failed_result->error_message);
+    // check succeed
+    uint8_t succeed_mfp[4] = {0x52, 0x74, 0x47, 0x03};
+    TransactionCheckResult *succeed_result = aptos_check_request(crypto_bytes->data, succeed_mfp, sizeof(succeed_mfp));
+    printf("transaction check succeed result: %d\r\n", succeed_result->error_code);
+    free_TransactionCheckResult(failed_result);
+    free_TransactionCheckResult(succeed_result);
+    free_ur_parse_result(crypto_bytes);
+    PrintRustMemoryStatus();
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
+}
+
+static void RustTestAptosParseTx(int argc, char *argv[])
+{
+    // Example:
+    // #rust test aptos parse tx: a601d825501a76927b7bf4464d91db40a5e97a28d202590102b5e97db07fa0bd0e5598aa3643a9bc6f6693bddc1a9fec9e674a461eaa00b193fe370d5c5e5d22f3f6decbf975bda3ad20c22677feff745e753938505708de2b00000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e740e7472616e736665725f636f696e73010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e000220fe370d5c5e5d22f3f6decbf975bda3ad20c22677feff745e753938505708de2b0880969800000000000a00000000000000640000000000000042f22d6500000000020381d90130a2018a182cf519027df507f500f500f5021a527447030480056550657472610601
+    printf("RustTestAptosTx\r\n");
+    URParseResult *ur = test_get_aptos_sign_request(argv[0]);
+    void *crypto_bytes = ur->data;
+    printf("RustTestAptosTx crypto_bytes: %s\r\n", crypto_bytes);
+    ViewType view_type = ur->t;
+    printf("RustTestAptosTx view_type: %d\r\n", view_type);
+    TransactionParseResult_DisplayAptosTx *result = aptos_parse(crypto_bytes);
+    printf("error_code: %d\r\n", result->error_code);
+    if (result->error_message != NULL) {
+        printf("error_message, %s\r\n", result->error_message);
+    }
+    printf("aptos parse result detail: %s\r\n", result->data->detail);
+    printf("aptos parse result is_msg: %d\r\n", result->data->is_msg);
+    free_ur_parse_result(ur);
+    free_TransactionParseResult_DisplayAptosTx(result);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }

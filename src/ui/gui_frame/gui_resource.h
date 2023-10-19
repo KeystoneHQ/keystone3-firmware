@@ -194,6 +194,7 @@ LV_IMG_DECLARE(walletYearn);
 LV_IMG_DECLARE(walletSushi);
 LV_IMG_DECLARE(walletKeplr);
 LV_IMG_DECLARE(walletFewcha);
+LV_IMG_DECLARE(walletPetra);
 
 
 //wallet list
@@ -211,6 +212,7 @@ LV_IMG_DECLARE(walletListYearn);
 LV_IMG_DECLARE(walletListSushi);
 LV_IMG_DECLARE(walletListKeplr);
 LV_IMG_DECLARE(walletListFewcha);
+LV_IMG_DECLARE(walletListPetra);
 
 // font
 LV_FONT_DECLARE(openSans_20);

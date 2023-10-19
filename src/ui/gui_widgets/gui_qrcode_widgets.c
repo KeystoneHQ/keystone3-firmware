@@ -246,6 +246,8 @@ static GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     case SolanaTx:
     case SolanaMessage:
         return CHAIN_SOL;
+    case AptosTx:
+        return CHAIN_APT;
     default:
         return CHAIN_BUTT;
     }
@@ -303,7 +305,7 @@ void GuiQrCodeScanResult(bool result, void *param)
         g_qrCodeWidgetView.analysis = GuiTemplateReload(g_qrCodeWidgetView.cont, g_qrcodeViewType);
         if (g_qrCodeWidgetView.analysis != NULL) {
             g_fingerSignCount = 0;
-            if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData || IsCosmosMsg(g_qrcodeViewType)) {
+            if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData || IsCosmosMsg(g_qrcodeViewType) || IsAptosMsg(g_qrcodeViewType)) {
                 SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_confirm_message"));
             } else {
                 SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
@@ -386,6 +388,9 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
     case SolanaMessage:
         GuiShowQrCode(GuiGetSolSignQrCodeData, qrcode);
         break;
+    case AptosTx:
+        GuiShowQrCode(GuiGetAptosSignQrCodeData, qrcode);
+        break;
     default:
         data = "";
         lv_qrcode_update(qrcode, data, strlen(data));
@@ -432,7 +437,7 @@ void GuiQrCodeRefresh(void)
         GuiModeControlQrDecode(true);
         break;
     case PAGE_PHASE_TRANSACTION_DETAIL:
-        if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData || IsCosmosMsg(g_qrcodeViewType)) {
+        if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData || IsCosmosMsg(g_qrcodeViewType) || IsAptosMsg(g_qrcodeViewType)) {
             SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_confirm_message"));
         } else {
             SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);

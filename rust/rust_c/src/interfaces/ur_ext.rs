@@ -2,6 +2,7 @@ use crate::interfaces::ur::ViewType;
 use alloc::format;
 use alloc::string::{String, ToString};
 use third_party::serde_json::{from_slice, from_value, Value};
+use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 use third_party::ur_registry::bytes::Bytes;
 use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 use third_party::ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
@@ -64,6 +65,12 @@ impl InferViewType for EvmSignRequest {
 impl InferViewType for SuiSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::SuiTx)
+    }
+}
+
+impl InferViewType for AptosSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::AptosTx)
     }
 }
 

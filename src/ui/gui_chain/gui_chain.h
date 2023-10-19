@@ -7,6 +7,7 @@
 #include "gui_cosmos.h"
 #include "gui_sui.h"
 #include "gui_sol.h"
+#include "gui_aptos.h"
 
 #define LABEL_MAX_BUFF_LEN                                      (512)
 
@@ -18,6 +19,7 @@ typedef enum {
     CHAIN_ETH,
     CHAIN_SOL,
     CHAIN_SUI,
+    CHAIN_APT,
     CHAIN_ADA,
     CHAIN_ATOM,
     CHAIN_OSMO,
@@ -71,6 +73,7 @@ typedef enum {
     REMAPVIEW_SUI,
     REMAPVIEW_SOL,
     REMAPVIEW_SOL_MESSAGE,
+    REMAPVIEW_APT,
     REMAPVIEW_WEB_AUTH,
 
     REMAPVIEW_BUTT,

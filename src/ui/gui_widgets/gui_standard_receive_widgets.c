@@ -218,7 +218,7 @@ lv_obj_t* CreateStandardReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)
 
 static uint16_t GetAddrYExtend(void)
 {
-    if (g_chainCard == HOME_WALLET_CARD_SUI) {
+    if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT) {
         return 30;
     }
     return 0;
@@ -429,7 +429,7 @@ static void RefreshSwitchAccount(void)
 
 static int GetMaxAddressIndex(void)
 {
-    if (g_chainCard == HOME_WALLET_CARD_SUI) {
+    if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT) {
         return 10;
     }
     return GENERAL_ADDRESS_INDEX_MAX;
@@ -502,6 +502,7 @@ static bool IsAccountSwitchable()
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TRX:
     case HOME_WALLET_CARD_SUI:
+    case HOME_WALLET_CARD_APT:
         return true;
 
     default:
@@ -594,8 +595,13 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         break;
     case HOME_WALLET_CARD_SUI:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_SUI_0 + index);
-        sprintf(hdPath, "M/44'/784'/%u'/0'/0'", index);
+        sprintf(hdPath, "m/44'/784'/%u'/0'/0'", index);
         result = sui_generate_address(xPub);
+        break;
+    case HOME_WALLET_CARD_APT:
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + index);
+        sprintf(hdPath, "m/44'/637'/%u'/0'/0'", index);
+        result = aptos_generate_address(xPub);
         break;
 
     default:

@@ -6,6 +6,7 @@ use alloc::vec::Vec;
 use cty::c_char;
 use third_party::hex;
 
+use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 use third_party::ur_registry::bytes::Bytes;
 use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 use third_party::ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
@@ -281,6 +282,13 @@ pub extern "C" fn test_get_sui_sign_request(cbor: *mut c_char) -> *mut URParseRe
     let cbor_str = recover_c_char(cbor);
     let sign_request = SuiSignRequest::try_from(hex::decode(cbor_str).unwrap()).unwrap();
     URParseResult::single(ViewType::SuiTx, URType::SuiSignRequest, sign_request).c_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn test_get_aptos_sign_request(cbor: *mut c_char) -> *mut URParseResult {
+    let cbor_str = recover_c_char(cbor);
+    let sign_request = AptosSignRequest::try_from(hex::decode(cbor_str).unwrap()).unwrap();
+    URParseResult::single(ViewType::AptosTx, URType::AptosSignRequest, sign_request).c_ptr()
 }
 
 #[no_mangle]

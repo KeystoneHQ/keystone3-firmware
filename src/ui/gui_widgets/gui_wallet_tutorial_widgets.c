@@ -162,6 +162,14 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_FEWCHA].items[0].url = _("connect_fewcha_link");
         g_tutorials[WALLET_LIST_FEWCHA].items[0].qrTitle = _("connect_fewcha_qr_title");
         g_tutorials[WALLET_LIST_FEWCHA].items[0].qrUrl = _("connect_fewcha_qr_link");
+
+        //WALLET_LIST_PETRA
+        g_tutorials[WALLET_LIST_PETRA].len = 1;
+        g_tutorials[WALLET_LIST_PETRA].desc = _("connect_petra_desc");
+        g_tutorials[WALLET_LIST_PETRA].items[0].walletName = _("connect_petra_title");
+        g_tutorials[WALLET_LIST_PETRA].items[0].url = _("connect_petra_link");
+        g_tutorials[WALLET_LIST_PETRA].items[0].qrTitle = _("connect_petra_qr_title");
+        g_tutorials[WALLET_LIST_PETRA].items[0].qrUrl = _("connect_petra_qr_link");
     }
 }
 

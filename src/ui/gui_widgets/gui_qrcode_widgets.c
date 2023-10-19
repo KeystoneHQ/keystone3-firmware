@@ -58,6 +58,7 @@ typedef enum {
 } PagePhase;
 
 void OpenForgetPasswordHandler(lv_event_t *e);
+static bool IsMessageType(ViewType type);
 
 static QrCodeWidget_t g_qrCodeWidgetView;
 static ViewType g_qrcodeViewType;
@@ -305,7 +306,7 @@ void GuiQrCodeScanResult(bool result, void *param)
         g_qrCodeWidgetView.analysis = GuiTemplateReload(g_qrCodeWidgetView.cont, g_qrcodeViewType);
         if (g_qrCodeWidgetView.analysis != NULL) {
             g_fingerSignCount = 0;
-            if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData || IsCosmosMsg(g_qrcodeViewType) || IsAptosMsg(g_qrcodeViewType)) {
+            if (IsMessageType(g_qrcodeViewType)) {
                 SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_confirm_message"));
             } else {
                 SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
@@ -437,7 +438,7 @@ void GuiQrCodeRefresh(void)
         GuiModeControlQrDecode(true);
         break;
     case PAGE_PHASE_TRANSACTION_DETAIL:
-        if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData || IsCosmosMsg(g_qrcodeViewType) || IsAptosMsg(g_qrcodeViewType)) {
+        if (IsMessageType(g_qrcodeViewType)) {
             SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_confirm_message"));
         } else {
             SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
@@ -534,4 +535,10 @@ void GuiQrCodeVerifyPasswordErrorCount(void *param)
 {
     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
     GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
+}
+
+
+static bool IsMessageType(ViewType type)
+{
+   return  type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type);
 }

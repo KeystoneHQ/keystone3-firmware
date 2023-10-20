@@ -2,9 +2,9 @@ use alloc::boxed::Box;
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use third_party::ur_registry::extend::qr_hardware_call::QRHardwareCall;
 use core::ptr::null_mut;
 use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
+use third_party::ur_registry::extend::qr_hardware_call::QRHardwareCall;
 
 use app_bitcoin::errors::BitcoinError;
 use app_cardano::errors::CardanoError;

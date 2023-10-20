@@ -370,8 +370,6 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"purpose_title", "New Wallet"},
     {"receive_ada_address_detail_path", "Path"},
     {"receive_ada_base_address", "Address"},
-    {"receive_ada_change_account_limit", "Account should be from 0 to 23"},
-    {"receive_ada_change_account_title", "Change Account (from 0 to 23)"},
     {"receive_ada_enterprise_address", "Address (Not Delegated)"},
     {"receive_ada_show_address_detail", "Show Address Detail"},
     {"receive_ada_stake_address", "Stake Key"},

@@ -47,6 +47,12 @@ typedef enum {
     COMPANION_APP_COINS_BUTT,
 } COMPANION_APP_COINS_ENUM;
 
+typedef enum {
+    APT,
+    SUI,
+    FEWCHA_COINS_BUTT,
+} FEWCHA_COINS_ENUM;
+
 typedef enum SOLAccountType {
   SOLBip44,
   SOLBip44ROOT,
@@ -54,7 +60,7 @@ typedef enum SOLAccountType {
 } SOLAccountType;
 
 typedef struct {
-    COMPANION_APP_COINS_ENUM   index;
+    int8_t                  index;
     bool                    state;
     lv_obj_t                *checkBox;
 } CoinState_t;

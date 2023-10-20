@@ -18,7 +18,6 @@ static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
 static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
 static lv_i18n_phrase_t en_singulars[] = {
-    {"", ""},
     {"Approve", "Approve"},
     {"Attention", "Attention"},
     {"Cancel", "Cancel"},
@@ -183,6 +182,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"connect_wallet_keystone_hint", "Select networks you’d like to manage in the software wallet"},
     {"connect_wallet_scan", "Scan the QR code with your software wallet"},
     {"connect_wallet_select_network", "Select Network"},
+    {"connect_wallet_select_network_hint", "Select the networks you'd like to display within the software wallet."},
     {"connect_wallet_supported_networks", "Supported Networks"},
     {"connect_wallet_title", "Connect Wallet"},
     {"connect_wallet_upgrade_hint", "Please upgrade to the latest version for access to expanded software wallet compatibility."},

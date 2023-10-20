@@ -888,7 +888,7 @@ void KeyStoreTest(int argc, char *argv[])
             PrintArray(tempStr, key, 32);
         }
         GetFpStateInfo(byte32);
-        ("fp state info", byte32, 32);
+        PrintArray("fp state info", byte32, 32);
     } else if (strcmp(argv[0], "clear_fp_info") == 0) {
         printf("clear fp info test\r\n");
         memset(key, 0, 32);

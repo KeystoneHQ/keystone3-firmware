@@ -4,8 +4,7 @@ CWD=`pwd`
 
 FMT_FILE=$CWD/.rustfmt.toml
 
-DIRS=("apps/bitcoin" "apps/cardano" "apps/solana" "apps/wallets" "apps/ethereum" "apps/tron" "apps/near" "apps/xrp" "apps/cosmos" "apps/aptos" "apps/utils" "apps/transport" "keystore" "rust_c" "third_party")
-
+DIRS=("apps/bitcoin" "apps/cardano" "apps/solana" "apps/sui" "apps/wallets" "apps/ethereum" "apps/tron" "apps/near" "apps/xrp" "apps/cosmos" "apps/aptos" "apps/utils" "keystore" "rust_c" "third_party")
 
 command=$1
 

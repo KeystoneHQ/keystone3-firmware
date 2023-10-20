@@ -155,7 +155,7 @@ UREncodeResult *GuiGetKeplrData(void)
 #endif
 }
 
-UREncodeResult *GuiGetFewchaData(void)
+UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin)
 {
 #ifndef COMPILE_SIMULATOR
     uint8_t mfp[4] = {0};
@@ -164,12 +164,31 @@ UREncodeResult *GuiGetFewchaData(void)
     ExtendedPublicKey keys[10];
     publicKeys->data = keys;
     publicKeys->size = 10;
+    int16_t coinType = 0;
+    int16_t xpubBaseIndex = 0;
+    switch (coin) {
+    case CHAIN_SUI:
+        coinType = 784;
+        xpubBaseIndex = XPUB_TYPE_SUI_0;
+        break;
+    case CHAIN_APT:
+        coinType = 637;
+        xpubBaseIndex = XPUB_TYPE_APT_0;
+        break;
+    default:
+        printf("invalid coin type\r\n");
+        return;
+    }
     for (uint8_t i = 0; i < 10; i++) {
         keys[i].path = SRAM_MALLOC(sizeof(char) * 32);
-        sprintf(keys[i].path, "M/44'/784'/%u'/0'/0'", i);
-        keys[i].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_SUI_0 + i);
+        sprintf(keys[i].path, "m/44'/%u'/%u'/0'/0'", coinType, i);
+        keys[i].xpub = GetCurrentAccountPublicKey(xpubBaseIndex + i);
     }
-    g_urEncode = get_connect_sui_wallet_ur(mfp, sizeof(mfp), publicKeys);
+    if (coin == CHAIN_SUI) {
+        g_urEncode = get_connect_sui_wallet_ur(mfp, sizeof(mfp), publicKeys);
+    } else {
+        g_urEncode = get_connect_aptos_wallet_ur(mfp, sizeof(mfp), publicKeys);
+    }
     CHECK_CHAIN_PRINT(g_urEncode);
     for (uint8_t i = 0; i < 10; i++) {
         SRAM_FREE(keys[i].path);

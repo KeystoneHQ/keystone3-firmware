@@ -1,6 +1,4 @@
 en:
-  ? ''
-  : ''
   Approve: Approve
   Attention: Attention
   Cancel: Cancel
@@ -208,6 +206,8 @@ en:
     \ software wallet"
   connect_wallet_scan: Scan the QR code with your software wallet
   connect_wallet_select_network: Select Network
+  connect_wallet_select_network_hint: Select the networks you'd like to display within
+    the software wallet.
   connect_wallet_supported_networks: Supported Networks
   connect_wallet_title: Connect Wallet
   connect_wallet_upgrade_hint: Please upgrade to the latest version for access to

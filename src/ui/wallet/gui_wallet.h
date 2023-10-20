@@ -2,13 +2,14 @@
 #define GUI_WALLET_H
 
 #include "rust.h"
+#include "gui_chain.h"
 
 UREncodeResult *GuiGetBlueWalletBtcData(void);
 UREncodeResult *GuiGetKeplrData(void);
 UREncodeResult *GuiGetCompanionAppData(void);
 UREncodeResult *GuiGetMetamaskData(void);
 UREncodeResult *GuiGetOkxWalletData(void);
-UREncodeResult *GuiGetFewchaData(void);
+UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin);
 UREncodeResult *GuiGetPetraData(void);
 UREncodeResult *GuiGetSolflareData(void);
 #endif

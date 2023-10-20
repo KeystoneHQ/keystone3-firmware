@@ -200,6 +200,13 @@ en:
   connect_sushi_title: SushiSwap
   connect_wallet_choose_wallet: Choose Wallet
   connect_wallet_desc: Scan the QR code with your software wallet
+  connect_wallet_eternl_step1: "Select accounts you\u2019d like to import on your\
+    \ Eternl wallet"
+  connect_wallet_eternl_step2: Scan the QR code via your Keystone
+  connect_wallet_eternl_step3: Approve the request to generate a new QR code on your
+    Keystone
+  connect_wallet_eternl_step4: Scan the QR code via Eternl wallet
+  connect_wallet_instruction: 'Follow the instructions below:'
   connect_wallet_key_request_fmt: '%s Wallet wants to get your public key on your
     Keystone: '
   connect_wallet_keystone_hint: "Select networks you\u2019d like to manage in the\

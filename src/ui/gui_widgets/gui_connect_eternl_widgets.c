@@ -24,10 +24,61 @@ void GuiCreateConnectEternlWidget()
 
 static void GuiCreatePageContent(lv_obj_t *parent)
 {
-    lv_obj_t *button, *label;
-    button = GuiCreateBtn(parent, _("connect_wallet_title"));
-    lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, 24);
+    lv_obj_t *button, *label, *cont;
+    label = GuiCreateIllustrateLabel(parent, _("connect_wallet_instruction"));
+    lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 8);
+
+    cont = GuiCreateContainerWithParent(parent, 408, 270);
+    lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 62);
+
+    char number[12] = {0};
+
+    sprintf(number, "#F5870A 1#");
+    label = GuiCreateIllustrateLabel(cont, number);
+    lv_label_set_recolor(label, true);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
+
+    label = GuiCreateIllustrateLabel(cont, _("connect_wallet_eternl_step1"));
+    lv_obj_set_width(label, 384);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 0);
+
+    sprintf(number, "#F5870A 2#");
+    label = GuiCreateIllustrateLabel(cont, number);
+    lv_label_set_recolor(label, true);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 72);
+
+    label = GuiCreateIllustrateLabel(cont, _("connect_wallet_eternl_step2"));
+    lv_obj_set_width(label, 384);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 72);
+
+    sprintf(number, "#F5870A 3#");
+    label = GuiCreateIllustrateLabel(cont, number);
+    lv_label_set_recolor(label, true);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 114);
+
+    label = GuiCreateIllustrateLabel(cont, _("connect_wallet_eternl_step3"));
+    lv_obj_set_width(label, 384);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 114);
+
+    sprintf(number, "#F5870A 4#");
+    label = GuiCreateIllustrateLabel(cont, number);
+    lv_label_set_recolor(label, true);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 186);
+
+    label = GuiCreateIllustrateLabel(cont, _("connect_wallet_eternl_step4"));
+    lv_obj_set_width(label, 384);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 186);
+
+    button = GuiCreateBtn(parent, _(""));
+    lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_add_event_cb(button, GotoScanQRCodeHandler, LV_EVENT_CLICKED, NULL);
+
+    lv_obj_t *img = GuiCreateImg(button, &imgNextStep);
+    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_set_style_bg_opa(button, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(button, WHITE_COLOR, LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(button, LV_OPA_12, LV_STATE_PRESSED);
 }
 
 static void CleanHandler(lv_event_t *e)

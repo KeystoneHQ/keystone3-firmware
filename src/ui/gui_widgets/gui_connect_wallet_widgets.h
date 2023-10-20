@@ -63,6 +63,8 @@ typedef struct {
     int8_t                  index;
     bool                    state;
     lv_obj_t                *checkBox;
+    lv_obj_t                *uncheckedImg;
+    lv_obj_t                *checkedImg;
 } CoinState_t;
 
 void GuiConnectWalletInit(void);

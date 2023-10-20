@@ -6,6 +6,7 @@
 #include "keystore.h"
 #include "account_manager.h"
 #include "secret_cache.h"
+#include "assert.h"
 
 static uint8_t GetAptosPublickeyIndex(char* rootPath);
 

@@ -17,7 +17,6 @@
 enum {
     SERVICE_ID_DEVICE_INFO              = 1,
     SERVICE_ID_FILE_TRANS,
-    SERVICE_ID_SIGN_TX,
     SERVICE_ID_MAX
 };
 

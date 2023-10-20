@@ -11,8 +11,15 @@ use alloc::format;
 use alloc::string::String;
 use alloc::string::ToString;
 use alloc::vec::Vec;
-use third_party::ur_registry::extend::qr_hardware_call::QRHardwareCall;
+use app_wallets::DEVICE_TYPE;
+use app_wallets::DEVICE_VERSION;
 use core::slice;
+use third_party::ed25519_bip32_core::XPub;
+use third_party::hex;
+use third_party::itertools::Itertools;
+use third_party::ur_registry::crypto_key_path::CryptoKeyPath;
+use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+use third_party::ur_registry::extend::qr_hardware_call::QRHardwareCall;
 
 use app_wallets::metamask::ETHAccountTypeApp;
 use cty::{int32_t, uint32_t};
@@ -270,15 +277,72 @@ pub extern "C" fn get_connect_metamask_ur(
     }
 }
 
-
 #[no_mangle]
-pub extern "C" fn parse_qr_hardware_call(
-    ur: PtrUR,
-) -> Ptr<Response<QRHardwareCallData>> {
+pub extern "C" fn parse_qr_hardware_call(ur: PtrUR) -> Ptr<Response<QRHardwareCallData>> {
     let qr_hardware_call = extract_ptr_with_type!(ur, QRHardwareCall);
     let data = QRHardwareCallData::try_from(qr_hardware_call);
     match data {
         Ok(_data) => Response::success(_data).c_ptr(),
-        Err(_e) => Response::from(_e).c_ptr()
+        Err(_e) => Response::from(_e).c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn generate_key_derivation_ur(
+    master_fingerprint: PtrBytes,
+    master_fingerprint_length: uint32_t,
+    xpubs: Ptr<CSliceFFI<ExtendedPublicKey>>,
+) -> Ptr<UREncodeResult> {
+    let mfp = extract_array!(master_fingerprint, u8, master_fingerprint_length);
+    let mfp = match <&[u8; 4]>::try_from(mfp) {
+        Ok(mfp) => mfp.clone(),
+        Err(e) => return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr(),
+    };
+    let public_keys = unsafe { recover_c_array(xpubs) };
+    let keys = public_keys
+        .iter()
+        .map(|v| {
+            let xpub = recover_c_char(v.xpub);
+            let path = recover_c_char(v.path);
+            let path = match CryptoKeyPath::from_path(path, None) {
+                Ok(path) => path,
+                Err(e) => return Err(URError::UrEncodeError(e)),
+            };
+            match hex::decode(xpub) {
+                Ok(v) => match XPub::from_slice(&v) {
+                    Ok(xpub) => Ok(CryptoHDKey::new_extended_key(
+                        None,
+                        xpub.public_key().to_vec(),
+                        Some(xpub.chain_code().to_vec()),
+                        None,
+                        Some(path),
+                        None,
+                        None,
+                        None,
+                        None,
+                    )),
+                    Err(e) => Err(URError::UrEncodeError(e.to_string())),
+                },
+                Err(e) => Err(URError::UrEncodeError(e.to_string())),
+            }
+        })
+        .collect::<Result<Vec<CryptoHDKey>, URError>>();
+    let keys = match keys {
+        Ok(keys) => keys,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
+    let accounts = CryptoMultiAccounts::new(
+        mfp,
+        keys,
+        Some(DEVICE_TYPE.to_string()),
+        None,
+        Some(DEVICE_VERSION.to_string()),
+    );
+    match accounts.try_into() {
+        Ok(v) => {
+            UREncodeResult::encode(v, CryptoMultiAccounts::get_registry_type().get_type(), 240)
+                .c_ptr()
+        }
+        Err(_e) => UREncodeResult::from(_e).c_ptr(),
     }
 }

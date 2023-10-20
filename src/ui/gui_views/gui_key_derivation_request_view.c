@@ -25,11 +25,11 @@ int32_t GuiKeyDerivationRequestViewEventProcess(void *self, uint16_t usEvent, vo
     case GUI_EVENT_REFRESH:
         GuiKeyDerivationRequestRefresh();
         break;
-    case SIG_SETUP_VIEW_TILE_NEXT:
-        GuiKeyDerivationRequestNextTile();
+    case SIG_BACKGROUND_UR_GENERATE_SUCCESS:
+        GuiKeyDerivationWidgetHandleURGenerate((char*)param, usLen);
         break;
-    case SIG_SETUP_VIEW_TILE_PREV:
-        GuiKeyDerivationRequestPrevTile();
+    case SIG_BACKGROUND_UR_UPDATE:
+        GuiKeyDerivationWidgetHandleURUpdate((char*)param, usLen);
         break;
     default:
         return ERR_GUI_UNHANDLED;

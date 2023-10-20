@@ -2,6 +2,7 @@
 #include "gui.h"
 #include "gui_page.h"
 #include "librust_c.h"
+#include "keystore.h"
 
 typedef struct KeyDerivationWidget
 {
@@ -31,6 +32,8 @@ static void GuiCreateQRCodeWidget(lv_obj_t *parent);
 static void OnApproveHandler(lv_event_t *e);
 static void OnReturnHandler(lv_event_t *e);
 static Ptr_Response_QRHardwareCallData ModelParseQRHardwareCall();
+static UREncodeResult *ModelGenerateSyncUR(void);
+static uint8_t GetXPubIndexByPath(char *path);
 
 void GuiSetKeyDerivationRequestData(void *data, bool is_multi)
 {
@@ -78,7 +81,6 @@ void GuiKeyDerivationRequestDeInit()
 }
 void GuiKeyDerivationRequestRefresh()
 {
-
 }
 void GuiKeyDerivationRequestNextTile()
 {
@@ -110,7 +112,9 @@ void GuiKeyDerivationRequestPrevTile()
 #ifndef COMPILE_SIMULATOR
 static Ptr_Response_QRHardwareCallData ModelParseQRHardwareCall()
 {
-    return parse_qr_hardware_call(g_data);
+    Ptr_Response_QRHardwareCallData data = parse_qr_hardware_call(g_data);
+    g_callData = data->data;
+    return data;
 }
 #else
 static Ptr_Response_QRHardwareCallData ModelParseQRHardwareCall()
@@ -141,9 +145,56 @@ static Ptr_Response_QRHardwareCallData ModelParseQRHardwareCall()
         .data = &data1,
         .error_code = 0,
         .error_message = ""};
+    g_callData = &data1;
     return &data;
 }
 #endif
+
+static UREncodeResult *ModelGenerateSyncUR(void)
+{
+    CSliceFFI_ExtendedPublicKey keys;
+    ExtendedPublicKey xpubs[24];
+    for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++)
+    {
+        KeyDerivationSchema schema = g_callData->key_derivation->schemas->data[i];
+        char* xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(schema.key_path));
+        xpubs[i].path = schema.key_path;
+        xpubs[i].xpub = xpub;
+    }
+    keys.data = xpubs;
+    keys.size = g_callData->key_derivation->schemas->size;
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    return generate_key_derivation_ur(mfp, 4, &keys);
+}
+
+static uint8_t GetXPubIndexByPath(char *path)
+{
+    if (strcmp("m/1852'/1815'/1'", path)) return XPUB_TYPE_ADA_1;
+    if (strcmp("m/1852'/1815'/2'", path)) return XPUB_TYPE_ADA_2;
+    if (strcmp("m/1852'/1815'/3'", path)) return XPUB_TYPE_ADA_3;
+    if (strcmp("m/1852'/1815'/4'", path)) return XPUB_TYPE_ADA_4;
+    if (strcmp("m/1852'/1815'/5'", path)) return XPUB_TYPE_ADA_5;
+    if (strcmp("m/1852'/1815'/6'", path)) return XPUB_TYPE_ADA_6;
+    if (strcmp("m/1852'/1815'/7'", path)) return XPUB_TYPE_ADA_7;
+    if (strcmp("m/1852'/1815'/8'", path)) return XPUB_TYPE_ADA_8;
+    if (strcmp("m/1852'/1815'/9'", path)) return XPUB_TYPE_ADA_9;
+    if (strcmp("m/1852'/1815'/10'", path)) return XPUB_TYPE_ADA_10;
+    if (strcmp("m/1852'/1815'/11'", path)) return XPUB_TYPE_ADA_11;
+    if (strcmp("m/1852'/1815'/12'", path)) return XPUB_TYPE_ADA_12;
+    if (strcmp("m/1852'/1815'/13'", path)) return XPUB_TYPE_ADA_13;
+    if (strcmp("m/1852'/1815'/14'", path)) return XPUB_TYPE_ADA_14;
+    if (strcmp("m/1852'/1815'/15'", path)) return XPUB_TYPE_ADA_15;
+    if (strcmp("m/1852'/1815'/16'", path)) return XPUB_TYPE_ADA_16;
+    if (strcmp("m/1852'/1815'/17'", path)) return XPUB_TYPE_ADA_17;
+    if (strcmp("m/1852'/1815'/18'", path)) return XPUB_TYPE_ADA_18;
+    if (strcmp("m/1852'/1815'/19'", path)) return XPUB_TYPE_ADA_19;
+    if (strcmp("m/1852'/1815'/20'", path)) return XPUB_TYPE_ADA_20;
+    if (strcmp("m/1852'/1815'/21'", path)) return XPUB_TYPE_ADA_21;
+    if (strcmp("m/1852'/1815'/22'", path)) return XPUB_TYPE_ADA_22;
+    if (strcmp("m/1852'/1815'/23'", path)) return XPUB_TYPE_ADA_23;
+    return XPUB_TYPE_ADA_0;
+}
 
 static void GuiCreateApproveWidget(lv_obj_t *parent)
 {
@@ -250,6 +301,7 @@ static void OnApproveHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED)
     {
+        GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
         GuiKeyDerivationRequestNextTile();
     }
 }
@@ -261,4 +313,14 @@ static void OnReturnHandler(lv_event_t *e)
     {
         GuiKeyDerivationRequestPrevTile();
     }
+}
+
+void GuiKeyDerivationWidgetHandleURGenerate(char *data, uint16_t len)
+{
+    GuiAnimantingQRCodeFirstUpdate(data, len);
+}
+
+void GuiKeyDerivationWidgetHandleURUpdate(char *data, uint16_t len)
+{
+    GuiAnimatingQRCodeUpdate(data, len);
 }

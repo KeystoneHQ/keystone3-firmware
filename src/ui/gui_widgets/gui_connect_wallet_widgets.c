@@ -336,8 +336,6 @@ static void UpdateFewchaCoinStateHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        CoinState_t *coinState = lv_event_get_user_data(e);
-        lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
         lv_obj_t *checkBox = lv_event_get_target(e);
         for (int i = 0; i < FEWCHA_COINS_BUTT; i++) {
             g_tempFewchaCoinState[i].state = checkBox == g_defaultFewchaState[i].checkBox;
@@ -373,7 +371,7 @@ static void ConfirmSelectFewchaCoinsHandler(lv_event_t *e)
         memcpy(g_fewchaCoinState, g_tempFewchaCoinState, sizeof(g_tempFewchaCoinState));
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
         GUI_DEL_OBJ(g_coinListCont)
     }
 }

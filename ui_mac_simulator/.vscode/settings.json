@@ -36,6 +36,9 @@
         "usb_task.h": "c",
         "gui_global_resources.h": "c",
         "keystore.h": "c",
-        "gui_connect_wallet_widgets.h": "c"
-    }
+        "gui_connect_wallet_widgets.h": "c",
+        "variant": "c",
+        "chrono": "c"
+    },
+    "explorer.autoReveal": true
 }

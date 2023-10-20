@@ -116,7 +116,7 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =
         .index = HOME_WALLET_CARD_ADA,
         .coin = "ADA",
         .chain = "Cardano",
-        .icon = &coinSui,
+        .icon = &coinAda,
     },
     {
         .index = HOME_WALLET_CARD_ATOM,

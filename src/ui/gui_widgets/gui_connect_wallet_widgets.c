@@ -36,7 +36,7 @@ WalletListItem_t g_walletListArray[] = {
     // {WALLET_LIST_KEYSTONE, &walletListKeyStone},
     {WALLET_LIST_OKX, &walletListOkx},
     {WALLET_LIST_METAMASK, &walletListMetaMask},
-    {WALLET_LIST_ETERNL, &walletListBlockWallet},
+    {WALLET_LIST_ETERNL, &walletListEternl},
     {WALLET_LIST_BLUE, &walletListBlue},
     // { WALLET_LIST_SUB, &walletListSub},
     {WALLET_LIST_SOLFARE, &walletListSolfare},

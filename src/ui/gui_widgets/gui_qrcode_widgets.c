@@ -119,7 +119,7 @@ void GuiQrCodeScreenCorner(void)
     lv_img_set_pivot(img, 0, 0);
 }
 
-void GuiQrCodeScreenInit(void *param)
+void GuiQrCodeScreenInit()
 {
     if (g_pageWidget != NULL)
     {

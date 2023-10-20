@@ -3,6 +3,7 @@
 #include "gui_page.h"
 #include "librust_c.h"
 #include "keystore.h"
+#include "user_memory.h"
 
 typedef struct KeyDerivationWidget
 {
@@ -26,13 +27,16 @@ static void *g_urResult;
 static bool g_isMulti;
 static KeyDerivationWidget_t g_keyDerivationTileView;
 static QRHardwareCallData *g_callData;
+static Response_QRHardwareCallData *g_response;
 
 static void GuiCreateApproveWidget(lv_obj_t *parent);
 static void GuiCreateQRCodeWidget(lv_obj_t *parent);
 static void OnApproveHandler(lv_event_t *e);
 static void OnReturnHandler(lv_event_t *e);
-static Ptr_Response_QRHardwareCallData ModelParseQRHardwareCall();
+static void ModelParseQRHardwareCall();
+#ifndef COMPILE_SIMULATOR
 static UREncodeResult *ModelGenerateSyncUR(void);
+#endif
 static uint8_t GetXPubIndexByPath(char *path);
 
 void GuiSetKeyDerivationRequestData(void *data, bool is_multi)
@@ -63,7 +67,6 @@ void GuiKeyDerivationRequestInit()
     }
     lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR & LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
-
     lv_obj_t *tile = lv_tileview_add_tile(tileView, TILE_APPROVE, 0, LV_DIR_HOR);
     GuiCreateApproveWidget(tile);
 
@@ -110,45 +113,51 @@ void GuiKeyDerivationRequestPrevTile()
 }
 
 #ifndef COMPILE_SIMULATOR
-static Ptr_Response_QRHardwareCallData ModelParseQRHardwareCall()
+static void ModelParseQRHardwareCall()
 {
-    Ptr_Response_QRHardwareCallData data = parse_qr_hardware_call(g_data);
+    Response_QRHardwareCallData *data = parse_qr_hardware_call(g_data);
     g_callData = data->data;
-    return data;
+    g_response = data;
 }
 #else
-static Ptr_Response_QRHardwareCallData ModelParseQRHardwareCall()
+static void ModelParseQRHardwareCall()
 {
-    KeyDerivationSchema schemas[7] = {
-        {.algo = "BIP32-ED25519", .key_path = "m/1852'/1815'/0'", .curve = "ED25519"},
-        {.algo = "BIP32-ED25519", .key_path = "m/1852'/1815'/1'", .curve = "ED25519"},
-        {.algo = "BIP32-ED25519", .key_path = "m/1852'/1815'/2'", .curve = "ED25519"},
-        {.algo = "BIP32-ED25519", .key_path = "m/1852'/1815'/3'", .curve = "ED25519"},
-        {.algo = "BIP32-ED25519", .key_path = "m/1852'/1815'/4'", .curve = "ED25519"},
-        {.algo = "BIP32-ED25519", .key_path = "m/1852'/1815'/5'", .curve = "ED25519"},
-        {.algo = "BIP32-ED25519", .key_path = "m/1852'/1815'/6'", .curve = "ED25519"},
-    };
-    VecFFI_KeyDerivationSchema keyDerivation = {
-        .cap = 7,
-        .data = &schemas[0],
-        .size = 7,
-    };
-    KeyDerivationRequestData keyRequest = {
-        .schemas = &keyDerivation,
-    };
-    QRHardwareCallData data1 = {
-        .call_type = "key_derivation",
-        .origin = "Eternl",
-        .key_derivation = &keyRequest,
-    };
-    Response_QRHardwareCallData data = {
-        .data = &data1,
-        .error_code = 0,
-        .error_message = ""};
-    g_callData = &data1;
-    return &data;
+    g_response = SRAM_MALLOC(sizeof(Response_QRHardwareCallData));
+    g_response->error_code = 0;
+    g_response->error_message = "";
+    g_response->data = SRAM_MALLOC(sizeof(QRHardwareCallData));
+    g_response->data->call_type = "key_derivation";
+    g_response->data->origin = "Eternl";
+    g_response->data->key_derivation = SRAM_MALLOC(sizeof(KeyDerivationRequestData));
+    g_response->data->key_derivation->schemas = SRAM_MALLOC(sizeof(VecFFI_KeyDerivationSchema));
+    g_response->data->key_derivation->schemas->cap = 5;
+    g_response->data->key_derivation->schemas->size = 5;
+    g_response->data->key_derivation->schemas->data = SRAM_MALLOC(5 * sizeof(KeyDerivationSchema));
+    g_response->data->key_derivation->schemas->data[0].algo = "BIP32-ED25519";
+    g_response->data->key_derivation->schemas->data[0].curve = "ED25519";
+    g_response->data->key_derivation->schemas->data[0].key_path = "m/1852'/1815'/0'";
+
+    g_response->data->key_derivation->schemas->data[1].algo = "BIP32-ED25519";
+    g_response->data->key_derivation->schemas->data[1].curve = "ED25519";
+    g_response->data->key_derivation->schemas->data[1].key_path = "m/1852'/1815'/1'";
+
+    g_response->data->key_derivation->schemas->data[2].algo = "BIP32-ED25519";
+    g_response->data->key_derivation->schemas->data[2].curve = "ED25519";
+    g_response->data->key_derivation->schemas->data[2].key_path = "m/1852'/1815'/2'";
+
+    g_response->data->key_derivation->schemas->data[3].algo = "BIP32-ED25519";
+    g_response->data->key_derivation->schemas->data[3].curve = "ED25519";
+    g_response->data->key_derivation->schemas->data[3].key_path = "m/1852'/1815'/3'";
+
+    g_response->data->key_derivation->schemas->data[4].algo = "BIP32-ED25519";
+    g_response->data->key_derivation->schemas->data[4].curve = "ED25519";
+    g_response->data->key_derivation->schemas->data[4].key_path = "m/1852'/1815'/4'";
+
+    g_callData = g_response->data;
 }
 #endif
+
+#ifndef COMPILE_SIMULATOR
 
 static UREncodeResult *ModelGenerateSyncUR(void)
 {
@@ -167,6 +176,8 @@ static UREncodeResult *ModelGenerateSyncUR(void)
     GetMasterFingerPrint(mfp);
     return generate_key_derivation_ur(mfp, 4, &keys);
 }
+
+#endif
 
 static uint8_t GetXPubIndexByPath(char *path)
 {
@@ -198,7 +209,7 @@ static uint8_t GetXPubIndexByPath(char *path)
 
 static void GuiCreateApproveWidget(lv_obj_t *parent)
 {
-    Ptr_Response_QRHardwareCallData response = ModelParseQRHardwareCall();
+    ModelParseQRHardwareCall();
 
     lv_obj_t *label, *cont, *btn, *pathCont;
 
@@ -206,8 +217,9 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
     lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 36, 8);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
 
+
     label = GuiCreateIllustrateLabel(cont, _("connect_wallet_key_request_fmt"));
-    lv_label_set_text_fmt(label, _("connect_wallet_key_request_fmt"), response->data->origin);
+    lv_label_set_text_fmt(label, _("connect_wallet_key_request_fmt"), g_response->data->origin);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 0);
 
     pathCont = GuiCreateContainerWithParent(cont, 408, 450);
@@ -218,11 +230,10 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
     lv_obj_add_flag(pathCont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(pathCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_scrollbar_mode(pathCont, LV_SCROLLBAR_MODE_OFF);
-
     lv_obj_t *line;
     static lv_point_t points[2] = {{0, 0}, {360, 0}};
 
-    for (size_t i = 0; i < response->data->key_derivation->schemas->size; i++)
+    for (size_t i = 0; i < g_response->data->key_derivation->schemas->size; i++)
     {
         cont = GuiCreateContainerWithParent(pathCont, 408, 102);
         lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 0, 102 * i);
@@ -231,7 +242,7 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
         sprintf(title, "Account-%d", i + 1);
         label = GuiCreateIllustrateLabel(cont, title);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
-        label = GuiCreateIllustrateLabel(cont, response->data->key_derivation->schemas->data[i].key_path);
+        label = GuiCreateIllustrateLabel(cont, g_response->data->key_derivation->schemas->data[i].key_path);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56);
         if (i > 0)
         {
@@ -301,7 +312,9 @@ static void OnApproveHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED)
     {
+        #ifndef COMPILE_SIMULATOR
         GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
+        #endif
         GuiKeyDerivationRequestNextTile();
     }
 }

@@ -336,21 +336,15 @@ static void UpdateFewchaCoinStateHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        CoinState_t *coinState = lv_event_get_user_data(e);
-        lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
-        bool state = lv_obj_has_state(lv_obj_get_child(parent, 2), LV_STATE_CHECKED);
-        if (state) {
-            for (int i = 0; i < FEWCHA_COINS_BUTT; i++) {
-                g_tempFewchaCoinState[i].state = false;
-            }
-        }
-        g_tempFewchaCoinState[coinState->index].state = state;
-
+        lv_obj_t *checkBox = lv_event_get_target(e);
         for (int i = 0; i < FEWCHA_COINS_BUTT; i++) {
+            g_tempFewchaCoinState[i].state = checkBox == g_defaultFewchaState[i].checkBox;
             if (g_tempFewchaCoinState[i].state) {
-                lv_obj_add_state(g_defaultFewchaState[i].checkBox, LV_STATE_CHECKED);
+                lv_obj_add_flag(g_defaultFewchaState[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_clear_flag(g_defaultFewchaState[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
             } else {
-                lv_obj_clear_state(g_defaultFewchaState[i].checkBox, LV_STATE_CHECKED);
+                lv_obj_clear_flag(g_defaultFewchaState[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(g_defaultFewchaState[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
             }
         }
     }
@@ -377,7 +371,7 @@ static void ConfirmSelectFewchaCoinsHandler(lv_event_t *e)
         memcpy(g_fewchaCoinState, g_tempFewchaCoinState, sizeof(g_tempFewchaCoinState));
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
         GUI_DEL_OBJ(g_coinListCont)
     }
 }
@@ -417,18 +411,19 @@ static void GuiCreateSelectFewchaCoinWidget()
 
     lv_obj_t *coinLabel;
     lv_obj_t *icon;
-    lv_obj_t *checkbox;
 
     for (int i = 0; i < FEWCHA_COINS_BUTT; i++) {
         coinLabel = GuiCreateTextLabel(coinListCont, g_fewchaCoinCardArray[i].coin);
         icon = GuiCreateScaleImg(coinListCont, g_fewchaCoinCardArray[i].icon, 118);
-        checkbox = GuiCreateMultiCheckBox(coinListCont, _(""));
-        g_defaultFewchaState[i].checkBox = checkbox;
+        g_defaultFewchaState[i].uncheckedImg = GuiCreateImg(coinListCont, &imgUncheckCircle);
+        g_defaultFewchaState[i].checkedImg = GuiCreateImg(coinListCont, &imgMessageSelect);
 
         if (g_tempFewchaCoinState[i].state) {
-            lv_obj_add_state(g_defaultFewchaState[i].checkBox, LV_STATE_CHECKED);
+            lv_obj_add_flag(g_defaultFewchaState[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(g_defaultFewchaState[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
         } else {
-            lv_obj_clear_state(g_defaultFewchaState[i].checkBox, LV_STATE_CHECKED);
+            lv_obj_clear_flag(g_defaultFewchaState[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(g_defaultFewchaState[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
         }
 
         GuiButton_t table[4] = {
@@ -443,15 +438,21 @@ static void GuiCreateSelectFewchaCoinWidget()
                 .position = {24, 60},
             },
             {
-                .obj = checkbox,
-                .align = LV_ALIGN_TOP_RIGHT,
-                .position = {-28, 36},
+                .obj = g_defaultFewchaState[i].checkedImg,
+                .align = LV_ALIGN_CENTER,
+                .position = {160, 0},
+            },
+            {
+                .obj = g_defaultFewchaState[i].uncheckedImg,
+                .align = LV_ALIGN_CENTER,
+                .position = {160, 0},
             },
         };
-        int buttonNum = 3;
+        int buttonNum = 4;
         lv_obj_t *button = GuiCreateButton(coinListCont, lv_obj_get_width(coinListCont), 100, table, buttonNum,
                                            UpdateFewchaCoinStateHandler, &g_fewchaCoinState[i]);
         lv_obj_align(button, LV_ALIGN_DEFAULT, 0, 100 * i + 16 * i + lv_obj_get_height(labelHint) + 24);
+        g_defaultFewchaState[i].checkBox = button;
     }
 
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_CHECK);
@@ -868,6 +869,15 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     if (func) {
         GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
     }
+#else
+    GenerateUR func = NULL;
+    lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
+    if (!g_isCoinReselected) {
+        initFewchaCoinsConfig();
+    }
+    func = GuiGetFewchaData;
+    AddFewchaCoins();
 #endif
 }
 

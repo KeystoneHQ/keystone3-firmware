@@ -40,6 +40,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
         {HOME_WALLET_CARD_APT, false, "APT", true},
         {HOME_WALLET_CARD_SUI, false, "SUI", true},
         {HOME_WALLET_CARD_ADA, false, "ADA", true},
+        {HOME_WALLET_CARD_XRP, false, "XRP", true},
         {HOME_WALLET_CARD_ATOM, false, "ATOM", true},
         {HOME_WALLET_CARD_OSMO, false, "OSMO", true},
         {HOME_WALLET_CARD_SCRT, false, "SCRT", true},
@@ -129,6 +130,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =
             .coin = "ADA",
             .chain = "Cardano",
             .icon = &coinAda,
+        },
+        {
+            .index = HOME_WALLET_CARD_XRP,
+            .coin = "XRP",
+            .chain = "Ripple",
+            .icon = &coinXrp,
         },
         {
             .index = HOME_WALLET_CARD_ATOM,

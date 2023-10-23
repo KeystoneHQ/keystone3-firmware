@@ -607,6 +607,14 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         sprintf(hdPath, "m/44'/637'/%u'/0'/0'", index);
         result = aptos_generate_address(xPub);
         break;
+    case HOME_WALLET_CARD_XRP:
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
+        printf("xPub=%s\r\n", xPub);
+        sprintf(hdPath, "m/44'/144'/0'/0/%u", index);
+        printf("hdPath=%s\r\n", hdPath);
+        result = xrp_get_address(hdPath, xPub, "m/44'/144'/0'/");
+        printf("result=%s\r\n", result->data);
+        break;
 
     default:
         if (IsCosmosChain(g_chainCard)) {

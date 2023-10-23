@@ -96,6 +96,8 @@ static bool HasMoreBtn();
 static void SwitchAddressHandler(lv_event_t *e);
 static void OpenSwitchAddressHandler(lv_event_t *e);
 static void AddressLongModeCut(char *out, const char *address);
+static void SetCurrentSelectIndex(uint32_t selectIndex);
+static uint32_t GetCurrentSelectIndex();
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
 
@@ -106,6 +108,8 @@ static HOME_WALLET_CARD_ENUM g_chainCard;
 // to do: stored.
 static uint32_t g_showIndex;
 static uint32_t g_selectIndex[3] = {0};
+static uint32_t g_suiSelectIndex[3] = {0};
+static uint32_t g_aptosSelectIndex[3] = {0};
 static PageWidget_t *g_pageWidget;
 
 void GuiStandardReceiveInit(uint8_t chain)
@@ -156,7 +160,7 @@ void GuiStandardReceiveRefresh(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-        g_showIndex = g_selectIndex[GetCurrentAccountIndex()] / 5 * 5;
+        g_showIndex = GetCurrentSelectIndex() / 5 * 5;
         if (g_showIndex < 5) {
             lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);
             lv_obj_set_style_img_opa(g_standardReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
@@ -377,7 +381,7 @@ static void RefreshQrCode(void)
 {
     AddressDataItem_t addressDataItem;
 
-    ModelGetAddress(g_selectIndex[GetCurrentAccountIndex()], &addressDataItem);
+    ModelGetAddress(GetCurrentSelectIndex(), &addressDataItem);
     lv_qrcode_update(g_standardReceiveWidgets.qrCode, addressDataItem.address, strlen(addressDataItem.address));
     lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
     if (fullscreen_qrcode) {
@@ -411,7 +415,7 @@ static void RefreshSwitchAccount(void)
         lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkBox, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-        if (index == g_selectIndex[GetCurrentAccountIndex()]) {
+        if (index == GetCurrentSelectIndex()) {
             lv_obj_add_state(g_standardReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
             lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
@@ -533,7 +537,7 @@ static void SwitchAddressHandler(lv_event_t *e)
                 lv_obj_add_state(g_standardReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-                g_selectIndex[GetCurrentAccountIndex()] = g_showIndex + i;
+                SetCurrentSelectIndex(g_showIndex + i);
             } else {
                 lv_obj_clear_state(g_standardReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
@@ -633,9 +637,40 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 void GuiResetCurrentStandardAddressIndex(void)
 {
     g_selectIndex[GetCurrentAccountIndex()] = 0;
+    g_suiSelectIndex[GetCurrentAccountIndex()] = 0;
+    g_aptosSelectIndex[GetCurrentAccountIndex()] = 0;
 }
 
 void GuiResetAllStandardAddressIndex(void)
 {
     memset(g_selectIndex, 0, sizeof(g_selectIndex));
+    memset(g_suiSelectIndex, 0, sizeof(g_suiSelectIndex));
+    memset(g_aptosSelectIndex, 0, sizeof(g_aptosSelectIndex));
+}
+
+static void SetCurrentSelectIndex(uint32_t selectIndex)
+{
+    switch (g_chainCard) {
+    case HOME_WALLET_CARD_SUI:
+        g_suiSelectIndex[GetCurrentAccountIndex()] = selectIndex;
+        break;
+    case HOME_WALLET_CARD_APT:
+        g_aptosSelectIndex[GetCurrentAccountIndex()] = selectIndex;
+        break;
+    default:
+        g_selectIndex[GetCurrentAccountIndex()] = selectIndex;
+        break;
+    }
+}
+
+static uint32_t GetCurrentSelectIndex()
+{
+    switch (g_chainCard) {
+    case HOME_WALLET_CARD_SUI:
+        return g_suiSelectIndex[GetCurrentAccountIndex()];
+    case HOME_WALLET_CARD_APT:
+        return g_aptosSelectIndex[GetCurrentAccountIndex()];
+    default:
+        return g_selectIndex[GetCurrentAccountIndex()];
+    }
 }

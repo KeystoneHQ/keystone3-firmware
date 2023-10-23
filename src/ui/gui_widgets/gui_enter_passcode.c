@@ -326,7 +326,7 @@ static void PassWordPinSwitchHandler(lv_event_t *e)
                 lv_obj_set_parent(item->fpErrLabel, item->passWdCont);
             }
             if (item->mode == ENTER_PASSCODE_SET_PASSWORD) {
-                GuiSetKeyBoardMinTaLen(item->kb, 0);
+                GuiSetKeyBoardMinTaLen(item->kb, 6);
             }
         } else {
             lv_obj_add_flag(item->passWdCont, LV_OBJ_FLAG_HIDDEN);

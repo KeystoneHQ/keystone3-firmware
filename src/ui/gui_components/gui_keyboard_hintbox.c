@@ -121,7 +121,6 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
     keyboardWidget->keyboardHintBox = keyboardHintBox;
 
     KeyBoard_t *kb = GuiCreateFullKeyBoard(keyboardHintBox, KeyboardConfirmHandler, KEY_STONE_FULL_L, keyboardWidget);
-    GuiSetKeyBoardMinTaLen(kb, 0);
     lv_obj_t *ta = kb->ta;
     lv_textarea_set_placeholder_text(ta, _("Enter Passcode"));
     lv_obj_set_size(ta, 352, 100);

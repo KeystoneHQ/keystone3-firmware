@@ -21,6 +21,7 @@
 #include "keystore.h"
 #include "account_manager.h"
 #include "gui_global_resources.h"
+#include "gui_connect_eternl_widgets.h"
 
 #define DERIVATION_PATH_EG_LEN 2
 
@@ -35,6 +36,7 @@ WalletListItem_t g_walletListArray[] = {
     // {WALLET_LIST_KEYSTONE, &walletListKeyStone},
     {WALLET_LIST_OKX, &walletListOkx},
     {WALLET_LIST_METAMASK, &walletListMetaMask},
+    {WALLET_LIST_ETERNL, &walletListEternl},
     {WALLET_LIST_BLUE, &walletListBlue},
     // { WALLET_LIST_SUB, &walletListSub},
     {WALLET_LIST_SOLFARE, &walletListSolfare},
@@ -297,6 +299,12 @@ static void OpenQRCodeHandler(lv_event_t *e)
         if (IsSOL(g_connectWalletTileView.walletIndex)) {
             g_derivationPathDescs = GetDerivationPathDescs(SOL_DERIVATION_PATH_DESC);
         }
+        if (g_connectWalletTileView.walletIndex == WALLET_LIST_ETERNL)
+        {
+            GuiCreateConnectEternlWidget();
+            return;
+        }
+        
         g_isCoinReselected = false;
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
     }

@@ -40,6 +40,7 @@ int32_t GuiQrCodeViewEventProcess(void *self, uint16_t usEvent, void *param, uin
     case SIG_QRCODE_VIEW_SCAN_PASS:
         GuiQrCodeScanResult(true, param);
         break;
+        
     case SIG_VERIFY_PASSWORD_PASS:
         if (param != NULL) {
             uint16_t sig = *(uint16_t *)param;

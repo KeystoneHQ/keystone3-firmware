@@ -89,6 +89,14 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_SOLFARE].items[0].qrTitle = _("connect_solflare_qr_title");
         g_tutorials[WALLET_LIST_SOLFARE].items[0].qrUrl = _("connect_solflare_qr_link");
 
+        //WALLET_LIST_ETERNL
+        g_tutorials[WALLET_LIST_ETERNL].len = 1;
+        g_tutorials[WALLET_LIST_ETERNL].desc = _("connect_eternl_desc");
+        g_tutorials[WALLET_LIST_ETERNL].items[0].walletName = _("connect_eternl_title");
+        g_tutorials[WALLET_LIST_ETERNL].items[0].url = _("connect_eternl_link");
+        g_tutorials[WALLET_LIST_ETERNL].items[0].qrTitle = _("connect_eternl_qr_title");
+        g_tutorials[WALLET_LIST_ETERNL].items[0].qrUrl = _("connect_eternl_qr_link");
+
         //WALLET_LIST_RABBY
         g_tutorials[WALLET_LIST_RABBY].len = 1;
         g_tutorials[WALLET_LIST_RABBY].desc = _("connect_rabby_desc");
@@ -176,6 +184,8 @@ static void WalletTutorialsInit()
 void GuiWalletTutorialInit(WALLET_LIST_INDEX_ENUM tutorialIndex)
 {
     WalletTutorialsInit();
+
+    printf("index: %d\r\n", tutorialIndex);
 
     WalletTutorial_t *tutorial = &g_tutorials[tutorialIndex];
 

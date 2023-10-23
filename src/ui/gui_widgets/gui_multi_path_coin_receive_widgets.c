@@ -89,8 +89,8 @@ typedef struct {
 static void GuiCreateMoreWidgets(lv_obj_t *parent);
 static void GuiEthereumReceiveGotoTile(EthereumReceiveTile tile);
 static void GuiCreateQrCodeWidget(lv_obj_t *parent);
-static void GuiCreateSwitchAccountWidget(lv_obj_t *parent);
-static void GuiCreateSwitchAccountButtons(lv_obj_t *parent);
+static void GuiCreateSwitchAddressWidget(lv_obj_t *parent);
+static void GuiCreateSwitchAddressButtons(lv_obj_t *parent);
 static void GuiCreateChangePathWidget(lv_obj_t *parent);
 
 static void RefreshQrCode(void);
@@ -106,7 +106,7 @@ static void LeftBtnHandler(lv_event_t *e);
 static void RightBtnHandler(lv_event_t* e);
 static void ChangePathCheckHandler(lv_event_t *e);
 static void SwitchAddressHandler(lv_event_t *e);
-static void SelectAddressHandler(lv_event_t *e);
+static void OpenSwitchAddressHandler(lv_event_t *e);
 
 static void GetPathItemSubTitle(char* subTitle, int index);
 static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item);
@@ -194,8 +194,8 @@ void GuiMultiPathCoinReceiveInit(uint8_t chain)
     g_multiPathCoinReceiveWidgets.tileQrCode = lv_tileview_add_tile(g_multiPathCoinReceiveWidgets.tileView, RECEIVE_TILE_QRCODE, 0, LV_DIR_HOR);
     GuiCreateQrCodeWidget(g_multiPathCoinReceiveWidgets.tileQrCode);
     g_multiPathCoinReceiveWidgets.tileSwitchAccount = lv_tileview_add_tile(g_multiPathCoinReceiveWidgets.tileView, RECEIVE_TILE_SWITCH_ACCOUNT, 0, LV_DIR_HOR);
-    GuiCreateSwitchAccountWidget(g_multiPathCoinReceiveWidgets.tileSwitchAccount);
-    GuiCreateSwitchAccountButtons(g_multiPathCoinReceiveWidgets.tileSwitchAccount);
+    GuiCreateSwitchAddressWidget(g_multiPathCoinReceiveWidgets.tileSwitchAccount);
+    GuiCreateSwitchAddressButtons(g_multiPathCoinReceiveWidgets.tileSwitchAccount);
     g_multiPathCoinReceiveWidgets.tileChangePath = lv_tileview_add_tile(g_multiPathCoinReceiveWidgets.tileView, RECEIVE_TILE_CHANGE_PATH, 0, LV_DIR_HOR);
     GuiCreateChangePathWidget(g_multiPathCoinReceiveWidgets.tileChangePath);
     lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.tileView, LV_OBJ_FLAG_SCROLLABLE);
@@ -350,7 +350,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_border_width(g_multiPathCoinReceiveWidgets.addressButton, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_outline_width(g_multiPathCoinReceiveWidgets.addressButton, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(g_multiPathCoinReceiveWidgets.addressButton, 0, LV_PART_MAIN);
-    lv_obj_add_event_cb(g_multiPathCoinReceiveWidgets.addressButton, SelectAddressHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(g_multiPathCoinReceiveWidgets.addressButton, OpenSwitchAddressHandler, LV_EVENT_CLICKED, NULL);
     tempObj = GuiCreateImg(g_multiPathCoinReceiveWidgets.addressButton, &imgArrowRight);
     lv_obj_set_style_img_opa(tempObj, LV_OPA_56, LV_PART_MAIN);
     lv_obj_align(tempObj, LV_ALIGN_CENTER, 150, 0);
@@ -391,7 +391,7 @@ static void GetHint(char *hint)
     }
 }
 
-static void GuiCreateSwitchAccountWidget(lv_obj_t *parent)
+static void GuiCreateSwitchAddressWidget(lv_obj_t *parent)
 {
     //Create the account list page.
     uint32_t index;
@@ -435,7 +435,7 @@ static void GuiCreateSwitchAccountWidget(lv_obj_t *parent)
     RefreshSwitchAccount();
 }
 
-static void GuiCreateSwitchAccountButtons(lv_obj_t *parent)
+static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
 {
     lv_obj_t *btn;
     lv_obj_t *img;
@@ -892,7 +892,7 @@ static void SwitchAddressHandler(lv_event_t *e)
     }
 }
 
-static void SelectAddressHandler(lv_event_t *e)
+static void OpenSwitchAddressHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 

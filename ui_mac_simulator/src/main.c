@@ -6,6 +6,7 @@
 
 int main(void)
 {
+
     lv_init();
 
     hal_setup();

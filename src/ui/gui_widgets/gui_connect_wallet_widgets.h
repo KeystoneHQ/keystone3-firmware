@@ -9,11 +9,13 @@
 #define _GUI_CONNECT_WALLET_WIDGETS_H
 
 #include "gui_views.h"
+#include "librust_c.h"
 
 typedef enum {
     WALLET_LIST_KEYSTONE,
     WALLET_LIST_METAMASK,
     WALLET_LIST_OKX,
+    WALLET_LIST_ETERNL,
     WALLET_LIST_BLUE,
     WALLET_LIST_SUB,
     WALLET_LIST_SOLFARE,

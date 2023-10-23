@@ -102,8 +102,8 @@ typedef struct {
 static void GuiCreateMoreWidgets(lv_obj_t *parent);
 static void GuiBitcoinReceiveGotoTile(UtxoReceiveTile tile);
 static void GuiCreateQrCodeWidget(lv_obj_t *parent);
-static void GuiCreateSwitchAccountWidget(lv_obj_t *parent);
-static void GuiCreateSwitchAccountButtons(lv_obj_t *parent);
+static void GuiCreateSwitchAddressWidget(lv_obj_t *parent);
+static void GuiCreateSwitchAddressButtons(lv_obj_t *parent);
 static void GuiCreateAddressSettingsWidget(lv_obj_t *parent);
 static void GuiCreateGotoAddressWidgets(lv_obj_t *parent);
 
@@ -118,7 +118,7 @@ static void LeftBtnHandler(lv_event_t *e);
 static void RightBtnHandler(lv_event_t *e);
 static void AddressSettingsCheckHandler(lv_event_t *e);
 static void SwitchAddressHandler(lv_event_t *e);
-static void SelectAddressHandler(lv_event_t *e);
+static void OpenSwitchAddressHandler(lv_event_t *e);
 static void ChangeAddressHandler(lv_event_t *e);
 static void GotoAddressHandler(lv_event_t *e);
 static void GotoAddressKeyboardHandler(lv_event_t *e);
@@ -178,8 +178,8 @@ void GuiReceiveInit(uint8_t chain)
     g_utxoReceiveWidgets.tileQrCode = lv_tileview_add_tile(g_utxoReceiveWidgets.tileView, UTXO_RECEIVE_TILE_QRCODE, 0, LV_DIR_HOR);
     GuiCreateQrCodeWidget(g_utxoReceiveWidgets.tileQrCode);
     g_utxoReceiveWidgets.tileSwitchAccount = lv_tileview_add_tile(g_utxoReceiveWidgets.tileView, UTXO_RECEIVE_TILE_SWITCH_ACCOUNT, 0, LV_DIR_HOR);
-    GuiCreateSwitchAccountWidget(g_utxoReceiveWidgets.tileSwitchAccount);
-    GuiCreateSwitchAccountButtons(g_utxoReceiveWidgets.tileSwitchAccount);
+    GuiCreateSwitchAddressWidget(g_utxoReceiveWidgets.tileSwitchAccount);
+    GuiCreateSwitchAddressButtons(g_utxoReceiveWidgets.tileSwitchAccount);
     g_utxoReceiveWidgets.tileAddressSettings = lv_tileview_add_tile(g_utxoReceiveWidgets.tileView, UTXO_RECEIVE_TILE_ADDRESS_SETTINGS, 0, LV_DIR_HOR);
     GuiCreateAddressSettingsWidget(g_utxoReceiveWidgets.tileAddressSettings);
     lv_obj_clear_flag(g_utxoReceiveWidgets.tileView, LV_OBJ_FLAG_SCROLLABLE);
@@ -388,7 +388,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_border_width(g_utxoReceiveWidgets.addressButton, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_outline_width(g_utxoReceiveWidgets.addressButton, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(g_utxoReceiveWidgets.addressButton, 0, LV_PART_MAIN);
-    lv_obj_add_event_cb(g_utxoReceiveWidgets.addressButton, SelectAddressHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(g_utxoReceiveWidgets.addressButton, OpenSwitchAddressHandler, LV_EVENT_CLICKED, NULL);
     tempObj = GuiCreateImg(g_utxoReceiveWidgets.addressButton, &imgArrowRight);
     lv_obj_set_style_img_opa(tempObj, LV_OPA_56, LV_PART_MAIN);
     lv_obj_align(tempObj, LV_ALIGN_CENTER, 150, 0);
@@ -496,7 +496,7 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
     }
 }
 
-static void GuiCreateSwitchAccountWidget(lv_obj_t *parent)
+static void GuiCreateSwitchAddressWidget(lv_obj_t *parent)
 {
     // Create the account list page.
     AddressDataItem_t addressDataItem;
@@ -542,7 +542,7 @@ static void GuiCreateSwitchAccountWidget(lv_obj_t *parent)
     RefreshSwitchAccount();
 }
 
-static void GuiCreateSwitchAccountButtons(lv_obj_t *parent)
+static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
 {
     lv_obj_t *btn;
     lv_obj_t *img;
@@ -861,7 +861,7 @@ static void ChangeAddressHandler(lv_event_t *e)
     }
 }
 
-static void SelectAddressHandler(lv_event_t *e)
+static void OpenSwitchAddressHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 

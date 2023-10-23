@@ -31,6 +31,7 @@
 #include "screen_manager.h"
 #include "keystore.h"
 #include "account_manager.h"
+#include "qrdecode_task.h"
 #ifndef COMPILE_SIMULATOR
 #include "rust.h"
 #include "user_msg.h"
@@ -1029,7 +1030,8 @@ static int32_t ModeControlQrDecode(const void *inData, uint32_t inDataLen)
     }
 #else
     static uint8_t urRet = 0;
-    GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urRet, sizeof(urRet));
+    UrViewType_t urViewType = { KeyDerivationRequest, QRHardwareCall };
+    GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
     // GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_FAIL, &urRet, sizeof(urRet));
 #endif
     SetLockScreen(enable);

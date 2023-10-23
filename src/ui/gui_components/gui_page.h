@@ -15,5 +15,10 @@ PageWidget_t *CreatePageWidget(void);
 void UpdatePageContentZone(PageWidget_t *pageWidget);
 void DestroyPageWidget(PageWidget_t *pageWidget);
 
+#define GUI_PAGE_DEL(obj)   if(obj != NULL) {   \
+    DestroyPageWidget(obj);                     \
+    obj = NULL;                                 \
+}
+
 
 #endif /* _GUI_PAGE_H */

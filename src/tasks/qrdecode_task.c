@@ -191,15 +191,22 @@ void ProcessQr(uint32_t count)
 void handleURResult(void *urResult, UrViewType_t urViewType, bool is_multi)
 {
     GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
-    if (urViewType.viewType == WebAuthResult) {
+    switch (urViewType.viewType)
+    {
+    case WebAuthResult:
         GuiSetWebAuthResultData(urResult, is_multi);
-    } else {
+        break;
+    case KeyDerivationRequest:
+        GuiSetKeyDerivationRequestData(urResult, is_multi);
+        break;
+    default:
         if (viewType != REMAPVIEW_BUTT) {
             g_chainViewArray[viewType].func(urResult, is_multi);
         }
+        break;
     }
 
-    if (urViewType.viewType == WebAuthResult || viewType != REMAPVIEW_BUTT) {
+    if (urViewType.viewType == WebAuthResult || urViewType.viewType == KeyDerivationRequest || viewType != REMAPVIEW_BUTT) {
         StopQrDecode();
         UserDelay(500);
         GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));

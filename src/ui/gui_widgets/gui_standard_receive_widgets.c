@@ -78,8 +78,8 @@ typedef struct {
 static void GuiCreateMoreWidgets(lv_obj_t *parent);
 static void GuiStandardReceiveGotoTile(StandardReceiveTile tile);
 static void GuiCreateQrCodeWidget(lv_obj_t *parent);
-static void GuiCreateSwitchAccountWidget(lv_obj_t *parent);
-static void GuiCreateSwitchAccountButtons(lv_obj_t *parent);
+static void GuiCreateSwitchAddressWidget(lv_obj_t *parent);
+static void GuiCreateSwitchAddressButtons(lv_obj_t *parent);
 
 static void RefreshQrCode(void);
 static void RefreshSwitchAccount(void);
@@ -94,7 +94,7 @@ static void RightBtnHandler(lv_event_t *e);
 static bool IsAccountSwitchable();
 static bool HasMoreBtn();
 static void SwitchAddressHandler(lv_event_t *e);
-static void SelectAddressHandler(lv_event_t *e);
+static void OpenSwitchAddressHandler(lv_event_t *e);
 static void AddressLongModeCut(char *out, const char *address);
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
@@ -120,8 +120,8 @@ void GuiStandardReceiveInit(uint8_t chain)
     GuiCreateQrCodeWidget(g_standardReceiveWidgets.tileQrCode);
     if (IsAccountSwitchable()) {
         g_standardReceiveWidgets.tileSwitchAccount = lv_tileview_add_tile(g_standardReceiveWidgets.tileView, RECEIVE_TILE_SWITCH_ACCOUNT, 0, LV_DIR_HOR);
-        GuiCreateSwitchAccountWidget(g_standardReceiveWidgets.tileSwitchAccount);
-        GuiCreateSwitchAccountButtons(g_standardReceiveWidgets.tileSwitchAccount);
+        GuiCreateSwitchAddressWidget(g_standardReceiveWidgets.tileSwitchAccount);
+        GuiCreateSwitchAddressButtons(g_standardReceiveWidgets.tileSwitchAccount);
     }
     lv_obj_clear_flag(g_standardReceiveWidgets.tileView, LV_OBJ_FLAG_SCROLLABLE);
 }
@@ -261,7 +261,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_outline_width(g_standardReceiveWidgets.addressButton, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(g_standardReceiveWidgets.addressButton, 0, LV_PART_MAIN);
     if (IsAccountSwitchable()) {
-        lv_obj_add_event_cb(g_standardReceiveWidgets.addressButton, SelectAddressHandler, LV_EVENT_CLICKED, NULL);
+        lv_obj_add_event_cb(g_standardReceiveWidgets.addressButton, OpenSwitchAddressHandler, LV_EVENT_CLICKED, NULL);
         tempObj = GuiCreateImg(g_standardReceiveWidgets.addressButton, &imgArrowRight);
         lv_obj_set_style_img_opa(tempObj, LV_OPA_56, LV_PART_MAIN);
         lv_obj_align(tempObj, LV_ALIGN_CENTER, 150, 0);
@@ -299,7 +299,7 @@ void GetAttentionText(char* text)
     }
 }
 
-static void GuiCreateSwitchAccountWidget(lv_obj_t *parent)
+static void GuiCreateSwitchAddressWidget(lv_obj_t *parent)
 {
     // Create the account list page.
     uint32_t index;
@@ -343,7 +343,7 @@ static void GuiCreateSwitchAccountWidget(lv_obj_t *parent)
     RefreshSwitchAccount();
 }
 
-static void GuiCreateSwitchAccountButtons(lv_obj_t *parent)
+static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
 {
     lv_obj_t *btn;
     lv_obj_t *img;
@@ -543,7 +543,7 @@ static void SwitchAddressHandler(lv_event_t *e)
     }
 }
 
-static void SelectAddressHandler(lv_event_t *e)
+static void OpenSwitchAddressHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 

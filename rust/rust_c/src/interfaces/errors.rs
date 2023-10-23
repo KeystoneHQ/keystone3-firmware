@@ -30,6 +30,7 @@ pub enum ErrorCodes {
     UnexpectedError,
     InvalidHex,
     WebAuthFailed,
+    InvalidData,
 
     //UR errors
     CborDecodeError = 20,
@@ -216,6 +217,7 @@ impl From<&RustCError> for ErrorCodes {
             RustCError::UnexpectedError(_) => Self::UnexpectedError,
             RustCError::InvalidHex(_) => Self::InvalidHex,
             RustCError::WebAuthFailed(_) => Self::WebAuthFailed,
+            RustCError::InvalidData(_) => Self::InvalidData,
         }
     }
 }
@@ -374,6 +376,8 @@ pub enum RustCError {
     InvalidHex(String),
     #[error("web auth failed: {0}")]
     WebAuthFailed(String),
+    #[error("invalid data: {0}")]
+    InvalidData(String),
 }
 
 #[derive(Error, Debug, PartialEq)]

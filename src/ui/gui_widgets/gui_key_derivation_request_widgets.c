@@ -89,9 +89,11 @@ void GuiKeyDerivationRequestInit()
 void GuiKeyDerivationRequestDeInit()
 {
     GUI_PAGE_DEL(g_keyDerivationTileView.pageWidget);
+    GuiAnimatingQRCodeDestroyTimer();
 }
 void GuiKeyDerivationRequestRefresh()
 {
+    GuiAnimatingQRCodeControl(false);
 }
 void GuiKeyDerivationRequestNextTile()
 {
@@ -113,6 +115,7 @@ void GuiKeyDerivationRequestPrevTile()
     {
     case TILE_APPROVE:
         SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+        GuiAnimatingQRCodeDestroyTimer();
         break;
     default:
         break;
@@ -143,23 +146,23 @@ static void ModelParseQRHardwareCall()
     g_response->data->key_derivation->schemas->data = SRAM_MALLOC(5 * sizeof(KeyDerivationSchema));
     g_response->data->key_derivation->schemas->data[0].algo = "BIP32-ED25519";
     g_response->data->key_derivation->schemas->data[0].curve = "ED25519";
-    g_response->data->key_derivation->schemas->data[0].key_path = "m/1852'/1815'/0'";
+    g_response->data->key_derivation->schemas->data[0].key_path = "1852'/1815'/0'";
 
     g_response->data->key_derivation->schemas->data[1].algo = "BIP32-ED25519";
     g_response->data->key_derivation->schemas->data[1].curve = "ED25519";
-    g_response->data->key_derivation->schemas->data[1].key_path = "m/1852'/1815'/1'";
+    g_response->data->key_derivation->schemas->data[1].key_path = "1852'/1815'/1'";
 
     g_response->data->key_derivation->schemas->data[2].algo = "BIP32-ED25519";
     g_response->data->key_derivation->schemas->data[2].curve = "ED25519";
-    g_response->data->key_derivation->schemas->data[2].key_path = "m/1852'/1815'/2'";
+    g_response->data->key_derivation->schemas->data[2].key_path = "1852'/1815'/2'";
 
     g_response->data->key_derivation->schemas->data[3].algo = "BIP32-ED25519";
     g_response->data->key_derivation->schemas->data[3].curve = "ED25519";
-    g_response->data->key_derivation->schemas->data[3].key_path = "m/1852'/1815'/3'";
+    g_response->data->key_derivation->schemas->data[3].key_path = "1852'/1815'/3'";
 
     g_response->data->key_derivation->schemas->data[4].algo = "BIP32-ED25519";
     g_response->data->key_derivation->schemas->data[4].curve = "ED25519";
-    g_response->data->key_derivation->schemas->data[4].key_path = "m/1852'/1815'/4'";
+    g_response->data->key_derivation->schemas->data[4].key_path = "1852'/1815'/4'";
 
     g_callData = g_response->data;
 }
@@ -189,29 +192,29 @@ static UREncodeResult *ModelGenerateSyncUR(void)
 
 static uint8_t GetXPubIndexByPath(char *path)
 {
-    if (strcmp("m/1852'/1815'/1'", path)) return XPUB_TYPE_ADA_1;
-    if (strcmp("m/1852'/1815'/2'", path)) return XPUB_TYPE_ADA_2;
-    if (strcmp("m/1852'/1815'/3'", path)) return XPUB_TYPE_ADA_3;
-    if (strcmp("m/1852'/1815'/4'", path)) return XPUB_TYPE_ADA_4;
-    if (strcmp("m/1852'/1815'/5'", path)) return XPUB_TYPE_ADA_5;
-    if (strcmp("m/1852'/1815'/6'", path)) return XPUB_TYPE_ADA_6;
-    if (strcmp("m/1852'/1815'/7'", path)) return XPUB_TYPE_ADA_7;
-    if (strcmp("m/1852'/1815'/8'", path)) return XPUB_TYPE_ADA_8;
-    if (strcmp("m/1852'/1815'/9'", path)) return XPUB_TYPE_ADA_9;
-    if (strcmp("m/1852'/1815'/10'", path)) return XPUB_TYPE_ADA_10;
-    if (strcmp("m/1852'/1815'/11'", path)) return XPUB_TYPE_ADA_11;
-    if (strcmp("m/1852'/1815'/12'", path)) return XPUB_TYPE_ADA_12;
-    if (strcmp("m/1852'/1815'/13'", path)) return XPUB_TYPE_ADA_13;
-    if (strcmp("m/1852'/1815'/14'", path)) return XPUB_TYPE_ADA_14;
-    if (strcmp("m/1852'/1815'/15'", path)) return XPUB_TYPE_ADA_15;
-    if (strcmp("m/1852'/1815'/16'", path)) return XPUB_TYPE_ADA_16;
-    if (strcmp("m/1852'/1815'/17'", path)) return XPUB_TYPE_ADA_17;
-    if (strcmp("m/1852'/1815'/18'", path)) return XPUB_TYPE_ADA_18;
-    if (strcmp("m/1852'/1815'/19'", path)) return XPUB_TYPE_ADA_19;
-    if (strcmp("m/1852'/1815'/20'", path)) return XPUB_TYPE_ADA_20;
-    if (strcmp("m/1852'/1815'/21'", path)) return XPUB_TYPE_ADA_21;
-    if (strcmp("m/1852'/1815'/22'", path)) return XPUB_TYPE_ADA_22;
-    if (strcmp("m/1852'/1815'/23'", path)) return XPUB_TYPE_ADA_23;
+    if (strcmp("1852'/1815'/1'", path) == 0) return XPUB_TYPE_ADA_1;
+    if (strcmp("1852'/1815'/2'", path) == 0) return XPUB_TYPE_ADA_2;
+    if (strcmp("1852'/1815'/3'", path) == 0) return XPUB_TYPE_ADA_3;
+    if (strcmp("1852'/1815'/4'", path) == 0) return XPUB_TYPE_ADA_4;
+    if (strcmp("1852'/1815'/5'", path) == 0) return XPUB_TYPE_ADA_5;
+    if (strcmp("1852'/1815'/6'", path) == 0) return XPUB_TYPE_ADA_6;
+    if (strcmp("1852'/1815'/7'", path) == 0) return XPUB_TYPE_ADA_7;
+    if (strcmp("1852'/1815'/8'", path) == 0) return XPUB_TYPE_ADA_8;
+    if (strcmp("1852'/1815'/9'", path) == 0) return XPUB_TYPE_ADA_9;
+    if (strcmp("1852'/1815'/10'", path) == 0) return XPUB_TYPE_ADA_10;
+    if (strcmp("1852'/1815'/11'", path) == 0) return XPUB_TYPE_ADA_11;
+    if (strcmp("1852'/1815'/12'", path) == 0) return XPUB_TYPE_ADA_12;
+    if (strcmp("1852'/1815'/13'", path) == 0) return XPUB_TYPE_ADA_13;
+    if (strcmp("1852'/1815'/14'", path) == 0) return XPUB_TYPE_ADA_14;
+    if (strcmp("1852'/1815'/15'", path) == 0) return XPUB_TYPE_ADA_15;
+    if (strcmp("1852'/1815'/16'", path) == 0) return XPUB_TYPE_ADA_16;
+    if (strcmp("1852'/1815'/17'", path) == 0) return XPUB_TYPE_ADA_17;
+    if (strcmp("1852'/1815'/18'", path) == 0) return XPUB_TYPE_ADA_18;
+    if (strcmp("1852'/1815'/19'", path) == 0) return XPUB_TYPE_ADA_19;
+    if (strcmp("1852'/1815'/20'", path) == 0) return XPUB_TYPE_ADA_20;
+    if (strcmp("1852'/1815'/21'", path) == 0) return XPUB_TYPE_ADA_21;
+    if (strcmp("1852'/1815'/22'", path) == 0) return XPUB_TYPE_ADA_22;
+    if (strcmp("1852'/1815'/23'", path) == 0) return XPUB_TYPE_ADA_23;
     return XPUB_TYPE_ADA_0;
 }
 

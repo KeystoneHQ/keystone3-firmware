@@ -253,6 +253,7 @@ bool BatteryIntervalHandler(void)
     uint32_t milliVolt;
     bool change = false;
     static bool first = true;
+    static uint8_t delayIncreate = 0;
 
     usbPowerState = GetUsbPowerState();
     milliVolt = GetBatteryMilliVolt();
@@ -277,11 +278,23 @@ bool BatteryIntervalHandler(void)
         //The battery percentage decrease by 1% each time.
         g_batterPercent--;
         change = true;
-    } else if (percent > g_batterPercent && usbPowerState == USB_POWER_STATE_CONNECT) {
+    } else if (usbPowerState == USB_POWER_STATE_CONNECT) {
         //The battery percentage only increase when charging.
         //The battery percentage increase by 1% each time.
-        g_batterPercent++;
-        change = true;
+        if (percent < g_batterPercent && percent >= 80) {
+            printf("delay increate battery percentage delayIncreate = %d\n", delayIncreate);
+            delayIncreate++;
+        }
+        
+        // delayIncreate == 4 * 80 320s
+        if (percent > g_batterPercent || delayIncreate == 1) {
+            g_batterPercent++;
+            if (g_batterPercent >= 100) {
+                g_batterPercent = 100;
+            }
+            change = true;
+            delayIncreate = 0;
+        }
     }
     BATTERY_PRINTF("g_batterPercent=%d\r\n", g_batterPercent);
     if (change) {

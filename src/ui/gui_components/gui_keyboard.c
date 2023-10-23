@@ -994,17 +994,16 @@ bool GuiWordsWhole(const char* text)
 
 void UpdateFullKeyBoard(const char *str, KeyBoard_t *keyBoard)
 {
-    // if (keyBoard->mode != KEY_STONE_FULL_L && keyBoard->mode != KEY_STONE_FULL_U) {
-    //     return;
-    // }
+    if (keyBoard->mode != KEY_STONE_FULL_L && keyBoard->mode != KEY_STONE_FULL_U) {
+        return;
+    }
 
-    // if (strlen(str) >= keyBoard->taMinLen) {
-    //     g_kbCtrl[keyBoard->mode - KEY_STONE_FULL_L][42] = LV_BTNMATRIX_CTRL_CHECKED | 2;
-    // } else {
-    //     g_kbCtrl[keyBoard->mode - KEY_STONE_FULL_L][42] = LV_BTNMATRIX_CTRL_HIDDEN | 2;
-    //     // g_kbCtrl[keyBoard->mode - KEY_STONE_FULL_L][42] = LV_BTNMATRIX_CTRL_DISABLED | 2;
-    // }
-    // GuiKeyBoardSetMode(keyBoard);
+    if (strlen(str) >= keyBoard->taMinLen) {
+        g_kbCtrl[keyBoard->mode - KEY_STONE_FULL_L][42] = LV_BTNMATRIX_CTRL_CHECKED | 2;
+    } else {
+        g_kbCtrl[keyBoard->mode - KEY_STONE_FULL_L][42] = LV_BTNMATRIX_CTRL_DISABLED | 2;
+    }
+    GuiKeyBoardSetMode(keyBoard);
 }
 
 void UpdateKeyBoard(TrieSTPtr root, const char *str, KeyBoard_t *keyBoard)
@@ -1192,9 +1191,9 @@ void KbTextAreaHandler(lv_event_t * e)
             }
             UpdateKeyBoard(rootTree, currText, keyBoard);
         } else {
-            // if (keyBoard->mode == KEY_STONE_FULL_L || keyBoard->mode == KEY_STONE_FULL_U) {
-            //     UpdateFullKeyBoard(currText, keyBoard);
-            // }
+            if (keyBoard->mode == KEY_STONE_FULL_L || keyBoard->mode == KEY_STONE_FULL_U) {
+                UpdateFullKeyBoard(currText, keyBoard);
+            }
 
             if (g_enterProgressLabel != NULL) {
                 lv_label_set_text_fmt(g_enterProgressLabel, "%d/16", taLen);

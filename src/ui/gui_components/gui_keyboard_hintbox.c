@@ -258,7 +258,9 @@ static void GuiHintBoxToLockSreen(void)
     static uint16_t sig = SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS;
     GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_UNLOCK);
     GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &sig, sizeof(sig));
-
+    if (GuiNeedFpRecognize()) {
+        FpRecognize(RECOGNIZE_UNLOCK);
+    }
 }
 
 static void CountDownHandler(lv_timer_t *timer)

@@ -540,7 +540,9 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             printf("xPubResult=%s\r\n", xPubResult->data);
             free_simple_response_c_char(xPubResult);
         }
-        free_simple_response_c_char(response);
+        if(!isSlip39) {
+            free_simple_response_c_char(response);
+        }
         g_tempPublicKeyAccountIndex = accountIndex;
     }
     CLEAR_ARRAY(seed);

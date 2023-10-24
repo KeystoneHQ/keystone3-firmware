@@ -42,6 +42,8 @@ void GuiJumpToLockDevicePage(void);
 void GuiLockScreenFpRecognize(void);
 bool GuiNeedFpRecognize(void);
 
+void GuiShowGenerateXPubLoading(void);
+void GuiHideGenerateXPubLoading(void);
 #endif /* _GUI_LOCK_WIDGETS_H */
 
 

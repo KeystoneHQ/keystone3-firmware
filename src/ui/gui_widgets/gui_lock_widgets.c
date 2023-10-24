@@ -41,6 +41,7 @@ static bool ModelGetPassphraseQuickAccess(void);
 static void GuiPassowrdToLockTimePage(uint16_t errorCount);
 void GuiLockScreenClearModal(lv_obj_t *cont);
 static char* GuiJudgeTitle();
+static void CountDownTimerChangeLabelTextHandler(lv_timer_t *timer);
 
 static GuiEnterPasscodeItem_t *g_verifyLock = NULL;
 static lv_obj_t *g_lockScreenCont;
@@ -48,6 +49,11 @@ static bool g_firstUnlock = true;
 static uint8_t g_fpErrorCount = 0;
 static LOCK_SCREEN_PURPOSE_ENUM g_purpose = LOCK_SCREEN_PURPOSE_UNLOCK;
 static PageWidget_t *g_pageWidget;
+
+static lv_obj_t *g_LoadingView = NULL;
+static lv_timer_t *g_countDownTimer;
+static int8_t g_countDown = 0;
+static bool g_canDismissLoading = false;
 
 void GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_ENUM purpose)
 {
@@ -232,6 +238,16 @@ void GuiLockScreenTurnOff(void)
         GuiEmitSignal(GUI_EVENT_REFRESH, &single, sizeof(single));
     }
     // g_lockView.isActive = false;
+
+    // Close the loading page after closing the lock screen page
+    if (g_canDismissLoading) {
+        if (g_LoadingView != NULL && lv_obj_is_valid(g_LoadingView)) {
+            GuiStopCircleAroundAnimation();
+            lv_obj_del(g_LoadingView);
+            g_LoadingView = NULL;
+        }
+    }
+    
 }
 
 void GuiUpdateOldAccountIndex(void)
@@ -445,3 +461,61 @@ static bool ModelGetPassphraseQuickAccess(void)
 #endif
 }
 
+static void CountDownTimerChangeLabelTextHandler(lv_timer_t *timer)
+{
+    lv_obj_t *obj = (lv_obj_t *)timer->user_data;
+    ++g_countDown;
+    if (g_countDown == 3) {
+        lv_label_set_text(obj, "Setting up support for new coins...");
+    } else  if (g_countDown == 6) {
+        lv_label_set_text(obj, "Generating extended public key...");
+        if (g_countDownTimer != NULL) {
+            g_countDown = 0;
+            lv_timer_del(g_countDownTimer);
+            g_countDownTimer = NULL;
+            UNUSED(g_countDownTimer);
+        }
+    }
+}
+
+void GuiShowGenerateXPubLoading(void)
+{
+    if (GuiLockScreenIsTop() == false) {
+        return;
+    }
+    
+    if (g_LoadingView != NULL && lv_obj_is_valid(g_LoadingView)) {
+        lv_obj_del(g_LoadingView);
+        g_LoadingView = NULL;
+    }
+    
+    SetPageLockScreen(false);
+    g_canDismissLoading = false;
+
+    g_LoadingView = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
+    GuiCreateCircleAroundAnimation(g_LoadingView, -51);
+    lv_obj_add_flag(g_LoadingView, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_size(g_LoadingView, lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
+
+    lv_obj_t *label = GuiCreateTextLabel(g_LoadingView, "Preparing Wallet");
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 403);
+
+    lv_obj_t *hintLabel = GuiCreateNoticeLabel(g_LoadingView, "New chains support detected");
+    lv_obj_set_style_text_align(hintLabel, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_width(hintLabel, 408);
+    lv_obj_align(hintLabel, LV_ALIGN_TOP_MID, 0, 457);
+
+    lv_obj_align(g_LoadingView, LV_ALIGN_DEFAULT, 0, 0);
+
+    g_countDown = 0;
+    g_countDownTimer = lv_timer_create(CountDownTimerChangeLabelTextHandler, 1000, hintLabel);
+}
+
+void GuiHideGenerateXPubLoading(void)
+{   
+    if (GuiLockScreenIsTop() == false) {
+        return;
+    }
+    g_canDismissLoading = true;
+    SetPageLockScreen(true);
+}

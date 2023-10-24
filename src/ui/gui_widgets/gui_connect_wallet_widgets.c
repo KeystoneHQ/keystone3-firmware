@@ -314,10 +314,10 @@ static void ReturnShowQRHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
+        GUI_DEL_OBJ(g_coinListCont)
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
-        GUI_DEL_OBJ(g_coinListCont)
     }
 }
 
@@ -364,10 +364,10 @@ static void ConfirmSelectCompanionAppCoinsHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         g_isCoinReselected = true;
         memcpy(g_companionAppcoinState, g_tempCompanionAppcoinState, sizeof(g_tempCompanionAppcoinState));
+        GUI_DEL_OBJ(g_coinListCont)
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
-        GUI_DEL_OBJ(g_coinListCont)
     }
 }
 
@@ -377,10 +377,10 @@ static void ConfirmSelectFewchaCoinsHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         g_isCoinReselected = true;
         memcpy(g_fewchaCoinState, g_tempFewchaCoinState, sizeof(g_tempFewchaCoinState));
+        GUI_DEL_OBJ(g_coinListCont)
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
-        GUI_DEL_OBJ(g_coinListCont)
     }
 }
 
@@ -388,6 +388,9 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
+        if (g_coinListCont != NULL) {
+            return;
+        }
 #ifndef COMPILE_SIMULATOR
         GuiAnimatingQRCodeDestroyTimer();
 #endif
@@ -1424,7 +1427,6 @@ void GuiConnectWalletRefresh(void)
         GUI_DEL_OBJ(g_derivationPathCont);
         OpenDerivationPath();
     }
-
 }
 
 void GuiConnectWalletDeInit(void)

@@ -78,7 +78,8 @@ UREncodeResult *GuiGetSuiSignQrCodeData(void)
     do {
         uint8_t seed[64];
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        encodeResult = sui_sign_intent(data, seed, sizeof(seed));
+        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+        encodeResult = sui_sign_intent(data, seed, len);
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);

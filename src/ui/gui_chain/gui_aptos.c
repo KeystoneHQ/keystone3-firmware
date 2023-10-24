@@ -93,7 +93,8 @@ UREncodeResult *GuiGetAptosSignQrCodeData(void)
         char *path = aptos_get_path(data);
         char pubkeyIndex = GetAptosPublickeyIndex(path);
         char *pubKey = GetCurrentAccountPublicKey(pubkeyIndex);
-        encodeResult = aptos_sign_tx(data, seed, sizeof(seed), pubKey);
+        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+        encodeResult = aptos_sign_tx(data, seed, len, pubKey);
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);

@@ -507,6 +507,7 @@ static bool IsAccountSwitchable()
     case HOME_WALLET_CARD_TRX:
     case HOME_WALLET_CARD_SUI:
     case HOME_WALLET_CARD_APT:
+    case HOME_WALLET_CARD_XRP:
         return true;
 
     default:
@@ -609,11 +610,8 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         break;
     case HOME_WALLET_CARD_XRP:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
-        printf("xPub=%s\r\n", xPub);
         sprintf(hdPath, "m/44'/144'/0'/0/%u", index);
-        printf("hdPath=%s\r\n", hdPath);
         result = xrp_get_address(hdPath, xPub, "m/44'/144'/0'/");
-        printf("result=%s\r\n", result->data);
         break;
 
     default:
@@ -633,7 +631,6 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 
     if (result->error_code == 0) {
         item->index = index;
-        printf("address=%s", item->address);
         strcpy(item->address, result->data);
         strcpy(item->path, hdPath);
     }

@@ -994,14 +994,21 @@ bool GuiWordsWhole(const char* text)
 
 void UpdateFullKeyBoard(const char *str, KeyBoard_t *keyBoard)
 {
-    if (keyBoard->mode != KEY_STONE_FULL_L && keyBoard->mode != KEY_STONE_FULL_U) {
+    if (keyBoard->mode != KEY_STONE_FULL_L && keyBoard->mode != KEY_STONE_FULL_U && keyBoard->mode != KEY_STONE_SYMBOL) {
         return;
     }
 
-    if (strlen(str) >= keyBoard->taMinLen) {
-        g_kbCtrl[keyBoard->mode - KEY_STONE_FULL_L][42] = LV_BTNMATRIX_CTRL_CHECKED | 2;
+    uint16_t size = 0;
+    if (keyBoard->mode == KEY_STONE_SYMBOL) {
+        size = NUMBER_OF_ARRAYS(g_symbolCtrlMap);
     } else {
-        g_kbCtrl[keyBoard->mode - KEY_STONE_FULL_L][42] = LV_BTNMATRIX_CTRL_DISABLED | 2;
+        size = NUMBER_OF_ARRAYS(g_fullCtrlMap);
+    }
+
+    if (strlen(str) >= keyBoard->taMinLen) {
+        g_kbCtrl[keyBoard->mode - KEY_STONE_FULL_L][size - 1] = LV_BTNMATRIX_CTRL_CHECKED | 2;
+    } else {
+        g_kbCtrl[keyBoard->mode - KEY_STONE_FULL_L][size - 1] = LV_BTNMATRIX_CTRL_DISABLED | 2;
     }
     GuiKeyBoardSetMode(keyBoard);
 }
@@ -1158,9 +1165,7 @@ void KbTextAreaHandler(lv_event_t * e)
                 UpdateKeyBoard(rootTree, currText, keyBoard);
             }
         } else {
-            if (keyBoard->mode == KEY_STONE_FULL_L || keyBoard->mode == KEY_STONE_FULL_U) {
-                UpdateFullKeyBoard(currText, keyBoard);
-            }
+            UpdateFullKeyBoard(currText, keyBoard);
             if (g_enterProgressLabel != NULL) {
                 if (taLen >= 16) {
                     lv_obj_set_style_text_color(g_enterProgressLabel, RED_COLOR, LV_PART_MAIN);
@@ -1206,6 +1211,7 @@ void KbTextAreaHandler(lv_event_t * e)
         lv_keyboard_user_mode_t *keyMode = lv_event_get_param(e);
         keyBoard->mode = *keyMode;
         GuiKeyBoardSetMode(keyBoard);
+        UpdateFullKeyBoard(currText, keyBoard);
     } else if (code == LV_EVENT_CLICKED) {
         Vibrate(SLIGHT);
     }

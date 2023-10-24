@@ -42,8 +42,14 @@ void GuiAnimatingQRCodeInit(lv_obj_t* parent, GenerateUR dataFunc, bool showPend
     GuiFullscreenModeInit(SCREEN_WIDTH, SCREEN_HEIGHT, QR_BG_COLOR);
     GuiFullscreenModeCreateObject(CreateQRCode, QR_SIZE_FULL, QR_SIZE_FULL);
 
-    g_qrcode = CreateQRCode(parent, QR_SIZE_REGULAR, QR_SIZE_REGULAR);
-    lv_obj_align(g_qrcode, LV_ALIGN_DEFAULT, 0, 0);
+    bool isValid = g_qrcode != NULL && lv_obj_is_valid(g_qrcode);
+    if (g_qrcode == NULL || g_qrcode->parent != parent || !isValid) {
+        if (isValid) {
+            lv_obj_del(g_qrcode);
+        }
+        g_qrcode = CreateQRCode(parent, QR_SIZE_REGULAR, QR_SIZE_REGULAR);
+        lv_obj_align(g_qrcode, LV_ALIGN_DEFAULT, 0, 0);
+    }
 
     GuiModelURGenerateQRCode(dataFunc);
 

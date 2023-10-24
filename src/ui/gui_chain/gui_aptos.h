@@ -1,6 +1,8 @@
 #ifndef _GUI_APT_H
 #define _GUI_APT_H
 
+#include "librust_c.h"
+
 void GuiSetAptosUrData(void *data, bool multi);
 void *GuiGetAptosData(void);
 void FreeAptosMemory(void);

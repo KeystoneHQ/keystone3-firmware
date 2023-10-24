@@ -24,6 +24,7 @@
 #include "user_memory.h"
 #include "presetting.h"
 #include "assert.h"
+#include "screen_manager.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "assert.h"

@@ -1,15 +1,18 @@
 use crate::extract_ptr_with_type;
 use crate::interfaces::cardano::structs::DisplayCardanoTx;
 use crate::interfaces::errors::{RustCError, R};
-use crate::interfaces::structs::{TransactionCheckResult, TransactionParseResult};
-use crate::interfaces::types::{PtrBytes, PtrString, PtrT, PtrUR};
+use crate::interfaces::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
+use crate::interfaces::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
 use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
-use crate::interfaces::utils::recover_c_char;
+use crate::interfaces::utils::{convert_c_char, recover_c_char};
 use alloc::format;
+use alloc::string::ToString;
 
 use alloc::vec::Vec;
+use app_cardano::errors::CardanoError;
 use app_cardano::structs::{CardanoCertKey, CardanoUtxo, ParseContext};
 use core::str::FromStr;
+use cty::c_char;
 use third_party::bitcoin::bip32::DerivationPath;
 
 use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
@@ -37,6 +40,20 @@ pub extern "C" fn cardano_check_tx(
             Err(e) => TransactionCheckResult::from(e).c_ptr(),
         },
         Err(e) => TransactionCheckResult::from(e).c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn cardano_get_path(ptr: PtrUR) -> Ptr<SimpleResponse<c_char>> {
+    let cardano_sign_reqeust = extract_ptr_with_type!(ptr, CardanoSignRequest);
+    match cardano_sign_reqeust.get_utxos().get(0) {
+        Some(_data) => match _data.get_key_path().get_path() {
+            Some(_path) => SimpleResponse::success(convert_c_char(_path)).simple_c_ptr(),
+            None => SimpleResponse::from(CardanoError::InvalidTransaction(format!("invalid utxo")))
+                .simple_c_ptr(),
+        },
+        None => SimpleResponse::from(CardanoError::InvalidTransaction(format!("invalid utxo")))
+            .simple_c_ptr(),
     }
 }
 
@@ -119,7 +136,9 @@ fn prepare_parse_context(
                         .to_vec(),
                     v.get_address(),
                     convert_key_path(v.get_key_path())?,
-                    v.get_amount(),
+                    v.get_amount()
+                        .parse::<u64>()
+                        .map_err(|e| RustCError::InvalidData(e.to_string()))?,
                     v.get_transaction_hash(),
                     v.get_index(),
                 ))

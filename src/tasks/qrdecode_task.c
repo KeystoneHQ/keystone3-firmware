@@ -41,7 +41,8 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_SUI, GuiSetSuiUrData},
     {REMAPVIEW_SOL, GuiSetSolUrData},
     {REMAPVIEW_SOL_MESSAGE, GuiSetSolUrData},
-    {REMAPVIEW_APT, GuiSetAptosUrData}
+    {REMAPVIEW_APT, GuiSetAptosUrData},
+    {REMAPVIEW_ADA, GuiSetupAdaUrData},
 };
 
 osThreadId_t g_qrDecodeTaskHandle;
@@ -166,6 +167,8 @@ void ProcessQr(uint32_t count)
                 }
             } else {
                 retFromRust = MultiurResult->error_code;
+                printf("error code: %d\r\n", MultiurResult->error_code);
+                printf("error message: %s\r\n", MultiurResult->error_message);
             }
             if (!(MultiurResult->is_complete)) {
                 free_ur_parse_multi_result(MultiurResult);

@@ -8,6 +8,7 @@
 #include "gui_sui.h"
 #include "gui_sol.h"
 #include "gui_aptos.h"
+#include "gui_ada.h"
 
 #define LABEL_MAX_BUFF_LEN                                      (512)
 
@@ -74,6 +75,7 @@ typedef enum {
     REMAPVIEW_SOL,
     REMAPVIEW_SOL_MESSAGE,
     REMAPVIEW_APT,
+    REMAPVIEW_ADA,
     REMAPVIEW_WEB_AUTH,
 
     REMAPVIEW_BUTT,

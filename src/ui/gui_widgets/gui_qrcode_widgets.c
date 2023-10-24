@@ -265,6 +265,8 @@ static GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
         return CHAIN_SOL;
     case AptosTx:
         return CHAIN_APT;
+    case CardanoTx:
+        return CHAIN_ADA;
     default:
         return CHAIN_BUTT;
     }
@@ -333,7 +335,8 @@ void GuiQrCodeScanResult(bool result, void *param)
         if (g_qrCodeWidgetView.analysis != NULL)
         {
             g_fingerSignCount = 0;
-            if (IsMessageType(g_qrcodeViewType)) {
+            if (IsMessageType(g_qrcodeViewType))
+            {
                 SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_confirm_message"));
             }
             else
@@ -393,6 +396,21 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
     GuiFullscreenModeInit(480, 800, WHITE_COLOR);
     GuiFullscreenModeCreateObject(GuiCreateQRCode, 420, 420);
 
+    lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 36);
+    lv_obj_t *label = GuiCreateNoticeLabel(cont, _("transaction_parse_scan_by_software"));
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 576 - GUI_MAIN_AREA_OFFSET);
+
+    lv_obj_t *btn = GuiCreateBtn(cont, _("Done"));
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+    lv_obj_set_size(btn, 408, 66);
+    lv_obj_add_event_cb(btn, CloseTimerCurrentViewHandler, LV_EVENT_CLICKED, NULL);
+
+    uint8_t chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
+    if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData)
+    {
+        SetCoinWallet(g_pageWidget->navBarWidget, chainType, _("transaction_parse_broadcast_message"));
+    }
+
     char *data = NULL;
     switch (g_qrcodeViewType)
     {
@@ -427,6 +445,9 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
     case AptosTx:
         GuiShowQrCode(GuiGetAptosSignQrCodeData, qrcode);
         break;
+    case CardanoTx:
+        GuiShowQrCode(GuiGetAdaSignQrCodeData, qrcode);
+        break;
     default:
         data = "";
         lv_qrcode_update(qrcode, data, strlen(data));
@@ -437,21 +458,6 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
         }
         break;
     }
-
-    lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 36);
-    lv_obj_t *label = GuiCreateNoticeLabel(cont, _("transaction_parse_scan_by_software"));
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 576 - GUI_MAIN_AREA_OFFSET);
-
-    lv_obj_t *btn = GuiCreateBtn(cont, _("Done"));
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
-    lv_obj_set_size(btn, 408, 66);
-    lv_obj_add_event_cb(btn, CloseTimerCurrentViewHandler, LV_EVENT_CLICKED, NULL);
-
-    uint8_t chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
-    if (g_qrcodeViewType == EthPersonalMessage || g_qrcodeViewType == EthTypedData)
-    {
-        SetCoinWallet(g_pageWidget->navBarWidget, chainType, _("transaction_parse_broadcast_message"));
-    }
 }
 
 void GuiQrCodeVerifyPasswordSuccess(void)
@@ -460,6 +466,7 @@ void GuiQrCodeVerifyPasswordSuccess(void)
     GUI_DEL_OBJ(g_fingerSingContainer)
     GUI_DEL_OBJ(g_scanErrorHintBox)
     g_qrCodeWidgetView.analysis = NULL;
+    GUI_DEL_OBJ(g_keyboardWidget->keyboardHintBox);
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     GuiQrCodeShowQrMessage(g_qrCodeWidgetView.cont);
 }
@@ -476,7 +483,8 @@ void GuiQrCodeRefresh(void)
         GuiModeControlQrDecode(true);
         break;
     case PAGE_PHASE_TRANSACTION_DETAIL:
-        if (IsMessageType(g_qrcodeViewType)) {
+        if (IsMessageType(g_qrcodeViewType))
+        {
             SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_confirm_message"));
         }
         else
@@ -593,8 +601,7 @@ void GuiQrCodeVerifyPasswordErrorCount(void *param)
     GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
 }
 
-
 static bool IsMessageType(ViewType type)
 {
-   return  type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type);
+    return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type);
 }

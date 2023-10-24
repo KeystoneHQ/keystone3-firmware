@@ -18,6 +18,7 @@
 #define LV_CONF_H
 
 #include <stdint.h>
+#include "lv_conf_local.h"
 
 /*====================
    COLOR SETTINGS
@@ -601,7 +602,6 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #define LV_USE_FS_STDIO 1
 #if LV_USE_FS_STDIO
 #define LV_FS_STDIO_LETTER 'C'     /*Set an upper cased letter on which the drive will accessible (e.g. 'A')*/
-#define LV_FS_STDIO_PATH ""         /*Set the working directory. File/directory paths will be appended to it.*/
 #define LV_FS_STDIO_CACHE_SIZE 0    /*>0 to cache this number of bytes in lv_fs_read()*/
 #endif
 

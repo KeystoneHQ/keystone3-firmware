@@ -26,6 +26,7 @@
 #include "assert.h"
 
 #ifdef COMPILE_SIMULATOR
+#include "assert.h"
 #define FINGERPRINT_EN_SING_ERR_TIMES           (5)
 #define FINGERPRINT_SING_ERR_TIMES              (3)
 #define FINGERPRINT_SING_DISABLE_ERR_TIMES      (15)

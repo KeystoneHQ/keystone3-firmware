@@ -49,7 +49,6 @@ typedef enum {
     HOME_WALLET_CARD_LUNA,
     HOME_WALLET_CARD_LUNC,
 
-    HOME_WALLET_CARD_BUTT,
     
     HOME_WALLET_CARD_BNB,
     HOME_WALLET_CARD_DOT,
@@ -59,6 +58,7 @@ typedef enum {
     HOME_WALLET_CARD_BCH,
     HOME_WALLET_CARD_TRX,
 
+    HOME_WALLET_CARD_BUTT,      // This represents the end of the array (the number of arrays) and needs to be placed at the end.
 } HOME_WALLET_CARD_ENUM;
 
 typedef struct {

@@ -12,7 +12,9 @@
 #include "secret_cache.h"
 #include "gui_views.h"
 #include "gui_lock_widgets.h"
-
+#ifdef COMPILE_SIMULATOR
+#define RECOGNIZE_UNLOCK                    0
+#endif
 #define DEFAULT_TIMER_COUNTER 5
 
 static KeyboardWidget_t *CreateKeyboardWidget();

@@ -11,7 +11,7 @@
 #include "gui_setting_widgets.h"
 #include "gui_page.h"
 
-
+#define CONTACT_ITEM_COUNT 4
 typedef struct {
     const char *url;
     const char *title;
@@ -33,7 +33,7 @@ static void GuiCloseQrcodeHandler(lv_event_t *e);
 void ContactItemsInit()
 {
     if (g_contactItems == NULL) {
-        g_contactItems = SRAM_MALLOC(4 * sizeof(ContactItem_t));
+        g_contactItems = SRAM_MALLOC(CONTACT_ITEM_COUNT * sizeof(ContactItem_t));
         g_contactItems[0].url = _("about_keystone_website_url");
         g_contactItems[0].title = _("about_keystone_website");
         g_contactItems[0].icon = &imgNetwork;
@@ -99,7 +99,7 @@ void GuiAboutKeystoneEntranceWidget(lv_obj_t *parent)
 {
 
     lv_obj_t *imgIcon, *label, *imgQr;
-    for (int i = 0; i < NUMBER_OF_ARRAYS(g_contactItems); i++) {
+    for (int i = 0; i < CONTACT_ITEM_COUNT; i++) {
         imgIcon = GuiCreateImg(parent, g_contactItems[i].icon);
         label = GuiCreateLabel(parent, g_contactItems[i].url);
         imgQr = GuiCreateImg(parent, g_contactItems[i].qrIcon);

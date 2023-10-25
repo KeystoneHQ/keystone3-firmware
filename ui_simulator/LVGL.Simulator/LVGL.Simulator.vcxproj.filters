@@ -1236,6 +1236,21 @@
     <ClCompile Include="..\..\src\config\version.c">
       <Filter>utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_chain\gui_btc.c">
+      <Filter>gui\gui_chain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_chain\gui_cosmos.c">
+      <Filter>gui\gui_chain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_chain\gui_eth.c">
+      <Filter>gui\gui_chain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_chain\gui_trx.c">
+      <Filter>gui\gui_chain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_analyze\gui_analyze.c">
+      <Filter>gui\gui_analyze</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\external\lvgl\src\core\lv_disp.h" />
@@ -1490,6 +1505,12 @@
     </Filter>
     <Filter Include="gui\gui_model">
       <UniqueIdentifier>{c969466a-f072-4e34-ab3a-37ced5b27f2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui\gui_chain">
+      <UniqueIdentifier>{7808f8c0-b301-4da8-b008-21fd78d87f83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui\gui_analyze">
+      <UniqueIdentifier>{71aeaddb-0c2e-4585-913e-fad631934290}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -43,6 +43,7 @@ static void GuiPassowrdToLockTimePage(uint16_t errorCount);
 void GuiLockScreenClearModal(lv_obj_t *cont);
 static char* GuiJudgeTitle();
 static void CountDownTimerChangeLabelTextHandler(lv_timer_t *timer);
+static void GuiCloseGenerateXPubLoading(void);
 
 static GuiEnterPasscodeItem_t *g_verifyLock = NULL;
 static lv_obj_t *g_lockScreenCont;
@@ -239,16 +240,6 @@ void GuiLockScreenTurnOff(void)
         GuiEmitSignal(GUI_EVENT_REFRESH, &single, sizeof(single));
     }
     // g_lockView.isActive = false;
-
-    // Close the loading page after closing the lock screen page
-    if (g_canDismissLoading) {
-        if (g_LoadingView != NULL && lv_obj_is_valid(g_LoadingView)) {
-            GuiStopCircleAroundAnimation();
-            lv_obj_del(g_LoadingView);
-            g_LoadingView = NULL;
-        }
-    }
-    
 }
 
 void GuiUpdateOldAccountIndex(void)
@@ -300,6 +291,8 @@ void GuiLockScreenPassCode(bool en)
             }
             printf("%s %d\n", __func__, __LINE__);
         }
+        // Close the loading page after closing the lock screen page
+        GuiCloseGenerateXPubLoading();
         UsbInit();
     }
 }
@@ -519,4 +512,16 @@ void GuiHideGenerateXPubLoading(void)
     }
     g_canDismissLoading = true;
     SetPageLockScreen(true);
+}
+
+static void GuiCloseGenerateXPubLoading(void)
+{
+    if (g_canDismissLoading) {
+        if (g_LoadingView != NULL && lv_obj_is_valid(g_LoadingView)) {
+            GuiStopCircleAroundAnimation();
+            lv_obj_del(g_LoadingView);
+            g_LoadingView = NULL;
+        }
+        g_canDismissLoading = false;
+    }
 }

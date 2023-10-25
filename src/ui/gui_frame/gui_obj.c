@@ -181,11 +181,11 @@ void* GuiCreateCircleAroundAnimation(lv_obj_t *parent, int w)
 void GuiStopCircleAroundAnimation(void)
 {
     lv_anim_del_all();
-    if (g_ringImg) {
+    if (g_ringImg != NULL && lv_obj_is_valid(g_ringImg)) {
         lv_obj_del(g_ringImg);
         g_ringImg = NULL;
     }
-    if (g_dotImg) {
+    if (g_dotImg != NULL && lv_obj_is_valid(g_dotImg)) {
         lv_obj_del(g_dotImg);
         g_dotImg = NULL;
     }

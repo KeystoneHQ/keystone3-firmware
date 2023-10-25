@@ -26,7 +26,7 @@
 #include "drv_rtc.h"
 #include "drv_sdcard.h"
 #include "log.h"
-#include "presetting.h
+#include "presetting.h"
 #include "anti_tamper.h"
 #else
 #include "simulator_model.h"

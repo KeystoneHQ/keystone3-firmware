@@ -280,6 +280,7 @@ static void SelectCheckBoxHandler(lv_event_t* e)
     const char *currText = lv_checkbox_get_text(actCb);
     if (!strcmp(currText, _("single_phrase_12words"))) {
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "12    "USR_SYMBOL_DOWN);
+        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 12) {
             g_phraseCnt = 12;
             GuiModelBip39UpdateMnemonic(g_phraseCnt);

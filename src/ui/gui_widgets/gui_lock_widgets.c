@@ -466,9 +466,9 @@ static void CountDownTimerChangeLabelTextHandler(lv_timer_t *timer)
     lv_obj_t *obj = (lv_obj_t *)timer->user_data;
     ++g_countDown;
     if (g_countDown == 3) {
-        lv_label_set_text(obj, "Setting up support for new coins...");
+        lv_label_set_text(obj, _("prepare_wallet_second_step"));
     } else  if (g_countDown == 6) {
-        lv_label_set_text(obj, "Generating extended public key...");
+        lv_label_set_text(obj, _("prepare_wallet_third_step"));
         if (g_countDownTimer != NULL) {
             g_countDown = 0;
             lv_timer_del(g_countDownTimer);
@@ -497,10 +497,10 @@ void GuiShowGenerateXPubLoading(void)
     lv_obj_add_flag(g_LoadingView, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_size(g_LoadingView, lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
 
-    lv_obj_t *label = GuiCreateTextLabel(g_LoadingView, "Preparing Wallet");
+    lv_obj_t *label = GuiCreateTextLabel(g_LoadingView, _("prepare_wallet_hint"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 403);
 
-    lv_obj_t *hintLabel = GuiCreateNoticeLabel(g_LoadingView, "New chains support detected");
+    lv_obj_t *hintLabel = GuiCreateNoticeLabel(g_LoadingView, _("prepare_wallet_first_step"));
     lv_obj_set_style_text_align(hintLabel, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_width(hintLabel, 408);
     lv_obj_align(hintLabel, LV_ALIGN_TOP_MID, 0, 457);

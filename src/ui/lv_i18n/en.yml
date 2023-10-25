@@ -18,17 +18,17 @@ en:
   Updating: Updating
   about_info_device_uid: Device UID
   about_info_export_log: Export System Log
-  about_info_export_to_sdcard: Export Log to SD Card
+  about_info_export_to_sdcard: Export Log to MicroSD Card
   about_info_fingerprint_firnware_version: Fingerprint Firmware Version
   about_info_firmware_version: Firmware Version
   about_info_result_export_failed: Export Failed
-  about_info_result_export_failed_desc_no_sdcard: Please make sure you have installed
-    a FAT32 Format MicroSD card.
+  about_info_result_export_failed_desc_no_sdcard: Please ensure you've inserted a
+    MicroSD Card formatted in FAT32.
   about_info_result_export_failed_desc_no_space: Please make sure your MicroSD card
     has enough memory.
   about_info_result_export_successful: Export Successful
-  about_info_result_export_successful_desc: Your system log has been export to MicoSD
-    card successfully.
+  about_info_result_export_successful_desc: Your system log has been successfully
+    exported to the MicroSD Card.
   about_info_serial_number: Serial Number
   about_keystone_discord: Discord
   about_keystone_discord_url: keyst.one/discord
@@ -90,17 +90,15 @@ en:
   change_passcode_warning_desc: If forgotten, you'll have to verify the seed phrase
     for this wallet to reset the passcode.
   change_passcode_warning_title: Remember your Passcode
-  connect_block_desc: Please use your laptop or mobile to open the link below for
-    detailed tutorials on how to use Keystone with certain chain specific companion
-    software wallet.
+  connect_block_desc: Visit the link below on your computer or mobile device for a
+    guide on syncing Keystone with your software wallet.
   connect_block_link: https://keyst.one/t/3rd/block
   connect_block_qr_link: https://keyst.one/t/3rd/block
   connect_block_qr_title: BlockWallet (Extension)
   connect_block_t: Tutorial
   connect_block_title: BlockWallet (Extension)
-  connect_bw_desc: Please use your laptop or mobile to open the link below for detailed
-    tutorials on how to use Keystone with certain chain specific companion software
-    wallet.
+  connect_bw_desc: Visit the link below on your computer or mobile device for a guide
+    on syncing Keystone with your software wallet.
   connect_bw_link: https://keyst.one/t/3rd/bw
   connect_bw_qr_link: https://keyst.one/t/3rd/bw
   connect_bw_qr_title: BlueWallet (Mobile)
@@ -110,35 +108,31 @@ en:
     a guide on syncing Keystone with your software wallet.
   connect_eternl_link: https://keyst.one/t/3rd/eternl
   connect_eternl_qr_link: https://keyst.one/t/3rd/eternl
-  connect_eternl_qr_title: Eternl
-  connect_eternl_title: Eternl
-  connect_fewcha_desc: Please use your laptop or mobile to open the link below for
-    detailed tutorials on how to use Keystone with certain chain specific companion
-    software wallet.
+  connect_eternl_qr_title: Eternl (Web)
+  connect_eternl_title: Eternl (Web)
+  connect_fewcha_desc: Visit the link below on your computer or mobile device for
+    a guide on syncing Keystone with your software wallet.
   connect_fewcha_link: https://keyst.one/t/3rd/fewcha
   connect_fewcha_qr_link: https://keyst.one/t/3rd/fewcha
   connect_fewcha_qr_title: Fewcha
   connect_fewcha_t: Tutorial
-  connect_fewcha_title: Fewcha
-  connect_keplr_desc: Please use your laptop or mobile to open the link below for
-    detailed tutorials on how to use Keystone with certain chain specific companion
-    software wallet.
+  connect_fewcha_title: 'Fewcha '
+  connect_keplr_desc: Visit the link below on your computer or mobile device for a
+    guide on syncing Keystone with your software wallet.
   connect_keplr_link: https://keyst.one/t/3rd/keplr
   connect_keplr_qr_link: https://keyst.one/t/3rd/keplr
   connect_keplr_qr_title: Keplr (Extension)
   connect_keplr_t: Tutorial
   connect_keplr_title: Keplr (Extension)
-  connect_keyst_app_desc: Please use your laptop or mobile to open the link below
-    for detailed tutorials on how to use Keystone with certain chain specific companion
-    software wallet.
+  connect_keyst_app_desc: Visit the link below on your computer or mobile device for
+    a guide on syncing Keystone with your software wallet.
   connect_keyst_app_link: https://keyst.one/t/3rd/keystone
   connect_keyst_app_qr_link: https://keyst.one/t/3rd/keystone
   connect_keyst_app_qr_title: Keystone Companion App
   connect_keyst_app_t: Tutorial
   connect_keyst_app_title: Keystone Companion App
-  connect_mm_desc: Please use your laptop or mobile to open the link below for detailed
-    tutorials on how to use Keystone with certain chain specific companion software
-    wallet.
+  connect_mm_desc: Visit the link below on your computer or mobile device for a guide
+    on syncing Keystone with your software wallet.
   connect_mm_link: https://keyst.one/t/3rd/mm
   connect_mm_link2: https://keyst.one/t/3rd/mmm
   connect_mm_qr_link: https://keyst.one/t/3rd/mm
@@ -148,9 +142,8 @@ en:
   connect_mm_t: Tutorial
   connect_mm_title: MetaMask (Extension)
   connect_mm_title2: MetaMask (Mobile)
-  connect_okx_desc: Please use your laptop or mobile to open the link below for detailed
-    tutorials on how to use Keystone with certain chain specific companion software
-    wallet.
+  connect_okx_desc: Visit the link below on your computer or mobile device for a guide
+    on syncing Keystone with your software wallet.
   connect_okx_link: https://keyst.one/t/3rd/okx
   connect_okx_link2: https://keyst.one/t/3rd/okxm
   connect_okx_qr_link: https://keyst.one/t/3rd/okx
@@ -160,45 +153,40 @@ en:
   connect_okx_t: Tutorial
   connect_okx_title: OKX Wallet (Extension)
   connect_okx_title2: OKX Wallet (Mobile)
-  connect_petra_desc: Please use your laptop or mobile to open the link below for
-    detailed tutorials on how to use Keystone with certain chain specific companion
-    software wallet.
+  connect_petra_desc: Visit the link below on your computer or mobile device for a
+    guide on syncing Keystone with your software wallet.
   connect_petra_link: https://keyst.one/t/3rd/petra
   connect_petra_qr_link: https://keyst.one/t/3rd/petra
   connect_petra_qr_title: Petra (Extension)
   connect_petra_t: Tutorial
   connect_petra_title: Petra (Extension)
-  connect_rabby_desc: Please use your laptop or mobile to open the link below for
-    detailed tutorials on how to use Keystone with certain chain specific companion
-    software wallet.
+  connect_rabby_desc: Visit the link below on your computer or mobile device for a
+    guide on syncing Keystone with your software wallet.
   connect_rabby_link: https://keyst.one/t/3rd/rabby
   connect_rabby_qr_link: https://keyst.one/t/3rd/rabby
   connect_rabby_qr_title: Rabby (Extension)
   connect_rabby_t: Tutorial
   connect_rabby_title: Rabby (Extension)
-  connect_safe_desc: Please use your laptop or mobile to open the link below for detailed
-    tutorials on how to use Keystone with certain chain specific companion software
-    wallet.
+  connect_safe_desc: Visit the link below on your computer or mobile device for a
+    guide on syncing Keystone with your software wallet.
   connect_safe_link: https://keyst.one/t/3rd/safe
   connect_safe_link2: https://keyst.one/t/3rd/safem
   connect_safe_qr_link: https://keyst.one/t/3rd/safe
   connect_safe_qr_link2: https://keyst.one/t/3rd/safem
   connect_safe_qr_title: Safe (Web)
-  connect_safe_qr_title2: Safe Mobile
+  connect_safe_qr_title2: Safe (Mobile)
   connect_safe_t: Tutorial
   connect_safe_title: Safe (Web)
   connect_safe_title2: Safe (Mobile)
-  connect_solflare_desc: Please use your laptop or mobile to open the link below for
-    detailed tutorials on how to use Keystone with certain chain specific companion
-    software wallet.
+  connect_solflare_desc: Visit the link below on your computer or mobile device for
+    a guide on syncing Keystone with your software wallet.
   connect_solflare_link: https://keyst.one/t/3rd/solflare
   connect_solflare_qr_link: https://keyst.one/t/3rd/solflare
   connect_solflare_qr_title: Solflare
   connect_solflare_t: Tutorial
   connect_solflare_title: Solflare
-  connect_sushi_desc: Please use your laptop or mobile to open the link below for
-    detailed tutorials on how to use Keystone with certain chain specific companion
-    software wallet.
+  connect_sushi_desc: Visit the link below on your computer or mobile device for a
+    guide on syncing Keystone with your software wallet.
   connect_sushi_link: https://keyst.one/t/3rd/sushi
   connect_sushi_qr_link: https://keyst.one/t/3rd/sushi
   connect_sushi_qr_title: SushiSwap
@@ -227,17 +215,15 @@ en:
     expanded software wallet compatibility.
   connect_wallet_xpub_addresstype: Address Type
   connect_wallet_xpub_qrformat: QR Code Format
-  connect_yearn_desc: Please use your laptop or mobile to open the link below for
-    detailed tutorials on how to use Keystone with certain chain specific companion
-    software wallet.
+  connect_yearn_desc: Visit the link below on your computer or mobile device for a
+    guide on syncing Keystone with your software wallet.
   connect_yearn_link: https://keyst.one/t/3rd/yearn
   connect_yearn_qr_link: https://keyst.one/t/3rd/yearn
   connect_yearn_qr_title: Yearn
   connect_yearn_t: Tutorial
   connect_yearn_title: Yearn
-  connect_zapper_desc: Please use your laptop or mobile to open the link below for
-    detailed tutorials on how to use Keystone with certain chain specific companion
-    software wallet.
+  connect_zapper_desc: Visit the link below on your computer or mobile device for
+    a guide on syncing Keystone with your software wallet.
   connect_zapper_link: https://keyst.one/t/3rd/zapper
   connect_zapper_qr_link: https://keyst.one/t/3rd/zapper
   connect_zapper_qr_title: Zapper
@@ -245,6 +231,7 @@ en:
   connect_zapper_title: Zapper
   create_wallet_generating_desc: Writing Secure Element...
   create_wallet_generating_title: Creating Wallet, Keep Device ON
+  derivation_path_address: Address
   derivation_path_address_eg: Addresses eg.
   derivation_path_change: Change Derivation Path
   derivation_path_eth_ledger_legacy_desc: Choose this path if you are managing your
@@ -279,23 +266,23 @@ en:
   device_settings_connection_title1: Connection
   enter_passcode: Please Enter Passcode
   error_box_duplicated_seed_phrase: Duplicate Seed Phrase
-  error_box_duplicated_seed_phrase_desc: The seed phrase you've entered is already
-    being used in a wallet account. Please use a different seed for the import process.
+  error_box_duplicated_seed_phrase_desc: This phrase you typed is already used in
+    a wallet account, please use another mnemonic to import.
   error_box_firmware_not_detected: Firmware Not Detected
-  error_box_firmware_not_detected_desc: Please ensure that you have inserted a MicroSD
-    card formatted in FAT32 that contains the firmware.
+  error_box_firmware_not_detected_desc: Please ensure that your MicroSD card is formatted
+    in FAT32 and contains the firmware 'keystone3.bin'.
   error_box_invalid_seed_phrase: Invalid Seed Phrase
-  error_box_invalid_seed_phrase_desc: The phrase you typed is invalid. Please check
-    your backup and try again
-  error_box_low_power: Low Power
-  error_box_low_power_desc: The device requires at least 20% power to continue the
-    process
-  error_box_mnemonic_not_match_wallet: Verification Failed
-  error_box_mnemonic_not_match_wallet_desc: "This seed phrase does not match the current\
-    \ wallet\u2019s. Please check it and try again."
+  error_box_invalid_seed_phrase_desc: The seed phrase you've entered is invalid. Please
+    re-verify your backup and try again.
+  error_box_low_power: Low Battery
+  error_box_low_power_desc: The device needs a minimum of 20% battery life to continue
+    the process.
+  error_box_mnemonic_not_match_wallet: Seed Phrase Mismatch
+  error_box_mnemonic_not_match_wallet_desc: The seed phrase is incorrect. Please re-verify
+    and try again.
   error_unknown_error: Unknown Error
   error_unknown_error_desc: There is an unknown problem with the device and it is
-    unavailable. Please erase the device to try to restart the device. If the problem
+    unavailable. Please wipe the device to try to restart the device. If the problem
     still exists, please contact our customer service team.
   fingerprint_passcode_fingerprint_setting: Fingerprint Settings
   fingerprint_passcode_mid_btn: Fingerprint & Passcode
@@ -364,7 +351,7 @@ en:
   firmware_update_via_usb: Via USB
   forget_password_cancel: Cancel forget password?
   forgot_password_reset_passcode_intro_button: Reset Passcode
-  forgot_password_reset_passcode_intro_desc: You have to verify the seed phrase of
+  forgot_password_reset_passcode_intro_desc: Verify the seed phrase associated with
     this wallet to reset the passcode.
   forgot_password_reset_passcode_intro_title: Forgot passcode?
   generating_qr_codes: Generating QR Codes
@@ -433,8 +420,7 @@ en:
     the process.
   low_battery_pop_up_title: Low Battery
   not_now: Not Now
-  passphrase_access_switch_desc: Display a shortcut entry for Passphrase when powered
-    on
+  passphrase_access_switch_desc: Create a passphrase shortcut for device boot-up
   passphrase_access_switch_title: Passphrase Quick Access
   passphrase_enter_input: Input passphrase
   passphrase_enter_passcode: Passphrase
@@ -454,17 +440,21 @@ en:
   passphrase_learn_more_title: What is a Passphrase?
   password_error_cannot_verify_fingerprint: "Couldn\u2019t verify fingerprint"
   password_error_duplicated_pincode: Duplicate PIN code detected. Please use a different
-    one
-  password_error_fingerprint_attempts_exceed: Too many unsuccessful attempts. Please
-    enter your passcode
-  password_error_not_match: passcode not match
+    one.
+  password_error_fingerprint_attempts_exceed: Too many attempts. Please enter your
+    passcode to unlock the device.
+  password_error_not_match: Passcode mismatch
   password_error_too_long: The input cannot exceed 128 characters
-  password_error_too_short: Password should be at least 6 characters
+  password_error_too_short: Password must be at least 6 characters
   password_error_too_weak: Set a strong password
-  password_input_desc: Input your password
+  password_input_desc: Enter your password
   password_label: PASSWORD
   pin_code: PIN CODE
   power_off: Power Off
+  prepare_wallet_first_step: New chains support detected
+  prepare_wallet_hint: Preparing Wallet
+  prepare_wallet_second_step: Setting up support for new coins...
+  prepare_wallet_third_step: Generating extended public key...
   purpose_desc: Create a new wallet or import an existing wallet using it's seed phrase.
   purpose_import_wallet: Import Wallet
   purpose_new_wallet: Create Wallet
@@ -472,6 +462,30 @@ en:
   receive_ada_address_detail_path: Path
   receive_ada_base_address: Address
   receive_ada_enterprise_address: Address (Not Delegated)
+  receive_ada_more_t: Tutorial
+  receive_ada_more_t_desc1: '1. Payment & Stake Keys: In Cardano, every account has
+    a Payment Key for regular ADA transactions (sending and receiving) and a Stake
+    Key for staking and receiving rewards.'
+  receive_ada_more_t_desc2: '2. Base Address: A Base Address is derived from both
+    the Payment Key and Stake Key. It can be used for both regular transactions and
+    staking. Also known as "External Addresses (Delegated)."'
+  receive_ada_more_t_desc3: '3. Enterprise Address: This address only contains the
+    Payment Key and is used solely for regular transactions, not for staking. It''s
+    designed for "business" scenarios that don''t involve staking, like exchanges.
+    Also known as "External Addresses (Not Delegated)."'
+  receive_ada_more_t_desc4: '4. Stake & Reward Addresses: The Stake Key is used for
+    staking, and the associated Stake Address is also called a Reward Address, used
+    to receive staking rewards.'
+  receive_ada_more_t_link1: Learn More
+  receive_ada_more_t_qr_link1: https://keyst.one/t/3rd/faq
+  receive_ada_more_t_qr_title1: Key Concepts in Cardano's ADA Addresses
+  receive_ada_more_t_title1: Multiple Cardano Accounts on Keystone
+  receive_ada_more_t_title1_1: 'On the Cardano blockchain, we provide 24 accounts,
+    and each account can generate numerous addresses for your use. You can easily
+    switch between the accounts you need.
+
+    '
+  receive_ada_more_t_title2: Key Concepts in Cardano's ADA Addresses
   receive_ada_show_address_detail: Show Address Detail
   receive_ada_stake_address: Stake Key
   receive_btc_alert_button: Got It
@@ -479,19 +493,20 @@ en:
     other types of digital assets to this address will result in their loss.
   receive_btc_alert_title: Attention
   receive_btc_more_address_settings: Address Settings
+  receive_btc_more_export_xpub: Export XPub
   receive_btc_more_t: Tutorial
   receive_btc_more_t_desc1: 'Bitcoin (BTC) uses three address formats for receiving
     funds:
 
-    1. Native SegWit is the most efficient and secure Bitcoin address format. It provides
-    cost savings and improved security compared to other traditional address formats,typically
-    starting with "bc1"
+    Native SegWit is the most efficient and secure Bitcoin address format. It provides
+    cost savings and improved security compared to other traditional address formats,
+    typically starting with "bc1"
 
-    2. Legacy address format is one of the earliest versions of Bitcoin, typically
-    starting with "1"
+    Legacy format is one of the earliest versions of Bitcoin, typically starting with
+    "1"
 
-    3. Nested SegWit is a solution designed to facilitate the transition to Native
-    SegWit in a smooth manner, typically starting with "3"'
+    Nested SegWit is a solution designed to facilitate the transition to Native SegWit
+    in a smooth manner, typically starting with "3"'
   receive_btc_more_t_desc2: "Yes, the three distinct Bitcoin address formats can be\
     \ used for transferring funds among each other. However, it\u2019s important to\
     \ keep in mind the following aspects:\n1. Differing transaction fees: The choice\
@@ -519,12 +534,12 @@ en:
   receive_btc_more_t_qr_title1: What are the three different address formats for BTC?
   receive_btc_more_t_qr_title2: Can the three different address formats be used to
     transfer funds to each other?
-  receive_btc_more_t_qr_title3: Advantages of Avoiding Address Reuse
+  receive_btc_more_t_qr_title3: Benefits of not reusing addresses
   receive_btc_more_t_title1: What are the three different address formats for BTC?
   receive_btc_more_t_title2: Can the three different address formats be used to transfer
     funds to each other?
-  receive_btc_more_t_title3: Advantages of Avoiding Address Reuse
-  receive_btc_receive_change_address_limit: Cannot exceed 999,999,999
+  receive_btc_more_t_title3: Benefits of not reusing addresses
+  receive_btc_receive_change_address_limit: Can't exceed 999,999,999
   receive_btc_receive_change_address_title: Go to
   receive_btc_receive_main_button: Generate New Address
   receive_btc_receive_main_title: Receive BTC
@@ -562,6 +577,8 @@ en:
   receive_eth_more_t_qr_link1: https://keyst.one/t/3rd/faq
   receive_eth_more_t_qr_title1: 'Exploring Differences: Standard, Ledger Live, and
     Legacy Derivation Paths in Ethereum'
+  receive_eth_more_t_title0: 'Exploring Differences: Standard, Ledger Live, and Legacy
+    Derivation Paths in Ethereum'
   receive_eth_more_t_title1: '1. Standard Path: This path is widely employed by numerous
     software wallets for address generation. Examples of such wallets encompass MetaMask,
     Rabby, BitKeep, and Core Wallet.
@@ -594,19 +611,20 @@ en:
   repeat_passcode_desc: Double confirm the PIN code you've entered.
   repeat_passcode_title: Re-Enter PIN Code
   scan_qr_code_error_invalid_qrcode: Invalid QR Code
-  scan_qr_code_error_invalid_qrcode_desc: Unable to recognize QR code information
+  scan_qr_code_error_invalid_qrcode_desc: QR code data not recognized. Please try
+    again.
   scan_qr_code_invalid_b_desc: The transaction does not belong to the current wallet.
-    Please use the correct wallet to sign the transaction.
-  scan_qr_code_invalid_b_title: Unauthorized to Sign
-  scan_qr_code_invalid_c_desc: Keystone does not support transaction signing for the
-    address path. Please try signing with a different address path.
+    Please ensure you are using the correct wallet to authorize the transaction.
+  scan_qr_code_invalid_b_title: Unpermitted Authorization
+  scan_qr_code_invalid_c_desc: Keystone cannot facilitate transaction signing for
+    the current address path. Please try again using a different address path.
   scan_qr_code_invalid_c_title: Unsupported Path
   scan_qr_code_sign_fingerprint_enter_passcode: Enter Passcode
   scan_qr_code_sign_fingerprint_verify_fingerprint: Verify Fingerprint
   scan_qr_code_sign_unsigned_content_fingerprint_failed_desc: Verification failed.
     Please try again!
-  scan_qr_code_sign_unsigned_content_fingerprint_failed_desc2: If verification failed
-    next time, sign transaction with fingerprint will be automatically disabled
+  scan_qr_code_sign_unsigned_content_fingerprint_failed_desc2: If the verification
+    fails again, the fingerprint signing for transactions will automatically be disabled.
   scan_qr_code_sign_unsigned_content_frame: Swipe to confirm
   scan_qr_code_signing_desc: Signing
   seed_check_mid_btn: Seed Phrase Check
@@ -625,7 +643,8 @@ en:
     device has been completely erased and this device can no longer be usable.
   self_destruction_hint: 'Contact us if any questions:'
   self_destruction_title: Device No Longer Usable
-  set_passcode_desc: This PIN code will be used to unlock your wallet and sign transactions.
+  set_passcode_desc: This PIN code will be used to unlock your wallet and authorize
+    transactions.
   set_passcode_title: Set a PIN Code
   shamir_backup: Shamir Backup
   shamir_phrase_backup_desc: Write down your Share 1 phrase and keep it properly.
@@ -663,7 +682,7 @@ en:
     please proceed to the next Share.
   shamir_phrase_verify_success_desc2: Tap the button below and hand the Keystone over
     to the custodian of Share 2.
-  shamir_phrase_verify_success_title: Verification Successful
+  shamir_phrase_verify_success_title: Verified
   single_backup_choose_backup_desc: Select the preferred method for backing up your
     seed phrase.
   single_backup_choose_backup_title: Backup Options
@@ -770,14 +789,16 @@ en:
     since the change address belongs to your own account, and its amount will be used
     automatically in subsequent transactions.
   tx_details_btc_change_link: Learn More
+  tx_details_btc_change_qr_link: https://keyst.one/change
+  tx_details_btc_change_qr_title: What is a 'Change' address?
   tx_details_btc_change_title: Change Address
-  tx_details_eth_decoding_link: learn More
+  tx_details_eth_decoding_link: Learn More
   tx_details_eth_decoding_qr_link: https://keyst.one/t/3rd/ddt
   tx_details_eth_decoding_qr_title: Decoding DeFi Transactions
   tx_details_general_tab_title1: Overview
   tx_details_general_tab_title2: Details
-  unlock_device_attempts_left_times_fmt: 'Incorrect password, you have #F55831 %d#
-    chances left'
+  unlock_device_attempts_left_times_fmt: 'Incorrect password, #F55831 %d# attampts
+    left'
   unlock_device_button1: PASSWORD
   unlock_device_button2: PIN CODE
   unlock_device_button3: FORGET
@@ -833,7 +854,7 @@ en:
   verify_desc: This procedure is to verify that the Keystone device or firmware has
     not been tampered with.
   verify_modal_desc: Calculating Auth Code...
-  verify_modal_title: Verifing
+  verify_modal_title: Verifying
   verify_qr_link: https://keyst.one/verify
   verify_qr_title: Verify Your Device
   verify_scan_qr_code: Scan QR Code

@@ -1196,7 +1196,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     g_derivationPathDescLabel = label;
     prevLabel = label;
 
-    char *desc = "Address";
+    char *desc = _("derivation_path_address");
     if (!(g_connectWalletTileView.walletIndex == WALLET_LIST_SOLFARE && GetSolflareAccountType() == SOLBip44ROOT)) {
         desc = _("derivation_path_address_eg");
     }
@@ -1235,9 +1235,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     }
     egContHeight += 12;
     lv_obj_set_height(egCont, egContHeight);
-    //GetEthEgAddress();
     GetEgAddress();
-    // UpdateEthEgAddress(GetMetamaskAccountType());
     UpdategAddress();
 }
 

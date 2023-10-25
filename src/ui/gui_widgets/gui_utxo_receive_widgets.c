@@ -164,6 +164,8 @@ static uint8_t g_currentAccountIndex = 0;
 
 static HOME_WALLET_CARD_ENUM g_chainCard;
 static PageWidget_t *g_pageWidget;
+static lv_obj_t *g_egCont = NULL;
+static lv_obj_t *g_addressLabel[2];
 
 void GuiReceiveInit(uint8_t chain)
 {
@@ -572,15 +574,89 @@ static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
     g_utxoReceiveWidgets.rightBtnImg = img;
 }
 
+static void RefreshDefaultAddress(void)
+{
+    char string[128];
+    char coloredAddress[137]; // Additional space for color code
+
+    AddressDataItem_t addressDataItem;
+
+    ModelGetUtxoAddress(0, &addressDataItem);
+    sprintf(coloredAddress, "#F5870A %c%c%c#%s",
+            addressDataItem.address[0],
+            addressDataItem.address[1],
+            addressDataItem.address[2],
+            &addressDataItem.address[3]);
+    AddressLongModeCut(string, coloredAddress);
+    lv_label_set_text(g_addressLabel[0], string);
+    lv_label_set_recolor(g_addressLabel[0], true);
+
+    ModelGetUtxoAddress(1, &addressDataItem);
+    sprintf(coloredAddress, "#F5870A %c%c%c#%s",
+            addressDataItem.address[0],
+            addressDataItem.address[1],
+            addressDataItem.address[2],
+            &addressDataItem.address[3]);
+    AddressLongModeCut(string, coloredAddress);
+    lv_label_set_text(g_addressLabel[1], string);
+    lv_label_set_recolor(g_addressLabel[1], true);
+}
+
+static void ShowEgAddressCont(lv_obj_t *egCont)
+{
+    if (egCont == NULL)
+    {
+        printf("egCont is NULL, cannot show eg address\n");
+        return;
+    }
+    lv_obj_clean(egCont);
+    lv_obj_t *prevLabel, *label;
+    int egContHeight = 12;
+
+    char *desc = _("derivation_path_address_eg");
+    label = GuiCreateNoticeLabel(egCont, desc);
+    lv_obj_set_width(label, 360);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
+    lv_obj_update_layout(label);
+
+    egContHeight = egContHeight + 4 + lv_obj_get_height(label);
+    prevLabel = label;
+
+    lv_obj_t *index = GuiCreateNoticeLabel(egCont, _("0"));
+    lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);
+    lv_obj_update_layout(index);
+    egContHeight = egContHeight + 4 + lv_obj_get_height(index);
+    prevLabel = index;
+
+    label = GuiCreateIllustrateLabel(egCont, "");
+    lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+    g_addressLabel[0] = label;
+
+    index = GuiCreateNoticeLabel(egCont, _("1"));
+    lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);
+    lv_obj_update_layout(index);
+    egContHeight =  egContHeight + 4 + lv_obj_get_height(index);
+    prevLabel = index;
+    label = GuiCreateIllustrateLabel(egCont, "");
+    lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+    g_addressLabel[1] = label;
+
+    RefreshDefaultAddress();
+}
+
 static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
 {
     lv_obj_t *cont, *line, *label;
     static lv_point_t points[2] = {{0, 0}, {360, 0}};
     char string[64];
 
-    cont = GuiCreateContainerWithParent(parent, 408, 514);
+    cont = GuiCreateContainerWithParent(parent, 408, 308);
     lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 0);
-    lv_obj_set_style_bg_color(cont, DARK_BG_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
     for (uint32_t i = 0; i < 3; i++) {
         label = GuiCreateLabelWithFont(cont, g_addressSettings[i].title, &openSans_24);
@@ -588,9 +664,11 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
         sprintf(string, "%s (%s)", g_addressSettings[i].subTitle, g_addressSettings[i].path);
         label = GuiCreateNoticeLabel(cont, string);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
-        line = GuiCreateLine(cont, points, 2);
-        lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * (i + 1));
-
+        if (i != 2)
+        {
+            line = GuiCreateLine(cont, points, 2);
+            lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * (i + 1));
+        }
         g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox = lv_btn_create(cont);
         lv_obj_set_size(g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox, 408, 82);
         lv_obj_align(g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox, LV_ALIGN_TOP_LEFT, 0, 10 + 102 * i);
@@ -611,6 +689,14 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
     }
     lv_obj_clear_flag(g_utxoReceiveWidgets.addressSettingsWidgets[g_addressSettingsIndex[g_currentAccountIndex]].checkedImg, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(g_utxoReceiveWidgets.addressSettingsWidgets[g_addressSettingsIndex[g_currentAccountIndex]].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+
+    lv_obj_t *egCont = GuiCreateContainerWithParent(parent, 408, 122);
+    lv_obj_align_to(egCont, cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
+    lv_obj_set_style_bg_color(egCont, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(egCont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
+    lv_obj_set_style_radius(egCont, 24, LV_PART_MAIN);
+    g_egCont = egCont;
+    ShowEgAddressCont(g_egCont);
 }
 
 static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
@@ -810,6 +896,7 @@ static void AddressSettingsCheckHandler(lv_event_t *e)
                 if (g_addressSettingsIndex[g_currentAccountIndex] != i) {
                     g_addressSettingsIndex[g_currentAccountIndex] = i;
                     g_selectIndex = 0;
+                    ShowEgAddressCont(g_egCont);
                 }
             } else {
                 lv_obj_clear_state(g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox, LV_STATE_CHECKED);

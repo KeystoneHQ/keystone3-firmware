@@ -1168,20 +1168,6 @@ static void AddressLongModeCut(char *out, const char *address)
     strcat(out, address + len - 12);
 }
 
-#ifdef COMPILE_SIMULATOR
-
-static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
-{
-    char hdPath[128];
-    // sprintf(hdPath, "m/44'/0'/0'/0/%u", index);
-    sprintf(hdPath, "%s/0/%u", g_addressSettings[g_addressSettingsIndex[g_currentAccountIndex]].path, index);
-    item->index = index;
-    sprintf(item->address, "tb1qkcp7vdhczgk5eh59d2l0dxvmpzhx%010u", index);
-    strcpy(item->path, hdPath);
-}
-
-#else
-
 static ChainType GetChainTypeByIndex(uint32_t index)
 {
     switch (g_chainCard) {
@@ -1206,6 +1192,20 @@ static ChainType GetChainTypeByIndex(uint32_t index)
     }
     return XPUB_TYPE_BTC;
 }
+
+#ifdef COMPILE_SIMULATOR
+
+static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
+{
+    char hdPath[128];
+    // sprintf(hdPath, "m/44'/0'/0'/0/%u", index);
+    sprintf(hdPath, "%s/0/%u", g_addressSettings[g_addressSettingsIndex[g_currentAccountIndex]].path, index);
+    item->index = index;
+    sprintf(item->address, "tb1qkcp7vdhczgk5eh59d2l0dxvmpzhx%010u", index);
+    strcpy(item->path, hdPath);
+}
+
+#else
 
 static void GetRootHdPath(char *hdPath)
 {

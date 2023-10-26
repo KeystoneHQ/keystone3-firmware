@@ -16,6 +16,16 @@ static void CleanHandler(lv_event_t *e);
 static void OpenTutorialHandler(lv_event_t *e);
 static void OpenMoreHandler(lv_event_t *e);
 
+bool ConnectEternlWidgetExist()
+{
+    return g_pageWidget != NULL;
+}
+
+void CleanConnectEternlWidget()
+{
+    GUI_PAGE_DEL(g_pageWidget);
+}
+
 void GuiCreateConnectEternlWidget()
 {
     g_walletIndex = WALLET_LIST_ETERNL;
@@ -94,16 +104,7 @@ static void CleanHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED)
     {
-        if (g_cont != NULL)
-        {
-            lv_obj_del(g_cont);
-            g_cont = NULL;
-        }
-        if (g_pageWidget != NULL)
-        {
-            DestroyPageWidget(g_pageWidget);
-            g_pageWidget = NULL;
-        }
+        CleanConnectEternlWidget();
     }
 }
 

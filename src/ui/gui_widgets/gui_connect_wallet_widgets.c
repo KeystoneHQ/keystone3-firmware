@@ -1422,6 +1422,11 @@ void GuiConnectWalletRefresh(void)
         }
         QRCodePause(false);
     }
+    if (ConnectEternlWidgetExist())
+    {
+        CleanConnectEternlWidget();
+        GuiCreateConnectEternlWidget();
+    }
     if (g_derivationPathCont != NULL) {
         GUI_DEL_OBJ(g_derivationPathCont);
         OpenDerivationPath();

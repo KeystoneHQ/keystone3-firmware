@@ -310,7 +310,11 @@ void GuiLockScreenErrorCount(void *param)
                 || *(uint16_t *)passwordVerifyResult->signal == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
             leftCount = MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount;
             ASSERT(leftCount >= 0);
-            sprintf(hint, _("unlock_device_attempts_left_times_fmt"), (MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount));
+            if (leftCount > 1) {
+                sprintf(hint, _("unlock_device_attempts_left_plural_times_fmt"), leftCount);
+            } else {
+                sprintf(hint, _("unlock_device_attempts_left_singular_times_fmt"), leftCount);
+            }
             lv_label_set_text(g_verifyLock->errLabel, hint);
             GuiPassowrdToLockTimePage(MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount);
             if (passwordVerifyResult->errorCount == MAX_LOGIN_PASSWORD_ERROR_COUNT) {

@@ -152,7 +152,7 @@ static void OpenNoticeHandler(lv_event_t *e)
         lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgRedEye);
         lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 364);
         lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("single_backup_notice_title"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 460);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 424);
 
         img = GuiCreateImg(g_noticeHintBox, &imgClose);
         lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
@@ -160,10 +160,10 @@ static void OpenNoticeHandler(lv_event_t *e)
         lv_obj_align(img, LV_ALIGN_BOTTOM_RIGHT, -36, -425);
 
         label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_backup_notice_desc1"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 512);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 476);
 
         label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_backup_notice_desc2"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 584);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 578);
 
         lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, USR_SYMBOL_CHECK);
         lv_obj_add_event_cb(btn, CloseParentAndNextHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
@@ -276,11 +276,11 @@ static void SelectImportShareHandler(lv_event_t* e)
 
         for (int i = 0; i < 2; i++) {
             GuiButton_t table[] = {
-                {.obj = GuiCreateTextLabel(g_noticeHintBox, _("import_wallet_phrase_33words_per_share")), .align = LV_ALIGN_LEFT_MID, .position = {24, 0},},
+                {.obj = GuiCreateTextLabel(g_noticeHintBox, _("import_wallet_ssb_33words")), .align = LV_ALIGN_LEFT_MID, .position = {24, 0},},
                 {.obj = GuiCreateImg(g_noticeHintBox, &imgArrowRight), .align = LV_ALIGN_RIGHT_MID, .position = {-24, 0},},
             };
             if (i == 1) {
-                lv_label_set_text(table[0].obj, _("import_wallet_phrase_20words_per_share"));
+                lv_label_set_text(table[0].obj, _("import_wallet_ssb_20words"));
             }
             lv_obj_t *button = GuiCreateButton(g_noticeHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table), OpenImportShareHandler, &wordsAmount[i]);
             lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -12 - 96 * i);

@@ -366,7 +366,7 @@ impl ParsedCardanoTx {
 
                     let to = CardanoTo {
                         address: address.clone(),
-                        amount: normalize_value(output.value),
+                        amount: normalize_coin(output.value),
                         value: output.value,
                         assets: assets_map.clone(),
                         assets_text: match assets_map.len() {
@@ -527,7 +527,7 @@ impl ParsedCardanoTx {
                                     let multi_asset = ParsedCardanoMultiAsset {
                                         policy_id: policy_id.clone().to_bytes(),
                                         name: name.to_bytes(),
-                                        amount: normalize_coin(from_bignum(&asset_value)),
+                                        amount: normalize_value(from_bignum(&asset_value)),
                                         value: from_bignum(&asset_value),
                                         id: format!(
                                             "{}#{}",

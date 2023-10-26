@@ -478,6 +478,9 @@ void GuiShowGenerateXPubLoading(void)
     if (GuiLockScreenIsTop() == false) {
         return;
     }
+    if (GetPassphraseQuickAccess() == true) {
+        return;
+    }
     
     if (g_LoadingView != NULL && lv_obj_is_valid(g_LoadingView)) {
         lv_obj_del(g_LoadingView);
@@ -511,6 +514,10 @@ void GuiHideGenerateXPubLoading(void)
     if (GuiLockScreenIsTop() == false) {
         return;
     }
+    if (GetPassphraseQuickAccess() == true) {
+        return;
+    }
+
     g_canDismissLoading = true;
     SetPageLockScreen(true);
 }

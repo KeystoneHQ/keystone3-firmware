@@ -221,7 +221,12 @@ void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t
 {
     printf("GuiShowErrorNumber error count is %d\n", passwordVerifyResult->errorCount);
     char hint[128];
-    sprintf(hint, _("unlock_device_attempts_left_times_fmt"), (MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX - passwordVerifyResult->errorCount));
+    uint8_t cnt = MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX - passwordVerifyResult->errorCount;
+    if (cnt > 1) {
+        sprintf(hint, _("unlock_device_attempts_left_plural_times_fmt"), cnt);
+    } else {
+        sprintf(hint, _("unlock_device_attempts_left_singular_times_fmt"), cnt);
+    }
     GuiSetErrorLabel(keyboardWidget, hint);
     if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
         GuiShowPasswordErrorHintBox(keyboardWidget);

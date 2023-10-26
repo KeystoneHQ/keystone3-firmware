@@ -470,7 +470,7 @@ void OpenSharePhraseHandler(lv_event_t *e)
         lv_obj_t *btn = GuiCreateButton(g_selectAmountHintbox, 36, 36, table, 1, CloseHintBoxHandler, &g_selectAmountHintbox);
         lv_obj_align(btn, LV_ALIGN_DEFAULT, 408, 545);
 
-        label = GuiCreateTextLabel(g_selectAmountHintbox, _("import_wallet_phrase_20words"));
+        label = GuiCreateTextLabel(g_selectAmountHintbox, _("import_wallet_ssb_20words"));
         img = GuiCreateImg(g_selectAmountHintbox, &imgArrowRight);
         table[0].obj = label;
         table[0].position.x = 24;
@@ -484,7 +484,7 @@ void OpenSharePhraseHandler(lv_event_t *e)
         btn = GuiCreateButton(g_selectAmountHintbox, 456, 84, table, NUMBER_OF_ARRAYS(table), SelectPhraseAmountHandler, &walletSetting[0]);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 607);
 
-        label = GuiCreateTextLabel(g_selectAmountHintbox, _("import_wallet_phrase_33words"));
+        label = GuiCreateTextLabel(g_selectAmountHintbox, _("import_wallet_ssb_33words"));
         img = GuiCreateImg(g_selectAmountHintbox, &imgArrowRight);
         table[0].obj = label;
         table[1].obj = img;

@@ -161,6 +161,7 @@ void GuiMultiAccountsReceiveDeInit(void)
     GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.attentionCont)
     GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.cont)
     GUI_PAGE_DEL(g_multiAccountsReceiveWidgets.switchAccountCont)
+    GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.addressDetailCont)
 
     CLEAR_OBJECT(g_multiAccountsReceiveWidgets);
     GuiFullscreenModeCleanUp();
@@ -230,7 +231,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
     lv_obj_add_event_cb(btn, TutorialHandler, LV_EVENT_CLICKED, NULL);
-    img = GuiCreateImg(btn, &imgTutorial);
+    img = GuiCreateImg(btn, &imgAddressType);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
     label = GuiCreateLabelWithFont(btn, _("Tutorial"), &openSans_24);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);

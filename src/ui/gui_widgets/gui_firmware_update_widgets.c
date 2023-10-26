@@ -389,10 +389,10 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 172);
     label = GuiCreateIllustrateLabel(parent, "#F5870A 3#");
     lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 248);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 278);
     label = GuiCreateIllustrateLabel(parent, "#F5870A 4#");
     lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 350);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 380);
 
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_sd_desc1"));
     lv_obj_set_width(label, 384);
@@ -402,21 +402,21 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 172);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_sd_desc2_link"));
     lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 206);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 236);
     lv_obj_add_flag(label, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(label, GuiQrcodeHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(parent, &imgQrcodeTurquoise);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 322, 206);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 322, 236);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, GuiQrcodeHandler, LV_EVENT_CLICKED, NULL);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_sd_desc3"));
     lv_obj_set_width(label, 390);
     lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 248);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 278);
 
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_sd_desc4"));
     lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 350);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 380);
 
     lv_obj_t *btn = GuiCreateBtn(parent, _("Update"));
     lv_obj_set_size(btn, 408, 66);

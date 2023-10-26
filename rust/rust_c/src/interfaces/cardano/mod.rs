@@ -6,7 +6,7 @@ use crate::interfaces::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
 use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::interfaces::utils::{convert_c_char, recover_c_char};
 use alloc::format;
-use alloc::string::ToString;
+use alloc::string::{String, ToString};
 
 use alloc::vec::Vec;
 use app_cardano::errors::CardanoError;
@@ -48,12 +48,33 @@ pub extern "C" fn cardano_get_path(ptr: PtrUR) -> Ptr<SimpleResponse<c_char>> {
     let cardano_sign_reqeust = extract_ptr_with_type!(ptr, CardanoSignRequest);
     match cardano_sign_reqeust.get_utxos().get(0) {
         Some(_data) => match _data.get_key_path().get_path() {
-            Some(_path) => SimpleResponse::success(convert_c_char(_path)).simple_c_ptr(),
+            Some(_path) => {
+                if let Some(path) = parse_cardano_root_path(_path) {
+                    return SimpleResponse::success(convert_c_char(path)).simple_c_ptr();
+                }
+                SimpleResponse::from(CardanoError::InvalidTransaction(format!("invalid utxo")))
+                    .simple_c_ptr()
+            }
             None => SimpleResponse::from(CardanoError::InvalidTransaction(format!("invalid utxo")))
                 .simple_c_ptr(),
         },
         None => SimpleResponse::from(CardanoError::InvalidTransaction(format!("invalid utxo")))
             .simple_c_ptr(),
+    }
+}
+
+fn parse_cardano_root_path(path: String) -> Option<String> {
+    let root_path = "1852'/1815'/";
+    match path.strip_prefix(root_path) {
+        Some(path) => {
+            if let Some(index) = path.find("/") {
+                let sub_path = &path[..index];
+                Some(format!("{}{}", root_path, sub_path))
+            } else {
+                None
+            }
+        }
+        None => None,
     }
 }
 

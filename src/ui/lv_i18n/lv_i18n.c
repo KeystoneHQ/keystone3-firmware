@@ -645,7 +645,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"usb_connection_title", "Connection"},
     {"verification_code_desc", "Enter this code on Keystone's official website to verify your device's security."},
     {"verification_code_failed_button", "Erase Data & Shut Down"},
-    {"verification_code_failed_desc", "Your device may have been compromised, posing a risk to your sensitive data and digital assets.\nFor your safety, we recommend erasing all personal data and contacting KeystoneSupport team immediately for assistance."},
+    {"verification_code_failed_desc", "Your device may have been compromised, posing a risk to your sensitive data and digital assets.\nFor your safety, we recommend erasing all personal data and contacting Keystone Support team immediately for assistance."},
     {"verification_code_failed_link", "support@keyst.one"},
     {"verification_code_failed_title", "Unauthorized breach attempt detected!"},
     {"verification_code_title", "Verification Code"},

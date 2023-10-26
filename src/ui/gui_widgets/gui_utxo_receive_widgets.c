@@ -25,6 +25,7 @@
 #include "keystore.h"
 #include "gui_page.h"
 #include "account_manager.h"
+#include "gui_global_resources.h"
 
 #define ADDRESS_INDEX_MAX 999999999
 
@@ -132,6 +133,7 @@ static uint32_t GetCurrentSelectIndex();
 static void SetCurrentSelectIndex(uint32_t selectIndex);
 static void GetCurrentTitle(TitleItem_t *titleItem);
 static void SetKeyboardValid(bool);
+static ChainType GetChanTypeByIndex(uint32_t index);
 
 static UtxoReceiveWidgets_t g_utxoReceiveWidgets;
 static UtxoReceiveTile g_utxoReceiveTileNow;
@@ -143,6 +145,7 @@ static const AddressSettingsItem_t g_addressSettings[] = {
     {"Legacy", "P2PKH", "m/44'/0'/0'"},
     //{"Custom",          "Edit path",        "m/72'/0'/0'"}
 };
+static char * *g_derivationPathDescs = NULL;
 
 static const ChainPathItem_t g_chainPathItems[] = {
     {HOME_WALLET_CARD_BTC, ""},
@@ -167,8 +170,20 @@ static PageWidget_t *g_pageWidget;
 static lv_obj_t *g_egCont = NULL;
 static lv_obj_t *g_addressLabel[2];
 
+static void InitDerivationPathDesc(uint8_t chain)
+{
+    switch (chain) {
+    case HOME_WALLET_CARD_BTC:
+        g_derivationPathDescs = GetDerivationPathDescs(BTC_DERIVATION_PATH_DESC);
+        break;
+    default:
+        break;
+    }
+}
+
 void GuiReceiveInit(uint8_t chain)
 {
+    InitDerivationPathDesc(chain);
     g_chainCard = chain;
     g_currentAccountIndex = GetCurrentAccountIndex();
     g_selectIndex = GetCurrentSelectIndex();
@@ -574,30 +589,50 @@ static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
     g_utxoReceiveWidgets.rightBtnImg = img;
 }
 
+static void Highlight(AddressDataItem_t *item, uint8_t highlightStart, uint8_t highlightEnd, char *coloredAddress, size_t bufferSize)
+{
+    if (item == NULL || coloredAddress == NULL || highlightStart > highlightEnd || highlightEnd > strlen(item->address))
+    {
+        return;
+    }
+
+    char beforeHighlight[128];
+    char highlight[128];
+    char afterHighlight[128];
+
+    strncpy(beforeHighlight, item->address, highlightStart);
+    beforeHighlight[highlightStart] = '\0';
+    strncpy(highlight, &item->address[highlightStart], highlightEnd - highlightStart);
+    highlight[highlightEnd - highlightStart] = '\0';
+    strcpy(afterHighlight, &item->address[highlightEnd]);
+
+    if (bufferSize < strlen(beforeHighlight) + strlen(highlight) + strlen(afterHighlight) + 10)
+    {
+        return;
+    }
+
+    sprintf(coloredAddress, "%s#F5870A %s#%s", beforeHighlight, highlight, afterHighlight);
+}
+
 static void RefreshDefaultAddress(void)
 {
     char string[128];
-    char coloredAddress[137]; // Additional space for color code
-
     AddressDataItem_t addressDataItem;
 
+    ChainType chainType;
+    chainType = GetChanTypeByIndex(g_addressSettingsIndex[g_currentAccountIndex]);
+
+    uint8_t highlightEnd = chainType == XPUB_TYPE_BTC_NATIVE_SEGWIT ? 3 : 1;
+    char buffer[137];
     ModelGetUtxoAddress(0, &addressDataItem);
-    sprintf(coloredAddress, "#F5870A %c%c%c#%s",
-            addressDataItem.address[0],
-            addressDataItem.address[1],
-            addressDataItem.address[2],
-            &addressDataItem.address[3]);
-    AddressLongModeCut(string, coloredAddress);
+    Highlight(&addressDataItem, 0, highlightEnd, buffer, 137);
+    AddressLongModeCut(string, buffer);
     lv_label_set_text(g_addressLabel[0], string);
     lv_label_set_recolor(g_addressLabel[0], true);
 
     ModelGetUtxoAddress(1, &addressDataItem);
-    sprintf(coloredAddress, "#F5870A %c%c%c#%s",
-            addressDataItem.address[0],
-            addressDataItem.address[1],
-            addressDataItem.address[2],
-            &addressDataItem.address[3]);
-    AddressLongModeCut(string, coloredAddress);
+    Highlight(&addressDataItem, 0, highlightEnd, buffer, 137);
+    AddressLongModeCut(string, buffer);
     lv_label_set_text(g_addressLabel[1], string);
     lv_label_set_recolor(g_addressLabel[1], true);
 }
@@ -613,11 +648,19 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     lv_obj_t *prevLabel, *label;
     int egContHeight = 12;
 
+    label = GuiCreateNoticeLabel(egCont, g_derivationPathDescs[g_addressSettingsIndex[g_currentAccountIndex]]);
+    lv_obj_set_width(label, 360);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
+    lv_obj_update_layout(label);
+    egContHeight += lv_obj_get_height(label);
+    prevLabel = label;
+
     char *desc = _("derivation_path_address_eg");
     label = GuiCreateNoticeLabel(egCont, desc);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
+    lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
     lv_obj_update_layout(label);
 
     egContHeight = egContHeight + 4 + lv_obj_get_height(label);
@@ -647,14 +690,31 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     RefreshDefaultAddress();
 }
 
+static void GetChangePathLabelHint(char* hint)
+{
+    switch (g_chainCard) {
+    case HOME_WALLET_CARD_BTC:
+        sprintf(hint, _("derivation_path_select_btc"));
+        return;
+    default:
+        break;
+    }
+}
+
 static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
 {
     lv_obj_t *cont, *line, *label;
     static lv_point_t points[2] = {{0, 0}, {360, 0}};
     char string[64];
+    char lableText[128] = {0};
+    GetChangePathLabelHint(lableText);
+
+    lv_obj_t *labelHint = GuiCreateIllustrateLabel(parent, lableText);
+    lv_obj_set_style_text_opa(labelHint, LV_OPA_56, LV_PART_MAIN);
+    lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 36, 0);
 
     cont = GuiCreateContainerWithParent(parent, 408, 308);
-    lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 0);
+    lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 84);
     lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
@@ -690,7 +750,7 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
     lv_obj_clear_flag(g_utxoReceiveWidgets.addressSettingsWidgets[g_addressSettingsIndex[g_currentAccountIndex]].checkedImg, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(g_utxoReceiveWidgets.addressSettingsWidgets[g_addressSettingsIndex[g_currentAccountIndex]].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
 
-    lv_obj_t *egCont = GuiCreateContainerWithParent(parent, 408, 122);
+    lv_obj_t *egCont = GuiCreateContainerWithParent(parent, 408, 186);
     lv_obj_align_to(egCont, cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
     lv_obj_set_style_bg_color(egCont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(egCont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);

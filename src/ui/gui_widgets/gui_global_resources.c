@@ -4,6 +4,7 @@
 
 static char * *g_ethDerivationPathDesc = NULL;
 static char * *g_solDerivationPathDesc = NULL;
+static char * *g_btcDerivationPathDesc = NULL;
 
 void DerivationPathDescsInit(void)
 {
@@ -19,6 +20,12 @@ void DerivationPathDescsInit(void)
         g_solDerivationPathDesc[SOL_SOLLET] = _("derivation_path_sol_2_desc");
         g_solDerivationPathDesc[SOL_PHANTOM] = _("derivation_path_sol_3_desc");
     }
+    if (g_btcDerivationPathDesc == NULL) {
+        g_btcDerivationPathDesc = SRAM_MALLOC(3 * 128);
+        g_btcDerivationPathDesc[BTC_NATIVE_SEGWIT] = _("derivation_path_btc_1_desc");
+        g_btcDerivationPathDesc[BTC_NESTED_SEGWIT] = _("derivation_path_btc_2_desc");
+        g_btcDerivationPathDesc[BTC_LEGACY] = _("derivation_path_btc_3_desc");
+    }
 }
 
 char **GetDerivationPathDescs(uint8_t index)
@@ -28,6 +35,9 @@ char **GetDerivationPathDescs(uint8_t index)
     }
     if (index == SOL_DERIVATION_PATH_DESC) {
         return g_solDerivationPathDesc;
+    }
+    if (index == BTC_DERIVATION_PATH_DESC) {
+        return g_btcDerivationPathDesc;
     }
 }
 

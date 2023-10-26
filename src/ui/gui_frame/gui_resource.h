@@ -180,6 +180,7 @@ LV_IMG_DECLARE(coinKava);
 LV_IMG_DECLARE(coinQck);
 LV_IMG_DECLARE(coinLuna);
 LV_IMG_DECLARE(coinLunc);
+LV_IMG_DECLARE(coinScroll);
 
 // wallet
 LV_IMG_DECLARE(walletKeystone);

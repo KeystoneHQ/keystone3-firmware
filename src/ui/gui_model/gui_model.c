@@ -439,6 +439,7 @@ static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, voi
     GenerateUR func = (GenerateUR)getUR;
     g_urResult = func();
     if (g_urResult->error_code == 0) {
+        printf("%s\r\n", g_urResult->data);
         GuiApiEmitSignal(SIG_BACKGROUND_UR_GENERATE_SUCCESS, g_urResult->data, strlen(g_urResult->data) + 1);
     } else {
         //TODO: deal with error
@@ -451,6 +452,7 @@ static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen)
     if (g_urResult->is_multi_part) {
         UREncodeMultiResult *result = get_next_part(g_urResult->encoder);
         if (result->error_code == 0) {
+            printf("%s\r\n", result->data);
             GuiApiEmitSignal(SIG_BACKGROUND_UR_UPDATE, result->data, strlen(result->data) + 1);
         } else {
             //TODO: deal with error
@@ -1030,7 +1032,7 @@ static int32_t ModeControlQrDecode(const void *inData, uint32_t inDataLen)
     }
 #else
     static uint8_t urRet = 0;
-    UrViewType_t urViewType = { KeyDerivationRequest, QRHardwareCall };
+    UrViewType_t urViewType = { CardanoTx, CardanoSignRequest };
     GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
     // GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_FAIL, &urRet, sizeof(urRet));
 #endif

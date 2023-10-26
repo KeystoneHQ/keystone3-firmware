@@ -12,6 +12,7 @@
 #include "secret_cache.h"
 #include "gui_views.h"
 #include "gui_lock_widgets.h"
+#include "fingerprint_process.h"
 #ifdef COMPILE_SIMULATOR
 #define RECOGNIZE_UNLOCK                    0
 #endif

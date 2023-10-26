@@ -7,8 +7,6 @@ extern crate alloc;
 extern crate std;
 
 pub mod address;
-pub mod detail;
 pub mod errors;
-pub mod overview;
 pub mod structs;
 pub mod transaction;

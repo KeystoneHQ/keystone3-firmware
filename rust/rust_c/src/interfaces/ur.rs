@@ -7,7 +7,6 @@ use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 use third_party::ur_registry::extend::qr_hardware_call::QRHardwareCall;
 
 use app_bitcoin::errors::BitcoinError;
-use app_cardano::errors::CardanoError;
 use app_ethereum::errors::EthereumError;
 use cstr_core::CString;
 use cty::c_char;
@@ -208,6 +207,7 @@ impl URType {
             InnerURType::SuiSignRequest(_) => Ok(URType::SuiSignRequest),
             InnerURType::AptosSignRequest(_) => Ok(URType::AptosSignRequest),
             InnerURType::QRHardwareCall(_) => Ok(URType::QRHardwareCall),
+            InnerURType::CardanoSignRequest(_) => Ok(URType::CardanoSignRequest),
             _ => Err(URError::NotSupportURTypeError(value.get_type_str())),
         }
     }
@@ -307,6 +307,9 @@ fn free_ur(ur_type: &URType, data: PtrUR) {
         }
         URType::AptosSignRequest => {
             free_ptr_with_type!(data, AptosSignRequest);
+        }
+        URType::CardanoSignRequest => {
+            free_ptr_with_type!(data, CardanoSignRequest);
         }
         URType::QRHardwareCall => {
             free_ptr_with_type!(data, QRHardwareCall);

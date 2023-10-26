@@ -74,11 +74,22 @@ pub fn sign_message_by_icarus_master_key(
     Ok(*sig.to_bytes())
 }
 
+pub fn sign_message_by_xprv(xprv: &XPrv, message: &[u8], path: &String) -> Result<[u8; 64]> {
+    let xprv = derive_extended_privkey_by_xprv(xprv, path)?;
+    let sig = xprv.sign::<Vec<u8>>(message);
+    Ok(*sig.to_bytes())
+}
+
 pub fn derive_extended_pubkey_by_icarus_master_key(
     master_key: &[u8],
     path: &String,
 ) -> Result<XPub> {
     let privkey = derive_extended_privkey_by_icarus_master_key(master_key, path)?;
+    Ok(privkey.public())
+}
+
+pub fn derive_extended_pubkey_by_xprv(xprv: &XPrv, path: &String) -> Result<XPub> {
+    let privkey = derive_extended_privkey_by_xprv(xprv, path)?;
     Ok(privkey.public())
 }
 
@@ -89,6 +100,10 @@ pub fn derive_extended_privkey_by_icarus_master_key(
     let xprv = XPrv::from_slice_verified(master_key)
         .map_err(|e| KeystoreError::DerivationError(e.to_string()))?;
     derive_bip32_ed25519_privkey(xprv, path)
+}
+
+pub fn derive_extended_privkey_by_xprv(xprv: &XPrv, path: &String) -> Result<XPrv> {
+    derive_bip32_ed25519_privkey(xprv.clone(), path)
 }
 
 fn derive_bip32_ed25519_privkey(root: XPrv, path: &String) -> Result<XPrv> {

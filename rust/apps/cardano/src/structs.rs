@@ -5,18 +5,13 @@ use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
 use app_utils::{impl_internal_struct, impl_public_struct};
-use cardano_serialization_lib::address::{EnterpriseAddress, RewardAddress};
+use cardano_serialization_lib::address::RewardAddress;
 
 use cardano_serialization_lib::utils::from_bignum;
-use cardano_serialization_lib::{CertificateKind, NetworkId, NetworkIdKind, Transaction};
+use cardano_serialization_lib::{
+    Certificate, CertificateKind, NetworkId, NetworkIdKind, Transaction,
+};
 
-use crate::detail::{
-    CardanoDetail, CardanoDetailStakeAction, CardanoRegistration, CardanoStake, CardanoWithdrawal,
-};
-use crate::overview::{
-    CardanoHeaderCard, CardanoOverview, CardanoOverviewStakeCard, CardanoOverviewTransferCard,
-    CardanoOverviewWithdrawalCard,
-};
 use alloc::format;
 use core::ops::Div;
 use third_party::bitcoin::bip32::ChildNumber::{Hardened, Normal};
@@ -48,33 +43,27 @@ impl_public_struct!(CardanoCertKey {
 });
 
 impl_public_struct!(ParsedCardanoTx {
-    overview: CardanoOverview,
-    detail: CardanoDetail,
     fee: String,
+    total_input: String,
+    total_output: String,
     from: Vec<CardanoFrom>,
     to: Vec<CardanoTo>,
     network: String,
-    method: String
+    certificates: Vec<CardanoCertificate>,
+    withdrawals: Vec<CardanoWithdrawal>,
+    auxiliary_data: Option<String>
 });
 
-// method label on ui
-#[derive(Clone, Debug, Default)]
-pub enum CardanoMethod {
-    #[default]
-    Transfer,
-    Stake,
-    Withdrawal,
-}
+impl_public_struct!(CardanoCertificate {
+    cert_type: String,
+    address: String,
+    pool: Option<String>
+});
 
-impl ToString for CardanoMethod {
-    fn to_string(&self) -> String {
-        match &self {
-            CardanoMethod::Transfer => "Transfer".to_string(),
-            CardanoMethod::Stake => "Stake".to_string(),
-            CardanoMethod::Withdrawal => "Withdrawals".to_string(),
-        }
-    }
-}
+impl_public_struct!(CardanoWithdrawal {
+    address: String,
+    amount: String
+});
 
 impl_internal_struct!(ParsedCardanoInput {
     transaction_hash: Vec<u8>,
@@ -147,11 +136,8 @@ impl ParsedCardanoTx {
         };
         let parsed_inputs = Self::parse_inputs(&tx, &context, network_id)?;
         let parsed_outputs = Self::parse_outputs(&tx)?;
-        let cert_actions = Self::parse_certs(&tx)?;
-        let stake_actions = Self::parse_stake_actions(&tx, &cert_actions)?;
 
         let fee = from_bignum(&tx.body().fee());
-        let method = Self::detect_method(&tx);
 
         let total_output_amount = {
             let _v = parsed_outputs.iter().fold(0u64, |acc, cur| acc + cur.value);
@@ -192,84 +178,6 @@ impl ParsedCardanoTx {
 
         let fee = normalize_coin(fee);
 
-        let deposit = match cert_actions
-            .iter()
-            .filter(|v| match v {
-                CardanoCertAction::Registration(_) => true,
-                _ => false,
-            })
-            .collect::<Vec<&CardanoCertAction>>()
-            .len()
-        {
-            0 => None,
-            x => Some(format!("{} ADA", x * 2)),
-        };
-
-        let deposit_reclaim = {
-            let actions = cert_actions
-                .iter()
-                .filter(|v| match v {
-                    CardanoCertAction::Deregistration(_) => true,
-                    _ => false,
-                })
-                .collect::<Vec<&CardanoCertAction>>();
-            match actions.len() {
-                0 => None,
-                x => Some(format!("{} ADA", x * 2)),
-            }
-        };
-
-        let reward_amount = {
-            let value = stake_actions.iter().fold(0, |acc, cur| match cur {
-                CardanoDetailStakeAction::Withdrawal(withdraw) => acc + withdraw.get_value(),
-                _ => acc,
-            });
-            normalize_coin(value)
-        };
-
-        let reward_account = {
-            let addresses = stake_actions
-                .iter()
-                .filter(|v| match v {
-                    CardanoDetailStakeAction::Withdrawal(_) => true,
-                    _ => false,
-                })
-                .map(|v| match v {
-                    CardanoDetailStakeAction::Withdrawal(x) => x.get_reward_address(),
-                    _ => None,
-                })
-                .collect::<Vec<Option<String>>>();
-            let mut addrs = vec![];
-            for x in addresses {
-                if let Some(value) = x {
-                    addrs.push(value);
-                }
-            }
-            match addrs.len() {
-                0 => None,
-                _ => Some(addrs.join(",")),
-            }
-        };
-
-        let mut transaction_overview = CardanoOverview::default();
-
-        transaction_overview.set_header_card(match method {
-            CardanoMethod::Transfer => CardanoHeaderCard::Transfer(
-                CardanoOverviewTransferCard::new(total_output_amount.clone()),
-            ),
-            CardanoMethod::Stake => CardanoHeaderCard::Stake(CardanoOverviewStakeCard::new(
-                total_output_amount.clone(),
-                deposit.clone(),
-            )),
-            CardanoMethod::Withdrawal => {
-                CardanoHeaderCard::Withdrawal(CardanoOverviewWithdrawalCard::new(
-                    reward_amount,
-                    deposit_reclaim.clone(),
-                    reward_account,
-                ))
-            }
-        });
-
         let total_input_amount = {
             let _v = parsed_inputs.iter().fold(0u64, |acc, cur| match cur.value {
                 Some(v) => acc + v,
@@ -278,22 +186,16 @@ impl ParsedCardanoTx {
             normalize_coin(_v)
         };
 
-        let transaction_detail = CardanoDetail::new(
-            total_input_amount,
-            total_output_amount,
-            deposit_reclaim.clone(),
-            deposit.clone(),
-            None,
-        );
-
         Ok(Self {
-            overview: transaction_overview,
-            detail: transaction_detail,
+            total_input: total_input_amount,
+            total_output: total_output_amount,
             from: from_list_detail,
             to: to_list_detail,
             fee: fee.clone(),
             network: network.clone(),
-            method: method.to_string(),
+            certificates: Self::parse_certificates(&tx, network_id)?,
+            withdrawals: Self::parse_withdrawals(&tx)?,
+            auxiliary_data: Self::parse_auxiliary_data(&tx)?,
         })
     }
 
@@ -308,6 +210,83 @@ impl ParsedCardanoTx {
                 NetworkIdKind::Testnet => 0,
             },
         }
+    }
+
+    fn parse_auxiliary_data(tx: &Transaction) -> R<Option<String>> {
+        tx.auxiliary_data()
+            .map(|v| {
+                v.to_json()
+                    .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))
+            })
+            .transpose()
+    }
+
+    fn parse_certificates(tx: &Transaction, network_id: u8) -> R<Vec<CardanoCertificate>> {
+        let mut certs = vec![];
+        if let Some(_certs) = tx.body().certs() {
+            let len = _certs.len();
+            for i in 0..len {
+                let cert = _certs.get(i);
+                if let Some(_cert) = cert.as_stake_delegation() {
+                    certs.push(CardanoCertificate::new(
+                        "stake delegation".to_string(),
+                        RewardAddress::new(network_id, &_cert.stake_credential())
+                            .to_address()
+                            .to_bech32(None)
+                            .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                        Some(
+                            _cert
+                                .pool_keyhash()
+                                .to_bech32("pool")
+                                .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                        ),
+                    ));
+                }
+                if let Some(_cert) = cert.as_stake_deregistration() {
+                    certs.push(CardanoCertificate::new(
+                        "stake deregistration".to_string(),
+                        RewardAddress::new(network_id, &_cert.stake_credential())
+                            .to_address()
+                            .to_bech32(None)
+                            .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                        None,
+                    ));
+                }
+                if let Some(_cert) = cert.as_stake_registration() {
+                    certs.push(CardanoCertificate::new(
+                        "stake registration".to_string(),
+                        RewardAddress::new(network_id, &_cert.stake_credential())
+                            .to_address()
+                            .to_bech32(None)
+                            .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                        None,
+                    ));
+                }
+            }
+        }
+        Ok(certs)
+    }
+
+    fn parse_withdrawals(tx: &Transaction) -> R<Vec<CardanoWithdrawal>> {
+        let mut withdrawals = vec![];
+        if let Some(_withdrawals) = tx.body().withdrawals() {
+            let keys = _withdrawals.keys();
+            let len = keys.len();
+            for i in 0..len {
+                let address = keys.get(i);
+                let value = _withdrawals.get(&address);
+                if let Some(_v) = value {
+                    withdrawals.push(CardanoWithdrawal::new(
+                        address
+                            .to_address()
+                            .to_bech32(None)
+                            .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                        normalize_coin(from_bignum(&_v)),
+                    ))
+                }
+            }
+        }
+        Ok(withdrawals)
     }
 
     fn get_from_list(inputs: Vec<ParsedCardanoInput>) -> BTreeMap<String, CardanoFrom> {
@@ -402,26 +381,6 @@ impl ParsedCardanoTx {
         map
     }
 
-    fn detect_method(tx: &Transaction) -> CardanoMethod {
-        if let Some(withdrawals) = tx.body().withdrawals() {
-            if withdrawals.len() > 0 {
-                return CardanoMethod::Withdrawal;
-            }
-        }
-        if let Some(certs) = tx.body().certs() {
-            if certs.len() > 0 {
-                let len = certs.len();
-                for i in 0..len {
-                    if let CertificateKind::StakeDeregistration = certs.get(i).kind() {
-                        return CardanoMethod::Withdrawal;
-                    }
-                }
-                return CardanoMethod::Stake;
-            }
-        }
-        return CardanoMethod::Transfer;
-    }
-
     pub fn verify(tx: Transaction, context: ParseContext) -> R<()> {
         let network_id = Self::judge_network_id(&tx);
         let parsed_inputs = Self::parse_inputs(&tx, &context, network_id)?;
@@ -435,7 +394,7 @@ impl ParsedCardanoTx {
                 "no input related to this account".to_string(),
             ));
         }
-        Self::parse_certs(&tx)?;
+        Self::parse_certificates(&tx, network_id)?;
         Ok(())
     }
 
@@ -523,7 +482,7 @@ impl ParsedCardanoTx {
                         index: utxo.index,
                         value: Some(utxo.value),
                         address: Some(address),
-                        path: None,
+                        path: Some(utxo.path.to_string()),
                         is_mine: utxo.master_fingerprint.eq(&context.master_fingerprint),
                     })
                 }
@@ -587,169 +546,6 @@ impl ParsedCardanoTx {
             parsed_outputs.push(parsed_output);
         }
         Ok(parsed_outputs)
-    }
-
-    fn parse_certs(tx: &Transaction) -> R<Vec<CardanoCertAction>> {
-        let mut parsed_certs = vec![];
-        let network_id = match tx
-            .body()
-            .network_id()
-            .unwrap_or(NetworkId::mainnet())
-            .kind()
-        {
-            NetworkIdKind::Mainnet => 0,
-            NetworkIdKind::Testnet => 1,
-        };
-        if let Some(certs) = tx.body().certs() {
-            let len = certs.len();
-            for i in 0..len {
-                let cert = certs.get(i);
-                let result = match cert.kind() {
-                    CertificateKind::StakeRegistration => cert.as_stake_registration().map(|v| {
-                        Ok(CardanoCertAction::Registration(Registration {
-                            stake_key: RewardAddress::new(network_id, &v.stake_credential()),
-                        }))
-                    }),
-                    CertificateKind::StakeDeregistration => {
-                        cert.as_stake_deregistration().map(|v| {
-                            Ok(CardanoCertAction::Deregistration(Deregistration {
-                                stake_key: RewardAddress::new(network_id, &v.stake_credential()),
-                            }))
-                        })
-                    }
-                    CertificateKind::StakeDelegation => cert.as_stake_delegation().map(|v| {
-                        Ok(CardanoCertAction::Delegation(Delegation {
-                            pool: v.pool_keyhash().to_hex(),
-                            stake_key: RewardAddress::new(network_id, &v.stake_credential()),
-                        }))
-                    }),
-                    CertificateKind::PoolRegistration => {
-                        return Err(CardanoError::UnsupportedTransaction(
-                            "PoolRegistration".to_string(),
-                        ));
-                    }
-                    CertificateKind::PoolRetirement => {
-                        return Err(CardanoError::UnsupportedTransaction(
-                            "PoolRetirement".to_string(),
-                        ));
-                    }
-                    CertificateKind::GenesisKeyDelegation => {
-                        return Err(CardanoError::UnsupportedTransaction(
-                            "GenesisKeyDelegation".to_string(),
-                        ));
-                    }
-                    CertificateKind::MoveInstantaneousRewardsCert => {
-                        return Err(CardanoError::UnsupportedTransaction(
-                            "MoveInstantaneousRewardsCert".to_string(),
-                        ));
-                    }
-                };
-                if let Some(parsed_cert) = result {
-                    parsed_certs.push(parsed_cert);
-                }
-            }
-        }
-        parsed_certs.into_iter().collect()
-    }
-
-    fn parse_stake_actions(
-        tx: &Transaction,
-        certs: &Vec<CardanoCertAction>,
-    ) -> R<Vec<CardanoDetailStakeAction>> {
-        let mut parsed_actions = vec![];
-
-        let mut registrations: Vec<Registration> = vec![];
-        certs.iter().for_each(|v| match v {
-            CardanoCertAction::Registration(x) => registrations.push(x.clone()),
-            _ => {}
-        });
-
-        let mut deregistrations = vec![];
-        certs.iter().for_each(|v| {
-            if let CardanoCertAction::Deregistration(x) = v {
-                deregistrations.push(x.clone());
-            }
-        });
-
-        let mut delegations = vec![];
-        certs.iter().for_each(|v| match v {
-            CardanoCertAction::Delegation(x) => delegations.push(x.clone()),
-            _ => {}
-        });
-
-        if let Some(_withdrawals) = tx.body().withdrawals() {
-            let len = _withdrawals.keys().len();
-            for i in 0..len {
-                let key = _withdrawals.keys().get(i);
-                let value = match _withdrawals.get(&key) {
-                    None => 0,
-                    Some(_v) => from_bignum(&_v),
-                };
-
-                let mut cardano_withdrawal = CardanoWithdrawal::new(
-                    Some(
-                        key.to_address()
-                            .to_bech32(None)
-                            .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
-                    ),
-                    Some(normalize_coin(value)),
-                    value,
-                    None,
-                );
-
-                if let Some((index, _)) = deregistrations
-                    .iter()
-                    .find_position(|v| v.stake_key.eq(&key))
-                {
-                    deregistrations.remove(index);
-                    //they are the same actually.
-                    cardano_withdrawal
-                        .set_deregistration_stake_key(cardano_withdrawal.get_reward_address());
-                }
-                parsed_actions.push(CardanoDetailStakeAction::Withdrawal(cardano_withdrawal))
-            }
-        }
-
-        for v in deregistrations {
-            let withdraw = CardanoWithdrawal::new(
-                None,
-                None,
-                0,
-                Some(
-                    v.stake_key
-                        .to_address()
-                        .to_bech32(None)
-                        .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
-                ),
-            );
-            parsed_actions.push(CardanoDetailStakeAction::Withdrawal(withdraw))
-        }
-
-        for v in delegations {
-            let key = v.stake_key;
-            let delegation = CardanoStake::new(
-                key.to_address()
-                    .to_bech32(None)
-                    .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
-                v.pool,
-            );
-            if let Some((index, _)) = registrations.iter().find_position(|v| v.stake_key.eq(&key)) {
-                registrations.remove(index);
-            }
-            parsed_actions.push(CardanoDetailStakeAction::Stake(delegation))
-        }
-
-        for v in registrations {
-            let registration = CardanoRegistration::new(
-                v.stake_key
-                    .to_address()
-                    .to_bech32(None)
-                    .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
-            );
-            parsed_actions.push(CardanoDetailStakeAction::Registration(registration))
-        }
-
-        Ok(parsed_actions)
     }
 }
 

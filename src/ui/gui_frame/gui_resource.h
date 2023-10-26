@@ -100,6 +100,7 @@ LV_IMG_DECLARE(imgFirmwareUp);
 LV_IMG_DECLARE(imgUsb);
 LV_IMG_DECLARE(imgUnknown);
 LV_IMG_DECLARE(imgNextStep);
+LV_IMG_DECLARE(imgInfo);
 
 // connect to do refresh
 LV_IMG_DECLARE(circular);

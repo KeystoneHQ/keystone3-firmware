@@ -231,7 +231,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
     lv_obj_add_event_cb(btn, TutorialHandler, LV_EVENT_CLICKED, NULL);
-    img = GuiCreateImg(btn, &imgAddressType);
+    img = GuiCreateImg(btn, &imgTutorial);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
     label = GuiCreateLabelWithFont(btn, _("Tutorial"), &openSans_24);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
@@ -245,7 +245,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
     lv_obj_add_event_cb(btn, OpenSwitchAccountHandler, LV_EVENT_CLICKED, NULL);
 
-    img = GuiCreateImg(btn, &imgTutorial);
+    img = GuiCreateImg(btn, &imgAddressType);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
     label = GuiCreateLabelWithFont(btn, _("switch_account"), &openSans_24);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
@@ -302,8 +302,8 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_add_event_cb(g_multiAccountsReceiveWidgets.addressLabel, ShowAddressDetailHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_add_flag(g_multiAccountsReceiveWidgets.addressLabel, LV_OBJ_FLAG_CLICKABLE);
 
-    g_multiAccountsReceiveWidgets.questionImg = GuiCreateImg(g_multiAccountsReceiveWidgets.qrCodeCont, &imgQuestion);
-    lv_obj_align_to(g_multiAccountsReceiveWidgets.questionImg, g_multiAccountsReceiveWidgets.addressLabel, LV_ALIGN_OUT_RIGHT_TOP, 0, 0);
+    g_multiAccountsReceiveWidgets.questionImg = GuiCreateImg(g_multiAccountsReceiveWidgets.qrCodeCont, &imgInfo);
+    lv_obj_align(g_multiAccountsReceiveWidgets.questionImg, LV_ALIGN_TOP_LEFT, 348, yOffset+4);
     lv_obj_add_event_cb(g_multiAccountsReceiveWidgets.questionImg, ShowAddressDetailHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_add_flag(g_multiAccountsReceiveWidgets.questionImg, LV_OBJ_FLAG_CLICKABLE);
 
@@ -451,10 +451,6 @@ static void RefreshQrCode(void)
     AddressLongModeCut(string, addressDataItem.address, 24);
     lv_label_set_text(g_multiAccountsReceiveWidgets.addressLabel, string);
     lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.addressCountLabel, "Address-%u", (addressDataItem.index));
-    // int width = lv_obj_get_self_width(g_multiAccountsReceiveWidgets.addressLabel);
-    // lv_obj_set_width(g_multiAccountsReceiveWidgets.addressLabel, width);
-
-    lv_obj_align_to(g_multiAccountsReceiveWidgets.questionImg, g_multiAccountsReceiveWidgets.addressLabel, LV_ALIGN_OUT_RIGHT_TOP, 6, 0);
 }
 
 static void RefreshSwitchAddress(void)

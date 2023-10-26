@@ -246,7 +246,7 @@ void GetAdaOutputDetailSize(uint16_t *width, uint16_t *height, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
     *width = 408;
-    *height = 16 + 30 + 94 * tx->from->size + 16;
+    *height = 16 + 30 + 94 * tx->to->size + 16;
 }
 
 bool GetAdaCertificatesExist(void *indata, void *param)

@@ -3,6 +3,7 @@
 #include "gui.h"
 #include "gui_home_widgets.h"
 #include "cjson/cJSON.h"
+#include "account_manager.h"
 
 bool g_fingerUnlockDeviceFlag = true;
 bool g_fingerSingTransitionsFlag = false;
@@ -525,4 +526,9 @@ void SetPassphraseQuickAccess(bool exist)
 void UserDelay(uint32_t ms)
 {
 
+}
+
+MnemonicType GetMnemonicType(void)
+{
+    return MNEMONIC_TYPE_SLIP39;
 }

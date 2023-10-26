@@ -121,11 +121,12 @@ static const CoinCard_t g_fewchaCoinCardArray[FEWCHA_COINS_BUTT] = {
     },
 };
 
-static const lv_img_dsc_t *g_metaMaskCoinArray[4] = {
+static const lv_img_dsc_t *g_metaMaskCoinArray[5] = {
     &coinEth,
     &coinBnb,
     &coinAva,
     &coinMatic,
+    &coinScroll,
 };
 
 static const lv_img_dsc_t *g_ethWalletCoinArray[4] = {
@@ -651,7 +652,7 @@ static void AddMetaMaskCoins(void)
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
         lv_obj_clean(g_coinCont);
     }
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 5; i++) {
         lv_obj_t *img = GuiCreateImg(g_coinCont, g_metaMaskCoinArray[i]);
         lv_img_set_zoom(img, 110);
         lv_img_set_pivot(img, 0, 0);

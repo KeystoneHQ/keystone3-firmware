@@ -133,7 +133,7 @@ static uint32_t GetCurrentSelectIndex();
 static void SetCurrentSelectIndex(uint32_t selectIndex);
 static void GetCurrentTitle(TitleItem_t *titleItem);
 static void SetKeyboardValid(bool);
-static ChainType GetChanTypeByIndex(uint32_t index);
+static ChainType GetChainTypeByIndex(uint32_t index);
 
 static UtxoReceiveWidgets_t g_utxoReceiveWidgets;
 static UtxoReceiveTile g_utxoReceiveTileNow;
@@ -620,7 +620,7 @@ static void RefreshDefaultAddress(void)
     AddressDataItem_t addressDataItem;
 
     ChainType chainType;
-    chainType = GetChanTypeByIndex(g_addressSettingsIndex[g_currentAccountIndex]);
+    chainType = GetChainTypeByIndex(g_addressSettingsIndex[g_currentAccountIndex]);
 
     uint8_t highlightEnd = chainType == XPUB_TYPE_BTC_NATIVE_SEGWIT ? 3 : 1;
     char buffer[137];
@@ -1182,7 +1182,7 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
 
 #else
 
-static ChainType GetChanTypeByIndex(uint32_t index)
+static ChainType GetChainTypeByIndex(uint32_t index)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC: {
@@ -1232,7 +1232,7 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
 {
     char *xPub, rootPath[128], hdPath[128];
     ChainType chainType;
-    chainType = GetChanTypeByIndex(g_addressSettingsIndex[g_currentAccountIndex]);
+    chainType = GetChainTypeByIndex(g_addressSettingsIndex[g_currentAccountIndex]);
     xPub = GetCurrentAccountPublicKey(chainType);
     ASSERT(xPub);
     SimpleResponse_c_char *result;

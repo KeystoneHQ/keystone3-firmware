@@ -107,6 +107,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_KEPLR, "Connect Keplr", &walletKeplr},
     {WALLET_LIST_FEWCHA, "Connect Fewcha", &walletFewcha},
     {WALLET_LIST_PETRA, "Connect Petra", &walletPetra},
+    {WALLET_LIST_XRP_TOOLKIT, "Connect XRP Toolkit", &walletXRPToolkit},
 };
 
 void GuiNvsBarSetWalletName(const char *name)

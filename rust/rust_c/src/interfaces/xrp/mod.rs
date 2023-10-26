@@ -4,10 +4,12 @@ use crate::interfaces::structs::{SimpleResponse, TransactionParseResult};
 use crate::interfaces::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::interfaces::utils::{convert_c_char, recover_c_array, recover_c_char};
 use alloc::format;
+use alloc::string::String;
 use alloc::vec::Vec;
 use core::slice;
 use core::str::FromStr;
 use cty::c_char;
+use third_party::{hex, secp256k1};
 
 use crate::extract_ptr_with_type;
 use crate::interfaces::errors::RustCError;
@@ -15,9 +17,11 @@ use crate::interfaces::ffi::CSliceFFI;
 use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::interfaces::xrp::structs::{DisplayXrpTx, XRPHDPath};
 use app_xrp::errors::XRPError;
-use third_party::bitcoin::bip32::DerivationPath;
+use third_party::bitcoin::bip32::{DerivationPath, ExtendedPubKey};
 use third_party::ur_registry::bytes::Bytes;
 use third_party::ur_registry::traits::RegistryItem;
+
+use super::errors::ErrorCodes;
 
 #[no_mangle]
 pub extern "C" fn xrp_get_address(
@@ -93,4 +97,42 @@ pub extern "C" fn xrp_sign_tx(
         },
         Err(e) => UREncodeResult::from(e).c_ptr(),
     }
+}
+
+#[no_mangle]
+pub extern "C" fn xrp_check_pub_key(
+    pub_key: PtrString,
+    root_xpub: PtrString,
+) -> *mut SimpleResponse<c_char> {
+    let pub_key_bytes = match hex::decode(recover_c_char(pub_key)) {
+        Ok(v) => v,
+        Err(_) => {
+            return SimpleResponse::error(ErrorCodes::InvalidData, String::from("Invalid public key"))
+                .simple_c_ptr()
+        }
+    };
+    let root_xpub = recover_c_char(root_xpub);
+    let xpub = match ExtendedPubKey::from_str(&root_xpub) {
+        Ok(v) => v,
+        Err(_) => {
+            return SimpleResponse::error(ErrorCodes::InvalidData, String::from("Invalid xpub"))
+                .simple_c_ptr()
+        }
+    };
+    let k1 = secp256k1::Secp256k1::new();
+    let a_xpub = xpub.derive_pub(&k1, &DerivationPath::from_str("m/0").unwrap()).unwrap();
+    for i in 0..1001 {
+        let pk = a_xpub.derive_pub(
+            &k1,
+            &DerivationPath::from_str(&format!("m/{}", i)).unwrap(),
+        );
+        if let Ok(pk) = pk {
+            if pub_key_bytes.eq(&pk.public_key.serialize()) {
+                return SimpleResponse::success(convert_c_char(format!("m/0/{}", i)) as *mut c_char)
+                    .simple_c_ptr();
+            }
+        }
+    }
+    SimpleResponse::error(ErrorCodes::InvalidData, String::from("Invalid public key"))
+        .simple_c_ptr()
 }

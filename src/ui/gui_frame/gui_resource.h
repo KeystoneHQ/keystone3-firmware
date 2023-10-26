@@ -200,6 +200,7 @@ LV_IMG_DECLARE(walletSushi);
 LV_IMG_DECLARE(walletKeplr);
 LV_IMG_DECLARE(walletFewcha);
 LV_IMG_DECLARE(walletPetra);
+LV_IMG_DECLARE(walletXRPToolkit);
 
 
 //wallet list
@@ -219,6 +220,7 @@ LV_IMG_DECLARE(walletListSushi);
 LV_IMG_DECLARE(walletListKeplr);
 LV_IMG_DECLARE(walletListFewcha);
 LV_IMG_DECLARE(walletListPetra);
+LV_IMG_DECLARE(walletListXRPToolkit);
 
 // font
 LV_FONT_DECLARE(openSans_20);

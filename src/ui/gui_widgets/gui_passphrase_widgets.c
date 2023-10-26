@@ -190,6 +190,15 @@ void GuiPassphraseDone(void)
     }
 }
 
+bool GuiPassphraseLoadingIsTop(void)
+{
+    if (g_waitAnimWidget.cont != NULL && lv_obj_is_valid(g_waitAnimWidget.cont)) {
+        return true;
+    }
+    return false;
+}
+
+
 static void SkipHandler(lv_event_t *e)
 {
 #ifndef COMPILE_SIMULATOR

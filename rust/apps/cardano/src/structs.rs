@@ -229,7 +229,7 @@ impl ParsedCardanoTx {
                 let cert = _certs.get(i);
                 if let Some(_cert) = cert.as_stake_delegation() {
                     certs.push(CardanoCertificate::new(
-                        "stake delegation".to_string(),
+                        "Stake Pool Delegation".to_string(),
                         RewardAddress::new(network_id, &_cert.stake_credential())
                             .to_address()
                             .to_bech32(None)
@@ -244,7 +244,7 @@ impl ParsedCardanoTx {
                 }
                 if let Some(_cert) = cert.as_stake_deregistration() {
                     certs.push(CardanoCertificate::new(
-                        "stake deregistration".to_string(),
+                        "Stake Deregistration".to_string(),
                         RewardAddress::new(network_id, &_cert.stake_credential())
                             .to_address()
                             .to_bech32(None)
@@ -254,7 +254,7 @@ impl ParsedCardanoTx {
                 }
                 if let Some(_cert) = cert.as_stake_registration() {
                     certs.push(CardanoCertificate::new(
-                        "stake registration".to_string(),
+                        "Stake Registration".to_string(),
                         RewardAddress::new(network_id, &_cert.stake_credential())
                             .to_address()
                             .to_bech32(None)
@@ -527,7 +527,7 @@ impl ParsedCardanoTx {
                                     let multi_asset = ParsedCardanoMultiAsset {
                                         policy_id: policy_id.clone().to_bytes(),
                                         name: name.to_bytes(),
-                                        amount: normalize_value(from_bignum(&asset_value)),
+                                        amount: normalize_coin(from_bignum(&asset_value)),
                                         value: from_bignum(&asset_value),
                                         id: format!(
                                             "{}#{}",

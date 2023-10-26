@@ -610,7 +610,7 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
         label = GuiCreateLabelWithFont(cont, _("receive_btc_receive_change_address_title"), &openSans_20);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 30 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
-        label = GuiCreateLabelWithFont(cont, "Account-", &openSans_24);
+        label = GuiCreateLabelWithFont(cont, "Address-", &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 108 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
         g_multiAccountsReceiveWidgets.inputAccountLabel = GuiCreateLabelWithFont(cont, "", &openSans_24);

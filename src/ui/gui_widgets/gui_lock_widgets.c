@@ -57,6 +57,7 @@ static lv_obj_t *g_LoadingView = NULL;
 static lv_timer_t *g_countDownTimer;
 static int8_t g_countDown = 0;
 static bool g_canDismissLoading = false;
+static bool g_isShowLoading = false;
 
 void GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_ENUM purpose)
 {
@@ -482,7 +483,7 @@ void GuiShowGenerateXPubLoading(void)
     if (GuiLockScreenIsTop() == false) {
         return;
     }
-    if (GetPassphraseQuickAccess() == true) {
+    if (GuiPassphraseLoadingIsTop() == true) {
         return;
     }
     
@@ -509,16 +510,17 @@ void GuiShowGenerateXPubLoading(void)
 
     lv_obj_align(g_LoadingView, LV_ALIGN_DEFAULT, 0, 0);
 
+    g_isShowLoading = true;
     g_countDown = 0;
     g_countDownTimer = lv_timer_create(CountDownTimerChangeLabelTextHandler, 1000, hintLabel);
 }
 
 void GuiHideGenerateXPubLoading(void)
 {   
-    if (GuiLockScreenIsTop() == false) {
+    if (!g_isShowLoading) {
         return;
     }
-    if (GetPassphraseQuickAccess() == true) {
+    if (GuiLockScreenIsTop() == false) {
         return;
     }
 

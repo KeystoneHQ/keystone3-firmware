@@ -185,7 +185,7 @@ void GuiMultiAccountsReceiveRefresh(void)
         break;
     case RECEIVE_TILE_SWITCH_ACCOUNT:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("switch_address"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SKIP, JumpToAccountHandler, NULL);
         g_showIndex = g_selectIndex[GetCurrentAccountIndex()] / 5 * 5;
         if (g_showIndex < 5)
@@ -243,7 +243,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
     lv_obj_add_event_cb(btn, OpenSwitchAccountHandler, LV_EVENT_CLICKED, NULL);
-    
+
     img = GuiCreateImg(btn, &imgTutorial);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
     label = GuiCreateLabelWithFont(btn, _("switch_account"), &openSans_24);
@@ -934,9 +934,13 @@ static void SwitchAccountHandler(lv_event_t *e)
                 lv_obj_add_state(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_clear_flag(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-                g_selectedAccount[GetCurrentAccountIndex()] = i;
-                RefreshQrCode();
-                RefreshSwitchAccount();
+                if (i != g_selectedAccount[GetCurrentAccountIndex()])
+                {
+                    g_selectedAccount[GetCurrentAccountIndex()] = i;
+                    g_selectIndex[GetCurrentAccountIndex()] = 0;
+                    RefreshQrCode();
+                    RefreshSwitchAccount();
+                }
             }
             else
             {
@@ -1038,7 +1042,7 @@ static void GuiCreateSwitchAccountWidget()
     index = 0;
     for (uint32_t i = 0; i < ACCOUNT_INDEX_MAX; i++)
     {
-        char* temp[64];
+        char *temp[64];
         sprintf(temp, "Account-%u", i);
         label = GuiCreateLabelWithFont(cont, temp, &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);

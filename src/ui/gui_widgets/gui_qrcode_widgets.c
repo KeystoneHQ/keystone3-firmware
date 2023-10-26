@@ -301,6 +301,12 @@ static void GuiDealScanErrorResult(int errorType)
     lv_obj_add_event_cb(btn, CloseScanErrorDataHandler, LV_EVENT_CLICKED, NULL);
 }
 
+static void ThrowError()
+{
+    GuiQrCodeScreenCorner();
+    GuiDealScanErrorResult(0);
+}
+
 void GuiQrCodeScanResult(bool result, void *param)
 {
     if (result)
@@ -309,6 +315,15 @@ void GuiQrCodeScanResult(bool result, void *param)
         g_qrcodeViewType = urViewType.viewType;
         g_chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
         // Not a chain based transaction, e.g. WebAuth
+        if(GetMnemonicType() == MNEMONIC_TYPE_SLIP39)
+        {
+            //we don't support ADA in Slip39 Wallet;
+            if(g_chainType == CHAIN_ADA || g_qrcodeViewType== KeyDerivationRequest)
+            {
+                ThrowError();
+                return;
+            }
+        }
         if (g_chainType == CHAIN_BUTT)
         {
             if (g_qrcodeViewType == WebAuthResult)
@@ -327,8 +342,7 @@ void GuiQrCodeScanResult(bool result, void *param)
         GetExistAccountNum(&accountNum);
         if (accountNum <= 0)
         {
-            GuiQrCodeScreenCorner();
-            GuiDealScanErrorResult(0);
+            ThrowError();
             return;
         }
         g_qrCodeWidgetView.analysis = GuiTemplateReload(g_qrCodeWidgetView.cont, g_qrcodeViewType);
@@ -349,13 +363,12 @@ void GuiQrCodeScanResult(bool result, void *param)
         }
         else
         {
-            GuiDealScanErrorResult(0);
+            ThrowError();
         }
     }
     else
     {
-        GuiQrCodeScreenCorner();
-        GuiDealScanErrorResult(0);
+        ThrowError();
     }
 }
 

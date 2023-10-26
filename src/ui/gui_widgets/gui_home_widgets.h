@@ -65,6 +65,7 @@ typedef struct {
     HOME_WALLET_CARD_ENUM index;
     bool state;
     const char *name;
+    bool enable;
     lv_obj_t *checkBox;
 } WalletState_t;
 

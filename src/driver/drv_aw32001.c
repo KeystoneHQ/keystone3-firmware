@@ -52,7 +52,7 @@
 #define PARM_VBAT_UVLO                              (0x04 << 0)
 #define PARM_IDSCHG                                 (0x09 << 4)
 #define PARM_IIN_LMT                                (0x0F << 0)
-#define PARM_VIN_MIN                                (0x08 << 4)
+#define PARM_VIN_MIN                                (0x06 << 4)
 #define PARM_VSYS_REG                               (0x08 << 0)
 #define PARM_VBAT_REG                               (0x28 << 2)
 #define PARM_VBAT_PRE                               (0x01 << 1)
@@ -340,11 +340,13 @@ void Aw32001Test(int argc, char *argv[])
 
 static void Aw32001RegValueInit(void)
 {
+    Aw32001WriteRegBits(AW320XX_REG2_CCR, AW320XX_BIT_CCR_SOFT_RST_MASK, AW320XX_BIT_CCR_SOFT_RST_RESET);     // Reg Reset
+
     Aw32001WriteRegBits(AW320XX_REG1_POCR, AW320XX_BIT_POCR_VBAT_UVLO_MASK, PARM_VBAT_UVLO);        //UVLO threshold 2.76V
     Aw32001WriteRegBits(AW320XX_REG1_POCR, AW320XX_BIT_POCR_RST_DEG_MASK, AW320XX_BIT_POCR_RST_DEG_12S);        //RST_DGL 12s
     Aw32001WriteRegBits(AW320XX_REG3_CCR2, AW320XX_BIT_CCR2_IDSCHG_MASK, PARM_IDSCHG);              //IDSCHG 2000mA
     Aw32001WriteRegBits(AW320XX_REG0_SCR, AW320XX_BIT_SCR_IIN_LMT_MASK, PARM_IIN_LMT);              //IIN_LMT 500mA
-    Aw32001WriteRegBits(AW320XX_REG0_SCR, AW320XX_BIT_SCR_VIN_MIN_MASK, PARM_VIN_MIN);              //VIN_MIN 4.52V
+    Aw32001WriteRegBits(AW320XX_REG0_SCR, AW320XX_BIT_SCR_VIN_MIN_MASK, PARM_VIN_MIN);              //VIN_MIN 4.36V
     Aw32001WriteRegBits(AW320XX_REG7_SVCR, AW320XX_BIT_SVCR_VSYS_REG_MASK, PARM_VSYS_REG);          //VSYS_REG 4.60V
     Aw32001WriteRegBits(AW320XX_REG4_CVR, AW320XX_BIT_CVR_VBAT_REG_MASK, PARM_VBAT_REG);            //VBAT_REG 4.20V
     Aw32001WriteRegBits(AW320XX_REG4_CVR, AW320XX_BIT_CVR_VBAT_PRE_MASK, PARM_VBAT_PRE);            //VBAT_PRE 3.0V
@@ -357,6 +359,7 @@ static void Aw32001RegValueInit(void)
     Aw32001WriteRegBits(AW320XX_REG5_TIMCR, AW320XX_BIT_TIMCR_WD_CFG_MASK, AW320XX_BIT_TIMCR_WD_CFG_DISABLE);
     //Disable NTC
     Aw32001WriteRegBits(AW320XX_REG6_MCR, AW320XX_BIT_MCR_EN_NTC_MASK, AW320XX_BIT_MCR_EN_NTC_DISABLE);
+    Aw32001WriteRegBits(AW320XX_REG7_SVCR, AW320XX_BIT_SVCR_EN_PCB_OTP_MASK, AW320XX_BIT_SVCR_EN_PCB_OTP_DISABLE);
 }
 
 

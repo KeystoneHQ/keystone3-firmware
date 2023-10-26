@@ -297,7 +297,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 
     yOffset += 16;
     g_multiAccountsReceiveWidgets.addressLabel = GuiCreateNoticeLabel(g_multiAccountsReceiveWidgets.qrCodeCont, "");
-    lv_obj_set_width(g_multiAccountsReceiveWidgets.addressLabel, 336);
+    lv_obj_set_width(g_multiAccountsReceiveWidgets.addressLabel, 280);
     lv_obj_align(g_multiAccountsReceiveWidgets.addressLabel, LV_ALIGN_TOP_LEFT, 36, yOffset);
     lv_obj_add_event_cb(g_multiAccountsReceiveWidgets.addressLabel, ShowAddressDetailHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_add_flag(g_multiAccountsReceiveWidgets.addressLabel, LV_OBJ_FLAG_CLICKABLE);
@@ -447,12 +447,12 @@ static void RefreshQrCode(void)
     {
         lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strlen(addressDataItem.address));
     }
-    char string[128];
+    char string[128] = {0};
     AddressLongModeCut(string, addressDataItem.address, 24);
     lv_label_set_text(g_multiAccountsReceiveWidgets.addressLabel, string);
     lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.addressCountLabel, "Address-%u", (addressDataItem.index));
-    int width = lv_obj_get_self_width(g_multiAccountsReceiveWidgets.addressLabel);
-    lv_obj_set_width(g_multiAccountsReceiveWidgets.addressLabel, width);
+    // int width = lv_obj_get_self_width(g_multiAccountsReceiveWidgets.addressLabel);
+    // lv_obj_set_width(g_multiAccountsReceiveWidgets.addressLabel, width);
 
     lv_obj_align_to(g_multiAccountsReceiveWidgets.questionImg, g_multiAccountsReceiveWidgets.addressLabel, LV_ALIGN_OUT_RIGHT_TOP, 6, 0);
 }
@@ -460,13 +460,14 @@ static void RefreshQrCode(void)
 static void RefreshSwitchAddress(void)
 {
     AddressDataItem_t addressDataItem;
-    char string[128];
+    
     uint32_t index = g_showIndex;
     bool end = false;
     for (uint32_t i = 0; i < 5; i++)
     {
         ModelGetAddress(index, &addressDataItem, 0);
         lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "Address-%u", (addressDataItem.index));
+        char string[128] = {0};
         AddressLongModeCut(string, addressDataItem.address, 24);
         lv_label_set_text(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end)
@@ -1028,6 +1029,7 @@ static void GuiCreateSwitchAccountWidget()
     PageWidget_t *page = CreatePageWidget();
     g_multiAccountsReceiveWidgets.switchAccountCont = page;
     SetNavBarLeftBtn(page->navBarWidget, NVS_BAR_RETURN, CloseSwitchAccountHandler, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
     SwitchAddressWidgetsItem_t switchAddressWidgets[5];
     // Create the account list page.
     uint32_t index;
@@ -1097,7 +1099,6 @@ static void AddressLongModeCut(char *out, const char *address, uint32_t targetLe
         return;
     }
     strncpy(out, address, targetLen / 2);
-    out[targetLen / 2] = 0;
     strcat(out, "...");
     strcat(out, address + len - targetLen / 2);
 }
@@ -1113,13 +1114,13 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
     switch (type)
     {
     case 1:
-        sprintf(item->address, "addr1vxg88k7kzt95q9vhpj4a9eewx3afe759a3rq9ggdhsetstgwkxsea", index);
+        sprintf(item->address, "addr1vxg88k7kzt95q9vhpj4a9eewx3afe759a3rq9ggdhsetstgwkxsea%d", index);
         break;
     case 2:
-        sprintf(item->address, "stake1u9vtx6ry4e8zculweg3racrnzdgja3yr2neayqnm8zwhd0qj5ln0l", index);
+        sprintf(item->address, "stake1u9vtx6ry4e8zculweg3racrnzdgja3yr2neayqnm8zwhd0qj5ln0l%d", index);
         break;
     default:
-        sprintf(item->address, "addr1q95l5x7exwzhgupzs0v0ku0censcx8p75jz52cl4uszr463n5nclg6z9gazt9lekgje2k7w53em2xxrljqh73gdul2ks9zxj4d", index);
+        sprintf(item->address, "addr1q95l5x7exwzhgupzs0v0ku0censcx8p75jz52cl4uszr463n5nclg6z9gazt9lekgje2k7w53em2xxrljqh73gdul2ks9zxj4d%d", index);
         break;
     }
     strcpy(item->path, hdPath);

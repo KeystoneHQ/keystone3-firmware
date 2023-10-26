@@ -312,7 +312,7 @@ static void GuiCreateQRCodeWidget(lv_obj_t *parent)
     lv_obj_align(coinCont, LV_ALIGN_TOP_LEFT, 36, 50);
     lv_obj_set_style_bg_color(coinCont, DARK_BG_COLOR, LV_PART_MAIN);
 
-    lv_obj_t *img = GuiCreateImg(coinCont, &coinBtc);
+    lv_obj_t *img = GuiCreateImg(coinCont, &coinAda);
     lv_img_set_zoom(img, 110);
     lv_img_set_pivot(img, 0, 0);
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 0, 0);

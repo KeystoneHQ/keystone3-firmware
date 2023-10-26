@@ -496,6 +496,7 @@ void GuiShowGenerateXPubLoading(void)
     g_canDismissLoading = false;
 
     g_LoadingView = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
+    lv_obj_add_flag(g_LoadingView, LV_OBJ_FLAG_HIDDEN);
     GuiCreateCircleAroundAnimation(g_LoadingView, -51);
     lv_obj_add_flag(g_LoadingView, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_size(g_LoadingView, lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
@@ -509,6 +510,8 @@ void GuiShowGenerateXPubLoading(void)
     lv_obj_align(hintLabel, LV_ALIGN_TOP_MID, 0, 457);
 
     lv_obj_align(g_LoadingView, LV_ALIGN_DEFAULT, 0, 0);
+    lv_obj_clear_flag(g_LoadingView, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_invalidate(g_LoadingView);
 
     g_isShowLoading = true;
     g_countDown = 0;

@@ -228,6 +228,24 @@ UREncodeResult *GuiGetPetraData(void)
 #endif
 }
 
+UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
+{
+#ifndef COMPILE_SIMULATOR
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    char *xpub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
+    char *rootPath = "m/44'/144'/0'";
+    char hdPath[32] = {0};
+    sprintf(hdPath, "%s/0/%u", rootPath, index);
+    g_urEncode = get_connect_xrp_toolkit_ur(hdPath, xpub, rootPath);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    return g_urEncode;
+#else
+    const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+    return (void *)data;
+#endif
+}
+
 UREncodeResult *GuiGetCompanionAppData(void)
 {
     extern CoinState_t g_companionAppcoinState[COMPANION_APP_COINS_BUTT];

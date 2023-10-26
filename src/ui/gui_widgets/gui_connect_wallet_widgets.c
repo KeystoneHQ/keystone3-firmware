@@ -22,6 +22,7 @@
 #include "account_manager.h"
 #include "gui_global_resources.h"
 #include "gui_connect_eternl_widgets.h"
+#include "gui_select_address_widgets.h"
 
 #define DERIVATION_PATH_EG_LEN 2
 
@@ -41,12 +42,14 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_SAFE, &walletListSafe},
     {WALLET_LIST_BLOCK_WALLET, &walletListBlockWallet},
     {WALLET_LIST_SOLFARE, &walletListSolfare},
+    {WALLET_LIST_XRP_TOOLKIT, &walletListXRPToolkit},
     {WALLET_LIST_PETRA, &walletListPetra},
     {WALLET_LIST_FEWCHA, &walletListFewcha},
     {WALLET_LIST_ZAPPER, &walletListZapper},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn},
     {WALLET_LIST_SUSHISWAP, &walletListSushi},
     {WALLET_LIST_KEPLR, &walletListKeplr},
+    {WALLET_LIST_XRP_TOOLKIT, &walletListKeplr},
     // {WALLET_LIST_ETERNL, &walletListEternl},
     // { WALLET_LIST_SUB, &walletListSub},
 };
@@ -206,6 +209,8 @@ const static ChangeDerivationItem_t g_solChangeDerivationList[] = {
     {"Single Account Path", "#8E8E8E m/44'/501'#"},
     {"Sub-account Path", "#8E8E8E m/44'/501'/##F5870A X##8E8E8E '/0'#"},
 };
+
+static uint16_t g_xrpAddressIndex[3] = {0};
 
 static lv_obj_t *g_coinListCont = NULL;
 static PageWidget_t *g_pageWidget;
@@ -385,6 +390,13 @@ static void ConfirmSelectFewchaCoinsHandler(lv_event_t *e)
     }
 }
 
+static void RefreshAddressIndex(uint32_t index)
+{
+    g_xrpAddressIndex[GetCurrentAccountIndex()] = index;
+    GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
+    g_coinListCont = NULL;
+}
+
 static void JumpSelectCoinPageHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -397,6 +409,10 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
 #endif
         if (g_connectWalletTileView.walletIndex == WALLET_LIST_FEWCHA) {
             GuiCreateSelectFewchaCoinWidget();
+        } else if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
+            // Avoid continuous triggering
+            g_coinListCont = g_bottomCont;
+            GuiCreateSelectAddressWidget(CHAIN_XRP, g_xrpAddressIndex[GetCurrentAccountIndex()], RefreshAddressIndex);
         } else {
             GuiCreateSelectCompanionAppCoinWidget();
         }
@@ -768,6 +784,46 @@ static void AddPetraCoins(void)
     }
 }
 
+static void AddressLongModeCutWithLen(char *out, const char *address, uint32_t maxLen)
+{
+    uint32_t len;
+    uint32_t midI = maxLen / 2;
+
+    len = strlen(address);
+    if (len <= maxLen) {
+        strcpy(out, address);
+        return;
+    }
+    strncpy(out, address, midI);
+    out[midI] = 0;
+    strcat(out, "...");
+    strcat(out, address + len - midI);
+}
+
+static void AddXrpToolkitAddress(void)
+{
+    if (lv_obj_get_child_cnt(g_bottomCont) > 0)
+    {
+        lv_obj_clean(g_bottomCont);
+        g_manageImg = NULL;
+        g_coinCont = NULL;
+    }
+    lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
+
+    char name[20] = {0};
+    sprintf(name, "Account-%d", g_xrpAddressIndex[GetCurrentAccountIndex()] + 1);
+    lv_obj_t *label = GuiCreateLabel(g_bottomCont, name);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
+
+    char addr[36] = {0};
+    AddressLongModeCutWithLen(addr, GuiGetXrpAddressByIndex(g_xrpAddressIndex[GetCurrentAccountIndex()]), 20);
+    label = GuiCreateNoticeLabel(g_bottomCont, addr);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 58);
+
+    label = GuiCreateImg(g_bottomCont, &imgArrowRight);
+    lv_obj_align(label, LV_ALIGN_CENTER, 150, 0);
+}
+
 static void AddSolflareCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -816,6 +872,11 @@ UREncodeResult *GuiGetFewchaData(void)
         coin = CHAIN_SUI;
     }
     return GuiGetFewchaDataByCoin(coin);
+}
+
+UREncodeResult *GuiGetXrpToolkitData(void)
+{
+    return GuiGetXrpToolkitDataByIndex(g_xrpAddressIndex[GetCurrentAccountIndex()]);
 }
 
 void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
@@ -875,6 +936,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetPetraData;
         AddPetraCoins();
         break;
+    case WALLET_LIST_XRP_TOOLKIT:
+        func = GuiGetXrpToolkitData;
+        AddXrpToolkitAddress();
+        break;
     default:
         return;
     }
@@ -885,11 +950,8 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     GenerateUR func = NULL;
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
-    if (!g_isCoinReselected) {
-        initFewchaCoinsConfig();
-    }
-    func = GuiGetFewchaData;
-    AddFewchaCoins();
+    func = GuiGetXrpToolkitData;
+    AddXrpToolkitAddress();
 #endif
 }
 

@@ -9,6 +9,7 @@
 #include "gui_sol.h"
 #include "gui_aptos.h"
 #include "gui_ada.h"
+#include "gui_xrp.h"
 
 #define LABEL_MAX_BUFF_LEN                                      (512)
 

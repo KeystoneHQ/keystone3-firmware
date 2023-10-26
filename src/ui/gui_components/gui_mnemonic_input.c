@@ -30,7 +30,7 @@
 extern TrieSTPtr rootTree;
 extern char g_wordBuf[3][32];
 static char g_sliceHeadWords[32];                                       // slip39 head three words
-static uint8_t *g_sliceSha256[15];                                      // slip39 words hash
+static uint8_t g_sliceSha256[15][32];                                      // slip39 words hash
 static lv_obj_t *g_noticeHintBox = NULL;
 
 

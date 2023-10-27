@@ -140,7 +140,7 @@ static FingerPrintTimeout_t g_cmdTimeoutMap[] = {
     {FINGERPRINT_CMD_SET_AES_KEY,           FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
     {FINGERPRINT_CMD_GET_AES_KEY_STATE,     FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
     // {FINGERPRINT_CMD_SYS_TEST,           FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
-    // {FINGERPRINT_CMD_LOW_POWER,             FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
+    {FINGERPRINT_CMD_LOW_POWER,             FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
 };
 
 bool FpModuleIsExist(void)
@@ -1237,6 +1237,7 @@ void __inline FingerprintIsrRecvProcess(uint8_t byte)
                 memcpy(g_fpRandomKey, &intrRecvBuffer[15], 16);
                 SendPackFingerMsg(FINGERPRINT_CMD_LOW_POWER, &passwd, 0, 1, AES_KEY_ENCRYPTION);
                 g_delayCmd = 0;
+                FpSendTimerStart(FINGERPRINT_CMD_LOW_POWER);
             } else {
                 xEventGroupSetBitsFromISR(g_fpEventGroup, 0x1, NULL);
                 memcpy(g_intrRecvBuffer, intrRecvBuffer, rcvByteCount);

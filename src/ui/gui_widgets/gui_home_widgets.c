@@ -157,7 +157,7 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =
         {
             .index = HOME_WALLET_CARD_CRO,
             .coin = "CRO",
-            .chain = "Crypto.org",
+            .chain = "Cronos POS chain",
             .icon = &coinCro,
         },
         {

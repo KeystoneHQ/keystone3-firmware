@@ -143,9 +143,9 @@ static const PathItem_t g_ethPaths[] = {
     {"Ledger Legacy",       "",     "m/44'/60'/0'"  },
 };
 static const PathItem_t g_solPaths[] = {
-    {"Solflare",                "",     "m/44'/501'"  },
-    {"Sollet / MathWallet",     "",     "m/44'/501'"  },
-    {"Phantom / Exodus",        "",     "m/44'/501'"  },
+    {"Account-based Path",                "",     "m/44'/501'"  },
+    {"Single Account Path",     "",     "m/44'/501'"  },
+    {"Sub-account Path",        "",     "m/44'/501'"  },
 };
 static lv_obj_t *g_addressLabel[2];
 static lv_obj_t *g_addressLabelOrder;

@@ -202,9 +202,9 @@ const static ChangeDerivationItem_t g_changeDerivationList[] = {
 };
 
 const static ChangeDerivationItem_t g_solChangeDerivationList[] = {
-    {"Solflare", "#8E8E8E m/44'/501'/##F5870A X##8E8E8E '#"},
-    {"Sollet / MathWallet", "#8E8E8E m/44'/501'#"},
-    {"Phantom / Exodus", "#8E8E8E m/44'/501'/##F5870A X##8E8E8E '/0'#"},
+    {"Account-based Path", "#8E8E8E m/44'/501'/##F5870A X##8E8E8E '#"},
+    {"Single Account Path", "#8E8E8E m/44'/501'#"},
+    {"Sub-account Path", "#8E8E8E m/44'/501'/##F5870A X##8E8E8E '/0'#"},
 };
 
 static lv_obj_t *g_coinListCont = NULL;
@@ -1200,10 +1200,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     g_derivationPathDescLabel = label;
     prevLabel = label;
 
-    char *desc = _("derivation_path_address");
-    if (!(g_connectWalletTileView.walletIndex == WALLET_LIST_SOLFARE && GetSolflareAccountType() == SOLBip44ROOT)) {
-        desc = _("derivation_path_address_eg");
-    }
+    char *desc = _("derivation_path_address_eg");
     label = GuiCreateNoticeLabel(egCont, desc);
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);

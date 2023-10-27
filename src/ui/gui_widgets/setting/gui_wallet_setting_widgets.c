@@ -206,6 +206,7 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
 
     label = GuiCreateNoticeLabel(parent, _("wallet_settings_add_info_desc1"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 228 - GUI_MAIN_AREA_OFFSET);
+    lv_label_set_recolor(label, true);
 
     led = lv_led_create(parent);
     lv_led_set_brightness(led, 150);
@@ -215,6 +216,7 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
 
     label = GuiCreateNoticeLabel(parent, _("wallet_settings_add_info_desc2"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 270 - GUI_MAIN_AREA_OFFSET);
+    lv_label_set_recolor(label, true);
 
     led = lv_led_create(parent);
     lv_led_set_brightness(led, 150);

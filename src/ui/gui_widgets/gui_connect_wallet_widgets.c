@@ -36,19 +36,19 @@ WalletListItem_t g_walletListArray[] = {
     // {WALLET_LIST_KEYSTONE, &walletListKeyStone},
     {WALLET_LIST_OKX, &walletListOkx},
     {WALLET_LIST_METAMASK, &walletListMetaMask},
-    // {WALLET_LIST_ETERNL, &walletListEternl},
     {WALLET_LIST_BLUE, &walletListBlue},
-    // { WALLET_LIST_SUB, &walletListSub},
-    {WALLET_LIST_SOLFARE, &walletListSolfare},
     {WALLET_LIST_RABBY, &walletListRabby},
     {WALLET_LIST_SAFE, &walletListSafe},
     {WALLET_LIST_BLOCK_WALLET, &walletListBlockWallet},
-    {WALLET_LIST_FEWCHA, &walletListFewcha},
+    {WALLET_LIST_SOLFARE, &walletListSolfare},
     {WALLET_LIST_PETRA, &walletListPetra},
+    {WALLET_LIST_FEWCHA, &walletListFewcha},
     {WALLET_LIST_ZAPPER, &walletListZapper},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn},
     {WALLET_LIST_SUSHISWAP, &walletListSushi},
     {WALLET_LIST_KEPLR, &walletListKeplr},
+    // {WALLET_LIST_ETERNL, &walletListEternl},
+    // { WALLET_LIST_SUB, &walletListSub},
 };
 
 typedef struct ConnectWalletWidget {

@@ -195,7 +195,7 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
     static uint32_t walletSetting = DEVICE_SETTING_ADD_WALLET_CREATE_OR_IMPORT;
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("Notice"));
+    lv_obj_t *label = GuiCreateTitleLabel(parent, _("wallet_settings_add_info_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *led = lv_led_create(parent);
@@ -204,7 +204,7 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
     lv_obj_set_size(led, 6, 6);
     lv_led_set_color(led, ORANGE_COLOR);
 
-    label = GuiCreateNoticeLabel(parent, _("Keystone supports at most 3 wallets"));
+    label = GuiCreateNoticeLabel(parent, _("wallet_settings_add_info_desc1"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 228 - GUI_MAIN_AREA_OFFSET);
 
     led = lv_led_create(parent);
@@ -213,7 +213,7 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
     lv_obj_set_size(led, 6, 6);
     lv_led_set_color(led, ORANGE_COLOR);
 
-    label = GuiCreateNoticeLabel(parent, _("You should set a different passcode for each wallet"));
+    label = GuiCreateNoticeLabel(parent, _("wallet_settings_add_info_desc2"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 270 - GUI_MAIN_AREA_OFFSET);
 
     led = lv_led_create(parent);
@@ -222,7 +222,7 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
     lv_obj_set_size(led, 6, 6);
     lv_led_set_color(led, ORANGE_COLOR);
 
-    label = GuiCreateNoticeLabel(parent, _("For your security, we will not display the wallet list anywhere. The only way to switch wallets is to unlock the device with the corresponding passcode."));
+    label = GuiCreateNoticeLabel(parent, _("wallet_settings_add_info_desc3"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 342 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *btn = GuiCreateBtn(parent, _("Got it (5)"));

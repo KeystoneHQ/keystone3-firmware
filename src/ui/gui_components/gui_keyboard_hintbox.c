@@ -137,7 +137,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
     keyboardWidget->kb = kb;
 
     img = GuiCreateImg(keyboardHintBox, &imgEyeOff);
-    lv_obj_align(img, LV_ALIGN_DEFAULT, 411, 332);
+    lv_obj_align_to(img, ta, LV_ALIGN_OUT_RIGHT_MID, 20, 0);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, ta);
 

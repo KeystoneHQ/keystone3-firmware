@@ -210,22 +210,22 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
 
     led = lv_led_create(parent);
     lv_led_set_brightness(led, 150);
-    lv_obj_align(led, LV_ALIGN_DEFAULT, 36, 282 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align(led, LV_ALIGN_DEFAULT, 36, 312 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_size(led, 6, 6);
     lv_led_set_color(led, ORANGE_COLOR);
 
     label = GuiCreateNoticeLabel(parent, _("wallet_settings_add_info_desc2"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 270 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 300 - GUI_MAIN_AREA_OFFSET);
     lv_label_set_recolor(label, true);
 
     led = lv_led_create(parent);
     lv_led_set_brightness(led, 150);
-    lv_obj_align(led, LV_ALIGN_DEFAULT, 36, 354 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align(led, LV_ALIGN_DEFAULT, 36, 384 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_size(led, 6, 6);
     lv_led_set_color(led, ORANGE_COLOR);
 
     label = GuiCreateNoticeLabel(parent, _("wallet_settings_add_info_desc3"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 342 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 372 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *btn = GuiCreateBtn(parent, _("Got it (5)"));
     lv_obj_set_size(btn, 408, 66);

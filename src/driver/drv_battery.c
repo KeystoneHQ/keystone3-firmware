@@ -285,7 +285,7 @@ bool BatteryIntervalHandler(void)
             printf("delay increate battery percentage delayIncreate = %d\n", delayIncreate);
             delayIncreate++;
         }
-        
+
         // delayIncreate == 4 * 80 320s
         if (percent > g_batterPercent || delayIncreate == 1) {
             g_batterPercent++;

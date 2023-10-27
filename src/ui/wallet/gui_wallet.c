@@ -422,7 +422,7 @@ UREncodeResult *GuiGetSolflareData(void)
         public_keys->size = 10;
         for (int i = XPUB_TYPE_SOL_BIP44_0; i <= XPUB_TYPE_SOL_BIP44_9; i++) {
             char *path = SRAM_MALLOC(sizeof(char) * 32);
-            sprintf(path, "m/44'/501'/%d'", i - XPUB_TYPE_SOL_BIP44_0); 
+            sprintf(path, "m/44'/501'/%d'", i - XPUB_TYPE_SOL_BIP44_0);
             keys[i - XPUB_TYPE_SOL_BIP44_0].path = path;
             keys[i - XPUB_TYPE_SOL_BIP44_0].xpub = GetCurrentAccountPublicKey(i);
         }

@@ -487,12 +487,12 @@ void GuiShowGenerateXPubLoading(void)
     if (GuiPassphraseLoadingIsTop() == true) {
         return;
     }
-    
+
     if (g_LoadingView != NULL && lv_obj_is_valid(g_LoadingView)) {
         lv_obj_del(g_LoadingView);
         g_LoadingView = NULL;
     }
-    
+
     SetPageLockScreen(false);
     g_canDismissLoading = false;
 
@@ -520,7 +520,7 @@ void GuiShowGenerateXPubLoading(void)
 }
 
 void GuiHideGenerateXPubLoading(void)
-{   
+{
     if (!g_isShowLoading) {
         return;
     }

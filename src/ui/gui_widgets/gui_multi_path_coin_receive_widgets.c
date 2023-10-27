@@ -494,12 +494,12 @@ static char* GetChangePathItemTitle(uint32_t i)
 
 static void ShowEgAddressCont(lv_obj_t *egCont)
 {
-   
+
     if (egCont == NULL) {
         printf("egCont is NULL, cannot show eg address\n");
         return;
     }
-    
+
     lv_obj_clean(egCont);
 
     lv_obj_t *prevLabel, *label;
@@ -536,8 +536,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
     g_addressLabel[0] = label;
 
-    if (!(g_chainCard == HOME_WALLET_CARD_SOL && g_solPathIndex[g_currentAccountIndex] == 1))
-    {
+    if (!(g_chainCard == HOME_WALLET_CARD_SOL && g_solPathIndex[g_currentAccountIndex] == 1)) {
         index = GuiCreateNoticeLabel(egCont, _("1"));
         lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);

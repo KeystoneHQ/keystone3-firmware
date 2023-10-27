@@ -194,8 +194,7 @@ void ProcessQr(uint32_t count)
 void handleURResult(void *urResult, UrViewType_t urViewType, bool is_multi)
 {
     GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
-    switch (urViewType.viewType)
-    {
+    switch (urViewType.viewType) {
     case WebAuthResult:
         GuiSetWebAuthResultData(urResult, is_multi);
         break;

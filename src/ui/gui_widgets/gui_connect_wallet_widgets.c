@@ -159,14 +159,12 @@ static const lv_img_dsc_t *g_keplrCoinArray[8] = {
     &coinCro,
 };
 
-static const lv_img_dsc_t *g_fewchaCoinArray[FEWCHA_COINS_BUTT] =
-{
+static const lv_img_dsc_t *g_fewchaCoinArray[FEWCHA_COINS_BUTT] = {
     &coinApt,
     &coinSui,
 };
 
-static const lv_img_dsc_t *g_petraCoinArray[1] =
-{
+static const lv_img_dsc_t *g_petraCoinArray[1] = {
     &coinApt,
 };
 
@@ -300,12 +298,11 @@ static void OpenQRCodeHandler(lv_event_t *e)
         if (IsSOL(g_connectWalletTileView.walletIndex)) {
             g_derivationPathDescs = GetDerivationPathDescs(SOL_DERIVATION_PATH_DESC);
         }
-        if (g_connectWalletTileView.walletIndex == WALLET_LIST_ETERNL)
-        {
+        if (g_connectWalletTileView.walletIndex == WALLET_LIST_ETERNL) {
             GuiCreateConnectEternlWidget();
             return;
         }
-        
+
         g_isCoinReselected = false;
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
     }
@@ -755,12 +752,10 @@ static void AddFewchaCoins()
 
 static void AddPetraCoins(void)
 {
-    if (lv_obj_get_child_cnt(g_coinCont) > 0)
-    {
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
         lv_obj_clean(g_coinCont);
     }
-    for (int i = 0; i < 1; i++)
-    {
+    for (int i = 0; i < 1; i++) {
         lv_obj_t *img = GuiCreateImg(g_coinCont, g_petraCoinArray[i]);
         lv_img_set_zoom(img, 110);
         lv_img_set_pivot(img, 0, 0);
@@ -944,8 +939,7 @@ SOLAccountType GetSolflareAccountType(void)
 
 static int GetAccountType(void)
 {
-    switch (g_connectWalletTileView.walletIndex)
-    {
+    switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
         return GetSolflareAccountType();
     default:
@@ -958,8 +952,7 @@ static lv_obj_t *g_derivationPathCont = NULL;
 static bool IsNeedReGenerateQRCode(void)
 {
 
-    switch (g_connectWalletTileView.walletIndex)
-    {
+    switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
         return g_currentBakSOLPathIndex != GetSolflareAccountType();
     default:
@@ -969,8 +962,7 @@ static bool IsNeedReGenerateQRCode(void)
 
 static void SetCurrentBakPathIndex(void)
 {
-    switch (g_connectWalletTileView.walletIndex)
-    {
+    switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
         g_currentBakSOLPathIndex = GetSolflareAccountType();
     default:
@@ -1055,8 +1047,7 @@ static void GetSolEgAddress(void)
 
 static void GetEgAddress(void)
 {
-    switch (g_connectWalletTileView.walletIndex)
-    {
+    switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
         GetSolEgAddress();
         break;
@@ -1082,8 +1073,7 @@ static void UpdateSolEgAddress(uint8_t index)
 
 static void UpdategAddress(void)
 {
-    switch (g_connectWalletTileView.walletIndex)
-    {
+    switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
         UpdateSolEgAddress(GetSolflareAccountType());
         break;
@@ -1095,8 +1085,7 @@ static void UpdategAddress(void)
 
 static void SetCurrentPathIndex(uint8_t index)
 {
-   switch (g_connectWalletTileView.walletIndex)
-    {
+    switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
         g_currentSOLPathIndex[GetCurrentAccountIndex()] = index;
         break;
@@ -1136,8 +1125,7 @@ static void OpenTutorialHandler(lv_event_t *e)
 
 static char *GetDerivationPathSelectDes(void)
 {
-    switch (g_connectWalletTileView.walletIndex)
-    {
+    switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
         return _("derivation_path_select_sol");
     default:
@@ -1147,8 +1135,7 @@ static char *GetDerivationPathSelectDes(void)
 
 static char *GetChangeDerivationAccountType(int i)
 {
-    switch (g_connectWalletTileView.walletIndex)
-    {
+    switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
         return g_solChangeDerivationList[i].accountType;
     default:
@@ -1158,8 +1145,7 @@ static char *GetChangeDerivationAccountType(int i)
 
 static char *GetChangeDerivationPath(int i)
 {
-    switch (g_connectWalletTileView.walletIndex)
-    {
+    switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
         return g_solChangeDerivationList[i].path;
     default:
@@ -1169,8 +1155,7 @@ static char *GetChangeDerivationPath(int i)
 
 static char *GetChangeDerivationPathDesc(void)
 {
-    switch (g_connectWalletTileView.walletIndex)
-    {
+    switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
         return g_derivationPathDescs[g_currentSOLPathIndex[GetCurrentAccountIndex()]];
     default:
@@ -1180,12 +1165,12 @@ static char *GetChangeDerivationPathDesc(void)
 
 static void ShowEgAddressCont(lv_obj_t *egCont)
 {
-   
+
     if (egCont == NULL) {
         printf("egCont is NULL, cannot show eg address\n");
         return;
     }
-    
+
     lv_obj_clean(egCont);
 
     lv_obj_t *prevLabel, *label;
@@ -1223,8 +1208,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
     g_egAddress[0] = label;
 
-    if (!(g_connectWalletTileView.walletIndex == WALLET_LIST_SOLFARE && GetSolflareAccountType() == SOLBip44ROOT))
-    {
+    if (!(g_connectWalletTileView.walletIndex == WALLET_LIST_SOLFARE && GetSolflareAccountType() == SOLBip44ROOT)) {
         index = GuiCreateNoticeLabel(egCont, _("1"));
         lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);
@@ -1298,7 +1282,7 @@ static void OpenDerivationPath()
             lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, i * 102);
         }
     }
- 
+
     lv_obj_t *egCont = GuiCreateContainerWithParent(bgCont, 408, 186);
     lv_obj_align_to(egCont, cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
     lv_obj_set_style_bg_color(egCont, WHITE_COLOR, LV_PART_MAIN);
@@ -1422,8 +1406,7 @@ void GuiConnectWalletRefresh(void)
         }
         QRCodePause(false);
     }
-    if (ConnectEternlWidgetExist())
-    {
+    if (ConnectEternlWidgetExist()) {
         CleanConnectEternlWidget();
         GuiCreateConnectEternlWidget();
     }

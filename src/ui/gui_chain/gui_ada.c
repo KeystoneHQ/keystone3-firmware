@@ -43,8 +43,7 @@ void *GuiGetAdaData(void)
     GetMasterFingerPrint(mfp);
     TransactionCheckResult *result = NULL;
     SimpleResponse_c_char *path = NULL;
-    do
-    {
+    do {
         path = cardano_get_path(data);
         CHECK_CHAIN_BREAK(path);
         char *adaPath = path->data;
@@ -123,11 +122,10 @@ void FreeAdaMemory(void)
 bool GetAdaExtraDataExist(void *indata, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    if (tx->auxiliary_data == NULL)
-    {
+    if (tx->auxiliary_data == NULL) {
         return false;
     }
-    return strlen(tx->auxiliary_data) > 0;   
+    return strlen(tx->auxiliary_data) > 0;
 }
 
 int GetAdaExtraDataLen(void *param)
@@ -184,25 +182,17 @@ void *GetAdaInputDetail(uint8_t *row, uint8_t *col, void *param)
     *row = 3 * tx->from->size;
     int i = 0, j = 0;
     char ***indata = (char ***)malloc(sizeof(char **) * *col);
-    for (i = 0; i < *col; i++)
-    {
+    for (i = 0; i < *col; i++) {
         indata[i] = malloc(sizeof(char *) * *row);
-        for (j = 0; j < *row; j++)
-        {
+        for (j = 0; j < *row; j++) {
             uint32_t index = j / 3;
             indata[i][j] = malloc(128);
-            if (j % 3 == 0)
-            {
+            if (j % 3 == 0) {
                 sprintf(indata[i][j], "%d #F5870A %s#", index + 1, tx->from->data[index].amount);
-            }
-            else if (j % 3 == 1)
-            {
+            } else if (j % 3 == 1) {
                 sprintf(indata[i][j], "%s", tx->from->data[index].address);
-            }
-            else
-            {
-                if (tx->from->data[index].has_path)
-                {
+            } else {
+                if (tx->from->data[index].has_path) {
                     strcpy(indata[i][j], tx->from->data[index].path);
                 }
             }
@@ -217,19 +207,14 @@ void *GetAdaOutputDetail(uint8_t *row, uint8_t *col, void *param)
     *row = 2 * tx->to->size;
     int i = 0, j = 0;
     char ***indata = (char ***)malloc(sizeof(char **) * *col);
-    for (i = 0; i < *col; i++)
-    {
+    for (i = 0; i < *col; i++) {
         indata[i] = malloc(sizeof(char *) * *row);
-        for (j = 0; j < *row; j++)
-        {
+        for (j = 0; j < *row; j++) {
             uint32_t index = j / 2;
             indata[i][j] = malloc(128);
-            if (j % 2 == 0)
-            {
+            if (j % 2 == 0) {
                 sprintf(indata[i][j], "%d #F5870A %s#", index + 1, tx->to->data[index].amount);
-            }
-            else
-            {
+            } else {
                 sprintf(indata[i][j], "%s", tx->to->data[index].address);
             }
         }
@@ -268,25 +253,17 @@ void *GetAdaCertificatesData(uint8_t *row, uint8_t *col, void *param)
     *row = 3 * tx->certificates->size;
     int i = 0, j = 0;
     char ***indata = (char ***)malloc(sizeof(char **) * *col);
-    for (i = 0; i < *col; i++)
-    {
+    for (i = 0; i < *col; i++) {
         indata[i] = malloc(sizeof(char *) * *row);
-        for (j = 0; j < *row; j++)
-        {
+        for (j = 0; j < *row; j++) {
             uint32_t index = j / 3;
             indata[i][j] = malloc(128);
-            if (j % 3 == 0)
-            {
+            if (j % 3 == 0) {
                 sprintf(indata[i][j], "%d #F5870A %s#", index + 1, tx->certificates->data[index].cert_type);
-            }
-            else if (j % 3 == 1)
-            {
+            } else if (j % 3 == 1) {
                 sprintf(indata[i][j], "Address: %s", tx->certificates->data[index].address);
-            }
-            else
-            {
-                if (tx->certificates->data[index].pool != NULL)
-                {
+            } else {
+                if (tx->certificates->data[index].pool != NULL) {
                     sprintf(indata[i][j], "Pool: %s", tx->certificates->data[index].pool);
                 }
             }
@@ -315,19 +292,14 @@ void *GetAdaWithdrawalsData(uint8_t *row, uint8_t *col, void *param)
     *row = 2 * tx->withdrawals->size;
     int i = 0, j = 0;
     char ***indata = (char ***)malloc(sizeof(char **) * *col);
-    for (i = 0; i < *col; i++)
-    {
+    for (i = 0; i < *col; i++) {
         indata[i] = malloc(sizeof(char *) * *row);
-        for (j = 0; j < *row; j++)
-        {
+        for (j = 0; j < *row; j++) {
             uint32_t index = j / 2;
             indata[i][j] = malloc(128);
-            if (j % 2 == 0)
-            {
+            if (j % 2 == 0) {
                 sprintf(indata[i][j], "%d #F5870A %s#", index + 1, tx->withdrawals->data[index].amount);
-            }
-            else
-            {
+            } else {
                 sprintf(indata[i][j], "Address: %s", tx->withdrawals->data[index].address);
             }
         }
@@ -352,10 +324,9 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
     UREncodeResult *encodeResult;
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-    
+
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
-    do
-    {
+    do {
         uint8_t entropy[64];
         uint32_t len = GetCurrentAccountEntropyLen();
         GetAccountEntropy(GetCurrentAccountIndex(), entropy, len, SecretCacheGetPassword());

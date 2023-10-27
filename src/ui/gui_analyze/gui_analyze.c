@@ -14,8 +14,7 @@ typedef void (*SetLvglFlagFunc)(lv_obj_t *obj, lv_obj_flag_t);
 #include "gui.h"
 #include "librust_c.h"
 #include "user_memory.h"
-typedef struct
-{
+typedef struct {
     GuiRemapViewType index;
     const char *config;
     GetChainDataFunc func;
@@ -24,8 +23,7 @@ typedef struct
 } GuiAnalyze_t;
 
 #define GUI_ANALYZE_TABVIEW_CNT 2
-typedef struct
-{
+typedef struct {
     lv_obj_t *obj[GUI_ANALYZE_TABVIEW_CNT];
     lv_obj_t *img[GUI_ANALYZE_TABVIEW_CNT];
     uint8_t tabviewIndex;
@@ -173,28 +171,17 @@ lv_obj_t *g_hiddenVector[OBJ_VECTOR_MAX_LEN];
 
 const lv_font_t *GetLvglTextFont(char *fontStr)
 {
-    if (!strcmp(fontStr, "openSansEnTitle"))
-    {
+    if (!strcmp(fontStr, "openSansEnTitle")) {
         return &openSansEnTitle;
-    }
-    else if (!strcmp(fontStr, "openSansEnLittleTitle"))
-    {
+    } else if (!strcmp(fontStr, "openSansEnLittleTitle")) {
         return &openSansEnLittleTitle;
-    }
-    else if (!strcmp(fontStr, "openSansEnText"))
-    {
+    } else if (!strcmp(fontStr, "openSansEnText")) {
         return &openSansEnText;
-    }
-    else if (!strcmp(fontStr, "openSansEnIllustrate"))
-    {
+    } else if (!strcmp(fontStr, "openSansEnIllustrate")) {
         return &openSansEnIllustrate;
-    }
-    else if (!strcmp(fontStr, "openSansEnBoldIllustrate"))
-    {
+    } else if (!strcmp(fontStr, "openSansEnBoldIllustrate")) {
         return &openSansEnBoldIllustrate;
-    }
-    else if (!strcmp(fontStr, "openSansDesc"))
-    {
+    } else if (!strcmp(fontStr, "openSansDesc")) {
         return &openSansDesc;
     }
 
@@ -203,12 +190,9 @@ const lv_font_t *GetLvglTextFont(char *fontStr)
 
 GetContSizeFunc GetPsbtContainerSize(char *type)
 {
-    if (!strcmp(type, "GetPsbtOverviewSize"))
-    {
+    if (!strcmp(type, "GetPsbtOverviewSize")) {
         return GetPsbtOverviewSize;
-    }
-    else if (!strcmp(type, "GetPsbtDetailSize"))
-    {
+    } else if (!strcmp(type, "GetPsbtDetailSize")) {
         return GetPsbtDetailSize;
     }
     return NULL;
@@ -216,12 +200,9 @@ GetContSizeFunc GetPsbtContainerSize(char *type)
 
 GetContSizeFunc GetEthContainerSize(char *type)
 {
-    if (!strcmp(type, "GetEthToFromSize"))
-    {
+    if (!strcmp(type, "GetEthToFromSize")) {
         return GetEthToFromSize;
-    }
-    else if (!strcmp(type, "GetEthContractDataSize"))
-    {
+    } else if (!strcmp(type, "GetEthContractDataSize")) {
         return GetEthContractDataSize;
     }
     return NULL;
@@ -229,12 +210,9 @@ GetContSizeFunc GetEthContainerSize(char *type)
 
 GetContSizeFunc GetCosmosContainerSize(char *type)
 {
-    if (!strcmp(type, "GetCosmosDetailMsgSize"))
-    {
+    if (!strcmp(type, "GetCosmosDetailMsgSize")) {
         return GetCosmosDetailMsgSize;
-    }
-    else if (!strcmp(type, "GetCosmosOverviewAddrSize"))
-    {
+    } else if (!strcmp(type, "GetCosmosOverviewAddrSize")) {
         return GetCosmosOverviewAddrSize;
     }
     return NULL;
@@ -242,20 +220,16 @@ GetContSizeFunc GetCosmosContainerSize(char *type)
 
 GetContSizeFunc GetAdaContainerSize(char *type)
 {
-    if (!strcmp(type, "GetAdaInputDetailSize"))
-    {
+    if (!strcmp(type, "GetAdaInputDetailSize")) {
         return GetAdaInputDetailSize;
     }
-    if (!strcmp(type, "GetAdaOutputDetailSize"))
-    {
+    if (!strcmp(type, "GetAdaOutputDetailSize")) {
         return GetAdaOutputDetailSize;
     }
-    if (!strcmp(type, "GetAdaCertificatesSize"))
-    {
+    if (!strcmp(type, "GetAdaCertificatesSize")) {
         return GetAdaCertificatesSize;
     }
-    if (!strcmp(type, "GetAdaWithdrawalsSize"))
-    {
+    if (!strcmp(type, "GetAdaWithdrawalsSize")) {
         return GetAdaWithdrawalsSize;
     }
     return NULL;
@@ -263,8 +237,7 @@ GetContSizeFunc GetAdaContainerSize(char *type)
 
 GetContSizeFunc GuiTemplateSizeFuncGet(char *type)
 {
-    switch (g_reMapIndex)
-    {
+    switch (g_reMapIndex) {
     case REMAPVIEW_BTC:
         return GetPsbtContainerSize(type);
     case REMAPVIEW_ETH:
@@ -282,8 +255,7 @@ GetContSizeFunc GuiTemplateSizeFuncGet(char *type)
 
 GetListLenFunc GetCosmosListLen(char *type)
 {
-    if (!strcmp(type, "GetCosmosMsgLen"))
-    {
+    if (!strcmp(type, "GetCosmosMsgLen")) {
         return GetCosmosMsgLen;
     }
     return NULL;
@@ -291,8 +263,7 @@ GetListLenFunc GetCosmosListLen(char *type)
 
 GetListLenFunc GuiTemplateListLenFuncGet(char *type)
 {
-    switch (g_reMapIndex)
-    {
+    switch (g_reMapIndex) {
     case REMAPVIEW_COSMOS:
         return GetCosmosListLen(type);
     default:
@@ -302,8 +273,7 @@ GetListLenFunc GuiTemplateListLenFuncGet(char *type)
 
 GetListItemKeyFunc GetCosmosListItemKey(char *type)
 {
-    if (!strcmp(type, "GetCosmosMsgKey"))
-    {
+    if (!strcmp(type, "GetCosmosMsgKey")) {
         return GetCosmosMsgKey;
     }
     return NULL;
@@ -311,8 +281,7 @@ GetListItemKeyFunc GetCosmosListItemKey(char *type)
 
 GetListItemKeyFunc GuiTemplateListItemKeyFuncGet(char *type)
 {
-    switch (g_reMapIndex)
-    {
+    switch (g_reMapIndex) {
     case REMAPVIEW_COSMOS:
         return GetCosmosListItemKey(type);
     default:
@@ -322,8 +291,7 @@ GetListItemKeyFunc GuiTemplateListItemKeyFuncGet(char *type)
 
 GetContSizeFunc GetEthObjPos(char *type)
 {
-    if (!strcmp(type, "GetEthToLabelPos"))
-    {
+    if (!strcmp(type, "GetEthToLabelPos")) {
         return GetEthToLabelPos;
     }
     return NULL;
@@ -331,28 +299,17 @@ GetContSizeFunc GetEthObjPos(char *type)
 
 GetContSizeFunc GetCosmosObjPos(char *type)
 {
-    if (!strcmp(type, "GetCosmosDetailMethodLabelPos"))
-    {
+    if (!strcmp(type, "GetCosmosDetailMethodLabelPos")) {
         return GetCosmosDetailMethodLabelPos;
-    }
-    else if (!strcmp(type, "GetCosmosDetailMethodValuePos"))
-    {
+    } else if (!strcmp(type, "GetCosmosDetailMethodValuePos")) {
         return GetCosmosDetailMethodValuePos;
-    }
-    else if (!strcmp(type, "GetCosmosDetailAddress1LabelPos"))
-    {
+    } else if (!strcmp(type, "GetCosmosDetailAddress1LabelPos")) {
         return GetCosmosDetailAddress1LabelPos;
-    }
-    else if (!strcmp(type, "GetCosmosDetailAddress1ValuePos"))
-    {
+    } else if (!strcmp(type, "GetCosmosDetailAddress1ValuePos")) {
         return GetCosmosDetailAddress1ValuePos;
-    }
-    else if (!strcmp(type, "GetCosmosDetailAddress2LabelPos"))
-    {
+    } else if (!strcmp(type, "GetCosmosDetailAddress2LabelPos")) {
         return GetCosmosDetailAddress2LabelPos;
-    }
-    else if (!strcmp(type, "GetCosmosDetailAddress2ValuePos"))
-    {
+    } else if (!strcmp(type, "GetCosmosDetailAddress2ValuePos")) {
         return GetCosmosDetailAddress2ValuePos;
     }
     return NULL;
@@ -360,8 +317,7 @@ GetContSizeFunc GetCosmosObjPos(char *type)
 
 GetContSizeFunc GuiTemplatePosFuncGet(char *type)
 {
-    switch (g_reMapIndex)
-    {
+    switch (g_reMapIndex) {
     case REMAPVIEW_BTC:
     case REMAPVIEW_ETH:
         return GetEthObjPos(type);
@@ -376,36 +332,21 @@ GetContSizeFunc GuiTemplatePosFuncGet(char *type)
 
 GetLabelDataFunc GuiBtcTextFuncGet(char *type)
 {
-    if (!strcmp(type, "GetPsbtTotalOutAmount"))
-    {
+    if (!strcmp(type, "GetPsbtTotalOutAmount")) {
         return GetPsbtTotalOutAmount;
-    }
-    else if (!strcmp(type, "GetPsbtFeeAmount"))
-    {
+    } else if (!strcmp(type, "GetPsbtFeeAmount")) {
         return GetPsbtFeeAmount;
-    }
-    else if (!strcmp(type, "GetPsbtTotalOutSat"))
-    {
+    } else if (!strcmp(type, "GetPsbtTotalOutSat")) {
         return GetPsbtTotalOutSat;
-    }
-    else if (!strcmp(type, "GetPsbtFeeSat"))
-    {
+    } else if (!strcmp(type, "GetPsbtFeeSat")) {
         return GetPsbtFeeSat;
-    }
-    else if (!strcmp(type, "GetPsbtNetWork"))
-    {
+    } else if (!strcmp(type, "GetPsbtNetWork")) {
         return GetPsbtNetWork;
-    }
-    else if (!strcmp(type, "GetPsbtDetailOutputValue"))
-    {
+    } else if (!strcmp(type, "GetPsbtDetailOutputValue")) {
         return GetPsbtDetailOutputValue;
-    }
-    else if (!strcmp(type, "GetPsbtDetailInputValue"))
-    {
+    } else if (!strcmp(type, "GetPsbtDetailInputValue")) {
         return GetPsbtDetailInputValue;
-    }
-    else if (!strcmp(type, "GetPsbtDetailFee"))
-    {
+    } else if (!strcmp(type, "GetPsbtDetailFee")) {
         return GetPsbtDetailFee;
     }
     return NULL;
@@ -413,72 +354,39 @@ GetLabelDataFunc GuiBtcTextFuncGet(char *type)
 
 GetLabelDataFunc GuiEthTextFuncGet(char *type)
 {
-    if (!strcmp(type, "GetEthValue"))
-    {
+    if (!strcmp(type, "GetEthValue")) {
         return GetEthValue;
-    }
-    else if (!strcmp(type, "GetEthTxFee"))
-    {
+    } else if (!strcmp(type, "GetEthTxFee")) {
         return GetEthTxFee;
-    }
-    else if (!strcmp(type, "GetEthGasPrice"))
-    {
+    } else if (!strcmp(type, "GetEthGasPrice")) {
         return GetEthGasPrice;
-    }
-    else if (!strcmp(type, "GetEthGasLimit"))
-    {
+    } else if (!strcmp(type, "GetEthGasLimit")) {
         return GetEthGasLimit;
-    }
-    else if (!strcmp(type, "GetEthNetWork"))
-    {
+    } else if (!strcmp(type, "GetEthNetWork")) {
         return GetEthNetWork;
-    }
-    else if (!strcmp(type, "GetEthMaxFee"))
-    {
+    } else if (!strcmp(type, "GetEthMaxFee")) {
         return GetEthMaxFee;
-    }
-    else if (!strcmp(type, "GetEthMaxPriority"))
-    {
+    } else if (!strcmp(type, "GetEthMaxPriority")) {
         return GetEthMaxPriority;
-    }
-    else if (!strcmp(type, "GetEthMaxFeePrice"))
-    {
+    } else if (!strcmp(type, "GetEthMaxFeePrice")) {
         return GetEthMaxFeePrice;
-    }
-    else if (!strcmp(type, "GetEthMaxPriorityFeePrice"))
-    {
+    } else if (!strcmp(type, "GetEthMaxPriorityFeePrice")) {
         return GetEthMaxPriorityFeePrice;
-    }
-    else if (!strcmp(type, "GetEthGetFromAddress"))
-    {
+    } else if (!strcmp(type, "GetEthGetFromAddress")) {
         return GetEthGetFromAddress;
-    }
-    else if (!strcmp(type, "GetEthGetToAddress"))
-    {
+    } else if (!strcmp(type, "GetEthGetToAddress")) {
         return GetEthGetToAddress;
-    }
-    else if (!strcmp(type, "GetTxnFeeDesc"))
-    {
+    } else if (!strcmp(type, "GetTxnFeeDesc")) {
         return GetTxnFeeDesc;
-    }
-    else if (!strcmp(type, "GetEthEnsName"))
-    {
+    } else if (!strcmp(type, "GetEthEnsName")) {
         return GetEthEnsName;
-    }
-    else if (!strcmp(type, "GetToEthEnsName"))
-    {
+    } else if (!strcmp(type, "GetToEthEnsName")) {
         return GetToEthEnsName;
-    }
-    else if (!strcmp(type, "GetEthMethodName"))
-    {
+    } else if (!strcmp(type, "GetEthMethodName")) {
         return GetEthMethodName;
-    }
-    else if (!strcmp(type, "GetEthTransactionData"))
-    {
+    } else if (!strcmp(type, "GetEthTransactionData")) {
         return GetEthTransactionData;
-    }
-    else if (!strcmp(type, "GetEthContractName"))
-    {
+    } else if (!strcmp(type, "GetEthContractName")) {
         return GetEthContractName;
     }
 
@@ -487,16 +395,11 @@ GetLabelDataFunc GuiEthTextFuncGet(char *type)
 
 GetLabelDataFunc GuiEthPersonalMessageTextFuncGet(char *type)
 {
-    if (!strcmp(type, "GetMessageFrom"))
-    {
+    if (!strcmp(type, "GetMessageFrom")) {
         return GetMessageFrom;
-    }
-    else if (!strcmp(type, "GetMessageUtf8"))
-    {
+    } else if (!strcmp(type, "GetMessageUtf8")) {
         return GetMessageUtf8;
-    }
-    else if (!strcmp(type, "GetMessageRaw"))
-    {
+    } else if (!strcmp(type, "GetMessageRaw")) {
         return GetMessageRaw;
     }
     return NULL;
@@ -504,16 +407,11 @@ GetLabelDataFunc GuiEthPersonalMessageTextFuncGet(char *type)
 
 GetLabelDataFunc GuiSolMessageTextFuncGet(char *type)
 {
-    if (!strcmp(type, "GetSolMessageFrom"))
-    {
+    if (!strcmp(type, "GetSolMessageFrom")) {
         return GetSolMessageFrom;
-    }
-    else if (!strcmp(type, "GetSolMessageUtf8"))
-    {
+    } else if (!strcmp(type, "GetSolMessageUtf8")) {
         return GetSolMessageUtf8;
-    }
-    else if (!strcmp(type, "GetSolMessageRaw"))
-    {
+    } else if (!strcmp(type, "GetSolMessageRaw")) {
         return GetSolMessageRaw;
     }
     return NULL;
@@ -521,36 +419,21 @@ GetLabelDataFunc GuiSolMessageTextFuncGet(char *type)
 
 GetLabelDataFunc GuiEthTypedDataTextFuncGet(char *type)
 {
-    if (!strcmp(type, "GetEthTypedDataDomianName"))
-    {
+    if (!strcmp(type, "GetEthTypedDataDomianName")) {
         return GetEthTypedDataDomianName;
-    }
-    else if (!strcmp(type, "GetEthTypedDataDomianVersion"))
-    {
+    } else if (!strcmp(type, "GetEthTypedDataDomianVersion")) {
         return GetEthTypedDataDomianVersion;
-    }
-    else if (!strcmp(type, "GetEthTypedDataDomianChainId"))
-    {
+    } else if (!strcmp(type, "GetEthTypedDataDomianChainId")) {
         return GetEthTypedDataDomianChainId;
-    }
-    else if (!strcmp(type, "GetEthTypedDataDomianVerifyContract"))
-    {
+    } else if (!strcmp(type, "GetEthTypedDataDomianVerifyContract")) {
         return GetEthTypedDataDomianVerifyContract;
-    }
-    else if (!strcmp(type, "GetEthTypedDataDomianSalt"))
-    {
+    } else if (!strcmp(type, "GetEthTypedDataDomianSalt")) {
         return GetEthTypedDataDomianSalt;
-    }
-    else if (!strcmp(type, "GetEthTypedDataMessage"))
-    {
+    } else if (!strcmp(type, "GetEthTypedDataMessage")) {
         return GetEthTypedDataMessage;
-    }
-    else if (!strcmp(type, "GetEthTypedDataFrom"))
-    {
+    } else if (!strcmp(type, "GetEthTypedDataFrom")) {
         return GetEthTypedDataFrom;
-    }
-    else if (!strcmp(type, "GetEthTypedDataPrimayType"))
-    {
+    } else if (!strcmp(type, "GetEthTypedDataPrimayType")) {
         return GetEthTypedDataPrimayType;
     }
     return NULL;
@@ -558,20 +441,13 @@ GetLabelDataFunc GuiEthTypedDataTextFuncGet(char *type)
 
 GetTableDataFunc GuiBtcTableFuncGet(char *type)
 {
-    if (!strcmp(type, "GetPsbtInputData"))
-    {
+    if (!strcmp(type, "GetPsbtInputData")) {
         return GetPsbtInputData;
-    }
-    else if (!strcmp(type, "GetPsbtOutputData"))
-    {
+    } else if (!strcmp(type, "GetPsbtOutputData")) {
         return GetPsbtOutputData;
-    }
-    else if (!strcmp(type, "GetPsbtInputDetailData"))
-    {
+    } else if (!strcmp(type, "GetPsbtInputDetailData")) {
         return GetPsbtInputDetailData;
-    }
-    else if (!strcmp(type, "GetPsbtOutputDetailData"))
-    {
+    } else if (!strcmp(type, "GetPsbtOutputDetailData")) {
         return GetPsbtOutputDetailData;
     }
     return NULL;
@@ -579,8 +455,7 @@ GetTableDataFunc GuiBtcTableFuncGet(char *type)
 
 GetTableDataFunc GuiEthTableFuncGet(char *type)
 {
-    if (!strcmp(type, "GetEthContractData"))
-    {
+    if (!strcmp(type, "GetEthContractData")) {
         return GetEthContractData;
     }
     return NULL;
@@ -588,20 +463,16 @@ GetTableDataFunc GuiEthTableFuncGet(char *type)
 
 GetTableDataFunc GuiAdaTabelFuncGet(char *type)
 {
-    if (!strcmp(type, "GetAdaInputDetail"))
-    {
+    if (!strcmp(type, "GetAdaInputDetail")) {
         return GetAdaInputDetail;
     }
-    if (!strcmp(type, "GetAdaOutputDetail"))
-    {
+    if (!strcmp(type, "GetAdaOutputDetail")) {
         return GetAdaOutputDetail;
     }
-    if (!strcmp(type, "GetAdaWithdrawalsData"))
-    {
+    if (!strcmp(type, "GetAdaWithdrawalsData")) {
         return GetAdaWithdrawalsData;
     }
-    if (!strcmp(type, "GetAdaCertificatesData"))
-    {
+    if (!strcmp(type, "GetAdaCertificatesData")) {
         return GetAdaCertificatesData;
     }
     return NULL;
@@ -609,28 +480,17 @@ GetTableDataFunc GuiAdaTabelFuncGet(char *type)
 
 GetLabelDataFunc GuiTrxTextFuncGet(char *type)
 {
-    if (!strcmp(type, "GetTrxValue"))
-    {
+    if (!strcmp(type, "GetTrxValue")) {
         return GetTrxValue;
-    }
-    else if (!strcmp(type, "GetTrxMethod"))
-    {
+    } else if (!strcmp(type, "GetTrxMethod")) {
         return GetTrxMethod;
-    }
-    else if (!strcmp(type, "GetTrxFromAddress"))
-    {
+    } else if (!strcmp(type, "GetTrxFromAddress")) {
         return GetTrxFromAddress;
-    }
-    else if (!strcmp(type, "GetTrxToAddress"))
-    {
+    } else if (!strcmp(type, "GetTrxToAddress")) {
         return GetTrxToAddress;
-    }
-    else if (!strcmp(type, "GetTrxContract"))
-    {
+    } else if (!strcmp(type, "GetTrxContract")) {
         return GetTrxContract;
-    }
-    else if (!strcmp(type, "GetTrxToken"))
-    {
+    } else if (!strcmp(type, "GetTrxToken")) {
         return GetTrxToken;
     }
     return NULL;
@@ -638,76 +498,41 @@ GetLabelDataFunc GuiTrxTextFuncGet(char *type)
 
 GetLabelDataFunc GuiCosmosTextFuncGet(char *type)
 {
-    if (!strcmp(type, "GetCosmosValue"))
-    {
+    if (!strcmp(type, "GetCosmosValue")) {
         return GetCosmosValue;
-    }
-    else if (!strcmp(type, "GetCosmosNetwork"))
-    {
+    } else if (!strcmp(type, "GetCosmosNetwork")) {
         return GetCosmosNetwork;
-    }
-    else if (!strcmp(type, "GetCosmosMethod"))
-    {
+    } else if (!strcmp(type, "GetCosmosMethod")) {
         return GetCosmosMethod;
-    }
-    else if (!strcmp(type, "GetCosmosAddress1Label"))
-    {
+    } else if (!strcmp(type, "GetCosmosAddress1Label")) {
         return GetCosmosAddress1Label;
-    }
-    else if (!strcmp(type, "GetCosmosAddress1Value"))
-    {
+    } else if (!strcmp(type, "GetCosmosAddress1Value")) {
         return GetCosmosAddress1Value;
-    }
-    else if (!strcmp(type, "GetCosmosAddress2Label"))
-    {
+    } else if (!strcmp(type, "GetCosmosAddress2Label")) {
         return GetCosmosAddress2Label;
-    }
-    else if (!strcmp(type, "GetCosmosAddress2Value"))
-    {
+    } else if (!strcmp(type, "GetCosmosAddress2Value")) {
         return GetCosmosAddress2Value;
-    }
-    else if (!strcmp(type, "GetCosmosMaxFee"))
-    {
+    } else if (!strcmp(type, "GetCosmosMaxFee")) {
         return GetCosmosMaxFee;
-    }
-    else if (!strcmp(type, "GetCosmosFee"))
-    {
+    } else if (!strcmp(type, "GetCosmosFee")) {
         return GetCosmosFee;
-    }
-    else if (!strcmp(type, "GetCosmosGasLimit"))
-    {
+    } else if (!strcmp(type, "GetCosmosGasLimit")) {
         return GetCosmosGasLimit;
-    }
-    else if (!strcmp(type, "GetCosmosChainId"))
-    {
+    } else if (!strcmp(type, "GetCosmosChainId")) {
         return GetCosmosChainId;
-    }
-    else if (!strcmp(type, "GetCosmosChannel"))
-    {
+    } else if (!strcmp(type, "GetCosmosChannel")) {
         return GetCosmosChannel;
-    }
-    else if (!strcmp(type, "GetCosmosOldValidator"))
-    {
+    } else if (!strcmp(type, "GetCosmosOldValidator")) {
         return GetCosmosOldValidator;
-    }
-    else if (!strcmp(type, "GetCosmosProposal"))
-    {
+    } else if (!strcmp(type, "GetCosmosProposal")) {
         return GetCosmosProposal;
-    }
-    else if (!strcmp(type, "GetCosmosVoted"))
-    {
+    } else if (!strcmp(type, "GetCosmosVoted")) {
         return GetCosmosVoted;
-    }
-    else if (!strcmp(type, "GetCosmosIndex"))
-    {
+    } else if (!strcmp(type, "GetCosmosIndex")) {
         return GetCosmosIndex;
-    }
-    else if (!strcmp(type, "GetCosmosTextOfKind"))
-    {
+    } else if (!strcmp(type, "GetCosmosTextOfKind")) {
         return GetCosmosTextOfKind;
-    }
-    else if (!strcmp(type, "GetCosmosDetailItemValue"))
-    {
+    } else if (!strcmp(type, "GetCosmosDetailItemValue")) {
         return GetCosmosDetailItemValue;
     }
     return NULL;
@@ -715,8 +540,7 @@ GetLabelDataFunc GuiCosmosTextFuncGet(char *type)
 
 GetLabelDataFunc GuiSuiTextFuncGet(char *type)
 {
-    if (!strcmp(type, "GetSuiDetail"))
-    {
+    if (!strcmp(type, "GetSuiDetail")) {
         return GetSuiDetail;
     }
     return NULL;
@@ -724,8 +548,7 @@ GetLabelDataFunc GuiSuiTextFuncGet(char *type)
 
 GetLabelDataLenFunc GuiSuiTextLenFuncGet(char *type)
 {
-    if (!strcmp(type, "GetSuiDetailLen"))
-    {
+    if (!strcmp(type, "GetSuiDetailLen")) {
         return GetSuiDetailLen;
     }
     return NULL;
@@ -733,8 +556,7 @@ GetLabelDataLenFunc GuiSuiTextLenFuncGet(char *type)
 
 GetLabelDataFunc GuiAptosTextFuncGet(char *type)
 {
-    if (!strcmp(type, "GetAptosDetail"))
-    {
+    if (!strcmp(type, "GetAptosDetail")) {
         return GetAptosDetail;
     }
     return NULL;
@@ -742,8 +564,7 @@ GetLabelDataFunc GuiAptosTextFuncGet(char *type)
 
 GetLabelDataLenFunc GuiAptosTextLenFuncGet(char *type)
 {
-    if (!strcmp(type, "GetAptosDetailLen"))
-    {
+    if (!strcmp(type, "GetAptosDetailLen")) {
         return GetAptosDetailLen;
     }
     return NULL;
@@ -751,32 +572,23 @@ GetLabelDataLenFunc GuiAptosTextLenFuncGet(char *type)
 
 GetLabelDataFunc GuiAdaTextFuncGet(char *type)
 {
-    if (!strcmp(type, "GetAdaExtraData"))
-    {
+    if (!strcmp(type, "GetAdaExtraData")) {
         return GetAdaExtraData;
     }
-    if (!strcmp(type, "GetAdaNetwork"))
-    {
+    if (!strcmp(type, "GetAdaNetwork")) {
         return GetAdaNetwork;
     }
-    if (!strcmp(type, "GetAdaTotalInput"))
-    {
+    if (!strcmp(type, "GetAdaTotalInput")) {
         return GetAdaTotalInput;
     }
-    if (!strcmp(type, "GetAdaTotalOutput"))
-    {
+    if (!strcmp(type, "GetAdaTotalOutput")) {
         return GetAdaTotalOutput;
     }
-    if (!strcmp(type, "GetAdaFee"))
-    {
+    if (!strcmp(type, "GetAdaFee")) {
         return GetAdaFee;
-    }
-    else if (!strcmp(type, "GetAdaWithdrawalsLabel"))
-    {
+    } else if (!strcmp(type, "GetAdaWithdrawalsLabel")) {
         return GetAdaWithdrawalsLabel;
-    }
-    else if (!strcmp(type, "GetAdaCertificatesLabel"))
-    {
+    } else if (!strcmp(type, "GetAdaCertificatesLabel")) {
         return GetAdaCertificatesLabel;
     }
     return NULL;
@@ -784,8 +596,7 @@ GetLabelDataFunc GuiAdaTextFuncGet(char *type)
 
 GetLabelDataLenFunc GuiAdaTextLenFuncGet(char *type)
 {
-    if (!strcmp(type, "GetAdaExtraDataLen"))
-    {
+    if (!strcmp(type, "GetAdaExtraDataLen")) {
         return GetAdaExtraDataLen;
     }
     return NULL;
@@ -793,8 +604,7 @@ GetLabelDataLenFunc GuiAdaTextLenFuncGet(char *type)
 
 GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
 {
-    switch (g_reMapIndex)
-    {
+    switch (g_reMapIndex) {
     case REMAPVIEW_SUI:
         return GuiSuiTextLenFuncGet(type);
     case REMAPVIEW_APT:
@@ -808,8 +618,7 @@ GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
 
 GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
 {
-    switch (g_reMapIndex)
-    {
+    switch (g_reMapIndex) {
     case REMAPVIEW_BTC:
         return GuiBtcTextFuncGet(type);
     case REMAPVIEW_ETH:
@@ -839,8 +648,7 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
 
 GetTableDataFunc GuiTemplateTableFuncGet(char *type)
 {
-    switch (g_reMapIndex)
-    {
+    switch (g_reMapIndex) {
     case REMAPVIEW_BTC:
         return GuiBtcTableFuncGet(type);
     case REMAPVIEW_ETH:
@@ -856,20 +664,16 @@ GetTableDataFunc GuiTemplateTableFuncGet(char *type)
 
 const void *GetImgSrc(char *type)
 {
-    if (!strcmp(type, "imgEns"))
-    {
+    if (!strcmp(type, "imgEns")) {
         return &imgEns;
     }
-    if (!strcmp(type, "imgContract"))
-    {
+    if (!strcmp(type, "imgContract")) {
         return &imgContract;
     }
-    if (!strcmp(type, "imgQrcodeTurquoise"))
-    {
+    if (!strcmp(type, "imgQrcodeTurquoise")) {
         return &imgQrcodeTurquoise;
     }
-    if (!strcmp(type, "imgConversion"))
-    {
+    if (!strcmp(type, "imgConversion")) {
         return &imgConversion;
     }
     return &imgSwitch;
@@ -877,76 +681,41 @@ const void *GetImgSrc(char *type)
 
 GetObjStateFunc GuiTemplateStateFuncGet(char *type)
 {
-    if (!strcmp(type, "GetEthEnsExist"))
-    {
+    if (!strcmp(type, "GetEthEnsExist")) {
         return GetEthEnsExist;
-    }
-    else if (!strcmp(type, "GetToEthEnsExist"))
-    {
+    } else if (!strcmp(type, "GetToEthEnsExist")) {
         return GetToEthEnsExist;
-    }
-    else if (!strcmp(type, "GetEthContractDataExist"))
-    {
+    } else if (!strcmp(type, "GetEthContractDataExist")) {
         return GetEthContractDataExist;
-    }
-    else if (!strcmp(type, "GetEthContractDataNotExist"))
-    {
+    } else if (!strcmp(type, "GetEthContractDataNotExist")) {
         return GetEthContractDataNotExist;
-    }
-    else if (!strcmp(type, "GetEthInputDataExist"))
-    {
+    } else if (!strcmp(type, "GetEthInputDataExist")) {
         return GetEthInputDataExist;
-    }
-    else if (!strcmp(type, "GetTrxContractExist"))
-    {
+    } else if (!strcmp(type, "GetTrxContractExist")) {
         return GetTrxContractExist;
-    }
-    else if (!strcmp(type, "GetTrxTokenExist"))
-    {
+    } else if (!strcmp(type, "GetTrxTokenExist")) {
         return GetTrxTokenExist;
-    }
-    else if (!strcmp(type, "GetCosmosChannelExist"))
-    {
+    } else if (!strcmp(type, "GetCosmosChannelExist")) {
         return GetCosmosChannelExist;
-    }
-    else if (!strcmp(type, "GetCosmosOldValidatorExist"))
-    {
+    } else if (!strcmp(type, "GetCosmosOldValidatorExist")) {
         return GetCosmosOldValidatorExist;
-    }
-    else if (!strcmp(type, "GetCosmosValueExist"))
-    {
+    } else if (!strcmp(type, "GetCosmosValueExist")) {
         return GetCosmosValueExist;
-    }
-    else if (!strcmp(type, "GetCosmosVoteExist"))
-    {
+    } else if (!strcmp(type, "GetCosmosVoteExist")) {
         return GetCosmosVoteExist;
-    }
-    else if (!strcmp(type, "GetCosmosAddress2Exist"))
-    {
+    } else if (!strcmp(type, "GetCosmosAddress2Exist")) {
         return GetCosmosAddress2Exist;
-    }
-    else if (!strcmp(type, "GetCosmosMsgListExist"))
-    {
+    } else if (!strcmp(type, "GetCosmosMsgListExist")) {
         return GetCosmosMsgListExist;
-    }
-    else if (!strcmp(type, "GetCosmosMethodExist"))
-    {
+    } else if (!strcmp(type, "GetCosmosMethodExist")) {
         return GetCosmosMethodExist;
-    }
-    else if (!strcmp(type, "GetCosmosAddrExist"))
-    {
+    } else if (!strcmp(type, "GetCosmosAddrExist")) {
         return GetCosmosAddrExist;
-    }
-    else if (!strcmp(type, "GetAdaWithdrawalsExist"))
-    {
+    } else if (!strcmp(type, "GetAdaWithdrawalsExist")) {
         return GetAdaWithdrawalsExist;
-    }
-    else if (!strcmp(type, "GetAdaCertificatesExist"))
-    {
+    } else if (!strcmp(type, "GetAdaCertificatesExist")) {
         return GetAdaCertificatesExist;
-    }
-    else if (!strcmp(type, "GetAdaExtraDataExist"))
-    {
+    } else if (!strcmp(type, "GetAdaExtraDataExist")) {
         return GetAdaExtraDataExist;
     }
     return NULL;
@@ -956,28 +725,22 @@ static void SwitchHidden(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         SetLvglFlagFunc clearHidden = lv_obj_add_flag;
         SetLvglFlagFunc addHidden = lv_obj_clear_flag;
-        if (lv_obj_has_flag(g_defaultVector[0], LV_OBJ_FLAG_HIDDEN))
-        {
+        if (lv_obj_has_flag(g_defaultVector[0], LV_OBJ_FLAG_HIDDEN)) {
             clearHidden = lv_obj_clear_flag;
             addHidden = lv_obj_add_flag;
-        }
-        else
-        {
+        } else {
             clearHidden = lv_obj_add_flag;
             addHidden = lv_obj_clear_flag;
         }
 
-        for (int i = 0; i < OBJ_VECTOR_MAX_LEN && g_defaultVector[i] != NULL; i++)
-        {
+        for (int i = 0; i < OBJ_VECTOR_MAX_LEN && g_defaultVector[i] != NULL; i++) {
             clearHidden(g_defaultVector[i], LV_OBJ_FLAG_HIDDEN);
         }
 
-        for (int i = 0; i < OBJ_VECTOR_MAX_LEN && g_hiddenVector[i] != NULL; i++)
-        {
+        for (int i = 0; i < OBJ_VECTOR_MAX_LEN && g_hiddenVector[i] != NULL; i++) {
             addHidden(g_hiddenVector[i], LV_OBJ_FLAG_HIDDEN);
         }
     }
@@ -985,12 +748,10 @@ static void SwitchHidden(lv_event_t *e)
 
 lv_event_cb_t GuiTemplateEventCbGet(char *type)
 {
-    if (!strcmp(type, "SwitchHidden"))
-    {
+    if (!strcmp(type, "SwitchHidden")) {
         return SwitchHidden;
     }
-    if (!strcmp(type, "EthContractLearnMore"))
-    {
+    if (!strcmp(type, "EthContractLearnMore")) {
         return EthContractLearnMore;
     }
 
@@ -1005,131 +766,100 @@ void GuiWidgetBaseInit(lv_obj_t *obj, cJSON *json)
     lv_align_t align;
     // virtual void create_lvgl_widget(cJSON *json) {};
     cJSON *item = cJSON_GetObjectItem(json, "pos_func");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         func = GuiTemplatePosFuncGet(item->valuestring);
         func(&xpos, &ypos, g_totalData);
         lv_obj_align(obj, LV_ALIGN_DEFAULT, xpos, ypos);
-    }
-    else
-    {
+    } else {
         item = cJSON_GetObjectItem(json, "pos");
-        if (item != NULL)
-        {
+        if (item != NULL) {
             xpos = item->child->valueint;
             ypos = item->child->next->valueint;
             item = cJSON_GetObjectItem(json, "align");
-            if (item != NULL)
-            {
+            if (item != NULL) {
                 align = item->valueint;
                 item = cJSON_GetObjectItem(json, "align_to");
-                if (item != NULL)
-                {
+                if (item != NULL) {
                     lv_obj_t *parent = lv_obj_get_parent(obj);
                     lv_obj_t *alignChild = lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) + item->valueint);
                     lv_obj_align_to(obj, alignChild, align, xpos, ypos);
-                }
-                else
-                {
+                } else {
                     lv_obj_align(obj, align, xpos, ypos);
                 }
-            }
-            else
-            {
+            } else {
                 lv_obj_align(obj, LV_ALIGN_DEFAULT, xpos, ypos);
             }
         }
     }
     item = cJSON_GetObjectItem(json, "size");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         xsize = item->child->valueint;
         ysize = item->child->next->valueint;
         lv_obj_set_size(obj, xsize, ysize);
-    }
-    else
-    {
+    } else {
         item = cJSON_GetObjectItem(json, "width");
-        if (item != NULL)
-        {
+        if (item != NULL) {
             lv_obj_set_width(obj, item->valueint);
         }
     }
 
     item = cJSON_GetObjectItem(json, "bg_color");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_obj_set_style_bg_color(obj, lv_color_hex(item->valueint), LV_PART_MAIN | LV_STATE_DEFAULT);
-    }
-    else
-    {
+    } else {
         lv_obj_set_style_bg_color(obj, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
     }
 
     item = cJSON_GetObjectItem(json, "bg_opa");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_obj_set_style_bg_opa(obj, item->valueint, LV_PART_MAIN | LV_STATE_DEFAULT);
     }
 
     item = cJSON_GetObjectItem(json, "radius");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_obj_set_style_radius(obj, item->valueint, LV_PART_MAIN | LV_STATE_DEFAULT);
-    }
-    else
-    {
+    } else {
         lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     }
 
     item = cJSON_GetObjectItem(json, "border_width");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_obj_set_style_border_width(obj, item->valueint, LV_PART_MAIN | LV_STATE_DEFAULT);
-    }
-    else
-    {
+    } else {
         lv_obj_set_style_border_width(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     }
 
     item = cJSON_GetObjectItem(json, "border_color");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_obj_set_style_border_color(obj, lv_color_hex(item->valueint), LV_PART_MAIN | LV_STATE_DEFAULT);
     }
 
     item = cJSON_GetObjectItem(json, "pad_vertical");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_obj_set_style_pad_top(obj, item->valueint, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_pad_bottom(obj, item->valueint, LV_PART_MAIN | LV_STATE_DEFAULT);
     }
 
     item = cJSON_GetObjectItem(json, "pad_horizontal");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_obj_set_style_pad_left(obj, item->valueint, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_pad_right(obj, item->valueint, LV_PART_MAIN | LV_STATE_DEFAULT);
     }
 
     item = cJSON_GetObjectItem(json, "aflag");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_obj_add_flag(obj, item->valueint);
     }
 
     item = cJSON_GetObjectItem(json, "cflag");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_obj_clear_flag(obj, item->valueint);
     }
 
     item = cJSON_GetObjectItem(json, "is_show");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         // ((1<<(g_viewTypeIndex - 1)) & 0x7fffffff);
-        if ((item->valueint & (1 << g_viewTypeIndex)) == 0)
-        {
+        if ((item->valueint & (1 << g_viewTypeIndex)) == 0) {
             lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
         }
     }
@@ -1137,10 +867,8 @@ void GuiWidgetBaseInit(lv_obj_t *obj, cJSON *json)
     lv_obj_set_scrollbar_mode(obj, LV_SCROLLBAR_MODE_OFF);
 
     cJSON *childrenArray = cJSON_GetObjectItem(json, "children");
-    if (childrenArray != NULL)
-    {
-        for (cJSON *child = childrenArray->child; child != NULL; child = child->next)
-        {
+    if (childrenArray != NULL) {
+        for (cJSON *child = childrenArray->child; child != NULL; child = child->next) {
             GuiWidgetFactoryCreate(obj, child);
         }
     }
@@ -1153,79 +881,62 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
     int textWidth = 0;
     int bufLen = LABEL_MAX_BUFF_LEN;
     cJSON *item = cJSON_GetObjectItem(json, "text_len_func");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lenFunc = GuiTemplateTextLenFuncGet(item->valuestring);
-        if (lenFunc != NULL)
-        {
+        if (lenFunc != NULL) {
             bufLen = lenFunc(g_totalData) + 1;
         }
     }
     char *text = EXT_MALLOC(bufLen);
     lv_obj_t *obj = lv_label_create(parent);
     item = cJSON_GetObjectItem(json, "text");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_label_set_text(obj, item->valuestring);
-    }
-    else
-    {
+    } else {
         lv_label_set_text(obj, "");
     }
 
     item = cJSON_GetObjectItem(json, "text_width");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         textWidth = item->valueint;
-    }
-    else
-    {
+    } else {
         textWidth = 400;
     }
 
     item = cJSON_GetObjectItem(json, "font");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         const lv_font_t *font = GetLvglTextFont(item->valuestring);
         lv_obj_set_style_text_font(obj, font, LV_STATE_DEFAULT | LV_PART_MAIN);
     }
 
     item = cJSON_GetObjectItem(json, "text_color");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_obj_set_style_text_color(obj, lv_color_hex(item->valueint), LV_PART_MAIN | LV_STATE_DEFAULT);
-    }
-    else
-    {
+    } else {
         lv_obj_set_style_text_color(obj, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
     }
 
     item = cJSON_GetObjectItem(json, "text_func");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         pFunc = GuiTemplateTextFuncGet(item->valuestring);
         item = cJSON_GetObjectItem(json, "text_key");
-        if (item != NULL)
-        {
+        if (item != NULL) {
             strcpy(text, item->valuestring);
         }
     }
 
     item = cJSON_GetObjectItem(json, "text_opa");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_obj_set_style_text_opa(obj, item->valueint, LV_PART_MAIN | LV_STATE_DEFAULT);
     }
 
     lv_label_set_recolor(obj, true);
     lv_obj_set_style_text_letter_space(obj, LV_STATE_DEFAULT | LV_PART_MAIN, 20);
-    if (pFunc)
-    {
+    if (pFunc) {
         pFunc(text, g_totalData);
         lv_label_set_text(obj, text);
 
-        if (lv_obj_get_self_width(obj) >= textWidth)
-        {
+        if (lv_obj_get_self_width(obj) >= textWidth) {
             lv_label_set_long_mode(obj, LV_LABEL_LONG_WRAP);
             lv_obj_set_width(obj, textWidth);
         }
@@ -1247,16 +958,14 @@ void *GuiWidgetContainer(lv_obj_t *parent, cJSON *json)
     lv_obj_set_style_pad_all(obj, 0, LV_STATE_DEFAULT | LV_PART_MAIN);
 
     cJSON *item = cJSON_GetObjectItem(json, "size_func");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         func = GuiTemplateSizeFuncGet(item->valuestring);
         func(&contWidth, &contHeight, g_totalData);
         lv_obj_set_size(obj, contWidth, contHeight);
     }
 
     item = cJSON_GetObjectItem(json, "cb");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_obj_add_event_cb(obj, GuiTemplateEventCbGet(item->valuestring), LV_EVENT_CLICKED, NULL);
     }
     return obj;
@@ -1264,12 +973,9 @@ void *GuiWidgetContainer(lv_obj_t *parent, cJSON *json)
 
 GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
 {
-    if (!strcmp(funcName, "GuiShowSolTxOverview"))
-    {
+    if (!strcmp(funcName, "GuiShowSolTxOverview")) {
         return GuiShowSolTxOverview;
-    }
-    else if (!strcmp(funcName, "GuiShowSolTxDetail"))
-    {
+    } else if (!strcmp(funcName, "GuiShowSolTxDetail")) {
         return GuiShowSolTxDetail;
     }
     return NULL;
@@ -1286,11 +992,9 @@ void *GuiWidgetCustomContainer(lv_obj_t *parent, cJSON *json)
 
     GetCustomContainerFunc func = NULL;
     cJSON *item = cJSON_GetObjectItem(json, "custom_show_func");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         func = GuiTemplateCustomFunc(item->valuestring);
-        if (func != NULL)
-        {
+        if (func != NULL) {
             func(obj, g_totalData);
         }
     }
@@ -1303,41 +1007,30 @@ void GuiWidgetList(lv_obj_t *parent, cJSON *json)
     GetListItemKeyFunc keyFunc = NULL;
     cJSON *item = cJSON_GetObjectItem(json, "len_func");
     uint8_t len = 0;
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lenFunc = GuiTemplateListLenFuncGet(item->valuestring);
         lenFunc(&len, g_totalData);
-    }
-    else
-    {
+    } else {
         item = cJSON_GetObjectItem(json, "len");
         len = item->valueint;
     }
-    if (len != 0)
-    {
+    if (len != 0) {
         cJSON *itemMap = cJSON_GetObjectItem(json, "item_map");
         cJSON *itemDefault = itemMap == NULL ? NULL : cJSON_GetObjectItem(itemMap, "default");
         cJSON *itemKeyFunc = cJSON_GetObjectItem(json, "item_key_func");
         cJSON *child = cJSON_GetObjectItem(json, "item");
         keyFunc = GuiTemplateListItemKeyFuncGet(itemKeyFunc->valuestring);
         char *key = SRAM_MALLOC(50);
-        for (uint8_t i = 0; i < len; i++)
-        {
-            if (itemKeyFunc != NULL)
-            {
+        for (uint8_t i = 0; i < len; i++) {
+            if (itemKeyFunc != NULL) {
                 keyFunc(key, g_totalData);
             }
-            if (itemMap != NULL)
-            {
+            if (itemMap != NULL) {
                 child = cJSON_GetObjectItem(itemMap, key);
-                if (child == NULL)
-                {
-                    if (itemDefault != NULL)
-                    {
+                if (child == NULL) {
+                    if (itemDefault != NULL) {
                         child = itemDefault;
-                    }
-                    else
-                    {
+                    } else {
                         printf("key %s not found!\r\n", key);
                     }
                 }
@@ -1358,34 +1051,29 @@ void *GuiWidgetTable(lv_obj_t *parent, cJSON *json)
     char ***tableData;
     lv_obj_t *obj = lv_table_create(parent);
     cJSON *item = cJSON_GetObjectItem(json, "width");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         tableWidth = item->valueint;
         lv_obj_set_width(obj, tableWidth);
     }
 
     item = cJSON_GetObjectItem(json, "key_width");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         keyWidth = item->valueint;
     }
 
     item = cJSON_GetObjectItem(json, "bg_color");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_obj_set_style_bg_color(obj, lv_color_hex(item->valueint), LV_PART_MAIN | LV_PART_ITEMS);
     }
 
     item = cJSON_GetObjectItem(json, "font");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         const lv_font_t *font = GetLvglTextFont(item->valuestring);
         lv_obj_set_style_text_font(obj, font, LV_STATE_DEFAULT | LV_PART_MAIN);
     }
 
     item = cJSON_GetObjectItem(json, "table_func");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         getDataFunc = GuiTemplateTableFuncGet(item->valuestring);
     }
 
@@ -1401,20 +1089,15 @@ void *GuiWidgetTable(lv_obj_t *parent, cJSON *json)
 
     tableData = (char ***)getDataFunc(&row, &col, g_totalData);
 
-    if (col == 1)
-    {
+    if (col == 1) {
         lv_table_set_col_width(obj, 0, tableWidth);
-    }
-    else
-    {
+    } else {
         lv_table_set_col_width(obj, 0, keyWidth);
         lv_table_set_col_width(obj, 1, tableWidth - keyWidth);
     }
 
-    for (int i = 0; i < col; i++)
-    {
-        for (int j = 0; j < row; j++)
-        {
+    for (int i = 0; i < col; i++) {
+        for (int j = 0; j < row; j++) {
             lv_table_set_cell_value(obj, j, i, (char *)tableData[i][j]);
         }
     }
@@ -1426,28 +1109,22 @@ void *GuiWidgetImg(lv_obj_t *parent, cJSON *json)
 {
     lv_obj_t *obj = lv_img_create(parent);
     cJSON *item = cJSON_GetObjectItem(json, "img_src");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_img_set_src(obj, GetImgSrc(item->valuestring));
-    }
-    else
-    {
+    } else {
         lv_img_set_src(obj, &imgSwitch);
         lv_obj_align(obj, LV_ALIGN_RIGHT_MID, -24, 0);
     }
 
     item = cJSON_GetObjectItem(json, "cb");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_obj_add_event_cb(obj, GuiTemplateEventCbGet(item->valuestring), LV_EVENT_CLICKED, NULL);
     }
 
     cJSON *array = cJSON_GetObjectItem(json, "default");
-    if (array != NULL)
-    {
+    if (array != NULL) {
         int i = 0;
-        for (cJSON *iter = array->child; iter != NULL; iter = iter->next)
-        {
+        for (cJSON *iter = array->child; iter != NULL; iter = iter->next) {
             lv_obj_t *parent = lv_obj_get_parent(obj);
             lv_obj_t *child = lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) + iter->valueint);
             g_defaultVector[i++] = child;
@@ -1455,11 +1132,9 @@ void *GuiWidgetImg(lv_obj_t *parent, cJSON *json)
     }
 
     array = cJSON_GetObjectItem(json, "hidden");
-    if (array != NULL)
-    {
+    if (array != NULL) {
         int i = 0;
-        for (cJSON *iter = array->child; iter != NULL; iter = iter->next)
-        {
+        for (cJSON *iter = array->child; iter != NULL; iter = iter->next) {
             lv_obj_t *parent = lv_obj_get_parent(obj);
             lv_obj_t *child = lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) + iter->valueint);
             g_hiddenVector[i++] = child;
@@ -1505,21 +1180,18 @@ void *GuiWidgetTabViewChild(lv_obj_t *parent, cJSON *json)
     lv_obj_set_width(tab_btns, 200);
 
     item = cJSON_GetObjectItem(json, "font");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         const lv_font_t *font = GetLvglTextFont(item->valuestring);
         lv_obj_set_style_text_font(obj, font, LV_STATE_DEFAULT | LV_PART_MAIN);
     }
 
     item = cJSON_GetObjectItem(json, "text_color");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_obj_set_style_text_color(obj, lv_color_hex(item->valueint), LV_PART_MAIN | LV_STATE_DEFAULT);
     }
 
     item = cJSON_GetObjectItem(json, "opa");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         lv_obj_set_style_text_opa(obj, item->valueint, LV_PART_MAIN | LV_STATE_DEFAULT);
     }
 
@@ -1533,76 +1205,52 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
 {
     lv_obj_t *obj = NULL;
     cJSON *item = cJSON_GetObjectItem(json, "type");
-    if (item == NULL)
-    {
+    if (item == NULL) {
         item = cJSON_GetObjectItem(json, "table");
-        if (item != NULL)
-        {
+        if (item != NULL) {
             char typeBuf[16];
             g_analyzeArray[g_reMapIndex].typeFunc(typeBuf, g_totalData);
             item = cJSON_GetObjectItem(item, typeBuf);
-            if (item != NULL)
-            {
+            if (item != NULL) {
                 return GuiWidgetFactoryCreate(parent, item);
             }
-        }
-        else
-        {
+        } else {
             return NULL;
         }
     }
     const char *type = item->valuestring;
     printf("type = %s\n", type);
-    if (!type)
-    {
+    if (!type) {
         return NULL;
     }
 
     item = cJSON_GetObjectItem(json, "exist_func");
-    if (item != NULL)
-    {
+    if (item != NULL) {
         GetObjStateFunc func = GuiTemplateStateFuncGet(item->valuestring);
-        if (!func(NULL, g_totalData))
-        {
+        if (!func(NULL, g_totalData)) {
             return NULL;
         }
     }
 
-    if (0 == strcmp(type, "list"))
-    {
+    if (0 == strcmp(type, "list")) {
         GuiWidgetList(parent, json);
         return NULL;
     }
-    if (0 == strcmp(type, "container"))
-    {
+    if (0 == strcmp(type, "container")) {
         obj = GuiWidgetContainer(parent, json);
-    }
-    else if (0 == strcmp(type, "img"))
-    {
+    } else if (0 == strcmp(type, "img")) {
         obj = GuiWidgetImg(parent, json);
-    }
-    else if (0 == strcmp(type, "label"))
-    {
+    } else if (0 == strcmp(type, "label")) {
         obj = GuiWidgetLabel(parent, json);
-    }
-    else if (0 == strcmp(type, "table"))
-    {
+    } else if (0 == strcmp(type, "table")) {
         obj = GuiWidgetTable(parent, json);
-    }
-    else if (0 == strcmp(type, "tabview"))
-    {
+    } else if (0 == strcmp(type, "tabview")) {
         obj = GuiWidgetTabView(parent, json);
-    }
-    else if (0 == strcmp(type, "tabview_child"))
-    {
+    } else if (0 == strcmp(type, "tabview_child")) {
         obj = GuiWidgetTabViewChild(parent, json);
-    }
-    else if (0 == strcmp(type, "custom_container"))
-    {
+    } else if (0 == strcmp(type, "custom_container")) {
         obj = GuiWidgetCustomContainer(parent, json);
-    }
-    else
-    {
+    } else {
         printf("json type is %s\n", type);
         return NULL;
     }
@@ -1618,8 +1266,7 @@ void *GuiTemplateOpenPage(GuiRemapViewType index)
 #define JSON_MAX_LEN (1024 * 100)
     char buf[JSON_MAX_LEN];
 
-    if (LV_FS_RES_OK != lv_fs_open(&fd, g_analyzeArray[index].config, LV_FS_MODE_RD))
-    {
+    if (LV_FS_RES_OK != lv_fs_open(&fd, g_analyzeArray[index].config, LV_FS_MODE_RD)) {
         printf("lv_fs_open failed %s\n", g_analyzeArray[index].config);
         return NULL;
     }
@@ -1628,15 +1275,12 @@ void *GuiTemplateOpenPage(GuiRemapViewType index)
     buf[size] = '\0';
 #endif
     uint32_t i = 0;
-    for (i = 0; i < NUMBER_OF_ARRAYS(g_analyzeArray); i++)
-    {
-        if (index == g_analyzeArray[i].index)
-        {
+    for (i = 0; i < NUMBER_OF_ARRAYS(g_analyzeArray); i++) {
+        if (index == g_analyzeArray[i].index) {
             TransactionParseResult_DisplayTx *result = NULL;
             result = (TransactionParseResult_DisplayTx *)(g_analyzeArray[i].func());
 #ifndef COMPILE_SIMULATOR
-            if ((result == NULL) || (result->error_code != 0) || (result->data == NULL))
-            {
+            if ((result == NULL) || (result->error_code != 0) || (result->data == NULL)) {
                 printf("remap view type index is : %d\r\n", index);
                 printf("Get Parsed QrData failed\r\n");
                 return NULL;
@@ -1649,8 +1293,7 @@ void *GuiTemplateOpenPage(GuiRemapViewType index)
 #else
             cJSON *paramJson = cJSON_Parse(g_analyzeArray[i].config);
 #endif
-            if (paramJson == NULL)
-            {
+            if (paramJson == NULL) {
                 printf("cJSON_Parse failed\n");
 #ifdef COMPILE_SIMULATOR
                 lv_fs_close(&fd);
@@ -1670,8 +1313,7 @@ void *GuiTemplateOpenPage(GuiRemapViewType index)
 
 GuiRemapViewType ViewTypeReMap(uint8_t viewType)
 {
-    switch (viewType)
-    {
+    switch (viewType) {
     case BtcNativeSegwitTx:
     case BtcSegwitTx:
     case BtcLegacyTx:
@@ -1733,15 +1375,11 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
     lv_obj_t *line = (lv_obj_t *)GuiCreateLine(g_imgCont, points, 2);
     lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, 64);
 
-    for (int i = 0; i < 2; i++)
-    {
+    for (int i = 0; i < 2; i++) {
         lv_obj_t *tabChild;
-        if (i == 0)
-        {
+        if (i == 0) {
             tabChild = lv_tabview_add_tab(tabView, "Overview");
-        }
-        else if (i == 1)
-        {
+        } else if (i == 1) {
             tabChild = lv_tabview_add_tab(tabView, "Details");
         }
         // lv_obj_set_size(tabChild, 408, 530);
@@ -1761,15 +1399,11 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
 
         int childCnt = lv_obj_get_child_cnt(g_analyzeTabview.obj[i]);
         int yOffset = 12;
-        for (int j = 0; j < childCnt; j++)
-        {
+        for (int j = 0; j < childCnt; j++) {
             lv_obj_t *child = lv_obj_get_child(g_analyzeTabview.obj[i], j);
-            if (lv_obj_get_child_cnt(child) == 0)
-            {
+            if (lv_obj_get_child_cnt(child) == 0) {
                 lv_obj_align(child, LV_ALIGN_DEFAULT, 0, yOffset);
-            }
-            else
-            {
+            } else {
                 lv_obj_align(child, LV_ALIGN_TOP_MID, 0, yOffset);
             }
             yOffset = yOffset + lv_obj_get_content_height(child) + 16;
@@ -1783,16 +1417,14 @@ void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
     g_tableView = NULL;
     g_analyzeTabview.tabviewIndex = 0;
     g_reMapIndex = ViewTypeReMap(index);
-    if (g_reMapIndex == REMAPVIEW_BUTT)
-    {
+    if (g_reMapIndex == REMAPVIEW_BUTT) {
         return NULL;
     }
     g_viewTypeIndex = index;
     g_templateContainer = (lv_obj_t *)GuiCreateContainerWithParent(parent, 480, 542);
     lv_obj_align(g_templateContainer, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_scrollbar_mode(g_templateContainer, LV_SCROLLBAR_MODE_OFF);
-    if (GuiTemplateOpenPage(g_reMapIndex) == NULL)
-    {
+    if (GuiTemplateOpenPage(g_reMapIndex) == NULL) {
         lv_obj_del(g_templateContainer);
         return NULL;
     }
@@ -1800,8 +1432,7 @@ void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
     //     lv_obj_del(g_templateContainer);
     //     return NULL;
     // }
-    if (g_tableView == NULL)
-    {
+    if (g_tableView == NULL) {
         return g_templateContainer;
     }
     GuiAnalyzeViewInit(parent);
@@ -1815,10 +1446,8 @@ void GuiTemplateClosePage(void)
     //     delete g_pageCrypto->container;
     //     g_pageCrypto = NULL;
     // }
-    for (uint32_t i = 0; i < NUMBER_OF_ARRAYS(g_analyzeArray); i++)
-    {
-        if (g_reMapIndex == g_analyzeArray[i].index)
-        {
+    for (uint32_t i = 0; i < NUMBER_OF_ARRAYS(g_analyzeArray); i++) {
+        if (g_reMapIndex == g_analyzeArray[i].index) {
             g_analyzeArray[i].freeFunc();
         }
     }

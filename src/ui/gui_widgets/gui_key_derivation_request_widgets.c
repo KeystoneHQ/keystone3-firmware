@@ -7,8 +7,7 @@
 #include "gui_button.h"
 #include "gui_hintbox.h"
 
-typedef struct KeyDerivationWidget
-{
+typedef struct KeyDerivationWidget {
     uint8_t currentTile;
     PageWidget_t *pageWidget;
     lv_obj_t *tileView;
@@ -16,8 +15,7 @@ typedef struct KeyDerivationWidget
     lv_obj_t *qrCode;
 } KeyDerivationWidget_t;
 
-typedef enum
-{
+typedef enum {
     TILE_APPROVE,
     TILE_QRCODE,
 
@@ -65,12 +63,9 @@ void GuiKeyDerivationRequestInit()
     SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
     lv_obj_t *tileView = lv_tileview_create(g_keyDerivationTileView.cont);
     lv_obj_clear_flag(tileView, LV_OBJ_FLAG_SCROLLABLE);
-    if (GuiDarkMode())
-    {
+    if (GuiDarkMode()) {
         lv_obj_set_style_bg_color(tileView, BLACK_COLOR, LV_PART_MAIN);
-    }
-    else
-    {
+    } else {
         lv_obj_set_style_bg_color(tileView, WHITE_COLOR, LV_PART_MAIN);
     }
     lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR & LV_STATE_SCROLLED);
@@ -98,8 +93,7 @@ void GuiKeyDerivationRequestRefresh()
 void GuiKeyDerivationRequestNextTile()
 {
     g_keyDerivationTileView.currentTile++;
-    switch (g_keyDerivationTileView.currentTile)
-    {
+    switch (g_keyDerivationTileView.currentTile) {
     case TILE_QRCODE:
         SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, OnReturnHandler, NULL);
         break;
@@ -111,8 +105,7 @@ void GuiKeyDerivationRequestNextTile()
 void GuiKeyDerivationRequestPrevTile()
 {
     g_keyDerivationTileView.currentTile--;
-    switch (g_keyDerivationTileView.currentTile)
-    {
+    switch (g_keyDerivationTileView.currentTile) {
     case TILE_APPROVE:
         SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
         GuiAnimatingQRCodeDestroyTimer();
@@ -174,8 +167,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
 {
     CSliceFFI_ExtendedPublicKey keys;
     ExtendedPublicKey xpubs[24];
-    for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++)
-    {
+    for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
         KeyDerivationSchema schema = g_callData->key_derivation->schemas->data[i];
         char* xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(schema.key_path));
         xpubs[i].path = schema.key_path;
@@ -244,8 +236,7 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
     lv_obj_t *line;
     static lv_point_t points[2] = {{0, 0}, {360, 0}};
 
-    for (size_t i = 0; i < g_response->data->key_derivation->schemas->size; i++)
-    {
+    for (size_t i = 0; i < g_response->data->key_derivation->schemas->size; i++) {
         cont = GuiCreateContainerWithParent(pathCont, 408, 102);
         lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 0, 102 * i);
         lv_obj_set_style_bg_opa(cont, LV_OPA_0, LV_PART_MAIN);
@@ -255,8 +246,7 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
         label = GuiCreateIllustrateLabel(cont, g_response->data->key_derivation->schemas->data[i].key_path);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56);
-        if (i > 0)
-        {
+        if (i > 0) {
             line = GuiCreateLine(cont, points, 2);
             lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 101);
         }
@@ -321,11 +311,10 @@ static void GuiCreateQRCodeWidget(lv_obj_t *parent)
 static void OnApproveHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
-        #ifndef COMPILE_SIMULATOR
+    if (code == LV_EVENT_CLICKED) {
+#ifndef COMPILE_SIMULATOR
         GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
-        #endif
+#endif
         GuiKeyDerivationRequestNextTile();
     }
 }
@@ -333,8 +322,7 @@ static void OnApproveHandler(lv_event_t *e)
 static void OnReturnHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GuiKeyDerivationRequestPrevTile();
     }
 }

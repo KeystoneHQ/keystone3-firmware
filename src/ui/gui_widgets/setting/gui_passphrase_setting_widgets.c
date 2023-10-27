@@ -115,7 +115,7 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent)
     lv_obj_set_align(ta, LV_ALIGN_CENTER);
     lv_obj_set_size(ta, 352, 60);
     lv_textarea_set_password_mode(ta, true);
-    lv_textarea_set_placeholder_text(ta, _("Input passphrase"));
+    lv_textarea_set_placeholder_text(ta, _("passphrase_enter_input"));
     lv_obj_set_style_bg_color(ta, BLACK_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_color(ta, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_border_opa(ta, LV_OPA_0, LV_PART_MAIN);
@@ -141,7 +141,7 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent)
     lv_obj_set_align(repeatTa, LV_ALIGN_CENTER);
     lv_obj_set_size(repeatTa, 352, 60);
     lv_textarea_set_password_mode(repeatTa, true);
-    lv_textarea_set_placeholder_text(repeatTa, _("Repeat passphrase"));
+    lv_textarea_set_placeholder_text(repeatTa, _("passphrase_enter_repeat"));
     lv_obj_set_style_bg_color(repeatTa, BLACK_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_color(repeatTa, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_border_opa(repeatTa, LV_OPA_0, LV_PART_MAIN);
@@ -160,13 +160,13 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent)
     g_setPassPhraseKb = GuiCreateFullKeyBoard(parent, UpdatePassPhraseHandler, KEY_STONE_FULL_L, NULL);
     GuiSetKeyBoardMinTaLen(g_setPassPhraseKb, 0);
     GuiSetFullKeyBoardTa(g_setPassPhraseKb, ta);
-    lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("Passphrase does not match"));
+    lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("passphrase_error_not_match"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 304 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
     g_passphraseWidget.errLabel = label;
 
-    label = GuiCreateIllustrateLabel(parent, _("input length cannot exceed 128 characters"));
+    label = GuiCreateIllustrateLabel(parent, _("passphrase_error_too_long"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 415 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);

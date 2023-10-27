@@ -160,7 +160,7 @@ static void CloseCurrentPage(lv_event_t *e)
 
 static void GuiPassphraseOpenQRCodeHintBox()
 {
-    GuiQRCodeHintBoxOpen("https://keyst.one/t/3rd/passphrase", "What is Passphrase", "https://keyst.one/t/3rd/passphrase");
+    GuiQRCodeHintBoxOpen("https://keyst.one/t/3rd/passphrase", _("passphrase_learn_more_title"), "https://keyst.one/t/3rd/passphrase");
 }
 
 static void OpenPassphraseQrCodeHandler(lv_event_t *e)

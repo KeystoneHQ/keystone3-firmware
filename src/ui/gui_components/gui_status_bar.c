@@ -97,7 +97,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_ETERNL, "Connect Eternl Wallet", &walletEternl},
     {WALLET_LIST_BLUE, "Connect BlueWallet", &walletBluewallet},
     {WALLET_LIST_SUB, "Connect SubWallet", &walletSubwallet},
-    {WALLET_LIST_SOLFARE, "Connect Solflare Wallet", &walletSolflare},
+    {WALLET_LIST_SOLFARE, "Connect Solflare", &walletSolflare},
     {WALLET_LIST_RABBY, "Connect Rabby", &walletRabby},
     {WALLET_LIST_SAFE, "Connect Safe", &walletSafe},
     {WALLET_LIST_BLOCK_WALLET, "Connect Block Wallet", &walletBlockWallet},

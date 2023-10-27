@@ -589,51 +589,48 @@ static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
     g_utxoReceiveWidgets.rightBtnImg = img;
 }
 
-static void Highlight(AddressDataItem_t *item, uint8_t highlightStart, uint8_t highlightEnd, char *coloredAddress, size_t bufferSize)
+static void Highlight(char *address, uint8_t highlightStart, uint8_t highlightEnd, char *coloredAddress)
 {
-    if (item == NULL || coloredAddress == NULL || highlightStart > highlightEnd || highlightEnd > strlen(item->address))
+    uint8_t addressLength = strlen(address);
+    if (address == NULL || coloredAddress == NULL || highlightStart > highlightEnd || highlightEnd > addressLength)
     {
         return;
     }
 
-    char beforeHighlight[128];
-    char highlight[128];
-    char afterHighlight[128];
+    char beforeHighlight[addressLength];
+    char highlight[addressLength];
+    char afterHighlight[addressLength];
 
-    strncpy(beforeHighlight, item->address, highlightStart);
+    strncpy(beforeHighlight, address, highlightStart);
     beforeHighlight[highlightStart] = '\0';
-    strncpy(highlight, &item->address[highlightStart], highlightEnd - highlightStart);
+    strncpy(highlight, &address[highlightStart], highlightEnd - highlightStart);
     highlight[highlightEnd - highlightStart] = '\0';
-    strcpy(afterHighlight, &item->address[highlightEnd]);
-
-    if (bufferSize < strlen(beforeHighlight) + strlen(highlight) + strlen(afterHighlight) + 10)
-    {
-        return;
-    }
+    strcpy(afterHighlight, &address[highlightEnd]);
 
     sprintf(coloredAddress, "%s#F5870A %s#%s", beforeHighlight, highlight, afterHighlight);
 }
 
 static void RefreshDefaultAddress(void)
 {
-    char string[128];
+    char address[128];
+    char highlightAddress[128];
+
     AddressDataItem_t addressDataItem;
 
     ChainType chainType;
     chainType = GetChainTypeByIndex(g_addressSettingsIndex[g_currentAccountIndex]);
 
     uint8_t highlightEnd = chainType == XPUB_TYPE_BTC_NATIVE_SEGWIT ? 3 : 1;
-    char buffer[137];
     ModelGetUtxoAddress(0, &addressDataItem);
-    Highlight(&addressDataItem, 0, highlightEnd, buffer, 137);
-    AddressLongModeCut(string, buffer);
-    lv_label_set_text(g_addressLabel[0], string);
+    AddressLongModeCut(address, addressDataItem.address);
+    Highlight(address, 0, highlightEnd, highlightAddress);
+    lv_label_set_text(g_addressLabel[0], highlightAddress);
     lv_label_set_recolor(g_addressLabel[0], true);
 
     ModelGetUtxoAddress(1, &addressDataItem);
-    Highlight(&addressDataItem, 0, highlightEnd, buffer, 137);
-    AddressLongModeCut(string, buffer);
-    lv_label_set_text(g_addressLabel[1], string);
+    AddressLongModeCut(address, addressDataItem.address);
+    Highlight(address, 0, highlightEnd, highlightAddress);
+    lv_label_set_text(g_addressLabel[1], highlightAddress);
     lv_label_set_recolor(g_addressLabel[1], true);
 }
 

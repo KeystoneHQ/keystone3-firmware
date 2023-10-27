@@ -479,7 +479,6 @@ void GuiQrCodeVerifyPasswordSuccess(void)
     GUI_DEL_OBJ(g_fingerSingContainer)
     GUI_DEL_OBJ(g_scanErrorHintBox)
     g_qrCodeWidgetView.analysis = NULL;
-    GUI_DEL_OBJ(g_keyboardWidget->keyboardHintBox);
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     GuiQrCodeShowQrMessage(g_qrCodeWidgetView.cont);
 }

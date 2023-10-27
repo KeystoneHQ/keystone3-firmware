@@ -113,8 +113,8 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                 sha256((struct sha256 *)tempHash, mnemonic, strlen(mnemonic));
                 for (int i = 0; i < mkb->currentSlice; i++) {
                     if (!memcmp(tempHash, g_sliceSha256[i], 32)) {
-                        g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgFailed, _("import_wallet_duplicated_share_title"),
-                                          _("import_wallet_duplicated_share_desc"), NULL, DARK_GRAY_COLOR, _("OK"), DARK_GRAY_COLOR);
+                        g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgFailed, _("import_wallet_ssb_incorrect_title"),
+                                          _("import_wallet_ssb_repeat_desc"), NULL, DARK_GRAY_COLOR, _("OK"), DARK_GRAY_COLOR);
                         lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeHintBox);
                         lv_obj_add_event_cb(rightBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
                         isSame = true;

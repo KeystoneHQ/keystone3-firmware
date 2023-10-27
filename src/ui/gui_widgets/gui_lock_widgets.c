@@ -25,6 +25,7 @@
 #include "presetting.h"
 #include "assert.h"
 #include "screen_manager.h"
+#include "gui_passphrase_widgets.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "assert.h"

@@ -136,7 +136,7 @@ void FingerSignHandler(lv_event_t *e)
         } else {
             g_verifyFingerCont = GuiCreateHintBox(lv_scr_act(), 480, 428, true);
             lv_obj_t *cont = g_verifyFingerCont;
-            lv_obj_t *label = GuiCreateIllustrateLabel(cont, "Verify Fingerprint");
+            lv_obj_t *label = GuiCreateIllustrateLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint"));
             lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
             lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 402);
 
@@ -154,7 +154,7 @@ void FingerSignHandler(lv_event_t *e)
             g_imgSignFinger = GuiCreateImg(cont, &imgYellowFinger);
             lv_obj_align(g_imgSignFinger, LV_ALIGN_BOTTOM_MID, 0, -178);
 
-            g_labelSignFailed = GuiCreateLabel(cont, "Verify Failed. Please try Again!");
+            g_labelSignFailed = GuiCreateLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint_failed"));
             lv_obj_set_style_text_color(g_labelSignFailed, RED_COLOR, LV_PART_MAIN);
             lv_obj_add_flag(g_labelSignFailed, LV_OBJ_FLAG_HIDDEN);
             lv_obj_align(g_labelSignFailed, LV_ALIGN_BOTTOM_MID, 0, -100);
@@ -207,13 +207,13 @@ void GuiWalletFingerAddFpWidget(lv_obj_t *parent, bool success)
 
     if (success) {
         img = GuiCreateImg(parent, &imgSuccess);
-        label = GuiCreateLittleTitleLabel(parent, "Add Successfully");
-        btn = GuiCreateBtn(parent, "Done");
+        label = GuiCreateLittleTitleLabel(parent, _("fingerprint_add_success"));
+        btn = GuiCreateBtn(parent, _("Done"));
     } else {
         img = GuiCreateImg(parent, &imgFailed);
-        label = GuiCreateLittleTitleLabel(parent, "Failed to Add");
-        btn = GuiCreateBtn(parent, "Try Again");
-        desc = GuiCreateNoticeLabel(parent, "Failed to add fingerprint, please use another finger and try again");
+        label = GuiCreateLittleTitleLabel(parent, _("fingerprint_add_failed"));
+        btn = GuiCreateBtn(parent, _("try_again"));
+        desc = GuiCreateNoticeLabel(parent, _("fingerprint_add_failed_use_another"));
         lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -404);
         lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     }
@@ -273,7 +273,7 @@ void GuiSettingFingerRegisterFail(void *param)
         printf("errCode = %#x\n", errCode);
         lv_obj_set_style_arc_color(g_arcProgress, RED_COLOR, LV_PART_INDICATOR);
         if (errCode == 0x93) { // finger registered
-            text = "Duplicate finger, Please change the other finger.";
+            text = _("fingerprint_add_failed_duplicate");
         } else {
             text = (char *)GetFpErrorMessage(errCode);
         }
@@ -287,10 +287,10 @@ void GuiWalletFingerAddWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
     g_fpAddCont = parent;
     lv_obj_t *label = NULL;
-    label = GuiCreateTitleLabel(parent, "Add Fingerprint");
+    label = GuiCreateTitleLabel(parent, _("fingerprint_add"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
 
-    label = GuiCreateNoticeLabel(parent, "Place your finger on the sensor and remove it when you feel a vibration");
+    label = GuiCreateNoticeLabel(parent, _("fingerprint_add_desc"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 72);
 
     g_imgFinger = GuiCreateImg(parent, &imgWhiteFinger);
@@ -357,7 +357,7 @@ void GuiFingerMangerStructureCb(void *obj, void *param)
     if (lv_obj_get_child_cnt(container) > 0) {
         lv_obj_clean(container);
     }
-    label = GuiCreateTextLabel(container, "Unlock Device");
+    label = GuiCreateTextLabel(container, _("fingerprint_unlock_device"));
     g_fpUnlockSwitch = GuiCreateSwitch(container);
 
     if (GetFingerUnlockFlag() == 1) {
@@ -387,7 +387,7 @@ void GuiFingerMangerStructureCb(void *obj, void *param)
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, curPositionY);
     curPositionY += 96;
 
-    label = GuiCreateTextLabel(container, "Sign Transactions");
+    label = GuiCreateTextLabel(container, _("fingerprint_sign_tx"));
     g_fpSingerSwitch = GuiCreateSwitch(container);
     if (GetFingerSignFlag() == 1) {
         lv_obj_add_state(g_fpSingerSwitch, LV_STATE_CHECKED);
@@ -430,7 +430,7 @@ void GuiFingerMangerStructureCb(void *obj, void *param)
             printf("text id = %d\n", textId);
             fpRegisteredNum++;
             label = GuiCreateTextLabel(container, "");
-            lv_label_set_text_fmt(label, "Finger %d", textId);
+            lv_label_set_text_fmt(label, _("fingerprint_nth"), textId);
             imgArrow = GuiCreateImg(container, &imgArrowRight);
 
             table[0].obj = label;
@@ -443,13 +443,13 @@ void GuiFingerMangerStructureCb(void *obj, void *param)
         }
     }
     if (fpRegisteredNum < 3) {
-        label = GuiCreateTextLabel(container, "+ Add Fingerprint");
+        label = GuiCreateTextLabel(container, _("fingerprint_add_btn"));
         lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
         table[0].obj = label;
         button = GuiCreateButton(container, 456, 84, table, 1, WalletSettingHandler, &walletSetting[0]);
         lv_obj_align(button, LV_ALIGN_DEFAULT, 12, curPositionY);
     } else {
-        label = GuiCreateNoticeLabel(container, "You can add up to 3 fingerprints");
+        label = GuiCreateNoticeLabel(container, _("fingerprint_up_to_3"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, curPositionY);
     }
 }
@@ -463,11 +463,11 @@ void GuiWalletFingerDeleteWidget(lv_obj_t *parent)
     lv_obj_align(imgFinger, LV_ALIGN_BOTTOM_MID, 0, -548);
 
     char buf[32] = {0};
-    sprintf(buf, "Finger %d", GetFingerRegisteredStatus(g_deleteFingerIndex));
+    sprintf(buf, _("fingerprint_nth"), GetFingerRegisteredStatus(g_deleteFingerIndex));
     lv_obj_t *label = GuiCreateLittleTitleLabel(parent, buf);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -476);
 
-    label = GuiCreateTextLabel(parent, "Remove Fingerprint");
+    label = GuiCreateTextLabel(parent, _("fingerprint_remove"));
     lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
     GuiButton_t table[] = {
         {
@@ -611,9 +611,9 @@ static void FingerDeleteDialogsHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         uint8_t *fingerIndex = lv_event_get_user_data(e);
         char buf[50] = {0};
-        lv_snprintf(buf, sizeof(buf), "Are you sure to remove fingerprint%d?", GetFingerRegisteredStatus(*fingerIndex));
-        lv_obj_t *cont = GuiCreateResultHintbox(lv_scr_act(), 386, &imgWarn, "Remove Fingerprint?",
-                                                buf, "Cancel", DARK_GRAY_COLOR, "Remove", RED_COLOR);
+        lv_snprintf(buf, sizeof(buf), _("fingerprint_nth_remove_desc"), GetFingerRegisteredStatus(*fingerIndex));
+        lv_obj_t *cont = GuiCreateResultHintbox(lv_scr_act(), 386, &imgWarn, _("fingerprint_nth_remove_title"),
+                                                buf, _("Cancel"), DARK_GRAY_COLOR, _("Remove"), RED_COLOR);
         lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(cont);
         lv_obj_add_event_cb(leftBtn, FingerCancelDeleteHandler, LV_EVENT_CLICKED, cont);
 

@@ -12,9 +12,9 @@ static const ErrCodeDesc_t g_fpFaults[] = {
     {ERR_FP_NUMBER_OF_FINGER_ZERO, "Number of finger zero"},
     {ERR_FP_ALGORITHMIC_PROCESSING_FAILURE, "Algorithmic processing failure"},
 
-    {ERR_FP_AREA_TOO_WET, "Moisture detected. Please wipe your finger\nand try again."},
-    {ERR_FP_RECORDING_AREA_SMALL, "Partial fingerprint detected. Please try\nagain"},
-    {ERR_FP_ARE_POOR_QUALITY, "Fingerprint unclear. Please restart the\nprocess and use a different finger to try\nagain."},
+    {ERR_FP_AREA_TOO_WET, "Moisture detected. Please wipe your finger\nand try again"},
+    {ERR_FP_RECORDING_AREA_SMALL, "Partial fingerprint detected, please try\nagain"},
+    {ERR_FP_ARE_POOR_QUALITY, "Fingerprint unclear, please restart process \nand use different finger to try again"},
     {ERR_FP_RECORDING_AREA_OVERLAPS_TOO_MUCH, "Duplicate area, please adjust your\nfinger's position slightly"},
     {ERR_FP_TOO_MUCH_WEIGHT_ON_RECORDING_AREA, "Too much weight on recording area"},
 
@@ -31,7 +31,7 @@ static const ErrCodeDesc_t g_fpFaults[] = {
     {ERR_FP_NON_EXISTENT_FINGERPRINT, "Non existent fingerprint"},
     {ERR_FP_AES_KEY_ALREADY_EXISTS, "AES key already exists"},
 
-    {ERR_FP_REPEAT_FINGER, "Duplicate finger, Please change another\nfinger"},
+    {ERR_FP_REPEAT_FINGER, "Duplicate finger, please use a\ndifferent finger"},
 };
 
 const char *GetFpErrorMessage(FingerError_Code errCode)

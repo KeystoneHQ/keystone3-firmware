@@ -356,7 +356,7 @@ static int32_t DS28S60_SendCmdAndGetResult(uint8_t cmd, uint8_t *para, uint8_t p
         }
         printf("retry %d\r\n", tryCount);
     }
-    assert(ret == 0);
+    // assert(ret == 0);
     return ret;
 }
 

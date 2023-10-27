@@ -260,6 +260,7 @@ static void GuiShareCustodianWidget(lv_obj_t *parent)
 
     label = GuiCreateIllustrateLabel(parent, _("shamir_phrase_custodian_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    lv_label_set_recolor(label, true);
     g_custodianTile.noticeLabel = label;
 
     lv_obj_t *cont = GuiCreateHintBoxWithoutTop(parent, 480, 452);

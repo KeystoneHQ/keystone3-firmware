@@ -143,9 +143,9 @@ static const PathItem_t g_ethPaths[] = {
     {"Ledger Legacy",       "",     "m/44'/60'/0'"  },
 };
 static const PathItem_t g_solPaths[] = {
-    {"Solflare",                "",     "m/44'/501'"  },
-    {"Sollet / MathWallet",     "",     "m/44'/501'"  },
-    {"Phantom / Exodus",        "",     "m/44'/501'"  },
+    {"Account-based Path",                "",     "m/44'/501'"  },
+    {"Single Account Path",     "",     "m/44'/501'"  },
+    {"Sub-account Path",        "",     "m/44'/501'"  },
 };
 static lv_obj_t *g_addressLabel[2];
 static lv_obj_t *g_addressLabelOrder;
@@ -514,10 +514,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     g_derivationPathDescLabel = label;
     prevLabel = label;
 
-    char *desc = "Address";
-    if (!(g_chainCard == HOME_WALLET_CARD_SOL && g_solPathIndex[g_currentAccountIndex] == 1)) {
-        desc = _("derivation_path_address_eg");
-    }
+    char *desc = _("derivation_path_address_eg");
     label = GuiCreateNoticeLabel(egCont, desc);
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);

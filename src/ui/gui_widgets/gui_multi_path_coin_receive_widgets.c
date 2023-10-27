@@ -514,10 +514,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     g_derivationPathDescLabel = label;
     prevLabel = label;
 
-    char *desc = "Address";
-    if (!(g_chainCard == HOME_WALLET_CARD_SOL && g_solPathIndex[g_currentAccountIndex] == 1)) {
-        desc = _("derivation_path_address_eg");
-    }
+    char *desc = _("derivation_path_address_eg");
     label = GuiCreateNoticeLabel(egCont, desc);
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);

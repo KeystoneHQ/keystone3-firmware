@@ -19,7 +19,7 @@ pub fn get_network_by_chain_id(chain_id: &str) -> Result<String> {
     map.insert("osmosis", "Osmosis");
     map.insert("secret", "Secret Network");
     map.insert("akashnet", "Akash");
-    map.insert("crypto-org-chain-mainnet", "Crypto.org");
+    map.insert("crypto-org-chain-mainnet", "Cronos POS chain");
     map.insert("iov-mainnet", "Starname");
     map.insert("sifchain", "Sifchain");
     map.insert("shentu", "Shentu");

@@ -581,9 +581,10 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
         label = GuiCreateLabelWithFontAndTextColor(cont, string, g_defIllustrateFont, 0x919191);
         lv_label_set_recolor(label, true);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
-        line = GuiCreateLine(cont, points, 2);
-        lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * (i + 1));
-
+        if (i < 2){
+            line = GuiCreateLine(cont, points, 2);
+            lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * (i + 1));
+        }
         g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox = lv_btn_create(cont);
         lv_obj_set_size(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox, 408, 82);
         lv_obj_align(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox, LV_ALIGN_TOP_LEFT, 0, 10 + 102 * i);

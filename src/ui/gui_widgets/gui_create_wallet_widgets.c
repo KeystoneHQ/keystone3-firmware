@@ -152,7 +152,7 @@ static void OpenNoticeHandler(lv_event_t *e)
         lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgRedEye);
         lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 364);
         lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("single_backup_notice_title"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 424);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 460);
 
         img = GuiCreateImg(g_noticeHintBox, &imgClose);
         lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
@@ -160,7 +160,7 @@ static void OpenNoticeHandler(lv_event_t *e)
         lv_obj_align(img, LV_ALIGN_BOTTOM_RIGHT, -36, -425);
 
         label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_backup_notice_desc1"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 476);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 512);
 
         label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_backup_notice_desc2"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 578);

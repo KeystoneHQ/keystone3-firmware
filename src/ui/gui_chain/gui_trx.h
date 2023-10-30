@@ -2,6 +2,7 @@
 
 void GuiSetTrxUrData(void *data, bool multi);
 void *GuiGetTrxData(void);
+PtrT_TransactionCheckResult GuiGetTrxCheckResult(void);
 void FreeTrxMemory(void);
 void GetTrxValue(void *indata, void *param);
 void GetTrxMethod(void *indata, void *param);

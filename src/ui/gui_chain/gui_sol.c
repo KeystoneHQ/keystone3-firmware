@@ -94,6 +94,18 @@ void *GuiGetSolData(void)
 #endif
 }
 
+PtrT_TransactionCheckResult GuiGetSolCheckResult(void)
+{
+#ifndef COMPILE_SIMULATOR
+    uint8_t mfp[4];
+    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    GetMasterFingerPrint(mfp);
+    return solana_check(data,  mfp, sizeof(mfp));
+#else
+    return NULL;
+#endif
+}
+
 void *GuiGetSolMessageData(void)
 {
 #ifndef COMPILE_SIMULATOR
@@ -109,6 +121,7 @@ void *GuiGetSolMessageData(void)
         char pubkeyIndex = GetSolPublickeyIndex(path);
         char *pubKey = GetCurrentAccountPublicKey(pubkeyIndex);
         PtrT_TransactionParseResult_DisplaySolanaMessage parseResult = solana_parse_message(data, pubKey);
+        free_simple_response_c_char(path);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);

@@ -118,4 +118,8 @@ typedef struct {
         result = NULL;                                                  \
     }
 
+GuiRemapViewType ViewTypeReMap(uint8_t viewType);
+
+PtrT_TransactionCheckResult CheckScanResult(ViewType ViewType);
+
 #endif

@@ -48,6 +48,18 @@ void *GuiGetSuiData(void)
 #endif
 }
 
+PtrT_TransactionCheckResult GuiGetSuiCheckResult(void)
+{
+#ifndef COMPILE_SIMULATOR
+    uint8_t mfp[4];
+    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    GetMasterFingerPrint(mfp);
+    return sui_check_request(data, mfp, sizeof(mfp));
+#else
+    return NULL;
+#endif
+}
+
 void FreeSuiMemory(void)
 {
 #ifndef COMPILE_SIMULATOR

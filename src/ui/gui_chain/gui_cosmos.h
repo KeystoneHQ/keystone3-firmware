@@ -27,6 +27,7 @@ typedef enum {
 const char* GuiGetCosmosTxTypeName(CosmosMsgType type);
 void GuiSetCosmosUrData(void *data, bool multi);
 void *GuiGetCosmosData(void);
+PtrT_TransactionCheckResult GuiGetCosmosCheckResult(void);
 void FreeCosmosMemory(void);
 void GuiGetCosmosTmpType(void *indata, void *param);
 UREncodeResult *GuiGetCosmosSignQrCodeData(void);

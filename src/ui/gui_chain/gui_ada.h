@@ -7,7 +7,7 @@
 
 void GuiSetupAdaUrData(void *data, bool multi);
 void *GuiGetAdaData(void);
-
+PtrT_TransactionCheckResult GuiGetAdaCheckResult(void);
 void GetAdaNetwork(void *indata, void *param);
 void GetAdaTotalInput(void *indata, void *param);
 void GetAdaTotalOutput(void *indata, void *param);

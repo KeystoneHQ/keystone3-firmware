@@ -5,6 +5,7 @@
 
 void GuiSetAptosUrData(void *data, bool multi);
 void *GuiGetAptosData(void);
+PtrT_TransactionCheckResult GuiGetAptosCheckResult(void);
 void FreeAptosMemory(void);
 int GetAptosDetailLen(void *param);
 void GetAptosDetail(void *indata, void *param);

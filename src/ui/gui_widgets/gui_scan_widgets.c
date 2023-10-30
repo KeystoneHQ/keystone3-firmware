@@ -109,26 +109,17 @@ void GuiScanResult(bool result, void *param)
             ThrowError();
             return;
         }
-        // g_qrCodeWidgetView.analysis = GuiTemplateReload(g_qrCodeWidgetView.cont, g_qrcodeViewType);
-        // if (g_qrCodeWidgetView.analysis != NULL)
-        // {
-        //     g_fingerSignCount = 0;
-        //     if (IsMessageType(g_qrcodeViewType))
-        //     {
-        //         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_confirm_message"));
-        //     }
-        //     else
-        //     {
-        //         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
-        //     }
-        //     GuiCreateConfirmSlider(g_qrCodeWidgetView.cont, CheckSliderProcessHandler);
-        //     g_pagePhase = PAGE_PHASE_TRANSACTION_DETAIL;
-        //     SetPageLockScreen(true);
-        // }
-        // else
-        // {
+
+        PtrT_TransactionCheckResult checkResult = CheckScanResult(g_qrcodeViewType);
+        if (checkResult != NULL && checkResult->error_code == 0)
+        {
+            //todo jump tx detail
+
+        } else
+        {
             ThrowError();
-        // }
+        }
+        free_TransactionCheckResult(checkResult);
     }
     else
     {

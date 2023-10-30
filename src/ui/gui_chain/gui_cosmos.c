@@ -125,6 +125,19 @@ void *GuiGetCosmosData(void)
 #endif
 }
 
+PtrT_TransactionCheckResult GuiGetCosmosCheckResult(void)
+{
+#ifndef COMPILE_SIMULATOR
+    uint8_t mfp[4];
+    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    GetMasterFingerPrint(mfp);
+    URType urType = g_isMulti ? ((URParseMultiResult *)g_urResult)->ur_type : ((URParseResult *)g_urResult)->ur_type;
+    return cosmos_check_tx(data, urType, mfp, sizeof(mfp));
+#else
+    return NULL;
+#endif
+}
+
 void FreeCosmosMemory(void)
 {
 #ifndef COMPILE_SIMULATOR

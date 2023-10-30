@@ -553,6 +553,18 @@ void *GuiGetEthData(void)
     return g_parseResult;
 }
 
+PtrT_TransactionCheckResult GuiGetEthCheckResult(void)
+{
+#ifndef COMPILE_SIMULATOR
+    uint8_t mfp[4];
+    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    GetMasterFingerPrint(mfp);
+    return eth_check(data, mfp, sizeof(mfp));
+#else
+    return NULL;
+#endif
+}
+
 void GetEthTransType(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;

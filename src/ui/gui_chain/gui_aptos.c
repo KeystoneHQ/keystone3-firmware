@@ -51,6 +51,18 @@ void *GuiGetAptosData(void)
 #endif
 }
 
+PtrT_TransactionCheckResult GuiGetAptosCheckResult(void)
+{
+#ifndef COMPILE_SIMULATOR
+    uint8_t mfp[4];
+    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    GetMasterFingerPrint(mfp);
+    return aptos_check_request(data, mfp, sizeof(mfp));
+#else
+    return NULL;
+#endif
+}
+
 void FreeAptosMemory(void)
 {
 #ifndef COMPILE_SIMULATOR

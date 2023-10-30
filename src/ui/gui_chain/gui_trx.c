@@ -50,6 +50,18 @@ void *GuiGetTrxData(void)
 #endif
 }
 
+PtrT_TransactionCheckResult GuiGetTrxCheckResult(void)
+{
+#ifndef COMPILE_SIMULATOR
+    uint8_t mfp[4];
+    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    char *trxXpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
+    GetMasterFingerPrint(mfp);
+    return tron_check_companion_app(data, mfp, sizeof(mfp), trxXpub);
+#else
+    return NULL;
+#endif
+}
 void FreeTrxMemory(void)
 {
 #ifndef COMPILE_SIMULATOR

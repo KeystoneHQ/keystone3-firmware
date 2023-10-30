@@ -21,7 +21,6 @@ typedef void *(*GetCustomContainerFunc)(lv_obj_t *parent, void *g_totalData);
 
 void *GuiTemplateReload(lv_obj_t *parent, uint8_t index);
 void GuiTemplateClosePage(void);
-GuiRemapViewType ViewTypeReMap(uint8_t viewType);
 
 #ifdef __cplusplus
 }

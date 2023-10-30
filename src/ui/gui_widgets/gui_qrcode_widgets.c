@@ -275,7 +275,7 @@ static GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     return CHAIN_BUTT;
 }
 
-void CloseScanErrorDataHandler(lv_event_t *e)
+static void CloseScanErrorDataHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 

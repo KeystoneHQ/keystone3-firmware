@@ -122,6 +122,7 @@ void DelCurrCloseToSubtopViewHandler(lv_event_t *e)
             for (int i = g_deviceSetTileView.currentTile; i > 3; i--) {
                 GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
             }
+            g_noticeHintBox = NULL;
         } else {
             CloseToTargetTileView(g_deviceSetTileView.currentTile, DEVICE_SETTING_WALLET_SETTING);
             g_noticeHintBox = NULL;

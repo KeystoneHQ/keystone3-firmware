@@ -514,9 +514,16 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     g_derivationPathDescLabel = label;
     prevLabel = label;
 
-    char *desc = _("derivation_path_address_eg");
+    int gap = 4;
+    if (strlen(g_derivationPathDescs[GetPathIndex()]) == 0) {
+        egContHeight -= lv_obj_get_height(label);
+        lv_obj_set_height(label, 0);
+        gap = 0;
+    }
+
+    char *desc = _("derivation_path_address_eg");    
     label = GuiCreateNoticeLabel(egCont, desc);
-    lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, gap);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_obj_update_layout(label);
     egContHeight =  egContHeight + 4 + lv_obj_get_height(label);

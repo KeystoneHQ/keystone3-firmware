@@ -1,3 +1,24 @@
+## 1.1.0 (2023-10-31)
+
+### Features
+
+1. Added support for Solana blockchain
+2. Added support for SUI blockchain
+3. Added support for Aptos blockchain
+4. Updated currency icons display
+5. Improved the loading page
+6. Added BTC address example display
+
+### Improvement
+
+1. Refined text throughout the app
+
+### Bug Fixes
+
+1. Fixed an issue triggered when inserting an SD card in specific scenarios
+2. Improved battery curve and battery level display
+
+
 ## 1.0.4 (2023-10-08)
 
 ### Features

@@ -8,9 +8,13 @@
 4. Updated currency icons display
 5. Improved the loading page
 6. Added BTC address example display
-7. Refined text throughout the app
+
+### Improvement
+
+1. Refined text throughout the app
 
 ### Bug Fixes
+
 1. Fixed an issue triggered when inserting an SD card in specific scenarios
 2. Improved battery curve and battery level display
 

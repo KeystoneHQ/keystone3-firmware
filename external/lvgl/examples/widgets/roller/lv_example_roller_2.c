@@ -36,7 +36,7 @@ void lv_example_roller_2(void)
     lv_obj_add_event_cb(roller, event_handler, LV_EVENT_ALL, NULL);
     lv_roller_set_selected(roller, 2, LV_ANIM_OFF);
 
-    /*A roller on the middle with center aligned text, and (default) width*/
+    /*A roller on the middle with center aligned text, and auto (default) width*/
     roller = lv_roller_create(lv_scr_act());
     lv_roller_set_options(roller, opts, LV_ROLLER_MODE_NORMAL);
     lv_roller_set_visible_row_count(roller, 3);

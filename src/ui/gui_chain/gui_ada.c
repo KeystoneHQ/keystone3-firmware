@@ -205,6 +205,9 @@ void *GetAdaInputDetail(uint8_t *row, uint8_t *col, void *param)
                 {
                     strcpy(indata[i][j], tx->from->data[index].path);
                 }
+                else {
+                    memset(indata[i][j], 0, 128);
+                }
             }
         }
     }

@@ -410,7 +410,7 @@ impl ParsedCardanoTx {
             let hash = input.transaction_id().to_hex();
             let index = input.index();
             let m = context.utxos.iter().find(|v| {
-                hash.eq_ignore_ascii_case(&hex::encode(&v.transaction_hash)) & index.eq(&v.index)
+                hash.eq_ignore_ascii_case(&hex::encode(&v.transaction_hash)) && index.eq(&v.index)
             });
             match m {
                 //known utxo

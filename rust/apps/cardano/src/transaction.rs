@@ -103,9 +103,9 @@ mod test {
 
     extern crate std;
 
+    use crate::transaction::parse_tx;
     use std::println;
     use third_party::hex;
-    use crate::transaction::parse_tx;
 
     #[test]
     fn spike_transaction() {

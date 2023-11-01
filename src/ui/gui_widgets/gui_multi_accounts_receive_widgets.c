@@ -1168,22 +1168,8 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
 
 #endif
 
-void GuiResetCurrentMultiAccountsAddressIndex(void)
+void GuiResetCurrentMultiAccountsCache(void)
 {
     g_selectIndex[GetCurrentAccountIndex()] = 0;
-}
-
-void GuiResetCurrentMultiAccountsSelectedAccount(void)
-{
     g_selectedAccount[GetCurrentAccountIndex()] = 0;
-}
-
-void GuiResetAllMultiAccountsAddressIndex(void)
-{
-    memset(g_selectIndex, 0, sizeof(g_selectIndex));
-}
-
-void GuiResetAllMultiAccountsSelectedAccount(void)
-{
-    memset(g_selectedAccount, 0, sizeof(g_selectedAccount));
 }

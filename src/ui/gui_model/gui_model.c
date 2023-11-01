@@ -747,10 +747,12 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
             void GuiResetCurrentUtxoAddressIndex(void);
             void GuiResetCurrentEthAddressIndex(void);
             void GuiResetCurrentStandardAddressIndex(void);
+            void GuiResetCurrentMultiAccountsCache(void);
 
             GuiResetCurrentUtxoAddressIndex();
             GuiResetCurrentEthAddressIndex();
             GuiResetCurrentStandardAddressIndex();
+            GuiResetCurrentMultiAccountsCache();
         }
 
         uint8_t accountNum;

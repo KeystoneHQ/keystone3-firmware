@@ -410,7 +410,7 @@ impl ParsedCardanoTx {
             let hash = input.transaction_id().to_hex();
             let index = input.index();
             let m = context.utxos.iter().find(|v| {
-                hash.eq_ignore_ascii_case(&hex::encode(&v.transaction_hash)) & index.eq(&v.index)
+                hash.eq_ignore_ascii_case(&hex::encode(&v.transaction_hash)) && index.eq(&v.index)
             });
             match m {
                 //known utxo
@@ -515,7 +515,7 @@ impl ParsedCardanoTx {
                     let mut parsed_multi_assets = vec![];
                     let len = v.keys().len();
                     for _j in 0..len {
-                        let policy_id = v.keys().get(i);
+                        let policy_id = v.keys().get(_j);
                         let multi_assets = v.get(&policy_id);
                         if let Some(assets) = multi_assets {
                             let names = assets.keys();

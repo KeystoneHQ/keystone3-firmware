@@ -195,7 +195,7 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
     static uint32_t walletSetting = DEVICE_SETTING_ADD_WALLET_CREATE_OR_IMPORT;
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("Notice"));
+    lv_obj_t *label = GuiCreateTitleLabel(parent, _("wallet_settings_add_info_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *led = lv_led_create(parent);
@@ -204,26 +204,31 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
     lv_obj_set_size(led, 6, 6);
     lv_led_set_color(led, ORANGE_COLOR);
 
-    label = GuiCreateNoticeLabel(parent, _("Keystone supports at most 3 wallets"));
+    label = GuiCreateNoticeLabel(parent, _("wallet_settings_add_info_desc1"));
+    lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 228 - GUI_MAIN_AREA_OFFSET);
+    lv_label_set_recolor(label, true);
 
     led = lv_led_create(parent);
     lv_led_set_brightness(led, 150);
-    lv_obj_align(led, LV_ALIGN_DEFAULT, 36, 282 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align(led, LV_ALIGN_DEFAULT, 36, 312 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_size(led, 6, 6);
     lv_led_set_color(led, ORANGE_COLOR);
 
-    label = GuiCreateNoticeLabel(parent, _("You should set a different passcode for each wallet"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 270 - GUI_MAIN_AREA_OFFSET);
+    label = GuiCreateNoticeLabel(parent, _("wallet_settings_add_info_desc2"));
+    lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 300 - GUI_MAIN_AREA_OFFSET);
+    lv_label_set_recolor(label, true);
 
     led = lv_led_create(parent);
     lv_led_set_brightness(led, 150);
-    lv_obj_align(led, LV_ALIGN_DEFAULT, 36, 354 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align(led, LV_ALIGN_DEFAULT, 36, 384 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_size(led, 6, 6);
     lv_led_set_color(led, ORANGE_COLOR);
 
-    label = GuiCreateNoticeLabel(parent, _("For your security, we will not display the wallet list anywhere. The only way to switch wallets is to unlock the device with the corresponding passcode."));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 342 - GUI_MAIN_AREA_OFFSET);
+    label = GuiCreateNoticeLabel(parent, _("wallet_settings_add_info_desc3"));
+    lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 372 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *btn = GuiCreateBtn(parent, _("Got it (5)"));
     lv_obj_set_size(btn, 408, 66);
@@ -501,7 +506,7 @@ void GuiWalletSetWidget(lv_obj_t *parent)
     line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 577 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateTextLabel(parent, _("+ Add Wallet"));
+    label = GuiCreateTextLabel(parent, _("wallet_setting_add_wallet"));
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
     table[0].obj = label;
     button = GuiCreateButton(parent, 456, 84, table, 1, GuiShowKeyboardHandler, &walletSetting[4]);
@@ -524,21 +529,21 @@ void GuiWalletDelWalletConfirm(lv_obj_t *parent)
     lv_obj_t *img = GuiCreateImg(parent, &imgDelWallet);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 180 - GUI_MAIN_AREA_OFFSET);
 
-    lv_obj_t *label = GuiCreateLittleTitleLabel(parent, _("Delete Wallet?"));
+    lv_obj_t *label = GuiCreateLittleTitleLabel(parent, _("wallet_settings_delete_confirm_title"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 284 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateNoticeLabel(parent, _("To prevent you from losing your assets, it is recommended that you check the recovery backup before deleting it."));
+    label = GuiCreateNoticeLabel(parent, _("wallet_settings_delete_confirm_desc"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 336 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("Seed Phrase Check"));
+    lv_obj_t *btn = GuiCreateBtn(parent, _("wallet_settings_delete_confirm_button1"));
     lv_obj_set_size(btn, 319, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 580 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), g_defTextFont, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_STATE_DEFAULT);
     lv_obj_add_event_cb(btn, WalletSettingHandler, LV_EVENT_CLICKED, &walletSetting);
 
-    btn = GuiCreateBtn(parent, _("Confirm Delete"));
+    btn = GuiCreateBtn(parent, _("wallet_settings_delete_confirm_button2"));
     lv_obj_set_size(btn, 230, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 670 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_STATE_DEFAULT);

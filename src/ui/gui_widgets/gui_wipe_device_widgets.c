@@ -182,13 +182,13 @@ static void WipeDevice(void)
     lv_obj_set_size(g_cont, lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
                     GUI_STATUS_BAR_HEIGHT);
 
-    lv_obj_t *label = GuiCreateTextLabel(g_cont, "Resetting Device");
+    lv_obj_t *label = GuiCreateTextLabel(g_cont, _("system_settings_wipe_device_generating_title"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 355);
 
-    label = GuiCreateNoticeLabel(g_cont, "Erasing Secure Element...");
+    label = GuiCreateNoticeLabel(g_cont, _("system_settings_wipe_device_generating_desc1"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 410);
 
-    label = GuiCreateNoticeLabel(g_cont, "Do not power off your device while the installation process is underway");
+    label = GuiCreateNoticeLabel(g_cont, _("system_settings_wipe_device_generating_desc2"));
     lv_obj_set_width(label, 408);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 612);

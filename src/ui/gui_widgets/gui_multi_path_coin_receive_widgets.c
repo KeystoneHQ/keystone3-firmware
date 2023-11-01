@@ -143,9 +143,9 @@ static const PathItem_t g_ethPaths[] = {
     {"Ledger Legacy",       "",     "m/44'/60'/0'"  },
 };
 static const PathItem_t g_solPaths[] = {
-    {"Solflare",                "",     "m/44'/501'"  },
-    {"Sollet / MathWallet",     "",     "m/44'/501'"  },
-    {"Phantom / Exodus",        "",     "m/44'/501'"  },
+    {"Account-based Path",                "",     "m/44'/501'"  },
+    {"Single Account Path",     "",     "m/44'/501'"  },
+    {"Sub-account Path",        "",     "m/44'/501'"  },
 };
 static lv_obj_t *g_addressLabel[2];
 static lv_obj_t *g_addressLabelOrder;
@@ -514,12 +514,16 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     g_derivationPathDescLabel = label;
     prevLabel = label;
 
-    char *desc = "Address";
-    if (!(g_chainCard == HOME_WALLET_CARD_SOL && g_solPathIndex[g_currentAccountIndex] == 1)) {
-        desc = _("derivation_path_address_eg");
+    int gap = 4;
+    if (strlen(g_derivationPathDescs[GetPathIndex()]) == 0) {
+        egContHeight -= lv_obj_get_height(label);
+        lv_obj_set_height(label, 0);
+        gap = 0;
     }
+
+    char *desc = _("derivation_path_address_eg");    
     label = GuiCreateNoticeLabel(egCont, desc);
-    lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, gap);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_obj_update_layout(label);
     egContHeight =  egContHeight + 4 + lv_obj_get_height(label);
@@ -581,9 +585,10 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
         label = GuiCreateLabelWithFontAndTextColor(cont, string, g_defIllustrateFont, 0x919191);
         lv_label_set_recolor(label, true);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
-        line = GuiCreateLine(cont, points, 2);
-        lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * (i + 1));
-
+        if (i < 2){
+            line = GuiCreateLine(cont, points, 2);
+            lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * (i + 1));
+        }
         g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox = lv_btn_create(cont);
         lv_obj_set_size(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox, 408, 82);
         lv_obj_align(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox, LV_ALIGN_TOP_LEFT, 0, 10 + 102 * i);

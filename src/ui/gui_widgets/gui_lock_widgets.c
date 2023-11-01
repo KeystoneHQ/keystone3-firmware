@@ -25,6 +25,7 @@
 #include "presetting.h"
 #include "assert.h"
 #include "screen_manager.h"
+#include "gui_passphrase_widgets.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "assert.h"
@@ -466,8 +467,6 @@ static void CountDownTimerChangeLabelTextHandler(lv_timer_t *timer)
     lv_obj_t *obj = (lv_obj_t *)timer->user_data;
     ++g_countDown;
     if (g_countDown == 3) {
-        lv_label_set_text(obj, _("prepare_wallet_second_step"));
-    } else  if (g_countDown == 6) {
         lv_label_set_text(obj, _("prepare_wallet_third_step"));
         if (g_countDownTimer != NULL) {
             g_countDown = 0;
@@ -475,7 +474,7 @@ static void CountDownTimerChangeLabelTextHandler(lv_timer_t *timer)
             g_countDownTimer = NULL;
             UNUSED(g_countDownTimer);
         }
-    }
+    } 
 }
 
 void GuiShowGenerateXPubLoading(void)
@@ -504,7 +503,7 @@ void GuiShowGenerateXPubLoading(void)
     lv_obj_t *label = GuiCreateTextLabel(g_LoadingView, _("prepare_wallet_hint"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 403);
 
-    lv_obj_t *hintLabel = GuiCreateNoticeLabel(g_LoadingView, _("prepare_wallet_first_step"));
+    lv_obj_t *hintLabel = GuiCreateNoticeLabel(g_LoadingView, _("prepare_wallet_second_step"));
     lv_obj_set_style_text_align(hintLabel, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_width(hintLabel, 408);
     lv_obj_align(hintLabel, LV_ALIGN_TOP_MID, 0, 457);

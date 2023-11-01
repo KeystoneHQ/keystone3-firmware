@@ -122,6 +122,7 @@ void DelCurrCloseToSubtopViewHandler(lv_event_t *e)
             for (int i = g_deviceSetTileView.currentTile; i > 3; i--) {
                 GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
             }
+            g_noticeHintBox = NULL;
         } else {
             CloseToTargetTileView(g_deviceSetTileView.currentTile, DEVICE_SETTING_WALLET_SETTING);
             g_noticeHintBox = NULL;
@@ -160,7 +161,7 @@ static void CloseCurrentPage(lv_event_t *e)
 
 static void GuiPassphraseOpenQRCodeHintBox()
 {
-    GuiQRCodeHintBoxOpen("https://keyst.one/t/3rd/passphrase", "What is Passphrase", "https://keyst.one/t/3rd/passphrase");
+    GuiQRCodeHintBoxOpen("https://keyst.one/t/3rd/passphrase", _("passphrase_learn_more_title"), "https://keyst.one/t/3rd/passphrase");
 }
 
 static void OpenPassphraseQrCodeHandler(lv_event_t *e)
@@ -545,9 +546,9 @@ void GuiWalletRecoveryWriteSe(bool result)
         g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
         img = GuiCreateImg(g_noticeHintBox, &imgSuccess);
         lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 36, -236);
-        label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("shamir_phrase_verify_success_title"));
+        label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("seed_check_verify_match_title"));
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -172);
-        label = GuiCreateNoticeLabel(g_noticeHintBox, _("Your seed has been validated and successfully verified."));
+        label = GuiCreateNoticeLabel(g_noticeHintBox, _("seed_check_verify_match_desc"));
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -110);
 
         btn = GuiCreateBtn(g_noticeHintBox, _("Done"));
@@ -558,7 +559,7 @@ void GuiWalletRecoveryWriteSe(bool result)
         g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
         img = GuiCreateImg(g_noticeHintBox, &imgFailed);
         lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 36, -236);
-        label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("Verification Unsuccessful"));
+        label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("seed_check_verify_not_match_title"));
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -172);
         label = GuiCreateIllustrateLabel(g_noticeHintBox, _("seed_check_verify_not_match_desc"));
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -110);

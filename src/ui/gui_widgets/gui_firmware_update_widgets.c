@@ -406,7 +406,7 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
     lv_obj_add_flag(label, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(label, GuiQrcodeHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(parent, &imgQrcodeTurquoise);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 322, 236);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 322, 241);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, GuiQrcodeHandler, LV_EVENT_CLICKED, NULL);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_sd_desc3"));

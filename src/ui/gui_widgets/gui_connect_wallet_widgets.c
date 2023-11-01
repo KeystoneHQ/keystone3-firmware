@@ -47,7 +47,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn},
     {WALLET_LIST_SUSHISWAP, &walletListSushi},
     {WALLET_LIST_KEPLR, &walletListKeplr},
-    // {WALLET_LIST_ETERNL, &walletListEternl},
+    {WALLET_LIST_ETERNL, &walletListEternl},
     // { WALLET_LIST_SUB, &walletListSub},
 };
 

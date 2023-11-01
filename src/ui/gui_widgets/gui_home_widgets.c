@@ -39,7 +39,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
         {HOME_WALLET_CARD_SOL, false, "SOL", true},
         {HOME_WALLET_CARD_APT, false, "APT", true},
         {HOME_WALLET_CARD_SUI, false, "SUI", true},
-        {HOME_WALLET_CARD_ADA, false, "ADA", false},
+        {HOME_WALLET_CARD_ADA, false, "ADA", true},
         {HOME_WALLET_CARD_ATOM, false, "ATOM", true},
         {HOME_WALLET_CARD_OSMO, false, "OSMO", true},
         {HOME_WALLET_CARD_SCRT, false, "SCRT", true},
@@ -82,14 +82,14 @@ static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 
 static void GuiInitWalletState()
 {
-    // if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39)
-    // {
-    //     g_walletState[HOME_WALLET_CARD_ADA].enable = false;
-    // }
-    // else
-    // {
-    //     g_walletState[HOME_WALLET_CARD_ADA].enable = true;
-    // }
+    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39)
+    {
+        g_walletState[HOME_WALLET_CARD_ADA].enable = false;
+    }
+    else
+    {
+        g_walletState[HOME_WALLET_CARD_ADA].enable = true;
+    }
 }
 
 static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =

@@ -73,7 +73,6 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
         {HOME_WALLET_CARD_LUNC, false, "LUNC", true},
         {HOME_WALLET_CARD_BNB, false, "BNB", false},
         {HOME_WALLET_CARD_DOT, false, "DOT", false},
-        {HOME_WALLET_CARD_XRP, false, "XRP", false},
         {HOME_WALLET_CARD_LTC, false, "LTC", false},
         {HOME_WALLET_CARD_DASH, false, "DASH", false},
         {HOME_WALLET_CARD_BCH, false, "BCH", false},
@@ -334,12 +333,6 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =
             .coin = "DOT",
             .chain = "Polkadot",
             .icon = &coinDot,
-        },
-        {
-            .index = HOME_WALLET_CARD_XRP,
-            .coin = "XRP",
-            .chain = "Ripple",
-            .icon = &coinXrp,
         },
         {
             .index = HOME_WALLET_CARD_LTC,

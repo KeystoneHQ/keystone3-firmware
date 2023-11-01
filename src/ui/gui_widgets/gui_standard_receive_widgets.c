@@ -436,6 +436,9 @@ static int GetMaxAddressIndex(void)
     if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT) {
         return 10;
     }
+    if (g_chainCard == HOME_WALLET_CARD_XRP) {
+        return 200;
+    }
     return GENERAL_ADDRESS_INDEX_MAX;
 }
 

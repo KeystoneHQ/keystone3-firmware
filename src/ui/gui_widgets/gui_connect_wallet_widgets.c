@@ -793,6 +793,7 @@ static void AddSolflareCoins(void)
 
 void GuiConnectWalletInit(void)
 {
+    GuiInitWalletListArray();
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 

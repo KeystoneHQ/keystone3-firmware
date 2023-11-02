@@ -35,6 +35,7 @@ typedef enum {
 typedef struct {
     WALLET_LIST_INDEX_ENUM index;
     const lv_img_dsc_t *img;
+    bool enable;
 } WalletListItem_t;
 
 typedef enum {

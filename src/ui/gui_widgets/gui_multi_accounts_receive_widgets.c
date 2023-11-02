@@ -162,6 +162,7 @@ void GuiMultiAccountsReceiveDeInit(void)
     GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.cont)
     GUI_PAGE_DEL(g_multiAccountsReceiveWidgets.switchAccountCont)
     GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.addressDetailCont)
+    GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.inputAccountCont)
 
     CLEAR_OBJECT(g_multiAccountsReceiveWidgets);
     GuiFullscreenModeCleanUp();
@@ -1025,7 +1026,7 @@ static void GuiCreateSwitchAccountWidget()
     PageWidget_t *page = CreatePageWidget();
     g_multiAccountsReceiveWidgets.switchAccountCont = page;
     SetNavBarLeftBtn(page->navBarWidget, NVS_BAR_RETURN, CloseSwitchAccountHandler, NULL);
-    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
+    SetMidBtnLabel(page->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
     SwitchAddressWidgetsItem_t switchAddressWidgets[5];
     // Create the account list page.
     uint32_t index;

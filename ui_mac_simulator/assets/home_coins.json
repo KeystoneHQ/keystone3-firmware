@@ -1,0 +1,42 @@
+{
+    "BTC": {
+        "firstRecv": true,
+        "manage": true
+    },
+    "ETH": {
+        "firstRecv": true,
+        "manage": true
+    },
+    "ADA": {
+        "firstRecv": true,
+        "manage": true
+    },
+    "BNB": {
+        "firstRecv": true,
+        "manage": false
+    },
+    "SOL": {
+        "firstRecv": true,
+        "manage": false
+    },
+    "DOT": {
+        "firstRecv": true,
+        "manage": false
+    },
+    "XRP": {
+        "firstRecv": true,
+        "manage": false
+    },
+    "LTC": {
+        "firstRecv": true,
+        "manage": false
+    },
+    "DASH": {
+        "firstRecv": true,
+        "manage": true
+    },
+    "BCH": {
+        "firstRecv": true,
+        "manage": true
+    }
+}

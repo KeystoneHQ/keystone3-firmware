@@ -9,7 +9,7 @@ bool g_fingerUnlockDeviceFlag = true;
 bool g_fingerSingTransitionsFlag = false;
 bool fingerRegisterState[3] = {true, false, false};
 #define JSON_MAX_LEN (1024 * 100)
-#define ACCOUNT_PUBLIC_HOME_COIN "{\"BTC\":{\"firstRecv\":true,\"manage\":true},\"ETH\":{\"firstRecv\":true,\"manage\":true},\"ADA\":{\"firstRecv\":true,\"manage\":true},\"BNB\":{\"firstRecv\":true,\"manage\":false},\"SOL\":{\"firstRecv\":true,\"manage\":false},\"DOT\":{\"firstRecv\":true,\"manage\":false},\"XRP\":{\"firstRecv\":true,\"manage\":false},\"LTC\":{\"firstRecv\":true,\"manage\":false},\"DASH\":{\"firstRecv\":true,\"manage\":true},\"BCH\":{\"firstRecv\":true,\"manage\":true}}"
+#define ACCOUNT_PUBLIC_HOME_COIN_PATH "C:/assets/home_coins.json"
 
 bool g_reboot = false;
 void OpenUsb()
@@ -354,7 +354,12 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
 {
     lv_fs_file_t fd;
     uint32_t size = 0;
-    char buf[JSON_MAX_LEN] = ACCOUNT_PUBLIC_HOME_COIN;
+    char buf[JSON_MAX_LEN] = {0};
+
+    if (LV_FS_RES_OK != lv_fs_open(&fd, ACCOUNT_PUBLIC_HOME_COIN_PATH, LV_FS_MODE_RD | LV_FS_MODE_WR)) {
+        printf("lv_fs_open failed %s\n", ACCOUNT_PUBLIC_HOME_COIN_PATH);
+        return;
+    }
 
     if (0) {
         cJSON *rootJson, *jsonItem;
@@ -374,7 +379,13 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
         printf("retStr = %s\n", retStr);
         // RemoveFormatChar(retStr);
         cJSON_Delete(rootJson);
+        if (LV_FS_RES_OK != lv_fs_write(&fd, retStr, strlen(retStr), &size)) {
+            printf("lv_fs_write failed %s\n", ACCOUNT_PUBLIC_HOME_COIN_PATH);
+            return;
+        }
     }
+    lv_fs_read(&fd, buf, JSON_MAX_LEN, &size);
+    buf[size] = '\0';
     cJSON *rootJson = cJSON_Parse(buf);
     for (int i = 0; i < count; i++) {
         cJSON *item = cJSON_GetObjectItem(rootJson, walletList[i].name);
@@ -386,15 +397,25 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
             walletList[i].state = false;
         }
     }
+    lv_fs_close(&fd);
 }
 
 void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
 {
     lv_fs_file_t fd;
     uint32_t size = 0;
-    char buf[JSON_MAX_LEN] = ACCOUNT_PUBLIC_HOME_COIN;
+    char buf[JSON_MAX_LEN] = {0};
     cJSON *rootJson, *jsonItem;
     bool needUpdate = false;
+
+    if (LV_FS_RES_OK != lv_fs_open(&fd, ACCOUNT_PUBLIC_HOME_COIN_PATH, LV_FS_MODE_RD)) {
+        printf("lv_fs_open failed %s\n", ACCOUNT_PUBLIC_HOME_COIN_PATH);
+        return;
+    }
+
+    lv_fs_read(&fd, buf, JSON_MAX_LEN, &size);
+    buf[size] = '\0';
+    lv_fs_close(&fd);
 
     rootJson = cJSON_Parse(buf);
     for (int i = 0; i < count; i++) {
@@ -407,6 +428,24 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
                 cJSON_ReplaceItemInObject(item, "manage", cJSON_CreateBool(walletList[i].state));
             }
         }
+    }
+    if (needUpdate) {
+        char *retStr = cJSON_Print(rootJson);
+        if (LV_FS_RES_OK != lv_fs_open(&fd, ACCOUNT_PUBLIC_HOME_COIN_PATH, LV_FS_MODE_RD | LV_FS_MODE_WR)) {
+            printf("lv_fs_open failed %s\n", ACCOUNT_PUBLIC_HOME_COIN_PATH);
+            return;
+        }
+        if (LV_FS_RES_OK != lv_fs_write(&fd, retStr, strlen(retStr), &size)) {
+            lv_fs_close(&fd);
+            printf("lv_fs_write failed %s\n", ACCOUNT_PUBLIC_HOME_COIN_PATH);
+            return;
+        }
+
+        lv_fs_read(&fd, buf, JSON_MAX_LEN, &size);
+        buf[size] = '\0';
+        printf("buf = %s\n", buf);
+
+        lv_fs_close(&fd);
     }
 }
 
@@ -530,5 +569,5 @@ void UserDelay(uint32_t ms)
 
 MnemonicType GetMnemonicType(void)
 {
-    return MNEMONIC_TYPE_BIP39;
+    return MNEMONIC_TYPE_SLIP39;
 }

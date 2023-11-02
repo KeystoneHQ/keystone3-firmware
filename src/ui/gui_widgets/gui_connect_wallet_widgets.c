@@ -34,20 +34,20 @@ typedef enum {
 
 WalletListItem_t g_walletListArray[] = {
     // {WALLET_LIST_KEYSTONE, &walletListKeyStone},
-    {WALLET_LIST_OKX, &walletListOkx},
-    {WALLET_LIST_METAMASK, &walletListMetaMask},
-    {WALLET_LIST_BLUE, &walletListBlue},
-    {WALLET_LIST_RABBY, &walletListRabby},
-    {WALLET_LIST_SAFE, &walletListSafe},
-    {WALLET_LIST_BLOCK_WALLET, &walletListBlockWallet},
-    {WALLET_LIST_SOLFARE, &walletListSolfare},
-    {WALLET_LIST_PETRA, &walletListPetra},
-    {WALLET_LIST_FEWCHA, &walletListFewcha},
-    {WALLET_LIST_ZAPPER, &walletListZapper},
-    {WALLET_LIST_YEARN_FINANCE, &walletListYearn},
-    {WALLET_LIST_SUSHISWAP, &walletListSushi},
-    {WALLET_LIST_KEPLR, &walletListKeplr},
-    {WALLET_LIST_ETERNL, &walletListEternl},
+    {WALLET_LIST_OKX, &walletListOkx, true},
+    {WALLET_LIST_METAMASK, &walletListMetaMask, true},
+    {WALLET_LIST_BLUE, &walletListBlue, true},
+    {WALLET_LIST_RABBY, &walletListRabby, true},
+    {WALLET_LIST_SAFE, &walletListSafe, true},
+    {WALLET_LIST_BLOCK_WALLET, &walletListBlockWallet, true},
+    {WALLET_LIST_SOLFARE, &walletListSolfare, true},
+    {WALLET_LIST_PETRA, &walletListPetra, true},
+    {WALLET_LIST_FEWCHA, &walletListFewcha, true},
+    {WALLET_LIST_ZAPPER, &walletListZapper, true},
+    {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true},
+    {WALLET_LIST_SUSHISWAP, &walletListSushi, true},
+    {WALLET_LIST_KEPLR, &walletListKeplr, true},
+    {WALLET_LIST_ETERNL, &walletListEternl, true},
     // { WALLET_LIST_SUB, &walletListSub},
 };
 
@@ -260,6 +260,20 @@ static char * *g_derivationPathDescs = NULL;
 static lv_obj_t *g_egCont = NULL;
 
 static void QRCodePause(bool);
+
+static void GuiInitWalletListArray()
+{
+    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39)
+    {
+        //eternl
+        g_walletListArray[13].enable = false;
+    }
+    else
+    {
+        //eternl
+        g_walletListArray[13].enable = true;
+    }
+}
 
 static bool IsEVMChain(int walletIndex)
 {
@@ -559,21 +573,17 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED, &g_walletListArray[0]);
-    for (int i = 1; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+    for (int i = 1, j = 1; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+        if(!g_walletListArray[i].enable)
+        {
+            continue;
+        }
         lv_obj_t *img = GuiCreateImg(parent, g_walletListArray[i].img);
-        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 136 + (i - 1) * 107);
+        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 136 + (j - 1) * 107);
         lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED, &g_walletListArray[i]);
+        j++;
     }
-
-    // ** temporary add.
-    lv_obj_t *line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, NUMBER_OF_ARRAYS(g_walletListArray) * 107 + 8);
-
-    lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("connect_wallet_upgrade_hint"));
-    lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 32, NUMBER_OF_ARRAYS(g_walletListArray) * 107 + 8 + 8);
-    // **
 }
 
 static void GuiCreateQrCodeWidget(lv_obj_t *parent)

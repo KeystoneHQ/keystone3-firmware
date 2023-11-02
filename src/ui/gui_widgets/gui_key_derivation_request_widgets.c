@@ -253,7 +253,9 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
         sprintf(title, "Account-%d", i);
         label = GuiCreateIllustrateLabel(cont, title);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
-        label = GuiCreateIllustrateLabel(cont, g_response->data->key_derivation->schemas->data[i].key_path);
+        char path[36] = {0};
+        sprintf(path, "M/%s", g_response->data->key_derivation->schemas->data[i].key_path);
+        label = GuiCreateIllustrateLabel(cont, path);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56);
         if (i > 0)
         {

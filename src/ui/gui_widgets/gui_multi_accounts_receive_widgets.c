@@ -449,7 +449,7 @@ static void RefreshQrCode(void)
         lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strlen(addressDataItem.address));
     }
     char string[128] = {0};
-    AddressLongModeCut(string, addressDataItem.address, 24);
+    AddressLongModeCut(string, addressDataItem.address, 20);
     lv_label_set_text(g_multiAccountsReceiveWidgets.addressLabel, string);
     lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.addressCountLabel, "Address-%u", (addressDataItem.index));
 }

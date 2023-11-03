@@ -82,6 +82,11 @@ void GuiTransactionDetailInit(uint8_t viewType)
 
 void GuiTransactionDetailDeInit()
 {
+    // for learn more hintbox in eth contract data block;
+    if (GuiQRHintBoxIsActive())
+    {
+        GuiQRHintBoxRemove();
+    }
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;

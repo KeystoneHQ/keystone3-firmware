@@ -84,7 +84,8 @@ void GuiModelCopySdCardOta(void);
 void GuiModelURGenerateQRCode(GenerateUR func);
 void GuiModelURUpdate(void);
 void GuiModelURClear(void);
-
+void GuiModelCheckTransaction(ViewType ViewType);
+void GuiModelTransactionCheckResultClear(void);
 
 #endif /* _GUI_MODEL_H */
 

@@ -46,7 +46,6 @@ void GuiScanInit()
         g_pageWidget = NULL;
     }
     g_pageWidget = CreatePageWidget();
-    SetPageLockScreen(false);
     GuiScanNavBarInit();
     GuiScanStart();
 }
@@ -59,16 +58,12 @@ void GuiScanDeInit()
         g_pageWidget = NULL;
     }
 
-     // for learn more hintbox in eth contract data block;
-    if (GuiQRHintBoxIsActive())
-    {
-        GuiQRHintBoxRemove();
-    }
     SetPageLockScreen(true);
 }
 
 void GuiScanRefresh()
 {
+    SetPageLockScreen(false);
 }
 
 void GuiScanResult(bool result, void *param)
@@ -109,24 +104,7 @@ void GuiScanResult(bool result, void *param)
             ThrowError();
             return;
         }
-#ifndef COMPILE_SIMULATOR
-
-        //Here return the error code and error message so that we can distinguish the error type later.
-        PtrT_TransactionCheckResult checkResult = CheckScanResult(g_qrcodeViewType);
-        if (checkResult != NULL && checkResult->error_code == 0)
-        {
-            //todo jump tx detail
-            GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
-
-        } else
-        {
-            ThrowError();
-        }
-        free_TransactionCheckResult(checkResult);
-#else
-        g_qrcodeViewType =  EthTx;
-        GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
-#endif
+        GuiModelCheckTransaction(g_qrcodeViewType);
     }
     else
     {
@@ -134,6 +112,26 @@ void GuiScanResult(bool result, void *param)
     }
 
 }
+
+void GuiTransactionCheckPass(void)
+{
+#ifndef COMPILE_SIMULATOR
+    GuiModelTransactionCheckResultClear();
+    SetPageLockScreen(true);
+    GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
+#else
+    g_qrcodeViewType =  EthTx;
+    GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
+#endif
+}
+
+//Here return the error code and error message so that we can distinguish the error type later.
+void GuiTransactionCheckFiald(PtrT_TransactionCheckResult result)
+{
+    GuiModelTransactionCheckResultClear();
+    ThrowError();
+}
+
 
 static void GuiScanNavBarInit()
 {
@@ -179,47 +177,6 @@ static void GuiSetScanCorner(void)
     lv_img_set_angle(img, 1800);
     lv_img_set_pivot(img, 0, 0);
 }
-
-
-// static GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
-// {
-//     switch (ViewType)
-//     {
-//     case BtcNativeSegwitTx:
-//     case BtcSegwitTx:
-//     case BtcLegacyTx:
-//     case BtcTx:
-//         return CHAIN_BTC;
-//     case LtcTx:
-//         return CHAIN_LTC;
-//     case DashTx:
-//         return CHAIN_DASH;
-//     case BchTx:
-//         return CHAIN_BCH;
-//     case EthPersonalMessage:
-//     case EthTx:
-//     case EthTypedData:
-//         return CHAIN_ETH;
-//     case TronTx:
-//         return CHAIN_TRX;
-//     case CosmosTx:
-//     case CosmosEvmTx:
-//         return GuiGetCosmosTxChain();
-//     case SuiTx:
-//         return CHAIN_SUI;
-//     case SolanaTx:
-//     case SolanaMessage:
-//         return CHAIN_SOL;
-//     case AptosTx:
-//         return CHAIN_APT;
-//     case CardanoTx:
-//         return CHAIN_ADA;
-//     default:
-//         return CHAIN_BUTT;
-//     }
-//     return CHAIN_BUTT;
-// }
-
 
 static void ThrowError()
 {

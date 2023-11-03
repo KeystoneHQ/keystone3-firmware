@@ -70,6 +70,8 @@ static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen);
 static int32_t ModelURGenerateQRCode(const void *inData, uint32_t inDataLen, void *getUR);
 static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen);
 static int32_t ModelURClear(const void *inData, uint32_t inDataLen);
+static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen);
+static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen);
 
 #ifndef COMPILE_SIMULATOR
 #define MODEL_WRITE_SE_HEAD                 do {                                \
@@ -236,6 +238,16 @@ void GuiModelURUpdate(void)
 void GuiModelURClear(void)
 {
     AsyncExecute(ModelURClear, NULL, 0);
+}
+
+void GuiModelCheckTransaction(ViewType viewType)
+{
+    AsyncExecute(ModelCheckTransaction, &viewType, sizeof(viewType));
+}
+
+void GuiModelTransactionCheckResultClear(void)
+{
+    AsyncExecute(ModelTransactionCheckResultClear, NULL, 0);
 }
 
 // bip39 generate
@@ -1077,5 +1089,43 @@ static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen)
     }
 #else
 #endif
+    return SUCCESS_CODE;
+}
+
+static PtrT_TransactionCheckResult g_checkResult = NULL;
+
+static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
+{
+#ifndef COMPILE_SIMULATOR
+    GuiEmitSignal(SIG_SHOW_CHECKING_LAODING, NULL, 0);
+    ViewType viewType = *((ViewType *)inData);
+    g_checkResult = CheckScanResult(viewType);
+    GuiEmitSignal(SIG_HIDE_CHECKING_LAODING, NULL, 0);
+
+    if (g_checkResult->error_code == 0) {
+        GuiApiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
+    } else {
+        GuiApiEmitSignal(SIG_TRANSACTION_CHECK_FAIL, g_checkResult, sizeof(g_checkResult));
+    }
+#else
+    GuiEmitSignal(SIG_SHOW_CHECKING_LAODING, NULL, 0);
+    for (size_t i = 0; i < 500000000; i++)
+    {
+        if(i == 1000000){
+            printf("ddd\n");
+        }
+    }
+    GuiEmitSignal(SIG_HIDE_CHECKING_LAODING, NULL, 0);
+    GuiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
+#endif
+    return SUCCESS_CODE;
+}
+
+static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen)
+{
+    if (g_checkResult != NULL) {
+        free_TransactionCheckResult(g_checkResult);
+        g_checkResult = NULL;
+    }
     return SUCCESS_CODE;
 }

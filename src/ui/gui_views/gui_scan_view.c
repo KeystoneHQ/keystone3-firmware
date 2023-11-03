@@ -4,7 +4,7 @@
 #include "gui_views.h"
 #include "gui_scan_widgets.h"
 #include "gui_lock_widgets.h"
-
+#include "gui_pending_hintbox.h"
 static int32_t GuiScanViewInit(void)
 {
     GuiScanInit();
@@ -32,6 +32,18 @@ int32_t GuiScanViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         break;
     case SIG_QRCODE_VIEW_SCAN_PASS:
         GuiScanResult(true, param);
+        break;
+    case SIG_TRANSACTION_CHECK_PASS:
+        GuiTransactionCheckPass();
+        break;
+    case SIG_TRANSACTION_CHECK_FAIL:
+        GuiTransactionCheckFiald((PtrT_TransactionCheckResult)param);
+        break;
+    case SIG_SHOW_CHECKING_LAODING:
+        GuiPendingHintBoxOpen(_("Loading"), "");
+        break;
+    case SIG_HIDE_CHECKING_LAODING:
+        GuiPendingHintBoxRemove();
         break;
     default:
         return ERR_GUI_UNHANDLED;

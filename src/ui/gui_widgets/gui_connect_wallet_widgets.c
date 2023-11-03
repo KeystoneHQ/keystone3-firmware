@@ -423,10 +423,8 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
         if (g_connectWalletTileView.walletIndex == WALLET_LIST_FEWCHA) {
             GuiCreateSelectFewchaCoinWidget();
         } else if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
-            // Avoid continuous triggering
-            g_coinListCont = g_bottomCont;
-            GuiCreateSelectAddressWidget(CHAIN_XRP, g_xrpAddressIndex[GetCurrentAccountIndex()], RefreshAddressIndex);
-        } else {
+            g_coinListCont = GuiCreateSelectAddressWidget(CHAIN_XRP, g_xrpAddressIndex[GetCurrentAccountIndex()], RefreshAddressIndex);
+        } else if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEYSTONE) {
             GuiCreateSelectCompanionAppCoinWidget();
         }
     }
@@ -1496,10 +1494,14 @@ void GuiConnectWalletRefresh(void)
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
         SetWallet(g_pageWidget->navBarWidget, g_connectWalletTileView.walletIndex, NULL);
         if (g_coinListCont != NULL) {
-            GUI_DEL_OBJ(g_coinListCont)
             if (g_connectWalletTileView.walletIndex == WALLET_LIST_FEWCHA) {
+                GUI_DEL_OBJ(g_coinListCont)
                 GuiCreateSelectFewchaCoinWidget();
-            } else {
+            } else if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
+                GuiDestroySelectAddressWidget();
+                g_coinListCont = GuiCreateSelectAddressWidget(CHAIN_XRP, g_xrpAddressIndex[GetCurrentAccountIndex()], RefreshAddressIndex);
+            } else if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEYSTONE) {
+                GUI_DEL_OBJ(g_coinListCont)
                 GuiCreateSelectCompanionAppCoinWidget();
             }
         }
@@ -1522,7 +1524,12 @@ void GuiConnectWalletDeInit(void)
     GUI_DEL_OBJ(g_manageImg);
     GUI_DEL_OBJ(g_coinCont)
     GUI_DEL_OBJ(g_derivationPathCont)
-    GUI_DEL_OBJ(g_coinListCont)
+    if (g_coinListCont != NULL && g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
+        g_coinListCont = NULL;
+        GuiDestroySelectAddressWidget();
+    } else {
+        GUI_DEL_OBJ(g_coinListCont)
+    }
 
     CloseToTargetTileView(g_connectWalletTileView.currentTile, CONNECT_WALLET_SELECT_WALLET);
     GUI_DEL_OBJ(g_connectWalletTileView.cont)

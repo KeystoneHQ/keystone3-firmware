@@ -8,6 +8,7 @@
 
 typedef void (*SetSelectAddressIndexFunc)(uint32_t index);
 
-void GuiCreateSelectAddressWidget(GuiChainCoinType chainCoinType, uint32_t selectIndex, SetSelectAddressIndexFunc setIndex);
+lv_obj_t *GuiCreateSelectAddressWidget(GuiChainCoinType chainCoinType, uint32_t selectIndex, SetSelectAddressIndexFunc setIndex);
+void GuiDestroySelectAddressWidget();
 
 #endif

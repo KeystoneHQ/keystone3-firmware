@@ -171,6 +171,7 @@ void GuiMultiAccountsReceiveDeInit(void)
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
+    g_multiAccountsReceiveTileNow = RECEIVE_TILE_QRCODE;
 }
 
 void GuiMultiAccountsReceiveRefresh(void)

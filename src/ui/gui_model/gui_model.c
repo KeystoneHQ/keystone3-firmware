@@ -1032,7 +1032,7 @@ static int32_t ModeControlQrDecode(const void *inData, uint32_t inDataLen)
     }
 #else
     static uint8_t urRet = 0;
-    UrViewType_t urViewType = { CardanoTx, CardanoSignRequest };
+    UrViewType_t urViewType = {XRPTx , Bytes };
     GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
     // GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_FAIL, &urRet, sizeof(urRet));
 #endif

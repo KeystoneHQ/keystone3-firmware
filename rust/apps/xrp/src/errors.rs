@@ -45,3 +45,9 @@ impl From<serde_json::Error> for XRPError {
         Self::InvalidData(format!("serde_json operation failed {}", value))
     }
 }
+
+impl From<third_party::bitcoin::bip32::Error> for XRPError {
+    fn from(value: third_party::bitcoin::bip32::Error) -> Self {
+        Self::InvalidData(format!("bip32 operation failed {}", value))
+    }
+}

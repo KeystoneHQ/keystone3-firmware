@@ -808,7 +808,7 @@ static void TutorialHandler(lv_event_t *e)
     {
         GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
 
-        TUTORIAL_LIST_INDEX_ENUM index = TUTORIAL_ETH_RECEIVE;
+        TUTORIAL_LIST_INDEX_ENUM index = TUTORIAL_ADA_RECEIVE;
         GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
     }
 }

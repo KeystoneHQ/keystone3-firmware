@@ -37,6 +37,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_OKX, &walletListOkx, true},
     {WALLET_LIST_METAMASK, &walletListMetaMask, true},
     {WALLET_LIST_BLUE, &walletListBlue, true},
+    {WALLET_LIST_ETERNL, &walletListEternl, true},
     {WALLET_LIST_RABBY, &walletListRabby, true},
     {WALLET_LIST_SAFE, &walletListSafe, true},
     {WALLET_LIST_BLOCK_WALLET, &walletListBlockWallet, true},
@@ -47,7 +48,6 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true},
     {WALLET_LIST_KEPLR, &walletListKeplr, true},
-    {WALLET_LIST_ETERNL, &walletListEternl, true},
     // { WALLET_LIST_SUB, &walletListSub},
 };
 
@@ -266,12 +266,12 @@ static void GuiInitWalletListArray()
     if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39)
     {
         //eternl
-        g_walletListArray[13].enable = false;
+        g_walletListArray[3].enable = false;
     }
     else
     {
         //eternl
-        g_walletListArray[13].enable = true;
+        g_walletListArray[3].enable = true;
     }
 }
 

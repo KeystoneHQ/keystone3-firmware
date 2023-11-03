@@ -250,7 +250,7 @@ static void GuiCreatePaginationBtns(lv_obj_t *parent)
     g_rightBtn = img;
 }
 
-static void DestroySelectAddressWidget()
+void GuiDestroySelectAddressWidget()
 {
     GUI_PAGE_DEL(g_pageWidget);
 }
@@ -260,12 +260,12 @@ static void BackHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED)
     {
-        DestroySelectAddressWidget();
+        GuiDestroySelectAddressWidget();
         g_setSelectIndexFunc(GetCurrentSelectAddressIndex());
     }
 }
 
-void GuiCreateSelectAddressWidget(GuiChainCoinType chainCoinType, uint32_t selectIndex, SetSelectAddressIndexFunc setIndex)
+lv_obj_t *GuiCreateSelectAddressWidget(GuiChainCoinType chainCoinType, uint32_t selectIndex, SetSelectAddressIndexFunc setIndex)
 {
     g_chainCoinType = chainCoinType;
     SetCurrentSelectIndex(selectIndex);
@@ -279,4 +279,6 @@ void GuiCreateSelectAddressWidget(GuiChainCoinType chainCoinType, uint32_t selec
 
     GuiCreateSelectAddressList(cont);
     GuiCreatePaginationBtns(cont);
+
+    return cont;
 }

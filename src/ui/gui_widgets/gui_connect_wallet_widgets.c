@@ -601,6 +601,27 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
     }
 }
 
+static void GuiCreateSupportedNetworks()
+{
+    if (g_coinCont != NULL && g_manageImg != NULL) {
+        return;
+    }
+    lv_obj_clean(g_bottomCont);
+
+    lv_obj_t *label = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_networks"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
+    lv_obj_add_event_cb(g_bottomCont, JumpSelectCoinPageHandler, LV_EVENT_CLICKED, NULL);
+
+    g_coinCont = GuiCreateContainerWithParent(g_bottomCont, 280, 30);
+    lv_obj_align(g_coinCont, LV_ALIGN_TOP_LEFT, 36, 50);
+    lv_obj_set_style_bg_color(g_coinCont, DARK_BG_COLOR, LV_PART_MAIN);
+
+    g_manageImg = GuiCreateImg(g_bottomCont, &imgManage);
+    lv_obj_set_style_img_opa(g_manageImg, LV_OPA_30, LV_PART_MAIN);
+    lv_obj_align(g_manageImg, LV_ALIGN_BOTTOM_RIGHT, -45, -41);
+    lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
+}
+
 static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 {
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("connect_wallet_scan"));
@@ -630,17 +651,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_color(g_bottomCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(g_bottomCont, LV_OPA_0, LV_STATE_DEFAULT | LV_PART_MAIN);
 
-    label = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_networks"));
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
-    lv_obj_add_event_cb(g_bottomCont, JumpSelectCoinPageHandler, LV_EVENT_CLICKED, NULL);
-
-    g_coinCont = GuiCreateContainerWithParent(g_bottomCont, 280, 30);
-    lv_obj_align(g_coinCont, LV_ALIGN_TOP_LEFT, 36, 50);
-    lv_obj_set_style_bg_color(g_coinCont, DARK_BG_COLOR, LV_PART_MAIN);
-    g_manageImg = GuiCreateImg(g_bottomCont, &imgManage);
-    lv_obj_set_style_img_opa(g_manageImg, LV_OPA_30, LV_PART_MAIN);
-    lv_obj_align(g_manageImg, LV_ALIGN_BOTTOM_RIGHT, -45, -41);
-    lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
+    GuiCreateSupportedNetworks();
 }
 
 static void AddCompanionAppCoins()
@@ -893,6 +904,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
 {
 #ifndef COMPILE_SIMULATOR
     SetWallet(g_pageWidget->navBarWidget, index, NULL);
+    GuiCreateSupportedNetworks();
     GenerateUR func = NULL;
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
@@ -957,6 +969,8 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
     }
 #else
+    SetWallet(g_pageWidget->navBarWidget, index, NULL);
+    GuiCreatePreloadObj();
     GenerateUR func = NULL;
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
@@ -1505,6 +1519,7 @@ void GuiConnectWalletRefresh(void)
 void GuiConnectWalletDeInit(void)
 {
     GUI_DEL_OBJ(g_openMoreHintBox)
+    GUI_DEL_OBJ(g_manageImg);
     GUI_DEL_OBJ(g_coinCont)
     GUI_DEL_OBJ(g_derivationPathCont)
     GUI_DEL_OBJ(g_coinListCont)

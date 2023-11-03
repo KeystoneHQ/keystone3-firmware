@@ -10,5 +10,6 @@ void *GuiGetXrpData(void);
 void FreeXrpMemory(void);
 int GetXrpDetailLen(void *param);
 void GetXrpDetail(void *indata, void *param);
+UREncodeResult *GuiGetXrpSignQrCodeData(void);
 
 #endif

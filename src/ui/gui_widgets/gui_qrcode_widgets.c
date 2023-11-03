@@ -463,6 +463,9 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
     case CardanoTx:
         GuiShowQrCode(GuiGetAdaSignQrCodeData, qrcode);
         break;
+    case XRPTx:
+        GuiShowQrCode(GuiGetXrpSignQrCodeData, qrcode);
+        break;
     default:
         data = "";
         lv_qrcode_update(qrcode, data, strlen(data));

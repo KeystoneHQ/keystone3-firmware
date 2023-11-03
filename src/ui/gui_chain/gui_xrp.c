@@ -1,41 +1,49 @@
+#include "gui_xrp.h"
 #include "gui_chain.h"
+#include "account_manager.h"
+#include "user_memory.h"
+#include "keystore.h"
+#include "secret_cache.h"
 
 #define XRP_ROOT_PATH "m/44'/144'/0'"
 
-static char g_xrpAddr[36];
-static char g_hdPath[25];
+static char g_xrpAddr[40];
+static char g_hdPath[26];
 
 static bool g_isMulti = false;
 static void *g_urResult = NULL;
 static void *g_parseResult = NULL;
+static char *g_cachedPubkey[3] = {NULL, NULL, NULL};
+static char *g_cachedPath[3] = {NULL, NULL, NULL};
 
 char *GuiGetXrpPath(uint16_t index)
 {
-  sprintf(g_hdPath, "%s/0/%u", XRP_ROOT_PATH, index);
-  return g_hdPath;
+    sprintf(g_hdPath, "%s/0/%u", XRP_ROOT_PATH, index);
+    return g_hdPath;
 }
 
 #ifdef COMPILE_SIMULATOR
 char *GuiGetXrpAddressByIndex(uint16_t index)
 {
-  sprintf(g_xrpAddr, "rHsMGQEkVNJmpGWs8XUBoTBiAAbwxZ%d", index);
-  return g_xrpAddr;
+    sprintf(g_xrpAddr, "rHsMGQEkVNJmpGWs8XUBoTBiAAbwxZ%d", index);
+    return g_xrpAddr;
 }
 #else
 char *GuiGetXrpAddressByIndex(uint16_t index)
 {
-  char *xPub;
-  char *hdPath = GuiGetXrpPath(index);
-  SimpleResponse_c_char *result;
+    char *xPub;
+    char *hdPath = GuiGetXrpPath(index);
+    SimpleResponse_c_char *result;
 
-  xPub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
-  result = xrp_get_address(hdPath, xPub, XRP_ROOT_PATH);
+    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
+    result = xrp_get_address(hdPath, xPub, XRP_ROOT_PATH);
 
-  if (result->error_code == 0) {
-    strcpy(g_xrpAddr, result->data);
-  }
-  free_simple_response_c_char(result);
-  return g_xrpAddr;
+    if (result->error_code == 0) {
+        strcpy(g_xrpAddr, result->data);
+    }
+
+    free_simple_response_c_char(result);
+    return g_xrpAddr;
 }
 #endif
 
@@ -59,15 +67,34 @@ void *GuiGetXrpData(void)
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
-    TransactionCheckResult *result = NULL;
+    SimpleResponse_c_char *result;
     do {
         PtrT_TransactionParseResult_DisplayXrpTx parseResult = xrp_parse_tx(data);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
-        result = xrp_check_pubkey(parseResult->data->signing_pubkey, GetCurrentAccountPublicKey(XPUB_TYPE_XRP));
-        CHECK_CHAIN_BREAK(result);
+
+        if (g_cachedPubkey[GetCurrentAccountIndex()] != parseResult->data->signing_pubkey) {
+            result = xrp_get_pubkey_path(GetCurrentAccountPublicKey(XPUB_TYPE_XRP), parseResult->data->signing_pubkey);
+            CHECK_CHAIN_BREAK(result);
+
+            SRAM_FREE(g_cachedPubkey[GetCurrentAccountIndex()]);
+            g_cachedPubkey[GetCurrentAccountIndex()] = SRAM_MALLOC(strlen(parseResult->data->signing_pubkey) + 1);
+            strcpy(g_cachedPubkey[GetCurrentAccountIndex()], result->data);
+
+            int rootLen = strlen(XRP_ROOT_PATH);
+            int extLen = strlen(result->data) - 1;
+            strncpy(g_hdPath, XRP_ROOT_PATH, rootLen);
+            strncpy(g_hdPath + rootLen, result->data + 1, extLen);
+            g_hdPath[rootLen + extLen] = '\0';
+
+            SRAM_FREE(g_cachedPath[GetCurrentAccountIndex()]);
+            g_cachedPath[GetCurrentAccountIndex()] = SRAM_MALLOC(strlen(g_hdPath) + 1);
+            strcpy(g_cachedPath[GetCurrentAccountIndex()], g_hdPath);
+        } else {
+            strcpy(g_hdPath, g_cachedPath[GetCurrentAccountIndex()]);
+        }
     } while (0);
-    free_TransactionCheckResult(result);
+    free_simple_response_c_char(result);
     return g_parseResult;
 #else
     TransactionParseResult_DisplayXrpTx *g_parseResult = malloc(sizeof(TransactionParseResult_DisplayXrpTx));
@@ -98,4 +125,32 @@ void GetXrpDetail(void *indata, void *param)
 {
     DisplayXrpTx *tx = (DisplayXrpTx *)param;
     sprintf((char *)indata, "%s", tx->detail);
+}
+
+UREncodeResult *GuiGetXrpSignQrCodeData(void)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+#ifndef COMPILE_SIMULATOR
+    UREncodeResult *encodeResult = NULL;
+    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    do {
+        uint8_t seed[64];
+        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+        encodeResult = xrp_sign_tx(data, g_hdPath, seed, len);
+        ClearSecretCache();
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+    SetLockScreen(enable);
+    return encodeResult;
+#else
+    UREncodeResult *encodeResult = NULL;
+    encodeResult->is_multi_part = 0;
+    encodeResult->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+    encodeResult->encoder = NULL;
+    encodeResult->error_code = 0;
+    encodeResult->error_message = NULL;
+    return encodeResult;
+#endif
 }

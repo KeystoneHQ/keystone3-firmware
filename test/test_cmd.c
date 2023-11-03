@@ -2680,16 +2680,9 @@ static void testXRPSignTx(int argc, char *argv[])
     VALUE_CHECK(argc, 2);
     sscanf(argv[0], "%d", &index);
     URParseResult *ur = test_get_xrp_sign_request();
-    PtrT_CSliceFFI_XRPHDPath hd_paths = SRAM_MALLOC(sizeof(CSliceFFI_XRPHDPath));
-    XRPHDPath paths[3];
-    hd_paths->data = paths;
-    hd_paths->size = 3;
-    paths[0].path = "m/44'/144'/0'/0/0";
-    paths[1].path = "m/44'/144'/0'/0/1";
-    paths[2].path = "m/44'/144'/0'/0/2";
     uint8_t seed[64];
     GetAccountSeed(index, seed, argv[1]);
-    UREncodeResult *result = xrp_sign_tx(ur->data, hd_paths, seed, sizeof(seed));
+    UREncodeResult *result = xrp_sign_tx(ur->data, "m/44'/144'/0'/0/0", seed, sizeof(seed));
 
     if (result->error_code == 0)
     {
@@ -2702,7 +2695,6 @@ static void testXRPSignTx(int argc, char *argv[])
     }
     free_ur_parse_result(ur);
     free_ur_encode_result(result);
-    SRAM_FREE(hd_paths);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }

@@ -12,15 +12,17 @@ pub mod errors;
 pub mod parser;
 mod transaction;
 
+use core::str::FromStr;
+
 use crate::errors::{XRPError, R};
 use crate::transaction::WrappedTxData;
 use alloc::format;
-use alloc::string::ToString;
+use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use third_party::bitcoin::bip32::DerivationPath;
-use third_party::hex;
+use third_party::bitcoin::bip32::{DerivationPath, ExtendedPubKey};
 use third_party::secp256k1::Message;
 use third_party::serde_json::{from_slice, Value};
+use third_party::{hex, secp256k1};
 
 pub fn sign_tx(raw_hex: &[u8], hd_paths: Vec<DerivationPath>, seed: &[u8]) -> R<Vec<u8>> {
     let v: Value = from_slice(raw_hex)?;
@@ -48,6 +50,28 @@ pub fn parse(raw_hex: &[u8]) -> R<parser::structs::ParsedXrpTx> {
     parser::structs::ParsedXrpTx::build(wrapped_tx.tx_data)
 }
 
+pub fn get_pubkey_path(root_xpub: &str, pubkey: &str, max_i: u32) -> R<String> {
+    let xpub = ExtendedPubKey::from_str(&root_xpub)?;
+    let k1 = secp256k1::Secp256k1::new();
+    let a_xpub = xpub.derive_pub(&k1, &DerivationPath::from_str("m/0")?)?;
+    let pubkey = hex::decode(pubkey)?;
+    let pubkey_bytes = pubkey.as_slice();
+    for i in 0..max_i {
+        let pk = a_xpub.derive_pub(&k1, &DerivationPath::from_str(&format!("m/{}", i))?)?;
+        let key = pk.public_key.serialize();
+        if key.eq(pubkey_bytes) {
+            return Ok(format!("m/0/{}", i));
+        }
+    }
+    return Err(XRPError::InvalidData("pubkey not found".to_string()));
+}
+
+pub fn check_tx(raw: &[u8], root_xpub: &str) -> R<String> {
+    let v: Value = from_slice(raw)?;
+    let wrapped_tx = WrappedTxData::from_raw(v.to_string().into_bytes().as_slice())?;
+    get_pubkey_path(root_xpub, &wrapped_tx.signing_pubkey, 200)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -65,5 +89,13 @@ mod tests {
         )
         .unwrap();
         assert_eq!("120000228000000024000000012e6559a3746140000000000f42406840000000000000147321031d68bc1a142e6766b2bdfb006ccfe135ef2e0e2e94abb5cf5c9ab6104776fbae7446304402207c29d6746cde16e42a0e63c7f6815329cdc73a6ed50a2cc75b208acd066e553602200e0458183beb7f8ea34f0bd9477b672787f66942f231962f3c4a6055acba69f68114d8343e8e1f27b467b651748b8396a52c9185d9f98314b0cb0194b32f22136d1ff5a01e45fb2fed2c3f75", hex::encode(signed_tx));
+    }
+
+    #[test]
+    fn test_check_tx() {
+        let raw = hex::decode("7B225472616E73616374696F6E54797065223A225061796D656E74222C22416D6F756E74223A223130303030303030222C2244657374696E6174696F6E223A22724A6436416D48485A7250756852683377536637696B724D4A516639373646516462222C22466C616773223A323134373438333634382C224163636F756E74223A227247556D6B794C627671474633687758347177474864727A4C6459325170736B756D222C22466565223A223132222C2253657175656E6365223A34323532393130372C224C6173744C656467657253657175656E6365223A34323532393137332C225369676E696E675075624B6579223A22303346354335424231443139454337313044334437464144313939414631304346384243314431313334384535423337363543304230423943304245433332383739227D").unwrap();
+        let root_xpub = "xpub6Czwh4mKUQryD6dbe9e9299Gjn4EnSP641rACmQeAhCXYjW4Hnj8tqiCMir3VSWoNnjimtzy6qtnjD1GSf8FtEdXUFcGeXXezXyEMXtMmo1";
+        let result = check_tx(&raw, root_xpub);
+        assert!(result.is_ok());
     }
 }

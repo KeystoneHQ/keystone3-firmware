@@ -267,6 +267,8 @@ static GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
         return CHAIN_APT;
     case CardanoTx:
         return CHAIN_ADA;
+    case XRPTx:
+        return CHAIN_XRP;
     default:
         return CHAIN_BUTT;
     }

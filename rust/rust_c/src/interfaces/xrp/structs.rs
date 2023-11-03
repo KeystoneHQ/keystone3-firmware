@@ -38,6 +38,7 @@ pub struct DisplayXrpTx {
     pub network: PtrString,
     pub overview: PtrT<DisplayXrpTxOverview>,
     pub detail: PtrString,
+    pub signing_pubkey: PtrString,
 }
 
 impl Default for DisplayXrpTxOverview {
@@ -63,6 +64,7 @@ impl Free for DisplayXrpTx {
             check_and_free_ptr!(self.overview);
             free_ptr_string(self.network);
             free_ptr_string(self.detail);
+            free_ptr_string(self.signing_pubkey);
         }
     }
 }
@@ -118,6 +120,7 @@ impl From<ParsedXrpTx> for DisplayXrpTx {
             network: convert_c_char(value.network.to_string()),
             overview: DisplayXrpTxOverview::from(&value).c_ptr(),
             detail: convert_c_char(value.detail),
+            signing_pubkey: convert_c_char(value.signing_pubkey),
         }
     }
 }

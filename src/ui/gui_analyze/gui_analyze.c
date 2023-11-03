@@ -156,6 +156,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreeAdaMemory,
     },
+    {
+        REMAPVIEW_XRP,
+#ifndef COMPILE_SIMULATOR
+        "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text\":\"Transaction Raw Data\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,0],\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,38],\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetXrpDetail\",\"text_len_func\":\"GetXrpDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_xrp.json",
+#endif
+        GuiGetXrpData,
+        NULL,
+        FreeXrpMemory,
+    },
 };
 
 void *GuiTemplateReload(lv_obj_t *parent, uint8_t index);
@@ -749,6 +760,24 @@ GetLabelDataLenFunc GuiAptosTextLenFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataFunc GuiXrpTextFuncGet(char *type)
+{
+    if (!strcmp(type, "GetXrpDetail"))
+    {
+        return GetXrpDetail;
+    }
+    return NULL;
+}
+
+GetLabelDataLenFunc GuiXrpTextLenFuncGet(char *type)
+{
+    if (!strcmp(type, "GetXrpDetailLen"))
+    {
+        return GetXrpDetailLen;
+    }
+    return NULL;
+}
+
 GetLabelDataFunc GuiAdaTextFuncGet(char *type)
 {
     if (!strcmp(type, "GetAdaExtraData"))
@@ -801,6 +830,8 @@ GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
         return GuiAptosTextLenFuncGet(type);
     case REMAPVIEW_ADA:
         return GuiAdaTextLenFuncGet(type);
+    case REMAPVIEW_XRP:
+        return GuiXrpTextLenFuncGet(type);
     default:
         return NULL;
     }
@@ -830,6 +861,8 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
         return GuiAptosTextFuncGet(type);
     case REMAPVIEW_ADA:
         return GuiAdaTextFuncGet(type);
+    case REMAPVIEW_XRP:
+        return GuiXrpTextFuncGet(type);
     default:
         return NULL;
     }
@@ -1701,6 +1734,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_APT;
     case CardanoTx:
         return REMAPVIEW_ADA;
+    case XRPTx:
+        return REMAPVIEW_XRP;
     default:
         return REMAPVIEW_BUTT;
     }

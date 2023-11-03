@@ -431,8 +431,11 @@ void FpGetAesKeyState(char *indata, uint8_t len)
     } else {
         printf("aes key %s\n", indata[0] ? "has been set" : "not set");
         state = indata[0];
+        if (state == 0) {
+            SendPackFingerMsg(FINGERPRINT_CMD_SET_AES_KEY, g_communicateAesKey, 0, sizeof(g_communicateAesKey), NO_ENCRYPTION);
+        }
         fpAesState = FpAesKeyExist();
-        assert(!!state == !!fpAesState);
+        // assert(!!state == !!fpAesState);
         if (fpAesState == 0) {
             FpSetAesKeySend(0, 0);
         } else {

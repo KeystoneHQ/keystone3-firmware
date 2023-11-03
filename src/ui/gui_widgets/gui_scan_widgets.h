@@ -6,4 +6,4 @@ void GuiScanDeInit();
 void GuiScanRefresh();
 void GuiScanResult(bool result, void *param);
 
-#endif /* _GUI_QRCODE_WIDGETS_H */
+#endif /* _GUI_SCAN_WIDGETS_H */

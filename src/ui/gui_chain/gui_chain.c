@@ -26,3 +26,47 @@ PtrT_TransactionCheckResult CheckScanResult(ViewType viewType)
             return NULL;
     }
 }
+
+GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
+{
+    switch (ViewType)
+    {
+    case BtcNativeSegwitTx:
+    case BtcSegwitTx:
+    case BtcLegacyTx:
+    case BtcTx:
+        return CHAIN_BTC;
+    case LtcTx:
+        return CHAIN_LTC;
+    case DashTx:
+        return CHAIN_DASH;
+    case BchTx:
+        return CHAIN_BCH;
+    case EthPersonalMessage:
+    case EthTx:
+    case EthTypedData:
+        return CHAIN_ETH;
+    case TronTx:
+        return CHAIN_TRX;
+    case CosmosTx:
+    case CosmosEvmTx:
+        return GuiGetCosmosTxChain();
+    case SuiTx:
+        return CHAIN_SUI;
+    case SolanaTx:
+    case SolanaMessage:
+        return CHAIN_SOL;
+    case AptosTx:
+        return CHAIN_APT;
+    case CardanoTx:
+        return CHAIN_ADA;
+    default:
+        return CHAIN_BUTT;
+    }
+    return CHAIN_BUTT;
+}
+
+bool IsMessageType(ViewType type)
+{
+    return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type);
+}

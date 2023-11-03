@@ -119,7 +119,8 @@ typedef struct {
     }
 
 GuiRemapViewType ViewTypeReMap(uint8_t viewType);
-
+GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType);
 PtrT_TransactionCheckResult CheckScanResult(ViewType ViewType);
+bool IsMessageType(ViewType type);
 
 #endif

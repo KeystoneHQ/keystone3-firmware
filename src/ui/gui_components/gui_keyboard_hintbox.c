@@ -40,8 +40,8 @@ static void KeyboardConfirmHandler(lv_event_t *e)
         const char *currText = GuiGetKeyboardInput(keyboardWidget);
         if (strlen(currText) > 0) {
             SecretCacheSetPassword((char *)currText);
-            GuiModelVerifyAmountPassWord(keyboardWidget->sig);
             GuiClearKeyboardInput(keyboardWidget);
+            GuiModelVerifyAmountPassWord(keyboardWidget->sig);
         }
     }
 
@@ -80,7 +80,8 @@ static KeyboardWidget_t *CreateKeyboardWidget()
     keyboardWidget->keyboardHintBox = NULL;
     keyboardWidget->kb = NULL;
     keyboardWidget->errLabel = NULL;
-    keyboardWidget->sig = ENTER_PASSCODE_VERIFY_PASSWORD;
+    static uint16_t sig = ENTER_PASSCODE_VERIFY_PASSWORD;
+    keyboardWidget->sig = &sig;
     keyboardWidget->countDownTimer = NULL;
     keyboardWidget->timerCounter = SRAM_MALLOC(sizeof(uint8_t));
     *keyboardWidget->timerCounter = DEFAULT_TIMER_COUNTER;
@@ -188,15 +189,14 @@ const char *GuiGetKeyboardInput(KeyboardWidget_t *keyboardWidget)
 
 void GuiClearKeyboardInput(KeyboardWidget_t *keyboardWidget)
 {
-    assert(keyboardWidget);
-    assert(keyboardWidget->kb);
-    assert(keyboardWidget->kb->ta);
-    lv_textarea_set_text(keyboardWidget->kb->ta, "");
+    if (keyboardWidget != NULL && keyboardWidget->kb != NULL && keyboardWidget->kb->ta != NULL && lv_obj_is_valid(keyboardWidget->kb->ta)) {
+        lv_textarea_set_text(keyboardWidget->kb->ta, "");
+    }
 }
 
 void GuiSetErrorLabel(KeyboardWidget_t *keyboardWidget, char *errorMessage)
 {
-    if (keyboardWidget != NULL && keyboardWidget->errLabel != NULL) {
+    if (keyboardWidget != NULL && keyboardWidget->errLabel != NULL && lv_obj_is_valid(keyboardWidget->errLabel)) {
         lv_label_set_text(keyboardWidget->errLabel, errorMessage);
         lv_obj_clear_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN);
     }
@@ -204,14 +204,15 @@ void GuiSetErrorLabel(KeyboardWidget_t *keyboardWidget, char *errorMessage)
 
 void GuiShowErrorLabel(KeyboardWidget_t *keyboardWidget)
 {
-    if (lv_obj_has_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN)) {
+    if (keyboardWidget != NULL && keyboardWidget->errLabel != NULL && lv_obj_is_valid(keyboardWidget->errLabel) && lv_obj_has_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN)) {
         lv_obj_clear_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN);
     }
 }
 
 void GuiHideErrorLabel(KeyboardWidget_t *keyboardWidget)
 {
-    if (!lv_obj_has_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN)) {
+    
+    if (keyboardWidget != NULL && !lv_obj_has_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN)) {
         lv_obj_add_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN);
     }
 }

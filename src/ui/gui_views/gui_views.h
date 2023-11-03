@@ -141,11 +141,14 @@ extern GUI_VIEW g_DevicePublicKeyView;
 extern GUI_VIEW g_multiAccountsReceiveView;
 extern GUI_VIEW g_keyDerivationRequestView;
 extern GUI_VIEW g_scanView;
+extern GUI_VIEW g_transactionDetailView;
+extern GUI_VIEW g_transactionSignatureView;
 
 void OpenImportWalletHandler(lv_event_t *e);
 void OpenCreateWalletHandler(lv_event_t *e);
 void OpenViewHandler(lv_event_t *e);
 void CloseTimerCurrentViewHandler(lv_event_t *e);
+void GoToHomeViewHandler(lv_event_t *e);
 void ReturnHandler(lv_event_t *e);
 void NextTileHandler(lv_event_t *e);
 void CloseCurrentParentHandler(lv_event_t *e);

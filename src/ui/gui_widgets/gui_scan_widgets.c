@@ -27,10 +27,11 @@
 
 static void GuiScanNavBarInit();
 static void GuiSetScanCorner(void);
-static GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType);
+// static GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType);
 static void ThrowError();
 static void GuiDealScanErrorResult(int errorType);
 static void CloseScanErrorDataHandler(lv_event_t *e);
+static void GuiScanStart();
 
 static PageWidget_t *g_pageWidget;
 static lv_obj_t *g_scanErrorHintBox = NULL;
@@ -47,6 +48,7 @@ void GuiScanInit()
     g_pageWidget = CreatePageWidget();
     SetPageLockScreen(false);
     GuiScanNavBarInit();
+    GuiScanStart();
 }
 
 void GuiScanDeInit()
@@ -67,8 +69,6 @@ void GuiScanDeInit()
 
 void GuiScanRefresh()
 {
-    GuiSetScanCorner();
-    GuiModeControlQrDecode(true);
 }
 
 void GuiScanResult(bool result, void *param)
@@ -109,17 +109,24 @@ void GuiScanResult(bool result, void *param)
             ThrowError();
             return;
         }
+#ifndef COMPILE_SIMULATOR
 
+        //Here return the error code and error message so that we can distinguish the error type later.
         PtrT_TransactionCheckResult checkResult = CheckScanResult(g_qrcodeViewType);
         if (checkResult != NULL && checkResult->error_code == 0)
         {
             //todo jump tx detail
+            GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
 
         } else
         {
             ThrowError();
         }
         free_TransactionCheckResult(checkResult);
+#else
+        g_qrcodeViewType =  EthTx;
+        GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
+#endif
     }
     else
     {
@@ -174,44 +181,44 @@ static void GuiSetScanCorner(void)
 }
 
 
-static GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
-{
-    switch (ViewType)
-    {
-    case BtcNativeSegwitTx:
-    case BtcSegwitTx:
-    case BtcLegacyTx:
-    case BtcTx:
-        return CHAIN_BTC;
-    case LtcTx:
-        return CHAIN_LTC;
-    case DashTx:
-        return CHAIN_DASH;
-    case BchTx:
-        return CHAIN_BCH;
-    case EthPersonalMessage:
-    case EthTx:
-    case EthTypedData:
-        return CHAIN_ETH;
-    case TronTx:
-        return CHAIN_TRX;
-    case CosmosTx:
-    case CosmosEvmTx:
-        return GuiGetCosmosTxChain();
-    case SuiTx:
-        return CHAIN_SUI;
-    case SolanaTx:
-    case SolanaMessage:
-        return CHAIN_SOL;
-    case AptosTx:
-        return CHAIN_APT;
-    case CardanoTx:
-        return CHAIN_ADA;
-    default:
-        return CHAIN_BUTT;
-    }
-    return CHAIN_BUTT;
-}
+// static GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
+// {
+//     switch (ViewType)
+//     {
+//     case BtcNativeSegwitTx:
+//     case BtcSegwitTx:
+//     case BtcLegacyTx:
+//     case BtcTx:
+//         return CHAIN_BTC;
+//     case LtcTx:
+//         return CHAIN_LTC;
+//     case DashTx:
+//         return CHAIN_DASH;
+//     case BchTx:
+//         return CHAIN_BCH;
+//     case EthPersonalMessage:
+//     case EthTx:
+//     case EthTypedData:
+//         return CHAIN_ETH;
+//     case TronTx:
+//         return CHAIN_TRX;
+//     case CosmosTx:
+//     case CosmosEvmTx:
+//         return GuiGetCosmosTxChain();
+//     case SuiTx:
+//         return CHAIN_SUI;
+//     case SolanaTx:
+//     case SolanaMessage:
+//         return CHAIN_SOL;
+//     case AptosTx:
+//         return CHAIN_APT;
+//     case CardanoTx:
+//         return CHAIN_ADA;
+//     default:
+//         return CHAIN_BUTT;
+//     }
+//     return CHAIN_BUTT;
+// }
 
 
 static void ThrowError()
@@ -244,6 +251,13 @@ static void CloseScanErrorDataHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED)
     {
         GUI_DEL_OBJ(g_scanErrorHintBox)
-        GuiScanRefresh();
+        GuiScanStart();
     }
+}
+
+
+static void GuiScanStart()
+{
+    GuiSetScanCorner();
+    GuiModeControlQrDecode(true);    
 }

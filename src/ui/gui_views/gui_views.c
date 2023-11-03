@@ -55,6 +55,15 @@ void CloseTimerCurrentViewHandler(lv_event_t *e)
     }
 }
 
+void GoToHomeViewHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        CloseQRTimer();
+        GuiCloseToTargetView(&g_homeView);
+    }  
+}
+
 void CloseCurrentViewHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);

@@ -311,7 +311,7 @@ UREncodeResult *GuiGetEthSignQrCodeData(void)
     SetLockScreen(enable);
     return encodeResult;
 #else
-    UREncodeResult *encodeResult = NULL;
+    UREncodeResult *encodeResult = SRAM_MALLOC(sizeof(UREncodeResult));
     encodeResult->is_multi_part = 0;
     encodeResult->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
     encodeResult->encoder = NULL;

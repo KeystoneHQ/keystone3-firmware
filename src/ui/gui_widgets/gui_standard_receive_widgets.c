@@ -634,11 +634,14 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 
 #endif
 
-void GuiResetCurrentStandardAddressIndex(void)
+void GuiResetCurrentStandardAddressIndex(uint8_t index)
 {
-    g_selectIndex[GetCurrentAccountIndex()] = 0;
-    g_suiSelectIndex[GetCurrentAccountIndex()] = 0;
-    g_aptosSelectIndex[GetCurrentAccountIndex()] = 0;
+    if(index > 2) {
+        return;
+    }
+    g_selectIndex[index] = 0;
+    g_suiSelectIndex[index] = 0;
+    g_aptosSelectIndex[index] = 0;
 }
 
 void GuiResetAllStandardAddressIndex(void)

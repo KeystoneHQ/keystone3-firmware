@@ -1247,13 +1247,18 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
 
 #endif
 
-void GuiResetCurrentUtxoAddressIndex(void)
+void GuiResetCurrentUtxoAddressIndex(uint8_t index)
 {
-    g_btcSelectIndex[GetCurrentAccountIndex()] = 0;
-    g_ltcSelectIndex[GetCurrentAccountIndex()] = 0;
-    g_dashSelectIndex[GetCurrentAccountIndex()] = 0;
-    g_bchSelectIndex[GetCurrentAccountIndex()] = 0;
-    g_addressSettingsIndex[GetCurrentAccountIndex()] = 0;
+    if (index > 2)
+    {
+        return;
+    }
+
+    g_btcSelectIndex[index] = 0;
+    g_ltcSelectIndex[index] = 0;
+    g_dashSelectIndex[index] = 0;
+    g_bchSelectIndex[index] = 0;
+    g_addressSettingsIndex[index] = 0;
 }
 
 void GuiResetAllUtxoAddressIndex(void)

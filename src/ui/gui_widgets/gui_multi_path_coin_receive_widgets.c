@@ -1136,13 +1136,18 @@ static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item)
 
 #endif
 
-void GuiResetCurrentEthAddressIndex(void)
+void GuiResetCurrentEthAddressIndex(uint8_t index)
 {
+    if (index > 2)
+    {
+        return;
+    }
+    
     g_selectIndex = 0;
-    g_ethSelectIndex[GetCurrentAccountIndex()] = 0;
-    g_solSelectIndex[GetCurrentAccountIndex()] = 0;
-    g_ethPathIndex[GetCurrentAccountIndex()] = 0;
-    g_solPathIndex[GetCurrentAccountIndex()] = 0;
+    g_ethSelectIndex[index] = 0;
+    g_solSelectIndex[index] = 0;
+    g_ethPathIndex[index] = 0;
+    g_solPathIndex[index] = 0;
 }
 
 void GuiResetAllEthAddressIndex(void)

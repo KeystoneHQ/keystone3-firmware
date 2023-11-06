@@ -739,20 +739,21 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
     SetLockScreen(false);
 #ifndef COMPILE_SIMULATOR
     int32_t ret;
-    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
-    ret = DestroyAccount(GetCurrentAccountIndex());
+    uint8_t accountIndex = GetCurrentAccountIndex();
+    UpdateFingerSignFlag(accountIndex, false);
+    ret = DestroyAccount(accountIndex);
     if (ret == SUCCESS_CODE) {
         // reset address index in receive page
         {
-            void GuiResetCurrentUtxoAddressIndex(void);
-            void GuiResetCurrentEthAddressIndex(void);
-            void GuiResetCurrentStandardAddressIndex(void);
-            void GuiResetCurrentMultiAccountsCache(void);
+            void GuiResetCurrentUtxoAddressIndex(uint8_t index);
+            void GuiResetCurrentEthAddressIndex(uint8_t index);
+            void GuiResetCurrentStandardAddressIndex(uint8_t index);
+            void GuiResetCurrentMultiAccountsCache(uint8_t index);
 
-            GuiResetCurrentUtxoAddressIndex();
-            GuiResetCurrentEthAddressIndex();
-            GuiResetCurrentStandardAddressIndex();
-            GuiResetCurrentMultiAccountsCache();
+            GuiResetCurrentUtxoAddressIndex(accountIndex);
+            GuiResetCurrentEthAddressIndex(accountIndex);
+            GuiResetCurrentStandardAddressIndex(accountIndex);
+            GuiResetCurrentMultiAccountsCache(accountIndex);
         }
 
         uint8_t accountNum;

@@ -10,7 +10,7 @@ void GuiMultiPathCoinReceiveDeInit(void);
 void GuiMultiPathCoinReceiveRefresh(void);
 void GuiMultiPathCoinReceivePrevTile(void);
 void AddressLongModeCut(char *out, const char *address);
-void GuiResetCurrentEthAddressIndex(void);
+void GuiResetCurrentEthAddressIndex(uint8_t index);
 void GuiResetAllEthAddressIndex(void);
 #endif
 

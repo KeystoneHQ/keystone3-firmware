@@ -13,8 +13,8 @@ static char g_hdPath[26];
 static bool g_isMulti = false;
 static void *g_urResult = NULL;
 static void *g_parseResult = NULL;
-static char *g_cachedPubkey[3] = {NULL, NULL, NULL};
-static char *g_cachedPath[3] = {NULL, NULL, NULL};
+static char g_cachedPubkey[3][80] = {{'\0'}};
+static char g_cachedPath[3][32] = {{'\0'}};
 
 char *GuiGetXrpPath(uint16_t index)
 {
@@ -67,19 +67,26 @@ void *GuiGetXrpData(void)
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
-    SimpleResponse_c_char *result;
+    SimpleResponse_c_char *result = NULL;
     do {
+        printf("GuiGetXrpData\n");
         PtrT_TransactionParseResult_DisplayXrpTx parseResult = xrp_parse_tx(data);
         CHECK_CHAIN_BREAK(parseResult);
-        g_parseResult = (void *)parseResult;
 
-        if (g_cachedPubkey[GetCurrentAccountIndex()] != parseResult->data->signing_pubkey) {
+        printf("parseResult->data->signing_pubkey: %s\n", parseResult->data->signing_pubkey);
+        if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
+            printf("g_cachedPubkey: %s\n", g_cachedPubkey[GetCurrentAccountIndex()]);
+        }
+        if (g_cachedPubkey[GetCurrentAccountIndex()] == NULL || strcmp(g_cachedPubkey[GetCurrentAccountIndex()], parseResult->data->signing_pubkey) != 0) {
+            printf("cache pubkey\n");
             result = xrp_get_pubkey_path(GetCurrentAccountPublicKey(XPUB_TYPE_XRP), parseResult->data->signing_pubkey);
             CHECK_CHAIN_BREAK(result);
 
-            SRAM_FREE(g_cachedPubkey[GetCurrentAccountIndex()]);
-            g_cachedPubkey[GetCurrentAccountIndex()] = SRAM_MALLOC(strlen(parseResult->data->signing_pubkey) + 1);
-            strcpy(g_cachedPubkey[GetCurrentAccountIndex()], result->data);
+            // if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
+            //     SRAM_FREE(g_cachedPubkey[GetCurrentAccountIndex()]);
+            // }
+            // g_cachedPubkey[GetCurrentAccountIndex()] = SRAM_MALLOC(strlen(parseResult->data->signing_pubkey) + 1);
+            strcpy(g_cachedPubkey[GetCurrentAccountIndex()], parseResult->data->signing_pubkey);
 
             int rootLen = strlen(XRP_ROOT_PATH);
             int extLen = strlen(result->data) - 1;
@@ -87,14 +94,21 @@ void *GuiGetXrpData(void)
             strncpy(g_hdPath + rootLen, result->data + 1, extLen);
             g_hdPath[rootLen + extLen] = '\0';
 
-            SRAM_FREE(g_cachedPath[GetCurrentAccountIndex()]);
-            g_cachedPath[GetCurrentAccountIndex()] = SRAM_MALLOC(strlen(g_hdPath) + 1);
+            // if (g_cachedPath[GetCurrentAccountIndex()] != NULL) {
+            //     SRAM_FREE(g_cachedPath[GetCurrentAccountIndex()]);
+            // }
+            // g_cachedPath[GetCurrentAccountIndex()] = SRAM_MALLOC(strlen(g_hdPath) + 1);
             strcpy(g_cachedPath[GetCurrentAccountIndex()], g_hdPath);
         } else {
+            printf("use cache pubkey\n");
             strcpy(g_hdPath, g_cachedPath[GetCurrentAccountIndex()]);
         }
+
+        g_parseResult = (void *)parseResult;
     } while (0);
-    free_simple_response_c_char(result);
+    if (result != NULL) {
+        free_simple_response_c_char(result);
+    }
     return g_parseResult;
 #else
     TransactionParseResult_DisplayXrpTx *g_parseResult = malloc(sizeof(TransactionParseResult_DisplayXrpTx));

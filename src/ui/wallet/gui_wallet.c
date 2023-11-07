@@ -77,8 +77,14 @@ UREncodeResult *GuiGetBlueWalletBtcData(void)
 #endif
 }
 
-// copy from gui_btc, need to use real data
-UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType)
+typedef UREncodeResult *MetamaskUrGetter(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys);
+
+static get_unlimited_connect_metamask_ur(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys)
+{
+    return get_connect_metamask_ur_dynamic(master_fingerprint, master_fingerprint_length, account_type, public_keys, 11000, 11000);
+}
+
+static UREncodeResult *BasicGetMetamaskDataForAccountType(ETHAccountType accountType, MetamaskUrGetter func)
 {
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
@@ -86,26 +92,43 @@ UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType)
     ExtendedPublicKey keys[10];
     public_keys->data = keys;
 
-    if (accountType == Bip44Standard) {
+    if (accountType == Bip44Standard)
+    {
         public_keys->size = 1;
         keys[0].path = "";
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
-    } else if (accountType == LedgerLive) {
+    }
+    else if (accountType == LedgerLive)
+    {
         public_keys->size = 10;
-        for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
+        for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++)
+        {
             keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = "";
             keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].xpub = GetCurrentAccountPublicKey(i);
         }
-    } else if (accountType == LedgerLegacy) {
+    }
+    else if (accountType == LedgerLegacy)
+    {
         public_keys->size = 1;
         keys[0].path = "";
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LEGACY);
     }
 
-    g_urEncode = get_connect_metamask_ur(mfp, sizeof(mfp), accountType, public_keys);
+    g_urEncode = func(mfp, sizeof(mfp), accountType, public_keys);
     CHECK_CHAIN_PRINT(g_urEncode);
     SRAM_FREE(public_keys);
     return g_urEncode;
+}
+
+// copy from gui_btc, need to use real data
+UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType)
+{
+    return BasicGetMetamaskDataForAccountType(accountType, get_connect_metamask_ur);   
+}
+
+UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountType)
+{
+    return BasicGetMetamaskDataForAccountType(accountType, get_unlimited_connect_metamask_ur);
 }
 
 UREncodeResult *GuiGetMetamaskData(void)

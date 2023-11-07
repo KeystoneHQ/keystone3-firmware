@@ -57,7 +57,7 @@ static struct EthParams *ParseParams(char *data)
 
 static void ExportEthAddress(EAPDURequestPayload_t payload, uint8_t n, ETHAccountType type)
 {
-    UREncodeResult *urResult = GetMetamaskDataForAccountType(type);
+    UREncodeResult *urResult = GetUnlimitedMetamaskDataForAccountType(type);
 
     if (urResult->error_code != 0)
     {

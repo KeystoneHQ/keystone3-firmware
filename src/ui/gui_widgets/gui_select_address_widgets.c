@@ -100,7 +100,7 @@ static int GetMaxAddressIndex(void)
     switch (g_chainCoinType)
     {
     case CHAIN_XRP:
-        return 200;
+        return 205;
     default:
         return 999999999;
     }

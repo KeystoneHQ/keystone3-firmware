@@ -100,7 +100,7 @@ static int GetMaxAddressIndex(void)
     switch (g_chainCoinType)
     {
     case CHAIN_XRP:
-        return 205;
+        return 200;
     default:
         return 999999999;
     }
@@ -270,6 +270,7 @@ lv_obj_t *GuiCreateSelectAddressWidget(GuiChainCoinType chainCoinType, uint32_t 
     g_chainCoinType = chainCoinType;
     SetCurrentSelectIndex(selectIndex);
     g_setSelectIndexFunc = setIndex;
+    g_showIndex = selectIndex / 5 * 5;
 
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;

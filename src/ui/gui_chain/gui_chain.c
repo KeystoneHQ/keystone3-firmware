@@ -1,6 +1,6 @@
 #include "gui_chain.h"
 
-PtrT_TransactionCheckResult CheckScanResult(ViewType viewType)
+PtrT_TransactionCheckResult CheckScanResult(uint8_t viewType)
 {
     switch (ViewTypeReMap(viewType)) {
         case REMAPVIEW_BTC:
@@ -66,7 +66,7 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     return CHAIN_BUTT;
 }
 
-bool IsMessageType(ViewType type)
+bool IsMessageType(uint8_t type)
 {
     return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type);
 }

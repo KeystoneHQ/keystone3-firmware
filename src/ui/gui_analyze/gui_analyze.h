@@ -22,6 +22,9 @@ typedef void *(*GetCustomContainerFunc)(lv_obj_t *parent, void *g_totalData);
 void *GuiTemplateReload(lv_obj_t *parent, uint8_t index);
 void GuiTemplateClosePage(void);
 
+void ParseTransaction(uint8_t index);
+void SetParseTransactionResult(void* result);
+
 #ifdef __cplusplus
 }
 #endif

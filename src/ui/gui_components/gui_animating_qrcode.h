@@ -15,6 +15,7 @@
 typedef UREncodeResult *(*GenerateUR)(void);
 
 void GuiAnimatingQRCodeInit(lv_obj_t* parent, GenerateUR dataFunc, bool showPending);
+void GuiAnimatingQRCodeInitWithCustomSize(lv_obj_t* parent, GenerateUR dataFunc, bool showPending, uint16_t w, uint16_t h);
 void GuiAnimatingQRCodeControl(bool pause);
 void GuiAnimantingQRCodeFirstUpdate(char* data, uint16_t len);
 void GuiAnimatingQRCodeUpdate(char* data, uint16_t len);

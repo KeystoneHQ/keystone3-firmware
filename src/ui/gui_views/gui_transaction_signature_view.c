@@ -33,6 +33,12 @@ int32_t GuiTransactionSignatureViewEventProcess(void *self, uint16_t usEvent, vo
     case GUI_EVENT_REFRESH:
         GuiTransactionSignatureRefresh();
         break;
+    case SIG_BACKGROUND_UR_GENERATE_SUCCESS:
+        GuiTransactionSignatureHandleURGenerate((char*)param, usLen);
+        break;
+    case SIG_BACKGROUND_UR_UPDATE:
+        GuiTransactionSignatureHandleURUpdate((char*)param, usLen);
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

@@ -49,7 +49,6 @@
 static ViewType g_viewType;
 static uint8_t g_chainType = CHAIN_BUTT;
 static PageWidget_t *g_pageWidget;
-static lv_obj_t *g_analysis;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 
 static lv_obj_t *g_fingerSingContainer = NULL;
@@ -73,7 +72,7 @@ void GuiTransactionDetailInit(uint8_t viewType)
     g_chainType = ViewTypeToChainTypeSwitch(g_viewType);
     g_pageWidget = CreatePageWidget();
     GuiTransactionDetailNavBarInit();
-    g_analysis = GuiTemplateReload(g_pageWidget->contentZone, g_viewType);
+    ParseTransaction(g_viewType);
     g_fingerSignCount = 0;
     GuiCreateConfirmSlider(g_pageWidget->contentZone, CheckSliderProcessHandler);
 }
@@ -100,6 +99,11 @@ void GuiTransactionDetailRefresh()
 
 }
 
+void GuiTransactionDetailParseSuccess(void *param)
+{
+    SetParseTransactionResult(param);
+    GuiTemplateReload(g_pageWidget->contentZone, g_viewType);
+}
 
 void GuiTransactionDetailVerifyPasswordSuccess(void)
 {

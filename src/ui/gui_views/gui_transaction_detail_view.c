@@ -4,6 +4,7 @@
 #include "gui_views.h"
 #include "gui_transaction_detail_widgets.h"
 #include "gui_lock_widgets.h"
+#include "gui_pending_hintbox.h"
 
 static int32_t GuiTransactionDetailViewInit(uint8_t viewType)
 {
@@ -58,6 +59,17 @@ int32_t GuiTransactionDetailViewEventProcess(void *self, uint16_t usEvent, void 
         break;
     case SIG_FINGER_RECOGNIZE_RESPONSE:
         GuiSignDealFingerRecognize(param);
+        break;
+    case SIG_TRANSACTION_PARSE_SUCCESS:
+        GuiTransactionDetailParseSuccess(param);
+        break;
+    case SIG_TRANSACTION_PARSE_FAIL:
+        break;
+    case SIG_SHOW_TRANSACTION_PARSE_LOADING:
+        GuiPendingHintBoxOpen(_("Loading"), "");
+        break;
+    case SIG_HIDE_TRANSACTION_PARSE_LOADING:
+        GuiPendingHintBoxRemove();
         break;
     default:
         return ERR_GUI_UNHANDLED;

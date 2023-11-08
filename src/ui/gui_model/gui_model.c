@@ -72,6 +72,7 @@ static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen);
 static int32_t ModelURClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen);
 static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen);
+static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, void *parseTransactionFunc);
 
 #ifndef COMPILE_SIMULATOR
 #define MODEL_WRITE_SE_HEAD                 do {                                \
@@ -106,6 +107,7 @@ int32_t AsyncExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t in
 
 int32_t AsyncExecuteRunnable(BackgroundAsyncFuncWithRunnable_t func, const void *inData, uint32_t inDataLen, BackgroundAsyncRunnable_t runnable)
 {
+    func(inData, inDataLen, runnable);
     return SUCCESS_CODE;
 }
 #endif
@@ -249,6 +251,12 @@ void GuiModelTransactionCheckResultClear(void)
 {
     AsyncExecute(ModelTransactionCheckResultClear, NULL, 0);
 }
+
+void GuiModelParseTransaction(ReturnVoidPointerFunc func)
+{
+    AsyncExecuteRunnable(ModelParseTransaction, NULL, 0, (BackgroundAsyncRunnable_t)func);
+}
+
 
 // bip39 generate
 static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
@@ -452,7 +460,11 @@ static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, voi
     g_urResult = func();
     if (g_urResult->error_code == 0) {
         // printf("%s\r\n", g_urResult->data);
+#ifndef COMPILE_SIMULATOR
         GuiApiEmitSignal(SIG_BACKGROUND_UR_GENERATE_SUCCESS, g_urResult->data, strlen(g_urResult->data) + 1);
+#else
+        GuiEmitSignal(SIG_BACKGROUND_UR_GENERATE_SUCCESS, g_urResult->data, strlen(g_urResult->data) + 1);
+#endif
     } else {
         //TODO: deal with error
     }
@@ -1097,10 +1109,10 @@ static PtrT_TransactionCheckResult g_checkResult = NULL;
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
 {
 #ifndef COMPILE_SIMULATOR
-    GuiEmitSignal(SIG_SHOW_CHECKING_LAODING, NULL, 0);
+    GuiApiEmitSignal(SIG_SHOW_TRANSACTION_CHECKING_LOADING, NULL, 0);
     ViewType viewType = *((ViewType *)inData);
     g_checkResult = CheckScanResult(viewType);
-    GuiEmitSignal(SIG_HIDE_CHECKING_LAODING, NULL, 0);
+    GuiApiEmitSignal(SIG_HIDE_TRANSACTION_CHECKING_LOADING, NULL, 0);
 
     if (g_checkResult->error_code == 0) {
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
@@ -1108,14 +1120,14 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_FAIL, g_checkResult, sizeof(g_checkResult));
     }
 #else
-    GuiEmitSignal(SIG_SHOW_CHECKING_LAODING, NULL, 0);
-    for (size_t i = 0; i < 500000000; i++)
-    {
-        if(i == 1000000){
-            printf("ddd\n");
-        }
-    }
-    GuiEmitSignal(SIG_HIDE_CHECKING_LAODING, NULL, 0);
+    GuiEmitSignal(SIG_SHOW_TRANSACTION_CHECKING_LOADING, NULL, 0);
+    // for (size_t i = 0; i < 500000000; i++)
+    // {
+    //     if(i == 1000000){
+    //         printf("ddd\n");
+    //     }
+    // }
+    GuiEmitSignal(SIG_HIDE_TRANSACTION_CHECKING_LOADING, NULL, 0);
     GuiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
 #endif
     return SUCCESS_CODE;
@@ -1127,5 +1139,30 @@ static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inD
         free_TransactionCheckResult(g_checkResult);
         g_checkResult = NULL;
     }
+    return SUCCESS_CODE;
+}
+
+
+static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, void *parseTransactionFunc)
+{
+    ReturnVoidPointerFunc func = (ReturnVoidPointerFunc)parseTransactionFunc;
+    GuiApiEmitSignal(SIG_SHOW_TRANSACTION_PARSE_LOADING, NULL, 0);
+    //There is no need to release here, the parsing results will be released when exiting the details page.
+    TransactionParseResult_DisplayTx *parsedResult = (TransactionParseResult_DisplayTx *)func();
+    if (parsedResult != NULL && parsedResult->error_code == 0 && parsedResult->data != NULL) {
+#ifndef COMPILE_SIMULATOR
+        GuiApiEmitSignal(SIG_TRANSACTION_PARSE_SUCCESS, parsedResult, sizeof(parsedResult));
+#else
+        GuiEmitSignal(SIG_TRANSACTION_PARSE_SUCCESS, parsedResult, sizeof(parsedResult));
+#endif
+    } else {
+
+#ifndef COMPILE_SIMULATOR
+        GuiApiEmitSignal(SIG_TRANSACTION_PARSE_FAIL, parsedResult, sizeof(parsedResult));
+#else
+        GuiEmitSignal(SIG_TRANSACTION_PARSE_FAIL, parsedResult, sizeof(parsedResult));
+#endif
+    }
+    GuiApiEmitSignal(SIG_HIDE_TRANSACTION_PARSE_LOADING, NULL, 0);
     return SUCCESS_CODE;
 }

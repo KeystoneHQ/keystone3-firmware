@@ -5,6 +5,7 @@
 #include "gui_scan_widgets.h"
 #include "gui_lock_widgets.h"
 #include "gui_pending_hintbox.h"
+
 static int32_t GuiScanViewInit(void)
 {
     GuiScanInit();
@@ -39,10 +40,10 @@ int32_t GuiScanViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case SIG_TRANSACTION_CHECK_FAIL:
         GuiTransactionCheckFiald((PtrT_TransactionCheckResult)param);
         break;
-    case SIG_SHOW_CHECKING_LAODING:
+    case SIG_SHOW_TRANSACTION_CHECKING_LOADING:
         GuiPendingHintBoxOpen(_("Loading"), "");
         break;
-    case SIG_HIDE_CHECKING_LAODING:
+    case SIG_HIDE_TRANSACTION_CHECKING_LOADING:
         GuiPendingHintBoxRemove();
         break;
     default:

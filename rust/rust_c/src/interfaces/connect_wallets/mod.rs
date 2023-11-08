@@ -38,7 +38,7 @@ use crate::interfaces::errors::RustCError;
 use crate::interfaces::ffi::CSliceFFI;
 use crate::interfaces::structs::ExtendedPublicKey;
 use crate::interfaces::types::{PtrBytes, PtrString, PtrT};
-use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
+use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
 use crate::interfaces::utils::{recover_c_array, recover_c_char};
 
 use self::structs::QRHardwareCallData;
@@ -279,6 +279,23 @@ pub extern "C" fn get_connect_metamask_ur_dynamic(
             }
         }
     }
+}
+
+#[no_mangle]
+pub extern "C" fn get_connect_metamask_ur_unlimited(
+    master_fingerprint: PtrBytes,
+    master_fingerprint_length: uint32_t,
+    account_type: ETHAccountType,
+    public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
+) -> *mut UREncodeResult {
+    get_connect_metamask_ur_dynamic(
+        master_fingerprint,
+        master_fingerprint_length,
+        account_type,
+        public_keys,
+        FRAGMENT_UNLIMITED_LENGTH,
+        FRAGMENT_UNLIMITED_LENGTH,
+    )
 }
 
 #[no_mangle]

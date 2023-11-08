@@ -114,7 +114,7 @@ void *ExportAddressService(EAPDURequestPayload_t payload)
     }
     else
     {
-        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_UNSUPPORTED_CHAIN, "Unsupported chain");
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_UNSUPPORTED_CHAIN, "Unsupported chain");
     }
 
     SRAM_FREE(params);

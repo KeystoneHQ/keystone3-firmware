@@ -33,12 +33,9 @@ pub fn sign_tx(raw_hex: &[u8], hd_path: &String, seed: &[u8]) -> R<Vec<u8>> {
             hex::encode(wrapped_tx.tx_hex)
         ))
     })?;
-    let (_, signature) = keystore::algorithms::secp256k1::sign_message_by_seed(
-        &seed,
-        hd_path,
-        &message,
-    )
-    .map_err(|e| XRPError::KeystoreError(format!("sign failed {:?}", e.to_string())))?;
+    let (_, signature) =
+        keystore::algorithms::secp256k1::sign_message_by_seed(&seed, hd_path, &message)
+            .map_err(|e| XRPError::KeystoreError(format!("sign failed {:?}", e.to_string())))?;
     let signed_tx_str = wrapped_tx.generate_signed_tx(&signature)?;
     Ok(hex::decode(signed_tx_str)?.to_vec())
 }

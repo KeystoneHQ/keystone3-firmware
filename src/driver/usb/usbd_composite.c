@@ -163,7 +163,7 @@ static uint8_t *GetCompositeConfigDescriptor(uint8_t speed, uint16_t *length)
     descriptor = USBD_MSC_cb.GetConfigDescriptor(speed, &descriptorSize);
     descriptorSize -= 9;
     descriptor[9 + 2] = interfaceIndex;
-    interfaceIndex++;
+    // interfaceIndex++;
     memcpy(CompositeConfigDescriptor + *length, descriptor + 9, descriptorSize);
     *length += descriptorSize;
     g_interfaceCount++;

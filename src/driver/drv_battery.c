@@ -29,6 +29,7 @@
 #define BATTERY_PRINTF(fmt, args...)
 #endif
 
+#define BATTERY_CHARGING_BY_TIME                        75
 #define BATTERY_LOG_PERCENT_INTERVAL                    1
 #define BATTERY_LOG_DETAIL                              1
 #define BATTERY_ADC_TIMES                               100
@@ -281,7 +282,7 @@ bool BatteryIntervalHandler(void)
     } else if (usbPowerState == USB_POWER_STATE_CONNECT) {
         //The battery percentage only increase when charging.
         //The battery percentage increase by 1% each time.
-        if (percent < g_batterPercent && percent >= 80) {
+        if (percent < g_batterPercent && percent >= BATTERY_CHARGING_BY_TIME) {
             printf("delay increate battery percentage delayIncreate = %d\n", delayIncreate);
             delayIncreate++;
         }

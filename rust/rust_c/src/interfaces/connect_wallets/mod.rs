@@ -38,7 +38,9 @@ use crate::interfaces::errors::RustCError;
 use crate::interfaces::ffi::CSliceFFI;
 use crate::interfaces::structs::ExtendedPublicKey;
 use crate::interfaces::types::{PtrBytes, PtrString, PtrT};
-use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
+use crate::interfaces::ur::{
+    UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH,
+};
 use crate::interfaces::utils::{recover_c_array, recover_c_char};
 
 use self::structs::QRHardwareCallData;

@@ -45,7 +45,6 @@ pub fn sign_tx(raw_hex: &[u8], hd_path: &String, seed: &[u8]) -> R<Vec<u8>> {
 
 pub fn parse(raw_hex: &[u8]) -> R<parser::structs::ParsedXrpTx> {
     let v: Value = from_slice(raw_hex)?;
-    // let wrapped_tx = WrappedTxData::from_raw(v.to_string().into_bytes().as_slice())?;
     parser::structs::ParsedXrpTx::build(v)
 }
 

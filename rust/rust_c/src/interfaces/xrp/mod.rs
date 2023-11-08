@@ -15,6 +15,9 @@ use app_xrp::errors::XRPError;
 use third_party::ur_registry::bytes::Bytes;
 use third_party::ur_registry::traits::RegistryItem;
 
+use super::errors::ErrorCodes;
+use super::structs::TransactionCheckResult;
+
 #[no_mangle]
 pub extern "C" fn xrp_get_address(
     hd_path: PtrString,
@@ -81,14 +84,14 @@ pub extern "C" fn xrp_sign_tx(
 }
 
 #[no_mangle]
-pub extern "C" fn xrp_get_pubkey_path(
+pub extern "C" fn xrp_check_tx(
+    ptr: PtrUR,
     root_xpub: PtrString,
-    pubkey: PtrString,
-) -> *mut SimpleResponse<c_char> {
+) -> PtrT<TransactionCheckResult> {
+    let crypto_bytes = extract_ptr_with_type!(ptr, Bytes);
     let root_xpub = recover_c_char(root_xpub);
-    let pubkey = recover_c_char(pubkey);
-    match app_xrp::get_pubkey_path(&root_xpub, &pubkey, 200) {
-        Ok(p) => SimpleResponse::success(convert_c_char(p) as *mut c_char).simple_c_ptr(),
-        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+    match app_xrp::check_tx(crypto_bytes.get_bytes().as_slice(), &root_xpub) {
+        Ok(p) => TransactionCheckResult::error(ErrorCodes::Success, p).c_ptr(),
+        Err(e) => TransactionCheckResult::from(e).c_ptr(),
     }
 }

@@ -41,11 +41,7 @@ pub extern "C" fn xrp_get_address(
     }
 }
 
-fn build_sign_result(
-    ptr: PtrUR,
-    hd_path: PtrString,
-    seed: &[u8],
-) -> Result<Vec<u8>, XRPError> {
+fn build_sign_result(ptr: PtrUR, hd_path: PtrString, seed: &[u8]) -> Result<Vec<u8>, XRPError> {
     let crypto_bytes = extract_ptr_with_type!(ptr, Bytes);
     let hd_path = recover_c_char(hd_path);
     app_xrp::sign_tx(crypto_bytes.get_bytes().as_slice(), &hd_path, seed)
@@ -84,10 +80,7 @@ pub extern "C" fn xrp_sign_tx(
 }
 
 #[no_mangle]
-pub extern "C" fn xrp_check_tx(
-    ptr: PtrUR,
-    root_xpub: PtrString,
-) -> PtrT<TransactionCheckResult> {
+pub extern "C" fn xrp_check_tx(ptr: PtrUR, root_xpub: PtrString) -> PtrT<TransactionCheckResult> {
     let crypto_bytes = extract_ptr_with_type!(ptr, Bytes);
     let root_xpub = recover_c_char(root_xpub);
     match app_xrp::check_tx(crypto_bytes.get_bytes().as_slice(), &root_xpub) {

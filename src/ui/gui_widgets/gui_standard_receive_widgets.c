@@ -677,6 +677,9 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
 
 static uint32_t GetCurrentSelectIndex()
 {
+    if (!IsAccountSwitchable()) {
+        return 0;
+    }
     switch (g_chainCard) {
     case HOME_WALLET_CARD_SUI:
         return g_suiSelectIndex[GetCurrentAccountIndex()];

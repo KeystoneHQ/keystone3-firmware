@@ -475,6 +475,7 @@ void GuiQrCodeShowQrMessage(lv_obj_t *parent)
 
 void GuiQrCodeVerifyPasswordSuccess(void)
 {
+    ClearSecretCache();
     lv_obj_del(g_qrCodeWidgetView.analysis);
     GUI_DEL_OBJ(g_fingerSingContainer)
     GUI_DEL_OBJ(g_scanErrorHintBox)

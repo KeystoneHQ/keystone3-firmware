@@ -96,6 +96,7 @@
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinQck.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinRegen.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinRowan.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\coin\coinScroll.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinScrt.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinSol.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinSomm.c" />
@@ -186,6 +187,7 @@
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgForget.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgGreenFinger.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgImport.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgInfo.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgInformation.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgLock.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgLockDestroy.c" />
@@ -298,6 +300,7 @@
     <ClCompile Include="..\..\src\ui\gui_assets\wallet\walletXrptoolkit.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\wallet\walletYearn.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\wallet\walletZapper.c" />
+    <ClCompile Include="..\..\src\ui\gui_chain\gui_ada.c" />
     <ClCompile Include="..\..\src\ui\gui_chain\gui_aptos.c" />
     <ClCompile Include="..\..\src\ui\gui_chain\gui_btc.c" />
     <ClCompile Include="..\..\src\ui\gui_chain\gui_cosmos.c" />

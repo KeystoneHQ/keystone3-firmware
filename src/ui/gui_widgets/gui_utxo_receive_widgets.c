@@ -591,12 +591,12 @@ static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
 
 static void Highlight(char *address, uint8_t highlightStart, uint8_t highlightEnd, char *coloredAddress)
 {
+#ifndef COMPILE_SIMULATOR
     uint8_t addressLength = strlen(address);
     if (address == NULL || coloredAddress == NULL || highlightStart > highlightEnd || highlightEnd > addressLength)
     {
         return;
     }
-
     char beforeHighlight[addressLength];
     char highlight[addressLength];
     char afterHighlight[addressLength];
@@ -608,6 +608,7 @@ static void Highlight(char *address, uint8_t highlightStart, uint8_t highlightEn
     strcpy(afterHighlight, &address[highlightEnd]);
 
     sprintf(coloredAddress, "%s#F5870A %s#%s", beforeHighlight, highlight, afterHighlight);
+#endif
 }
 
 static void RefreshDefaultAddress(void)

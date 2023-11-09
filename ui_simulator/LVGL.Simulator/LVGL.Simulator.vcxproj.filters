@@ -789,9 +789,6 @@
     <ClCompile Include="..\..\src\ui\gui_views\gui_dispaly_view.c">
       <Filter>gui\gui_views</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_views\gui_ethereum_receive_view.c">
-      <Filter>gui\gui_views</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_views\gui_firmware_update_view.c">
       <Filter>gui\gui_views</Filter>
     </ClCompile>
@@ -922,9 +919,6 @@
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_enter_passcode.c">
-      <Filter>gui\gui_widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_ethereum_receive_widgets.c">
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_firmware_process_widgets.c">
@@ -1250,6 +1244,34 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_analyze\gui_analyze.c">
       <Filter>gui\gui_analyze</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\coin\coinAda.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\coin\coinSui.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgNextStep.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgUnknown.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\walletList\walletListEternl.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\walletList\walletListFewcha.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\walletList\walletListPetra.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\wallet\walletPetra.c" />
+    <ClCompile Include="..\..\src\ui\gui_chain\gui_aptos.c" />
+    <ClCompile Include="..\..\src\ui\gui_chain\gui_sol.c" />
+    <ClCompile Include="..\..\src\ui\gui_chain\gui_sui.c" />
+    <ClCompile Include="..\..\src\ui\gui_views\gui_key_derivation_request_view.c" />
+    <ClCompile Include="..\..\src\ui\gui_views\gui_multi_account_receive_view copy.c" />
+    <ClCompile Include="..\..\src\ui\gui_views\gui_multi_path_coin_receive_view.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_connect_eternl_widgets.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_global_resources.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_key_derivation_request_widgets.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_multi_accounts_receive_widgets.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_multi_path_coin_receive_widgets.c" />
+    <ClCompile Include="..\..\src\ui\gui_chain\gui_ada.c">
+      <Filter>gui\gui_chain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\coin\coinScroll.c">
+      <Filter>gui\assets\coin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgInfo.c">
+      <Filter>gui\assets\img</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

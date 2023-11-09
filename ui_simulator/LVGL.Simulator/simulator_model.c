@@ -12,6 +12,11 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
+MnemonicType GetMnemonicType(void)
+{
+    return MNEMONIC_TYPE_SLIP39;
+}
+
 void SetPassphraseQuickAccess(bool exist)
 {
 

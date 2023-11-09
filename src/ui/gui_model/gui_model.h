@@ -32,6 +32,7 @@
 #include "simulator_model.h"
 #endif
 #include "gui_animating_qrcode.h"
+#include "account_manager.h"
 
 #define MAX_LOGIN_PASSWORD_ERROR_COUNT  10
 #define MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX 4

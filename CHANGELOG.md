@@ -1,3 +1,14 @@
+## 1.1.2 (2023-11-09)
+
+### Features
+
+1. Added support for XRP
+
+### Improvement
+
+1. Refined text throughout the app
+
+
 ## 1.1.0 (2023-10-31)
 
 ### Features

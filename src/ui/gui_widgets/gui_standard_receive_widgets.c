@@ -115,6 +115,7 @@ static PageWidget_t *g_pageWidget;
 void GuiStandardReceiveInit(uint8_t chain)
 {
     g_chainCard = chain;
+    g_showIndex = GetCurrentSelectIndex() / 5 * 5;
     g_pageWidget = CreatePageWidget();
     g_standardReceiveWidgets.cont = g_pageWidget->contentZone;
     g_standardReceiveWidgets.tileView = lv_tileview_create(g_standardReceiveWidgets.cont);

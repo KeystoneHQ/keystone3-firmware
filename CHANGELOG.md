@@ -2,7 +2,7 @@
 
 ### Features
 
-1. Added support for XRP blockchain
+1. Added support for XRP
 
 ### Improvement
 

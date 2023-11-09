@@ -880,12 +880,14 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
     int32_t ret;
     uint16_t *param = (uint16_t *)inData;
 
+    // Unlock screen
     if (SIG_LOCK_VIEW_VERIFY_PIN == *param || SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS == *param) {
         ret = VerifyPasswordAndLogin(&accountIndex, SecretCacheGetPassword());
         if (ret == ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH) {
             GuiApiEmitSignal(SIG_EXTENDED_PUBLIC_KEY_NOT_MATCH, NULL, 0);
             return ret;
         }
+        ClearSecretCache();
     } else {
         ret = VerifyCurrentAccountPassword(SecretCacheGetPassword());
     }

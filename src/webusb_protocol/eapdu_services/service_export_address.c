@@ -13,6 +13,7 @@ struct EthParams
     uint8_t n;
     ETHAccountType type;
     uint8_t chain;
+    uint8_t wallet;
 };
 
 static struct EthParams *NewParams()
@@ -21,12 +22,13 @@ static struct EthParams *NewParams()
     params->n = -1;
     params->type = -1;
     params->chain = -1;
+    params->wallet = -1;
     return params;
 }
 
 static bool IsValidParams(struct EthParams *params)
 {
-    if (params->n == -1 || params->type == -1 || params->chain == -1)
+    if (params->n == -1 || params->type == -1 || params->chain == -1 || params->wallet == -1)
     {
         return false;
     }
@@ -41,6 +43,7 @@ static struct EthParams *ParseParams(char *data)
     cJSON *n = cJSON_GetObjectItem(json, "n");
     cJSON *type = cJSON_GetObjectItem(json, "type");
     cJSON *chain = cJSON_GetObjectItem(json, "chain");
+    cJSON *wallet = cJSON_GetObjectItem(json, "wallet");
 
     if (n != NULL && n->type == cJSON_Number)
     {
@@ -54,6 +57,10 @@ static struct EthParams *ParseParams(char *data)
     {
         params->chain = chain->valueint;
     }
+    if (wallet != NULL && wallet->type == cJSON_Number)
+    {
+        params->wallet = wallet->valueint;
+    }
     cJSON_Delete(json);
     return params;
 }
@@ -62,10 +69,20 @@ typedef struct
 {
     uint16_t requestID;
     uint8_t n;
+    uint8_t wallet;
     ETHAccountType type;
 } ExportAddressParams_t;
 
 static ExportAddressParams_t *g_exportAddressParams = NULL;
+
+uint8_t GetExportWallet()
+{
+    if (g_exportAddressParams == NULL)
+    {
+        return DEFAULT;
+    }
+    return g_exportAddressParams->wallet;
+}
 
 void ExportAddressApprove()
 {
@@ -155,6 +172,7 @@ void *ExportAddressService(EAPDURequestPayload_t payload)
         g_exportAddressParams->requestID = payload.requestID;
         g_exportAddressParams->n = params->n;
         g_exportAddressParams->type = params->type;
+        g_exportAddressParams->wallet = params->wallet;
         PubValueMsg(UI_MSG_USB_TRANSPORT_VIEW, 0);
     }
     else

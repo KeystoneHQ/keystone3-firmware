@@ -25,13 +25,24 @@ static void RejectButtonHandler(lv_event_t *e)
     }
 }
 
+static lv_img_dsc_t *GetConnectWalletImg()
+{
+    uint8_t wallet = GetExportWallet();
+    switch (wallet) {
+        case Rabby:
+            return &imgConnectWithRabby;
+        default:
+            return &imgConnectWithRabby;
+    }
+}
+
 void GuiUSBTransportWidgetsInit()
 {
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 
     g_cont = cont;
-    lv_obj_t *img = GuiCreateImg(cont, &imgConnectWithRabby);
+    lv_obj_t *img = GuiCreateImg(cont, GetConnectWalletImg());
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 16);
 
     lv_obj_t *label;

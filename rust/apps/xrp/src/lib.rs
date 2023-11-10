@@ -49,21 +49,24 @@ pub fn get_pubkey_path(root_xpub: &str, pubkey: &str, max_i: u32) -> R<String> {
     let xpub = ExtendedPubKey::from_str(&root_xpub)?;
     let k1 = secp256k1::Secp256k1::new();
     let a_xpub = xpub.derive_pub(&k1, &DerivationPath::from_str("m/0")?)?;
-    let pubkey = hex::decode(pubkey)?;
-    let pubkey_bytes = pubkey.as_slice();
+    let pubkey_arr = hex::decode(pubkey)?;
+    let pubkey_bytes = pubkey_arr.as_slice();
     for i in 0..max_i {
         let pk = a_xpub.derive_pub(&k1, &DerivationPath::from_str(&format!("m/{}", i))?)?;
         let key = pk.public_key.serialize();
         if key.eq(pubkey_bytes) {
-            return Ok(format!("m/0/{}", i));
+            return Ok(format!("{}:m/0/{}", pubkey, i));
         }
     }
     return Err(XRPError::InvalidData("pubkey not found".to_string()));
 }
 
-pub fn check_tx(raw: &[u8], root_xpub: &str) -> R<String> {
+pub fn check_tx(raw: &[u8], root_xpub: &str, cached_pubkey: &str) -> R<String> {
     let v: Value = from_slice(raw)?;
     let wrapped_tx = WrappedTxData::from_raw(v.to_string().into_bytes().as_slice())?;
+    if wrapped_tx.signing_pubkey == cached_pubkey {
+        return Ok("".to_string());
+    }
     get_pubkey_path(root_xpub, &wrapped_tx.signing_pubkey, 200)
 }
 
@@ -90,14 +93,17 @@ mod tests {
         let pubkey = "03F5C5BB1D19EC710D3D7FAD199AF10CF8BC1D11348E5B3765C0B0B9C0BEC32879";
         let root_xpub = "xpub6Czwh4mKUQryD6dbe9e9299Gjn4EnSP641rACmQeAhCXYjW4Hnj8tqiCMir3VSWoNnjimtzy6qtnjD1GSf8FtEdXUFcGeXXezXyEMXtMmo1";
         let result = get_pubkey_path(root_xpub, pubkey, 200).unwrap();
-        assert_eq!(result, "m/0/0");
+        assert_eq!(
+            result,
+            "03F5C5BB1D19EC710D3D7FAD199AF10CF8BC1D11348E5B3765C0B0B9C0BEC32879:m/0/0"
+        );
     }
 
     #[test]
     fn test_check_tx() {
         let raw = hex::decode("7B225472616E73616374696F6E54797065223A225061796D656E74222C22416D6F756E74223A223130303030303030222C2244657374696E6174696F6E223A22724A6436416D48485A7250756852683377536637696B724D4A516639373646516462222C22466C616773223A323134373438333634382C224163636F756E74223A227247556D6B794C627671474633687758347177474864727A4C6459325170736B756D222C22466565223A223132222C2253657175656E6365223A34323532393130372C224C6173744C656467657253657175656E6365223A34323532393137332C225369676E696E675075624B6579223A22303346354335424231443139454337313044334437464144313939414631304346384243314431313334384535423337363543304230423943304245433332383739227D").unwrap();
         let root_xpub = "xpub6Czwh4mKUQryD6dbe9e9299Gjn4EnSP641rACmQeAhCXYjW4Hnj8tqiCMir3VSWoNnjimtzy6qtnjD1GSf8FtEdXUFcGeXXezXyEMXtMmo1";
-        let result = check_tx(&raw, root_xpub);
+        let result = check_tx(&raw, root_xpub, "");
         assert!(result.is_ok());
     }
 }

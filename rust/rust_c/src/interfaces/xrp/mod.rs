@@ -80,10 +80,19 @@ pub extern "C" fn xrp_sign_tx(
 }
 
 #[no_mangle]
-pub extern "C" fn xrp_check_tx(ptr: PtrUR, root_xpub: PtrString) -> PtrT<TransactionCheckResult> {
+pub extern "C" fn xrp_check_tx(
+    ptr: PtrUR,
+    root_xpub: PtrString,
+    cached_pubkey: PtrString,
+) -> PtrT<TransactionCheckResult> {
     let crypto_bytes = extract_ptr_with_type!(ptr, Bytes);
     let root_xpub = recover_c_char(root_xpub);
-    match app_xrp::check_tx(crypto_bytes.get_bytes().as_slice(), &root_xpub) {
+    let cached_pubkey = recover_c_char(cached_pubkey);
+    match app_xrp::check_tx(
+        crypto_bytes.get_bytes().as_slice(),
+        &root_xpub,
+        &cached_pubkey,
+    ) {
         Ok(p) => TransactionCheckResult::error(ErrorCodes::Success, p).c_ptr(),
         Err(e) => TransactionCheckResult::from(e).c_ptr(),
     }

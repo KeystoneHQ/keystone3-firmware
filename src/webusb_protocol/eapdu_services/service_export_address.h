@@ -4,6 +4,14 @@
 // Consider finding a way to separate these concerns to maintain thread safety and better organize the code.
 #include "gui_wallet.h"
 
+enum ExportWallet
+{
+    Rabby,
+    DEFAULT = 0xFF,
+};
+
 void *ExportAddressService(EAPDURequestPayload_t payload);
 void ExportAddressApprove();
 void ExportAddressReject();
+uint8_t GetExportWallet();
+

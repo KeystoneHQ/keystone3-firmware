@@ -122,6 +122,7 @@ void AccountPublicInfoTest(int argc, char *argv[]);
 bool GetFirstReceive(const char* chainName);
 void SetFirstReceive(const char* chainName, bool isFirst);
 void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count);
+char *GetXPubPath(uint8_t index);
 
 #endif
 

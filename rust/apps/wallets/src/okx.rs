@@ -27,6 +27,10 @@ const BTC_SEGWIT_PREFIX: &str = "m/49'/0'/0'";
 const BTC_NATIVE_SEGWIT_PREFIX: &str = "m/84'/0'/0'";
 const ETH_STANDARD_PREFIX: &str = "m/44'/60'/0'";
 const ETH_LEDGER_LIVE_PREFIX: &str = "m/44'/60'"; //overlap with ETH_STANDARD at 0
+const TRX_PREFIX: &str = "m/44'/195'/0'";
+const LTC_PREFIX: &str = "m/49'/2'/0'";
+const BCH_PREFIX: &str = "m/44'/145'/0'";
+const DASH_PREFIX: &str = "m/44'/5'/0'";
 
 pub fn generate_crypto_multi_accounts(
     master_fingerprint: [u8; 4],
@@ -35,21 +39,25 @@ pub fn generate_crypto_multi_accounts(
 ) -> URResult<CryptoMultiAccounts> {
     let device_id = get_device_id(serial_number);
     let mut keys = vec![];
-    let btc_keys = vec![
+    let k1_keys = vec![
         BTC_LEGACY_PREFIX.to_string(),
         BTC_SEGWIT_PREFIX.to_string(),
         BTC_NATIVE_SEGWIT_PREFIX.to_string(),
+        TRX_PREFIX.to_string(),
+        LTC_PREFIX.to_string(),
+        BCH_PREFIX.to_string(),
+        DASH_PREFIX.to_string(),
     ];
     for ele in extended_public_keys {
         match ele.get_path() {
-            _path if btc_keys.contains(&_path.to_string()) => {
+            _path if k1_keys.contains(&_path.to_string().to_lowercase()) => {
                 keys.push(generate_k1_normal_key(
                     master_fingerprint,
                     ele.clone(),
                     None,
                 )?);
             }
-            _path if _path.to_string().eq(ETH_STANDARD_PREFIX) => {
+            _path if _path.to_string().to_lowercase().eq(ETH_STANDARD_PREFIX) => {
                 keys.push(generate_k1_normal_key(
                     master_fingerprint,
                     ele.clone(),
@@ -61,7 +69,12 @@ pub fn generate_crypto_multi_accounts(
                     Some("account.ledger_live".to_string()),
                 )?);
             }
-            _path if _path.to_string().starts_with(ETH_LEDGER_LIVE_PREFIX) => {
+            _path
+                if _path
+                    .to_string()
+                    .to_lowercase()
+                    .starts_with(ETH_LEDGER_LIVE_PREFIX) =>
+            {
                 keys.push(generate_eth_ledger_live_key(
                     master_fingerprint,
                     ele,

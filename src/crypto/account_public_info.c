@@ -159,6 +159,12 @@ static const ChainItem_t g_chainTable[] =
     {XPUB_TYPE_ADA_23,                BIP32_ED25519,"ada_23",                   "M/1852'/1815'/23'"},
 };
 
+char *GetXPubPath(uint8_t index)
+{
+    ASSERT(index < XPUB_TYPE_NUM);
+    return g_chainTable[index].path;
+}
+
 void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
 {
     int32_t ret = SUCCESS_CODE;

@@ -13,6 +13,7 @@ hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 either = { version = "1.8.1", default-features = false }
 rsa = { version = "0.8.2", default-features = false }
 sha1 = { version = "0.10.5", default-features = false }
+sha2 = { version = "0.10.8", default-features = false }
 cty = "0.2.2"
 cstr_core = "0.2.6"
 ur-registry = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag="0.0.20" }
@@ -25,3 +26,4 @@ base64 = { version = "0.11", default-features = false, features = ['alloc'] }
 unicode-blocks = "0.1.6"
 bcs = {git = "https://github.com/KeystoneHQ/bcs.git", tag = "0.1.1"}
 blake2 = { version = "0.10.6", default-features = false }
+pbkdf2 = { version = "0.12", features = ["simple"] }

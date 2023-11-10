@@ -1643,14 +1643,28 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
     return obj;
 }
 
-void *GuiTemplateOpenPage(GuiRemapViewType index)
+void SetParseTransactionResult(void* result)
 {
+    g_totalData = ((TransactionParseResult_DisplayTx *)result)->data;
+}
+
+static void* CreateTransactionDetailWidgets()
+{
+    int index = -1;
+    for (int j = 0; j < NUMBER_OF_ARRAYS(g_analyzeArray); j++) {
+        if (g_reMapIndex == g_analyzeArray[j].index) {
+            index = j;
+            break;
+        }
+    }
+    if (index == -1) {
+        return NULL;
+    }
 #ifdef COMPILE_SIMULATOR
     lv_fs_file_t fd;
     uint32_t size;
 #define JSON_MAX_LEN (1024 * 100)
     char buf[JSON_MAX_LEN];
-
     if (LV_FS_RES_OK != lv_fs_open(&fd, g_analyzeArray[index].config, LV_FS_MODE_RD))
     {
         printf("lv_fs_open failed %s\n", g_analyzeArray[index].config);
@@ -1660,45 +1674,38 @@ void *GuiTemplateOpenPage(GuiRemapViewType index)
     lv_fs_read(&fd, buf, JSON_MAX_LEN, &size);
     buf[size] = '\0';
 #endif
-    uint32_t i = 0;
-    for (i = 0; i < NUMBER_OF_ARRAYS(g_analyzeArray); i++)
-    {
-        if (index == g_analyzeArray[i].index)
-        {
-            TransactionParseResult_DisplayTx *result = NULL;
-            result = (TransactionParseResult_DisplayTx *)(g_analyzeArray[i].func());
-#ifndef COMPILE_SIMULATOR
-            if ((result == NULL) || (result->error_code != 0) || (result->data == NULL))
-            {
-                printf("remap view type index is : %d\r\n", index);
-                printf("Get Parsed QrData failed\r\n");
-                return NULL;
-            }
-#endif
-            g_totalData = result->data;
 
 #ifdef COMPILE_SIMULATOR
-            cJSON *paramJson = cJSON_Parse(buf);
+    cJSON *paramJson = cJSON_Parse(buf);
 #else
-            cJSON *paramJson = cJSON_Parse(g_analyzeArray[i].config);
+    cJSON *paramJson = cJSON_Parse(g_analyzeArray[index].config);
 #endif
-            if (paramJson == NULL)
-            {
-                printf("cJSON_Parse failed\n");
+    if (paramJson == NULL) {
+        printf("cJSON_Parse failed\n");
 #ifdef COMPILE_SIMULATOR
-                lv_fs_close(&fd);
+        lv_fs_close(&fd);
 #endif
-                return NULL;
-            }
-            lv_obj_t *obj = GuiWidgetFactoryCreate(g_templateContainer, paramJson);
+        return NULL;
+    }
+    lv_obj_t *obj = GuiWidgetFactoryCreate(g_templateContainer, paramJson);
 #ifdef COMPILE_SIMULATOR
-            lv_fs_close(&fd);
+    lv_fs_close(&fd);
 #endif
-            cJSON_Delete(paramJson);
-            return obj;
+    cJSON_Delete(paramJson);
+    return obj;
+}
+
+void ParseTransaction(uint8_t index)
+{
+    g_reMapIndex = ViewTypeReMap(index);
+    g_viewTypeIndex = index;
+
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_analyzeArray); i++) {
+        if (g_reMapIndex == g_analyzeArray[i].index) {
+             GuiModelParseTransaction(g_analyzeArray[i].func);  
+             break; 
         }
     }
-    return NULL;
 }
 
 GuiRemapViewType ViewTypeReMap(uint8_t viewType)
@@ -1826,7 +1833,7 @@ void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
     g_templateContainer = (lv_obj_t *)GuiCreateContainerWithParent(parent, 480, 542);
     lv_obj_align(g_templateContainer, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_scrollbar_mode(g_templateContainer, LV_SCROLLBAR_MODE_OFF);
-    if (GuiTemplateOpenPage(g_reMapIndex) == NULL)
+    if (CreateTransactionDetailWidgets() == NULL)
     {
         lv_obj_del(g_templateContainer);
         return NULL;

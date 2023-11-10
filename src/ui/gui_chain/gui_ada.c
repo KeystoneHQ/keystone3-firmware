@@ -41,7 +41,6 @@ void *GuiGetAdaData(void)
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-    TransactionCheckResult *result = NULL;
     SimpleResponse_c_char *path = NULL;
     do
     {
@@ -50,13 +49,11 @@ void *GuiGetAdaData(void)
         char *adaPath = path->data;
         uint8_t xpubIndex = GetXPubIndexByPath(adaPath);
         xpub = GetCurrentAccountPublicKey(xpubIndex);
-        result = cardano_check_tx(data, mfp, xpub);
-        CHECK_CHAIN_BREAK(result);
         TransactionParseResult_DisplayCardanoTx *parseResult = cardano_parse_tx(data, mfp, xpub);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
-    free_TransactionCheckResult(result);
+    free_simple_response_c_char(path);
     return g_parseResult;
 #else
     TransactionParseResult_DisplayCardanoTx *parseResult = SRAM_MALLOC(sizeof(TransactionParseResult_DisplayCardanoTx));
@@ -109,6 +106,27 @@ void *GuiGetAdaData(void)
     data->withdrawals->data[0].address = "stake1ux3gqw3889fz6ujajw44af52w6kqtsv077cj635wdmu8zuqyksq6g";
     data->withdrawals->data[0].amount = "6.00135 ADA";
     return parseResult;
+#endif
+}
+
+PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
+{
+#ifndef COMPILE_SIMULATOR
+    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    Ptr_SimpleResponse_c_char path = cardano_get_path(data);
+    if (path->error_code != 0) {
+        return NULL;
+    }
+    char *adaPath = path->data;
+    uint8_t xpubIndex = GetXPubIndexByPath(adaPath);
+    xpub = GetCurrentAccountPublicKey(xpubIndex);
+    PtrT_TransactionCheckResult result = cardano_check_tx(data, mfp, xpub);
+    free_simple_response_c_char(path);
+    return result;
+#else
+    return NULL;
 #endif
 }
 

@@ -136,7 +136,6 @@ void *GuiGetParsedQrData(void)
         urType = urResult->ur_type;
         viewType = urResult->t;
     }
-    TransactionCheckResult *checkResult = NULL;
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
 
@@ -152,11 +151,9 @@ void *GuiGetParsedQrData(void)
             keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
             keys[2].path = "m/44'/0'/0'";
             keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
-            checkResult = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys);
-            CHECK_CHAIN_BREAK(checkResult);
-            free_TransactionCheckResult(checkResult);
             g_parseResult = btc_parse_psbt(crypto, mfp, sizeof(mfp), public_keys);
             CHECK_CHAIN_RETURN(g_parseResult);
+            SRAM_FREE(public_keys);
             return g_parseResult;
         } else if (urType == Bytes) {
             char *hdPath = NULL;
@@ -164,15 +161,11 @@ void *GuiGetParsedQrData(void)
             if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
                 return NULL;
             }
-            checkResult = utxo_check_companion_app(crypto, mfp, sizeof(mfp), xPub);
-            CHECK_CHAIN_BREAK(checkResult);
-            free_TransactionCheckResult(checkResult);
             g_parseResult = utxo_parse_companion_app(crypto, mfp, sizeof(mfp), xPub);
             CHECK_CHAIN_RETURN(g_parseResult);
             return g_parseResult;
         }
     } while (0);
-    free_TransactionCheckResult(checkResult);
 #else
     TransactionParseResult_DisplayTx parseResult;
     TransactionParseResult_DisplayTx *g_parseResult = &parseResult;
@@ -181,6 +174,53 @@ void *GuiGetParsedQrData(void)
     g_parseResult->error_message = NULL;
 #endif
     return g_parseResult;
+}
+
+PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
+{
+#ifndef COMPILE_SIMULATOR
+    PtrT_TransactionCheckResult result = NULL;
+    enum URType urType = URTypeUnKnown;
+    enum ViewType viewType = ViewTypeUnKnown;
+    void *crypto = NULL;
+    if (g_isMulti) {
+        URParseMultiResult *urResult = (URParseMultiResult *)g_urResult;
+        crypto = urResult->data;
+        urType = urResult->ur_type;
+        viewType = urResult->t;
+    } else {
+        URParseResult *urResult = (URParseResult *)g_urResult;
+        crypto = urResult->data;
+        urType = urResult->ur_type;
+        viewType = urResult->t;
+    }
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    if (urType == CryptoPSBT) {
+        PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+        ExtendedPublicKey keys[3];
+        public_keys->data = keys;
+        public_keys->size = 3;
+        keys[0].path = "m/84'/0'/0'";
+        keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+        keys[1].path = "m/49'/0'/0'";
+        keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+        keys[2].path = "m/44'/0'/0'";
+        keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+        result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys);
+        SRAM_FREE(public_keys);
+    } else if (urType == Bytes) {
+        char *hdPath = NULL;
+        char *xPub = NULL;
+        if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
+            return NULL;
+        }
+        result = utxo_check_companion_app(crypto, mfp, sizeof(mfp), xPub);
+    }
+    return result;
+#else
+    return NULL;
+ #endif   
 }
 
 void GetPsbtFeeValue(void *indata, void *param)

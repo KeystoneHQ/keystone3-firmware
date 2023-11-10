@@ -60,6 +60,8 @@ typedef struct PasswordVerifyResult {
     uint16_t errorCount;
 } PasswordVerifyResult_t;
 
+typedef void *(*ReturnVoidPointerFunc)(void);
+
 void GuiModelWriteSe(void);
 void GuiModelSlip39CalWriteSe(Slip39Data_t slip39);
 void GuiModelBip39CalWriteSe(Bip39Data_t bip39);
@@ -84,7 +86,8 @@ void GuiModelCopySdCardOta(void);
 void GuiModelURGenerateQRCode(GenerateUR func);
 void GuiModelURUpdate(void);
 void GuiModelURClear(void);
-
-
+void GuiModelCheckTransaction(ViewType ViewType);
+void GuiModelTransactionCheckResultClear(void);
+void GuiModelParseTransaction(ReturnVoidPointerFunc func);
 #endif /* _GUI_MODEL_H */
 

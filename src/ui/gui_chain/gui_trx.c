@@ -35,21 +35,29 @@ void *GuiGetTrxData(void)
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
     char *trxXpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
     GetMasterFingerPrint(mfp);
-    TransactionCheckResult *result = NULL;
     do {
-        result = tron_check_companion_app(data, mfp, sizeof(mfp), trxXpub);
-        CHECK_CHAIN_BREAK(result);
         PtrT_TransactionParseResult_DisplayTron parseResult = tron_parse_companion_app(data, mfp, sizeof(mfp), trxXpub);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
-    free_TransactionCheckResult(result);
     return g_parseResult;
 #else
     return NULL;
 #endif
 }
 
+PtrT_TransactionCheckResult GuiGetTrxCheckResult(void)
+{
+#ifndef COMPILE_SIMULATOR
+    uint8_t mfp[4];
+    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    char *trxXpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
+    GetMasterFingerPrint(mfp);
+    return tron_check_companion_app(data, mfp, sizeof(mfp), trxXpub);
+#else
+    return NULL;
+#endif
+}
 void FreeTrxMemory(void)
 {
 #ifndef COMPILE_SIMULATOR

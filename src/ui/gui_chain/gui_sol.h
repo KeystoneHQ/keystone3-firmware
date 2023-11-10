@@ -6,6 +6,7 @@
 void GuiSetSolUrData(void *data, bool multi);
 void *GuiGetSolData(void);
 UREncodeResult *GuiGetSolSignQrCodeData(void);
+PtrT_TransactionCheckResult GuiGetSolCheckResult(void);
 void *GuiGetSolMessageData(void);
 void GetSolMessageType(void *indata, void *param);
 void GetSolMessageFrom(void *indata, void *param);

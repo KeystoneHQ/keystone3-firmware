@@ -6,6 +6,7 @@
 
 void GuiSetEthUrData(void *data, bool multi);
 void *GuiGetEthData(void);
+PtrT_TransactionCheckResult GuiGetEthCheckResult(void);
 void GetEthValue(void *indata, void *param);
 void GetEthTxFee(void *indata, void *param);
 void GetEthGasPrice(void *indata, void *param);

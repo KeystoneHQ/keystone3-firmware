@@ -13,7 +13,6 @@
 #include "account_public_info.h"
 #include "gui_keyboard.h"
 #include "gui_model.h"
-#include "gui_qrcode_widgets.h"
 #include "gui_web_auth_widgets.h"
 #include "gui_setup_widgets.h"
 #include "keystore.h"
@@ -724,7 +723,7 @@ void GuiHomeAreaInit(void)
 
     lv_obj_t *img = GuiCreateImg(lv_scr_act(), &imgScan);
     lv_obj_align(img, LV_ALIGN_BOTTOM_RIGHT, -32, -32);
-    lv_obj_add_event_cb(img, ScanQrCodeHandler, LV_EVENT_CLICKED, &g_qrCodeView);
+    lv_obj_add_event_cb(img, ScanQrCodeHandler, LV_EVENT_CLICKED, &g_scanView);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     g_scanImg = img;
 }

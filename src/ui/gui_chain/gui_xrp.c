@@ -67,48 +67,11 @@ void *GuiGetXrpData(void)
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
-    TransactionCheckResult *result = NULL;
     do {
-        char pubkey[68] = "";
-        if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
-            strcpy(pubkey, g_cachedPubkey[GetCurrentAccountIndex()]);
-        }
-        result = xrp_check_tx(data, GetCurrentAccountPublicKey(XPUB_TYPE_XRP), pubkey);
-        CHECK_CHAIN_BREAK(result);
-        if (strlen(result->error_message) > 0) {
-            if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
-                SRAM_FREE(g_cachedPubkey[GetCurrentAccountIndex()]);
-            }
-            char *res_str = SRAM_MALLOC(strlen(result->error_message) + 1);
-            strcpy(res_str, result->error_message);
-            char *p = strtok(res_str, ":");
-            g_cachedPubkey[GetCurrentAccountIndex()] = SRAM_MALLOC(strlen(p) + 1);
-            strcpy(g_cachedPubkey[GetCurrentAccountIndex()], p);
-
-            p = strtok(NULL, ":");
-            int rootLen = strlen(XRP_ROOT_PATH);
-            int extLen = strlen(p) - 1;
-            strncpy(g_hdPath, XRP_ROOT_PATH, rootLen);
-            strncpy(g_hdPath + rootLen, p + 1, extLen);
-            g_hdPath[rootLen + extLen] = '\0';
-            SRAM_FREE(res_str);
-
-            if (g_cachedPath[GetCurrentAccountIndex()] != NULL) {
-                SRAM_FREE(g_cachedPath[GetCurrentAccountIndex()]);
-            }
-            g_cachedPath[GetCurrentAccountIndex()] = SRAM_MALLOC(strlen(g_hdPath) + 1);
-            strcpy(g_cachedPath[GetCurrentAccountIndex()], g_hdPath);
-        } else {
-            strcpy(g_hdPath, g_cachedPath[GetCurrentAccountIndex()]);
-        }
-
         PtrT_TransactionParseResult_DisplayXrpTx parseResult = xrp_parse_tx(data);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
-    if (result != NULL) {
-        free_TransactionCheckResult(result);
-    }
     return g_parseResult;
 #else
     TransactionParseResult_DisplayXrpTx *g_parseResult = malloc(sizeof(TransactionParseResult_DisplayXrpTx));
@@ -118,6 +81,45 @@ void *GuiGetXrpData(void)
     g_parseResult->error_code = 0;
     return g_parseResult;
 #endif
+}
+
+PtrT_TransactionCheckResult GuiGetXrpCheckResult(void)
+{
+     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    TransactionCheckResult *result = NULL;
+    char pubkey[68] = {0};
+    if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
+        strcpy(pubkey, g_cachedPubkey[GetCurrentAccountIndex()]);
+    }
+    result = xrp_check_tx(data, GetCurrentAccountPublicKey(XPUB_TYPE_XRP), pubkey);
+    if (result != NULL && result->error_code == 0 && strlen(result->error_message) > 0) {
+        if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
+            SRAM_FREE(g_cachedPubkey[GetCurrentAccountIndex()]);
+        }
+        char *res_str = SRAM_MALLOC(strlen(result->error_message) + 1);
+        strcpy(res_str, result->error_message);
+        char *p = strtok(res_str, ":");
+        g_cachedPubkey[GetCurrentAccountIndex()] = SRAM_MALLOC(strlen(p) + 1);
+        strcpy(g_cachedPubkey[GetCurrentAccountIndex()], p);
+
+        p = strtok(NULL, ":");
+        int rootLen = strlen(XRP_ROOT_PATH);
+        int extLen = strlen(p) - 1;
+        strncpy(g_hdPath, XRP_ROOT_PATH, rootLen);
+        strncpy(g_hdPath + rootLen, p + 1, extLen);
+        g_hdPath[rootLen + extLen] = '\0';
+        SRAM_FREE(res_str);
+
+        if (g_cachedPath[GetCurrentAccountIndex()] != NULL) {
+            SRAM_FREE(g_cachedPath[GetCurrentAccountIndex()]);
+        }
+        g_cachedPath[GetCurrentAccountIndex()] = SRAM_MALLOC(strlen(g_hdPath) + 1);
+        strcpy(g_cachedPath[GetCurrentAccountIndex()], g_hdPath);
+    } else {
+        strcpy(g_hdPath, g_cachedPath[GetCurrentAccountIndex()]);
+    }
+
+    return result;
 }
 
 void FreeXrpMemory(void)

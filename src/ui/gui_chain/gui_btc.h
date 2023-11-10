@@ -7,6 +7,7 @@ UREncodeResult *GuiGetSignQrCodeData(void);
 void GuiSetPsbtUrData(void *data, bool multi);
 void FreePsbtUxtoMemory(void);
 void *GuiGetParsedQrData(void);
+PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void);
 void GetPsbtTotalOutAmount(void *indata, void *param);
 void GetPsbtFeeAmount(void *indata, void *param);
 void GetPsbtTotalOutSat(void *indata, void *param);

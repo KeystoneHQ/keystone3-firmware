@@ -97,10 +97,26 @@ typedef enum {
 
     SIG_FORGET_PASSWORD_SUCCESS = SIG_FINGER_SET_BUTT + 50,
     SIG_FORGET_PASSWORD_FAIL,
+    SIG_FORGET_PASSWORD_BUTT,
 
-    SIG_WEB_AUTH_CODE_SUCCESS = SIG_FORGET_PASSWORD_FAIL + 50,
+    SIG_WEB_AUTH_CODE_SUCCESS = SIG_FORGET_PASSWORD_BUTT + 50,
     SIG_BACKGROUND_UR_GENERATE_SUCCESS,
     SIG_BACKGROUND_UR_UPDATE,
+    SIG_BACKGROUND_UR_BUTT,
+
+    SIG_TRANSACTION_CHECK_PASS = SIG_BACKGROUND_UR_BUTT + 50,
+    SIG_TRANSACTION_CHECK_FAIL,
+    SIG_SHOW_TRANSACTION_CHECKING_LOADING,
+    SIG_HIDE_TRANSACTION_CHECKING_LOADING,
+    SIG_TRANSACTION_PARSE_SUCCESS,
+    SIG_TRANSACTION_PARSE_FAIL,
+    SIG_SHOW_TRANSACTION_PARSE_LOADING,
+    SIG_HIDE_TRANSACTION_PARSE_LOADING,
+    SIG_TRANSACTION_BUTT,
+
+
+
+
 } GUI_VIEW_SIG_ENUM;
 
 extern GUI_VIEW g_initView;
@@ -114,7 +130,6 @@ extern GUI_VIEW g_createShareView;
 extern GUI_VIEW g_importShareView;
 extern GUI_VIEW g_settingView;
 extern GUI_VIEW g_connectWalletView;
-extern GUI_VIEW g_qrCodeView;
 extern GUI_VIEW g_passphraseView;
 extern GUI_VIEW g_utxoReceiveView;
 extern GUI_VIEW g_multiPathCoinReceiveView;
@@ -140,11 +155,15 @@ extern GUI_VIEW g_connectionView;
 extern GUI_VIEW g_DevicePublicKeyView;
 extern GUI_VIEW g_multiAccountsReceiveView;
 extern GUI_VIEW g_keyDerivationRequestView;
+extern GUI_VIEW g_scanView;
+extern GUI_VIEW g_transactionDetailView;
+extern GUI_VIEW g_transactionSignatureView;
 
 void OpenImportWalletHandler(lv_event_t *e);
 void OpenCreateWalletHandler(lv_event_t *e);
 void OpenViewHandler(lv_event_t *e);
 void CloseTimerCurrentViewHandler(lv_event_t *e);
+void GoToHomeViewHandler(lv_event_t *e);
 void ReturnHandler(lv_event_t *e);
 void NextTileHandler(lv_event_t *e);
 void CloseCurrentParentHandler(lv_event_t *e);

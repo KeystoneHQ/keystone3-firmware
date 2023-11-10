@@ -311,7 +311,7 @@ UREncodeResult *GuiGetEthSignQrCodeData(void)
     SetLockScreen(enable);
     return encodeResult;
 #else
-    UREncodeResult *encodeResult = NULL;
+    UREncodeResult *encodeResult = SRAM_MALLOC(sizeof(UREncodeResult));
     encodeResult->is_multi_part = 0;
     encodeResult->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
     encodeResult->encoder = NULL;
@@ -495,10 +495,7 @@ void *GuiGetEthData(void)
     char *rootPath = eth_get_root_path(data);
     char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
     GetMasterFingerPrint(mfp);
-    TransactionCheckResult *result = NULL;
     do {
-        result = eth_check(data, mfp, sizeof(mfp));
-        CHECK_CHAIN_BREAK(result);
         PtrT_TransactionParseResult_DisplayETH parseResult = eth_parse(data, ethXpub);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
@@ -508,7 +505,6 @@ void *GuiGetEthData(void)
         decodeEthContractData(parseResult);
         printf("decode finish\n");
     } while (0);
-    free_TransactionCheckResult(result);
 #else
     TransactionParseResult_DisplayETH *g_parseResult = malloc(sizeof(TransactionParseResult_DisplayETH));
     DisplayETH *eth = malloc(sizeof(DisplayETH));
@@ -551,6 +547,18 @@ void *GuiGetEthData(void)
     strcpy(g_toEthEnsName, "xiaoliu.eth");
 #endif
     return g_parseResult;
+}
+
+PtrT_TransactionCheckResult GuiGetEthCheckResult(void)
+{
+#ifndef COMPILE_SIMULATOR
+    uint8_t mfp[4];
+    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    GetMasterFingerPrint(mfp);
+    return eth_check(data, mfp, sizeof(mfp));
+#else
+    return NULL;
+#endif
 }
 
 void GetEthTransType(void *indata, void *param)

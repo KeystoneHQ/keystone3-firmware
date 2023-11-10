@@ -1,4 +1,7 @@
 #include "service_export_address.h"
+#include "user_msg.h";
+
+static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type);
 
 enum Chain
 {
@@ -55,13 +58,38 @@ static struct EthParams *ParseParams(char *data)
     return params;
 }
 
-static void ExportEthAddress(EAPDURequestPayload_t payload, uint8_t n, ETHAccountType type)
+typedef struct
+{
+    uint16_t requestID;
+    uint8_t n;
+    ETHAccountType type;
+} ExportAddressParams_t;
+
+static ExportAddressParams_t *g_exportAddressParams = NULL;
+
+void ExportAddressApprove()
+{
+    ExportEthAddress(g_exportAddressParams->requestID, g_exportAddressParams->n, g_exportAddressParams->type);
+    SRAM_FREE(g_exportAddressParams);
+    g_exportAddressParams = NULL;
+    GuiCLoseCurrentWorkingView();
+}
+
+void ExportAddressReject()
+{
+    SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, g_exportAddressParams->requestID, PRS_EXPORT_ADDRESS_REJECTED, "Export address is rejected");
+    SRAM_FREE(g_exportAddressParams);
+    g_exportAddressParams = NULL;
+    GuiCLoseCurrentWorkingView();
+}
+
+static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
 {
     UREncodeResult *urResult = GetUnlimitedMetamaskDataForAccountType(type);
 
     if (urResult->error_code != 0)
     {
-        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_ERROR, urResult->error_message);
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, requestID, PRS_EXPORT_ADDRESS_ERROR, urResult->error_message);
         return;
     }
 
@@ -76,7 +104,7 @@ static void ExportEthAddress(EAPDURequestPayload_t payload, uint8_t n, ETHAccoun
     result->status = RSP_SUCCESS_CODE;
     result->cla = EAPDU_PROTOCOL_HEADER;
     result->commandType = CMD_EXPORT_ADDRESS;
-    result->requestID = payload.requestID;
+    result->requestID = requestID;
 
     SendEApduResponse(result);
 
@@ -90,7 +118,12 @@ static bool CheckExportAcceptable(EAPDURequestPayload_t payload)
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_DISALLOWED, "Export address is not allowed when the device is locked");
         return false;
     }
-    // TODO: Only allow on specific pages
+    // Only allow on specific pages
+    if (!GuiHomePageIsTop())
+    {
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_DISALLOWED, "Export address is just allowed on specific pages");
+        return false;
+    }
     return true;
 }
 
@@ -101,16 +134,28 @@ void *ExportAddressService(EAPDURequestPayload_t payload)
         return NULL;
     }
 
+    if (g_exportAddressParams != NULL)
+    {
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_BUSY, "Export address is busy, please try again later");
+        ExportAddressReject();
+        return NULL;
+    }
+
     struct EthParams *params = ParseParams(payload.data);
 
     if (!IsValidParams(params))
     {
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_INVALID_PARAMS, "Invalid params");
+        return NULL;
     }
 
     if (params->chain == ETH)
     {
-        ExportEthAddress(payload, params->n, params->type);
+        g_exportAddressParams = (ExportAddressParams_t *)SRAM_MALLOC(sizeof(ExportAddressParams_t));
+        g_exportAddressParams->requestID = payload.requestID;
+        g_exportAddressParams->n = params->n;
+        g_exportAddressParams->type = params->type;
+        PubValueMsg(UI_MSG_USB_TRANSPORT_VIEW, 0);
     }
     else
     {

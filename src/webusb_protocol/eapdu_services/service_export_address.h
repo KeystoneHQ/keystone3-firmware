@@ -5,3 +5,5 @@
 #include "gui_wallet.h"
 
 void *ExportAddressService(EAPDURequestPayload_t payload);
+void ExportAddressApprove();
+void ExportAddressReject();

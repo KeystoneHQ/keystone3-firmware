@@ -113,6 +113,10 @@ static void UiDisplayTask(void *argument)
                 GuiFrameWorkViewHandleMsg(rcvMsg.buffer, rcvMsg.length);
             }
             break;
+            case UI_MSG_USB_TRANSPORT_VIEW: {
+                GuiFrameOpenView(&g_USBTransportView);
+            }
+            break;
             case UI_MSG_PREPARE_RECEIVE_UR_USB: {
                 PrepareToReceiveURViaUSB();
             }
@@ -145,7 +149,7 @@ static void UiDisplayTask(void *argument)
 
 static void PrepareToReceiveURViaUSB()
 {
-    GuiFrameOpenView(&g_USBTransportView);
+    GuiFrameOpenView(&g_USBSignView);
 }
 
 static void RefreshLvglTickMode(void)

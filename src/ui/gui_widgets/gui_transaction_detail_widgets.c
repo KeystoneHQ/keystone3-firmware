@@ -164,6 +164,11 @@ void GuiSignDealFingerRecognize(void *param)
     }
 }
 
+void GuiClearQrcodeSignCnt(void)
+{
+    g_fingerSignErrCount = 0;
+}
+
 static void GuiTransactionDetailNavBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, GoToHomeViewHandler, NULL);

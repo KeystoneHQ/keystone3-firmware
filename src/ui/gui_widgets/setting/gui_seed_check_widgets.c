@@ -16,7 +16,6 @@
 #include "gui_qr_hintbox.h"
 #include "motor_manager.h"
 #include "fingerprint_process.h"
-#include "gui_qrcode_widgets.h"
 #include "gui_mnemonic_input.h"
 #include "account_manager.h"
 #ifndef COMPILE_SIMULATOR

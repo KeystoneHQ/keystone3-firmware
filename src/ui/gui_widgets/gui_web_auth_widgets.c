@@ -7,7 +7,6 @@
 #include "gui_model.h"
 #include "user_memory.h"
 #include "presetting.h"
-#include "gui_qrcode_widgets.h"
 #include "gui_web_auth_widgets.h"
 #include "gui_web_auth_result_widgets.h"
 #include "gui_firmware_update_widgets.h"
@@ -50,7 +49,7 @@ void GuiWebAuthScanQRCodeHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        GuiFrameOpenView(&g_qrCodeView);
+        GuiFrameOpenView(&g_scanView);
         if (g_webAuthEntry == WEB_AUTH_ENTRY_SETUP) {
             GuiWebAuthResultSetSuccessCb(GuiWebAuthSuccessCbSetup);
         } else {

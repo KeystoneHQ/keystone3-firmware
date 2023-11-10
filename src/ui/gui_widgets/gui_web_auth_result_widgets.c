@@ -7,7 +7,6 @@
 #include "gui_model.h"
 #include "user_memory.h"
 #include "presetting.h"
-#include "gui_qrcode_widgets.h"
 #include "gui_web_auth_widgets.h"
 #include "gui_web_auth_result_widgets.h"
 #include "screen_manager.h"

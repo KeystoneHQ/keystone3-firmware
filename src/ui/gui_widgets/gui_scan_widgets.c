@@ -27,7 +27,6 @@
 
 static void GuiScanNavBarInit();
 static void GuiSetScanCorner(void);
-// static GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType);
 static void ThrowError();
 static void GuiDealScanErrorResult(int errorType);
 static void CloseScanErrorDataHandler(lv_event_t *e);

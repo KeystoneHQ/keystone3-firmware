@@ -8,7 +8,6 @@
 #include "gui_model.h"
 #include "user_memory.h"
 #include "presetting.h"
-#include "gui_qrcode_widgets.h"
 #include "gui_web_auth_widgets.h"
 #include "gui_setting_widgets.h"
 #include "gui_enter_passcode.h"

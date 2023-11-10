@@ -256,6 +256,8 @@ const static EvmNetwork_t NETWORKS[] = {
     {4216137055, "OneLedger Testnet Frankenstein", "OLT"},
     {11297108109, "Palm Mainnet", "PALM"},
     {11297108099, "Palm Testnet", "PALM"},
+    {210425, "PlatON Mainnet", "LAT"},
+    {2206132, "PlatON Testnet", "LAT"},
 };
 #include "abi_ethereum.h"
 #include "gui_constants.h"

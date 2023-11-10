@@ -378,9 +378,13 @@ UREncodeResult *GuiGetOkxWalletData(void)
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
     //   btc 3
     // + eth 10
-    ExtendedPublicKey keys[13];
+    // + trx 1
+    // + ltc 1
+    // + dash 1
+    // + bch 1
+    ExtendedPublicKey keys[17];
     public_keys->data = keys;
-    public_keys->size = 13;
+    public_keys->size = 17;
     for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
         keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = SRAM_MALLOC(64);
         sprintf(keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
@@ -395,6 +399,18 @@ UREncodeResult *GuiGetOkxWalletData(void)
 
     keys[12].path = "m/84'/0'/0'";
     keys[12].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+
+    keys[13].path = GetXPubPath(XPUB_TYPE_TRX);
+    keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
+
+    keys[14].path = GetXPubPath(XPUB_TYPE_LTC);
+    keys[14].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_LTC);
+
+    keys[15].path = GetXPubPath(XPUB_TYPE_DASH);
+    keys[15].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DASH);
+
+    keys[16].path = GetXPubPath(XPUB_TYPE_BCH);
+    keys[16].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
     char serialNumber[256];
     GetSerialNumber(serialNumber);
     g_urEncode = get_okx_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys);

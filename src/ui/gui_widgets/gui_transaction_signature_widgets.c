@@ -137,6 +137,8 @@ static void GuiCreateSignatureQRCode(lv_obj_t *parent)
     case CardanoTx:
         func = GuiGetAdaSignQrCodeData;
         break;
+    case XRPTx:
+        func = GuiGetXrpSignQrCodeData;
     default:
         break;
     }

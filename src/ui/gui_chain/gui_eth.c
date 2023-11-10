@@ -495,10 +495,7 @@ void *GuiGetEthData(void)
     char *rootPath = eth_get_root_path(data);
     char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
     GetMasterFingerPrint(mfp);
-    TransactionCheckResult *result = NULL;
     do {
-        result = eth_check(data, mfp, sizeof(mfp));
-        CHECK_CHAIN_BREAK(result);
         PtrT_TransactionParseResult_DisplayETH parseResult = eth_parse(data, ethXpub);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
@@ -508,7 +505,6 @@ void *GuiGetEthData(void)
         decodeEthContractData(parseResult);
         printf("decode finish\n");
     } while (0);
-    free_TransactionCheckResult(result);
 #else
     TransactionParseResult_DisplayETH *g_parseResult = malloc(sizeof(TransactionParseResult_DisplayETH));
     DisplayETH *eth = malloc(sizeof(DisplayETH));

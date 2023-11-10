@@ -1114,7 +1114,7 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
     g_checkResult = CheckScanResult(viewType);
     GuiApiEmitSignal(SIG_HIDE_TRANSACTION_CHECKING_LOADING, NULL, 0);
 
-    if (g_checkResult->error_code == 0) {
+    if (g_checkResult != NULL &&g_checkResult->error_code == 0) {
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
     } else {
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_FAIL, g_checkResult, sizeof(g_checkResult));

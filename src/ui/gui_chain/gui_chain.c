@@ -22,6 +22,8 @@ PtrT_TransactionCheckResult CheckScanResult(uint8_t viewType)
             return GuiGetAptosCheckResult();
         case REMAPVIEW_ADA:
             return GuiGetAdaCheckResult();
+        case REMAPVIEW_XRP:
+            return GuiGetXrpCheckResult();
         default:
             return NULL;
     }
@@ -60,6 +62,8 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
         return CHAIN_APT;
     case CardanoTx:
         return CHAIN_ADA;
+    case XRPTx:
+        return CHAIN_XRP;
     default:
         return CHAIN_BUTT;
     }

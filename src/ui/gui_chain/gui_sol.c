@@ -76,18 +76,12 @@ void *GuiGetSolData(void)
 {
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_SOL_RESULT(g_parseResult);
-    uint8_t mfp[4];
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
-    GetMasterFingerPrint(mfp);
-    TransactionCheckResult *result = NULL;
     do {
-        result = solana_check(data,  mfp, sizeof(mfp));
-        CHECK_CHAIN_BREAK(result);
         PtrT_TransactionParseResult_DisplaySolanaTx parseResult = solana_parse_tx(data);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
-    free_TransactionCheckResult(result);
     return g_parseResult;
 #else
     return NULL;

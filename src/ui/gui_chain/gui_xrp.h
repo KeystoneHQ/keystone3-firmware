@@ -4,6 +4,7 @@
 #include "rust.h"
 
 char *GuiGetXrpPath(uint16_t index);
+PtrT_TransactionCheckResult GuiGetXrpCheckResult(void);
 char *GuiGetXrpAddressByIndex(uint16_t index);
 void GuiSetXrpUrData(void *data, bool multi);
 void *GuiGetXrpData(void);

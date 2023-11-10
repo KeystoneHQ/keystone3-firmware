@@ -109,16 +109,12 @@ void *GuiGetCosmosData(void)
     uint8_t mfp[4];
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
     GetMasterFingerPrint(mfp);
-    TransactionCheckResult *result = NULL;
     do {
         URType urType = g_isMulti ? ((URParseMultiResult *)g_urResult)->ur_type : ((URParseResult *)g_urResult)->ur_type;
-        result = cosmos_check_tx(data, urType, mfp, sizeof(mfp));
-        CHECK_CHAIN_BREAK(result);
         PtrT_TransactionParseResult_DisplayCosmosTx parseResult = cosmos_parse_tx(data, urType);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
-    free_TransactionCheckResult(result);
     return g_parseResult;
 #else
     return NULL;

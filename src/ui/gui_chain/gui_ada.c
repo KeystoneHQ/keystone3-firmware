@@ -41,7 +41,6 @@ void *GuiGetAdaData(void)
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-    TransactionCheckResult *result = NULL;
     SimpleResponse_c_char *path = NULL;
     do
     {
@@ -50,13 +49,10 @@ void *GuiGetAdaData(void)
         char *adaPath = path->data;
         uint8_t xpubIndex = GetXPubIndexByPath(adaPath);
         xpub = GetCurrentAccountPublicKey(xpubIndex);
-        result = cardano_check_tx(data, mfp, xpub);
-        CHECK_CHAIN_BREAK(result);
         TransactionParseResult_DisplayCardanoTx *parseResult = cardano_parse_tx(data, mfp, xpub);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
-    free_TransactionCheckResult(result);
     free_simple_response_c_char(path);
     return g_parseResult;
 #else

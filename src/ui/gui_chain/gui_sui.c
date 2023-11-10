@@ -30,18 +30,12 @@ void *GuiGetSuiData(void)
 {
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
-    uint8_t mfp[4];
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
-    GetMasterFingerPrint(mfp);
-    TransactionCheckResult *result = NULL;
     do {
-        result = sui_check_request(data, mfp, sizeof(mfp));
-        CHECK_CHAIN_BREAK(result);
         PtrT_TransactionParseResult_DisplaySuiIntentMessage parseResult = sui_parse_intent(data);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
-    free_TransactionCheckResult(result);
     return g_parseResult;
 #else
     return NULL;

@@ -107,6 +107,7 @@ void GuiTransactionDetailParseSuccess(void *param)
 
 void GuiTransactionDetailVerifyPasswordSuccess(void)
 {
+    ClearSecretCache();
     GUI_DEL_OBJ(g_fingerSingContainer)
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     GuiFrameOpenViewWithParam(&g_transactionSignatureView, &g_viewType, sizeof(g_viewType));

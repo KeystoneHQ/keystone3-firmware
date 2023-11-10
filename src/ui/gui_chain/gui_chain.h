@@ -9,6 +9,7 @@
 #include "gui_sol.h"
 #include "gui_aptos.h"
 #include "gui_ada.h"
+#include "gui_xrp.h"
 
 #define LABEL_MAX_BUFF_LEN                                      (512)
 
@@ -22,6 +23,7 @@ typedef enum {
     CHAIN_APT,
     CHAIN_SUI,
     CHAIN_ADA,
+    CHAIN_XRP,
     CHAIN_ATOM,
     CHAIN_OSMO,
     CHAIN_SCRT,
@@ -54,7 +56,6 @@ typedef enum {
     CHAIN_LUNC,
     CHAIN_BNB,
     CHAIN_DOT,
-    CHAIN_XRP,
     CHAIN_LTC,
     CHAIN_DASH,
     CHAIN_BCH,
@@ -76,6 +77,7 @@ typedef enum {
     REMAPVIEW_SOL_MESSAGE,
     REMAPVIEW_APT,
     REMAPVIEW_ADA,
+    REMAPVIEW_XRP,
     REMAPVIEW_WEB_AUTH,
 
     REMAPVIEW_BUTT,

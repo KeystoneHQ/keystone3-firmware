@@ -115,6 +115,7 @@ static PageWidget_t *g_pageWidget;
 void GuiStandardReceiveInit(uint8_t chain)
 {
     g_chainCard = chain;
+    g_showIndex = GetCurrentSelectIndex() / 5 * 5;
     g_pageWidget = CreatePageWidget();
     g_standardReceiveWidgets.cont = g_pageWidget->contentZone;
     g_standardReceiveWidgets.tileView = lv_tileview_create(g_standardReceiveWidgets.cont);
@@ -436,6 +437,9 @@ static int GetMaxAddressIndex(void)
     if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT) {
         return 10;
     }
+    if (g_chainCard == HOME_WALLET_CARD_XRP) {
+        return 200;
+    }
     return GENERAL_ADDRESS_INDEX_MAX;
 }
 
@@ -507,6 +511,7 @@ static bool IsAccountSwitchable()
     case HOME_WALLET_CARD_TRX:
     case HOME_WALLET_CARD_SUI:
     case HOME_WALLET_CARD_APT:
+    case HOME_WALLET_CARD_XRP:
         return true;
 
     default:
@@ -607,6 +612,11 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         sprintf(hdPath, "m/44'/637'/%u'/0'/0'", index);
         result = aptos_generate_address(xPub);
         break;
+    case HOME_WALLET_CARD_XRP:
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
+        sprintf(hdPath, "m/44'/144'/0'/0/%u", index);
+        result = xrp_get_address(hdPath, xPub, "m/44'/144'/0'/");
+        break;
 
     default:
         if (IsCosmosChain(g_chainCard)) {
@@ -625,7 +635,6 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 
     if (result->error_code == 0) {
         item->index = index;
-        printf("address=%s", item->address);
         strcpy(item->address, result->data);
         strcpy(item->path, hdPath);
     }
@@ -668,6 +677,9 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
 
 static uint32_t GetCurrentSelectIndex()
 {
+    if (!IsAccountSwitchable()) {
+        return 0;
+    }
     switch (g_chainCard) {
     case HOME_WALLET_CARD_SUI:
         return g_suiSelectIndex[GetCurrentAccountIndex()];

@@ -22,6 +22,7 @@ impl ParsedXrpTx {
             overview: parsed_overview,
             detail: parsed_detail,
             network: "XRP Mainnet".to_string(),
+            signing_pubkey: Self::format_field(&tx["SigningPubKey"])?,
         })
     }
 
@@ -39,7 +40,7 @@ impl ParsedXrpTx {
         )))
     }
     fn build_detail(tx: &Value) -> R<String> {
-        Ok(serde_json::to_string(tx)?)
+        Ok(serde_json::to_string_pretty(tx)?)
     }
 
     fn build_overview(display_type: &XrpTxDisplayType, tx: &Value) -> R<XrpTxOverview> {
@@ -127,7 +128,8 @@ mod tests {
             },
             "Fee": "12",
             "Flags": 2147483648,
-            "Sequence": 2
+            "Sequence": 2,
+            "SigningPubKey": "03F5C5BB1D19EC710D3D7FAD199AF10CF8BC1D11348E5B3765C0B0B9C0BEC32879"
         }"#;
         let v: Value = from_str(tx_str).unwrap();
         let input_bytes = v.to_string().into_bytes();
@@ -193,7 +195,8 @@ mod tests {
             "Amount": "100000000",
             "CheckID": "838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334",
             "Sequence": 5,
-            "Fee": "12"
+            "Fee": "12",
+            "SigningPubKey": "03F5C5BB1D19EC710D3D7FAD199AF10CF8BC1D11348E5B3765C0B0B9C0BEC32879"
         }"#;
         let v: Value = from_str(tx_str).unwrap();
         let input_bytes = v.to_string().into_bytes();
@@ -224,7 +227,8 @@ mod tests {
             "Sequence": 5,
             "Domain": "6578616D706C652E636F6D",
             "SetFlag": 5,
-            "MessageKey": "03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB"
+            "MessageKey": "03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB",
+            "SigningPubKey":"03F5C5BB1D19EC710D3D7FAD199AF10CF8BC1D11348E5B3765C0B0B9C0BEC32879"
         }"#;
         let v: Value = from_str(tx_str).unwrap();
         let input_bytes = v.to_string().into_bytes();
@@ -254,7 +258,8 @@ mod tests {
             "TransactionType": "CheckCancel",
             "CheckID": "49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0",
             "Fee": "12",
-            "Sequence": 5
+            "Sequence": 5,
+            "SigningPubKey":"03F5C5BB1D19EC710D3D7FAD199AF10CF8BC1D11348E5B3765C0B0B9C0BEC32879"
         }"#;
         let v: Value = from_str(tx_str).unwrap();
         let input_bytes = v.to_string().into_bytes();

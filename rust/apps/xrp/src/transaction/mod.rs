@@ -1,24 +1,24 @@
 use crate::errors::{XRPError, R};
 use alloc::format;
 use alloc::string::{String, ToString};
-use alloc::vec::Vec;
 use bytes::BytesMut;
 use rippled_binary_codec;
-use third_party::bitcoin::bip32::DerivationPath;
+use rippled_binary_codec::definition_fields::DefinitionFields;
 use third_party::cryptoxide::hashing;
 use third_party::hex;
 use third_party::secp256k1::ecdsa::Signature;
 use third_party::serde_json::{from_slice, to_string, Value};
 
-#[derive(Debug, Clone)]
 pub struct WrappedTxData {
     pub(crate) tx_data: Value,
     pub(crate) tx_hex: [u8; 32],
     pub(crate) signing_pubkey: String,
+    pub(crate) definition_fields: DefinitionFields,
 }
 
 impl WrappedTxData {
     pub fn from_raw(input: &[u8]) -> R<WrappedTxData> {
+        let definition_fields = DefinitionFields::new();
         let tx_data: Value = from_slice(input)?;
         let signing_pubkey = tx_data["SigningPubKey"].as_str().unwrap_or(&"").to_string();
         if let Some(tag) = tx_data["DestinationTag"].as_i64() {
@@ -26,12 +26,15 @@ impl WrappedTxData {
                 return Err(XRPError::SignFailure(format!("invalid tag {:?}", tag)));
             }
         }
-        let serialized_tx: String =
-            rippled_binary_codec::serialize::serialize_tx(tx_data.to_string(), true)
-                .ok_or(XRPError::SignFailure("serialize tx failed".to_string()))?;
+        let serialized_tx: String = rippled_binary_codec::serialize::serialize_tx(
+            tx_data.to_string(),
+            true,
+            Some(&definition_fields),
+        )
+        .ok_or(XRPError::SignFailure("serialize tx failed".to_string()))?;
         let mut tx_hex = BytesMut::new();
         tx_hex.extend_from_slice(&hex::decode("53545800")?);
-        tx_hex.extend_from_slice(&hex::decode(serialized_tx.clone())?);
+        tx_hex.extend_from_slice(&hex::decode(serialized_tx)?);
         let tx_hex = hashing::sha512(&tx_hex)[..32].try_into().map_err(|_e| {
             XRPError::InvalidData(format!(
                 "generate unsigned tx hash failed, data is {:?}",
@@ -42,20 +45,8 @@ impl WrappedTxData {
             tx_data,
             tx_hex,
             signing_pubkey,
+            definition_fields,
         })
-    }
-
-    pub fn detect_hd_path(&self, seed: &[u8], hd_paths: Vec<DerivationPath>) -> R<DerivationPath> {
-        for hd_path in hd_paths {
-            let pub_key = keystore::algorithms::secp256k1::get_public_key_by_seed(
-                seed,
-                &hd_path.to_string(),
-            )?;
-            if pub_key.to_string().to_uppercase().eq(&self.signing_pubkey) {
-                return Ok(hd_path);
-            }
-        }
-        Err(XRPError::SignFailure("no hd_path found".to_string()))
     }
 
     pub fn generate_signed_tx(&mut self, signature: &[u8; 64]) -> R<String> {
@@ -64,8 +55,12 @@ impl WrappedTxData {
         })?;
         self.tx_data["TxnSignature"] =
             Value::from(Some(sig.serialize_der().to_string().to_uppercase()));
-        rippled_binary_codec::serialize::serialize_tx(to_string(&self.tx_data)?, false)
-            .ok_or(XRPError::SignFailure("serialize tx failed".to_string()))
+        rippled_binary_codec::serialize::serialize_tx(
+            to_string(&self.tx_data)?,
+            false,
+            Some(&self.definition_fields),
+        )
+        .ok_or(XRPError::SignFailure("serialize tx failed".to_string()))
     }
 }
 
@@ -183,9 +178,11 @@ mod tests {
         let v: Value = from_str(input).unwrap();
         let input_bytes = v.to_string().into_bytes();
         let wrapped_tx = WrappedTxData::from_raw(input_bytes.as_slice()).unwrap();
+        let definition_fields = DefinitionFields::new();
         let serialized = rippled_binary_codec::serialize::serialize_tx(
             to_string(&wrapped_tx.tx_data).unwrap(),
             true,
+            Some(&definition_fields),
         )
         .unwrap();
         assert_eq!("1200002280000000240000000261D4838D7EA4C6800000000000000000000000000055534400000000004B4E9C06F24296074F7BC48F92A97916C6DC5EA968400000000000000C81144B4E9C06F24296074F7BC48F92A97916C6DC5EA983143E9D4A2B8AA0780F682D136F7A56D6724EF53754", serialized);
@@ -208,9 +205,11 @@ mod tests {
         let v: Value = from_str(input).unwrap();
         let input_bytes = v.to_string().into_bytes();
         let wrapped_tx = WrappedTxData::from_raw(input_bytes.as_slice()).unwrap();
+        let definition_fields = DefinitionFields::new();
         let serialized = rippled_binary_codec::serialize::serialize_tx(
             to_string(&wrapped_tx.tx_data).unwrap(),
             true,
+            Some(&definition_fields),
         )
         .unwrap();
         assert_eq!("12000022800000002404C49439201B04D1257761400000000098968068400000000000000C732103F5C5BB1D19EC710D3D7FAD199AF10CF8BC1D11348E5B3765C0B0B9C0BEC328798114A6C3D314FB5418627AB22D9DDF6C18AED5F6CA8983148E1C41B8BEC53377243BB6AD958F3F35B046F330", serialized);
@@ -229,9 +228,11 @@ mod tests {
         let v: Value = from_str(input).unwrap();
         let input_bytes = v.to_string().into_bytes();
         let wrapped_tx = WrappedTxData::from_raw(input_bytes.as_slice()).unwrap();
+        let definition_fields = DefinitionFields::new();
         let serialized = rippled_binary_codec::serialize::serialize_tx(
             to_string(&wrapped_tx.tx_data).unwrap(),
             true,
+            Some(&definition_fields),
         )
         .unwrap();
         assert_eq!("1200115018838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334614000000005F5E10068400000000000000C811449FF0C73CA6AF9733DA805F76CA2C37776B7C46B", serialized);
@@ -255,6 +256,7 @@ mod tests {
         let serialized = rippled_binary_codec::serialize::serialize_tx(
             to_string(&wrapped_tx.tx_data).unwrap(),
             true,
+            None,
         )
         .unwrap();
         assert_eq!("120003240000000520210000000568400000000000000C722103AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB770B6578616D706C652E636F6D81144B4E9C06F24296074F7BC48F92A97916C6DC5EA9", serialized);
@@ -276,6 +278,7 @@ mod tests {
         let serialized = rippled_binary_codec::serialize::serialize_tx(
             to_string(&wrapped_tx.tx_data).unwrap(),
             true,
+            None,
         )
         .unwrap();
         assert_eq!("1200122400000005501849647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB068400000000000000C81147990EC5D1D8DF69E070A968D4B186986FDF06ED0", serialized);
@@ -300,6 +303,7 @@ mod tests {
         let serialized = rippled_binary_codec::serialize::serialize_tx(
             to_string(&wrapped_tx.tx_data).unwrap(),
             true,
+            None,
         )
         .unwrap();
         assert_eq!("1200102A21FB3DF12E0000000150116F1DFD1D0FE8A32E40E1F2C05CF1C15545BAB56B617F9C6C2D63A6B704BEF59B68400000000000000C694000000005F5E10081147990EC5D1D8DF69E070A968D4B186986FDF06ED0831449FF0C73CA6AF9733DA805F76CA2C37776B7C46B", serialized);

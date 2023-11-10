@@ -11,7 +11,7 @@
 #include "stdint.h"
 #include "stdbool.h"
 
-#define QR_DECODE_STRING_LEN   1024
+#define QR_DECODE_STRING_LEN   1536
 
 typedef enum {
     QR_DECODE_STATE_OFF,

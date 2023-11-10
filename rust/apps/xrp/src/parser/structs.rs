@@ -7,6 +7,7 @@ pub struct ParsedXrpTx {
     pub overview: XrpTxOverview,
     pub detail: String,
     pub network: String,
+    pub signing_pubkey: String,
 }
 
 // method label on ui

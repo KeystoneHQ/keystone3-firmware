@@ -874,8 +874,8 @@ checksum = "436b050e76ed2903236f032a59761c1eb99e1b0aead2c257922771dab1fc8c78"
 
 [[package]]
 name = "rippled_binary_codec"
-version = "0.0.5"
-source = "git+https://github.com/KeystoneHQ/rippled_binary_codec.git?tag=v0.0.6#7a62be0410a82765c80714311735008f8642b5f2"
+version = "0.0.6"
+source = "git+https://github.com/KeystoneHQ/rippled_binary_codec.git?tag=v0.0.7#330441d02498d7c9054cc1d51adfac1738d0b2de"
 dependencies = [
  "ascii",
  "base-x",
@@ -1237,7 +1237,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.18#bc59184e6db904a76d36eb75d37a3d3533183603"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.19#3bde5fde141489b71c71c622289a1cf0a89658b5"
 dependencies = [
  "hex",
  "ur",
@@ -1247,7 +1247,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.18#bc59184e6db904a76d36eb75d37a3d3533183603"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.19#3bde5fde141489b71c71c622289a1cf0a89658b5"
 dependencies = [
  "bs58",
  "core2",

@@ -178,6 +178,14 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_PETRA].items[0].url = _("connect_petra_link");
         g_tutorials[WALLET_LIST_PETRA].items[0].qrTitle = _("connect_petra_qr_title");
         g_tutorials[WALLET_LIST_PETRA].items[0].qrUrl = _("connect_petra_qr_link");
+
+        //WALLET_LIST_XRP_TOOLKIT
+        g_tutorials[WALLET_LIST_XRP_TOOLKIT].len = 1;
+        g_tutorials[WALLET_LIST_XRP_TOOLKIT].desc = _("connect_xrp_toolkit_desc");
+        g_tutorials[WALLET_LIST_XRP_TOOLKIT].items[0].walletName = _("connect_xrp_toolkit_title");
+        g_tutorials[WALLET_LIST_XRP_TOOLKIT].items[0].url = _("connect_xrp_toolkit_link");
+        g_tutorials[WALLET_LIST_XRP_TOOLKIT].items[0].qrTitle = _("connect_xrp_toolkit_qr_title");
+        g_tutorials[WALLET_LIST_XRP_TOOLKIT].items[0].qrUrl = _("connect_xrp_toolkit_qr_link");
     }
 }
 

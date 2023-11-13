@@ -19,6 +19,7 @@ typedef enum {
     HOME_WALLET_CARD_SUI,
     HOME_WALLET_CARD_ADA,
     HOME_WALLET_CARD_XRP,
+    HOME_WALLET_CARD_TRX,
     HOME_WALLET_CARD_ATOM,
     HOME_WALLET_CARD_OSMO,
     HOME_WALLET_CARD_SCRT,
@@ -56,7 +57,6 @@ typedef enum {
     HOME_WALLET_CARD_LTC,
     HOME_WALLET_CARD_DASH,
     HOME_WALLET_CARD_BCH,
-    HOME_WALLET_CARD_TRX,
 
     HOME_WALLET_CARD_BUTT,      // This represents the end of the array (the number of arrays) and needs to be placed at the end.
 } HOME_WALLET_CARD_ENUM;

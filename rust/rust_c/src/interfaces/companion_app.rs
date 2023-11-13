@@ -14,6 +14,8 @@ use app_wallets::{companion_app::DESCRIPTION, DEVICE_TYPE};
 use core::str::FromStr;
 use third_party::hex;
 use third_party::ur_registry::bytes::Bytes;
+use third_party::ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
+use third_party::ur_registry::keystone::keystone_sign_result::KeystoneSignResult;
 use third_party::ur_registry::pb::protobuf_parser::{
     parse_protobuf, serialize_protobuf, unzip, zip,
 };
@@ -22,9 +24,25 @@ use third_party::ur_registry::pb::protoc::payload::Type as PbType;
 use third_party::ur_registry::pb::protoc::{payload, Base, Payload, SignTransactionResult};
 use third_party::ur_registry::traits::RegistryItem;
 
-pub fn build_payload(ptr: PtrUR) -> Result<Payload, CompanionAppError> {
-    let crypto_bytes = extract_ptr_with_type!(ptr, Bytes);
-    unzip(crypto_bytes.get_bytes())
+use super::ur::URType;
+
+pub fn build_payload(ptr: PtrUR, ur_type: URType) -> Result<Payload, CompanionAppError> {
+    let bytes = match ur_type {
+        URType::KeystoneSignRequest => {
+            let req = extract_ptr_with_type!(ptr, KeystoneSignRequest);
+            req.get_sign_data()
+        }
+        URType::Bytes => {
+            let bytes = extract_ptr_with_type!(ptr, Bytes);
+            bytes.get_bytes()
+        }
+        _ => {
+            return Err(CompanionAppError::ProtobufError(
+                "invalid ur type".to_string(),
+            ))
+        }
+    };
+    unzip(bytes)
         .and_then(|unzip_data| parse_protobuf(unzip_data))
         .and_then(|base: Base| Ok(base.data))
         .map_err(|e| CompanionAppError::ProtobufError(e.to_string()))?
@@ -79,10 +97,11 @@ fn get_signed_tx(
 
 pub fn build_check_result(
     ptr: PtrUR,
+    ur_type: URType,
     master_fingerprint: PtrBytes,
     x_pub: PtrString,
 ) -> Result<(), CompanionAppError> {
-    let payload = build_payload(ptr)?;
+    let payload = build_payload(ptr, ur_type)?;
     let payload_content = payload.content.clone();
     match payload_content {
         Some(payload::Content::SignTx(sign_tx_content)) => {
@@ -113,12 +132,13 @@ pub fn build_check_result(
 
 pub fn build_sign_result(
     ptr: PtrUR,
+    ur_type: URType,
     master_fingerprint: PtrBytes,
     x_pub: PtrString,
     cold_version: i32,
     seed: &[u8],
 ) -> Result<Vec<u8>, CompanionAppError> {
-    let payload = build_payload(ptr)?;
+    let payload = build_payload(ptr, ur_type)?;
     let payload_content = payload.content.clone();
     match payload_content {
         Some(payload::Content::SignTx(sign_tx_content)) => {
@@ -158,6 +178,7 @@ pub fn build_sign_result(
 
 pub fn check(
     ptr: PtrUR,
+    ur_type: URType,
     master_fingerprint: PtrBytes,
     length: u32,
     x_pub: PtrString,
@@ -165,7 +186,7 @@ pub fn check(
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
-    let result = build_check_result(ptr, master_fingerprint, x_pub);
+    let result = build_check_result(ptr, ur_type, master_fingerprint, x_pub);
     match result {
         Ok(_) => TransactionCheckResult::new().c_ptr(),
         Err(e) => TransactionCheckResult::from(e).c_ptr(),
@@ -174,6 +195,7 @@ pub fn check(
 
 pub fn sign(
     ptr: PtrUR,
+    ur_type: URType,
     master_fingerprint: PtrBytes,
     length: u32,
     x_pub: PtrString,
@@ -183,17 +205,42 @@ pub fn sign(
     if length != 4 {
         return UREncodeResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
-    let result = build_sign_result(ptr, master_fingerprint, x_pub, cold_version, seed);
-    match result.map(|v| Bytes::new(v).try_into()) {
-        Ok(v) => match v {
-            Ok(data) => UREncodeResult::encode(
-                data,
-                Bytes::get_registry_type().get_type(),
-                FRAGMENT_MAX_LENGTH_DEFAULT,
-            )
-            .c_ptr(),
-            Err(e) => UREncodeResult::from(e).c_ptr(),
-        },
-        Err(e) => UREncodeResult::from(e).c_ptr(),
+    match ur_type {
+        URType::KeystoneSignRequest => {
+            let result =
+                build_sign_result(ptr, ur_type, master_fingerprint, x_pub, cold_version, seed);
+            match result.map(|v| KeystoneSignResult::new(v).try_into()) {
+                Ok(v) => match v {
+                    Ok(data) => UREncodeResult::encode(
+                        data,
+                        KeystoneSignResult::get_registry_type().get_type(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT,
+                    )
+                    .c_ptr(),
+                    Err(e) => UREncodeResult::from(e).c_ptr(),
+                },
+                Err(e) => UREncodeResult::from(e).c_ptr(),
+            }
+        }
+        URType::Bytes => {
+            let result =
+                build_sign_result(ptr, ur_type, master_fingerprint, x_pub, cold_version, seed);
+            match result.map(|v| Bytes::new(v).try_into()) {
+                Ok(v) => match v {
+                    Ok(data) => UREncodeResult::encode(
+                        data,
+                        Bytes::get_registry_type().get_type(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT,
+                    )
+                    .c_ptr(),
+                    Err(e) => UREncodeResult::from(e).c_ptr(),
+                },
+                Err(e) => UREncodeResult::from(e).c_ptr(),
+            }
+        }
+        _ => UREncodeResult::from(RustCError::UnsupportedTransaction(
+            "unsupported ur type".to_string(),
+        ))
+        .c_ptr(),
     }
 }

@@ -102,7 +102,7 @@ UREncodeResult *GuiGetSignQrCodeData(void)
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        encodeResult = utxo_sign_companion_app(data, mfp, sizeof(mfp), xPub, SOFTWARE_VERSION, seed, len);
+        encodeResult = utxo_sign_companion_app(data, urType, mfp, sizeof(mfp), xPub, SOFTWARE_VERSION, seed, len);
     }
     CHECK_CHAIN_PRINT(encodeResult);
     ClearSecretCache();
@@ -161,7 +161,7 @@ void *GuiGetParsedQrData(void)
             if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
                 return NULL;
             }
-            g_parseResult = utxo_parse_companion_app(crypto, mfp, sizeof(mfp), xPub);
+            g_parseResult = utxo_parse_companion_app(crypto, urType, mfp, sizeof(mfp), xPub);
             CHECK_CHAIN_RETURN(g_parseResult);
             return g_parseResult;
         }
@@ -215,7 +215,7 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
             return NULL;
         }
-        result = utxo_check_companion_app(crypto, mfp, sizeof(mfp), xPub);
+        result = utxo_check_companion_app(crypto, urType, mfp, sizeof(mfp), xPub);
     }
     return result;
 #else

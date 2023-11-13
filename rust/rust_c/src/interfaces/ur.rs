@@ -5,6 +5,7 @@ use alloc::vec::Vec;
 use core::ptr::null_mut;
 use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 use third_party::ur_registry::extend::qr_hardware_call::QRHardwareCall;
+use third_party::ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
 
 use app_bitcoin::errors::BitcoinError;
 use app_ethereum::errors::EthereumError;
@@ -181,6 +182,7 @@ pub enum URType {
     CryptoPSBT,
     CryptoMultiAccounts,
     Bytes,
+    KeystoneSignRequest,
     EthSignRequest,
     SolSignRequest,
     NearSignRequest,
@@ -199,6 +201,7 @@ impl URType {
             InnerURType::CryptoPsbt(_) => Ok(URType::CryptoPSBT),
             InnerURType::CryptoMultiAccounts(_) => Ok(URType::CryptoMultiAccounts),
             InnerURType::Bytes(_) => Ok(URType::Bytes),
+            InnerURType::KeystoneSignRequest(_) => Ok(URType::KeystoneSignRequest),
             InnerURType::EthSignRequest(_) => Ok(URType::EthSignRequest),
             InnerURType::SolSignRequest(_) => Ok(URType::SolSignRequest),
             InnerURType::NearSignRequest(_) => Ok(URType::NearSignRequest),
@@ -293,8 +296,8 @@ fn free_ur(ur_type: &URType, data: PtrUR) {
         URType::Bytes => {
             free_ptr_with_type!(data, Bytes);
         }
-        URType::CardanoSignRequest => {
-            free_ptr_with_type!(data, CardanoSignRequest);
+        URType::KeystoneSignRequest => {
+            free_ptr_with_type!(data, KeystoneSignRequest);
         }
         URType::CosmosSignRequest => {
             free_ptr_with_type!(data, CosmosSignRequest);
@@ -434,6 +437,7 @@ pub fn decode_ur(ur: String) -> URParseResult {
         URType::CryptoPSBT => _decode_ur::<CryptoPSBT>(ur, ur_type),
         URType::CryptoMultiAccounts => _decode_ur::<CryptoMultiAccounts>(ur, ur_type),
         URType::Bytes => _decode_ur::<Bytes>(ur, ur_type),
+        URType::KeystoneSignRequest => _decode_ur::<KeystoneSignRequest>(ur, ur_type),
         URType::EthSignRequest => _decode_ur::<EthSignRequest>(ur, ur_type),
         URType::SolSignRequest => _decode_ur::<SolSignRequest>(ur, ur_type),
         URType::NearSignRequest => _decode_ur::<NearSignRequest>(ur, ur_type),
@@ -490,6 +494,7 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         URType::CryptoPSBT => _receive_ur::<CryptoPSBT>(ur, ur_type, decoder),
         URType::CryptoMultiAccounts => _receive_ur::<CryptoMultiAccounts>(ur, ur_type, decoder),
         URType::Bytes => _receive_ur::<Bytes>(ur, ur_type, decoder),
+        URType::KeystoneSignRequest => _receive_ur::<KeystoneSignRequest>(ur, ur_type, decoder),
         URType::EthSignRequest => _receive_ur::<EthSignRequest>(ur, ur_type, decoder),
         URType::SolSignRequest => _receive_ur::<SolSignRequest>(ur, ur_type, decoder),
         URType::NearSignRequest => _receive_ur::<NearSignRequest>(ur, ur_type, decoder),

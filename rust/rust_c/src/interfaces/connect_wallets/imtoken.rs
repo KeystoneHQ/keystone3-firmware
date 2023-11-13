@@ -1,14 +1,14 @@
+use crate::alloc::string::ToString;
+use crate::extract_array;
+use crate::interfaces::types::{Ptr, PtrBytes, PtrString};
+use crate::interfaces::ur::UREncodeResult;
+use crate::interfaces::utils::recover_c_char;
 use alloc::format;
 use app_wallets::metamask::ETHAccountTypeApp::Bip44Standard;
 use cty::uint32_t;
 use third_party::ur_registry::crypto_hd_key::CryptoHDKey;
 use third_party::ur_registry::error::URError;
 use third_party::ur_registry::traits::RegistryItem;
-use crate::alloc::string::ToString;
-use crate::extract_array;
-use crate::interfaces::types::{Ptr, PtrBytes, PtrString};
-use crate::interfaces::ur::UREncodeResult;
-use crate::interfaces::utils::{recover_c_char};
 
 //only support export bip44standard eth account to imToken, rewrite this func if imToken supports other chains
 #[no_mangle]
@@ -23,7 +23,7 @@ pub extern "C" fn get_connect_imtoken_ur(
             "master fingerprint length must be 4, current is {}",
             master_fingerprint_length
         )))
-            .c_ptr();
+        .c_ptr();
     }
     let mfp = extract_array!(master_fingerprint, u8, master_fingerprint_length);
     let mfp = match <&[u8; 4]>::try_from(mfp) {
@@ -36,16 +36,14 @@ pub extern "C" fn get_connect_imtoken_ur(
             mfp,
             &recover_c_char(xpub),
             Bip44Standard,
-            Some(wallet_name)
+            Some(wallet_name),
         );
         match result.map(|v| v.try_into()) {
             Ok(v) => match v {
-                Ok(data) => UREncodeResult::encode(
-                    data,
-                    CryptoHDKey::get_registry_type().get_type(),
-                    240,
-                )
-                    .c_ptr(),
+                Ok(data) => {
+                    UREncodeResult::encode(data, CryptoHDKey::get_registry_type().get_type(), 240)
+                        .c_ptr()
+                }
                 Err(e) => UREncodeResult::from(e).c_ptr(),
             },
             Err(e) => UREncodeResult::from(e).c_ptr(),

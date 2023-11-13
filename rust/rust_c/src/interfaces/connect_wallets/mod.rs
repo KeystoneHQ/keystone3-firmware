@@ -1,4 +1,5 @@
 pub mod aptos;
+mod imtoken;
 pub mod keplr;
 pub mod okx;
 pub mod solana;
@@ -6,7 +7,6 @@ pub mod structs;
 pub mod sui;
 mod utils;
 pub mod xrp_toolkit;
-mod imtoken;
 
 use alloc::format;
 use alloc::string::String;

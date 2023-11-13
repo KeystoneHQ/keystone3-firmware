@@ -44,7 +44,13 @@ pub extern "C" fn get_okx_wallet_ur(
         let device_type = recover_c_char(device_type);
         match normalize_xpub(keys) {
             Ok(_keys) => {
-                match app_wallets::okx::generate_crypto_multi_accounts(mfp, &serial_number, _keys, &device_type, &device_version) {
+                match app_wallets::okx::generate_crypto_multi_accounts(
+                    mfp,
+                    &serial_number,
+                    _keys,
+                    &device_type,
+                    &device_version,
+                ) {
                     Ok(data) => match data.try_into() {
                         Ok(_v) => UREncodeResult::encode(
                             _v,

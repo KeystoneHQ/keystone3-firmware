@@ -1,6 +1,7 @@
 use crate::interfaces::ur::ViewType;
 use alloc::format;
 use alloc::string::{String, ToString};
+use alloc::vec::Vec;
 use third_party::serde_json::{from_slice, from_value, Value};
 use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 use third_party::ur_registry::bytes::Bytes;
@@ -13,6 +14,7 @@ use third_party::ur_registry::ethereum::eth_sign_request;
 use third_party::ur_registry::ethereum::eth_sign_request::EthSignRequest;
 use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 use third_party::ur_registry::extend::qr_hardware_call::{CallType, QRHardwareCall};
+use third_party::ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
 use third_party::ur_registry::near::near_sign_request::NearSignRequest;
 use third_party::ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
 use third_party::ur_registry::pb::protoc;
@@ -75,6 +77,49 @@ impl InferViewType for AptosSignRequest {
     }
 }
 
+fn get_view_type_from_keystone(bytes: Vec<u8>) -> Result<ViewType, URError> {
+    let unzip_data = unzip(bytes)
+        .map_err(|_| URError::NotSupportURTypeError("bytes can not unzip".to_string()))?;
+    let base: Base = parse_protobuf(unzip_data)
+        .map_err(|_| URError::NotSupportURTypeError("invalid protobuf".to_string()))?;
+    let payload = base
+        .data
+        .ok_or(URError::NotSupportURTypeError("empty payload".to_string()))?;
+    let result = match payload.content {
+        Some(protoc::payload::Content::SignTx(sign_tx_content)) => {
+            match sign_tx_content.coin_code.as_str() {
+                "BTC_NATIVE_SEGWIT" => ViewType::BtcNativeSegwitTx,
+                "BTC_SEGWIT" => ViewType::BtcSegwitTx,
+                "BTC_LEGACY" => ViewType::BtcLegacyTx,
+                "BTC" => ViewType::BtcSegwitTx,
+                "LTC" => ViewType::LtcTx,
+                "DASH" => ViewType::DashTx,
+                "BCH" => ViewType::BchTx,
+                "ETH" => ViewType::EthTx,
+                "TRON" => ViewType::TronTx,
+                _ => {
+                    return Err(URError::ProtobufDecodeError(format!(
+                        "invalid coin_code {:?}",
+                        sign_tx_content.coin_code
+                    )));
+                }
+            }
+        }
+        _ => {
+            return Err(URError::ProtobufDecodeError(
+                "invalid payload content".to_string(),
+            ));
+        }
+    };
+    Ok(result)
+}
+
+impl InferViewType for KeystoneSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        get_view_type_from_keystone(self.get_sign_data())
+    }
+}
+
 impl InferViewType for Bytes {
     fn infer(&self) -> Result<ViewType, URError> {
         match from_slice::<Value>(self.get_bytes().as_slice()) {
@@ -90,43 +135,7 @@ impl InferViewType for Bytes {
                 }
                 Ok(ViewType::XRPTx)
             }
-            Err(_e) => {
-                let unzip_data = unzip(self.get_bytes()).map_err(|_| {
-                    URError::NotSupportURTypeError("bytes can not unzip".to_string())
-                })?;
-                let base: Base = parse_protobuf(unzip_data)
-                    .map_err(|_| URError::NotSupportURTypeError("invalid protobuf".to_string()))?;
-                let payload = base
-                    .data
-                    .ok_or(URError::NotSupportURTypeError("empty payload".to_string()))?;
-                let result = match payload.content {
-                    Some(protoc::payload::Content::SignTx(sign_tx_content)) => {
-                        match sign_tx_content.coin_code.as_str() {
-                            "BTC_NATIVE_SEGWIT" => ViewType::BtcNativeSegwitTx,
-                            "BTC_SEGWIT" => ViewType::BtcSegwitTx,
-                            "BTC_LEGACY" => ViewType::BtcLegacyTx,
-                            "BTC" => ViewType::BtcSegwitTx,
-                            "LTC" => ViewType::LtcTx,
-                            "DASH" => ViewType::DashTx,
-                            "BCH" => ViewType::BchTx,
-                            "ETH" => ViewType::EthTx,
-                            "TRON" => ViewType::TronTx,
-                            _ => {
-                                return Err(URError::ProtobufDecodeError(format!(
-                                    "invalid coin_code {:?}",
-                                    sign_tx_content.coin_code
-                                )));
-                            }
-                        }
-                    }
-                    _ => {
-                        return Err(URError::ProtobufDecodeError(
-                            "invalid payload content".to_string(),
-                        ));
-                    }
-                };
-                Ok(result)
-            }
+            Err(_e) => get_view_type_from_keystone(self.get_bytes()),
         }
     }
 }

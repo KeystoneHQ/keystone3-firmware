@@ -1173,7 +1173,7 @@ static void RustTestParseBTCCompanionApp(int argc, char *argv[])
     char *xpub = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
     printf("RustTestParseBTCCompanionApp crypto_bytes %p\r\n", crypto_bytes);
-    TransactionParseResult_DisplayTx *result = utxo_parse_companion_app(crypto_bytes, mfp, sizeof(mfp), xpub);
+    TransactionParseResult_DisplayTx *result = utxo_parse_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     printf("RustTestParseBTCCompanionApp 22\r\n");
     VecFFI_DisplayTxDetailInput *inputs = result->data->detail->from;
     VecFFI_DisplayTxOverviewOutput *overview_to = result->data->overview->to;
@@ -1205,7 +1205,7 @@ static void RustTestCheckFailedBTCCompanionApp(int argc, char *argv[])
     char *xpub = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
     printf("RustTestCheckFailedBTCCompanionApp crypto_bytes %p\r\n", crypto_bytes);
-    TransactionCheckResult *result = utxo_check_companion_app(crypto_bytes, mfp, sizeof(mfp), xpub);
+    TransactionCheckResult *result = utxo_check_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     printf("error_code: %d\r\n", result->error_code);
     printf("error_message, %s\r\n", result->error_message);
     free_ur_parse_result(ur);
@@ -1222,7 +1222,7 @@ static void RustTestCheckSucceedBCHCompanionApp(int argc, char *argv[])
     char *xpub = "xpub6ByHsPNSQXTWZ7PLESMY2FufyYWtLXagSUpMQq7Un96SiThZH2iJB1X7pwviH1WtKVeDP6K8d6xxFzzoaFzF3s8BKCZx8oEDdDkNnp4owAZ";
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
     printf("RustTestCheckSucceedBCHCompanionApp crypto_bytes %p\r\n", crypto_bytes);
-    TransactionCheckResult *result = utxo_check_companion_app(crypto_bytes, mfp, sizeof(mfp), xpub);
+    TransactionCheckResult *result = utxo_check_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     printf("error_code: %d\r\n", result->error_code);
     printf("error_message, %s\r\n", result->error_message);
     free_ur_parse_result(ur);
@@ -1241,7 +1241,7 @@ static void RustTestParseLTCCompanionApp(int argc, char *argv[])
     printf("RustTestParseLTCCompanionApp view_type %d\r\n", view_type);
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
     printf("RustTestParseLTCCompanionApp crypto_bytes %p\r\n", crypto_bytes);
-    TransactionParseResult_DisplayTx *result = utxo_parse_companion_app(crypto_bytes, mfp, sizeof(mfp), xpub);
+    TransactionParseResult_DisplayTx *result = utxo_parse_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     VecFFI_DisplayTxDetailInput *inputs = result->data->detail->from;
     VecFFI_DisplayTxOverviewOutput *overview_to = result->data->overview->to;
     printf("RustTestParseLTCCompanionApp to->size %d\r\n", result->data->overview->to->size);
@@ -1276,7 +1276,7 @@ static void RustTestParseTronCompanionApp(int argc, char *argv[])
     printf("RustTestParseTronCompanionApp view_type %d\r\n", view_type);
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
     printf("RustTestParseTronCompanionApp crypto_bytes %p\r\n", crypto_bytes);
-    TransactionParseResult_DisplayTron *result = tron_parse_companion_app(crypto_bytes, mfp, sizeof(mfp), xpub);
+    TransactionParseResult_DisplayTron *result = tron_parse_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     printf("error_code: %d\r\n", result->error_code);
     printf("error_message, %s\r\n", result->error_message);
     printf("parse result overview: \r\n");
@@ -1304,7 +1304,7 @@ static void RustTestCheckTronCompanionAppFailed(int argc, char *argv[])
     printf("RustTestCheckTronCompanionAppFailed view_type %d\r\n", view_type);
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
     printf("RustTestCheckTronCompanionAppFailed crypto_bytes %p\r\n", crypto_bytes);
-    TransactionCheckResult *result = tron_check_companion_app(crypto_bytes, mfp, sizeof(mfp), xpub);
+    TransactionCheckResult *result = tron_check_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     printf("error_code: %d\r\n", result->error_code);
     printf("error_message, %s\r\n", result->error_message);
     free_ur_parse_result(ur);
@@ -1323,7 +1323,7 @@ static void RustTestCheckTronCompanionAppSucceed(int argc, char *argv[])
     printf("RustTestCheckTronCompanionAppSucceed view_type %d\r\n", view_type);
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
     printf("RustTestCheckTronCompanionAppSucceed crypto_bytes %p\r\n", crypto_bytes);
-    TransactionCheckResult *result = tron_check_companion_app(crypto_bytes, mfp, sizeof(mfp), xpub);
+    TransactionCheckResult *result = tron_check_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     printf("error_code: %d\r\n", result->error_code);
     printf("error_message, %s\r\n", result->error_message);
     free_ur_parse_result(ur);
@@ -1349,7 +1349,7 @@ static void RustTestSignTronCompanionApp(int argc, char *argv[])
     printf("RustTestSignTronCompanionApp crypto_bytes %p\r\n", crypto_bytes);
     uint8_t seed[64];
     GetAccountSeed(index, seed, argv[1]);
-    UREncodeResult *result = tron_sign_companion_app(crypto_bytes, mfp, sizeof(mfp), xpub, cold_version, seed, sizeof(seed));
+    UREncodeResult *result = tron_sign_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, sizeof(seed));
     printf("is multi part: %d\r\n", result->is_multi_part);
     printf("data, %s\r\n", result->data);
     free_ur_parse_result(ur);
@@ -1430,7 +1430,7 @@ static void RustTestParseBCHCompanionApp(int argc, char *argv[])
     printf("RustTestParseBCHCompanionApp view_type %d\r\n", view_type);
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
     printf("RustTestParseBCHCompanionApp crypto_bytes %p\r\n", crypto_bytes);
-    TransactionParseResult_DisplayTx *result = utxo_parse_companion_app(crypto_bytes, mfp, sizeof(mfp), xpub);
+    TransactionParseResult_DisplayTx *result = utxo_parse_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     VecFFI_DisplayTxDetailInput *inputs = result->data->detail->from;
     VecFFI_DisplayTxOverviewOutput *overview_to = result->data->overview->to;
     printf("RustTestParseBCHCompanionApp to->size %d\r\n", result->data->overview->to->size);
@@ -1470,7 +1470,7 @@ static void RustTestParseDASHCompanionApp(int argc, char *argv[])
     char *xpub = "xpub6CYEjsU6zPM3sADS2ubu2aZeGxCm3C5KabkCpo4rkNbXGAH9M7rRUJ4E5CKiyUddmRzrSCopPzisTBrXkfCD4o577XKM9mzyZtP1Xdbizyk";
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
     printf("RustTestParseDASHCompanionApp crypto_bytes %p\r\n", crypto_bytes);
-    TransactionParseResult_DisplayTx *result = utxo_parse_companion_app(crypto_bytes, mfp, sizeof(mfp), xpub);
+    TransactionParseResult_DisplayTx *result = utxo_parse_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     VecFFI_DisplayTxDetailInput *inputs = result->data->detail->from;
     VecFFI_DisplayTxOverviewOutput *overview_to = result->data->overview->to;
     printf("RustTestParseDASHCompanionApp to->size %d\r\n", result->data->overview->to->size);
@@ -1667,7 +1667,7 @@ static void RustTestSignBTCCompanionApp(int argc, char *argv[])
     uint8_t seed[64];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
     GetAccountSeed(index, seed, argv[1]);
-    UREncodeResult *result = utxo_sign_companion_app(crypto_bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
+    UREncodeResult *result = utxo_sign_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
     printf("is multi part: %d\r\n", result->is_multi_part);
     printf("data, %s\r\n", result->data);
     free_ur_parse_result(ur);
@@ -1691,7 +1691,7 @@ static void RustTestSignLTCCompanionApp(int argc, char *argv[])
     uint8_t seed[64];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
     GetAccountSeed(index, seed, argv[1]);
-    UREncodeResult *result = utxo_sign_companion_app(crypto_bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
+    UREncodeResult *result = utxo_sign_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
     printf("is multi part: %d\r\n", result->is_multi_part);
     printf("data, %s\r\n", result->data);
     free_ur_parse_result(ur);
@@ -1715,7 +1715,7 @@ static void RustTestSignDASHCompanionApp(int argc, char *argv[])
     uint8_t seed[64];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
     GetAccountSeed(index, seed, argv[1]);
-    UREncodeResult *result = utxo_sign_companion_app(crypto_bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
+    UREncodeResult *result = utxo_sign_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
     printf("is multi part: %d\r\n", result->is_multi_part);
     printf("data, %s\r\n", result->data);
     free_ur_parse_result(ur);
@@ -1739,7 +1739,7 @@ static void RustTestSignBCHCompanionApp(int argc, char *argv[])
     uint8_t seed[64];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
     GetAccountSeed(index, seed, argv[1]);
-    UREncodeResult *result = utxo_sign_companion_app(crypto_bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
+    UREncodeResult *result = utxo_sign_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
     printf("is multi part: %d\r\n", result->is_multi_part);
     printf("data, %s\r\n", result->data);
     free_ur_parse_result(ur);

@@ -52,6 +52,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_SUI, "Confirm Transaction", &coinSui},
     {CHAIN_ADA, "Confirm Transaction", &coinAda},
     {CHAIN_XRP, "Confirm Transaction", &coinXrp},
+    {CHAIN_TRX, "Confirm Transaction", &coinTrx},
     {CHAIN_ATOM, "Confirm Transaction", &coinAtom},
     {CHAIN_OSMO, "Confirm Transaction", &coinOsmo},
     {CHAIN_SCRT, "Confirm Transaction", &coinScrt},
@@ -87,7 +88,6 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_LTC, "Confirm Transaction", &coinLtc},
     {CHAIN_DASH, "Confirm Transaction", &coinDash},
     {CHAIN_BCH, "Confirm Transaction", &coinBch},
-    {CHAIN_TRX, "Confirm Transaction", &coinTrx},
 };
 
 const static CoinWalletInfo_t g_walletBtn[] = {

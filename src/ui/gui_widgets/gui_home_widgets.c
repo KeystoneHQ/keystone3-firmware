@@ -40,6 +40,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
         {HOME_WALLET_CARD_SUI, false, "SUI", true},
         {HOME_WALLET_CARD_ADA, false, "ADA", true},
         {HOME_WALLET_CARD_XRP, false, "XRP", true},
+        {HOME_WALLET_CARD_TRX, false, "TRX", true},
         {HOME_WALLET_CARD_ATOM, false, "ATOM", true},
         {HOME_WALLET_CARD_OSMO, false, "OSMO", true},
         {HOME_WALLET_CARD_SCRT, false, "SCRT", true},
@@ -75,7 +76,6 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
         {HOME_WALLET_CARD_LTC, false, "LTC", false},
         {HOME_WALLET_CARD_DASH, false, "DASH", false},
         {HOME_WALLET_CARD_BCH, false, "BCH", false},
-        {HOME_WALLET_CARD_TRX, false, "TRX", false},
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 
@@ -134,6 +134,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =
             .coin = "XRP",
             .chain = "Ripple",
             .icon = &coinXrp,
+        },
+        {
+            .index = HOME_WALLET_CARD_TRX,
+            .coin = "TRX",
+            .chain = "TRON",
+            .icon = &coinTrx,
         },
         {
             .index = HOME_WALLET_CARD_ATOM,
@@ -320,12 +326,6 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =
             .coin = "BNB",
             .chain = "Binance",
             .icon = &coinBnb,
-        },
-        {
-            .index = HOME_WALLET_CARD_TRX,
-            .coin = "TRX",
-            .chain = "TRON",
-            .icon = &coinTrx,
         },
         {
             .index = HOME_WALLET_CARD_DOT,

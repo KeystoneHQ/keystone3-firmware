@@ -33,10 +33,11 @@ void *GuiGetTrxData(void)
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    URType urType = g_isMulti ? ((URParseMultiResult *)g_urResult)->ur_type : ((URParseResult *)g_urResult)->ur_type;
     char *trxXpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
     GetMasterFingerPrint(mfp);
     do {
-        PtrT_TransactionParseResult_DisplayTron parseResult = tron_parse_companion_app(data, mfp, sizeof(mfp), trxXpub);
+        PtrT_TransactionParseResult_DisplayTron parseResult = tron_parse_companion_app(data, urType, mfp, sizeof(mfp), trxXpub);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
@@ -51,9 +52,10 @@ PtrT_TransactionCheckResult GuiGetTrxCheckResult(void)
 #ifndef COMPILE_SIMULATOR
     uint8_t mfp[4];
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    URType urType = g_isMulti ? ((URParseMultiResult *)g_urResult)->ur_type : ((URParseResult *)g_urResult)->ur_type;
     char *trxXpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
     GetMasterFingerPrint(mfp);
-    return tron_check_companion_app(data, mfp, sizeof(mfp), trxXpub);
+    return tron_check_companion_app(data, urType, mfp, sizeof(mfp), trxXpub);
 #else
     return NULL;
 #endif
@@ -121,13 +123,14 @@ UREncodeResult *GuiGetTrxSignQrCodeData(void)
 #ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult;
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    URType urType = g_isMulti ? ((URParseMultiResult *)g_urResult)->ur_type : ((URParseResult *)g_urResult)->ur_type;
     do {
         uint8_t mfp[4];
         GetMasterFingerPrint(mfp);
         uint8_t seed[64];
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
-        encodeResult = tron_sign_companion_app(data, mfp, sizeof(mfp), xPub, SOFTWARE_VERSION, seed, sizeof(seed));
+        encodeResult = tron_sign_companion_app(data, urType, mfp, sizeof(mfp), xPub, SOFTWARE_VERSION, seed, sizeof(seed));
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);

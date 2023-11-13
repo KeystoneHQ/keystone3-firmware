@@ -4,6 +4,7 @@
 #include "user_memory.h"
 #include "keystore.h"
 #include "secret_cache.h"
+#include "screen_manager.h"
 
 #define XRP_ROOT_PATH "m/44'/144'/0'"
 

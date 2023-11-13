@@ -201,6 +201,8 @@ LV_IMG_DECLARE(walletKeplr);
 LV_IMG_DECLARE(walletFewcha);
 LV_IMG_DECLARE(walletPetra);
 LV_IMG_DECLARE(walletXRPToolkit);
+LV_IMG_DECLARE(walletSparrow);
+LV_IMG_DECLARE(walletImToken);
 
 
 //wallet list
@@ -221,6 +223,8 @@ LV_IMG_DECLARE(walletListKeplr);
 LV_IMG_DECLARE(walletListFewcha);
 LV_IMG_DECLARE(walletListPetra);
 LV_IMG_DECLARE(walletListXRPToolkit);
+LV_IMG_DECLARE(walletListSparrow);
+LV_IMG_DECLARE(walletListImToken);
 
 // font
 LV_FONT_DECLARE(openSans_20);

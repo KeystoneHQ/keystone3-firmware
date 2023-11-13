@@ -41,6 +41,8 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_ETERNL, &walletListEternl, true},
     {WALLET_LIST_RABBY, &walletListRabby, true},
     {WALLET_LIST_SAFE, &walletListSafe, true},
+    {WALLET_LIST_SPARROW, &walletListSparrow, true},
+    {WALLET_LIST_IMTOKEN, &walletListImToken, true},
     {WALLET_LIST_BLOCK_WALLET, &walletListBlockWallet, true},
     {WALLET_LIST_SOLFARE, &walletListSolfare, true},
     {WALLET_LIST_XRP_TOOLKIT, &walletListXRPToolkit, true},
@@ -927,11 +929,17 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetMetamaskData;
         AddEthWalletCoins();
         break;
+    case WALLET_LIST_IMTOKEN:
+        func = GuiGetImTokenData;
+        AddEthWalletCoins();
+        break;
+        break;
     case WALLET_LIST_OKX:
         func = GuiGetOkxWalletData;
         AddOkxWalletCoins();
         break;
     case WALLET_LIST_BLUE:
+    case WALLET_LIST_SPARROW:
         func = GuiGetBlueWalletBtcData;
         AddBlueWalletCoins();
         break;
@@ -968,7 +976,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     }
 #else
     SetWallet(g_pageWidget->navBarWidget, index, NULL);
-    GuiCreatePreloadObj();
     GenerateUR func = NULL;
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);

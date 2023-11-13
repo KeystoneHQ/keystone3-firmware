@@ -6,6 +6,7 @@ pub mod structs;
 pub mod sui;
 mod utils;
 pub mod xrp_toolkit;
+mod imtoken;
 
 use alloc::format;
 use alloc::string::String;
@@ -256,6 +257,7 @@ pub extern "C" fn get_connect_metamask_ur(
                             mfp,
                             &recover_c_char(k.xpub),
                             account_type.into(),
+                            None,
                         );
                         match result.map(|v| v.try_into()) {
                             Ok(v) => match v {

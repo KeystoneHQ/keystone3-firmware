@@ -118,18 +118,9 @@ UREncodeResult *GuiGetImTokenData(void)
 {
 #ifndef COMPILE_SIMULATOR
     uint8_t mfp[4] = {0};
-    GetMasterFingerPrint(mfp);
-    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    ExtendedPublicKey keys[10];
-    public_keys->data = keys;
-
-    public_keys->size = 1;
-    keys[0].path = "";
-    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
-    
-    g_urEncode = get_connect_metamask_ur(mfp, sizeof(mfp), Bip44Standard, public_keys);
+    GetMasterFingerPrint(mfp);    
+    g_urEncode = get_connect_imtoken_ur(mfp, sizeof(mfp), GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD), GetWalletName());
     CHECK_CHAIN_PRINT(g_urEncode);
-    SRAM_FREE(public_keys);
     return g_urEncode;
 #else
     const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";

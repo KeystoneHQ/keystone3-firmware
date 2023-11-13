@@ -22,6 +22,8 @@ pub extern "C" fn get_okx_wallet_ur(
     master_fingerprint_length: u32,
     serial_number: PtrString,
     public_keys: Ptr<CSliceFFI<ExtendedPublicKey>>,
+    device_type: PtrString,
+    device_version: PtrString,
 ) -> Ptr<UREncodeResult> {
     if master_fingerprint_length != 4 {
         return UREncodeResult::from(URError::UrEncodeError(format!(
@@ -38,9 +40,11 @@ pub extern "C" fn get_okx_wallet_ur(
     unsafe {
         let keys = recover_c_array(public_keys);
         let serial_number = recover_c_char(serial_number);
+        let device_version = recover_c_char(device_version);
+        let device_type = recover_c_char(device_type);
         match normalize_xpub(keys) {
             Ok(_keys) => {
-                match app_wallets::okx::generate_crypto_multi_accounts(mfp, &serial_number, _keys) {
+                match app_wallets::okx::generate_crypto_multi_accounts(mfp, &serial_number, _keys, &device_type, &device_version) {
                     Ok(data) => match data.try_into() {
                         Ok(_v) => UREncodeResult::encode(
                             _v,

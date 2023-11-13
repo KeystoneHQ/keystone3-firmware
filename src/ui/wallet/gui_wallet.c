@@ -454,7 +454,9 @@ UREncodeResult *GuiGetOkxWalletData(void)
     keys[16].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
     char serialNumber[256];
     GetSerialNumber(serialNumber);
-    g_urEncode = get_okx_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys);
+    char firmwareVersion[12];
+    GetSoftWareVersionNumber(firmwareVersion);
+    g_urEncode = get_okx_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
     CHECK_CHAIN_PRINT(g_urEncode);
     SRAM_FREE(public_keys);
     return g_urEncode;

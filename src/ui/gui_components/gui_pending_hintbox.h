@@ -3,5 +3,6 @@
 
 void GuiPendingHintBoxRemove();
 void GuiPendingHintBoxOpen(char* title, char* subtitle);
+void GuiPendingHintBoxMoveToTargetParent(lv_obj_t *parent);
 
 #endif

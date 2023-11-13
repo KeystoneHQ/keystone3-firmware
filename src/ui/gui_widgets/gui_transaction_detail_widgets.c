@@ -75,6 +75,7 @@ void GuiTransactionDetailInit(uint8_t viewType)
     ParseTransaction(g_viewType);
     g_fingerSignCount = 0;
     GuiCreateConfirmSlider(g_pageWidget->contentZone, CheckSliderProcessHandler);
+    GuiPendingHintBoxMoveToTargetParent(lv_scr_act());
 }
 
 

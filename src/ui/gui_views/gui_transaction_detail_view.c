@@ -65,10 +65,7 @@ int32_t GuiTransactionDetailViewEventProcess(void *self, uint16_t usEvent, void 
         break;
     case SIG_TRANSACTION_PARSE_FAIL:
         break;
-    case SIG_SHOW_TRANSACTION_PARSE_LOADING:
-        GuiPendingHintBoxOpen(_("Loading"), "");
-        break;
-    case SIG_HIDE_TRANSACTION_PARSE_LOADING:
+    case SIG_HIDE_TRANSACTION_LOADING:
         GuiPendingHintBoxRemove();
         break;
     default:

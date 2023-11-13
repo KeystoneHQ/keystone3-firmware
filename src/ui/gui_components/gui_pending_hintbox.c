@@ -55,10 +55,20 @@ void GuiPendingHintBoxOpen(char* title, char* subtitle)
     g_pendingHintBox = bgCont;
 }
 
+
+
 void GuiPendingHintBoxRemove()
 {
     if (g_pendingHintBox != NULL) {
         GUI_DEL_OBJ(g_pendingHintBox)
         lv_anim_del_all();
+    }
+}
+
+
+void GuiPendingHintBoxMoveToTargetParent(lv_obj_t *parent)
+{
+     if (g_pendingHintBox != NULL) {
+        lv_obj_set_parent(g_pendingHintBox, parent);
     }
 }

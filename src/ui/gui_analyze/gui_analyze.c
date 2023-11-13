@@ -1862,6 +1862,7 @@ void GuiTemplateClosePage(void)
         if (g_reMapIndex == g_analyzeArray[i].index)
         {
             g_analyzeArray[i].freeFunc();
+            break;
         }
     }
 }

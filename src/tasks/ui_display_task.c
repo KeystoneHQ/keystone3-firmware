@@ -37,7 +37,6 @@ static void LcdFlush(struct _lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_
 static void InputDevReadCb(struct _lv_indev_drv_t *indev_drv, lv_indev_data_t *data);
 static uint8_t *GetActSnapShot(void);
 static void __SetLvglHandlerAndSnapShot(uint32_t value);
-static void PrepareToReceiveURViaUSB();
 
 osThreadId_t g_uiDisplayTaskHandle;
 osTimerId_t g_lvglTickTimer;
@@ -113,14 +112,6 @@ static void UiDisplayTask(void *argument)
                 GuiFrameWorkViewHandleMsg(rcvMsg.buffer, rcvMsg.length);
             }
             break;
-            case UI_MSG_USB_TRANSPORT_VIEW: {
-                GuiFrameOpenView(&g_USBTransportView);
-            }
-            break;
-            case UI_MSG_PREPARE_RECEIVE_UR_USB: {
-                PrepareToReceiveURViaUSB();
-            }
-            break;
             case UI_MSG_CLOSE_CURRENT_VIEW: {
                 GuiCLoseCurrentWorkingView();
             }
@@ -135,6 +126,11 @@ static void UiDisplayTask(void *argument)
 #endif
             }
             break;
+            case UI_MSG_USB_TRANSPORT_VIEW:
+            {
+                GuiFrameOpenView(&g_USBTransportView);
+            }
+            break;
             default:
                 break;
             }
@@ -145,11 +141,6 @@ static void UiDisplayTask(void *argument)
             GuiLetterKbStatusError();
         }
     }
-}
-
-static void PrepareToReceiveURViaUSB()
-{
-    GuiFrameOpenView(&g_USBSignView);
 }
 
 static void RefreshLvglTickMode(void)

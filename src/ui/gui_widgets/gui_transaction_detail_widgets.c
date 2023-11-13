@@ -86,6 +86,8 @@ void GuiTransactionDetailDeInit()
     {
         GuiQRHintBoxRemove();
     }
+    GUI_DEL_OBJ(g_fingerSingContainer)
+
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;

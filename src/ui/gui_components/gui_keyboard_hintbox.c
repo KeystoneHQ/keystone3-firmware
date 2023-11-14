@@ -19,17 +19,14 @@
 #define DEFAULT_TIMER_COUNTER 5
 
 static KeyboardWidget_t *CreateKeyboardWidget();
-
 static void KeyboardConfirmHandler(lv_event_t *e);
 static void ForgetHandler(lv_event_t *e);
 static void CloseKeyBoardWidgetHandler(lv_event_t *e);
-
 static void GuiShowPasswordErrorHintBox(KeyboardWidget_t *keyboardWidget);
 static void LockDeviceHandler(lv_event_t *e);
 static void GuiHintBoxToLockSreen(void);
 static void CountDownHandler(lv_timer_t *timer);
 static void GuiCountDownTimerDestruct(KeyboardWidget_t *keyboardWidget);
-
 
 static void KeyboardConfirmHandler(lv_event_t *e)
 {
@@ -56,15 +53,12 @@ static void ForgetHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-
         GuiFrameOpenView(&g_forgetPassView);
     }
 }
 
-
 static void CloseKeyBoardWidgetHandler(lv_event_t *e)
 {
-
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
@@ -75,7 +69,6 @@ static void CloseKeyBoardWidgetHandler(lv_event_t *e)
 
 static KeyboardWidget_t *CreateKeyboardWidget()
 {
-
     KeyboardWidget_t *keyboardWidget = SRAM_MALLOC(sizeof(KeyboardWidget_t));
     keyboardWidget->keyboardHintBox = NULL;
     keyboardWidget->kb = NULL;
@@ -101,11 +94,9 @@ void SetKeyboardWidgetSelf(KeyboardWidget_t *keyboardWidget, KeyboardWidget_t **
     keyboardWidget->self = self;
 }
 
-
 KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
 {
     KeyboardWidget_t *keyboardWidget = CreateKeyboardWidget();
-
     lv_obj_t *keyboardHintBox = GuiCreateHintBox(parent, 480, 576, true);
 
     lv_obj_add_event_cb(lv_obj_get_child(keyboardHintBox, 0), CloseKeyBoardWidgetHandler, LV_EVENT_CLICKED, keyboardWidget);
@@ -211,7 +202,6 @@ void GuiShowErrorLabel(KeyboardWidget_t *keyboardWidget)
 
 void GuiHideErrorLabel(KeyboardWidget_t *keyboardWidget)
 {
-    
     if (keyboardWidget != NULL && !lv_obj_has_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN)) {
         lv_obj_add_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN);
     }
@@ -222,13 +212,16 @@ void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t
 {
     printf("GuiShowErrorNumber error count is %d\n", passwordVerifyResult->errorCount);
     char hint[128];
+    char temp[128];
     uint8_t cnt = MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX - passwordVerifyResult->errorCount;
     if (cnt > 1) {
         sprintf(hint, _("unlock_device_attempts_left_plural_times_fmt"), cnt);
     } else {
         sprintf(hint, _("unlock_device_attempts_left_singular_times_fmt"), cnt);
     }
-    GuiSetErrorLabel(keyboardWidget, hint);
+    sprintf(temp, "#F55831 %s#", hint);
+    printf("hit = %s\n", temp);
+    GuiSetErrorLabel(keyboardWidget, temp);
     if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
         GuiShowPasswordErrorHintBox(keyboardWidget);
     }
@@ -236,7 +229,6 @@ void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t
 
 static void GuiShowPasswordErrorHintBox(KeyboardWidget_t *keyboardWidget)
 {
-
     lv_obj_t *errHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgFailed,
                            _("unlock_device_error_attempts_exceed"), _("unlock_device_error_attempts_exceed_desc"),
                            NULL, DARK_GRAY_COLOR, _("unlock_device_error_btn_start_text"), DARK_GRAY_COLOR);
@@ -245,7 +237,6 @@ static void GuiShowPasswordErrorHintBox(KeyboardWidget_t *keyboardWidget)
     lv_label_set_text(lv_obj_get_child(btn, 0), _("unlock_device_error_btn_start_text"));
     lv_obj_add_event_cb(btn, LockDeviceHandler, LV_EVENT_CLICKED, keyboardWidget);
     lv_timer_t *countDownTimer = lv_timer_create(CountDownHandler, 1000, keyboardWidget);
-
 
     keyboardWidget->countDownTimer = countDownTimer;
     keyboardWidget->errHintBox = errHintBox;

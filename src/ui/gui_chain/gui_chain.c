@@ -75,7 +75,7 @@ bool IsMessageType(uint8_t type)
     return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type);
 }
 
-GenerateUR GetUrGenerator(GuiChainCoinType viewType)
+static GenerateUR UrGenerator(GuiChainCoinType viewType, bool isMulti)
 {
     GenerateUR func = NULL;
     switch (viewType)
@@ -92,7 +92,7 @@ GenerateUR GetUrGenerator(GuiChainCoinType viewType)
     case EthTx:
     case EthPersonalMessage:
     case EthTypedData:
-        func = GuiGetEthSignQrCodeData;
+        func = isMulti ? GuiGetEthSignQrCodeData : GuiGetEthSignUrDataUnlimited;
         break;
     case TronTx:
         func = GuiGetTrxSignQrCodeData;
@@ -120,4 +120,14 @@ GenerateUR GetUrGenerator(GuiChainCoinType viewType)
         break;
     }
     return func;
+}
+
+GenerateUR GetUrGenerator(GuiChainCoinType viewType)
+{
+    return UrGenerator(viewType, false);
+}
+
+GenerateUR GetSingleUrGenerator(GuiChainCoinType viewType)
+{
+    return UrGenerator(viewType, true);
 }

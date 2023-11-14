@@ -19,7 +19,7 @@ use crate::interfaces::ethereum::structs::{
 
 use crate::interfaces::structs::{TransactionCheckResult, TransactionParseResult};
 use crate::interfaces::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
+use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
 use crate::interfaces::utils::{convert_c_char, recover_c_char};
 use crate::interfaces::KEYSTONE;
 
@@ -242,7 +242,7 @@ pub extern "C" fn eth_parse_typed_data(
 }
 
 #[no_mangle]
-pub extern "C" fn eth_sign_tx(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+pub extern "C" fn eth_sign_tx_dynamic(ptr: PtrUR, seed: PtrBytes, seed_len: u32, fragment_length: usize) -> PtrT<UREncodeResult> {
     let crypto_eth = extract_ptr_with_type!(ptr, EthSignRequest);
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
     let mut path = match crypto_eth.get_derivation_path().get_path() {
@@ -292,12 +292,23 @@ pub extern "C" fn eth_sign_tx(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT
                 Ok(v) => UREncodeResult::encode(
                     v,
                     EthSignature::get_registry_type().get_type(),
-                    FRAGMENT_MAX_LENGTH_DEFAULT,
+                    fragment_length,
                 )
                 .c_ptr(),
             }
         }
     }
+}
+
+#[no_mangle]
+pub extern "C" fn eth_sign_tx(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+    eth_sign_tx_dynamic(ptr, seed, seed_len, FRAGMENT_MAX_LENGTH_DEFAULT)
+}
+
+// _unlimited
+#[no_mangle]
+pub extern "C" fn eth_sign_tx_unlimited(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+    eth_sign_tx_dynamic(ptr, seed, seed_len, FRAGMENT_UNLIMITED_LENGTH)
 }
 
 #[cfg(test)]

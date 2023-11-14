@@ -1,7 +1,6 @@
 #include "service_resolve_ur.h";
 #include "user_delay.h";
 #include "gui_chain.h";
-#include "gui_views.h";
 #include "user_msg.h";
 
 #define REQUEST_ID_IDLE 0
@@ -46,6 +45,10 @@ void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requ
     resultPage->command = CMD_RESOLVE_UR;
     resultPage->error_code = status;
     resultPage->error_message = (char *)data;
+    if (status == PRS_PARSING_DISALLOWED)
+    {
+        return NULL;
+    }
     GotoResultPage(resultPage);
 };
 

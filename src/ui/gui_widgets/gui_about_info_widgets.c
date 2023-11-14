@@ -146,6 +146,13 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
 
     titleLabel = GuiCreateTextLabel(parent, _("about_info_fingerprint_firnware_version"));
     contentLabel = GuiCreateNoticeLabel(parent, fpVersion);
+    if (!FpModuleIsExist()) {
+        lv_obj_set_style_text_color(contentLabel, RED_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(contentLabel, LV_OPA_100, LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_text_color(contentLabel, WHITE_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(contentLabel, LV_OPA_56, LV_PART_MAIN);
+    }
 
     table[0].obj = titleLabel;
     table[0].align = LV_ALIGN_DEFAULT;

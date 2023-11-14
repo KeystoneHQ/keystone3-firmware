@@ -124,10 +124,10 @@ static GenerateUR UrGenerator(GuiChainCoinType viewType, bool isMulti)
 
 GenerateUR GetUrGenerator(GuiChainCoinType viewType)
 {
-    return UrGenerator(viewType, false);
+    return UrGenerator(viewType, true);
 }
 
 GenerateUR GetSingleUrGenerator(GuiChainCoinType viewType)
 {
-    return UrGenerator(viewType, true);
+    return UrGenerator(viewType, false);
 }

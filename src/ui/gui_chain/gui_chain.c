@@ -1,6 +1,6 @@
 #include "gui_chain.h"
 
-PtrT_TransactionCheckResult CheckScanResult(uint8_t viewType)
+PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
 {
     switch (ViewTypeReMap(viewType)) {
         case REMAPVIEW_BTC:
@@ -73,4 +73,51 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
 bool IsMessageType(uint8_t type)
 {
     return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type);
+}
+
+GenerateUR GetUrGenerator(GuiChainCoinType viewType)
+{
+    GenerateUR func = NULL;
+    switch (viewType)
+    {
+    case BtcNativeSegwitTx:
+    case BtcSegwitTx:
+    case BtcLegacyTx:
+    case BtcTx:
+    case LtcTx:
+    case DashTx:
+    case BchTx:
+        func = GuiGetSignQrCodeData;
+        break;
+    case EthTx:
+    case EthPersonalMessage:
+    case EthTypedData:
+        func = GuiGetEthSignQrCodeData;
+        break;
+    case TronTx:
+        func = GuiGetTrxSignQrCodeData;
+        break;
+    case CosmosTx:
+    case CosmosEvmTx:
+        func = GuiGetCosmosSignQrCodeData;
+        break;
+    case SuiTx:
+        func = GuiGetSuiSignQrCodeData;
+        break;
+    case SolanaTx:
+    case SolanaMessage:
+        func = GuiGetSolSignQrCodeData;
+        break;
+    case AptosTx:
+        func = GuiGetAptosSignQrCodeData;
+        break;
+    case CardanoTx:
+        func = GuiGetAdaSignQrCodeData;
+        break;
+    case XRPTx:
+        func = GuiGetXrpSignQrCodeData;
+    default:
+        break;
+    }
+    return func;
 }

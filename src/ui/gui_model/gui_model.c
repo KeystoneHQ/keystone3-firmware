@@ -1115,7 +1115,7 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
 #ifndef COMPILE_SIMULATOR
     GuiApiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
     ViewType viewType = *((ViewType *)inData);
-    g_checkResult = CheckScanResult(viewType);
+    g_checkResult = CheckUrResult(viewType);
     if (g_checkResult != NULL &&g_checkResult->error_code == 0) {
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
     } else {

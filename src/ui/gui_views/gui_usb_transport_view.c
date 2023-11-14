@@ -6,9 +6,10 @@
 
 int32_t GuiUSBTransportViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
+    EAPDUResultPage_t *pageParam = (EAPDUResultPage_t *)param;
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        GuiUSBTransportWidgetsInit();
+        GuiUSBTransportWidgetsInit(pageParam);
         break;
     case GUI_EVENT_OBJ_DEINIT:
         GuiUSBTransportWidgetsDeInit();

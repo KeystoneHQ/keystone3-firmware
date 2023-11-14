@@ -173,7 +173,13 @@ void *ExportAddressService(EAPDURequestPayload_t payload)
         g_exportAddressParams->n = params->n;
         g_exportAddressParams->type = params->type;
         g_exportAddressParams->wallet = params->wallet;
-        PubValueMsg(UI_MSG_USB_TRANSPORT_VIEW, 0);
+
+        EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
+        resultPage->command = CMD_EXPORT_ADDRESS;
+        resultPage->error_code = 0;
+        resultPage->error_message = "";
+        GotoResultPage(resultPage);
+        SRAM_FREE(resultPage);
     }
     else
     {

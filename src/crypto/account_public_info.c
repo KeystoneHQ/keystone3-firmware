@@ -289,12 +289,13 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
             Gd25FlashSectorErase(eraseAddr);
         }
         jsonString = cJSON_Print(rootJson);
-        cJSON_Delete(rootJson);
         RemoveFormatChar(jsonString);
         size = strlen(jsonString);
         Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
         Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
+        EXT_FREE(jsonString);
     }
+    cJSON_Delete(rootJson);
 }
 
 int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool newKey)

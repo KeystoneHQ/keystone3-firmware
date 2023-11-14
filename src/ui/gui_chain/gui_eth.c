@@ -851,8 +851,10 @@ bool GetEthContractFromExternal(char *address, char *selectorId, uint64_t chainI
             g_contractDataExist = true;
             g_contractData = contractData;
         } else {
+            SRAM_FREE(contractMethodJson);
             return false;
         }
+        SRAM_FREE(contractMethodJson);
         return true;
     }
     SRAM_FREE(contractMethodJson);

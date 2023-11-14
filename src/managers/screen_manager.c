@@ -30,7 +30,7 @@ static void ShortPressHandler(void);
 static void ReleaseHandler(void);
 static void LockScreen(void);
 static void LockScreenTimerFunc(void *argument);
-int32_t SetFpLowPowerMode(void);
+void SetFpLowPowerMode(void);
 
 static volatile bool g_pageLockScreenEnable;
 static volatile bool g_lockScreenEnable;

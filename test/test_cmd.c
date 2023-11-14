@@ -197,7 +197,6 @@ static void DeviceSettingsTestFunc(int argc, char *argv[]);
 static void RustTestParseAptosTx(int argc, char *argv[]);
 static void ScreenShotFunc(int argc, char *argv[]);
 static void FatfsCopyFunc(int argc, char *argv[]);
-static void LcdChangeParamFunc(int argc, char *argv[]);
 static void BpkPrintFunc(int argc, char *argv[]);
 static void RustTestSuiParseTx(int argc, char *argv[]);
 static void RustTestSuiCheckTx(int argc, char *argv[]);
@@ -375,7 +374,6 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] =
     {"usb test:", UsbTestFunc},
     {"device settings test:", DeviceSettingsTestFunc},
     {"screen shot", ScreenShotFunc},
-    {"lcd set:", LcdChangeParamFunc},
     {"bpk print:", BpkPrintFunc},
 };
 
@@ -850,11 +848,6 @@ static void FatfsFileCopyFunc(int argc, char *argv[])
 {
     VALUE_CHECK(argc, 2);
     FatfsFileCopy(argv[0], argv[1]);
-}
-
-static void LcdChangeParamFunc(int argc, char *argv[])
-{
-    Ili9806bTest(argc, argv);
 }
 
 static void BpkPrintFunc(int argc, char *argv[])

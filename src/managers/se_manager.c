@@ -8,6 +8,7 @@
 #include "err_code.h"
 #include "drv_trng.h"
 #include "drv_atecc608b.h"
+#include "log_print.h"
 
 #define SHA256_COUNT                            3
 

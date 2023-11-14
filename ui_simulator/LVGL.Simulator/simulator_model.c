@@ -307,9 +307,8 @@ int32_t FpRecognize(int type)
     return 0;
 }
 
-int32_t DeleteFp(uint8_t index)
+void DeleteFp(uint8_t index)
 {
-    return 0;
 }
 
 int32_t FpCancelCurOperate(void)

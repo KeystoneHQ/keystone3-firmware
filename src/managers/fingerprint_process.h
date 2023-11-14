@@ -41,7 +41,6 @@
 #define FINGERPRINT_CMD_CANCEL_EXECUTE          (0xB600)
 
 #define FINGERPRINT_CMD_PARAM_RESET             (0xC000)
-#define FINGERPRINT_CMD_UPDATE_FIRMWARE         (0xC100)
 #define FINGERPRINT_CMD_GET_INIT_STATE          (0xC200)
 
 #define FINGERPRINT_CMD_SET_AES_KEY             (0xD000)
@@ -149,7 +148,6 @@ typedef enum {
 typedef enum {
     NO_ENCRYPTION,
     AES_KEY_ENCRYPTION,
-    RESET_AES_KEY_ENCRYPTION,
 } Encryption_Type;
 
 typedef struct {
@@ -183,22 +181,17 @@ void FingerTest(int argc, char *argv[]);
 void InitFingerManagerInfo(void);
 bool FpModuleIsExist(void);
 
-int32_t RegisterFp(uint8_t index);
-int32_t DeleteFp(uint8_t index);
-int32_t SearchFpNum(void);
-int32_t FpRecognize(Recognize_Type type);
-int32_t SearchFpChipId(void);
-int32_t FpSysReset(void);
-int32_t SearchFpSensorUID(void);
-int32_t SearchFpFwVersion(void);
-int32_t FpCancelCurOperate(void);
-int32_t SearchFpInitState(void);
-int32_t SetFpAesKey(void);
-int32_t SearchFpAesKeyState(void);
-int32_t FpSysRegAndRecognizeTest(void);
-int32_t SetFpLowPowerMode(void);
+void RegisterFp(uint8_t index);
+void DeleteFp(uint8_t index);
+void FpRecognize(Recognize_Type type);
+void SearchFpFwVersion(void);
+void FpCancelCurOperate(void);
+void SearchFpInitState(void);
+void SetFpAesKey(void);
+void SetFpLowPowerMode(void);
 uint8_t *GuiGetFpVersion(uint8_t *version);
 void FpWipeManageInfo(void);
 const char *GetFpErrorMessage(FingerError_Code errCode);
+void FpResponseHandleStop(void);
 
 #endif

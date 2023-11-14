@@ -295,7 +295,7 @@ void GuiSetEthUrData(void *data, bool multi)
     }
 
 // The results here are released in the close qr timer species
-UREncodeResult *GuiGetEthSignQrCodeData(void)
+static UREncodeResult *GetEthSignDataDynamic(bool isUnlimited)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
@@ -306,7 +306,14 @@ UREncodeResult *GuiGetEthSignQrCodeData(void)
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        encodeResult = eth_sign_tx(data, seed, len);
+        if (isUnlimited)
+        {
+            encodeResult = eth_sign_tx_unlimited(data, seed, len);
+        }
+        else
+        {
+            encodeResult = eth_sign_tx(data, seed, len);
+        }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
@@ -321,6 +328,16 @@ UREncodeResult *GuiGetEthSignQrCodeData(void)
     encodeResult->error_message = NULL;
     return encodeResult;
 #endif
+}
+
+UREncodeResult *GuiGetEthSignQrCodeData(void)
+{
+    return GetEthSignDataDynamic(false);
+}
+
+UREncodeResult *GuiGetEthSignUrDataUnlimited(void)
+{
+    return GetEthSignDataDynamic(true);
 }
 
 void *GuiGetEthTypeData(void)

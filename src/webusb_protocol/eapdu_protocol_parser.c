@@ -239,6 +239,10 @@ struct ProtocolParser *NewEApduProtocolParser()
 
 void GotoResultPage(EAPDUResultPage_t *resultPageParams)
 {
+    if (GuiCheckIfTopView(&g_USBTransportView))
+    {
+        return NULL;
+    }
     if (resultPageParams == NULL)
     {
         PubValueMsg(UI_MSG_USB_TRANSPORT_VIEW, 0);

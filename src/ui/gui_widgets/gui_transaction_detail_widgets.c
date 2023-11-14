@@ -150,7 +150,7 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
 
     if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB)
     {
-        GenerateUR func = GetUrGenerator(g_viewType);
+        GenerateUR func = GetSingleUrGenerator(g_viewType);
         if (func == NULL)
         {
             return;

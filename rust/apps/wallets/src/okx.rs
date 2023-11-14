@@ -36,6 +36,8 @@ pub fn generate_crypto_multi_accounts(
     master_fingerprint: [u8; 4],
     serial_number: &str,
     extended_public_keys: Vec<ExtendedPublicKey>,
+    device_type: &str,
+    device_version: &str,
 ) -> URResult<CryptoMultiAccounts> {
     let device_id = get_device_id(serial_number);
     let mut keys = vec![];
@@ -93,9 +95,9 @@ pub fn generate_crypto_multi_accounts(
     Ok(CryptoMultiAccounts::new(
         master_fingerprint,
         keys,
-        Some(DEVICE_TYPE.to_string()),
+        Some(device_type.to_string()),
         Some(device_id),
-        Some(DEVICE_VERSION.to_string()),
+        Some(device_version.to_string()),
     ))
 }
 

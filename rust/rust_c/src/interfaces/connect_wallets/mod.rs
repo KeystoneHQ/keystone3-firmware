@@ -1,4 +1,5 @@
 pub mod aptos;
+mod imtoken;
 pub mod keplr;
 pub mod okx;
 pub mod solana;
@@ -256,6 +257,7 @@ pub extern "C" fn get_connect_metamask_ur(
                             mfp,
                             &recover_c_char(k.xpub),
                             account_type.into(),
+                            None,
                         );
                         match result.map(|v| v.try_into()) {
                             Ok(v) => match v {

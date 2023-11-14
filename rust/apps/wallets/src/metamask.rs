@@ -34,6 +34,7 @@ pub fn generate_standard_legacy_hd_key(
     master_fingerprint: &[u8; 4],
     extended_public_key: &str,
     account_type: ETHAccountTypeApp,
+    name: Option<String>,
 ) -> URResult<CryptoHDKey> {
     let bip32_extended_pub_key = bip32::ExtendedPubKey::from_str(extended_public_key).unwrap();
     let parent_fingerprint = bip32_extended_pub_key.parent_fingerprint;
@@ -71,7 +72,7 @@ pub fn generate_standard_legacy_hd_key(
         Some(origin),
         Some(children),
         Some(parent_fingerprint.to_bytes()),
-        Some(String::from(KEY_NAME)),
+        Some(name.unwrap_or(String::from(KEY_NAME))),
         match account_type {
             ETHAccountTypeApp::Bip44Standard => Some(String::from("account.standard")),
             ETHAccountTypeApp::LedgerLegacy => Some(String::from("account.ledger_legacy")),

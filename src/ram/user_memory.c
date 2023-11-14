@@ -20,6 +20,9 @@ void *SramMalloc(uint32_t size, const char *file, int line, const char *func)
     void *p = pvPortMalloc((uint32_t) size);
     // printf("malloc:%s %s %d 0x%X %d\r\n", file, func, line, p, size);
     // ASSERT(p != NULL);
+    if (xPortGetFreeHeapSize() < 10000) {
+        printf("Sram FreeHeapSize = %d\n", xPortGetFreeHeapSize());
+    }
     g_sramHeapCount++;
     return p;
 }
@@ -50,6 +53,9 @@ void *ExtMalloc(uint32_t size, const char *file, int line, const char *func)
 {
     void *p = PsramMalloc((uint32_t) size);
     ASSERT(p != NULL);
+    if (PsramGetFreeHeapSize() < 10000) {
+        printf("Psram FreeHeapSize = %d\n", PsramGetFreeHeapSize());
+    }
     g_extHeapCount++;
     return p;
 }
@@ -66,13 +72,15 @@ void ExtFree(void *p, const char *file, int line, const char *func)
 
 void *RustMalloc(int32_t size)
 {
-    return SramMalloc(size, __FILE__, __LINE__, __func__);
+    return ExtMalloc(size, __FILE__, __LINE__, __func__);
+    // return SramMalloc(size, __FILE__, __LINE__, __func__);
 }
 
 
 void RustFree(void *p)
 {
-    SramFree(p, __FILE__, __LINE__, __func__);
+    ExtFree(p, __FILE__, __LINE__, __func__);
+    // SramFree(p, __FILE__, __LINE__, __func__);
 }
 
 

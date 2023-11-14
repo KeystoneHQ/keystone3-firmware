@@ -23,7 +23,6 @@ osThreadId_t g_fingerprintTaskId;
 osTimerId_t g_fingerInitTimer = NULL;
 osTimerId_t g_fpTimeoutTimer = NULL;
 void FpTimeoutHandle(void *argument);
-void FpUpdateFirmwareSend(uint16_t cmd, uint8_t passwd);
 void FpResponseHandleStop(void);
 bool GuiNeedFpRecognize(void);
 
@@ -44,7 +43,6 @@ void FingerPrintGroupSetBit(uint32_t uxBitsToSet)
 
 void FpGetAesStateHandle(void *argument)
 {
-    // SearchFpAesKeyState();
     SearchFpFwVersion();
 }
 
@@ -80,9 +78,6 @@ static void FingerprintTask(void *pvParameter)
             break;
         case FINGER_PRINT_EVENT_LOW_POWER:
             SetFpLowPowerMode();
-            break;
-        case FINGER_PRINT_EVENT_UPDATE:
-            FpUpdateFirmwareSend(0, 0);
             break;
         }
     }

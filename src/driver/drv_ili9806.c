@@ -270,14 +270,3 @@ static void Ili9806InitSequence(void)
     Ili9806WriteCmd(0x29);
     UserDelay(20);
 }
-
-void Ili9806bTest(int argc, char *argv[])
-{
-    VALUE_CHECK(argc, 1);
-    char *endptr;
-    printf("argv = %s\n", argv[0]);
-    g_c7param = (uint8_t)strtol(argv[0], &endptr, 16);
-    printf("g_c7param = %#x\n", g_c7param);
-    Ili9806WriteCmd(0xC7);
-    Ili9806WriteData(g_c7param);
-}

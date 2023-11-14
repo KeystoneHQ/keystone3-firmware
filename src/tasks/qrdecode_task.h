@@ -28,6 +28,7 @@ void StartQrDecode(void);
 void StopQrDecode(void);
 void QrDecodeTouchQuit(void);
 void ProcessQr(uint32_t count);
+void HandleDefaultViewType(void *urResult, UrViewType_t urViewType, bool is_multi);
 
 #endif
 

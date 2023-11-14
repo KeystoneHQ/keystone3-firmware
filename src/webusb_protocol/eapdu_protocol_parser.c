@@ -1,8 +1,8 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "eapdu_protocol_parser.h"
-#include "librust_c.h"
 #include "keystore.h"
+#include "user_msg.h"
 #include "eapdu_services/service_resolve_ur.h"
 #include "eapdu_services/service_check_lock.h"
 #include "eapdu_services/service_echo_test.h"
@@ -235,4 +235,16 @@ struct ProtocolParser *NewEApduProtocolParser()
         global_parser->rcvCount = 0;
     }
     return global_parser;
+}
+
+void GotoResultPage(EAPDUResultPage_t *resultPageParams)
+{
+    if (resultPageParams == NULL)
+    {
+        PubValueMsg(UI_MSG_USB_TRANSPORT_VIEW, 0);
+    }
+    else
+    {
+        PubBufferMsg(UI_MSG_USB_TRANSPORT_VIEW, resultPageParams, sizeof(EAPDUResultPage_t));
+    }
 }

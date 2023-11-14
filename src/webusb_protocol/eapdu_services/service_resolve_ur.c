@@ -42,6 +42,11 @@ uint16_t GetCurrentUSParsingRequestID()
 void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
 {
     BasicHandlerFunc(data, data_len, requestID, status);
+    EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
+    resultPage->command = CMD_RESOLVE_UR;
+    resultPage->error_code = status;
+    resultPage->error_message = (char *)data;
+    GotoResultPage(resultPage);
 };
 
 static uint8_t *DataParser(EAPDURequestPayload_t *payload)
@@ -49,15 +54,22 @@ static uint8_t *DataParser(EAPDURequestPayload_t *payload)
     return payload->data;
 }
 
-static bool CheckURAcceptable()
+static bool CheckURAcceptable(EAPDURequestPayload_t payload)
 {
+    char *data = "";
     if (GuiLockScreenIsTop())
     {
-        const char *data = "Device is locked";
+        data = "Device is locked";
         HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
         return false;
     }
-    // TODO: Only allow URL parsing on specific pages
+    // Only allow URL parsing on specific pages
+    if (!GuiHomePageIsTop())
+    {
+        data = "Export address is just allowed on specific pages";
+        HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
+        return false;
+    }
     return true;
 }
 
@@ -74,7 +86,7 @@ void *ProcessURService(EAPDURequestPayload_t payload)
         g_requestID = payload.requestID;
     }
 
-    if (!CheckURAcceptable())
+    if (!CheckURAcceptable(payload))
     {
         return NULL;
     }
@@ -88,6 +100,19 @@ void *ProcessURService(EAPDURequestPayload_t payload)
     urViewType.viewType = urResult->t;
     urViewType.urType = urResult->ur_type;
     UIDisplay_t data = {0};
-    PubValueMsg(UI_MSG_PREPARE_RECEIVE_UR_USB, 0);
-    handleURResult(urResult, urViewType, false);
+    HandleDefaultViewType(urResult, urViewType, false);
+    PtrT_TransactionCheckResult checkResult = CheckUrResult(urViewType.viewType);
+    if (checkResult != NULL && checkResult->error_code == 0)
+    {
+        PubValueMsg(UI_MSG_PREPARE_RECEIVE_UR_USB, urViewType.viewType);
+    } else {
+        EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
+        resultPage->command = CMD_RESOLVE_UR;
+        resultPage->error_code = checkResult->error_code;
+        resultPage->error_message = checkResult->error_message;
+        GotoResultPage(resultPage);
+        HandleURResultViaUSBFunc(checkResult->error_message, strlen(checkResult->error_message), g_requestID, PRS_PARSING_ERROR);
+        SRAM_FREE(resultPage);
+    }
 }
+

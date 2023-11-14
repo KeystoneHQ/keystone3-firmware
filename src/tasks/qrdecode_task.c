@@ -192,6 +192,14 @@ void ProcessQr(uint32_t count)
     count++;
 }
 
+void HandleDefaultViewType(void *urResult, UrViewType_t urViewType, bool is_multi)
+{
+    GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
+    if (viewType != REMAPVIEW_BUTT) {
+        g_chainViewArray[viewType].func(urResult, is_multi);
+    }
+}
+
 void handleURResult(void *urResult, UrViewType_t urViewType, bool is_multi)
 {
     GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
@@ -204,9 +212,7 @@ void handleURResult(void *urResult, UrViewType_t urViewType, bool is_multi)
         GuiSetKeyDerivationRequestData(urResult, is_multi);
         break;
     default:
-        if (viewType != REMAPVIEW_BUTT) {
-            g_chainViewArray[viewType].func(urResult, is_multi);
-        }
+        HandleDefaultViewType(urResult, urViewType, is_multi);
         break;
     }
 

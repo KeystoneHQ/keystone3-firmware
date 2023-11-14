@@ -4,6 +4,7 @@
 #include "protocol_parse.h"
 #include "cJSON.h"
 #include "user_memory.h"
+#include "librust_c.h"
 
 #define EAPDU_PROTOCOL_HEADER             0x00
 #define EAPDU_PROTOCOL_PARSER_NAME        "eapdu_protocol_parser"
@@ -69,8 +70,16 @@ typedef struct
     CommandType commandType; // ins
 } EAPDUResponsePayload_t;
 
+typedef struct
+{
+    CommandType command;
+    uint32_t error_code;
+    PtrString error_message;
+} EAPDUResultPage_t;
+
 struct ProtocolParser* NewEApduProtocolParser();
 void SendEApduResponse(EAPDUResponsePayload_t *payload);
+void GotoResultPage(EAPDUResultPage_t *resultPageParams);
 void SendEApduResponseError(uint8_t cla, CommandType ins, uint16_t requestID, StatusEnum status, char *error);
 
 #endif

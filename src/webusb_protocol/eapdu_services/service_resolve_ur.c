@@ -45,7 +45,7 @@ void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requ
     resultPage->command = CMD_RESOLVE_UR;
     resultPage->error_code = status;
     resultPage->error_message = (char *)data;
-    if (status == PRS_PARSING_DISALLOWED)
+    if (status == PRS_PARSING_DISALLOWED || status == PRS_PARSING_REJECTED)
     {
         return NULL;
     }

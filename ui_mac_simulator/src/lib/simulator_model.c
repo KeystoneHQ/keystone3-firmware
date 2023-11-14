@@ -569,5 +569,5 @@ void UserDelay(uint32_t ms)
 
 MnemonicType GetMnemonicType(void)
 {
-    return MNEMONIC_TYPE_SLIP39;
+    return MNEMONIC_TYPE_BIP39;
 }

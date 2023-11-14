@@ -31,6 +31,10 @@ void GuiAboutInfoWidgetsInit()
 {
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLL_ELASTIC);
+    lv_obj_set_scrollbar_mode(cont, LV_SCROLLBAR_MODE_OFF);
     g_cont = cont;
     GuiAboutInfoEntranceWidget(cont);
 }
@@ -129,8 +133,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     table[1].position.y = 0;
     button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
                              LogExportHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -189);
-
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 383);
 
     titleLabel = GuiCreateTextLabel(parent, _("about_info_device_uid"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
@@ -142,7 +145,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     table[1].position.y = 0;
     button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
                              OpenViewHandler, &g_DevicePublicKeyView);
-    lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -290);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 282);
 
     titleLabel = GuiCreateTextLabel(parent, _("about_info_fingerprint_firnware_version"));
     contentLabel = GuiCreateNoticeLabel(parent, fpVersion);
@@ -151,7 +154,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
         lv_obj_set_style_text_opa(contentLabel, LV_OPA_100, LV_PART_MAIN);
     } else {
         lv_obj_set_style_text_color(contentLabel, WHITE_COLOR, LV_PART_MAIN);
-        lv_obj_set_style_text_opa(contentLabel, LV_OPA_56, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(contentLabel, LV_OPA_80, LV_PART_MAIN);
     }
 
     table[0].obj = titleLabel;
@@ -165,7 +168,26 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     table[1].position.y = 64;
     button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table),
                              UnHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_BOTTOM_LEFT, 12, -63);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 484);
+
+    line = GuiCreateDividerLine(parent);
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 610);
+
+    titleLabel = GuiCreateTextLabel(parent, _("about_info_battery_voltage"));
+    contentLabel = GuiCreateNoticeLabel(parent, "");
+    lv_label_set_text_fmt(contentLabel, "%umV", GetBatteryMilliVolt());
+    table[0].obj = titleLabel;
+    table[0].align = LV_ALIGN_DEFAULT;
+    table[0].position.x = 24;
+    table[0].position.y = 24;
+
+    table[1].obj = contentLabel;
+    table[1].align = LV_ALIGN_DEFAULT;
+    table[1].position.x = 24;
+    table[1].position.y = 64;
+    button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table),
+                             UnHandler, NULL);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 619);
 }
 
 void GuiAboutWidgetsLogExport(bool en, int32_t errCode)

@@ -140,7 +140,7 @@ void GuiWalletSelectAddWallet(lv_obj_t *parent)
     label = GuiCreateIllustrateLabel(parent, _("purpose_desc"));
     lv_obj_set_style_text_line_space(label, 12, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 324 - GUI_MAIN_AREA_OFFSET);
@@ -174,7 +174,7 @@ void GuiWalletSelectAddWallet(lv_obj_t *parent)
 
     img = GuiCreateImg(parent, &imgImport);
     label = GuiCreateTextLabel(parent, _("purpose_import_wallet"));
-    lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
     table[0].obj = img;
     table[0].position.x = -lv_obj_get_self_width(label) / 2 - 10;
     table[0].position.y = 0;
@@ -346,7 +346,7 @@ void GuiResettingWriteSe(void)
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -124);
     label = GuiCreateIllustrateLabel(g_resetingCont, _("Writing Secure Element..."));
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -76);
-    lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
     GuiCreateCircleAroundAnimation(lv_scr_act(), 165);
 }
 

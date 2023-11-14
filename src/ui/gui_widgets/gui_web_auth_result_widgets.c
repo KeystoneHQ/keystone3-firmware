@@ -183,7 +183,7 @@ void GuiWebAuthResultFailedWidget(lv_obj_t *parent)
 
     label = GuiCreateIllustrateLabel(parent, _("verification_code_failed_desc"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 232);
-    lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 
     char mail[64] = {0};

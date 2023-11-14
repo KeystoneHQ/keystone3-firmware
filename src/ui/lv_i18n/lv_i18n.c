@@ -35,6 +35,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"Tutorial", "Tutorial"},
     {"Update", "Update"},
     {"Updating", "Updating"},
+    {"about_info_battery_voltage", "Battery Voltage"},
     {"about_info_device_uid", "Device UID"},
     {"about_info_export_log", "Export System Log"},
     {"about_info_export_to_sdcard", "Export Log to MicroSD Card"},

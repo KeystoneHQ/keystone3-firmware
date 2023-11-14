@@ -97,7 +97,7 @@ void GuiLockDeviceInit(void *param)
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 
     if (!IsLockTimePage()) {
-        lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
         lv_obj_t *btn = GuiCreateBtn(cont, _("unlock_device_fingerprint_pin_device_locked_btn_start_text"));
         lv_obj_set_size(btn, 302, 66);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 622 - 96);

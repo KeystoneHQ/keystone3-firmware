@@ -497,7 +497,7 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
         label = GuiCreateIllustrateLabel(passWdCont, g_enterPassLabel[ENTER_PASSCODE_SET_PASSWORD].desc);
-        lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
 
         KeyBoard_t *kb = GuiCreateFullKeyBoard(passWdCont, SetPassWordHandler, KEY_STONE_FULL_L, passCodeParam);
@@ -577,7 +577,7 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(pinCont, g_enterPassLabel[mode].desc);
-    lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(pinCont, _("password_error_not_match"));
@@ -598,7 +598,7 @@ void GuiCreateEnterPassWord(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(passWdCont, g_enterPassLabel[mode].desc);
-    lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
 
     KeyBoard_t *kb = GuiCreateFullKeyBoard(passWdCont, SetPassWordHandler, KEY_STONE_FULL_L, passCodeParam);

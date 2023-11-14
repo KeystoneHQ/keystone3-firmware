@@ -207,7 +207,7 @@ void GuiWalletTutorialInit(WALLET_LIST_INDEX_ENUM tutorialIndex)
     g_walletTutorialWidget.cont = cont;
     label = GuiCreateIllustrateLabel(cont, tutorial->desc);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
-    lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lastTarget = label;
 
@@ -225,7 +225,7 @@ void GuiWalletTutorialInit(WALLET_LIST_INDEX_ENUM tutorialIndex)
 
         label = GuiCreateIllustrateLabel(cont, tutorial->items[i].url);
         lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 56);
-        lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
 
         img = GuiCreateImg(cont, &imgQrcode36px);
         lv_obj_align(img, LV_ALIGN_DEFAULT, 348, 33);

@@ -622,7 +622,7 @@ void GuiSetEnterProgressLabel(lv_obj_t *label)
 void GuiClearEnterProgressLabel(void)
 {
     lv_obj_set_style_text_color(g_enterProgressLabel, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_text_opa(g_enterProgressLabel, LV_OPA_56, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(g_enterProgressLabel, LV_OPA_80, LV_PART_MAIN);
     lv_label_set_text(g_enterProgressLabel, "0/16");
 }
 
@@ -1203,7 +1203,7 @@ void KbTextAreaHandler(lv_event_t * e)
             if (g_enterProgressLabel != NULL) {
                 lv_label_set_text_fmt(g_enterProgressLabel, "%d/16", taLen);
                 lv_obj_set_style_text_color(g_enterProgressLabel, WHITE_COLOR, LV_PART_MAIN);
-                lv_obj_set_style_text_opa(g_enterProgressLabel, LV_OPA_56, LV_PART_MAIN);
+                lv_obj_set_style_text_opa(g_enterProgressLabel, LV_OPA_80, LV_PART_MAIN);
             }
         }
     } else if (code == KEY_STONE_KEYBOARD_CHANGE) {

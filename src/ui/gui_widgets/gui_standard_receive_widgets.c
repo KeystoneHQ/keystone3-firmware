@@ -268,7 +268,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     if (IsAccountSwitchable()) {
         lv_obj_add_event_cb(g_standardReceiveWidgets.addressButton, OpenSwitchAddressHandler, LV_EVENT_CLICKED, NULL);
         tempObj = GuiCreateImg(g_standardReceiveWidgets.addressButton, &imgArrowRight);
-        lv_obj_set_style_img_opa(tempObj, LV_OPA_56, LV_PART_MAIN);
+        lv_obj_set_style_img_opa(tempObj, LV_OPA_80, LV_PART_MAIN);
         lv_obj_align(tempObj, LV_ALIGN_CENTER, 150, 0);
     }
 

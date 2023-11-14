@@ -155,7 +155,7 @@ static void GuiShareSsbInputWidget(lv_obj_t *parent)
 
     label = GuiCreateIllustrateLabel(cont, "");
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 39);
-    lv_obj_set_style_text_opa(label, LV_OPA_56, 0);
+    lv_obj_set_style_text_opa(label, LV_OPA_80, 0);
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
     g_importMkb->stepLabel = label;
 

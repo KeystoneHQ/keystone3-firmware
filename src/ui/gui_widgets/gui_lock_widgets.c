@@ -273,11 +273,8 @@ void GuiLockScreenPassCode(bool en)
         g_fpErrorCount = 0;
         FpCancelCurOperate();
         if (ModelGetPassphraseQuickAccess()) {
-            if (g_passphraseView.isActive) {
-                GuiLockScreenTurnOff();
-            } else {
-                GuiFrameOpenView(&g_passphraseView);
-            }
+            GuiLockScreenTurnOff();
+            GuiFrameOpenView(&g_passphraseView);
             printf("passphrase quick access\r\n");
         } else if (g_homeView.isActive) {
             printf("g_homeView.isActive\r\n");

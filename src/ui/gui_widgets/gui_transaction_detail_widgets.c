@@ -92,7 +92,7 @@ static void TransactionGoToHomeViewHandler(lv_event_t *e)
     {
         if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB)
         {
-            const char *data = "Rejected!";
+            const char *data = "UR parsing rejected";
             HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_REJECTED);
         }
         CloseQRTimer();

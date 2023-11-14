@@ -41,6 +41,9 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
         {HOME_WALLET_CARD_ADA, false, "ADA", true},
         {HOME_WALLET_CARD_XRP, false, "XRP", true},
         {HOME_WALLET_CARD_TRX, false, "TRX", true},
+        {HOME_WALLET_CARD_BCH, false, "BCH", true},
+        {HOME_WALLET_CARD_DASH, false, "DASH", true},
+        {HOME_WALLET_CARD_LTC, false, "LTC", true},
         {HOME_WALLET_CARD_ATOM, false, "ATOM", true},
         {HOME_WALLET_CARD_OSMO, false, "OSMO", true},
         {HOME_WALLET_CARD_SCRT, false, "SCRT", true},
@@ -73,9 +76,6 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
         {HOME_WALLET_CARD_LUNC, false, "LUNC", true},
         {HOME_WALLET_CARD_BNB, false, "BNB", false},
         {HOME_WALLET_CARD_DOT, false, "DOT", false},
-        {HOME_WALLET_CARD_LTC, false, "LTC", false},
-        {HOME_WALLET_CARD_DASH, false, "DASH", false},
-        {HOME_WALLET_CARD_BCH, false, "BCH", false},
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 
@@ -140,6 +140,24 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =
             .coin = "TRX",
             .chain = "TRON",
             .icon = &coinTrx,
+        },
+        {
+            .index = HOME_WALLET_CARD_BCH,
+            .coin = "BCH",
+            .chain = "Bitcoin Cash",
+            .icon = &coinBch,
+        },
+        {
+            .index = HOME_WALLET_CARD_DASH,
+            .coin = "DASH",
+            .chain = "Dash",
+            .icon = &coinDash,
+        },
+        {
+            .index = HOME_WALLET_CARD_LTC,
+            .coin = "LTC",
+            .chain = "Litecoin",
+            .icon = &coinLtc,
         },
         {
             .index = HOME_WALLET_CARD_ATOM,
@@ -332,24 +350,6 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =
             .coin = "DOT",
             .chain = "Polkadot",
             .icon = &coinDot,
-        },
-        {
-            .index = HOME_WALLET_CARD_LTC,
-            .coin = "LTC",
-            .chain = "Litecoin",
-            .icon = &coinLtc,
-        },
-        {
-            .index = HOME_WALLET_CARD_DASH,
-            .coin = "DASH",
-            .chain = "Dash",
-            .icon = &coinDash,
-        },
-        {
-            .index = HOME_WALLET_CARD_BCH,
-            .coin = "BCH",
-            .chain = "Bitcoin Cash",
-            .icon = &coinBch,
         },
 };
 

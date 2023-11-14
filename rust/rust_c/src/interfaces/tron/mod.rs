@@ -1,7 +1,7 @@
 pub mod structs;
 
-use crate::interfaces::companion_app;
 use crate::interfaces::errors::RustCError;
+use crate::interfaces::keystone;
 use crate::interfaces::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use crate::interfaces::tron::structs::DisplayTron;
 use crate::interfaces::types::{PtrBytes, PtrString, PtrT, PtrUR};
@@ -15,18 +15,18 @@ use cty::c_char;
 use super::ur::URType;
 
 #[no_mangle]
-pub extern "C" fn tron_check_companion_app(
+pub extern "C" fn tron_check_keystone(
     ptr: PtrUR,
     ur_type: URType,
     master_fingerprint: PtrBytes,
     length: u32,
     x_pub: PtrString,
 ) -> PtrT<TransactionCheckResult> {
-    companion_app::check(ptr, ur_type, master_fingerprint, length, x_pub)
+    keystone::check(ptr, ur_type, master_fingerprint, length, x_pub)
 }
 
 #[no_mangle]
-pub extern "C" fn tron_parse_companion_app(
+pub extern "C" fn tron_parse_keystone(
     ptr: PtrUR,
     ur_type: URType,
     master_fingerprint: PtrBytes,
@@ -36,10 +36,10 @@ pub extern "C" fn tron_parse_companion_app(
     if length != 4 {
         return TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
-    companion_app::build_payload(ptr, ur_type).map_or_else(
+    keystone::build_payload(ptr, ur_type).map_or_else(
         |e| TransactionParseResult::from(e).c_ptr(),
         |payload| {
-            companion_app::build_parse_context(master_fingerprint, x_pub).map_or_else(
+            keystone::build_parse_context(master_fingerprint, x_pub).map_or_else(
                 |e| TransactionParseResult::from(e).c_ptr(),
                 |context| {
                     app_tron::parse_raw_tx(payload, context).map_or_else(
@@ -58,7 +58,7 @@ pub extern "C" fn tron_parse_companion_app(
 }
 
 #[no_mangle]
-pub extern "C" fn tron_sign_companion_app(
+pub extern "C" fn tron_sign_keystone(
     ptr: PtrUR,
     ur_type: URType,
     master_fingerprint: PtrBytes,
@@ -69,7 +69,7 @@ pub extern "C" fn tron_sign_companion_app(
     seed_len: u32,
 ) -> *mut UREncodeResult {
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
-    companion_app::sign(
+    keystone::sign(
         ptr,
         ur_type,
         master_fingerprint,

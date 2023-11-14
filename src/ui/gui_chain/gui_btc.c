@@ -93,7 +93,7 @@ UREncodeResult *GuiGetSignQrCodeData(void)
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         encodeResult = btc_sign_psbt(data, seed, len);
-    } else if (urType == Bytes) {
+    } else if (urType == Bytes || urType == KeystoneSignRequest) {
         char *hdPath = NULL;
         char *xPub = NULL;
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
@@ -102,7 +102,7 @@ UREncodeResult *GuiGetSignQrCodeData(void)
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        encodeResult = utxo_sign_companion_app(data, urType, mfp, sizeof(mfp), xPub, SOFTWARE_VERSION, seed, len);
+        encodeResult = utxo_sign_keystone(data, urType, mfp, sizeof(mfp), xPub, SOFTWARE_VERSION, seed, len);
     }
     CHECK_CHAIN_PRINT(encodeResult);
     ClearSecretCache();
@@ -155,13 +155,13 @@ void *GuiGetParsedQrData(void)
             CHECK_CHAIN_RETURN(g_parseResult);
             SRAM_FREE(public_keys);
             return g_parseResult;
-        } else if (urType == Bytes) {
+        } else if (urType == Bytes || urType == KeystoneSignRequest) {
             char *hdPath = NULL;
             char *xPub = NULL;
             if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
                 return NULL;
             }
-            g_parseResult = utxo_parse_companion_app(crypto, urType, mfp, sizeof(mfp), xPub);
+            g_parseResult = utxo_parse_keystone(crypto, urType, mfp, sizeof(mfp), xPub);
             CHECK_CHAIN_RETURN(g_parseResult);
             return g_parseResult;
         }
@@ -209,13 +209,13 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
         result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys);
         SRAM_FREE(public_keys);
-    } else if (urType == Bytes) {
+    } else if (urType == Bytes || urType == KeystoneSignRequest) {
         char *hdPath = NULL;
         char *xPub = NULL;
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
             return NULL;
         }
-        result = utxo_check_companion_app(crypto, urType, mfp, sizeof(mfp), xPub);
+        result = utxo_check_keystone(crypto, urType, mfp, sizeof(mfp), xPub);
     }
     return result;
 #else

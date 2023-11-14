@@ -94,8 +94,8 @@ macro_rules! impl_new_error {
             }
         }
 
-        impl From<crate::interfaces::errors::CompanionAppError> for $name {
-            fn from(value: crate::interfaces::errors::CompanionAppError) -> Self {
+        impl From<crate::interfaces::errors::KeystoneError> for $name {
+            fn from(value: crate::interfaces::errors::KeystoneError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
@@ -203,8 +203,8 @@ macro_rules! impl_new_error {
             }
         }
 
-        impl<$t: Free> From<crate::interfaces::errors::CompanionAppError> for $name<$t> {
-            fn from(value: crate::interfaces::errors::CompanionAppError) -> Self {
+        impl<$t: Free> From<crate::interfaces::errors::KeystoneError> for $name<$t> {
+            fn from(value: crate::interfaces::errors::KeystoneError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }

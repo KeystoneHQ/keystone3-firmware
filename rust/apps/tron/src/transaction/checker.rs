@@ -1,13 +1,13 @@
 use crate::errors::Result;
 use crate::transaction::wrapped_tron::WrappedTron;
-use app_utils::companion_app;
+use app_utils::keystone;
 
 pub trait TxChecker {
-    fn check(&self, context: &companion_app::ParseContext) -> Result<()>;
+    fn check(&self, context: &keystone::ParseContext) -> Result<()>;
 }
 
 impl TxChecker for WrappedTron {
-    fn check(&self, context: &companion_app::ParseContext) -> Result<()> {
+    fn check(&self, context: &keystone::ParseContext) -> Result<()> {
         self.check_input(context)
     }
 }

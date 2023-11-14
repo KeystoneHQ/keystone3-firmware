@@ -6,8 +6,8 @@ static lv_obj_t *g_pendingHintBox = NULL;
 
 void GuiPendingHintBoxOpen(char* title, char* subtitle)
 {
-    uint16_t h = 326;
-    uint16_t animHeight = 82;
+    uint16_t h = 278;
+    uint16_t animHeight = 76;
     uint16_t w = 480;
     lv_obj_t *bgCont = GuiCreateContainer(w, 800);
     lv_obj_set_style_bg_opa(bgCont, 0, 0);
@@ -26,16 +26,16 @@ void GuiPendingHintBoxOpen(char* title, char* subtitle)
     lv_obj_set_style_radius(midCont, 20, 0);
     lv_obj_align(midCont, LV_ALIGN_TOP_MID, 0, 800 - h);
 
-    lv_obj_t *downCont = GuiCreateContainerWithParent(bgCont, w, h - 80 + 20);
+    lv_obj_t *downCont = GuiCreateContainerWithParent(bgCont, w, h - 80 + 12);
     lv_obj_set_style_bg_color(downCont, DARK_BG_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align(downCont, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_set_style_border_width(downCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_t *img = GuiCreateImg(downCont, &ring);
-    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, animHeight - 60);
+    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, animHeight - 68);
 
     img = GuiCreateImg(downCont, &circular);
-    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, animHeight - 55);
+    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, animHeight - 63);
     lv_img_set_pivot(img, 5, 25);
 
     lv_anim_t a;
@@ -48,17 +48,27 @@ void GuiPendingHintBoxOpen(char* title, char* subtitle)
     lv_anim_start(&a);
 
     lv_obj_t *label = GuiCreateTextLabel(bgCont, title);
-    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -124);
-    label = GuiCreateNoticeLabel(bgCont, subtitle);
-    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -76);
+    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -64);
+    // label = GuiCreateNoticeLabel(bgCont, subtitle);
+    // lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -76);
 
     g_pendingHintBox = bgCont;
 }
+
+
 
 void GuiPendingHintBoxRemove()
 {
     if (g_pendingHintBox != NULL) {
         GUI_DEL_OBJ(g_pendingHintBox)
         lv_anim_del_all();
+    }
+}
+
+
+void GuiPendingHintBoxMoveToTargetParent(lv_obj_t *parent)
+{
+     if (g_pendingHintBox != NULL) {
+        lv_obj_set_parent(g_pendingHintBox, parent);
     }
 }

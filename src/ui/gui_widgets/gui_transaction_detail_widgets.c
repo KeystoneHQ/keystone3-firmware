@@ -24,6 +24,7 @@
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
 #include "account_manager.h"
+#include "gui_pending_hintbox.h"
 #ifndef COMPILE_SIMULATOR
 #include "keystore.h"
 
@@ -75,6 +76,7 @@ void GuiTransactionDetailInit(uint8_t viewType)
     ParseTransaction(g_viewType);
     g_fingerSignCount = 0;
     GuiCreateConfirmSlider(g_pageWidget->contentZone, CheckSliderProcessHandler);
+    GuiPendingHintBoxMoveToTargetParent(lv_scr_act());
 }
 
 
@@ -87,7 +89,7 @@ void GuiTransactionDetailDeInit()
         GuiQRHintBoxRemove();
     }
     GUI_DEL_OBJ(g_fingerSingContainer)
-
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;

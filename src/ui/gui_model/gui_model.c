@@ -1113,25 +1113,24 @@ static PtrT_TransactionCheckResult g_checkResult = NULL;
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
 {
 #ifndef COMPILE_SIMULATOR
-    GuiApiEmitSignal(SIG_SHOW_TRANSACTION_CHECKING_LOADING, NULL, 0);
+    GuiApiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
     ViewType viewType = *((ViewType *)inData);
     g_checkResult = CheckScanResult(viewType);
-    GuiApiEmitSignal(SIG_HIDE_TRANSACTION_CHECKING_LOADING, NULL, 0);
-
     if (g_checkResult != NULL &&g_checkResult->error_code == 0) {
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
     } else {
+        GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_FAIL, g_checkResult, sizeof(g_checkResult));
     }
 #else
-    GuiEmitSignal(SIG_SHOW_TRANSACTION_CHECKING_LOADING, NULL, 0);
+    GuiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
     // for (size_t i = 0; i < 500000000; i++)
     // {
     //     if(i == 1000000){
     //         printf("ddd\n");
     //     }
     // }
-    GuiEmitSignal(SIG_HIDE_TRANSACTION_CHECKING_LOADING, NULL, 0);
+    GuiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
     GuiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
 #endif
     return SUCCESS_CODE;
@@ -1150,7 +1149,6 @@ static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inD
 static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, void *parseTransactionFunc)
 {
     ReturnVoidPointerFunc func = (ReturnVoidPointerFunc)parseTransactionFunc;
-    GuiApiEmitSignal(SIG_SHOW_TRANSACTION_PARSE_LOADING, NULL, 0);
     //There is no need to release here, the parsing results will be released when exiting the details page.
     TransactionParseResult_DisplayTx *parsedResult = (TransactionParseResult_DisplayTx *)func();
     if (parsedResult != NULL && parsedResult->error_code == 0 && parsedResult->data != NULL) {
@@ -1167,6 +1165,6 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, voi
         GuiEmitSignal(SIG_TRANSACTION_PARSE_FAIL, parsedResult, sizeof(parsedResult));
 #endif
     }
-    GuiApiEmitSignal(SIG_HIDE_TRANSACTION_PARSE_LOADING, NULL, 0);
+    GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
     return SUCCESS_CODE;
 }

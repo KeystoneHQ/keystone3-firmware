@@ -795,3 +795,12 @@ const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)
     }
     return NULL;
 }
+
+
+void GuiHomeDeInit(void)
+{
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
+}

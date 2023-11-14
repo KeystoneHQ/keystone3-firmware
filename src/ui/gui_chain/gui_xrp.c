@@ -86,7 +86,8 @@ void *GuiGetXrpData(void)
 
 PtrT_TransactionCheckResult GuiGetXrpCheckResult(void)
 {
-     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+#ifndef COMPILE_SIMULATOR
+    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
     TransactionCheckResult *result = NULL;
     char pubkey[68] = {0};
     if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
@@ -121,6 +122,9 @@ PtrT_TransactionCheckResult GuiGetXrpCheckResult(void)
     }
 
     return result;
+#else
+    return NULL;
+#endif
 }
 
 void FreeXrpMemory(void)

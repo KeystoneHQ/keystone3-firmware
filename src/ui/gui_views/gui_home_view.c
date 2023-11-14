@@ -19,6 +19,7 @@ static int32_t GuiHomeViewInit(void)
 
 static int32_t GuiHomeViewDeInit(void)
 {
+    GuiHomeDeInit();
     return SUCCESS_CODE;
 }
 

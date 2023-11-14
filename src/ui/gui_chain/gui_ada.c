@@ -15,7 +15,6 @@ static bool g_isMulti = false;
 static void *g_urResult = NULL;
 static void *g_parseResult = NULL;
 static char *xpub = NULL;
-static lv_obj_t *g_waitAnimCont = NULL;
 
 static uint8_t GetXPubIndexByPath(char *path);
 
@@ -361,15 +360,6 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
 #ifndef COMPILE_SIMULATOR
-    GUI_DEL_OBJ(g_waitAnimCont);
-
-    g_waitAnimCont = GuiCreateAnimHintBox(lv_scr_act(), 480, 386, 82);
-    lv_obj_t *title = GuiCreateTextLabel(g_waitAnimCont, _("sign_transaction"));
-    lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
-    lv_obj_t *desc = GuiCreateNoticeLabel(g_waitAnimCont, _("sign_transaction_desc"));
-    lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -86);
-    lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, 0);
-
     UREncodeResult *encodeResult;
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
@@ -388,7 +378,6 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
     SetLockScreen(enable);
-    GUI_DEL_OBJ(g_waitAnimCont);
     return encodeResult;
 #else
     UREncodeResult *encodeResult = NULL;

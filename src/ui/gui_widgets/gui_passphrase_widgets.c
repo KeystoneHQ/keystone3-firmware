@@ -94,6 +94,7 @@ void GuiPassphraseInit(void)
     g_passphraseWidgets.inputTa = ta;
     line = GuiCreateLine(g_passphraseWidgets.passphraseInputCont, points, 2);
     lv_obj_align(line, LV_ALIGN_TOP_MID, 0, 348);
+    lv_obj_add_state(ta, LV_STATE_FOCUSED);
 
     btn = lv_btn_create(g_passphraseWidgets.passphraseInputCont);
     lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -221,11 +222,12 @@ static void SetKeyboardTaHandler(lv_event_t *e)
         lv_obj_t *ta = lv_event_get_user_data(e);
         if (ta == g_passphraseWidgets.repeatTa) {
             GuiSetFullKeyBoardConfirm(g_passphraseWidgets.keyboard, true);
+            lv_obj_clear_state(g_passphraseWidgets.inputTa, LV_STATE_FOCUSED);
         } else {
             GuiSetFullKeyBoardConfirm(g_passphraseWidgets.keyboard, false);
+            lv_obj_clear_state(g_passphraseWidgets.repeatTa, LV_STATE_FOCUSED);
         }
         GuiSetFullKeyBoardTa(g_passphraseWidgets.keyboard, ta);
-
         lv_obj_add_flag(g_passphraseWidgets.lenOverLabel, LV_OBJ_FLAG_HIDDEN);
     } else if (code == KEY_STONE_KEYBOARD_CHANGE) {
         lv_keyboard_user_mode_t *keyMode = lv_event_get_param(e);
@@ -245,16 +247,28 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
     if (code == LV_EVENT_READY) {
         if (lv_keyboard_get_textarea(g_passphraseWidgets.keyboard->kb) == g_passphraseWidgets.inputTa) {
             lv_keyboard_set_textarea(g_passphraseWidgets.keyboard->kb, g_passphraseWidgets.repeatTa);
+            lv_obj_clear_state(g_passphraseWidgets.inputTa, LV_STATE_FOCUSED);
+            lv_obj_add_state(g_passphraseWidgets.repeatTa, LV_STATE_FOCUSED);
         } else {
             const char *input = lv_textarea_get_text(g_passphraseWidgets.inputTa);
             const char *repeat = lv_textarea_get_text(g_passphraseWidgets.repeatTa);
             if (!strcmp(input, repeat)) {
-                SecretCacheSetPassphrase((char *)repeat);
-                g_waitAnimWidget.cont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
-                g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("seed_check_wait_verify"));
-                lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
-                lv_obj_add_flag(g_waitAnimWidget.cont, LV_OBJ_FLAG_CLICKABLE);
-                GuiModelSettingWritePassphrase();
+                if (strlen(repeat) == 0) {
+                    GuiCLoseCurrentWorkingView();
+                    GuiLockScreenHidden();
+                    if (g_homeView.isActive) {
+                        GuiLockScreenTurnOff();
+                    } else {
+                        GuiFrameOpenView(&g_homeView);
+                    }
+                } else {
+                    SecretCacheSetPassphrase((char *)repeat);
+                    g_waitAnimWidget.cont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
+                    g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("seed_check_wait_verify"));
+                    lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
+                    lv_obj_add_flag(g_waitAnimWidget.cont, LV_OBJ_FLAG_CLICKABLE);
+                    GuiModelSettingWritePassphrase();
+                }
             } else {
                 delayFlag = true;
                 lv_obj_clear_flag(g_passphraseWidgets.errLabel, LV_OBJ_FLAG_HIDDEN);

@@ -31,7 +31,7 @@
 
 typedef struct PassphraseWidget {
     lv_obj_t *inputTa;
-    lv_obj_t *repeatTA;
+    lv_obj_t *repeatTa;
     lv_obj_t *errLabel;
     lv_obj_t *lenOverLabel;
 } PassphraseWidget_t;
@@ -129,6 +129,7 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent)
     lv_textarea_set_one_line(ta, true);
     lv_obj_set_scrollbar_mode(ta, LV_SCROLLBAR_MODE_OFF);
     g_passphraseWidget.inputTa = ta;
+    lv_obj_add_state(ta, LV_STATE_FOCUSED);
 
     btn = lv_btn_create(parent);
     lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -155,7 +156,7 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent)
     lv_obj_align(img, LV_ALIGN_DEFAULT, 411, 252 - GUI_MAIN_AREA_OFFSET);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, repeatTa);
-    g_passphraseWidget.repeatTA = repeatTa;
+    g_passphraseWidget.repeatTa = repeatTa;
 
     g_setPassPhraseKb = GuiCreateFullKeyBoard(parent, UpdatePassPhraseHandler, KEY_STONE_FULL_L, NULL);
     GuiSetKeyBoardMinTaLen(g_setPassPhraseKb, 0);
@@ -178,9 +179,11 @@ static void SetKeyboardTaHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         lv_obj_t *ta = lv_event_get_user_data(e);
-        if (ta == g_passphraseWidget.repeatTA) {
+        if (ta == g_passphraseWidget.repeatTa) {
             GuiSetFullKeyBoardConfirm(g_setPassPhraseKb, true);
+            lv_obj_clear_state(g_passphraseWidget.inputTa, LV_STATE_FOCUSED);
         } else {
+            lv_obj_clear_state(g_passphraseWidget.repeatTa, LV_STATE_FOCUSED);
             GuiSetFullKeyBoardConfirm(g_setPassPhraseKb, false);
         }
         GuiSetFullKeyBoardTa(g_setPassPhraseKb, ta);
@@ -219,15 +222,21 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
     static bool delayFlag = false;
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_READY) {
-        const char *input = lv_textarea_get_text(g_passphraseWidget.inputTa);
-        const char *repeat = lv_textarea_get_text(g_passphraseWidget.repeatTA);
-        if (!strcmp(input, repeat)) {
-            SecretCacheSetPassphrase((char *)repeat);
-            GuiSettingAnimSetLabel(_("seed_check_wait_verify"));
-            GuiModelSettingWritePassphrase();
+        if (lv_keyboard_get_textarea(g_setPassPhraseKb->kb) == g_passphraseWidget.inputTa) {
+            lv_keyboard_set_textarea(g_setPassPhraseKb->kb, g_passphraseWidget.repeatTa);
+            lv_obj_clear_state(g_passphraseWidget.inputTa, LV_STATE_FOCUSED);
+            lv_obj_add_state(g_passphraseWidget.repeatTa, LV_STATE_FOCUSED);
         } else {
-            delayFlag = true;
-            lv_obj_clear_flag(g_passphraseWidget.errLabel, LV_OBJ_FLAG_HIDDEN);
+            const char *input = lv_textarea_get_text(g_passphraseWidget.inputTa);
+            const char *repeat = lv_textarea_get_text(g_passphraseWidget.repeatTa);
+            if (!strcmp(input, repeat)) {
+                SecretCacheSetPassphrase((char *)repeat);
+                GuiSettingAnimSetLabel(_("seed_check_wait_verify"));
+                GuiModelSettingWritePassphrase();
+            } else {
+                delayFlag = true;
+                lv_obj_clear_flag(g_passphraseWidget.errLabel, LV_OBJ_FLAG_HIDDEN);
+            }
         }
     }
 

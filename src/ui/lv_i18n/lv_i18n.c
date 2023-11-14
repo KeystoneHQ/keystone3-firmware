@@ -531,7 +531,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"shamir_phrase_verify_success_desc1", "The seed phrase for this Share has been validated, please proceed to the next Share."},
     {"shamir_phrase_verify_success_desc2", "Tap the button below and hand the Keystone over to the custodian of Share 2."},
     {"shamir_phrase_verify_success_title", "Verified"},
-    {"sign_transaction", "Transaction Signing"},
+    {"sign_transaction", "Signing"},
     {"sign_transaction_desc", "Please Wait..."},
     {"single_backup_choose_backup_desc", "Select the preferred method for backing up your seed phrase."},
     {"single_backup_choose_backup_title", "Backup Options"},

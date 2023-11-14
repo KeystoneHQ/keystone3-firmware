@@ -24,6 +24,7 @@ int32_t GetAccountSlip39Ems(uint8_t accountIndex, uint8_t *slip39Ems, const char
 int32_t ChangePassword(uint8_t accountIndex, const char *newPassword, const char *password);
 int32_t VerifyPassword(uint8_t *accountIndex, const char *password);
 
+bool CheckPassphraseSame(uint8_t accountIndex, const char *passphrase);
 char* GetPassphrase(uint8_t accountIndex);
 
 int32_t CheckPasswordExisted(const char *password, uint8_t excludeIndex);

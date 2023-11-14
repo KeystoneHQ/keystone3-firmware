@@ -2187,10 +2187,11 @@ static void RustADATest(int argc, char *argv[])
         "m/1852'/1815'/22'",
         "m/1852'/1815'/23'",
     };
-    GetAccountEntropy(accountIndex, entropy, GetCurrentAccountEntropyLen(), "123456");
+    uint8_t entropyLen = 0;
+    GetAccountEntropy(accountIndex, entropy, &entropyLen, "123456");
     char* rootKey;
 
-    SimpleResponse_c_char* root = get_icarus_master_key(entropy, GetCurrentAccountEntropyLen(), GetPassphrase(accountIndex));
+    SimpleResponse_c_char* root = get_icarus_master_key(entropy, (uint32_t)entropyLen, GetPassphrase(accountIndex));
     printf("get root key \r\n");
     printf("root key: %s\r\n", root->data);
     rootKey = root->data;

@@ -393,6 +393,11 @@ int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *
     return ret;
 }
 
+bool CheckPassphraseSame(uint8_t accountIndex, const char *passphrase)
+{
+    ASSERT(accountIndex <= 2);
+    return !strcmp(passphrase, g_passphraseInfo[accountIndex].passphrase);
+}
 
 /// @brief Get master fingerprint
 /// @param[out] mfp

@@ -20,6 +20,7 @@ void *GuiCreateContainerWithParent(lv_obj_t *parent, int w, int h)
     lv_obj_set_style_radius(cont, 0, 0);
     lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_scrollbar_mode(cont, LV_SCROLLBAR_MODE_OFF);
     if (GuiDarkMode()) {
         lv_obj_set_style_bg_color(cont, BLACK_COLOR, LV_PART_MAIN);
     } else {
@@ -66,7 +67,7 @@ void *GuiCreateLabelWithFontAndTextColor(lv_obj_t *parent, const char *text, con
 void *GuiCreateNoticeLabel(lv_obj_t *parent, const char *text)
 {
     lv_obj_t *label = GuiCreateLabelWithFont(parent, text, g_defIllustrateFont);
-    lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
     return label;
 }
 

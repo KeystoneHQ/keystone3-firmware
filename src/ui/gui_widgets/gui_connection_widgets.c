@@ -85,7 +85,7 @@ void GuiConnectionEntranceWidget(lv_obj_t *parent)
     lv_label_set_text(contentLabel, _("usb_connection_desc"));
     lv_obj_set_style_text_font(contentLabel, g_defIllustrateFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(contentLabel, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_text_opa(contentLabel, LV_OPA_56, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(contentLabel, LV_OPA_80, LV_PART_MAIN);
     lv_label_set_long_mode(contentLabel, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(contentLabel, 346);
 

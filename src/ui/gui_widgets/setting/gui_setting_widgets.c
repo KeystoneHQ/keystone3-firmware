@@ -563,7 +563,7 @@ void GuiWalletRecoveryWriteSe(bool result)
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -172);
         label = GuiCreateIllustrateLabel(g_noticeHintBox, _("seed_check_verify_not_match_desc"));
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -110);
-        lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
 
         btn = GuiCreateBtn(g_noticeHintBox, _("Done"));
         lv_obj_align(btn, LV_ALIGN_DEFAULT, 332, 710);

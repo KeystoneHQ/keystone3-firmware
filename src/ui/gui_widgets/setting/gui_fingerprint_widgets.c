@@ -137,7 +137,7 @@ void FingerSignHandler(lv_event_t *e)
             g_verifyFingerCont = GuiCreateHintBox(lv_scr_act(), 480, 428, true);
             lv_obj_t *cont = g_verifyFingerCont;
             lv_obj_t *label = GuiCreateIllustrateLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint"));
-            lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
+            lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
             lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 402);
 
             lv_obj_t *img = GuiCreateImg(cont, &imgClose);

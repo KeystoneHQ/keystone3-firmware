@@ -326,7 +326,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     {
         lv_obj_add_event_cb(g_multiAccountsReceiveWidgets.addressButton, OpenSwitchAddressHandler, LV_EVENT_CLICKED, NULL);
         tempObj = GuiCreateImg(g_multiAccountsReceiveWidgets.addressButton, &imgArrowRight);
-        lv_obj_set_style_img_opa(tempObj, LV_OPA_56, LV_PART_MAIN);
+        lv_obj_set_style_img_opa(tempObj, LV_OPA_80, LV_PART_MAIN);
         lv_obj_align(tempObj, LV_ALIGN_CENTER, 150, 0);
     }
 
@@ -607,10 +607,10 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
 
         label = GuiCreateLabelWithFont(cont, _("receive_btc_receive_change_address_title"), &openSans_20);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 30 + 270);
-        lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
         label = GuiCreateLabelWithFont(cont, "Address-", &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 108 + 270);
-        lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
         g_multiAccountsReceiveWidgets.inputAccountLabel = GuiCreateLabelWithFont(cont, "", &openSans_24);
         lv_obj_align(g_multiAccountsReceiveWidgets.inputAccountLabel, LV_ALIGN_TOP_LEFT, 38 + lv_obj_get_self_width(label), 108 + 270);
         label = GuiCreateLabelWithFont(cont, _("receive_btc_receive_change_address_limit"), &openSans_20);

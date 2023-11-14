@@ -447,7 +447,7 @@ static void GuiCreateSelectFewchaCoinWidget()
     lv_obj_set_scrollbar_mode(coinListCont, LV_SCROLLBAR_MODE_OFF);
 
     lv_obj_t *labelHint = GuiCreateIllustrateLabel(coinListCont, _("connect_wallet_select_network_hint"));
-    lv_obj_set_style_text_opa(labelHint, LV_OPA_56, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(labelHint, LV_OPA_80, LV_PART_MAIN);
     lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 0, 0);
 
     lv_obj_t *coinLabel;
@@ -520,7 +520,7 @@ static void GuiCreateSelectCompanionAppCoinWidget()
     lv_obj_set_scrollbar_mode(coinListCont, LV_SCROLLBAR_MODE_OFF);
 
     lv_obj_t *labelHint = GuiCreateIllustrateLabel(coinListCont, _("connect_wallet_keystone_hint"));
-    lv_obj_set_style_text_opa(labelHint, LV_OPA_56, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(labelHint, LV_OPA_80, LV_PART_MAIN);
     lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 0, 0);
 
     lv_obj_t *coinLabel;

@@ -179,7 +179,7 @@ void GuiWriteSeWidget(lv_obj_t *parent)
 
     label = GuiCreateIllustrateLabel(parent, _("create_wallet_generating_desc"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 457 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
 }
 
 void DuplicateShareHandler(lv_event_t *e)

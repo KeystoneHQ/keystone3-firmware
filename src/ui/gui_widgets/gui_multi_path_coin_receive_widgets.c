@@ -352,7 +352,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_shadow_width(g_multiPathCoinReceiveWidgets.addressButton, 0, LV_PART_MAIN);
     lv_obj_add_event_cb(g_multiPathCoinReceiveWidgets.addressButton, OpenSwitchAddressHandler, LV_EVENT_CLICKED, NULL);
     tempObj = GuiCreateImg(g_multiPathCoinReceiveWidgets.addressButton, &imgArrowRight);
-    lv_obj_set_style_img_opa(tempObj, LV_OPA_56, LV_PART_MAIN);
+    lv_obj_set_style_img_opa(tempObj, LV_OPA_80, LV_PART_MAIN);
     lv_obj_align(tempObj, LV_ALIGN_CENTER, 150, 0);
     g_goToAddressIcon = tempObj;
     const char* coin = GetCoinCardByIndex(g_chainCard)->coin;
@@ -568,7 +568,7 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
     char lableText[128] = {0};
     GetChangePathLabelHint(lableText);
     lv_obj_t *labelHint = GuiCreateIllustrateLabel(parent, lableText);
-    lv_obj_set_style_text_opa(labelHint, LV_OPA_56, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(labelHint, LV_OPA_80, LV_PART_MAIN);
     lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 36, 0);
 
     cont = GuiCreateContainerWithParent(parent, 408, 308);

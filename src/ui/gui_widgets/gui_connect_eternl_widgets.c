@@ -44,7 +44,7 @@ static void GuiCreatePageContent(lv_obj_t *parent)
 {
     lv_obj_t *button, *label, *cont;
     label = GuiCreateIllustrateLabel(parent, _("connect_wallet_instruction"));
-    lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 8);
 
     cont = GuiCreateContainerWithParent(parent, 408, 270);

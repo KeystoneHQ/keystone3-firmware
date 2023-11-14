@@ -61,7 +61,7 @@ void GuiPurposeAreaInit()
 
     img = GuiCreateImg(container, &imgImport);
     label = GuiCreateTextLabel(container, _("purpose_import_wallet"));
-    lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
     table[0].obj = img;
     table[0].position.x = -lv_obj_get_self_width(label) / 2 - 5;
     table[0].position.y = 0;

@@ -161,6 +161,8 @@ if(COMPILE_MAIN)
         external/lvgl/src/misc
         external/lvgl/src/widgets
         external/lvgl/src/core
+        external/safec/include
+        external/safec/src
         build/rust-builds
         ${CMAKE_CURRENT_BINARY_DIR}
     )
@@ -179,7 +181,7 @@ if(COMPILE_MAIN)
     aux_source_directory(src/webusb_protocol/ webusb_protocol)
     aux_source_directory(src/webusb_protocol/services webusb_protocol_services)
     aux_source_directory(src/webusb_protocol/eapdu_services webusb_protocol_eapdu_services)
-    
+
     file(GLOB_RECURSE usb
         "src/driver/usb/*.c"
         "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Core/src/*.c"
@@ -221,6 +223,16 @@ if(COMPILE_MAIN)
         "external/lvgl/src/widgets/*.c"
         "external/lvgl/src/extra/*.c"
         "external/lvgl/src/font/*.c"
+    )
+
+    file(GLOB_RECURSE safec
+        "external/safec/src/*.c"
+        "external/safec/src/extmem/*.c"
+        "external/safec/src/extstr/*.c"
+        "external/safec/src/io/*.c"
+        "external/safec/src/mem/*.c"
+        "external/safec/src/misc/*.c"
+        "external/safec/src/str/*.c"
     )
 
     file(GLOB_RECURSE ctaes
@@ -305,6 +317,7 @@ if(COMPILE_MAIN)
         ${webusb_protocol}
         ${webusb_protocol_services}
         ${webusb_protocol_eapdu_services}
+        ${safec}
         external/mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s
         src/cm_backtrace/fault_handler/gcc/cmb_fault.s)
 

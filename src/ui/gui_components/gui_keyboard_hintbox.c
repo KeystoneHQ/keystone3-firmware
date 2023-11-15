@@ -264,6 +264,8 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
 void GuiDeleteKeyboardWidget(KeyboardWidget_t *keyboardWidget)
 {
     if (keyboardWidget != NULL && keyboardWidget->self != NULL) {
+        memset(g_pinBuf, 0, sizeof(g_pinBuf));
+        keyboardWidget->currentNum = 0;
         if (keyboardWidget->keyboardHintBox != NULL && lv_obj_is_valid(keyboardWidget->keyboardHintBox)) {
             lv_obj_del(keyboardWidget->keyboardHintBox);
             keyboardWidget->keyboardHintBox = NULL;

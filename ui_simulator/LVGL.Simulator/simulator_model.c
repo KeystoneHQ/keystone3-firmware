@@ -12,6 +12,20 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
+void free_TransactionCheckResult(PtrT_TransactionCheckResult ptr)
+{
+
+}
+uint32_t GetBatteryMilliVolt(void)
+{
+    return 1000;
+}
+
+bool FpModuleIsExist(void)
+{
+    return true;
+}
+
 MnemonicType GetMnemonicType(void)
 {
     return MNEMONIC_TYPE_SLIP39;

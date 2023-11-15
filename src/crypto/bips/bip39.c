@@ -11,7 +11,7 @@
 #include "err_code.h"
 #include "pbkdf2.h"
 
-
+#include "safe_mem_lib.h"
 
 static const struct {
     const char name[4];
@@ -98,7 +98,7 @@ static size_t bip39_checksum(const unsigned char *bytes, size_t bytes_len, size_
     size_t ret;
     sha256(&sha, bytes, bytes_len);
     ret = sha.u.u8[0] | (sha.u.u8[1] << 8);
-    memset(&sha, 0, sizeof(sha));
+    memset_s(&sha, sizeof(sha), 0, sizeof(sha));
     return ret & mask;
 }
 
@@ -127,7 +127,7 @@ int bip39_mnemonic_from_bytes(const struct words *w,
     if (mask > 0xff)
         tmp_bytes[++bytes_len] = (checksum >> 8) & 0xff;
     *output = mnemonic_from_bytes(w, tmp_bytes, bytes_len + 1);
-    memset(tmp_bytes, 0, sizeof(tmp_bytes));
+    memset_s(tmp_bytes, sizeof(tmp_bytes), 0, sizeof(tmp_bytes));
     return *output ? SUCCESS_CODE : -1;
 }
 
@@ -188,7 +188,7 @@ int bip39_mnemonic_to_bytes(const struct words *w, const char *mnemonic,
             }
         }
     }
-    memset(tmp_bytes, 0, sizeof(tmp_bytes));
+    memset_s(tmp_bytes, sizeof(tmp_bytes), 0, sizeof(tmp_bytes));
     if (!ret && written)
         *written = tmp_len;
     return ret;
@@ -199,7 +199,7 @@ int bip39_mnemonic_validate(const struct words *w, const char *mnemonic)
     unsigned char buf[BIP39_ENTROPY_MAX_LEN];
     size_t len;
     int ret = bip39_mnemonic_to_bytes(w, mnemonic, buf, sizeof(buf), &len);
-    memset(buf, 0, sizeof(buf));
+    memset_s(buf, sizeof(buf), 0, sizeof(buf));
     return ret;
 }
 
@@ -236,7 +236,7 @@ int bip39_mnemonic_to_seed(const char *mnemonic, const char *passphrase,
     if (!ret && written)
         *written = BIP39_SEED_LEN_512; /* Succeeded */
 
-    memset(salt, 0, salt_len);
+    memset_s(salt, salt_len, 0, salt_len);
     SRAM_FREE(salt);
 
     return ret;

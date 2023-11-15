@@ -2,7 +2,7 @@
 #![feature(error_in_core)]
 extern crate alloc;
 
-pub mod companion_app;
+pub mod keystone;
 pub mod macros;
 pub use paste;
 

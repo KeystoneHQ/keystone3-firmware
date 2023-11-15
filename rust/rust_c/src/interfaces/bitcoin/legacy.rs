@@ -1,7 +1,7 @@
 use crate::interfaces::bitcoin::structs::DisplayTx;
-use crate::interfaces::companion_app;
-use crate::interfaces::companion_app::{build_parse_context, build_payload};
 use crate::interfaces::errors::RustCError;
+use crate::interfaces::keystone;
+use crate::interfaces::keystone::{build_parse_context, build_payload};
 use crate::interfaces::structs::{TransactionCheckResult, TransactionParseResult};
 use crate::interfaces::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::interfaces::ur::{UREncodeResult, URType};
@@ -9,7 +9,7 @@ use alloc::boxed::Box;
 use alloc::slice;
 
 #[no_mangle]
-pub extern "C" fn utxo_parse_companion_app(
+pub extern "C" fn utxo_parse_keystone(
     ptr: PtrUR,
     ur_type: URType,
     master_fingerprint: PtrBytes,
@@ -41,7 +41,7 @@ pub extern "C" fn utxo_parse_companion_app(
 }
 
 #[no_mangle]
-pub extern "C" fn utxo_sign_companion_app(
+pub extern "C" fn utxo_sign_keystone(
     ptr: PtrUR,
     ur_type: URType,
     master_fingerprint: PtrBytes,
@@ -52,7 +52,7 @@ pub extern "C" fn utxo_sign_companion_app(
     seed_len: u32,
 ) -> *mut UREncodeResult {
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
-    companion_app::sign(
+    keystone::sign(
         ptr,
         ur_type,
         master_fingerprint,
@@ -64,12 +64,12 @@ pub extern "C" fn utxo_sign_companion_app(
 }
 
 #[no_mangle]
-pub extern "C" fn utxo_check_companion_app(
+pub extern "C" fn utxo_check_keystone(
     ptr: PtrUR,
     ur_type: URType,
     master_fingerprint: PtrBytes,
     length: u32,
     x_pub: PtrString,
 ) -> PtrT<TransactionCheckResult> {
-    companion_app::check(ptr, ur_type, master_fingerprint, length, x_pub)
+    keystone::check(ptr, ur_type, master_fingerprint, length, x_pub)
 }

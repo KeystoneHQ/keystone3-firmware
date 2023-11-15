@@ -381,7 +381,7 @@ pub enum RustCError {
 }
 
 #[derive(Error, Debug, PartialEq)]
-pub enum CompanionAppError {
+pub enum KeystoneError {
     #[error("protobuf operation failed, reason: {0}")]
     ProtobufError(String),
     #[error("parse context invalid: {0}")]
@@ -392,13 +392,13 @@ pub enum CompanionAppError {
     CheckTxFailed(String),
 }
 
-impl From<&CompanionAppError> for ErrorCodes {
-    fn from(value: &CompanionAppError) -> Self {
+impl From<&KeystoneError> for ErrorCodes {
+    fn from(value: &KeystoneError) -> Self {
         match value {
-            CompanionAppError::ProtobufError(_) => Self::CompanionAppProtobufError,
-            CompanionAppError::InvalidParseContext(_) => Self::CompanionAppInvalidParseContext,
-            CompanionAppError::SignTxFailed(_) => Self::CompanionAppSignTxFailed,
-            CompanionAppError::CheckTxFailed(_) => Self::CompanionAppCheckTxFailed,
+            KeystoneError::ProtobufError(_) => Self::CompanionAppProtobufError,
+            KeystoneError::InvalidParseContext(_) => Self::CompanionAppInvalidParseContext,
+            KeystoneError::SignTxFailed(_) => Self::CompanionAppSignTxFailed,
+            KeystoneError::CheckTxFailed(_) => Self::CompanionAppCheckTxFailed,
         }
     }
 }

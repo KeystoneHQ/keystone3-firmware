@@ -24,7 +24,7 @@ use crate::transactions::legacy::input::{InputConverter, TxIn};
 use crate::transactions::legacy::output::{OutputConverter, TxOut};
 use crate::transactions::script_type::ScriptType;
 use crate::{collect, derivation_address_path};
-use app_utils::companion_app;
+use app_utils::keystone;
 use third_party::either::{Either, Left, Right};
 use third_party::hex::ToHex;
 use third_party::secp256k1::ecdsa::Signature;
@@ -59,7 +59,7 @@ struct SegwitCache {
 impl TxData {
     pub fn from_payload(
         payload: protoc::Payload,
-        context: &companion_app::ParseContext,
+        context: &keystone::ParseContext,
     ) -> Result<Self> {
         let sign_tx_content: Result<SignTransaction> = match payload.content {
             Some(protoc::payload::Content::SignTx(sign_tx_content)) => Ok(sign_tx_content),
@@ -101,7 +101,7 @@ impl TxData {
         });
     }
 
-    pub fn check_inputs(&self, context: &companion_app::ParseContext) -> Result<()> {
+    pub fn check_inputs(&self, context: &keystone::ParseContext) -> Result<()> {
         if self.inputs.len() == 0 {
             return Err(BitcoinError::NoInputs);
         }
@@ -127,11 +127,7 @@ impl TxData {
         Ok(())
     }
 
-    pub fn check_my_input(
-        &self,
-        input: &TxIn,
-        context: &companion_app::ParseContext,
-    ) -> Result<bool> {
+    pub fn check_my_input(&self, input: &TxIn, context: &keystone::ParseContext) -> Result<bool> {
         let hd_path = input.hd_path.to_string();
         let address_path_str = derivation_address_path!(hd_path)?;
         let pubkey =
@@ -142,7 +138,7 @@ impl TxData {
         Ok(false)
     }
 
-    pub fn check_outputs(&self, _context: &companion_app::ParseContext) -> Result<()> {
+    pub fn check_outputs(&self, _context: &keystone::ParseContext) -> Result<()> {
         if self.outputs.len() == 0 {
             return Err(BitcoinError::NoOutputs);
         }

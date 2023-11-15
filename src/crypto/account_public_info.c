@@ -19,6 +19,7 @@
 #include "assert.h"
 #include "gui.h"
 #include "gui_views.h"
+#include "gui_api.h"
 #include "gui_home_widgets.h"
 #include "sha256.h"
 #include "se_manager.h"
@@ -364,7 +365,7 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         {
             break;
         }
-        GuiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
+        GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
         char* icarusMasterKey = NULL;
         printf("regenerate pub key!\r\n");
         FreePublicKeyRam();
@@ -453,7 +454,7 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
         Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
         printf("regenerate jsonString=%s\r\n", jsonString);
-        GuiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
+        GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
         EXT_FREE(jsonString);
     }
     while (0);
@@ -481,7 +482,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     }
     else
     {
-        GuiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
+        GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
         char* icarusMasterKey = NULL;
         FreePublicKeyRam();
         ret = GetAccountSeed(accountIndex, seed, password);
@@ -556,7 +557,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             free_simple_response_c_char(response);
         }
         g_tempPublicKeyAccountIndex = accountIndex;
-        GuiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
+        GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
     }
     CLEAR_ARRAY(seed);
     return ret;

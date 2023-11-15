@@ -822,9 +822,6 @@
     <ClCompile Include="..\..\src\ui\gui_views\gui_purpose_view.c">
       <Filter>gui\gui_views</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_views\gui_qrcode_view.c">
-      <Filter>gui\gui_views</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_views\gui_self_destruct_view.c">
       <Filter>gui\gui_views</Filter>
     </ClCompile>
@@ -964,9 +961,6 @@
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_purpose_widgets.c">
-      <Filter>gui\gui_widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_qrcode_widgets.c">
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_self_destruct_widgets.c">
@@ -1272,6 +1266,45 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgInfo.c">
       <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_views\gui_scan_view.c">
+      <Filter>gui\gui_views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_views\gui_transaction_detail_view.c">
+      <Filter>gui\gui_views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_views\gui_transaction_signature_view.c">
+      <Filter>gui\gui_views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_chain\gui_chain.c">
+      <Filter>gui\gui_chain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_chain\gui_xrp.c">
+      <Filter>gui\gui_chain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_scan_widgets.c">
+      <Filter>gui\gui_widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_select_address_widgets.c">
+      <Filter>gui\gui_widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_transaction_detail_widgets.c">
+      <Filter>gui\gui_widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_transaction_signature_widgets.c">
+      <Filter>gui\gui_widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\wallet\walletImToken.c">
+      <Filter>gui\assets\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\walletList\walletListImToken.c">
+      <Filter>gui\assets\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\walletList\walletListSparrow.c">
+      <Filter>gui\assets\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\walletList\walletListXRPToolkit.c">
+      <Filter>gui\assets\wallet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

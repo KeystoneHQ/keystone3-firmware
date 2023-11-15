@@ -306,7 +306,7 @@ void GuiLockScreenErrorCount(void *param)
     printf("GuiLockScreenErrorCount  errorcount is %d\n", passwordVerifyResult->errorCount);
     if (g_verifyLock != NULL) {
         char hint[128];
-        char temp[128];
+        char tempBuf[128];
         int leftCount = 0;
 
         if (*(uint16_t *)passwordVerifyResult->signal == SIG_LOCK_VIEW_VERIFY_PIN
@@ -318,9 +318,8 @@ void GuiLockScreenErrorCount(void *param)
             } else {
                 sprintf(hint, _("unlock_device_attempts_left_singular_times_fmt"), leftCount - 4);
             }
-            sprintf(temp, "#F55831 %s #", hint);
-            printf("hit = %s\n", temp);
-            lv_label_set_text(g_verifyLock->errLabel, temp);
+            sprintf(tempBuf, "#F55831 %s #", hint);
+            lv_label_set_text(g_verifyLock->errLabel, tempBuf);
             GuiPassowrdToLockTimePage(leftCount);
             if (passwordVerifyResult->errorCount == MAX_LOGIN_PASSWORD_ERROR_COUNT) {
                 GuiFrameOpenView(&g_lockDeviceView);

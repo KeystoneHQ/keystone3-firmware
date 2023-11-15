@@ -160,6 +160,8 @@ if(COMPILE_MAIN)
         external/lvgl/src/misc
         external/lvgl/src/widgets
         external/lvgl/src/core
+        external/safec/include
+        external/safec/src
         build/rust-builds
         ${CMAKE_CURRENT_BINARY_DIR}
     )
@@ -219,6 +221,16 @@ if(COMPILE_MAIN)
         "external/lvgl/src/widgets/*.c"
         "external/lvgl/src/extra/*.c"
         "external/lvgl/src/font/*.c"
+    )
+
+    file(GLOB_RECURSE safec
+        "external/safec/src/*.c"
+        "external/safec/src/extmem/*.c"
+        "external/safec/src/extstr/*.c"
+        "external/safec/src/io/*.c"
+        "external/safec/src/mem/*.c"
+        "external/safec/src/misc/*.c"
+        "external/safec/src/str/*.c"
     )
 
     file(GLOB_RECURSE ctaes
@@ -302,6 +314,7 @@ if(COMPILE_MAIN)
         ${gui}
         ${webusb_protocol}
         ${webusb_protocol_services}
+        ${safec}
         external/mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s
         src/cm_backtrace/fault_handler/gcc/cmb_fault.s)
 

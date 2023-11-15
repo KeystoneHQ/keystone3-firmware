@@ -1,0 +1,114 @@
+/*------------------------------------------------------------------
+ * safe_types.h - C99 std types & defs or Linux kernel equivalents
+ *
+ * March 2007, Bo Berry
+ * Modified 2012, Jonathan Toppins <jtoppins@users.sourceforge.net>
+ * Modified 2017-2020, Reini Urban <rurban@cpan.org>
+ *
+ * Copyright (c) 2007-2013 by Cisco Systems, Inc
+ * Copyright (c) 2017-2020 by Reini Urban
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ *------------------------------------------------------------------
+ */
+
+#ifndef __SAFE_TYPES_H__
+#define __SAFE_TYPES_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef __KERNEL__
+/* linux kernel environment */
+
+#include <linux/stddef.h>
+#include <linux/types.h>
+#include <linux/errno.h>
+
+/* errno_t isn't defined in the kernel */
+typedef int errno_t;
+
+#else
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <inttypes.h>
+#include <stdint.h>
+#include <errno.h>
+
+typedef int errno_t;
+#define CHAR_BIT        8               /* number of bits in a char */
+#define HAVE_TOWLOWER
+#define HAVE_TOWUPPER
+#define SIZEOF_WCHAR_T 4
+#define SAFECLIB_DISABLE_WCHAR
+
+#ifndef __cplusplus
+#include <stdbool.h>
+#else
+# define restrict __restrict
+#endif
+
+#endif /* __KERNEL__ */
+
+/* C11 appendix K types - specific for bounds checking */
+#ifndef _RSIZE_T /* PGI */
+typedef size_t  rsize_t;
+#endif
+
+#ifndef RSIZE_MAX
+#define RSIZE_MAX (~(rsize_t)0)  /* leave here for completeness */
+#endif
+
+#ifdef __GNUC__ /* also clang and icc */
+
+#define __attribute_format__(type, index, check)                               \
+    __attribute__((format(type, index, check)))
+/* Stalled since 2008 https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64862
+   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=38308 */
+#if 0
+#define __attribute_format_wprintf(index, check)                               \
+    __attribute__((format(__wprintf__, index, check)))
+#else
+#define __attribute_format_wprintf(index, check)
+#endif
+#if 0
+#define __attribute_format_wscanf(index, check)                                \
+    __attribute__((format(__wscanf__, index, check)))
+#else
+#define __attribute_format_wscanf(index, check)
+#endif
+
+#else
+
+#define __attribute_format__(type, index, check)
+#define __attribute_format_wprintf(index, check)
+#define __attribute_format_wscanf(index, check)
+
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+#endif /* __SAFE_TYPES_H__ */

@@ -85,6 +85,8 @@ void GuiLockDeviceInit(void *param)
         uint16_t time = GuiGetLockTimeByLeftErrorCount(*(uint16_t*)pageParam) / 60;
         if (time == 1) {
             sprintf(lockHint, "%s", _("unlock_device_time_limited_error_max_desc"));
+        } else if (time == 60) {
+            sprintf(lockHint, _("unlock_device_time_limited_error_max_warning_fmt"), time);
         } else {
             sprintf(lockHint, _("unlock_device_time_limited_error_max_desc_fmt"), time);
         }

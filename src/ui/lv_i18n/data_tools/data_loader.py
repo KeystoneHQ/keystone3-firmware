@@ -1,7 +1,7 @@
 import csv
 import yaml
 
-with open("./data.csv", newline="") as csvfile:
+with open("./data.csv", newline="", encoding='utf-8') as csvfile:
     reader = csv.DictReader(csvfile)
     en = {}
 

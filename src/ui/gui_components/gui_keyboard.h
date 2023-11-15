@@ -13,10 +13,6 @@
 
 typedef struct {
     lv_obj_t *cont;
-} KeyBoardHead_t;
-
-typedef struct {
-    lv_obj_t *cont;
     lv_obj_t *kb;
     lv_obj_t *associateLabel[3];
     lv_obj_t *ta;

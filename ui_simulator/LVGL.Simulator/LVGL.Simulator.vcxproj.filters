@@ -1306,6 +1306,9 @@
     <ClCompile Include="..\..\src\ui\gui_assets\walletList\walletListXRPToolkit.c">
       <Filter>gui\assets\wallet</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_components\gui_led.c">
+      <Filter>gui\gui_components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\external\lvgl\src\core\lv_disp.h" />

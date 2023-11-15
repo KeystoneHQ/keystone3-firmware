@@ -320,6 +320,7 @@
     <ClCompile Include="..\..\src\ui\gui_components\gui_hintbox.c" />
     <ClCompile Include="..\..\src\ui\gui_components\gui_keyboard.c" />
     <ClCompile Include="..\..\src\ui\gui_components\gui_keyboard_hintbox.c" />
+    <ClCompile Include="..\..\src\ui\gui_components\gui_led.c" />
     <ClCompile Include="..\..\src\ui\gui_components\gui_letter_tree.c" />
     <ClCompile Include="..\..\src\ui\gui_components\gui_mnemonic_input.c" />
     <ClCompile Include="..\..\src\ui\gui_components\gui_page.c" />

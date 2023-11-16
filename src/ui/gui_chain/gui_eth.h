@@ -22,6 +22,7 @@ void GetEthMaxFeePrice(void *indata, void *param);
 void GetEthMaxPriorityFeePrice(void *indata, void *param);
 
 UREncodeResult *GuiGetEthSignQrCodeData(void);
+UREncodeResult *GuiGetEthSignUrDataUnlimited(void);
 void GetEthGetFromAddress(void *indata, void *param);
 void GetEthGetToAddress(void *indata, void *param);
 void GetTxnFeeDesc(void *indata, void *param);

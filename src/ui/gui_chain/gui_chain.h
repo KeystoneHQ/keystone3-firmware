@@ -120,6 +120,8 @@ typedef struct {
 
 GuiRemapViewType ViewTypeReMap(uint8_t viewType);
 GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t viewType);
-PtrT_TransactionCheckResult CheckScanResult(uint8_t viewType);
+PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType);
+GenerateUR GetUrGenerator(GuiChainCoinType viewType);
+GenerateUR GetSingleUrGenerator(GuiChainCoinType viewType);
 bool IsMessageType(uint8_t type);
 #endif

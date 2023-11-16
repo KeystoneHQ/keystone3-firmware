@@ -77,37 +77,65 @@ UREncodeResult *GuiGetBlueWalletBtcData(void)
 #endif
 }
 
-// copy from gui_btc, need to use real data
-UREncodeResult *GuiGetMetamaskData(void)
+typedef UREncodeResult *MetamaskUrGetter(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys);
+
+static get_unlimited_connect_metamask_ur(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys)
 {
-#ifndef COMPILE_SIMULATOR
-    ETHAccountType accountType = GetMetamaskAccountType();
+    return get_connect_metamask_ur_unlimited(master_fingerprint, master_fingerprint_length, account_type, public_keys);
+}
+
+static UREncodeResult *BasicGetMetamaskDataForAccountType(ETHAccountType accountType, MetamaskUrGetter func)
+{
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
     ExtendedPublicKey keys[10];
     public_keys->data = keys;
 
-    if (accountType == Bip44Standard) {
+    if (accountType == Bip44Standard)
+    {
         public_keys->size = 1;
         keys[0].path = "";
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
-    } else if (accountType == LedgerLive) {
+    }
+    else if (accountType == LedgerLive)
+    {
         public_keys->size = 10;
-        for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
+        for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++)
+        {
             keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = "";
             keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].xpub = GetCurrentAccountPublicKey(i);
         }
-    } else if (accountType == LedgerLegacy) {
+    }
+    else if (accountType == LedgerLegacy)
+    {
         public_keys->size = 1;
         keys[0].path = "";
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LEGACY);
     }
 
-    g_urEncode = get_connect_metamask_ur(mfp, sizeof(mfp), accountType, public_keys);
+    g_urEncode = func(mfp, sizeof(mfp), accountType, public_keys);
     CHECK_CHAIN_PRINT(g_urEncode);
     SRAM_FREE(public_keys);
     return g_urEncode;
+}
+
+// copy from gui_btc, need to use real data
+UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType)
+{
+    return BasicGetMetamaskDataForAccountType(accountType, get_connect_metamask_ur);   
+}
+
+UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountType)
+{
+    return BasicGetMetamaskDataForAccountType(accountType, get_unlimited_connect_metamask_ur);
+}
+
+UREncodeResult *GuiGetMetamaskData(void)
+{
+#ifndef COMPILE_SIMULATOR
+    ETHAccountType accountType = GetMetamaskAccountType();
+    return GetMetamaskDataForAccountType(accountType);
 #else
     const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
     return (void *)data;

@@ -117,7 +117,6 @@ static ParserStatusEnum CheckFrameValidity(EAPDUFrame_t *eapduFrame)
 {
     if (eapduFrame->p1 > MAX_PACKETS)
     {
-        printf("Invalid total number of packets\n");
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, eapduFrame->ins, eapduFrame->lc, PRS_INVALID_TOTAL_PACKETS, "Invalid total number of packets");
         free_parser();
         return FRAME_TOTAL_ERROR;

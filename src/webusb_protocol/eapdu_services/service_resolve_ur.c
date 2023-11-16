@@ -12,6 +12,11 @@ typedef struct
     uint8_t urType;
 } UrViewType_t;
 
+static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status);
+static uint8_t *DataParser(EAPDURequestPayload_t *payload);
+static bool CheckURAcceptable(EAPDURequestPayload_t payload);
+static void GotoFailPage(StatusEnum error_code, const char *error_message);
+
 static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
 {
     EAPDUResponsePayload_t *payload = (EAPDUResponsePayload_t *)SRAM_MALLOC(sizeof(EAPDUResponsePayload_t));
@@ -31,25 +36,6 @@ static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t reque
 
     g_requestID = REQUEST_ID_IDLE;
     SRAM_FREE(payload);
-};
-
-uint16_t GetCurrentUSParsingRequestID()
-{
-    return g_requestID;
-};
-
-void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
-{
-    BasicHandlerFunc(data, data_len, requestID, status);
-    EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
-    resultPage->command = CMD_RESOLVE_UR;
-    resultPage->error_code = status;
-    resultPage->error_message = (char *)data;
-    if (status == PRS_PARSING_DISALLOWED || status == PRS_PARSING_REJECTED)
-    {
-        return NULL;
-    }
-    GotoResultPage(resultPage);
 };
 
 static uint8_t *DataParser(EAPDURequestPayload_t *payload)
@@ -75,6 +61,36 @@ static bool CheckURAcceptable(EAPDURequestPayload_t payload)
     }
     return true;
 }
+
+static void GotoFailPage(StatusEnum error_code, const char *error_message)
+{
+    EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
+    resultPage->command = CMD_RESOLVE_UR;
+    resultPage->error_code = error_code;
+    resultPage->error_message = error_message;
+    GotoResultPage(resultPage);
+    HandleURResultViaUSBFunc(error_message, strlen(error_message), g_requestID, error_code);
+    SRAM_FREE(resultPage);
+}
+
+void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
+{
+    BasicHandlerFunc(data, data_len, requestID, status);
+    EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
+    resultPage->command = CMD_RESOLVE_UR;
+    resultPage->error_code = status;
+    resultPage->error_message = (char *)data;
+    if (status == PRS_PARSING_DISALLOWED || status == PRS_PARSING_REJECTED || status == PRS_PARSING_VERIFY_PASSWORD_ERROR)
+    {
+        return NULL;
+    }
+    GotoResultPage(resultPage);
+};
+
+uint16_t GetCurrentUSParsingRequestID()
+{
+    return g_requestID;
+};
 
 void *ProcessURService(EAPDURequestPayload_t payload)
 {
@@ -108,14 +124,15 @@ void *ProcessURService(EAPDURequestPayload_t payload)
     if (checkResult != NULL && checkResult->error_code == 0)
     {
         PubValueMsg(UI_MSG_PREPARE_RECEIVE_UR_USB, urViewType.viewType);
-    } else {
-        EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
-        resultPage->command = CMD_RESOLVE_UR;
-        resultPage->error_code = checkResult->error_code;
-        resultPage->error_message = checkResult->error_message;
-        GotoResultPage(resultPage);
-        HandleURResultViaUSBFunc(checkResult->error_message, strlen(checkResult->error_message), g_requestID, PRS_PARSING_ERROR);
-        SRAM_FREE(resultPage);
+    }
+    else if (checkResult != NULL && checkResult->error_code == 2)
+    {
+        const char *data = "Mismatched wallet, please switch to another wallet and try again";
+        GotoFailPage(PRS_PARSING_MISMATCHED_WALLET, data);
+    }
+    else
+    {
+        GotoFailPage(PRS_PARSING_ERROR, checkResult->error_message);
     }
 }
 

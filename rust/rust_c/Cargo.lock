@@ -1739,7 +1739,7 @@ checksum = "b6868896879ba532248f33598de5181522d8b3d9d724dfd230911e1a7d4822f5"
 [[package]]
 name = "rippled_binary_codec"
 version = "0.0.6"
-source = "git+https://github.com/KeystoneHQ/rippled_binary_codec.git?tag=v0.0.7#330441d02498d7c9054cc1d51adfac1738d0b2de"
+source = "git+https://github.com/KeystoneHQ/rippled_binary_codec.git?tag=v0.0.8#6d54449b9f57ab5a881725d591c9283914ce8bf6"
 dependencies = [
  "ascii",
  "base-x",

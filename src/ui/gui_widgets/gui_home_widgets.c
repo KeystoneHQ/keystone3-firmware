@@ -40,7 +40,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
         {HOME_WALLET_CARD_SUI, false, "SUI", true},
         {HOME_WALLET_CARD_ADA, false, "ADA", true},
         {HOME_WALLET_CARD_XRP, false, "XRP", true},
-        {HOME_WALLET_CARD_TRX, false, "TRX", true},
+        {HOME_WALLET_CARD_TRX, false, "TRX", false},
         {HOME_WALLET_CARD_ATOM, false, "ATOM", true},
         {HOME_WALLET_CARD_OSMO, false, "OSMO", true},
         {HOME_WALLET_CARD_SCRT, false, "SCRT", true},

@@ -69,7 +69,9 @@ void *GuiGetXrpData(void)
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
     do {
+        SetRustMallocPsram(true);
         PtrT_TransactionParseResult_DisplayXrpTx parseResult = xrp_parse_tx(data);
+        SetRustMallocPsram(false);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
@@ -93,7 +95,9 @@ PtrT_TransactionCheckResult GuiGetXrpCheckResult(void)
     if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
         strcpy(pubkey, g_cachedPubkey[GetCurrentAccountIndex()]);
     }
+    SetRustMallocPsram(true);
     result = xrp_check_tx(data, GetCurrentAccountPublicKey(XPUB_TYPE_XRP), pubkey);
+    SetRustMallocPsram(false);
     if (result != NULL && result->error_code == 0 && strlen(result->error_message) > 0) {
         if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
             SRAM_FREE(g_cachedPubkey[GetCurrentAccountIndex()]);
@@ -158,7 +162,9 @@ UREncodeResult *GuiGetXrpSignQrCodeData(void)
         uint8_t seed[64];
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+        SetRustMallocPsram(true);
         encodeResult = xrp_sign_tx(data, g_hdPath, seed, len);
+        SetRustMallocPsram(false);
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);

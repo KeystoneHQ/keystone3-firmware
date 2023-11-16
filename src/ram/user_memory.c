@@ -14,6 +14,7 @@
 
 static uint32_t g_sramHeapCount = 0;
 static uint32_t g_extHeapCount = 0;
+static bool g_isRustMallocPsram = false;
 
 void *SramMalloc(uint32_t size, const char *file, int line, const char *func)
 {
@@ -70,17 +71,28 @@ void ExtFree(void *p, const char *file, int line, const char *func)
 }
 
 
+void SetRustMallocPsram(bool isPsram)
+{
+    g_isRustMallocPsram = isPsram;
+}
+
+
 void *RustMalloc(int32_t size)
 {
-    return ExtMalloc(size, __FILE__, __LINE__, __func__);
-    // return SramMalloc(size, __FILE__, __LINE__, __func__);
+    if (g_isRustMallocPsram) {
+        return ExtMalloc(size, __FILE__, __LINE__, __func__);
+    }
+    return SramMalloc(size, __FILE__, __LINE__, __func__);
 }
 
 
 void RustFree(void *p)
 {
-    ExtFree(p, __FILE__, __LINE__, __func__);
-    // SramFree(p, __FILE__, __LINE__, __func__);
+    if (p >= PSRAM_BASE) {
+        ExtFree(p, __FILE__, __LINE__, __func__);
+    } else {
+        SramFree(p, __FILE__, __LINE__, __func__);
+    }
 }
 
 

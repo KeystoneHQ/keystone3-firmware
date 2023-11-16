@@ -17,6 +17,7 @@ void *SramRealloc(void *p, uint32_t size, const char *file, int line, const char
 void *ExtMalloc(uint32_t size, const char *file, int line, const char *func);
 void ExtFree(void *p, const char *file, int line, const char *func);
 
+void SetRustMallocPsram(bool isRustPsram);
 void *RustMalloc(int32_t size);
 void RustFree(void *p);
 

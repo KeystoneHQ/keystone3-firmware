@@ -160,11 +160,6 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
         {
             HandleURResultViaUSBFunc(urResult->data, strlen(urResult->data), GetCurrentUSParsingRequestID(), RSP_SUCCESS_CODE);
         }
-        else if (urResult->error_code == 2)
-        {
-            const char *data = "Mismatched wallet, please switch to another wallet and try again";
-            HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_MISMATCHED_WALLET);
-        }
         else
         {
             HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), GetCurrentUSParsingRequestID(), PRS_PARSING_ERROR);

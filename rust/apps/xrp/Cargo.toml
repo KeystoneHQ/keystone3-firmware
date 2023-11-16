@@ -12,7 +12,7 @@ app_utils = {path="../utils"}
 base-x = {version="0.2.11", default-features= false}
 serde = { version = "1.0.139", default-features = false }
 serde_derive = { version = "1.0.159"}
-rippled_binary_codec = {git="https://github.com/KeystoneHQ/rippled_binary_codec.git", tag="v0.0.7"}
+rippled_binary_codec = {git="https://github.com/KeystoneHQ/rippled_binary_codec.git", tag="v0.0.8"}
 bytes = { version = "1.1.0", default-features = false }
 
 [dev-dependencies]

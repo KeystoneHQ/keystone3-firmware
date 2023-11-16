@@ -39,6 +39,7 @@ LV_IMG_DECLARE(imgWalletSetting);
 LV_IMG_DECLARE(imgSystemSetting);
 LV_IMG_DECLARE(imgConnection);
 LV_IMG_DECLARE(imgConnectWithRabby);
+LV_IMG_DECLARE(imgConnectWithWallet);
 LV_IMG_DECLARE(imgAbout);
 LV_IMG_DECLARE(imgLock);
 LV_IMG_DECLARE(imgDelWallet);

@@ -3,6 +3,7 @@
 #include "gui.h"
 #include "gui_home_widgets.h"
 #include "cjson/cJSON.h"
+#include "eapdu_services/service_resolve_ur.h"
 
 bool g_fingerUnlockDeviceFlag = true;
 bool g_fingerSingTransitionsFlag = false;
@@ -11,6 +12,32 @@ bool fingerRegisterState[3] = {true, false, false};
 #define ACCOUNT_PUBLIC_HOME_COIN_PATH "C:/assets/coin.json"
 
 bool g_reboot = false;
+
+struct UREncodeResult *get_connect_metamask_ur_unlimited(PtrBytes master_fingerprint,
+                                                         uint32_t master_fingerprint_length,
+                                                         enum ETHAccountType account_type,
+                                                         PtrT_CSliceFFI_ExtendedPublicKey public_keys)
+{
+
+}
+
+struct UREncodeResult *get_connect_metamask_ur(PtrBytes master_fingerprint,
+                                               uint32_t master_fingerprint_length,
+                                               enum ETHAccountType account_type,
+                                               PtrT_CSliceFFI_ExtendedPublicKey public_keys)
+{
+
+}
+
+uint16_t GetCurrentUSParsingRequestID()
+{
+
+}
+
+void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
+{
+
+}
 
 void free_TransactionCheckResult(PtrT_TransactionCheckResult ptr)
 {

@@ -292,42 +292,51 @@ static void SetPassWordHandler(lv_event_t *e)
     }
 }
 
+void PassWordPinSwitch(GuiEnterPasscodeItem_t *item)
+{
+    if (lv_obj_has_flag(item->passWdCont, LV_OBJ_FLAG_HIDDEN)) {
+        lv_obj_clear_flag(item->passWdCont, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(item->pinCont, LV_OBJ_FLAG_HIDDEN);
+        item->mode++; // This operation is related to the ENTER_PASSCODE_ENUM
+        lv_obj_set_parent(item->errLabel, item->passWdCont);
+        lv_obj_set_parent(item->repeatLabel, item->passWdCont);
+        if (item->fpErrLabel) {
+            lv_obj_set_parent(item->fpErrLabel, item->passWdCont);
+        }
+        if (item->mode == ENTER_PASSCODE_SET_PASSWORD) {
+            GuiSetKeyBoardMinTaLen(item->kb, 6);
+        }    
+        if (item->mode == ENTER_PASSCODE_VERIFY_PASSWORD) {
+            SetKeyboardWidgetMode(KEYBOARD_HINTBOX_PASSWORD);
+        }
+    } else {
+        lv_obj_add_flag(item->passWdCont, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(item->pinCont, LV_OBJ_FLAG_HIDDEN);
+        item->mode--; // This operation is related to the ENTER_PASSCODE_ENUM
+        lv_obj_set_parent(item->errLabel, item->pinCont);
+        lv_obj_set_parent(item->repeatLabel, item->pinCont);
+        if (item->fpErrLabel) {
+            lv_obj_set_parent(item->fpErrLabel, item->pinCont);
+        }
+        if (item->mode == ENTER_PASSCODE_VERIFY_PIN) {
+            SetKeyboardWidgetMode(KEYBOARD_HINTBOX_PIN);
+        }
+    }
+    lv_obj_add_flag(item->errLabel, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
+    if (item->mode == ENTER_PASSCODE_VERIFY_PIN || item->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN) {
+        GuiEmitSignal(SIG_PASSCODE_SWITCH_TO_PIN, NULL, 0);
+    } else if (item -> mode == ENTER_PASSCODE_VERIFY_PASSWORD || item->mode == ENTER_PASSCODE_LOCK_VERIFY_PASSWORD) {
+        GuiEmitSignal(SIG_PASSCODE_SWITCH_TO_PASSWORD, NULL, 0);
+    }
+}
+
 static void PassWordPinSwitchHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GuiEnterPasscodeItem_t *item = g_passParam.setpinParam;
-        if (lv_obj_has_flag(item->passWdCont, LV_OBJ_FLAG_HIDDEN)) {
-            lv_obj_clear_flag(item->passWdCont, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(item->pinCont, LV_OBJ_FLAG_HIDDEN);
-            item->mode++; // This operation is related to the ENTER_PASSCODE_ENUM
-            lv_obj_set_parent(item->errLabel, item->passWdCont);
-            lv_obj_set_parent(item->repeatLabel, item->passWdCont);
-            if (item->fpErrLabel) {
-                lv_obj_set_parent(item->fpErrLabel, item->passWdCont);
-            }
-            if (item->mode == ENTER_PASSCODE_SET_PASSWORD) {
-                GuiSetKeyBoardMinTaLen(item->kb, 6);
-            }    
-            SetKeyboardWidgetMode(KEYBOARD_HINTBOX_PASSWORD);
-        } else {
-            lv_obj_add_flag(item->passWdCont, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(item->pinCont, LV_OBJ_FLAG_HIDDEN);
-            item->mode--; // This operation is related to the ENTER_PASSCODE_ENUM
-            lv_obj_set_parent(item->errLabel, item->pinCont);
-            lv_obj_set_parent(item->repeatLabel, item->pinCont);
-            if (item->fpErrLabel) {
-                lv_obj_set_parent(item->fpErrLabel, item->pinCont);
-            }
-            SetKeyboardWidgetMode(KEYBOARD_HINTBOX_PIN);
-        }
-        lv_obj_add_flag(item->errLabel, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
-        if (item->mode == ENTER_PASSCODE_VERIFY_PIN || item->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN) {
-            GuiEmitSignal(SIG_PASSCODE_SWITCH_TO_PIN, NULL, 0);
-        } else if (item -> mode == ENTER_PASSCODE_VERIFY_PASSWORD || item->mode == ENTER_PASSCODE_LOCK_VERIFY_PASSWORD) {
-            GuiEmitSignal(SIG_PASSCODE_SWITCH_TO_PASSWORD, NULL, 0);
-        }
+        PassWordPinSwitch(item);
     }
 }
 
@@ -694,8 +703,6 @@ void GuiUpdateEnterPasscodeParam(GuiEnterPasscodeItem_t *item, void *param)
         if (item->eyeImg != NULL) {
             lv_img_set_src(item->eyeImg, &imgEyeOff);
         }
-        // lv_obj_remove_event_cb(item->kb->kb, SetPassWordHandler);
-        // lv_obj_add_event_cb(item->kb->kb, SetPassWordHandler, LV_EVENT_ALL, &g_passParam);
     }
     if (item->btnm != NULL) {
         item->currentNum = 0;
@@ -703,8 +710,6 @@ void GuiUpdateEnterPasscodeParam(GuiEnterPasscodeItem_t *item, void *param)
         for (int i = 0; i < CREATE_PIN_NUM; i++) {
             GuiSetLedStatus(item->numLed[i], PASSCODE_LED_OFF);
         }
-        // lv_obj_remove_event_cb(item->btnm, SetPinEventHandler);
-        // lv_obj_add_event_cb(item->btnm, SetPinEventHandler, LV_EVENT_ALL, &g_passParam);
     }
 
     if (item->errLabel != NULL) {

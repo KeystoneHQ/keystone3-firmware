@@ -949,7 +949,6 @@ void FingerprintRcvMsgHandle(char *recvBuff, uint8_t len)
             if (cmd == FINGERPRINT_CMD_CANCEL_EXECUTE) {
                 const uint8_t cancelCmd[7] = {0xB6, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
                 if (!memcmp(&msg.data.cmd0, cancelCmd, sizeof(cancelCmd))) {
-                    printf("cancel success.....................\n");
                 }
             }
 
@@ -963,7 +962,7 @@ void FingerprintRcvMsgHandle(char *recvBuff, uint8_t len)
     } while (0);
 
     if (cmd != FINGERPRINT_CMD_GET_RANDOM_NUM) {
-        printf("%#4x len = %d recv.....\n", cmd, msg.data.dataLen);
+        // printf("%#4x len = %d recv.....\n", cmd, msg.data.dataLen);
     }
     if (recvFunc != NULL) {
         recvFunc((char *)msg.data.data, msg.data.dataLen);

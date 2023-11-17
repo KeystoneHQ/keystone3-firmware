@@ -18,6 +18,7 @@
 #include "gui_setting_widgets.h"
 #include "gui_mnemonic_input.h"
 #include "gui_page.h"
+#include "gui_keyboard_hintbox.h"
 #ifndef COMPILE_MAC_SIMULATOR
 #include "sha256.h"
 #else
@@ -150,6 +151,7 @@ void GuiForgetPassVerifyResult(bool en, int errCode)
 
 void GuiForgetPassResetPass(bool en, int errCode)
 {
+    SetKeyboardWidgetMode((g_setPassCode->mode == ENTER_PASSCODE_SET_PIN) ? KEYBOARD_HINTBOX_PIN : KEYBOARD_HINTBOX_PASSWORD);
     lv_obj_t *cont = GuiCreateResultHintbox(lv_scr_act(), 356, &imgSuccess, _("change_passcode_reset_success_title"),
                                             _("change_passcode_reset_success_desc"), NULL, DARK_GRAY_COLOR, _("Done"), ORANGE_COLOR);
     lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(cont);

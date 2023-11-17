@@ -109,21 +109,21 @@ bool SDCardSetup(void)
     if (!SDIOExecuteCommand(SD_CMD_ALL_SEND_CID, 0, SDIOResponseR2, SDCardInfo.CID))
         return false;
 
-    printf(                            //
-        "SDCard CID Info: \n"          //
-        "  ManufacturerID: %02X\n"     //
-        "  ApplicationID: %04X\n"      //
-        "  ProductName: %.5s\n"        //
-        "  ProductRevision: %02X\n"    //
-        "  ProductSN: %08X\n"          //
-        "  ManufacturingDate: %06X\n", //
-        SDCardInfo.ManufacturerID,     //
-        SDCardInfo.ApplicationID,      //
-        SDCardInfo.ProductName,        //
-        SDCardInfo.ProductRevision,    //
-        SDCardInfo.ProductSN,          //
-        SDCardInfo.ManufacturingDate   //
-    );
+    // printf(                            //
+    //     "SDCard CID Info: \n"          //
+    //     "  ManufacturerID: %02X\n"     //
+    //     "  ApplicationID: %04X\n"      //
+    //     "  ProductName: %.5s\n"        //
+    //     "  ProductRevision: %02X\n"    //
+    //     "  ProductSN: %08X\n"          //
+    //     "  ManufacturingDate: %06X\n", //
+    //     SDCardInfo.ManufacturerID,     //
+    //     SDCardInfo.ApplicationID,      //
+    //     SDCardInfo.ProductName,        //
+    //     SDCardInfo.ProductRevision,    //
+    //     SDCardInfo.ProductSN,          //
+    //     SDCardInfo.ManufacturingDate   //
+    // );
 
     // CMD3: Get RCA
     if (!SDIOExecuteCommand(SD_CMD_SET_REL_ADDR, 0, SDIOResponseR6, (uint32_t*)&SDCardInfo.CardStatus))
@@ -144,18 +144,18 @@ bool SDCardSetup(void)
     SDCardInfo.DeviceSize = SDCardInfo.CSDStruct ? ((SDCardInfo.V2.DeviceSize + 1) >> 1)
                             : ((SDCardInfo.V1.DeviceSize + 1) << (SDCardInfo.V1.DeviceSizeMultiplier + SDCardInfo.MaxReadLength - 8));
 
-    printf(                        //
-        "SDCard CSD Info: \n"      //
-        "  MaxDataRate: %d Kbps\n" //
-        "  Class: %d\n"            //
-        "  BlockSize: %u\n"        //
-        "  DeviceSize: %u MB\n"    //
-        ,                          //
-        SDCardInfo.TransferRate,   //
-        SDCardInfo.Class,          //
-        SDCardInfo.BlockSize,      //
-        SDCardInfo.DeviceSize      //
-    );
+    // printf(                        //
+    //     "SDCard CSD Info: \n"      //
+    //     "  MaxDataRate: %d Kbps\n" //
+    //     "  Class: %d\n"            //
+    //     "  BlockSize: %u\n"        //
+    //     "  DeviceSize: %u MB\n"    //
+    //     ,                          //
+    //     SDCardInfo.TransferRate,   //
+    //     SDCardInfo.Class,          //
+    //     SDCardInfo.BlockSize,      //
+    //     SDCardInfo.DeviceSize      //
+    // );
 
     // CMD7: Select Card
     if (!SDIOExecuteCommand(SD_CMD_SEL_DESEL_CARD, SDCardInfo.RCA << 16, SDIOResponseR1b, NULL))
@@ -238,7 +238,7 @@ SD_Error SD_Init(void)
         printf("SDCard Init failed!\n");
         return 1;
     }
-    printf("SDCard Init is Successful!\n");
+    // printf("SDCard Init is Successful!\n");
     return 0;
 }
 

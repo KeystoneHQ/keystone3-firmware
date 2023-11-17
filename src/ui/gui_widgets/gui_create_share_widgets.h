@@ -9,13 +9,6 @@
 #ifndef _GUI_CREATE_WALLET_WIDGETS_H
 #define _GUI_CREATE_WALLET_WIDGETS_H
 
-typedef enum {
-    CREATE_WALLET_PIN = 0,
-    CREATE_WALLET_PASSWORD,
-
-    CREATE_WALLET_MODE_BUTT,
-} CREATE_WALLET_MODE_ENUM;
-
 void GuiCreateShareInit(void);
 void GuiCreateShareDeInit(void);
 void GuiCreateShareRefresh(void);

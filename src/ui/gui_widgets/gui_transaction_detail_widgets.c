@@ -173,10 +173,13 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
 void GuiSignVerifyPasswordErrorCount(void *param)
 {
     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-    if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB)
+    if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX)
     {
-        const char *data = "Please try again after unlocking";
-        HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_VERIFY_PASSWORD_ERROR);
+        if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB)
+        {
+            const char *data = "Please try again after unlocking";
+            HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_VERIFY_PASSWORD_ERROR);
+        }
     }
     GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
 }

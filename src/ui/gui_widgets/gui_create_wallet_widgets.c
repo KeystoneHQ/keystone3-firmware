@@ -18,6 +18,7 @@
 #include "gui_enter_passcode.h"
 #include "motor_manager.h"
 #include "gui_tutorial_widgets.h"
+#include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
 
 typedef enum {
@@ -43,7 +44,9 @@ typedef struct CreateWalletWidget {
 static CreateWalletWidget_t g_createWalletTileView;
 
 static void CloseChooseWordsAmountHandler(lv_event_t* e);
+static void GuiRefreshNavBar(void);
 
+static PageWidget_t *g_pageWidget;
 static KeyBoard_t *g_nameWalletKb = NULL;
 static lv_obj_t *g_nameWalletIcon = NULL;
 static lv_obj_t *g_wordsAmountView = NULL;
@@ -54,9 +57,11 @@ static lv_obj_t *g_repeatPinTile = NULL;
 static lv_obj_t *g_noticeHintBox = NULL;
 static char g_pinBuf[GUI_DEFINE_MAX_PASSCODE_LEN + 1];
 
-static PageWidget_t *g_pageWidget;
-
-static void GuiRefreshNavBar(void);
+void GuiSetupKeyboardWidgetMode(void)
+{
+    printf("g_setPassCode->mode = %d\n", g_setPassCode->mode % 2);
+    SetKeyboardWidgetMode(KEYBOARD_HINTBOX_PIN + g_setPassCode->mode % 2);
+}
 
 static void GuiCreateSetpinWidget(lv_obj_t *parent)
 {

@@ -218,6 +218,9 @@ void GuiLockScreenTurnOn(void *param)
     lv_obj_clear_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
     // g_lockView.isActive = true;
     lv_obj_set_parent(g_pageWidget->page, lv_scr_act());
+    if (GetKeyboardWidgetMode() != g_verifyLock->mode % 2) {
+        PassWordPinSwitch(g_verifyLock);
+    }
     GuiUpdateEnterPasscodeParam(g_verifyLock, single);
     GuilockScreenRefresh();
 }

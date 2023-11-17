@@ -38,6 +38,11 @@ void SetKeyboardWidgetMode(uint8_t mode)
     g_keyboardHintBoxMode = mode;
 }
 
+uint8_t GetKeyboardWidgetMode(void)
+{
+    return g_keyboardHintBoxMode;
+}
+
 static void KeyboardConfirmHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -108,16 +113,26 @@ void SetKeyboardWidgetSelf(KeyboardWidget_t *keyboardWidget, KeyboardWidget_t **
     keyboardWidget->self = self;
 }
 
+static void ClearKeyboardWidgetCache(KeyboardWidget_t *keyboardWidget)
+{
+    memset(g_pinBuf, 0, sizeof(g_pinBuf));
+    keyboardWidget->currentNum = 0;
+    for (int i = 0; i < CREATE_PIN_NUM; i++) {
+        GuiSetLedStatus(keyboardWidget->led[i], PASSCODE_LED_OFF);
+    }
+    GuiClearKeyboardInput(keyboardWidget);
+}
+
 static void SetPinEventHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
     if (code == LV_EVENT_RELEASED) {
-        Vibrate(SLIGHT);
         uint32_t id = lv_btnmatrix_get_selected_btn(keyboardWidget->btnm);
         if (id == 9) {
             return;
         }
+        Vibrate(SLIGHT);
         const char *txt = lv_btnmatrix_get_btn_text(keyboardWidget->btnm, id);
         if (strcmp(txt, USR_SYMBOL_DELETE) == 0) {
             if (keyboardWidget->currentNum > 0) {
@@ -135,8 +150,9 @@ static void SetPinEventHandler(lv_event_t *e)
         } else {
             if (keyboardWidget->currentNum < CREATE_PIN_NUM) {
                 sprintf(g_pinBuf + keyboardWidget->currentNum, "%s", txt);
-                printf("g_pinBuf = %s\n", g_pinBuf);
-                GuiSetLedStatus(keyboardWidget->led[keyboardWidget->currentNum], PASSCODE_LED_ON);
+                for (int i = 0; i < keyboardWidget->currentNum; i++) {
+                    GuiSetLedStatus(keyboardWidget->led[i], PASSCODE_LED_ON);
+                }
                 keyboardWidget->currentNum++;
                 if (!lv_obj_has_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN)) {
                     lv_obj_add_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN);
@@ -157,7 +173,7 @@ static void SetPinEventHandler(lv_event_t *e)
     }
 }
 
-static void PassWordPinSwitch(KeyboardWidget_t *keyboardWidget, uint8_t keyboardMode)
+static void PassWordPinHintSwitch(KeyboardWidget_t *keyboardWidget, uint8_t keyboardMode)
 {
     if (keyboardMode == KEYBOARD_HINTBOX_PIN) {
         lv_obj_clear_flag(keyboardWidget->btnm, LV_OBJ_FLAG_HIDDEN);
@@ -178,6 +194,7 @@ static void PassWordPinSwitch(KeyboardWidget_t *keyboardWidget, uint8_t keyboard
         }
         lv_label_set_text(keyboardWidget->switchLabel, _("pin_label"));
     }
+    ClearKeyboardWidgetCache(keyboardWidget);
     g_keyboardHintBoxMode = keyboardMode;
 }
 
@@ -187,7 +204,7 @@ static void PassWordPinSwitchHandler(lv_event_t *e)
     KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
     if (code == LV_EVENT_CLICKED) {
         uint8_t keyboardMode = lv_obj_has_flag(keyboardWidget->btnm, LV_OBJ_FLAG_HIDDEN) ? KEYBOARD_HINTBOX_PIN : KEYBOARD_HINTBOX_PASSWORD;
-        PassWordPinSwitch(keyboardWidget, keyboardMode);
+        PassWordPinHintSwitch(keyboardWidget, keyboardMode);
     }
 }
 
@@ -257,7 +274,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
     lv_obj_align(btnm, LV_ALIGN_DEFAULT, 0, 490);
     keyboardWidget->btnm = btnm;
 
-    PassWordPinSwitch(keyboardWidget, g_keyboardHintBoxMode);
+    PassWordPinHintSwitch(keyboardWidget, g_keyboardHintBoxMode);
     return keyboardWidget;
 }
 

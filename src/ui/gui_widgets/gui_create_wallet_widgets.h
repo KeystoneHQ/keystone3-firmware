@@ -12,13 +12,6 @@
 #include "gui_enter_passcode.h"
 #include "gui_setup_widgets.h"
 
-typedef enum {
-    CREATE_WALLET_PIN = 0,
-    CREATE_WALLET_PASSWORD,
-
-    CREATE_WALLET_MODE_BUTT,
-} CREATE_WALLET_MODE_ENUM;
-
 void GuiCreateWalletInit(uint8_t walletMethod);
 void GuiCreateWalletDeInit(void);
 void GuiCreateWalletNameUpdate(const void * src);
@@ -30,6 +23,7 @@ void GuiCreateWalletSetPinPass(const char* buf);
 void GuiCreateWalletRepeatPinPass(const char* buf);
 const char *GetCurrentKbWalletName(void);
 void GuiCreateWalletRefresh(void);
+void GuiSetupKeyboardWidgetMode(void);
 
 #endif /* _GUI_CREATE_WALLET_WIDGETS_H */
 

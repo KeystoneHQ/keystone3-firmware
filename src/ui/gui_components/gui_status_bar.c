@@ -207,7 +207,7 @@ void GuiStatusBarSetSdCard(bool connected)
         lv_obj_align_to(g_guiStatusBar.sdCardImg, g_guiStatusBar.batteryImg, LV_ALIGN_OUT_LEFT_MID, -10, 0);
         uint8_t accountCnt = 0;
         GetExistAccountNum(&accountCnt);
-        if (!GuiLockScreenIsTop() && FatfsGetSize("0:") && CheckOtaBinVersion(version) && accountCnt > 0) {
+        if (!GuiLockScreenIsTop() && FatfsGetSize("0:") && CheckOtaBinVersion(version) && accountCnt > 0 && !GuiCheckIfTopView(&g_forgetPassView)) {
             GuiCreateSdCardUpdateHintbox(version);
         }
     } else {

@@ -954,6 +954,7 @@ int8_t GuiDevSettingPrevTile(uint8_t tileIndex)
 
 void GuiSettingRefresh(void)
 {
+    GuiWalletSettingRefresh();
     DeviceSettingItem_t *item = &g_deviceSettingArray[g_deviceSetTileView.currentTile];
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, item->leftBtn, item->leftCb, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, item->rightBtn, item->rightCb, NULL);
@@ -969,7 +970,6 @@ void GuiSettingRefresh(void)
     if (item->leftCb == CancelCurFingerHandler) {
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
     }
-    GuiWalletSettingRefresh();
 }
 
 int GuiSettingGetCurrentTileIndex(void)

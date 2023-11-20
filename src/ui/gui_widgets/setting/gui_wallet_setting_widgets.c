@@ -266,12 +266,6 @@ void GuiWalletSettingDeinit(void)
 
 void GuiWalletSettingRefresh(void)
 {
-    if (g_setPassCode != NULL) {
-        GuiUpdateEnterPasscodeParam(g_setPassCode, NULL);
-    }
-    if (g_repeatPassCode != NULL) {
-        GuiUpdateEnterPasscodeParam(g_repeatPassCode, NULL);
-    }
     PassWordPinHintRefresh(g_keyboardWidget);
 }
 

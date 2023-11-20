@@ -329,6 +329,7 @@ void PassWordPinSwitch(GuiEnterPasscodeItem_t *item)
     } else if (item -> mode == ENTER_PASSCODE_VERIFY_PASSWORD || item->mode == ENTER_PASSCODE_LOCK_VERIFY_PASSWORD) {
         GuiEmitSignal(SIG_PASSCODE_SWITCH_TO_PASSWORD, NULL, 0);
     }
+    GuiEnterPassCodeStatus(item, true);
 }
 
 static void PassWordPinSwitchHandler(lv_event_t *e)
@@ -772,6 +773,7 @@ void GuiEnterPassCodeStatus(GuiEnterPasscodeItem_t *item, bool en)
         }
         lv_obj_add_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
         lv_obj_add_flag(item->errLabel, LV_OBJ_FLAG_HIDDEN);
+        lv_textarea_set_text(item->kb->ta, "");
     }
     memset(g_pinBuf, 0, sizeof(g_pinBuf));
 }

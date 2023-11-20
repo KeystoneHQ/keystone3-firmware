@@ -192,6 +192,12 @@ void GuiFirmwareUpdateRefresh(void)
         }
     }
     GuiCreateSelectTile(g_firmwareUpdateWidgets.tileSelect);
+    PassWordPinHintRefresh(g_keyboardWidget);
+}
+
+void GuiFirmwareUpdateWidgetRefresh(void)
+{
+    PassWordPinHintRefresh(g_keyboardWidget);
 }
 
 

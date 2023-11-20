@@ -118,6 +118,7 @@ void GuiSettingFingerRegisterFail(void *param);
 void GuiSettingDealFingerRecognize(void *param);
 void GuiWalletResetPassWordHintBox(void);
 void GuiWalletSelectAddWallet(lv_obj_t *parent);
+void GuiWalletSettingRefresh(void);
 
 //forget passcode share logic;
 void GuiSettingCloseSelectAmountHintBox();

@@ -32,6 +32,7 @@ void SetKeyboardWidgetSig(KeyboardWidget_t *keyboardWidget, uint16_t *sig);
 void SetKeyboardWidgetSelf(KeyboardWidget_t *keyboardWidget, KeyboardWidget_t **self);
 void SetKeyboardWidgetMode(uint8_t mode);
 uint8_t GetKeyboardWidgetMode(void);
+void PassWordPinHintRefresh(KeyboardWidget_t *keyboardWidget);
 
 void GuiDeleteKeyboardWidget(KeyboardWidget_t *keyboardWidget);
 const char *GuiGetKeyboardInput(KeyboardWidget_t *keyboardWidget);

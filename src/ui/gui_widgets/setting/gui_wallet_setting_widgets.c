@@ -272,6 +272,7 @@ void GuiWalletSettingRefresh(void)
     if (g_repeatPassCode != NULL) {
         GuiUpdateEnterPasscodeParam(g_repeatPassCode, NULL);
     }
+    PassWordPinHintRefresh(g_keyboardWidget);
 }
 
 void GuiWalletRepeatPinWidget(lv_obj_t *parent)

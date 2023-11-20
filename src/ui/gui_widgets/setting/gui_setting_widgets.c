@@ -969,7 +969,7 @@ void GuiSettingRefresh(void)
     if (item->leftCb == CancelCurFingerHandler) {
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
     }
-
+    GuiWalletSettingRefresh();
 }
 
 int GuiSettingGetCurrentTileIndex(void)

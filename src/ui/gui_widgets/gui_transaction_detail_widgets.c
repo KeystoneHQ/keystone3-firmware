@@ -134,7 +134,7 @@ void GuiTransactionDetailDeInit()
 
 void GuiTransactionDetailRefresh()
 {
-
+    // PassWordPinHintRefresh(g_keyboardWidget);
 }
 
 void GuiTransactionDetailParseSuccess(void *param)

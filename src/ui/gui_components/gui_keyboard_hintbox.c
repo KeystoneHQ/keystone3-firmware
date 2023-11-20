@@ -150,10 +150,10 @@ static void SetPinEventHandler(lv_event_t *e)
         } else {
             if (keyboardWidget->currentNum < CREATE_PIN_NUM) {
                 sprintf(g_pinBuf + keyboardWidget->currentNum, "%s", txt);
+                keyboardWidget->currentNum++;
                 for (int i = 0; i < keyboardWidget->currentNum; i++) {
                     GuiSetLedStatus(keyboardWidget->led[i], PASSCODE_LED_ON);
                 }
-                keyboardWidget->currentNum++;
                 if (!lv_obj_has_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN)) {
                     lv_obj_add_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN);
                     for (int i = 1; i < CREATE_PIN_NUM; i++) {
@@ -185,6 +185,8 @@ static void PassWordPinHintSwitch(KeyboardWidget_t *keyboardWidget, uint8_t keyb
         lv_obj_add_flag(keyboardWidget->eyeImg, LV_OBJ_FLAG_HIDDEN);
         lv_label_set_text(keyboardWidget->switchLabel, _("password_label"));
     } else {
+        lv_textarea_set_password_mode(keyboardWidget->kb->ta, true);
+        lv_img_set_src(keyboardWidget->eyeImg, &imgEyeOff);
         lv_obj_clear_flag(keyboardWidget->kb->cont, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(keyboardWidget->kb->ta, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(keyboardWidget->eyeImg, LV_OBJ_FLAG_HIDDEN);
@@ -196,6 +198,13 @@ static void PassWordPinHintSwitch(KeyboardWidget_t *keyboardWidget, uint8_t keyb
     }
     ClearKeyboardWidgetCache(keyboardWidget);
     g_keyboardHintBoxMode = keyboardMode;
+}
+
+void PassWordPinHintRefresh(KeyboardWidget_t *keyboardWidget)
+{    
+    if (keyboardWidget != NULL) {
+        PassWordPinHintSwitch(keyboardWidget, g_keyboardHintBoxMode);
+    }
 }
 
 static void PassWordPinSwitchHandler(lv_event_t *e)

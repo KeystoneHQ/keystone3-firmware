@@ -159,6 +159,7 @@ void GuiSystemSettingAreaDeInit()
 void GuiSystemSettingAreaRefresh()
 {
     GuiSystemSettingNVSBarInit();
+    PassWordPinHintRefresh(g_keyboardWidget);
 }
 
 

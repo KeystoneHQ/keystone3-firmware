@@ -243,6 +243,7 @@ void GuiLockScreenTurnOff(void)
         g_oldWalletIndex = GetCurrentAccountIndex();
         GuiCloseToTargetView(&g_homeView);
     } else {
+        GuiFirmwareUpdateWidgetRefresh();
         GuiEmitSignal(GUI_EVENT_REFRESH, &single, sizeof(single));
     }
     // g_lockView.isActive = false;

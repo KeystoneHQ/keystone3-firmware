@@ -3,7 +3,7 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use alloc::{format, vec};
 use app_utils::impl_public_struct;
-use ethabi::{Contract, Function};
+use ethabi::{Contract, Function, Token};
 use third_party::serde_json::Value;
 use third_party::{hex, serde_json};
 
@@ -108,7 +108,12 @@ fn _parse_by_function(
             if let (Some(_token), Some(_input)) = (token, input) {
                 params.push(ContractMethodParam::new(
                     _input.name.clone(),
-                    _token.to_string(),
+                    match _token {
+                        Token::Address(_) => {
+                            format!("0x{}", _token.to_string())
+                        }
+                        _ => _token.to_string(),
+                    },
                 ))
             } else {
                 return Some(Err(EthereumError::DecodeContractDataError(String::from(

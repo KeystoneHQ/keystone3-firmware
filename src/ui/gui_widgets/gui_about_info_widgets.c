@@ -148,8 +148,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
                              OpenViewHandler, &g_DevicePublicKeyView);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 282);
 
-    //TODO: typo about_info_fingerprint_firnware_version
-    titleLabel = GuiCreateTextLabel(parent, _("about_info_fingerprint_firnware_version"));
+    titleLabel = GuiCreateTextLabel(parent, _("about_info_fingerprint_firmware_version"));
     contentLabel = GuiCreateNoticeLabel(parent, fpVersion);
     if (!FpModuleIsExist()) {
         lv_obj_set_style_text_color(contentLabel, RED_COLOR, LV_PART_MAIN);

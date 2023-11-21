@@ -1,6 +1,4 @@
-use sha2::Sha256;
-use third_party::cryptoxide::mac::Mac;
-use third_party::pbkdf2::pbkdf2_hmac;
+use third_party::cryptoxide::{hmac::Hmac, mac::Mac, pbkdf2::pbkdf2, sha2::Sha256};
 
 pub fn hmac_sha512(key: &[u8], data: &[u8]) -> [u8; 64] {
     let digest = third_party::cryptoxide::sha2::Sha512::new();
@@ -13,7 +11,12 @@ pub fn hmac_sha512(key: &[u8], data: &[u8]) -> [u8; 64] {
 
 pub fn hkdf(password: &[u8], salt: &[u8], iterations: u32) -> [u8; 32] {
     let mut output = [0u8; 32];
-    pbkdf2_hmac::<Sha256>(password, salt, iterations, &mut output);
+    pbkdf2(
+        &mut Hmac::new(Sha256::new(), password),
+        salt,
+        iterations,
+        &mut output,
+    );
     output
 }
 

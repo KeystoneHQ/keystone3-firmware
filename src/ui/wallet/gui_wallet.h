@@ -7,8 +7,10 @@
 UREncodeResult *GuiGetBlueWalletBtcData(void);
 UREncodeResult *GuiGetKeplrData(void);
 UREncodeResult *GuiGetCompanionAppData(void);
+#ifndef COMPILE_SIMULATOR
 UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType);
 UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountType);
+#endif
 UREncodeResult *GuiGetMetamaskData(void);
 UREncodeResult *GuiGetOkxWalletData(void);
 UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin);

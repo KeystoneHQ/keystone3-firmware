@@ -4,6 +4,8 @@
 #include "gui_home_widgets.h"
 #include "cjson/cJSON.h"
 #include "account_manager.h"
+#include "qrdecode_task.h"
+#include <gui_chain.h>
 
 bool g_fingerUnlockDeviceFlag = true;
 bool g_fingerSingTransitionsFlag = false;
@@ -569,4 +571,24 @@ void UserDelay(uint32_t ms)
 MnemonicType GetMnemonicType(void)
 {
     return MNEMONIC_TYPE_BIP39;
+}
+
+bool FpModuleIsExist() {
+    return true;
+}
+
+uint32_t GetBatteryMilliVolt() {
+    return 50;
+}
+
+void HandleDefaultViewType(void *urResult, UrViewType_t urViewType, bool is_multi)
+{
+    GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
+    if (viewType != REMAPVIEW_BUTT) {
+        // g_chainViewArray[viewType].func(urResult, is_multi);
+    }
+}
+
+uint32_t PubBufferMsg(uint32_t messageID, void *buffer, uint32_t length) {
+    return 0;
 }

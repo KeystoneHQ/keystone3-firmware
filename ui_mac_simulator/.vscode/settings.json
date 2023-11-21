@@ -38,7 +38,8 @@
         "keystore.h": "c",
         "gui_connect_wallet_widgets.h": "c",
         "variant": "c",
-        "chrono": "c"
+        "chrono": "c",
+        "protocol_parse.h": "c"
     },
     "explorer.autoReveal": true
 }

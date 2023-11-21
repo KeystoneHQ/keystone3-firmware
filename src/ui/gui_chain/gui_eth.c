@@ -650,7 +650,7 @@ void GetEthTransType(void *indata, void *param)
 void GetEthTxFee(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    sprintf((char *)indata, "%s %s", eth->overview->max_txn_fee, CalcSymbol(param));
+    sprintf((char *)indata, "%s %s", eth->overview->max_txn_fee, _FindNetwork(eth->chain_id));
 }
 
 void GetEthTxFrom(void *indata, void *param)
@@ -708,13 +708,13 @@ void GetEthNetWork(void *indata, void *param)
 void GetEthMaxFee(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    sprintf((char *)indata, "%s %s", eth->detail->max_fee, CalcSymbol(param));
+    sprintf((char *)indata, "%s %s", eth->detail->max_fee, _FindNetwork(eth->chain_id));
 }
 
 void GetEthMaxPriority(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    sprintf((char *)indata, "%s %s", eth->detail->max_priority, CalcSymbol(param));
+    sprintf((char *)indata, "%s %s", eth->detail->max_priority, _FindNetwork(eth->chain_id));
 }
 
 void GetEthMaxFeePrice(void *indata, void *param)
@@ -861,7 +861,7 @@ void *GetEthContractData(uint8_t *row, uint8_t *col, void *param)
             int index = j / 2;
             DisplayContractParam param = contractData->data->params->data[index];
             if (!(j % 2)) {
-                indata[i][j] = malloc(strlen(param.name));
+                indata[i][j] = SRAM_MALLOC(strlen(param.name) + 9);
                 sprintf(indata[i][j], "#919191 %s#", param.name);
             } else {
                 indata[i][j] = SRAM_MALLOC(strlen(param.value));
@@ -931,6 +931,7 @@ static bool GetEthErc20ContractData(void *parseResult)
         Erc20Contract_t contract = ERC20_CONTRACTS[i];
         if (strcasecmp(contract.contract_address, to) == 0)
         {
+            contractData->data->contract_name = contract.symbol;
             FixRecipientAndValueWhenErc20Contract(result->data->detail->input, contract.decimals);
             return true;
         }

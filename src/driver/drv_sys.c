@@ -48,7 +48,6 @@ void PrintSystemInfo(void)
 #elif defined(__GNUC__)
     printf("GNUC\r\n");
 #endif
-    printf("build time:%s %s\r\n", __DATE__, __TIME__);
     SYSCTRL_GetClocksFreq(&ClocksStructure);
     printf("PLL_Frequency :%dHz\r\n", ClocksStructure.PLL_Frequency);
     printf("CPU_Frequency :%dHz\r\n", ClocksStructure.CPU_Frequency);

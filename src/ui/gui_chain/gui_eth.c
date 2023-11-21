@@ -883,15 +883,6 @@ static void decodeEthContractData(void *parseResult)
     }
 
     if (GetEthErc20ContractData(parseResult)) {
-        Response_DisplayContractData *contractData = eth_parse_contract_data(result->data->detail->input, (char *)ethereum_erc20_json);
-        if (contractData->error_code == 0)
-        {
-            g_contractDataExist = true;
-            g_contractData = contractData;
-            printf("contractData->data->contract_name: %s\n", contractData->data->contract_name);
-            printf("contractData->data->method_name: %s\n", contractData->data->method_name);
-        }
-        printf("contractData->error_code: %d\n", contractData->error_code);
         return;
     }
 
@@ -930,6 +921,12 @@ static bool GetEthErc20ContractData(void *parseResult)
     {
         return false;
     }
+    Response_DisplayContractData *contractData = eth_parse_contract_data(result->data->detail->input, (char *)ethereum_erc20_json);
+    if (contractData->error_code == 0)
+    {
+        g_contractDataExist = true;
+        g_contractData = contractData;
+    }
     char *to = result->data->detail->to;
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++)
     {
@@ -937,6 +934,10 @@ static bool GetEthErc20ContractData(void *parseResult)
         if (strcasecmp(contract.contract_address, to) == 0)
         {
             FixRecipientAndValueWhenErc20Contract(result->data->detail->input, contract.decimals);
+            if (contractData->error_code == 0)
+            {
+                contractData->data->contract_name = contract.symbol;
+            }
             return true;
         }
     }

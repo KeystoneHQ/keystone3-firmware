@@ -356,6 +356,7 @@ static bool isErc20Tx(void *param)
         g_erc20ContractAddress = NULL;
         return false;
     }
+    // FIXME: 0xa9059cbb is the method of erc20 transfer
     char *erc20Method = "a9059cbb";
     for (int i = 0; i < 8; i++)
     {

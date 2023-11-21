@@ -154,6 +154,14 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_SUSHISWAP].items[0].qrTitle = _("connect_sushi_qr_title");
         g_tutorials[WALLET_LIST_SUSHISWAP].items[0].qrUrl = _("connect_sushi_qr_link");
 
+        //WALLET_LIST_IMTOKEN
+        g_tutorials[WALLET_LIST_IMTOKEN].len = 1;
+        g_tutorials[WALLET_LIST_IMTOKEN].desc = _("connect_imtoken_desc");
+        g_tutorials[WALLET_LIST_IMTOKEN].items[0].walletName = _("connect_imtoken_title");
+        g_tutorials[WALLET_LIST_IMTOKEN].items[0].url = _("connect_imtoken_link");
+        g_tutorials[WALLET_LIST_IMTOKEN].items[0].qrTitle = _("connect_imtoken_qr_title");
+        g_tutorials[WALLET_LIST_IMTOKEN].items[0].qrUrl = _("connect_imtoken_qr_link");
+
 
         //WALLET_LIST_KEPLR
         g_tutorials[WALLET_LIST_KEPLR].len = 1;

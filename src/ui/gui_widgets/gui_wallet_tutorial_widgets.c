@@ -162,6 +162,13 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_IMTOKEN].items[0].qrTitle = _("connect_imtoken_qr_title");
         g_tutorials[WALLET_LIST_IMTOKEN].items[0].qrUrl = _("connect_imtoken_qr_link");
 
+        //WALLET_LIST_SPARROW
+        g_tutorials[WALLET_LIST_SPARROW].len = 1;
+        g_tutorials[WALLET_LIST_SPARROW].desc = _("connect_sparrow_desc");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].walletName = _("connect_sparrow_title");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].url = _("connect_sparrow_link");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].qrTitle = _("connect_sparrow_qr_title");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl = _("connect_sparrow_qr_link");
 
         //WALLET_LIST_KEPLR
         g_tutorials[WALLET_LIST_KEPLR].len = 1;

@@ -19,6 +19,7 @@ static bool g_isMulti = false;
 static void *g_urResult = NULL;
 static void *g_parseResult = NULL;
 static char *g_erc20ContractAddress = NULL;
+static char *g_erc20Name = NULL;
 static void *g_contractData = NULL;
 static bool g_contractDataExist = false;
 static char g_fromEthEnsName[64];
@@ -816,6 +817,10 @@ void GetEthMethodName(void *indata, void *param)
 void GetEthContractName(void *indata, void *param)
 {
     Response_DisplayContractData *contractData = (Response_DisplayContractData *)g_contractData;
+    if(strlen(g_erc20Name) > 0) {
+        strcpy((char *)indata, g_erc20Name);
+        return;
+    }
     if (strlen(contractData->data->contract_name) > 0) {
         strcpy((char *)indata, contractData->data->contract_name);
     } else {
@@ -918,6 +923,7 @@ static void FixRecipientAndValueWhenErc20Contract(const char *inputdata, uint8_t
 
 static bool GetEthErc20ContractData(void *parseResult)
 {
+    g_erc20Name = NULL;
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)parseResult;
     Response_DisplayContractData *contractData = eth_parse_contract_data(result->data->detail->input, (char *)ethereum_erc20_json);
     if (contractData->error_code == 0)
@@ -931,7 +937,7 @@ static bool GetEthErc20ContractData(void *parseResult)
         Erc20Contract_t contract = ERC20_CONTRACTS[i];
         if (strcasecmp(contract.contract_address, to) == 0)
         {
-            contractData->data->contract_name = contract.symbol;
+            g_erc20Name = contract.symbol;
             FixRecipientAndValueWhenErc20Contract(result->data->detail->input, contract.decimals);
             return true;
         }

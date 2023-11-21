@@ -17,10 +17,10 @@ static struct ProtocolParser *global_parser = NULL;
 #define MAX_EAPDU_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA)
 #define MEX_EAPDU_RESPONSE_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA - EAPDU_RESPONSE_STATUS_LENGTH)
 
-uint8_t g_protocolRcvBuffer[MAX_PACKETS][MAX_PACKETS_LENGTH];
-uint8_t g_packetLengths[MAX_PACKETS];
-uint8_t g_receivedPackets[MAX_PACKETS];
-uint8_t g_totalPackets = 0;
+static uint8_t g_protocolRcvBuffer[MAX_PACKETS][MAX_PACKETS_LENGTH];
+static uint8_t g_packetLengths[MAX_PACKETS];
+static uint8_t g_receivedPackets[MAX_PACKETS];
+static uint8_t g_totalPackets = 0;
 
 typedef enum {
     FRAME_INVALID_LENGTH,
@@ -240,7 +240,7 @@ void GotoResultPage(EAPDUResultPage_t *resultPageParams)
 {
     if (GuiCheckIfTopView(&g_USBTransportView))
     {
-        return NULL;
+        return;
     }
     if (resultPageParams == NULL)
     {

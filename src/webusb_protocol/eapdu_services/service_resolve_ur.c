@@ -1,16 +1,12 @@
-#include "service_resolve_ur.h";
-#include "user_delay.h";
-#include "gui_chain.h";
-#include "user_msg.h";
+#include "service_resolve_ur.h"
+#include "user_delay.h"
+#include "gui_chain.h"
+#include "user_msg.h"
+#include "qrdecode_task.h"
+#include "gui_lock_widgets.h"
 
 #define REQUEST_ID_IDLE 0
 static uint16_t g_requestID = REQUEST_ID_IDLE;
-
-typedef struct
-{
-    uint8_t viewType;
-    uint8_t urType;
-} UrViewType_t;
 
 static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status);
 static uint8_t *DataParser(EAPDURequestPayload_t *payload);
@@ -82,7 +78,7 @@ void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requ
     resultPage->error_message = (char *)data;
     if (status == PRS_PARSING_DISALLOWED || status == PRS_PARSING_REJECTED || status == PRS_PARSING_VERIFY_PASSWORD_ERROR)
     {
-        return NULL;
+        return;
     }
     GotoResultPage(resultPage);
 };
@@ -94,6 +90,7 @@ uint16_t GetCurrentUSParsingRequestID()
 
 void *ProcessURService(EAPDURequestPayload_t payload)
 {
+    #ifndef COMPILE_SIMULATOR
     if (g_requestID != REQUEST_ID_IDLE)
     {
         const char *data = "Previous request is not finished";
@@ -134,5 +131,6 @@ void *ProcessURService(EAPDURequestPayload_t payload)
     {
         GotoFailPage(PRS_PARSING_ERROR, checkResult->error_message);
     }
+    #endif
 }
 

@@ -1,4 +1,5 @@
 #include "service_check_lock.h"
+#include "gui_lock_widgets.h"
 
 void *CheckDeviceLockStatusService(EAPDURequestPayload_t payload)
 {

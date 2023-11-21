@@ -12,6 +12,7 @@
 #include "version.h"
 #include "err_code.h"
 #include "gui_page.h"
+#include "drv_battery.h"
 
 #ifdef COMPILE_MAC_SIMULATOR
 #include "simulator_model.h"
@@ -147,6 +148,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
                              OpenViewHandler, &g_DevicePublicKeyView);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 282);
 
+    //TODO: typo about_info_fingerprint_firnware_version
     titleLabel = GuiCreateTextLabel(parent, _("about_info_fingerprint_firnware_version"));
     contentLabel = GuiCreateNoticeLabel(parent, fpVersion);
     if (!FpModuleIsExist()) {

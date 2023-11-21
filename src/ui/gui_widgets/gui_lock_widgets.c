@@ -26,6 +26,8 @@
 #include "assert.h"
 #include "screen_manager.h"
 #include "gui_passphrase_widgets.h"
+#include "gui_keyboard_hintbox.h"
+#include "gui_firmware_update_widgets.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "assert.h"

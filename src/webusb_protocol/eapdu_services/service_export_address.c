@@ -1,5 +1,6 @@
 #include "service_export_address.h"
 #include "user_msg.h";
+#include "gui_lock_widgets.h"
 
 static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type);
 
@@ -102,6 +103,7 @@ void ExportAddressReject()
 
 static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
 {
+    #ifndef COMPILE_SIMULATOR
     UREncodeResult *urResult = GetUnlimitedMetamaskDataForAccountType(type);
 
     if (urResult->error_code != 0)
@@ -126,6 +128,7 @@ static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
     SendEApduResponse(result);
 
     SRAM_FREE(result);
+    #endif
 }
 
 static bool CheckExportAcceptable(EAPDURequestPayload_t payload)

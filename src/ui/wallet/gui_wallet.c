@@ -122,7 +122,7 @@ static UREncodeResult *BasicGetMetamaskDataForAccountType(ETHAccountType account
 
 #ifndef COMPILE_SIMULATOR
 // copy from gui_btc, need to use real data
-static UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType)
+UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType)
 {
     return BasicGetMetamaskDataForAccountType(accountType, get_connect_metamask_ur);   
 }

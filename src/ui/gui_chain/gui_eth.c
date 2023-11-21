@@ -8,12 +8,17 @@
 #include "screen_manager.h"
 #include "user_sqlite3.h"
 #include "account_manager.h"
+#include "math.h"
+#include "stdio.h"
+#include "string.h"
 
-void decodeEthContractData(void *parseResult);
+static void decodeEthContractData(void *parseResult);
+static bool GetEthErc20ContractData(void *parseResult);
 
 static bool g_isMulti = false;
 static void *g_urResult = NULL;
 static void *g_parseResult = NULL;
+static char *g_erc20ContractAddress = NULL;
 static void *g_contractData = NULL;
 static bool g_contractDataExist = false;
 static char g_fromEthEnsName[64];
@@ -259,6 +264,18 @@ const static EvmNetwork_t NETWORKS[] = {
     {210425, "PlatON Mainnet", "LAT"},
     {2206132, "PlatON Testnet", "LAT"},
 };
+
+const static Erc20Contract_t ERC20_CONTRACTS[] = {
+    {"USDC", "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", 6},
+    {"USDT", "0xdac17f958d2ee523a2206206994597c13d831ec7", 6},
+    {"DAI", "0x6b175474e89094c44da98b954eedeac495271d0f", 18},
+    {"MKR", "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2", 18},
+    {"BNB", "0xB8c77482e45F1F44dE1745F52C74426C631bDD52", 18},
+    {"LINK", "0x514910771af9ca656af840dff83e8264ecf986ca", 18},
+    {"UNI", "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", 18},
+    {"COMP", "0xc00e94cb662c3520282e6f5717214004a7f26888", 18},
+    {"AAVE", "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9", 18},
+};
 #include "abi_ethereum.h"
 #include "gui_constants.h"
 extern const ABIItem_t ethereum_abi_map[];
@@ -328,6 +345,50 @@ static UREncodeResult *GetEthSignDataDynamic(bool isUnlimited)
     encodeResult->error_message = NULL;
     return encodeResult;
 #endif
+}
+
+static bool isErc20Transfer(void *param)
+{
+    DisplayETH *eth = (DisplayETH *)param;
+    char *input = eth->detail->input;
+    if (strlen(input) <= 8)
+    {
+        g_erc20ContractAddress = NULL;
+        return false;
+    }
+    // FIXME: 0xa9059cbb is the method of erc20 transfer
+    char *erc20Method = "a9059cbb";
+    for (int i = 0; i < 8; i++)
+    {
+        if (input[i] != erc20Method[i])
+        {
+            g_erc20ContractAddress = NULL;
+            return false;
+        }
+    }
+    return true;
+}
+
+static char *CalcSymbol(void *param)
+{
+    DisplayETH *eth = (DisplayETH *)param;
+
+    TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
+
+    if (isErc20Transfer(result->data) && g_erc20ContractAddress != NULL)
+    {
+        for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++)
+        {
+            Erc20Contract_t contract = ERC20_CONTRACTS[i];
+            if (strcasecmp(contract.contract_address, g_erc20ContractAddress) == 0)
+            {
+                return contract.symbol;
+            }
+        }
+    }
+
+    EvmNetwork_t network = _FindNetwork(eth->chain_id);
+    return network.symbol;
 }
 
 UREncodeResult *GuiGetEthSignQrCodeData(void)
@@ -589,8 +650,7 @@ void GetEthTransType(void *indata, void *param)
 void GetEthTxFee(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    EvmNetwork_t network = _FindNetwork(eth->chain_id);
-    sprintf((char *)indata, "%s %s", eth->overview->max_txn_fee, network.symbol);
+    sprintf((char *)indata, "%s %s", eth->overview->max_txn_fee, CalcSymbol(param));
 }
 
 void GetEthTxFrom(void *indata, void *param)
@@ -619,8 +679,7 @@ EvmNetwork_t _FindNetwork(uint64_t chainId)
 void GetEthValue(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    EvmNetwork_t network = _FindNetwork(eth->chain_id);
-    sprintf((char *)indata, "%s %s", eth->overview->value, network.symbol);
+    sprintf((char *)indata, "%s %s", eth->overview->value, CalcSymbol(param));
 }
 
 void GetEthGasPrice(void *indata, void *param)
@@ -649,15 +708,13 @@ void GetEthNetWork(void *indata, void *param)
 void GetEthMaxFee(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    EvmNetwork_t network = _FindNetwork(eth->chain_id);
-    sprintf((char *)indata, "%s %s", eth->detail->max_fee, network.symbol);
+    sprintf((char *)indata, "%s %s", eth->detail->max_fee, CalcSymbol(param));
 }
 
 void GetEthMaxPriority(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    EvmNetwork_t network = _FindNetwork(eth->chain_id);
-    sprintf((char *)indata, "%s %s", eth->detail->max_priority, network.symbol);
+    sprintf((char *)indata, "%s %s", eth->detail->max_priority, CalcSymbol(param));
 }
 
 void GetEthMaxFeePrice(void *indata, void *param)
@@ -815,7 +872,7 @@ void *GetEthContractData(uint8_t *row, uint8_t *col, void *param)
     return (void *)indata;
 }
 
-void decodeEthContractData(void *parseResult)
+static void decodeEthContractData(void *parseResult)
 {
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)parseResult;
     char *contractAddress = result->data->detail->to;
@@ -824,11 +881,62 @@ void decodeEthContractData(void *parseResult)
         return;
     }
 
+    if (GetEthErc20ContractData(parseResult)) {
+        return;
+    }
+
     if (!GetEthContractFromInternal(contractAddress, result->data->detail->input)) {
         char selectorId[9] = {0};
         strncpy(selectorId, result->data->detail->input, 8);
         GetEthContractFromExternal(contractAddress, selectorId, result->data->chain_id, result->data->detail->input);
     }
+}
+
+static void hex_to_dec(char *hex, uint8_t decimals, uint8_t *dec)
+{
+    uint64_t num = 0;
+    uint32_t decimalsNum = pow(10, decimals);
+    sscanf(hex, "%llx", &num);
+    uint64_t integer = num / decimalsNum;
+    uint64_t fractional = num % decimalsNum;
+    sprintf(dec, "%llu.%llu", integer, fractional);
+}
+
+static void FixRecipientAndValueWhenErc20Contract(const char *inputdata, uint8_t decimals)
+{
+    TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
+    if (!isErc20Transfer(result->data)) {
+        return;
+    }
+    PtrT_TransactionParseResult_EthParsedErc20Transaction contractData = eth_parse_erc20(inputdata, decimals);
+    g_erc20ContractAddress = result->data->detail->to;
+    result->data->detail->to = contractData->data->to;
+    result->data->overview->to = contractData->data->to;
+    result->data->detail->value = contractData->data->value;
+    result->data->overview->value = contractData->data->value;
+}
+
+static bool GetEthErc20ContractData(void *parseResult)
+{
+    TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)parseResult;
+    Response_DisplayContractData *contractData = eth_parse_contract_data(result->data->detail->input, (char *)ethereum_erc20_json);
+    if (contractData->error_code == 0)
+    {
+        g_contractDataExist = true;
+        g_contractData = contractData;
+    }
+    char *to = result->data->detail->to;
+    for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++)
+    {
+        Erc20Contract_t contract = ERC20_CONTRACTS[i];
+        if (strcasecmp(contract.contract_address, to) == 0)
+        {
+            FixRecipientAndValueWhenErc20Contract(result->data->detail->input, contract.decimals);
+            return true;
+        }
+    }
+    FixRecipientAndValueWhenErc20Contract(result->data->detail->input, 18);
+    return true;
 }
 
 bool GetEthContractFromInternal(char *address, char *inputData)

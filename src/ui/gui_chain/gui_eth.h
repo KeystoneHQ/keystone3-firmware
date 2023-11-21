@@ -64,6 +64,17 @@ typedef struct {
     char *symbol;
 } EvmNetwork_t;
 
+typedef struct {
+    char *symbol;
+    char *contract_address;
+    uint8_t decimals;
+} Erc20Contract_t;
+
+typedef struct {
+    char *recipient;
+    char *value;
+} Erc20Transfer_t;
+
 EvmNetwork_t _FindNetwork(uint64_t chainId);
 
 void FreeEthMemory(void);

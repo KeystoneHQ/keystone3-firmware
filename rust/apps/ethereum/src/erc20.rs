@@ -44,10 +44,7 @@ pub fn parse_erc20(input: &str, decimal: u32) -> Result<ParsedErc20Transaction, 
         value.trim_end_matches('0').to_string()
     };
 
-    Ok(ParsedErc20Transaction {
-        to,
-        value,
-    })
+    Ok(ParsedErc20Transaction { to, value })
 }
 
 #[cfg(test)]

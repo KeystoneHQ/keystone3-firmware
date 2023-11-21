@@ -12,9 +12,9 @@
 #include "stdio.h"
 #include "string.h"
 
-void decodeEthContractData(void *parseResult);
-Erc20Transfer_t parseTransferData(const char *inputdata, uint8_t decimals);
-void GetEthErc20ContractData(void *parseResult);
+static void decodeEthContractData(void *parseResult);
+static Erc20Transfer_t parseTransferData(const char *inputdata, uint8_t decimals);
+static void GetEthErc20ContractData(void *parseResult);
 
 static bool g_isMulti = false;
 static void *g_urResult = NULL;
@@ -870,7 +870,7 @@ void *GetEthContractData(uint8_t *row, uint8_t *col, void *param)
     return (void *)indata;
 }
 
-void decodeEthContractData(void *parseResult)
+static void decodeEthContractData(void *parseResult)
 {
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)parseResult;
     char *contractAddress = result->data->detail->to;
@@ -898,7 +898,7 @@ static void hex_to_dec(char *hex, uint8_t decimals, uint8_t *dec)
     sprintf(dec, "%llu.%llu", integer, fractional);
 }
 
-Erc20Transfer_t parseTransferData(const char *inputdata, uint8_t decimals)
+static Erc20Transfer_t parseTransferData(const char *inputdata, uint8_t decimals)
 {
     Erc20Transfer_t transfer;
 
@@ -911,11 +911,9 @@ Erc20Transfer_t parseTransferData(const char *inputdata, uint8_t decimals)
     char value_hex[65];
     strncpy(value_hex, inputdata + 72, 64);
     value_hex[64] = '\0';
-    // char *value = "0.0002";
-    char value[32];
-    hex_to_dec(value_hex, decimals, value);
-    transfer.value = SRAM_MALLOC(strlen(value));
-    strcpy(transfer.value, value);
+
+    // TODO: hex to dec
+
     return transfer;
 }
 
@@ -923,13 +921,11 @@ static void FixRecipientAndValueWhenErc20Contract(const char *inputdata, uint8_t
 {
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
     Erc20Transfer_t transfer = parseTransferData(inputdata, decimals);
-    result->data->detail->value = transfer.value;
     result->data->detail->to = transfer.recipient;
     result->data->overview->to = transfer.recipient;
-    result->data->overview->value = transfer.value;
 }
 
-void GetEthErc20ContractData(void *parseResult)
+static void GetEthErc20ContractData(void *parseResult)
 {
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)parseResult;
     if (!isErc20Tx(result->data))

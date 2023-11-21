@@ -13,12 +13,12 @@
 #include "string.h"
 
 static void decodeEthContractData(void *parseResult);
-static Erc20Transfer_t parseTransferData(const char *inputdata, uint8_t decimals);
-static void GetEthErc20ContractData(void *parseResult);
+static bool GetEthErc20ContractData(void *parseResult);
 
 static bool g_isMulti = false;
 static void *g_urResult = NULL;
 static void *g_parseResult = NULL;
+static char *g_erc20ContractAddress = NULL;
 static void *g_contractData = NULL;
 static bool g_contractDataExist = false;
 static char g_fromEthEnsName[64];
@@ -353,6 +353,7 @@ static bool isErc20Tx(void *param)
     char *input = eth->detail->input;
     if (strlen(input) <= 8)
     {
+        g_erc20ContractAddress = NULL;
         return false;
     }
     char *erc20Method = "a9059cbb";
@@ -360,6 +361,7 @@ static bool isErc20Tx(void *param)
     {
         if (input[i] != erc20Method[i])
         {
+            g_erc20ContractAddress = NULL;
             return false;
         }
     }
@@ -372,13 +374,14 @@ static char *CalcSymbol(void *param)
 
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
 
-    if (isErc20Tx(result->data))
+    if (isErc20Tx(result->data) && g_erc20ContractAddress != NULL)
     {
-        char *to = result->data->detail->to;
         for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++)
         {
             Erc20Contract_t contract = ERC20_CONTRACTS[i];
-            if (strcasecmp(contract.contract_address, to) == 0)
+            printf("contract.contract_address: %s\n", contract.contract_address);
+            printf("g_erc20ContractAddress: %s\n", g_erc20ContractAddress);
+            if (strcasecmp(contract.contract_address, g_erc20ContractAddress) == 0)
             {
                 return contract.symbol;
             }
@@ -879,7 +882,18 @@ static void decodeEthContractData(void *parseResult)
         return;
     }
 
-    GetEthErc20ContractData(parseResult);
+    if (GetEthErc20ContractData(parseResult)) {
+        Response_DisplayContractData *contractData = eth_parse_contract_data(result->data->detail->input, (char *)ethereum_erc20_json);
+        if (contractData->error_code == 0)
+        {
+            g_contractDataExist = true;
+            g_contractData = contractData;
+            printf("contractData->data->contract_name: %s\n", contractData->data->contract_name);
+            printf("contractData->data->method_name: %s\n", contractData->data->method_name);
+        }
+        printf("contractData->error_code: %d\n", contractData->error_code);
+        return;
+    }
 
     if (!GetEthContractFromInternal(contractAddress, result->data->detail->input)) {
         char selectorId[9] = {0};
@@ -898,39 +912,23 @@ static void hex_to_dec(char *hex, uint8_t decimals, uint8_t *dec)
     sprintf(dec, "%llu.%llu", integer, fractional);
 }
 
-static Erc20Transfer_t parseTransferData(const char *inputdata, uint8_t decimals)
-{
-    Erc20Transfer_t transfer;
-
-    transfer.recipient = SRAM_MALLOC(43);
-    transfer.recipient[0] = '0';
-    transfer.recipient[1] = 'x';
-    strncpy(transfer.recipient + 2, inputdata + 32, 40);
-    transfer.recipient[42] = '\0';
-
-    char value_hex[65];
-    strncpy(value_hex, inputdata + 72, 64);
-    value_hex[64] = '\0';
-
-    // TODO: hex to dec
-
-    return transfer;
-}
-
 static void FixRecipientAndValueWhenErc20Contract(const char *inputdata, uint8_t decimals)
 {
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
-    Erc20Transfer_t transfer = parseTransferData(inputdata, decimals);
-    result->data->detail->to = transfer.recipient;
-    result->data->overview->to = transfer.recipient;
+    PtrT_TransactionParseResult_EthParsedErc20Transaction contractData = eth_parse_erc20(inputdata, decimals);
+    g_erc20ContractAddress = result->data->detail->to;
+    result->data->detail->to = contractData->data->to;
+    result->data->overview->to = contractData->data->to;
+    result->data->detail->value = contractData->data->value;
+    result->data->overview->value = contractData->data->value;
 }
 
-static void GetEthErc20ContractData(void *parseResult)
+static bool GetEthErc20ContractData(void *parseResult)
 {
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)parseResult;
     if (!isErc20Tx(result->data))
     {
-        return;
+        return false;
     }
     char *to = result->data->detail->to;
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++)
@@ -939,10 +937,11 @@ static void GetEthErc20ContractData(void *parseResult)
         if (strcasecmp(contract.contract_address, to) == 0)
         {
             FixRecipientAndValueWhenErc20Contract(result->data->detail->input, contract.decimals);
-            return;
+            return true;
         }
     }
     FixRecipientAndValueWhenErc20Contract(result->data->detail->input, 18);
+    return true;
 }
 
 bool GetEthContractFromInternal(char *address, char *inputData)

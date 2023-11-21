@@ -6,7 +6,7 @@
 
 static struct ProtocolParser *global_parser = NULL;
 static ProtocolSendCallbackFunc_t g_sendFunc = NULL;
-uint8_t g_protocolRcvBuffer[PROTOCOL_MAX_LENGTH];
+static uint8_t g_protocolRcvBuffer[PROTOCOL_MAX_LENGTH];
 
 static uint8_t *ExecuteService(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *ProtocolParse(const uint8_t *inData, uint32_t inLen, uint32_t *outLen);

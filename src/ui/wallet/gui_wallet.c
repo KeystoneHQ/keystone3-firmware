@@ -120,8 +120,9 @@ static UREncodeResult *BasicGetMetamaskDataForAccountType(ETHAccountType account
     return g_urEncode;
 }
 
+#ifndef COMPILE_SIMULATOR
 // copy from gui_btc, need to use real data
-UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType)
+static UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType)
 {
     return BasicGetMetamaskDataForAccountType(accountType, get_connect_metamask_ur);   
 }
@@ -130,6 +131,7 @@ UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountTyp
 {
     return BasicGetMetamaskDataForAccountType(accountType, get_unlimited_connect_metamask_ur);
 }
+#endif
 
 UREncodeResult *GuiGetMetamaskData(void)
 {

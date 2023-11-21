@@ -347,7 +347,7 @@ static UREncodeResult *GetEthSignDataDynamic(bool isUnlimited)
 #endif
 }
 
-static bool isErc20Tx(void *param)
+static bool isErc20Transfer(void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
     char *input = eth->detail->input;
@@ -375,13 +375,11 @@ static char *CalcSymbol(void *param)
 
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
 
-    if (isErc20Tx(result->data) && g_erc20ContractAddress != NULL)
+    if (isErc20Transfer(result->data) && g_erc20ContractAddress != NULL)
     {
         for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++)
         {
             Erc20Contract_t contract = ERC20_CONTRACTS[i];
-            printf("contract.contract_address: %s\n", contract.contract_address);
-            printf("g_erc20ContractAddress: %s\n", g_erc20ContractAddress);
             if (strcasecmp(contract.contract_address, g_erc20ContractAddress) == 0)
             {
                 return contract.symbol;
@@ -907,6 +905,9 @@ static void hex_to_dec(char *hex, uint8_t decimals, uint8_t *dec)
 static void FixRecipientAndValueWhenErc20Contract(const char *inputdata, uint8_t decimals)
 {
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
+    if (!isErc20Transfer(result->data)) {
+        return;
+    }
     PtrT_TransactionParseResult_EthParsedErc20Transaction contractData = eth_parse_erc20(inputdata, decimals);
     g_erc20ContractAddress = result->data->detail->to;
     result->data->detail->to = contractData->data->to;
@@ -918,10 +919,6 @@ static void FixRecipientAndValueWhenErc20Contract(const char *inputdata, uint8_t
 static bool GetEthErc20ContractData(void *parseResult)
 {
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)parseResult;
-    if (!isErc20Tx(result->data))
-    {
-        return false;
-    }
     Response_DisplayContractData *contractData = eth_parse_contract_data(result->data->detail->input, (char *)ethereum_erc20_json);
     if (contractData->error_code == 0)
     {
@@ -935,10 +932,6 @@ static bool GetEthErc20ContractData(void *parseResult)
         if (strcasecmp(contract.contract_address, to) == 0)
         {
             FixRecipientAndValueWhenErc20Contract(result->data->detail->input, contract.decimals);
-            if (contractData->error_code == 0)
-            {
-                contractData->data->contract_name = contract.symbol;
-            }
             return true;
         }
     }

@@ -178,3 +178,15 @@ pub extern "C" fn k1_verify_signature(
         Err(_e) => false,
     }
 }
+
+#[no_mangle]
+pub extern "C" fn pbkdf2_rust(
+    password: PtrBytes,
+    salt: PtrBytes,
+    iterations: u32,
+) -> *mut SimpleResponse<u8> {
+    let password_bytes = unsafe { slice::from_raw_parts(password, 32) };
+    let salt_bytes = unsafe { slice::from_raw_parts(salt, 32) };
+    let mut output = keystore::algorithms::crypto::hkdf(&password_bytes, &salt_bytes, iterations);
+    SimpleResponse::success(Box::into_raw(Box::new(output)) as *mut u8).simple_c_ptr()
+}

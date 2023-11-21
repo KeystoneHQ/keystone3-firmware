@@ -955,6 +955,11 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
             } else {
                 UnlimitedVibrate(LONG);
             }
+            if (SIG_INIT_SD_CARD_OTA_COPY == *param) {
+                g_passwordVerifyResult.signal = param;
+                GuiApiEmitSignal(SIG_FIRMWARE_VERIFY_PASSWORD_FAIL, (void*)&g_passwordVerifyResult, sizeof(g_passwordVerifyResult));
+                return SUCCESS_CODE;
+            }
         }
         g_passwordVerifyResult.signal = param;
         GuiApiEmitSignal(SIG_VERIFY_PASSWORD_FAIL, (void*)&g_passwordVerifyResult, sizeof(g_passwordVerifyResult));

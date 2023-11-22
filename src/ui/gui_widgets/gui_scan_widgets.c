@@ -63,6 +63,7 @@ void GuiScanDeInit()
 void GuiScanRefresh()
 {
     SetPageLockScreen(false);
+    GuiScanStart();
 }
 
 void GuiScanResult(bool result, void *param)

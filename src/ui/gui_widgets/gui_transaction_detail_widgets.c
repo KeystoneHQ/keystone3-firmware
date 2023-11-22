@@ -59,6 +59,7 @@ static lv_obj_t *g_fpErrorLabel = NULL;
 static uint32_t g_fingerSignCount = FINGER_SIGN_MAX_COUNT;
 static uint32_t g_fingerSignErrCount = 0;
 static lv_timer_t *g_fpRecognizeTimer;
+static lv_obj_t *g_parseErrorHintBox = NULL;
 
 typedef enum {
     TRANSACTION_MODE_QR_CODE = 0,
@@ -74,6 +75,9 @@ static void SignByFinger(void);
 static void RecognizeFailHandler(lv_timer_t *timer);
 static TransactionMode GetCurrentTransactionMode(void);
 static void TransactionGoToHomeViewHandler(lv_event_t *e);
+static void CloseParseErrorDataHandler(lv_event_t *e);
+static void GuiDealParseErrorResult(int errorType);
+static void ThrowError();
 
 static TransactionMode GetCurrentTransactionMode(void)
 {
@@ -130,12 +134,50 @@ void GuiTransactionDetailDeInit()
     GuiTemplateClosePage();
 }
 
-
+//should get error cod here
+void GuiTransactionParseFailed()
+{
+    ThrowError();
+}
 
 void GuiTransactionDetailRefresh()
 {
     // PassWordPinHintRefresh(g_keyboardWidget);
 }
+
+static void ThrowError()
+{
+    GuiDealParseErrorResult(0);
+}
+
+static void GuiDealParseErrorResult(int errorType)
+{
+    g_parseErrorHintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_parseErrorHintBox, &imgFailed);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
+
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_parseErrorHintBox, _("scan_qr_code_error_invalid_qrcode"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
+
+    label = GuiCreateIllustrateLabel(g_parseErrorHintBox, _("scan_qr_code_error_invalid_qrcode_desc"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
+
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_parseErrorHintBox, _("OK"), &openSansEnText);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_add_event_cb(btn, CloseParseErrorDataHandler, LV_EVENT_CLICKED, NULL);
+}
+
+static void CloseParseErrorDataHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED)
+    {
+        GUI_DEL_OBJ(g_parseErrorHintBox)
+        GuiCLoseCurrentWorkingView();
+    }
+}
+
 
 void GuiTransactionDetailParseSuccess(void *param)
 {

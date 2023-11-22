@@ -9,5 +9,6 @@ void GuiSignVerifyPasswordErrorCount(void *param);
 void GuiSignDealFingerRecognize(void *param);
 void GuiTransactionDetailParseSuccess(void *param);
 void GuiClearQrcodeSignCnt(void);
+void GuiTransactionParseFailed(void);
 
 #endif /* _GUI_TRANSACTION_DETAIL_WIDGETS_H */

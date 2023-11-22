@@ -175,6 +175,7 @@ static void CloseParseErrorDataHandler(lv_event_t *e)
     {
         GUI_DEL_OBJ(g_parseErrorHintBox)
         GuiCLoseCurrentWorkingView();
+        GuiModeControlQrDecode(true);
     }
 }
 

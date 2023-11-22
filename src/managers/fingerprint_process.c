@@ -28,6 +28,7 @@
 #include "screen_manager.h"
 #include "low_power.h"
 #include "se_manager.h"
+#include "safe_mem_lib.h"
 
 /* DEFINES */
 #define FINGERPRINT_REG_MAX_TIMES               (18)
@@ -339,7 +340,7 @@ static void FpRecognizeRecv(char *indata, uint8_t len)
 // D000 SEND
 static void FpSetAesKeySend(uint16_t cmd, uint8_t fingerInfo)
 {
-    memset(g_communicateAesKey, 0, sizeof(g_communicateAesKey));
+    memset_s(g_communicateAesKey, sizeof(g_communicateAesKey), 0, sizeof(g_communicateAesKey));
     TrngGet(g_communicateAesKey, sizeof(g_communicateAesKey));
     PrintArray("g_communicateAesKey", g_communicateAesKey, 32);
     SendPackFingerMsg(FINGERPRINT_CMD_SET_AES_KEY, g_communicateAesKey, 0, sizeof(g_communicateAesKey), NO_ENCRYPTION);
@@ -700,7 +701,7 @@ void UpdateHostRandom(void)
 static uint8_t *GetRandomAesKey(uint8_t *hostRandomKey, uint8_t *fpRandomKey, uint8_t *communicateAesKey)
 {
     if (communicateAesKey == NULL) {
-        memset(g_randomAesKey, 0, 16);
+        memset_s(g_randomAesKey, 16, 0, 16);
     } else {
         AES128_ctx ctx1;
         uint8_t ptr[16] = {0};
@@ -826,7 +827,7 @@ static void SearchFpAesKeyState(void)
     if (ret != SUCCESS_CODE) {
         return;
     } 
-    memset(&g_communicateAesKey[16], 0, 16);
+    memset_s(&g_communicateAesKey[16], 16, 0, 16);
     FpGenericSend(FINGERPRINT_CMD_GET_AES_KEY_STATE, NO_ENCRYPTION);
 }
 

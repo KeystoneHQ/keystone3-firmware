@@ -12,6 +12,7 @@
 #include "motor_manager.h"
 #include "account_manager.h"
 #include "gui_keyboard_hintbox.h"
+#include "safe_mem_lib.h"
 
 typedef enum {
     PASSWORD_STRENGTH_LEN,
@@ -144,7 +145,7 @@ static void SetPinEventHandler(lv_event_t *e)
                 }
                 CLEAR_HANDLE_FLAG();
                 item->currentNum = 0;
-                memset(g_pinBuf, 0, sizeof(g_pinBuf));
+                memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
                 item->setPassCb = NULL;
             }
         }
@@ -700,7 +701,7 @@ void GuiUpdateEnterPasscodeParam(GuiEnterPasscodeItem_t *item, void *param)
     }
     if (item->btnm != NULL) {
         item->currentNum = 0;
-        memset(g_pinBuf, 0, sizeof(g_pinBuf));
+        memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
         for (int i = 0; i < CREATE_PIN_NUM; i++) {
             GuiSetLedStatus(item->numLed[i], PASSCODE_LED_OFF);
         }
@@ -768,7 +769,7 @@ void GuiEnterPassCodeStatus(GuiEnterPasscodeItem_t *item, bool en)
         lv_obj_add_flag(item->errLabel, LV_OBJ_FLAG_HIDDEN);
         lv_textarea_set_text(item->kb->ta, "");
     }
-    memset(g_pinBuf, 0, sizeof(g_pinBuf));
+    memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
 }
 
 void GuiFingerPrintStatus(GuiEnterPasscodeItem_t *item, bool en, uint8_t errCnt)

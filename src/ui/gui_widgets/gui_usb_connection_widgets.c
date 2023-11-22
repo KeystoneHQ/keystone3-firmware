@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) Keystone 2020-2025. All rights reserved.
- * Description: Gui USB connection widgets.
- * Author: leon sun
- * Create: 2023-7-20
- ************************************************************************************************/
-
 #include "gui_usb_connection_widgets.h"
 #include "gui.h"
 #include "gui_pop_message_box.h"

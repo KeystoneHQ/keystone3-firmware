@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) Keystone 2020-2025. All rights reserved.
- * Description: Anti-tamper.
- * Author: leon sun
- * Create: 2023-8-2
- ************************************************************************************************/
-
-
 #include "anti_tamper.h"
 #include "drv_tamper.h"
 #include "stdio.h"

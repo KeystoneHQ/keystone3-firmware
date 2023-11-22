@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) Keystone 2020-2025. All rights reserved.
- * Description: Gui Low battery widgets.
- * Author: leon sun
- * Create: 2023-7-20
- ************************************************************************************************/
-
-
 #ifndef _GUI_LOW_BATTERY_WIDGETS_H
 #define _GUI_LOW_BATTERY_WIDGETS_H
 

@@ -910,9 +910,6 @@ static void hex_to_dec(char *hex, uint8_t decimals, uint8_t *dec)
 static void FixRecipientAndValueWhenErc20Contract(const char *inputdata, uint8_t decimals)
 {
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
-    if (!isErc20Transfer(result->data)) {
-        return;
-    }
     PtrT_TransactionParseResult_EthParsedErc20Transaction contractData = eth_parse_erc20(inputdata, decimals);
     g_erc20ContractAddress = result->data->detail->to;
     result->data->detail->to = contractData->data->to;
@@ -925,6 +922,10 @@ static bool GetEthErc20ContractData(void *parseResult)
 {
     g_erc20Name = NULL;
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)parseResult;
+    if (!isErc20Transfer(result->data))
+    {
+        return false;
+    }
     Response_DisplayContractData *contractData = eth_parse_contract_data(result->data->detail->input, (char *)ethereum_erc20_json);
     if (contractData->error_code == 0)
     {
@@ -942,6 +943,7 @@ static bool GetEthErc20ContractData(void *parseResult)
             return true;
         }
     }
+    g_erc20Name = "Erc20";
     FixRecipientAndValueWhenErc20Contract(result->data->detail->input, 18);
     return true;
 }

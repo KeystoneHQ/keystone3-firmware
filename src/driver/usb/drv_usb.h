@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : drv_usb.h
- * Description:
- * author     : stone wang
- * data       : 2023-01-05 17:51
-**********************************************************************/
-
 #ifndef _DRV_USB_H
 #define _DRV_USB_H
 

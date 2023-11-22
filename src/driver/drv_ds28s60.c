@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: MAXIM DS28S60
- * Author: leon sun
- * Create: 2022-12-1
- ************************************************************************************************/
-
 #include "drv_ds28s60.h"
 #include "stdint.h"
 #include "stdbool.h"

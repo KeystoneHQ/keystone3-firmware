@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one 2020-2025. All rights reserved.
- * Description: On-chip SRAM and external PSRAM heap memory management.
- * Author: leon sun
- * Create: 2022-11-8
- ************************************************************************************************/
-
 #include "user_memory.h"
 #include "stdio.h"
 #include "string.h"

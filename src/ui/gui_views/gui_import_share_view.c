@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_import_share_view.c
- * Description:
- * author     : stone wang
- * data       : 2023-02-23 11:22
-**********************************************************************/
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_status_bar.h"

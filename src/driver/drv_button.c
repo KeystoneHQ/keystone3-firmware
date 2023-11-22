@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: button driver, rely on RTOS timer.
- * Author: leon sun
- * Create: 2023-2-20
- ************************************************************************************************/
-
 #include "drv_button.h"
 #include "mhscpu.h"
 #include "stdio.h"

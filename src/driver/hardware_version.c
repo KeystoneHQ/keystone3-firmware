@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Hardware version.
- * Author: leon sun
- * Create: 2023-5-12
- ************************************************************************************************/
-
 #include "hardware_version.h"
 #include "mhscpu.h"
 #include "user_delay.h"

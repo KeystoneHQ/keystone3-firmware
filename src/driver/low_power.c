@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: low power implement.
- * Author: leon sun
- * Create: 2023-5-25
- ************************************************************************************************/
-
-
 #include "low_power.h"
 #include "stdio.h"
 #include "string.h"

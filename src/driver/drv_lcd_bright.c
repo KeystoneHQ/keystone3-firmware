@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: LCD bright driver.
- * Author: leon sun
- * Create: 2023-1-16
- ************************************************************************************************/
-
 #include "drv_lcd_bright.h"
 #include "stdio.h"
 #include "mhscpu.h"

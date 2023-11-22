@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : drv_gd25qxx.h
- * Description: gd25qxx spi flash driver
- * author     : stone wang
- * data       : 2022-12-07 11:54
-**********************************************************************/
-
 #ifndef _DRV_GD25QXX_H
 #define _DRV_GD25QXX_H
 

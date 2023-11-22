@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : user_utils.h
- * Description:
- * author     : stone wang
- * data       : 2022-12-29 16:40
-**********************************************************************/
-
 #ifndef _USER_UTILS_H
 #define _USER_UTILS_H
 

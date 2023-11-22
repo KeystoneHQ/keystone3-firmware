@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_status_bar.c
- * Description:
- * author     : stone wang
- * data       : 2023-01-09 16:26
- **********************************************************************/
 #include "gui_obj.h"
 #include "gui_views.h"
 #include "gui_button.h"

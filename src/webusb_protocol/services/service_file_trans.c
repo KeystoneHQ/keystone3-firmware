@@ -102,7 +102,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
     uint32_t tlvNumber;
     FrameHead_t sendHead = {0};
     uint8_t hash[32];
-
+    g_isReceivingFile = true;
     printf("ServiceFileTransInfo\n");
     //PrintArray("tlvData", tlvData, head->length);
     tlvNumber = GetTlvFromData(tlvArray, 5, tlvData, head->length);

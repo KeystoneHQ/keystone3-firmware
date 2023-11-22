@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) Keystone 2020-2025. All rights reserved.
- * Description: Pop up message box.
- * Author: leon sun
- * Create: 2023-7-17
- ************************************************************************************************/
-
 #include "gui_pop_message_box.h"
 #include "gui.h"
 #include "gui_hintbox.h"

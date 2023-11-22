@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_setup_view.c
- * Description:
- * author     : stone wang
- * data       : 2023-01-06 14:40
-**********************************************************************/
 #include "gui_obj.h"
 #include "gui_resource.h"
 #include "gui_views.h"

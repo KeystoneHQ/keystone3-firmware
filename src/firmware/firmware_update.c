@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: MH1903 firmware update.
- * Author: leon sun
- * Create: 2023-1-19
- ************************************************************************************************/
-
 #include "firmware_update.h"
 #include "stdio.h"
 #include "string.h"

@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: background app.
- * Author: leon sun
- * Create: 2023-3-25
- ************************************************************************************************/
-
 #include "background_app.h"
 #include "drv_aw32001.h"
 #include "drv_battery.h"

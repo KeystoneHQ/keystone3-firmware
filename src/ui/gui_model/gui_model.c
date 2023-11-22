@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_model.c
- * Description:
- * author     : stone wang
- * data       : 2023-03-23 09:41
-**********************************************************************/
 #include <string.h>
 #include "stdlib.h"
 #include "gui.h"

@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : drv_sdcard.h
- * Description: driver for sdcard
- * author     : stone wang
- * data       : 2022-12-16 11:05
- **********************************************************************/
-
 #ifndef _DRV_SDCARD_H
 #define _DRV_SDCARD_H
 

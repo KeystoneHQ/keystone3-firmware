@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Secret data ram cache.
- * Author: leon sun
- * Create: 2023-3-22
- ************************************************************************************************/
-
 #include "secret_cache.h"
 #include "string.h"
 #include "user_memory.h"

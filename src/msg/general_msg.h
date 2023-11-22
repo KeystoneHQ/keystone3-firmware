@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one 2020-2025. All rights reserved.
- * Description: Generic messaging based on publish/subscribe mechanism.
- * Author: leon sun
- * Create: 2022-11-8
- ************************************************************************************************/
-
 #ifndef _GENERAL_MSG_H
 #define _GENERAL_MSG_H
 

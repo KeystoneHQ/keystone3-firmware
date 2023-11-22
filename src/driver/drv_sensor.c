@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : drv_sensor.c
- * Description:
- * author     : stone wang
- * data       : 2022-12-23 10:02
-**********************************************************************/
-
 #include <stdio.h>
 #include <string.h>
 #include "drv_sensor.h"

@@ -186,9 +186,9 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
         }
         GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 1);
         if (g_fileTransTimeOutTimer == NULL) {
-            g_isReceivingFile = true;
             g_fileTransTimeOutTimer = osTimerNew(FileTransTimeOutTimerFunc, osTimerOnce, NULL, NULL);
         }
+        g_isReceivingFile = true;
         osTimerStart(g_fileTransTimeOutTimer, FILE_TRANS_TIME_OUT);
     } while (0);
 

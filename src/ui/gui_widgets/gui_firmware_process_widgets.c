@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) Keystone 2020-2025. All rights reserved.
- * Description: Firmware process UI widgets.
- * Author: leon sun
- * Create: 2023-7-19
- ************************************************************************************************/
-
 #include "gui_firmware_process_widgets.h"
 #include "lvgl.h"
 #include "gui_obj.h"

@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) Keystone 2020-2025. All rights reserved.
- * Description: Gui firmware update widgets.
- * Author: leon sun
- * Create: 2023-7-18
- ************************************************************************************************/
-
 #include "gui_firmware_update_widgets.h"
 #include "gui.h"
 #include "gui_views.h"

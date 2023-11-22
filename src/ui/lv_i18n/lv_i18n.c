@@ -680,7 +680,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"usb_transport_sign_completed_btn", "Done"},
     {"usb_transport_sign_completed_subtitle", "View transaction details at your software wallet"},
     {"usb_transport_sign_completed_title", "Signature Completed"},
-    {"usb_transport_sign_failed_btn", "Ok"},
+    {"usb_transport_sign_failed_btn", "OK"},
     {"usb_transport_sign_failed_title", "Signature Failed"},
     {"verification_code_desc", "Enter this code on Keystone's official website to verify your device's security."},
     {"verification_code_failed_button", "Erase Data & Shut Down"},

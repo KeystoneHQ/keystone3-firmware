@@ -1,10 +1,3 @@
-/*
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * @FilePath: \project-pillar-firmware\lvgl\examples\widgets\tabview\lv_example_tabview_1.c
- * @Description:
- * @Author: stone wang
- * @LastEditTime: 2023-04-10 11:47:09
- */
 #include "../../lv_examples.h"
 #if LV_USE_TABVIEW && LV_BUILD_EXAMPLES
 

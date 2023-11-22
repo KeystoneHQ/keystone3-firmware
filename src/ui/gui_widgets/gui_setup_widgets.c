@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_tileview.c
- * Description:
- * author     : stone wang
- * data       : 2023-01-09 17:07
- **********************************************************************/
 #include "gui_views.h"
 #include "gui_status_bar.h"
 #include "gui_button.h"

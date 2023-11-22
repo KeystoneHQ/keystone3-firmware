@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_framework.h
- * Description:
- * author     : stone wang
- * data       : 2023-01-06 13:34
-**********************************************************************/
 #ifndef _GUI_FRAMEWORK_H
 #define _GUI_FRAMEWORK_H
 

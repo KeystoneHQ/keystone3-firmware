@@ -1,10 +1,3 @@
-/*
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * @FilePath: \project-pillar-firmware\ui\gui_assets\img\imgArrowRightS.c
- * @Description:
- * @Author: stone wang
- * @LastEditTime: 2023-04-03 17:19:55
- */
 #ifdef __has_include
 #if __has_include("lvgl.h")
 #ifndef LV_LVGL_H_INCLUDE_SIMPLE

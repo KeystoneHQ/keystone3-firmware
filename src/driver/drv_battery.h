@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: battary driver.
- * Author: leon sun
- * Create: 2023-1-6
- ************************************************************************************************/
-
-
 #ifndef _DRV_BATTARY_H
 #define _DRV_BATTARY_H
 

@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: background task.
- * Author: leon sun
- * Create: 2023-3-20
- ************************************************************************************************/
-
 #include "background_task.h"
 #include "background_app.h"
 #include "drv_aw32001.h"

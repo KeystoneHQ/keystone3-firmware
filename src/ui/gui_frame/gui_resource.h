@@ -1,11 +1,3 @@
-/*
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * @FilePath: \project-pillar-firmware\ui\gui_frame\gui_resource.h
- * @Description:
- * @Author: stone wang
- * @LastEditTime: 2023-04-13 19:29:24
- */
-
 #ifndef _GUI_RESOURCE_H
 #define _GUI_RESOURCE_H
 

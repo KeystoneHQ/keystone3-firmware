@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: 8080 driver.
- * Author: leon sun
- * Create: 2023-4-6
- ************************************************************************************************/
-
-
 #include "drv_parallel8080.h"
 #include "stdio.h"
 #include "mhscpu.h"

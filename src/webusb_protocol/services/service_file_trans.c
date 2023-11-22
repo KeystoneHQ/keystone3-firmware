@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: file trans protocol service.
- * Author: leon sun
- * Create: 2023-7-7
- ************************************************************************************************/
-
-
 #include "service_file_trans.h"
 #include "stdio.h"
 #include "protocol_codec.h"

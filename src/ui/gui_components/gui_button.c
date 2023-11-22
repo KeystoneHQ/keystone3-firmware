@@ -1,10 +1,3 @@
-/*
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * @FilePath: \project-pillar-firmware\ui\gui_widgets\gui_button.c
- * @Description:
- * @Author: stone wang
- * @LastEditTime: 2023-04-18 13:11:58
- */
 #include "gui_button.h"
 #include "gui_obj.h"
 

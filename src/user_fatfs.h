@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : user_fatfs.h
- * Description:
- * author     : stone wang
- * data       : 2022-12-16 11:06
-**********************************************************************/
-
 #ifndef _USER_FATFS_H
 #define _USER_FATFS_H
 

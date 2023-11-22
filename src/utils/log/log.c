@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: log stored in SPI flash.
- * Author: leon sun
- * Create: 2023-4-11
- ************************************************************************************************/
-
 #include "log.h"
 #include "stdio.h"
 #include <stdlib.h>

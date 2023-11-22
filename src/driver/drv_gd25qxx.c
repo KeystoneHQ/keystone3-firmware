@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : drv_gd25qxx.c
- * Description:
- * author     : stone wang
- * data       : 2022-12-07 11:59
-**********************************************************************/
-
 #include "drv_spi.h"
 #include "stdio.h"
 #include "mhscpu.h"

@@ -7,13 +7,7 @@
  * @LastEditTime: 2023-04-03 18:41:05
  * @Path:
  */
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_setting_widgets.h
- * Description:
- * author     : stone wang
- * data       : 2023-03-20 17:19
-**********************************************************************/
+
 
 #ifndef _GUI_SETTING_WIDGETS_H
 #define _GUI_SETTING_WIDGETS_H

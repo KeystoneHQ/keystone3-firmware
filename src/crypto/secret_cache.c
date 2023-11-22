@@ -2,6 +2,7 @@
 #include "string.h"
 #include "user_memory.h"
 #include "user_utils.h"
+#include "safe_mem_lib.h"
 
 
 static char *g_passwordCache = NULL;
@@ -149,34 +150,34 @@ void ClearSecretCache(void)
 
     if (g_passwordCache != NULL) {
         len = strlen(g_passwordCache);
-        memset(g_passwordCache, 0, len);
+        memset_s(g_passwordCache, len, 0, len);
         SRAM_FREE(g_passwordCache);
         g_passwordCache = NULL;
     }
 
     if (g_passphraseCache != NULL) {
         len = strlen(g_passphraseCache);
-        memset(g_passphraseCache, 0, len);
+        memset_s(g_passphraseCache, len, 0, len);
         SRAM_FREE(g_passphraseCache);
         g_passphraseCache = NULL;
     }
 
     if (g_newPasswordCache != NULL) {
         len = strlen(g_newPasswordCache);
-        memset(g_newPasswordCache, 0, len);
+        memset_s(g_newPasswordCache, len, 0, len);
         SRAM_FREE(g_newPasswordCache);
         g_newPasswordCache = NULL;
     }
 
     if (g_entropyCache != NULL) {
-        memset(g_entropyCache, 0, g_entropyLen);
+        memset_s(g_entropyCache, g_entropyLen, 0, g_entropyLen);
         g_entropyLen = 0;
         SRAM_FREE(g_entropyCache);
         g_entropyCache = NULL;
     }
 
     if (g_emsCache != NULL) {
-        memset(g_emsCache, 0, g_emsLen);
+        memset_s(g_emsCache, g_emsLen, 0, g_emsLen);
         g_emsLen = 0;
         SRAM_FREE(g_emsCache);
         g_emsCache = NULL;
@@ -184,7 +185,7 @@ void ClearSecretCache(void)
 
     if (g_mnemonicCache != NULL) {
         len = strlen(g_mnemonicCache);
-        memset(g_mnemonicCache, 0, len);
+        memset_s(g_mnemonicCache, len, 0, len);
         SRAM_FREE(g_mnemonicCache);
         g_mnemonicCache = NULL;
     }
@@ -192,7 +193,7 @@ void ClearSecretCache(void)
     for (int i = 0; i < 15; i++) {
         if (g_slip39MnemonicCache[i] != NULL) {
             len = strlen(g_slip39MnemonicCache[i]);
-            memset(g_slip39MnemonicCache[i], 0, len);
+            memset_s(g_slip39MnemonicCache[i], len, 0, len);
             EXT_FREE(g_slip39MnemonicCache[i]);
             g_slip39MnemonicCache[i] = NULL;
         }

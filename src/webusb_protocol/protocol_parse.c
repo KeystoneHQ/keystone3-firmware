@@ -30,7 +30,7 @@ void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbac
 
     tick = osKernelGetTickCount();
 
-    if (data[0] == EAPDU_PROTOCOL_HEADER)
+    if (data[0] == EAPDU_PROTOCOL_HEADER && !GetIsReceivingFile())
     {
         currentParser = NewEApduProtocolParser();
     }

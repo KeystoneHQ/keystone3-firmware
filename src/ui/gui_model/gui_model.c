@@ -25,6 +25,7 @@
 #include "keystore.h"
 #include "account_manager.h"
 #include "qrdecode_task.h"
+#include "safe_mem_lib.h"
 #ifndef COMPILE_SIMULATOR
 #include "rust.h"
 #include "user_msg.h"
@@ -269,7 +270,7 @@ static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
     SecretCacheSetMnemonic(mnemonic);
     retData = SUCCESS_CODE;
     GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, &retData, sizeof(retData));
-    memset(mnemonic, 0, strlen(mnemonic));
+    memset_s(mnemonic, strlen(mnemonic), 0, strlen(mnemonic));
     SRAM_FREE(mnemonic);
 #else
     mnemonic = SRAM_MALLOC(256);
@@ -367,7 +368,7 @@ if (ret == SUCCESS_CODE)
 {
     GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));
 }
-memset(entropy, 0, entropyInLen);
+memset_s(entropy, entropyInLen, 0, entropyInLen);
 SRAM_FREE(entropy);
 #else
     ret = ERR_KEYSTORE_MNEMONIC_REPEAT;

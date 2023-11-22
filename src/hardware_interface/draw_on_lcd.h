@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Directly draw items on LCD with out GUI handler.
- * Author: leon sun
- * Create: 2023-4-8
- ************************************************************************************************/
-
-
 #ifndef _DRAW_ON_LCD_H
 #define _DRAW_ON_LCD_H
 

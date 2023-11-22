@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description:
- * author     : ginger liu
- * data       : 2023-03-02
-**********************************************************************/
-
 #ifndef _GUI_CONNECT_WALLET_WIDGETS_H
 #define _GUI_CONNECT_WALLET_WIDGETS_H
 

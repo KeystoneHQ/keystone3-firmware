@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Protocol codec.
- * Author: leon sun
- * Create: 2023-6-27
- ************************************************************************************************/
-
-
 #ifndef _PROTOCOL_CODEC_H
 #define _PROTOCOL_CODEC_H
 

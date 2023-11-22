@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : version.h
- * Description:
- * author     : liuzepeng
- * data       : 2023-05-11 10:08
-**********************************************************************/
-
 #ifndef _VERSION_H
 #define _VERSION_H
 

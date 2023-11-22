@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: OTP(One-Time Programmable memory) driver.
- * Author: leon sun
- * Create: 2023-3-16
- ************************************************************************************************/
-
-
 #ifndef _DRV_OTP_H
 #define _DRV_OTP_H
 

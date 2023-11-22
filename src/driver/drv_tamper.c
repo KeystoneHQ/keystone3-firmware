@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: tamper driver.
- * Author: leon sun
- * Create: 2023-2-21
- ************************************************************************************************/
-
 #include "drv_tamper.h"
 #include "stdio.h"
 #include "mhscpu.h"

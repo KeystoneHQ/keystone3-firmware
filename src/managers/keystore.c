@@ -1,10 +1,3 @@
-/**************************************************************************************************
-* Copyright (c) keyst.one. 2020-2025. All rights reserved.
-* Description: Seeds are stored in ATECC608B and DS28S60.
-* Author: leon sun
-* Create: 2023-3-7
-************************************************************************************************/
-
 #include "keystore.h"
 #include "string.h"
 #include "stdio.h"

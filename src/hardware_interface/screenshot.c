@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) Keystone 2020-2025. All rights reserved.
- * Description: Screen shot.
- * Author: leon sun
- * Create: 2023-8-2
- ************************************************************************************************/
-
-
 #include "screenshot.h"
 #include "stdio.h"
 #include "user_memory.h"

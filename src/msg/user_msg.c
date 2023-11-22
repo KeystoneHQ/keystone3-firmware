@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one 2020-2025. All rights reserved.
- * Description: User message defining and subscription.
- * Author: leon sun
- * Create: 2022-11-8
- ************************************************************************************************/
-
 #include "user_msg.h"
 #include "cmsis_os.h"
 #include "general_msg.h"

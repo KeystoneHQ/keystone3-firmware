@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Hardware version.
- * Author: leon sun
- * Create: 2023-5-12
- ************************************************************************************************/
-
-
 #ifndef _HARDWARE_VERSION_H
 #define _HARDWARE_VERSION_H
 

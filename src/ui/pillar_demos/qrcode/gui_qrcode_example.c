@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_qrcode_example.c
- * Description:
- * author     : stone wang
- * data       : 2022-12-14 11:42
-**********************************************************************/
 #include "gui_qrcode_example.h"
 #include "gui.h"
 

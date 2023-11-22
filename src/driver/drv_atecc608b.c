@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: ATECC608E secure element driver, depends on cryptoauthlib.
- * Author: leon sun
- * Create: 2023-1-31
- ************************************************************************************************/
-
 #include "drv_atecc608b.h"
 #include "string.h"
 #include "cryptoauthlib.h"

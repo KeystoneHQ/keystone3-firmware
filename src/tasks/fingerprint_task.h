@@ -1,9 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: fingerprint module task
- * Author:
- * Create:
- ************************************************************************************************/
 #ifndef _FINGERPRINT_TASK_H
 #define _FINGERPRINT_TASK_H
 

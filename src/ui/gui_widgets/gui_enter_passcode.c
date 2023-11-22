@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_enter_passcode.c
- * Description:
- * author     : stone wang
- * data       : 2023-03-21 14:12
- **********************************************************************/
 #include "gui_enter_passcode.h"
 #include "gui_obj.h"
 #include "gui_led.h"

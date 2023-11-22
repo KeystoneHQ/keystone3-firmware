@@ -1,9 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description:
- * author     : ginger liu
- * data       : 2023-03-02
-**********************************************************************/
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_status_bar.h"

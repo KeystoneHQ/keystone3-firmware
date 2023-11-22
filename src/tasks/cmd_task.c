@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: cmd任务
- * Author: leon sun
- * Create: 2022-11-8
- ************************************************************************************************/
-
 #include "cmd_task.h"
 #include "cmsis_os.h"
 #include "general_msg.h"

@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: mh1903 i2c hal for atca.
- * Author: leon sun
- * Create: 2023-1-31
- ************************************************************************************************/
-
 #include "hal_mh1903_i2c.h"
 //#include "atca_hal.h"
 #include "cryptoauthlib.h"

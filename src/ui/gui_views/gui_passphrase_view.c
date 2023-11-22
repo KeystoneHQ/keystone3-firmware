@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Passphrase input UI.
- * Author: leon sun
- * Create: 2023-6-8
- ************************************************************************************************/
-
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_views.h"

@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one 2020-2025. All rights reserved.
- * Description: User message defining and subscription.
- * Author: leon sun
- * Create: 2022-11-8
- ************************************************************************************************/
-
 #ifndef _USER_MSG_H
 #define _USER_MSG_H
 

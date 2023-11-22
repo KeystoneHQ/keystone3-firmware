@@ -15,6 +15,7 @@
 #include "gui_views.h"
 #include "gui_lock_widgets.h"
 #include "fingerprint_process.h"
+#include "safe_mem_lib.h"
 #ifdef COMPILE_SIMULATOR
 #define RECOGNIZE_UNLOCK                    0
 #endif
@@ -116,7 +117,7 @@ void SetKeyboardWidgetSelf(KeyboardWidget_t *keyboardWidget, KeyboardWidget_t **
 
 static void ClearKeyboardWidgetCache(KeyboardWidget_t *keyboardWidget)
 {
-    memset(g_pinBuf, 0, sizeof(g_pinBuf));
+    memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
     keyboardWidget->currentNum = 0;
     for (int i = 0; i < CREATE_PIN_NUM; i++) {
         GuiSetLedStatus(keyboardWidget->led[i], PASSCODE_LED_OFF);
@@ -164,7 +165,7 @@ static void SetPinEventHandler(lv_event_t *e)
             }
             if (keyboardWidget->currentNum == CREATE_PIN_NUM) {
                 SecretCacheSetPassword((char *)g_pinBuf);
-                memset(g_pinBuf, 0, sizeof(g_pinBuf));
+                memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
                 keyboardWidget->currentNum = 0;
                 GuiClearKeyboardInput(keyboardWidget);
                 GuiModelVerifyAmountPassWord(keyboardWidget->sig);
@@ -371,7 +372,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
 void GuiDeleteKeyboardWidget(KeyboardWidget_t *keyboardWidget)
 {
     if (keyboardWidget != NULL && keyboardWidget->self != NULL) {
-        memset(g_pinBuf, 0, sizeof(g_pinBuf));
+        memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
         keyboardWidget->currentNum = 0;
         if (keyboardWidget->keyboardHintBox != NULL && lv_obj_is_valid(keyboardWidget->keyboardHintBox)) {
             lv_obj_del(keyboardWidget->keyboardHintBox);

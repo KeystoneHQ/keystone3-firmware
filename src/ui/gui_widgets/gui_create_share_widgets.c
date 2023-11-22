@@ -14,6 +14,7 @@
 #include "user_utils.h"
 #include "motor_manager.h"
 #include "gui_page.h"
+#include "safe_mem_lib.h"
 
 typedef enum {
     CREATE_SHARE_SELECT_SLICE = 0,
@@ -358,7 +359,7 @@ static void MnemonicConfirmHandler(lv_event_t * e)
                 lv_obj_align(btn, LV_ALIGN_DEFAULT, 345, 710);
                 lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
             }
-            memset(confirmMnemonic, 0, 10 * g_phraseCnt + 1);
+            memset_s(confirmMnemonic, 10 * g_phraseCnt + 1, 0, 10 * g_phraseCnt + 1);
             SRAM_FREE(confirmMnemonic);
         }
     }
@@ -527,7 +528,7 @@ void GuiCreateShareDeInit(void)
     //     memset(g_shareBackupTile.words, 0, 10);
     //     memset(g_shareConfirmTile.words, 0, 10);
     // }
-    memset(g_randomBuff, 0, 512);
+    memset_s(g_randomBuff, 512, 0, 512);
     GUI_DEL_OBJ(g_shareBackupTile.nextCont)
     GUI_DEL_OBJ(g_selectSliceTile.stepCont)
     GUI_DEL_OBJ(g_createShareTileView.cont)

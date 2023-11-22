@@ -5,9 +5,10 @@
 #include "stdint.h"
 #include "stdbool.h"
 #include "string.h"
+#include "safe_mem_lib.h"
 
-#define CLEAR_ARRAY(array)                      memset(array, 0, sizeof(array))
-#define CLEAR_OBJECT(obj)                       memset(&obj, 0, sizeof(obj))
+#define CLEAR_ARRAY(array)                      memset_s(array, sizeof(array), 0, sizeof(array))
+#define CLEAR_OBJECT(obj)                       memset_s(&obj, sizeof(obj), 0, sizeof(obj))
 #define VALUE_CHECK(value, expect)              {if (value != expect) {printf("input err!\r\n"); return; }}
 
 

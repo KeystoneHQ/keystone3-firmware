@@ -65,6 +65,13 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
 static uint8_t *GetFileContent(const FrameHead_t *head, uint32_t offset, uint32_t *outLen);
 static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 
+static bool g_isReceivingFile = false;
+
+bool GetIsReceivingFile()
+{
+    return g_isReceivingFile;
+}
+
 static void FileTransTimeOutTimerFunc(void *argument);
 
 static FileTransInfo_t g_fileTransInfo;
@@ -181,6 +188,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
         if (g_fileTransTimeOutTimer == NULL) {
             g_fileTransTimeOutTimer = osTimerNew(FileTransTimeOutTimerFunc, osTimerOnce, NULL, NULL);
         }
+        g_isReceivingFile = true;
         osTimerStart(g_fileTransTimeOutTimer, FILE_TRANS_TIME_OUT);
     } while (0);
 
@@ -300,6 +308,7 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
 
 static void FileTransTimeOutTimerFunc(void *argument)
 {
+    g_isReceivingFile = false;
     GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 0);
 }
 

@@ -94,7 +94,7 @@ static void GuiResolveUrResultViewInit()
     {
         title = _("usb_transport_sign_failed_title");
         subTitle = g_param->error_message;
-        buttonColor = DARK_GRAY_COLOR;
+        buttonColor = WHITE_COLOR;
         img = GuiCreateImg(cont, &imgFailed);
         buttonText = _("usb_transport_sign_failed_btn");
     }
@@ -120,6 +120,9 @@ static void GuiResolveUrResultViewInit()
     lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_size(button, 408, 66);
     lv_obj_set_style_bg_color(button, buttonColor, LV_PART_MAIN);
+    if (g_param->error_code != 0) {
+        lv_obj_set_style_bg_opa(button, LV_OPA_12, LV_PART_MAIN);
+    }
     lv_obj_add_event_cb(button, GoToHomeViewHandler, LV_EVENT_CLICKED, NULL);
 }
 

@@ -276,6 +276,21 @@ const static Erc20Contract_t ERC20_CONTRACTS[] = {
     {"UNI", "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", 18},
     {"COMP", "0xc00e94cb662c3520282e6f5717214004a7f26888", 18},
     {"AAVE", "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9", 18},
+    {"ETH", "0x2170Ed0880ac9A755fd29B2688956BD959F933F8", 18},
+    {"BSC-USD", "0x55d398326f99059fF775485246999027B3197955", 18},
+    {"WBNB", "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", 18},
+    {"XRP", "0x1D2F0da169ceB9fC7B3144628dB156f3F6c60dBE", 18},
+    {"USDC", "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", 18},
+    {"anyUSDC", "0x8965349fb649A33a30cbFDa057D8eC2C48AbE2A2", 18},
+    {"ADA", "0x3EE2200Efb3400fAbB9AacF31297cBdD1d435D47", 18},
+    {"DOGE", "0xbA2aE424d960c26247Dd6c32edC70B295c744C43", 8},
+    {"TRX", "0xCE7de646e7208a4Ef112cb6ed5038FA6cC6b12e3", 6},
+    {"LINK", "0xF8A0BF9cF54Bb92F17374d9e9A321E6a111a51bD", 18},
+    {"AVAX", "0x1CE0c2827e2eF14D5C4f29a091d735A204794041", 18},
+    {"MATIC", "0xCC42724C6683B7E57334c4E856f4c9965ED682bD", 18},
+    {"DOT", "0x7083609fCE4d1d8Dc0C979AAb8c869Ea2C873402", 18},
+    {"DAI", "0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3", 18},
+    {"TONCOIN", "0x76A797A59Ba2C17726896976B7B3747BfD1d220f", 9}
 };
 #include "abi_ethereum.h"
 #include "gui_constants.h"
@@ -931,6 +946,10 @@ static bool GetEthErc20ContractData(void *parseResult)
         g_contractDataExist = true;
         g_contractData = contractData;
     }
+    else
+    {
+        return false;
+    }
     char *to = result->data->detail->to;
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++)
     {
@@ -942,6 +961,7 @@ static bool GetEthErc20ContractData(void *parseResult)
             return true;
         }
     }
+    g_erc20Name = "Erc20";
     FixRecipientAndValueWhenErc20Contract(result->data->detail->input, 18);
     return true;
 }

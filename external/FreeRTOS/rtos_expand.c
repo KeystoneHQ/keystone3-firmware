@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one 2020-2023. All rights reserved.
- * Description: rtos扩展功能
- * Author: leon sun
- * Create: 2022-6-24
- ************************************************************************************************/
-
 #include "rtos_expand.h"
 #include "stdio.h"
 #include "FreeRTOS.h"

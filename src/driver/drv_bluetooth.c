@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Bluetooth driver.
- * Author: leon sun
- * Create: 2023-5-18
- ************************************************************************************************/
-
-
 #include "drv_bluetooth.h"
 #include "stdio.h"
 #include "string.h"

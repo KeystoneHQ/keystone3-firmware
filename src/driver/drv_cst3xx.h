@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: CST3XX touch pad driver.
- * Author: leon sun
- * Create: 2023-1-16
- ************************************************************************************************/
-
-
 #ifndef _DRV_CST3XX_H
 #define _DRV_CST3XX_H
 

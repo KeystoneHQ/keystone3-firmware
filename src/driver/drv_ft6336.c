@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: FT6336 touch pad driver.
- * Author: leon sun
- * Create: 2023-2-20
- ************************************************************************************************/
-
 #include "drv_ft6336.h"
 #include "stdio.h"
 #include "mhscpu.h"

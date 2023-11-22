@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_keyboard_example.c
- * Description:
- * author     : stone wang
- * data       : 2023-01-18 15:16
-**********************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>

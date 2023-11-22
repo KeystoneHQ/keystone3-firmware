@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one 2020-2025. All rights reserved.
- * Description: system init. Always build this file for updating build time.
- * Author: leon sun
- * Create: 2022-11-8
- ************************************************************************************************/
-
 #include "drv_sys.h"
 #include "mhscpu.h"
 #include "stdio.h"

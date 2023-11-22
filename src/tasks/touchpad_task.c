@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Touch pad task.
- * Author: leon sun
- * Create: 2023-1-17
- ************************************************************************************************/
-
 #include "touchpad_task.h"
 #include "stdio.h"
 #include "string.h"

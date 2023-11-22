@@ -1,18 +1,3 @@
-/*
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * @FilePath: \project-pillar-firmware\ui\gui_model\gui_model.h
- * @Description:
- * @Author: stone wang
- * @LastEditTime: 2023-04-12 14:51:30
- */
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_model.h
- * Description:
- * author     : stone wang
- * data       : 2023-03-23 09:41
-**********************************************************************/
-
 #ifndef _GUI_MODEL_H
 #define _GUI_MODEL_H
 

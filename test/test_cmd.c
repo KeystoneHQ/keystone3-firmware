@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Test cmd.
- * Author: leon sun
- * Create: 2022-12
- ************************************************************************************************/
-
 #include "test_cmd.h"
 #include "stdio.h"
 #include "string.h"

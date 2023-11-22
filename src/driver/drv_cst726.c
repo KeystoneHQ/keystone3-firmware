@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: CST726 touch pad driver.
- * Author: leon sun
- * Create: 2023-2-20
- ************************************************************************************************/
-
 #include "drv_cst726.h"
 #include "stdio.h"
 #include "mhscpu.h"

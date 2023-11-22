@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: fingerpirnt任务
- * Author:
- * Create:
- ************************************************************************************************/
-
 #include "fingerprint_task.h"
 #include "fingerprint_process.h"
 #include "cmsis_os.h"

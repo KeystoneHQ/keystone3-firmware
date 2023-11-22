@@ -40,7 +40,6 @@ void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
     PrintArray("data", data, len);
     for (i = 0; i < len; i++)
     {
-        printf("i=%d,rcvCount=%d\n", i, global_parser->rcvCount);
         if (global_parser->rcvCount == 0)
         {
             printf("loop head\n");

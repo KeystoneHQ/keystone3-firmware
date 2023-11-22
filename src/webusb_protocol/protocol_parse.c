@@ -20,8 +20,6 @@
 
 uint8_t g_protocolRcvBuffer[PROTOCOL_MAX_LENGTH];
 
-struct ProtocolParser *currentParser = NULL;
-
 void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbackFunc_t sendFunc)
 {
     static uint32_t lastTick = 0;

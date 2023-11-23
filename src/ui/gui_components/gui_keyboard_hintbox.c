@@ -352,6 +352,8 @@ void GuiHideErrorLabel(KeyboardWidget_t *keyboardWidget)
 
 void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t *passwordVerifyResult)
 {
+    memset(g_pinBuf, 0, sizeof(g_pinBuf));
+    keyboardWidget->currentNum = 0;
     printf("GuiShowErrorNumber error count is %d\n", passwordVerifyResult->errorCount);
     char hint[128];
     char tempBuf[128];

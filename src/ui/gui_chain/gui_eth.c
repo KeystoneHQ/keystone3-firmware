@@ -584,6 +584,7 @@ void *GuiGetEthData(void)
     memset(g_fromEthEnsName, 0, sizeof(g_fromEthEnsName));
     memset(g_toEthEnsName, 0, sizeof(g_toEthEnsName));
     g_contractDataExist = false;
+    g_erc20Name = NULL;
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
@@ -832,7 +833,7 @@ void GetEthMethodName(void *indata, void *param)
 void GetEthContractName(void *indata, void *param)
 {
     Response_DisplayContractData *contractData = (Response_DisplayContractData *)g_contractData;
-    if(strlen(g_erc20Name) > 0) {
+    if(g_erc20Name != NULL && strlen(g_erc20Name) > 0) {
         strcpy((char *)indata, g_erc20Name);
         return;
     }

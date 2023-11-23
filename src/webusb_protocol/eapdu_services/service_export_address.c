@@ -157,7 +157,8 @@ void *ExportAddressService(EAPDURequestPayload_t payload)
     if (g_exportAddressParams != NULL)
     {
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_BUSY, "Export address is busy, please try again later");
-        ExportAddressReject();
+        SRAM_FREE(g_exportAddressParams);
+        g_exportAddressParams = NULL;
         return NULL;
     }
 

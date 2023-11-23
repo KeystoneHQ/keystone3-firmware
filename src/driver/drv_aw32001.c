@@ -247,7 +247,7 @@ void RegisterChangerInsertCallback(ChangerInsertIntCallbackFunc_t func)
 int32_t Aw32001PowerOff(void)
 {
     uint8_t byte;
-    int32_t ret;
+    int32_t ret = SUCCESS_CODE;
     do {
         ret = Aw32001WriteRegBits(AW320XX_REG6_MCR, AW320XX_BIT_MCR_FET_DIS_MASK, AW320XX_BIT_MCR_FET_DIS_OFF);
         if (ret != SUCCESS_CODE) {
@@ -258,7 +258,7 @@ int32_t Aw32001PowerOff(void)
         printf("AW320XX_REG6_MCR ship power = %#x\n", byte & AW320XX_BIT_MCR_FET_DIS_OFF);
         if ((ret == SUCCESS_CODE) && ((byte & AW320XX_BIT_MCR_FET_DIS_OFF) == AW320XX_BIT_MCR_FET_DIS_OFF)) {
             printf("power off success\n");
-            return ret;
+            return SUCCESS_CODE;
         }
     } while (1);
     return ret;

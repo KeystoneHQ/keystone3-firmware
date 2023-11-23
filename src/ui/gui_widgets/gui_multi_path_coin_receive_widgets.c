@@ -138,7 +138,7 @@ static MultiPathCoinReceiveWidgets_t g_multiPathCoinReceiveWidgets;
 static EthereumReceiveTile g_multiPathCoinReceiveTileNow;
 
 static const PathItem_t g_ethPaths[] = {
-    {"BIP 44 Standard",     "",     "m/44'/60'/0'"  },
+    {"BIP44 Standard",     "",     "m/44'/60'/0'"  },
     {"Ledger Live",         "",     "m/44'/60'"     },
     {"Ledger Legacy",       "",     "m/44'/60'/0'"  },
 };

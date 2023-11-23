@@ -23,6 +23,7 @@
 #include "se_manager.h"
 #include "account_manager.h"
 #include "librust_c.h"
+#include "safe_mem_lib.h"
 
 #define KEYSTORE_DEBUG          0
 
@@ -419,8 +420,8 @@ void ClearAccountPassphrase(uint8_t accountIndex)
     if (accountIndex > 2) {
         return;
     }
-    memset(g_passphraseInfo[accountIndex].passphrase, 0, sizeof(g_passphraseInfo[accountIndex].passphrase));
-    memset(g_passphraseInfo[accountIndex].mfp, 0, sizeof(g_passphraseInfo[accountIndex].mfp));
+    memset_s(g_passphraseInfo[accountIndex].passphrase, sizeof(g_passphraseInfo[accountIndex].passphrase), 0, sizeof(g_passphraseInfo[accountIndex].passphrase));
+    memset_s(g_passphraseInfo[accountIndex].mfp, sizeof(g_passphraseInfo[accountIndex].mfp), 0, sizeof(g_passphraseInfo[accountIndex].mfp));
     g_passphraseInfo[accountIndex].passphraseExist = false;
 }
 

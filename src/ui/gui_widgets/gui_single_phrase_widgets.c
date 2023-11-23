@@ -15,6 +15,7 @@
 #include "motor_manager.h"
 #include "user_delay.h"
 #include "gui_page.h"
+#include "safe_mem_lib.h"
 
 #define SINGLE_PHRASE_MAX_WORDS         24
 typedef enum {
@@ -178,7 +179,7 @@ static void MnemonicConfirmHandler(lv_event_t * e)
                 lv_obj_align(btn, LV_ALIGN_DEFAULT, 345, 710);
                 lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
             }
-            memset(confirmMnemonic, 0, BIP39_MAX_WORD_LEN * g_phraseCnt + 1);
+            memset_s(confirmMnemonic, BIP39_MAX_WORD_LEN * g_phraseCnt + 1, 0, BIP39_MAX_WORD_LEN * g_phraseCnt + 1);
             SRAM_FREE(confirmMnemonic);
         }
     }
@@ -401,7 +402,7 @@ void GuiSinglePhraseDeInit(void)
     lv_obj_del(g_randomPhraseKb->cont);
     lv_obj_del(g_confirmPhraseKb->cont);
     GUI_DEL_OBJ(g_singlePhraseTileView.cont)
-    memset(g_randomBuff, 0, 512);
+    memset_s(g_randomBuff, 512, 0, 512);
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;

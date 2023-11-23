@@ -6,6 +6,8 @@
 #include "user_memory.h"
 #include "err_code.h"
 #include "assert.h"
+#include "safe_mem_lib.h"
+
 
 
 #define FACTORY_RESULT_CHECK_ENABLE         1
@@ -83,7 +85,7 @@ int32_t SetWebAuthRsaKey(const uint8_t *key)
     for (uint32_t i = 0; i < WEB_AUTH_RSA_KEY_LEN; i += 256) {
         WriteOtpData(OTP_ADDR_WEB_AUTH_RSA_KEY + i, data + i, 256);
     }
-    memset(data, 0, WEB_AUTH_RSA_KEY_LEN);
+    memset_s(data, WEB_AUTH_RSA_KEY_LEN, 0, WEB_AUTH_RSA_KEY_LEN);
     SRAM_FREE(data);
     return SUCCESS_CODE;
 }

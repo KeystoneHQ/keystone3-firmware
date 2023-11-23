@@ -86,6 +86,7 @@ typedef enum {
     XPUB_TYPE_APT_7,
     XPUB_TYPE_APT_8,
     XPUB_TYPE_APT_9,
+    XPUB_TYPE_XLM_0,
     XPUB_TYPE_ADA_0,
     XPUB_TYPE_ADA_1,
     XPUB_TYPE_ADA_2,

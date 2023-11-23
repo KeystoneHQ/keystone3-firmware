@@ -1,0 +1,24 @@
+[package]
+name = "app_stellar"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+keystore = { path = "../../keystore", default-features = false }
+third_party = { path = "../../third_party", default-features = false }
+app_utils = {path = "../utils"}
+serde = { version = "1.0.139", default-features = false }
+serde_derive = { version = "1.0.159"}
+stellar-xdr = { path = "../../../../rs-stellar-xdr" }
+
+[dev-dependencies]
+keystore = { path = "../../keystore" }
+
+[features]
+default = ["std"]
+std = []
+
+[lib]
+doctest = false

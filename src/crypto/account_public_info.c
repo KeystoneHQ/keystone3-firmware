@@ -135,6 +135,7 @@ static const ChainItem_t g_chainTable[] =
     {XPUB_TYPE_APT_7,                 ED25519,      "apt_7",                    "M/44'/637'/7'/0'/0'"},
     {XPUB_TYPE_APT_8,                 ED25519,      "apt_8",                    "M/44'/637'/8'/0'/0'"},
     {XPUB_TYPE_APT_9,                 ED25519,      "apt_9",                    "M/44'/637'/9'/0'/0'"},
+    {XPUB_TYPE_XLM_0,                 ED25519,      "xlm_0",                    "M/44'/148'/0'"},
     {XPUB_TYPE_ADA_0,                 BIP32_ED25519,"ada_0",                    "M/1852'/1815'/0'"},
     {XPUB_TYPE_ADA_1,                 BIP32_ED25519,"ada_1",                    "M/1852'/1815'/1'"},
     {XPUB_TYPE_ADA_2,                 BIP32_ED25519,"ada_2",                    "M/1852'/1815'/2'"},

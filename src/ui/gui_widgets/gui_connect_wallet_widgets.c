@@ -269,15 +269,20 @@ static void QRCodePause(bool);
 
 static void GuiInitWalletListArray()
 {
-    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39)
+    for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++)
     {
-        //eternl
-        g_walletListArray[3].enable = false;
-    }
-    else
-    {
-        //eternl
-        g_walletListArray[3].enable = true;
+        if (g_walletListArray[i].index == WALLET_LIST_ETERNL)
+        {
+            if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39)
+            {
+                g_walletListArray[i].enable = false;
+            }
+            else
+            {
+                g_walletListArray[i].enable = true;
+            }
+        }
+        continue;
     }
 }
 

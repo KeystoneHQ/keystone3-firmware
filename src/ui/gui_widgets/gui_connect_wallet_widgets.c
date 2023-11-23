@@ -200,7 +200,7 @@ typedef struct {
 } ChangeDerivationItem_t;
 
 const static ChangeDerivationItem_t g_changeDerivationList[] = {
-    {"BIP 44 Standard", "#8E8E8E m/44'/60'/0'/0/##F5870A X#"},
+    {"BIP44 Standard", "#8E8E8E m/44'/60'/0'/0/##F5870A X#"},
     {"Ledger Live", "#8E8E8E m/44'/60'/##F5870A X##8E8E8E '/0/0#"},
     {"Ledger Legacy", "#8E8E8E m/44'/60'/0'/##F5870A X#"},
 };

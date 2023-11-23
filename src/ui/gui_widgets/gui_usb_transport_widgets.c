@@ -7,6 +7,7 @@
 static lv_obj_t *g_cont;
 static PageWidget_t *g_pageWidget;
 static EAPDUResultPage_t *g_param;
+static bool g_original_lock_screen = false;
 
 static void ApproveButtonHandler(lv_event_t *e);
 static void RejectButtonHandler(lv_event_t *e);
@@ -48,6 +49,7 @@ static lv_img_dsc_t *GetConnectWalletImg()
 
 static void GuiExportXPubViewInit()
 {
+    SetLockScreen(false);
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 
@@ -128,6 +130,7 @@ static void GuiResolveUrResultViewInit()
 
 void GuiUSBTransportWidgetsInit(EAPDUResultPage_t *param)
 {
+    g_original_lock_screen = IsPreviousLockScreenEnable();
     g_param = param;
     if (g_param == NULL)
     {
@@ -148,6 +151,7 @@ void GuiUSBTransportWidgetsInit(EAPDUResultPage_t *param)
 
 void GuiUSBTransportWidgetsDeInit()
 {
+    SetLockScreen(g_original_lock_screen);
     g_param = NULL;
     GUI_DEL_OBJ(g_cont)
     if (g_pageWidget != NULL)

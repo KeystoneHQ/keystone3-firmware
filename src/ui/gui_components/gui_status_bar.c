@@ -140,7 +140,6 @@ void GuiStatusBarInit(void)
     lv_obj_set_style_radius(background, 0, 0);
     lv_obj_align(background, LV_ALIGN_TOP_LEFT, 0, GUI_STATUS_BAR_HEIGHT);
 
-    // 创建状态栏
     g_guiStatusBar.cont = cont;
     lv_obj_t *img = GuiCreateImg(cont, NULL);
     lv_obj_align(img, LV_ALIGN_LEFT_MID, 24, 0);

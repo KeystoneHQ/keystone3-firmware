@@ -1,5 +1,3 @@
-//由于整数经常需要表达返回长度等结果，所以ERR CODE均定义为负数，每个模块预留100个ERR CODE
-
 #ifndef _ERR_CODE_H
 #define _ERR_CODE_H
 

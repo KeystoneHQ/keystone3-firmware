@@ -53,6 +53,7 @@ xrp_rust_c = {path = "./src/xrp", optional = true}
 crate-type = ["staticlib"]
 
 [features]
+memory_profile = []
 default = ["multi-coins"]
 multi-coins = [
     "common_rust_c/multi-coins",
@@ -75,3 +76,5 @@ btc-only = [
     "wallet_rust_c/btc-only",
     "test_cmd/btc-only"
 ]
+[dev-dependencies]
+keystore = { path = "../keystore"}

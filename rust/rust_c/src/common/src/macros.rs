@@ -2,15 +2,21 @@
 macro_rules! impl_c_ptr {
     ($name:ident) => {
         impl $name {
+            #[track_caller]
             pub fn c_ptr(self) -> *mut Self {
-                alloc::boxed::Box::into_raw(alloc::boxed::Box::new(self))
+                let x = alloc::boxed::Box::into_raw(alloc::boxed::Box::new(self));
+                rust_tools::debug!(alloc::format!("Rust Ptr: {}#{:p}, called from: {}", core::stringify!($name), x, core::panic::Location::caller()));
+                x
             }
         }
     };
     ($name:ident<$t: ident>) => {
         impl<$t: Free> $name<$t> {
+            #[track_caller]
             pub fn c_ptr(self) -> *mut Self {
-                alloc::boxed::Box::into_raw(alloc::boxed::Box::new(self))
+                let x = alloc::boxed::Box::into_raw(alloc::boxed::Box::new(self));
+                rust_tools::debug!(alloc::format!("Rust Ptr: {}#{:p}, called from: {}", core::stringify!($name), x, core::panic::Location::caller()));
+                x
             }
         }
     };
@@ -20,8 +26,11 @@ macro_rules! impl_c_ptr {
 macro_rules! impl_simple_c_ptr {
     ($name:ident<$t: ident>) => {
         impl<$t> $name<$t> {
+            #[track_caller]
             pub fn simple_c_ptr(self) -> *mut Self {
-                alloc::boxed::Box::into_raw(alloc::boxed::Box::new(self))
+                let x = alloc::boxed::Box::into_raw(alloc::boxed::Box::new(self));
+                rust_tools::debug!(alloc::format!("Rust Ptr: {}#{:p}, called from: {}", core::stringify!($name), x, core::panic::Location::caller()));
+                x
             }
         }
     };

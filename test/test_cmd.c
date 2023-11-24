@@ -1153,7 +1153,7 @@ static void RustTestParseCryptoPSBT(int argc, char *argv[])
     printf("result: fee value %s\r\n", result->data->detail->fee_amount);
     printf("result: input length %d\r\n", result->data->detail->from->size);
     free_ur_parse_result(ur);
-    free_transaction_parse_result_display_tx(result);
+    free_TransactionParseResult_DisplayTx(result);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
@@ -1185,7 +1185,7 @@ static void RustTestParseBTCKeystone(int argc, char *argv[])
     printf("result: fee value %s\r\n", result->data->detail->fee_amount);
     printf("result: input length %d\r\n", result->data->detail->from->size);
     free_ur_parse_result(ur);
-    free_transaction_parse_result_display_tx(result);
+    free_TransactionParseResult_DisplayTx(result);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
@@ -1254,7 +1254,7 @@ static void RustTestParseLTCKeystone(int argc, char *argv[])
     printf("result: fee value %s\r\n", result->data->detail->fee_amount);
     printf("result: input length %d\r\n", result->data->detail->from->size);
     free_ur_parse_result(ur);
-    free_transaction_parse_result_display_tx(result);
+    free_TransactionParseResult_DisplayTx(result);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
@@ -1282,7 +1282,7 @@ static void RustTestParseTronKeystone(int argc, char *argv[])
     printf("parse result detail token: %s\r\n", result->data->detail->token);
     printf("parse result detail contract_address: %s\r\n", result->data->detail->contract_address);
     free_ur_parse_result(ur);
-    free_transaction_parse_result_display_tron(result);
+    free_TransactionParseResult_DisplayTron(result);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
@@ -1448,7 +1448,7 @@ static void RustTestParseBCHKeystone(int argc, char *argv[])
     printf("result: fee value %s\r\n", result->data->detail->fee_amount);
     printf("result: input length %d\r\n", result->data->detail->from->size);
     free_ur_parse_result(ur);
-    free_transaction_parse_result_display_tx(result);
+    free_TransactionParseResult_DisplayTx(result);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
@@ -1483,7 +1483,7 @@ static void RustTestParseDASHKeystone(int argc, char *argv[])
     printf("result: fee value %s\r\n", result->data->detail->fee_amount);
     printf("result: input length %d\r\n", result->data->detail->from->size);
     free_ur_parse_result(ur);
-    free_transaction_parse_result_display_tx(result);
+    free_TransactionParseResult_DisplayTx(result);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }

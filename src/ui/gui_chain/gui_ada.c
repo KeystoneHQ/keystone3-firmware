@@ -29,7 +29,7 @@ void GuiSetupAdaUrData(void *data, bool multi)
 #define CHECK_FREE_PARSE_RESULT(result)                                                                         \
     if (result != NULL)                                                                                         \
     {                                                                                                           \
-        free_transaction_parse_result_display_cardano_tx((PtrT_TransactionParseResult_DisplayCardanoTx)result); \
+        free_TransactionParseResult_DisplayCardanoTx((PtrT_TransactionParseResult_DisplayCardanoTx)result);     \
         result = NULL;                                                                                          \
     }
 

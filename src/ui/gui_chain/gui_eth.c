@@ -18,7 +18,8 @@ static bool GetEthErc20ContractData(void *parseResult);
 static bool g_isMulti = false;
 static void *g_urResult = NULL;
 static void *g_parseResult = NULL;
-static char *g_erc20ContractAddress = NULL;
+static void *g_erc20ContractData = NULL;
+static char *g_erc20Value = NULL;
 static char *g_erc20Name = NULL;
 static void *g_contractData = NULL;
 static bool g_contractDataExist = false;
@@ -369,7 +370,6 @@ static bool isErc20Transfer(void *param)
     char *input = eth->detail->input;
     if (strlen(input) <= 8)
     {
-        g_erc20ContractAddress = NULL;
         return false;
     }
     // FIXME: 0xa9059cbb is the method of erc20 transfer
@@ -378,7 +378,6 @@ static bool isErc20Transfer(void *param)
     {
         if (input[i] != erc20Method[i])
         {
-            g_erc20ContractAddress = NULL;
             return false;
         }
     }
@@ -390,13 +389,13 @@ static char *CalcSymbol(void *param)
     DisplayETH *eth = (DisplayETH *)param;
 
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
-
-    if (isErc20Transfer(result->data) && g_erc20ContractAddress != NULL)
+    //eth->detail->to: the actual contract address;
+    if (isErc20Transfer(eth) && eth->detail->to != NULL)
     {
         for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++)
         {
             Erc20Contract_t contract = ERC20_CONTRACTS[i];
-            if (strcasecmp(contract.contract_address, g_erc20ContractAddress) == 0)
+            if (strcasecmp(contract.contract_address, eth->detail->to) == 0)
             {
                 return contract.symbol;
             }
@@ -678,18 +677,6 @@ void GetEthTxFee(void *indata, void *param)
     sprintf((char *)indata, "%s %s", eth->overview->max_txn_fee, _FindNetwork(eth->chain_id));
 }
 
-void GetEthTxFrom(void *indata, void *param)
-{
-    DisplayETH *eth = (DisplayETH *)param;
-    strcpy((char *)indata, eth->overview->from);
-}
-
-void GetEthTxTo(void *indata, void *param)
-{
-    DisplayETH *eth = (DisplayETH *)param;
-    strcpy((char *)indata, eth->overview->to);
-}
-
 EvmNetwork_t _FindNetwork(uint64_t chainId)
 {
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(NETWORKS); i++) {
@@ -704,7 +691,14 @@ EvmNetwork_t _FindNetwork(uint64_t chainId)
 void GetEthValue(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    sprintf((char *)indata, "%s %s", eth->overview->value, CalcSymbol(param));
+    if (isErc20Transfer(eth))
+    {
+        TransactionParseResult_EthParsedErc20Transaction *contract = (TransactionParseResult_EthParsedErc20Transaction *)g_erc20ContractData;
+        sprintf((char *)indata, "%s %s", contract->data->value, CalcSymbol(param));
+    }
+    else {
+        sprintf((char *)indata, "%s %s", eth->overview->value, CalcSymbol(param));
+    }
 }
 
 void GetEthGasPrice(void *indata, void *param)
@@ -763,7 +757,14 @@ void GetEthGetFromAddress(void *indata, void *param)
 void GetEthGetToAddress(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    strcpy((char *)indata, eth->overview->to);
+    if (isErc20Transfer(eth))
+    {
+        TransactionParseResult_EthParsedErc20Transaction *contract = (TransactionParseResult_EthParsedErc20Transaction *)g_erc20ContractData;
+        strcpy((char *)indata, contract->data->to);
+    }
+    else {
+        strcpy((char *)indata, eth->overview->to);
+    }
 }
 
 void GetTxnFeeDesc(void *indata, void *param)
@@ -928,11 +929,11 @@ static void FixRecipientAndValueWhenErc20Contract(const char *inputdata, uint8_t
         return;
     }
     PtrT_TransactionParseResult_EthParsedErc20Transaction contractData = eth_parse_erc20((PtrString)inputdata, decimals);
-    g_erc20ContractAddress = result->data->detail->to;
-    result->data->detail->to = contractData->data->to;
-    result->data->overview->to = contractData->data->to;
-    result->data->detail->value = contractData->data->value;
-    result->data->overview->value = contractData->data->value;
+    g_erc20ContractData = contractData;
+    // result->data->detail->to = contractData->data->to;
+    // result->data->overview->to = contractData->data->to;
+    // result->data->detail->value = contractData->data->value;
+    // result->data->overview->value = contractData->data->value;
 }
 
 static bool GetEthErc20ContractData(void *parseResult)
@@ -1019,6 +1020,9 @@ void FreeContractData(void)
         free_Response_DisplayContractData(g_contractData);
     }
     g_contractData = NULL;
+    if (g_erc20ContractData != NULL) {
+        free_TransactionParseResult_EthParsedErc20Transaction(g_erc20ContractData);
+    }
 #endif
 }
 

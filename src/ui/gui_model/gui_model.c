@@ -470,6 +470,7 @@ static UREncodeResult *g_urResult = NULL;
 
 static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, void *getUR)
 {
+    printf("ModelURGenerateQRCode: g_urResult generated\r\n");
     GenerateUR func = (GenerateUR)getUR;
     g_urResult = func();
     if (g_urResult->error_code == 0) {
@@ -502,7 +503,9 @@ static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen)
 
 static int32_t ModelURClear(const void *inData, uint32_t inDataLen)
 {
+    printf("ModelURClear: g_urResult: %p\r\n", g_urResult);
     if (g_urResult != NULL) {
+        printf("ModelURClear: g_urResult clear\r\n");
         free_ur_encode_result(g_urResult);
         g_urResult = NULL;
     }

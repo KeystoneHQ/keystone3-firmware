@@ -37,7 +37,8 @@ void Ili9806Init(void)
 {
     Parallel8080Init();
     UserDelay(50);
-    Parallel8080Reset();   //初始化之前复位
+    Parallel8080Reset();   
+    //Reset before initialization
     Ili9806InitSequence();
 }
 

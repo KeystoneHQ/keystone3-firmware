@@ -64,8 +64,8 @@ typedef void (*UartTestCmdFunc_t)(int argc, char *argv[]);
 
 typedef struct
 {
-    const char *cmdString;  // 命令字符串，用于对比
-    UartTestCmdFunc_t func; // 对应命令的测试函数
+    const char *cmdString;  // Command string for comparison
+    UartTestCmdFunc_t func; // Test function for the corresponding command
 } UartTestCmdItem_t;
 
 static void TestFunc(int argc, char *argv[]);
@@ -1146,7 +1146,7 @@ static void RustGetMasterFingerprint(int argc, char *argv[])
 static void RustTestParseCryptoPSBT(int argc, char *argv[])
 {
     printf("RustTestParseCryptoPSBT\r\n");
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize()); // 剩余堆空间
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
     URParseResult *ur = test_get_crypto_psbt();
     void *crypto_psbt = ur->data;
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};

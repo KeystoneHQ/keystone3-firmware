@@ -13,6 +13,11 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
+void FpSaveKeyInfo(void)
+{
+
+}
+
 struct UREncodeResult *get_connect_metamask_ur_unlimited(PtrBytes master_fingerprint,
                                                          uint32_t master_fingerprint_length,
                                                          enum ETHAccountType account_type,
@@ -364,7 +369,7 @@ bool GetPassphraseQuickAccess(void)
 
 bool PassphraseExist(uint8_t accountIndex)
 {
-    return false;
+    return true;
 }
 
 uint8_t GetFingerSignFlag(void)

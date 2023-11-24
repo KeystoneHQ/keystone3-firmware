@@ -232,6 +232,7 @@ void GuiLockScreenTurnOff(void)
 {
     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
     lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
+    ClearSecretCache();
     GuiModeGetWalletDesc();
     GuiEnterPassCodeStatus(g_verifyLock, true);
 
@@ -239,8 +240,6 @@ void GuiLockScreenTurnOff(void)
         g_oldWalletIndex = GetCurrentAccountIndex();
     }
 
-    printf("oldWalletIndex = %d\n", g_oldWalletIndex);
-    printf("GetCurrentAccountIndex() = %d\n", GetCurrentAccountIndex());
     if (GetCurrentAccountIndex() != g_oldWalletIndex) {
         g_oldWalletIndex = GetCurrentAccountIndex();
         GuiCloseToTargetView(&g_homeView);
@@ -363,6 +362,10 @@ void GuiLockScreenInit(void *param)
 
     g_lockScreenCont = cont;
     GuiEnterPasscodeItem_t *item = GuiCreateEnterPasscode(cont, NULL, param, ENTER_PASSCODE_VERIFY_PIN);
+    if (ModelGetPassphraseQuickAccess()) {
+        static uint16_t currentTile = SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE;
+        GuiUpdateEnterPasscodeParam(item, &currentTile);
+    }
     g_verifyLock = item;
 
     GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_GO_LOCK_DEVICE_PASS, NULL, 0);

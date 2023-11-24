@@ -22,6 +22,7 @@
 #include "gui_mnemonic_input.h"
 #include "motor_manager.h"
 #include "account_manager.h"
+#include "gui_keyboard_hintbox.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "keystore.h"
@@ -46,7 +47,7 @@ static KeyBoard_t *g_setPassPhraseKb = NULL;         // setting keyboard
 
 void GuiWalletPassphrase(lv_obj_t *parent)
 {
-    static uint16_t walletSetting = DEVICE_SETTING_PASSPHRASE_VERIFY;
+    static uint16_t walletSetting = DEVICE_SETTING_PASSPHRASE_ENTER;
 
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
@@ -66,7 +67,7 @@ void GuiWalletPassphrase(lv_obj_t *parent)
             .position = {376, 0},
         },
     };
-    lv_obj_t *button = GuiCreateButton(parent, 456, 84, table, 2, GuiShowKeyboardHandler, &walletSetting);
+    lv_obj_t *button = GuiCreateButton(parent, 456, 84, table, 2, WalletSettingHandler, &walletSetting);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 144 - GUI_MAIN_AREA_OFFSET);
 
     g_passphraseQuickAccessSwitch = lv_switch_create(parent);
@@ -231,8 +232,8 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
             const char *repeat = lv_textarea_get_text(g_passphraseWidget.repeatTa);
             if (!strcmp(input, repeat)) {
                 SecretCacheSetPassphrase((char *)repeat);
-                GuiSettingAnimSetLabel(_("seed_check_wait_verify"));
-                GuiModelSettingWritePassphrase();
+                static uint16_t signal = SIG_SETTING_WRITE_PASSPHRASE;
+                GuiShowKeyboard(&signal, true, NULL);
             } else {
                 delayFlag = true;
                 lv_obj_clear_flag(g_passphraseWidget.errLabel, LV_OBJ_FLAG_HIDDEN);

@@ -89,13 +89,14 @@ static uint16_t g_lastCmd;
 static bool g_devLogSwitch = false;
 static uint8_t g_fpRandomKey[16] = {0};
 static uint8_t g_hostRandomKey[16] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10};
+static uint8_t g_communicateAesKey[32] = {0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77};
 static uint8_t g_randomAesKey[16] = {0};
+static uint8_t g_fpTempAesKey[32] = {0};
 static Recognize_Type g_fingerRecognizeType = RECOGNIZE_UNLOCK;
 static uint8_t g_fpRegCnt = 0;
 static FingerManagerInfo_t g_fpManager = {0};
 static uint8_t g_fpVersion[4] = {0};
 static bool g_chipIdState = false;
-static uint8_t g_communicateAesKey[32] = {0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77};
 char g_intrRecvBuffer[RCV_MSG_MAX_LEN] = {0};
 
 static const FingerPrintControl_t g_cmdHandleMap[] = {
@@ -173,24 +174,29 @@ static void FpRegSend(uint16_t cmd, uint8_t param)
     // SendPackFingerMsg(FINGERPRINT_CMD_REG, &param, 0, 1, AES_KEY_ENCRYPTION);
 }
 
+void FpDeleteRegisterFinger(void)
+{
+    DeleteFp(g_fpDeleteIndex);
+}
+
 // A000 RECV
 void FpRegRecv(char *indata, uint8_t len)
 {
     int i = 0;
     uint8_t result = indata[i++];
-    uint8_t fingerId;
     g_fpRegCnt++;
     ClearLockScreenTime();
     if (result == FP_SUCCESS_CODE) {
-        fingerId = indata[i++];
+        g_fpDeleteIndex = indata[i++];
         uint8_t cnt = indata[i];
         printf("finger index = %d\n", indata[i]);
         MotorCtrl(MOTOR_LEVEL_MIDDLE, MOTOR_SHAKE_SHORT_TIME);
         if (len == 38) {
             printf("save account index = %d\n", GetCurrentAccountIndex());
-            AddFingerManager(fingerId);
-            SetFingerManagerInfoToSE();
-            FingerSetInfoToSE((uint8_t *)&indata[6], fingerId, GetCurrentAccountIndex(), SecretCacheGetPassword());
+            AddFingerManager(g_fpDeleteIndex);
+            // SetFingerManagerInfoToSE();
+            memcpy(g_fpTempAesKey, (uint8_t *)&indata[6], sizeof(g_fpTempAesKey));
+            // FingerSetInfoToSE((uint8_t *)&indata[6], fingerId, GetCurrentAccountIndex(), SecretCacheGetPassword());
         }
         GuiApiEmitSignal(SIG_FINGER_REGISTER_STEP_SUCCESS, &cnt, sizeof(cnt));
     } else {
@@ -283,6 +289,16 @@ static void FpRecognizeSend(uint16_t cmd, uint8_t passwd)
     // SendPackFingerMsg(FINGERPRINT_CMD_RECOGNIZE, &passwd, 0, 1, AES_KEY_ENCRYPTION);
 }
 
+void FpSaveKeyInfo(void)
+{
+    printf("what fuck...\n");
+    printf("...%s....\n", SecretCacheGetPassword());
+    SetFingerManagerInfoToSE();
+    FingerSetInfoToSE(g_fpTempAesKey, 0, GetCurrentAccountIndex(), SecretCacheGetPassword());
+    memset(g_fpTempAesKey, 0,  sizeof(g_fpTempAesKey));
+    ClearSecretCache();
+}
+
 // A7FF RECV
 static void FpRecognizeRecv(char *indata, uint8_t len)
 {
@@ -294,9 +310,9 @@ static void FpRecognizeRecv(char *indata, uint8_t len)
         printf("recognize score is %d\n", indata[i++]);
         if (len == 38) {
             if (g_fingerRecognizeType == RECOGNIZE_OPEN_SIGN) {
-                printf("open sign\n");
                 if (GetCurrentAccountIndex() != 0xFF) {
-                    FingerSetInfoToSE((uint8_t *)&indata[6], 0, GetCurrentAccountIndex(), SecretCacheGetPassword());
+                    memcpy(g_fpTempAesKey, (uint8_t *)&indata[6], sizeof(g_fpTempAesKey));
+                    FpSaveKeyInfo();
                 } else {
                     return;
                 }
@@ -306,6 +322,8 @@ static void FpRecognizeRecv(char *indata, uint8_t len)
                 GetFpEncryptedPassword(GetCurrentAccountIndex(), encryptedPassword);
                 decryptFunc((uint8_t *)decryptPasscode, encryptedPassword, (uint8_t *)&indata[6]);
                 SecretCacheSetPassword(decryptPasscode);
+                memset(decryptPasscode, 0, sizeof(decryptPasscode));
+                memset(encryptedPassword, 0, sizeof(encryptedPassword));
             }
         }
 

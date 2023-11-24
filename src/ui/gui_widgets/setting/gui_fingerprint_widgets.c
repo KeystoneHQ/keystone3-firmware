@@ -94,6 +94,7 @@ void CancelVerifyFingerHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
+        ClearSecretCache();
         FpCancelCurOperate();
         GUI_DEL_OBJ(g_verifyFingerCont)
     }
@@ -122,6 +123,38 @@ void GuiFpVerifyDestruct(void)
     GUI_DEL_OBJ(g_verifyFingerCont)
 }
 
+void GuiWalletFingerOpenSign(void)
+{
+    g_verifyFingerCont = GuiCreateHintBox(lv_scr_act(), 480, 428, true);
+    lv_obj_t *cont = g_verifyFingerCont;
+    lv_obj_t *label = GuiCreateIllustrateLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint"));
+    lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 402);
+
+    lv_obj_t *img = GuiCreateImg(cont, &imgClose);
+    GuiButton_t table[] = {
+        {
+            .obj = img,
+            .align = LV_ALIGN_DEFAULT,
+            .position = {14, 14},
+        }
+    };
+    lv_obj_t *button = GuiCreateButton(cont, 64, 64, table, 1, CancelVerifyFingerHandler, NULL);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 384, 394);
+
+    g_imgSignFinger = GuiCreateImg(cont, &imgYellowFinger);
+    lv_obj_align(g_imgSignFinger, LV_ALIGN_BOTTOM_MID, 0, -178);
+
+    g_labelSignFailed = GuiCreateLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint_failed"));
+    lv_obj_set_style_text_color(g_labelSignFailed, RED_COLOR, LV_PART_MAIN);
+    lv_obj_add_flag(g_labelSignFailed, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_align(g_labelSignFailed, LV_ALIGN_BOTTOM_MID, 0, -100);
+
+    lv_obj_t *arc = GuiCreateArc(cont);
+    lv_obj_align(arc, LV_ALIGN_BOTTOM_MID, 0, -154);
+    FpRecognize(RECOGNIZE_OPEN_SIGN);
+}
+
 void FingerSignHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -134,34 +167,7 @@ void FingerSignHandler(lv_event_t *e)
             SetFingerManagerInfoToSE();
             lv_event_send(g_fpSingerSwitch, LV_EVENT_VALUE_CHANGED, NULL);
         } else {
-            g_verifyFingerCont = GuiCreateHintBox(lv_scr_act(), 480, 428, true);
-            lv_obj_t *cont = g_verifyFingerCont;
-            lv_obj_t *label = GuiCreateIllustrateLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint"));
-            lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-            lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 402);
-
-            lv_obj_t *img = GuiCreateImg(cont, &imgClose);
-            GuiButton_t table[] = {
-                {
-                    .obj = img,
-                    .align = LV_ALIGN_DEFAULT,
-                    .position = {14, 14},
-                }
-            };
-            lv_obj_t *button = GuiCreateButton(cont, 64, 64, table, 1, CancelVerifyFingerHandler, NULL);
-            lv_obj_align(button, LV_ALIGN_DEFAULT, 384, 394);
-
-            g_imgSignFinger = GuiCreateImg(cont, &imgYellowFinger);
-            lv_obj_align(g_imgSignFinger, LV_ALIGN_BOTTOM_MID, 0, -178);
-
-            g_labelSignFailed = GuiCreateLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint_failed"));
-            lv_obj_set_style_text_color(g_labelSignFailed, RED_COLOR, LV_PART_MAIN);
-            lv_obj_add_flag(g_labelSignFailed, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_align(g_labelSignFailed, LV_ALIGN_BOTTOM_MID, 0, -100);
-
-            lv_obj_t *arc = GuiCreateArc(cont);
-            lv_obj_align(arc, LV_ALIGN_BOTTOM_MID, 0, -154);
-            FpRecognize(RECOGNIZE_OPEN_SIGN);
+            GuiShowKeyboardHandler(e);
         }
     }
 }
@@ -253,8 +259,8 @@ void GuiSettingFingerRegisterSuccess(void *param)
     lv_obj_set_style_arc_color(g_arcProgress, ORANGE_COLOR, LV_PART_INDICATOR);
     lv_label_set_text(g_fpRegLabel, "");
     if (step == 8) {
-        uint8_t walletIndex = DEVICE_SETTING_FINGER_ADD_SUCCESS;
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
+        static uint16_t signal = SIG_FINGER_REGISTER_ADD_SUCCESS;
+        GuiShowKeyboard(&signal, true, StopAddNewFingerHandler);
     }
 }
 
@@ -279,6 +285,13 @@ void GuiSettingFingerRegisterFail(void *param)
         }
         lv_label_set_text(g_fpRegLabel, text);
     }
+}
+
+void GuiWalletFingerOpenUnlock(void)
+{
+    lv_obj_add_state(g_fpUnlockSwitch, LV_STATE_CHECKED);
+    UpdateFingerUnlockFlag(true);
+    lv_event_send(g_fpUnlockSwitch, LV_EVENT_VALUE_CHANGED, NULL);
 }
 
 void GuiWalletFingerAddWidget(lv_obj_t *parent)
@@ -353,6 +366,8 @@ void GuiFingerMangerStructureCb(void *obj, void *param)
         DEVICE_SETTING_FINGER_DELETE,
         DEVICE_SETTING_FINGER_SET_PATTERN
     };
+    static uint16_t walletUnlock = SIG_FINGER_SET_UNLOCK;
+    static uint16_t walletSign = SIG_FINGER_SET_SIGN_TRANSITIONS;
 
     if (lv_obj_get_child_cnt(container) > 0) {
         lv_obj_clean(container);
@@ -379,7 +394,7 @@ void GuiFingerMangerStructureCb(void *obj, void *param)
             .position = {376, 0},
         },
     };
-    button = GuiCreateButton(container, 456, 84, table, NUMBER_OF_ARRAYS(table), FingerUnlockDeviceHandler, NULL);
+    button = GuiCreateButton(container, 456, 84, table, NUMBER_OF_ARRAYS(table), FingerUnlockDeviceHandler, &walletUnlock);
     if (GetRegisteredFingerNum() == 0) {
         lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_set_style_bg_opa(button, LV_OPA_10, LV_PART_MAIN);
@@ -397,7 +412,7 @@ void GuiFingerMangerStructureCb(void *obj, void *param)
     lv_obj_clear_flag(g_fpSingerSwitch, LV_OBJ_FLAG_CLICKABLE);
     table[0].obj = label;
     table[1].obj = g_fpSingerSwitch;
-    button = GuiCreateButton(container, 456, 84, table, NUMBER_OF_ARRAYS(table), FingerSignHandler, NULL);
+    button = GuiCreateButton(container, 456, 84, table, NUMBER_OF_ARRAYS(table), FingerSignHandler, &walletSign);
     if (GetRegisteredFingerNum() == 0) {
         lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_set_style_bg_opa(button, LV_OPA_10, LV_PART_MAIN);
@@ -483,8 +498,8 @@ void GuiWalletFingerDeleteWidget(lv_obj_t *parent)
 void GuiWalletSetFingerPassCodeWidget(lv_obj_t *parent)
 {
     static uint32_t walletSetting[2] = {
-        DEVICE_SETTING_FINGER_SETTING,
-        DEVICE_SETTING_RESET_PASSCODE
+        SIG_FINGER_FINGER_SETTING,
+        SIG_SETTING_CHANGE_PASSWORD
     };
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
@@ -597,11 +612,11 @@ static void FingerUnlockDeviceHandler(lv_event_t *e)
         bool en = lv_obj_has_state(g_fpUnlockSwitch, LV_STATE_CHECKED);
         if (en) {
             lv_obj_clear_state(g_fpUnlockSwitch, LV_STATE_CHECKED);
+            UpdateFingerUnlockFlag(!en);
+            lv_event_send(g_fpUnlockSwitch, LV_EVENT_VALUE_CHANGED, NULL);
         } else {
-            lv_obj_add_state(g_fpUnlockSwitch, LV_STATE_CHECKED);
+            GuiShowKeyboardHandler(e);
         }
-        UpdateFingerUnlockFlag(!en);
-        lv_event_send(g_fpUnlockSwitch, LV_EVENT_VALUE_CHANGED, NULL);
     }
 }
 

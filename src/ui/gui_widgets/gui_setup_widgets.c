@@ -26,6 +26,7 @@ typedef enum {
     SETUP_LANGUAGE_BUTT,
 } SETUP_LANGUAGE_ENUM;
 
+
 static const char *g_languageList[] = {
     "English",
     "繁體中文",

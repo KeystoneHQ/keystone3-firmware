@@ -167,6 +167,7 @@ uint8_t GetRegisteredFingerNum(void);
 void UpdateRegisteredFingerNum(uint8_t num);
 uint8_t GetFingerRegisteredStatus(uint8_t fingerIndex);
 void UpdateFingerRegisteredStatus(uint8_t fingerIndex, uint8_t data);
+void FpDeleteRegisterFinger(void);
 
 void decryptFunc(uint8_t *decryptPasscode, uint8_t *encryptPasscode, uint8_t *passwordAesKey);
 void FingerSetInfoToSE(uint8_t *random, uint8_t fingerId, uint8_t accountIndex, char *password);
@@ -193,5 +194,6 @@ uint8_t *GuiGetFpVersion(uint8_t *version);
 void FpWipeManageInfo(void);
 const char *GetFpErrorMessage(FingerError_Code errCode);
 void FpResponseHandleStop(void);
+void FpSaveKeyInfo(void);
 
 #endif

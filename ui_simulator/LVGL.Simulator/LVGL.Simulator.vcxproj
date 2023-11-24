@@ -54,6 +54,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\external\cjson\cJSON.c" />
+    <ClCompile Include="..\..\external\lvgl\examples\widgets\table\lv_example_table_1.c" />
+    <ClCompile Include="..\..\external\lvgl\examples\widgets\table\lv_example_table_2.c" />
     <ClCompile Include="..\..\src\config\version.c" />
     <ClCompile Include="..\..\src\crypto\secret_cache.c" />
     <ClCompile Include="..\..\src\ui\gui_analyze\gui_analyze.c" />

@@ -65,6 +65,7 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         }
         SetCurrentAccountIndex();
         GuiFpRecognizeResult(true);
+    case SIG_LOCK_VIEW_SCREEN_ON_PASSPHRASE_PASS:
     case SIG_VERIFY_PASSWORD_PASS:
         GuiLockScreenClearFirstUnlock();
         GuiLockScreenPassCode(true);

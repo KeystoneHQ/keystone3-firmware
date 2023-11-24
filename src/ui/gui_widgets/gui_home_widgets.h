@@ -81,6 +81,7 @@ void GuiHomeAreaInit(void);
 void GuiHomeDisActive(void);
 void GuiHomeSetWalletDesc(WalletDesc_t *wallet);
 void GuiHomeRestart(void);
+bool GuiHomePageIsTop(void);
 const ChainCoinCard_t* GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index);
 void GuiHomeDeInit(void);
 #endif /* _GUI_HOME_WIDGETS_H */

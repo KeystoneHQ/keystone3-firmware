@@ -216,6 +216,7 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         WalletDesc_t wallet = {
             .iconIndex = GuiGetEmojiIconIndex(),
         };
+        GuiSetupKeyboardWidgetMode();
         SetStatusBarEmojiIndex(wallet.iconIndex);
         strcpy(wallet.name, GetCurrentKbWalletName());
         GuiNvsBarSetWalletName(GetCurrentKbWalletName());

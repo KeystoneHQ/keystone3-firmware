@@ -8,6 +8,7 @@ pub mod address;
 mod crypto;
 mod eip1559_transaction;
 pub mod eip712;
+pub mod erc20;
 pub mod errors;
 mod legacy_transaction;
 mod normalizer;

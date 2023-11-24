@@ -313,3 +313,27 @@ impl Free for DisplayContractParam {
 }
 
 impl_c_ptr!(DisplayContractParam);
+
+#[repr(C)]
+pub struct EthParsedErc20Transaction {
+    pub to: PtrString,
+    pub value: PtrString,
+}
+
+impl From<app_ethereum::erc20::ParsedErc20Transaction> for EthParsedErc20Transaction {
+    fn from(value: app_ethereum::erc20::ParsedErc20Transaction) -> Self {
+        Self {
+            to: convert_c_char(value.to),
+            value: convert_c_char(value.value),
+        }
+    }
+}
+
+impl Free for EthParsedErc20Transaction {
+    fn free(&self) {
+        free_str_ptr!(self.to);
+        free_str_ptr!(self.value);
+    }
+}
+
+impl_c_ptr!(EthParsedErc20Transaction);

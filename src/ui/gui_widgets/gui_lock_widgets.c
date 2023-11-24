@@ -26,6 +26,8 @@
 #include "assert.h"
 #include "screen_manager.h"
 #include "gui_passphrase_widgets.h"
+#include "gui_keyboard_hintbox.h"
+#include "gui_firmware_update_widgets.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "assert.h"
@@ -218,6 +220,9 @@ void GuiLockScreenTurnOn(void *param)
     lv_obj_clear_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
     // g_lockView.isActive = true;
     lv_obj_set_parent(g_pageWidget->page, lv_scr_act());
+    if (GetKeyboardWidgetMode() != g_verifyLock->mode % 2) {
+        PassWordPinSwitch(g_verifyLock);
+    }
     GuiUpdateEnterPasscodeParam(g_verifyLock, single);
     GuilockScreenRefresh();
 }
@@ -241,6 +246,7 @@ void GuiLockScreenTurnOff(void)
         GuiCloseToTargetView(&g_homeView);
     } else {
         GuiEmitSignal(GUI_EVENT_REFRESH, &single, sizeof(single));
+        GuiFirmwareUpdateWidgetRefresh();
     }
     // g_lockView.isActive = false;
 }
@@ -273,11 +279,8 @@ void GuiLockScreenPassCode(bool en)
         g_fpErrorCount = 0;
         FpCancelCurOperate();
         if (ModelGetPassphraseQuickAccess()) {
-            if (g_passphraseView.isActive) {
-                GuiLockScreenTurnOff();
-            } else {
-                GuiFrameOpenView(&g_passphraseView);
-            }
+            GuiLockScreenTurnOff();
+            GuiFrameOpenView(&g_passphraseView);
             printf("passphrase quick access\r\n");
         } else if (g_homeView.isActive) {
             printf("g_homeView.isActive\r\n");
@@ -306,6 +309,7 @@ void GuiLockScreenErrorCount(void *param)
     printf("GuiLockScreenErrorCount  errorcount is %d\n", passwordVerifyResult->errorCount);
     if (g_verifyLock != NULL) {
         char hint[128];
+        char tempBuf[128];
         int leftCount = 0;
 
         if (*(uint16_t *)passwordVerifyResult->signal == SIG_LOCK_VIEW_VERIFY_PIN
@@ -313,12 +317,13 @@ void GuiLockScreenErrorCount(void *param)
             leftCount = MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount;
             ASSERT(leftCount >= 0);
             if (leftCount > 1) {
-                sprintf(hint, _("unlock_device_attempts_left_plural_times_fmt"), leftCount);
+                sprintf(hint, _("unlock_device_attempts_left_plural_times_fmt"), leftCount - 4);
             } else {
-                sprintf(hint, _("unlock_device_attempts_left_singular_times_fmt"), leftCount);
+                sprintf(hint, _("unlock_device_attempts_left_singular_times_fmt"), leftCount - 4);
             }
-            lv_label_set_text(g_verifyLock->errLabel, hint);
-            GuiPassowrdToLockTimePage(MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount);
+            sprintf(tempBuf, "#F55831 %s #", hint);
+            lv_label_set_text(g_verifyLock->errLabel, tempBuf);
+            GuiPassowrdToLockTimePage(leftCount);
             if (passwordVerifyResult->errorCount == MAX_LOGIN_PASSWORD_ERROR_COUNT) {
                 GuiFrameOpenView(&g_lockDeviceView);
                 FpCancelCurOperate();

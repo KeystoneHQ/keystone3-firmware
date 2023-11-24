@@ -40,10 +40,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
         {HOME_WALLET_CARD_SUI, false, "SUI", true},
         {HOME_WALLET_CARD_ADA, false, "ADA", true},
         {HOME_WALLET_CARD_XRP, false, "XRP", true},
-        {HOME_WALLET_CARD_TRX, false, "TRX", true},
-        {HOME_WALLET_CARD_BCH, false, "BCH", true},
-        {HOME_WALLET_CARD_DASH, false, "DASH", true},
-        {HOME_WALLET_CARD_LTC, false, "LTC", true},
+        {HOME_WALLET_CARD_TRX, false, "TRX", false},
         {HOME_WALLET_CARD_ATOM, false, "ATOM", true},
         {HOME_WALLET_CARD_OSMO, false, "OSMO", true},
         {HOME_WALLET_CARD_SCRT, false, "SCRT", true},
@@ -392,6 +389,11 @@ static void UpdateManageWalletState(bool needUpdate)
         // g_manageWalletNum = selectCnt;
     }
 }
+
+bool GuiHomePageIsTop(void)
+{
+    return GuiCheckIfTopView(&g_homeView) && g_manageCont == NULL;
+};
 
 void ReturnManageWalletHandler(lv_event_t *e)
 {

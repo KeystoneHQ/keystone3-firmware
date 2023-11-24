@@ -64,6 +64,7 @@ typedef enum {
 
     SIG_VERIFY_PASSWORD_PASS = SIG_QRCODE_VIEW_SCAN_BUTT + 500,
     SIG_VERIFY_PASSWORD_FAIL,
+    SIG_FIRMWARE_VERIFY_PASSWORD_FAIL,
     SIG_VERIFY_FINGER_PASS,
     SIG_VERIFY_FINGER_FAIL,
     SIG_SETTING_SET_PIN,
@@ -128,6 +129,7 @@ extern GUI_VIEW g_createShareView;
 extern GUI_VIEW g_importShareView;
 extern GUI_VIEW g_settingView;
 extern GUI_VIEW g_connectWalletView;
+extern GUI_VIEW g_USBTransportView;
 extern GUI_VIEW g_passphraseView;
 extern GUI_VIEW g_utxoReceiveView;
 extern GUI_VIEW g_multiPathCoinReceiveView;

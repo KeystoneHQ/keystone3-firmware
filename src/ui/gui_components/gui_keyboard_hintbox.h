@@ -5,10 +5,20 @@
 #include "gui_keyboard.h"
 #include "gui_model.h"
 
+enum {
+    KEYBOARD_HINTBOX_PIN = 0,
+    KEYBOARD_HINTBOX_PASSWORD = 1,
+};
+
 typedef struct KeyboardWidget {
     lv_obj_t *keyboardHintBox;
     KeyBoard_t *kb;
+    lv_obj_t *led[6];
+    lv_obj_t *btnm;
     lv_obj_t *errLabel;
+    lv_obj_t *eyeImg;
+    lv_obj_t *switchLabel;
+    uint8_t currentNum;
     uint16_t *sig;
     lv_timer_t *countDownTimer;
     uint8_t *timerCounter;
@@ -20,6 +30,9 @@ typedef struct KeyboardWidget {
 KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent);
 void SetKeyboardWidgetSig(KeyboardWidget_t *keyboardWidget, uint16_t *sig);
 void SetKeyboardWidgetSelf(KeyboardWidget_t *keyboardWidget, KeyboardWidget_t **self);
+void SetKeyboardWidgetMode(uint8_t mode);
+uint8_t GetKeyboardWidgetMode(void);
+void PassWordPinHintRefresh(KeyboardWidget_t *keyboardWidget);
 
 void GuiDeleteKeyboardWidget(KeyboardWidget_t *keyboardWidget);
 const char *GuiGetKeyboardInput(KeyboardWidget_t *keyboardWidget);

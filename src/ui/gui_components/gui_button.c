@@ -36,7 +36,7 @@ void *GuiCreateButton(lv_obj_t *parent, uint16_t w, uint16_t h, GuiButton_t *mem
     return cont;
 }
 
-void *GuiCreateImgLabelButton(lv_obj_t *parent, const char *text, const void *src,
+void *GuiCreateImgLabelButton(lv_obj_t *parent, const char *text, const void *src, uint16_t width,
                               lv_event_cb_t buttonCb, void *param)
 {
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, text);
@@ -45,8 +45,9 @@ void *GuiCreateImgLabelButton(lv_obj_t *parent, const char *text, const void *sr
         {.obj = img, .align = LV_ALIGN_LEFT_MID, .position = {12, 0},},
         {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {40, 0},},
     };
-    lv_obj_t *button = GuiCreateButton(parent, 123, 36, table, NUMBER_OF_ARRAYS(table),
+    lv_obj_t *button = GuiCreateButton(parent, width, 36, table, NUMBER_OF_ARRAYS(table),
                                        buttonCb, param);
+    lv_obj_set_style_radius(button, 12, LV_PART_MAIN);
     return button;
 }
 

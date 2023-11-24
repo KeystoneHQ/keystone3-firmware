@@ -255,7 +255,6 @@ void GuiWalletSetPinWidget(lv_obj_t *parent, uint8_t tile)
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
 
     g_setPassCode = GuiCreateEnterPasscode(parent, NULL, &currentTile, ENTER_PASSCODE_SET_PIN);
-    printf("%s %d passcode = %p\n", __func__, __LINE__, g_setPassCode);
 
     GuiWalletResetPassWordHintBox();
 }
@@ -267,12 +266,7 @@ void GuiWalletSettingDeinit(void)
 
 void GuiWalletSettingRefresh(void)
 {
-    if (g_setPassCode != NULL) {
-        GuiUpdateEnterPasscodeParam(g_setPassCode, NULL);
-    }
-    if (g_repeatPassCode != NULL) {
-        GuiUpdateEnterPasscodeParam(g_repeatPassCode, NULL);
-    }
+    PassWordPinHintRefresh(g_keyboardWidget);
 }
 
 void GuiWalletRepeatPinWidget(lv_obj_t *parent)
@@ -334,6 +328,7 @@ void GuiChangePassWord(bool result)
 {
     GuiStopCircleAroundAnimation();
     GUI_DEL_OBJ(g_resetingCont)
+    SetKeyboardWidgetMode((g_setPassCode->mode == ENTER_PASSCODE_SET_PIN) ? KEYBOARD_HINTBOX_PIN : KEYBOARD_HINTBOX_PASSWORD);
     if (result) {
         GuiEmitSignal(SIG_SETTING_PASSWORD_RESET_PASS, NULL, 0);
     }

@@ -55,7 +55,7 @@ int32_t GuiFirmwareUpdateViewEventProcess(void *self, uint16_t usEvent, void *pa
         }
         GuiFirmwareSdCardCopy();
         break;
-    case SIG_VERIFY_PASSWORD_FAIL:
+    case SIG_FIRMWARE_VERIFY_PASSWORD_FAIL:
         if (param != NULL) {
             PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
             uint16_t sig = *(uint16_t *) passwordVerifyResult->signal;

@@ -47,6 +47,8 @@ void UserMsgInit(void)
     SubMessageID(UI_MSG_CLOSE_CURRENT_VIEW, g_uiQueue);
     SubMessageID(UI_MSG_ACTIVATE_LOOP, g_uiQueue);
     SubMessageID(UI_MSG_SCREEN_SHOT, g_uiQueue);
+    SubMessageID(UI_MSG_PREPARE_RECEIVE_UR_USB, g_uiQueue);
+    SubMessageID(UI_MSG_USB_TRANSPORT_VIEW, g_uiQueue);
 
     SubMessageID(BACKGROUND_MSG_EXECUTE, g_backgroundQueue);
     SubMessageID(BACKGROUND_MSG_EXECUTE_RUNNABLE, g_backgroundQueue);

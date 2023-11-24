@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include "gui.h"
 #include "gui_obj.h"
-#include "user_memory.h"
 #include "gui_views.h"
+#include "gui_led.h"
 #include "gui_hintbox.h"
 #include "gui_button.h"
 #include "gui_enter_passcode.h"
 #include "gui_keyboard_hintbox.h"
 #include "assert.h"
+#include "user_memory.h"
 #include "motor_manager.h"
 #include "secret_cache.h"
 #include "gui_views.h"
@@ -18,18 +19,29 @@
 #endif
 #define DEFAULT_TIMER_COUNTER 5
 
-static KeyboardWidget_t *CreateKeyboardWidget();
 
+static KeyboardWidget_t *CreateKeyboardWidget();
 static void KeyboardConfirmHandler(lv_event_t *e);
 static void ForgetHandler(lv_event_t *e);
 static void CloseKeyBoardWidgetHandler(lv_event_t *e);
-
 static void GuiShowPasswordErrorHintBox(KeyboardWidget_t *keyboardWidget);
 static void LockDeviceHandler(lv_event_t *e);
 static void GuiHintBoxToLockSreen(void);
 static void CountDownHandler(lv_timer_t *timer);
 static void GuiCountDownTimerDestruct(KeyboardWidget_t *keyboardWidget);
 
+static uint8_t g_keyboardHintBoxMode = KEYBOARD_HINTBOX_PIN;
+static char g_pinBuf[GUI_DEFINE_MAX_PASSCODE_LEN + 1];
+
+void SetKeyboardWidgetMode(uint8_t mode)
+{
+    g_keyboardHintBoxMode = mode;
+}
+
+uint8_t GetKeyboardWidgetMode(void)
+{
+    return g_keyboardHintBoxMode;
+}
 
 static void KeyboardConfirmHandler(lv_event_t *e)
 {
@@ -56,15 +68,12 @@ static void ForgetHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-
         GuiFrameOpenView(&g_forgetPassView);
     }
 }
 
-
 static void CloseKeyBoardWidgetHandler(lv_event_t *e)
 {
-
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
@@ -75,9 +84,12 @@ static void CloseKeyBoardWidgetHandler(lv_event_t *e)
 
 static KeyboardWidget_t *CreateKeyboardWidget()
 {
-
     KeyboardWidget_t *keyboardWidget = SRAM_MALLOC(sizeof(KeyboardWidget_t));
     keyboardWidget->keyboardHintBox = NULL;
+    keyboardWidget->btnm = NULL;
+    for (int i = 0; i < 6; i++) {
+        keyboardWidget->led[i] = NULL;
+    }
     keyboardWidget->kb = NULL;
     keyboardWidget->errLabel = NULL;
     static uint16_t sig = ENTER_PASSCODE_VERIFY_PASSWORD;
@@ -101,11 +113,113 @@ void SetKeyboardWidgetSelf(KeyboardWidget_t *keyboardWidget, KeyboardWidget_t **
     keyboardWidget->self = self;
 }
 
+static void ClearKeyboardWidgetCache(KeyboardWidget_t *keyboardWidget)
+{
+    memset(g_pinBuf, 0, sizeof(g_pinBuf));
+    keyboardWidget->currentNum = 0;
+    for (int i = 0; i < CREATE_PIN_NUM; i++) {
+        GuiSetLedStatus(keyboardWidget->led[i], PASSCODE_LED_OFF);
+    }
+    GuiClearKeyboardInput(keyboardWidget);
+}
+
+static void SetPinEventHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
+    if (code == LV_EVENT_RELEASED) {
+        uint32_t id = lv_btnmatrix_get_selected_btn(keyboardWidget->btnm);
+        if (id == 9) {
+            return;
+        }
+        Vibrate(SLIGHT);
+        const char *txt = lv_btnmatrix_get_btn_text(keyboardWidget->btnm, id);
+        if (strcmp(txt, USR_SYMBOL_DELETE) == 0) {
+            if (keyboardWidget->currentNum > 0) {
+                --keyboardWidget->currentNum;
+                GuiSetLedStatus(keyboardWidget->led[keyboardWidget->currentNum], PASSCODE_LED_OFF);
+                g_pinBuf[keyboardWidget->currentNum] = '\0';
+            } else {
+                for (int i = 0; i < CREATE_PIN_NUM; i++) {
+                    GuiSetLedStatus(keyboardWidget->led[i], PASSCODE_LED_OFF);
+                }
+            }
+            if (!lv_obj_has_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN)) {
+                lv_obj_add_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN);
+            }
+        } else {
+            if (keyboardWidget->currentNum < CREATE_PIN_NUM) {
+                sprintf(g_pinBuf + keyboardWidget->currentNum, "%s", txt);
+                keyboardWidget->currentNum++;
+                for (int i = 0; i < keyboardWidget->currentNum; i++) {
+                    GuiSetLedStatus(keyboardWidget->led[i], PASSCODE_LED_ON);
+                }
+                if (!lv_obj_has_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN)) {
+                    lv_obj_add_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN);
+                    for (int i = 1; i < CREATE_PIN_NUM; i++) {
+                        GuiSetLedStatus(keyboardWidget->led[i], PASSCODE_LED_OFF);
+                    }
+                }
+            }
+            if (keyboardWidget->currentNum == CREATE_PIN_NUM) {
+                SecretCacheSetPassword((char *)g_pinBuf);
+                memset(g_pinBuf, 0, sizeof(g_pinBuf));
+                keyboardWidget->currentNum = 0;
+                GuiClearKeyboardInput(keyboardWidget);
+                GuiModelVerifyAmountPassWord(keyboardWidget->sig);
+            }
+
+        }
+    }
+}
+
+static void PassWordPinHintSwitch(KeyboardWidget_t *keyboardWidget, uint8_t keyboardMode)
+{
+    if (keyboardMode == KEYBOARD_HINTBOX_PIN) {
+        lv_obj_clear_flag(keyboardWidget->btnm, LV_OBJ_FLAG_HIDDEN);
+        for (int i = 0; i < CREATE_PIN_NUM; i++) {
+            lv_obj_clear_flag(keyboardWidget->led[i], LV_OBJ_FLAG_HIDDEN);
+        }
+        lv_obj_add_flag(keyboardWidget->kb->cont, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(keyboardWidget->kb->ta, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(keyboardWidget->eyeImg, LV_OBJ_FLAG_HIDDEN);
+        lv_label_set_text(keyboardWidget->switchLabel, _("password_label"));
+    } else {
+        lv_textarea_set_password_mode(keyboardWidget->kb->ta, true);
+        lv_img_set_src(keyboardWidget->eyeImg, &imgEyeOff);
+        lv_obj_clear_flag(keyboardWidget->kb->cont, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(keyboardWidget->kb->ta, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(keyboardWidget->eyeImg, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(keyboardWidget->btnm, LV_OBJ_FLAG_HIDDEN);
+        for (int i = 0; i < CREATE_PIN_NUM; i++) {
+            lv_obj_add_flag(keyboardWidget->led[i], LV_OBJ_FLAG_HIDDEN);
+        }
+        lv_label_set_text(keyboardWidget->switchLabel, _("pin_label"));
+    }
+    ClearKeyboardWidgetCache(keyboardWidget);
+    g_keyboardHintBoxMode = keyboardMode;
+}
+
+void PassWordPinHintRefresh(KeyboardWidget_t *keyboardWidget)
+{    
+    if (keyboardWidget != NULL) {
+        PassWordPinHintSwitch(keyboardWidget, g_keyboardHintBoxMode);
+    }
+}
+
+static void PassWordPinSwitchHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
+    if (code == LV_EVENT_CLICKED) {
+        uint8_t keyboardMode = lv_obj_has_flag(keyboardWidget->btnm, LV_OBJ_FLAG_HIDDEN) ? KEYBOARD_HINTBOX_PIN : KEYBOARD_HINTBOX_PASSWORD;
+        PassWordPinHintSwitch(keyboardWidget, keyboardMode);
+    }
+}
 
 KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
 {
     KeyboardWidget_t *keyboardWidget = CreateKeyboardWidget();
-
     lv_obj_t *keyboardHintBox = GuiCreateHintBox(parent, 480, 576, true);
 
     lv_obj_add_event_cb(lv_obj_get_child(keyboardHintBox, 0), CloseKeyBoardWidgetHandler, LV_EVENT_CLICKED, keyboardWidget);
@@ -141,24 +255,43 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
     lv_obj_align_to(img, ta, LV_ALIGN_OUT_RIGHT_MID, 20, 0);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, ta);
+    keyboardWidget->eyeImg = img;
 
-    button = GuiCreateImgLabelButton(keyboardHintBox, _("FORGET"), &imgLock, ForgetHandler, NULL);
+    button = GuiCreateImgLabelButton(keyboardHintBox, _("FORGET"), &imgLock, 124, ForgetHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 333, 439);
+
+    button = GuiCreateImgLabelButton(keyboardHintBox, _("password_label"), &imgSwitch, 156, PassWordPinSwitchHandler, keyboardWidget);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 439);
+    keyboardWidget->switchLabel = lv_obj_get_child(button, 1);
 
     label = GuiCreateIllustrateLabel(keyboardHintBox, _("password_error_not_match"));
     lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 390);
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
     lv_label_set_recolor(label, true);
-
     keyboardWidget->errLabel = label;
 
+    for (int i = 0; i < CREATE_PIN_NUM; i++) {
+        lv_obj_t *led = GuiCreateLed(keyboardHintBox);
+        lv_obj_align(led, LV_ALIGN_DEFAULT, 36 + 30 * i, 344);
+        keyboardWidget->led[i] = led;
+    }
+    keyboardWidget->currentNum = 0;
+
+    lv_obj_t *btnm = GuiCreateNumKeyboard(keyboardHintBox, SetPinEventHandler, NUM_KEYBOARD_PIN, keyboardWidget);
+    lv_obj_add_style(btnm, &g_enterPressBtnmStyle, LV_STATE_PRESSED | LV_PART_ITEMS);
+    lv_obj_align(btnm, LV_ALIGN_DEFAULT, 0, 490);
+    keyboardWidget->btnm = btnm;
+
+    PassWordPinHintSwitch(keyboardWidget, g_keyboardHintBoxMode);
     return keyboardWidget;
 }
 
 void GuiDeleteKeyboardWidget(KeyboardWidget_t *keyboardWidget)
 {
     if (keyboardWidget != NULL && keyboardWidget->self != NULL) {
+        memset(g_pinBuf, 0, sizeof(g_pinBuf));
+        keyboardWidget->currentNum = 0;
         if (keyboardWidget->keyboardHintBox != NULL && lv_obj_is_valid(keyboardWidget->keyboardHintBox)) {
             lv_obj_del(keyboardWidget->keyboardHintBox);
             keyboardWidget->keyboardHintBox = NULL;
@@ -211,7 +344,6 @@ void GuiShowErrorLabel(KeyboardWidget_t *keyboardWidget)
 
 void GuiHideErrorLabel(KeyboardWidget_t *keyboardWidget)
 {
-    
     if (keyboardWidget != NULL && !lv_obj_has_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN)) {
         lv_obj_add_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN);
     }
@@ -220,15 +352,19 @@ void GuiHideErrorLabel(KeyboardWidget_t *keyboardWidget)
 
 void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t *passwordVerifyResult)
 {
+    memset(g_pinBuf, 0, sizeof(g_pinBuf));
+    keyboardWidget->currentNum = 0;
     printf("GuiShowErrorNumber error count is %d\n", passwordVerifyResult->errorCount);
     char hint[128];
+    char tempBuf[128];
     uint8_t cnt = MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX - passwordVerifyResult->errorCount;
     if (cnt > 1) {
         sprintf(hint, _("unlock_device_attempts_left_plural_times_fmt"), cnt);
     } else {
         sprintf(hint, _("unlock_device_attempts_left_singular_times_fmt"), cnt);
     }
-    GuiSetErrorLabel(keyboardWidget, hint);
+    sprintf(tempBuf, "#F55831 %s#", hint);
+    GuiSetErrorLabel(keyboardWidget, tempBuf);
     if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
         GuiShowPasswordErrorHintBox(keyboardWidget);
     }
@@ -236,7 +372,6 @@ void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t
 
 static void GuiShowPasswordErrorHintBox(KeyboardWidget_t *keyboardWidget)
 {
-
     lv_obj_t *errHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgFailed,
                            _("unlock_device_error_attempts_exceed"), _("unlock_device_error_attempts_exceed_desc"),
                            NULL, DARK_GRAY_COLOR, _("unlock_device_error_btn_start_text"), DARK_GRAY_COLOR);
@@ -245,7 +380,6 @@ static void GuiShowPasswordErrorHintBox(KeyboardWidget_t *keyboardWidget)
     lv_label_set_text(lv_obj_get_child(btn, 0), _("unlock_device_error_btn_start_text"));
     lv_obj_add_event_cb(btn, LockDeviceHandler, LV_EVENT_CLICKED, keyboardWidget);
     lv_timer_t *countDownTimer = lv_timer_create(CountDownHandler, 1000, keyboardWidget);
-
 
     keyboardWidget->countDownTimer = countDownTimer;
     keyboardWidget->errHintBox = errHintBox;

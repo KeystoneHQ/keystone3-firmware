@@ -87,7 +87,7 @@ extern USB_OTG_CORE_HANDLE g_usbDev;
 #define CDC_PACKET_SIZE                 64
 
 static uint8_t g_cdcSendBuffer[CDC_TX_MAX_LENGTH];
-static uint32_t g_cdcSendLen = 0, g_cdcSendIndex = 0;
+static uint32_t g_cdcSendIndex = 0;
 
 static uint32_t cdcCmd = 0xFF;
 static uint32_t cdcLen = 0;
@@ -433,30 +433,31 @@ static uint8_t* USBD_cdc_GetCfgDesc(uint8_t speed, uint16_t* length)
 #endif
 }
 
-
 static void USBD_cdc_SendBuffer(const uint8_t *data, uint32_t len)
 {
     uint32_t sendLen;
+    uint32_t remaining;
+    g_cdcSendIndex = 0;
+
     ASSERT(len <= CDC_TX_MAX_LENGTH);
     memcpy(g_cdcSendBuffer, data, len);
-    g_cdcSendLen = len;
-    sendLen = len > CDC_PACKET_SIZE ? CDC_PACKET_SIZE : len;
-    g_cdcSendIndex = len;
-    DCD_EP_Tx(&g_usbDev, CDC_IN_EP, g_cdcSendBuffer, sendLen);
+
+    while (g_cdcSendIndex < len) {
+        remaining = len - g_cdcSendIndex;
+        sendLen = remaining > CDC_PACKET_SIZE ? CDC_PACKET_SIZE : remaining;
+
+        PrintArray("sendBuf USBD_cdc_SendBuffer", g_cdcSendBuffer + g_cdcSendIndex, sendLen);
+        DCD_EP_Tx(&g_usbDev, CDC_IN_EP, g_cdcSendBuffer + g_cdcSendIndex, sendLen);
+
+        g_cdcSendIndex += sendLen;
+    }
+
+    g_cdcSendIndex = 0;
+    printf("usb send over\n");
 }
 
 static void USBD_cdc_SendCallback(void)
 {
-    uint32_t sendLen, remaining;
-    if (g_cdcSendIndex >= g_cdcSendLen) {
-        g_cdcSendIndex = 0;
-        g_cdcSendIndex = 0;
-        printf("usb send over\n");
-        return;
-    }
-    remaining = g_cdcSendLen - g_cdcSendIndex;
-    sendLen = remaining > CDC_PACKET_SIZE ? CDC_PACKET_SIZE : remaining;
-    DCD_EP_Tx(&g_usbDev, CDC_IN_EP, g_cdcSendBuffer, sendLen);
+    printf("USBD_cdc_SendCallback usb send over\n");
 }
-
 

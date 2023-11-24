@@ -23,6 +23,6 @@ enum {
 };
 
 extern const ProtocolServiceCallbackFunc_t g_fileTransInfoServiceFunc[];
-
+bool GetIsReceivingFile();
 
 #endif

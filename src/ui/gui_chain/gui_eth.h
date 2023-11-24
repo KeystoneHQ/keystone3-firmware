@@ -22,6 +22,7 @@ void GetEthMaxFeePrice(void *indata, void *param);
 void GetEthMaxPriorityFeePrice(void *indata, void *param);
 
 UREncodeResult *GuiGetEthSignQrCodeData(void);
+UREncodeResult *GuiGetEthSignUrDataUnlimited(void);
 void GetEthGetFromAddress(void *indata, void *param);
 void GetEthGetToAddress(void *indata, void *param);
 void GetTxnFeeDesc(void *indata, void *param);
@@ -62,6 +63,17 @@ typedef struct {
     char *name;
     char *symbol;
 } EvmNetwork_t;
+
+typedef struct {
+    char *symbol;
+    char *contract_address;
+    uint8_t decimals;
+} Erc20Contract_t;
+
+typedef struct {
+    char *recipient;
+    char *value;
+} Erc20Transfer_t;
 
 EvmNetwork_t _FindNetwork(uint64_t chainId);
 

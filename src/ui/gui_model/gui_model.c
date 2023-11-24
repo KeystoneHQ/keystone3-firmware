@@ -955,6 +955,11 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
             } else {
                 UnlimitedVibrate(LONG);
             }
+            if (SIG_INIT_SD_CARD_OTA_COPY == *param) {
+                g_passwordVerifyResult.signal = param;
+                GuiApiEmitSignal(SIG_FIRMWARE_VERIFY_PASSWORD_FAIL, (void*)&g_passwordVerifyResult, sizeof(g_passwordVerifyResult));
+                return SUCCESS_CODE;
+            }
         }
         g_passwordVerifyResult.signal = param;
         GuiApiEmitSignal(SIG_VERIFY_PASSWORD_FAIL, (void*)&g_passwordVerifyResult, sizeof(g_passwordVerifyResult));
@@ -1115,7 +1120,7 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
 #ifndef COMPILE_SIMULATOR
     GuiApiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
     ViewType viewType = *((ViewType *)inData);
-    g_checkResult = CheckScanResult(viewType);
+    g_checkResult = CheckUrResult(viewType);
     if (g_checkResult != NULL &&g_checkResult->error_code == 0) {
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
     } else {

@@ -120,24 +120,28 @@ static uint8_t CompositeEP0_RxReady(void *pdev)
 static uint8_t CompositeDataIn(void *pdev, uint8_t epnum)
 {
     epnum = epnum & 0x0F;
-    if (epnum == MSC_EP_NUM) {
+    if (epnum == MSC_EP_NUM)
+    {
         return USBD_MSC_cb.DataIn(pdev, epnum);
-    } else {
+    }
+    else
+    {
         return USBD_CDC_cb.DataIn(pdev, epnum);
     }
 }
 
-
 static uint8_t CompositeDataOut(void *pdev, uint8_t epnum)
 {
     epnum = epnum & 0x0F;
-    if (epnum == MSC_EP_NUM) {
+    if (epnum == MSC_EP_NUM)
+    {
         return USBD_MSC_cb.DataOut(pdev, epnum);
-    } else {
+    }
+    else
+    {
         return USBD_CDC_cb.DataOut(pdev, epnum);
     }
 }
-
 
 static uint8_t CompositeSOF(void* pdev)
 {

@@ -2,6 +2,7 @@ use alloc::boxed::Box;
 use alloc::string::{String, ToString};
 use alloc::{format, slice};
 
+use app_ethereum::erc20::parse_erc20;
 use app_ethereum::errors::EthereumError;
 use app_ethereum::{
     parse_fee_market_tx, parse_legacy_tx, parse_personal_message, parse_typed_data_message,
@@ -14,12 +15,15 @@ use third_party::ur_registry::traits::RegistryItem;
 use crate::extract_ptr_with_type;
 use crate::interfaces::errors::RustCError;
 use crate::interfaces::ethereum::structs::{
-    DisplayETH, DisplayETHPersonalMessage, DisplayETHTypedData, TransactionType,
+    DisplayETH, DisplayETHPersonalMessage, DisplayETHTypedData, EthParsedErc20Transaction,
+    TransactionType,
 };
 
 use crate::interfaces::structs::{TransactionCheckResult, TransactionParseResult};
 use crate::interfaces::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
+use crate::interfaces::ur::{
+    UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH,
+};
 use crate::interfaces::utils::{convert_c_char, recover_c_char};
 use crate::interfaces::KEYSTONE;
 
@@ -242,7 +246,12 @@ pub extern "C" fn eth_parse_typed_data(
 }
 
 #[no_mangle]
-pub extern "C" fn eth_sign_tx(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+pub extern "C" fn eth_sign_tx_dynamic(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+    fragment_length: usize,
+) -> PtrT<UREncodeResult> {
     let crypto_eth = extract_ptr_with_type!(ptr, EthSignRequest);
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
     let mut path = match crypto_eth.get_derivation_path().get_path() {
@@ -292,7 +301,7 @@ pub extern "C" fn eth_sign_tx(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT
                 Ok(v) => UREncodeResult::encode(
                     v,
                     EthSignature::get_registry_type().get_type(),
-                    FRAGMENT_MAX_LENGTH_DEFAULT,
+                    fragment_length,
                 )
                 .c_ptr(),
             }
@@ -300,6 +309,38 @@ pub extern "C" fn eth_sign_tx(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT
     }
 }
 
+#[no_mangle]
+pub extern "C" fn eth_sign_tx(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+    eth_sign_tx_dynamic(ptr, seed, seed_len, FRAGMENT_MAX_LENGTH_DEFAULT)
+}
+
+// _unlimited
+#[no_mangle]
+pub extern "C" fn eth_sign_tx_unlimited(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+) -> PtrT<UREncodeResult> {
+    eth_sign_tx_dynamic(ptr, seed, seed_len, FRAGMENT_UNLIMITED_LENGTH)
+}
+
+#[no_mangle]
+pub extern "C" fn eth_parse_erc20(
+    input: PtrString,
+    decimal: u32,
+) -> PtrT<TransactionParseResult<EthParsedErc20Transaction>> {
+    let input = recover_c_char(input);
+    let tx = parse_erc20(&input, decimal);
+    match tx {
+        Ok(t) => {
+            TransactionParseResult::success(EthParsedErc20Transaction::from(t).c_ptr()).c_ptr()
+        }
+        Err(_) => TransactionParseResult::from(EthereumError::DecodeContractDataError(
+            String::from("invalid input data"),
+        ))
+        .c_ptr(),
+    }
+}
 #[cfg(test)]
 mod tests {
     extern crate std;

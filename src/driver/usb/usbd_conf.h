@@ -30,6 +30,7 @@
 #define MSC_OUT_EP 0x04
 #else
 #define MSC_EP_NUM 0x01
+#define EAPDU_EP_NUM 0x02
 #define MSC_IN_EP  0x81
 #define MSC_OUT_EP 0x01
 #endif

@@ -38,20 +38,20 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_OKX, &walletListOkx, true},
     {WALLET_LIST_METAMASK, &walletListMetaMask, true},
     {WALLET_LIST_BLUE, &walletListBlue, true},
-    {WALLET_LIST_ETERNL, &walletListEternl, true},
-    {WALLET_LIST_RABBY, &walletListRabby, true},
-    {WALLET_LIST_SAFE, &walletListSafe, true},
     {WALLET_LIST_SPARROW, &walletListSparrow, true},
-    {WALLET_LIST_IMTOKEN, &walletListImToken, true},
+    {WALLET_LIST_RABBY, &walletListRabby, true},
+    {WALLET_LIST_ETERNL, &walletListEternl, true},
+    {WALLET_LIST_SAFE, &walletListSafe, true},
     {WALLET_LIST_BLOCK_WALLET, &walletListBlockWallet, true},
     {WALLET_LIST_SOLFARE, &walletListSolfare, true},
     {WALLET_LIST_XRP_TOOLKIT, &walletListXRPToolkit, true},
     {WALLET_LIST_PETRA, &walletListPetra, true},
+    {WALLET_LIST_KEPLR, &walletListKeplr, true},
+    {WALLET_LIST_IMTOKEN, &walletListImToken, true},
     {WALLET_LIST_FEWCHA, &walletListFewcha, true},
     {WALLET_LIST_ZAPPER, &walletListZapper, true},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true},
-    {WALLET_LIST_KEPLR, &walletListKeplr, true},
     // { WALLET_LIST_SUB, &walletListSub},
 };
 
@@ -200,7 +200,7 @@ typedef struct {
 } ChangeDerivationItem_t;
 
 const static ChangeDerivationItem_t g_changeDerivationList[] = {
-    {"BIP 44 Standard", "#8E8E8E m/44'/60'/0'/0/##F5870A X#"},
+    {"BIP44 Standard", "#8E8E8E m/44'/60'/0'/0/##F5870A X#"},
     {"Ledger Live", "#8E8E8E m/44'/60'/##F5870A X##8E8E8E '/0/0#"},
     {"Ledger Legacy", "#8E8E8E m/44'/60'/0'/##F5870A X#"},
 };
@@ -269,15 +269,20 @@ static void QRCodePause(bool);
 
 static void GuiInitWalletListArray()
 {
-    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39)
+    for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++)
     {
-        //eternl
-        g_walletListArray[3].enable = false;
-    }
-    else
-    {
-        //eternl
-        g_walletListArray[3].enable = true;
+        if (g_walletListArray[i].index == WALLET_LIST_ETERNL)
+        {
+            if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39)
+            {
+                g_walletListArray[i].enable = false;
+            }
+            else
+            {
+                g_walletListArray[i].enable = true;
+            }
+        }
+        continue;
     }
 }
 

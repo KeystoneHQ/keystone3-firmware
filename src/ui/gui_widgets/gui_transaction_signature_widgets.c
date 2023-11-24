@@ -99,49 +99,7 @@ static void GuiCreateSignatureQRCode(lv_obj_t *parent)
     lv_obj_set_size(btn, 408, 66);
     lv_obj_add_event_cb(btn, GoToHomeViewHandler, LV_EVENT_CLICKED, NULL);
 
-    char *data = NULL;
-    GenerateUR func = NULL;
-    switch (g_viewType)
-    {
-    case BtcNativeSegwitTx:
-    case BtcSegwitTx:
-    case BtcLegacyTx:
-    case BtcTx:
-    case LtcTx:
-    case DashTx:
-    case BchTx:
-        func = GuiGetSignQrCodeData;
-        break;
-    case EthTx:
-    case EthPersonalMessage:
-    case EthTypedData:
-        func = GuiGetEthSignQrCodeData;
-        break;
-    case TronTx:
-        func = GuiGetTrxSignQrCodeData;
-        break;
-    case CosmosTx:
-    case CosmosEvmTx:
-        func = GuiGetCosmosSignQrCodeData;
-        break;
-    case SuiTx:
-        func = GuiGetSuiSignQrCodeData;
-        break;
-    case SolanaTx:
-    case SolanaMessage:
-        func = GuiGetSolSignQrCodeData;
-        break;
-    case AptosTx:
-        func = GuiGetAptosSignQrCodeData;
-        break;
-    case CardanoTx:
-        func = GuiGetAdaSignQrCodeData;
-        break;
-    case XRPTx:
-        func = GuiGetXrpSignQrCodeData;
-    default:
-        break;
-    }
+    GenerateUR func = GetUrGenerator(g_viewType);
 
     if (func) {
         GuiAnimatingQRCodeInitWithCustomSize(qrCont, func, true, 336, 336, _("sign_transaction"));

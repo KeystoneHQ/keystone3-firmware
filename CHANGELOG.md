@@ -2,7 +2,7 @@
 
 ### What’s new
 
-1. Added support for ADA through integration with Eternal wallet
+1. Added support for ADA through integration with Eternl wallet
 2. Added support for connecting and signing transactions with Rabby Wallet via USB
 3. Added support for managing ETH and EVM assets using imToken wallet
 4. Added support for managing BTC through Sparrow wallet
@@ -19,7 +19,6 @@
 
 1. Fixed the issue where pressing the Enter key twice was required for the passphrase popup in the keyboard
 2. Resolved the occasional device restart problem when reading ABI data from an SD card during transaction decoding
-
 
 
 ## 1.1.2 (2023-11-09)

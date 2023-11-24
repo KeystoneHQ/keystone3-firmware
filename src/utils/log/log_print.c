@@ -1,10 +1,11 @@
 #include "log_print.h"
 #include "stdio.h"
 #include "librust_c.h"
-// #define RUST_MEMORY_DEBUG
+#define RUST_MEMORY_DEBUG
 
 #ifdef RUST_MEMORY_DEBUG
 #include "user_memory.h"
+#include "assert.h"
 struct __RustMemoryNode {
     void *p;
     uint32_t size;
@@ -17,7 +18,7 @@ RustMemoryNode_t *rustMemoryListHead = NULL;
 
 void RustMemoryNode_add(void *p, uint32_t size)
 {
-    printf("RustMalloc 0x%x, %d\r\n", p, size);
+    // printf("RustMalloc 0x%x, %d\r\n", p, size);
     RustMemoryNode_t *child = rustMemoryListHead;
     RustMemoryNode_t *parent = NULL;
     while (child != NULL) {
@@ -41,12 +42,15 @@ void RustMemoryNode_remove(void *p)
 {
     RustMemoryNode_t *current = rustMemoryListHead;
     if (current == NULL) {
+        //empty list
         return;
     }
     while (current != NULL && current -> p != p) {
         current = current -> next;
     }
-    printf("RustFree 0x%x, %d\r\n", current->p, current -> size);
+    //current must not be NULL, or the memory have already been free. 
+    ASSERT(current != NULL);
+    // printf("RustFree 0x%x, %d\r\n", current->p, current -> size);
     current -> next -> prev = current -> prev;
     if (current -> prev != NULL) {
         current -> prev -> next = current -> next;

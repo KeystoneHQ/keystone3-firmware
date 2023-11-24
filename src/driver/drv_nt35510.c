@@ -26,7 +26,7 @@ void Nt35510Init(void)
 {
     Parallel8080Init();
     UserDelay(50);
-    Parallel8080Reset();   //初始化之前复位
+    Parallel8080Reset();
     Nt35510InitSequence();
 }
 
@@ -121,7 +121,7 @@ void Nt35510Draw(uint16_t xStart, uint16_t yStart, uint16_t xEnd, uint16_t yEnd,
 
 static void Nt35510InitSequence(void)
 {
-//************* NT35510初始化**********//
+//************* NT35510 initialized **********//
     Nt35510WriteReg(0xF000);
     Nt35510WriteData(0x55);
     Nt35510WriteReg(0xF001);
@@ -950,11 +950,11 @@ static void Nt35510InitSequence(void)
     UserDelay(120);
     Nt35510WriteReg(0x2900);
     Nt35510WriteReg(0x2C00);
-    //设置LCD属性参数
-    //LCD_direction(USE_HORIZONTAL);      //设置LCD显示方向
+    //Set the LCD property parameters
+    //LCD_direction(USE_HORIZONTAL);      //Set the LCD display orientation
     //Nt35510WriteToReg(0x3600, 0x00);
     Nt35510WriteToReg16(0x3600, (1 << 6) | (1 << 0));
 
-    //LCD_BL=1;//点亮背光
+    //LCD_BL=1;//Light up the backlight
 }
 

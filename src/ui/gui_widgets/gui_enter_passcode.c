@@ -730,7 +730,6 @@ void GuiSetPasscodeDescLabel(GuiEnterPasscodeItem_t *item, const char *text)
     }
 }
 
-// todo 重入的时候怎么处理
 void GuiDelEnterPasscode(void *obj, void *param)
 {
     GuiEnterPasscodeItem_t *item = obj;

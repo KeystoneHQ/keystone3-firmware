@@ -1,6 +1,30 @@
+## 1.1.4 (2023-11-24)
+
+### What’s new
+
+1. Added support for ADA through integration with Eternal wallet
+2. Added support for connecting and signing transactions with Rabby Wallet via USB
+3. Added support for managing ETH and EVM assets using imToken wallet
+4. Added support for managing BTC through Sparrow wallet
+5. Added support for PlatON transaction decoding on the EVM network
+
+### Improvements
+
+1. Enhanced readability of transaction decoding information for part of ERC20 tokens
+2. Improved transaction decoding speed for XRP signatures
+3. Optimized logic for incorrect device unlock password prompts
+4. Various optimizations at the firmware system level and improvements in text display
+
+### Bug Fixes
+
+1. Fixed the issue where pressing the Enter key twice was required for the passphrase popup in the keyboard
+2. Resolved the occasional device restart problem when reading ABI data from an SD card during transaction decoding
+
+
+
 ## 1.1.2 (2023-11-09)
 
-### Features
+### What’s new
 
 1. Added support for XRP
 
@@ -11,7 +35,7 @@
 
 ## 1.1.0 (2023-10-31)
 
-### Features
+### What’s new
 
 1. Added support for Solana blockchain
 2. Added support for SUI blockchain
@@ -32,14 +56,14 @@
 
 ## 1.0.4 (2023-10-08)
 
-### Features
+### What’s new
 
 1. Implemented WebUSB upgrade support.
 
 
 ## 1.0.0 (2023-09-26)
 
-### Features
+### What’s new
 
 1. Added support for the Cosmos blockchain.
 2. Introduced Passphrase functionality.
@@ -59,7 +83,7 @@
 
 ## 0.8.8 (2023-08-18)
 
-### Features
+### What’s new
 
 1. Enables USB upgrade functionality.
 2. Supports fingerprint signature capability.

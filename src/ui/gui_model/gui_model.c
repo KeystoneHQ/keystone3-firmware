@@ -553,7 +553,7 @@ static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen
 
     for (int i = 0; i < memberCnt; i++) {
         memset(wordsList[i], 0, SRAM_MNEMONIC_LEN);
-        // todo 这里用SRAM_FREE有问题
+        // todo There is a problem with SRAM FREE here
         free(wordsList[i]);
     }
     retData = SUCCESS_CODE;

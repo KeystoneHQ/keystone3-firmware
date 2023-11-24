@@ -1,6 +1,6 @@
 /**************************************************************************************************
  * Copyright (c) Larrie studio. 2020-2023. All rights reserved.
- * Description: rtos扩展功能
+ * Description: rtos extends functionality
  * Author: leon sun
  * Create: 2022-6-24
  ************************************************************************************************/

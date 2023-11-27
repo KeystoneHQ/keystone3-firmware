@@ -356,8 +356,8 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
     char fileVersion[16] = {0};
     GetSoftWareVersionNumber(version);
     if (CheckOtaBinVersion(fileVersion)) {
-        // sprintf(showString, "#8E8E8E v%s# / #F5870A v%sAvailable#", version, fileVersion);
-        sprintf(showString, "#8E8E8E %s#", version);
+        sprintf(showString, "#8E8E8E v%s#  /  #F5870A v%s  Available#", version, fileVersion);
+        // sprintf(showString, "#8E8E8E %s#", version);
     } else {
         sprintf(showString, "#8E8E8E %s#", version);
     }

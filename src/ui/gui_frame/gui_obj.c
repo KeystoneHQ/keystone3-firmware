@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_obj.c
- * Description:
- * author     : stone wang
- * data       : 2023-01-06 14:52
-**********************************************************************/
 #include "gui_obj.h"
 
 void *GuiCreateContainerWithParent(lv_obj_t *parent, int w, int h)

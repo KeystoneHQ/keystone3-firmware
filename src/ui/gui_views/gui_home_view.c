@@ -1,10 +1,3 @@
-/*
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * @FilePath: \project-pillar-firmware\ui\gui_views\gui_home_view.c
- * @Description:
- * @Author: stone wang
- * @LastEditTime: 2023-04-12 18:41:49
- */
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_views.h"

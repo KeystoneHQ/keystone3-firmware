@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: touch hal.
- * Author: leon sun
- * Create: 2023-5-15
- ************************************************************************************************/
-
-
 #include "hal_touch.h"
 #include "drv_i2c_io.h"
 #include "drv_cst726.h"

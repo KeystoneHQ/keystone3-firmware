@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Screen manager.
- * Author: leon sun
- * Create: 2023-3-27
- ************************************************************************************************/
-
 #include "screen_manager.h"
 #include "drv_lcd_bright.h"
 #include "drv_button.h"

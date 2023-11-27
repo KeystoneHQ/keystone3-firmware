@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: device info protocol service.
- * Author: leon sun
- * Create: 2023-6-29
- ************************************************************************************************/
-
-
 #ifndef _SERVICE_DEVICE_INFO_H
 #define _SERVICE_DEVICE_INFO_H
 

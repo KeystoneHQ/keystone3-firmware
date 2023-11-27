@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : user_utils.c
- * Description:
- * author     : stone wang
- * data       : 2022-12-29 16:42
-**********************************************************************/
-
 #include "user_utils.h"
 #include "lvgl.h"
 

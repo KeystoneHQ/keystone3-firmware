@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) Keystone 2020-2025. All rights reserved.
- * Description: Anti-tamper.
- * Author: leon sun
- * Create: 2023-8-2
- ************************************************************************************************/
-
-
 #include "anti_tamper.h"
 #include "drv_tamper.h"
 #include "stdio.h"
@@ -23,10 +15,11 @@
 #include "background_task.h"
 #include "drv_sensor.h"
 #include "drv_bpk.h"
+#include "drv_otp.h"
 
 
 #define TAMPER_MARK                 0x5A
-
+// #define TAMPER_OTP_FLAG
 
 static void TamperEraseInfo(void);
 
@@ -97,6 +90,11 @@ bool Tampered(void)
     if (checked) {
         return tampered;
     }
+#ifdef TAMPER_OTP_FLAG
+    checked = true;
+    tampered = ReadTamperFlag();
+    return tampered;
+#else
     Atecc608bEncryptRead(15, 0, pageData);
     PrintArray("pageData", pageData, 32);
     for (uint32_t i = 0; i < 32; i++) {
@@ -107,6 +105,7 @@ bool Tampered(void)
             return tampered;
         }
     }
+#endif
     tampered = true;
     checked = true;
     return tampered;
@@ -125,6 +124,9 @@ static void TamperEraseInfo(void)
     //In order to ensure that the current of the button cell can make the device erase secrets,
     //the redundant peripherals are turned off.
     DisableAllHardware();
+#ifdef TAMPER_OTP_FLAG
+    WriteTamperFlag();
+#endif
     Uart0OpenPort();
     Atecc608bInit();
     memset(pageData, TAMPER_MARK, 32);

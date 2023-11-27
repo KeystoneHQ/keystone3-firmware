@@ -19,6 +19,7 @@
 #include "gui_mnemonic_input.h"
 #include "gui_page.h"
 #include "gui_keyboard_hintbox.h"
+#include "safe_mem_lib.h"
 #ifndef COMPILE_MAC_SIMULATOR
 #include "sha256.h"
 #else
@@ -172,7 +173,7 @@ void GuiForgetPassRepeatPinPass(const char* buf)
 {
     if (!strcmp(buf, g_pinBuf)) {
         SecretCacheSetNewPassword((char *)buf);
-        memset(g_pinBuf, 0, sizeof(g_pinBuf));
+        memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
         GuiForgetAnimContDel(0);
         if (g_forgetMkb->wordCnt == 33 || g_forgetMkb->wordCnt == 20) {
             Slip39Data_t slip39 = {

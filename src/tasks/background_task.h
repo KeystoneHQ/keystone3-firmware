@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: background task.
- * Author: leon sun
- * Create: 2023-3-20
- ************************************************************************************************/
-
 #ifndef _BACKGROUND_TASK_H
 #define _BACKGROUND_TASK_H
 

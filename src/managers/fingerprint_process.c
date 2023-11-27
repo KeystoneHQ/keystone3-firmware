@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_wallet_setting_widgets.c
- * Description:
- * author     : stone wang
- * data       : 2023-09-28 13:18
-**********************************************************************/
-
 /* INCLUDES */
 #include <stdlib.h>
 #include <string.h>
@@ -36,6 +28,7 @@
 #include "screen_manager.h"
 #include "low_power.h"
 #include "se_manager.h"
+#include "safe_mem_lib.h"
 
 /* DEFINES */
 #define FINGERPRINT_REG_MAX_TIMES               (18)
@@ -100,7 +93,7 @@ static bool g_chipIdState = false;
 char g_intrRecvBuffer[RCV_MSG_MAX_LEN] = {0};
 
 static const FingerPrintControl_t g_cmdHandleMap[] = {
-    {FINGERPRINT_CMD_GET_RANDOM_NUM,    false,  FpGenericSend,      FpUpdateUpdateRandom},    //random number 优先级较高
+    {FINGERPRINT_CMD_GET_RANDOM_NUM,    false,  FpGenericSend,      FpUpdateUpdateRandom},
     {FINGERPRINT_CMD_REG,               true,   FpRegSend,          FpRegRecv},
     {FINGERPRINT_CMD_DELETE_SINGLE,     true,   FpDeleteSend,       FpDeleteRecv},
     {FINGERPRINT_CMD_DELETE_ALL,        true,   FpDeleteSend,       FpDeleteAllRecv},
@@ -347,7 +340,7 @@ static void FpRecognizeRecv(char *indata, uint8_t len)
 // D000 SEND
 static void FpSetAesKeySend(uint16_t cmd, uint8_t fingerInfo)
 {
-    memset(g_communicateAesKey, 0, sizeof(g_communicateAesKey));
+    memset_s(g_communicateAesKey, sizeof(g_communicateAesKey), 0, sizeof(g_communicateAesKey));
     TrngGet(g_communicateAesKey, sizeof(g_communicateAesKey));
     PrintArray("g_communicateAesKey", g_communicateAesKey, 32);
     SendPackFingerMsg(FINGERPRINT_CMD_SET_AES_KEY, g_communicateAesKey, 0, sizeof(g_communicateAesKey), NO_ENCRYPTION);
@@ -625,7 +618,6 @@ static void DeleteFingerManager(uint8_t index)
     g_fpManager.fingerId[index] = 0;
 }
 
-// 设置指纹SE
 void SetFingerManagerInfoToSE(void)
 {
     int32_t ret = SetFpStateInfo((uint8_t *)&g_fpManager);
@@ -633,57 +625,48 @@ void SetFingerManagerInfoToSE(void)
     assert(ret == 0);
 }
 
-// 获取指纹的解锁flag
 uint8_t GetFingerUnlockFlag(void)
 {
     return g_fpManager.unlockFlag;
 }
 
-// 更新指纹的解锁flag
 void UpdateFingerUnlockFlag(uint8_t unlockFlag)
 {
     g_fpManager.unlockFlag = unlockFlag;
     SetFingerManagerInfoToSE();
 }
 
-// 获取指纹的签名flag
 uint8_t GetFingerSignFlag(void)
 {
     return g_fpManager.signFlag[GetCurrentAccountIndex()];
 }
 
-// 更新指纹签名的flag
 void UpdateFingerSignFlag(uint8_t index, bool signFlag)
 {
     g_fpManager.signFlag[index] = signFlag;
     SetFingerManagerInfoToSE();
 }
 
-// 获取指纹的个数
 uint8_t GetRegisteredFingerNum(void)
 {
     return g_fpManager.fingerNum;
 }
 
-// 更新指纹个数
 void UpdateRegisteredFingerNum(uint8_t num)
 {
     g_fpManager.fingerNum = num;
 }
 
-// 获取指纹注册状态
 uint8_t GetFingerRegisteredStatus(uint8_t fingerIndex)
 {
     return g_fpManager.fingerId[fingerIndex];
 }
 
-// 更新指纹注册状态
 void UpdateFingerRegisteredStatus(uint8_t fingerIndex, uint8_t data)
 {
     g_fpManager.fingerId[fingerIndex] = data;
 }
 
-// 设置指纹的注册状态到SE
 void FingerSetInfoToSE(uint8_t *random, uint8_t fingerId, uint8_t accountIndex, char *password)
 {
     uint8_t cipherData[32] = {0};
@@ -698,17 +681,15 @@ void FingerSetInfoToSE(uint8_t *random, uint8_t fingerId, uint8_t accountIndex, 
     assert(ret == 0);
 }
 
-// 更新的随机数
 void UpdateHostRandom(void)
 {
     TrngGet(g_hostRandomKey, 16);
 }
 
-// 获取随机的AESkey
 static uint8_t *GetRandomAesKey(uint8_t *hostRandomKey, uint8_t *fpRandomKey, uint8_t *communicateAesKey)
 {
     if (communicateAesKey == NULL) {
-        memset(g_randomAesKey, 0, 16);
+        memset_s(g_randomAesKey, 16, 0, 16);
     } else {
         AES128_ctx ctx1;
         uint8_t ptr[16] = {0};
@@ -721,7 +702,6 @@ static uint8_t *GetRandomAesKey(uint8_t *hostRandomKey, uint8_t *fpRandomKey, ui
     return g_randomAesKey;
 }
 
-// 对数据进行加密
 static void EncryptFingerprintData(uint8_t *cipherData, const uint8_t *plainData, uint16_t len)
 {
     AES128_ctx ctx;
@@ -730,7 +710,6 @@ static void EncryptFingerprintData(uint8_t *cipherData, const uint8_t *plainData
     AES128_encrypt(&ctx, len / 16, cipherData, plainData);
 }
 
-// 对数据进行解密
 static void DecryptFingerprintData(uint8_t *decipheredData, const uint8_t *cipherData, uint16_t len)
 {
     AES128_ctx ctx;
@@ -834,7 +813,7 @@ static void SearchFpAesKeyState(void)
     if (ret != SUCCESS_CODE) {
         return;
     } 
-    memset(&g_communicateAesKey[16], 0, 16);
+    memset_s(&g_communicateAesKey[16], 16, 0, 16);
     FpGenericSend(FINGERPRINT_CMD_GET_AES_KEY_STATE, NO_ENCRYPTION);
 }
 
@@ -849,7 +828,7 @@ void FpTimeoutHandle(void *argument)
 {
     bool timerStop = true;
     osMutexAcquire(g_fpResponseMutex, osWaitForever);
-    for (uint32_t i = 1; i < NUMBER_OF_ARRAYS(g_cmdTimeoutMap); i++) {  // random num先不处理
+    for (uint32_t i = 1; i < NUMBER_OF_ARRAYS(g_cmdTimeoutMap); i++) {  // random number is not processed
         if (g_cmdTimeoutMap[i].cnt != FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT) {
             if (g_cmdHandleMap[i].cmd == FINGERPRINT_CMD_RECOGNIZE) {
                 if (g_cmdTimeoutMap[i].cnt == 2) {

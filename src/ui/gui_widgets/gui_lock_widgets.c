@@ -1,10 +1,3 @@
-/*
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * @FilePath: \project-pillar-firmware\ui\gui_widgets\gui_lock_widgets.c
- * @Description:
- * @Author: stone wang
- * @LastEditTime: 2023-04-04 16:53:20
- */
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_views.h"

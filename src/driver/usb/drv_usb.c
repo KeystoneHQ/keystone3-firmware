@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : drv_usb.c
- * Description:
- * author     : stone wang
- * data       : 2023-01-05 17:51
-**********************************************************************/
 #include <stdio.h>
 #include "drv_usb.h"
 #include "usbd_composite.h"

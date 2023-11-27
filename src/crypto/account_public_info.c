@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Account public  info.
- * Author: leon sun
- * Create: 2023-5-4
- ************************************************************************************************/
-
 #include "account_public_info.h"
 #include "string.h"
 #include "stdio.h"

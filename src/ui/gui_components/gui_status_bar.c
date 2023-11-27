@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_status_bar.c
- * Description:
- * author     : stone wang
- * data       : 2023-01-09 16:26
- **********************************************************************/
 #include "gui_obj.h"
 #include "gui_views.h"
 #include "gui_button.h"
@@ -147,7 +140,6 @@ void GuiStatusBarInit(void)
     lv_obj_set_style_radius(background, 0, 0);
     lv_obj_align(background, LV_ALIGN_TOP_LEFT, 0, GUI_STATUS_BAR_HEIGHT);
 
-    // 创建状态栏
     g_guiStatusBar.cont = cont;
     lv_obj_t *img = GuiCreateImg(cont, NULL);
     lv_obj_align(img, LV_ALIGN_LEFT_MID, 24, 0);

@@ -1,15 +1,9 @@
-/**************************************************************************************************
-* Copyright (c) keyst.one. 2020-2025. All rights reserved.
-* Description: Seeds are stored in ATECC608B and DS28S60.
-* Author: leon sun
-* Create: 2023-3-7
-************************************************************************************************/
-
 #include "keystore.h"
 #include "string.h"
 #include "stdio.h"
 #include "user_utils.h"
 #include "hash_and_salt.h"
+#include "hkdf.h"
 #include "drv_atecc608b.h"
 #include "drv_ds28s60.h"
 #include "drv_trng.h"
@@ -29,6 +23,7 @@
 #include "se_manager.h"
 #include "account_manager.h"
 #include "librust_c.h"
+#include "safe_mem_lib.h"
 
 #define KEYSTORE_DEBUG          0
 
@@ -56,6 +51,7 @@
 #define PARAM_LEN                               32
 
 #define PASSPHRASE_MAX_LEN                      128
+#define ITERATION_TIME                          700
 
 typedef struct {
     uint8_t entropy[ENTROPY_MAX_LEN];
@@ -86,35 +82,38 @@ static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char
 /// @return err code.
 int32_t GenerateEntropy(uint8_t *entropy, uint8_t entropyLen, const char *password)
 {
-    uint8_t readBuffer[ENTROPY_MAX_LEN], tempEntropy[ENTROPY_MAX_LEN];
+    uint8_t randomBuffer[ENTROPY_MAX_LEN], inputBuffer[ENTROPY_MAX_LEN], outputBuffer[ENTROPY_MAX_LEN];
     int32_t ret, i;
 
     do {
-        HashWithSalt(tempEntropy, (uint8_t *)password, strlen(password), "generate entropy");
-        SE_GetTRng(readBuffer, ENTROPY_MAX_LEN);
-        KEYSTORE_PRINT_ARRAY("trng", readBuffer, ENTROPY_MAX_LEN);
-        for (i = 0; i < ENTROPY_MAX_LEN; i++) {
-            tempEntropy[i] ^= readBuffer[i];
-        }
-        KEYSTORE_PRINT_ARRAY("tempEntropy", tempEntropy, ENTROPY_MAX_LEN);
-        ret = SE_GetDS28S60Rng(readBuffer, ENTROPY_MAX_LEN);
+        HashWithSalt(inputBuffer, (uint8_t *)password, strlen(password), "generate entropy");
+        
+        SE_GetTRng(randomBuffer, ENTROPY_MAX_LEN);
+        KEYSTORE_PRINT_ARRAY("trng", randomBuffer, ENTROPY_MAX_LEN);
+        // set the initial value
+        memcpy(outputBuffer, randomBuffer, ENTROPY_MAX_LEN);
+        hkdf(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
+        KEYSTORE_PRINT_ARRAY("outputBuffer", outputBuffer, ENTROPY_MAX_LEN);
+        memcpy(inputBuffer, outputBuffer, ENTROPY_MAX_LEN);
+        
+        ret = SE_GetDS28S60Rng(randomBuffer, ENTROPY_MAX_LEN);
         CHECK_ERRCODE_BREAK("get ds28s60 trng", ret);
-        KEYSTORE_PRINT_ARRAY("ds28s60 rng", readBuffer, ENTROPY_MAX_LEN);
-        for (i = 0; i < ENTROPY_MAX_LEN; i++) {
-            tempEntropy[i] ^= readBuffer[i];
-        }
-        KEYSTORE_PRINT_ARRAY("tempEntropy", tempEntropy, ENTROPY_MAX_LEN);
-        ret = SE_GetAtecc608bRng(readBuffer, ENTROPY_MAX_LEN);
+        KEYSTORE_PRINT_ARRAY("ds28s60 rng", randomBuffer, ENTROPY_MAX_LEN);
+        hkdf(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
+        KEYSTORE_PRINT_ARRAY("outputBuffer", outputBuffer, ENTROPY_MAX_LEN);
+        memcpy(inputBuffer, outputBuffer, ENTROPY_MAX_LEN);
+        
+        ret = SE_GetAtecc608bRng(randomBuffer, ENTROPY_MAX_LEN);
         CHECK_ERRCODE_BREAK("get 608b trng", ret);
-        KEYSTORE_PRINT_ARRAY("608b rng", readBuffer, ENTROPY_MAX_LEN);
-        for (i = 0; i < ENTROPY_MAX_LEN; i++) {
-            tempEntropy[i] ^= readBuffer[i];
-        }
-        KEYSTORE_PRINT_ARRAY("tempEntropy", tempEntropy, ENTROPY_MAX_LEN);
-        memcpy(entropy, tempEntropy, entropyLen);
+        KEYSTORE_PRINT_ARRAY("608b rng", randomBuffer, ENTROPY_MAX_LEN);
+        hkdf(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
+        
+        KEYSTORE_PRINT_ARRAY("finalEntropy", outputBuffer, ENTROPY_MAX_LEN);
+        memcpy(entropy, outputBuffer, entropyLen);
     } while (0);
-    CLEAR_ARRAY(readBuffer);
-    CLEAR_ARRAY(tempEntropy);
+    CLEAR_ARRAY(outputBuffer);
+    CLEAR_ARRAY(inputBuffer);
+    CLEAR_ARRAY(randomBuffer);
     return ret;
 }
 
@@ -421,8 +420,8 @@ void ClearAccountPassphrase(uint8_t accountIndex)
     if (accountIndex > 2) {
         return;
     }
-    memset(g_passphraseInfo[accountIndex].passphrase, 0, sizeof(g_passphraseInfo[accountIndex].passphrase));
-    memset(g_passphraseInfo[accountIndex].mfp, 0, sizeof(g_passphraseInfo[accountIndex].mfp));
+    memset_s(g_passphraseInfo[accountIndex].passphrase, sizeof(g_passphraseInfo[accountIndex].passphrase), 0, sizeof(g_passphraseInfo[accountIndex].passphrase));
+    memset_s(g_passphraseInfo[accountIndex].mfp, sizeof(g_passphraseInfo[accountIndex].mfp), 0, sizeof(g_passphraseInfo[accountIndex].mfp));
     g_passphraseInfo[accountIndex].passphraseExist = false;
 }
 

@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Test cmd.
- * Author: leon sun
- * Create: 2022-12
- ************************************************************************************************/
-
 #include "test_cmd.h"
 #include "stdio.h"
 #include "string.h"
@@ -71,8 +64,8 @@ typedef void (*UartTestCmdFunc_t)(int argc, char *argv[]);
 
 typedef struct
 {
-    const char *cmdString;  // 命令字符串，用于对比
-    UartTestCmdFunc_t func; // 对应命令的测试函数
+    const char *cmdString;  // Compare string for testing
+    UartTestCmdFunc_t func; // add the function for testing
 } UartTestCmdItem_t;
 
 static void TestFunc(int argc, char *argv[]);
@@ -1122,7 +1115,7 @@ static void RustGetMasterFingerprint(int argc, char *argv[])
 static void RustTestParseCryptoPSBT(int argc, char *argv[])
 {
     printf("RustTestParseCryptoPSBT\r\n");
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize()); // 剩余堆空间
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize()); // remaining heap size
     URParseResult *ur = test_get_crypto_psbt();
     void *crypto_psbt = ur->data;
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};

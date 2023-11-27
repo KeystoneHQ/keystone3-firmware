@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_model.c
- * Description:
- * author     : stone wang
- * data       : 2023-03-23 09:41
-**********************************************************************/
 #include <string.h>
 #include "stdlib.h"
 #include "gui.h"
@@ -32,6 +25,7 @@
 #include "keystore.h"
 #include "account_manager.h"
 #include "qrdecode_task.h"
+#include "safe_mem_lib.h"
 #ifndef COMPILE_SIMULATOR
 #include "rust.h"
 #include "user_msg.h"
@@ -276,7 +270,7 @@ static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
     SecretCacheSetMnemonic(mnemonic);
     retData = SUCCESS_CODE;
     GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, &retData, sizeof(retData));
-    memset(mnemonic, 0, strlen(mnemonic));
+    memset_s(mnemonic, strlen(mnemonic), 0, strlen(mnemonic));
     SRAM_FREE(mnemonic);
 #else
     mnemonic = SRAM_MALLOC(256);
@@ -374,7 +368,7 @@ if (ret == SUCCESS_CODE)
 {
     GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));
 }
-memset(entropy, 0, entropyInLen);
+memset_s(entropy, entropyInLen, 0, entropyInLen);
 SRAM_FREE(entropy);
 #else
     ret = ERR_KEYSTORE_MNEMONIC_REPEAT;
@@ -559,7 +553,7 @@ static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen
 
     for (int i = 0; i < memberCnt; i++) {
         memset(wordsList[i], 0, SRAM_MNEMONIC_LEN);
-        // todo 这里用SRAM_FREE有问题
+        // todo There is a problem with SRAM FREE here
         free(wordsList[i]);
     }
     retData = SUCCESS_CODE;

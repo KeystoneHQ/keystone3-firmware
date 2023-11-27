@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_create_wallet _widgets.c
- * Description:
- * author     : stone wang
- * data       : 2023-01-13 15:40
-**********************************************************************/
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_status_bar.h"
@@ -20,6 +13,7 @@
 #include "gui_tutorial_widgets.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
+#include "safe_mem_lib.h"
 
 typedef enum {
     CREATE_WALLET_SETPIN = 0,
@@ -500,7 +494,7 @@ void GuiCreateWalletRepeatPinPass(const char* buf)
 {
     if (!strcmp(buf, g_pinBuf)) {
         SecretCacheSetNewPassword((char *)buf);
-        memset(g_pinBuf, 0, sizeof(g_pinBuf));
+        memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
     } else {
         UnlimitedVibrate(LONG);

@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: background app.
- * Author: leon sun
- * Create: 2023-3-25
- ************************************************************************************************/
-
 #ifndef _BACKGROUND_APP_H
 #define _BACKGROUND_APP_H
 

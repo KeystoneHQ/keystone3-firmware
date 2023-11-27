@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Screen manager.
- * Author: leon sun
- * Create: 2023-3-27
- ************************************************************************************************/
-
-
 #ifndef _SCREEN_MANAGER_H
 #define _SCREEN_MANAGER_H
 

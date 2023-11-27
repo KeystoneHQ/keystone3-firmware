@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: heap_4 on PSRAM.
- * Author: leon sun
- * Create: 2022-11-11
- ************************************************************************************************/
-
 #include "psram_heap_4.h"
 #include "cmsis_os.h"
 #include "task.h"

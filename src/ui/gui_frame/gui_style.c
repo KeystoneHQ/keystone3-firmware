@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_style.c
- * Description:
- * author     : stone wang
- * data       : 2023-02-03 11:56
-**********************************************************************/
 #include "gui_style.h"
 #include "lv_i18n_api.h"
 

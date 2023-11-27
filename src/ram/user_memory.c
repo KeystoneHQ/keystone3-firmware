@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one 2020-2025. All rights reserved.
- * Description: On-chip SRAM and external PSRAM heap memory management.
- * Author: leon sun
- * Create: 2022-11-8
- ************************************************************************************************/
-
 #include "user_memory.h"
 #include "stdio.h"
 #include "string.h"
@@ -80,13 +73,13 @@ void PrintHeapInfo(void)
 {
     printf("sram heap info:\r\n");
     printf("g_sramHeapCount = %d\n", g_sramHeapCount);
-    printf("TotalHeapSize = %d\n", configTOTAL_HEAP_SIZE);                    // 堆总空间
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());                    // 剩余堆空间
-    printf("MinEverFreeHeapSize = %d\n", xPortGetMinimumEverFreeHeapSize());  // 最小的未被分配的堆空间
+    printf("TotalHeapSize = %d\n", configTOTAL_HEAP_SIZE);                      // Total heap size
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());                      // Free heap space
+    printf("MinEverFreeHeapSize = %d\n", xPortGetMinimumEverFreeHeapSize());    // Minimum amount of unallocated heap space
     printf("\r\next heap info:\r\n");
     printf("g_extHeapCount = %d\n", g_extHeapCount);
-    printf("TotalHeapSize = %d\n", PsramGetTotalSize());                    // 堆总空间
-    printf("FreeHeapSize = %d\n", PsramGetFreeHeapSize());                    // 剩余堆空间
-    printf("MinEverFreeHeapSize = %d\n", PsramGetMinimumEverFreeHeapSize());  // 最小的未被分配的堆空间
+    printf("TotalHeapSize = %d\n", PsramGetTotalSize());                        // Total heap size
+    printf("FreeHeapSize = %d\n", PsramGetFreeHeapSize());                      // Free heap space
+    printf("MinEverFreeHeapSize = %d\n", PsramGetMinimumEverFreeHeapSize());    // Minimum amount of unallocated heap space
 }
 

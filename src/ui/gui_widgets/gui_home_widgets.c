@@ -759,7 +759,9 @@ void GuiHomeRestart(void)
 
 void GuiHomeRefresh(void)
 {
+    #ifdef RUST_MEMORY_DEBUG
     PrintRustMemoryStatus();
+    #endif
     if (GetCurrentAccountIndex() > 2)
     {
         return;

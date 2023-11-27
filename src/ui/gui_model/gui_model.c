@@ -503,9 +503,7 @@ static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen)
 
 static int32_t ModelURClear(const void *inData, uint32_t inDataLen)
 {
-    printf("ModelURClear: g_urResult: %p\r\n", g_urResult);
     if (g_urResult != NULL) {
-        printf("ModelURClear: g_urResult clear\r\n");
         free_ur_encode_result(g_urResult);
         g_urResult = NULL;
     }

@@ -53,7 +53,7 @@ xrp_rust_c = {path = "./src/xrp", optional = true}
 crate-type = ["staticlib"]
 
 [features]
-memory_profile = []
+debug-memory = ["default", "common_rust_c/debug-memory"]
 default = ["multi-coins"]
 multi-coins = [
     "common_rust_c/multi-coins",

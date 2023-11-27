@@ -1514,7 +1514,6 @@ void *GuiWidgetTabView(lv_obj_t *parent, cJSON *json)
     lv_obj_set_style_text_color(obj, lv_color_hex(0xffffff), LV_PART_ITEMS);
     lv_obj_set_style_border_color(obj, lv_color_hex(0), LV_PART_ITEMS);
 
-    // todo 更新大小
     g_tableView = obj;
     lv_obj_t *line;
     static lv_point_t points[2] = {{0, 0}, {408, 0}};
@@ -1585,7 +1584,6 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
         }
     }
     const char *type = item->valuestring;
-    printf("type = %s\n", type);
     if (!type)
     {
         return NULL;

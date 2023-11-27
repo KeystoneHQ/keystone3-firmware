@@ -121,16 +121,16 @@ void GuiAboutEntranceWidget(lv_obj_t *parent)
 
     table[0].obj = label;
     table[1].obj = imgArrow;
-    // if (CheckOtaBinVersion(fileVersion)) {
-    //     lv_obj_t *versionLabel = GuiCreateIllustrateLabel(parent, fileVersion);
-    //     lv_obj_set_style_text_color(versionLabel, ORANGE_COLOR, LV_PART_MAIN);
-    //     lv_label_set_text_fmt(versionLabel, "v%s Available", fileVersion);
-    //     table[2].align = LV_ALIGN_BOTTOM_LEFT;
-    //     table[2].position.x = 24;
-    //     table[2].position.y = -24;
-    //     table[2].obj = versionLabel;
-    //     memberCnt = 3;
-    // }
+    if (CheckOtaBinVersion(fileVersion)) {
+        lv_obj_t *versionLabel = GuiCreateIllustrateLabel(parent, fileVersion);
+        lv_obj_set_style_text_color(versionLabel, ORANGE_COLOR, LV_PART_MAIN);
+        lv_label_set_text_fmt(versionLabel, "v%s Available", fileVersion);
+        table[2].align = LV_ALIGN_BOTTOM_LEFT;
+        table[2].position.x = 24;
+        table[2].position.y = -24;
+        table[2].obj = versionLabel;
+        memberCnt = 3;
+    }
 
     button = GuiCreateButton(parent, 456, 84 + (memberCnt - 2) * 34, table, memberCnt,
                              OpenViewHandler, &g_firmwareUpdateView);

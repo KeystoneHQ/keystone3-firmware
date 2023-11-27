@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one 2020-2025. All rights reserved.
- * Description: User message defining and subscription.
- * Author: leon sun
- * Create: 2022-11-8
- ************************************************************************************************/
-
 #include "user_msg.h"
 #include "cmsis_os.h"
 #include "general_msg.h"
@@ -20,7 +13,7 @@ osMessageQueueId_t g_lowPowerQueue = NULL;
 
 void UserMsgInit(void)
 {
-    //消息机制的队列在此创建
+    //Queues for the message mechanism are created here
     g_cmdQueue = osMessageQueueNew(10, sizeof(Message_t), NULL);
     g_testQueue = osMessageQueueNew(10, sizeof(Message_t), NULL);
     g_qrDecodeQueue = osMessageQueueNew(5, sizeof(Message_t), NULL);
@@ -31,7 +24,7 @@ void UserMsgInit(void)
     g_lowPowerQueue = osMessageQueueNew(5, sizeof(Message_t), NULL);
 
 
-    //所有消息在此统一注册
+    //All messages are registered here
     SubMessageID(MSG_TEST_CMD_FRAME, g_cmdQueue);
 
     SubMessageID(TEST_MSG_MEASUREMENT, g_testQueue);

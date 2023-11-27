@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : drv_rtc.c
- * Description:
- * author     : stone wang
- * data       : 2023-01-04 10:13
-**********************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include "drv_rtc.h"

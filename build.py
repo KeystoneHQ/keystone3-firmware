@@ -38,6 +38,8 @@ def build_firmware(environment, options):
     for option in options:
         if option == "screenshot":
             cmd += ' -DENABLE_SCREEN_SHOT=true'
+        if option == "debugmemory":
+            cmd += ' -DDEBUG_MEMORY=true'
         # add more option here.
 
 

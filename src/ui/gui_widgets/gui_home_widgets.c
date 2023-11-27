@@ -73,9 +73,6 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
         {HOME_WALLET_CARD_LUNC, false, "LUNC", true},
         {HOME_WALLET_CARD_BNB, false, "BNB", false},
         {HOME_WALLET_CARD_DOT, false, "DOT", false},
-        {HOME_WALLET_CARD_LTC, false, "LTC", false},
-        {HOME_WALLET_CARD_DASH, false, "DASH", false},
-        {HOME_WALLET_CARD_BCH, false, "BCH", false},
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 
@@ -140,6 +137,24 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =
             .coin = "TRX",
             .chain = "TRON",
             .icon = &coinTrx,
+        },
+        {
+            .index = HOME_WALLET_CARD_BCH,
+            .coin = "BCH",
+            .chain = "Bitcoin Cash",
+            .icon = &coinBch,
+        },
+        {
+            .index = HOME_WALLET_CARD_DASH,
+            .coin = "DASH",
+            .chain = "Dash",
+            .icon = &coinDash,
+        },
+        {
+            .index = HOME_WALLET_CARD_LTC,
+            .coin = "LTC",
+            .chain = "Litecoin",
+            .icon = &coinLtc,
         },
         {
             .index = HOME_WALLET_CARD_ATOM,
@@ -332,24 +347,6 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =
             .coin = "DOT",
             .chain = "Polkadot",
             .icon = &coinDot,
-        },
-        {
-            .index = HOME_WALLET_CARD_LTC,
-            .coin = "LTC",
-            .chain = "Litecoin",
-            .icon = &coinLtc,
-        },
-        {
-            .index = HOME_WALLET_CARD_DASH,
-            .coin = "DASH",
-            .chain = "Dash",
-            .icon = &coinDash,
-        },
-        {
-            .index = HOME_WALLET_CARD_BCH,
-            .coin = "BCH",
-            .chain = "Bitcoin Cash",
-            .icon = &coinBch,
         },
 };
 
@@ -758,6 +755,9 @@ void GuiHomeRestart(void)
 
 void GuiHomeRefresh(void)
 {
+    #ifdef RUST_MEMORY_DEBUG
+    PrintRustMemoryStatus();
+    #endif
     if (GetCurrentAccountIndex() > 2)
     {
         return;

@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : drv_sdcard.h
- * Description: driver for sdcard
- * author     : stone wang
- * data       : 2022-12-16 11:05
- **********************************************************************/
-
 #ifndef _DRV_SDCARD_H
 #define _DRV_SDCARD_H
 
@@ -419,23 +411,23 @@ typedef enum {
 #define SDIO_STATIC_FLAGS ((uint32_t)0x0000FFFF) //16ä¸ªé™æ€æ ‡å¿?
 #define SDIO_CMD0TIMEOUT  ((uint32_t)0x000FFFFF)
 
-SD_Error SD_Init(void);                                                             // 初始化SD卡，使卡处于就绪状�?准备传输数据)
-SD_Error SD_PowerON(void);                                                          // 确保SD卡的工作电压和配置控制时�?
-SD_Error SD_PowerOFF(void);                                                         // 关掉SDIO的输出信�?
-SD_Error SD_InitializeCards(void);                                                  // 初始化所有的卡或者单个卡进入就绪状�?
-SD_Error SD_StopTransfer(void);                                                     // 停止数据传输
-SD_Error SD_GetCardInfo(SDCardInfoStruct* cardinfo);                                     // 获取SD卡的具体信息
-SD_Error SD_SelectDeselect(uint32_t addr);                                          // 利用cmd7，选择卡相对地址为addr的卡，取消选择其它�?
-SD_Error SD_EnableWideBusOperation(uint32_t WideMode);                              // 配置卡的数据宽度(但得看卡是否支持)
-SD_Error SD_ReadBlock(uint8_t* readbuff, uint32_t ReadAddr, uint16_t BlockSize);    // 单块�?
+SD_Error SD_Init(void);                                                            
+SD_Error SD_PowerON(void);                                                          
+SD_Error SD_PowerOFF(void);                                                         
+SD_Error SD_InitializeCards(void);                                                  
+SD_Error SD_StopTransfer(void);                                                     
+SD_Error SD_GetCardInfo(SDCardInfoStruct* cardinfo);                                 
+SD_Error SD_SelectDeselect(uint32_t addr);                                          
+SD_Error SD_EnableWideBusOperation(uint32_t WideMode);                              
+SD_Error SD_ReadBlock(uint8_t* readbuff, uint32_t ReadAddr, uint16_t BlockSize);    
 SD_Error SD_WaitReadOperation(void);
 SD_Error SD_WaitWriteOperation(void);
-SD_Error SD_WriteBlock(uint8_t* writebuff, uint32_t WriteAddr, uint16_t BlockSize); // 单块�?
+SD_Error SD_WriteBlock(uint8_t* writebuff, uint32_t WriteAddr, uint16_t BlockSize);
 
 SDTransferState SD_GetStatus(void);
 
 SD_Error SD_WriteMultiBlocks(uint8_t* writebuff, uint32_t WriteAddr, uint16_t BlockSize, uint32_t NumberOfBlocks);
-SD_Error SD_ReadMultiBlocks(uint8_t* readbuff, uint32_t ReadAddr, uint16_t BlockSize, uint32_t NumberOfBlocks); //多块�?DMA操作
+SD_Error SD_ReadMultiBlocks(uint8_t* readbuff, uint32_t ReadAddr, uint16_t BlockSize, uint32_t NumberOfBlocks);
 SD_Error SD_ProcessIRQSrc(void);
 
 extern bool SDCardSetBusWidth(uint8_t busWidth);

@@ -49,6 +49,7 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
         GuiDevSettingNextTile(tileIndex);
         break;
     case SIG_VERIFY_PASSWORD_PASS:
+    case SIG_VERIFY_FINGER_PASS:
         if (param != NULL) {
             uint16_t sig = *(uint16_t *)param;
             if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
@@ -63,6 +64,9 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
         //temporary fix sign tx qrcode not animating;
         QRCodeControl(false);
         GuiDevSettingPassCode(true, tileIndex);
+        break;
+    case SIG_SETTING_WRITE_PASSPHRASE_VERIFY_PASS:
+        GuiSettingAnimSetLabel(_("seed_check_wait_verify"));
         break;
     case SIG_VERIFY_PASSWORD_FAIL:
         if (param != NULL) {
@@ -87,9 +91,6 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
     case SIG_SETTING_REPEAT_PIN:
         GuiSettingRepeatPinPass((const char *)param);
         break;
-    case SIG_SETTING_PASSWORD_RESET_PASS:
-        GuiResettingPassWordSuccess();
-        break;
     case SIG_SETTING_CHANGE_WALLET_DESC_PASS:
         GuiChangeWalletDesc(true);
         break;
@@ -99,11 +100,17 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
     case SIG_SETTING_WRITE_PASSPHRASE_PASS:
         GuiWritePassphrase(true);
         break;
+    case SIG_SETTING_WRITE_PASSPHRASE_FAIL:
+        GuiWritePassphrase(false);
+        break;
     case SIG_SETTING_CHANGE_PASSWORD_PASS:
         GuiChangePassWord(true);
         break;
     case SIG_SETTING_CHANGE_PASSWORD_FAIL:
         GuiChangePassWord(false);
+        if (param != NULL) {
+            GuiVerifyCurrentPasswordErrorCount(param);
+        }
         break;
     case SIG_SETTING_ADD_WALLET_AMOUNT_LIMIT:
         GuiAddWalletAmountLimit();

@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: ext interrupt.
- * Author: leon sun
- * Create: 2023-3-24
- ************************************************************************************************/
-
 #include "drv_exti.h"
 #include "hal_touch.h"
 #include "drv_aw32001.h"

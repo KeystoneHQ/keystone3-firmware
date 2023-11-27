@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Power manager.
- * Author: leon sun
- * Create: 2023-5-25
- ************************************************************************************************/
-
-
 #ifndef _POWER_MANAGER_H
 #define _POWER_MANAGER_H
 

@@ -1,0 +1,37 @@
+include_guard = "_LIBRUST_C_H"
+
+[defines]
+"feature = multi-coins" = "BUILD_MULTI_COINS"
+
+[parse]
+parse_deps = true
+include = [
+    "rust_c",
+    "common_rust_c",
+    "bitcoin_rust_c",
+    "wallet_rust_c",
+    "btc_only_wallet_rust_c",
+    "test_cmd",
+    "btc_test_cmd"
+]
+extra_bindings = [
+    "common_rust_c",
+    "bitcoin_rust_c",
+    "wallet_rust_c",
+    "btc_only_wallet_rust_c",
+    "test_cmd",
+    "btc_test_cmd"
+]
+
+[parse.expand]
+crates = [
+    "rust_c",
+    "common_rust_c",
+    "bitcoin_rust_c",
+    "wallet_rust_c",
+    "btc_only_wallet_rust_c",
+    "test_cmd",
+    "btc_test_cmd"
+]
+default_features = false
+features = ["btc-only"]

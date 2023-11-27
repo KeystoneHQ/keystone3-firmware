@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Test cmd.
- * Author: leon sun
- * Create: 2022-12
- ************************************************************************************************/
-
 #include "test_cmd.h"
 #include "stdio.h"
 #include "string.h"
@@ -71,8 +64,8 @@ typedef void (*UartTestCmdFunc_t)(int argc, char *argv[]);
 
 typedef struct
 {
-    const char *cmdString;  // 命令字符串，用于对比
-    UartTestCmdFunc_t func; // 对应命令的测试函数
+    const char *cmdString;  // Compare string for testing
+    UartTestCmdFunc_t func; // add the function for testing
 } UartTestCmdItem_t;
 
 static void TestFunc(int argc, char *argv[]);
@@ -119,27 +112,27 @@ static void KeyStoreTestFunc(int argc, char *argv[]);
 static void RustGetMasterFingerprint(int argc, char *argv[]);
 static void GuiFrameDebugTestFunc(int argc, char *argv[]);
 static void RustTestParseCryptoPSBT(int argc, char *argv[]);
-static void RustTestParseBTCCompanionApp(int argc, char *argv[]);
-static void RustTestCheckFailedBTCCompanionApp(int argc, char *argv[]);
-static void RustTestCheckSucceedBCHCompanionApp(int argc, char *argv[]);
-static void RustTestParseDASHCompanionApp(int argc, char *argv[]);
-static void RustTestParseBCHCompanionApp(int argc, char *argv[]);
-static void RustTestParseLTCCompanionApp(int argc, char *argv[]);
-static void RustTestParseTronCompanionApp(int argc, char *argv[]);
-static void RustTestCheckTronCompanionAppSucceed(int argc, char *argv[]);
-static void RustTestCheckTronCompanionAppFailed(int argc, char *argv[]);
-static void RustTestSignTronCompanionApp(int argc, char *argv[]);
+static void RustTestParseBTCKeystone(int argc, char *argv[]);
+static void RustTestCheckFailedBTCKeystone(int argc, char *argv[]);
+static void RustTestCheckSucceedBCHKeystone(int argc, char *argv[]);
+static void RustTestParseDASHKeystone(int argc, char *argv[]);
+static void RustTestParseBCHKeystone(int argc, char *argv[]);
+static void RustTestParseLTCKeystone(int argc, char *argv[]);
+static void RustTestParseTronKeystone(int argc, char *argv[]);
+static void RustTestCheckTronKeystoneSucceed(int argc, char *argv[]);
+static void RustTestCheckTronKeystoneFailed(int argc, char *argv[]);
+static void RustTestSignTronKeystone(int argc, char *argv[]);
 static void RustTestEncodeCryptoPSBT(int argc, char *argv[]);
 static void RustTestDecodeCryptoPSBT(int argc, char *argv[]);
 static void RustTestDecodeMultiCryptoPSBT(int argc, char *argv[]);
-static void RustTestDecodeCompanionAppBTCSignResult(int argc, char *argv[]);
-static void RustTestDecodeCompanionAppSignRequest(int argc, char *argv[]);
+static void RustTestDecodeKeystoneBTCSignResult(int argc, char *argv[]);
+static void RustTestDecodeKeystoneSignRequest(int argc, char *argv[]);
 static void LogTestFunc(int argc, char *argv[]);
 static void RustTestSignPSBT(int argc, char *argv[]);
-static void RustTestSignBTCCompanionApp(int argc, char *argv[]);
-static void RustTestSignLTCCompanionApp(int argc, char *argv[]);
-static void RustTestSignDASHCompanionApp(int argc, char *argv[]);
-static void RustTestSignBCHCompanionApp(int argc, char *argv[]);
+static void RustTestSignBTCKeystone(int argc, char *argv[]);
+static void RustTestSignLTCKeystone(int argc, char *argv[]);
+static void RustTestSignDASHKeystone(int argc, char *argv[]);
+static void RustTestSignBCHKeystone(int argc, char *argv[]);
 static void BackgroundTestFunc(int argc, char *argv[]);
 static void RustTestDecodeUr(int argc, char *argv[]);
 static void RustGetConnectBlueWalletUR(int argc, char *argv[]);
@@ -253,26 +246,26 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] =
 #ifndef EXCLUDE_RUSTC
     {"rust get mfp:", RustGetMasterFingerprint},
     {"rust test parse psbt", RustTestParseCryptoPSBT},
-    {"rust test parse bitcoin companion app", RustTestParseBTCCompanionApp},
-    {"rust test check bitcoin companion app failed", RustTestCheckFailedBTCCompanionApp},
-    {"rust test check bch succeed", RustTestCheckSucceedBCHCompanionApp},
-    {"rust test parse ltc", RustTestParseLTCCompanionApp},
-    {"rust test parse tron companion app", RustTestParseTronCompanionApp},
-    {"rust test check tron companion app succeed:", RustTestCheckTronCompanionAppSucceed},
-    {"rust test check tron companion app failed", RustTestCheckTronCompanionAppFailed},
-    {"rust test sign tron companion app:", RustTestSignTronCompanionApp},
-    {"rust test parse dash", RustTestParseDASHCompanionApp},
-    {"rust test parse bch", RustTestParseBCHCompanionApp},
+    {"rust test parse bitcoin keystone", RustTestParseBTCKeystone},
+    {"rust test check bitcoin keystone failed", RustTestCheckFailedBTCKeystone},
+    {"rust test check bch succeed", RustTestCheckSucceedBCHKeystone},
+    {"rust test parse ltc", RustTestParseLTCKeystone},
+    {"rust test parse tron keystone", RustTestParseTronKeystone},
+    {"rust test check tron keystone succeed:", RustTestCheckTronKeystoneSucceed},
+    {"rust test check tron keystone failed", RustTestCheckTronKeystoneFailed},
+    {"rust test sign tron keystone:", RustTestSignTronKeystone},
+    {"rust test parse dash", RustTestParseDASHKeystone},
+    {"rust test parse bch", RustTestParseBCHKeystone},
     {"rust test encode psbt", RustTestEncodeCryptoPSBT},
     {"rust test decode psbt", RustTestDecodeCryptoPSBT},
-    {"rust test decode companion app btc sign result", RustTestDecodeCompanionAppBTCSignResult},
-    {"rust test decode companion app sign request", RustTestDecodeCompanionAppSignRequest},
+    {"rust test decode keystone btc sign result", RustTestDecodeKeystoneBTCSignResult},
+    {"rust test decode keystone sign request", RustTestDecodeKeystoneSignRequest},
     {"rust test decode multi psbt", RustTestDecodeMultiCryptoPSBT},
     {"rust test sign psbt:", RustTestSignPSBT},
-    {"rust test sign btc companion app:", RustTestSignBTCCompanionApp},
-    {"rust test sign ltc:", RustTestSignLTCCompanionApp},
-    {"rust test sign dash:", RustTestSignDASHCompanionApp},
-    {"rust test sign bch:", RustTestSignBCHCompanionApp},
+    {"rust test sign btc keystone:", RustTestSignBTCKeystone},
+    {"rust test sign ltc:", RustTestSignLTCKeystone},
+    {"rust test sign dash:", RustTestSignDASHKeystone},
+    {"rust test sign bch:", RustTestSignBCHKeystone},
     {"rust test decode ur", RustTestDecodeUr},
     {"rust test get connect blue wallet ur", RustGetConnectBlueWalletUR},
     {"rust test get connect keplr wallet ur", RustGetConnectKeplrUR},
@@ -313,26 +306,26 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] =
     {"rust test web auth", testWebAuth},
     {"rust get mfp:",           RustGetMasterFingerprint},
     {"rust test parse psbt",    RustTestParseCryptoPSBT},
-    {"rust test parse bitcoin companion app",           RustTestParseBTCCompanionApp        },
-    {"rust test check bitcoin companion app failed",    RustTestCheckFailedBTCCompanionApp  },
-    {"rust test check bch succeed",                     RustTestCheckSucceedBCHCompanionApp },
-    {"rust test parse ltc",                             RustTestParseLTCCompanionApp        },
-    {"rust test parse tron companion app",              RustTestParseTronCompanionApp       },
-    {"rust test check tron companion app succeed:",     RustTestCheckTronCompanionAppSucceed},
-    {"rust test check tron companion app failed",       RustTestCheckTronCompanionAppFailed },
-    {"rust test sign tron companion app:",              RustTestSignTronCompanionApp        },
-    {"rust test parse dash",                            RustTestParseDASHCompanionApp       },
-    {"rust test parse bch",                             RustTestParseBCHCompanionApp        },
+    {"rust test parse bitcoin keystone",           RustTestParseBTCKeystone        },
+    {"rust test check bitcoin keystone failed",    RustTestCheckFailedBTCKeystone  },
+    {"rust test check bch succeed",                     RustTestCheckSucceedBCHKeystone },
+    {"rust test parse ltc",                             RustTestParseLTCKeystone        },
+    {"rust test parse tron keystone",              RustTestParseTronKeystone       },
+    {"rust test check tron keystone succeed:",     RustTestCheckTronKeystoneSucceed},
+    {"rust test check tron keystone failed",       RustTestCheckTronKeystoneFailed },
+    {"rust test sign tron keystone:",              RustTestSignTronKeystone        },
+    {"rust test parse dash",                            RustTestParseDASHKeystone       },
+    {"rust test parse bch",                             RustTestParseBCHKeystone        },
     {"rust test encode psbt",                           RustTestEncodeCryptoPSBT            },
     {"rust test decode psbt",                           RustTestDecodeCryptoPSBT            },
-    {"rust test decode companion app btc sign result",  RustTestDecodeCompanionAppBTCSignResult },
-    {"rust test decode companion app sign request",     RustTestDecodeCompanionAppSignRequest   },
+    {"rust test decode keystone btc sign result",  RustTestDecodeKeystoneBTCSignResult },
+    {"rust test decode keystone sign request",     RustTestDecodeKeystoneSignRequest   },
     {"rust test decode multi psbt",                     RustTestDecodeMultiCryptoPSBT       },
     {"rust test sign psbt:",                            RustTestSignPSBT                    },
-    {"rust test sign btc companion app:",               RustTestSignBTCCompanionApp         },
-    {"rust test sign ltc:",                             RustTestSignLTCCompanionApp         },
-    {"rust test sign dash:",                            RustTestSignDASHCompanionApp        },
-    {"rust test sign bch:",                             RustTestSignBCHCompanionApp         },
+    {"rust test sign btc keystone:",               RustTestSignBTCKeystone         },
+    {"rust test sign ltc:",                             RustTestSignLTCKeystone         },
+    {"rust test sign dash:",                            RustTestSignDASHKeystone        },
+    {"rust test sign bch:",                             RustTestSignBCHKeystone         },
     {"rust test decode ur",                             RustTestDecodeUr                    },
     {"rust test get connect blue wallet ur",            RustGetConnectBlueWalletUR          },
     {"rust test derivation:",                           RustTestKeyDerivation               },
@@ -1121,7 +1114,7 @@ static void RustGetMasterFingerprint(int argc, char *argv[])
 static void RustTestParseCryptoPSBT(int argc, char *argv[])
 {
     printf("RustTestParseCryptoPSBT\r\n");
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize()); // 剩余堆空间
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize()); // remaining heap size
     URParseResult *ur = test_get_crypto_psbt();
     void *crypto_psbt = ur->data;
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
@@ -1153,21 +1146,21 @@ static void RustTestParseCryptoPSBT(int argc, char *argv[])
     printf("result: fee value %s\r\n", result->data->detail->fee_amount);
     printf("result: input length %d\r\n", result->data->detail->from->size);
     free_ur_parse_result(ur);
-    free_transaction_parse_result_display_tx(result);
+    free_TransactionParseResult_DisplayTx(result);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustTestParseBTCCompanionApp(int argc, char *argv[])
+static void RustTestParseBTCKeystone(int argc, char *argv[])
 {
-    printf("RustTestParseBTCCompanionApp 11\r\n");
-    URParseResult *ur = test_get_btc_companion_app_bytes();
+    printf("RustTestParseBTCKeystone 11\r\n");
+    URParseResult *ur = test_get_btc_keystone_bytes();
     void *crypto_bytes = ur->data;
     char *xpub = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
-    printf("RustTestParseBTCCompanionApp crypto_bytes %p\r\n", crypto_bytes);
-    TransactionParseResult_DisplayTx *result = utxo_parse_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
-    printf("RustTestParseBTCCompanionApp 22\r\n");
+    printf("RustTestParseBTCKeystone crypto_bytes %p\r\n", crypto_bytes);
+    TransactionParseResult_DisplayTx *result = utxo_parse_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
+    printf("RustTestParseBTCKeystone 22\r\n");
     VecFFI_DisplayTxDetailInput *inputs = result->data->detail->from;
     VecFFI_DisplayTxOverviewOutput *overview_to = result->data->overview->to;
     for (size_t i = 0; i < result->data->overview->to->size; i++)
@@ -1185,20 +1178,20 @@ static void RustTestParseBTCCompanionApp(int argc, char *argv[])
     printf("result: fee value %s\r\n", result->data->detail->fee_amount);
     printf("result: input length %d\r\n", result->data->detail->from->size);
     free_ur_parse_result(ur);
-    free_transaction_parse_result_display_tx(result);
+    free_TransactionParseResult_DisplayTx(result);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustTestCheckFailedBTCCompanionApp(int argc, char *argv[])
+static void RustTestCheckFailedBTCKeystone(int argc, char *argv[])
 {
-    printf("RustTestCheckFailedBTCCompanionApp 11\r\n");
-    URParseResult *ur = test_get_btc_companion_app_bytes();
+    printf("RustTestCheckFailedBTCKeystone 11\r\n");
+    URParseResult *ur = test_get_btc_keystone_bytes();
     void *crypto_bytes = ur->data;
     char *xpub = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
-    printf("RustTestCheckFailedBTCCompanionApp crypto_bytes %p\r\n", crypto_bytes);
-    TransactionCheckResult *result = utxo_check_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
+    printf("RustTestCheckFailedBTCKeystone crypto_bytes %p\r\n", crypto_bytes);
+    TransactionCheckResult *result = utxo_check_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     printf("error_code: %d\r\n", result->error_code);
     printf("error_message, %s\r\n", result->error_message);
     free_ur_parse_result(ur);
@@ -1207,15 +1200,15 @@ static void RustTestCheckFailedBTCCompanionApp(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustTestCheckSucceedBCHCompanionApp(int argc, char *argv[])
+static void RustTestCheckSucceedBCHKeystone(int argc, char *argv[])
 {
-    printf("RustTestCheckSucceedBCHCompanionApp 11\r\n");
-    URParseResult *ur = test_get_bch_companion_app_succeed_bytes();
+    printf("RustTestCheckSucceedBCHKeystone 11\r\n");
+    URParseResult *ur = test_get_bch_keystone_succeed_bytes();
     void *crypto_bytes = ur->data;
     char *xpub = "xpub6ByHsPNSQXTWZ7PLESMY2FufyYWtLXagSUpMQq7Un96SiThZH2iJB1X7pwviH1WtKVeDP6K8d6xxFzzoaFzF3s8BKCZx8oEDdDkNnp4owAZ";
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
-    printf("RustTestCheckSucceedBCHCompanionApp crypto_bytes %p\r\n", crypto_bytes);
-    TransactionCheckResult *result = utxo_check_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
+    printf("RustTestCheckSucceedBCHKeystone crypto_bytes %p\r\n", crypto_bytes);
+    TransactionCheckResult *result = utxo_check_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     printf("error_code: %d\r\n", result->error_code);
     printf("error_message, %s\r\n", result->error_message);
     free_ur_parse_result(ur);
@@ -1224,26 +1217,26 @@ static void RustTestCheckSucceedBCHCompanionApp(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustTestParseLTCCompanionApp(int argc, char *argv[])
+static void RustTestParseLTCKeystone(int argc, char *argv[])
 {
-    printf("RustTestParseLTCCompanionApp 11\r\n");
-    URParseResult *ur = test_get_ltc_companion_app_bytes();
+    printf("RustTestParseLTCKeystone 11\r\n");
+    URParseResult *ur = test_get_ltc_keystone_bytes();
     void *crypto_bytes = ur->data;
     char *xpub = "Mtub2rz9F1pkisRsSZX8sa4Ajon9GhPP6JymLgpuHqbYdU5JKFLBF7Qy8b1tZ3dccj2fefrAxfrPdVkpCxuWn3g72UctH2bvJRkp6iFmp8aLeRZ";
     ViewType view_type = ur->t;
-    printf("RustTestParseLTCCompanionApp view_type %d\r\n", view_type);
+    printf("RustTestParseLTCKeystone view_type %d\r\n", view_type);
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
-    printf("RustTestParseLTCCompanionApp crypto_bytes %p\r\n", crypto_bytes);
-    TransactionParseResult_DisplayTx *result = utxo_parse_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
+    printf("RustTestParseLTCKeystone crypto_bytes %p\r\n", crypto_bytes);
+    TransactionParseResult_DisplayTx *result = utxo_parse_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     VecFFI_DisplayTxDetailInput *inputs = result->data->detail->from;
     VecFFI_DisplayTxOverviewOutput *overview_to = result->data->overview->to;
-    printf("RustTestParseLTCCompanionApp to->size %d\r\n", result->data->overview->to->size);
+    printf("RustTestParseLTCKeystone to->size %d\r\n", result->data->overview->to->size);
     for (size_t i = 0; i < result->data->overview->to->size; i++)
     {
         printf("result: overview output #%d\r\n", i);
         printf("result: overview output address %s\r\n", overview_to->data[i].address);
     }
-    printf("RustTestParseLTCCompanionApp from->size %d\r\n", result->data->detail->from->size);
+    printf("RustTestParseLTCKeystone from->size %d\r\n", result->data->detail->from->size);
     for (size_t i = 0; i < result->data->detail->from->size; i++)
     {
         printf("result: input #%d\r\n", i);
@@ -1254,22 +1247,22 @@ static void RustTestParseLTCCompanionApp(int argc, char *argv[])
     printf("result: fee value %s\r\n", result->data->detail->fee_amount);
     printf("result: input length %d\r\n", result->data->detail->from->size);
     free_ur_parse_result(ur);
-    free_transaction_parse_result_display_tx(result);
+    free_TransactionParseResult_DisplayTx(result);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustTestParseTronCompanionApp(int argc, char *argv[])
+static void RustTestParseTronKeystone(int argc, char *argv[])
 {
-    printf("RustTestParseTronCompanionApp 11\r\n");
-    URParseResult *ur = test_get_tron_companion_app_bytes();
+    printf("RustTestParseTronKeystone 11\r\n");
+    URParseResult *ur = test_get_tron_keystone_bytes();
     void *crypto_bytes = ur->data;
     char *xpub = "xpub6C3ndD75jvoARyqUBTvrsMZaprs2ZRF84kRTt5r9oxKQXn5oFChRRgrP2J8QhykhKACBLF2HxwAh4wccFqFsuJUBBcwyvkyqfzJU5gfn5pY";
     ViewType view_type = ur->t;
-    printf("RustTestParseTronCompanionApp view_type %d\r\n", view_type);
+    printf("RustTestParseTronKeystone view_type %d\r\n", view_type);
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
-    printf("RustTestParseTronCompanionApp crypto_bytes %p\r\n", crypto_bytes);
-    TransactionParseResult_DisplayTron *result = tron_parse_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
+    printf("RustTestParseTronKeystone crypto_bytes %p\r\n", crypto_bytes);
+    TransactionParseResult_DisplayTron *result = tron_parse_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     printf("error_code: %d\r\n", result->error_code);
     printf("error_message, %s\r\n", result->error_message);
     printf("parse result overview: \r\n");
@@ -1282,22 +1275,22 @@ static void RustTestParseTronCompanionApp(int argc, char *argv[])
     printf("parse result detail token: %s\r\n", result->data->detail->token);
     printf("parse result detail contract_address: %s\r\n", result->data->detail->contract_address);
     free_ur_parse_result(ur);
-    free_transaction_parse_result_display_tron(result);
+    free_TransactionParseResult_DisplayTron(result);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustTestCheckTronCompanionAppFailed(int argc, char *argv[])
+static void RustTestCheckTronKeystoneFailed(int argc, char *argv[])
 {
-    printf("RustTestCheckTronCompanionAppFailed 11\r\n");
-    URParseResult *ur = test_get_tron_check_failed_companion_app_bytes();
+    printf("RustTestCheckTronKeystoneFailed 11\r\n");
+    URParseResult *ur = test_get_tron_check_failed_keystone_bytes();
     void *crypto_bytes = ur->data;
     char *xpub = "xpub6C3ndD75jvoARyqUBTvrsMZaprs2ZRF84kRTt5r9oxKQXn5oFChRRgrP2J8QhykhKACBLF2HxwAh4wccFqFsuJUBBcwyvkyqfzJU5gfn5pY";
     ViewType view_type = ur->t;
-    printf("RustTestCheckTronCompanionAppFailed view_type %d\r\n", view_type);
+    printf("RustTestCheckTronKeystoneFailed view_type %d\r\n", view_type);
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
-    printf("RustTestCheckTronCompanionAppFailed crypto_bytes %p\r\n", crypto_bytes);
-    TransactionCheckResult *result = tron_check_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
+    printf("RustTestCheckTronKeystoneFailed crypto_bytes %p\r\n", crypto_bytes);
+    TransactionCheckResult *result = tron_check_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     printf("error_code: %d\r\n", result->error_code);
     printf("error_message, %s\r\n", result->error_message);
     free_ur_parse_result(ur);
@@ -1306,17 +1299,17 @@ static void RustTestCheckTronCompanionAppFailed(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustTestCheckTronCompanionAppSucceed(int argc, char *argv[])
+static void RustTestCheckTronKeystoneSucceed(int argc, char *argv[])
 {
-    printf("RustTestCheckTronCompanionAppSucceed 11\r\n");
-    URParseResult *ur = test_get_tron_companion_app_bytes();
+    printf("RustTestCheckTronKeystoneSucceed 11\r\n");
+    URParseResult *ur = test_get_tron_keystone_bytes();
     void *crypto_bytes = ur->data;
     char *xpub = "xpub6C3ndD75jvoARyqUBTvrsMZaprs2ZRF84kRTt5r9oxKQXn5oFChRRgrP2J8QhykhKACBLF2HxwAh4wccFqFsuJUBBcwyvkyqfzJU5gfn5pY";
     ViewType view_type = ur->t;
-    printf("RustTestCheckTronCompanionAppSucceed view_type %d\r\n", view_type);
+    printf("RustTestCheckTronKeystoneSucceed view_type %d\r\n", view_type);
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
-    printf("RustTestCheckTronCompanionAppSucceed crypto_bytes %p\r\n", crypto_bytes);
-    TransactionCheckResult *result = tron_check_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
+    printf("RustTestCheckTronKeystoneSucceed crypto_bytes %p\r\n", crypto_bytes);
+    TransactionCheckResult *result = tron_check_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     printf("error_code: %d\r\n", result->error_code);
     printf("error_message, %s\r\n", result->error_message);
     free_ur_parse_result(ur);
@@ -1325,24 +1318,24 @@ static void RustTestCheckTronCompanionAppSucceed(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustTestSignTronCompanionApp(int argc, char *argv[])
+static void RustTestSignTronKeystone(int argc, char *argv[])
 {
-    printf("RustTestSignBTCCompanionApp\r\n");
+    printf("RustTestSignBTCKeystone\r\n");
     int32_t index;
     VALUE_CHECK(argc, 2);
     sscanf(argv[0], "%d", &index);
-    printf("RustTestSignTronCompanionApp 11\r\n");
-    URParseResult *ur = test_get_tron_companion_app_bytes();
+    printf("RustTestSignTronKeystone 11\r\n");
+    URParseResult *ur = test_get_tron_keystone_bytes();
     void *crypto_bytes = ur->data;
     char *xpub = "xpub6C3ndD75jvoARyqUBTvrsMZaprs2ZRF84kRTt5r9oxKQXn5oFChRRgrP2J8QhykhKACBLF2HxwAh4wccFqFsuJUBBcwyvkyqfzJU5gfn5pY";
     ViewType view_type = ur->t;
-    printf("RustTestSignTronCompanionApp view_type %d\r\n", view_type);
+    printf("RustTestSignTronKeystone view_type %d\r\n", view_type);
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
     int32_t cold_version = SOFTWARE_VERSION;
-    printf("RustTestSignTronCompanionApp crypto_bytes %p\r\n", crypto_bytes);
+    printf("RustTestSignTronKeystone crypto_bytes %p\r\n", crypto_bytes);
     uint8_t seed[64];
     GetAccountSeed(index, seed, argv[1]);
-    UREncodeResult *result = tron_sign_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, sizeof(seed));
+    UREncodeResult *result = tron_sign_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, sizeof(seed));
     printf("is multi part: %d\r\n", result->is_multi_part);
     printf("data, %s\r\n", result->data);
     free_ur_parse_result(ur);
@@ -1413,31 +1406,31 @@ static void RustTestCosmosEvmSignTx(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustTestParseBCHCompanionApp(int argc, char *argv[])
+static void RustTestParseBCHKeystone(int argc, char *argv[])
 {
-    printf("RustTestParseBCHCompanionApp 11\r\n");
-    URParseResult *ur = test_get_bch_companion_app_bytes();
+    printf("RustTestParseBCHKeystone 11\r\n");
+    URParseResult *ur = test_get_bch_keystone_bytes();
     void *crypto_bytes = ur->data;
     char *xpub = "xpub6ByHsPNSQXTWZ7PLESMY2FufyYWtLXagSUpMQq7Un96SiThZH2iJB1X7pwviH1WtKVeDP6K8d6xxFzzoaFzF3s8BKCZx8oEDdDkNnp4owAZ";
     ViewType view_type = ur->t;
-    printf("RustTestParseBCHCompanionApp view_type %d\r\n", view_type);
+    printf("RustTestParseBCHKeystone view_type %d\r\n", view_type);
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
-    printf("RustTestParseBCHCompanionApp crypto_bytes %p\r\n", crypto_bytes);
-    TransactionParseResult_DisplayTx *result = utxo_parse_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
+    printf("RustTestParseBCHKeystone crypto_bytes %p\r\n", crypto_bytes);
+    TransactionParseResult_DisplayTx *result = utxo_parse_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     VecFFI_DisplayTxDetailInput *inputs = result->data->detail->from;
     VecFFI_DisplayTxOverviewOutput *overview_to = result->data->overview->to;
-    printf("RustTestParseBCHCompanionApp to->size %d\r\n", result->data->overview->to->size);
-    printf("RustTestParseBCHCompanionApp overview->total_output_amount %s\r\n", result->data->overview->total_output_amount);
-    printf("RustTestParseBCHCompanionApp overview->fee_amount %s\r\n", result->data->overview->fee_amount);
-    printf("RustTestParseBCHCompanionApp detail->total_input_amount %s\r\n", result->data->detail->total_input_amount);
-    printf("RustTestParseBCHCompanionApp detail->total_output_amount %s\r\n", result->data->detail->total_output_amount);
-    printf("RustTestParseBCHCompanionApp detail->fee_amount %s\r\n", result->data->detail->fee_amount);
+    printf("RustTestParseBCHKeystone to->size %d\r\n", result->data->overview->to->size);
+    printf("RustTestParseBCHKeystone overview->total_output_amount %s\r\n", result->data->overview->total_output_amount);
+    printf("RustTestParseBCHKeystone overview->fee_amount %s\r\n", result->data->overview->fee_amount);
+    printf("RustTestParseBCHKeystone detail->total_input_amount %s\r\n", result->data->detail->total_input_amount);
+    printf("RustTestParseBCHKeystone detail->total_output_amount %s\r\n", result->data->detail->total_output_amount);
+    printf("RustTestParseBCHKeystone detail->fee_amount %s\r\n", result->data->detail->fee_amount);
     for (size_t i = 0; i < result->data->overview->to->size; i++)
     {
         printf("result: overview output #%d\r\n", i);
         printf("result: overview output address %s\r\n", overview_to->data[i].address);
     }
-    printf("RustTestParseBCHCompanionApp from->size %d\r\n", result->data->detail->from->size);
+    printf("RustTestParseBCHKeystone from->size %d\r\n", result->data->detail->from->size);
     for (size_t i = 0; i < result->data->detail->from->size; i++)
     {
         printf("result: input #%d\r\n", i);
@@ -1448,31 +1441,31 @@ static void RustTestParseBCHCompanionApp(int argc, char *argv[])
     printf("result: fee value %s\r\n", result->data->detail->fee_amount);
     printf("result: input length %d\r\n", result->data->detail->from->size);
     free_ur_parse_result(ur);
-    free_transaction_parse_result_display_tx(result);
+    free_TransactionParseResult_DisplayTx(result);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustTestParseDASHCompanionApp(int argc, char *argv[])
+static void RustTestParseDASHKeystone(int argc, char *argv[])
 {
-    printf("RustTestParseDASHCompanionApp 11\r\n");
-    URParseResult *ur = test_get_dash_companion_app_bytes();
+    printf("RustTestParseDASHKeystone 11\r\n");
+    URParseResult *ur = test_get_dash_keystone_bytes();
     ViewType view_type = ur->t;
-    printf("RustTestParseDASHCompanionApp view_type %d\r\n", view_type);
+    printf("RustTestParseDASHKeystone view_type %d\r\n", view_type);
     void *crypto_bytes = ur->data;
     char *xpub = "xpub6CYEjsU6zPM3sADS2ubu2aZeGxCm3C5KabkCpo4rkNbXGAH9M7rRUJ4E5CKiyUddmRzrSCopPzisTBrXkfCD4o577XKM9mzyZtP1Xdbizyk";
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
-    printf("RustTestParseDASHCompanionApp crypto_bytes %p\r\n", crypto_bytes);
-    TransactionParseResult_DisplayTx *result = utxo_parse_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
+    printf("RustTestParseDASHKeystone crypto_bytes %p\r\n", crypto_bytes);
+    TransactionParseResult_DisplayTx *result = utxo_parse_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub);
     VecFFI_DisplayTxDetailInput *inputs = result->data->detail->from;
     VecFFI_DisplayTxOverviewOutput *overview_to = result->data->overview->to;
-    printf("RustTestParseDASHCompanionApp to->size %d\r\n", result->data->overview->to->size);
+    printf("RustTestParseDASHKeystone to->size %d\r\n", result->data->overview->to->size);
     for (size_t i = 0; i < result->data->overview->to->size; i++)
     {
         printf("result: overview output #%d\r\n", i);
         printf("result: overview output address %s\r\n", overview_to->data[i].address);
     }
-    printf("RustTestParseDASHCompanionApp from->size %d\r\n", result->data->detail->from->size);
+    printf("RustTestParseDASHKeystone from->size %d\r\n", result->data->detail->from->size);
     for (size_t i = 0; i < result->data->detail->from->size; i++)
     {
         printf("result: input #%d\r\n", i);
@@ -1483,7 +1476,7 @@ static void RustTestParseDASHCompanionApp(int argc, char *argv[])
     printf("result: fee value %s\r\n", result->data->detail->fee_amount);
     printf("result: input length %d\r\n", result->data->detail->from->size);
     free_ur_parse_result(ur);
-    free_transaction_parse_result_display_tx(result);
+    free_TransactionParseResult_DisplayTx(result);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
@@ -1518,19 +1511,19 @@ static void RustTestDecodeCryptoPSBT(int argc, char *argv[])
     printf("progress is %d\r\n", ur->progress);
 }
 
-static void RustTestDecodeCompanionAppBTCSignResult(int argc, char *argv[])
+static void RustTestDecodeKeystoneBTCSignResult(int argc, char *argv[])
 {
-    printf("RustTestDecodeCompanionAppBTCSignResult\r\n");
-    URParseResult *ur = test_decode_btc_companion_app_sign_result();
+    printf("RustTestDecodeKeystoneBTCSignResult\r\n");
+    URParseResult *ur = test_decode_btc_keystone_sign_result();
     printf("decode ur\r\n");
     printf("error_code is %d\r\n", ur->error_code);
     printf("error_message is %s\r\n", ur->error_message);
 }
 
-static void RustTestDecodeCompanionAppSignRequest(int argc, char *argv[])
+static void RustTestDecodeKeystoneSignRequest(int argc, char *argv[])
 {
-    printf("RustTestDecodeCompanionAppSignRequest\r\n");
-    URParseResult *ur = test_decode_companion_app_sign_request();
+    printf("RustTestDecodeKeystoneSignRequest\r\n");
+    URParseResult *ur = test_decode_keystone_sign_request();
     printf("decode ur\r\n");
     printf("error_code is %d\r\n", ur->error_code);
     printf("view type is %d\r\n", ur->t);
@@ -1645,22 +1638,22 @@ static void RustTestGetAddressLTCFailed(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustTestSignBTCCompanionApp(int argc, char *argv[])
+static void RustTestSignBTCKeystone(int argc, char *argv[])
 {
-    printf("RustTestSignBTCCompanionApp\r\n");
+    printf("RustTestSignBTCKeystone\r\n");
     int32_t index;
     VALUE_CHECK(argc, 2);
     sscanf(argv[0], "%d", &index);
-    URParseResult *ur = test_get_btc_companion_app_bytes();
+    URParseResult *ur = test_get_btc_keystone_bytes();
     void *crypto_bytes = ur->data;
     char *xpub = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
     int32_t cold_version = SOFTWARE_VERSION;
-    printf("RustTestSignBTCCompanionApp crypto_bytes %p\r\n", crypto_bytes);
+    printf("RustTestSignBTCKeystone crypto_bytes %p\r\n", crypto_bytes);
     uint8_t seed[64];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
     GetAccountSeed(index, seed, argv[1]);
-    UREncodeResult *result = utxo_sign_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
+    UREncodeResult *result = utxo_sign_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
     printf("is multi part: %d\r\n", result->is_multi_part);
     printf("data, %s\r\n", result->data);
     free_ur_parse_result(ur);
@@ -1669,22 +1662,22 @@ static void RustTestSignBTCCompanionApp(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustTestSignLTCCompanionApp(int argc, char *argv[])
+static void RustTestSignLTCKeystone(int argc, char *argv[])
 {
-    printf("RustTestSignLTCCompanionApp\r\n");
+    printf("RustTestSignLTCKeystone\r\n");
     int32_t index;
     VALUE_CHECK(argc, 2);
     sscanf(argv[0], "%d", &index);
-    URParseResult *ur = test_get_ltc_companion_app_bytes();
+    URParseResult *ur = test_get_ltc_keystone_bytes();
     void *crypto_bytes = ur->data;
     char *xpub = "Mtub2rz9F1pkisRsSZX8sa4Ajon9GhPP6JymLgpuHqbYdU5JKFLBF7Qy8b1tZ3dccj2fefrAxfrPdVkpCxuWn3g72UctH2bvJRkp6iFmp8aLeRZ";
     int32_t cold_version = SOFTWARE_VERSION;
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
-    printf("RustTestSignLTCCompanionApp crypto_bytes %p\r\n", crypto_bytes);
+    printf("RustTestSignLTCKeystone crypto_bytes %p\r\n", crypto_bytes);
     uint8_t seed[64];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
     GetAccountSeed(index, seed, argv[1]);
-    UREncodeResult *result = utxo_sign_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
+    UREncodeResult *result = utxo_sign_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
     printf("is multi part: %d\r\n", result->is_multi_part);
     printf("data, %s\r\n", result->data);
     free_ur_parse_result(ur);
@@ -1693,22 +1686,22 @@ static void RustTestSignLTCCompanionApp(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustTestSignDASHCompanionApp(int argc, char *argv[])
+static void RustTestSignDASHKeystone(int argc, char *argv[])
 {
-    printf("RustTestSignDASHCompanionApp\r\n");
+    printf("RustTestSignDASHKeystone\r\n");
     int32_t index;
     VALUE_CHECK(argc, 2);
     sscanf(argv[0], "%d", &index);
-    URParseResult *ur = test_get_dash_companion_app_bytes();
+    URParseResult *ur = test_get_dash_keystone_bytes();
     void *crypto_bytes = ur->data;
     char *xpub = "xpub6CYEjsU6zPM3sADS2ubu2aZeGxCm3C5KabkCpo4rkNbXGAH9M7rRUJ4E5CKiyUddmRzrSCopPzisTBrXkfCD4o577XKM9mzyZtP1Xdbizyk";
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
     int32_t cold_version = SOFTWARE_VERSION;
-    printf("RustTestSignDASHCompanionApp crypto_bytes %p\r\n", crypto_bytes);
+    printf("RustTestSignDASHKeystone crypto_bytes %p\r\n", crypto_bytes);
     uint8_t seed[64];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
     GetAccountSeed(index, seed, argv[1]);
-    UREncodeResult *result = utxo_sign_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
+    UREncodeResult *result = utxo_sign_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
     printf("is multi part: %d\r\n", result->is_multi_part);
     printf("data, %s\r\n", result->data);
     free_ur_parse_result(ur);
@@ -1717,22 +1710,22 @@ static void RustTestSignDASHCompanionApp(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustTestSignBCHCompanionApp(int argc, char *argv[])
+static void RustTestSignBCHKeystone(int argc, char *argv[])
 {
-    printf("RustTestSignBCHCompanionApp\r\n");
+    printf("RustTestSignBCHKeystone\r\n");
     int32_t index;
     VALUE_CHECK(argc, 2);
     sscanf(argv[0], "%d", &index);
-    URParseResult *ur = test_get_bch_companion_app_bytes();
+    URParseResult *ur = test_get_bch_keystone_bytes();
     void *crypto_bytes = ur->data;
     char *xpub = "xpub6ByHsPNSQXTWZ7PLESMY2FufyYWtLXagSUpMQq7Un96SiThZH2iJB1X7pwviH1WtKVeDP6K8d6xxFzzoaFzF3s8BKCZx8oEDdDkNnp4owAZ";
     uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
     int32_t cold_version = SOFTWARE_VERSION;
-    printf("RustTestSignBCHCompanionApp crypto_bytes %p\r\n", crypto_bytes);
+    printf("RustTestSignBCHKeystone crypto_bytes %p\r\n", crypto_bytes);
     uint8_t seed[64];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
     GetAccountSeed(index, seed, argv[1]);
-    UREncodeResult *result = utxo_sign_companion_app(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
+    UREncodeResult *result = utxo_sign_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
     printf("is multi part: %d\r\n", result->is_multi_part);
     printf("data, %s\r\n", result->data);
     free_ur_parse_result(ur);

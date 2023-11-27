@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_status_bar.c
- * Description:
- * author     : stone wang
- * data       : 2023-01-09 16:26
- **********************************************************************/
 #include "gui_obj.h"
 #include "gui_views.h"
 #include "gui_button.h"
@@ -53,6 +46,9 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_ADA, "Confirm Transaction", &coinAda},
     {CHAIN_XRP, "Confirm Transaction", &coinXrp},
     {CHAIN_TRX, "Confirm Transaction", &coinTrx},
+    {CHAIN_BCH, "Confirm Transaction", &coinBch},
+    {CHAIN_DASH, "Confirm Transaction", &coinDash},
+    {CHAIN_LTC, "Confirm Transaction", &coinLtc},
     {CHAIN_ATOM, "Confirm Transaction", &coinAtom},
     {CHAIN_OSMO, "Confirm Transaction", &coinOsmo},
     {CHAIN_SCRT, "Confirm Transaction", &coinScrt},
@@ -85,9 +81,6 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_LUNC, "Confirm Transaction", &coinLunc},
     {CHAIN_BNB, "Confirm Transaction", &coinBnb},
     {CHAIN_DOT, "Confirm Transaction", &coinDot},
-    {CHAIN_LTC, "Confirm Transaction", &coinLtc},
-    {CHAIN_DASH, "Confirm Transaction", &coinDash},
-    {CHAIN_BCH, "Confirm Transaction", &coinBch},
 };
 
 const static CoinWalletInfo_t g_walletBtn[] = {
@@ -147,7 +140,6 @@ void GuiStatusBarInit(void)
     lv_obj_set_style_radius(background, 0, 0);
     lv_obj_align(background, LV_ALIGN_TOP_LEFT, 0, GUI_STATUS_BAR_HEIGHT);
 
-    // 创建状态栏
     g_guiStatusBar.cont = cont;
     lv_obj_t *img = GuiCreateImg(cont, NULL);
     lv_obj_align(img, LV_ALIGN_LEFT_MID, 24, 0);
@@ -207,7 +199,7 @@ void GuiStatusBarSetSdCard(bool connected)
         lv_obj_align_to(g_guiStatusBar.sdCardImg, g_guiStatusBar.batteryImg, LV_ALIGN_OUT_LEFT_MID, -10, 0);
         uint8_t accountCnt = 0;
         GetExistAccountNum(&accountCnt);
-        if (!GuiLockScreenIsTop() && FatfsGetSize("0:") && CheckOtaBinVersion(version) && accountCnt > 0 && !GuiCheckIfTopView(&g_forgetPassView)) {
+        if (!GuiLockScreenIsTop() && CheckOtaBinVersion(version) && accountCnt > 0 && !GuiCheckIfTopView(&g_forgetPassView)) {
             GuiCreateSdCardUpdateHintbox(version);
         }
     } else {

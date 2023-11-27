@@ -8,7 +8,7 @@ use alloc::borrow::ToOwned;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use alloc::{format, vec};
-use app_utils::companion_app;
+use app_utils::keystone;
 use ascii::AsciiStr;
 use core::ops::Div;
 use core::str::FromStr;
@@ -55,7 +55,7 @@ macro_rules! derivation_account_path {
 }
 
 impl WrappedTron {
-    pub fn check_input(&self, context: &companion_app::ParseContext) -> Result<()> {
+    pub fn check_input(&self, context: &keystone::ParseContext) -> Result<()> {
         // check master fingerprint
         if self.xfp.to_uppercase() != hex::encode(context.master_fingerprint).to_uppercase() {
             return Err(TronError::InvalidParseContext(format!(
@@ -262,7 +262,7 @@ impl WrappedTron {
         Self::ref_with_latest_block(tx, latest_block, true)
     }
 
-    pub fn from_payload(payload: Payload, context: &companion_app::ParseContext) -> Result<Self> {
+    pub fn from_payload(payload: Payload, context: &keystone::ParseContext) -> Result<Self> {
         let sign_tx_content: Result<SignTransaction> = match payload.content {
             Some(protoc::payload::Content::SignTx(sign_tx_content)) => Ok(sign_tx_content),
             _ => {
@@ -272,7 +272,7 @@ impl WrappedTron {
                 )));
             }
         };
-        let content = sign_tx_content?;
+        let content: SignTransaction = sign_tx_content?;
         let tx = &content
             .transaction
             .ok_or(TronError::InvalidRawTxCryptoBytes(

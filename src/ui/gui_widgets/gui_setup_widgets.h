@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_setup_widgets.c
- * Description:
- * author     : stone wang
- * data       : 2023-01-31 14:00
-**********************************************************************/
-
 #ifndef _GUI_SETUP_WIDGETS_H
 #define _GUI_SETUP_WIDGETS_H
 

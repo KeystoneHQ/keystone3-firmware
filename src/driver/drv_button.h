@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: button driver.
- * Author: leon sun
- * Create: 2023-2-20
- ************************************************************************************************/
-
 #ifndef _DRV_BUTTON_IO_H
 #define _DRV_BUTTON_IO_H
 

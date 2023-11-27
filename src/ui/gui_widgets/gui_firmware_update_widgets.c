@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) Keystone 2020-2025. All rights reserved.
- * Description: Gui firmware update widgets.
- * Author: leon sun
- * Create: 2023-7-18
- ************************************************************************************************/
-
 #include "gui_firmware_update_widgets.h"
 #include "gui.h"
 #include "gui_views.h"
@@ -243,17 +236,17 @@ static void GuiCreateSelectTile(lv_obj_t *parent)
         {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 40},},
     };
 
-    // char fileVersion[16] = {0};
-    // if (CheckOtaBinVersion(fileVersion)) {
-    //     lv_obj_t *versionLabel = GuiCreateIllustrateLabel(parent, fileVersion);
-    //     lv_obj_set_style_text_color(versionLabel, ORANGE_COLOR, LV_PART_MAIN);
-    //     lv_label_set_text_fmt(versionLabel, "v%s Available", fileVersion);
-    //     table1[3].align = LV_ALIGN_DEFAULT;
-    //     table1[3].position.x = 76;
-    //     table1[3].position.y = 81;
-    //     table1[3].obj = versionLabel;
-    //     memberCnt = 4;
-    // }
+    char fileVersion[16] = {0};
+    if (CheckOtaBinVersion(fileVersion)) {
+        lv_obj_t *versionLabel = GuiCreateIllustrateLabel(parent, fileVersion);
+        lv_obj_set_style_text_color(versionLabel, ORANGE_COLOR, LV_PART_MAIN);
+        lv_label_set_text_fmt(versionLabel, "v%s Available", fileVersion);
+        table1[3].align = LV_ALIGN_DEFAULT;
+        table1[3].position.x = 76;
+        table1[3].position.y = 81;
+        table1[3].obj = versionLabel;
+        memberCnt = 4;
+    }
 
     button = GuiCreateButton(parent, 408, 120, table1, memberCnt, GuiViaSdCardHandler, NULL);
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 210);

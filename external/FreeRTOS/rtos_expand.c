@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one 2020-2023. All rights reserved.
- * Description: rtos扩展功能
- * Author: leon sun
- * Create: 2022-6-24
- ************************************************************************************************/
-
 #include "rtos_expand.h"
 #include "stdio.h"
 #include "FreeRTOS.h"
@@ -31,9 +24,9 @@ void PrintTasksStatus(void)
     static uint32_t taskRunTime = 0;
     uint32_t millionPercent;
 
-    arraySize = uxTaskGetNumberOfTasks(); //获取任务个数
+    arraySize = uxTaskGetNumberOfTasks(); //Get the number of tasks
     statusArray = pvPortMalloc(arraySize * sizeof(TaskStatus_t));
-    if (statusArray != NULL) { //内存申请成功
+    if (statusArray != NULL) { //Memory request successful
         arraySize = uxTaskGetSystemState((TaskStatus_t *)statusArray,
                                          (UBaseType_t)arraySize,
                                          (uint32_t *)&totalRunTime);
@@ -90,7 +83,7 @@ void ClrRunTimeStats(void)
     uint32_t totalRunTime;
     UBaseType_t arraySize;
 
-    arraySize = uxTaskGetNumberOfTasks(); //获取任务个数
+    arraySize = uxTaskGetNumberOfTasks();
     if (g_taskStatusArray) {
         vPortFree(g_taskStatusArray);
     }

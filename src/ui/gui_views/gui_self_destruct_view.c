@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Self destruct view.
- * Author: leon sun
- * Create: 2023-8-2
- ************************************************************************************************/
-
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_views.h"

@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Passphrase input UI widgets.
- * Author: leon sun
- * Create: 2023-6-8
- ************************************************************************************************/
-
 #include "gui.h"
 #include "gui_passphrase_widgets.h"
 #include "gui_status_bar.h"
@@ -245,7 +238,7 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
     static bool delayFlag = false;
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_READY) {
-        if (lv_keyboard_get_textarea(g_passphraseWidgets.keyboard->kb) == g_passphraseWidgets.inputTa) {
+    if (lv_keyboard_get_textarea(g_passphraseWidgets.keyboard->kb) == g_passphraseWidgets.inputTa) {
             lv_keyboard_set_textarea(g_passphraseWidgets.keyboard->kb, g_passphraseWidgets.repeatTa);
             lv_obj_clear_state(g_passphraseWidgets.inputTa, LV_STATE_FOCUSED);
             lv_obj_add_state(g_passphraseWidgets.repeatTa, LV_STATE_FOCUSED);

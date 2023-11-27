@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: mh1903 gpio i2c hal.
- * Author: leon sun
- * Create: 2023-1-31
- ************************************************************************************************/
-
 #include "drv_i2c_io.h"
 #include "stdio.h"
 #include "err_code.h"

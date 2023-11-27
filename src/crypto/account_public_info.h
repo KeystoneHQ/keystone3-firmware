@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Account public info.
- * Author: leon sun
- * Create: 2023-5-4
- ************************************************************************************************/
-
-
 #ifndef _ACCOUNT_PUBLIC_INFO_H
 #define _ACCOUNT_PUBLIC_INFO_H
 

@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : slip39.h
- * Description:
- * author     : stone wang
- * data       : 2023-02-22 11:43
-**********************************************************************/
-
 #ifndef _SLIP39_H
 #define _SLIP39_H
 

@@ -1,0 +1,34 @@
+[package]
+name = "common_rust_c"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+keystore = { path = "../../../keystore", default-features = false }
+third_party = { path = "../../../third_party" }
+cty = "0.2.2"
+cstr_core = "0.2.6"
+app_utils = { path = "../../../apps/utils" }
+rust_tools = {path="../../../tools"}
+
+app_bitcoin = { path = "../../../apps/bitcoin" }
+app_wallets = { path = "../../../apps/wallets" }
+
+app_ethereum = { path = "../../../apps/ethereum", optional = true }
+app_cardano = {path = "../../../apps/cardano", optional = true}
+app_tron = { path = "../../../apps/tron", optional = true }
+app_solana = { path = "../../../apps/solana", optional = true }
+app_near = { path = "../../../apps/near", optional = true }
+app_xrp = {path = "../../../apps/xrp", optional = true }
+app_cosmos = {path = "../../../apps/cosmos", default-features = false, optional = true}
+app_aptos = {path = "../../../apps/aptos", default-features = false, optional = true}
+app_sui = {path = "../../../apps/sui", optional = true}
+
+[features]
+debug-memory = ["default"]
+default = ["multi-coins"]
+multi-coins = ["app_ethereum", "app_cardano", "app_tron", "app_solana", "app_near", "app_xrp", "app_cosmos", "app_aptos", "app_sui"]
+#
+btc-only = []

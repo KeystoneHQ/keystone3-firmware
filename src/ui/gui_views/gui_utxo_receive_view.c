@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Bitcoin receive address UI.
- * Author: leon sun
- * Create: 2023-4-25
- ************************************************************************************************/
-
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_views.h"

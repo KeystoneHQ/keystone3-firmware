@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_hintbox.h
- * Description:
- * author     : stone wang
- * data       : 2023-02-02 16:20
-**********************************************************************/
-
 #ifndef _GUI_HINTBOX_H
 #define _GUI_HINTBOX_H
 

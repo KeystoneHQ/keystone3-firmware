@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: UI显示任务
- * Author: leon sun
- * Create: 2022-11-28
- ************************************************************************************************/
-
 #include "ui_display_task.h"
 #include "stdio.h"
 #include "cmsis_os.h"
@@ -14,7 +7,6 @@
 #include "user_msg.h"
 #include "lv_demos.h"
 #include "drv_virtual_touch.h"
-#include "qrcode/gui_qrcode_example.h"
 #include "touchpad_task.h"
 #include "gui_views.h"
 #include "gui_framework.h"

@@ -1570,5 +1570,8 @@
     <Filter Include="gui\gui_analyze">
       <UniqueIdentifier>{71aeaddb-0c2e-4585-913e-fad631934290}</UniqueIdentifier>
     </Filter>
+    <Filter Include="gui\example">
+      <UniqueIdentifier>{f22310db-3323-4745-b3b1-e36ea380b944}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

@@ -25,6 +25,9 @@ typedef enum {
     CHAIN_ADA,
     CHAIN_XRP,
     CHAIN_TRX,
+    CHAIN_BCH,
+    CHAIN_DASH,
+    CHAIN_LTC,
     CHAIN_ATOM,
     CHAIN_OSMO,
     CHAIN_SCRT,
@@ -57,9 +60,6 @@ typedef enum {
     CHAIN_LUNC,
     CHAIN_BNB,
     CHAIN_DOT,
-    CHAIN_LTC,
-    CHAIN_DASH,
-    CHAIN_BCH,
 
     CHAIN_BUTT,
 } GuiChainCoinType;

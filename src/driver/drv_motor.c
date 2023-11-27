@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Motor driver.
- * Author: leon sun
- * Create: 2023-5-17
- ************************************************************************************************/
-
 #include "drv_motor.h"
 #include "stdio.h"
 #include "cmsis_os.h"

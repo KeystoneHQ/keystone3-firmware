@@ -12,7 +12,9 @@
 #include "version.h"
 #include "err_code.h"
 #include "gui_page.h"
+#ifndef COMPILE_SIMULATOR
 #include "drv_battery.h"
+#endif
 
 #ifdef COMPILE_MAC_SIMULATOR
 #include "simulator_model.h"

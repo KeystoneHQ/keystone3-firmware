@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one 2020-2025. All rights reserved.
- * Description: usbd composite
- * Author: leon sun
- * Create: 2023-6-16
- ************************************************************************************************/
-
 #include "usbd_composite.h"
 #include "stdio.h"
 #include "usb_core.h"

@@ -21,28 +21,25 @@ mod utils;
 pub use crate::address::get_address;
 pub use crate::transaction::parser::{DetailTx, OverviewTx, ParsedTx, TxParser};
 use crate::transaction::wrapped_tron::WrappedTron;
-use app_utils::companion_app;
+use app_utils::keystone;
 use transaction::checker::TxChecker;
 use transaction::signer::Signer;
 
 pub fn sign_raw_tx(
     raw_tx: protoc::Payload,
-    context: companion_app::ParseContext,
+    context: keystone::ParseContext,
     seed: &[u8],
 ) -> Result<(String, String)> {
     let tx = WrappedTron::from_payload(raw_tx, &context)?;
     tx.sign(seed)
 }
 
-pub fn parse_raw_tx(
-    raw_tx: protoc::Payload,
-    context: companion_app::ParseContext,
-) -> Result<ParsedTx> {
+pub fn parse_raw_tx(raw_tx: protoc::Payload, context: keystone::ParseContext) -> Result<ParsedTx> {
     let tx_data = WrappedTron::from_payload(raw_tx, &context)?;
     tx_data.parse()
 }
 
-pub fn check_raw_tx(raw_tx: protoc::Payload, context: companion_app::ParseContext) -> Result<()> {
+pub fn check_raw_tx(raw_tx: protoc::Payload, context: keystone::ParseContext) -> Result<()> {
     let tx_data = WrappedTron::from_payload(raw_tx, &context)?;
     tx_data.check(&context)
 }
@@ -55,12 +52,12 @@ mod test {
     use third_party::hex::FromHex;
     use third_party::ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
     use third_party::ur_registry::pb::protoc::{Base, Payload};
-    pub fn prepare_parse_context(pubkey_str: &str) -> companion_app::ParseContext {
+    pub fn prepare_parse_context(pubkey_str: &str) -> keystone::ParseContext {
         let master_fingerprint =
             third_party::bitcoin::bip32::Fingerprint::from_str("73c5da0a").unwrap();
         let extended_pubkey =
             third_party::bitcoin::bip32::ExtendedPubKey::from_str(pubkey_str).unwrap();
-        companion_app::ParseContext::new(master_fingerprint, extended_pubkey)
+        keystone::ParseContext::new(master_fingerprint, extended_pubkey)
     }
 
     pub fn prepare_payload(hex: &str) -> Payload {

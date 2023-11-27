@@ -1,10 +1,3 @@
-/*
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * @FilePath: \project-pillar-firmware\ui\gui_views\gui_lock_view.c
- * @Description:
- * @Author: stone wang
- * @LastEditTime: 2023-04-12 18:47:04
- */
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_views.h"
@@ -65,6 +58,7 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         }
         SetCurrentAccountIndex();
         GuiFpRecognizeResult(true);
+    case SIG_LOCK_VIEW_SCREEN_ON_PASSPHRASE_PASS:
     case SIG_VERIFY_PASSWORD_PASS:
         GuiLockScreenClearFirstUnlock();
         GuiLockScreenPassCode(true);

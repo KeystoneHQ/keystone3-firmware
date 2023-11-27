@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_api.h
- * Description:
- * author     : stone wang
- * data       : 2023-01-09 11:58
-**********************************************************************/
-
 #ifndef _GUI_API_H
 #define _GUI_API_H
 

@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : drv_sdcard.c
- * Description: driver for sdcard
- * author     : stone wang
- * data       : 2022-12-16 11:04
-**********************************************************************/
-
 #include <string.h>
 #include <stdio.h>
 #include "mhscpu.h"
@@ -206,6 +198,7 @@ bool SDCardTransferBlock(bool isWrite, uint32_t address, uint8_t* buffer, uint32
     if (SDCardInfo.Capacity > SDCardCapacityStandard) {
         address /= 512;
         addressUnit = 1;
+        osDelay(1);
     }
 
     if (SDCardInfo.Capacity <= SDCardCapacityStandard && !SDCardSetBlockLength(512))

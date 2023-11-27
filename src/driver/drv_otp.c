@@ -1,13 +1,9 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: OTP(One-Time Programmable memory) driver.
- * Author: leon sun
- * Create: 2023-3-16
- ************************************************************************************************/
-
 #include "drv_otp.h"
 #include "mhscpu.h"
 #include "assert.h"
+#include "user_utils.h"
+
+const uint32_t g_tamperFlag = 0x1234ABCD;
 
 /// @brief Write data to OTP zone.
 /// @param[in] addr OTP address.
@@ -32,4 +28,19 @@ int32_t WriteOtpData(uint32_t addr, const uint8_t *data, uint32_t len)
     return ret;
 }
 
+int32_t WriteTamperFlag(void)
+{
+    return WriteOtpData(OTP_ADDR_TAMPER, (uint8_t *)&g_tamperFlag, sizeof(g_tamperFlag));
+}
 
+bool ReadTamperFlag(void)
+{
+    uint32_t flag;
+    OTP_PowerOn();
+    memcpy(&flag, (uint8_t *)OTP_ADDR_TAMPER, sizeof(flag));
+    if (CheckEntropy((uint8_t *)&flag, sizeof(flag)) == false) {
+        return false;
+    } else if (flag == g_tamperFlag) {
+        return true;
+    }
+}

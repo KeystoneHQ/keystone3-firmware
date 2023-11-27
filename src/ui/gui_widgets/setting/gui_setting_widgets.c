@@ -356,8 +356,8 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
     char fileVersion[16] = {0};
     GetSoftWareVersionNumber(version);
     if (CheckOtaBinVersion(fileVersion)) {
-        // sprintf(showString, "#8E8E8E v%s# / #F5870A v%sAvailable#", version, fileVersion);
-        sprintf(showString, "#8E8E8E %s#", version);
+        sprintf(showString, "#8E8E8E v%s#  /  #F5870A v%s  Available#", version, fileVersion);
+        // sprintf(showString, "#8E8E8E %s#", version);
     } else {
         sprintf(showString, "#8E8E8E %s#", version);
     }
@@ -572,27 +572,37 @@ void GuiWalletRecoveryWriteSe(bool result)
     }
 }
 
-void GuiDevSettingPassCode(bool result, uint8_t tileIndex)
+void GuiDevSettingPassCode(bool result, uint16_t tileIndex)
 {
-    static uint8_t walletIndex = DEVICE_SETTING_RESET_PASSCODE_VERIFY;
+    static uint16_t walletIndex = DEVICE_SETTING_RESET_PASSCODE_VERIFY;
+    printf("tileIndex = %d\n", tileIndex);
     switch (tileIndex) {
-    case DEVICE_SETTING_FINGER_SETTING:
+    case SIG_FINGER_FINGER_SETTING:
         walletIndex = GuiGetFingerSettingIndex();
         break;
-    case DEVICE_SETTING_RESET_PASSCODE:
+    case SIG_FINGER_SET_UNLOCK:
+        GuiShowKeyboardDestruct();
+        return GuiWalletFingerOpenUnlock();
+    case SIG_FINGER_SET_SIGN_TRANSITIONS:
+        GuiShowKeyboardDestruct();
+        return GuiWalletFingerOpenSign();
+    case SIG_FINGER_REGISTER_ADD_SUCCESS:
+        FpSaveKeyInfo();
+        walletIndex = DEVICE_SETTING_FINGER_ADD_SUCCESS;
+        break;
+    case SIG_SETTING_CHANGE_PASSWORD:
         walletIndex = DEVICE_SETTING_RESET_PASSCODE_VERIFY;
-        break;
-    case DEVICE_SETTING_ADD_WALLET:
-        walletIndex = DEVICE_SETTING_ADD_WALLET_NOTICE;
-        break;
-    case DEVICE_SETTING_DEL_WALLET:
-        walletIndex = DEVICE_SETTING_DEL_WALLET_VERIFY;
         break;
     case DEVICE_SETTING_PASSPHRASE_VERIFY:
         walletIndex = DEVICE_SETTING_PASSPHRASE_ENTER;
         break;
-    case DEVICE_SETTING_RECOVERY_PHRASE_VERIFY:
-        walletIndex = DEVICE_SETTING_RECOVERY_METHOD_CHECK;
+    case DEVICE_SETTING_ADD_WALLET:
+        ClearSecretCache();
+        walletIndex = DEVICE_SETTING_ADD_WALLET_NOTICE;
+        break;
+    case DEVICE_SETTING_DEL_WALLET:
+        ClearSecretCache();
+        walletIndex = DEVICE_SETTING_DEL_WALLET_VERIFY;
         break;
     default:
         if (result)
@@ -804,6 +814,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
         strcpy(midLabel, _("wallet_setting_passphrase"));
         break;
     case DEVICE_SETTING_PASSPHRASE_VERIFY:
+        printf("wallet_setting_passphrase...\n");
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         currTileIndex = DEVICE_SETTING_PASSPHRASE_VERIFY;
         destructCb = GuiDelEnterPasscode;

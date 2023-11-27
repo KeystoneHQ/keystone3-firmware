@@ -1,18 +1,3 @@
-/*
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * @FilePath: \project-pillar-firmware\ui\gui_widgets\gui_button.h
- * @Description:
- * @Author: stone wang
- * @LastEditTime: 2023-04-13 19:46:02
- */
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_button.h
- * Description:
- * author     : stone wang
- * data       : 2023-02-01 15:58
-**********************************************************************/
-
 #ifndef _GUI_BUTTON_H
 #define _GUI_BUTTON_H
 

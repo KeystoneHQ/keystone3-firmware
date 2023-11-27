@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Self destruct widgets.
- * Author: leon sun
- * Create: 2023-8-2
- ************************************************************************************************/
-
-
 #include "gui_self_destruct_widgets.h"
 #include "gui_status_bar.h"
 #include "gui_views.h"

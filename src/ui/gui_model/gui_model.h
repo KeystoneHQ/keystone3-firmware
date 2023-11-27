@@ -89,5 +89,6 @@ void GuiModelURClear(void);
 void GuiModelCheckTransaction(ViewType ViewType);
 void GuiModelTransactionCheckResultClear(void);
 void GuiModelParseTransaction(ReturnVoidPointerFunc func);
+bool ModelGetPassphraseQuickAccess(void);
 #endif /* _GUI_MODEL_H */
 

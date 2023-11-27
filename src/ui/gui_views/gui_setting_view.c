@@ -65,6 +65,9 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
         QRCodeControl(false);
         GuiDevSettingPassCode(true, tileIndex);
         break;
+    case SIG_SETTING_WRITE_PASSPHRASE_VERIFY_PASS:
+        GuiSettingAnimSetLabel(_("seed_check_wait_verify"));
+        break;
     case SIG_VERIFY_PASSWORD_FAIL:
         if (param != NULL) {
             PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;

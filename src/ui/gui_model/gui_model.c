@@ -919,14 +919,12 @@ static void ModelVerifyPassSuccess(uint16_t *param)
             ModelCopySdCardOta(NULL, 0);
             break;
         case SIG_SETTING_WRITE_PASSPHRASE:
-            GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
+            GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_VERIFY_PASS, param, sizeof(*param));
             ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
             if (ret == SUCCESS_CODE) {
-                printf("%s %d...\n", __func__, __LINE__);
                 GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
                 ClearSecretCache();
             } else {
-                printf("%s %d...\n", __func__, __LINE__);
                 GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_FAIL, NULL, 0);
             }            
             break;
@@ -973,6 +971,7 @@ static void ModelVerifyPassFailed(uint16_t *param)
 static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
+    static bool firstVerify = true;
     SetLockScreen(false);
     uint8_t accountIndex;
 #ifndef COMPILE_SIMULATOR
@@ -988,6 +987,11 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
         }
     } else {
         ret = VerifyCurrentAccountPassword(SecretCacheGetPassword());
+    }
+
+    if (SIG_LOCK_VIEW_VERIFY_PIN == *param && firstVerify && ModelGetPassphraseQuickAccess()) {
+        *param = SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE;
+        firstVerify = false;
     }
 
     // some scene would need clear secret after check
@@ -1214,4 +1218,18 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, voi
     }
     GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
     return SUCCESS_CODE;
+}
+
+
+bool ModelGetPassphraseQuickAccess(void)
+{
+#ifdef COMPILE_SIMULATOR
+    return true;
+#else
+    if (PassphraseExist(GetCurrentAccountIndex()) == false && GetPassphraseQuickAccess() == true && GetPassphraseMark() == true) {
+        return true;
+    } else {
+        return false;
+    }
+#endif
 }

@@ -126,7 +126,7 @@ static void SetPinEventHandler(lv_event_t *e)
 
                 g_userParam = g_passParam.userParam;
                 uint8_t index = 0xff;
-                if (g_userParam != NULL && *(uint8_t *)g_userParam == DEVICE_SETTING_RESET_PASSCODE_VERIFY) {
+                if (g_userParam != NULL && *(uint16_t *)g_userParam == DEVICE_SETTING_RESET_PASSCODE_VERIFY) {
                     index = GetCurrentAccountIndex();
                 }
 
@@ -188,7 +188,7 @@ static void SetPassWordHandler(lv_event_t *e)
             if (item->mode == ENTER_PASSCODE_SET_PASSWORD) {
                 uint8_t index = 0xff;
 
-                if (g_userParam != NULL && *(uint8_t *)g_userParam == DEVICE_SETTING_RESET_PASSCODE_VERIFY) {
+                if (g_userParam != NULL && *(uint16_t *)g_userParam == DEVICE_SETTING_RESET_PASSCODE_VERIFY) {
                     index = GetCurrentAccountIndex();
                 }
                 if (CheckPasswordExisted(currText, index)) {

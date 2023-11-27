@@ -42,7 +42,6 @@
 #include "simulator_model.h"
 #endif
 
-static bool ModelGetPassphraseQuickAccess(void);
 static void GuiPassowrdToLockTimePage(uint16_t errorCount);
 void GuiLockScreenClearModal(lv_obj_t *cont);
 static char* GuiJudgeTitle();
@@ -278,7 +277,9 @@ void GuiLockScreenPassCode(bool en)
         g_fpErrorCount = 0;
         FpCancelCurOperate();
         if (ModelGetPassphraseQuickAccess()) {
-            GuiLockScreenTurnOff();
+            lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
+            GuiModeGetWalletDesc();
+            GuiEnterPassCodeStatus(g_verifyLock, true);
             GuiFrameOpenView(&g_passphraseView);
             printf("passphrase quick access\r\n");
         } else if (g_homeView.isActive) {
@@ -362,10 +363,6 @@ void GuiLockScreenInit(void *param)
 
     g_lockScreenCont = cont;
     GuiEnterPasscodeItem_t *item = GuiCreateEnterPasscode(cont, NULL, param, ENTER_PASSCODE_VERIFY_PIN);
-    if (ModelGetPassphraseQuickAccess()) {
-        static uint16_t currentTile = SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE;
-        GuiUpdateEnterPasscodeParam(item, &currentTile);
-    }
     g_verifyLock = item;
 
     GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_GO_LOCK_DEVICE_PASS, NULL, 0);
@@ -455,20 +452,6 @@ void GuiLockScreenUpdatePassCode(void)
 #ifndef COMPILE_SIMULATOR
 #include "keystore.h"
 #endif
-
-
-static bool ModelGetPassphraseQuickAccess(void)
-{
-#ifdef COMPILE_SIMULATOR
-    return false;
-#else
-    if (PassphraseExist(GetCurrentAccountIndex()) == false && GetPassphraseQuickAccess() == true && GetPassphraseMark() == true) {
-        return true;
-    } else {
-        return false;
-    }
-#endif
-}
 
 static void CountDownTimerChangeLabelTextHandler(lv_timer_t *timer)
 {

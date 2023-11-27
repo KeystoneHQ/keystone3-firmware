@@ -1,5 +1,5 @@
 use crate::extract_ptr_with_type;
-use crate::interfaces::errors::{CompanionAppError, RustCError};
+use crate::interfaces::errors::{KeystoneError, RustCError};
 use crate::interfaces::structs::TransactionCheckResult;
 use crate::interfaces::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::interfaces::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
@@ -26,7 +26,7 @@ use third_party::ur_registry::traits::RegistryItem;
 
 use super::ur::URType;
 
-pub fn build_payload(ptr: PtrUR, ur_type: URType) -> Result<Payload, CompanionAppError> {
+pub fn build_payload(ptr: PtrUR, ur_type: URType) -> Result<Payload, KeystoneError> {
     let bytes = match ur_type {
         URType::KeystoneSignRequest => {
             let req = extract_ptr_with_type!(ptr, KeystoneSignRequest);
@@ -36,37 +36,31 @@ pub fn build_payload(ptr: PtrUR, ur_type: URType) -> Result<Payload, CompanionAp
             let bytes = extract_ptr_with_type!(ptr, Bytes);
             bytes.get_bytes()
         }
-        _ => {
-            return Err(CompanionAppError::ProtobufError(
-                "invalid ur type".to_string(),
-            ))
-        }
+        _ => return Err(KeystoneError::ProtobufError("invalid ur type".to_string())),
     };
     unzip(bytes)
         .and_then(|unzip_data| parse_protobuf(unzip_data))
         .and_then(|base: Base| Ok(base.data))
-        .map_err(|e| CompanionAppError::ProtobufError(e.to_string()))?
-        .ok_or(CompanionAppError::ProtobufError(
-            "empty payload".to_string(),
-        ))
+        .map_err(|e| KeystoneError::ProtobufError(e.to_string()))?
+        .ok_or(KeystoneError::ProtobufError("empty payload".to_string()))
 }
 
 pub fn build_parse_context(
     master_fingerprint: PtrBytes,
     x_pub: PtrString,
-) -> Result<app_utils::companion_app::ParseContext, CompanionAppError> {
+) -> Result<app_utils::keystone::ParseContext, KeystoneError> {
     let mfp = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
     let x_pub = recover_c_char(x_pub);
     let xpub_str = convert_version(x_pub.as_str(), &Version::Xpub)
-        .map_err(|e| CompanionAppError::InvalidParseContext(e.to_string()))?;
+        .map_err(|e| KeystoneError::InvalidParseContext(e.to_string()))?;
     let master_fingerprint =
         third_party::bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
-            .map_err(|_| CompanionAppError::InvalidParseContext(format!("invalid mfp")))?;
+            .map_err(|_| KeystoneError::InvalidParseContext(format!("invalid mfp")))?;
     let extended_pubkey = third_party::bitcoin::bip32::ExtendedPubKey::from_str(&xpub_str)
         .map_err(|_| {
-            CompanionAppError::InvalidParseContext(format!("invalid extended pub key {}", x_pub))
+            KeystoneError::InvalidParseContext(format!("invalid extended pub key {}", x_pub))
         })?;
-    Ok(app_utils::companion_app::ParseContext::new(
+    Ok(app_utils::keystone::ParseContext::new(
         master_fingerprint,
         extended_pubkey,
     ))
@@ -78,16 +72,16 @@ fn get_signed_tx(
     master_fingerprint: PtrBytes,
     x_pub: PtrString,
     seed: &[u8],
-) -> Result<(String, String), CompanionAppError> {
+) -> Result<(String, String), KeystoneError> {
     build_parse_context(master_fingerprint, x_pub).and_then(|context| {
         if app_bitcoin::network::Network::from_str(coin_code.as_str()).is_ok() {
             return app_bitcoin::sign_raw_tx(payload, context, seed)
-                .map_err(|e| CompanionAppError::SignTxFailed(e.to_string()));
+                .map_err(|e| KeystoneError::SignTxFailed(e.to_string()));
         }
         match coin_code.as_str() {
             "TRON" => app_tron::sign_raw_tx(payload, context, seed)
-                .map_err(|e| CompanionAppError::SignTxFailed(e.to_string())),
-            _ => Err(CompanionAppError::SignTxFailed(format!(
+                .map_err(|e| KeystoneError::SignTxFailed(e.to_string())),
+            _ => Err(KeystoneError::SignTxFailed(format!(
                 "chain is not supported {}",
                 coin_code
             ))),
@@ -100,7 +94,7 @@ pub fn build_check_result(
     ur_type: URType,
     master_fingerprint: PtrBytes,
     x_pub: PtrString,
-) -> Result<(), CompanionAppError> {
+) -> Result<(), KeystoneError> {
     let payload = build_payload(ptr, ur_type)?;
     let payload_content = payload.content.clone();
     match payload_content {
@@ -110,12 +104,12 @@ pub fn build_check_result(
                     .is_ok()
                 {
                     return app_bitcoin::check_raw_tx(payload, context)
-                        .map_err(|e| CompanionAppError::CheckTxFailed(e.to_string()));
+                        .map_err(|e| KeystoneError::CheckTxFailed(e.to_string()));
                 }
                 match sign_tx_content.coin_code.as_str() {
                     "TRON" => app_tron::check_raw_tx(payload, context)
-                        .map_err(|e| CompanionAppError::CheckTxFailed(e.to_string())),
-                    _ => Err(CompanionAppError::CheckTxFailed(format!(
+                        .map_err(|e| KeystoneError::CheckTxFailed(e.to_string())),
+                    _ => Err(KeystoneError::CheckTxFailed(format!(
                         "chain is not supported {}",
                         sign_tx_content.coin_code
                     ))),
@@ -123,7 +117,7 @@ pub fn build_check_result(
             })
         }
         _ => {
-            return Err(CompanionAppError::ProtobufError(
+            return Err(KeystoneError::ProtobufError(
                 "empty payload content".to_string(),
             ));
         }
@@ -137,7 +131,7 @@ pub fn build_sign_result(
     x_pub: PtrString,
     cold_version: i32,
     seed: &[u8],
-) -> Result<Vec<u8>, CompanionAppError> {
+) -> Result<Vec<u8>, KeystoneError> {
     let payload = build_payload(ptr, ur_type)?;
     let payload_content = payload.content.clone();
     match payload_content {
@@ -166,10 +160,10 @@ pub fn build_sign_result(
                 device_type: DEVICE_TYPE.to_string(),
             };
             let data = serialize_protobuf(base);
-            zip(&data).map_err(|_| CompanionAppError::ProtobufError("zip bytes failed".to_string()))
+            zip(&data).map_err(|_| KeystoneError::ProtobufError("zip bytes failed".to_string()))
         }
         _ => {
-            return Err(CompanionAppError::ProtobufError(
+            return Err(KeystoneError::ProtobufError(
                 "empty payload content".to_string(),
             ));
         }

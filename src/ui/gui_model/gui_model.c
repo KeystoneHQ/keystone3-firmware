@@ -853,7 +853,6 @@ static int32_t ModelChangeAmountPass(const void *inData, uint32_t inDataLen)
     int32_t ret;
 
     ret = VerifyCurrentAccountPassword(SecretCacheGetPassword());
-    printf("SecretCacheGetPassword = %s\n", SecretCacheGetPassword());
     ret = ChangePassword(GetCurrentAccountIndex(), SecretCacheGetNewPassword(), SecretCacheGetPassword());
     UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     if (ret == SUCCESS_CODE) {

@@ -30,7 +30,7 @@ use crate::transactions::legacy::TxData;
 use crate::transactions::psbt::wrapped_psbt::WrappedPsbt;
 use crate::transactions::tx_checker::TxChecker;
 use alloc::string::{String, ToString};
-use app_utils::companion_app;
+use app_utils::keystone;
 use third_party::either::{Left, Right};
 use third_party::hex;
 use third_party::ur_registry::pb::protoc;
@@ -54,17 +54,14 @@ pub fn check_psbt(psbt_hex: Vec<u8>, context: ParseContext) -> Result<()> {
     wpsbt.check(Left(&context))
 }
 
-pub fn parse_raw_tx(
-    raw_tx: protoc::Payload,
-    context: companion_app::ParseContext,
-) -> Result<ParsedTx> {
+pub fn parse_raw_tx(raw_tx: protoc::Payload, context: keystone::ParseContext) -> Result<ParsedTx> {
     let tx_data = TxData::from_payload(raw_tx, &context)?;
     tx_data.parse(None)
 }
 
 pub fn sign_raw_tx(
     raw_tx: protoc::Payload,
-    context: companion_app::ParseContext,
+    context: keystone::ParseContext,
     seed: &[u8],
 ) -> Result<(String, String)> {
     let tx_data = &mut TxData::from_payload(raw_tx, &context)?;
@@ -75,7 +72,7 @@ pub fn sign_raw_tx(
     ))
 }
 
-pub fn check_raw_tx(raw_tx: protoc::Payload, context: companion_app::ParseContext) -> Result<()> {
+pub fn check_raw_tx(raw_tx: protoc::Payload, context: keystone::ParseContext) -> Result<()> {
     let tx_data = TxData::from_payload(raw_tx, &context)?;
     tx_data.check(Right(&context))
 }
@@ -93,7 +90,7 @@ mod test {
         DetailTx, OverviewTx, ParsedInput, ParsedOutput, ParsedTx,
     };
     use alloc::vec::Vec;
-    use app_utils::companion_app;
+    use app_utils::keystone;
     use core::str::FromStr;
     use third_party::hex::FromHex;
     use third_party::ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
@@ -158,14 +155,14 @@ mod test {
         };
     }
 
-    pub fn prepare_parse_context(pubkey_str: &str) -> companion_app::ParseContext {
+    pub fn prepare_parse_context(pubkey_str: &str) -> keystone::ParseContext {
         let master_fingerprint =
             third_party::bitcoin::bip32::Fingerprint::from_str("73c5da0a").unwrap();
         let extended_pubkey_str = convert_version(pubkey_str, &Version::Xpub).unwrap();
         let extended_pubkey =
             third_party::bitcoin::bip32::ExtendedPubKey::from_str(extended_pubkey_str.as_str())
                 .unwrap();
-        companion_app::ParseContext::new(master_fingerprint, extended_pubkey)
+        keystone::ParseContext::new(master_fingerprint, extended_pubkey)
     }
 
     pub fn prepare_payload(hex: &str) -> Payload {

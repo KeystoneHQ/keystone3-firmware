@@ -255,6 +255,10 @@ void GuiWalletSetPinWidget(lv_obj_t *parent, uint8_t tile)
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
 
     g_setPassCode = GuiCreateEnterPasscode(parent, NULL, &currentTile, ENTER_PASSCODE_SET_PIN);
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
     GuiWalletResetPassWordHintBox();
 }
 

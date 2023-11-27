@@ -313,7 +313,7 @@ void GuiSetEthUrData(void *data, bool multi)
         switch (g_viewType)                                                                                                       \
         {                                                                                                                         \
         case EthTx:                                                                                                               \
-            free_transaction_parse_result_display_eth((PtrT_TransactionParseResult_DisplayETH)result);                            \
+            free_TransactionParseResult_DisplayETH((PtrT_TransactionParseResult_DisplayETH)result);                               \
             break;                                                                                                                \
         case EthPersonalMessage:                                                                                                  \
             free_TransactionParseResult_DisplayETHPersonalMessage((PtrT_TransactionParseResult_DisplayETHPersonalMessage)result); \

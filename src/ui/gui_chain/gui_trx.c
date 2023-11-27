@@ -23,7 +23,7 @@ void GuiSetTrxUrData(void *data, bool multi)
 #define CHECK_FREE_PARSE_RESULT(result)                                                              \
     if (result != NULL)                                                                              \
     {                                                                                                \
-        free_transaction_parse_result_display_tron((PtrT_TransactionParseResult_DisplayTron)result); \
+        free_TransactionParseResult_DisplayTron((PtrT_TransactionParseResult_DisplayTron)result);    \
         result = NULL;                                                                               \
     }
 

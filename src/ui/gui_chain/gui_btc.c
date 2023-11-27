@@ -10,7 +10,7 @@
 
 #define CHECK_FREE_PARSE_RESULT(result)                             \
     if (result != NULL) {                                           \
-        free_transaction_parse_result_display_tx(g_parseResult);    \
+        free_TransactionParseResult_DisplayTx(g_parseResult);       \
         g_parseResult = NULL;                                       \
     }
 

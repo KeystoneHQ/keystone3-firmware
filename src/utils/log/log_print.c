@@ -1,7 +1,10 @@
 #include "log_print.h"
 #include "stdio.h"
 #include "librust_c.h"
+
+#ifdef DEBUG_MEMORY
 #define RUST_MEMORY_DEBUG
+#endif
 
 #ifdef RUST_MEMORY_DEBUG
 #include "user_memory.h"

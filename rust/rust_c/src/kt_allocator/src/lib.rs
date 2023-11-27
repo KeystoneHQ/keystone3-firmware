@@ -5,13 +5,14 @@
 #![allow(unused_unsafe)]
 extern crate alloc;
 
-use cstr_core::CString;
 
 pub mod bindings;
 pub mod my_alloc;
 
 #[cfg(not(test))]
 use core::panic::PanicInfo;
+#[cfg(not(test))]
+use cstr_core::CString;
 
 #[cfg(not(test))]
 #[alloc_error_handler]

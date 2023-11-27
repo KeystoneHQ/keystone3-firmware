@@ -103,7 +103,6 @@ void GuiAnimatingQRCodeUpdate(char* data, uint16_t len)
 
 void GuiAnimatingQRCodeDestroyTimer()
 {
-    printf("GuiAnimatingQRCodeDestroyTimer\r\n");
     if (g_timer) {
         lv_timer_del(g_timer);
         g_timer = NULL;

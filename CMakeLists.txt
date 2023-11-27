@@ -160,8 +160,9 @@ if(COMPILE_MAIN)
         external/lvgl/src/misc
         external/lvgl/src/widgets
         external/lvgl/src/core
-        external/safec/include
-        external/safec/src
+        external/safeC
+        external/safeC/include
+        external/safeC/src
         build/rust-builds
         ${CMAKE_CURRENT_BINARY_DIR}
     )
@@ -225,13 +226,13 @@ if(COMPILE_MAIN)
     )
 
     file(GLOB_RECURSE safec
-        "external/safec/src/*.c"
-        "external/safec/src/extmem/*.c"
-        "external/safec/src/extstr/*.c"
-        "external/safec/src/io/*.c"
-        "external/safec/src/mem/*.c"
-        "external/safec/src/misc/*.c"
-        "external/safec/src/str/*.c"
+        "external/safeC/src/*.c"
+        "external/safeC/src/extmem/*.c"
+        "external/safeC/src/extstr/*.c"
+        "external/safeC/src/io/*.c"
+        "external/safeC/src/mem/*.c"
+        "external/safeC/src/misc/*.c"
+        "external/safeC/src/str/*.c"
     )
 
     file(GLOB_RECURSE ctaes
@@ -265,6 +266,7 @@ if(COMPILE_MAIN)
         ${ccan}
         ${cryptoauthlib}
         ${ctaes}
+        ${safec}
     )
 
     file(GLOB_RECURSE gui
@@ -315,7 +317,6 @@ if(COMPILE_MAIN)
         ${webusb_protocol}
         ${webusb_protocol_services}
         ${webusb_protocol_eapdu_services}
-        ${safec}
         external/mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s
         src/cm_backtrace/fault_handler/gcc/cmb_fault.s)
 

@@ -5,7 +5,6 @@
 #![allow(unused_unsafe)]
 extern crate alloc;
 
-
 pub mod bindings;
 pub mod my_alloc;
 

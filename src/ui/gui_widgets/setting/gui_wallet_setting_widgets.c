@@ -327,9 +327,6 @@ void GuiChangePassWord(bool result)
     GuiStopCircleAroundAnimation();
     GUI_DEL_OBJ(g_resetingCont)
     SetKeyboardWidgetMode((g_setPassCode->mode == ENTER_PASSCODE_SET_PIN) ? KEYBOARD_HINTBOX_PIN : KEYBOARD_HINTBOX_PASSWORD);
-    if (result) {
-        // GuiEmitSignal(SIG_SETTING_PASSWORD_RESET_PASS, NULL, 0);
-    }
     GuiResettingPassWordSuccess();
 }
 

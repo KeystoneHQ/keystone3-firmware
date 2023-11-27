@@ -44,7 +44,6 @@ typedef struct ContLabelWidget_t {
 } ContLabelWidget_t;
 
 /* FUNC DECLARATION*/
-static void RecoveryPassphraseHandler(lv_event_t *e);
 static void DelWalletConfirmHandler(lv_event_t *e);
 
 /* STATIC VARIABLES */
@@ -97,11 +96,12 @@ void GuiSettingRecoveryCheck(void)
 
 void GuiWritePassphrase(bool result)
 {
-    // goto home
-    // GuiStopCircleAryououndAnimation();
     GuiDeleteAnimHintBox();
     g_waitAnimWidget.cont = NULL;
-    GuiSettingCloseToTargetTileView(DEVICE_SETTING_WALLET_SETTING);
+    if (result) {
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+        GuiSettingCloseToTargetTileView(DEVICE_SETTING_WALLET_SETTING);
+    }
 }
 
 void CountDownTimerHandler(lv_timer_t *timer)
@@ -255,7 +255,6 @@ void GuiWalletSetPinWidget(lv_obj_t *parent, uint8_t tile)
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
 
     g_setPassCode = GuiCreateEnterPasscode(parent, NULL, &currentTile, ENTER_PASSCODE_SET_PIN);
-
     GuiWalletResetPassWordHintBox();
 }
 
@@ -302,11 +301,10 @@ void GuiSettingSetPinPass(const char *buf)
 
 void GuiSettingRepeatPinPass(const char *buf)
 {
-    uint8_t accountIndex = 0;
     if (!strcmp(buf, g_passCode)) {
         GuiResettingWriteSe();
         SecretCacheSetNewPassword((char *)buf);
-        GuiModelChangeAmountPassWord(accountIndex);
+        GuiModelChangeAmountPassWord();
     } else {
         GuiEnterPassCodeStatus(g_repeatPassCode, false);
     }
@@ -317,11 +315,11 @@ void GuiDelWallet(bool result)
     GuiDeleteAnimHintBox();
     // g_waitAnimWidget.cont = NULL;
     GuiCLoseCurrentWorkingView();
-    static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
+    static uint16_t signal = SIG_LOCK_VIEW_VERIFY_PIN;
     LogoutCurrentAccount();
     GuiLockScreenSetFirstUnlock();
     GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_VERIFY);
-    GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
+    GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &signal, sizeof(signal));
 }
 
 void GuiChangePassWord(bool result)
@@ -329,9 +327,7 @@ void GuiChangePassWord(bool result)
     GuiStopCircleAroundAnimation();
     GUI_DEL_OBJ(g_resetingCont)
     SetKeyboardWidgetMode((g_setPassCode->mode == ENTER_PASSCODE_SET_PIN) ? KEYBOARD_HINTBOX_PIN : KEYBOARD_HINTBOX_PASSWORD);
-    if (result) {
-        GuiEmitSignal(SIG_SETTING_PASSWORD_RESET_PASS, NULL, 0);
-    }
+    GuiResettingPassWordSuccess();
 }
 
 void GuiResettingWriteSe(void)
@@ -371,6 +367,28 @@ void GuiDelWalletSetup(void)
 void GuiShowKeyboardDestruct(void)
 {
     GuiDeleteKeyboardWidget(g_keyboardWidget);
+}
+
+void StopAddNewFingerHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
+        GuiDeleteKeyboardWidget(keyboardWidget);
+        FpDeleteRegisterFinger();
+    }
+}
+
+void GuiShowKeyboard(uint16_t *signal, bool isView, lv_event_cb_t cb)
+{
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
+    if (isView) {
+        g_keyboardWidget = GuiCreateKeyboardWidgetView(GuiSettingGetCurrentCont(), cb);
+    } else {
+        g_keyboardWidget = GuiCreateKeyboardWidget(GuiSettingGetCurrentCont());
+    }
+    SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+    SetKeyboardWidgetSig(g_keyboardWidget, signal);
 }
 
 void GuiShowKeyboardHandler(lv_event_t *e)
@@ -422,7 +440,7 @@ void GuiWalletSetWidget(lv_obj_t *parent)
         DEVICE_SETTING_CHANGE_WALLET_DESC,
         DEVICE_SETTING_FINGERPRINT_PASSCODE,
         DEVICE_SETTING_PASSPHRASE,
-        DEVICE_SETTING_RECOVERY_PHRASE_VERIFY,
+        DEVICE_SETTING_RECOVERY_METHOD_CHECK,
         DEVICE_SETTING_ADD_WALLET
     };
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
@@ -495,7 +513,7 @@ void GuiWalletSetWidget(lv_obj_t *parent)
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     table[0].obj = label;
     table[1].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 84, table, 2, RecoveryPassphraseHandler, &walletSetting[3]);
+    button = GuiCreateButton(parent, 456, 84, table, 2, WalletSettingHandler, &walletSetting[3]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 479 - GUI_MAIN_AREA_OFFSET);
 
     line = GuiCreateDividerLine(parent);
@@ -557,22 +575,5 @@ static void DelWalletConfirmHandler(lv_event_t *e)
         g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("wallet_settings_delete_laoding_title"));
         lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
         GuiModelSettingDelWalletDesc();
-    }
-}
-
-static void RecoveryPassphraseHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (PassphraseExist(GetCurrentAccountIndex()) == true) {
-            static uint16_t recoveryMethod = DEVICE_SETTING_RECOVERY_METHOD_CHECK;
-            GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &recoveryMethod, sizeof(recoveryMethod));
-        } else {
-            static uint16_t recoveryMethod = DEVICE_SETTING_RECOVERY_PHRASE_VERIFY;
-            GuiDeleteKeyboardWidget(g_keyboardWidget);
-            g_keyboardWidget = GuiCreateKeyboardWidget(GuiSettingGetCurrentCont());
-            SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
-            SetKeyboardWidgetSig(g_keyboardWidget, &recoveryMethod);
-        }
     }
 }

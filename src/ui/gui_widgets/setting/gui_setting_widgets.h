@@ -57,7 +57,6 @@ typedef enum {
     DEVICE_SETTING_PASSPHRASE_SET_END,
 
     // RECOVERY PHRASE CHECK
-    DEVICE_SETTING_RECOVERY_PHRASE_VERIFY,
     DEVICE_SETTING_RECOVERY_METHOD_CHECK,
     DEVICE_SETTING_RECOVERY_SINGLE_PHRASE,
     DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_12WORDS,
@@ -101,7 +100,7 @@ void WalletSettingHandler(lv_event_t *e);
 void GuiSettingCloseToTargetTileView(uint8_t targetIndex);
 void GuiShowKeyboardHandler(lv_event_t *e);
 void GuiSettingAnimSetLabel(const char *text);
-void GuiDevSettingPassCode(bool result, uint8_t tileIndex);
+void GuiDevSettingPassCode(bool result, uint16_t tileIndex);
 void GuiSettingSetPinPass(const char* buf);
 void GuiSettingRepeatPinPass(const char* buf);
 void GuiResettingPassWordSuccess(void);
@@ -119,6 +118,8 @@ void GuiSettingDealFingerRecognize(void *param);
 void GuiWalletResetPassWordHintBox(void);
 void GuiWalletSelectAddWallet(lv_obj_t *parent);
 void GuiWalletSettingRefresh(void);
+void StopAddNewFingerHandler(lv_event_t *e);
+void GuiShowKeyboard(uint16_t *signal, bool isView, lv_event_cb_t cb);
 
 //forget passcode share logic;
 void GuiSettingCloseSelectAmountHintBox();
@@ -146,6 +147,7 @@ void GuiWalletDelWalletConfirm(lv_obj_t *parent);
 void GuiWalletSetPinWidget(lv_obj_t *parent, uint8_t tile);
 void GuiSettingCountDownDestruct(void *obj, void *param);
 void GuiWalletAddWalletNotice(lv_obj_t *parent);
+void GuiSettingSetNewPassword(void);
 
 // wallet name and icon setting
 void *GuiWalletNameWallet(lv_obj_t *parent, uint8_t tile);
@@ -166,6 +168,7 @@ void CancelCurFingerHandler(lv_event_t *e);
 void FingerSignHandler(lv_event_t *e);
 void GuiFingerManagerDestruct(void *obj, void *param);
 void GuiFpVerifyDestruct(void);
+void GuiWalletFingerOpenSign(void);
 
 // set passphrase
 void GuiWalletPassphrase(lv_obj_t *parent);

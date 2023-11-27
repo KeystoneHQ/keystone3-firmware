@@ -175,9 +175,9 @@ void GuiModelSettingWritePassphrase(void)
     AsyncExecute(ModelWritePassphrase, NULL, 0);
 }
 
-void GuiModelChangeAmountPassWord(uint8_t accountIndex)
+void GuiModelChangeAmountPassWord(void)
 {
-    AsyncExecute(ModelChangeAmountPass, &accountIndex, sizeof(accountIndex));
+    AsyncExecute(ModelChangeAmountPass, NULL, 0);
 }
 
 void GuiModelVerifyAmountPassWord(uint16_t *param)
@@ -898,12 +898,81 @@ static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
     return SUCCESS_CODE;
 }
 
+static void ModelVerifyPassSuccess(uint16_t *param)
+{
+    int32_t ret = SUCCESS_CODE;
+    uint8_t walletAmount;
+    uint16_t signal = SIG_VERIFY_PASSWORD_FAIL;
+    switch (*param) {
+        case DEVICE_SETTING_ADD_WALLET:
+            GetExistAccountNum(&walletAmount);
+            if (walletAmount == 3) {
+                GuiApiEmitSignal(SIG_SETTING_ADD_WALLET_AMOUNT_LIMIT, NULL, 0);
+            } else {
+                GuiEmitSignal(SIG_INIT_GET_ACCOUNT_NUMBER, &walletAmount, sizeof(walletAmount));
+                GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
+            }
+            break;
+        case SIG_INIT_SD_CARD_OTA_COPY:
+            GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
+            GuiApiEmitSignal(SIG_INIT_SD_CARD_OTA_COPY, param, sizeof(*param));
+            ModelCopySdCardOta(NULL, 0);
+            break;
+        case SIG_SETTING_WRITE_PASSPHRASE:
+            GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_VERIFY_PASS, param, sizeof(*param));
+            ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
+            if (ret == SUCCESS_CODE) {
+                GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
+                ClearSecretCache();
+            } else {
+                GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_FAIL, NULL, 0);
+            }            
+            break;
+        case SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE:
+            GuiApiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_PASSPHRASE_PASS, param, sizeof(*param));
+            break;
+        default:
+            GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
+            break;
+    }
+}
+
+static void ModelVerifyPassFailed(uint16_t *param)
+{
+    uint16_t signal = SIG_VERIFY_PASSWORD_FAIL;
+    switch (*param) {
+        case SIG_LOCK_VIEW_VERIFY_PIN:
+        case SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS:
+            g_passwordVerifyResult.errorCount = GetLoginPasswordErrorCount();
+            printf("gui model get login error count %d \n", g_passwordVerifyResult.errorCount);
+            assert(g_passwordVerifyResult.errorCount <= MAX_LOGIN_PASSWORD_ERROR_COUNT);
+            if (g_passwordVerifyResult.errorCount == MAX_LOGIN_PASSWORD_ERROR_COUNT) {
+                UnlimitedVibrate(SUPER_LONG);
+            } else {
+                UnlimitedVibrate(LONG);
+            }
+            break;
+        default:
+            g_passwordVerifyResult.errorCount = GetCurrentPasswordErrorCount();
+            printf("gui model get current error count %d \n", g_passwordVerifyResult.errorCount);
+            assert(g_passwordVerifyResult.errorCount <= MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX);
+            if (g_passwordVerifyResult.errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
+                UnlimitedVibrate(SUPER_LONG);
+            } else {
+                UnlimitedVibrate(LONG);
+            }
+            break;
+    }
+    g_passwordVerifyResult.signal = param;
+    GuiApiEmitSignal(signal, (void*)&g_passwordVerifyResult, sizeof(g_passwordVerifyResult));
+}
+
 // verify wallet password
 static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
+    static bool firstVerify = true;
     SetLockScreen(false);
-    static uint8_t walletAmount;
     uint8_t accountIndex;
 #ifndef COMPILE_SIMULATOR
     int32_t ret;
@@ -919,52 +988,29 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
     } else {
         ret = VerifyCurrentAccountPassword(SecretCacheGetPassword());
     }
+
+    if (SIG_LOCK_VIEW_VERIFY_PIN == *param && firstVerify && ModelGetPassphraseQuickAccess()) {
+        *param = SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE;
+        firstVerify = false;
+    }
+
+    // some scene would need clear secret after check
+    if (*param != SIG_SETTING_CHANGE_PASSWORD &&
+        *param != SIG_SETTING_WRITE_PASSPHRASE && 
+        *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE &&
+        *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
+        *param != SIG_FINGER_REGISTER_ADD_SUCCESS) {
+        ClearSecretCache();
+    }
+    printf("*param = %u\n", *param);
     SetLockScreen(enable);
     if (ret == SUCCESS_CODE) {
-        if (*param == DEVICE_SETTING_ADD_WALLET) {
-            GetExistAccountNum(&walletAmount);
-            if (walletAmount == 3) {
-                GuiApiEmitSignal(SIG_SETTING_ADD_WALLET_AMOUNT_LIMIT, NULL, 0);
-            } else {
-                GuiEmitSignal(SIG_INIT_GET_ACCOUNT_NUMBER, &walletAmount, sizeof(walletAmount));
-                GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
-            }
-        } else if (*param == SIG_INIT_SD_CARD_OTA_COPY) {
-            GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
-            GuiApiEmitSignal(SIG_INIT_SD_CARD_OTA_COPY, param, sizeof(*param));
-            ModelCopySdCardOta(inData, inDataLen);
-        } else {
-            GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
-        }
+        ModelVerifyPassSuccess(param);
     } else {
-        if (SIG_LOCK_VIEW_VERIFY_PIN == *param || SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS == *param) {
-            g_passwordVerifyResult.errorCount = GetLoginPasswordErrorCount();
-            printf("gui model get login error count %d \n", g_passwordVerifyResult.errorCount);
-            assert(g_passwordVerifyResult.errorCount <= MAX_LOGIN_PASSWORD_ERROR_COUNT);
-            if (g_passwordVerifyResult.errorCount == MAX_LOGIN_PASSWORD_ERROR_COUNT) {
-                UnlimitedVibrate(SUPER_LONG);
-            } else {
-                UnlimitedVibrate(LONG);
-            }
-        } else {
-            g_passwordVerifyResult.errorCount = GetCurrentPasswordErrorCount();
-            printf("gui model get current error count %d \n", g_passwordVerifyResult.errorCount);
-            assert(g_passwordVerifyResult.errorCount <= MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX);
-            if (g_passwordVerifyResult.errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
-                UnlimitedVibrate(SUPER_LONG);
-            } else {
-                UnlimitedVibrate(LONG);
-            }
-            if (SIG_INIT_SD_CARD_OTA_COPY == *param) {
-                g_passwordVerifyResult.signal = param;
-                GuiApiEmitSignal(SIG_FIRMWARE_VERIFY_PASSWORD_FAIL, (void*)&g_passwordVerifyResult, sizeof(g_passwordVerifyResult));
-                return SUCCESS_CODE;
-            }
-        }
-        g_passwordVerifyResult.signal = param;
-        GuiApiEmitSignal(SIG_VERIFY_PASSWORD_FAIL, (void*)&g_passwordVerifyResult, sizeof(g_passwordVerifyResult));
+        ModelVerifyPassFailed(param);
     }
 #else
+    uint8_t walletAmount;
     uint8_t *entropy;
     uint8_t entropyLen;
     int32_t ret;
@@ -1172,4 +1218,18 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, voi
     }
     GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
     return SUCCESS_CODE;
+}
+
+
+bool ModelGetPassphraseQuickAccess(void)
+{
+#ifdef COMPILE_SIMULATOR
+    return true;
+#else
+    if (PassphraseExist(GetCurrentAccountIndex()) == false && GetPassphraseQuickAccess() == true && GetPassphraseMark() == true) {
+        return true;
+    } else {
+        return false;
+    }
+#endif
 }

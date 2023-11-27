@@ -14,7 +14,6 @@
 #include "user_msg.h"
 #include "lv_demos.h"
 #include "drv_virtual_touch.h"
-#include "qrcode/gui_qrcode_example.h"
 #include "touchpad_task.h"
 #include "gui_views.h"
 #include "gui_framework.h"

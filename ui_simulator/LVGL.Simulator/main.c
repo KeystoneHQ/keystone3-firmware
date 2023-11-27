@@ -103,10 +103,6 @@ static void UIEventHandler(void)
     case SIG_SETTING_REPEAT_PIN:
         GuiEmitSignal(SIG_SETTING_REPEAT_PIN, NULL, 0);
         break;
-    case SIG_SETTING_PASSWORD_RESETTING:
-        printf("%s %d\n", __func__, __LINE__);
-        GuiEmitSignal(SIG_SETTING_PASSWORD_RESET_PASS, NULL, 0);
-        break;
     case SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC:
         Sleep(10);
         GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, &ret, sizeof(ret));

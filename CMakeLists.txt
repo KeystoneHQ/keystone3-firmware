@@ -123,7 +123,6 @@ if(COMPILE_MAIN)
         src/ram 
         src/hardware_interface
         src/ui/lv_demos
-        src/ui/pillar_demos
         src/ui/gui_views
         src/ui/gui_assets
         src/ui/gui_assets/abi
@@ -264,7 +263,6 @@ if(COMPILE_MAIN)
         "src/ui/gui_views/*.c"
         "src/ui/gui_widgets/*.c"
         "src/ui/gui_widgets/setting/*.c"
-        "src/ui/pillar_demos/qrcode_sign/*.c"
         "src/ui/lv_i18n/*.c"
         "src/ui/gui_model/*.c"
 		"src/ui/gui_analyze/gui_analyze.c"

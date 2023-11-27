@@ -28,6 +28,7 @@
 #include "log.h"
 #include "presetting.h"
 #include "anti_tamper.h"
+#include "drv_battery.h"
 #else
 #include "simulator_model.h"
 #endif
@@ -66,10 +67,9 @@ void GuiModelWriteSe(void);
 void GuiModelSlip39CalWriteSe(Slip39Data_t slip39);
 void GuiModelBip39CalWriteSe(Bip39Data_t bip39);
 void GuiModelSettingSaveWalletDesc(WalletDesc_t *wallet);
-void GuiModelSettingWritePassphrase(void);
 void GuiModelSettingDelWalletDesc(void);
 void GuiModelLockedDeviceDelAllWalletDesc(void);
-void GuiModelChangeAmountPassWord(uint8_t accountIndex);
+void GuiModelChangeAmountPassWord(void);
 void GuiModelVerifyAmountPassWord(uint16_t *param);
 void GuiModelBip39UpdateMnemonic(uint8_t wordCnt);
 void GuiModelSlip39UpdateMnemonic(Slip39Data_t slip39);
@@ -89,5 +89,6 @@ void GuiModelURClear(void);
 void GuiModelCheckTransaction(ViewType ViewType);
 void GuiModelTransactionCheckResultClear(void);
 void GuiModelParseTransaction(ReturnVoidPointerFunc func);
+bool ModelGetPassphraseQuickAccess(void);
 #endif /* _GUI_MODEL_H */
 

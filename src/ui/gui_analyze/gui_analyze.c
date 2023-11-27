@@ -1585,7 +1585,6 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
         }
     }
     const char *type = item->valuestring;
-    printf("type = %s\n", type);
     if (!type)
     {
         return NULL;

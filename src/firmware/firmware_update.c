@@ -26,7 +26,7 @@
 #include "drv_otp.h"
 #include "user_utils.h"
 
-#define SD_CARD_OTA_BIN_PATH   "0:/pillar.bin"
+#define SD_CARD_OTA_BIN_PATH   "0:/keystone3.bin"
 
 #define CHECK_UNIT              256
 #define CHECK_SIZE              4096
@@ -150,7 +150,7 @@ static bool CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t *pH
 
 bool CheckOtaBinVersion(char *version)
 {
-    return true;
+    // return true;
     OtaFileInfo_t otaFileInfo = {0};
     uint32_t headSize;
     bool ret = true;
@@ -208,13 +208,12 @@ static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32
     GetSoftwareVersionFormData(&fileMajor, &fileMinor, &fileBuild, g_dataUnit + FIXED_SEGMENT_OFFSET, decmpsdSize - FIXED_SEGMENT_OFFSET);
     printf("now version:%d.%d.%d\n", nowMajor, nowMinor, nowBuild);
     printf("file version:%d.%d.%d\n", fileMajor, fileMinor, fileBuild);
-    if (fileMajor < nowMajor) {
-        return false;
-    }
-    if (fileMinor < nowMinor) {
-        return false;
-    }
-    if (fileBuild <= nowBuild) {
+
+    uint32_t epoch = 100;
+    uint32_t nowVersionNumber = (nowMajor * epoch * epoch)  + (nowMinor * epoch) + nowBuild;
+    uint32_t fileVersionNumber = (fileMajor * epoch * epoch)  + (fileMinor * epoch) + fileBuild;
+
+    if (fileVersionNumber < nowVersionNumber) {
         return false;
     }
     sprintf(version, "%d.%d.%d", fileMajor, fileMinor, fileBuild);

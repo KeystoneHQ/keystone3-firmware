@@ -291,8 +291,6 @@ static void FpRecognizeSend(uint16_t cmd, uint8_t passwd)
 
 void FpSaveKeyInfo(void)
 {
-    printf("what fuck...\n");
-    printf("...%s....\n", SecretCacheGetPassword());
     SetFingerManagerInfoToSE();
     FingerSetInfoToSE(g_fpTempAesKey, 0, GetCurrentAccountIndex(), SecretCacheGetPassword());
     memset(g_fpTempAesKey, 0,  sizeof(g_fpTempAesKey));

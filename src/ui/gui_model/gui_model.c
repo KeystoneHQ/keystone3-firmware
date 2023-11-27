@@ -920,9 +920,6 @@ static void ModelVerifyPassSuccess(uint16_t *param)
             break;
         case SIG_SETTING_WRITE_PASSPHRASE:
             GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
-            printf("%s %d...\n", __func__, __LINE__);
-            printf("SecretCacheGetPassphrase = %s\n", SecretCacheGetPassphrase());
-            printf("SecretCacheGetPassword = %s\n", SecretCacheGetPassword());
             ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
             if (ret == SUCCESS_CODE) {
                 printf("%s %d...\n", __func__, __LINE__);

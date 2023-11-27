@@ -206,6 +206,7 @@ bool SDCardTransferBlock(bool isWrite, uint32_t address, uint8_t* buffer, uint32
     if (SDCardInfo.Capacity > SDCardCapacityStandard) {
         address /= 512;
         addressUnit = 1;
+        osDelay(1);
     }
 
     if (SDCardInfo.Capacity <= SDCardCapacityStandard && !SDCardSetBlockLength(512))

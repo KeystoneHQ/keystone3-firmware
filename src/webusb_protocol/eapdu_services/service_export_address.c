@@ -90,7 +90,6 @@ void ExportAddressApprove()
     ExportEthAddress(g_exportAddressParams->requestID, g_exportAddressParams->n, g_exportAddressParams->type);
     SRAM_FREE(g_exportAddressParams);
     g_exportAddressParams = NULL;
-    GuiCLoseCurrentWorkingView();
 }
 
 void ExportAddressReject()
@@ -98,7 +97,6 @@ void ExportAddressReject()
     SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, g_exportAddressParams->requestID, PRS_EXPORT_ADDRESS_REJECTED, "Export address is rejected");
     SRAM_FREE(g_exportAddressParams);
     g_exportAddressParams = NULL;
-    GuiCLoseCurrentWorkingView();
 }
 
 static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)

@@ -9,9 +9,15 @@ static PageWidget_t *g_pageWidget;
 static EAPDUResultPage_t *g_param;
 static bool g_original_lock_screen = false;
 
+typedef struct
+{
+    lv_img_dsc_t *img;
+    char *title;
+} WalletInfo_t;
+
 static void ApproveButtonHandler(lv_event_t *e);
 static void RejectButtonHandler(lv_event_t *e);
-static lv_img_dsc_t *GetConnectWalletImg();
+static WalletInfo_t GetConnectWalletInfo();
 static void GuiExportXPubViewInit();
 static void GuiResolveUrResultViewInit();
 
@@ -22,6 +28,7 @@ static void ApproveButtonHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED)
     {
         ExportAddressApprove();
+        GuiCLoseCurrentWorkingView();
     }
 }
 
@@ -32,18 +39,25 @@ static void RejectButtonHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED)
     {
         ExportAddressReject();
+        GuiCLoseCurrentWorkingView();
     }
 }
 
-static lv_img_dsc_t *GetConnectWalletImg()
+static WalletInfo_t GetConnectWalletInfo()
 {
     uint8_t wallet = GetExportWallet();
+    WalletInfo_t walletInfo = {
+        .img = &imgConnectWithWallet,
+        .title = _("usb_transport_connect_wallet"),
+    };
     switch (wallet)
     {
     case Rabby:
-        return &imgConnectWithRabby;
+        walletInfo.img = &imgConnectWithRabby;
+        walletInfo.title = _("usb_transport_connect_rabby");
+        return walletInfo;
     default:
-        return &imgConnectWithWallet;
+        return walletInfo;
     }
 }
 
@@ -54,7 +68,8 @@ static void GuiExportXPubViewInit()
     lv_obj_t *cont = g_pageWidget->contentZone;
 
     g_cont = cont;
-    lv_obj_t *img = GuiCreateImg(cont, GetConnectWalletImg());
+    WalletInfo_t walletInfo = GetConnectWalletInfo();
+    lv_obj_t *img = GuiCreateImg(cont, walletInfo.img);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 16);
 
     lv_obj_t *label;
@@ -62,7 +77,7 @@ static void GuiExportXPubViewInit()
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 184);
 
-    label = GuiCreateLabel(cont, _("usb_transport_connect_rabby"));
+    label = GuiCreateLabel(cont, walletInfo.title);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 236);

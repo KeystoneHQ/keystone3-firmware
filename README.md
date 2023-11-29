@@ -1,7 +1,13 @@
 # Keystone3 Firmware
 
 ## Description
-The Keystone3 Firmware is a specialized software designed for [specific application or device]. This project focuses on [key functionalities], offering features like [list main features]. Its unique selling points include [mention any unique aspects or innovations].
+The Keystone3 Firmware is an advanced, highly secure software specifically crafted for the Keystone3 product, a state-of-the-art crypto hardware wallet. This project is laser-focused on delivering an exceptionally secure and intuitive user experience. It boasts cutting-edge features like PCI level anti-tamper protection, ensuring the highest security against physical and digital threats. Additionally, it supports Multi Seed Phrase functionality, which enhances security and recovery options, and includes safeguards against blind signing to protect against unauthorized transactions. The firmware also offers extensive support for a wide range of cryptocurrencies, catering to the diverse needs of crypto users.
+
+Its standout features include:
+
+1. Triple-layer security with Three Secure Element Chips, ensuring top-notch protection of your digital assets.
+2. Advanced PCI level anti-tamper features, providing robust defense against physical tampering and hacking attempts.
+3. A user-friendly interface offering an intuitive user experience, making it accessible even for those new to crypto hardware wallets.
 
 ## Getting Started
 
@@ -31,7 +37,7 @@ git clone https://github.com/KeystoneHQ/keystone3-firmware --recursive
 Alternatively, use Docker to build the required environment:
 
 ```bash
-docker build -t project-pillar-base:local .
+docker build -t keystone3-base:local .
 ```
 
 ### Building the Firmware
@@ -59,13 +65,7 @@ cd tools && astyle -A3nrUpHcQ --exclude=../src/cm_backtrace/Languages --exclude=
 ```
 
 ## License
-This project is licensed under the MIT License - see the LICENSE.md file for details.
-
-## Authors and Acknowledgments
-We thank all the contributors who have been a part of this project. Special thanks to [mention any third-party resources or contributors].
-
-## FAQs
-[Include a section answering common questions about the project.]
+Please see the LICENSE.md file for details.
 
 ## Contact
-For support or inquiries, please contact us at [provide contact information or link to contact page].
+For support or inquiries, please contact us at eng@keyst.one

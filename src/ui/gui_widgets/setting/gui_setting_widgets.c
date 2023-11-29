@@ -508,7 +508,7 @@ static void DelWalletHandler(lv_event_t *e)
 static void OpenDelWalletHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    static uint8_t walletIndex = DEVICE_SETTING_DEL_WALLET;
+    static uint16_t walletIndex = DEVICE_SETTING_DEL_WALLET;
 
     if (code == LV_EVENT_CLICKED) {
         g_delWalletHintbox = GuiCreateHintBox(lv_event_get_user_data(e), 480, 132, true);

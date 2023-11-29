@@ -15,6 +15,13 @@ typedef struct
     char *title;
 } WalletInfo_t;
 
+typedef struct
+{
+    char *title;
+    char *subTitle;
+    char *buttonText;
+} ResolveUrInfo_t;
+
 static void ApproveButtonHandler(lv_event_t *e);
 static void RejectButtonHandler(lv_event_t *e);
 static WalletInfo_t GetConnectWalletInfo();
@@ -95,25 +102,48 @@ static void GuiExportXPubViewInit()
     lv_obj_add_event_cb(button, ApproveButtonHandler, LV_EVENT_CLICKED, NULL);
 }
 
+static ResolveUrInfo_t CalcResolveUrPageInfo()
+{
+    ResolveUrInfo_t info = {
+        .title = _("usb_transport_sign_completed_title"),
+        .subTitle = _("usb_transport_sign_completed_subtitle"),
+        .buttonText = _("usb_transport_sign_completed_btn"),
+    };
+    switch (g_param->error_code)
+    {
+    case RSP_SUCCESS_CODE:
+        break;
+    case PRS_PARSING_MISMATCHED_WALLET:
+        info.title = _("usb_transport_mismatched_wallet_title");
+        info.subTitle = g_param->error_message;
+        info.buttonText = _("usb_transport_sign_failed_btn");
+        break;
+    default:
+        info.title = _("usb_transport_sign_unkown_error_title");
+        info.subTitle = _("usb_transport_sign_unkown_error_message");
+        info.buttonText = _("usb_transport_sign_failed_btn");
+        break;
+    }
+    return info;
+}
+
 static void GuiResolveUrResultViewInit()
 {
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
     g_cont = cont;
 
-    char *title = _("usb_transport_sign_completed_title");
-    char *subTitle = _("usb_transport_sign_completed_subtitle");
-    char *buttonText = _("usb_transport_sign_completed_btn");
+    ResolveUrInfo_t info = CalcResolveUrPageInfo();
+    char *title = info.title;
+    char *subTitle = info.subTitle;
+    char *buttonText = info.buttonText;
     lv_color_t buttonColor = ORANGE_COLOR;
     lv_obj_t *img = NULL;
     lv_img_dsc_t statusImg = imgSuccess;
     if (g_param->error_code != 0)
     {
-        title = _("usb_transport_sign_failed_title");
-        subTitle = g_param->error_message;
         buttonColor = WHITE_COLOR;
         img = GuiCreateImg(cont, &imgFailed);
-        buttonText = _("usb_transport_sign_failed_btn");
     }
     else
     {
@@ -137,7 +167,8 @@ static void GuiResolveUrResultViewInit()
     lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_size(button, 408, 66);
     lv_obj_set_style_bg_color(button, buttonColor, LV_PART_MAIN);
-    if (g_param->error_code != 0) {
+    if (g_param->error_code != 0)
+    {
         lv_obj_set_style_bg_opa(button, LV_OPA_12, LV_PART_MAIN);
     }
     lv_obj_add_event_cb(button, GoToHomeViewHandler, LV_EVENT_CLICKED, NULL);

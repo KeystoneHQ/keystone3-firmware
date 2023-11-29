@@ -368,8 +368,8 @@ void StopAddNewFingerHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        g_hintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgWarn, _("fingerprint_nth_remove_title"),
-                                                "Do you really want to delete Finger", _("Cancel"), DARK_GRAY_COLOR, _("Remove"), RED_COLOR);
+        g_hintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgWarn, "Fingerprints not saved",
+                                                "Exiting does not save the current fingerprint", _("Cancel"), DARK_GRAY_COLOR, _("Confirm"), RED_COLOR);
         lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_hintBox);
         lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_hintBox);
 

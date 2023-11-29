@@ -39,6 +39,7 @@ name = "app_stellar"
 version = "0.1.0"
 dependencies = [
  "app_utils",
+ "base32",
  "keystore",
  "serde",
  "serde_derive",
@@ -1146,6 +1147,8 @@ dependencies = [
 name = "stellar-xdr"
 version = "20.0.0-rc1"
 dependencies = [
+ "core2",
+ "crate-git-revision",
  "hex",
  "serde",
  "serde_with",

@@ -212,11 +212,13 @@ static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32
     uint32_t fileVersionNumber = (fileMajor * epoch * epoch)  + (fileMinor * epoch) + fileBuild;
 
     if (fileVersionNumber < nowVersionNumber) {
+        SRAM_FREE(g_dataUnit);
+        SRAM_FREE(g_fileUnit);
         return false;
     }
-    sprintf(version, "%d.%d.%d", fileMajor, fileMinor, fileBuild);
     SRAM_FREE(g_dataUnit);
     SRAM_FREE(g_fileUnit);
+    sprintf(version, "%d.%d.%d", fileMajor, fileMinor, fileBuild);
     return true;
 }
 

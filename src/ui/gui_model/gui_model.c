@@ -847,6 +847,7 @@ static int32_t ModelWritePassphrase(const void *inData, uint32_t inDataLen)
         ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
         if (ret == SUCCESS_CODE) {
             GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
+            ClearSecretCache();
         } else {
             GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_FAIL, NULL, 0);
         }
@@ -966,6 +967,8 @@ static void ModelVerifyPassFailed(uint16_t *param)
                 UnlimitedVibrate(LONG);
             }
             break;
+        case SIG_INIT_SD_CARD_OTA_COPY:
+            signal = SIG_FIRMWARE_VERIFY_PASSWORD_FAIL;
         default:
             g_passwordVerifyResult.errorCount = GetCurrentPasswordErrorCount();
             printf("gui model get current error count %d \n", g_passwordVerifyResult.errorCount);

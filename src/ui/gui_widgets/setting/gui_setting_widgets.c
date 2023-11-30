@@ -574,12 +574,17 @@ void GuiDevSettingPassCode(bool result, uint16_t tileIndex)
         walletIndex = GuiGetFingerSettingIndex();
         break;
     case SIG_FINGER_SET_UNLOCK:
-        GuiShowKeyboardDestruct();
-        return GuiWalletFingerOpenUnlock();
+        if (result) {
+            GuiShowKeyboardDestruct();
+            GuiWalletFingerOpenUnlock();
+            return;
+        }
+        break;
     case SIG_FINGER_SET_SIGN_TRANSITIONS:
         if (result) {
             GuiShowKeyboardDestruct();
-            return GuiWalletFingerOpenSign();
+            GuiWalletFingerOpenSign();
+            return;
         }
         break;
     case SIG_FINGER_REGISTER_ADD_SUCCESS:

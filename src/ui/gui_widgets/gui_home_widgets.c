@@ -40,6 +40,9 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
         {HOME_WALLET_CARD_SUI, false, "SUI", true},
         {HOME_WALLET_CARD_ADA, false, "ADA", true},
         {HOME_WALLET_CARD_XRP, false, "XRP", true},
+        {HOME_WALLET_CARD_BCH, false, "BCH", true},
+        {HOME_WALLET_CARD_DASH, false, "DASH", true},
+        {HOME_WALLET_CARD_LTC, false, "LTC", true},
         {HOME_WALLET_CARD_TRX, false, "TRX", false},
         {HOME_WALLET_CARD_ATOM, false, "ATOM", true},
         {HOME_WALLET_CARD_OSMO, false, "OSMO", true},
@@ -133,12 +136,6 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =
             .icon = &coinXrp,
         },
         {
-            .index = HOME_WALLET_CARD_TRX,
-            .coin = "TRX",
-            .chain = "TRON",
-            .icon = &coinTrx,
-        },
-        {
             .index = HOME_WALLET_CARD_BCH,
             .coin = "BCH",
             .chain = "Bitcoin Cash",
@@ -155,6 +152,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =
             .coin = "LTC",
             .chain = "Litecoin",
             .icon = &coinLtc,
+        },
+        {
+            .index = HOME_WALLET_CARD_TRX,
+            .coin = "TRX",
+            .chain = "TRON",
+            .icon = &coinTrx,
         },
         {
             .index = HOME_WALLET_CARD_ATOM,

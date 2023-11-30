@@ -50,7 +50,6 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
         GuiDevSettingNextTile(tileIndex);
         break;
     case SIG_VERIFY_PASSWORD_PASS:
-    case SIG_VERIFY_FINGER_PASS:
         if (param != NULL) {
             uint16_t sig = *(uint16_t *)param;
             if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {

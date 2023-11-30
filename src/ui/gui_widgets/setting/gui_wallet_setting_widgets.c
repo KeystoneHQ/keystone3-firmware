@@ -79,6 +79,7 @@ void GuiSetPinDestruct(void *obj, void *param)
         SRAM_FREE(g_setPassCode);
         g_setPassCode = NULL;
     }
+    ClearSecretCache();
 }
 
 void GuiSettingRecoveryCheck(void)
@@ -382,11 +383,7 @@ void GuiShowKeyboard(uint16_t *signal, bool isView, lv_event_cb_t cb)
 {
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     if (isView) {
-        g_keyboardWidget = GuiCreateKeyboardWidgetView(GuiSettingGetCurrentCont(), cb);
-        if (*signal == SIG_FINGER_REGISTER_ADD_SUCCESS) {
-            lv_obj_t *img = lv_obj_get_child(lv_obj_get_child(g_keyboardWidget->keyboardHintBox, 0), 0);
-            lv_img_set_src(img, &imgClose);
-        }
+        g_keyboardWidget = GuiCreateKeyboardWidgetView(GuiSettingGetCurrentCont(), cb, signal);
     } else {
         g_keyboardWidget = GuiCreateKeyboardWidget(GuiSettingGetCurrentCont());
     }

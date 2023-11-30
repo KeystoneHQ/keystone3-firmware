@@ -13,6 +13,11 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
+bool GetLvglHandlerStatus(void)
+{
+
+}
+
 void FpDeleteRegisterFinger(void)
 {
     
@@ -65,7 +70,7 @@ bool FpModuleIsExist(void)
 
 MnemonicType GetMnemonicType(void)
 {
-    return MNEMONIC_TYPE_SLIP39;
+    return MNEMONIC_TYPE_BIP39;
 }
 
 void SetPassphraseQuickAccess(bool exist)

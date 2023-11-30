@@ -91,6 +91,7 @@ typedef enum {
     SIG_SETTING_LOG_EXPORT_SUCCESS,
     SIG_SETTING_LOG_EXPORT_FAIL,
     SIG_SETTING_LOG_EXPORT_NOT_ENOUGH_SPACE,
+    SIG_SETTING_CHECKSUM_PERCENT,
     SIG_SETTING_BUTT,
 
     SIG_FINGER_REGISTER_STEP_SUCCESS = SIG_SETTING_BUTT + 50,
@@ -168,6 +169,7 @@ extern GUI_VIEW g_scanView;
 extern GUI_VIEW g_transactionDetailView;
 extern GUI_VIEW g_transactionSignatureView;
 
+void UnHandler(lv_event_t *e);
 void OpenImportWalletHandler(lv_event_t *e);
 void OpenCreateWalletHandler(lv_event_t *e);
 void OpenViewHandler(lv_event_t *e);

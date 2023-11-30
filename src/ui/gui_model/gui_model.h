@@ -16,6 +16,7 @@
 #include "drv_battery.h"
 #else
 #include "simulator_model.h"
+#define memset_s memset
 #endif
 #include "gui_animating_qrcode.h"
 #include "account_manager.h"
@@ -75,5 +76,8 @@ void GuiModelCheckTransaction(ViewType ViewType);
 void GuiModelTransactionCheckResultClear(void);
 void GuiModelParseTransaction(ReturnVoidPointerFunc func);
 bool ModelGetPassphraseQuickAccess(void);
+void GuiModelCalculateCheckSum(void);
+void GuiModelStopCalculateCheckSum(void);
+
 #endif /* _GUI_MODEL_H */
 

@@ -4,6 +4,7 @@ SET BUILD_FOLDER=%CD%\build
 SET TOOLS_FOLDER=%CD%\tools
 SET ALWAYSE_BUILD_FILE=%CD%\driver\drv_sys.c
 SET MAKE_OAT_FILE_PATH=%TOOLS_FOLDER%\ota_file_maker
+SET MAKE_PADDING_FILE_PATH=%TOOLS_FOLDER%\padding_bin_file
 SET ASTYLE_PATH=%TOOLS_FOLDER%\AStyle.bat
 SET PACK_PATH=%CD%\pack.bat
 
@@ -15,8 +16,12 @@ if not exist %BUILD_FOLDER% (
 	mkdir %BUILD_FOLDER%
 )
 
-if exist %BUILD_FOLDER%\make_file_test.bat (
+if not exist %BUILD_FOLDER%\make_file_test.bat (
 	copy %MAKE_OAT_FILE% %BUILD_FOLDER%\make_file_test.bat /Y
+)
+
+if not exist %BUILD_FOLDER%\padding_bin_file.py (
+	copy %TOOLS_FOLDER%\padding_bin_file\padding_bin_file.py %BUILD_FOLDER%\padding_bin_file.py /Y
 )
 
 touch %ALWAYSE_BUILD_FILE%
@@ -41,7 +46,9 @@ if "%1"=="log" (
 ) else (
 	make -j16 | stdbuf -oL tr '\n' '\n'
 )
+python3 .\padding_bin_file.py .\mh1903.bin
 popd
+
 
 if "%1" == "copy" (
 	pushd %MAKE_OAT_FILE_PATH%

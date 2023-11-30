@@ -11,6 +11,13 @@
 
 static lv_obj_t *g_hintBox = NULL;
 static lv_obj_t **g_hintParam = NULL;
+void UnHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+    }
+}
+
 void OpenImportWalletHandler(lv_event_t *e)
 {
     static uint8_t walletMethod = WALLET_METHOD_IMPORT;

@@ -266,13 +266,6 @@ static void GuiWalletAddLimit(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, AddCloseToSubtopViewHandler, LV_EVENT_CLICKED, NULL);
 }
 
-static void UnHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-    }
-}
-
 static void AboutHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);

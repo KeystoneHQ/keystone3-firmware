@@ -142,6 +142,7 @@ void GuiWalletSetPinWidget(lv_obj_t *parent, uint8_t tile);
 void GuiSettingCountDownDestruct(void *obj, void *param);
 void GuiWalletAddWalletNotice(lv_obj_t *parent);
 void GuiSettingSetNewPassword(void);
+void GuiUpdateCheckSumPercent(uint8_t percent);
 
 // wallet name and icon setting
 void *GuiWalletNameWallet(lv_obj_t *parent, uint8_t tile);

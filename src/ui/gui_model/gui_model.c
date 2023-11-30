@@ -1274,7 +1274,7 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
         }
     }
 
-	struct sha256_ctx ctx;
+    struct sha256_ctx ctx;
     sha256_init(&ctx);
     uint8_t percent = 0;
     for (int i = 0; i < num - 1; i++) {

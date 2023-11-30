@@ -21,7 +21,6 @@ if not exist %BUILD_FOLDER%\make_file_test.bat (
 )
 
 if not exist %BUILD_FOLDER%\padding_bin_file.py (
-	echo 123
 	copy %TOOLS_FOLDER%\padding_bin_file\padding_bin_file.py %BUILD_FOLDER%\padding_bin_file.py /Y
 )
 

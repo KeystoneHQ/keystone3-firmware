@@ -367,7 +367,6 @@ void GuiCreateVerifyFirmwareInstructionTile(lv_obj_t *parent)
 
 static void StartFirmwareCheckSumHandler(lv_event_t *e)
 {
-    static uint8_t walletIndex = 0;
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         g_noticeHintBox = GuiCreateAnimHintBox(lv_scr_act(), 480, 400, 76);

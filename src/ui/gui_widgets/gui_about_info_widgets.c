@@ -105,7 +105,9 @@ void GuiAboutInfoWidgetsDeInit()
 
 void GuiAboutInfoWidgetsRefresh()
 {
-    GuiAboutNVSBarInit();
+    if (g_firmwareVerifyCont == NULL) {
+        GuiAboutNVSBarInit();
+    }
 }
 
 

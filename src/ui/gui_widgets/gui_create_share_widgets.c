@@ -257,9 +257,9 @@ static void GuiShareCustodianWidget(lv_obj_t *parent)
     lv_label_set_recolor(label, true);
     g_custodianTile.noticeLabel = label;
 
-    lv_obj_t *cont = GuiCreateHintBoxWithoutTop(parent, 480, 452);
+    lv_obj_t *cont = GuiCreateHintBoxWithoutTop(parent, 480, 482);
     lv_obj_t *img = GuiCreateImg(cont, &imgRedEye);
-    lv_obj_align(img, LV_ALIGN_DEFAULT, 39, 54);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 39, 48);
     hintHeight = GetHintBoxReHeight(hintHeight, img) + 24;
     label = GuiCreateLittleTitleLabel(cont, _("shamir_phrase_notice_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 108);
@@ -272,7 +272,7 @@ static void GuiShareCustodianWidget(lv_obj_t *parent)
     lv_obj_t *desc2 = GuiCreateIllustrateLabel(cont, _("shamir_phrase_notice_desc2"));
     lv_obj_align_to(desc2, desc1, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     hintHeight = GetHintBoxReHeight(hintHeight, desc1) + 130;
-    lv_obj_set_size(cont, 480, hintHeight);
+    // lv_obj_set_size(cont, 480, hintHeight);
 
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_CHECK);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);

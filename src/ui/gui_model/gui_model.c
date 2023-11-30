@@ -935,13 +935,15 @@ static void ModelVerifyPassSuccess(uint16_t *param)
             break;
         case SIG_SETTING_WRITE_PASSPHRASE:
             GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_VERIFY_PASS, param, sizeof(*param));
+            SetPageLockScreen(false);
             ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
+            SetPageLockScreen(true);
             if (ret == SUCCESS_CODE) {
                 GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
                 ClearSecretCache();
             } else {
                 GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_FAIL, NULL, 0);
-            }            
+            }
             break;
         case SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE:
             GuiApiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_PASSPHRASE_PASS, param, sizeof(*param));

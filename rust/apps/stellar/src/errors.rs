@@ -1,8 +1,8 @@
-use core::array::TryFromSliceError;
-
 use alloc::string::{String, ToString};
-use third_party::{base58, bcs, hex, serde_json, thiserror};
-use thiserror::Error;
+use core::array::TryFromSliceError;
+use third_party::hex;
+use third_party::thiserror;
+use third_party::thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum StellarError {
@@ -24,26 +24,14 @@ impl From<hex::FromHexError> for StellarError {
     }
 }
 
-impl From<serde_json::Error> for StellarError {
-    fn from(value: serde_json::Error) -> Self {
-        Self::InvalidData(format!("serde_json operation failed {}", value))
-    }
-}
-
-impl From<base58::Error> for StellarError {
-    fn from(value: base58::Error) -> Self {
-        Self::InvalidXPub(value.to_string())
-    }
-}
-
-impl From<bcs::Error> for StellarError {
-    fn from(value: bcs::Error) -> Self {
-        Self::InvalidData(value.to_string())
-    }
-}
-
 impl From<TryFromSliceError> for StellarError {
     fn from(value: TryFromSliceError) -> Self {
         Self::InvalidXPub(value.to_string())
+    }
+}
+
+impl From<stellar_xdr::curr::Error> for StellarError {
+    fn from(value: stellar_xdr::curr::Error) -> Self {
+        Self::ParseTxError(value.to_string())
     }
 }

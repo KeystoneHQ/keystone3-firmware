@@ -11,7 +11,7 @@ third_party = { path = "../../third_party", default-features = false }
 app_utils = {path = "../utils"}
 serde = { version = "1.0.139", default-features = false }
 serde_derive = { version = "1.0.159"}
-stellar-xdr = { path = "../../../../rs-stellar-xdr" }
+stellar-xdr = { git = "https://github.com/KeystoneHQ/rs-stellar-xdr.git", branch = "no-std" }
 base32 = { git = "https://github.com/KeystoneHQ/base32.git", version = "0.4.0" }
 
 [dev-dependencies]

@@ -198,7 +198,12 @@ static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32
     }
     qlz_decompress((char*)g_fileUnit, g_dataUnit, &qlzState);
     GetSoftwareVersion(&nowMajor, &nowMinor, &nowBuild);
-    GetSoftwareVersionFormData(&fileMajor, &fileMinor, &fileBuild, g_dataUnit + FIXED_SEGMENT_OFFSET, decmpsdSize - FIXED_SEGMENT_OFFSET);
+    ret = GetSoftwareVersionFormData(&fileMajor, &fileMinor, &fileBuild, g_dataUnit + FIXED_SEGMENT_OFFSET, decmpsdSize - FIXED_SEGMENT_OFFSET);
+    if (ret != 0) {
+        SRAM_FREE(g_dataUnit);
+        SRAM_FREE(g_fileUnit);
+        return false;
+    }
     printf("now version:%d.%d.%d\n", nowMajor, nowMinor, nowBuild);
     printf("file version:%d.%d.%d\n", fileMajor, fileMinor, fileBuild);
 

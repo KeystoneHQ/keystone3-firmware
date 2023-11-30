@@ -200,6 +200,7 @@ static void SkipHandler(lv_event_t *e)
 #endif
     GuiCLoseCurrentWorkingView();
     GuiLockScreenHidden();
+    ClearSecretCache();
     if (g_homeView.isActive) {
         GuiLockScreenTurnOff();
     } else {

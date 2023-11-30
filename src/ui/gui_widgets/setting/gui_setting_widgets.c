@@ -577,8 +577,11 @@ void GuiDevSettingPassCode(bool result, uint16_t tileIndex)
         GuiShowKeyboardDestruct();
         return GuiWalletFingerOpenUnlock();
     case SIG_FINGER_SET_SIGN_TRANSITIONS:
-        GuiShowKeyboardDestruct();
-        return GuiWalletFingerOpenSign();
+        if (result) {
+            GuiShowKeyboardDestruct();
+            return GuiWalletFingerOpenSign();
+        }
+        break;
     case SIG_FINGER_REGISTER_ADD_SUCCESS:
         FpSaveKeyInfo();
         walletIndex = DEVICE_SETTING_FINGER_ADD_SUCCESS;

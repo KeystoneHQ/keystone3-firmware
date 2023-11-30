@@ -236,6 +236,10 @@ static void __SetLvglHandlerAndSnapShot(uint32_t value)
     snapShotDone = true;
 }
 
+bool GetLvglHandlerStatus(void)
+{
+    return lvglHandlerEnable;
+}
 
 /// @brief
 /// @param enable

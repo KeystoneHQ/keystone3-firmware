@@ -390,7 +390,6 @@ static void StopFirmwareCheckSumHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GuiModelStopCalculateCheckSum();
-        GuiUpdateCheckSumPercent(100);
         GUI_DEL_OBJ(g_noticeHintBox)
     }
 }

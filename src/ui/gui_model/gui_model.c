@@ -154,7 +154,8 @@ void GuiModelCalculateCheckSum(void)
 
 void GuiModelStopCalculateCheckSum(void)
 {
-    AsyncExecute(ModelStopCalculateCheckSum, NULL, 0);
+    SetPageLockScreen(true);
+    g_stopCalChecksum = true;
 }
 
 void GuiModelCalculateWebAuthCode(void *webAuthData)
@@ -849,6 +850,7 @@ static int32_t ModelWritePassphrase(const void *inData, uint32_t inDataLen)
         } else {
             GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_FAIL, NULL, 0);
         }
+        ClearSecretCache();
     }
 #else
     GuiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
@@ -1312,8 +1314,6 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
 static int32_t ModelStopCalculateCheckSum(const void *indata, uint32_t inDataLen)
 {
 #ifndef COMPILE_SIMULATOR
-    SetPageLockScreen(true);
-    g_stopCalChecksum = true;
 #else
 #endif
     return SUCCESS_CODE;

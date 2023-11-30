@@ -1309,6 +1309,8 @@
     <ClCompile Include="..\..\src\ui\gui_components\gui_led.c">
       <Filter>gui\gui_components</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\external\lvgl\examples\widgets\table\lv_example_table_1.c" />
+    <ClCompile Include="..\..\external\lvgl\examples\widgets\table\lv_example_table_2.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\external\lvgl\src\core\lv_disp.h" />

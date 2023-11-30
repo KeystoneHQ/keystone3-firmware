@@ -20,6 +20,7 @@ bool CheckAllZero(const uint8_t *array, uint32_t len);
 void RemoveFormatChar(char *str);
 void ArrayRandom(char *words, char *out, int count);
 int WordsListSlice(char *words, char wordsList[][10], uint8_t wordsCount);
+void ConvertToLowerCase(char *str);
 
 #endif /* _USER_UTILS_H */
 

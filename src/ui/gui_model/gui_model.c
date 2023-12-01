@@ -550,7 +550,6 @@ static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#define SRAM_MNEMONIC_LEN       33 * 10
     int32_t retData;
     uint8_t entropy[32], ems[32];
     uint32_t memberCnt, threShold, entropyLen = 32;
@@ -572,7 +571,7 @@ static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen
     }
 
     for (int i = 0; i < memberCnt; i++) {
-        memset(wordsList[i], 0, SRAM_MNEMONIC_LEN);
+        memset(wordsList[i], 0, strlen(wordsList[i]));
         // todo There is a problem with SRAM FREE here
         free(wordsList[i]);
     }

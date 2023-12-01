@@ -588,7 +588,7 @@ void GuiDevSettingPassCode(bool result, uint16_t tileIndex)
         }
         break;
     case SIG_FINGER_REGISTER_ADD_SUCCESS:
-        FpSaveKeyInfo();
+        FpSaveKeyInfo(true);
         walletIndex = DEVICE_SETTING_FINGER_ADD_SUCCESS;
         break;
     case SIG_SETTING_CHANGE_PASSWORD:

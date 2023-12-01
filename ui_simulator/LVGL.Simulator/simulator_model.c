@@ -23,7 +23,7 @@ void FpDeleteRegisterFinger(void)
     
 }
 
-void FpSaveKeyInfo(void)
+void FpSaveKeyInfo(bool add)
 {
 
 }

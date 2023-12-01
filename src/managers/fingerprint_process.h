@@ -194,6 +194,6 @@ uint8_t *GuiGetFpVersion(uint8_t *version);
 void FpWipeManageInfo(void);
 const char *GetFpErrorMessage(FingerError_Code errCode);
 void FpResponseHandleStop(void);
-void FpSaveKeyInfo(void);
+void FpSaveKeyInfo(bool add);
 
 #endif

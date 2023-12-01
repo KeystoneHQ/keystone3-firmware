@@ -321,6 +321,8 @@ static void SignByPasswordCb(bool cancel)
     }
     g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
     SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+    static uint16_t sig = SIG_SIGN_TRANSACTION_WITH_PASSWORD;
+    SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
 
 static void SignByPasswordCbHandler(lv_event_t *e)

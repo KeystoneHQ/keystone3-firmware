@@ -483,6 +483,12 @@ void GetEthTypedDataMessage(void *indata, void *param)
     strcpy((char *)indata, message->message);
 }
 
+int GetEthTypedDataMessageLen(void *param)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    return strlen(message->message);
+}
+
 void GetEthTypedDataFrom(void *indata, void *param)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;

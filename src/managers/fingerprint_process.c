@@ -224,10 +224,10 @@ static void FpDeleteRecv(char *indata, uint8_t len)
     if (result == FP_SUCCESS_CODE) {
         printf("delete success\n");
         DeleteFingerManager(g_fpIndex);
-        SetFingerManagerInfoToSE();
         if (g_fpManager.fingerNum == 0) {
             memset(&g_fpManager, 0, sizeof(g_fpManager));
         }
+        SetFingerManagerInfoToSE();
         GuiApiEmitSignal(SIG_FINGER_DELETE_SUCCESS, NULL, 0);
     }
 }
@@ -616,7 +616,9 @@ static void AddFingerManager(uint8_t index)
 
 static void DeleteFingerManager(uint8_t index)
 {
-    g_fpManager.fingerNum--;
+    if (g_fpManager.fingerNum > 0) {
+        g_fpManager.fingerNum--;
+    }
     g_fpManager.fingerId[index] = 0;
 }
 

@@ -56,6 +56,7 @@ void GetEthTypedDataDomianVerifyContract(void *indata, void *param);
 void GetEthTypedDataDomianSalt(void *indata, void *param);
 void GetEthTypedDataPrimayType(void *indata, void *param);
 void GetEthTypedDataMessage(void *indata, void *param);
+int GetEthTypedDataMessageLen(void *param);
 void GetEthTypedDataFrom(void *indata, void *param);
 void EthContractLearnMore(lv_event_t *e);
 typedef struct {

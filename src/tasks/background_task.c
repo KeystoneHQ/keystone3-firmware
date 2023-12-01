@@ -197,7 +197,6 @@ static void BackgroundTask(void *argument)
         }
         break;
         case BACKGROUND_MSG_SD_CARD_CHANGE: {
-            osDelay(200);
             if (sdCardState == GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_7)) {
                 break;
             } else {

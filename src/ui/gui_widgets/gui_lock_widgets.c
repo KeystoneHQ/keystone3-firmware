@@ -40,6 +40,7 @@ void GuiLockScreenClearModal(lv_obj_t *cont);
 static char* GuiJudgeTitle();
 static void CountDownTimerChangeLabelTextHandler(lv_timer_t *timer);
 static void GuiCloseGenerateXPubLoading(void);
+int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
 
 static GuiEnterPasscodeItem_t *g_verifyLock = NULL;
 static lv_obj_t *g_lockScreenCont;
@@ -47,7 +48,6 @@ static bool g_firstUnlock = true;
 static uint8_t g_fpErrorCount = 0;
 static LOCK_SCREEN_PURPOSE_ENUM g_purpose = LOCK_SCREEN_PURPOSE_UNLOCK;
 static PageWidget_t *g_pageWidget;
-
 static lv_obj_t *g_LoadingView = NULL;
 static lv_timer_t *g_countDownTimer;
 static int8_t g_countDown = 0;
@@ -239,6 +239,7 @@ void GuiLockScreenTurnOff(void)
         GuiEmitSignal(GUI_EVENT_REFRESH, &single, sizeof(single));
         GuiFirmwareUpdateWidgetRefresh();
     }
+    AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
     // g_lockView.isActive = false;
 }
 

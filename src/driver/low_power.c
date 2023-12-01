@@ -31,7 +31,7 @@
 #define RTC_WAKE_UP_INTERVAL_CHARGING                           (80)                //80 seconds
 
 static void SetRtcWakeUp(uint32_t second);
-static int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
+int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
 
 volatile LowPowerState g_lowPowerState = LOW_POWER_STATE_WORKING;
 
@@ -128,7 +128,7 @@ void RecoverFromLowPower(void)
     g_lowPowerState = LOW_POWER_STATE_WORKING;
     LcdBacklightOn();
     UsbInit();
-    AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
+    // AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
 }
 
 void EnterDeepSleep(void)
@@ -315,13 +315,11 @@ static void SetRtcWakeUp(uint32_t second)
     GPIO->WAKE_TYPE_EN |= BIT(12);
 }
 
-static int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
+int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
 {
     bool sdCardState = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_7);
     if (sdCardState == false) {
-        MountSdFatfs();
-        uint32_t freeSize = FatfsGetSize("0:");
-        if (freeSize > 0) {
+        if (!MountSdFatfs()) {
             GuiApiEmitSignalWithValue(SIG_INIT_SDCARD_CHANGE, sdCardState);
         }
     } else {

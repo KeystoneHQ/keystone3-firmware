@@ -1243,21 +1243,15 @@ static uint32_t BinarySearchLastNonFFSector(void)
 {
     uint8_t buffer[SECTOR_SIZE];
     uint32_t mid;
-    uint32_t startIndex = 0;
+    uint32_t startIndex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE / 2;
     uint32_t endInex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE;
-    while (startIndex <= endInex) {
-        mid = (startIndex + endInex) / 2;
-        int allFF = 1;
-        QSPI_Read(NULL, buffer, APP_ADDR + mid * SECTOR_SIZE, SECTOR_SIZE);
-        allFF = CheckAllFF(buffer, SECTOR_SIZE);
-        if (allFF) {
-            endInex = mid - 1;
-        } else {
-            startIndex = mid + 1;
+
+    for (int i = startIndex + 1; i < endInex; i++) {
+        QSPI_Read(NULL, buffer, APP_ADDR + i * SECTOR_SIZE, SECTOR_SIZE);
+        if (CheckAllFF(&buffer[2], SECTOR_SIZE - 2) && ((buffer[0] * 256 + buffer[1]) < 4096)) {
+            return i;
         }
     }
-
-    return startIndex;
 }
 
 static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
@@ -1268,40 +1262,24 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
     uint8_t buffer[4096] = {0}; 
     uint8_t hash[32] = {0};
     int num = BinarySearchLastNonFFSector();
-    QSPI_Read(NULL, buffer, APP_ADDR + (num - 1) * SECTOR_SIZE, SECTOR_SIZE);
-    uint32_t offset = buffer[0] * 256 + buffer[1];
-    if (buffer[2] == 0xFF && buffer[3] == 0xFF && offset < 4096) {
-        // todo this case
-    } else {
-        for (int i = 4095; i > 0; i--) {
-            if (buffer[i] != 0xFF) {
-                offset = buffer[i - 1] * 256 + buffer[i];
-                break;
-            }
-        }
-    }
-
     struct sha256_ctx ctx;
     sha256_init(&ctx);
     uint8_t percent = 0;
-    for (int i = 0; i < num - 1; i++) {
+    for (int i = 0; i <= num; i++) {
         if (g_stopCalChecksum == true) {
             return SUCCESS_CODE;
         }
         memset(buffer, 0, SECTOR_SIZE);
         QSPI_Read(NULL, buffer, APP_ADDR + i * SECTOR_SIZE, SECTOR_SIZE);
         sha256_update(&ctx, buffer, SECTOR_SIZE);
-        if (percent != i * 100 / (num - 1)) {
-            percent = i * 100 / (num - 1);
+        if (percent != i * 100 / num) {
+            percent = i * 100 / num;
             printf("percent: %d\n", percent);
             if (percent != 100) {
                 GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
             }
         }
     }
-    memset(buffer, 0, SECTOR_SIZE);
-    QSPI_Read(NULL, buffer, APP_ADDR + (num - 1) * SECTOR_SIZE, SECTOR_SIZE);
-    sha256_update(&ctx, buffer, SECTOR_SIZE);
 	sha256_done(&ctx, (struct sha256 *)hash);
     memset(buffer, 0, SECTOR_SIZE);
     percent = 100;

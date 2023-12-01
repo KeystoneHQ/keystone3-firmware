@@ -3,6 +3,7 @@
 #include "gui_views.h"
 #include "gui_status_bar.h"
 #include "gui_about_widgets.h"
+#include "gui_about_info_widgets.h"
 
 static int32_t GuiAboutViewInit(void)
 {
@@ -18,6 +19,7 @@ static int32_t GuiAboutViewDeInit(void)
 
 int32_t GuiAboutViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
+    uint8_t checkSumPercent = 0;
     GUI_ASSERT(g_aboutView.isActive);
 
     switch (usEvent) {
@@ -30,6 +32,14 @@ int32_t GuiAboutViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         break;
     case GUI_EVENT_RESTART:
         GuiAboutWidgetsRestart();
+        break;
+    case SIG_SETTING_CHECKSUM_PERCENT:
+        if (param != NULL) {
+            checkSumPercent = *(uint8_t *)param;
+        } else {
+            return ERR_GUI_ERROR;
+        }
+        GuiUpdateCheckSumPercent(checkSumPercent);
         break;
     default:
         return ERR_GUI_UNHANDLED;

@@ -6,5 +6,6 @@ void GuiAboutInfoWidgetsDeInit();
 void GuiAboutInfoWidgetsRefresh();
 void GuiAboutInfoWidgetsRestart();
 void GuiAboutWidgetsLogExport(bool en, int32_t errCode);
+void GuiUpdateCheckSumPercent(uint8_t percent);
 
 #endif

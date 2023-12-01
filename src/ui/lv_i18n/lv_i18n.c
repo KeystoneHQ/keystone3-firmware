@@ -368,7 +368,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"import_wallet_shamir_backup", "Shamir Backup"},
     {"import_wallet_shamir_backup_desc", "You'll need a couple of seed phrase\nshares to recover your wallet"},
     {"import_wallet_share_success_desc", "This share of your seed phrase matches your wallet."},
-    {"import_wallet_single_backup_desc", "Recover your wallet with the specific\nseed phrase"},
+    {"import_wallet_single_backup_desc", "Recover your wallet with the specific seed phrase. Please complete the setup process in one go to avoid any security risks."},
     {"import_wallet_single_phrase", "Single Secret Phrase"},
     {"import_wallet_single_phrase_desc", "You'll need a 12/18/24 seed phrase\nto recover your wallet."},
     {"import_wallet_ssb_20words", "20 Words"},

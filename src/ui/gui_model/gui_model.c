@@ -578,6 +578,7 @@ static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen
     retData = SUCCESS_CODE;
     GuiApiEmitSignal(SIG_CREATE_SHARE_UPDATE_MNEMONIC, &retData, sizeof(retData));
 #else
+#define SRAM_MNEMONIC_LEN 33 * 11
     memberCnt = 3;
     char *mnemonic = NULL;
     mnemonic = SRAM_MALLOC(SRAM_MNEMONIC_LEN);

@@ -365,10 +365,10 @@ static void GuiImportBackupWidget(lv_obj_t *parent)
         {.obj = labelNotice, .align = LV_ALIGN_DEFAULT, .position = {24, 132},},
     };
     lv_obj_t *button = GuiCreateButton(parent, 432, 216, table, NUMBER_OF_ARRAYS(table), ChooseWordsAmountHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 300 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 330 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 515 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 545 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateLittleTitleLabel(parent, _("import_wallet_shamir_backup"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
@@ -383,7 +383,7 @@ static void GuiImportBackupWidget(lv_obj_t *parent)
     table[2].position.x = 372;
     table[2].position.y = 26;
     button = GuiCreateButton(parent, 432, 156, table, 3, SelectImportShareHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 516 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 546 - GUI_MAIN_AREA_OFFSET);
 }
 
 void GuiCreateWalletInit(uint8_t walletMethod)

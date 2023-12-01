@@ -230,7 +230,7 @@ void GuiSignVerifyPasswordErrorCount(void *param)
 void GuiSignDealFingerRecognize(void *param)
 {
     uint8_t errCode = *(uint8_t *)param;
-    static uint16_t passCodeType = ENTER_PASSCODE_VERIFY_PASSWORD;
+    static uint16_t passCodeType = SIG_SIGN_TRANSACTION_WITH_PASSWORD;
     if (g_fingerSingContainer == NULL)
     {
         return;

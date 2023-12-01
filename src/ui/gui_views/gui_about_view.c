@@ -3,6 +3,7 @@
 #include "gui_views.h"
 #include "gui_status_bar.h"
 #include "gui_about_widgets.h"
+#include "gui_about_info_widgets.h"
 
 static int32_t GuiAboutViewInit(void)
 {

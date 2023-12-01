@@ -23,7 +23,6 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
 {
     uint16_t tileIndex = 0;
     uint8_t walletCnt = 0;
-    uint8_t checkSumPercent = 0;
     // GUI_ASSERT(g_settingView.isActive);
 
     switch (usEvent) {
@@ -149,14 +148,6 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
         break;
     case GUI_EVENT_UPDATE_KEYBOARD:
         GuiWalletRecoveryUpdateKeyboard();
-        break;
-    case SIG_SETTING_CHECKSUM_PERCENT:
-        if (param != NULL) {
-            checkSumPercent = *(uint8_t *)param;
-        } else {
-            return ERR_GUI_ERROR;
-        }
-        GuiUpdateCheckSumPercent(checkSumPercent);
         break;
     default:
         return ERR_GUI_UNHANDLED;

@@ -33,15 +33,9 @@ pub fn parse_erc20(input: &str, decimal: u32) -> Result<ParsedErc20Transaction, 
         // If there is a remainder, convert it to a decimal
         let remainder_decimal = remainder.to_string();
         let padded_remainder = format!("{:0>width$}", remainder_decimal, width = decimal as usize);
-        format!("{}.{}", value_decimal.to_string(), padded_remainder)
+        format!("{}.{}", value_decimal.to_string(), padded_remainder).trim_end_matches('0').to_string()
     } else {
         value_decimal.to_string()
-    };
-
-    let value = if value == "0" {
-        value
-    } else {
-        value.trim_end_matches('0').to_string()
     };
 
     Ok(ParsedErc20Transaction { to, value })

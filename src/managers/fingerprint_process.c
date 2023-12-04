@@ -729,7 +729,6 @@ void RegisterFp(uint8_t index)
 
 void DeleteFp(uint8_t index)
 {
-    printf("%s delete finger id is %d\n", __func__, index);
     if (index == 0xff) {
         FpDeleteSend(FINGERPRINT_CMD_DELETE_ALL, 1);
     } else {

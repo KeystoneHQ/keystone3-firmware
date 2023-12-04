@@ -589,6 +589,7 @@ void GuiDevSettingPassCode(bool result, uint16_t tileIndex)
         break;
     case SIG_FINGER_REGISTER_ADD_SUCCESS:
         FpSaveKeyInfo(true);
+        SetPageLockScreen(true);
         walletIndex = DEVICE_SETTING_FINGER_ADD_SUCCESS;
         break;
     case SIG_SETTING_CHANGE_PASSWORD:
@@ -669,6 +670,7 @@ void GuiSettingDeInit(void)
     //     GUI_DEL_OBJ(g_recoveryMkb->cont)
     // }
     GuiWalletSeedCheckClearObject();
+    GuiWalletSettingDeinit();
     CloseToTargetTileView(g_deviceSetTileView.currentTile, DEVICE_SETTING);
     lv_obj_del(g_deviceSetTileView.tileView);
     lv_obj_del(g_deviceSetTileView.cont);

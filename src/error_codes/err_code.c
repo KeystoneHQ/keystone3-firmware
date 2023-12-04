@@ -34,6 +34,7 @@ static const ErrCodeDesc_t g_faults[] = {
     {ERR_KEYSTORE_NOT_LOGIN, "Keystore Not Login"},
     {ERR_KEYSTORE_MNEMONIC_REPEAT, "Keystore Mnemonic Repeat"},
     {ERR_KEYSTORE_SAVE_LOW_POWER, "keystore save low power"},
+    {ERR_KEYSTORE_SAVE_FP_LOW_POWER, "keystore save fp low power"},
     {ERR_KEYSTORE_MNEMONIC_INVALID, "Keystore Mnemonic Invalid"},
     {ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET, "Keystore Mnemonic not match"},
     {ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH, "Keystore extend public key not match"},

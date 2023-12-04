@@ -203,8 +203,7 @@ static void BackgroundTask(void *argument)
                 sdCardState = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_7);
                 if (sdCardState == false) {
                     ret = MountSdFatfs();
-                    uint32_t freeSize = FatfsGetSize("0:");
-                    if (freeSize > 0) {
+                    if (ret == 0) {
                         GuiApiEmitSignalWithValue(SIG_INIT_SDCARD_CHANGE, sdCardState);
                     }
                 } else {

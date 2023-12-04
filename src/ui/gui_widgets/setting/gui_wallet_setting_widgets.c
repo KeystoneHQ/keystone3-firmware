@@ -262,6 +262,7 @@ void GuiWalletSettingDeinit(void)
 void GuiWalletSettingRefresh(void)
 {
     PassWordPinHintRefresh(g_keyboardWidget);
+    GuiFpVerifyDestruct();
 }
 
 void GuiWalletRepeatPinWidget(lv_obj_t *parent)

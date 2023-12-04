@@ -270,6 +270,9 @@ void GuiLockScreenPassCode(bool en)
     if (en) {
         g_fpErrorCount = 0;
         FpCancelCurOperate();
+        if (g_oldWalletIndex == 0xFF) {
+            g_oldWalletIndex = GetCurrentAccountIndex();
+        }
         if (ModelGetPassphraseQuickAccess()) {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiModeGetWalletDesc();
@@ -286,9 +289,6 @@ void GuiLockScreenPassCode(bool en)
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
             GuiFrameOpenView(&g_homeView);
-            if (g_oldWalletIndex == 0xFF) {
-                g_oldWalletIndex = GetCurrentAccountIndex();
-            }
             printf("%s %d\n", __func__, __LINE__);
         }
         // Close the loading page after closing the lock screen page

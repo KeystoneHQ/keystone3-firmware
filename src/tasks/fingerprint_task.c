@@ -75,8 +75,3 @@ static void FingerprintTask(void *pvParameter)
         }
     }
 }
-
-void CloseFingerInitTimer(void)
-{
-    osTimerStop(g_fingerInitTimer);
-}

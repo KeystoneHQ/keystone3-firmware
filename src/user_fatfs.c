@@ -554,6 +554,9 @@ int MountSdFatfs(void)
     FRESULT res;
     FatfsMountParam_t *fs = &g_fsMountParamArray[DEV_MMC];
     res = f_mount(fs->fs, fs->volume, fs->opt);
+    if (res != FR_OK) {
+        res = f_mount(fs->fs, fs->volume, fs->opt);
+    }
     // if (res == FR_NO_FILESYSTEM) {
     //     BYTE work[FF_MAX_SS];
     //     f_mkfs(fs->volume, 0, work, sizeof work);

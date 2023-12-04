@@ -251,6 +251,7 @@ void GuiSettingFingerRegisterSuccess(void *param)
     lv_obj_set_style_arc_color(g_arcProgress, ORANGE_COLOR, LV_PART_INDICATOR);
     lv_label_set_text(g_fpRegLabel, "");
     if (step == 8) {
+        SetPageLockScreen(false);
         static uint16_t signal = SIG_FINGER_REGISTER_ADD_SUCCESS;
         GuiShowKeyboard(&signal, true, StopAddNewFingerHandler);
     }

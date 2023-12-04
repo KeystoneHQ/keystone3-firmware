@@ -65,4 +65,42 @@ mod tests {
             Err(err) => panic!("Test failed due to error: {}", err),
         }
     }
+    #[test]
+    fn test_parse_erc20_boundary() {
+        let input1 = "a9059cbb0000000000000000000000005df9b87991262f6ba471f09758cde1c0fc1de7340000000000000000000000000000000000000000000000008ac7230489e80000";
+        let decimal = 18;
+
+        let result1 = parse_erc20(input1, decimal);
+
+        match result1 {
+            Ok(transaction) => {
+                assert_eq!(transaction.to, "0x5df9b87991262f6ba471f09758cde1c0fc1de734");
+                assert_eq!(transaction.value, "10");
+            }
+            Err(err) => panic!("Test failed due to error: {}", err),
+        }
+
+        let input2 = "a9059cbb0000000000000000000000005df9b87991262f6ba471f09758cde1c0fc1de7340000000000000000000000000000000000000000000000000000000000000000";
+        let result2 = parse_erc20(input2, decimal);
+
+        match result2 {
+            Ok(transaction) => {
+                assert_eq!(transaction.to, "0x5df9b87991262f6ba471f09758cde1c0fc1de734");
+                assert_eq!(transaction.value, "0");
+            }
+            Err(err) => panic!("Test failed due to error: {}", err),
+        }
+
+        let input3 = "a9059cbb0000000000000000000000005df9b87991262f6ba471f09758cde1c0fc1de734ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+
+        let result3 = parse_erc20(input3, decimal);
+
+        match result3 {
+            Ok(transaction) => {
+                assert_eq!(transaction.to, "0x5df9b87991262f6ba471f09758cde1c0fc1de734");
+                assert_eq!(transaction.value, "115792089237316195423570985008687907853269984665640564039457.584007913129639935");
+            }
+            Err(err) => panic!("Test failed due to error: {}", err),
+        }
+    }
 }

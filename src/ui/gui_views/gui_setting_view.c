@@ -71,10 +71,15 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
         if (param != NULL) {
             PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
             uint16_t sig = *(uint16_t *) passwordVerifyResult->signal;
+            uint16_t cnt = passwordVerifyResult->errorCount;
             if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
                 GuiLockScreenPassCode(false);
                 GuiLockScreenErrorCount(param);
                 return SUCCESS_CODE;
+            } else if (sig == SIG_FINGER_REGISTER_ADD_SUCCESS) {
+                if (cnt == 4) {
+                    GuiFingerCancelRegister();
+                }
             } else {
                 tileIndex = sig;
             }

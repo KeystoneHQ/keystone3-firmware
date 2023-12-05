@@ -75,8 +75,8 @@ static osMutexId_t g_fpResponseMutex;
 EventGroupHandle_t g_fpEventGroup = NULL;
 static osTimerId_t g_delayCmdTimer = NULL;
 static bool g_fpStatusExist = false;
+static bool g_delFpSave = false;
 static uint8_t g_fpIndex;
-static uint8_t g_fpRegIndex;
 static uint16_t g_delayCmd;
 static uint16_t g_lastCmd;
 static bool g_devLogSwitch = false;
@@ -161,7 +161,7 @@ static void FpRegSend(uint16_t cmd, uint8_t param)
     UNUSED(cmd);
     g_fpRegCnt = 0;
     g_delayCmd = FINGERPRINT_CMD_REG;
-    g_fpRegIndex = param;
+    g_fpIndex = param;
     FpGenericSend(FINGERPRINT_CMD_GET_RANDOM_NUM, false);
     FpSendTimerStart(FINGERPRINT_CMD_REG);
     // SendPackFingerMsg(FINGERPRINT_CMD_REG, &param, 0, 1, AES_KEY_ENCRYPTION);
@@ -169,6 +169,7 @@ static void FpRegSend(uint16_t cmd, uint8_t param)
 
 void FpDeleteRegisterFinger(void)
 {
+    g_delFpSave = true;
     DeleteFp(g_fpIndex);
 }
 
@@ -222,7 +223,12 @@ static void FpDeleteRecv(char *indata, uint8_t len)
     printf("%s %d\n", __func__, __LINE__);
     uint8_t result = indata[0];
     if (result == FP_SUCCESS_CODE) {
-        printf("delete success\n");
+        if (g_delFpSave == true) {
+            g_delFpSave = false;
+            GuiApiEmitSignal(SIG_FINGER_DELETE_SUCCESS, NULL, 0);
+            return;
+        }
+        printf("delete success %d\n", g_fpIndex);
         DeleteFingerManager(g_fpIndex);
         if (g_fpManager.fingerNum == 0) {
             memset(&g_fpManager, 0, sizeof(g_fpManager));
@@ -281,15 +287,20 @@ static void FpRecognizeSend(uint16_t cmd, uint8_t passwd)
     // SendPackFingerMsg(FINGERPRINT_CMD_RECOGNIZE, &passwd, 0, 1, AES_KEY_ENCRYPTION);
 }
 
+void FpSaveFingerKey(void)
+{
+    FingerSetInfoToSE(g_fpTempAesKey, 0, GetCurrentAccountIndex(), SecretCacheGetPassword());
+    memset(g_fpTempAesKey, 0,  sizeof(g_fpTempAesKey));
+    ClearSecretCache();
+}
+
 void FpSaveKeyInfo(bool add)
 {
     SetFingerManagerInfoToSE();
     if (add) {
         AddFingerManager(g_fpIndex);
     }
-    FingerSetInfoToSE(g_fpTempAesKey, 0, GetCurrentAccountIndex(), SecretCacheGetPassword());
-    memset(g_fpTempAesKey, 0,  sizeof(g_fpTempAesKey));
-    ClearSecretCache();
+    FpSaveFingerKey();
 }
 
 // A7FF RECV
@@ -473,7 +484,7 @@ static void FpDelayMsgSend(void)
         FpSendTimerStart(FINGERPRINT_CMD_DELETE_SINGLE);
         g_delayCmd = 0;
     } else if (g_delayCmd == FINGERPRINT_CMD_REG) {
-        SendPackFingerMsg(FINGERPRINT_CMD_REG, &g_fpRegIndex, 0, 1, AES_KEY_ENCRYPTION);
+        SendPackFingerMsg(FINGERPRINT_CMD_REG, &g_fpIndex, 0, 1, AES_KEY_ENCRYPTION);
         FpSendTimerStart(FINGERPRINT_CMD_REG);
         g_delayCmd = 0;
     } else if (g_delayCmd == FINGERPRINT_CMD_GET_CHIP_ID) {

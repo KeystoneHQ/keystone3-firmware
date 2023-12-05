@@ -92,7 +92,9 @@ int main(void)
     osKernelInitialize();
 
     CreateFingerprintTask();
+#ifndef BUILD_PRODUCTION
     CreateCmdTask();
+#endif
     CreateTestTask();
     CreateUiDisplayTask();
     CreateQrDecodeTask();

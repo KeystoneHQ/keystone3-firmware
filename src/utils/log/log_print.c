@@ -52,7 +52,11 @@ void RustMemoryNode_remove(void *p)
         current = current -> next;
     }
     //current must not be NULL, or the memory have already been free. 
-    ASSERT(current != NULL);
+    // ASSERT(current != NULL);
+    if(current == NULL) {
+        printf("pointer not found: %p\r\n", p);
+        return;
+    }
     // printf("RustFree 0x%x, %d\r\n", current->p, current -> size);
     current -> next -> prev = current -> prev;
     if (current -> prev != NULL) {

@@ -224,7 +224,6 @@ void GuiLockScreenTurnOff(void)
 {
     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
     lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
-    ClearSecretCache();
     GuiModeGetWalletDesc();
     GuiEnterPassCodeStatus(g_verifyLock, true);
 

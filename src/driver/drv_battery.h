@@ -20,6 +20,7 @@ uint32_t GetBatteryMilliVolt(void);
 bool BatteryIntervalHandler(void);
 uint8_t GetBatterPercent(void);
 uint32_t GetBatteryInterval(void);
+uint8_t GetBatteryPercentByMilliVolt(uint32_t milliVolt, bool discharge);
 
 void BatteryTest(int argc, char *argv[]);
 

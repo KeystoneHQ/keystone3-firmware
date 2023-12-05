@@ -470,7 +470,6 @@ static UREncodeResult *g_urResult = NULL;
 
 static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, void *getUR)
 {
-    printf("ModelURGenerateQRCode: g_urResult generated\r\n");
     GenerateUR func = (GenerateUR)getUR;
     g_urResult = func();
     if (g_urResult->error_code == 0) {

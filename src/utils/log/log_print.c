@@ -2,10 +2,6 @@
 #include "stdio.h"
 #include "librust_c.h"
 
-#ifdef DEBUG_MEMORY
-#define RUST_MEMORY_DEBUG
-#endif
-
 #ifdef RUST_MEMORY_DEBUG
 #include "user_memory.h"
 #include "assert.h"
@@ -81,6 +77,7 @@ void RustMemoryNode_print()
 void PrintRustMemoryStatus()
 {
 #ifdef RUST_MEMORY_DEBUG
+    printf("Rust Memory Status: \r\n");
     RustMemoryNode_print();
 #else
     printf("Open RUST_DEBUG_MEMORY to print rust memory status\r\n");

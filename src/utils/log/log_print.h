@@ -4,6 +4,10 @@
 #include "stdint.h"
 #include "stdbool.h"
 
+#ifdef DEBUG_MEMORY
+#define RUST_MEMORY_DEBUG
+#endif
+
 void PrintString(char *str);
 void PrintArray(const char *name, const uint8_t *data, uint16_t length);
 void PrintU16Array(const char *name, const uint16_t *data, uint16_t length);

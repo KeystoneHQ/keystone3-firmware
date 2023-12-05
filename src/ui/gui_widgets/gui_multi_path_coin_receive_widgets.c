@@ -117,7 +117,6 @@ static char *GetEthXpub(int index);
 static char *GetSolXpub(int index);
 void AddressLongModeCut(char *out, const char *address);
 
-static void GetCurrentTittle(TittleItem_t *tittleItem);
 static uint32_t GetPathIndex(void);
 static void SetPathIndex(uint32_t index);
 
@@ -148,7 +147,6 @@ static const PathItem_t g_solPaths[] = {
     {"Sub-account Path",        "",     "m/44'/501'"  },
 };
 static lv_obj_t *g_addressLabel[2];
-static lv_obj_t *g_addressLabelOrder;
 static lv_obj_t *g_goToAddressIcon;
 
 static uint32_t g_showIndex;
@@ -483,12 +481,13 @@ static char* GetChangePathItemTitle(uint32_t i)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
-        return g_ethPaths[i].title;
+        return (char *)g_ethPaths[i].title;
     case HOME_WALLET_CARD_SOL:
-        return g_solPaths[i].title;
+        return (char *)g_solPaths[i].title;
     default:
         break;
     }
+    return "";
 }
 
 
@@ -731,6 +730,8 @@ static int GetMaxAddressIndex(void)
     default:
         break;
     }
+
+    return -1;
 }
 
 static void CloseAttentionHandler(lv_event_t *e)
@@ -776,6 +777,8 @@ static TUTORIAL_LIST_INDEX_ENUM GetTutorialIndex()
     default:
         break;
     }
+
+    return TUTORIAL_LIST_INDEX_BUTT;
 }
 
 static void TutorialHandler(lv_event_t *e)
@@ -833,6 +836,8 @@ static uint32_t GetPathIndex(void)
     default:
         break;
     }
+
+    return -1;
 }
 
 static void SetPathIndex(uint32_t index)
@@ -1039,21 +1044,25 @@ static char *GetSolXpub(int index)
         break;
     }
     ASSERT(0);
+
+    return "";
 }
 
 static char *GetEthXpub(int index)
 {
     switch (g_ethPathIndex[g_currentAccountIndex]) {
     case 0:
-        return GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
+        return (char *)GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
     case 1:
-        return GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LIVE_0 + index);
+        return (char *)GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LIVE_0 + index);
     case 2:
-        return GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LEGACY);
+        return (char *)GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LEGACY);
     default:
         break;
     }
     ASSERT(0);
+
+    return "";
 }
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)

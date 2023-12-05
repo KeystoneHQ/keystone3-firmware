@@ -5,7 +5,6 @@
 #include "lvgl.h"
 #include "log_print.h"
 #include "user_msg.h"
-#include "lv_demos.h"
 #include "drv_virtual_touch.h"
 #include "touchpad_task.h"
 #include "gui_views.h"
@@ -21,6 +20,8 @@
 #define LVGL_IDLE_TICK_MS                   100
 #define LVGL_GRAM_PIXEL         LCD_DISPLAY_WIDTH * 450
 
+
+bool GuiLetterKbStatusError(void);
 static void UiDisplayTask(void *argument);
 static void RefreshLvglTickMode(void);
 static void SetLvglTick(uint32_t dynamicTick);

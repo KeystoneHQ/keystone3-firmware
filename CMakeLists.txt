@@ -122,7 +122,6 @@ if(COMPILE_MAIN)
         src/msg 
         src/ram 
         src/hardware_interface
-        src/ui/lv_demos
         src/ui/gui_views
         src/ui/gui_assets
         src/ui/gui_assets/abi

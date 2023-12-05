@@ -15,6 +15,7 @@
 #include "presetting.h"
 #include "anti_tamper.h"
 #include "gui_global_resources.h"
+#include "gui_about_info_widgets.h"
 
 static int32_t GuiInitViewInit(void)
 {

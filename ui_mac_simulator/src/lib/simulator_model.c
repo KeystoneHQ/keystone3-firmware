@@ -65,7 +65,7 @@ struct UREncodeMultiResult *get_next_part(PtrEncoder ptr)
 
 static uint8_t g_fpVersion[4] = {0};
 
-uint8_t *GuiGetFpVersion(uint8_t *version)
+uint8_t *GuiGetFpVersion(char *version)
 {
     for (int i = 0; i < 4; i++) {
         version[2 * i] = g_fpVersion[i] + '0';

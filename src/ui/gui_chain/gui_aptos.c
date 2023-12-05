@@ -132,4 +132,5 @@ static uint8_t GetAptosPublickeyIndex(char* rootPath)
     if (strcmp(rootPath, "44'/637'/8'/0'/0'") == 0) return XPUB_TYPE_APT_8;
     if (strcmp(rootPath, "44'/637'/9'/0'/0'") == 0) return XPUB_TYPE_APT_9;
     ASSERT(0);
+    return -1;
 }

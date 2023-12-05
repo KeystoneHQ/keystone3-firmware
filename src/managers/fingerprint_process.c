@@ -395,7 +395,7 @@ void FpGenericRecv(char *indata, uint8_t len)
     printf("\n");
 }
 
-uint8_t *GuiGetFpVersion(uint8_t *version)
+uint8_t *GuiGetFpVersion(char *version)
 {
     for (int i = 0; i < 4; i++) {
         version[2 * i] = g_fpVersion[i] + '0';

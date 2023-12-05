@@ -6,6 +6,7 @@
 #include "user_utils.h"
 #include "account_public_info.h"
 #include "assert.h"
+#include "hash_and_salt.h"
 
 
 typedef struct {
@@ -421,7 +422,6 @@ int32_t SaveCurrentAccountInfo(void)
 
     accountIndex = GetCurrentAccountIndex();
     ASSERT(accountIndex <= 2);
-    AccountInfo_t accountInfo;
     memcpy(pAccountInfo, &g_currentAccountInfo, sizeof(AccountInfo_t));
     ret = SE_HmacEncryptWrite(param, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
     return ret;

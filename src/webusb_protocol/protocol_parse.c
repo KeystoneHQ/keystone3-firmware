@@ -8,6 +8,7 @@
 #include "cmsis_os.h"
 #include "user_memory.h"
 #include "log_print.h"
+#include "service_file_trans.h"
 
 #define PROTOCOL_PARSE_OVERTIME 500
 

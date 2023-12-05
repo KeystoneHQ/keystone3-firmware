@@ -74,7 +74,7 @@ void SendEApduResponseError(uint8_t cla, CommandType ins, uint16_t requestID, St
     char *json_str = cJSON_Print(root);
     cJSON_Delete(root);
     result->data = (uint8_t *)json_str;
-    result->dataLen = strlen(result->data);
+    result->dataLen = strlen((char *)result->data);
     result->status = status;
     result->cla = cla;
     result->commandType = ins;
@@ -108,7 +108,7 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
         ExportAddressService(*request);
         break;
     default:
-        printf('Invalid command\n');
+        printf("Invalid command\n");
         break;
     }
 }

@@ -38,7 +38,7 @@ volatile LowPowerState g_lowPowerState = LOW_POWER_STATE_WORKING;
 
 static uint32_t GetWakeUpInterval(void)
 {
-    UsbPowerState usbPowerState;
+    UsbPowerState usbPowerState = GetUsbPowerState();
     uint32_t milliVolt = GetBatteryMilliVolt();
     uint8_t percent = GetBatteryPercentByMilliVolt(milliVolt, usbPowerState == USB_POWER_STATE_DISCONNECT);
     if (usbPowerState == USB_POWER_STATE_CONNECT) {

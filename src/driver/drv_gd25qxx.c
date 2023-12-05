@@ -60,7 +60,6 @@ static uint32_t Gd25FlashPageProgram(uint32_t addr, const uint8_t *buffer, uint3
 
 void Gd25FlashInit(void)
 {
-    uint32_t flashId;
     GPIO_InitTypeDef gpioInit = {0};
     SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_GPIO, ENABLE);
 

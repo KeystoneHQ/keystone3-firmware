@@ -476,6 +476,7 @@ static bool IsUtxoCoin(HOME_WALLET_CARD_ENUM coin)
     default:
         return false;
     }
+    return false;
 }
 
 static void CoinDealHandler(lv_event_t *e)

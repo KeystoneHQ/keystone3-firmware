@@ -584,6 +584,7 @@ static void FingerCancelRegisterHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_hintBox)
+        SetPageLockScreen(true);
         KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
         GuiDeleteKeyboardWidget(keyboardWidget);
         FpDeleteRegisterFinger();

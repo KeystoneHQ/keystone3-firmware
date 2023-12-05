@@ -26,6 +26,7 @@
 #include "account_manager.h"
 #include "qrdecode_task.h"
 #include "safe_mem_lib.h"
+#include "gui_views.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "rust.h"
@@ -1019,7 +1020,9 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
         *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE &&
         *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
         *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
-        *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD) {
+        *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&  
+        strlen(SecretCacheGetPassphrase()) &&
+        !GuiCheckIfViewOpened(&g_createWalletView)) {
         ClearSecretCache();
     }
     printf("*param = %u\n", *param);

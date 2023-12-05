@@ -569,6 +569,8 @@ void GuiDevSettingPassCode(bool result, uint16_t tileIndex)
 {
     static uint16_t walletIndex = DEVICE_SETTING_RESET_PASSCODE_VERIFY;
     printf("tileIndex = %d\n", tileIndex);
+    if (!result)
+        return;
     switch (tileIndex) {
     case SIG_FINGER_FINGER_SETTING:
         walletIndex = GuiGetFingerSettingIndex();
@@ -588,9 +590,11 @@ void GuiDevSettingPassCode(bool result, uint16_t tileIndex)
         }
         break;
     case SIG_FINGER_REGISTER_ADD_SUCCESS:
-        FpSaveKeyInfo(true);
-        SetPageLockScreen(true);
-        walletIndex = DEVICE_SETTING_FINGER_ADD_SUCCESS;
+        if (result) {
+            FpSaveKeyInfo(true);
+            SetPageLockScreen(true);
+            walletIndex = DEVICE_SETTING_FINGER_ADD_SUCCESS;
+        }
         break;
     case SIG_SETTING_CHANGE_PASSWORD:
         walletIndex = DEVICE_SETTING_RESET_PASSCODE_VERIFY;

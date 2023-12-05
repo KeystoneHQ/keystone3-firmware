@@ -81,7 +81,6 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
         } else {
             return ERR_GUI_ERROR;
         }
-        GuiDevSettingPassCode(false, tileIndex);
         GuiVerifyCurrentPasswordErrorCount(param);
         break;
     case SIG_SETTING_SET_PIN:

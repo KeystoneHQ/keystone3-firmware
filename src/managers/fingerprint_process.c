@@ -287,20 +287,15 @@ static void FpRecognizeSend(uint16_t cmd, uint8_t passwd)
     // SendPackFingerMsg(FINGERPRINT_CMD_RECOGNIZE, &passwd, 0, 1, AES_KEY_ENCRYPTION);
 }
 
-void FpSaveFingerKey(void)
-{
-    FingerSetInfoToSE(g_fpTempAesKey, 0, GetCurrentAccountIndex(), SecretCacheGetPassword());
-    memset(g_fpTempAesKey, 0,  sizeof(g_fpTempAesKey));
-    ClearSecretCache();
-}
-
 void FpSaveKeyInfo(bool add)
 {
-    SetFingerManagerInfoToSE();
     if (add) {
         AddFingerManager(g_fpIndex);
     }
-    FpSaveFingerKey();
+    SetFingerManagerInfoToSE();
+    FingerSetInfoToSE(g_fpTempAesKey, 0, GetCurrentAccountIndex(), SecretCacheGetPassword());
+    memset(g_fpTempAesKey, 0,  sizeof(g_fpTempAesKey));
+    ClearSecretCache();
 }
 
 // A7FF RECV

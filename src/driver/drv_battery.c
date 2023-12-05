@@ -12,6 +12,7 @@
 #include "assert.h"
 #include "user_utils.h"
 #include "user_msg.h"
+#include "hardware_version.h"
 
 
 #define BATTERY_DEBUG          0
@@ -154,10 +155,53 @@ void BatteryOpen(void)
 /// @brief Get battery voltage.
 /// @param
 /// @return Battery voltage, in millivolts.
+// uint32_t GetBatteryMilliVolt(void)
+// {
+//     int32_t i, adcAver, temp, max, min;//, temps[BATTERY_ADC_TIMES];
+//     uint64_t adcSum = 0;
+
+//     max = 0;
+//     min = 0xFFF;
+//     ADC_StartCmd(ENABLE);
+//     ADC_ChannelSwitch(BATTERY_CHANNEL);
+//     for (i = 0; i < BATTERY_ADC_TIMES; i++) {
+//         do {
+//             UserDelay(1);
+//             temp = ADC_GetResult();
+//         } while (temp >= 0xF00);
+//         adcSum += temp;
+//         if (temp > max) {
+//             max = temp;
+//         }
+//         if (temp < min) {
+//             min = temp;
+//         }
+//     }
+//     ADC_StartCmd(DISABLE);
+//     BATTERY_PRINTF("max=%d,min=%d\r\n", max, min);
+//     adcSum -= max;
+//     adcSum -= min;
+//     adcAver = adcSum / (BATTERY_ADC_TIMES - 2);
+//     //PrintU32Array("temps", temps, BATTERY_ADC_TIMES);
+//     BATTERY_PRINTF("adcAver=%d\r\n", adcAver);
+
+//     if(GetHardwareVersion() < VERSION_V3_2) {
+//         temp = ADC_CalVoltage(adcAver, 6200);
+//     } else {
+//         temp = ADC_CalVoltage(adcAver, 1987);
+//         temp = temp * 16365 / 6365;
+//     }
+
+//     return temp;
+// }
+
 uint32_t GetBatteryMilliVolt(void)
 {
-    int32_t i, adcAver, temp, max, min;//, temps[BATTERY_ADC_TIMES];
+    int32_t i, adcAver, temp, max, min; //, temps[BATTERY_ADC_TIMES];
     uint64_t adcSum = 0;
+    static uint32_t battery_vol_back = 0;
+    static uint32_t nBatteryCount1 = 0, nBatteryCount2 = 0, nBatteryCount3 = 0;
+    ;
 
     max = 0;
     min = 0xFFF;
@@ -175,18 +219,70 @@ uint32_t GetBatteryMilliVolt(void)
         if (temp < min) {
             min = temp;
         }
-        //printf("temp=%d\r\n", temp);
-        //temps[i] = temp;
     }
     ADC_StartCmd(DISABLE);
     BATTERY_PRINTF("max=%d,min=%d\r\n", max, min);
     adcSum -= max;
     adcSum -= min;
     adcAver = adcSum / (BATTERY_ADC_TIMES - 2);
-    //PrintU32Array("temps", temps, BATTERY_ADC_TIMES);
     BATTERY_PRINTF("adcAver=%d\r\n", adcAver);
+    printf("Bat adcAver=%d\r\n", adcAver);
 
-    return ADC_CalVoltage(adcAver, 6200);
+    if (GetHardwareVersion() < VERSION_V3_2) {
+        temp = ADC_CalVoltage(adcAver, 6200);
+    } else {
+        temp = ADC_CalVoltage(adcAver, 1987);
+        temp = temp * 16365 / 6365;
+    }
+
+    if (battery_vol_back == 0) {
+        battery_vol_back = temp;
+        nBatteryCount1 = 0;
+        nBatteryCount2 = 0;
+        nBatteryCount3 = 0;
+    } else {
+        if ((battery_vol_back > temp) && ((battery_vol_back - temp) > 100)) {
+            if ((battery_vol_back - temp) > 500) {
+                nBatteryCount3++;
+                if (nBatteryCount3 > 3) {
+                    battery_vol_back = temp;
+                    nBatteryCount1 = 0;
+                    nBatteryCount2 = 0;
+                    nBatteryCount3 = 0;
+                }
+            } else {
+                battery_vol_back = temp;
+                nBatteryCount1 = 0;
+                nBatteryCount2 = 0;
+                nBatteryCount3 = 0;
+            }
+        } else if ((battery_vol_back < temp) && ((temp - battery_vol_back) > 100)) {
+            battery_vol_back = temp;
+            nBatteryCount1 = 0;
+            nBatteryCount2 = 0;
+            nBatteryCount3 = 0;
+        } else {
+            if (battery_vol_back < temp) {
+                nBatteryCount3 = 0;
+                nBatteryCount2 = 0;
+                nBatteryCount1++;
+                if (nBatteryCount1 >= 10) {
+                    battery_vol_back = temp;
+                    nBatteryCount1 = 0;
+                }
+            } else if (battery_vol_back > temp) {
+                nBatteryCount3 = 0;
+                nBatteryCount1 = 0;
+                nBatteryCount2++;
+                if (nBatteryCount2 >= 10) {
+                    battery_vol_back = temp;
+                    nBatteryCount2 = 0;
+                }
+            }
+        }
+    }
+
+    return battery_vol_back; // ADC_CalVoltage(adcAver, 6200);// 6140
 }
 
 uint32_t GetRtcBatteryMilliVolt(void)
@@ -195,6 +291,7 @@ uint32_t GetRtcBatteryMilliVolt(void)
     uint64_t adcSum = 0;
     uint32_t vol;
 
+    osKernelLock();
     RtcBatAdcDetEnable();
     UserDelay(10);
     max = 0;
@@ -218,21 +315,28 @@ uint32_t GetRtcBatteryMilliVolt(void)
     adcSum -= max;
     adcSum -= min;
     adcAver = adcSum / (BATTERY_ADC_TIMES - 2);
-    vol = ADC_CalVoltage(adcAver, 1880);
-    temp = vol;
-    if (adcAver > 2420) {
-        vol = vol * 285 / 100;
-    } else if (adcAver > 2070) {
-        vol = vol * 29 / 10;
-    } else if (adcAver < 2020) {
-        vol = vol * 27 / 10;
-    } else if ((adcAver >= 2020) && (adcAver < 2038)) {
-        vol = vol * 28 / 10;
+
+    if(GetHardwareVersion() < VERSION_V3_2) {
+        vol = ADC_CalVoltage(adcAver, 1880);
+        temp = vol;
+        if (adcAver > 2420) {
+            vol = vol * 285 / 100;
+        } else if (adcAver > 2070) {
+            vol = vol * 29 / 10;
+        } else if (adcAver < 2020) {
+            vol = vol * 27 / 10;
+        } else if ((adcAver >= 2020) && (adcAver < 2038)) {
+            vol = vol * 28 / 10;
+        } else {
+            vol = vol * 284 / 100;
+        }
     } else {
-        vol = vol * 284 / 100;
+        vol = ADC_CalVoltage(adcAver, 1969);
+        vol = vol * 1913 / 913;
     }
 
     RtcBatAdcDetDisable();
+    osKernelUnlock();
     return vol;
 }
 

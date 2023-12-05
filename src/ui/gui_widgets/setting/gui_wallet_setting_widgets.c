@@ -566,6 +566,12 @@ void GuiWalletDelWalletConfirm(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, DelWalletConfirmHandler, LV_EVENT_CLICKED, NULL);
 }
 
+void GuiFingerCancelRegister(void)
+{
+    SetPageLockScreen(true);
+    FpDeleteRegisterFinger();
+}
+
 /* STATIC FUNC */
 static void DelWalletConfirmHandler(lv_event_t *e)
 {
@@ -583,6 +589,9 @@ static void FingerCancelRegisterHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
+        for (int i = 0; i < 3; i++) {
+            UpdateFingerSignFlag(i, false);
+        }
         GUI_DEL_OBJ(g_hintBox)
         SetPageLockScreen(true);
         KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);

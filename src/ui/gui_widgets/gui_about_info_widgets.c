@@ -337,7 +337,7 @@ void GuiCreateVerifyFirmwareInstructionTile(lv_obj_t *parent)
     label = GuiCreateIllustrateLabel(parent, _("about_info_verify_firmware_step1"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 60, 202);
     lv_label_set_recolor(label, true);
-    label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_desc2_link"));
+    label = GuiCreateIllustrateLabel(parent, _("firmware_update_verify_firmware_qr_link"));
     lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 266);
     lv_obj_add_flag(label, LV_OBJ_FLAG_CLICKABLE);

@@ -17,6 +17,8 @@ struct __RustMemoryNode {
 };
 typedef struct __RustMemoryNode RustMemoryNode_t;
 
+void WriteDebugToSdcard(char *buf, uint16_t len);
+
 RustMemoryNode_t *rustMemoryListHead = NULL;
 
 void RustMemoryNode_add(void *p, uint32_t size)
@@ -67,7 +69,10 @@ void RustMemoryNode_remove(void *p)
 void RustMemoryNode_print()
 {
     RustMemoryNode_t *current = rustMemoryListHead;
+    char memBuf[128] = {0};
     while (current != NULL) {
+        snprintf(memBuf, sizeof(memBuf), "Rust Memory Usage: address: 0x%x, size: %d\n", current -> p, current -> size);
+        WriteDebugToSdcard(memBuf, strlen(memBuf));
         printf("Rust Memory Usage: address: 0x%x, size: %d\r\n", current -> p, current -> size);
         current = current -> next;
     }

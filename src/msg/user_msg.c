@@ -55,6 +55,7 @@ void UserMsgInit(void)
     SubMessageID(LOG_MSG_WRITE, g_logQueue);
     SubMessageID(LOG_MSG_ERASE, g_logQueue);
     SubMessageID(LOG_MSG_EXPORT, g_logQueue);
+    SubMessageID(LOG_MSG_WRITE_TO_SDCARD, g_logQueue);
 
     SubMessageID(USB_MSG_ISR_HANDLER, g_usbQueue);
     SubMessageID(USB_MSG_SET_STATE, g_usbQueue);

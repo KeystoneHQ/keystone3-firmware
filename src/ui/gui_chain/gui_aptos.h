@@ -3,7 +3,7 @@
 
 #include "librust_c.h"
 
-void GuiSetAptosUrData(void *data, bool multi);
+void GuiSetAptosUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetAptosData(void);
 PtrT_TransactionCheckResult GuiGetAptosCheckResult(void);
 void FreeAptosMemory(void);

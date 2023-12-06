@@ -45,7 +45,7 @@ static uint8_t GetXPubIndexByPath(char *path);
 static void OpenTutorialHandler(lv_event_t *e);
 static void OpenMoreHandler(lv_event_t *e);
 
-void GuiSetKeyDerivationRequestData(void *data, bool is_multi)
+void GuiSetKeyDerivationRequestData(void *data, void *multiResult, bool is_multi)
 {
 #ifndef COMPILE_SIMULATOR
     g_urResult = data;

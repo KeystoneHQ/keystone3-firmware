@@ -9,13 +9,15 @@
 #include "account_manager.h"
 
 static bool g_isMulti = false;
-static void *g_urResult = NULL;
+static URParseResult *g_urResult = NULL;
+static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 
-void GuiSetTrxUrData(void *data, bool multi)
+void GuiSetTrxUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
 #ifndef COMPILE_SIMULATOR
-    g_urResult = data;
+    g_urResult = urResult;
+    g_urMultiResult = urMultiResult;
     g_isMulti = multi;
 #endif
 }
@@ -32,8 +34,8 @@ void *GuiGetTrxData(void)
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
-    URType urType = g_isMulti ? ((URParseMultiResult *)g_urResult)->ur_type : ((URParseResult *)g_urResult)->ur_type;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    URType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     char *trxXpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
     GetMasterFingerPrint(mfp);
     do {
@@ -51,8 +53,8 @@ PtrT_TransactionCheckResult GuiGetTrxCheckResult(void)
 {
 #ifndef COMPILE_SIMULATOR
     uint8_t mfp[4];
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
-    URType urType = g_isMulti ? ((URParseMultiResult *)g_urResult)->ur_type : ((URParseResult *)g_urResult)->ur_type;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    URType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     char *trxXpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
     GetMasterFingerPrint(mfp);
     return tron_check_keystone(data, urType, mfp, sizeof(mfp), trxXpub);
@@ -63,7 +65,8 @@ PtrT_TransactionCheckResult GuiGetTrxCheckResult(void)
 void FreeTrxMemory(void)
 {
 #ifndef COMPILE_SIMULATOR
-    CHECK_FREE_UR_RESULT(g_urResult, g_isMulti);
+    CHECK_FREE_UR_RESULT(g_urResult, false);
+    CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
 #endif
 }
@@ -122,8 +125,8 @@ UREncodeResult *GuiGetTrxSignQrCodeData(void)
     SetLockScreen(false);
 #ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult;
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
-    URType urType = g_isMulti ? ((URParseMultiResult *)g_urResult)->ur_type : ((URParseResult *)g_urResult)->ur_type;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    URType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     do {
         uint8_t mfp[4];
         GetMasterFingerPrint(mfp);

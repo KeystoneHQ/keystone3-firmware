@@ -68,13 +68,14 @@ void RustMemoryNode_print()
 {
     RustMemoryNode_t *current = rustMemoryListHead;
     while (current != NULL) {
-        printf("Rust Memory Usage: address: 0x%x, size: %d, possible string value: %s\r\n", current -> p, current -> size, current -> p);
+        printf("Rust Memory Usage: address: 0x%x, size: %d\r\n", current -> p, current -> size);
         current = current -> next;
     }
 }
 #endif
 
-void PrintRustMemoryStatus()
+void PrintRustMemoryStatus(
+)
 {
 #ifdef RUST_MEMORY_DEBUG
     printf("Rust Memory Status: \r\n");

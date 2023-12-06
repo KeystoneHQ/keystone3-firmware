@@ -10,7 +10,7 @@ void GuiWebAuthResultAreaRefresh();
 void GuiWebAuthResultAreaRestart();
 uint32_t GuiWebAuthResultPrevTile();
 uint32_t GuiWebAuthResultNextTile();
-void GuiSetWebAuthResultData(void *data, bool multi);
+void GuiSetWebAuthResultData(void *data, void *multiResult, bool multi);
 void GuiWebAuthResultSetSuccessCb(WebAuthSuccessCb cb);
 void GuiWebAuthShowAuthCode(char* authCode);
 #endif

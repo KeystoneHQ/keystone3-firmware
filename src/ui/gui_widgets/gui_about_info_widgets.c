@@ -73,6 +73,12 @@ void GuiUpdateCheckSumPercent(uint8_t percent)
         lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 62);
         
         label = GuiCreateIllustrateLabel(g_firmwareVerifyCont, _("about_info_verify_checksum_desc"));
+
+        lv_obj_t *btn = GuiCreateBtn(g_firmwareVerifyCont, _("Done"));
+        lv_obj_set_size(btn, 408, 66);
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
+        lv_obj_add_event_cb(btn, CloseVerifyHintBoxHandler, LV_EVENT_CLICKED, NULL);
+
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 286);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseVerifyHintBoxHandler, NULL);
     }

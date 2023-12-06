@@ -1021,6 +1021,7 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
         *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
         *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&  
         strlen(SecretCacheGetPassphrase()) &&
+        strlen(SecretCacheGetSlip39Mnemonic(0)) &&
         !GuiCheckIfViewOpened(&g_createWalletView)) {
         ClearSecretCache();
     }
@@ -1248,8 +1249,15 @@ static uint32_t BinarySearchLastNonFFSector(void)
     uint32_t startIndex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE / 2;
     uint32_t endInex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE;
 
+    uint8_t percent = 1;
+    GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
+
     for (int i = startIndex + 1; i < endInex; i++) {
         QSPI_Read(NULL, buffer, APP_ADDR + i * SECTOR_SIZE, SECTOR_SIZE);
+        if ((i - startIndex) % 200 == 0) {
+            percent++;
+            GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
+        }
         if (CheckAllFF(&buffer[2], SECTOR_SIZE - 2) && ((buffer[0] * 256 + buffer[1]) < 4096)) {
             return i;
         }
@@ -1278,8 +1286,8 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
         sha256_update(&ctx, buffer, SECTOR_SIZE);
         if (percent != i * 100 / num) {
             percent = i * 100 / num;
-            printf("percent: %d\n", percent);
-            if (percent != 100) {
+            printf("percent: %d....\n", percent);
+            if (percent != 100 && percent >= 10) {
                 GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
             }
         }

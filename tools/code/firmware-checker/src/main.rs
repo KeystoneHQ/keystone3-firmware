@@ -35,7 +35,7 @@ async fn main() -> std::io::Result<()>{
     
     let result = get_decompress_file_sha256(&source_path).await.unwrap();
     let mut handle = io::stdout().lock();
-    writeln!(handle, "Firmware checksum is: {}", result)
+    writeln!(handle, "Firmware Digest sha256: {} \n You can check this value on your device.", result)
 }
 #[derive(Serialize, Debug, Deserialize)]
 struct Header {

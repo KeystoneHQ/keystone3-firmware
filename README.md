@@ -37,7 +37,7 @@ git clone https://github.com/KeystoneHQ/keystone3-firmware --recursive
 Alternatively, use Docker to build the required environment:
 
 ```bash
-docker build -t keystone3-base:local .
+docker build -t keystone3-baker:local .
 ```
 
 ### Building the Firmware

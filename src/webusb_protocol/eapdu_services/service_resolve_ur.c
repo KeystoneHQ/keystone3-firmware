@@ -63,7 +63,7 @@ static void GotoFailPage(StatusEnum error_code, const char *error_message)
     EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
     resultPage->command = CMD_RESOLVE_UR;
     resultPage->error_code = error_code;
-    resultPage->error_message = error_message;
+    resultPage->error_message = (char *)error_message;
     GotoResultPage(resultPage);
     HandleURResultViaUSBFunc(error_message, strlen(error_message), g_requestID, error_code);
     SRAM_FREE(resultPage);
@@ -106,7 +106,7 @@ void ProcessURService(EAPDURequestPayload_t payload)
     {
         return;
     }
-    struct URParseResult *urResult = parse_ur(DataParser(&payload));
+    struct URParseResult *urResult = parse_ur((char *)DataParser(&payload));
     if (urResult->error_code != 0)
     {
         HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), g_requestID, PRS_PARSING_ERROR);

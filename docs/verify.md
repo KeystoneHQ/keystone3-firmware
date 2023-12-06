@@ -42,7 +42,7 @@ A consistent build environment is essential. Docker facilitates this by creating
 **Commands:**
 
 ```bash
-docker build -t keystonedockerhub/keystone3_baker:1.0.0 .
+docker build -t keystonedockerhub/keystone3_baker:1.0.1 .
 ```
 
 #### b. Using a Pre-built Image
@@ -50,7 +50,7 @@ docker build -t keystonedockerhub/keystone3_baker:1.0.0 .
 **Commands:**
 
 ```bash
-docker pull keystonedockerhub/keystone3_baker:1.0.0
+docker pull keystonedockerhub/keystone3_baker:1.0.1
 ```
 
 ### 3. Execute the Build Process
@@ -60,7 +60,7 @@ Compile the firmware using Docker.
 **Commands:**
 
 ```bash
-docker run -v $(pwd):/project-pillar-firmware keystonedockerhub/keystone3_baker:1.0.0 python3 build.py -e production
+docker run -v $(pwd):/keystone3-firmware keystonedockerhub/keystone3_baker:1.0.1 python3 build.py -e production
 ```
 
 **Note:** This step compiles the source into the `mh1903.bin` file.

@@ -720,6 +720,8 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"wallet_setting_passcode", "Fingerprint & Passcode"},
     {"wallet_setting_passphrase", "Passphrase"},
     {"wallet_setting_seed_phrase", "Seed Phrase Check"},
+    {"wallet_setting_stop_add_fingerprint", "Cancel This Process?"},
+    {"wallet_setting_stop_add_fingerprint_desc", "Fingerprint Not Saved. Upon cancellation, you will be required to re-enter your fingerprint."},
     {"wallet_settings_add_info_desc1", "Keystone supports a maximum of #F5870A 3# different wallets."},
     {"wallet_settings_add_info_desc2", "You should set a #F5870A different passcode# for each wallet"},
     {"wallet_settings_add_info_desc3", "To switch wallets, unlock the device with the specific passcode associated with each one. The wallet list will not be displayed for enhanced security."},

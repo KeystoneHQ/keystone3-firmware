@@ -434,6 +434,7 @@ void *GuiGetEthTypeData(void)
         g_parseResult = (void *)parseResult;
     } while (0);
     free_TransactionCheckResult(result);
+    free_ptr_string(rootPath);
     return g_parseResult;
 #else
     return NULL;
@@ -512,6 +513,7 @@ void *GuiGetEthPersonalMessage(void)
         g_parseResult = (void *)parseResult;
     } while (0);
     free_TransactionCheckResult(result);
+    free_ptr_string(rootPath);
 #else
     PtrT_TransactionParseResult_DisplayETHPersonalMessage parseResult = SRAM_MALLOC(sizeof(TransactionParseResult_DisplayETHPersonalMessage));
     parseResult->data = SRAM_MALLOC(sizeof(DisplayETHPersonalMessage));
@@ -609,6 +611,7 @@ void *GuiGetEthData(void)
         decodeEthContractData(parseResult);
         printf("decode finish\n");
     } while (0);
+    free_ptr_string(rootPath);
 #else
     TransactionParseResult_DisplayETH *g_parseResult = malloc(sizeof(TransactionParseResult_DisplayETH));
     DisplayETH *eth = malloc(sizeof(DisplayETH));

@@ -1,24 +1,24 @@
 # Comprehensive Guide to Building and Verifying Keystone3 Firmware
 
-This document offers a detailed walkthrough for building and verifying the Keystone3 firmware from source code. It focuses on ensuring the firmware's integrity and alignment with the specific release version, which is crucial for maintaining the reliability and security of the hardware wallet.
+This guide provides an in-depth walkthrough for building and verifying the Keystone3 firmware from its source code. It emphasizes the crucial role of maintaining firmware integrity and alignment with specific release versions, essential for the reliability and security of the Keystone3 hardware wallet.
 
 ## Introduction
 
-Building and verifying firmware are critical steps in software development, especially for hardware wallets like Keystone3. This guide targets developers and technicians who need to compile firmware from the source and verify its authenticity and integrity.
+Building and verifying firmware are key steps in software development, especially for specialized devices like the Keystone3 hardware wallet. This guide is designed for developers and technicians who are tasked with compiling firmware from source and verifying its authenticity and integrity.
 
 ## Prerequisites
 
-- Keystone3 firmware version 1.2.0 or higher.
-- Basic knowledge of command-line operations.
+- Keystone3 firmware version 1.2.0 or later.
+- Basic proficiency in command-line operations.
 - Docker installed on your machine.
-- Internet access to clone the repository and pull Docker images.
-- A robust Linux machine: The build process requires a Linux environment. Opt for a system with at least 16GB of memory for adequate compatibility and performance; a 32GB memory setup is highly recommended for optimal results.
+- Internet access for cloning the repository and pulling Docker images.
+- A robust Linux machine with at least 16GB of memory; 32GB is recommended for optimal performance.
 
 ## Detailed Steps for Building and Verifying the Firmware
 
 ### 1. Clone and Prepare the Repository
 
-Begin by cloning the Keystone3 firmware repository to copy the entire firmware codebase onto your local machine.
+Start by cloning the Keystone3 firmware repository to your local machine.
 
 **Commands:**
 
@@ -27,30 +27,25 @@ git clone https://github.com/KeystoneHQ/keystone3-firmware --recursive
 git checkout tags/<release_tag_name>
 ```
 
-**Explanation:**
+**Highlights:**
 
-- `git clone` copies the repository.
-- `--recursive` ensures all submodules are also cloned.
-- `git checkout tags/<release_tag_name>` switches to the specified release version.
+- The `git clone` command retrieves the repository.
+- The `--recursive` flag includes all submodules.
+- `git checkout tags/<release_tag_name>` switches to a specific firmware version.
 
 ### 2. Build the Docker Image
 
-A consistent build environment is key. Docker helps by creating a container with all necessary dependencies and tools.
+A consistent build environment is essential. Docker facilitates this by creating a container with all necessary dependencies and tools.
 
-#### a. Build Locally
+#### a. Building Locally
 
 **Commands:**
 
 ```bash
-docker build -t keystone3-baker:local .
+docker build -t keystonedockerhub/keystone3_baker:1.0.0 .
 ```
 
-**Explanation:**
-
-- This builds a Docker image based on the provided Dockerfile.
-- The tag `keystone3-baker:local` identifies your local build.
-
-#### b. Use Pre-built Image
+#### b. Using a Pre-built Image
 
 **Commands:**
 
@@ -58,32 +53,21 @@ docker build -t keystone3-baker:local .
 docker pull keystonedockerhub/keystone3_baker:1.0.0
 ```
 
-**Explanation:**
-
-- This pulls a pre-built Docker image from Docker Hub.
-- It saves time and ensures a standardized environment.
-
 ### 3. Execute the Build Process
 
-Use the Docker image to compile the firmware.
+Compile the firmware using Docker.
 
 **Commands:**
 
 ```bash
-docker run -v $(pwd):/project-pillar-firmware keystone3_baker:1.0.0 python3 build.py -e production
+docker run -v $(pwd):/project-pillar-firmware keystonedockerhub/keystone3_baker:1.0.0 python3 build.py -e production
 ```
 
-**Explanation:**
-
-- `docker run` creates a container from the Docker image.
-- `-v $(pwd):/project-pillar-firmware` mounts your directory to the container.
-- `python3 build.py -e production` initiates the build process.
-
-**Note:** The build process compiles the source code into `mh1903.bin`, which may take some time.
+**Note:** This step compiles the source into the `mh1903.bin` file.
 
 ### 4. Verify the Firmware Checksum
 
-Verifying the firmware's integrity is crucial.
+An integrity check is essential.
 
 **Commands:**
 
@@ -91,13 +75,24 @@ Verifying the firmware's integrity is crucial.
 sha256sum mh1903.bin
 ```
 
-**Explanation:**
+**Further Steps:** Compare the generated hash with the display on your device. For detailed instructions, refer [here](). To understand the checksum calculation on the device, see the code [here]().
 
-- `sha256sum` generates a hash for `mh1903.bin`.
-- Compare this hash with the one on your Keystone3 device to confirm authenticity. For instructions on obtaining this value from the device, refer to [this tutorial](). To understand how the value is calculated, see the code [here]().
+## Optional: In-Depth Verification with Release Page
+Before delving into this section, it's important to understand some context. The firmware file available on our release page, named `keystone3.bin`, is derived from the `mh1903.bin` file. This transformation involves compressing the original file and adding our official signature for enhanced security and authenticity.
 
-## Optional: Cross-Verification with Release Page
+**Verification Steps:**
 
-Enhance security by comparing `keystone3.bin` with the version on Keystone3's official release page.
+1. **Use the Firmware Maker:**
+   - Access the `firmware-maker` tool under `<ProjectRoot>/tools/code/firmware-maker`.
+   - Build it using `cargo build`.
+   - Run `./fmm --source mh1903.bin --destination keystone3-unsigned.bin` to generate `keystone3-unsigned.bin`.
 
-**Why This Matters:** Cross-verification adds a layer of security, ensuring the built firmware matches the officially released version and mitigating security threats.
+**Note**: The checksum of `keystone3-unsigned.bin` will differ from the official release due to the absence of our signature.
+
+2. **Checksum Verification:**
+   - Find the `firmware-checker` tool under `<ProjectRoot>/tools/code/firmware-checker`.
+   - Build it with `cargo build`.
+   - Run `./fmc --source keystone3-unsigned.bin` to obtain the firmware checksum.
+   - This checksum should match the `mh1903.bin` checksum from step 4 and the value on your device.
+
+**Significance:** These verification steps conclusively confirm that `keystone3.bin` is derived from `mh1903.bin`, ensuring the code on your Keystone3 device is authentic and reliable.

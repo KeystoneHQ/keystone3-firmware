@@ -1020,8 +1020,7 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
         *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
         *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
         *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&  
-        strlen(SecretCacheGetPassphrase()) &&
-        strlen(SecretCacheGetSlip39Mnemonic(0)) &&
+        !strlen(SecretCacheGetPassphrase()) &&
         !GuiCheckIfViewOpened(&g_createWalletView)) {
         ClearSecretCache();
     }

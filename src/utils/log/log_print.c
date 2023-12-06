@@ -73,7 +73,7 @@ void RustMemoryNode_print()
     while (current != NULL) {
         snprintf(memBuf, sizeof(memBuf), "Rust Memory Usage: address: 0x%x, size: %d\n", current -> p, current -> size);
         WriteDebugToSdcard(memBuf, strlen(memBuf));
-        printf("Rust Memory Usage: address: 0x%x, size: %d\r\n", current -> p, current -> size);
+        printf("Rust Memory Usage: address: 0x%x, size: %d, possible string value: %s\r\n", current -> p, current -> size, current -> p);
         current = current -> next;
     }
 }

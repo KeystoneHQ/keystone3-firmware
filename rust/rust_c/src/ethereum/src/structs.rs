@@ -23,6 +23,8 @@ pub struct DisplayETH {
     detail: PtrT<DisplayETHDetail>,
 }
 
+impl_c_ptr!(DisplayETH);
+
 #[repr(C)]
 pub struct DisplayETHOverview {
     value: PtrString,

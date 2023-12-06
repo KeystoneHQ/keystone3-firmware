@@ -25,7 +25,7 @@ typedef enum {
 } CosmosMsgType;
 
 const char* GuiGetCosmosTxTypeName(CosmosMsgType type);
-void GuiSetCosmosUrData(void *data, bool multi);
+void GuiSetCosmosUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetCosmosData(void);
 PtrT_TransactionCheckResult GuiGetCosmosCheckResult(void);
 void FreeCosmosMemory(void);

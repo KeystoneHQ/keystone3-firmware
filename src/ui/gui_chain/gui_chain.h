@@ -13,7 +13,7 @@
 
 #define LABEL_MAX_BUFF_LEN                                      (512)
 
-typedef void (*SetChainDataFunc)(void *indata, bool multi);
+typedef void (*SetChainDataFunc)(void *resultData, void *multiResultData, bool multi);
 
 // Enumeration for displaying in the middle of the status bar
 typedef enum {

@@ -16,7 +16,8 @@
 
 #ifndef COMPILE_SIMULATOR
 static bool g_isMulti = false;
-static void *g_urResult = NULL;
+static URParseResult *g_urResult = NULL;
+static URParseMultiResult *g_urMultiResult = NULL;
 static TransactionParseResult_DisplayTx *g_parseResult = NULL;
 #endif
 
@@ -35,10 +36,11 @@ static UtxoViewToChain_t g_UtxoViewToChainMap[] = {
     {BchTx,             XPUB_TYPE_BCH,               "m/44'/145'/0'"},
 };
 
-void GuiSetPsbtUrData(void *data, bool multi)
+void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
 #ifndef COMPILE_SIMULATOR
-    g_urResult = data;
+    g_urResult = urResult;
+    g_urMultiResult = urMultiResult;
     g_isMulti = multi;
 #endif
 }
@@ -74,15 +76,13 @@ UREncodeResult *GuiGetSignQrCodeData(void)
     enum ViewType viewType = ViewTypeUnKnown;
     void *data = NULL;
     if (g_isMulti) {
-        URParseMultiResult *urResult = (URParseMultiResult *)g_urResult;
-        urType = urResult->ur_type;
-        viewType = urResult->t;
-        data = urResult->data;
+        urType = g_urMultiResult->ur_type;
+        viewType = g_urMultiResult->t;
+        data = g_urMultiResult->data;
     } else {
-        URParseResult *urResult = (URParseResult *)g_urResult;
-        urType = urResult->ur_type;
-        viewType = urResult->t;
-        data = urResult->data;
+        urType = g_urResult->ur_type;
+        viewType = g_urResult->t;
+        data = g_urResult->data;
     }
     UREncodeResult *encodeResult = NULL;
     uint8_t mfp[4] = {0};
@@ -126,15 +126,13 @@ void *GuiGetParsedQrData(void)
     enum ViewType viewType = ViewTypeUnKnown;
     void *crypto = NULL;
     if (g_isMulti) {
-        URParseMultiResult *urResult = (URParseMultiResult *)g_urResult;
-        crypto = urResult->data;
-        urType = urResult->ur_type;
-        viewType = urResult->t;
+        crypto = g_urMultiResult->data;
+        urType = g_urMultiResult->ur_type;
+        viewType = g_urMultiResult->t;
     } else {
-        URParseResult *urResult = (URParseResult *)g_urResult;
-        crypto = urResult->data;
-        urType = urResult->ur_type;
-        viewType = urResult->t;
+        crypto = g_urResult->data;
+        urType = g_urResult->ur_type;
+        viewType = g_urResult->t;
     }
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
@@ -184,15 +182,13 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
     enum ViewType viewType = ViewTypeUnKnown;
     void *crypto = NULL;
     if (g_isMulti) {
-        URParseMultiResult *urResult = (URParseMultiResult *)g_urResult;
-        crypto = urResult->data;
-        urType = urResult->ur_type;
-        viewType = urResult->t;
+        crypto = g_urMultiResult->data;
+        urType = g_urMultiResult->ur_type;
+        viewType = g_urMultiResult->t;
     } else {
-        URParseResult *urResult = (URParseResult *)g_urResult;
-        crypto = urResult->data;
-        urType = urResult->ur_type;
-        viewType = urResult->t;
+        crypto = g_urResult->data;
+        urType = g_urResult->ur_type;
+        viewType = g_urResult->t;
     }
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
@@ -389,7 +385,10 @@ void GetPsbtDetailSize(uint16_t *width, uint16_t *height, void *param)
 void FreePsbtUxtoMemory(void)
 {
 #ifndef COMPILE_SIMULATOR
-    CHECK_FREE_UR_RESULT(g_urResult, g_isMulti);
+    printf("free g_urResult: %p\r\n", g_urResult);
+    CHECK_FREE_UR_RESULT(g_urResult, false);
+    printf("free g_urMultiResult: %p\r\n", g_urMultiResult);
+    CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
 #endif
 }

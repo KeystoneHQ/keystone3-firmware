@@ -5,7 +5,7 @@
 #include "stdint.h"
 #include "librust_c.h"
 
-void GuiSetupAdaUrData(void *data, bool multi);
+void GuiSetupAdaUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetAdaData(void);
 PtrT_TransactionCheckResult GuiGetAdaCheckResult(void);
 void GetAdaNetwork(void *indata, void *param);

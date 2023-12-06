@@ -16,7 +16,8 @@ static void decodeEthContractData(void *parseResult);
 static bool GetEthErc20ContractData(void *parseResult);
 
 static bool g_isMulti = false;
-static void *g_urResult = NULL;
+static URParseResult *g_urResult = NULL;
+static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static void *g_erc20ContractData = NULL;
 static char *g_erc20Value = NULL;
@@ -299,12 +300,13 @@ extern const ABIItem_t ethereum_abi_map[];
 
 static uint8_t GetEthPublickeyIndex(char* rootPath);
 
-void GuiSetEthUrData(void *data, bool multi)
+void GuiSetEthUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
 #ifndef COMPILE_SIMULATOR
-    g_urResult = data;
+    g_urResult = urResult;
+    g_urMultiResult = urMultiResult;
     g_isMulti = multi;
-    g_viewType = g_isMulti ? ((URParseMultiResult *)g_urResult)->t : ((URParseResult *)g_urResult)->t;
+    g_viewType = g_isMulti ? g_urMultiResult->t : g_urResult->t;
 #endif
 }
 
@@ -335,7 +337,7 @@ static UREncodeResult *GetEthSignDataDynamic(bool isUnlimited)
     SetLockScreen(false);
 #ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult;
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
@@ -421,7 +423,7 @@ void *GuiGetEthTypeData(void)
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     char *rootPath = eth_get_root_path(data);
     char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
     GetMasterFingerPrint(mfp);
@@ -500,7 +502,7 @@ void *GuiGetEthPersonalMessage(void)
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     char *rootPath = eth_get_root_path(data);
     char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
     GetMasterFingerPrint(mfp);
@@ -597,7 +599,7 @@ void *GuiGetEthData(void)
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     char *rootPath = eth_get_root_path(data);
     char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
     GetMasterFingerPrint(mfp);
@@ -660,7 +662,7 @@ PtrT_TransactionCheckResult GuiGetEthCheckResult(void)
 {
 #ifndef COMPILE_SIMULATOR
     uint8_t mfp[4];
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
     return eth_check(data, mfp, sizeof(mfp));
 #else
@@ -1032,7 +1034,8 @@ void FreeContractData(void)
 void FreeEthMemory(void)
 {
 #ifndef COMPILE_SIMULATOR
-    CHECK_FREE_UR_RESULT(g_urResult, g_isMulti);
+    CHECK_FREE_UR_RESULT(g_urResult, false);
+    CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     FreeContractData();
 #endif

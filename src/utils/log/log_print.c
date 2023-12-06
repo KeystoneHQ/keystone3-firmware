@@ -79,7 +79,8 @@ void RustMemoryNode_print()
 }
 #endif
 
-void PrintRustMemoryStatus()
+void PrintRustMemoryStatus(
+)
 {
 #ifdef RUST_MEMORY_DEBUG
     printf("Rust Memory Status: \r\n");

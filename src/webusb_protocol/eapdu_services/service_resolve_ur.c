@@ -115,7 +115,7 @@ void ProcessURService(EAPDURequestPayload_t payload)
     UrViewType_t urViewType = {0, 0};
     urViewType.viewType = urResult->t;
     urViewType.urType = urResult->ur_type;
-    HandleDefaultViewType(urResult, urViewType, false);
+    HandleDefaultViewType(urResult, NULL, urViewType, false);
     PtrT_TransactionCheckResult checkResult = CheckUrResult(urViewType.viewType);
     if (checkResult != NULL && checkResult->error_code == 0)
     {

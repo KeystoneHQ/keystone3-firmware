@@ -1,7 +1,7 @@
 #include "service_check_lock.h"
 #include "gui_lock_widgets.h"
 
-void *CheckDeviceLockStatusService(EAPDURequestPayload_t payload)
+void CheckDeviceLockStatusService(EAPDURequestPayload_t payload)
 {
     EAPDUResponsePayload_t *result = (EAPDUResponsePayload_t *)SRAM_MALLOC(sizeof(EAPDUResponsePayload_t));
 

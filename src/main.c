@@ -21,7 +21,6 @@
 #include "drv_button.h"
 #include "drv_tamper.h"
 #include "drv_exti.h"
-#include "drv_bluetooth.h"
 #include "drv_motor.h"
 #include "hal_lcd.h"
 #include "cmsis_os.h"

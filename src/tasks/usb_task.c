@@ -12,6 +12,7 @@
 #include "gui_views.h"
 #include "gui_api.h"
 #include "drv_aw32001.h"
+#include "device_setting.h"
 
 #ifdef BUILD_PRODUCTION
 #define USB_POP_WINDOW_ENABLE           1

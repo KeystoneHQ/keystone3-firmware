@@ -63,8 +63,8 @@ void GuiUpdateCheckSumPercent(uint8_t percent)
         label = GuiCreateNoticeLabel(cont, version);
         lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
 
-        uint8_t hash[128] = {0};
-        uint8_t tempBuf[128] = {0};
+        char hash[128] = {0};
+        char tempBuf[128] = {0};
         SecretCacheGetChecksum(hash);
         ConvertToLowerCase(hash);
         snprintf(tempBuf, sizeof(tempBuf), "#F5870A %.8s#%.24s\n%.24s#F5870A %.8s#", hash, &hash[8], &hash[32], &hash[56]);
@@ -130,7 +130,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     char *versionPrefix = "Firmware ";
     char *startPointer = strstr(version, versionPrefix);
     char versionStr[32] = {0};
-    uint8_t fpVersion[32] = "v";
+    char fpVersion[32] = "v";
     if (startPointer) {
         strncpy(versionStr, version + strlen(versionPrefix), strlen(version));
     } else {
@@ -387,7 +387,6 @@ static void StartFirmwareCheckSumHandler(lv_event_t *e)
 
 static void StopFirmwareCheckSumHandler(lv_event_t *e)
 {
-    static uint8_t walletIndex = 0;
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GuiModelStopCalculateCheckSum();

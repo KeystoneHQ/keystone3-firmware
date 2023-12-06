@@ -198,6 +198,8 @@ static uint8_t GetSolPublickeyIndex(char* rootPath)
     if (strcmp(rootPath, "44'/501'/8'/0'") == 0) return XPUB_TYPE_SOL_BIP44_CHANGE_8;
     if (strcmp(rootPath, "44'/501'/9'/0'") == 0) return XPUB_TYPE_SOL_BIP44_CHANGE_9;
     ASSERT(0);
+
+    return -1;
 }
 
 static void SetContainerDefaultStyle(lv_obj_t *container)

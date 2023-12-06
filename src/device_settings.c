@@ -15,6 +15,7 @@
 #include "fingerprint_process.h"
 #include "screen_manager.h"
 #include "power_manager.h"
+#include "account_manager.h"
 
 #define VERSION_MAX_LENGTH      32
 
@@ -206,7 +207,7 @@ void WipeDevice(void)
     }
 
     uint32_t wipeFlag = DEVICE_WIPE_FLAG_MAGIC_NUM;
-    ret = Gd25FlashWriteBuffer(SPI_FLASH_ADDR_PROTECT_PARAM, (uint8_t *)&wipeFlag, sizeof(wipeFlag));
+    Gd25FlashWriteBuffer(SPI_FLASH_ADDR_PROTECT_PARAM, (uint8_t *)&wipeFlag, sizeof(wipeFlag));
     SetShowPowerOffPage(false);
     FpWipeManageInfo();
     ErasePublicInfo();

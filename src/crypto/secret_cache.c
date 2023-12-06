@@ -26,7 +26,7 @@ void SecretCacheSetChecksum(uint8_t *checksum)
     memcpy(g_checksumCache, checksum, sizeof(g_checksumCache));
 }
 
-void SecretCacheGetChecksum(uint8_t *checksum)
+void SecretCacheGetChecksum(char *checksum)
 {
     ByteArrayToHexStr(g_checksumCache, sizeof(g_checksumCache), checksum);
 }

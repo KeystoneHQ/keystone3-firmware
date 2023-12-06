@@ -83,7 +83,7 @@ static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char
 int32_t GenerateEntropy(uint8_t *entropy, uint8_t entropyLen, const char *password)
 {
     uint8_t randomBuffer[ENTROPY_MAX_LEN], inputBuffer[ENTROPY_MAX_LEN], outputBuffer[ENTROPY_MAX_LEN];
-    int32_t ret, i;
+    int32_t ret;
 
     do {
         HashWithSalt(inputBuffer, (uint8_t *)password, strlen(password), "generate entropy");

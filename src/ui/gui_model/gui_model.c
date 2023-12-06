@@ -92,7 +92,6 @@ static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataL
 static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen);
 static int32_t ModelURGenerateQRCode(const void *inData, uint32_t inDataLen, void *getUR);
 static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen);
-static int32_t ModelStopCalculateCheckSum(const void *indata, uint32_t inDataLen);
 static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen);
 static int32_t ModelURClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen);
@@ -1246,7 +1245,6 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, voi
 static uint32_t BinarySearchLastNonFFSector(void) 
 {
     uint8_t buffer[SECTOR_SIZE];
-    uint32_t mid;
     uint32_t startIndex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE / 2;
     uint32_t endInex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE;
 
@@ -1256,6 +1254,8 @@ static uint32_t BinarySearchLastNonFFSector(void)
             return i;
         }
     }
+    
+    return -1;
 }
 
 static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
@@ -1297,14 +1297,6 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
     return SUCCESS_CODE;
 }
 
-
-static int32_t ModelStopCalculateCheckSum(const void *indata, uint32_t inDataLen)
-{
-#ifndef COMPILE_SIMULATOR
-#else
-#endif
-    return SUCCESS_CODE;
-}
 
 bool ModelGetPassphraseQuickAccess(void)
 {

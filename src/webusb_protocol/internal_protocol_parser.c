@@ -1,4 +1,6 @@
 #include "stdio.h"
+#include "string.h"
+#include "crc.h"
 #include "internal_protocol_parser.h"
 #include "service_device_info.h"
 #include "service_file_trans.h"
@@ -33,11 +35,10 @@ void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
         return;
     }
 
-    static rcvLen = 0;
+    static uint32_t rcvLen = 0;
     uint32_t i, outLen;
     uint8_t *sendBuf;
 
-    PrintArray("data", data, len);
     for (i = 0; i < len; i++)
     {
         if (global_parser->rcvCount == 0)
@@ -68,7 +69,6 @@ void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
             sendBuf = ProtocolParse(g_protocolRcvBuffer, rcvLen + 14, &outLen);
             if (sendBuf)
             {
-                PrintArray("sendBuf", sendBuf, outLen);
                 g_sendFunc(sendBuf, outLen);
                 SRAM_FREE(sendBuf);
             }

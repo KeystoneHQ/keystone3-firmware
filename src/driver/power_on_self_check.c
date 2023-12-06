@@ -10,6 +10,7 @@
 #include "fingerprint_process.h"
 #include "keystore.h"
 #include "draw_on_lcd.h"
+#include "account_manager.h"
 
 #define GD25_FLASH_ID               (0xC84018)
 #define PY25_FLASH_ID               (0x852018)

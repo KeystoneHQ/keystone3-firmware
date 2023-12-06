@@ -368,11 +368,8 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
     do
     {
         uint8_t entropy[64];
-        uint32_t len = GetCurrentAccountEntropyLen();
-        GetAccountEntropy(GetCurrentAccountIndex(), entropy, len, SecretCacheGetPassword());
-        char *path = cardano_get_path(data);
-        char pubkeyIndex = GetXPubIndexByPath(path);
-        char *pubKey = GetCurrentAccountPublicKey(pubkeyIndex);
+        uint8_t len = 0;
+        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
         encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);

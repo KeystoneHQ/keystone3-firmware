@@ -10,6 +10,7 @@ btc_only_wallet_rust_c = {path = "src/btc_only_wallet", default-features = false
 multi_coins_wallet_rust_c = {path = "./src/multi_coins_wallet",  optional = true}
 
 [features]
+debug-memory = ["default"]
 default = ["multi-coins"]
 multi-coins = ["btc_only_wallet_rust_c/multi-coins","multi_coins_wallet_rust_c"]
 btc-only = ["btc_only_wallet_rust_c/btc-only"]

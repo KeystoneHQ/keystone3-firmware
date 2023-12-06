@@ -25,5 +25,5 @@ RUN wget -q https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/gc
 RUN mkdir gcc-arm-none-eabi && tar xjf gcc-arm-none-eabi.tar.bz2 -C gcc-arm-none-eabi --strip-components 1
 RUN rm gcc-arm-none-eabi.tar.bz2
 ENV PATH="/gcc-arm-none-eabi/bin:${PATH}"
-WORKDIR /project-pillar-firmware
+WORKDIR /keystone3-firmware
 RUN rm -rf build

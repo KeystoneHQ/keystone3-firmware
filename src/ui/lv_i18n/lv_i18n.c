@@ -333,7 +333,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"firmware_update_usb_low_desc", "The device needs a minimum of 20% battery life to continue the process."},
     {"firmware_update_usb_low_title", "Low Battery"},
     {"firmware_update_usb_qr_link", "https://keyst.one/webusb"},
-    {"firmware_update_verify_firmware_qr_link", "https://keyst.one/firmware/verify"},
+    {"firmware_update_verify_firmware_qr_link", "https://keyst.one/firmware?verify"},
     {"firmware_update_verify_firmware_title", "Verify Firmware"},
     {"firmware_update_usb_qr_title", "Firmware Update"},
     {"firmware_update_usb_title", "USB Update"},

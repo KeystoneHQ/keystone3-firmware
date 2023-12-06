@@ -64,6 +64,7 @@ enum {
     LOG_MSG_WRITE = LOG_MSG_BASE,
     LOG_MSG_ERASE,
     LOG_MSG_EXPORT,
+    LOG_MSG_WRITE_TO_SDCARD,
 };
 
 

@@ -28,6 +28,7 @@ void LogErase(void);
 
 void LogInit(void);
 void WriteLogDataToFlash(const void *data, uint32_t length);
+void WriteLogDataToSdCard(const void *data, uint32_t length);
 void LogExportSync(void);
 void LogEraseSync(void);
 void LogTest(int argc, char *argv[]);

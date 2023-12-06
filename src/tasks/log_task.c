@@ -39,6 +39,10 @@ static void LogTask(void *argument)
                 WriteLogDataToFlash(rcvMsg.buffer, rcvMsg.length);
             }
             break;
+            case LOG_MSG_WRITE_TO_SDCARD: {
+                WriteLogDataToSdCard(rcvMsg.buffer, rcvMsg.length);
+            }
+            break;
             case LOG_MSG_ERASE: {
                 LogEraseSync();
             }

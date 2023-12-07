@@ -5,7 +5,9 @@
 #ifdef RUST_MEMORY_DEBUG
 #include "user_memory.h"
 #include "assert.h"
-struct __RustMemoryNode {
+#include "string.h"
+struct __RustMemoryNode
+{
     void *p;
     uint32_t size;
     struct __RustMemoryNode *next;
@@ -73,8 +75,17 @@ void RustMemoryNode_print()
     while (current != NULL) {
         snprintf(memBuf, sizeof(memBuf), "Rust Memory Usage: address: 0x%x, size: %d\n", current -> p, current -> size);
         WriteDebugToSdcard(memBuf, strlen(memBuf));
-        printf("Rust Memory Usage: address: 0x%x, size: %d\r\n", current -> p, current -> size);
-        current = current -> next;
+        printf("Rust Memory Usage: address: 0x%x, size: %d\r\n", current->p, current->size);
+        if (sizeof(current->p[0]) == 1)
+        {
+            if (((char *)current->p)[current->size - 1] == '\0')
+            {
+                snprintf(memBuf, sizeof(memBuf), "Rust Memory Possible value: %s\r\n", current->p);
+                WriteDebugToSdcard(memBuf, strlen(memBuf));
+                printf("Rust Memory Possible value: %s\r\n", current->p);
+            }
+        }
+        current = current->next;
     }
 }
 #endif

@@ -293,7 +293,7 @@ static void WriteLogAsync(LogData_t *pLogData)
 
 void WriteDebugToSdcard(char *buf, uint16_t len)
 {
-    PubBufferMsg(LOG_MSG_WRITE, buf, len);
+    PubBufferMsg(LOG_MSG_WRITE_TO_SDCARD, buf, len);
 }
 
 static void WriteLogSync(LogData_t *pLogData)

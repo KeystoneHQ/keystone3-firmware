@@ -1,3 +1,45 @@
+## 1.2.0 (2023-12-08)
+
+### What's new
+
+1. Added checksum for firmware.
+
+### Improvements
+
+1. Improved responsiveness of device to click events after unlocking the screen with an inserted microSD card.
+2. Enhanced compatibility with microSD cards from major manufacturers (<= 512GB).
+3. Optimized certain text messages.
+
+### Bug Fixes
+
+1. Fixed the display error in the parsing of large few BEP-20 transactions.
+2. Resolved an issue where signing List NFT transactions on OpenSea would lead to device reboot.
+3. Addressed the problem of firmware upgrade failure when using a 512GB microSD card.
+
+
+## 1.1.4 (2023-11-24)
+
+### What’s new
+
+1. Added support for ADA through integration with Eternl wallet
+2. Added support for connecting and signing transactions with Rabby Wallet via USB
+3. Added support for managing ETH and EVM assets using imToken wallet
+4. Added support for managing BTC through Sparrow wallet
+5. Added support for PlatON transaction decoding on the EVM network
+
+### Improvements
+
+1. Enhanced readability of transaction decoding information for part of ERC20 tokens
+2. Improved transaction decoding speed for XRP signatures
+3. Optimized logic for incorrect device unlock password prompts
+4. Various optimizations at the firmware system level and improvements in text display
+
+### Bug Fixes
+
+1. Fixed the issue where pressing the Enter key twice was required for the passphrase popup in the keyboard
+2. Resolved the occasional device restart problem when reading ABI data from an SD card during transaction decoding
+
+
 ## 1.1.2 (2023-11-09)
 
 ### Features

@@ -48,9 +48,8 @@ void ExecuteSystemReset(SystemResetType type)
     break;
     case SYSTEM_RESET_TYPE_POWEROFF: {
         //todo: poweroff
-        if (SUCCESS_CODE == Aw32001PowerOff()) {
-            LcdFadesOut();
-        }
+        LcdFadesOut();
+        Aw32001PowerOff();
     }
     break;
     default:

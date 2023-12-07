@@ -142,10 +142,9 @@ pub extern "C" fn eth_parse(
                 TransactionType::Legacy => {
                     let tx = parse_legacy_tx(crypto_eth.get_sign_data(), key);
                     match tx {
-                        Ok(t) => TransactionParseResult::success(
-                            DisplayETH::from(t).c_ptr()
-                        )
-                        .c_ptr(),
+                        Ok(t) => {
+                            TransactionParseResult::success(DisplayETH::from(t).c_ptr()).c_ptr()
+                        }
                         Err(e) => TransactionParseResult::from(e).c_ptr(),
                     }
                 }
@@ -156,10 +155,10 @@ pub extern "C" fn eth_parse(
                             let payload = crypto_eth.get_sign_data()[1..].to_vec();
                             let tx = parse_fee_market_tx(payload, key);
                             match tx {
-                                Ok(t) => TransactionParseResult::success(
-                                    DisplayETH::from(t).c_ptr(),
-                                )
-                                .c_ptr(),
+                                Ok(t) => {
+                                    TransactionParseResult::success(DisplayETH::from(t).c_ptr())
+                                        .c_ptr()
+                                }
                                 Err(e) => TransactionParseResult::from(e).c_ptr(),
                             }
                         }

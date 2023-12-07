@@ -18,7 +18,7 @@ pub extern "C" fn eth_parse_contract_data(
         Ok(_input_data) => {
             let result = app_ethereum::abi::parse_contract_data(_input_data, contract_json);
             match result {
-                Ok(v) => Response::success(DisplayContractData::from(v)).c_ptr(),
+                Ok(v) => Response::success_ptr(DisplayContractData::from(v).c_ptr()).c_ptr(),
                 Err(e) => Response::from(e).c_ptr(),
             }
         }

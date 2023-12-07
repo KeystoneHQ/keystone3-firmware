@@ -1,14 +1,3 @@
-/*
- * @Author: ww 15809188520@163.com
- * @Date: 2023-03-22 09:36:30
- * @LastEditors: Please set LastEditors
- * @LastEditTime: 2023-04-02 13:17:08
- * @FilePath: \project-pillar-firmware\ui\gui_widgets\gui_enter_passcode.h
- * @Description:
- *
- * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
- */
-
 #ifndef _GUI_ENTER_PASSCODE_H
 #define _GUI_ENTER_PASSCODE_H
 

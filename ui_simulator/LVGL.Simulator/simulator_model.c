@@ -13,12 +13,22 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
+int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
+{
+
+}
+
+bool GetLvglHandlerStatus(void)
+{
+
+}
+
 void FpDeleteRegisterFinger(void)
 {
     
 }
 
-void FpSaveKeyInfo(void)
+void FpSaveKeyInfo(bool add)
 {
 
 }
@@ -65,7 +75,7 @@ bool FpModuleIsExist(void)
 
 MnemonicType GetMnemonicType(void)
 {
-    return MNEMONIC_TYPE_SLIP39;
+    return MNEMONIC_TYPE_BIP39;
 }
 
 void SetPassphraseQuickAccess(bool exist)
@@ -93,7 +103,7 @@ void SetLockDeviceAlive(bool alive)
     
 }
 
-uint8_t *GuiGetFpVersion(uint8_t *version)
+uint8_t *GuiGetFpVersion(char *version)
 {
     for (int i = 0; i < 4; i++) {
         version[2 * i] = 1 + '0';

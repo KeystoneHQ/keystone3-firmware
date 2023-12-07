@@ -74,7 +74,7 @@ void SendEApduResponseError(uint8_t cla, CommandType ins, uint16_t requestID, St
     char *json_str = cJSON_Print(root);
     cJSON_Delete(root);
     result->data = (uint8_t *)json_str;
-    result->dataLen = strlen(result->data);
+    result->dataLen = strlen((char *)result->data);
     result->status = status;
     result->cla = cla;
     result->commandType = ins;
@@ -108,7 +108,7 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
         ExportAddressService(*request);
         break;
     default:
-        printf('Invalid command\n');
+        printf("Invalid command\n");
         break;
     }
 }
@@ -139,13 +139,14 @@ static ParserStatusEnum CheckFrameValidity(EAPDUFrame_t *eapduFrame)
 
 static EAPDUFrame_t *FrameParser(const uint8_t *frame, uint32_t len)
 {
+    char *data = frame;
     EAPDUFrame_t *eapduFrame = (EAPDUFrame_t *)SRAM_MALLOC(sizeof(EAPDUFrame_t));
     eapduFrame->cla = frame[OFFSET_CLA];
     eapduFrame->ins = extract_16bit_value(frame, OFFSET_INS);
     eapduFrame->p1 = extract_16bit_value(frame, OFFSET_P1);
     eapduFrame->p2 = extract_16bit_value(frame, OFFSET_P2);
     eapduFrame->lc = extract_16bit_value(frame, OFFSET_LC);
-    eapduFrame->data = frame + OFFSET_CDATA;
+    eapduFrame->data = data + OFFSET_CDATA;
     eapduFrame->dataLen = len - OFFSET_CDATA;
     return eapduFrame;
 }

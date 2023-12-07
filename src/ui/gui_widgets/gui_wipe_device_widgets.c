@@ -18,7 +18,6 @@ static PageWidget_t *g_pageWidget;
 
 static void GuiWipeDeviceNVSBarInit();
 static void GuiWipeDeviceEntranceWidget(lv_obj_t *parent);
-// static void UnHandler(lv_event_t *e);
 static void WipeDeviceHandler(lv_event_t *e);
 static void NotNowHandler(lv_event_t *e);
 static void GuiShowWipeDeviceHintBox(void);
@@ -87,20 +86,12 @@ void GuiWipeDeviceEntranceWidget(lv_obj_t *parent)
 
 }
 
-// static void UnHandler(lv_event_t *e)
-// {
-//     lv_event_code_t code = lv_event_get_code(e);
-//     if (code == LV_EVENT_CLICKED) {
-//     }
-// }
-
 static void WipeDeviceHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GuiShowWipeDeviceHintBox();
     }
-
 }
 
 

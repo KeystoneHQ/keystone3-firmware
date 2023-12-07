@@ -266,13 +266,6 @@ static void GuiWalletAddLimit(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, AddCloseToSubtopViewHandler, LV_EVENT_CLICKED, NULL);
 }
 
-static void UnHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-    }
-}
-
 static void AboutHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -508,7 +501,7 @@ static void DelWalletHandler(lv_event_t *e)
 static void OpenDelWalletHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    static uint8_t walletIndex = DEVICE_SETTING_DEL_WALLET;
+    static uint16_t walletIndex = DEVICE_SETTING_DEL_WALLET;
 
     if (code == LV_EVENT_CLICKED) {
         g_delWalletHintbox = GuiCreateHintBox(lv_event_get_user_data(e), 480, 132, true);
@@ -576,19 +569,32 @@ void GuiDevSettingPassCode(bool result, uint16_t tileIndex)
 {
     static uint16_t walletIndex = DEVICE_SETTING_RESET_PASSCODE_VERIFY;
     printf("tileIndex = %d\n", tileIndex);
+    if (!result)
+        return;
     switch (tileIndex) {
     case SIG_FINGER_FINGER_SETTING:
         walletIndex = GuiGetFingerSettingIndex();
         break;
     case SIG_FINGER_SET_UNLOCK:
-        GuiShowKeyboardDestruct();
-        return GuiWalletFingerOpenUnlock();
+        if (result) {
+            GuiShowKeyboardDestruct();
+            GuiWalletFingerOpenUnlock();
+            return;
+        }
+        break;
     case SIG_FINGER_SET_SIGN_TRANSITIONS:
-        GuiShowKeyboardDestruct();
-        return GuiWalletFingerOpenSign();
+        if (result) {
+            GuiShowKeyboardDestruct();
+            GuiWalletFingerOpenSign();
+            return;
+        }
+        break;
     case SIG_FINGER_REGISTER_ADD_SUCCESS:
-        FpSaveKeyInfo();
-        walletIndex = DEVICE_SETTING_FINGER_ADD_SUCCESS;
+        if (result) {
+            FpSaveKeyInfo(true);
+            SetPageLockScreen(true);
+            walletIndex = DEVICE_SETTING_FINGER_ADD_SUCCESS;
+        }
         break;
     case SIG_SETTING_CHANGE_PASSWORD:
         walletIndex = DEVICE_SETTING_RESET_PASSCODE_VERIFY;
@@ -668,6 +674,7 @@ void GuiSettingDeInit(void)
     //     GUI_DEL_OBJ(g_recoveryMkb->cont)
     // }
     GuiWalletSeedCheckClearObject();
+    GuiWalletSettingDeinit();
     CloseToTargetTileView(g_deviceSetTileView.currentTile, DEVICE_SETTING);
     lv_obj_del(g_deviceSetTileView.tileView);
     lv_obj_del(g_deviceSetTileView.cont);

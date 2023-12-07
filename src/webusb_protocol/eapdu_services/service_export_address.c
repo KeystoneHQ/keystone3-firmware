@@ -90,7 +90,6 @@ void ExportAddressApprove()
     ExportEthAddress(g_exportAddressParams->requestID, g_exportAddressParams->n, g_exportAddressParams->type);
     SRAM_FREE(g_exportAddressParams);
     g_exportAddressParams = NULL;
-    GuiCLoseCurrentWorkingView();
 }
 
 void ExportAddressReject()
@@ -98,7 +97,6 @@ void ExportAddressReject()
     SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, g_exportAddressParams->requestID, PRS_EXPORT_ADDRESS_REJECTED, "Export address is rejected");
     SRAM_FREE(g_exportAddressParams);
     g_exportAddressParams = NULL;
-    GuiCLoseCurrentWorkingView();
 }
 
 static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
@@ -119,7 +117,7 @@ static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
     char *json_str = cJSON_Print(root);
     cJSON_Delete(root);
     result->data = (uint8_t *)json_str;
-    result->dataLen = strlen(result->data);
+    result->dataLen = strlen((char *)result->data);
     result->status = RSP_SUCCESS_CODE;
     result->cla = EAPDU_PROTOCOL_HEADER;
     result->commandType = CMD_EXPORT_ADDRESS;
@@ -147,11 +145,11 @@ static bool CheckExportAcceptable(EAPDURequestPayload_t payload)
     return true;
 }
 
-void *ExportAddressService(EAPDURequestPayload_t payload)
+void ExportAddressService(EAPDURequestPayload_t payload)
 {
     if (!CheckExportAcceptable(payload))
     {
-        return NULL;
+        return;
     }
 
     if (g_exportAddressParams != NULL)
@@ -159,7 +157,7 @@ void *ExportAddressService(EAPDURequestPayload_t payload)
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_BUSY, "Export address is busy, please try again later");
         SRAM_FREE(g_exportAddressParams);
         g_exportAddressParams = NULL;
-        return NULL;
+        return;
     }
 
     struct EthParams *params = ParseParams(payload.data);
@@ -167,7 +165,7 @@ void *ExportAddressService(EAPDURequestPayload_t payload)
     if (!IsValidParams(params))
     {
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_INVALID_PARAMS, "Invalid params");
-        return NULL;
+        return;
     }
 
     if (params->chain == ETH)

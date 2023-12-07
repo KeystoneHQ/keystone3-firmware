@@ -149,6 +149,9 @@ void GuiWalletNameWalletDestruct(void);
 void GuiWalletSettingSetIconLabel(const lv_img_dsc_t *src, const char *name);
 
 // fp and passcode setting
+void GuiFingerCancelRegister(void);
+void GuiWalletSettingDeinit(void);
+void GuiWalletFingerOpenUnlock(void);
 void GuiWalletSetFingerPassCodeWidget(lv_obj_t *parent);
 void GuiWalletFingerAddWidget(lv_obj_t *parent);
 uint8_t GuiGetFingerSettingIndex(void);

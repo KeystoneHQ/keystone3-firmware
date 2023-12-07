@@ -2,8 +2,11 @@
 #include "string.h"
 #include "user_memory.h"
 #include "user_utils.h"
+#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
-
+#else
+#define memset_s memset
+#endif
 
 static char *g_passwordCache = NULL;
 static char *g_newPasswordCache = NULL;
@@ -11,11 +14,22 @@ static char *g_passphraseCache = NULL;
 static uint8_t *g_entropyCache = NULL;
 static uint32_t g_entropyLen;
 static uint8_t *g_emsCache = NULL;
+static uint8_t g_checksumCache[32] = {0};
 static uint32_t g_emsLen;
 static char *g_mnemonicCache = NULL;
 static char *g_slip39MnemonicCache[15];
 static uint16_t g_identifier;
 static uint16_t g_iteration;
+
+void SecretCacheSetChecksum(uint8_t *checksum)
+{
+    memcpy(g_checksumCache, checksum, sizeof(g_checksumCache));
+}
+
+void SecretCacheGetChecksum(char *checksum)
+{
+    ByteArrayToHexStr(g_checksumCache, sizeof(g_checksumCache), checksum);
+}
 
 void SecretCacheSetPassword(char *password)
 {
@@ -198,4 +212,6 @@ void ClearSecretCache(void)
             g_slip39MnemonicCache[i] = NULL;
         }
     }
+
+    memset_s(g_checksumCache, 32, 0, 32);
 }

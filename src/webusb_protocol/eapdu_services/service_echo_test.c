@@ -1,6 +1,6 @@
 #include "service_echo_test.h"
 
-void *EchoService(EAPDURequestPayload_t payload)
+void EchoService(EAPDURequestPayload_t payload)
 {
     EAPDUResponsePayload_t *result = (EAPDUResponsePayload_t *)SRAM_MALLOC(sizeof(EAPDUResponsePayload_t));
 

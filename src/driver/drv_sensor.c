@@ -19,6 +19,7 @@
 
 static void SensorNvicConfiguration(void);
 static void SensorRegPrint(char *regName, uint32_t *regAddr);
+void SENSOR_Soft_Enable(void);
 
 void SensorInit(void)
 {

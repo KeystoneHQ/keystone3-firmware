@@ -18,7 +18,6 @@ static PageWidget_t *g_pageWidget;
 
 static void GuiAboutNVSBarInit();
 static void GuiAboutEntranceWidget(lv_obj_t *parent);
-// static void UnHandler(lv_event_t *e);
 
 void GuiAboutWidgetsInit()
 {
@@ -136,10 +135,3 @@ void GuiAboutEntranceWidget(lv_obj_t *parent)
                              OpenViewHandler, &g_firmwareUpdateView);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 508);
 }
-
-// static void UnHandler(lv_event_t *e)
-// {
-//     lv_event_code_t code = lv_event_get_code(e);
-//     if (code == LV_EVENT_CLICKED) {
-//     }
-// }

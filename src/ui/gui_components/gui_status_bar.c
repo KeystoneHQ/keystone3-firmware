@@ -37,6 +37,8 @@ typedef struct {
     const lv_img_dsc_t *icon;
 } CoinWalletInfo_t;
 
+bool GetLvglHandlerStatus(void);
+
 const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_BTC, "Confirm Transaction", &coinBtc},
     {CHAIN_ETH, "Confirm Transaction", &coinEth},
@@ -193,7 +195,15 @@ void GuiStatusBarInit(void)
 
 void GuiStatusBarSetSdCard(bool connected)
 {
+    if (!GetLvglHandlerStatus()) {
+        return;
+    }
+    static bool sdStatus = true;
     char version[16] = {0};
+    if (sdStatus == connected) {
+        return;
+    }
+    sdStatus = connected;
     if (connected) {
         lv_obj_clear_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN);
         lv_obj_align_to(g_guiStatusBar.sdCardImg, g_guiStatusBar.batteryImg, LV_ALIGN_OUT_LEFT_MID, -10, 0);

@@ -18,6 +18,7 @@
 #include "touchpad_task.h"
 #include "gui_analyze.h"
 #include "gui_web_auth_result_widgets.h"
+#include "gui_key_derivation_request_widgets.h"
 
 static void QrDecodeTask(void *argument);
 static void QrDecodeMinuteTimerFunc(void *argument);

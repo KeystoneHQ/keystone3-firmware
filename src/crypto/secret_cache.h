@@ -5,6 +5,8 @@
 #include "stdbool.h"
 #include "err_code.h"
 
+void SecretCacheSetChecksum(uint8_t *checksum);
+void SecretCacheGetChecksum(char *checksum);
 
 void SecretCacheSetPassword(char *password);
 char *SecretCacheGetPassword(void);

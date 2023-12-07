@@ -10,7 +10,7 @@ enum ExportWallet
     DEFAULT = 0xFF,
 };
 
-void *ExportAddressService(EAPDURequestPayload_t payload);
+void ExportAddressService(EAPDURequestPayload_t payload);
 void ExportAddressApprove();
 void ExportAddressReject();
 uint8_t GetExportWallet();

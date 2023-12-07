@@ -9,6 +9,7 @@
 #include "user_memory.h"
 #include "user_msg.h"
 #include "user_fatfs.h"
+#include "user_delay.h"
 #include "err_code.h"
 #include "gui_api.h"
 #include "gui_views.h"
@@ -197,7 +198,7 @@ static void BackgroundTask(void *argument)
         }
         break;
         case BACKGROUND_MSG_SD_CARD_CHANGE: {
-            osDelay(200);
+            UserDelay(100);
             if (sdCardState == GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_7)) {
                 break;
             } else {

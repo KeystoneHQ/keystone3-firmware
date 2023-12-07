@@ -48,7 +48,6 @@
 #include "version.h"
 #include "drv_motor.h"
 #include "hal_lcd.h"
-#include "drv_bluetooth.h"
 #include "low_power.h"
 #include "fingerprint_process.h"
 #include "slip39.h"
@@ -165,7 +164,6 @@ static void ETHDBContractsTest(int argc, char *argv[]);
 static void FingerTestFunc(int argc, char *argv[]);
 static void MotorTestFunc(int argc, char *argv[]);
 static void LcdTestFunc(int argc, char *argv[]);
-static void BluetoothTestFunc(int argc, char *argv[]);
 static void LowPowerTestFunc(int argc, char *argv[]);
 static void RustGetEthAddress(int argc, char *argv[]);
 static void Slip39SliceWordTestFunc(int argc, char *argv[]);
@@ -357,7 +355,6 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] =
     {"finger test:", FingerTestFunc},
     {"motor:", MotorTestFunc},
     {"lcd:", LcdTestFunc},
-    {"bluetooth:", BluetoothTestFunc},
     {"low power:", LowPowerTestFunc},
     {"slip39 test", Slip39SliceWordTestFunc},
     {"sqlite test:", Sqlite3TestFunc},
@@ -2586,10 +2583,7 @@ static void LcdTestFunc(int argc, char *argv[])
     LcdTest(argc, argv);
 }
 
-static void BluetoothTestFunc(int argc, char *argv[])
-{
-    BluetoothTest(argc, argv);
-}
+
 static void LowPowerTestFunc(int argc, char *argv[])
 {
     LowPowerTest(argc, argv);

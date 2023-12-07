@@ -37,6 +37,7 @@ typedef struct ContLabelWidget_t {
 
 /* FUNC DECLARATION*/
 static void DelWalletConfirmHandler(lv_event_t *e);
+static void FingerCancelRegisterHandler(lv_event_t *e);
 
 /* STATIC VARIABLES */
 static bool g_delWalletStatus = false;                      // delete wallet status
@@ -51,6 +52,7 @@ static lv_obj_t *g_walletSetLabel = NULL;                   // wallet setting la
 static lv_obj_t *g_mfpLabel = NULL;                         // wallet setting label
 static lv_obj_t *g_resetingCont = NULL;                     // resetting container
 static lv_timer_t *g_countDownTimer = NULL;                 // count down timer
+static lv_obj_t *g_hintBox = NULL;                     
 
 /* FUNC */
 void GuiAddWalletGetWalletAmount(uint8_t walletAmount)
@@ -77,6 +79,7 @@ void GuiSetPinDestruct(void *obj, void *param)
         SRAM_FREE(g_setPassCode);
         g_setPassCode = NULL;
     }
+    ClearSecretCache();
 }
 
 void GuiSettingRecoveryCheck(void)
@@ -253,11 +256,13 @@ void GuiWalletSetPinWidget(lv_obj_t *parent, uint8_t tile)
 void GuiWalletSettingDeinit(void)
 {
     g_delWalletStatus = false;
+    GUI_DEL_OBJ(g_hintBox)
 }
 
 void GuiWalletSettingRefresh(void)
 {
     PassWordPinHintRefresh(g_keyboardWidget);
+    GuiFpVerifyDestruct();
 }
 
 void GuiWalletRepeatPinWidget(lv_obj_t *parent)
@@ -365,9 +370,13 @@ void StopAddNewFingerHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
-        GuiDeleteKeyboardWidget(keyboardWidget);
-        FpDeleteRegisterFinger();
+        g_hintBox = GuiCreateResultHintbox(lv_scr_act(), 416, &imgWarn, _("wallet_setting_stop_add_fingerprint"),
+                                                _("wallet_setting_stop_add_fingerprint_desc"), _("Not Now"), DARK_GRAY_COLOR, _("Cancel"), RED_COLOR);
+        lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_hintBox);
+        lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_hintBox);
+
+        lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_hintBox);
+        lv_obj_add_event_cb(rightBtn, FingerCancelRegisterHandler, LV_EVENT_CLICKED, lv_event_get_user_data(e));
     }
 }
 
@@ -375,7 +384,7 @@ void GuiShowKeyboard(uint16_t *signal, bool isView, lv_event_cb_t cb)
 {
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     if (isView) {
-        g_keyboardWidget = GuiCreateKeyboardWidgetView(GuiSettingGetCurrentCont(), cb);
+        g_keyboardWidget = GuiCreateKeyboardWidgetView(GuiSettingGetCurrentCont(), cb, signal);
     } else {
         g_keyboardWidget = GuiCreateKeyboardWidget(GuiSettingGetCurrentCont());
     }
@@ -557,6 +566,12 @@ void GuiWalletDelWalletConfirm(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, DelWalletConfirmHandler, LV_EVENT_CLICKED, NULL);
 }
 
+void GuiFingerCancelRegister(void)
+{
+    SetPageLockScreen(true);
+    FpDeleteRegisterFinger();
+}
+
 /* STATIC FUNC */
 static void DelWalletConfirmHandler(lv_event_t *e)
 {
@@ -567,5 +582,20 @@ static void DelWalletConfirmHandler(lv_event_t *e)
         g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("wallet_settings_delete_laoding_title"));
         lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
         GuiModelSettingDelWalletDesc();
+    }
+}
+
+static void FingerCancelRegisterHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        for (int i = 0; i < 3; i++) {
+            UpdateFingerSignFlag(i, false);
+        }
+        GUI_DEL_OBJ(g_hintBox)
+        SetPageLockScreen(true);
+        KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
+        GuiDeleteKeyboardWidget(keyboardWidget);
+        FpDeleteRegisterFinger();
     }
 }

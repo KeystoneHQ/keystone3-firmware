@@ -49,7 +49,6 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
         GuiDevSettingNextTile(tileIndex);
         break;
     case SIG_VERIFY_PASSWORD_PASS:
-    case SIG_VERIFY_FINGER_PASS:
         if (param != NULL) {
             uint16_t sig = *(uint16_t *)param;
             if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
@@ -72,17 +71,21 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
         if (param != NULL) {
             PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
             uint16_t sig = *(uint16_t *) passwordVerifyResult->signal;
+            uint16_t cnt = passwordVerifyResult->errorCount;
             if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
                 GuiLockScreenPassCode(false);
                 GuiLockScreenErrorCount(param);
                 return SUCCESS_CODE;
+            } else if (sig == SIG_FINGER_REGISTER_ADD_SUCCESS) {
+                if (cnt == 4) {
+                    GuiFingerCancelRegister();
+                }
             } else {
                 tileIndex = sig;
             }
         } else {
             return ERR_GUI_ERROR;
         }
-        GuiDevSettingPassCode(false, tileIndex);
         GuiVerifyCurrentPasswordErrorCount(param);
         break;
     case SIG_SETTING_SET_PIN:

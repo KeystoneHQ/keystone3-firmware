@@ -1028,7 +1028,6 @@ static void GuiCreateSwitchAccountWidget()
     g_multiAccountsReceiveWidgets.switchAccountCont = page;
     SetNavBarLeftBtn(page->navBarWidget, NVS_BAR_RETURN, CloseSwitchAccountHandler, NULL);
     SetMidBtnLabel(page->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
-    SwitchAddressWidgetsItem_t switchAddressWidgets[5];
     // Create the account list page.
     uint32_t index;
     lv_obj_t *cont = GuiCreateContainerWithParent(page->contentZone, 408, 514);
@@ -1043,7 +1042,7 @@ static void GuiCreateSwitchAccountWidget()
     index = 0;
     for (uint32_t i = 0; i < ACCOUNT_INDEX_MAX; i++)
     {
-        char *temp[64];
+        char temp[64];
         sprintf(temp, "Account-%u", i);
         label = GuiCreateLabelWithFont(cont, temp, &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
@@ -1129,9 +1128,8 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
 {
     char *xPub, hdPath[128];
-    SimpleResponse_c_char *result;
+    SimpleResponse_c_char *result = NULL;
     uint32_t currentAccount = g_selectedAccount[GetCurrentAccountIndex()];
-    uint32_t currentIndex = g_selectIndex[GetCurrentAccountIndex()];
 
     switch (g_chainCard)
     {
@@ -1139,7 +1137,6 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0 + currentAccount);
         sprintf(hdPath, "m/1852'/1815'/%u'/0/%u", currentAccount, index);
         // cardano mainnet;
-        uint8_t network = 1;
         switch (type)
         {
         case 1:

@@ -355,7 +355,8 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
     char version[16] = {0};
     char fileVersion[16] = {0};
     GetSoftWareVersionNumber(version);
-    if (CheckOtaBinVersion(fileVersion)) {
+    // if (CheckOtaBinVersion(fileVersion)) {
+    if (1) {
         sprintf(showString, "#8E8E8E v%s#  /  #F5870A v%s  Available#", version, fileVersion);
         // sprintf(showString, "#8E8E8E %s#", version);
     } else {
@@ -664,9 +665,6 @@ void GuiSettingDeInit(void)
     GUI_DEL_OBJ(g_selectAmountHintbox)
     GUI_DEL_OBJ(g_passphraseLearnMoreCont)
     GuiFpVerifyDestruct();
-    // if (g_recoveryMkb->cont != NULL) {
-    //     GUI_DEL_OBJ(g_recoveryMkb->cont)
-    // }
     GuiWalletSeedCheckClearObject();
     CloseToTargetTileView(g_deviceSetTileView.currentTile, DEVICE_SETTING);
     lv_obj_del(g_deviceSetTileView.tileView);

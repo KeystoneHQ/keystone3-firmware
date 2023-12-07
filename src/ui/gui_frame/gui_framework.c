@@ -9,14 +9,13 @@ static GUI_VIEW *g_workingView = NULL;
 static uint32_t g_viewCnt = 0;      // Record how many views are opened
 
 bool GuiLockScreenIsTop(void);
+static char *GuiFrameIdToName(SCREEN_ID_ENUM ID);
 
 typedef struct {
     GUI_VIEW view;
     GUI_VIEW *pview;
 } GuiFrameDebug_t;
 GuiFrameDebug_t g_debugView[OPENED_VIEW_MAX];
-
-static void GuiFrameIdToName(SCREEN_ID_ENUM ID);
 
 bool GuiViewHandleEvent(GUI_VIEW *view, uint16_t usEvent, void *param, uint16_t usLen)
 {
@@ -97,6 +96,7 @@ int32_t GuiFrameOpenView(GUI_VIEW *view)
     }
 
     GuiFrameDebugging();
+    printf("open view %s freeHeap %d\n", GuiFrameIdToName(view->id), xPortGetFreeHeapSize());
 
     g_debugView[g_viewCnt].view.id = view->id;
     g_debugView[g_viewCnt].view.pEvtHandler = view->pEvtHandler;
@@ -114,6 +114,7 @@ int32_t GuiFrameOpenView(GUI_VIEW *view)
     GuiFrameDebugging();
     GuiViewHandleEvent(view, GUI_EVENT_OBJ_INIT, NULL, 0);
     GuiViewHandleEvent(view, GUI_EVENT_REFRESH, NULL, 0);
+    
     return SUCCESS_CODE;
 }
 
@@ -143,10 +144,12 @@ int32_t GuiCLoseCurrentWorkingView(void)
 {
     g_viewCnt--;
     GuiViewHandleEvent(g_workingView, GUI_EVENT_OBJ_DEINIT, NULL, 0);
+    printf("close view %s freeHeap %d\n", GuiFrameIdToName(g_workingView->id), xPortGetFreeHeapSize());
     g_workingView->isActive = false;
     g_workingView = g_workingView->previous;
     g_workingView->isActive = true;
     GuiViewHandleEvent(g_workingView, GUI_EVENT_REFRESH, NULL, 0);
+
 
     return SUCCESS_CODE;
 }
@@ -208,18 +211,27 @@ int32_t GuiCloseToTargetView(GUI_VIEW *view)
     return SUCCESS_CODE;
 }
 
-static void GuiFrameIdToName(SCREEN_ID_ENUM ID)
+static char *GuiFrameIdToName(SCREEN_ID_ENUM ID)
 {
     const char *str =
         "SCREEN_INIT\0" "SCREEN_LOCK\0" "SCREEN_HOME\0" "SCREEN_SETUP\0" "CREATE_WALLET\0" "CREATE_SHARE\0"
         "IMPORT_SHARE\0" "SINGLE_PHRASE\0" "IMPORT_SINGLE_PHRASE\0" "CONNECT_WALLET\0" "SCREEN_SETTING\0" "SCREEN_QRCODE\0"
-        "USB_TRANSPORT\0";
+        "SCREEN_PASSPHRASE\0" "SCREEN_BITCOIN_RECEIVE\0" "SCREEN_ETHEREUM_RECEIVE\0" "SCREEN_STANDARD_RECEIVE\0"
+        "SCREEN_FORGET_PASSCODE\0" "SCREEN_LOCK_DEVICE\0" "SCREEN_FIRMWARE_UPDATE\0" "SCREEN_WEB_AUTH\0"
+        "SCREEN_PURPOSE\0" "SCREEN_SYSTEM_SETTING\0" "SCREEN_WEB_AUTH_RESULT\0" "SCREEN_ABOUT\0"
+        "SCREEN_ABOUT_KEYSTONE\0" "SCREEN_ABOUT_TERMS\0" "SCREEN_ABOUT_INFO\0" "SCREEN_WIPE_DEVICE\0"
+        "SCREEN_WALLET_TUTORIAL\0" "SCREEN_SELF_DESTRUCT\0" "SCREEN_INACTIVE\0" "SCREEN_DISPLAY\0"
+        "SCREEN_TUTORIAL\0" "SCREEN_CONNECTION\0" "SCREEN_MULTI_ACCOUNTS_RECEIVE\0" "SCREEN_KEY_DERIVATION_REQUEST\0"
+        "SCREEN_SCAN\0" "SCREEN_TRANSACTION_DETAIL\0" "SCREEN_TRANSACTION_SIGNATURE\0" "SCREEN_USB_TRANSPORT\0"
+        "SCREEN_DEVICE_PUB_KEY\0";
     SCREEN_ID_ENUM i;
 
     for (i = SCREEN_INIT; i != ID && *str; i++) {
         while (*str++) ;
     }
     printf("id = %d name = %s\n", ID, str);
+    char *name = str;
+    return name;
 }
 
 bool GuiCheckIfTopView(GUI_VIEW *view)

@@ -196,6 +196,7 @@ static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32
         f_close(&fp);
         return false;
     }
+    f_close(&fp);
     qlz_decompress((char*)g_fileUnit, g_dataUnit, &qlzState);
     GetSoftwareVersion(&nowMajor, &nowMinor, &nowBuild);
     ret = GetSoftwareVersionFormData(&fileMajor, &fileMinor, &fileBuild, g_dataUnit + FIXED_SEGMENT_OFFSET, decmpsdSize - FIXED_SEGMENT_OFFSET);

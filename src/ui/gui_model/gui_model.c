@@ -149,6 +149,7 @@ void GuiModelSlip39CalWriteSe(Slip39Data_t slip39)
 
 void GuiModelCalculateCheckSum(void)
 {
+    SetPageLockScreen(false);
     AsyncExecute(ModelCalculateCheckSum, NULL, 0);
 }
 
@@ -1255,6 +1256,9 @@ static uint32_t BinarySearchLastNonFFSector(void)
     GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
 
     for (int i = startIndex + 1; i < endInex; i++) {
+        if (g_stopCalChecksum == true) {
+            return SUCCESS_CODE;
+        }
         QSPI_Read(NULL, buffer, APP_ADDR + i * SECTOR_SIZE, SECTOR_SIZE);
         if ((i - startIndex) % 200 == 0) {
             percent++;
@@ -1271,11 +1275,13 @@ static uint32_t BinarySearchLastNonFFSector(void)
 static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
 {
 #ifndef COMPILE_SIMULATOR
-    SetPageLockScreen(false);
     g_stopCalChecksum = false;
     uint8_t buffer[4096] = {0}; 
     uint8_t hash[32] = {0};
     int num = BinarySearchLastNonFFSector();
+    if (g_stopCalChecksum == true) {
+        return SUCCESS_CODE;
+    }
     struct sha256_ctx ctx;
     sha256_init(&ctx);
     uint8_t percent = 0;
@@ -1288,7 +1294,6 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
         sha256_update(&ctx, buffer, SECTOR_SIZE);
         if (percent != i * 100 / num) {
             percent = i * 100 / num;
-            printf("percent: %d....\n", percent);
             if (percent != 100 && percent >= 10) {
                 GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
             }

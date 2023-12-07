@@ -58,8 +58,6 @@ def ota_maker():
             args = ("./tools/mac_arm/ota-maker", "--source", "./build/mh1903.bin", "--destination", "./build/keystone3.bin")
         else:
             args = ("./tools/mac/ota-maker", "--source", "./build/mh1903.bin", "--destination", "./build/keystone3.bin")
-    else:
-        args = ("./tools/ubuntu/ota-maker", "--source", "./build/mh1903.bin", "--destination", "./build/keystone3.bin")
     popen = subprocess.Popen(args, stdout=subprocess.PIPE)
     popen.wait()
 

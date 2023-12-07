@@ -64,6 +64,11 @@ brew install astyle
 cd tools && astyle -A3nrUpHcQ --exclude=../src/cm_backtrace/Languages --exclude=../external --exclude=../rust "../*.c" "../*.h" "../*.cpp" && cd ..
 ```
 
+## FAQ
+Q. How to build and verify the firmware?
+
+A. Please check the detail guide on `docs/verify.md`
+
 ## License
 Please see the LICENSE.md file for details.
 

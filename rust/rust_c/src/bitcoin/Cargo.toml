@@ -17,6 +17,7 @@ cstr_core = "0.2.6"
 common_rust_c = {path = "../common", default-features = false, optional = true}
 
 [features]
+debug-memory = ["default"]
 default = ["multi-coins"]
 multi-coins = ["common_rust_c/multi-coins"]
 btc-only = ["common_rust_c/btc-only"]

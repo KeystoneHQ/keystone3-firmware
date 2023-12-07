@@ -4,7 +4,7 @@
 #include "rust.h"
 #include "lvgl.h"
 
-void GuiSetEthUrData(void *data, bool multi);
+void GuiSetEthUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetEthData(void);
 PtrT_TransactionCheckResult GuiGetEthCheckResult(void);
 void GetEthValue(void *indata, void *param);

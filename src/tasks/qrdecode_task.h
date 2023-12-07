@@ -3,6 +3,7 @@
 
 #include "stdint.h"
 #include "stdbool.h"
+#include "librust_c.h"
 
 #define QR_DECODE_STRING_LEN   1536
 
@@ -21,7 +22,7 @@ void StartQrDecode(void);
 void StopQrDecode(void);
 void QrDecodeTouchQuit(void);
 void ProcessQr(uint32_t count);
-void HandleDefaultViewType(void *urResult, UrViewType_t urViewType, bool is_multi);
+void HandleDefaultViewType(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi);
 
 #endif
 

@@ -2,10 +2,6 @@
 #include "stdio.h"
 #include "librust_c.h"
 
-#ifdef DEBUG_MEMORY
-#define RUST_MEMORY_DEBUG
-#endif
-
 #ifdef RUST_MEMORY_DEBUG
 #include "user_memory.h"
 #include "assert.h"
@@ -54,7 +50,11 @@ void RustMemoryNode_remove(void *p)
         current = current -> next;
     }
     //current must not be NULL, or the memory have already been free. 
-    ASSERT(current != NULL);
+    // ASSERT(current != NULL);
+    if(current == NULL) {
+        printf("pointer not found: %p\r\n", p);
+        return;
+    }
     // printf("RustFree 0x%x, %d\r\n", current->p, current -> size);
     current -> next -> prev = current -> prev;
     if (current -> prev != NULL) {
@@ -79,9 +79,11 @@ void RustMemoryNode_print()
 }
 #endif
 
-void PrintRustMemoryStatus()
+void PrintRustMemoryStatus(
+)
 {
 #ifdef RUST_MEMORY_DEBUG
+    printf("Rust Memory Status: \r\n");
     RustMemoryNode_print();
 #else
     printf("Open RUST_DEBUG_MEMORY to print rust memory status\r\n");

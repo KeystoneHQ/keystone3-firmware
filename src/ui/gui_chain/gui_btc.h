@@ -4,7 +4,7 @@
 #include "rust.h"
 
 UREncodeResult *GuiGetSignQrCodeData(void);
-void GuiSetPsbtUrData(void *data, bool multi);
+void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void FreePsbtUxtoMemory(void);
 void *GuiGetParsedQrData(void);
 PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void);

@@ -936,6 +936,9 @@ static void ModelVerifyPassSuccess(uint16_t *param)
         case SIG_SETTING_WRITE_PASSPHRASE:
             GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_VERIFY_PASS, param, sizeof(*param));
             SetPageLockScreen(false);
+            if (SecretCacheGetPassphrase() == NULL) {
+                SecretCacheSetPassphrase("");
+            }
             ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
             SetPageLockScreen(true);
             if (ret == SUCCESS_CODE) {
@@ -1019,7 +1022,7 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
         *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE &&
         *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
         *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
-        *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&  
+        *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&
         !strlen(SecretCacheGetPassphrase()) &&
         !GuiCheckIfViewOpened(&g_createWalletView)) {
         ClearSecretCache();

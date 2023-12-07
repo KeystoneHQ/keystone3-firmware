@@ -16,10 +16,6 @@ if not exist %BUILD_FOLDER% (
 	mkdir %BUILD_FOLDER%
 )
 
-if not exist %BUILD_FOLDER%\make_file_test.bat (
-	copy %MAKE_OAT_FILE% %BUILD_FOLDER%\make_file_test.bat /Y
-)
-
 if not exist %BUILD_FOLDER%\padding_bin_file.py (
 	copy %TOOLS_FOLDER%\padding_bin_file\padding_bin_file.py %BUILD_FOLDER%\padding_bin_file.py /Y
 )

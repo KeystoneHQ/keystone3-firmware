@@ -1,5 +1,0 @@
-build\mh1903.bin
-build\mh1903.elf
-build\mh1903.hex
-build\mh1903.map
-build\pillar.bin

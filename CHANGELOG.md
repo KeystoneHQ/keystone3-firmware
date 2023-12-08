@@ -12,7 +12,7 @@
 
 ### Bug Fixes
 
-1. Fixed the display error in the parsing of large few BEP-20 transactions.
+1. Fixed an issue with incorrect Value display in the parsing of individual ERC-20 transactions.
 2. Resolved an issue where signing List NFT transactions on OpenSea would lead to device reboot.
 3. Addressed the problem of firmware upgrade failure when using a 512GB microSD card.
 

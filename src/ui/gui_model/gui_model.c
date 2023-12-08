@@ -25,10 +25,11 @@
 #include "keystore.h"
 #include "account_manager.h"
 #include "qrdecode_task.h"
-#include "safe_mem_lib.h"
 #include "gui_views.h"
 #include "firmware_update.h"
+#include <assert.h>
 #ifndef COMPILE_SIMULATOR
+#include "safe_mem_lib.h"
 #include "sha256.h"
 #include "rust.h"
 #include "user_msg.h"
@@ -38,6 +39,9 @@
 #include "user_delay.h"
 #include "user_fatfs.h"
 #include "mhscpu_qspi.h"
+#else
+#define memset_s(p, s, c, l) memset(p, c, l)
+#define QSPI_Read(a, b, c, d) return 0
 #endif
 
 #define SECTOR_SIZE                         4096

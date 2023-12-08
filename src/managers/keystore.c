@@ -23,7 +23,11 @@
 #include "se_manager.h"
 #include "account_manager.h"
 #include "librust_c.h"
+#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
+#else
+#define memset_s(p, s, c, l) memset(p, c, l)
+#endif
 
 #define KEYSTORE_DEBUG          0
 

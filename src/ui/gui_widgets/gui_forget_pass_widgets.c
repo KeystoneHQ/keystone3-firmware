@@ -19,11 +19,12 @@
 #include "gui_mnemonic_input.h"
 #include "gui_page.h"
 #include "gui_keyboard_hintbox.h"
-#include "safe_mem_lib.h"
 #ifndef COMPILE_MAC_SIMULATOR
+#include "safe_mem_lib.h"
 #include "sha256.h"
 #else
 #include "simulator_model.h"
+#define memset_s(p, s, c, l) memset(p, c, l)
 #endif
 
 typedef struct {

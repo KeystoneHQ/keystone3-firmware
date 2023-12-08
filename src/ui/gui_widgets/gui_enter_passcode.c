@@ -12,7 +12,11 @@
 #include "motor_manager.h"
 #include "account_manager.h"
 #include "gui_keyboard_hintbox.h"
+#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
+#else
+#define memset_s(p, s, c, l) memset(p, c, l)
+#endif
 
 typedef enum {
     PASSWORD_STRENGTH_LEN,

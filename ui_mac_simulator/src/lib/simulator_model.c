@@ -23,6 +23,26 @@ void CloseUsb()
 {
 }
 
+void FpDeleteRegisterFinger(void)
+{
+    
+}
+
+void FpSaveKeyInfo(bool add)
+{
+
+}
+
+bool GetLvglHandlerStatus(void)
+{
+
+}
+
+int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
+{
+
+}
+
 void SetLockDeviceAlive(bool alive)
 {
 

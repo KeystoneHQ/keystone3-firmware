@@ -11,7 +11,11 @@
 #include "err_code.h"
 #include "pbkdf2.h"
 
+#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
+#else
+#define memset_s(p, s, c, l) memset(p, c, l)
+#endif
 
 static const struct {
     const char name[4];

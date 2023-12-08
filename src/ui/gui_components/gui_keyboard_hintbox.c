@@ -15,8 +15,11 @@
 #include "gui_views.h"
 #include "gui_lock_widgets.h"
 #include "fingerprint_process.h"
+
+#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
-#ifdef COMPILE_SIMULATOR
+#else
+#define memset_s(p, s, c, l) memset(p, c, l)
 #define RECOGNIZE_UNLOCK                    0
 #endif
 #define DEFAULT_TIMER_COUNTER 5

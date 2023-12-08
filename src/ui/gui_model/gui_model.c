@@ -1259,7 +1259,7 @@ static uint32_t BinarySearchLastNonFFSector(void)
         if (g_stopCalChecksum == true) {
             return SUCCESS_CODE;
         }
-        QSPI_Read(NULL, buffer, APP_ADDR + i * SECTOR_SIZE, SECTOR_SIZE);
+        memcpy(buffer,(uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
         if ((i - startIndex) % 200 == 0) {
             percent++;
             GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
@@ -1290,7 +1290,7 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
             return SUCCESS_CODE;
         }
         memset(buffer, 0, SECTOR_SIZE);
-        QSPI_Read(NULL, buffer, APP_ADDR + i * SECTOR_SIZE, SECTOR_SIZE);
+        memcpy(buffer,(uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
         sha256_update(&ctx, buffer, SECTOR_SIZE);
         if (percent != i * 100 / num) {
             percent = i * 100 / num;

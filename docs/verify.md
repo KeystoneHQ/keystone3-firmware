@@ -23,7 +23,8 @@ Start by cloning the Keystone3 firmware repository to your local machine.
 **Commands:**
 
 ```bash
-git clone https://github.com/KeystoneHQ/keystone3-firmware --recursive
+git clone https://github.com/KeystoneHQ/keystone3-firmware
+git -c submodule.keystone3-firmware-release.update=none submodule update --init --recursive
 git checkout tags/<release_tag_name>
 ```
 

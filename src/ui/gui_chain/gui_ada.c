@@ -367,7 +367,7 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do
     {
         uint8_t entropy[64];

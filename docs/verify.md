@@ -76,7 +76,7 @@ An integrity check is essential.
 sha256sum mh1903.bin
 ```
 
-**Further Steps:** Compare the generated hash with the display on your device. For detailed instructions, refer [here](). To understand the checksum calculation on the device, see the code [here](https://github.com/KeystoneHQ/keystone3-firmware/blob/ce9e8e7e9bc33b46d420f9cfea4329b73426a7cd/src/ui/gui_model/gui_model.c#L1261).
+**Further Steps:** Compare the generated hash with the display on your device. For detailed instructions, refer [here](https://guide.keyst.one/docs/verify-checksum). To understand the checksum calculation on the device, see the code [here](https://github.com/KeystoneHQ/keystone3-firmware/blob/ce9e8e7e9bc33b46d420f9cfea4329b73426a7cd/src/ui/gui_model/gui_model.c#L1261).
 
 ## Optional: In-Depth Verification with Release Page
 Before delving into this section, it's important to understand some context. The firmware file available on our release page, named `keystone3.bin`, is derived from the `mh1903.bin` file. This transformation involves compressing the original file and adding our official signature for enhanced security and authenticity.

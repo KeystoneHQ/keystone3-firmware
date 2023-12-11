@@ -6,6 +6,7 @@
 #include "gui_hintbox.h"
 #include "gui_button.h"
 #include "gui_enter_passcode.h"
+#include "gui_keyboard.h"
 #include "gui_keyboard_hintbox.h"
 #include "assert.h"
 #include "user_memory.h"
@@ -14,6 +15,7 @@
 #include "gui_views.h"
 #include "gui_lock_widgets.h"
 #include "fingerprint_process.h"
+#include "safe_mem_lib.h"
 #ifdef COMPILE_SIMULATOR
 #define RECOGNIZE_UNLOCK                    0
 #endif
@@ -115,7 +117,7 @@ void SetKeyboardWidgetSelf(KeyboardWidget_t *keyboardWidget, KeyboardWidget_t **
 
 static void ClearKeyboardWidgetCache(KeyboardWidget_t *keyboardWidget)
 {
-    memset(g_pinBuf, 0, sizeof(g_pinBuf));
+    memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
     keyboardWidget->currentNum = 0;
     for (int i = 0; i < CREATE_PIN_NUM; i++) {
         GuiSetLedStatus(keyboardWidget->led[i], PASSCODE_LED_OFF);
@@ -163,7 +165,7 @@ static void SetPinEventHandler(lv_event_t *e)
             }
             if (keyboardWidget->currentNum == CREATE_PIN_NUM) {
                 SecretCacheSetPassword((char *)g_pinBuf);
-                memset(g_pinBuf, 0, sizeof(g_pinBuf));
+                memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
                 keyboardWidget->currentNum = 0;
                 GuiClearKeyboardInput(keyboardWidget);
                 GuiModelVerifyAmountPassWord(keyboardWidget->sig);
@@ -215,6 +217,94 @@ static void PassWordPinSwitchHandler(lv_event_t *e)
         uint8_t keyboardMode = lv_obj_has_flag(keyboardWidget->btnm, LV_OBJ_FLAG_HIDDEN) ? KEYBOARD_HINTBOX_PIN : KEYBOARD_HINTBOX_PASSWORD;
         PassWordPinHintSwitch(keyboardWidget, keyboardMode);
     }
+}
+
+static void CloseKeyboardWidgetViewHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
+        GuiDeleteKeyboardWidget(keyboardWidget);
+    }
+}
+
+KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t buttonCb, uint16_t *signal)
+{
+    KeyboardWidget_t *keyboardWidget = CreateKeyboardWidget();
+    lv_obj_t *keyboardHintBox = GuiCreateContainerWithParent(parent, 480, 800 - GUI_STATUS_BAR_HEIGHT);
+    lv_obj_align(keyboardHintBox, LV_ALIGN_DEFAULT, 0, 0);
+
+    lv_obj_t *img = GuiCreateImg(keyboardHintBox, &imgArrowLeft);
+    if (*signal == SIG_FINGER_REGISTER_ADD_SUCCESS) {
+        lv_img_set_src(img, &imgClose);
+    }
+    GuiButton_t table[] = {
+        {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {14, 14},}
+    };
+    lv_obj_t *button = GuiCreateButton(keyboardHintBox, 64, 64, table, NUMBER_OF_ARRAYS(table), buttonCb ? buttonCb : CloseKeyboardWidgetViewHandler, keyboardWidget);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 10, 16);
+
+    lv_obj_t *label = GuiCreateTitleLabel(keyboardHintBox, _("change_passcode_mid_btn"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12 + GUI_NAV_BAR_HEIGHT);
+    label = GuiCreateNoticeLabel(keyboardHintBox, _("passphrase_add_password"));
+    if (*signal == SIG_FINGER_REGISTER_ADD_SUCCESS) {
+        lv_label_set_text(label, _("fingerprint_add_password"));
+    }
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 72 + GUI_NAV_BAR_HEIGHT);
+
+    keyboardWidget->keyboardHintBox = keyboardHintBox;
+
+    KeyBoard_t *kb = GuiCreateFullKeyBoard(keyboardHintBox, KeyboardConfirmHandler, KEY_STONE_FULL_L, keyboardWidget);
+    lv_obj_t *ta = kb->ta;
+    lv_textarea_set_placeholder_text(ta, _("Enter Passcode"));
+    lv_obj_set_size(ta, 352, 100);
+    lv_obj_align(ta, LV_ALIGN_DEFAULT, 36, 260);
+    lv_obj_set_style_text_opa(ta, LV_OPA_100, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(ta, BLACK_COLOR, LV_PART_MAIN);
+    lv_textarea_set_password_mode(ta, true);
+    lv_textarea_set_max_length(ta, GUI_DEFINE_MAX_PASSCODE_LEN);
+    lv_textarea_set_one_line(ta, true);
+
+    keyboardWidget->kb = kb;
+
+    img = GuiCreateImg(keyboardHintBox, &imgEyeOff);
+    lv_obj_align_to(img, ta, LV_ALIGN_OUT_RIGHT_MID, 20, 0);
+    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, ta);
+    keyboardWidget->eyeImg = img;
+
+    if (*signal != SIG_FINGER_REGISTER_ADD_SUCCESS) {
+        button = GuiCreateImgLabelButton(keyboardHintBox, _("FORGET"), &imgLock, 124, ForgetHandler, NULL);
+        lv_obj_align(button, LV_ALIGN_DEFAULT, 333, 439 - GUI_STATUS_BAR_HEIGHT);
+    }
+
+    button = GuiCreateImgLabelButton(keyboardHintBox, _("password_label"), &imgSwitch, 156, PassWordPinSwitchHandler, keyboardWidget);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 439 - GUI_STATUS_BAR_HEIGHT);
+    keyboardWidget->switchLabel = lv_obj_get_child(button, 1);
+
+    label = GuiCreateIllustrateLabel(keyboardHintBox, _("password_error_not_match"));
+    lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 390 - GUI_STATUS_BAR_HEIGHT);
+    lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
+    lv_label_set_recolor(label, true);
+
+    keyboardWidget->errLabel = label;
+
+    for (int i = 0; i < CREATE_PIN_NUM; i++) {
+        lv_obj_t *led = GuiCreateLed(keyboardHintBox);
+        lv_obj_align(led, LV_ALIGN_DEFAULT, 36 + 30 * i, 194 + GUI_NAV_BAR_HEIGHT);
+        keyboardWidget->led[i] = led;
+    }
+    keyboardWidget->currentNum = 0;
+
+    lv_obj_t *btnm = GuiCreateNumKeyboard(keyboardHintBox, SetPinEventHandler, NUM_KEYBOARD_PIN, keyboardWidget);
+    lv_obj_add_style(btnm, &g_enterPressBtnmStyle, LV_STATE_PRESSED | LV_PART_ITEMS);
+    lv_obj_align(btnm, LV_ALIGN_BOTTOM_MID, 0, 0);
+    keyboardWidget->btnm = btnm;
+
+    PassWordPinHintSwitch(keyboardWidget, g_keyboardHintBoxMode);
+
+    return keyboardWidget;
 }
 
 KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
@@ -290,7 +380,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
 void GuiDeleteKeyboardWidget(KeyboardWidget_t *keyboardWidget)
 {
     if (keyboardWidget != NULL && keyboardWidget->self != NULL) {
-        memset(g_pinBuf, 0, sizeof(g_pinBuf));
+        memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
         keyboardWidget->currentNum = 0;
         if (keyboardWidget->keyboardHintBox != NULL && lv_obj_is_valid(keyboardWidget->keyboardHintBox)) {
             lv_obj_del(keyboardWidget->keyboardHintBox);

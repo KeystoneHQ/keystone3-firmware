@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_status_bar.c
- * Description:
- * author     : stone wang
- * data       : 2023-01-09 16:26
- **********************************************************************/
 #include "gui_obj.h"
 #include "gui_views.h"
 #include "gui_button.h"
@@ -43,6 +36,8 @@ typedef struct {
     const char *name;
     const lv_img_dsc_t *icon;
 } CoinWalletInfo_t;
+
+bool GetLvglHandlerStatus(void);
 
 const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_BTC, "Confirm Transaction", &coinBtc},
@@ -147,7 +142,6 @@ void GuiStatusBarInit(void)
     lv_obj_set_style_radius(background, 0, 0);
     lv_obj_align(background, LV_ALIGN_TOP_LEFT, 0, GUI_STATUS_BAR_HEIGHT);
 
-    // 创建状态栏
     g_guiStatusBar.cont = cont;
     lv_obj_t *img = GuiCreateImg(cont, NULL);
     lv_obj_align(img, LV_ALIGN_LEFT_MID, 24, 0);
@@ -201,13 +195,21 @@ void GuiStatusBarInit(void)
 
 void GuiStatusBarSetSdCard(bool connected)
 {
+    if (!GetLvglHandlerStatus()) {
+        return;
+    }
+    static bool sdStatus = true;
     char version[16] = {0};
+    if (sdStatus == connected) {
+        return;
+    }
+    sdStatus = connected;
     if (connected) {
         lv_obj_clear_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN);
         lv_obj_align_to(g_guiStatusBar.sdCardImg, g_guiStatusBar.batteryImg, LV_ALIGN_OUT_LEFT_MID, -10, 0);
         uint8_t accountCnt = 0;
         GetExistAccountNum(&accountCnt);
-        if (!GuiLockScreenIsTop() && FatfsGetSize("0:") && CheckOtaBinVersion(version) && accountCnt > 0 && !GuiCheckIfTopView(&g_forgetPassView)) {
+        if (!GuiLockScreenIsTop() && CheckOtaBinVersion(version) && accountCnt > 0 && !GuiCheckIfTopView(&g_forgetPassView)) {
             GuiCreateSdCardUpdateHintbox(version);
         }
     } else {

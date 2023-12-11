@@ -1,12 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one 2020-2025. All rights reserved.
- * Description: pillar error code.
- * Author: leon sun
- * Create: 2023-1-5
- ************************************************************************************************/
-
-//由于整数经常需要表达返回长度等结果，所以ERR CODE均定义为负数，每个模块预留100个ERR CODE
-
 #ifndef _ERR_CODE_H
 #define _ERR_CODE_H
 
@@ -48,6 +39,7 @@ typedef enum {
     ERR_KEYSTORE_NOT_LOGIN,
     ERR_KEYSTORE_MNEMONIC_REPEAT,
     ERR_KEYSTORE_SAVE_LOW_POWER,
+    ERR_KEYSTORE_SAVE_FP_LOW_POWER,
     ERR_KEYSTORE_MNEMONIC_INVALID,
     ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET,
     ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH,

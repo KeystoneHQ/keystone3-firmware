@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Bitcoin receive address UI widgets.
- * Author: leon sun
- * Create: 2023-4-26
- ************************************************************************************************/
-
 #include "gui_utxo_receive_widgets.h"
 #include "gui_status_bar.h"
 #include "gui_chain.h"

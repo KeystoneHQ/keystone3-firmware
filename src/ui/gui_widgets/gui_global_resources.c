@@ -39,6 +39,8 @@ char **GetDerivationPathDescs(uint8_t index)
     if (index == BTC_DERIVATION_PATH_DESC) {
         return g_btcDerivationPathDesc;
     }
+
+    return NULL;
 }
 
 void GlobalResourcesInit(void)

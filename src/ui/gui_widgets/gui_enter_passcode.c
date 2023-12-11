@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_enter_passcode.c
- * Description:
- * author     : stone wang
- * data       : 2023-03-21 14:12
- **********************************************************************/
 #include "gui_enter_passcode.h"
 #include "gui_obj.h"
 #include "gui_led.h"
@@ -19,6 +12,7 @@
 #include "motor_manager.h"
 #include "account_manager.h"
 #include "gui_keyboard_hintbox.h"
+#include "safe_mem_lib.h"
 
 typedef enum {
     PASSWORD_STRENGTH_LEN,
@@ -126,7 +120,7 @@ static void SetPinEventHandler(lv_event_t *e)
 
                 g_userParam = g_passParam.userParam;
                 uint8_t index = 0xff;
-                if (g_userParam != NULL && *(uint8_t *)g_userParam == DEVICE_SETTING_RESET_PASSCODE_VERIFY) {
+                if (g_userParam != NULL && *(uint16_t *)g_userParam == DEVICE_SETTING_RESET_PASSCODE_VERIFY) {
                     index = GetCurrentAccountIndex();
                 }
 
@@ -151,7 +145,7 @@ static void SetPinEventHandler(lv_event_t *e)
                 }
                 CLEAR_HANDLE_FLAG();
                 item->currentNum = 0;
-                memset(g_pinBuf, 0, sizeof(g_pinBuf));
+                memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
                 item->setPassCb = NULL;
             }
         }
@@ -188,7 +182,7 @@ static void SetPassWordHandler(lv_event_t *e)
             if (item->mode == ENTER_PASSCODE_SET_PASSWORD) {
                 uint8_t index = 0xff;
 
-                if (g_userParam != NULL && *(uint8_t *)g_userParam == DEVICE_SETTING_RESET_PASSCODE_VERIFY) {
+                if (g_userParam != NULL && *(uint16_t *)g_userParam == DEVICE_SETTING_RESET_PASSCODE_VERIFY) {
                     index = GetCurrentAccountIndex();
                 }
                 if (CheckPasswordExisted(currText, index)) {
@@ -707,7 +701,7 @@ void GuiUpdateEnterPasscodeParam(GuiEnterPasscodeItem_t *item, void *param)
     }
     if (item->btnm != NULL) {
         item->currentNum = 0;
-        memset(g_pinBuf, 0, sizeof(g_pinBuf));
+        memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
         for (int i = 0; i < CREATE_PIN_NUM; i++) {
             GuiSetLedStatus(item->numLed[i], PASSCODE_LED_OFF);
         }
@@ -736,7 +730,6 @@ void GuiSetPasscodeDescLabel(GuiEnterPasscodeItem_t *item, const char *text)
     }
 }
 
-// todo 重入的时候怎么处理
 void GuiDelEnterPasscode(void *obj, void *param)
 {
     GuiEnterPasscodeItem_t *item = obj;
@@ -775,7 +768,7 @@ void GuiEnterPassCodeStatus(GuiEnterPasscodeItem_t *item, bool en)
         lv_obj_add_flag(item->errLabel, LV_OBJ_FLAG_HIDDEN);
         lv_textarea_set_text(item->kb->ta, "");
     }
-    memset(g_pinBuf, 0, sizeof(g_pinBuf));
+    memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
 }
 
 void GuiFingerPrintStatus(GuiEnterPasscodeItem_t *item, bool en, uint8_t errCnt)

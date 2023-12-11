@@ -9,6 +9,7 @@
 static int32_t GuiTransactionDetailViewInit(uint8_t viewType)
 {
     GuiTransactionDetailInit(viewType);
+    return SUCCESS_CODE;
 }
 
 static int32_t GuiTransactionDetailViewDeInit(void)

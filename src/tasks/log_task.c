@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: log task.
- * Author: leon sun
- * Create: 2023-4-11
- ************************************************************************************************/
-
 #include "log_task.h"
 #include "stdio.h"
 #include "string.h"

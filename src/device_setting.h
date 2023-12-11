@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) Keystone 2020-2025. All rights reserved.
- * Description: Device settings.
- * Author: leon sun
- * Create: 2023-7-17
- ************************************************************************************************/
-
-
 #ifndef _DEVICE_SETTINGS_H
 #define _DEVICE_SETTINGS_H
 

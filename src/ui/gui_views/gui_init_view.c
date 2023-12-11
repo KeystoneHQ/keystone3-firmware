@@ -15,6 +15,7 @@
 #include "presetting.h"
 #include "anti_tamper.h"
 #include "gui_global_resources.h"
+#include "gui_about_info_widgets.h"
 
 static int32_t GuiInitViewInit(void)
 {
@@ -43,6 +44,7 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     static uint16_t lockParam = SIG_LOCK_VIEW_VERIFY_PIN;
     uint16_t battState;
     uint32_t rcvValue;
+    uint8_t checkSumPercent = 0;
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
@@ -124,6 +126,14 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         break;
     case SIG_FIRMWARE_VERIFY_PASSWORD_FAIL: 
         GuiFirmwareUpdateVerifyPasswordErrorCount(param);
+        break;
+    case SIG_SETTING_CHECKSUM_PERCENT:
+        if (param != NULL) {
+            checkSumPercent = *(uint8_t *)param;
+        } else {
+            return ERR_GUI_ERROR;
+        }
+        GuiUpdateCheckSumPercent(checkSumPercent);
         break;
     default:
         return ERR_GUI_UNHANDLED;

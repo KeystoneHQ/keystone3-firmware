@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: LCD display hal.
- * Author: leon sun
- * Create: 2023-4-6
- ************************************************************************************************/
-
 #include "hal_lcd.h"
 #include "stdio.h"
 #include "string.h"

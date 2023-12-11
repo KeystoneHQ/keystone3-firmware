@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: background task.
- * Author: leon sun
- * Create: 2023-3-20
- ************************************************************************************************/
-
 #include "background_task.h"
 #include "background_app.h"
 #include "drv_aw32001.h"
@@ -16,6 +9,7 @@
 #include "user_memory.h"
 #include "user_msg.h"
 #include "user_fatfs.h"
+#include "user_delay.h"
 #include "err_code.h"
 #include "gui_api.h"
 #include "gui_views.h"
@@ -204,7 +198,7 @@ static void BackgroundTask(void *argument)
         }
         break;
         case BACKGROUND_MSG_SD_CARD_CHANGE: {
-            osDelay(200);
+            UserDelay(100);
             if (sdCardState == GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_7)) {
                 break;
             } else {

@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Motor driver.
- * Author: leon sun
- * Create: 2023-5-17
- ************************************************************************************************/
-
 #include "drv_motor.h"
 #include "stdio.h"
 #include "cmsis_os.h"
@@ -24,24 +17,15 @@ typedef enum {
 } MotorStateType;
 
 static osTimerId_t g_motorTimer = NULL;
-static uint32_t g_motorPer = 0;
-static uint32_t g_motorTick = 0;
-static uint32_t g_motorTimerCnt = 0;
 static uint32_t g_motorLevel = 0;
 
 static void MotorTimerFunc(void *argument);
 static void MotorAsGpio(bool set);
 static void MotorAsPwm(uint32_t pwm);
 
-#define MOTOR_WORK_PWM
-
 void MotorInit(void)
 {
-#ifdef MOTOR_WORK_PWM
     g_motorTimer = osTimerNew(MotorTimerFunc, osTimerOnce, NULL, NULL);
-#else
-    g_motorTimer = osTimerNew(MotorTimerFunc, osTimerPeriodic, NULL, NULL);
-#endif
 }
 
 /// @brief Control the motor to run for a specified time.
@@ -57,57 +41,13 @@ void MotorCtrl(uint32_t level, uint32_t tick)
         MotorAsGpio(false);
         osTimerStop(g_motorTimer);
     }
-#ifdef MOTOR_WORK_PWM
     MotorAsPwm(level);
     osTimerStart(g_motorTimer, tick);
-#else
-    g_motorTimerCnt = 0;
-    g_motorTick = tick / 10;
-    MotorAsGpio(true);
-    osTimerStart(g_motorTimer, 10);
-#endif
 }
 
 static void MotorTimerFunc(void *argument)
 {
-#ifdef MOTOR_WORK_PWM
     MotorAsGpio(false);
-#else
-    g_motorTimerCnt++;
-    // if (g_motorTimerCnt % 3 == 0) {
-    //     MotorAsGpio(false);
-    // } else {
-    //     MotorAsGpio(true);
-    // }
-    if (g_motorLevel <= 60) {
-        if (g_motorTimerCnt % 2 == 0) {
-            MotorAsGpio(false);
-        } else {
-            MotorAsGpio(true);
-        }
-    } else if (g_motorLevel <= 80) {
-        if (g_motorTimerCnt % 4 == 0) {
-            MotorAsGpio(false);
-        } else {
-            MotorAsGpio(true);
-        }
-    } else if (g_motorLevel <= 100) {
-        if (g_motorTimerCnt % 6 == 0) {
-            MotorAsGpio(false);
-        } else {
-            MotorAsGpio(true);
-        }
-    }
-
-    if (g_motorTimerCnt >= g_motorTick) {
-        g_motorTimerCnt = 0;
-        g_motorTick = 0;
-        MotorAsGpio(false);
-        osTimerStop(g_motorTimer);
-    } else {
-        // MotorAsPwm(g_motorLevel);
-    }
-#endif
 }
 
 

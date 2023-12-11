@@ -1,9 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description:
- * author     : ginger liu
- * data       : 2023-03-02
- **********************************************************************/
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_status_bar.h"
@@ -1246,9 +1240,9 @@ static char *GetChangeDerivationAccountType(int i)
     switch (g_connectWalletTileView.walletIndex)
     {
     case WALLET_LIST_SOLFARE:
-        return g_solChangeDerivationList[i].accountType;
+        return (char *)g_solChangeDerivationList[i].accountType;
     default:
-        return g_changeDerivationList[i].accountType;
+        return (char *)g_changeDerivationList[i].accountType;
     }
 }
 
@@ -1257,9 +1251,9 @@ static char *GetChangeDerivationPath(int i)
     switch (g_connectWalletTileView.walletIndex)
     {
     case WALLET_LIST_SOLFARE:
-        return g_solChangeDerivationList[i].path;
+        return (char *)g_solChangeDerivationList[i].path;
     default:
-        return g_changeDerivationList[i].path;
+        return (char *)g_changeDerivationList[i].path;
     }
 }
 

@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: MAXIM DS28S60
- * Author: leon sun
- * Create: 2022-12-1
- ************************************************************************************************/
-
 #include "drv_ds28s60.h"
 #include "stdint.h"
 #include "stdbool.h"
@@ -348,7 +341,7 @@ static int32_t ConfirmBlockSettings(void)
 static int32_t DS28S60_SendCmdAndGetResult(uint8_t cmd, uint8_t *para, uint8_t paraLen, uint8_t expectedLen, uint8_t *resultArray)
 {
     uint32_t tryCount = 0;
-    int32_t ret;
+    int32_t ret = SUCCESS_CODE;
     while (tryCount++ < RETRY_MAX_COUNT) {
         ret = DS28S60_TrySendCmdAndGetResult(cmd, para, paraLen, expectedLen, resultArray);
         if (ret == DS28S60_SUCCESS) {

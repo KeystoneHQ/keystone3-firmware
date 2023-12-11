@@ -71,7 +71,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_ETH_TYPEDDATA,
 #ifndef COMPILE_SIMULATOR
-        "{\"type\":\"container\",\"pos\":[0,0],\"size\":[480,542],\"align\":0,\"bg_opa\":0,\"aflag\":16,\"children\":[{\"type\":\"container\",\"pos\":[36,24],\"size\":[408,298],\"align\":0,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Domain Name\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataDomianName\",\"pos\":[24,54],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Verifying Contract\",\"pos\":[24,100],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataDomianVerifyContract\",\"pos\":[24,138],\"text_color\":16777215,\"text_width\":360,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Primary Type\",\"pos\":[24,214],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataPrimayType\",\"pos\":[24,252],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"label\",\"text\":\"Message\",\"pos\":[36,354],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataMessage\",\"pos\":[36,396],\"width\":408,\"bg_color\":16777215,\"bg_opa\":31,\"pad_vertical\":16,\"pad_horizontal\":24,\"radius\":24,\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"}]}",
+        "{\"type\":\"container\",\"pos\":[0,0],\"size\":[480,542],\"align\":0,\"bg_opa\":0,\"aflag\":16,\"children\":[{\"type\":\"container\",\"pos\":[36,24],\"size\":[408,298],\"align\":0,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Domain Name\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataDomianName\",\"pos\":[24,54],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Verifying Contract\",\"pos\":[24,100],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataDomianVerifyContract\",\"pos\":[24,138],\"text_color\":16777215,\"text_width\":360,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Primary Type\",\"pos\":[24,214],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataPrimayType\",\"pos\":[24,252],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"label\",\"text\":\"Message\",\"pos\":[36,354],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataMessage\",\"text_len_func\":\"GetEthTypedDataMessageLen\",\"pos\":[36,396],\"width\":408,\"bg_color\":16777215,\"bg_opa\":31,\"pad_vertical\":16,\"pad_horizontal\":24,\"radius\":24,\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"}]}",
 #else
         PC_SIMULATOR_PATH "/page_eth.json",
 #endif
@@ -778,6 +778,15 @@ GetLabelDataLenFunc GuiXrpTextLenFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataLenFunc GuiEthTextLenFuncGet(char *type)
+{
+    if (!strcmp(type, "GetEthTypedDataMessageLen"))
+    {
+        return GetEthTypedDataMessageLen;
+    }
+    return NULL;
+}
+
 GetLabelDataFunc GuiAdaTextFuncGet(char *type)
 {
     if (!strcmp(type, "GetAdaExtraData"))
@@ -832,6 +841,8 @@ GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
         return GuiAdaTextLenFuncGet(type);
     case REMAPVIEW_XRP:
         return GuiXrpTextLenFuncGet(type);
+    case REMAPVIEW_ETH_TYPEDDATA:
+        return GuiEthTextLenFuncGet(type);
     default:
         return NULL;
     }
@@ -1514,7 +1525,6 @@ void *GuiWidgetTabView(lv_obj_t *parent, cJSON *json)
     lv_obj_set_style_text_color(obj, lv_color_hex(0xffffff), LV_PART_ITEMS);
     lv_obj_set_style_border_color(obj, lv_color_hex(0), LV_PART_ITEMS);
 
-    // todo 更新大小
     g_tableView = obj;
     lv_obj_t *line;
     static lv_point_t points[2] = {{0, 0}, {408, 0}};
@@ -1585,7 +1595,6 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
         }
     }
     const char *type = item->valuestring;
-    printf("type = %s\n", type);
     if (!type)
     {
         return NULL;

@@ -18,7 +18,6 @@ static PageWidget_t *g_pageWidget;
 
 static void GuiAboutNVSBarInit();
 static void GuiAboutEntranceWidget(lv_obj_t *parent);
-// static void UnHandler(lv_event_t *e);
 
 void GuiAboutWidgetsInit()
 {
@@ -121,25 +120,18 @@ void GuiAboutEntranceWidget(lv_obj_t *parent)
 
     table[0].obj = label;
     table[1].obj = imgArrow;
-    // if (CheckOtaBinVersion(fileVersion)) {
-    //     lv_obj_t *versionLabel = GuiCreateIllustrateLabel(parent, fileVersion);
-    //     lv_obj_set_style_text_color(versionLabel, ORANGE_COLOR, LV_PART_MAIN);
-    //     lv_label_set_text_fmt(versionLabel, "v%s Available", fileVersion);
-    //     table[2].align = LV_ALIGN_BOTTOM_LEFT;
-    //     table[2].position.x = 24;
-    //     table[2].position.y = -24;
-    //     table[2].obj = versionLabel;
-    //     memberCnt = 3;
-    // }
+    if (CheckOtaBinVersion(fileVersion)) {
+        lv_obj_t *versionLabel = GuiCreateIllustrateLabel(parent, fileVersion);
+        lv_obj_set_style_text_color(versionLabel, ORANGE_COLOR, LV_PART_MAIN);
+        lv_label_set_text_fmt(versionLabel, "v%s Available", fileVersion);
+        table[2].align = LV_ALIGN_BOTTOM_LEFT;
+        table[2].position.x = 24;
+        table[2].position.y = -24;
+        table[2].obj = versionLabel;
+        memberCnt = 3;
+    }
 
     button = GuiCreateButton(parent, 456, 84 + (memberCnt - 2) * 34, table, memberCnt,
                              OpenViewHandler, &g_firmwareUpdateView);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 508);
 }
-
-// static void UnHandler(lv_event_t *e)
-// {
-//     lv_event_code_t code = lv_event_get_code(e);
-//     if (code == LV_EVENT_CLICKED) {
-//     }
-// }

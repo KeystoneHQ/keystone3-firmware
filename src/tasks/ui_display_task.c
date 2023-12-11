@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: UI显示任务
- * Author: leon sun
- * Create: 2022-11-28
- ************************************************************************************************/
-
 #include "ui_display_task.h"
 #include "stdio.h"
 #include "cmsis_os.h"
@@ -12,9 +5,7 @@
 #include "lvgl.h"
 #include "log_print.h"
 #include "user_msg.h"
-#include "lv_demos.h"
 #include "drv_virtual_touch.h"
-#include "qrcode/gui_qrcode_example.h"
 #include "touchpad_task.h"
 #include "gui_views.h"
 #include "gui_framework.h"
@@ -29,6 +20,8 @@
 #define LVGL_IDLE_TICK_MS                   100
 #define LVGL_GRAM_PIXEL         LCD_DISPLAY_WIDTH * 450
 
+
+bool GuiLetterKbStatusError(void);
 static void UiDisplayTask(void *argument);
 static void RefreshLvglTickMode(void);
 static void SetLvglTick(uint32_t dynamicTick);
@@ -244,6 +237,10 @@ static void __SetLvglHandlerAndSnapShot(uint32_t value)
     snapShotDone = true;
 }
 
+bool GetLvglHandlerStatus(void)
+{
+    return lvglHandlerEnable;
+}
 
 /// @brief
 /// @param enable

@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: battery driver.
- * Author: leon sun
- * Create: 2023-1-6
- ************************************************************************************************/
-
 #include "drv_battery.h"
 #include "mhscpu.h"
 #include "stdio.h"
@@ -41,7 +34,6 @@
 
 static uint8_t LoadBatteryPercent(void);
 static void SaveBatteryPercent(uint8_t percent);
-static uint8_t GetBatteryPercentByMilliVolt(uint32_t milliVolt, bool discharge);
 
 // const uint16_t dischargeCurve[100] = {
 //     3391, 3409, 3423, 3435, 3447, 3459, 3469, 3478, 3488, 3497,
@@ -398,7 +390,7 @@ static void SaveBatteryPercent(uint8_t percent)
 }
 
 
-static uint8_t GetBatteryPercentByMilliVolt(uint32_t milliVolt, bool discharge)
+uint8_t GetBatteryPercentByMilliVolt(uint32_t milliVolt, bool discharge)
 {
     uint16_t const *curve = discharge ? dischargeCurve : chargingCurve;
     uint8_t percent;

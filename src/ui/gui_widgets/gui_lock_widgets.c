@@ -1,10 +1,3 @@
-/*
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * @FilePath: \project-pillar-firmware\ui\gui_widgets\gui_lock_widgets.c
- * @Description:
- * @Author: stone wang
- * @LastEditTime: 2023-04-04 16:53:20
- */
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_views.h"
@@ -28,6 +21,7 @@
 #include "gui_passphrase_widgets.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_firmware_update_widgets.h"
+#include "background_task.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "assert.h"
@@ -42,12 +36,12 @@
 #include "simulator_model.h"
 #endif
 
-static bool ModelGetPassphraseQuickAccess(void);
 static void GuiPassowrdToLockTimePage(uint16_t errorCount);
 void GuiLockScreenClearModal(lv_obj_t *cont);
 static char* GuiJudgeTitle();
 static void CountDownTimerChangeLabelTextHandler(lv_timer_t *timer);
 static void GuiCloseGenerateXPubLoading(void);
+int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
 
 static GuiEnterPasscodeItem_t *g_verifyLock = NULL;
 static lv_obj_t *g_lockScreenCont;
@@ -55,7 +49,6 @@ static bool g_firstUnlock = true;
 static uint8_t g_fpErrorCount = 0;
 static LOCK_SCREEN_PURPOSE_ENUM g_purpose = LOCK_SCREEN_PURPOSE_UNLOCK;
 static PageWidget_t *g_pageWidget;
-
 static lv_obj_t *g_LoadingView = NULL;
 static lv_timer_t *g_countDownTimer;
 static int8_t g_countDown = 0;
@@ -239,8 +232,6 @@ void GuiLockScreenTurnOff(void)
         g_oldWalletIndex = GetCurrentAccountIndex();
     }
 
-    printf("oldWalletIndex = %d\n", g_oldWalletIndex);
-    printf("GetCurrentAccountIndex() = %d\n", GetCurrentAccountIndex());
     if (GetCurrentAccountIndex() != g_oldWalletIndex) {
         g_oldWalletIndex = GetCurrentAccountIndex();
         GuiCloseToTargetView(&g_homeView);
@@ -248,6 +239,7 @@ void GuiLockScreenTurnOff(void)
         GuiEmitSignal(GUI_EVENT_REFRESH, &single, sizeof(single));
         GuiFirmwareUpdateWidgetRefresh();
     }
+    AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
     // g_lockView.isActive = false;
 }
 
@@ -278,8 +270,13 @@ void GuiLockScreenPassCode(bool en)
     if (en) {
         g_fpErrorCount = 0;
         FpCancelCurOperate();
+        if (g_oldWalletIndex == 0xFF) {
+            g_oldWalletIndex = GetCurrentAccountIndex();
+        }
         if (ModelGetPassphraseQuickAccess()) {
-            GuiLockScreenTurnOff();
+            lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
+            GuiModeGetWalletDesc();
+            GuiEnterPassCodeStatus(g_verifyLock, true);
             GuiFrameOpenView(&g_passphraseView);
             printf("passphrase quick access\r\n");
         } else if (g_homeView.isActive) {
@@ -292,9 +289,6 @@ void GuiLockScreenPassCode(bool en)
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
             GuiFrameOpenView(&g_homeView);
-            if (g_oldWalletIndex == 0xFF) {
-                g_oldWalletIndex = GetCurrentAccountIndex();
-            }
             printf("%s %d\n", __func__, __LINE__);
         }
         // Close the loading page after closing the lock screen page
@@ -452,20 +446,6 @@ void GuiLockScreenUpdatePassCode(void)
 #ifndef COMPILE_SIMULATOR
 #include "keystore.h"
 #endif
-
-
-static bool ModelGetPassphraseQuickAccess(void)
-{
-#ifdef COMPILE_SIMULATOR
-    return false;
-#else
-    if (PassphraseExist(GetCurrentAccountIndex()) == false && GetPassphraseQuickAccess() == true && GetPassphraseMark() == true) {
-        return true;
-    } else {
-        return false;
-    }
-#endif
-}
 
 static void CountDownTimerChangeLabelTextHandler(lv_timer_t *timer)
 {

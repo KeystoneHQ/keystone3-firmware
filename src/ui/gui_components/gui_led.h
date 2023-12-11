@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_led.h
- * Description:
- * author     : stone wang
- * data       : 2023-02-01 15:58
-**********************************************************************/
-
 #ifndef _GUI_LED_H
 #define _GUI_LED_H
 

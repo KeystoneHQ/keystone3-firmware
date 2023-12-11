@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: FLASH address define.
- * Author: leon sun
- * Create: 2023-4-11
- ************************************************************************************************/
-
 #ifndef _FLASH_ADDRESS_H
 #define _FLASH_ADDRESS_H
 

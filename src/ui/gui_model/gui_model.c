@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_model.c
- * Description:
- * author     : stone wang
- * data       : 2023-03-23 09:41
-**********************************************************************/
 #include <string.h>
 #include "stdlib.h"
 #include "gui.h"
@@ -32,7 +25,10 @@
 #include "keystore.h"
 #include "account_manager.h"
 #include "qrdecode_task.h"
+#include "safe_mem_lib.h"
+#include "gui_views.h"
 #ifndef COMPILE_SIMULATOR
+#include "sha256.h"
 #include "rust.h"
 #include "user_msg.h"
 #include "general_msg.h"
@@ -40,9 +36,36 @@
 #include "fingerprint_process.h"
 #include "user_delay.h"
 #include "user_fatfs.h"
+#include "mhscpu_qspi.h"
 #endif
 
-static PasswordVerifyResult_t g_passwordVerifyResult;
+#define SECTOR_SIZE                         4096
+#define APP_ADDR                            (0x1001000 + 0x80000)   //108 1000
+#define APP_END_ADDR                        (0x1001000 + 0x1000000) //200 1000
+
+#ifndef COMPILE_SIMULATOR
+#define MODEL_WRITE_SE_HEAD                 do {                                \
+        ret = CHECK_BATTERY_LOW_POWER();                                        \
+        CHECK_ERRCODE_BREAK("save low power", ret);                             \
+        ret = GetBlankAccountIndex(&newAccount);                                \
+        CHECK_ERRCODE_BREAK("get blank account", ret);                          \
+        ret = GetExistAccountNum(&accountCnt);                                  \
+        CHECK_ERRCODE_BREAK("get exist account", ret);                          \
+        printf("before accountCnt = %d\n", accountCnt);
+
+#define MODEL_WRITE_SE_END                                                      \
+        ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());    \
+        CHECK_ERRCODE_BREAK("login error", ret);                                \
+        GetExistAccountNum(&accountCnt);                                        \
+        printf("after accountCnt = %d\n", accountCnt);                          \
+    } while (0);                                                                \
+    if (ret == SUCCESS_CODE) {                                                  \
+        ClearSecretCache();                                                     \
+        GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));  \
+    } else {                                                                            \
+        GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));     \
+    }
+#endif
 
 static int32_t ModelSaveWalletDesc(const void *inData, uint32_t inDataLen);
 static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen);
@@ -68,35 +91,15 @@ static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
 static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataLen);
 static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen);
 static int32_t ModelURGenerateQRCode(const void *inData, uint32_t inDataLen, void *getUR);
+static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen);
 static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen);
 static int32_t ModelURClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen);
 static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, void *parseTransactionFunc);
 
-#ifndef COMPILE_SIMULATOR
-#define MODEL_WRITE_SE_HEAD                 do {                                \
-        ret = CHECK_BATTERY_LOW_POWER();                                        \
-        CHECK_ERRCODE_BREAK("save low power", ret);                             \
-        ret = GetBlankAccountIndex(&newAccount);                                \
-        CHECK_ERRCODE_BREAK("get blank account", ret);                          \
-        ret = GetExistAccountNum(&accountCnt);                                  \
-        CHECK_ERRCODE_BREAK("get exist account", ret);                          \
-        printf("before accountCnt = %d\n", accountCnt);
-
-#define MODEL_WRITE_SE_END                                                      \
-        ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());    \
-        CHECK_ERRCODE_BREAK("login error", ret);                                \
-        GetExistAccountNum(&accountCnt);                                        \
-        printf("after accountCnt = %d\n", accountCnt);                          \
-    } while (0);                                                                \
-    if (ret == SUCCESS_CODE) {                                                  \
-        ClearSecretCache();                                                     \
-        GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));  \
-    } else {                                                                            \
-        GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));     \
-    }
-#endif
+static PasswordVerifyResult_t g_passwordVerifyResult;
+static bool g_stopCalChecksum = false;
 
 #ifdef COMPILE_SIMULATOR
 int32_t AsyncExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t inDataLen)
@@ -144,6 +147,18 @@ void GuiModelSlip39CalWriteSe(Slip39Data_t slip39)
     AsyncExecute(ModelSlip39CalWriteEntropyAndSeed, &slip39, sizeof(slip39));
 }
 
+void GuiModelCalculateCheckSum(void)
+{
+    SetPageLockScreen(false);
+    AsyncExecute(ModelCalculateCheckSum, NULL, 0);
+}
+
+void GuiModelStopCalculateCheckSum(void)
+{
+    SetPageLockScreen(true);
+    g_stopCalChecksum = true;
+}
+
 void GuiModelCalculateWebAuthCode(void *webAuthData)
 {
     AsyncExecuteWithPtr(ModelCalculateWebAuthCode, webAuthData);
@@ -175,9 +190,9 @@ void GuiModelSettingWritePassphrase(void)
     AsyncExecute(ModelWritePassphrase, NULL, 0);
 }
 
-void GuiModelChangeAmountPassWord(uint8_t accountIndex)
+void GuiModelChangeAmountPassWord(void)
 {
-    AsyncExecute(ModelChangeAmountPass, &accountIndex, sizeof(accountIndex));
+    AsyncExecute(ModelChangeAmountPass, NULL, 0);
 }
 
 void GuiModelVerifyAmountPassWord(uint16_t *param)
@@ -276,7 +291,7 @@ static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
     SecretCacheSetMnemonic(mnemonic);
     retData = SUCCESS_CODE;
     GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, &retData, sizeof(retData));
-    memset(mnemonic, 0, strlen(mnemonic));
+    memset_s(mnemonic, strlen(mnemonic), 0, strlen(mnemonic));
     SRAM_FREE(mnemonic);
 #else
     mnemonic = SRAM_MALLOC(256);
@@ -374,7 +389,7 @@ if (ret == SUCCESS_CODE)
 {
     GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));
 }
-memset(entropy, 0, entropyInLen);
+memset_s(entropy, entropyInLen, 0, entropyInLen);
 SRAM_FREE(entropy);
 #else
     ret = ERR_KEYSTORE_MNEMONIC_REPEAT;
@@ -536,7 +551,6 @@ static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#define SRAM_MNEMONIC_LEN       33 * 10
     int32_t retData;
     uint8_t entropy[32], ems[32];
     uint32_t memberCnt, threShold, entropyLen = 32;
@@ -558,13 +572,14 @@ static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen
     }
 
     for (int i = 0; i < memberCnt; i++) {
-        memset(wordsList[i], 0, SRAM_MNEMONIC_LEN);
-        // todo 这里用SRAM_FREE有问题
+        memset(wordsList[i], 0, strlen(wordsList[i]));
+        // todo There is a problem with SRAM FREE here
         free(wordsList[i]);
     }
     retData = SUCCESS_CODE;
     GuiApiEmitSignal(SIG_CREATE_SHARE_UPDATE_MNEMONIC, &retData, sizeof(retData));
 #else
+#define SRAM_MNEMONIC_LEN 33 * 11
     memberCnt = 3;
     char *mnemonic = NULL;
     mnemonic = SRAM_MALLOC(SRAM_MNEMONIC_LEN);
@@ -833,9 +848,11 @@ static int32_t ModelWritePassphrase(const void *inData, uint32_t inDataLen)
         ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
         if (ret == SUCCESS_CODE) {
             GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
+            ClearSecretCache();
         } else {
             GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_FAIL, NULL, 0);
         }
+        ClearSecretCache();
     }
 #else
     GuiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
@@ -898,12 +915,87 @@ static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
     return SUCCESS_CODE;
 }
 
+static void ModelVerifyPassSuccess(uint16_t *param)
+{
+    int32_t ret = SUCCESS_CODE;
+    uint8_t walletAmount;
+    switch (*param) {
+        case DEVICE_SETTING_ADD_WALLET:
+            GetExistAccountNum(&walletAmount);
+            if (walletAmount == 3) {
+                GuiApiEmitSignal(SIG_SETTING_ADD_WALLET_AMOUNT_LIMIT, NULL, 0);
+            } else {
+                GuiEmitSignal(SIG_INIT_GET_ACCOUNT_NUMBER, &walletAmount, sizeof(walletAmount));
+                GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
+            }
+            break;
+        case SIG_INIT_SD_CARD_OTA_COPY:
+            GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
+            GuiApiEmitSignal(SIG_INIT_SD_CARD_OTA_COPY, param, sizeof(*param));
+            ModelCopySdCardOta(NULL, 0);
+            break;
+        case SIG_SETTING_WRITE_PASSPHRASE:
+            GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_VERIFY_PASS, param, sizeof(*param));
+            SetPageLockScreen(false);
+            if (SecretCacheGetPassphrase() == NULL) {
+                SecretCacheSetPassphrase("");
+            }
+            ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
+            SetPageLockScreen(true);
+            if (ret == SUCCESS_CODE) {
+                GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
+                ClearSecretCache();
+            } else {
+                GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_FAIL, NULL, 0);
+            }
+            break;
+        case SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE:
+            GuiApiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_PASSPHRASE_PASS, param, sizeof(*param));
+            break;
+        default:
+            GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
+            break;
+    }
+}
+
+static void ModelVerifyPassFailed(uint16_t *param)
+{
+    uint16_t signal = SIG_VERIFY_PASSWORD_FAIL;
+    switch (*param) {
+        case SIG_LOCK_VIEW_VERIFY_PIN:
+        case SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS:
+            g_passwordVerifyResult.errorCount = GetLoginPasswordErrorCount();
+            printf("gui model get login error count %d \n", g_passwordVerifyResult.errorCount);
+            assert(g_passwordVerifyResult.errorCount <= MAX_LOGIN_PASSWORD_ERROR_COUNT);
+            if (g_passwordVerifyResult.errorCount == MAX_LOGIN_PASSWORD_ERROR_COUNT) {
+                UnlimitedVibrate(SUPER_LONG);
+            } else {
+                UnlimitedVibrate(LONG);
+            }
+            break;
+        case SIG_INIT_SD_CARD_OTA_COPY:
+            signal = SIG_FIRMWARE_VERIFY_PASSWORD_FAIL;
+        default:
+            g_passwordVerifyResult.errorCount = GetCurrentPasswordErrorCount();
+            printf("gui model get current error count %d \n", g_passwordVerifyResult.errorCount);
+            assert(g_passwordVerifyResult.errorCount <= MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX);
+            if (g_passwordVerifyResult.errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
+                UnlimitedVibrate(SUPER_LONG);
+            } else {
+                UnlimitedVibrate(LONG);
+            }
+            break;
+    }
+    g_passwordVerifyResult.signal = param;
+    GuiApiEmitSignal(signal, (void*)&g_passwordVerifyResult, sizeof(g_passwordVerifyResult));
+}
+
 // verify wallet password
 static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
+    static bool firstVerify = true;
     SetLockScreen(false);
-    static uint8_t walletAmount;
     uint8_t accountIndex;
 #ifndef COMPILE_SIMULATOR
     int32_t ret;
@@ -919,52 +1011,32 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
     } else {
         ret = VerifyCurrentAccountPassword(SecretCacheGetPassword());
     }
+
+    if (SIG_LOCK_VIEW_VERIFY_PIN == *param && firstVerify && ModelGetPassphraseQuickAccess()) {
+        *param = SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE;
+        firstVerify = false;
+    }
+
+    // some scene would need clear secret after check
+    if (*param != SIG_SETTING_CHANGE_PASSWORD &&
+        *param != SIG_SETTING_WRITE_PASSPHRASE && 
+        *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE &&
+        *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
+        *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
+        *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&
+        !strlen(SecretCacheGetPassphrase()) &&
+        !GuiCheckIfViewOpened(&g_createWalletView)) {
+        ClearSecretCache();
+    }
+    printf("*param = %u\n", *param);
     SetLockScreen(enable);
     if (ret == SUCCESS_CODE) {
-        if (*param == DEVICE_SETTING_ADD_WALLET) {
-            GetExistAccountNum(&walletAmount);
-            if (walletAmount == 3) {
-                GuiApiEmitSignal(SIG_SETTING_ADD_WALLET_AMOUNT_LIMIT, NULL, 0);
-            } else {
-                GuiEmitSignal(SIG_INIT_GET_ACCOUNT_NUMBER, &walletAmount, sizeof(walletAmount));
-                GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
-            }
-        } else if (*param == SIG_INIT_SD_CARD_OTA_COPY) {
-            GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
-            GuiApiEmitSignal(SIG_INIT_SD_CARD_OTA_COPY, param, sizeof(*param));
-            ModelCopySdCardOta(inData, inDataLen);
-        } else {
-            GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
-        }
+        ModelVerifyPassSuccess(param);
     } else {
-        if (SIG_LOCK_VIEW_VERIFY_PIN == *param || SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS == *param) {
-            g_passwordVerifyResult.errorCount = GetLoginPasswordErrorCount();
-            printf("gui model get login error count %d \n", g_passwordVerifyResult.errorCount);
-            assert(g_passwordVerifyResult.errorCount <= MAX_LOGIN_PASSWORD_ERROR_COUNT);
-            if (g_passwordVerifyResult.errorCount == MAX_LOGIN_PASSWORD_ERROR_COUNT) {
-                UnlimitedVibrate(SUPER_LONG);
-            } else {
-                UnlimitedVibrate(LONG);
-            }
-        } else {
-            g_passwordVerifyResult.errorCount = GetCurrentPasswordErrorCount();
-            printf("gui model get current error count %d \n", g_passwordVerifyResult.errorCount);
-            assert(g_passwordVerifyResult.errorCount <= MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX);
-            if (g_passwordVerifyResult.errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
-                UnlimitedVibrate(SUPER_LONG);
-            } else {
-                UnlimitedVibrate(LONG);
-            }
-            if (SIG_INIT_SD_CARD_OTA_COPY == *param) {
-                g_passwordVerifyResult.signal = param;
-                GuiApiEmitSignal(SIG_FIRMWARE_VERIFY_PASSWORD_FAIL, (void*)&g_passwordVerifyResult, sizeof(g_passwordVerifyResult));
-                return SUCCESS_CODE;
-            }
-        }
-        g_passwordVerifyResult.signal = param;
-        GuiApiEmitSignal(SIG_VERIFY_PASSWORD_FAIL, (void*)&g_passwordVerifyResult, sizeof(g_passwordVerifyResult));
+        ModelVerifyPassFailed(param);
     }
 #else
+    uint8_t walletAmount;
     uint8_t *entropy;
     uint8_t entropyLen;
     int32_t ret;
@@ -1172,4 +1244,84 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, voi
     }
     GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
     return SUCCESS_CODE;
+}
+
+static uint32_t BinarySearchLastNonFFSector(void) 
+{
+    uint8_t buffer[SECTOR_SIZE];
+    uint32_t startIndex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE / 2;
+    uint32_t endInex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE;
+
+    uint8_t percent = 1;
+    GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
+
+    for (int i = startIndex + 1; i < endInex; i++) {
+        if (g_stopCalChecksum == true) {
+            return SUCCESS_CODE;
+        }
+        memcpy(buffer,(uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
+        if ((i - startIndex) % 200 == 0) {
+            percent++;
+            GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
+        }
+        if (CheckAllFF(&buffer[2], SECTOR_SIZE - 2) && ((buffer[0] * 256 + buffer[1]) < 4096)) {
+            return i;
+        }
+    }
+    
+    return -1;
+}
+
+static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
+{
+#ifndef COMPILE_SIMULATOR
+    g_stopCalChecksum = false;
+    uint8_t buffer[4096] = {0}; 
+    uint8_t hash[32] = {0};
+    int num = BinarySearchLastNonFFSector();
+    if (g_stopCalChecksum == true) {
+        return SUCCESS_CODE;
+    }
+    struct sha256_ctx ctx;
+    sha256_init(&ctx);
+    uint8_t percent = 0;
+    for (int i = 0; i <= num; i++) {
+        if (g_stopCalChecksum == true) {
+            return SUCCESS_CODE;
+        }
+        memset(buffer, 0, SECTOR_SIZE);
+        memcpy(buffer,(uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
+        sha256_update(&ctx, buffer, SECTOR_SIZE);
+        if (percent != i * 100 / num) {
+            percent = i * 100 / num;
+            if (percent != 100 && percent >= 10) {
+                GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
+            }
+        }
+    }
+	sha256_done(&ctx, (struct sha256 *)hash);
+    memset(buffer, 0, SECTOR_SIZE);
+    percent = 100;
+    SetPageLockScreen(true);
+    SecretCacheSetChecksum(hash);
+    GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
+#else
+    char *hash = "131b3a1e9314ba076f8e459a1c4c6713eeb38862f3eb6f9371360aa234cdde1f";
+    SecretCacheSetChecksum(hash);
+#endif
+    return SUCCESS_CODE;
+}
+
+
+bool ModelGetPassphraseQuickAccess(void)
+{
+#ifdef COMPILE_SIMULATOR
+    return false;
+#else
+    if (PassphraseExist(GetCurrentAccountIndex()) == false && GetPassphraseQuickAccess() == true && GetPassphraseMark() == true) {
+        return true;
+    } else {
+        return false;
+    }
+#endif
 }

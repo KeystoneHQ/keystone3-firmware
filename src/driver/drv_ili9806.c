@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Ili9806 drvier.
- * Author: leon sun
- * Create: 2022-11-24
- ************************************************************************************************/
-
-
 #include "drv_ili9806.h"
 #include "stdio.h"
 #include "mhscpu.h"
@@ -45,7 +37,8 @@ void Ili9806Init(void)
 {
     Parallel8080Init();
     UserDelay(50);
-    Parallel8080Reset();   //初始化之前复位
+    Parallel8080Reset();   
+    //Reset before initialization
     Ili9806InitSequence();
 }
 

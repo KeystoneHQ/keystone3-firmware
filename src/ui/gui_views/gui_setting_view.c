@@ -64,21 +64,28 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
         QRCodeControl(false);
         GuiDevSettingPassCode(true, tileIndex);
         break;
+    case SIG_SETTING_WRITE_PASSPHRASE_VERIFY_PASS:
+        GuiSettingAnimSetLabel(_("seed_check_wait_verify"));
+        break;
     case SIG_VERIFY_PASSWORD_FAIL:
         if (param != NULL) {
             PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
             uint16_t sig = *(uint16_t *) passwordVerifyResult->signal;
+            uint16_t cnt = passwordVerifyResult->errorCount;
             if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
                 GuiLockScreenPassCode(false);
                 GuiLockScreenErrorCount(param);
                 return SUCCESS_CODE;
+            } else if (sig == SIG_FINGER_REGISTER_ADD_SUCCESS) {
+                if (cnt == 4) {
+                    GuiFingerCancelRegister();
+                }
             } else {
                 tileIndex = sig;
             }
         } else {
             return ERR_GUI_ERROR;
         }
-        GuiDevSettingPassCode(false, tileIndex);
         GuiVerifyCurrentPasswordErrorCount(param);
         break;
     case SIG_SETTING_SET_PIN:
@@ -86,9 +93,6 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
         break;
     case SIG_SETTING_REPEAT_PIN:
         GuiSettingRepeatPinPass((const char *)param);
-        break;
-    case SIG_SETTING_PASSWORD_RESET_PASS:
-        GuiResettingPassWordSuccess();
         break;
     case SIG_SETTING_CHANGE_WALLET_DESC_PASS:
         GuiChangeWalletDesc(true);
@@ -99,11 +103,17 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
     case SIG_SETTING_WRITE_PASSPHRASE_PASS:
         GuiWritePassphrase(true);
         break;
+    case SIG_SETTING_WRITE_PASSPHRASE_FAIL:
+        GuiWritePassphrase(false);
+        break;
     case SIG_SETTING_CHANGE_PASSWORD_PASS:
         GuiChangePassWord(true);
         break;
     case SIG_SETTING_CHANGE_PASSWORD_FAIL:
         GuiChangePassWord(false);
+        if (param != NULL) {
+            GuiVerifyCurrentPasswordErrorCount(param);
+        }
         break;
     case SIG_SETTING_ADD_WALLET_AMOUNT_LIMIT:
         GuiAddWalletAmountLimit();

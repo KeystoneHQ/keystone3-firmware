@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Inactive widgets.
- * Author: leon sun
- * Create: 2023-8-4
- ************************************************************************************************/
-
 #include "gui_inactive_widgets.h"
 #include "gui_status_bar.h"
 #include "gui_views.h"

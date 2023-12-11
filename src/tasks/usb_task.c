@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: usb task.
- * Author: leon sun
- * Create: 2023-4-17
- ************************************************************************************************/
-
 #include "usb_task.h"
 #include "stdio.h"
 #include "string.h"
@@ -19,6 +12,7 @@
 #include "gui_views.h"
 #include "gui_api.h"
 #include "drv_aw32001.h"
+#include "device_setting.h"
 
 #ifdef BUILD_PRODUCTION
 #define USB_POP_WINDOW_ENABLE           1

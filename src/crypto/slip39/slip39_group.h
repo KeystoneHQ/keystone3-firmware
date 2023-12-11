@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : group.h
- * Description:
- * author     : stone wang
- * data       : 2023-02-22 11:01
-**********************************************************************/
 #ifndef _SLIP39_GROUP_H
 #define _SLIP39_GROUP_H
 

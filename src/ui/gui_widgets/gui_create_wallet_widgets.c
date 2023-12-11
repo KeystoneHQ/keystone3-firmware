@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_create_wallet _widgets.c
- * Description:
- * author     : stone wang
- * data       : 2023-01-13 15:40
-**********************************************************************/
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_status_bar.h"
@@ -20,6 +13,7 @@
 #include "gui_tutorial_widgets.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
+#include "safe_mem_lib.h"
 
 typedef enum {
     CREATE_WALLET_SETPIN = 0,
@@ -152,23 +146,23 @@ static void OpenNoticeHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 484, true);
+        g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 518, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
         lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgRedEye);
-        lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 364);
+        lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 330);
         lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("single_backup_notice_title"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 460);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 420);
 
         img = GuiCreateImg(g_noticeHintBox, &imgClose);
         lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-        lv_obj_align(img, LV_ALIGN_BOTTOM_RIGHT, -36, -425);
+        lv_obj_align(img, LV_ALIGN_BOTTOM_RIGHT, -36, -455);
 
         label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_backup_notice_desc1"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 512);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 478);
 
         label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_backup_notice_desc2"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 578);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 550);
 
         lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, USR_SYMBOL_CHECK);
         lv_obj_add_event_cb(btn, CloseParentAndNextHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
@@ -371,10 +365,10 @@ static void GuiImportBackupWidget(lv_obj_t *parent)
         {.obj = labelNotice, .align = LV_ALIGN_DEFAULT, .position = {24, 132},},
     };
     lv_obj_t *button = GuiCreateButton(parent, 432, 216, table, NUMBER_OF_ARRAYS(table), ChooseWordsAmountHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 300 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 330 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 515 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 545 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateLittleTitleLabel(parent, _("import_wallet_shamir_backup"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
@@ -389,7 +383,7 @@ static void GuiImportBackupWidget(lv_obj_t *parent)
     table[2].position.x = 372;
     table[2].position.y = 26;
     button = GuiCreateButton(parent, 432, 156, table, 3, SelectImportShareHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 516 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 546 - GUI_MAIN_AREA_OFFSET);
 }
 
 void GuiCreateWalletInit(uint8_t walletMethod)
@@ -500,7 +494,7 @@ void GuiCreateWalletRepeatPinPass(const char* buf)
 {
     if (!strcmp(buf, g_pinBuf)) {
         SecretCacheSetNewPassword((char *)buf);
-        memset(g_pinBuf, 0, sizeof(g_pinBuf));
+        memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
     } else {
         UnlimitedVibrate(LONG);

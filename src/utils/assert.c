@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Assert handler.
- * Author: leon sun
- * Create: 2023-4-7
- ************************************************************************************************/
-
-
 #include "assert.h"
 #include "presetting.h"
 #include "log_print.h"

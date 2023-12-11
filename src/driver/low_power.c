@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: low power implement.
- * Author: leon sun
- * Create: 2023-5-25
- ************************************************************************************************/
-
-
 #include "low_power.h"
 #include "stdio.h"
 #include "string.h"
@@ -37,11 +29,27 @@
 
 #define RTC_WAKE_UP_INTERVAL_DISCHARGE                          (60 * 30)           //30 minutes
 #define RTC_WAKE_UP_INTERVAL_CHARGING                           (80)                //80 seconds
+#define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                        (60 * 2)            //2 minutes
 
 static void SetRtcWakeUp(uint32_t second);
-static int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
+int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
 
 volatile LowPowerState g_lowPowerState = LOW_POWER_STATE_WORKING;
+
+static uint32_t GetWakeUpInterval(void)
+{
+    UsbPowerState usbPowerState = GetUsbPowerState();
+    uint32_t milliVolt = GetBatteryMilliVolt();
+    uint8_t percent = GetBatteryPercentByMilliVolt(milliVolt, usbPowerState == USB_POWER_STATE_DISCONNECT);
+    if (usbPowerState == USB_POWER_STATE_CONNECT) {
+        return RTC_WAKE_UP_INTERVAL_CHARGING;
+    }
+    if (percent >= 30) {
+        return RTC_WAKE_UP_INTERVAL_DISCHARGE;
+    } else {
+        return RTC_WAKE_UP_INTERVAL_LOW_BATTERY;
+    }
+}
 
 void LowPowerTest(int argc, char *argv[])
 {
@@ -93,7 +101,6 @@ uint32_t EnterLowPower(void)
     wakeUpSecond = GetRtcCounter() + sleepSecond;
     EnterDeepSleep();
     while ((ButtonPress() == false) && (FingerPress() == false)) {
-        // while (ButtonPress() == false) {
         RecoverFromDeepSleep();
         Uart0OpenPort();
         wakeUpCount++;
@@ -101,10 +108,8 @@ uint32_t EnterLowPower(void)
             Gd25FlashOpen();
             Aw32001RefreshState();
             BatteryIntervalHandler();
-            printf("rtc wake up interval\n");
             printf("GetUsbPowerState()=%d\n", GetUsbPowerState());
             sleepSecond = GetUsbPowerState() == USB_POWER_STATE_DISCONNECT ? RTC_WAKE_UP_INTERVAL_DISCHARGE : RTC_WAKE_UP_INTERVAL_CHARGING;
-            printf("sleepSecond=%d\n", sleepSecond);
             AutoShutdownHandler(sleepSecond);
             SetRtcWakeUp(sleepSecond);
             wakeUpSecond = GetRtcCounter() + sleepSecond;
@@ -136,7 +141,7 @@ void RecoverFromLowPower(void)
     g_lowPowerState = LOW_POWER_STATE_WORKING;
     LcdBacklightOn();
     UsbInit();
-    AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
+    // AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
 }
 
 void EnterDeepSleep(void)
@@ -323,13 +328,11 @@ static void SetRtcWakeUp(uint32_t second)
     GPIO->WAKE_TYPE_EN |= BIT(12);
 }
 
-static int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
+int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
 {
     bool sdCardState = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_7);
     if (sdCardState == false) {
-        MountSdFatfs();
-        uint32_t freeSize = FatfsGetSize("0:");
-        if (freeSize > 0) {
+        if (!MountSdFatfs()) {
             GuiApiEmitSignalWithValue(SIG_INIT_SDCARD_CHANGE, sdCardState);
         }
     } else {

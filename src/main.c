@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one 2020-2025. All rights reserved.
- * Description: mh1903 main.
- * Author: leon sun
- * Create: 2022-11-8
- ************************************************************************************************/
-
 #include <string.h>
 #include <stdio.h>
 #include "mhscpu.h"
@@ -28,7 +21,6 @@
 #include "drv_button.h"
 #include "drv_tamper.h"
 #include "drv_exti.h"
-#include "drv_bluetooth.h"
 #include "drv_motor.h"
 #include "hal_lcd.h"
 #include "cmsis_os.h"
@@ -99,7 +91,9 @@ int main(void)
     osKernelInitialize();
 
     CreateFingerprintTask();
+#ifndef BUILD_PRODUCTION
     CreateCmdTask();
+#endif
     CreateTestTask();
     CreateUiDisplayTask();
     CreateQrDecodeTask();

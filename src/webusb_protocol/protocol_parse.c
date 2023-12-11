@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Protocol parse.
- * Author: leon sun
- * Create: 2023-6-29
- ************************************************************************************************/
-
 #include "internal_protocol_parser.h"
 #include "eapdu_protocol_parser.h"
 #include "stdio.h"
@@ -15,6 +8,7 @@
 #include "cmsis_os.h"
 #include "user_memory.h"
 #include "log_print.h"
+#include "service_file_trans.h"
 
 #define PROTOCOL_PARSE_OVERTIME 500
 

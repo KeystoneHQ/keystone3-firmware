@@ -20,12 +20,12 @@ static void CheckAndClearFlag(lv_obj_t *obj, lv_obj_flag_t flag)
     }
 }
 
-static void CheckAndAddFlag(lv_obj_t *obj, lv_obj_flag_t flag)
-{
-    if (!lv_obj_has_flag(obj, flag)) {
-        lv_obj_add_flag(obj, flag);
-    }
-}
+// static void CheckAndAddFlag(lv_obj_t *obj, lv_obj_flag_t flag)
+// {
+//     if (!lv_obj_has_flag(obj, flag)) {
+//         lv_obj_add_flag(obj, flag);
+//     }
+// }
 
 static void GuiQRHintBoxCloseHandler(lv_event_t *e)
 {

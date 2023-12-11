@@ -9,6 +9,7 @@
 #include "drv_trng.h"
 #include "drv_atecc608b.h"
 #include "log_print.h"
+#include "hash_and_salt.h"
 
 #define SHA256_COUNT                            3
 

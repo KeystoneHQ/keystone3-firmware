@@ -1,0 +1,22 @@
+[package]
+name = "bitcoin_rust_c"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+keystore = { path = "../../../keystore", default-features = false }
+app_bitcoin = { path = "./../../../apps/bitcoin" }
+third_party = { path = "../../../third_party" }
+app_utils = { path = "../../../apps/utils" }
+rust_tools = {path="../../../tools"}
+cty = "0.2.2"
+cstr_core = "0.2.6"
+
+common_rust_c = {path = "../common", default-features = false, optional = true}
+
+[features]
+default = ["multi-coins"]
+multi-coins = ["common_rust_c/multi-coins"]
+btc-only = ["common_rust_c/btc-only"]

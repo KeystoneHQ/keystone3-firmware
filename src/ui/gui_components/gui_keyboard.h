@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_emoji_keyboard.h
- * Description:
- * author     : stone wang
- * data       : 2023-01-18 10:22
-**********************************************************************/
-
 #ifndef _GUI_EMOJI_KEYBOARD_H
 #define _GUI_EMOJI_KEYBOARD_H
 

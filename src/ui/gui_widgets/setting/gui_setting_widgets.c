@@ -266,13 +266,6 @@ static void GuiWalletAddLimit(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, AddCloseToSubtopViewHandler, LV_EVENT_CLICKED, NULL);
 }
 
-static void UnHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-    }
-}
-
 static void AboutHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -356,8 +349,8 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
     char fileVersion[16] = {0};
     GetSoftWareVersionNumber(version);
     if (CheckOtaBinVersion(fileVersion)) {
-        // sprintf(showString, "#8E8E8E v%s# / #F5870A v%sAvailable#", version, fileVersion);
-        sprintf(showString, "#8E8E8E %s#", version);
+        sprintf(showString, "#8E8E8E v%s#  /  #F5870A v%s  Available#", version, fileVersion);
+        // sprintf(showString, "#8E8E8E %s#", version);
     } else {
         sprintf(showString, "#8E8E8E %s#", version);
     }
@@ -508,7 +501,7 @@ static void DelWalletHandler(lv_event_t *e)
 static void OpenDelWalletHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    static uint8_t walletIndex = DEVICE_SETTING_DEL_WALLET;
+    static uint16_t walletIndex = DEVICE_SETTING_DEL_WALLET;
 
     if (code == LV_EVENT_CLICKED) {
         g_delWalletHintbox = GuiCreateHintBox(lv_event_get_user_data(e), 480, 132, true);
@@ -572,27 +565,50 @@ void GuiWalletRecoveryWriteSe(bool result)
     }
 }
 
-void GuiDevSettingPassCode(bool result, uint8_t tileIndex)
+void GuiDevSettingPassCode(bool result, uint16_t tileIndex)
 {
-    static uint8_t walletIndex = DEVICE_SETTING_RESET_PASSCODE_VERIFY;
+    static uint16_t walletIndex = DEVICE_SETTING_RESET_PASSCODE_VERIFY;
+    printf("tileIndex = %d\n", tileIndex);
+    if (!result)
+        return;
     switch (tileIndex) {
-    case DEVICE_SETTING_FINGER_SETTING:
+    case SIG_FINGER_FINGER_SETTING:
         walletIndex = GuiGetFingerSettingIndex();
         break;
-    case DEVICE_SETTING_RESET_PASSCODE:
+    case SIG_FINGER_SET_UNLOCK:
+        if (result) {
+            GuiShowKeyboardDestruct();
+            GuiWalletFingerOpenUnlock();
+            return;
+        }
+        break;
+    case SIG_FINGER_SET_SIGN_TRANSITIONS:
+        if (result) {
+            GuiShowKeyboardDestruct();
+            GuiWalletFingerOpenSign();
+            return;
+        }
+        break;
+    case SIG_FINGER_REGISTER_ADD_SUCCESS:
+        if (result) {
+            FpSaveKeyInfo(true);
+            SetPageLockScreen(true);
+            walletIndex = DEVICE_SETTING_FINGER_ADD_SUCCESS;
+        }
+        break;
+    case SIG_SETTING_CHANGE_PASSWORD:
         walletIndex = DEVICE_SETTING_RESET_PASSCODE_VERIFY;
-        break;
-    case DEVICE_SETTING_ADD_WALLET:
-        walletIndex = DEVICE_SETTING_ADD_WALLET_NOTICE;
-        break;
-    case DEVICE_SETTING_DEL_WALLET:
-        walletIndex = DEVICE_SETTING_DEL_WALLET_VERIFY;
         break;
     case DEVICE_SETTING_PASSPHRASE_VERIFY:
         walletIndex = DEVICE_SETTING_PASSPHRASE_ENTER;
         break;
-    case DEVICE_SETTING_RECOVERY_PHRASE_VERIFY:
-        walletIndex = DEVICE_SETTING_RECOVERY_METHOD_CHECK;
+    case DEVICE_SETTING_ADD_WALLET:
+        ClearSecretCache();
+        walletIndex = DEVICE_SETTING_ADD_WALLET_NOTICE;
+        break;
+    case DEVICE_SETTING_DEL_WALLET:
+        ClearSecretCache();
+        walletIndex = DEVICE_SETTING_DEL_WALLET_VERIFY;
         break;
     default:
         if (result)
@@ -658,6 +674,7 @@ void GuiSettingDeInit(void)
     //     GUI_DEL_OBJ(g_recoveryMkb->cont)
     // }
     GuiWalletSeedCheckClearObject();
+    GuiWalletSettingDeinit();
     CloseToTargetTileView(g_deviceSetTileView.currentTile, DEVICE_SETTING);
     lv_obj_del(g_deviceSetTileView.tileView);
     lv_obj_del(g_deviceSetTileView.cont);
@@ -804,6 +821,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
         strcpy(midLabel, _("wallet_setting_passphrase"));
         break;
     case DEVICE_SETTING_PASSPHRASE_VERIFY:
+        printf("wallet_setting_passphrase...\n");
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         currTileIndex = DEVICE_SETTING_PASSPHRASE_VERIFY;
         destructCb = GuiDelEnterPasscode;

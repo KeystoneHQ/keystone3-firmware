@@ -13,6 +13,26 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
+int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
+{
+
+}
+
+bool GetLvglHandlerStatus(void)
+{
+
+}
+
+void FpDeleteRegisterFinger(void)
+{
+    
+}
+
+void FpSaveKeyInfo(bool add)
+{
+
+}
+
 struct UREncodeResult *get_connect_metamask_ur_unlimited(PtrBytes master_fingerprint,
                                                          uint32_t master_fingerprint_length,
                                                          enum ETHAccountType account_type,
@@ -55,7 +75,7 @@ bool FpModuleIsExist(void)
 
 MnemonicType GetMnemonicType(void)
 {
-    return MNEMONIC_TYPE_SLIP39;
+    return MNEMONIC_TYPE_BIP39;
 }
 
 void SetPassphraseQuickAccess(bool exist)
@@ -83,7 +103,7 @@ void SetLockDeviceAlive(bool alive)
     
 }
 
-uint8_t *GuiGetFpVersion(uint8_t *version)
+uint8_t *GuiGetFpVersion(char *version)
 {
     for (int i = 0; i < 4; i++) {
         version[2 * i] = 1 + '0';
@@ -364,7 +384,7 @@ bool GetPassphraseQuickAccess(void)
 
 bool PassphraseExist(uint8_t accountIndex)
 {
-    return false;
+    return true;
 }
 
 uint8_t GetFingerSignFlag(void)

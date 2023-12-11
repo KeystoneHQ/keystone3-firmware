@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Account public  info.
- * Author: leon sun
- * Create: 2023-5-4
- ************************************************************************************************/
-
 #include "account_public_info.h"
 #include "string.h"
 #include "stdio.h"
@@ -309,6 +302,7 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     uint8_t seed[64];
     uint8_t entropy[64];
     uint8_t hash[32];
+    uint8_t entropyLen = 0;
     bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
     int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
 
@@ -371,13 +365,13 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         FreePublicKeyRam();
         ret = GetAccountSeed(accountIndex, seed, password);
         CHECK_ERRCODE_BREAK("get seed", ret);
-        ret = GetAccountEntropy(accountIndex, entropy, GetCurrentAccountEntropyLen(), password);
+        ret = GetAccountEntropy(accountIndex, entropy, &entropyLen, password);
         CHECK_ERRCODE_BREAK("get entropy", ret);
         SimpleResponse_c_char* response = NULL;
         // should setup ADA;
         if(!isSlip39)
         {
-            response = get_icarus_master_key(entropy, GetCurrentAccountEntropyLen(), GetPassphrase(accountIndex));
+            response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
             ASSERT(response);
             if (response->error_code != 0)
             {
@@ -472,6 +466,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     int32_t ret = SUCCESS_CODE;
     uint8_t seed[64];
     uint8_t entropy[64];
+    uint8_t entropyLen;
     bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
     int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
 
@@ -487,14 +482,14 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
         FreePublicKeyRam();
         ret = GetAccountSeed(accountIndex, seed, password);
         CHECK_ERRCODE_RETURN_INT(ret);
-        ret = GetAccountEntropy(accountIndex, entropy, GetCurrentAccountEntropyLen(), password);
+        ret = GetAccountEntropy(accountIndex, entropy, &entropyLen, password);
         CHECK_ERRCODE_RETURN_INT(ret);
-        SimpleResponse_c_char* response;
+        SimpleResponse_c_char *response = NULL;
 
         // should setup ADA;
         if(!isSlip39)
         {
-            response = get_icarus_master_key(entropy, GetCurrentAccountEntropyLen(), GetPassphrase(accountIndex));
+            response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
             ASSERT(response);
             if (response->error_code != 0)
             {

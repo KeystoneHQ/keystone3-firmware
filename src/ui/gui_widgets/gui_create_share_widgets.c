@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_create_share_widgets.c
- * Description:
- * author     : stone wang
- * data       : 2023-02-23 11:49
-**********************************************************************/
 #include "gui.h"
 
 #include "gui_views.h"
@@ -21,6 +14,7 @@
 #include "user_utils.h"
 #include "motor_manager.h"
 #include "gui_page.h"
+#include "safe_mem_lib.h"
 
 typedef enum {
     CREATE_SHARE_SELECT_SLICE = 0,
@@ -263,9 +257,9 @@ static void GuiShareCustodianWidget(lv_obj_t *parent)
     lv_label_set_recolor(label, true);
     g_custodianTile.noticeLabel = label;
 
-    lv_obj_t *cont = GuiCreateHintBoxWithoutTop(parent, 480, 452);
+    lv_obj_t *cont = GuiCreateHintBoxWithoutTop(parent, 480, 482);
     lv_obj_t *img = GuiCreateImg(cont, &imgRedEye);
-    lv_obj_align(img, LV_ALIGN_DEFAULT, 39, 54);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 39, 48);
     hintHeight = GetHintBoxReHeight(hintHeight, img) + 24;
     label = GuiCreateLittleTitleLabel(cont, _("shamir_phrase_notice_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 108);
@@ -278,7 +272,7 @@ static void GuiShareCustodianWidget(lv_obj_t *parent)
     lv_obj_t *desc2 = GuiCreateIllustrateLabel(cont, _("shamir_phrase_notice_desc2"));
     lv_obj_align_to(desc2, desc1, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     hintHeight = GetHintBoxReHeight(hintHeight, desc1) + 130;
-    lv_obj_set_size(cont, 480, hintHeight);
+    // lv_obj_set_size(cont, 480, hintHeight);
 
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_CHECK);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
@@ -365,7 +359,7 @@ static void MnemonicConfirmHandler(lv_event_t * e)
                 lv_obj_align(btn, LV_ALIGN_DEFAULT, 345, 710);
                 lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
             }
-            memset(confirmMnemonic, 0, 10 * g_phraseCnt + 1);
+            memset_s(confirmMnemonic, 10 * g_phraseCnt + 1, 0, 10 * g_phraseCnt + 1);
             SRAM_FREE(confirmMnemonic);
         }
     }
@@ -534,7 +528,7 @@ void GuiCreateShareDeInit(void)
     //     memset(g_shareBackupTile.words, 0, 10);
     //     memset(g_shareConfirmTile.words, 0, 10);
     // }
-    memset(g_randomBuff, 0, 512);
+    memset_s(g_randomBuff, 512, 0, 512);
     GUI_DEL_OBJ(g_shareBackupTile.nextCont)
     GUI_DEL_OBJ(g_selectSliceTile.stepCont)
     GUI_DEL_OBJ(g_createShareTileView.cont)

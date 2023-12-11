@@ -313,7 +313,7 @@ void GuiSetEthUrData(void *data, bool multi)
         switch (g_viewType)                                                                                                       \
         {                                                                                                                         \
         case EthTx:                                                                                                               \
-            free_transaction_parse_result_display_eth((PtrT_TransactionParseResult_DisplayETH)result);                            \
+            free_TransactionParseResult_DisplayETH((PtrT_TransactionParseResult_DisplayETH)result);                               \
             break;                                                                                                                \
         case EthPersonalMessage:                                                                                                  \
             free_TransactionParseResult_DisplayETHPersonalMessage((PtrT_TransactionParseResult_DisplayETHPersonalMessage)result); \
@@ -483,6 +483,12 @@ void GetEthTypedDataMessage(void *indata, void *param)
     strcpy((char *)indata, message->message);
 }
 
+int GetEthTypedDataMessageLen(void *param)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    return strlen(message->message);
+}
+
 void GetEthTypedDataFrom(void *indata, void *param)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
@@ -576,6 +582,8 @@ static uint8_t GetEthPublickeyIndex(char* rootPath)
     if (strcmp(rootPath, "44'/60'/7'") == 0) return XPUB_TYPE_ETH_LEDGER_LIVE_7;
     if (strcmp(rootPath, "44'/60'/8'") == 0) return XPUB_TYPE_ETH_LEDGER_LIVE_8;
     if (strcmp(rootPath, "44'/60'/9'") == 0) return XPUB_TYPE_ETH_LEDGER_LIVE_9;
+
+    return -1;
 }
 
 // pase result
@@ -913,23 +921,13 @@ static void decodeEthContractData(void *parseResult)
     }
 }
 
-static void hex_to_dec(char *hex, uint8_t decimals, uint8_t *dec)
-{
-    uint64_t num = 0;
-    uint32_t decimalsNum = pow(10, decimals);
-    sscanf(hex, "%llx", &num);
-    uint64_t integer = num / decimalsNum;
-    uint64_t fractional = num % decimalsNum;
-    sprintf(dec, "%llu.%llu", integer, fractional);
-}
-
 static void FixRecipientAndValueWhenErc20Contract(const char *inputdata, uint8_t decimals)
 {
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
     if (!isErc20Transfer(result->data)) {
         return;
     }
-    PtrT_TransactionParseResult_EthParsedErc20Transaction contractData = eth_parse_erc20(inputdata, decimals);
+    PtrT_TransactionParseResult_EthParsedErc20Transaction contractData = eth_parse_erc20((PtrString)inputdata, decimals);
     g_erc20ContractAddress = result->data->detail->to;
     result->data->detail->to = contractData->data->to;
     result->data->overview->to = contractData->data->to;

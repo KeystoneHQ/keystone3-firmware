@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: QR decode task
- * Author: leon sun
- * Create: 2022-12-5
- ************************************************************************************************/
-
 #include "qrdecode_task.h"
 #include "stdint.h"
 #include "stdbool.h"
@@ -25,6 +18,7 @@
 #include "touchpad_task.h"
 #include "gui_analyze.h"
 #include "gui_web_auth_result_widgets.h"
+#include "gui_key_derivation_request_widgets.h"
 
 static void QrDecodeTask(void *argument);
 static void QrDecodeMinuteTimerFunc(void *argument);

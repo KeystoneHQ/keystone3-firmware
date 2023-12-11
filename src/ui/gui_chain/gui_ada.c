@@ -29,7 +29,7 @@ void GuiSetupAdaUrData(void *data, bool multi)
 #define CHECK_FREE_PARSE_RESULT(result)                                                                         \
     if (result != NULL)                                                                                         \
     {                                                                                                           \
-        free_transaction_parse_result_display_cardano_tx((PtrT_TransactionParseResult_DisplayCardanoTx)result); \
+        free_TransactionParseResult_DisplayCardanoTx((PtrT_TransactionParseResult_DisplayCardanoTx)result);     \
         result = NULL;                                                                                          \
     }
 
@@ -368,11 +368,8 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
     do
     {
         uint8_t entropy[64];
-        uint32_t len = GetCurrentAccountEntropyLen();
-        GetAccountEntropy(GetCurrentAccountIndex(), entropy, len, SecretCacheGetPassword());
-        char *path = cardano_get_path(data);
-        char pubkeyIndex = GetXPubIndexByPath(path);
-        char *pubKey = GetCurrentAccountPublicKey(pubkeyIndex);
+        uint8_t len = 0;
+        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
         encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);

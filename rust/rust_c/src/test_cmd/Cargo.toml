@@ -1,0 +1,16 @@
+[package]
+name = "test_cmd"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+[dependencies]
+btc_test_cmd = {path = "./src/btc_test_cmd", default-features = false, optional = true}
+general_test_cmd = {path = "./src/general_test_cmd",  optional = true}
+
+[features]
+default = ["multi-coins"]
+multi-coins = ["btc_test_cmd/multi-coins","general_test_cmd/multi-coins"]
+btc-only = ["btc_test_cmd/btc-only"]

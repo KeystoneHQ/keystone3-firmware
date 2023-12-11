@@ -29,7 +29,6 @@
 
 static void GuiTransactionSignatureNVSBarInit();
 static void GuiCreateSignatureQRCode(lv_obj_t *parent);
-static void GuiShowSignatureQRCode(GetUR func, lv_obj_t *qr);
 
 static ViewType g_viewType;
 static uint8_t g_chainType = CHAIN_BUTT;

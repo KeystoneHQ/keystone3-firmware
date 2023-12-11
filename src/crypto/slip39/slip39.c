@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : slip39.c
- * Description:
- * author     : stone wang
- * data       : 2023-02-22 11:17
-**********************************************************************/
 #include <string.h>
 #include "slip39.h"
 #include "slip39_group.h"

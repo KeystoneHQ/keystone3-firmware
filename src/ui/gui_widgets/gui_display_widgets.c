@@ -48,7 +48,6 @@ static PageWidget_t *g_pageWidget;
 static void GuiDisplayNVSBarInit(void);
 static void GuiDisplayEntranceWidget(lv_obj_t *parent);
 
-static void UnHandler(lv_event_t *e);
 static void SliderEventCb(lv_event_t * e);
 static void SetLowestBrightness(lv_event_t *e);
 static void SetHighestBrightness(lv_event_t *e);
@@ -236,27 +235,16 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
                              ChooseAutoShutdownHandler, NULL);
 
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 316);
-
-
-}
-
-static void UnHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-    }
 }
 
 static void SetLowestBrightness(lv_event_t *e)
 {
-
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         lv_obj_t * slider = (lv_obj_t *)lv_event_get_user_data(e);
         lv_slider_set_value(slider, 0, LV_ANIM_OFF);
         lv_event_send(slider, LV_EVENT_VALUE_CHANGED, NULL);
     }
-
 }
 
 static void SetHighestBrightness(lv_event_t *e)

@@ -1,10 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_obj.h
- * Description:
- * author     : stone wang
- * data       : 2023-01-06 13:38
-**********************************************************************/
 #ifndef _GUI_OBJ_H
 #define _GUI_OBJ_H
 

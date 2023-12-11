@@ -344,6 +344,7 @@ void FatfsDirectoryListing(char *ptr)
         put_rc(res);
     }
 #endif
+    f_closedir(&Dir);
 }
 
 uint32_t FatfsGetSize(const char *path)
@@ -357,6 +358,7 @@ uint32_t FatfsGetSize(const char *path)
         printf(", %10llu bytes free\r\n", (QWORD)dw * fs->csize * 512);
     } else {
         FatfsError(res);
+        return 0;
     }
 
     return (QWORD)dw * fs->csize * 512;
@@ -552,6 +554,9 @@ int MountSdFatfs(void)
     FRESULT res;
     FatfsMountParam_t *fs = &g_fsMountParamArray[DEV_MMC];
     res = f_mount(fs->fs, fs->volume, fs->opt);
+    if (res != FR_OK) {
+        res = f_mount(fs->fs, fs->volume, fs->opt);
+    }
     // if (res == FR_NO_FILESYSTEM) {
     //     BYTE work[FF_MAX_SS];
     //     f_mkfs(fs->volume, 0, work, sizeof work);

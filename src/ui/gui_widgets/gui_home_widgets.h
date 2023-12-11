@@ -1,10 +1,3 @@
-/*
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * @FilePath: \project-pillar-firmware\ui\gui_widgets\gui_home_widgets.h
- * @Description:
- * @Author: stone wang
- * @LastEditTime: 2023-04-12 18:43:17
- */
 #ifndef _GUI_HOME_WIDGETS_H
 #define _GUI_HOME_WIDGETS_H
 
@@ -19,10 +12,10 @@ typedef enum {
     HOME_WALLET_CARD_SUI,
     HOME_WALLET_CARD_ADA,
     HOME_WALLET_CARD_XRP,
-    HOME_WALLET_CARD_TRX,
     HOME_WALLET_CARD_BCH,
     HOME_WALLET_CARD_DASH,
     HOME_WALLET_CARD_LTC,
+    HOME_WALLET_CARD_TRX,
     HOME_WALLET_CARD_ATOM,
     HOME_WALLET_CARD_OSMO,
     HOME_WALLET_CARD_SCRT,

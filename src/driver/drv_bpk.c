@@ -1,13 +1,6 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : drv_bpk.c
- * Description:
- * author     : stone wang
- * data       : 2023-09-26 14:00
-**********************************************************************/
-
 /* header */
 #include <stdio.h>
+#include <string.h>
 #include "define.h"
 #include "drv_bpk.h"
 
@@ -29,7 +22,7 @@ ErrorStatus ClearBpkValue(uint32_t offset)
 {
     while (BPK_IsReady() == RESET);
     uint32_t data[BPK_KEY_LENGTH] = {0};
-    memset(data, 0, BPK_KEY_LENGTH);
+    memset(data, 0x0, sizeof(data));
     return SetBpkValue(data, BPK_KEY_LENGTH, offset);
 }
 

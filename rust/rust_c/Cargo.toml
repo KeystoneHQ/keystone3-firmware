@@ -5,27 +5,73 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[workspace]
+members = [
+    "src/kt_allocator",
+    "src/common",
+
+    "src/bitcoin",
+    "src/ethereum",
+    "src/solana",
+    "src/aptos",
+    "src/near",
+    "src/cosmos",
+    "src/cardano",
+    "src/sui",
+    "src/tron",
+    "src/xrp",
+
+    "src/wallet",
+    "src/wallet/src/btc_only_wallet",
+    "src/wallet/src/multi_coins_wallet",
+
+    "src/test_cmd",
+    "src/test_cmd/src/btc_test_cmd",
+    "src/test_cmd/src/general_test_cmd"
+]
+
 [dependencies]
-keystore = { path = "../keystore", default-features = false }
-app_bitcoin = { path = "../apps/bitcoin" }
-app_wallets = { path = "../apps/wallets" }
-app_ethereum = { path = "../apps/ethereum" }
-app_cardano = {path = "../apps/cardano"}
-app_tron = { path = "../apps/tron" }
-app_solana = { path = "../apps/solana" }
-app_near = { path = "../apps/near" }
-app_xrp = {path = "../apps/xrp"}
-app_cosmos = {path = "../apps/cosmos", default-features = false}
-app_aptos = {path = "../apps/aptos", default-features = false}
-app_sui = {path = "../apps/sui"}
-third_party = { path = "../third_party" }
-app_utils = { path = "../apps/utils" }
-rust_tools = {path="../tools"}
-cty = "0.2.2"
-cstr_core = "0.2.6"
+kt_allocator = {path = "./src/kt_allocator"}
+
+common_rust_c = {path = "./src/common", default-features = false, optional = true}
+bitcoin_rust_c = {path = "./src/bitcoin", default-features = false, optional = true}
+wallet_rust_c = {path = "./src/wallet", default-features = false, optional = true}
+test_cmd = {path = "./src/test_cmd", default-features = false, optional = true}
+
+ethereum_rust_c = {path = "./src/ethereum", optional = true}
+solana_rust_c = {path = "./src/solana", optional = true}
+aptos_rust_c = {path = "./src/aptos", optional = true}
+near_rust_c = {path = "./src/near", optional = true}
+cosmos_rust_c = {path = "./src/cosmos", optional = true}
+cardano_rust_c = {path = "./src/cardano", optional = true}
+sui_rust_c = {path = "./src/sui", optional = true}
+tron_rust_c = {path = "./src/tron", optional = true}
+xrp_rust_c = {path = "./src/xrp", optional = true}
+
 
 [lib]
 crate-type = ["staticlib"]
 
-[dev-dependencies]
-keystore = { path = "../keystore"}
+[features]
+default = ["multi-coins"]
+multi-coins = [
+    "common_rust_c/multi-coins",
+    "bitcoin_rust_c/multi-coins",
+    "wallet_rust_c/multi-coins",
+    "test_cmd/multi-coins",
+    "ethereum_rust_c",
+    "solana_rust_c",
+    "aptos_rust_c",
+    "near_rust_c",
+    "cosmos_rust_c",
+    "cardano_rust_c",
+    "sui_rust_c",
+    "tron_rust_c",
+    "xrp_rust_c"
+]
+btc-only = [
+    "common_rust_c/btc-only",
+    "bitcoin_rust_c/btc-only",
+    "wallet_rust_c/btc-only",
+    "test_cmd/btc-only"
+]

@@ -1,17 +1,3 @@
-/*
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * @FilePath: \project-pillar-firmware\ui\gui_frame\gui_api.c
- * @Description:
- * @Author: stone wang
- * @LastEditTime: 2023-04-12 14:46:23
- */
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : gui_api.c
- * Description:
- * author     : stone wang
- * data       : 2023-01-09 16:00
-**********************************************************************/
 #include "gui_api.h"
 
 #ifdef COMPILE_SIMULATOR

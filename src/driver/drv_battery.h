@@ -1,11 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: battary driver.
- * Author: leon sun
- * Create: 2023-1-6
- ************************************************************************************************/
-
-
 #ifndef _DRV_BATTARY_H
 #define _DRV_BATTARY_H
 
@@ -28,6 +20,7 @@ uint32_t GetBatteryMilliVolt(void);
 bool BatteryIntervalHandler(void);
 uint8_t GetBatterPercent(void);
 uint32_t GetBatteryInterval(void);
+uint8_t GetBatteryPercentByMilliVolt(uint32_t milliVolt, bool discharge);
 
 void BatteryTest(int argc, char *argv[]);
 

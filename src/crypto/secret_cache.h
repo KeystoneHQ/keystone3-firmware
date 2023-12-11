@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Secret data ram cache.
- * Author: leon sun
- * Create: 2023-3-22
- ************************************************************************************************/
-
 #ifndef _SECRET_CACHE_H
 #define _SECRET_CACHE_H
 
@@ -12,6 +5,8 @@
 #include "stdbool.h"
 #include "err_code.h"
 
+void SecretCacheSetChecksum(uint8_t *checksum);
+void SecretCacheGetChecksum(char *checksum);
 
 void SecretCacheSetPassword(char *password);
 char *SecretCacheGetPassword(void);

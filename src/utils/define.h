@@ -1,11 +1,3 @@
-/*********************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * name       : define.h
- * Description:
- * author     : stone wang
- * data       : 2022-12-23 18:04
-**********************************************************************/
-
 #ifndef _DEFINE_H
 #define _DEFINE_H
 

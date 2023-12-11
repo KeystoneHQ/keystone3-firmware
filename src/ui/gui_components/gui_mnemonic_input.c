@@ -235,10 +235,10 @@ bool GuiMnemonicInputCheck(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
     return true;
 }
 
-// 当前按钮必须是完整的单词才能往下走，这个在kbcb中判断
-// 下一个按钮是空格
-// 下个按钮是完整的word
-// 下个按钮是不完整的word
+// The current button must be a full word in order to proceed, as determined by kbcb
+// The next button is a space
+// Next button is full word
+// The next button is an incomplete word
 static void GuiMnemonicUpdateNextBtn(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb, lv_obj_t *obj, const char *word)
 {
     bool needNext = false;
@@ -267,7 +267,7 @@ static void GuiMnemonicUpdateNextBtn(MnemonicKeyBoard_t *mkb, KeyBoard_t *letter
         currentId = lv_btnmatrix_get_selected_btn(obj);
         const char *nextText = lv_btnmatrix_get_btn_text(obj, currentId);
         GuiMnemonicGetTrueWord(nextText, trueText);
-        if (searchTrie(rootTree, trueText) == 1) {// 完整的单词
+        if (searchTrie(rootTree, trueText) == 1) { // whole word
             GuiSetLetterBoardNext(letterKb);
         }
     }

@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: Power option UI widgets.
- * Author: leon sun
- * Create: 2023-6-7
- ************************************************************************************************/
-
 #include "gui_power_option_widgets.h"
 #include "lvgl.h"
 #include "gui_obj.h"

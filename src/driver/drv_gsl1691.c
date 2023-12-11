@@ -1,10 +1,3 @@
-/**************************************************************************************************
- * Copyright (c) keyst.one. 2020-2025. All rights reserved.
- * Description: GSL1691 touch pad driver.
- * Author: leon sun
- * Create: 2023-7-4
- ************************************************************************************************/
-
 #include "drv_gsl1691.h"
 #include "stdio.h"
 #include "mhscpu.h"

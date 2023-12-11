@@ -477,6 +477,7 @@ void GuiShowGenerateXPubLoading(void)
     }
     
     SetPageLockScreen(false);
+    FpCancelCurOperate();
     g_canDismissLoading = false;
 
     g_LoadingView = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));

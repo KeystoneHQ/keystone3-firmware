@@ -24,6 +24,8 @@
 #define SOL_BIP44_ADDRESS_INDEX_MAX                     9
 #define SOL_BIP44_ROOT_ADDRESS_INDEX_MAX                0
 #define SOL_BIP44_CHANGE_ADDRESS_INDEX_MAX              9
+#define NEAR_BIP44_ADDRESS_INDEX_MAX                    0
+#define NEAR_LEDGER_LIVE_ADDRESS_INDEX_MAX              9
 
 
 typedef enum {
@@ -59,6 +61,7 @@ typedef struct {
     lv_obj_t *qrCode;
     lv_obj_t *addressLabel;
     lv_obj_t *addressCountLabel;
+    lv_obj_t *pathLabel;
     lv_obj_t *moreCont;
     lv_obj_t *addressButton;
     lv_obj_t *leftBtnImg;
@@ -132,6 +135,8 @@ static void GetHint(char *hint);
 static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item);
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
 static void GetSolPathItemSubTitle(char* subTitle, int index);
+static void GuiCreateNearWidget(lv_obj_t *parent);
+static void ModelGetNearAddress(uint32_t index, AddressDataItem_t *item);
 
 static MultiPathCoinReceiveWidgets_t g_multiPathCoinReceiveWidgets;
 static EthereumReceiveTile g_multiPathCoinReceiveTileNow;
@@ -146,6 +151,10 @@ static const PathItem_t g_solPaths[] = {
     {"Single Account Path",     "",     "m/44'/501'"  },
     {"Sub-account Path",        "",     "m/44'/501'"  },
 };
+static const PathItem_t g_nearPaths[] = {
+    {"BIP44 Standard",     "",     "m/44'/397'/0'"        },
+    {"Ledger Live",        "",     "m/44'/397'/0'/0'"  },
+};
 static lv_obj_t *g_addressLabel[2];
 static lv_obj_t *g_goToAddressIcon;
 
@@ -154,8 +163,10 @@ static uint32_t g_selectIndex;
 static uint8_t g_currentAccountIndex = 0;
 static uint32_t g_ethSelectIndex[3] = {0};
 static uint32_t g_solSelectIndex[3] = {0};
+static uint32_t g_nearSelectIndex[3] = {0};
 static uint32_t g_ethPathIndex[3] = {0};
 static uint32_t g_solPathIndex[3] = {0};
+static uint32_t g_nearPathIndex[3] = {0};
 static PageWidget_t *g_pageWidget;
 static HOME_WALLET_CARD_ENUM g_chainCard;
 static lv_obj_t *g_derivationPathDescLabel = NULL;
@@ -171,6 +182,9 @@ static void InitDerivationPathDesc(uint8_t chain)
         break;
     case HOME_WALLET_CARD_SOL:
         g_derivationPathDescs = GetDerivationPathDescs(SOL_DERIVATION_PATH_DESC);
+        break;
+    case HOME_WALLET_CARD_NEAR:
+        g_derivationPathDescs = GetDerivationPathDescs(NEAR_DERIVATION_PATH_DESC);
         break;
     default:
         break;
@@ -190,7 +204,11 @@ void GuiMultiPathCoinReceiveInit(uint8_t chain)
     lv_obj_set_style_bg_opa(g_multiPathCoinReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR & LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(g_multiPathCoinReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
     g_multiPathCoinReceiveWidgets.tileQrCode = lv_tileview_add_tile(g_multiPathCoinReceiveWidgets.tileView, RECEIVE_TILE_QRCODE, 0, LV_DIR_HOR);
-    GuiCreateQrCodeWidget(g_multiPathCoinReceiveWidgets.tileQrCode);
+    if (g_chainCard == HOME_WALLET_CARD_NEAR) {
+        GuiCreateNearWidget(g_multiPathCoinReceiveWidgets.tileQrCode);
+    } else {
+        GuiCreateQrCodeWidget(g_multiPathCoinReceiveWidgets.tileQrCode);
+    }
     g_multiPathCoinReceiveWidgets.tileSwitchAccount = lv_tileview_add_tile(g_multiPathCoinReceiveWidgets.tileView, RECEIVE_TILE_SWITCH_ACCOUNT, 0, LV_DIR_HOR);
     GuiCreateSwitchAddressWidget(g_multiPathCoinReceiveWidgets.tileSwitchAccount);
     GuiCreateSwitchAddressButtons(g_multiPathCoinReceiveWidgets.tileSwitchAccount);
@@ -227,6 +245,9 @@ void GuiMultiPathCoinReceiveRefresh(void)
         case HOME_WALLET_CARD_SOL:
             SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_SOL, "Receive SOL");
             break;
+        case HOME_WALLET_CARD_NEAR:
+            SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_NEAR, "Receive NEAR");
+            break;
         default:
             break;
         }
@@ -235,7 +256,7 @@ void GuiMultiPathCoinReceiveRefresh(void)
         break;
     case RECEIVE_TILE_SWITCH_ACCOUNT:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Switch Account");
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_showIndex = g_selectIndex / 5 * 5;
         if (g_showIndex < 5) {
@@ -251,7 +272,7 @@ void GuiMultiPathCoinReceiveRefresh(void)
         break;
     case RECEIVE_TILE_CHANGE_PATH:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Change Derivation Path");
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         break;
     default:
@@ -282,7 +303,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, ChangePathHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgPath);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, "Change Derivation Path", &openSans_24);
+    label = GuiCreateLabelWithFont(btn, _("derivation_path_change"), &openSans_24);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 
     btn = lv_btn_create(cont);
@@ -295,7 +316,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, TutorialHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgTutorial);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, "Tutorial", &openSans_24);
+    label = GuiCreateLabelWithFont(btn, _("Tutorial"), &openSans_24);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 }
 
@@ -312,6 +333,28 @@ lv_obj_t* CreateEthereumReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)
     lv_obj_add_flag(qrcode, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(qrcode, GuiFullscreenModeHandler, LV_EVENT_CLICKED, NULL);
     return qrcode;
+}
+
+static void GuiFirstReceive(lv_obj_t *parent) {
+    const char* coin = GetCoinCardByIndex(g_chainCard)->coin;
+    if (!GetFirstReceive(coin)) {
+        g_multiPathCoinReceiveWidgets.attentionCont = GuiCreateHintBox(parent, 480, 386, false);
+        lv_obj_t *tempObj = GuiCreateImg(g_multiPathCoinReceiveWidgets.attentionCont, &imgInformation);
+        lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
+        tempObj = GuiCreateLittleTitleLabel(g_multiPathCoinReceiveWidgets.attentionCont, _("Attention"));
+        lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
+        char hint[256];
+        GetHint(hint);
+        tempObj = GuiCreateLabelWithFont(g_multiPathCoinReceiveWidgets.attentionCont, hint, &openSans_20);
+        lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
+        tempObj = GuiCreateBtn(g_multiPathCoinReceiveWidgets.attentionCont, _("got_it"));
+        lv_obj_set_size(tempObj, 122, 66);
+        lv_obj_set_style_radius(tempObj, 24, LV_PART_MAIN);
+        lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
+        lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+        lv_obj_add_event_cb(tempObj, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
+        SetFirstReceive(coin, true);
+    }
 }
 
 static void GuiCreateQrCodeWidget(lv_obj_t *parent)
@@ -353,26 +396,59 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_img_opa(tempObj, LV_OPA_80, LV_PART_MAIN);
     lv_obj_align(tempObj, LV_ALIGN_CENTER, 150, 0);
     g_goToAddressIcon = tempObj;
-    const char* coin = GetCoinCardByIndex(g_chainCard)->coin;
 
-    if (!GetFirstReceive(coin)) {
-        g_multiPathCoinReceiveWidgets.attentionCont = GuiCreateHintBox(parent, 480, 386, false);
-        tempObj = GuiCreateImg(g_multiPathCoinReceiveWidgets.attentionCont, &imgInformation);
-        lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
-        tempObj = GuiCreateLittleTitleLabel(g_multiPathCoinReceiveWidgets.attentionCont, "Attention");
-        lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
-        char hint[256];
-        GetHint(hint);
-        tempObj = GuiCreateLabelWithFont(g_multiPathCoinReceiveWidgets.attentionCont, hint, &openSans_20);
-        lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
-        tempObj = GuiCreateBtn(g_multiPathCoinReceiveWidgets.attentionCont, "Got It");
-        lv_obj_set_size(tempObj, 122, 66);
-        lv_obj_set_style_radius(tempObj, 24, LV_PART_MAIN);
-        lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
-        lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-        lv_obj_add_event_cb(tempObj, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
-        SetFirstReceive(coin, true);
+    GuiFirstReceive(parent);
+}
+
+static void GuiCreateNearWidget(lv_obj_t *parent)
+{
+    g_multiPathCoinReceiveWidgets.qrCodeCont = GuiCreateContainerWithParent(parent, 408, 336);
+    uint16_t yOffset = 36;
+    lv_obj_t *line;
+    static lv_point_t points[2] =  {{0, 0}, {336, 0}};
+    lv_obj_align(g_multiPathCoinReceiveWidgets.qrCodeCont, LV_ALIGN_TOP_MID, 0, 0);
+    lv_obj_set_style_bg_color(g_multiPathCoinReceiveWidgets.qrCodeCont, DARK_BG_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_radius(g_multiPathCoinReceiveWidgets.qrCodeCont, 24, LV_PART_MAIN);
+
+    g_multiPathCoinReceiveWidgets.addressCountLabel = GuiCreateLabel(g_multiPathCoinReceiveWidgets.qrCodeCont, "");
+    lv_obj_align(g_multiPathCoinReceiveWidgets.addressCountLabel, LV_ALIGN_DEFAULT, 36, yOffset);
+
+    if (GetPathIndex() == 0) {
+        yOffset += 46;
+        line = GuiCreateLine(g_multiPathCoinReceiveWidgets.qrCodeCont, points, 2);
+        lv_obj_align(line, LV_ALIGN_TOP_LEFT, 36, yOffset);
     }
+
+    yOffset += 18;
+    lv_obj_t *tempObj = GuiCreateNoticeLabel(g_multiPathCoinReceiveWidgets.qrCodeCont, _("public_key"));
+    lv_obj_align(tempObj, LV_ALIGN_DEFAULT, 36, yOffset);
+
+    yOffset += 38;
+    g_multiPathCoinReceiveWidgets.addressLabel = GuiCreateNoticeLabel(g_multiPathCoinReceiveWidgets.qrCodeCont, "");
+    lv_obj_align(g_multiPathCoinReceiveWidgets.addressLabel, LV_ALIGN_DEFAULT, 36, yOffset);
+    lv_obj_set_width(g_multiPathCoinReceiveWidgets.addressLabel, 336);
+
+    yOffset += 106;
+    tempObj = GuiCreateNoticeLabel(g_multiPathCoinReceiveWidgets.qrCodeCont, _("path"));
+    lv_obj_align(tempObj, LV_ALIGN_DEFAULT, 36, yOffset);
+
+    yOffset += 38;
+    g_multiPathCoinReceiveWidgets.pathLabel = GuiCreateNoticeLabel(g_multiPathCoinReceiveWidgets.qrCodeCont, "");
+    lv_obj_align(g_multiPathCoinReceiveWidgets.pathLabel, LV_ALIGN_DEFAULT, 36, yOffset);
+
+    g_multiPathCoinReceiveWidgets.addressButton = lv_btn_create(g_multiPathCoinReceiveWidgets.qrCodeCont);
+    lv_obj_set_size(g_multiPathCoinReceiveWidgets.addressButton, 336, 36);
+    lv_obj_align(g_multiPathCoinReceiveWidgets.addressButton, LV_ALIGN_TOP_LEFT, 36, 26);
+    lv_obj_set_style_bg_opa(g_multiPathCoinReceiveWidgets.addressButton, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_style_border_width(g_multiPathCoinReceiveWidgets.addressButton, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_width(g_multiPathCoinReceiveWidgets.addressButton, 0, LV_PART_MAIN);
+    lv_obj_set_style_shadow_width(g_multiPathCoinReceiveWidgets.addressButton, 0, LV_PART_MAIN);
+    lv_obj_add_flag(g_multiPathCoinReceiveWidgets.addressButton, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_event_cb(g_multiPathCoinReceiveWidgets.addressButton, OpenSwitchAddressHandler, LV_EVENT_CLICKED, NULL);
+    g_goToAddressIcon = GuiCreateImg(g_multiPathCoinReceiveWidgets.addressButton, &imgArrowRight);
+    lv_obj_align(g_goToAddressIcon, LV_ALIGN_RIGHT_MID, 20, 0);
+
+    GuiFirstReceive(parent);
 }
 
 static void GetHint(char *hint)
@@ -383,6 +459,9 @@ static void GetHint(char *hint)
         break;
     case HOME_WALLET_CARD_SOL:
         sprintf(hint, _("receive_coin_hint_fmt"), "SOL");
+        break;
+    case HOME_WALLET_CARD_NEAR:
+        sprintf(hint, _("receive_coin_hint_fmt"), "NEAR");
         break;
     default:
         break;
@@ -472,6 +551,9 @@ static void GetChangePathLabelHint(char* hint)
     case HOME_WALLET_CARD_SOL:
         sprintf(hint, _("derivation_path_select_sol"));
         return;
+    case HOME_WALLET_CARD_NEAR:
+        sprintf(hint, _("derivation_path_select_near"));
+        return;
     default:
         break;
     }
@@ -484,6 +566,8 @@ static char* GetChangePathItemTitle(uint32_t i)
         return (char *)g_ethPaths[i].title;
     case HOME_WALLET_CARD_SOL:
         return (char *)g_solPaths[i].title;
+    case HOME_WALLET_CARD_NEAR:
+        return (char *)g_nearPaths[i].title;
     default:
         break;
     }
@@ -520,7 +604,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
         gap = 0;
     }
 
-    char *desc = _("derivation_path_address_eg");    
+    char *desc = _("derivation_path_address_eg");
     label = GuiCreateNoticeLabel(egCont, desc);
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, gap);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
@@ -539,7 +623,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
     g_addressLabel[0] = label;
 
-    if (!(g_chainCard == HOME_WALLET_CARD_SOL && g_solPathIndex[g_currentAccountIndex] == 1))
+    if (!((g_chainCard == HOME_WALLET_CARD_SOL && g_solPathIndex[g_currentAccountIndex] == 1) || (g_chainCard == HOME_WALLET_CARD_NEAR && g_nearPathIndex[g_currentAccountIndex] == 0)))
     {
         index = GuiCreateNoticeLabel(egCont, _("1"));
         lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
@@ -576,15 +660,19 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
 
-    for (uint32_t i = 0; i < 3; i++) {
-
+    int8_t len = 3;
+    if (g_chainCard == HOME_WALLET_CARD_NEAR) {
+        len = 2;
+        lv_obj_set_height(cont, 205);
+    }
+    for (uint32_t i = 0; i < len; i++) {
         label = GuiCreateLabelWithFont(cont, GetChangePathItemTitle(i), &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         GetPathItemSubTitle(string, i);
         label = GuiCreateLabelWithFontAndTextColor(cont, string, g_defIllustrateFont, 0x919191);
         lv_label_set_recolor(label, true);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
-        if (i < 2){
+        if (i < len - 1){
             line = GuiCreateLine(cont, points, 2);
             lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * (i + 1));
         }
@@ -622,13 +710,23 @@ static void RefreshQrCode(void)
 {
     AddressDataItem_t addressDataItem;
     ModelGetAddress(g_selectIndex, &addressDataItem);
-    lv_qrcode_update(g_multiPathCoinReceiveWidgets.qrCode, addressDataItem.address, strlen(addressDataItem.address));
-    lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
-    if (fullscreen_qrcode) {
-        lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strlen(addressDataItem.address));
+    if (g_chainCard != HOME_WALLET_CARD_NEAR) {
+        lv_qrcode_update(g_multiPathCoinReceiveWidgets.qrCode, addressDataItem.address, strlen(addressDataItem.address));
+        lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
+        if (fullscreen_qrcode) {
+            lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strlen(addressDataItem.address));
+        }
     }
     lv_label_set_text(g_multiPathCoinReceiveWidgets.addressLabel, addressDataItem.address);
     lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.addressCountLabel, "Account-%u", (addressDataItem.index + 1));
+    if (g_chainCard == HOME_WALLET_CARD_NEAR) {
+        lv_label_set_text(g_multiPathCoinReceiveWidgets.pathLabel, addressDataItem.path);
+        if (GetPathIndex() == 0) {
+            lv_obj_add_flag(g_multiPathCoinReceiveWidgets.addressButton, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.addressButton, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
 }
 
 static void RefreshSwitchAccount(void)
@@ -719,6 +817,19 @@ static int GetSOLMaxAddressIndex(void)
     return GENERAL_ADDRESS_INDEX_MAX;
 }
 
+static int GetNearMaxAddressIndex(void)
+{
+    switch (g_nearPathIndex[GetCurrentAccountIndex()]) {
+    case 0:
+        return NEAR_BIP44_ADDRESS_INDEX_MAX;
+    case 1:
+        return NEAR_LEDGER_LIVE_ADDRESS_INDEX_MAX;
+    default:
+        break;
+    }
+    return GENERAL_ADDRESS_INDEX_MAX;
+}
+
 
 static int GetMaxAddressIndex(void)
 {
@@ -727,6 +838,8 @@ static int GetMaxAddressIndex(void)
         return GetEthMaxAddressIndex();
     case HOME_WALLET_CARD_SOL:
         return GetSOLMaxAddressIndex();
+    case HOME_WALLET_CARD_NEAR:
+        return GetNearMaxAddressIndex();
     default:
         break;
     }
@@ -774,6 +887,8 @@ static TUTORIAL_LIST_INDEX_ENUM GetTutorialIndex()
         return TUTORIAL_ETH_RECEIVE;
     case HOME_WALLET_CARD_SOL:
         return TUTORIAL_SOL_RECEIVE;
+    case HOME_WALLET_CARD_NEAR:
+        return TUTORIAL_NEAR_RECEIVE;
     default:
         break;
     }
@@ -833,6 +948,9 @@ static uint32_t GetPathIndex(void)
     case HOME_WALLET_CARD_SOL:
         return g_solPathIndex[g_currentAccountIndex];
         break;
+    case HOME_WALLET_CARD_NEAR:
+        return g_nearPathIndex[g_currentAccountIndex];
+        break;
     default:
         break;
     }
@@ -849,6 +967,9 @@ static void SetPathIndex(uint32_t index)
     case HOME_WALLET_CARD_SOL:
         g_solPathIndex[g_currentAccountIndex] = index;
         break;
+    case HOME_WALLET_CARD_NEAR:
+        g_nearPathIndex[g_currentAccountIndex] = index;
+        break;
     default:
         break;
     }
@@ -857,10 +978,11 @@ static void ChangePathCheckHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *checkBox;
+    int8_t len = (g_chainCard == HOME_WALLET_CARD_NEAR ? 2 : 3);
 
     if (code == LV_EVENT_CLICKED) {
         checkBox = lv_event_get_target(e);
-        for (uint32_t i = 0; i < 3; i++) {
+        for (uint32_t i = 0; i < len; i++) {
             if (checkBox == g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox) {
                 lv_obj_add_state(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
@@ -951,6 +1073,20 @@ static void GetSolPathItemSubTitle(char* subTitle, int index)
     }
 }
 
+static void GetNearPathItemSubTitle(char* subTitle, int index)
+{
+    switch (index) {
+    case 0:
+        sprintf(subTitle, "m/44'/397'/0'");
+        break;
+    case 1:
+        sprintf(subTitle, "m/44'/397'/0'/0'/#F5870A X#'");
+        break;
+    default:
+        break;
+    }
+}
+
 static void GetPathItemSubTitle(char* subTitle, int index)
 {
     switch (g_chainCard) {
@@ -959,6 +1095,9 @@ static void GetPathItemSubTitle(char* subTitle, int index)
         break;
     case HOME_WALLET_CARD_SOL:
         GetSolPathItemSubTitle(subTitle, index);
+        break;
+    case HOME_WALLET_CARD_NEAR:
+        GetNearPathItemSubTitle(subTitle, index);
         break;
     default:
         break;
@@ -978,6 +1117,20 @@ void AddressLongModeCut(char *out, const char *address)
     out[12] = 0;
     strcat(out, "...");
     strcat(out, address + len - 12);
+}
+
+static void GetNearHdPath(char *hdPath, int index)
+{
+    switch (g_nearPathIndex[g_currentAccountIndex]) {
+    case 0:
+        sprintf(hdPath, "%s", g_nearPaths[g_nearPathIndex[g_currentAccountIndex]].path);
+        break;
+    case 1:
+        sprintf(hdPath, "%s/%u'", g_nearPaths[g_nearPathIndex[g_currentAccountIndex]].path, index);
+        break;
+    default:
+        break;
+    }
 }
 
 static void GetSolHdPath(char *hdPath, int index)
@@ -1048,6 +1201,21 @@ static char *GetSolXpub(int index)
     return "";
 }
 
+static char *GetNearXpub(int index)
+{
+    switch (g_nearPathIndex[g_currentAccountIndex]) {
+    case 0:
+        return (char *)GetCurrentAccountPublicKey(XPUB_TYPE_NEAR_BIP44_STANDARD_0);
+    case 1:
+        return (char *)GetCurrentAccountPublicKey(XPUB_TYPE_NEAR_LEDGER_LIVE_0 + index);
+    default:
+        break;
+    }
+    ASSERT(0);
+
+    return "";
+}
+
 static char *GetEthXpub(int index)
 {
     switch (g_ethPathIndex[g_currentAccountIndex]) {
@@ -1074,6 +1242,9 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         break;
     case HOME_WALLET_CARD_SOL:
         ModelGetSolAddress(index, item);
+        break;
+    case HOME_WALLET_CARD_NEAR:
+        ModelGetNearAddress(index, item);
         break;
     default:
         break;
@@ -1105,9 +1276,29 @@ static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item)
     strcpy(item->path, hdPath);
 }
 
+static void ModelGetNearAddress(uint32_t index, AddressDataItem_t *item)
+{
+    char hdPath[128];
+    GetNearHdPath(hdPath, index);
+    printf("ModelGetNearAddress hdPath=%s\r\n", hdPath);
+    item->index = index;
+    sprintf(item->address, "tb1qkcp7vdhczgk5eh59d2l0dxvmpzhxasjdhakjsdhjasduwbdshwuhtqjhbfwiuehf%u", index);
+    strcpy(item->path, hdPath);
+}
 
 #else
 
+
+static void ModelGetNearAddress(uint32_t index, AddressDataItem_t *item)
+{
+    char *xPub = NULL, hdPath[128] = {0};
+    GetNearHdPath(hdPath, index);
+    xPub = GetNearXpub(index);
+    ASSERT(xPub);
+    item->index = index;
+    strcpy(item->address, xPub);
+    strcpy(item->path, hdPath);
+}
 
 static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item)
 {
@@ -1155,17 +1346,20 @@ void GuiResetCurrentEthAddressIndex(uint8_t index)
     g_selectIndex = 0;
     g_ethSelectIndex[index] = 0;
     g_solSelectIndex[index] = 0;
+    g_nearSelectIndex[index] = 0;
     g_ethPathIndex[index] = 0;
     g_solPathIndex[index] = 0;
+    g_nearPathIndex[index] = 0;
 }
 
 void GuiResetAllEthAddressIndex(void)
 {
     memset(g_ethSelectIndex, 0, sizeof(g_ethSelectIndex));
     memset(g_solSelectIndex, 0, sizeof(g_solSelectIndex));
+    memset(g_nearSelectIndex, 0, sizeof(g_nearSelectIndex));
     memset(g_ethPathIndex, 0, sizeof(g_ethPathIndex));
     memset(g_solPathIndex, 0, sizeof(g_solPathIndex));
-
+    memset(g_nearPathIndex, 0, sizeof(g_nearPathIndex));
 }
 
 static void SetCurrentSelectIndex(uint32_t selectIndex)
@@ -1176,6 +1370,9 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
         break;
     case HOME_WALLET_CARD_SOL:
         g_solSelectIndex[g_currentAccountIndex] = selectIndex;
+        break;
+    case HOME_WALLET_CARD_NEAR:
+        g_nearSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
     default:
         break;
@@ -1189,6 +1386,8 @@ static uint32_t GetCurrentSelectIndex()
         return g_ethSelectIndex[g_currentAccountIndex];
     case HOME_WALLET_CARD_SOL:
         return g_solSelectIndex[g_currentAccountIndex];
+    case HOME_WALLET_CARD_NEAR:
+        return g_nearSelectIndex[g_currentAccountIndex];
     default:
         break;
     }

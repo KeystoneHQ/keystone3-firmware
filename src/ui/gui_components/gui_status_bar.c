@@ -81,6 +81,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_QCK, "Confirm Transaction", &coinQck},
     {CHAIN_LUNA, "Confirm Transaction", &coinLuna},
     {CHAIN_LUNC, "Confirm Transaction", &coinLunc},
+    {CHAIN_NEAR, "Confirm Transaction", &coinNear},
     {CHAIN_BNB, "Confirm Transaction", &coinBnb},
     {CHAIN_DOT, "Confirm Transaction", &coinDot},
 };

@@ -58,6 +58,7 @@ typedef enum {
     CHAIN_QCK,
     CHAIN_LUNA,
     CHAIN_LUNC,
+    CHAIN_NEAR,
     CHAIN_BNB,
     CHAIN_DOT,
 

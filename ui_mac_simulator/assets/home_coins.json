@@ -9,6 +9,10 @@
     },
     "ADA": {
         "firstRecv": true,
+        "manage": false
+    },
+    "NEAR": {
+        "firstRecv": false,
         "manage": true
     },
     "BNB": {

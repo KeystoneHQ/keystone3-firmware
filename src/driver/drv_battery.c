@@ -26,7 +26,8 @@
 #define BATTERY_CHARGING_BY_TIME                        75
 #define BATTERY_LOG_PERCENT_INTERVAL                    1
 #define BATTERY_LOG_DETAIL                              1
-#define BATTERY_ADC_TIMES                               100
+#define BATTERY_ADC_TIMES                               22
+#define BATTERY_RTC_ADC_TIMES                           10
 #define BATTERY_PCT_CHANGE_MIN_TICK_DISCHARGE           (120 * 1000)
 #define BATTERY_PCT_CHANGE_MIN_TICK_CHARGING            (80 * 1000)
 #define BATTERY_INVALID_PERCENT_VALUE                   101
@@ -155,53 +156,12 @@ void BatteryOpen(void)
 /// @brief Get battery voltage.
 /// @param
 /// @return Battery voltage, in millivolts.
-// uint32_t GetBatteryMilliVolt(void)
-// {
-//     int32_t i, adcAver, temp, max, min;//, temps[BATTERY_ADC_TIMES];
-//     uint64_t adcSum = 0;
-
-//     max = 0;
-//     min = 0xFFF;
-//     ADC_StartCmd(ENABLE);
-//     ADC_ChannelSwitch(BATTERY_CHANNEL);
-//     for (i = 0; i < BATTERY_ADC_TIMES; i++) {
-//         do {
-//             UserDelay(1);
-//             temp = ADC_GetResult();
-//         } while (temp >= 0xF00);
-//         adcSum += temp;
-//         if (temp > max) {
-//             max = temp;
-//         }
-//         if (temp < min) {
-//             min = temp;
-//         }
-//     }
-//     ADC_StartCmd(DISABLE);
-//     BATTERY_PRINTF("max=%d,min=%d\r\n", max, min);
-//     adcSum -= max;
-//     adcSum -= min;
-//     adcAver = adcSum / (BATTERY_ADC_TIMES - 2);
-//     //PrintU32Array("temps", temps, BATTERY_ADC_TIMES);
-//     BATTERY_PRINTF("adcAver=%d\r\n", adcAver);
-
-//     if(GetHardwareVersion() < VERSION_V3_2) {
-//         temp = ADC_CalVoltage(adcAver, 6200);
-//     } else {
-//         temp = ADC_CalVoltage(adcAver, 1987);
-//         temp = temp * 16365 / 6365;
-//     }
-
-//     return temp;
-// }
-
 uint32_t GetBatteryMilliVolt(void)
 {
-    int32_t i, adcAver, temp, max, min; //, temps[BATTERY_ADC_TIMES];
+    int32_t i, adcAver, temp, max, min;//, temps[BATTERY_ADC_TIMES];
     uint64_t adcSum = 0;
     static uint32_t battery_vol_back = 0;
-    static uint32_t nBatteryCount1 = 0, nBatteryCount2 = 0, nBatteryCount3 = 0;
-    ;
+    static uint32_t nBatteryCount1 = 0, nBatteryCount2 = 0, nBatteryCount3 = 0;;
 
     max = 0;
     min = 0xFFF;
@@ -282,7 +242,7 @@ uint32_t GetBatteryMilliVolt(void)
         }
     }
 
-    return battery_vol_back; // ADC_CalVoltage(adcAver, 6200);// 6140
+    return battery_vol_back;// ADC_CalVoltage(adcAver, 6200);// 6140
 }
 
 uint32_t GetRtcBatteryMilliVolt(void)
@@ -291,14 +251,11 @@ uint32_t GetRtcBatteryMilliVolt(void)
     uint64_t adcSum = 0;
     uint32_t vol;
 
-    osKernelLock();
-    RtcBatAdcDetEnable();
-    UserDelay(10);
     max = 0;
     min = 0xFFF;
     ADC_StartCmd(ENABLE);
     ADC_ChannelSwitch(RTC_BAT_CHANNEL);
-    for (i = 0; i < BATTERY_ADC_TIMES; i++) {
+    for (i = 0; i < BATTERY_RTC_ADC_TIMES; i++) {
         do {
             UserDelay(1);
             temp = ADC_GetResult();
@@ -314,7 +271,7 @@ uint32_t GetRtcBatteryMilliVolt(void)
     ADC_StartCmd(DISABLE);
     adcSum -= max;
     adcSum -= min;
-    adcAver = adcSum / (BATTERY_ADC_TIMES - 2);
+    adcAver = adcSum / (BATTERY_RTC_ADC_TIMES - 2);
 
     if(GetHardwareVersion() < VERSION_V3_2) {
         vol = ADC_CalVoltage(adcAver, 1880);
@@ -335,8 +292,6 @@ uint32_t GetRtcBatteryMilliVolt(void)
         vol = vol * 1913 / 913;
     }
 
-    RtcBatAdcDetDisable();
-    osKernelUnlock();
     return vol;
 }
 
@@ -518,7 +473,12 @@ void BatteryTest(int argc, char *argv[])
         milliVolt = GetBatteryMilliVolt();
         percent = GetBatteryPercentByMilliVolt(milliVolt, GetUsbPowerState() == USB_POWER_STATE_DISCONNECT);
         printf("milliVolt=%d, percent=%d, showPercent=%d\n", milliVolt, percent, GetBatterPercent());
+        RtcBatAdcDetEnable();
+        osKernelLock();
+        UserDelay(150);
         printf("rtc voltage=%d\n", GetRtcBatteryMilliVolt());
+        osKernelUnlock();
+        RtcBatAdcDetDisable();
     } else if (strcmp(argv[0], "set_percent") == 0) {
         VALUE_CHECK(argc, 2);
         sscanf(argv[1], "%d", &temp32);

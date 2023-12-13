@@ -28,10 +28,10 @@ static int32_t GuiInitViewInit(void)
         GuiFrameOpenView(&g_inactiveView);
         return SUCCESS_CODE;
     }
-    // if (Tampered()) {
-    //     GuiFrameOpenView(&g_selfDestructView);
-    //     return SUCCESS_CODE;
-    // }
+    if (Tampered()) {
+        GuiFrameOpenView(&g_selfDestructView);
+        return SUCCESS_CODE;
+    }
     GuiModeGetAmount();
     // GuiFrameOpenView(&g_settingView);
     // GuiFrameOpenView(&g_connectWalletView);

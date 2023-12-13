@@ -573,8 +573,9 @@ UREncodeResult *GuiGetCosmosSignQrCodeData(void)
     URType urType = g_isMulti ? ((URParseMultiResult *)g_urResult)->ur_type : ((URParseResult *)g_urResult)->ur_type;
     do {
         uint8_t seed[64];
+        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        encodeResult = cosmos_sign_tx(data, urType, seed, sizeof(seed));
+        encodeResult = cosmos_sign_tx(data, urType, seed, len);
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);

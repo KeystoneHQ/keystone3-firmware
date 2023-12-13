@@ -384,6 +384,20 @@ impl ParsedCardanoTx {
     pub fn verify(tx: Transaction, context: ParseContext) -> R<()> {
         let network_id = Self::judge_network_id(&tx);
         let parsed_inputs = Self::parse_inputs(&tx, &context, network_id)?;
+
+        let mfp = hex::encode(context.get_master_fingerprint());
+        let has_my_signer = context
+            .get_cert_keys()
+            .iter()
+            .filter(|v| hex::encode(v.get_master_fingerprint()).eq(&mfp))
+            .fold(false, |acc, cur| {
+                acc || hex::encode(cur.get_master_fingerprint()).eq(&mfp)
+            });
+
+        if has_my_signer {
+            return Ok(());
+        }
+
         if parsed_inputs
             .iter()
             .filter(|v| v.address.is_some())

@@ -11,7 +11,6 @@ typedef enum {
     VERSION_DVT2,
     VERSION_V3_0,   // pvt version
     VERSION_V3_1,
-    VERSION_V3_2,
     VERSION_NONE,
 } HardwareVersion;
 

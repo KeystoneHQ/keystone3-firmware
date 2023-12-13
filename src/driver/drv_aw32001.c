@@ -225,7 +225,9 @@ void Aw32001Init(void)
     Aw32001RegValueInit();
     milliVolt = GetBatteryMilliVolt();
     printf("milliVolt=%d\n", milliVolt);
-    Aw32001ChargingEnable();
+    if (milliVolt > 1000) {
+        Aw32001ChargingEnable();
+    }
 }
 
 

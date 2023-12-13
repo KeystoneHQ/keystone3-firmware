@@ -1,5 +1,6 @@
 use crate::errors::{CardanoError, R};
 use crate::structs::{ParseContext, ParsedCardanoTx};
+use alloc::collections::{BTreeMap, BTreeSet};
 use alloc::format;
 use alloc::string::ToString;
 use alloc::vec::Vec;
@@ -32,56 +33,79 @@ pub fn sign_tx(
             entropy, passphrase,
         )
         .map_err(|e| CardanoError::SigningFailed(e.to_string()))?;
-    let mut utxo_signatures: Vec<([u8; 32], [u8; 64])> = context
-        .get_utxos()
-        .iter()
-        .filter(|v| {
-            v.get_master_fingerprint()
-                .eq(&context.get_master_fingerprint())
-        })
-        .map(|v| {
-            let pubkey =
-                keystore::algorithms::ed25519::bip32_ed25519::derive_extended_pubkey_by_xprv(
+
+    let mut signatures = BTreeMap::new();
+
+    for utxo in context.get_utxos() {
+        if !utxo
+            .get_master_fingerprint()
+            .eq(&context.get_master_fingerprint())
+        {
+            continue;
+        }
+        match keystore::algorithms::ed25519::bip32_ed25519::derive_extended_pubkey_by_xprv(
+            &icarus_master_key,
+            &utxo.get_path().to_string(),
+        )
+        .map(|v| v.public_key())
+        .map_err(|e| CardanoError::SigningFailed(e.to_string()))
+        {
+            Ok(pubkey) => {
+                if signatures.contains_key(&pubkey) {
+                    continue;
+                }
+                match keystore::algorithms::ed25519::bip32_ed25519::sign_message_by_xprv(
                     &icarus_master_key,
-                    &v.get_path().to_string(),
+                    &hash,
+                    &utxo.get_path().to_string(),
                 )
-                .map(|v| v.public_key())
-                .map_err(|e| CardanoError::SigningFailed(e.to_string()));
-            let signature = keystore::algorithms::ed25519::bip32_ed25519::sign_message_by_xprv(
-                &icarus_master_key,
-                &hash,
-                &v.get_path().to_string(),
-            )
-            .map_err(|e| CardanoError::SigningFailed(e.to_string()));
-            pubkey.and_then(|_pubkey| signature.map(|_signature| (_pubkey, _signature)))
-        })
-        .collect::<R<Vec<([u8; 32], [u8; 64])>>>()?;
-    let mut cert_signatures = context
-        .get_cert_keys()
-        .iter()
-        .filter(|v| {
-            v.get_master_fingerprint()
-                .eq(&context.get_master_fingerprint())
-        })
-        .map(|v| {
-            let pubkey =
-                keystore::algorithms::ed25519::bip32_ed25519::derive_extended_pubkey_by_xprv(
+                .map_err(|e| CardanoError::SigningFailed(e.to_string()))
+                {
+                    Ok(signature) => {
+                        signatures.insert(pubkey, signature);
+                    }
+                    Err(e) => return Err(e),
+                }
+            }
+            Err(e) => return Err(e),
+        }
+    }
+
+    for signer in context.get_cert_keys() {
+        if !signer
+            .get_master_fingerprint()
+            .eq(&context.get_master_fingerprint())
+        {
+            continue;
+        }
+        match keystore::algorithms::ed25519::bip32_ed25519::derive_extended_pubkey_by_xprv(
+            &icarus_master_key,
+            &signer.get_path().to_string(),
+        )
+        .map(|v| v.public_key())
+        .map_err(|e| CardanoError::SigningFailed(e.to_string()))
+        {
+            Ok(pubkey) => {
+                if signatures.contains_key(&pubkey) {
+                    continue;
+                }
+                match keystore::algorithms::ed25519::bip32_ed25519::sign_message_by_xprv(
                     &icarus_master_key,
-                    &v.get_path().to_string(),
+                    &hash,
+                    &signer.get_path().to_string(),
                 )
-                .map(|v| v.public_key())
-                .map_err(|e| CardanoError::SigningFailed(e.to_string()));
-            let signature = keystore::algorithms::ed25519::bip32_ed25519::sign_message_by_xprv(
-                &icarus_master_key,
-                &hash,
-                &v.get_path().to_string(),
-            )
-            .map_err(|e| CardanoError::SigningFailed(e.to_string()));
-            pubkey.and_then(|v| signature.map(|_v| (v, _v)))
-        })
-        .collect::<R<Vec<([u8; 32], [u8; 64])>>>()?;
-    utxo_signatures.append(&mut cert_signatures);
-    for (pubkey, signature) in utxo_signatures {
+                .map_err(|e| CardanoError::SigningFailed(e.to_string()))
+                {
+                    Ok(signature) => {
+                        signatures.insert(pubkey, signature);
+                    }
+                    Err(e) => return Err(e),
+                }
+            }
+            Err(e) => return Err(e),
+        }
+    }
+    for (pubkey, signature) in signatures {
         let v = Vkeywitness::new(
             &Vkey::new(
                 &PublicKey::from_bytes(&pubkey)

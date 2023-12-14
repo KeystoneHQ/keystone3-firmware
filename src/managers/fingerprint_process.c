@@ -140,7 +140,12 @@ static void FpDelayTimerHandle(void *argument)
 
 bool FpModuleIsExist(void)
 {
-    return g_fpStatusExist && g_chipIdState;
+    return g_fpStatusExist;
+}
+
+bool FpModuleIsChipState(void)
+{
+    return g_chipIdState;
 }
 
 void FpSendTimerStart(uint16_t cmd)
@@ -260,7 +265,6 @@ static void FpGetNumberSend(uint16_t cmd, uint8_t fingerInfo)
 // A500 RECV
 static void FpGetNumberRecv(char *indata, uint8_t len)
 {
-    SearchFpChipId();
     uint8_t result = indata[0];
     if (result == FP_SUCCESS_CODE) {
         FpResponseHandle(FINGERPRINT_CMD_GET_REG_NUM);
@@ -274,6 +278,9 @@ static void FpGetNumberRecv(char *indata, uint8_t len)
             SetFingerManagerInfoToSE();
             FpDeleteSend(FINGERPRINT_CMD_DELETE_ALL, 1);
         }
+    }
+    if (g_chipIdState == false) {
+        SearchFpChipId();
     }
 }
 

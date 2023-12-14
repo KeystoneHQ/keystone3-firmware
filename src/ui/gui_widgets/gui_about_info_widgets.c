@@ -413,6 +413,7 @@ static void OpenVerifyFirmwareHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
+        lv_obj_scroll_to_y(g_cont, 0, LV_ANIM_OFF);
         g_firmwareVerifyCont = GuiCreateContainerWithParent(g_pageWidget->contentZone, 480, 800 - GUI_MAIN_AREA_OFFSET);
         lv_obj_clear_flag(g_pageWidget->contentZone, LV_OBJ_FLAG_SCROLLABLE);
         GuiCreateVerifyFirmwareInstructionTile(g_firmwareVerifyCont);

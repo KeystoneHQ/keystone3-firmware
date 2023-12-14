@@ -11,7 +11,6 @@ static int32_t GuiStandardReceiveViewInit(uint8_t chain)
 
 static int32_t GuiStandardReceiveViewDeInit(void)
 {
-    printf("GuiStandardReceiveViewDeInit\n");
     GuiStandardReceiveDeInit();
     return SUCCESS_CODE;
 }

@@ -181,6 +181,7 @@ void SendPackFingerMsg(uint16_t cmd, uint8_t *data, uint16_t frameId, uint32_t l
 void FingerTest(int argc, char *argv[]);
 void InitFingerManagerInfo(void);
 bool FpModuleIsExist(void);
+bool FpModuleIsChipState(void);
 
 void RegisterFp(uint8_t index);
 void DeleteFp(uint8_t index);

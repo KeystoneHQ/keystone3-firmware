@@ -413,11 +413,9 @@ static void GuiCreateNearWidget(lv_obj_t *parent)
     g_multiPathCoinReceiveWidgets.addressCountLabel = GuiCreateLabel(g_multiPathCoinReceiveWidgets.qrCodeCont, "");
     lv_obj_align(g_multiPathCoinReceiveWidgets.addressCountLabel, LV_ALIGN_DEFAULT, 36, yOffset);
 
-    if (GetPathIndex() == 0) {
-        yOffset += 46;
-        line = GuiCreateLine(g_multiPathCoinReceiveWidgets.qrCodeCont, points, 2);
-        lv_obj_align(line, LV_ALIGN_TOP_LEFT, 36, yOffset);
-    }
+    yOffset += 46;
+    line = GuiCreateLine(g_multiPathCoinReceiveWidgets.qrCodeCont, points, 2);
+    lv_obj_align(line, LV_ALIGN_TOP_LEFT, 36, yOffset);
 
     yOffset += 18;
     lv_obj_t *tempObj = GuiCreateNoticeLabel(g_multiPathCoinReceiveWidgets.qrCodeCont, _("public_key"));

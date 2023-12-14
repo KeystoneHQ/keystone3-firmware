@@ -143,6 +143,7 @@ void GuiTransactionParseFailed()
 void GuiTransactionDetailRefresh()
 {
     // PassWordPinHintRefresh(g_keyboardWidget);
+    GUI_DEL_OBJ(g_fingerSingContainer)
 }
 
 static void ThrowError()

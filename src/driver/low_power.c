@@ -90,7 +90,7 @@ uint32_t EnterLowPower(void)
     g_lowPowerState = LOW_POWER_STATE_DEEP_SLEEP;
     UsbDeInit();
     printf("enter deep sleep\r\n");
-    sleepSecond = GetWakeUpInterval();
+    sleepSecond = GetUsbPowerState() == USB_POWER_STATE_DISCONNECT ? RTC_WAKE_UP_INTERVAL_DISCHARGE : RTC_WAKE_UP_INTERVAL_CHARGING;
     printf("sleepSecond=%d\n", sleepSecond);
     TouchClose();
     UserDelay(10);
@@ -109,8 +109,7 @@ uint32_t EnterLowPower(void)
             Aw32001RefreshState();
             BatteryIntervalHandler();
             printf("GetUsbPowerState()=%d\n", GetUsbPowerState());
-            // sleepSecond = GetUsbPowerState() == USB_POWER_STATE_DISCONNECT ? RTC_WAKE_UP_INTERVAL_DISCHARGE : RTC_WAKE_UP_INTERVAL_CHARGING;
-            sleepSecond = GetWakeUpInterval();
+            sleepSecond = GetUsbPowerState() == USB_POWER_STATE_DISCONNECT ? RTC_WAKE_UP_INTERVAL_DISCHARGE : RTC_WAKE_UP_INTERVAL_CHARGING;
             AutoShutdownHandler(sleepSecond);
             SetRtcWakeUp(sleepSecond);
             wakeUpSecond = GetRtcCounter() + sleepSecond;

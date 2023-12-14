@@ -46,6 +46,7 @@ macro_rules! impl_c_ptr {
 macro_rules! impl_simple_c_ptr {
     ($name:ident<$t: ident>) => {
         impl<$t> $name<$t> {
+            #[cfg(feature = "debug-memory")]
             #[track_caller]
             pub fn simple_c_ptr(self) -> *mut Self {
                 let x = alloc::boxed::Box::into_raw(alloc::boxed::Box::new(self));
@@ -56,6 +57,10 @@ macro_rules! impl_simple_c_ptr {
                     core::panic::Location::caller()
                 ));
                 x
+            }
+            #[cfg(not(feature = "debug-memory"))]
+            pub fn simple_c_ptr(self) -> *mut Self {
+                alloc::boxed::Box::into_raw(alloc::boxed::Box::new(self))
             }
         }
     };

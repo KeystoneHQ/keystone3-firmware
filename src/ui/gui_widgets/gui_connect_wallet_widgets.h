@@ -24,6 +24,7 @@ typedef enum {
     WALLET_LIST_FEWCHA,
     WALLET_LIST_PETRA,
     WALLET_LIST_XRP_TOOLKIT,
+    WALLET_LIST_SENDER,
 
     WALLET_LIST_BUTT,
 } WALLET_LIST_INDEX_ENUM;
@@ -76,5 +77,6 @@ ETHAccountType GetMetamaskAccountType(void);
 void GuiConnectWalletHandleURGenerate(char *data, uint16_t len);
 void GuiConnectWalletHandleURUpdate(char *data, uint16_t len);
 SOLAccountType GetSolflareAccountType(void);
+uint8_t GetNearAccountType(void);
 #endif /* _GUI_CONNECT_WALLET_WIDGETS_H */
 

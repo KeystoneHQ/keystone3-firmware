@@ -18,4 +18,5 @@ UREncodeResult *GuiGetPetraData(void);
 UREncodeResult *GuiGetSolflareData(void);
 UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index);
 UREncodeResult *GuiGetImTokenData(void);
+UREncodeResult *GuiGetSenderDataByIndex(uint16_t index);
 #endif

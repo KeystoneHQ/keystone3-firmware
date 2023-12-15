@@ -152,8 +152,8 @@ static const PathItem_t g_solPaths[] = {
     {"Sub-account Path",        "",     "m/44'/501'"  },
 };
 static const PathItem_t g_nearPaths[] = {
-    {"BIP44 Standard",     "",     "m/44'/397'/0'"        },
-    {"Ledger Live",        "",     "m/44'/397'/0'/0'"  },
+    {"Standard",     "",     "m/44'/397'/0'"     },
+    {"Ledger Live",  "",     "m/44'/397'/0'/0'"  },
 };
 static lv_obj_t *g_addressLabel[2];
 static lv_obj_t *g_goToAddressIcon;

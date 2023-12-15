@@ -57,6 +57,10 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         item->index = index;
         strcpy(item->address, GuiGetXrpAddressByIndex(index));
         break;
+    case CHAIN_NEAR:
+        item->index = index;
+        strcpy(item->address, GetCurrentAccountPublicKey(XPUB_TYPE_NEAR_LEDGER_LIVE_0 + index));
+        break;
 
     default:
         printf("ModelGetAddress cannot match %d\r\n", index);

@@ -214,7 +214,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
 
     titleLabel = GuiCreateTextLabel(parent, _("about_info_fingerprint_firmware_version"));
     contentLabel = GuiCreateNoticeLabel(parent, fpVersion);
-    if (!FpModuleIsExist()) {
+    if (!FpModuleIsChipState()) {
         lv_obj_set_style_text_color(contentLabel, RED_COLOR, LV_PART_MAIN);
         lv_obj_set_style_text_opa(contentLabel, LV_OPA_100, LV_PART_MAIN);
     } else {

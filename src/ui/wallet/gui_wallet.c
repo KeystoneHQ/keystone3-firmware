@@ -150,8 +150,8 @@ UREncodeResult *GuiGetSenderDataByIndex(uint16_t index)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     uint8_t accountType = GetNearAccountType();
-    uint8_t xpubIndex = XPUB_TYPE_NEAR_BIP44_STANDARD_0;
-    PtrT_CSliceFFI_KeplrAccount publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_KeplrAccount));
+    uint8_t xpubIndex = XPUB_TYPE_NEAR_STANDARD_0;
+    PtrT_CSliceFFI_ExtendedPublicKey publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
     ExtendedPublicKey keys[1];
     publicKeys->data = keys;
     publicKeys->size = 1;
@@ -163,7 +163,8 @@ UREncodeResult *GuiGetSenderDataByIndex(uint16_t index)
         sprintf(keys[0].path, "m/44'/397'/0'");
     }
     keys[0].xpub = GetCurrentAccountPublicKey(xpubIndex);
-    g_urEncode = get_connect_sender_ur(mfp, sizeof(mfp), GetCurrentAccountPublicKey(xpubIndex));
+    g_urEncode = get_connect_sender_wallet_ur(mfp, sizeof(mfp), publicKeys);
+    SRAM_FREE(publicKeys);
     CHECK_CHAIN_PRINT(g_urEncode);
     return g_urEncode;
 #else

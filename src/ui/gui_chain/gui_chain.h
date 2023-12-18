@@ -10,6 +10,7 @@
 #include "gui_aptos.h"
 #include "gui_ada.h"
 #include "gui_xrp.h"
+#include "gui_near.h"
 
 #define LABEL_MAX_BUFF_LEN                                      (512)
 
@@ -21,6 +22,7 @@ typedef enum {
     CHAIN_ETH,
     CHAIN_SOL,
     CHAIN_APT,
+    CHAIN_NEAR,
     CHAIN_SUI,
     CHAIN_ADA,
     CHAIN_XRP,
@@ -58,7 +60,6 @@ typedef enum {
     CHAIN_QCK,
     CHAIN_LUNA,
     CHAIN_LUNC,
-    CHAIN_NEAR,
     CHAIN_BNB,
     CHAIN_DOT,
 

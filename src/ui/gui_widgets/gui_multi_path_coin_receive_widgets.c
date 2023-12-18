@@ -1203,7 +1203,7 @@ static char *GetNearXpub(int index)
 {
     switch (g_nearPathIndex[g_currentAccountIndex]) {
     case 0:
-        return (char *)GetCurrentAccountPublicKey(XPUB_TYPE_NEAR_BIP44_STANDARD_0);
+        return (char *)GetCurrentAccountPublicKey(XPUB_TYPE_NEAR_STANDARD_0);
     case 1:
         return (char *)GetCurrentAccountPublicKey(XPUB_TYPE_NEAR_LEDGER_LIVE_0 + index);
     default:

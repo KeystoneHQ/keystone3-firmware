@@ -37,6 +37,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
         {HOME_WALLET_CARD_ETH, false, "ETH", true},
         {HOME_WALLET_CARD_SOL, false, "SOL", true},
         {HOME_WALLET_CARD_APT, false, "APT", true},
+        {HOME_WALLET_CARD_NEAR, false, "NEAR", true},
         {HOME_WALLET_CARD_SUI, false, "SUI", true},
         {HOME_WALLET_CARD_ADA, false, "ADA", true},
         {HOME_WALLET_CARD_XRP, false, "XRP", true},
@@ -74,7 +75,6 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
         {HOME_WALLET_CARD_QCK, false, "QCK", true},
         {HOME_WALLET_CARD_LUNA, false, "LUNA", true},
         {HOME_WALLET_CARD_LUNC, false, "LUNC", true},
-        {HOME_WALLET_CARD_NEAR, false, "NEAR", true},
         {HOME_WALLET_CARD_BNB, false, "BNB", false},
         {HOME_WALLET_CARD_DOT, false, "DOT", false},
 };
@@ -117,6 +117,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =
             .coin = "APT",
             .chain = "Aptos",
             .icon = &coinApt,
+        },
+        {
+            .index = HOME_WALLET_CARD_NEAR,
+            .coin = "NEAR",
+            .chain = "Near",
+            .icon = &coinNear,
         },
         {
             .index = HOME_WALLET_CARD_SUI,
@@ -339,12 +345,6 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =
             .coin = "LUNC",
             .chain = "Terra Classic",
             .icon = &coinLunc,
-        },
-        {
-            .index = HOME_WALLET_CARD_NEAR,
-            .coin = "NEAR",
-            .chain = "Near",
-            .icon = &coinNear,
         },
         {
             .index = HOME_WALLET_CARD_BNB,

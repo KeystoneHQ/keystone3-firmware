@@ -221,6 +221,7 @@ LV_IMG_DECLARE(walletListPetra);
 LV_IMG_DECLARE(walletListXRPToolkit);
 LV_IMG_DECLARE(walletListSparrow);
 LV_IMG_DECLARE(walletListImToken);
+LV_IMG_DECLARE(walletListSender);
 
 // font
 LV_FONT_DECLARE(openSans_20);

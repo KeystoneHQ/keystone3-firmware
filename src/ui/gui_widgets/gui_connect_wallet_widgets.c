@@ -29,7 +29,6 @@ typedef enum {
 
 WalletListItem_t g_walletListArray[] = {
     // {WALLET_LIST_KEYSTONE, &walletListKeyStone},
-    {WALLET_LIST_SENDER, &walletListKeplr, true},
     {WALLET_LIST_OKX, &walletListOkx, true},
     {WALLET_LIST_METAMASK, &walletListMetaMask, true},
     {WALLET_LIST_BLUE, &walletListBlue, true},
@@ -44,6 +43,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_KEPLR, &walletListKeplr, true},
     {WALLET_LIST_IMTOKEN, &walletListImToken, true},
     {WALLET_LIST_FEWCHA, &walletListFewcha, true},
+    {WALLET_LIST_SENDER, &walletListSender, true},
     {WALLET_LIST_ZAPPER, &walletListZapper, true},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true},
@@ -476,6 +476,9 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
             GuiChainCoinType t = CHAIN_XRP;
             if (IsNear(g_connectWalletTileView.walletIndex)) {
                 t = CHAIN_NEAR;
+                if (GetNearAccountType() == 0) {
+                    return;
+                }
             }
             g_coinListCont = GuiCreateSelectAddressWidget(t, GetAddrIndex(), RefreshAddressIndex);
         } else if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEYSTONE) {
@@ -912,12 +915,14 @@ static void AddSenderAddress(void)
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 
     char addr[36] = {0};
-    AddressLongModeCutWithLen(addr, GuiGetSenderDataByIndex(GetAddrIndex()), 20);
+    AddressLongModeCutWithLen(addr, GuiGetNearPubkey(GetNearAccountType(), GetAddrIndex()), 20);
     label = GuiCreateNoticeLabel(g_bottomCont, addr);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 58);
 
-    label = GuiCreateImg(g_bottomCont, &imgArrowRight);
-    lv_obj_align(label, LV_ALIGN_CENTER, 150, 0);
+    if (GetNearAccountType() == 1) {
+        label = GuiCreateImg(g_bottomCont, &imgArrowRight);
+        lv_obj_align(label, LV_ALIGN_CENTER, 150, 0);
+    }
 }
 
 static void AddSolflareCoins(void)
@@ -1128,6 +1133,8 @@ static int GetAccountType(void)
     {
     case WALLET_LIST_SOLFARE:
         return GetSolflareAccountType();
+    case WALLET_LIST_SENDER:
+        return GetNearAccountType();
     default:
         return GetMetamaskAccountType();
     }
@@ -1142,6 +1149,8 @@ static bool IsNeedReGenerateQRCode(void)
     {
     case WALLET_LIST_SOLFARE:
         return g_currentBakSOLPathIndex != GetSolflareAccountType();
+    case WALLET_LIST_SENDER:
+        return g_currentBakNearPathIndex != GetNearAccountType();
     default:
         return g_currentBakPathIndex != GetMetamaskAccountType();
     }
@@ -1153,6 +1162,8 @@ static void SetCurrentBakPathIndex(void)
     {
     case WALLET_LIST_SOLFARE:
         g_currentBakSOLPathIndex = GetSolflareAccountType();
+    case WALLET_LIST_SENDER:
+        g_currentBakNearPathIndex = GetNearAccountType();
     default:
         g_currentBakPathIndex = GetMetamaskAccountType();
     }
@@ -1264,7 +1275,7 @@ static void UpdateNearEgAddress(uint8_t index)
 {
     char pubkey[64] = {0};
     if (index == 0) {
-        AddressLongModeCut(pubkey, GetCurrentAccountPublicKey(XPUB_TYPE_NEAR_BIP44_STANDARD_0));
+        AddressLongModeCut(pubkey, GetCurrentAccountPublicKey(XPUB_TYPE_NEAR_STANDARD_0));
         lv_label_set_text(g_egAddress[0], pubkey);
     } else {
         AddressLongModeCut(pubkey, GetCurrentAccountPublicKey(XPUB_TYPE_NEAR_LEDGER_LIVE_0));
@@ -1403,16 +1414,21 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     lv_obj_t *prevLabel, *label;
 
     int egContHeight = 12;
-    label = GuiCreateNoticeLabel(egCont, GetChangeDerivationPathDesc());
+    char *desc = GetChangeDerivationPathDesc();
+    label = GuiCreateNoticeLabel(egCont, desc);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
     lv_obj_update_layout(label);
-    egContHeight += lv_obj_get_height(label);
     g_derivationPathDescLabel = label;
     prevLabel = label;
+    if (strlen(desc) > 0) {
+        egContHeight += lv_obj_get_height(label);
+    } else {
+        lv_obj_set_height(label, 0);
+    }
 
-    char *desc = _("derivation_path_address_eg");
+    desc = _("derivation_path_address_eg");
     label = GuiCreateNoticeLabel(egCont, desc);
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);

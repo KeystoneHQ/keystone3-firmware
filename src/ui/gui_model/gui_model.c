@@ -25,9 +25,9 @@
 #include "keystore.h"
 #include "account_manager.h"
 #include "qrdecode_task.h"
-#include "safe_mem_lib.h"
 #include "gui_views.h"
 #include "firmware_update.h"
+#include "assert.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "rust.h"
@@ -38,6 +38,7 @@
 #include "user_delay.h"
 #include "user_fatfs.h"
 #include "mhscpu_qspi.h"
+#include "safe_mem_lib.h"
 #endif
 
 #define SECTOR_SIZE                         4096

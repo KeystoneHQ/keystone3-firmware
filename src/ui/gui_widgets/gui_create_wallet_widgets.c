@@ -13,7 +13,9 @@
 #include "gui_tutorial_widgets.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
+#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
+#endif
 
 typedef enum {
     CREATE_WALLET_SETPIN = 0,

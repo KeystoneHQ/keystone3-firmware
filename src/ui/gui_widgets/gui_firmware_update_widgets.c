@@ -45,7 +45,7 @@ static void GuiViaSdCardHandler(lv_event_t *e);
 static void GuiViaUsbHandler(lv_event_t *e);
 static void GuiCreateUsbInstructionTile(lv_obj_t *parent);
 static void GuiQrcodeHandler(lv_event_t *e);
-static void GuiFirmwareUpdateViewSha256(uint8_t percent);
+static void GuiFirmwareUpdateViewSha256(char *version, uint8_t percent);
 static void CloseQrcodeHandler(lv_event_t *e);
 static int GetEntryEnum(void);
 static void GuiCreateSdCardnstructionTile(lv_obj_t *parent);
@@ -97,13 +97,14 @@ void GuiCreateSdCardUpdateHintbox(char *version, bool checkSumDone)
         SecretCacheGetChecksum(hash);
         ConvertToLowerCase(hash);
         snprintf(tempBuf, sizeof(tempBuf), "#F5870A %.8s#%.24s\n%.24s#F5870A %.8s#", hash, &hash[8], &hash[32], &hash[56]);
-        lv_label_set_text_fmt(g_calCheckSumLabel, "Checksum:\n%s", tempBuf);
+        lv_label_set_text_fmt(g_calCheckSumLabel, "Checksum(v%s):\n%s", version, tempBuf);
     } else {
         lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _(""));
         lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
         lv_obj_set_size(btn, 250, 50);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -120);
         lv_obj_add_event_cb(btn, FirmwareSdcardCheckSha256HintBoxHandler, LV_EVENT_CLICKED, NULL);
+        lv_label_set_text_fmt(g_calCheckSumLabel, _("firmware_update_sd_checksum_fmt_version"), version);
     }
 }
 
@@ -245,14 +246,18 @@ void GuiFirmwareUpdateSha256Percent(uint8_t percent)
     if (g_noticeHintBox == NULL) {
         return;
     }
+    char version[16] = {0};
+    if (percent == 100) {
+        CheckOtaBinVersion(version);
+    }
 
     if (lv_obj_is_valid(g_calCheckSumLabel)) {
         lv_label_set_text_fmt(g_calCheckSumLabel, _("firmware_update_sd_checksum_fmt"), percent);
         if (percent == 100) {
-            GuiCreateSdCardUpdateHintbox(NULL, true);
+            GuiCreateSdCardUpdateHintbox(version, true);
         }
     } else {
-        GuiFirmwareUpdateViewSha256(percent);
+        GuiFirmwareUpdateViewSha256(version, percent);
     }
 }
 
@@ -573,7 +578,7 @@ void GuiFirmwareUpdateVerifyPasswordErrorCount(void *param)
     }
 }
 
-static void GuiFirmwareUpdateViewSha256(uint8_t percent)
+static void GuiFirmwareUpdateViewSha256(char *version, uint8_t percent)
 {
     if (percent == 0xFF) {
         GuiDeleteAnimHintBox();
@@ -586,7 +591,7 @@ static void GuiFirmwareUpdateViewSha256(uint8_t percent)
         g_noticeHintBox = NULL;
         uint32_t hintHeight = 220 + 48;
         g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 482, 300);
-        lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("Ok"));
+        lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("OK"));
         lv_obj_set_size(btn, 94, 66);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
@@ -609,7 +614,7 @@ static void GuiFirmwareUpdateViewSha256(uint8_t percent)
         ConvertToLowerCase(hash);
         snprintf(tempBuf, sizeof(tempBuf), "#F5870A %.8s#%.24s\n%.24s#F5870A %.8s#", hash, &hash[8], &hash[32], &hash[56]);
         lv_obj_t *label = lv_obj_get_child(g_noticeHintBox, lv_obj_get_child_cnt(g_noticeHintBox) - 3);
-        lv_label_set_text_fmt(label, "CheckSum:\n%s", tempBuf);
+        lv_label_set_text_fmt(label, "CheckSum(v%s):\n%s", version, tempBuf);
     }
 }
 

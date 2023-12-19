@@ -179,16 +179,6 @@ int8_t SCSI_ProcessCmd(USB_OTG_CORE_HANDLE  *pdev,
     }
 }
 
-bool SDOtaFileExist(void)
-{
-    FILINFO fno;
-    FRESULT res = f_stat("0:pillar.bin", &fno);
-    if (res == FR_OK) {
-        return true;
-    }
-
-    return false;
-}
 
 /**
 * @brief  SCSI_TestUnitReady

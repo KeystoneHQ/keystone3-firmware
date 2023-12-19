@@ -27,6 +27,7 @@
 #include "qrdecode_task.h"
 #include "safe_mem_lib.h"
 #include "gui_views.h"
+#include "firmware_update.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "rust.h"
@@ -92,6 +93,7 @@ static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataL
 static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen);
 static int32_t ModelURGenerateQRCode(const void *inData, uint32_t inDataLen, void *getUR);
 static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen);
+static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen);
 static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen);
 static int32_t ModelURClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen);
@@ -151,6 +153,12 @@ void GuiModelCalculateCheckSum(void)
 {
     SetPageLockScreen(false);
     AsyncExecute(ModelCalculateCheckSum, NULL, 0);
+}
+
+void GuiModelCalculateBinSha256(void)
+{
+    SetPageLockScreen(false);
+    AsyncExecute(ModelCalculateBinSha256, NULL, 0);
 }
 
 void GuiModelStopCalculateCheckSum(void)
@@ -1308,6 +1316,70 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
 #else
     char *hash = "131b3a1e9314ba076f8e459a1c4c6713eeb38862f3eb6f9371360aa234cdde1f";
     SecretCacheSetChecksum(hash);
+#endif
+    return SUCCESS_CODE;
+}
+
+static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen)
+{
+    uint8_t percent;
+#ifndef COMPILE_SIMULATOR
+    g_stopCalChecksum = false;
+    FIL fp;
+    struct sha256_ctx ctx;
+    sha256_init(&ctx);
+    uint8_t *fileBuf;
+    uint32_t fileSize = 0, readBytes = 0;
+    int len, changePercent = 0;
+    unsigned char hash[32];
+    FRESULT res = f_open(&fp, OTA_FILE_PATH, FA_OPEN_EXISTING | FA_READ);
+    if (res) {
+        FatfsError(res);
+        return RES_ERROR;
+    }
+    fileSize = f_size(&fp);
+    int lastLen = fileSize;
+    fileBuf = SRAM_MALLOC(4096);
+    while (lastLen) {
+        len = lastLen > 4096 ? 4096 : lastLen;
+        res = f_read(&fp, (void*)fileBuf, len, &readBytes);
+        if (res) {
+            GuiApiEmitSignal(SIG_SETTING_SHA256_PERCENT_ERROR, NULL, 0);
+            FatfsError(res);
+            f_close(&fp);
+            SRAM_FREE(fileBuf);
+            return RES_ERROR;
+        }
+        lastLen -= len;
+        sha256_update(&ctx, fileBuf, len);
+        percent = (fileSize - lastLen) * 100 / fileSize;
+        if (percent != changePercent) {
+            changePercent = percent;
+            printf("sha256 update percent = %d\n", (fileSize - lastLen) * 100 / fileSize);
+            if (percent != 100 && percent >= 2) {
+                GuiApiEmitSignal(SIG_SETTING_SHA256_PERCENT, &percent, sizeof(percent));
+            }
+        }
+        if (g_stopCalChecksum == true) {
+            return SUCCESS_CODE;
+        }
+    }
+	sha256_done(&ctx, (struct sha256 *)hash);
+    SRAM_FREE(fileBuf);
+    f_close(&fp);
+    for (int i = 0; i < sizeof(hash); i++) {
+        printf("%02x", hash[i]);
+    }
+
+    SecretCacheSetChecksum(hash);
+    SetPageLockScreen(true);
+    percent = 100;
+    GuiApiEmitSignal(SIG_SETTING_SHA256_PERCENT, &percent, sizeof(percent));
+#else
+    percent = 20;
+    char *hash = "131b3a1e9314ba076f8e459a1c4c6713eeb38862f3eb6f9371360aa234cdde1f";
+    SecretCacheSetChecksum(hash);
+    GuiEmitSignal(SIG_SETTING_SHA256_PERCENT, &percent, sizeof(percent));
 #endif
     return SUCCESS_CODE;
 }

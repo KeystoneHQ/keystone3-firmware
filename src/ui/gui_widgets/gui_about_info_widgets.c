@@ -28,7 +28,6 @@ static void LogExportHandler(lv_event_t *e);
 static void StartFirmwareCheckSumHandler(lv_event_t *e);
 static void CloseVerifyHintBoxHandler(lv_event_t *e);
 static void OpenVerifyFirmwareHandler(lv_event_t *e);
-static void StopFirmwareCheckSumHandler(lv_event_t *e);
 static void CloseQrcodeHandler(lv_event_t *e);
 static void GuiQrcodeHandler(lv_event_t *e);
 
@@ -330,7 +329,7 @@ void GuiCreateVerifyFirmwareInstructionTile(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("about_info_verify_firmware_title"));
+    lv_obj_t *label = GuiCreateTitleLabel(parent, _("about_info_verify_source_code_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
 
     label = GuiCreateNoticeLabel(parent, _("about_info_verify_firmware_desc"));
@@ -338,28 +337,21 @@ void GuiCreateVerifyFirmwareInstructionTile(lv_obj_t *parent)
 
     label = GuiCreateIllustrateLabel(parent, "1");
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 202);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 232);
 
     label = GuiCreateIllustrateLabel(parent, _("about_info_verify_firmware_step1"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 60, 202);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 60, 232);
     lv_label_set_recolor(label, true);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_verify_firmware_qr_link"));
     lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 266);
-    lv_obj_add_flag(label, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(label, GuiQrcodeHandler, LV_EVENT_CLICKED, NULL);
-    lv_obj_t *img = GuiCreateImg(parent, &imgQrcodeTurquoise);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 381, 269);
-    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(img, GuiQrcodeHandler, LV_EVENT_CLICKED, NULL);
-
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 326);
 
     label = GuiCreateIllustrateLabel(parent, "2");
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 308);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 398);
 
     label = GuiCreateIllustrateLabel(parent, _("about_info_verify_firmware_step3"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 60, 308);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 60, 398);
     lv_label_set_recolor(label, true);
 
     lv_obj_t *btn = GuiCreateBtn(parent, _("Show Checksum"));
@@ -382,7 +374,7 @@ static void StartFirmwareCheckSumHandler(lv_event_t *e)
         lv_obj_set_size(btn, 408, 66);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
         lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-        lv_obj_add_event_cb(btn, StopFirmwareCheckSumHandler, LV_EVENT_CLICKED, NULL);
+        lv_obj_add_event_cb(btn, GuiStopFirmwareCheckSumHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
 
         lv_obj_t *desc = GuiCreateNoticeLabel(g_noticeHintBox, "0%");
         lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -140);
@@ -391,12 +383,17 @@ static void StartFirmwareCheckSumHandler(lv_event_t *e)
     }
 }
 
-static void StopFirmwareCheckSumHandler(lv_event_t *e)
+void GuiStopFirmwareCheckSumHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GuiModelStopCalculateCheckSum();
-        GUI_DEL_OBJ(g_noticeHintBox)
+        void **param = lv_event_get_user_data(e);
+        if (param != NULL) {
+            lv_obj_t *obj = *param;
+            lv_obj_del(obj);
+            *param = NULL;
+        }
     }
 }
 

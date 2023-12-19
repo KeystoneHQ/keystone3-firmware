@@ -135,6 +135,14 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         }
         GuiUpdateCheckSumPercent(checkSumPercent);
         break;
+    case SIG_SETTING_SHA256_PERCENT:
+        if (param != NULL) {
+            checkSumPercent = *(uint8_t *)param;
+        } else {
+            return ERR_GUI_ERROR;
+        }
+        GuiFirmwareUpdateSha256Percent(checkSumPercent);
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

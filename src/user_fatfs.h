@@ -1,6 +1,7 @@
 #ifndef _USER_FATFS_H
 #define _USER_FATFS_H
 
+#include <stdbool.h>
 #include "diskio.h"
 #include "ff.h"
 
@@ -45,6 +46,8 @@ int FatfsFileCopy(const TCHAR* source, const TCHAR* dest);
 uint32_t FatfsFileGetSize(const TCHAR *path);
 void FatfsError(FRESULT errNum);
 uint32_t FatfsGetSize(const char *path);
+int FatfsFileSha256(const TCHAR* path, uint8_t *sha256);
+bool FatfsFileExist(const char *path);
 
 #endif /* _USER_FATFS_H */
 

@@ -621,7 +621,7 @@ static void GuiFirmwareUpdateViewSha256(char *version, uint8_t percent)
         ConvertToLowerCase(hash);
         snprintf(tempBuf, sizeof(tempBuf), "#F5870A %.8s#%.24s\n%.24s#F5870A %.8s#", hash, &hash[8], &hash[32], &hash[56]);
         lv_obj_t *label = lv_obj_get_child(g_noticeHintBox, lv_obj_get_child_cnt(g_noticeHintBox) - 3);
-        lv_label_set_text_fmt(label, "CheckSum(v%s):\n%s", version, tempBuf);
+        lv_label_set_text_fmt(label, "Checksum(v%s):\n%s", version, tempBuf);
     }
 }
 

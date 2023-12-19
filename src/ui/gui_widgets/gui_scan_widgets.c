@@ -142,7 +142,6 @@ static void GuiSetScanCorner(void)
     UpdatePageContentZone(g_pageWidget);
 
     lv_obj_t *cont = g_pageWidget->contentZone;
-    printf("qrcode refresh...\n");
     static lv_point_t topLinePoints[2] = {{0, 0}, {322, 0}};
     static lv_point_t bottomLinePoints[2] = {{0, 0}, {322, 0}};
     static lv_point_t leftLinePoints[2] = {{0, 0}, {0, 322}};

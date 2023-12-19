@@ -1,11 +1,13 @@
 #include "log_print.h"
 #include "stdio.h"
 #include "librust_c.h"
-// #define RUST_MEMORY_DEBUG
 
 #ifdef RUST_MEMORY_DEBUG
 #include "user_memory.h"
-struct __RustMemoryNode {
+#include "assert.h"
+#include "string.h"
+struct __RustMemoryNode
+{
     void *p;
     uint32_t size;
     struct __RustMemoryNode *next;
@@ -13,11 +15,13 @@ struct __RustMemoryNode {
 };
 typedef struct __RustMemoryNode RustMemoryNode_t;
 
+void WriteDebugToSdcard(char *buf, uint16_t len);
+
 RustMemoryNode_t *rustMemoryListHead = NULL;
 
 void RustMemoryNode_add(void *p, uint32_t size)
 {
-    printf("RustMalloc 0x%x, %d\r\n", p, size);
+    // printf("RustMalloc 0x%x, %d\r\n", p, size);
     RustMemoryNode_t *child = rustMemoryListHead;
     RustMemoryNode_t *parent = NULL;
     while (child != NULL) {
@@ -41,12 +45,19 @@ void RustMemoryNode_remove(void *p)
 {
     RustMemoryNode_t *current = rustMemoryListHead;
     if (current == NULL) {
+        //empty list
         return;
     }
     while (current != NULL && current -> p != p) {
         current = current -> next;
     }
-    printf("RustFree 0x%x, %d\r\n", current->p, current -> size);
+    //current must not be NULL, or the memory have already been free. 
+    // ASSERT(current != NULL);
+    if(current == NULL) {
+        printf("pointer not found: %p\r\n", p);
+        return;
+    }
+    // printf("RustFree 0x%x, %d\r\n", current->p, current -> size);
     current -> next -> prev = current -> prev;
     if (current -> prev != NULL) {
         current -> prev -> next = current -> next;
@@ -60,16 +71,30 @@ void RustMemoryNode_remove(void *p)
 void RustMemoryNode_print()
 {
     RustMemoryNode_t *current = rustMemoryListHead;
+    char memBuf[128] = {0};
     while (current != NULL) {
-        printf("Rust Memory Usage: address: 0x%x, size: %d\r\n", current -> p, current -> size);
-        current = current -> next;
+        snprintf(memBuf, sizeof(memBuf), "Rust Memory Usage: address: 0x%x, size: %d\n", current -> p, current -> size);
+        WriteDebugToSdcard(memBuf, strlen(memBuf));
+        printf("Rust Memory Usage: address: 0x%x, size: %d\r\n", current->p, current->size);
+        if (sizeof(current->p[0]) == 1)
+        {
+            if (((char *)current->p)[current->size - 1] == '\0')
+            {
+                snprintf(memBuf, sizeof(memBuf), "Rust Memory Possible value: %s\r\n", current->p);
+                WriteDebugToSdcard(memBuf, strlen(memBuf));
+                printf("Rust Memory Possible value: %s\r\n", current->p);
+            }
+        }
+        current = current->next;
     }
 }
 #endif
 
-void PrintRustMemoryStatus()
+void PrintRustMemoryStatus(
+)
 {
 #ifdef RUST_MEMORY_DEBUG
+    printf("Rust Memory Status: \r\n");
     RustMemoryNode_print();
 #else
     printf("Open RUST_DEBUG_MEMORY to print rust memory status\r\n");

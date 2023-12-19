@@ -25,7 +25,8 @@ typedef enum
 } PAGE_TILE;
 
 static void *g_data;
-static void *g_urResult;
+static URParseResult *g_urResult;
+static URParseMultiResult *g_urMultiResult;
 static bool g_isMulti;
 static KeyDerivationWidget_t g_keyDerivationTileView;
 static QRHardwareCallData *g_callData;
@@ -45,12 +46,13 @@ static uint8_t GetXPubIndexByPath(char *path);
 static void OpenTutorialHandler(lv_event_t *e);
 static void OpenMoreHandler(lv_event_t *e);
 
-void GuiSetKeyDerivationRequestData(void *data, bool is_multi)
+void GuiSetKeyDerivationRequestData(void *urResult, void *multiResult, bool is_multi)
 {
 #ifndef COMPILE_SIMULATOR
-    g_urResult = data;
+    g_urResult = urResult;
+    g_urMultiResult = multiResult;
     g_isMulti = is_multi;
-    g_data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    g_data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
 #endif
 }
 

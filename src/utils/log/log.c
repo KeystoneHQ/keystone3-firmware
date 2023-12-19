@@ -146,6 +146,10 @@ void WriteLogDataToFlash(const void *data, uint32_t length)
     //printf("new g_logAddr=0x%08X\r\n", g_logAddr);
 }
 
+void WriteLogDataToSdCard(const void *data, uint32_t length)
+{
+    FatfsFileAppend("0:mem.debug", data, length);
+}
 
 void LogExportSync(void)
 {
@@ -287,6 +291,10 @@ static void WriteLogAsync(LogData_t *pLogData)
     SRAM_FREE(data);
 }
 
+void WriteDebugToSdcard(char *buf, uint16_t len)
+{
+    PubBufferMsg(LOG_MSG_WRITE_TO_SDCARD, buf, len);
+}
 
 static void WriteLogSync(LogData_t *pLogData)
 {

@@ -12,16 +12,18 @@
 #include "gui.h"
 
 static bool g_isMulti = false;
-static void *g_urResult = NULL;
+static struct URParseResult *g_urResult = NULL;
+static struct URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static char *xpub = NULL;
 
 static uint8_t GetXPubIndexByPath(char *path);
 
-void GuiSetupAdaUrData(void *data, bool multi)
+void GuiSetupAdaUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
 #ifndef COMPILE_SIMULATOR
-    g_urResult = data;
+    g_urResult = urResult;
+    g_urMultiResult = urMultiResult;
     g_isMulti = multi;
 #endif
 }
@@ -37,7 +39,7 @@ void *GuiGetAdaData(void)
 {
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     SimpleResponse_c_char *path = NULL;
@@ -111,7 +113,7 @@ void *GuiGetAdaData(void)
 PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
 {
 #ifndef COMPILE_SIMULATOR
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     Ptr_SimpleResponse_c_char path = cardano_get_path(data);
@@ -132,7 +134,8 @@ PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
 void FreeAdaMemory(void)
 {
 #ifndef COMPILE_SIMULATOR
-    CHECK_FREE_UR_RESULT(g_urResult, g_isMulti);
+    CHECK_FREE_UR_RESULT(g_urResult, false);
+    CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
 #endif
 }
@@ -364,7 +367,7 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do
     {
         uint8_t entropy[64];

@@ -272,7 +272,7 @@ impl WrappedTron {
                 )));
             }
         };
-        let content = sign_tx_content?;
+        let content: SignTransaction = sign_tx_content?;
         let tx = &content
             .transaction
             .ok_or(TronError::InvalidRawTxCryptoBytes(

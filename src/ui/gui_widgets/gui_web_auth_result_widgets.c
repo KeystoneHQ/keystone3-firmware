@@ -53,7 +53,7 @@ typedef enum {
     WEB_AUTH_RESULT_BUTT,
 } WEB_AUTH_RESULT_ENUM;
 
-void GuiSetWebAuthResultData(void *data, bool multi)
+void GuiSetWebAuthResultData(void *data, void *multiResult, bool multi)
 {
 #ifndef COMPILE_SIMULATOR
     g_urResult = data;

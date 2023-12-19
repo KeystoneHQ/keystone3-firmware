@@ -16,9 +16,11 @@ static void decodeEthContractData(void *parseResult);
 static bool GetEthErc20ContractData(void *parseResult);
 
 static bool g_isMulti = false;
-static void *g_urResult = NULL;
+static URParseResult *g_urResult = NULL;
+static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
-static char *g_erc20ContractAddress = NULL;
+static void *g_erc20ContractData = NULL;
+static char *g_erc20Value = NULL;
 static char *g_erc20Name = NULL;
 static void *g_contractData = NULL;
 static bool g_contractDataExist = false;
@@ -298,12 +300,13 @@ extern const ABIItem_t ethereum_abi_map[];
 
 static uint8_t GetEthPublickeyIndex(char* rootPath);
 
-void GuiSetEthUrData(void *data, bool multi)
+void GuiSetEthUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
 #ifndef COMPILE_SIMULATOR
-    g_urResult = data;
+    g_urResult = urResult;
+    g_urMultiResult = urMultiResult;
     g_isMulti = multi;
-    g_viewType = g_isMulti ? ((URParseMultiResult *)g_urResult)->t : ((URParseResult *)g_urResult)->t;
+    g_viewType = g_isMulti ? g_urMultiResult->t : g_urResult->t;
 #endif
 }
 
@@ -334,7 +337,7 @@ static UREncodeResult *GetEthSignDataDynamic(bool isUnlimited)
     SetLockScreen(false);
 #ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult;
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
@@ -369,7 +372,6 @@ static bool isErc20Transfer(void *param)
     char *input = eth->detail->input;
     if (strlen(input) <= 8)
     {
-        g_erc20ContractAddress = NULL;
         return false;
     }
     // FIXME: 0xa9059cbb is the method of erc20 transfer
@@ -378,7 +380,6 @@ static bool isErc20Transfer(void *param)
     {
         if (input[i] != erc20Method[i])
         {
-            g_erc20ContractAddress = NULL;
             return false;
         }
     }
@@ -390,13 +391,13 @@ static char *CalcSymbol(void *param)
     DisplayETH *eth = (DisplayETH *)param;
 
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
-
-    if (isErc20Transfer(result->data) && g_erc20ContractAddress != NULL)
+    //eth->detail->to: the actual contract address;
+    if (isErc20Transfer(eth) && eth->detail->to != NULL)
     {
         for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++)
         {
             Erc20Contract_t contract = ERC20_CONTRACTS[i];
-            if (strcasecmp(contract.contract_address, g_erc20ContractAddress) == 0)
+            if (strcasecmp(contract.contract_address, eth->detail->to) == 0)
             {
                 return contract.symbol;
             }
@@ -422,7 +423,7 @@ void *GuiGetEthTypeData(void)
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     char *rootPath = eth_get_root_path(data);
     char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
     GetMasterFingerPrint(mfp);
@@ -435,6 +436,7 @@ void *GuiGetEthTypeData(void)
         g_parseResult = (void *)parseResult;
     } while (0);
     free_TransactionCheckResult(result);
+    free_ptr_string(rootPath);
     return g_parseResult;
 #else
     return NULL;
@@ -500,7 +502,7 @@ void *GuiGetEthPersonalMessage(void)
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     char *rootPath = eth_get_root_path(data);
     char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
     GetMasterFingerPrint(mfp);
@@ -513,6 +515,7 @@ void *GuiGetEthPersonalMessage(void)
         g_parseResult = (void *)parseResult;
     } while (0);
     free_TransactionCheckResult(result);
+    free_ptr_string(rootPath);
 #else
     PtrT_TransactionParseResult_DisplayETHPersonalMessage parseResult = SRAM_MALLOC(sizeof(TransactionParseResult_DisplayETHPersonalMessage));
     parseResult->data = SRAM_MALLOC(sizeof(DisplayETHPersonalMessage));
@@ -596,7 +599,7 @@ void *GuiGetEthData(void)
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     char *rootPath = eth_get_root_path(data);
     char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
     GetMasterFingerPrint(mfp);
@@ -610,6 +613,7 @@ void *GuiGetEthData(void)
         decodeEthContractData(parseResult);
         printf("decode finish\n");
     } while (0);
+    free_ptr_string(rootPath);
 #else
     TransactionParseResult_DisplayETH *g_parseResult = malloc(sizeof(TransactionParseResult_DisplayETH));
     DisplayETH *eth = malloc(sizeof(DisplayETH));
@@ -658,7 +662,7 @@ PtrT_TransactionCheckResult GuiGetEthCheckResult(void)
 {
 #ifndef COMPILE_SIMULATOR
     uint8_t mfp[4];
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
     return eth_check(data, mfp, sizeof(mfp));
 #else
@@ -678,18 +682,6 @@ void GetEthTxFee(void *indata, void *param)
     sprintf((char *)indata, "%s %s", eth->overview->max_txn_fee, _FindNetwork(eth->chain_id));
 }
 
-void GetEthTxFrom(void *indata, void *param)
-{
-    DisplayETH *eth = (DisplayETH *)param;
-    strcpy((char *)indata, eth->overview->from);
-}
-
-void GetEthTxTo(void *indata, void *param)
-{
-    DisplayETH *eth = (DisplayETH *)param;
-    strcpy((char *)indata, eth->overview->to);
-}
-
 EvmNetwork_t _FindNetwork(uint64_t chainId)
 {
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(NETWORKS); i++) {
@@ -704,7 +696,14 @@ EvmNetwork_t _FindNetwork(uint64_t chainId)
 void GetEthValue(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    sprintf((char *)indata, "%s %s", eth->overview->value, CalcSymbol(param));
+    if (isErc20Transfer(eth))
+    {
+        TransactionParseResult_EthParsedErc20Transaction *contract = (TransactionParseResult_EthParsedErc20Transaction *)g_erc20ContractData;
+        sprintf((char *)indata, "%s %s", contract->data->value, CalcSymbol(param));
+    }
+    else {
+        sprintf((char *)indata, "%s %s", eth->overview->value, CalcSymbol(param));
+    }
 }
 
 void GetEthGasPrice(void *indata, void *param)
@@ -763,7 +762,14 @@ void GetEthGetFromAddress(void *indata, void *param)
 void GetEthGetToAddress(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    strcpy((char *)indata, eth->overview->to);
+    if (isErc20Transfer(eth))
+    {
+        TransactionParseResult_EthParsedErc20Transaction *contract = (TransactionParseResult_EthParsedErc20Transaction *)g_erc20ContractData;
+        strcpy((char *)indata, contract->data->to);
+    }
+    else {
+        strcpy((char *)indata, eth->overview->to);
+    }
 }
 
 void GetTxnFeeDesc(void *indata, void *param)
@@ -928,11 +934,11 @@ static void FixRecipientAndValueWhenErc20Contract(const char *inputdata, uint8_t
         return;
     }
     PtrT_TransactionParseResult_EthParsedErc20Transaction contractData = eth_parse_erc20((PtrString)inputdata, decimals);
-    g_erc20ContractAddress = result->data->detail->to;
-    result->data->detail->to = contractData->data->to;
-    result->data->overview->to = contractData->data->to;
-    result->data->detail->value = contractData->data->value;
-    result->data->overview->value = contractData->data->value;
+    g_erc20ContractData = contractData;
+    // result->data->detail->to = contractData->data->to;
+    // result->data->overview->to = contractData->data->to;
+    // result->data->detail->value = contractData->data->value;
+    // result->data->overview->value = contractData->data->value;
 }
 
 static bool GetEthErc20ContractData(void *parseResult)
@@ -947,6 +953,7 @@ static bool GetEthErc20ContractData(void *parseResult)
     }
     else
     {
+        free_Response_DisplayContractData(contractData);
         return false;
     }
     char *to = result->data->detail->to;
@@ -975,6 +982,7 @@ bool GetEthContractFromInternal(char *address, char *inputData)
                 g_contractDataExist = true;
                 g_contractData = contractData;
             } else {
+                free_Response_DisplayContractData(contractData);
                 return false;
             }
             return true;
@@ -1003,6 +1011,7 @@ bool GetEthContractFromExternal(char *address, char *selectorId, uint64_t chainI
             g_contractData = contractData;
         } else {
             SRAM_FREE(contractMethodJson);
+            free_Response_DisplayContractData(contractData);
             return false;
         }
         SRAM_FREE(contractMethodJson);
@@ -1019,13 +1028,17 @@ void FreeContractData(void)
         free_Response_DisplayContractData(g_contractData);
     }
     g_contractData = NULL;
+    if (g_erc20ContractData != NULL) {
+        free_TransactionParseResult_EthParsedErc20Transaction(g_erc20ContractData);
+    }
 #endif
 }
 
 void FreeEthMemory(void)
 {
 #ifndef COMPILE_SIMULATOR
-    CHECK_FREE_UR_RESULT(g_urResult, g_isMulti);
+    CHECK_FREE_UR_RESULT(g_urResult, false);
+    CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     FreeContractData();
 #endif

@@ -23,6 +23,8 @@ pub struct DisplayETH {
     detail: PtrT<DisplayETHDetail>,
 }
 
+impl_c_ptr!(DisplayETH);
+
 #[repr(C)]
 pub struct DisplayETHOverview {
     value: PtrString,
@@ -91,7 +93,10 @@ impl Free for DisplayETH {
     fn free(&self) {
         unsafe {
             let x = Box::from_raw(self.overview);
-            x.free()
+            x.free();
+            free_str_ptr!(self.tx_type);
+            let y = Box::from_raw(self.detail);
+            y.free();
         }
     }
 }

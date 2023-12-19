@@ -20,7 +20,6 @@ if not exist %BUILD_FOLDER%\padding_bin_file.py (
 	copy %TOOLS_FOLDER%\padding_bin_file\padding_bin_file.py %BUILD_FOLDER%\padding_bin_file.py /Y
 )
 
-touch %ALWAYSE_BUILD_FILE%
 if "%1" == "copy" (
 	del %BUILD_FOLDER%\mh1903.elf
 	del %BUILD_FOLDER%\mh1903.map
@@ -33,6 +32,8 @@ if "%2"=="production" (
 	cmake -G "Unix Makefiles" -DBUILD_PRODUCTION=true ..
 ) else if "%2"=="screen" (
 	cmake -G "Unix Makefiles" -DENABLE_SCREEN_SHOT=true ..
+) else if "%2"=="debug" (
+	cmake -G "Unix Makefiles" -DDEBUG_MEMORY=true=true ..
 ) else (
 	cmake -G "Unix Makefiles" ..
 )

@@ -13,7 +13,8 @@
 static uint8_t GetSolPublickeyIndex(char* rootPath);
 
 static bool g_isMulti = false;
-static void *g_urResult = NULL;
+static URParseResult *g_urResult = NULL;
+static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static ViewType g_viewType = ViewTypeUnKnown;
 
@@ -35,12 +36,13 @@ static ViewType g_viewType = ViewTypeUnKnown;
     }
 
 
-void GuiSetSolUrData(void *data, bool multi)
+void GuiSetSolUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
 #ifndef COMPILE_SIMULATOR
-    g_urResult = data;
+    g_urResult = urResult;
+    g_urMultiResult = urMultiResult;
     g_isMulti = multi;
-    g_viewType = g_isMulti ? ((URParseMultiResult *)g_urResult)->t : ((URParseResult *)g_urResult)->t;
+    g_viewType = g_isMulti ? urMultiResult->t : g_urResult->t;
 #endif
 }
 
@@ -50,7 +52,7 @@ UREncodeResult *GuiGetSolSignQrCodeData(void)
     SetLockScreen(false);
 #ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult;
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
@@ -76,7 +78,7 @@ void *GuiGetSolData(void)
 {
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_SOL_RESULT(g_parseResult);
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
         PtrT_TransactionParseResult_DisplaySolanaTx parseResult = solana_parse_tx(data);
         CHECK_CHAIN_BREAK(parseResult);
@@ -92,7 +94,7 @@ PtrT_TransactionCheckResult GuiGetSolCheckResult(void)
 {
 #ifndef COMPILE_SIMULATOR
     uint8_t mfp[4];
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
     return solana_check(data,  mfp, sizeof(mfp));
 #else
@@ -104,7 +106,7 @@ void *GuiGetSolMessageData(void)
 {
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_SOL_RESULT(g_parseResult);
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
         char *path = sol_get_path(data);
         char pubkeyIndex = GetSolPublickeyIndex(path);
@@ -123,7 +125,8 @@ void *GuiGetSolMessageData(void)
 void FreeSolMemory(void)
 {
 #ifndef COMPILE_SIMULATOR
-    CHECK_FREE_UR_RESULT(g_urResult, g_isMulti);
+    CHECK_FREE_UR_RESULT(g_urResult, false);
+    CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_SOL_RESULT(g_parseResult);
 #endif
 }

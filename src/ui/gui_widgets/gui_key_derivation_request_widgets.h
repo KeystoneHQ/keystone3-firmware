@@ -10,6 +10,6 @@ void GuiKeyDerivationRequestDeInit();
 void GuiKeyDerivationRequestRefresh();
 void GuiKeyDerivationWidgetHandleURGenerate(char *data, uint16_t len);
 void GuiKeyDerivationWidgetHandleURUpdate(char *data, uint16_t len);
-void GuiSetKeyDerivationRequestData(void *data, bool is_multi);
+void GuiSetKeyDerivationRequestData(void *data, void *multiResult, bool is_multi);
 
 #endif

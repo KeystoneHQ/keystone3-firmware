@@ -11,6 +11,7 @@ btc_test_cmd = {path = "./src/btc_test_cmd", default-features = false, optional 
 general_test_cmd = {path = "./src/general_test_cmd",  optional = true}
 
 [features]
+debug-memory = ["default"]
 default = ["multi-coins"]
 multi-coins = ["btc_test_cmd/multi-coins","general_test_cmd/multi-coins"]
 btc-only = ["btc_test_cmd/btc-only"]

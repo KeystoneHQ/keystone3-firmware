@@ -86,6 +86,10 @@ if(COMPILE_MAIN)
         add_compile_definitions(ENABLE_SCREEN_SHOT)
     endif()
 
+    if(DEBUG_MEMORY)
+        add_compile_definitions(DEBUG_MEMORY)
+    endif()
+
     print_firmware_info()
     #include(mh1903_main.cmake)
 

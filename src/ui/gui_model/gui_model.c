@@ -1367,7 +1367,7 @@ static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen)
     } while (0);
 
     if (res == FR_OK) {
-	    sha256_done(&ctx, (struct sha256 *)hash);
+        sha256_done(&ctx, (struct sha256 *)hash);
         for (int i = 0; i < sizeof(hash); i++) {
             printf("%02x", hash[i]);
         }

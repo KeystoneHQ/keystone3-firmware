@@ -301,7 +301,7 @@ void GuiSettingRepeatPinPass(const char *buf)
     if (!strcmp(buf, g_passCode)) {
         GuiResettingWriteSe();
         SecretCacheSetNewPassword((char *)buf);
-        GuiModelChangeAmountPassWord();
+        GuiModelChangeAccountPassWord();
     } else {
         GuiEnterPassCodeStatus(g_repeatPassCode, false);
     }

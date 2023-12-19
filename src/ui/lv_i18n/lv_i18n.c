@@ -303,6 +303,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"firmware_update_desc", "To unlock the newest features, please update your firmware to the latest version."},
     {"firmware_update_sd_checksum_desc", "#F5870A Show Checksum#"},
     {"firmware_update_sd_checksum_done", "Checksum:\n\n"},
+    {"firmware_update_sd_checksum_fmt_version", "#F5870A Show Checksum(v%s)#"},
     {"firmware_update_sd_checksum_fmt", "#F5870A Show Checksum(%d%%)#"},
     {"firmware_update_sd_checksum_notice", "This is an optional feature to further enhance security. Compare the following checksum with the checksum of your download package on the official website, ensure that they are consistent."},
     {"firmware_update_sd_copying_desc", "Do not remove the MicroSD Card while the update is underway."},

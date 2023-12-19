@@ -164,6 +164,7 @@ UREncodeResult *GuiGetSenderDataByIndex(uint16_t index)
     }
     keys[0].xpub = GetCurrentAccountPublicKey(xpubIndex);
     g_urEncode = get_connect_sender_wallet_ur(mfp, sizeof(mfp), publicKeys);
+    SRAM_FREE(keys[0].path);
     SRAM_FREE(publicKeys);
     CHECK_CHAIN_PRINT(g_urEncode);
     return g_urEncode;

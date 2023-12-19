@@ -88,6 +88,7 @@ static void Ds28s60TestFunc(int argc, char *argv[]);
 static void FatfsLsFunc(int argc, char *argv[]);
 static void FatfsCatFunc(int argc, char *argv[]);
 static void FatfsFileMd5Func(int argc, char *argv[]);
+static void FatfsFileSha256Func(int argc, char *argv[]);
 static void FatfsFileWriteFunc(int argc, char *argv[]);
 static void FatfsFileDeleteFunc(int argc, char *argv[]);
 static void FatfsFileCopyFunc(int argc, char *argv[]);
@@ -221,6 +222,7 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] =
     {"write:", FatfsFileWriteFunc},
     {"rm:", FatfsFileDeleteFunc},
     {"md5:", FatfsFileMd5Func},
+    {"sha256:", FatfsFileSha256Func},
     {"copy:", FatfsFileCopyFunc},
     {"copy ota", FatfsCopyFunc},
     // {"param read:", ParamReadFunc},
@@ -820,6 +822,13 @@ static void FatfsFileMd5Func(int argc, char *argv[])
 {
     VALUE_CHECK(argc, 1);
     FatfsFileMd5(argv[0]);
+}
+
+static void FatfsFileSha256Func(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 1);
+    uint8_t sha256[32];
+    FatfsFileSha256(argv[0], sha256);
 }
 
 static void FatfsFileWriteFunc(int argc, char *argv[])

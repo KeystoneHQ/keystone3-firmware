@@ -13,6 +13,11 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
+bool FatfsFileExist(const char *path)
+{
+    return false;
+}
+
 int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
 {
 

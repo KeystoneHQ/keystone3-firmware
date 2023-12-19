@@ -32,7 +32,7 @@ static int32_t GuiInitViewInit(void)
         GuiFrameOpenView(&g_selfDestructView);
         return SUCCESS_CODE;
     }
-    GuiModeGetAmount();
+    GuiModeGetAccount();
     // GuiFrameOpenView(&g_settingView);
     // GuiFrameOpenView(&g_connectWalletView);
     return SUCCESS_CODE;

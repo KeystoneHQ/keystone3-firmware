@@ -72,15 +72,15 @@ static int32_t ModelSaveWalletDesc(const void *inData, uint32_t inDataLen);
 static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen);
 static int32_t ModelDelAllWallet(const void *inData, uint32_t inDataLen);
 static int32_t ModelWritePassphrase(const void *inData, uint32_t inDataLen);
-static int32_t ModelChangeAmountPass(const void *inData, uint32_t inDataLen);
-static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen);
+static int32_t ModelChangeAccountPass(const void *inData, uint32_t inDataLen);
+static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen);
 static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen);
 static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inDataLen);
 static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen);
 static int32_t ModelBip39VerifyMnemonic(const void *inData, uint32_t inDataLen);
 static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen);
 static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t inDataLen);
-static int32_t ModeGetAmount(const void *inData, uint32_t inDataLen);
+static int32_t ModeGetAccount(const void *inData, uint32_t inDataLen);
 static int32_t ModeGetWalletDesc(const void *inData, uint32_t inDataLen);
 static int32_t ModeLoginWallet(const void *inData, uint32_t inDataLen);
 static int32_t ModeControlQrDecode(const void *inData, uint32_t inDataLen);
@@ -198,14 +198,14 @@ void GuiModelSettingWritePassphrase(void)
     AsyncExecute(ModelWritePassphrase, NULL, 0);
 }
 
-void GuiModelChangeAmountPassWord(void)
+void GuiModelChangeAccountPassWord(void)
 {
-    AsyncExecute(ModelChangeAmountPass, NULL, 0);
+    AsyncExecute(ModelChangeAccountPass, NULL, 0);
 }
 
-void GuiModelVerifyAmountPassWord(uint16_t *param)
+void GuiModelVerifyAccountPassWord(uint16_t *param)
 {
-    AsyncExecute(ModelVerifyAmountPass, param, sizeof(*param));
+    AsyncExecute(ModelVerifyAccountPass, param, sizeof(*param));
 }
 
 void GuiModelBip39UpdateMnemonic(uint8_t wordCnt)
@@ -220,9 +220,9 @@ void GuiModelSlip39UpdateMnemonic(Slip39Data_t slip39)
     AsyncExecute(ModelGenerateSlip39Entropy, &slip39, sizeof(slip39));
 }
 
-void GuiModeGetAmount(void)
+void GuiModeGetAccount(void)
 {
-    AsyncExecute(ModeGetAmount, NULL, 0);
+    AsyncExecute(ModeGetAccount, NULL, 0);
 }
 
 void GuiModeGetWalletDesc(void)
@@ -870,7 +870,7 @@ static int32_t ModelWritePassphrase(const void *inData, uint32_t inDataLen)
 }
 
 // reset wallet password
-static int32_t ModelChangeAmountPass(const void *inData, uint32_t inDataLen)
+static int32_t ModelChangeAccountPass(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
@@ -999,7 +999,7 @@ static void ModelVerifyPassFailed(uint16_t *param)
 }
 
 // verify wallet password
-static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
+static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
     static bool firstVerify = true;
@@ -1074,7 +1074,7 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
 }
 
 // get wallet amount
-static int32_t ModeGetAmount(const void *inData, uint32_t inDataLen)
+static int32_t ModeGetAccount(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);

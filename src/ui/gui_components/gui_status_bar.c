@@ -198,7 +198,7 @@ void GuiStatusBarSetSdCard(bool connected)
     if (!GetLvglHandlerStatus()) {
         return;
     }
-    static bool sdStatus = true;
+    static bool sdStatus = false;
     char version[16] = {0};
     if (sdStatus == connected) {
         return;

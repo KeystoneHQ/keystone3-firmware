@@ -15,6 +15,7 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_about_info_widgets.h"
+#include "secret_cache.h"
 #ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
 #endif
@@ -422,6 +423,9 @@ static void FirmwareSdcardCheckSha256Handler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
+        if (!SdCardInsert()) {
+            return;
+        }
         g_noticeHintBox = GuiCreateAnimHintBox(lv_scr_act(), 480, 400, 76);
         lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("Calculating"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
@@ -445,8 +449,10 @@ static void FirmwareSdcardCheckSha256HintBoxHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        lv_obj_del(lv_event_get_target(e));
-        GuiModelCalculateBinSha256();
+        if (SdCardInsert()) {
+            lv_obj_del(lv_event_get_target(e));
+            GuiModelCalculateBinSha256();
+        }
     }
 }
 
@@ -582,6 +588,7 @@ static void GuiFirmwareUpdateViewSha256(char *version, uint8_t percent)
 {
     if (percent == 0xFF) {
         GuiDeleteAnimHintBox();
+        g_noticeHintBox = NULL;
         return;
     }
     lv_obj_t *label = lv_obj_get_child(g_noticeHintBox, lv_obj_get_child_cnt(g_noticeHintBox) - 1);

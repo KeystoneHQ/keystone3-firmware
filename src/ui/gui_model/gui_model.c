@@ -1320,61 +1320,66 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
     return SUCCESS_CODE;
 }
 
+#define FATFS_SHA256_BUFFER_SIZE              4096
 static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen)
 {
     uint8_t percent;
 #ifndef COMPILE_SIMULATOR
     g_stopCalChecksum = false;
     FIL fp;
+    uint8_t *data = NULL;
+    uint32_t fileSize, actualSize, copyOffset, totalSize = 0;
+    uint8_t oldPercent = 0;
+    FRESULT res;
     struct sha256_ctx ctx;
     sha256_init(&ctx);
-    uint8_t *fileBuf;
-    uint32_t fileSize = 0, readBytes = 0;
-    int len, changePercent = 0;
     unsigned char hash[32];
-    FRESULT res = f_open(&fp, OTA_FILE_PATH, FA_OPEN_EXISTING | FA_READ);
-    if (res) {
-        FatfsError(res);
-        return RES_ERROR;
-    }
-    fileSize = f_size(&fp);
-    int lastLen = fileSize;
-    fileBuf = SRAM_MALLOC(4096);
-    while (lastLen) {
-        len = lastLen > 4096 ? 4096 : lastLen;
-        res = f_read(&fp, (void*)fileBuf, len, &readBytes);
+    do {
+        res = f_open(&fp, OTA_FILE_PATH, FA_OPEN_EXISTING | FA_READ);
         if (res) {
-            GuiApiEmitSignal(SIG_SETTING_SHA256_PERCENT_ERROR, NULL, 0);
-            FatfsError(res);
-            f_close(&fp);
-            SRAM_FREE(fileBuf);
-            return RES_ERROR;
+            return res;
         }
-        lastLen -= len;
-        sha256_update(&ctx, fileBuf, len);
-        percent = (fileSize - lastLen) * 100 / fileSize;
-        if (percent != changePercent) {
-            changePercent = percent;
-            printf("sha256 update percent = %d\n", (fileSize - lastLen) * 100 / fileSize);
-            if (percent != 100 && percent >= 2) {
-                GuiApiEmitSignal(SIG_SETTING_SHA256_PERCENT, &percent, sizeof(percent));
+        fileSize = f_size(&fp);
+        data = SRAM_MALLOC(FATFS_SHA256_BUFFER_SIZE);
+        for (copyOffset = 0; copyOffset <= fileSize; copyOffset += FATFS_SHA256_BUFFER_SIZE) {
+            if (!SdCardInsert() || (g_stopCalChecksum == true)) {
+                res = ERR_GENERAL_FAIL;
+                break;
+            }
+
+            res = f_read(&fp, data, FATFS_SHA256_BUFFER_SIZE, &actualSize);
+            if (res) {
+                FatfsError(res);
+                break;
+            }
+            sha256_update(&ctx, data, actualSize);
+            totalSize += actualSize;
+
+            uint8_t percent = totalSize * 100 / fileSize;
+            if (oldPercent != percent) {
+                printf("==========copy %d%%==========\n", percent);
+                oldPercent = percent;
+                if (percent != 100 && percent >= 2) {
+                    GuiApiEmitSignal(SIG_SETTING_SHA256_PERCENT, &percent, sizeof(percent));
+                }
             }
         }
-        if (g_stopCalChecksum == true) {
-            return SUCCESS_CODE;
-        }
-    }
-	sha256_done(&ctx, (struct sha256 *)hash);
-    SRAM_FREE(fileBuf);
-    f_close(&fp);
-    for (int i = 0; i < sizeof(hash); i++) {
-        printf("%02x", hash[i]);
-    }
+    } while (0);
 
-    SecretCacheSetChecksum(hash);
+    if (res == FR_OK) {
+	    sha256_done(&ctx, (struct sha256 *)hash);
+        for (int i = 0; i < sizeof(hash); i++) {
+            printf("%02x", hash[i]);
+        }
+        SecretCacheSetChecksum(hash);
+        percent = 100;
+        GuiApiEmitSignal(SIG_SETTING_SHA256_PERCENT, &percent, sizeof(percent));
+    } else {
+        GuiApiEmitSignal(SIG_SETTING_SHA256_PERCENT_ERROR, NULL, 0);
+    }
+    SRAM_FREE(data);
+    f_close(&fp);
     SetPageLockScreen(true);
-    percent = 100;
-    GuiApiEmitSignal(SIG_SETTING_SHA256_PERCENT, &percent, sizeof(percent));
 #else
     percent = 20;
     char *hash = "131b3a1e9314ba076f8e459a1c4c6713eeb38862f3eb6f9371360aa234cdde1f";

@@ -97,6 +97,7 @@ void GuiAboutInfoWidgetsInit()
 
 void GuiAboutInfoWidgetsDeInit()
 {
+    GUI_DEL_OBJ(g_firmwareVerifyCont)
     GUI_DEL_OBJ(g_noticeHintBox)
     if (g_cont != NULL) {
         lv_obj_del(g_cont);

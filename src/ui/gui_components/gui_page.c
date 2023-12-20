@@ -44,6 +44,7 @@ void DestroyPageContentZone(PageWidget_t *pageWidget)
 {
     if (pageWidget != NULL && pageWidget->contentZone != NULL && lv_obj_is_valid(pageWidget->contentZone)) {
         lv_obj_del(pageWidget->contentZone);
+        pageWidget->contentZone = NULL;
     }
 }
 

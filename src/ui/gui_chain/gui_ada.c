@@ -203,14 +203,14 @@ void *GetAdaInputDetail(uint8_t *row, uint8_t *col, void *param)
     *col = 1;
     *row = 3 * tx->from->size;
     int i = 0, j = 0;
-    char ***indata = (char ***)malloc(sizeof(char **) * *col);
+    char ***indata = (char ***)SRAM_MALLOC(sizeof(char **) * *col);
     for (i = 0; i < *col; i++)
     {
-        indata[i] = malloc(sizeof(char *) * *row);
+        indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++)
         {
             uint32_t index = j / 3;
-            indata[i][j] = malloc(128);
+            indata[i][j] = SRAM_MALLOC(128);
             if (j % 3 == 0)
             {
                 sprintf(indata[i][j], "%d #F5870A %s#", index + 1, tx->from->data[index].amount);
@@ -233,20 +233,21 @@ void *GetAdaInputDetail(uint8_t *row, uint8_t *col, void *param)
     }
     return (void *)indata;
 }
+
 void *GetAdaOutputDetail(uint8_t *row, uint8_t *col, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
     *col = 1;
     *row = 2 * tx->to->size;
     int i = 0, j = 0;
-    char ***indata = (char ***)malloc(sizeof(char **) * *col);
+    char ***indata = (char ***)SRAM_MALLOC(sizeof(char **) * *col);
     for (i = 0; i < *col; i++)
     {
-        indata[i] = malloc(sizeof(char *) * *row);
+        indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++)
         {
             uint32_t index = j / 2;
-            indata[i][j] = malloc(128);
+            indata[i][j] = SRAM_MALLOC(128);
             if (j % 2 == 0)
             {
                 sprintf(indata[i][j], "%d #F5870A %s#", index + 1, tx->to->data[index].amount);
@@ -290,14 +291,14 @@ void *GetAdaCertificatesData(uint8_t *row, uint8_t *col, void *param)
     *col = 1;
     *row = 3 * tx->certificates->size;
     int i = 0, j = 0;
-    char ***indata = (char ***)malloc(sizeof(char **) * *col);
+    char ***indata = (char ***)SRAM_MALLOC(sizeof(char **) * *col);
     for (i = 0; i < *col; i++)
     {
-        indata[i] = malloc(sizeof(char *) * *row);
+        indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++)
         {
             uint32_t index = j / 3;
-            indata[i][j] = malloc(128);
+            indata[i][j] = SRAM_MALLOC(128);
             if (j % 3 == 0)
             {
                 sprintf(indata[i][j], "%d #F5870A %s#", index + 1, tx->certificates->data[index].cert_type);
@@ -337,14 +338,14 @@ void *GetAdaWithdrawalsData(uint8_t *row, uint8_t *col, void *param)
     *col = 1;
     *row = 2 * tx->withdrawals->size;
     int i = 0, j = 0;
-    char ***indata = (char ***)malloc(sizeof(char **) * *col);
+    char ***indata = (char ***)SRAM_MALLOC(sizeof(char **) * *col);
     for (i = 0; i < *col; i++)
     {
-        indata[i] = malloc(sizeof(char *) * *row);
+        indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++)
         {
             uint32_t index = j / 2;
-            indata[i][j] = malloc(128);
+            indata[i][j] = SRAM_MALLOC(128);
             if (j % 2 == 0)
             {
                 sprintf(indata[i][j], "%d #F5870A %s#", index + 1, tx->withdrawals->data[index].amount);

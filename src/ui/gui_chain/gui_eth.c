@@ -615,14 +615,14 @@ void *GuiGetEthData(void)
     } while (0);
     free_ptr_string(rootPath);
 #else
-    TransactionParseResult_DisplayETH *g_parseResult = malloc(sizeof(TransactionParseResult_DisplayETH));
-    DisplayETH *eth = malloc(sizeof(DisplayETH));
+    TransactionParseResult_DisplayETH *g_parseResult = SRAM_MALLOC(sizeof(TransactionParseResult_DisplayETH));
+    DisplayETH *eth = SRAM_MALLOC(sizeof(DisplayETH));
     g_parseResult->data = eth;
     g_parseResult->error_code = 0;
     // eth->tx_type = "legacy";
     eth->tx_type = "FeeMarket";
-    eth->overview = malloc(sizeof(DisplayETHOverview));
-    eth->overview->from = malloc(sizeof(PtrT_VecFFI_DisplayTxOverviewInput));
+    eth->overview = SRAM_MALLOC(sizeof(DisplayETHOverview));
+    eth->overview->from = SRAM_MALLOC(sizeof(PtrT_VecFFI_DisplayTxOverviewInput));
     eth->overview->value = "0.024819276 ETH";
 
     eth->overview->gas_price = "0.000000001 gwei";
@@ -632,15 +632,15 @@ void *GuiGetEthData(void)
     eth->overview->from = "0x1q3qqt6mthrlgshy542tpf408lcfa7je92scxtz8";
     eth->overview->to = "0x12Z82nWhvUfFC4tn6iKb1jzuoCnnmsgN";
 
-    eth->detail = malloc(sizeof(DisplayETHDetail));
+    eth->detail = SRAM_MALLOC(sizeof(DisplayETHDetail));
     eth->detail->max_fee = "49.8089 Gwei";
     eth->detail->max_priority = "49.8089 Gwei";
     eth->detail->max_fee_price = "49.8089 Gwei";
     eth->detail->max_priority_price = "49.8089 Gwei";
     eth->detail->input = "123";
     g_contractDataExist = false;
-    struct Response_DisplayContractData *contractData = malloc(sizeof(Response_DisplayContractData));
-    contractData->data = malloc(sizeof(DisplayContractData));
+    struct Response_DisplayContractData *contractData = SRAM_MALLOC(sizeof(Response_DisplayContractData));
+    contractData->data = SRAM_MALLOC(sizeof(DisplayContractData));
     contractData->data->contract_name = "contract name";
     contractData->data->method_name = "method_name name";
     contractData->data->params = SRAM_MALLOC(sizeof(VecFFI_DisplayContractParam));

@@ -167,7 +167,7 @@ void *GuiGetParsedQrData(void)
 #else
     TransactionParseResult_DisplayTx parseResult;
     TransactionParseResult_DisplayTx *g_parseResult = &parseResult;
-    g_parseResult->data = malloc(sizeof(DisplayTx));
+    g_parseResult->data = SRAM_MALLOC(sizeof(DisplayTx));
     g_parseResult->error_code = 0;
     g_parseResult->error_message = NULL;
 #endif
@@ -287,11 +287,11 @@ void *GetPsbtInputData(uint8_t *row, uint8_t *col, void *param)
     *col = 2;
     *row = psbt->overview->from->size;
     int i = 0, j = 0;
-    char ***indata = (char ***)malloc(sizeof(char **) * *col);
+    char ***indata = (char ***)SRAM_MALLOC(sizeof(char **) * *col);
     for (i = 0; i < *col; i++) {
-        indata[i] = malloc(sizeof(char *) * *row);
+        indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++) {
-            indata[i][j] = malloc(64);
+            indata[i][j] = SRAM_MALLOC(64);
             if (i == 0) {
                 sprintf(indata[i][j], "%d\n", j + 1);
             } else {
@@ -308,11 +308,11 @@ void *GetPsbtOutputData(uint8_t *row, uint8_t *col, void *param)
     *col = 2;
     *row = psbt->overview->to->size;
     int i = 0, j = 0;
-    char ***indata = (char ***)malloc(sizeof(char **) * *col);
+    char ***indata = (char ***)SRAM_MALLOC(sizeof(char **) * *col);
     for (i = 0; i < *col; i++) {
-        indata[i] = malloc(sizeof(char *) * *row);
+        indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++) {
-            indata[i][j] = malloc(64);
+            indata[i][j] = SRAM_MALLOC(64);
             if (i == 0) {
                 sprintf(indata[i][j], "%d\n", j + 1);
             } else {
@@ -329,11 +329,11 @@ void *GetPsbtInputDetailData(uint8_t *row, uint8_t *col, void *param)
     *col = 2;
     *row = psbt->detail->from->size;
     int i = 0, j = 0;
-    char ***indata = (char ***)malloc(sizeof(char **) * *col);
+    char ***indata = (char ***)SRAM_MALLOC(sizeof(char **) * *col);
     for (i = 0; i < *col; i++) {
-        indata[i] = malloc(sizeof(char *) * *row);
+        indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++) {
-            indata[i][j] = malloc(64);
+            indata[i][j] = SRAM_MALLOC(64);
             if (i == 0) {
                 sprintf(indata[i][j], "%d\n", j + 1);
             } else {

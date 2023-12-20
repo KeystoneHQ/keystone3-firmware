@@ -999,9 +999,15 @@ void FingerprintRestart(void)
 {
     GPIO_InitTypeDef gpioInit = {0};
     gpioInit.GPIO_Mode = GPIO_Mode_Out_PP;
-    gpioInit.GPIO_Pin = GPIO_Pin_11;
+    gpioInit.GPIO_Pin = GPIO_Pin_12 | GPIO_Pin_11;
     gpioInit.GPIO_Remap = GPIO_Remap_1;
     GPIO_Init(GPIOE, &gpioInit);
+
+    GPIO_ResetBits(GPIOE, GPIO_Pin_12);
+    osDelay(10);
+    GPIO_SetBits(GPIOE, GPIO_Pin_12);
+    osDelay(10);
+
     GPIO_ResetBits(GPIOE, GPIO_Pin_11);
     osDelay(10);
     GPIO_SetBits(GPIOE, GPIO_Pin_11);

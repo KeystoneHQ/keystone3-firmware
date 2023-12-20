@@ -7,6 +7,8 @@
 
 #ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
+#else
+#define memset_s memset
 #endif
 
 #define PC_SIMULATOR_PATH "C:/assets"

@@ -437,21 +437,14 @@ static void UpdateHomeConnectWalletCard(void)
 
     for (int i = 0, j = 0; i < HOME_WALLET_CARD_BUTT; i++)
     {
-        if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS)
+        if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS ||
+            g_walletState[i].state == false ||
+            g_walletState[i].enable == false)
         {
+            j++;
             continue;
         }
 
-        if (g_walletState[i].state == false)
-        {
-            j++;
-            continue;
-        }
-        if (g_walletState[i].enable == false)
-        {
-            j++;
-            continue;
-        }
         coinLabel = GuiCreateTextLabel(walletCardCont, g_coinCardArray[i].coin);
         chainLabel = GuiCreateNoticeLabel(walletCardCont, g_coinCardArray[i].chain);
         icon = GuiCreateImg(walletCardCont, g_coinCardArray[i].icon);

@@ -191,6 +191,19 @@ lv_obj_t *g_hiddenVector[OBJ_VECTOR_MAX_LEN];
 GuiAnalyzeTable_t g_tableData[8];
 uint8_t g_tableDataAmount = 0;
 
+void GuiAnalyzeFreeTable(uint8_t row, uint8_t col, void *param)
+{
+    int i = 0, j = 0;
+    char ***indata = (char ***)param;
+    for (i = 0; i < col; i++) {
+        for (j = 0; j < row; j++) {
+            SRAM_FREE(indata[i][j]);
+        }
+        SRAM_FREE(indata[i]);
+    }
+    SRAM_FREE(indata);
+}
+
 const lv_font_t *GetLvglTextFont(char *fontStr)
 {
     if (!strcmp(fontStr, "openSansEnTitle"))
@@ -624,16 +637,6 @@ GetTableDataFunc GuiAdaTabelFuncGet(char *type)
     {
         return GetAdaCertificatesData;
     }
-    return NULL;
-}
-
-GetTableDataFreeFunc GuiAdaTabelFuncFreeGet(char *type)
-{
-    if (!strcmp(type, "GetAdaInputDetail"))
-    {
-        return GetAdaInputDetailFree;
-    }
-
     return NULL;
 }
 
@@ -1893,7 +1896,7 @@ void GuiTemplateClosePage(void)
 
     for (uint32_t i = 0; i < g_tableDataAmount; i++)
     {
-        GetAdaInputDetailFree(g_tableData[i].row, g_tableData[i].col, g_tableData[i].totalPtr);
+        GuiAnalyzeFreeTable(g_tableData[i].row, g_tableData[i].col, g_tableData[i].totalPtr);
         memset_s(&g_tableData[i], sizeof(g_tableData[i]), 0, sizeof(g_tableData[i]));
     }
     g_tableDataAmount = 0;

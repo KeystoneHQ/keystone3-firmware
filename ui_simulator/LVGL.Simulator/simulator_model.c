@@ -13,6 +13,16 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
+bool FpModuleIsChipState(void)
+{
+    return true;
+}
+
+void free_Response_DisplayContractData(PtrT_Response_DisplayContractData ptr)
+{
+
+}
+
 int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
 {
 

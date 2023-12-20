@@ -28,6 +28,7 @@ typedef enum {
     CHAIN_BCH,
     CHAIN_DASH,
     CHAIN_LTC,
+    CHAIN_COSMOS,
     CHAIN_ATOM,
     CHAIN_OSMO,
     CHAIN_SCRT,

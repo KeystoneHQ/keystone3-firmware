@@ -176,6 +176,8 @@ LV_IMG_DECLARE(coinQck);
 LV_IMG_DECLARE(coinLuna);
 LV_IMG_DECLARE(coinLunc);
 LV_IMG_DECLARE(coinScroll);
+LV_IMG_DECLARE(coinCosmos);
+LV_IMG_DECLARE(coinCosmosEco);
 
 // wallet
 LV_IMG_DECLARE(walletKeystone);

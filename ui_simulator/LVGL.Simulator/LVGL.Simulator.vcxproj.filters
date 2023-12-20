@@ -1311,6 +1311,12 @@
     </ClCompile>
     <ClCompile Include="..\..\external\lvgl\examples\widgets\table\lv_example_table_1.c" />
     <ClCompile Include="..\..\external\lvgl\examples\widgets\table\lv_example_table_2.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\coin\coinCosmos.c">
+      <Filter>gui\assets\coin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\coin\coinCosmosEco.c">
+      <Filter>gui\assets\coin</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\external\lvgl\src\core\lv_disp.h" />

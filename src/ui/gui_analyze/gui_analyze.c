@@ -4,6 +4,7 @@
 #include "lvgl.h"
 #include "gui_analyze.h"
 #include "gui_chain.h"
+#include "safe_mem_lib.h"
 
 #define PC_SIMULATOR_PATH "C:/assets"
 #define OBJ_VECTOR_MAX_LEN 5
@@ -31,6 +32,13 @@ typedef struct
     uint8_t tabviewIndex;
 } GuiAnalyzeTabview_t;
 static GuiAnalyzeTabview_t g_analyzeTabview;
+
+typedef struct
+{
+    void *totalPtr;
+    uint8_t col;
+    uint8_t row;
+} GuiAnalyzeTable_t;
 
 const static GuiAnalyze_t g_analyzeArray[] = {
     {
@@ -173,7 +181,6 @@ void *GuiTemplateReload(lv_obj_t *parent, uint8_t index);
 void GuiTemplateClosePage(void);
 static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json);
 
-lv_timer_t *timer;
 lv_obj_t *g_templateContainer = NULL;
 lv_obj_t *g_tableView = NULL;
 void *g_totalData;
@@ -181,6 +188,8 @@ GuiRemapViewType g_reMapIndex = REMAPVIEW_BUTT;
 uint8_t g_viewTypeIndex = ViewTypeUnKnown;
 lv_obj_t *g_defaultVector[OBJ_VECTOR_MAX_LEN];
 lv_obj_t *g_hiddenVector[OBJ_VECTOR_MAX_LEN];
+GuiAnalyzeTable_t g_tableData[8];
+uint8_t g_tableDataAmount = 0;
 
 const lv_font_t *GetLvglTextFont(char *fontStr)
 {
@@ -615,6 +624,16 @@ GetTableDataFunc GuiAdaTabelFuncGet(char *type)
     {
         return GetAdaCertificatesData;
     }
+    return NULL;
+}
+
+GetTableDataFreeFunc GuiAdaTabelFuncFreeGet(char *type)
+{
+    if (!strcmp(type, "GetAdaInputDetail"))
+    {
+        return GetAdaInputDetailFree;
+    }
+
     return NULL;
 }
 
@@ -1395,11 +1414,11 @@ void GuiWidgetList(lv_obj_t *parent, cJSON *json)
 void *GuiWidgetTable(lv_obj_t *parent, cJSON *json)
 {
     uint16_t tableWidth = 400;
-    uint16_t keyWidth = 50;
+    char ***tableData;
     uint8_t col;
     uint8_t row;
+    uint16_t keyWidth = 50;
     GetTableDataFunc getDataFunc = NULL;
-    char ***tableData;
     lv_obj_t *obj = lv_table_create(parent);
     cJSON *item = cJSON_GetObjectItem(json, "width");
     if (item != NULL)
@@ -1462,6 +1481,10 @@ void *GuiWidgetTable(lv_obj_t *parent, cJSON *json)
             lv_table_set_cell_value(obj, j, i, (char *)tableData[i][j]);
         }
     }
+    g_tableData[g_tableDataAmount].col = col;
+    g_tableData[g_tableDataAmount].row = row;
+    g_tableData[g_tableDataAmount].totalPtr = tableData;
+    g_tableDataAmount++;
 
     return obj;
 }
@@ -1847,10 +1870,7 @@ void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
         lv_obj_del(g_templateContainer);
         return NULL;
     }
-    // if (g_pageCrypto == NULL) {
-    //     lv_obj_del(g_templateContainer);
-    //     return NULL;
-    // }
+
     if (g_tableView == NULL)
     {
         return g_templateContainer;
@@ -1862,10 +1882,6 @@ void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
 
 void GuiTemplateClosePage(void)
 {
-    // if (g_pageCrypto != NULL) {
-    //     delete g_pageCrypto->container;
-    //     g_pageCrypto = NULL;
-    // }
     for (uint32_t i = 0; i < NUMBER_OF_ARRAYS(g_analyzeArray); i++)
     {
         if (g_reMapIndex == g_analyzeArray[i].index)
@@ -1874,4 +1890,11 @@ void GuiTemplateClosePage(void)
             break;
         }
     }
+
+    for (uint32_t i = 0; i < g_tableDataAmount; i++)
+    {
+        GetAdaInputDetailFree(g_tableData[i].row, g_tableData[i].col, g_tableData[i].totalPtr);
+        memset_s(&g_tableData[i], sizeof(g_tableData[i]), 0, sizeof(g_tableData[i]));
+    }
+    g_tableDataAmount = 0;
 }

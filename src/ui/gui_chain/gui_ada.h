@@ -16,6 +16,7 @@ void GetAdaWithdrawalsLabel(void *indata, void *param);
 void GetAdaCertificatesLabel(void *indata, void *param);
 
 void *GetAdaInputDetail(uint8_t *row, uint8_t *col, void *param);
+void GetAdaInputDetailFree(uint8_t row, uint8_t col, void *param);
 void GetAdaInputDetailSize(uint16_t *width, uint16_t *height, void *param);
 
 void *GetAdaOutputDetail(uint8_t *row, uint8_t *col, void *param);

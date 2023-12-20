@@ -77,8 +77,8 @@ void *GuiGetXrpData(void)
     } while (0);
     return g_parseResult;
 #else
-    TransactionParseResult_DisplayXrpTx *g_parseResult = malloc(sizeof(TransactionParseResult_DisplayXrpTx));
-    DisplayXrpTx *data = malloc(sizeof(DisplayXrpTx));
+    TransactionParseResult_DisplayXrpTx *g_parseResult = SRAM_MALLOC(sizeof(TransactionParseResult_DisplayXrpTx));
+    DisplayXrpTx *data = SRAM_MALLOC(sizeof(DisplayXrpTx));
     data->detail = "detail";
     g_parseResult->data = data;
     g_parseResult->error_code = 0;

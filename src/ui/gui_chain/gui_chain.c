@@ -24,6 +24,8 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
             return GuiGetAdaCheckResult();
         case REMAPVIEW_XRP:
             return GuiGetXrpCheckResult();
+        case REMAPVIEW_NEAR:
+            return GuiGetNearCheckResult();
         default:
             return NULL;
     }
@@ -64,6 +66,8 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
         return CHAIN_ADA;
     case XRPTx:
         return CHAIN_XRP;
+    case NearTx:
+        return CHAIN_NEAR;
     default:
         return CHAIN_BUTT;
     }
@@ -116,6 +120,8 @@ static GenerateUR UrGenerator(GuiChainCoinType viewType, bool isMulti)
         break;
     case XRPTx:
         func = GuiGetXrpSignQrCodeData;
+    case NearTx:
+        func = GuiGetNearSignQrCodeData;
     default:
         break;
     }

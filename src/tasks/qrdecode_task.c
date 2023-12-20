@@ -38,6 +38,7 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_APT, GuiSetAptosUrData},
     {REMAPVIEW_ADA, GuiSetupAdaUrData},
     {REMAPVIEW_XRP, GuiSetXrpUrData},
+    {REMAPVIEW_NEAR, GuiSetNearUrData},
 };
 
 osThreadId_t g_qrDecodeTaskHandle;

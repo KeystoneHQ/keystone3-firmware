@@ -26,13 +26,15 @@ static lv_obj_t *g_homeWalletCardCont = NULL;
 static lv_obj_t *g_homeViewCont = NULL;
 static lv_obj_t *g_scanImg = NULL;
 static lv_obj_t *g_manageCont = NULL;
-static lv_obj_t *g_cosmosPulldownImg = NULL;
 static lv_obj_t *g_moreHintbox = NULL;
 static bool g_isManageOpen = false;
 static bool g_isManageClick = true;
 static PageWidget_t *g_pageWidget;
 static lv_timer_t *g_countDownTimer = NULL; // count down timer
 static lv_obj_t *g_walletButton[HOME_WALLET_CARD_BUTT];
+static lv_obj_t *g_cosmosPulldownImg = NULL;
+static lv_obj_t *g_endCosmosLine = NULL;
+static lv_obj_t *g_lastCosmosLine = NULL;
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
     {
@@ -419,6 +421,7 @@ void ReturnManageWalletHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED)
     {
         UpdateManageWalletState(false);
+        GUI_DEL_OBJ(g_lastCosmosLine)
         GUI_DEL_OBJ(g_manageCont);
         GuiEmitSignal(GUI_EVENT_REFRESH, NULL, 0);
     }
@@ -527,8 +530,12 @@ static void UpdateCosmosEnable(bool en)
     void (*func)(lv_obj_t *, lv_obj_flag_t);
     if (en) {
         func = lv_obj_clear_flag;
+        lv_obj_add_flag(g_endCosmosLine, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_lastCosmosLine, LV_OBJ_FLAG_HIDDEN);
     } else {
         func = lv_obj_add_flag;
+        lv_obj_clear_flag(g_endCosmosLine, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_lastCosmosLine, LV_OBJ_FLAG_HIDDEN);
     }
     for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
         if (IsCosmosChain(g_coinCardArray[i].index)) {
@@ -588,6 +595,7 @@ void ConfirmManageAssetsHandler(lv_event_t *e)
     {
         UpdateManageWalletState(true);
         UpdateHomeConnectWalletCard();
+        GUI_DEL_OBJ(g_lastCosmosLine)
         GUI_DEL_OBJ(g_manageCont)
         GuiHomeRefresh();
     }
@@ -710,6 +718,10 @@ static void OpenManageAssetsHandler(lv_event_t *e)
             
             if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS) {
                 // lv_obj_del(table[2].obj);
+                lv_obj_t *line = GuiCreateDividerLine(checkBoxCont);
+                lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 96 * heightIndex);
+                g_endCosmosLine = GuiCreateDividerLine(checkBoxCont);
+                lv_obj_align(g_endCosmosLine, LV_ALIGN_DEFAULT, 0, 96 * (heightIndex + 1));
                 lv_obj_t *cosmosCoinImg = GuiCreateImg(checkBoxCont, &coinCosmosEco);
                 table[2].obj = cosmosCoinImg;
                 table[2].align = LV_ALIGN_DEFAULT;
@@ -729,6 +741,10 @@ static void OpenManageAssetsHandler(lv_event_t *e)
             g_walletButton[i] = button;
             if (IsCosmosChain(g_coinCardArray[i].index)) {
                 lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);
+                GUI_DEL_OBJ(g_lastCosmosLine);
+                g_lastCosmosLine = GuiCreateDividerLine(checkBoxCont);
+                lv_obj_add_flag(g_lastCosmosLine, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_align(g_lastCosmosLine, LV_ALIGN_DEFAULT, 0, 96 * (heightIndex + 1));
             }
             if (!g_walletState[i].enable)
             {

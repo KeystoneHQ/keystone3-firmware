@@ -26,11 +26,13 @@ static lv_obj_t *g_homeWalletCardCont = NULL;
 static lv_obj_t *g_homeViewCont = NULL;
 static lv_obj_t *g_scanImg = NULL;
 static lv_obj_t *g_manageCont = NULL;
+static lv_obj_t *g_cosmosPulldownImg = NULL;
 static lv_obj_t *g_moreHintbox = NULL;
 static bool g_isManageOpen = false;
 static bool g_isManageClick = true;
 static PageWidget_t *g_pageWidget;
 static lv_timer_t *g_countDownTimer = NULL; // count down timer
+static lv_obj_t *g_walletButton[HOME_WALLET_CARD_BUTT];
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
     {
@@ -45,6 +47,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] =
         {HOME_WALLET_CARD_DASH, false, "DASH", false},
         {HOME_WALLET_CARD_LTC, false, "LTC", false},
         {HOME_WALLET_CARD_TRX, false, "TRX", false},
+        {HOME_WALLET_CARD_COSMOS, false, "Cosmos Eco", true},
         {HOME_WALLET_CARD_ATOM, false, "ATOM", true},
         {HOME_WALLET_CARD_OSMO, false, "OSMO", true},
         {HOME_WALLET_CARD_SCRT, false, "SCRT", true},
@@ -159,6 +162,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] =
             .coin = "TRX",
             .chain = "TRON",
             .icon = &coinTrx,
+        },
+        {
+            .index = HOME_WALLET_CARD_COSMOS,
+            .coin = "Cosmos Eco",
+            .chain = "",
+            .icon = &coinCosmos,
         },
         {
             .index = HOME_WALLET_CARD_ATOM,
@@ -367,6 +376,11 @@ static void UpdateManageWalletState(bool needUpdate)
     int total = 0;
     for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++)
     {
+        if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS)
+        {
+            continue;
+        }
+
         if(g_walletState[i].enable)
         {
             total++;
@@ -390,7 +404,6 @@ static void UpdateManageWalletState(bool needUpdate)
             memcpy(g_walletState, g_walletBakState, sizeof(g_walletBakState));
             AccountPublicHomeCoinSet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
         }
-        // g_manageWalletNum = selectCnt;
     }
 }
 
@@ -424,6 +437,11 @@ static void UpdateHomeConnectWalletCard(void)
 
     for (int i = 0, j = 0; i < HOME_WALLET_CARD_BUTT; i++)
     {
+        if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS)
+        {
+            continue;
+        }
+
         if (g_walletState[i].state == false)
         {
             j++;
@@ -511,19 +529,44 @@ static void CoinDealHandler(lv_event_t *e)
     }
 }
 
+static void UpdateCosmosEnable(bool en)
+{
+    void (*func)(lv_obj_t *, lv_obj_flag_t);
+    if (en) {
+        func = lv_obj_clear_flag;
+    } else {
+        func = lv_obj_add_flag;
+    }
+    for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+        if (IsCosmosChain(g_coinCardArray[i].index)) {
+            func(g_walletButton[i], LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+}
+
 static void ManageCoinChainHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED)
     {
+        bool state;
         WalletState_t *wallet = lv_event_get_user_data(e);
-        lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
-        bool state = lv_obj_has_state(lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 1), LV_STATE_CHECKED);
-        g_walletBakState[wallet->index].state = state;
-
-        // lv_obj_scroll_to_y(lv_obj_get_parent(parent), (wallet->index - 2) * 96, LV_ANIM_ON);
-        UpdateManageWalletState(false);
+        if (wallet->index == HOME_WALLET_CARD_COSMOS) {
+            state = g_walletBakState[wallet->index].state;
+            if (state) {
+                lv_img_set_src(g_cosmosPulldownImg, &imgArrowRight);
+            } else {
+                lv_img_set_src(g_cosmosPulldownImg, &imgArrowDown);
+            }
+            UpdateCosmosEnable(!state);
+            g_walletBakState[wallet->index].state = !state;
+        } else {
+            lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
+            state = lv_obj_has_state(lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 1), LV_STATE_CHECKED);
+            g_walletBakState[wallet->index].state = state;
+            UpdateManageWalletState(false);
+        }
     }
 }
 
@@ -631,7 +674,6 @@ static void OpenManageAssetsHandler(lv_event_t *e)
         lv_obj_t *chainLabel;
         lv_obj_t *icon;
         lv_obj_t *checkbox;
-        lv_obj_t *tag;
         int heightIndex = 0;
         for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++)
         {
@@ -643,7 +685,7 @@ static void OpenManageAssetsHandler(lv_event_t *e)
             lv_obj_set_size(checkbox, 446, 96);
             g_walletState[i].checkBox = checkbox;
             uint8_t tableLen = 4;
-            GuiButton_t table[5] =
+            GuiButton_t table[4] =
                 {
                     {
                         .obj = icon,
@@ -668,16 +710,33 @@ static void OpenManageAssetsHandler(lv_event_t *e)
                 };
             if (IsCosmosChain(g_coinCardArray[i].index))
             {
-                tag = GuiCreateImg(checkBoxCont, &imgCosmosTag);
-                table[4] = table[3];
-                table[3].obj = tag;
-                table[3].align = LV_ALIGN_LEFT_MID;
-                GuiPosition_t p = {272, 0};
-                table[3].position = p;
-                tableLen = 5;
+                table[0].position.x += 12;
+                table[1].position.x += 12;
+                table[2].position.x += 12;
             }
+            
+            if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS) {
+                // lv_obj_del(table[2].obj);
+                lv_obj_t *cosmosCoinImg = GuiCreateImg(checkBoxCont, &coinCosmosEco);
+                table[2].obj = cosmosCoinImg;
+                table[2].align = LV_ALIGN_DEFAULT;
+                table[2].position.x = 100;
+                table[2].position.y = 53;
+
+                lv_obj_del(table[3].obj);
+                g_cosmosPulldownImg = GuiCreateImg(checkBoxCont, &imgArrowRight);
+                table[3].obj = g_cosmosPulldownImg;
+                table[3].align = LV_ALIGN_RIGHT_MID;
+                table[3].position.x = -12; 
+                table[3].position.y = 0;
+            }
+
             lv_obj_t *button = GuiCreateButton(checkBoxCont, 456, 96, table, tableLen,
                                                ManageCoinChainHandler, &g_walletState[i]);
+            g_walletButton[i] = button;
+            if (IsCosmosChain(g_coinCardArray[i].index)) {
+                lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);
+            }
             if (!g_walletState[i].enable)
             {
                 lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);

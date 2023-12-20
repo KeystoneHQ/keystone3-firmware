@@ -4,7 +4,10 @@
 #include "lvgl.h"
 #include "gui_analyze.h"
 #include "gui_chain.h"
+
+#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
+#endif
 
 #define PC_SIMULATOR_PATH "C:/assets"
 #define OBJ_VECTOR_MAX_LEN 5

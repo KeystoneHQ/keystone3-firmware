@@ -73,6 +73,8 @@
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinBnb.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinBoot.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinBtc.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\coin\coinCosmos.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\coin\coinCosmosEco.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinCro.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinCtk.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinDash.c" />

@@ -22,19 +22,14 @@ void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbac
 
     tick = osKernelGetTickCount();
 
-    if (data[0] == EAPDU_PROTOCOL_HEADER && !GetIsReceivingFile())
-    {
+    if (data[0] == EAPDU_PROTOCOL_HEADER && !GetIsReceivingFile()) {
         currentParser = NewEApduProtocolParser();
-    }
-    else
-    {
+    } else {
         currentParser = NewInternalProtocolParser();
     }
 
-    if (currentParser->rcvCount != 0)
-    {
-        if (tick - lastTick > PROTOCOL_PARSE_OVERTIME)
-        {
+    if (currentParser->rcvCount != 0) {
+        if (tick - lastTick > PROTOCOL_PARSE_OVERTIME) {
             currentParser->rcvCount = 0;
         }
     }

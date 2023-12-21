@@ -299,7 +299,7 @@ void PassWordPinSwitch(GuiEnterPasscodeItem_t *item)
         }
         if (item->mode == ENTER_PASSCODE_SET_PASSWORD) {
             GuiSetKeyBoardMinTaLen(item->kb, 6);
-        }    
+        }
         if (item->mode == ENTER_PASSCODE_VERIFY_PASSWORD) {
             SetKeyboardWidgetMode(KEYBOARD_HINTBOX_PASSWORD);
         }

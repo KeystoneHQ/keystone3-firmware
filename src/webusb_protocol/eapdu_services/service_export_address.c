@@ -4,13 +4,11 @@
 
 static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type);
 
-enum Chain
-{
+enum Chain {
     ETH,
 };
 
-struct EthParams
-{
+struct EthParams {
     uint8_t n;
     ETHAccountType type;
     uint8_t chain;
@@ -29,8 +27,7 @@ static struct EthParams *NewParams()
 
 static bool IsValidParams(struct EthParams *params)
 {
-    if (params->n == -1 || params->type == -1 || params->chain == -1 || params->wallet == -1)
-    {
+    if (params->n == -1 || params->type == -1 || params->chain == -1 || params->wallet == -1) {
         return false;
     }
     return true;
@@ -46,28 +43,23 @@ static struct EthParams *ParseParams(char *data)
     cJSON *chain = cJSON_GetObjectItem(json, "chain");
     cJSON *wallet = cJSON_GetObjectItem(json, "wallet");
 
-    if (n != NULL && n->type == cJSON_Number)
-    {
+    if (n != NULL && n->type == cJSON_Number) {
         params->n = n->valueint;
     }
-    if (type != NULL && type->type == cJSON_Number)
-    {
+    if (type != NULL && type->type == cJSON_Number) {
         params->type = type->valueint;
     }
-    if (chain != NULL && chain->type == cJSON_Number)
-    {
+    if (chain != NULL && chain->type == cJSON_Number) {
         params->chain = chain->valueint;
     }
-    if (wallet != NULL && wallet->type == cJSON_Number)
-    {
+    if (wallet != NULL && wallet->type == cJSON_Number) {
         params->wallet = wallet->valueint;
     }
     cJSON_Delete(json);
     return params;
 }
 
-typedef struct
-{
+typedef struct {
     uint16_t requestID;
     uint8_t n;
     uint8_t wallet;
@@ -78,8 +70,7 @@ static ExportAddressParams_t *g_exportAddressParams = NULL;
 
 uint8_t GetExportWallet()
 {
-    if (g_exportAddressParams == NULL)
-    {
+    if (g_exportAddressParams == NULL) {
         return DEFAULT;
     }
     return g_exportAddressParams->wallet;
@@ -101,11 +92,10 @@ void ExportAddressReject()
 
 static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
 {
-    #ifndef COMPILE_SIMULATOR
+#ifndef COMPILE_SIMULATOR
     UREncodeResult *urResult = GetUnlimitedMetamaskDataForAccountType(type);
 
-    if (urResult->error_code != 0)
-    {
+    if (urResult->error_code != 0) {
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, requestID, PRS_EXPORT_ADDRESS_ERROR, urResult->error_message);
         return;
     }
@@ -126,19 +116,17 @@ static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
     SendEApduResponse(result);
 
     SRAM_FREE(result);
-    #endif
+#endif
 }
 
 static bool CheckExportAcceptable(EAPDURequestPayload_t payload)
 {
-    if (GuiLockScreenIsTop())
-    {
+    if (GuiLockScreenIsTop()) {
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_DISALLOWED, "Export address is not allowed when the device is locked");
         return false;
     }
     // Only allow on specific pages
-    if (!GuiHomePageIsTop())
-    {
+    if (!GuiHomePageIsTop()) {
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_DISALLOWED, "Export address is just allowed on specific pages");
         return false;
     }
@@ -147,13 +135,11 @@ static bool CheckExportAcceptable(EAPDURequestPayload_t payload)
 
 void ExportAddressService(EAPDURequestPayload_t payload)
 {
-    if (!CheckExportAcceptable(payload))
-    {
+    if (!CheckExportAcceptable(payload)) {
         return;
     }
 
-    if (g_exportAddressParams != NULL)
-    {
+    if (g_exportAddressParams != NULL) {
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_BUSY, "Export address is busy, please try again later");
         SRAM_FREE(g_exportAddressParams);
         g_exportAddressParams = NULL;
@@ -162,14 +148,12 @@ void ExportAddressService(EAPDURequestPayload_t payload)
 
     struct EthParams *params = ParseParams(payload.data);
 
-    if (!IsValidParams(params))
-    {
+    if (!IsValidParams(params)) {
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_INVALID_PARAMS, "Invalid params");
         return;
     }
 
-    if (params->chain == ETH)
-    {
+    if (params->chain == ETH) {
         g_exportAddressParams = (ExportAddressParams_t *)SRAM_MALLOC(sizeof(ExportAddressParams_t));
         g_exportAddressParams->requestID = payload.requestID;
         g_exportAddressParams->n = params->n;
@@ -182,9 +166,7 @@ void ExportAddressService(EAPDURequestPayload_t payload)
         resultPage->error_message = "";
         GotoResultPage(resultPage);
         SRAM_FREE(resultPage);
-    }
-    else
-    {
+    } else {
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_UNSUPPORTED_CHAIN, "Unsupported chain");
     }
 

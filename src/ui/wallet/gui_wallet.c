@@ -92,23 +92,17 @@ static UREncodeResult *BasicGetMetamaskDataForAccountType(ETHAccountType account
     ExtendedPublicKey keys[10];
     public_keys->data = keys;
 
-    if (accountType == Bip44Standard)
-    {
+    if (accountType == Bip44Standard) {
         public_keys->size = 1;
         keys[0].path = "";
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
-    }
-    else if (accountType == LedgerLive)
-    {
+    } else if (accountType == LedgerLive) {
         public_keys->size = 10;
-        for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++)
-        {
+        for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
             keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = "";
             keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].xpub = GetCurrentAccountPublicKey(i);
         }
-    }
-    else if (accountType == LedgerLegacy)
-    {
+    } else if (accountType == LedgerLegacy) {
         public_keys->size = 1;
         keys[0].path = "";
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LEGACY);
@@ -124,7 +118,7 @@ static UREncodeResult *BasicGetMetamaskDataForAccountType(ETHAccountType account
 // copy from gui_btc, need to use real data
 UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType)
 {
-    return BasicGetMetamaskDataForAccountType(accountType, get_connect_metamask_ur);   
+    return BasicGetMetamaskDataForAccountType(accountType, get_connect_metamask_ur);
 }
 
 UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountType)
@@ -148,7 +142,7 @@ UREncodeResult *GuiGetImTokenData(void)
 {
 #ifndef COMPILE_SIMULATOR
     uint8_t mfp[4] = {0};
-    GetMasterFingerPrint(mfp);    
+    GetMasterFingerPrint(mfp);
     g_urEncode = get_connect_imtoken_ur(mfp, sizeof(mfp), GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD), GetWalletName());
     CHECK_CHAIN_PRINT(g_urEncode);
     return g_urEncode;
@@ -502,7 +496,7 @@ UREncodeResult *GuiGetSolflareData(void)
         public_keys->size = 10;
         for (int i = XPUB_TYPE_SOL_BIP44_0; i <= XPUB_TYPE_SOL_BIP44_9; i++) {
             char *path = SRAM_MALLOC(sizeof(char) * 32);
-            sprintf(path, "m/44'/501'/%d'", i - XPUB_TYPE_SOL_BIP44_0); 
+            sprintf(path, "m/44'/501'/%d'", i - XPUB_TYPE_SOL_BIP44_0);
             keys[i - XPUB_TYPE_SOL_BIP44_0].path = path;
             keys[i - XPUB_TYPE_SOL_BIP44_0].xpub = GetCurrentAccountPublicKey(i);
         }

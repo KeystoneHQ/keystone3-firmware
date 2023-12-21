@@ -198,8 +198,7 @@ void HandleDefaultViewType(URParseResult *urResult, URParseMultiResult *urMultiR
 void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi)
 {
     GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
-    switch (urViewType.viewType)
-    {
+    switch (urViewType.viewType) {
     case WebAuthResult:
         GuiSetWebAuthResultData(urResult, urMultiResult, is_multi);
         break;
@@ -207,7 +206,7 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
         GuiSetKeyDerivationRequestData(urResult, urMultiResult, is_multi);
         break;
     default:
-        HandleDefaultViewType(urResult, urMultiResult ,urViewType, is_multi);
+        HandleDefaultViewType(urResult, urMultiResult, urViewType, is_multi);
         break;
     }
 

@@ -39,8 +39,7 @@ static uint8_t g_chainType = CHAIN_BUTT;
 
 void GuiScanInit()
 {
-    if (g_pageWidget != NULL)
-    {
+    if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
@@ -51,8 +50,7 @@ void GuiScanInit()
 
 void GuiScanDeInit()
 {
-    if (g_pageWidget != NULL)
-    {
+    if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
@@ -67,30 +65,24 @@ void GuiScanRefresh()
 
 void GuiScanResult(bool result, void *param)
 {
-    if (result)
-    {
+    if (result) {
         UrViewType_t urViewType = *(UrViewType_t *)param;
         g_qrcodeViewType = urViewType.viewType;
         g_chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
         // Not a chain based transaction, e.g. WebAuth
-        if(GetMnemonicType() == MNEMONIC_TYPE_SLIP39)
-        {
+        if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
             //we don't support ADA in Slip39 Wallet;
-            if(g_chainType == CHAIN_ADA || g_qrcodeViewType== KeyDerivationRequest)
-            {
+            if (g_chainType == CHAIN_ADA || g_qrcodeViewType == KeyDerivationRequest) {
                 ThrowError();
                 return;
             }
         }
-        if (g_chainType == CHAIN_BUTT)
-        {
-            if (g_qrcodeViewType == WebAuthResult)
-            {
+        if (g_chainType == CHAIN_BUTT) {
+            if (g_qrcodeViewType == WebAuthResult) {
                 GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_webAuthResultView);
             }
-            if (g_qrcodeViewType == KeyDerivationRequest)
-            {
+            if (g_qrcodeViewType == KeyDerivationRequest) {
                 GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_keyDerivationRequestView);
             }
@@ -98,15 +90,12 @@ void GuiScanResult(bool result, void *param)
         }
         uint8_t accountNum = 0;
         GetExistAccountNum(&accountNum);
-        if (accountNum <= 0)
-        {
+        if (accountNum <= 0) {
             ThrowError();
             return;
         }
         GuiModelCheckTransaction(g_qrcodeViewType);
-    }
-    else
-    {
+    } else {
         ThrowError();
     }
 
@@ -203,8 +192,7 @@ static void CloseScanErrorDataHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_scanErrorHintBox)
         GuiScanStart();
     }
@@ -214,5 +202,5 @@ static void CloseScanErrorDataHandler(lv_event_t *e)
 static void GuiScanStart()
 {
     GuiSetScanCorner();
-    GuiModeControlQrDecode(true);    
+    GuiModeControlQrDecode(true);
 }

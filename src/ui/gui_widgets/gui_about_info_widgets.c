@@ -70,7 +70,7 @@ void GuiUpdateCheckSumPercent(uint8_t percent)
         label = GuiCreateIllustrateLabel(cont, tempBuf);
         lv_label_set_recolor(label, true);
         lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 62);
-        
+
         label = GuiCreateIllustrateLabel(g_firmwareVerifyCont, _("about_info_verify_checksum_desc"));
 
         lv_obj_t *btn = GuiCreateBtn(g_firmwareVerifyCont, _("Done"));

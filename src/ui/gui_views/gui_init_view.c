@@ -124,7 +124,7 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_INIT_SD_CARD_OTA_COPY:
         GuiFirmwareSdCardCopy();
         break;
-    case SIG_FIRMWARE_VERIFY_PASSWORD_FAIL: 
+    case SIG_FIRMWARE_VERIFY_PASSWORD_FAIL:
         GuiFirmwareUpdateVerifyPasswordErrorCount(param);
         break;
     case SIG_SETTING_CHECKSUM_PERCENT:

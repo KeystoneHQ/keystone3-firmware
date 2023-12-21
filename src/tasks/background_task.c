@@ -143,12 +143,10 @@ static void BackgroundTask(void *argument)
             BackgroundRunnable_t *async_r = (BackgroundRunnable_t *)rcvMsg.buffer;
             // compiler will optimize the argument inData and inDataLen if they are not used in some cases;
             bool shouldClean = async_r->inDataLen > 0 && async_r->inData != NULL;
-            if (async_r->func)
-            {
+            if (async_r->func) {
                 async_r->func(async_r->inData, async_r->inDataLen, async_r->runnable);
             }
-            if (shouldClean)
-            {
+            if (shouldClean) {
                 SRAM_FREE(async_r->inData);
             }
         }

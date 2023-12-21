@@ -290,7 +290,7 @@ bool BatteryIntervalHandler(uint32_t *sleepInterval)
             printf("delay increate battery percentage delayIncreate = %d\n", delayIncreate);
             delayIncreate++;
         }
-        
+
         if (sleepInterval != NULL) {
             *sleepInterval = RTC_WAKE_UP_INTERVAL_CHARGING;
         }

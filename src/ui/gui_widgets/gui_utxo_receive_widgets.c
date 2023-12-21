@@ -586,8 +586,7 @@ static void Highlight(char *address, uint8_t highlightStart, uint8_t highlightEn
 {
 #ifndef COMPILE_SIMULATOR
     uint8_t addressLength = strlen(address);
-    if (address == NULL || coloredAddress == NULL || highlightStart > highlightEnd || highlightEnd > addressLength)
-    {
+    if (address == NULL || coloredAddress == NULL || highlightStart > highlightEnd || highlightEnd > addressLength) {
         return;
     }
     char beforeHighlight[addressLength];
@@ -630,8 +629,7 @@ static void RefreshDefaultAddress(void)
 
 static void ShowEgAddressCont(lv_obj_t *egCont)
 {
-    if (egCont == NULL)
-    {
+    if (egCont == NULL) {
         printf("egCont is NULL, cannot show eg address\n");
         return;
     }
@@ -715,8 +713,7 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
         sprintf(string, "%s (%s)", g_addressSettings[i].subTitle, g_addressSettings[i].path);
         label = GuiCreateNoticeLabel(cont, string);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
-        if (i != 2)
-        {
+        if (i != 2) {
             line = GuiCreateLine(cont, points, 2);
             lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * (i + 1));
         }
@@ -1243,8 +1240,7 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
 
 void GuiResetCurrentUtxoAddressIndex(uint8_t index)
 {
-    if (index > 2)
-    {
+    if (index > 2) {
         return;
     }
 

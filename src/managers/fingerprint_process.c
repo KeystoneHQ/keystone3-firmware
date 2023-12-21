@@ -828,7 +828,7 @@ static void SearchFpAesKeyState(void)
     ret = GetFpCommAesKey(g_communicateAesKey);
     if (ret != SUCCESS_CODE) {
         return;
-    } 
+    }
     memset_s(&g_communicateAesKey[16], 16, 0, 16);
     FpGenericSend(FINGERPRINT_CMD_GET_AES_KEY_STATE, NO_ENCRYPTION);
 }

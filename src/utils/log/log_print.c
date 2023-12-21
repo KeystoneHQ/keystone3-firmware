@@ -6,8 +6,7 @@
 #include "user_memory.h"
 #include "assert.h"
 #include "string.h"
-struct __RustMemoryNode
-{
+struct __RustMemoryNode {
     void *p;
     uint32_t size;
     struct __RustMemoryNode *next;
@@ -51,9 +50,9 @@ void RustMemoryNode_remove(void *p)
     while (current != NULL && current -> p != p) {
         current = current -> next;
     }
-    //current must not be NULL, or the memory have already been free. 
+    //current must not be NULL, or the memory have already been free.
     // ASSERT(current != NULL);
-    if(current == NULL) {
+    if (current == NULL) {
         printf("pointer not found: %p\r\n", p);
         return;
     }
@@ -76,10 +75,8 @@ void RustMemoryNode_print()
         snprintf(memBuf, sizeof(memBuf), "Rust Memory Usage: address: 0x%x, size: %d\n", current -> p, current -> size);
         WriteDebugToSdcard(memBuf, strlen(memBuf));
         printf("Rust Memory Usage: address: 0x%x, size: %d\r\n", current->p, current->size);
-        if (sizeof(current->p[0]) == 1)
-        {
-            if (((char *)current->p)[current->size - 1] == '\0')
-            {
+        if (sizeof(current->p[0]) == 1) {
+            if (((char *)current->p)[current->size - 1] == '\0') {
                 snprintf(memBuf, sizeof(memBuf), "Rust Memory Possible value: %s\r\n", current->p);
                 WriteDebugToSdcard(memBuf, strlen(memBuf));
                 printf("Rust Memory Possible value: %s\r\n", current->p);

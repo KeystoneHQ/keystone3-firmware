@@ -44,8 +44,7 @@ typedef enum {
     RSP_MAX_VALUE = 0xFFFFFFFF,
 } StatusEnum;
 
-typedef struct
-{
+typedef struct {
     uint8_t cla;
     CommandType ins;
     uint16_t p1;
@@ -55,8 +54,7 @@ typedef struct
     uint32_t dataLen;
 } EAPDUFrame_t;
 
-typedef struct
-{
+typedef struct {
     uint8_t cla;
     uint8_t *data;
     uint32_t dataLen;
@@ -64,8 +62,7 @@ typedef struct
     CommandType commandType; // ins
 } EAPDURequestPayload_t;
 
-typedef struct
-{
+typedef struct {
     uint8_t cla;
     uint8_t *data;
     uint32_t dataLen;
@@ -74,8 +71,7 @@ typedef struct
     CommandType commandType; // ins
 } EAPDUResponsePayload_t;
 
-typedef struct
-{
+typedef struct {
     CommandType command;
     uint32_t error_code;
     PtrString error_message;

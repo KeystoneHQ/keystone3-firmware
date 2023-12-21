@@ -48,7 +48,7 @@ typedef enum {
     HOME_WALLET_CARD_LUNA,
     HOME_WALLET_CARD_LUNC,
 
-    
+
     HOME_WALLET_CARD_BNB,
     HOME_WALLET_CARD_DOT,
 

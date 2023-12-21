@@ -154,7 +154,7 @@ int FatfsFileSha256(const TCHAR* path, uint8_t *sha256)
             printf("sha256 update percent = %d\n", (fileSize - lastLen) * 100 / fileSize);
         }
     }
-	sha256_done(&ctx, (struct sha256 *)hash);
+    sha256_done(&ctx, (struct sha256 *)hash);
     SRAM_FREE(fileBuf);
     printf("%s hash: ", path);
     memcpy(sha256, hash, sizeof(hash));

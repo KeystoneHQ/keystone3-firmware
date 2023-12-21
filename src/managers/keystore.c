@@ -87,7 +87,7 @@ int32_t GenerateEntropy(uint8_t *entropy, uint8_t entropyLen, const char *passwo
 
     do {
         HashWithSalt(inputBuffer, (uint8_t *)password, strlen(password), "generate entropy");
-        
+
         SE_GetTRng(randomBuffer, ENTROPY_MAX_LEN);
         KEYSTORE_PRINT_ARRAY("trng", randomBuffer, ENTROPY_MAX_LEN);
         // set the initial value
@@ -95,19 +95,19 @@ int32_t GenerateEntropy(uint8_t *entropy, uint8_t entropyLen, const char *passwo
         hkdf(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
         KEYSTORE_PRINT_ARRAY("outputBuffer", outputBuffer, ENTROPY_MAX_LEN);
         memcpy(inputBuffer, outputBuffer, ENTROPY_MAX_LEN);
-        
+
         ret = SE_GetDS28S60Rng(randomBuffer, ENTROPY_MAX_LEN);
         CHECK_ERRCODE_BREAK("get ds28s60 trng", ret);
         KEYSTORE_PRINT_ARRAY("ds28s60 rng", randomBuffer, ENTROPY_MAX_LEN);
         hkdf(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
         KEYSTORE_PRINT_ARRAY("outputBuffer", outputBuffer, ENTROPY_MAX_LEN);
         memcpy(inputBuffer, outputBuffer, ENTROPY_MAX_LEN);
-        
+
         ret = SE_GetAtecc608bRng(randomBuffer, ENTROPY_MAX_LEN);
         CHECK_ERRCODE_BREAK("get 608b trng", ret);
         KEYSTORE_PRINT_ARRAY("608b rng", randomBuffer, ENTROPY_MAX_LEN);
         hkdf(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
-        
+
         KEYSTORE_PRINT_ARRAY("finalEntropy", outputBuffer, ENTROPY_MAX_LEN);
         memcpy(entropy, outputBuffer, entropyLen);
     } while (0);

@@ -232,7 +232,8 @@ void GuiLockScreenTurnOff(void)
         g_oldWalletIndex = GetCurrentAccountIndex();
     }
 
-    if (GetCurrentAccountIndex() != g_oldWalletIndex) {
+    if ((GetCurrentAccountIndex() != g_oldWalletIndex) || 
+        GuiIsForgetPass()) {
         g_oldWalletIndex = GetCurrentAccountIndex();
         GuiCloseToTargetView(&g_homeView);
     } else {

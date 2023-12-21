@@ -18,6 +18,8 @@
 #include "secret_cache.h"
 #ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
+#else
+#include "simulator_model.h"
 #endif
 
 typedef enum {

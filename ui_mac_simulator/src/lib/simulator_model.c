@@ -612,3 +612,13 @@ void HandleDefaultViewType(void *urResult, UrViewType_t urViewType, bool is_mult
 uint32_t PubBufferMsg(uint32_t messageID, void *buffer, uint32_t length) {
     return 0;
 }
+
+bool FatfsFileExist(const char *path)
+{
+    return false;
+}
+
+bool FpModuleIsChipState(void)
+{
+    return false;
+}

@@ -49,6 +49,7 @@ void FpSaveKeyInfo(bool add);
 void UpdateFingerSignFlag(uint8_t index, bool signFlag);
 bool GetLvglHandlerStatus(void);
 int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
+bool FatfsFileExist(const char *path);
 
 #define LOW_BATTERY_LIMIT               20
 #define CHECK_BATTERY_LOW_POWER()       ((GetBatterPercent() <= LOW_BATTERY_LIMIT) ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE)

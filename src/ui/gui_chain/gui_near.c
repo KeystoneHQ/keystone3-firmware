@@ -83,7 +83,7 @@ void *GuiGetNearData(void)
     overview->transfer_from = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.near";
     overview->transfer_to = "206fab31eb5774733ec6eed3d24300dd541d2e60f2b5779a0f5dfbb7b37aefbb";
     data->overview = overview;
-    data->detail = "[{\"From\":\"test.near\",\"To\":\"whatever.near\"},{\"Action\":\"Transfer\",\"Value\":\"0.00125 NEAR\"},{\"Action\":\"Function Call\",\"Method\":\"ft_transfer\",\"Deposit Value\":\"1 Yocto\",\"Prepaid Gas\":\"30 TGas\"},{\"Action\":\"Create Account\"},{\"Action\":\"Deploy Contract\"},{\"Action\":\"Function Call\",\"Method\":\"qqq\",\"Deposit Value\":\"1000000 Yocto\",\"Prepaid Gas\":\"0.000000001 TGas\"},{\"Action\":\"Transfer\",\"Value\":\"123 Yocto\"},{\"Action\":\"Stake\",\"Public Key\":\"873bfc360d676cdf426c2194aeddb009c741ee28607c79a5f376356b563b9bb3\",\"Stake Amount\":\"1000000 Yocto\"},{\"Action\":\"Add Key\",\"Public Key\":\"873bfc360d676cdf426c2194aeddb009c741ee28607c79a5f376356b563b9bb3\",\"Access Key Permission\":\"FunctionCall\",\"Access Key Receiver ID\":\"zzz\",\"Access Key Allowance\":\"0 Yocto\",\"Access Key Nonce\":0,\"Access Key Method Names\":[\"www\",\"eee\",\"rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr\",\"ddddddd\"]},{\"Action\":\"Delete Key\",\"Public Key\":\"873bfc360d676cdf426c2194aeddb009c741ee28607c79a5f376356b563b9bb3\"},{\"Action\":\"Delete Account\",\"Beneficiary ID\":\"123\"}]";
+    data->detail = "[{\"From\":\"test.near\",\"To\":\"whatever.near\"},{\"Action\":\"Transfer\",\"Value\":\"0.00125 NEAR\"},{\"Action\":\"Function Call\",\"Method\":\"ft_transfer\",\"Deposit Value\":\"1 Yocto\",\"Prepaid Gas\":\"30 TGas\"},{\"Action\":\"Create Account\"},{\"Action\":\"Deploy Contract\"},{\"Action\":\"Function Call\",\"Method\":\"qqq\",\"Deposit Value\":\"1000000 Yocto\",\"Prepaid Gas\":\"0.000000001 TGas\"},{\"Action\":\"Transfer\",\"Value\":\"123 Yocto\"},{\"Action\":\"Stake\",\"Public Key\":\"873bfc360d676cdf426c2194aeddb009c741ee28607c79a5f376356b563b9bb3\",\"Stake Amount\":\"1000000 Yocto\"},{\"Action\":\"Add Key\",\"Public Key\":\"873bfc360d676cdf426c2194aeddb009c741ee28607c79a5f376356b563b9bb3\",\"Access Key Permission\":\"FunctionCall\",\"Access Key Receiver ID\":\"zzz\",\"Access Key Allowance\":\"0 Yocto\",\"Access Key Nonce\":0,\"Access Key Method Names\":[\"www\",\"eee\",\"rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr\",\"ddddddd\"]},{\"Action\":\"Delete Key\",\"Public Key\":\"873bfc360d676cdf426c2194aeddb009c741ee28607c79a5f376356b563b9bb3\"},{\"Action\":\"Delete Account\",\"Beneficiary ID\":\"123\"}]";
     g_parseResult->data = data;
     g_parseResult->error_code = 0;
     return g_parseResult;
@@ -308,11 +308,12 @@ void GuiShowNearTxDetail(lv_obj_t *parent, void *totalData)
     int8_t len = cJSON_GetArraySize(root);
     lv_obj_t *prevContainer = NULL;
     lv_obj_t *prevLabel = NULL;
-    int8_t gap = 8;
+    int8_t gapS = 8;
+    int8_t gapM = 16;
     for (int8_t i = 0; i < len; i++) {
         lv_obj_t *container = GuiCreateContainerWithParent(parent, 408, 150);
         if (NULL != prevContainer) {
-            lv_obj_align_to(container, prevContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, gap);
+            lv_obj_align_to(container, prevContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, gapM);
         } else {
             lv_obj_align(container, LV_ALIGN_TOP_LEFT, 0, 0);
         }
@@ -326,11 +327,11 @@ void GuiShowNearTxDetail(lv_obj_t *parent, void *totalData)
         if (i > 0 && len > 2) {
             lv_obj_t *iLabel = lv_label_create(container);
             lv_label_set_text_fmt(iLabel, "#%d", i);
-            lv_obj_align(iLabel, LV_ALIGN_TOP_LEFT, 24, gap);
+            lv_obj_align(iLabel, LV_ALIGN_TOP_LEFT, 24, gapM);
             lv_obj_set_style_text_font(iLabel, &openSans_20, LV_PART_MAIN);
             lv_obj_set_style_text_color(iLabel, ORANGE_COLOR, LV_PART_MAIN);
             prevLabel = iLabel;
-            height += gap + 30;
+            height += gapM + 30;
         } else {
             prevLabel = NULL;
         }
@@ -340,17 +341,22 @@ void GuiShowNearTxDetail(lv_obj_t *parent, void *totalData)
             lv_obj_t *tLabel = lv_label_create(container);
             lv_label_set_text(tLabel, key->string);
             if (NULL != prevLabel) {
-                lv_obj_align_to(tLabel, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, gap);
+                int8_t g = gapM;
+                if (k > 0) {
+                    g = gapS;
+                }
+                lv_obj_align_to(tLabel, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, g);
+                height += g + 30;
             } else {
-                lv_obj_align(tLabel, LV_ALIGN_TOP_LEFT, 24, gap);
+                lv_obj_align(tLabel, LV_ALIGN_TOP_LEFT, 24, gapM);
+                height += gapM + 30;
             }
             SetTitleLabelStyle(tLabel);
             prevLabel = tLabel;
-            height += gap + 30;
-            lv_obj_t *vLabel = lv_label_create(container);
             if (key->type == cJSON_Array) {
                 GuiRenderTextList(key, container, prevLabel, &height);
             } else {
+                lv_obj_t *vLabel = lv_label_create(container);
                 if (key->type == cJSON_String) {
                     lv_label_set_text(vLabel, key->valuestring);
                 } else if (key->type == cJSON_Number) {
@@ -358,18 +364,18 @@ void GuiShowNearTxDetail(lv_obj_t *parent, void *totalData)
                 }
                 lv_label_set_long_mode(vLabel, LV_LABEL_LONG_WRAP);
                 if (IsKeyInline(key->string)) {
-                    lv_obj_align_to(vLabel, prevLabel, LV_ALIGN_OUT_RIGHT_TOP, gap * 2, 0);
+                    lv_obj_align_to(vLabel, prevLabel, LV_ALIGN_OUT_RIGHT_TOP, gapM, 0);
                 } else {
-                    lv_obj_align_to(vLabel, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, gap);
+                    lv_obj_align_to(vLabel, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, gapS);
                     lv_obj_set_width(vLabel, 360);
                     lv_obj_update_layout(vLabel);
-                    height += gap + lv_obj_get_height(vLabel);
+                    height += gapS + lv_obj_get_height(vLabel);
                     prevLabel = vLabel;
                 }
                 SetContentLableStyle(vLabel);
             }
         }
-        lv_obj_set_height(container, height + gap);
+        lv_obj_set_height(container, height + gapM);
     }
     cJSON_Delete(root);
 }

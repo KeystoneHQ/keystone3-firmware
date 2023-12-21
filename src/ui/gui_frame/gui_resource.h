@@ -95,6 +95,7 @@ LV_IMG_DECLARE(imgUsb);
 LV_IMG_DECLARE(imgUnknown);
 LV_IMG_DECLARE(imgNextStep);
 LV_IMG_DECLARE(imgInfo);
+LV_IMG_DECLARE(imgDice);
 
 // connect to do refresh
 LV_IMG_DECLARE(circular);

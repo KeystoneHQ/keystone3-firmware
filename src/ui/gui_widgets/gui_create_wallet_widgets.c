@@ -40,7 +40,10 @@ typedef struct CreateWalletWidget {
 static CreateWalletWidget_t g_createWalletTileView;
 
 static void CloseChooseWordsAmountHandler(lv_event_t* e);
+static void OpenMoreHandler(lv_event_t* e);
+static void OpenChangeEntropyHandler(lv_event_t* e);
 static void GuiRefreshNavBar(void);
+static void CloseChangeEntropyHandler(lv_event_t *e);
 
 static PageWidget_t *g_pageWidget;
 static KeyBoard_t *g_nameWalletKb = NULL;
@@ -52,6 +55,9 @@ static lv_obj_t *g_setPinTile = NULL;
 static lv_obj_t *g_repeatPinTile = NULL;
 static lv_obj_t *g_noticeHintBox = NULL;
 static char g_pinBuf[GUI_DEFINE_MAX_PASSCODE_LEN + 1];
+static lv_obj_t *g_openMoreHintBox;
+static PageWidget_t *g_changeEntropyPage;
+static uint8_t g_selectedEntropyMethod = 0;
 
 void GuiSetupKeyboardWidgetMode(void)
 {
@@ -91,6 +97,7 @@ static void QuestionMarkEventCb(lv_event_t* e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         uint8_t index = TUTORIAL_SHAMIR_BACKUP;
+        GUI_DEL_OBJ(g_openMoreHintBox);
         GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
     }
 }
@@ -391,6 +398,7 @@ static void GuiImportBackupWidget(lv_obj_t *parent)
 void GuiCreateWalletInit(uint8_t walletMethod)
 {
     CLEAR_OBJECT(g_createWalletTileView);
+    g_selectedEntropyMethod = 0;
 
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
@@ -543,13 +551,10 @@ static void GuiRefreshNavBar(void)
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     if (CREATE_WALLET_BACKUPFROM == g_createWalletTileView.currentTile) {
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, QuestionMarkEventCb, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
     }
     if (CREATE_WALLET_SETPIN == g_createWalletTileView.currentTile) {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    }
-    if (CREATE_WALLET_BACKUPFROM == g_createWalletTileView.currentTile) {
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, QuestionMarkEventCb, NULL);
     }
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
 }
@@ -569,3 +574,216 @@ void GuiCreateWalletRefresh(void)
     }
 }
 
+static void OpenMoreHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        int hintboxHeight = 228;
+        g_openMoreHintBox = GuiCreateHintBox(lv_scr_act(), 480, hintboxHeight, true);
+        lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
+        lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, _("Tutorial"));
+        lv_obj_t *img = GuiCreateImg(g_openMoreHintBox, &imgTutorial);
+
+        GuiButton_t table[] = {
+            {
+                .obj = img,
+                .align = LV_ALIGN_LEFT_MID,
+                .position = {24, 0},
+            },
+            {
+                .obj = label,
+                .align = LV_ALIGN_LEFT_MID,
+                .position = {76, 0},
+            },
+        };
+        lv_obj_t *btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
+                                        QuestionMarkEventCb, NULL);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+
+        label = GuiCreateTextLabel(g_openMoreHintBox, _("change_entropy"));
+        img = GuiCreateImg(g_openMoreHintBox, &imgDice);
+        table[0].obj = img;
+        table[1].obj = label;
+        btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
+                                OpenChangeEntropyHandler, NULL);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -120);
+    }
+}
+
+
+// Change Entropy
+typedef struct {
+    lv_obj_t *checkBox;
+    lv_obj_t *checkedImg;
+    lv_obj_t *uncheckedImg;
+    lv_obj_t *descCont;
+} MethodWidgetItem_t;
+
+static MethodWidgetItem_t g_entropyMethods[2];
+static uint8_t g_selectedEntropyMethodCache;
+static lv_obj_t* g_entropyMethodContainer;
+
+
+static void ChangeEntropyMethodHandler(lv_event_t *e);
+static void ChangeEntropyMethodConfirmHandler(lv_event_t *e);
+
+static void OpenChangeEntropyHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        GUI_DEL_OBJ(g_openMoreHintBox);
+        g_selectedEntropyMethodCache = g_selectedEntropyMethod;
+        g_changeEntropyPage = CreatePageWidget();
+        SetNavBarLeftBtn(g_changeEntropyPage->navBarWidget, NVS_BAR_CLOSE, CloseChangeEntropyHandler, NULL);
+        SetMidBtnLabel(g_changeEntropyPage->navBarWidget, NVS_BAR_MID_LABEL, _("change_entropy"));
+        SetNavBarRightBtn(g_changeEntropyPage->navBarWidget, NVS_BAR_QUESTION_MARK, NULL, NULL);
+        lv_obj_t *contentZone = g_changeEntropyPage->contentZone;
+        lv_obj_t *cont = GuiCreateContainerWithParent(contentZone, 480, 542);
+        g_entropyMethodContainer = cont;
+        lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_set_scrollbar_mode(cont, LV_SCROLLBAR_MODE_OFF);
+        lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 0, 0);
+
+        lv_obj_t *label, img;
+        label = GuiCreateIllustrateLabel(cont, _("change_entropy_desc"));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 0);
+        lv_obj_t *method_cont = GuiCreateContainerWithParent(cont, 408, 205);
+        lv_obj_set_style_radius(method_cont, 24, LV_PART_MAIN);
+        lv_obj_set_style_bg_color(method_cont, WHITE_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_bg_opa(method_cont, LV_OPA_12, LV_PART_MAIN);
+        lv_obj_align(method_cont, LV_ALIGN_TOP_LEFT, 36, 84);
+        label = GuiCreateIllustrateLabel(method_cont, _("change_entropy_system"));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+        label = GuiCreateIllustrateLabel(method_cont, _("change_entropy_system_subtitle"));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56);
+
+        static lv_point_t points[2] = {{0, 0}, {360, 0}};
+        lv_obj_t *line = GuiCreateLine(method_cont, points, 2);
+        lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102);
+
+        label = GuiCreateIllustrateLabel(method_cont, _("change_entropy_dice_rolls"));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16+102);
+        label = GuiCreateIllustrateLabel(method_cont, _("change_entropy_dice_rolls_subtitle"));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56+102);
+
+        for (size_t i = 0; i < 2; i++)
+        {
+            g_entropyMethods[i].checkBox = lv_btn_create(method_cont);
+            lv_obj_set_size(g_entropyMethods[i].checkBox, 408, 82);
+            lv_obj_align(g_entropyMethods[i].checkBox, LV_ALIGN_TOP_LEFT, 0, 10 + 102*i);
+            lv_obj_set_style_bg_opa(g_entropyMethods[i].checkBox, LV_OPA_TRANSP, LV_PART_MAIN);
+            lv_obj_set_style_bg_opa(g_entropyMethods[i].checkBox, LV_OPA_TRANSP, LV_STATE_CHECKED);
+            lv_obj_set_style_border_width(g_entropyMethods[i].checkBox, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_outline_width(g_entropyMethods[i].checkBox, 0, LV_PART_MAIN);
+            lv_obj_set_style_shadow_width(g_entropyMethods[i].checkBox, 0, LV_PART_MAIN);
+            lv_obj_add_flag(g_entropyMethods[i].checkBox, LV_OBJ_FLAG_CHECKABLE);
+            lv_obj_add_event_cb(g_entropyMethods[i].checkBox, ChangeEntropyMethodHandler, LV_EVENT_CLICKED, NULL);
+
+            g_entropyMethods[i].checkedImg = GuiCreateImg(g_entropyMethods[i].checkBox, &imgMessageSelect);
+            lv_obj_align(g_entropyMethods[i].checkedImg, LV_ALIGN_CENTER, 162, 0);
+            lv_obj_add_flag(g_entropyMethods[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+            g_entropyMethods[i].uncheckedImg = GuiCreateImg(g_entropyMethods[i].checkBox, &imgUncheckCircle);
+            lv_obj_align(g_entropyMethods[i].uncheckedImg, LV_ALIGN_CENTER, 162, 0);
+            lv_obj_clear_flag(g_entropyMethods[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+        }
+
+        // System Desc Container
+        lv_obj_t *descCont = GuiCreateContainerWithParent(cont, 408, 114);
+        g_entropyMethods[0].descCont = descCont;
+        lv_obj_align(descCont, LV_ALIGN_TOP_LEFT, 36, 313);
+        lv_obj_set_style_radius(descCont, 24, LV_PART_MAIN);
+        lv_obj_set_style_bg_color(descCont, WHITE_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_bg_opa(descCont, LV_OPA_12, LV_PART_MAIN);
+
+        label = GuiCreateIllustrateLabel(descCont, _("change_entropy_system_desc"));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
+        lv_obj_set_width(label, 360);
+
+        lv_obj_add_flag(descCont, LV_OBJ_FLAG_HIDDEN);
+
+        // Dice Roll Desc Container
+        descCont = GuiCreateContainerWithParent(cont, 408, 332);
+        g_entropyMethods[1].descCont = descCont;
+        lv_obj_align(descCont, LV_ALIGN_TOP_LEFT, 36, 313);
+        lv_obj_set_style_radius(descCont, 24, LV_PART_MAIN);
+        lv_obj_set_style_bg_color(descCont, WHITE_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_bg_opa(descCont, LV_OPA_12, LV_PART_MAIN);
+
+        label = GuiCreateIllustrateLabel(descCont, _("change_entropy_dice_desc"));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
+        lv_obj_set_width(label, 360);
+
+        label = GuiCreateIllustrateLabel(descCont, "#F5870A ·#");
+        lv_label_set_recolor(label, true);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 88);
+
+        label = GuiCreateIllustrateLabel(descCont, _("change_entropy_dice_detail_desc_1"));
+        lv_label_set_recolor(label, true);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 40, 88);
+        lv_obj_set_width(label, 344);
+
+        label = GuiCreateIllustrateLabel(descCont, "#F5870A ·#");
+        lv_label_set_recolor(label, true);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 220);
+
+        label = GuiCreateIllustrateLabel(descCont, _("change_entropy_dice_detail_desc_2"));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 40, 220);
+        lv_obj_set_width(label, 344);
+
+        lv_obj_add_flag(descCont, LV_OBJ_FLAG_HIDDEN);
+
+        lv_obj_clear_flag(g_entropyMethods[g_selectedEntropyMethodCache].checkedImg, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_entropyMethods[g_selectedEntropyMethodCache].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_entropyMethods[g_selectedEntropyMethodCache].descCont, LV_OBJ_FLAG_HIDDEN);
+
+        // Check Btn
+        lv_obj_t *bottomCont = GuiCreateContainerWithParent(contentZone, 480, 114);
+        lv_obj_align(bottomCont, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+        lv_obj_t *btn = GuiCreateBtn(bottomCont, USR_SYMBOL_CHECK);
+        lv_obj_add_event_cb(btn, CloseChangeEntropyHandler, LV_EVENT_ALL, NULL);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    }
+}
+
+static void CloseChangeEntropyHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        GUI_PAGE_DEL(g_changeEntropyPage);
+    }
+}
+
+static void ChangeEntropyMethodConfirmHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        GUI_PAGE_DEL(g_changeEntropyPage);
+        g_selectedEntropyMethod = g_selectedEntropyMethodCache;
+    }
+}
+
+static void ChangeEntropyMethodHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        lv_obj_scroll_to_y(g_entropyMethodContainer, 0, LV_ANIM_OFF);
+        lv_obj_t *checkBox = lv_event_get_target(e);
+        for (uint32_t i = 0; i < 2; i++) {
+            if (checkBox == g_entropyMethods[i].checkBox) {
+                lv_obj_add_state(g_entropyMethods[i].checkBox, LV_STATE_CHECKED);
+                lv_obj_clear_flag(g_entropyMethods[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(g_entropyMethods[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_clear_flag(g_entropyMethods[i].descCont, LV_OBJ_FLAG_HIDDEN);
+                if (g_selectedEntropyMethodCache != i) {
+                    g_selectedEntropyMethodCache = i;
+                }
+            } else {
+                lv_obj_clear_state(g_entropyMethods[i].checkBox, LV_STATE_CHECKED);
+                lv_obj_add_flag(g_entropyMethods[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_clear_flag(g_entropyMethods[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(g_entropyMethods[i].descCont, LV_OBJ_FLAG_HIDDEN);
+            }
+        }
+    }
+}

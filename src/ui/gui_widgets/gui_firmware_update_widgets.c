@@ -14,7 +14,11 @@
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
 #include "account_manager.h"
-
+#include "gui_about_info_widgets.h"
+#include "secret_cache.h"
+#ifndef COMPILE_SIMULATOR
+#include "user_fatfs.h"
+#endif
 
 typedef enum {
     FIRMWARE_UPDATE_SELECT = 0,
@@ -42,10 +46,14 @@ static void GuiViaSdCardHandler(lv_event_t *e);
 static void GuiViaUsbHandler(lv_event_t *e);
 static void GuiCreateUsbInstructionTile(lv_obj_t *parent);
 static void GuiQrcodeHandler(lv_event_t *e);
+static void GuiFirmwareUpdateViewSha256(char *version, uint8_t percent);
 static void CloseQrcodeHandler(lv_event_t *e);
 static int GetEntryEnum(void);
 static void GuiCreateSdCardnstructionTile(lv_obj_t *parent);
 static void FirmwareSdcardUpdateHandler(lv_event_t *e);
+static void FirmwareSdcardCheckSha256Handler(lv_event_t *e);
+static void FirmwareSdcardCheckSha256HintBoxHandler(lv_event_t *e);
+static void GuiFirmwareUpdateCancelUpdate(lv_event_t *e);
 
 static FirmwareUpdateWidgets_t g_firmwareUpdateWidgets;
 static char *g_firmwareUpdateUrl = NULL;
@@ -53,7 +61,7 @@ static char *g_firmwareSdUpdateUrl = NULL;
 static lv_obj_t *g_waitAnimCont = NULL;
 static void *g_param = NULL;
 static lv_obj_t *g_noticeHintBox = NULL;
-
+static lv_obj_t *g_calCheckSumLabel = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static PageWidget_t *g_pageWidget;
 
@@ -67,19 +75,38 @@ static void UrlInit()
     }
 }
 
-void GuiCreateSdCardUpdateHintbox(char *version)
+void GuiCreateSdCardUpdateHintbox(char *version, bool checkSumDone)
 {
     GUI_DEL_OBJ(g_noticeHintBox)
     static uint32_t param = SIG_INIT_SD_CARD_OTA_COPY;
     char desc[150] = {0};
+    lv_obj_t *label;
     sprintf(desc, _("firmware_update_sd_dialog_desc"));
-    g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 416, &imgFirmwareUp, _("firmware_update_sd_dialog_title"),
-                      desc, _("not_now"), DARK_GRAY_COLOR, _("Update"), ORANGE_COLOR);
+    uint16_t height = checkSumDone ? 518 : 458;
+    g_noticeHintBox = GuiCreateUpdateHintbox(lv_scr_act(), height, &imgFirmwareUp, _("firmware_update_sd_dialog_title"),
+                      desc, _("not_now"), DARK_GRAY_COLOR, _("Update"), ORANGE_COLOR, checkSumDone);
+
+    g_calCheckSumLabel = lv_obj_get_child(g_noticeHintBox, 3);
     lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeHintBox);
-    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+    lv_obj_add_event_cb(leftBtn, GuiFirmwareUpdateCancelUpdate, LV_EVENT_CLICKED, &g_noticeHintBox);
 
     lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeHintBox);
     lv_obj_add_event_cb(rightBtn, FirmwareSdcardUpdateHandler, LV_EVENT_CLICKED, &param);
+    if (checkSumDone) {
+        char hash[128] = {0};
+        char tempBuf[128] = {0};
+        SecretCacheGetChecksum(hash);
+        ConvertToLowerCase(hash);
+        snprintf(tempBuf, sizeof(tempBuf), "#F5870A %.8s#%.24s\n%.24s#F5870A %.8s#", hash, &hash[8], &hash[32], &hash[56]);
+        lv_label_set_text_fmt(g_calCheckSumLabel, "Checksum(v%s):\n%s", version, tempBuf);
+    } else {
+        lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _(""));
+        lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
+        lv_obj_set_size(btn, 250, 50);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -120);
+        lv_obj_add_event_cb(btn, FirmwareSdcardCheckSha256HintBoxHandler, LV_EVENT_CLICKED, NULL);
+        lv_label_set_text_fmt(g_calCheckSumLabel, _("firmware_update_sd_checksum_fmt_version"), version);
+    }
 }
 
 static int GetEntryEnum(void)
@@ -215,6 +242,25 @@ void GuiFirmwareUpdatePrevTile(void)
     GuiFirmwareUpdateRefresh();
 }
 
+void GuiFirmwareUpdateSha256Percent(uint8_t percent)
+{
+    if (g_noticeHintBox == NULL) {
+        return;
+    }
+    char version[16] = {0};
+    if (percent == 100) {
+        CheckOtaBinVersion(version);
+    }
+
+    if (lv_obj_is_valid(g_calCheckSumLabel)) {
+        lv_label_set_text_fmt(g_calCheckSumLabel, _("firmware_update_sd_checksum_fmt"), percent);
+        if (percent == 100) {
+            GuiCreateSdCardUpdateHintbox(version, true);
+        }
+    } else {
+        GuiFirmwareUpdateViewSha256(version, percent);
+    }
+}
 
 static void GuiCreateSelectTile(lv_obj_t *parent)
 {
@@ -350,6 +396,7 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     uint16_t *walletSetIndex = lv_event_get_user_data(e);
     if (code == LV_EVENT_CLICKED) {
+        GuiModelStopCalculateCheckSum();
         if (CHECK_BATTERY_LOW_POWER()) {
             g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox);
         } else if (!SdCardInsert()) {
@@ -368,6 +415,43 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
             }
         } else {
             g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
+        }
+    }
+}
+
+static void FirmwareSdcardCheckSha256Handler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        if (!SdCardInsert()) {
+            return;
+        }
+        g_noticeHintBox = GuiCreateAnimHintBox(lv_scr_act(), 480, 400, 76);
+        lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("Calculating"));
+        lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
+        lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("Cancel"));
+        lv_obj_set_size(btn, 408, 66);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+        lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
+        lv_obj_add_event_cb(btn, GuiStopFirmwareCheckSumHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+
+        lv_obj_t *desc = GuiCreateNoticeLabel(g_noticeHintBox, "0%");
+        lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -140);
+        lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, 0);
+        GuiModelCalculateBinSha256();
+#ifdef COMPILE_SIMULATOR
+        GuiFirmwareUpdateSha256Percent(100);
+#endif
+    }
+}
+
+static void FirmwareSdcardCheckSha256HintBoxHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        if (SdCardInsert()) {
+            lv_obj_del(lv_event_get_target(e));
+            GuiModelCalculateBinSha256();
         }
     }
 }
@@ -417,7 +501,19 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
     lv_label_set_recolor(label, true);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 380);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("Update"));
+    lv_obj_t *btn = NULL;
+    if (FatfsFileExist(OTA_FILE_PATH)) {
+        btn = GuiCreateBtn(parent, _("about_info_verify_firmware_title"));
+        lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
+        label = lv_obj_get_child(btn, 0);
+        lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
+        lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+        lv_obj_set_size(btn, 400, 30);
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 605 - GUI_MAIN_AREA_OFFSET);
+        lv_obj_add_event_cb(btn, FirmwareSdcardCheckSha256Handler, LV_EVENT_CLICKED, &param);
+    }
+
+    btn = GuiCreateBtn(parent, _("Update"));
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
     lv_obj_add_event_cb(btn, FirmwareSdcardUpdateHandler, LV_EVENT_CLICKED, &param);
@@ -485,5 +581,59 @@ void GuiFirmwareUpdateVerifyPasswordErrorCount(void *param)
     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
     if (g_keyboardWidget != NULL) {
         GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
+    }
+}
+
+static void GuiFirmwareUpdateViewSha256(char *version, uint8_t percent)
+{
+    if (percent == 0xFF) {
+        GuiDeleteAnimHintBox();
+        g_noticeHintBox = NULL;
+        return;
+    }
+    lv_obj_t *label = lv_obj_get_child(g_noticeHintBox, lv_obj_get_child_cnt(g_noticeHintBox) - 1);
+    lv_label_set_text_fmt(label, "%d%%", percent);
+    if (percent == 100) {
+        GuiDeleteAnimHintBox();
+        g_noticeHintBox = NULL;
+        uint32_t hintHeight = 220 + 48;
+        g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 482, 300);
+        lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("OK"));
+        lv_obj_set_size(btn, 94, 66);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+        lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+
+        label = GuiCreateIllustrateLabel(g_noticeHintBox, _("Checksum\n\n"));
+        lv_label_set_recolor(label, true);
+        lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -130);
+
+        lv_obj_t *desc = GuiCreateIllustrateLabel(g_noticeHintBox, _("firmware_update_sd_checksum_notice"));
+        lv_obj_align_to(desc, label, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
+        hintHeight = hintHeight + lv_obj_get_height(desc) + 12;
+
+        lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("Verify Firmware"));
+        lv_obj_align_to(title, desc, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
+        hintHeight = hintHeight + lv_obj_get_height(title) + 12;
+
+        char hash[128] = {0};
+        char tempBuf[128] = {0};
+        SecretCacheGetChecksum(hash);
+        ConvertToLowerCase(hash);
+        snprintf(tempBuf, sizeof(tempBuf), "#F5870A %.8s#%.24s\n%.24s#F5870A %.8s#", hash, &hash[8], &hash[32], &hash[56]);
+        lv_obj_t *label = lv_obj_get_child(g_noticeHintBox, lv_obj_get_child_cnt(g_noticeHintBox) - 3);
+        lv_label_set_text_fmt(label, "Checksum(v%s):\n%s", version, tempBuf);
+    }
+}
+
+static void GuiFirmwareUpdateCancelUpdate(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        GuiModelStopCalculateCheckSum();
+        lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
+        void **param = lv_event_get_user_data(e);
+        if (param != NULL) {
+            *param = NULL;
+        }
     }
 }

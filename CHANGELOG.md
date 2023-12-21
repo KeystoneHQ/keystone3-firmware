@@ -1,3 +1,22 @@
+## 1.2.4 (2023-12-21)
+
+### What's new
+
+1. Introduced the Checksum verification feature for firmware update via microSD cards
+
+### Improvements
+
+1. Optimized the feature for open-source code verification of firmware
+2. Improved the wording within the device for better clarity
+3. Optimized transaction decoding for ETH, Polygon, and BSC networks
+4. Enhanced the user experience of fingerprint unlocking for Passphrase wallets
+
+### Bug Fixes
+
+1. Fixed transaction failures in specific scenarios among Cardano and COSMOS networks
+2. Resolved fingerprint signature failures in specific scenarios
+
+
 ## 1.2.2 (2023-12-18)
 
 ### Improvements

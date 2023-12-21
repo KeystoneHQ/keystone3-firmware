@@ -32,7 +32,7 @@ static int32_t GuiInitViewInit(void)
         GuiFrameOpenView(&g_selfDestructView);
         return SUCCESS_CODE;
     }
-    GuiModeGetAmount();
+    GuiModeGetAccount();
     // GuiFrameOpenView(&g_settingView);
     // GuiFrameOpenView(&g_connectWalletView);
     return SUCCESS_CODE;
@@ -134,6 +134,14 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
             return ERR_GUI_ERROR;
         }
         GuiUpdateCheckSumPercent(checkSumPercent);
+        break;
+    case SIG_SETTING_SHA256_PERCENT:
+        if (param != NULL) {
+            checkSumPercent = *(uint8_t *)param;
+        } else {
+            return ERR_GUI_ERROR;
+        }
+        GuiFirmwareUpdateSha256Percent(checkSumPercent);
         break;
     default:
         return ERR_GUI_UNHANDLED;

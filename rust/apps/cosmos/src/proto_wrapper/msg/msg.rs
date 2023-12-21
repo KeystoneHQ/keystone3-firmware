@@ -202,6 +202,26 @@ where
     }
 }
 
+fn deserialize_string_option_u64<'de, D>(deserializer: D) -> Result<Option<u64>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value: Value = serde::Deserialize::deserialize(deserializer)?;
+    match value.as_u64() {
+        Some(data) => Ok(Some(data)),
+        None => {
+            if let Some(data) = value.as_str().and_then(|v| v.parse::<u64>().ok()) {
+                Ok(Some(data))
+            } else {
+                Err(serde::de::Error::custom(format!(
+                    "invalid proposal id {:?}",
+                    value
+                )))
+            }
+        }
+    }
+}
+
 impl MsgVote {
     pub const TYPE_URL: &'static str = "/cosmos.gov.v1beta1.MsgVote";
 }
@@ -238,8 +258,9 @@ impl Msg for MsgVote {}
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Height {
     /// the revision that the client is currently on
-    #[serde(deserialize_with = "deserialize_string_u64")]
-    pub revision_number: u64,
+    #[serde(default)]
+    #[serde(deserialize_with = "deserialize_string_option_u64")]
+    pub revision_number: Option<u64>,
     /// the height within the given revision
     #[serde(deserialize_with = "deserialize_string_u64")]
     pub revision_height: u64,
@@ -284,7 +305,7 @@ impl TryFrom<&proto::ibc::applications::transfer::v1::MsgTransfer> for MsgTransf
 
         let timeout_height: Option<Height> = match &proto.timeout_height {
             Some(height) => Some(Height {
-                revision_number: height.revision_number,
+                revision_number: Some(height.revision_number),
                 revision_height: height.revision_height,
             }),
             None => None,

@@ -143,6 +143,7 @@ void GuiTransactionParseFailed()
 void GuiTransactionDetailRefresh()
 {
     // PassWordPinHintRefresh(g_keyboardWidget);
+    GUI_DEL_OBJ(g_fingerSingContainer)
 }
 
 static void ThrowError()
@@ -238,7 +239,7 @@ void GuiSignDealFingerRecognize(void *param)
     if (errCode == FP_SUCCESS_CODE)
     {
         lv_img_set_src(g_fpErrorImg, &imgYellowFinger);
-        GuiModelVerifyAmountPassWord(&passCodeType);
+        GuiModelVerifyAccountPassWord(&passCodeType);
         g_fingerSignErrCount = 0;
     }
     else

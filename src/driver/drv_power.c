@@ -4,8 +4,6 @@
 
 #define POWER_CTRL_VCC33_PORT               GPIOE
 #define POWER_CTRL_VCC33_PIN                GPIO_Pin_13
-#define POWER_CTRL_BLUETOOTH_PORT           GPIOF
-#define POWER_CTRL_BLUETOOTH_PIN            GPIO_Pin_13
 
 
 /// @brief Power ctrl init.
@@ -20,14 +18,7 @@ void PowerInit(void)
     GPIO_Init(POWER_CTRL_VCC33_PORT, &gpioInit);
     GPIO_ResetBits(POWER_CTRL_VCC33_PORT, POWER_CTRL_VCC33_PIN);
 
-    gpioInit.GPIO_Mode = GPIO_Mode_Out_PP;
-    gpioInit.GPIO_Pin = POWER_CTRL_BLUETOOTH_PIN;
-    gpioInit.GPIO_Remap = GPIO_Remap_1;
-    GPIO_Init(POWER_CTRL_BLUETOOTH_PORT, &gpioInit);
-    GPIO_ResetBits(POWER_CTRL_BLUETOOTH_PORT, POWER_CTRL_BLUETOOTH_PIN);
-
     OpenPower(POWER_TYPE_VCC33);
-    //OpenPower(POWER_TYPE_BLUETOOTH);
 
     ////BT RSTN HIGH
     //gpioInit.GPIO_Mode = GPIO_Mode_Out_PP;
@@ -47,10 +38,6 @@ void OpenPower(PowerType powerType)
         GPIO_SetBits(POWER_CTRL_VCC33_PORT, POWER_CTRL_VCC33_PIN);
     }
     break;
-    case POWER_TYPE_BLUETOOTH: {
-        GPIO_SetBits(POWER_CTRL_BLUETOOTH_PORT, POWER_CTRL_BLUETOOTH_PIN);
-    }
-    break;
     default:
         break;
     }
@@ -64,10 +51,6 @@ void ClosePower(PowerType powerType)
     switch (powerType) {
     case POWER_TYPE_VCC33: {
         GPIO_ResetBits(POWER_CTRL_VCC33_PORT, POWER_CTRL_VCC33_PIN);
-    }
-    break;
-    case POWER_TYPE_BLUETOOTH: {
-        GPIO_ResetBits(POWER_CTRL_BLUETOOTH_PORT, POWER_CTRL_BLUETOOTH_PIN);
     }
     break;
     default:
@@ -89,15 +72,6 @@ void PowerTest(int argc, char *argv[])
         }
         if (strcmp(argv[1], "close") == 0) {
             ClosePower(POWER_TYPE_VCC33);
-            line = __LINE__;
-        }
-    } else if (strcmp(argv[0], "bluetooth") == 0) {
-        if (strcmp(argv[1], "open") == 0) {
-            OpenPower(POWER_TYPE_BLUETOOTH);
-            line = __LINE__;
-        }
-        if (strcmp(argv[1], "close") == 0) {
-            ClosePower(POWER_TYPE_BLUETOOTH);
             line = __LINE__;
         }
     }

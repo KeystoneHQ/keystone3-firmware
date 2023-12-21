@@ -55,7 +55,7 @@ static void KeyboardConfirmHandler(lv_event_t *e)
         if (strlen(currText) > 0) {
             SecretCacheSetPassword((char *)currText);
             GuiClearKeyboardInput(keyboardWidget);
-            GuiModelVerifyAmountPassWord(keyboardWidget->sig);
+            GuiModelVerifyAccountPassWord(keyboardWidget->sig);
         }
     }
 
@@ -168,7 +168,7 @@ static void SetPinEventHandler(lv_event_t *e)
                 memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
                 keyboardWidget->currentNum = 0;
                 GuiClearKeyboardInput(keyboardWidget);
-                GuiModelVerifyAmountPassWord(keyboardWidget->sig);
+                GuiModelVerifyAccountPassWord(keyboardWidget->sig);
             }
 
         }

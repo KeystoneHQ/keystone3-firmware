@@ -8,6 +8,7 @@
 #include "diskio.h"
 #include "drv_gd25qxx.h"
 #include "drv_sdcard.h"
+#include "sha256.h"
 
 void FatfsError(FRESULT errNum);
 
@@ -110,6 +111,55 @@ int FatfsFileMd5(const TCHAR* path)
     printf("%s md5: ", path);
     for (int i = 0; i < sizeof(md5); i++) {
         printf("%02x", md5[i]);
+    }
+    printf("\r\n");
+
+    return RES_OK;
+}
+
+int FatfsFileSha256(const TCHAR* path, uint8_t *sha256)
+{
+    FIL fp;
+    struct sha256_ctx ctx;
+    sha256_init(&ctx);
+    uint8_t *fileBuf;
+    uint32_t fileSize = 0;
+    uint32_t readBytes = 0;
+    int len, changePercent = 0, percent;
+    unsigned char hash[32];
+    FRESULT res = f_open(&fp, path, FA_OPEN_EXISTING | FA_READ);
+    if (res) {
+        FatfsError(res);
+        return RES_ERROR;
+    }
+    fileSize = f_size(&fp);
+    int lastLen = fileSize;
+    len = lastLen > 1024 ? 1024 : lastLen;
+    fileBuf = SRAM_MALLOC(len);
+    printf("reading, please wait.\n");
+    while (lastLen) {
+        len = lastLen > 1024 ? 1024 : lastLen;
+        res = f_read(&fp, (void*)fileBuf, len, &readBytes);
+        if (res) {
+            FatfsError(res);
+            f_close(&fp);
+            SRAM_FREE(fileBuf);
+            return RES_ERROR;
+        }
+        lastLen -= len;
+        sha256_update(&ctx, fileBuf, len);
+        percent = (fileSize - lastLen) * 100 / fileSize;
+        if (percent != changePercent) {
+            changePercent = percent;
+            printf("sha256 update percent = %d\n", (fileSize - lastLen) * 100 / fileSize);
+        }
+    }
+	sha256_done(&ctx, (struct sha256 *)hash);
+    SRAM_FREE(fileBuf);
+    printf("%s hash: ", path);
+    memcpy(sha256, hash, sizeof(hash));
+    for (int i = 0; i < sizeof(hash); i++) {
+        printf("%02x", hash[i]);
     }
     printf("\r\n");
 
@@ -325,7 +375,8 @@ void FatfsDirectoryListing(char *ptr)
             acc_files++;
             acc_size += Finfo.fsize;
         }
-        printf("%c%c%c%c%c   %u/%02u/%02u   %02u:%02u %9lu  %s\r\n",
+        printf("%s\n", Finfo.fname);
+        printf("%c%c%c%c%c   %u/%02u/%02u   %02u:%02u %9lu\r\n",
                (Finfo.fattrib & AM_DIR) ? 'd' : '-',
                (Finfo.fattrib & AM_RDO) ? 'r' : '-',
                (Finfo.fattrib & AM_HID) ? 'h' : '-',
@@ -333,7 +384,7 @@ void FatfsDirectoryListing(char *ptr)
                (Finfo.fattrib & AM_ARC) ? 'a' : '-',
                (Finfo.fdate >> 9) + 1980, (Finfo.fdate >> 5) & 15, Finfo.fdate & 31,
                (Finfo.ftime >> 11), (Finfo.ftime >> 5) & 63,
-               Finfo.fsize, Finfo.fname);
+               Finfo.fsize);
     }
 #if 0
     printf("%4u File(s),%10llu bytes total\r\n%4u Dir(s)", acc_files, acc_size, acc_dirs);
@@ -362,6 +413,17 @@ uint32_t FatfsGetSize(const char *path)
     }
 
     return (QWORD)dw * fs->csize * 512;
+}
+
+bool FatfsFileExist(const char *path)
+{
+    FIL fp;
+    FRESULT res = f_open(&fp, path, FA_READ);
+    if (res == FR_OK) {
+        f_close(&fp);
+        return true;
+    }
+    return false;
 }
 
 int MMC_disk_initialize(void)

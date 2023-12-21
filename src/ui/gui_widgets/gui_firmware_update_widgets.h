@@ -17,10 +17,11 @@ void GuiFirmwareUpdateDeInit(void);
 void GuiFirmwareUpdateRefresh(void);
 void GuiFirmwareUpdatePrevTile(void);
 void GuiFirmwareSdCardCopy(void);
-void GuiCreateSdCardUpdateHintbox(char *version);
+void GuiCreateSdCardUpdateHintbox(char *version, bool checkSumDone);
 void GuiFirmwareSdCardCopyResult(bool en);
 void GuiFirmwareUpdateVerifyPasswordErrorCount(void *param);
 void GuiFirmwareUpdateWidgetRefresh(void);
+void GuiFirmwareUpdateSha256Percent(uint8_t percent);
 
 #endif
 

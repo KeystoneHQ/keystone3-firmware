@@ -9,6 +9,7 @@
 
 #define OTA_FILE_INFO_MARK_MAX_LEN          32
 #define SIGNATURE_LEN                       128
+#define OTA_FILE_PATH                       "0:keystone3.bin"
 
 //OTA file head info.
 typedef struct {

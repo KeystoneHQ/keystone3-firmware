@@ -50,6 +50,17 @@ pub extern "C" fn cardano_check_tx(
 #[no_mangle]
 pub extern "C" fn cardano_get_path(ptr: PtrUR) -> Ptr<SimpleResponse<c_char>> {
     let cardano_sign_reqeust = extract_ptr_with_type!(ptr, CardanoSignRequest);
+    match cardano_sign_reqeust.get_cert_keys().get(0) {
+        Some(_data) => match _data.get_key_path().get_path() {
+            Some(_path) => {
+                if let Some(path) = parse_cardano_root_path(_path) {
+                    return SimpleResponse::success(convert_c_char(path)).simple_c_ptr();
+                }
+            }
+            None => {}
+        },
+        None => {}
+    };
     match cardano_sign_reqeust.get_utxos().get(0) {
         Some(_data) => match _data.get_key_path().get_path() {
             Some(_path) => {

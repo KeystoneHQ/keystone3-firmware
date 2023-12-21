@@ -27,29 +27,10 @@
 #include "power_manager.h"
 #include "screen_manager.h"
 
-#define RTC_WAKE_UP_INTERVAL_DISCHARGE                          (60 * 30)           //30 minutes
-#define RTC_WAKE_UP_INTERVAL_CHARGING                           (80)                //80 seconds
-#define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                        (60 * 2)            //2 minutes
-
 static void SetRtcWakeUp(uint32_t second);
 int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
 
 volatile LowPowerState g_lowPowerState = LOW_POWER_STATE_WORKING;
-
-static uint32_t GetWakeUpInterval(void)
-{
-    UsbPowerState usbPowerState = GetUsbPowerState();
-    uint32_t milliVolt = GetBatteryMilliVolt();
-    uint8_t percent = GetBatteryPercentByMilliVolt(milliVolt, usbPowerState == USB_POWER_STATE_DISCONNECT);
-    if (usbPowerState == USB_POWER_STATE_CONNECT) {
-        return RTC_WAKE_UP_INTERVAL_CHARGING;
-    }
-    if (percent >= 30) {
-        return RTC_WAKE_UP_INTERVAL_DISCHARGE;
-    } else {
-        return RTC_WAKE_UP_INTERVAL_LOW_BATTERY;
-    }
-}
 
 void LowPowerTest(int argc, char *argv[])
 {
@@ -90,7 +71,7 @@ uint32_t EnterLowPower(void)
     g_lowPowerState = LOW_POWER_STATE_DEEP_SLEEP;
     UsbDeInit();
     printf("enter deep sleep\r\n");
-    sleepSecond = GetUsbPowerState() == USB_POWER_STATE_DISCONNECT ? RTC_WAKE_UP_INTERVAL_DISCHARGE : RTC_WAKE_UP_INTERVAL_CHARGING;
+    sleepSecond = 80;
     printf("sleepSecond=%d\n", sleepSecond);
     TouchClose();
     UserDelay(10);
@@ -107,9 +88,8 @@ uint32_t EnterLowPower(void)
         if (GetRtcCounter() >= wakeUpSecond) {
             Gd25FlashOpen();
             Aw32001RefreshState();
-            BatteryIntervalHandler();
+            BatteryIntervalHandler(&sleepSecond);
             printf("GetUsbPowerState()=%d\n", GetUsbPowerState());
-            sleepSecond = GetUsbPowerState() == USB_POWER_STATE_DISCONNECT ? RTC_WAKE_UP_INTERVAL_DISCHARGE : RTC_WAKE_UP_INTERVAL_CHARGING;
             AutoShutdownHandler(sleepSecond);
             SetRtcWakeUp(sleepSecond);
             wakeUpSecond = GetRtcCounter() + sleepSecond;

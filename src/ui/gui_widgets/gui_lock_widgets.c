@@ -232,7 +232,8 @@ void GuiLockScreenTurnOff(void)
         g_oldWalletIndex = GetCurrentAccountIndex();
     }
 
-    if (GetCurrentAccountIndex() != g_oldWalletIndex) {
+    if ((GetCurrentAccountIndex() != g_oldWalletIndex) || 
+        GuiIsForgetPass()) {
         g_oldWalletIndex = GetCurrentAccountIndex();
         GuiCloseToTargetView(&g_homeView);
     } else {
@@ -477,6 +478,7 @@ void GuiShowGenerateXPubLoading(void)
     }
     
     SetPageLockScreen(false);
+    FpCancelCurOperate();
     g_canDismissLoading = false;
 
     g_LoadingView = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));

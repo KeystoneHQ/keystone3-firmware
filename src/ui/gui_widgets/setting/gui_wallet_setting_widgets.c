@@ -301,7 +301,7 @@ void GuiSettingRepeatPinPass(const char *buf)
     if (!strcmp(buf, g_passCode)) {
         GuiResettingWriteSe();
         SecretCacheSetNewPassword((char *)buf);
-        GuiModelChangeAmountPassWord();
+        GuiModelChangeAccountPassWord();
     } else {
         GuiEnterPassCodeStatus(g_repeatPassCode, false);
     }
@@ -568,6 +568,9 @@ void GuiWalletDelWalletConfirm(lv_obj_t *parent)
 
 void GuiFingerCancelRegister(void)
 {
+    for (int i = 0; i < 3; i++) {
+        UpdateFingerSignFlag(i, false);
+    }
     SetPageLockScreen(true);
     FpDeleteRegisterFinger();
 }

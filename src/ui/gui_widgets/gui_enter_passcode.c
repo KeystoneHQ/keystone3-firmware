@@ -127,7 +127,7 @@ static void SetPinEventHandler(lv_event_t *e)
                 switch (item->mode) {
                 case ENTER_PASSCODE_VERIFY_PIN:
                     SecretCacheSetPassword(g_pinBuf);
-                    GuiModelVerifyAmountPassWord(g_userParam);
+                    GuiModelVerifyAccountPassWord(g_userParam);
                     break;
                 case ENTER_PASSCODE_SET_PIN:
                     if (CheckPasswordExisted(g_pinBuf, index)) {
@@ -198,7 +198,7 @@ static void SetPassWordHandler(lv_event_t *e)
                 g_userParam = g_passParam.userParam;
                 if (strlen(currText) > 0) {
                     SecretCacheSetPassword((char *)currText);
-                    GuiModelVerifyAmountPassWord(g_userParam);
+                    GuiModelVerifyAccountPassWord(g_userParam);
                 }
             }
             lv_textarea_set_text(ta, "");

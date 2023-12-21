@@ -55,13 +55,13 @@ void GuiModelBip39CalWriteSe(Bip39Data_t bip39);
 void GuiModelSettingSaveWalletDesc(WalletDesc_t *wallet);
 void GuiModelSettingDelWalletDesc(void);
 void GuiModelLockedDeviceDelAllWalletDesc(void);
-void GuiModelChangeAmountPassWord(void);
-void GuiModelVerifyAmountPassWord(uint16_t *param);
+void GuiModelChangeAccountPassWord(void);
+void GuiModelVerifyAccountPassWord(uint16_t *param);
 void GuiModelBip39UpdateMnemonic(uint8_t wordCnt);
 void GuiModelSlip39UpdateMnemonic(Slip39Data_t slip39);
 void GuiModelBip39RecoveryCheck(uint8_t wordsCnt);
 void GuiModeGetWalletDesc(void);
-void GuiModeGetAmount(void);
+void GuiModeGetAccount(void);
 void GuiModeControlQrDecode(bool en);
 void GuiModelSlip39WriteSe(void);
 void GuiModelBip39ForgetPassword(uint8_t wordsCnt);
@@ -79,7 +79,7 @@ bool ModelGetPassphraseQuickAccess(void);
 void GuiModelCalculateCheckSum(void);
 void GuiModelStopCalculateCheckSum(void);
 void GuiModelSettingWritePassphrase(void);
-
+void GuiModelCalculateBinSha256(void);
 
 #endif /* _GUI_MODEL_H */
 

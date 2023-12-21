@@ -27,6 +27,7 @@
 #include "qrdecode_task.h"
 #include "safe_mem_lib.h"
 #include "gui_views.h"
+#include "firmware_update.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "rust.h"
@@ -71,15 +72,15 @@ static int32_t ModelSaveWalletDesc(const void *inData, uint32_t inDataLen);
 static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen);
 static int32_t ModelDelAllWallet(const void *inData, uint32_t inDataLen);
 static int32_t ModelWritePassphrase(const void *inData, uint32_t inDataLen);
-static int32_t ModelChangeAmountPass(const void *inData, uint32_t inDataLen);
-static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen);
+static int32_t ModelChangeAccountPass(const void *inData, uint32_t inDataLen);
+static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen);
 static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen);
 static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inDataLen);
 static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen);
 static int32_t ModelBip39VerifyMnemonic(const void *inData, uint32_t inDataLen);
 static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen);
 static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t inDataLen);
-static int32_t ModeGetAmount(const void *inData, uint32_t inDataLen);
+static int32_t ModeGetAccount(const void *inData, uint32_t inDataLen);
 static int32_t ModeGetWalletDesc(const void *inData, uint32_t inDataLen);
 static int32_t ModeLoginWallet(const void *inData, uint32_t inDataLen);
 static int32_t ModeControlQrDecode(const void *inData, uint32_t inDataLen);
@@ -92,6 +93,7 @@ static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataL
 static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen);
 static int32_t ModelURGenerateQRCode(const void *inData, uint32_t inDataLen, void *getUR);
 static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen);
+static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen);
 static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen);
 static int32_t ModelURClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen);
@@ -153,6 +155,12 @@ void GuiModelCalculateCheckSum(void)
     AsyncExecute(ModelCalculateCheckSum, NULL, 0);
 }
 
+void GuiModelCalculateBinSha256(void)
+{
+    SetPageLockScreen(false);
+    AsyncExecute(ModelCalculateBinSha256, NULL, 0);
+}
+
 void GuiModelStopCalculateCheckSum(void)
 {
     SetPageLockScreen(true);
@@ -190,14 +198,14 @@ void GuiModelSettingWritePassphrase(void)
     AsyncExecute(ModelWritePassphrase, NULL, 0);
 }
 
-void GuiModelChangeAmountPassWord(void)
+void GuiModelChangeAccountPassWord(void)
 {
-    AsyncExecute(ModelChangeAmountPass, NULL, 0);
+    AsyncExecute(ModelChangeAccountPass, NULL, 0);
 }
 
-void GuiModelVerifyAmountPassWord(uint16_t *param)
+void GuiModelVerifyAccountPassWord(uint16_t *param)
 {
-    AsyncExecute(ModelVerifyAmountPass, param, sizeof(*param));
+    AsyncExecute(ModelVerifyAccountPass, param, sizeof(*param));
 }
 
 void GuiModelBip39UpdateMnemonic(uint8_t wordCnt)
@@ -212,9 +220,9 @@ void GuiModelSlip39UpdateMnemonic(Slip39Data_t slip39)
     AsyncExecute(ModelGenerateSlip39Entropy, &slip39, sizeof(slip39));
 }
 
-void GuiModeGetAmount(void)
+void GuiModeGetAccount(void)
 {
-    AsyncExecute(ModeGetAmount, NULL, 0);
+    AsyncExecute(ModeGetAccount, NULL, 0);
 }
 
 void GuiModeGetWalletDesc(void)
@@ -862,7 +870,7 @@ static int32_t ModelWritePassphrase(const void *inData, uint32_t inDataLen)
 }
 
 // reset wallet password
-static int32_t ModelChangeAmountPass(const void *inData, uint32_t inDataLen)
+static int32_t ModelChangeAccountPass(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
@@ -991,7 +999,7 @@ static void ModelVerifyPassFailed(uint16_t *param)
 }
 
 // verify wallet password
-static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
+static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
     static bool firstVerify = true;
@@ -1066,7 +1074,7 @@ static int32_t ModelVerifyAmountPass(const void *inData, uint32_t inDataLen)
 }
 
 // get wallet amount
-static int32_t ModeGetAmount(const void *inData, uint32_t inDataLen)
+static int32_t ModeGetAccount(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
@@ -1308,6 +1316,75 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
 #else
     char *hash = "131b3a1e9314ba076f8e459a1c4c6713eeb38862f3eb6f9371360aa234cdde1f";
     SecretCacheSetChecksum(hash);
+#endif
+    return SUCCESS_CODE;
+}
+
+#define FATFS_SHA256_BUFFER_SIZE              4096
+static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen)
+{
+    uint8_t percent;
+#ifndef COMPILE_SIMULATOR
+    g_stopCalChecksum = false;
+    FIL fp;
+    uint8_t *data = NULL;
+    uint32_t fileSize, actualSize, copyOffset, totalSize = 0;
+    uint8_t oldPercent = 0;
+    FRESULT res;
+    struct sha256_ctx ctx;
+    sha256_init(&ctx);
+    unsigned char hash[32];
+    do {
+        res = f_open(&fp, OTA_FILE_PATH, FA_OPEN_EXISTING | FA_READ);
+        if (res) {
+            return res;
+        }
+        fileSize = f_size(&fp);
+        data = SRAM_MALLOC(FATFS_SHA256_BUFFER_SIZE);
+        for (copyOffset = 0; copyOffset <= fileSize; copyOffset += FATFS_SHA256_BUFFER_SIZE) {
+            if (!SdCardInsert() || (g_stopCalChecksum == true)) {
+                res = ERR_GENERAL_FAIL;
+                break;
+            }
+
+            res = f_read(&fp, data, FATFS_SHA256_BUFFER_SIZE, &actualSize);
+            if (res) {
+                FatfsError(res);
+                break;
+            }
+            sha256_update(&ctx, data, actualSize);
+            totalSize += actualSize;
+
+            uint8_t percent = totalSize * 100 / fileSize;
+            if (oldPercent != percent) {
+                printf("==========copy %d%%==========\n", percent);
+                oldPercent = percent;
+                if (percent != 100 && percent >= 2) {
+                    GuiApiEmitSignal(SIG_SETTING_SHA256_PERCENT, &percent, sizeof(percent));
+                }
+            }
+        }
+    } while (0);
+
+    if (res == FR_OK) {
+        sha256_done(&ctx, (struct sha256 *)hash);
+        for (int i = 0; i < sizeof(hash); i++) {
+            printf("%02x", hash[i]);
+        }
+        SecretCacheSetChecksum(hash);
+        percent = 100;
+        GuiApiEmitSignal(SIG_SETTING_SHA256_PERCENT, &percent, sizeof(percent));
+    } else {
+        GuiApiEmitSignal(SIG_SETTING_SHA256_PERCENT_ERROR, NULL, 0);
+    }
+    SRAM_FREE(data);
+    f_close(&fp);
+    SetPageLockScreen(true);
+#else
+    percent = 20;
+    char *hash = "131b3a1e9314ba076f8e459a1c4c6713eeb38862f3eb6f9371360aa234cdde1f";
+    SecretCacheSetChecksum(hash);
+    GuiEmitSignal(SIG_SETTING_SHA256_PERCENT, &percent, sizeof(percent));
 #endif
     return SUCCESS_CODE;
 }

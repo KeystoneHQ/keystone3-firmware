@@ -34,6 +34,7 @@ typedef struct {
 static ForgetPassWidget_t g_forgetPassTileView;
 static lv_obj_t *g_waitAnimCont;
 static GUI_VIEW *g_prevView;
+static bool g_isForgetPass = false;
 
 typedef enum {
     FORGET_PASSWORD_ENTRANCE = 0,
@@ -59,6 +60,15 @@ static lv_obj_t *g_nextCont;
 static lv_obj_t *g_letterKbCont;
 static lv_obj_t *g_noticeHintBox = NULL;
 static PageWidget_t *g_pageWidget;
+
+bool GuiIsForgetPass(void)
+{
+    if (g_isForgetPass) {
+        g_isForgetPass = false;
+        return true;
+    }
+    return false;
+}
 
 static void GuiQuitHandler(lv_event_t *e)
 {
@@ -152,6 +162,7 @@ void GuiForgetPassVerifyResult(bool en, int errCode)
 
 void GuiForgetPassResetPass(bool en, int errCode)
 {
+    g_isForgetPass = true;
     SetKeyboardWidgetMode((g_setPassCode->mode == ENTER_PASSCODE_SET_PIN) ? KEYBOARD_HINTBOX_PIN : KEYBOARD_HINTBOX_PASSWORD);
     lv_obj_t *cont = GuiCreateResultHintbox(lv_scr_act(), 356, &imgSuccess, _("change_passcode_reset_success_title"),
                                             _("change_passcode_reset_success_desc"), NULL, DARK_GRAY_COLOR, _("Done"), ORANGE_COLOR);

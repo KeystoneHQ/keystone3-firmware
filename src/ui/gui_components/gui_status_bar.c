@@ -198,7 +198,7 @@ void GuiStatusBarSetSdCard(bool connected)
     if (!GetLvglHandlerStatus()) {
         return;
     }
-    static bool sdStatus = true;
+    static bool sdStatus = false;
     char version[16] = {0};
     if (sdStatus == connected) {
         return;
@@ -210,7 +210,7 @@ void GuiStatusBarSetSdCard(bool connected)
         uint8_t accountCnt = 0;
         GetExistAccountNum(&accountCnt);
         if (!GuiLockScreenIsTop() && CheckOtaBinVersion(version) && accountCnt > 0 && !GuiCheckIfTopView(&g_forgetPassView)) {
-            GuiCreateSdCardUpdateHintbox(version);
+            GuiCreateSdCardUpdateHintbox(version, false);
         }
     } else {
         lv_obj_add_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN);

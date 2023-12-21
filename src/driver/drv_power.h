@@ -3,7 +3,6 @@
 
 typedef enum {
     POWER_TYPE_VCC33,
-    POWER_TYPE_BLUETOOTH,
 } PowerType;
 
 void PowerInit(void);

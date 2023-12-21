@@ -13,6 +13,11 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
+bool FatfsFileExist(const char *path)
+{
+    return false;
+}
+
 bool FpModuleIsChipState(void)
 {
     return true;

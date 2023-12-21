@@ -13,6 +13,7 @@ void GuiForgetPassDeInit(void);
 void GuiForgetPassResetPass(bool en, int errCode);
 void GuiForgetPassVerifyResult(bool en, int errCode);
 void GuiForgetPassUpdateKeyboard(void);
+bool GuiIsForgetPass(void);
 
 #endif /* _GUI_FORGET_PASS_WIDGETS_H */
 

@@ -79,8 +79,7 @@ static void AddressLongModeCut(char *out, const char *address)
 
 static void SetCurrentSelectIndex(uint32_t selectIndex)
 {
-    switch (g_chainCoinType)
-    {
+    switch (g_chainCoinType) {
     default:
         g_selectIndex = selectIndex;
     }
@@ -88,8 +87,7 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
 
 static uint32_t GetCurrentSelectAddressIndex()
 {
-    switch (g_chainCoinType)
-    {
+    switch (g_chainCoinType) {
     default:
         return g_selectIndex;
     }
@@ -97,8 +95,7 @@ static uint32_t GetCurrentSelectAddressIndex()
 
 static int GetMaxAddressIndex(void)
 {
-    switch (g_chainCoinType)
-    {
+    switch (g_chainCoinType) {
     case CHAIN_XRP:
         return 200;
     default:
@@ -258,8 +255,7 @@ void GuiDestroySelectAddressWidget()
 static void BackHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GuiDestroySelectAddressWidget();
         g_setSelectIndexFunc(GetCurrentSelectAddressIndex());
     }

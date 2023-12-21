@@ -154,7 +154,7 @@ void ArrayRandom(char *words, char *out, int count)
     strcat(out, wordList[count - 1]);
 }
 
-void ConvertToLowerCase(char *str) 
+void ConvertToLowerCase(char *str)
 {
     while (*str) {
         *str = tolower(*str);

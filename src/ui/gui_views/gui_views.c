@@ -68,7 +68,7 @@ void GoToHomeViewHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         CloseQRTimer();
         GuiCloseToTargetView(&g_homeView);
-    }  
+    }
 }
 
 void CloseCurrentViewHandler(lv_event_t *e)

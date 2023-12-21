@@ -68,7 +68,7 @@ void GuiPendingHintBoxRemove()
 
 void GuiPendingHintBoxMoveToTargetParent(lv_obj_t *parent)
 {
-     if (g_pendingHintBox != NULL) {
+    if (g_pendingHintBox != NULL) {
         lv_obj_set_parent(g_pendingHintBox, parent);
     }
 }

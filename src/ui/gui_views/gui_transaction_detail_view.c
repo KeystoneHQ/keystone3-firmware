@@ -23,7 +23,7 @@ int32_t GuiTransactionDetailViewEventProcess(void *self, uint16_t usEvent, void 
     uint8_t viewType = 0;
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-         if (param != NULL) {
+        if (param != NULL) {
             viewType = *(uint8_t *)param;
         } else {
             return ERR_GUI_ERROR;

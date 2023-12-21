@@ -232,8 +232,8 @@ void GuiLockScreenTurnOff(void)
         g_oldWalletIndex = GetCurrentAccountIndex();
     }
 
-    if ((GetCurrentAccountIndex() != g_oldWalletIndex) || 
-        GuiIsForgetPass()) {
+    if ((GetCurrentAccountIndex() != g_oldWalletIndex) ||
+            GuiIsForgetPass()) {
         g_oldWalletIndex = GetCurrentAccountIndex();
         GuiCloseToTargetView(&g_homeView);
     } else {
@@ -460,7 +460,7 @@ static void CountDownTimerChangeLabelTextHandler(lv_timer_t *timer)
             g_countDownTimer = NULL;
             UNUSED(g_countDownTimer);
         }
-    } 
+    }
 }
 
 void GuiShowGenerateXPubLoading(void)
@@ -471,12 +471,12 @@ void GuiShowGenerateXPubLoading(void)
     if (GuiPassphraseLoadingIsTop() == true) {
         return;
     }
-    
+
     if (g_LoadingView != NULL && lv_obj_is_valid(g_LoadingView)) {
         lv_obj_del(g_LoadingView);
         g_LoadingView = NULL;
     }
-    
+
     SetPageLockScreen(false);
     FpCancelCurOperate();
     g_canDismissLoading = false;
@@ -505,7 +505,7 @@ void GuiShowGenerateXPubLoading(void)
 }
 
 void GuiHideGenerateXPubLoading(void)
-{   
+{
     if (!g_isShowLoading) {
         return;
     }

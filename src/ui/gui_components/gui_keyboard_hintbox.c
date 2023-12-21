@@ -203,7 +203,7 @@ static void PassWordPinHintSwitch(KeyboardWidget_t *keyboardWidget, uint8_t keyb
 }
 
 void PassWordPinHintRefresh(KeyboardWidget_t *keyboardWidget)
-{    
+{
     if (keyboardWidget != NULL) {
         PassWordPinHintSwitch(keyboardWidget, g_keyboardHintBoxMode);
     }

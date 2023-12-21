@@ -216,7 +216,7 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
     return result;
 #else
     return NULL;
- #endif   
+#endif
 }
 
 void GetPsbtFeeValue(void *indata, void *param)

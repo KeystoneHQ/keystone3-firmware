@@ -102,8 +102,7 @@ static void GuiCreatePageContent(lv_obj_t *parent)
 static void CleanHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         CleanConnectEternlWidget();
     }
 }
@@ -111,8 +110,7 @@ static void CleanHandler(lv_event_t *e)
 static void GotoScanQRCodeHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GuiFrameOpenView(&g_scanView);
     }
 }

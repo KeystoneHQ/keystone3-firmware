@@ -524,12 +524,9 @@ static UREncodeResult *GetEthSignDataDynamic(bool isUnlimited)
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        if (isUnlimited)
-        {
+        if (isUnlimited) {
             encodeResult = eth_sign_tx_unlimited(data, seed, len);
-        }
-        else
-        {
+        } else {
             encodeResult = eth_sign_tx(data, seed, len);
         }
         ClearSecretCache();
@@ -552,16 +549,13 @@ static bool isErc20Transfer(void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
     char *input = eth->detail->input;
-    if (strlen(input) <= 8)
-    {
+    if (strlen(input) <= 8) {
         return false;
     }
     // FIXME: 0xa9059cbb is the method of erc20 transfer
     char *erc20Method = "a9059cbb";
-    for (int i = 0; i < 8; i++)
-    {
-        if (input[i] != erc20Method[i])
-        {
+    for (int i = 0; i < 8; i++) {
+        if (input[i] != erc20Method[i]) {
             return false;
         }
     }
@@ -574,13 +568,10 @@ static char *CalcSymbol(void *param)
 
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
     //eth->detail->to: the actual contract address;
-    if (isErc20Transfer(eth) && eth->detail->to != NULL)
-    {
-        for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++)
-        {
+    if (isErc20Transfer(eth) && eth->detail->to != NULL) {
+        for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++) {
             Erc20Contract_t contract = ERC20_CONTRACTS[i];
-            if (strcasecmp(contract.contract_address, eth->detail->to) == 0)
-            {
+            if (strcasecmp(contract.contract_address, eth->detail->to) == 0) {
                 return contract.symbol;
             }
         }
@@ -878,12 +869,10 @@ EvmNetwork_t _FindNetwork(uint64_t chainId)
 void GetEthValue(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    if (isErc20Transfer(eth))
-    {
+    if (isErc20Transfer(eth)) {
         TransactionParseResult_EthParsedErc20Transaction *contract = (TransactionParseResult_EthParsedErc20Transaction *)g_erc20ContractData;
         sprintf((char *)indata, "%s %s", contract->data->value, CalcSymbol(param));
-    }
-    else {
+    } else {
         sprintf((char *)indata, "%s %s", eth->overview->value, CalcSymbol(param));
     }
 }
@@ -944,12 +933,10 @@ void GetEthGetFromAddress(void *indata, void *param)
 void GetEthGetToAddress(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    if (isErc20Transfer(eth))
-    {
+    if (isErc20Transfer(eth)) {
         TransactionParseResult_EthParsedErc20Transaction *contract = (TransactionParseResult_EthParsedErc20Transaction *)g_erc20ContractData;
         strcpy((char *)indata, contract->data->to);
-    }
-    else {
+    } else {
         strcpy((char *)indata, eth->overview->to);
     }
 }
@@ -1029,7 +1016,7 @@ void GetEthMethodName(void *indata, void *param)
 void GetEthContractName(void *indata, void *param)
 {
     Response_DisplayContractData *contractData = (Response_DisplayContractData *)g_contractData;
-    if(g_erc20Name != NULL && strlen(g_erc20Name) > 0) {
+    if (g_erc20Name != NULL && strlen(g_erc20Name) > 0) {
         strcpy((char *)indata, g_erc20Name);
         return;
     }
@@ -1128,22 +1115,17 @@ static bool GetEthErc20ContractData(void *parseResult)
     g_erc20Name = NULL;
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)parseResult;
     Response_DisplayContractData *contractData = eth_parse_contract_data(result->data->detail->input, (char *)ethereum_erc20_json);
-    if (contractData->error_code == 0)
-    {
+    if (contractData->error_code == 0) {
         g_contractDataExist = true;
         g_contractData = contractData;
-    }
-    else
-    {
+    } else {
         free_Response_DisplayContractData(contractData);
         return false;
     }
     char *to = result->data->detail->to;
-    for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++)
-    {
+    for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++) {
         Erc20Contract_t contract = ERC20_CONTRACTS[i];
-        if (strcasecmp(contract.contract_address, to) == 0)
-        {
+        if (strcasecmp(contract.contract_address, to) == 0) {
             g_erc20Name = contract.symbol;
             FixRecipientAndValueWhenErc20Contract(result->data->detail->input, contract.decimals);
             return true;

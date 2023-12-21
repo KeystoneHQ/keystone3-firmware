@@ -411,15 +411,15 @@ typedef enum {
 #define SDIO_STATIC_FLAGS ((uint32_t)0x0000FFFF) //16ä¸ªé™æ€æ ‡å¿?
 #define SDIO_CMD0TIMEOUT  ((uint32_t)0x000FFFFF)
 
-SD_Error SD_Init(void);                                                            
-SD_Error SD_PowerON(void);                                                          
-SD_Error SD_PowerOFF(void);                                                         
-SD_Error SD_InitializeCards(void);                                                  
-SD_Error SD_StopTransfer(void);                                                     
-SD_Error SD_GetCardInfo(SDCardInfoStruct* cardinfo);                                 
-SD_Error SD_SelectDeselect(uint32_t addr);                                          
-SD_Error SD_EnableWideBusOperation(uint32_t WideMode);                              
-SD_Error SD_ReadBlock(uint8_t* readbuff, uint32_t ReadAddr, uint16_t BlockSize);    
+SD_Error SD_Init(void);
+SD_Error SD_PowerON(void);
+SD_Error SD_PowerOFF(void);
+SD_Error SD_InitializeCards(void);
+SD_Error SD_StopTransfer(void);
+SD_Error SD_GetCardInfo(SDCardInfoStruct* cardinfo);
+SD_Error SD_SelectDeselect(uint32_t addr);
+SD_Error SD_EnableWideBusOperation(uint32_t WideMode);
+SD_Error SD_ReadBlock(uint8_t* readbuff, uint32_t ReadAddr, uint16_t BlockSize);
 SD_Error SD_WaitReadOperation(void);
 SD_Error SD_WaitWriteOperation(void);
 SD_Error SD_WriteBlock(uint8_t* writebuff, uint32_t WriteAddr, uint16_t BlockSize);

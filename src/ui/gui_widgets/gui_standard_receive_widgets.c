@@ -645,7 +645,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 
 void GuiResetCurrentStandardAddressIndex(uint8_t index)
 {
-    if(index > 2) {
+    if (index > 2) {
         return;
     }
     g_selectIndex[index] = 0;

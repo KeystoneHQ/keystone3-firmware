@@ -77,44 +77,24 @@ void *GuiGetNearData(void)
     TransactionParseResult_DisplayNearTx *g_parseResult = malloc(sizeof(TransactionParseResult_DisplayNearTx));
     DisplayNearTx *data = malloc(sizeof(DisplayNearTx));
     DisplayNearTxOverview *overview = malloc(sizeof(DisplayNearTxOverview));
-    overview->display_type = "Transfer";
+    DisplayNearTxOverviewGeneralAction *generalAction = malloc(sizeof(DisplayNearTxOverviewGeneralAction) * 3);
+    VecFFI_DisplayNearTxOverviewGeneralAction *actionList = malloc(sizeof(VecFFI_DisplayNearTxOverviewGeneralAction));
+    generalAction[0].action = "aaaaaaa";
+    generalAction[1].action = "bbbbbbbbbb";
+    generalAction[2].action = "cccccccccccccc";
+    actionList->data = generalAction;
+    actionList->size = 3;
+    overview->display_type = "General";
     overview->main_action = "Transfer";
     overview->transfer_value = "0.024819276 NEAR";
-    overview->transfer_from = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.near";
-    overview->transfer_to = "206fab31eb5774733ec6eed3d24300dd541d2e60f2b5779a0f5dfbb7b37aefbb";
+    overview->from = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.near";
+    overview->to = "206fab31eb5774733ec6eed3d24300dd541d2e60f2b5779a0f5dfbb7b37aefbb";
+    overview->action_list = actionList;
     data->overview = overview;
-    data->detail = "[{\"From\":\"test.near\",\"To\":\"whatever.near\"},{\"Action\":\"Transfer\",\"Value\":\"0.00125 NEAR\"},{\"Action\":\"Function Call\",\"Method\":\"ft_transfer\",\"Deposit Value\":\"1 Yocto\",\"Prepaid Gas\":\"30 TGas\"},{\"Action\":\"Create Account\"},{\"Action\":\"Deploy Contract\"},{\"Action\":\"Function Call\",\"Method\":\"qqq\",\"Deposit Value\":\"1000000 Yocto\",\"Prepaid Gas\":\"0.000000001 TGas\"},{\"Action\":\"Transfer\",\"Value\":\"123 Yocto\"},{\"Action\":\"Stake\",\"Public Key\":\"873bfc360d676cdf426c2194aeddb009c741ee28607c79a5f376356b563b9bb3\",\"Stake Amount\":\"1000000 Yocto\"},{\"Action\":\"Add Key\",\"Public Key\":\"873bfc360d676cdf426c2194aeddb009c741ee28607c79a5f376356b563b9bb3\",\"Access Key Permission\":\"FunctionCall\",\"Access Key Receiver ID\":\"zzz\",\"Access Key Allowance\":\"0 Yocto\",\"Access Key Nonce\":0,\"Access Key Method Names\":[\"www\",\"eee\",\"rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr\",\"ddddddd\"]},{\"Action\":\"Delete Key\",\"Public Key\":\"873bfc360d676cdf426c2194aeddb009c741ee28607c79a5f376356b563b9bb3\"},{\"Action\":\"Delete Account\",\"Beneficiary ID\":\"123\"}]";
+    data->detail = "[{\"From\":\"testaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.near\",\"To\":\"whatever.near\"},{\"Action\":\"Transfer\",\"Value\":\"0.00125 NEAR\"},{\"Action\":\"Function Call\",\"Method\":\"ft_transfer\",\"Deposit Value\":\"1 Yocto\",\"Prepaid Gas\":\"30 TGas\"},{\"Action\":\"Create Account\"},{\"Action\":\"Deploy Contract\"},{\"Action\":\"Function Call\",\"Method\":\"qqq\",\"Deposit Value\":\"1000000 Yocto\",\"Prepaid Gas\":\"0.000000001 TGas\"},{\"Action\":\"Transfer\",\"Value\":\"123 Yocto\"},{\"Action\":\"Stake\",\"Public Key\":\"873bfc360d676cdf426c2194aeddb009c741ee28607c79a5f376356b563b9bb3\",\"Stake Amount\":\"1000000 Yocto\"},{\"Action\":\"Add Key\",\"Public Key\":\"873bfc360d676cdf426c2194aeddb009c741ee28607c79a5f376356b563b9bb3\",\"Access Key Permission\":\"FunctionCall\",\"Access Key Receiver ID\":\"zzz\",\"Access Key Allowance\":\"0 Yocto\",\"Access Key Nonce\":0,\"Access Key Method Names\":[\"www\",\"eee\"]},{\"Action\":\"Delete Key\",\"Public Key\":\"873bfc360d676cdf426c2194aeddb009c741ee28607c79a5f376356b563b9bb3\"},{\"Action\":\"Delete Account\",\"Beneficiary ID\":\"123\"}]";
     g_parseResult->data = data;
     g_parseResult->error_code = 0;
     return g_parseResult;
-#endif
-}
-
-UREncodeResult *GuiGetNearSignQrCodeData(void)
-{
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
-    UREncodeResult *encodeResult;
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
-    do {
-        uint8_t seed[64];
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        encodeResult = sui_sign_intent(data, seed, len);
-        ClearSecretCache();
-        CHECK_CHAIN_BREAK(encodeResult);
-    } while (0);
-    SetLockScreen(enable);
-    return encodeResult;
-#else
-    UREncodeResult *encodeResult = NULL;
-    encodeResult->is_multi_part = 0;
-    encodeResult->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    encodeResult->encoder = NULL;
-    encodeResult->error_code = 0;
-    encodeResult->error_message = NULL;
-    return encodeResult;
 #endif
 }
 
@@ -175,79 +155,94 @@ static void GuiShowNearTxTransferOverview(lv_obj_t *parent, PtrT_DisplayNearTxOv
     lv_obj_t *addressContainer = GuiCreateContainerWithParent(parent, 408, 194);
     lv_obj_align_to(addressContainer, mainActionContainer, LV_ALIGN_OUT_BOTTOM_MID, 0, 16);
     SetContainerDefaultStyle(addressContainer);
-    lv_obj_add_flag(addressContainer, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_add_flag(addressContainer, LV_OBJ_FLAG_CLICKABLE);
 
     label = lv_label_create(addressContainer);
     lv_label_set_text(label, "From");
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     SetTitleLabelStyle(label);
 
+    lv_obj_t *prev = label;
     label = lv_label_create(addressContainer);
-    lv_label_set_text(label, overviewData->transfer_from);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54);
+    lv_label_set_text(label, overviewData->from);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(label, 360);
+    lv_obj_align_to(label, prev, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
     SetContentLableStyle(label);
+    prev = label;
 
     label = lv_label_create(addressContainer);
     lv_label_set_text(label, "To");
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 100);
+    lv_obj_align_to(label, prev, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     SetTitleLabelStyle(label);
+    prev = label;
 
     label = lv_label_create(addressContainer);
-    lv_label_set_text(label, overviewData->transfer_to);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 138);
+    lv_label_set_text(label, overviewData->to);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(label, 360);
+    lv_obj_align_to(label, prev, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
     SetContentLableStyle(label);
+    prev = label;
+
+    lv_obj_update_layout(prev);
+    lv_obj_set_height(addressContainer, lv_obj_get_y2(prev) + 16);
 }
 
 static void GuiShowNearTxGeneralOverview(lv_obj_t *parent, PtrT_DisplayNearTxOverview overviewData)
 {
     PtrT_VecFFI_DisplayNearTxOverviewGeneralAction general = overviewData->action_list;
+    
+    lv_obj_t *container = GuiCreateContainerWithParent(parent, 408, 150);
+    lv_obj_align(container, LV_ALIGN_DEFAULT, 0, 0);
+    SetContainerDefaultStyle(container);
 
-    int containerYOffset = 0;
+    lv_obj_t *prev = NULL;
+    lv_obj_t *label = NULL;
+
+    label = lv_label_create(container);
+    lv_label_set_text(label, "From");
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+    SetTitleLabelStyle(label);
+    prev = label;
+
+    label = lv_label_create(container);
+    lv_label_set_text(label, overviewData->from);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(label, 360);
+    lv_obj_align_to(label, prev, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    SetContentLableStyle(label);
+    prev = label;
+
+    label = lv_label_create(container);
+    lv_label_set_text(label, "To");
+    lv_obj_align_to(label, prev, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    SetTitleLabelStyle(label);
+    prev = label;
+
+    label = lv_label_create(container);
+    lv_label_set_text(label, overviewData->to);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(label, 360);
+    lv_obj_align_to(label, prev, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    SetContentLableStyle(label);
+    prev = label;
+
+    label = lv_label_create(container);
+    lv_label_set_text(label, "Action List");
+    lv_obj_align_to(label, prev, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    SetTitleLabelStyle(label);
+    prev = label;
 
     for (int i = 0; i < general->size; i++) {
-        lv_obj_t *container = GuiCreateContainerWithParent(parent, 408, 150);
-        lv_obj_align(container, LV_ALIGN_DEFAULT, 0, containerYOffset);
-        SetContainerDefaultStyle(container);
-
-        char *program = general->data[i].action;
-        lv_obj_t *orderLabel = lv_label_create(container);
-        char order[10] = {0};
-        sprintf(order, "#%d", i + 1);
-        lv_label_set_text(orderLabel, order);
-        lv_obj_set_style_text_font(orderLabel, &openSans_20, LV_PART_MAIN);
-        lv_obj_set_style_text_color(orderLabel, lv_color_hex(0xF5870A), LV_PART_MAIN);
-        lv_obj_align(orderLabel, LV_ALIGN_TOP_LEFT, 24, 16);
-
-        lv_obj_t *label = lv_label_create(container);
-        lv_label_set_text(label, "Program");
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 62);
-        SetTitleLabelStyle(label);
-
         label = lv_label_create(container);
-        lv_label_set_text(label, program);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 121, 62);
+        lv_label_set_text_fmt(label, "%d. %s", i + 1, general->data[i].action);
+        lv_obj_align_to(label, prev, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
         SetContentLableStyle(label);
-
-        if (0 == strcmp(program, "Unknown")) {
-            lv_obj_set_height(container, 108);
-            containerYOffset = containerYOffset + 108 + 16;
-            continue;
-        } else {
-            containerYOffset = containerYOffset + 150 + 16;
-        }
-
-        char *method = general->data[i].action;
-        label = lv_label_create(container);
-        lv_label_set_text(label, "Method");
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 100);
-        SetTitleLabelStyle(label);
-
-        label = lv_label_create(container);
-        lv_label_set_text(label, method);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 113, 100);
-        SetContentLableStyle(label);
+        prev = label;
     }
+
+    lv_obj_update_layout(prev);
+    lv_obj_set_height(container, lv_obj_get_y2(prev) + 16);
 }
 
 void GuiShowNearTxOverview(lv_obj_t *parent, void *totalData)
@@ -277,21 +272,21 @@ static bool IsKeyInline(char *key)
         || 0 == strcmp(key, "Stake Amount");
 }
 
-static void GuiRenderTextList(cJSON *array, lv_obj_t *parent, lv_obj_t *prev, int16_t *height)
+static void GuiRenderTextList(cJSON *array, lv_obj_t *parent, lv_obj_t **prev)
 {
+    lv_obj_t *label;
     int8_t len = cJSON_GetArraySize(array);
     for (int8_t i = 0; i < len; i++) {
         cJSON *item = cJSON_GetArrayItem(array, i);
-        lv_obj_t *label = lv_label_create(parent);
+        label = lv_label_create(parent);
         if (len > 1) {
             lv_label_set_text_fmt(label, "%d. %s", i + 1, item->valuestring);
         } else {
             lv_label_set_text(label, item->valuestring);
         }
-        lv_obj_align_to(label, prev, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+        lv_obj_align_to(label, *prev, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
         SetContentLableStyle(label);
-        prev = label;
-        *height += 8 + 30;
+        *prev = label;
     }
 }
 
@@ -322,16 +317,14 @@ void GuiShowNearTxDetail(lv_obj_t *parent, void *totalData)
 
         cJSON *item = cJSON_GetArrayItem(root, i);
         int8_t kLen = cJSON_GetArraySize(item);
-        int16_t height = 0;
 
-        if (i > 0 && len > 2) {
+        if (i > 0) {
             lv_obj_t *iLabel = lv_label_create(container);
             lv_label_set_text_fmt(iLabel, "#%d", i);
             lv_obj_align(iLabel, LV_ALIGN_TOP_LEFT, 24, gapM);
             lv_obj_set_style_text_font(iLabel, &openSans_20, LV_PART_MAIN);
             lv_obj_set_style_text_color(iLabel, ORANGE_COLOR, LV_PART_MAIN);
             prevLabel = iLabel;
-            height += gapM + 30;
         } else {
             prevLabel = NULL;
         }
@@ -346,15 +339,13 @@ void GuiShowNearTxDetail(lv_obj_t *parent, void *totalData)
                     g = gapS;
                 }
                 lv_obj_align_to(tLabel, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, g);
-                height += g + 30;
             } else {
                 lv_obj_align(tLabel, LV_ALIGN_TOP_LEFT, 24, gapM);
-                height += gapM + 30;
             }
             SetTitleLabelStyle(tLabel);
             prevLabel = tLabel;
             if (key->type == cJSON_Array) {
-                GuiRenderTextList(key, container, prevLabel, &height);
+                GuiRenderTextList(key, container, &prevLabel);
             } else {
                 lv_obj_t *vLabel = lv_label_create(container);
                 if (key->type == cJSON_String) {
@@ -368,14 +359,42 @@ void GuiShowNearTxDetail(lv_obj_t *parent, void *totalData)
                 } else {
                     lv_obj_align_to(vLabel, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, gapS);
                     lv_obj_set_width(vLabel, 360);
-                    lv_obj_update_layout(vLabel);
-                    height += gapS + lv_obj_get_height(vLabel);
                     prevLabel = vLabel;
                 }
                 SetContentLableStyle(vLabel);
             }
         }
-        lv_obj_set_height(container, height + gapM);
+        lv_obj_update_layout(prevLabel);
+        int16_t bottom = lv_obj_get_y2(prevLabel);
+        lv_obj_set_height(container, bottom + gapM);
     }
     cJSON_Delete(root);
+}
+
+UREncodeResult *GuiGetNearSignQrCodeData(void)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+#ifndef COMPILE_SIMULATOR
+    UREncodeResult *encodeResult;
+    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    do {
+        uint8_t seed[64];
+        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+        encodeResult = near_sign_tx(data, seed, len);
+        ClearSecretCache();
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+    SetLockScreen(enable);
+    return encodeResult;
+#else
+    UREncodeResult *encodeResult = malloc(sizeof(UREncodeResult));
+    encodeResult->is_multi_part = 0;
+    encodeResult->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+    encodeResult->encoder = NULL;
+    encodeResult->error_code = 0;
+    encodeResult->error_message = NULL;
+    return encodeResult;
+#endif
 }

@@ -41,8 +41,8 @@
 | display_type   | char \*                                                                           | the overview display type, `"Transfer"`, or `"General"`   |
 | main_action    | char \*                                                                           | action text                                               |
 | transfer_value | char \*                                                                           | available for `"Transfer"` display type                   |
-| transfer_from  | char \*                                                                           | available for `"Transfer"` display type                   |
-| transfer_to    | char \*                                                                           | available for `"Transfer"` display type                   |
+| from  | char \*                                                                           | available for `"Transfer"` display type                   |
+| to    | char \*                                                                           | available for `"Transfer"` display type                   |
 | action_list    | [DisplayNearTxOverviewGeneralAction](#display_near_tx_overview_general_action) \* | available for `"General"` display type, a list of actions |
 
 ### <a id="display_near_tx_overview_general_action">DisplayNearTxOverviewGeneralAction</a>

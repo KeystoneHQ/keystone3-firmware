@@ -1,7 +1,7 @@
 #ifndef _GUI_CREATE_WALLET_WIDGETS_H
 #define _GUI_CREATE_WALLET_WIDGETS_H
 
-void GuiCreateShareInit(void);
+void GuiCreateShareInit(uint8_t entropyMethod);
 void GuiCreateShareDeInit(void);
 void GuiCreateShareRefresh(void);
 int8_t GuiCreateSharePrevTile(void);

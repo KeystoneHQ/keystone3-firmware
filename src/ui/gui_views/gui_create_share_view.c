@@ -3,9 +3,9 @@
 #include "gui_status_bar.h"
 #include "gui_create_share_widgets.h"
 
-static int32_t GuiCreateShareViewInit(void)
+static int32_t GuiCreateShareViewInit(uint8_t entropyMethod)
 {
-    GuiCreateShareInit();
+    GuiCreateShareInit(entropyMethod);
     return SUCCESS_CODE;
 }
 
@@ -19,10 +19,18 @@ int32_t GuiCreateShareViewEventProcess(void *self, uint16_t usEvent, void *param
 {
     int32_t ret = SUCCESS_CODE;
     GUI_ASSERT(g_createShareView.isActive);
+    uint8_t entropyMethod;
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiCreateShareViewInit();
+        if(param != NULL)
+        {
+            entropyMethod = *(uint8_t *)param;
+        }
+        else {
+            return ERR_GUI_ERROR;
+        }
+        return GuiCreateShareViewInit(entropyMethod);
     case GUI_EVENT_OBJ_DEINIT:
         return GuiCreateShareViewDeInit();
     case GUI_EVENT_REFRESH:

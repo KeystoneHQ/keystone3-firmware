@@ -96,6 +96,13 @@ LV_IMG_DECLARE(imgUnknown);
 LV_IMG_DECLARE(imgNextStep);
 LV_IMG_DECLARE(imgInfo);
 LV_IMG_DECLARE(imgDice);
+LV_IMG_DECLARE(imgDice1);
+LV_IMG_DECLARE(imgDice2);
+LV_IMG_DECLARE(imgDice3);
+LV_IMG_DECLARE(imgDice4);
+LV_IMG_DECLARE(imgDice5);
+LV_IMG_DECLARE(imgDice6);
+LV_IMG_DECLARE(imgUndo);
 
 // connect to do refresh
 LV_IMG_DECLARE(circular);

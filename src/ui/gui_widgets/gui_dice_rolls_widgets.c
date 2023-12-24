@@ -3,6 +3,9 @@
 #include "gui_page.h"
 #include "gui_hintbox.h"
 #include "user_memory.h"
+#include "gui_create_wallet_widgets.h"
+#include "sha256.h"
+#include "log_print.h"
 
 static void GuiCreatePage(lv_obj_t *parent);
 static void OpenQuitHintBoxHandler(lv_event_t *e);
@@ -16,6 +19,7 @@ static void UndoLongPressHandler(lv_event_t *e);
 static void ConfirmHandler(lv_event_t *e);
 
 static PageWidget_t *g_page;
+static uint8_t g_seedType;
 static lv_obj_t *g_quitHintBox;
 static lv_obj_t *g_diceTextArea;
 static lv_obj_t *g_rollsLabel;
@@ -24,8 +28,9 @@ static lv_obj_t *g_diceImgs[6];
 static lv_obj_t *g_errLabel;
 static lv_obj_t *g_confirmBtn;
 
-void GuiDiceRollsWidgetsInit()
+void GuiDiceRollsWidgetsInit(uint8_t seed_type)
 {
+    g_seedType = seed_type;
     g_page = CreatePageWidget();
     GuiCreatePage(g_page->contentZone);
     SetNavBarLeftBtn(g_page->navBarWidget, NVS_BAR_RETURN, OpenQuitHintBoxHandler, NULL);
@@ -282,7 +287,6 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
                 stillValid = false;
                 break;
             }
-            
         }
         if (stillValid)
         {
@@ -320,16 +324,27 @@ static void ConfirmHandler(lv_event_t *e)
 
         // convert result
         const char *txt = lv_textarea_get_text(ta);
-        char *temp = SRAM_MALLOC(100);
+        char *temp = SRAM_MALLOC(128);
         strcpy(temp, txt);
-        for (size_t i = 0; i < temp; i++)
+        for (size_t i = 0; i < strlen(txt); i++)
         {
-            char c = txt[i];
+            char c = temp[i];
             if (c == '6')
             {
                 temp[i] = '0';
             }
         }
-        printf("result: %s\r\n", temp);
+        uint8_t hash[32] = {0};
+        sha256((struct sha256 *)hash, temp, strlen(temp));
+        uint8_t entropyMethod = 1;
+        SecretCacheSetDiceRollHash(hash);
+        if (g_seedType == SEED_TYPE_BIP39)
+        {
+            GuiFrameOpenViewWithParam(&g_singlePhraseView, &entropyMethod, 1);
+        }
+        else
+        {
+            GuiFrameOpenViewWithParam(&g_createShareView, &entropyMethod, 1);
+        }
     }
 }

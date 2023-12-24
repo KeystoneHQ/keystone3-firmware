@@ -13,6 +13,7 @@
 #include "slip39.h"
 #include "gui_model.h"
 #include "bip39.h"
+#include "sha256.h"
 #include "gui_setting_widgets.h"
 #include "secret_cache.h"
 #include "gui_forget_pass_widgets.h"

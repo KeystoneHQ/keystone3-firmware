@@ -18,6 +18,7 @@ static uint8_t g_checksumCache[32] = {0};
 static uint32_t g_emsLen;
 static char *g_mnemonicCache = NULL;
 static char *g_slip39MnemonicCache[15];
+static uint8_t g_diceRollHashCache[32] = {0};
 static uint16_t g_identifier;
 static uint16_t g_iteration;
 
@@ -156,6 +157,16 @@ char *SecretCacheGetSlip39Mnemonic(int index)
     return g_slip39MnemonicCache[index];
 }
 
+void SecretCacheSetDiceRollHash(uint8_t *hash)
+{
+    memcpy(g_diceRollHashCache, hash, 32);
+}
+
+uint8_t *SecretCacheGetDiceRollHash()
+{
+    return g_diceRollHashCache;
+}
+
 void ClearSecretCache(void)
 {
     uint32_t len;
@@ -214,4 +225,5 @@ void ClearSecretCache(void)
     }
 
     memset_s(g_checksumCache, 32, 0, 32);
+    memset_s(g_diceRollHashCache, 32, 0, 32);
 }

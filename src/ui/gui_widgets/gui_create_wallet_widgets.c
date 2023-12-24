@@ -61,11 +61,6 @@ static lv_obj_t *g_openMoreHintBox;
 static PageWidget_t *g_changeEntropyPage;
 static uint8_t g_selectedEntropyMethod = 0;
 
-typedef enum
-{
-    SEED_TYPE_BIP39,
-    SEED_TYPE_SLIP39,
-} SEED_TYPE;
 
 void GuiSetupKeyboardWidgetMode(void)
 {
@@ -548,7 +543,7 @@ int8_t GuiCreateWalletNextTile(void)
     case CREATE_WALLET_BACKUPFROM:
         if (g_selectedEntropyMethod == 0)
         {
-            return GuiFrameOpenView(&g_singlePhraseView);
+            return GuiFrameOpenViewWithParam(&g_singlePhraseView, &g_selectedEntropyMethod, sizeof(g_selectedEntropyMethod));
         }
         else
         {

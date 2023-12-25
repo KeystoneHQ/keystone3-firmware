@@ -409,7 +409,7 @@ static void GuiShareConfirmWidget(lv_obj_t *parent)
     lv_obj_align_to(g_shareConfirmTile.keyBoard->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
 }
 
-void GuiCreateShareInit(uint8_t entropyMethod)
+void GuiCreateShareInit(void)
 {
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;

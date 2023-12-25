@@ -26,6 +26,7 @@ static lv_obj_t *g_rollsLabel;
 static lv_obj_t *g_line;
 static lv_obj_t *g_diceImgs[6];
 static lv_obj_t *g_errLabel;
+static lv_obj_t *g_hintLabel;
 static lv_obj_t *g_confirmBtn;
 
 void GuiDiceRollsWidgetsInit(uint8_t seed_type)
@@ -85,6 +86,13 @@ static void GuiCreatePage(lv_obj_t *parent)
     lv_obj_align_to(label, anchor, LV_ALIGN_OUT_BOTTOM_LEFT, 196, 4);
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
     g_errLabel = label;
+
+    label = GuiCreateIllustrateLabel(parent, _("dice_roll_hint_label"));
+    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_align_to(label, anchor, LV_ALIGN_OUT_BOTTOM_LEFT, 196, 4);
+    lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+    g_hintLabel = label;
 
     label = GuiCreateIllustrateLabel(parent, "#F5870A 0 roll#");
     lv_label_set_recolor(label, true);
@@ -169,13 +177,13 @@ static void OpenQuitHintBoxHandler(lv_event_t *e)
 
         btn = GuiCreateBtn(g_quitHintBox, _("Cancel"));
         lv_obj_set_size(btn, 192, 66);
-        lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
+        lv_obj_set_style_bg_color(btn, DEEP_ORANGE_COLOR, LV_PART_MAIN);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_add_event_cb(btn, QuitConfirmHandler, LV_EVENT_CLICKED, NULL);
 
         btn = GuiCreateBtn(g_quitHintBox, _("not_now"));
         lv_obj_set_size(btn, 192, 66);
-        lv_obj_set_style_bg_color(btn, DEEP_ORANGE_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
         lv_obj_add_event_cb(btn, CloseQuitHintBoxHandler, LV_EVENT_CLICKED, NULL);
     }
@@ -250,7 +258,17 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
         lv_obj_update_layout(ta);
         lv_obj_align_to(g_line, ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
         lv_obj_align_to(g_errLabel, g_line, LV_ALIGN_OUT_BOTTOM_LEFT, 196, 4);
+        lv_obj_align_to(g_hintLabel, g_line, LV_ALIGN_OUT_BOTTOM_LEFT, 196, 4);
         lv_obj_align_to(g_rollsLabel, g_line, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+
+        if (length > 0 && length < 50)
+        {
+            lv_obj_clear_flag(g_hintLabel, LV_OBJ_FLAG_HIDDEN);
+        }
+        else
+        {
+            lv_obj_add_flag(g_hintLabel, LV_OBJ_FLAG_HIDDEN);
+        }
 
         if (length > 1)
         {
@@ -265,32 +283,31 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
         {
             lv_obj_remove_style(g_confirmBtn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
             lv_obj_add_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE);
+            float counts[6] = {0};
+            for (size_t i = 0; i < length; i++)
+            {
+                counts[txt[i] - '1']++;
+            }
+            float len = length;
+            bool stillValid = true;
+            for (size_t i = 0; i < 6; i++)
+            {
+                if (counts[i] / len > 0.3)
+                {
+                    lv_obj_clear_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN);
+                    stillValid = false;
+                    break;
+                }
+            }
+            if (stillValid)
+            {
+                lv_obj_add_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN);
+            }
         }
         else
         {
             lv_obj_add_style(g_confirmBtn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
             lv_obj_clear_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE);
-        }
-        float counts[6] = {0};
-        for (size_t i = 0; i < length; i++)
-        {
-            counts[txt[i] - '1']++;
-        }
-        float len = length;
-        bool stillValid = true;
-        for (size_t i = 0; i < 6; i++)
-        {
-            printf("percent %d: %f\r\n", i, counts[i] / len);
-            if (counts[i] / len > 0.3)
-            {
-                lv_obj_clear_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN);
-                stillValid = false;
-                break;
-            }
-        }
-        if (stillValid)
-        {
-            lv_obj_add_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN);
         }
     }
 }

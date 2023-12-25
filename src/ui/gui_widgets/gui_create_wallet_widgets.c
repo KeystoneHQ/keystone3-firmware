@@ -46,6 +46,7 @@ static void OpenMoreHandler(lv_event_t *e);
 static void OpenChangeEntropyHandler(lv_event_t *e);
 static void GuiRefreshNavBar(void);
 static void CloseChangeEntropyHandler(lv_event_t *e);
+static void OpenChangeEntropyTutorialHandler(lv_event_t *e);
 
 static PageWidget_t *g_pageWidget;
 static KeyBoard_t *g_nameWalletKb = NULL;
@@ -758,7 +759,7 @@ static void OpenChangeEntropyHandler(lv_event_t *e)
         g_changeEntropyPage = CreatePageWidget();
         SetNavBarLeftBtn(g_changeEntropyPage->navBarWidget, NVS_BAR_CLOSE, CloseChangeEntropyHandler, NULL);
         SetMidBtnLabel(g_changeEntropyPage->navBarWidget, NVS_BAR_MID_LABEL, _("change_entropy"));
-        SetNavBarRightBtn(g_changeEntropyPage->navBarWidget, NVS_BAR_QUESTION_MARK, NULL, NULL);
+        SetNavBarRightBtn(g_changeEntropyPage->navBarWidget, NVS_BAR_QUESTION_MARK, OpenChangeEntropyTutorialHandler, NULL);
         lv_obj_t *contentZone = g_changeEntropyPage->contentZone;
         lv_obj_t *cont = GuiCreateContainerWithParent(contentZone, 480, 542);
         g_entropyMethodContainer = cont;
@@ -915,5 +916,16 @@ static void ChangeEntropyMethodHandler(lv_event_t *e)
                 lv_obj_add_flag(g_entropyMethods[i].descCont, LV_OBJ_FLAG_HIDDEN);
             }
         }
+    }
+}
+
+
+static void OpenChangeEntropyTutorialHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED)
+    {
+        uint8_t index = TUTORIAL_CHANGE_ENTROPY;
+        GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
     }
 }

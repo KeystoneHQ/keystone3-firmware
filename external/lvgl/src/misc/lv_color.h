@@ -54,6 +54,7 @@ enum {
     LV_OPA_50     = 127,
     LV_OPA_56     = 143,
     LV_OPA_60     = 153,
+    LV_OPA_64     = 163,
     LV_OPA_70     = 178,
     LV_OPA_80     = 204,
     LV_OPA_90     = 229,

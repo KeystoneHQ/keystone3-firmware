@@ -5,7 +5,7 @@
 #ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
 #else
-#define memset_s(a1,a2,a3,a4)               memset(a1,a2,a3)
+#define memset_s memset
 #endif
 
 static char *g_passwordCache = NULL;

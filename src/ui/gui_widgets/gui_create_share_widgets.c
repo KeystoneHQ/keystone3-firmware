@@ -14,9 +14,7 @@
 #include "user_utils.h"
 #include "motor_manager.h"
 #include "gui_page.h"
-#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
-#endif
 
 typedef enum {
     CREATE_SHARE_SELECT_SLICE = 0,

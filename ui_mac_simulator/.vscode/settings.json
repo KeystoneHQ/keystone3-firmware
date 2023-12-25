@@ -39,11 +39,7 @@
         "gui_connect_wallet_widgets.h": "c",
         "variant": "c",
         "chrono": "c",
-        "protocol_parse.h": "c",
-        "safe_mem_lib.h": "c",
-        "gui_keyboard_hintbox.h": "c",
-        "gui_enter_passcode.h": "c",
-        "screen_manager.h": "c"
+        "protocol_parse.h": "c"
     },
     "explorer.autoReveal": true
 }

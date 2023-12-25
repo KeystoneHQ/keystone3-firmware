@@ -1,7 +1,7 @@
 #ifndef _GUI_SINGLE_PHRASE_WIDGETS_H
 #define _GUI_SINGLE_PHRASE_WIDGETS_H
 
-void GuiSinglePhraseInit(void);
+void GuiSinglePhraseInit(uint8_t entropyMethod);
 int8_t GuiSinglePhraseNextTile(void);
 int8_t GuiSinglePhrasePrevTile(void);
 void GuiSinglePhraseDeInit(void);

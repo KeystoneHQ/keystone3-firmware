@@ -20,6 +20,8 @@
 #include "firmware_update.h"
 #include "account_manager.h"
 #include "gui_lock_widgets.h"
+#include "screen_manager.h"
+#include "fingerprint_process.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "keystore.h"

@@ -4,6 +4,8 @@
 #include "gui_framework.h"
 #include "gui_views.h"
 
+#define memset_s memset
+
 void printInfo()
 {
     lv_fs_dir_t dir;

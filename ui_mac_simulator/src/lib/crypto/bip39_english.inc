@@ -1,0 +1,1 @@
+../../../../src/crypto/bips/bip39_english.inc

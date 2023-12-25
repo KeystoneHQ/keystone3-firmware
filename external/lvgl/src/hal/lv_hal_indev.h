@@ -34,7 +34,7 @@ extern "C" {
 
 /*Long press time in milliseconds.
  *Time to send `LV_EVENT_LONG_PRESSSED`)*/
-#define LV_INDEV_DEF_LONG_PRESS_TIME      400
+#define LV_INDEV_DEF_LONG_PRESS_TIME      2000
 
 /*Repeated trigger period in long press [ms]
  *Time between `LV_EVENT_LONG_PRESSED_REPEAT*/

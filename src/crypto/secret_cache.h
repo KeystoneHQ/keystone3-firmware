@@ -34,8 +34,6 @@ uint8_t SecretCacheGetIteration(void);
 uint8_t *SecretCacheGetEms(uint32_t *len);
 void SecretCacheSetEms(uint8_t *ems, uint32_t len);
 
-void SecretCacheSetDiceRollHash(uint8_t *hash);
-uint8_t *SecretCacheGetDiceRollHash();
 
 void ClearSecretCache(void);
 

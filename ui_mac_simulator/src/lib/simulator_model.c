@@ -242,9 +242,9 @@ int Slip39CheckFirstWordList(char *wordsList, uint8_t wordCnt, uint8_t *threshol
     return SUCCESS_CODE;
 }
 
-// void sha256(void *sha, const void *p, size_t size)
-// {
-// }
+void sha256(void *sha, const void *p, size_t size)
+{
+}
 
 void SetLockScreen(bool enable)
 {

@@ -73,7 +73,6 @@ static uint8_t g_pressedBtnFlag[SLIP39_MNEMONIC_WORDS_MAX + 1];
 static uint8_t g_currId = 0;
 static char g_randomBuff[512];
 static lv_obj_t *g_noticeHintBox = NULL;
-static uint8_t g_entropyMethod;
 static PageWidget_t *g_pageWidget;
 
 static void ShareUpdateTileHandler(lv_event_t *e)
@@ -412,7 +411,6 @@ static void GuiShareConfirmWidget(lv_obj_t *parent)
 
 void GuiCreateShareInit(uint8_t entropyMethod)
 {
-    g_entropyMethod = entropyMethod;
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 
@@ -476,12 +474,7 @@ int8_t GuiCreateShareNextTile(void)
     };
     switch (g_createShareTileView.currentTile) {
     case CREATE_SHARE_SELECT_SLICE:
-        if(g_entropyMethod == 0) {
-            GuiModelSlip39UpdateMnemonic(slip39);
-        }
-        else {
-            GuiModelSlip39UpdateMnemonicWithDiceRolls(slip39);
-        }
+        GuiModelSlip39UpdateMnemonic(slip39);
         lv_label_set_text_fmt(g_custodianTile.titleLabel, _("shamir_phrase_share_number_fmt"), g_createShareTileView.currentSlice + 1, g_selectSliceTile.memberCnt);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
         lv_obj_add_flag(g_selectSliceTile.stepCont, LV_OBJ_FLAG_HIDDEN);

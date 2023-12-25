@@ -5,9 +5,7 @@
 #include "stdint.h"
 #include "stdbool.h"
 #include "string.h"
-#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
-#endif
 
 #define CLEAR_ARRAY(array)                      memset_s(array, sizeof(array), 0, sizeof(array))
 #define CLEAR_OBJECT(obj)                       memset_s(&obj, sizeof(obj), 0, sizeof(obj))

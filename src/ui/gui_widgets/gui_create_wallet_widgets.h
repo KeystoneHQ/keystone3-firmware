@@ -17,10 +17,5 @@ const char *GetCurrentKbWalletName(void);
 void GuiCreateWalletRefresh(void);
 void GuiSetupKeyboardWidgetMode(void);
 
-typedef enum {
-    SEED_TYPE_BIP39,
-    SEED_TYPE_SLIP39,
-} SEED_TYPE;
-
 #endif /* _GUI_CREATE_WALLET_WIDGETS_H */
 

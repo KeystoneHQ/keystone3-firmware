@@ -102,22 +102,6 @@ static void TutorialsInit()
         g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].qrSubtitle = _("receive_sol_more_t_qr_link1");
         g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].qrCode = _("receive_sol_more_t_qr_link1");
 
-        // TUTORIAL_CHANGE_ENTROPY
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].len = 2;
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].title = _("tutorial_change_entropy_title1");
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].desc = _("tutorial_change_entropy_desc1");
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].link = NULL;
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].qrTitle = NULL;
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].qrSubtitle = NULL;
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].qrCode = NULL;
-
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].title = _("tutorial_change_entropy_title2");
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].desc = _("tutorial_change_entropy_desc2");
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].link = _("learn_more");
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrTitle = _("tutorial_change_entropy_qr_title1");
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrSubtitle = _("tutorial_change_entropy_qr_link1");
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrCode = _("tutorial_change_entropy_qr_link1");
-
         g_tutorialInitialized = true;
     }
 }

@@ -15,9 +15,7 @@
 #include "motor_manager.h"
 #include "user_delay.h"
 #include "gui_page.h"
-#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
-#endif
 
 #define SINGLE_PHRASE_MAX_WORDS         24
 typedef enum {
@@ -51,7 +49,6 @@ static uint8_t g_currId = 0;
 static char g_randomBuff[512];
 static lv_obj_t *g_noticeHintBox = NULL;
 static PageWidget_t *g_pageWidget;
-static uint8_t g_entropyMethod = 0;
 
 static void ResetConfirmInput(void);
 static void SelectPhraseCntHandler(lv_event_t *e);
@@ -77,6 +74,8 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     label = GuiCreateIllustrateLabel(parent, _("single_phrase_desc"));
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+
+    GuiModelBip39UpdateMnemonic(g_phraseCnt);
     g_randomPhraseKb = GuiCreateMnemonicKeyBoard(parent, NULL,
                        g_phraseCnt == 12 ? KEY_STONE_MNEMONIC_12 : KEY_STONE_MNEMONIC_24, NULL);
     lv_obj_set_size(g_randomPhraseKb->cont, 408, 360);
@@ -86,27 +85,20 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 114);
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
     g_changeCont = cont;
-    if (g_entropyMethod == 0) {
-        label = GuiCreateTextLabel(cont, _("single_backup_phrase_regenerate"));
-        lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-        lv_obj_t *img = GuiCreateImg(cont, &imgChange);
-        GuiButton_t table[] = {
-            {.obj = img, .align = LV_ALIGN_LEFT_MID, .position = {14, 0},},
-            {.obj = label, .align = LV_ALIGN_RIGHT_MID, .position = {-12, 0},},
-        };
-        lv_obj_t *button = GuiCreateButton(cont, 186, 66, table, NUMBER_OF_ARRAYS(table), UpdatePhraseHandler, NULL);
-        lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 24);
-    }
+    label = GuiCreateTextLabel(cont, _("single_backup_phrase_regenerate"));
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_t *img = GuiCreateImg(cont, &imgChange);
+    GuiButton_t table[] = {
+        {.obj = img, .align = LV_ALIGN_LEFT_MID, .position = {14, 0},},
+        {.obj = label, .align = LV_ALIGN_RIGHT_MID, .position = {-12, 0},},
+    };
+    lv_obj_t *button = GuiCreateButton(cont, 186, 66, table, NUMBER_OF_ARRAYS(table), UpdatePhraseHandler, NULL);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 24);
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_KB_NEXT);
     lv_obj_align(btn, LV_ALIGN_DEFAULT, 348, 24);
     lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, cont);
     SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12    "USR_SYMBOL_DOWN : "24    "USR_SYMBOL_DOWN);
     SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
-    if (g_entropyMethod == 0) {
-        GuiModelBip39UpdateMnemonic(g_phraseCnt);
-    } else {
-        GuiModelBip39UpdateMnemonicWithDiceRolls(g_phraseCnt);
-    }
 }
 
 
@@ -219,9 +211,8 @@ static void GuiConfirmPhraseWidget(lv_obj_t *parent)
     lv_obj_align(g_confirmPhraseKb->cont, LV_ALIGN_TOP_MID, 0, 310 - GUI_MAIN_AREA_OFFSET);
 }
 
-void GuiSinglePhraseInit(uint8_t entropyMethod)
+void GuiSinglePhraseInit(void)
 {
-    g_entropyMethod = entropyMethod;
     CLEAR_OBJECT(g_singlePhraseTileView);
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
@@ -286,22 +277,14 @@ static void SelectCheckBoxHandler(lv_event_t* e)
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 12) {
             g_phraseCnt = 12;
-            if (g_entropyMethod == 0) {
-                GuiModelBip39UpdateMnemonic(g_phraseCnt);
-            } else {
-                GuiModelBip39UpdateMnemonicWithDiceRolls(g_phraseCnt);
-            }
+            GuiModelBip39UpdateMnemonic(g_phraseCnt);
         }
     } else if (!strcmp(currText, _("single_phrase_24words"))) {
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "24    "USR_SYMBOL_DOWN);
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 24) {
             g_phraseCnt = 24;
-            if (g_entropyMethod == 0) {
-                GuiModelBip39UpdateMnemonic(g_phraseCnt);
-            } else {
-                GuiModelBip39UpdateMnemonicWithDiceRolls(g_phraseCnt);
-            }
+            GuiModelBip39UpdateMnemonic(g_phraseCnt);
         }
     }
     lv_obj_scroll_to_y(g_randomPhraseKb->cont, 0, LV_ANIM_ON);

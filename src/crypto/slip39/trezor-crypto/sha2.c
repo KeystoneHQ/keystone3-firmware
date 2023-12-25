@@ -586,7 +586,7 @@ void sha1_Final(SHA1_CTX* context, sha2_byte digest[])
     unsigned int    usedspace;
 
     /* If no digest buffer is passed, we don't bother doing this: */
-    if (digest != (sha2_byte *)0) {
+    if (digest != (sha2_byte*)0) {
         usedspace = (context->bitcount >> 3) % SHA1_BLOCK_LENGTH;
         /* Begin padding with a 1 bit: */
         ((uint8_t*)context->buffer)[usedspace++] = 0x80;
@@ -641,7 +641,7 @@ char *sha1_End(SHA1_CTX* context, char buffer[])
     sha2_byte   digest[SHA1_DIGEST_LENGTH], *d = digest;
     int     i;
 
-    if (buffer != (char *)0) {
+    if (buffer != (char*)0) {
         sha1_Final(context, digest);
 
         for (i = 0; i < SHA1_DIGEST_LENGTH; i++) {
@@ -677,7 +677,7 @@ char* sha1_Data(const sha2_byte* data, size_t len, char digest[SHA1_DIGEST_STRIN
 /*** SHA-256: *********************************************************/
 void sha256_Init(SHA256_CTX* context)
 {
-    if (context == (SHA256_CTX *)0) {
+    if (context == (SHA256_CTX*)0) {
         return;
     }
     MEMCPY_BCOPY(context->state, sha256_initial_hash_value, SHA256_DIGEST_LENGTH);
@@ -901,7 +901,7 @@ void sha256_Final(SHA256_CTX* context, sha2_byte digest[])
     unsigned int    usedspace;
 
     /* If no digest buffer is passed, we don't bother doing this: */
-    if (digest != (sha2_byte *)0) {
+    if (digest != (sha2_byte*)0) {
         usedspace = (context->bitcount >> 3) % SHA256_BLOCK_LENGTH;
         /* Begin padding with a 1 bit: */
         ((uint8_t*)context->buffer)[usedspace++] = 0x80;
@@ -956,7 +956,7 @@ char *sha256_End(SHA256_CTX* context, char buffer[])
     sha2_byte   digest[SHA256_DIGEST_LENGTH], *d = digest;
     int     i;
 
-    if (buffer != (char *)0) {
+    if (buffer != (char*)0) {
         sha256_Final(context, digest);
 
         for (i = 0; i < SHA256_DIGEST_LENGTH; i++) {
@@ -993,7 +993,7 @@ char* sha256_Data(const sha2_byte* data, size_t len, char digest[SHA256_DIGEST_S
 /*** SHA-512: *********************************************************/
 void sha512_Init(SHA512_CTX* context)
 {
-    if (context == (SHA512_CTX *)0) {
+    if (context == (SHA512_CTX*)0) {
         return;
     }
     MEMCPY_BCOPY(context->state, sha512_initial_hash_value, SHA512_DIGEST_LENGTH);
@@ -1252,7 +1252,7 @@ static void sha512_Last(SHA512_CTX* context)
 void sha512_Final(SHA512_CTX* context, sha2_byte digest[])
 {
     /* If no digest buffer is passed, we don't bother doing this: */
-    if (digest != (sha2_byte *)0) {
+    if (digest != (sha2_byte*)0) {
         sha512_Last(context);
 
         /* Save the hash data for output: */
@@ -1274,7 +1274,7 @@ char *sha512_End(SHA512_CTX* context, char buffer[])
     sha2_byte   digest[SHA512_DIGEST_LENGTH], *d = digest;
     int     i;
 
-    if (buffer != (char *)0) {
+    if (buffer != (char*)0) {
         sha512_Final(context, digest);
 
         for (i = 0; i < SHA512_DIGEST_LENGTH; i++) {

@@ -16,7 +16,7 @@
 #include "drv_battery.h"
 #else
 #include "simulator_model.h"
-#define memset_s(a1,a2,a3,a4)               memset(a1,a2,a3)
+#define memset_s memset
 #endif
 #include "gui_animating_qrcode.h"
 #include "account_manager.h"
@@ -58,9 +58,7 @@ void GuiModelLockedDeviceDelAllWalletDesc(void);
 void GuiModelChangeAccountPassWord(void);
 void GuiModelVerifyAccountPassWord(uint16_t *param);
 void GuiModelBip39UpdateMnemonic(uint8_t wordCnt);
-void GuiModelBip39UpdateMnemonicWithDiceRolls(uint8_t wordCnt);
 void GuiModelSlip39UpdateMnemonic(Slip39Data_t slip39);
-void GuiModelSlip39UpdateMnemonicWithDiceRolls(Slip39Data_t slip39);
 void GuiModelBip39RecoveryCheck(uint8_t wordsCnt);
 void GuiModeGetWalletDesc(void);
 void GuiModeGetAccount(void);

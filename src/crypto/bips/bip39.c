@@ -11,9 +11,7 @@
 #include "err_code.h"
 #include "pbkdf2.h"
 
-#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
-#endif
 
 static const struct {
     const char name[4];

@@ -12,8 +12,8 @@ static UREncodeResult *g_urEncode = NULL;
 
 #ifdef COMPILE_SIMULATOR
 struct UREncodeResult *get_connect_blue_wallet_ur(uint8_t *master_fingerprint,
-    uint32_t length,
-    PtrT_CSliceFFI_ExtendedPublicKey public_keys)
+        uint32_t length,
+        PtrT_CSliceFFI_ExtendedPublicKey public_keys)
 {
     struct UREncodeResult *result = malloc(sizeof(struct UREncodeResult));
     result->is_multi_part = 0;
@@ -25,10 +25,10 @@ struct UREncodeResult *get_connect_blue_wallet_ur(uint8_t *master_fingerprint,
 }
 
 PtrT_UREncodeResult get_connect_companion_app_ur(PtrBytes master_fingerprint,
-    uint32_t master_fingerprint_length,
-    int device_info,
-    CoinConfig *coin_config,
-    uint32_t coin_config_length)
+        uint32_t master_fingerprint_length,
+        int device_info,
+        CoinConfig *coin_config,
+        uint32_t coin_config_length)
 {
     struct UREncodeResult *result = malloc(sizeof(struct UREncodeResult));
     result->is_multi_part = 0;

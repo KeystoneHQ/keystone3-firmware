@@ -118,7 +118,7 @@ bool SDCardSetup(void)
     // );
 
     // CMD3: Get RCA
-    if (!SDIOExecuteCommand(SD_CMD_SET_REL_ADDR, 0, SDIOResponseR6, (uint32_t*)&SDCardInfo.CardStatus))
+    if (!SDIOExecuteCommand(SD_CMD_SET_REL_ADDR, 0, SDIOResponseR6, (uint32_t *)&SDCardInfo.CardStatus))
         return false;
 
     // CMD9: Get CSD

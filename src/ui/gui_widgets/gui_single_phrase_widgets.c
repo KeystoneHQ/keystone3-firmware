@@ -86,8 +86,7 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 114);
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
     g_changeCont = cont;
-    if(g_entropyMethod == 0)
-    {
+    if (g_entropyMethod == 0) {
         label = GuiCreateTextLabel(cont, _("single_backup_phrase_regenerate"));
         lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
         lv_obj_t *img = GuiCreateImg(cont, &imgChange);
@@ -103,10 +102,9 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, cont);
     SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12    "USR_SYMBOL_DOWN : "24    "USR_SYMBOL_DOWN);
     SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
-    if(g_entropyMethod == 0) {
+    if (g_entropyMethod == 0) {
         GuiModelBip39UpdateMnemonic(g_phraseCnt);
-    }
-    else {
+    } else {
         GuiModelBip39UpdateMnemonicWithDiceRolls(g_phraseCnt);
     }
 }
@@ -288,10 +286,9 @@ static void SelectCheckBoxHandler(lv_event_t* e)
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 12) {
             g_phraseCnt = 12;
-            if(g_entropyMethod == 0) {
+            if (g_entropyMethod == 0) {
                 GuiModelBip39UpdateMnemonic(g_phraseCnt);
-            }
-            else {
+            } else {
                 GuiModelBip39UpdateMnemonicWithDiceRolls(g_phraseCnt);
             }
         }
@@ -300,10 +297,9 @@ static void SelectCheckBoxHandler(lv_event_t* e)
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 24) {
             g_phraseCnt = 24;
-            if(g_entropyMethod == 0) {
+            if (g_entropyMethod == 0) {
                 GuiModelBip39UpdateMnemonic(g_phraseCnt);
-            }
-            else {
+            } else {
                 GuiModelBip39UpdateMnemonicWithDiceRolls(g_phraseCnt);
             }
         }

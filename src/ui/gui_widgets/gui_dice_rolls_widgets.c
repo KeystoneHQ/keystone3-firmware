@@ -161,7 +161,8 @@ static void GuiCreatePage(lv_obj_t *parent)
 static void OpenQuitHintBoxHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         GUI_DEL_OBJ(g_quitHintBox);
         g_quitHintBox = GuiCreateHintBox(lv_scr_act(), 480, 386, true);
         lv_obj_t *img, *label, *btn;
@@ -191,7 +192,8 @@ static void OpenQuitHintBoxHandler(lv_event_t *e)
 static void QuitConfirmHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         GUI_DEL_OBJ(g_quitHintBox);
         GuiCLoseCurrentWorkingView();
     }
@@ -200,7 +202,8 @@ static void QuitConfirmHandler(lv_event_t *e)
 static void CloseQuitHintBoxHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         GUI_DEL_OBJ(g_quitHintBox);
     }
 }
@@ -208,12 +211,16 @@ static void CloseQuitHintBoxHandler(lv_event_t *e)
 static void ClickDiceHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         lv_obj_t *img = lv_event_get_target(e);
-        for (size_t i = 0; i < 6; i++) {
-            if (g_diceImgs[i] == img) {
+        for (size_t i = 0; i < 6; i++)
+        {
+            if (g_diceImgs[i] == img)
+            {
                 const char *txt = lv_textarea_get_text(g_diceTextArea);
-                if (strlen(txt) == 100) {
+                if (strlen(txt) == 100)
+                {
                     return;
                 }
 
@@ -238,7 +245,8 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *ta = lv_event_get_target(e);
-    if (code == LV_EVENT_VALUE_CHANGED) {
+    if (code == LV_EVENT_VALUE_CHANGED)
+    {
         const char *txt = lv_textarea_get_text(ta);
         lv_coord_t font_height = lv_obj_get_style_text_font(ta, LV_PART_MAIN)->line_height;
         // 27chars per line in reality;
@@ -253,38 +261,51 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
         lv_obj_align_to(g_hintLabel, g_line, LV_ALIGN_OUT_BOTTOM_LEFT, 196, 4);
         lv_obj_align_to(g_rollsLabel, g_line, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
 
-        if (length > 0 && length < 50) {
+        if (length > 0 && length < 50)
+        {
             lv_obj_clear_flag(g_hintLabel, LV_OBJ_FLAG_HIDDEN);
-        } else {
+        }
+        else
+        {
             lv_obj_add_flag(g_hintLabel, LV_OBJ_FLAG_HIDDEN);
         }
 
-        if (length > 1) {
+        if (length > 1)
+        {
             lv_label_set_text_fmt(g_rollsLabel, "#F5870A %d rolls#", length);
-        } else {
+        }
+        else
+        {
             lv_label_set_text_fmt(g_rollsLabel, "#F5870A %d roll#", length);
         }
 
-        if (length >= 50) {
+        if (length >= 50)
+        {
             lv_obj_remove_style(g_confirmBtn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
             lv_obj_add_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE);
             float counts[6] = {0};
-            for (size_t i = 0; i < length; i++) {
+            for (size_t i = 0; i < length; i++)
+            {
                 counts[txt[i] - '1']++;
             }
             float len = length;
             bool stillValid = true;
-            for (size_t i = 0; i < 6; i++) {
-                if (counts[i] / len > 0.3) {
+            for (size_t i = 0; i < 6; i++)
+            {
+                if (counts[i] / len > 0.3)
+                {
                     lv_obj_clear_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN);
                     stillValid = false;
                     break;
                 }
             }
-            if (stillValid) {
+            if (stillValid)
+            {
                 lv_obj_add_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN);
             }
-        } else {
+        }
+        else
+        {
             lv_obj_add_style(g_confirmBtn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
             lv_obj_clear_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE);
         }
@@ -294,7 +315,8 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
 static void UndoShortClickHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_SHORT_CLICKED) {
+    if (code == LV_EVENT_SHORT_CLICKED)
+    {
         lv_obj_t *ta = (lv_obj_t *)lv_event_get_user_data(e);
         lv_textarea_set_cursor_pos(ta, LV_TEXTAREA_CURSOR_LAST);
         lv_textarea_del_char(ta);
@@ -303,7 +325,8 @@ static void UndoShortClickHandler(lv_event_t *e)
 static void UndoLongPressHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_LONG_PRESSED) {
+    if (code == LV_EVENT_LONG_PRESSED)
+    {
         lv_obj_t *ta = (lv_obj_t *)lv_event_get_user_data(e);
         lv_textarea_set_text(ta, "");
     }
@@ -312,16 +335,19 @@ static void UndoLongPressHandler(lv_event_t *e)
 static void ConfirmHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         lv_obj_t *ta = (lv_obj_t *)lv_event_get_user_data(e);
 
         // convert result
         const char *txt = lv_textarea_get_text(ta);
         char *temp = SRAM_MALLOC(128);
         strcpy(temp, txt);
-        for (size_t i = 0; i < strlen(txt); i++) {
+        for (size_t i = 0; i < strlen(txt); i++)
+        {
             char c = temp[i];
-            if (c == '6') {
+            if (c == '6')
+            {
                 temp[i] = '0';
             }
         }
@@ -329,9 +355,12 @@ static void ConfirmHandler(lv_event_t *e)
         sha256((struct sha256 *)hash, temp, strlen(temp));
         uint8_t entropyMethod = 1;
         SecretCacheSetDiceRollHash(hash);
-        if (g_seedType == SEED_TYPE_BIP39) {
+        if (g_seedType == SEED_TYPE_BIP39)
+        {
             GuiFrameOpenViewWithParam(&g_singlePhraseView, &entropyMethod, 1);
-        } else {
+        }
+        else
+        {
             GuiFrameOpenViewWithParam(&g_createShareView, &entropyMethod, 1);
         }
     }

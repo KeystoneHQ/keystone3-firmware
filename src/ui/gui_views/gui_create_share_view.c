@@ -23,9 +23,11 @@ int32_t GuiCreateShareViewEventProcess(void *self, uint16_t usEvent, void *param
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        if (param != NULL) {
+        if(param != NULL)
+        {
             entropyMethod = *(uint8_t *)param;
-        } else {
+        }
+        else {
             return ERR_GUI_ERROR;
         }
         return GuiCreateShareViewInit(entropyMethod);

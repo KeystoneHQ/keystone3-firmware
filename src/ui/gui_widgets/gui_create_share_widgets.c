@@ -476,9 +476,10 @@ int8_t GuiCreateShareNextTile(void)
     };
     switch (g_createShareTileView.currentTile) {
     case CREATE_SHARE_SELECT_SLICE:
-        if (g_entropyMethod == 0) {
+        if(g_entropyMethod == 0) {
             GuiModelSlip39UpdateMnemonic(slip39);
-        } else {
+        }
+        else {
             GuiModelSlip39UpdateMnemonicWithDiceRolls(slip39);
         }
         lv_label_set_text_fmt(g_custodianTile.titleLabel, _("shamir_phrase_share_number_fmt"), g_createShareTileView.currentSlice + 1, g_selectSliceTile.memberCnt);

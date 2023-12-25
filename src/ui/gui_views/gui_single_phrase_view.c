@@ -29,9 +29,11 @@ int32_t GuiSinglePhraseViewEventProcess(void *self, uint16_t usEvent, void *para
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        if (param != NULL) {
+        if(param != NULL)
+        {
             entropyMethod = *(uint8_t *)param;
-        } else {
+        }
+        else {
             return ERR_GUI_ERROR;
         }
         return GuiSinglePhraseViewInit(entropyMethod);

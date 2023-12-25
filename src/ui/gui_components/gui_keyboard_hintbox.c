@@ -15,7 +15,10 @@
 #include "gui_views.h"
 #include "gui_lock_widgets.h"
 #include "fingerprint_process.h"
+#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
+#define memset_s(a1,a2,a3,a4)               memset(a1,a2,a3)
+#endif
 #ifdef COMPILE_SIMULATOR
 #define RECOGNIZE_UNLOCK                    0
 #endif

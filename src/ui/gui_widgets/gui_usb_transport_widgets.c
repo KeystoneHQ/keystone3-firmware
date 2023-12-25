@@ -3,6 +3,7 @@
 #include "gui_page.h"
 #include "gui_usb_transport_widgets.h"
 #include "eapdu_services/service_export_address.h"
+#include "screen_manager.h"
 
 static lv_obj_t *g_cont;
 static PageWidget_t *g_pageWidget;

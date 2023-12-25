@@ -31,7 +31,7 @@ int32_t GuiMultiAccountsReceiveViewEventProcess(void *self, uint16_t usEvent, vo
     case GUI_EVENT_DISACTIVE:
         break;
     case GUI_EVENT_REFRESH:
-        GuiMultiAccountsReceiveRefresh();
+        // GuiMultiAccountsReceiveRefresh();
         break;
     case SIG_SETUP_VIEW_TILE_PREV:
         GuiMultiAccountsReceivePrevTile();

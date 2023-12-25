@@ -32,7 +32,7 @@ int32_t GuiMultiPathCoinReceiveViewEventProcess(void *self, uint16_t usEvent, vo
     case GUI_EVENT_DISACTIVE:
         break;
     case GUI_EVENT_REFRESH:
-        GuiMultiPathCoinReceiveRefresh();
+        // GuiMultiPathCoinReceiveRefresh();
         break;
     case SIG_SETUP_VIEW_TILE_PREV:
         GuiMultiPathCoinReceivePrevTile();

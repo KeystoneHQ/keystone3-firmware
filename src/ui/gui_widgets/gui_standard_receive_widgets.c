@@ -129,6 +129,8 @@ void GuiStandardReceiveInit(uint8_t chain)
         GuiCreateSwitchAddressButtons(g_standardReceiveWidgets.tileSwitchAccount);
     }
     lv_obj_clear_flag(g_standardReceiveWidgets.tileView, LV_OBJ_FLAG_SCROLLABLE);
+
+    GuiStandardReceiveRefresh();
 }
 
 void GuiStandardReceiveDeInit(void)

@@ -19,7 +19,9 @@
 #include "gui_mnemonic_input.h"
 #include "gui_page.h"
 #include "gui_keyboard_hintbox.h"
+#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
+#endif
 #ifndef COMPILE_MAC_SIMULATOR
 #include "sha256.h"
 #else

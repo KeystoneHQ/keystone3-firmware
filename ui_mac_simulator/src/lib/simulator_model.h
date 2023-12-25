@@ -30,7 +30,7 @@ size_t xPortGetFreeHeapSize(void);
 int32_t CheckPasswordExisted(const char *password, uint8_t excludeIndex);
 uint8_t GetBatterPercent(void);
 int Slip39CheckFirstWordList(char *wordsList, uint8_t wordCnt, uint8_t *threshold);
-void sha256(void *sha, const void *p, size_t size);
+// void sha256(void *sha, const void *p, size_t size);
 bool GetPassphraseQuickAccess(void);
 int strcasecmp(char const *a, char const *b);
 uint32_t GetCurrentStampTime(void);

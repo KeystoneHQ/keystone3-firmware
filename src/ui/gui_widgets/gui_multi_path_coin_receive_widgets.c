@@ -197,6 +197,8 @@ void GuiMultiPathCoinReceiveInit(uint8_t chain)
     g_multiPathCoinReceiveWidgets.tileChangePath = lv_tileview_add_tile(g_multiPathCoinReceiveWidgets.tileView, RECEIVE_TILE_CHANGE_PATH, 0, LV_DIR_HOR);
     GuiCreateChangePathWidget(g_multiPathCoinReceiveWidgets.tileChangePath);
     lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.tileView, LV_OBJ_FLAG_SCROLLABLE);
+
+    GuiMultiPathCoinReceiveRefresh();
 }
 
 void GuiMultiPathCoinReceiveDeInit(void)

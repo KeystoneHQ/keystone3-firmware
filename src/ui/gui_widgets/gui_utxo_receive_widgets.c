@@ -193,6 +193,8 @@ void GuiReceiveInit(uint8_t chain)
     g_utxoReceiveWidgets.tileAddressSettings = lv_tileview_add_tile(g_utxoReceiveWidgets.tileView, UTXO_RECEIVE_TILE_ADDRESS_SETTINGS, 0, LV_DIR_HOR);
     GuiCreateAddressSettingsWidget(g_utxoReceiveWidgets.tileAddressSettings);
     lv_obj_clear_flag(g_utxoReceiveWidgets.tileView, LV_OBJ_FLAG_SCROLLABLE);
+
+    GuiReceiveRefresh();
 }
 
 void GuiReceiveDeInit(void)

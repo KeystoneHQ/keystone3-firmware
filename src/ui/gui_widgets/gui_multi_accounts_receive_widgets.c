@@ -146,6 +146,8 @@ void GuiMultiAccountsReceiveInit(uint8_t chain)
         GuiCreateSwitchAddressButtons(g_multiAccountsReceiveWidgets.tileSwitchAddress);
     }
     lv_obj_clear_flag(g_multiAccountsReceiveWidgets.tileView, LV_OBJ_FLAG_SCROLLABLE);
+
+    GuiMultiAccountsReceiveRefresh();
 }
 
 void GuiMultiAccountsReceiveDeInit(void)

@@ -61,7 +61,7 @@ Before submitting, ensure your code follows our formatting standards:
 
 ```bash
 brew install astyle
-cd tools && astyle -A3nrUpHcQ --exclude=../src/cm_backtrace/Languages --exclude=../external --exclude=../rust "../*.c" "../*.h" "../*.cpp" && cd ..
+cd tools && astyle -A3nrUpHcQ --exclude=../src/cm_backtrace/Languages "../src/*.c" "../src/*.h" && cd ..
 ```
 
 ## FAQ

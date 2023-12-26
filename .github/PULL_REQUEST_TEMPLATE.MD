@@ -1,11 +1,5 @@
 ## Explanation
-<!-- Why this PR is required -->
-<!-- START -->
-
-<!-- END -->
-
-## Changes
-<!-- What change is included in this PR -->
+<!-- Why this PR is required and what changed -->
 <!-- START -->
 
 <!-- END -->

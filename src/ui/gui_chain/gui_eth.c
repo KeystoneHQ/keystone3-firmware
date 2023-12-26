@@ -1190,10 +1190,11 @@ void FreeContractData(void)
 #ifndef COMPILE_SIMULATOR
     if (g_contractData != NULL) {
         free_Response_DisplayContractData(g_contractData);
+        g_contractData = NULL;
     }
-    g_contractData = NULL;
     if (g_erc20ContractData != NULL) {
         free_TransactionParseResult_EthParsedErc20Transaction(g_erc20ContractData);
+        g_erc20ContractData = NULL;
     }
 #endif
 }

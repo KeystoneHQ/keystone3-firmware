@@ -5,9 +5,10 @@ use app_wallets::keplr::sync_info::SyncInfo;
 use common_rust_c::errors::RustCError;
 use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::Free;
-use common_rust_c::types::{Ptr, PtrString};
+use common_rust_c::structs::Response;
+use common_rust_c::types::{Ptr, PtrString, PtrT};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
-use common_rust_c::{free_str_ptr, impl_c_ptr};
+use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
 use third_party::ur_registry::extend::key_derivation_schema::{Curve, DerivationAlgo};
 use third_party::ur_registry::extend::qr_hardware_call::{CallParams, CallType, QRHardwareCall};
 
@@ -129,3 +130,5 @@ impl Free for KeyDerivationSchema {
         free_str_ptr!(self.key_path);
     }
 }
+
+make_free_method!(Response<QRHardwareCallData>);

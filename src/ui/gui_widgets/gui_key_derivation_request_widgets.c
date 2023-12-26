@@ -54,6 +54,18 @@ void GuiSetKeyDerivationRequestData(void *urResult, void *multiResult, bool is_m
 #endif
 }
 
+void FreeKeyDerivationRequestMemory(void)
+{
+#ifndef COMPILE_SIMULATOR
+    CHECK_FREE_UR_RESULT(g_urResult, false);
+    CHECK_FREE_UR_RESULT(g_urMultiResult, true);
+    if (g_response != NULL) {
+        free_Response_QRHardwareCallData(g_response);
+        g_response = NULL;
+    }
+#endif
+}
+
 void GuiKeyDerivationRequestInit()
 {
     g_walletIndex = WALLET_LIST_ETERNL;
@@ -87,6 +99,7 @@ void GuiKeyDerivationRequestDeInit()
 {
     GUI_PAGE_DEL(g_keyDerivationTileView.pageWidget);
     GuiAnimatingQRCodeDestroyTimer();
+    FreeKeyDerivationRequestMemory();
 }
 void GuiKeyDerivationRequestRefresh()
 {

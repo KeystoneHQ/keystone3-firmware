@@ -629,8 +629,7 @@ static void GuiRefreshNavBar(void)
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     if (CREATE_WALLET_BACKUPFROM == g_createWalletTileView.currentTile) {
         //create wallet, show change entropy
-        if(g_createWalletTileView.walletMethod == 0)
-        {
+        if (g_createWalletTileView.walletMethod == 0) {
             SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
         }
         //import wallet, dont't show change entropy

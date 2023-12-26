@@ -1119,9 +1119,9 @@ static bool GetEthErc20ContractData(void *parseResult)
         g_contractDataExist = true;
         g_contractData = contractData;
     } else {
-        #ifndef COMPILE_SIMULATOR
+#ifndef COMPILE_SIMULATOR
         free_Response_DisplayContractData(contractData);
-        #endif
+#endif
         return false;
     }
     char *to = result->data->detail->to;
@@ -1148,9 +1148,9 @@ bool GetEthContractFromInternal(char *address, char *inputData)
                 g_contractDataExist = true;
                 g_contractData = contractData;
             } else {
-                #ifndef COMPILE_SIMULATOR
+#ifndef COMPILE_SIMULATOR
                 free_Response_DisplayContractData(contractData);
-                #endif
+#endif
                 return false;
             }
             return true;
@@ -1179,9 +1179,9 @@ bool GetEthContractFromExternal(char *address, char *selectorId, uint64_t chainI
             g_contractData = contractData;
         } else {
             SRAM_FREE(contractMethodJson);
-            #ifndef COMPILE_SIMULATOR
+#ifndef COMPILE_SIMULATOR
             free_Response_DisplayContractData(contractData);
-            #endif
+#endif
             return false;
         }
         SRAM_FREE(contractMethodJson);

@@ -193,7 +193,7 @@ static void ClickDiceHandler(lv_event_t *e)
         for (size_t i = 0; i < 6; i++) {
             if (g_diceImgs[i] == img) {
                 const char *txt = lv_textarea_get_text(g_diceTextArea);
-                if (strlen(txt) == 100) {
+                if (strlen(txt) == 256) {
                     return;
                 }
 
@@ -305,6 +305,8 @@ static void ConfirmHandler(lv_event_t *e)
         sha256((struct sha256 *)hash, temp, strlen(temp));
         uint8_t entropyMethod = 1;
         SecretCacheSetDiceRollHash(hash);
+        PrintArray("Dice Rolls Hash", hash, 32);
+        memset_s(hash, 32, 0, 32);
         if (g_seedType == SEED_TYPE_BIP39) {
             GuiFrameOpenViewWithParam(&g_singlePhraseView, &entropyMethod, 1);
         } else {

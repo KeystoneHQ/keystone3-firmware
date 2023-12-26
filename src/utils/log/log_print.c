@@ -114,7 +114,7 @@ void PrintArray(const char *name, const uint8_t *data, uint16_t length)
         if (i % 32 == 0 && i != 0) {
             printf("\r\n");
         }
-        printf("%02X ", data[i]);
+        printf("%02X", data[i]);
     }
     printf("\r\n");
 }

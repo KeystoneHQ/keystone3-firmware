@@ -232,6 +232,8 @@ char* slip39_strings_for_words(
         }
     }
 
+    printf("result_string: %s\r\n", result_string);
+
     return result_string;
 }
 

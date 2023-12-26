@@ -628,7 +628,14 @@ static void GuiRefreshNavBar(void)
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     if (CREATE_WALLET_BACKUPFROM == g_createWalletTileView.currentTile) {
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
+        //create wallet, show change entropy
+        if (g_createWalletTileView.walletMethod == 0) {
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
+        }
+        //import wallet, dont't show change entropy
+        else {
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, QuestionMarkEventCb, NULL);
+        }
     }
     if (CREATE_WALLET_SETPIN == g_createWalletTileView.currentTile) {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);

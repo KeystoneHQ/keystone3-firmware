@@ -22,6 +22,7 @@
 #include "gui_keyboard_hintbox.h"
 #include "gui_firmware_update_widgets.h"
 #include "background_task.h"
+#include "gui_forget_pass_widgets.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "assert.h"

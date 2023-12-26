@@ -14,7 +14,7 @@ static void ClickDiceHandler(lv_event_t *e);
 static void InitDiceImg(lv_obj_t *img, lv_obj_t *anchor, size_t x, size_t y);
 static void OnTextareaValueChangeHandler(lv_event_t *e);
 static void QuitConfirmHandler(lv_event_t *e);
-static void UndoShortClickHandler(lv_event_t *e);
+static void UndoClickHandler(lv_event_t *e);
 static void UndoLongPressHandler(lv_event_t *e);
 static void ConfirmHandler(lv_event_t *e);
 
@@ -35,6 +35,7 @@ void GuiDiceRollsWidgetsInit(uint8_t seed_type)
     g_page = CreatePageWidget();
     GuiCreatePage(g_page->contentZone);
     SetNavBarLeftBtn(g_page->navBarWidget, NVS_BAR_RETURN, OpenQuitHintBoxHandler, NULL);
+    SetNavBarRightBtn(g_page->navBarWidget, NVS_BAR_UNDO, UndoClickHandler, g_diceTextArea);
 }
 void GuiDiceRollsWidgetsDeInit()
 {
@@ -83,22 +84,10 @@ static void GuiCreatePage(lv_obj_t *parent)
 
     label = GuiCreateIllustrateLabel(parent, _("dice_roll_error_label"));
     lv_obj_set_style_text_color(label, DEEP_ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_align_to(label, anchor, LV_ALIGN_OUT_BOTTOM_LEFT, 196, 4);
+    lv_obj_align_to(label, anchor, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
     g_errLabel = label;
 
-    label = GuiCreateIllustrateLabel(parent, _("dice_roll_hint_label"));
-    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_align_to(label, anchor, LV_ALIGN_OUT_BOTTOM_LEFT, 196, 4);
-    lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
-    g_hintLabel = label;
-
-    label = GuiCreateIllustrateLabel(parent, "#F5870A 0 roll#");
-    lv_label_set_recolor(label, true);
-    lv_obj_align_to(label, anchor, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
-    g_rollsLabel = label;
-    anchor = label;
 
     img = GuiCreateImg(parent, &imgDice1);
     InitDiceImg(img, parent, 12 + 48, 258);
@@ -136,26 +125,17 @@ static void GuiCreatePage(lv_obj_t *parent)
     lv_obj_add_style(btn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
     g_confirmBtn = btn;
 
-    btn = lv_btn_create(parent);
-    lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_PART_MAIN);
-    lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
-    lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
-    lv_obj_set_size(btn, 119, 66);
-    lv_obj_set_style_pad_all(btn, 0, LV_PART_MAIN);
-    lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 24, -24);
+    label = GuiCreateIllustrateLabel(parent, "0");
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -54);
+    g_rollsLabel = label;
 
-    label = GuiCreateTextLabel(btn, _("Undo"));
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 45, 15);
-
-    img = GuiCreateImg(btn, &imgUndo);
-    lv_obj_set_size(img, 24, 24);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 12, 21);
-
-    lv_obj_add_event_cb(btn, UndoShortClickHandler, LV_EVENT_SHORT_CLICKED, textArea);
-    lv_obj_add_event_cb(btn, UndoLongPressHandler, LV_EVENT_LONG_PRESSED, textArea);
+    label = GuiCreateIllustrateLabel(parent, _("dice_roll_hint_label"));
+    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -24);
+    lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+    g_hintLabel = label;
 }
 
 static void OpenQuitHintBoxHandler(lv_event_t *e)
@@ -249,9 +229,7 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
         lv_obj_set_height(ta, line_count * font_height + 2 * lv_obj_get_style_pad_top(ta, LV_PART_MAIN));
         lv_obj_update_layout(ta);
         lv_obj_align_to(g_line, ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
-        lv_obj_align_to(g_errLabel, g_line, LV_ALIGN_OUT_BOTTOM_LEFT, 196, 4);
-        lv_obj_align_to(g_hintLabel, g_line, LV_ALIGN_OUT_BOTTOM_LEFT, 196, 4);
-        lv_obj_align_to(g_rollsLabel, g_line, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+        lv_obj_align_to(g_errLabel, g_line, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
 
         if (length > 0 && length < 50) {
             lv_obj_clear_flag(g_hintLabel, LV_OBJ_FLAG_HIDDEN);
@@ -259,10 +237,8 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
             lv_obj_add_flag(g_hintLabel, LV_OBJ_FLAG_HIDDEN);
         }
 
-        if (length > 1) {
-            lv_label_set_text_fmt(g_rollsLabel, "#F5870A %d rolls#", length);
-        } else {
-            lv_label_set_text_fmt(g_rollsLabel, "#F5870A %d roll#", length);
+        if (length >= 1) {
+            lv_label_set_text_fmt(g_rollsLabel, "%d", length);
         }
 
         if (length >= 50) {
@@ -291,10 +267,10 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
     }
 }
 
-static void UndoShortClickHandler(lv_event_t *e)
+static void UndoClickHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_SHORT_CLICKED) {
+    if (code == LV_EVENT_CLICKED) {
         lv_obj_t *ta = (lv_obj_t *)lv_event_get_user_data(e);
         lv_textarea_set_cursor_pos(ta, LV_TEXTAREA_CURSOR_LAST);
         lv_textarea_del_char(ta);

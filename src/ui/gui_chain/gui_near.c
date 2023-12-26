@@ -331,6 +331,9 @@ void GuiShowNearTxDetail(lv_obj_t *parent, void *totalData)
 
         for (int8_t k = 0; k < kLen; k++) {
             cJSON *key = cJSON_GetArrayItem(item, k);
+            if (key->type == cJSON_Array && cJSON_GetArraySize(key) == 0) {
+                continue;
+            }
             lv_obj_t *tLabel = lv_label_create(container);
             lv_label_set_text(tLabel, key->string);
             if (NULL != prevLabel) {

@@ -56,6 +56,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_OSMO, "Confirm Transaction", &coinOsmo},
     {CHAIN_SCRT, "Confirm Transaction", &coinScrt},
     {CHAIN_AKT, "Confirm Transaction", &coinAkt},
+    {CHAIN_TORI, "Confirm Transaction", &coinTori},
     {CHAIN_CRO, "Confirm Transaction", &coinCro},
     {CHAIN_IOV, "Confirm Transaction", &coinIov},
     {CHAIN_ROWAN, "Confirm Transaction", &coinRowan},

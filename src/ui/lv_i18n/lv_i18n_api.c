@@ -11,9 +11,10 @@ typedef struct {
 const LanguageInfo_t g_languageList[] = {
     {LANG_EN, "en"},
     {LANG_ZH_CN, "zh"},
+    {LANG_RU, "ru"},
 };
 
-static uint8_t g_curLangIndex = LANG_EN;
+static uint8_t g_curLangIndex = LANG_RU;
 
 void LanguageInit(void)
 {

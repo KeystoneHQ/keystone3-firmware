@@ -31,5 +31,7 @@ void GuiSetupAreaRefresh(void);
 
 uint8_t GuiSetSetupPhase(SETUP_PHASE_ENUM pahaseEnum);
 bool GuiJudgeCurrentPahse(SETUP_PHASE_ENUM pahaseEnum);
+void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset);
+
 #endif /* _GUI_SETUP_WIDGETS_H */
 

@@ -108,9 +108,9 @@ void CountDownTimerHandler(lv_timer_t *timer)
     char buf[16] = {0};
     --countDown;
     if (countDown > 0) {
-        sprintf(buf, "Got it (%d)", countDown);
+        sprintf(buf, _("got_it_fmt"), countDown);
     } else {
-        strcpy(buf, "Got it");
+        strcpy(buf, _("got_it"));
     }
     lv_label_set_text(lv_obj_get_child(obj, 0), buf);
     if (countDown <= 0) {
@@ -227,7 +227,7 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
     lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 372 - GUI_MAIN_AREA_OFFSET);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("Got it (5)"));
+    lv_obj_t *btn = GuiCreateBtn(parent, _("got_it_start"));
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_bg_opa(btn, LV_OPA_60, LV_STATE_DEFAULT);
@@ -457,7 +457,7 @@ void GuiWalletSetWidget(lv_obj_t *parent)
     }
     memset(mfp, 0, sizeof(mfp));
     lv_obj_t *label = GuiCreateTextLabel(parent, GuiNvsBarGetWalletName());
-    lv_obj_set_style_text_font(label, &openSansButton, LV_PART_MAIN);
+    // lv_obj_set_style_text_font(label, &buttonFont, LV_PART_MAIN);
     lv_obj_t *mfpLabel = GuiCreateNoticeLabel(parent, tempBuf);
     g_mfpLabel = mfpLabel;
     g_walletSetLabel = label;

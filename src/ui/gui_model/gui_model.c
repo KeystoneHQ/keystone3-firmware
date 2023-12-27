@@ -333,6 +333,7 @@ static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
 
 static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t inDataLen)
 {
+#ifndef COMPILE_SIMULATOR
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t retData;
@@ -353,6 +354,7 @@ static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t in
     memset_s(mnemonic, strlen(mnemonic), 0, strlen(mnemonic));
     SRAM_FREE(mnemonic);
     SetLockScreen(enable);
+#endif
     return SUCCESS_CODE;
 }
 

@@ -70,7 +70,7 @@ bool lv_font_get_glyph_dsc(const lv_font_t * font_p, lv_font_glyph_dsc_t * dsc_o
 
 #if LV_USE_FONT_PLACEHOLDER
     const lv_font_t * placeholder_font = NULL;
-#endif
+#endife
 
     const lv_font_t * f = font_p;
 

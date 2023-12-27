@@ -4,6 +4,7 @@
 void GuiSystemSettingAreaInit();
 void GuiSystemSettingAreaDeInit();
 void GuiSystemSettingAreaRefresh();
+void GuiSystemSettingAreaRestart();
 
 void GuiSystemSettingVerifyPasswordSuccess(void);
 void GuiSystemSettingVerifyPasswordErrorCount(void *param);

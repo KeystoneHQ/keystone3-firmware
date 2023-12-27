@@ -37,7 +37,7 @@ int strcasecmp(char const *a, char const *b);
 
 #define LOW_BATTERY_LIMIT               20
 #define CHECK_BATTERY_LOW_POWER()       ((GetBatterPercent() <= LOW_BATTERY_LIMIT) ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE)
-#define SIMULATOR_WALLET_AMOUNT         1
+#define SIMULATOR_WALLET_AMOUNT         0
 
 extern bool g_reboot;
 

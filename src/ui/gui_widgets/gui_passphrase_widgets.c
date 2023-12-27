@@ -51,6 +51,7 @@ void GuiPassphraseInit(void)
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 216);
     lv_obj_set_style_text_opa(label, LV_OPA_70, LV_PART_MAIN);
     btn = GuiCreateBtn(g_passphraseWidgets.passphraseInputCont, _("Skip"));
+    printf("%s....\n", _("Skip"));
     lv_obj_set_size(btn, 63, 42);
     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
@@ -74,7 +75,7 @@ void GuiPassphraseInit(void)
     lv_obj_set_style_bg_color(ta, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_color(ta, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_border_opa(ta, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_text_font(ta, &openSans_24, LV_PART_MAIN);
+    lv_obj_set_style_text_font(ta, &buttonFont, LV_PART_MAIN);
     lv_obj_add_event_cb(ta, SetKeyboardTaHandler, LV_EVENT_ALL, ta);
     lv_textarea_set_max_length(ta, GUI_DEFINE_MAX_PASSCODE_LEN);
     lv_textarea_set_one_line(ta, true);
@@ -104,7 +105,7 @@ void GuiPassphraseInit(void)
     lv_obj_set_style_bg_color(ta, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_color(ta, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_border_opa(ta, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_text_font(ta, &openSans_24, LV_PART_MAIN);
+    lv_obj_set_style_text_font(ta, &buttonFont, LV_PART_MAIN);
     lv_textarea_set_max_length(ta, GUI_DEFINE_MAX_PASSCODE_LEN);
     lv_textarea_set_one_line(ta, true);
     lv_obj_set_scrollbar_mode(ta, LV_SCROLLBAR_MODE_OFF);

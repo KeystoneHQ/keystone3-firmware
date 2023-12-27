@@ -13,7 +13,10 @@
 #include "err_code.h"
 #include "gui_page.h"
 #include "secret_cache.h"
+
+#ifndef COMPILE_SIMULATOR
 #include "drv_battery.h"
+#endif
 
 #ifdef COMPILE_MAC_SIMULATOR
 #include "simulator_model.h"
@@ -353,7 +356,7 @@ void GuiCreateVerifyFirmwareInstructionTile(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 60, 398);
     lv_label_set_recolor(label, true);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("Show Checksum"));
+    lv_obj_t *btn = GuiCreateBtn(parent, _("show_checksum"));
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
     lv_obj_add_event_cb(btn, StartFirmwareCheckSumHandler, LV_EVENT_CLICKED, NULL);

@@ -101,7 +101,7 @@ void GuiAboutKeystoneEntranceWidget(lv_obj_t *parent)
     lv_obj_t *imgIcon, *label, *imgQr;
     for (int i = 0; i < CONTACT_ITEM_COUNT; i++) {
         imgIcon = GuiCreateImg(parent, g_contactItems[i].icon);
-        label = GuiCreateLabel(parent, g_contactItems[i].url);
+        label = GuiCreateIllustrateLabel(parent, g_contactItems[i].url);
         imgQr = GuiCreateImg(parent, g_contactItems[i].qrIcon);
 
         GuiButton_t table[] = {

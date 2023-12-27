@@ -9,35 +9,13 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val)
-{
-    return (uint32_t)(val < 0 ? -val : val);
-}
-static inline uint32_t op_i(uint32_t val)
-{
-    return val;
-}
+static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
+static inline uint32_t op_i(uint32_t val) { return val; }
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_w(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_f(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_t(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
+static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
+static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
 static lv_i18n_phrase_t en_singulars[] = {
     {"Approve", "Approve"},
@@ -391,7 +369,9 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"forgot_password_reset_passcode_intro_desc", "Verify the seed phrase associated with this wallet to reset the passcode."},
     {"forgot_password_reset_passcode_intro_title", "Forgot passcode?"},
     {"generating_qr_codes", "Generating QR Codes"},
-    {"got_it", "Got It"},
+    {"got_it", "Got it"},
+    {"got_it_fmt", "Got it(%d)"},
+    {"got_it_start", "Got it (5)"},
     {"home_manage_assets", "Manage Assets"},
     {"home_more_connect_wallet", "Connect Software Wallet"},
     {"home_more_device_setting", "Device Settings"},
@@ -411,11 +391,11 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"import_wallet_phrase_title", "Import Your Seed"},
     {"import_wallet_phrase_words_title", "Seed Phrase Count"},
     {"import_wallet_shamir_backup", "Shamir Backup"},
-    {"import_wallet_shamir_backup_desc", "You'll need a couple of seed phrase\nshares to recover your wallet"},
+    {"import_wallet_shamir_backup_desc", "You'll need a couple of seed phrase\r\nshares to recover your wallet"},
     {"import_wallet_share_success_desc", "This share of your seed phrase matches your wallet."},
     {"import_wallet_single_backup_desc", "Recover your wallet with the specific seed phrase. Please complete the setup process in one go to avoid any security risks."},
     {"import_wallet_single_phrase", "Single Secret Phrase"},
-    {"import_wallet_single_phrase_desc", "You'll need a 12/18/24 seed phrase\nto recover your wallet."},
+    {"import_wallet_single_phrase_desc", "You'll need a 12/18/24 seed phrase\r\nto recover your wallet."},
     {"import_wallet_ssb_20words", "20 Words"},
     {"import_wallet_ssb_33words", "33 Words"},
     {"import_wallet_ssb_cancel_btn_1", "Not Now"},
@@ -483,8 +463,8 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"receive_ada_base_address", "Address"},
     {"receive_ada_enterprise_address", "Address (Not Delegated)"},
     {"receive_ada_more_t", "Tutorial"},
-    {"receive_ada_more_t_desc1", "On the Cardano blockchain, we provide 24 accounts, and each account can generate numerous addresses for your use. You can easily switch between the accounts you need.\n"},
-    {"receive_ada_more_t_desc2", "1. Payment & Stake Keys: In Cardano, every account has a Payment Key for regular ADA transactions (sending and receiving) and a Stake Key for staking and receiving rewards.\n2. Base Address: A Base Address is derived from both the Payment Key and Stake Key. It can be used for both regular transactions and staking. Also known as \"External Addresses (Delegated).\"\n3. Enterprise Address: This address only contains the Payment Key and is used solely for regular transactions, not for staking. It's designed for \"business\" scenarios that don't involve staking, like exchanges. Also known as \"External Addresses (Not Delegated).\"\n4. Stake & Reward Addresses: The Stake Key is used for staking, and the associated Stake Address is also called a Reward Address, used to receive staking rewards."},
+    {"receive_ada_more_t_desc1", "On the Cardano blockchain, we provide 24 accounts, and each account can generate numerous addresses for your use. You can easily switch between the accounts you need.\r\n"},
+    {"receive_ada_more_t_desc2", "1. Payment & Stake Keys: In Cardano, every account has a Payment Key for regular ADA transactions (sending and receiving) and a Stake Key for staking and receiving rewards.\r\n2. Base Address: A Base Address is derived from both the Payment Key and Stake Key. It can be used for both regular transactions and staking. Also known as \"External Addresses (Delegated).\"\r\n3. Enterprise Address: This address only contains the Payment Key and is used solely for regular transactions, not for staking. It's designed for \"business\" scenarios that don't involve staking, like exchanges. Also known as \"External Addresses (Not Delegated).\"\r\n4. Stake & Reward Addresses: The Stake Key is used for staking, and the associated Stake Address is also called a Reward Address, used to receive staking rewards."},
     {"receive_ada_more_t_link2", "Learn More"},
     {"receive_ada_more_t_qr_link2", "https://keyst.one/t/3rd/faq"},
     {"receive_ada_more_t_qr_title2", "Key Concepts in Cardano's ADA Addresses"},
@@ -498,9 +478,9 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"receive_btc_more_address_settings", "Address Settings"},
     {"receive_btc_more_export_xpub", "Export XPub"},
     {"receive_btc_more_t", "Tutorial"},
-    {"receive_btc_more_t_desc1", "Bitcoin (BTC) uses three address formats for receiving funds:\n1. Native SegWit is the most efficient and secure Bitcoin address format. It provides cost savings and improved security compared to other traditional address formats, typically starting with \"bc1\"\n2. Legacy format is one of the earliest versions of Bitcoin, typically starting with \"1\"\n3. Nested SegWit is a solution designed to facilitate the transition to Native SegWit in a smooth manner, typically starting with \"3\""},
-    {"receive_btc_more_t_desc2", "Yes, the three distinct Bitcoin address formats can be used for transferring funds among each other. However, it’s important to keep in mind the following aspects:\n1. Differing transaction fees: The choice of address format can influence transaction fees, with Native SegWit addresses generally having lower fees.\n2. Wallet and exchange compatibility: Make sure that the wallet or exchange you are using supports your chosen address format. Some wallets may only be compatible with specific address formats."},
-    {"receive_btc_more_t_desc3", "1. Privacy: Reusing addresses increases transaction traceability, endangering privacy. New addresses help maintain transaction privacy.\n2. Transaction Efficiency: Multiple UTXOs linked to one address can raise costs for consolidation, impacting wallet efficiency.\n3. Security: Repeated address use heightens the risk of private key exposure, potentially leading to losses if compromised.\nIn short, not reusing addresses safeguards privacy, optimizes transactions, and reduces security risks within the UTXO model."},
+    {"receive_btc_more_t_desc1", "Bitcoin (BTC) uses three address formats for receiving funds:\r\n1. Native SegWit is the most efficient and secure Bitcoin address format. It provides cost savings and improved security compared to other traditional address formats, typically starting with \"bc1\"\r\n2. Legacy format is one of the earliest versions of Bitcoin, typically starting with \"1\"\r\n3. Nested SegWit is a solution designed to facilitate the transition to Native SegWit in a smooth manner, typically starting with \"3\""},
+    {"receive_btc_more_t_desc2", "Yes, the three distinct Bitcoin address formats can be used for transferring funds among each other. However, it’s important to keep in mind the following aspects:\r\n1. Differing transaction fees: The choice of address format can influence transaction fees, with Native SegWit addresses generally having lower fees.\r\n2. Wallet and exchange compatibility: Make sure that the wallet or exchange you are using supports your chosen address format. Some wallets may only be compatible with specific address formats."},
+    {"receive_btc_more_t_desc3", "1. Privacy: Reusing addresses increases transaction traceability, endangering privacy. New addresses help maintain transaction privacy.\r\n2. Transaction Efficiency: Multiple UTXOs linked to one address can raise costs for consolidation, impacting wallet efficiency.\r\n3. Security: Repeated address use heightens the risk of private key exposure, potentially leading to losses if compromised.\r\nIn short, not reusing addresses safeguards privacy, optimizes transactions, and reduces security risks within the UTXO model."},
     {"receive_btc_more_t_link1", "Learn More"},
     {"receive_btc_more_t_link2", "Learn More"},
     {"receive_btc_more_t_link3", "Learn More"},
@@ -533,7 +513,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"receive_eth_more_derivation_path_title", "Change Derivation Path"},
     {"receive_eth_more_derivation_path_title2", "Accounts eg:"},
     {"receive_eth_more_t", "Tutorial"},
-    {"receive_eth_more_t_desc1", "1. Standard Path: This path is widely employed by numerous software wallets for address generation. Examples of such wallets encompass MetaMask, Rabby, BitKeep, and Core Wallet.\n2. Ledger Live: Choose this path if you intend to import a seed phrase from Ledger Live. Please note that Keystone supports synchronizing only the initial 10 addresses using this format.\n3. Ledger Legacy: Transition to this path if you manage your digital assets with Ledger Legacy"},
+    {"receive_eth_more_t_desc1", "1. Standard Path: This path is widely employed by numerous software wallets for address generation. Examples of such wallets encompass MetaMask, Rabby, BitKeep, and Core Wallet.\r\n2. Ledger Live: Choose this path if you intend to import a seed phrase from Ledger Live. Please note that Keystone supports synchronizing only the initial 10 addresses using this format.\r\n3. Ledger Legacy: Transition to this path if you manage your digital assets with Ledger Legacy"},
     {"receive_eth_more_t_link1", "Learn More"},
     {"receive_eth_more_t_qr_link1", "https://keyst.one/t/3rd/faq"},
     {"receive_eth_more_t_qr_title1", "Exploring Differences: Standard, Ledger Live, and Legacy Derivation Paths in Ethereum"},
@@ -547,7 +527,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"receive_near_more_t_qr_title1", ""},
     {"receive_near_more_t_title1", ""},
     {"receive_sol_more_t", "Tutorial"},
-    {"receive_sol_more_t_desc1", "1. Account-based Path: Widely adopted across numerous Solana wallets. An example of such a wallet is Solflare.\n2. Single Account Path: Choose this path if you intend to import a seed phrase from Sollet / MathWallet. Please note that Keystone supports synchronizing only the initial 10 addresses using this format.\n3. Sub-account Path: Transition to this path if you manage your digital assets with software wallets like Phantom / Exodus."},
+    {"receive_sol_more_t_desc1", "1. Account-based Path: Widely adopted across numerous Solana wallets. An example of such a wallet is Solflare.\r\n2. Single Account Path: Choose this path if you intend to import a seed phrase from Sollet / MathWallet. Please note that Keystone supports synchronizing only the initial 10 addresses using this format.\r\n3. Sub-account Path: Transition to this path if you manage your digital assets with software wallets like Phantom / Exodus."},
     {"receive_sol_more_t_link1", "Learn More"},
     {"receive_sol_more_t_qr_link1", "https://keyst.one/t/3rd/faq"},
     {"receive_sol_more_t_qr_title1", "Exploring Solana Path Options"},
@@ -603,12 +583,13 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"shamir_phrase_number", "Number of Shares"},
     {"shamir_phrase_share_backup_notice_fmt", "Write down your Share #F5870A %d# phrase and keep it properly."},
     {"shamir_phrase_share_confirm_notice_fmt", "Select the words below in the correct order of your Share #F5870A %d# phrase to validate your seed phrase."},
-    {"shamir_phrase_share_notice_fmt", "Please confirm you are the custodian of the\nShare #F5870A %d#"},
+    {"shamir_phrase_share_notice_fmt", "Please confirm you are the custodian of the\r\nShare #F5870A %d#"},
     {"shamir_phrase_share_number_fmt", "Share #F5870A %d#/%d"},
     {"shamir_phrase_threold", "Threshold"},
     {"shamir_phrase_verify_success_desc1", "The seed phrase for this Share has been validated, please proceed to the next Share."},
     {"shamir_phrase_verify_success_desc2", "Tap the button below and hand the Keystone over to the custodian of Share 2."},
     {"shamir_phrase_verify_success_title", "Verified"},
+    {"show_checksum", "Show Checksum"},
     {"sign_transaction", "Signing"},
     {"sign_transaction_desc", "Please Wait..."},
     {"single_backup_choose_backup_desc", "Select the preferred method for backing up your seed phrase."},
@@ -623,7 +604,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"single_backup_namewallet_previntput_2", "Pick an icon for your wallet"},
     {"single_backup_namewallet_title", "Name Your Wallet"},
     {"single_backup_notice_desc1", "Never share your seed phrase with anyone else, as it grants access to your assets."},
-    {"single_backup_notice_desc2", "Ensure there are no onlookers or cameras when recording your seed phrase.\nPlease complete the setup process in one go to avoid any security risks."},
+    {"single_backup_notice_desc2", "Ensure there are no onlookers or cameras when recording your seed phrase.\r\nPlease complete the setup process in one go to avoid any security risks."},
     {"single_backup_notice_title", "Check Your Surroundings"},
     {"single_backup_phrase_regenerate", "Regenerate"},
     {"single_backup_phrase_regenerate_button_1", "Cancel"},
@@ -758,7 +739,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"usb_transport_sign_unkown_error_title", "Unknown Error"},
     {"verification_code_desc", "Enter this code on Keystone's official website to verify your device's security."},
     {"verification_code_failed_button", "Erase Data & Shut Down"},
-    {"verification_code_failed_desc", "Your device may have been compromised, posing a risk to your sensitive data and digital assets.\nFor your safety, we recommend erasing all personal data and contacting Keystone Support team immediately for assistance."},
+    {"verification_code_failed_desc", "Your device may have been compromised, posing a risk to your sensitive data and digital assets.\r\nFor your safety, we recommend erasing all personal data and contacting Keystone Support team immediately for assistance."},
     {"verification_code_failed_link", "support@keyst.one"},
     {"verification_code_failed_title", "Unauthorized breach attempt detected!"},
     {"verification_code_title", "Verification Code"},
@@ -801,12 +782,9 @@ static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -819,8 +797,792 @@ static const lv_i18n_lang_t en_lang = {
     .locale_plural_fn = en_plural_fn
 };
 
+static lv_i18n_phrase_t ru_singulars[] = {
+    {"Approve", "Утверждено"},
+    {"Attention", "Внимание!"},
+    {"Cancel", "Отменить"},
+    {"Continue", "Продолжение"},
+    {"Done", "Завершено"},
+    {"Export", "Экспорт"},
+    {"FORGET", "Забыть"},
+    {"Failed", "Неудача"},
+    {"Keystone", "Кейстон."},
+    {"OK", "Ладно."},
+    {"Pending", "Нерешенные"},
+    {"Restart", "Перезапустить"},
+    {"Skip", "Пропустить"},
+    {"Success", "Успех"},
+    {"Tutorial", "Консультационный"},
+    {"Update", "Модернизировать"},
+    {"Updating", "Обновляется"},
+    {"about_info_battery_voltage", "напряжение аккумулятора"},
+    {"about_info_device_uid", "Устройства UID"},
+    {"about_info_export_log", "Экспорт системного журнала"},
+    {"about_info_export_to_sdcard", "Экспорт журнала на карту MicroSD"},
+    {"about_info_fingerprint_firmware_version", "Версия прошивки отпечатков пальцев"},
+    {"about_info_firmware_version", "Версия прошивки"},
+    {"about_info_result_export_failed", "Ошибка экспорта"},
+    {"about_info_result_export_failed_desc_no_sdcard", "Убедитесь, что карта MicroSD в формате FAT32 была вставлена."},
+    {"about_info_result_export_failed_desc_no_space", "Убедитесь, что у вашей карты MicroSD достаточно памяти."},
+    {"about_info_result_export_successful", "Экспорт успешно"},
+    {"about_info_result_export_successful_desc", "Ваш системный журнал успешно экспортирован на карту MicroSD."},
+    {"about_info_serial_number", "Серийный номер"},
+    {"about_info_verify_checksum_desc", "Проверьте, соответствует ли приведенная выше информация веб - странице. Если это не совпадает, это означает, что прошивка может быть изменена. Пожалуйста, немедленно прекратите использование."},
+    {"about_info_verify_checksum_title", "Контрольная сумма"},
+    {"about_info_verify_firmware_desc", "Это расширенная функция, позволяющая разработчикам проверять, соответствует ли прошивка, работающая на вашем устройстве Keystone, прошивке с открытым исходным кодом."},
+    {"about_info_verify_firmware_step1", "Перейдите на репозиторий GitHub с открытым исходным кодом Keystone, создайте прошивку в соответствии с инструкциями и получите контрольную сумму."},
+    {"about_info_verify_firmware_step2", "Нажмите кнопку #F5870A Проверка и# рядом с загрузкой прошивки."},
+    {"about_info_verify_firmware_step3", "Нажмите кнопку #F5870A Show Checksum# ниже и сравните информацию, показанную на веб-странице и устройстве"},
+    {"about_info_verify_firmware_title", "Проверка прошивки"},
+    {"about_info_verify_source_code_title", "Проверить исходный код"},
+    {"about_keystone_discord", "Несоответствие"},
+    {"about_keystone_discord_url", "keys.one / discord"},
+    {"about_keystone_telegram", "Телеграмма"},
+    {"about_keystone_telegram_url", "Т, Я / Ключ"},
+    {"about_keystone_title", "О компании Keystone"},
+    {"about_keystone_twitter", "А"},
+    {"about_keystone_twitter_url", "twitter.com / Keystone Кошелек"},
+    {"about_keystone_website", "Веб - сайт"},
+    {"about_keystone_website_url", "Один ключ."},
+    {"about_terms_contact_us", "Свяжитесь с нами"},
+    {"about_terms_contact_us_desc", "Если у вас есть вопросы или сомнения, пожалуйста, отправьте электронное письмо support@keyst.one."},
+    {"about_terms_desc", "Чтобы получить доступ к полной версии Условий использования, перейдите по следующим ссылкам:"},
+    {"about_terms_disclaimers", "Заявление об освобождении от ответственности"},
+    {"about_terms_disclaimers_desc", "Представленная информация не является финансовой рекомендацией. Прежде чем принимать какое - либо решение, обратитесь за профессиональным советом."},
+    {"about_terms_discontinuance_service", "Прекращение обслуживания"},
+    {"about_terms_discontinuance_service_desc", "Мы можем изменить или прекратить наши услуги. Пожалуйста, помните резервное копирование ваших фраз семян для доступа к вашей криптовалюте."},
+    {"about_terms_eligibility", "Квалификация"},
+    {"about_terms_eligibility_desc", "Вы должны быть старше 18 лет, чтобы иметь доступ к нашим продуктам или услугам."},
+    {"about_terms_indemnity", "Гарантии"},
+    {"about_terms_indemnity_desc", "Вы должны быть старше 18 лет, чтобы иметь доступ к нашим продуктам или услугам."},
+    {"about_terms_law", "Применимое право и урегулирование споров"},
+    {"about_terms_law_desc", "Эта статья регулируется законодательством ОАРГ, и любые споры должны быть поданы в течение одного года."},
+    {"about_terms_modification", "Изменения этих статей"},
+    {"about_terms_modification_desc", "Мы оставляем за собой право изменять эти положения по своему усмотрению."},
+    {"about_terms_no_sensitive_information", "Отсутствие доступа к конфиденциальной информации"},
+    {"about_terms_no_sensitive_information_desc", "Мы не храним вашу конфиденциальную информацию, такую как пароли или семенные фразы. Убедитесь, что ваши документы в безопасности."},
+    {"about_terms_ownership", "Право собственности и владения"},
+    {"about_terms_ownership_desc", "Вы несете ответственность за использование продуктов и услуг."},
+    {"about_terms_product_and_services", "Продукты и услуги Keystone"},
+    {"about_terms_product_and_services_desc", "Наши аппаратные кошельки безопасно управляют криптовалютами."},
+    {"about_terms_prohibited_conduct", "Запрещенные действия"},
+    {"about_terms_prohibited_product_desc", "Наши продукты и услуги защищены законодательством об интеллектуальной собственности."},
+    {"about_terms_risks", "Риск"},
+    {"about_terms_risks_desc", "Обратите внимание на риски, связанные с криптовалютными и технологическими лазейками."},
+    {"about_terms_subtitle", "Условия использования Keystone"},
+    {"about_terms_title", "Условия использования"},
+    {"about_terms_website_url", "https://keyst.one/terms"},
+    {"change_entropy", "Энтропия изменения"},
+    {"change_entropy_desc", "Выберите энтропию для создания кошелька"},
+    {"change_entropy_dice_desc", "Создайте свои семенные фразы со случайными числами, создаваемыми бросанием костей."},
+    {"change_entropy_dice_detail_desc_1", "Вы должны перевернуть хотя бы #F5870A 128 бит #, чтобы создать семенную фразу, и это рекомендуется перевернуть больше, чем #F5870A 256# #F5870A бит # для достаточной случайности."},
+    {"change_entropy_dice_detail_desc_2", "Мы рекомендуем вам использовать кости казино, чтобы увеличить энтропию каждого броска."},
+    {"change_entropy_dice_rolls", "Том для костей"},
+    {"change_entropy_dice_rolls_subtitle", "Использовать кубики как энтропию"},
+    {"change_entropy_system", "Системы"},
+    {"change_entropy_system_desc", "Используйте генератор реальных случайных чисел Keystone SE для создания семенных фраз."},
+    {"change_entropy_system_subtitle", "Использование энтропии Keystone SE"},
+    {"change_passcode_mid_btn", "Введите пароль"},
+    {"change_passcode_reset_desc", "Записывается элемент безопасности."},
+    {"change_passcode_reset_success_desc", "Ваш пароль был успешно сброшен."},
+    {"change_passcode_reset_success_title", "Удалось сбросить"},
+    {"change_passcode_reset_title", "Сбросить, держать устройство открытым"},
+    {"change_passcode_warning_desc", "Если вы забыли, вы должны проверить семенные фразы этого кошелька, чтобы сбросить пароль."},
+    {"change_passcode_warning_title", "Запомните свой пароль."},
+    {"connect_block_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_block_link", "https://keyst.one/t/3rd/block"},
+    {"connect_block_qr_link", "https://keyst.one/t/3rd/block"},
+    {"connect_block_qr_title", "Блок - кошелек (расширение)"},
+    {"connect_block_t", "Консультационный"},
+    {"connect_block_title", "Блок - кошелек (расширение)"},
+    {"connect_bw_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_bw_link", "https://keyst.one/t/3rd/bw"},
+    {"connect_bw_qr_link", "https://keyst.one/t/3rd/bw"},
+    {"connect_bw_qr_title", "BlueWallet (Перейти)"},
+    {"connect_bw_t", "Консультационный"},
+    {"connect_bw_title", "BlueWallet (Перейти)"},
+    {"connect_eternl_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_eternl_link", "https://keyst.one/t/3rd/eternl"},
+    {"connect_eternl_qr_link", "https://keyst.one/t/3rd/eternl"},
+    {"connect_eternl_qr_title", "Eternl (Веб)"},
+    {"connect_eternl_title", "Eternl (Веб)"},
+    {"connect_fewcha_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_fewcha_link", "https://keyst.one/t/3rd/fewcha"},
+    {"connect_fewcha_qr_link", "https://keyst.one/t/3rd/fewcha"},
+    {"connect_fewcha_qr_title", "Fewcha (Расширение)"},
+    {"connect_fewcha_t", "Консультационный"},
+    {"connect_fewcha_title", "Fewcha (Расширение)"},
+    {"connect_imtoken_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_imtoken_link", "https://keyst.one/t/3rd/imtoken"},
+    {"connect_imtoken_qr_link", "https://keyst.one/t/3rd/imtoken"},
+    {"connect_imtoken_qr_title", "imToken (Переместить)"},
+    {"connect_imtoken_t", "Консультационный"},
+    {"connect_imtoken_title", "imToken (Переместить)"},
+    {"connect_keplr_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_keplr_link", "https://keyst.one/t/3rd/keplr"},
+    {"connect_keplr_qr_link", "https://keyst.one/t/3rd/keplr"},
+    {"connect_keplr_qr_title", "Keplr (Расширение)"},
+    {"connect_keplr_t", "Консультационный"},
+    {"connect_keplr_title", "Keplr (Расширение)"},
+    {"connect_keyst_app_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_keyst_app_link", "https://keyst.one/t/3rd/keystone"},
+    {"connect_keyst_app_qr_link", "https://keyst.one/t/3rd/keystone"},
+    {"connect_keyst_app_qr_title", "Приложение Keystone Companion"},
+    {"connect_keyst_app_t", "Консультационный"},
+    {"connect_keyst_app_title", "Приложение Keystone Companion"},
+    {"connect_mm_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_mm_link", "https://keyst.one/t/3rd/mm"},
+    {"connect_mm_link2", "https://keyst.one/t/3rd/mmm"},
+    {"connect_mm_qr_link", "https://keyst.one/t/3rd/mm"},
+    {"connect_mm_qr_link2", "https://keyst.one/t/3rd/mmm"},
+    {"connect_mm_qr_title", "MetaMask (Расширение)"},
+    {"connect_mm_qr_title2", "MetaMask (Перейти)"},
+    {"connect_mm_t", "Консультационный"},
+    {"connect_mm_title", "MetaMask (Расширение)"},
+    {"connect_mm_title2", "MetaMask (Перейти)"},
+    {"connect_okx_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_okx_link", "https://keyst.one/t/3rd/okx"},
+    {"connect_okx_link2", "https://keyst.one/t/3rd/okxm"},
+    {"connect_okx_qr_link", "https://keyst.one/t/3rd/okx"},
+    {"connect_okx_qr_link2", "https://keyst.one/t/3rd/okxm"},
+    {"connect_okx_qr_title", "Кошелек OKX (расширение)"},
+    {"connect_okx_qr_title2", "Кошелек OKX (телефон)"},
+    {"connect_okx_t", "Консультационный"},
+    {"connect_okx_title", "Кошелек OKX (расширение)"},
+    {"connect_okx_title2", "Кошелек OKX (телефон)"},
+    {"connect_petra_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_petra_link", "https://keyst.one/t/3rd/petra"},
+    {"connect_petra_qr_link", "https://keyst.one/t/3rd/petra"},
+    {"connect_petra_qr_title", "Петра (расширение)"},
+    {"connect_petra_t", "Консультационный"},
+    {"connect_petra_title", "Петра (расширение)"},
+    {"connect_rabby_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_rabby_link", "https://keyst.one/t/3rd/rabby"},
+    {"connect_rabby_qr_link", "https://keyst.one/t/3rd/rabby"},
+    {"connect_rabby_qr_title", "Рабби (расширение)"},
+    {"connect_rabby_t", "Консультационный"},
+    {"connect_rabby_title", "Рабби (расширение)"},
+    {"connect_safe_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_safe_link", "https://keyst.one/t/3rd/safe"},
+    {"connect_safe_link2", "https://keyst.one/t/3rd/safem"},
+    {"connect_safe_qr_link", "https://keyst.one/t/3rd/safe"},
+    {"connect_safe_qr_link2", "https://keyst.one/t/3rd/safem"},
+    {"connect_safe_qr_title", "Безопасность (Web)"},
+    {"connect_safe_qr_title2", "Безопасность (перемещение)"},
+    {"connect_safe_t", "Консультационный"},
+    {"connect_safe_title", "Безопасность (Web)"},
+    {"connect_safe_title2", "Безопасность (перемещение)"},
+    {"connect_solflare_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_solflare_link", "https://keyst.one/t/3rd/solflare"},
+    {"connect_solflare_qr_link", "https://keyst.one/t/3rd/solflare"},
+    {"connect_solflare_qr_title", "Солнечная вспышка"},
+    {"connect_solflare_t", "Консультационный"},
+    {"connect_solflare_title", "Солнечная вспышка"},
+    {"connect_sparrow_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_sparrow_link", "https://keyst.one/t/3rd/sparrow"},
+    {"connect_sparrow_qr_link", "https://keyst.one/t/3rd/sparrow"},
+    {"connect_sparrow_qr_title", "Воробей"},
+    {"connect_sparrow_t", "Консультационный"},
+    {"connect_sparrow_title", "Воробей"},
+    {"connect_sushi_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_sushi_link", "https://keyst.one/t/3rd/sushi"},
+    {"connect_sushi_qr_link", "https://keyst.one/t/3rd/sushi"},
+    {"connect_sushi_qr_title", "Суши Свап"},
+    {"connect_sushi_t", "Консультационный"},
+    {"connect_sushi_title", "Суши Свап"},
+    {"connect_wallet_choose_wallet", "Выберите кошелек"},
+    {"connect_wallet_desc", "Сканирование QR - кода с помощью программного кошелька"},
+    {"connect_wallet_eternl_step1", "Выберите учетную запись для импорта в кошелек Eternl"},
+    {"connect_wallet_eternl_step2", "Сканируйте QR - код через Keystone"},
+    {"connect_wallet_eternl_step3", "Утверждение запроса на создание нового QR - кода на Keystone"},
+    {"connect_wallet_eternl_step4", "Сканирование QR - кода через кошелек Eternl"},
+    {"connect_wallet_instruction", "Просьба следовать следующим инструкциям:"},
+    {"connect_wallet_key_request_fmt", "% s Wallet хочет получить ваш открытый ключ на Keystone:"},
+    {"connect_wallet_keystone_hint", "Выберите сеть для управления в программном кошельке"},
+    {"connect_wallet_scan", "Сканирование QR - кода с помощью программного кошелька"},
+    {"connect_wallet_select_network", "Выберите сеть"},
+    {"connect_wallet_select_network_hint", "Выберите сеть, которая будет отображаться в программном кошельке."},
+    {"connect_wallet_supported_networks", "Поддерживаемые сети"},
+    {"connect_wallet_title", "Подключить кошелек"},
+    {"connect_wallet_upgrade_hint", "Обновите до последней версии, чтобы получить доступ к расширенной совместимости программного кошелька."},
+    {"connect_wallet_xpub_addresstype", "Тип адреса"},
+    {"connect_wallet_xpub_qrformat", "Формат QR - кода"},
+    {"connect_xrp_toolkit_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_xrp_toolkit_link", "https://keyst.one/t/3rd/xrptoolkit"},
+    {"connect_xrp_toolkit_qr_link", "https://keyst.one/t/3rd/xrptoolkit"},
+    {"connect_xrp_toolkit_qr_title", "Набор инструментов XRP (Web)"},
+    {"connect_xrp_toolkit_t", "Консультационный"},
+    {"connect_xrp_toolkit_title", "Набор инструментов XRP (Web)"},
+    {"connect_yearn_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_yearn_link", "https://keyst.one/t/3rd/yearn"},
+    {"connect_yearn_qr_link", "https://keyst.one/t/3rd/yearn"},
+    {"connect_yearn_qr_title", "Жажда"},
+    {"connect_yearn_t", "Консультационный"},
+    {"connect_yearn_title", "Жажда"},
+    {"connect_zapper_desc", "Посетите следующие ссылки на компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
+    {"connect_zapper_link", "https://keyst.one/t/3rd/zapper"},
+    {"connect_zapper_qr_link", "https://keyst.one/t/3rd/zapper"},
+    {"connect_zapper_qr_title", "Заппер."},
+    {"connect_zapper_t", "Консультационный"},
+    {"connect_zapper_title", "Заппер."},
+    {"create_wallet_generating_desc", "Записывается элемент безопасности."},
+    {"create_wallet_generating_title", "Создать кошелек, держать устройство открытым"},
+    {"derivation_path_address", "Адрес"},
+    {"derivation_path_address_eg", "Адрес, например."},
+    {"derivation_path_btc_1_desc", "Современный формат, более низкая стоимость, начиная с \"bc1\""},
+    {"derivation_path_btc_2_desc", "Совместимость Legacy и SegWit, средняя стоимость, начинается с \"3\""},
+    {"derivation_path_btc_3_desc", "Оригинальный формат, стоимость выше, начинается с \"1\""},
+    {"derivation_path_change", "Изменить производный путь"},
+    {"derivation_path_eth_ledger_legacy_desc", "Более старый формат бухгалтерского учета, менее распространен."},
+    {"derivation_path_eth_ledger_live_desc", "Специально для бухгалтерских книг, оптимизировано для бухгалтерского оборудования."},
+    {"derivation_path_eth_standard_desc", "По умолчанию, следуя BIP44, широко используется."},
+    {"derivation_path_near_ledger_live_desc", "Нан"},
+    {"derivation_path_near_standard_desc", "Рекомендуется. Широко используется во многих кошельках NEAR."},
+    {"derivation_path_select_btc", "Выберите тип адреса для биткоина"},
+    {"derivation_path_select_eth", "Выберите производный путь, который вы хотите использовать для Ethereum"},
+    {"derivation_path_select_near", "Выберите производный путь для Near"},
+    {"derivation_path_select_sol", "Выберите производный путь для Solana"},
+    {"derivation_path_sol_1_desc", "Нан"},
+    {"derivation_path_sol_2_desc", "Нан"},
+    {"derivation_path_sol_3_desc", "Нан"},
+    {"device_info_title", "Информация об оборудовании"},
+    {"device_setting_about_title", "нас"},
+    {"device_setting_about_title_desc", "V1.0.2"},
+    {"device_setting_connection_desc", "Карты USB / MicroSD"},
+    {"device_setting_connection_title", "Связь"},
+    {"device_setting_mid_btn", "Настройка устройства"},
+    {"device_setting_system_setting_desc", "Язык / экран / Сброс."},
+    {"device_setting_system_setting_title", "Настройки системы"},
+    {"device_setting_wallet_setting_desc", "Имя / пароль / пароль фразы."},
+    {"device_setting_wallet_setting_title", "Параметры кошелька"},
+    {"device_settings_connection_desc1", "При отключении USB может использоваться только для зарядки батареи."},
+    {"device_settings_connection_sub_title1", "Использование USB для передачи данных"},
+    {"device_settings_connection_title1", "Связь"},
+    {"dice_roll_cancel_desc", "Если вы отмените, любой номер, который вы введете, будет потерян."},
+    {"dice_roll_cancel_title", "Отменить генерацию томов?"},
+    {"dice_roll_error_label", "Отсутствие случайности"},
+    {"dice_roll_hint_label", "Не менее 50 томов"},
+    {"enter_passcode", "Введите пароль."},
+    {"error_box_duplicated_seed_phrase", "Повторить семенные фразы"},
+    {"error_box_duplicated_seed_phrase_desc", "Введённые вами фразы уже используются в учетной записи кошелька, импортируйте другой набор семян."},
+    {"error_box_firmware_not_detected", "Не найдено прошивки"},
+    {"error_box_firmware_not_detected_desc", "Убедитесь, что ваша карта MicroSD отформатирована в формате FAT32 и содержит прошивку « keystone3.bin»."},
+    {"error_box_invalid_seed_phrase", "Неверная фраза семян"},
+    {"error_box_invalid_seed_phrase_desc", "Введите неверную фразу семян. Пожалуйста, проверьте свою резервную копию и попробуйте снова."},
+    {"error_box_low_power", "Низкий заряд батареи"},
+    {"error_box_low_power_desc", "Устройству требуется не менее 20% срока службы батареи, чтобы продолжить процесс."},
+    {"error_box_mnemonic_not_match_wallet", "Фразы семян не совпадают"},
+    {"error_box_mnemonic_not_match_wallet_desc", "Фраза семян неверна. Пожалуйста, проверьте заново и попробуйте снова."},
+    {"error_unknown_error", "Неизвестная ошибка"},
+    {"error_unknown_error_desc", "Устройство столкнулось с неизвестной проблемой и в настоящее время недоступно. Чтобы устранить эту проблему, очистите и перезагрузите устройство. Если проблема все еще существует, пожалуйста, свяжитесь с нашей командой поддержки."},
+    {"fingerprint_add", "Добавить отпечатки пальцев"},
+    {"fingerprint_add_btn", "+ Добавить отпечатки пальцев"},
+    {"fingerprint_add_desc", "Положите палец на датчик и поднимите его, как только вы почувствуете вибрацию."},
+    {"fingerprint_add_failed", "Ошибка добавления"},
+    {"fingerprint_add_failed_duplicate", "Повторяйте пальцы, используйте другие пальцы"},
+    {"fingerprint_add_failed_use_another", "Ошибка добавления отпечатков пальцев, используйте другие пальцы, а затем попробуйте снова"},
+    {"fingerprint_add_password", "Теперь нам нужно ввести пароль для шифрования и хранения отпечатков пальцев."},
+    {"fingerprint_add_success", "Добавить успех"},
+    {"fingerprint_nth", "Пальцы %d"},
+    {"fingerprint_nth_remove_desc", "Вы действительно хотите удалить палец %d?"},
+    {"fingerprint_nth_remove_title", "Удалить отпечатки пальцев?"},
+    {"fingerprint_passcode_fingerprint_setting", "Параметры отпечатков пальцев"},
+    {"fingerprint_passcode_mid_btn", "Отпечатки пальцев и пароли"},
+    {"fingerprint_passcode_reset_passcode", "Сбросить пароль"},
+    {"fingerprint_remove", "Удалить отпечатки пальцев"},
+    {"fingerprint_sign_tx", "Подписание"},
+    {"fingerprint_unlock_device", "Разблокировать устройство"},
+    {"fingerprint_up_to_3", "Можно добавить до трех отпечатков пальцев."},
+    {"firmware_update_deny_desc", "Вам нужно разблокировать устройство, чтобы обновить версию прошивки."},
+    {"firmware_update_deny_input_password", "Введите пароль"},
+    {"firmware_update_deny_input_password_title", "Введите пароль."},
+    {"firmware_update_deny_title", "Нужно разблокировать устройство."},
+    {"firmware_update_desc", "Чтобы разблокировать последние функции, обновите прошивку до последней версии."},
+    {"firmware_update_sd_checksum_desc", "#F5870A Показать контрольную сумму#"},
+    {"firmware_update_sd_checksum_done", "Контрольная сумма: \\ n \\ n"},
+    {"firmware_update_sd_checksum_fmt", "#F5870A Показать контрольную сумму (%d%%)#"},
+    {"firmware_update_sd_checksum_fmt_version", "#F5870A Показать контрольную сумму (v%s)#"},
+    {"firmware_update_sd_checksum_notice", "Это дополнительная функция для дальнейшего повышения безопасности. Следующие проверки сравниваются с проверкой и сопоставлением пакетов, загруженных на официальный сайт, чтобы убедиться, что они согласуются."},
+    {"firmware_update_sd_copying_desc", "Во время обновления не извлекайте карту MicroSD."},
+    {"firmware_update_sd_copying_title", "Запускается обновление"},
+    {"firmware_update_sd_desc1", "Убедитесь, что срок службы аккумулятора Keystone составляет не менее 20%."},
+    {"firmware_update_sd_desc2", "Используйте компьютер или смартфон для доступа к странице обновления прошивки Keystone."},
+    {"firmware_update_sd_desc2_link", "https://keyst.one/firmware"},
+    {"firmware_update_sd_desc3", "Используйте карту MicroSD в формате FAT32 для передачи файлов прошивки (keystone3.bin) в Keystone."},
+    {"firmware_update_sd_desc4", "Нажмите кнопку #F5870A Обновление# ниже, чтобы запустить процесс."},
+    {"firmware_update_sd_dialog_desc", "Появились новые версии прошивки. Нужно ли обновлять прошивку устройства до новой версии?"},
+    {"firmware_update_sd_dialog_title", "Доступные обновления"},
+    {"firmware_update_sd_failed_access_desc", "Убедитесь, что карта MicroSD была вставлена правильно."},
+    {"firmware_update_sd_failed_access_title", "Не найдена карта MicroSD"},
+    {"firmware_update_sd_not_detected_desc", "Убедитесь, что ваша карта MicroSD отформатирована в формате FAT32 и содержит прошивку « keystone3.bin»."},
+    {"firmware_update_sd_not_detected_title", "Не найдено прошивки"},
+    {"firmware_update_sd_title", "Обновление MicroSD"},
+    {"firmware_update_sd_updating_desc", "Это займет около пяти минут."},
+    {"firmware_update_sd_updating_title", "Обновляется"},
+    {"firmware_update_title", "Обновление прошивки"},
+    {"firmware_update_updating_desc", "Это займет около пяти минут."},
+    {"firmware_update_updating_title", "Обновляется"},
+    {"firmware_update_usb_button_1", "Не сейчас."},
+    {"firmware_update_usb_button_2", "Подключение"},
+    {"firmware_update_usb_connect_info_desc", "После подключения внешнее устройство получит разрешение на передачу данных в Keystone."},
+    {"firmware_update_usb_connect_info_title", "Подключены ли к этому устройству?"},
+    {"firmware_update_usb_desc1", "Убедитесь, что срок службы аккумулятора Keystone составляет не менее 20%."},
+    {"firmware_update_usb_desc2", "Используйте компьютер или смартфон для доступа к странице обновления прошивки Keystone."},
+    {"firmware_update_usb_desc2_link", "https://keyst.one/webusb"},
+    {"firmware_update_usb_desc3", "Используйте кабель USB - C для подключения Keystone к компьютеру."},
+    {"firmware_update_usb_desc4", "Нажмите кнопку #F5870A Install Update# на веб-странице и следуйте инструкциям по установке последней прошивки."},
+    {"firmware_update_usb_desc5", "Во время установки не отключайте USB - кабель."},
+    {"firmware_update_usb_low_button", "Ладно."},
+    {"firmware_update_usb_low_desc", "Устройству требуется не менее 20% срока службы батареи, чтобы продолжить процесс."},
+    {"firmware_update_usb_low_title", "Низкий заряд батареи"},
+    {"firmware_update_usb_qr_link", "https://keyst.one/webusb"},
+    {"firmware_update_usb_qr_title", "Обновление прошивки"},
+    {"firmware_update_usb_title", "Обновление USB"},
+    {"firmware_update_usb_title2", "#F5870A Внимание#"},
+    {"firmware_update_usb_updating_hint", "Во время установки не отключайте USB - кабель."},
+    {"firmware_update_verify_firmware_qr_link", "KeystoneHQ / Keystone3 прошивка / docs / \\ nverify.md"},
+    {"firmware_update_verify_firmware_title", "Проверка прошивки"},
+    {"firmware_update_via_sd", "С помощью карты MicroSD"},
+    {"firmware_update_via_usb", "Через USB"},
+    {"forget_password_cancel", "Отменить сброс пароля?"},
+    {"forgot_password_reset_passcode_intro_button", "Сбросить пароль"},
+    {"forgot_password_reset_passcode_intro_desc", "Проверьте семенные фразы, связанные с этим кошельком, чтобы сбросить пароль."},
+    {"forgot_password_reset_passcode_intro_title", "Забыли пароль?"},
+    {"generating_qr_codes", "Создание QR - кода"},
+    {"got_it", "понял"},
+    {"got_it_fmt", "понял(%d)"},
+    {"got_it_start", "понял (5)"},
+    {"home_manage_assets", "Управление активами"},
+    {"home_more_connect_wallet", "Программный кошелек Connect"},
+    {"home_more_device_setting", "Настройка устройства"},
+    {"home_select_coin_count_fmt", "#F5870A %d# /%d"},
+    {"home_upgrade_hint", "Обновите до последней версии, чтобы получить доступ к расширенной совместимости шифрования."},
+    {"import_wallet_choose_method", "Выберите метод импорта"},
+    {"import_wallet_duplicated_share_desc", "Вы проверили этот общий доступ, пожалуйста, продолжайте использовать другой общий доступ."},
+    {"import_wallet_duplicated_share_title", "Повторить общий доступ"},
+    {"import_wallet_invalid_phrase_desc", "Введённая фраза неверна. Проверьте резервную копию и попробуйте снова."},
+    {"import_wallet_invalid_phrase_title", "Неверная фраза семян"},
+    {"import_wallet_invalid_phrase_title_desc", "Введите неверную фразу семян. Пожалуйста, проверьте свою резервную копию и попробуйте снова."},
+    {"import_wallet_phrase_12words", "Двенадцать слов"},
+    {"import_wallet_phrase_18words", "18 Слово"},
+    {"import_wallet_phrase_24words", "24 Слова"},
+    {"import_wallet_phrase_clear_btn", "Очистить"},
+    {"import_wallet_phrase_desc", "Введите свои семенные фразы в пустоте, указанной ниже."},
+    {"import_wallet_phrase_title", "Импортируйте свои семена"},
+    {"import_wallet_phrase_words_title", "Количество семян"},
+    {"import_wallet_shamir_backup", "Резервное копирование Shamir"},
+    {"import_wallet_shamir_backup_desc", "Вам нужно несколько семенных фраз."},
+    {"import_wallet_share_success_desc", "Эта часть семенной фразы соответствует вашему кошельку."},
+    {"import_wallet_single_backup_desc", "Восстановление вашего кошелька с помощью определенных фраз семян. Пожалуйста, выполните процесс настройки за один раз, чтобы избежать каких - либо рисков безопасности."},
+    {"import_wallet_single_phrase", "Отдельные секретные фразы"},
+    {"import_wallet_single_phrase_desc", "Вам нужна семенная фраза 12 / 18 / 24"},
+    {"import_wallet_ssb_20words", "Двадцать слов"},
+    {"import_wallet_ssb_33words", "33 Слова"},
+    {"import_wallet_ssb_cancel_btn_1", "Не сейчас."},
+    {"import_wallet_ssb_cancel_btn_2", "Выход"},
+    {"import_wallet_ssb_cancel_desc", "После отмены вам будет предложено повторно ввести все акции."},
+    {"import_wallet_ssb_cancel_title", "Отменить импорт кошелька?"},
+    {"import_wallet_ssb_desc_fmt", "Введите семенную фразу слова #F5870A %d# в пробеле, указанном ниже, для совместного использования #F5870AC %d#."},
+    {"import_wallet_ssb_incorrect_title", "Повторить общий доступ"},
+    {"import_wallet_ssb_notbelong_desc", "Введённый вами общий доступ не соответствует этому резервному копированию. Пожалуйста, проверьте свою резервную копию и попробуйте снова."},
+    {"import_wallet_ssb_notbelong_title", "Совместное несовпадение"},
+    {"import_wallet_ssb_repeat_desc", "Вводимые акции были введены ранее. Пожалуйста, представьте другой общий."},
+    {"import_wallet_ssb_step_fmt", "%d всего %d"},
+    {"import_wallet_ssb_title_fmt", "Поделиться #F5870A %d#"},
+    {"import_wallet_ssb_words_title", "Количество семян"},
+    {"language_desc", "Выберите свой язык"},
+    {"language_option1", "Английский язык"},
+    {"language_option2", "Упрощенный китайский"},
+    {"language_option3", "Русский язык"},
+    {"language_option4", "Испанский"},
+    {"language_option5", "Корейцы"},
+    {"language_title", "Язык"},
+    {"learn_more", "Узнать больше"},
+    {"low_battery_pop_up_desc", "Устройству требуется не менее 20% срока службы батареи, чтобы продолжить процесс."},
+    {"low_battery_pop_up_title", "Низкий заряд батареи"},
+    {"not_now", "Не сейчас."},
+    {"passphrase_access_switch_desc", "Создание комбинации клавиш пароля для запуска устройства"},
+    {"passphrase_access_switch_title", "Быстрый доступ к паролю"},
+    {"passphrase_add_password", "Теперь нам нужно ввести пароль, чтобы настроить криптовалютный кошелек."},
+    {"passphrase_enter_input", "Введите фразу пароля"},
+    {"passphrase_enter_passcode", "Пароль фразы"},
+    {"passphrase_enter_repeat", "Подтвердить пароль"},
+    {"passphrase_error_not_match", "Пароли не совпадают"},
+    {"passphrase_error_too_long", "Длина ввода не должна превышать 128 символов."},
+    {"passphrase_learn_more_desc1", "Пароли обеспечивают дополнительный уровень безопасности для вашей текущей фразы семян."},
+    {"passphrase_learn_more_desc2", "Каждая уникальная фраза пароля генерирует разные кошельки."},
+    {"passphrase_learn_more_desc3", "Чтобы восстановить кошелек, нужны парольные фразы и семенные фразы."},
+    {"passphrase_learn_more_desc4", "Забывание пароля может привести к тому, что вы не сможете получить доступ к цифровым активам."},
+    {"passphrase_learn_more_link", "Узнать больше"},
+    {"passphrase_learn_more_qr_link", "https://keyst.one/t/3rd/passphrase"},
+    {"passphrase_learn_more_qr_title", "Что такое фраза?"},
+    {"passphrase_learn_more_title", "Что такое фраза?"},
+    {"password_error_cannot_verify_fingerprint", "Невозможно проверить отпечатки пальцев"},
+    {"password_error_duplicated_pincode", "Обнаружены повторяющиеся PIN - коды. Пожалуйста, используйте другой."},
+    {"password_error_fingerprint_attempts_exceed", "Слишком много попыток. Введите пароль, чтобы разблокировать устройство."},
+    {"password_error_not_match", "Пароль не совпадает"},
+    {"password_error_too_long", "Введите не более 128 символов."},
+    {"password_error_too_short", "Пароль должен быть не менее 6 символов."},
+    {"password_error_too_weak", "Настройка сильного пароля"},
+    {"password_input_desc", "Введите свой пароль"},
+    {"password_label", "Пароль"},
+    {"path", "Путь"},
+    {"pin_code", "Код PIN"},
+    {"pin_label", "Штырь"},
+    {"power_off", "Выключите питание."},
+    {"prepare_wallet_first_step", "Обнаружена поддержка новой цепочки"},
+    {"prepare_wallet_hint", "Приготовьте кошелек."},
+    {"prepare_wallet_second_step", "Устанавливаются монеты."},
+    {"prepare_wallet_third_step", "Создается расширенный открытый ключ."},
+    {"public_key", "Открытый ключ"},
+    {"purpose_desc", "Создайте новый кошелек или импортируйте существующий кошелек с семенной фразой."},
+    {"purpose_import_wallet", "Импорт кошелька"},
+    {"purpose_new_wallet", "Создание кошелька"},
+    {"purpose_title", "Новый кошелек"},
+    {"receive_ada_address_detail_path", "Путь"},
+    {"receive_ada_base_address", "Адрес"},
+    {"receive_ada_enterprise_address", "Адрес (не аккредитован)"},
+    {"receive_ada_more_t", "Консультационный"},
+    {"receive_ada_more_t_desc1", "В блокчейне Cardano мы предлагаем 24 аккаунта, каждый из которых может генерировать множество адресов для вашего использования. Вы можете легко переключаться между нужными учетными записями."},
+    {"receive_ada_more_t_desc2", "Ключ оплаты и ставки: В Cardano каждый счет имеет платежный ключ для регулярных транзакций ADA (отправки и получения) и ключ ставки для ставок и получения вознаграждения."},
+    {"receive_ada_more_t_link2", "Узнать больше"},
+    {"receive_ada_more_t_qr_link2", "https://keyst.one/t/3rd/faq"},
+    {"receive_ada_more_t_qr_title2", "Ключевые понятия в адресе Cardano ADA"},
+    {"receive_ada_more_t_title1", "Несколько учетных записей Cardano в Keystone"},
+    {"receive_ada_more_t_title2", "Ключевые понятия в адресе Cardano ADA"},
+    {"receive_ada_show_address_detail", "Показать подробную информацию об адресе"},
+    {"receive_ada_stake_address", "Поощрительный адрес"},
+    {"receive_btc_alert_button", "Понял."},
+    {"receive_btc_alert_desc", "Этот адрес используется только для транзакций BTC. Отправка других типов цифровых активов на этот адрес приведет к их потере."},
+    {"receive_btc_alert_title", "Внимание!"},
+    {"receive_btc_more_address_settings", "Адрес"},
+    {"receive_btc_more_export_xpub", "Экспорт XPub"},
+    {"receive_btc_more_t", "Консультационный"},
+    {"receive_btc_more_t_desc1", "Биткоин (BTC) получает деньги в трех форматах адресов:"},
+    {"receive_btc_more_t_desc2", "Да, три разных формата биткоин - адресов могут быть использованы для взаимного перевода денег. Однако важно помнить о следующих аспектах:"},
+    {"receive_btc_more_t_desc3", "Конфиденциальность: Повторное использование адреса повышает прослеживаемость транзакций и ставит под угрозу конфиденциальность. Новый адрес помогает сохранить конфиденциальность транзакций."},
+    {"receive_btc_more_t_link1", "Узнать больше"},
+    {"receive_btc_more_t_link2", "Узнать больше"},
+    {"receive_btc_more_t_link3", "Узнать больше"},
+    {"receive_btc_more_t_qr_link1", "https://keyst.one/t/3rd/faq"},
+    {"receive_btc_more_t_qr_link2", "https://keyst.one/t/3rd/faq"},
+    {"receive_btc_more_t_qr_link3", "https://keyst.one/t/3rd/faq"},
+    {"receive_btc_more_t_qr_title1", "Каковы три разных формата адресов BTC?"},
+    {"receive_btc_more_t_qr_title2", "Можно ли использовать три разных формата адресов для взаимных переводов?"},
+    {"receive_btc_more_t_qr_title3", "Преимущества повторного использования адреса"},
+    {"receive_btc_more_t_title1", "Каковы три разных формата адресов BTC?"},
+    {"receive_btc_more_t_title2", "Можно ли использовать три разных формата адресов для взаимных переводов?"},
+    {"receive_btc_more_t_title3", "Преимущества повторного использования адреса"},
+    {"receive_btc_receive_change_address_limit", "Не может превышать 99999999"},
+    {"receive_btc_receive_change_address_title", "Перейти"},
+    {"receive_btc_receive_main_button", "Создать новый адрес"},
+    {"receive_btc_receive_main_title", "Получение BTC"},
+    {"receive_btc_receive_switch_title", "Адрес коммутатора"},
+    {"receive_coin_fmt", "Получено% s"},
+    {"receive_coin_hint_fmt", "Этот адрес доступен только для% s, и другие цифровые активы, отправленные на этот адрес, будут потеряны."},
+    {"receive_eth_alert_button", "Понял."},
+    {"receive_eth_alert_desc", "Этот адрес доступен только для токенов ETH и EVM ERC - 20, и другие цифровые активы, отправленные по этому адресу, будут потеряны."},
+    {"receive_eth_alert_title", "Внимание!"},
+    {"receive_eth_more_derivation_path", "Изменить производный путь"},
+    {"receive_eth_more_derivation_path_bip", "Стандарт BIP44"},
+    {"receive_eth_more_derivation_path_desc", "Рекомендации Чаще всего используется во многих программных кошельках."},
+    {"receive_eth_more_derivation_path_desc2", "Выберите этот путь для управления активами Ledger Live."},
+    {"receive_eth_more_derivation_path_desc3", "Выберите этот путь для управления активами Ledger Legacy."},
+    {"receive_eth_more_derivation_path_ledger_legacy", "Леджер Легачи"},
+    {"receive_eth_more_derivation_path_ledger_live", "Леджер Live"},
+    {"receive_eth_more_derivation_path_title", "Изменить производный путь"},
+    {"receive_eth_more_derivation_path_title2", "Счета, например:"},
+    {"receive_eth_more_t", "Консультационный"},
+    {"receive_eth_more_t_desc1", "Стандартный путь: этот путь широко используется многими программными кошельками для генерации адресов. Примерами таких кошельков являются MetaMask, Rabby, BitKeep и Core."},
+    {"receive_eth_more_t_link1", "Узнать больше"},
+    {"receive_eth_more_t_qr_link1", "https://keyst.one/t/3rd/faq"},
+    {"receive_eth_more_t_qr_title1", "Исследуйте различия: стандарты в Ethereum, Ledger Live и унаследованные производные пути"},
+    {"receive_eth_more_t_title1", "Исследуйте различия: стандарты в Ethereum, Ledger Live и унаследованные производные пути"},
+    {"receive_eth_receive_main_button", "Создать новый адрес"},
+    {"receive_eth_receive_main_title", "Прием ETH"},
+    {"receive_generate_new_address", "Создать новый адрес"},
+    {"receive_near_more_t_desc1", "Нан"},
+    {"receive_near_more_t_link1", "Нан"},
+    {"receive_near_more_t_qr_link1", "Нан"},
+    {"receive_near_more_t_qr_title1", "Нан"},
+    {"receive_near_more_t_title1", "Нан"},
+    {"receive_sol_more_t", "Консультационный"},
+    {"receive_sol_more_t_desc1", "Путь, основанный на учетной записи: широко используется во многих кошельках Solana. Примером такого кошелька является Solflare."},
+    {"receive_sol_more_t_link1", "Узнать больше"},
+    {"receive_sol_more_t_qr_link1", "https://keyst.one/t/3rd/faq"},
+    {"receive_sol_more_t_qr_title1", "Исследуйте варианты пути Соланы"},
+    {"receive_sol_more_t_title1", "Исследуйте варианты пути Соланы"},
+    {"receive_trx_hint", "Этот адрес доступен только для токенов TRX, TRC - 20 и TRC - 10, и другие цифровые активы, отправленные по этому адресу, будут потеряны."},
+    {"repeat_passcode_desc", "Подтвердите введенный вами PIN - код."},
+    {"repeat_passcode_title", "Повторный ввод PIN - кода"},
+    {"scan_qr_code_error_invalid_qrcode", "Неверный QR - код"},
+    {"scan_qr_code_error_invalid_qrcode_desc", "Данные QR - кода не могут быть идентифицированы. Пожалуйста, попробуйте еще раз."},
+    {"scan_qr_code_invalid_b_desc", "Сделка не принадлежит текущему кошельку. Убедитесь, что вы используете правильный кошелек для авторизации транзакций."},
+    {"scan_qr_code_invalid_b_title", "Не санкционирована"},
+    {"scan_qr_code_invalid_c_desc", "Keystone не может облегчить подписание транзакций по текущему адресному пути. Пожалуйста, используйте другие адресные пути для повторной попытки."},
+    {"scan_qr_code_invalid_c_title", "Поддерживаемый путь"},
+    {"scan_qr_code_sign_fingerprint_enter_passcode", "Введите пароль"},
+    {"scan_qr_code_sign_fingerprint_verify_fingerprint", "Проверка отпечатков пальцев"},
+    {"scan_qr_code_sign_fingerprint_verify_fingerprint_failed", "Ошибка проверки. Пожалуйста, попробуйте еще раз!"},
+    {"scan_qr_code_sign_unsigned_content_fingerprint_failed_desc", "Ошибка проверки. Пожалуйста, попробуйте еще раз!"},
+    {"scan_qr_code_sign_unsigned_content_fingerprint_failed_desc2", "Если проверка снова не удалась, подпись отпечатка пальца транзакции будет автоматически отключена."},
+    {"scan_qr_code_sign_unsigned_content_frame", "Подтверждение скольжения"},
+    {"scan_qr_code_signing_desc", "Подпись"},
+    {"seed_check_mid_btn", "Проверка фраз семян"},
+    {"seed_check_share_phrase", "Резервное копирование Shamir"},
+    {"seed_check_share_phrase_title", "Введите фразу семян, чтобы проверить, соответствует ли она вашему текущему кошельку."},
+    {"seed_check_single_phrase", "Стандартная семенная фраза"},
+    {"seed_check_single_phrase_title", "Введите свои семена."},
+    {"seed_check_verify_match_desc", "Ваши семена были проверены и успешно проверены."},
+    {"seed_check_verify_match_title", "Проверка успешно"},
+    {"seed_check_verify_not_match_desc", "Фраза семян неверна. Пожалуйста, проверьте заново и попробуйте снова."},
+    {"seed_check_verify_not_match_title", "Ошибка проверки"},
+    {"seed_check_wait_verify", "Проверяется"},
+    {"self_destruction_desc", "Обнаружена физическая атака, в результате которой все данные, хранящиеся на этом устройстве, полностью стерты. Таким образом, устройство теперь не может работать."},
+    {"self_destruction_hint", "Свяжитесь с нами"},
+    {"self_destruction_title", "Оборудование больше не работает"},
+    {"set_passcode_desc", "Этот PIN - код будет использоваться для разблокировки вашего кошелька и авторизации транзакций."},
+    {"set_passcode_title", "Настройка PIN - кода"},
+    {"shamir_backup", "Резервное копирование Shamir"},
+    {"shamir_phrase_backup_desc", "Запишите фразу #F5870A 1# и сохраните ее в сохранности."},
+    {"shamir_phrase_backup_title", "Резервное копирование ваших семян."},
+    {"shamir_phrase_cancel_create_btn", "Выход"},
+    {"shamir_phrase_cancel_create_desc", "Если вы его отмените, все подтвержденные акции будут потеряны."},
+    {"shamir_phrase_cancel_create_title", "Выйти из настройки кошелька?"},
+    {"shamir_phrase_confirm_desc", "Выберите следующие слова в правильном порядке фразы « Общие 1», чтобы проверить ваши семенные фразы."},
+    {"shamir_phrase_confirm_title", "Подтвердите свои семена."},
+    {"shamir_phrase_continue_btn", "Продолжение"},
+    {"shamir_phrase_custodian_desc", "Убедитесь, что вы хранитель акций #F5870A1#"},
+    {"shamir_phrase_custodian_title", "Общий пакет акций #F5870A 1# / N"},
+    {"shamir_phrase_desc", "Резервное копирование Shamir"},
+    {"shamir_phrase_not_match_desc", "Фраза семян неверна. Пожалуйста, проверьте заново и попробуйте снова."},
+    {"shamir_phrase_not_match_title", "Фразы семян не совпадают"},
+    {"shamir_phrase_notice_desc1", "Никогда не делитесь своими семенными фразами с другими людьми, потому что это позволяет получить доступ к вашим активам."},
+    {"shamir_phrase_notice_desc2", "При записи семенной фразы убедитесь, что нет зрителей или камер. \\ Пожалуйста, выполните процесс установки за один раз, чтобы избежать каких - либо рисков безопасности."},
+    {"shamir_phrase_notice_title", "Проверьте окружающую среду"},
+    {"shamir_phrase_number", "Количество акций"},
+    {"shamir_phrase_share_backup_notice_fmt", "Запишите общую фразу #F5870A %d# и сохраните ее."},
+    {"shamir_phrase_share_confirm_notice_fmt", "Выберите следующие слова в правильном порядке, чтобы проверить вашу семенную фразу, используя общую фразу #F5870A %d#."},
+    {"shamir_phrase_share_notice_fmt", "Убедитесь, что вы хранитель."},
+    {"shamir_phrase_share_number_fmt", "Поделиться #F5870A %d#/%d"},
+    {"shamir_phrase_threold", "Порог"},
+    {"shamir_phrase_verify_success_desc1", "Эта общая семенная фраза проверена, пожалуйста, продолжайте следующий общий."},
+    {"shamir_phrase_verify_success_desc2", "Нажмите кнопку ниже, чтобы передать Keystone хранителю Share 2."},
+    {"shamir_phrase_verify_success_title", "Подтвержденные"},
+    {"show_checksum", "Показать контрольную сумму"},
+    {"sign_transaction", "Подпись"},
+    {"sign_transaction_desc", "Пожалуйста, подождите немного."},
+    {"single_backup_choose_backup_desc", "Выберите предпочтительный метод резервного копирования семян фраз."},
+    {"single_backup_choose_backup_title", "Параметры резервного копирования"},
+    {"single_backup_learn_more_desc", "Метод резервного копирования Shamir обеспечивает очень безопасный способ восстановления фраз семян. Он включает разделение семенной фразы на несколько фрагментов и указывает количество фрагментов, необходимых для восстановления фразы."},
+    {"single_backup_learn_more_link", "Узнать больше"},
+    {"single_backup_learn_more_qr_link", "https://keyst.one/b/3rd/shamir"},
+    {"single_backup_learn_more_qr_title", "Что такое Shamir Backup?"},
+    {"single_backup_learn_more_title", "Что такое Shamir Backup?"},
+    {"single_backup_namewallet_desc", "Назовите свой кошелек и выберите значок, чтобы его было легко отличить."},
+    {"single_backup_namewallet_previntput", "Название кошелька"},
+    {"single_backup_namewallet_previntput_2", "Выберите значок для вашего кошелька"},
+    {"single_backup_namewallet_title", "Назовите свой кошелек"},
+    {"single_backup_notice_desc1", "Никогда не делитесь своими семенными фразами с другими людьми, потому что это позволяет получить доступ к вашим активам."},
+    {"single_backup_notice_desc2", "При записи семенной фразы убедитесь, что нет зрителей или камер."},
+    {"single_backup_notice_title", "Проверьте окружающую среду"},
+    {"single_backup_phrase_regenerate", "Активизировать"},
+    {"single_backup_phrase_regenerate_button_1", "Отменить"},
+    {"single_backup_phrase_regenerate_button_2", "Активизировать"},
+    {"single_backup_phrase_regenerate_desc", "Создать новый набор семян?"},
+    {"single_backup_repeatpass_desc", "Подтвердите введенный вами пароль."},
+    {"single_backup_repeatpass_title", "Введите пароль"},
+    {"single_backup_repeatpin_desc", "Подтвердите введенный вами PIN - код."},
+    {"single_backup_repeatpin_error", "Код PIN не совпадает"},
+    {"single_backup_repeatpin_title", "Повторный ввод PIN - кода"},
+    {"single_backup_setpass_desc", "Пароль будет использоваться для разблокировки вашего кошелька и авторизации транзакций."},
+    {"single_backup_setpass_desc_1", "Настройка сильного пароля"},
+    {"single_backup_setpass_error_1", "Пароль должен быть не менее 6 символов."},
+    {"single_backup_setpass_error_2", "Пароль не совпадает"},
+    {"single_backup_setpass_title", "Настройка пароля"},
+    {"single_backup_setpin_desc", "PIN - код будет использоваться для разблокировки вашего кошелька и авторизации транзакций."},
+    {"single_backup_setpin_title", "Настройка PIN - кода"},
+    {"single_backup_setpin_use_pass", "Использовать пароль"},
+    {"single_backup_setpin_use_pin", "Использование PIN - кода"},
+    {"single_backup_shamir_desc", "Безопасное хранение расширенного процесса семенных фраз."},
+    {"single_backup_shamir_title", "Резервное копирование Shamir"},
+    {"single_backup_single_phrase_desc", "Резервное копирование 12 или 24 семенных фраз. Наиболее часто используемый метод."},
+    {"single_backup_single_phrase_title", "Стандартная семенная фраза"},
+    {"single_phrase_12words", "12 слов"},
+    {"single_phrase_24words", "24 слов"},
+    {"single_phrase_confirm_desc", "Выберите следующие слова в правильном порядке, чтобы проверить ваши семенные фразы."},
+    {"single_phrase_confirm_title", "Подтвердите свои семена."},
+    {"single_phrase_desc", "Запишите свои семенные фразы и сохраните их в безопасном месте."},
+    {"single_phrase_low_battery_desc", "Устройству требуется не менее 20% срока службы батареи, чтобы продолжить процесс."},
+    {"single_phrase_low_battery_tilte", "Низкий заряд батареи"},
+    {"single_phrase_not_match_desc", "Фраза семян неверна. Пожалуйста, проверьте заново и попробуйте снова."},
+    {"single_phrase_not_match_title", "Фразы семян не совпадают"},
+    {"single_phrase_reset", "Сбросить"},
+    {"single_phrase_title", "Резервное копирование ваших семян."},
+    {"single_phrase_word_amount_select", "Количество семян"},
+    {"support_link", "support@keyst.one"},
+    {"switch_account", "Коммутаторный счет"},
+    {"switch_address", "Адрес коммутатора"},
+    {"system_settings_screen_lock_auto_lock", "Автоблокировка"},
+    {"system_settings_screen_lock_auto_lock_10mins", "Десять минут."},
+    {"system_settings_screen_lock_auto_lock_15secs", "15 секунд."},
+    {"system_settings_screen_lock_auto_lock_1min", "Одна минута."},
+    {"system_settings_screen_lock_auto_lock_30secs", "Тридцать секунд."},
+    {"system_settings_screen_lock_auto_lock_5mins", "Пять минут."},
+    {"system_settings_screen_lock_auto_lock_title", "Время ожидания"},
+    {"system_settings_screen_lock_auto_power_off_12h", "Двенадцать часов."},
+    {"system_settings_screen_lock_auto_power_off_1d", "Один день"},
+    {"system_settings_screen_lock_auto_power_off_1h", "Один час."},
+    {"system_settings_screen_lock_auto_power_off_6h", "Шесть часов."},
+    {"system_settings_screen_lock_auto_power_off_never", "Никогда."},
+    {"system_settings_screen_lock_auto_power_off_title", "Автоматическое выключение"},
+    {"system_settings_screen_lock_auto_shutdown", "Автоматическое выключение"},
+    {"system_settings_screen_lock_brightness", "Яркость"},
+    {"system_settings_screen_lock_title", "Показать и заблокировать экран"},
+    {"system_settings_title", "Настройки системы"},
+    {"system_settings_vabiration", "Вибрация"},
+    {"system_settings_wipe_device_generating_desc1", "Все данные удаляются."},
+    {"system_settings_wipe_device_generating_desc2", "Пожалуйста, не выключайте оборудование во время чистки."},
+    {"system_settings_wipe_device_generating_title", "Сбросить устройство"},
+    {"system_settings_wipe_device_wipe_alert_desc", "Убедитесь, что продолжение операции навсегда удалит все данные с этого устройства, включая кошелек."},
+    {"system_settings_wipe_device_wipe_alert_title", "Устройство стирания"},
+    {"system_settings_wipe_device_wipe_button", "Немедленно очистите устройство."},
+    {"system_settings_wipe_device_wipe_desc", "Продолжайте работать, и все данные на этом устройстве, включая все ваши кошельки, будут удалены навсегда."},
+    {"system_settings_wipe_device_wipe_end_text", "А"},
+    {"system_settings_wipe_device_wipe_fmt", "Стереть (%d)"},
+    {"system_settings_wipe_device_wipe_start_text", "Вытрить (5)"},
+    {"system_settings_wipe_device_wipe_title", "Устройство стирания"},
+    {"transaction_parse_broadcast_message", "Сообщения по радио"},
+    {"transaction_parse_confirm_message", "Подтвердить сообщение"},
+    {"transaction_parse_scan_by_software", "Сканирование QR - кода с помощью программного кошелька"},
+    {"try_again", "Попробуй еще раз."},
+    {"tutorial_change_entropy_desc1", "Метод резервного копирования Shamir обеспечивает очень безопасный способ восстановления фраз семян. Он включает разделение семенной фразы на несколько фрагментов и указывает количество фрагментов, необходимых для восстановления фразы."},
+    {"tutorial_change_entropy_desc2", "Метод резервного копирования Shamir обеспечивает очень безопасный способ восстановления фраз семян. Он включает разделение семенной фразы на несколько фрагментов и указывает количество фрагментов, необходимых для восстановления фразы."},
+    {"tutorial_change_entropy_qr_link1", "https://keyst.one/"},
+    {"tutorial_change_entropy_qr_title1", "Почему кости используются как энтропия?"},
+    {"tutorial_change_entropy_title1", "Что такое энтропия?"},
+    {"tutorial_change_entropy_title2", "Почему кости используются как энтропия?"},
+    {"tx_details_btc_change_desc", "Транзакции BTC основаны на механизме UTXO, который распределяет некоторые активы на изменение адреса во время передачи. Этот адрес генерируется программным кошельком для анонимных и приватных целей. Вам не нужно беспокоиться, потому что изменение адреса принадлежит вашему собственному счету, и его сумма будет автоматически использована для последующих транзакций."},
+    {"tx_details_btc_change_link", "Узнать больше"},
+    {"tx_details_btc_change_qr_link", "https://keyst.one/change"},
+    {"tx_details_btc_change_qr_title", "Что такое \"изменение\" адреса?"},
+    {"tx_details_btc_change_title", "Изменить адрес"},
+    {"tx_details_eth_decoding_link", "Узнать больше"},
+    {"tx_details_eth_decoding_qr_link", "https://keyst.one/t/3rd/ddt"},
+    {"tx_details_eth_decoding_qr_title", "Расшифровка транзакций DeFi"},
+    {"tx_details_general_tab_title1", "Общий обзор"},
+    {"tx_details_general_tab_title2", "Подробная информация"},
+    {"unlock_device_attempts_left_plural_times_fmt", "Пароль неверный, осталось %d попыток"},
+    {"unlock_device_attempts_left_singular_times_fmt", "Пароль неверный, осталось %d попыток"},
+    {"unlock_device_button1", "Пароль"},
+    {"unlock_device_button2", "Код PIN"},
+    {"unlock_device_button3", "Забыть"},
+    {"unlock_device_error_attempts_exceed", "Превышение ограничений попыток"},
+    {"unlock_device_error_attempts_exceed_desc", "Блокировка оборудования неизбежна. Пожалуйста, разблокируйте для доступа к устройству."},
+    {"unlock_device_error_btn_end_text", "Разблокировать устройство"},
+    {"unlock_device_error_btn_start_text", "Разблокировать устройство (5s)"},
+    {"unlock_device_error_btn_text_fmt", "Разблокировать устройство (%d)"},
+    {"unlock_device_fingerprint_pin_device_locked_btn", "Немедленно очистите устройство."},
+    {"unlock_device_fingerprint_pin_device_locked_btn_fmt", "Немедленное стирание устройства (%d)"},
+    {"unlock_device_fingerprint_pin_device_locked_btn_start_text", "Немедленное стирание оборудования (15)"},
+    {"unlock_device_fingerprint_pin_device_locked_desc", "Вы должны очистить устройство, чтобы продолжить. После удаления все данные, хранящиеся на этом устройстве, будут стерты."},
+    {"unlock_device_fingerprint_pin_device_locked_title", "Устройство заблокировано."},
+    {"unlock_device_fingerprint_pin_error1_desc", "Невозможно проверить отпечатки пальцев"},
+    {"unlock_device_fingerprint_pin_error1_title", "Попробуй еще раз."},
+    {"unlock_device_fingerprint_pin_error2_title", "Использование PIN или отпечатков пальцев"},
+    {"unlock_device_fingerprint_pin_error_max_desc", "Слишком много неудачных попыток. Введите пароль."},
+    {"unlock_device_fingerprint_pin_error_max_title", "Введите PIN"},
+    {"unlock_device_fingerprint_pin_title", "Использование PIN или отпечатков пальцев"},
+    {"unlock_device_time_limited_error_max_desc", "Пожалуйста, разблокируйте устройство в течение 1 # F55831"},
+    {"unlock_device_time_limited_error_max_desc_fmt", "Пожалуйста, разблокируйте устройство в течение минуты #F55831 %d#"},
+    {"unlock_device_time_limited_error_max_title", "Устройство недоступно"},
+    {"unlock_device_time_limited_error_max_warning_fmt", "Пожалуйста, разблокируйте устройство через минуту после #F55831 %d#. Если очередная попытка будет неправильной, ваше устройство будет заблокировано."},
+    {"unlock_device_title_fmt", "% s или% s"},
+    {"unlock_device_use_fingerprint", "Использовать отпечатки пальцев"},
+    {"unlock_device_use_password", "Использовать пароль"},
+    {"unlock_device_use_pin", "Использование PIN"},
+    {"usb_connection_desc", "При отключении USB может использоваться только для зарядки батареи."},
+    {"usb_connection_subtitle", "Использование USB для передачи данных"},
+    {"usb_connection_title", "Связь"},
+    {"usb_transport_connect_rabby", "Кошелек раввина хочет подключить вас к Keystone через USB"},
+    {"usb_transport_connect_wallet", "Ваш программный кошелек хочет подключиться к вашему устройству через USB"},
+    {"usb_transport_connection_approve", "Утверждено"},
+    {"usb_transport_connection_reject", "Отказ"},
+    {"usb_transport_connection_request", "Запрос на подключение"},
+    {"usb_transport_mismatched_wallet_title", "Несоответствующие кошельки"},
+    {"usb_transport_sign_completed_btn", "Завершено"},
+    {"usb_transport_sign_completed_subtitle", "Просмотр транзакций в вашем программном кошельке"},
+    {"usb_transport_sign_completed_title", "Подпись завершена"},
+    {"usb_transport_sign_failed_btn", "Ладно."},
+    {"usb_transport_sign_failed_title", "Ошибка подписи"},
+    {"usb_transport_sign_unkown_error_message", "Невозможно идентифицировать данные"},
+    {"usb_transport_sign_unkown_error_title", "Неизвестная ошибка"},
+    {"verification_code_desc", "Введите этот код на официальном сайте Keystone, чтобы проверить безопасность вашего устройства."},
+    {"verification_code_failed_button", "Удалить данные и закрыть"},
+    {"verification_code_failed_desc", "Ваше устройство может быть скомпрометировано, что создает риск для ваших конфиденциальных данных и цифровых активов."},
+    {"verification_code_failed_link", "support@keyst.one"},
+    {"verification_code_failed_title", "Обнаружена несанкционированная попытка вторжения!"},
+    {"verification_code_title", "Код проверки"},
+    {"verification_failed", "Неудача"},
+    {"verification_success", "Подтвержденные"},
+    {"verify_cont1", "Посетите наш сайт и нажмите кнопку #F5870A, чтобы начать проверку#."},
+    {"verify_cont1_link", "https://keyst.one/verify"},
+    {"verify_cont2", "Сканируйте QR - код, отображаемый на веб - сайте, чтобы получить код проверки вашего устройства."},
+    {"verify_cont3", "Введите код на сайте, чтобы проверить, есть ли какие - либо потенциальные изменения устройства."},
+    {"verify_desc", "Этот процесс обеспечивает целостность устройств и прошивки Keystone."},
+    {"verify_modal_desc", "Вычисляется код аутентификации."},
+    {"verify_modal_title", "Проверяется"},
+    {"verify_qr_link", "https://keyst.one/verify"},
+    {"verify_qr_title", "Проверьте свое устройство"},
+    {"verify_scan_qr_code", "Сканирование QR - кода"},
+    {"verify_title", "Проверьте свое устройство"},
+    {"wallet_setting_add_wallet", "+ Добавить кошелек"},
+    {"wallet_setting_passcode", "Отпечатки пальцев и пароли"},
+    {"wallet_setting_passphrase", "Пароль фразы"},
+    {"wallet_setting_seed_phrase", "Проверка фраз семян"},
+    {"wallet_setting_stop_add_fingerprint", "Отменить этот процесс?"},
+    {"wallet_setting_stop_add_fingerprint_desc", "Отпечатки пальцев не сохранились. После отмены вам будет предложено повторно ввести отпечатки пальцев."},
+    {"wallet_settings_add_info_desc1", "Keystone поддерживает #F5870A 3# различные кошельки."},
+    {"wallet_settings_add_info_desc2", "Вы должны установить #F5870A различные коды # для каждого кошелька"},
+    {"wallet_settings_add_info_desc3", "Чтобы переключить кошелек, разблокируйте устройство с помощью определенного пароля, связанного с каждым кошельком. Для повышения безопасности список кошельков не отображается."},
+    {"wallet_settings_add_info_title", "Внимание!"},
+    {"wallet_settings_delete_button", "Удалить кошелек"},
+    {"wallet_settings_delete_confirm_button1", "Проверка фраз семян"},
+    {"wallet_settings_delete_confirm_button2", "Подтвердить удаление"},
+    {"wallet_settings_delete_confirm_desc", "Чтобы защитить свои цифровые активы, рекомендуется проверить их, прежде чем продолжать удалять семенные фразы."},
+    {"wallet_settings_delete_confirm_title", "Удалить кошелек?"},
+    {"wallet_settings_delete_laoding_desc", "Все данные удаляются."},
+    {"wallet_settings_delete_laoding_title", "Удаляется"},
+    {"wallet_settings_mid_btn", "Параметры кошелька"},
+    {"wipe_device", "Устройство стирания"},
+    {NULL, NULL} // End mark
+};
+
+
+
+static uint8_t ru_plural_fn(int32_t num)
+{
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t i10 = i % 10;
+    uint32_t i100 = i % 100;
+    if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
+    if ((v == 0 && (2 <= i10 && i10 <= 4) && (!(12 <= i100 && i100 <= 14)))) return LV_I18N_PLURAL_TYPE_FEW;
+    if ((v == 0 && i10 == 0) || (v == 0 && (5 <= i10 && i10 <= 9)) || (v == 0 && (11 <= i100 && i100 <= 14))) return LV_I18N_PLURAL_TYPE_MANY;
+    return LV_I18N_PLURAL_TYPE_OTHER;
+}
+
+static const lv_i18n_lang_t ru_lang = {
+    .locale_name = "ru",
+    .singulars = ru_singulars,
+
+    .locale_plural_fn = ru_plural_fn
+};
+
 const lv_i18n_language_pack_t lv_i18n_language_pack[] = {
     &en_lang,
+    &ru_lang,
     NULL // End mark
 };
 
@@ -847,8 +1609,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if (langs == NULL) return -1;
-    if (langs[0] == NULL) return -1;
+    if(langs == NULL) return -1;
+    if(langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -861,13 +1623,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if (current_lang_pack == NULL) return -1;
+    if(current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for (i = 0; current_lang_pack[i] != NULL; i++) {
+    for(i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -880,10 +1642,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for (i = 0; trans[i].msg_id != NULL; i++) {
-        if (strcmp(trans[i].msg_id, msg_id) == 0) {
+    for(i = 0; trans[i].msg_id != NULL; i++) {
+        if(strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if (trans[i].translation) return trans[i].translation;
+            if(trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -898,23 +1660,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -930,31 +1692,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -969,6 +1731,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if (!current_lang) return NULL;
+    if(!current_lang) return NULL;
     return current_lang->locale_name;
 }

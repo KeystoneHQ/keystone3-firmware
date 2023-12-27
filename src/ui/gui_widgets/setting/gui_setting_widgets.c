@@ -142,7 +142,7 @@ void GuiWalletResetPassWordHintBox(void)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 558);
     label = GuiCreateIllustrateLabel(g_noticeHintBox, _("change_passcode_warning_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 610);
-    lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("Got it"));
+    lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("got_it"));
     lv_obj_align(btn, LV_ALIGN_DEFAULT, 332, 710);
     lv_obj_set_size(btn, 122, 66);
     lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
@@ -261,7 +261,7 @@ static void GuiWalletAddLimit(lv_obj_t *parent)
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("Got it"));
+    lv_obj_t *btn = GuiCreateBtn(parent, _("got_it"));
     lv_obj_set_size(btn, 348, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
@@ -508,7 +508,7 @@ static void OpenDelWalletHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         g_delWalletHintbox = GuiCreateHintBox(lv_event_get_user_data(e), 480, 132, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_delWalletHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_delWalletHintbox);
-        lv_obj_t *label = GuiCreateTextLabel(g_delWalletHintbox, _("Delete Wallet"));
+        lv_obj_t *label = GuiCreateTextLabel(g_delWalletHintbox, _("wallet_settings_delete_button"));
         lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
         lv_obj_t *img = GuiCreateImg(g_delWalletHintbox, &imgDel);
         GuiButton_t table[2] = {
@@ -695,7 +695,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
     lv_obj_t *tile = NULL;
     static uint8_t currTileIndex = DEVICE_SETTING;
     char rightLabel[16] = {0};
-    char midLabel[32] = {0};
+    char midLabel[64] = {0};
     lv_event_cb_t rightCb = NULL;
     lv_event_cb_t leftCb = ReturnHandler;
     NVS_RIGHT_BUTTON_ENUM rightBtn = NVS_RIGHT_BUTTON_BUTT;
@@ -921,7 +921,7 @@ int8_t GuiDevSettingPrevTile(uint8_t tileIndex)
 {
     uint8_t currentTile = g_deviceSetTileView.currentTile;
     char rightLabel[16] = {0};
-    char midLabel[32] = {0};
+    char midLabel[64] = {0};
     lv_event_cb_t rightCb = NULL;
     NVS_RIGHT_BUTTON_ENUM rightBtn = NVS_RIGHT_BUTTON_BUTT;
     NVS_LEFT_BUTTON_ENUM leftBtn = NVS_BAR_RETURN;

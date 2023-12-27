@@ -87,14 +87,8 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
     g_changeCont = cont;
     if (g_entropyMethod == 0) {
-        label = GuiCreateTextLabel(cont, _("single_backup_phrase_regenerate"));
-        lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-        lv_obj_t *img = GuiCreateImg(cont, &imgChange);
-        GuiButton_t table[] = {
-            {.obj = img, .align = LV_ALIGN_LEFT_MID, .position = {14, 0},},
-            {.obj = label, .align = LV_ALIGN_RIGHT_MID, .position = {-12, 0},},
-        };
-        lv_obj_t *button = GuiCreateButton(cont, 186, 66, table, NUMBER_OF_ARRAYS(table), UpdatePhraseHandler, NULL);
+        lv_obj_t *button = GuiCreateImgLabelAdaptButton(cont, _("single_backup_phrase_regenerate"), &imgChange, UpdatePhraseHandler, NULL);
+        lv_obj_set_height(button, 66);
         lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 24);
     }
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_KB_NEXT);

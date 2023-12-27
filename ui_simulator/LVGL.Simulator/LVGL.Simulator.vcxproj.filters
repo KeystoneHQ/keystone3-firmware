@@ -1317,6 +1317,60 @@
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinCosmosEco.c">
       <Filter>gui\assets\coin</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\font\rus\rusIllustrate.c">
+      <Filter>gui\assets\fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\font\rus\rusLittleTitle.c">
+      <Filter>gui\assets\fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\font\rus\rusText.c">
+      <Filter>gui\assets\fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\font\rus\rusTitle.c">
+      <Filter>gui\assets\fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgConnectWithRabby.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgConnectWithWallet.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice1.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice2.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice3.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice4.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice5.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice6.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgUndo.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_views\gui_dice_rolls_view.c">
+      <Filter>gui\gui_views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_views\gui_usb_transport_view.c">
+      <Filter>gui\gui_views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_dice_rolls_widgets.c">
+      <Filter>gui\gui_widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_usb_transport_widgets.c">
+      <Filter>gui\gui_widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\external\lvgl\src\core\lv_disp.h" />

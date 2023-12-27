@@ -51,19 +51,20 @@ pub fn generate_standard_legacy_hd_key(
         Some(bip32_extended_pub_key.depth as u32),
     );
 
-    let children = CryptoKeyPath::new(
-        match account_type {
-            ETHAccountTypeApp::Bip44Standard => {
-                vec![
-                    get_path_component(Some(0), false)?,
-                    get_path_component(None, false)?,
-                ]
-            }
-            _ => vec![get_path_component(None, false)?],
-        },
-        None,
-        Some(0),
-    );
+    let children =
+        CryptoKeyPath::new(
+            match account_type {
+                ETHAccountTypeApp::Bip44Standard => {
+                    vec![
+                        get_path_component(Some(0), false)?,
+                        get_path_component(None, false)?,
+                    ]
+                }
+                _ => vec![get_path_component(None, false)?],
+            },
+            None,
+            Some(0),
+        );
     let hd_key: CryptoHDKey = CryptoHDKey::new_extended_key(
         Some(false),
         Vec::from(bip32_extended_pub_key.public_key.serialize()),

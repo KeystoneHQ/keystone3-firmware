@@ -8,11 +8,12 @@ use third_party::ur_registry::error::URError::UrEncodeError;
 use third_party::ur_registry::error::URResult;
 
 pub fn generate_sync_ur(hd_path: &str, root_x_pub: &str, root_path: &str) -> URResult<Bytes> {
-    let root_path = if !root_path.ends_with("/") {
-        root_path.to_string() + "/"
-    } else {
-        root_path.to_string()
-    };
+    let root_path =
+        if !root_path.ends_with("/") {
+            root_path.to_string() + "/"
+        } else {
+            root_path.to_string()
+        };
     let sub_path = hd_path.strip_prefix(&root_path).unwrap();
     if let (Ok(address), Ok(pubkey)) = (
         get_address(hd_path, root_x_pub, root_path.as_str()),

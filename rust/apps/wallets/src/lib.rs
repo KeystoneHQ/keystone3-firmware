@@ -20,12 +20,12 @@ mod common;
 pub mod companion_app;
 pub mod keplr;
 pub mod metamask;
+pub mod near;
 pub mod okx;
 pub mod solana;
 pub mod sui;
 mod utils;
 pub mod xrp_toolkit;
-pub mod near;
 
 //TODO: get these value from device
 pub const DEVICE_TYPE: &str = "Keystone 3 Pro";

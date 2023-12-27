@@ -102,14 +102,15 @@ fn generate_crypto_hd_key(
         Some(bip32_extended_pub_key.depth as u32),
     );
 
-    let children = CryptoKeyPath::new(
-        vec![
-            get_path_component(Some(0), false)?,
-            get_path_component(None, false)?,
-        ],
-        None,
-        Some(0),
-    );
+    let children =
+        CryptoKeyPath::new(
+            vec![
+                get_path_component(Some(0), false)?,
+                get_path_component(None, false)?,
+            ],
+            None,
+            Some(0),
+        );
     let hd_key = CryptoHDKey::new_extended_key(
         Some(false),
         Vec::from(bip32_extended_pub_key.public_key.serialize()),

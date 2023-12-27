@@ -9,14 +9,20 @@ use crate::parser::overview::{NearTxOverview, NearTxOverviewGeneral, NearTxOverv
 use crate::parser::structs::{NearTxDisplayType, ParsedNearTx};
 use crate::parser::transaction::{Action, Normalizer, Transaction};
 use crate::parser::utils::format_amount;
-use crate::parser::utils::Merge;
 use alloc::format;
 use alloc::string::{String, ToString};
-use alloc::vec;
 use alloc::vec::Vec;
 use borsh::BorshDeserialize;
+use serde::{Deserialize, Serialize};
 use third_party::serde_json;
 use third_party::serde_json::{json, Value};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+enum NearDetailItem {
+    Info(Value),
+    Action(Action),
+}
 
 impl ParsedNearTx {
     pub fn build(data: &Vec<u8>) -> Result<Self> {
@@ -46,13 +52,14 @@ impl ParsedNearTx {
         }
     }
     fn build_detail(tx: &Transaction) -> Result<String> {
-        let detail_str = serde_json::to_string(&tx.actions)?;
-        let mut result = json!([{
+        let mut result = [NearDetailItem::Info(json!({
             "From": tx.signer_id.to_string(),
             "To": tx.receiver_id.to_string()
-        }]);
-        let action_values: Value = serde_json::from_str(detail_str.as_str())?;
-        result.merge(action_values);
+        }))]
+        .to_vec();
+        tx.actions.iter().for_each(|action| {
+            result.push(NearDetailItem::Action(action.clone()));
+        });
         Ok(serde_json::to_string(&result)?)
     }
     fn build_overview(

@@ -44,6 +44,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_ETH, "Confirm Transaction", &coinEth},
     {CHAIN_SOL, "Confirm Transaction", &coinSol},
     {CHAIN_APT, "Confirm Transaction", &coinApt},
+    {CHAIN_NEAR, "Confirm Transaction", &coinNear},
     {CHAIN_SUI, "Confirm Transaction", &coinSui},
     {CHAIN_ADA, "Confirm Transaction", &coinAda},
     {CHAIN_XRP, "Confirm Transaction", &coinXrp},
@@ -106,6 +107,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_FEWCHA, "Connect Fewcha", &walletFewcha},
     {WALLET_LIST_PETRA, "Connect Petra", &walletPetra},
     {WALLET_LIST_XRP_TOOLKIT, "Connect XRP Toolkit", &walletXRPToolkit},
+    {WALLET_LIST_SENDER, "Connect Sender", &walletSender},
 };
 
 void GuiNvsBarSetWalletName(const char *name)

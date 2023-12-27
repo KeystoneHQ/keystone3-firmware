@@ -17,6 +17,8 @@
 #include "gui_page.h"
 #ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
+#else
+#define memset_s(p, s, c, l) memset(p, c, l)
 #endif
 
 #define SINGLE_PHRASE_MAX_WORDS         24

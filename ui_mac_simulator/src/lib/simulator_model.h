@@ -39,6 +39,16 @@ void SetLockTimeState(bool enable);
 void UsbInit(void);
 uint32_t FatfsGetSize(const char *path);
 bool SdCardInsert(void);
+uint32_t GetBatteryMilliVolt();
+void SetPageLockScreen(bool enable);
+void SetLockScreen(bool enable);
+bool IsPreviousLockScreenEnable(void);
+void SetPageLockScreen(bool enable);
+void FpDeleteRegisterFinger(void);
+void FpSaveKeyInfo(bool add);
+void UpdateFingerSignFlag(uint8_t index, bool signFlag);
+bool GetLvglHandlerStatus(void);
+int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
 bool FatfsFileExist(const char *path);
 
 #define LOW_BATTERY_LIMIT               20

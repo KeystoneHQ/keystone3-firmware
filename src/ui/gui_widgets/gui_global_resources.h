@@ -23,9 +23,15 @@ typedef enum {
 } BTC_PATH_TYPE;
 
 typedef enum {
+    NEAR_STANDARD,
+    NEAR_LEDGER_LIVE,
+} NEAR_PATH_TYPE;
+
+typedef enum {
     ETH_DERIVATION_PATH_DESC,
     SOL_DERIVATION_PATH_DESC,
     BTC_DERIVATION_PATH_DESC,
+    NEAR_DERIVATION_PATH_DESC,
 } DERIVATION_PATH_DESC_INDEX;
 
 char **GetDerivationPathDescs(uint8_t index);

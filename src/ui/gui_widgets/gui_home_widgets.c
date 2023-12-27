@@ -41,6 +41,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_ETH, false, "ETH", true},
     {HOME_WALLET_CARD_SOL, false, "SOL", true},
     {HOME_WALLET_CARD_APT, false, "APT", true},
+    {HOME_WALLET_CARD_NEAR, false, "NEAR", true},
     {HOME_WALLET_CARD_SUI, false, "SUI", true},
     {HOME_WALLET_CARD_ADA, false, "ADA", true},
     {HOME_WALLET_CARD_XRP, false, "XRP", true},
@@ -117,6 +118,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "APT",
         .chain = "Aptos",
         .icon = &coinApt,
+    },
+    {
+        .index = HOME_WALLET_CARD_NEAR,
+        .coin = "NEAR",
+        .chain = "Near",
+        .icon = &coinNear,
     },
     {
         .index = HOME_WALLET_CARD_SUI,
@@ -492,6 +499,7 @@ static void CoinDealHandler(lv_event_t *e)
             break;
         case HOME_WALLET_CARD_ETH:
         case HOME_WALLET_CARD_SOL:
+        case HOME_WALLET_CARD_NEAR:
             GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
             break;
         case HOME_WALLET_CARD_ADA:

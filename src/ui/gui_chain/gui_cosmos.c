@@ -19,6 +19,7 @@ static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_OSMO, "osmo", 118, XPUB_TYPE_COSMOS, "osmosis-1"},
     {CHAIN_SCRT, "secret", 529, XPUB_TYPE_SCRT, "secret-4"},
     {CHAIN_AKT, "akash", 118, XPUB_TYPE_COSMOS, "akashnet-2"},
+    {CHAIN_TORI, "tori", 118, XPUB_TYPE_COSMOS, "teritori-1"},
     {CHAIN_CRO, "cro", 394, XPUB_TYPE_CRO, "crypto-org-chain-mainnet-1"},
     {CHAIN_IOV, "star", 234, XPUB_TYPE_IOV, "iov-mainnet-ibc"},
     {CHAIN_ROWAN, "sif", 118, XPUB_TYPE_COSMOS, "sifchain-1"},

@@ -33,6 +33,7 @@ typedef enum {
     CHAIN_OSMO,
     CHAIN_SCRT,
     CHAIN_AKT,
+    CHAIN_TORI,
     CHAIN_CRO,
     CHAIN_IOV,
     CHAIN_ROWAN,

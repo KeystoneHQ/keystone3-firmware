@@ -40,6 +40,7 @@ void GuiDiceRollsWidgetsInit(uint8_t seed_type)
 void GuiDiceRollsWidgetsDeInit()
 {
     GUI_PAGE_DEL(g_page);
+    GUI_DEL_OBJ(g_quitHintBox);
 }
 void GuiDiceRollsWidgetsRefresh()
 {
@@ -193,7 +194,7 @@ static void ClickDiceHandler(lv_event_t *e)
         for (size_t i = 0; i < 6; i++) {
             if (g_diceImgs[i] == img) {
                 const char *txt = lv_textarea_get_text(g_diceTextArea);
-                if (strlen(txt) == 100) {
+                if (strlen(txt) == 256) {
                     return;
                 }
 
@@ -237,10 +238,8 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
             lv_obj_add_flag(g_hintLabel, LV_OBJ_FLAG_HIDDEN);
         }
 
-        if (length >= 1) {
-            lv_label_set_text_fmt(g_rollsLabel, "%d", length);
-        }
-
+        lv_label_set_text_fmt(g_rollsLabel, "%d", length);
+        
         if (length >= 50) {
             lv_obj_remove_style(g_confirmBtn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
             lv_obj_add_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE);

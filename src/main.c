@@ -84,8 +84,8 @@ int main(void)
     MountSdFatfs();
     UserSqlite3Init();
     ScreenManagerInit();
-    PowerOnSelfCheck();
     AccountManagerInit();
+    PowerOnSelfCheck();
 
     PrintSystemInfo();
     osKernelInitialize();

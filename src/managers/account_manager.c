@@ -48,9 +48,16 @@ int32_t AccountManagerInit(void)
     ASSERT(sizeof(AccountInfo_t) == 32);
     ASSERT(sizeof(PublicInfo_t) == 32);
     ret = SE_HmacEncryptRead((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
-    assert(g_publicInfo.loginPasswordErrorCount <= 10);
     return ret;
 }
+
+bool AccountManagerIsNeedReset(void)
+{
+    if (g_publicInfo.loginPasswordErrorCount < 10) {
+        return false;
+    }
+    return true;
+} 
 
 /// @brief Get passcode type of the current account.
 /// @return Passcode type.

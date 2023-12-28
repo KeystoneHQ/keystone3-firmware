@@ -523,13 +523,7 @@ static bool IsAccountSwitchable()
 
 static bool HasMoreBtn()
 {
-    switch (g_chainCard) {
-    case HOME_WALLET_CARD_TRX:
-        return true;
-
-    default:
-        return false;
-    }
+    return false;
 }
 
 static void SwitchAddressHandler(lv_event_t *e)

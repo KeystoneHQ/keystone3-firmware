@@ -28,9 +28,11 @@ static lv_obj_t *g_diceImgs[6];
 static lv_obj_t *g_errLabel;
 static lv_obj_t *g_hintLabel;
 static lv_obj_t *g_confirmBtn;
+static bool g_confirmValid = false;
 
 void GuiDiceRollsWidgetsInit(uint8_t seed_type)
 {
+    g_confirmValid = false;
     g_seedType = seed_type;
     g_page = CreatePageWidget();
     GuiCreatePage(g_page->contentZone);
@@ -88,7 +90,6 @@ static void GuiCreatePage(lv_obj_t *parent)
     lv_obj_align_to(label, anchor, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
     g_errLabel = label;
-
 
     img = GuiCreateImg(parent, &imgDice1);
     InitDiceImg(img, parent, 12 + 48, 258);
@@ -225,12 +226,6 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
         // 27chars per line in reality;
         uint32_t length = strlen(txt);
         uint32_t line_count = length / 27 + 1;
-        if (line_count > 4)
-            return;
-        lv_obj_set_height(ta, line_count * font_height + 2 * lv_obj_get_style_pad_top(ta, LV_PART_MAIN));
-        lv_obj_update_layout(ta);
-        lv_obj_align_to(g_line, ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
-        lv_obj_align_to(g_errLabel, g_line, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
 
         if (length > 0 && length < 50) {
             lv_obj_clear_flag(g_hintLabel, LV_OBJ_FLAG_HIDDEN);
@@ -239,30 +234,46 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
         }
 
         lv_label_set_text_fmt(g_rollsLabel, "%d", length);
-        
         if (length >= 50) {
-            lv_obj_remove_style(g_confirmBtn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
-            lv_obj_add_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE);
-            float counts[6] = {0};
-            for (size_t i = 0; i < length; i++) {
-                counts[txt[i] - '1']++;
-            }
-            float len = length;
-            bool stillValid = true;
-            for (size_t i = 0; i < 6; i++) {
-                if (counts[i] / len > 0.3) {
-                    lv_obj_clear_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN);
-                    stillValid = false;
-                    break;
+            if (!g_confirmValid) {
+                g_confirmValid = true;
+                lv_obj_remove_style(g_confirmBtn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
+                if (!lv_obj_has_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE)) {
+                    lv_obj_add_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE);
+                }
+                float counts[6] = {0};
+                for (size_t i = 0; i < length; i++) {
+                    counts[txt[i] - '1']++;
+                }
+                float len = length;
+                bool stillValid = true;
+                for (size_t i = 0; i < 6; i++) {
+                    if (counts[i] / len > 0.3) {
+                        lv_obj_clear_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN);
+                        stillValid = false;
+                        break;
+                    }
+                }
+                if (stillValid) {
+                    lv_obj_add_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN);
                 }
             }
-            if (stillValid) {
-                lv_obj_add_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN);
-            }
         } else {
-            lv_obj_add_style(g_confirmBtn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
-            lv_obj_clear_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE);
+            if (g_confirmValid) {
+                g_confirmValid = false;
+                lv_obj_add_style(g_confirmBtn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
+                if (lv_obj_has_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE)) {
+                    lv_obj_clear_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE);
+                }
+            }
         }
+
+        if (line_count > 4)
+            return;
+        lv_obj_set_height(ta, line_count * font_height + 2 * lv_obj_get_style_pad_top(ta, LV_PART_MAIN));
+        lv_obj_update_layout(ta);
+        lv_obj_align_to(g_line, ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+        lv_obj_align_to(g_errLabel, g_line, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
     }
 }
 

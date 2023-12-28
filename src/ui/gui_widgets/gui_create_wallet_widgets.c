@@ -860,16 +860,12 @@ static void ChangeEntropyMethodConfirmHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         GUI_PAGE_DEL(g_changeEntropyPage);
         g_selectedEntropyMethod = g_selectedEntropyMethodCache;
-        if(g_selectedEntropyMethod == 1)
-        {
-            if(lv_obj_has_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN))
-            {
+        if (g_selectedEntropyMethod == 1) {
+            if (lv_obj_has_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN)) {
                 lv_obj_clear_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN);
             }
-        }
-        else {
-            if(!lv_obj_has_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN))
-            {
+        } else {
+            if (!lv_obj_has_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN)) {
                 lv_obj_add_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN);
             }
         }

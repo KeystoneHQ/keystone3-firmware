@@ -599,7 +599,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"shamir_phrase_not_match_desc", "The seed phrase is incorrect. Please re-verify and try again."},
     {"shamir_phrase_not_match_title", "Seed Phrase Mismatch"},
     {"shamir_phrase_notice_desc1", "Never share your seed phrase with anyone else, as it grants access to your assets."},
-    {"shamir_phrase_notice_desc2", "Ensure there are no onlookers or cameras when recording your seed phrase.\\nPlease complete the setup process in one go to avoid any security risks."},
+    {"shamir_phrase_notice_desc2", "Ensure there are no onlookers or cameras when recording your seed phrase.\nPlease complete the setup process in one go to avoid any security risks."},
     {"shamir_phrase_notice_title", "Check Your Surroundings"},
     {"shamir_phrase_number", "Number of Shares"},
     {"shamir_phrase_share_backup_notice_fmt", "Write down your Share #F5870A %d# phrase and keep it properly."},

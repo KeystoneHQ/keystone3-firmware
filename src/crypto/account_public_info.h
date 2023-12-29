@@ -4,12 +4,14 @@
 #include "stdint.h"
 #include "stdbool.h"
 #include "gui_home_widgets.h"
-typedef struct {
+typedef struct
+{
     int32_t addressType;
     int32_t addressIndex;
 } AccountSettingsItem_t;
 
-typedef enum {
+typedef enum
+{
     XPUB_TYPE_BTC,
     XPUB_TYPE_BTC_LEGACY,
     XPUB_TYPE_BTC_NATIVE_SEGWIT,
@@ -112,10 +114,9 @@ void DeleteAccountPublicInfo(uint8_t accountIndex);
 char *GetCurrentAccountPublicKey(ChainType chain);
 uint8_t SpecifiedXPubExist(const char *xPub);
 void AccountPublicInfoTest(int argc, char *argv[]);
-bool GetFirstReceive(const char* chainName);
-void SetFirstReceive(const char* chainName, bool isFirst);
+bool GetFirstReceive(const char *chainName);
+void SetFirstReceive(const char *chainName, bool isFirst);
 void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count);
 char *GetXPubPath(uint8_t index);
 
 #endif
-

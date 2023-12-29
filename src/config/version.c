@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "version.h"
 
-#define SOFTWARE_VERSION_MAX_LEN            (32)
+#define SOFTWARE_VERSION_MAX_LEN (32)
 
 #define STRINGIFY(x) #x
 #define EXPAND(x) STRINGIFY(x)
@@ -28,4 +28,3 @@ const char *GetSoftwareVersionString(void)
 {
     return g_softwareVersionString;
 }
-

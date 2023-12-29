@@ -723,13 +723,17 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     uint32_t entropyLen;
     uint8_t newAccount;
     uint8_t accountCnt;
+    uint16_t id;
+    uint8_t ie;
     int ret;
 
     ems = SecretCacheGetEms(&entropyLen);
     entropy = SecretCacheGetEntropy(&entropyLen);
+    id = SecretCacheGetIdentifier();
+    ie = SecretCacheGetIteration();
 
     MODEL_WRITE_SE_HEAD
-    ret = ModelComparePubkey(false, NULL, 0, 0, 0, NULL);
+    ret = ModelComparePubkey(false, ems, entropyLen, id, ie, NULL);
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
     ret = CreateNewSlip39Account(newAccount, ems, entropy, 32, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetIteration());
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);

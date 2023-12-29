@@ -113,10 +113,10 @@ static void TutorialsInit()
 
         g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].title = _("tutorial_change_entropy_title2");
         g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].desc = _("tutorial_change_entropy_desc2");
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].link = _("learn_more");
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrTitle = _("tutorial_change_entropy_qr_title1");
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrSubtitle = _("tutorial_change_entropy_qr_link1");
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrCode = _("tutorial_change_entropy_qr_link1");
+        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].link = NULL;
+        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrTitle = NULL;
+        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrSubtitle = NULL;
+        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrCode = NULL;
 
         g_tutorialInitialized = true;
     }

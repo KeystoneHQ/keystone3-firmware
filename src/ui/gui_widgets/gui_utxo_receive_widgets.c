@@ -228,13 +228,12 @@ void GuiReceiveDeInit(void)
 
 static bool HasMoreBtn()
 {
-    switch (g_chainCard)
-    {
+    switch (g_chainCard) {
     case HOME_WALLET_CARD_LTC:
     case HOME_WALLET_CARD_BCH:
     case HOME_WALLET_CARD_DASH:
         return false;
-    
+
     default:
         return true;
     }

@@ -57,7 +57,7 @@ bool AccountManagerIsNeedReset(void)
         return false;
     }
     return true;
-} 
+}
 
 /// @brief Get passcode type of the current account.
 /// @return Passcode type.

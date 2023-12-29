@@ -76,7 +76,7 @@ static void GuiCreatePage(lv_obj_t *parent)
     lv_style_set_border_opa(&style_hidden_cursor, LV_OPA_TRANSP);
     lv_style_set_outline_opa(&style_hidden_cursor, LV_OPA_TRANSP);
     lv_style_set_pad_all(&style_hidden_cursor, 0);
-
+ 
     lv_obj_add_style(textArea, &style_hidden_cursor, LV_PART_CURSOR);
 
     static lv_point_t points[2] = {{0, 0}, {384, 0}};

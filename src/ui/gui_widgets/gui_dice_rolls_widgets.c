@@ -303,7 +303,7 @@ static void ConfirmHandler(lv_event_t *e)
 
         // convert result
         const char *txt = lv_textarea_get_text(ta);
-        char *temp = SRAM_MALLOC(128);
+        char *temp = SRAM_MALLOC(300);
         strcpy(temp, txt);
         for (size_t i = 0; i < strlen(txt); i++) {
             char c = temp[i];
@@ -320,5 +320,6 @@ static void ConfirmHandler(lv_event_t *e)
         } else {
             GuiFrameOpenViewWithParam(&g_createShareView, &entropyMethod, 1);
         }
+        SRAM_FREE(temp);
     }
 }

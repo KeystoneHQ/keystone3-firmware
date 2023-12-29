@@ -32,8 +32,6 @@
 #define BATTERY_CHANNEL                                 ADC_CHANNEL_4
 #define RTC_BAT_CHANNEL                                 ADC_CHANNEL_3
 #define RTC_WAKE_UP_INTERVAL_DISCHARGE                  (60 * 30)           //30 minutes
-#define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                //80 seconds
-#define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                (60 * 2)            //2 minutes
 
 static uint8_t LoadBatteryPercent(void);
 static void SaveBatteryPercent(uint8_t percent);
@@ -242,7 +240,7 @@ uint32_t GetRtcBatteryMilliVolt(void)
 
 /// @brief Execute once every minimum percent change time interval.
 /// @param
-bool BatteryIntervalHandler(uint32_t *sleepInterval)
+bool BatteryIntervalHandler(void)
 {
     UsbPowerState usbPowerState;
     uint8_t percent;
@@ -276,23 +274,12 @@ bool BatteryIntervalHandler(uint32_t *sleepInterval)
         //The battery percentage decrease by 1% each time.
         g_batterPercent--;
         change = true;
-        if (sleepInterval != NULL) {
-            if (percent >= 30) {
-                *sleepInterval = RTC_WAKE_UP_INTERVAL_DISCHARGE;
-            } else {
-                *sleepInterval = RTC_WAKE_UP_INTERVAL_LOW_BATTERY;
-            }
-        }
     } else if (usbPowerState == USB_POWER_STATE_CONNECT) {
         //The battery percentage only increase when charging.
         //The battery percentage increase by 1% each time.
         if (percent < g_batterPercent && percent >= BATTERY_CHARGING_BY_TIME) {
             printf("delay increate battery percentage delayIncreate = %d\n", delayIncreate);
             delayIncreate++;
-        }
-
-        if (sleepInterval != NULL) {
-            *sleepInterval = RTC_WAKE_UP_INTERVAL_CHARGING;
         }
 
         // delayIncreate == 4 * 80 320s

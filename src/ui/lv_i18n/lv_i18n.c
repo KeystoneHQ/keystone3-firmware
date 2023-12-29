@@ -303,6 +303,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"dice_roll_cancel_desc", "If you cancel, any numbers you entered will be lost."},
     {"dice_roll_cancel_title", "Cancel Dice Rolls Generation?"},
     {"dice_roll_error_label", "Lack of randomness"},
+    {"dice_roll_max_limit_label", "You've reached the max limits"},
     {"dice_roll_hint_label", "At least 50 times"},
     {"dice_rolls_entropy_hint", "Dice rolls as entropy"},
     {"enter_passcode", "Please Enter Passcode"},

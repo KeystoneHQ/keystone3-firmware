@@ -14,6 +14,7 @@ int32_t GuiFrameWorkViewHandleMsg(void *data, uint16_t len);
 void GuiFrameDebugging(void);
 int32_t GuiCloseToTargetView(GUI_VIEW *view);
 bool GuiCheckIfTopView(GUI_VIEW *view);
+void GuiViewsTest(int argc, char *argv[]);
 
 #define GUI_FRAME_TIMER_EVENT_PERIOD 1000
 

@@ -242,7 +242,7 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] =
     {"hash and salt:", HashAndSaltFunc},
     {"sha512:", Sha512Func},
     {"key store test:", KeyStoreTestFunc},
-    {"gui debug", GuiFrameDebugTestFunc},
+    {"gui debug:", GuiFrameDebugTestFunc},
 #ifndef EXCLUDE_RUSTC
     {"rust get mfp:", RustGetMasterFingerprint},
     {"rust test parse psbt", RustTestParseCryptoPSBT},
@@ -1031,7 +1031,7 @@ static void KeyStoreTestFunc(int argc, char *argv[])
 
 static void GuiFrameDebugTestFunc(int argc, char *argv[])
 {
-    GuiFrameDebugging();
+    GuiViewsTest(argc, argv);
 }
 
 #ifndef EXCLUDE_RUSTC

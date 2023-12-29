@@ -1,4 +1,4 @@
-// #include "internal.h"
+//#include "internal.h"
 #include "mnemonic.h"
 #include "wordlist.h"
 #include "hmac.h"
@@ -15,12 +15,11 @@
 #include "safe_mem_lib.h"
 #endif
 
-static const struct
-{
+static const struct {
     const char name[4];
     const struct words *words;
 } lookup[] = {
-    {"en", &en_words},
+    { "en", &en_words},
 };
 
 int bip39_get_languages(char **output)
@@ -30,7 +29,7 @@ int bip39_get_languages(char **output)
 
     *output = SRAM_MALLOC(strlen("en") + 1);
     strcpy(*output, "en");
-    // #endif
+//#endif
     return *output ? SUCCESS_CODE : -1;
 }
 
@@ -45,8 +44,7 @@ int bip39_get_wordlist(const char *lang, struct words **output)
 
     if (lang)
         for (i = 0; i < sizeof(lookup) / sizeof(lookup[0]); ++i)
-            if (!strcmp(lang, lookup[i].name))
-            {
+            if (!strcmp(lang, lookup[i].name)) {
                 *output = (struct words *)lookup[i].words;
                 break;
             }
@@ -77,8 +75,7 @@ int bip39_get_word(const struct words *w, size_t idx,
  */
 static size_t len_to_mask(size_t len)
 {
-    switch (len)
-    {
+    switch (len) {
     case BIP39_ENTROPY_LEN_128:
         return 0xf0;
     case BIP39_ENTROPY_LEN_160:
@@ -173,8 +170,7 @@ int bip39_mnemonic_to_bytes(const struct words *w, const char *mnemonic,
 
     ret = mnemonic_to_bytes(w, mnemonic, tmp_bytes, sizeof(tmp_bytes), &tmp_len);
 
-    if (!ret)
-    {
+    if (!ret) {
         /* Remove checksum bytes from the output length */
         --tmp_len;
         if (tmp_len > BIP39_ENTROPY_LEN_256)
@@ -182,18 +178,14 @@ int bip39_mnemonic_to_bytes(const struct words *w, const char *mnemonic,
 
         if (tmp_len > sizeof(tmp_bytes))
             ret = -2; /* Too big for biggest supported entropy */
-        else
-        {
-            if (tmp_len <= len)
-            {
+        else {
+            if (tmp_len <= len) {
                 mask = len_to_mask(tmp_len);
                 if (!mask ||
-                    !checksum_ok(tmp_bytes, tmp_len, mask))
-                {
+                        !checksum_ok(tmp_bytes, tmp_len, mask)) {
                     tmp_len = 0;
                     ret = -2; /* Bad checksum */
-                }
-                else
+                } else
                     memcpy(bytes_out, tmp_bytes, tmp_len);
             }
         }

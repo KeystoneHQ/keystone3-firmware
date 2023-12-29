@@ -9,7 +9,8 @@
 #include "user_memory.h"
 #include "gui_page.h"
 
-typedef struct Tutorial {
+typedef struct Tutorial
+{
     const char *title;
     const char *desc;
     const char *link;
@@ -18,14 +19,16 @@ typedef struct Tutorial {
     const char *qrCode;
 } Tutorial_t;
 
-typedef struct TutorialList {
+typedef struct TutorialList
+{
     size_t len;
     Tutorial_t tutorials[3];
 } TutorialList_t;
 
 static TutorialList_t g_tutorials[TUTORIAL_LIST_INDEX_BUTT];
 
-typedef struct GuiTurorialWidget {
+typedef struct GuiTurorialWidget
+{
     lv_obj_t *cont;
 } GuiTurorialWidget_t;
 
@@ -35,7 +38,8 @@ static PageWidget_t *g_pageWidget = NULL;
 
 static void TutorialsInit()
 {
-    if (!g_tutorialInitialized) {
+    if (!g_tutorialInitialized)
+    {
         // TUTORIAL_SHAMIR_BACKUP
         g_tutorials[TUTORIAL_SHAMIR_BACKUP].len = 1;
         g_tutorials[TUTORIAL_SHAMIR_BACKUP].tutorials[0].title = _("single_backup_learn_more_title");
@@ -130,7 +134,8 @@ static void GuiOpenQRHintBox(Tutorial_t *tutorial)
 static void GuiOpenQRHintBoxHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         Tutorial_t *t = lv_event_get_user_data(e);
         GuiOpenQRHintBox(t);
     }
@@ -143,7 +148,8 @@ void GuiTutorialInit(TUTORIAL_LIST_INDEX_ENUM tutorialIndex)
     lv_obj_t *cont, *label, *img, *parent;
     cont = NULL;
 
-    if (g_pageWidget != NULL) {
+    if (g_pageWidget != NULL)
+    {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
@@ -154,13 +160,17 @@ void GuiTutorialInit(TUTORIAL_LIST_INDEX_ENUM tutorialIndex)
 
     TutorialList_t *tutorialList = &g_tutorials[tutorialIndex];
 
-    for (size_t i = 0; i < tutorialList->len; i++) {
+    for (size_t i = 0; i < tutorialList->len; i++)
+    {
         lv_obj_t *container, *learnMoreCont, *last;
         container = GuiCreateContainerWithParent(parent, lv_obj_get_width(lv_scr_act()) - 36 - 36, 0);
-        if (cont == NULL) {
+        if (cont == NULL)
+        {
             lv_obj_align(container, LV_ALIGN_DEFAULT, 36, 12);
             cont = container;
-        } else {
+        }
+        else
+        {
             lv_obj_align_to(container, cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
             cont = container;
         }
@@ -182,7 +192,8 @@ void GuiTutorialInit(TUTORIAL_LIST_INDEX_ENUM tutorialIndex)
         h = lv_obj_get_height(label);
         height += h;
 
-        if (tutorialList->tutorials[i].link != NULL) {
+        if (tutorialList->tutorials[i].link != NULL)
+        {
             learnMoreCont = GuiCreateContainerWithParent(container, 144, 30);
             lv_obj_add_flag(learnMoreCont, LV_OBJ_FLAG_CLICKABLE);
             lv_obj_add_event_cb(learnMoreCont, GuiOpenQRHintBoxHandler, LV_EVENT_CLICKED, &tutorialList->tutorials[i]);
@@ -216,10 +227,12 @@ void GuiTutorialRefresh()
 void GuiTutorialDeInit()
 {
     GUI_DEL_OBJ(g_tutorialWidget.cont);
-    if (GuiQRHintBoxIsActive()) {
+    if (GuiQRHintBoxIsActive())
+    {
         GuiQRHintBoxRemove();
     }
-    if (g_pageWidget != NULL) {
+    if (g_pageWidget != NULL)
+    {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }

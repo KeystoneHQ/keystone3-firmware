@@ -17,7 +17,8 @@
 #include "safe_mem_lib.h"
 #endif
 
-typedef enum {
+typedef enum
+{
     CREATE_WALLET_SETPIN = 0,
     CREATE_WALLET_REPEATPIN,
     CREATE_WALLET_NAMEWALLET,
@@ -26,7 +27,8 @@ typedef enum {
     CREATE_WALLET_BUTT,
 } CREATE_WALLET_ENUM;
 
-typedef struct CreateWalletWidget {
+typedef struct CreateWalletWidget
+{
     uint8_t currentTile;
     uint8_t walletMethod;
     lv_obj_t *cont;
@@ -61,7 +63,6 @@ static lv_obj_t *g_openMoreHintBox;
 static PageWidget_t *g_changeEntropyPage;
 static uint8_t g_selectedEntropyMethod = 0;
 
-
 void GuiSetupKeyboardWidgetMode(void)
 {
     printf("g_setPassCode->mode = %d\n", g_setPassCode->mode % 2);
@@ -82,14 +83,16 @@ static void GuiCreateRepeatPinWidget(lv_obj_t *parent)
 static void UpdateWalletNameIconHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_READY) {
+    if (code == LV_EVENT_READY)
+    {
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
     }
 }
 
 const char *GetCurrentKbWalletName(void)
 {
-    if (g_nameWalletKb != NULL) {
+    if (g_nameWalletKb != NULL)
+    {
         return lv_textarea_get_text(g_nameWalletKb->ta);
     }
     return "";
@@ -98,7 +101,8 @@ const char *GetCurrentKbWalletName(void)
 static void QuestionMarkEventCb(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         uint8_t index = TUTORIAL_SHAMIR_BACKUP;
         GUI_DEL_OBJ(g_openMoreHintBox);
         GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
@@ -109,7 +113,8 @@ static void OpenEmojiKbHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         GuiCreateEmojiKeyBoard(lv_scr_act(), g_nameWalletIcon);
     }
 }
@@ -165,7 +170,8 @@ static void OpenNoticeHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 518, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
         lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgRedEye);
@@ -194,10 +200,14 @@ static void OpenSecretShareHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
-        if (g_selectedEntropyMethod == 0) {
+    if (code == LV_EVENT_CLICKED)
+    {
+        if (g_selectedEntropyMethod == 0)
+        {
             GuiFrameOpenViewWithParam(&g_createShareView, &g_selectedEntropyMethod, sizeof(g_selectedEntropyMethod));
-        } else {
+        }
+        else
+        {
             uint8_t index = SEED_TYPE_SLIP39;
             GuiFrameOpenViewWithParam(&g_diceRollsView, &index, sizeof(index));
         }
@@ -208,7 +218,8 @@ static void OpenImportPhraseHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     uint8_t *wordsAmount = lv_event_get_user_data(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         // todo
         Vibrate(SLIGHT);
         lv_obj_add_flag(lv_obj_get_parent(lv_event_get_target(e)), LV_OBJ_FLAG_HIDDEN);
@@ -220,7 +231,8 @@ static void ChooseWordsAmountHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         static uint8_t wordsAmount12 = 12;
         static uint8_t wordsAmount18 = 18;
         static uint8_t wordsAmount24 = 24;
@@ -285,7 +297,8 @@ static void CloseChooseWordsAmountHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         GUI_DEL_OBJ(g_wordsAmountView)
     }
 }
@@ -293,7 +306,8 @@ static void CloseChooseWordsAmountHandler(lv_event_t *e)
 static void OpenImportShareHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         Vibrate(SLIGHT);
         lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
         g_noticeHintBox = NULL;
@@ -304,7 +318,8 @@ static void OpenImportShareHandler(lv_event_t *e)
 static void SelectImportShareHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         static uint8_t wordsAmount[] = {33, 20};
         g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 282, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
@@ -316,7 +331,8 @@ static void SelectImportShareHandler(lv_event_t *e)
         lv_obj_add_event_cb(img, CloseCurrentParentHandler, LV_EVENT_CLICKED, NULL);
         lv_obj_align(img, LV_ALIGN_BOTTOM_RIGHT, -36, -222);
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 2; i++)
+        {
             GuiButton_t table[] = {
                 {
                     .obj = GuiCreateTextLabel(g_noticeHintBox, _("import_wallet_ssb_33words")),
@@ -329,7 +345,8 @@ static void SelectImportShareHandler(lv_event_t *e)
                     .position = {-24, 0},
                 },
             };
-            if (i == 1) {
+            if (i == 1)
+            {
                 lv_label_set_text(table[0].obj, _("import_wallet_ssb_20words"));
             }
             lv_obj_t *button = GuiCreateButton(g_noticeHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table), OpenImportShareHandler, &wordsAmount[i]);
@@ -492,9 +509,12 @@ void GuiCreateWalletInit(uint8_t walletMethod)
     lv_obj_t *cont = g_pageWidget->contentZone;
 
     lv_obj_t *tileView = lv_tileview_create(cont);
-    if (GuiDarkMode()) {
+    if (GuiDarkMode())
+    {
         lv_obj_set_style_bg_color(tileView, BLACK_COLOR, LV_PART_MAIN);
-    } else {
+    }
+    else
+    {
         lv_obj_set_style_bg_color(tileView, WHITE_COLOR, LV_PART_MAIN);
     }
     lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
@@ -513,9 +533,12 @@ void GuiCreateWalletInit(uint8_t walletMethod)
 
     tile = lv_tileview_add_tile(tileView, CREATE_WALLET_BACKUPFROM, 0, LV_DIR_HOR);
     g_createWalletTileView.backupForm = tile;
-    if (walletMethod == WALLET_METHOD_CREATE) {
+    if (walletMethod == WALLET_METHOD_CREATE)
+    {
         GuiCreateBackupWidget(tile);
-    } else {
+    }
+    else
+    {
         GuiImportBackupWidget(tile);
     }
 
@@ -530,20 +553,25 @@ void GuiCreateWalletInit(uint8_t walletMethod)
 
 int8_t GuiCreateWalletNextTile(void)
 {
-    switch (g_createWalletTileView.currentTile) {
+    switch (g_createWalletTileView.currentTile)
+    {
     case CREATE_WALLET_BACKUPFROM:
-        if (g_selectedEntropyMethod == 0) {
+        if (g_selectedEntropyMethod == 0)
+        {
             return GuiFrameOpenViewWithParam(&g_singlePhraseView, &g_selectedEntropyMethod, sizeof(g_selectedEntropyMethod));
-        } else {
+        }
+        else
+        {
             uint8_t index = SEED_TYPE_BIP39;
             return GuiFrameOpenViewWithParam(&g_diceRollsView, &index, sizeof(index));
         }
     case CREATE_WALLET_NAMEWALLET:
         break;
     case CREATE_WALLET_SETPIN:
-        if (g_repeatPassCode == NULL) {
+        if (g_repeatPassCode == NULL)
+        {
             g_repeatPassCode = GuiCreateEnterPasscode(g_repeatPinTile, NULL, NULL,
-                               g_setPassCode->mode + 2);
+                                                      g_setPassCode->mode + 2);
         }
         break;
     case CREATE_WALLET_REPEATPIN:
@@ -560,17 +588,20 @@ int8_t GuiCreateWalletNextTile(void)
 
 int8_t GuiCreateWalletPrevTile(void)
 {
-    switch (g_createWalletTileView.currentTile) {
+    switch (g_createWalletTileView.currentTile)
+    {
     case CREATE_WALLET_SETPIN:
         return SUCCESS_CODE;
     case CREATE_WALLET_NAMEWALLET:
         g_createWalletTileView.currentTile--;
     case CREATE_WALLET_REPEATPIN:
-        if (g_repeatPassCode != NULL) {
+        if (g_repeatPassCode != NULL)
+        {
             GuiDelEnterPasscode(g_repeatPassCode, NULL);
             g_repeatPassCode = NULL;
         }
-        if (g_setPassCode != NULL) {
+        if (g_setPassCode != NULL)
+        {
             GuiDelEnterPasscode(g_setPassCode, NULL);
             g_setPassCode = NULL;
         }
@@ -594,11 +625,14 @@ void GuiCreateWalletSetPinPass(const char *buf)
 
 void GuiCreateWalletRepeatPinPass(const char *buf)
 {
-    if (!strcmp(buf, g_pinBuf)) {
+    if (!strcmp(buf, g_pinBuf))
+    {
         SecretCacheSetNewPassword((char *)buf);
         memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
-    } else {
+    }
+    else
+    {
         UnlimitedVibrate(LONG);
         GuiEnterPassCodeStatus(g_repeatPassCode, false);
     }
@@ -606,7 +640,8 @@ void GuiCreateWalletRepeatPinPass(const char *buf)
 
 void GuiCreateWalletNameUpdate(const void *src)
 {
-    if (g_nameWalletIcon != NULL) {
+    if (g_nameWalletIcon != NULL)
+    {
         lv_img_set_src(g_nameWalletIcon, src);
     }
 }
@@ -617,11 +652,13 @@ void GuiCreateWalletDeInit(void)
     GUI_DEL_OBJ(g_wordsAmountView)
     GuiDelEnterProgressLabel();
 
-    if (g_setPassCode != NULL) {
+    if (g_setPassCode != NULL)
+    {
         GuiDelEnterPasscode(g_setPassCode, NULL);
         g_setPassCode = NULL;
     }
-    if (g_repeatPassCode != NULL) {
+    if (g_repeatPassCode != NULL)
+    {
         GuiDelEnterPasscode(g_repeatPassCode, NULL);
         g_repeatPassCode = NULL;
     }
@@ -632,7 +669,8 @@ void GuiCreateWalletDeInit(void)
     g_createWalletTileView.currentTile = 0;
     CLEAR_OBJECT(g_createWalletTileView);
     ClearSecretCache();
-    if (g_pageWidget != NULL) {
+    if (g_pageWidget != NULL)
+    {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
@@ -642,17 +680,12 @@ static void GuiRefreshNavBar(void)
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-    if (CREATE_WALLET_BACKUPFROM == g_createWalletTileView.currentTile) {
-        //create wallet, show change entropy
-        if (g_createWalletTileView.walletMethod == 0) {
-            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
-        }
-        //import wallet, dont't show change entropy
-        else {
-            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, QuestionMarkEventCb, NULL);
-        }
+    if (CREATE_WALLET_BACKUPFROM == g_createWalletTileView.currentTile)
+    {
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
     }
-    if (CREATE_WALLET_SETPIN == g_createWalletTileView.currentTile) {
+    if (CREATE_WALLET_SETPIN == g_createWalletTileView.currentTile)
+    {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     }
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
@@ -661,13 +694,17 @@ static void GuiRefreshNavBar(void)
 void GuiCreateWalletRefresh(void)
 {
     GuiRefreshNavBar();
-    if (CREATE_WALLET_SETPIN == g_createWalletTileView.currentTile) {
-        if (g_setPassCode != NULL) {
+    if (CREATE_WALLET_SETPIN == g_createWalletTileView.currentTile)
+    {
+        if (g_setPassCode != NULL)
+        {
             GuiUpdateEnterPasscodeParam(g_setPassCode, NULL);
         }
     }
-    if (CREATE_WALLET_REPEATPIN == g_createWalletTileView.currentTile) {
-        if (g_repeatPassCode != NULL) {
+    if (CREATE_WALLET_REPEATPIN == g_createWalletTileView.currentTile)
+    {
+        if (g_repeatPassCode != NULL)
+        {
             GuiUpdateEnterPasscodeParam(g_repeatPassCode, NULL);
         }
     }
@@ -676,7 +713,8 @@ void GuiCreateWalletRefresh(void)
 static void OpenMoreHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         int hintboxHeight = 228;
         g_openMoreHintBox = GuiCreateHintBox(lv_scr_act(), 480, hintboxHeight, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
@@ -710,7 +748,8 @@ static void OpenMoreHandler(lv_event_t *e)
 }
 
 // Change Entropy
-typedef struct {
+typedef struct
+{
     lv_obj_t *checkBox;
     lv_obj_t *checkedImg;
     lv_obj_t *uncheckedImg;
@@ -727,7 +766,8 @@ static void ChangeEntropyMethodConfirmHandler(lv_event_t *e);
 static void OpenChangeEntropyHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         GUI_DEL_OBJ(g_openMoreHintBox);
         g_selectedEntropyMethodCache = g_selectedEntropyMethod;
         g_changeEntropyPage = CreatePageWidget();
@@ -766,7 +806,8 @@ static void OpenChangeEntropyHandler(lv_event_t *e)
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 102);
         lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
-        for (size_t i = 0; i < 2; i++) {
+        for (size_t i = 0; i < 2; i++)
+        {
             g_entropyMethods[i].checkBox = lv_btn_create(method_cont);
             lv_obj_set_size(g_entropyMethods[i].checkBox, 408, 82);
             lv_obj_align(g_entropyMethods[i].checkBox, LV_ALIGN_TOP_LEFT, 0, 10 + 102 * i);
@@ -849,7 +890,8 @@ static void OpenChangeEntropyHandler(lv_event_t *e)
 static void CloseChangeEntropyHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         GUI_PAGE_DEL(g_changeEntropyPage);
     }
 }
@@ -857,15 +899,21 @@ static void CloseChangeEntropyHandler(lv_event_t *e)
 static void ChangeEntropyMethodConfirmHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         GUI_PAGE_DEL(g_changeEntropyPage);
         g_selectedEntropyMethod = g_selectedEntropyMethodCache;
-        if (g_selectedEntropyMethod == 1) {
-            if (lv_obj_has_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN)) {
+        if (g_selectedEntropyMethod == 1)
+        {
+            if (lv_obj_has_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN))
+            {
                 lv_obj_clear_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN);
             }
-        } else {
-            if (!lv_obj_has_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN)) {
+        }
+        else
+        {
+            if (!lv_obj_has_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN))
+            {
                 lv_obj_add_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN);
             }
         }
@@ -875,19 +923,25 @@ static void ChangeEntropyMethodConfirmHandler(lv_event_t *e)
 static void ChangeEntropyMethodHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         lv_obj_scroll_to_y(g_entropyMethodContainer, 0, LV_ANIM_OFF);
         lv_obj_t *checkBox = lv_event_get_target(e);
-        for (uint32_t i = 0; i < 2; i++) {
-            if (checkBox == g_entropyMethods[i].checkBox) {
+        for (uint32_t i = 0; i < 2; i++)
+        {
+            if (checkBox == g_entropyMethods[i].checkBox)
+            {
                 lv_obj_add_state(g_entropyMethods[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_clear_flag(g_entropyMethods[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(g_entropyMethods[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_clear_flag(g_entropyMethods[i].descCont, LV_OBJ_FLAG_HIDDEN);
-                if (g_selectedEntropyMethodCache != i) {
+                if (g_selectedEntropyMethodCache != i)
+                {
                     g_selectedEntropyMethodCache = i;
                 }
-            } else {
+            }
+            else
+            {
                 lv_obj_clear_state(g_entropyMethods[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_add_flag(g_entropyMethods[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_clear_flag(g_entropyMethods[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
@@ -897,11 +951,11 @@ static void ChangeEntropyMethodHandler(lv_event_t *e)
     }
 }
 
-
 static void OpenChangeEntropyTutorialHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         uint8_t index = TUTORIAL_CHANGE_ENTROPY;
         GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
     }

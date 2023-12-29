@@ -27,6 +27,8 @@
 #include "power_manager.h"
 #include "screen_manager.h"
 
+#define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                //80 seconds
+#define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                (60 * 8)            //8 minutes
 static void SetRtcWakeUp(uint32_t second);
 int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
 
@@ -88,8 +90,9 @@ uint32_t EnterLowPower(void)
         if (GetRtcCounter() >= wakeUpSecond) {
             Gd25FlashOpen();
             Aw32001RefreshState();
-            BatteryIntervalHandler(&sleepSecond);
+            BatteryIntervalHandler();
             printf("GetUsbPowerState()=%d\n", GetUsbPowerState());
+            sleepSecond = (GetUsbPowerState() == USB_POWER_STATE_CONNECT) ? RTC_WAKE_UP_INTERVAL_CHARGING : RTC_WAKE_UP_INTERVAL_LOW_BATTERY;
             AutoShutdownHandler(sleepSecond);
             SetRtcWakeUp(sleepSecond);
             wakeUpSecond = GetRtcCounter() + sleepSecond;

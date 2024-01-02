@@ -69,7 +69,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"about_info_result_export_successful", "Export Successful"},
     {"about_info_result_export_successful_desc", "Your system log has been successfully exported to the MicroSD Card."},
     {"about_info_serial_number", "Serial Number"},
-    {"about_info_verify_checksum_desc", "Please check if the above information matches the webpage. If it does not match, it means that your firmware may have been tampered with. Please stop using it immediately."},
+    {"about_info_verify_checksum_desc", "If the above information matches the checksum in your self-built mh1903.bin, it means that our open-source firmware is consistent with the firmware in your device."},
     {"about_info_verify_checksum_title", "Checksum"},
     {"about_info_verify_firmware_desc", "This is an advanced feature for developers to verify that the firmware running on your Keystone device is consistent with the one we open-sourced."},
     {"about_info_verify_firmware_step1", "Go to Keystone's open-sourced GitHub repo and follow the instructions to build your firmware and get the checksum."},

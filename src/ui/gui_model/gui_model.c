@@ -615,6 +615,8 @@ static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen
     SecretCacheSetEntropy(entropy, entropyLen);
     GetSlip39MnemonicsWords(entropy, ems, 33, memberCnt, threShold, wordsList, &id, &ie);
     SecretCacheSetEms(ems, entropyLen);
+    PrintArray("se generate, ems", ems, 32);
+    PrintArray("se generate, entropy", entropy, 32);
     SecretCacheSetIdentifier(id);
     SecretCacheSetIteration(ie);
     for (int i = 0; i < memberCnt; i++) {
@@ -673,6 +675,8 @@ static int32_t ModelGenerateSlip39EntropyWithDiceRolls(const void *inData, uint3
     SecretCacheSetEntropy(entropy, entropyLen);
     GetSlip39MnemonicsWords(entropy, ems, 33, memberCnt, threShold, wordsList, &id, &ie);
     SecretCacheSetEms(ems, entropyLen);
+    PrintArray("dice generate, ems", ems, 32);
+    PrintArray("dice generate, entropy", entropy, 32);
     SecretCacheSetIdentifier(id);
     SecretCacheSetIteration(ie);
     for (int i = 0; i < memberCnt; i++) {
@@ -729,12 +733,16 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
 
     ems = SecretCacheGetEms(&entropyLen);
     entropy = SecretCacheGetEntropy(&entropyLen);
+    PrintArray("write, ems1", ems, 32);
+    PrintArray("write, entropy1", entropy, 32);
     id = SecretCacheGetIdentifier();
     ie = SecretCacheGetIteration();
 
     MODEL_WRITE_SE_HEAD
     ret = ModelComparePubkey(false, ems, entropyLen, id, ie, NULL);
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
+    PrintArray("write, ems2", ems, 32);
+    PrintArray("write, entropy2", entropy, 32);
     ret = CreateNewSlip39Account(newAccount, ems, entropy, 32, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetIteration());
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
     ClearAccountPassphrase(newAccount);

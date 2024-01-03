@@ -133,6 +133,7 @@ void GuiCreateShareUpdateMnemonic(void *signalParam, uint16_t paramLen)
     GuiUpdateMnemonicKeyBoard(g_shareBackupTile.keyBoard, SecretCacheGetSlip39Mnemonic(g_createShareTileView.currentSlice), false);
     g_shareConfirmTile.keyBoard->wordCnt = g_phraseCnt;
     ArrayRandom(SecretCacheGetSlip39Mnemonic(g_createShareTileView.currentSlice), g_randomBuff, g_phraseCnt);
+    printf("slip39 mnemonic: %s\r\n", SecretCacheGetSlip39Mnemonic(g_createShareTileView.currentSlice));
     GuiUpdateMnemonicKeyBoard(g_shareConfirmTile.keyBoard, g_randomBuff, true);
     GuiStopCircleAroundAnimation();
 }
@@ -463,6 +464,7 @@ int8_t GuiCreateShareNextSlice(void)
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     lv_obj_set_tile_id(g_createShareTileView.tileView, g_createShareTileView.currentTile, 0, LV_ANIM_OFF);
     ArrayRandom(SecretCacheGetSlip39Mnemonic(g_createShareTileView.currentSlice), g_randomBuff, g_phraseCnt);
+    printf("slip39 mnemonic: %s\r\n", SecretCacheGetSlip39Mnemonic(g_createShareTileView.currentSlice));
     GuiUpdateMnemonicKeyBoard(g_shareConfirmTile.keyBoard, g_randomBuff, true);
     return SUCCESS_CODE;
 }

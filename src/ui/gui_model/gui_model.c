@@ -363,12 +363,23 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
     SetLockScreen(false);
     int32_t ret;
 #ifndef COMPILE_SIMULATOR
-    uint8_t *entropy;
+    uint8_t *entropy, *entropyCheck;
     uint32_t entropyLen;
     uint8_t newAccount;
     uint8_t accountCnt;
+    size_t entropyOutLen;
 
     entropy = SecretCacheGetEntropy(&entropyLen);
+    entropyCheck = SRAM_MALLOC(entropyLen);
+    ret = bip39_mnemonic_to_bytes(NULL, SecretCacheGetMnemonic(), entropyCheck, entropyLen, &entropyOutLen);
+    if (memcmp(entropyCheck, entropy, entropyLen) != 0) {
+        CLEAR_ARRAY(entropyCheck);
+        SRAM_FREE(entropyCheck);
+        SetLockScreen(enable);
+        return 0;
+    }
+    CLEAR_ARRAY(entropyCheck);
+    SRAM_FREE(entropyCheck);
     MODEL_WRITE_SE_HEAD
     ret = ModelComparePubkey(true, NULL, 0, 0, 0, NULL);
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
@@ -725,7 +736,10 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     uint8_t accountCnt;
     uint16_t id;
     uint8_t ie;
+    uint8_t msCheck[32], emsCheck[32];
+    uint8_t threShold;
     int ret;
+
 
     ems = SecretCacheGetEms(&entropyLen);
     entropy = SecretCacheGetEntropy(&entropyLen);
@@ -733,6 +747,22 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     ie = SecretCacheGetIteration();
 
     MODEL_WRITE_SE_HEAD
+    ret = Slip39CheckFirstWordList(SecretCacheGetSlip39Mnemonic(0), SLIP39_MNEMONIC_WORDS_MAX, &threShold);
+    char *words[threShold];
+    for (int i = 0; i < threShold; i++) {
+        words[i] = SecretCacheGetSlip39Mnemonic(i);
+    }
+    ret = Sli39GetMasterSecret(threShold, SLIP39_MNEMONIC_WORDS_MAX, emsCheck, msCheck, words, &id, &ie);
+    if (ret != SUCCESS_CODE) {
+        printf("get master secret error\n");
+        break;
+    }
+    if ((ret != 0) || (memcmp(msCheck, entropy, entropyLen) != 0) || (memcmp(emsCheck, ems, entropyLen) != 0)) {
+        ret = ERR_KEYSTORE_MNEMONIC_INVALID;
+        break;
+    }
+    CLEAR_ARRAY(emsCheck);
+    CLEAR_ARRAY(msCheck);
     ret = ModelComparePubkey(false, ems, entropyLen, id, ie, NULL);
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
     ret = CreateNewSlip39Account(newAccount, ems, entropy, 32, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetIteration());

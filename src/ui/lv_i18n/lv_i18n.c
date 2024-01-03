@@ -74,7 +74,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"about_info_verify_firmware_desc", "This is an advanced feature for developers to verify that the firmware running on your Keystone device is consistent with the one we open-sourced."},
     {"about_info_verify_firmware_step1", "Go to Keystone's open-sourced GitHub repo and follow the instructions to build your firmware and get the checksum."},
     {"about_info_verify_firmware_step2", "Click the #F5870A Checksum# button next to the firmware download."},
-    {"about_info_verify_firmware_step3", "Tap the #F5870A Show Checksum# button below and compare the info shown on the webpage and your device."},
+    {"about_info_verify_firmware_step3", "Tap the #F5870A Show Checksum# button below and compare the string with the one you got in the first step."},
     {"about_info_verify_firmware_title", "Verify Firmware"},
     {"about_info_verify_source_code_title", "Verify Source Code"},
     {"about_keystone_discord", "Discord"},

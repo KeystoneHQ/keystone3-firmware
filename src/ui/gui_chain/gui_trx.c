@@ -133,7 +133,8 @@ UREncodeResult *GuiGetTrxSignQrCodeData(void)
         uint8_t seed[64];
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
-        encodeResult = tron_sign_keystone(data, urType, mfp, sizeof(mfp), xPub, SOFTWARE_VERSION, seed, sizeof(seed));
+        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+        encodeResult = tron_sign_keystone(data, urType, mfp, sizeof(mfp), xPub, SOFTWARE_VERSION, seed, len);
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);

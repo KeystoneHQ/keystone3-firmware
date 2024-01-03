@@ -333,6 +333,7 @@ static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
 
 static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t inDataLen)
 {
+#ifndef COMPILE_SIMULATOR
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t retData;
@@ -353,6 +354,7 @@ static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t in
     memset_s(mnemonic, strlen(mnemonic), 0, strlen(mnemonic));
     SRAM_FREE(mnemonic);
     SetLockScreen(enable);
+#endif
     return SUCCESS_CODE;
 }
 
@@ -1488,7 +1490,7 @@ static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen)
     f_close(&fp);
     SetPageLockScreen(true);
 #else
-    percent = 20;
+    percent = 100;
     char *hash = "131b3a1e9314ba076f8e459a1c4c6713eeb38862f3eb6f9371360aa234cdde1f";
     SecretCacheSetChecksum(hash);
     GuiEmitSignal(SIG_SETTING_SHA256_PERCENT, &percent, sizeof(percent));

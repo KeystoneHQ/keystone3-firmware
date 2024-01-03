@@ -3,7 +3,9 @@
 #include "gui_api.h"
 #include "screen_manager.h"
 #include "gui_model.h"
-
+#ifndef COMPILE_SIMULATOR
+#include "user_msg.h"
+#endif
 
 /* DEFINES */
 #define OPENED_VIEW_MAX 20          // the litmit of views
@@ -23,6 +25,7 @@ static char *GuiFrameIdToName(SCREEN_ID_ENUM ID);
 static GUI_VIEW *g_workingView = NULL;
 static uint32_t g_viewCnt = 0;      // Record how many views are opened
 
+#ifndef COMPILE_SIMULATOR
 static GUI_VIEW *g_viewsTable[] = {
     &g_initView,
     &g_lockView,
@@ -66,7 +69,7 @@ static GUI_VIEW *g_viewsTable[] = {
     &g_transactionSignatureView,
     &g_diceRollsView
 };
-
+#endif
 
 bool GuiViewHandleEvent(GUI_VIEW *view, uint16_t usEvent, void *param, uint16_t usLen)
 {
@@ -300,10 +303,10 @@ void GuiViewsTest(int argc, char *argv[])
     }
     if (strcmp(argv[0], "open") == 0) {
         printf("open view %s\n", GuiFrameIdToName(view->id));
-        GuiFrameOpenView(view);
+        PubValueMsg(UI_MSG_OPEN_VIEW, (uint32_t)view);
     } else if (strcmp(argv[0], "close") == 0) {
         printf("close view %s\n", GuiFrameIdToName(view->id));
-        GuiFrameCLoseView(view);
+        PubValueMsg(UI_MSG_CLOSE_VIEW, (uint32_t)view);
     } else if (strcmp(argv[0], "debug") == 0) {
         GuiFrameDebugging();
     }

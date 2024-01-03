@@ -31,16 +31,6 @@ __ALIGN_BEGIN static uint8_t CompositeConfigDescriptor[USB_COMPOSITE_CONFIG_DESC
     USBD_IDX_CONFIG_STR,                              /*iConfiguration: Index of string descriptor describing the configuration*/
     0xE0,                              /*bmAttributes: bus powered and Support Remote Wake-up */
     0xC8,                              /*MaxPower 400 mA: this current is used for detecting Vbus*/
-
-    //0x09,   /* bLength: Configuration Descriptor size */
-    //USB_DESC_TYPE_CONFIGURATION,      /* bDescriptorType: Configuration */
-    //0x00,                /* wTotalLength:no of returned bytes */
-    //0x00,
-    //0x02,   /* bNumInterfaces: 1 interface for WINUSB */
-    //0x01,   /* bConfigurationValue: Configuration value */
-    //USBD_IDX_PRODUCT_STR,   /* iConfiguration: Index of string descriptor describing the configuration */
-    //0xC0,   /* bmAttributes: self powered */
-    //0x32,   /* MaxPower 50*2 mA */
 };
 
 
@@ -141,6 +131,7 @@ static uint8_t *GetCompositeConfigDescriptor(uint8_t speed, uint16_t *length)
     uint16_t descriptorSize = 0;
     uint8_t *descriptor;
     uint8_t interfaceIndex = 0;
+    return CompositeConfigDescriptor;
 
     g_interfaceCount = 0;
     *length = 9;
@@ -165,8 +156,12 @@ static uint8_t *GetCompositeConfigDescriptor(uint8_t speed, uint16_t *length)
     g_interfaceCount++;
 
     CompositeConfigDescriptor[2] = *length;
+    CompositeConfigDescriptor[3] = 0;
     CompositeConfigDescriptor[4] = g_interfaceCount;
-    //printf("length=%d\r\n", *length);
+    printf("length = %d\r\n", *length);
+    printf("g_interfaceCount = %d\r\n", g_interfaceCount);
+    printf("CompositeConfigDescriptor bDescriptorType = %d\r\n", CompositeConfigDescriptor[2]);
+    printf("CompositeConfigDescriptor bNumInterfaces = %d\r\n", CompositeConfigDescriptor[4]);
     //PrintArray("Descriptor", CompositeConfigDescriptor, *length);
     return CompositeConfigDescriptor;
 }

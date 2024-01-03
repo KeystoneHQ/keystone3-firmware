@@ -3,12 +3,10 @@
 #include "mhscpu.h"
 #include "drv_sdcard.h"
 #include "drv_sdio.h"
-
 #include "drv_sys.h"
 #include "mhscpu_gpio.h"
 #include "low_power.h"
 #include "user_msg.h"
-
 
 SDCardInfoStruct SDCardInfo;
 
@@ -50,7 +48,6 @@ bool SDCardPowerUp(void)
             if (ocr & BIT30) {
                 SDCardInfo.Capacity = SDCardCapacityHigh;
             }
-            printf("Power up, OCR: %08X.\n", ocr);
             return true;
         }
     }
@@ -59,11 +56,26 @@ bool SDCardPowerUp(void)
     return false;
 }
 
+void PrintSdCardInfo(SDCardInfoStruct info)
+{
+    printf("SDCardInfo:\n");
+    printf("  ManufacturerID: %02X\n", info.ManufacturerID);
+    printf("  ApplicationID: %04X\n", info.ApplicationID);
+    printf("  ProductName: %.5s\n", info.ProductName);
+    printf("  ProductRevision: %02X\n", info.ProductRevision);
+    printf("  ProductSN: %08X\n", info.ProductSN);
+    printf("  ManufacturingDate: %06X\n", info.ManufacturingDate);
+    printf("  Class: %d\n", info.Class);
+    printf("  BlockSize: %u\n", info.BlockSize);
+    printf("  DeviceSize: %u MB\n", info.DeviceSize);
+    printf("  TransferRate: %d Kbps\n", info.TransferRate);
+}
+
 void GPIO_RemapConfiguration(void)
 {
     GPIO_InitTypeDef ioConfig;
     ioConfig.GPIO_Mode  = GPIO_Mode_Out_PP;
-    ioConfig.GPIO_Pin   = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5; //| GPIO_Pin_6 | GPIO_Pin_7;
+    ioConfig.GPIO_Pin   = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5;
     ioConfig.GPIO_Remap = GPIO_Remap_2;
     GPIO_Init(GPIOD, &ioConfig);
 
@@ -76,16 +88,16 @@ void GPIO_RemapConfiguration(void)
 
 bool SDCardSetup(void)
 {
-    SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_SDIOM, ENABLE);//=======added
-    SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_SDIOM, ENABLE); //========added
+    SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_SDIOM, ENABLE);
+    SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_SDIOM, ENABLE);
     GPIO_RemapConfiguration();
 
-    SDIO_GlobalITCmd(ENABLE);               ///< Enable interrupts
-    SDIO_SetPowerState(SDIO_PowerState_ON); ///< Power on for up to 01 cards
+    SDIO_GlobalITCmd(ENABLE);
+    SDIO_SetPowerState(SDIO_PowerState_ON);
 
     SDIOClockConfig(400, false, true);
 
-    SDIO->INTMASK = 0; // Enable all interrupt of controller
+    SDIO->INTMASK = 0;
 
     SDIO_DMAInitTypeDef sdioDMAConfig;
     sdioDMAConfig.SDIO_DMABurstSize     = SDIO_DMA_BurstSize_8;
@@ -101,21 +113,7 @@ bool SDCardSetup(void)
     if (!SDIOExecuteCommand(SD_CMD_ALL_SEND_CID, 0, SDIOResponseR2, SDCardInfo.CID))
         return false;
 
-    // printf(                            //
-    //     "SDCard CID Info: \n"          //
-    //     "  ManufacturerID: %02X\n"     //
-    //     "  ApplicationID: %04X\n"      //
-    //     "  ProductName: %.5s\n"        //
-    //     "  ProductRevision: %02X\n"    //
-    //     "  ProductSN: %08X\n"          //
-    //     "  ManufacturingDate: %06X\n", //
-    //     SDCardInfo.ManufacturerID,     //
-    //     SDCardInfo.ApplicationID,      //
-    //     SDCardInfo.ProductName,        //
-    //     SDCardInfo.ProductRevision,    //
-    //     SDCardInfo.ProductSN,          //
-    //     SDCardInfo.ManufacturingDate   //
-    // );
+    // PrintSdCardInfo(SDCardInfo);
 
     // CMD3: Get RCA
     if (!SDIOExecuteCommand(SD_CMD_SET_REL_ADDR, 0, SDIOResponseR6, (uint32_t *)&SDCardInfo.CardStatus))
@@ -135,19 +133,6 @@ bool SDCardSetup(void)
 
     SDCardInfo.DeviceSize = SDCardInfo.CSDStruct ? ((SDCardInfo.V2.DeviceSize + 1) >> 1)
                             : ((SDCardInfo.V1.DeviceSize + 1) << (SDCardInfo.V1.DeviceSizeMultiplier + SDCardInfo.MaxReadLength - 8));
-
-    // printf(                        //
-    //     "SDCard CSD Info: \n"      //
-    //     "  MaxDataRate: %d Kbps\n" //
-    //     "  Class: %d\n"            //
-    //     "  BlockSize: %u\n"        //
-    //     "  DeviceSize: %u MB\n"    //
-    //     ,                          //
-    //     SDCardInfo.TransferRate,   //
-    //     SDCardInfo.Class,          //
-    //     SDCardInfo.BlockSize,      //
-    //     SDCardInfo.DeviceSize      //
-    // );
 
     // CMD7: Select Card
     if (!SDIOExecuteCommand(SD_CMD_SEL_DESEL_CARD, SDCardInfo.RCA << 16, SDIOResponseR1b, NULL))
@@ -217,14 +202,6 @@ bool SDCardTransferBlock(bool isWrite, uint32_t address, uint8_t* buffer, uint32
     return true;
 }
 
-/**
- * ��������SD_Init
- * ����  ����ʼ��SD����ʹ�����ھ���״̬(׼����������)
- * ����  ����
- * ���  ��-SD_Error SD���������
- *         �ɹ�ʱ��Ϊ SD_OK
- * ����  ���ⲿ����
- */
 SD_Error SD_Init(void)
 {
     if (!SDCardSetup()) {
@@ -235,28 +212,12 @@ SD_Error SD_Init(void)
     return 0;
 }
 
-
-/**
- * @brief  Allows to read one block from a specified address in a card. The Data
- *         transfer can be managed by DMA mode or Polling mode.
- * @note   This operation should be followed by two functions to check if the
- *         DMA Controller and SD Card status.
- *          - SD_ReadWaitOperation(): this function insure that the DMA
- *            controller has finished all data transfer.
- *          - SD_GetStatus(): to check that the SD Card has finished the
- *            data transfer and it is ready for data.
- * @param  readbuff: pointer to the buffer that will contain the received data
- * @param  ReadAddr: Address from where data are to be read.
- * @param  BlockSize: the SD card Data block size. The Block size should be 512.
- * @retval SD_Error: SD Card Error code.
- */
 SD_Error SD_ReadBlock(uint8_t* readbuff, uint32_t ReadAddr, uint16_t BlockSize)
 {
     if (!SDCardTransferBlock(false, ReadAddr, readbuff, 1)) {
         printf("SDCard read failed!\n");
         return 1;
     }
-    // printf("SDCard erase-write-read %d blocks @ 0x%08X test is successful!\n", 1, ReadAddr);
     return 0;
 }
 
@@ -273,20 +234,6 @@ SD_Error SD_WaitWriteOperation(void)
     return errorstatus;
 }
 
-/**
- * @brief  Allows to write one block starting from a specified address in a card.
- *         The Data transfer can be managed by DMA mode or Polling mode.
- * @note   This operation should be followed by two functions to check if the
- *         DMA Controller and SD Card status.
- *          - SD_ReadWaitOperation(): this function insure that the DMA
- *            controller has finished all data transfer.
- *          - SD_GetStatus(): to check that the SD Card has finished the
- *            data transfer and it is ready for data.
- * @param  writebuff: pointer to the buffer that contain the data to be transferred.
- * @param  WriteAddr: Address from where data are to be read.
- * @param  BlockSize: the SD card Data block size. The Block size should be 512.
- * @retval SD_Error: SD Card Error code.
- */
 SD_Error SD_WriteBlock(uint8_t* writebuff, uint32_t WriteAddr, uint16_t BlockSize)
 {
     if (!SDCardTransferBlock(true, WriteAddr, writebuff, 1)) {

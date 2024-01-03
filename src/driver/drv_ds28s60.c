@@ -18,7 +18,7 @@
 #include "assert.h"
 
 //#define DS28S60_TEST_MODE
-//#define DS28S60_FORCE_BINDING
+#define DS28S60_FORCE_BINDING
 
 #define DS28S60_HARDWARE_EVB            0
 #define DS28S60_HARDWARE_EVT0           1

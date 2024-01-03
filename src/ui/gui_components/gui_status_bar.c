@@ -479,7 +479,7 @@ static lv_obj_t *CreateUndo(lv_obj_t *navBar)
 
     btn = lv_label_create(navBar);
     lv_label_set_text(btn, "");
-    lv_obj_set_size(btn, 106, 42);
+    lv_obj_set_size(btn, 106, 48);
     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, GRAY_COLOR, 0);
     lv_obj_add_flag(btn, LV_OBJ_FLAG_CLICKABLE);
@@ -492,12 +492,12 @@ static lv_obj_t *CreateUndo(lv_obj_t *navBar)
     lv_obj_set_style_text_opa(textLabel, LV_OPA_90, LV_PART_MAIN);
     lv_label_set_long_mode(textLabel, LV_LABEL_LONG_WRAP);
     lv_obj_set_style_bg_opa(textLabel, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_align(textLabel, LV_ALIGN_TOP_LEFT, 42, 6);
+    lv_obj_align(textLabel, LV_ALIGN_TOP_LEFT, 42, 9);
     lv_obj_set_style_text_color(textLabel, WHITE_COLOR, LV_PART_MAIN);
 
     img = GuiCreateImg(btn, &imgUndo);
     lv_obj_set_size(img, 24, 24);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 12, 9);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 12, 12);
 
     return btn;
 }

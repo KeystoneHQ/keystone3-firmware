@@ -755,11 +755,7 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
         words[i] = SecretCacheGetSlip39Mnemonic(i);
     }
     ret = Sli39GetMasterSecret(threShold, SLIP39_MNEMONIC_WORDS_MAX, emsCheck, msCheck, words, &id, &ie);
-    if (ret != SUCCESS_CODE) {
-        printf("get master secret error\n");
-        break;
-    }
-    if ((ret != 0) || (memcmp(msCheck, entropy, entropyLen) != 0) || (memcmp(emsCheck, ems, entropyLen) != 0)) {
+    if ((ret != SUCCESS_CODE) || (memcmp(msCheck, entropy, entropyLen) != 0) || (memcmp(emsCheck, ems, entropyLen) != 0)) {
         ret = ERR_KEYSTORE_MNEMONIC_INVALID;
         break;
     }

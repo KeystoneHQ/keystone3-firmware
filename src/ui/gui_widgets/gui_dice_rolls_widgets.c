@@ -30,6 +30,7 @@ static lv_obj_t *g_maxLimitLabel;
 static lv_obj_t *g_hintLabel;
 static lv_obj_t *g_confirmBtn;
 static bool g_confirmValid = false;
+static bool g_hitMaxLimits = false;
 
 void GuiDiceRollsWidgetsInit(uint8_t seed_type)
 {
@@ -202,7 +203,7 @@ static void ClickDiceHandler(lv_event_t *e)
         for (size_t i = 0; i < 6; i++) {
             if (g_diceImgs[i] == img) {
                 const char *txt = lv_textarea_get_text(g_diceTextArea);
-                if (strlen(txt) == 256) {
+                if (strlen(txt) >= 256) {
                     return;
                 }
 
@@ -244,6 +245,14 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
             if (!lv_obj_has_flag(g_maxLimitLabel, LV_OBJ_FLAG_HIDDEN)) {
                 lv_obj_add_flag(g_maxLimitLabel, LV_OBJ_FLAG_HIDDEN);
             }
+            if(g_hitMaxLimits)
+            {
+                g_hitMaxLimits = false;
+                for (size_t i = 0; i < 6; i++)
+                {
+                    lv_obj_set_style_img_opa(g_diceImgs[i], LV_OPA_100, LV_PART_MAIN);
+                }
+            }
         } else {
             if (lv_obj_has_flag(g_maxLimitLabel, LV_OBJ_FLAG_HIDDEN)) {
                 lv_obj_clear_flag(g_maxLimitLabel, LV_OBJ_FLAG_HIDDEN);
@@ -251,6 +260,14 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
             if (!lv_obj_has_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN)) {
                 lv_obj_add_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN);
             }
+            if(!g_hitMaxLimits) {
+                for (size_t i = 0; i < 6; i++)
+                {
+                    lv_obj_set_style_img_opa(g_diceImgs[i], LV_OPA_64, LV_PART_MAIN);
+                }
+                g_hitMaxLimits = true;
+            }
+            
         }
 
         lv_label_set_text_fmt(g_rollsLabel, "%d", length);
@@ -258,6 +275,7 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
             if (!g_confirmValid) {
                 g_confirmValid = true;
                 lv_obj_remove_style(g_confirmBtn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
+                lv_obj_set_style_text_opa(g_confirmBtn, LV_OPA_100, LV_PART_MAIN);
                 if (!lv_obj_has_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE)) {
                     lv_obj_add_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE);
                 }
@@ -288,6 +306,7 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
             if (g_confirmValid) {
                 g_confirmValid = false;
                 lv_obj_add_style(g_confirmBtn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
+                lv_obj_set_style_text_opa(g_confirmBtn, LV_OPA_30, LV_PART_MAIN);
                 if (lv_obj_has_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE)) {
                     lv_obj_clear_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE);
                 }

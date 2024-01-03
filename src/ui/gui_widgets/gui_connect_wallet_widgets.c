@@ -331,7 +331,7 @@ static void ReturnShowQRHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_coinListCont)
-        GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
+        QRCodePause(false);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
     }
@@ -381,6 +381,7 @@ static void ConfirmSelectCompanionAppCoinsHandler(lv_event_t *e)
         g_isCoinReselected = true;
         memcpy(g_companionAppcoinState, g_tempCompanionAppcoinState, sizeof(g_tempCompanionAppcoinState));
         GUI_DEL_OBJ(g_coinListCont)
+        GuiAnimatingQRCodeDestroyTimer();
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
@@ -394,6 +395,7 @@ static void ConfirmSelectFewchaCoinsHandler(lv_event_t *e)
         g_isCoinReselected = true;
         memcpy(g_fewchaCoinState, g_tempFewchaCoinState, sizeof(g_tempFewchaCoinState));
         GUI_DEL_OBJ(g_coinListCont)
+        GuiAnimatingQRCodeDestroyTimer();
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
@@ -402,8 +404,13 @@ static void ConfirmSelectFewchaCoinsHandler(lv_event_t *e)
 
 static void RefreshAddressIndex(uint32_t index)
 {
-    g_xrpAddressIndex[GetCurrentAccountIndex()] = index;
-    GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
+    if (g_xrpAddressIndex[GetCurrentAccountIndex()] != index) {
+        g_xrpAddressIndex[GetCurrentAccountIndex()] = index;
+        GuiAnimatingQRCodeDestroyTimer();
+        GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
+    } else {
+        QRCodePause(false);
+    }
     g_coinListCont = NULL;
 }
 
@@ -415,7 +422,7 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
             return;
         }
 #ifndef COMPILE_SIMULATOR
-        GuiAnimatingQRCodeDestroyTimer();
+        QRCodePause(true);
 #endif
         if (g_connectWalletTileView.walletIndex == WALLET_LIST_FEWCHA) {
             GuiCreateSelectFewchaCoinWidget();

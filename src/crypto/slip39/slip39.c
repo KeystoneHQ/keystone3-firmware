@@ -716,11 +716,7 @@ void GetSlip39MnemonicsWords(uint8_t *masterSecret, uint8_t *ems, uint8_t wordCn
 
 int Slip39GetSeed(uint8_t *ems, uint8_t *seed, uint8_t emsLen, const char *passphrase, uint8_t ie, uint16_t id)
 {
-    int ret = _decrypt(ems, emsLen, ems, emsLen, (uint8_t *)passphrase, strlen(passphrase), ie, id);
-    if (ret == 0) {
-        memcpy(seed, ems, emsLen);
-    }
-    return ret;
+    return _decrypt(ems, emsLen, seed, emsLen, (uint8_t *)passphrase, strlen(passphrase), ie, id);
 }
 
 int Sli39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, uint8_t *masterSecret,

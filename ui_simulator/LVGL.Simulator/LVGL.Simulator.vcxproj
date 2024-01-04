@@ -172,6 +172,8 @@
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgConfirmSlider.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgConnect.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgConnection.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgConnectWithRabby.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgConnectWithWallet.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgContract.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgConversion.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgCosmosTag.c" />
@@ -179,6 +181,14 @@
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgDelete.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgDeleteL.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgDelWallet.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice1.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice2.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice3.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice4.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice5.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice6.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDiceGrey.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgDiscord.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgEdit.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgEns.c" />
@@ -235,6 +245,7 @@
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgTutorialS.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgTwitter.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgUncheckCircle.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgUndo.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgUnitConversion.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgUnknown.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgUsb.c" />
@@ -345,6 +356,7 @@
     <ClCompile Include="..\..\src\ui\gui_views\gui_create_share_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_create_wallet_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_device_public_key_view.c" />
+    <ClCompile Include="..\..\src\ui\gui_views\gui_dice_rolls_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_dispaly_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_firmware_update_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_forget_pass_view.c" />
@@ -370,6 +382,7 @@
     <ClCompile Include="..\..\src\ui\gui_views\gui_transaction_detail_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_transaction_signature_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_tutorial_view.c" />
+    <ClCompile Include="..\..\src\ui\gui_views\gui_usb_transport_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_utxo_receive_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_views.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_wallet_tutorial_view.c" />
@@ -386,6 +399,7 @@
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_create_share_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_create_wallet_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_device_public_key_widgets.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_dice_rolls_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_display_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_enter_passcode.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_firmware_process_widgets.c" />
@@ -418,6 +432,7 @@
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_transaction_signature_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_tutorial_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_usb_connection_widgets.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_usb_transport_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_utxo_receive_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_wallet_tutorial_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_web_auth_result_widgets.c" />

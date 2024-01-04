@@ -18,7 +18,6 @@
 
 #define AW32001_ADDR                                0x49
 
-
 #define AW320XX_REG0_SCR                            (0x00)
 #define AW320XX_REG1_POCR                           (0x01)
 #define AW320XX_REG2_CCR                            (0x02)

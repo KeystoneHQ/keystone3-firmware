@@ -127,6 +127,16 @@ static void UiDisplayTask(void *argument)
                 GuiFrameOpenViewWithParam(&g_transactionDetailView, &rcvMsg.value, sizeof(rcvMsg.value));
             }
             break;
+            case UI_MSG_OPEN_VIEW: {
+                GUI_VIEW *view = (GUI_VIEW *)rcvMsg.value;
+                GuiFrameOpenView(view);
+            }
+            break;
+            case UI_MSG_CLOSE_VIEW: {
+                GUI_VIEW *view = (GUI_VIEW *)rcvMsg.value;
+                GuiFrameCLoseView(view);
+            }
+            break;
             default:
                 break;
             }

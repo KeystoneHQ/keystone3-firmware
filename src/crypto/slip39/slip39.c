@@ -141,8 +141,6 @@ int32_t slip39_data_for_words(
     size_t size            // total space available
 )
 {
-
-
     // The bottom bit of the last byte will always show up in
     // the bottom bit of the last word.
 
@@ -154,7 +152,6 @@ int32_t slip39_data_for_words(
     //        X         X         X         X         *
     // words  4         3         2         1         0
     //
-
 
     uint32_t word = 0;
     int16_t bits = -2 * (wordsize % 4);
@@ -244,7 +241,6 @@ uint32_t slip39_words_for_strings(
     char buf[16];
     uint8_t i = 0;
     uint32_t j = 0;
-
 
     const char *p = words_string;
 
@@ -685,7 +681,6 @@ extern void TrngGet(void *buf, uint32_t len);
 void GetSlip39MnemonicsWords(uint8_t *masterSecret, uint8_t *ems, uint8_t wordCnt, uint8_t memberCnt, uint8_t memberThreshold,
                              char *wordsList[], uint16_t *id, uint8_t *ie)
 {
-//    uint8_t masterSecret[32] = {0x12, 0xc4, 0xac, 0x53, 0xfc, 0xc6, 0xd3, 0x3e, 0x38, 0xc6, 0x3f, 0xde, 0x60, 0xda, 0xe8, 0x9f, 0x12, 0xc4, 0xac, 0x53, 0xfc, 0xc6, 0xd3, 0x3e, 0x38, 0xc6, 0x3f, 0xde, 0x60, 0xda, 0xe8, 0x9f};
     uint8_t *passPhrase = (uint8_t *)"";
     uint8_t iterationExponent  = 0;
     uint16_t identifier = 0;

@@ -1418,7 +1418,7 @@ static void OpenDerivationPath()
 
     lv_obj_t *tmCont = GuiCreateContainerWithParent(bgCont, 480, 114);
     lv_obj_align(tmCont, LV_ALIGN_BOTTOM_LEFT, 0, 0);
-    lv_obj_set_style_bg_color(egCont, BLACK_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(tmCont, BLACK_COLOR, LV_PART_MAIN);
     lv_obj_t *btn = GuiCreateBtn(tmCont, USR_SYMBOL_CHECK);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -36, 0);
     lv_obj_add_event_cb(btn, ConfirmDerivationHandler, LV_EVENT_CLICKED, NULL);

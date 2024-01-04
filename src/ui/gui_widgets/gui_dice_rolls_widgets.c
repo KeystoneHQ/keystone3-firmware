@@ -133,6 +133,7 @@ static void GuiCreatePage(lv_obj_t *parent)
     lv_obj_clear_flag(btn, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(btn, ConfirmHandler, LV_EVENT_CLICKED, textArea);
     lv_obj_add_style(btn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(btn, LV_OPA_30, LV_PART_MAIN);
     g_confirmBtn = btn;
 
     label = GuiCreateIllustrateLabel(parent, "0");

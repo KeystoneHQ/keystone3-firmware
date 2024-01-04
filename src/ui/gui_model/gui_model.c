@@ -375,12 +375,12 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
     entropyCheck = SRAM_MALLOC(entropyLen);
     ret = bip39_mnemonic_to_bytes(NULL, SecretCacheGetMnemonic(), entropyCheck, entropyLen, &entropyOutLen);
     if (memcmp(entropyCheck, entropy, entropyLen) != 0) {
-        CLEAR_ARRAY(entropyCheck);
+        memset_s(entropyCheck, entropyLen, 0, entropyLen);
         SRAM_FREE(entropyCheck);
         SetLockScreen(enable);
         return 0;
     }
-    CLEAR_ARRAY(entropyCheck);
+    memset_s(entropyCheck, entropyLen, 0, entropyLen);
     SRAM_FREE(entropyCheck);
     MODEL_WRITE_SE_HEAD
     ret = ModelComparePubkey(true, NULL, 0, 0, 0, NULL);

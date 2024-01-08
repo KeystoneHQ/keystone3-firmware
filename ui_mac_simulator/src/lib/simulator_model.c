@@ -622,33 +622,3 @@ bool FpModuleIsChipState(void)
 {
     return false;
 }
-
-
-void FpDeleteRegisterFinger(void)
-{
-    
-}
-
-void FpSaveKeyInfo(bool add)
-{
-
-}
-
-bool GetLvglHandlerStatus(void)
-{
-    return true;
-}
-
-int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
-{
-    return 0;
-}
-
-bool FatfsFileExist(const char *path){
-    return true;
-}
-
-bool FpModuleIsChipState(void)
-{
-    return false;
-}

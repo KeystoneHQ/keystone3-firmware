@@ -449,13 +449,8 @@ static void ConfirmSelectFewchaCoinsHandler(lv_event_t *e)
 
 static void RefreshAddressIndex(uint32_t index)
 {
-    if (g_xrpAddressIndex[GetCurrentAccountIndex()] != index) {
-        SetAddrIndex(index);
-        GuiAnimatingQRCodeDestroyTimer();
-        GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
-    } else {
-        QRCodePause(false);
-    }
+    SetAddrIndex(index);
+    GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
     g_coinListCont = NULL;
 }
 
@@ -1298,10 +1293,10 @@ static void UpdategAddress(void)
 {
     switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
-        UpdateSolEgAddress(GetSolflareAccountType());
+        UpdateSolEgAddress(GetCurrentSelectedIndex());
         break;
     case WALLET_LIST_SENDER:
-        UpdateNearEgAddress(GetNearAccountType());
+        UpdateNearEgAddress(GetCurrentSelectedIndex());
         break;
     default:
         UpdateEthEgAddress(GetCurrentSelectedIndex());

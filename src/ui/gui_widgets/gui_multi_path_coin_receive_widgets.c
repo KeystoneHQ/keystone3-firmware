@@ -66,6 +66,8 @@ typedef struct {
     lv_obj_t *addressButton;
     lv_obj_t *leftBtnImg;
     lv_obj_t *rightBtnImg;
+    lv_obj_t *confirmAddrTypeBtn;
+    lv_obj_t *confirmAddrIndexBtn;
     lv_obj_t *inputAddressLabel;
     lv_obj_t *overflowLabel;
     PathWidgetsItem_t changePathWidgets[3];
@@ -137,6 +139,10 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
 static void GetSolPathItemSubTitle(char* subTitle, int index);
 static void GuiCreateNearWidget(lv_obj_t *parent);
 static void ModelGetNearAddress(uint32_t index, AddressDataItem_t *item);
+static void UpdateConfirmAddrIndexBtn(void);
+static void UpdateConfirmAddrTypeBtn(void);
+static void UpdateAddrTypeCheckbox(uint8_t i, bool isChecked);
+static bool IsOnlyOneAddress(uint8_t addrType);
 
 static MultiPathCoinReceiveWidgets_t g_multiPathCoinReceiveWidgets;
 static EthereumReceiveTile g_multiPathCoinReceiveTileNow;
@@ -160,6 +166,7 @@ static lv_obj_t *g_goToAddressIcon;
 
 static uint32_t g_showIndex;
 static uint32_t g_selectIndex;
+static uint32_t g_selectType = 0;
 static uint8_t g_currentAccountIndex = 0;
 static uint32_t g_ethSelectIndex[3] = {0};
 static uint32_t g_solSelectIndex[3] = {0};
@@ -172,7 +179,6 @@ static HOME_WALLET_CARD_ENUM g_chainCard;
 static lv_obj_t *g_derivationPathDescLabel = NULL;
 static char * *g_derivationPathDescs = NULL;
 static lv_obj_t *g_egCont = NULL;
-
 
 static void InitDerivationPathDesc(uint8_t chain)
 {
@@ -197,6 +203,7 @@ void GuiMultiPathCoinReceiveInit(uint8_t chain)
     g_chainCard = chain;
     g_currentAccountIndex = GetCurrentAccountIndex();
     g_selectIndex = GetCurrentSelectIndex();
+    g_selectType = GetPathIndex();
 
     g_pageWidget = CreatePageWidget();
     g_multiPathCoinReceiveWidgets.cont = g_pageWidget->contentZone;
@@ -255,11 +262,17 @@ void GuiMultiPathCoinReceiveRefresh(void)
         }
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, MoreHandler, NULL);
         RefreshQrCode();
+        if (IsOnlyOneAddress(GetPathIndex())) {
+            lv_obj_add_flag(g_goToAddressIcon, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_clear_flag(g_goToAddressIcon, LV_OBJ_FLAG_HIDDEN);
+        }
         break;
     case RECEIVE_TILE_SWITCH_ACCOUNT:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        g_selectIndex = GetCurrentSelectIndex();
         g_showIndex = g_selectIndex / 5 * 5;
         if (g_showIndex < 5) {
             lv_obj_set_style_img_opa(g_multiPathCoinReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);
@@ -271,11 +284,17 @@ void GuiMultiPathCoinReceiveRefresh(void)
             lv_obj_set_style_img_opa(g_multiPathCoinReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
             lv_obj_set_style_img_opa(g_multiPathCoinReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
         }
+        UpdateConfirmAddrIndexBtn();
         break;
     case RECEIVE_TILE_CHANGE_PATH:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        g_selectType = GetPathIndex();
+        for (uint32_t i = 0; i < 3; i++) {
+            UpdateAddrTypeCheckbox(i, g_selectType == i);
+        }
+        UpdateConfirmAddrTypeBtn();
         break;
     default:
         break;
@@ -512,6 +531,61 @@ static void GuiCreateSwitchAddressWidget(lv_obj_t *parent)
     RefreshSwitchAccount();
 }
 
+static bool IsAddrIndexSelectChanged()
+{
+    return g_selectIndex != GetCurrentSelectIndex();
+}
+
+static void UpdateConfirmAddrIndexBtn(void)
+{
+    if (IsAddrIndexSelectChanged()) {
+        lv_obj_set_style_bg_opa(g_multiPathCoinReceiveWidgets.confirmAddrIndexBtn, LV_OPA_COVER, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(g_multiPathCoinReceiveWidgets.confirmAddrIndexBtn, 0), LV_OPA_COVER, LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_bg_opa(g_multiPathCoinReceiveWidgets.confirmAddrIndexBtn, LV_OPA_30, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(g_multiPathCoinReceiveWidgets.confirmAddrIndexBtn, 0), LV_OPA_30, LV_PART_MAIN);
+    }
+}
+
+static bool IsAddrTypeSelectChanged()
+{
+    return g_selectType != GetPathIndex();
+}
+
+static void UpdateConfirmAddrTypeBtn(void)
+{
+    if (IsAddrTypeSelectChanged()) {
+        lv_obj_set_style_bg_opa(g_multiPathCoinReceiveWidgets.confirmAddrTypeBtn, LV_OPA_COVER, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(g_multiPathCoinReceiveWidgets.confirmAddrTypeBtn, 0), LV_OPA_COVER, LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_bg_opa(g_multiPathCoinReceiveWidgets.confirmAddrTypeBtn, LV_OPA_30, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(g_multiPathCoinReceiveWidgets.confirmAddrTypeBtn, 0), LV_OPA_30, LV_PART_MAIN);
+    }
+}
+
+static void ConfirmAddrIndexHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED && IsAddrIndexSelectChanged()) {
+        SetCurrentSelectIndex(g_selectIndex);
+        ReturnHandler(e);
+    }
+}
+
+static void ConfirmAddrTypeHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED && IsAddrTypeSelectChanged()) {
+        SetPathIndex(g_selectType);
+        g_selectIndex = 0;
+        SetCurrentSelectIndex(g_selectIndex);
+        ReturnHandler(e);
+    }
+}
+
+
 static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
 {
     lv_obj_t *btn;
@@ -534,12 +608,18 @@ static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
     lv_obj_set_size(btn, 96, 66);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 156, -24);
     img = GuiCreateImg(btn, &imgArrowRight);
     lv_obj_set_align(img, LV_ALIGN_CENTER);
     lv_obj_set_style_opa(img, LV_OPA_COVER, LV_PART_MAIN);
     lv_obj_add_event_cb(btn, RightBtnHandler, LV_EVENT_CLICKED, NULL);
     g_multiPathCoinReceiveWidgets.rightBtnImg = img;
+
+    btn = GuiCreateBtn(parent, USR_SYMBOL_CHECK);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_add_event_cb(btn, ConfirmAddrIndexHandler, LV_EVENT_CLICKED, NULL);
+    g_multiPathCoinReceiveWidgets.confirmAddrIndexBtn = btn;
+    UpdateConfirmAddrIndexBtn();
 }
 
 static void GetChangePathLabelHint(char* hint)
@@ -588,7 +668,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     lv_obj_t *prevLabel, *label;
 
     int egContHeight = 12;
-    label = GuiCreateNoticeLabel(egCont, g_derivationPathDescs[GetPathIndex()]);
+    label = GuiCreateNoticeLabel(egCont, g_derivationPathDescs[g_selectType]);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
@@ -598,7 +678,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     prevLabel = label;
 
     int gap = 4;
-    if (strlen(g_derivationPathDescs[GetPathIndex()]) == 0) {
+    if (strlen(g_derivationPathDescs[g_selectType]) == 0) {
         egContHeight -= lv_obj_get_height(label);
         lv_obj_set_height(label, 0);
         gap = 0;
@@ -623,8 +703,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
     g_addressLabel[0] = label;
 
-    if (!((g_chainCard == HOME_WALLET_CARD_SOL && g_solPathIndex[g_currentAccountIndex] == 1) || (g_chainCard == HOME_WALLET_CARD_NEAR && g_nearPathIndex[g_currentAccountIndex] == 0)))
-    {
+    if (!IsOnlyOneAddress(g_selectType)) {
         index = GuiCreateNoticeLabel(egCont, _("1"));
         lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);
@@ -650,11 +729,16 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
     char string[64];
     char lableText[128] = {0};
     GetChangePathLabelHint(lableText);
-    lv_obj_t *labelHint = GuiCreateIllustrateLabel(parent, lableText);
-    lv_obj_set_style_text_opa(labelHint, LV_OPA_80, LV_PART_MAIN);
-    lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 36, 0);
+    lv_obj_t *scrollCont = GuiCreateContainerWithParent(parent, 408, 542);
+    lv_obj_align(scrollCont, LV_ALIGN_DEFAULT, 36, 0);
+    lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_SCROLLABLE);
 
-    cont = GuiCreateContainerWithParent(parent, 408, 308);
+    lv_obj_t *labelHint = GuiCreateIllustrateLabel(scrollCont, lableText);
+    lv_obj_set_style_text_opa(labelHint, LV_OPA_80, LV_PART_MAIN);
+    lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 0, 0);
+
+    cont = GuiCreateContainerWithParent(scrollCont, 408, 308);
     lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 84);
     lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
@@ -694,22 +778,31 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
         lv_obj_align(g_multiPathCoinReceiveWidgets.changePathWidgets[i].uncheckedImg, LV_ALIGN_CENTER, 162, 0);
         lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
     }
-    lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[GetPathIndex()].checkedImg, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_add_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[GetPathIndex()].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[g_selectType].checkedImg, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[g_selectType].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
 
-    lv_obj_t *egCont = GuiCreateContainerWithParent(parent, 408, 186);
+    lv_obj_t *egCont = GuiCreateContainerWithParent(scrollCont, 408, 186);
     lv_obj_align_to(egCont, cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
     lv_obj_set_style_bg_color(egCont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(egCont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(egCont, 24, LV_PART_MAIN);
     g_egCont = egCont;
     ShowEgAddressCont(g_egCont);
+
+    lv_obj_t *tmCont = GuiCreateContainerWithParent(parent, 480, 114);
+    lv_obj_align(tmCont, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+    lv_obj_set_style_bg_color(tmCont, BLACK_COLOR, LV_PART_MAIN);
+    lv_obj_t *btn = GuiCreateBtn(tmCont, USR_SYMBOL_CHECK);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -36, 0);
+    lv_obj_add_event_cb(btn, ConfirmAddrTypeHandler, LV_EVENT_CLICKED, NULL);
+    g_multiPathCoinReceiveWidgets.confirmAddrTypeBtn = btn;
+    UpdateConfirmAddrTypeBtn();
 }
 
 static void RefreshQrCode(void)
 {
     AddressDataItem_t addressDataItem;
-    ModelGetAddress(g_selectIndex, &addressDataItem);
+    ModelGetAddress(GetCurrentSelectIndex(), &addressDataItem);
     if (g_chainCard != HOME_WALLET_CARD_NEAR) {
         lv_qrcode_update(g_multiPathCoinReceiveWidgets.qrCode, addressDataItem.address, strlen(addressDataItem.address));
         lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
@@ -769,6 +862,14 @@ static void RefreshSwitchAccount(void)
     }
 }
 
+static bool IsOnlyOneAddress(uint8_t addrType)
+{
+    if ((g_chainCard == HOME_WALLET_CARD_SOL && addrType == 1) || (g_chainCard == HOME_WALLET_CARD_NEAR && g_nearPathIndex[g_currentAccountIndex] == 0)) {
+        return true;
+    }
+    return false;
+}
+
 static void RefreshDefaultAddress(void)
 {
     char string[128];
@@ -779,13 +880,10 @@ static void RefreshDefaultAddress(void)
     AddressLongModeCut(string, addressDataItem.address);
     lv_label_set_text(g_addressLabel[0], string);
 
-    if (GetMaxAddressIndex() != 0) {
+    if (!IsOnlyOneAddress(g_selectType)) {
         ModelGetAddress(1, &addressDataItem);
         AddressLongModeCut(string, addressDataItem.address);
         lv_label_set_text(g_addressLabel[1], string);
-        lv_obj_clear_flag(g_goToAddressIcon, LV_OBJ_FLAG_HIDDEN);
-    } else {
-        lv_obj_add_flag(g_goToAddressIcon, LV_OBJ_FLAG_HIDDEN);
     }
 }
 
@@ -974,31 +1072,34 @@ static void SetPathIndex(uint32_t index)
         break;
     }
 }
+
+static void UpdateAddrTypeCheckbox(uint8_t i, bool isChecked)
+{
+    if (isChecked) {
+        lv_obj_add_state(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox, LV_STATE_CHECKED);
+        lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+        g_selectType = i;
+        ShowEgAddressCont(g_egCont);
+    } else {
+        lv_obj_clear_state(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox, LV_STATE_CHECKED);
+        lv_obj_add_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
 static void ChangePathCheckHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *checkBox;
-    int8_t len = (g_chainCard == HOME_WALLET_CARD_NEAR ? 2 : 3);
 
     if (code == LV_EVENT_CLICKED) {
+        int8_t len = (g_chainCard == HOME_WALLET_CARD_NEAR ? 2 : 3);
         checkBox = lv_event_get_target(e);
         for (uint32_t i = 0; i < len; i++) {
-            if (checkBox == g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox) {
-                lv_obj_add_state(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox, LV_STATE_CHECKED);
-                lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-                if (GetPathIndex() != i) {
-                    SetPathIndex(i);
-                    g_selectIndex = 0;
-                    g_showIndex = 0;
-                    ShowEgAddressCont(g_egCont);
-                }
-            } else {
-                lv_obj_clear_state(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox, LV_STATE_CHECKED);
-                lv_obj_add_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-            }
+            UpdateAddrTypeCheckbox(i, checkBox == g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox);
         }
+        UpdateConfirmAddrTypeBtn();
     }
 }
 
@@ -1021,6 +1122,7 @@ static void SwitchAddressHandler(lv_event_t *e)
                 lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
             }
         }
+        UpdateConfirmAddrIndexBtn();
     }
 }
 

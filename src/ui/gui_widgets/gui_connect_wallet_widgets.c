@@ -238,6 +238,7 @@ static void AddFewchaCoins(void);
 static void AddKeplrCoins(void);
 static void AddSolflareCoins(void);
 static void ShowEgAddressCont(lv_obj_t *egCont);
+static uint8_t GetCurrentSelectedIndex();
 
 CoinState_t g_companionAppcoinState[COMPANION_APP_COINS_BUTT];
 CoinState_t g_fewchaCoinState[FEWCHA_COINS_BUTT];
@@ -245,12 +246,11 @@ static char g_derivationPathAddr[LedgerLegacy + 1][DERIVATION_PATH_EG_LEN][64];
 static char g_solDerivationPathAddr[SOLBip44Change + 1][DERIVATION_PATH_EG_LEN][64];
 
 static lv_obj_t *g_derivationCheck[LedgerLegacy + 1];
-static ETHAccountType g_currentPathIndex[3] = {Bip44Standard, Bip44Standard, Bip44Standard};
-static ETHAccountType g_currentBakPathIndex = Bip44Standard;
+static ETHAccountType g_currentEthPathIndex[3] = {Bip44Standard, Bip44Standard, Bip44Standard};
 static SOLAccountType g_currentSOLPathIndex[3] = {SOLBip44, SOLBip44, SOLBip44};
-static SOLAccountType g_currentBakSOLPathIndex = SOLBip44;
 static uint8_t g_currentNearPathIndex[3] = {0};
-static uint8_t g_currentBakNearPathIndex = 0;
+
+static uint8_t g_currentSelectedPathIndex[3] = {0};
 
 static lv_obj_t *g_egAddress[DERIVATION_PATH_EG_LEN];
 static lv_obj_t *g_egAddressIndex[DERIVATION_PATH_EG_LEN];
@@ -262,7 +262,6 @@ static lv_obj_t *g_openMoreHintBox = NULL;
 static lv_obj_t *g_bottomCont = NULL;
 static lv_obj_t *g_manageImg = NULL;
 static bool g_isCoinReselected = false;
-static lv_obj_t *g_derivationPathDescLabel = NULL;
 static char * *g_derivationPathDescs = NULL;
 static lv_obj_t *g_egCont = NULL;
 
@@ -377,7 +376,7 @@ static void ReturnShowQRHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_coinListCont)
-        GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
+        QRCodePause(false);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
     }
@@ -427,6 +426,7 @@ static void ConfirmSelectCompanionAppCoinsHandler(lv_event_t *e)
         g_isCoinReselected = true;
         memcpy(g_companionAppcoinState, g_tempCompanionAppcoinState, sizeof(g_tempCompanionAppcoinState));
         GUI_DEL_OBJ(g_coinListCont)
+        GuiAnimatingQRCodeDestroyTimer();
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
@@ -440,6 +440,7 @@ static void ConfirmSelectFewchaCoinsHandler(lv_event_t *e)
         g_isCoinReselected = true;
         memcpy(g_fewchaCoinState, g_tempFewchaCoinState, sizeof(g_tempFewchaCoinState));
         GUI_DEL_OBJ(g_coinListCont)
+        GuiAnimatingQRCodeDestroyTimer();
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
@@ -448,8 +449,13 @@ static void ConfirmSelectFewchaCoinsHandler(lv_event_t *e)
 
 static void RefreshAddressIndex(uint32_t index)
 {
-    SetAddrIndex(index);
-    GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
+    if (g_xrpAddressIndex[GetCurrentAccountIndex()] != index) {
+        SetAddrIndex(index);
+        GuiAnimatingQRCodeDestroyTimer();
+        GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
+    } else {
+        QRCodePause(false);
+    }
     g_coinListCont = NULL;
 }
 
@@ -461,7 +467,7 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
             return;
         }
 #ifndef COMPILE_SIMULATOR
-        GuiAnimatingQRCodeDestroyTimer();
+        QRCodePause(true);
 #endif
         if (g_connectWalletTileView.walletIndex == WALLET_LIST_FEWCHA) {
             GuiCreateSelectFewchaCoinWidget();
@@ -1057,6 +1063,9 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     SetWallet(g_pageWidget->navBarWidget, index, NULL);
     GenerateUR func = NULL;
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
+    if (g_manageImg != NULL) {
+        lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
+    }
     func = GuiGetSenderData;
     AddSenderAddress();
 #endif
@@ -1103,7 +1112,7 @@ static void initFewchaCoinsConfig(void)
 
 ETHAccountType GetMetamaskAccountType(void)
 {
-    return g_currentPathIndex[GetCurrentAccountIndex()];
+    return g_currentEthPathIndex[GetCurrentAccountIndex()];
 }
 
 SOLAccountType GetSolflareAccountType(void)
@@ -1128,31 +1137,27 @@ static int GetAccountType(void)
     }
 }
 
-static lv_obj_t *g_derivationPathCont = NULL;
-
-static bool IsNeedReGenerateQRCode(void)
+static void SetAccountType(uint8_t index)
 {
-
     switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
-        return g_currentBakSOLPathIndex != GetSolflareAccountType();
+        g_currentSOLPathIndex[GetCurrentAccountIndex()] = index;
+        break;
     case WALLET_LIST_SENDER:
-        return g_currentBakNearPathIndex != GetNearAccountType();
+        g_currentNearPathIndex[GetCurrentAccountIndex()] = index;
+        break;
     default:
-        return g_currentBakPathIndex != GetMetamaskAccountType();
+        g_currentEthPathIndex[GetCurrentAccountIndex()] = index;
+        break;
     }
 }
 
-static void SetCurrentBakPathIndex(void)
+static lv_obj_t *g_derivationPathCont = NULL;
+static lv_obj_t *g_derivationPathConfirmBtn = NULL;
+
+static bool IsSelectChanged(void)
 {
-    switch (g_connectWalletTileView.walletIndex) {
-    case WALLET_LIST_SOLFARE:
-        g_currentBakSOLPathIndex = GetSolflareAccountType();
-    case WALLET_LIST_SENDER:
-        g_currentBakNearPathIndex = GetNearAccountType();
-    default:
-        g_currentBakPathIndex = GetMetamaskAccountType();
-    }
+    return GetCurrentSelectedIndex() != GetAccountType();
 }
 
 static void CloseDerivationHandler(lv_event_t *e)
@@ -1160,17 +1165,36 @@ static void CloseDerivationHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        if (IsNeedReGenerateQRCode()) {
-            GuiAnimatingQRCodeDestroyTimer();
-            GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
-            SetCurrentBakPathIndex();
-        } else {
-            QRCodePause(false);
-        }
+        QRCodePause(false);
         GUI_DEL_OBJ(g_derivationPathCont);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         SetWallet(g_pageWidget->navBarWidget, g_connectWalletTileView.walletIndex, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
+    }
+}
+
+static void ConfirmDerivationHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED && IsSelectChanged()) {
+        SetAccountType(GetCurrentSelectedIndex());
+        GuiAnimatingQRCodeDestroyTimer();
+        GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
+        GUI_DEL_OBJ(g_derivationPathCont);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+        SetWallet(g_pageWidget->navBarWidget, g_connectWalletTileView.walletIndex, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
+    }
+}
+
+static void UpdateConfirmBtn(void)
+{
+    if (IsSelectChanged()) {
+        lv_obj_set_style_bg_opa(g_derivationPathConfirmBtn, LV_OPA_COVER, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(g_derivationPathConfirmBtn, 0), LV_OPA_COVER, LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_bg_opa(g_derivationPathConfirmBtn, LV_OPA_30, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(g_derivationPathConfirmBtn, 0), LV_OPA_30, LV_PART_MAIN);
     }
 }
 
@@ -1280,7 +1304,7 @@ static void UpdategAddress(void)
         UpdateNearEgAddress(GetNearAccountType());
         break;
     default:
-        UpdateEthEgAddress(GetMetamaskAccountType());
+        UpdateEthEgAddress(GetCurrentSelectedIndex());
         break;
     }
 }
@@ -1295,9 +1319,19 @@ static void SetCurrentPathIndex(uint8_t index)
         g_currentNearPathIndex[GetCurrentAccountIndex()] = index;
         break;
     default:
-        g_currentPathIndex[GetCurrentAccountIndex()] = index;
+        g_currentEthPathIndex[GetCurrentAccountIndex()] = index;
         break;
     }
+}
+
+static void SetCurrentSelectedIndex(uint8_t index)
+{
+    g_currentSelectedPathIndex[GetCurrentAccountIndex()] = index;
+}
+
+static uint8_t GetCurrentSelectedIndex()
+{
+    return g_currentSelectedPathIndex[GetCurrentAccountIndex()];
 }
 
 static void SelectDerivationHandler(lv_event_t *e)
@@ -1313,14 +1347,16 @@ static void SelectDerivationHandler(lv_event_t *e)
         for (int i = 0; i < n; i++) {
             if (newCheckBox == g_derivationCheck[i]) {
                 lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
-                SetCurrentPathIndex(i);
+                SetCurrentSelectedIndex(i);
                 ShowEgAddressCont(g_egCont);
+                UpdateConfirmBtn();
             } else {
                 lv_obj_clear_state(g_derivationCheck[i], LV_STATE_CHECKED);
             }
         }
     }
 }
+
 static void OpenTutorialHandler(lv_event_t *e)
 {
     QRCodePause(true);
@@ -1370,14 +1406,7 @@ static char *GetChangeDerivationPath(int i)
 
 static char *GetChangeDerivationPathDesc(void)
 {
-    switch (g_connectWalletTileView.walletIndex) {
-    case WALLET_LIST_SOLFARE:
-        return g_derivationPathDescs[g_currentSOLPathIndex[GetCurrentAccountIndex()]];
-    case WALLET_LIST_SENDER:
-        return g_derivationPathDescs[g_currentNearPathIndex[GetCurrentAccountIndex()]];
-    default:
-        return g_derivationPathDescs[g_currentPathIndex[GetCurrentAccountIndex()]];
-    }
+    return g_derivationPathDescs[g_currentSelectedPathIndex[GetCurrentAccountIndex()]];
 }
 
 static void ShowEgAddressCont(lv_obj_t *egCont)
@@ -1390,26 +1419,26 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
 
     lv_obj_clean(egCont);
 
-    lv_obj_t *prevLabel, *label;
+    lv_obj_t *prevLabel = NULL, *label;
 
     int egContHeight = 12;
     char *desc = GetChangeDerivationPathDesc();
-    label = GuiCreateNoticeLabel(egCont, desc);
-    lv_obj_set_width(label, 360);
-    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
-    lv_obj_update_layout(label);
-    g_derivationPathDescLabel = label;
-    prevLabel = label;
-    if (strlen(desc) > 0) {
+    if (desc != NULL && strlen(desc) > 0) {
+        label = GuiCreateNoticeLabel(egCont, desc);
+        lv_obj_set_width(label, 360);
+        lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
+        lv_obj_update_layout(label);
         egContHeight += lv_obj_get_height(label);
-    } else {
-        lv_obj_set_height(label, 0);
+        prevLabel = label;
     }
 
-    desc = _("derivation_path_address_eg");
-    label = GuiCreateNoticeLabel(egCont, desc);
-    lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    label = GuiCreateNoticeLabel(egCont, _("derivation_path_address_eg"));
+    if (prevLabel != NULL) {
+        lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    } else {
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
+    }
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_obj_update_layout(label);
     egContHeight =  egContHeight + 4 + lv_obj_get_height(label);
@@ -1428,8 +1457,8 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     g_egAddress[0] = label;
 
     if (
-        !(g_connectWalletTileView.walletIndex == WALLET_LIST_SOLFARE && GetSolflareAccountType() == SOLBip44ROOT)
-        && !(g_connectWalletTileView.walletIndex == WALLET_LIST_SENDER && GetNearAccountType() == 0)
+        !(g_connectWalletTileView.walletIndex == WALLET_LIST_SOLFARE && GetCurrentSelectedIndex() == SOLBip44ROOT)
+        && !(g_connectWalletTileView.walletIndex == WALLET_LIST_SENDER && GetCurrentSelectedIndex() == 0)
     )
     {
         index = GuiCreateNoticeLabel(egCont, _("1"));
@@ -1453,6 +1482,8 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
 
 static void OpenDerivationPath()
 {
+    SetCurrentSelectedIndex(GetAccountType());
+
     int8_t n = 3;
     int16_t height = 308;
     if (IsNear(g_connectWalletTileView.walletIndex)) {
@@ -1462,15 +1493,17 @@ static void OpenDerivationPath()
     lv_obj_t *bgCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
                                           GUI_MAIN_AREA_OFFSET);
 
-    lv_obj_add_flag(bgCont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_flag(bgCont, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_scrollbar_mode(bgCont, LV_SCROLLBAR_MODE_OFF);
-
     lv_obj_align(bgCont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
-    lv_obj_t *label = GuiCreateNoticeLabel(bgCont, GetDerivationPathSelectDes());
+
+    lv_obj_t *scrollCont = GuiCreateContainerWithParent(bgCont, lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET - 114);
+    lv_obj_align(scrollCont, LV_ALIGN_DEFAULT, 0, 0);
+    lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_t *label = GuiCreateNoticeLabel(scrollCont, GetDerivationPathSelectDes());
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
 
-    lv_obj_t *cont = GuiCreateContainerWithParent(bgCont, 408, height);
+    lv_obj_t *cont = GuiCreateContainerWithParent(scrollCont, 408, height);
     lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 84);
     lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
@@ -1482,7 +1515,7 @@ static void OpenDerivationPath()
         lv_obj_t *checkBox = GuiCreateSingleCheckBox(cont, _(""));
         lv_obj_set_size(checkBox, 36, 36);
         g_derivationCheck[i] = checkBox;
-        if (i == GetAccountType()) {
+        if (i == GetCurrentSelectedIndex()) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
         GuiButton_t table[] = {
@@ -1512,7 +1545,7 @@ static void OpenDerivationPath()
         }
     }
 
-    lv_obj_t *egCont = GuiCreateContainerWithParent(bgCont, 408, 186);
+    lv_obj_t *egCont = GuiCreateContainerWithParent(scrollCont, 408, 186);
     lv_obj_align_to(egCont, cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
     lv_obj_set_style_bg_color(egCont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(egCont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
@@ -1523,6 +1556,16 @@ static void OpenDerivationPath()
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseDerivationHandler, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     GUI_DEL_OBJ(g_openMoreHintBox);
+
+    lv_obj_t *tmCont = GuiCreateContainerWithParent(bgCont, 480, 114);
+    lv_obj_align(tmCont, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+    lv_obj_set_style_bg_color(tmCont, BLACK_COLOR, LV_PART_MAIN);
+    lv_obj_t *btn = GuiCreateBtn(tmCont, USR_SYMBOL_CHECK);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -36, 0);
+    lv_obj_add_event_cb(btn, ConfirmDerivationHandler, LV_EVENT_CLICKED, NULL);
+    g_derivationPathConfirmBtn = btn;
+    UpdateConfirmBtn();
+
     g_derivationPathCont = bgCont;
 }
 

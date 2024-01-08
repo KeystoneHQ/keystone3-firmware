@@ -22,11 +22,16 @@ static SelectAddressWidgetsItem_t g_selectAddressWidgets[5];
 static uint32_t g_showIndex = 0;
 static GuiChainCoinType g_chainCoinType;
 static uint32_t g_selectIndex = 0;
+static uint32_t g_initedSelectIndex = 0;
 static lv_obj_t *g_leftBtn;
 static lv_obj_t *g_rightBtn;
 static SetSelectAddressIndexFunc g_setSelectIndexFunc;
+static lv_obj_t *g_confirmBtn;
 
 static void SetCurrentSelectIndex(uint32_t selectIndex);
+static void UpdateConfirmBtn(void);
+static void BackHandler(lv_event_t *e);
+static void ConfirmHandler(lv_event_t *e);
 
 static void SelectAddressHandler(lv_event_t *e)
 {
@@ -41,6 +46,7 @@ static void SelectAddressHandler(lv_event_t *e)
                 lv_obj_clear_flag(g_selectAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(g_selectAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
                 SetCurrentSelectIndex(g_showIndex + i);
+                UpdateConfirmBtn();
             } else {
                 lv_obj_clear_state(g_selectAddressWidgets[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_add_flag(g_selectAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
@@ -83,18 +89,17 @@ static void AddressLongModeCut(char *out, const char *address)
 
 static void SetCurrentSelectIndex(uint32_t selectIndex)
 {
-    switch (g_chainCoinType) {
-    default:
-        g_selectIndex = selectIndex;
-    }
+    g_selectIndex = selectIndex;
 }
 
 static uint32_t GetCurrentSelectAddressIndex()
 {
-    switch (g_chainCoinType) {
-    default:
-        return g_selectIndex;
-    }
+    return g_selectIndex;
+}
+
+static bool IsSelectChanged()
+{
+    return g_selectIndex != g_initedSelectIndex;
 }
 
 static int GetMaxAddressIndex(void)
@@ -223,6 +228,17 @@ static void RightBtnHandler(lv_event_t *e)
     }
 }
 
+static void UpdateConfirmBtn(void)
+{
+    if (IsSelectChanged()) {
+        lv_obj_set_style_bg_opa(g_confirmBtn, LV_OPA_COVER, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(g_confirmBtn, 0), LV_OPA_COVER, LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_bg_opa(g_confirmBtn, LV_OPA_30, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(g_confirmBtn, 0), LV_OPA_30, LV_PART_MAIN);
+    }
+}
+
 static void GuiCreatePaginationBtns(lv_obj_t *parent)
 {
     lv_obj_t *btn;
@@ -245,7 +261,7 @@ static void GuiCreatePaginationBtns(lv_obj_t *parent)
     lv_obj_set_size(btn, 96, 66);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 156, -24);
     img = GuiCreateImg(btn, &imgArrowRight);
     lv_obj_set_align(img, LV_ALIGN_CENTER);
     lv_obj_set_style_opa(img, LV_OPA_COVER, LV_PART_MAIN);
@@ -254,6 +270,12 @@ static void GuiCreatePaginationBtns(lv_obj_t *parent)
     }
     lv_obj_add_event_cb(btn, RightBtnHandler, LV_EVENT_CLICKED, NULL);
     g_rightBtn = img;
+
+    btn = GuiCreateBtn(parent, USR_SYMBOL_CHECK);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_add_event_cb(btn, ConfirmHandler, LV_EVENT_CLICKED, NULL);
+    g_confirmBtn = btn;
+    UpdateConfirmBtn();
 }
 
 void GuiDestroySelectAddressWidget()
@@ -266,6 +288,15 @@ static void BackHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GuiDestroySelectAddressWidget();
+        g_setSelectIndexFunc(g_initedSelectIndex);
+    }
+}
+
+static void ConfirmHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED && IsSelectChanged()) {
+        GuiDestroySelectAddressWidget();
         g_setSelectIndexFunc(GetCurrentSelectAddressIndex());
     }
 }
@@ -273,6 +304,7 @@ static void BackHandler(lv_event_t *e)
 lv_obj_t *GuiCreateSelectAddressWidget(GuiChainCoinType chainCoinType, uint32_t selectIndex, SetSelectAddressIndexFunc setIndex)
 {
     g_chainCoinType = chainCoinType;
+    g_initedSelectIndex = selectIndex;
     SetCurrentSelectIndex(selectIndex);
     g_setSelectIndexFunc = setIndex;
     g_showIndex = selectIndex / 5 * 5;

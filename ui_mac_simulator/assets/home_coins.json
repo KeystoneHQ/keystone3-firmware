@@ -1,46 +1,58 @@
 {
-    "BTC": {
-        "firstRecv": true,
-        "manage": true
-    },
-    "ETH": {
-        "firstRecv": true,
-        "manage": true
-    },
-    "ADA": {
-        "firstRecv": true,
-        "manage": false
-    },
-    "NEAR": {
-        "firstRecv": false,
-        "manage": true
-    },
-    "BNB": {
-        "firstRecv": true,
-        "manage": false
-    },
-    "SOL": {
-        "firstRecv": true,
-        "manage": false
-    },
-    "DOT": {
-        "firstRecv": true,
-        "manage": false
-    },
-    "XRP": {
-        "firstRecv": true,
-        "manage": false
-    },
-    "LTC": {
-        "firstRecv": true,
-        "manage": false
-    },
-    "DASH": {
-        "firstRecv": true,
-        "manage": true
-    },
-    "BCH": {
-        "firstRecv": true,
-        "manage": true
-    }
+	"BTC": {
+		"firstRecv": true,
+		"manage": true
+	},
+	"ETH": {
+		"firstRecv": true,
+		"manage": true
+	},
+	"ADA": {
+		"firstRecv": true,
+		"manage": false
+	},
+	"NEAR": {
+		"firstRecv": false,
+		"manage": false
+	},
+	"BNB": {
+		"firstRecv": true,
+		"manage": false
+	},
+	"SOL": {
+		"firstRecv": true,
+		"manage": false
+	},
+	"DOT": {
+		"firstRecv": true,
+		"manage": false
+	},
+	"XRP": {
+		"firstRecv": true,
+		"manage": true
+	},
+	"LTC": {
+		"firstRecv": true,
+		"manage": false
+	},
+	"DASH": {
+		"firstRecv": true,
+		"manage": false
+	},
+	"BCH": {
+		"firstRecv": true,
+		"manage": false
+	},
+	"TRX": {
+		"firstRecv": true,
+		"manage": true
+	},
+	"APT": {
+		"firstRecv": true,
+		"manage": true
+	},
+	"SUI": {
+		"firstRecv": true,
+		"manage": true
+	}
 }

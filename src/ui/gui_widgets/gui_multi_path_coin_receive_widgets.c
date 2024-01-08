@@ -291,7 +291,8 @@ void GuiMultiPathCoinReceiveRefresh(void)
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_selectType = GetPathIndex();
-        for (uint32_t i = 0; i < 3; i++) {
+        uint8_t n = g_chainCard == HOME_WALLET_CARD_NEAR ? 2 : 3;
+        for (uint32_t i = 0; i < n; i++) {
             UpdateAddrTypeCheckbox(i, g_selectType == i);
         }
         UpdateConfirmAddrTypeBtn();
@@ -864,7 +865,7 @@ static void RefreshSwitchAccount(void)
 
 static bool IsOnlyOneAddress(uint8_t addrType)
 {
-    if ((g_chainCard == HOME_WALLET_CARD_SOL && addrType == 1) || (g_chainCard == HOME_WALLET_CARD_NEAR && g_nearPathIndex[g_currentAccountIndex] == 0)) {
+    if ((g_chainCard == HOME_WALLET_CARD_SOL && addrType == 1) || (g_chainCard == HOME_WALLET_CARD_NEAR && addrType == 0)) {
         return true;
     }
     return false;

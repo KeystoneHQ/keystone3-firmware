@@ -19,16 +19,17 @@ fn get_origin(
 ) -> URResult<CryptoKeyPath> {
     let path = app_utils::normalize_path(&sync_info.hd_path.clone());
     let derivation_path = DerivationPath::from_str(path.as_str()).unwrap();
-    let components = derivation_path
-        .into_iter()
-        .map(|child_number| {
-            let index = match child_number {
-                ChildNumber::Hardened { index } => index,
-                ChildNumber::Normal { index } => index,
-            };
-            PathComponent::new(Some(index.clone()), child_number.is_hardened()).unwrap()
-        })
-        .collect::<Vec<PathComponent>>();
+    let components =
+        derivation_path
+            .into_iter()
+            .map(|child_number| {
+                let index = match child_number {
+                    ChildNumber::Hardened { index } => index,
+                    ChildNumber::Normal { index } => index,
+                };
+                PathComponent::new(Some(index.clone()), child_number.is_hardened()).unwrap()
+            })
+            .collect::<Vec<PathComponent>>();
     Ok(CryptoKeyPath::new(
         components,
         Some(master_fingerprint.clone()),

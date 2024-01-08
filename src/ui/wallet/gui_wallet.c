@@ -138,6 +138,36 @@ UREncodeResult *GuiGetMetamaskData(void)
 #endif
 }
 
+UREncodeResult *GuiGetSenderDataByIndex(uint16_t index)
+{
+#ifndef COMPILE_SIMULATOR
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    uint8_t accountType = GetNearAccountType();
+    uint8_t xpubIndex = XPUB_TYPE_NEAR_STANDARD_0;
+    PtrT_CSliceFFI_ExtendedPublicKey publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    ExtendedPublicKey keys[1];
+    publicKeys->data = keys;
+    publicKeys->size = 1;
+    keys[0].path = SRAM_MALLOC(sizeof(char) * 32);
+    if (accountType == 1) {
+        xpubIndex = XPUB_TYPE_NEAR_LEDGER_LIVE_0 + index;
+        sprintf(keys[0].path, "m/44'/397'/0'/0'/%u'", index);
+    } else {
+        sprintf(keys[0].path, "m/44'/397'/0'");
+    }
+    keys[0].xpub = GetCurrentAccountPublicKey(xpubIndex);
+    g_urEncode = get_connect_sender_wallet_ur(mfp, sizeof(mfp), publicKeys);
+    SRAM_FREE(keys[0].path);
+    SRAM_FREE(publicKeys);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    return g_urEncode;
+#else
+    const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+    return (void *)data;
+#endif
+}
+
 UREncodeResult *GuiGetImTokenData(void)
 {
 #ifndef COMPILE_SIMULATOR
@@ -438,9 +468,10 @@ UREncodeResult *GuiGetOkxWalletData(void)
     // + ltc 1
     // + dash 1
     // + bch 1
-    ExtendedPublicKey keys[17];
+    // + near 11
+    ExtendedPublicKey keys[28];
     public_keys->data = keys;
-    public_keys->size = 17;
+    public_keys->size = 28;
     for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
         keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = SRAM_MALLOC(64);
         sprintf(keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
@@ -467,6 +498,14 @@ UREncodeResult *GuiGetOkxWalletData(void)
 
     keys[16].path = GetXPubPath(XPUB_TYPE_BCH);
     keys[16].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
+
+    keys[17].path = GetXPubPath(XPUB_TYPE_NEAR_STANDARD_0);
+    keys[17].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_NEAR_STANDARD_0);
+    for (int i = XPUB_TYPE_NEAR_LEDGER_LIVE_0; i <= XPUB_TYPE_NEAR_LEDGER_LIVE_9; i++) {
+        keys[18 + i - XPUB_TYPE_NEAR_LEDGER_LIVE_0].path = GetXPubPath(i);
+        keys[18 + i - XPUB_TYPE_NEAR_LEDGER_LIVE_0].xpub = GetCurrentAccountPublicKey(i);
+    }
+
     char serialNumber[256];
     GetSerialNumber(serialNumber);
     char firmwareVersion[12];

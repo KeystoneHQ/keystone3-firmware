@@ -108,7 +108,7 @@ void GuiTransactionCheckPass(void)
     SetPageLockScreen(true);
     GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
 #else
-    g_qrcodeViewType =  EthTx;
+    g_qrcodeViewType =  NearTx;
     GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
 #endif
 }

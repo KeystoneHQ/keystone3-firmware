@@ -23,6 +23,26 @@ void CloseUsb()
 {
 }
 
+void FpDeleteRegisterFinger(void)
+{
+    
+}
+
+void FpSaveKeyInfo(bool add)
+{
+
+}
+
+bool GetLvglHandlerStatus(void)
+{
+
+}
+
+int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
+{
+
+}
+
 void SetLockDeviceAlive(bool alive)
 {
 
@@ -592,6 +612,17 @@ void HandleDefaultViewType(URParseResult *urResult, URParseMultiResult *urMultiR
 uint32_t PubBufferMsg(uint32_t messageID, void *buffer, uint32_t length) {
     return 0;
 }
+
+bool FatfsFileExist(const char *path)
+{
+    return false;
+}
+
+bool FpModuleIsChipState(void)
+{
+    return false;
+}
+
 
 void FpDeleteRegisterFinger(void)
 {

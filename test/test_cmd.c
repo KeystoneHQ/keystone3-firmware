@@ -2219,13 +2219,13 @@ static void testNearParseTx(int argc, char *argv[])
     {
         printf("near parse result overview transfer_value: %s\r\n", result->data->overview->transfer_value);
     }
-    if (result->data->overview->transfer_from != NULL)
+    if (result->data->overview->from != NULL)
     {
-        printf("near parse result overview transfer_from: %s\r\n", result->data->overview->transfer_from);
+        printf("near parse result overview from: %s\r\n", result->data->overview->from);
     }
-    if (result->data->overview->transfer_to != NULL)
+    if (result->data->overview->to != NULL)
     {
-        printf("near parse result overview transfer_to: %s\r\n", result->data->overview->transfer_to);
+        printf("near parse result overview to: %s\r\n", result->data->overview->to);
     }
     if (result->data->overview->main_action != NULL)
     {

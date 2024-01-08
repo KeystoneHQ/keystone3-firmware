@@ -57,6 +57,10 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         item->index = index;
         strcpy(item->address, GuiGetXrpAddressByIndex(index));
         break;
+    case CHAIN_NEAR:
+        item->index = index;
+        strcpy(item->address, GetCurrentAccountPublicKey(XPUB_TYPE_NEAR_LEDGER_LIVE_0 + index));
+        break;
 
     default:
         printf("ModelGetAddress cannot match %d\r\n", index);
@@ -98,6 +102,8 @@ static int GetMaxAddressIndex(void)
     switch (g_chainCoinType) {
     case CHAIN_XRP:
         return 200;
+    case CHAIN_NEAR:
+        return 10;
     default:
         return 999999999;
     }
@@ -243,6 +249,9 @@ static void GuiCreatePaginationBtns(lv_obj_t *parent)
     img = GuiCreateImg(btn, &imgArrowRight);
     lv_obj_set_align(img, LV_ALIGN_CENTER);
     lv_obj_set_style_opa(img, LV_OPA_COVER, LV_PART_MAIN);
+    if (g_showIndex >= GetMaxAddressIndex() - 5) {
+        lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
+    }
     lv_obj_add_event_cb(btn, RightBtnHandler, LV_EVENT_CLICKED, NULL);
     g_rightBtn = img;
 }

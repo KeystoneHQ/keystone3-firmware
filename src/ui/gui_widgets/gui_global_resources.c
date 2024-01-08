@@ -5,6 +5,7 @@
 static char * *g_ethDerivationPathDesc = NULL;
 static char * *g_solDerivationPathDesc = NULL;
 static char * *g_btcDerivationPathDesc = NULL;
+static char * *g_nearDerivationPathDesc = NULL;
 
 void DerivationPathDescsInit(void)
 {
@@ -26,6 +27,11 @@ void DerivationPathDescsInit(void)
         g_btcDerivationPathDesc[BTC_NESTED_SEGWIT] = _("derivation_path_btc_2_desc");
         g_btcDerivationPathDesc[BTC_LEGACY] = _("derivation_path_btc_3_desc");
     }
+    if (g_nearDerivationPathDesc == NULL) {
+        g_nearDerivationPathDesc = SRAM_MALLOC(2 * 128);
+        g_nearDerivationPathDesc[NEAR_STANDARD] = _("derivation_path_near_standard_desc");
+        g_nearDerivationPathDesc[NEAR_LEDGER_LIVE] = _("derivation_path_near_ledger_live_desc");
+    }
 }
 
 char **GetDerivationPathDescs(uint8_t index)
@@ -38,6 +44,9 @@ char **GetDerivationPathDescs(uint8_t index)
     }
     if (index == BTC_DERIVATION_PATH_DESC) {
         return g_btcDerivationPathDesc;
+    }
+    if (index == NEAR_DERIVATION_PATH_DESC) {
+        return g_nearDerivationPathDesc;
     }
 
     return NULL;

@@ -151,6 +151,7 @@ LV_IMG_DECLARE(coinSol);
 LV_IMG_DECLARE(coinSui);
 LV_IMG_DECLARE(coinTrx);
 LV_IMG_DECLARE(coinXrp);
+LV_IMG_DECLARE(coinNear);
 LV_IMG_DECLARE(coinLtc);
 LV_IMG_DECLARE(coinBch);
 LV_IMG_DECLARE(coinDash);
@@ -208,6 +209,7 @@ LV_IMG_DECLARE(walletPetra);
 LV_IMG_DECLARE(walletXRPToolkit);
 LV_IMG_DECLARE(walletSparrow);
 LV_IMG_DECLARE(walletImToken);
+LV_IMG_DECLARE(walletSender);
 
 
 //wallet list
@@ -230,6 +232,7 @@ LV_IMG_DECLARE(walletListPetra);
 LV_IMG_DECLARE(walletListXRPToolkit);
 LV_IMG_DECLARE(walletListSparrow);
 LV_IMG_DECLARE(walletListImToken);
+LV_IMG_DECLARE(walletListSender);
 
 // font
 LV_FONT_DECLARE(openSans_20);

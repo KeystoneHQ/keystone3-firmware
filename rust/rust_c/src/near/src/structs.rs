@@ -38,8 +38,9 @@ pub struct DisplayNearTxOverview {
     pub main_action: PtrString,
     // transfer
     pub transfer_value: PtrString,
-    pub transfer_from: PtrString,
-    pub transfer_to: PtrString,
+    // user
+    pub from: PtrString,
+    pub to: PtrString,
     // general
     pub action_list: PtrT<VecFFI<DisplayNearTxOverviewGeneralAction>>,
 }
@@ -52,8 +53,8 @@ impl Default for DisplayNearTxOverview {
             display_type: null_mut(),
             transfer_value: null_mut(),
             main_action: null_mut(),
-            transfer_from: null_mut(),
-            transfer_to: null_mut(),
+            from: null_mut(),
+            to: null_mut(),
             action_list: null_mut(),
         }
     }
@@ -72,8 +73,8 @@ impl Free for DisplayNearTxOverview {
         free_str_ptr!(self.display_type);
         free_str_ptr!(self.main_action);
         free_str_ptr!(self.transfer_value);
-        free_str_ptr!(self.transfer_from);
-        free_str_ptr!(self.transfer_to);
+        free_str_ptr!(self.from);
+        free_str_ptr!(self.to);
         unsafe {
             if !self.action_list.is_null() {
                 let x = Box::from_raw(self.action_list);
@@ -107,8 +108,8 @@ impl From<&ParsedNearTx> for DisplayNearTxOverview {
                         //transfer
                         transfer_value: convert_c_char(overview.value.to_string()),
                         main_action: convert_c_char(overview.main_action.to_string()),
-                        transfer_from: convert_c_char(overview.from.to_string()),
-                        transfer_to: convert_c_char(overview.to.to_string()),
+                        from: convert_c_char(overview.from.to_string()),
+                        to: convert_c_char(overview.to.to_string()),
                         ..DisplayNearTxOverview::default()
                     };
                 }
@@ -117,6 +118,8 @@ impl From<&ParsedNearTx> for DisplayNearTxOverview {
                 if let NearTxOverview::General(overview) = &value.overview {
                     return Self {
                         display_type,
+                        from: convert_c_char(overview.from.to_string()),
+                        to: convert_c_char(overview.to.to_string()),
                         //vote
                         action_list: VecFFI::from(
                             overview

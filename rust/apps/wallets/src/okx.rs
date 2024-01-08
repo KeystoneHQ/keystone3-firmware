@@ -15,7 +15,7 @@ use third_party::{
     },
 };
 
-use crate::{common::get_path_component, ExtendedPublicKey, DEVICE_TYPE, DEVICE_VERSION};
+use crate::{common::get_path_component, ExtendedPublicKey};
 
 fn get_device_id(serial_number: &str) -> String {
     use third_party::cryptoxide::hashing::sha256;
@@ -31,6 +31,8 @@ const TRX_PREFIX: &str = "m/44'/195'/0'";
 const LTC_PREFIX: &str = "m/49'/2'/0'";
 const BCH_PREFIX: &str = "m/44'/145'/0'";
 const DASH_PREFIX: &str = "m/44'/5'/0'";
+const NEAR_STANDARD_PREFIX: &str = "m/44'/397'";
+const NEAR_LEDGER_LIVE_PREFIX: &str = "m/44'/397'/0'/0'";
 
 pub fn generate_crypto_multi_accounts(
     master_fingerprint: [u8; 4],
@@ -83,11 +85,30 @@ pub fn generate_crypto_multi_accounts(
                     Some("account.ledger_live".to_string()),
                 )?);
             }
+            _path
+                if _path
+                    .to_string()
+                    .to_lowercase()
+                    .starts_with(NEAR_STANDARD_PREFIX) =>
+            {
+                keys.push(generate_ed_key(
+                    master_fingerprint,
+                    ele,
+                    if _path
+                        .to_string()
+                        .to_lowercase()
+                        .starts_with(NEAR_LEDGER_LIVE_PREFIX)
+                    {
+                        Some("account.ledger_live".to_string())
+                    } else {
+                        Some("account.standard".to_string())
+                    },
+                )?);
+            }
             _ => {
-                return Err(URError::UrEncodeError(format!(
-                    "Unknown key path: {}",
-                    ele.path.to_string()
-                )))
+                return Err(
+                    URError::UrEncodeError(format!("Unknown key path: {}", ele.path.to_string()))
+                )
             }
         }
     }
@@ -98,6 +119,37 @@ pub fn generate_crypto_multi_accounts(
         Some(device_type.to_string()),
         Some(device_id),
         Some(device_version.to_string()),
+    ))
+}
+
+pub fn generate_ed_key(
+    mfp: [u8; 4],
+    key: ExtendedPublicKey,
+    note: Option<String>,
+) -> URResult<CryptoHDKey> {
+    let pub_key = key.get_key();
+    let path = key.get_path();
+    let depth = path.len() as u32;
+    let key_path = CryptoKeyPath::new(
+        path.into_iter()
+            .map(|v| match v {
+                ChildNumber::Normal { index } => get_path_component(Some(index.clone()), false),
+                ChildNumber::Hardened { index } => get_path_component(Some(index.clone()), true),
+            })
+            .collect::<URResult<Vec<PathComponent>>>()?,
+        Some(mfp),
+        Some(depth),
+    );
+    Ok(CryptoHDKey::new_extended_key(
+        Some(false),
+        pub_key,
+        None,
+        None,
+        Some(key_path),
+        None,
+        Some(mfp),
+        Some("Keystone".to_string()),
+        note,
     ))
 }
 

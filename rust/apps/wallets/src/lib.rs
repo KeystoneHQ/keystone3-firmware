@@ -20,6 +20,7 @@ mod common;
 pub mod companion_app;
 pub mod keplr;
 pub mod metamask;
+pub mod near;
 pub mod okx;
 pub mod solana;
 pub mod sui;

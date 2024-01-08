@@ -175,6 +175,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreeXrpMemory,
     },
+    {
+        REMAPVIEW_NEAR,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"near_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowNearTxOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowNearTxDetail\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_near.json",
+#endif
+        GuiGetNearData,
+        NULL,
+        FreeNearMemory,
+    }
 };
 
 void *GuiTemplateReload(lv_obj_t *parent, uint8_t index);
@@ -1043,6 +1054,14 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
     } else if (!strcmp(funcName, "GuiShowSolTxDetail")) {
         return GuiShowSolTxDetail;
     }
+    else if (!strcmp(funcName, "GuiShowNearTxOverview"))
+    {
+        return GuiShowNearTxOverview;
+    }
+    else if (!strcmp(funcName, "GuiShowNearTxDetail"))
+    {
+        return GuiShowNearTxDetail;
+    }
     return NULL;
 }
 
@@ -1423,6 +1442,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_ADA;
     case XRPTx:
         return REMAPVIEW_XRP;
+    case NearTx:
+        return REMAPVIEW_NEAR;
     default:
         return REMAPVIEW_BUTT;
     }

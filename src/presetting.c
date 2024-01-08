@@ -6,8 +6,11 @@
 #include "user_memory.h"
 #include "err_code.h"
 #include "assert.h"
+#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
-
+#else
+#define memset_s(p, s, c, l) memset(p, c, l)
+#endif
 
 
 #define FACTORY_RESULT_CHECK_ENABLE         1

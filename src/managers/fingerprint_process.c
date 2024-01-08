@@ -28,7 +28,11 @@
 #include "screen_manager.h"
 #include "low_power.h"
 #include "se_manager.h"
+#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
+#else
+#define memset_s(p, s, c, l) memset(p, c, l)
+#endif
 
 /* DEFINES */
 #define FINGERPRINT_REG_MAX_TIMES               (18)

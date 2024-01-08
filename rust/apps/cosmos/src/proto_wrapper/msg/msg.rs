@@ -262,8 +262,9 @@ pub struct Height {
     #[serde(deserialize_with = "deserialize_string_option_u64")]
     pub revision_number: Option<u64>,
     /// the height within the given revision
-    #[serde(deserialize_with = "deserialize_string_u64")]
-    pub revision_height: u64,
+    #[serde(default)]
+    #[serde(deserialize_with = "deserialize_string_option_u64")]
+    pub revision_height: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -306,7 +307,7 @@ impl TryFrom<&proto::ibc::applications::transfer::v1::MsgTransfer> for MsgTransf
         let timeout_height: Option<Height> = match &proto.timeout_height {
             Some(height) => Some(Height {
                 revision_number: Some(height.revision_number),
-                revision_height: height.revision_height,
+                revision_height: Some(height.revision_height),
             }),
             None => None,
         };

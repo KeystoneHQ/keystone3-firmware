@@ -124,6 +124,9 @@ void RecoverFromLowPower(void)
     SetLvglHandlerAndSnapShot(true);
     g_lowPowerState = LOW_POWER_STATE_WORKING;
     LcdBacklightOn();
+#if (USB_POP_WINDOW_ENABLE == 0)
+    UsbInit();
+#endif
     // AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
 }
 

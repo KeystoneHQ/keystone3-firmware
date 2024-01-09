@@ -41,7 +41,6 @@ void FpGetAesStateHandle(void *argument)
 
 void FpRecognizeHandle(void *argument)
 {
-    printf("%s %d\n", __func__, __LINE__);
     if (GuiNeedFpRecognize()) {
         FpRecognize(RECOGNIZE_UNLOCK);
     }
@@ -50,6 +49,7 @@ void FpRecognizeHandle(void *argument)
 static void FingerprintTask(void *pvParameter)
 {
     uint8_t len = 0;
+    osTimerId_t fpFpRecognizeTimer = NULL;
 
     FingerprintRestart();
     g_fpTimeoutTimer = osTimerNew(FpTimeoutHandle, osTimerPeriodic, NULL, NULL);
@@ -66,7 +66,10 @@ static void FingerprintTask(void *pvParameter)
         case FINGER_PRINT_EVENT_RESTART:
             FpResponseHandleStop();
             FingerprintRestart();
-            osTimerStart(getAesKeyTimer, 150);
+            if (fpFpRecognizeTimer == NULL) {
+                fpFpRecognizeTimer = osTimerNew(FpRecognizeHandle, osTimerOnce, NULL, NULL);
+            }
+            osTimerStart(fpFpRecognizeTimer, 150);
             break;
         case FINGER_PRINT_EVENT_LOW_POWER:
             SetFpLowPowerMode();

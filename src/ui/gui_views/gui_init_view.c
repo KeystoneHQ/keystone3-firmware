@@ -81,14 +81,6 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
             CloseMsgBox(&g_guiMsgBoxLowBattery);
         }
         break;
-    case SIG_INIT_USB_CONNECTION:
-        rcvValue = *(uint32_t *)param;
-        if (rcvValue != 0 && !GuiLockScreenIsTop()) {
-            OpenMsgBox(&g_guiMsgBoxUsbConnection);
-        } else {
-            CloseMsgBox(&g_guiMsgBoxUsbConnection);
-        }
-        break;
     case SIG_INIT_USB_STATE_CHANGE:
         GuiStatusBarSetUsb();
         break;

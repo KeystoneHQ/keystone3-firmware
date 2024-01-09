@@ -76,7 +76,7 @@ static void GuiCreatePage(lv_obj_t *parent)
     lv_style_set_border_opa(&style_hidden_cursor, LV_OPA_TRANSP);
     lv_style_set_outline_opa(&style_hidden_cursor, LV_OPA_TRANSP);
     lv_style_set_pad_all(&style_hidden_cursor, 0);
- 
+
     lv_obj_add_style(textArea, &style_hidden_cursor, LV_PART_CURSOR);
 
     static lv_point_t points[2] = {{0, 0}, {384, 0}};
@@ -246,11 +246,9 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
             if (!lv_obj_has_flag(g_maxLimitLabel, LV_OBJ_FLAG_HIDDEN)) {
                 lv_obj_add_flag(g_maxLimitLabel, LV_OBJ_FLAG_HIDDEN);
             }
-            if(g_hitMaxLimits)
-            {
+            if (g_hitMaxLimits) {
                 g_hitMaxLimits = false;
-                for (size_t i = 0; i < 6; i++)
-                {
+                for (size_t i = 0; i < 6; i++) {
                     lv_obj_set_style_img_opa(g_diceImgs[i], LV_OPA_100, LV_PART_MAIN);
                 }
             }
@@ -261,14 +259,13 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
             if (!lv_obj_has_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN)) {
                 lv_obj_add_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN);
             }
-            if(!g_hitMaxLimits) {
-                for (size_t i = 0; i < 6; i++)
-                {
+            if (!g_hitMaxLimits) {
+                for (size_t i = 0; i < 6; i++) {
                     lv_obj_set_style_img_opa(g_diceImgs[i], LV_OPA_64, LV_PART_MAIN);
                 }
                 g_hitMaxLimits = true;
             }
-            
+
         }
 
         lv_label_set_text_fmt(g_rollsLabel, "%d", length);

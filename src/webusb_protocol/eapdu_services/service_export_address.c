@@ -2,8 +2,9 @@
 #include "user_msg.h";
 #include "gui_lock_widgets.h"
 
-static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type);
+/* DEFINES */
 
+/* TYPEDEFS */
 enum Chain {
     ETH,
 };
@@ -14,6 +15,19 @@ struct EthParams {
     uint8_t chain;
     uint8_t wallet;
 };
+
+typedef struct {
+    uint16_t requestID;
+    uint8_t n;
+    uint8_t wallet;
+    ETHAccountType type;
+} ExportAddressParams_t;
+
+/* FUNC DECLARATION*/
+static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type);
+
+/* STATIC VARIABLES */
+static ExportAddressParams_t *g_exportAddressParams = NULL;
 
 static struct EthParams *NewParams()
 {
@@ -58,15 +72,6 @@ static struct EthParams *ParseParams(char *data)
     cJSON_Delete(json);
     return params;
 }
-
-typedef struct {
-    uint16_t requestID;
-    uint8_t n;
-    uint8_t wallet;
-    ETHAccountType type;
-} ExportAddressParams_t;
-
-static ExportAddressParams_t *g_exportAddressParams = NULL;
 
 uint8_t GetExportWallet()
 {

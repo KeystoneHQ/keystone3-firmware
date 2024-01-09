@@ -1,7 +1,12 @@
 #include "service_echo_test.h"
 
+#define CMD_ECHO_TEST_MAX_LEN   128
+
 void EchoService(EAPDURequestPayload_t payload)
 {
+    if (payload.dataLen >= CMD_ECHO_TEST_MAX_LEN) {
+        return;
+    }
     EAPDUResponsePayload_t *result = (EAPDUResponsePayload_t *)SRAM_MALLOC(sizeof(EAPDUResponsePayload_t));
 
     result->data = &payload.data;

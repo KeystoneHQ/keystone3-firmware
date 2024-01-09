@@ -12,8 +12,6 @@
 
 #define PROTOCOL_PARSE_OVERTIME 500
 
-uint8_t g_protocolRcvBuffer[PROTOCOL_MAX_LENGTH];
-
 void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbackFunc_t sendFunc)
 {
     static uint32_t lastTick = 0;

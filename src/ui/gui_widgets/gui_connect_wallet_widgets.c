@@ -134,12 +134,16 @@ static const lv_img_dsc_t *g_ethWalletCoinArray[4] = {
     &coinMatic,
 };
 
-static const lv_img_dsc_t *g_okxWalletCoinArray[5] = {
+static const lv_img_dsc_t *g_okxWalletCoinArray[9] = {
     &coinBtc,
     &coinEth,
     &coinBnb,
     &coinMatic,
     &coinOkb,
+    &coinTrx,
+    &coinLtc,
+    &coinBch,
+    &coinDash,
 };
 
 static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {
@@ -715,7 +719,7 @@ static void AddOkxWalletCoins(void)
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
         lv_obj_clean(g_coinCont);
     }
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 9; i++) {
         lv_obj_t *img = GuiCreateImg(g_coinCont, g_okxWalletCoinArray[i]);
         lv_img_set_zoom(img, 110);
         lv_img_set_pivot(img, 0, 0);
@@ -966,8 +970,8 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     GenerateUR func = NULL;
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
-    func = GuiGetXrpToolkitData;
-    AddXrpToolkitAddress();
+    func = GuiGetOkxWalletData;
+    AddOkxWalletCoins();
 #endif
 }
 

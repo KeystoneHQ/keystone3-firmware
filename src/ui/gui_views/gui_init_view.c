@@ -41,7 +41,7 @@ static int32_t GuiInitViewInit(void)
 
 int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
-    uint8_t walletNum;
+    static uint8_t walletNum;
     static uint16_t lockParam = SIG_LOCK_VIEW_VERIFY_PIN;
     uint16_t battState;
     uint32_t rcvValue;

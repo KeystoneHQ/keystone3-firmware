@@ -66,7 +66,6 @@ static void FingerprintTask(void *pvParameter)
         case FINGER_PRINT_EVENT_RESTART:
             FpResponseHandleStop();
             FingerprintRestart();
-            getAesKeyTimer = osTimerNew(FpRecognizeHandle, osTimerOnce, NULL, NULL);
             osTimerStart(getAesKeyTimer, 150);
             break;
         case FINGER_PRINT_EVENT_LOW_POWER:

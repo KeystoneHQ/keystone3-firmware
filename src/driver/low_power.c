@@ -26,6 +26,7 @@
 #include "gui_api.h"
 #include "power_manager.h"
 #include "screen_manager.h"
+#include "usb_task.h"
 
 #define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                //80 seconds
 #define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                (60 * 8)            //8 minutes
@@ -61,7 +62,11 @@ static void FpLowerPowerHandle(void *argument)
 
 void LowerPowerTimerStart(void)
 {
-    osTimerId_t lowPowerTimer = osTimerNew(FpLowerPowerHandle, osTimerOnce, NULL, NULL);
+    static osTimerId_t lowPowerTimer = NULL;
+    if (lowPowerTimer == NULL) {
+        lowPowerTimer = osTimerNew(FpLowerPowerHandle, osTimerOnce, NULL, NULL);
+    }
+
     osTimerStart(lowPowerTimer, 10);
 }
 

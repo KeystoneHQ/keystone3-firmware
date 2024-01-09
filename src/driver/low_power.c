@@ -26,6 +26,7 @@
 #include "gui_api.h"
 #include "power_manager.h"
 #include "screen_manager.h"
+#include "usb_task.h"
 
 #define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                //80 seconds
 #define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                (60 * 8)            //8 minutes

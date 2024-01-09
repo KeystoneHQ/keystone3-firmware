@@ -28,6 +28,7 @@ void GuiSetupAreaDeInit(void);
 void GuiSetupAreaInit(void);
 void GuiSetupAreaRestart(void);
 void GuiSetupAreaRefresh(void);
+bool GuiIsSetup(void);
 
 uint8_t GuiSetSetupPhase(SETUP_PHASE_ENUM pahaseEnum);
 bool GuiJudgeCurrentPahse(SETUP_PHASE_ENUM pahaseEnum);

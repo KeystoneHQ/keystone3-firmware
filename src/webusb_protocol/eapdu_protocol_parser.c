@@ -1,5 +1,6 @@
 #include "stdio.h"
 #include "stdlib.h"
+#include "assert.h"
 #include "eapdu_protocol_parser.h"
 #include "keystore.h"
 #include "user_msg.h"

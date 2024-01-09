@@ -72,6 +72,7 @@ uint32_t EnterLowPower(void)
     uint32_t sleepSecond, wakeUpSecond, wakeUpCount = 0;
     g_lowPowerState = LOW_POWER_STATE_DEEP_SLEEP;
     UsbDeInit();
+    SetUsbState(false);
     printf("enter deep sleep\r\n");
     sleepSecond = 80;
     printf("sleepSecond=%d\n", sleepSecond);
@@ -123,7 +124,6 @@ void RecoverFromLowPower(void)
     SetLvglHandlerAndSnapShot(true);
     g_lowPowerState = LOW_POWER_STATE_WORKING;
     LcdBacklightOn();
-    UsbInit();
     // AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
 }
 

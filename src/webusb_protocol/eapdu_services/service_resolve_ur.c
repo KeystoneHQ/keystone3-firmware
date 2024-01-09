@@ -5,13 +5,19 @@
 #include "qrdecode_task.h"
 #include "gui_lock_widgets.h"
 
+/* DEFINES */
 #define REQUEST_ID_IDLE 0
-static uint16_t g_requestID = REQUEST_ID_IDLE;
 
+/* TYPEDEFS */
+
+/* FUNC DECLARATION*/
 static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status);
 static uint8_t *DataParser(EAPDURequestPayload_t *payload);
 static bool CheckURAcceptable(EAPDURequestPayload_t payload);
 static void GotoFailPage(StatusEnum error_code, const char *error_message);
+
+/* STATIC VARIABLES */
+static uint16_t g_requestID = REQUEST_ID_IDLE;
 
 static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
 {

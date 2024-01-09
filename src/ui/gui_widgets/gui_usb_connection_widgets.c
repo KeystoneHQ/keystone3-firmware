@@ -72,7 +72,8 @@ static void NotNowHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 0);
+        CloseMsgBox(&g_guiMsgBoxUsbConnection);
+        SetUsbState(false);
     }
 }
 
@@ -82,9 +83,10 @@ static void ConnectUsbHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
 #ifndef COMPILE_SIMULATOR
+        OpenUsb();
         SetUsbState(true);
 #endif
-        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 0);
+        CloseMsgBox(&g_guiMsgBoxUsbConnection);
     }
 }
 

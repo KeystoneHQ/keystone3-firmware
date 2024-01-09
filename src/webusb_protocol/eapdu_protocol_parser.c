@@ -162,10 +162,13 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
     if (eapduFrame->p2 == 0 && g_totalPackets == 0) {
         // the first packet
         g_totalPackets = eapduFrame->p1;
+        assert(g_totalPackets <= MAX_PACKETS);
         printf("Total number of packets: %d\n", g_totalPackets);
         memset(g_receivedPackets, 0, sizeof(g_receivedPackets));
     }
 
+    assert(eapduFrame->dataLen <= MAX_PACKETS_LENGTH);
+    assert(eapduFrame->p2 < MAX_PACKETS);
     memcpy(g_protocolRcvBuffer[eapduFrame->p2], eapduFrame->data, eapduFrame->dataLen);
     g_packetLengths[eapduFrame->p2] = eapduFrame->dataLen;
     g_receivedPackets[eapduFrame->p2] = 1;

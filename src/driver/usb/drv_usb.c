@@ -44,6 +44,7 @@ void UsbLoop(void)
 void UsbDeInit(void)
 {
     if (g_usbInit == true) {
+        NVIC_DisableIRQ(USB_IRQn);
         USBD_DeInit(&g_usbDev);
         g_usbInit = false;
     }

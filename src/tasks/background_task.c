@@ -15,6 +15,7 @@
 #include "gui_views.h"
 #include "usb_task.h"
 #include "anti_tamper.h"
+#include "device_setting.h"
 
 static void BackgroundTask(void *argument);
 
@@ -169,7 +170,10 @@ static void BackgroundTask(void *argument)
             }
             if (GetUsbDetectState() == false) {
                 SetUsbState(false);
+                UsbDeInit();
                 GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 0);
+            } else if (GetUSBSwitch()) {
+                GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
             }
             printf("send battState=0x%04X\r\n", battState);
             GuiApiEmitSignal(SIG_INIT_BATTERY, &battState, sizeof(battState));

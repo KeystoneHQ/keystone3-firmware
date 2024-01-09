@@ -16,6 +16,7 @@
 #include "anti_tamper.h"
 #include "gui_global_resources.h"
 #include "gui_about_info_widgets.h"
+#include "account_manager.h"
 
 static int32_t GuiInitViewInit(void)
 {
@@ -79,6 +80,14 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
             OpenMsgBox(&g_guiMsgBoxLowBattery);
         } else {
             CloseMsgBox(&g_guiMsgBoxLowBattery);
+        }
+        break;
+    case SIG_INIT_USB_CONNECTION:
+        rcvValue = *(uint32_t *)param;
+        if (rcvValue != 0 && !GuiLockScreenIsTop() && ((GetCurrentAccountIndex() != 0xFF) || walletNum == 0)) {
+            OpenMsgBox(&g_guiMsgBoxUsbConnection);
+        } else {
+            CloseMsgBox(&g_guiMsgBoxUsbConnection);
         }
         break;
     case SIG_INIT_USB_STATE_CHANGE:

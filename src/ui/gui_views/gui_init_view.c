@@ -83,8 +83,9 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         }
         break;
     case SIG_INIT_USB_CONNECTION:
+        GetExistAccountNum(&walletNum);
         rcvValue = *(uint32_t *)param;
-        if (rcvValue != 0 && !GuiLockScreenIsTop() && ((GetCurrentAccountIndex() != 0xFF) || walletNum == 0)) {
+        if (rcvValue != 0 && !GuiLockScreenIsTop() && GetUsbDetectState() && ((GetCurrentAccountIndex() != 0xFF) || walletNum == 0)) {
             OpenMsgBox(&g_guiMsgBoxUsbConnection);
         } else {
             CloseMsgBox(&g_guiMsgBoxUsbConnection);

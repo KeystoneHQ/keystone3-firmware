@@ -107,6 +107,7 @@ static void RefreshSwitchAccount(void);
 static void CloseAttentionHandler(lv_event_t *e);
 static void MoreHandler(lv_event_t *e);
 static void AddressSettingsHandler(lv_event_t *e);
+static void ExportXpubHandler(lv_event_t *e);
 static void TutorialHandler(lv_event_t *e);
 static void LeftBtnHandler(lv_event_t *e);
 static void RightBtnHandler(lv_event_t *e);
@@ -316,7 +317,7 @@ static void GetCurrentTitle(TitleItem_t *titleItem)
 static void GuiCreateMoreWidgets(lv_obj_t *parent)
 {
     lv_obj_t *cont, *btn, *img, *label;
-    int height = 228;
+    int height = 324;
     if (g_chainCard != HOME_WALLET_CARD_BTC) {
         height = 132;
     }
@@ -328,7 +329,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     case HOME_WALLET_CARD_BTC:
         btn = lv_btn_create(cont);
         lv_obj_set_size(btn, 456, 84);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 24 + 572);
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 24 + 476);
         lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_PART_MAIN);
         lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
@@ -337,6 +338,19 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
         img = GuiCreateImg(btn, &imgAddressType);
         lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
         label = GuiCreateLabelWithFont(btn, _("receive_btc_more_address_settings"), &openSans_24);
+        lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
+        // export xpub
+        btn = lv_btn_create(cont);
+        lv_obj_set_size(btn, 456, 84);
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 120 + 476);
+        lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_PART_MAIN);
+        lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
+        lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
+        lv_obj_add_event_cb(btn, ExportXpubHandler, LV_EVENT_CLICKED, NULL);
+        img = GuiCreateImg(btn, &imgExport);
+        lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
+        label = GuiCreateLabelWithFont(btn, _("export_xpub"), &openSans_24);
         lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
         break;
     default:
@@ -899,6 +913,14 @@ static void AddressSettingsHandler(lv_event_t *e)
             g_utxoReceiveWidgets.moreCont = NULL;
         }
         GuiBitcoinReceiveGotoTile(UTXO_RECEIVE_TILE_ADDRESS_SETTINGS);
+    }
+}
+
+static void ExportXpubHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        GuiFrameOpenViewWithParam(&g_exportPubkeyView, &g_chainCard, sizeof(g_chainCard));
     }
 }
 

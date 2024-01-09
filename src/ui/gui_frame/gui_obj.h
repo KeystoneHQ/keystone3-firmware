@@ -25,6 +25,7 @@ typedef int32_t(*GuiEventProcessFunc)(void *self, uint16_t usEvent, void *param,
     add(SCREEN_BITCOIN_RECEIVE) \
     add(SCREEN_ETHEREUM_RECEIVE)\
     add(SCREEN_STANDARD_RECEIVE)\
+    add(SCREEN_EXPORT_PUBKEY)   \
     add(SCREEN_FORGET_PASSCODE) \
     add(SCREEN_LOCK_DEVICE)     \
     add(SCREEN_FIRMWARE_UPDATE) \

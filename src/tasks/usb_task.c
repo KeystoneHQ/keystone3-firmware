@@ -13,6 +13,7 @@
 #include "gui_api.h"
 #include "drv_aw32001.h"
 #include "device_setting.h"
+#include "gui_setup_widgets.h"
 
 static void UsbTask(void *argument);
 
@@ -67,7 +68,7 @@ static void UsbTask(void *argument)
             case USB_MSG_ISR_HANDLER: {
                 ClearLockScreenTime();
 #if (USB_POP_WINDOW_ENABLE == 1)
-                if (GetCurrentAccountIndex() != 0xFF && GetUSBSwitch()) {
+                if ((GetCurrentAccountIndex() != 0xFF || GuiIsSetup()) && GetUSBSwitch()) {
 #else
                 if (GetUSBSwitch()) {
 #endif
@@ -80,7 +81,6 @@ static void UsbTask(void *argument)
             case USB_MSG_SET_STATE: {
                 g_usbState = rcvMsg.value != 0;
                 GuiApiEmitSignal(SIG_INIT_USB_STATE_CHANGE, NULL, 0);
-                // UsbInit();
             }
             break;
             case USB_MSG_INIT: {

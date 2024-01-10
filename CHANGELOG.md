@@ -1,3 +1,19 @@
+## 1.2.6 (2024-01-10)
+
+### What's new
+
+1. Added a feature to generate seed phrases through dice rolling
+2. Introduced support for Tron, Bitcoin Cash, Dash, and Litecoin
+
+### Improvements
+
+1. Improved the display of Cosmos and its para-chains on the coin management page
+
+### Bug Fixes
+
+1. Fixed the issue of device restarts caused by insufficient memory
+
+
 ## 1.2.4 (2023-12-21)
 
 ### What's new

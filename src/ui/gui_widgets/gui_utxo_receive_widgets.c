@@ -350,7 +350,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
         lv_obj_add_event_cb(btn, ExportXpubHandler, LV_EVENT_CLICKED, NULL);
         img = GuiCreateImg(btn, &imgExport);
         lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-        label = GuiCreateLabelWithFont(btn, _("export_xpub"), &openSans_24);
+        label = GuiCreateLabelWithFont(btn, _("receive_btc_more_export_xpub"), &openSans_24);
         lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
         break;
     default:
@@ -920,6 +920,10 @@ static void ExportXpubHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
+        if (g_utxoReceiveWidgets.moreCont != NULL) {
+            lv_obj_del(g_utxoReceiveWidgets.moreCont);
+            g_utxoReceiveWidgets.moreCont = NULL;
+        }
         GuiFrameOpenViewWithParam(&g_exportPubkeyView, &g_chainCard, sizeof(g_chainCard));
     }
 }

@@ -122,9 +122,6 @@ void USBD_Init(USB_OTG_CORE_HANDLE* pdev, USB_OTG_CORE_ID_TypeDef coreID, USBD_D
         NVIC_InitStructure.NVIC_IRQChannelSubPriority        = 1;
         NVIC_InitStructure.NVIC_IRQChannelCmd                = ENABLE;
         NVIC_Init(&NVIC_InitStructure);
-    } else {
-        NVIC_ClearPendingIRQ(USB_IRQn);
-        NVIC_EnableIRQ(USB_IRQn);
     }
 }
 

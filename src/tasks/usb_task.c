@@ -68,6 +68,9 @@ static void UsbTask(void *argument)
         if (ret == osOK) {
             switch (rcvMsg.id) {
             case USB_MSG_ISR_HANDLER: {
+                if (GetLowPowerState() != LOW_POWER_STATE_WORKING) {
+                    break;
+                }
                 ClearLockScreenTime();
 #if (USB_POP_WINDOW_ENABLE == 1)
                 if ((GetCurrentAccountIndex() != 0xFF || GuiIsSetup()) && GetUSBSwitch() && g_usbState) {

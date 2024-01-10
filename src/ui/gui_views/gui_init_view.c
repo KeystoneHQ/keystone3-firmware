@@ -17,6 +17,7 @@
 #include "gui_global_resources.h"
 #include "gui_about_info_widgets.h"
 #include "account_manager.h"
+#include "gui_setup_widgets.h"
 
 static int32_t GuiInitViewInit(void)
 {
@@ -83,9 +84,8 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         }
         break;
     case SIG_INIT_USB_CONNECTION:
-        GetExistAccountNum(&walletNum);
         rcvValue = *(uint32_t *)param;
-        if (rcvValue != 0 && !GuiLockScreenIsTop() && GetUsbDetectState() && ((GetCurrentAccountIndex() != 0xFF) || walletNum == 0)) {
+        if (rcvValue != 0 && !GuiLockScreenIsTop() && GetUsbDetectState() && ((GetCurrentAccountIndex() != 0xFF) || GuiIsSetup())) {
             OpenMsgBox(&g_guiMsgBoxUsbConnection);
         } else {
             CloseMsgBox(&g_guiMsgBoxUsbConnection);

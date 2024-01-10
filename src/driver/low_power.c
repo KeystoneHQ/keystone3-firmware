@@ -32,6 +32,7 @@
 #define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                (60 * 8)            //8 minutes
 static void SetRtcWakeUp(uint32_t second);
 int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
+int32_t GetWalletAmountAfterWakeup(const void *inData, uint32_t inDataLen);
 
 volatile LowPowerState g_lowPowerState = LOW_POWER_STATE_WORKING;
 
@@ -77,7 +78,6 @@ uint32_t EnterLowPower(void)
     uint32_t sleepSecond, wakeUpSecond, wakeUpCount = 0;
     g_lowPowerState = LOW_POWER_STATE_DEEP_SLEEP;
     UsbDeInit();
-    SetUsbState(false);
     printf("enter deep sleep\r\n");
     sleepSecond = 80;
     printf("sleepSecond=%d\n", sleepSecond);
@@ -117,7 +117,6 @@ void RecoverFromLowPower(void)
     Uart0OpenPort();
     PowerInit();
     TouchOpen();
-    //Uart1OpenPort();
     Uart2OpenPort();
     FingerPrintGroupSetBit(FINGER_PRINT_EVENT_RESTART);
     PsramOpen();
@@ -131,8 +130,9 @@ void RecoverFromLowPower(void)
     LcdBacklightOn();
 #if (USB_POP_WINDOW_ENABLE == 0)
     UsbInit();
+#else
+    AsyncExecute(GetWalletAmountAfterWakeup, NULL, 0);
 #endif
-    // AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
 }
 
 void EnterDeepSleep(void)
@@ -141,12 +141,9 @@ void EnterDeepSleep(void)
     GPIO_WakeEvenConfig(GPIO_PortSourceGPIOF, GPIO_Pin_14, ENABLE);     //woken up by fingerprint.
     //GPIO_WakeEvenConfig(GPIO_PortSourceGPIOF, GPIO_Pin_15, ENABLE);     //woken up by USB.
     GPIO_WakeModeConfig(GPIO_WakeMode_Now);
-    //for (int32_t u32Count = 0; u32Count < 0xFFFFF; u32Count++);
     SYSCTRL->MSR_CR1 |= BIT(27);
-    //for (int32_t u32Count = 0; u32Count < 0xFFFFF; u32Count++);
     /************************* power down ROM *************************/
     SYSCTRL->ANA_CTRL |= BIT(7);
-    //for (int32_t u32Count = 0; u32Count < 0xFFFFF; u32Count++);
     /************************ power down LDO25 ************************/
     SYSCTRL->LDO25_CR |= (BIT(4) | BIT(5));
     /************************** for usb ************************/
@@ -217,13 +214,6 @@ void DisableAllHardware(void)
     SetGpioLow(GPIOF, GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_13);
     SetGpioLow(GPIOG, GPIO_Pin_0 | GPIO_Pin_5 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12);
     SetGpioLow(GPIOH, GPIO_Pin_All);
-
-    // Finger, reset
-    // SetGpioLow(GPIOE, GPIO_Pin_11);
-    // SetGpioLow(GPIOD, GPIO_Pin_12);
-    // SetGpioLow(GPIOD, GPIO_Pin_13);
-    // SetGpioLow(GPIOA, GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9);
-    // SetGpioLow(GPIOF, GPIO_Pin_14);
 
     //PSRAM
     SetGpioHigh(GPIOG, GPIO_Pin_6);
@@ -314,7 +304,6 @@ void SetGpioHigh(GPIO_TypeDef *GpioX, uint32_t pin)
 static void SetRtcWakeUp(uint32_t second)
 {
     RTC_SetAlarm(GetRtcCounter() + second);
-    //RTC_SetRefRegister(0);
     RTC_ITConfig(ENABLE);
     GPIO->WAKE_TYPE_EN |= BIT(12);
 }
@@ -333,3 +322,9 @@ int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
     return 0;
 }
 
+int32_t GetWalletAmountAfterWakeup(const void *inData, uint32_t inDataLen)
+{
+    UserDelay(200);
+    GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+    return 0;
+}

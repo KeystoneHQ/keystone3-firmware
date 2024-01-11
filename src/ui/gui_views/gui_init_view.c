@@ -18,6 +18,9 @@
 #include "gui_about_info_widgets.h"
 #include "account_manager.h"
 #include "gui_setup_widgets.h"
+#ifdef COMPILE_SIMULATOR
+#include "simulator_model.h"
+#endif
 
 static int32_t GuiInitViewInit(void)
 {

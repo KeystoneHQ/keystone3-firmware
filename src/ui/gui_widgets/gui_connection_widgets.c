@@ -11,6 +11,7 @@
 #include "device_setting.h"
 #include "usb_task.h"
 #include "gui_page.h"
+#include "gui_api.h"
 #ifndef COMPILE_SIMULATOR
 #include "drv_usb.h"
 #endif

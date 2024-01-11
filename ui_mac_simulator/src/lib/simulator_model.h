@@ -41,6 +41,7 @@ uint32_t FatfsGetSize(const char *path);
 bool SdCardInsert(void);
 bool FatfsFileExist(const char *path);
 uint32_t GetBatteryMilliVolt(void);
+bool GetUsbDetectState(void);
 
 #define LOW_BATTERY_LIMIT               20
 #define CHECK_BATTERY_LOW_POWER()       ((GetBatterPercent() <= LOW_BATTERY_LIMIT) ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE)

@@ -210,7 +210,6 @@ void GuiMultiPathCoinReceiveInit(uint8_t chain)
 
 void GuiMultiPathCoinReceiveDeInit(void)
 {
-    SetCurrentSelectIndex(g_selectIndex);
     GUI_DEL_OBJ(g_multiPathCoinReceiveWidgets.moreCont)
     GUI_DEL_OBJ(g_multiPathCoinReceiveWidgets.attentionCont)
     GUI_DEL_OBJ(g_multiPathCoinReceiveWidgets.cont)

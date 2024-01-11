@@ -222,7 +222,6 @@ void GuiReceiveDeInit(void)
         g_utxoReceiveWidgets.inputAddressCont = NULL;
     }
 
-    SetCurrentSelectIndex(g_selectIndex);
     lv_obj_del(g_utxoReceiveWidgets.cont);
     CLEAR_OBJECT(g_utxoReceiveWidgets);
     g_utxoReceiveTileNow = 0;

@@ -1332,10 +1332,13 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
 
 static void GetRootHdPath(char *hdPath)
 {
-
+    uint8_t addrType = g_addressType[g_currentAccountIndex];
+    if (g_utxoReceiveTileNow == UTXO_RECEIVE_TILE_ADDRESS_SETTINGS) {
+        addrType = g_selectType;
+    }
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
-        sprintf(hdPath, "%s", g_addressSettings[g_addressType[g_currentAccountIndex]].path);
+        sprintf(hdPath, "%s", g_addressSettings[addrType].path);
         break;
     case HOME_WALLET_CARD_LTC:
         sprintf(hdPath, "%s", g_chainPathItems[1].path);
@@ -1355,7 +1358,11 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
 {
     char *xPub, rootPath[128], hdPath[128];
     ChainType chainType;
-    chainType = GetChainTypeByIndex(g_addressType[g_currentAccountIndex]);
+    uint8_t addrType = g_addressType[g_currentAccountIndex];
+    if (g_utxoReceiveTileNow == UTXO_RECEIVE_TILE_ADDRESS_SETTINGS) {
+        addrType = g_selectType;
+    }
+    chainType = GetChainTypeByIndex(addrType);
     xPub = GetCurrentAccountPublicKey(chainType);
     ASSERT(xPub);
     SimpleResponse_c_char *result;

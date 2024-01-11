@@ -1085,15 +1085,19 @@ void AddressLongModeCut(char *out, const char *address)
 
 static void GetSolHdPath(char *hdPath, int index)
 {
-    switch (g_solPathIndex[g_currentAccountIndex]) {
+    uint8_t i = g_solPathIndex[g_currentAccountIndex];
+    if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
+        i = g_selectType;
+    }
+    switch (i) {
     case 0:
-        sprintf(hdPath, "%s/%u'", g_solPaths[g_solPathIndex[g_currentAccountIndex]].path, index);
+        sprintf(hdPath, "%s/%u'", g_solPaths[i].path, index);
         break;
     case 1:
-        sprintf(hdPath, "%s", g_solPaths[g_solPathIndex[g_currentAccountIndex]].path);
+        sprintf(hdPath, "%s", g_solPaths[i].path);
         break;
     case 2:
-        sprintf(hdPath, "%s/%u'/0'", g_solPaths[g_solPathIndex[g_currentAccountIndex]].path, index);
+        sprintf(hdPath, "%s/%u'/0'", g_solPaths[i].path, index);
         break;
     default:
         break;
@@ -1102,15 +1106,19 @@ static void GetSolHdPath(char *hdPath, int index)
 
 static void GetEthHdPath(char *hdPath, int index)
 {
-    switch (g_ethPathIndex[g_currentAccountIndex]) {
+    uint8_t i = g_ethPathIndex[g_currentAccountIndex];
+    if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
+        i = g_selectType;
+    }
+    switch (i) {
     case 0:
-        sprintf(hdPath, "%s/0/%u", g_ethPaths[g_ethPathIndex[g_currentAccountIndex]].path, index);
+        sprintf(hdPath, "%s/0/%u", g_ethPaths[i].path, index);
         break;
     case 1:
-        sprintf(hdPath, "%s/%u'/0/0", g_ethPaths[g_ethPathIndex[g_currentAccountIndex]].path, index);
+        sprintf(hdPath, "%s/%u'/0/0", g_ethPaths[i].path, index);
         break;
     case 2:
-        sprintf(hdPath, "%s/%u", g_ethPaths[g_ethPathIndex[g_currentAccountIndex]].path, index);
+        sprintf(hdPath, "%s/%u", g_ethPaths[i].path, index);
         break;
     default:
         break;
@@ -1119,15 +1127,19 @@ static void GetEthHdPath(char *hdPath, int index)
 
 static void GetEthRootPath(char *rootPath, int index)
 {
-    switch (g_ethPathIndex[g_currentAccountIndex]) {
+    uint8_t i = g_ethPathIndex[g_currentAccountIndex];
+    if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
+        i = g_selectType;
+    }
+    switch (i) {
     case 0:
-        sprintf(rootPath, "%s", g_ethPaths[g_ethPathIndex[g_currentAccountIndex]].path);
+        sprintf(rootPath, "%s", g_ethPaths[i].path);
         break;
     case 1:
-        sprintf(rootPath, "%s/%u'", g_ethPaths[g_ethPathIndex[g_currentAccountIndex]].path, index);
+        sprintf(rootPath, "%s/%u'", g_ethPaths[i].path, index);
         break;
     case 2:
-        sprintf(rootPath, "%s", g_ethPaths[g_ethPathIndex[g_currentAccountIndex]].path);
+        sprintf(rootPath, "%s", g_ethPaths[i].path);
         break;
     default:
         break;
@@ -1136,7 +1148,11 @@ static void GetEthRootPath(char *rootPath, int index)
 
 static char *GetSolXpub(int index)
 {
-    switch (g_solPathIndex[g_currentAccountIndex]) {
+    uint8_t i = g_solPathIndex[g_currentAccountIndex];
+    if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
+        i = g_selectType;
+    }
+    switch (i) {
     case 0:
         return GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_0 + index);
     case 1:
@@ -1153,7 +1169,11 @@ static char *GetSolXpub(int index)
 
 static char *GetEthXpub(int index)
 {
-    switch (g_ethPathIndex[g_currentAccountIndex]) {
+    uint8_t i = g_ethPathIndex[g_currentAccountIndex];
+    if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
+        i = g_selectType;
+    }
+    switch (i) {
     case 0:
         return (char *)GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
     case 1:

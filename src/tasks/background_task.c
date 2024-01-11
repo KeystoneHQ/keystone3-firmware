@@ -15,6 +15,7 @@
 #include "gui_views.h"
 #include "usb_task.h"
 #include "anti_tamper.h"
+#include "device_setting.h"
 
 static void BackgroundTask(void *argument);
 
@@ -143,12 +144,10 @@ static void BackgroundTask(void *argument)
             BackgroundRunnable_t *async_r = (BackgroundRunnable_t *)rcvMsg.buffer;
             // compiler will optimize the argument inData and inDataLen if they are not used in some cases;
             bool shouldClean = async_r->inDataLen > 0 && async_r->inData != NULL;
-            if (async_r->func)
-            {
+            if (async_r->func) {
                 async_r->func(async_r->inData, async_r->inDataLen, async_r->runnable);
             }
-            if (shouldClean)
-            {
+            if (shouldClean) {
                 SRAM_FREE(async_r->inData);
             }
         }
@@ -171,7 +170,12 @@ static void BackgroundTask(void *argument)
             }
             if (GetUsbDetectState() == false) {
                 SetUsbState(false);
+                UsbDeInit();
                 GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 0);
+            } else if (GetUSBSwitch()) {
+#if (USB_POP_WINDOW_ENABLE == 1)
+                GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+#endif
             }
             printf("send battState=0x%04X\r\n", battState);
             GuiApiEmitSignal(SIG_INIT_BATTERY, &battState, sizeof(battState));
@@ -183,7 +187,7 @@ static void BackgroundTask(void *argument)
         }
         break;
         case BACKGROUND_MSG_BATTERY_INTERVAL: {
-            if (rcvMsg.value != 0 || BatteryIntervalHandler(NULL)) {
+            if (rcvMsg.value != 0 || BatteryIntervalHandler()) {
                 battState = GetBatterPercent();
                 if (GetUsbPowerState() == USB_POWER_STATE_CONNECT) {
                     battState |= 0x8000;

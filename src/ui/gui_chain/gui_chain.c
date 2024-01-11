@@ -3,36 +3,35 @@
 PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
 {
     switch (ViewTypeReMap(viewType)) {
-        case REMAPVIEW_BTC:
-            return GuiGetPsbtCheckResult();
-        case REMAPVIEW_ETH:
-        case REMAPVIEW_ETH_PERSONAL_MESSAGE:
-        case REMAPVIEW_ETH_TYPEDDATA:
-            return GuiGetEthCheckResult();
-        case REMAPVIEW_TRX:
-            return GuiGetTrxCheckResult();
-        case REMAPVIEW_COSMOS:
-            return GuiGetCosmosCheckResult();
-        case REMAPVIEW_SUI:
-            return GuiGetSuiCheckResult();
-        case REMAPVIEW_SOL:
-        case REMAPVIEW_SOL_MESSAGE:
-            return GuiGetSolCheckResult();
-        case REMAPVIEW_APT:
-            return GuiGetAptosCheckResult();
-        case REMAPVIEW_ADA:
-            return GuiGetAdaCheckResult();
-        case REMAPVIEW_XRP:
-            return GuiGetXrpCheckResult();
-        default:
-            return NULL;
+    case REMAPVIEW_BTC:
+        return GuiGetPsbtCheckResult();
+    case REMAPVIEW_ETH:
+    case REMAPVIEW_ETH_PERSONAL_MESSAGE:
+    case REMAPVIEW_ETH_TYPEDDATA:
+        return GuiGetEthCheckResult();
+    case REMAPVIEW_TRX:
+        return GuiGetTrxCheckResult();
+    case REMAPVIEW_COSMOS:
+        return GuiGetCosmosCheckResult();
+    case REMAPVIEW_SUI:
+        return GuiGetSuiCheckResult();
+    case REMAPVIEW_SOL:
+    case REMAPVIEW_SOL_MESSAGE:
+        return GuiGetSolCheckResult();
+    case REMAPVIEW_APT:
+        return GuiGetAptosCheckResult();
+    case REMAPVIEW_ADA:
+        return GuiGetAdaCheckResult();
+    case REMAPVIEW_XRP:
+        return GuiGetXrpCheckResult();
+    default:
+        return NULL;
     }
 }
 
 GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
 {
-    switch (ViewType)
-    {
+    switch (ViewType) {
     case BtcNativeSegwitTx:
     case BtcSegwitTx:
     case BtcLegacyTx:
@@ -78,8 +77,7 @@ bool IsMessageType(uint8_t type)
 static GenerateUR UrGenerator(GuiChainCoinType viewType, bool isMulti)
 {
     GenerateUR func = NULL;
-    switch (viewType)
-    {
+    switch (viewType) {
     case BtcNativeSegwitTx:
     case BtcSegwitTx:
     case BtcLegacyTx:

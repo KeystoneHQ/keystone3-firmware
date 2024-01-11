@@ -197,6 +197,8 @@ void GuiMultiPathCoinReceiveInit(uint8_t chain)
     g_multiPathCoinReceiveWidgets.tileChangePath = lv_tileview_add_tile(g_multiPathCoinReceiveWidgets.tileView, RECEIVE_TILE_CHANGE_PATH, 0, LV_DIR_HOR);
     GuiCreateChangePathWidget(g_multiPathCoinReceiveWidgets.tileChangePath);
     lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.tileView, LV_OBJ_FLAG_SCROLLABLE);
+
+    GuiMultiPathCoinReceiveRefresh();
 }
 
 void GuiMultiPathCoinReceiveDeInit(void)
@@ -493,12 +495,12 @@ static char* GetChangePathItemTitle(uint32_t i)
 
 static void ShowEgAddressCont(lv_obj_t *egCont)
 {
-   
+
     if (egCont == NULL) {
         printf("egCont is NULL, cannot show eg address\n");
         return;
     }
-    
+
     lv_obj_clean(egCont);
 
     lv_obj_t *prevLabel, *label;
@@ -520,7 +522,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
         gap = 0;
     }
 
-    char *desc = _("derivation_path_address_eg");    
+    char *desc = _("derivation_path_address_eg");
     label = GuiCreateNoticeLabel(egCont, desc);
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, gap);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
@@ -539,8 +541,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
     g_addressLabel[0] = label;
 
-    if (!(g_chainCard == HOME_WALLET_CARD_SOL && g_solPathIndex[g_currentAccountIndex] == 1))
-    {
+    if (!(g_chainCard == HOME_WALLET_CARD_SOL && g_solPathIndex[g_currentAccountIndex] == 1)) {
         index = GuiCreateNoticeLabel(egCont, _("1"));
         lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);
@@ -584,7 +585,7 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
         label = GuiCreateLabelWithFontAndTextColor(cont, string, g_defIllustrateFont, 0x919191);
         lv_label_set_recolor(label, true);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
-        if (i < 2){
+        if (i < 2) {
             line = GuiCreateLine(cont, points, 2);
             lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * (i + 1));
         }
@@ -1147,11 +1148,10 @@ static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item)
 
 void GuiResetCurrentEthAddressIndex(uint8_t index)
 {
-    if (index > 2)
-    {
+    if (index > 2) {
         return;
     }
-    
+
     g_selectIndex = 0;
     g_ethSelectIndex[index] = 0;
     g_solSelectIndex[index] = 0;

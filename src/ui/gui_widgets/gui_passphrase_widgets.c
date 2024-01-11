@@ -239,7 +239,7 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
     static bool delayFlag = false;
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_READY) {
-    if (lv_keyboard_get_textarea(g_passphraseWidgets.keyboard->kb) == g_passphraseWidgets.inputTa) {
+        if (lv_keyboard_get_textarea(g_passphraseWidgets.keyboard->kb) == g_passphraseWidgets.inputTa) {
             lv_keyboard_set_textarea(g_passphraseWidgets.keyboard->kb, g_passphraseWidgets.repeatTa);
             lv_obj_clear_state(g_passphraseWidgets.inputTa, LV_STATE_FOCUSED);
             lv_obj_add_state(g_passphraseWidgets.repeatTa, LV_STATE_FOCUSED);

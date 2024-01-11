@@ -82,8 +82,7 @@ static void ThrowError();
 static TransactionMode GetCurrentTransactionMode(void)
 {
     uint16_t requestID = GetCurrentUSParsingRequestID();
-    if (requestID != 0)
-    {
+    if (requestID != 0) {
         return TRANSACTION_MODE_USB;
     }
     return TRANSACTION_MODE_QR_CODE;
@@ -92,10 +91,8 @@ static TransactionMode GetCurrentTransactionMode(void)
 static void TransactionGoToHomeViewHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
-        if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB)
-        {
+    if (code == LV_EVENT_CLICKED) {
+        if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
             const char *data = "UR parsing rejected";
             HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_REJECTED);
         }
@@ -121,8 +118,7 @@ void GuiTransactionDetailInit(uint8_t viewType)
 void GuiTransactionDetailDeInit()
 {
     // for learn more hintbox in eth contract data block;
-    if (GuiQRHintBoxIsActive())
-    {
+    if (GuiQRHintBoxIsActive()) {
         GuiQRHintBoxRemove();
     }
     GUI_DEL_OBJ(g_fingerSingContainer)
@@ -172,8 +168,7 @@ static void CloseParseErrorDataHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_parseErrorHintBox)
         GuiCLoseCurrentWorkingView();
         GuiModeControlQrDecode(true);
@@ -192,20 +187,15 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
     GUI_DEL_OBJ(g_fingerSingContainer)
     GuiDeleteKeyboardWidget(g_keyboardWidget);
 
-    if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB)
-    {
+    if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
         GenerateUR func = GetSingleUrGenerator(g_viewType);
-        if (func == NULL)
-        {
+        if (func == NULL) {
             return;
         }
         UREncodeResult *urResult = func();
-        if (urResult->error_code == 0)
-        {
+        if (urResult->error_code == 0) {
             HandleURResultViaUSBFunc(urResult->data, strlen(urResult->data), GetCurrentUSParsingRequestID(), RSP_SUCCESS_CODE);
-        }
-        else
-        {
+        } else {
             HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), GetCurrentUSParsingRequestID(), PRS_PARSING_ERROR);
         }
         return;
@@ -217,10 +207,8 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
 void GuiSignVerifyPasswordErrorCount(void *param)
 {
     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-    if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX)
-    {
-        if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB)
-        {
+    if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
+        if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
             const char *data = "Please try again after unlocking";
             HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_VERIFY_PASSWORD_ERROR);
         }
@@ -232,41 +220,31 @@ void GuiSignDealFingerRecognize(void *param)
 {
     uint8_t errCode = *(uint8_t *)param;
     static uint16_t passCodeType = SIG_SIGN_TRANSACTION_WITH_PASSWORD;
-    if (g_fingerSingContainer == NULL)
-    {
+    if (g_fingerSingContainer == NULL) {
         return;
     }
-    if (errCode == FP_SUCCESS_CODE)
-    {
+    if (errCode == FP_SUCCESS_CODE) {
         lv_img_set_src(g_fpErrorImg, &imgYellowFinger);
         GuiModelVerifyAccountPassWord(&passCodeType);
         g_fingerSignErrCount = 0;
-    }
-    else
-    {
+    } else {
         g_fingerSignErrCount++;
         g_fingerSignCount++;
-        if (g_fpErrorLabel != NULL && lv_obj_has_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN))
-        {
+        if (g_fpErrorLabel != NULL && lv_obj_has_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN)) {
             lv_obj_clear_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN);
         }
         lv_img_set_src(g_fpErrorImg, &imgRedFinger);
         printf("GuiSignDealFingerRecognize err message is %s\n", GetFpErrorMessage(errCode));
         printf("g_fingerSingCount is %d\n", g_fingerSignCount);
-        if (g_fingerSignCount < FINGERPRINT_SING_ERR_TIMES)
-        {
+        if (g_fingerSignCount < FINGERPRINT_SING_ERR_TIMES) {
             FpRecognize(RECOGNIZE_SIGN);
             g_fpRecognizeTimer = lv_timer_create(RecognizeFailHandler, 1000, NULL);
-        }
-        else
-        {
+        } else {
             SignByPasswordCb(false);
         }
         printf("g_fingerSignErrCount.... = %d\n", g_fingerSignErrCount);
-        if (g_fingerSignErrCount >= FINGERPRINT_SING_DISABLE_ERR_TIMES)
-        {
-            for (int i = 0; i < 3; i++)
-            {
+        if (g_fingerSignErrCount >= FINGERPRINT_SING_DISABLE_ERR_TIMES) {
+            for (int i = 0; i < 3; i++) {
                 UpdateFingerSignFlag(i, false);
             }
         }
@@ -291,23 +269,16 @@ static void GuiTransactionDetailNavBarInit()
 static void CheckSliderProcessHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_RELEASED)
-    {
+    if (code == LV_EVENT_RELEASED) {
         int32_t value = lv_slider_get_value(lv_event_get_target(e));
-        if (value >= QRCODE_CONFIRM_SIGN_PROCESS)
-        {
-            if ((GetCurrentAccountIndex() < 3) && GetFingerSignFlag() && g_fingerSignCount < 3)
-            {
+        if (value >= QRCODE_CONFIRM_SIGN_PROCESS) {
+            if ((GetCurrentAccountIndex() < 3) && GetFingerSignFlag() && g_fingerSignCount < 3) {
                 SignByFinger();
-            }
-            else
-            {
+            } else {
                 SignByPasswordCb(false);
             }
             lv_slider_set_value(lv_event_get_target(e), 0, LV_ANIM_OFF);
-        }
-        else
-        {
+        } else {
             lv_slider_set_value(lv_event_get_target(e), 0, LV_ANIM_ON);
         }
     }
@@ -316,8 +287,7 @@ static void CheckSliderProcessHandler(lv_event_t *e)
 static void SignByPasswordCb(bool cancel)
 {
     GUI_DEL_OBJ(g_fingerSingContainer)
-    if (cancel)
-    {
+    if (cancel) {
         FpCancelCurOperate();
     }
     g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
@@ -329,8 +299,7 @@ static void SignByPasswordCb(bool cancel)
 static void SignByPasswordCbHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         SignByPasswordCb(true);
     }
 }
@@ -338,8 +307,7 @@ static void SignByPasswordCbHandler(lv_event_t *e)
 static void CloseContHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_fingerSingContainer)
     }
 }
@@ -359,7 +327,8 @@ static void SignByFinger(void)
             .obj = img,
             .align = LV_ALIGN_DEFAULT,
             .position = {14, 14},
-        }};
+        }
+    };
     lv_obj_t *button = GuiCreateButton(cont, 64, 64, table, 1, CloseContHandler, cont);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 384, 394);
 
@@ -393,8 +362,7 @@ static void SignByFinger(void)
 
 static void RecognizeFailHandler(lv_timer_t *timer)
 {
-    if (g_fingerSingContainer != NULL)
-    {
+    if (g_fingerSingContainer != NULL) {
         lv_img_set_src(g_fpErrorImg, &imgYellowFinger);
         lv_obj_add_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN);
     }

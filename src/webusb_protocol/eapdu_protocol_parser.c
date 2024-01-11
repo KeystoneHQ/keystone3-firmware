@@ -48,8 +48,7 @@ void SendEApduResponse(EAPDUResponsePayload_t *payload)
     uint16_t totalPackets = (payload->dataLen + MEX_EAPDU_RESPONSE_DATA_SIZE - 1) / MEX_EAPDU_RESPONSE_DATA_SIZE;
     uint16_t packetIndex = 0;
     uint32_t offset = 0;
-    while (payload->dataLen > 0)
-    {
+    while (payload->dataLen > 0) {
         uint16_t packetDataSize = payload->dataLen > MEX_EAPDU_RESPONSE_DATA_SIZE ? MEX_EAPDU_RESPONSE_DATA_SIZE : payload->dataLen;
 
         packet[OFFSET_CLA] = payload->cla;
@@ -93,8 +92,7 @@ static void free_parser()
 
 static void EApduRequestHandler(EAPDURequestPayload_t *request)
 {
-    switch (request->commandType)
-    {
+    switch (request->commandType) {
     case CMD_ECHO_TEST:
         EchoService(*request);
         break;
@@ -115,21 +113,17 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
 
 static ParserStatusEnum CheckFrameValidity(EAPDUFrame_t *eapduFrame)
 {
-    if (eapduFrame->p1 > MAX_PACKETS)
-    {
+    if (eapduFrame->p1 > MAX_PACKETS) {
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, eapduFrame->ins, eapduFrame->lc, PRS_INVALID_TOTAL_PACKETS, "Invalid total number of packets");
         free_parser();
         return FRAME_TOTAL_ERROR;
-    }
-    else if (eapduFrame->p2 >= eapduFrame->p1)
-    {
+    } else if (eapduFrame->p2 >= eapduFrame->p1) {
         printf("Invalid packet index\n");
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, eapduFrame->ins, eapduFrame->lc, PRS_INVALID_INDEX, "Invalid packet index");
         free_parser();
         return FRAME_INDEX_ERROR;
-    }
-    else if (g_receivedPackets[eapduFrame->p2])
-    { // duplicate packet
+    } else if (g_receivedPackets[eapduFrame->p2]) {
+        // duplicate packet
         printf("Duplicate frame\n");
         return DUPLICATE_FRAME;
     }
@@ -153,8 +147,7 @@ static EAPDUFrame_t *FrameParser(const uint8_t *frame, uint32_t len)
 
 void EApduProtocolParse(const uint8_t *frame, uint32_t len)
 {
-    if (len < 4)
-    {
+    if (len < 4) {
         printf("Invalid EAPDU data\n");
         free_parser();
         return;
@@ -162,41 +155,39 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
 
     EAPDUFrame_t *eapduFrame = FrameParser(frame, len);
 
-    if (CheckFrameValidity(eapduFrame) != FRAME_CHECKSUM_OK)
-    {
+    if (CheckFrameValidity(eapduFrame) != FRAME_CHECKSUM_OK) {
         return;
     }
 
-    if (eapduFrame->p2 == 0 && g_totalPackets == 0)
-    { // the first packet
+    if (eapduFrame->p2 == 0 && g_totalPackets == 0) {
+        // the first packet
         g_totalPackets = eapduFrame->p1;
+        assert(g_totalPackets <= MAX_PACKETS);
         printf("Total number of packets: %d\n", g_totalPackets);
         memset(g_receivedPackets, 0, sizeof(g_receivedPackets));
     }
 
+    assert(eapduFrame->dataLen <= MAX_PACKETS_LENGTH);
+    assert(eapduFrame->p2 < MAX_PACKETS);
     memcpy(g_protocolRcvBuffer[eapduFrame->p2], eapduFrame->data, eapduFrame->dataLen);
     g_packetLengths[eapduFrame->p2] = eapduFrame->dataLen;
     g_receivedPackets[eapduFrame->p2] = 1;
 
     // check if all packets have arrived
-    for (uint8_t i = 0; i < g_totalPackets; i++)
-    {
-        if (!g_receivedPackets[i])
-        {
+    for (uint8_t i = 0; i < g_totalPackets; i++) {
+        if (!g_receivedPackets[i]) {
             printf("Waiting for packet %d\n", i);
             return; // not all packets have arrived yet
         }
     }
 
     uint32_t fullDataLen = 0;
-    for (uint16_t i = 0; i < g_totalPackets; i++)
-    {
+    for (uint16_t i = 0; i < g_totalPackets; i++) {
         fullDataLen += g_packetLengths[i];
     }
     uint8_t *fullData = (uint8_t *)SRAM_MALLOC(fullDataLen + 1);
     uint32_t offset = 0;
-    for (uint32_t i = 0; i < g_totalPackets; i++)
-    {
+    for (uint32_t i = 0; i < g_totalPackets; i++) {
         memcpy(fullData + offset, g_protocolRcvBuffer[i], g_packetLengths[i]);
         offset += g_packetLengths[i];
     }
@@ -218,16 +209,14 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
 
 static void RegisterSendFunc(ProtocolSendCallbackFunc_t sendFunc)
 {
-    if (g_sendFunc == NULL)
-    {
+    if (g_sendFunc == NULL) {
         g_sendFunc = sendFunc;
     }
 }
 
 struct ProtocolParser *NewEApduProtocolParser()
 {
-    if (!global_parser)
-    {
+    if (!global_parser) {
         global_parser = (struct ProtocolParser *)SRAM_MALLOC(sizeof(struct ProtocolParser));
         global_parser->name = EAPDU_PROTOCOL_PARSER_NAME;
         global_parser->parse = EApduProtocolParse;
@@ -239,16 +228,12 @@ struct ProtocolParser *NewEApduProtocolParser()
 
 void GotoResultPage(EAPDUResultPage_t *resultPageParams)
 {
-    if (GuiCheckIfTopView(&g_USBTransportView))
-    {
+    if (GuiCheckIfTopView(&g_USBTransportView)) {
         return;
     }
-    if (resultPageParams == NULL)
-    {
+    if (resultPageParams == NULL) {
         PubValueMsg(UI_MSG_USB_TRANSPORT_VIEW, 0);
-    }
-    else
-    {
+    } else {
         PubBufferMsg(UI_MSG_USB_TRANSPORT_VIEW, resultPageParams, sizeof(EAPDUResultPage_t));
     }
 }

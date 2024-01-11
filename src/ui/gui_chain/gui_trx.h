@@ -1,6 +1,6 @@
 #include "rust.h"
 
-void GuiSetTrxUrData(void *data, bool multi);
+void GuiSetTrxUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetTrxData(void);
 PtrT_TransactionCheckResult GuiGetTrxCheckResult(void);
 void FreeTrxMemory(void);

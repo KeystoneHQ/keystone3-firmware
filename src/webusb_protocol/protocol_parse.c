@@ -12,8 +12,6 @@
 
 #define PROTOCOL_PARSE_OVERTIME 500
 
-uint8_t g_protocolRcvBuffer[PROTOCOL_MAX_LENGTH];
-
 void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbackFunc_t sendFunc)
 {
     static uint32_t lastTick = 0;
@@ -22,19 +20,14 @@ void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbac
 
     tick = osKernelGetTickCount();
 
-    if (data[0] == EAPDU_PROTOCOL_HEADER && !GetIsReceivingFile())
-    {
+    if (data[0] == EAPDU_PROTOCOL_HEADER && !GetIsReceivingFile()) {
         currentParser = NewEApduProtocolParser();
-    }
-    else
-    {
+    } else {
         currentParser = NewInternalProtocolParser();
     }
 
-    if (currentParser->rcvCount != 0)
-    {
-        if (tick - lastTick > PROTOCOL_PARSE_OVERTIME)
-        {
+    if (currentParser->rcvCount != 0) {
+        if (tick - lastTick > PROTOCOL_PARSE_OVERTIME) {
             currentParser->rcvCount = 0;
         }
     }

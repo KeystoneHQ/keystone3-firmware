@@ -17,7 +17,7 @@ void BatteryOpen(void);
 /// @return Battery voltage, in millivolts.
 uint32_t GetBatteryMilliVolt(void);
 
-bool BatteryIntervalHandler(uint32_t *sleepInterval);
+bool BatteryIntervalHandler(void);
 uint8_t GetBatterPercent(void);
 uint32_t GetBatteryInterval(void);
 uint8_t GetBatteryPercentByMilliVolt(uint32_t milliVolt, bool discharge);

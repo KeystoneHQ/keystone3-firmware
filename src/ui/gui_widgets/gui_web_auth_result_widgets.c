@@ -14,7 +14,8 @@
 
 static void *g_web_auth_data;
 static bool g_isMulti = false;
-static void *g_urResult = NULL;
+static URParseResult *g_urResult = NULL;
+static URParseMultiResult *g_urMultiResult = NULL;
 static char *g_authCode = NULL;
 static lv_obj_t *g_hintBox = NULL;
 static PageWidget_t *g_pageWidget;
@@ -53,12 +54,13 @@ typedef enum {
     WEB_AUTH_RESULT_BUTT,
 } WEB_AUTH_RESULT_ENUM;
 
-void GuiSetWebAuthResultData(void *data, bool multi)
+void GuiSetWebAuthResultData(URParseResult *urResult, URParseMultiResult *multiResult, bool multi)
 {
 #ifndef COMPILE_SIMULATOR
-    g_urResult = data;
+    g_urResult = urResult;
+    g_urMultiResult = multiResult;
     g_isMulti = multi;
-    g_web_auth_data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    g_web_auth_data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
 #endif
 }
 
@@ -247,14 +249,15 @@ void GuiWebAuthResultAreaDeInit()
     if (g_urResult != NULL) {
         if (g_isMulti) {
             // has already free
-            ((URParseMultiResult *)g_urResult)->data = NULL;
-            free_ur_parse_multi_result(g_urResult);
+            g_urMultiResult->data = NULL;
+            free_ur_parse_multi_result(g_urMultiResult);
         } else {
             // has already free
-            ((URParseMultiResult *)g_urResult)->data = NULL;
+            g_urResult->data = NULL;
             free_ur_parse_result(g_urResult);
         }
         g_urResult = NULL;
+        g_urMultiResult = NULL;
     }
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);

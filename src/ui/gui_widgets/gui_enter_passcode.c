@@ -12,7 +12,9 @@
 #include "motor_manager.h"
 #include "account_manager.h"
 #include "gui_keyboard_hintbox.h"
+#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
+#endif
 
 typedef enum {
     PASSWORD_STRENGTH_LEN,
@@ -299,7 +301,7 @@ void PassWordPinSwitch(GuiEnterPasscodeItem_t *item)
         }
         if (item->mode == ENTER_PASSCODE_SET_PASSWORD) {
             GuiSetKeyBoardMinTaLen(item->kb, 6);
-        }    
+        }
         if (item->mode == ENTER_PASSCODE_VERIFY_PASSWORD) {
             SetKeyboardWidgetMode(KEYBOARD_HINTBOX_PASSWORD);
         }

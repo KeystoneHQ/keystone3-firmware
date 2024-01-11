@@ -5,13 +5,19 @@
 #include "qrdecode_task.h"
 #include "gui_lock_widgets.h"
 
+/* DEFINES */
 #define REQUEST_ID_IDLE 0
-static uint16_t g_requestID = REQUEST_ID_IDLE;
 
+/* TYPEDEFS */
+
+/* FUNC DECLARATION*/
 static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status);
 static uint8_t *DataParser(EAPDURequestPayload_t *payload);
 static bool CheckURAcceptable(EAPDURequestPayload_t payload);
 static void GotoFailPage(StatusEnum error_code, const char *error_message);
+
+/* STATIC VARIABLES */
+static uint16_t g_requestID = REQUEST_ID_IDLE;
 
 static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
 {
@@ -42,15 +48,13 @@ static uint8_t *DataParser(EAPDURequestPayload_t *payload)
 static bool CheckURAcceptable(EAPDURequestPayload_t payload)
 {
     char *data = "";
-    if (GuiLockScreenIsTop())
-    {
+    if (GuiLockScreenIsTop()) {
         data = "Device is locked";
         HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
         return false;
     }
     // Only allow URL parsing on specific pages
-    if (!GuiHomePageIsTop())
-    {
+    if (!GuiHomePageIsTop()) {
         data = "Export address is just allowed on specific pages";
         HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
         return false;
@@ -76,8 +80,7 @@ void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requ
     resultPage->command = CMD_RESOLVE_UR;
     resultPage->error_code = status;
     resultPage->error_message = (char *)data;
-    if (status == PRS_PARSING_DISALLOWED || status == PRS_PARSING_REJECTED || status == PRS_PARSING_VERIFY_PASSWORD_ERROR)
-    {
+    if (status == PRS_PARSING_DISALLOWED || status == PRS_PARSING_REJECTED || status == PRS_PARSING_VERIFY_PASSWORD_ERROR) {
         return;
     }
     GotoResultPage(resultPage);
@@ -90,46 +93,36 @@ uint16_t GetCurrentUSParsingRequestID()
 
 void ProcessURService(EAPDURequestPayload_t payload)
 {
-    #ifndef COMPILE_SIMULATOR
-    if (g_requestID != REQUEST_ID_IDLE)
-    {
+#ifndef COMPILE_SIMULATOR
+    if (g_requestID != REQUEST_ID_IDLE) {
         const char *data = "Previous request is not finished";
         HandleURResultViaUSBFunc(data, strlen(data), payload.requestID, PRS_PARSING_DISALLOWED);
         return;
-    }
-    else
-    {
+    } else {
         g_requestID = payload.requestID;
     }
 
-    if (!CheckURAcceptable(payload))
-    {
+    if (!CheckURAcceptable(payload)) {
         return;
     }
     struct URParseResult *urResult = parse_ur((char *)DataParser(&payload));
-    if (urResult->error_code != 0)
-    {
+    if (urResult->error_code != 0) {
         HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), g_requestID, PRS_PARSING_ERROR);
         return;
     }
     UrViewType_t urViewType = {0, 0};
     urViewType.viewType = urResult->t;
     urViewType.urType = urResult->ur_type;
-    HandleDefaultViewType(urResult, urViewType, false);
+    HandleDefaultViewType(urResult, NULL, urViewType, false);
     PtrT_TransactionCheckResult checkResult = CheckUrResult(urViewType.viewType);
-    if (checkResult != NULL && checkResult->error_code == 0)
-    {
+    if (checkResult != NULL && checkResult->error_code == 0) {
         PubValueMsg(UI_MSG_PREPARE_RECEIVE_UR_USB, urViewType.viewType);
-    }
-    else if (checkResult != NULL && checkResult->error_code == 2)
-    {
+    } else if (checkResult != NULL && checkResult->error_code == 2) {
         const char *data = "Mismatched wallet, please switch to another wallet and try again";
         GotoFailPage(PRS_PARSING_MISMATCHED_WALLET, data);
-    }
-    else
-    {
+    } else {
         GotoFailPage(PRS_PARSING_ERROR, checkResult->error_message);
     }
-    #endif
+#endif
 }
 

@@ -138,8 +138,7 @@ static void UsbConnectionSwitchHandler(lv_event_t * e)
         if (lv_obj_has_state(obj, LV_STATE_CHECKED)) {
             printf("usb switch on\n");
             SetUSBSwitch(1);
-            CloseUsb();
-            OpenUsb();
+            GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
         } else {
             SetUSBSwitch(0);
             SetUsbState(false);

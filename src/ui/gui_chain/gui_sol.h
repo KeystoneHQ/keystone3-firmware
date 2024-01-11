@@ -3,7 +3,7 @@
 
 #include "rust.h"
 
-void GuiSetSolUrData(void *data, bool multi);
+void GuiSetSolUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetSolData(void);
 UREncodeResult *GuiGetSolSignQrCodeData(void);
 PtrT_TransactionCheckResult GuiGetSolCheckResult(void);

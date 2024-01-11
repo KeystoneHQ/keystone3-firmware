@@ -40,13 +40,19 @@ void UpdatePageContentZone(PageWidget_t *pageWidget)
     }
 }
 
+void DestroyPageContentZone(PageWidget_t *pageWidget)
+{
+    if (pageWidget != NULL && pageWidget->contentZone != NULL && lv_obj_is_valid(pageWidget->contentZone)) {
+        lv_obj_del(pageWidget->contentZone);
+        pageWidget->contentZone = NULL;
+    }
+}
+
 void DestroyPageWidget(PageWidget_t *pageWidget)
 {
-
     if (pageWidget != NULL) {
-
         DestoryNavBarWidget(pageWidget->navBarWidget);
-
+        DestroyPageContentZone(pageWidget);
         if (pageWidget->page != NULL && lv_obj_is_valid(pageWidget->page)) {
             lv_obj_del(pageWidget->page);
             pageWidget->page = NULL;
@@ -54,6 +60,4 @@ void DestroyPageWidget(PageWidget_t *pageWidget)
 
         SRAM_FREE(pageWidget);
     }
-
-
 }

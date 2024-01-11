@@ -2008,6 +2008,7 @@ dependencies = [
  "common_rust_c",
  "cosmos_rust_c",
  "ethereum_rust_c",
+ "keystore",
  "kt_allocator",
  "near_rust_c",
  "solana_rust_c",

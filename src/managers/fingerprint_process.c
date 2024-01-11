@@ -225,7 +225,6 @@ static void FpDeleteSend(uint16_t cmd, uint8_t index)
 // A400 RECV
 static void FpDeleteRecv(char *indata, uint8_t len)
 {
-    printf("%s %d\n", __func__, __LINE__);
     uint8_t result = indata[0];
     if (result == FP_SUCCESS_CODE) {
         if (g_delFpSave == true) {
@@ -245,7 +244,6 @@ static void FpDeleteRecv(char *indata, uint8_t len)
 
 void FpDeleteAllRecv(char *indata, uint8_t len)
 {
-    printf("%s %d\n", __func__, __LINE__);
     uint8_t result = indata[0];
     if (result == FP_SUCCESS_CODE) {
         printf("delete success\n");
@@ -428,7 +426,6 @@ static void FpGetVersion(char *indata, uint8_t len)
 
 static void FpGetAesKeyState(char *indata, uint8_t len)
 {
-    printf("%s %d\n", __func__, __LINE__);
     uint8_t state = 0;
     uint8_t fpAesState = 0;
 
@@ -584,7 +581,6 @@ void FpLowerPowerRecv(char *indata, uint8_t len)
     if (len == 0) {
         // FpResponseHandleStop();
     } else {
-        printf("%s %d\n", __func__, __LINE__);
         LowerPowerTimerStart();
     }
 }
@@ -828,7 +824,7 @@ static void SearchFpAesKeyState(void)
     ret = GetFpCommAesKey(g_communicateAesKey);
     if (ret != SUCCESS_CODE) {
         return;
-    } 
+    }
     memset_s(&g_communicateAesKey[16], 16, 0, 16);
     FpGenericSend(FINGERPRINT_CMD_GET_AES_KEY_STATE, NO_ENCRYPTION);
 }

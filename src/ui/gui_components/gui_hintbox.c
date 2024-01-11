@@ -79,7 +79,7 @@ void GuiStopAnimHintBox(void)
     if (g_animHintBox != NULL) {
         lv_anim_del_all();
     }
-    
+
     if (g_imgRing != NULL) {
         lv_obj_add_flag(g_imgRing, LV_OBJ_FLAG_HIDDEN);
     }

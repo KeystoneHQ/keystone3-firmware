@@ -1288,9 +1288,6 @@
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_select_address_widgets.c">
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_transaction_detail_widgets.c">
-      <Filter>gui\gui_widgets</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_transaction_signature_widgets.c">
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
@@ -1311,6 +1308,60 @@
     </ClCompile>
     <ClCompile Include="..\..\external\lvgl\examples\widgets\table\lv_example_table_1.c" />
     <ClCompile Include="..\..\external\lvgl\examples\widgets\table\lv_example_table_2.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\coin\coinCosmos.c">
+      <Filter>gui\assets\coin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\coin\coinCosmosEco.c">
+      <Filter>gui\assets\coin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgConnectWithRabby.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgConnectWithWallet.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice1.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice2.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice3.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice4.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice5.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDice6.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDiceGrey.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgUndo.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_views\gui_dice_rolls_view.c">
+      <Filter>gui\gui_views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_views\gui_usb_transport_view.c">
+      <Filter>gui\gui_views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_dice_rolls_widgets.c">
+      <Filter>gui\gui_widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_usb_transport_widgets.c">
+      <Filter>gui\gui_widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_transaction_detail_widgets.c">
+      <Filter>gui\gui_widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\external\lvgl\src\core\lv_disp.h" />

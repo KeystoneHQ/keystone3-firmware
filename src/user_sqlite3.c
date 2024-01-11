@@ -10,6 +10,7 @@
 #define USER_DEBUG(fmt, ...)
 #define ENS_DB_FILE_PATH                    "0:ens.db"
 #define SQL_BUFF_MAX_SIZE                   (256)
+#define SQL_ABI_BUFF_MAX_SIZE               (2000)
 #define CACHEBLOCKSZ                        (64)
 #define ESP8266_DEFAULT_MAXNAMESIZE         (32)
 
@@ -545,10 +546,19 @@ int OpenDb(char *filename, sqlite3 **db)
 static int callback(void *output, int nCol, char **argv, char **azColName)
 {
     int i;
+    int maxLen = 0;
+    if (nCol == 1) {
+        maxLen = SQL_BUFF_MAX_SIZE;
+    } else if (nCol == 2) {
+        maxLen = SQL_ABI_BUFF_MAX_SIZE;
+    } else {
+        USER_DEBUG("callback nCol error\n");
+        return 0;
+    }
     char **data = (char**)output;
     for (i = 0; i < nCol; i++) {
         USER_DEBUG("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-        strcpy(data[i], argv[i]);
+        snprintf(data[i], maxLen, "%s", argv[i] ? argv[i] : "NULL");
     }
 
     USER_DEBUG("\n");
@@ -608,8 +618,8 @@ bool GetEnsName(const char *addr, char *name)
         return NULL;
     }
 
-    char sqlBuf[128] = {0};
-    char lowAddr[128] = {0};
+    char sqlBuf[SQL_BUFF_MAX_SIZE] = {0};
+    char lowAddr[SQL_BUFF_MAX_SIZE] = {0};
     strcpy(lowAddr, addr);
     snprintf(sqlBuf, SQL_BUFF_MAX_SIZE, "Select name from ens where addr = '%s'", strlwr(lowAddr));
     int ret = db_exec(db, sqlBuf, name);
@@ -633,7 +643,7 @@ bool GetDBContract(const char* address, const char *selector, const uint32_t cha
         return NULL;
     }
 
-    char sqlBuf[256] = {0};
+    char sqlBuf[SQL_BUFF_MAX_SIZE] = {0};
     snprintf(sqlBuf, SQL_BUFF_MAX_SIZE, "Select functionABI, name from contracts where selectorId = '%s' and address = '%s'", selector, address);
     int ret = db_exec_2(db, sqlBuf, functionABIJson, contractName);
     if (ret != SQLITE_OK) {

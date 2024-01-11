@@ -42,6 +42,8 @@ void UserMsgInit(void)
     SubMessageID(UI_MSG_SCREEN_SHOT, g_uiQueue);
     SubMessageID(UI_MSG_PREPARE_RECEIVE_UR_USB, g_uiQueue);
     SubMessageID(UI_MSG_USB_TRANSPORT_VIEW, g_uiQueue);
+    SubMessageID(UI_MSG_OPEN_VIEW, g_uiQueue);
+    SubMessageID(UI_MSG_CLOSE_VIEW, g_uiQueue);
 
     SubMessageID(BACKGROUND_MSG_EXECUTE, g_backgroundQueue);
     SubMessageID(BACKGROUND_MSG_EXECUTE_RUNNABLE, g_backgroundQueue);
@@ -55,6 +57,7 @@ void UserMsgInit(void)
     SubMessageID(LOG_MSG_WRITE, g_logQueue);
     SubMessageID(LOG_MSG_ERASE, g_logQueue);
     SubMessageID(LOG_MSG_EXPORT, g_logQueue);
+    SubMessageID(LOG_MSG_WRITE_TO_SDCARD, g_logQueue);
 
     SubMessageID(USB_MSG_ISR_HANDLER, g_usbQueue);
     SubMessageID(USB_MSG_SET_STATE, g_usbQueue);

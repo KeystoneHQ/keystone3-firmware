@@ -11,6 +11,7 @@ static volatile bool g_usbInit = false;
 void UsbInit(void)
 {
     USBPHY_CR1_TypeDef usbphy_cr1;
+    printf("usb init\r\n");
 
     if (g_usbInit == false) {
         SYSCTRL_AHBPeriphClockCmd(SYSCTRL_AHBPeriph_USB, ENABLE);

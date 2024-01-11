@@ -75,6 +75,8 @@ impl Free for DisplayCardanoTx {
             free_vec!(self.withdrawals);
             free_vec!(self.certificates);
 
+            free_ptr_string(self.total_input);
+            free_ptr_string(self.total_output);
             free_ptr_string(self.fee);
             free_ptr_string(self.network);
         }

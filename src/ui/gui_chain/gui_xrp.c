@@ -12,7 +12,8 @@ static char g_xrpAddr[40];
 static char g_hdPath[26];
 
 static bool g_isMulti = false;
-static void *g_urResult = NULL;
+static URParseResult *g_urResult = NULL;
+static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static char *g_cachedPubkey[3] = {NULL};
 static char *g_cachedPath[3] = {NULL};
@@ -48,10 +49,11 @@ char *GuiGetXrpAddressByIndex(uint16_t index)
 }
 #endif
 
-void GuiSetXrpUrData(void *data, bool multi)
+void GuiSetXrpUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
 #ifndef COMPILE_SIMULATOR
-    g_urResult = data;
+    g_urResult = urResult;
+    g_urMultiResult = urMultiResult;
     g_isMulti = multi;
 #endif
 }
@@ -67,7 +69,7 @@ void *GuiGetXrpData(void)
 {
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
         PtrT_TransactionParseResult_DisplayXrpTx parseResult = xrp_parse_tx(data);
         CHECK_CHAIN_BREAK(parseResult);
@@ -75,8 +77,8 @@ void *GuiGetXrpData(void)
     } while (0);
     return g_parseResult;
 #else
-    TransactionParseResult_DisplayXrpTx *g_parseResult = malloc(sizeof(TransactionParseResult_DisplayXrpTx));
-    DisplayXrpTx *data = malloc(sizeof(DisplayXrpTx));
+    TransactionParseResult_DisplayXrpTx *g_parseResult = SRAM_MALLOC(sizeof(TransactionParseResult_DisplayXrpTx));
+    DisplayXrpTx *data = SRAM_MALLOC(sizeof(DisplayXrpTx));
     data->detail = "detail";
     g_parseResult->data = data;
     g_parseResult->error_code = 0;
@@ -87,7 +89,7 @@ void *GuiGetXrpData(void)
 PtrT_TransactionCheckResult GuiGetXrpCheckResult(void)
 {
 #ifndef COMPILE_SIMULATOR
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     TransactionCheckResult *result = NULL;
     char pubkey[68] = {0};
     if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
@@ -130,7 +132,8 @@ PtrT_TransactionCheckResult GuiGetXrpCheckResult(void)
 void FreeXrpMemory(void)
 {
 #ifndef COMPILE_SIMULATOR
-    CHECK_FREE_UR_RESULT(g_urResult, g_isMulti);
+    CHECK_FREE_UR_RESULT(g_urResult, false);
+    CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
 #endif
 }
@@ -153,7 +156,7 @@ UREncodeResult *GuiGetXrpSignQrCodeData(void)
     SetLockScreen(false);
 #ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult = NULL;
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
         uint8_t seed[64];
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());

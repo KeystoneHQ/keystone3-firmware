@@ -20,6 +20,8 @@
 #include "firmware_update.h"
 #include "account_manager.h"
 #include "gui_lock_widgets.h"
+#include "screen_manager.h"
+#include "fingerprint_process.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "keystore.h"
@@ -52,7 +54,7 @@ static lv_obj_t *g_walletSetLabel = NULL;                   // wallet setting la
 static lv_obj_t *g_mfpLabel = NULL;                         // wallet setting label
 static lv_obj_t *g_resetingCont = NULL;                     // resetting container
 static lv_timer_t *g_countDownTimer = NULL;                 // count down timer
-static lv_obj_t *g_hintBox = NULL;                     
+static lv_obj_t *g_hintBox = NULL;
 
 /* FUNC */
 void GuiAddWalletGetWalletAmount(uint8_t walletAmount)
@@ -371,7 +373,7 @@ void StopAddNewFingerHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         g_hintBox = GuiCreateResultHintbox(lv_scr_act(), 416, &imgWarn, _("wallet_setting_stop_add_fingerprint"),
-                                                _("wallet_setting_stop_add_fingerprint_desc"), _("Not Now"), DARK_GRAY_COLOR, _("Cancel"), RED_COLOR);
+                                           _("wallet_setting_stop_add_fingerprint_desc"), _("Not Now"), DARK_GRAY_COLOR, _("Cancel"), RED_COLOR);
         lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_hintBox);
         lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_hintBox);
 

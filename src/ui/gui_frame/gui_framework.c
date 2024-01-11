@@ -3,20 +3,73 @@
 #include "gui_api.h"
 #include "screen_manager.h"
 #include "gui_model.h"
+#ifndef COMPILE_SIMULATOR
+#include "user_msg.h"
+#endif
 
+/* DEFINES */
 #define OPENED_VIEW_MAX 20          // the litmit of views
-static GUI_VIEW *g_workingView = NULL;
-static uint32_t g_viewCnt = 0;      // Record how many views are opened
 
-bool GuiLockScreenIsTop(void);
-
+/* TYPEDEFS */
 typedef struct {
     GUI_VIEW view;
     GUI_VIEW *pview;
 } GuiFrameDebug_t;
 GuiFrameDebug_t g_debugView[OPENED_VIEW_MAX];
 
-static void GuiFrameIdToName(SCREEN_ID_ENUM ID);
+/* FUNC DECLARATION*/
+bool GuiLockScreenIsTop(void);
+static char *GuiFrameIdToName(SCREEN_ID_ENUM ID);
+
+/* STATIC VARIABLES */
+static GUI_VIEW *g_workingView = NULL;
+static uint32_t g_viewCnt = 0;      // Record how many views are opened
+
+#ifndef COMPILE_SIMULATOR
+static GUI_VIEW *g_viewsTable[] = {
+    &g_initView,
+    &g_lockView,
+    &g_homeView,
+    &g_setupView,
+    &g_createWalletView,
+    &g_singlePhraseView,
+    &g_importPhraseView,
+    &g_createShareView,
+    &g_importShareView,
+    &g_settingView,
+    &g_connectWalletView,
+    &g_USBTransportView,
+    &g_passphraseView,
+    &g_utxoReceiveView,
+    &g_multiPathCoinReceiveView,
+    &g_standardReceiveView,
+    &g_forgetPassView,
+    &g_lockDeviceView,
+    &g_firmwareUpdateView,
+    &g_webAuthView,
+    &g_webAuthResultView,
+    &g_systemSettingView,
+    &g_purposeView,
+    &g_aboutView,
+    &g_aboutKeystoneView,
+    &g_aboutInfoView,
+    &g_aboutTermsView,
+    &g_wipeDeviceView,
+    &g_walletTutorialView,
+    &g_selfDestructView,
+    &g_inactiveView,
+    &g_displayView,
+    &g_tutorialView,
+    &g_connectionView,
+    &g_DevicePublicKeyView,
+    &g_multiAccountsReceiveView,
+    &g_keyDerivationRequestView,
+    &g_scanView,
+    &g_transactionDetailView,
+    &g_transactionSignatureView,
+    &g_diceRollsView
+};
+#endif
 
 bool GuiViewHandleEvent(GUI_VIEW *view, uint16_t usEvent, void *param, uint16_t usLen)
 {
@@ -46,7 +99,6 @@ int32_t GuiEmitSignal(uint16_t usEvent, void *param, uint16_t usLen)
     bool sigHandled;
     GUI_VIEW *pView = g_workingView;
     uint32_t loopCnt = 0;
-    GuiFrameDebugging();
     if (GuiLockScreenIsTop()) {
         //verify failed
         if (usEvent == SIG_VERIFY_PASSWORD_FAIL) {
@@ -96,7 +148,7 @@ int32_t GuiFrameOpenView(GUI_VIEW *view)
         return ERR_GUI_ERROR;
     }
 
-    GuiFrameDebugging();
+    printf("open view %s freeHeap %d\n", GuiFrameIdToName(view->id), xPortGetFreeHeapSize());
 
     g_debugView[g_viewCnt].view.id = view->id;
     g_debugView[g_viewCnt].view.pEvtHandler = view->pEvtHandler;
@@ -111,7 +163,6 @@ int32_t GuiFrameOpenView(GUI_VIEW *view)
     view->previous = g_workingView;
     g_workingView = view;
     g_workingView->isActive = true;
-    GuiFrameDebugging();
     GuiViewHandleEvent(view, GUI_EVENT_OBJ_INIT, NULL, 0);
     GuiViewHandleEvent(view, GUI_EVENT_REFRESH, NULL, 0);
     return SUCCESS_CODE;
@@ -133,7 +184,6 @@ int32_t GuiFrameOpenViewWithParam(GUI_VIEW *view, void *param, uint16_t usLen)
     view->previous = g_workingView;
     g_workingView = view;
     g_workingView->isActive = true;
-    GuiFrameDebugging();
     GuiViewHandleEvent(view, GUI_EVENT_OBJ_INIT, param, usLen);
     GuiViewHandleEvent(view, GUI_EVENT_REFRESH, NULL, 0);
     return SUCCESS_CODE;
@@ -143,6 +193,7 @@ int32_t GuiCLoseCurrentWorkingView(void)
 {
     g_viewCnt--;
     GuiViewHandleEvent(g_workingView, GUI_EVENT_OBJ_DEINIT, NULL, 0);
+    printf("close view %s freeHeap %d\n", GuiFrameIdToName(g_workingView->id), xPortGetFreeHeapSize());
     g_workingView->isActive = false;
     g_workingView = g_workingView->previous;
     g_workingView->isActive = true;
@@ -194,6 +245,11 @@ void GuiFrameDebugging(void)
     // }
 }
 
+bool GuiCheckIfTopView(GUI_VIEW *view)
+{
+    return view == g_workingView;
+}
+
 int32_t GuiCloseToTargetView(GUI_VIEW *view)
 {
     GuiViewHintBoxClear();
@@ -208,21 +264,50 @@ int32_t GuiCloseToTargetView(GUI_VIEW *view)
     return SUCCESS_CODE;
 }
 
-static void GuiFrameIdToName(SCREEN_ID_ENUM ID)
+static char *GuiFrameIdToName(SCREEN_ID_ENUM ID)
 {
     const char *str =
         "SCREEN_INIT\0" "SCREEN_LOCK\0" "SCREEN_HOME\0" "SCREEN_SETUP\0" "CREATE_WALLET\0" "CREATE_SHARE\0"
         "IMPORT_SHARE\0" "SINGLE_PHRASE\0" "IMPORT_SINGLE_PHRASE\0" "CONNECT_WALLET\0" "SCREEN_SETTING\0" "SCREEN_QRCODE\0"
-        "USB_TRANSPORT\0";
+        "SCREEN_PASSPHRASE\0" "SCREEN_BITCOIN_RECEIVE\0" "SCREEN_ETHEREUM_RECEIVE\0" "SCREEN_STANDARD_RECEIVE\0"
+        "SCREEN_FORGET_PASSCODE\0" "SCREEN_LOCK_DEVICE\0" "SCREEN_FIRMWARE_UPDATE\0" "SCREEN_WEB_AUTH\0"
+        "SCREEN_PURPOSE\0" "SCREEN_SYSTEM_SETTING\0" "SCREEN_WEB_AUTH_RESULT\0" "SCREEN_ABOUT\0"
+        "SCREEN_ABOUT_KEYSTONE\0" "SCREEN_ABOUT_TERMS\0" "SCREEN_ABOUT_INFO\0" "SCREEN_WIPE_DEVICE\0"
+        "SCREEN_WALLET_TUTORIAL\0" "SCREEN_SELF_DESTRUCT\0" "SCREEN_INACTIVE\0" "SCREEN_DISPLAY\0"
+        "SCREEN_TUTORIAL\0" "SCREEN_CONNECTION\0" "SCREEN_MULTI_ACCOUNTS_RECEIVE\0" "SCREEN_KEY_DERIVATION_REQUEST\0"
+        "SCREEN_SCAN\0" "SCREEN_TRANSACTION_DETAIL\0" "SCREEN_TRANSACTION_SIGNATURE\0" "SCREEN_USB_TRANSPORT\0"
+        "SCREEN_DEVICE_PUB_KEY\0";
     SCREEN_ID_ENUM i;
 
     for (i = SCREEN_INIT; i != ID && *str; i++) {
         while (*str++) ;
     }
     printf("id = %d name = %s\n", ID, str);
+    char *name = str;
+    return name;
 }
 
-bool GuiCheckIfTopView(GUI_VIEW *view)
+void GuiViewsTest(int argc, char *argv[])
 {
-    return view == g_workingView;
+    VALUE_CHECK(argc, 2);
+    int viewId = atoi(argv[1]);
+    GUI_VIEW *view = NULL;
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_viewsTable); i++) {
+        if (viewId == g_viewsTable[i]->id) {
+            view = g_viewsTable[i];
+            break;
+        }
+    }
+    if (view == NULL) {
+        return;
+    }
+    if (strcmp(argv[0], "open") == 0) {
+        printf("open view %s\n", GuiFrameIdToName(view->id));
+        PubValueMsg(UI_MSG_OPEN_VIEW, (uint32_t)view);
+    } else if (strcmp(argv[0], "close") == 0) {
+        printf("close view %s\n", GuiFrameIdToName(view->id));
+        PubValueMsg(UI_MSG_CLOSE_VIEW, (uint32_t)view);
+    } else if (strcmp(argv[0], "debug") == 0) {
+        GuiFrameDebugging();
+    }
 }

@@ -53,9 +53,9 @@ typedef enum {
 } FEWCHA_COINS_ENUM;
 
 typedef enum SOLAccountType {
-  SOLBip44,
-  SOLBip44ROOT,
-  SOLBip44Change,
+    SOLBip44,
+    SOLBip44ROOT,
+    SOLBip44Change,
 } SOLAccountType;
 
 typedef struct {

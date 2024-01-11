@@ -5,8 +5,10 @@
 #ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
 #else
-#define memset_s memset
+#define memset_s(a1,a2,a3,a4)               memset(a1,a2,a3)
 #endif
+
+#define MAX_SLIP39_MEMBER 16
 
 static char *g_passwordCache = NULL;
 static char *g_newPasswordCache = NULL;
@@ -17,7 +19,8 @@ static uint8_t *g_emsCache = NULL;
 static uint8_t g_checksumCache[32] = {0};
 static uint32_t g_emsLen;
 static char *g_mnemonicCache = NULL;
-static char *g_slip39MnemonicCache[15];
+static char *g_slip39MnemonicCache[MAX_SLIP39_MEMBER];
+static uint8_t g_diceRollHashCache[32] = {0};
 static uint16_t g_identifier;
 static uint16_t g_iteration;
 
@@ -156,6 +159,16 @@ char *SecretCacheGetSlip39Mnemonic(int index)
     return g_slip39MnemonicCache[index];
 }
 
+void SecretCacheSetDiceRollHash(uint8_t *hash)
+{
+    memcpy(g_diceRollHashCache, hash, 32);
+}
+
+uint8_t *SecretCacheGetDiceRollHash()
+{
+    return g_diceRollHashCache;
+}
+
 void ClearSecretCache(void)
 {
     uint32_t len;
@@ -204,7 +217,7 @@ void ClearSecretCache(void)
         g_mnemonicCache = NULL;
     }
 
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < MAX_SLIP39_MEMBER; i++) {
         if (g_slip39MnemonicCache[i] != NULL) {
             len = strlen(g_slip39MnemonicCache[i]);
             memset_s(g_slip39MnemonicCache[i], len, 0, len);
@@ -214,4 +227,5 @@ void ClearSecretCache(void)
     }
 
     memset_s(g_checksumCache, 32, 0, 32);
+    memset_s(g_diceRollHashCache, 32, 0, 32);
 }

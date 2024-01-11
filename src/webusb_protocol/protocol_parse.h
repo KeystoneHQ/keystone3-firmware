@@ -20,8 +20,7 @@ typedef void (*ProtocolSendCallbackFunc_t)(const uint8_t *data, uint32_t len);
 
 void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbackFunc_t sendFunc);
 
-struct ProtocolParser
-{
+struct ProtocolParser {
     char *name;
     uint32_t rcvCount;
     void (*parse)(const uint8_t *data, uint32_t len);

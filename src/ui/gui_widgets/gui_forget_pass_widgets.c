@@ -19,7 +19,9 @@
 #include "gui_mnemonic_input.h"
 #include "gui_page.h"
 #include "gui_keyboard_hintbox.h"
+#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
+#endif
 #ifndef COMPILE_MAC_SIMULATOR
 #include "sha256.h"
 #else
@@ -273,6 +275,7 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
         lv_obj_add_event_cb(g_forgetMkb->nextButton, ImportShareNextSliceHandler, LV_EVENT_CLICKED, NULL);
 
         lv_label_set_text_fmt(g_forgetMkb->stepLabel, _("import_wallet_ssb_step_fmt"), g_forgetMkb->currentSlice + 1, g_forgetMkb->threShold);
+        lv_obj_add_flag(g_forgetMkb->stepLabel, LV_OBJ_FLAG_HIDDEN);
         lv_label_set_text_fmt(g_forgetMkb->titleLabel, _("import_wallet_ssb_title_fmt"), g_forgetMkb->currentSlice + 1);
         lv_label_set_text_fmt(g_forgetMkb->descLabel, _("import_wallet_ssb_desc_fmt"), g_forgetMkb->wordCnt, g_forgetMkb->currentSlice + 1);
         bip39 = false;

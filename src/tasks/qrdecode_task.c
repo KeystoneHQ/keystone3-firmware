@@ -19,10 +19,11 @@
 #include "gui_analyze.h"
 #include "gui_web_auth_result_widgets.h"
 #include "gui_key_derivation_request_widgets.h"
+#include "assert.h"
 
 static void QrDecodeTask(void *argument);
 static void QrDecodeMinuteTimerFunc(void *argument);
-void handleURResult(void *urResult, UrViewType_t urViewType, bool is_multi);
+void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi);
 
 // The order of the enumeration must be guaranteed
 static SetChainData_t g_chainViewArray[] = {
@@ -124,20 +125,22 @@ void ProcessQr(uint32_t count)
     static bool firstQrFlag = true;
     static PtrDecoder decoder = NULL;
     static UrViewType_t urViewType = {0, 0};
+    static struct URParseResult *urResult;
 
     uint32_t retFromRust = 0;
     int32_t ret = QrDecodeProcess(qrString, QR_DECODE_STRING_LEN, testProgress);
 
     if (ret > 0) {
         if (firstQrFlag == true) {
-            struct URParseResult *urResult = parse_ur(qrString);
+            assert(strlen(qrString) < QR_DECODE_STRING_LEN);
+            urResult = parse_ur(qrString);
             if (urResult->error_code == 0) {
                 if (urResult->is_multi_part == 0) {
                     // single qr code
                     firstQrFlag = true;
                     urViewType.viewType = urResult->t;
                     urViewType.urType = urResult->ur_type;
-                    handleURResult(urResult, urViewType, false);
+                    handleURResult(urResult, NULL, urViewType, false);
                     testProgress = 0;
                 } else {
                     // first qr code
@@ -157,7 +160,7 @@ void ProcessQr(uint32_t count)
                     firstQrFlag = true;
                     urViewType.viewType = MultiurResult->t;
                     urViewType.urType = MultiurResult->ur_type;
-                    handleURResult(MultiurResult, urViewType, true);
+                    handleURResult(urResult, MultiurResult, urViewType, true);
                     testProgress = 0;
                 }
             } else {
@@ -186,27 +189,26 @@ void ProcessQr(uint32_t count)
     count++;
 }
 
-void HandleDefaultViewType(void *urResult, UrViewType_t urViewType, bool is_multi)
+void HandleDefaultViewType(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi)
 {
     GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
     if (viewType != REMAPVIEW_BUTT) {
-        g_chainViewArray[viewType].func(urResult, is_multi);
+        g_chainViewArray[viewType].func(urResult, urMultiResult, is_multi);
     }
 }
 
-void handleURResult(void *urResult, UrViewType_t urViewType, bool is_multi)
+void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi)
 {
     GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
-    switch (urViewType.viewType)
-    {
+    switch (urViewType.viewType) {
     case WebAuthResult:
-        GuiSetWebAuthResultData(urResult, is_multi);
+        GuiSetWebAuthResultData(urResult, urMultiResult, is_multi);
         break;
     case KeyDerivationRequest:
-        GuiSetKeyDerivationRequestData(urResult, is_multi);
+        GuiSetKeyDerivationRequestData(urResult, urMultiResult, is_multi);
         break;
     default:
-        HandleDefaultViewType(urResult, urViewType, is_multi);
+        HandleDefaultViewType(urResult, urMultiResult, urViewType, is_multi);
         break;
     }
 

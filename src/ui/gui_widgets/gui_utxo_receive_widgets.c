@@ -193,6 +193,8 @@ void GuiReceiveInit(uint8_t chain)
     g_utxoReceiveWidgets.tileAddressSettings = lv_tileview_add_tile(g_utxoReceiveWidgets.tileView, UTXO_RECEIVE_TILE_ADDRESS_SETTINGS, 0, LV_DIR_HOR);
     GuiCreateAddressSettingsWidget(g_utxoReceiveWidgets.tileAddressSettings);
     lv_obj_clear_flag(g_utxoReceiveWidgets.tileView, LV_OBJ_FLAG_SCROLLABLE);
+
+    GuiReceiveRefresh();
 }
 
 void GuiReceiveDeInit(void)
@@ -224,6 +226,19 @@ void GuiReceiveDeInit(void)
     }
 }
 
+static bool HasMoreBtn()
+{
+    switch (g_chainCard) {
+    case HOME_WALLET_CARD_LTC:
+    case HOME_WALLET_CARD_BCH:
+    case HOME_WALLET_CARD_DASH:
+        return false;
+
+    default:
+        return true;
+    }
+}
+
 void GuiReceiveRefresh(void)
 {
     printf("g_utxoReceiveTileNow=%d\r\n", g_utxoReceiveTileNow);
@@ -233,7 +248,7 @@ void GuiReceiveRefresh(void)
         TitleItem_t titleItem;
         GetCurrentTitle(&titleItem);
         SetCoinWallet(g_pageWidget->navBarWidget, titleItem.type, titleItem.title);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, MoreHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, HasMoreBtn() ? NVS_BAR_MORE_INFO : NVS_RIGHT_BUTTON_BUTT, MoreHandler, NULL);
         RefreshQrCode();
         if (g_selectIndex == ADDRESS_INDEX_MAX) {
             lv_obj_set_style_img_opa(g_utxoReceiveWidgets.changeImg, LV_OPA_60, LV_PART_MAIN);
@@ -586,8 +601,7 @@ static void Highlight(char *address, uint8_t highlightStart, uint8_t highlightEn
 {
 #ifndef COMPILE_SIMULATOR
     uint8_t addressLength = strlen(address);
-    if (address == NULL || coloredAddress == NULL || highlightStart > highlightEnd || highlightEnd > addressLength)
-    {
+    if (address == NULL || coloredAddress == NULL || highlightStart > highlightEnd || highlightEnd > addressLength) {
         return;
     }
     char beforeHighlight[addressLength];
@@ -630,8 +644,7 @@ static void RefreshDefaultAddress(void)
 
 static void ShowEgAddressCont(lv_obj_t *egCont)
 {
-    if (egCont == NULL)
-    {
+    if (egCont == NULL) {
         printf("egCont is NULL, cannot show eg address\n");
         return;
     }
@@ -715,8 +728,7 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
         sprintf(string, "%s (%s)", g_addressSettings[i].subTitle, g_addressSettings[i].path);
         label = GuiCreateNoticeLabel(cont, string);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
-        if (i != 2)
-        {
+        if (i != 2) {
             line = GuiCreateLine(cont, points, 2);
             lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * (i + 1));
         }
@@ -1243,8 +1255,7 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
 
 void GuiResetCurrentUtxoAddressIndex(uint8_t index)
 {
-    if (index > 2)
-    {
+    if (index > 2) {
         return;
     }
 

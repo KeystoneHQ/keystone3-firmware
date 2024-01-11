@@ -9,7 +9,8 @@
 #include "account_manager.h"
 
 static bool g_isMulti = false;
-static void *g_urResult = NULL;
+static URParseResult *g_urResult = NULL;
+static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static int8_t g_cosmosListIndex = -1;
 
@@ -87,10 +88,11 @@ const char* GuiGetCosmosTxTypeName(CosmosMsgType type)
     }
 }
 
-void GuiSetCosmosUrData(void *data, bool multi)
+void GuiSetCosmosUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
 #ifndef COMPILE_SIMULATOR
-    g_urResult = data;
+    g_urResult = urResult;
+    g_urMultiResult = urMultiResult;
     g_isMulti = multi;
 #endif
 }
@@ -107,10 +109,10 @@ void *GuiGetCosmosData(void)
 #ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
     do {
-        URType urType = g_isMulti ? ((URParseMultiResult *)g_urResult)->ur_type : ((URParseResult *)g_urResult)->ur_type;
+        URType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
         PtrT_TransactionParseResult_DisplayCosmosTx parseResult = cosmos_parse_tx(data, urType);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
@@ -125,9 +127,9 @@ PtrT_TransactionCheckResult GuiGetCosmosCheckResult(void)
 {
 #ifndef COMPILE_SIMULATOR
     uint8_t mfp[4];
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
-    URType urType = g_isMulti ? ((URParseMultiResult *)g_urResult)->ur_type : ((URParseResult *)g_urResult)->ur_type;
+    URType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     return cosmos_check_tx(data, urType, mfp, sizeof(mfp));
 #else
     return NULL;
@@ -137,7 +139,8 @@ PtrT_TransactionCheckResult GuiGetCosmosCheckResult(void)
 void FreeCosmosMemory(void)
 {
 #ifndef COMPILE_SIMULATOR
-    CHECK_FREE_UR_RESULT(g_urResult, g_isMulti);
+    CHECK_FREE_UR_RESULT(g_urResult, false);
+    CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
 #endif
 }
@@ -541,11 +544,11 @@ uint8_t GuiGetCosmosTxChain(void)
     if (parseResult == NULL) {
         return CHAIN_ATOM;
     }
-    char* chain_id = SRAM_MALLOC(100);
+    char* chain_id = SRAM_MALLOC(64);
     if (strcmp(parseResult->data->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_MESSAGE)) == 0 || strcmp(parseResult->data->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_UNKNOWN)) == 0) {
         cJSON* detail = cJSON_Parse(parseResult->data->detail);
         cJSON* value = cJSON_GetObjectItem(detail, "Chain ID");
-        chain_id = value->valuestring;
+        sprintf(chain_id, "%s", value->valuestring);
     } else {
         GetCosmosDetailCommon(chain_id, parseResult->data, "Chain ID");
     }
@@ -569,8 +572,8 @@ UREncodeResult *GuiGetCosmosSignQrCodeData(void)
     SetLockScreen(false);
 #ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult;
-    void *data = g_isMulti ? ((URParseMultiResult *)g_urResult)->data : ((URParseResult *)g_urResult)->data;
-    URType urType = g_isMulti ? ((URParseMultiResult *)g_urResult)->ur_type : ((URParseResult *)g_urResult)->ur_type;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    URType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     do {
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();

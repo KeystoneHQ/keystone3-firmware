@@ -3,20 +3,19 @@
 #include "gui_page.h"
 #include "gui_usb_transport_widgets.h"
 #include "eapdu_services/service_export_address.h"
+#include "screen_manager.h"
 
 static lv_obj_t *g_cont;
 static PageWidget_t *g_pageWidget;
 static EAPDUResultPage_t *g_param;
 static bool g_original_lock_screen = false;
 
-typedef struct
-{
+typedef struct {
     lv_img_dsc_t *img;
     char *title;
 } WalletInfo_t;
 
-typedef struct
-{
+typedef struct {
     char *title;
     char *subTitle;
     char *buttonText;
@@ -32,8 +31,7 @@ static void ApproveButtonHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         ExportAddressApprove();
         GuiCLoseCurrentWorkingView();
     }
@@ -43,8 +41,7 @@ static void RejectButtonHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         ExportAddressReject();
         GuiCLoseCurrentWorkingView();
     }
@@ -57,8 +54,7 @@ static WalletInfo_t GetConnectWalletInfo()
         .img = &imgConnectWithWallet,
         .title = _("usb_transport_connect_wallet"),
     };
-    switch (wallet)
-    {
+    switch (wallet) {
     case Rabby:
         walletInfo.img = &imgConnectWithRabby;
         walletInfo.title = _("usb_transport_connect_rabby");
@@ -109,8 +105,7 @@ static ResolveUrInfo_t CalcResolveUrPageInfo()
         .subTitle = _("usb_transport_sign_completed_subtitle"),
         .buttonText = _("usb_transport_sign_completed_btn"),
     };
-    switch (g_param->error_code)
-    {
+    switch (g_param->error_code) {
     case RSP_SUCCESS_CODE:
         break;
     case PRS_PARSING_MISMATCHED_WALLET:
@@ -140,13 +135,10 @@ static void GuiResolveUrResultViewInit()
     lv_color_t buttonColor = ORANGE_COLOR;
     lv_obj_t *img = NULL;
     lv_img_dsc_t statusImg = imgSuccess;
-    if (g_param->error_code != 0)
-    {
+    if (g_param->error_code != 0) {
         buttonColor = WHITE_COLOR;
         img = GuiCreateImg(cont, &imgFailed);
-    }
-    else
-    {
+    } else {
         img = GuiCreateImg(cont, &imgSuccess);
     }
 
@@ -167,8 +159,7 @@ static void GuiResolveUrResultViewInit()
     lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_size(button, 408, 66);
     lv_obj_set_style_bg_color(button, buttonColor, LV_PART_MAIN);
-    if (g_param->error_code != 0)
-    {
+    if (g_param->error_code != 0) {
         lv_obj_set_style_bg_opa(button, LV_OPA_12, LV_PART_MAIN);
     }
     lv_obj_add_event_cb(button, GoToHomeViewHandler, LV_EVENT_CLICKED, NULL);
@@ -178,12 +169,10 @@ void GuiUSBTransportWidgetsInit(EAPDUResultPage_t *param)
 {
     g_original_lock_screen = IsPreviousLockScreenEnable();
     g_param = param;
-    if (g_param == NULL)
-    {
+    if (g_param == NULL) {
         return;
     }
-    switch (g_param->command)
-    {
+    switch (g_param->command) {
     case CMD_RESOLVE_UR:
         GuiResolveUrResultViewInit();
         break;
@@ -200,8 +189,7 @@ void GuiUSBTransportWidgetsDeInit()
     SetLockScreen(g_original_lock_screen);
     g_param = NULL;
     GUI_DEL_OBJ(g_cont)
-    if (g_pageWidget != NULL)
-    {
+    if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }

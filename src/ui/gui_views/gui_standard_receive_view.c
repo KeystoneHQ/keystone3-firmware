@@ -11,7 +11,6 @@ static int32_t GuiStandardReceiveViewInit(uint8_t chain)
 
 static int32_t GuiStandardReceiveViewDeInit(void)
 {
-    printf("GuiStandardReceiveViewDeInit\n");
     GuiStandardReceiveDeInit();
     return SUCCESS_CODE;
 }
@@ -32,7 +31,7 @@ int32_t GuiStandardReceiveViewEventProcess(void *self, uint16_t usEvent, void *p
     case GUI_EVENT_DISACTIVE:
         break;
     case GUI_EVENT_REFRESH:
-        GuiStandardReceiveRefresh();
+        // GuiStandardReceiveRefresh();
         break;
     case SIG_SETUP_VIEW_TILE_PREV:
         GuiStandardReceivePrevTile();

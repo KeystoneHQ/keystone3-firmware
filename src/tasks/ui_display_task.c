@@ -119,14 +119,22 @@ static void UiDisplayTask(void *argument)
 #endif
             }
             break;
-            case UI_MSG_USB_TRANSPORT_VIEW:
-            {
+            case UI_MSG_USB_TRANSPORT_VIEW: {
                 GuiFrameOpenViewWithParam(&g_USBTransportView, rcvMsg.buffer, rcvMsg.length);
             }
             break;
-            case UI_MSG_PREPARE_RECEIVE_UR_USB:
-            {
+            case UI_MSG_PREPARE_RECEIVE_UR_USB: {
                 GuiFrameOpenViewWithParam(&g_transactionDetailView, &rcvMsg.value, sizeof(rcvMsg.value));
+            }
+            break;
+            case UI_MSG_OPEN_VIEW: {
+                GUI_VIEW *view = (GUI_VIEW *)rcvMsg.value;
+                GuiFrameOpenView(view);
+            }
+            break;
+            case UI_MSG_CLOSE_VIEW: {
+                GUI_VIEW *view = (GUI_VIEW *)rcvMsg.value;
+                GuiFrameCLoseView(view);
             }
             break;
             default:

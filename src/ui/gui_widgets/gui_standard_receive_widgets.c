@@ -129,6 +129,8 @@ void GuiStandardReceiveInit(uint8_t chain)
         GuiCreateSwitchAddressButtons(g_standardReceiveWidgets.tileSwitchAccount);
     }
     lv_obj_clear_flag(g_standardReceiveWidgets.tileView, LV_OBJ_FLAG_SCROLLABLE);
+
+    GuiStandardReceiveRefresh();
 }
 
 void GuiStandardReceiveDeInit(void)
@@ -521,13 +523,7 @@ static bool IsAccountSwitchable()
 
 static bool HasMoreBtn()
 {
-    switch (g_chainCard) {
-    case HOME_WALLET_CARD_TRX:
-        return true;
-
-    default:
-        return false;
-    }
+    return false;
 }
 
 static void SwitchAddressHandler(lv_event_t *e)
@@ -645,7 +641,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 
 void GuiResetCurrentStandardAddressIndex(uint8_t index)
 {
-    if(index > 2) {
+    if (index > 2) {
         return;
     }
     g_selectIndex[index] = 0;

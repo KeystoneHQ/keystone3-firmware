@@ -25,7 +25,6 @@ static char *GuiFrameIdToName(SCREEN_ID_ENUM ID);
 static GUI_VIEW *g_workingView = NULL;
 static uint32_t g_viewCnt = 0;      // Record how many views are opened
 
-#ifndef COMPILE_SIMULATOR
 static GUI_VIEW *g_viewsTable[] = {
     &g_initView,
     &g_lockView,
@@ -69,7 +68,6 @@ static GUI_VIEW *g_viewsTable[] = {
     &g_transactionSignatureView,
     &g_diceRollsView
 };
-#endif
 
 bool GuiViewHandleEvent(GUI_VIEW *view, uint16_t usEvent, void *param, uint16_t usLen)
 {
@@ -301,6 +299,7 @@ void GuiViewsTest(int argc, char *argv[])
     if (view == NULL) {
         return;
     }
+    #ifndef COMPILE_SIMULATOR
     if (strcmp(argv[0], "open") == 0) {
         printf("open view %s\n", GuiFrameIdToName(view->id));
         PubValueMsg(UI_MSG_OPEN_VIEW, (uint32_t)view);
@@ -310,4 +309,5 @@ void GuiViewsTest(int argc, char *argv[])
     } else if (strcmp(argv[0], "debug") == 0) {
         GuiFrameDebugging();
     }
+    #endif
 }

@@ -22,11 +22,12 @@
 #define BATTERY_PRINTF(fmt, args...)
 #endif
 
+#define BATTERY_DIFF_THRESHOLD                          20
 #define BATTERY_CHARGING_BY_TIME                        75
 #define BATTERY_LOG_PERCENT_INTERVAL                    1
 #define BATTERY_LOG_DETAIL                              1
 #define BATTERY_ADC_TIMES                               100
-#define BATTERY_PCT_CHANGE_MIN_TICK_DISCHARGE           (120 * 1000)
+#define BATTERY_PCT_CHANGE_MIN_TICK_DISCHARGE           (80 * 1000)
 #define BATTERY_PCT_CHANGE_MIN_TICK_CHARGING            (80 * 1000)
 #define BATTERY_INVALID_PERCENT_VALUE                   101
 #define BATTERY_CHANNEL                                 ADC_CHANNEL_4
@@ -301,9 +302,15 @@ uint32_t GetBatteryInterval(void)
 static uint8_t LoadBatteryPercent(void)
 {
     uint8_t *data;
-    uint32_t i;
-    uint8_t percent;
+    uint32_t i, milliVolt;
+    uint8_t percent, measurePercent;
     bool resetValue, checkErased, needErase;
+    UsbPowerState usbPowerState;
+
+    usbPowerState = GetUsbPowerState();
+    milliVolt = GetBatteryMilliVolt();
+    measurePercent = GetBatteryPercentByMilliVolt(milliVolt, usbPowerState == USB_POWER_STATE_DISCONNECT);
+    printf("load batt,usbPowerState=%d,milliVolt=%d,measurePercent=%d\n", usbPowerState, milliVolt, measurePercent);
 
     data = SRAM_MALLOC(SPI_FLASH_SIZE_BATTERY_INFO);
     Gd25FlashReadBuffer(SPI_FLASH_ADDR_BATTERY_INFO, data, SPI_FLASH_SIZE_BATTERY_INFO);
@@ -325,6 +332,12 @@ static uint8_t LoadBatteryPercent(void)
                     percent = data[i - 1];
                     g_batteryFlashAddress = SPI_FLASH_ADDR_BATTERY_INFO + i - 1;
                     printf("the latest battery history percent=%d,addr=0x%08X\r\n", percent, g_batteryFlashAddress);
+                    if (usbPowerState == USB_POWER_STATE_DISCONNECT && \
+                            percent > measurePercent && \
+                            (percent - measurePercent > BATTERY_DIFF_THRESHOLD || measurePercent <= 20)) {
+                        printf("set battery percent to measurement value.\n");
+                        percent = measurePercent;
+                    }
                 }
             }
             checkErased = true;

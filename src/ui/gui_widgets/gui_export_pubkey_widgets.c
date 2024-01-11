@@ -2,6 +2,7 @@
 #include "gui_home_widgets.h"
 #include "gui_page.h"
 #include "gui_fullscreen_mode.h"
+#include "assert.h"
 
 typedef enum
 {
@@ -27,7 +28,7 @@ typedef struct
     lv_obj_t *title;
     lv_obj_t *desc;
     lv_obj_t *pubkey;
-    lv_obj_t *eg;
+    lv_obj_t *egs[2];
     lv_obj_t *confirmBtn;
     SelectItem_t selectItems[3];
 } ExportPubkeyWidgets_t;
@@ -39,7 +40,7 @@ typedef struct {
     ChainType pubkeyType;
 } PathTypeItem_t;
 
-char *GetExportPubkey(uint16_t chain, uint8_t pathType);
+void GetExportPubkey(char *dest, uint16_t chain, uint8_t pathType);
 
 static void GuiCreateQrCodeWidget(lv_obj_t *parent);
 static void OpenSwitchPathTypeHandler(lv_event_t *e);
@@ -132,7 +133,8 @@ void GuiExportPubkeyDeInit(void)
 lv_obj_t* CreateExportPubkeyQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)
 {
     lv_obj_t* qrcode = lv_qrcode_create(parent, w, BLACK_COLOR, WHITE_COLOR);
-    char *pubkey = GetExportPubkey(g_chain, GetPathType());
+    char pubkey[128] = {0};
+    GetExportPubkey(pubkey, g_chain, GetPathType());
     lv_obj_add_flag(qrcode, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(qrcode, GuiFullscreenModeHandler, LV_EVENT_CLICKED, NULL);
     lv_qrcode_update(qrcode, pubkey, strlen(pubkey) + 1);
@@ -226,19 +228,22 @@ static void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent)
     lv_obj_clear_flag(g_widgets.selectItems[g_tmpSelectIndex].checkedImg, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(g_widgets.selectItems[g_tmpSelectIndex].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
 
-    lv_obj_t *egCont = GuiCreateContainerWithParent(parent, 408, 186);
+    lv_obj_t *egCont = GuiCreateContainerWithParent(parent, 408, 122);
     lv_obj_align_to(egCont, cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
     lv_obj_set_style_bg_color(egCont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(egCont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(egCont, 24, LV_PART_MAIN);
 
-    label = GuiCreateNoticeLabel(egCont, _("eg."));
+    label = GuiCreateNoticeLabel(egCont, _("derivation_path_address_eg"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
-    g_widgets.eg = GuiCreateLabel(egCont, "");
-    lv_obj_align(g_widgets.eg, LV_ALIGN_TOP_LEFT, 24, 50);
-    lv_obj_set_width(g_widgets.eg, 360);
-    lv_label_set_long_mode(g_widgets.eg, LV_LABEL_LONG_WRAP);
-    lv_label_set_recolor(g_widgets.eg, true);
+    for (uint32_t i = 0; i < 2; i++) {
+        label = GuiCreateLabel(egCont, "");
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 50 + 34 * i);
+        lv_obj_set_width(label, 360);
+        lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+        lv_label_set_recolor(label, true);
+        g_widgets.egs[i] = label;
+    }
 
     lv_obj_t *btn = GuiCreateBtn(parent, USR_SYMBOL_CHECK);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
@@ -285,15 +290,51 @@ static void ConfirmHandler(lv_event_t *e)
     }
 }
 
-char *GetExportPubkey(uint16_t chain, uint8_t pathType)
+#ifndef COMPILE_SIMULATOR
+static void GetBtcPubkey(char *dest, uint8_t pathType)
+{
+    char *xpub = GetCurrentAccountPublicKey(g_btcPathTypeList[pathType].pubkeyType);
+    if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_LEGACY)
+    {
+        sprintf(dest, "%s", xpub);
+        return;
+    }
+
+    char *t = "ypub";
+    if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_NATIVE_SEGWIT) {
+        t = "zpub";
+    }
+    SimpleResponse_c_char *result;
+    do {
+        result = xpub_convert_version(xpub, t);
+        CHECK_CHAIN_BREAK(result);
+    } while (0);
+    sprintf(dest, "%s", result->data);
+    free_simple_response_c_char(result);
+}
+#else
+static void GetBtcPubkey(char *dest, uint8_t pathType)
+{
+    if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_LEGACY)
+    {
+        sprintf(dest, "xpub6DkencgjwZW2G2ayofjQ9cD76C59JqsjmahLmwffHmm9LpW5urCVeu3UVNr9zULcbagfEVKqdcBAiCaL8PLCxmisgKNLA1br6bqrm8783yu");
+    } else if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC) {
+        sprintf(dest, "ypub6YbWuU2sY6ZkEzNkRc8rGk7m6jYqYU9hZJY4y8JtF7K4i2sC5wL9RtB7bRzLJqj1P5J7wR5H8Z6Q2H7nZC6n5z5v9X3a2Wn2m");
+    } else {
+        sprintf(dest, "zpub6YbWuU2sY6ZkEzNkRc8rGk7m6jYqYU9hZJY4y8JtF7K4i2sC5wL9RtB7bRzLJqj1P5J7wR5H8Z6Q2H7nZC6n5z5v9X3a2Wn2m");
+    }
+}
+#endif
+
+void GetExportPubkey(char *dest, uint16_t chain, uint8_t pathType)
 {
     switch (chain)
     {
     case CHAIN_BTC:
-        return GetCurrentAccountPublicKey(g_btcPathTypeList[pathType].pubkeyType);
+        GetBtcPubkey(dest, pathType);
+        break;
     default:
         printf("(GetExportPubkey) unsupported chain type: %d\r\n", g_chain);
-        return NULL;
     }
 }
 
@@ -324,7 +365,8 @@ static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType)
 static void RefreshQrcode()
 {
     uint8_t pathType = GetPathType();
-    char *pubkey = GetExportPubkey(g_chain, pathType);
+    char pubkey[128];
+    GetExportPubkey(pubkey, g_chain, pathType);
     if (pubkey != NULL) {
         lv_label_set_text(g_widgets.title, GetPathTypeTitle(g_chain, pathType));
         char desc[32] = {0};
@@ -363,16 +405,59 @@ static void SetPathType(uint8_t pathType)
     }
 }
 
+#ifndef COMPILE_SIMULATOR
+static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index)
+{
+    char *xPub, hdPath[128];
+    xPub = GetCurrentAccountPublicKey(g_btcPathTypeList[pathType].pubkeyType);
+    ASSERT(xPub);
+    SimpleResponse_c_char *result;
+    sprintf(hdPath, "%s/0/%u", g_btcPathTypeList[pathType].path, index);
+    do {
+        result = utxo_get_address(hdPath, xPub);
+        CHECK_CHAIN_BREAK(result);
+    } while (0);
+    sprintf(dest, "%s", result->data);
+    free_simple_response_c_char(result);
+}
+#else
+static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index)
+{
+    sprintf(dest, "1JLNi9AmQcfEuobvwJ4FT5YCiq3WLhCh%u%u", pathType, index);
+}
+#endif
+
+static void AddressLongModeCut(char *out, const char *address)
+{
+    uint32_t len;
+
+    len = strlen(address);
+    if (len <= 24) {
+        strcpy(out, address);
+        return;
+    }
+    strncpy(out, address, 12);
+    out[12] = 0;
+    strcat(out, "...");
+    strcat(out, address + len - 12);
+}
+
 static void SetEgContent(uint8_t index)
 {
-    char eg[256] = {0};
-    char *pubkey = GetExportPubkey(g_chain, index);
+    char eg[64] = {0};
     char prefix[8] = {0};
-    char rest[256] = {0};
-    strncpy(prefix, pubkey, 4);
-    strncpy(rest, pubkey + 4, strlen(pubkey) - 4);
-    sprintf(eg, "#F5870A %s#%s", prefix, rest);
-    lv_label_set_text(g_widgets.eg, eg);
+    char rest[64] = {0};
+    char addr[128] = {0};
+    char addrShot[64] = {0};
+    int8_t prefixLen = index == 0 ? 3 : 1;
+    for (uint8_t i = 0; i < 2; i++) {
+        ModelGetUtxoAddress(addr, index, i);
+        AddressLongModeCut(addrShot, addr);
+        strncpy(prefix, addrShot, prefixLen);
+        strncpy(rest, addrShot + prefixLen, strlen(addrShot) - prefixLen);
+        sprintf(eg, "%d  #F5870A %s#%s", i, prefix, rest);
+        lv_label_set_text(g_widgets.egs[i], eg);
+    }
 }
 
 static void SetCheckboxState(uint8_t i, bool isChecked)

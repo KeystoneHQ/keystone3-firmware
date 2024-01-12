@@ -303,8 +303,18 @@ void *GuiCreateErrorCodeHintbox(int32_t errCode, lv_obj_t **param)
         break;
     case ERR_UPDATE_FIRMWARE_NOT_DETECTED:
         height = 400;
-        titleText = _("error_box_firmware_not_detected");
-        descText = _("error_box_firmware_not_detected_desc");
+        titleText = _("firmware_update_sd_not_detected_title");
+        descText = _("firmware_update_sd_not_detected_desc");
+        break;
+    case ERR_UPDATE_SDCARD_NOT_DETECTED:
+        height = 400;
+        titleText = _("firmware_update_sd_failed_access_title");
+        descText = _("firmware_update_sd_failed_access_desc");
+        break;
+    case ERR_UPDATE_NO_UPGRADABLE_FIRMWARE:
+        height = 400;
+        titleText = _("firmware_update_no_upgradable_firmware_title");
+        descText = _("firmware_update_no_upgradable_firmware_desc");
         break;
     }
 

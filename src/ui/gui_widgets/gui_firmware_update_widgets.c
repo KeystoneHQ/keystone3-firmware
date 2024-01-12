@@ -401,7 +401,8 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
         if (CHECK_BATTERY_LOW_POWER()) {
             g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox);
         } else if (!SdCardInsert()) {
-            g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
+            //firmware_update_sd_failed_access_title
+            g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeHintBox);
         } else if (CheckOtaBinVersion(fileVersion)) {
             uint8_t accountCnt = 0;
             GetExistAccountNum(&accountCnt);
@@ -415,7 +416,13 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
                 SetKeyboardWidgetSig(g_keyboardWidget, walletSetIndex);
             }
         } else {
-            g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
+            if (strlen(fileVersion) == 0) {
+                //no file
+                g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
+            } else {
+                g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_NO_UPGRADABLE_FIRMWARE, &g_noticeHintBox);
+            }
+
         }
     }
 }

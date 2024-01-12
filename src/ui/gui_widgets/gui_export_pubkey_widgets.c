@@ -4,8 +4,7 @@
 #include "gui_fullscreen_mode.h"
 #include "assert.h"
 
-typedef enum
-{
+typedef enum {
     TILEVIEW_QRCODE = 0,
     TILEVIEW_SELECT_TYPE,
 } TILEVIEW_INDEX_ENUM;
@@ -16,8 +15,7 @@ typedef struct {
     lv_obj_t *uncheckedImg;
 } SelectItem_t;
 
-typedef struct
-{
+typedef struct {
     lv_obj_t *cont;
     lv_obj_t *tileview;
     lv_obj_t *qrTileview;
@@ -71,8 +69,7 @@ static uint8_t g_tmpSelectIndex = 0;
 
 static GuiRefreshTileview()
 {
-    switch (g_tileviewIndex)
-    {
+    switch (g_tileviewIndex) {
     case TILEVIEW_QRCODE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseTimerCurrentViewHandler, NULL);
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("receive_btc_extended_public_key"));
@@ -86,7 +83,7 @@ static GuiRefreshTileview()
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         RefreshPathType();
         break;
-    
+
     default:
         break;
     }
@@ -294,8 +291,7 @@ static void ConfirmHandler(lv_event_t *e)
 static void GetBtcPubkey(char *dest, uint8_t pathType)
 {
     char *xpub = GetCurrentAccountPublicKey(g_btcPathTypeList[pathType].pubkeyType);
-    if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_LEGACY)
-    {
+    if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_LEGACY) {
         sprintf(dest, "%s", xpub);
         return;
     }
@@ -315,8 +311,7 @@ static void GetBtcPubkey(char *dest, uint8_t pathType)
 #else
 static void GetBtcPubkey(char *dest, uint8_t pathType)
 {
-    if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_LEGACY)
-    {
+    if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_LEGACY) {
         sprintf(dest, "xpub6DkencgjwZW2G2ayofjQ9cD76C59JqsjmahLmwffHmm9LpW5urCVeu3UVNr9zULcbagfEVKqdcBAiCaL8PLCxmisgKNLA1br6bqrm8783yu");
     } else if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC) {
         sprintf(dest, "ypub6YbWuU2sY6ZkEzNkRc8rGk7m6jYqYU9hZJY4y8JtF7K4i2sC5wL9RtB7bRzLJqj1P5J7wR5H8Z6Q2H7nZC6n5z5v9X3a2Wn2m");
@@ -328,8 +323,7 @@ static void GetBtcPubkey(char *dest, uint8_t pathType)
 
 void GetExportPubkey(char *dest, uint16_t chain, uint8_t pathType)
 {
-    switch (chain)
-    {
+    switch (chain) {
     case CHAIN_BTC:
         GetBtcPubkey(dest, pathType);
         break;
@@ -340,8 +334,7 @@ void GetExportPubkey(char *dest, uint16_t chain, uint8_t pathType)
 
 static char *GetPathTypeTitle(uint16_t chain, uint8_t pathType)
 {
-    switch (chain)
-    {
+    switch (chain) {
     case CHAIN_BTC:
         return g_btcPathTypeList[pathType].title;
     default:
@@ -352,8 +345,7 @@ static char *GetPathTypeTitle(uint16_t chain, uint8_t pathType)
 
 static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType)
 {
-    switch (chain)
-    {
+    switch (chain) {
     case CHAIN_BTC:
         sprintf(dest, "%s (%s)", g_btcPathTypeList[pathType].subTitle, g_btcPathTypeList[pathType].path);
         break;
@@ -382,11 +374,10 @@ static void RefreshQrcode()
 
 static uint8_t GetPathType()
 {
-    switch (g_chain)
-    {
+    switch (g_chain) {
     case CHAIN_BTC:
         return g_btcPathType[GetCurrentAccountIndex()];
-    
+
     default:
         break;
     }
@@ -394,12 +385,11 @@ static uint8_t GetPathType()
 
 static void SetPathType(uint8_t pathType)
 {
-    switch (g_chain)
-    {
+    switch (g_chain) {
     case CHAIN_BTC:
         g_btcPathType[GetCurrentAccountIndex()] = pathType;
         break;
-    
+
     default:
         break;
     }

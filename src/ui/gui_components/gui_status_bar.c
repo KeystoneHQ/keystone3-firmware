@@ -10,6 +10,8 @@
 #include "usb_task.h"
 #include "user_memory.h"
 #include "account_manager.h"
+#include "gui_chain.h"
+#include "gui_connect_wallet_widgets.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
@@ -38,6 +40,8 @@ typedef struct {
 } CoinWalletInfo_t;
 
 bool GetLvglHandlerStatus(void);
+
+static void RefreshStatusBar(void);
 
 const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_BTC, "Confirm Transaction", &coinBtc},
@@ -180,15 +184,14 @@ void GuiStatusBarInit(void)
 
     img = GuiCreateImg(cont, &imgSdCard);
     g_guiStatusBar.sdCardImg = img;
-    lv_obj_align_to(g_guiStatusBar.sdCardImg, g_guiStatusBar.batteryImg, LV_ALIGN_OUT_LEFT_MID, -10, 0);
     if (!SdCardInsert()) {
         lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
     }
 
     img = GuiCreateImg(cont, &imgUsb);
     g_guiStatusBar.usbImg = img;
-    lv_obj_align_to(g_guiStatusBar.usbImg, g_guiStatusBar.sdCardImg, LV_ALIGN_OUT_LEFT_MID, -10, 0);
     lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
+    RefreshStatusBar();
 #ifdef COMPILE_SIMULATOR
     GuiStatusBarSetBattery(88, true);
 #endif
@@ -199,15 +202,14 @@ void GuiStatusBarSetSdCard(bool connected)
     if (!GetLvglHandlerStatus()) {
         return;
     }
-    static bool sdStatus = false;
+    static int32_t sdStatus = -1;
     char version[16] = {0};
-    if (sdStatus == connected) {
+    if (sdStatus == (connected ? 1 : 0)) {
         return;
     }
     sdStatus = connected;
     if (connected) {
         lv_obj_clear_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_align_to(g_guiStatusBar.sdCardImg, g_guiStatusBar.batteryImg, LV_ALIGN_OUT_LEFT_MID, -10, 0);
         uint8_t accountCnt = 0;
         GetExistAccountNum(&accountCnt);
         if (!GuiLockScreenIsTop() && CheckOtaBinVersion(version) && accountCnt > 0 && !GuiCheckIfTopView(&g_forgetPassView)) {
@@ -216,6 +218,7 @@ void GuiStatusBarSetSdCard(bool connected)
     } else {
         lv_obj_add_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN);
     }
+    RefreshStatusBar();
 }
 
 void GuiStatusBarSetUsb()
@@ -225,6 +228,7 @@ void GuiStatusBarSetUsb()
     } else {
         lv_obj_add_flag(g_guiStatusBar.usbImg, LV_OBJ_FLAG_HIDDEN);
     }
+    RefreshStatusBar();
 }
 
 void GuiStatusBarSetBattery(uint8_t percent, bool charging)
@@ -236,8 +240,6 @@ void GuiStatusBarSetBattery(uint8_t percent, bool charging)
 
     if (charging) {
         lv_obj_align(g_guiStatusBar.batteryImg, LV_ALIGN_RIGHT_MID, -89, 0);
-        lv_obj_align_to(g_guiStatusBar.sdCardImg, g_guiStatusBar.batteryImg, LV_ALIGN_OUT_LEFT_MID, -10, 0);
-        lv_obj_align_to(g_guiStatusBar.usbImg, g_guiStatusBar.sdCardImg, LV_ALIGN_OUT_LEFT_MID, -10, 0);
         lv_obj_clear_flag(g_guiStatusBar.batteryCharging, LV_OBJ_FLAG_HIDDEN);
     } else {
         lv_obj_align(g_guiStatusBar.batteryImg, LV_ALIGN_RIGHT_MID, -70, 0);
@@ -267,8 +269,20 @@ void GuiStatusBarSetBattery(uint8_t percent, bool charging)
         lv_obj_clear_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
         lv_obj_set_size(g_guiStatusBar.batteryPad, percent / 10 * 2, 10);
     }
+    RefreshStatusBar();
 }
 
+
+static void RefreshStatusBar(void)
+{
+    lv_obj_t *next;
+    next = g_guiStatusBar.batteryImg;
+    lv_obj_align_to(g_guiStatusBar.sdCardImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
+    if (!lv_obj_has_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN)) {
+        next = g_guiStatusBar.sdCardImg;
+    }
+    lv_obj_align_to(g_guiStatusBar.usbImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
+}
 
 static lv_obj_t *CreateReturnBtn(lv_obj_t *navBar)
 {

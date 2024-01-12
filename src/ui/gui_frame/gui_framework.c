@@ -299,7 +299,7 @@ void GuiViewsTest(int argc, char *argv[])
     if (view == NULL) {
         return;
     }
-    #ifndef COMPILE_SIMULATOR
+#ifndef COMPILE_SIMULATOR
     if (strcmp(argv[0], "open") == 0) {
         printf("open view %s\n", GuiFrameIdToName(view->id));
         PubValueMsg(UI_MSG_OPEN_VIEW, (uint32_t)view);
@@ -309,5 +309,5 @@ void GuiViewsTest(int argc, char *argv[])
     } else if (strcmp(argv[0], "debug") == 0) {
         GuiFrameDebugging();
     }
-    #endif
+#endif
 }

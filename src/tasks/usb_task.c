@@ -68,15 +68,20 @@ static void UsbTask(void *argument)
         if (ret == osOK) {
             switch (rcvMsg.id) {
             case USB_MSG_ISR_HANDLER: {
-                if (GetLowPowerState() != LOW_POWER_STATE_WORKING) {
-                    break;
-                }
                 ClearLockScreenTime();
 #if (USB_POP_WINDOW_ENABLE == 1)
-                if ((GetCurrentAccountIndex() != 0xFF || GuiIsSetup()) && GetUSBSwitch() && g_usbState) {
-#else
-                if (GetUSBSwitch()) {
+                if (g_usbState == false && GetUSBSwitch() == true) {
+                    osDelay(50);
+                    if (GetUsbDetectState() == true) {
+                        printf("pop the USB connection message box and deinit USB driver\n");
+                        UsbDeInit();
+                        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+                    } else {
+                        printf("!debug!\n");
+                    }
+                }
 #endif
+                if (GetUSBSwitch()) {
                     USBD_OTG_ISR_Handler((USB_OTG_CORE_HANDLE *)rcvMsg.value);
                     NVIC_ClearPendingIRQ(USB_IRQn);
                     NVIC_EnableIRQ(USB_IRQn);

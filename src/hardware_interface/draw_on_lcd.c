@@ -148,6 +148,7 @@ void DrawProgressBarOnLcd(uint16_t x, uint16_t y, uint16_t length, uint16_t widt
     }
     while (LcdBusy());
     LcdDraw(x, y, x + length - 1, y + width - 1, pixelMap);
+    while (LcdBusy());
 }
 
 

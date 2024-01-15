@@ -20,6 +20,8 @@ use third_party::bitcoin::address::{WitnessProgram, WitnessVersion};
 use third_party::bitcoin::base58;
 use third_party::bitcoin::blockdata::script;
 use third_party::bitcoin::hashes::Hash;
+use third_party::bitcoin::secp256k1::{Secp256k1, Verification, XOnlyPublicKey};
+use third_party::bitcoin::taproot::TapNodeHash;
 use third_party::bitcoin::PublicKey;
 use third_party::bitcoin::{bech32, PubkeyHash, ScriptHash};
 
@@ -54,6 +56,38 @@ impl Address {
             }
             _ => Err(BitcoinError::AddressError(format!(
                 "Invalid network for p2wpkh {:?}",
+                network
+            ))),
+        }
+    }
+
+    pub fn p2tr_no_script(pk: &PublicKey, network: Network) -> Result<Address, BitcoinError> {
+        match network {
+            Network::Bitcoin | Network::BitcoinTestnet => {
+                let secp = Secp256k1::verification_only();
+                let payload = Payload::p2tr(&secp, XOnlyPublicKey::from(pk.inner), None);
+                Ok(Address { network, payload })
+            }
+            _ => Err(BitcoinError::AddressError(format!(
+                "Invalid network for p2tr {:?}",
+                network
+            ))),
+        }
+    }
+
+    pub fn p2tr(
+        x_only_pubkey: &XOnlyPublicKey,
+        merkle_root: Option<TapNodeHash>,
+        network: Network,
+    ) -> Result<Address, BitcoinError> {
+        match network {
+            Network::Bitcoin | Network::BitcoinTestnet => {
+                let secp = Secp256k1::verification_only();
+                let payload = Payload::p2tr(&secp, *x_only_pubkey, merkle_root);
+                Ok(Address { network, payload })
+            }
+            _ => Err(BitcoinError::AddressError(format!(
+                "Invalid network for p2tr {:?}",
                 network
             ))),
         }

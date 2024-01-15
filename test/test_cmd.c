@@ -1543,7 +1543,9 @@ static void RustTestSignPSBT(int argc, char *argv[])
     uint8_t seed[64];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
     GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-    UREncodeResult *result = btc_sign_psbt(crypto_psbt, seed, len);
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    UREncodeResult *result = btc_sign_psbt(crypto_psbt, seed, len, mfp, sizeof(mfp));
     printf("is multi part: %d\r\n", result->is_multi_part);
     printf("data, %s\r\n", result->data);
 }

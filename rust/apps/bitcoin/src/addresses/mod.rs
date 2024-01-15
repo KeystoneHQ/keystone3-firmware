@@ -39,6 +39,8 @@ pub fn get_address(hd_path: String, extended_pub_key: &String) -> Result<String>
         "m/49'/2'/0'" => Address::p2shp2wpkh(&compressed_ecdsa_pubkey, Network::Litecoin),
         "m/44'/5'/0'" => Address::p2pkh(&compressed_ecdsa_pubkey, Network::Dash),
         "m/44'/145'/0'" => Address::p2pkh(&compressed_ecdsa_pubkey, Network::BitcoinCash),
+        "m/86'/1'/0'" => Address::p2tr_no_script(&compressed_ecdsa_pubkey, Network::BitcoinTestnet),
+        "m/86'/0'/0'" => Address::p2tr_no_script(&compressed_ecdsa_pubkey, Network::Bitcoin),
         _ => Err(BitcoinError::AddressError(
             "network is not supported".to_string(),
         )),
@@ -113,5 +115,16 @@ mod tests {
         )
         .unwrap();
         assert_eq!(address, "M7wtsL7wSHDBJVMWWhtQfTMSYYkyooAAXM")
+    }
+
+    #[test]
+    fn test_btc_p2tr_no_script_address() {
+        let extended_pubkey = "tpubDDfvzhdVV4unsoKt5aE6dcsNsfeWbTgmLZPi8LQDYU2xixrYemMfWJ3BaVneH3u7DBQePdTwhpybaKRU95pi6PMUtLPBJLVQRpzEnjfjZzX";
+        let address =
+            get_address("M/86'/1'/0'/0/0".to_string(), &extended_pubkey.to_string()).unwrap();
+        assert_eq!(
+            address,
+            "tb1p8wpt9v4frpf3tkn0srd97pksgsxc5hs52lafxwru9kgeephvs7rqlqt9zj"
+        );
     }
 }

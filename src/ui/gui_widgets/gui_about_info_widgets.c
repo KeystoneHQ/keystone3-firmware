@@ -31,6 +31,7 @@ static void OpenVerifyFirmwareHandler(lv_event_t *e);
 static void CloseQrcodeHandler(lv_event_t *e);
 static void GuiQrcodeHandler(lv_event_t *e);
 
+uint32_t GetBatteryMilliVolt();
 static lv_obj_t *g_firmwareVerifyCont = NULL;
 static lv_obj_t *g_noticeHintBox = NULL;
 static lv_obj_t *g_cont;

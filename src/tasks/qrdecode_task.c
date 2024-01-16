@@ -27,18 +27,18 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
 
 // The order of the enumeration must be guaranteed
 static SetChainData_t g_chainViewArray[] = {
-    {REMAPVIEW_BTC, GuiSetPsbtUrData},
-    {REMAPVIEW_ETH, GuiSetEthUrData},
-    {REMAPVIEW_ETH_PERSONAL_MESSAGE, GuiSetEthUrData},
-    {REMAPVIEW_ETH_TYPEDDATA, GuiSetEthUrData},
-    {REMAPVIEW_TRX, GuiSetTrxUrData},
-    {REMAPVIEW_COSMOS, GuiSetCosmosUrData},
-    {REMAPVIEW_SUI, GuiSetSuiUrData},
-    {REMAPVIEW_SOL, GuiSetSolUrData},
-    {REMAPVIEW_SOL_MESSAGE, GuiSetSolUrData},
-    {REMAPVIEW_APT, GuiSetAptosUrData},
-    {REMAPVIEW_ADA, GuiSetupAdaUrData},
-    {REMAPVIEW_XRP, GuiSetXrpUrData},
+    {REMAPVIEW_BTC, (SetChainDataFunc)GuiSetPsbtUrData},
+    {REMAPVIEW_ETH, (SetChainDataFunc)GuiSetEthUrData},
+    {REMAPVIEW_ETH_PERSONAL_MESSAGE, (SetChainDataFunc)GuiSetEthUrData},
+    {REMAPVIEW_ETH_TYPEDDATA, (SetChainDataFunc)GuiSetEthUrData},
+    {REMAPVIEW_TRX, (SetChainDataFunc)GuiSetTrxUrData},
+    {REMAPVIEW_COSMOS, (SetChainDataFunc)GuiSetCosmosUrData},
+    {REMAPVIEW_SUI, (SetChainDataFunc)GuiSetSuiUrData},
+    {REMAPVIEW_SOL, (SetChainDataFunc)GuiSetSolUrData},
+    {REMAPVIEW_SOL_MESSAGE, (SetChainDataFunc)GuiSetSolUrData},
+    {REMAPVIEW_APT, (SetChainDataFunc)GuiSetAptosUrData},
+    {REMAPVIEW_ADA, (SetChainDataFunc)GuiSetupAdaUrData},
+    {REMAPVIEW_XRP, (SetChainDataFunc)GuiSetXrpUrData},
 };
 
 osThreadId_t g_qrDecodeTaskHandle;

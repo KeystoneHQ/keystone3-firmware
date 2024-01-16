@@ -148,6 +148,9 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         }
         GuiFirmwareUpdateSha256Percent(checkSumPercent);
         break;
+    case SIG_STATUS_BAR_REFRESH:
+        GuiStatusBarSetUsb();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

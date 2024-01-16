@@ -170,7 +170,6 @@ static void BackgroundTask(void *argument)
             }
             if (GetUsbDetectState() == false) {
                 SetUsbState(false);
-                UsbDeInit();
                 GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 0);
             } else if (GetUSBSwitch()) {
                 UsbInit();

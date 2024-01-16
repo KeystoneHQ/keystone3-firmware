@@ -22,7 +22,7 @@
 void UsbInit(void);
 void UsbLoop(void);
 void UsbDeInit(void);
-
+bool UsbInitState(void);
 
 #endif /* _DRV_USB_H */
 

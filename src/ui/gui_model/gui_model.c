@@ -438,6 +438,7 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     if (bip39Data->forget) {
         SetWalletName(accountInfo.walletName);
         SetWalletIconIndex(accountInfo.iconIndex);
+        LogoutCurrentAccount();
     }
     UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     GetExistAccountNum(&accountCnt);
@@ -826,6 +827,7 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     if (slip39->forget) {
         SetWalletName(accountInfo.walletName);
         SetWalletIconIndex(accountInfo.iconIndex);
+        LogoutCurrentAccount();
     }
     UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     CLEAR_ARRAY(ems);

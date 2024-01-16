@@ -33,6 +33,10 @@ void CreateUsbTask(void)
     printf("g_usbTaskHandle=%d\r\n", g_usbTaskHandle);
 }
 
+void SetUsbStateInt(bool enable)
+{
+    g_usbState = enable;
+}
 
 void SetUsbState(bool enable)
 {
@@ -76,8 +80,6 @@ static void UsbTask(void *argument)
                         printf("pop the USB connection message box and deinit USB driver\n");
                         UsbDeInit();
                         GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
-                    } else {
-                        printf("!debug!\n");
                     }
                 }
 #endif

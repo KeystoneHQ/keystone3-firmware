@@ -50,4 +50,9 @@ void UsbDeInit(void)
     }
 }
 
+bool UsbInitState(void)
+{
+    return g_usbInit;
+}
+
 

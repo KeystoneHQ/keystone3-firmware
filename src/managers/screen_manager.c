@@ -55,6 +55,9 @@ void SetPageLockScreen(bool enable)
 void SetLockScreen(bool enable)
 {
     g_lockScreenEnable = enable;
+    if (enable) {
+        GuiApiEmitSignal(SIG_STATUS_BAR_REFRESH, NULL, 0);
+    }
 }
 
 void SetLockTimeState(bool enable)

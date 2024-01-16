@@ -223,7 +223,7 @@ void GuiStatusBarSetSdCard(bool connected)
 
 void GuiStatusBarSetUsb()
 {
-    if (GetUsbState()) {
+    if (GetUsbState() && UsbInitState()) {
         lv_obj_clear_flag(g_guiStatusBar.usbImg, LV_OBJ_FLAG_HIDDEN);
     } else {
         lv_obj_add_flag(g_guiStatusBar.usbImg, LV_OBJ_FLAG_HIDDEN);

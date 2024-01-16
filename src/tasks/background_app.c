@@ -5,10 +5,12 @@
 #include "mhscpu.h"
 #include "power_manager.h"
 #include "drv_lcd_bright.h"
+#include "drv_usb.h"
 
 static void ChangerInsertIntCallback(void);
 static void MinuteTimerFunc(void *argument);
 static void BatteryTimerFunc(void *argument);
+void SetUsbStateInt(bool enable);
 
 static osTimerId_t g_minuteTimer, g_batteryTimer;
 
@@ -62,6 +64,10 @@ void ExecuteSystemReset(SystemResetType type)
 /// @param
 static void ChangerInsertIntCallback(void)
 {
+    if (GetUsbDetectState() == false) {
+        UsbDeInit();
+        SetUsbStateInt(false);
+    }
     PubValueMsg(BACKGROUND_MSG_CHANGER_INSERT, 0);
 }
 

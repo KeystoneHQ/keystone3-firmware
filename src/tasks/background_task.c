@@ -170,9 +170,12 @@ static void BackgroundTask(void *argument)
             }
             if (GetUsbDetectState() == false) {
                 SetUsbState(false);
+                UsbDeInit();
                 GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 0);
             } else if (GetUSBSwitch()) {
-                UsbInit();
+#if (USB_POP_WINDOW_ENABLE == 1)
+                GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+#endif
             }
             printf("send battState=0x%04X\r\n", battState);
             GuiApiEmitSignal(SIG_INIT_BATTERY, &battState, sizeof(battState));

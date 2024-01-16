@@ -132,8 +132,6 @@ void RecoverFromLowPower(void)
     LcdBacklightOn();
 #if (USB_POP_WINDOW_ENABLE == 0)
     UsbInit();
-#else
-    AsyncExecute(GetWalletAmountAfterWakeup, NULL, 0);
 #endif
 }
 

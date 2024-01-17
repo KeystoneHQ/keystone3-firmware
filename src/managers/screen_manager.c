@@ -101,6 +101,10 @@ static void ReleaseHandler(void)
 
 static void LockScreen(void)
 {
+    if (GetLowPowerState() == LOW_POWER_STATE_DEEP_SLEEP) {
+        return;
+    }
+
     if (!g_pageLockScreenEnable) {
         printf("current page lock screen is disabled\n");
         return;

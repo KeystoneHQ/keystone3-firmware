@@ -15,6 +15,7 @@ pub fn detect_msg_type(msg_type: Option<&str>) -> &str {
 pub fn get_network_by_chain_id(chain_id: &str) -> Result<String> {
     // Registered chains https://github.com/cosmos/chain-registry
     let mut map: BTreeMap<&str, &str> = BTreeMap::new();
+    map.insert("celestia", "Celestia");
     map.insert("cosmoshub", "Cosmos Hub");
     map.insert("osmosis", "Osmosis");
     map.insert("secret", "Secret Network");
@@ -47,7 +48,11 @@ pub fn get_network_by_chain_id(chain_id: &str) -> Result<String> {
     map.insert("phoenix", "Terra");
     map.insert("columbus", "Terra Classic");
     let chain_id_parts: Vec<&str> = chain_id.split("-").collect();
-    let chain_id_prefix = chain_id_parts[..chain_id_parts.len() - 1].join("-");
+    let chain_id_prefix = if chain_id_parts.len() > 1 {
+        chain_id_parts[..chain_id_parts.len() - 1].join("-")
+    } else {
+        chain_id_parts[0].to_string()
+    };
     Ok(map
         .get(chain_id_prefix.as_str())
         .and_then(|v| Some(v.to_string()))
@@ -56,6 +61,7 @@ pub fn get_network_by_chain_id(chain_id: &str) -> Result<String> {
 
 pub fn get_chain_id_by_address(address: &str) -> String {
     let mut map: BTreeMap<&str, &str> = BTreeMap::new();
+    map.insert("celestia", "celestia");
     map.insert("cosmos", "cosmoshub-4");
     map.insert("osmo", "osmosis-1");
     map.insert("secret", "secret-4");
@@ -91,4 +97,35 @@ pub fn get_chain_id_by_address(address: &str) -> String {
         }
     }
     "cosmoshub-4".to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_network_by_chain_id() {
+        assert_eq!(get_network_by_chain_id("celestia").unwrap(), "Celestia");
+        assert_eq!(
+            get_network_by_chain_id("cosmoshub-4").unwrap(),
+            "Cosmos Hub"
+        );
+        assert_eq!(
+            get_network_by_chain_id("crypto-org-chain-mainnet-1").unwrap(),
+            "Cronos POS chain"
+        );
+        assert_eq!(get_network_by_chain_id("evmos_9001-2").unwrap(), "Evmos");
+    }
+
+    #[test]
+    fn test_get_chain_id_by_address() {
+        assert_eq!(
+            get_chain_id_by_address("celestia17u02f80vkafne9la4wypdx3kxxxxwm6fm26gg8"),
+            "celestia"
+        );
+        assert_eq!(
+            get_chain_id_by_address("cosmos17u02f80vkafne9la4wypdx3kxxxxwm6f2qtcj2"),
+            "cosmoshub-4"
+        );
+    }
 }

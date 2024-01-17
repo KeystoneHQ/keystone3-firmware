@@ -1,6 +1,7 @@
 #include "screen_manager.h"
 #include "drv_lcd_bright.h"
 #include "drv_button.h"
+#include "drv_usb.h"
 #include "gui_api.h"
 #include "gui_views.h"
 #include "qrdecode_task.h"
@@ -121,6 +122,7 @@ static void LockScreen(void)
     if (FpModuleIsExist()) {
         SetFpLowPowerMode();
     }
+    UsbDeInit();
     ClearLockScreenTime();
     ClearShutdownTime();
     LcdBacklightOff();

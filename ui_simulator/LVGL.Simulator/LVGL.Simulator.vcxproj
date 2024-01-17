@@ -108,6 +108,7 @@
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinStrd.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinSui.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinTgd.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\coin\coinTia.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinTrx.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinUmee.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinXprt.c" />
@@ -129,6 +130,7 @@
     <ClCompile Include="..\..\src\ui\gui_assets\emoji\emojiRocket.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\emoji\emojiSafe.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\emoji\emojiStar.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\font\buttonFont.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\font\cn\openSansCnBoldIllustrate.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\font\cn\openSansCnIllustrate.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\font\cn\openSansCnLittleTitle.c" />
@@ -144,6 +146,10 @@
     <ClCompile Include="..\..\src\ui\gui_assets\font\openSansLanguage.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\font\openSans_20.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\font\openSans_24.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\font\rus\rusIllustrate.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\font\rus\rusLittleTitle.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\font\rus\rusText.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\font\rus\rusTitle.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgAbout.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgAboutIcon.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgAddressType.c" />
@@ -358,6 +364,7 @@
     <ClCompile Include="..\..\src\ui\gui_views\gui_device_public_key_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_dice_rolls_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_dispaly_view.c" />
+    <ClCompile Include="..\..\src\ui\gui_views\gui_export_pubkey_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_firmware_update_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_forget_pass_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_home_view.c" />
@@ -402,6 +409,7 @@
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_dice_rolls_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_display_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_enter_passcode.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_export_pubkey_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_firmware_process_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_firmware_update_deny_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_firmware_update_widgets.c" />

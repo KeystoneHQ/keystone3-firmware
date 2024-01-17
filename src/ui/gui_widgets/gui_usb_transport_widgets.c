@@ -80,7 +80,7 @@ static void GuiExportXPubViewInit()
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 184);
 
-    label = GuiCreateLabel(cont, walletInfo.title);
+    label = GuiCreateIllustrateLabel(cont, walletInfo.title);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 236);
@@ -149,7 +149,7 @@ static void GuiResolveUrResultViewInit()
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 140);
 
-    label = GuiCreateLabel(cont, subTitle);
+    label = GuiCreateIllustrateLabel(cont, subTitle);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 192);

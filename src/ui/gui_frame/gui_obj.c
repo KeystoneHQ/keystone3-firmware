@@ -91,8 +91,15 @@ void *GuiCreateBtnWithFont(lv_obj_t *parent, const char *text, const lv_font_t *
     lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
-    lv_obj_set_size(btn, 96, 66);
+    lv_obj_set_size(btn, lv_obj_get_self_width(label) + 24, lv_obj_get_self_height(label) + 6);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
+    return btn;
+}
+
+void *GuiCreateBtn(lv_obj_t *parent, const char *text)
+{
+    lv_obj_t *btn = GuiCreateBtnWithFont(parent, text, &buttonFont);
+    lv_obj_set_size(btn, 96, 66);
     return btn;
 }
 
@@ -281,4 +288,9 @@ void *GuiCreateSwitch(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(switchObj, LV_OPA_30, LV_PART_MAIN);
 
     return switchObj;
+}
+
+void GuiAlignToPrevObj(lv_obj_t *obj, lv_align_t align, int16_t x, int16_t y)
+{
+    lv_obj_align_to(obj, lv_obj_get_child(lv_obj_get_parent(obj), lv_obj_get_child_cnt(lv_obj_get_parent(obj)) - 2), align, x, y);
 }

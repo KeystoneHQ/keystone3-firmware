@@ -140,7 +140,7 @@ void GuiWalletFingerOpenSign(void)
     g_imgSignFinger = GuiCreateImg(cont, &imgYellowFinger);
     lv_obj_align(g_imgSignFinger, LV_ALIGN_BOTTOM_MID, 0, -178);
 
-    g_labelSignFailed = GuiCreateLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint_failed"));
+    g_labelSignFailed = GuiCreateIllustrateLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint_failed"));
     lv_obj_set_style_text_color(g_labelSignFailed, RED_COLOR, LV_PART_MAIN);
     lv_obj_add_flag(g_labelSignFailed, LV_OBJ_FLAG_HIDDEN);
     lv_obj_align(g_labelSignFailed, LV_ALIGN_BOTTOM_MID, 0, -100);
@@ -309,7 +309,7 @@ void GuiWalletFingerAddWidget(lv_obj_t *parent)
     lv_arc_set_range(g_arcProgress, 0, 8);
     lv_obj_align(g_arcProgress, LV_ALIGN_BOTTOM_MID, 0, -240);
 
-    g_fpRegLabel = GuiCreateLabel(parent, "");
+    g_fpRegLabel = GuiCreateIllustrateLabel(parent, "");
     lv_obj_set_style_text_color(g_fpRegLabel, RED_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_align(g_fpRegLabel, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(g_fpRegLabel, LV_ALIGN_BOTTOM_MID, 0, -156);

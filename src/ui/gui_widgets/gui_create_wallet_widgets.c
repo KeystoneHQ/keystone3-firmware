@@ -166,27 +166,16 @@ static void OpenNoticeHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 518, true);
+        g_noticeHintBox = GuiCreateConfirmHintBox(lv_scr_act(), 518, &imgRedEye, _("single_backup_notice_title"), _("single_backup_notice_desc1"), _("single_backup_notice_desc2"), USR_SYMBOL_CHECK, ORANGE_COLOR);
         lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-        lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgRedEye);
-        lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 330);
-        lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("single_backup_notice_title"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 420);
 
-        img = GuiCreateImg(g_noticeHintBox, &imgClose);
+        lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeHintBox);
+        lv_obj_add_event_cb(btn, CloseParentAndNextHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+
+        lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgClose);
         lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-        lv_obj_align(img, LV_ALIGN_BOTTOM_RIGHT, -36, -455);
-
-        label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_backup_notice_desc1"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 478);
-
-        label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_backup_notice_desc2"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 550);
-
-        lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, USR_SYMBOL_CHECK);
-        lv_obj_add_event_cb(btn, CloseParentAndNextHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-        lv_obj_align(btn, LV_ALIGN_DEFAULT, 348, 710);
+        lv_obj_align_to(img, lv_obj_get_child(g_noticeHintBox, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
     }
 }
 
@@ -519,7 +508,7 @@ void GuiCreateWalletInit(uint8_t walletMethod)
         GuiImportBackupWidget(tile);
     }
 
-    g_createWalletTileView.currentTile = CREATE_WALLET_SETPIN;
+    g_createWalletTileView.currentTile = CREATE_WALLET_BACKUPFROM;
     g_createWalletTileView.tileView = tileView;
     g_createWalletTileView.cont = cont;
     g_createWalletTileView.walletMethod = walletMethod;

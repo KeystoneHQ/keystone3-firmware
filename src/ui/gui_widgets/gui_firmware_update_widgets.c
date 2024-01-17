@@ -350,44 +350,49 @@ static void GuiCreateUsbInstructionTile(lv_obj_t *parent)
     label = GuiCreateIllustrateLabel(parent, "#F5870A 1#");
     lv_label_set_recolor(label, true);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 100);
-    label = GuiCreateIllustrateLabel(parent, "#F5870A 2#");
-    lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 172);
-    label = GuiCreateIllustrateLabel(parent, "#F5870A 3#");
-    lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 278);
-    label = GuiCreateIllustrateLabel(parent, "#F5870A 4#");
-    lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 350);
-
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_desc1"));
     lv_obj_set_width(label, 384);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 100);
+
+    label = GuiCreateIllustrateLabel(parent, "#F5870A 2#");
+    lv_label_set_recolor(label, true);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_desc2"));
     lv_obj_set_width(label, 384);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 172);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_desc2_link"));
     lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 236);
     lv_obj_add_flag(label, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(label, GuiQrcodeHandler, LV_EVENT_CLICKED, NULL);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     img = GuiCreateImg(parent, &imgQrcodeTurquoise);
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 322, 239);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, GuiQrcodeHandler, LV_EVENT_CLICKED, NULL);
+    GuiAlignToPrevObj(img, LV_ALIGN_RIGHT_MID, 30, 0);
+
+    label = GuiCreateIllustrateLabel(parent, "#F5870A 3#");
+    lv_label_set_recolor(label, true);
+    lv_obj_align_to(label, lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 3), LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_desc3"));
     lv_obj_set_width(label, 384);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 278);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
+
+    label = GuiCreateIllustrateLabel(parent, "#F5870A 4#");
+    lv_label_set_recolor(label, true);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
+
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_desc4"));
     lv_obj_set_width(label, 390);
     lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 350);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
 
     label = GuiCreateBoldIllustrateLabel(parent, _("firmware_update_usb_title2"));
     lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 480);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_desc5"));
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 510);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 }
 
 static void FirmwareSdcardUpdateHandler(lv_event_t *e)
@@ -475,39 +480,43 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
     label = GuiCreateIllustrateLabel(parent, "#F5870A 1#");
     lv_label_set_recolor(label, true);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 100);
-    label = GuiCreateIllustrateLabel(parent, "#F5870A 2#");
-    lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 172);
-    label = GuiCreateIllustrateLabel(parent, "#F5870A 3#");
-    lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 278);
-    label = GuiCreateIllustrateLabel(parent, "#F5870A 4#");
-    lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 380);
-
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_sd_desc1"));
     lv_obj_set_width(label, 384);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 100);
+
+    label = GuiCreateIllustrateLabel(parent, "#F5870A 2#");
+    lv_label_set_recolor(label, true);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 172);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_sd_desc2"));
     lv_obj_set_width(label, 384);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 172);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_sd_desc2_link"));
     lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 236);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     lv_obj_add_flag(label, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(label, GuiQrcodeHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(parent, &imgQrcodeTurquoise);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 322, 241);
+    GuiAlignToPrevObj(img, LV_ALIGN_RIGHT_MID, 30, 0);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, GuiQrcodeHandler, LV_EVENT_CLICKED, NULL);
+
+    label = GuiCreateIllustrateLabel(parent, "#F5870A 3#");
+    lv_label_set_recolor(label, true);
+    lv_obj_align_to(label, lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 3), LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
+
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_sd_desc3"));
     lv_obj_set_width(label, 390);
     lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 278);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
+
+    label = GuiCreateIllustrateLabel(parent, "#F5870A 4#");
+    lv_label_set_recolor(label, true);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
 
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_sd_desc4"));
     lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 380);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
 
     lv_obj_t *btn = NULL;
     if (FatfsFileExist(OTA_FILE_PATH)) {

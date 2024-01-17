@@ -11,6 +11,7 @@
 #include "gui_web_auth_widgets.h"
 #include "gui_setting_widgets.h"
 #include "gui_enter_passcode.h"
+#include "gui_setup_widgets.h"
 #include "secret_cache.h"
 #include "device_setting.h"
 #include "motor_manager.h"
@@ -24,6 +25,7 @@
 
 static lv_obj_t *container;
 static lv_obj_t *vibrationSw;
+static lv_obj_t *g_selectLanguageCont;
 
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static PageWidget_t *g_pageWidget;
@@ -33,7 +35,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent);
 static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e);
 static void GuiShowKeyBoardDialog(lv_obj_t *parent);
 static void DispalyHandler(lv_event_t *e);
-
+static void OpenLanguageSelectHandler(lv_event_t *e);
 static void VibrationHandler(lv_event_t *e);
 static void VibrationSwitchHandler(lv_event_t * e);
 
@@ -68,7 +70,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
 {
     lv_obj_t *label, *imgArrow, *button;
 
-    label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_title"));
+    label = GuiCreateTextLabel(parent, _("language_title"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     GuiButton_t table[] = {
         {
@@ -83,8 +85,16 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
         },
     };
     button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                             DispalyHandler, NULL);
+                             OpenLanguageSelectHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 0);
+
+    label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_title"));
+    imgArrow = GuiCreateImg(parent, &imgArrowRight);
+    table[0].obj = label,
+            table[1].obj = imgArrow;
+    button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
+                             DispalyHandler, NULL);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 109);
 
     label = GuiCreateTextLabel(parent, _("system_settings_vabiration"));
     vibrationSw = lv_switch_create(parent);
@@ -111,7 +121,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
     };
     button = GuiCreateButton(parent, 456, 84, tableSwitch, NUMBER_OF_ARRAYS(tableSwitch),
                              VibrationHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 109);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 205);
 
 
     label = GuiCreateTextLabel(parent, _("verify_title"));
@@ -120,10 +130,10 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
     table[1].obj = imgArrow;
     button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
                              GuiSystemSettingWebAuthHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 205);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 301);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 301);
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 397);
 
     label = GuiCreateTextLabel(parent, _("wipe_device"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
@@ -133,7 +143,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
                              GuiSystemSettingWipeDeivceHandler, NULL);
     lv_obj_set_style_text_color(lv_obj_get_child(button, 0), lv_color_hex(0xf55831), LV_PART_MAIN);
 
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 301);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 397);
 
 }
 
@@ -162,6 +172,9 @@ void GuiSystemSettingAreaRefresh()
     PassWordPinHintRefresh(g_keyboardWidget);
 }
 
+void GuiSystemSettingAreaRestart()
+{
+}
 
 static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e)
 {
@@ -236,5 +249,15 @@ static void VibrationSwitchHandler(lv_event_t * e)
             SetVibration(0);
         }
         SaveDeviceSettings();
+    }
+}
+
+static void OpenLanguageSelectHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        g_selectLanguageCont = GuiCreateContainerWithParent(g_pageWidget->contentZone, 480, 800 - GUI_MAIN_AREA_OFFSET);
+        lv_obj_clear_flag(g_pageWidget->contentZone, LV_OBJ_FLAG_SCROLLABLE);
+        GuiCreateLanguageWidget(g_selectLanguageCont, 12);
     }
 }

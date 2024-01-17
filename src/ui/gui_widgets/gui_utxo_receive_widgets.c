@@ -349,7 +349,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
         lv_obj_add_event_cb(btn, AddressSettingsHandler, LV_EVENT_CLICKED, NULL);
         img = GuiCreateImg(btn, &imgAddressType);
         lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-        label = GuiCreateLabelWithFont(btn, _("receive_btc_more_address_settings"), &openSans_24);
+        label = GuiCreateLabelWithFont(btn, _("receive_btc_more_address_settings"), &buttonFont);
         lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
         // export xpub
         btn = lv_btn_create(cont);
@@ -379,7 +379,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, TutorialHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgTutorial);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, _("Tutorial"), &openSans_24);
+    label = GuiCreateLabelWithFont(btn, _("Tutorial"), &buttonFont);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 }
 
@@ -479,7 +479,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
         char hint[256];
         GetHint(hint);
-        tempObj = GuiCreateLabelWithFont(g_utxoReceiveWidgets.attentionCont, hint, &openSans_20);
+        tempObj = GuiCreateLabelWithFont(g_utxoReceiveWidgets.attentionCont, hint, g_defIllustrateFont);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
         tempObj = GuiCreateBtn(g_utxoReceiveWidgets.attentionCont, _("got_it"));
         lv_obj_set_size(tempObj, 122, 66);
@@ -561,7 +561,7 @@ static void GuiCreateSwitchAddressWidget(lv_obj_t *parent)
     index = 0;
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetUtxoAddress(index, &addressDataItem);
-        g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel = GuiCreateLabelWithFont(cont, "", &openSans_24);
+        g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel = GuiCreateLabelWithFont(cont, "", &buttonFont);
         lv_obj_align(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         g_utxoReceiveWidgets.switchAddressWidgets[i].addressLabel = GuiCreateNoticeLabel(cont, "");
         lv_obj_align(g_utxoReceiveWidgets.switchAddressWidgets[i].addressLabel, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
@@ -815,7 +815,7 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
 
     for (uint32_t i = 0; i < 3; i++) {
-        label = GuiCreateLabelWithFont(cont, g_addressSettings[i].title, &openSans_24);
+        label = GuiCreateLabelWithFont(cont, g_addressSettings[i].title, &buttonFont);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         sprintf(string, "%s (%s)", g_addressSettings[i].subTitle, g_addressSettings[i].path);
         label = GuiCreateNoticeLabel(cont, string);
@@ -874,15 +874,15 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
         lv_obj_add_event_cb(lv_obj_get_child(g_utxoReceiveWidgets.inputAddressCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_utxoReceiveWidgets.inputAddressCont);
         cont = g_utxoReceiveWidgets.inputAddressCont;
 
-        label = GuiCreateLabelWithFont(cont, _("receive_btc_receive_change_address_title"), &openSans_20);
+        label = GuiCreateLabelWithFont(cont, _("receive_btc_receive_change_address_title"), g_defIllustrateFont);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 30 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        label = GuiCreateLabelWithFont(cont, "Address-", &openSans_24);
+        label = GuiCreateLabelWithFont(cont, "Address-", &buttonFont);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 108 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        g_utxoReceiveWidgets.inputAddressLabel = GuiCreateLabelWithFont(cont, "", &openSans_24);
+        g_utxoReceiveWidgets.inputAddressLabel = GuiCreateLabelWithFont(cont, "", &buttonFont);
         lv_obj_align(g_utxoReceiveWidgets.inputAddressLabel, LV_ALIGN_TOP_LEFT, 38 + lv_obj_get_self_width(label), 108 + 270);
-        label = GuiCreateLabelWithFont(cont, _("receive_btc_receive_change_address_limit"), &openSans_20);
+        label = GuiCreateLabelWithFont(cont, _("receive_btc_receive_change_address_limit"), g_defIllustrateFont);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 170 + 270);
         lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);

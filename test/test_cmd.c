@@ -145,6 +145,7 @@ static void RustTestGetAddressSolanaSucceed(int argc, char *argv[]);
 static void RustTestGetAddressLTCFailed(int argc, char *argv[]);
 static void RustParseEthPersonalMessage(int argc, char *argv[]);
 static void RustParseEthContractData(int argc, char *argv[]);
+static void RustTestKeyDerivation2(int argc, char *argv[]);
 static void GetReceiveAddress(int argc, char *argv[]);
 static void testEthTx(int argc, char *argv[]);
 static void testSolanaTx(int argc, char *argv[]);
@@ -266,6 +267,7 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] =
     {"rust test get connect keplr wallet ur", RustGetConnectKeplrUR},
     {"rust test get connect xrp toolkit ur", RustGetConnectXrpToolKitUR},
     {"rust test derivation:", RustTestKeyDerivation},
+    {"rust test derivation2:", RustTestKeyDerivation2},
     {"rust test memory", RustTestMemory},
     {"rust test get connect companion app ur", RustGetSyncCompanionAppUR},
     {"rust test connect metamask", RustGetConnectMetaMaskUR},
@@ -1833,15 +1835,36 @@ static void RustTestKeyDerivation(int argc, char *argv[])
     sscanf(argv[0], "%d", &index);
     uint8_t seed[64];
     GetAccountSeed(index, seed, argv[1]);
-    SimpleResponse_c_char *ed25519_key = get_ed25519_pubkey_by_seed(seed, sizeof(seed), "m/0'");
-    printf("ed25519 pubkey: %s\r\n", ed25519_key);
-    SimpleResponse_c_char *xpub = get_extended_pubkey_by_seed(seed, sizeof(seed), "m/0'");
+    // SimpleResponse_c_char *ed25519_key = get_ed25519_pubkey_by_seed(seed, sizeof(seed), "m/0'");
+    // printf("ed25519 pubkey: %s\r\n", ed25519_key);
+    // SimpleResponse_c_char *xpub = get_extended_pubkey_by_seed(seed, sizeof(seed), "m/0'");
+    SimpleResponse_c_char *xpub = get_extended_pubkey_by_seed(seed, sizeof(seed), "m/44'/3'/0'");
     printf("xpub: %s\r\n", xpub->data);
-    free_simple_response_c_char(ed25519_key);
+    // free_simple_response_c_char(ed25519_key);
     free_simple_response_c_char(xpub);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
+
+static void RustTestKeyDerivation2(int argc, char *argv[])
+{
+    int32_t index;
+    VALUE_CHECK(argc, 3);
+    sscanf(argv[0], "%d", &index);
+    uint8_t seed[64];
+    GetAccountSeed(index, seed, argv[1]);
+    // SimpleResponse_c_char *ed25519_key = get_ed25519_pubkey_by_seed(seed, sizeof(seed), "m/0'");
+    // printf("ed25519 pubkey: %s\r\n", ed25519_key);
+    // SimpleResponse_c_char *xpub = get_extended_pubkey_by_seed(seed, sizeof(seed), "m/0'");
+    printf("argv[2] = %s\n", argv[2]);
+    SimpleResponse_c_char *xpub = get_extended_pubkey_by_seed(seed, sizeof(seed), argv[2]);
+    printf("xpub: %s\r\n", xpub->data);
+    // free_simple_response_c_char(ed25519_key);
+    free_simple_response_c_char(xpub);
+    PrintRustMemoryStatus();
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
+}
+
 static void RustGetSyncCompanionAppUR(int argc, char *argv[])
 {
     printf("RustGetSyncCompanionAppUR\r\n");

@@ -463,29 +463,9 @@ static lv_obj_t *CreateSearch(lv_obj_t *navBar)
 
 static lv_obj_t *CreateNewSkip(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *textLabel;
-
-    btn = lv_label_create(navBar);
-    lv_label_set_text(btn, "");
-    lv_obj_set_size(btn, 63, 42);
-    lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
+    lv_obj_t *btn = GuiCreateBtnWithFont(navBar, _("Skip"), g_defIllustrateFont);
     lv_obj_set_style_bg_color(btn, GRAY_COLOR, 0);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED | LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_10 + LV_OPA_2, LV_STATE_PRESSED | LV_PART_MAIN);
-
-    textLabel = lv_label_create(btn);
-    lv_label_set_text(textLabel, "Skip");
-    lv_obj_set_style_text_font(textLabel, &openSans_20, LV_PART_MAIN);
-    lv_obj_set_style_text_opa(textLabel, LV_OPA_90, LV_PART_MAIN);
-    lv_label_set_long_mode(textLabel, LV_LABEL_LONG_WRAP);
-    lv_obj_set_style_bg_opa(textLabel, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_align(textLabel, LV_ALIGN_CENTER);
-    lv_obj_align(textLabel, LV_ALIGN_CENTER, 0, 2);
-    lv_obj_set_style_text_color(textLabel, WHITE_COLOR, LV_PART_MAIN);
-
     return btn;
 }
 

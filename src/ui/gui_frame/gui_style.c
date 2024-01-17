@@ -19,6 +19,7 @@ lv_font_t *g_defBoldIllustratFont = (lv_font_t *)&openSansEnBoldIllustrate; //20
 
 static const GuiFontDesc_t g_langFontArr[] = {
     {LANG_EN, &openSansEnTitle, &openSansEnLittleTitle, &openSansEnText, &openSansEnIllustrate, &openSansEnBoldIllustrate},
+    {LANG_RU, &rusTitle, &rusLittleTitle, &rusText, &rusIllustrate, &rusIllustrate},
     {LANG_ZH_CN, &openSansCnTitle, &openSansCnLittleTitle, &openSansCnText, &openSansCnIllustrate, &openSansCnBoldIllustrate},
 };
 

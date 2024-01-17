@@ -1,3 +1,4 @@
+#include "gui_obj.h"
 #include "gui_export_pubkey_widgets.h"
 #include "gui_home_widgets.h"
 #include "gui_page.h"
@@ -234,7 +235,7 @@ static void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent)
     label = GuiCreateNoticeLabel(egCont, _("derivation_path_address_eg"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
     for (uint32_t i = 0; i < 2; i++) {
-        label = GuiCreateLabel(egCont, "");
+        label = GuiCreateIllustrateLabel(egCont, "");
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 50 + 34 * i);
         lv_obj_set_width(label, 360);
         lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);

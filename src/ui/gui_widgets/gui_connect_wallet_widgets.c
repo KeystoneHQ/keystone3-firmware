@@ -830,7 +830,7 @@ static void AddXrpToolkitAddress(void)
 
     char name[20] = {0};
     sprintf(name, "Account-%d", g_xrpAddressIndex[GetCurrentAccountIndex()] + 1);
-    lv_obj_t *label = GuiCreateLabel(g_bottomCont, name);
+    lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 
     char addr[36] = {0};

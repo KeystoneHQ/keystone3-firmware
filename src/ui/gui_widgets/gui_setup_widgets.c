@@ -11,8 +11,8 @@
 
 typedef enum {
     SETUP_ENGLISH = 0,
-    SETUP_CHINESE,
     SETUP_RUSSIAN,
+    SETUP_CHINESE,
     SETUP_SPANISH,
     SETUP_KOREAN,
 
@@ -22,8 +22,8 @@ typedef enum {
 
 static const char *g_languageList[] = {
     "English",
-    "繁體中文",
     "Русский язык",
+    "繁體中文",
     "Español",
     "korean", // "한국인",
     "Japanese",
@@ -45,7 +45,6 @@ typedef struct SetupWidget {
     lv_obj_t *setLanguage;
 } SetupWidget_t;
 static SetupWidget_t g_setupTileView;
-static uint32_t currentIndex = 0;
 static lv_obj_t *g_languageCheck[SETUP_LANGUAGE_BUTT];
 
 static bool g_setup = false;
@@ -86,17 +85,18 @@ static void SelectLanguageHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         int newCheckIndex = 0;
         lv_obj_t *newCheckBox = lv_event_get_user_data(e);
-        for (int i = SETUP_ENGLISH; i < SETUP_LANGUAGE_BUTT; i++) {
+        for (int i = SETUP_ENGLISH; i <= SETUP_RUSSIAN; i++) {
             if (newCheckBox == g_languageCheck[i]) {
                 newCheckIndex = i;
-                break;
+                lv_obj_add_state(g_languageCheck[i], LV_STATE_CHECKED);
+            } else {
+                lv_obj_clear_state(g_languageCheck[i], LV_STATE_CHECKED);
             }
         }
 
-        lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
-        if (newCheckIndex <= 1)
+        if (newCheckIndex != SETUP_CHINESE)
             LanguageSwitch(newCheckIndex);
-        GuiEmitSignal(GUI_EVENT_RESTART, NULL, 0);
+        GuiEmitSignal(GUI_EVENT_CHANGE_LANGUAGE, NULL, 0);
     }
 }
 
@@ -110,18 +110,13 @@ void GuiOpenWebAuthHandler(lv_event_t *e)
     }
 }
 
-static void GuiSetLanguageWidget(lv_obj_t *parent)
+void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
 {
-    static lv_point_t linePoints[2] = {{36, 0}, {444, 0}};
     uint8_t lang = LanguageGetIndex();
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("language_title"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
-
-    label = GuiCreateIllustrateLabel(parent, _("language_desc"));
-    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
-
-    for (int i = SETUP_ENGLISH; i < SETUP_ENGLISH + 1; i++) {
+    static lv_point_t linePoints[2] = {{36, 0}, {444, 0}};
+    lv_obj_t *label;
+    for (int i = SETUP_ENGLISH; i < SETUP_ENGLISH + 2; i++) {
+        // for (int i = SETUP_ENGLISH; i < SETUP_LANGUAGE_BUTT; i++) {
         lv_obj_t *checkBox = GuiCreateSingleCheckBox(parent, "");
         g_languageCheck[i] = checkBox;
         if (i == SETUP_CHINESE) {
@@ -131,7 +126,6 @@ static void GuiSetLanguageWidget(lv_obj_t *parent)
         }
         if (i == lang) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
-            currentIndex = i;
         }
         GuiButton_t table[] = {
             {
@@ -147,10 +141,22 @@ static void GuiSetLanguageWidget(lv_obj_t *parent)
         };
         lv_obj_t *button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
                                            SelectLanguageHandler, g_languageCheck[i]);
-        lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 270 - GUI_MAIN_AREA_OFFSET + i * 84);
+        lv_obj_align(button, LV_ALIGN_TOP_MID, 0, i * 84 + offset);
         lv_obj_t *line = GuiCreateLine(parent, linePoints, 2);
-        lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 354 - GUI_MAIN_AREA_OFFSET + i * 84);
+        lv_obj_align(line, LV_ALIGN_DEFAULT, 0, i * 84 + offset + 84);
     }
+}
+
+static void GuiSetLanguageWidget(lv_obj_t *parent)
+{
+    lv_obj_t *label = GuiCreateTitleLabel(parent, _("language_title"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
+
+    label = GuiCreateIllustrateLabel(parent, _("language_desc"));
+    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+
+    GuiCreateLanguageWidget(parent, 270 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *btn = GuiCreateBtn(parent, USR_SYMBOL_ARROW_NEXT);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
@@ -186,8 +192,6 @@ void GuiSetupAreaInit(void)
     g_setupTileView.cont = cont;
 
     lv_obj_set_tile_id(g_setupTileView.tileView, g_setupTileView.currentTile, 0, LV_ANIM_OFF);
-
-
 }
 
 uint8_t GuiSetupNextTile(void)
@@ -284,50 +288,9 @@ void GuiSetupAreaRestart(void)
 
 uint8_t GuiSetSetupPhase(SETUP_PHASE_ENUM pahaseEnum)
 {
-
-    // uint32_t currentPhase = GetSetupStep();
-    // bool valid = false;
-    // switch (pahaseEnum) {
-    // case SETUP_PAHSE_WELCOME:
-    //     if (currentPhase == SETUP_PAHSE_WELCOME) {
-    //         valid = true;
-    //     }
-    //     break;
-    // case SETUP_PAHSE_LANGUAGE:
-    //     if (currentPhase == SETUP_PAHSE_WELCOME) {
-    //         valid = true;
-    //     }
-    //     break;
-    // case SETUP_PAHSE_WEB_AUTH:
-    //     if (currentPhase == SETUP_PAHSE_LANGUAGE) {
-    //         valid = true;
-    //     }
-    //     break;
-    // case SETUP_PAHSE_FIRMWARE_UPDATE:
-    //     if (currentPhase == SETUP_PAHSE_WEB_AUTH) {
-    //         valid = true;
-    //     }
-    //     break;
-    // case SETUP_PAHSE_CREATE_WALLET:
-    //     if (currentPhase == SETUP_PAHSE_FIRMWARE_UPDATE) {
-    //         valid = true;
-    //     }
-    //     break;
-    // case SETUP_PAHSE_DONE:
-    //     if (currentPhase == SETUP_PAHSE_CREATE_WALLET) {
-    //         valid = true;
-    //     }
-    //     break;
-    // default:
-    //     break;
-    // }
-
-    // if (valid) {
     SetSetupStep(pahaseEnum);
     SaveDeviceSettings();
     return 0;
-    // }
-    // return -1;
 }
 
 bool GuiJudgeCurrentPahse(SETUP_PHASE_ENUM pahaseEnum)

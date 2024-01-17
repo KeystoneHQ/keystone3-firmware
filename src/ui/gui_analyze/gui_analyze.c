@@ -220,7 +220,7 @@ const lv_font_t *GetLvglTextFont(char *fontStr)
         return &openSansDesc;
     }
 
-    return &openSans_20;
+    return &openSansEnIllustrate;
 }
 
 GetContSizeFunc GetPsbtContainerSize(char *type)

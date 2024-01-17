@@ -92,7 +92,7 @@ void GuiLockDeviceInit(void *param)
         }
     }
 
-    label =  GuiCreateLabelWithFont(cont, lockHint, &openSans_20);
+    label =  GuiCreateLabelWithFont(cont, lockHint, g_defIllustrateFont);
     lv_label_set_recolor(label, true);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 288 - 96);
     lv_obj_set_width(label, 408);

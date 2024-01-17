@@ -13,6 +13,7 @@
 #include "err_code.h"
 #include "gui_page.h"
 #include "secret_cache.h"
+
 #ifndef COMPILE_SIMULATOR
 #include "drv_battery.h"
 #endif
@@ -332,28 +333,29 @@ void GuiCreateVerifyFirmwareInstructionTile(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
 
     label = GuiCreateNoticeLabel(parent, _("about_info_verify_firmware_desc"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 72);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
 
     label = GuiCreateIllustrateLabel(parent, "1");
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 232);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 40);
 
     label = GuiCreateIllustrateLabel(parent, _("about_info_verify_firmware_step1"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 60, 232);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
     lv_label_set_recolor(label, true);
+
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_verify_firmware_qr_link"));
     lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 326);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
 
     label = GuiCreateIllustrateLabel(parent, "2");
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 398);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
 
     label = GuiCreateIllustrateLabel(parent, _("about_info_verify_firmware_step3"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 60, 398);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
     lv_label_set_recolor(label, true);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("Show Checksum"));
+    lv_obj_t *btn = GuiCreateBtn(parent, _("show_checksum"));
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
     lv_obj_add_event_cb(btn, StartFirmwareCheckSumHandler, LV_EVENT_CLICKED, NULL);

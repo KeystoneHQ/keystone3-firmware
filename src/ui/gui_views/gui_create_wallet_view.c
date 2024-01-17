@@ -22,11 +22,12 @@ int32_t GuiCreateWalletViewEventProcess(void *self, uint16_t usEvent, void *para
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        if (param != NULL) {
-            walletMethod = *(uint8_t *)param;
-        } else {
-            return ERR_GUI_ERROR;
-        }
+        // if (param != NULL) {
+        //     walletMethod = *(uint8_t *)param;
+        // } else {
+        //     return ERR_GUI_ERROR;
+        // }
+        walletMethod = WALLET_METHOD_CREATE;
         return GuiCreateWalletViewInit(walletMethod);
     case GUI_EVENT_OBJ_DEINIT:
         return GuiCreateWalletViewDeInit();

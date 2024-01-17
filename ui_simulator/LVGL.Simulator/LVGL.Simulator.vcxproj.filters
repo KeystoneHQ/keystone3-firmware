@@ -1288,6 +1288,9 @@
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_select_address_widgets.c">
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_transaction_detail_widgets.c">
+      <Filter>gui\gui_widgets</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_transaction_signature_widgets.c">
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
@@ -1313,6 +1316,18 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinCosmosEco.c">
       <Filter>gui\assets\coin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\font\rus\rusIllustrate.c">
+      <Filter>gui\assets\fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\font\rus\rusLittleTitle.c">
+      <Filter>gui\assets\fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\font\rus\rusText.c">
+      <Filter>gui\assets\fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\font\rus\rusTitle.c">
+      <Filter>gui\assets\fonts</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgConnectWithRabby.c">
       <Filter>gui\assets\img</Filter>
@@ -1357,9 +1372,6 @@
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_usb_transport_widgets.c">
-      <Filter>gui\gui_widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_transaction_detail_widgets.c">
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
   </ItemGroup>

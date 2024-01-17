@@ -16,6 +16,7 @@
 #include "screen_manager.h"
 #include "power_manager.h"
 #include "account_manager.h"
+#include "lv_i18n_api.h"
 
 #define VERSION_MAX_LENGTH      32
 
@@ -29,6 +30,7 @@
 #define KEY_VIBRATION                   "vibration"
 #define KEY_DARK_MODE                   "dark_mode"
 #define KEY_USB_SWITCH                  "usb_switch"
+#define KEY_LANGUAGE                    "language"
 
 #define DEFAULT_SETUP_STEP              0
 #define DEFAULT_BRIGHT                  15
@@ -37,6 +39,7 @@
 #define DEFAULT_VIBRATION               1
 #define DEFAULT_DARK_MODE               1
 #define DEFAULT_USB_SWITCH              1
+#define DEFAULT_LANGUAGE                LANG_EN
 
 typedef struct {
     uint32_t setupStep;
@@ -46,6 +49,7 @@ typedef struct {
     uint32_t vibration;
     uint32_t darkMode;
     uint32_t usbSwitch;
+    uint32_t language;
 } DeviceSettings_t;
 
 static int32_t SaveDeviceSettingsAsyncFunc(const void *inData, uint32_t inDataLen);
@@ -55,7 +59,7 @@ static char *GetJsonStringFromDeviceSettings(void);
 static int32_t GetIntValue(const cJSON *obj, const char *key, int32_t defaultValue);
 static void GetStringValue(const cJSON *obj, const char *key, char *value, uint32_t maxLen);
 
-static const char g_deviceSettingsVersion[] = "1.0.0";
+static const char g_deviceSettingsVersion[] = "1.0.1";
 DeviceSettings_t g_deviceSettings;
 
 void DeviceSettingsInit(void)
@@ -93,6 +97,7 @@ void DeviceSettingsInit(void)
         g_deviceSettings.vibration = DEFAULT_VIBRATION;
         g_deviceSettings.darkMode = DEFAULT_DARK_MODE;
         g_deviceSettings.usbSwitch = DEFAULT_USB_SWITCH;
+        g_deviceSettings.language = DEFAULT_LANGUAGE;
         SaveDeviceSettingsSync();
     }
 }
@@ -191,6 +196,17 @@ void SetUSBSwitch(uint32_t usbSwitch)
     g_deviceSettings.usbSwitch = usbSwitch;
 }
 
+uint32_t GetLanguage(void)
+{
+    return g_deviceSettings.language;
+}
+
+
+void SetLanguage(uint32_t language)
+{
+    g_deviceSettings.language = language;
+}
+
 /// @brief Wipe device.
 void WipeDevice(void)
 {
@@ -238,6 +254,7 @@ void DeviceSettingsTest(int argc, char *argv[])
         printf("vibration=%d\n", GetVibration());
         printf("darkMode=%d\n", GetDarkMode());
         printf("usbSwitch=%d\n", GetUSBSwitch());
+        printf("language=%d\n", GetLanguage());
     } else if (strcmp(argv[0], "set") == 0) {
         SetSetupStep(5);
         SetBright(50);
@@ -246,6 +263,7 @@ void DeviceSettingsTest(int argc, char *argv[])
         SetVibration(0);
         SetDarkMode(0);
         SetUSBSwitch(0);
+        SetLanguage(DEFAULT_LANGUAGE);
         SaveDeviceSettings();
         printf("set device settings test\n");
     } else {
@@ -304,6 +322,7 @@ static bool GetDeviceSettingsFromJsonString(const char *string)
         g_deviceSettings.vibration = GetIntValue(rootJson, KEY_VIBRATION, DEFAULT_VIBRATION);
         g_deviceSettings.darkMode = GetIntValue(rootJson, KEY_DARK_MODE, DEFAULT_DARK_MODE);
         g_deviceSettings.usbSwitch = GetIntValue(rootJson, KEY_USB_SWITCH, DEFAULT_USB_SWITCH);
+        g_deviceSettings.language = GetIntValue(rootJson, KEY_LANGUAGE, DEFAULT_LANGUAGE);
     } while (0);
     cJSON_Delete(rootJson);
 
@@ -324,6 +343,7 @@ static char *GetJsonStringFromDeviceSettings(void)
     cJSON_AddItemToObject(rootJson, KEY_VIBRATION, cJSON_CreateNumber(g_deviceSettings.vibration));
     cJSON_AddItemToObject(rootJson, KEY_DARK_MODE, cJSON_CreateNumber(g_deviceSettings.darkMode));
     cJSON_AddItemToObject(rootJson, KEY_USB_SWITCH, cJSON_CreateNumber(g_deviceSettings.usbSwitch));
+    cJSON_AddItemToObject(rootJson, KEY_LANGUAGE, cJSON_CreateNumber(g_deviceSettings.language));
     retStr = cJSON_Print(rootJson);
     RemoveFormatChar(retStr);
     cJSON_Delete(rootJson);

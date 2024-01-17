@@ -13,13 +13,16 @@
 #include "err_code.h"
 #include "gui_api.h"
 #include "gui_views.h"
+#include "drv_usb.h"
 #include "usb_task.h"
 #include "anti_tamper.h"
 #include "device_setting.h"
 
 static void BackgroundTask(void *argument);
+static void RebootTimerFunc(void *argument);
 
 osThreadId_t g_backgroundTaskHandle;
+static osTimerId_t g_rebootTimer = NULL;
 
 void CreateBackgroundTask(void)
 {
@@ -96,12 +99,24 @@ int32_t AsyncExecuteRunnable(BackgroundAsyncFuncWithRunnable_t func, const void 
 /// @brief Notify the background task to reboot the system.
 void SystemReboot(void)
 {
+    if (g_rebootTimer == NULL) {
+        uint32_t *arg = SRAM_MALLOC(sizeof(uint32_t));
+        *arg = SYSTEM_RESET_TYPE_REBOOT;
+        g_rebootTimer = osTimerNew(RebootTimerFunc, osTimerPeriodic, arg, NULL);
+        osTimerStart(g_rebootTimer, 3000);
+    }
     PubValueMsg(BACKGROUND_MSG_RESET, SYSTEM_RESET_TYPE_REBOOT);
 }
 
 /// @brief Notify the background task to poweroff the system.
 void SystemPoweroff(void)
 {
+    if (g_rebootTimer == NULL) {
+        uint32_t *arg = SRAM_MALLOC(sizeof(uint32_t));
+        *arg = SYSTEM_RESET_TYPE_POWEROFF;
+        g_rebootTimer = osTimerNew(RebootTimerFunc, osTimerPeriodic, arg, NULL);
+        osTimerStart(g_rebootTimer, 3000);
+    }
     PubValueMsg(BACKGROUND_MSG_RESET, SYSTEM_RESET_TYPE_POWEROFF);
 }
 
@@ -228,3 +243,11 @@ static void BackgroundTask(void *argument)
         }
     }
 }
+
+
+static void RebootTimerFunc(void *argument)
+{
+    uint32_t *arg = argument;
+    ExecuteSystemReset(*arg);
+}
+

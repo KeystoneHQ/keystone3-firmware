@@ -626,3 +626,8 @@ bool GetUsbDetectState(void)
 {
     return false;
 }
+
+bool UsbInitState(void)
+{
+    return false;
+}

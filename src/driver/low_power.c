@@ -27,6 +27,7 @@
 #include "power_manager.h"
 #include "screen_manager.h"
 #include "usb_task.h"
+#include "gui_setup_widgets.h"
 
 #define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                //80 seconds
 #define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                (60 * 8)            //8 minutes
@@ -77,7 +78,6 @@ uint32_t EnterLowPower(void)
 {
     uint32_t sleepSecond, wakeUpSecond, wakeUpCount = 0;
     g_lowPowerState = LOW_POWER_STATE_DEEP_SLEEP;
-    UsbDeInit();
     printf("enter deep sleep\r\n");
     sleepSecond = 80;
     printf("sleepSecond=%d\n", sleepSecond);

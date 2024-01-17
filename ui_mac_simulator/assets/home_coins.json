@@ -50,5 +50,9 @@
 	"SUI": {
 		"firstRecv": true,
 		"manage": true
+	},
+	"TIA": {
+		"firstRecv": true,
+		"manage": true
 	}
 }

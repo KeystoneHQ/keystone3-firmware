@@ -47,6 +47,16 @@ void UsbDeInit(void)
     if (g_usbInit == true) {
         USBD_DeInit(&g_usbDev);
         g_usbInit = false;
+        ConnectUsbMutexRestrict();
+    }
+}
+
+void UsbSetIRQ(bool enable)
+{
+    if (enable) {
+        NVIC_EnableIRQ(USB_IRQn);
+    } else {
+        NVIC_DisableIRQ(USB_IRQn);
     }
 }
 

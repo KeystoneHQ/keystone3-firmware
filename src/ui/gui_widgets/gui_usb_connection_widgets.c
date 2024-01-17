@@ -11,6 +11,7 @@ static void GuiUsbConnectionInit(void);
 static void GuiUsbConnectionDeInit(void);
 static void NotNowHandler(lv_event_t *e);
 static void ConnectUsbHandler(lv_event_t *e);
+void ConnectUsbMutexRelease(void);
 
 static lv_obj_t *g_usbConnectionHintBox = NULL;
 
@@ -85,6 +86,7 @@ static void ConnectUsbHandler(lv_event_t *e)
 #ifndef COMPILE_SIMULATOR
         OpenUsb();
         SetUsbState(true);
+        ConnectUsbMutexRelease();
 #endif
         CloseMsgBox(&g_guiMsgBoxUsbConnection);
     }

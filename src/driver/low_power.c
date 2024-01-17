@@ -132,6 +132,8 @@ void RecoverFromLowPower(void)
     LcdBacklightOn();
 #if (USB_POP_WINDOW_ENABLE == 0)
     UsbInit();
+#else
+    AsyncExecute(GetWalletAmountAfterWakeup, NULL, 0);
 #endif
 }
 
@@ -324,7 +326,9 @@ int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
 
 int32_t GetWalletAmountAfterWakeup(const void *inData, uint32_t inDataLen)
 {
-    UserDelay(200);
-    GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+    if (GuiIsSetup()) {
+        UserDelay(200);
+        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+    }
     return 0;
 }

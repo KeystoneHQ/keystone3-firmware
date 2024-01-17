@@ -927,6 +927,7 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
     int32_t ret;
     uint8_t accountIndex = GetCurrentAccountIndex();
     UpdateFingerSignFlag(accountIndex, false);
+    CloseUsb();
     ret = DestroyAccount(accountIndex);
     if (ret == SUCCESS_CODE) {
         // reset address index in receive page

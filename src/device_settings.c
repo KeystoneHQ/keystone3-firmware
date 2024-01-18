@@ -194,7 +194,6 @@ void SetUSBSwitch(uint32_t usbSwitch)
 /// @brief Wipe device.
 void WipeDevice(void)
 {
-    int ret = 0;
     // reset all account address index in receive page
     {
         void GuiResetAllUtxoAddressIndex(void);

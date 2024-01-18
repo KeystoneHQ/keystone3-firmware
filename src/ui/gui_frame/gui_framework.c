@@ -19,7 +19,7 @@ GuiFrameDebug_t g_debugView[OPENED_VIEW_MAX];
 
 /* FUNC DECLARATION*/
 bool GuiLockScreenIsTop(void);
-static char *GuiFrameIdToName(SCREEN_ID_ENUM ID);
+static const char *GuiFrameIdToName(SCREEN_ID_ENUM ID);
 
 /* STATIC VARIABLES */
 static GUI_VIEW *g_workingView = NULL;
@@ -262,7 +262,7 @@ int32_t GuiCloseToTargetView(GUI_VIEW *view)
     return SUCCESS_CODE;
 }
 
-static char *GuiFrameIdToName(SCREEN_ID_ENUM ID)
+static const char *GuiFrameIdToName(SCREEN_ID_ENUM ID)
 {
     const char *str =
         "SCREEN_INIT\0" "SCREEN_LOCK\0" "SCREEN_HOME\0" "SCREEN_SETUP\0" "CREATE_WALLET\0" "CREATE_SHARE\0"
@@ -281,7 +281,7 @@ static char *GuiFrameIdToName(SCREEN_ID_ENUM ID)
         while (*str++) ;
     }
     printf("id = %d name = %s\n", ID, str);
-    char *name = str;
+    const char *name = str;
     return name;
 }
 

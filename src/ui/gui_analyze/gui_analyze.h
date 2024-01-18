@@ -17,7 +17,7 @@ typedef void (*FreeChainDataFunc)(void);
 typedef void *(*GetTableDataFunc)(uint8_t *row, uint8_t *col, void *param);
 typedef void (*GetListLenFunc)(uint8_t *len, void *param);
 typedef void (*GetListItemKeyFunc)(void *indata, void *param);
-typedef void *(*GetCustomContainerFunc)(lv_obj_t *parent, void *g_totalData);
+typedef void (*GetCustomContainerFunc)(lv_obj_t *parent, void *g_totalData);
 
 void *GuiTemplateReload(lv_obj_t *parent, uint8_t index);
 void GuiTemplateClosePage(void);

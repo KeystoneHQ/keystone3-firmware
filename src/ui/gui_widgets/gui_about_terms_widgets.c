@@ -14,7 +14,7 @@
 static void GuiAboutNVSBarInit();
 static void GuiAboutTermsEntranceWidget(lv_obj_t *parent);
 static int GetLvObjHeight(lv_obj_t *obj);
-static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, char *title, char *content, int *height);
+static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, const char *title, const char *content, int *height);
 static void GuiQrcodeHandler(lv_event_t *e);
 static void CloseQrcodeHandler(lv_event_t *e);
 
@@ -73,7 +73,7 @@ static void GuiAboutNVSBarInit()
 }
 
 
-static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, char *title, char *content, int *height)
+static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, const char *title, const char *content, int *height)
 {
 
     lv_obj_t *cont = lv_obj_create(parent);
@@ -141,8 +141,8 @@ void GuiAboutTermsEntranceWidget(lv_obj_t *parent)
     int dy = 195;
     int height = 0;
 
-    char *title = _("about_terms_eligibility");
-    char *text = _("about_terms_eligibility_desc");
+    const char *title = _("about_terms_eligibility");
+    const char *text = _("about_terms_eligibility_desc");
     lv_obj_t *itemObj = GuiGetTermsItemContainer(g_cont, title, text, &height);
     lv_obj_align(itemObj, LV_ALIGN_DEFAULT, 22, dy);
     dy += (height + 24);

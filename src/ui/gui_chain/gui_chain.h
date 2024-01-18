@@ -113,9 +113,9 @@ typedef struct {
 #define CHECK_FREE_UR_RESULT(result, multi)                             \
     if (result != NULL) {                                               \
         if (multi) {                                                    \
-            free_ur_parse_multi_result(result);                         \
+            free_ur_parse_multi_result((PtrT_URParseMultiResult)result);\
         } else {                                                        \
-            free_ur_parse_result(result);                               \
+            free_ur_parse_result((PtrT_URParseResult)result);           \
         }                                                               \
         result = NULL;                                                  \
     }

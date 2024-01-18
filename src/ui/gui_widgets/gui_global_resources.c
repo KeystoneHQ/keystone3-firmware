@@ -22,6 +22,7 @@ void DerivationPathDescsInit(void)
     }
     if (g_btcDerivationPathDesc == NULL) {
         g_btcDerivationPathDesc = SRAM_MALLOC(3 * 128);
+        g_btcDerivationPathDesc[BTC_TAPROOT] = "taproot test";
         g_btcDerivationPathDesc[BTC_NATIVE_SEGWIT] = _("derivation_path_btc_1_desc");
         g_btcDerivationPathDesc[BTC_NESTED_SEGWIT] = _("derivation_path_btc_2_desc");
         g_btcDerivationPathDesc[BTC_LEGACY] = _("derivation_path_btc_3_desc");

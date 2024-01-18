@@ -601,7 +601,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
         gap = 0;
     }
 
-    char *desc = _("derivation_path_address_eg");
+    const char *desc = _("derivation_path_address_eg");
     label = GuiCreateNoticeLabel(egCont, desc);
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, gap);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);

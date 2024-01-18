@@ -694,9 +694,9 @@ static void Highlight(char *address, uint8_t highlightStart, uint8_t highlightEn
     char highlight[addressLength];
     char afterHighlight[addressLength];
 
-    strncpy(beforeHighlight, address, highlightStart);
+    memcpy(beforeHighlight, address, highlightStart);
     beforeHighlight[highlightStart] = '\0';
-    strncpy(highlight, &address[highlightStart], highlightEnd - highlightStart);
+    memcpy(highlight, &address[highlightStart], highlightEnd - highlightStart);
     highlight[highlightEnd - highlightStart] = '\0';
     strcpy(afterHighlight, &address[highlightEnd]);
 
@@ -746,7 +746,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     egContHeight += lv_obj_get_height(label);
     prevLabel = label;
 
-    char *desc = _("derivation_path_address_eg");
+    const char *desc = _("derivation_path_address_eg");
     label = GuiCreateNoticeLabel(egCont, desc);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);

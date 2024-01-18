@@ -1098,7 +1098,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
 {
-    char *xPub, hdPath[128];
+    char *xPub = NULL, hdPath[128];
     SimpleResponse_c_char *result = NULL;
     uint32_t currentAccount = g_selectedAccount[GetCurrentAccountIndex()];
 

@@ -43,4 +43,5 @@ bool ReadTamperFlag(void)
     } else if (flag == g_tamperFlag) {
         return true;
     }
+    return false;
 }

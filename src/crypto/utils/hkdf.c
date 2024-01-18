@@ -8,7 +8,7 @@
 
 void hkdf(uint8_t *password, const uint8_t *salt, uint8_t *output, uint32_t iterations)
 {
-    SimpleResponse_u8 *simpleResponse = pbkdf2_rust(password, salt, iterations);
+    SimpleResponse_u8 *simpleResponse = pbkdf2_rust(password, (uint8_t *)salt, iterations);
     if (simpleResponse == NULL) {
         printf("get hdk return NULL\r\n");
         return;

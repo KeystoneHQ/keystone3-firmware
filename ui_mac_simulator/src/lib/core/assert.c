@@ -1,1 +1,1 @@
-../../../../src/utils/assert.c
+#include "../../../../src/utils/assert.c"

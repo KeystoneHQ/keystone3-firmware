@@ -6,6 +6,7 @@ SET ALWAYSE_BUILD_FILE=%CD%\driver\drv_sys.c
 SET MAKE_OAT_FILE_PATH=%TOOLS_FOLDER%\ota_file_maker
 SET MAKE_PADDING_FILE_PATH=%TOOLS_FOLDER%\padding_bin_file
 SET ASTYLE_PATH=%TOOLS_FOLDER%\AStyle.bat
+SET UPDATE_LANGUAGE_PATH=%CD%\src\ui\lv_i18n
 SET PACK_PATH=%CD%\pack.bat
 
 if "%1"=="log" (
@@ -25,6 +26,10 @@ if "%1" == "copy" (
 	del %BUILD_FOLDER%\mh1903.map
 	del %BUILD_FOLDER%\mh1903.hex
 	del %BUILD_FOLDER%\mh1903.bin
+)
+
+if "%2"=="language" (
+	pushd build
 )
 
 pushd build

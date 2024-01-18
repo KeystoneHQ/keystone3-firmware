@@ -9,35 +9,13 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val)
-{
-    return (uint32_t)(val < 0 ? -val : val);
-}
-static inline uint32_t op_i(uint32_t val)
-{
-    return val;
-}
+static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
+static inline uint32_t op_i(uint32_t val) { return val; }
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_w(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_f(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_t(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
+static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
+static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
 static lv_i18n_phrase_t en_singulars[] = {
     {"Approve", "Approve"},
@@ -52,6 +30,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"OK", "OK"},
     {"Pending", "Pending"},
     {"Restart", "Restart"},
+    {"Restart_now", "Restart Now"},
     {"Skip", "Skip"},
     {"Success", "Success"},
     {"Tutorial", "Tutorial"},
@@ -575,6 +554,8 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"scan_qr_code_sign_unsigned_content_frame", "Swipe to confirm"},
     {"scan_qr_code_signing_desc", "Signing"},
     {"seed_check_mid_btn", "Seed Phrase Check"},
+    {"seed_check_passphrase_notice", "You are presently using a passphrase-protected wallet. Prior to proceeding with the seed phrase verification process, please restart your device without entering the passphrase."},
+    {"seed_check_passphrase_title", "Disable Passphrase Wallet"},
     {"seed_check_share_phrase", "Shamir Backup"},
     {"seed_check_share_phrase_title", "Enter your seed phrase to verify if it matches your current wallet."},
     {"seed_check_single_phrase", "Standard Seed Phrase"},
@@ -615,6 +596,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"shamir_phrase_verify_success_desc1", "The seed phrase for this Share has been validated, please proceed to the next Share."},
     {"shamir_phrase_verify_success_desc2", "Tap the button below and hand the Keystone over to the custodian of Share 2."},
     {"shamir_phrase_verify_success_title", "Verified"},
+    {"show_checksum", "Show checksum"},
     {"sign_transaction", "Signing"},
     {"sign_transaction_desc", "Please Wait..."},
     {"single_backup_choose_backup_desc", "Select the preferred method for backing up your seed phrase."},
@@ -807,12 +789,9 @@ static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -838,6 +817,7 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"OK", "Хорошо"},
     {"Pending", "В ожидании"},
     {"Restart", "Перезагрузка"},
+    {"Restart_now", "Перезагрузите сейчас же."},
     {"Skip", "Пропустить"},
     {"Success", "Успех"},
     {"Tutorial", "Руководство"},
@@ -1284,9 +1264,9 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"receive_btc_more_address_settings", "Настройки адресов"},
     {"receive_btc_more_export_xpub", "Экспорт XPub"},
     {"receive_btc_more_t", "Руководство"},
-    {"receive_btc_more_t_desc1", "Bitcoin (BTC) поддерживает три формата адресов:  \n1. Native SegWit �?это наиболее эффективный и безопасный формат, который уменьшает комиссии в сети в отличие от других адресов. Адреса этого формата начинаются с символов «bc1».                \n2. Устаревший формат �?одна из самых ранних версий адресов Bitcoin, обычно начинающаяся с «1».\n3. Nested SegWit �?это решение, предназначенное для плавного перехода на Native SegWit, обычно начинается с «3».                                                                                                                                                                                  "},
+    {"receive_btc_more_t_desc1", "Bitcoin (BTC) поддерживает три формата адресов:\n1. Native SegWit ?это наиболее эффективный и безопасный формат, который уменьшает комиссии в сети в отличие от других адресов. Адреса этого формата начинаются с символов \"bc1\". \n2. Устаревший формат ?одна из самых ранних версий адресов Bitcoin, обычно начинающаяся с \"1\".\n3. Nested SegWit ?это решение, предназначенное для плавного перехода на Native SegWit, обычно начинается с \"3\"."},
     {"receive_btc_more_t_desc2", "Да, три различных формата Bitcoin адресов могут использоваться для перевода средств друг другу. Однако важно учитывать следующие аспекты:\n1. Различная комиссия за транзакцию. Выбор формата адреса может влиять на комиссию за транзакцию, при этом оригинальные адреса SegWit обычно имеют более низкую комиссию.\n2. Совместимость кошелька и биржи. Убедитесь, что используемый вами кошелек или биржа поддерживает выбранный формат адреса. Некоторые кошельки могут быть совместимы только с определенными форматами адресов."},
-    {"receive_btc_more_t_desc3", "1. Конфиденциальность: повторное использование адресов повышает отслеживаемость транзакций и уменьшает вашу конфиденциальность. Новые адреса помогают поддерживать конфиденциальность транзакций.\n2. Эффективность транзакций. Несколько UTXO, связанных с одним адресом, могут повысить затраты на консолидацию, что повлияет на эффективность кошелька.\n3. Безопасность. Повторное использование адреса повышает риск раскрытия приватного ключа, что потенциально может привести к потерям в случае компрометации своих секретов.\nОтказ от повторного использования адресов защищает конфиденциальность, оптимизирует транзакции и снижает риски безопасности в рамках модели UTXO»"},
+    {"receive_btc_more_t_desc3", "1. Конфиденциальность: повторное использование адресов повышает отслеживаемость транзакций и уменьшает вашу конфиденциальность. Новые адреса помогают поддерживать конфиденциальность транзакций.\n2. Эффективность транзакций. Несколько UTXO, связанных с одним адресом, могут повысить затраты на консолидацию, что повлияет на эффективность кошелька.\n3. Безопасность. Повторное использование адреса повышает риск раскрытия приватного ключа, что потенциально может привести к потерям в случае компрометации своих секретов.Отказ от повторного использования адресов защищает конфиденциальность, оптимизирует транзакции и снижает риски безопасности в рамках модели UTXO»"},
     {"receive_btc_more_t_link1", "Узнать больше"},
     {"receive_btc_more_t_link2", "Узнать больше"},
     {"receive_btc_more_t_link3", "Узнать больше"},
@@ -1355,6 +1335,8 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"scan_qr_code_sign_unsigned_content_frame", "Смахните вправо"},
     {"scan_qr_code_signing_desc", "Подписание"},
     {"seed_check_mid_btn", "Проверка сид фразы"},
+    {"seed_check_passphrase_notice", "В настоящее время вы используете кошелек, защищенный паролем. Перед началом процесса проверки семенной фразы, пожалуйста, перезагрузите устройство без ввода ключевой фразы."},
+    {"seed_check_passphrase_title", "Отключите кошелек с ключевой фразой"},
     {"seed_check_share_phrase", "Фраза Шамира"},
     {"seed_check_share_phrase_title", "Введите сид фразу, чтобы проверить, соответствует ли она текущему кошельку."},
     {"seed_check_single_phrase", "Стандартная фраза"},
@@ -1395,6 +1377,7 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"shamir_phrase_verify_success_desc1", "Фраза для этой части кошелька подтверждена, перейдите к следующей."},
     {"shamir_phrase_verify_success_desc2", "Нажмите на кнопку ниже и передайте устройство держателю Части 2."},
     {"shamir_phrase_verify_success_title", "Проверено"},
+    {"show_checksum", "показать контрольную сумму"},
     {"sign_transaction", "Подписание транзакции"},
     {"sign_transaction_desc", "Подождите..."},
     {"single_backup_choose_backup_desc", "Выберите метод резервного копирования сид фразы."},
@@ -1587,12 +1570,9 @@ static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t v = op_v(n);
-    UNUSED(v);
-    uint32_t i = op_i(n);
-    UNUSED(i);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t i = op_i(n); UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -1637,8 +1617,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if (langs == NULL) return -1;
-    if (langs[0] == NULL) return -1;
+    if(langs == NULL) return -1;
+    if(langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -1651,13 +1631,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if (current_lang_pack == NULL) return -1;
+    if(current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for (i = 0; current_lang_pack[i] != NULL; i++) {
+    for(i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -1670,10 +1650,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for (i = 0; trans[i].msg_id != NULL; i++) {
-        if (strcmp(trans[i].msg_id, msg_id) == 0) {
+    for(i = 0; trans[i].msg_id != NULL; i++) {
+        if(strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if (trans[i].translation) return trans[i].translation;
+            if(trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -1688,23 +1668,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -1720,31 +1700,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -1759,6 +1739,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if (!current_lang) return NULL;
+    if(!current_lang) return NULL;
     return current_lang->locale_name;
 }

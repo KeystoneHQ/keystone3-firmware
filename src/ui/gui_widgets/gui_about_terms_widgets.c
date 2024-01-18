@@ -109,6 +109,7 @@ static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, const char *title, c
 
 void GuiAboutTermsEntranceWidget(lv_obj_t *parent)
 {
+    GuiAddObjFlag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_t *label, *img;
     label = GuiCreateLittleTitleLabel(parent, _("about_terms_subtitle"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 22, 13);

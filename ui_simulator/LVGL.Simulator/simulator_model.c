@@ -50,7 +50,7 @@ void ExportAddressApprove()
 
 bool FatfsFileExist(const char *path)
 {
-    return false;
+    return true;
 }
 
 bool FpModuleIsChipState(void)

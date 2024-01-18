@@ -736,8 +736,6 @@ void *GuiCreateMnemonicKeyBoard(lv_obj_t *parent,
     } else if (keyMode == KEY_STONE_MNEMONIC_33) {
         lv_btnmatrix_set_ctrl_map(btnm, g_numBtnm33MapCtrl);
     }
-    // lv_obj_t *bottomCont = GuiCreateContainerWithParent(mkb->cont, 408, 50);
-    // lv_obj_align_to(bottomCont, btnm, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
     mkb->btnm = btnm;
     mkb->currentSlice = 0;

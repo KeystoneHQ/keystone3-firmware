@@ -471,8 +471,11 @@ static void FirmwareSdcardCheckSha256HintBoxHandler(lv_event_t *e)
 
 static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
 {
+#define UPDATE_BTN_X_OFFSET (-20)
+    GuiAddObjFlag(parent, LV_OBJ_FLAG_SCROLLABLE);
     static uint32_t param = SIG_INIT_SD_CARD_OTA_COPY;
-    lv_obj_t *label, *img;
+    lv_obj_t *label, *img, *btn = NULL;
+    int16_t btnOffset = UPDATE_BTN_X_OFFSET;
 
     label = GuiCreateTitleLabel(parent, _("firmware_update_sd_title"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
@@ -518,7 +521,6 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
     lv_label_set_recolor(label, true);
     GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
 
-    lv_obj_t *btn = NULL;
     if (FatfsFileExist(OTA_FILE_PATH)) {
         btn = GuiCreateBtn(parent, _("about_info_verify_firmware_title"));
         lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
@@ -526,14 +528,18 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
         lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
         lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
         lv_obj_set_size(btn, 400, 30);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 605 - GUI_MAIN_AREA_OFFSET);
+        GuiAlignToPrevObj(btn, LV_ALIGN_OUT_BOTTOM_MID, btnOffset, 20);
         lv_obj_add_event_cb(btn, FirmwareSdcardCheckSha256Handler, LV_EVENT_CLICKED, &param);
+        btnOffset = 0;
     }
 
     btn = GuiCreateBtn(parent, _("Update"));
     lv_obj_set_size(btn, 408, 66);
-    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(btn, LV_ALIGN_OUT_BOTTOM_MID, btnOffset, 20);
     lv_obj_add_event_cb(btn, FirmwareSdcardUpdateHandler, LV_EVENT_CLICKED, &param);
+
+    lv_obj_t *spacer = GuiCreateSpacer(parent, 24);
+    GuiAlignToPrevObj(spacer, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 }
 
 static void GuiQrcodeHandler(lv_event_t *e)

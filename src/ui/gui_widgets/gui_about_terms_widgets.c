@@ -20,7 +20,7 @@ static void CloseQrcodeHandler(lv_event_t *e);
 
 static lv_obj_t *g_cont;
 
-static char *g_termsWebSiteUrl = NULL;
+static const char *g_termsWebSiteUrl = NULL;
 static lv_obj_t *g_qrCodeCont;
 static PageWidget_t *g_pageWidget;
 

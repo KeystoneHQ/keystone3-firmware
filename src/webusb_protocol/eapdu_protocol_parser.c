@@ -134,7 +134,7 @@ static ParserStatusEnum CheckFrameValidity(EAPDUFrame_t *eapduFrame)
 
 static EAPDUFrame_t *FrameParser(const uint8_t *frame, uint32_t len)
 {
-    char *data = frame;
+    uint8_t *data = (uint8_t *)frame;
     EAPDUFrame_t *eapduFrame = (EAPDUFrame_t *)SRAM_MALLOC(sizeof(EAPDUFrame_t));
     eapduFrame->cla = frame[OFFSET_CLA];
     eapduFrame->ins = extract_16bit_value(frame, OFFSET_INS);

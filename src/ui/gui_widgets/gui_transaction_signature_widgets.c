@@ -101,6 +101,6 @@ static void GuiCreateSignatureQRCode(lv_obj_t *parent)
     GenerateUR func = GetUrGenerator(g_viewType);
 
     if (func) {
-        GuiAnimatingQRCodeInitWithCustomSize(qrCont, func, true, 336, 336, _("sign_transaction"));
+        GuiAnimatingQRCodeInitWithCustomSize(qrCont, func, true, 336, 336, (char *)_("sign_transaction"));
     }
 }

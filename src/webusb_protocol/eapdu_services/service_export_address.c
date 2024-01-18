@@ -1,5 +1,5 @@
 #include "service_export_address.h"
-#include "user_msg.h";
+#include "user_msg.h"
 #include "gui_lock_widgets.h"
 
 /* DEFINES */
@@ -151,7 +151,7 @@ void ExportAddressService(EAPDURequestPayload_t payload)
         return;
     }
 
-    struct EthParams *params = ParseParams(payload.data);
+    struct EthParams *params = ParseParams((char *)payload.data);
 
     if (!IsValidParams(params)) {
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_INVALID_PARAMS, "Invalid params");

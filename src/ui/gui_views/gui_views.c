@@ -239,8 +239,8 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         lv_obj_t *desc = NULL;
         lv_obj_t *title = NULL;
         lv_event_cb_t cb = CloseCurrentUserDataHandler;
-        char *titleText = (char *)_("error_box_invalid_seed_phrase");
-        char *descText = (char *)_("error_box_invalid_seed_phrase_desc");
+        const char *titleText = _("error_box_invalid_seed_phrase");
+        const char *descText = _("error_box_invalid_seed_phrase_desc");
         switch (errCode) {
         case ERR_KEYSTORE_MNEMONIC_REPEAT:
             height = 400;
@@ -281,8 +281,8 @@ void *GuiCreateErrorCodeHintbox(int32_t errCode, lv_obj_t **param)
     int height = 370;
     lv_obj_t *desc = NULL;
     lv_obj_t *title = NULL;
-    char *titleText = (char *)_("error_box_invalid_seed_phrase");
-    char *descText = (char *)_("error_box_invalid_seed_phrase_desc");
+    const char *titleText = _("error_box_invalid_seed_phrase");
+    const char *descText = _("error_box_invalid_seed_phrase_desc");
     switch (errCode) {
     case ERR_KEYSTORE_MNEMONIC_REPEAT:
         height = 400;

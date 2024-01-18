@@ -79,7 +79,7 @@ UREncodeResult *GuiGetBlueWalletBtcData(void)
 
 typedef UREncodeResult *MetamaskUrGetter(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys);
 
-static get_unlimited_connect_metamask_ur(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys)
+static UREncodeResult *get_unlimited_connect_metamask_ur(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys)
 {
     return get_connect_metamask_ur_unlimited(master_fingerprint, master_fingerprint_length, account_type, public_keys);
 }
@@ -215,7 +215,7 @@ UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin)
         break;
     default:
         printf("invalid coin type\r\n");
-        return;
+        return NULL;
     }
     for (uint8_t i = 0; i < 10; i++) {
         keys[i].path = SRAM_MALLOC(sizeof(char) * 32);

@@ -102,7 +102,7 @@ void SystemReboot(void)
     if (g_rebootTimer == NULL) {
         uint32_t *arg = SRAM_MALLOC(sizeof(uint32_t));
         *arg = SYSTEM_RESET_TYPE_REBOOT;
-        g_rebootTimer = osTimerNew(RebootTimerFunc, osTimerPeriodic, arg, NULL);
+        g_rebootTimer = osTimerNew(RebootTimerFunc, osTimerOnce, arg, NULL);
         osTimerStart(g_rebootTimer, 3000);
     }
     PubValueMsg(BACKGROUND_MSG_RESET, SYSTEM_RESET_TYPE_REBOOT);
@@ -114,7 +114,7 @@ void SystemPoweroff(void)
     if (g_rebootTimer == NULL) {
         uint32_t *arg = SRAM_MALLOC(sizeof(uint32_t));
         *arg = SYSTEM_RESET_TYPE_POWEROFF;
-        g_rebootTimer = osTimerNew(RebootTimerFunc, osTimerPeriodic, arg, NULL);
+        g_rebootTimer = osTimerNew(RebootTimerFunc, osTimerOnce, arg, NULL);
         osTimerStart(g_rebootTimer, 3000);
     }
     PubValueMsg(BACKGROUND_MSG_RESET, SYSTEM_RESET_TYPE_POWEROFF);
@@ -249,5 +249,6 @@ static void RebootTimerFunc(void *argument)
 {
     uint32_t *arg = argument;
     ExecuteSystemReset(*arg);
+    g_rebootTimer = NULL;
 }
 

@@ -6,6 +6,7 @@
 #include "power_manager.h"
 #include "drv_lcd_bright.h"
 #include "drv_usb.h"
+#include "low_power.h"
 
 static void ChangerInsertIntCallback(void);
 static void MinuteTimerFunc(void *argument);
@@ -13,6 +14,7 @@ static void BatteryTimerFunc(void *argument);
 void SetUsbStateInt(bool enable);
 
 static osTimerId_t g_minuteTimer, g_batteryTimer;
+static bool g_powerOff = false;
 
 void BackGroundAppInit(void)
 {
@@ -49,9 +51,12 @@ void ExecuteSystemReset(SystemResetType type)
     }
     break;
     case SYSTEM_RESET_TYPE_POWEROFF: {
-        //todo: poweroff
-        LcdFadesOut();
-        Aw32001PowerOff();
+        if (!g_powerOff) {
+            g_powerOff = true;
+            LcdFadesOut();
+            Aw32001PowerOff();
+            DisableAllHardware();
+        }
     }
     break;
     default:

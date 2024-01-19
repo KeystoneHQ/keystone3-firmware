@@ -18,6 +18,9 @@
 #include "gui_about_info_widgets.h"
 #include "account_manager.h"
 #include "gui_setup_widgets.h"
+#ifdef COMPILE_SIMULATOR
+#include "simulator_model.h"
+#endif
 
 static int32_t GuiInitViewInit(void)
 {
@@ -144,6 +147,9 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
             return ERR_GUI_ERROR;
         }
         GuiFirmwareUpdateSha256Percent(checkSumPercent);
+        break;
+    case SIG_STATUS_BAR_REFRESH:
+        GuiStatusBarSetUsb();
         break;
     default:
         return ERR_GUI_UNHANDLED;

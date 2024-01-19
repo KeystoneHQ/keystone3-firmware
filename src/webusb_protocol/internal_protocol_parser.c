@@ -53,7 +53,7 @@ void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
             g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
             global_parser->rcvCount++;
             rcvLen = ((uint32_t)g_protocolRcvBuffer[9] << 8) + g_protocolRcvBuffer[8];
-            assert(rcvLen <= PROTOCOL_MAX_LENGTH);
+            assert(rcvLen <= (PROTOCOL_MAX_LENGTH - 14));
             printf("rcvLen=%d\n", rcvLen);
         } else if (global_parser->rcvCount == rcvLen + 13) {
             printf("loop crc\n");

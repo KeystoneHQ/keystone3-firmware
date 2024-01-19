@@ -63,6 +63,8 @@ typedef struct {
     lv_obj_t *changeLabel;
     lv_obj_t *leftBtnImg;
     lv_obj_t *rightBtnImg;
+    lv_obj_t *confirmAddrTypeBtn;
+    lv_obj_t *confirmAddrIndexBtn;
     lv_obj_t *inputAddressCont;
     lv_obj_t *inputAddressLabel;
     lv_obj_t *overflowLabel;
@@ -107,6 +109,7 @@ static void RefreshSwitchAccount(void);
 static void CloseAttentionHandler(lv_event_t *e);
 static void MoreHandler(lv_event_t *e);
 static void AddressSettingsHandler(lv_event_t *e);
+static void ExportXpubHandler(lv_event_t *e);
 static void TutorialHandler(lv_event_t *e);
 static void LeftBtnHandler(lv_event_t *e);
 static void RightBtnHandler(lv_event_t *e);
@@ -127,6 +130,9 @@ static void SetCurrentSelectIndex(uint32_t selectIndex);
 static void GetCurrentTitle(TitleItem_t *titleItem);
 static void SetKeyboardValid(bool);
 static ChainType GetChainTypeByIndex(uint32_t index);
+static void UpdateConfirmAddrIndexBtn(void);
+static void UpdateConfirmAddrTypeBtn(void);
+static void UpdateAddrTypeCheckbox(uint8_t i, bool isChecked);
 
 static UtxoReceiveWidgets_t g_utxoReceiveWidgets;
 static UtxoReceiveTile g_utxoReceiveTileNow;
@@ -149,10 +155,11 @@ static const ChainPathItem_t g_chainPathItems[] = {
 
 static uint32_t g_showIndex;
 static uint32_t g_selectIndex;
+static uint32_t g_selectType = 0;
 
 // to do: stored.
+static uint32_t g_addressType[3] = {0};
 static uint32_t g_btcSelectIndex[3] = {0};
-static uint32_t g_addressSettingsIndex[3] = {0};
 static uint32_t g_ltcSelectIndex[3] = {0};
 static uint32_t g_dashSelectIndex[3] = {0};
 static uint32_t g_bchSelectIndex[3] = {0};
@@ -180,6 +187,7 @@ void GuiReceiveInit(uint8_t chain)
     g_chainCard = chain;
     g_currentAccountIndex = GetCurrentAccountIndex();
     g_selectIndex = GetCurrentSelectIndex();
+    g_selectType = g_addressType[g_currentAccountIndex];
     g_pageWidget = CreatePageWidget();
     g_utxoReceiveWidgets.cont = g_pageWidget->contentZone;
     g_utxoReceiveWidgets.tileView = lv_tileview_create(g_utxoReceiveWidgets.cont);
@@ -214,7 +222,6 @@ void GuiReceiveDeInit(void)
         g_utxoReceiveWidgets.inputAddressCont = NULL;
     }
 
-    SetCurrentSelectIndex(g_selectIndex);
     lv_obj_del(g_utxoReceiveWidgets.cont);
     CLEAR_OBJECT(g_utxoReceiveWidgets);
     g_utxoReceiveTileNow = 0;
@@ -241,7 +248,6 @@ static bool HasMoreBtn()
 
 void GuiReceiveRefresh(void)
 {
-    printf("g_utxoReceiveTileNow=%d\r\n", g_utxoReceiveTileNow);
     switch (g_utxoReceiveTileNow) {
     case UTXO_RECEIVE_TILE_QRCODE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
@@ -262,6 +268,7 @@ void GuiReceiveRefresh(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SKIP, GotoAddressHandler, NULL);
+        g_selectIndex = GetCurrentSelectIndex();
         g_showIndex = g_selectIndex / 5 * 5;
         if (g_showIndex < 5) {
             lv_obj_set_style_img_opa(g_utxoReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);
@@ -273,11 +280,17 @@ void GuiReceiveRefresh(void)
             lv_obj_set_style_img_opa(g_utxoReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
             lv_obj_set_style_img_opa(g_utxoReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
         }
+        UpdateConfirmAddrIndexBtn();
         break;
     case UTXO_RECEIVE_TILE_ADDRESS_SETTINGS:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("receive_btc_more_address_settings"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        g_selectType = g_addressType[g_currentAccountIndex];
+        for (uint32_t i = 0; i < 3; i++) {
+            UpdateAddrTypeCheckbox(i, g_selectType == i);
+        }
+        UpdateConfirmAddrTypeBtn();
         break;
     default:
         break;
@@ -316,7 +329,7 @@ static void GetCurrentTitle(TitleItem_t *titleItem)
 static void GuiCreateMoreWidgets(lv_obj_t *parent)
 {
     lv_obj_t *cont, *btn, *img, *label;
-    int height = 228;
+    int height = 324;
     if (g_chainCard != HOME_WALLET_CARD_BTC) {
         height = 132;
     }
@@ -328,7 +341,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     case HOME_WALLET_CARD_BTC:
         btn = lv_btn_create(cont);
         lv_obj_set_size(btn, 456, 84);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 24 + 572);
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 24 + 476);
         lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_PART_MAIN);
         lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
@@ -337,6 +350,19 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
         img = GuiCreateImg(btn, &imgAddressType);
         lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
         label = GuiCreateLabelWithFont(btn, _("receive_btc_more_address_settings"), &openSans_24);
+        lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
+        // export xpub
+        btn = lv_btn_create(cont);
+        lv_obj_set_size(btn, 456, 84);
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 120 + 476);
+        lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_PART_MAIN);
+        lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
+        lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
+        lv_obj_add_event_cb(btn, ExportXpubHandler, LV_EVENT_CLICKED, NULL);
+        img = GuiCreateImg(btn, &imgExport);
+        lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
+        label = GuiCreateLabelWithFont(btn, _("receive_btc_more_export_xpub"), &openSans_24);
         lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
         break;
     default:
@@ -567,6 +593,60 @@ static void GuiCreateSwitchAddressWidget(lv_obj_t *parent)
     RefreshSwitchAccount();
 }
 
+static bool IsAddrIndexSelectChanged()
+{
+    return g_selectIndex != GetCurrentSelectIndex();
+}
+
+static void UpdateConfirmAddrIndexBtn(void)
+{
+    if (IsAddrIndexSelectChanged()) {
+        lv_obj_set_style_bg_opa(g_utxoReceiveWidgets.confirmAddrIndexBtn, LV_OPA_COVER, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(g_utxoReceiveWidgets.confirmAddrIndexBtn, 0), LV_OPA_COVER, LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_bg_opa(g_utxoReceiveWidgets.confirmAddrIndexBtn, LV_OPA_30, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(g_utxoReceiveWidgets.confirmAddrIndexBtn, 0), LV_OPA_30, LV_PART_MAIN);
+    }
+}
+
+static bool IsAddrTypeSelectChanged()
+{
+    return g_selectType != g_addressType[g_currentAccountIndex];
+}
+
+static void UpdateConfirmAddrTypeBtn(void)
+{
+    if (IsAddrTypeSelectChanged()) {
+        lv_obj_set_style_bg_opa(g_utxoReceiveWidgets.confirmAddrTypeBtn, LV_OPA_COVER, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(g_utxoReceiveWidgets.confirmAddrTypeBtn, 0), LV_OPA_COVER, LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_bg_opa(g_utxoReceiveWidgets.confirmAddrTypeBtn, LV_OPA_30, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(g_utxoReceiveWidgets.confirmAddrTypeBtn, 0), LV_OPA_30, LV_PART_MAIN);
+    }
+}
+
+static void ConfirmAddrIndexHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED && IsAddrIndexSelectChanged()) {
+        SetCurrentSelectIndex(g_selectIndex);
+        ReturnHandler(e);
+    }
+}
+
+static void ConfirmAddrTypeHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED && IsAddrTypeSelectChanged()) {
+        g_addressType[g_currentAccountIndex] = g_selectType;
+        g_selectIndex = 0;
+        SetCurrentSelectIndex(g_selectIndex);
+        ReturnHandler(e);
+    }
+}
+
 static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
 {
     lv_obj_t *btn;
@@ -589,12 +669,18 @@ static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
     lv_obj_set_size(btn, 96, 66);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 156, -24);
     img = GuiCreateImg(btn, &imgArrowRight);
     lv_obj_set_align(img, LV_ALIGN_CENTER);
     lv_obj_set_style_opa(img, LV_OPA_COVER, LV_PART_MAIN);
     lv_obj_add_event_cb(btn, RightBtnHandler, LV_EVENT_CLICKED, NULL);
     g_utxoReceiveWidgets.rightBtnImg = img;
+
+    btn = GuiCreateBtn(parent, USR_SYMBOL_CHECK);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_add_event_cb(btn, ConfirmAddrIndexHandler, LV_EVENT_CLICKED, NULL);
+    g_utxoReceiveWidgets.confirmAddrIndexBtn = btn;
+    UpdateConfirmAddrIndexBtn();
 }
 
 static void Highlight(char *address, uint8_t highlightStart, uint8_t highlightEnd, char *coloredAddress)
@@ -626,7 +712,7 @@ static void RefreshDefaultAddress(void)
     AddressDataItem_t addressDataItem;
 
     ChainType chainType;
-    chainType = GetChainTypeByIndex(g_addressSettingsIndex[g_currentAccountIndex]);
+    chainType = GetChainTypeByIndex(g_selectType);
 
     uint8_t highlightEnd = chainType == XPUB_TYPE_BTC_NATIVE_SEGWIT ? 3 : 1;
     ModelGetUtxoAddress(0, &addressDataItem);
@@ -652,7 +738,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     lv_obj_t *prevLabel, *label;
     int egContHeight = 12;
 
-    label = GuiCreateNoticeLabel(egCont, g_derivationPathDescs[g_addressSettingsIndex[g_currentAccountIndex]]);
+    label = GuiCreateNoticeLabel(egCont, g_derivationPathDescs[g_selectType]);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
@@ -713,15 +799,21 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
     char lableText[128] = {0};
     GetChangePathLabelHint(lableText);
 
-    lv_obj_t *labelHint = GuiCreateIllustrateLabel(parent, lableText);
-    lv_obj_set_style_text_opa(labelHint, LV_OPA_80, LV_PART_MAIN);
-    lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 36, 0);
+    lv_obj_t *scrollCont = GuiCreateContainerWithParent(parent, 408, 542);
+    lv_obj_align(scrollCont, LV_ALIGN_DEFAULT, 36, 0);
+    lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_SCROLLABLE);
 
-    cont = GuiCreateContainerWithParent(parent, 408, 308);
+    lv_obj_t *labelHint = GuiCreateIllustrateLabel(scrollCont, lableText);
+    lv_obj_set_style_text_opa(labelHint, LV_OPA_80, LV_PART_MAIN);
+    lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 0, 0);
+
+    cont = GuiCreateContainerWithParent(scrollCont, 408, 308);
     lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 84);
     lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
+
     for (uint32_t i = 0; i < 3; i++) {
         label = GuiCreateLabelWithFont(cont, g_addressSettings[i].title, &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
@@ -750,16 +842,25 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
         lv_obj_align(g_utxoReceiveWidgets.addressSettingsWidgets[i].uncheckedImg, LV_ALIGN_CENTER, 162, 0);
         lv_obj_clear_flag(g_utxoReceiveWidgets.addressSettingsWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
     }
-    lv_obj_clear_flag(g_utxoReceiveWidgets.addressSettingsWidgets[g_addressSettingsIndex[g_currentAccountIndex]].checkedImg, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_add_flag(g_utxoReceiveWidgets.addressSettingsWidgets[g_addressSettingsIndex[g_currentAccountIndex]].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clear_flag(g_utxoReceiveWidgets.addressSettingsWidgets[g_addressType[g_currentAccountIndex]].checkedImg, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(g_utxoReceiveWidgets.addressSettingsWidgets[g_addressType[g_currentAccountIndex]].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
 
-    lv_obj_t *egCont = GuiCreateContainerWithParent(parent, 408, 186);
+    lv_obj_t *egCont = GuiCreateContainerWithParent(scrollCont, 408, 186);
     lv_obj_align_to(egCont, cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
     lv_obj_set_style_bg_color(egCont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(egCont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(egCont, 24, LV_PART_MAIN);
     g_egCont = egCont;
     ShowEgAddressCont(g_egCont);
+
+    lv_obj_t *tmCont = GuiCreateContainerWithParent(parent, 480, 114);
+    lv_obj_align(tmCont, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+    lv_obj_set_style_bg_color(tmCont, BLACK_COLOR, LV_PART_MAIN);
+    lv_obj_t *btn = GuiCreateBtn(tmCont, USR_SYMBOL_CHECK);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -36, 0);
+    lv_obj_add_event_cb(btn, ConfirmAddrTypeHandler, LV_EVENT_CLICKED, NULL);
+    g_utxoReceiveWidgets.confirmAddrTypeBtn = btn;
+    UpdateConfirmAddrTypeBtn();
 }
 
 static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
@@ -817,7 +918,7 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
 static void RefreshQrCode(void)
 {
     AddressDataItem_t addressDataItem;
-    ModelGetUtxoAddress(g_selectIndex, &addressDataItem);
+    ModelGetUtxoAddress(GetCurrentSelectIndex(), &addressDataItem);
 
     lv_qrcode_update(g_utxoReceiveWidgets.qrCode, addressDataItem.address, strlen(addressDataItem.address));
     lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
@@ -902,6 +1003,18 @@ static void AddressSettingsHandler(lv_event_t *e)
     }
 }
 
+static void ExportXpubHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        if (g_utxoReceiveWidgets.moreCont != NULL) {
+            lv_obj_del(g_utxoReceiveWidgets.moreCont);
+            g_utxoReceiveWidgets.moreCont = NULL;
+        }
+        GuiFrameOpenViewWithParam(&g_exportPubkeyView, &g_chainCard, sizeof(g_chainCard));
+    }
+}
+
 static void TutorialHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -944,6 +1057,21 @@ static void RightBtnHandler(lv_event_t *e)
     }
 }
 
+static void UpdateAddrTypeCheckbox(uint8_t i, bool isChecked)
+{
+    if (isChecked) {
+        lv_obj_add_state(g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox, LV_STATE_CHECKED);
+        lv_obj_clear_flag(g_utxoReceiveWidgets.addressSettingsWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_utxoReceiveWidgets.addressSettingsWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+        g_selectType = i;
+        ShowEgAddressCont(g_egCont);
+    } else {
+        lv_obj_clear_state(g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox, LV_STATE_CHECKED);
+        lv_obj_add_flag(g_utxoReceiveWidgets.addressSettingsWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_utxoReceiveWidgets.addressSettingsWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
 static void AddressSettingsCheckHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -952,21 +1080,9 @@ static void AddressSettingsCheckHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         checkBox = lv_event_get_target(e);
         for (uint32_t i = 0; i < 3; i++) {
-            if (checkBox == g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox) {
-                lv_obj_add_state(g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox, LV_STATE_CHECKED);
-                lv_obj_clear_flag(g_utxoReceiveWidgets.addressSettingsWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(g_utxoReceiveWidgets.addressSettingsWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-                if (g_addressSettingsIndex[g_currentAccountIndex] != i) {
-                    g_addressSettingsIndex[g_currentAccountIndex] = i;
-                    g_selectIndex = 0;
-                    ShowEgAddressCont(g_egCont);
-                }
-            } else {
-                lv_obj_clear_state(g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox, LV_STATE_CHECKED);
-                lv_obj_add_flag(g_utxoReceiveWidgets.addressSettingsWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_clear_flag(g_utxoReceiveWidgets.addressSettingsWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-            }
+            UpdateAddrTypeCheckbox(i, checkBox == g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox);
         }
+        UpdateConfirmAddrTypeBtn();
     }
 }
 
@@ -989,6 +1105,7 @@ static void SwitchAddressHandler(lv_event_t *e)
                 lv_obj_clear_flag(g_utxoReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
             }
         }
+        UpdateConfirmAddrIndexBtn();
     }
 }
 
@@ -997,11 +1114,13 @@ static void ChangeAddressHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        if (g_selectIndex < ADDRESS_INDEX_MAX) {
-            g_selectIndex++;
+        uint32_t i = GetCurrentSelectIndex();
+        if (i < ADDRESS_INDEX_MAX) {
+            i++;
+            SetCurrentSelectIndex(i);
         }
         RefreshQrCode();
-        if (g_selectIndex == ADDRESS_INDEX_MAX) {
+        if (i == ADDRESS_INDEX_MAX) {
             lv_obj_set_style_img_opa(g_utxoReceiveWidgets.changeImg, LV_OPA_60, LV_PART_MAIN);
             lv_obj_set_style_text_opa(g_utxoReceiveWidgets.changeLabel, LV_OPA_60, LV_PART_MAIN);
         } else {
@@ -1064,7 +1183,7 @@ static void GotoAddressKeyboardHandler(lv_event_t *e)
                 sscanf(input, "%u", &g_selectIndex);
                 g_showIndex = g_selectIndex / 5 * 5;
                 RefreshSwitchAccount();
-                GuiReceiveRefresh();
+                UpdateConfirmAddrIndexBtn();
                 lv_obj_add_flag(g_utxoReceiveWidgets.inputAddressCont, LV_OBJ_FLAG_HIDDEN);
                 g_gotoAddressValid = false;
             }
@@ -1202,7 +1321,7 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
 {
     char hdPath[128];
     // sprintf(hdPath, "m/44'/0'/0'/0/%u", index);
-    sprintf(hdPath, "%s/0/%u", g_addressSettings[g_addressSettingsIndex[g_currentAccountIndex]].path, index);
+    sprintf(hdPath, "%s/0/%u", g_addressSettings[g_addressType[g_currentAccountIndex]].path, index);
     item->index = index;
     sprintf(item->address, "tb1qkcp7vdhczgk5eh59d2l0dxvmpzhx%010u", index);
     strcpy(item->path, hdPath);
@@ -1212,10 +1331,13 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
 
 static void GetRootHdPath(char *hdPath)
 {
-
+    uint8_t addrType = g_addressType[g_currentAccountIndex];
+    if (g_utxoReceiveTileNow == UTXO_RECEIVE_TILE_ADDRESS_SETTINGS) {
+        addrType = g_selectType;
+    }
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
-        sprintf(hdPath, "%s", g_addressSettings[g_addressSettingsIndex[g_currentAccountIndex]].path);
+        sprintf(hdPath, "%s", g_addressSettings[addrType].path);
         break;
     case HOME_WALLET_CARD_LTC:
         sprintf(hdPath, "%s", g_chainPathItems[1].path);
@@ -1235,7 +1357,11 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
 {
     char *xPub, rootPath[128], hdPath[128];
     ChainType chainType;
-    chainType = GetChainTypeByIndex(g_addressSettingsIndex[g_currentAccountIndex]);
+    uint8_t addrType = g_addressType[g_currentAccountIndex];
+    if (g_utxoReceiveTileNow == UTXO_RECEIVE_TILE_ADDRESS_SETTINGS) {
+        addrType = g_selectType;
+    }
+    chainType = GetChainTypeByIndex(addrType);
     xPub = GetCurrentAccountPublicKey(chainType);
     ASSERT(xPub);
     SimpleResponse_c_char *result;
@@ -1263,7 +1389,7 @@ void GuiResetCurrentUtxoAddressIndex(uint8_t index)
     g_ltcSelectIndex[index] = 0;
     g_dashSelectIndex[index] = 0;
     g_bchSelectIndex[index] = 0;
-    g_addressSettingsIndex[index] = 0;
+    g_addressType[index] = 0;
 }
 
 void GuiResetAllUtxoAddressIndex(void)
@@ -1272,5 +1398,5 @@ void GuiResetAllUtxoAddressIndex(void)
     memset(g_ltcSelectIndex, 0, sizeof(g_ltcSelectIndex));
     memset(g_dashSelectIndex, 0, sizeof(g_dashSelectIndex));
     memset(g_bchSelectIndex, 0, sizeof(g_bchSelectIndex));
-    memset(g_addressSettingsIndex, 0, sizeof(g_addressSettingsIndex));
+    memset(g_addressType, 0, sizeof(g_addressType));
 }

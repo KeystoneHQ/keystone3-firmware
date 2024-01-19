@@ -1,6 +1,7 @@
 #include "screen_manager.h"
 #include "drv_lcd_bright.h"
 #include "drv_button.h"
+#include "drv_usb.h"
 #include "gui_api.h"
 #include "gui_views.h"
 #include "qrdecode_task.h"
@@ -55,6 +56,9 @@ void SetPageLockScreen(bool enable)
 void SetLockScreen(bool enable)
 {
     g_lockScreenEnable = enable;
+    if (enable) {
+        GuiApiEmitSignal(SIG_STATUS_BAR_REFRESH, NULL, 0);
+    }
 }
 
 void SetLockTimeState(bool enable)
@@ -98,6 +102,10 @@ static void ReleaseHandler(void)
 
 static void LockScreen(void)
 {
+    if (GetLowPowerState() == LOW_POWER_STATE_DEEP_SLEEP) {
+        return;
+    }
+
     if (!g_pageLockScreenEnable) {
         printf("current page lock screen is disabled\n");
         return;
@@ -114,6 +122,7 @@ static void LockScreen(void)
     if (FpModuleIsExist()) {
         SetFpLowPowerMode();
     }
+    UsbDeInit();
     ClearLockScreenTime();
     ClearShutdownTime();
     LcdBacklightOff();

@@ -104,6 +104,7 @@ LV_IMG_DECLARE(imgDice5);
 LV_IMG_DECLARE(imgDice6);
 LV_IMG_DECLARE(imgDiceGrey);
 LV_IMG_DECLARE(imgUndo);
+LV_IMG_DECLARE(imgExport);
 
 // connect to do refresh
 LV_IMG_DECLARE(circular);
@@ -187,6 +188,7 @@ LV_IMG_DECLARE(coinLunc);
 LV_IMG_DECLARE(coinScroll);
 LV_IMG_DECLARE(coinCosmos);
 LV_IMG_DECLARE(coinCosmosEco);
+LV_IMG_DECLARE(coinTia);
 
 // wallet
 LV_IMG_DECLARE(walletKeystone);

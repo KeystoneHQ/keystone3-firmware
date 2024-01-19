@@ -21,6 +21,7 @@ static void UsbTask(void *argument);
 
 static osThreadId_t g_usbTaskHandle;
 static volatile bool g_usbState = false;
+static volatile bool g_usbConnectMutex = false;
 
 void CreateUsbTask(void)
 {
@@ -33,6 +34,10 @@ void CreateUsbTask(void)
     printf("g_usbTaskHandle=%d\r\n", g_usbTaskHandle);
 }
 
+void SetUsbStateInt(bool enable)
+{
+    g_usbState = enable;
+}
 
 void SetUsbState(bool enable)
 {
@@ -68,12 +73,10 @@ static void UsbTask(void *argument)
         if (ret == osOK) {
             switch (rcvMsg.id) {
             case USB_MSG_ISR_HANDLER: {
-                if (GetLowPowerState() != LOW_POWER_STATE_WORKING) {
-                    break;
-                }
                 ClearLockScreenTime();
 #if (USB_POP_WINDOW_ENABLE == 1)
-                if ((GetCurrentAccountIndex() != 0xFF || GuiIsSetup()) && GetUSBSwitch() && g_usbState) {
+
+                if ((GetCurrentAccountIndex() != 0xFF || GuiIsSetup()) && GetUSBSwitch() && g_usbConnectMutex) {
 #else
                 if (GetUSBSwitch()) {
 #endif
@@ -89,10 +92,12 @@ static void UsbTask(void *argument)
             }
             break;
             case USB_MSG_INIT: {
+                g_usbState = true;
                 UsbInit();
             }
             break;
             case USB_MSG_DEINIT: {
+                g_usbState = false;
                 UsbDeInit();
             }
             break;
@@ -106,6 +111,15 @@ static void UsbTask(void *argument)
     }
 }
 
+void ConnectUsbMutexRelease(void)
+{
+    g_usbConnectMutex = true;
+}
+
+void ConnectUsbMutexRestrict(void)
+{
+    g_usbConnectMutex = false;
+}
 
 /// @brief
 /// @param argc Test arg count.

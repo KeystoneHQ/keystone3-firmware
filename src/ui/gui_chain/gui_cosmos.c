@@ -15,6 +15,7 @@ static void *g_parseResult = NULL;
 static int8_t g_cosmosListIndex = -1;
 
 static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
+    {CHAIN_TIA, "celestia", 118, XPUB_TYPE_COSMOS, "celestia"},
     {CHAIN_ATOM, "cosmos", 118, XPUB_TYPE_COSMOS, "cosmoshub-4"},
     {CHAIN_OSMO, "osmo", 118, XPUB_TYPE_COSMOS, "osmosis-1"},
     {CHAIN_SCRT, "secret", 529, XPUB_TYPE_SCRT, "secret-4"},

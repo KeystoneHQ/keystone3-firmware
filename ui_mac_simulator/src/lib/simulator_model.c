@@ -621,3 +621,13 @@ bool FpModuleIsChipState(void)
 {
     return false;
 }
+
+bool GetUsbDetectState(void)
+{
+    return false;
+}
+
+bool UsbInitState(void)
+{
+    return false;
+}

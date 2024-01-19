@@ -27,6 +27,7 @@
 #include "power_manager.h"
 #include "screen_manager.h"
 #include "usb_task.h"
+#include "gui_setup_widgets.h"
 
 #define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                //80 seconds
 #define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                (60 * 8)            //8 minutes
@@ -77,7 +78,6 @@ uint32_t EnterLowPower(void)
 {
     uint32_t sleepSecond, wakeUpSecond, wakeUpCount = 0;
     g_lowPowerState = LOW_POWER_STATE_DEEP_SLEEP;
-    UsbDeInit();
     printf("enter deep sleep\r\n");
     sleepSecond = 80;
     printf("sleepSecond=%d\n", sleepSecond);
@@ -127,6 +127,8 @@ void RecoverFromLowPower(void)
     PubValueMsg(BACKGROUND_MSG_BATTERY_INTERVAL, 1);
     SetLvglHandlerAndSnapShot(true);
     g_lowPowerState = LOW_POWER_STATE_WORKING;
+    PubValueMsg(BACKGROUND_MSG_SD_CARD_CHANGE, 0);
+    SetUsbState(false);
     LcdBacklightOn();
 #if (USB_POP_WINDOW_ENABLE == 0)
     UsbInit();
@@ -324,7 +326,9 @@ int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
 
 int32_t GetWalletAmountAfterWakeup(const void *inData, uint32_t inDataLen)
 {
-    UserDelay(200);
-    GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+    if (GuiIsSetup()) {
+        UserDelay(200);
+        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+    }
     return 0;
 }

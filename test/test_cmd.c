@@ -16,7 +16,6 @@
 #include "qrdecode_task.h"
 #include "hmac.h"
 #include "user_fatfs.h"
-// #include "user_param.h"
 #include "crc.h"
 #include "user_msg.h"
 #include "bip39.h"
@@ -92,8 +91,6 @@ static void FatfsFileSha256Func(int argc, char *argv[]);
 static void FatfsFileWriteFunc(int argc, char *argv[]);
 static void FatfsFileDeleteFunc(int argc, char *argv[]);
 static void FatfsFileCopyFunc(int argc, char *argv[]);
-// static void ParamReadFunc(int argc, char *argv[]);
-// static void ParamWriteFunc(int argc, char *argv[]);
 static void ReadAddrFunc(int argc, char *argv[]);
 static void GetCurrentTimeFunc(int argc, char *argv[]);
 static void SetCurrentTimeFunc(int argc, char *argv[]);
@@ -225,8 +222,6 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] =
     {"sha256:", FatfsFileSha256Func},
     {"copy:", FatfsFileCopyFunc},
     {"copy ota", FatfsCopyFunc},
-    // {"param read:", ParamReadFunc},
-    // {"param write:", ParamWriteFunc},
     {"read addr:", ReadAddrFunc},
     {"get time", GetCurrentTimeFunc},
     {"set time:", SetCurrentTimeFunc},
@@ -461,10 +456,6 @@ static void GetChipTempFunc(int argc, char *argv[])
 
 static void GetClockInfoFunc(int argc, char *argv[])
 {
-    // printf("HAL_RCC_GetSysClockFreq()=%d\r\n", HAL_RCC_GetSysClockFreq());
-    // printf("HAL_RCC_GetHCLKFreq()=%d\r\n", HAL_RCC_GetHCLKFreq());
-    // printf("HAL_RCC_GetPCLK1Freq()=%d\r\n", HAL_RCC_GetPCLK1Freq());
-    // printf("HAL_RCC_GetPCLK2Freq()=%d\r\n", HAL_RCC_GetPCLK2Freq());
 }
 
 static void HeapInfoFunc(int argc, char *argv[])
@@ -699,7 +690,6 @@ static void Gd25FlashOperateFunc(int argc, char *argv[])
     sscanf(argv[0], "%d", &opearte);
     sscanf(argv[1], "%x", &addr);
 
-    // tempBuf[strlen(tempBuf) - 4]  = '\0';
     switch (opearte)
     {
     case GD25_FLASH_ERASE:
@@ -774,8 +764,6 @@ static void Sha256TestFunc(int argc, char *argv[])
 
 static void Sha256HmacFunc(int argc, char *argv[])
 {
-    // example:
-    // #sha256 hmac:3b015f84131b10db4352c31fe60a371e58fb639a64c313f22d65e9b4c5913e15 552ed9a701011c836e0752cbeb52df38b9fe057667aea507f2ef4acb6a1e929af7aeb0920f25c3af1fe9e0113f6cf08208c53f9b9e857ae6887de143d970051c87837b34ed032e621400003c\r\n
     uint32_t keyLen, msgLen;
     uint8_t *privateKey, *msg;
     uint8_t hmac[32] = {0};
@@ -854,21 +842,6 @@ static void BpkPrintFunc(int argc, char *argv[])
     VALUE_CHECK(argc, 1);
     PrintBpkValue(atoi(argv[0]));
 }
-// static void ParamReadFunc(int argc, char *argv[])
-// {
-//     uint32_t id;
-//     VALUE_CHECK(argc, 1);
-//     sscanf(argv[0], "%d", &id);
-//     ParamPrintf(id);
-// }
-
-// static void ParamWriteFunc(int argc, char *argv[])
-// {
-//     uint32_t id;
-//     VALUE_CHECK(argc, 2);
-//     sscanf(argv[0], "%d", &id);
-//     ParamWriteParamBuf(id, argv[1]);
-// }
 
 static void ReadAddrFunc(int argc, char *argv[])
 {
@@ -915,7 +888,6 @@ static void GetMnemonicTestFunc(int argc, char *argv[])
     }
     else
     {
-        // PrintArray("mnemonics", mnemonic, strlen(mnemonic));
         printf("mnemonic:\r\n%s\r\n", mnemonic);
     }
     ret = bip39_mnemonic_to_bytes(NULL, mnemonic, entropyCalc, 32, &entropySize);

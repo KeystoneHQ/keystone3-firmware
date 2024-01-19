@@ -39,6 +39,7 @@
 #include "user_fatfs.h"
 #include "mhscpu_qspi.h"
 #include "safe_mem_lib.h"
+#include "usb_task.h"
 #endif
 
 #define SECTOR_SIZE                         4096
@@ -177,7 +178,6 @@ void GuiModelCalculateWebAuthCode(void *webAuthData)
 
 void GuiModelSlip39ForgetPassword(Slip39Data_t slip39)
 {
-    // GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
     AsyncExecute(ModelSlip39ForgetPass, &slip39, sizeof(slip39));
 }
 
@@ -438,6 +438,8 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     if (bip39Data->forget) {
         SetWalletName(accountInfo.walletName);
         SetWalletIconIndex(accountInfo.iconIndex);
+        LogoutCurrentAccount();
+        CloseUsb();
     }
     UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     GetExistAccountNum(&accountCnt);
@@ -826,6 +828,8 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     if (slip39->forget) {
         SetWalletName(accountInfo.walletName);
         SetWalletIconIndex(accountInfo.iconIndex);
+        LogoutCurrentAccount();
+        CloseUsb();
     }
     UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     CLEAR_ARRAY(ems);
@@ -923,6 +927,7 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
     int32_t ret;
     uint8_t accountIndex = GetCurrentAccountIndex();
     UpdateFingerSignFlag(accountIndex, false);
+    CloseUsb();
     ret = DestroyAccount(accountIndex);
     if (ret == SUCCESS_CODE) {
         // reset address index in receive page

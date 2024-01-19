@@ -1,3 +1,16 @@
+## 1.2.8 (2024-01-19)
+
+### What's new
+
+1. Introduced the display of BTC's XPUB in the form of a QR code
+
+### Improvements
+
+1. Improved the presentation of Celestia chain under the Cosmos ecosystem and other parallel chains
+2. Enhanced the wording in some device messages
+3. Optimized the display of icons in certain status bars
+
+
 ## 1.2.6 (2024-01-10)
 
 ### What's new

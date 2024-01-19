@@ -5,6 +5,7 @@
 #include "usbd_cdc_core.h"
 #include "usbd_desc.h"
 #include "log_print.h"
+#include "usb_task.h"
 
 #define USB_COMPOSITE_CONFIG_DESC_MAX_SIZE 192
 

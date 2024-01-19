@@ -13,10 +13,9 @@
 #include "gui_api.h"
 #include "drv_aw32001.h"
 #include "device_setting.h"
-
-#ifdef BUILD_PRODUCTION
-#define USB_POP_WINDOW_ENABLE           1
-#endif
+#include "gui_setup_widgets.h"
+#include "low_power.h"
+#include "account_manager.h"
 
 static void UsbTask(void *argument);
 
@@ -61,25 +60,23 @@ static void UsbTask(void *argument)
     osStatus_t ret;
 
     osDelay(1000);
+#if (USB_POP_WINDOW_ENABLE == 1)
+    UsbDeInit();
+#endif
     while (1) {
         ret = osMessageQueueGet(g_usbQueue, &rcvMsg, NULL, 10000);
         if (ret == osOK) {
             switch (rcvMsg.id) {
             case USB_MSG_ISR_HANDLER: {
+                if (GetLowPowerState() != LOW_POWER_STATE_WORKING) {
+                    break;
+                }
                 ClearLockScreenTime();
 #if (USB_POP_WINDOW_ENABLE == 1)
-                if (g_usbState == false && GetUSBSwitch() == true) {
-                    osDelay(50);
-                    if (GetUsbDetectState() == true) {
-                        printf("pop the USB connection message box and deinit USB driver\n");
-                        UsbDeInit();
-                        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
-                    } else {
-                        printf("!debug!\n");
-                    }
-                }
-#endif
+                if ((GetCurrentAccountIndex() != 0xFF || GuiIsSetup()) && GetUSBSwitch() && g_usbState) {
+#else
                 if (GetUSBSwitch()) {
+#endif
                     USBD_OTG_ISR_Handler((USB_OTG_CORE_HANDLE *)rcvMsg.value);
                     NVIC_ClearPendingIRQ(USB_IRQn);
                     NVIC_EnableIRQ(USB_IRQn);
@@ -89,7 +86,6 @@ static void UsbTask(void *argument)
             case USB_MSG_SET_STATE: {
                 g_usbState = rcvMsg.value != 0;
                 GuiApiEmitSignal(SIG_INIT_USB_STATE_CHANGE, NULL, 0);
-                UsbInit();
             }
             break;
             case USB_MSG_INIT: {

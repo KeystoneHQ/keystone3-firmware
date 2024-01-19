@@ -5,6 +5,7 @@
 #include "service_device_info.h"
 #include "service_file_trans.h"
 #include "user_memory.h"
+#include "assert.h"
 
 static struct ProtocolParser *global_parser = NULL;
 static ProtocolSendCallbackFunc_t g_sendFunc = NULL;
@@ -33,6 +34,7 @@ void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
         return;
     }
 
+    assert(len <= PROTOCOL_MAX_LENGTH);
     static uint32_t rcvLen = 0;
     uint32_t i, outLen;
     uint8_t *sendBuf;
@@ -51,6 +53,7 @@ void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
             g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
             global_parser->rcvCount++;
             rcvLen = ((uint32_t)g_protocolRcvBuffer[9] << 8) + g_protocolRcvBuffer[8];
+            assert(rcvLen <= PROTOCOL_MAX_LENGTH);
             printf("rcvLen=%d\n", rcvLen);
         } else if (global_parser->rcvCount == rcvLen + 13) {
             printf("loop crc\n");

@@ -49,7 +49,7 @@ void PowerOnSelfCheck(void)
     uint32_t wipeFlag = 0xFFFFFFFF;
     int32_t readSize = Gd25FlashReadBuffer(SPI_FLASH_ADDR_PROTECT_PARAM, (uint8_t *)&wipeFlag, sizeof(wipeFlag));
     assert(readSize == sizeof(wipeFlag));
-    if (wipeFlag == DEVICE_WIPE_FLAG_MAGIC_NUM) {
+    if (wipeFlag == DEVICE_WIPE_FLAG_MAGIC_NUM || AccountManagerIsNeedReset()) {
         DrawStringOnLcd(190, 408, "Loading...", 0xFFFF, &openSans_24);
         uint32_t c = 0x666666;
         DrawStringOnLcd(170, 456, "About 1 minute", (uint16_t)(((c & 0xF80000) >> 16) | ((c & 0xFC00) >> 13) | ((c & 0x1C00) << 3) | ((c & 0xF8) << 5)), &openSans_20);

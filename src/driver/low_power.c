@@ -26,9 +26,13 @@
 #include "gui_api.h"
 #include "power_manager.h"
 #include "screen_manager.h"
+#include "usb_task.h"
 
+#define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                //80 seconds
+#define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                (60 * 8)            //8 minutes
 static void SetRtcWakeUp(uint32_t second);
 int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
+int32_t GetWalletAmountAfterWakeup(const void *inData, uint32_t inDataLen);
 
 volatile LowPowerState g_lowPowerState = LOW_POWER_STATE_WORKING;
 
@@ -59,7 +63,11 @@ static void FpLowerPowerHandle(void *argument)
 
 void LowerPowerTimerStart(void)
 {
-    osTimerId_t lowPowerTimer = osTimerNew(FpLowerPowerHandle, osTimerOnce, NULL, NULL);
+    static osTimerId_t lowPowerTimer = NULL;
+    if (lowPowerTimer == NULL) {
+        lowPowerTimer = osTimerNew(FpLowerPowerHandle, osTimerOnce, NULL, NULL);
+    }
+
     osTimerStart(lowPowerTimer, 10);
 }
 
@@ -88,8 +96,9 @@ uint32_t EnterLowPower(void)
         if (GetRtcCounter() >= wakeUpSecond) {
             Gd25FlashOpen();
             Aw32001RefreshState();
-            BatteryIntervalHandler(&sleepSecond);
+            BatteryIntervalHandler();
             printf("GetUsbPowerState()=%d\n", GetUsbPowerState());
+            sleepSecond = (GetUsbPowerState() == USB_POWER_STATE_CONNECT) ? RTC_WAKE_UP_INTERVAL_CHARGING : RTC_WAKE_UP_INTERVAL_LOW_BATTERY;
             AutoShutdownHandler(sleepSecond);
             SetRtcWakeUp(sleepSecond);
             wakeUpSecond = GetRtcCounter() + sleepSecond;
@@ -108,7 +117,6 @@ void RecoverFromLowPower(void)
     Uart0OpenPort();
     PowerInit();
     TouchOpen();
-    //Uart1OpenPort();
     Uart2OpenPort();
     FingerPrintGroupSetBit(FINGER_PRINT_EVENT_RESTART);
     PsramOpen();
@@ -120,8 +128,11 @@ void RecoverFromLowPower(void)
     SetLvglHandlerAndSnapShot(true);
     g_lowPowerState = LOW_POWER_STATE_WORKING;
     LcdBacklightOn();
+#if (USB_POP_WINDOW_ENABLE == 0)
     UsbInit();
-    // AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
+#else
+    AsyncExecute(GetWalletAmountAfterWakeup, NULL, 0);
+#endif
 }
 
 void EnterDeepSleep(void)
@@ -130,12 +141,9 @@ void EnterDeepSleep(void)
     GPIO_WakeEvenConfig(GPIO_PortSourceGPIOF, GPIO_Pin_14, ENABLE);     //woken up by fingerprint.
     //GPIO_WakeEvenConfig(GPIO_PortSourceGPIOF, GPIO_Pin_15, ENABLE);     //woken up by USB.
     GPIO_WakeModeConfig(GPIO_WakeMode_Now);
-    //for (int32_t u32Count = 0; u32Count < 0xFFFFF; u32Count++);
     SYSCTRL->MSR_CR1 |= BIT(27);
-    //for (int32_t u32Count = 0; u32Count < 0xFFFFF; u32Count++);
     /************************* power down ROM *************************/
     SYSCTRL->ANA_CTRL |= BIT(7);
-    //for (int32_t u32Count = 0; u32Count < 0xFFFFF; u32Count++);
     /************************ power down LDO25 ************************/
     SYSCTRL->LDO25_CR |= (BIT(4) | BIT(5));
     /************************** for usb ************************/
@@ -206,13 +214,6 @@ void DisableAllHardware(void)
     SetGpioLow(GPIOF, GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_13);
     SetGpioLow(GPIOG, GPIO_Pin_0 | GPIO_Pin_5 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12);
     SetGpioLow(GPIOH, GPIO_Pin_All);
-
-    // Finger, reset
-    // SetGpioLow(GPIOE, GPIO_Pin_11);
-    // SetGpioLow(GPIOD, GPIO_Pin_12);
-    // SetGpioLow(GPIOD, GPIO_Pin_13);
-    // SetGpioLow(GPIOA, GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9);
-    // SetGpioLow(GPIOF, GPIO_Pin_14);
 
     //PSRAM
     SetGpioHigh(GPIOG, GPIO_Pin_6);
@@ -303,7 +304,6 @@ void SetGpioHigh(GPIO_TypeDef *GpioX, uint32_t pin)
 static void SetRtcWakeUp(uint32_t second)
 {
     RTC_SetAlarm(GetRtcCounter() + second);
-    //RTC_SetRefRegister(0);
     RTC_ITConfig(ENABLE);
     GPIO->WAKE_TYPE_EN |= BIT(12);
 }
@@ -322,3 +322,9 @@ int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
     return 0;
 }
 
+int32_t GetWalletAmountAfterWakeup(const void *inData, uint32_t inDataLen)
+{
+    UserDelay(200);
+    GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+    return 0;
+}

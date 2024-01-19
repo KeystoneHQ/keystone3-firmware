@@ -48,6 +48,7 @@ static SetupWidget_t g_setupTileView;
 static uint32_t currentIndex = 0;
 static lv_obj_t *g_languageCheck[SETUP_LANGUAGE_BUTT];
 
+static bool g_setup = false;
 static uint32_t g_clickLogoCount = 0;
 static void GoToDeviceUIDPage(lv_event_t *e);
 static lv_timer_t *g_resetClickCountTimer;
@@ -158,6 +159,7 @@ static void GuiSetLanguageWidget(lv_obj_t *parent)
 
 void GuiSetupAreaInit(void)
 {
+    g_setup = true;
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 
@@ -230,12 +232,18 @@ uint8_t GuiSetupPrevTile(void)
 
 void GuiSetupAreaDeInit(void)
 {
+    g_setup = false;
     lv_obj_del(g_setupTileView.cont);
     g_setupTileView.cont = NULL;
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
+}
+
+bool GuiIsSetup(void)
+{
+    return g_setup;
 }
 
 void GuiSetupAreaRefresh(void)

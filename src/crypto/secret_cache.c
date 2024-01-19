@@ -8,6 +8,8 @@
 #define memset_s(a1,a2,a3,a4)               memset(a1,a2,a3)
 #endif
 
+#define MAX_SLIP39_MEMBER 16
+
 static char *g_passwordCache = NULL;
 static char *g_newPasswordCache = NULL;
 static char *g_passphraseCache = NULL;
@@ -17,7 +19,7 @@ static uint8_t *g_emsCache = NULL;
 static uint8_t g_checksumCache[32] = {0};
 static uint32_t g_emsLen;
 static char *g_mnemonicCache = NULL;
-static char *g_slip39MnemonicCache[15];
+static char *g_slip39MnemonicCache[MAX_SLIP39_MEMBER];
 static uint8_t g_diceRollHashCache[32] = {0};
 static uint16_t g_identifier;
 static uint16_t g_iteration;
@@ -215,7 +217,7 @@ void ClearSecretCache(void)
         g_mnemonicCache = NULL;
     }
 
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < MAX_SLIP39_MEMBER; i++) {
         if (g_slip39MnemonicCache[i] != NULL) {
             len = strlen(g_slip39MnemonicCache[i]);
             memset_s(g_slip39MnemonicCache[i], len, 0, len);

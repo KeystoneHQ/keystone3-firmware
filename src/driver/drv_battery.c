@@ -32,37 +32,9 @@
 #define BATTERY_CHANNEL                                 ADC_CHANNEL_4
 #define RTC_BAT_CHANNEL                                 ADC_CHANNEL_3
 #define RTC_WAKE_UP_INTERVAL_DISCHARGE                  (60 * 30)           //30 minutes
-#define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                //80 seconds
-#define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                (60 * 2)            //2 minutes
 
 static uint8_t LoadBatteryPercent(void);
 static void SaveBatteryPercent(uint8_t percent);
-
-// const uint16_t dischargeCurve[100] = {
-//     3391, 3409, 3423, 3435, 3447, 3459, 3469, 3478, 3488, 3497,
-//     3505, 3513, 3521, 3528, 3535, 3541, 3548, 3554, 3560, 3566,
-//     3571, 3576, 3582, 3587, 3593, 3598, 3604, 3609, 3615, 3621,
-//     3627, 3634, 3641, 3648, 3655, 3663, 3671, 3679, 3688, 3697,
-//     3706, 3716, 3725, 3735, 3744, 3753, 3762, 3770, 3778, 3785,
-//     3792, 3799, 3805, 3811, 3817, 3822, 3828, 3833, 3838, 3844,
-//     3849, 3853, 3858, 3863, 3867, 3872, 3877, 3883, 3891, 3900,
-//     3910, 3921, 3932, 3943, 3954, 3964, 3974, 3977, 3980, 3983,
-//     3986, 3990, 3993, 3996, 3999, 4000, 4003, 4006, 4009, 4013,
-//     4019, 4028, 4038, 4049, 4062, 4076, 4090, 4107, 4125, 4156,
-// };
-
-// const uint16_t chargingCurve[100] = {
-//     3380, 3495, 3531, 3547, 3556, 3564, 3572, 3579, 3588, 3596,
-//     3605, 3613, 3622, 3631, 3639, 3646, 3655, 3662, 3668, 3675,
-//     3681, 3687, 3692, 3697, 3701, 3706, 3710, 3714, 3719, 3724,
-//     3729, 3734, 3739, 3744, 3750, 3756, 3762, 3769, 3776, 3784,
-//     3792, 3800, 3808, 3819, 3827, 3836, 3845, 3855, 3865, 3874,
-//     3883, 3892, 3900, 3908, 3916, 3923, 3930, 3936, 3943, 3949,
-//     3955, 3960, 3965, 3970, 3975, 3980, 3985, 3989, 3994, 3999,
-//     4003, 4010, 4016, 4024, 4033, 4042, 4052, 4063, 4074, 4084,
-//     4094, 4102, 4109, 4115, 4119, 4123, 4127, 4131, 4135, 4139,
-//     4144, 4149, 4155, 4161, 4168, 4176, 4186, 4195, 4200, 4200,
-// };
 
 const uint16_t dischargeCurve[100] = {
     3391, 3409, 3423, 3435, 3447, 3459, 3469, 3478, 3488, 3497,
@@ -242,7 +214,7 @@ uint32_t GetRtcBatteryMilliVolt(void)
 
 /// @brief Execute once every minimum percent change time interval.
 /// @param
-bool BatteryIntervalHandler(uint32_t *sleepInterval)
+bool BatteryIntervalHandler(void)
 {
     UsbPowerState usbPowerState;
     uint8_t percent;
@@ -276,23 +248,12 @@ bool BatteryIntervalHandler(uint32_t *sleepInterval)
         //The battery percentage decrease by 1% each time.
         g_batterPercent--;
         change = true;
-        if (sleepInterval != NULL) {
-            if (percent >= 30) {
-                *sleepInterval = RTC_WAKE_UP_INTERVAL_DISCHARGE;
-            } else {
-                *sleepInterval = RTC_WAKE_UP_INTERVAL_LOW_BATTERY;
-            }
-        }
     } else if (usbPowerState == USB_POWER_STATE_CONNECT) {
         //The battery percentage only increase when charging.
         //The battery percentage increase by 1% each time.
         if (percent < g_batterPercent && percent >= BATTERY_CHARGING_BY_TIME) {
             printf("delay increate battery percentage delayIncreate = %d\n", delayIncreate);
             delayIncreate++;
-        }
-
-        if (sleepInterval != NULL) {
-            *sleepInterval = RTC_WAKE_UP_INTERVAL_CHARGING;
         }
 
         // delayIncreate == 4 * 80 320s

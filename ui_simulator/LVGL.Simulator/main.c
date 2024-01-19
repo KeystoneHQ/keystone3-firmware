@@ -112,24 +112,19 @@ static void UIEventHandler(void)
         GuiEmitSignal(SIG_CREATE_SHARE_UPDATE_MNEMONIC, &ret, sizeof(ret));
         break;
     case SIG_SETTING_CHANGE_PASSWORD_PASS:
-        printf("%s %d\n", __func__, __LINE__);
         GuiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_PASS, &ret, sizeof(ret));
         break;
     case SIG_SETTING_CHANGE_PASSWORD_FAIL:
-        printf("%s %d\n", __func__, __LINE__);
         GuiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_FAIL, &ret, sizeof(ret));
         break;
     case SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS:
-        printf("%s %d\n", __func__, __LINE__);
         GuiEmitSignal(SIG_CREATE_SINGLE_PHRASE_WRITESE_PASS, &ret, sizeof(ret));
         // GuiEmitSignal(SIG_CREATE_SINGLE_PHRASE_WRITESE_PASS, &ret, sizeof(ret));
         break;
     case SIG_LOCK_VIEW_SCREEN_ON_VERIFY:
-        printf("%s %d\n", __func__, __LINE__);
         GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
         break;
     case SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL:
-        printf("%s %d\n", __func__, __LINE__);
         single = ERR_KEYSTORE_MNEMONIC_REPEAT;
         GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &single, sizeof(single));
         break;

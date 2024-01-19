@@ -125,8 +125,10 @@ int WordsListSlice(char *words, char wordsList[][10], uint8_t wordsCount)
 
 void ArrayRandom(char *words, char *out, int count)
 {
-    // strcpy(out, words);
-    // return;
+#ifndef BUILD_PRODUCTION
+    strcpy(out, words);
+    return;
+#endif
     int index = count - 1;
     char wordList[33][10];
     memset(out, 0, 512);

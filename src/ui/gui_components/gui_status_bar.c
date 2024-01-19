@@ -43,48 +43,48 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_BTC, "Confirm Transaction", &coinBtc},
     {CHAIN_ETH, "Confirm Transaction", &coinEth},
     {CHAIN_SOL, "Confirm Transaction", &coinSol},
+    {CHAIN_BNB, "Confirm Transaction", &coinBnb},
+    {CHAIN_XRP, "Confirm Transaction", &coinXrp},
+    {CHAIN_ADA, "Confirm Transaction", &coinAda},
+    {CHAIN_DOT, "Confirm Transaction", &coinDot},
+    {CHAIN_TRX, "Confirm Transaction", &coinTrx},
+    {CHAIN_LTC, "Confirm Transaction", &coinLtc},
+    {CHAIN_BCH, "Confirm Transaction", &coinBch},
     {CHAIN_APT, "Confirm Transaction", &coinApt},
     {CHAIN_SUI, "Confirm Transaction", &coinSui},
-    {CHAIN_ADA, "Confirm Transaction", &coinAda},
-    {CHAIN_XRP, "Confirm Transaction", &coinXrp},
-    {CHAIN_BCH, "Confirm Transaction", &coinBch},
     {CHAIN_DASH, "Confirm Transaction", &coinDash},
-    {CHAIN_LTC, "Confirm Transaction", &coinLtc},
-    {CHAIN_TRX, "Confirm Transaction", &coinTrx},
     {CHAIN_COSMOS, "Confirm Transaction", &coinCosmos},
     {CHAIN_ATOM, "Confirm Transaction", &coinAtom},
-    {CHAIN_OSMO, "Confirm Transaction", &coinOsmo},
-    {CHAIN_SCRT, "Confirm Transaction", &coinScrt},
-    {CHAIN_AKT, "Confirm Transaction", &coinAkt},
-    {CHAIN_TORI, "Confirm Transaction", &coinTori},
+    {CHAIN_INJ, "Confirm Transaction", &coinInj},
     {CHAIN_CRO, "Confirm Transaction", &coinCro},
-    {CHAIN_IOV, "Confirm Transaction", &coinIov},
-    {CHAIN_ROWAN, "Confirm Transaction", &coinRowan},
+    {CHAIN_KAVA, "Confirm Transaction", &coinKava},
+    {CHAIN_OSMO, "Confirm Transaction", &coinOsmo},
+    {CHAIN_LUNC, "Confirm Transaction", &coinLunc},
+    {CHAIN_AXL, "Confirm Transaction", &coinAxl},
+    {CHAIN_LUNA, "Confirm Transaction", &coinLuna},
+    {CHAIN_AKT, "Confirm Transaction", &coinAkt},
+    {CHAIN_STRD, "Confirm Transaction", &coinStrd},
+    {CHAIN_SCRT, "Confirm Transaction", &coinScrt},
+    {CHAIN_BLD, "Confirm Transaction", &coinBld},
+    {CHAIN_TORI, "Confirm Transaction", &coinTori},
     {CHAIN_CTK, "Confirm Transaction", &coinCtk},
-    {CHAIN_IRIS, "Confirm Transaction", &coinIris},
-    {CHAIN_REGEN, "Confirm Transaction", &coinRegen},
+    {CHAIN_EVMOS, "Confirm Transaction", &coinEvmos},
+    {CHAIN_STARS, "Confirm Transaction", &coinStars},
     {CHAIN_XPRT, "Confirm Transaction", &coinXprt},
+    {CHAIN_SOMM, "Confirm Transaction", &coinSomm},
+    {CHAIN_JUNO, "Confirm Transaction", &coinJuno},
+    {CHAIN_IRIS, "Confirm Transaction", &coinIris},
     {CHAIN_DVPN, "Confirm Transaction", &coinDvpn},
+    {CHAIN_ROWAN, "Confirm Transaction", &coinRowan},
+    {CHAIN_REGEN, "Confirm Transaction", &coinRegen},
+    {CHAIN_BOOT, "Confirm Transaction", &coinBoot},
+    {CHAIN_GRAV, "Confirm Transaction", &coinGrav},
     {CHAIN_IXO, "Confirm Transaction", &coinIxo},
     {CHAIN_NGM, "Confirm Transaction", &coinNgm},
-    {CHAIN_BLD, "Confirm Transaction", &coinBld},
-    {CHAIN_BOOT, "Confirm Transaction", &coinBoot},
-    {CHAIN_JUNO, "Confirm Transaction", &coinJuno},
-    {CHAIN_STARS, "Confirm Transaction", &coinStars},
-    {CHAIN_AXL, "Confirm Transaction", &coinAxl},
-    {CHAIN_SOMM, "Confirm Transaction", &coinSomm},
+    {CHAIN_IOV, "Confirm Transaction", &coinIov},
     {CHAIN_UMEE, "Confirm Transaction", &coinUmee},
-    {CHAIN_GRAV, "Confirm Transaction", &coinGrav},
-    {CHAIN_TGD, "Confirm Transaction", &coinTgd},
-    {CHAIN_STRD, "Confirm Transaction", &coinStrd},
-    {CHAIN_EVMOS, "Confirm Transaction", &coinEvmos},
-    {CHAIN_INJ, "Confirm Transaction", &coinInj},
-    {CHAIN_KAVA, "Confirm Transaction", &coinKava},
     {CHAIN_QCK, "Confirm Transaction", &coinQck},
-    {CHAIN_LUNA, "Confirm Transaction", &coinLuna},
-    {CHAIN_LUNC, "Confirm Transaction", &coinLunc},
-    {CHAIN_BNB, "Confirm Transaction", &coinBnb},
-    {CHAIN_DOT, "Confirm Transaction", &coinDot},
+    {CHAIN_TGD, "Confirm Transaction", &coinTgd},
 };
 
 const static CoinWalletInfo_t g_walletBtn[] = {
@@ -480,7 +480,7 @@ static lv_obj_t *CreateUndo(lv_obj_t *navBar)
 
     btn = lv_label_create(navBar);
     lv_label_set_text(btn, "");
-    lv_obj_set_size(btn, 106, 42);
+    lv_obj_set_size(btn, 106, 48);
     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, GRAY_COLOR, 0);
     lv_obj_add_flag(btn, LV_OBJ_FLAG_CLICKABLE);
@@ -493,12 +493,12 @@ static lv_obj_t *CreateUndo(lv_obj_t *navBar)
     lv_obj_set_style_text_opa(textLabel, LV_OPA_90, LV_PART_MAIN);
     lv_label_set_long_mode(textLabel, LV_LABEL_LONG_WRAP);
     lv_obj_set_style_bg_opa(textLabel, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_align(textLabel, LV_ALIGN_TOP_LEFT, 42, 6);
+    lv_obj_align(textLabel, LV_ALIGN_TOP_LEFT, 42, 9);
     lv_obj_set_style_text_color(textLabel, WHITE_COLOR, LV_PART_MAIN);
 
     img = GuiCreateImg(btn, &imgUndo);
     lv_obj_set_size(img, 24, 24);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 12, 9);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 12, 12);
 
     return btn;
 }

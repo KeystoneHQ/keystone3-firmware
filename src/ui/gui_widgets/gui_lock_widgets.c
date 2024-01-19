@@ -23,6 +23,9 @@
 #include "gui_firmware_update_widgets.h"
 #include "background_task.h"
 #include "gui_forget_pass_widgets.h"
+#include "gui_usb_connection_widgets.h"
+#include "gui_pop_message_box.h"
+#include "usb_task.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "assert.h"
@@ -42,6 +45,7 @@ void GuiLockScreenClearModal(lv_obj_t *cont);
 static char* GuiJudgeTitle();
 static void CountDownTimerChangeLabelTextHandler(lv_timer_t *timer);
 static void GuiCloseGenerateXPubLoading(void);
+static void HardwareInitAfterWake(void);
 int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
 
 static GuiEnterPasscodeItem_t *g_verifyLock = NULL;
@@ -55,6 +59,7 @@ static lv_timer_t *g_countDownTimer;
 static int8_t g_countDown = 0;
 static bool g_canDismissLoading = false;
 static bool g_isShowLoading = false;
+static uint8_t g_oldWalletIndex = 0xFF;
 
 void GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_ENUM purpose)
 {
@@ -221,7 +226,6 @@ void GuiLockScreenTurnOn(void *param)
     GuilockScreenRefresh();
 }
 
-static uint8_t g_oldWalletIndex = 0xFF;
 void GuiLockScreenTurnOff(void)
 {
     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
@@ -241,7 +245,7 @@ void GuiLockScreenTurnOff(void)
         GuiEmitSignal(GUI_EVENT_REFRESH, &single, sizeof(single));
         GuiFirmwareUpdateWidgetRefresh();
     }
-    AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
+    HardwareInitAfterWake();
     // g_lockView.isActive = false;
 }
 
@@ -280,22 +284,18 @@ void GuiLockScreenPassCode(bool en)
             GuiModeGetWalletDesc();
             GuiEnterPassCodeStatus(g_verifyLock, true);
             GuiFrameOpenView(&g_passphraseView);
-            printf("passphrase quick access\r\n");
         } else if (g_homeView.isActive) {
-            printf("g_homeView.isActive\r\n");
             GuiLockScreenTurnOff();
         } else if (g_forgetPassView.isActive) {
-            printf("g_forgetPassView.isActive\r\n");
             GuiLockScreenTurnOff();
         } else {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
             GuiFrameOpenView(&g_homeView);
-            printf("%s %d\n", __func__, __LINE__);
+            HardwareInitAfterWake();
         }
         // Close the loading page after closing the lock screen page
         GuiCloseGenerateXPubLoading();
-        UsbInit();
     }
 }
 
@@ -528,4 +528,14 @@ static void GuiCloseGenerateXPubLoading(void)
         }
         g_canDismissLoading = false;
     }
+}
+
+static void HardwareInitAfterWake(void)
+{
+    AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
+#if (USB_POP_WINDOW_ENABLE == 1)
+    if (GetUSBSwitch() == true && GetUsbDetectState()) {
+        OpenMsgBox(&g_guiMsgBoxUsbConnection);
+    }
+#endif
 }

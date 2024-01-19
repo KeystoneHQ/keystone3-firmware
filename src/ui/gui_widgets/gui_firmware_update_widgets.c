@@ -244,6 +244,7 @@ void GuiFirmwareUpdatePrevTile(void)
 
 void GuiFirmwareUpdateSha256Percent(uint8_t percent)
 {
+    printf("percent = %d\n", percent);
     if (g_noticeHintBox == NULL) {
         return;
     }

@@ -158,6 +158,9 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                     } else {
                         mkb->currentSlice++;
                         if (mkb->stepLabel != NULL) {
+                            if (lv_obj_has_flag(mkb->stepLabel, LV_OBJ_FLAG_HIDDEN)) {
+                                lv_obj_clear_flag(mkb->stepLabel, LV_OBJ_FLAG_HIDDEN);
+                            }
                             lv_label_set_text_fmt(mkb->stepLabel, _("import_wallet_ssb_step_fmt"), mkb->currentSlice + 1, mkb->threShold);
                         }
                         if (mkb->titleLabel != NULL) {

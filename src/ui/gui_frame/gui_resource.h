@@ -102,6 +102,7 @@ LV_IMG_DECLARE(imgDice3);
 LV_IMG_DECLARE(imgDice4);
 LV_IMG_DECLARE(imgDice5);
 LV_IMG_DECLARE(imgDice6);
+LV_IMG_DECLARE(imgDiceGrey);
 LV_IMG_DECLARE(imgUndo);
 
 // connect to do refresh

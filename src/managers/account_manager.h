@@ -36,6 +36,7 @@ typedef struct {
 } AccountInfo_t;
 
 int32_t AccountManagerInit(void);
+bool AccountManagerIsNeedReset(void);
 
 PasscodeType GetPasscodeType(void);
 MnemonicType GetMnemonicType(void);

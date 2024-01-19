@@ -226,6 +226,19 @@ void GuiReceiveDeInit(void)
     }
 }
 
+static bool HasMoreBtn()
+{
+    switch (g_chainCard) {
+    case HOME_WALLET_CARD_LTC:
+    case HOME_WALLET_CARD_BCH:
+    case HOME_WALLET_CARD_DASH:
+        return false;
+
+    default:
+        return true;
+    }
+}
+
 void GuiReceiveRefresh(void)
 {
     printf("g_utxoReceiveTileNow=%d\r\n", g_utxoReceiveTileNow);
@@ -235,7 +248,7 @@ void GuiReceiveRefresh(void)
         TitleItem_t titleItem;
         GetCurrentTitle(&titleItem);
         SetCoinWallet(g_pageWidget->navBarWidget, titleItem.type, titleItem.title);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, MoreHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, HasMoreBtn() ? NVS_BAR_MORE_INFO : NVS_RIGHT_BUTTON_BUTT, MoreHandler, NULL);
         RefreshQrCode();
         if (g_selectIndex == ADDRESS_INDEX_MAX) {
             lv_obj_set_style_img_opa(g_utxoReceiveWidgets.changeImg, LV_OPA_60, LV_PART_MAIN);

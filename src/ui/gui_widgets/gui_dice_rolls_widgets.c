@@ -26,11 +26,15 @@ static lv_obj_t *g_rollsLabel;
 static lv_obj_t *g_line;
 static lv_obj_t *g_diceImgs[6];
 static lv_obj_t *g_errLabel;
+static lv_obj_t *g_maxLimitLabel;
 static lv_obj_t *g_hintLabel;
 static lv_obj_t *g_confirmBtn;
+static bool g_confirmValid = false;
+static bool g_hitMaxLimits = false;
 
 void GuiDiceRollsWidgetsInit(uint8_t seed_type)
 {
+    g_confirmValid = false;
     g_seedType = seed_type;
     g_page = CreatePageWidget();
     GuiCreatePage(g_page->contentZone);
@@ -40,6 +44,7 @@ void GuiDiceRollsWidgetsInit(uint8_t seed_type)
 void GuiDiceRollsWidgetsDeInit()
 {
     GUI_PAGE_DEL(g_page);
+    GUI_DEL_OBJ(g_quitHintBox);
 }
 void GuiDiceRollsWidgetsRefresh()
 {
@@ -88,6 +93,11 @@ static void GuiCreatePage(lv_obj_t *parent)
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
     g_errLabel = label;
 
+    label = GuiCreateIllustrateLabel(parent, _("dice_roll_max_limit_label"));
+    lv_obj_set_style_text_color(label, DEEP_ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_align_to(label, anchor, LV_ALIGN_OUT_BOTTOM_LEFT, 196, 4);
+    lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
+    g_maxLimitLabel = label;
 
     img = GuiCreateImg(parent, &imgDice1);
     InitDiceImg(img, parent, 12 + 48, 258);
@@ -123,6 +133,7 @@ static void GuiCreatePage(lv_obj_t *parent)
     lv_obj_clear_flag(btn, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(btn, ConfirmHandler, LV_EVENT_CLICKED, textArea);
     lv_obj_add_style(btn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(btn, LV_OPA_30, LV_PART_MAIN);
     g_confirmBtn = btn;
 
     label = GuiCreateIllustrateLabel(parent, "0");
@@ -193,7 +204,7 @@ static void ClickDiceHandler(lv_event_t *e)
         for (size_t i = 0; i < 6; i++) {
             if (g_diceImgs[i] == img) {
                 const char *txt = lv_textarea_get_text(g_diceTextArea);
-                if (strlen(txt) == 100) {
+                if (strlen(txt) >= 256) {
                     return;
                 }
 
@@ -224,12 +235,6 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
         // 27chars per line in reality;
         uint32_t length = strlen(txt);
         uint32_t line_count = length / 27 + 1;
-        if (line_count > 4)
-            return;
-        lv_obj_set_height(ta, line_count * font_height + 2 * lv_obj_get_style_pad_top(ta, LV_PART_MAIN));
-        lv_obj_update_layout(ta);
-        lv_obj_align_to(g_line, ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
-        lv_obj_align_to(g_errLabel, g_line, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
 
         if (length > 0 && length < 50) {
             lv_obj_clear_flag(g_hintLabel, LV_OBJ_FLAG_HIDDEN);
@@ -237,33 +242,82 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
             lv_obj_add_flag(g_hintLabel, LV_OBJ_FLAG_HIDDEN);
         }
 
-        if (length >= 1) {
-            lv_label_set_text_fmt(g_rollsLabel, "%d", length);
-        }
-
-        if (length >= 50) {
-            lv_obj_remove_style(g_confirmBtn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
-            lv_obj_add_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE);
-            float counts[6] = {0};
-            for (size_t i = 0; i < length; i++) {
-                counts[txt[i] - '1']++;
+        if (length < 256) {
+            if (!lv_obj_has_flag(g_maxLimitLabel, LV_OBJ_FLAG_HIDDEN)) {
+                lv_obj_add_flag(g_maxLimitLabel, LV_OBJ_FLAG_HIDDEN);
             }
-            float len = length;
-            bool stillValid = true;
-            for (size_t i = 0; i < 6; i++) {
-                if (counts[i] / len > 0.3) {
-                    lv_obj_clear_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN);
-                    stillValid = false;
-                    break;
+            if (g_hitMaxLimits) {
+                g_hitMaxLimits = false;
+                for (size_t i = 0; i < 6; i++) {
+                    lv_obj_set_style_img_opa(g_diceImgs[i], LV_OPA_100, LV_PART_MAIN);
                 }
             }
-            if (stillValid) {
+        } else {
+            if (lv_obj_has_flag(g_maxLimitLabel, LV_OBJ_FLAG_HIDDEN)) {
+                lv_obj_clear_flag(g_maxLimitLabel, LV_OBJ_FLAG_HIDDEN);
+            }
+            if (!lv_obj_has_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN)) {
                 lv_obj_add_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN);
             }
-        } else {
-            lv_obj_add_style(g_confirmBtn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
-            lv_obj_clear_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE);
+            if (!g_hitMaxLimits) {
+                for (size_t i = 0; i < 6; i++) {
+                    lv_obj_set_style_img_opa(g_diceImgs[i], LV_OPA_64, LV_PART_MAIN);
+                }
+                g_hitMaxLimits = true;
+            }
+
         }
+
+        lv_label_set_text_fmt(g_rollsLabel, "%d", length);
+        if (length >= 50) {
+            if (!g_confirmValid) {
+                g_confirmValid = true;
+                lv_obj_remove_style(g_confirmBtn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
+                lv_obj_set_style_text_opa(g_confirmBtn, LV_OPA_100, LV_PART_MAIN);
+                if (!lv_obj_has_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE)) {
+                    lv_obj_add_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE);
+                }
+            }
+            if (length < 256) {
+                float counts[6] = {0};
+                for (size_t i = 0; i < length; i++) {
+                    counts[txt[i] - '1']++;
+                }
+                float len = length;
+                bool stillValid = true;
+                for (size_t i = 0; i < 6; i++) {
+                    if (counts[i] / len > 0.3) {
+                        if (lv_obj_has_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN)) {
+                            lv_obj_clear_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN);
+                        }
+                        stillValid = false;
+                        break;
+                    }
+                }
+                if (stillValid) {
+                    if (!lv_obj_has_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN)) {
+                        lv_obj_add_flag(g_errLabel, LV_OBJ_FLAG_HIDDEN);
+                    }
+                }
+            }
+        } else {
+            if (g_confirmValid) {
+                g_confirmValid = false;
+                lv_obj_add_style(g_confirmBtn, &g_numBtnmDisabledStyle, LV_PART_MAIN);
+                lv_obj_set_style_text_opa(g_confirmBtn, LV_OPA_30, LV_PART_MAIN);
+                if (lv_obj_has_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE)) {
+                    lv_obj_clear_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE);
+                }
+            }
+        }
+
+        if (line_count > 4)
+            return;
+        lv_obj_set_height(ta, line_count * font_height + 2 * lv_obj_get_style_pad_top(ta, LV_PART_MAIN));
+        lv_obj_update_layout(ta);
+        lv_obj_align_to(g_line, ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+        lv_obj_align_to(g_errLabel, g_line, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+        lv_obj_align_to(g_maxLimitLabel, g_line, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
     }
 }
 
@@ -293,7 +347,7 @@ static void ConfirmHandler(lv_event_t *e)
 
         // convert result
         const char *txt = lv_textarea_get_text(ta);
-        char *temp = SRAM_MALLOC(128);
+        char *temp = SRAM_MALLOC(300);
         strcpy(temp, txt);
         for (size_t i = 0; i < strlen(txt); i++) {
             char c = temp[i];
@@ -310,5 +364,6 @@ static void ConfirmHandler(lv_event_t *e)
         } else {
             GuiFrameOpenViewWithParam(&g_createShareView, &entropyMethod, 1);
         }
+        SRAM_FREE(temp);
     }
 }

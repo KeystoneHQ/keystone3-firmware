@@ -220,7 +220,7 @@ void PresettingTest(int argc, char *argv[])
         ret = SetWebAuthRsaKey(data);
         printf("set web auth key ret=%d\n", ret);
         SRAM_FREE(data);
-    } else if (strcmp(argv[0], "get_update_pub_key") == 0) {
+    } else if (strcmp(argv[0], "c") == 0) {
         data = SRAM_MALLOC(UPDATE_PUB_KEY_LEN + 1);
         ret = GetUpdatePubKey(data);
         printf("ret=%d\n", ret);

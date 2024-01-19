@@ -140,6 +140,7 @@ bool GuiCheckIfViewOpened(GUI_VIEW *viewToOpen)
 
 int32_t GuiFrameOpenView(GUI_VIEW *view)
 {
+    printf("%s %d.....\n", __func__, __LINE__);
     // todo some error proofing
     if (GuiCheckIfViewOpened(view)) {
         printf("err:gui has already opened!\r\n");
@@ -148,12 +149,8 @@ int32_t GuiFrameOpenView(GUI_VIEW *view)
 
     printf("open view %s freeHeap %d\n", GuiFrameIdToName(view->id), xPortGetFreeHeapSize());
 
-    g_debugView[g_viewCnt].view.id = view->id;
-    g_debugView[g_viewCnt].view.pEvtHandler = view->pEvtHandler;
-    g_debugView[g_viewCnt].view.previous = view->previous;
-    g_debugView[g_viewCnt].view.isActive = view->isActive;
-    g_debugView[g_viewCnt].pview = view;
     g_viewCnt++;
+    printf("%s %d.....\n", __func__, __LINE__);
     if (NULL != g_workingView) {
         GuiViewHandleEvent(g_workingView, GUI_EVENT_DISACTIVE, NULL, 0);
         // g_workingView->isActive = false;
@@ -161,20 +158,17 @@ int32_t GuiFrameOpenView(GUI_VIEW *view)
     view->previous = g_workingView;
     g_workingView = view;
     g_workingView->isActive = true;
+    printf("%s %d.....\n", __func__, __LINE__);
     GuiViewHandleEvent(view, GUI_EVENT_OBJ_INIT, NULL, 0);
+    printf("%s %d.....\n", __func__, __LINE__);
     GuiViewHandleEvent(view, GUI_EVENT_REFRESH, NULL, 0);
+    printf("%s %d.....\n", __func__, __LINE__);
     return SUCCESS_CODE;
 }
 
 int32_t GuiFrameOpenViewWithParam(GUI_VIEW *view, void *param, uint16_t usLen)
 {
     // todo some error proofing
-    g_debugView[g_viewCnt].view.id = view->id;
-    g_debugView[g_viewCnt].view.pEvtHandler = view->pEvtHandler;
-    g_debugView[g_viewCnt].view.previous = view->previous;
-    g_debugView[g_viewCnt].view.isActive = view->isActive;
-    g_debugView[g_viewCnt].pview = view;
-
     g_viewCnt++;
     if (NULL != g_workingView) {
         // g_workingView->isActive = false;

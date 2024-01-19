@@ -6,33 +6,30 @@
 #include "user_utils.h"
 #include "assert.h"
 #include "md5.h"
-#include "cmsis_os.h"
-#include "user_fatfs.h"
-#include "ff.h"
 #include "gui_views.h"
 #include "gui_api.h"
 #include "librust_c.h"
 #include "sha256.h"
 #include "background_task.h"
-#include "drv_battery.h"
 #include "keystore.h"
 #include "device_setting.h"
 #include "account_manager.h"
+#ifndef COMPILE_SIMULATOR
+#include "user_fatfs.h"
+#include "ff.h"
+#include "drv_battery.h"
+#include "cmsis_os.h"
+#endif
 
 
 #define TYPE_FILE_INFO_FILE_NAME                        1
 #define TYPE_FILE_INFO_FILE_SIZE                        2
 #define TYPE_FILE_INFO_FILE_MD5                         3
 #define TYPE_FILE_INFO_FILE_SIGN                        4
-
-
 #define TYPE_FILE_INFO_FILE_OFFSET                      1
 #define TYPE_FILE_INFO_FILE_DATA                        2
 #define TYPE_FILE_INFO_FILE_ACK                         3
-
-
 #define MAX_FILE_NAME_LENGTH                            32
-
 #define FILE_TRANS_TIME_OUT                             2000
 
 typedef struct {
@@ -56,19 +53,21 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
 static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *GetFileContent(const FrameHead_t *head, uint32_t offset, uint32_t *outLen);
 static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
+static void FileTransTimeOutTimerFunc(void *argument);
 
 static bool g_isReceivingFile = false;
+static FileTransInfo_t g_fileTransInfo;
+static FileTransCtrl_t g_fileTransCtrl;
+#ifndef COMPILE_SIMULATOR
+static osTimerId_t g_fileTransTimeOutTimer = NULL;
+#endif
 
 bool GetIsReceivingFile()
 {
     return g_isReceivingFile;
 }
 
-static void FileTransTimeOutTimerFunc(void *argument);
 
-static FileTransInfo_t g_fileTransInfo;
-static FileTransCtrl_t g_fileTransCtrl;
-static osTimerId_t g_fileTransTimeOutTimer = NULL;
 
 static const uint8_t g_webUsbPubKey[] = {
     0x04, 0x85, 0x1C, 0xD8, 0x8D, 0xCE, 0xB1, 0xAF, 0xBB, 0xCC, 0x8E, 0x0A, 0xF3, 0xC1, 0x7E, 0x61, \

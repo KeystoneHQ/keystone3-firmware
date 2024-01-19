@@ -28,7 +28,6 @@
 #include "eapdu_services/service_resolve_ur.h"
 #ifndef COMPILE_SIMULATOR
 #include "keystore.h"
-
 #else
 #define FP_SUCCESS_CODE 0
 #define RECOGNIZE_UNLOCK 0

@@ -6,6 +6,7 @@
 #include "account_manager.h"
 #include "qrdecode_task.h"
 #include <gui_chain.h>
+#include "eapdu_services/service_resolve_ur.h"
 
 bool g_fingerUnlockDeviceFlag = true;
 bool g_fingerSingTransitionsFlag = false;
@@ -14,6 +15,29 @@ bool fingerRegisterState[3] = {true, false, false};
 #define ACCOUNT_PUBLIC_HOME_COIN_PATH "C:/assets/home_coins.json"
 
 bool g_reboot = false;
+uint8_t GetExportWallet()
+{
+    return 1;
+}
+
+void ExportAddressReject()
+{
+}
+
+void ExportAddressApprove()
+{
+}
+
+uint16_t GetCurrentUSParsingRequestID()
+{
+
+}
+
+void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
+{
+
+}
+
 void OpenUsb()
 {
 

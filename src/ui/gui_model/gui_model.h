@@ -16,7 +16,7 @@
 #include "drv_battery.h"
 #else
 #include "simulator_model.h"
-#define memset_s(a1,a2,a3,a4)               memset(a1,a2,a3)
+#define memset_s(a1,a2,a3,a4)               memset(a1,a3,a2)
 #endif
 #include "gui_animating_qrcode.h"
 #include "account_manager.h"

@@ -37,7 +37,8 @@ static int32_t GuiInitViewInit(void)
         GuiFrameOpenView(&g_selfDestructView);
         return SUCCESS_CODE;
     }
-    GuiModeGetAccount();
+    return GuiFrameOpenView(&g_setupView);
+    // GuiModeGetAccount();
     // GuiFrameOpenView(&g_settingView);
     // GuiFrameOpenView(&g_connectWalletView);
     return SUCCESS_CODE;
@@ -59,6 +60,7 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         break;
     case SIG_INIT_GET_ACCOUNT_NUMBER:
         walletNum = *(uint8_t *)param;
+        printf("walletnum = %d\n", walletNum);
         if (walletNum == 0) {
             return GuiFrameOpenView(&g_setupView);
         } else {

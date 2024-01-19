@@ -1364,7 +1364,7 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
 static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen)
 {
     if (g_checkResult != NULL) {
-        free_TransactionCheckResult(g_checkResult);
+        // free_TransactionCheckResult(g_checkResult);
         g_checkResult = NULL;
     }
     return SUCCESS_CODE;

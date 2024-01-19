@@ -6,10 +6,11 @@
 
 static int32_t GuiSetupViewInit(void)
 {
-    GuiSetupAreaInit();
+    printf("%s %d.....\n", __func__, __LINE__);
+    // GuiSetupAreaInit();
     return SUCCESS_CODE;
 }
-
+ 
 static int32_t GuiSetupViewDeInit(void)
 {
     GuiSetupAreaDeInit();
@@ -26,7 +27,7 @@ int32_t GuiSetupViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case GUI_EVENT_OBJ_DEINIT:
         return GuiSetupViewDeInit();
     case GUI_EVENT_REFRESH:
-        GuiSetupAreaRefresh();
+        // GuiSetupAreaRefresh();
         break;
     case GUI_EVENT_RESTART:
         GuiSetupAreaRestart();

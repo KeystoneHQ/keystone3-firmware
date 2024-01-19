@@ -46,7 +46,14 @@
         "screen_manager.h": "c",
         "cmath": "c",
         "random": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "keyboard.h": "c",
+        "monitor.h": "c",
+        "sdl.h": "c",
+        "gui_create_wallet_widgets.h": "c",
+        "service_device_info.h": "c",
+        "user_fatfs.h": "c",
+        "drv_battery.h": "c"
     },
     "explorer.autoReveal": true
 }

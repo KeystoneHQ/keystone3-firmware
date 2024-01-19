@@ -5,10 +5,12 @@
 #include "user_utils.h"
 #include "protocol_codec.h"
 #include "crc.h"
-#include "cmsis_os.h"
 #include "user_memory.h"
 #include "log_print.h"
 #include "service_file_trans.h"
+#ifndef COMPILE_SIMULATOR
+#include "cmsis_os.h"
+#endif
 
 #define PROTOCOL_PARSE_OVERTIME 500
 

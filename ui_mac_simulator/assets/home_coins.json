@@ -54,5 +54,9 @@
 	"TIA": {
 		"firstRecv": true,
 		"manage": true
+	},
+	"KUJI": {
+		"firstRecv": true,
+		"manage": true
 	}
 }

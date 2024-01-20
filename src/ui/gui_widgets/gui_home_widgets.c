@@ -55,6 +55,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_OSMO, false, "OSMO", true},
     {HOME_WALLET_CARD_INJ, false, "INJ", true},
     {HOME_WALLET_CARD_ATOM, false, "ATOM", true},
+    {HOME_WALLET_CARD_KUJI, false, "KUJI", true},
     {HOME_WALLET_CARD_CRO, false, "CRO", true},
     {HOME_WALLET_CARD_KAVA, false, "KAVA", true},
     {HOME_WALLET_CARD_LUNC, false, "LUNC", true},
@@ -202,6 +203,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "ATOM",
         .chain = "Cosmos Hub",
         .icon = &coinAtom,
+    },
+    {
+        .index = HOME_WALLET_CARD_KUJI,
+        .coin = "KUJI",
+        .chain = "Kujira",
+        .icon = &coinKuji,
     },
     {
         .index = HOME_WALLET_CARD_CRO,

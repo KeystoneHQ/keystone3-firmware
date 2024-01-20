@@ -35,6 +35,7 @@ typedef enum {
     CHAIN_OSMO,
     CHAIN_INJ,
     CHAIN_ATOM,
+    CHAIN_KUJI,
     CHAIN_CRO,
     CHAIN_KAVA,
     CHAIN_LUNC,

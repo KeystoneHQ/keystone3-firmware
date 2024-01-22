@@ -133,21 +133,22 @@ void ArrayRandom(char *words, char *out, int count)
     char wordList[33][10];
     memset(out, 0, 512);
     WordsListSlice(words, wordList, count);
-    char tempBuf[16] = {0};
+    char tempBuf1[16] = {0}, tempBuf2[16] = {0};
     if (count  % 2 == 1) {
         index = count - 2;
     }
     for (int i = 0; i < index; i++) {
         int num = i + lv_rand(0, 2048) % (index - i);
-        strcpy(tempBuf, wordList[i]);
+        strcpy(tempBuf1, wordList[i]);
         strcpy(wordList[i], wordList[num]);
-        strcpy(wordList[num], tempBuf);
+        strcpy(wordList[num], tempBuf1);
     }
 
     int num = lv_rand(0, 2048) % (index - 1);
-    strcpy(tempBuf, wordList[count - 1]);
-    strcpy(wordList[count - 1], wordList[num]);
-    strcpy(wordList[num], tempBuf);
+    strcpy(tempBuf1, wordList[count - 1]);
+    strcpy(tempBuf2, wordList[num]);
+    strcpy(wordList[num], tempBuf1);
+    strcpy(wordList[count - 1], tempBuf2);
 
     for (int i = 0; i < count - 1; i++) {
         strcat(out, wordList[i]);

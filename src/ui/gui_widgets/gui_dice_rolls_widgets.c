@@ -330,14 +330,6 @@ static void UndoClickHandler(lv_event_t *e)
         lv_textarea_del_char(ta);
     }
 }
-//static void UndoLongPressHandler(lv_event_t *e)
-//{
-//    lv_event_code_t code = lv_event_get_code(e);
-//    if (code == LV_EVENT_LONG_PRESSED) {
-//        lv_obj_t *ta = (lv_obj_t *)lv_event_get_user_data(e);
-//        lv_textarea_set_text(ta, "");
-//    }
-//}
 
 static void ConfirmHandler(lv_event_t *e)
 {

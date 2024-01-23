@@ -1195,18 +1195,6 @@ static void UpdategAddress(void)
     }
 }
 
-//static void SetCurrentPathIndex(uint8_t index)
-//{
-//    switch (g_connectWalletTileView.walletIndex) {
-//    case WALLET_LIST_SOLFARE:
-//        g_currentSOLPathIndex[GetCurrentAccountIndex()] = index;
-//        break;
-//    default:
-//        g_currentEthPathIndex[GetCurrentAccountIndex()] = index;
-//        break;
-//    }
-//}
-
 static void SetCurrentSelectedIndex(uint8_t index)
 {
     g_currentSelectedPathIndex[GetCurrentAccountIndex()] = index;

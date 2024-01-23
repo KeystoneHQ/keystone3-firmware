@@ -20,7 +20,6 @@ static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static void *g_erc20ContractData = NULL;
-//static char *g_erc20Value = NULL;
 static char *g_erc20Name = NULL;
 static void *g_contractData = NULL;
 static bool g_contractDataExist = false;

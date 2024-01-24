@@ -109,7 +109,7 @@ PtrT_TransactionCheckResult GuiGetXrpCheckResult(void)
         p = strtok(NULL, ":");
         int rootLen = strlen(XRP_ROOT_PATH);
         int extLen = strlen(p) - 1;
-        strncpy(g_hdPath, XRP_ROOT_PATH, rootLen);
+        strcpy(g_hdPath, XRP_ROOT_PATH);
         strncpy(g_hdPath + rootLen, p + 1, extLen);
         g_hdPath[rootLen + extLen] = '\0';
         SRAM_FREE(res_str);

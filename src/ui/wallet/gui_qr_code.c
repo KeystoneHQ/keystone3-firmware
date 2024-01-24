@@ -1,11 +1,10 @@
 #include "gui_qr_code.h"
 
-typedef lv_res_t *UpdateFunc(lv_obj_t * qrcode, const void * data, uint32_t data_len);
 
 static lv_timer_t *g_timer;
 static UREncodeResult *g_result;
 static lv_obj_t *g_qr;
-static UpdateFunc *g_updateFunc;
+static UpdateFunc g_updateFunc;
 
 static bool g_qrcodeSuspend = false;
 

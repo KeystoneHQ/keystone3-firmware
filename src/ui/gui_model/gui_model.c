@@ -95,14 +95,14 @@ static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen);
 static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen);
 static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataLen);
 static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen);
-static int32_t ModelURGenerateQRCode(const void *inData, uint32_t inDataLen, void *getUR);
+static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t getUR);
 static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen);
 static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen);
 static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen);
 static int32_t ModelURClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen);
 static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen);
-static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, void *parseTransactionFunc);
+static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t parseTransactionFunc);
 
 static PasswordVerifyResult_t g_passwordVerifyResult;
 static bool g_stopCalChecksum = false;
@@ -534,7 +534,7 @@ static int32_t ModelBip39ForgetPass(const void *inData, uint32_t inDataLen)
 
 static UREncodeResult *g_urResult = NULL;
 
-static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, void *getUR)
+static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t getUR)
 {
     GenerateUR func = (GenerateUR)getUR;
     g_urResult = func();
@@ -1371,7 +1371,7 @@ static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inD
 }
 
 
-static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, void *parseTransactionFunc)
+static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t parseTransactionFunc)
 {
     ReturnVoidPointerFunc func = (ReturnVoidPointerFunc)parseTransactionFunc;
     //There is no need to release here, the parsing results will be released when exiting the details page.

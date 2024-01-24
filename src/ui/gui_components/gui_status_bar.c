@@ -15,6 +15,7 @@
 
 #ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
+#include "drv_usb.h"
 #else
 #include "simulator_model.h"
 #endif

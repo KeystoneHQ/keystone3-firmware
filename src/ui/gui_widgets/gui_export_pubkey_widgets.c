@@ -67,7 +67,7 @@ static TILEVIEW_INDEX_ENUM g_tileviewIndex;
 static uint8_t g_btcPathType[3] = {0};
 static uint8_t g_tmpSelectIndex = 0;
 
-static GuiRefreshTileview()
+static void GuiRefreshTileview()
 {
     switch (g_tileviewIndex) {
     case TILEVIEW_QRCODE:
@@ -89,7 +89,7 @@ static GuiRefreshTileview()
     }
 }
 
-static GuiGotoTileview(TILEVIEW_INDEX_ENUM index)
+static void GuiGotoTileview(TILEVIEW_INDEX_ENUM index)
 {
     g_tileviewIndex = index;
     lv_obj_set_tile_id(g_widgets.tileview, g_tileviewIndex, 0, LV_ANIM_OFF);
@@ -359,17 +359,16 @@ static void RefreshQrcode()
     uint8_t pathType = GetPathType();
     char pubkey[128];
     GetExportPubkey(pubkey, g_chain, pathType);
-    if (pubkey != NULL) {
-        lv_label_set_text(g_widgets.title, GetPathTypeTitle(g_chain, pathType));
-        char desc[32] = {0};
-        GetPathTypeDesc(desc, g_chain, pathType);
-        lv_label_set_text(g_widgets.desc, desc);
-        lv_qrcode_update(g_widgets.qrCode, pubkey, strlen(pubkey));
-        lv_qrcode_update(g_widgets.qrCodeFullscreen, pubkey, strlen(pubkey));
-        lv_label_set_text(g_widgets.pubkey, pubkey);
-        lv_obj_update_layout(g_widgets.pubkey);
-        lv_obj_set_height(g_widgets.qrCont, lv_obj_get_height(g_widgets.pubkey) + 484);
-    }
+
+    lv_label_set_text(g_widgets.title, GetPathTypeTitle(g_chain, pathType));
+    char desc[32] = {0};
+    GetPathTypeDesc(desc, g_chain, pathType);
+    lv_label_set_text(g_widgets.desc, desc);
+    lv_qrcode_update(g_widgets.qrCode, pubkey, strlen(pubkey));
+    lv_qrcode_update(g_widgets.qrCodeFullscreen, pubkey, strlen(pubkey));
+    lv_label_set_text(g_widgets.pubkey, pubkey);
+    lv_obj_update_layout(g_widgets.pubkey);
+    lv_obj_set_height(g_widgets.qrCont, lv_obj_get_height(g_widgets.pubkey) + 484);
 }
 
 static uint8_t GetPathType()
@@ -381,6 +380,7 @@ static uint8_t GetPathType()
     default:
         break;
     }
+    return 0;
 }
 
 static void SetPathType(uint8_t pathType)

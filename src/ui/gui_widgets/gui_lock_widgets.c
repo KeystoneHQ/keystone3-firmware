@@ -26,6 +26,7 @@
 #include "gui_usb_connection_widgets.h"
 #include "gui_pop_message_box.h"
 #include "usb_task.h"
+#include "drv_aw32001.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "assert.h"
@@ -42,7 +43,7 @@
 
 static void GuiPassowrdToLockTimePage(uint16_t errorCount);
 void GuiLockScreenClearModal(lv_obj_t *cont);
-static char* GuiJudgeTitle();
+static const char *GuiJudgeTitle();
 static void CountDownTimerChangeLabelTextHandler(lv_timer_t *timer);
 static void GuiCloseGenerateXPubLoading(void);
 static void HardwareInitAfterWake(void);
@@ -87,7 +88,7 @@ void GuiFpRecognizeResult(bool en)
             SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("try_again"));
             FpRecognize(RECOGNIZE_UNLOCK);
         } else {
-            char* title;
+            const char *title;
             if (g_verifyLock->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN || g_verifyLock->mode == ENTER_PASSCODE_VERIFY_PIN) {
                 title = _("unlock_device_use_pin");
             } else {
@@ -390,15 +391,15 @@ void GuiLockScreenPasscodeSwitch(bool isPin)
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, GuiJudgeTitle());
 }
 
-static char* GuiJudgeTitle()
+static const char *GuiJudgeTitle()
 {
-    char* title;
+    char *title;
     //no fingerprint presents
     if (g_fpErrorCount >= FINGERPRINT_EN_SING_ERR_TIMES || (GetRegisteredFingerNum() < 1) || GuiLockScreenIsFirstUnlock()) {
         if (g_verifyLock->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN || g_verifyLock->mode == ENTER_PASSCODE_VERIFY_PIN) {
-            title = _("unlock_device_use_pin");
+            title = (char *)_("unlock_device_use_pin");
         } else {
-            title = _("unlock_device_use_password");
+            title = (char *)_("unlock_device_use_password");
         }
         return title;
     }
@@ -413,9 +414,9 @@ static char* GuiJudgeTitle()
         return title;
     }
     if (g_verifyLock->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN || g_verifyLock->mode == ENTER_PASSCODE_VERIFY_PIN) {
-        title = _("unlock_device_use_pin");
+        title = (char *)_("unlock_device_use_pin");
     } else {
-        title = _("unlock_device_use_password");
+        title = (char *)_("unlock_device_use_password");
     }
     return title;
 }

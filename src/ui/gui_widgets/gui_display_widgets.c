@@ -58,13 +58,13 @@ static void ChooseAutoLockTimeHandler(lv_event_t *e);
 static void CloseChooseAutoLockTimeHandler(lv_event_t* e);
 static void SelectAutoLockTimeHandler(lv_event_t *e);
 static uint32_t GetAutoLockTimeByEnum(AUTO_LOCK_TIME_ENUM lock_time_enum);
-static char* GetAutoLockTimeDescByLockTime(void);
+static const char *GetAutoLockTimeDescByLockTime();
 
 static void ChooseAutoShutdownHandler(lv_event_t *e);
 static void CloseChooseAutoShutdownHandler(lv_event_t* e);
 static void SelectAutoShutdownHandler(lv_event_t *e);
 static uint32_t GetAutoShutdownTimeByEnum(AUTO_SHUTDOWN_ENUM shutdownTime);
-static char* GetAutoShutdownTimeDescByLockTime(void);
+static const char *GetAutoShutdownTimeDescByLockTime(void);
 
 void GuiDisplayWidgetsInit()
 {
@@ -195,7 +195,7 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
 
     label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_auto_lock"));
     lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    char *currentLockTime = GetAutoLockTimeDescByLockTime();
+    const char *currentLockTime = GetAutoLockTimeDescByLockTime();
     autoLockAutoLockLabel = GuiCreateNoticeLabel(parent, currentLockTime);
 
     GuiButton_t table[] = {
@@ -223,7 +223,7 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
 
     label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_auto_shutdown"));
 
-    char *currentShutdownTime = GetAutoShutdownTimeDescByLockTime();
+    const char *currentShutdownTime = GetAutoShutdownTimeDescByLockTime();
     autoShutDownTimeLabel = GuiCreateNoticeLabel(parent, currentShutdownTime);
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
 
@@ -393,7 +393,7 @@ static void SelectAutoLockTimeHandler(lv_event_t *e)
             uint32_t lockTime = GetAutoLockTimeByEnum(newCheckIndex);
             SetAutoLockScreen(lockTime);
             SaveDeviceSettings();
-            char *currentLockTime = GetAutoLockTimeDescByLockTime();
+            const char *currentLockTime = GetAutoLockTimeDescByLockTime();
             lv_label_set_text(autoLockAutoLockLabel, currentLockTime);
             GUI_DEL_OBJ(g_autoLockHintBox)
         }
@@ -420,7 +420,7 @@ static uint32_t GetAutoLockTimeByEnum(AUTO_LOCK_TIME_ENUM lock_time_enum)
     return 0;
 }
 
-static char* GetAutoLockTimeDescByLockTime()
+static const char *GetAutoLockTimeDescByLockTime()
 {
     uint32_t currentAutoLockTime = GetAutoLockScreen();
 
@@ -559,7 +559,7 @@ static void SelectAutoShutdownHandler(lv_event_t *e)
             uint32_t powerOffTime = GetAutoShutdownTimeByEnum(newCheckIndex);
             SetAutoPowerOff(powerOffTime);
             SaveDeviceSettings();
-            char *currentPowerOffTime = GetAutoShutdownTimeDescByLockTime();
+            const char *currentPowerOffTime = GetAutoShutdownTimeDescByLockTime();
             lv_label_set_text(autoShutDownTimeLabel, currentPowerOffTime);
             GUI_DEL_OBJ(g_autoShutdownHintBox)
         }
@@ -584,7 +584,7 @@ static uint32_t GetAutoShutdownTimeByEnum(AUTO_SHUTDOWN_ENUM shutdownTime)
     }
     return 0;
 }
-static char* GetAutoShutdownTimeDescByLockTime(void)
+static const char *GetAutoShutdownTimeDescByLockTime(void)
 {
     uint32_t currentPowerOff = GetAutoPowerOff();
 

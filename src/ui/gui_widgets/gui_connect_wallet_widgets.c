@@ -1195,18 +1195,6 @@ static void UpdategAddress(void)
     }
 }
 
-static void SetCurrentPathIndex(uint8_t index)
-{
-    switch (g_connectWalletTileView.walletIndex) {
-    case WALLET_LIST_SOLFARE:
-        g_currentSOLPathIndex[GetCurrentAccountIndex()] = index;
-        break;
-    default:
-        g_currentEthPathIndex[GetCurrentAccountIndex()] = index;
-        break;
-    }
-}
-
 static void SetCurrentSelectedIndex(uint8_t index)
 {
     g_currentSelectedPathIndex[GetCurrentAccountIndex()] = index;
@@ -1247,7 +1235,7 @@ static void OpenTutorialHandler(lv_event_t *e)
     }
 }
 
-static char *GetDerivationPathSelectDes(void)
+static const char *GetDerivationPathSelectDes(void)
 {
     switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
@@ -1257,23 +1245,23 @@ static char *GetDerivationPathSelectDes(void)
     }
 }
 
-static char *GetChangeDerivationAccountType(int i)
+static const char *GetChangeDerivationAccountType(int i)
 {
     switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
-        return (char *)g_solChangeDerivationList[i].accountType;
+        return g_solChangeDerivationList[i].accountType;
     default:
-        return (char *)g_changeDerivationList[i].accountType;
+        return g_changeDerivationList[i].accountType;
     }
 }
 
-static char *GetChangeDerivationPath(int i)
+static const char *GetChangeDerivationPath(int i)
 {
     switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
-        return (char *)g_solChangeDerivationList[i].path;
+        return g_solChangeDerivationList[i].path;
     default:
-        return (char *)g_changeDerivationList[i].path;
+        return g_changeDerivationList[i].path;
     }
 }
 

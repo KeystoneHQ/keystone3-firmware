@@ -270,7 +270,7 @@ void GuiSettingFingerRegisterFail(void *param)
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
     } else {
         uint8_t errCode = *(uint8_t *)param;
-        char *text = NULL;
+        const char *text = NULL;
         lv_img_set_src(g_imgFinger, &imgRedFinger);
         printf("errCode = %#x\n", errCode);
         lv_obj_set_style_arc_color(g_arcProgress, RED_COLOR, LV_PART_INDICATOR);

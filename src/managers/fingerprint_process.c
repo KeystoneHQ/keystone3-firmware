@@ -409,7 +409,7 @@ uint8_t *GuiGetFpVersion(char *version)
         }
         version[2 * i + 1] = '.';
     }
-    return version;
+    return (uint8_t *)version;
 }
 
 static void FpGetVersion(char *indata, uint8_t len)

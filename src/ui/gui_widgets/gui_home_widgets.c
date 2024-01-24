@@ -368,7 +368,6 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
 };
 
 static void CoinDealHandler(lv_event_t *e);
-static bool IsUtxoCoin(HOME_WALLET_CARD_ENUM coin);
 static void AddFlagCountDownTimerHandler(lv_timer_t *timer);
 void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count);
 
@@ -466,20 +465,6 @@ static void UpdateHomeConnectWalletCard(void)
         lv_obj_set_style_bg_opa(button, LV_OPA_12, LV_PART_MAIN);
         lv_obj_set_style_radius(button, 24, LV_PART_MAIN);
     }
-}
-
-static bool IsUtxoCoin(HOME_WALLET_CARD_ENUM coin)
-{
-    switch (coin) {
-    case HOME_WALLET_CARD_BTC:
-    case HOME_WALLET_CARD_LTC:
-    case HOME_WALLET_CARD_DASH:
-    case HOME_WALLET_CARD_BCH:
-        return true;
-    default:
-        return false;
-    }
-    return false;
 }
 
 static void CoinDealHandler(lv_event_t *e)

@@ -20,7 +20,6 @@ static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static void *g_erc20ContractData = NULL;
-static char *g_erc20Value = NULL;
 static char *g_erc20Name = NULL;
 static void *g_contractData = NULL;
 static bool g_contractDataExist = false;
@@ -566,7 +565,7 @@ static char *CalcSymbol(void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
 
-    TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
+    //TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
     //eth->detail->to: the actual contract address;
     if (isErc20Transfer(eth) && eth->detail->to != NULL) {
         for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++) {

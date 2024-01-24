@@ -11,14 +11,14 @@ static EAPDUResultPage_t *g_param;
 static bool g_original_lock_screen = false;
 
 typedef struct {
-    lv_img_dsc_t *img;
-    char *title;
+    const lv_img_dsc_t *img;
+    const char *title;
 } WalletInfo_t;
 
 typedef struct {
-    char *title;
-    char *subTitle;
-    char *buttonText;
+    const char *title;
+    const char *subTitle;
+    const char *buttonText;
 } ResolveUrInfo_t;
 
 static void ApproveButtonHandler(lv_event_t *e);
@@ -129,12 +129,11 @@ static void GuiResolveUrResultViewInit()
     g_cont = cont;
 
     ResolveUrInfo_t info = CalcResolveUrPageInfo();
-    char *title = info.title;
-    char *subTitle = info.subTitle;
-    char *buttonText = info.buttonText;
+    const char *title = info.title;
+    const char *subTitle = info.subTitle;
+    const char *buttonText = info.buttonText;
     lv_color_t buttonColor = ORANGE_COLOR;
     lv_obj_t *img = NULL;
-    lv_img_dsc_t statusImg = imgSuccess;
     if (g_param->error_code != 0) {
         buttonColor = WHITE_COLOR;
         img = GuiCreateImg(cont, &imgFailed);

@@ -742,7 +742,7 @@ static void OpenChangeEntropyHandler(lv_event_t *e)
         lv_obj_set_scrollbar_mode(cont, LV_SCROLLBAR_MODE_OFF);
         lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 0, 0);
 
-        lv_obj_t *label, img;
+        lv_obj_t *label;
         label = GuiCreateIllustrateLabel(cont, _("change_entropy_desc"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 0);
         lv_obj_t *method_cont = GuiCreateContainerWithParent(cont, 408, 205);

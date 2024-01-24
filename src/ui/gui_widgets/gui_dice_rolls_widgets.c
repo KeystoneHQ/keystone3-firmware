@@ -15,7 +15,7 @@ static void InitDiceImg(lv_obj_t *img, lv_obj_t *anchor, size_t x, size_t y);
 static void OnTextareaValueChangeHandler(lv_event_t *e);
 static void QuitConfirmHandler(lv_event_t *e);
 static void UndoClickHandler(lv_event_t *e);
-static void UndoLongPressHandler(lv_event_t *e);
+//static void UndoLongPressHandler(lv_event_t *e);
 static void ConfirmHandler(lv_event_t *e);
 
 static PageWidget_t *g_page;
@@ -328,14 +328,6 @@ static void UndoClickHandler(lv_event_t *e)
         lv_obj_t *ta = (lv_obj_t *)lv_event_get_user_data(e);
         lv_textarea_set_cursor_pos(ta, LV_TEXTAREA_CURSOR_LAST);
         lv_textarea_del_char(ta);
-    }
-}
-static void UndoLongPressHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_LONG_PRESSED) {
-        lv_obj_t *ta = (lv_obj_t *)lv_event_get_user_data(e);
-        lv_textarea_set_text(ta, "");
     }
 }
 

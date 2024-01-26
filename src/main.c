@@ -66,8 +66,8 @@ int main(void)
     DrawBootLogoOnLcd();
     Gd25FlashInit();
     NvicInit();
-    LogInit();
     PsramInit();
+    LogInit();
     DeviceSettingsInit();
     UserMsgInit();
     DS28S60_Init();

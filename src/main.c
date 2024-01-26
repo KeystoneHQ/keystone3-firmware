@@ -80,7 +80,6 @@ int main(void)
     Aw32001Init();
     ButtonInit();
     ExtInterruptInit();
-    WriteLogEvent(EVENT_ID_BOOT);
     MountSdFatfs();
     UserSqlite3Init();
     ScreenManagerInit();

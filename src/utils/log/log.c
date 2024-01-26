@@ -41,6 +41,7 @@ static uint32_t FindLogOffsetAddr(void);
 static void EraseNextSector(uint32_t length);
 static uint32_t GetNextSectorAddr(uint32_t addr);
 static void CheckLogData(void);
+void CheckLastErrLog(void);
 
 static uint32_t g_logAddr;
 static bool g_logInit = false;
@@ -136,6 +137,8 @@ void LogInit(void)
     printf("g_logAddr=0x%08lX\r\n", g_logAddr);
     CheckLogData();
     g_logInit = true;
+    WriteLogEvent(EVENT_ID_BOOT);
+    CheckLastErrLog();
 }
 
 
@@ -459,4 +462,19 @@ static void CheckLogData(void)
         printf("need erase log\n");
         LogEraseSync();
     }
+}
+
+
+void CheckLastErrLog(void)
+{
+    char errStr[256];
+    Gd25FlashReadBuffer(SPI_FLASH_ADDR_ERR_INFO, (uint8_t *)errStr, sizeof(errStr));
+    if (CheckAllFF((uint8_t *)errStr, sizeof(errStr))) {
+        return;
+    }
+    if (strlen(errStr) < sizeof(errStr)) {
+        printf("last err:%s\n", errStr);
+        WriteLogFormat(EVENT_ID_ERROR, "%s", errStr);
+    }
+    Gd25FlashBlockErase(SPI_FLASH_ADDR_ERR_INFO);
 }

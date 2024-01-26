@@ -4,7 +4,7 @@ use crate::addresses::cashaddr::CashAddrCodec;
 use crate::addresses::constants::{
     PUBKEY_ADDRESS_PREFIX_BCH, PUBKEY_ADDRESS_PREFIX_BTC, PUBKEY_ADDRESS_PREFIX_DASH,
     PUBKEY_ADDRESS_PREFIX_TEST, SCRIPT_ADDRESS_PREFIX_BTC, SCRIPT_ADDRESS_PREFIX_LTC,
-    SCRIPT_ADDRESS_PREFIX_TEST,
+    SCRIPT_ADDRESS_PREFIX_LTC_P2PKH, SCRIPT_ADDRESS_PREFIX_TEST,
 };
 use crate::addresses::encoding::{
     BCHAddressEncoding, BTCAddressEncoding, DASHAddressEncoding, LTCAddressEncoding,
@@ -141,6 +141,7 @@ impl FromStr for Address {
     fn from_str(s: &str) -> Result<Address, Self::Err> {
         let bech32_network = match find_bech32_prefix(s) {
             "bc" | "BC" => Some(Network::Bitcoin),
+            "ltc" | "LTC" => Some(Network::Litecoin),
             _ => None,
         };
         let cash_addr = CashAddrCodec::decode(s);
@@ -219,6 +220,11 @@ impl FromStr for Address {
                 let pubkey_hash = PubkeyHash::from_slice(&data[1..])
                     .map_err(|_| Self::Err::AddressError(format!("failed to get pubkey hash")))?;
                 (Network::Dash, Payload::PubkeyHash(pubkey_hash))
+            }
+            SCRIPT_ADDRESS_PREFIX_LTC_P2PKH => {
+                let pubkey_hash = PubkeyHash::from_slice(&data[1..])
+                    .map_err(|_| Self::Err::AddressError(format!("failed to get pubkey hash")))?;
+                (Network::Litecoin, Payload::PubkeyHash(pubkey_hash))
             }
             SCRIPT_ADDRESS_PREFIX_LTC => {
                 let script_hash = ScriptHash::from_slice(&data[1..])

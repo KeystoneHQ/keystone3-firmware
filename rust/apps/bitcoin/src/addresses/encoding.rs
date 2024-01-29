@@ -22,6 +22,7 @@ pub struct LTCAddressEncoding<'a> {
 pub struct DASHAddressEncoding<'a> {
     pub payload: &'a Payload,
     pub p2pkh_prefix: u8,
+    pub p2sh_prefix: u8,
 }
 
 pub struct BCHAddressEncoding<'a> {
@@ -143,6 +144,12 @@ impl<'a> fmt::Display for DASHAddressEncoding<'a> {
             Payload::PubkeyHash(hash) => {
                 let mut prefixed = [0; 21];
                 prefixed[0] = self.p2pkh_prefix;
+                prefixed[1..].copy_from_slice(&hash[..]);
+                base58::encode_check_to_fmt(fmt, &prefixed[..])
+            }
+            Payload::ScriptHash(hash) => {
+                let mut prefixed = [0; 21];
+                prefixed[0] = self.p2sh_prefix;
                 prefixed[1..].copy_from_slice(&hash[..]);
                 base58::encode_check_to_fmt(fmt, &prefixed[..])
             }

@@ -107,6 +107,7 @@ impl fmt::Display for Address {
                 let encoding = DASHAddressEncoding {
                     payload: &self.payload,
                     p2pkh_prefix: PUBKEY_ADDRESS_PREFIX_DASH,
+                    p2sh_prefix: PUBKEY_ADDRESS_PREFIX_DASH_P2SH,
                 };
                 encoding.fmt(fmt)
             }
@@ -322,5 +323,19 @@ mod tests {
             addr.to_string(),
             "qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a"
         );
+    }
+
+    #[test]
+    fn test_address_dash_p2wpkh() {
+        let addr = Address::from_str("XdAUmwtig27HBG6WfYyHAzP8n6XC9jESEw").unwrap();
+        assert_eq!(addr.network.get_unit(), "DASH");
+        assert_eq!(addr.to_string(), "XdAUmwtig27HBG6WfYyHAzP8n6XC9jESEw");
+    }
+
+    #[test]
+    fn test_address_dash_p2sh() {
+        let addr = Address::from_str("7qd1hqQqZzMRaJA5drqkpEZL41s3JktRuZ").unwrap();
+        assert_eq!(addr.network.get_unit(), "DASH");
+        assert_eq!(addr.to_string(), "7qd1hqQqZzMRaJA5drqkpEZL41s3JktRuZ");
     }
 }

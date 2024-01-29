@@ -169,6 +169,8 @@ void LogRustPanic(char* panic_info)
 
 #include "draw_on_lcd.h"
 #include "presetting.h"
+#include "version.h"
+#include "hardware_version.h"
 
 LV_FONT_DECLARE(openSans_20);
 
@@ -188,6 +190,8 @@ void PrintErrorInfoOnLcd(void)
     PrintOnLcd(&openSans_20, 0x1927, "support@Keyst.one\n");
     GetSerialNumber(serialNumber);
     PrintOnLcd(&openSans_20, 0xFFFF, "Serial No.%s\n", serialNumber);
+    PrintOnLcd(&openSans_20, 0xFFFF, "Software:%s\n", GetSoftwareVersionString());
+    PrintOnLcd(&openSans_20, 0xFFFF, "Hardware:%s\n", GetHardwareVersionString());
 }
 
 #endif

@@ -46,6 +46,8 @@
 #include "anti_tamper.h"
 #include "power_on_self_check.h"
 #include "account_manager.h"
+#include "version.h"
+#include "hardware_version.h"
 
 
 int main(void)
@@ -56,7 +58,7 @@ int main(void)
     SensorInit();
     Uart0Init(CmdIsrRcvByte);
     FingerprintInit();
-    cm_backtrace_init("mh1903", "V1.0.0", "V1.0.0");
+    cm_backtrace_init("mh1903", GetHardwareVersionString(), GetSoftwareVersionString());
     TrngInit();
     TamperInit(TamperStartup);
     PowerInit();

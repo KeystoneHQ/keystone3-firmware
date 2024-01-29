@@ -15,6 +15,7 @@
 #include "log_task.h"
 #include "gui_api.h"
 #include "gui_views.h"
+#include "version.h"
 
 
 #define LOG_NAME_MAX_LEN            64
@@ -133,11 +134,13 @@ void LogErase(void)
 
 void LogInit(void)
 {
+    char version[32];
     g_logAddr = FindLogOffsetAddr();
     printf("g_logAddr=0x%08lX\r\n", g_logAddr);
     CheckLogData();
     g_logInit = true;
-    WriteLogEvent(EVENT_ID_BOOT);
+    GetSoftWareVersionNumber(version);
+    WriteLogFormat(EVENT_ID_BOOT, "v%s", version);
     CheckLastErrLog();
 }
 

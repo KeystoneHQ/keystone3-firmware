@@ -42,8 +42,10 @@ yml_files = glob.glob('*.yml')
 # 构建命令
 cmd = ['lv_i18n', 'compile', '-t'] + yml_files + ['-o', '.', '-l', 'zh-CN', '-l', 'en']
 
+print(cmd)
+
 # 执行命令
-result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+result = subprocess.run(cmd)
 
 # 检查是否执行成功
 if result.returncode == 0:

@@ -254,3 +254,4 @@ void GuiImportShareRefresh(void)
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
 }
 
+ 

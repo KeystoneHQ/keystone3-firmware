@@ -1,1 +1,1 @@
-lv_i18n compile -t *.yml -o .
+lv_i18n compile -t *.yml -o . -l zh-CN -l en -l ru

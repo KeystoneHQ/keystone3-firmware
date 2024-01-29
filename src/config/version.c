@@ -5,7 +5,7 @@
 #define SOFTWARE_VERSION_MAX_LEN            (32)
 #define STRINGIFY(x)                        #x
 #define EXPAND(x)                           STRINGIFY(x)
-#define BETA_DESC                           "russian_support"
+#define BETA_DESC                           "zh_support"
 
 #define SOFTWARE_VERSION_STR "Firmware v" EXPAND(SOFTWARE_VERSION_MAJOR) "." EXPAND(SOFTWARE_VERSION_MINOR) "." EXPAND(SOFTWARE_VERSION_BUILD)
 #ifdef COMPILE_SIMULATOR

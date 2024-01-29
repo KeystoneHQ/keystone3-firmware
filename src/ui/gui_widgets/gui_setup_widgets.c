@@ -115,7 +115,7 @@ void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
     uint8_t lang = LanguageGetIndex();
     static lv_point_t linePoints[2] = {{36, 0}, {444, 0}};
     lv_obj_t *label;
-    for (int i = SETUP_ENGLISH; i < SETUP_ENGLISH + 2; i++) {
+    for (int i = SETUP_ENGLISH; i < SETUP_ENGLISH + 3; i++) {
         // for (int i = SETUP_ENGLISH; i < SETUP_LANGUAGE_BUTT; i++) {
         lv_obj_t *checkBox = GuiCreateSingleCheckBox(parent, "");
         g_languageCheck[i] = checkBox;

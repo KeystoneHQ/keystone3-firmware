@@ -51,6 +51,10 @@ if (RU_SUPPORT)
     add_compile_definitions(RU_SUPPORT)
 endif()
 
+if (CN_SUPPORT)
+    add_compile_definitions(CN_SUPPORT)
+endif()
+
 if(BUILD_PRODUCTION)
     add_compile_definitions(BUILD_PRODUCTION)
 endif()

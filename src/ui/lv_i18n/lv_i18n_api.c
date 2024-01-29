@@ -15,11 +15,11 @@ const LanguageInfo_t g_languageList[] = {
     {LANG_RU, "ru"},
 #endif
 #if CN_SUPPORT
-    {LANG_ZH_CN, "zh"},
+    {LANG_ZH_CN, "zh-CN"},
 #endif
 };
 
-static uint8_t g_curLangIndex = LANG_EN;
+static uint8_t g_curLangIndex = LANG_ZH_CN;
 
 void LanguageInit(void)
 {

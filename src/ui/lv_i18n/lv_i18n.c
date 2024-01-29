@@ -746,7 +746,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"unlock_device_use_fingerprint", "Use Fingerprint"},
     {"unlock_device_use_password", "Use Password"},
     {"unlock_device_use_pin", "Use PIN"},
-    {"usb_connection_desc", "When disabled, the usb can only be used for charging battery"},
+    {"usb_connection_desc", "When enabled, the USB port can only be used for battery charging purposes."},
     {"usb_connection_subtitle", "Air-Gap Mode"},
     {"usb_connection_title", "Connection"},
     {"usb_transport_connect_rabby", "Rabby Wallet wants to connect your Keystone via USB"},

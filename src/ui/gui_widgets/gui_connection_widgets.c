@@ -106,7 +106,7 @@ void GuiConnectionEntranceWidget(lv_obj_t *parent)
         },
     };
 
-    lv_obj_t *button = GuiCreateButton(parent, 456, 148, table, NUMBER_OF_ARRAYS(table),
+    lv_obj_t *button = GuiCreateButton(parent, 456, 178, table, NUMBER_OF_ARRAYS(table),
                                        UsbConnectionHandler, NULL);
     // lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 0);
@@ -134,12 +134,12 @@ static void UsbConnectionSwitchHandler(lv_event_t * e)
     if (code == LV_EVENT_VALUE_CHANGED) {
         if (lv_obj_has_state(obj, LV_STATE_CHECKED)) {
             printf("air gap off\n");
-            SetUSBSwitch(0);
             SetUsbState(false);
+            SetUSBSwitch(1);
             CloseUsb();
         } else {
+            SetUSBSwitch(0);
             GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
-            SetUSBSwitch(1);
             printf("air gap on\n");
         }
         SaveDeviceSettings();

@@ -182,7 +182,7 @@ void SetDarkMode(uint32_t darkMode)
 
 uint32_t GetUSBSwitch(void)
 {
-    return g_deviceSettings.usbSwitch;
+    return !g_deviceSettings.usbSwitch;
 }
 
 

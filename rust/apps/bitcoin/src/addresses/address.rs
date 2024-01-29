@@ -114,6 +114,8 @@ impl fmt::Display for Address {
                 let encoding = LTCAddressEncoding {
                     payload: &self.payload,
                     p2sh_prefix: SCRIPT_ADDRESS_PREFIX_LTC,
+                    p2pkh_prefix: SCRIPT_ADDRESS_PREFIX_LTC_P2PKH,
+                    bech32_hrp: "ltc",
                 };
                 encoding.fmt(fmt)
             }
@@ -245,5 +247,80 @@ impl FromStr for Address {
         };
 
         Ok(Address { network, payload })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_address_btc_p2pkh() {
+        let addr = Address::from_str("1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2").unwrap();
+        assert_eq!(addr.network.get_unit(), "BTC");
+        assert_eq!(addr.to_string(), "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2");
+    }
+
+    #[test]
+    fn test_address_btc_p2sh() {
+        let addr = Address::from_str("3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy").unwrap();
+        assert_eq!(addr.network.get_unit(), "BTC");
+        assert_eq!(addr.to_string(), "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy");
+    }
+
+    #[test]
+    fn test_address_btc_p2wpkh() {
+        let addr = Address::from_str("bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4").unwrap();
+        assert_eq!(addr.network.get_unit(), "BTC");
+        assert_eq!(
+            addr.to_string(),
+            "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
+        );
+    }
+
+    #[test]
+    fn test_address_btc_p2tr() {
+        let addr =
+            Address::from_str("bc1p5d7rjq7g6rdk2yhzks9smlaqtedr4dekq08ge8ztwac72sfr9rusxg3297")
+                .unwrap();
+        assert_eq!(addr.network.get_unit(), "BTC");
+        assert_eq!(
+            addr.to_string(),
+            "bc1p5d7rjq7g6rdk2yhzks9smlaqtedr4dekq08ge8ztwac72sfr9rusxg3297"
+        );
+    }
+
+    #[test]
+    fn test_address_ltc_p2wpkh() {
+        let addr = Address::from_str("ltc1qum864wd9nwsc0u9ytkctz6wzrw6g7zdn08yddf").unwrap();
+        assert_eq!(addr.network.get_unit(), "LTC");
+        assert_eq!(
+            addr.to_string(),
+            "ltc1qum864wd9nwsc0u9ytkctz6wzrw6g7zdn08yddf"
+        );
+    }
+
+    #[test]
+    fn test_address_ltc_p2sh() {
+        let addr = Address::from_str("MR5Hu9zXPX3o9QuYNJGft1VMpRP418QDfW").unwrap();
+        assert_eq!(addr.network.get_unit(), "LTC");
+        assert_eq!(addr.to_string(), "MR5Hu9zXPX3o9QuYNJGft1VMpRP418QDfW");
+    }
+
+    #[test]
+    fn test_address_ltc_p2pkh() {
+        let addr = Address::from_str("LhyLNfBkoKshT7R8Pce6vkB9T2cP2o84hx").unwrap();
+        assert_eq!(addr.network.get_unit(), "LTC");
+        assert_eq!(addr.to_string(), "LhyLNfBkoKshT7R8Pce6vkB9T2cP2o84hx");
+    }
+
+    #[test]
+    fn test_address_bch() {
+        let addr = Address::from_str("qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a").unwrap();
+        assert_eq!(addr.network.get_unit(), "BCH");
+        assert_eq!(
+            addr.to_string(),
+            "qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a"
+        );
     }
 }

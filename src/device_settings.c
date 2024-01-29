@@ -36,7 +36,7 @@
 #define DEFAULT_AUTO_POWER_OFF          0
 #define DEFAULT_VIBRATION               1
 #define DEFAULT_DARK_MODE               1
-#define DEFAULT_USB_SWITCH              1
+#define DEFAULT_USB_SWITCH              0
 
 typedef struct {
     uint32_t setupStep;

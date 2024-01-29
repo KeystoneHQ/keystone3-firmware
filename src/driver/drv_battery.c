@@ -24,7 +24,8 @@
 
 #define BATTERY_DIFF_THRESHOLD                          20
 #define BATTERY_CHARGING_BY_TIME                        75
-#define BATTERY_LOG_PERCENT_INTERVAL                    1
+#define BATTERY_LOG_PERCENT_INTERVAL                    10
+#define BATTERY_LOG_ONLY_LOW_BATTERY                    1
 #define BATTERY_LOG_DETAIL                              1
 #define BATTERY_ADC_TIMES                               100
 #define BATTERY_PCT_CHANGE_MIN_TICK_DISCHARGE           (80 * 1000)
@@ -253,7 +254,7 @@ bool BatteryIntervalHandler(void)
         //The battery percentage only increase when charging.
         //The battery percentage increase by 1% each time.
         if (percent < g_batterPercent && percent >= BATTERY_CHARGING_BY_TIME) {
-            printf("delay increate battery percentage delayIncreate = %d\n", delayIncreate);
+            //printf("delay increate battery percentage delayIncreate = %d\n", delayIncreate);
             delayIncreate++;
         }
 
@@ -270,10 +271,17 @@ bool BatteryIntervalHandler(void)
     BATTERY_PRINTF("g_batterPercent=%d\r\n", g_batterPercent);
     if (change) {
         if (g_batterPercent % BATTERY_LOG_PERCENT_INTERVAL == 0) {
+
+#if BATTERY_LOG_ONLY_LOW_BATTERY == 1
+            if (g_batterPercent <= 20) {
+#endif
 #if BATTERY_LOG_DETAIL == 1
-            WriteLogFormat(EVENT_ID_BATTERY, "%dmv,%d%%,disp=%d%%", milliVolt, percent, g_batterPercent);
+                WriteLogFormat(EVENT_ID_BATTERY, "%dmv,%d%%,disp=%d%%", milliVolt, percent, g_batterPercent);
 #else
-            WriteLogValue(EVENT_ID_BATTERY, g_batterPercent);
+                WriteLogValue(EVENT_ID_BATTERY, g_batterPercent);
+#endif
+#if BATTERY_LOG_ONLY_LOW_BATTERY == 1
+            }
 #endif
         }
         SaveBatteryPercent(g_batterPercent);

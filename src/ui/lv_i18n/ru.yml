@@ -11,13 +11,13 @@ ru:
   OK: Хорошо
   Pending: В ожидании
   Restart: Перезагрузка
-  Restart_now: ''
+  Restart_now: Перезагрузите сейчас же.
   Skip: Пропустить
   Success: Успех
   Tutorial: Руководство
   Update: Обновить
   Updating: Обновление
-  about_info_battery_voltage: Напряжение батар    еи
+  about_info_battery_voltage: Напряжение батареи
   about_info_device_uid: IOD устройства
   about_info_export_log: Выгрузка логов
   about_info_export_to_sdcard: Выгрузить логи на MicroSD

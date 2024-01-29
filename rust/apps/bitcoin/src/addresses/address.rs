@@ -3,8 +3,8 @@ extern crate alloc;
 use crate::addresses::cashaddr::CashAddrCodec;
 use crate::addresses::constants::{
     PUBKEY_ADDRESS_PREFIX_BCH, PUBKEY_ADDRESS_PREFIX_BTC, PUBKEY_ADDRESS_PREFIX_DASH,
-    PUBKEY_ADDRESS_PREFIX_TEST, SCRIPT_ADDRESS_PREFIX_BTC, SCRIPT_ADDRESS_PREFIX_LTC,
-    SCRIPT_ADDRESS_PREFIX_LTC_P2PKH, SCRIPT_ADDRESS_PREFIX_TEST,
+    PUBKEY_ADDRESS_PREFIX_DASH_P2SH, PUBKEY_ADDRESS_PREFIX_TEST, SCRIPT_ADDRESS_PREFIX_BTC,
+    SCRIPT_ADDRESS_PREFIX_LTC, SCRIPT_ADDRESS_PREFIX_LTC_P2PKH, SCRIPT_ADDRESS_PREFIX_TEST,
 };
 use crate::addresses::encoding::{
     BCHAddressEncoding, BTCAddressEncoding, DASHAddressEncoding, LTCAddressEncoding,
@@ -220,6 +220,11 @@ impl FromStr for Address {
                 let pubkey_hash = PubkeyHash::from_slice(&data[1..])
                     .map_err(|_| Self::Err::AddressError(format!("failed to get pubkey hash")))?;
                 (Network::Dash, Payload::PubkeyHash(pubkey_hash))
+            }
+            PUBKEY_ADDRESS_PREFIX_DASH_P2SH => {
+                let script_hash = ScriptHash::from_slice(&data[1..])
+                    .map_err(|_| Self::Err::AddressError(format!("failed to get script hash")))?;
+                (Network::Dash, Payload::ScriptHash(script_hash))
             }
             SCRIPT_ADDRESS_PREFIX_LTC_P2PKH => {
                 let pubkey_hash = PubkeyHash::from_slice(&data[1..])

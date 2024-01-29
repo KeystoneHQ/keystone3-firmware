@@ -1,5 +1,6 @@
 pub const PUBKEY_ADDRESS_PREFIX_BTC: u8 = 0; // 0x00
 pub const PUBKEY_ADDRESS_PREFIX_DASH: u8 = 76; // 0x4C
+pub const PUBKEY_ADDRESS_PREFIX_DASH_P2SH: u8 = 16; // 0x10
 pub const PUBKEY_ADDRESS_PREFIX_BCH: u8 = 0; // 0x00
 
 pub const SCRIPT_ADDRESS_PREFIX_BTC: u8 = 5; // 0x05

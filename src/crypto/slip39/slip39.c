@@ -14,8 +14,6 @@
 #include "user_utils.h"
 #include <stdlib.h>
 
-// #define pbkdf2_hmac_sha256_slip39 pbkdf2_hmac_sha256
-
 void Slip39Error(int errNum);
 extern void pbkdf2_hmac_sha256_slip39(const uint8_t *pass, int passlen, const uint8_t *salt,
                                       int saltlen, uint32_t iterations, uint8_t *key,

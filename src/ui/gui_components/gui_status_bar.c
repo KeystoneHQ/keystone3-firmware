@@ -626,12 +626,14 @@ void SetMidBtnLabel(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, co
 void SetRightBtnLabel(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM button, const char *text)
 {
     SetNavBarRightBtn(navBarWidget, button, NULL, NULL);
+    char btnBuf[64] = {0};
     switch (button) {
     case NVS_BAR_WORD_SELECT:
         lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 0), text);
         break;
     case NVS_BAR_WORD_RESET:
-        lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 0), text);
+        sprintf(btnBuf, "%s %s", USR_SYMBOL_RESET, _("import_wallet_phrase_clear_btn"));
+        lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 0), btnBuf);
         break;
     default:
         return;

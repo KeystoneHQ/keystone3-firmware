@@ -1,4 +1,6 @@
 ru:
+  ? ''
+  : Ethereum - Ethereum
   Approve: Разрешить
   Attention: Внимание
   Cancel: Отмена
@@ -32,22 +34,6 @@ ru:
   about_info_result_export_successful_desc: Системные логи были успешно выгружены
     на MicroSD карту.
   about_info_serial_number: Серийный номер
-  about_info_verify_checksum_desc: Проверьте, соответствует ли приведенная выше информация
-    веб-странице. Если он не совпадает, это означает, что ваша прошивка могла быть
-    подделана. Прекратите использование устройства.
-  about_info_verify_checksum_title: Контрольная сумма
-  about_info_verify_firmware_desc: Это расширенная функция, позволяющая разработчикам
-    проверить, соответствует ли прошивка устройства Keystone той версии, исходный
-    код которой мы предоставили в открытом доступе
-  about_info_verify_firmware_step1: Перейдите в репозиторий Keystone на GitHub с открытым
-    исходным кодом и следуйте инструкциям, чтобы собрать прошивку и получить контрольную
-    сумму
-  about_info_verify_firmware_step2: 'Нажмите кнопку #F5870A Контрольная сумма# рядом
-    с загрузкой прошивки'
-  about_info_verify_firmware_step3: 'Нажмите кнопку #F5870A «Показать контрольную
-    сумму#» ниже и сравните информацию, отображаемую на веб-странице и на вашем устройстве'
-  about_info_verify_firmware_title: Проверка прошивки
-  about_info_verify_source_code_title: Проверка исходного кода
   about_keystone_discord: Discord
   about_keystone_discord_url: keyst.one/discord
   about_keystone_telegram: Telegram
@@ -85,7 +71,7 @@ ru:
   about_terms_no_sensitive_information: Конфиденциальная информация
   about_terms_no_sensitive_information_desc: Мы не храним вашу конфиденциальную информацию,
     такую как пароли или сид фразы. Только вы ответственны за их хранение.
-  about_terms_ownership: Ответственность
+  about_terms_ownership: 'Ответственность '
   about_terms_ownership_desc: Вы несете ответственность за свои действия при использовании
     Продуктов и Услуг.
   about_terms_product_and_services: Продукты и услуги Keystone
@@ -100,26 +86,10 @@ ru:
   about_terms_subtitle: Условия использования Keystone
   about_terms_title: Условия использования
   about_terms_website_url: https://keyst.one/terms
-  change_entropy: Изменение Энтропии
-  change_entropy_desc: Выберите энтропию, которую вы хотите использовать для создания
-    кошельков
-  change_entropy_dice_desc: Создайте исходную фразу со случайными числами, полученными
-    путем броска игральных костей
-  change_entropy_dice_detail_desc_1: 'Вам необходимо выбросить как минимум #F5870A
-    128 бит#, чтобы сгенерировать сид фразу. Рекомендуется выбросить больше, чем #F5870A
-    256# #F5870A бит# для достаточной случайности.'
-  change_entropy_dice_detail_desc_2: Мы рекомендуем использовать игральные кости для
-    казино, чтобы увеличить энтропию каждого броска игральных костей.
-  change_entropy_dice_rolls: Игральные кубики
-  change_entropy_dice_rolls_subtitle: Использовать игральные кубики в качестве энтропии
-  change_entropy_system: Система
-  change_entropy_system_desc: Создайте сид фразу с помощью генератора случайных чисел
-    Keystone SE.
-  change_entropy_system_subtitle: Используйте энтропию Keystone SE
   change_passcode_mid_btn: Введите код-пароль
   change_passcode_reset_desc: Идет запись на SE чип...
-  change_passcode_reset_success_desc: Пароль успешно сброшен
-  change_passcode_reset_success_title: Сброс выполнен
+  change_passcode_reset_success_desc: 'Пароль успешно сброшен '
+  change_passcode_reset_success_title: 'Сброс выполнен '
   change_passcode_reset_title: Cброс, не выключайте кошелек
   change_passcode_warning_desc: Если вы забыли пароль, вам придется сначала подтвердить
     сид фразу этого кошелька и только затем сбросить пароль.
@@ -138,9 +108,7 @@ ru:
   connect_bw_qr_title: BlueWallet (Мобильный)
   connect_bw_t: Руководство
   connect_bw_title: BlueWallet (Мобильный)
-  connect_eternl_desc: Перейдите по ссылке ниже на своем компьютере или мобильном
-    устройстве, чтобы получить руководство по синхронизации Keystone с программным
-    кошельком.
+  connect_eternl_desc: ''
   connect_eternl_link: https://keyst.one/t/3rd/eternl
   connect_eternl_qr_link: https://keyst.one/t/3rd/eternl
   connect_eternl_qr_title: Eternl (Веб)
@@ -153,14 +121,6 @@ ru:
   connect_fewcha_qr_title: Fewcha (Расширение)
   connect_fewcha_t: Руководство
   connect_fewcha_title: Fewcha (Расширение)
-  connect_imtoken_desc: Перейдите по ссылке ниже на своем компьютере или мобильном
-    устройстве, чтобы получить руководство по синхронизации Keystone с программным
-    кошельком.
-  connect_imtoken_link: https://keyst.one/t/3rd/imtoken
-  connect_imtoken_qr_link: https://keyst.one/t/3rd/imtoken
-  connect_imtoken_qr_title: imToken (Мобильный)
-  connect_imtoken_t: Руководство
-  connect_imtoken_title: imToken (Мобильный)
   connect_keplr_desc: Перейдите по ссылке ниже на своем компьютере или мобильном устройстве,
     чтобы получить руководство по синхронизации Keystone с программным кошельком.
   connect_keplr_link: https://keyst.one/t/3rd/keplr
@@ -231,14 +191,6 @@ ru:
   connect_solflare_qr_title: Solflare
   connect_solflare_t: Руководство
   connect_solflare_title: Solflare
-  connect_sparrow_desc: Перейдите по ссылке ниже на своем компьютере или мобильном
-    устройстве, чтобы получить руководство по синхронизации Keystone с программным
-    кошельком.
-  connect_sparrow_link: https://keyst.one/t/3rd/sparrow
-  connect_sparrow_qr_link: https://keyst.one/t/3rd/sparrow
-  connect_sparrow_qr_title: Sparrow
-  connect_sparrow_t: Руководство
-  connect_sparrow_title: Sparrow
   connect_sushi_desc: Перейдите по ссылке ниже на своем компьютере или мобильном устройстве,
     чтобы получить руководство по синхронизации Keystone с программным кошельком.
   connect_sushi_link: https://keyst.one/t/3rd/sushi
@@ -246,14 +198,14 @@ ru:
   connect_sushi_qr_title: SushiSwap
   connect_sushi_t: Руководство
   connect_sushi_title: SushiSwap
-  connect_wallet_choose_wallet: Выберите кошелек
+  connect_wallet_choose_wallet: 'Выберите кошелек '
   connect_wallet_desc: Сканируйте QR-код программным кошельком
   connect_wallet_eternl_step1: Выберите счета, которые вы хотите импортировать в кошелек
     Eternl.
   connect_wallet_eternl_step2: Сканируйте QR-код через Keystone
   connect_wallet_eternl_step3: Подтвердите создание нового QR-кода на Keystone
   connect_wallet_eternl_step4: Сканируйте QR-код через кошелек Eternl
-  connect_wallet_instruction: 'Cледуйте инструкциям ниже:'
+  connect_wallet_instruction: 'Cледуйте инструкциям ниже: '
   connect_wallet_key_request_fmt: 'Кошелек %s хочет получить открытый ключ Keystone:'
   connect_wallet_keystone_hint: 'Выберите сети, для добавления в программный кошелек '
   connect_wallet_scan: Сканируйте QR-код программным кошельком
@@ -261,10 +213,10 @@ ru:
   connect_wallet_select_network_hint: Выберите сети, для отображения в программном
     кошельке
   connect_wallet_supported_networks: Поддерживаемые сети
-  connect_wallet_title: Подключить кошелек
+  connect_wallet_title: 'Подключить кошелек '
   connect_wallet_upgrade_hint: 'Обновите прошивку, чтобы получить доступ к работе
     с программным кошельком '
-  connect_wallet_xpub_addresstype: Тип адреса
+  connect_wallet_xpub_addresstype: 'Тип адреса '
   connect_wallet_xpub_qrformat: Формат QR-кода
   connect_xrp_toolkit_desc: Перейдите по ссылке ниже на своем компьютере или мобильном
     устройстве, чтобы получить руководство по синхронизации Keystone с программным
@@ -291,7 +243,7 @@ ru:
   connect_zapper_title: Zapper
   create_wallet_generating_desc: Идет запись на безопасный чип
   create_wallet_generating_title: Создание кошелька
-  derivation_path_address: Адреса
+  derivation_path_address: 'Адреса '
   derivation_path_address_eg: Пример адресов
   derivation_path_btc_1_desc: Современный формат с низкими комиссиями, начинается
     с «bc1».
@@ -303,13 +255,9 @@ ru:
   derivation_path_eth_ledger_legacy_desc: Формат адреса для старых устройств Ledger
   derivation_path_eth_ledger_live_desc: Формат адреса для устройств Ledger
   derivation_path_eth_standard_desc: По умолчанию, следует стандарту BIP44, популярный
-  derivation_path_near_ledger_live_desc: ''
-  derivation_path_near_standard_desc: Рекомендуется. Популярный формат для многих
-    кошельков NEAR.
   derivation_path_select_btc: Выберите тип адресов Bitcoin, который вы хотите использовать
   derivation_path_select_eth: Выберите путь вывода Ethereum, который вы хотите использовать
-  derivation_path_select_near: Выберите путь вывода Near, который вы хотите использовать
-  derivation_path_select_sol: Выберите путь вывода Solana, который вы хотите использовать
+  derivation_path_select_sol: Выберите тип адресов Solana, который вы хотите использовать
   derivation_path_sol_1_desc: ''
   derivation_path_sol_2_desc: ''
   derivation_path_sol_3_desc: ''
@@ -327,10 +275,6 @@ ru:
     для зарядки аккумулятора.
   device_settings_connection_sub_title1: Передача данных по USB
   device_settings_connection_title1: Связь
-  dice_roll_cancel_desc: Если вы отмените, то все введенные вами номера будут потеряны.
-  dice_roll_cancel_title: Отменить создание через кубики?
-  dice_roll_error_label: Недостаточная случайности
-  dice_roll_hint_label: Не менее 50 бросков
   enter_passcode: Введите код-пароль
   error_box_duplicated_seed_phrase: Дубликат сид фразы
   error_box_duplicated_seed_phrase_desc: Введенная вами сид фраза уже используется
@@ -343,7 +287,7 @@ ru:
     проверьте резервную копию и повторите попытку.
   error_box_low_power: Низкий заряд
   error_box_low_power_desc: Для продолжения процесса устройству требуется минимум
-    20% заряда батареи
+    20% заряда батареи.
   error_box_mnemonic_not_match_wallet: Сид фраза не совпадает
   error_box_mnemonic_not_match_wallet_desc: Неверная сид фраза. Перепроверьте и попробуйте
     снова.
@@ -359,12 +303,10 @@ ru:
   fingerprint_add_failed_duplicate: Дубликат пальца, используйте другой палец.
   fingerprint_add_failed_use_another: Не удалось добавить отпечаток пальца. Используйте
     другой палец и повторите попытку.
-  fingerprint_add_password: Введите код-пароль для шифрования и сохранения отпечатка
-    пальца.\
   fingerprint_add_success: Успешно добавлено
   fingerprint_nth: Палец %d
   fingerprint_nth_remove_desc: Вы точно хотите удалить отпечаток %d?
-  fingerprint_nth_remove_title: Удалить отпечаток?
+  fingerprint_nth_remove_title: 'Удалить отпечаток? '
   fingerprint_passcode_fingerprint_setting: Настройки отпечатков
   fingerprint_passcode_mid_btn: Биометрия и код-пароль
   fingerprint_passcode_reset_passcode: Сброс код-пароля
@@ -373,19 +315,11 @@ ru:
   fingerprint_unlock_device: Разблокировка
   fingerprint_up_to_3: Можно добавить 3 отпечатка
   firmware_update_deny_desc: Необходимо разблокировать устройство для обновления прошивки.
-  firmware_update_deny_input_password: Введите пароль
+  firmware_update_deny_input_password: 'Введите пароль '
   firmware_update_deny_input_password_title: 'Пожалуйста, введите пароль '
   firmware_update_deny_title: Разблокируйте устройство
   firmware_update_desc: Чтобы получить больше возможностей обновите прошивку до последней
     версии.
-  firmware_update_sd_checksum_desc: '#F5870A Показать контрольную сумму#'
-  firmware_update_sd_checksum_done: Контрольная сумма:\n\n
-  firmware_update_sd_checksum_fmt: '#F5870A Показать контрольную сумму(%d%%)#'
-  firmware_update_sd_checksum_fmt_version: '#F5870A Показать контрольную сумму(v%s)#'
-  firmware_update_sd_checksum_notice: Это дополнительная функция, предназначенная
-    для дальнейшего повышения безопасности. Сравните следующую контрольную сумму с
-    контрольной суммой вашего загружаемого пакета на официальном сайте и убедитесь,
-    что они совпадают
   firmware_update_sd_copying_desc: Не доставайте MicroSD карту во время загрузки прошивки.
   firmware_update_sd_copying_title: Старт обновления
   firmware_update_sd_desc1: Убедитесь, что у вашего Keystone осталось не менее 20%
@@ -406,7 +340,7 @@ ru:
     прошивкой (keystone3.bin) и карта отформатирована в стандарте FAT32. '
   firmware_update_sd_not_detected_title: Прошивка не найдена
   firmware_update_sd_title: MicroSD обновление
-  firmware_update_sd_updating_desc: Это займет около 5 минут
+  firmware_update_sd_updating_desc: 'Это займет около 5 минут '
   firmware_update_sd_updating_title: Обновление
   firmware_update_title: Обновление прошивки
   firmware_update_updating_desc: Это займет около 5 минут
@@ -434,8 +368,6 @@ ru:
   firmware_update_usb_title: USB обновление
   firmware_update_usb_title2: '#F5870A Внимание#'
   firmware_update_usb_updating_hint: Не отключайте USB кабель во время процесса установки.
-  firmware_update_verify_firmware_qr_link: KeystoneHQ/keystone3-firmware/docs/\nverify.md
-  firmware_update_verify_firmware_title: Проверка прошивки
   firmware_update_via_sd: Через MicroSD карту
   firmware_update_via_usb: Через USB кабель
   forget_password_cancel: Отменить сброс пароля?
@@ -446,7 +378,7 @@ ru:
   generating_qr_codes: Генерируются QR-коды
   got_it: Понятно
   home_manage_assets: Управление активами
-  home_more_connect_wallet: Программные кошельки
+  home_more_connect_wallet: 'Программные кошельки '
   home_more_device_setting: Настройки устройства
   home_select_coin_count_fmt: '#F5870A %d#/%d'
   home_upgrade_hint: Обновитесь до последней версии, чтобы расширить возможности устройства.
@@ -501,16 +433,14 @@ ru:
   language_option2: 简体中文
   language_option3: Русский язык
   language_option4: Español
-  language_option5: 한국인
+  language_option5: 한국어
   language_title: Язык
-  learn_more: Узнать больше
   low_battery_pop_up_desc: Для продолжения процесса устройству требуется минимум 20%
     заряда батареи.
   low_battery_pop_up_title: Низкий заряд
   not_now: Не сейчас
   passphrase_access_switch_desc: Включить ввод кодовой фразы после включения устройства
   passphrase_access_switch_title: Быстрый доступ
-  passphrase_add_password: Введите код-пароль для настройки кошелька с кодовой фразой.
   passphrase_enter_input: Введите фразу
   passphrase_enter_passcode: Кодовая фраза
   passphrase_enter_repeat: Подтвердите фразу
@@ -536,15 +466,12 @@ ru:
   password_error_too_weak: Установите сложный пароль
   password_input_desc: Введите пароль
   password_label: ПАРОЛЬ
-  path: Путь
   pin_code: PIN-КОД
-  pin_label: PIN
   power_off: Выключить
   prepare_wallet_first_step: Обнаружены новые сети
   prepare_wallet_hint: Подготовка кошелька
   prepare_wallet_second_step: Настройка монет...
   prepare_wallet_third_step: Генерация расширенного публичного ключа...
-  public_key: Публичный ключ
   purpose_desc: Создайте новый или восстановите кошелек используя сид фразу.
   purpose_import_wallet: Восстановить кошелек
   purpose_new_wallet: Создать кошелек
@@ -586,12 +513,15 @@ ru:
   receive_btc_more_address_settings: Настройки адресов
   receive_btc_more_export_xpub: Экспорт XPub
   receive_btc_more_t: Руководство
-  receive_btc_more_t_desc1: "Bitcoin (BTC) поддерживает три формата адресов:\n1. Native\
-    \ SegWit ?это наиболее эффективный и безопасный формат, который уменьшает комиссии\
-    \ в сети в отличие от других адресов. Адреса этого формата начинаются с символов\
-    \ \"bc1\". \n2. Устаревший формат ?одна из самых ранних версий адресов Bitcoin,\
-    \ обычно начинающаяся с \"1\".\n3. Nested SegWit ?это решение, предназначенное\
-    \ для плавного перехода на Native SegWit, обычно начинается с \"3\"."
+  receive_btc_more_t_desc1: "Bitcoin (BTC) поддерживает три формата адресов:  \n1.\
+    \ Native SegWit — это наиболее эффективный и безопасный формат, который уменьшает\
+    \ комиссии в сети в отличие от других адресов. Адреса этого формата начинаются\
+    \ с символов «bc1».                \n2. Устаревший формат — одна из самых ранних\
+    \ версий адресов Bitcoin, обычно начинающаяся с «1».\n3. Nested SegWit — это решение,\
+    \ предназначенное для плавного перехода на Native SegWit, обычно начинается с\
+    \ «3».                                                                       \
+    \                                                                            \
+    \                               "
   receive_btc_more_t_desc2: 'Да, три различных формата Bitcoin адресов могут использоваться
     для перевода средств друг другу. Однако важно учитывать следующие аспекты:
 
@@ -610,24 +540,26 @@ ru:
 
     3. Безопасность. Повторное использование адреса повышает риск раскрытия приватного
     ключа, что потенциально может привести к потерям в случае компрометации своих
-    секретов.Отказ от повторного использования адресов защищает конфиденциальность,
-    оптимизирует транзакции и снижает риски безопасности в рамках модели UTXO»'
+    секретов.
+
+    Отказ от повторного использования адресов защищает конфиденциальность, оптимизирует
+    транзакции и снижает риски безопасности в рамках модели UTXO»'
   receive_btc_more_t_link1: Узнать больше
   receive_btc_more_t_link2: Узнать больше
   receive_btc_more_t_link3: Узнать больше
   receive_btc_more_t_qr_link1: https://keyst.one/t/3rd/faq
   receive_btc_more_t_qr_link2: https://keyst.one/t/3rd/faq
   receive_btc_more_t_qr_link3: https://keyst.one/t/3rd/faq
-  receive_btc_more_t_qr_title1: Чем отличаются три формата Bitcoin адресов?
+  receive_btc_more_t_qr_title1: 'Чем отличаются три формата Bitcoin адресов? '
   receive_btc_more_t_qr_title2: Можно ли использовать три разных формата адресов для
     перевода средств между ними?
   receive_btc_more_t_qr_title3: О недостатках повторного использования адресов
-  receive_btc_more_t_title1: Чем отличаются три формата Bitcoin адресов?
+  receive_btc_more_t_title1: 'Чем отличаются три формата Bitcoin адресов? '
   receive_btc_more_t_title2: Можно ли использовать три разных формата адресов для
     перевода средств между ними?
   receive_btc_more_t_title3: О недостатках повторного использования адресов
   receive_btc_receive_change_address_limit: Нельзя превысить 999 999 999.
-  receive_btc_receive_change_address_title: Перейти к
+  receive_btc_receive_change_address_title: 'Перейти к '
   receive_btc_receive_main_button: Создать новый адрес
   receive_btc_receive_main_title: Получить BTC
   receive_btc_receive_switch_title: Сменить адрес
@@ -662,15 +594,11 @@ ru:
   receive_eth_more_t_qr_link1: https://keyst.one/t/3rd/faq
   receive_eth_more_t_qr_title1: 'Узнать различия: стандартные, Ledger Live и устаревшие
     пути вывода в Ethereum'
-  receive_eth_more_t_title1: ' Ledger Live и устаревших путей вывода в Ethereum"'
+  receive_eth_more_t_title1: Узнаем различия стандартных, Ledger Live и устаревших
+    путей вывода в Ethereum
   receive_eth_receive_main_button: Создать новый адрес
   receive_eth_receive_main_title: Получить ETH
   receive_generate_new_address: Создать новый адрес
-  receive_near_more_t_desc1: ''
-  receive_near_more_t_link1: ''
-  receive_near_more_t_qr_link1: ''
-  receive_near_more_t_qr_title1: ''
-  receive_near_more_t_title1: ''
   receive_sol_more_t: Руководство
   receive_sol_more_t_desc1: '1. Путь на основе учетной записи: широко применяется
     во многих кошельках Solana. Примером такого кошелька является Solflare.
@@ -709,10 +637,6 @@ ru:
   scan_qr_code_sign_unsigned_content_frame: Смахните вправо
   scan_qr_code_signing_desc: Подписание
   seed_check_mid_btn: Проверка сид фразы
-  seed_check_passphrase_notice: В настоящее время вы используете кошелек, защищенный
-    паролем. Перед началом процесса проверки семенной фразы, пожалуйста, перезагрузите
-    устройство без ввода ключевой фразы.
-  seed_check_passphrase_title: Отключите кошелек с ключевой фразой
   seed_check_share_phrase: Фраза Шамира
   seed_check_share_phrase_title: Введите сид фразу, чтобы проверить, соответствует
     ли она текущему кошельку.
@@ -767,7 +691,6 @@ ru:
   shamir_phrase_verify_success_desc2: Нажмите на кнопку ниже и передайте устройство
     держателю Части 2.
   shamir_phrase_verify_success_title: Проверено
-  show_checksum: показать контрольную сумму
   sign_transaction: Подписание транзакции
   sign_transaction_desc: Подождите...
   single_backup_choose_backup_desc: Выберите метод резервного копирования сид фразы.
@@ -801,7 +724,7 @@ ru:
   single_backup_repeatpin_title: Подтвердите PIN-код
   single_backup_setpass_desc: Пароль будет использоваться для разблокировки устройства
     и подписи транзакций.
-  single_backup_setpass_desc_1: Установите сложный пароль
+  single_backup_setpass_desc_1: 'Установите сложный пароль '
   single_backup_setpass_error_1: Пароль должен состоять минимум из 6 символов
   single_backup_setpass_error_2: Пароли не совпадают
   single_backup_setpass_title: Установить пароль
@@ -860,7 +783,7 @@ ru:
   system_settings_wipe_device_wipe_button: Сбросить
   system_settings_wipe_device_wipe_desc: Если вы продолжите, все данные на этом устройстве,
     включая все ваши кошельки, будут удалены без возможности восстановления.
-  system_settings_wipe_device_wipe_end_text: Сброс
+  system_settings_wipe_device_wipe_end_text: 'Сброс '
   system_settings_wipe_device_wipe_fmt: Сброс(%d)
   system_settings_wipe_device_wipe_start_text: Сброс(5)
   system_settings_wipe_device_wipe_title: Сброс устройства
@@ -868,19 +791,6 @@ ru:
   transaction_parse_confirm_message: Подтвердить сообщение
   transaction_parse_scan_by_software: Сканируйте QR-код программным кошельком
   try_again: Повторить
-  tutorial_change_entropy_desc1: Резервная копия Шамира обеспечивает высокобезопасный
-    способ восстановления исходной фразы. Она включает в себя разделение сид фразы
-    на несколько частей и указание необходимого их количества, необходимых для восстановления
-    фразы.
-  tutorial_change_entropy_desc2: Резервная копия Шамира обеспечивает высокобезопасный
-    способ восстановления исходной фразы. Она включает в себя разделение сид фразы
-    на несколько частей и указание необходимого их количества, необходимых для восстановления
-    фразы.
-  tutorial_change_entropy_qr_link1: https://keyst.one/
-  tutorial_change_entropy_qr_title1: Зачем использовать игральные кубики в качестве
-    энтропии?
-  tutorial_change_entropy_title1: Что такое Энтропия?
-  tutorial_change_entropy_title2: Зачем использовать игральные кубики в качестве энтропии?
   tx_details_btc_change_desc: Транзакции BTC, основанные на механизме UTXO, распределяют
     некоторые активы на адреса сдачи во время переводов. Этот адрес генерируется кошельком
     в целях анонимности и конфиденциальности. Вам не о чем беспокоиться, поскольку
@@ -909,7 +819,7 @@ ru:
   unlock_device_error_btn_start_text: Разблокировать (5s)
   unlock_device_error_btn_text_fmt: Разблокировать (%ds)
   unlock_device_fingerprint_pin_device_locked_btn: Очистить кошелек
-  unlock_device_fingerprint_pin_device_locked_btn_fmt: Очистить кошелек (%д)
+  unlock_device_fingerprint_pin_device_locked_btn_fmt: 'Очистить кошелек (%д) '
   unlock_device_fingerprint_pin_device_locked_btn_start_text: Очистить кошелек (15)
   unlock_device_fingerprint_pin_device_locked_desc: Все данные на этом устройстве
     будут удалены после очистки
@@ -917,7 +827,8 @@ ru:
   unlock_device_fingerprint_pin_error1_desc: Не удалось проверить отпечаток пальца
   unlock_device_fingerprint_pin_error1_title: Попробуйте еще раз
   unlock_device_fingerprint_pin_error2_title: PIN или отпечаток
-  unlock_device_fingerprint_pin_error_max_desc: ' введите код-пароль"'
+  unlock_device_fingerprint_pin_error_max_desc: Слишком много неудачных попыток. Пожалуйста,
+    введите код-пароль
   unlock_device_fingerprint_pin_error_max_title: Введите PIN
   unlock_device_fingerprint_pin_title: PIN или отпечаток
   unlock_device_time_limited_error_max_desc: Разблокируйте ваше устройство в течение
@@ -925,8 +836,6 @@ ru:
   unlock_device_time_limited_error_max_desc_fmt: Разблокируйте свое устройство через
     %d минут
   unlock_device_time_limited_error_max_title: Недоступно
-  unlock_device_time_limited_error_max_warning_fmt: 'Пожалуйста, разблокируйте устройство
-    через #F55831 %d# минут. Еще одна неверная попытка и ваше устройство будет заблокировано'
   unlock_device_title_fmt: '%s or %s'
   unlock_device_use_fingerprint: Вход по отпечатку
   unlock_device_use_password: Вход по паролю
@@ -934,21 +843,6 @@ ru:
   usb_connection_desc: Если отключено, USB можно использовать только для зарядки аккумулятора.
   usb_connection_subtitle: Передача данных через USB
   usb_connection_title: Соединение
-  usb_transport_connect_rabby: Кошелек Rabby хочет подключиться к Keystone через USB
-  usb_transport_connect_wallet: Ваш программный кошелек хочет подключиться к устройству
-    через USB
-  usb_transport_connection_approve: Разрешить
-  usb_transport_connection_reject: Отклонить
-  usb_transport_connection_request: Запрос подключения
-  usb_transport_mismatched_wallet_title: Разные кошельки
-  usb_transport_sign_completed_btn: Завершено
-  usb_transport_sign_completed_subtitle: Посмотреть детали транзакций в программном
-    кошельке
-  usb_transport_sign_completed_title: Подпись завершена
-  usb_transport_sign_failed_btn: Хорошо
-  usb_transport_sign_failed_title: Ошибка подписи
-  usb_transport_sign_unkown_error_message: Невозможно распознать данные
-  usb_transport_sign_unkown_error_title: Неизвестная ошибка
   verification_code_desc: Введите этот код на официальном сайте Keystone, чтобы проверить
     подлинность устройства.
   verification_code_failed_button: Очистить данные и выключить
@@ -974,13 +868,10 @@ ru:
   verify_qr_title: Проверка устройства
   verify_scan_qr_code: Сканировать QR-код
   verify_title: Проверка устройства
-  wallet_setting_add_wallet: + Добавить
+  wallet_setting_add_wallet: + Добавить кошелек
   wallet_setting_passcode: Биометрия и код-пароль
   wallet_setting_passphrase: Кодовая фраза
   wallet_setting_seed_phrase: Проверка сид фразы
-  wallet_setting_stop_add_fingerprint: Прервать процесс?
-  wallet_setting_stop_add_fingerprint_desc: Отпечаток пальца не сохранен. При отмене
-    вам потребуется повторить процесс.
   wallet_settings_add_info_desc1: 'Keystone поддерживает максимум #F5870A 3# разных
     кошелька.'
   wallet_settings_add_info_desc2: 'Вам следует установить #F5870A отдельный код-пароль#

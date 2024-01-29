@@ -448,7 +448,7 @@ int8_t GuiForgetPassNextTile(uint8_t tileIndex)
         break;
     case FORGET_PASSWORD_METHOD_SELECT:
         SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("import_wallet_phrase_clear_btn"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetClearImportHandler, NULL);
         if (tileIndex != 0) {
             switch (tileIndex) {
@@ -501,7 +501,7 @@ int8_t GuiForgetPassPrevTile(uint8_t tileIndex)
         break;
     case FORGET_PASSWORD_SETPIN:
         SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("import_wallet_phrase_clear_btn"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetClearImportHandler, NULL);
         break;
     case FORGET_PASSWORD_REPEATPIN:

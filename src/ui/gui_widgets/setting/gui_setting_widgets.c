@@ -889,7 +889,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
         break;
     case NVS_BAR_WORD_RESET:
         rightCb = ResetSeedCheckImportHandler;
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("import_wallet_phrase_clear_btn"));
         SetRightBtnCb(g_pageWidget->navBarWidget, rightCb, NULL);
         break;
     case NVS_RIGHT_BUTTON_BUTT:

@@ -1374,6 +1374,7 @@
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_usb_transport_widgets.c">
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\font\buttonFont.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\external\lvgl\src\core\lv_disp.h" />

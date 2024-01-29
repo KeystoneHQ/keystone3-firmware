@@ -1,6 +1,4 @@
 ru:
-  ? ''
-  : Ethereum - Ethereum
   Approve: Разрешить
   Attention: Внимание
   Cancel: Отмена
@@ -13,13 +11,13 @@ ru:
   OK: Хорошо
   Pending: В ожидании
   Restart: Перезагрузка
-  Restart_now: Перезагрузите сейчас же.
+  Restart_now: ''
   Skip: Пропустить
   Success: Успех
   Tutorial: Руководство
   Update: Обновить
   Updating: Обновление
-  about_info_battery_voltage: Напряжение батареи
+  about_info_battery_voltage: Напряжение батар    еи
   about_info_device_uid: IOD устройства
   about_info_export_log: Выгрузка логов
   about_info_export_to_sdcard: Выгрузить логи на MicroSD
@@ -34,6 +32,19 @@ ru:
   about_info_result_export_successful_desc: Системные логи были успешно выгружены
     на MicroSD карту.
   about_info_serial_number: Серийный номер
+  about_info_verify_checksum_desc: Проверьте, соответствует ли приведенная выше информация
+    веб-странице. Если он не совпадает, это означает, что ваша прошивка могла быть
+    подделана. Прекратите использование устройства.
+  about_info_verify_checksum_title: Контрольная сумма
+  about_info_verify_firmware_desc: Это расширенная функция для разработчиков
+  about_info_verify_firmware_step1: Перейдите на открытый GitHub repo компании Keystone
+    и следуйте инструкциям
+  about_info_verify_firmware_step2: 'Нажмите кнопку #F5870A Checksum# рядом с загрузкой
+    микропрограммы.'
+  about_info_verify_firmware_step3: 'Нажмите кнопку #F5870A Show Checksum# ниже и
+    сравните информацию'
+  about_info_verify_firmware_title: Убедитесь в прошивке
+  about_info_verify_source_code_title: Проверить исходный код
   about_keystone_discord: Discord
   about_keystone_discord_url: keyst.one/discord
   about_keystone_telegram: Telegram
@@ -86,7 +97,17 @@ ru:
   about_terms_subtitle: Условия использования Keystone
   about_terms_title: Условия использования
   about_terms_website_url: https://keyst.one/terms
-  change_passcode_mid_btn: Введите код-пароль
+  change_entropy: ''
+  change_entropy_desc: ''
+  change_entropy_dice_desc: ''
+  change_entropy_dice_detail_desc_1: ''
+  change_entropy_dice_detail_desc_2: ''
+  change_entropy_dice_rolls: ''
+  change_entropy_dice_rolls_subtitle: ''
+  change_entropy_system: ''
+  change_entropy_system_desc: ''
+  change_entropy_system_subtitle: ''
+  change_passcode_mid_btn: ''
   change_passcode_reset_desc: Идет запись на SE чип...
   change_passcode_reset_success_desc: 'Пароль успешно сброшен '
   change_passcode_reset_success_title: 'Сброс выполнен '
@@ -121,6 +142,14 @@ ru:
   connect_fewcha_qr_title: Fewcha (Расширение)
   connect_fewcha_t: Руководство
   connect_fewcha_title: Fewcha (Расширение)
+  connect_imtoken_desc: Перейдите по ссылке ниже на вашем компьютере или мобильном
+    устройстве для получения руководства по синхронизации Keystone с вашим кошельком
+    программного обеспечения.
+  connect_imtoken_link: https://keyst.one/t/3rd/imtoken
+  connect_imtoken_qr_link: https://keyst.one/t/3rd/imtoken
+  connect_imtoken_qr_title: ImToken (мобильный)
+  connect_imtoken_t: Руководство по эксплуатации
+  connect_imtoken_title: ImToken (мобильный)
   connect_keplr_desc: Перейдите по ссылке ниже на своем компьютере или мобильном устройстве,
     чтобы получить руководство по синхронизации Keystone с программным кошельком.
   connect_keplr_link: https://keyst.one/t/3rd/keplr
@@ -191,6 +220,12 @@ ru:
   connect_solflare_qr_title: Solflare
   connect_solflare_t: Руководство
   connect_solflare_title: Solflare
+  connect_sparrow_desc: ''
+  connect_sparrow_link: ''
+  connect_sparrow_qr_link: ''
+  connect_sparrow_qr_title: ''
+  connect_sparrow_t: ''
+  connect_sparrow_title: ''
   connect_sushi_desc: Перейдите по ссылке ниже на своем компьютере или мобильном устройстве,
     чтобы получить руководство по синхронизации Keystone с программным кошельком.
   connect_sushi_link: https://keyst.one/t/3rd/sushi
@@ -255,8 +290,11 @@ ru:
   derivation_path_eth_ledger_legacy_desc: Формат адреса для старых устройств Ledger
   derivation_path_eth_ledger_live_desc: Формат адреса для устройств Ledger
   derivation_path_eth_standard_desc: По умолчанию, следует стандарту BIP44, популярный
+  derivation_path_near_ledger_live_desc: ''
+  derivation_path_near_standard_desc: ''
   derivation_path_select_btc: Выберите тип адресов Bitcoin, который вы хотите использовать
   derivation_path_select_eth: Выберите путь вывода Ethereum, который вы хотите использовать
+  derivation_path_select_near: ''
   derivation_path_select_sol: Выберите тип адресов Solana, который вы хотите использовать
   derivation_path_sol_1_desc: ''
   derivation_path_sol_2_desc: ''
@@ -275,6 +313,12 @@ ru:
     для зарядки аккумулятора.
   device_settings_connection_sub_title1: Передача данных по USB
   device_settings_connection_title1: Связь
+  dice_roll_cancel_desc: ''
+  dice_roll_cancel_title: ''
+  dice_roll_error_label: ''
+  dice_roll_hint_label: ''
+  dice_roll_max_limit_label: ''
+  dice_rolls_entropy_hint: ''
   enter_passcode: Введите код-пароль
   error_box_duplicated_seed_phrase: Дубликат сид фразы
   error_box_duplicated_seed_phrase_desc: Введенная вами сид фраза уже используется
@@ -303,6 +347,7 @@ ru:
   fingerprint_add_failed_duplicate: Дубликат пальца, используйте другой палец.
   fingerprint_add_failed_use_another: Не удалось добавить отпечаток пальца. Используйте
     другой палец и повторите попытку.
+  fingerprint_add_password: ''
   fingerprint_add_success: Успешно добавлено
   fingerprint_nth: Палец %d
   fingerprint_nth_remove_desc: Вы точно хотите удалить отпечаток %d?
@@ -320,6 +365,13 @@ ru:
   firmware_update_deny_title: Разблокируйте устройство
   firmware_update_desc: Чтобы получить больше возможностей обновите прошивку до последней
     версии.
+  firmware_update_no_upgradable_firmware_desc: ''
+  firmware_update_no_upgradable_firmware_title: ''
+  firmware_update_sd_checksum_desc: ''
+  firmware_update_sd_checksum_done: ''
+  firmware_update_sd_checksum_fmt: ''
+  firmware_update_sd_checksum_fmt_version: ''
+  firmware_update_sd_checksum_notice: ''
   firmware_update_sd_copying_desc: Не доставайте MicroSD карту во время загрузки прошивки.
   firmware_update_sd_copying_title: Старт обновления
   firmware_update_sd_desc1: Убедитесь, что у вашего Keystone осталось не менее 20%
@@ -368,6 +420,8 @@ ru:
   firmware_update_usb_title: USB обновление
   firmware_update_usb_title2: '#F5870A Внимание#'
   firmware_update_usb_updating_hint: Не отключайте USB кабель во время процесса установки.
+  firmware_update_verify_firmware_qr_link: KeystoneHQ/keystone3-firmware/docs/verify.md
+  firmware_update_verify_firmware_title: ''
   firmware_update_via_sd: Через MicroSD карту
   firmware_update_via_usb: Через USB кабель
   forget_password_cancel: Отменить сброс пароля?
@@ -377,6 +431,8 @@ ru:
   forgot_password_reset_passcode_intro_title: Забыли код-пароль?
   generating_qr_codes: Генерируются QR-коды
   got_it: Понятно
+  got_it_fmt: Понятно (%d)
+  got_it_start: Понятно (5)
   home_manage_assets: Управление активами
   home_more_connect_wallet: 'Программные кошельки '
   home_more_device_setting: Настройки устройства
@@ -399,17 +455,13 @@ ru:
   import_wallet_phrase_title: Введите сид фразу
   import_wallet_phrase_words_title: Количество слов
   import_wallet_shamir_backup: Фраза Шамира
-  import_wallet_shamir_backup_desc: 'Вам понадобится несколько сид фраз
-
-    для восстановления кошелька'
+  import_wallet_shamir_backup_desc: "Вам понадобится несколько сид фраз\r\nдля восстановления\
+    \ кошелька"
   import_wallet_share_success_desc: Эта часть сид фразы соответствует вашему кошельку.
-  import_wallet_single_backup_desc: 'Восстановите кошелек выбрав
-
-    тип сид фразы'
+  import_wallet_single_backup_desc: ''
   import_wallet_single_phrase: Стандартная фраза
-  import_wallet_single_phrase_desc: 'Вам понадобится 12/18/24 слова,
-
-    чтобы восстановить кошелек.'
+  import_wallet_single_phrase_desc: "Вам понадобится 12/18/24 слова,\r\nчтобы восстановить\
+    \ кошелек."
   import_wallet_ssb_20words: 20 слов
   import_wallet_ssb_33words: 33 слова
   import_wallet_ssb_cancel_btn_1: Не сейчас
@@ -435,12 +487,14 @@ ru:
   language_option4: Español
   language_option5: 한국어
   language_title: Язык
+  learn_more: ''
   low_battery_pop_up_desc: Для продолжения процесса устройству требуется минимум 20%
     заряда батареи.
   low_battery_pop_up_title: Низкий заряд
   not_now: Не сейчас
   passphrase_access_switch_desc: Включить ввод кодовой фразы после включения устройства
   passphrase_access_switch_title: Быстрый доступ
+  passphrase_add_password: ''
   passphrase_enter_input: Введите фразу
   passphrase_enter_passcode: Кодовая фраза
   passphrase_enter_repeat: Подтвердите фразу
@@ -466,12 +520,15 @@ ru:
   password_error_too_weak: Установите сложный пароль
   password_input_desc: Введите пароль
   password_label: ПАРОЛЬ
+  path: ''
   pin_code: PIN-КОД
+  pin_label: ''
   power_off: Выключить
   prepare_wallet_first_step: Обнаружены новые сети
   prepare_wallet_hint: Подготовка кошелька
   prepare_wallet_second_step: Настройка монет...
   prepare_wallet_third_step: Генерация расширенного публичного ключа...
+  public_key: ''
   purpose_desc: Создайте новый или восстановите кошелек используя сид фразу.
   purpose_import_wallet: Восстановить кошелек
   purpose_new_wallet: Создать кошелек
@@ -483,22 +540,18 @@ ru:
   receive_ada_more_t_desc1: В блокчейне Cardano мы предоставляем 24 счета. Каждый
     счет может генерировать множество адресов. Вы можете легко переключаться между
     нужными вам счетами.
-  receive_ada_more_t_desc2: '1.  Ключи для платежей и делегирования: В Cardano каждая
-    учетная запись имеет платежный ключ для обычных транзакций ADA (отправка и получение)
-    и ключ для стейкинга и получения вознаграждений.
-
-    2. Базовый адрес: Базовый адрес получается как из платежного ключа, так и из ключа
-    делегирования. Его можно использовать как для обычных транзакций, так и для стейкинга.
-    Также известен как «Внешний адрес (делегированный)».
-
-    3. Адрес предприятия: Этот адрес содержит только платежный ключ и используется
-    исключительно для обычных транзакций, а не для стейкинга. Он предназначен для
-    «бизнес-сценариев», которые не требуют стейкинга, например, бирж. Также известен
-    как «Внешний адрес (не делегированный)».
-
-    4. Адреса стейкинга и вознаграждений: Ключи для стейкинга используется для стейкинга,
-    а связанный с ним адрес стейкинга также называется адресом вознаграждения и используется
-    для получения вознаграждений за стейкинг.'
+  receive_ada_more_t_desc2: "1.  Ключи для платежей и делегирования: В Cardano каждая\
+    \ учетная запись имеет платежный ключ для обычных транзакций ADA (отправка и получение)\
+    \ и ключ для стейкинга и получения вознаграждений.\r\n2. Базовый адрес: Базовый\
+    \ адрес получается как из платежного ключа, так и из ключа делегирования. Его\
+    \ можно использовать как для обычных транзакций, так и для стейкинга. Также известен\
+    \ как «Внешний адрес (делегированный)».\r\n3. Адрес предприятия: Этот адрес содержит\
+    \ только платежный ключ и используется исключительно для обычных транзакций, а\
+    \ не для стейкинга. Он предназначен для «бизнес-сценариев», которые не требуют\
+    \ стейкинга, например, бирж. Также известен как «Внешний адрес (не делегированный)».\r\
+    \n4. Адреса стейкинга и вознаграждений: Ключи для стейкинга используется для стейкинга,\
+    \ а связанный с ним адрес стейкинга также называется адресом вознаграждения и\
+    \ используется для получения вознаграждений за стейкинг."
   receive_ada_more_t_link2: Узнать больше
   receive_ada_more_t_qr_link2: https://keyst.one/t/3rd/faq
   receive_ada_more_t_qr_title2: Ключевые понятия адресов ADA Cardano
@@ -506,44 +559,38 @@ ru:
   receive_ada_more_t_title2: Ключевые понятия в адресах ADA Cardano
   receive_ada_show_address_detail: Показать адрес целиком
   receive_ada_stake_address: Адрес для награды
+  receive_btc_address_type: ''
   receive_btc_alert_button: Понятно
   receive_btc_alert_desc: Этот адрес предназначен только для Bitcoin, другие цифровые
     активы, отправленные на этот адрес, будут потеряны.
   receive_btc_alert_title: Внимание
+  receive_btc_extended_public_key: ''
   receive_btc_more_address_settings: Настройки адресов
   receive_btc_more_export_xpub: Экспорт XPub
   receive_btc_more_t: Руководство
-  receive_btc_more_t_desc1: "Bitcoin (BTC) поддерживает три формата адресов:  \n1.\
-    \ Native SegWit — это наиболее эффективный и безопасный формат, который уменьшает\
+  receive_btc_more_t_desc1: "Bitcoin (BTC) поддерживает три формата адресов:\r\n1.\
+    \ Native SegWit ?это наиболее эффективный и безопасный формат, который уменьшает\
     \ комиссии в сети в отличие от других адресов. Адреса этого формата начинаются\
-    \ с символов «bc1».                \n2. Устаревший формат — одна из самых ранних\
-    \ версий адресов Bitcoin, обычно начинающаяся с «1».\n3. Nested SegWit — это решение,\
+    \ с символов \\\"bc1\\\". \r\n2. Устаревший формат ?одна из самых ранних версий\
+    \ адресов Bitcoin, обычно начинающаяся с \\\"1\\\".\r\n3. Nested SegWit ?это решение,\
     \ предназначенное для плавного перехода на Native SegWit, обычно начинается с\
-    \ «3».                                                                       \
-    \                                                                            \
-    \                               "
-  receive_btc_more_t_desc2: 'Да, три различных формата Bitcoin адресов могут использоваться
-    для перевода средств друг другу. Однако важно учитывать следующие аспекты:
-
-    1. Различная комиссия за транзакцию. Выбор формата адреса может влиять на комиссию
-    за транзакцию, при этом оригинальные адреса SegWit обычно имеют более низкую комиссию.
-
-    2. Совместимость кошелька и биржи. Убедитесь, что используемый вами кошелек или
-    биржа поддерживает выбранный формат адреса. Некоторые кошельки могут быть совместимы
-    только с определенными форматами адресов.'
-  receive_btc_more_t_desc3: '1. Конфиденциальность: повторное использование адресов
-    повышает отслеживаемость транзакций и уменьшает вашу конфиденциальность. Новые
-    адреса помогают поддерживать конфиденциальность транзакций.
-
-    2. Эффективность транзакций. Несколько UTXO, связанных с одним адресом, могут
-    повысить затраты на консолидацию, что повлияет на эффективность кошелька.
-
-    3. Безопасность. Повторное использование адреса повышает риск раскрытия приватного
-    ключа, что потенциально может привести к потерям в случае компрометации своих
-    секретов.
-
-    Отказ от повторного использования адресов защищает конфиденциальность, оптимизирует
-    транзакции и снижает риски безопасности в рамках модели UTXO»'
+    \ \\\"3\\\".\""
+  receive_btc_more_t_desc2: "Да, три различных формата Bitcoin адресов могут использоваться\
+    \ для перевода средств друг другу. Однако важно учитывать следующие аспекты:\r\
+    \n1. Различная комиссия за транзакцию. Выбор формата адреса может влиять на комиссию\
+    \ за транзакцию, при этом оригинальные адреса SegWit обычно имеют более низкую\
+    \ комиссию.\r\n2. Совместимость кошелька и биржи. Убедитесь, что используемый\
+    \ вами кошелек или биржа поддерживает выбранный формат адреса. Некоторые кошельки\
+    \ могут быть совместимы только с определенными форматами адресов."
+  receive_btc_more_t_desc3: "1. Конфиденциальность: повторное использование адресов\
+    \ повышает отслеживаемость транзакций и уменьшает вашу конфиденциальность. Новые\
+    \ адреса помогают поддерживать конфиденциальность транзакций.\r\n2. Эффективность\
+    \ транзакций. Несколько UTXO, связанных с одним адресом, могут повысить затраты\
+    \ на консолидацию, что повлияет на эффективность кошелька.\r\n3. Безопасность.\
+    \ Повторное использование адреса повышает риск раскрытия приватного ключа, что\
+    \ потенциально может привести к потерям в случае компрометации своих секретов.\r\
+    \nОтказ от повторного использования адресов защищает конфиденциальность, оптимизирует\
+    \ транзакции и снижает риски безопасности в рамках модели UTXO"
   receive_btc_more_t_link1: Узнать больше
   receive_btc_more_t_link2: Узнать больше
   receive_btc_more_t_link3: Узнать больше
@@ -585,9 +632,9 @@ ru:
   receive_eth_more_t: Руководство
   receive_eth_more_t_desc1: "1. Стандартный путь: этот путь широко используется популярными\
     \ программными кошельками для генерации адресов. Примеры таких кошельков: MetaMask,\
-    \ Rabby, BitKeep и Core Wallet. \n2. Ledger Live: выберите этот путь, если вы\
+    \ Rabby, BitKeep и Core Wallet. \r\n2. Ledger Live: выберите этот путь, если вы\
     \ собираетесь импортировать сид фразу из Ledger Live. Обратите внимание, что Keystone\
-    \ поддерживает синхронизацию только первых 10 адресов в этом формате. \n3. Ledger\
+    \ поддерживает синхронизацию только первых 10 адресов в этом формате. \r\n3. Ledger\
     \ устаревшие: переходите на этот путь, если вы управляете своими цифровыми активами\
     \ с помощью устаревших приложений Ledger"
   receive_eth_more_t_link1: Узнать больше
@@ -599,16 +646,19 @@ ru:
   receive_eth_receive_main_button: Создать новый адрес
   receive_eth_receive_main_title: Получить ETH
   receive_generate_new_address: Создать новый адрес
+  receive_near_more_t_desc1: ''
+  receive_near_more_t_link1: ''
+  receive_near_more_t_qr_link1: ''
+  receive_near_more_t_qr_title1: ''
+  receive_near_more_t_title1: ''
   receive_sol_more_t: Руководство
-  receive_sol_more_t_desc1: '1. Путь на основе учетной записи: широко применяется
-    во многих кошельках Solana. Примером такого кошелька является Solflare.
-
-    2. Путь к единой учетной записи: выберите этот путь, если вы собираетесь импортировать
-    исходную фразу из Sollet/MathWallet. Обратите внимание, что Keystone поддерживает
-    синхронизацию только первых 10 адресов в этом формате.
-
-    3. Путь субсчета: перейдите на этот путь, если вы управляете своими цифровыми
-    активами с помощью программных кошельков, таких как Phantom/Exodus.'
+  receive_sol_more_t_desc1: "1. Путь на основе учетной записи: широко применяется\
+    \ во многих кошельках Solana. Примером такого кошелька является Solflare.\r\n\
+    2. Путь к единой учетной записи: выберите этот путь, если вы собираетесь импортировать\
+    \ исходную фразу из Sollet/MathWallet. Обратите внимание, что Keystone поддерживает\
+    \ синхронизацию только первых 10 адресов в этом формате.\r\n3. Путь субсчета:\
+    \ перейдите на этот путь, если вы управляете своими цифровыми активами с помощью\
+    \ программных кошельков, таких как Phantom/Exodus."
   receive_sol_more_t_link1: Узнать больше
   receive_sol_more_t_qr_link1: https://keyst.one/t/3rd/faq
   receive_sol_more_t_qr_title1: Узнать о путях вывода Solana
@@ -637,6 +687,10 @@ ru:
   scan_qr_code_sign_unsigned_content_frame: Смахните вправо
   scan_qr_code_signing_desc: Подписание
   seed_check_mid_btn: Проверка сид фразы
+  seed_check_passphrase_notice: "В настоящее время вы используете кошелек, защищенный\
+    \ паролем. Перед началом процесса проверки семенной фразы, пожалуйста, перезагрузите\
+    \ устройство без ввода ключевой фразы.\r\n"
+  seed_check_passphrase_title: Отключите кошелек с ключевой фразой
   seed_check_share_phrase: Фраза Шамира
   seed_check_share_phrase_title: Введите сид фразу, чтобы проверить, соответствует
     ли она текущему кошельку.
@@ -674,14 +728,12 @@ ru:
   shamir_phrase_not_match_title: Неверная фраза
   shamir_phrase_notice_desc1: Никогда не показывайте свою сид фразу с третьим лицам,
     поскольку она предоставляет доступ к вашим активам.
-  shamir_phrase_notice_desc2: Убедитесь, что во время записи сид фразы вблизи нет
-    третьих лиц или камер.
+  shamir_phrase_notice_desc2: ''
   shamir_phrase_notice_title: Проверьте окружение
   shamir_phrase_number: Количество частей
   shamir_phrase_share_backup_notice_fmt: 'Запишите фразу Часть #F5870A %d# и сохраните
     ее правильно.'
-  shamir_phrase_share_confirm_notice_fmt: 'Выберите слова в правильном порядке для
-    подтверждения вашей фразы Части #F5870A %d#/%d.'
+  shamir_phrase_share_confirm_notice_fmt: ''
   shamir_phrase_share_notice_fmt: 'Подтвердите, что вы являетесь держателем части
     #F5870A %d#'
   shamir_phrase_share_number_fmt: 'Часть #F5870A %d#/%d'
@@ -691,6 +743,7 @@ ru:
   shamir_phrase_verify_success_desc2: Нажмите на кнопку ниже и передайте устройство
     держателю Части 2.
   shamir_phrase_verify_success_title: Проверено
+  show_checksum: показать контрольную сумму
   sign_transaction: Подписание транзакции
   sign_transaction_desc: Подождите...
   single_backup_choose_backup_desc: Выберите метод резервного копирования сид фразы.
@@ -791,6 +844,12 @@ ru:
   transaction_parse_confirm_message: Подтвердить сообщение
   transaction_parse_scan_by_software: Сканируйте QR-код программным кошельком
   try_again: Повторить
+  tutorial_change_entropy_desc1: ''
+  tutorial_change_entropy_desc2: ''
+  tutorial_change_entropy_qr_link1: ''
+  tutorial_change_entropy_qr_title1: ''
+  tutorial_change_entropy_title1: ''
+  tutorial_change_entropy_title2: ''
   tx_details_btc_change_desc: Транзакции BTC, основанные на механизме UTXO, распределяют
     некоторые активы на адреса сдачи во время переводов. Этот адрес генерируется кошельком
     в целях анонимности и конфиденциальности. Вам не о чем беспокоиться, поскольку
@@ -836,6 +895,7 @@ ru:
   unlock_device_time_limited_error_max_desc_fmt: Разблокируйте свое устройство через
     %d минут
   unlock_device_time_limited_error_max_title: Недоступно
+  unlock_device_time_limited_error_max_warning_fmt: ''
   unlock_device_title_fmt: '%s or %s'
   unlock_device_use_fingerprint: Вход по отпечатку
   unlock_device_use_password: Вход по паролю
@@ -843,14 +903,26 @@ ru:
   usb_connection_desc: Если отключено, USB можно использовать только для зарядки аккумулятора.
   usb_connection_subtitle: Передача данных через USB
   usb_connection_title: Соединение
+  usb_transport_connect_rabby: ''
+  usb_transport_connect_wallet: ''
+  usb_transport_connection_approve: ''
+  usb_transport_connection_reject: ''
+  usb_transport_connection_request: ''
+  usb_transport_mismatched_wallet_title: ''
+  usb_transport_sign_completed_btn: ''
+  usb_transport_sign_completed_subtitle: ''
+  usb_transport_sign_completed_title: ''
+  usb_transport_sign_failed_btn: ''
+  usb_transport_sign_failed_title: ''
+  usb_transport_sign_unkown_error_message: ''
+  usb_transport_sign_unkown_error_title: ''
   verification_code_desc: Введите этот код на официальном сайте Keystone, чтобы проверить
     подлинность устройства.
   verification_code_failed_button: Очистить данные и выключить
-  verification_code_failed_desc: 'Ваше устройство могло быть скомпрометировано, что
-    представляет угрозу для ваших конфиденциальных данных и цифровых активов.
-
-    В целях безопасности мы рекомендуем удалить все личные данные и немедленно обратиться
-    в службу поддержки Keystone за помощью.'
+  verification_code_failed_desc: "Ваше устройство могло быть скомпрометировано, что\
+    \ представляет угрозу для ваших конфиденциальных данных и цифровых активов.\r\n\
+    В целях безопасности мы рекомендуем удалить все личные данные и немедленно обратиться\
+    \ в службу поддержки Keystone за помощью."
   verification_code_failed_link: support@keyst.one
   verification_code_failed_title: Осторожно! Ваше устройство скомпрометировано!
   verification_code_title: Код проверки
@@ -872,6 +944,8 @@ ru:
   wallet_setting_passcode: Биометрия и код-пароль
   wallet_setting_passphrase: Кодовая фраза
   wallet_setting_seed_phrase: Проверка сид фразы
+  wallet_setting_stop_add_fingerprint: ''
+  wallet_setting_stop_add_fingerprint_desc: ''
   wallet_settings_add_info_desc1: 'Keystone поддерживает максимум #F5870A 3# разных
     кошелька.'
   wallet_settings_add_info_desc2: 'Вам следует установить #F5870A отдельный код-пароль#

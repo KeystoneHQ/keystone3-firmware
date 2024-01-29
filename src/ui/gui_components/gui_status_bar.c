@@ -41,6 +41,7 @@ typedef struct {
 } CoinWalletInfo_t;
 
 bool GetLvglHandlerStatus(void);
+static void GuiStatusBarReSetWidth(lv_obj_t *obj);
 
 static void RefreshStatusBar(void);
 
@@ -351,7 +352,7 @@ static lv_obj_t *CreateMidWordCntSelect(lv_obj_t *navBar)
 {
     lv_obj_t *btn;
 
-    btn = GuiCreateBtnWithFont(navBar, "20    " USR_SYMBOL_DOWN, &openSans_20);
+    btn = GuiCreateBtnWithFont(navBar, "20    " USR_SYMBOL_DOWN, g_defIllustrateFont);
     lv_obj_align(btn, LV_ALIGN_LEFT_MID, 268, 0);
     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
     lv_obj_set_size(btn, 69, 42);
@@ -374,8 +375,8 @@ static lv_obj_t *CreateWordCntSelect(lv_obj_t *navBar)
 {
     lv_obj_t *btn;
 
-    btn = GuiCreateBtnWithFont(navBar, "24    " USR_SYMBOL_DOWN, &openSans_20);
-    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 387, 0);
+    btn = GuiCreateBtnWithFont(navBar, "24    " USR_SYMBOL_DOWN, g_defIllustrateFont);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
     lv_obj_set_size(btn, 69, 42);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
@@ -387,9 +388,9 @@ static lv_obj_t *CreateResetButton(lv_obj_t *navBar)
 {
     lv_obj_t *btn;
 
-    btn = GuiCreateBtnWithFont(navBar, _("single_phrase_reset"), &openSansEnIllustrate);
+    btn = GuiCreateBtnWithFont(navBar, _("single_phrase_reset"), g_defIllustrateFont);
     lv_obj_set_size(btn, 106, 42);
-    lv_obj_align(btn, LV_ALIGN_DEFAULT, 350, 27);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
     lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
@@ -405,7 +406,7 @@ static lv_obj_t *CreateQuestion(lv_obj_t *navBar)
     img = GuiCreateImg(btn, &imgQuestion);
     lv_obj_set_align(img, LV_ALIGN_CENTER);
     lv_obj_set_size(btn, 106, 42);
-    lv_obj_align(btn, LV_ALIGN_DEFAULT, 380, 27);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
     lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
@@ -632,8 +633,9 @@ void SetRightBtnLabel(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM button
         lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 0), text);
         break;
     case NVS_BAR_WORD_RESET:
-        sprintf(btnBuf, "%s %s", USR_SYMBOL_RESET, _("import_wallet_phrase_clear_btn"));
+        sprintf(btnBuf, "%s %s", USR_SYMBOL_RESET, text);
         lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 0), btnBuf);
+        GuiStatusBarReSetWidth(navBarWidget->rightBtn);
         break;
     default:
         return;
@@ -692,4 +694,9 @@ void SetNavBarRightBtn(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM butto
     if (rightButtonCb != NULL) {
         lv_obj_add_event_cb(navBarWidget->rightBtn, rightButtonCb, LV_EVENT_CLICKED, param);
     }
+}
+
+static void GuiStatusBarReSetWidth(lv_obj_t *obj)
+{
+    lv_obj_set_width(obj, lv_obj_get_self_width(lv_obj_get_child(obj, 0)) + 20);
 }

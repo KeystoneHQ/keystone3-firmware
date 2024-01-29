@@ -105,7 +105,7 @@ void CountDownTimerHandler(lv_timer_t *timer)
 {
     lv_obj_t *obj = (lv_obj_t *)timer->user_data;
     static int8_t countDown = 5;
-    char buf[16] = {0};
+    char buf[32] = {0};
     --countDown;
     if (countDown > 0) {
         sprintf(buf, _("got_it_fmt"), countDown);
@@ -231,7 +231,7 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_bg_opa(btn, LV_OPA_60, LV_STATE_DEFAULT);
-    lv_obj_clear_flag(btn, LV_OBJ_FLAG_CLICKABLE);
+    // lv_obj_clear_flag(btn, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(btn, WalletSettingHandler, LV_EVENT_CLICKED, &walletSetting);
     g_countDownTimer = lv_timer_create(CountDownTimerHandler, 1000, btn);
 }

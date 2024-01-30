@@ -28,11 +28,9 @@ with open("./data.csv", newline="", encoding='utf-8') as csvfile:
         if args.zh:
             cn[id] = row['cn']
 
-# 总是生成英文 YAML
 with open("./en.yml", 'w', encoding='utf-8') as f:
     yaml.dump({'en': en}, f, default_flow_style=False)
 
-# 根据参数生成俄文和中文 YAML
 if args.ru:
     with open("./ru.yml", 'w', encoding='utf-8') as f:
         yaml.dump({'ru': ru}, f, allow_unicode=True, default_flow_style=False)

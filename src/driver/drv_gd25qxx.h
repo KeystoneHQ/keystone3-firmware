@@ -42,6 +42,7 @@ int32_t Gd25FlashChipErase(void);
 int32_t Gd25FlashBlockErase(uint32_t addr);
 int32_t Gd25FlashReadBuffer(uint32_t addr, uint8_t *buffer, uint32_t size);
 int32_t Gd25FlashWriteBuffer(uint32_t addr, const uint8_t *buffer, uint32_t size);
+int32_t Gd25FlashWriteBufferNoMutex(uint32_t addr, const uint8_t *buffer, uint32_t size);
 
 #endif /* _DRV_GD25QXX_H */
 

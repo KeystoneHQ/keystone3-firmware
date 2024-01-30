@@ -1204,7 +1204,8 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
         }
     } else {
         if (!strcmp(SecretCacheGetPassword(), "999999")) {
-            GuiApiEmitSignal(SIG_VERIFY_PASSWORD_FAIL, param, sizeof(*param));
+            g_passwordVerifyResult.signal = param;
+            GuiEmitSignal(SIG_VERIFY_PASSWORD_FAIL, (void*)&g_passwordVerifyResult, sizeof(g_passwordVerifyResult));
         } else {
             GuiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
         }

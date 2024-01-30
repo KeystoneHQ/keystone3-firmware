@@ -124,7 +124,7 @@ void GuiDevicePublicKeyEntranceWidget(lv_obj_t *parent)
     char show[200] = {0};
     sprintf(show, "%s\n%s", sn, uid);
 
-    lv_obj_t * label = GuiCreateLabel(contentCont, show);
+    lv_obj_t * label = GuiCreateIllustrateLabel(contentCont, show);
     lv_obj_set_width(label, 336);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
 }

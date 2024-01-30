@@ -62,7 +62,7 @@ static void GuiCreatePage(lv_obj_t *parent)
     lv_obj_set_style_radius(textArea, 0, LV_PART_MAIN);
     lv_obj_set_style_border_width(textArea, 0, LV_PART_MAIN);
     lv_obj_set_style_text_color(textArea, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_text_font(textArea, &openSans_24, LV_PART_MAIN);
+    lv_obj_set_style_text_font(textArea, &buttonFont, LV_PART_MAIN);
     lv_obj_set_scrollbar_mode(textArea, LV_SCROLLBAR_MODE_OFF);
     lv_obj_add_event_cb(textArea, OnTextareaValueChangeHandler, LV_EVENT_ALL, NULL);
     lv_obj_clear_flag(textArea, LV_OBJ_FLAG_CLICK_FOCUSABLE);

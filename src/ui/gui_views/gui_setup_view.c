@@ -29,6 +29,7 @@ int32_t GuiSetupViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         GuiSetupAreaRefresh();
         break;
     case GUI_EVENT_RESTART:
+    case GUI_EVENT_CHANGE_LANGUAGE:
         GuiSetupAreaRestart();
         break;
     case SIG_SETUP_VIEW_TILE_PREV:

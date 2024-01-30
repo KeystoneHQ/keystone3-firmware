@@ -343,25 +343,13 @@ void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *pa
     lv_obj_t *passWdCont = item->passWdCont;
     lv_obj_t *label;
     lv_obj_t *img;
-    GuiButton_t table[2];
     item->fpErrLabel = NULL;
     if (item->mode == ENTER_PASSCODE_VERIFY_PIN) {
         lv_obj_t *btnm = GuiCreateNumKeyboard(pinCont, SetPinEventHandler, NUM_KEYBOARD_PIN, passCodeParam);
         lv_obj_add_style(btnm, &g_enterPassBtnmStyle, LV_PART_ITEMS);
         lv_obj_add_style(btnm, &g_enterPressBtnmStyle, LV_STATE_PRESSED | LV_PART_ITEMS);
         item->btnm = btnm;
-        label = GuiCreateIllustrateLabel(pinCont, _("FORGET"));
-        img = GuiCreateImg(pinCont, &imgLock);
-        table[0].obj = img;
-        table[0].align = LV_ALIGN_LEFT_MID;
-        table[0].position.x = 12;
-        table[0].position.y = 0;
-        table[1].obj = label;
-        table[1].align = LV_ALIGN_LEFT_MID;
-        table[1].position.x = 40;
-        table[1].position.y = 0;
-        lv_obj_t *button = GuiCreateButton(pinCont, 123, 36, table, NUMBER_OF_ARRAYS(table),
-                                           OpenForgetPasswordHandler, &g_lockView);
+        lv_obj_t *button = GuiCreateImgLabelAdaptButton(pinCont, _("FORGET"), &imgLock, OpenForgetPasswordHandler, &g_lockView);
         lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -32, -27);
         lv_obj_align(btnm, LV_ALIGN_BOTTOM_MID, 0, -84);
         lv_obj_set_style_bg_color(btnm, BLACK_COLOR, LV_PART_MAIN);
@@ -384,17 +372,7 @@ void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *pa
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
         item->repeatLabel = label;
 
-        label = GuiCreateIllustrateLabel(pinCont, _("password_label"));
-        img = GuiCreateImg(pinCont, &imgSwitch);
-        table[0].obj = img;
-        table[0].align = LV_ALIGN_LEFT_MID;
-        table[0].position.x = 8;
-        table[0].position.y = 0;
-        table[1].obj = label;
-        table[1].align = LV_ALIGN_LEFT_MID;
-        table[1].position.x = 40;
-        table[1].position.y = 0;
-        button = GuiCreateButton(pinCont, 156, 36, table, NUMBER_OF_ARRAYS(table), PassWordPinSwitchHandler, passCodeParam);
+        button = GuiCreateImgLabelAdaptButton(pinCont, _("password_label"), &imgSwitch, PassWordPinSwitchHandler, passCodeParam);
         lv_obj_align(button, LV_ALIGN_BOTTOM_LEFT, 24, -24);
     }
 
@@ -418,31 +396,10 @@ void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *pa
     lv_obj_t *line = (lv_obj_t *)GuiCreateLine(passWdCont, points, 2);
     lv_obj_align_to(line, kb->ta, LV_ALIGN_BOTTOM_MID, 0, 0);
 
-    label = GuiCreateIllustrateLabel(passWdCont, _("FORGET"));
-    img = GuiCreateImg(passWdCont, &imgLock);
-    table[0].obj = img;
-    table[0].align = LV_ALIGN_LEFT_MID;
-    table[0].position.x = 12;
-    table[0].position.y = 0;
-    table[1].obj = label;
-    table[1].align = LV_ALIGN_LEFT_MID;
-    table[1].position.x = 40;
-    table[1].position.y = 0;
-    lv_obj_t *button = GuiCreateButton(passWdCont, 123, 36, table, NUMBER_OF_ARRAYS(table),
-                                       OpenForgetPasswordHandler, &g_lockView);
+    lv_obj_t *button = GuiCreateImgLabelAdaptButton(passWdCont, _("FORGET"), &imgLock, OpenForgetPasswordHandler, &g_lockView);
     lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -32, -27);
 
-    label = GuiCreateIllustrateLabel(passWdCont, _("pin_code"));
-    img = GuiCreateImg(passWdCont, &imgSwitch);
-    table[0].obj = img;
-    table[0].align = LV_ALIGN_LEFT_MID;
-    table[0].position.x = 8;
-    table[0].position.y = 0;
-    table[1].obj = label;
-    table[1].align = LV_ALIGN_LEFT_MID;
-    table[1].position.x = 40;
-    table[1].position.y = 0;
-    button = GuiCreateButton(passWdCont, 156, 36, table, NUMBER_OF_ARRAYS(table), PassWordPinSwitchHandler, passCodeParam);
+    button = GuiCreateImgLabelAdaptButton(passWdCont, _("pin_code"), &imgSwitch, PassWordPinSwitchHandler, passCodeParam);
     lv_obj_align(button, LV_ALIGN_BOTTOM_LEFT, 24, -24);
 }
 
@@ -459,21 +416,7 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
     item->fpErrLabel = NULL;
 
     if (mode == ENTER_PASSCODE_SET_PIN) {
-        label = GuiCreateNoticeLabel(pinCont, g_enterPassLabel[mode].passSwitch);
-        img = GuiCreateImg(pinCont, &imgSwitch);
-        GuiButton_t table[2] = {
-            {
-                .obj = img,
-                .align = LV_ALIGN_LEFT_MID,
-                .position = {12, 0},
-            },
-            {
-                .obj = label,
-                .align = LV_ALIGN_RIGHT_MID,
-                .position = {-8, 0},
-            },
-        };
-        button = GuiCreateButton(pinCont, 179, 36, table, NUMBER_OF_ARRAYS(table), PassWordPinSwitchHandler, passCodeParam);
+        button = GuiCreateImgLabelAdaptButton(pinCont, g_enterPassLabel[mode].passSwitch, &imgSwitch, PassWordPinSwitchHandler, passCodeParam);
         lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 449 - GUI_MAIN_AREA_OFFSET);
 
         label = GuiCreateIllustrateLabel(pinCont, _("password_error_duplicated_pincode"));
@@ -499,17 +442,7 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
         lv_textarea_set_one_line(kb->ta, true);
         item->kb = kb;
 
-        label = GuiCreateNoticeLabel(passWdCont, g_enterPassLabel[ENTER_PASSCODE_SET_PASSWORD].passSwitch);
-        img = GuiCreateImg(pinCont, &imgSwitch);
-        table[0].obj = img;
-        table[0].align = LV_ALIGN_LEFT_MID;
-        table[0].position.x = 12;
-        table[0].position.y = 0;
-        table[1].obj = label;
-        table[1].align = LV_ALIGN_LEFT_MID;
-        table[1].position.x = 40;
-        table[1].position.y = 0;
-        button = GuiCreateButton(passWdCont, 179, 36, table, NUMBER_OF_ARRAYS(table), PassWordPinSwitchHandler, passCodeParam);
+        button = GuiCreateImgLabelAdaptButton(passWdCont, g_enterPassLabel[ENTER_PASSCODE_SET_PASSWORD].passSwitch, &imgSwitch, PassWordPinSwitchHandler, passCodeParam);
         lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 449 - GUI_MAIN_AREA_OFFSET);
 
         static lv_style_t style_indic;

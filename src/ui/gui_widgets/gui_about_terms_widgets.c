@@ -75,7 +75,6 @@ static void GuiAboutNVSBarInit()
 
 static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, const char *title, const char *content, int *height)
 {
-
     lv_obj_t *cont = lv_obj_create(parent);
     lv_obj_set_width(cont, 408);
     lv_obj_set_style_border_width(cont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -96,14 +95,8 @@ static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, const char *title, c
     lv_obj_align(titleLabel, LV_ALIGN_DEFAULT, 0, 0);
     int16_t titleHight = GetLvObjHeight(titleLabel);
 
-
-    lv_obj_t *contentLabel = lv_label_create(cont);
-    lv_label_set_text(contentLabel, content);
-    lv_obj_set_style_text_font(contentLabel, g_defTextFont, LV_PART_MAIN);
-    lv_obj_set_style_text_color(contentLabel, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_t *contentLabel = GuiCreateIllustrateLabel(cont, content);
     lv_obj_set_style_text_opa(contentLabel, LV_OPA_80, LV_PART_MAIN);
-    lv_label_set_long_mode(contentLabel, LV_LABEL_LONG_WRAP);
-    lv_obj_set_width(contentLabel, 410);
     lv_obj_align(contentLabel, LV_ALIGN_DEFAULT, 0, 4 + titleHight);
     int16_t contentHeight = GetLvObjHeight(contentLabel);
 
@@ -116,29 +109,27 @@ static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, const char *title, c
 
 void GuiAboutTermsEntranceWidget(lv_obj_t *parent)
 {
-
-
+    GuiAddObjFlag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_t *label, *img;
     label = GuiCreateLittleTitleLabel(parent, _("about_terms_subtitle"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 22, 13);
 
-    label = GuiCreateLabel(parent, _("about_terms_desc"));
+    label = GuiCreateIllustrateLabel(parent, _("about_terms_desc"));
     lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 22, 77);
-
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
 
     label = GuiCreateIllustrateLabel(parent, g_termsWebSiteUrl);
     lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 22, 141);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
     lv_obj_add_flag(label, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(label, GuiQrcodeHandler, LV_EVENT_CLICKED, NULL);
+
     img = GuiCreateImg(parent, &imgQrcodeTurquoise);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 254, 144);
+    lv_obj_align_to(img, label, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, GuiQrcodeHandler, LV_EVENT_CLICKED, NULL);
 
-
-    int dy = 195;
+    int dy = lv_obj_get_y2(label) + 24;
     int height = 0;
 
     const char *title = _("about_terms_eligibility");
@@ -200,7 +191,6 @@ void GuiAboutTermsEntranceWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(bottom, LV_OPA_0, LV_PART_MAIN);
     lv_obj_set_style_border_width(bottom, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align(bottom, LV_ALIGN_DEFAULT, 0, dy);
-
 }
 
 static int GetLvObjHeight(lv_obj_t *obj)
@@ -208,7 +198,6 @@ static int GetLvObjHeight(lv_obj_t *obj)
     lv_obj_update_layout(obj);
     return lv_obj_get_height(obj);
 }
-
 
 static void GuiQrcodeHandler(lv_event_t *e)
 {

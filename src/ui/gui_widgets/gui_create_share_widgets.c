@@ -275,7 +275,6 @@ static void GuiShareCustodianWidget(lv_obj_t *parent)
     lv_obj_t *desc2 = GuiCreateIllustrateLabel(cont, _("shamir_phrase_notice_desc2"));
     lv_obj_align_to(desc2, desc1, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     hintHeight = GetHintBoxReHeight(hintHeight, desc1) + 130;
-    // lv_obj_set_size(cont, 480, hintHeight);
 
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_CHECK);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);

@@ -77,13 +77,13 @@ static void UsbTask(void *argument)
 #if (USB_POP_WINDOW_ENABLE == 1)
 
                 if ((GetCurrentAccountIndex() != 0xFF || GuiIsSetup()) && GetUSBSwitch() && g_usbConnectMutex) {
-#else
-                if (GetUSBSwitch()) {
 #endif
                     USBD_OTG_ISR_Handler((USB_OTG_CORE_HANDLE *)rcvMsg.value);
                     NVIC_ClearPendingIRQ(USB_IRQn);
                     NVIC_EnableIRQ(USB_IRQn);
+#if (USB_POP_WINDOW_ENABLE == 1)
                 }
+#endif
             }
             break;
             case USB_MSG_SET_STATE: {

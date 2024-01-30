@@ -18,14 +18,14 @@
 #include "gui_about_info_widgets.h"
 #include "account_manager.h"
 #include "gui_setup_widgets.h"
-#include "drv_aw32001.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
+#else
+#include "drv_aw32001.h"
 #endif
 
 static int32_t GuiInitViewInit(void)
 {
-    LanguageInit();
     GuiEnterPassLabelInit();
     GuiStyleInit();
     GuiStatusBarInit();
@@ -68,7 +68,7 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         break;
     case SIG_INIT_BATTERY:
         battState = *(uint16_t *)param;
-        printf("rcv battState=0x%04X\r\n", battState);
+        //printf("rcv battState=0x%04X\r\n", battState);
         GuiStatusBarSetBattery(battState & 0xFF, (battState & 0x8000) != 0);
         break;
     case SIG_INIT_FIRMWARE_UPDATE_DENY:

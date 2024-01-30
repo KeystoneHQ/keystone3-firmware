@@ -25,6 +25,8 @@ void *GuiCreateImgLabelButton(lv_obj_t *parent, const char *text, const void *sr
                               lv_event_cb_t buttonCb, void *param);
 void *GuiCreateStatusCoinButton(lv_obj_t *parent, const char *text, const void *src);
 void *GuiUpdateStatusCoinButton(lv_obj_t *button, const char *text, const void *src);
+void *GuiCreateImgLabelAdaptButton(lv_obj_t *parent, const char *text, const void *src,
+                                   lv_event_cb_t buttonCb, void *param);
 
 
 #endif /* _GUI_BUTTON_H */

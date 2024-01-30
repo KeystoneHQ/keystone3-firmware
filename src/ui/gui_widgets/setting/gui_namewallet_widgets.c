@@ -102,7 +102,7 @@ void *GuiWalletNameWallet(lv_obj_t *parent, uint8_t tile)
     lv_obj_set_style_text_opa(g_setNameKb->ta, LV_OPA_100, 0);
     lv_obj_align(g_setNameKb->ta, LV_ALIGN_DEFAULT, 126, 320 - GUI_MAIN_AREA_OFFSET);
     lv_textarea_set_max_length(g_setNameKb->ta, 16);
-    lv_textarea_set_placeholder_text(g_setNameKb->ta, "Wallet Name");
+    lv_textarea_set_placeholder_text(g_setNameKb->ta, _("single_backup_namewallet_previntput"));
     lv_obj_set_style_text_opa(g_setNameKb->ta, LV_OPA_50, LV_PART_TEXTAREA_PLACEHOLDER);
     lv_obj_set_style_border_color(g_setNameKb->ta, ORANGE_COLOR, LV_PART_CURSOR | LV_STATE_FOCUSED);
     lv_textarea_set_text(g_setNameKb->ta, GuiNvsBarGetWalletName());

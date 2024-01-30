@@ -151,6 +151,7 @@ void GuiTutorialInit(TUTORIAL_LIST_INDEX_ENUM tutorialIndex)
     parent = g_pageWidget->contentZone;
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     g_tutorialWidget.cont = parent;
+    GuiAddObjFlag(parent, LV_OBJ_FLAG_SCROLLABLE);
 
     TutorialList_t *tutorialList = &g_tutorials[tutorialIndex];
 
@@ -183,7 +184,7 @@ void GuiTutorialInit(TUTORIAL_LIST_INDEX_ENUM tutorialIndex)
         height += h;
 
         if (tutorialList->tutorials[i].link != NULL) {
-            learnMoreCont = GuiCreateContainerWithParent(container, 144, 30);
+            learnMoreCont = GuiCreateContainerWithParent(container, 300, 30);
             lv_obj_add_flag(learnMoreCont, LV_OBJ_FLAG_CLICKABLE);
             lv_obj_add_event_cb(learnMoreCont, GuiOpenQRHintBoxHandler, LV_EVENT_CLICKED, &tutorialList->tutorials[i]);
             lv_obj_align_to(learnMoreCont, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
@@ -197,7 +198,7 @@ void GuiTutorialInit(TUTORIAL_LIST_INDEX_ENUM tutorialIndex)
             lv_obj_align(label, LV_ALIGN_DEFAULT, 0, 0);
 
             img = GuiCreateImg(learnMoreCont, &imgQrcodeTurquoise);
-            lv_obj_align(img, LV_ALIGN_DEFAULT, 120, 3);
+            lv_obj_align_to(img, label, LV_ALIGN_RIGHT_MID, 30, 0);
         }
 
         lv_obj_t *line = GuiCreateDividerLine(container);

@@ -14,8 +14,6 @@
 #include "user_utils.h"
 #include <stdlib.h>
 
-// #define pbkdf2_hmac_sha256_slip39 pbkdf2_hmac_sha256
-
 void Slip39Error(int errNum);
 extern void pbkdf2_hmac_sha256_slip39(const uint8_t *pass, int passlen, const uint8_t *salt,
                                       int saltlen, uint32_t iterations, uint8_t *key,
@@ -282,12 +280,6 @@ int FormatShareMnemonic(Slip39Shared_t *shared, uint16_t *destination, uint32_t 
     uint16_t mi = (shared->memberIndex) & 0xF;
     uint16_t mt = (shared->memberThreshold - 1) & 0xF;
 
-#if 0
-    destination[0] = (shared->identifier >> 5) & 0x3FF;
-    destination[1] = ((shared->identifier << 5) | shared->iteration) & 0x3FF;
-    destination[2] = ((shared->groupIndex << 6) | (gt << 2) | (gc >> 2)) & 0x3FF;
-    destination[3] = ((gc << 8) | (mi << 4) | (mt)) & 0x3FF;
-#endif
     destination[0] = (shared->identifier >> 5) & 0x3FF; // ID high 10bit
     destination[1] = ((shared->identifier & 0x1F) << 5) | (shared->iteration & 0x1F); // ID low 5bit | ie 5bit
     destination[2] = ((shared->groupIndex & 0xF) << 6) | ((gt & 0xF) << 2) | ((gc & 0xF) >> 2);
@@ -770,14 +762,12 @@ int Sli39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, ui
     uint8_t gsv[MAX_SAHRE_VALUE_LEN];
     uint8_t *pp = NULL;
     uint8_t ppl = 0;
-    // uint16_t groupCount;
 
     identifier = shards[0].identifier;
     *id = identifier;
     iteration = shards[0].iteration;
     *ie = iteration;
     groupThreshold = shards[0].groupThreshold;
-    // groupCount = shards[0].groupCount;
     valueLength = shards[0].valueLength;
     memset(groupIndexMember, 0, sizeof(groupIndexMember));
 

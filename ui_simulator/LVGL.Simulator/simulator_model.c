@@ -13,6 +13,27 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
+bool GetUsbDetectState(void)
+{
+    return false;
+}
+
+bool UsbInitState(void)
+{
+    return true;
+}
+
+uint32_t GetLanguage(void)
+{
+    return 0;
+}
+
+
+void SetLanguage(uint32_t language)
+{
+}
+
+
 uint8_t GetExportWallet()
 {
     return 1;
@@ -24,11 +45,12 @@ void ExportAddressReject()
 
 void ExportAddressApprove()
 {
+
 }
 
 bool FatfsFileExist(const char *path)
 {
-    return false;
+    return true;
 }
 
 bool FpModuleIsChipState(void)

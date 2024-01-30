@@ -12,6 +12,9 @@
 #define SPI_FLASH_ADDR_LOG                      0x00800000
 #define SPI_FLASH_SIZE_LOG                      0x80000
 
+#define SPI_FLASH_ADDR_ERR_INFO                 0x00880000
+#define SPI_FLASH_SIZE_ERR_INFO                 0x1000
+
 //USER IMAGE, 480KB
 #define SPI_FLASH_ADDR_USER_IMAGE               0x00F3A000
 #define SPI_FLASH_SIZE_USER_IMAGE               0x78000

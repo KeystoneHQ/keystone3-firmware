@@ -230,7 +230,7 @@ void GuiMultiPathCoinReceiveRefresh(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
         switch (g_chainCard) {
         case HOME_WALLET_CARD_ETH:
-            SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_ETH, "Receive ETH");
+            SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_ETH, _("receive_eth_receive_main_title"));
             break;
         case HOME_WALLET_CARD_SOL:
             SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_SOL, "Receive SOL");
@@ -266,7 +266,7 @@ void GuiMultiPathCoinReceiveRefresh(void)
         break;
     case RECEIVE_TILE_CHANGE_PATH:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Change Derivation Path");
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_selectType = GetPathIndex();
         for (uint32_t i = 0; i < 3; i++) {
@@ -302,7 +302,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, ChangePathHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgPath);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, "Change Derivation Path", &openSans_24);
+    label = GuiCreateLabelWithFont(btn, _("derivation_path_change"), &buttonFont);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 
     btn = lv_btn_create(cont);
@@ -315,7 +315,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, TutorialHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgTutorial);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, "Tutorial", &openSans_24);
+    label = GuiCreateLabelWithFont(btn, "Tutorial", &buttonFont);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 }
 
@@ -383,7 +383,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
         char hint[256];
         GetHint(hint);
-        tempObj = GuiCreateLabelWithFont(g_multiPathCoinReceiveWidgets.attentionCont, hint, &openSans_20);
+        tempObj = GuiCreateLabelWithFont(g_multiPathCoinReceiveWidgets.attentionCont, hint, g_defIllustrateFont);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
         tempObj = GuiCreateBtn(g_multiPathCoinReceiveWidgets.attentionCont, "Got It");
         lv_obj_set_size(tempObj, 122, 66);
@@ -421,7 +421,7 @@ static void GuiCreateSwitchAddressWidget(lv_obj_t *parent)
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
     index = 0;
     for (uint32_t i = 0; i < 5; i++) {
-        g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel = GuiCreateLabelWithFont(cont, "", &openSans_24);
+        g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel = GuiCreateLabelWithFont(cont, "", &buttonFont);
         lv_obj_align(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressLabel = GuiCreateNoticeLabel(cont, "");
         lv_obj_align(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressLabel, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
@@ -662,7 +662,8 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
 
     for (uint32_t i = 0; i < 3; i++) {
-        label = GuiCreateLabelWithFont(cont, GetChangePathItemTitle(i), &openSans_24);
+
+        label = GuiCreateLabelWithFont(cont, GetChangePathItemTitle(i), &buttonFont);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         GetPathItemSubTitle(string, i);
         label = GuiCreateLabelWithFontAndTextColor(cont, string, g_defIllustrateFont, 0x919191);

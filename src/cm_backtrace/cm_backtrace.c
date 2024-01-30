@@ -31,6 +31,8 @@
 #include <string.h>
 #include <stdio.h>
 #include "mhscpu.h"
+#include "drv_gd25qxx.h"
+#include "flash_address.h"
 
 #if __STDC_VERSION__ < 199901L
 #error "must be C99 or higher. try to add '-std=c99' to compile parameters"
@@ -378,6 +380,7 @@ static void print_call_stack(uint32_t sp)
 {
     size_t i, cur_depth = 0;
     uint32_t call_stack_buf[CMB_CALL_STACK_MAX_DEPTH] = {0};
+    char callStackStr[256];
 
     cur_depth = cm_backtrace_call_stack(call_stack_buf, CMB_CALL_STACK_MAX_DEPTH, sp);
 
@@ -389,9 +392,15 @@ static void print_call_stack(uint32_t sp)
     if (cur_depth) {
         call_stack_info[cur_depth * (8 + 1) - 1] = '\0';
         cmb_println(print_info[PRINT_CALL_STACK_INFO], fw_name, CMB_ELF_FILE_EXTENSION_NAME, call_stack_info);
+        sprintf(callStackStr, print_info[PRINT_CALL_STACK_INFO], fw_name, CMB_ELF_FILE_EXTENSION_NAME, call_stack_info);
     } else {
         cmb_println(print_info[PRINT_CALL_STACK_ERR]);
+        strcpy(callStackStr, print_info[PRINT_CALL_STACK_ERR]);
     }
+    if (strlen(callStackStr) + 1 > SPI_FLASH_SIZE_ERR_INFO) {
+        return;
+    }
+    Gd25FlashWriteBuffer(SPI_FLASH_ADDR_ERR_INFO, (uint8_t *)callStackStr, strlen(callStackStr) + 1);
 }
 
 /**

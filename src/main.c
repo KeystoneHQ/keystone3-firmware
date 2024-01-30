@@ -66,8 +66,8 @@ int main(void)
     DrawBootLogoOnLcd();
     Gd25FlashInit();
     NvicInit();
-    LogInit();
     PsramInit();
+    LogInit();
     DeviceSettingsInit();
     UserMsgInit();
     DS28S60_Init();
@@ -80,7 +80,6 @@ int main(void)
     Aw32001Init();
     ButtonInit();
     ExtInterruptInit();
-    WriteLogEvent(EVENT_ID_BOOT);
     MountSdFatfs();
     UserSqlite3Init();
     ScreenManagerInit();

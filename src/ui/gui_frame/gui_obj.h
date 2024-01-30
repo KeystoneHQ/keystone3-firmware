@@ -86,12 +86,14 @@ void *GuiCreateTileView(lv_obj_t *parent);
 void *GuiCreateAnimView(lv_obj_t *parent, uint16_t animHeight);
 void *GuiCreateArc(lv_obj_t *parent);
 void *GuiCreateSwitch(lv_obj_t *parent);
+void *GuiCreateBtn(lv_obj_t *parent, const char *text);
+void GuiAlignToPrevObj(lv_obj_t *obj, lv_align_t align, int16_t x, int16_t y);
+void GuiAddObjFlag(void *obj, lv_obj_flag_t flag);
+void *GuiCreateSpacer(void *parent, uint16_t height);
 
 #define GuiCreateContainer(w, h) GuiCreateContainerWithParent(lv_scr_act(), w, h)
-#define GuiCreateBtn(parent, text) GuiCreateBtnWithFont(parent, text, &openSansButton)
-#define GuiCreateSingleCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, true, &openSans_24)
-#define GuiCreateMultiCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, false, &openSans_24)
-#define GuiCreateLabel(parent, text) GuiCreateLabelWithFont(parent, text, &openSans_20)
+#define GuiCreateSingleCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, true, g_defTextFont)
+#define GuiCreateMultiCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, false, g_defTextFont)
 #define GuiCreateTitleLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defTitleFont)
 #define GuiCreateLittleTitleLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defLittleTitleFont)
 #define GuiCreateTextLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defTextFont)

@@ -583,7 +583,7 @@ static void GuiCreateSelectCompanionAppCoinWidget()
 
 static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
 {
-    lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_MOMENTUM);
+    lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_ELASTIC);
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
 
     lv_obj_t *img = GuiCreateImg(parent, g_walletListArray[0].img);
@@ -830,7 +830,7 @@ static void AddXrpToolkitAddress(void)
 
     char name[20] = {0};
     sprintf(name, "Account-%d", g_xrpAddressIndex[GetCurrentAccountIndex()] + 1);
-    lv_obj_t *label = GuiCreateLabel(g_bottomCont, name);
+    lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 
     char addr[36] = {0};

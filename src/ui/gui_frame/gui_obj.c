@@ -1,5 +1,10 @@
 #include "gui_obj.h"
 
+lv_obj_t *g_circleAnimationItems = NULL;
+lv_anim_t g_circleAnimation = {0};
+lv_obj_t *g_ringImg = NULL;
+lv_obj_t *g_dotImg = NULL;
+
 void *GuiCreateContainerWithParent(lv_obj_t *parent, int w, int h)
 {
     lv_obj_t *cont = lv_obj_create(parent);
@@ -27,7 +32,6 @@ void *GuiCreateLabelWithFont(lv_obj_t *parent, const char *text, const lv_font_t
     lv_obj_t *label = lv_label_create(parent);
     lv_label_set_text(label, text);
     lv_obj_set_style_text_font(label, font, LV_PART_MAIN);
-    // lv_obj_set_style_text_line_space(label, 10, LV_PART_MAIN);
     if (GuiDarkMode()) {
         lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
     } else {
@@ -91,8 +95,15 @@ void *GuiCreateBtnWithFont(lv_obj_t *parent, const char *text, const lv_font_t *
     lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
-    lv_obj_set_size(btn, 96, 66);
+    lv_obj_set_size(btn, lv_obj_get_self_width(label) + 24, lv_obj_get_self_height(label) + 6);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
+    return btn;
+}
+
+void *GuiCreateBtn(lv_obj_t *parent, const char *text)
+{
+    lv_obj_t *btn = GuiCreateBtnWithFont(parent, text, &buttonFont);
+    lv_obj_set_size(btn, 96, 66);
     return btn;
 }
 
@@ -141,18 +152,9 @@ void GuiSetAngle(void* img, int32_t v)
     lv_img_set_angle(img, v);
 }
 
-lv_obj_t *g_circleAnimationItems = NULL;
-lv_anim_t g_circleAnimation = {0};
-lv_obj_t *g_ringImg = NULL;
-lv_obj_t *g_dotImg = NULL;
-
 void* GuiCreateCircleAroundAnimation(lv_obj_t *parent, int w)
 {
-    //if (g_circleAnimationItems) {
-    //    lv_obj_del(g_circleAnimationItems);
-    //}
     GuiStopCircleAroundAnimation();
-    //g_circleAnimationItems = lv_obj_create(parent);
     lv_obj_set_size(parent, 480, 800);
     g_ringImg = GuiCreateImg(parent, &ring);
     lv_obj_align(g_ringImg, LV_ALIGN_CENTER, 0, w);
@@ -195,7 +197,7 @@ void *GuiCreateConfirmSlider(lv_obj_t *parent, lv_event_cb_t cb)
     lv_obj_set_style_bg_opa(bgCont, LV_OPA_10, LV_PART_MAIN);
     lv_obj_set_align(bgCont, LV_ALIGN_CENTER);
     lv_obj_set_style_radius(bgCont, 24, LV_PART_MAIN);
-    lv_obj_t *label = GuiCreateIllustrateLabel(bgCont, "Swipe to confirm");
+    lv_obj_t *label = GuiCreateIllustrateLabel(bgCont, _("scan_qr_code_sign_unsigned_content_frame"));
     lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_opa(label, LV_OPA_30, LV_PART_MAIN);
     lv_obj_set_align(label, LV_ALIGN_CENTER);
@@ -281,4 +283,25 @@ void *GuiCreateSwitch(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(switchObj, LV_OPA_30, LV_PART_MAIN);
 
     return switchObj;
+}
+
+void GuiAlignToPrevObj(lv_obj_t *obj, lv_align_t align, int16_t x, int16_t y)
+{
+    lv_obj_align_to(obj, lv_obj_get_child(lv_obj_get_parent(obj), lv_obj_get_child_cnt(lv_obj_get_parent(obj)) - 2), align, x, y);
+}
+
+void GuiAddObjFlag(void *obj, lv_obj_flag_t flag)
+{
+    lv_obj_add_flag(obj, flag);
+    if (flag & LV_OBJ_FLAG_SCROLLABLE) {
+        lv_obj_set_scrollbar_mode(obj, LV_SCROLLBAR_MODE_OFF);
+        lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLL_ELASTIC);
+    }
+}
+
+void *GuiCreateSpacer(void *parent, uint16_t height)
+{
+    lv_obj_t *spacer = GuiCreateContainerWithParent(parent, lv_obj_get_width(parent), height);
+    lv_obj_set_style_bg_opa(spacer, LV_OPA_0, LV_PART_MAIN);
+    return spacer;
 }

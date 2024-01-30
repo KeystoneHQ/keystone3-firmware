@@ -13,6 +13,7 @@
 #include "err_code.h"
 #include "gui_page.h"
 #include "secret_cache.h"
+
 #ifndef COMPILE_SIMULATOR
 #include "drv_battery.h"
 #endif
@@ -85,8 +86,7 @@ void GuiAboutInfoWidgetsInit()
 {
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    GuiAddObjFlag(cont, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
     lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLL_ELASTIC);
     lv_obj_set_scrollbar_mode(cont, LV_SCROLLBAR_MODE_OFF);
     g_cont = cont;
@@ -325,38 +325,44 @@ static void LogExportHandler(lv_event_t *e)
 
 void GuiCreateVerifyFirmwareInstructionTile(lv_obj_t *parent)
 {
+#define UPDATE_BTN_X_OFFSET (-30)
+    int16_t btnOffset = UPDATE_BTN_X_OFFSET;
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
-    lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+    GuiAddObjFlag(parent, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
     lv_obj_t *label = GuiCreateTitleLabel(parent, _("about_info_verify_source_code_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
 
     label = GuiCreateNoticeLabel(parent, _("about_info_verify_firmware_desc"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 72);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
 
     label = GuiCreateIllustrateLabel(parent, "1");
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 232);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 40);
 
     label = GuiCreateIllustrateLabel(parent, _("about_info_verify_firmware_step1"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 60, 232);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
     lv_label_set_recolor(label, true);
+
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_verify_firmware_qr_link"));
     lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 326);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
 
     label = GuiCreateIllustrateLabel(parent, "2");
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 398);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
 
     label = GuiCreateIllustrateLabel(parent, _("about_info_verify_firmware_step3"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 60, 398);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
     lv_label_set_recolor(label, true);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("Show Checksum"));
+    lv_obj_t *btn = GuiCreateBtn(parent, _("show_checksum"));
     lv_obj_set_size(btn, 408, 66);
-    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
     lv_obj_add_event_cb(btn, StartFirmwareCheckSumHandler, LV_EVENT_CLICKED, NULL);
+    GuiAlignToPrevObj(btn, LV_ALIGN_OUT_BOTTOM_MID, btnOffset, 20);
+
+    lv_obj_t *spacer = GuiCreateSpacer(parent, 24);
+    GuiAlignToPrevObj(spacer, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseVerifyHintBoxHandler, parent);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "");

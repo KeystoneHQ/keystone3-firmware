@@ -26,7 +26,6 @@
 #include "gui_usb_connection_widgets.h"
 #include "gui_pop_message_box.h"
 #include "usb_task.h"
-#include "drv_aw32001.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "assert.h"
@@ -34,6 +33,7 @@
 #define FINGERPRINT_SING_ERR_TIMES              (3)
 #define FINGERPRINT_SING_DISABLE_ERR_TIMES      (15)
 #else
+#include "drv_aw32001.h"
 #include "drv_usb.h"
 #endif
 

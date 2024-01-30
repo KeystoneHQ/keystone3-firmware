@@ -69,7 +69,7 @@ typedef struct {
     lv_obj_t *inputAddressLabel;
     lv_obj_t *overflowLabel;
     lv_obj_t *gotoAddressKeyboard;
-    addressSettingsWidgetsItem_t addressSettingsWidgets[3];
+    addressSettingsWidgetsItem_t addressSettingsWidgets[4];
     SwitchAddressWidgetsItem_t switchAddressWidgets[5];
 } UtxoReceiveWidgets_t;
 
@@ -138,11 +138,11 @@ static UtxoReceiveWidgets_t g_utxoReceiveWidgets;
 static UtxoReceiveTile g_utxoReceiveTileNow;
 static bool g_gotoAddressValid = false;
 static const AddressSettingsItem_t g_addressSettings[] = {
-    //{"Taproot",         "P2TR",             "m/86'/0'/0'"},
-    {"Native SegWit", "P2WPKH", "m/84'/0'/0'"},
-    {"Nested SegWit", "P2SH-P2WPKH", "m/49'/0'/0'"},
-    {"Legacy", "P2PKH", "m/44'/0'/0'"},
-    //{"Custom",          "Edit path",        "m/72'/0'/0'"}
+    {"Taproot",         "P2TR",             "m/86'/0'/0'"},
+    {"Native SegWit",   "P2WPKH",           "m/84'/0'/0'"},
+    {"Nested SegWit",   "P2SH-P2WPKH",      "m/49'/0'/0'"},
+    {"Legacy",          "P2PKH",            "m/44'/0'/0'"},
+    // {"Custom",          "Edit path",        "m/72'/0'/0'"}
 };
 static char * *g_derivationPathDescs = NULL;
 
@@ -405,6 +405,8 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     uint16_t yOffset = 0;
 
     g_utxoReceiveWidgets.qrCodeCont = GuiCreateContainerWithParent(parent, 408, 552);
+    lv_obj_add_flag(g_utxoReceiveWidgets.qrCodeCont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(g_utxoReceiveWidgets.qrCodeCont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_align(g_utxoReceiveWidgets.qrCodeCont, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_style_bg_color(g_utxoReceiveWidgets.qrCodeCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_radius(g_utxoReceiveWidgets.qrCodeCont, 24, LV_PART_MAIN);
@@ -714,7 +716,7 @@ static void RefreshDefaultAddress(void)
     ChainType chainType;
     chainType = GetChainTypeByIndex(g_selectType);
 
-    uint8_t highlightEnd = chainType == XPUB_TYPE_BTC_NATIVE_SEGWIT ? 3 : 1;
+    uint8_t highlightEnd = (chainType == XPUB_TYPE_BTC_NATIVE_SEGWIT || chainType == XPUB_TYPE_BTC_TAPROOT) ? 4 : 1;
     ModelGetUtxoAddress(0, &addressDataItem);
     AddressLongModeCut(address, addressDataItem.address);
     Highlight(address, 0, highlightEnd, highlightAddress);
@@ -808,19 +810,19 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
     lv_obj_set_style_text_opa(labelHint, LV_OPA_80, LV_PART_MAIN);
     lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 0, 0);
 
-    cont = GuiCreateContainerWithParent(scrollCont, 408, 308);
+    cont = GuiCreateContainerWithParent(scrollCont, 408, 411);
     lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 84);
     lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
 
-    for (uint32_t i = 0; i < 3; i++) {
+    for (uint32_t i = 0; i < sizeof(g_addressSettings) / sizeof(g_addressSettings[0]); i++) {
         label = GuiCreateLabelWithFont(cont, g_addressSettings[i].title, &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         sprintf(string, "%s (%s)", g_addressSettings[i].subTitle, g_addressSettings[i].path);
         label = GuiCreateNoticeLabel(cont, string);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
-        if (i != 2) {
+        if (i != (sizeof(g_addressSettings) / sizeof(g_addressSettings[0]) - 1)) {
             line = GuiCreateLine(cont, points, 2);
             lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * (i + 1));
         }
@@ -928,6 +930,9 @@ static void RefreshQrCode(void)
     lv_label_set_text(g_utxoReceiveWidgets.addressLabel, addressDataItem.address);
     lv_label_set_text_fmt(g_utxoReceiveWidgets.addressCountLabel, "Address-%u", addressDataItem.index);
     lv_label_set_text(g_utxoReceiveWidgets.pathLabel, addressDataItem.path);
+
+    lv_obj_align_to(g_utxoReceiveWidgets.addressCountLabel, g_utxoReceiveWidgets.addressLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    lv_obj_align_to(g_utxoReceiveWidgets.pathLabel, g_utxoReceiveWidgets.addressCountLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
 }
 
 static void RefreshSwitchAccount(void)
@@ -1079,7 +1084,7 @@ static void AddressSettingsCheckHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         checkBox = lv_event_get_target(e);
-        for (uint32_t i = 0; i < 3; i++) {
+        for (uint32_t i = 0; i < sizeof(g_addressSettings) / sizeof(g_addressSettings[0]); i++) {
             UpdateAddrTypeCheckbox(i, checkBox == g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox);
         }
         UpdateConfirmAddrTypeBtn();
@@ -1295,8 +1300,10 @@ static ChainType GetChainTypeByIndex(uint32_t index)
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC: {
         if (index == 0) {
-            return XPUB_TYPE_BTC_NATIVE_SEGWIT;
+            return XPUB_TYPE_BTC_TAPROOT;
         } else if (index == 1) {
+            return XPUB_TYPE_BTC_NATIVE_SEGWIT;
+        } else if (index == 2) {
             return XPUB_TYPE_BTC;
         } else {
             return XPUB_TYPE_BTC_LEGACY;

@@ -31,14 +31,15 @@ use crate::transactions::psbt::wrapped_psbt::WrappedPsbt;
 use crate::transactions::tx_checker::TxChecker;
 use alloc::string::{String, ToString};
 use app_utils::keystone;
+use third_party::bitcoin::bip32::Fingerprint;
 use third_party::either::{Left, Right};
 use third_party::hex;
 use third_party::ur_registry::pb::protoc;
 
-pub fn sign_psbt(psbt_hex: Vec<u8>, seed: &[u8]) -> Result<Vec<u8>> {
+pub fn sign_psbt(psbt_hex: Vec<u8>, seed: &[u8], mfp: Fingerprint) -> Result<Vec<u8>> {
     let psbt = deserialize_psbt(psbt_hex)?;
     let mut wpsbt = WrappedPsbt { psbt };
-    let result = wpsbt.sign(seed)?;
+    let result = wpsbt.sign(seed, mfp)?;
     Ok(result.serialize())
 }
 

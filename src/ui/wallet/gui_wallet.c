@@ -59,15 +59,17 @@ UREncodeResult *GuiGetBlueWalletBtcData(void)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    ExtendedPublicKey keys[3];
+    ExtendedPublicKey keys[4];
     public_keys->data = keys;
-    public_keys->size = 3;
+    public_keys->size = 4;
     keys[0].path = "m/84'/0'/0'";
     keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
     keys[1].path = "m/49'/0'/0'";
     keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
     keys[2].path = "m/44'/0'/0'";
     keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+    keys[3].path = "m/86'/0'/0'";
+    keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
     UREncodeResult *urencode = get_connect_blue_wallet_ur(mfp, sizeof(mfp), public_keys);
     CHECK_CHAIN_PRINT(urencode);
     return urencode;
@@ -432,15 +434,15 @@ UREncodeResult *GuiGetOkxWalletData(void)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    //   btc 3
+    //   btc 4
     // + eth 10
     // + trx 1
     // + ltc 1
     // + dash 1
     // + bch 1
-    ExtendedPublicKey keys[17];
+    ExtendedPublicKey keys[18];
     public_keys->data = keys;
-    public_keys->size = 17;
+    public_keys->size = 18;
     for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
         keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = SRAM_MALLOC(64);
         sprintf(keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
@@ -467,6 +469,10 @@ UREncodeResult *GuiGetOkxWalletData(void)
 
     keys[16].path = GetXPubPath(XPUB_TYPE_BCH);
     keys[16].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
+
+    keys[17].path = "m/86'/0'/0'";
+    keys[17].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+
     char serialNumber[256];
     GetSerialNumber(serialNumber);
     char firmwareVersion[12];

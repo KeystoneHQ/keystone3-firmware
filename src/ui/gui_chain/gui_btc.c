@@ -89,10 +89,12 @@ UREncodeResult *GuiGetSignQrCodeData(void)
     GetMasterFingerPrint(mfp);
 
     if (urType == CryptoPSBT) {
+        uint8_t mfp[4] = {0};
+        GetMasterFingerPrint(mfp);
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        encodeResult = btc_sign_psbt(data, seed, len);
+        encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
     } else if (urType == Bytes || urType == KeystoneSignRequest) {
         char *hdPath = NULL;
         char *xPub = NULL;
@@ -140,15 +142,17 @@ void *GuiGetParsedQrData(void)
     do {
         if (urType == CryptoPSBT) {
             PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-            ExtendedPublicKey keys[3];
+            ExtendedPublicKey keys[4];
             public_keys->data = keys;
-            public_keys->size = 3;
+            public_keys->size = 4;
             keys[0].path = "m/84'/0'/0'";
             keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
             keys[1].path = "m/49'/0'/0'";
             keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
             keys[2].path = "m/44'/0'/0'";
             keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+            keys[3].path = "m/86'/0'/0'";
+            keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
             g_parseResult = btc_parse_psbt(crypto, mfp, sizeof(mfp), public_keys);
             CHECK_CHAIN_RETURN(g_parseResult);
             SRAM_FREE(public_keys);
@@ -194,15 +198,17 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
     GetMasterFingerPrint(mfp);
     if (urType == CryptoPSBT) {
         PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-        ExtendedPublicKey keys[3];
+        ExtendedPublicKey keys[4];
         public_keys->data = keys;
-        public_keys->size = 3;
+        public_keys->size = 4;
         keys[0].path = "m/84'/0'/0'";
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
         keys[1].path = "m/49'/0'/0'";
         keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
         keys[2].path = "m/44'/0'/0'";
         keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+        keys[3].path = "m/86'/0'/0'";
+        keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
         result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys);
         SRAM_FREE(public_keys);
     } else if (urType == Bytes || urType == KeystoneSignRequest) {

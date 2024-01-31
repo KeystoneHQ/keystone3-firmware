@@ -284,55 +284,13 @@ void GuiSetupAreaRestart(void)
 
 uint8_t GuiSetSetupPhase(SETUP_PHASE_ENUM pahaseEnum)
 {
-
-    // uint32_t currentPhase = GetSetupStep();
-    // bool valid = false;
-    // switch (pahaseEnum) {
-    // case SETUP_PAHSE_WELCOME:
-    //     if (currentPhase == SETUP_PAHSE_WELCOME) {
-    //         valid = true;
-    //     }
-    //     break;
-    // case SETUP_PAHSE_LANGUAGE:
-    //     if (currentPhase == SETUP_PAHSE_WELCOME) {
-    //         valid = true;
-    //     }
-    //     break;
-    // case SETUP_PAHSE_WEB_AUTH:
-    //     if (currentPhase == SETUP_PAHSE_LANGUAGE) {
-    //         valid = true;
-    //     }
-    //     break;
-    // case SETUP_PAHSE_FIRMWARE_UPDATE:
-    //     if (currentPhase == SETUP_PAHSE_WEB_AUTH) {
-    //         valid = true;
-    //     }
-    //     break;
-    // case SETUP_PAHSE_CREATE_WALLET:
-    //     if (currentPhase == SETUP_PAHSE_FIRMWARE_UPDATE) {
-    //         valid = true;
-    //     }
-    //     break;
-    // case SETUP_PAHSE_DONE:
-    //     if (currentPhase == SETUP_PAHSE_CREATE_WALLET) {
-    //         valid = true;
-    //     }
-    //     break;
-    // default:
-    //     break;
-    // }
-
-    // if (valid) {
     SetSetupStep(pahaseEnum);
     SaveDeviceSettings();
     return 0;
-    // }
-    // return -1;
 }
 
 bool GuiJudgeCurrentPahse(SETUP_PHASE_ENUM pahaseEnum)
 {
-    // uint32_t currentPhase = GetSetupStep();
     return lastShutDownPage == pahaseEnum;
 }
 

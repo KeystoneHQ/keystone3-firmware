@@ -20,6 +20,9 @@
 #include "gui_setup_widgets.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
+#else
+#include "drv_aw32001.h"
+#include "device_setting.h"
 #endif
 
 static int32_t GuiInitViewInit(void)
@@ -38,8 +41,6 @@ static int32_t GuiInitViewInit(void)
         return SUCCESS_CODE;
     }
     GuiModeGetAccount();
-    // GuiFrameOpenView(&g_settingView);
-    // GuiFrameOpenView(&g_connectWalletView);
     return SUCCESS_CODE;
 }
 
@@ -60,7 +61,11 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_INIT_GET_ACCOUNT_NUMBER:
         walletNum = *(uint8_t *)param;
         if (walletNum == 0) {
-            return GuiFrameOpenView(&g_setupView);
+            GuiFrameOpenView(&g_setupView);
+            if (IsUpdateSuccess()) {
+                GuiFrameOpenView(&g_updateSuccessView);
+            }
+            break;
         } else {
             return GuiFrameOpenViewWithParam(&g_lockView, &lockParam, sizeof(lockParam));
         }

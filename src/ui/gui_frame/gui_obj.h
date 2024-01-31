@@ -51,7 +51,8 @@ typedef int32_t(*GuiEventProcessFunc)(void *self, uint16_t usEvent, void *param,
     add(SCREEN_TRANSACTION_SIGNATURE)        \
     add(SCREEN_USB_TRANSPORT)   \
     add(SCREEN_DICE_ROLLS)   \
-    add(SCREEN_DEVICE_PUB_KEY)
+    add(SCREEN_DEVICE_PUB_KEY) \
+    add(SCREEN_DEVICE_UPDATE_SUCCESS)
 
 typedef enum {
     SCREEN_INVALID = -1,

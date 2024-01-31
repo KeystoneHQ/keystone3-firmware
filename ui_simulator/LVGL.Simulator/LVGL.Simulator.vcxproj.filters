@@ -1362,6 +1362,15 @@
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_transaction_detail_widgets.c">
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_update_success_widgets.c">
+      <Filter>gui\gui_widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_views\gui_update_success_view.c">
+      <Filter>gui\gui_views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgUpdate.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\external\lvgl\src\core\lv_disp.h" />

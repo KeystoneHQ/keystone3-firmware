@@ -108,6 +108,7 @@
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinStrd.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinSui.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinTgd.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\coin\coinTia.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinTrx.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinUmee.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinXprt.c" />
@@ -248,6 +249,7 @@
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgUndo.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgUnitConversion.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgUnknown.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgUpdate.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgUsb.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgUsbConnection.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgWallet.c" />
@@ -382,6 +384,7 @@
     <ClCompile Include="..\..\src\ui\gui_views\gui_transaction_detail_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_transaction_signature_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_tutorial_view.c" />
+    <ClCompile Include="..\..\src\ui\gui_views\gui_update_success_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_usb_transport_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_utxo_receive_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_views.c" />
@@ -431,6 +434,7 @@
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_transaction_detail_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_transaction_signature_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_tutorial_widgets.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_update_success_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_usb_connection_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_usb_transport_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_utxo_receive_widgets.c" />

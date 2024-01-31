@@ -105,6 +105,7 @@ LV_IMG_DECLARE(imgDice6);
 LV_IMG_DECLARE(imgDiceGrey);
 LV_IMG_DECLARE(imgUndo);
 LV_IMG_DECLARE(imgExport);
+LV_IMG_DECLARE(imgUpdate);
 
 // connect to do refresh
 LV_IMG_DECLARE(circular);

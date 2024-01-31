@@ -174,6 +174,7 @@ extern GUI_VIEW g_transactionDetailView;
 extern GUI_VIEW g_transactionSignatureView;
 extern GUI_VIEW g_diceRollsView;
 extern GUI_VIEW g_exportPubkeyView;
+extern GUI_VIEW g_updateSuccessView;
 
 void UnHandler(lv_event_t *e);
 void OpenImportWalletHandler(lv_event_t *e);

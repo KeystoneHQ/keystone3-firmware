@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser(description='Convert CSV to YAML')
 parser.add_argument('--ru', action='store_true', help='Generate Russian translations')
 parser.add_argument('--zh', action='store_true', help='Generate Chinese (Simplified) translations')
 args = parser.parse_args()
-compile_command = 'lv_i18n compile -t *.yml -o .'
+compile_command = 'lv_i18n compile -t "*.yml" -o .'
 
 with open("./data.csv", newline="", encoding='utf-8') as csvfile:
     reader = csv.DictReader(csvfile)
@@ -42,6 +42,8 @@ if args.zh:
     compile_command += ' -l zh-CN'
 
 compile_command += ' -l en'
+
+print(compile_command)
 
 cmd_result = os.system(compile_command)
 if cmd_result != 0:

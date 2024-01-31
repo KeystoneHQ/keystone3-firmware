@@ -976,7 +976,6 @@ static int32_t ModelDelAllWallet(const void *inData, uint32_t inDataLen)
     WipeDevice();
     SystemReboot();
 #else
-    // GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS_SETUP, NULL, 0);
     GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS, NULL, 0);
 #endif
     SetLockScreen(enable);

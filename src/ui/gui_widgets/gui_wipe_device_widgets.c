@@ -132,7 +132,6 @@ static void GuiShowWipeDeviceHintBox(void)
         lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_set_style_bg_opa(button, LV_OPA_50, LV_STATE_DEFAULT);
         g_countDownTimer = lv_timer_create(CountDownTimerHandler, 1000, button);
-
     }
 }
 

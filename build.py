@@ -42,7 +42,7 @@ def build_firmware(environment, options):
         if option == "debugmemory":
             cmd += ' -DDEBUG_MEMORY=true'
         # add more option here.
-
+    cmd += "-DRU_SUPPORT=true"
 
     cmd_result = os.system(cmd)
     if cmd_result != 0:

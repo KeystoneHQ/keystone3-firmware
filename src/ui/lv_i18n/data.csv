@@ -140,7 +140,8 @@ SSB,shamir_phrase_number,Number of Shares,Количество частей,공�
 ,shamir_phrase_notice_title,Check Your Surroundings,Проверьте окружение,주변 환경 확인,检查您的周围环境,,
 ,shamir_phrase_notice_desc1,"Never share your seed phrase with anyone else, as it grants access to your assets.","Никогда не показывайте свою сид фразу с третьим лицам, поскольку она предоставляет доступ к вашим активам.",자산에 대한 액세스 권한을 부여하기 때문에 시드 문구를 다른 사람과 공유하지 마십시오.,拥有您的助记词就可以访问您的资产，因此切勿与他人分享您的助记词。,,
 ,shamir_phrase_notice_desc2,"Ensure there are no onlookers or cameras when recording your seed phrase.
-Please complete the setup process in one go to avoid any security risks.",,,请确保在没有旁观者或摄像头的环境下备份您的助记词！,,
+Please complete the setup process in one go to avoid any security risks.","Убедитесь, что нет ни зрителей, ни камер при записи вашей семенной фразы.
+Пожалуйста, выполните процесс установки за Один раз, чтобы избежать любых рисков безопасности.",,请确保在没有旁观者或摄像头的环境下备份您的助记词！,,
 ,shamir_phrase_backup_title,Backup Your Seed,Запишите сид фразу,시드 백업,备份您的助记词,,
 ,shamir_phrase_backup_desc,Write down your Share #F5870A 1# phrase and keep it properly.,Запишите фразу Часть #F5870A 1# и сохраните ее правильно.,공유 #F5870A 1# 문구를 적어서 보관하세요.,写下您的分片＃F5870A 1＃部分的助记词，并妥善保存。,,
 ,shamir_phrase_confirm_title,Confirm Your Seed,Подтвердите фразу,시드 확인,确认您的助记词,,
@@ -246,7 +247,7 @@ device setting,device_setting_mid_btn,Device Settings,Настройки уст�
 ,wallet_setting_seed_phrase,Seed Phrase Check,Проверка сид фразы,시드 프레이즈 체크,验证助记词,,
 ,wallet_setting_add_wallet_limit,Add Limited,Добавить лимит,,,,
 ,wallet_setting_add_wallet_limit_desc,You can only add up to a maximum of 3 wallets. Please delete other wallets before adding a new wallet.,"Вы можете добавить максимум 3 кошелька. Пожалуйста, удалите другие кошельки, прежде чем добавлять новый кошелек.",,,,
-,wallet_setting_add_wallet,+ Add Wallet,+ Добавить кошелек,#ERROR!,+添加钱包,,
+,wallet_setting_add_wallet,#NAME?,#NAME?,#ERROR!,#NAME?,,
 ,fingerprint_passcode_mid_btn,Fingerprint & Passcode,Биометрия и код-пароль,지문 & 패스코드,指纹/密码,,
 ,fingerprint_passcode_fingerprint_setting,Fingerprint Settings,Настройки отпечатков,지문 설정,指纹设置,,
 ,fingerprint_passcode_reset_passcode,Reset Passcode,Сброс код-пароля,암호 재설정,重置密码,,
@@ -259,7 +260,7 @@ device setting,device_setting_mid_btn,Device Settings,Настройки уст�
 ,fingerprint_unlock_device,Unlock Device,Разблокировка,장치 잠금 해제,解锁设备,,
 ,fingerprint_sign_tx,Sign Transactions,Подпись транзакций,서명 트랜잭션,交易签名,,
 ,fingerprint_nth,Finger %d,Палец %d,손가락 %d,指纹 ％d,,
-,fingerprint_add_btn,+ Add Fingerprint,+ Добавить отпечаток,#ERROR!,+添加指纹,,
+,fingerprint_add_btn,#NAME?,#NAME?,#ERROR!,#NAME?,,
 ,fingerprint_up_to_3,You can add up to 3 fingerprints,Можно добавить 3 отпечатка,지문을 3개까지 추가할 수 있습니다,您最多可以添加 3 个指纹,,
 ,fingerprint_remove,Remove Fingerprint,Удалить отпечаток,지문 제거,删除指纹,,
 ,fingerprint_nth_remove_title,Remove Fingerprint?,Удалить отпечаток? ,지문 제거?,删除指纹？,,

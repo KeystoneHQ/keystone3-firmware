@@ -25,7 +25,7 @@ void PrintTasksStatus(void)
     uint32_t millionPercent;
 
     arraySize = uxTaskGetNumberOfTasks(); //Get the number of tasks
-    statusArray = pvPortMalloc(arraySize * sizeof(TaskStatus_t));
+    statusArray = SramMalloc(arraySize * sizeof(TaskStatus_t));
     if (statusArray != NULL) { //Memory request successful
         arraySize = uxTaskGetSystemState((TaskStatus_t *)statusArray,
                                          (UBaseType_t)arraySize,
@@ -54,7 +54,7 @@ void PrintTasksStatus(void)
 
         printf("total allocated stack size :  %d(%d K).\n", (int)totalSizeofStack, (int)totalSizeofStack / 1024);
     }
-    vPortFree(statusArray);
+    SramFree(statusArray);
 #else
     printf(" Need to set configUSE_TRACE_FACILITY to 1.\n");
 #endif
@@ -85,9 +85,9 @@ void ClrRunTimeStats(void)
 
     arraySize = uxTaskGetNumberOfTasks();
     if (g_taskStatusArray) {
-        vPortFree(g_taskStatusArray);
+        SramFree(g_taskStatusArray);
     }
-    g_taskStatusArray = pvPortMalloc(sizeof(TaskStatus_t) * arraySize);
+    g_taskStatusArray = SramMalloc(sizeof(TaskStatus_t) * arraySize);
     uxTaskGetSystemState((TaskStatus_t *)g_taskStatusArray,
                          (UBaseType_t)arraySize,
                          (uint32_t *)&totalRunTime);

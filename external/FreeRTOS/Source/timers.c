@@ -285,7 +285,7 @@ TimerHandle_t xTimerCreate(const char * const pcTimerName,  /*lint !e971 Unquali
 {
     Timer_t * pxNewTimer;
 
-    pxNewTimer = (Timer_t *) pvPortMalloc(sizeof(Timer_t));       /*lint !e9087 !e9079 All values returned by pvPortMalloc() have at least the alignment required by the MCU's stack, and the first member of Timer_t is always a pointer to the timer's mame. */
+    pxNewTimer = (Timer_t *) SramMalloc(sizeof(Timer_t));       /*lint !e9087 !e9079 All values returned by SramMalloc() have at least the alignment required by the MCU's stack, and the first member of Timer_t is always a pointer to the timer's mame. */
 
     if (pxNewTimer != NULL) {
         /* Status is thus far zero as the timer is not created statically
@@ -801,7 +801,7 @@ static void prvProcessReceivedCommands(void)
                  * just free up the memory if the memory was dynamically
                  * allocated. */
                 if ((pxTimer->ucStatus & tmrSTATUS_IS_STATICALLY_ALLOCATED) == (uint8_t) 0) {
-                    vPortFree(pxTimer);
+                    SramFree(pxTimer);
                 } else {
                     pxTimer->ucStatus &= ((uint8_t) ~tmrSTATUS_IS_ACTIVE);
                 }

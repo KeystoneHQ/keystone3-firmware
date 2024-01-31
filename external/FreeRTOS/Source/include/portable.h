@@ -180,8 +180,8 @@
     void * pvPortMallocStack(size_t xSize) PRIVILEGED_FUNCTION;
     void vPortFreeStack(void * pv) PRIVILEGED_FUNCTION;
 #else
-#define pvPortMallocStack    pvPortMalloc
-#define vPortFreeStack       vPortFree
+#define pvPortMallocStack    SramMalloc
+#define vPortFreeStack       SramFree
 #endif
 
     /*

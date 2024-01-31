@@ -2,6 +2,7 @@
 #include "cmsis_os.h"
 #include "task.h"
 #include "drv_psram.h"
+#include "assert.h"
 
 /* Block sizes must not get too small. */
 #define heapMINIMUM_BLOCK_SIZE    ( ( size_t ) ( xHeapStructSize << 1 ) )
@@ -192,6 +193,7 @@ void PsramFree(void *pv)
     uint8_t * puc = (uint8_t *) pv;
     BlockLink_t * pxLink;
 
+    ASSERT((uint32_t)pv >= GetPsramMappedAddr() && (uint32_t)pv < GetPsramMappedAddr() + GetPsramTotalSize());
     if (pv != NULL) {
         /* The memory being freed will have an BlockLink_t structure immediately
          * before it. */

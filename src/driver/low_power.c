@@ -97,7 +97,6 @@ uint32_t EnterLowPower(void)
             Gd25FlashOpen();
             Aw32001RefreshState();
             BatteryIntervalHandler();
-            printf("GetUsbPowerState()=%d\n", GetUsbPowerState());
             sleepSecond = (GetUsbPowerState() == USB_POWER_STATE_CONNECT) ? RTC_WAKE_UP_INTERVAL_CHARGING : RTC_WAKE_UP_INTERVAL_LOW_BATTERY;
             AutoShutdownHandler(sleepSecond);
             SetRtcWakeUp(sleepSecond);

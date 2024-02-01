@@ -56,7 +56,7 @@ if "%PERFORM_COPY%"=="1" (
 )
 
 if "%BUILD_CN%"=="1" (
-    set "LANGUAGE_SCRIPT=%LANGUAGE_SCRIPT% --cn"
+    set "LANGUAGE_SCRIPT=%LANGUAGE_SCRIPT% --zh"
 )
 
 if "%BUILD_RU%"=="1" (

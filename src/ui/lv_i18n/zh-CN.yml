@@ -546,7 +546,6 @@ zh-CN:
   scan_qr_code_invalid_b_title: 未经许可的授权
   scan_qr_code_invalid_c_desc: Keystone无法为当前地址路径的交易签名。请使用其他地址路径后重试。
   scan_qr_code_invalid_c_title: 未支持路径
-  scan_qr_code_sign_fingerprint_enter_passcode: 输入密码
   scan_qr_code_sign_fingerprint_verify_fingerprint: 指纹验证
   scan_qr_code_sign_fingerprint_verify_fingerprint_failed: 验证失败。请重新尝试！
   scan_qr_code_sign_unsigned_content_fingerprint_failed_desc: 验证失败。请重新尝试！
@@ -565,6 +564,7 @@ zh-CN:
   seed_check_verify_not_match_desc: 助记词不正确，请重新尝试。
   seed_check_verify_not_match_title: 验证失败
   seed_check_wait_verify: 验证中......
+  seed_check_word_select: ''
   self_destruction_desc: 已经检测到了物理攻击，因此设备上存储的所有数据已被清除。当前的设备现在无法使用。
   self_destruction_hint: 联系我们
   self_destruction_title: 设备不再可用
@@ -707,11 +707,11 @@ zh-CN:
   unlock_device_error_attempts_exceed: 超出尝试次数
   unlock_device_error_attempts_exceed_desc: 设备锁即将锁定，请解锁以访问设备。
   unlock_device_error_btn_end_text: 解锁设备
-  unlock_device_error_btn_start_text: 解锁设备（5s）
-  unlock_device_error_btn_text_fmt: 解锁设备（％ds）
+  unlock_device_error_btn_start_text: 解锁设备(5s)
+  unlock_device_error_btn_text_fmt: 解锁设备(％ds)
   unlock_device_fingerprint_pin_device_locked_btn: 立即擦除设备
-  unlock_device_fingerprint_pin_device_locked_btn_fmt: 立即擦除设备（％D）
-  unlock_device_fingerprint_pin_device_locked_btn_start_text: 立即擦除设备（15）
+  unlock_device_fingerprint_pin_device_locked_btn_fmt: 立即擦除设备(％D)
+  unlock_device_fingerprint_pin_device_locked_btn_start_text: 立即擦除设备(15)
   unlock_device_fingerprint_pin_device_locked_desc: 您必须擦除设备继续。擦除后，将删除所有存储在此设备上的数据。
   unlock_device_fingerprint_pin_device_locked_title: 设备锁定
   unlock_device_fingerprint_pin_error1_desc: 无法验证指纹
@@ -764,6 +764,8 @@ zh-CN:
   verify_scan_qr_code: 扫描二维码
   verify_title: 设备验证
   wallet_setting_add_wallet: +添加钱包
+  wallet_setting_add_wallet_limit: ''
+  wallet_setting_add_wallet_limit_desc: ''
   wallet_setting_passcode: 指纹/密码
   wallet_setting_passphrase: 密语钱包
   wallet_setting_seed_phrase: 验证助记词

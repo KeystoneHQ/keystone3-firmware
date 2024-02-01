@@ -31,6 +31,7 @@ void GuiUpdateSuccessInit(void)
     char version[32] = "v";
     if (g_updateSuccessCont == NULL) {
         g_updateSuccessCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
+        lv_obj_add_flag(g_updateSuccessCont, LV_OBJ_FLAG_CLICKABLE);
         tempObj = GuiCreateImg(g_updateSuccessCont, &imgUpdate);
         lv_obj_align(tempObj, LV_ALIGN_TOP_MID, 0, 180);
         tempObj = GuiCreateLittleTitleLabel(g_updateSuccessCont, "Update Successful");

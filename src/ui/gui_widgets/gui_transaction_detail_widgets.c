@@ -25,7 +25,9 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_pending_hintbox.h"
-#include "eapdu_services/service_resolve_ur.h"
+#ifndef BTC_ONLY
+#include "general/eapdu_services/service_resolve_ur.h"
+#endif
 #ifndef COMPILE_SIMULATOR
 #include "keystore.h"
 
@@ -81,10 +83,12 @@ static void ThrowError();
 
 static TransactionMode GetCurrentTransactionMode(void)
 {
+#ifndef BTC_ONLY
     uint16_t requestID = GetCurrentUSParsingRequestID();
     if (requestID != 0) {
         return TRANSACTION_MODE_USB;
     }
+#endif
     return TRANSACTION_MODE_QR_CODE;
 }
 
@@ -92,10 +96,12 @@ static void TransactionGoToHomeViewHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
+#ifndef BTC_ONLY
         if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
             const char *data = "UR parsing rejected";
             HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_REJECTED);
         }
+#endif
         CloseQRTimer();
         GuiCloseToTargetView(&g_homeView);
     }
@@ -187,6 +193,7 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
     GUI_DEL_OBJ(g_fingerSingContainer)
     GuiDeleteKeyboardWidget(g_keyboardWidget);
 
+#ifndef BTC_ONLY
     if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
         GenerateUR func = GetSingleUrGenerator(g_viewType);
         if (func == NULL) {
@@ -200,7 +207,7 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
         }
         return;
     }
-
+#endif
     GuiFrameOpenViewWithParam(&g_transactionSignatureView, &g_viewType, sizeof(g_viewType));
 }
 
@@ -208,10 +215,12 @@ void GuiSignVerifyPasswordErrorCount(void *param)
 {
     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
     if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
+#ifndef BTC_ONLY
         if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
             const char *data = "Please try again after unlocking";
             HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_VERIFY_PASSWORD_ERROR);
         }
+#endif
     }
     GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
 }
@@ -259,11 +268,15 @@ void GuiClearQrcodeSignCnt(void)
 static void GuiTransactionDetailNavBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, TransactionGoToHomeViewHandler, NULL);
+#ifndef BTC_ONLY
     if (IsMessageType(g_viewType)) {
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_confirm_message"));
     } else {
+#endif
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
+#ifndef BTC_ONLY
     }
+#endif
 }
 
 static void CheckSliderProcessHandler(lv_event_t *e)

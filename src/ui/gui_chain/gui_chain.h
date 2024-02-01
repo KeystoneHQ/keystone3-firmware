@@ -1,7 +1,9 @@
 #ifndef _GUI_CHAIN_H
 #define _GUI_CHAIN_H
 
+#include "gui_animating_qrcode.h"
 #include "gui_btc.h"
+#ifndef BTC_ONLY
 #include "gui_eth.h"
 #include "gui_trx.h"
 #include "gui_cosmos.h"
@@ -10,7 +12,7 @@
 #include "gui_aptos.h"
 #include "gui_ada.h"
 #include "gui_xrp.h"
-
+#endif
 #define LABEL_MAX_BUFF_LEN                                      (512)
 
 typedef void (*SetChainDataFunc)(void *resultData, void *multiResultData, bool multi);
@@ -18,6 +20,7 @@ typedef void (*SetChainDataFunc)(void *resultData, void *multiResultData, bool m
 // Enumeration for displaying in the middle of the status bar
 typedef enum {
     CHAIN_BTC,
+#ifndef BTC_ONLY
     CHAIN_ETH,
     CHAIN_SOL,
     CHAIN_BNB,
@@ -62,13 +65,14 @@ typedef enum {
     CHAIN_UMEE,
     CHAIN_QCK,
     CHAIN_TGD,
-
+#endif
     CHAIN_BUTT,
 } GuiChainCoinType;
 
 // Enumeration of pages used for transaction resolution
 typedef enum {
     REMAPVIEW_BTC,
+#ifndef BTC_ONLY
     REMAPVIEW_ETH,
     REMAPVIEW_ETH_PERSONAL_MESSAGE,
     REMAPVIEW_ETH_TYPEDDATA,
@@ -81,7 +85,7 @@ typedef enum {
     REMAPVIEW_ADA,
     REMAPVIEW_XRP,
     REMAPVIEW_WEB_AUTH,
-
+#endif
     REMAPVIEW_BUTT,
 } GuiRemapViewType;
 
@@ -125,5 +129,7 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t viewType);
 PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType);
 GenerateUR GetUrGenerator(GuiChainCoinType viewType);
 GenerateUR GetSingleUrGenerator(GuiChainCoinType viewType);
+#ifndef BTC_ONLY
 bool IsMessageType(uint8_t type);
+#endif
 #endif

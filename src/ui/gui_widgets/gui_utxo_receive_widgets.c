@@ -148,9 +148,11 @@ static char * *g_derivationPathDescs = NULL;
 
 static const ChainPathItem_t g_chainPathItems[] = {
     {HOME_WALLET_CARD_BTC, ""},
+#ifndef BTC_ONLY
     {HOME_WALLET_CARD_LTC, "m/49'/2'/0'"},
     {HOME_WALLET_CARD_DASH, "m/44'/5'/0'"},
     {HOME_WALLET_CARD_BCH, "m/44'/145'/0'"}
+#endif
 };
 
 static uint32_t g_showIndex;
@@ -236,11 +238,12 @@ void GuiReceiveDeInit(void)
 static bool HasMoreBtn()
 {
     switch (g_chainCard) {
+#ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
     case HOME_WALLET_CARD_BCH:
     case HOME_WALLET_CARD_DASH:
         return false;
-
+#endif
     default:
         return true;
     }
@@ -309,6 +312,7 @@ static void GetCurrentTitle(TitleItem_t *titleItem)
         titleItem->type = CHAIN_BTC;
         sprintf(titleItem->title, _("receive_coin_fmt"), "BTC");
         break;
+#ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
         titleItem->type = CHAIN_LTC;
         sprintf(titleItem->title, _("receive_coin_fmt"), "LTC");
@@ -321,6 +325,7 @@ static void GetCurrentTitle(TitleItem_t *titleItem)
         titleItem->type = CHAIN_BCH;
         sprintf(titleItem->title, _("receive_coin_fmt"), "BCH");
         break;
+#endif
     default:
         break;
     }
@@ -498,6 +503,7 @@ static void GetHint(char *hint)
     case HOME_WALLET_CARD_BTC:
         strcpy(hint, _("receive_btc_alert_desc"));
         break;
+#ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
         sprintf(hint, _("receive_coin_hint_fmt"), "LTC");
         break;
@@ -507,6 +513,7 @@ static void GetHint(char *hint)
     case HOME_WALLET_CARD_BCH:
         sprintf(hint, _("receive_coin_hint_fmt"), "BCH");
         break;
+#endif
     default:
         break;
     }
@@ -517,12 +524,14 @@ static uint32_t GetCurrentSelectIndex()
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
         return g_btcSelectIndex[g_currentAccountIndex];
+#ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
         return g_ltcSelectIndex[g_currentAccountIndex];
     case HOME_WALLET_CARD_DASH:
         return g_dashSelectIndex[g_currentAccountIndex];
     case HOME_WALLET_CARD_BCH:
         return g_bchSelectIndex[g_currentAccountIndex];
+#endif
     default:
         break;
     }
@@ -535,6 +544,7 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
     case HOME_WALLET_CARD_BTC:
         g_btcSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
+#ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
         g_ltcSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
@@ -544,6 +554,7 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
     case HOME_WALLET_CARD_BCH:
         g_bchSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
+#endif
     default:
         break;
     }
@@ -1310,12 +1321,14 @@ static ChainType GetChainTypeByIndex(uint32_t index)
         }
         break;
     }
+#ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
         return XPUB_TYPE_LTC;
     case HOME_WALLET_CARD_DASH:
         return XPUB_TYPE_DASH;
     case HOME_WALLET_CARD_BCH:
         return XPUB_TYPE_BCH;
+#endif
     default:
         break;
     }
@@ -1346,6 +1359,7 @@ static void GetRootHdPath(char *hdPath)
     case HOME_WALLET_CARD_BTC:
         sprintf(hdPath, "%s", g_addressSettings[addrType].path);
         break;
+#ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
         sprintf(hdPath, "%s", g_chainPathItems[1].path);
         break;
@@ -1355,6 +1369,7 @@ static void GetRootHdPath(char *hdPath)
     case HOME_WALLET_CARD_BCH:
         sprintf(hdPath, "%s", g_chainPathItems[3].path);
         break;
+#endif
     default:
         break;
     }

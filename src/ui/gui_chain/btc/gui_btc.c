@@ -31,9 +31,11 @@ static UtxoViewToChain_t g_UtxoViewToChainMap[] = {
     {BtcNativeSegwitTx, XPUB_TYPE_BTC_NATIVE_SEGWIT, "m/84'/0'/0'"},
     {BtcSegwitTx,       XPUB_TYPE_BTC,               "m/49'/0'/0'"},
     {BtcLegacyTx,       XPUB_TYPE_BTC_LEGACY,        "m/44'/0'/0'"},
+#ifndef BTC_ONLY
     {LtcTx,             XPUB_TYPE_LTC,               "m/49'/2'/0'"},
     {DashTx,            XPUB_TYPE_DASH,              "m/44'/5'/0'"},
     {BchTx,             XPUB_TYPE_BCH,               "m/44'/145'/0'"},
+#endif
 };
 
 void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
@@ -95,7 +97,9 @@ UREncodeResult *GuiGetSignQrCodeData(void)
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
-    } else if (urType == Bytes || urType == KeystoneSignRequest) {
+    } 
+#ifndef BTC_ONLY
+    else if (urType == Bytes || urType == KeystoneSignRequest) {
         char *hdPath = NULL;
         char *xPub = NULL;
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
@@ -106,6 +110,7 @@ UREncodeResult *GuiGetSignQrCodeData(void)
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         encodeResult = utxo_sign_keystone(data, urType, mfp, sizeof(mfp), xPub, SOFTWARE_VERSION, seed, len);
     }
+#endif
     CHECK_CHAIN_PRINT(encodeResult);
     ClearSecretCache();
     SetLockScreen(enable);
@@ -157,7 +162,9 @@ void *GuiGetParsedQrData(void)
             CHECK_CHAIN_RETURN(g_parseResult);
             SRAM_FREE(public_keys);
             return g_parseResult;
-        } else if (urType == Bytes || urType == KeystoneSignRequest) {
+        } 
+#ifndef BTC_ONLY
+        else if (urType == Bytes || urType == KeystoneSignRequest) {
             char *hdPath = NULL;
             char *xPub = NULL;
             if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
@@ -167,6 +174,7 @@ void *GuiGetParsedQrData(void)
             CHECK_CHAIN_RETURN(g_parseResult);
             return g_parseResult;
         }
+#endif
     } while (0);
 #else
     TransactionParseResult_DisplayTx parseResult;
@@ -211,7 +219,9 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
         result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys);
         SRAM_FREE(public_keys);
-    } else if (urType == Bytes || urType == KeystoneSignRequest) {
+    } 
+#ifndef BTC_ONLY
+    else if (urType == Bytes || urType == KeystoneSignRequest) {
         char *hdPath = NULL;
         char *xPub = NULL;
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
@@ -219,6 +229,7 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         }
         result = utxo_check_keystone(crypto, urType, mfp, sizeof(mfp), xPub);
     }
+#endif
     return result;
 #else
     return NULL;

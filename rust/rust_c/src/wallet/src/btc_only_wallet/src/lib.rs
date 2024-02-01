@@ -2,7 +2,7 @@
 
 extern crate alloc;
 
-use alloc::format;
+use alloc::{format, vec};
 use alloc::string::String;
 use alloc::string::ToString;
 use alloc::vec::Vec;
@@ -11,15 +11,21 @@ use app_wallets::DEVICE_VERSION;
 use common_rust_c::extract_array;
 use common_rust_c::ffi::CSliceFFI;
 use common_rust_c::structs::ExtendedPublicKey;
-use common_rust_c::types::{PtrBytes, PtrString, PtrT};
+use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{recover_c_array, recover_c_char};
 use core::slice;
+use core::str::FromStr;
+use app_utils::normalize_path;
 use cty::{int32_t, uint32_t};
+use third_party::bitcoin::bip32::{DerivationPath, ExtendedPubKey};
+use third_party::hex;
 use third_party::ur_registry::bytes::Bytes;
 use third_party::ur_registry::crypto_account::CryptoAccount;
 use third_party::ur_registry::error::URError;
+use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 use third_party::ur_registry::traits::RegistryItem;
+use common_rust_c::errors::RustCError;
 
 #[no_mangle]
 pub extern "C" fn get_connect_blue_wallet_ur(
@@ -154,4 +160,80 @@ pub extern "C" fn get_connect_companion_app_ur(
         },
         Err(e) => UREncodeResult::from(e).c_ptr(),
     }
+}
+
+
+#[no_mangle]
+pub extern "C" fn get_okx_wallet_ur_btc_only(
+    master_fingerprint: PtrBytes,
+    master_fingerprint_length: u32,
+    serial_number: PtrString,
+    public_keys: Ptr<CSliceFFI<ExtendedPublicKey>>,
+    device_type: PtrString,
+    device_version: PtrString,
+) -> Ptr<UREncodeResult> {
+    if master_fingerprint_length != 4 {
+        return UREncodeResult::from(URError::UrEncodeError(format!(
+            "master fingerprint length must be 4, current is {}",
+            master_fingerprint_length
+        )))
+        .c_ptr();
+    }
+    let mfp = extract_array!(master_fingerprint, u8, master_fingerprint_length);
+    let mfp = match <[u8; 4]>::try_from(mfp) {
+        Ok(mfp) => mfp,
+        Err(e) => return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr(),
+    };
+    unsafe {
+        let keys = recover_c_array(public_keys);
+        let serial_number = recover_c_char(serial_number);
+        let device_version = recover_c_char(device_version);
+        let device_type = recover_c_char(device_type);
+        match normalize_xpub(keys) {
+            Ok(_keys) => {
+                match app_wallets::okx::generate_crypto_multi_accounts(
+                    mfp,
+                    &serial_number,
+                    _keys,
+                    &device_type,
+                    &device_version,
+                ) {
+                    Ok(data) => match data.try_into() {
+                        Ok(_v) => UREncodeResult::encode(
+                            _v,
+                            CryptoMultiAccounts::get_registry_type().get_type(),
+                            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                        )
+                        .c_ptr(),
+                        Err(_e) => UREncodeResult::from(_e).c_ptr(),
+                    },
+                    Err(_e) => UREncodeResult::from(_e).c_ptr(),
+                }
+            }
+            Err(_e) => UREncodeResult::from(_e).c_ptr(),
+        }
+    }
+}
+
+fn normalize_xpub(
+    keys: &[ExtendedPublicKey],
+) -> Result<Vec<app_wallets::ExtendedPublicKey>, RustCError> {
+    let mut result = vec![];
+    for ele in keys {
+        let xpub = recover_c_char(ele.xpub);
+        let path = recover_c_char(ele.path);
+        let path = normalize_path(&path);
+        let derivation_path =
+            DerivationPath::from_str(&path).map_err(|_e| RustCError::InvalidHDPath)?;
+        let key = match xpub.len() {
+            //32 bytes ed25519 public key or 64 bytes bip32-ed25519 xpub;
+            64 | 128 => hex::decode(&xpub).map_err(|_e| RustCError::InvalidXPub)?,
+            _ => ExtendedPubKey::from_str(&xpub)
+                .map_err(|_e| RustCError::InvalidXPub)?
+                .encode()
+                .to_vec(),
+        };
+        result.push(app_wallets::ExtendedPublicKey::new(derivation_path, key));
+    }
+    Ok(result)
 }

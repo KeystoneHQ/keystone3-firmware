@@ -6,6 +6,7 @@
 
 typedef enum {
     HOME_WALLET_CARD_BTC,
+#ifndef BTC_ONLY
     HOME_WALLET_CARD_ETH,
     HOME_WALLET_CARD_SOL,
     HOME_WALLET_CARD_BNB,
@@ -50,7 +51,7 @@ typedef enum {
     HOME_WALLET_CARD_UMEE,
     HOME_WALLET_CARD_QCK,
     HOME_WALLET_CARD_TGD,
-
+#endif
     HOME_WALLET_CARD_BUTT,      // This represents the end of the array (the number of arrays) and needs to be placed at the end.
 } HOME_WALLET_CARD_ENUM;
 

@@ -37,11 +37,15 @@ static GUI_VIEW *g_viewsTable[] = {
     &g_importShareView,
     &g_settingView,
     &g_connectWalletView,
+#ifndef BTC_ONLY
     &g_USBTransportView,
+#endif
     &g_passphraseView,
     &g_utxoReceiveView,
+#ifndef BTC_ONLY
     &g_multiPathCoinReceiveView,
     &g_standardReceiveView,
+#endif
     &g_forgetPassView,
     &g_lockDeviceView,
     &g_firmwareUpdateView,
@@ -61,8 +65,10 @@ static GUI_VIEW *g_viewsTable[] = {
     &g_tutorialView,
     &g_connectionView,
     &g_DevicePublicKeyView,
+#ifndef BTC_ONLY
     &g_multiAccountsReceiveView,
     &g_keyDerivationRequestView,
+#endif
     &g_scanView,
     &g_transactionDetailView,
     &g_transactionSignatureView,

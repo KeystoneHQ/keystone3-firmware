@@ -39,7 +39,9 @@ static void CmdTask(void *pvParameter)
         case MSG_TEST_CMD_FRAME:
             g_testCmdRcvBuffer[rcvMsg.value - 3] = 0;
 #ifndef BUILD_PRODUCTION
+#ifndef BTC_ONLY 
             CompareAndRunTestCmd((char *)g_testCmdRcvBuffer + 1);
+#endif
 #endif
             break;
         default:

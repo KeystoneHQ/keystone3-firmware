@@ -46,7 +46,7 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_BLUE].items[0].url = _("connect_bw_link");
         g_tutorials[WALLET_LIST_BLUE].items[0].qrTitle = _("connect_bw_qr_title");
         g_tutorials[WALLET_LIST_BLUE].items[0].qrUrl = _("connect_bw_qr_link");
-
+#ifndef BTC_ONLY
         //WALLET_LIST_METAMASK
         g_tutorials[WALLET_LIST_METAMASK].len = 2;
         g_tutorials[WALLET_LIST_METAMASK].desc = _("connect_mm_desc");
@@ -59,7 +59,7 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_METAMASK].items[1].url = _("connect_mm_link2");
         g_tutorials[WALLET_LIST_METAMASK].items[1].qrTitle = _("connect_mm_qr_title2");
         g_tutorials[WALLET_LIST_METAMASK].items[1].qrUrl = _("connect_mm_qr_link2");
-
+#endif
         //WALLET_LIST_OKX
         g_tutorials[WALLET_LIST_OKX].len = 2;
         g_tutorials[WALLET_LIST_OKX].desc = _("connect_okx_desc");
@@ -72,7 +72,7 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_OKX].items[1].url = _("connect_okx_link2");
         g_tutorials[WALLET_LIST_OKX].items[1].qrTitle = _("connect_okx_qr_title2");
         g_tutorials[WALLET_LIST_OKX].items[1].qrUrl = _("connect_okx_qr_link2");
-
+#ifndef BTC_ONLY
         //WALLET_LIST_KEYSTONE
         g_tutorials[WALLET_LIST_KEYSTONE].len = 1;
         g_tutorials[WALLET_LIST_KEYSTONE].desc = _("connect_keyst_app_desc");
@@ -161,7 +161,7 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_IMTOKEN].items[0].url = _("connect_imtoken_link");
         g_tutorials[WALLET_LIST_IMTOKEN].items[0].qrTitle = _("connect_imtoken_qr_title");
         g_tutorials[WALLET_LIST_IMTOKEN].items[0].qrUrl = _("connect_imtoken_qr_link");
-
+#endif
         //WALLET_LIST_SPARROW
         g_tutorials[WALLET_LIST_SPARROW].len = 1;
         g_tutorials[WALLET_LIST_SPARROW].desc = _("connect_sparrow_desc");
@@ -169,7 +169,7 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_SPARROW].items[0].url = _("connect_sparrow_link");
         g_tutorials[WALLET_LIST_SPARROW].items[0].qrTitle = _("connect_sparrow_qr_title");
         g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl = _("connect_sparrow_qr_link");
-
+#ifndef BTC_ONLY
         //WALLET_LIST_KEPLR
         g_tutorials[WALLET_LIST_KEPLR].len = 1;
         g_tutorials[WALLET_LIST_KEPLR].desc = _("connect_keplr_desc");
@@ -201,6 +201,7 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_XRP_TOOLKIT].items[0].url = _("connect_xrp_toolkit_link");
         g_tutorials[WALLET_LIST_XRP_TOOLKIT].items[0].qrTitle = _("connect_xrp_toolkit_qr_title");
         g_tutorials[WALLET_LIST_XRP_TOOLKIT].items[0].qrUrl = _("connect_xrp_toolkit_qr_link");
+#endif
     }
 }
 

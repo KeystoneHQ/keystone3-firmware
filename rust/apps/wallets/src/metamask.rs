@@ -36,7 +36,7 @@ pub fn generate_standard_legacy_hd_key(
     account_type: ETHAccountTypeApp,
     name: Option<String>,
 ) -> URResult<CryptoHDKey> {
-    let bip32_extended_pub_key = bip32::ExtendedPubKey::from_str(extended_public_key).unwrap();
+    let bip32_extended_pub_key = bip32::Xpub::from_str(extended_public_key).unwrap();
     let parent_fingerprint = bip32_extended_pub_key.parent_fingerprint;
 
     let coin_info = CryptoCoinInfo::new(Some(CoinType::Ethereum), Some(Network::MainNet));
@@ -118,8 +118,8 @@ pub fn generate_ledger_live_hd_key(
     extended_public_key: &str,
     account_index: u32,
 ) -> URResult<CryptoHDKey> {
-    let bip32_extended_pub_key: bip32::ExtendedPubKey =
-        bip32::ExtendedPubKey::from_str(extended_public_key).unwrap();
+    let bip32_extended_pub_key: bip32::Xpub =
+        bip32::Xpub::from_str(extended_public_key).unwrap();
 
     let origin = CryptoKeyPath::new(
         vec![

@@ -1,7 +1,6 @@
 use crate::errors::{CardanoError, R};
 use crate::structs::{ParseContext, ParsedCardanoTx};
-use alloc::collections::{BTreeMap, BTreeSet};
-use alloc::format;
+use alloc::collections::BTreeMap;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use cardano_serialization_lib;

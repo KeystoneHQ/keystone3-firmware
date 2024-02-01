@@ -61,11 +61,11 @@ mod tests {
 
     use core::str::FromStr;
     use std::collections::BTreeMap;
-    use third_party::bitcoin::bip32::{DerivationPath, ExtendedPubKey, Fingerprint};
+    use third_party::bitcoin::bip32::{DerivationPath, Xpub, Fingerprint};
 
     use super::*;
     use crate::parsed_tx::TxParser;
-    use third_party::bitcoin::hashes::hex::FromHex;
+    use third_party::bitcoin_hashes::hex::FromHex;
     use third_party::bitcoin::psbt::Psbt;
 
     #[test]
@@ -74,7 +74,7 @@ mod tests {
         let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
         let wpsbt = WrappedPsbt { psbt };
         let master_fingerprint = Fingerprint::from_str("73c5da0a").unwrap();
-        let extended_pubkey = ExtendedPubKey::from_str("xpub6Bm9M1SxZdzL3TxdNV8897FgtTLBgehR1wVNnMyJ5VLRK5n3tFqXxrCVnVQj4zooN4eFSkf6Sma84reWc5ZCXMxPbLXQs3BcaBdTd4YQa3B").unwrap();
+        let extended_pubkey = Xpub::from_str("xpub6Bm9M1SxZdzL3TxdNV8897FgtTLBgehR1wVNnMyJ5VLRK5n3tFqXxrCVnVQj4zooN4eFSkf6Sma84reWc5ZCXMxPbLXQs3BcaBdTd4YQa3B").unwrap();
         let path = DerivationPath::from_str("m/84'/1'/0'").unwrap();
         let mut keys = BTreeMap::new();
         keys.insert(path, extended_pubkey);

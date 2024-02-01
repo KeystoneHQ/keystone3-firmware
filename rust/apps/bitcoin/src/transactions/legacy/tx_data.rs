@@ -9,11 +9,11 @@ use third_party::{bitcoin, hex};
 use crate::errors::Result;
 use core::str::FromStr;
 use third_party::bitcoin::consensus::Encodable;
-use third_party::bitcoin::hashes::{sha256, sha256d, Hash};
+use third_party::bitcoin_hashes::{sha256, sha256d, Hash};
 use third_party::bitcoin::sighash::{
     EcdsaSighashType, LegacySighash, SegwitV0Sighash, SighashCache,
 };
-use third_party::bitcoin::Script;
+use third_party::bitcoin::{Amount, Script};
 use third_party::bitcoin::{PubkeyHash, ScriptBuf, Transaction};
 
 use crate::addresses::cashaddr::{Base58Codec, CashAddrCodec};
@@ -93,7 +93,7 @@ impl TxData {
             extended_pubkey,
             xfp: payload.xfp,
             transaction: Transaction {
-                version: 2,
+                version: third_party::bitcoin::transaction::Version(2),
                 lock_time: LockTime::from_consensus(0),
                 input: transaction_mapped_input?,
                 output: transaction_mapped_output?,
@@ -263,7 +263,7 @@ impl TxData {
                     .segwit_signature_hash(
                         input_index,
                         &script,
-                        raw_input.value,
+                        Amount::from_sat(raw_input.value),
                         EcdsaSighashType::All,
                     )
                     .map(|v| Right(v))

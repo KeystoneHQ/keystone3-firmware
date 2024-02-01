@@ -12,7 +12,7 @@ use common_rust_c::structs::{ExtendedPublicKey, TransactionCheckResult, Transact
 use common_rust_c::types::{PtrBytes, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{recover_c_array, recover_c_char};
-use third_party::bitcoin::bip32::{DerivationPath, ExtendedPubKey, Fingerprint};
+use third_party::bitcoin::bip32::{DerivationPath, Xpub};
 use third_party::hex;
 use third_party::ur_registry::crypto_psbt::CryptoPSBT;
 use third_party::ur_registry::traits::RegistryItem;
@@ -44,7 +44,7 @@ pub extern "C" fn btc_parse_psbt(
                 for x in public_keys {
                     let xpub = recover_c_char(x.xpub);
                     let path = recover_c_char(x.path);
-                    let extended_public_key = ExtendedPubKey::from_str(xpub.as_str())
+                    let extended_public_key = Xpub::from_str(xpub.as_str())
                         .map_err(|_e| RustCError::InvalidXPub);
                     let derivation_path = DerivationPath::from_str(path.as_str())
                         .map_err(|_e| RustCError::InvalidHDPath);
@@ -139,7 +139,7 @@ pub extern "C" fn btc_check_psbt(
                 for x in public_keys {
                     let xpub = recover_c_char(x.xpub);
                     let path = recover_c_char(x.path);
-                    let extended_public_key = ExtendedPubKey::from_str(xpub.as_str())
+                    let extended_public_key = Xpub::from_str(xpub.as_str())
                         .map_err(|_e| RustCError::InvalidXPub);
                     let derivation_path = DerivationPath::from_str(path.as_str())
                         .map_err(|_e| RustCError::InvalidHDPath);

@@ -6,7 +6,7 @@ use alloc::vec::Vec;
 use core::iter;
 use core::str::FromStr;
 use third_party::bitcoin;
-use third_party::bitcoin::hashes::Hash;
+use third_party::bitcoin_hashes::Hash;
 use third_party::bitcoin::script::{Builder, PushBytesBuf};
 use third_party::bitcoin::WPubkeyHash;
 use third_party::bitcoin::{PublicKey, ScriptBuf, Sequence};

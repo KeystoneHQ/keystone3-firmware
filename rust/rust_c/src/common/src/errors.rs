@@ -82,13 +82,15 @@ pub enum ErrorCodes {
     BitcoinUnsupportedNetwork,
     BitcoinTransactionConsensusEncodeError,
     BitcoinPushBytesFailed,
-    BitcoinInvalidHashLength,
+    BitcoinInvalidHex,
     BitcoinBase58Error,
     BitcoinKeystoreError,
     BitcoinInvalidParseContext,
     BitcoinInvalidRawTxCryptoBytes,
     BitcoinInvalidTxData,
     BitcoinUnsupportedScriptType,
+    BitcoinBech32DecodeError,
+    BitcoinWitnessProgramError,
 
     //Ethereum
     EthereumRlpDecodingError = 200,
@@ -186,8 +188,10 @@ impl From<&BitcoinError> for ErrorCodes {
                 Self::BitcoinTransactionConsensusEncodeError
             }
             BitcoinError::PushBytesFailed(_) => Self::BitcoinPushBytesFailed,
-            BitcoinError::InvalidHashLength(_) => Self::BitcoinInvalidHashLength,
+            BitcoinError::InvalidHex(_) => Self::BitcoinInvalidHex,
             BitcoinError::Base58Error(_) => Self::BitcoinBase58Error,
+            BitcoinError::Bech32DecodeError(_) => Self::BitcoinBech32DecodeError,
+            BitcoinError::WitnessProgramError(_) => Self::BitcoinWitnessProgramError,
             BitcoinError::KeystoreError(_) => Self::BitcoinKeystoreError,
             BitcoinError::InvalidParseContext(_) => Self::BitcoinInvalidParseContext,
             BitcoinError::InvalidRawTxCryptoBytes(_) => Self::BitcoinInvalidRawTxCryptoBytes,

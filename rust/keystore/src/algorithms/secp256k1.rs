@@ -6,7 +6,7 @@ use bitcoin::secp256k1::{ecdsa, SecretKey};
 use core::str::FromStr;
 use secp256k1::PublicKey;
 
-use third_party::bitcoin::bip32::{DerivationPath, ExtendedPrivKey, ExtendedPubKey, Fingerprint};
+use third_party::bitcoin::bip32::{DerivationPath, Xpriv, Xpub, Fingerprint};
 use third_party::bitcoin::Network;
 use third_party::secp256k1::Message;
 use third_party::{bitcoin, secp256k1};
@@ -19,9 +19,9 @@ pub fn derive_public_key(xpub: &String, path: &String) -> Result<PublicKey> {
     derive_extend_public_key(xpub, path).map(|e| e.public_key)
 }
 
-pub fn derive_extend_public_key(xpub: &String, path: &String) -> Result<ExtendedPubKey> {
+pub fn derive_extend_public_key(xpub: &String, path: &String) -> Result<Xpub> {
     let p = normalize_path(path);
-    let extended_key = ExtendedPubKey::from_str(xpub.as_str())
+    let extended_key = Xpub::from_str(xpub.as_str())
         .map_err(|e| KeystoreError::DerivePubKey(e.to_string()))?;
     let derivation_path = DerivationPath::from_str(p.as_str())
         .map_err(|e| KeystoreError::InvalidDerivationPath(e.to_string()))?;
@@ -38,26 +38,26 @@ pub fn get_public_key_by_seed(seed: &[u8], path: &String) -> Result<PublicKey> {
     Ok(get_private_key_by_seed(seed, path)?.public_key(&secp256k1::Secp256k1::new()))
 }
 
-fn get_extended_private_key_by_seed(seed: &[u8], path: &String) -> Result<ExtendedPrivKey> {
+fn get_extended_private_key_by_seed(seed: &[u8], path: &String) -> Result<Xpriv> {
     let p = normalize_path(path);
     let derivation_path = DerivationPath::from_str(p.as_str())
         .map_err(|e| KeystoreError::InvalidDerivationPath(e.to_string()))?;
-    let root = ExtendedPrivKey::new_master(Network::Bitcoin, seed)
+    let root = Xpriv::new_master(Network::Bitcoin, seed)
         .map_err(|e| KeystoreError::SeedError(e.to_string()))?;
     root.derive_priv(&secp256k1::Secp256k1::new(), &derivation_path)
         .map_err(|e| KeystoreError::DerivationError(e.to_string()))
 }
 
-pub fn get_extended_public_key_by_seed(seed: &[u8], path: &String) -> Result<ExtendedPubKey> {
+pub fn get_extended_public_key_by_seed(seed: &[u8], path: &String) -> Result<Xpub> {
     let prik = get_extended_private_key_by_seed(seed, path)?;
-    Ok(ExtendedPubKey::from_priv(
+    Ok(Xpub::from_priv(
         &secp256k1::Secp256k1::new(),
         &prik,
     ))
 }
 
 pub fn get_master_fingerprint_by_seed(seed: &[u8]) -> Result<Fingerprint> {
-    let root = ExtendedPrivKey::new_master(Network::Bitcoin, seed)
+    let root = Xpriv::new_master(Network::Bitcoin, seed)
         .map_err(|e| KeystoreError::SeedError(e.to_string()))?;
     Ok(root.fingerprint(&secp256k1::Secp256k1::new()))
 }
@@ -80,7 +80,7 @@ pub fn sign_message_hash_by_private_key(
     private_key: &[u8],
 ) -> Result<[u8; 64]> {
     let secp = secp256k1::Secp256k1::signing_only();
-    let message = Message::from_slice(message_hash)
+    let message = Message::from_digest_slice(message_hash)
         .map_err(|e| KeystoreError::InvalidDataError(e.to_string()))?;
 
     let private_key = SecretKey::from_slice(private_key)
@@ -98,7 +98,7 @@ pub fn verify_signature(
     let secp = secp256k1::Secp256k1::verification_only();
     let public_key = PublicKey::from_slice(public_key_bytes)
         .map_err(|e| KeystoreError::InvalidDataError(e.to_string()))?;
-    let message = Message::from_slice(message_hash)
+    let message = Message::from_digest_slice(message_hash)
         .map_err(|e| KeystoreError::InvalidDataError(e.to_string()))?;
     let mut sig = ecdsa::Signature::from_compact(signature)
         .map_err(|e| KeystoreError::InvalidDataError(e.to_string()))?;

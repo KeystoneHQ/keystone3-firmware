@@ -36,23 +36,19 @@ set(FIRMWARE_VERSION "0.0.1")
 message(STATUS "compile main firmware")
 add_subdirectory(rust)
 add_definitions(
--DUSE_STDPERIPH_DRIVER 
--DUSE_FULL_ASSERT 
--DLV_CONF_INCLUDE_SIMPLE 
--DLV_LVGL_H_INCLUDE_SIMPLE 
--DARM_MATH_CM4 
--D__TARGET_FPU_VFP 
--DNDEBUG -DATCA_HAL_I2C
--DCONFIG_USB_DEVICE_MSC
-#    -DRUST_MEMORY_DEBUG
+    -DUSE_STDPERIPH_DRIVER 
+    -DUSE_FULL_ASSERT 
+    -DLV_CONF_INCLUDE_SIMPLE 
+    -DLV_LVGL_H_INCLUDE_SIMPLE 
+    -DARM_MATH_CM4 
+    -D__TARGET_FPU_VFP 
+    -DNDEBUG 
+    -DATCA_HAL_I2C
+    -DCONFIG_USB_DEVICE_MSC
 )
 
 if (RU_SUPPORT)
     add_compile_definitions(RU_SUPPORT)
-endif()
-
-if (CN_SUPPORT)
-    add_compile_definitions(CN_SUPPORT)
 endif()
 
 if(BUILD_PRODUCTION)
@@ -254,7 +250,8 @@ file(GLOB_RECURSE gui
     "src/ui/gui_views/*.c"
     "src/ui/gui_widgets/*.c"
     "src/ui/gui_widgets/setting/*.c"
-    "src/ui/lv_i18n/*.c"
+    "src/ui/lv_i18n/lv_i18n.c"
+    "src/ui/lv_i18n/lv_i18n_api.c"
     "src/ui/gui_model/*.c"
     "src/ui/gui_analyze/gui_analyze.c"
     "src/ui/gui_chain/*"

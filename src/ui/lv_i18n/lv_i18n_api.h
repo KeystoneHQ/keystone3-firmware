@@ -7,7 +7,6 @@ typedef enum {
     LANG_EN,
 #ifdef RU_SUPPORT
     LANG_RU,
-    1
 #endif
 #ifdef CN_SUPPORT
     LANG_ZH_CN,

@@ -362,7 +362,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
         lv_obj_add_event_cb(btn, ExportXpubHandler, LV_EVENT_CLICKED, NULL);
         img = GuiCreateImg(btn, &imgExport);
         lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-        label = GuiCreateLabelWithFont(btn, _("receive_btc_more_export_xpub"), &openSans_24);
+        label = GuiCreateTextLabel(btn, _("receive_btc_more_export_xpub"));
         lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
         break;
     default:

@@ -398,7 +398,7 @@ void OpenSinglePhraseHandler(lv_event_t *e)
         };
         g_selectAmountHintbox = GuiCreateHintBox(lv_scr_act(), 480, 378, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_selectAmountHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_selectAmountHintbox);
-        lv_obj_t *label = GuiCreateTextLabel(g_selectAmountHintbox, _("Seed Phrase Word Count"));
+        lv_obj_t *label = GuiCreateTextLabel(g_selectAmountHintbox, _("seed_check_word_select"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 30, 451);
         lv_obj_t *img = GuiCreateImg(g_selectAmountHintbox, &imgClose);
         GuiButton_t table[2] = {
@@ -453,7 +453,7 @@ void OpenSharePhraseHandler(lv_event_t *e)
         };
         g_selectAmountHintbox = GuiCreateHintBox(lv_scr_act(), 480, 282, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_selectAmountHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_selectAmountHintbox);
-        lv_obj_t *label = GuiCreateTextLabel(g_selectAmountHintbox, _("Seed Phrase Word Count"));
+        lv_obj_t *label = GuiCreateTextLabel(g_selectAmountHintbox, _("seed_check_word_select"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 30, 546);
         lv_obj_t *img = GuiCreateImg(g_selectAmountHintbox, &imgClose);
         GuiButton_t table[2] = {

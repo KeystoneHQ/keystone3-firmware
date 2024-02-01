@@ -33,6 +33,7 @@ def build_firmware(environment, options):
         cmd = 'cmake -G "Unix Makefiles" .. -DLIB_RUST_C=ON'
     if is_release:
         cmd += ' -DBUILD_PRODUCTION=true'
+        cmd += ' -DRU_SUPPORT=true'
 
 
     for option in options:
@@ -41,7 +42,7 @@ def build_firmware(environment, options):
         if option == "debugmemory":
             cmd += ' -DDEBUG_MEMORY=true'
         # add more option here.
-
+    cmd += "-DRU_SUPPORT=true"
 
     cmd_result = os.system(cmd)
     if cmd_result != 0:

@@ -19,7 +19,7 @@ const LanguageInfo_t g_languageList[] = {
 #endif
 };
 
-static uint8_t g_curLangIndex = LANG_ZH_CN;
+static uint8_t g_curLangIndex = LANG_EN;
 
 void LanguageInit(void)
 {

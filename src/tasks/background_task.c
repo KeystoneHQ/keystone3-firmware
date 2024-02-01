@@ -190,6 +190,8 @@ static void BackgroundTask(void *argument)
             } else if (GetUSBSwitch()) {
 #if (USB_POP_WINDOW_ENABLE == 1)
                 GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+#else
+                UsbInit();
 #endif
             }
             //printf("send battState=0x%04X\r\n", battState);

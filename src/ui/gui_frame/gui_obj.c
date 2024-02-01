@@ -197,7 +197,7 @@ void *GuiCreateConfirmSlider(lv_obj_t *parent, lv_event_cb_t cb)
     lv_obj_set_style_bg_opa(bgCont, LV_OPA_10, LV_PART_MAIN);
     lv_obj_set_align(bgCont, LV_ALIGN_CENTER);
     lv_obj_set_style_radius(bgCont, 24, LV_PART_MAIN);
-    lv_obj_t *label = GuiCreateIllustrateLabel(bgCont, "Swipe to confirm");
+    lv_obj_t *label = GuiCreateIllustrateLabel(bgCont, _("scan_qr_code_sign_unsigned_content_frame"));
     lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_opa(label, LV_OPA_30, LV_PART_MAIN);
     lv_obj_set_align(label, LV_ALIGN_CENTER);

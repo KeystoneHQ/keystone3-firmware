@@ -230,7 +230,7 @@ void GuiMultiPathCoinReceiveRefresh(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
         switch (g_chainCard) {
         case HOME_WALLET_CARD_ETH:
-            SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_ETH, "Receive ETH");
+            SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_ETH, _("receive_eth_receive_main_title"));
             break;
         case HOME_WALLET_CARD_SOL:
             SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_SOL, "Receive SOL");
@@ -266,7 +266,7 @@ void GuiMultiPathCoinReceiveRefresh(void)
         break;
     case RECEIVE_TILE_CHANGE_PATH:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Change Derivation Path");
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_selectType = GetPathIndex();
         for (uint32_t i = 0; i < 3; i++) {
@@ -302,7 +302,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, ChangePathHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgPath);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, "Change Derivation Path", &buttonFont);
+    label = GuiCreateLabelWithFont(btn, _("derivation_path_change"), &buttonFont);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 
     btn = lv_btn_create(cont);

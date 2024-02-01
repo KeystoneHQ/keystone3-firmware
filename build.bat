@@ -5,11 +5,15 @@ set "BUILD_FOLDER=%CD%\build"
 set "TOOLS_FOLDER=%CD%\tools"
 set "MAKE_OAT_FILE_PATH=%TOOLS_FOLDER%\ota_file_maker"
 set "ASTYLE_PATH=%TOOLS_FOLDER%\AStyle.bat"
+set "LANGUAGE_PATH=%CD%\src\ui\lv_i18n"
+set "LANGUAGE_SCRIPT=py data_loader.py"
 
 set "CLEAN_BUILD=0"
 set "PERFORM_COPY=0"
 set "FORMAT_CODE=0"
 set "BUILD_TYPE="
+set "BUILD_RU=0"
+set "BUILD_CN=0"
 
 :parse_args
 if "%~1"=="" goto end_parse_args
@@ -19,8 +23,8 @@ if /i "%~1"=="format" set "FORMAT_CODE=1"
 if /i "%~1"=="debug" set "BUILD_TYPE=-DDEBUG_MEMORY=true"
 if /i "%~1"=="production" set "BUILD_TYPE=-DBUILD_PRODUCTION=true"
 if /i "%~1"=="screen" set "BUILD_TYPE=-DENABLE_SCREEN_SHOT=true"
-if /i "%~1"=="RU" set "BUILD_TYPE=%BUILD_TYPE% -DRU_SUPPORT=true"
-if /i "%~1"=="CN" set "BUILD_TYPE=%BUILD_TYPE% -DCN_SUPPORT=true"
+if /i "%~1"=="RU" (set "BUILD_TYPE=%BUILD_TYPE% -DRU_SUPPORT=true" & set "BUILD_RU=1")
+if /i "%~1"=="CN" (set "BUILD_TYPE=%BUILD_TYPE% -DCN_SUPPORT=true" & set "BUILD_CN=1")
 shift
 goto parse_args
 :end_parse_args
@@ -50,6 +54,18 @@ if "%PERFORM_COPY%"=="1" (
     del "%BUILD_FOLDER%\mh1903.hex" 2>nul
     del "%BUILD_FOLDER%\mh1903.bin" 2>nul
 )
+
+if "%BUILD_CN%"=="1" (
+    set "LANGUAGE_SCRIPT=%LANGUAGE_SCRIPT% --cn"
+)
+
+if "%BUILD_RU%"=="1" (
+    set "LANGUAGE_SCRIPT=%LANGUAGE_SCRIPT% --ru"
+)
+
+pushd %LANGUAGE_PATH%
+%LANGUAGE_SCRIPT%
+popd
 
 pushd "%BUILD_FOLDER%"
 if not "%BUILD_TYPE%"=="" (

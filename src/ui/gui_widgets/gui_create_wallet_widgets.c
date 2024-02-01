@@ -129,7 +129,7 @@ static void GuiCreateNameWalletWidget(lv_obj_t *parent)
     lv_obj_set_size(g_nameWalletKb->ta, 300, 60);
     lv_obj_set_style_text_opa(g_nameWalletKb->ta, LV_OPA_100, 0);
     lv_obj_align(g_nameWalletKb->ta, LV_ALIGN_DEFAULT, 128, 316 - GUI_MAIN_AREA_OFFSET);
-    lv_textarea_set_placeholder_text(g_nameWalletKb->ta, "Wallet Name");
+    lv_textarea_set_placeholder_text(g_nameWalletKb->ta, _("single_backup_namewallet_previntput"));
     lv_textarea_set_max_length(g_nameWalletKb->ta, 16);
     lv_textarea_set_one_line(g_nameWalletKb->ta, true);
     char tempBuf[16] = {0};

@@ -220,9 +220,9 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
 
     if (urViewType.viewType == WebAuthResult
 #ifndef BTC_ONLY
-        || urViewType.viewType == KeyDerivationRequest
+            || urViewType.viewType == KeyDerivationRequest
 #endif
-        || viewType != REMAPVIEW_BUTT) {
+            || viewType != REMAPVIEW_BUTT) {
         StopQrDecode();
         UserDelay(500);
         GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));

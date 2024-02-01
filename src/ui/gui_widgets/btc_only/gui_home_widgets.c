@@ -62,7 +62,7 @@ static void UpdateManageWalletState(bool needUpdate)
     g_isManageOpen = false;
     int total = 0;
     for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-       
+
         if (g_walletState[i].enable) {
             total++;
         }
@@ -196,10 +196,10 @@ static void ManageCoinChainHandler(lv_event_t *e)
         bool state;
         WalletState_t *wallet = lv_event_get_user_data(e);
 
-            lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
-            state = lv_obj_has_state(lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 1), LV_STATE_CHECKED);
-            g_walletBakState[wallet->index].state = state;
-            UpdateManageWalletState(false);
+        lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
+        state = lv_obj_has_state(lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 1), LV_STATE_CHECKED);
+        g_walletBakState[wallet->index].state = state;
+        UpdateManageWalletState(false);
     }
 }
 
@@ -332,7 +332,7 @@ static void OpenManageAssetsHandler(lv_event_t *e)
                     .position = {-10, 0},
                 },
             };
-        
+
 
             lv_obj_t *button = GuiCreateButton(checkBoxCont, 456, 96, table, tableLen,
                                                ManageCoinChainHandler, &g_walletState[i]);

@@ -97,7 +97,7 @@ UREncodeResult *GuiGetSignQrCodeData(void)
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
-    } 
+    }
 #ifndef BTC_ONLY
     else if (urType == Bytes || urType == KeystoneSignRequest) {
         char *hdPath = NULL;
@@ -162,7 +162,7 @@ void *GuiGetParsedQrData(void)
             CHECK_CHAIN_RETURN(g_parseResult);
             SRAM_FREE(public_keys);
             return g_parseResult;
-        } 
+        }
 #ifndef BTC_ONLY
         else if (urType == Bytes || urType == KeystoneSignRequest) {
             char *hdPath = NULL;
@@ -219,7 +219,7 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
         result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys);
         SRAM_FREE(public_keys);
-    } 
+    }
 #ifndef BTC_ONLY
     else if (urType == Bytes || urType == KeystoneSignRequest) {
         char *hdPath = NULL;

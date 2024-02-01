@@ -761,7 +761,7 @@ static void AddOkxWalletCoins(void)
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
         lv_obj_clean(g_coinCont);
     }
-    for (int i = 0; i < sizeof(g_okxWalletCoinArray)/ sizeof(g_okxWalletCoinArray[0]); i++) {
+    for (int i = 0; i < sizeof(g_okxWalletCoinArray) / sizeof(g_okxWalletCoinArray[0]); i++) {
         lv_obj_t *img = GuiCreateImg(g_coinCont, g_okxWalletCoinArray[i]);
         lv_img_set_zoom(img, 110);
         lv_img_set_pivot(img, 0, 0);
@@ -894,7 +894,7 @@ static void AddSolflareCoins(void)
 
 void GuiConnectWalletInit(void)
 {
- #ifndef BTC_ONLY
+#ifndef BTC_ONLY
     GuiInitWalletListArray();
 #endif
     g_pageWidget = CreatePageWidget();

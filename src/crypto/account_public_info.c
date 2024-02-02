@@ -323,6 +323,8 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         SRAM_FREE(jsonString);
     }
 
+    regeneratePubKey = true;
+
     do {
         if (regeneratePubKey == false) {
             break;

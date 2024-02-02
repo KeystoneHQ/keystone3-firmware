@@ -127,8 +127,8 @@ typedef struct {
 GuiRemapViewType ViewTypeReMap(uint8_t viewType);
 GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t viewType);
 PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType);
-GenerateUR GetUrGenerator(GuiChainCoinType viewType);
-GenerateUR GetSingleUrGenerator(GuiChainCoinType viewType);
+GenerateUR GetUrGenerator(ViewType viewType);
+GenerateUR GetSingleUrGenerator(ViewType viewType);
 #ifndef BTC_ONLY
 bool IsMessageType(uint8_t type);
 #endif

@@ -80,7 +80,7 @@ bool IsMessageType(uint8_t type)
 }
 #endif
 
-static GenerateUR UrGenerator(GuiChainCoinType viewType, bool isMulti)
+static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
 {
     GenerateUR func = NULL;
     switch (viewType) {
@@ -131,12 +131,12 @@ static GenerateUR UrGenerator(GuiChainCoinType viewType, bool isMulti)
     return func;
 }
 
-GenerateUR GetUrGenerator(GuiChainCoinType viewType)
+GenerateUR GetUrGenerator(ViewType viewType)
 {
     return UrGenerator(viewType, true);
 }
 
-GenerateUR GetSingleUrGenerator(GuiChainCoinType viewType)
+GenerateUR GetSingleUrGenerator(ViewType viewType)
 {
     return UrGenerator(viewType, false);
 }

@@ -17,6 +17,7 @@ typedef enum {
 } SOL_PATH_TYPE;
 
 typedef enum {
+    BTC_TAPROOT,
     BTC_NATIVE_SEGWIT,
     BTC_NESTED_SEGWIT,
     BTC_LEGACY,

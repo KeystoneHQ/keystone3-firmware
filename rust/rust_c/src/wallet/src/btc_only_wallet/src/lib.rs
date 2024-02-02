@@ -40,14 +40,17 @@ pub extern "C" fn get_connect_blue_wallet_ur(
         let key1 = keys.get(0);
         let key2 = keys.get(1);
         let key3 = keys.get(2);
-        return if let (Some(k1), Some(k2), Some(k3)) = (key1, key2, key3) {
+        let key4 = keys.get(3);
+        return if let (Some(k1), Some(k2), Some(k3), Some(k4)) = (key1, key2, key3, key4) {
             let native_x_pub = recover_c_char(k1.xpub);
             let nested_x_pub = recover_c_char(k2.xpub);
             let legacy_x_pub = recover_c_char(k3.xpub);
+            let taproot_x_pub = recover_c_char(k4.xpub);
             let extended_public_keys = [
                 native_x_pub.trim(),
                 legacy_x_pub.trim(),
                 nested_x_pub.trim(),
+                taproot_x_pub.trim(),
             ];
             let mfp = match <&[u8; 4]>::try_from(mfp) {
                 Ok(mfp) => mfp,

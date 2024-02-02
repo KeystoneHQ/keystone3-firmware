@@ -976,7 +976,6 @@ static int32_t ModelDelAllWallet(const void *inData, uint32_t inDataLen)
     WipeDevice();
     SystemReboot();
 #else
-    // GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS_SETUP, NULL, 0);
     GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS, NULL, 0);
 #endif
     SetLockScreen(enable);
@@ -1349,12 +1348,6 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
     }
 #else
     GuiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
-    // for (size_t i = 0; i < 500000000; i++)
-    // {
-    //     if(i == 1000000){
-    //         printf("ddd\n");
-    //     }
-    // }
     GuiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
     GuiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
 #endif

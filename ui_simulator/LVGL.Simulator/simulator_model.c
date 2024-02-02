@@ -13,6 +13,21 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
+bool IsUpdateSuccess(void)
+{
+    return true;
+}
+
+bool GetUsbDetectState(void)
+{
+    return true;
+}
+
+bool UsbInitState(void)
+{
+    return true;
+}
+
 uint8_t GetExportWallet()
 {
     return 1;

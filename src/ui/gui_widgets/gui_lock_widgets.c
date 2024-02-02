@@ -34,7 +34,9 @@
 #define FINGERPRINT_SING_ERR_TIMES              (3)
 #define FINGERPRINT_SING_DISABLE_ERR_TIMES      (15)
 #else
+#include "drv_aw32001.h"
 #include "drv_usb.h"
+#include "device_setting.h"
 #endif
 
 #ifdef COMPILE_MAC_SIMULATOR
@@ -280,7 +282,13 @@ void GuiLockScreenPassCode(bool en)
         if (g_oldWalletIndex == 0xFF) {
             g_oldWalletIndex = GetCurrentAccountIndex();
         }
-        if (ModelGetPassphraseQuickAccess()) {
+        if (IsUpdateSuccess()) {
+            lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
+            GuiModeGetWalletDesc();
+            GuiEnterPassCodeStatus(g_verifyLock, true);
+            GuiFrameOpenView(&g_homeView);
+            GuiFrameOpenView(&g_updateSuccessView);
+        } else if (ModelGetPassphraseQuickAccess()) {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiModeGetWalletDesc();
             GuiEnterPassCodeStatus(g_verifyLock, true);

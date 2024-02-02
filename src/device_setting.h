@@ -34,6 +34,7 @@ void SetDarkMode(uint32_t darkMode);
 uint32_t GetUSBSwitch(void);
 void SetUSBSwitch(uint32_t usbSwitch);
 
+bool IsUpdateSuccess(void);
 void WipeDevice(void);
 void DeviceSettingsTest(int argc, char *argv[]);
 

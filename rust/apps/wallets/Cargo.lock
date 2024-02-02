@@ -118,17 +118,19 @@ checksum = "d86b93f97252c47b41663388e6d155714a9d0c398b99f1005cbc5f978b29f445"
 
 [[package]]
 name = "bitcoin"
-version = "0.30.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b36f4c848f6bd9ff208128f08751135846cc23ae57d66ab10a22efff1c675f3c"
+version = "0.30.1"
 dependencies = [
  "bech32",
- "bitcoin-private",
+ "bitcoin-private 0.1.0",
  "bitcoin_hashes",
  "core2",
  "hex_lit",
  "secp256k1",
 ]
+
+[[package]]
+name = "bitcoin-private"
+version = "0.1.0"
 
 [[package]]
 name = "bitcoin-private"
@@ -142,7 +144,7 @@ version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d7066118b13d4b20b23645932dfb3a81ce7e29f95726c2036fa33cd7b092501"
 dependencies = [
- "bitcoin-private",
+ "bitcoin-private 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "core2",
 ]
 
@@ -889,7 +891,7 @@ checksum = "a5996294f19bd3aae0453a862ad728f60e6600695733dd5df01da90c54363a3c"
 [[package]]
 name = "rippled_binary_codec"
 version = "0.0.6"
-source = "git+https://github.com/KeystoneHQ/rippled_binary_codec.git?tag=v0.0.7#330441d02498d7c9054cc1d51adfac1738d0b2de"
+source = "git+https://github.com/KeystoneHQ/rippled_binary_codec.git?tag=v0.0.8#6d54449b9f57ab5a881725d591c9283914ce8bf6"
 dependencies = [
  "ascii",
  "base-x",
@@ -1250,7 +1252,6 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.20#0a78622270532cd7784784e9a9865bc29a7ae6e5"
 dependencies = [
  "hex",
  "ur",
@@ -1260,7 +1261,6 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.20#0a78622270532cd7784784e9a9865bc29a7ae6e5"
 dependencies = [
  "bs58",
  "core2",

@@ -29,6 +29,7 @@ static void StartFirmwareCheckSumHandler(lv_event_t *e);
 static void CloseVerifyHintBoxHandler(lv_event_t *e);
 static void OpenVerifyFirmwareHandler(lv_event_t *e);
 
+uint32_t GetBatteryMilliVolt();
 static lv_obj_t *g_firmwareVerifyCont = NULL;
 static lv_obj_t *g_noticeHintBox = NULL;
 static lv_obj_t *g_cont;

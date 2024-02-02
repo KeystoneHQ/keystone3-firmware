@@ -2,12 +2,14 @@
 
 extern crate alloc;
 
-use alloc::{format, vec};
 use alloc::string::String;
 use alloc::string::ToString;
 use alloc::vec::Vec;
+use alloc::{format, vec};
+use app_utils::normalize_path;
 use app_wallets::DEVICE_TYPE;
 use app_wallets::DEVICE_VERSION;
+use common_rust_c::errors::RustCError;
 use common_rust_c::extract_array;
 use common_rust_c::ffi::CSliceFFI;
 use common_rust_c::structs::ExtendedPublicKey;
@@ -16,7 +18,6 @@ use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{recover_c_array, recover_c_char};
 use core::slice;
 use core::str::FromStr;
-use app_utils::normalize_path;
 use cty::{int32_t, uint32_t};
 use third_party::bitcoin::bip32::{DerivationPath, ExtendedPubKey};
 use third_party::hex;
@@ -25,7 +26,6 @@ use third_party::ur_registry::crypto_account::CryptoAccount;
 use third_party::ur_registry::error::URError;
 use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 use third_party::ur_registry::traits::RegistryItem;
-use common_rust_c::errors::RustCError;
 
 #[no_mangle]
 pub extern "C" fn get_connect_blue_wallet_ur(
@@ -161,7 +161,6 @@ pub extern "C" fn get_connect_companion_app_ur(
         Err(e) => UREncodeResult::from(e).c_ptr(),
     }
 }
-
 
 #[no_mangle]
 pub extern "C" fn get_okx_wallet_ur_btc_only(

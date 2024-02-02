@@ -79,6 +79,8 @@ UREncodeResult *GuiGetBlueWalletBtcData(void)
 #endif
 }
 
+#ifndef BTC_ONLY
+
 typedef UREncodeResult *MetamaskUrGetter(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys);
 
 static UREncodeResult *get_unlimited_connect_metamask_ur(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys)
@@ -428,6 +430,8 @@ UREncodeResult *GuiGetCompanionAppData(void)
     return result;
 }
 
+#endif
+
 UREncodeResult *GuiGetOkxWalletData(void)
 {
 #ifndef COMPILE_SIMULATOR
@@ -440,6 +444,8 @@ UREncodeResult *GuiGetOkxWalletData(void)
     // + ltc 1
     // + dash 1
     // + bch 1
+#ifndef BTC_ONLY
+
     ExtendedPublicKey keys[18];
     public_keys->data = keys;
     public_keys->size = 18;
@@ -473,11 +479,32 @@ UREncodeResult *GuiGetOkxWalletData(void)
     keys[17].path = "m/86'/0'/0'";
     keys[17].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
 
+#else
+    ExtendedPublicKey keys[4];
+    public_keys->data = keys;
+    public_keys->size = 4;
+
+    keys[0].path = "m/44'/0'/0'";
+    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+
+    keys[1].path = "m/49'/0'/0'";
+    keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+
+    keys[2].path = "m/84'/0'/0'";
+    keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+
+    keys[3].path = "m/86'/0'/0'";
+    keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+#endif
     char serialNumber[256];
     GetSerialNumber(serialNumber);
     char firmwareVersion[12];
     GetSoftWareVersionNumber(firmwareVersion);
+#ifndef BTC_ONLY
     g_urEncode = get_okx_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
+#else
+    g_urEncode = get_okx_wallet_ur_btc_only(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
+#endif
     CHECK_CHAIN_PRINT(g_urEncode);
     SRAM_FREE(public_keys);
     return g_urEncode;
@@ -487,6 +514,7 @@ UREncodeResult *GuiGetOkxWalletData(void)
 #endif
 }
 
+#ifndef BTC_ONLY
 UREncodeResult *GuiGetSolflareData(void)
 {
 #ifndef COMPILE_SIMULATOR
@@ -535,3 +563,5 @@ UREncodeResult *GuiGetSolflareData(void)
 
 
 }
+
+#endif

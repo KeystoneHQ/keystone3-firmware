@@ -69,12 +69,15 @@ void GuiTransactionSignatureHandleURUpdate(char *data, uint16_t len)
 static void GuiTransactionSignatureNVSBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, GoToHomeViewHandler, NULL);
+#ifndef BTC_ONLY
     if (IsMessageType(g_viewType)) {
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_broadcast_message"));
     } else {
+#endif
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
+#ifndef BTC_ONLY
     }
-
+#endif
 }
 
 

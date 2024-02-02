@@ -14,6 +14,7 @@ typedef enum {
     XPUB_TYPE_BTC_LEGACY,
     XPUB_TYPE_BTC_NATIVE_SEGWIT,
     XPUB_TYPE_BTC_TAPROOT,
+#ifndef BTC_ONLY
     XPUB_TYPE_LTC,
     XPUB_TYPE_DASH,
     XPUB_TYPE_BCH,
@@ -103,7 +104,7 @@ typedef enum {
     XPUB_TYPE_ADA_21,
     XPUB_TYPE_ADA_22,
     XPUB_TYPE_ADA_23,
-
+#endif
     XPUB_TYPE_NUM,
 } ChainType;
 

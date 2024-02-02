@@ -21,6 +21,7 @@ static URParseMultiResult *g_urMultiResult = NULL;
 static TransactionParseResult_DisplayTx *g_parseResult = NULL;
 #endif
 
+#ifndef BTC_ONLY
 typedef struct UtxoViewToChain {
     ViewType viewType;
     ChainType chainType;
@@ -35,6 +36,7 @@ static UtxoViewToChain_t g_UtxoViewToChainMap[] = {
     {DashTx,            XPUB_TYPE_DASH,              "m/44'/5'/0'"},
     {BchTx,             XPUB_TYPE_BCH,               "m/44'/145'/0'"},
 };
+#endif
 
 void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
@@ -45,6 +47,7 @@ void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult
 #endif
 }
 
+#ifndef BTC_ONLY
 static int32_t GuiGetUtxoPubKeyAndHdPath(ViewType viewType, char **xPub, char **hdPath)
 {
     int32_t ret = 0;
@@ -65,6 +68,7 @@ static int32_t GuiGetUtxoPubKeyAndHdPath(ViewType viewType, char **xPub, char **
     }
     return ret;
 }
+#endif
 
 // The results here are released in the close qr timer species
 UREncodeResult *GuiGetSignQrCodeData(void)
@@ -73,15 +77,21 @@ UREncodeResult *GuiGetSignQrCodeData(void)
     SetLockScreen(false);
 #ifndef COMPILE_SIMULATOR
     enum URType urType = URTypeUnKnown;
+#ifndef BTC_ONLY
     enum ViewType viewType = ViewTypeUnKnown;
+#endif
     void *data = NULL;
     if (g_isMulti) {
         urType = g_urMultiResult->ur_type;
+#ifndef BTC_ONLY
         viewType = g_urMultiResult->t;
+#endif
         data = g_urMultiResult->data;
     } else {
         urType = g_urResult->ur_type;
+#ifndef BTC_ONLY
         viewType = g_urResult->t;
+#endif
         data = g_urResult->data;
     }
     UREncodeResult *encodeResult = NULL;
@@ -95,7 +105,9 @@ UREncodeResult *GuiGetSignQrCodeData(void)
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
-    } else if (urType == Bytes || urType == KeystoneSignRequest) {
+    }
+#ifndef BTC_ONLY
+    else if (urType == Bytes || urType == KeystoneSignRequest) {
         char *hdPath = NULL;
         char *xPub = NULL;
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
@@ -106,6 +118,7 @@ UREncodeResult *GuiGetSignQrCodeData(void)
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         encodeResult = utxo_sign_keystone(data, urType, mfp, sizeof(mfp), xPub, SOFTWARE_VERSION, seed, len);
     }
+#endif
     CHECK_CHAIN_PRINT(encodeResult);
     ClearSecretCache();
     SetLockScreen(enable);
@@ -125,16 +138,22 @@ void *GuiGetParsedQrData(void)
 {
 #ifndef COMPILE_SIMULATOR
     enum URType urType = URTypeUnKnown;
+#ifndef BTC_ONLY
     enum ViewType viewType = ViewTypeUnKnown;
+#endif
     void *crypto = NULL;
     if (g_isMulti) {
         crypto = g_urMultiResult->data;
         urType = g_urMultiResult->ur_type;
+#ifndef BTC_ONLY
         viewType = g_urMultiResult->t;
+#endif
     } else {
         crypto = g_urResult->data;
         urType = g_urResult->ur_type;
+#ifndef BTC_ONLY
         viewType = g_urResult->t;
+#endif
     }
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
@@ -157,7 +176,9 @@ void *GuiGetParsedQrData(void)
             CHECK_CHAIN_RETURN(g_parseResult);
             SRAM_FREE(public_keys);
             return g_parseResult;
-        } else if (urType == Bytes || urType == KeystoneSignRequest) {
+        }
+#ifndef BTC_ONLY
+        else if (urType == Bytes || urType == KeystoneSignRequest) {
             char *hdPath = NULL;
             char *xPub = NULL;
             if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
@@ -167,6 +188,7 @@ void *GuiGetParsedQrData(void)
             CHECK_CHAIN_RETURN(g_parseResult);
             return g_parseResult;
         }
+#endif
     } while (0);
 #else
     TransactionParseResult_DisplayTx parseResult;
@@ -183,16 +205,22 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
 #ifndef COMPILE_SIMULATOR
     PtrT_TransactionCheckResult result = NULL;
     enum URType urType = URTypeUnKnown;
+#ifndef BTC_ONLY
     enum ViewType viewType = ViewTypeUnKnown;
+#endif
     void *crypto = NULL;
     if (g_isMulti) {
         crypto = g_urMultiResult->data;
         urType = g_urMultiResult->ur_type;
+#ifndef BTC_ONLY
         viewType = g_urMultiResult->t;
+#endif
     } else {
         crypto = g_urResult->data;
         urType = g_urResult->ur_type;
+#ifndef BTC_ONLY
         viewType = g_urResult->t;
+#endif
     }
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
@@ -211,7 +239,9 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
         result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys);
         SRAM_FREE(public_keys);
-    } else if (urType == Bytes || urType == KeystoneSignRequest) {
+    }
+#ifndef BTC_ONLY
+    else if (urType == Bytes || urType == KeystoneSignRequest) {
         char *hdPath = NULL;
         char *xPub = NULL;
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
@@ -219,6 +249,7 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         }
         result = utxo_check_keystone(crypto, urType, mfp, sizeof(mfp), xPub);
     }
+#endif
     return result;
 #else
     return NULL;

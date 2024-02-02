@@ -224,12 +224,15 @@ void WipeDevice(void)
     // reset all account address index in receive page
     {
         void GuiResetAllUtxoAddressIndex(void);
+#ifndef BTC_ONLY
         void GuiResetAllEthAddressIndex(void);
         void GuiResetAllStandardAddressIndex(void);
-
+#endif
         GuiResetAllUtxoAddressIndex();
+#ifndef BTC_ONLY
         GuiResetAllEthAddressIndex();
         GuiResetAllStandardAddressIndex();
+#endif
     }
 
     uint32_t wipeFlag = DEVICE_WIPE_FLAG_MAGIC_NUM;

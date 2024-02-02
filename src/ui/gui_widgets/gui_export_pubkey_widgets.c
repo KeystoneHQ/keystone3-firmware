@@ -2,6 +2,7 @@
 #include "gui_home_widgets.h"
 #include "gui_page.h"
 #include "gui_fullscreen_mode.h"
+#include "account_public_info.h"
 #include "assert.h"
 
 typedef enum {

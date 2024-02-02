@@ -82,6 +82,10 @@ if(COMPILE_MAIN)
         add_compile_definitions(BUILD_PRODUCTION)
     endif()
 
+    if(BTC_ONLY)
+        add_compile_definitions(BTC_ONLY)
+    endif()
+
     if(ENABLE_SCREEN_SHOT)
         add_compile_definitions(ENABLE_SCREEN_SHOT)
     endif()
@@ -93,87 +97,95 @@ if(COMPILE_MAIN)
     print_firmware_info()
     #include(mh1903_main.cmake)
 
-    include_directories(
-        Inc
-        src/config
-        src/tasks
-        test
-        src/driver
-        src/driver/usb
-        external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/msc/inc
-        external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/cdc/inc
-        external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_OTG_Driver/inc
-        external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Core/inc
-        external/mh1903_lib/USB-ESL
-        src/cm_backtrace
-        src/crypto
-        src/crypto/bips
-        src/crypto/checksum
-        src/crypto/utils
-        src/crypto/slip39
-        src/crypto/slip39/trezor-crypto
-        external/mh1903_lib/MHSCPU_Driver/inc 
-        external/mh1903_lib/Device/MegaHunt/mhscpu/Include 
-        external/mh1903_lib/CMSIS/Include 
-        external/mh1903_lib/MHSCPU_Driver/inc/cryptlib 
-        external/mh1903_lib/MHSCPU_Driver/inc/emvlib
-        src
-        src/utils
-        src/utils/log
-        src/managers 
-        src/error_codes 
-        src/firmware 
-        src/msg 
-        src/ram 
-        src/hardware_interface
-        src/ui/gui_views
-        src/ui/gui_assets
-        src/ui/gui_assets/abi
-        src/ui/gui_frame
-        src/ui/gui_widgets
-        src/ui/gui_widgets/setting
-        src/ui/lv_i18n
-        src/ui/gui_model
-        src/ui/gui_analyze
-        src/ui/gui_chain
-        src/ui/gui_components
-        src/ui/wallet
-        src/webusb_protocol
-        src/webusb_protocol/services
-        src/webusb_protocol/eapdu_services
-        external
-        external/ctaes
-        external/fatfs
-        external/ccan
-        external/cjson
-        external/quicklz
-        external/sqlite3
-        external/cryptoauthlib/lib
-        external/FreeRTOS
-        external/FreeRTOS/Source/include
-        external/FreeRTOS/Source/portable/GCC/ARM_CM4F
-        external/FreeRTOS/CMSIS_RTOS_V2
-        external/lvgl
-        external/lvgl/src
-        external/lvgl/src/core
-        external/lvgl/src/draw
-        external/lvgl/src/extra
-        external/lvgl/src/font
-        external/lvgl/src/hal
-        external/lvgl/src/misc
-        external/lvgl/src/widgets
-        external/lvgl/src/core
-        external/safec/include
-        external/safec/src
-        build/rust-builds
-        ${CMAKE_CURRENT_BINARY_DIR}
-    )
+
+    set(common_include_dirs 
+    Inc
+    src/config
+    src/tasks
+    test
+    src/driver
+    src/driver/usb
+    external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/msc/inc
+    external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/cdc/inc
+    external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_OTG_Driver/inc
+    external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Core/inc
+    external/mh1903_lib/USB-ESL
+    src/cm_backtrace
+    src/crypto
+    src/crypto/bips
+    src/crypto/checksum
+    src/crypto/utils
+    src/crypto/slip39
+    src/crypto/slip39/trezor-crypto
+    external/mh1903_lib/MHSCPU_Driver/inc 
+    external/mh1903_lib/Device/MegaHunt/mhscpu/Include 
+    external/mh1903_lib/CMSIS/Include 
+    external/mh1903_lib/MHSCPU_Driver/inc/cryptlib 
+    external/mh1903_lib/MHSCPU_Driver/inc/emvlib
+    src
+    src/utils
+    src/utils/log
+    src/managers 
+    src/error_codes 
+    src/firmware 
+    src/msg 
+    src/ram 
+    src/hardware_interface
+    src/ui/gui_views
+    src/ui/gui_assets
+    src/ui/gui_assets/abi
+    src/ui/gui_frame
+    src/ui/gui_widgets
+    src/ui/gui_widgets/setting
+    src/ui/lv_i18n
+    src/ui/gui_model
+    src/ui/gui_analyze
+    src/ui/gui_chain
+    src/ui/gui_chain/btc
+    src/ui/gui_components
+    src/ui/wallet
+    src/webusb_protocol
+    src/webusb_protocol/services
+    external
+    external/ctaes
+    external/fatfs
+    external/ccan
+    external/cjson
+    external/quicklz
+    external/sqlite3
+    external/cryptoauthlib/lib
+    external/FreeRTOS
+    external/FreeRTOS/Source/include
+    external/FreeRTOS/Source/portable/GCC/ARM_CM4F
+    external/FreeRTOS/CMSIS_RTOS_V2
+    external/lvgl
+    external/lvgl/src
+    external/lvgl/src/core
+    external/lvgl/src/draw
+    external/lvgl/src/extra
+    external/lvgl/src/font
+    external/lvgl/src/hal
+    external/lvgl/src/misc
+    external/lvgl/src/widgets
+    external/lvgl/src/core
+    external/safec/include
+    external/safec/src
+    build/rust-builds
+    ${CMAKE_CURRENT_BINARY_DIR} )
+
+    if(BTC_ONLY)
+        set(project_include_dirs ${common_include_dirs}  src/ui/gui_widgets/btc_only)
+    else()
+        set(project_include_dirs ${common_include_dirs}  src/ui/gui_chain/others src/ui/gui_widgets/general  src/webusb_protocol/general src/webusb_protocol/general/eapdu_services)
+    endif()
+
+    include_directories(${project_include_dirs})
 
     set_property(SOURCE external/mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s PROPERTY LANGUAGE C)
     set_property(SOURCE src/cm_backtrace/fault_handler/gcc/cmb_fault.s PROPERTY LANGUAGE C)
     aux_source_directory(external/mh1903_lib/MHSCPU_Driver/src/ mh1903_driver)
     aux_source_directory(src/driver/ driver)
-    if(NOT BUILD_PRODUCTION)
+    if(NOT BUILD_PRODUCTION AND NOT BTC_ONLY)
         aux_source_directory(test/ test)
     endif()    
     aux_source_directory(src/cm_backtrace/ cm_backtrace)
@@ -325,6 +337,29 @@ if(COMPILE_MAIN)
         src/cm_backtrace/fault_handler/gcc/cmb_fault.s)
 
     set(CMAKE_EXE_LINKER_FLAGS " -T ${LINKER_SCRIPT} -Wl,-Map=mh1903.map -lm -mcpu=${MCU} --specs=nano.specs -specs=nosys.specs -nostartfiles -Wl,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref -Wl,--gc-sections ")
+
+
+
+    if(BTC_ONLY)
+        set(excluded_directories
+            src/ui/gui_chain/others
+            src/ui/gui_widgets/general
+            src/ui/gui_views/general
+            src/webusb_protocol/general
+            test/)
+    else()
+        set(excluded_directories
+            src/ui/gui_widgets/btc_only)
+    endif()
+
+    foreach(directory ${excluded_directories})
+        file(GLOB_RECURSE excluded_files "${directory}/*")
+        list(REMOVE_ITEM objsrc ${excluded_files})
+    endforeach()
+
+    # foreach(file ${objsrc})
+    #     message(STATUS "File: ${file}")
+    # endforeach()
 
     add_executable(${PROJECT_NAME}.elf ${objsrc})
     add_dependencies(${PROJECT_NAME}.elf rust_c)

@@ -1,5 +1,6 @@
 #include "gui.h"
 #include "gui_obj.h"
+#include "gui_model.h"
 #include "gui_status_bar.h"
 #include "gui_views.h"
 #include "gui_hintbox.h"

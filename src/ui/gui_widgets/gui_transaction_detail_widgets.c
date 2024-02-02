@@ -75,22 +75,24 @@ static void SignByPasswordCbHandler(lv_event_t *e);
 static void CloseContHandler(lv_event_t *e);
 static void SignByFinger(void);
 static void RecognizeFailHandler(lv_timer_t *timer);
+#ifndef BTC_ONLY
 static TransactionMode GetCurrentTransactionMode(void);
+#endif
 static void TransactionGoToHomeViewHandler(lv_event_t *e);
 static void CloseParseErrorDataHandler(lv_event_t *e);
 static void GuiDealParseErrorResult(int errorType);
 static void ThrowError();
 
+#ifndef BTC_ONLY
 static TransactionMode GetCurrentTransactionMode(void)
 {
-#ifndef BTC_ONLY
     uint16_t requestID = GetCurrentUSParsingRequestID();
     if (requestID != 0) {
         return TRANSACTION_MODE_USB;
     }
-#endif
     return TRANSACTION_MODE_QR_CODE;
 }
+#endif
 
 static void TransactionGoToHomeViewHandler(lv_event_t *e)
 {

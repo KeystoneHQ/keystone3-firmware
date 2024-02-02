@@ -220,12 +220,12 @@ const static ChangeDerivationItem_t g_solChangeDerivationList[] = {
 };
 
 static uint16_t g_xrpAddressIndex[3] = {0};
+static uint8_t g_currentSelectedPathIndex[3] = {0};
+static lv_obj_t *g_coinListCont = NULL;
 #endif
 
 static ConnectWalletWidget_t g_connectWalletTileView;
-static lv_obj_t *g_coinListCont = NULL;
 static PageWidget_t *g_pageWidget;
-static uint8_t g_currentSelectedPathIndex[3] = {0};
 
 #ifndef BTC_ONLY
 static void UpdategAddress(void);
@@ -235,8 +235,8 @@ static void initCompanionAppCoinsConfig(void);
 static void initFewchaCoinsConfig(void);
 #endif
 static void OpenQRCodeHandler(lv_event_t *e);
-static void ReturnShowQRHandler(lv_event_t *e);
 #ifndef BTC_ONLY
+static void ReturnShowQRHandler(lv_event_t *e);
 static void UpdateCompanionAppCoinStateHandler(lv_event_t *e);
 static void UpdateFewchaCoinStateHandler(lv_event_t *e);
 static void JumpSelectCoinPageHandler(lv_event_t *e);
@@ -257,8 +257,9 @@ static void AddFewchaCoins(void);
 static void AddKeplrCoins(void);
 static void AddSolflareCoins(void);
 static void ShowEgAddressCont(lv_obj_t *egCont);
-#endif
 static uint8_t GetCurrentSelectedIndex();
+#endif
+
 
 #ifndef BTC_ONLY
 CoinState_t g_companionAppcoinState[COMPANION_APP_COINS_BUTT];
@@ -283,10 +284,12 @@ static lv_obj_t *g_openMoreHintBox = NULL;
 static lv_obj_t *g_bottomCont = NULL;
 static lv_obj_t *g_manageImg = NULL;
 static bool g_isCoinReselected = false;
-static char * *g_derivationPathDescs = NULL;
-static lv_obj_t *g_egCont = NULL;
 static lv_obj_t *g_derivationPathCont = NULL;
+#ifndef BTC_ONLY
+static char * *g_derivationPathDescs = NULL;
 static lv_obj_t *g_derivationPathConfirmBtn = NULL;
+static lv_obj_t *g_egCont = NULL;
+#endif
 
 static void QRCodePause(bool);
 
@@ -356,6 +359,8 @@ static void OpenQRCodeHandler(lv_event_t *e)
     }
 }
 
+#ifndef BTC_ONLY
+
 static void ReturnShowQRHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -367,7 +372,6 @@ static void ReturnShowQRHandler(lv_event_t *e)
     }
 }
 
-#ifndef BTC_ONLY
 static void UpdateCompanionAppCoinStateHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -1248,7 +1252,6 @@ static uint8_t GetCurrentSelectedIndex()
     return g_currentSelectedPathIndex[GetCurrentAccountIndex()];
 }
 
-#ifndef BTC_ONLY
 static void SelectDerivationHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);

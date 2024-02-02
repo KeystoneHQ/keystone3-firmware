@@ -21,6 +21,7 @@ static URParseMultiResult *g_urMultiResult = NULL;
 static TransactionParseResult_DisplayTx *g_parseResult = NULL;
 #endif
 
+#ifndef BTC_ONLY
 typedef struct UtxoViewToChain {
     ViewType viewType;
     ChainType chainType;
@@ -31,12 +32,11 @@ static UtxoViewToChain_t g_UtxoViewToChainMap[] = {
     {BtcNativeSegwitTx, XPUB_TYPE_BTC_NATIVE_SEGWIT, "m/84'/0'/0'"},
     {BtcSegwitTx,       XPUB_TYPE_BTC,               "m/49'/0'/0'"},
     {BtcLegacyTx,       XPUB_TYPE_BTC_LEGACY,        "m/44'/0'/0'"},
-#ifndef BTC_ONLY
     {LtcTx,             XPUB_TYPE_LTC,               "m/49'/2'/0'"},
     {DashTx,            XPUB_TYPE_DASH,              "m/44'/5'/0'"},
     {BchTx,             XPUB_TYPE_BCH,               "m/44'/145'/0'"},
-#endif
 };
+#endif
 
 void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
@@ -47,6 +47,7 @@ void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult
 #endif
 }
 
+#ifndef BTC_ONLY
 static int32_t GuiGetUtxoPubKeyAndHdPath(ViewType viewType, char **xPub, char **hdPath)
 {
     int32_t ret = 0;
@@ -67,6 +68,7 @@ static int32_t GuiGetUtxoPubKeyAndHdPath(ViewType viewType, char **xPub, char **
     }
     return ret;
 }
+#endif
 
 // The results here are released in the close qr timer species
 UREncodeResult *GuiGetSignQrCodeData(void)
@@ -75,15 +77,21 @@ UREncodeResult *GuiGetSignQrCodeData(void)
     SetLockScreen(false);
 #ifndef COMPILE_SIMULATOR
     enum URType urType = URTypeUnKnown;
+#ifndef BTC_ONLY
     enum ViewType viewType = ViewTypeUnKnown;
+#endif
     void *data = NULL;
     if (g_isMulti) {
         urType = g_urMultiResult->ur_type;
+#ifndef BTC_ONLY
         viewType = g_urMultiResult->t;
+#endif
         data = g_urMultiResult->data;
     } else {
         urType = g_urResult->ur_type;
+#ifndef BTC_ONLY
         viewType = g_urResult->t;
+#endif
         data = g_urResult->data;
     }
     UREncodeResult *encodeResult = NULL;
@@ -130,16 +138,22 @@ void *GuiGetParsedQrData(void)
 {
 #ifndef COMPILE_SIMULATOR
     enum URType urType = URTypeUnKnown;
+#ifndef BTC_ONLY
     enum ViewType viewType = ViewTypeUnKnown;
+#endif
     void *crypto = NULL;
     if (g_isMulti) {
         crypto = g_urMultiResult->data;
         urType = g_urMultiResult->ur_type;
+#ifndef BTC_ONLY
         viewType = g_urMultiResult->t;
+#endif
     } else {
         crypto = g_urResult->data;
         urType = g_urResult->ur_type;
+#ifndef BTC_ONLY
         viewType = g_urResult->t;
+#endif
     }
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
@@ -191,16 +205,22 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
 #ifndef COMPILE_SIMULATOR
     PtrT_TransactionCheckResult result = NULL;
     enum URType urType = URTypeUnKnown;
+#ifndef BTC_ONLY
     enum ViewType viewType = ViewTypeUnKnown;
+#endif
     void *crypto = NULL;
     if (g_isMulti) {
         crypto = g_urMultiResult->data;
         urType = g_urMultiResult->ur_type;
+#ifndef BTC_ONLY
         viewType = g_urMultiResult->t;
+#endif
     } else {
         crypto = g_urResult->data;
         urType = g_urResult->ur_type;
+#ifndef BTC_ONLY
         viewType = g_urResult->t;
+#endif
     }
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);

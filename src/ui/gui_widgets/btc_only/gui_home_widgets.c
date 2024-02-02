@@ -32,9 +32,6 @@ static bool g_isManageClick = true;
 static PageWidget_t *g_pageWidget;
 static lv_timer_t *g_countDownTimer = NULL; // count down timer
 static lv_obj_t *g_walletButton[HOME_WALLET_CARD_BUTT];
-static lv_obj_t *g_cosmosPulldownImg = NULL;
-static lv_obj_t *g_endCosmosLine = NULL;
-static lv_obj_t *g_lastCosmosLine = NULL;
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_BTC, false, "BTC", true},
@@ -51,7 +48,6 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
 };
 
 static void CoinDealHandler(lv_event_t *e);
-static bool IsUtxoCoin(HOME_WALLET_CARD_ENUM coin);
 static void AddFlagCountDownTimerHandler(lv_timer_t *timer);
 void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count);
 
@@ -94,7 +90,6 @@ void ReturnManageWalletHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         UpdateManageWalletState(false);
-        GUI_DEL_OBJ(g_lastCosmosLine)
         GUI_DEL_OBJ(g_manageCont);
         GuiEmitSignal(GUI_EVENT_REFRESH, NULL, 0);
     }
@@ -142,17 +137,6 @@ static void UpdateHomeConnectWalletCard(void)
     }
 }
 
-static bool IsUtxoCoin(HOME_WALLET_CARD_ENUM coin)
-{
-    switch (coin) {
-    case HOME_WALLET_CARD_BTC:
-        return true;
-    default:
-        return false;
-    }
-    return false;
-}
-
 static void CoinDealHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -165,25 +149,8 @@ static void CoinDealHandler(lv_event_t *e)
         case HOME_WALLET_CARD_BTC:
             GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
             break;
-        }
-    }
-}
-
-static void UpdateCosmosEnable(bool en)
-{
-    void (*func)(lv_obj_t *, lv_obj_flag_t);
-    if (en) {
-        func = lv_obj_clear_flag;
-        lv_obj_add_flag(g_endCosmosLine, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(g_lastCosmosLine, LV_OBJ_FLAG_HIDDEN);
-    } else {
-        func = lv_obj_add_flag;
-        lv_obj_clear_flag(g_endCosmosLine, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(g_lastCosmosLine, LV_OBJ_FLAG_HIDDEN);
-    }
-    for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-        if (IsCosmosChain(g_coinCardArray[i].index)) {
-            func(g_walletButton[i], LV_OBJ_FLAG_HIDDEN);
+        default:
+            break;
         }
     }
 }
@@ -225,7 +192,6 @@ void ConfirmManageAssetsHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         UpdateManageWalletState(true);
         UpdateHomeConnectWalletCard();
-        GUI_DEL_OBJ(g_lastCosmosLine)
         GUI_DEL_OBJ(g_manageCont)
         GuiHomeRefresh();
     }

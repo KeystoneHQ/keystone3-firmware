@@ -113,7 +113,7 @@ static int GetMaxAddressIndex(void)
 
 static void RefreshSwitchAccount(void)
 {
-    AddressDataItem_t addressDataItem;
+    AddressDataItem_t addressDataItem = {0};
     char string[128];
     uint32_t index = g_showIndex;
     bool end = false;

@@ -146,14 +146,14 @@ static const AddressSettingsItem_t g_addressSettings[] = {
 };
 static char * *g_derivationPathDescs = NULL;
 
+#ifndef BTC_ONLY
 static const ChainPathItem_t g_chainPathItems[] = {
     {HOME_WALLET_CARD_BTC, ""},
-#ifndef BTC_ONLY
     {HOME_WALLET_CARD_LTC, "m/49'/2'/0'"},
     {HOME_WALLET_CARD_DASH, "m/44'/5'/0'"},
     {HOME_WALLET_CARD_BCH, "m/44'/145'/0'"}
-#endif
 };
+#endif
 
 static uint32_t g_showIndex;
 static uint32_t g_selectIndex;

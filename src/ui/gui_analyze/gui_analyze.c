@@ -4,6 +4,7 @@
 #include "lvgl.h"
 #include "gui_analyze.h"
 #include "gui_chain.h"
+#include "gui_model.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
@@ -816,6 +817,7 @@ GetObjStateFunc GuiTemplateStateFuncGet(char *type)
     return NULL;
 }
 
+#ifndef BTC_ONLY
 static void SwitchHidden(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -840,6 +842,7 @@ static void SwitchHidden(lv_event_t *e)
         }
     }
 }
+#endif
 
 lv_event_cb_t GuiTemplateEventCbGet(char *type)
 {

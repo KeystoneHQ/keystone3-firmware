@@ -118,11 +118,10 @@ checksum = "d86b93f97252c47b41663388e6d155714a9d0c398b99f1005cbc5f978b29f445"
 [[package]]
 name = "bitcoin"
 version = "0.30.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e99ff7289b20a7385f66a0feda78af2fc119d28fb56aea8886a9cd0a4abdd75"
+source = "git+https://github.com/KeystoneHQ/rust-bitcoin.git?tag=v0.30.1#49edc1c4cdb874604f31755df63c11379ea32f7b"
 dependencies = [
  "bech32",
- "bitcoin-private",
+ "bitcoin-private 0.1.0 (git+https://github.com/KeystoneHQ/rust-bitcoin.git?tag=v0.30.1)",
  "bitcoin_hashes",
  "core2",
  "hex_lit",
@@ -136,12 +135,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73290177011694f38ec25e165d0387ab7ea749a4b81cd4c80dae5988229f7a57"
 
 [[package]]
+name = "bitcoin-private"
+version = "0.1.0"
+source = "git+https://github.com/KeystoneHQ/rust-bitcoin.git?tag=v0.30.1#49edc1c4cdb874604f31755df63c11379ea32f7b"
+
+[[package]]
 name = "bitcoin_hashes"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d7066118b13d4b20b23645932dfb3a81ce7e29f95726c2036fa33cd7b092501"
 dependencies = [
- "bitcoin-private",
+ "bitcoin-private 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "core2",
 ]
 
@@ -765,7 +769,6 @@ dependencies = [
 [[package]]
 name = "move-core-types"
 version = "0.0.4"
-source = "git+https://github.com/KeystoneHQ/sui.git?tag=0.1.1#d20f438132f289959fcc924c96c8430936d5efba"
 dependencies = [
  "anyhow",
  "bcs",
@@ -1442,12 +1445,10 @@ checksum = "81cdd64d312baedb58e21336b31bc043b77e01cc99033ce76ef539f78e965ebc"
 [[package]]
 name = "sui-enum-compat-util"
 version = "0.1.0"
-source = "git+https://github.com/KeystoneHQ/sui.git?tag=0.1.1#d20f438132f289959fcc924c96c8430936d5efba"
 
 [[package]]
 name = "sui-macros"
 version = "0.7.0"
-source = "git+https://github.com/KeystoneHQ/sui.git?tag=0.1.1#d20f438132f289959fcc924c96c8430936d5efba"
 dependencies = [
  "futures",
  "once_cell",
@@ -1458,7 +1459,6 @@ dependencies = [
 [[package]]
 name = "sui-proc-macros"
 version = "0.7.0"
-source = "git+https://github.com/KeystoneHQ/sui.git?tag=0.1.1#d20f438132f289959fcc924c96c8430936d5efba"
 dependencies = [
  "msim-macros",
  "proc-macro2",
@@ -1470,7 +1470,6 @@ dependencies = [
 [[package]]
 name = "sui-types"
 version = "0.1.1"
-source = "git+https://github.com/KeystoneHQ/sui.git?tag=0.1.1#d20f438132f289959fcc924c96c8430936d5efba"
 dependencies = [
  "anyhow",
  "base64ct",
@@ -1649,7 +1648,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.20#0a78622270532cd7784784e9a9865bc29a7ae6e5"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.21#9531ed7f512af5216ef855090ca728a4fe784bfd"
 dependencies = [
  "hex",
  "ur",
@@ -1659,7 +1658,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.20#0a78622270532cd7784784e9a9865bc29a7ae6e5"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.21#9531ed7f512af5216ef855090ca728a4fe784bfd"
 dependencies = [
  "bs58",
  "core2",

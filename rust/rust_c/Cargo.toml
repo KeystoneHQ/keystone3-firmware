@@ -69,6 +69,8 @@ debug-memory = [
     "tron_rust_c/debug-memory",
     "xrp_rust_c/debug-memory",
 ]
+simulator = ["multi-coins", "no-allocator", "sui_rust_c/simulator"]
+no-allocator = []
 default = ["multi-coins"]
 multi-coins = [
     "common_rust_c/multi-coins",

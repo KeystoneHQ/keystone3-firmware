@@ -1,1 +1,1 @@
-../../../../build/rust-builds/librust_c.a
+../../../../rust/rust_c/target/release/librust_c.a

@@ -3,26 +3,16 @@
 #include "gui.h"
 #include "gui_framework.h"
 #include "gui_views.h"
+#include "librust_c.h"
+#include "log_print.h"
 
 #define memset_s memset
 
 void printInfo()
 {
-    lv_fs_dir_t dir;
-    
-    lv_fs_dir_open(&dir, "C:/");
-    char fn[128];
-    lv_fs_dir_read(&dir, fn);
-    printf("fn: %s\r\n", fn);
-
-    lv_fs_dir_read(&dir, fn);
-    printf("fn: %s\r\n", fn);
-
-    lv_fs_dir_read(&dir, fn);
-    printf("fn: %s\r\n", fn);
-
-    lv_fs_dir_read(&dir, fn);
-    printf("fn: %s\r\n", fn);
+    uint8_t seed[32] = {0};
+    SimpleResponse_u8 *result = get_master_fingerprint(seed, 32);
+    PrintArray("mfp", result->data, 4);
 }
 
 int main(void)
@@ -30,7 +20,7 @@ int main(void)
 
     lv_init();
 
-    //printInfo();
+    printInfo();
 
     hal_setup();
 

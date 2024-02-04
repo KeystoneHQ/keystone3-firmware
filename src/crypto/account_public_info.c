@@ -657,6 +657,11 @@ static bool GetPublicKeyFromJsonString(const char *string)
             ret = false;
             break;
         }
+        if (cJSON_GetArraySize(keyJson) != NUMBER_OF_ARRAYS(g_chainTable)) {
+            printf("chain number does not match:%d %d\n", cJSON_GetArraySize(keyJson), NUMBER_OF_ARRAYS(g_chainTable));
+            ret = false;
+            break;
+        }
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
             chainJson = cJSON_GetObjectItem(keyJson, g_chainTable[i].name);
             if (chainJson == NULL) {

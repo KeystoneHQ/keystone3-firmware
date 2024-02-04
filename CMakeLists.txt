@@ -84,6 +84,7 @@ if(COMPILE_MAIN)
 
     if(BTC_ONLY)
         add_compile_definitions(BTC_ONLY)
+        add_compile_definitions(EXCLUDE_RUSTC)
     endif()
 
     if(ENABLE_SCREEN_SHOT)
@@ -185,7 +186,7 @@ if(COMPILE_MAIN)
     set_property(SOURCE src/cm_backtrace/fault_handler/gcc/cmb_fault.s PROPERTY LANGUAGE C)
     aux_source_directory(external/mh1903_lib/MHSCPU_Driver/src/ mh1903_driver)
     aux_source_directory(src/driver/ driver)
-    if(NOT BUILD_PRODUCTION AND NOT BTC_ONLY)
+    if(NOT BUILD_PRODUCTION)
         aux_source_directory(test/ test)
     endif()    
     aux_source_directory(src/cm_backtrace/ cm_backtrace)
@@ -345,8 +346,7 @@ if(COMPILE_MAIN)
             src/ui/gui_chain/others
             src/ui/gui_widgets/general
             src/ui/gui_views/general
-            src/webusb_protocol/general
-            test/)
+            src/webusb_protocol/general)
     else()
         set(excluded_directories
             src/ui/gui_widgets/btc_only)

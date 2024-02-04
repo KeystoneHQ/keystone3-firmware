@@ -44,8 +44,8 @@ pub extern "C" fn btc_parse_psbt(
                 for x in public_keys {
                     let xpub = recover_c_char(x.xpub);
                     let path = recover_c_char(x.path);
-                    let extended_public_key = Xpub::from_str(xpub.as_str())
-                        .map_err(|_e| RustCError::InvalidXPub);
+                    let extended_public_key =
+                        Xpub::from_str(xpub.as_str()).map_err(|_e| RustCError::InvalidXPub);
                     let derivation_path = DerivationPath::from_str(path.as_str())
                         .map_err(|_e| RustCError::InvalidHDPath);
                     match extended_public_key.and_then(|k| derivation_path.and_then(|p| Ok((k, p))))
@@ -139,8 +139,8 @@ pub extern "C" fn btc_check_psbt(
                 for x in public_keys {
                     let xpub = recover_c_char(x.xpub);
                     let path = recover_c_char(x.path);
-                    let extended_public_key = Xpub::from_str(xpub.as_str())
-                        .map_err(|_e| RustCError::InvalidXPub);
+                    let extended_public_key =
+                        Xpub::from_str(xpub.as_str()).map_err(|_e| RustCError::InvalidXPub);
                     let derivation_path = DerivationPath::from_str(path.as_str())
                         .map_err(|_e| RustCError::InvalidHDPath);
                     match extended_public_key.and_then(|k| derivation_path.and_then(|p| Ok((k, p))))

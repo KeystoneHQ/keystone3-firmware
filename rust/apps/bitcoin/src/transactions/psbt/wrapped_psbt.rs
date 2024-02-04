@@ -453,7 +453,7 @@ impl WrappedPsbt {
 
     fn is_taproot_input(&self, input: &Input) -> bool {
         if let Some(witness_utxo) = &input.witness_utxo {
-            return witness_utxo.script_pubkey.is_v1_p2tr();
+            return witness_utxo.script_pubkey.is_p2tr();
         }
         return false;
     }

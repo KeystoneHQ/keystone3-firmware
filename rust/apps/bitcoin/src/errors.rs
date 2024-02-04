@@ -1,6 +1,5 @@
 use alloc::string::{String, ToString};
 use keystore::errors::KeystoreError;
-use third_party::bech32::Bech32;
 use third_party::bitcoin::base58::Error as Base58Error;
 use third_party::bitcoin::script::PushBytesError;
 use third_party::bitcoin_hashes::hex::HexToArrayError;

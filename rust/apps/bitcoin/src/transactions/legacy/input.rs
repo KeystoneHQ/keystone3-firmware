@@ -6,10 +6,10 @@ use alloc::vec::Vec;
 use core::iter;
 use core::str::FromStr;
 use third_party::bitcoin;
-use third_party::bitcoin_hashes::Hash;
 use third_party::bitcoin::script::{Builder, PushBytesBuf};
 use third_party::bitcoin::WPubkeyHash;
 use third_party::bitcoin::{PublicKey, ScriptBuf, Sequence};
+use third_party::bitcoin_hashes::Hash;
 use third_party::secp256k1::ecdsa::Signature;
 use third_party::ur_registry::pb::protoc;
 use third_party::ur_registry::pb::protoc::sign_transaction::Transaction::{
@@ -63,8 +63,7 @@ impl TxIn {
                 Ok(builder.into_script())
             }
             ScriptType::P2SHP2WPKH => {
-                let redeem_script =
-                    ScriptBuf::new_v0_p2wpkh(&WPubkeyHash::hash(&pubkey.to_bytes()));
+                let redeem_script = ScriptBuf::new_p2wpkh(&WPubkeyHash::hash(&pubkey.to_bytes()));
                 let mut script_sig_bytes = PushBytesBuf::new();
                 script_sig_bytes.extend_from_slice(redeem_script.as_bytes())?;
                 let builder = Builder::new().push_slice(script_sig_bytes);

@@ -19,7 +19,7 @@ use common_rust_c::utils::{recover_c_array, recover_c_char};
 use core::slice;
 use core::str::FromStr;
 use cty::{int32_t, uint32_t};
-use third_party::bitcoin::bip32::{DerivationPath, ExtendedPubKey};
+use third_party::bitcoin::bip32::{DerivationPath, Xpub};
 use third_party::hex;
 use third_party::ur_registry::bytes::Bytes;
 use third_party::ur_registry::crypto_account::CryptoAccount;
@@ -227,7 +227,7 @@ fn normalize_xpub(
         let key = match xpub.len() {
             //32 bytes ed25519 public key or 64 bytes bip32-ed25519 xpub;
             64 | 128 => hex::decode(&xpub).map_err(|_e| RustCError::InvalidXPub)?,
-            _ => ExtendedPubKey::from_str(&xpub)
+            _ => Xpub::from_str(&xpub)
                 .map_err(|_e| RustCError::InvalidXPub)?
                 .encode()
                 .to_vec(),

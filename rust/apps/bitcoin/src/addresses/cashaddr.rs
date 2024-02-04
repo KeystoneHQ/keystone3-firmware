@@ -9,8 +9,8 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::{fmt, str};
 use third_party::bitcoin::address::Payload;
-use third_party::bitcoin_hashes::Hash;
 use third_party::bitcoin::PubkeyHash;
+use third_party::bitcoin_hashes::Hash;
 
 // Prefixes
 const DASH_PREFIX: &str = "bitcoincash";

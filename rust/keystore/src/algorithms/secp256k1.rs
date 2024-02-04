@@ -6,7 +6,7 @@ use bitcoin::secp256k1::{ecdsa, SecretKey};
 use core::str::FromStr;
 use secp256k1::PublicKey;
 
-use third_party::bitcoin::bip32::{DerivationPath, Xpriv, Xpub, Fingerprint};
+use third_party::bitcoin::bip32::{DerivationPath, Fingerprint, Xpriv, Xpub};
 use third_party::bitcoin::Network;
 use third_party::secp256k1::Message;
 use third_party::{bitcoin, secp256k1};
@@ -21,8 +21,8 @@ pub fn derive_public_key(xpub: &String, path: &String) -> Result<PublicKey> {
 
 pub fn derive_extend_public_key(xpub: &String, path: &String) -> Result<Xpub> {
     let p = normalize_path(path);
-    let extended_key = Xpub::from_str(xpub.as_str())
-        .map_err(|e| KeystoreError::DerivePubKey(e.to_string()))?;
+    let extended_key =
+        Xpub::from_str(xpub.as_str()).map_err(|e| KeystoreError::DerivePubKey(e.to_string()))?;
     let derivation_path = DerivationPath::from_str(p.as_str())
         .map_err(|e| KeystoreError::InvalidDerivationPath(e.to_string()))?;
     extended_key
@@ -50,10 +50,7 @@ fn get_extended_private_key_by_seed(seed: &[u8], path: &String) -> Result<Xpriv>
 
 pub fn get_extended_public_key_by_seed(seed: &[u8], path: &String) -> Result<Xpub> {
     let prik = get_extended_private_key_by_seed(seed, path)?;
-    Ok(Xpub::from_priv(
-        &secp256k1::Secp256k1::new(),
-        &prik,
-    ))
+    Ok(Xpub::from_priv(&secp256k1::Secp256k1::new(), &prik))
 }
 
 pub fn get_master_fingerprint_by_seed(seed: &[u8]) -> Result<Fingerprint> {

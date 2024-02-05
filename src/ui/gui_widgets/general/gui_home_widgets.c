@@ -405,7 +405,7 @@ static void UpdateManageWalletState(bool needUpdate)
 bool GuiHomePageIsTop(void)
 {
     return GuiCheckIfTopView(&g_homeView) && g_manageCont == NULL;
-};
+}
 
 void ReturnManageWalletHandler(lv_event_t *e)
 {

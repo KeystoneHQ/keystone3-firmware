@@ -149,6 +149,7 @@ unsigned __stdcall UITaskEntry(void *param)
         printf("set start event failed, errno:%d\n", GetLastError());
         return 1;
     }
+    LanguageInit();
     GuiStyleInit();
 
     uiThreadId = GetCurrentThreadId();

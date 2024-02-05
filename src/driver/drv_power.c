@@ -19,13 +19,6 @@ void PowerInit(void)
     GPIO_ResetBits(POWER_CTRL_VCC33_PORT, POWER_CTRL_VCC33_PIN);
 
     OpenPower(POWER_TYPE_VCC33);
-
-    ////BT RSTN HIGH
-    //gpioInit.GPIO_Mode = GPIO_Mode_Out_PP;
-    //gpioInit.GPIO_Pin = GPIO_Pin_10;
-    //gpioInit.GPIO_Remap = GPIO_Remap_1;
-    //GPIO_Init(GPIOE, &gpioInit);
-    //GPIO_SetBits(GPIOE, GPIO_Pin_10);
 }
 
 

@@ -23,7 +23,7 @@ typedef enum {
 static const char *g_languageList[] = {
     "English",
     "Русский язык",
-    "繁體中文",
+    "简体中文",
     "Español",
     "korean", // "한국인",
     "Japanese",
@@ -85,7 +85,7 @@ static void SelectLanguageHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         int newCheckIndex = 0;
         lv_obj_t *newCheckBox = lv_event_get_user_data(e);
-        for (int i = SETUP_ENGLISH; i <= SETUP_RUSSIAN; i++) {
+        for (int i = SETUP_ENGLISH; i <= SETUP_ENGLISH + 3; i++) {
             if (newCheckBox == g_languageCheck[i]) {
                 newCheckIndex = i;
                 lv_obj_add_state(g_languageCheck[i], LV_STATE_CHECKED);
@@ -94,8 +94,7 @@ static void SelectLanguageHandler(lv_event_t *e)
             }
         }
 
-        if (newCheckIndex != SETUP_CHINESE)
-            LanguageSwitch(newCheckIndex);
+        LanguageSwitch(newCheckIndex);
         GuiEmitSignal(GUI_EVENT_CHANGE_LANGUAGE, NULL, 0);
     }
 }

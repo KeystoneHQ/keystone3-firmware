@@ -64,7 +64,7 @@ if "%BUILD_RU%"=="1" (
 )
 
 pushd %LANGUAGE_PATH%
-%LANGUAGE_SCRIPT%
+@REM %LANGUAGE_SCRIPT%
 popd
 
 pushd "%BUILD_FOLDER%"

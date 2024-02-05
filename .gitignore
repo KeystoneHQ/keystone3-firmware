@@ -7,5 +7,3 @@
 **/.cache
 **/.vscode
 /src/ui/lv_i18n/*.yml
-/src/ui/lv_i18n/lv_i18n.c
-/src/ui/lv_i18n/lv_i18n.h

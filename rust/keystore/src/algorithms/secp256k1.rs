@@ -107,12 +107,11 @@ pub fn verify_signature(
 #[cfg(test)]
 mod tests {
     use crate::algorithms::crypto::hmac_sha512;
+    use crate::algorithms::secp256k1::derive_public_key;
     use alloc::string::{String, ToString};
-    use third_party::bitcoin::hashes;
+    use secp256k1::hashes;
     use third_party::hex;
     use third_party::hex::ToHex;
-
-    use crate::algorithms::secp256k1::derive_public_key;
 
     use super::*;
 

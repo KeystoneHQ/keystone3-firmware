@@ -87,14 +87,14 @@ mod tests {
     use alloc::string::ToString;
     use alloc::vec;
     use keystore;
-    use third_party::bitcoin::bech32;
-    use third_party::bitcoin::bech32::{ToBase32, Variant};
+    use third_party::bech32;
     use third_party::cryptoxide::hashing::blake2b_224;
 
     extern crate std;
 
     use crate::address::{derive_address, AddressType};
     use std::println;
+    use third_party::bech32::Bech32;
     use third_party::hex;
 
     #[test]
@@ -125,13 +125,17 @@ mod tests {
         buf.push(header);
         buf.extend(spend);
         buf.extend(stake);
-        let spend_address = bech32::encode(prefix, buf.to_base32(), Variant::Bech32).unwrap();
+        let spend_address =
+            bech32::encode::<Bech32>(third_party::bech32::Hrp::parse_unchecked(prefix), &buf)
+                .unwrap();
         println!("{}", spend_address);
 
         let mut buf2 = vec![];
         buf2.push(0b1110_0001);
         buf2.extend(stake);
-        let reward_address = bech32::encode("stake", buf2.to_base32(), Variant::Bech32).unwrap();
+        let reward_address =
+            bech32::encode::<Bech32>(third_party::bech32::Hrp::parse_unchecked("stake"), &buf2)
+                .unwrap();
         println!("{}", reward_address);
     }
 

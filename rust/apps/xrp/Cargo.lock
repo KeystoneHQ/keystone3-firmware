@@ -108,8 +108,7 @@ checksum = "98f7eed2b2781a6f0b5c903471d48e15f56fb4e1165df8a9a2337fd1a59d45ea"
 [[package]]
 name = "bitcoin"
 version = "0.31.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd00f3c09b5f21fb357abe32d29946eb8bb7a0862bae62c0b5e4a692acbbe73c"
+source = "git+https://github.com/KeystoneHQ/rust-bitcoin.git?tag=v0.31.2#2f21ea86643edc615b59f84a6724036f435ba2cd"
 dependencies = [
  "bech32",
  "bitcoin-internals",
@@ -1265,7 +1264,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.20#0a78622270532cd7784784e9a9865bc29a7ae6e5"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.21#9531ed7f512af5216ef855090ca728a4fe784bfd"
 dependencies = [
  "hex",
  "ur",
@@ -1275,7 +1274,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.20#0a78622270532cd7784784e9a9865bc29a7ae6e5"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.21#9531ed7f512af5216ef855090ca728a4fe784bfd"
 dependencies = [
  "bs58",
  "core2",

@@ -17,20 +17,20 @@
 int32_t GuiApiEmitSignal(uint16_t signal, void *param, uint16_t usLen)
 {
 #ifdef COMPILE_SIMULATOR
-    GuiEmitMsg_t *msg = (GuiEmitMsg_t *)malloc(sizeof(GuiEmitMsg_t) + usLen);
-    if (NULL == msg) {
-        return ERR_GUI_ERROR;
-    }
-    msg->signal = signal;
+//     GuiEmitMsg_t *msg = (GuiEmitMsg_t *)malloc(sizeof(GuiEmitMsg_t) + usLen);
+//     if (NULL == msg) {
+//         return ERR_GUI_ERROR;
+//     }
+//     msg->signal = signal;
 
-    if (param != NULL) {
-        memcpy(msg->param, param, usLen);
-    }
-#ifndef COMPILE_MAC_SIMULATOR
-    if (!PostThreadMessage(GetUiThreadId(), signal, (WPARAM)msg, (LPARAM)(sizeof(GuiEmitMsg_t) + usLen))) {
-        printf("post message failed, errno:%d\n", GetLastError());
-    }
-#endif
+//     if (param != NULL) {
+//         memcpy(msg->param, param, usLen);
+//     }
+// #ifndef COMPILE_MAC_SIMULATOR
+//     if (!PostThreadMessage(GetUiThreadId(), signal, (WPARAM)msg, (LPARAM)(sizeof(GuiEmitMsg_t) + usLen))) {
+//         printf("post message failed, errno:%d\n", GetLastError());
+//     }
+// #endif
 #else
     GuiEmitMsg_t *msg = (GuiEmitMsg_t *)SRAM_MALLOC(sizeof(GuiEmitMsg_t) + usLen);
     msg->signal = signal;

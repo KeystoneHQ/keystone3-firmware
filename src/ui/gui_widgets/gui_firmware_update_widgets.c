@@ -16,9 +16,7 @@
 #include "account_manager.h"
 #include "gui_about_info_widgets.h"
 #include "secret_cache.h"
-#ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
-#endif
 
 typedef enum {
     FIRMWARE_UPDATE_SELECT = 0,

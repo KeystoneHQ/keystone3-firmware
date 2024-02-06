@@ -20,7 +20,6 @@
 #include "account_manager.h"
 #include "log_print.h"
 
-// static uint8_t g_manageWalletNum = 2;
 static lv_obj_t *g_manageWalletLabel = NULL;
 static lv_obj_t *g_homeWalletCardCont = NULL;
 static lv_obj_t *g_homeViewCont = NULL;
@@ -405,7 +404,7 @@ static void UpdateManageWalletState(bool needUpdate)
 bool GuiHomePageIsTop(void)
 {
     return GuiCheckIfTopView(&g_homeView) && g_manageCont == NULL;
-};
+}
 
 void ReturnManageWalletHandler(lv_event_t *e)
 {

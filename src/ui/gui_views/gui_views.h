@@ -2,7 +2,9 @@
 #define _GUI_VIEWS_H
 
 #include "gui_framework.h"
+#ifndef COMPILE_SIMULATOR
 #include "ui_display_task.h"
+#endif
 
 typedef enum {
     SIG_INIT_VIEW_START = GUI_EVENT_FRAME_WORK_RSV + 1, //101

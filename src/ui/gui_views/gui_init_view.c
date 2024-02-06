@@ -18,12 +18,11 @@
 #include "gui_about_info_widgets.h"
 #include "account_manager.h"
 #include "gui_setup_widgets.h"
+#include "device_setting.h"
 #include "drv_aw32001.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #else
-#include "drv_aw32001.h"
-#include "device_setting.h"
 #endif
 
 static int32_t GuiInitViewInit(void)

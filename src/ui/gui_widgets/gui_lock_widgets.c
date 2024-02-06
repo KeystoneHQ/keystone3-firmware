@@ -26,7 +26,6 @@
 #include "gui_usb_connection_widgets.h"
 #include "gui_pop_message_box.h"
 #include "usb_task.h"
-#include "drv_aw32001.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "assert.h"

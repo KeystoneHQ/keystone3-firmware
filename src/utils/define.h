@@ -1,9 +1,9 @@
 #ifndef _DEFINE_H
 #define _DEFINE_H
 
-#define __I                             volatile const
-#define __O                             volatile
-#define __IO                            volatile
+// #define __I                             volatile const
+// #define __O                             volatile
+// #define __IO                            volatile
 
 #ifndef UNUSED
 #define UNUSED(X) (void)X

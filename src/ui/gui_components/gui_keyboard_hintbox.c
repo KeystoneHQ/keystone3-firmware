@@ -15,13 +15,13 @@
 #include "gui_views.h"
 #include "gui_lock_widgets.h"
 #include "fingerprint_process.h"
-#ifndef COMPILE_SIMULATOR
+#include "gui_model.h"
 #include "usb_task.h"
+#ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
 #undef memset_s
 #define memset_s(dest, dmax, value, n)          memset(dest, value, n)
-#endif
-#ifdef COMPILE_SIMULATOR
+#else
 #define RECOGNIZE_UNLOCK                    0
 #endif
 #define DEFAULT_TIMER_COUNTER 5

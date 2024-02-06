@@ -25,7 +25,7 @@ void PrintHeapInfo(void);
 #include <stdlib.h>
 #define SRAM_MALLOC(size)           malloc(size)
 #define SRAM_FREE(p)                free(p)
-#define SRAM_REALLOC(p, size)       realloc(p)
+#define SRAM_REALLOC(p, size)       realloc(p, size)
 #else
 #define SRAM_MALLOC(size)           SramMallocTrack(size, __FILE__, __LINE__, __func__)
 #define SRAM_FREE(p)                SramFreeTrack(p, __FILE__, __LINE__, __func__)

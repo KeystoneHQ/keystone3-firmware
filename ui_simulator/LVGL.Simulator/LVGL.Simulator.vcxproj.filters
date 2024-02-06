@@ -834,9 +834,6 @@
     <ClCompile Include="..\..\src\ui\gui_views\gui_single_phrase_view.c">
       <Filter>gui\gui_views</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_views\gui_standard_receive_view.c">
-      <Filter>gui\gui_views</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_views\gui_system_setting_view.c">
       <Filter>gui\gui_views</Filter>
     </ClCompile>
@@ -930,9 +927,6 @@
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_forget_pass_widgets.c">
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_home_widgets.c">
-      <Filter>gui\gui_widgets</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_import_phrase_widgets.c">
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
@@ -970,9 +964,6 @@
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_single_phrase_widgets.c">
-      <Filter>gui\gui_widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_standard_receive_widgets.c">
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_system_setting_widgets.c">
@@ -1224,18 +1215,6 @@
     <ClCompile Include="..\..\src\config\version.c">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_btc.c">
-      <Filter>gui\gui_chain</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_cosmos.c">
-      <Filter>gui\gui_chain</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_eth.c">
-      <Filter>gui\gui_chain</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_trx.c">
-      <Filter>gui\gui_chain</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_analyze\gui_analyze.c">
       <Filter>gui\gui_analyze</Filter>
     </ClCompile>
@@ -1247,20 +1226,7 @@
     <ClCompile Include="..\..\src\ui\gui_assets\walletList\walletListFewcha.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\walletList\walletListPetra.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\wallet\walletPetra.c" />
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_aptos.c" />
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_sol.c" />
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_sui.c" />
-    <ClCompile Include="..\..\src\ui\gui_views\gui_key_derivation_request_view.c" />
-    <ClCompile Include="..\..\src\ui\gui_views\gui_multi_account_receive_view copy.c" />
-    <ClCompile Include="..\..\src\ui\gui_views\gui_multi_path_coin_receive_view.c" />
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_connect_eternl_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_global_resources.c" />
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_key_derivation_request_widgets.c" />
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_multi_accounts_receive_widgets.c" />
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_multi_path_coin_receive_widgets.c" />
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_ada.c">
-      <Filter>gui\gui_chain</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_assets\coin\coinScroll.c">
       <Filter>gui\assets\coin</Filter>
     </ClCompile>
@@ -1277,9 +1243,6 @@
       <Filter>gui\gui_views</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_chain\gui_chain.c">
-      <Filter>gui\gui_chain</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_xrp.c">
       <Filter>gui\gui_chain</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_scan_widgets.c">
@@ -1350,13 +1313,7 @@
     <ClCompile Include="..\..\src\ui\gui_views\gui_dice_rolls_view.c">
       <Filter>gui\gui_views</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_views\gui_usb_transport_view.c">
-      <Filter>gui\gui_views</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_dice_rolls_widgets.c">
-      <Filter>gui\gui_widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_usb_transport_widgets.c">
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_transaction_detail_widgets.c">
@@ -1370,6 +1327,76 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgUpdate.c">
       <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\coin\coinTia.c" />
+    <ClCompile Include="..\..\src\ui\gui_chain\btc\gui_btc.c">
+      <Filter>gui\gui_chain\btc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_chain\others\gui_ada.c">
+      <Filter>gui\gui_chain\others</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_chain\others\gui_cosmos.c">
+      <Filter>gui\gui_chain\others</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_chain\others\gui_eth.c">
+      <Filter>gui\gui_chain\others</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_chain\others\gui_trx.c">
+      <Filter>gui\gui_chain\others</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_chain\others\gui_xrp.c">
+      <Filter>gui\gui_chain\others</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_chain\others\gui_aptos.c">
+      <Filter>gui\gui_chain\others</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_chain\others\gui_sol.c">
+      <Filter>gui\gui_chain\others</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_chain\others\gui_sui.c">
+      <Filter>gui\gui_chain\others</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_views\general\gui_key_derivation_request_view.c">
+      <Filter>gui\gui_views\general</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_views\general\gui_multi_account_receive_view copy.c">
+      <Filter>gui\gui_views\general</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_views\general\gui_multi_path_coin_receive_view.c">
+      <Filter>gui\gui_views\general</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_views\general\gui_standard_receive_view.c">
+      <Filter>gui\gui_views\general</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_views\general\gui_usb_transport_view.c">
+      <Filter>gui\gui_views\general</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_connect_eternl_widgets.c">
+      <Filter>gui\gui_widgets\general</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_home_widgets.c">
+      <Filter>gui\gui_widgets\general</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_key_derivation_request_widgets.c">
+      <Filter>gui\gui_widgets\general</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_multi_accounts_receive_widgets.c">
+      <Filter>gui\gui_widgets\general</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_multi_path_coin_receive_widgets.c">
+      <Filter>gui\gui_widgets\general</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_standard_receive_widgets.c">
+      <Filter>gui\gui_widgets\general</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_usb_transport_widgets.c">
+      <Filter>gui\gui_widgets\general</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_views\gui_export_pubkey_view.c">
+      <Filter>gui\gui_views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_export_pubkey_widgets.c">
+      <Filter>gui\gui_widgets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1634,6 +1661,18 @@
     </Filter>
     <Filter Include="gui\example">
       <UniqueIdentifier>{f22310db-3323-4745-b3b1-e36ea380b944}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui\gui_chain\btc">
+      <UniqueIdentifier>{f2ef0d56-88d0-4e48-972c-86db077ab240}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui\gui_chain\others">
+      <UniqueIdentifier>{3222f7f6-c4cf-4c79-80c1-af7385b220e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui\gui_views\general">
+      <UniqueIdentifier>{bb5a9e7c-3ed2-40ad-9a96-0237c1f3a79a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui\gui_widgets\general">
+      <UniqueIdentifier>{555ca555-ab52-406a-85f2-14d7cd207705}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

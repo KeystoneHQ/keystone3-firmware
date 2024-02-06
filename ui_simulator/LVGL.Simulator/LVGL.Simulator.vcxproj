@@ -35,9 +35,9 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;COMPILE_SIMULATOR;LV_LVGL_H_INCLUDE_SIMPLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization Condition="'$(Configuration)'=='Release'">MinSpace</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionPath)..\..\..\src\tasks;$(SolutionPath)..\..\..\src\crypto;$(SolutionPath)..\..\..\external\lvgl\src;$(SolutionPath)..\..\..\src\ui\gui_widgets;$(SolutionPath)..\..\..\src\ui\gui_frame;$(SolutionPath)..\..\..\src\ui\gui_assets;$(SolutionPath)..\..\..\src\ui\gui_views;$(SolutionPath)..\..\..\src\ui\gui_assets\abi;$(SolutionPath)..\..\..\src\ui\gui_chain;$(SolutionPath)..\..\..\src\ui\gui_widgets\setting;$(SolutionPath)..\..\..\src\ui\lv_i18n;$(SolutionPath)..\..\..\src\ui\gui_model;$(SolutionPath)..\..\..\components\ram;$(SolutionPath)..\..\..\src\utils;$(SolutionPath)..\..\..\src\ui\gui_components;$(SolutionPath)..\..\..\components\log;$(SolutionPath)..\..\..\tasks;$(SolutionPath)..\..\..\crypto\bips;$(SolutionPath)..\..\..\ui\gui_analyze;$(SolutionPath)..\..\..\external;$(SolutionPath)..\..\..\build\rust-builds;$(SolutionPath)..\..\..\external\ccan;$(SolutionPath)..\..\..\components\sqlite3;$(SolutionPath)..\..\..\application;$(SolutionPath)..\..\..\ui\gui_assets\abi;$(SolutionPath)..\..\..\components\msg;$(SolutionPath)..\..\..\components\firmware;$(SolutionPath)..\..\..\ui\gui_components;$(SolutionPath)..\..\..\src\ui\lv_demos;$(SolutionPath)..\..\..\src\error_codes;$(SolutionPath)..\..\..\src\managers\;$(SolutionPath)..\..\..\src\ui\wallet;$(SolutionPath)..\..\..\src\;$(SolutionPath)..\..\..\src\config;$(SolutionPath)..\..\..\src\ram;$(SolutionPath)..\..\..\src\firmware;$(SolutionPath)..\..\..\src\msg;$(SolutionPath)..\..\..\src\crypto\slip39;$(SolutionPath)..\..\..\src\crypto\bips;$(SolutionPath)..\..\..\src\ui\gui_analyze;$(SolutionPath)..\..\..\src\utils\log;$(SolutionPath)..\..\..\src\hardware_interface;$(SolutionPath)..\..\..\src\webusb_protocol;$(SolutionPath)..\..\..\external\cjson;$(SolutionPath)..\..\..\external\safec\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionPath)..\..\..\src\tasks;$(SolutionPath)..\..\..\src\crypto;$(SolutionPath)..\..\..\external\lvgl\src;$(SolutionPath)..\..\..\src\ui\gui_widgets;$(SolutionPath)..\..\..\src\ui\gui_frame;$(SolutionPath)..\..\..\src\ui\gui_assets;$(SolutionPath)..\..\..\src\ui\gui_views;$(SolutionPath)..\..\..\src\ui\gui_assets\abi;$(SolutionPath)..\..\..\src\ui\gui_chain\others;$(SolutionPath)..\..\..\src\ui\gui_chain\btc;$(SolutionPath)..\..\..\src\ui\gui_chain;$(SolutionPath)..\..\..\src\ui\gui_widgets\general;$(SolutionPath)..\..\..\src\ui\gui_widgets\setting;$(SolutionPath)..\..\..\src\ui\lv_i18n;$(SolutionPath)..\..\..\src\ui\gui_model;$(SolutionPath)..\..\..\components\ram;$(SolutionPath)..\..\..\src\utils;$(SolutionPath)..\..\..\src\ui\gui_components;$(SolutionPath)..\..\..\components\log;$(SolutionPath)..\..\..\tasks;$(SolutionPath)..\..\..\crypto\bips;$(SolutionPath)..\..\..\ui\gui_analyze;$(SolutionPath)..\..\..\external;$(SolutionPath)..\..\..\build\rust-builds;$(SolutionPath)..\..\..\external\ccan;$(SolutionPath)..\..\..\components\sqlite3;$(SolutionPath)..\..\..\application;$(SolutionPath)..\..\..\ui\gui_assets\abi;$(SolutionPath)..\..\..\components\msg;$(SolutionPath)..\..\..\components\firmware;$(SolutionPath)..\..\..\ui\gui_components;$(SolutionPath)..\..\..\src\ui\lv_demos;$(SolutionPath)..\..\..\src\error_codes;$(SolutionPath)..\..\..\src\managers\;$(SolutionPath)..\..\..\src\ui\wallet;$(SolutionPath)..\..\..\src\;$(SolutionPath)..\..\..\src\config;$(SolutionPath)..\..\..\src\ram;$(SolutionPath)..\..\..\src\firmware;$(SolutionPath)..\..\..\src\msg;$(SolutionPath)..\..\..\src\crypto\slip39;$(SolutionPath)..\..\..\src\crypto\bips;$(SolutionPath)..\..\..\src\ui\gui_analyze;$(SolutionPath)..\..\..\src\utils\log;$(SolutionPath)..\..\..\src\hardware_interface;$(SolutionPath)..\..\..\src\webusb_protocol;$(SolutionPath)..\..\..\src\webusb_protocol\general;$(SolutionPath)..\..\..\src\webusb_protocol\eapdu_services;$(SolutionPath)..\..\..\external\cjson;$(SolutionPath)..\..\..\external\safec\include</AdditionalIncludeDirectories>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionPath)..\..\..\src\tasks;$(SolutionPath)..\..\..\src\crypto;$(SolutionPath)..\..\..\external\lvgl\src;$(SolutionPath)..\..\..\src\ui\gui_widgets;$(SolutionPath)..\..\..\src\ui\gui_frame;$(SolutionPath)..\..\..\src\ui\gui_assets;$(SolutionPath)..\..\..\src\ui\gui_views;$(SolutionPath)..\..\..\src\ui\gui_assets\abi;$(SolutionPath)..\..\..\src\ui\gui_chain;$(SolutionPath)..\..\..\src\ui\gui_widgets\setting;$(SolutionPath)..\..\..\src\ui\lv_i18n;$(SolutionPath)..\..\..\src\ui\gui_model;$(SolutionPath)..\..\..\components\ram;$(SolutionPath)..\..\..\src\utils;$(SolutionPath)..\..\..\src\ui\gui_components;$(SolutionPath)..\..\..\components\log;$(SolutionPath)..\..\..\tasks;$(SolutionPath)..\..\..\crypto\bips;$(SolutionPath)..\..\..\ui\gui_analyze;$(SolutionPath)..\..\..\external;$(SolutionPath)..\..\..\build\rust-builds;$(SolutionPath)..\..\..\external\ccan;$(SolutionPath)..\..\..\components\sqlite3;$(SolutionPath)..\..\..\application;$(SolutionPath)..\..\..\ui\gui_assets\abi;$(SolutionPath)..\..\..\components\msg;$(SolutionPath)..\..\..\components\firmware;$(SolutionPath)..\..\..\ui\gui_components;$(SolutionPath)..\..\..\src\ui\lv_demos;$(SolutionPath)..\..\..\src\error_codes;$(SolutionPath)..\..\..\src\managers\;$(SolutionPath)..\..\..\src\ui\wallet;$(SolutionPath)..\..\..\src\;$(SolutionPath)..\..\..\src\config;$(SolutionPath)..\..\..\src\ram;$(SolutionPath)..\..\..\src\firmware;$(SolutionPath)..\..\..\src\msg;$(SolutionPath)..\..\..\src\crypto\slip39;$(SolutionPath)..\..\..\src\crypto\bips;$(SolutionPath)..\..\..\src\ui\gui_analyze;$(SolutionPath)..\..\..\src\utils\log;$(SolutionPath)..\..\..\src\hardware_interface;$(SolutionPath)..\..\..\src\webusb_protocol;$(SolutionPath)..\..\..\external\cjson;$(SolutionPath)..\..\..\external\safec\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionPath)..\..\..\src\tasks;$(SolutionPath)..\..\..\src\crypto;$(SolutionPath)..\..\..\external\lvgl\src;$(SolutionPath)..\..\..\src\ui\gui_widgets;$(SolutionPath)..\..\..\src\ui\gui_frame;$(SolutionPath)..\..\..\src\ui\gui_assets;$(SolutionPath)..\..\..\src\ui\gui_views;$(SolutionPath)..\..\..\src\ui\gui_assets\abi;$(SolutionPath)..\..\..\src\ui\gui_chain\others;$(SolutionPath)..\..\..\src\ui\gui_chain\btc;$(SolutionPath)..\..\..\src\ui\gui_chain;$(SolutionPath)..\..\..\src\ui\gui_widgets\general;$(SolutionPath)..\..\..\src\ui\gui_widgets\setting;$(SolutionPath)..\..\..\src\ui\lv_i18n;$(SolutionPath)..\..\..\src\ui\gui_model;$(SolutionPath)..\..\..\components\ram;$(SolutionPath)..\..\..\src\utils;$(SolutionPath)..\..\..\src\ui\gui_components;$(SolutionPath)..\..\..\components\log;$(SolutionPath)..\..\..\tasks;$(SolutionPath)..\..\..\crypto\bips;$(SolutionPath)..\..\..\ui\gui_analyze;$(SolutionPath)..\..\..\external;$(SolutionPath)..\..\..\build\rust-builds;$(SolutionPath)..\..\..\external\ccan;$(SolutionPath)..\..\..\components\sqlite3;$(SolutionPath)..\..\..\application;$(SolutionPath)..\..\..\ui\gui_assets\abi;$(SolutionPath)..\..\..\components\msg;$(SolutionPath)..\..\..\components\firmware;$(SolutionPath)..\..\..\ui\gui_components;$(SolutionPath)..\..\..\src\ui\lv_demos;$(SolutionPath)..\..\..\src\error_codes;$(SolutionPath)..\..\..\src\managers\;$(SolutionPath)..\..\..\src\ui\wallet;$(SolutionPath)..\..\..\src\;$(SolutionPath)..\..\..\src\config;$(SolutionPath)..\..\..\src\ram;$(SolutionPath)..\..\..\src\firmware;$(SolutionPath)..\..\..\src\msg;$(SolutionPath)..\..\..\src\crypto\slip39;$(SolutionPath)..\..\..\src\crypto\bips;$(SolutionPath)..\..\..\src\ui\gui_analyze;$(SolutionPath)..\..\..\src\utils\log;$(SolutionPath)..\..\..\src\hardware_interface;$(SolutionPath)..\..\..\src\webusb_protocol;$(SolutionPath)..\..\..\src\webusb_protocol\general;$(SolutionPath)..\..\..\src\webusb_protocol\eapdu_services;$(SolutionPath)..\..\..\external\cjson;$(SolutionPath)..\..\..\external\safec\include</AdditionalIncludeDirectories>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdcpp17</LanguageStandard>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdcpp17</LanguageStandard>
       <LanguageStandard_C Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</LanguageStandard_C>
@@ -321,16 +321,16 @@
     <ClCompile Include="..\..\src\ui\gui_assets\wallet\walletXrptoolkit.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\wallet\walletYearn.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\wallet\walletZapper.c" />
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_ada.c" />
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_aptos.c" />
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_btc.c" />
+    <ClCompile Include="..\..\src\ui\gui_chain\btc\gui_btc.c" />
     <ClCompile Include="..\..\src\ui\gui_chain\gui_chain.c" />
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_cosmos.c" />
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_eth.c" />
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_sol.c" />
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_sui.c" />
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_trx.c" />
-    <ClCompile Include="..\..\src\ui\gui_chain\gui_xrp.c" />
+    <ClCompile Include="..\..\src\ui\gui_chain\others\gui_ada.c" />
+    <ClCompile Include="..\..\src\ui\gui_chain\others\gui_aptos.c" />
+    <ClCompile Include="..\..\src\ui\gui_chain\others\gui_cosmos.c" />
+    <ClCompile Include="..\..\src\ui\gui_chain\others\gui_eth.c" />
+    <ClCompile Include="..\..\src\ui\gui_chain\others\gui_sol.c" />
+    <ClCompile Include="..\..\src\ui\gui_chain\others\gui_sui.c" />
+    <ClCompile Include="..\..\src\ui\gui_chain\others\gui_trx.c" />
+    <ClCompile Include="..\..\src\ui\gui_chain\others\gui_xrp.c" />
     <ClCompile Include="..\..\src\ui\gui_components\gui_animating_qrcode.c" />
     <ClCompile Include="..\..\src\ui\gui_components\gui_button.c" />
     <ClCompile Include="..\..\src\ui\gui_components\gui_fullscreen_mode.c" />
@@ -349,6 +349,11 @@
     <ClCompile Include="..\..\src\ui\gui_frame\gui_obj.c" />
     <ClCompile Include="..\..\src\ui\gui_frame\gui_style.c" />
     <ClCompile Include="..\..\src\ui\gui_model\gui_model.c" />
+    <ClCompile Include="..\..\src\ui\gui_views\general\gui_key_derivation_request_view.c" />
+    <ClCompile Include="..\..\src\ui\gui_views\general\gui_multi_account_receive_view copy.c" />
+    <ClCompile Include="..\..\src\ui\gui_views\general\gui_multi_path_coin_receive_view.c" />
+    <ClCompile Include="..\..\src\ui\gui_views\general\gui_standard_receive_view.c" />
+    <ClCompile Include="..\..\src\ui\gui_views\general\gui_usb_transport_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_about_device_info_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_about_keystone_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_about_terms_view.c" />
@@ -360,6 +365,7 @@
     <ClCompile Include="..\..\src\ui\gui_views\gui_device_public_key_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_dice_rolls_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_dispaly_view.c" />
+    <ClCompile Include="..\..\src\ui\gui_views\gui_export_pubkey_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_firmware_update_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_forget_pass_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_home_view.c" />
@@ -367,11 +373,8 @@
     <ClCompile Include="..\..\src\ui\gui_views\gui_import_share_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_inactive_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_init_view.c" />
-    <ClCompile Include="..\..\src\ui\gui_views\gui_key_derivation_request_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_lock_device_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_lock_view.c" />
-    <ClCompile Include="..\..\src\ui\gui_views\gui_multi_account_receive_view copy.c" />
-    <ClCompile Include="..\..\src\ui\gui_views\gui_multi_path_coin_receive_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_passphrase_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_purpose_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_scan_view.c" />
@@ -379,25 +382,29 @@
     <ClCompile Include="..\..\src\ui\gui_views\gui_setting_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_setup_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_single_phrase_view.c" />
-    <ClCompile Include="..\..\src\ui\gui_views\gui_standard_receive_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_system_setting_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_transaction_detail_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_transaction_signature_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_tutorial_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_update_success_view.c" />
-    <ClCompile Include="..\..\src\ui\gui_views\gui_usb_transport_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_utxo_receive_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_views.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_wallet_tutorial_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_web_auth_result_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_web_auth_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_wipe_device_view.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_connect_eternl_widgets.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_home_widgets.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_key_derivation_request_widgets.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_multi_accounts_receive_widgets.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_multi_path_coin_receive_widgets.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_standard_receive_widgets.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_usb_transport_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_about_info_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_about_keystone_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_about_terms_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_about_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_connection_widgets.c" />
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_connect_eternl_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_connect_wallet_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_create_share_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_create_wallet_widgets.c" />
@@ -405,21 +412,18 @@
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_dice_rolls_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_display_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_enter_passcode.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\gui_export_pubkey_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_firmware_process_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_firmware_update_deny_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_firmware_update_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_forget_pass_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_global_resources.c" />
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_home_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_import_phrase_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_import_share_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_inactive_widgets.c" />
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_key_derivation_request_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_lock_device_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_lock_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_low_battery_widgets.c" />
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_multi_accounts_receive_widgets.c" />
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_multi_path_coin_receive_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_passphrase_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_pop_message_box.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_power_option_widgets.c" />
@@ -429,14 +433,12 @@
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_self_destruct_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_setup_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_single_phrase_widgets.c" />
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_standard_receive_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_system_setting_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_transaction_detail_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_transaction_signature_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_tutorial_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_update_success_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_usb_connection_widgets.c" />
-    <ClCompile Include="..\..\src\ui\gui_widgets\gui_usb_transport_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_utxo_receive_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_wallet_tutorial_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_web_auth_result_widgets.c" />

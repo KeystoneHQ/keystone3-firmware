@@ -263,6 +263,7 @@ void GuiLockScreenToHome(void)
     GuiModeGetWalletDesc();
     GuiEnterPassCodeStatus(g_verifyLock, true);
     GuiCloseToTargetView(&g_homeView);
+    HardwareInitAfterWake();
 }
 
 void GuiLockScreenTurnOffHandler(lv_event_t *e)

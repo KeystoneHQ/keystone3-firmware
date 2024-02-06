@@ -336,6 +336,7 @@ lv_fs_res_t lv_fs_dir_open(lv_fs_dir_t * rddir_p, const char * path)
     }
 
     const char * real_path = lv_fs_get_real_path(path);
+    printf("real_path = %s\n", real_path);
     void * dir_d = drv->dir_open_cb(drv, real_path);
 
     if (dir_d == NULL || dir_d == (void *)(-1)) {

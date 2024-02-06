@@ -31,7 +31,7 @@ PtrT_TransactionParseResult_EthParsedErc20Transaction eth_parse_erc20(PtrString 
 
 bool IsUpdateSuccess(void)
 {
-    return true;
+    return false;
 }
 
 bool GetUsbDetectState(void)
@@ -503,14 +503,22 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
 {
     lv_fs_file_t fd;
     uint32_t size = 0;
+    lv_fs_res_t ret = LV_FS_RES_OK;
     char buf[JSON_MAX_LEN] = {0};
 
-    if (LV_FS_RES_OK != lv_fs_open(&fd, ACCOUNT_PUBLIC_HOME_COIN_PATH, LV_FS_MODE_RD | LV_FS_MODE_WR)) {
-        printf("lv_fs_open failed %s\n", ACCOUNT_PUBLIC_HOME_COIN_PATH);
+    ret = lv_fs_open(&fd, ACCOUNT_PUBLIC_HOME_COIN_PATH, LV_FS_MODE_RD);
+    if (ret != LV_FS_RES_OK) {
+        printf("lv_fs_open failed %s ret = %d line = %d\n", ACCOUNT_PUBLIC_HOME_COIN_PATH, ret, __LINE__);
         return;
     }
-
-    if (0) {
+    ret = lv_fs_read(&fd, buf, JSON_MAX_LEN, &size);
+    if (ret == LV_FS_RES_OK && size == 0) {
+        lv_fs_close(&fd);
+        ret = lv_fs_open(&fd, ACCOUNT_PUBLIC_HOME_COIN_PATH, LV_FS_MODE_WR);
+        if (ret != LV_FS_RES_OK) {
+            printf("lv_fs_open failed %s ret = %d line = %d\n", ACCOUNT_PUBLIC_HOME_COIN_PATH, ret, __LINE__);
+            return;
+        }
         cJSON *rootJson, *jsonItem;
         char *retStr;
         rootJson = cJSON_CreateObject();
@@ -528,12 +536,13 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
         printf("retStr = %s\n", retStr);
         // RemoveFormatChar(retStr);
         cJSON_Delete(rootJson);
-        if (LV_FS_RES_OK != lv_fs_write(&fd, retStr, strlen(retStr), &size)) {
-            printf("lv_fs_write failed %s\n", ACCOUNT_PUBLIC_HOME_COIN_PATH);
+        ret = lv_fs_write(&fd, retStr, strlen(retStr), &size);
+        if (ret != LV_FS_RES_OK) {
+            printf("lv_fs_write failed %s ret = %d\n", ACCOUNT_PUBLIC_HOME_COIN_PATH, ret);
             return;
         }
+        lv_fs_close(&fd);
     }
-    lv_fs_read(&fd, buf, JSON_MAX_LEN, &size);
     buf[size] = '\0';
     cJSON *rootJson = cJSON_Parse(buf);
     for (int i = 0; i < count; i++) {
@@ -562,6 +571,7 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
         return;
     }
 
+
     lv_fs_read(&fd, buf, JSON_MAX_LEN, &size);
     buf[size] = '\0';
     lv_fs_close(&fd);
@@ -589,11 +599,6 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
             printf("lv_fs_write failed %s\n", ACCOUNT_PUBLIC_HOME_COIN_PATH);
             return;
         }
-
-        lv_fs_read(&fd, buf, JSON_MAX_LEN, &size);
-        buf[size] = '\0';
-        printf("buf = %s\n", buf);
-
         lv_fs_close(&fd);
     }
 }

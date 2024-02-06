@@ -109,7 +109,6 @@ if "%build_log%"=="true" (
 python3 .\padding_bin_file.py .\mh1903.bin
 popd
 
-echo simulator file is in %CD%
 if "%build_copy%"=="true" (
     pushd %MAKE_OAT_FILE_PATH%
     echo generating pillar.bin file...
@@ -124,6 +123,5 @@ if "%build_copy%"=="true" (
     call make_ota_file.bat %CD%\build\keystone3.bin
     popd
 ) else if "%build_simulator%"=="true" (
-    echo simulator file is in %CD%
     .\build\simulator.exe
 )

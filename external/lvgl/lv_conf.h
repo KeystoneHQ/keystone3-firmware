@@ -220,7 +220,11 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
  *-----------*/
 
 /*Enable the log module*/
+#ifdef COMPILE_SIMULATOR
+#define LV_USE_LOG 1
+#else
 #define LV_USE_LOG 0
+#endif
 #if LV_USE_LOG
 
 /*How important log should be added:
@@ -615,10 +619,10 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #endif
 
 /*API for CreateFile, ReadFile, etc*/
-#define LV_USE_FS_WIN32 0
+#define LV_USE_FS_WIN32 1
 #if LV_USE_FS_WIN32
-#define LV_FS_WIN32_LETTER '\0'     /*Set an upper cased letter on which the drive will accessible (e.g. 'A')*/
-#define LV_FS_WIN32_PATH ""         /*Set the working directory. File/directory paths will be appended to it.*/
+#define LV_FS_WIN32_LETTER 'C'     /*Set an upper cased letter on which the drive will accessible (e.g. 'A')*/
+#define LV_FS_WIN32_PATH "C:"         /*Set the working directory. File/directory paths will be appended to it.*/
 #define LV_FS_WIN32_CACHE_SIZE 0    /*>0 to cache this number of bytes in lv_fs_read()*/
 #endif
 

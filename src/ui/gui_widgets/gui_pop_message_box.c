@@ -10,6 +10,10 @@ void OpenMsgBox(const GuiMsgBox_t *msgBox)
 {
     ASSERT(msgBox);
     ASSERT(msgBox->init);
+    if (lv_anim_count_running() > 0) {
+        printf("anim running, can not call any msg box.\n");
+        return;
+    }
     if (g_currentMsgBox) {
         if (msgBox->pagePriority <= g_currentMsgBox->pagePriority) {
             printf("priority is not high enough,%d,%d\n", msgBox->pagePriority, g_currentMsgBox->pagePriority);

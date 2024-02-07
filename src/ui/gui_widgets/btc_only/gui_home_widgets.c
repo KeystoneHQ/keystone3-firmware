@@ -21,11 +21,9 @@
 #include "account_manager.h"
 #include "log_print.h"
 
-// static uint8_t g_manageWalletNum = 2;
 static lv_obj_t *g_manageWalletLabel = NULL;
 static lv_obj_t *g_homeWalletCardCont = NULL;
 static lv_obj_t *g_homeViewCont = NULL;
-//static lv_obj_t *g_scanImg = NULL;
 static lv_obj_t *g_manageCont = NULL;
 static lv_obj_t *g_moreHintbox = NULL;
 static bool g_isManageOpen = false;
@@ -368,8 +366,6 @@ void GuiHomeAreaInit(void)
     lv_obj_add_flag(walletCardCont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_scrollbar_mode(walletCardCont, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_bg_opa(walletCardCont, LV_OPA_TRANSP, LV_PART_MAIN);
-    //GuiCreateImg(walletCardCont, &imgDeepLayersVolume11);
-    //lv_obj_move_background(walletCardCont);
     g_homeWalletCardCont = walletCardCont;
     CreateHomePageButtons();
     ShowWallPager(true);
@@ -408,20 +404,11 @@ void GuiHomeRefresh(void)
     ShowWallPager(true);
     g_countDownTimer = lv_timer_create(AddFlagCountDownTimerHandler, 500, NULL);
     GuiSetSetupPhase(SETUP_PAHSE_DONE);
-    //if (g_manageCont != NULL) {
-    //    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("home_manage_assets"));
-    //    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, g_manageCont);
-    //    // TODO: add search
-    //    // GuiNvsBarSetRightCb(NVS_BAR_SEARCH, NULL, NULL);
-    //    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-    //} else {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_MANAGE, OpenManageAssetsHandler, NULL);
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreSettingHandler, NULL);
-    //}
     if (g_homeWalletCardCont != NULL) {
         lv_obj_clear_flag(g_homeWalletCardCont, LV_OBJ_FLAG_HIDDEN);
-        //lv_obj_clear_flag(g_scanImg, LV_OBJ_FLAG_HIDDEN);
     }
     GUI_DEL_OBJ(g_moreHintbox)
     AccountPublicHomeCoinGet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));

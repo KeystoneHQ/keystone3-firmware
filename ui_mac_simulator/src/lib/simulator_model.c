@@ -465,8 +465,7 @@ void SetPageLockScreen(bool enable)
 {
 }
 
-void SetFirstReceive(const char* chainName, bool isFirst)
-{}
+
 
 bool GetFirstReceive(const char* chainName)
 {}

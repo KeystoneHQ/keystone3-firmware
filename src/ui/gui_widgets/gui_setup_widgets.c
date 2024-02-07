@@ -284,8 +284,10 @@ void GuiSetupAreaRestart(void)
 
 uint8_t GuiSetSetupPhase(SETUP_PHASE_ENUM pahaseEnum)
 {
-    SetSetupStep(pahaseEnum);
-    SaveDeviceSettings();
+    if (GetSetupStep() != pahaseEnum) {
+        SetSetupStep(pahaseEnum);
+        SaveDeviceSettings();
+    }
     return 0;
 }
 

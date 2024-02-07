@@ -295,8 +295,7 @@ else()
 
     # target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIR})
     add_executable(${PROJECT_NAME} 
-        ui_simulator/main.c
-        ui_simulator/simulator_model.c
+        ${SIMULATOR_SRC}
         ${EXTERNAL}
         ${SOURCES} 
         ${INCLUDES}

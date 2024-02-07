@@ -11,6 +11,8 @@
 extern bool g_fingerUnlockDeviceFlag;
 extern bool g_fingerSingTransitionsFlag;
 extern bool fingerRegisterState[3];
+#define JSON_MAX_LEN (1024 * 100)
+#define ACCOUNT_PUBLIC_HOME_COIN_PATH "C:/assets/coin.json"
 
 // typedef enum {
 //     RECOGNIZE_UNLOCK = 0,

@@ -181,6 +181,10 @@ extern GUI_VIEW g_transactionSignatureView;
 extern GUI_VIEW g_diceRollsView;
 extern GUI_VIEW g_exportPubkeyView;
 extern GUI_VIEW g_updateSuccessView;
+#ifdef BTC_ONLY
+extern GUI_VIEW g_btcBtcWalletProfileView;
+#endif
+
 
 void UnHandler(lv_event_t *e);
 void OpenImportWalletHandler(lv_event_t *e);

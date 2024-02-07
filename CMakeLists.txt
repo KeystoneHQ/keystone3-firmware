@@ -349,7 +349,8 @@ if(COMPILE_MAIN)
             src/webusb_protocol/general)
     else()
         set(excluded_directories
-            src/ui/gui_widgets/btc_only)
+            src/ui/gui_widgets/btc_only
+            src/ui/gui_views/btc_only)
     endif()
 
     foreach(directory ${excluded_directories})

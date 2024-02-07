@@ -47,6 +47,7 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
 };
 
 void ScanQrCodeHandler(lv_event_t *e);
+static void OpenWalletProfileHandler(lv_event_t *e);
 static void CreateHomePageButtons(void);
 static void RcvHandler(lv_event_t *e);
 static void AddFlagCountDownTimerHandler(lv_timer_t *timer);
@@ -257,90 +258,13 @@ static void OpenMoreSettingHandler(lv_event_t *e)
     }
 }
 
-static void OpenManageAssetsHandler(lv_event_t *e)
+static void OpenWalletProfileHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        if (g_isManageClick == false) {
-            return;
-        }
-        memcpy(&g_walletBakState, &g_walletState, sizeof(g_walletState));
-        g_manageCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                          GUI_MAIN_AREA_OFFSET);
-        lv_obj_add_flag(g_manageCont, LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_align(g_manageCont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
-        lv_obj_t *checkBoxCont = GuiCreateContainerWithParent(g_manageCont, lv_obj_get_width(lv_scr_act()), 542);
-        lv_obj_set_align(checkBoxCont, LV_ALIGN_DEFAULT);
-        lv_obj_add_flag(checkBoxCont, LV_OBJ_FLAG_SCROLLABLE);
-        lv_obj_set_scrollbar_mode(checkBoxCont, LV_SCROLLBAR_MODE_OFF);
-
-        lv_obj_t *coinLabel;
-        lv_obj_t *chainLabel;
-        lv_obj_t *icon;
-        lv_obj_t *checkbox;
-        int heightIndex = 0;
-        for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-            coinLabel = GuiCreateTextLabel(checkBoxCont, g_coinCardArray[i].coin);
-            chainLabel = GuiCreateNoticeLabel(checkBoxCont, g_coinCardArray[i].chain);
-            icon = GuiCreateImg(checkBoxCont, g_coinCardArray[i].icon);
-            checkbox = GuiCreateMultiCheckBox(checkBoxCont, _(""));
-            lv_obj_set_style_pad_top(checkbox, 32, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_size(checkbox, 446, 96);
-            g_walletState[i].checkBox = checkbox;
-            uint8_t tableLen = 4;
-            GuiButton_t table[4] = {
-                {
-                    .obj = icon,
-                    .align = LV_ALIGN_LEFT_MID,
-                    .position = {24, 0},
-                },
-                {
-                    .obj = coinLabel,
-                    .align = LV_ALIGN_DEFAULT,
-                    .position = {100, 13},
-                },
-                {
-                    .obj = chainLabel,
-                    .align = LV_ALIGN_DEFAULT,
-                    .position = {100, 53},
-                },
-                {
-                    .obj = checkbox,
-                    .align = LV_ALIGN_TOP_MID,
-                    .position = {-10, 0},
-                },
-            };
-
-
-            lv_obj_t *button = GuiCreateButton(checkBoxCont, 456, 96, table, tableLen,
-                                               ManageCoinChainHandler, &g_walletState[i]);
-            g_walletButton[i] = button;
-            if (!g_walletState[i].enable) {
-                lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);
-                continue;
-            }
-            lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 96 * heightIndex);
-            heightIndex++;
-        }
-
-        lv_obj_t *btn = GuiCreateBtn(g_manageCont, USR_SYMBOL_CHECK);
-        lv_obj_add_event_cb(btn, ConfirmManageAssetsHandler, LV_EVENT_ALL, NULL);
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-
-        lv_obj_t *label = GuiCreateTextLabel(g_manageCont, "");
-        lv_obj_align_to(label, btn, LV_ALIGN_OUT_LEFT_MID, -300, 0);
-        lv_label_set_recolor(label, true);
-
-        g_manageWalletLabel = label;
-
-        UpdateManageWalletState(false);
-
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("home_manage_assets"));
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, g_manageCont);
-        // TODO: add search
-        // GuiNvsBarSetRightCb(NVS_BAR_SEARCH, NULL, NULL);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        printf("OpenWalletProfileHandler\n");
+        GuiFrameOpenView(&g_btcBtcWalletProfileView);
     }
 }
 
@@ -404,7 +328,7 @@ void GuiHomeRefresh(void)
     ShowWallPager(true);
     g_countDownTimer = lv_timer_create(AddFlagCountDownTimerHandler, 500, NULL);
     GuiSetSetupPhase(SETUP_PAHSE_DONE);
-    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_MANAGE, OpenManageAssetsHandler, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_MANAGE, OpenWalletProfileHandler, NULL);
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreSettingHandler, NULL);
     if (g_homeWalletCardCont != NULL) {

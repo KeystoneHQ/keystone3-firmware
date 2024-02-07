@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "rust.h"
 #include "keystore.h"
 #include "user_memory.h"
@@ -137,3 +138,4 @@ static uint8_t GetAptosPublickeyIndex(char* rootPath)
     ASSERT(0);
     return -1;
 }
+#endif

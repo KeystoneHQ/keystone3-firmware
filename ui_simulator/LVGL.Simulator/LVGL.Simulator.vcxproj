@@ -33,7 +33,7 @@
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;COMPILE_SIMULATOR;LV_LVGL_H_INCLUDE_SIMPLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;COMPILE_SIMULATOR;LV_LVGL_H_INCLUDE_SIMPLE;BTC_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization Condition="'$(Configuration)'=='Release'">MinSpace</Optimization>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionPath)..\..\..\src\tasks;$(SolutionPath)..\..\..\src\crypto;$(SolutionPath)..\..\..\external\lvgl\src;$(SolutionPath)..\..\..\src\ui\gui_widgets;$(SolutionPath)..\..\..\src\ui\gui_frame;$(SolutionPath)..\..\..\src\ui\gui_assets;$(SolutionPath)..\..\..\src\ui\gui_views;$(SolutionPath)..\..\..\src\ui\gui_assets\abi;$(SolutionPath)..\..\..\src\ui\gui_chain\others;$(SolutionPath)..\..\..\src\ui\gui_chain\btc;$(SolutionPath)..\..\..\src\ui\gui_chain;$(SolutionPath)..\..\..\src\ui\gui_widgets\general;$(SolutionPath)..\..\..\src\ui\gui_widgets\setting;$(SolutionPath)..\..\..\src\ui\lv_i18n;$(SolutionPath)..\..\..\src\ui\gui_model;$(SolutionPath)..\..\..\components\ram;$(SolutionPath)..\..\..\src\utils;$(SolutionPath)..\..\..\src\ui\gui_components;$(SolutionPath)..\..\..\components\log;$(SolutionPath)..\..\..\tasks;$(SolutionPath)..\..\..\crypto\bips;$(SolutionPath)..\..\..\ui\gui_analyze;$(SolutionPath)..\..\..\external;$(SolutionPath)..\..\..\build\rust-builds;$(SolutionPath)..\..\..\external\ccan;$(SolutionPath)..\..\..\components\sqlite3;$(SolutionPath)..\..\..\application;$(SolutionPath)..\..\..\ui\gui_assets\abi;$(SolutionPath)..\..\..\components\msg;$(SolutionPath)..\..\..\components\firmware;$(SolutionPath)..\..\..\ui\gui_components;$(SolutionPath)..\..\..\src\ui\lv_demos;$(SolutionPath)..\..\..\src\error_codes;$(SolutionPath)..\..\..\src\managers\;$(SolutionPath)..\..\..\src\ui\wallet;$(SolutionPath)..\..\..\src\;$(SolutionPath)..\..\..\src\config;$(SolutionPath)..\..\..\src\ram;$(SolutionPath)..\..\..\src\firmware;$(SolutionPath)..\..\..\src\msg;$(SolutionPath)..\..\..\src\crypto\slip39;$(SolutionPath)..\..\..\src\crypto\bips;$(SolutionPath)..\..\..\src\ui\gui_analyze;$(SolutionPath)..\..\..\src\utils\log;$(SolutionPath)..\..\..\src\hardware_interface;$(SolutionPath)..\..\..\src\webusb_protocol;$(SolutionPath)..\..\..\src\webusb_protocol\general;$(SolutionPath)..\..\..\src\webusb_protocol\eapdu_services;$(SolutionPath)..\..\..\external\cjson;$(SolutionPath)..\..\..\external\safec\include</AdditionalIncludeDirectories>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -178,6 +178,7 @@
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgContract.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgConversion.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgCosmosTag.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDeepLayersVolume11.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgDel.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgDelete.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgDeleteL.c" />
@@ -230,6 +231,7 @@
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgRedFinger.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgReset.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgScan.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgScan48.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgSdCard.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgSdCardL.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgSearch.c" />
@@ -393,6 +395,7 @@
     <ClCompile Include="..\..\src\ui\gui_views\gui_web_auth_result_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_web_auth_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_wipe_device_view.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\btc_only\gui_home_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_connect_eternl_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_home_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_key_derivation_request_widgets.c" />

@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "rust.h"
 #include "keystore.h"
 #include "user_memory.h"
@@ -411,3 +412,6 @@ static uint8_t GetXPubIndexByPath(char *path)
         return XPUB_TYPE_ADA_23;
     return XPUB_TYPE_ADA_0;
 }
+
+#endif
+

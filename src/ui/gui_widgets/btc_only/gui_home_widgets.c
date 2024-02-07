@@ -1,3 +1,4 @@
+#ifdef BTC_ONLY
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_button.h"
@@ -24,7 +25,7 @@
 static lv_obj_t *g_manageWalletLabel = NULL;
 static lv_obj_t *g_homeWalletCardCont = NULL;
 static lv_obj_t *g_homeViewCont = NULL;
-static lv_obj_t *g_scanImg = NULL;
+//static lv_obj_t *g_scanImg = NULL;
 static lv_obj_t *g_manageCont = NULL;
 static lv_obj_t *g_moreHintbox = NULL;
 static bool g_isManageOpen = false;
@@ -47,6 +48,9 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
     },
 };
 
+void ScanQrCodeHandler(lv_event_t *e);
+static void CreateHomePageButtons(void);
+static void RcvHandler(lv_event_t *e);
 static void CoinDealHandler(lv_event_t *e);
 static void AddFlagCountDownTimerHandler(lv_timer_t *timer);
 void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count);
@@ -95,6 +99,77 @@ void ReturnManageWalletHandler(lv_event_t *e)
     }
 }
 
+
+static void CreateHomePageButtons(void)
+{
+    lv_obj_t *img, *label, *arrow, *rcvButton, *scanButton;
+
+    img = GuiCreateImg(g_homeWalletCardCont, &imgReceive);
+    label = GuiCreateLittleTitleLabel(g_homeWalletCardCont, "RECEIVE");
+    arrow = GuiCreateImg(g_homeWalletCardCont, &imgArrowRight);
+    GuiButton_t rcvButtonTable[3] = {
+        {
+            .obj = img,
+            .align = LV_ALIGN_TOP_LEFT,
+            .position = {36, 36},
+        },
+        {
+            .obj = label,
+            .align = LV_ALIGN_TOP_LEFT,
+            .position = {36, 108},
+        },
+        {
+            .obj = arrow,
+            .align = LV_ALIGN_TOP_RIGHT,
+            .position = {-24, 110},
+        },
+    };
+    rcvButton = GuiCreateButton(g_homeWalletCardCont, 432, 172, rcvButtonTable, NUMBER_OF_ARRAYS(rcvButtonTable), RcvHandler, NULL);
+    lv_obj_align(rcvButton, LV_ALIGN_BOTTOM_MID, 0, -220);
+    lv_obj_set_style_bg_color(rcvButton, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(rcvButton, LV_OPA_30, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(rcvButton, WHITE_COLOR, LV_STATE_PRESSED | LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(rcvButton, LV_OPA_20, LV_STATE_PRESSED | LV_PART_MAIN);
+
+    img = GuiCreateImg(g_homeWalletCardCont, &imgScan48);
+    label = GuiCreateLittleTitleLabel(g_homeWalletCardCont, "SCAN");
+    arrow = GuiCreateImg(g_homeWalletCardCont, &imgArrowRight);
+    GuiButton_t scanButtonTable[3] = {
+        {
+            .obj = img,
+            .align = LV_ALIGN_TOP_LEFT,
+            .position = {36, 36},
+        },
+        {
+            .obj = label,
+            .align = LV_ALIGN_TOP_LEFT,
+            .position = {36, 108},
+        },
+        {
+            .obj = arrow,
+            .align = LV_ALIGN_TOP_RIGHT,
+            .position = {-24, 110},
+        },
+    };
+    scanButton = GuiCreateButton(g_homeWalletCardCont, 432, 172, scanButtonTable, NUMBER_OF_ARRAYS(scanButtonTable), ScanQrCodeHandler, NULL);
+    lv_obj_align(scanButton, LV_ALIGN_BOTTOM_MID, 0, -24);
+    lv_obj_set_style_bg_color(scanButton, ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(scanButton, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(scanButton, ORANGE_COLOR, LV_STATE_PRESSED | LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(scanButton, LV_OPA_80, LV_STATE_PRESSED | LV_PART_MAIN);
+}
+
+
+static void RcvHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        printf("rcv handler\n");
+        GuiFrameOpenViewWithParam(&g_utxoReceiveView, &g_coinCardArray[HOME_WALLET_CARD_BTC], sizeof(g_coinCardArray[HOME_WALLET_CARD_BTC]));
+    }
+}
+
+
 static void UpdateHomeConnectWalletCard(void)
 {
     lv_obj_t *coinLabel;
@@ -106,7 +181,6 @@ static void UpdateHomeConnectWalletCard(void)
     }
 
     for (int i = 0, j = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-
         coinLabel = GuiCreateTextLabel(walletCardCont, g_coinCardArray[i].coin);
         chainLabel = GuiCreateNoticeLabel(walletCardCont, g_coinCardArray[i].chain);
         icon = GuiCreateImg(walletCardCont, g_coinCardArray[i].icon);
@@ -136,6 +210,7 @@ static void UpdateHomeConnectWalletCard(void)
         lv_obj_set_style_radius(button, 24, LV_PART_MAIN);
     }
 }
+
 
 static void CoinDealHandler(lv_event_t *e)
 {
@@ -181,7 +256,7 @@ void ScanQrCodeHandler(lv_event_t *e)
             g_countDownTimer = NULL;
         }
 
-        GuiFrameOpenView(lv_event_get_user_data(e));
+        GuiFrameOpenView(&g_scanView);
     }
 }
 
@@ -191,7 +266,7 @@ void ConfirmManageAssetsHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         UpdateManageWalletState(true);
-        UpdateHomeConnectWalletCard();
+        //UpdateHomeConnectWalletCard();
         GUI_DEL_OBJ(g_manageCont)
         GuiHomeRefresh();
     }
@@ -343,26 +418,27 @@ void GuiHomeAreaInit(void)
 {
     g_pageWidget = CreatePageWidget();
     g_homeViewCont = g_pageWidget->contentZone;
+    lv_obj_set_style_bg_opa(g_pageWidget->contentZone, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(g_pageWidget->page, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(g_pageWidget->navBar, LV_OPA_TRANSP, LV_PART_MAIN);
 
     lv_obj_t *walletCardCont = GuiCreateContainerWithParent(g_homeViewCont, lv_obj_get_width(lv_scr_act()),
                                lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_align(walletCardCont, LV_ALIGN_DEFAULT);
     lv_obj_add_flag(walletCardCont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_scrollbar_mode(walletCardCont, LV_SCROLLBAR_MODE_OFF);
+    lv_obj_set_style_bg_opa(walletCardCont, LV_OPA_TRANSP, LV_PART_MAIN);
+    //GuiCreateImg(walletCardCont, &imgDeepLayersVolume11);
+    //lv_obj_move_background(walletCardCont);
     g_homeWalletCardCont = walletCardCont;
-
-    lv_obj_t *img = GuiCreateImg(lv_scr_act(), &imgScan);
-    lv_obj_align(img, LV_ALIGN_BOTTOM_RIGHT, -32, -32);
-    lv_obj_add_event_cb(img, ScanQrCodeHandler, LV_EVENT_CLICKED, &g_scanView);
-    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-    g_scanImg = img;
+    CreateHomePageButtons();
+    ShowWallPager(true);
 }
 
 void GuiHomeDisActive(void)
 {
     if (g_homeWalletCardCont != NULL) {
         lv_obj_add_flag(g_homeWalletCardCont, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(g_scanImg, LV_OBJ_FLAG_HIDDEN);
     }
 }
 
@@ -388,26 +464,26 @@ void GuiHomeRefresh(void)
     if (GetCurrentAccountIndex() > 2) {
         return;
     }
+    printf("GuiHomeRefresh\n");
+    ShowWallPager(true);
     g_countDownTimer = lv_timer_create(AddFlagCountDownTimerHandler, 500, NULL);
     GuiSetSetupPhase(SETUP_PAHSE_DONE);
-    if (g_manageCont != NULL) {
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("home_manage_assets"));
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, g_manageCont);
-        // TODO: add search
-        // GuiNvsBarSetRightCb(NVS_BAR_SEARCH, NULL, NULL);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-    } else {
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_MANAGE, OpenManageAssetsHandler, NULL);
-        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreSettingHandler, NULL);
-    }
+    //if (g_manageCont != NULL) {
+    //    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("home_manage_assets"));
+    //    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, g_manageCont);
+    //    // TODO: add search
+    //    // GuiNvsBarSetRightCb(NVS_BAR_SEARCH, NULL, NULL);
+    //    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    //} else {
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_MANAGE, OpenManageAssetsHandler, NULL);
+    SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreSettingHandler, NULL);
+    //}
     if (g_homeWalletCardCont != NULL) {
         lv_obj_clear_flag(g_homeWalletCardCont, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(g_scanImg, LV_OBJ_FLAG_HIDDEN);
+        //lv_obj_clear_flag(g_scanImg, LV_OBJ_FLAG_HIDDEN);
     }
     GUI_DEL_OBJ(g_moreHintbox)
-    AccountPublicHomeCoinGet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
-    UpdateHomeConnectWalletCard();
 }
 
 const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)
@@ -428,3 +504,5 @@ void GuiHomeDeInit(void)
         g_pageWidget = NULL;
     }
 }
+
+#endif

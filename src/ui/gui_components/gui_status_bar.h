@@ -47,6 +47,7 @@ void GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_ENUM button, lv_event_cb_t eventCb, vo
 void GuiNvsBarSetRightBtnLabel(NVS_RIGHT_BUTTON_ENUM button, const char *text);
 void GuiNvsBarSetMidCb(NVS_MID_BUTTON_ENUM button, lv_event_cb_t eventCb, void* param);
 void GuiNvsBarSetMidBtnLabel(NVS_MID_BUTTON_ENUM button, const char* text);
+void ShowWallPager(bool enable);
 void GuiStatusBarInit(void);
 void GuiStatusBarSetBattery(uint8_t percent, bool charging);
 void GuiNvsBarSetWalletIcon(const void *src);

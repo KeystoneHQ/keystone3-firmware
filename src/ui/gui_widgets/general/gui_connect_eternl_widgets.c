@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "gui_connect_eternl_widgets.h"
 #include "gui_connect_wallet_widgets.h"
 #include "gui.h"
@@ -152,3 +153,5 @@ static void OpenMoreHandler(lv_event_t *e)
         lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     }
 }
+#endif
+

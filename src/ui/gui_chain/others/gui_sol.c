@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "gui_analyze.h"
 #include "rust.h"
 #include "account_public_info.h"
@@ -499,3 +500,4 @@ void GuiShowSolTxDetail(lv_obj_t *parent, void *totalData)
     SetTitleLabelStyle(label);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
 }
+#endif

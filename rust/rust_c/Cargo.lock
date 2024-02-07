@@ -313,7 +313,7 @@ dependencies = [
 [[package]]
 name = "bitcoin"
 version = "0.31.1"
-source = "git+https://github.com/KeystoneHQ/rust-bitcoin.git?tag=v0.31.2#2f21ea86643edc615b59f84a6724036f435ba2cd"
+source = "git+https://github.com/KeystoneHQ/rust-bitcoin.git?tag=v0.31.2#f4fc5bef20b4ffe1f25cb45dee0f345e4f66ab54"
 dependencies = [
  "bech32 0.10.0-beta",
  "bitcoin-internals",

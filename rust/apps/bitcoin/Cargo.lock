@@ -85,7 +85,7 @@ checksum = "98f7eed2b2781a6f0b5c903471d48e15f56fb4e1165df8a9a2337fd1a59d45ea"
 [[package]]
 name = "bitcoin"
 version = "0.31.1"
-source = "git+https://github.com/KeystoneHQ/rust-bitcoin.git?tag=v0.31.2#2f21ea86643edc615b59f84a6724036f435ba2cd"
+source = "git+https://github.com/KeystoneHQ/rust-bitcoin.git?tag=v0.31.2#f4fc5bef20b4ffe1f25cb45dee0f345e4f66ab54"
 dependencies = [
  "bech32",
  "bitcoin-internals",
@@ -908,7 +908,7 @@ version = "0.28.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d24b59d129cdadea20aea4fb2352fa053712e5d713eee47d700cd4b2bc002f10"
 dependencies = [
- "bitcoin_hashes 0.12.0",
+ "bitcoin_hashes 0.13.0",
  "secp256k1-sys",
 ]
 

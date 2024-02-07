@@ -273,7 +273,7 @@ static void SliderEventCb(lv_event_t * e)
 
 static void SaveSystemSetting(lv_timer_t *timer)
 {
-    SaveDeviceSettings();
+    // SaveDeviceSettings();
     lv_timer_del(timer);
     g_delayTaskTimer = NULL;
     UNUSED(g_delayTaskTimer);
@@ -392,7 +392,7 @@ static void SelectAutoLockTimeHandler(lv_event_t *e)
         if (g_currentAutoLockIndex != newCheckIndex) {
             uint32_t lockTime = GetAutoLockTimeByEnum(newCheckIndex);
             SetAutoLockScreen(lockTime);
-            SaveDeviceSettings();
+            // SaveDeviceSettings();
             const char *currentLockTime = GetAutoLockTimeDescByLockTime();
             lv_label_set_text(autoLockAutoLockLabel, currentLockTime);
             GUI_DEL_OBJ(g_autoLockHintBox)
@@ -558,7 +558,7 @@ static void SelectAutoShutdownHandler(lv_event_t *e)
         if (g_currentShutdownIndex != newCheckIndex) {
             uint32_t powerOffTime = GetAutoShutdownTimeByEnum(newCheckIndex);
             SetAutoPowerOff(powerOffTime);
-            SaveDeviceSettings();
+            // SaveDeviceSettings();
             const char *currentPowerOffTime = GetAutoShutdownTimeDescByLockTime();
             lv_label_set_text(autoShutDownTimeLabel, currentPowerOffTime);
             GUI_DEL_OBJ(g_autoShutdownHintBox)

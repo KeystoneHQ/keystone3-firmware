@@ -77,6 +77,8 @@ int main(int argc, char **argv)
   /*Initialize the HAL (display, input devices, tick) for LVGL*/
   hal_init();
 
+  DeviceSettingsInit();
+
     GuiStyleInit();
 
     GuiFrameOpenView(&g_initView);

@@ -11,9 +11,14 @@ file(GLOB_RECURSE INCLUDES "ui_simulator/lv_drivers/*.h" "external/lvgl/*.h")
 file(GLOB_RECURSE SOURCES  "ui_simulator/lv_drivers/*.c")
 file(GLOB_RECURSE CRYPTO
     "src/crypto/secret_cache.c"
+    "src/crypto/account_public_info.c"
+    "src/device_settings.c"
 )
 file(GLOB_RECURSE EXTERNAL
     "external/cjson/*.c"
+)
+file(GLOB_RECURSE SIMULATOR_SRC
+    ui_simulator/*.c
 )
 
 if(BTC_ONLY)

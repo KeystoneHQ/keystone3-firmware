@@ -10,48 +10,48 @@
 
 static UREncodeResult *g_urEncode = NULL;
 
-#ifdef COMPILE_SIMULATOR
-struct UREncodeResult *get_connect_blue_wallet_ur(uint8_t *master_fingerprint,
-        uint32_t length,
-        PtrT_CSliceFFI_ExtendedPublicKey public_keys)
-{
-    struct UREncodeResult *result = malloc(sizeof(struct UREncodeResult));
-    result->is_multi_part = 0;
-    result->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    result->encoder = NULL;
-    result->error_code = 0;
-    result->error_message = NULL;
-    return result;
-}
+// #ifdef COMPILE_SIMULATOR
+// struct UREncodeResult *get_connect_blue_wallet_ur(uint8_t *master_fingerprint,
+//         uint32_t length,
+//         PtrT_CSliceFFI_ExtendedPublicKey public_keys)
+// {
+//     struct UREncodeResult *result = malloc(sizeof(struct UREncodeResult));
+//     result->is_multi_part = 0;
+//     result->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+//     result->encoder = NULL;
+//     result->error_code = 0;
+//     result->error_message = NULL;
+//     return result;
+// }
 
-PtrT_UREncodeResult get_connect_companion_app_ur(PtrBytes master_fingerprint,
-        uint32_t master_fingerprint_length,
-        int device_info,
-        CoinConfig *coin_config,
-        uint32_t coin_config_length)
-{
-    struct UREncodeResult *result = malloc(sizeof(struct UREncodeResult));
-    result->is_multi_part = 0;
-    result->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    result->encoder = NULL;
-    result->error_code = 0;
-    result->error_message = NULL;
-    return result;
-}
+// PtrT_UREncodeResult get_connect_companion_app_ur(PtrBytes master_fingerprint,
+//         uint32_t master_fingerprint_length,
+//         int device_info,
+//         CoinConfig *coin_config,
+//         uint32_t coin_config_length)
+// {
+//     struct UREncodeResult *result = malloc(sizeof(struct UREncodeResult));
+//     result->is_multi_part = 0;
+//     result->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+//     result->encoder = NULL;
+//     result->error_code = 0;
+//     result->error_message = NULL;
+//     return result;
+// }
 
-char *GetCurrentAccountPublicKey(ChainType chain)
-{
-    return "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-}
+// char *GetCurrentAccountPublicKey(ChainType chain)
+// {
+//     return "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+// }
 
-void GetMasterFingerPrint(uint8_t *mfp)
-{
-    mfp[0] = 0x70;
-    mfp[1] = 0x7e;
-    mfp[2] = 0xed;
-    mfp[3] = 0x6c;
-}
-#endif
+// void GetMasterFingerPrint(uint8_t *mfp)
+// {
+//     mfp[0] = 0x70;
+//     mfp[1] = 0x7e;
+//     mfp[2] = 0xed;
+//     mfp[3] = 0x6c;
+// }
+// #endif
 
 UREncodeResult *GuiGetBlueWalletBtcData(void)
 {

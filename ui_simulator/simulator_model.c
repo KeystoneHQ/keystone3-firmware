@@ -13,6 +13,64 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
+uint32_t GetCurrentAccountEntropyLen(void)
+{
+    return 64;
+}
+
+bool VerifyWalletDataHash(uint8_t index, uint8_t *info)
+{
+    return true;
+}
+
+PtrT_UREncodeResult get_connect_companion_app_ur(PtrBytes master_fingerprint,
+                                                 uint32_t master_fingerprint_length,
+                                                 int32_t cold_version,
+                                                 PtrT_CoinConfig coin_config,
+                                                 uint32_t coin_config_length)
+{
+
+}
+
+void GetMasterFingerPrint(uint8_t *mfp)
+{
+
+}
+
+void SetLcdBright(uint32_t bright)
+{
+
+}
+
+void SetShowPowerOffPage(bool isShow)
+{
+}
+
+int32_t DestroyAccount(uint8_t accountIndex)
+{
+
+}
+
+int32_t ErasePublicInfo(void)
+{
+
+}
+
+void FpWipeManageInfo(void)
+{
+
+}
+
+void SetShutdownTimeOut(uint32_t timeOut)
+{
+
+}
+
+void SetLockTimeOut(uint32_t timeOut)
+{
+
+}
+
 uint8_t GetCurrentPasswordErrorCount(void)
 {
     return 0;
@@ -29,10 +87,6 @@ PtrT_TransactionParseResult_EthParsedErc20Transaction eth_parse_erc20(PtrString 
 
 }
 
-bool IsUpdateSuccess(void)
-{
-    return false;
-}
 
 bool GetUsbDetectState(void)
 {
@@ -147,16 +201,6 @@ void UserDelay(uint32_t ms)
 
 }
 
-void SetFirstReceive(const char* chainName, bool isFirst)
-{
-
-}
-
-bool GetFirstReceive(const char* chainName)
-{
-    return false;
-}
-
 void SetLockDeviceAlive(bool alive)
 {
     
@@ -254,24 +298,7 @@ bool GetUsbState(void)
     return 1;
 }
 
-uint32_t GetVibration(void)
-{
-    return 1;
-}
 
-void SetVibration(uint32_t vibration)
-{
-}
-
-void SetUSBSwitch(uint32_t usbSwitch)
-{
-
-}
-
-uint32_t GetUSBSwitch(void)
-{
-    return 0;
-}
 
 void UnlimitedVibrate(int strength)
 {
@@ -283,10 +310,6 @@ void Vibrate(int strength)
 
 }
 
-void SetAutoPowerOff(uint32_t autoPowerOff)
-{
-
-}
 
 int32_t GetExistAccountNum(uint8_t *accountNum)
 {
@@ -299,16 +322,6 @@ bool SdCardInsert(void)
     return true;
 }
 
-uint32_t GetSetupStep(void)
-{
-
-}
-
-void SetSetupStep(uint32_t setupStep)
-{
-
-}
-
 bool CheckOtaBinVersion(char *version)
 {
     strcpy(version, "1.1.1");
@@ -317,36 +330,6 @@ bool CheckOtaBinVersion(char *version)
 
 void LogSetLogName(char *name)
 {
-}
-
-uint32_t GetAutoLockScreen(void)
-{
-    return 10;
-}
-
-void SetAutoLockScreen(uint32_t autoLockScreen)
-{
-
-}
-
-uint32_t GetAutoPowerOff(void)
-{
-    return 10;
-}
-
-void SetBright(uint32_t bight)
-{
-
-}
-
-uint32_t GetBright(void)
-{
-    return 10;
-}
-
-void SaveDeviceSettings(void)
-{
-
 }
 
 uint32_t PubValueMsg(uint32_t messageID, uint32_t value)
@@ -499,109 +482,6 @@ int strcasecmp(char const *a, char const* b)
     return 0;
 }
 
-void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
-{
-    lv_fs_file_t fd;
-    uint32_t size = 0;
-    lv_fs_res_t ret = LV_FS_RES_OK;
-    char buf[JSON_MAX_LEN] = {0};
-
-    ret = lv_fs_open(&fd, ACCOUNT_PUBLIC_HOME_COIN_PATH, LV_FS_MODE_RD);
-    if (ret != LV_FS_RES_OK) {
-        printf("lv_fs_open failed %s ret = %d line = %d\n", ACCOUNT_PUBLIC_HOME_COIN_PATH, ret, __LINE__);
-        return;
-    }
-    ret = lv_fs_read(&fd, buf, JSON_MAX_LEN, &size);
-    if (ret == LV_FS_RES_OK && size == 0) {
-        lv_fs_close(&fd);
-        ret = lv_fs_open(&fd, ACCOUNT_PUBLIC_HOME_COIN_PATH, LV_FS_MODE_WR);
-        if (ret != LV_FS_RES_OK) {
-            printf("lv_fs_open failed %s ret = %d line = %d\n", ACCOUNT_PUBLIC_HOME_COIN_PATH, ret, __LINE__);
-            return;
-        }
-        cJSON *rootJson, *jsonItem;
-        char *retStr;
-        rootJson = cJSON_CreateObject();
-        for (int i = 0; i < count; i++) {
-            jsonItem = cJSON_CreateObject();
-            cJSON_AddItemToObject(jsonItem, "firstRecv", cJSON_CreateBool(true));
-            if (!strcmp(walletList[i].name, "BTC") || !strcmp(walletList[i].name, "ETH")) {
-                cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
-            } else {
-                cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(false));
-            }
-            cJSON_AddItemToObject(rootJson, walletList[i].name, jsonItem);
-        }
-        retStr = cJSON_Print(rootJson);
-        printf("retStr = %s\n", retStr);
-        // RemoveFormatChar(retStr);
-        cJSON_Delete(rootJson);
-        ret = lv_fs_write(&fd, retStr, strlen(retStr), &size);
-        if (ret != LV_FS_RES_OK) {
-            printf("lv_fs_write failed %s ret = %d\n", ACCOUNT_PUBLIC_HOME_COIN_PATH, ret);
-            return;
-        }
-        lv_fs_close(&fd);
-    }
-    buf[size] = '\0';
-    cJSON *rootJson = cJSON_Parse(buf);
-    for (int i = 0; i < count; i++) {
-        cJSON *item = cJSON_GetObjectItem(rootJson, walletList[i].name);
-        if (item != NULL) {
-            cJSON *manage = cJSON_GetObjectItem(item, "manage");
-            bool state = manage->valueint;
-            walletList[i].state = state;
-        } else {
-            walletList[i].state = false;
-        }
-    }
-    lv_fs_close(&fd);
-}
-
-void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
-{
-    lv_fs_file_t fd;
-    uint32_t size = 0;
-    char buf[JSON_MAX_LEN] = {0};
-    cJSON *rootJson, *jsonItem;
-    bool needUpdate = false;
-
-    if (LV_FS_RES_OK != lv_fs_open(&fd, ACCOUNT_PUBLIC_HOME_COIN_PATH, LV_FS_MODE_RD)) {
-        printf("lv_fs_open failed %s\n", ACCOUNT_PUBLIC_HOME_COIN_PATH);
-        return;
-    }
-
-
-    lv_fs_read(&fd, buf, JSON_MAX_LEN, &size);
-    buf[size] = '\0';
-    lv_fs_close(&fd);
-
-    rootJson = cJSON_Parse(buf);
-    for (int i = 0; i < count; i++) {
-        cJSON *item = cJSON_GetObjectItem(rootJson, walletList[i].name);
-        if (item != NULL) {
-            cJSON *manage = cJSON_GetObjectItem(item, "manage");
-            bool state = manage->valueint;
-            if (state != walletList[i].state) {
-                needUpdate = true;
-                cJSON_ReplaceItemInObject(item, "manage", cJSON_CreateBool(walletList[i].state));
-            }
-        }
-    }
-    if (needUpdate) {
-        char *retStr = cJSON_Print(rootJson);
-        if (LV_FS_RES_OK != lv_fs_open(&fd, ACCOUNT_PUBLIC_HOME_COIN_PATH, LV_FS_MODE_RD | LV_FS_MODE_WR)) {
-            printf("lv_fs_open failed %s\n", ACCOUNT_PUBLIC_HOME_COIN_PATH);
-            return;
-        }
-        if (LV_FS_RES_OK != lv_fs_write(&fd, retStr, strlen(retStr), &size)) {
-            lv_fs_close(&fd);
-            printf("lv_fs_write failed %s\n", ACCOUNT_PUBLIC_HOME_COIN_PATH);
-            return;
-        }
-        lv_fs_close(&fd);
-    }
-}
 
 bool GetDBContract(const char* address, const char *selector, const uint32_t chainId, char *functionABIJson, char *contractName)
 {
@@ -622,10 +502,6 @@ void SystemReboot(void)
 
 }
 
-void WipeDevice(void)
-{
-
-}
 
 void SetPageLockScreen(bool enable)
 {

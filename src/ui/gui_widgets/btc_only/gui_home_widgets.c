@@ -51,7 +51,6 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
 void ScanQrCodeHandler(lv_event_t *e);
 static void CreateHomePageButtons(void);
 static void RcvHandler(lv_event_t *e);
-static void CoinDealHandler(lv_event_t *e);
 static void AddFlagCountDownTimerHandler(lv_timer_t *timer);
 void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count);
 
@@ -162,73 +161,15 @@ static void CreateHomePageButtons(void)
 
 static void RcvHandler(lv_event_t *e)
 {
+    static HOME_WALLET_CARD_ENUM coin;
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         printf("rcv handler\n");
-        GuiFrameOpenViewWithParam(&g_utxoReceiveView, &g_coinCardArray[HOME_WALLET_CARD_BTC], sizeof(g_coinCardArray[HOME_WALLET_CARD_BTC]));
+        coin = HOME_WALLET_CARD_BTC;
+        GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
     }
 }
 
-
-static void UpdateHomeConnectWalletCard(void)
-{
-    lv_obj_t *coinLabel;
-    lv_obj_t *chainLabel;
-    lv_obj_t *icon;
-    lv_obj_t *walletCardCont = g_homeWalletCardCont;
-    if (lv_obj_get_child_cnt(walletCardCont) > 0) {
-        lv_obj_clean(walletCardCont);
-    }
-
-    for (int i = 0, j = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-        coinLabel = GuiCreateTextLabel(walletCardCont, g_coinCardArray[i].coin);
-        chainLabel = GuiCreateNoticeLabel(walletCardCont, g_coinCardArray[i].chain);
-        icon = GuiCreateImg(walletCardCont, g_coinCardArray[i].icon);
-        GuiButton_t table[3] = {
-            {
-                .obj = icon,
-                .align = LV_ALIGN_TOP_MID,
-                .position = {0, 30},
-            },
-            {
-                .obj = coinLabel,
-                .align = LV_ALIGN_TOP_MID,
-                .position = {0, 92},
-            },
-            {
-                .obj = chainLabel,
-                .align = LV_ALIGN_TOP_MID,
-                .position = {0, 130},
-            },
-        };
-        lv_obj_t *button = GuiCreateButton(walletCardCont, 208, 176, table, NUMBER_OF_ARRAYS(table),
-                                           CoinDealHandler, (void *) & (g_coinCardArray[i].index));
-        lv_obj_align(button, LV_ALIGN_DEFAULT, 24 + ((i - j) % 2) * 224,
-                     144 - GUI_MAIN_AREA_OFFSET + ((i - j) / 2) * 192);
-        lv_obj_set_style_bg_color(button, WHITE_COLOR, LV_PART_MAIN);
-        lv_obj_set_style_bg_opa(button, LV_OPA_12, LV_PART_MAIN);
-        lv_obj_set_style_radius(button, 24, LV_PART_MAIN);
-    }
-}
-
-
-static void CoinDealHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    HOME_WALLET_CARD_ENUM coin;
-
-    if (code == LV_EVENT_CLICKED) {
-        coin = *(HOME_WALLET_CARD_ENUM *)lv_event_get_user_data(e);
-
-        switch (coin) {
-        case HOME_WALLET_CARD_BTC:
-            GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
-            break;
-        default:
-            break;
-        }
-    }
-}
 
 static void ManageCoinChainHandler(lv_event_t *e)
 {
@@ -266,7 +207,6 @@ void ConfirmManageAssetsHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         UpdateManageWalletState(true);
-        //UpdateHomeConnectWalletCard();
         GUI_DEL_OBJ(g_manageCont)
         GuiHomeRefresh();
     }
@@ -484,6 +424,7 @@ void GuiHomeRefresh(void)
         //lv_obj_clear_flag(g_scanImg, LV_OBJ_FLAG_HIDDEN);
     }
     GUI_DEL_OBJ(g_moreHintbox)
+    AccountPublicHomeCoinGet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
 }
 
 const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)

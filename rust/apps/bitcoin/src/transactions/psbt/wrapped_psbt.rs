@@ -92,13 +92,13 @@ impl WrappedPsbt {
             let prevout = prev_tx.output.get(tx_in.previous_output.vout as usize);
             match prevout {
                 Some(out) => {
-                    value = out.value;
+                    value = out.value.to_sat();
                 }
                 None => {}
             }
         }
         if let Some(utxo) = &input.witness_utxo {
-            value = utxo.value;
+            value = utxo.value.to_sat();
         }
         if value <= 0 {
             return Err(BitcoinError::InvalidTransaction(format!(
@@ -312,8 +312,8 @@ impl WrappedPsbt {
         let path = self.get_my_output_path(output, index, context)?;
         Ok(ParsedOutput {
             address: self.calculate_address_for_output(tx_out, network)?,
-            amount: Self::format_amount(tx_out.value, network),
-            value: tx_out.value,
+            amount: Self::format_amount(tx_out.value.to_sat(), network),
+            value: tx_out.value.to_sat(),
             path,
         })
     }
@@ -453,7 +453,7 @@ impl WrappedPsbt {
 
     fn is_taproot_input(&self, input: &Input) -> bool {
         if let Some(witness_utxo) = &input.witness_utxo {
-            return witness_utxo.script_pubkey.is_v1_p2tr();
+            return witness_utxo.script_pubkey.is_p2tr();
         }
         return false;
     }
@@ -465,7 +465,7 @@ mod tests {
     use alloc::vec::Vec;
     use core::str::FromStr;
 
-    use third_party::bitcoin::hashes::hex::FromHex;
+    use third_party::bitcoin_hashes::hex::FromHex;
     use third_party::hex::{self, ToHex};
 
     use super::*;

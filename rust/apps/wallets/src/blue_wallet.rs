@@ -1,7 +1,8 @@
+use core::str::FromStr;
+
 use alloc::string::ToString;
 use alloc::vec;
 use alloc::vec::Vec;
-use core::str::FromStr;
 use third_party::bitcoin::bip32;
 use third_party::ur_registry::crypto_account::CryptoAccount;
 use third_party::ur_registry::crypto_coin_info::{CoinType, CryptoCoinInfo, Network};
@@ -105,7 +106,7 @@ fn generate_crypto_hd_key(
     extended_public_key: &str,
     purpose: u32,
 ) -> URResult<CryptoHDKey> {
-    let bip32_extended_pub_key = bip32::ExtendedPubKey::from_str(extended_public_key)
+    let bip32_extended_pub_key = bip32::Xpub::from_str(extended_public_key)
         .map_err(|e| URError::UrEncodeError(e.to_string()))?;
     let parent_fingerprint = bip32_extended_pub_key.parent_fingerprint;
 

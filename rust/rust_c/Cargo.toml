@@ -95,3 +95,10 @@ btc-only = [
 ]
 [dev-dependencies]
 keystore = { path = "../keystore" }
+
+[patch.crates-io.bitcoin]
+git = "https://github.com/KeystoneHQ/rust-bitcoin.git"
+tag = "v0.31.2"
+default-features = false
+features = ["no-std", "secp-recovery"]
+

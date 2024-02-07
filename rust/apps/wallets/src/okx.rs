@@ -108,7 +108,7 @@ fn generate_k1_normal_key(
     key: ExtendedPublicKey,
     note: Option<String>,
 ) -> URResult<CryptoHDKey> {
-    let xpub = third_party::bitcoin::bip32::ExtendedPubKey::decode(&key.get_key())
+    let xpub = third_party::bitcoin::bip32::Xpub::decode(&key.get_key())
         .map_err(|_e| URError::UrEncodeError(_e.to_string()))?;
     let path = key.get_path();
     let key_path = CryptoKeyPath::new(
@@ -139,7 +139,7 @@ fn generate_eth_ledger_live_key(
     key: ExtendedPublicKey,
     note: Option<String>,
 ) -> URResult<CryptoHDKey> {
-    let xpub = third_party::bitcoin::bip32::ExtendedPubKey::decode(&key.get_key())
+    let xpub = third_party::bitcoin::bip32::Xpub::decode(&key.get_key())
         .map_err(|_e| URError::UrEncodeError(_e.to_string()))?;
     let path = key.get_path();
     let sub_path =

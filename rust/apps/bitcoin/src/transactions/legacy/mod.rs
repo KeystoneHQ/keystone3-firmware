@@ -19,13 +19,13 @@ pub fn sign_legacy_tx(tx_data: &mut TxData, seed: &[u8]) -> Result<Vec<u8>> {
         let raw_input = &tx_data.inputs[index].clone();
         let sig_hash = tx_data.signature_hash(index.clone())?;
         let message = match sig_hash {
-            either::Left(s) => Message::from_slice(s.as_ref()).map_err(|_e| {
+            either::Left(s) => Message::from_digest_slice(s.as_ref()).map_err(|_e| {
                 BitcoinError::SignFailure(format!(
                     "invalid sig hash for input #{}",
                     (index as u8).to_string()
                 ))
             })?,
-            either::Right(r) => Message::from_slice(r.as_ref()).map_err(|_e| {
+            either::Right(r) => Message::from_digest_slice(r.as_ref()).map_err(|_e| {
                 BitcoinError::SignFailure(format!(
                     "invalid sig hash for input #{}",
                     (index as u8).to_string()
@@ -85,7 +85,7 @@ mod tests {
         let master_fingerprint =
             third_party::bitcoin::bip32::Fingerprint::from_str("52744703").unwrap();
         let extended_pubkey =
-            third_party::bitcoin::bip32::ExtendedPubKey::from_str(extended_pubkey_str).unwrap();
+            third_party::bitcoin::bip32::Xpub::from_str(extended_pubkey_str).unwrap();
         let context = keystone::ParseContext::new(master_fingerprint, extended_pubkey);
         let payload = prepare_payload(hex);
         let check = check_raw_tx(payload, context.clone()).unwrap();
@@ -99,7 +99,7 @@ mod tests {
         let master_fingerprint =
             third_party::bitcoin::bip32::Fingerprint::from_str("52744703").unwrap();
         let extended_pubkey =
-            third_party::bitcoin::bip32::ExtendedPubKey::from_str(extended_pubkey_str).unwrap();
+            third_party::bitcoin::bip32::Xpub::from_str(extended_pubkey_str).unwrap();
         let context = keystone::ParseContext::new(master_fingerprint, extended_pubkey);
         let payload = prepare_payload(hex);
         let check = check_raw_tx(payload, context.clone()).unwrap();
@@ -144,7 +144,7 @@ mod tests {
         let master_fingerprint =
             third_party::bitcoin::bip32::Fingerprint::from_str("52744703").unwrap();
         let extended_pubkey =
-            third_party::bitcoin::bip32::ExtendedPubKey::from_str(extended_pubkey_str).unwrap();
+            third_party::bitcoin::bip32::Xpub::from_str(extended_pubkey_str).unwrap();
         let context = keystone::ParseContext::new(master_fingerprint, extended_pubkey);
         let payload = prepare_payload(hex);
         let check = check_raw_tx(payload, context.clone()).unwrap();

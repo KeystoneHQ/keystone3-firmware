@@ -4,7 +4,7 @@ use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::ops::Div;
-use third_party::bitcoin::bip32::{DerivationPath, ExtendedPubKey, Fingerprint};
+use third_party::bitcoin::bip32::{DerivationPath, Fingerprint, Xpub};
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct ParsedTx {
@@ -55,13 +55,13 @@ pub struct DetailTx {
 
 pub struct ParseContext {
     pub master_fingerprint: Fingerprint,
-    pub extended_public_keys: BTreeMap<DerivationPath, ExtendedPubKey>,
+    pub extended_public_keys: BTreeMap<DerivationPath, Xpub>,
 }
 
 impl ParseContext {
     pub fn new(
         master_fingerprint: Fingerprint,
-        extended_public_keys: BTreeMap<DerivationPath, ExtendedPubKey>,
+        extended_public_keys: BTreeMap<DerivationPath, Xpub>,
     ) -> Self {
         ParseContext {
             master_fingerprint,

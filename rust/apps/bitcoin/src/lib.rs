@@ -161,8 +161,7 @@ mod test {
             third_party::bitcoin::bip32::Fingerprint::from_str("73c5da0a").unwrap();
         let extended_pubkey_str = convert_version(pubkey_str, &Version::Xpub).unwrap();
         let extended_pubkey =
-            third_party::bitcoin::bip32::ExtendedPubKey::from_str(extended_pubkey_str.as_str())
-                .unwrap();
+            third_party::bitcoin::bip32::Xpub::from_str(extended_pubkey_str.as_str()).unwrap();
         keystone::ParseContext::new(master_fingerprint, extended_pubkey)
     }
 

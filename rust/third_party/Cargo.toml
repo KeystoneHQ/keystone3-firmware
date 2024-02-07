@@ -6,7 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bitcoin = { git = "https://github.com/KeystoneHQ/rust-bitcoin.git", tag="v0.30.1", default-features = false, features = ["no-std", "secp-recovery"] }
+bitcoin = { version = "0.31.1", default-features = false, features = ["no-std", "secp-recovery"] }
+bech32 = {version = "0.10.0-beta", default-features = false}
+bitcoin_hashes = {version = "0.13.0", default-features = false}
 core2 = { version = "0.3.3", default_features = false }
 thiserror = { version = "1.0", package = "thiserror-core", default-features = false }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }

@@ -19,7 +19,7 @@ use crate::transaction::WrappedTxData;
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use third_party::bitcoin::bip32::{DerivationPath, ExtendedPubKey};
+use third_party::bitcoin::bip32::{DerivationPath, Xpub};
 use third_party::secp256k1::Message;
 use third_party::serde_json::{from_slice, Value};
 use third_party::{hex, secp256k1};
@@ -27,7 +27,7 @@ use third_party::{hex, secp256k1};
 pub fn sign_tx(raw_hex: &[u8], hd_path: &String, seed: &[u8]) -> R<Vec<u8>> {
     let v: Value = from_slice(raw_hex)?;
     let mut wrapped_tx = WrappedTxData::from_raw(v.to_string().into_bytes().as_slice())?;
-    let message = Message::from_slice(&wrapped_tx.tx_hex).map_err(|_e| {
+    let message = Message::from_digest_slice(&wrapped_tx.tx_hex).map_err(|_e| {
         XRPError::SignFailure(format!(
             "invalid message to sign {:?}",
             hex::encode(wrapped_tx.tx_hex)
@@ -46,7 +46,7 @@ pub fn parse(raw_hex: &[u8]) -> R<parser::structs::ParsedXrpTx> {
 }
 
 pub fn get_pubkey_path(root_xpub: &str, pubkey: &str, max_i: u32) -> R<String> {
-    let xpub = ExtendedPubKey::from_str(&root_xpub)?;
+    let xpub = Xpub::from_str(&root_xpub)?;
     let k1 = secp256k1::Secp256k1::new();
     let a_xpub = xpub.derive_pub(&k1, &DerivationPath::from_str("m/0")?)?;
     let pubkey_arr = hex::decode(pubkey)?;

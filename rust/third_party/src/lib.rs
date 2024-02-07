@@ -2,9 +2,11 @@
 
 pub use base64;
 pub use bcs;
+pub use bech32;
 pub use bitcoin;
 pub use bitcoin::base58;
 pub use bitcoin::secp256k1;
+pub use bitcoin_hashes;
 pub use blake2;
 pub use core2;
 pub use cryptoxide;

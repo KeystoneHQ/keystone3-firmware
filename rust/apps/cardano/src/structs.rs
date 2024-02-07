@@ -8,9 +8,7 @@ use app_utils::{impl_internal_struct, impl_public_struct};
 use cardano_serialization_lib::address::RewardAddress;
 
 use cardano_serialization_lib::utils::from_bignum;
-use cardano_serialization_lib::{
-    Certificate, CertificateKind, NetworkId, NetworkIdKind, Transaction,
-};
+use cardano_serialization_lib::{NetworkIdKind, Transaction};
 
 use alloc::format;
 use core::ops::Div;
@@ -18,7 +16,6 @@ use third_party::bitcoin::bip32::ChildNumber::{Hardened, Normal};
 use third_party::bitcoin::bip32::DerivationPath;
 
 use third_party::hex;
-use third_party::itertools::Itertools;
 
 impl_public_struct!(ParseContext {
     utxos: Vec<CardanoUtxo>,

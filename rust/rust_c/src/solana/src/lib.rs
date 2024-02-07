@@ -4,7 +4,7 @@ extern crate alloc;
 
 use crate::structs::{DisplaySolanaMessage, DisplaySolanaTx};
 use alloc::format;
-use alloc::string::ToString;
+use alloc::string::{String, ToString};
 use app_solana::errors::SolanaError;
 use app_solana::parse_message;
 use common_rust_c::errors::RustCError;
@@ -139,4 +139,25 @@ pub extern "C" fn sol_get_path(ptr: PtrUR) -> PtrString {
         return convert_c_char(path);
     }
     return convert_c_char("".to_string());
+}
+
+#[no_mangle]
+pub extern "C" fn solana_parse_program(program_account: PtrString, program_data: PtrString, instruction: PtrString, types: PtrString) -> *mut SimpleResponse<c_char> {
+    let program_account = recover_c_char(program_account);
+    let program_data = recover_c_char(program_data);
+    let instruction = recover_c_char(instruction);
+    let types = recover_c_char(types);
+    match app_solana::parse_program_anchor(&program_account, &program_data, &instruction, &types) {
+        Ok(v) => SimpleResponse::success(convert_c_char(v) as *mut c_char).simple_c_ptr(),
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn solana_get_instruction_index(program_data: PtrString) -> *mut SimpleResponse<c_char> {
+    let program_data = recover_c_char(program_data);
+    match app_solana::get_instruction_index(&program_data) {
+        Ok(v) => SimpleResponse::success(convert_c_char(v) as *mut c_char).simple_c_ptr(),
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+    }
 }

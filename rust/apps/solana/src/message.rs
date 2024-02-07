@@ -23,6 +23,7 @@ impl Read<Signature> for Signature {
     }
 }
 
+#[derive(Debug)]
 pub struct Account {
     pub value: Vec<u8>,
 }

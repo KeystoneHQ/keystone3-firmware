@@ -1060,6 +1060,24 @@ impl ProgramDetailRawUnknown {
 }
 
 #[derive(Debug, Clone, Serialize)]
+pub struct ProgramMethodParam {
+    pub name: String,
+    pub value: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ProgramDetailAnchor {
+    pub program_account: String,
+    pub program_method: String,
+    pub program_params: Vec<ProgramMethodParam>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ProgramDetailCumputeBudget {
+    pub value: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
 #[serde(untagged)]
 pub enum ProgramDetail {
     // system
@@ -1162,6 +1180,16 @@ pub enum ProgramDetail {
     Unknown(ProgramDetailUnknown),
     GeneralUnknown(ProgramDetailGeneralUnknown),
     RawUnknown(ProgramDetailRawUnknown),
+
+    // Anchor
+    Anchor(ProgramDetailAnchor),
+
+    // cumpute budget
+    ComputeBudgetUnused,
+    ComputeBudgetRequestHeapFrame(ProgramDetailCumputeBudget),
+    ComputeBudgetSetComputeUnitLimit(ProgramDetailCumputeBudget),
+    ComputeBudgetSetComputeUnitPrice(ProgramDetailCumputeBudget),
+    ComputeBudgetSetLoadedAccountsDataSizeLimit(ProgramDetailCumputeBudget),
 }
 
 #[derive(Debug, Clone, Serialize)]

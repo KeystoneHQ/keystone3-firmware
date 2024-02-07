@@ -3,16 +3,13 @@ pub mod overview;
 pub mod structs;
 
 use crate::errors::{Result, SolanaError};
-use crate::message::Message;
-use crate::parser::detail::{
-    CommonDetail, ProgramDetail, ProgramDetailGeneralUnknown, SolanaDetail,
-};
+use crate::parser::detail::{CommonDetail, ProgramDetail, SolanaDetail};
 use crate::parser::overview::{
     ProgramOverviewGeneral, ProgramOverviewTransfer, ProgramOverviewUnknown, ProgramOverviewVote,
     SolanaOverview,
 };
 use crate::parser::structs::{ParsedSolanaTx, SolanaTxDisplayType};
-use crate::read::Read;
+use crate::vertioned_message::VersionedMessage;
 use alloc::borrow::ToOwned;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
@@ -20,7 +17,7 @@ use serde_json::json;
 
 impl ParsedSolanaTx {
     pub fn build(data: &Vec<u8>) -> Result<Self> {
-        let message = Message::read(data.clone().to_vec().as_mut())?;
+        let message = VersionedMessage::read(data.clone().to_vec().as_mut())?;
         let raw_details = message.to_program_details()?;
         let display_type = Self::detect_display_type(&raw_details);
         let parsed_overview = Self::build_overview(&display_type, &raw_details)?;
@@ -68,35 +65,51 @@ impl ParsedSolanaTx {
     fn is_unknown_detail(common: &CommonDetail) -> bool {
         common.program.eq("Unknown") && common.method.eq("")
     }
-    fn build_genera_detail(details: &[SolanaDetail]) -> Result<String> {
+
+    pub fn build_genera_detail(details: &[SolanaDetail]) -> Result<String> {
         let parsed_detail = details
             .iter()
             .map(|d| {
-                if Self::is_unknown_detail(&d.common) {
-                    if let ProgramDetail::Unknown(v) = &d.kind {
-                        return SolanaDetail {
-                            common: d.common.clone(),
-                            kind: ProgramDetail::GeneralUnknown(
-                                ProgramDetailGeneralUnknown::from_unknown_detail(&v),
-                            ),
-                        };
-                    }
-                }
+                // if Self::is_unknown_detail(&d.common) {
+                //     if let ProgramDetail::Unknown(v) = &d.kind {
+                //         return SolanaDetail {
+                //             common: d.common.clone(),
+                //             kind: ProgramDetail::GeneralUnknown(
+                //                 ProgramDetailGeneralUnknown::from_unknown_detail(&v),
+                //             ),
+                //         };
+                //     }
+                // }
                 d.clone()
             })
             .collect::<Vec<SolanaDetail>>();
         Ok(serde_json::to_string(&parsed_detail)?)
     }
 
-    fn build_unknown_detail(details: &[SolanaDetail], message: &Message) -> Result<String> {
+    fn build_unknown_detail(
+        details: &[SolanaDetail],
+        message: &VersionedMessage,
+    ) -> Result<String> {
+        let header = match message {
+            VersionedMessage::Legacy(m) => &m.header,
+            VersionedMessage::V0(m) => &m.header,
+        };
+        let accounts = match message {
+            VersionedMessage::Legacy(m) => &m.accounts,
+            VersionedMessage::V0(m) => &m.account_keys,
+        };
+        let block_hash = match message {
+            VersionedMessage::Legacy(m) => &m.block_hash,
+            VersionedMessage::V0(m) => &m.recent_blockhash,
+        };
         let value = json!({
                     "header": {
-                        "num_required_signatures": message.header.num_required_signatures,
-                        "num_readonly_signed_accounts": message.header.num_readonly_signed_accounts,
-                        "num_readonly_unsigned_accounts": message.header.num_readonly_unsigned_accounts,
+                        "num_required_signatures": header.num_required_signatures,
+                        "num_readonly_signed_accounts": header.num_readonly_signed_accounts,
+                        "num_readonly_unsigned_accounts": header.num_readonly_unsigned_accounts,
                     },
-                    "accounts": message.accounts.iter().map(|account| {third_party::base58::encode(&account.value)}).collect::<Vec<String>>(),
-                    "block_hash": third_party::base58::encode(&message.block_hash.value),
+                    "accounts": accounts.iter().map(|account| {third_party::base58::encode(&account.value)}).collect::<Vec<String>>(),
+                    "block_hash": third_party::base58::encode(&block_hash.value),
                     "instructions": details,
                 }).to_string();
         Ok(value)
@@ -105,7 +118,7 @@ impl ParsedSolanaTx {
     fn build_detail(
         display_type: &SolanaTxDisplayType,
         details: &[SolanaDetail],
-        message: &Message,
+        message: &VersionedMessage,
     ) -> Result<String> {
         match display_type {
             SolanaTxDisplayType::Unknown => Self::build_unknown_detail(details, message),
@@ -159,12 +172,12 @@ impl ParsedSolanaTx {
     fn build_general_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
         let mut overview = Vec::new();
         details.iter().for_each(|d| {
-            if d.common.program != SolanaTxDisplayType::Unknown.to_string() {
-                overview.push(ProgramOverviewGeneral {
-                    program: d.common.program.to_string(),
-                    method: d.common.method.to_string(),
-                })
-            }
+            // if d.common.program != SolanaTxDisplayType::Unknown.to_string() {
+            overview.push(ProgramOverviewGeneral {
+                program: d.common.program.to_string(),
+                method: d.common.method.to_string(),
+            })
+            // }
         });
         Ok(SolanaOverview::General(overview))
     }

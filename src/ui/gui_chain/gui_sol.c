@@ -9,6 +9,7 @@
 #include "account_manager.h"
 #include "assert.h"
 #include "cjson/cJSON.h"
+#include "ff.h"
 
 static uint8_t GetSolPublickeyIndex(char* rootPath);
 
@@ -17,6 +18,8 @@ static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static ViewType g_viewType = ViewTypeUnKnown;
+static char *g_programInstructions[100] = {NULL};
+static SolProgramInfo_t *g_programInfos[100] = {NULL};
 
 #define CHECK_FREE_PARSE_SOL_RESULT(result)                                                                                       \
     if (result != NULL)                                                                                                           \
@@ -74,6 +77,97 @@ UREncodeResult *GuiGetSolSignQrCodeData(void)
 #endif
 }
 
+static void ParsePrograms(void)
+{
+    PtrT_TransactionParseResult_DisplaySolanaTx parseResult = (PtrT_TransactionParseResult_DisplaySolanaTx)g_parseResult;
+    DisplaySolanaTx *tx = parseResult->data;
+    cJSON *json = cJSON_Parse(tx->detail);
+    int n = cJSON_GetArraySize(json);
+    if (n == NULL) {
+        return;
+    }
+    for (int i = 0; i < n; ++i)
+    {
+        cJSON *program = cJSON_GetArrayItem(json, i);
+        char *programType = cJSON_GetObjectItem(program, "program")->valuestring;
+        if (strcmp(programType, "Unknown") == 0) {
+            char *programAccount = cJSON_GetObjectItem(program, "program_account")->valuestring;
+            char *programData = cJSON_GetObjectItem(program, "data")->valuestring;
+            char *instruction = NULL;
+            char *info = NULL;
+            char path[256] = {0};
+            FIL fp;
+            uint32_t fileSize = 0, readSize = 0;
+            char *fileBuf;
+            char index[16] = {0};
+            // get instruction
+            printf("programData=%s\n", programData);
+            PtrT_SimpleResponse_c_char indexRes = solana_get_instruction_index(programData);
+            strcpy(index, indexRes->data);
+            free_simple_response_c_char(indexRes);
+            printf("index=%s\n", index);
+            sprintf(path, "0:solana-programs/%s-instruction-%s.json", programAccount, index);
+            printf("path=%s\n", path);
+            uint32_t ret = f_open(&fp, path, FA_OPEN_EXISTING | FA_READ);
+            if (ret != FR_OK) {
+                printf("f_open error: %d\n", ret);
+                continue;
+            }
+            fileSize = f_size(&fp);
+            fileBuf = EXT_MALLOC(fileSize + 1);
+            ret = f_read(&fp, (void *)fileBuf, fileSize, &readSize);
+            if (ret != FR_OK) {
+                printf("f_read error: %d\n", ret);
+                f_close(&fp);
+                continue;
+            }
+            fileBuf[fileSize] = '\0';
+            instruction = fileBuf;
+            f_close(&fp);
+            // get info
+            sprintf(path, "0:solana-programs/%s-info.json", programAccount);
+            printf("path=%s\n", path);
+            ret = f_open(&fp, path, FA_OPEN_EXISTING | FA_READ);
+            if (ret != FR_OK) {
+                printf("f_open error: %d\n", ret);
+                continue;
+            }
+            fileSize = f_size(&fp);
+            printf("fileSize=%d\n", fileSize);
+            fileBuf = EXT_MALLOC(fileSize + 1);
+            ret = f_read(&fp, (void *)fileBuf, fileSize, &readSize);
+            if (ret != FR_OK) {
+                printf("f_read error: %d\n", ret);
+                f_close(&fp);
+                continue;
+            }
+            fileBuf[fileSize] = '\0';
+            info = fileBuf;
+            f_close(&fp);
+            cJSON *infoRoot = cJSON_Parse(info);
+            char *types = cJSON_Print(cJSON_GetObjectItem(infoRoot, "types")->child);
+            g_programInfos[i] = (SolProgramInfo_t *)EXT_MALLOC(sizeof(SolProgramInfo_t));
+            g_programInfos[i]->account = EXT_MALLOC(strlen(programAccount) + 1);
+            strcpy(g_programInfos[i]->account, programAccount);
+            char *name = cJSON_GetObjectItem(infoRoot, "name")->valuestring;
+            g_programInfos[i]->name = EXT_MALLOC(strlen(name) + 1);
+            strcpy(g_programInfos[i]->name, name);
+            char *version = cJSON_GetObjectItem(infoRoot, "version")->valuestring;
+            g_programInfos[i]->version = EXT_MALLOC(strlen(version) + 1);
+            strcpy(g_programInfos[i]->version, version);
+            PtrT_SimpleResponse_c_char res = solana_parse_program(programAccount, programData, instruction, types);
+            if (res->error_code == 0) {
+                g_programInstructions[i] = EXT_MALLOC(strlen(res->data) + 1);
+                strcpy(g_programInstructions[i], res->data);
+                printf("g_programInstructions[%d]=%s\n", i, g_programInstructions[i]);
+            }
+            free_simple_response_c_char(res);
+            EXT_FREE(instruction);
+            EXT_FREE(info);
+        }
+    }
+}
+
 void *GuiGetSolData(void)
 {
 #ifndef COMPILE_SIMULATOR
@@ -83,6 +177,7 @@ void *GuiGetSolData(void)
         PtrT_TransactionParseResult_DisplaySolanaTx parseResult = solana_parse_tx(data);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
+        ParsePrograms();
     } while (0);
     return g_parseResult;
 #else
@@ -128,6 +223,14 @@ void FreeSolMemory(void)
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_SOL_RESULT(g_parseResult);
+    for (uint8_t i = 0; i < 100; i++)
+    {
+        EXT_FREE(g_programInstructions[i]);
+        g_programInstructions[i] = NULL;
+        EXT_FREE(g_programInfos[i]);
+        g_programInfos[i] = NULL;
+    }
+    
 #endif
 }
 
@@ -399,15 +502,24 @@ static void GuiShowSolTxGeneralOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOv
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 121, 62);
         SetContentLableStyle(label);
 
+        char *method;
         if (0 == strcmp(program, "Unknown")) {
-            lv_obj_set_height(container, 108);
-            containerYOffset = containerYOffset + 108 + 16;
-            continue;
+            if (g_programInstructions[i] == NULL) {
+                lv_obj_set_height(container, 108);
+                containerYOffset = containerYOffset + 108 + 16;
+                continue;
+            } else {
+                lv_label_set_text(label, g_programInfos[i]->name);
+                cJSON *json = cJSON_Parse(g_programInstructions[i]);
+                method = cJSON_GetObjectItem(json, "program_method")->valuestring;
+                cJSON_Delete(json);
+                containerYOffset = containerYOffset + 150 + 16;
+            }
         } else {
+            method = general->data[i].method;
             containerYOffset = containerYOffset + 150 + 16;
         }
 
-        char *method = general->data[i].method;
         label = lv_label_create(container);
         lv_label_set_text(label, "Method");
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 100);
@@ -492,6 +604,12 @@ void GuiShowSolTxDetail(lv_obj_t *parent, void *totalData)
 
     lv_obj_t *label = lv_label_create(cont);
     cJSON *root = cJSON_Parse((const char *)txDetail);
+    int16_t len = cJSON_GetArraySize(root);
+    for (int16_t i = 0; i < len; i++) {
+        if (g_programInstructions[i] != NULL) {
+            cJSON_ReplaceItemInArray(root, i, cJSON_Parse(g_programInstructions[i]));
+        }
+    }
     lv_label_set_text(label, cJSON_Print(root));
     cJSON_Delete(root);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);

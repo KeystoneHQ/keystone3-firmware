@@ -1,3 +1,4 @@
+pub mod compute_budget;
 pub mod stake;
 pub mod system;
 pub mod token;

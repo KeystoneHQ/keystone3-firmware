@@ -41,6 +41,7 @@ enum SupportedProgram {
     TokenProgram,
     TokenSwapProgramV3,
     TokenLendingProgram,
+    ComputeBudget,
 }
 
 impl SupportedProgram {
@@ -56,6 +57,7 @@ impl SupportedProgram {
             "LendZqTs7gn5CTSJU1jWKhKuVpjJGom45nnwPb2AMTi" => {
                 Ok(SupportedProgram::TokenLendingProgram)
             }
+            "ComputeBudget111111111111111111111111111111" => Ok(SupportedProgram::ComputeBudget),
             x => Err(SolanaError::UnsupportedProgram(x.to_string())),
         }
     }
@@ -103,6 +105,14 @@ impl Instruction {
                     )
                     .map_err(|e| ProgramError(e.to_string()))?;
                 resolvers::token_lending::resolve(instruction, accounts)
+            }
+            SupportedProgram::ComputeBudget => {
+                let instruction =
+                    crate::solana_lib::solana_program::compute_budget_instruction::ComputeBudgetInstruction::unpack(
+                        self.data.clone().as_slice(),
+                    )
+                    .map_err(|e| ProgramError(e.to_string()))?;
+                resolvers::compute_budget::resolve(instruction, accounts)
             }
         }
     }

@@ -1,3 +1,4 @@
+pub mod compute_budget_instruction;
 pub mod errors;
 pub mod program_option;
 pub mod program_pack;

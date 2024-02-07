@@ -3,6 +3,12 @@
 
 #include "rust.h"
 
+typedef struct {
+  char *version;
+  char *name;
+  char *account;
+} SolProgramInfo_t;
+
 void GuiSetSolUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetSolData(void);
 UREncodeResult *GuiGetSolSignQrCodeData(void);

@@ -102,7 +102,7 @@ static void CreateHomePageButtons(void)
     lv_obj_t *img, *label, *arrow, *rcvButton, *scanButton;
 
     img = GuiCreateImg(g_homeWalletCardCont, &imgReceive);
-    label = GuiCreateLittleTitleLabel(g_homeWalletCardCont, "RECEIVE");
+    label = GuiCreateLittleTitleLabel(g_homeWalletCardCont, _("home_button_receive"));
     arrow = GuiCreateImg(g_homeWalletCardCont, &imgArrowRight);
     GuiButton_t rcvButtonTable[3] = {
         {
@@ -129,7 +129,7 @@ static void CreateHomePageButtons(void)
     lv_obj_set_style_bg_opa(rcvButton, LV_OPA_20, LV_STATE_PRESSED | LV_PART_MAIN);
 
     img = GuiCreateImg(g_homeWalletCardCont, &imgScan48);
-    label = GuiCreateLittleTitleLabel(g_homeWalletCardCont, "SCAN");
+    label = GuiCreateLittleTitleLabel(g_homeWalletCardCont, _("home_button_scan"));
     arrow = GuiCreateImg(g_homeWalletCardCont, &imgArrowRight);
     GuiButton_t scanButtonTable[3] = {
         {

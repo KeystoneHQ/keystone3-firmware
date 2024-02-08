@@ -16,7 +16,7 @@ void GuiBtcWalletProfileInit(void)
 {
     printf("%s\n", __func__);
     g_pageWidget = CreatePageWidget();
-    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Wallet Profile");
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_profile_mid_btn"));
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     CreateBtcWalletProfileEntranceWidget(g_pageWidget->contentZone);
 }
@@ -58,7 +58,7 @@ static void CreateBtcWalletProfileEntranceWidget(lv_obj_t *parent)
     lv_obj_t *label, *img, *imgArrow, *button, *line;
 
     img = GuiCreateImg(parent, &imgKey);
-    label = GuiCreateTextLabel(parent, "Single-Sign Wallet");
+    label = GuiCreateTextLabel(parent, _("wallet_profile_single-sign_title"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     GuiButton_t table[3] = {
         {
@@ -84,13 +84,13 @@ static void CreateBtcWalletProfileEntranceWidget(lv_obj_t *parent)
     lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, 96);
 
     table[0].obj = GuiCreateImg(parent, &imgNetwork);
-    table[1].obj = GuiCreateTextLabel(parent, "Network");
+    table[1].obj = GuiCreateTextLabel(parent, _("wallet_profile_network_title"));
     table[2].obj = GuiCreateImg(parent, &imgArrowRight);
     button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table), EmptyHandler, NULL);
     lv_obj_align(button, LV_ALIGN_TOP_LEFT, 12, 109);
 
     table[0].obj = GuiCreateImg(parent, &imgExport);
-    table[1].obj = GuiCreateTextLabel(parent, "Export (Ext) Public Key");
+    table[1].obj = GuiCreateTextLabel(parent, _("wallet_profile_export_title"));
     table[2].obj = GuiCreateImg(parent, &imgArrowRight);
     button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table), EmptyHandler, NULL);
     lv_obj_align(button, LV_ALIGN_TOP_LEFT, 12, 205);

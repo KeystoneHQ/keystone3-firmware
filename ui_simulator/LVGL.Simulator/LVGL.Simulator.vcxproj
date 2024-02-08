@@ -205,6 +205,7 @@
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgImport.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgInfo.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgInformation.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgKey.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgLock.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgLockDestroy.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgLockedDevice.c" />

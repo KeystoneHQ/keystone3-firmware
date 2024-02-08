@@ -30,7 +30,6 @@ static bool g_isManageOpen = false;
 static bool g_isManageClick = true;
 static PageWidget_t *g_pageWidget;
 static lv_timer_t *g_countDownTimer = NULL; // count down timer
-static lv_obj_t *g_walletButton[HOME_WALLET_CARD_BUTT];
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_BTC, false, "BTC", true},
@@ -169,21 +168,6 @@ static void RcvHandler(lv_event_t *e)
     }
 }
 
-
-static void ManageCoinChainHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        bool state;
-        WalletState_t *wallet = lv_event_get_user_data(e);
-
-        lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
-        state = lv_obj_has_state(lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 1), LV_STATE_CHECKED);
-        g_walletBakState[wallet->index].state = state;
-        UpdateManageWalletState(false);
-    }
-}
 
 void ScanQrCodeHandler(lv_event_t *e)
 {

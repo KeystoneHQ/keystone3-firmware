@@ -164,6 +164,7 @@ static void RcvHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         printf("rcv handler\n");
         coin = HOME_WALLET_CARD_BTC;
+        ShowWallPager(false);
         GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
     }
 }
@@ -179,7 +180,7 @@ void ScanQrCodeHandler(lv_event_t *e)
             lv_timer_del(g_countDownTimer);
             g_countDownTimer = NULL;
         }
-
+        ShowWallPager(false);
         GuiFrameOpenView(&g_scanView);
     }
 }
@@ -202,6 +203,7 @@ static void OpenMoreViewHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
         g_moreHintbox = NULL;
+        ShowWallPager(false);
         GuiFrameOpenView(lv_event_get_user_data(e));
     }
 }
@@ -248,6 +250,7 @@ static void OpenWalletProfileHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         printf("OpenWalletProfileHandler\n");
+        ShowWallPager(false);
         GuiFrameOpenView(&g_btcBtcWalletProfileView);
     }
 }

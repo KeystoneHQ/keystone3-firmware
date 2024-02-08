@@ -20,7 +20,6 @@ static int32_t GuiBtcWalletProfileViewDeInit(void)
 static int32_t GuiBtcWalletProfileViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     uint16_t tileIndex = 0;
-    uint8_t walletCnt = 0;
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:

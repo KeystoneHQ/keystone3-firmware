@@ -163,9 +163,11 @@ void ShowWallPager(bool enable)
 void GuiStatusBarInit(void)
 {
     g_guiStatusBar.background = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
+#ifdef BTC_ONLY
     g_guiStatusBar.wallPaper = GuiCreateImg(g_guiStatusBar.background, NULL);
     lv_img_set_src(g_guiStatusBar.wallPaper, &imgDeepLayersVolume11);
     ShowWallPager(false);
+#endif
     lv_obj_t *cont = GuiCreateContainerWithParent(g_guiStatusBar.background, lv_obj_get_width(lv_scr_act()), GUI_STATUS_BAR_HEIGHT);
     lv_obj_set_size(cont, lv_obj_get_width(lv_scr_act()), GUI_STATUS_BAR_HEIGHT);
     lv_obj_set_style_radius(cont, 0, 0);

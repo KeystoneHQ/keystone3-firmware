@@ -291,7 +291,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"device_info_title", "Device Info"},
     {"device_setting_about_title", "About"},
     {"device_setting_about_title_desc", "v1.0.2"},
-    {"device_setting_connection_desc", "USB / MicroSD Card"},
+    {"device_setting_connection_desc", "Air-Gap Mode / MicroSD Card"},
     {"device_setting_connection_title", "Connection"},
     {"device_setting_mid_btn", "Device Settings"},
     {"device_setting_system_setting_desc", "Language / Screen / Reset..."},

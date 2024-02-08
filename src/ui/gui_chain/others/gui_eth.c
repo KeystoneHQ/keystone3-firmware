@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "gui_analyze.h"
 #include "user_memory.h"
 #include "secret_cache.h"
@@ -1213,3 +1214,4 @@ void FreeEthMemory(void)
     FreeContractData();
 #endif
 }
+#endif

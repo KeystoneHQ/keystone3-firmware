@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "gui_standard_receive_widgets.h"
 #include "gui_status_bar.h"
 #include "gui_chain.h"
@@ -731,3 +732,4 @@ static uint32_t GetCurrentSelectIndex()
         return g_selectIndex[GetCurrentAccountIndex()];
     }
 }
+#endif

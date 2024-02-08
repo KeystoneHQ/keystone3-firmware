@@ -1398,6 +1398,24 @@
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_export_pubkey_widgets.c">
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\btc_only\gui_home_widgets.c">
+      <Filter>gui\gui_widgets\btc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgDeepLayersVolume11.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgScan48.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_views\btc_only\gui_btc_wallet_profile_view.c">
+      <Filter>gui\gui_views\btc_only</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\btc_only\gui_btc_wallet_profile_widgets.c">
+      <Filter>gui\gui_widgets\btc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgKey.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\external\lvgl\src\core\lv_disp.h" />
@@ -1673,6 +1691,12 @@
     </Filter>
     <Filter Include="gui\gui_widgets\general">
       <UniqueIdentifier>{555ca555-ab52-406a-85f2-14d7cd207705}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui\gui_widgets\btc">
+      <UniqueIdentifier>{d81fd867-d0e4-44c2-ae12-5ea03544d708}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui\gui_views\btc_only">
+      <UniqueIdentifier>{d55766bd-6654-4f4e-96a8-37538d26e464}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

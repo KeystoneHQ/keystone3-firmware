@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "gui_key_derivation_request_widgets.h"
 #include "gui.h"
 #include "gui_page.h"
@@ -391,3 +392,4 @@ static void OpenTutorialHandler(lv_event_t *e)
         GUI_DEL_OBJ(g_openMoreHintBox);
     }
 }
+#endif

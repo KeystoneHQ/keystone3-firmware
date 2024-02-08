@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "rust.h"
 #include "keystore.h"
 #include "user_memory.h"
@@ -104,3 +105,4 @@ UREncodeResult *GuiGetSuiSignQrCodeData(void)
     return encodeResult;
 #endif
 }
+#endif

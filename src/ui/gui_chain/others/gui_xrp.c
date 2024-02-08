@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "gui_xrp.h"
 #include "gui_chain.h"
 #include "account_manager.h"
@@ -177,3 +178,4 @@ UREncodeResult *GuiGetXrpSignQrCodeData(void)
     return encodeResult;
 #endif
 }
+#endif

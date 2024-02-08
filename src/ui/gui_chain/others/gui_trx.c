@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "gui_analyze.h"
 #include "rust.h"
 #include "account_public_info.h"
@@ -150,3 +151,4 @@ UREncodeResult *GuiGetTrxSignQrCodeData(void)
     return encodeResult;
 #endif
 }
+#endif

@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "gui_multi_path_coin_receive_widgets.h"
 #include "gui_status_bar.h"
 #include "gui_chain.h"
@@ -1315,3 +1316,4 @@ static uint32_t GetCurrentSelectIndex()
     }
     return g_ethSelectIndex[g_currentAccountIndex];
 }
+#endif

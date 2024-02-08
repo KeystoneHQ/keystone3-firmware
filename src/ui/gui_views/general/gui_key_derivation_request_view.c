@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_views.h"
@@ -44,3 +45,4 @@ GUI_VIEW g_keyDerivationRequestView = {
     .optimization = false,
     .pEvtHandler = GuiKeyDerivationRequestViewEventProcess,
 };
+#endif

@@ -22,7 +22,7 @@
 #define BATTERY_PRINTF(fmt, args...)
 #endif
 
-#define BATTERY_DIFF_THRESHOLD                          20
+#define BATTERY_DIFF_THRESHOLD                          40
 #define BATTERY_CHARGING_BY_TIME                        75
 #define BATTERY_LOG_PERCENT_INTERVAL                    10
 #define BATTERY_LOG_ONLY_LOW_BATTERY                    1

@@ -397,8 +397,8 @@
     <ClCompile Include="..\..\src\ui\gui_views\gui_web_auth_result_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_web_auth_view.c" />
     <ClCompile Include="..\..\src\ui\gui_views\gui_wipe_device_view.c" />
+    <ClCompile Include="..\..\src\ui\gui_widgets\btc_only\gui_btc_home_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\btc_only\gui_btc_wallet_profile_widgets.c" />
-    <ClCompile Include="..\..\src\ui\gui_widgets\btc_only\gui_home_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_connect_eternl_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_home_widgets.c" />
     <ClCompile Include="..\..\src\ui\gui_widgets\general\gui_key_derivation_request_widgets.c" />

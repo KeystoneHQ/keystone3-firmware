@@ -30,13 +30,14 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         GuiHomeRestart();
         break;
     case GUI_EVENT_REFRESH:
+        printf("%s %d..\n", __func__, __LINE__);
+        GuiHomeRefresh();
         if (param != NULL) {
             GuiModeGetWalletDesc();
         }
-        GuiHomeRefresh();
         break;
     case SIG_INIT_GET_CURRENT_WALLET_DESC:
-        GuiHomeSetWalletDesc((WalletDesc_t *)param);
+        // GuiHomeSetWalletDesc((WalletDesc_t *)param);
         break;
     default:
         return ERR_GUI_UNHANDLED;

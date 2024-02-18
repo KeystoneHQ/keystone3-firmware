@@ -13,10 +13,63 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
-uint32_t GetCurrentAccountEntropyLen(void)
+int pbkdf2_hmac_sha512(
+    const unsigned char *pass,
+    size_t pass_len,
+    const unsigned char *salt,
+    size_t salt_len,
+    uint32_t flags,
+    uint32_t cost,
+    unsigned char *bytes_out,
+    size_t len)
 {
-    return 64;
+
 }
+
+void TrngGet(void *buf, uint32_t len)
+{
+    uint32_t buf4[4];
+    for (uint32_t i = 0; i < len; i += 16) {
+        for (int i = 0; i < 4; i++) {
+            buf4[i] = 0x1234 * i;
+        }
+        if (len - i >= 16) {
+            memcpy((uint8_t *)buf + i, buf4, 16);
+        } else {
+            memcpy((uint8_t *)buf + i, buf4, len - i);
+        }
+    }
+}
+
+void SE_GetTRng(void *buf, uint32_t len)
+{
+    uint8_t *data = buf;
+    for (int i = 0; i < len; i++) {
+        data[i] = i;
+    }
+}
+
+int32_t SE_GetDS28S60Rng(uint8_t *rngArray, uint32_t num)
+{
+    uint8_t *data = rngArray;
+    for (int i = 0; i < num; i++) {
+        data[i] = num - i;
+    }
+}
+
+int32_t SE_GetAtecc608bRng(uint8_t *rngArray, uint32_t num)
+{
+    uint8_t *data = rngArray;
+    for (int i = 0; i < num; i++) {
+        data[i] = 2 * i;
+    }
+}
+
+int32_t SetWalletDataHash(uint8_t index, uint8_t *info)
+{
+
+}
+
 
 bool VerifyWalletDataHash(uint8_t index, uint8_t *info)
 {
@@ -32,10 +85,6 @@ PtrT_UREncodeResult get_connect_companion_app_ur(PtrBytes master_fingerprint,
 
 }
 
-void GetMasterFingerPrint(uint8_t *mfp)
-{
-
-}
 
 void SetLcdBright(uint32_t bright)
 {
@@ -46,15 +95,6 @@ void SetShowPowerOffPage(bool isShow)
 {
 }
 
-int32_t DestroyAccount(uint8_t accountIndex)
-{
-
-}
-
-int32_t ErasePublicInfo(void)
-{
-
-}
 
 void FpWipeManageInfo(void)
 {
@@ -71,15 +111,6 @@ void SetLockTimeOut(uint32_t timeOut)
 
 }
 
-uint8_t GetCurrentPasswordErrorCount(void)
-{
-    return 0;
-}
-
-int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *password)
-{
-    
-}
 
 PtrT_TransactionParseResult_EthParsedErc20Transaction eth_parse_erc20(PtrString input,
                                                                       uint32_t decimal)
@@ -172,10 +203,7 @@ void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requ
 
 }
 
-void free_TransactionCheckResult(PtrT_TransactionCheckResult ptr)
-{
 
-}
 uint32_t GetBatteryMilliVolt(void)
 {
     return 1000;
@@ -186,15 +214,7 @@ bool FpModuleIsExist(void)
     return true;
 }
 
-MnemonicType GetMnemonicType(void)
-{
-    return MNEMONIC_TYPE_BIP39;
-}
 
-void SetPassphraseQuickAccess(bool exist)
-{
-
-}
 
 void UserDelay(uint32_t ms)
 {
@@ -234,47 +254,13 @@ void CloseUsb()
 }
 
 
-int Slip39OneSliceCheck(char *wordsList, uint8_t wordCnt, uint16_t id, uint8_t ie, uint8_t *threshold)
-{
-
-}
-
-uint16_t GetSlip39Id(void)
-{
-
-}
-
-uint8_t GetSlip39Ie(void)
-{
-
-}
 
 uint32_t FatfsGetSize(const char *path)
 {
 
 }
 
-int32_t ClearCurrentPasswordErrorCount(void)
-{
-
-}
-
 int32_t GetDevicePublicKey(uint8_t *pubkey)
-{
-
-}
-
-struct UREncodeMultiResult *get_next_part(PtrEncoder ptr)
-{
-
-}
-
-void free_ur_encode_muilt_result(PtrT_UREncodeMultiResult ptr)
-{
-
-}
-
-void free_ur_encode_result(PtrT_UREncodeResult ptr)
 {
 
 }
@@ -311,11 +297,6 @@ void Vibrate(int strength)
 }
 
 
-int32_t GetExistAccountNum(uint8_t *accountNum)
-{
-    *accountNum = 1;
-    return SUCCESS_CODE;
-}
 
 bool SdCardInsert(void)
 {
@@ -352,30 +333,12 @@ size_t xPortGetFreeHeapSize(void)
     return 0;
 }
 
-int32_t CheckPasswordExisted(const char *password, uint8_t excludeIndex)
-{
-    return SUCCESS_CODE;
-}
-
-uint8_t GetCurrentAccountIndex(void)
-{
-    return 1;
-}
 
 uint8_t GetBatterPercent(void)
 {
     return 50;
 }
 
-int Slip39CheckFirstWordList(char *wordsList, uint8_t wordCnt, uint8_t *threshold)
-{
-    *threshold = 3;
-    return SUCCESS_CODE;
-}
-
-void sha256(void *sha, const void *p, size_t size)
-{
-}
 
 void SetLockScreen(bool enable)
 {
@@ -419,15 +382,6 @@ int32_t FpCancelCurOperate(void)
     return 0;
 }
 
-bool GetPassphraseQuickAccess(void)
-{
-    return false;
-}
-
-bool PassphraseExist(uint8_t accountIndex)
-{
-    return true;
-}
 
 uint8_t GetFingerSignFlag(void)
 {
@@ -507,10 +461,6 @@ void SetPageLockScreen(bool enable)
 {
 }
 
-void SetLastLockDeviceTime(uint32_t timeStamp)
-{
-
-}
 
 uint32_t GetCurrentStampTime(void)
 {
@@ -522,34 +472,6 @@ void SetLockTimeState(bool enable)
 
 }
 
-uint32_t GetLastLockDeviceTime(void)
-{
-    return 0;
-}
-
-uint8_t GetLoginPasswordErrorCount(void)
-{
-
-}
-
-void LogoutCurrentAccount(void)
-{
-}
-
-void free_ur_parse_multi_result(PtrT_URParseMultiResult ptr)
-{
-
-}
-
-void free_ur_parse_result(PtrT_URParseResult ur_parse_result)
-{
-
-}
-
-void free_ptr_string(PtrString ptr)
-{
-
-}
 
 PtrString calculate_auth_code(ConstPtrUR web_auth_data,
                               PtrBytes rsa_key_n,
@@ -566,11 +488,6 @@ int32_t GetWebAuthRsaKey(uint8_t *key)
 }
 
 int32_t AsyncExecuteWithPtr(void *func, const void *inData)
-{
-
-}
-
-void SetCurrentAccountIndex(void)
 {
 
 }

@@ -8,7 +8,10 @@ use app_utils::{impl_internal_struct, impl_public_struct};
 use cardano_serialization_lib::address::RewardAddress;
 
 use cardano_serialization_lib::utils::from_bignum;
-use cardano_serialization_lib::{NetworkIdKind, Transaction};
+use cardano_serialization_lib::{
+    protocol_types::fixed_tx::FixedTransaction as Transaction, Certificate, CertificateKind,
+    NetworkId, NetworkIdKind,
+};
 
 use alloc::format;
 use core::ops::Div;

@@ -164,19 +164,20 @@ file(GLOB_RECURSE LVGL
     "external/lvgl/src/font/*.c"
 )
 
+file(GLOB_RECURSE CRYPTO_SLIP39
+    "src/crypto/slip39/gf256.c"
+    "src/crypto/slip39/rs1024.c"
+    "src/crypto/slip39/slip39.c"
+    "src/crypto/slip39/trezor-crypto/memzero.c"
+    "src/crypto/slip39/trezor-crypto/sha2.c"
+    "src/crypto/slip39/trezor-crypto/rand.c"
+    "src/crypto/slip39/trezor-crypto/pbkdf2.c"
+)
+
 if(NOT CMAKE_BUILD_TYPE STREQUAL "Simulator")
     project(mh1903)
     include(firmware.cmake)
 
-    file(GLOB_RECURSE CRYPTO_SLIP39
-        "src/crypto/slip39/gf256.c"
-        "src/crypto/slip39/rs1024.c"
-        "src/crypto/slip39/slip39.c"
-        "src/crypto/slip39/trezor-crypto/memzero.c"
-        "src/crypto/slip39/trezor-crypto/sha2.c"
-        "src/crypto/slip39/trezor-crypto/rand.c"
-        "src/crypto/slip39/trezor-crypto/pbkdf2.c"
-    )
 
     file(GLOB_RECURSE SAFE_C
         "external/safec/src/*.c"
@@ -299,9 +300,10 @@ else()
         ${LVGL}
         ${CRYPTO}
         ${UTILS}
+        ${CRYPTO_SLIP39}
     )
-    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2)
+    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2 rust_c)
     if(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
-        target_link_libraries(${PROJECT_NAME} PRIVATE windows)
+        target_link_libraries(${PROJECT_NAME} PRIVATE windows ntdll)
     endif()
 endif()

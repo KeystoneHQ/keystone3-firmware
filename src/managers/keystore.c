@@ -23,8 +23,10 @@
 #include "se_manager.h"
 #include "account_manager.h"
 #include "librust_c.h"
+#include "assert.h"
+#if 0
 #include "safe_mem_lib.h"
-
+#endif
 #define KEYSTORE_DEBUG          0
 
 

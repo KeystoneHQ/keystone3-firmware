@@ -306,7 +306,8 @@ static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
     uint8_t entropy[32];
     uint32_t mnemonicNum, entropyLen;
     mnemonicNum = *((uint32_t *)inData);
-#ifndef COMPILE_SIMULATOR
+#if 1
+// #ifndef COMPILE_SIMULATOR
     entropyLen = (mnemonicNum == 24) ? 32 : 16;
     GenerateEntropy(entropy, entropyLen, SecretCacheGetNewPassword());
     SecretCacheSetEntropy(entropy, entropyLen);
@@ -1147,7 +1148,8 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
     static bool firstVerify = true;
     SetLockScreen(false);
     uint8_t accountIndex;
-#ifndef COMPILE_SIMULATOR
+// #ifndef COMPILE_SIMULATOR
+#if 1
     int32_t ret;
     uint16_t *param = (uint16_t *)inData;
 
@@ -1230,7 +1232,7 @@ static int32_t ModeGetAccount(const void *inData, uint32_t inDataLen)
     }
     GuiApiEmitSignal(SIG_INIT_GET_ACCOUNT_NUMBER, &walletAmount, sizeof(walletAmount));
 #else
-    walletAmount = SIMULATOR_WALLET_AMOUNT;
+    walletAmount = 0;
     GuiEmitSignal(SIG_INIT_GET_ACCOUNT_NUMBER, &walletAmount, sizeof(walletAmount));
 #endif
     SetLockScreen(enable);

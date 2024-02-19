@@ -269,8 +269,11 @@ void QrDecodeTouchQuit(void)
     } else {
         if (quitArea) {
             quitArea = false;
+            osKernelLock();
             StopQrDecode();
             LvglCloseCurrentView();
+            ClearTouchBuffer();
+            osKernelUnlock();
         }
         quitArea = false;
     }

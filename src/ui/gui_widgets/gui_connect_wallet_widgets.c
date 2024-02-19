@@ -144,11 +144,9 @@ static const lv_img_dsc_t *g_ethWalletCoinArray[4] = {
     &coinAva,
     &coinMatic,
 };
-#endif
 
 static const lv_img_dsc_t *g_okxWalletCoinArray[] = {
     &coinBtc,
-#ifndef BTC_ONLY
     &coinEth,
     &coinBnb,
     &coinMatic,
@@ -157,14 +155,12 @@ static const lv_img_dsc_t *g_okxWalletCoinArray[] = {
     &coinLtc,
     &coinBch,
     &coinDash,
-#endif
 };
 
 static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {
     &coinBtc,
 };
 
-#ifndef BTC_ONLY
 static const lv_img_dsc_t *g_keplrCoinArray[8] = {
     &coinAtom,
     &coinOsmo,
@@ -251,9 +247,8 @@ void ConnectWalletReturnHandler(lv_event_t *e);
 static void OpenMoreHandler(lv_event_t *e);
 #ifndef BTC_ONLY
 static void AddMetaMaskCoins(void);
-#endif
+static void AddOkxWalletCoins(void);
 static void AddBlueWalletCoins(void);
-#ifndef BTC_ONLY
 static void AddCompanionAppCoins(void);
 static void AddFewchaCoins(void);
 static void AddKeplrCoins(void);
@@ -657,6 +652,7 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
 #endif
 }
 
+#ifndef BTC_ONLY
 static void GuiCreateSupportedNetworks()
 {
     if (g_coinCont != NULL && g_manageImg != NULL) {
@@ -666,9 +662,7 @@ static void GuiCreateSupportedNetworks()
 
     lv_obj_t *label = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_networks"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
-#ifndef BTC_ONLY
     lv_obj_add_event_cb(g_bottomCont, JumpSelectCoinPageHandler, LV_EVENT_CLICKED, NULL);
-#endif
     g_coinCont = GuiCreateContainerWithParent(g_bottomCont, 280, 30);
     lv_obj_align(g_coinCont, LV_ALIGN_TOP_LEFT, 36, 50);
     lv_obj_set_style_bg_color(g_coinCont, DARK_BG_COLOR, LV_PART_MAIN);
@@ -678,14 +672,18 @@ static void GuiCreateSupportedNetworks()
     lv_obj_align(g_manageImg, LV_ALIGN_BOTTOM_RIGHT, -45, -41);
     lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
 }
+#endif
 
 static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 {
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("connect_wallet_scan"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 152 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
-
+#ifndef BTC_ONLY
     lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 482);
+#else
+    lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 408);
+#endif
     lv_obj_add_flag(qrCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align(qrCont, LV_ALIGN_TOP_MID, 0, 62);
     lv_obj_set_style_bg_color(qrCont, DARK_BG_COLOR, LV_PART_MAIN);
@@ -707,8 +705,9 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_align(g_bottomCont, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_set_style_bg_color(g_bottomCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(g_bottomCont, LV_OPA_0, LV_STATE_DEFAULT | LV_PART_MAIN);
-
+#ifndef BTC_ONLY
     GuiCreateSupportedNetworks();
+#endif
 }
 
 #ifndef BTC_ONLY
@@ -777,7 +776,6 @@ static void AddEthWalletCoins(void)
     lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 132, 2);
 }
-#endif
 
 static void AddOkxWalletCoins(void)
 {
@@ -810,7 +808,6 @@ static void AddBlueWalletCoins(void)
     }
 }
 
-#ifndef BTC_ONLY
 static void AddKeplrCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -965,11 +962,13 @@ UREncodeResult *GuiGetXrpToolkitData(void)
 void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
 {
 #ifndef COMPILE_SIMULATOR
-    SetWallet(g_pageWidget->navBarWidget, index, NULL);
-    GuiCreateSupportedNetworks();
     GenerateUR func = NULL;
+    SetWallet(g_pageWidget->navBarWidget, index, NULL);
+#ifndef BTC_ONLY
+    GuiCreateSupportedNetworks();
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
+#endif
     switch (index) {
 #ifndef BTC_ONLY
     case WALLET_LIST_KEYSTONE:
@@ -1036,7 +1035,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_SPARROW:
     case WALLET_LIST_NUNCHUK:
         func = GuiGetBlueWalletBtcData;
-        AddBlueWalletCoins();
         break;
 #endif
     default:
@@ -1052,8 +1050,12 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     if (g_manageImg != NULL) {
         lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
     }
+#ifndef BTC_ONLY
     func = GuiGetOkxWalletData;
     AddOkxWalletCoins();
+#else
+    func = GuiGetBlueWalletBtcData;
+#endif
 #endif
 }
 

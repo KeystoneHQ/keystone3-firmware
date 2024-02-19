@@ -213,11 +213,11 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_SPECTER].items[0].qrUrl = _("connect_bw_qr_link");
 
         g_tutorials[WALLET_LIST_SPARROW].len = 1;
-        g_tutorials[WALLET_LIST_SPARROW].desc = _("connect_bw_desc");
-        g_tutorials[WALLET_LIST_SPARROW].items[0].walletName = _("connect_bw_title");
-        g_tutorials[WALLET_LIST_SPARROW].items[0].url = _("connect_bw_link");
-        g_tutorials[WALLET_LIST_SPARROW].items[0].qrTitle = _("connect_bw_qr_title");
-        g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl = _("connect_bw_qr_link");
+        g_tutorials[WALLET_LIST_SPARROW].desc = _("connect_sparrow_desc");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].walletName = _("connect_sparrow_title");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].url = _("connect_sparrow_link");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].qrTitle = _("connect_sparrow_qr_title");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl = _("connect_sparrow_qr_link");
 
         g_tutorials[WALLET_LIST_NUNCHUK].len = 1;
         g_tutorials[WALLET_LIST_NUNCHUK].desc = _("connect_bw_desc");

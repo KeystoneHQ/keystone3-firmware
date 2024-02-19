@@ -789,7 +789,6 @@ void GuiHomeRefresh(void)
     PrintRustMemoryStatus();
 #endif
     printf("%s %d..\n", __func__, __LINE__);
-    printf("what fuck...\n");
     if (GetCurrentAccountIndex() > 2) {
         return;
     }

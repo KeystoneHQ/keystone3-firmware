@@ -3,8 +3,15 @@
 #include "flash_address.h"
 #include "simulator_model.h"
 #include "se_manager.h"
+#include "log_print.h"
+#include "keystore.h"
+#include "account_manager.h"
 
-#define DS28S60_DATA_ADDR 0x1000
+#define DS28S60_DATA_ADDR                   0x1000
+#define ATECC608B_DATA_ADDR                 0x2000
+#define SIMULATOR_USER1_SECRET_ADDR                 0x3000
+#define SIMULATOR_USER2_SECRET_ADDR                 0x4000
+#define SIMULATOR_USER3_SECRET_ADDR                 0x5000
 
 typedef int32_t (*OperateStorageDataFunc)(uint32_t addr, uint8_t *buffer, uint32_t size);
 
@@ -23,9 +30,23 @@ int32_t StorageSetData(uint32_t addr, uint8_t *buffer, uint32_t size);
 SimulatorFlashPath g_simulatorPathMap[] ={
     {SPI_FLASH_ADDR_NORMAL_PARAM, "C:/assets/device_setting.json", StorageGetDataSize, StorageSetDataSize},
     {SPI_FLASH_ADDR_NORMAL_PARAM + 4, "C:/assets/device_setting.json", StorageGetData, StorageSetData},
-    {SPI_FLASH_ADDR_USER1_MUTABLE_DATA + 1 * SPI_FLASH_ADDR_EACH_SIZE, "C:/assets/coin.json", StorageGetDataSize, StorageSetDataSize},
-    {SPI_FLASH_ADDR_USER1_MUTABLE_DATA + 1 * SPI_FLASH_ADDR_EACH_SIZE + 4, "C:/assets/coin.json", StorageGetData, StorageSetData},
+    {SPI_FLASH_ADDR_USER1_DATA, "C:/assets/user1_data.json", StorageGetDataSize, StorageSetDataSize},
+    {SPI_FLASH_ADDR_USER1_DATA + 4, "C:/assets/user1_data.json", StorageGetData, StorageSetData},
+    {SPI_FLASH_ADDR_USER1_DATA + SPI_FLASH_ADDR_EACH_SIZE, "C:/assets/user1_data.json", StorageGetDataSize, StorageSetDataSize},
+    {SPI_FLASH_ADDR_USER1_DATA + 4 + SPI_FLASH_ADDR_EACH_SIZE, "C:/assets/user1_data.json", StorageGetData, StorageSetData},
+    {SPI_FLASH_ADDR_USER1_DATA + SPI_FLASH_ADDR_EACH_SIZE * 2, "C:/assets/user1_data.json", StorageGetDataSize, StorageSetDataSize},
+    {SPI_FLASH_ADDR_USER1_DATA + 4 + SPI_FLASH_ADDR_EACH_SIZE * 2, "C:/assets/user1_data.json", StorageGetData, StorageSetData},
+    {SPI_FLASH_ADDR_USER1_MUTABLE_DATA, "C:/assets/coin.json", StorageGetDataSize, StorageSetDataSize},
+    {SPI_FLASH_ADDR_USER1_MUTABLE_DATA + 4, "C:/assets/coin.json", StorageGetData, StorageSetData},
+    {SPI_FLASH_ADDR_USER1_MUTABLE_DATA + SPI_FLASH_ADDR_EACH_SIZE, "C:/assets/coin.json", StorageGetDataSize, StorageSetDataSize},
+    {SPI_FLASH_ADDR_USER1_MUTABLE_DATA + SPI_FLASH_ADDR_EACH_SIZE + 4, "C:/assets/coin.json", StorageGetData, StorageSetData},
+    {SPI_FLASH_ADDR_USER1_MUTABLE_DATA + 2 * SPI_FLASH_ADDR_EACH_SIZE, "C:/assets/coin.json", StorageGetDataSize, StorageSetDataSize},
+    {SPI_FLASH_ADDR_USER1_MUTABLE_DATA + 2 * SPI_FLASH_ADDR_EACH_SIZE + 4, "C:/assets/coin.json", StorageGetData, StorageSetData},
     {DS28S60_DATA_ADDR, "C:/assets/ds28s60.json", StorageGetData, StorageSetData},
+    {ATECC608B_DATA_ADDR, "C:/assets/atecc608b.json", StorageGetData, StorageSetData},
+    {SIMULATOR_USER1_SECRET_ADDR, "C:/assets/user1_secret.json", StorageGetData, StorageSetData},
+    {SIMULATOR_USER2_SECRET_ADDR, "C:/assets/user2_secret.json", StorageGetData, StorageSetData},
+    {SIMULATOR_USER3_SECRET_ADDR, "C:/assets/user3_secret.json", StorageGetData, StorageSetData},
 };
 
 const char *FindSimulatorFlashPath(uint32_t addr)
@@ -128,7 +149,7 @@ int32_t StorageSetData(uint32_t addr, uint8_t *buffer, uint32_t size)
 
     ret = lv_fs_write(&fd, buffer, size, &readBytes);
     if (ret != LV_FS_RES_OK) {
-        printf("lv_fs_read failed %s ret = %d line = %d\n", path, ret, __LINE__);
+        printf("lv_fs_write failed %s ret = %d line = %d\n", path, ret, __LINE__);
         return;
     }
     lv_fs_close(&fd);
@@ -139,6 +160,12 @@ int32_t StorageSetData(uint32_t addr, uint8_t *buffer, uint32_t size)
 int32_t Gd25FlashReadBuffer(uint32_t addr, uint8_t *buffer, uint32_t size)
 {
     OperateStorageDataFunc func = FindSimulatorStorageFunc(addr, true);
+    if (func == NULL) {
+        printf("%s failed, addr = 0x%x\n", __func__, addr);
+        return -1;
+    } else {
+        return func(addr, buffer, size);
+    }
     return func ? func(addr, buffer, size) : -1;
 }
 
@@ -158,9 +185,155 @@ int32_t Gd25FlashSectorErase(uint32_t addr)
 
 }
 
+void InsertJsonU8Array(cJSON *root, uint8_t *data, uint8_t len, char *key)
+{
+    cJSON *array = cJSON_CreateArray();
+    for (int i = 0; i < len; i++) {
+        cJSON_AddItemToArray(array, cJSON_CreateNumber(data[i]));
+    }
+    cJSON_AddItemToObject(root, key, array);
+}
+
+void GetJsonArrayData(cJSON *root, uint8_t *data, char *key)
+{
+    cJSON *item = cJSON_GetObjectItem(root, key);
+    if (item == NULL) {
+        return;
+    }
+    for (int i = 0; i < cJSON_GetArraySize(item); i++) {
+        cJSON *item2 = cJSON_GetArrayItem(item, i);
+        data[i] = item2->valueint;
+    }
+}
+
+void ModifyJsonArrayData(cJSON *root, uint8_t *data, uint8_t len, char *key)
+{
+    cJSON *item = cJSON_GetObjectItem(root, key);
+    if (item == NULL) {
+        return InsertJsonU8Array(root, data, len, key);
+    }
+    for (int i = 0; i < cJSON_GetArraySize(item); i++) {
+        cJSON *item2 = cJSON_GetArrayItem(item, i);
+        item2->valueint = data[i];
+    }
+}
+
+uint8_t SimulatorGetAccountNum(void)
+{
+    uint8_t buffer[JSON_MAX_LEN] = {0};
+    uint8_t accountNum = 0;
+    for (int i = 0; i < 3; i++) {
+        memset(buffer, 0, JSON_MAX_LEN);
+        OperateStorageDataFunc func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + i * 0x1000, true);
+        func(SIMULATOR_USER1_SECRET_ADDR + i * 0x1000, buffer, JSON_MAX_LEN);
+        cJSON *rootJson = cJSON_Parse(buffer);
+        if (rootJson == NULL) {
+            continue;
+        }
+        cJSON *item = cJSON_GetObjectItem(rootJson, "password");
+        if (item != NULL) {
+            printf("item = %s.....\n", item->valuestring);
+            accountNum++;
+        }
+        cJSON_Delete(rootJson);
+    }
+
+    return accountNum;
+}
+
+void SimulatorSaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *accountSecret, const char *password)
+{
+    uint8_t buffer[JSON_MAX_LEN] = {'\0'};
+    uint32_t size = 0;
+
+    StorageGetDataSize(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, &size, 4);
+    printf("size = %d\n", size);
+
+    cJSON *rootJson = cJSON_CreateObject();
+    InsertJsonU8Array(rootJson, accountSecret->entropy, ENTROPY_MAX_LEN, "entropy");
+    InsertJsonU8Array(rootJson, accountSecret->seed, SEED_LEN, "seed");
+    InsertJsonU8Array(rootJson, accountSecret->slip39Ems, SLIP39_EMS_LEN, "slip39_ems");
+    InsertJsonU8Array(rootJson, accountSecret->reservedData, SE_DATA_RESERVED_LEN, "reserved_data");
+    cJSON *item = cJSON_CreateNumber(accountSecret->entropyLen);
+    cJSON_AddItemToObject(rootJson, "entropy_len", item);
+    item = cJSON_CreateString(password);
+    cJSON_AddItemToObject(rootJson, "password", item);
+    char *jsonBuf = cJSON_Print(rootJson);
+    strncpy(buffer, jsonBuf, JSON_MAX_LEN);
+    OperateStorageDataFunc func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, false);
+    func(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, buffer, strlen(jsonBuf));
+    cJSON_Delete(rootJson);
+}
+
+int32_t SimulatorLoadAccountSecret(uint8_t accountIndex, const AccountSecret_t *accountSecret, const char *password)
+{
+    int32_t ret = SUCCESS_CODE;
+    uint8_t buffer[JSON_MAX_LEN] = {'\0'};
+    uint32_t size = 0;
+
+    OperateStorageDataFunc func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, true);
+    func(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, buffer, JSON_MAX_LEN);
+
+    cJSON *rootJson = cJSON_Parse(buffer);
+    if (rootJson == NULL) {
+        return ERR_KEYSTORE_PASSWORD_ERR;
+    }
+
+    char *jsonBuf = cJSON_Print(rootJson);
+    printf("jsonBuf = %s\n", jsonBuf);
+
+    // cJSON *item = cJSON_GetObjectItem(rootJson, "password");
+    // if (item != NULL && strncmp(item->valuestring, password, strlen(password)) == 0) {
+    //     printf("item = %s\n", item->valuestring);
+    //     cJSON_Delete(rootJson);
+    //     return ERR_KEYSTORE_PASSWORD_ERR;
+    // } else {
+    //     return ERR_KEYSTO
+    // }
+    // cJSON_Delete(rootJson);
+
+    // cJSON_AddItemToObject(rootJson, "password", item);
+    // char *jsonBuf = cJSON_Print(rootJson);
+    // strncpy(buffer, jsonBuf, JSON_MAX_LEN);
+    // OperateStorageDataFunc func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, false);
+    // func(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, buffer, strlen(jsonBuf));
+    // cJSON_Delete(rootJson);
+
+    return ret;
+}
+
+int32_t SimulatorVerifyPassword(uint8_t *accountIndex, char *password)
+{
+    uint8_t buffer[JSON_MAX_LEN] = {0};
+    for (int i = 0; i < 3; i++) {
+        // func must be found
+        OperateStorageDataFunc func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + i * 0x1000, true);
+        func(SIMULATOR_USER1_SECRET_ADDR + i * 0x1000, buffer, JSON_MAX_LEN);
+        cJSON *rootJson = cJSON_Parse(buffer);
+        if (rootJson == NULL) {
+            continue;
+        }
+        cJSON *item = cJSON_GetObjectItem(rootJson, "password");
+        if (item != NULL && strncmp(item->valuestring, password, strlen(password)) == 0) {
+            *accountIndex = i;
+            printf("item = %s....\n", item->valuestring);
+            cJSON_Delete(rootJson);
+            return SUCCESS_CODE;
+        }
+        cJSON_Delete(rootJson);
+    }
+
+    return ERR_KEYSTORE_PASSWORD_ERR;
+}
+
 // 28S60
 #if 1
-int32_t SE_HmacEncryptRead(const uint8_t *data, uint8_t page)
+uint8_t SE_GetAccountIndexFromPage(uint8_t page)
+{
+    return page / PAGE_INDEX_PARAM;
+}
+
+int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
 {
     uint8_t buffer[JSON_MAX_LEN] = {0};
     OperateStorageDataFunc func = FindSimulatorStorageFunc(DS28S60_DATA_ADDR, true);
@@ -168,81 +341,174 @@ int32_t SE_HmacEncryptRead(const uint8_t *data, uint8_t page)
         func(DS28S60_DATA_ADDR, buffer, JSON_MAX_LEN);
     }
 
-    int i = 0;
-    if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH) {
-        printf("1234");
-    }
+    // cJSON *rootJson = cJSON_Parse(buffer);
+    // if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV) {
+    //     GetJsonArrayData(rootJson, data, "iv");
+    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY) {
+    //     GetJsonArrayData(rootJson, data, "entropy");
+    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_H32) {
+    //     GetJsonArrayData(rootJson, data, "seed_h32");
+    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_L32) {
+    //     GetJsonArrayData(rootJson, data, "seed_l32");
+    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS) {
+    //     GetJsonArrayData(rootJson, data, "slip39_ems");
+    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC) {
+    //     GetJsonArrayData(rootJson, data, "hmac");
+    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_KEY_PIECE) {
+    //     GetJsonArrayData(rootJson, data, "key_piece");
+    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH) {
+    //     GetJsonArrayData(rootJson, data, "password_hash");
+    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM) {
+    //     GetJsonArrayData(rootJson, data, "index_param");
+    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_PF_ENCRYPTED_PASSWORD) {
+    //     GetJsonArrayData(rootJson, data, "encrypted_password");
+    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_PF_AES_KEY) {
+    //     GetJsonArrayData(rootJson, data, "aes_key");
+    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_PF_RESET_KEY) {
+    //     GetJsonArrayData(rootJson, data, "reset_key");
+    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_PF_INFO) {
+    //     GetJsonArrayData(rootJson, data, "pf_info");
+    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_WALLET1_PUB_KEY_HASH) {
+    //     GetJsonArrayData(rootJson, data, "wallet1_pub_key_hash");
+    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_WALLET2_PUB_KEY_HASH) {
+    //     GetJsonArrayData(rootJson, data, "wallet2_pub_key_hash");
+    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_WALLET3_PUB_KEY_HASH) {
+    //     GetJsonArrayData(rootJson, data, "wallet3_pub_key_hash");
+    // }
+    return 0;
 }
 
 int32_t SE_HmacEncryptWrite(const uint8_t *data, uint8_t page)
 {
-    // uint8_t buffer[JSON_MAX_LEN] = {0};
-    // OperateStorageDataFunc func = FindSimulatorStorageFunc(addr, true);
-    // return func ? func(addr, buffer, size) : -1;
+    uint8_t buffer[JSON_MAX_LEN] = {0};
+    if (page == PAGE_PF_ENCRYPTED_PASSWORD) {
+    } else if (page == PAGE_WALLET1_PUB_KEY_HASH) {
+
+    } else if (page == PAGE_WALLET2_PUB_KEY_HASH) {
+        
+    } else if (page == PAGE_WALLET3_PUB_KEY_HASH) {
+
+    } else if (page == PAGE_PUBLIC_INFO) {
+        return 0;
+    }
+
+    uint8_t account = SE_GetAccountIndexFromPage(page);
+    OperateStorageDataFunc func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + account * 0x1000, true);
+    if (func) {
+        func(SIMULATOR_USER1_SECRET_ADDR + account * 0x1000, buffer, JSON_MAX_LEN);
+    }
+    cJSON *rootJson = cJSON_Parse(buffer);
+    if (page == account * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV) {
+        ModifyJsonArrayData(rootJson, data, 32, "iv");
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY) {
+        ModifyJsonArrayData(rootJson, data, 32, "entropy");
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_H32) {
+        ModifyJsonArrayData(rootJson, data, 32, "seed_h32");
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_L32) {
+        ModifyJsonArrayData(rootJson, data, 32, "seed_l32");
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS) {
+        ModifyJsonArrayData(rootJson, data, 32, "slip39_ems");
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC) {
+        ModifyJsonArrayData(rootJson, data, 32, "hmac");
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_KEY_PIECE) {
+        ModifyJsonArrayData(rootJson, data, 32, "key_piece");
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH) {
+        ModifyJsonArrayData(rootJson, data, 32, "password_hash");
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM) {
+        AccountInfo_t *pAccountInfo = (AccountInfo_t *)data;
+        printf("pAccountInfo->entropyLen = %d\n", pAccountInfo->entropyLen);
+        printf("pAccountInfo->passcodeType = %d\n", pAccountInfo->passcodeType);
+        printf("pAccountInfo->mnemonicType = %d\n", pAccountInfo->mnemonicType);
+        printf("pAccountInfo->passphraseQuickAccess = %d\n", pAccountInfo->passphraseQuickAccess);
+        printf("pAccountInfo->passphraseMark = %d\n", pAccountInfo->passphraseMark);
+        printf("pAccountInfo->slip39Id = %d\n", pAccountInfo->slip39Id);
+        printf("pAccountInfo->mfp = %d\n", pAccountInfo->mfp);
+        printf("pAccountInfo->slip39Ie = %d\n", pAccountInfo->slip39Ie);
+        printf("pAccountInfo->reserved2 = %d\n", pAccountInfo->reserved2);
+        printf("pAccountInfo->iconIndex = %d\n", pAccountInfo->iconIndex);
+        printf("pAccountInfo->walletName = %s\n", pAccountInfo->walletName);
+    }
+
+    // char *buff = cJSON_Print(rootJson);
+    // printf("buff = %s\n", buff);
+
+    // func = FindSimulatorStorageFunc(DS28S60_DATA_ADDR, false);
+    // if (func) {
+    //     func(DS28S60_DATA_ADDR, buff, strlen(buff));
+    // }
+
+    return SUCCESS_CODE;
 }
 #endif
 
 // 608B
-int32_t GetKeyPieceFromSE(uint8_t accountIndex, uint8_t *pieces, const char *password)
-{
-}
-
-int32_t SetNewKeyPieceToSE(uint8_t accountIndex, uint8_t *pieces, const char *password)
-{
-}
-
-int32_t SetFpCommAesKey(const uint8_t *aesKey)
-{
-    // return SE_HmacEncryptWrite(aesKey, PAGE_PF_AES_KEY);
-}
-
-int32_t SetFpResetKey(const uint8_t *resetKey)
+int32_t Atecc608bEncryptWrite(uint8_t slot, uint8_t block, const uint8_t *data)
 {
 
 }
 
-int32_t SetFpEncryptedPassword(uint32_t index, const uint8_t *encryptedPassword)
+int32_t Atecc608bKdf(uint8_t slot, const uint8_t *authKey, const uint8_t *inData, uint32_t inLen, uint8_t *outData)
 {
 
 }
 
-int32_t GetFpCommAesKey(uint8_t *aesKey)
+int32_t Atecc608bDeriveKey(uint8_t slot, const uint8_t *authKey)
+{
+    
+}
+
+int32_t Atecc608bSignMessageWithDeviceKey(uint8_t *messageHash, uint8_t *signature)
 {
 
 }
 
-int32_t GetFpResetKey(uint8_t *resetKey)
+int32_t Atecc608bGenDevicePubkey(uint8_t *pubkey)
 {
-
+    
 }
 
-int32_t GetFpEncryptedPassword(uint32_t index, uint8_t *encryptedPassword)
+cJSON *Atecc608bEncryptReadJson(void)
 {
+    uint8_t buffer[JSON_MAX_LEN] = {0};
+    OperateStorageDataFunc func = FindSimulatorStorageFunc(ATECC608B_DATA_ADDR, true);
+    if (func) {
+        func(ATECC608B_DATA_ADDR, buffer, JSON_MAX_LEN);
+    }
 
+    return cJSON_Parse(buffer);
 }
 
-int32_t SignMessageWithDeviceKey(uint8_t *messageHash, uint8_t *signaure)
+int32_t SE_EncryptWrite(uint8_t slot, uint8_t block, const uint8_t *data)
 {
+    // block default 0
+    cJSON *rootKey = Atecc608bEncryptReadJson();
+    int i = 0;
+    if (slot == 3) {
 
+    }
+    return 0;
 }
 
-bool FpAesKeyExist()
+int32_t SE_Kdf(uint8_t slot, const uint8_t *authKey, const uint8_t *inData, uint32_t inLen, uint8_t *outData)
 {
-    uint8_t key[32];
-    bool ret;
+    cJSON *rootKey = Atecc608bEncryptReadJson();
+    int i = 0;
+    if (slot == 4) {
 
-    // if (SE_HmacEncryptRead(key, PAGE_PF_AES_KEY) != SUCCESS_CODE) {
-        // return false;
-    // }
-    // ret = CheckEntropy(key, 32);
-    // CLEAR_ARRAY(key);
-    return ret;
+    }
+    return 0;
 }
 
-bool FpResetKeyExist()
+int32_t SE_DeriveKey(uint8_t slot, const uint8_t *authKey)
 {
-    return true;
+    cJSON *rootKey = Atecc608bEncryptReadJson();
+    int i = 0;
+    if (slot == 4) {
+
+    }
+    return 0;
 }
+
 // OTP
 void OTP_PowerOn(void)
 {

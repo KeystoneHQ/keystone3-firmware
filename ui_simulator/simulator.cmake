@@ -16,6 +16,7 @@ file(GLOB_RECURSE CRYPTO
     "src/crypto/utils/hash_and_salt.c"
     "src/crypto/utils/hmac.c"
     "src/crypto/utils/hkdf.c"
+    "src/crypto/utils/pbkdf2.c"
     "src/crypto/bip39.c"
     "src/crypto/wordlist.c"
     "src/crypto/bips/mnemonic.c"
@@ -44,6 +45,7 @@ file(GLOB_RECURSE UTILS
     "src/config/*.c"
     "src/managers/keystore.c"
     "src/managers/account_manager.c"
+    "src/managers/se_manager.c"
 )
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/build) 

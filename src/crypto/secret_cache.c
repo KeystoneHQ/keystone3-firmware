@@ -59,7 +59,7 @@ void SecretCacheSetPassphrase(char *passPhrase)
 
 char *SecretCacheGetPassphrase(void)
 {
-    return g_passphraseCache;
+    return g_passphraseCache ? g_passphraseCache : "";
 }
 
 void SecretCacheSetNewPassword(char *password)

@@ -13,25 +13,12 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
-int pbkdf2_hmac_sha512(
-    const unsigned char *pass,
-    size_t pass_len,
-    const unsigned char *salt,
-    size_t salt_len,
-    uint32_t flags,
-    uint32_t cost,
-    unsigned char *bytes_out,
-    size_t len)
-{
-
-}
-
 void TrngGet(void *buf, uint32_t len)
 {
     uint32_t buf4[4];
     for (uint32_t i = 0; i < len; i += 16) {
         for (int i = 0; i < 4; i++) {
-            buf4[i] = 0x1234 * i;
+            buf4[i] = 0x1 * i;
         }
         if (len - i >= 16) {
             memcpy((uint8_t *)buf + i, buf4, 16);
@@ -45,7 +32,8 @@ void SE_GetTRng(void *buf, uint32_t len)
 {
     uint8_t *data = buf;
     for (int i = 0; i < len; i++) {
-        data[i] = i;
+        uint32_t randNum = rand();
+        data[i] = randNum & 0xFF;
     }
 }
 
@@ -55,6 +43,8 @@ int32_t SE_GetDS28S60Rng(uint8_t *rngArray, uint32_t num)
     for (int i = 0; i < num; i++) {
         data[i] = num - i;
     }
+
+    return 0;
 }
 
 int32_t SE_GetAtecc608bRng(uint8_t *rngArray, uint32_t num)
@@ -63,18 +53,11 @@ int32_t SE_GetAtecc608bRng(uint8_t *rngArray, uint32_t num)
     for (int i = 0; i < num; i++) {
         data[i] = 2 * i;
     }
-}
-
-int32_t SetWalletDataHash(uint8_t index, uint8_t *info)
-{
-
+    
+    return 0;
 }
 
 
-bool VerifyWalletDataHash(uint8_t index, uint8_t *info)
-{
-    return true;
-}
 
 PtrT_UREncodeResult get_connect_companion_app_ur(PtrBytes master_fingerprint,
                                                  uint32_t master_fingerprint_length,
@@ -260,10 +243,6 @@ uint32_t FatfsGetSize(const char *path)
 
 }
 
-int32_t GetDevicePublicKey(uint8_t *pubkey)
-{
-
-}
 
 void UsbDeInit(void)
 {
@@ -354,14 +333,7 @@ bool IsPreviousLockScreenEnable(void)
 {
     return true;
 }
-int32_t GetFpStateInfo(uint8_t *info)
-{
-    return 0;
-}
-int32_t SetFpStateInfo(uint8_t *info)
-{
-    return 0;
-}
+
 
 int32_t RegisterFp(uint8_t index)
 {

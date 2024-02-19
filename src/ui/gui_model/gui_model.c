@@ -47,7 +47,7 @@
 #define APP_CHECK_START_ADDR                (0x1400000)
 #define APP_END_ADDR                        (0x2000000)
 
-#ifndef COMPILE_SIMULATOR
+// #ifndef COMPILE_SIMULATOR
 #define MODEL_WRITE_SE_HEAD                 do {                                \
         ret = CHECK_BATTERY_LOW_POWER();                                        \
         CHECK_ERRCODE_BREAK("save low power", ret);                             \
@@ -69,7 +69,7 @@
     } else {                                                                            \
         GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));     \
     }
-#endif
+// #endif
 
 static int32_t ModelSaveWalletDesc(const void *inData, uint32_t inDataLen);
 static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen);
@@ -307,8 +307,6 @@ static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
     uint8_t entropy[32];
     uint32_t mnemonicNum, entropyLen;
     mnemonicNum = *((uint32_t *)inData);
-#if 1
-// #ifndef COMPILE_SIMULATOR
     entropyLen = (mnemonicNum == 24) ? 32 : 16;
     GenerateEntropy(entropy, entropyLen, SecretCacheGetNewPassword());
     SecretCacheSetEntropy(entropy, entropyLen);
@@ -318,17 +316,6 @@ static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
     GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, &retData, sizeof(retData));
     memset_s(mnemonic, strlen(mnemonic), 0, strlen(mnemonic));
     SRAM_FREE(mnemonic);
-#else
-    mnemonic = SRAM_MALLOC(256);
-    uint16_t buffLen = 0;
-    for (int i = 0; i < mnemonicNum; i++) {
-        buffLen += sprintf(mnemonic + buffLen, "%s ", wordlist[lv_rand(0, 2047)]);
-    }
-    mnemonic[strlen(mnemonic) - 1] = '\0';
-    SecretCacheSetMnemonic(mnemonic);
-    retData = SUCCESS_CODE;
-    GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, NULL, 0);
-#endif
     SetLockScreen(enable);
     return SUCCESS_CODE;
 }
@@ -366,7 +353,8 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t ret;
-#ifndef COMPILE_SIMULATOR
+// #ifndef COMPILE_SIMULATOR
+#if 1
     uint8_t *entropy, *entropyCheck;
     uint32_t entropyLen;
     uint8_t newAccount;
@@ -382,12 +370,16 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
         SetLockScreen(enable);
         return 0;
     }
+    printf("%s %d..\n", __func__, __LINE__);
     memset_s(entropyCheck, entropyLen, 0, entropyLen);
     SRAM_FREE(entropyCheck);
     MODEL_WRITE_SE_HEAD
+    printf("%s %d..\n", __func__, __LINE__);
     ret = ModelComparePubkey(true, NULL, 0, 0, 0, NULL);
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
+    printf("%s %d..\n", __func__, __LINE__);
     ret = CreateNewAccount(newAccount, entropy, entropyLen, SecretCacheGetNewPassword());
+    printf("%s %d..\n", __func__, __LINE__);
     ClearAccountPassphrase(newAccount);
     CHECK_ERRCODE_BREAK("save entropy error", ret);
     MODEL_WRITE_SE_END
@@ -582,7 +574,6 @@ static int32_t ModelComparePubkey(bool bip39, uint8_t *ems, uint8_t emsLen, uint
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     SimpleResponse_c_char *xPubResult;
     uint8_t seed[64] = {0};
     int ret = 0;
@@ -590,6 +581,7 @@ static int32_t ModelComparePubkey(bool bip39, uint8_t *ems, uint8_t emsLen, uint
     do {
         if (bip39) {
             ret = bip39_mnemonic_to_seed(SecretCacheGetMnemonic(), NULL, seed, 64, NULL);
+            printf("SecretCacheGetMnemonic = %s\n", SecretCacheGetMnemonic());
             xPubResult = get_extended_pubkey_by_seed(seed, 64, "M/49'/0'/0'");
         } else {
             ret = Slip39GetSeed(ems, seed, emsLen, "", ie, id);
@@ -610,7 +602,6 @@ static int32_t ModelComparePubkey(bool bip39, uint8_t *ems, uint8_t emsLen, uint
     free_simple_response_c_char(xPubResult);
     SetLockScreen(enable);
     return ret;
-#endif
 }
 
 // slip39 generate
@@ -1169,20 +1160,22 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
         *param = SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE;
         firstVerify = false;
     }
+    printf("%s %d...\n", __func__, __LINE__);
 
     // some scene would need clear secret after check
-    if (*param != SIG_SETTING_CHANGE_PASSWORD &&
-            *param != SIG_SETTING_WRITE_PASSPHRASE &&
-            *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE &&
-            *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
-            *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
-            *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&
-            !strlen(SecretCacheGetPassphrase()) &&
-            !GuiCheckIfViewOpened(&g_createWalletView)) {
+    if (*param != SIG_SETTING_CHANGE_PASSWORD
+     && *param != SIG_SETTING_WRITE_PASSPHRASE 
+     && *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE 
+     && *param != SIG_FINGER_SET_SIGN_TRANSITIONS 
+     && *param != SIG_FINGER_REGISTER_ADD_SUCCESS 
+     && *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD 
+     && !strlen(SecretCacheGetPassphrase())
+     && !GuiCheckIfViewOpened(&g_createWalletView)) {
         ClearSecretCache();
     }
-    printf("*param = %u\n", *param);
+    printf("%s %d...\n", __func__, __LINE__);
     SetLockScreen(enable);
+    printf("%s %d...\n", __func__, __LINE__);
     if (ret == SUCCESS_CODE) {
         ModelVerifyPassSuccess(param);
     } else {
@@ -1224,7 +1217,6 @@ static int32_t ModeGetAccount(const void *inData, uint32_t inDataLen)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     static uint8_t walletAmount;
-#ifndef COMPILE_SIMULATOR
     int32_t ret;
 
     ret = GetExistAccountNum(&walletAmount);
@@ -1232,10 +1224,6 @@ static int32_t ModeGetAccount(const void *inData, uint32_t inDataLen)
         walletAmount = 0xFF;
     }
     GuiApiEmitSignal(SIG_INIT_GET_ACCOUNT_NUMBER, &walletAmount, sizeof(walletAmount));
-#else
-    walletAmount = 0;
-    GuiEmitSignal(SIG_INIT_GET_ACCOUNT_NUMBER, &walletAmount, sizeof(walletAmount));
-#endif
     SetLockScreen(enable);
     return SUCCESS_CODE;
 }

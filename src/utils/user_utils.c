@@ -81,6 +81,7 @@ bool CheckAllZero(const uint8_t *array, uint32_t len)
 
 void RemoveFormatChar(char *str)
 {
+#ifndef COMPILE_SIMULATOR
     char *str_c = str;
     int i, j = 0;
     for (i = 0; str[i] != '\0'; i++) {
@@ -89,6 +90,7 @@ void RemoveFormatChar(char *str)
     }
     str_c[j] = '\0';
     str = str_c;
+#endif
 }
 
 

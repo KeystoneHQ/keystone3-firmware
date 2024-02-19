@@ -10,6 +10,9 @@
 #include "drv_atecc608b.h"
 #include "log_print.h"
 #include "hash_and_salt.h"
+#ifdef COMPILE_SIMULATOR
+#define memset_s(a1,a2,a3,a4)               memset(a1,a2,a3)
+#endif
 
 #define SHA256_COUNT                            3
 

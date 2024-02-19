@@ -17,6 +17,7 @@
 int32_t GuiApiEmitSignal(uint16_t signal, void *param, uint16_t usLen)
 {
 #ifdef COMPILE_SIMULATOR
+    GuiEmitSignal(signal, param, usLen);
 //     GuiEmitMsg_t *msg = (GuiEmitMsg_t *)malloc(sizeof(GuiEmitMsg_t) + usLen);
 //     if (NULL == msg) {
 //         return ERR_GUI_ERROR;

@@ -27,6 +27,9 @@ static PublicInfo_t g_publicInfo = {0};
 /// @return err code.
 static int32_t ReadCurrentAccountInfo(void)
 {
+#ifdef COMPILE_SIMULATOR
+    return 0;
+#endif
     uint8_t accountIndex, param[32];
     AccountInfo_t *pAccountInfo = (AccountInfo_t *)param;
     int32_t ret;
@@ -97,7 +100,7 @@ void SetMnemonicType(MnemonicType type)
 int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t entropyLen, const char *password)
 {
     ASSERT(accountIndex <= 2);
-    DestroyAccount(accountIndex);
+    // DestroyAccount(accountIndex);
     CLEAR_OBJECT(g_currentAccountInfo);
     g_currentAccountIndex = accountIndex;
 
@@ -199,11 +202,14 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
         } else {
             printf("passphrase not exist, info switch\r\n");
             AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
+            printf("%s %d...\n", __func__, __LINE__);
         }
     } else {
         g_publicInfo.loginPasswordErrorCount++;
     }
     SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+                printf("%s %d...\n", __func__, __LINE__);
+
     return ret;
 }
 
@@ -237,6 +243,11 @@ int32_t GetExistAccountNum(uint8_t *accountNum)
 {
     int32_t ret;
     uint8_t data[32], count = 0;
+
+#ifdef COMPILE_SIMULATOR
+    *accountNum = SimulatorGetAccountNum();
+    return SUCCESS_CODE;
+#endif
 
     for (uint8_t i = 0; i < 3; i++) {
         ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
@@ -442,6 +453,11 @@ int32_t GetBlankAccountIndex(uint8_t *accountIndex)
 {
     int32_t ret;
     uint8_t data[32];
+
+#ifdef COMPILE_SIMULATOR
+    *accountIndex = 0;
+    return SUCCESS_CODE;
+#endif
 
     for (uint8_t i = 0; i < 3; i++) {
         ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);

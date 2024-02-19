@@ -100,20 +100,14 @@ const static CoinWalletInfo_t g_walletBtn[] = {
 #ifndef BTC_ONLY
     {WALLET_LIST_KEYSTONE, "Connect Keystone Wallet", &walletKeystone},
     {WALLET_LIST_METAMASK, "Connect MetaMask", &walletMetamask},
-#endif
     {WALLET_LIST_OKX, "Connect OKX Wallet", &walletOkx},
-#ifndef BTC_ONLY
     {WALLET_LIST_ETERNL, "Connect Eternl Wallet", &walletEternl},
-#endif
     {WALLET_LIST_BLUE, "Connect BlueWallet", &walletBluewallet},
-#ifndef BTC_ONLY
     {WALLET_LIST_SUB, "Connect SubWallet", &walletSubwallet},
     {WALLET_LIST_SOLFARE, "Connect Solflare", &walletSolflare},
     {WALLET_LIST_RABBY, "Connect Rabby", &walletRabby},
     {WALLET_LIST_SAFE, "Connect Safe", &walletSafe},
-#endif
     {WALLET_LIST_SPARROW, "Connect Sparrow", &walletSparrow},
-#ifndef BTC_ONLY
     {WALLET_LIST_IMTOKEN, "Connect imToken", &walletImToken},
     {WALLET_LIST_BLOCK_WALLET, "Connect Block Wallet", &walletBlockWallet},
     {WALLET_LIST_ZAPPER, "Connect Zapper", &walletZapper},
@@ -123,6 +117,11 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_FEWCHA, "Connect Fewcha", &walletFewcha},
     {WALLET_LIST_PETRA, "Connect Petra", &walletPetra},
     {WALLET_LIST_XRP_TOOLKIT, "Connect XRP Toolkit", &walletXRPToolkit},
+#else
+    {WALLET_LIST_BLUE, "Connect BlueWallet", &walletBluewallet},
+    {WALLET_LIST_SPECTER, "Connect Specter", &walletBluewallet},
+    {WALLET_LIST_SPARROW, "Connect Sparrow", &walletSparrow},
+    {WALLET_LIST_NUNCHUK, "Connect Nunchuk", &walletBluewallet},
 #endif
 };
 

@@ -1416,6 +1416,18 @@
     <ClCompile Include="..\..\src\ui\gui_widgets\btc_only\gui_btc_home_widgets.c">
       <Filter>gui\gui_widgets\btc</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\walletList\btcWalletListBlue.c">
+      <Filter>gui\assets\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\walletList\btcWalletListNunchuk.c">
+      <Filter>gui\assets\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\walletList\btcWalletListSparrow.c">
+      <Filter>gui\assets\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\walletList\btcWalletListSpecter.c">
+      <Filter>gui\assets\wallet</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\external\lvgl\src\core\lv_disp.h" />

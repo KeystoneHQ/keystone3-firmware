@@ -33,13 +33,11 @@ typedef enum {
 
 WalletListItem_t g_walletListArray[] = {
     // {WALLET_LIST_KEYSTONE, &walletListKeyStone},
-    {WALLET_LIST_OKX, &walletListOkx, true},
 #ifndef BTC_ONLY
+    {WALLET_LIST_OKX, &walletListOkx, true},
     {WALLET_LIST_METAMASK, &walletListMetaMask, true},
-#endif
     {WALLET_LIST_BLUE, &walletListBlue, true},
     {WALLET_LIST_SPARROW, &walletListSparrow, true},
-#ifndef BTC_ONLY
     {WALLET_LIST_RABBY, &walletListRabby, true},
     {WALLET_LIST_ETERNL, &walletListEternl, true},
     {WALLET_LIST_SAFE, &walletListSafe, true},
@@ -53,8 +51,12 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_ZAPPER, &walletListZapper, true},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true},
+#else
+    {WALLET_LIST_BLUE, &btcWalletListBlue, true},
+    {WALLET_LIST_SPECTER, &btcWalletListSpecter, true},
+    {WALLET_LIST_SPARROW, &btcWalletListSparrow, true},
+    {WALLET_LIST_NUNCHUK, &btcWalletListNunchuk, true},
 #endif
-    // { WALLET_LIST_SUB, &walletListSub},
 };
 
 typedef struct ConnectWalletWidget {
@@ -621,7 +623,7 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
 {
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_MOMENTUM);
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
-
+#ifndef BTC_ONLY
     lv_obj_t *img = GuiCreateImg(parent, g_walletListArray[0].img);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
@@ -636,6 +638,23 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
         lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED, &g_walletListArray[i]);
         j++;
     }
+#else
+    lv_obj_t *img, *line;
+    static lv_point_t points[2] = {{0, 0}, {408, 0}};
+    line = GuiCreateLine(parent, points, 2);
+    lv_obj_align(line, LV_ALIGN_TOP_MID, 0, 0);
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+        if (!g_walletListArray[i].enable) {
+            continue;
+        }
+        img = GuiCreateImg(parent, g_walletListArray[i].img);
+        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, i * 99 + 9);
+        lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED, &g_walletListArray[i]);
+        line = GuiCreateLine(parent, points, 2);
+        lv_obj_align(line, LV_ALIGN_TOP_MID, 0, (i + 1) * 99);
+    }
+#endif
 }
 
 static void GuiCreateSupportedNetworks()
@@ -977,8 +996,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetImTokenData;
         AddEthWalletCoins();
         break;
-        break;
-#endif
     case WALLET_LIST_OKX:
         func = GuiGetOkxWalletData;
         AddOkxWalletCoins();
@@ -988,7 +1005,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetBlueWalletBtcData;
         AddBlueWalletCoins();
         break;
-#ifndef BTC_ONLY
     case WALLET_LIST_SUB:
         break;
     case WALLET_LIST_SOLFARE:
@@ -1013,6 +1029,14 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_XRP_TOOLKIT:
         func = GuiGetXrpToolkitData;
         AddXrpToolkitAddress();
+        break;
+#else
+    case WALLET_LIST_BLUE:
+    case WALLET_LIST_SPECTER:
+    case WALLET_LIST_SPARROW:
+    case WALLET_LIST_NUNCHUK:
+        func = GuiGetBlueWalletBtcData;
+        AddBlueWalletCoins();
         break;
 #endif
     default:

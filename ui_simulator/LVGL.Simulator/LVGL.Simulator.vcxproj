@@ -273,6 +273,10 @@
     <ClCompile Include="..\..\src\ui\gui_assets\ring.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\sparrow.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\specter.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\walletList\btcWalletListBlue.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\walletList\btcWalletListNunchuk.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\walletList\btcWalletListSparrow.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\walletList\btcWalletListSpecter.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\walletList\walletListBlockwallet.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\walletList\walletListBlue.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\walletList\walletListEternl.c" />

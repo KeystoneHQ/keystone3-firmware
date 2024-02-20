@@ -86,7 +86,6 @@ static int32_t ModelGenerateSlip39EntropyWithDiceRolls(const void *inData, uint3
 static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t inDataLen);
 static int32_t ModeGetAccount(const void *inData, uint32_t inDataLen);
 static int32_t ModeGetWalletDesc(const void *inData, uint32_t inDataLen);
-static int32_t ModeLoginWallet(const void *inData, uint32_t inDataLen);
 static int32_t ModeControlQrDecode(const void *inData, uint32_t inDataLen);
 static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen);
 static int32_t ModelComparePubkey(bool bip39, uint8_t *ems, uint8_t emsLen, uint16_t id, uint8_t ie, uint8_t *index);
@@ -243,11 +242,6 @@ void GuiModeGetAccount(void)
 void GuiModeGetWalletDesc(void)
 {
     AsyncExecute(ModeGetWalletDesc, NULL, 0);
-}
-
-void GuiModeLoginWallet(void)
-{
-    AsyncExecute(ModeLoginWallet, NULL, 0);
 }
 
 void GuiModeControlQrDecode(bool en)
@@ -896,16 +890,13 @@ static int32_t ModelSaveWalletDesc(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     WalletDesc_t *wallet = (WalletDesc_t *)inData;
+    printf("wallet->name = %s...........\n", wallet->name);
+    printf("wallet->iconIndex = %d..........\n", wallet->iconIndex);
     SetWalletName(wallet->name);
     SetWalletIconIndex(wallet->iconIndex);
 
     GuiApiEmitSignal(SIG_SETTING_CHANGE_WALLET_DESC_PASS, NULL, 0);
-#else
-    WalletDesc_t *wallet = (char *)inData;
-    GuiEmitSignal(SIG_SETTING_CHANGE_WALLET_DESC_PASS, NULL, 0);
-#endif
     SetLockScreen(enable);
     return SUCCESS_CODE;
 }
@@ -941,12 +932,10 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
         uint8_t accountNum;
         GetExistAccountNum(&accountNum);
         if (accountNum == 0) {
-            {
-                FpWipeManageInfo();
-                SetSetupStep(0);
-                SaveDeviceSettings();
-                g_reboot = true;
-            }
+            FpWipeManageInfo();
+            SetSetupStep(0);
+            SaveDeviceSettings();
+            g_reboot = true;
             GuiApiEmitSignal(SIG_SETTING_DEL_WALLET_PASS_SETUP, NULL, 0);
         } else {
             GuiApiEmitSignal(SIG_SETTING_DEL_WALLET_PASS, NULL, 0);
@@ -955,7 +944,7 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
         GuiApiEmitSignal(SIG_SETTING_DEL_WALLET_FAIL, &ret, sizeof(ret));
     }
 #else
-    // GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS_SETUP, NULL, 0);
+    // GuiEmitSignal(SIG_SETTING _DEL_WALLET_PASS_SETUP, NULL, 0);
     GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS, NULL, 0);
 #endif
     SetLockScreen(enable);
@@ -1139,8 +1128,6 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
     static bool firstVerify = true;
     SetLockScreen(false);
     uint8_t accountIndex;
-// #ifndef COMPILE_SIMULATOR
-#if 1
     int32_t ret;
     uint16_t *param = (uint16_t *)inData;
 
@@ -1159,54 +1146,24 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
         *param = SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE;
         firstVerify = false;
     }
-    printf("%s %d...\n", __func__, __LINE__);
 
     // some scene would need clear secret after check
     if (*param != SIG_SETTING_CHANGE_PASSWORD
-     && *param != SIG_SETTING_WRITE_PASSPHRASE 
-     && *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE 
-     && *param != SIG_FINGER_SET_SIGN_TRANSITIONS 
-     && *param != SIG_FINGER_REGISTER_ADD_SUCCESS 
-     && *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD 
-     && !strlen(SecretCacheGetPassphrase())
-     && !GuiCheckIfViewOpened(&g_createWalletView)) {
+            && *param != SIG_SETTING_WRITE_PASSPHRASE
+            && *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE
+            && *param != SIG_FINGER_SET_SIGN_TRANSITIONS
+            && *param != SIG_FINGER_REGISTER_ADD_SUCCESS
+            && *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD
+            && !strlen(SecretCacheGetPassphrase())
+            && !GuiCheckIfViewOpened(&g_createWalletView)) {
         ClearSecretCache();
     }
-    printf("%s %d...\n", __func__, __LINE__);
     SetLockScreen(enable);
-    printf("%s %d...\n", __func__, __LINE__);
     if (ret == SUCCESS_CODE) {
         ModelVerifyPassSuccess(param);
     } else {
         ModelVerifyPassFailed(param);
     }
-#else
-    uint8_t walletAmount;
-    uint8_t *entropy;
-    uint8_t entropyLen;
-    int32_t ret;
-    uint16_t *param = (uint16_t *)inData;
-
-    if (param == NULL) {
-        GuiEmitSignal(SIG_VERIFY_PASSWORD_PASS, NULL, 0);
-        return SUCCESS_CODE;
-    }
-    walletAmount = 2;
-    if (*param == DEVICE_SETTING_ADD_WALLET) {
-        if (walletAmount == 3) {
-            GuiEmitSignal(SIG_SETTING_ADD_WALLET_AMOUNT_LIMIT, NULL, 0);
-        } else {
-            GuiEmitSignal(SIG_INIT_GET_ACCOUNT_NUMBER, &walletAmount, sizeof(walletAmount));
-            GuiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
-        }
-    } else {
-        if (!strcmp(SecretCacheGetPassword(), "999999")) {
-            GuiApiEmitSignal(SIG_VERIFY_PASSWORD_FAIL, param, sizeof(*param));
-        } else {
-            GuiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
-        }
-    }
-#endif
     return SUCCESS_CODE;
 }
 
@@ -1233,7 +1190,6 @@ static int32_t ModeGetWalletDesc(const void *inData, uint32_t inDataLen)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     static WalletDesc_t wallet;
-#ifndef COMPILE_SIMULATOR
     if (GetCurrentAccountIndex() > 2) {
         SetLockScreen(enable);
         return SUCCESS_CODE;
@@ -1241,28 +1197,6 @@ static int32_t ModeGetWalletDesc(const void *inData, uint32_t inDataLen)
     wallet.iconIndex = GetWalletIconIndex();
     strcpy(wallet.name, GetWalletName());
     GuiApiEmitSignal(SIG_INIT_GET_CURRENT_WALLET_DESC, &wallet, sizeof(wallet));
-#else
-    wallet.iconIndex = 0;
-    GuiEmitSignal(SIG_INIT_GET_CURRENT_WALLET_DESC, &wallet, sizeof(wallet));
-#endif
-    SetLockScreen(enable);
-    return SUCCESS_CODE;
-}
-
-// login wallet
-static int32_t ModeLoginWallet(const void *inData, uint32_t inDataLen)
-{
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    static WalletDesc_t wallet;
-#ifndef COMPILE_SIMULATOR
-    wallet.iconIndex = GetWalletIconIndex();
-    strcpy(wallet.name, GetWalletName());
-    GuiApiEmitSignal(SIG_INIT_GET_CURRENT_WALLET_DESC, &wallet, sizeof(wallet));
-#else
-    wallet.iconIndex = 0;
-    GuiEmitSignal(SIG_INIT_GET_CURRENT_WALLET_DESC, &wallet, sizeof(wallet));
-#endif
     SetLockScreen(enable);
     return SUCCESS_CODE;
 }

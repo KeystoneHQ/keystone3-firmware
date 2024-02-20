@@ -27,9 +27,6 @@ static PublicInfo_t g_publicInfo = {0};
 /// @return err code.
 static int32_t ReadCurrentAccountInfo(void)
 {
-#ifdef COMPILE_SIMULATOR
-    return 0;
-#endif
     uint8_t accountIndex, param[32];
     AccountInfo_t *pAccountInfo = (AccountInfo_t *)param;
     int32_t ret;
@@ -100,9 +97,20 @@ void SetMnemonicType(MnemonicType type)
 int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t entropyLen, const char *password)
 {
     ASSERT(accountIndex <= 2);
-    // DestroyAccount(accountIndex);
+    DestroyAccount(accountIndex);
     CLEAR_OBJECT(g_currentAccountInfo);
     g_currentAccountIndex = accountIndex;
+
+    printf("g_currentAccountInfo.entropyLen=%d\r\n", g_currentAccountInfo.entropyLen);
+    printf("g_currentAccountInfo.passcodeType=%d\r\n", g_currentAccountInfo.passcodeType);
+    printf("g_currentAccountInfo.mnemonicType=%d\r\n", g_currentAccountInfo.mnemonicType);
+    printf("g_currentAccountInfo.passphraseQuickAccess=%d\r\n", g_currentAccountInfo.passphraseQuickAccess);
+    printf("g_currentAccountInfo.passphraseMark=%d\r\n", g_currentAccountInfo.passphraseMark);
+    printf("pAccountInfo->slip39Id = %d\n", g_currentAccountInfo.slip39Id[0] * 256 + g_currentAccountInfo.slip39Id[1]);
+    PrintArray("mfp", g_currentAccountInfo.mfp, 4);
+    printf("pAccountInfo->slip39Ie = %d\n", g_currentAccountInfo.slip39Ie[0]);
+    printf("g_currentAccountInfo.iconIndex=%d\r\n", g_currentAccountInfo.iconIndex);
+    printf("g_currentAccountInfo.walletName=%s\r\n", g_currentAccountInfo.walletName);
 
     int32_t ret = SaveNewEntropy(accountIndex, entropy, entropyLen, password);
     CHECK_ERRCODE_RETURN_INT(ret);
@@ -147,14 +155,19 @@ int32_t VerifyCurrentAccountPassword(const char *password)
             ret = ERR_KEYSTORE_NOT_LOGIN;
             break;
         }
+#ifdef COMPILE_SIMULATOR
+        ret = SimulatorVerifyCurrentPassword(accountIndex, password);
+#else
         ret = SE_HmacEncryptRead(passwordHashStore, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
         CHECK_ERRCODE_BREAK("read password hash", ret);
         HashWithSalt(passwordHashClac, (const uint8_t *)password, strlen(password), "password hash");
-        if (memcmp(passwordHashStore, passwordHashClac, 32) == 0) {
+        ret = memcmp(passwordHashStore, passwordHashClac, 32);
+#endif
+        if (ret == SUCCESS_CODE) {
             g_publicInfo.currentPasswordErrorCount = 0;
-            ret = SUCCESS_CODE;
         } else {
             g_publicInfo.currentPasswordErrorCount++;
+            printf("password error count=%d\r\n", g_publicInfo.currentPasswordErrorCount);
             ret = ERR_KEYSTORE_PASSWORD_ERR;
         }
         SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
@@ -202,13 +215,11 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
         } else {
             printf("passphrase not exist, info switch\r\n");
             AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
-            printf("%s %d...\n", __func__, __LINE__);
         }
     } else {
         g_publicInfo.loginPasswordErrorCount++;
     }
     SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
-                printf("%s %d...\n", __func__, __LINE__);
 
     return ret;
 }
@@ -441,6 +452,17 @@ int32_t SaveCurrentAccountInfo(void)
     accountIndex = GetCurrentAccountIndex();
     ASSERT(accountIndex <= 2);
     memcpy(pAccountInfo, &g_currentAccountInfo, sizeof(AccountInfo_t));
+    // printf("g_currentAccountInfo.entropyLen=%d\r\n", g_currentAccountInfo.entropyLen);
+    // printf("g_currentAccountInfo.passcodeType=%d\r\n", g_currentAccountInfo.passcodeType);
+    // printf("g_currentAccountInfo.mnemonicType=%d\r\n", g_currentAccountInfo.mnemonicType);
+    // printf("g_currentAccountInfo.passphraseQuickAccess=%d\r\n", g_currentAccountInfo.passphraseQuickAccess);
+    // printf("g_currentAccountInfo.passphraseMark=%d\r\n", g_currentAccountInfo.passphraseMark);
+    // printf("g_currentAccountInfo.slip39Id = %d\n", g_currentAccountInfo.slip39Id[0] * 256 + g_currentAccountInfo.slip39Id[1]);
+    // PrintArray("mfp", g_currentAccountInfo.mfp, 4);
+    // printf("g_currentAccountInfo.slip39Ie = %d\n", g_currentAccountInfo.slip39Ie[0]);
+    // printf("g_currentAccountInfo.iconIndex=%d\r\n", g_currentAccountInfo.iconIndex);
+    // printf("g_currentAccountInfo.walletName=%s\r\n", g_currentAccountInfo.walletName);
+
     ret = SE_HmacEncryptWrite(param, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
     return ret;
 }

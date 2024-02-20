@@ -28,6 +28,7 @@
 #include "safe_mem_lib.h"
 #else
 #include "simulator_model.h"
+#include "simulator_storge.h"
 #endif
 #define KEYSTORE_DEBUG          0
 
@@ -429,10 +430,6 @@ char* GetPassphrase(uint8_t accountIndex)
 /// @return err code.
 static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *accountSecret, const char *password, bool newAccount)
 {
-#ifdef COMPILE_SIMULATOR
-    SimulatorSaveAccountSecret(accountIndex, accountSecret, password);
-    return SUCCESS_CODE;    
-#endif
     uint8_t pieces[KEY_PIECE_LEN * 2], hash[32], sha512Hash[64];
     uint8_t *enKey, *authKey;
     uint8_t *iv, *encryptEntropy, *encryptSeed, *slip39Ems, *encryptReservedData, *hmac;
@@ -451,6 +448,9 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
     encryptReservedData = slip39Ems + SLIP39_EMS_LEN;
     hmac = encryptReservedData + SE_DATA_RESERVED_LEN;
     do {
+#ifdef COMPILE_SIMULATOR
+        ret = SimulatorSaveAccountSecret(accountIndex, accountSecret, password);
+#else
         ret = SetNewKeyPieceToSE(accountIndex, pieces, password);
         CHECK_ERRCODE_BREAK("set key to se", ret);
         HashWithSalt(hash, pieces, sizeof(pieces), "combine two pieces");
@@ -488,6 +488,7 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
         CHECK_ERRCODE_BREAK("write encrypt reserved data", ret);
         ret = SE_HmacEncryptWrite(hmac, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC);
         CHECK_ERRCODE_BREAK("write hmac", ret);
+#endif
         if (newAccount) {
             SetCurrentAccountEntropyLen(accountSecret->entropyLen);
             seedLen = GetMnemonicType() == MNEMONIC_TYPE_SLIP39 ? accountSecret->entropyLen : sizeof(accountSecret->seed);
@@ -606,8 +607,8 @@ static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountS
 static void CombineInnerAesKey(uint8_t *aesKey)
 {
     uint8_t aesPiece[AES_KEY_LEN];
-    OTP_PowerOn();
 #ifndef COMPILE_SIMULATOR
+    OTP_PowerOn();
     memcpy(aesPiece, (uint8_t *)OTP_ADDR_AES_KEY, AES_KEY_LEN);
     if (CheckEntropy(aesPiece, AES_KEY_LEN) == false) {
         printf("need generate inner aes piece\r\n");

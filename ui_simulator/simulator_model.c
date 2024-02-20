@@ -57,8 +57,6 @@ int32_t SE_GetAtecc608bRng(uint8_t *rngArray, uint32_t num)
     return 0;
 }
 
-
-
 PtrT_UREncodeResult get_connect_companion_app_ur(PtrBytes master_fingerprint,
                                                  uint32_t master_fingerprint_length,
                                                  int32_t cold_version,
@@ -67,7 +65,6 @@ PtrT_UREncodeResult get_connect_companion_app_ur(PtrBytes master_fingerprint,
 {
 
 }
-
 
 void SetLcdBright(uint32_t bright)
 {
@@ -93,7 +90,6 @@ void SetLockTimeOut(uint32_t timeOut)
 {
 
 }
-
 
 PtrT_TransactionParseResult_EthParsedErc20Transaction eth_parse_erc20(PtrString input,
                                                                       uint32_t decimal)
@@ -402,12 +398,6 @@ Ptr_Response_DisplayContractData eth_parse_contract_data(PtrString input_data,
 
     return result;
 }
-
-int strcasecmp(char const *a, char const* b)
-{
-    return 0;
-}
-
 
 bool GetDBContract(const char* address, const char *selector, const uint32_t chainId, char *functionABIJson, char *contractName)
 {

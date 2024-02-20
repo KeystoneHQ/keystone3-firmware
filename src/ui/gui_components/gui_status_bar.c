@@ -123,9 +123,9 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_XRP_TOOLKIT, "Connect XRP Toolkit", &walletXRPToolkit},
 #else
     {WALLET_LIST_BLUE, "Connect BlueWallet", &walletBluewallet},
-    {WALLET_LIST_SPECTER, "Connect Specter", &walletBluewallet},
+    {WALLET_LIST_SPECTER, "Connect Specter", &walletSpecter},
     {WALLET_LIST_SPARROW, "Connect Sparrow", &walletSparrow},
-    {WALLET_LIST_NUNCHUK, "Connect Nunchuk", &walletBluewallet},
+    {WALLET_LIST_NUNCHUK, "Connect Nunchuk", &walletNunchuk},
 #endif
 };
 

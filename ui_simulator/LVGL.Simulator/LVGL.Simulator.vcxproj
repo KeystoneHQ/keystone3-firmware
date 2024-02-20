@@ -244,6 +244,7 @@
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgSwitch.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgSystemSetting.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgTelegram.c" />
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgTestNet.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgTransfer.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgTutorial.c" />
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgTutorialS.c" />

@@ -57,8 +57,10 @@ void GuiNvsSetCoinWallet(GuiChainCoinType index, const char *name);
 void GuiNvsSetWallet(WALLET_LIST_INDEX_ENUM index, const char *name);
 void GuiNvsBarClear(void);
 void GuiStatusBarSetSdCard(bool connected);
-void GuiStatusBarSetUsb();
-
+void GuiStatusBarSetUsb(void);
+#ifdef BTC_ONLY
+void GuiStatusBarSetTestNet(void);
+#endif
 
 NavBarWidget_t *CreateNavBarWidget(lv_obj_t *navBar);
 void DestoryNavBarWidget(NavBarWidget_t *navBarWidget);

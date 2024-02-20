@@ -1428,6 +1428,9 @@
     <ClCompile Include="..\..\src\ui\gui_assets\walletList\btcWalletListSpecter.c">
       <Filter>gui\assets\wallet</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgTestNet.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\external\lvgl\src\core\lv_disp.h" />

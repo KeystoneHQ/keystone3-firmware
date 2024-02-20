@@ -12,6 +12,7 @@
 #include "account_manager.h"
 #include "gui_chain.h"
 #include "gui_connect_wallet_widgets.h"
+#include "gui_home_widgets.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
@@ -33,6 +34,9 @@ typedef struct StatusBar {
     lv_obj_t *batteryCharging;
     lv_obj_t *batteryPadImg;
     lv_obj_t *batteryLabel;
+#ifdef BTC_ONLY
+    lv_obj_t *testNetImg;
+#endif
 } StatusBar_t;
 static StatusBar_t g_guiStatusBar;
 
@@ -223,6 +227,11 @@ void GuiStatusBarInit(void)
     img = GuiCreateImg(cont, &imgUsb);
     g_guiStatusBar.usbImg = img;
     lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
+#ifdef BTC_ONLY
+    img = GuiCreateImg(cont, &imgTestNet);
+    g_guiStatusBar.testNetImg = img;
+    lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
+#endif
     RefreshStatusBar();
 #ifdef COMPILE_SIMULATOR
     GuiStatusBarSetBattery(88, true);
@@ -253,7 +262,7 @@ void GuiStatusBarSetSdCard(bool connected)
     RefreshStatusBar();
 }
 
-void GuiStatusBarSetUsb()
+void GuiStatusBarSetUsb(void)
 {
     if (GetUsbState() && UsbInitState()) {
         lv_obj_clear_flag(g_guiStatusBar.usbImg, LV_OBJ_FLAG_HIDDEN);
@@ -262,6 +271,19 @@ void GuiStatusBarSetUsb()
     }
     RefreshStatusBar();
 }
+
+#ifdef BTC_ONLY
+void GuiStatusBarSetTestNet(void)
+{
+    if (GetCurrentAccountIndex() >= 3 || GetIsTestNet() == false) {
+        lv_obj_add_flag(g_guiStatusBar.testNetImg, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_clear_flag(g_guiStatusBar.testNetImg, LV_OBJ_FLAG_HIDDEN);
+    }
+    RefreshStatusBar();
+    printf("GuiStatusBarSetTestNet\n");
+}
+#endif
 
 void GuiStatusBarSetBattery(uint8_t percent, bool charging)
 {
@@ -314,6 +336,12 @@ static void RefreshStatusBar(void)
         next = g_guiStatusBar.sdCardImg;
     }
     lv_obj_align_to(g_guiStatusBar.usbImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
+#ifdef BTC_ONLY
+    if (!lv_obj_has_flag(g_guiStatusBar.usbImg, LV_OBJ_FLAG_HIDDEN)) {
+        next = g_guiStatusBar.usbImg;
+    }
+    lv_obj_align_to(g_guiStatusBar.testNetImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
+#endif
 }
 
 static lv_obj_t *CreateReturnBtn(lv_obj_t *navBar)

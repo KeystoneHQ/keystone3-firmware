@@ -32,7 +32,7 @@ static PageWidget_t *g_pageWidget;
 static lv_timer_t *g_countDownTimer = NULL; // count down timer
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
-    {HOME_WALLET_CARD_BTC, false, "BTC", true},
+    {HOME_WALLET_CARD_BTC, false, "BTC", true, false},
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 
@@ -323,6 +323,18 @@ void GuiHomeRefresh(void)
     }
     GUI_DEL_OBJ(g_moreHintbox)
     AccountPublicHomeCoinGet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
+}
+
+bool GetIsTestNet(void)
+{
+    return g_walletState[HOME_WALLET_CARD_BTC].testNet;
+}
+
+void SetIsTestNet(bool testNet)
+{
+    printf("testNet=%d\n", testNet);
+    g_walletState[HOME_WALLET_CARD_BTC].testNet = testNet;
+    AccountPublicHomeCoinSet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
 }
 
 const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)

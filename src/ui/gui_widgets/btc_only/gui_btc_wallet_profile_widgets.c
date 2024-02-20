@@ -147,6 +147,17 @@ static void CreateBtcNetworkWidget(lv_obj_t *parent)
         lv_obj_align(g_networkCheckbox[i].uncheckedImg, LV_ALIGN_RIGHT_MID, -24, 0);
         lv_obj_clear_flag(g_networkCheckbox[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
     }
+    if (GetIsTestNet()) {
+        lv_obj_add_flag(g_networkCheckbox[0].checkedImg, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_networkCheckbox[0].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_networkCheckbox[1].checkedImg, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_networkCheckbox[1].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_clear_flag(g_networkCheckbox[0].checkedImg, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_networkCheckbox[0].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_networkCheckbox[1].checkedImg, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_networkCheckbox[1].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+    }
 }
 
 
@@ -160,6 +171,7 @@ static void NetworkSelHandler(lv_event_t *e)
         for (i = 0; i < 2; i++) {
             if (target == g_networkCheckbox[i].button) {
                 printf("target is %d\n", i);
+                SetIsTestNet(i == 1);
                 for (j = 0; j < 2; j++) {
                     if (i == j) {
                         //checked

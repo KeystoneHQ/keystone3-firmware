@@ -1416,6 +1416,9 @@
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgKey.c">
       <Filter>gui\assets\img</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_assets\img\imgTestNet.c">
+      <Filter>gui\assets\img</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\external\lvgl\src\core\lv_disp.h" />

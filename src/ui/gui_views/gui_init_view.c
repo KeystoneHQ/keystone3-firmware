@@ -156,6 +156,11 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_STATUS_BAR_REFRESH:
         GuiStatusBarSetUsb();
         break;
+#ifdef BTC_ONLY
+    case SIG_STATUS_BAR_TEST_NET:
+        GuiStatusBarSetTestNet();
+        break;
+#endif
     default:
         return ERR_GUI_UNHANDLED;
     }

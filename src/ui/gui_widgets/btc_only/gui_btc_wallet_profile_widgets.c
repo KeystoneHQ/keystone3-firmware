@@ -8,6 +8,7 @@
 #include "gui_button.h"
 #include "gui_btc_home_widgets.h"
 #include "gui_hintbox.h"
+#include "gui_api.h"
 
 typedef struct {
     lv_obj_t *button;
@@ -172,6 +173,9 @@ static void NetworkSelHandler(lv_event_t *e)
             if (target == g_networkCheckbox[i].button) {
                 printf("target is %d\n", i);
                 SetIsTestNet(i == 1);
+#ifdef BTC_ONLY
+                GuiApiEmitSignal(SIG_STATUS_BAR_TEST_NET, NULL, 0);
+#endif
                 for (j = 0; j < 2; j++) {
                     if (i == j) {
                         //checked

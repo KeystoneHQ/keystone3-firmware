@@ -217,6 +217,8 @@ LV_IMG_DECLARE(walletPetra);
 LV_IMG_DECLARE(walletXRPToolkit);
 LV_IMG_DECLARE(walletSparrow);
 LV_IMG_DECLARE(walletImToken);
+LV_IMG_DECLARE(walletSpecter);
+LV_IMG_DECLARE(walletNunchuk);
 
 
 //wallet list

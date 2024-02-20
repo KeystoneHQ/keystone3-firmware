@@ -1,5 +1,5 @@
-#ifndef _GUI_BTC_HOME_WIDGETS_H
-#define _GUI_BTC_HOME_WIDGETS_H
+#ifndef _GUI_HOME_WIDGETS_H
+#define _GUI_HOME_WIDGETS_H
 
 #include "gui_model.h"
 #include "lvgl.h"

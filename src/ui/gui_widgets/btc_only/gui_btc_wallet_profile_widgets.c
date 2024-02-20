@@ -77,7 +77,6 @@ static void CreateBtcWalletProfileEntranceWidget(lv_obj_t *parent)
             .position = {396, 24},
         },
     };
-    lv_obj_add_flag(table[2].obj, LV_OBJ_FLAG_HIDDEN);
     button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table), EmptyHandler, NULL);
     lv_obj_align(button, LV_ALIGN_TOP_LEFT, 12, 0);
 

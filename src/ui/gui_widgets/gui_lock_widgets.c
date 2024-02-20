@@ -217,9 +217,6 @@ void GuiLockScreenTurnOn(void *param)
     if (*single == SIG_LOCK_VIEW_VERIFY_PIN || *single == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
         GuiNvsBarSetWalletIcon(NULL);
         GuiNvsBarSetWalletName("");
-#ifdef BTC_ONLY
-        ShowWallPager(false);
-#endif
     }
     lv_obj_clear_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
     // g_lockView.isActive = true;

@@ -239,11 +239,6 @@ LV_IMG_DECLARE(walletListXRPToolkit);
 LV_IMG_DECLARE(walletListSparrow);
 LV_IMG_DECLARE(walletListImToken);
 
-LV_IMG_DECLARE(btcWalletListBlue);
-LV_IMG_DECLARE(btcWalletListSpecter);
-LV_IMG_DECLARE(btcWalletListSparrow);
-LV_IMG_DECLARE(btcWalletListNunchuk);
-
 // font
 LV_FONT_DECLARE(openSans_20);
 LV_FONT_DECLARE(openSans_24);

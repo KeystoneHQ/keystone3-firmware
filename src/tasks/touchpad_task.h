@@ -11,7 +11,6 @@ void CreateTouchPadTask(void);
 TouchStatus_t *GetTouchStatus(void);
 TouchStatus_t *GetLatestTouchStatus(void);
 bool GetTouchPress(void);
-void ClearTouchBuffer(void);
 
 #endif
 

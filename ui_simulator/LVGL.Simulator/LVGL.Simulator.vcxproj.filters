@@ -1398,6 +1398,9 @@
     <ClCompile Include="..\..\src\ui\gui_widgets\gui_export_pubkey_widgets.c">
       <Filter>gui\gui_widgets</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ui\gui_widgets\btc_only\gui_home_widgets.c">
+      <Filter>gui\gui_widgets\btc</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgDeepLayersVolume11.c">
       <Filter>gui\assets\img</Filter>
     </ClCompile>
@@ -1412,21 +1415,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ui\gui_assets\img\imgKey.c">
       <Filter>gui\assets\img</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_widgets\btc_only\gui_btc_home_widgets.c">
-      <Filter>gui\gui_widgets\btc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_assets\walletList\btcWalletListBlue.c">
-      <Filter>gui\assets\wallet</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_assets\walletList\btcWalletListNunchuk.c">
-      <Filter>gui\assets\wallet</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_assets\walletList\btcWalletListSparrow.c">
-      <Filter>gui\assets\wallet</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ui\gui_assets\walletList\btcWalletListSpecter.c">
-      <Filter>gui\assets\wallet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

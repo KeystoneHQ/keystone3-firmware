@@ -1,13 +1,12 @@
 #ifndef _GUI_HOME_WIDGETS_H
 #define _GUI_HOME_WIDGETS_H
 
-#ifndef BTC_ONLY
-
 #include "gui_model.h"
 #include "lvgl.h"
 
 typedef enum {
     HOME_WALLET_CARD_BTC,
+#ifndef BTC_ONLY
     HOME_WALLET_CARD_ETH,
     HOME_WALLET_CARD_SOL,
     HOME_WALLET_CARD_BNB,
@@ -52,6 +51,7 @@ typedef enum {
     HOME_WALLET_CARD_UMEE,
     HOME_WALLET_CARD_QCK,
     HOME_WALLET_CARD_TGD,
+#endif
     HOME_WALLET_CARD_BUTT,      // This represents the end of the array (the number of arrays) and needs to be placed at the end.
 } HOME_WALLET_CARD_ENUM;
 
@@ -78,9 +78,4 @@ void GuiHomeRestart(void);
 bool GuiHomePageIsTop(void);
 const ChainCoinCard_t* GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index);
 void GuiHomeDeInit(void);
-
-#else
-#include "gui_btc_home_widgets.h"
-#endif
-
 #endif /* _GUI_HOME_WIDGETS_H */

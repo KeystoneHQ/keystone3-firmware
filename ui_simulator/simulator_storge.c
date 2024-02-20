@@ -7,8 +7,8 @@
 #include "keystore.h"
 #include "account_manager.h"
 
-#define DS28S60_DATA_ADDR                   0x1000
-#define ATECC608B_DATA_ADDR                 0x2000
+#define DS28S60_DATA_ADDR                           0x1000
+#define ATECC608B_DATA_ADDR                         0x2000
 #define SIMULATOR_USER1_SECRET_ADDR                 0x3000
 #define SIMULATOR_USER2_SECRET_ADDR                 0x4000
 #define SIMULATOR_USER3_SECRET_ADDR                 0x5000
@@ -117,13 +117,13 @@ int32_t StorageGetData(uint32_t addr, uint8_t *buffer, uint32_t size)
     ret = lv_fs_open(&fd, path, LV_FS_MODE_RD);
     if (ret != LV_FS_RES_OK) {
         printf("lv_fs_open failed %s ret = %d line = %d\n", path, ret, __LINE__);
-        return;
+        return -1;
     }
 
     ret = lv_fs_read(&fd, buffer, size, &readBytes);
     if (ret != LV_FS_RES_OK) {
         printf("lv_fs_read failed %s ret = %d line = %d\n", path, ret, __LINE__);
-        return;
+        return -1;
     }
     lv_fs_close(&fd);
     
@@ -144,13 +144,13 @@ int32_t StorageSetData(uint32_t addr, uint8_t *buffer, uint32_t size)
     ret = lv_fs_open(&fd, path, LV_FS_MODE_WR);
     if (ret != LV_FS_RES_OK) {
         printf("lv_fs_open failed %s ret = %d line = %d\n", path, ret, __LINE__);
-        return;
+        return -1;
     }
 
     ret = lv_fs_write(&fd, buffer, size, &readBytes);
     if (ret != LV_FS_RES_OK) {
         printf("lv_fs_write failed %s ret = %d line = %d\n", path, ret, __LINE__);
-        return;
+        return -1;
     }
     lv_fs_close(&fd);
     
@@ -185,7 +185,7 @@ int32_t Gd25FlashSectorErase(uint32_t addr)
 
 }
 
-void InsertJsonU8Array(cJSON *root, uint8_t *data, uint8_t len, char *key)
+void InsertJsonU8Array(cJSON *root, const uint8_t *data, uint8_t len, char *key)
 {
     cJSON *array = cJSON_CreateArray();
     for (int i = 0; i < len; i++) {
@@ -194,7 +194,7 @@ void InsertJsonU8Array(cJSON *root, uint8_t *data, uint8_t len, char *key)
     cJSON_AddItemToObject(root, key, array);
 }
 
-void GetJsonArrayData(cJSON *root, uint8_t *data, char *key)
+void GetJsonArrayData(cJSON *root, uint8_t *data, uint8_t len, char *key)
 {
     cJSON *item = cJSON_GetObjectItem(root, key);
     if (item == NULL) {
@@ -210,11 +210,12 @@ void ModifyJsonArrayData(cJSON *root, uint8_t *data, uint8_t len, char *key)
 {
     cJSON *item = cJSON_GetObjectItem(root, key);
     if (item == NULL) {
+        printf("%s %d..\n", __func__, __LINE__);
         return InsertJsonU8Array(root, data, len, key);
     }
+    printf("cJSON_GetArraySize(item) = %d\n", cJSON_GetArraySize(item));
     for (int i = 0; i < cJSON_GetArraySize(item); i++) {
-        cJSON *item2 = cJSON_GetArrayItem(item, i);
-        item2->valueint = data[i];
+        cJSON_ReplaceItemInArray(item, i, cJSON_CreateNumber(data[i]));
     }
 }
 
@@ -232,7 +233,6 @@ uint8_t SimulatorGetAccountNum(void)
         }
         cJSON *item = cJSON_GetObjectItem(rootJson, "password");
         if (item != NULL) {
-            printf("item = %s.....\n", item->valuestring);
             accountNum++;
         }
         cJSON_Delete(rootJson);
@@ -241,13 +241,10 @@ uint8_t SimulatorGetAccountNum(void)
     return accountNum;
 }
 
-void SimulatorSaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *accountSecret, const char *password)
+int32_t SimulatorSaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *accountSecret, const char *password)
 {
     uint8_t buffer[JSON_MAX_LEN] = {'\0'};
     uint32_t size = 0;
-
-    StorageGetDataSize(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, &size, 4);
-    printf("size = %d\n", size);
 
     cJSON *rootJson = cJSON_CreateObject();
     InsertJsonU8Array(rootJson, accountSecret->entropy, ENTROPY_MAX_LEN, "entropy");
@@ -263,9 +260,11 @@ void SimulatorSaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *acc
     OperateStorageDataFunc func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, false);
     func(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, buffer, strlen(jsonBuf));
     cJSON_Delete(rootJson);
+
+    return SUCCESS_CODE;
 }
 
-int32_t SimulatorLoadAccountSecret(uint8_t accountIndex, const AccountSecret_t *accountSecret, const char *password)
+int32_t SimulatorLoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountSecret, const char *password)
 {
     int32_t ret = SUCCESS_CODE;
     uint8_t buffer[JSON_MAX_LEN] = {'\0'};
@@ -279,30 +278,27 @@ int32_t SimulatorLoadAccountSecret(uint8_t accountIndex, const AccountSecret_t *
         return ERR_KEYSTORE_PASSWORD_ERR;
     }
 
-    char *jsonBuf = cJSON_Print(rootJson);
-    printf("jsonBuf = %s\n", jsonBuf);
+    cJSON *passwordJson = cJSON_GetObjectItem(rootJson, "password");
+    if (passwordJson == NULL || strcmp(passwordJson->valuestring, password) != 0) {
+        cJSON_Delete(rootJson);
+        return ret;
+    }
 
-    // cJSON *item = cJSON_GetObjectItem(rootJson, "password");
-    // if (item != NULL && strncmp(item->valuestring, password, strlen(password)) == 0) {
-    //     printf("item = %s\n", item->valuestring);
-    //     cJSON_Delete(rootJson);
-    //     return ERR_KEYSTORE_PASSWORD_ERR;
-    // } else {
-    //     return ERR_KEYSTO
-    // }
-    // cJSON_Delete(rootJson);
+    GetJsonArrayData(rootJson, "entropy", accountSecret->entropy, ENTROPY_MAX_LEN);
+    GetJsonArrayData(rootJson, "seed", accountSecret->seed, SEED_LEN);
+    GetJsonArrayData(rootJson, "slip39_ems", accountSecret->slip39Ems, SLIP39_EMS_LEN);
+    GetJsonArrayData(rootJson, "reserved_data", accountSecret->reservedData, SE_DATA_RESERVED_LEN);
+    cJSON *entropyLenJson = cJSON_GetObjectItem(rootJson, "entropy_len");
+    if (entropyLenJson != NULL) {
+        accountSecret->entropyLen = (uint8_t)entropyLenJson->valueint;
+    }
 
-    // cJSON_AddItemToObject(rootJson, "password", item);
-    // char *jsonBuf = cJSON_Print(rootJson);
-    // strncpy(buffer, jsonBuf, JSON_MAX_LEN);
-    // OperateStorageDataFunc func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, false);
-    // func(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, buffer, strlen(jsonBuf));
-    // cJSON_Delete(rootJson);
+    cJSON_Delete(rootJson);
 
     return ret;
 }
 
-int32_t SimulatorVerifyPassword(uint8_t *accountIndex, char *password)
+int32_t SimulatorVerifyPassword(uint8_t *accountIndex, const char *password)
 {
     uint8_t buffer[JSON_MAX_LEN] = {0};
     for (int i = 0; i < 3; i++) {
@@ -316,7 +312,6 @@ int32_t SimulatorVerifyPassword(uint8_t *accountIndex, char *password)
         cJSON *item = cJSON_GetObjectItem(rootJson, "password");
         if (item != NULL && strncmp(item->valuestring, password, strlen(password)) == 0) {
             *accountIndex = i;
-            printf("item = %s....\n", item->valuestring);
             cJSON_Delete(rootJson);
             return SUCCESS_CODE;
         }
@@ -326,55 +321,88 @@ int32_t SimulatorVerifyPassword(uint8_t *accountIndex, char *password)
     return ERR_KEYSTORE_PASSWORD_ERR;
 }
 
+int32_t SimulatorVerifyCurrentPassword(uint8_t accountIndex, const char *password)
+{
+    uint8_t buffer[JSON_MAX_LEN] = {0};
+    OperateStorageDataFunc func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, true);
+    func(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, buffer, JSON_MAX_LEN);
+    cJSON *rootJson = cJSON_Parse(buffer);
+    if (rootJson == NULL) {
+        return ERR_KEYSTORE_PASSWORD_ERR;
+    }
+    cJSON *item = cJSON_GetObjectItem(rootJson, "password");
+    if (item != NULL && strncmp(item->valuestring, password, strlen(password)) == 0) {
+        cJSON_Delete(rootJson);
+        return SUCCESS_CODE;
+    }
+    cJSON_Delete(rootJson);
+
+    return ERR_KEYSTORE_PASSWORD_ERR;
+}
+
 // 28S60
 #if 1
 uint8_t SE_GetAccountIndexFromPage(uint8_t page)
 {
-    return page / PAGE_INDEX_PARAM;
+    return page / (PAGE_INDEX_PARAM + 1);
 }
 
 int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
 {
     uint8_t buffer[JSON_MAX_LEN] = {0};
-    OperateStorageDataFunc func = FindSimulatorStorageFunc(DS28S60_DATA_ADDR, true);
-    if (func) {
-        func(DS28S60_DATA_ADDR, buffer, JSON_MAX_LEN);
+    if (page == PAGE_PF_ENCRYPTED_PASSWORD) {
+    } else if (page == PAGE_WALLET1_PUB_KEY_HASH) {
+
+    } else if (page == PAGE_WALLET2_PUB_KEY_HASH) {
+        
+    } else if (page == PAGE_WALLET3_PUB_KEY_HASH) {
+
+    } else if (page == PAGE_PUBLIC_INFO) {
+        
+        return 0;
     }
 
-    // cJSON *rootJson = cJSON_Parse(buffer);
-    // if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV) {
-    //     GetJsonArrayData(rootJson, data, "iv");
-    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY) {
-    //     GetJsonArrayData(rootJson, data, "entropy");
-    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_H32) {
-    //     GetJsonArrayData(rootJson, data, "seed_h32");
-    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_L32) {
-    //     GetJsonArrayData(rootJson, data, "seed_l32");
-    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS) {
-    //     GetJsonArrayData(rootJson, data, "slip39_ems");
-    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC) {
-    //     GetJsonArrayData(rootJson, data, "hmac");
-    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_KEY_PIECE) {
-    //     GetJsonArrayData(rootJson, data, "key_piece");
-    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH) {
-    //     GetJsonArrayData(rootJson, data, "password_hash");
-    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM) {
-    //     GetJsonArrayData(rootJson, data, "index_param");
-    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_PF_ENCRYPTED_PASSWORD) {
-    //     GetJsonArrayData(rootJson, data, "encrypted_password");
-    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_PF_AES_KEY) {
-    //     GetJsonArrayData(rootJson, data, "aes_key");
-    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_PF_RESET_KEY) {
-    //     GetJsonArrayData(rootJson, data, "reset_key");
-    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_PF_INFO) {
-    //     GetJsonArrayData(rootJson, data, "pf_info");
-    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_WALLET1_PUB_KEY_HASH) {
-    //     GetJsonArrayData(rootJson, data, "wallet1_pub_key_hash");
-    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_WALLET2_PUB_KEY_HASH) {
-    //     GetJsonArrayData(rootJson, data, "wallet2_pub_key_hash");
-    // } else if (page == i * PAGE_NUM_PER_ACCOUNT + PAGE_WALLET3_PUB_KEY_HASH) {
-    //     GetJsonArrayData(rootJson, data, "wallet3_pub_key_hash");
-    // }
+    uint8_t account = SE_GetAccountIndexFromPage(page);
+    printf("account = %d\n", account);
+    OperateStorageDataFunc func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + account * 0x1000, true);
+    if (func) {
+        func(SIMULATOR_USER1_SECRET_ADDR + account * 0x1000, buffer, JSON_MAX_LEN);
+    }
+    printf("buffer1111 = %s\n", buffer);
+
+    cJSON *rootJson = cJSON_Parse(buffer);
+    if (page == account * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV) {
+        GetJsonArrayData(rootJson, data, 32, "iv");
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY) {
+        GetJsonArrayData(rootJson, data, 32, "entropy");
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_H32) {
+        GetJsonArrayData(rootJson, data, 32, "seed_h32");
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_L32) {
+        GetJsonArrayData(rootJson, data, 32, "seed_l32");
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS) {
+        GetJsonArrayData(rootJson, data, 32, "slip39_ems");
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC) {
+        GetJsonArrayData(rootJson, data, 32, "hmac");
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_KEY_PIECE) {
+        GetJsonArrayData(rootJson, data, 32, "key_piece");
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH) {
+        GetJsonArrayData(rootJson, data, 32, "password_hash");
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM) {
+        GetJsonArrayData(rootJson, data, sizeof(AccountInfo_t), "param");
+        AccountInfo_t *pAccountInfo = (AccountInfo_t *)data;
+        printf("read.....\n");
+        printf("pAccountInfo->entropyLen = %d\n", pAccountInfo->entropyLen);
+        printf("pAccountInfo->passcodeType = %d\n", pAccountInfo->passcodeType);
+        printf("pAccountInfo->mnemonicType = %d\n", pAccountInfo->mnemonicType);
+        printf("pAccountInfo->passphraseQuickAccess = %d\n", pAccountInfo->passphraseQuickAccess);
+        printf("pAccountInfo->passphraseMark = %d\n", pAccountInfo->passphraseMark);
+        printf("pAccountInfo->slip39Id = %d\n", pAccountInfo->slip39Id[0] * 256 + pAccountInfo->slip39Id[1]);
+        PrintArray("mfp", pAccountInfo->mfp, 4);
+        printf("pAccountInfo->slip39Ie = %d\n", pAccountInfo->slip39Ie[0]);
+        printf("pAccountInfo->iconIndex = %d\n", pAccountInfo->iconIndex);
+        printf("pAccountInfo->walletName = %s\n", pAccountInfo->walletName);
+    }
+
     return 0;
 }
 
@@ -397,45 +425,51 @@ int32_t SE_HmacEncryptWrite(const uint8_t *data, uint8_t page)
     if (func) {
         func(SIMULATOR_USER1_SECRET_ADDR + account * 0x1000, buffer, JSON_MAX_LEN);
     }
+    printf("buffer2222 = %s\n", buffer);
     cJSON *rootJson = cJSON_Parse(buffer);
+    if (rootJson == NULL) {
+        rootJson = cJSON_CreateObject();
+    }
     if (page == account * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV) {
-        ModifyJsonArrayData(rootJson, data, 32, "iv");
+        // ModifyJsonArrayData(rootJson, data, 32, "iv");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY) {
-        ModifyJsonArrayData(rootJson, data, 32, "entropy");
+        // ModifyJsonArrayData(rootJson, data, 32, "entropy");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_H32) {
-        ModifyJsonArrayData(rootJson, data, 32, "seed_h32");
+        // ModifyJsonArrayData(rootJson, data, 32, "seed_h32");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_L32) {
-        ModifyJsonArrayData(rootJson, data, 32, "seed_l32");
+        // ModifyJsonArrayData(rootJson, data, 32, "seed_l32");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS) {
-        ModifyJsonArrayData(rootJson, data, 32, "slip39_ems");
+        // ModifyJsonArrayData(rootJson, data, 32, "slip39_ems");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC) {
-        ModifyJsonArrayData(rootJson, data, 32, "hmac");
+        // ModifyJsonArrayData(rootJson, data, 32, "hmac");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_KEY_PIECE) {
-        ModifyJsonArrayData(rootJson, data, 32, "key_piece");
+        // ModifyJsonArrayData(rootJson, data, 32, "key_piece");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH) {
-        ModifyJsonArrayData(rootJson, data, 32, "password_hash");
+        // ModifyJsonArrayData(rootJson, data, 32, "password_hash");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM) {
+        ModifyJsonArrayData(rootJson, data, sizeof(AccountInfo_t), "param");
         AccountInfo_t *pAccountInfo = (AccountInfo_t *)data;
+        printf("write.....\n");
         printf("pAccountInfo->entropyLen = %d\n", pAccountInfo->entropyLen);
         printf("pAccountInfo->passcodeType = %d\n", pAccountInfo->passcodeType);
         printf("pAccountInfo->mnemonicType = %d\n", pAccountInfo->mnemonicType);
         printf("pAccountInfo->passphraseQuickAccess = %d\n", pAccountInfo->passphraseQuickAccess);
         printf("pAccountInfo->passphraseMark = %d\n", pAccountInfo->passphraseMark);
-        printf("pAccountInfo->slip39Id = %d\n", pAccountInfo->slip39Id);
-        printf("pAccountInfo->mfp = %d\n", pAccountInfo->mfp);
-        printf("pAccountInfo->slip39Ie = %d\n", pAccountInfo->slip39Ie);
-        printf("pAccountInfo->reserved2 = %d\n", pAccountInfo->reserved2);
+        printf("pAccountInfo->slip39Id = %d\n", pAccountInfo->slip39Id[0] * 256 + pAccountInfo->slip39Id[1]);
+        PrintArray("mfp", pAccountInfo->mfp, 4);
+        printf("pAccountInfo->slip39Ie = %d\n", pAccountInfo->slip39Ie[0]);
         printf("pAccountInfo->iconIndex = %d\n", pAccountInfo->iconIndex);
         printf("pAccountInfo->walletName = %s\n", pAccountInfo->walletName);
+    } else {
+        return SUCCESS_CODE;
     }
 
-    // char *buff = cJSON_Print(rootJson);
-    // printf("buff = %s\n", buff);
-
-    // func = FindSimulatorStorageFunc(DS28S60_DATA_ADDR, false);
-    // if (func) {
-    //     func(DS28S60_DATA_ADDR, buff, strlen(buff));
-    // }
+    char *buff = cJSON_Print(rootJson);
+    printf("buff = %s\n", buff);
+    func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + account * 0x1000, false);
+    if (func) {
+        func(SIMULATOR_USER1_SECRET_ADDR + account * 0x1000, buff, strlen(buff));
+    }
 
     return SUCCESS_CODE;
 }
@@ -507,14 +541,4 @@ int32_t SE_DeriveKey(uint8_t slot, const uint8_t *authKey)
 
     }
     return 0;
-}
-
-// OTP
-void OTP_PowerOn(void)
-{
-    
-}
-
-int32_t WriteOtpData(uint32_t addr, const uint8_t *data, uint32_t len)
-{
 }

@@ -37,7 +37,6 @@ bool GetPassphraseQuickAccess(void);
 bool SdCardInsert(void);
 void SdCardIntHandler(void);
 bool UsbInitState(void);
-int strcasecmp(char const *a, char const *b);
 
 #define LOW_BATTERY_LIMIT               20
 #define CHECK_BATTERY_LOW_POWER()       ((GetBatterPercent() <= LOW_BATTERY_LIMIT) ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE)

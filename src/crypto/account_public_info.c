@@ -411,11 +411,11 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
                 ret = xPubResult->error_code;
                 break;
             }
-            printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
+            // printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
             ASSERT(xPubResult->data);
             g_accountPublicKey[i].pubKey = SRAM_MALLOC(strlen(xPubResult->data) + 1);
             strcpy(g_accountPublicKey[i].pubKey, xPubResult->data);
-            printf("xPubResult=%s\r\n", xPubResult->data);
+            // printf("xPubResult=%s\r\n", xPubResult->data);
             free_simple_response_c_char(xPubResult);
         }
         if (response != NULL) {
@@ -433,7 +433,7 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         size = strlen(jsonString);
         Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
         Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
-        printf("regenerate jsonString=%s\r\n", jsonString);
+        // printf("regenerate jsonString=%s\r\n", jsonString);
         GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
         EXT_FREE(jsonString);
     } while (0);

@@ -15,6 +15,7 @@ typedef struct {
     bool state;
     const char *name;
     bool enable;
+    bool testNet;
     lv_obj_t *checkBox;
 } WalletState_t;
 
@@ -31,6 +32,8 @@ void GuiHomeDisActive(void);
 void GuiHomeSetWalletDesc(WalletDesc_t *wallet);
 void GuiHomeRestart(void);
 bool GuiHomePageIsTop(void);
+bool GetIsTestNet(void);
+void SetIsTestNet(bool testNet);
 const ChainCoinCard_t* GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index);
 void GuiHomeDeInit(void);
 #endif /* _GUI_HOME_WIDGETS_H */

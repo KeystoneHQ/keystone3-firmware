@@ -45,7 +45,7 @@ def build_firmware(environment, options, bin_type):
             cmd += ' -DDEBUG_MEMORY=true'
         # add more option here.
 
-
+    print("run command:",cmd)
     cmd_result = os.system(cmd)
     if cmd_result != 0:
         return cmd_result

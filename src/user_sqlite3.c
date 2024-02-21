@@ -8,11 +8,8 @@
 
 // #define USER_DEBUG(fmt, ...)             printf("[%s:%d] " fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__);
 #define USER_DEBUG(fmt, ...)
-#define ENS_DB_FILE_PATH                    "0:ens.db"
-#define SQL_BUFF_MAX_SIZE                   (256)
-#define SQL_ABI_BUFF_MAX_SIZE               (2000)
 #define CACHEBLOCKSZ                        (64)
-#define ESP8266_DEFAULT_MAXNAMESIZE         (32)
+#define DEFAULT_MAXNAMESIZE                 (32)
 
 typedef struct st_linkedlist {
     uint16_t blockid;
@@ -29,7 +26,7 @@ typedef struct UserSqlite3File {
     sqlite3_file base;
     vfs_file *fd;
     filecache_t *cache;
-    char name[ESP8266_DEFAULT_MAXNAMESIZE];
+    char name[DEFAULT_MAXNAMESIZE];
 } UserSqlite3File;
 
 int UserClose(sqlite3_file*);
@@ -323,8 +320,8 @@ int UserOpen(sqlite3_vfs * vfs, const char * path, sqlite3_file * file, int flag
     USER_DEBUG("UserOpen: 1o %s %s\n", path, "r");
     memset(p, 0, sizeof(UserSqlite3File));
 
-    strncpy(p->name, path, ESP8266_DEFAULT_MAXNAMESIZE);
-    p->name[ESP8266_DEFAULT_MAXNAMESIZE - 1] = '\0';
+    strncpy(p->name, path, DEFAULT_MAXNAMESIZE);
+    p->name[DEFAULT_MAXNAMESIZE - 1] = '\0';
 
     if (flags & SQLITE_OPEN_MAIN_JOURNAL) {
         p->fd = 0;
@@ -344,7 +341,7 @@ int UserOpen(sqlite3_vfs * vfs, const char * path, sqlite3_file * file, int flag
     }
 
     p->base.pMethods = &g_fileIoMethods;
-    USER_DEBUG("UserOpen: 2o %s %d OK\n", p->name, p->fd);
+    USER_DEBUG("UserOpen: %s %d OK\n", p->name, p->fd);
     return SQLITE_OK;
 }
 
@@ -686,7 +683,7 @@ void Sqlite3Test(int argc, char *argv[])
         SqliteTest();
     } else if (strcmp(argv[0], "ens") == 0) {
         VALUE_CHECK(argc, 2);
-        char name[256] = {0};
+        char name[SQL_ENS_NAME_MAX_LEN] = {0};
         bool isexist = GetEnsName(argv[1], name);
         if (isexist == true) {
             printf("addr %s found name %s\n", argv[1], name);

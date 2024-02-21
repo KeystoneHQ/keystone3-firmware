@@ -1169,8 +1169,8 @@ void EthContractLearnMore(lv_event_t *e)
 
 bool GetEthContractFromExternal(char *address, char *selectorId, uint64_t chainId, char *inputData)
 {
-    char *contractMethodJson = SRAM_MALLOC(2000);
-    memset(contractMethodJson, 0, 2000);
+    char *contractMethodJson = SRAM_MALLOC(SQL_ABI_BUFF_MAX_SIZE);
+    memset(contractMethodJson, 0, SQL_ABI_BUFF_MAX_SIZE);
     char contractName[64] = {0};
     if (GetDBContract(address, selectorId, chainId, contractMethodJson, contractName)) {
         Response_DisplayContractData *contractData = eth_parse_contract_data_by_method(inputData, contractName, contractMethodJson);

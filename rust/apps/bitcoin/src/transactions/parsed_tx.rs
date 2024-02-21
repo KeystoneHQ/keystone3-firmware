@@ -115,11 +115,13 @@ pub trait TxParser {
             .filter(|v| v.address.is_some())
             .map(|v| v.address.clone().unwrap_or("Unknown Address".to_string()))
             .collect::<Vec<String>>();
+        overview_from.sort();
         overview_from.dedup();
         let mut overview_to = outputs
             .iter()
             .map(|v| v.address.clone())
             .collect::<Vec<String>>();
+        overview_to.sort();
         overview_to.dedup();
         let overview = OverviewTx {
             total_output_amount: Self::format_amount(overview_amount, network),

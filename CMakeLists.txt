@@ -138,15 +138,20 @@ if(COMPILE_MAIN)
     src/ui/gui_frame
     src/ui/gui_widgets
     src/ui/gui_widgets/setting
+    src/ui/gui_widgets/general
+    src/ui/gui_widgets/btc_only
     src/ui/lv_i18n
     src/ui/gui_model
     src/ui/gui_analyze
     src/ui/gui_chain
     src/ui/gui_chain/btc
+    src/ui/gui_chain/others
     src/ui/gui_components
     src/ui/wallet
     src/webusb_protocol
     src/webusb_protocol/services
+    src/webusb_protocol/general
+    src/webusb_protocol/general/eapdu_services
     external
     external/ctaes
     external/fatfs
@@ -174,13 +179,7 @@ if(COMPILE_MAIN)
     build/rust-builds
     ${CMAKE_CURRENT_BINARY_DIR} )
 
-    if(BTC_ONLY)
-        set(project_include_dirs ${common_include_dirs}  src/ui/gui_widgets/btc_only)
-    else()
-        set(project_include_dirs ${common_include_dirs}  src/ui/gui_chain/others src/ui/gui_widgets/general  src/webusb_protocol/general src/webusb_protocol/general/eapdu_services)
-    endif()
-
-    include_directories(${project_include_dirs})
+    include_directories(${common_include_dirs})
 
     set_property(SOURCE external/mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s PROPERTY LANGUAGE C)
     set_property(SOURCE src/cm_backtrace/fault_handler/gcc/cmb_fault.s PROPERTY LANGUAGE C)

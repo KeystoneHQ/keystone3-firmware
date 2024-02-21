@@ -28,7 +28,7 @@ void CreateBackgroundTask(void)
 {
     const osThreadAttr_t backgroundTask_attributes = {
         .name = "BackgroundTask",
-        .stack_size = 1024 * 16,
+        .stack_size = 1024 * 28,
         .priority = (osPriority_t)osPriorityBelowNormal,
     };
     g_backgroundTaskHandle = osThreadNew(BackgroundTask, NULL, &backgroundTask_attributes);

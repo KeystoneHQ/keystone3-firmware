@@ -7,7 +7,11 @@
 #define STRINGIFY(x) #x
 #define EXPAND(x) STRINGIFY(x)
 
+#ifndef BTC_ONLY
 #define SOFTWARE_VERSION_STR "Firmware v" EXPAND(SOFTWARE_VERSION_MAJOR) "." EXPAND(SOFTWARE_VERSION_MINOR) "." EXPAND(SOFTWARE_VERSION_BUILD)
+#else
+#define SOFTWARE_VERSION_STR "Firmware v" EXPAND(SOFTWARE_VERSION_BTC_ONLY_MAJOR) "." EXPAND(SOFTWARE_VERSION_MINOR) "." EXPAND(SOFTWARE_VERSION_BUILD)
+#endif
 #ifdef COMPILE_SIMULATOR
 const char g_softwareVersionString[] = SOFTWARE_VERSION_STR;
 #else
@@ -26,6 +30,8 @@ void GetSoftWareVersionNumber(char *version)
 
 const char *GetSoftwareVersionString(void)
 {
-    return g_softwareVersionString;
+    static char version[32] = {0};
+    sprintf(version, "Firmware v%d,%d,%d", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+    return version;
 }
 

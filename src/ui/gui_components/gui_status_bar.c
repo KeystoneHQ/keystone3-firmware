@@ -154,7 +154,7 @@ void GuiNvsBarSetWalletIcon(const void *src)
     lv_obj_align(g_guiStatusBar.walletIcon, LV_ALIGN_LEFT_MID, 26, 0);
 }
 
-void ShowWallPager(bool enable)
+void ShowWallPaper(bool enable)
 {
     if (enable) {
         lv_obj_clear_flag(g_guiStatusBar.wallPaper, LV_OBJ_FLAG_HIDDEN);
@@ -169,7 +169,7 @@ void GuiStatusBarInit(void)
 #ifdef BTC_ONLY
     g_guiStatusBar.wallPaper = GuiCreateImg(g_guiStatusBar.background, NULL);
     lv_img_set_src(g_guiStatusBar.wallPaper, &imgDeepLayersVolume11);
-    ShowWallPager(false);
+    ShowWallPaper(false);
 #endif
     lv_obj_t *cont = GuiCreateContainerWithParent(g_guiStatusBar.background, lv_obj_get_width(lv_scr_act()), GUI_STATUS_BAR_HEIGHT);
     lv_obj_set_size(cont, lv_obj_get_width(lv_scr_act()), GUI_STATUS_BAR_HEIGHT);

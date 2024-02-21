@@ -218,7 +218,7 @@ void GuiLockScreenTurnOn(void *param)
         GuiNvsBarSetWalletIcon(NULL);
         GuiNvsBarSetWalletName("");
 #ifdef BTC_ONLY
-        ShowWallPager(false);
+        ShowWallPaper(false);
 #endif
     }
     lv_obj_clear_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);

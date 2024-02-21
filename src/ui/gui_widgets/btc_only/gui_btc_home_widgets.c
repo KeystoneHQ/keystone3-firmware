@@ -164,7 +164,7 @@ static void RcvHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         printf("rcv handler\n");
         coin = HOME_WALLET_CARD_BTC;
-        ShowWallPager(false);
+        ShowWallPaper(false);
         GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
     }
 }
@@ -180,7 +180,7 @@ void ScanQrCodeHandler(lv_event_t *e)
             lv_timer_del(g_countDownTimer);
             g_countDownTimer = NULL;
         }
-        ShowWallPager(false);
+        ShowWallPaper(false);
         GuiFrameOpenView(&g_scanView);
     }
 }
@@ -203,7 +203,7 @@ static void OpenMoreViewHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
         g_moreHintbox = NULL;
-        ShowWallPager(false);
+        ShowWallPaper(false);
         GuiFrameOpenView(lv_event_get_user_data(e));
     }
 }
@@ -250,7 +250,7 @@ static void OpenWalletProfileHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         printf("OpenWalletProfileHandler\n");
-        ShowWallPager(false);
+        ShowWallPaper(false);
         GuiFrameOpenView(&g_btcBtcWalletProfileView);
     }
 }
@@ -279,7 +279,7 @@ void GuiHomeAreaInit(void)
     lv_obj_set_style_bg_opa(walletCardCont, LV_OPA_TRANSP, LV_PART_MAIN);
     g_homeWalletCardCont = walletCardCont;
     CreateHomePageButtons();
-    ShowWallPager(true);
+    ShowWallPaper(true);
 }
 
 void GuiHomeDisActive(void)
@@ -312,7 +312,7 @@ void GuiHomeRefresh(void)
         return;
     }
     printf("GuiHomeRefresh\n");
-    ShowWallPager(true);
+    ShowWallPaper(true);
     g_countDownTimer = lv_timer_create(AddFlagCountDownTimerHandler, 500, NULL);
     GuiSetSetupPhase(SETUP_PAHSE_DONE);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_MANAGE, OpenWalletProfileHandler, NULL);

@@ -7,7 +7,7 @@
 #include "gui_connect_wallet_widgets.h"
 
 #ifdef BTC_ONLY
-#define WALLPAPER_ENABLE            1
+#define WALLPAPER_ENABLE            0
 #else
 #define WALLPAPER_ENABLE            0
 #endif

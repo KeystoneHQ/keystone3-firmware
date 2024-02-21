@@ -25,7 +25,7 @@ bool UsbInitState(void)
 
 uint32_t GetLanguage(void)
 {
-    return 0;
+    return 1;
 }
 
 

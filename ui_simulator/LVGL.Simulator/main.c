@@ -150,7 +150,7 @@ unsigned __stdcall UITaskEntry(void *param)
         return 1;
     }
     GuiStyleInit();
-
+    LanguageInit();
     uiThreadId = GetCurrentThreadId();
     GuiFrameOpenView(&g_initView);
     // lv_example_textarea_1();

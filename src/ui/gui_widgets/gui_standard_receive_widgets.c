@@ -288,7 +288,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
         tempObj = GuiCreateLittleTitleLabel(g_standardReceiveWidgets.attentionCont, _("Attention"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
-        char attentionText[150];
+        char attentionText[1024];
         GetAttentionText(attentionText);
         tempObj = GuiCreateLabelWithFont(g_standardReceiveWidgets.attentionCont, attentionText, g_defIllustrateFont);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);

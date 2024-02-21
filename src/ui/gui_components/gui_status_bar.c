@@ -23,7 +23,9 @@
 
 typedef struct StatusBar {
     lv_obj_t *background;
+#if (WALLPAPER_ENABLE == 1)
     lv_obj_t *wallPaper;
+#endif
     lv_obj_t *cont;
     lv_obj_t *walletIcon;
     lv_obj_t *walletNameLabel;
@@ -156,17 +158,19 @@ void GuiNvsBarSetWalletIcon(const void *src)
 
 void ShowWallPaper(bool enable)
 {
+#if (WALLPAPER_ENABLE == 1)
     if (enable) {
         lv_obj_clear_flag(g_guiStatusBar.wallPaper, LV_OBJ_FLAG_HIDDEN);
     } else {
         lv_obj_add_flag(g_guiStatusBar.wallPaper, LV_OBJ_FLAG_HIDDEN);
     }
+#endif
 }
 
 void GuiStatusBarInit(void)
 {
     g_guiStatusBar.background = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
-#ifdef BTC_ONLY
+#if (WALLPAPER_ENABLE == 1)
     g_guiStatusBar.wallPaper = GuiCreateImg(g_guiStatusBar.background, NULL);
     lv_img_set_src(g_guiStatusBar.wallPaper, &imgDeepLayersVolume11);
     ShowWallPaper(false);

@@ -267,9 +267,11 @@ void GuiHomeAreaInit(void)
 {
     g_pageWidget = CreatePageWidget();
     g_homeViewCont = g_pageWidget->contentZone;
+#if (WALLPAPER_ENABLE == 1)
     lv_obj_set_style_bg_opa(g_pageWidget->contentZone, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(g_pageWidget->page, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(g_pageWidget->navBar, LV_OPA_TRANSP, LV_PART_MAIN);
+#endif
 
     lv_obj_t *walletCardCont = GuiCreateContainerWithParent(g_homeViewCont, lv_obj_get_width(lv_scr_act()),
                                lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);

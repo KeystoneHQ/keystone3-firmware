@@ -5,6 +5,12 @@
 #include "gui.h"
 #include "gui_chain.h"
 #include "gui_connect_wallet_widgets.h"
+
+#ifdef BTC_ONLY
+#define WALLPAPER_ENABLE            1
+#else
+#define WALLPAPER_ENABLE            0
+#endif
 typedef enum {
     NVS_BAR_RETURN = 0,
     NVS_BAR_CLOSE,

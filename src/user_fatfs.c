@@ -9,6 +9,8 @@
 #include "drv_gd25qxx.h"
 #include "drv_sdcard.h"
 #include "sha256.h"
+#include "gui_setup_widgets.h"
+#include "account_manager.h"
 
 void FatfsError(FRESULT errNum);
 
@@ -440,6 +442,9 @@ int MMC_disk_read(
     UINT count      /* Number of sectors to read */
 )
 {
+    if ((GetCurrentAccountIndex() == 0xFF) && !GuiIsSetup()) {
+        return RES_NOTRDY;
+    }
     uint32_t i;
     DRESULT status = RES_PARERR;
     SD_Error SD_state = SD_OK;

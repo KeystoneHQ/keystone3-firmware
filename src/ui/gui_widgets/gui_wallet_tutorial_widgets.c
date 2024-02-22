@@ -206,11 +206,11 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_BLUE].items[0].qrUrl = _("connect_bw_qr_link");
 
         g_tutorials[WALLET_LIST_SPECTER].len = 1;
-        g_tutorials[WALLET_LIST_SPECTER].desc = _("connect_bw_desc");
-        g_tutorials[WALLET_LIST_SPECTER].items[0].walletName = _("connect_bw_title");
-        g_tutorials[WALLET_LIST_SPECTER].items[0].url = _("connect_bw_link");
-        g_tutorials[WALLET_LIST_SPECTER].items[0].qrTitle = _("connect_bw_qr_title");
-        g_tutorials[WALLET_LIST_SPECTER].items[0].qrUrl = _("connect_bw_qr_link");
+        g_tutorials[WALLET_LIST_SPECTER].desc = _("connect_specter_desc");
+        g_tutorials[WALLET_LIST_SPECTER].items[0].walletName = _("connect_specter_title");
+        g_tutorials[WALLET_LIST_SPECTER].items[0].url = _("connect_specter_link");
+        g_tutorials[WALLET_LIST_SPECTER].items[0].qrTitle = _("connect_specter_qr_title");
+        g_tutorials[WALLET_LIST_SPECTER].items[0].qrUrl = _("connect_specter_qr_link");
 
         g_tutorials[WALLET_LIST_SPARROW].len = 1;
         g_tutorials[WALLET_LIST_SPARROW].desc = _("connect_sparrow_desc");
@@ -220,11 +220,11 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl = _("connect_sparrow_qr_link");
 
         g_tutorials[WALLET_LIST_NUNCHUK].len = 1;
-        g_tutorials[WALLET_LIST_NUNCHUK].desc = _("connect_bw_desc");
-        g_tutorials[WALLET_LIST_NUNCHUK].items[0].walletName = _("connect_bw_title");
-        g_tutorials[WALLET_LIST_NUNCHUK].items[0].url = _("connect_bw_link");
-        g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrTitle = _("connect_bw_qr_title");
-        g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrUrl = _("connect_bw_qr_link");
+        g_tutorials[WALLET_LIST_NUNCHUK].desc = _("connect_nunchuk_desc");
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].walletName = _("connect_nunchuk_title");
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].url = _("connect_nunchuk_link");
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrTitle = _("connect_nunchuk_qr_title");
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrUrl = _("connect_nunchuk_qr_link");
 #endif
     }
 }

@@ -7,7 +7,8 @@
 #include "account_public_info.h"
 #include "assert.h"
 #include "hash_and_salt.h"
-
+#include "secret_cache.h"
+#include "safe_str_lib.h"
 
 typedef struct {
     uint8_t loginPasswordErrorCount;
@@ -146,7 +147,7 @@ int32_t VerifyCurrentAccountPassword(const char *password)
         }
         ret = SE_HmacEncryptRead(passwordHashStore, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
         CHECK_ERRCODE_BREAK("read password hash", ret);
-        HashWithSalt(passwordHashClac, (const uint8_t *)password, strlen(password), "password hash");
+        HashWithSalt(passwordHashClac, (const uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password hash");
         if (memcmp(passwordHashStore, passwordHashClac, 32) == 0) {
             g_publicInfo.currentPasswordErrorCount = 0;
             ret = SUCCESS_CODE;

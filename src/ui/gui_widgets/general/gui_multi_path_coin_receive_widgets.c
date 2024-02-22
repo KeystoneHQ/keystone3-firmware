@@ -20,11 +20,13 @@
 #include "gui_home_widgets.h"
 #include "gui_global_resources.h"
 
-#define GENERAL_ADDRESS_INDEX_MAX               999999999
-#define ETH_LEDGER_LIVE_ADDRESS_INDEX_MAX               9
-#define SOL_BIP44_ADDRESS_INDEX_MAX                     9
-#define SOL_BIP44_ROOT_ADDRESS_INDEX_MAX                0
-#define SOL_BIP44_CHANGE_ADDRESS_INDEX_MAX              9
+#define GENERAL_ADDRESS_INDEX_MAX                       (999999999)
+#define ETH_LEDGER_LIVE_ADDRESS_INDEX_MAX               (9)
+#define SOL_BIP44_ADDRESS_INDEX_MAX                     (9)
+#define SOL_BIP44_ROOT_ADDRESS_INDEX_MAX                (0)
+#define SOL_BIP44_CHANGE_ADDRESS_INDEX_MAX              (9)
+#define ADDRESS_MAX_LEN                                 (128)
+#define PATH_ITEM_MAX_LEN                               (32)
 
 
 typedef enum {
@@ -74,19 +76,19 @@ typedef struct {
 
 typedef struct {
     GuiChainCoinType type;
-    char tittle[32];
+    char tittle[PATH_ITEM_MAX_LEN];
 } TittleItem_t;
 
 typedef struct {
     uint32_t index;
-    char address[128];
-    char path[32];
+    char address[ADDRESS_MAX_LEN];
+    char path[PATH_ITEM_MAX_LEN];
 } AddressDataItem_t;
 
 typedef struct {
-    char title[32];
-    char subTitle[32];
-    char path[32];
+    char title[PATH_ITEM_MAX_LEN];
+    char subTitle[PATH_ITEM_MAX_LEN];
+    char path[PATH_ITEM_MAX_LEN];
 } PathItem_t;
 
 static void GuiCreateMoreWidgets(lv_obj_t *parent);
@@ -144,12 +146,12 @@ static MultiPathCoinReceiveWidgets_t g_multiPathCoinReceiveWidgets;
 static EthereumReceiveTile g_multiPathCoinReceiveTileNow;
 
 static const PathItem_t g_ethPaths[] = {
-    {"BIP44 Standard",     "",     "m/44'/60'/0'"  },
-    {"Ledger Live",         "",     "m/44'/60'"     },
-    {"Ledger Legacy",       "",     "m/44'/60'/0'"  },
+    {"BIP44 Standard",          "",     "m/44'/60'/0'"  },
+    {"Ledger Live",             "",     "m/44'/60'"     },
+    {"Ledger Legacy",           "",     "m/44'/60'/0'"  },
 };
 static const PathItem_t g_solPaths[] = {
-    {"Account-based Path",                "",     "m/44'/501'"  },
+    {"Account-based Path",      "",     "m/44'/501'"  },
     {"Single Account Path",     "",     "m/44'/501'"  },
     {"Sub-account Path",        "",     "m/44'/501'"  },
 };
@@ -167,7 +169,7 @@ static uint32_t g_solPathIndex[3] = {0};
 static PageWidget_t *g_pageWidget;
 static HOME_WALLET_CARD_ENUM g_chainCard;
 static lv_obj_t *g_derivationPathDescLabel = NULL;
-static char * *g_derivationPathDescs = NULL;
+static char **g_derivationPathDescs = NULL;
 static lv_obj_t *g_egCont = NULL;
 
 static void InitDerivationPathDesc(uint8_t chain)
@@ -596,7 +598,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     prevLabel = label;
 
     int gap = 4;
-    if (strlen(g_derivationPathDescs[g_selectType]) == 0) {
+    if (strnlen_s(g_derivationPathDescs[g_selectType], ADDRESS_MAX_LEN) == 0) {
         egContHeight -= lv_obj_get_height(label);
         lv_obj_set_height(label, 0);
         gap = 0;
@@ -716,10 +718,10 @@ static void RefreshQrCode(void)
 {
     AddressDataItem_t addressDataItem;
     ModelGetAddress(GetCurrentSelectIndex(), &addressDataItem);
-    lv_qrcode_update(g_multiPathCoinReceiveWidgets.qrCode, addressDataItem.address, strlen(addressDataItem.address));
+    lv_qrcode_update(g_multiPathCoinReceiveWidgets.qrCode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
     if (fullscreen_qrcode) {
-        lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strlen(addressDataItem.address));
+        lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
     lv_label_set_text(g_multiPathCoinReceiveWidgets.addressLabel, addressDataItem.address);
     lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.addressCountLabel, "Account-%u", (addressDataItem.index + 1));
@@ -1070,17 +1072,16 @@ static void GetPathItemSubTitle(char* subTitle, int index)
 
 void AddressLongModeCut(char *out, const char *address)
 {
-    uint32_t len;
+    uint32_t len = strnlen_s(address, 24);
 
-    len = strlen(address);
     if (len <= 24) {
         strcpy(out, address);
-        return;
+    } else {
+        strncpy(out, address, 12);
+        out[12] = 0;
+        strcat(out, "...");
+        strcat(out, address + len - 12);
     }
-    strncpy(out, address, 12);
-    out[12] = 0;
-    strcat(out, "...");
-    strcat(out, address + len - 12);
 }
 
 static void GetSolHdPath(char *hdPath, int index)

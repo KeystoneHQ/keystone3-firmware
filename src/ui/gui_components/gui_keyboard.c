@@ -1,15 +1,15 @@
-
+#include <string.h>
+#include "user_memory.h"
+#include "motor_manager.h"
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_create_wallet_widgets.h"
 #include "gui_keyboard.h"
-#include "user_memory.h"
 #include "gui_hintbox.h"
 #include "gui_views.h"
 #include "gui_lock_widgets.h"
 #include "gui_letter_tree.h"
-#include "string.h"
-#include "motor_manager.h"
+#include "safe_str_lib.h"
 
 #pragma GCC optimize ("O0")
 
@@ -188,8 +188,8 @@ static lv_obj_t *g_walletIcon = NULL;
 static lv_obj_t *g_enterProgressLabel = NULL;
 static uint8_t g_currEmojiIndex = 0;
 static uint8_t g_statusBarEmojiIndex = 0;
-char g_wordBuf[3][32];
-static char g_wordChange[32];
+char g_wordBuf[GUI_KEYBOARD_CANDIDATE_WORDS_CNT][GUI_KEYBOARD_CANDIDATE_WORDS_LEN];
+static char g_wordChange[GUI_KEYBOARD_CANDIDATE_WORDS_LEN];
 extern TrieSTPtr rootTree;
 
 static const char *const g_fullKbLcMap[] = {
@@ -1005,7 +1005,7 @@ void UpdateFullKeyBoard(const char *str, KeyBoard_t *keyBoard)
         size = NUMBER_OF_ARRAYS(g_fullCtrlMap);
     }
 
-    if (strlen(str) >= keyBoard->taMinLen) {
+    if (strnlen_s(str, keyBoard->taMinLen) >= keyBoard->taMinLen) {
         g_kbCtrl[keyBoard->mode - KEY_STONE_FULL_L][size - 1] = LV_BTNMATRIX_CTRL_CHECKED | 2;
     } else {
         g_kbCtrl[keyBoard->mode - KEY_STONE_FULL_L][size - 1] = LV_BTNMATRIX_CTRL_DISABLED | 2;
@@ -1053,10 +1053,6 @@ void UpdateKeyBoard(TrieSTPtr root, const char *str, KeyBoard_t *keyBoard)
 
     if (strlen(str) < 3) {
         enable[26] = LV_BTNMATRIX_CTRL_DISABLED;
-    }
-
-    if (strlen(str) == 0) {
-        // enable[27] = LV_BTNMATRIX_CTRL_DISABLED;
     }
 
     GuiKeyBoardLetterUpdate(keyBoard, enable);

@@ -18,6 +18,7 @@
 #ifndef COMPILE_SIMULATOR
 #include "usb_task.h"
 #include "safe_mem_lib.h"
+#include "safe_str_lib.h"
 #undef memset_s
 #define memset_s(dest, dmax, value, n)          memset(dest, value, n)
 #endif
@@ -38,7 +39,7 @@ static void CountDownHandler(lv_timer_t *timer);
 static void GuiCountDownTimerDestruct(KeyboardWidget_t *keyboardWidget);
 
 static uint8_t g_keyboardHintBoxMode = KEYBOARD_HINTBOX_PIN;
-static char g_pinBuf[GUI_DEFINE_MAX_PASSCODE_LEN + 1];
+static char g_pinBuf[PASSWORD_MAX_LEN + 1];
 
 void SetKeyboardWidgetMode(uint8_t mode)
 {
@@ -57,7 +58,7 @@ static void KeyboardConfirmHandler(lv_event_t *e)
 
     if (code == LV_EVENT_READY) {
         const char *currText = GuiGetKeyboardInput(keyboardWidget);
-        if (strlen(currText) > 0) {
+        if (strnlen_s(currText, PASSWORD_MAX_LEN) > 0) {
             SecretCacheSetPassword((char *)currText);
             GuiClearKeyboardInput(keyboardWidget);
             GuiModelVerifyAccountPassWord(keyboardWidget->sig);
@@ -267,7 +268,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t bu
     lv_obj_set_style_text_opa(ta, LV_OPA_100, LV_PART_MAIN);
     lv_obj_set_style_bg_color(ta, BLACK_COLOR, LV_PART_MAIN);
     lv_textarea_set_password_mode(ta, true);
-    lv_textarea_set_max_length(ta, GUI_DEFINE_MAX_PASSCODE_LEN);
+    lv_textarea_set_max_length(ta, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(ta, true);
 
     keyboardWidget->kb = kb;
@@ -341,7 +342,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
     lv_obj_set_style_text_opa(ta, LV_OPA_100, LV_PART_MAIN);
     lv_obj_set_style_bg_color(ta, DARK_BG_COLOR, LV_PART_MAIN);
     lv_textarea_set_password_mode(ta, true);
-    lv_textarea_set_max_length(ta, GUI_DEFINE_MAX_PASSCODE_LEN);
+    lv_textarea_set_max_length(ta, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(ta, true);
 
     keyboardWidget->kb = kb;

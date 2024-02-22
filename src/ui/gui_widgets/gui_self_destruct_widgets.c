@@ -29,7 +29,7 @@ void GuiSelfDestructInit(void)
         lv_obj_set_style_text_color(tempObj, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
         lv_obj_align(tempObj, LV_ALIGN_BOTTOM_MID, 0, -106);
         strcpy(serialNum, "SN:");
-        GetSerialNumber(serialNum + strlen(serialNum));
+        GetSerialNumber(serialNum + strnlen_s(serialNum, 3));
         tempObj = GuiCreateNoticeLabel(g_selfDestructCont, serialNum);
         lv_obj_align(tempObj, LV_ALIGN_BOTTOM_MID, 0, -36);
     }

@@ -5,6 +5,11 @@
 #define __O                             volatile
 #define __IO                            volatile
 
+#define BUFFER_SIZE_32                  (32)
+#define BUFFER_SIZE_64                  (64)
+#define BUFFER_SIZE_128                 (128)
+#define BUFFER_SIZE_256                 (256)
+
 #ifndef UNUSED
 #define UNUSED(X) (void)X
 #endif

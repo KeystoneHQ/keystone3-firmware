@@ -549,24 +549,22 @@ static bool isErc20Transfer(void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
     char *input = eth->detail->input;
-    if (strlen(input) <= 8) {
+    if (strnlen_s(input, 9) <= 8) {
         return false;
     }
     // FIXME: 0xa9059cbb is the method of erc20 transfer
-    char *erc20Method = "a9059cbb";
-    for (int i = 0; i < 8; i++) {
-        if (input[i] != erc20Method[i]) {
-            return false;
-        }
+    const char *erc20Method = "a9059cbb";
+    if (strncmp(input, erc20Method, 8) == 0) {
+        return true;
     }
-    return true;
+
+    return false;
 }
 
 static char *CalcSymbol(void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
 
-    //TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
     //eth->detail->to: the actual contract address;
     if (isErc20Transfer(eth) && eth->detail->to != NULL) {
         for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++) {
@@ -719,7 +717,6 @@ void GetMessageFrom(void *indata, void *param)
     } else {
         snprintf((char *)indata, LABEL_MAX_BUFF_LEN, "%s", message->from);
     }
-    // strcpy((char *)indata, message->from);
 }
 void GetMessageUtf8(void *indata, void *param)
 {
@@ -730,7 +727,6 @@ void GetMessageUtf8(void *indata, void *param)
     } else {
         snprintf((char *)indata, LABEL_MAX_BUFF_LEN, "%s", message->utf8_message);
     }
-    // strcpy((char *)indata, message->utf8_message);
 }
 
 void GetMessageRaw(void *indata, void *param)
@@ -743,7 +739,6 @@ void GetMessageRaw(void *indata, void *param)
     } else {
         snprintf((char *)indata, LABEL_MAX_BUFF_LEN, "%s%s", message->raw_message, "\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
     }
-    // sprintf((char *)indata, "%s%s", message->raw_message, "\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
 }
 
 static uint8_t GetEthPublickeyIndex(char* rootPath)

@@ -20,8 +20,11 @@
 #include "gui_tutorial_widgets.h"
 #include "account_manager.h"
 
-#define GENERAL_ADDRESS_INDEX_MAX 999999999
-#define ACCOUNT_INDEX_MAX 24
+#define GENERAL_ADDRESS_INDEX_MAX                           (999999999)
+#define ACCOUNT_INDEX_MAX                                   (24)
+#define ADDRESS_MAX_LEN                                     (128)
+#define PATH_ITEM_MAX_LEN                                   (32)
+#define INPUT_ADDRESS_MAX_LEN                               (16)
 
 typedef enum {
     RECEIVE_TILE_QRCODE = 0,
@@ -73,14 +76,14 @@ typedef struct {
 
 typedef struct {
     uint32_t index;
-    char address[128];
-    char path[32];
+    char address[ADDRESS_MAX_LEN];
+    char path[PATH_ITEM_MAX_LEN];
 } AddressDataItem_t;
 
 typedef struct {
-    char title[32];
-    char subTitle[32];
-    char path[32];
+    char title[PATH_ITEM_MAX_LEN];
+    char subTitle[PATH_ITEM_MAX_LEN];
+    char path[PATH_ITEM_MAX_LEN];
 } PathItem_t;
 
 static void GuiCreateMoreWidgets(lv_obj_t *parent);
@@ -499,10 +502,10 @@ static void RefreshQrCode(void)
     AddressDataItem_t addressDataItem;
 
     ModelGetAddress(g_selectedIndex[GetCurrentAccountIndex()], &addressDataItem, 0);
-    lv_qrcode_update(g_multiAccountsReceiveWidgets.qrCode, addressDataItem.address, strlen(addressDataItem.address));
+    lv_qrcode_update(g_multiAccountsReceiveWidgets.qrCode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
     if (fullscreen_qrcode) {
-        lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strlen(addressDataItem.address));
+        lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
     char string[128] = {0};
     AddressLongModeCut(string, addressDataItem.address, 20);
@@ -695,36 +698,33 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
     lv_obj_t *obj = lv_event_get_target(e);
     uint32_t id = lv_btnmatrix_get_selected_btn(obj);
     lv_obj_draw_part_dsc_t *dsc;
-    const char *txt;
-    char input[16];
-    uint32_t len;
+    char input[INPUT_ADDRESS_MAX_LEN];
     uint64_t longInt;
 
     if (code == LV_EVENT_CLICKED) {
-        txt = lv_btnmatrix_get_btn_text(obj, id);
+        const char *txt = lv_btnmatrix_get_btn_text(obj, id);
+        uint32_t len = strnlen_s(input, INPUT_ADDRESS_MAX_LEN);
         strcpy(input, lv_label_get_text(g_multiAccountsReceiveWidgets.inputAccountLabel));
         if (strcmp(txt, LV_SYMBOL_OK) == 0) {
             if (g_inputAccountValid) {
-                sscanf(input, "%u", &g_tmpIndex);
-                g_showIndex = g_tmpIndex / 5 * 5;
-                RefreshSwitchAddress();
-                lv_obj_add_flag(g_multiAccountsReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
-                g_inputAccountValid = false;
-                UpdateConfirmIndexBtn();
+                if (sscanf(input, "%u", &g_tmpIndex) == 1) {
+                    g_showIndex = g_tmpIndex / 5 * 5;
+                    RefreshSwitchAddress();
+                    lv_obj_add_flag(g_multiAccountsReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
+                    g_inputAccountValid = false;
+                    UpdateConfirmIndexBtn();
+                }
             }
         } else if (strcmp(txt, "-") == 0) {
-            len = strlen(input);
-            if (len >= 1) {
+            if (len > 0) {
                 input[len - 1] = '\0';
                 lv_label_set_text(g_multiAccountsReceiveWidgets.inputAccountLabel, input);
                 lv_obj_add_flag(g_multiAccountsReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
-                if (strlen(input) >= 1) {
-                    g_inputAccountValid = true;
-                } else {
-                    g_inputAccountValid = false;
-                }
+                g_inputAccountValid = true;
+            } else {
+                g_inputAccountValid = false;
             }
-        } else if (strlen(input) < 15) {
+        } else if (len < INPUT_ADDRESS_MAX_LEN - 1) {
             strcat(input, txt);
             longInt = strtol(input, NULL, 10);
             if (longInt >= GENERAL_ADDRESS_INDEX_MAX) {
@@ -1061,20 +1061,19 @@ static void GuiCreateSwitchAccountWidget()
 
 static void AddressLongModeCut(char *out, const char *address, uint32_t targetLen)
 {
-    uint32_t len;
+    uint32_t len = strnlen_s(address, ADDRESS_MAX_LEN);
 
-    len = strlen(address);
     if (len <= targetLen) {
         strcpy(out, address);
-        return;
+    } else {
+        strncpy(out, address, targetLen / 2);
+        strcat(out, "...");
+        strcat(out, address + len - targetLen / 2);
+        out[targetLen] = '\0';
     }
-    strncpy(out, address, targetLen / 2);
-    strcat(out, "...");
-    strcat(out, address + len - targetLen / 2);
 }
 
 #ifdef COMPILE_SIMULATOR
-
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
 {
     char hdPath[128];

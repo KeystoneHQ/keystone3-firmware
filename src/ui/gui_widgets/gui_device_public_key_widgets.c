@@ -96,13 +96,13 @@ void GuiDevicePublicKeyEntranceWidget(lv_obj_t *parent)
     char serialNumber[64] = {0};
     GetSerialNumber(serialNumber);
 
-    char qrData[200] = {0};
+    char qrData[BUFFER_SIZE_256] = {0};
     sprintf(qrData, "%s#%s", serialNumber, hexStr);
 
     lv_obj_t * qrCode = lv_qrcode_create(innerCont, 294, BLACK_COLOR, WHITE_COLOR);
     lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
 
-    lv_qrcode_update(qrCode, qrData, (uint32_t)strlen(qrData));
+    lv_qrcode_update(qrCode, qrData, (uint32_t)strnlen_s(qrData, BUFFER_SIZE_256));
 
     lv_obj_t * contentCont = lv_obj_create(qrCodeCont);
     lv_obj_set_size(contentCont, 336, 180);

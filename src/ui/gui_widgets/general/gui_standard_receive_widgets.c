@@ -20,8 +20,10 @@
 #include "gui_tutorial_widgets.h"
 #include "account_manager.h"
 
-#define GENERAL_ADDRESS_INDEX_MAX 999999999
-#define LEDGER_LIVE_ADDRESS_INDEX_MAX 9
+#define GENERAL_ADDRESS_INDEX_MAX                           999999999
+#define LEDGER_LIVE_ADDRESS_INDEX_MAX                       9
+#define ADDRESS_MAX_LEN                                     (128)
+#define PATH_ITEM_MAX_LEN                                   (32)
 
 typedef enum {
     RECEIVE_TILE_QRCODE = 0,
@@ -415,10 +417,10 @@ static void RefreshQrCode(void)
     AddressDataItem_t addressDataItem;
 
     ModelGetAddress(GetCurrentSelectIndex(), &addressDataItem);
-    lv_qrcode_update(g_standardReceiveWidgets.qrCode, addressDataItem.address, strlen(addressDataItem.address));
-    lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
-    if (fullscreen_qrcode) {
-        lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strlen(addressDataItem.address));
+    lv_qrcode_update(g_standardReceiveWidgets.qrCode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
+    lv_obj_t *fullscreenQrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
+    if (fullscreenQrcode) {
+        lv_qrcode_update(fullscreenQrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
     lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressDataItem.address);
     lv_label_set_text_fmt(g_standardReceiveWidgets.addressCountLabel, "Account-%u", (addressDataItem.index + 1));
@@ -600,17 +602,16 @@ static void OpenSwitchAddressHandler(lv_event_t *e)
 
 static void AddressLongModeCut(char *out, const char *address)
 {
-    uint32_t len;
+    uint32_t len = strnlen_s(address, 24);
 
-    len = strlen(address);
     if (len <= 24) {
         strcpy(out, address);
-        return;
+    } else {
+        strncpy(out, address, 12);
+        out[12] = 0;
+        strcat(out, "...");
+        strcat(out, address + len - 12);
     }
-    strncpy(out, address, 12);
-    out[12] = 0;
-    strcat(out, "...");
-    strcat(out, address + len - 12);
 }
 
 #ifdef COMPILE_SIMULATOR

@@ -20,6 +20,7 @@
 #include "gui_setting_widgets.h"
 #include "keystore.h"
 #include "account_manager.h"
+#include "safe_str_lib.h"
 
 #ifndef COMPILE_MAC_SIMULATOR
 #include "sha256.h"
@@ -29,16 +30,16 @@
 
 #pragma GCC optimize ("O0")
 extern TrieSTPtr rootTree;
-extern char g_wordBuf[3][32];
-static char g_sliceHeadWords[32];                                       // slip39 head three words
-static uint8_t g_sliceSha256[15][32];                                      // slip39 words hash
+extern char g_wordBuf[GUI_KEYBOARD_CANDIDATE_WORDS_CNT][GUI_KEYBOARD_CANDIDATE_WORDS_LEN];
+static char g_sliceHeadWords[GUI_KEYBOARD_CANDIDATE_WORDS_LEN];                                           // slip39 head three words
+static uint8_t g_sliceSha256[15][GUI_KEYBOARD_CANDIDATE_WORDS_LEN];                                       // slip39 words hash
 static lv_obj_t *g_noticeHintBox = NULL;
 
 
 char *GuiMnemonicGetTrueWord(const char *word, char *trueWord)
 {
     char *temp = trueWord;
-    for (int i = 0; i < strlen(word); i++) {
+    for (int i = 0; i < strnlen_s(word, GUI_KEYBOARD_CANDIDATE_WORDS_CNT); i++) {
         if (word[i] >= 'a' && word[i] <= 'z') {
             *temp++ = word[i];
         }
@@ -405,10 +406,10 @@ void GuiMnemonicInputHandler(lv_event_t *e)
             }
             lv_btnmatrix_set_selected_btn(mkb->btnm, mkb->currentId);
             GuiSetMnemonicCache(letterKb, word);
-        } else if (strlen(word) >= 3) {
+        } else if (strnlen_s(word, GUI_KEYBOARD_CANDIDATE_WORDS_CNT) >= 3) {
             int wordcnt = searchTrie(rootTree, word);
             if (wordcnt <= 1) {
-                sprintf(tempBuf, "%s#999999 %s#", word, &g_wordBuf[0][strlen(word)]);
+                sprintf(tempBuf, "%s#999999 %s#", word, &g_wordBuf[0][strnlen_s(word, GUI_KEYBOARD_CANDIDATE_WORDS_LEN)]);
                 lv_label_set_text(letterKb->associateLabel[0], g_wordBuf[0]);
             } else {
                 wordcnt = wordcnt > 3 ? 3 : wordcnt;

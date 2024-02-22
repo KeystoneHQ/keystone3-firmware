@@ -18,6 +18,7 @@
 #include "keystore.h"
 #include "device_setting.h"
 #include "account_manager.h"
+#include "safe_str_lib.h"
 
 
 #define TYPE_FILE_INFO_FILE_NAME                        1
@@ -86,6 +87,28 @@ const ProtocolServiceCallbackFunc_t g_fileTransInfoServiceFunc[] = {
     ServiceFileTransComplete,                   //2.3
 };
 
+static int ValidateAndSetFileName(Tlv_t *tlvArray, FileTransInfo_t *fileTransInfo) {
+    if (tlvArray == NULL || fileTransInfo == NULL) {
+        printf("Invalid pointers provided.\n");
+        return -1;
+    }
+
+    size_t pValueLength = strnlen_s(tlvArray->pValue, MAX_FILE_NAME_LENGTH);
+
+    if (pValueLength >= MAX_FILE_NAME_LENGTH || tlvArray->length > MAX_FILE_NAME_LENGTH) {
+        printf("File name is too long.\n");
+        return -1;
+    }
+
+    int written = snprintf(fileTransInfo->fileName, MAX_FILE_NAME_LENGTH + 3, "1:%s", tlvArray->pValue);
+
+    if (written < 0 || written >= MAX_FILE_NAME_LENGTH + 3) {
+        printf("Failed to write file name.\n");
+        return -1;
+    }
+
+    return SUCCESS_CODE;
+}
 
 static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
@@ -96,19 +119,15 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
     uint8_t hash[32];
     g_isReceivingFile = true;
     printf("ServiceFileTransInfo\n");
-    //PrintArray("tlvData", tlvData, head->length);
     tlvNumber = GetTlvFromData(tlvArray, 5, tlvData, head->length);
-    //printf("tlvNumber=%d\n", tlvNumber);
     CLEAR_OBJECT(g_fileTransInfo);
     CLEAR_OBJECT(g_fileTransCtrl);
     for (uint32_t i = 0; i < tlvNumber; i++) {
         switch (tlvArray[i].type) {
         case TYPE_FILE_INFO_FILE_NAME: {
-            if (strlen(tlvArray[i].pValue) > (MAX_FILE_NAME_LENGTH - 1) || tlvArray[i].length > MAX_FILE_NAME_LENGTH) {
-                printf("file name err\n");
+            if (ValidateAndSetFileName(&tlvArray[i], &g_fileTransInfo) != 0) {
                 return NULL;
             }
-            sprintf(g_fileTransInfo.fileName, "1:%s", tlvArray[i].pValue);      //Add USB FS path.< 1: >
         }
         break;
         case TYPE_FILE_INFO_FILE_SIZE: {
@@ -145,7 +164,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
     PrintArray("signature", g_fileTransInfo.signature, 64);
 
     do {
-        if (strlen(g_fileTransInfo.fileName) == 0 || g_fileTransInfo.fileSize == 0) {
+        if (strnlen_s(g_fileTransInfo.fileName, MAX_FILE_NAME_LENGTH) == 0 || g_fileTransInfo.fileSize == 0) {
             sendTlvArray[0].value = 4;
             break;
         }

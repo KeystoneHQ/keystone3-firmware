@@ -52,7 +52,8 @@ typedef enum {
 
 #define GUI_KEYBOARD_EMOJI_NEW_INDEX                            (0xFF)
 #define GUI_KEYBOARD_EMOJI_CANCEL_NEW_INDEX                     (0xFE)
-#define GUI_DEFINE_MAX_PASSCODE_LEN                             (128)
+#define GUI_KEYBOARD_CANDIDATE_WORDS_CNT                        (3)
+#define GUI_KEYBOARD_CANDIDATE_WORDS_LEN                        (32)
 
 void GuiKeyBoardSetMode(KeyBoard_t *keyBoard);
 void GuiDeleteKeyBoard(KeyBoard_t *kb);

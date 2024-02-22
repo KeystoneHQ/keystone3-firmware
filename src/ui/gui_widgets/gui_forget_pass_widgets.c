@@ -49,7 +49,7 @@ typedef enum {
 
 // static void ImportPhraseWords(void);
 
-static char g_pinBuf[GUI_DEFINE_MAX_PASSCODE_LEN + 1];
+static char g_pinBuf[PASSWORD_MAX_LEN + 1];
 static KeyBoard_t *g_forgetPhraseKb;
 static lv_obj_t *g_enterMnemonicCont;
 static MnemonicKeyBoard_t *g_forgetMkb;

@@ -24,6 +24,8 @@
 #include "account_manager.h"
 #include "librust_c.h"
 #include "safe_mem_lib.h"
+#include "safe_str_lib.h"
+#include "secret_cache.h"
 
 #define KEYSTORE_DEBUG          0
 
@@ -50,7 +52,6 @@
 #define ACCOUNT_TOTAL_LEN                       (AES_IV_LEN + ENTROPY_MAX_LEN + SEED_LEN + SLIP39_EMS_LEN + SE_DATA_RESERVED_LEN + HMAC_LEN)
 #define PARAM_LEN                               32
 
-#define PASSPHRASE_MAX_LEN                      128
 #define ITERATION_TIME                          700
 
 typedef struct {
@@ -86,7 +87,7 @@ int32_t GenerateEntropy(uint8_t *entropy, uint8_t entropyLen, const char *passwo
     int32_t ret;
 
     do {
-        HashWithSalt(inputBuffer, (uint8_t *)password, strlen(password), "generate entropy");
+        HashWithSalt(inputBuffer, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "generate entropy");
 
         SE_GetTRng(randomBuffer, ENTROPY_MAX_LEN);
         KEYSTORE_PRINT_ARRAY("trng", randomBuffer, ENTROPY_MAX_LEN);
@@ -145,7 +146,7 @@ int32_t SaveNewEntropy(uint8_t accountIndex, const uint8_t *entropy, uint8_t ent
 
         ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
         CHECK_ERRCODE_BREAK("SaveAccountSecret", ret);
-        HashWithSalt(passwordHash, (const uint8_t *)password, strlen(password), "password hash");
+        HashWithSalt(passwordHash, (const uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password hash");
         ret = SE_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
         CHECK_ERRCODE_BREAK("write password hash", ret);
 
@@ -182,7 +183,7 @@ int32_t SaveNewSlip39Entropy(uint8_t accountIndex, const uint8_t *ems, const uin
         memcpy(accountSecret.slip39Ems, ems, entropyLen);
         ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
         CHECK_ERRCODE_BREAK("SaveAccountSecret", ret);
-        HashWithSalt(passwordHash, (const uint8_t *)password, strlen(password), "password hash");
+        HashWithSalt(passwordHash, (const uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password hash");
         ret = SE_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
         CHECK_ERRCODE_BREAK("write password hash", ret);
 
@@ -289,7 +290,7 @@ int32_t ChangePassword(uint8_t accountIndex, const char *newPassword, const char
         CHECK_ERRCODE_BREAK("load account secret", ret);
         ret = SaveAccountSecret(accountIndex, &accountSecret, newPassword, false);
         CHECK_ERRCODE_BREAK("save account secret", ret);
-        HashWithSalt(passwordHash, (const uint8_t *)newPassword, strlen(newPassword), "password hash");
+        HashWithSalt(passwordHash, (const uint8_t *)newPassword, strnlen_s(newPassword, PASSWORD_MAX_LEN), "password hash");
         ret = SE_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
         CHECK_ERRCODE_BREAK("write password hash", ret);
     } while (0);
@@ -310,7 +311,7 @@ int32_t VerifyPassword(uint8_t *accountIndex, const char *password)
     for (i = 0; i < 3; i++) {
         ret = SE_HmacEncryptRead(passwordHashStore, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
         CHECK_ERRCODE_BREAK("read password hash", ret);
-        HashWithSalt(passwordHashClac, (const uint8_t *)password, strlen(password), "password hash");
+        HashWithSalt(passwordHashClac, (const uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password hash");
         if (memcmp(passwordHashStore, passwordHashClac, 32) == 0) {
             if (accountIndex != NULL) {
                 *accountIndex = i;
@@ -358,7 +359,7 @@ int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *
     int32_t ret;
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
 
-    ASSERT(strlen(password) >= 6);
+    ASSERT(strnlen_s(password, PASSWORD_MAX_LEN) >= 6);
     ASSERT(accountIndex <= 2);
     do {
         ret = GetPassphraseSeed(accountIndex, seed, passphrase, password);
@@ -378,7 +379,7 @@ int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *
         uint8_t *masterFingerprint = simpleResponse->data;
         memcpy(g_passphraseInfo[accountIndex].mfp, masterFingerprint, 4);
         free_simple_response_u8(simpleResponse);
-        if (strlen(passphrase) > 0) {
+        if (strnlen_s(passphrase, PASSPHRASE_MAX_LEN) > 0) {
             strcpy(g_passphraseInfo[accountIndex].passphrase, passphrase);
             g_passphraseInfo[accountIndex].passphraseExist = true;
         } else {
@@ -434,8 +435,8 @@ bool PassphraseExist(uint8_t accountIndex)
         return false;
     }
 
-    assert(g_passphraseInfo[accountIndex].passphraseExist == (strlen(g_passphraseInfo[accountIndex].passphrase) > 0));
-    return (strlen(g_passphraseInfo[accountIndex].passphrase) > 0);
+    assert(g_passphraseInfo[accountIndex].passphraseExist == (strnlen_s(g_passphraseInfo[accountIndex].passphrase, PASSPHRASE_MAX_LEN) > 0));
+    return (strnlen_s(g_passphraseInfo[accountIndex].passphrase, PASSPHRASE_MAX_LEN) > 0);
 }
 
 char* GetPassphrase(uint8_t accountIndex)

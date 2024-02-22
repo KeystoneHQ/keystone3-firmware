@@ -5,8 +5,9 @@
 #include "sqlite3.h"
 #include "sdfat_fns.h"
 #include "vfs.h"
+#include "safe_str_lib.h"
+#include "assert.h"
 
-// #define USER_DEBUG(fmt, ...)             printf("[%s:%d] " fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__);
 #define USER_DEBUG(fmt, ...)
 #define CACHEBLOCKSZ                        (64)
 #define DEFAULT_MAXNAMESIZE                 (32)
@@ -52,7 +53,6 @@ void UserDlClose(sqlite3_vfs*, void*);
 int UserRandomness(sqlite3_vfs*, int, char*);
 int UserSleep(sqlite3_vfs*, int);
 int UserCurrentTime(sqlite3_vfs*, double*);
-
 int UserFileClose(sqlite3_file*);
 int UserFileRead(sqlite3_file*, void*, int, sqlite3_int64);
 int UserFileWrite(sqlite3_file*, const void*, int, sqlite3_int64);
@@ -111,6 +111,8 @@ const sqlite3_io_methods g_fileMemMethods = {
     UserSectorSize,
     UserDeviceCharacteristics
 };
+
+static sqlite3 *g_db;
 
 uint32_t linkedlist_store(linkedlist_t **leaf, uint32_t offset, uint32_t len, const uint8_t *data)
 {
@@ -607,9 +609,9 @@ void SqliteTest(void)
     sqlite3_close(db1);
 }
 
-sqlite3 *g_db;
 bool GetEnsName(const char *addr, char *name)
 {
+    assert(strnlen_s(addr, SQL_ADDR_MAX_LEN) == SQL_ADDR_MAX_LEN - 1);
     sqlite3 *db;
     if (OpenDb(ENS_DB_FILE_PATH, &db)) {
         return NULL;
@@ -626,11 +628,12 @@ bool GetEnsName(const char *addr, char *name)
     }
 
     sqlite3_close(db);
-    return strlen(name) ? true : false;
+    return strnlen_s(name, SQL_ENS_NAME_MAX_LEN) ? true : false;
 }
 
 bool GetDBContract(const char* address, const char *selector, const uint32_t chainId, char *functionABIJson, char *contractName)
 {
+    assert(strnlen_s(address, SQL_ADDR_MAX_LEN) == SQL_ADDR_MAX_LEN - 1);
     sqlite3 *db;
     char index = address[2]; // [0,f]
 
@@ -649,7 +652,7 @@ bool GetDBContract(const char* address, const char *selector, const uint32_t cha
     }
 
     sqlite3_close(db);
-    return strlen(functionABIJson) ? true : false;
+    return strnlen_s(functionABIJson, SQL_ABI_BUFF_MAX_SIZE) ? true : false;
 }
 
 void sqlite_open_close(void)

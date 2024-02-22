@@ -43,7 +43,7 @@ static void FingerCancelRegisterHandler(lv_event_t *e);
 
 /* STATIC VARIABLES */
 static bool g_delWalletStatus = false;                      // delete wallet status
-static char g_passCode[GUI_DEFINE_MAX_PASSCODE_LEN + 1];    // passcode
+static char g_passCode[PASSWORD_MAX_LEN + 1];    // passcode
 static uint8_t g_walletAmount;
 static ContLabelWidget_t g_waitAnimWidget;
 static KeyboardWidget_t *g_keyboardWidget = NULL;

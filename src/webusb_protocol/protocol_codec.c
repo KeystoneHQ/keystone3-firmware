@@ -189,8 +189,6 @@ void ProtocolCodecTest(int argc, char *argv[])
         head.flag.b.ack = 0;
         head.flag.b.isHost = 1;
         head.length = 1234;
-        //PrintArray("head", (uint8_t *)&head, sizeof(head));
-        //printf("u16=0x%X\r\n", head.flag.u16);
         tlvArray[0].type = 1;
         tlvArray[0].length = strlen("Keystone 3Pro") + 1;
         tlvArray[0].pValue = "Keystone 3Pro";

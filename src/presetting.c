@@ -7,6 +7,7 @@
 #include "err_code.h"
 #include "assert.h"
 #include "safe_mem_lib.h"
+#include "safe_str_lib.h"
 
 #define FACTORY_RESULT_CHECK_ENABLE         1
 
@@ -19,7 +20,7 @@ int32_t GetSerialNumber(char *serialNumber)
         serialNumber[0] = '\0';
         return ERR_SERIAL_NUMBER_NOT_EXIST;
     }
-    if (strlen(temp) >= SERIAL_NUMBER_MAX_LEN) {
+    if (strnlen_s(temp, SERIAL_NUMBER_MAX_LEN + 1) >= SERIAL_NUMBER_MAX_LEN) {
         serialNumber[0] = '\0';
         return ERR_SERIAL_NUMBER_INVALID;
     }
@@ -39,7 +40,7 @@ int32_t SetSerialNumber(const char *serialNumber)
     } else if (ret == ERR_SERIAL_NUMBER_INVALID) {
         return ret;
     }
-    ASSERT(strlen(serialNumber) < SERIAL_NUMBER_MAX_LEN);
+    ASSERT(strnlen_s(serialNumber, SERIAL_NUMBER_MAX_LEN - 1) < SERIAL_NUMBER_MAX_LEN);
     OTP_PowerOn();
     CLEAR_ARRAY(temp);
     strcpy(temp, serialNumber);
@@ -200,7 +201,7 @@ void PresettingTest(int argc, char *argv[])
         SRAM_FREE(data);
     } else if (strcmp(argv[0], "set_web_auth_key") == 0) {
         VALUE_CHECK(argc, 2);
-        len = strlen(argv[1]);
+        len = strnlen_s(argv[1], 1024);
         if (len != 2048) {
             printf("set_web_auth_key err input,len=%d\n", len);
             return;
@@ -224,7 +225,7 @@ void PresettingTest(int argc, char *argv[])
         SRAM_FREE(data);
     } else if (strcmp(argv[0], "set_update_pub_key") == 0) {
         VALUE_CHECK(argc, 2);
-        len = strlen(argv[1]);
+        len = strnlen_s(argv[1], 1024);
         if (len != 130) {
             printf("set_update_pub_key err input,len=%d\n", len);
             return;

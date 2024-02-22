@@ -16,6 +16,7 @@
 #include "gui_api.h"
 #include "gui_views.h"
 #include "version.h"
+#include "safe_str_lib.h"
 
 
 #define LOG_NAME_MAX_LEN            64
@@ -105,7 +106,7 @@ void WriteLogFormat(uint32_t event, const char *format, ...)
     LogData_t logData = {0};
     logData.event = event;
     logData.dataType = 1;
-    logData.length = strlen(str) / 4 + 1;
+    logData.length = strnlen_s(str, LOG_MAX_STRING_LEN - 1) / 4 + 1;
     logData.timeStamp = GetCurrentStampTime();
     logData.pData = (uint8_t *)str;
     //printf("length=%d\r\n", logData.length);
@@ -470,12 +471,14 @@ static void CheckLogData(void)
 
 void CheckLastErrLog(void)
 {
-    char errStr[256];
+    #define ERROR_LOG_STR_MAX_LEN    256
+    char errStr[ERROR_LOG_STR_MAX_LEN];
     Gd25FlashReadBuffer(SPI_FLASH_ADDR_ERR_INFO, (uint8_t *)errStr, sizeof(errStr));
     if (CheckAllFF((uint8_t *)errStr, sizeof(errStr))) {
         return;
     }
-    if (strlen(errStr) < sizeof(errStr)) {
+    
+    if (strnlen_s(errStr, ERROR_LOG_STR_MAX_LEN) < ERROR_LOG_STR_MAX_LEN) {
         printf("last err:%s\n", errStr);
         WriteLogFormat(EVENT_ID_ERROR, "%s", errStr);
     }

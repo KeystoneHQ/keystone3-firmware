@@ -5,6 +5,7 @@
 #include "gui_views.h"
 #include "gui_qr_hintbox.h"
 #include "gui_hintbox.h"
+#include "safe_str_lib.h"
 
 static lv_obj_t *g_qrHintBox = NULL;
 static lv_obj_t *g_qrHintBoxTitle = NULL;
@@ -72,7 +73,7 @@ void GuiQRCodeHintBoxOpen(const char *qrdata, const char *title, const char *sub
         label = GuiCreateTextLabel(parent, title);
         lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -156);
-        g_qrHintBoxTitle = label;
+        g_qrHintBoxTitle = label; 
 
         label = GuiCreateIllustrateLabel(parent, subtitle);
         lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);
@@ -87,7 +88,7 @@ void GuiQRCodeHintBoxOpen(const char *qrdata, const char *title, const char *sub
     } else {
         //enhancement
         CheckAndClearFlag(g_qrHintBox, LV_OBJ_FLAG_HIDDEN);
-        lv_qrcode_update(g_qrHintBoxQR, qrdata, (uint32_t)strlen(qrdata));
+        lv_qrcode_update(g_qrHintBoxQR, qrdata, (uint32_t)strnlen_s(qrdata, 1024));
         lv_label_set_text(g_qrHintBoxTitle, title);
         lv_label_set_text(g_qrHintBoxSubTitle, subtitle);
     }

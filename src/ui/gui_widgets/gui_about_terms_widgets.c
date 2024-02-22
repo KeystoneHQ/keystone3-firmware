@@ -233,7 +233,7 @@ static void GuiQrcodeHandler(lv_event_t *e)
 
             qrCode = lv_qrcode_create(qrCodeCont, 360, BLACK_COLOR, WHITE_COLOR);
             lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
-            lv_qrcode_update(qrCode, g_termsWebSiteUrl, (uint32_t)strlen(g_termsWebSiteUrl));
+            lv_qrcode_update(qrCode, g_termsWebSiteUrl, (uint32_t)strnlen_s(g_termsWebSiteUrl, BUFFER_SIZE_128));
 
             label = GuiCreateLittleTitleLabel(parent, _("about_terms_title"));
             lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -156);

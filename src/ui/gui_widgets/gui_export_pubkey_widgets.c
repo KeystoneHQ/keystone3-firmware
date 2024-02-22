@@ -141,11 +141,11 @@ void GuiExportPubkeyDeInit(void)
 lv_obj_t* CreateExportPubkeyQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)
 {
     lv_obj_t* qrcode = lv_qrcode_create(parent, w, BLACK_COLOR, WHITE_COLOR);
-    char pubkey[128] = {0};
+    char pubkey[BUFFER_SIZE_128] = {0};
     GetExportPubkey(pubkey, g_chain, GetPathType());
     lv_obj_add_flag(qrcode, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(qrcode, GuiFullscreenModeHandler, LV_EVENT_CLICKED, NULL);
-    lv_qrcode_update(qrcode, pubkey, strlen(pubkey) + 1);
+    lv_qrcode_update(qrcode, pubkey, strnlen_s(pubkey, BUFFER_SIZE_128) + 1);
     return qrcode;
 }
 
@@ -421,15 +421,15 @@ static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType)
 static void RefreshQrcode()
 {
     uint8_t pathType = GetPathType();
-    char pubkey[128];
+    char pubkey[BUFFER_SIZE_128];
     GetExportPubkey(pubkey, g_chain, pathType);
 
     lv_label_set_text(g_widgets.title, GetPathTypeTitle(g_chain, pathType));
     char desc[32] = {0};
     GetPathTypeDesc(desc, g_chain, pathType);
     lv_label_set_text(g_widgets.desc, desc);
-    lv_qrcode_update(g_widgets.qrCode, pubkey, strlen(pubkey));
-    lv_qrcode_update(g_widgets.qrCodeFullscreen, pubkey, strlen(pubkey));
+    lv_qrcode_update(g_widgets.qrCode, pubkey, strnlen_s(pubkey, BUFFER_SIZE_128));
+    lv_qrcode_update(g_widgets.qrCodeFullscreen, pubkey, strnlen_s(pubkey, BUFFER_SIZE_128));
     lv_label_set_text(g_widgets.pubkey, pubkey);
     lv_obj_update_layout(g_widgets.pubkey);
     lv_obj_set_height(g_widgets.qrCont, lv_obj_get_height(g_widgets.pubkey) + 484);
@@ -503,32 +503,31 @@ static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index)
 
 static void AddressLongModeCut(char *out, const char *address)
 {
-    uint32_t len;
+    uint32_t len = strnlen_s(address, 24);
 
-    len = strlen(address);
     if (len <= 24) {
         strcpy(out, address);
-        return;
+    } else {
+        strncpy(out, address, 12);
+        out[12] = 0;
+        strcat(out, "...");
+        strcat(out, address + len - 12);
     }
-    strncpy(out, address, 12);
-    out[12] = 0;
-    strcat(out, "...");
-    strcat(out, address + len - 12);
 }
 
 static void SetEgContent(uint8_t index)
 {
-    char eg[64] = {0};
+    char eg[BUFFER_SIZE_64] = {0};
     char prefix[8] = {0};
-    char rest[64] = {0};
-    char addr[128] = {0};
-    char addrShot[64] = {0};
+    char rest[BUFFER_SIZE_64] = {0};
+    char addr[BUFFER_SIZE_128] = {0};
+    char addrShot[BUFFER_SIZE_64] = {0};
     int8_t prefixLen = (g_btcPathTypeList[index].pubkeyType == XPUB_TYPE_BTC_NATIVE_SEGWIT || g_btcPathTypeList[index].pubkeyType == XPUB_TYPE_BTC_TAPROOT) ? 4 : 1;
     for (uint8_t i = 0; i < 2; i++) {
         ModelGetUtxoAddress(addr, index, i);
         AddressLongModeCut(addrShot, addr);
         strncpy(prefix, addrShot, prefixLen);
-        strncpy(rest, addrShot + prefixLen, strlen(addrShot) - prefixLen);
+        strncpy(rest, addrShot + prefixLen, strnlen_s(addrShot, BUFFER_SIZE_64) - prefixLen);
         sprintf(eg, "%d  #F5870A %s#%s", i, prefix, rest);
         lv_label_set_text(g_widgets.egs[i], eg);
     }

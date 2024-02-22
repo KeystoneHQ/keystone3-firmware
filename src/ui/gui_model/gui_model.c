@@ -40,6 +40,7 @@
 #include "mhscpu_qspi.h"
 #include "safe_mem_lib.h"
 #include "usb_task.h"
+#include "safe_str_lib.h"
 #endif
 
 #define SECTOR_SIZE                         4096
@@ -308,7 +309,7 @@ static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
     SecretCacheSetMnemonic(mnemonic);
     retData = SUCCESS_CODE;
     GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, &retData, sizeof(retData));
-    memset_s(mnemonic, strlen(mnemonic), 0, strlen(mnemonic));
+    memset_s(mnemonic, strnlen_s(mnemonic, MNEMONIC_MAX_LEN), 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
     SRAM_FREE(mnemonic);
     SetLockScreen(enable);
     return SUCCESS_CODE;
@@ -334,7 +335,7 @@ static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t in
     SecretCacheSetMnemonic(mnemonic);
     retData = SUCCESS_CODE;
     GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, &retData, sizeof(retData));
-    memset_s(mnemonic, strlen(mnemonic), 0, strlen(mnemonic));
+    memset_s(mnemonic, strnlen_s(mnemonic, MNEMONIC_MAX_LEN), 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
     SRAM_FREE(mnemonic);
     SetLockScreen(enable);
 #endif
@@ -529,7 +530,7 @@ static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, Bac
     if (g_urResult->error_code == 0) {
         // printf("%s\r\n", g_urResult->data);
 #ifndef COMPILE_SIMULATOR
-        GuiApiEmitSignal(SIG_BACKGROUND_UR_GENERATE_SUCCESS, g_urResult->data, strlen(g_urResult->data) + 1);
+        GuiApiEmitSignal(SIG_BACKGROUND_UR_GENERATE_SUCCESS, g_urResult->data, strnlen_s(g_urResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
 #else
         GuiEmitSignal(SIG_BACKGROUND_UR_GENERATE_SUCCESS, g_urResult->data, strlen(g_urResult->data) + 1);
 #endif
@@ -545,7 +546,7 @@ static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen)
         UREncodeMultiResult *result = get_next_part(g_urResult->encoder);
         if (result->error_code == 0) {
             // printf("%s\r\n", result->data);
-            GuiApiEmitSignal(SIG_BACKGROUND_UR_UPDATE, result->data, strlen(result->data) + 1);
+            GuiApiEmitSignal(SIG_BACKGROUND_UR_UPDATE, result->data, strnlen_s(result->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
         } else {
             //TODO: deal with error
         }
@@ -624,7 +625,7 @@ static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen
     }
 
     for (int i = 0; i < memberCnt; i++) {
-        memset(wordsList[i], 0, strlen(wordsList[i]));
+        memset(wordsList[i], 0, strnlen_s(wordsList[i], MNEMONIC_MAX_LEN));
         // todo There is a problem with SRAM FREE here
         free(wordsList[i]);
     }
@@ -682,7 +683,7 @@ static int32_t ModelGenerateSlip39EntropyWithDiceRolls(const void *inData, uint3
     }
 
     for (int i = 0; i < memberCnt; i++) {
-        memset(wordsList[i], 0, strlen(wordsList[i]));
+        memset_s(wordsList[i], strnlen_s(wordsList[i], MNEMONIC_MAX_LEN), 0, strnlen_s(wordsList[i], MNEMONIC_MAX_LEN));
         // todo There is a problem with SRAM FREE here
         free(wordsList[i]);
     }
@@ -1033,6 +1034,9 @@ static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
     uint8_t *key = SRAM_MALLOC(WEB_AUTH_RSA_KEY_LEN);
     GetWebAuthRsaKey(key);
     char* authCode = calculate_auth_code(inData, key, 512, &key[512], 512);
+    SRAM_FREE(key);
+    printf("authCode = %s\n", authCode);
+    printf("authCode len = %d...............\n\n\n", strlen(authCode));
     GuiApiEmitSignal(SIG_WEB_AUTH_CODE_SUCCESS, authCode, strlen(authCode));
 #else
     uint8_t *entropy;
@@ -1149,14 +1153,14 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
     }
 
     // some scene would need clear secret after check
-    if (*param != SIG_SETTING_CHANGE_PASSWORD
-            && *param != SIG_SETTING_WRITE_PASSPHRASE
-            && *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE
-            && *param != SIG_FINGER_SET_SIGN_TRANSITIONS
-            && *param != SIG_FINGER_REGISTER_ADD_SUCCESS
-            && *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD
-            && !strlen(SecretCacheGetPassphrase())
-            && !GuiCheckIfViewOpened(&g_createWalletView)) {
+    if (*param != SIG_SETTING_CHANGE_PASSWORD &&
+            *param != SIG_SETTING_WRITE_PASSPHRASE &&
+            *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE &&
+            *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
+            *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
+            *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&
+            !strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) &&
+            !GuiCheckIfViewOpened(&g_createWalletView)) {
         ClearSecretCache();
     }
     SetLockScreen(enable);

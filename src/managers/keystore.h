@@ -53,7 +53,6 @@ char* GetPassphrase(uint8_t accountIndex);
 
 int32_t CheckPasswordExisted(const char *password, uint8_t excludeIndex);
 
-
 int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *password);
 void ClearAccountPassphrase(uint8_t accountIndex);
 void GetMasterFingerPrint(uint8_t *mfp);

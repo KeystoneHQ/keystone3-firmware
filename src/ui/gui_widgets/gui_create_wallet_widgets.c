@@ -56,7 +56,7 @@ static GuiEnterPasscodeItem_t *g_repeatPassCode = NULL;
 static lv_obj_t *g_setPinTile = NULL;
 static lv_obj_t *g_repeatPinTile = NULL;
 static lv_obj_t *g_noticeHintBox = NULL;
-static char g_pinBuf[GUI_DEFINE_MAX_PASSCODE_LEN + 1];
+static char g_pinBuf[PASSWORD_MAX_LEN + 1];
 static lv_obj_t *g_openMoreHintBox;
 static PageWidget_t *g_changeEntropyPage;
 static uint8_t g_selectedEntropyMethod = 0;
@@ -115,6 +115,7 @@ static void OpenEmojiKbHandler(lv_event_t *e)
 
 static void GuiCreateNameWalletWidget(lv_obj_t *parent)
 {
+    char tempBuf[16] = {0};
     lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_backup_namewallet_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
@@ -131,8 +132,7 @@ static void GuiCreateNameWalletWidget(lv_obj_t *parent)
     lv_textarea_set_placeholder_text(g_nameWalletKb->ta, "Wallet Name");
     lv_textarea_set_max_length(g_nameWalletKb->ta, 16);
     lv_textarea_set_one_line(g_nameWalletKb->ta, true);
-    char tempBuf[16] = {0};
-    sprintf(tempBuf, "%d/16", strlen(GuiNvsBarGetWalletName()));
+    sprintf(tempBuf, "%d/16", strnlen_s(GuiNvsBarGetWalletName(), 16));
     lv_obj_t *progresslabel = GuiCreateNoticeLabel(parent, tempBuf);
     lv_obj_align(progresslabel, LV_ALIGN_TOP_RIGHT, -36, 384 - GUI_MAIN_AREA_OFFSET);
     GuiSetEnterProgressLabel(progresslabel);

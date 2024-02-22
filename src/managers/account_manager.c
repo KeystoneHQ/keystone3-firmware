@@ -7,8 +7,8 @@
 #include "account_public_info.h"
 #include "assert.h"
 #include "hash_and_salt.h"
-#include "log_print.h"
-
+#include "secret_cache.h"
+#include "safe_str_lib.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_storage.h"
 #endif
@@ -164,11 +164,10 @@ int32_t VerifyCurrentAccountPassword(const char *password)
         ret = SimulatorVerifyCurrentPassword(accountIndex, password);
 #else
         ret = SE_HmacEncryptRead(passwordHashStore, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
-        CHECK_ERRCODE_BREAK("read password hash", ret);
-        HashWithSalt(passwordHashClac, (const uint8_t *)password, strlen(password), "password hash");
-        ret = memcmp(passwordHashStore, passwordHashClac, 32);
 #endif
-        if (ret == SUCCESS_CODE) {
+        CHECK_ERRCODE_BREAK("read password hash", ret);
+        HashWithSalt(passwordHashClac, (const uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password hash");
+        if (memcmp(passwordHashStore, passwordHashClac, 32) == 0) {
             g_publicInfo.currentPasswordErrorCount = 0;
         } else {
             g_publicInfo.currentPasswordErrorCount++;

@@ -151,6 +151,7 @@ void GetSolMessageFrom(void *indata, void *param)
     if (strlen(message->from) >= LABEL_MAX_BUFF_LEN) {
         snprintf((char *)indata, LABEL_MAX_BUFF_LEN - 3, "%s", message->from);
         strcat((char *)indata, "...");
+        snprintf((char *)indata, LABEL_MAX_BUFF_LEN, "%.*s...", LABEL_MAX_BUFF_LEN - 4, message->from);
     } else {
         snprintf((char *)indata, LABEL_MAX_BUFF_LEN, "%s", message->from);
     }

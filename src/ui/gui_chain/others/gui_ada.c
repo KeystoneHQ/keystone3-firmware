@@ -146,13 +146,13 @@ bool GetAdaExtraDataExist(void *indata, void *param)
     if (tx->auxiliary_data == NULL) {
         return false;
     }
-    return strlen(tx->auxiliary_data) > 0;
+    return strnlen_s(tx->auxiliary_data, SIMPLERESPONSE_C_CHAR_MAX_LEN) > 0;
 }
 
 int GetAdaExtraDataLen(void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    return strlen(tx->auxiliary_data);
+    return strnlen_s(tx->auxiliary_data, SIMPLERESPONSE_C_CHAR_MAX_LEN);
 }
 
 void GetAdaExtraData(void *indata, void *param)

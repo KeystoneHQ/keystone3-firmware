@@ -1,28 +1,28 @@
-#include "account_public_info.h"
-#include "string.h"
-#include "stdio.h"
-#include "user_memory.h"
-#include "keystore.h"
+#include <stdio.h>
+#include <string.h>
+#include "define.h"
+#include "cjson/cJSON.h"
+#include "sha256.h"
 #include "flash_address.h"
 #include "drv_gd25qxx.h"
-#include "define.h"
+#include "keystore.h"
+#include "user_memory.h"
+#include "account_public_info.h"
+#include "account_manager.h"
+#include "se_manager.h"
 #include "user_utils.h"
 #include "librust_c.h"
-#include "cjson/cJSON.h"
 #include "assert.h"
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_api.h"
 #include "gui_home_widgets.h"
-#include "sha256.h"
-#include "se_manager.h"
-#include "account_manager.h"
-
+#include "safe_str_lib.h"
 
 #define PUB_KEY_MAX_LENGTH                  256
 #define VERSION_MAX_LENGTH                  64
-
 #define INVALID_ACCOUNT_INDEX               255
+#define USER1_MUTABLE_DATA_MAX_SIZE         (SPI_FLASH_SIZE_USER1_MUTABLE_DATA - 4)
 
 typedef struct {
     char *pubKey;
@@ -209,7 +209,7 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
         retStr = cJSON_Print(rootJson);
         cJSON_Delete(rootJson);
         RemoveFormatChar(retStr);
-        size = strlen(retStr);
+        size = strnlen_s(retStr, USER1_MUTABLE_DATA_MAX_SIZE);
         Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
         Gd25FlashWriteBuffer(addr + 4, (uint8_t *)retStr, size);
     }
@@ -290,7 +290,7 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
         }
         jsonString = cJSON_Print(rootJson);
         RemoveFormatChar(jsonString);
-        size = strlen(jsonString);
+        size = strnlen_s(jsonString, USER1_MUTABLE_DATA_MAX_SIZE);
         Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
         Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
         EXT_FREE(jsonString);
@@ -331,15 +331,13 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
         ASSERT(ret == size);
         jsonString[size] = 0;
-        sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
-        #ifndef COMPILE_SIMULATOR
+        sha256((struct sha256 *)hash, jsonString, size);
         if (!VerifyWalletDataHash(accountIndex, hash)) {
             CLEAR_ARRAY(hash);
             return ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH;
         } else {
             ret = SUCCESS_CODE;
         }
-        #endif
         CLEAR_ARRAY(hash);
         if (GetPublicKeyFromJsonString(jsonString) == false) {
             printf("GetPublicKeyFromJsonString false, need regenerate\r\n");
@@ -415,7 +413,7 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
             }
             // printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
             ASSERT(xPubResult->data);
-            g_accountPublicKey[i].pubKey = SRAM_MALLOC(strlen(xPubResult->data) + 1);
+            g_accountPublicKey[i].pubKey = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
             strcpy(g_accountPublicKey[i].pubKey, xPubResult->data);
             // printf("xPubResult=%s\r\n", xPubResult->data);
             free_simple_response_c_char(xPubResult);
@@ -429,10 +427,11 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         }
         printf("erase done\n");
         jsonString = GetJsonStringFromPublicKey();
-        sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
+        sha256((struct sha256 *)hash, jsonString, strnlen_s(jsonString, USER1_MUTABLE_DATA_MAX_SIZE));
         SetWalletDataHash(accountIndex, hash);
         CLEAR_ARRAY(hash);
-        size = strlen(jsonString);
+        size = strnlen_s(jsonString, USER1_MUTABLE_DATA_MAX_SIZE);
+        printf("size = %d........\n", size);
         Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
         Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
         // printf("regenerate jsonString=%s\r\n", jsonString);
@@ -519,7 +518,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             }
             printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
             ASSERT(xPubResult->data);
-            g_accountPublicKey[i].pubKey = SRAM_MALLOC(strlen(xPubResult->data) + 1);
+            g_accountPublicKey[i].pubKey = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
             strcpy(g_accountPublicKey[i].pubKey, xPubResult->data);
             printf("xPubResult=%s\r\n", xPubResult->data);
             free_simple_response_c_char(xPubResult);
@@ -697,7 +696,7 @@ static bool GetPublicKeyFromJsonString(const char *string)
             } else {
                 GetStringValue(chainJson, "value", pubKeyString, PUB_KEY_MAX_LENGTH);
                 //printf("%s pub key=%s\r\n", g_chainTable[i].name, pubKeyString);
-                g_accountPublicKey[i].pubKey = SRAM_MALLOC(strlen(pubKeyString) + 1);
+                g_accountPublicKey[i].pubKey = SRAM_MALLOC(strnlen_s(pubKeyString, PUB_KEY_MAX_LENGTH) + 1);
                 strcpy(g_accountPublicKey[i].pubKey, pubKeyString);
             }
         }
@@ -765,7 +764,7 @@ static void GetStringValue(cJSON *obj, const char *key, char *value, uint32_t ma
     json = cJSON_GetObjectItem(obj, key);
     if (json != NULL) {
         strTemp = json->valuestring;
-        len = strlen(strTemp);
+        len = strnlen_s(strTemp, 256);
         if (len < maxLen) {
             strcpy(value, strTemp);
         } else {
@@ -850,7 +849,7 @@ void SetFirstReceive(const char* chainName, bool isFirst)
     jsonString = cJSON_Print(rootJson);
     cJSON_Delete(rootJson);
     RemoveFormatChar(jsonString);
-    size = strlen(jsonString);
+    size = strnlen_s(jsonString, USER1_MUTABLE_DATA_MAX_SIZE);
     Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
     Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
 }

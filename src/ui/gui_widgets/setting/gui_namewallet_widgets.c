@@ -108,7 +108,7 @@ void *GuiWalletNameWallet(lv_obj_t *parent, uint8_t tile)
     lv_textarea_set_text(g_setNameKb->ta, GuiNvsBarGetWalletName());
 
     char tempBuf[16] = {0};
-    sprintf(tempBuf, "%d/16", strlen(GuiNvsBarGetWalletName()));
+    sprintf(tempBuf, "%d/16", strnlen_s(GuiNvsBarGetWalletName(), 17));
     GuiSetEmojiIconIndex(GUI_KEYBOARD_EMOJI_CANCEL_NEW_INDEX);
     lv_obj_t *progresslabel = GuiCreateNoticeLabel(parent, tempBuf);
     lv_obj_align(progresslabel, LV_ALIGN_DEFAULT, 402, 384 - GUI_MAIN_AREA_OFFSET);

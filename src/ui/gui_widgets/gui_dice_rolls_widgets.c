@@ -7,6 +7,8 @@
 #include "sha256.h"
 #include "log_print.h"
 
+#define DICE_ROLLS_MAX_LEN                              256
+
 static void GuiCreatePage(lv_obj_t *parent);
 static void OpenQuitHintBoxHandler(lv_event_t *e);
 static void CloseQuitHintBoxHandler(lv_event_t *e);
@@ -15,7 +17,6 @@ static void InitDiceImg(lv_obj_t *img, lv_obj_t *anchor, size_t x, size_t y);
 static void OnTextareaValueChangeHandler(lv_event_t *e);
 static void QuitConfirmHandler(lv_event_t *e);
 static void UndoClickHandler(lv_event_t *e);
-//static void UndoLongPressHandler(lv_event_t *e);
 static void ConfirmHandler(lv_event_t *e);
 
 static PageWidget_t *g_page;
@@ -204,7 +205,7 @@ static void ClickDiceHandler(lv_event_t *e)
         for (size_t i = 0; i < 6; i++) {
             if (g_diceImgs[i] == img) {
                 const char *txt = lv_textarea_get_text(g_diceTextArea);
-                if (strlen(txt) >= 256) {
+                if (strnlen_s(txt, DICE_ROLLS_MAX_LEN) >= DICE_ROLLS_MAX_LEN) {
                     return;
                 }
 
@@ -233,8 +234,8 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
         const char *txt = lv_textarea_get_text(ta);
         lv_coord_t font_height = lv_obj_get_style_text_font(ta, LV_PART_MAIN)->line_height;
         // 27chars per line in reality;
-        uint32_t length = strlen(txt);
-        uint32_t line_count = length / 27 + 1;
+        uint32_t length = strnlen_s(txt, DICE_ROLLS_MAX_LEN);
+        uint32_t lineCount = length / 27 + 1;
 
         if (length > 0 && length < 50) {
             lv_obj_clear_flag(g_hintLabel, LV_OBJ_FLAG_HIDDEN);
@@ -242,7 +243,7 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
             lv_obj_add_flag(g_hintLabel, LV_OBJ_FLAG_HIDDEN);
         }
 
-        if (length < 256) {
+        if (length < DICE_ROLLS_MAX_LEN) {
             if (!lv_obj_has_flag(g_maxLimitLabel, LV_OBJ_FLAG_HIDDEN)) {
                 lv_obj_add_flag(g_maxLimitLabel, LV_OBJ_FLAG_HIDDEN);
             }
@@ -278,7 +279,7 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
                     lv_obj_add_flag(g_confirmBtn, LV_OBJ_FLAG_CLICKABLE);
                 }
             }
-            if (length < 256) {
+            if (length < DICE_ROLLS_MAX_LEN) {
                 float counts[6] = {0};
                 for (size_t i = 0; i < length; i++) {
                     counts[txt[i] - '1']++;
@@ -311,9 +312,9 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
             }
         }
 
-        if (line_count > 4)
+        if (lineCount > 4) 
             return;
-        lv_obj_set_height(ta, line_count * font_height + 2 * lv_obj_get_style_pad_top(ta, LV_PART_MAIN));
+        lv_obj_set_height(ta, lineCount * font_height + 2 * lv_obj_get_style_pad_top(ta, LV_PART_MAIN));
         lv_obj_update_layout(ta);
         lv_obj_align_to(g_line, ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
         lv_obj_align_to(g_errLabel, g_line, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
@@ -340,15 +341,16 @@ static void ConfirmHandler(lv_event_t *e)
         // convert result
         const char *txt = lv_textarea_get_text(ta);
         char *temp = SRAM_MALLOC(300);
+        size_t len = strnlen_s(txt, 300);
         strcpy(temp, txt);
-        for (size_t i = 0; i < strlen(txt); i++) {
+        for (size_t i = 0; i < len; i++) {
             char c = temp[i];
             if (c == '6') {
                 temp[i] = '0';
             }
         }
         uint8_t hash[32] = {0};
-        sha256((struct sha256 *)hash, temp, strlen(temp));
+        sha256((struct sha256 *)hash, temp, strnlen_s(temp, 300));
         uint8_t entropyMethod = 1;
         SecretCacheSetDiceRollHash(hash);
         if (g_seedType == SEED_TYPE_BIP39) {

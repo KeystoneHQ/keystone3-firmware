@@ -5,6 +5,11 @@
 #include "stdbool.h"
 #include "err_code.h"
 
+#define SLIP39_MAX_MEMBER                           (16)
+#define PASSWORD_MAX_LEN                            (128)
+#define PASSPHRASE_MAX_LEN                          (128)
+#define MNEMONIC_MAX_LEN                            (33 * 10)
+
 void SecretCacheSetChecksum(uint8_t *checksum);
 void SecretCacheGetChecksum(char *checksum);
 

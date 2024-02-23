@@ -39,7 +39,7 @@ typedef struct {
 
 typedef struct {
     uint8_t iconIndex;
-    char name[64];
+    char name[WALLET_NAME_MAX_LEN + 1];
 } WalletDesc_t;
 
 typedef struct PasswordVerifyResult {

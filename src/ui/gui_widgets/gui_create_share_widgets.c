@@ -71,7 +71,7 @@ static uint8_t g_phraseCnt = 33;
 static uint8_t g_pressedBtn[SLIP39_MNEMONIC_WORDS_MAX + 1];
 static uint8_t g_pressedBtnFlag[SLIP39_MNEMONIC_WORDS_MAX + 1];
 static uint8_t g_currId = 0;
-static char g_randomBuff[512];
+static char g_randomBuff[BUFFER_SIZE_512];
 static lv_obj_t *g_noticeHintBox = NULL;
 static uint8_t g_entropyMethod;
 static PageWidget_t *g_pageWidget;

@@ -1,3 +1,4 @@
+#include "stdio.h"
 #include "gui_utxo_receive_widgets.h"
 #include "gui_status_bar.h"
 #include "gui_chain.h"
@@ -8,7 +9,6 @@
 #include "assert.h"
 #include "gui_keyboard.h"
 #include "draw/lv_draw_mask.h"
-#include "stdio.h"
 #include "user_utils.h"
 #include "gui_home_widgets.h"
 #include "gui_button.h"
@@ -21,7 +21,6 @@
 #include "gui_global_resources.h"
 
 #define ADDRESS_INDEX_MAX                               (999999999)
-#define INPUT_ADDRESS_MAX_LEN                           (128)
 
 typedef enum {
     UTXO_RECEIVE_TILE_QRCODE = 0,
@@ -76,24 +75,24 @@ typedef struct {
 
 typedef struct {
     uint32_t index;
-    char address[INPUT_ADDRESS_MAX_LEN];
-    char path[32];
+    char address[ADDRESS_MAX_LEN];
+    char path[PATH_ITEM_MAX_LEN];
 } AddressDataItem_t;
 
 typedef struct {
-    char title[32];
-    char subTitle[32];
-    char path[32];
+    char title[PATH_ITEM_MAX_LEN];
+    char subTitle[PATH_ITEM_MAX_LEN];
+    char path[PATH_ITEM_MAX_LEN];
 } AddressSettingsItem_t;
 
 typedef struct {
     HOME_WALLET_CARD_ENUM g_chainCard;
-    char path[32];
+    char path[PATH_ITEM_MAX_LEN];
 } ChainPathItem_t;
 
 typedef struct {
     GuiChainCoinType type;
-    char title[32];
+    char title[PATH_ITEM_MAX_LEN];
 } TitleItem_t;
 
 static void GuiCreateMoreWidgets(lv_obj_t *parent);
@@ -485,7 +484,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
         tempObj = GuiCreateLittleTitleLabel(g_utxoReceiveWidgets.attentionCont, _("Attention"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
-        char hint[256];
+        char hint[BUFFER_SIZE_256];
         GetHint(hint);
         tempObj = GuiCreateLabelWithFont(g_utxoReceiveWidgets.attentionCont, hint, &openSans_20);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
@@ -502,17 +501,17 @@ static void GetHint(char *hint)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
-        strcpy(hint, _("receive_btc_alert_desc"));
+        strcpy_s(hint, BUFFER_SIZE_256, _("receive_btc_alert_desc"));
         break;
 #ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
-        sprintf(hint, _("receive_coin_hint_fmt"), "LTC");
+        snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "LTC");
         break;
     case HOME_WALLET_CARD_DASH:
-        sprintf(hint, _("receive_coin_hint_fmt"), "DASH");
+        snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "DASH");
         break;
     case HOME_WALLET_CARD_BCH:
-        sprintf(hint, _("receive_coin_hint_fmt"), "BCH");
+        snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "BCH");
         break;
 #endif
     default:
@@ -700,7 +699,7 @@ static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
 static void Highlight(char *address, uint8_t highlightStart, uint8_t highlightEnd, char *coloredAddress)
 {
 #ifndef COMPILE_SIMULATOR
-    uint8_t addressLength = strnlen_s(address, INPUT_ADDRESS_MAX_LEN);
+    uint8_t addressLength = strnlen_s(address, ADDRESS_MAX_LEN);
     if (address == NULL || coloredAddress == NULL || highlightStart > highlightEnd || highlightEnd > addressLength) {
         return;
     }
@@ -720,8 +719,8 @@ static void Highlight(char *address, uint8_t highlightStart, uint8_t highlightEn
 
 static void RefreshDefaultAddress(void)
 {
-    char address[INPUT_ADDRESS_MAX_LEN];
-    char highlightAddress[INPUT_ADDRESS_MAX_LEN];
+    char address[ADDRESS_MAX_LEN];
+    char highlightAddress[ADDRESS_MAX_LEN];
 
     AddressDataItem_t addressDataItem;
 
@@ -810,7 +809,7 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
     lv_obj_t *cont, *line, *label;
     static lv_point_t points[2] = {{0, 0}, {360, 0}};
     char string[64];
-    char lableText[INPUT_ADDRESS_MAX_LEN] = {0};
+    char lableText[ADDRESS_MAX_LEN] = {0};
     GetChangePathLabelHint(lableText);
 
     lv_obj_t *scrollCont = GuiCreateContainerWithParent(parent, 408, 542);
@@ -934,10 +933,10 @@ static void RefreshQrCode(void)
     AddressDataItem_t addressDataItem;
     ModelGetUtxoAddress(GetCurrentSelectIndex(), &addressDataItem);
 
-    lv_qrcode_update(g_utxoReceiveWidgets.qrCode, addressDataItem.address, strnlen_s(addressDataItem.address, INPUT_ADDRESS_MAX_LEN));
+    lv_qrcode_update(g_utxoReceiveWidgets.qrCode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
     if (fullscreen_qrcode) {
-        lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strnlen_s(addressDataItem.address, INPUT_ADDRESS_MAX_LEN));
+        lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
     lv_label_set_text(g_utxoReceiveWidgets.addressLabel, addressDataItem.address);
     lv_label_set_text_fmt(g_utxoReceiveWidgets.addressCountLabel, "Address-%u", addressDataItem.index);
@@ -950,7 +949,7 @@ static void RefreshQrCode(void)
 static void RefreshSwitchAccount(void)
 {
     AddressDataItem_t addressDataItem;
-    char string[INPUT_ADDRESS_MAX_LEN];
+    char string[ADDRESS_MAX_LEN];
     uint32_t index = g_showIndex;
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
@@ -1187,13 +1186,13 @@ static void GotoAddressKeyboardHandler(lv_event_t *e)
     lv_obj_t *obj = lv_event_get_target(e);
     uint32_t id = lv_btnmatrix_get_selected_btn(obj);
     lv_obj_draw_part_dsc_t *dsc;
-    char input[INPUT_ADDRESS_MAX_LEN];
+    char input[ADDRESS_MAX_LEN];
     uint64_t longInt;
 
     if (code == LV_EVENT_CLICKED) {
         const char *txt = lv_btnmatrix_get_btn_text(obj, id);
-        uint32_t len = strnlen_s(input, INPUT_ADDRESS_MAX_LEN);
-        strcpy(input, lv_label_get_text(g_utxoReceiveWidgets.inputAddressLabel));
+        uint32_t len = strnlen_s(input, ADDRESS_MAX_LEN);
+        strcpy_s(input, ADDRESS_MAX_LEN, lv_label_get_text(g_utxoReceiveWidgets.inputAddressLabel));
         if (strcmp(txt, LV_SYMBOL_OK) == 0) {
             if (g_gotoAddressValid) {
                 if (sscanf(input, "%u", &g_selectIndex) == 1) {
@@ -1213,7 +1212,7 @@ static void GotoAddressKeyboardHandler(lv_event_t *e)
             } else {
                 g_gotoAddressValid = false;
             }
-        } else if (len < INPUT_ADDRESS_MAX_LEN - 1) {
+        } else if (len < ADDRESS_MAX_LEN - 1) {
             strcat(input, txt);
             longInt = strtol(input, NULL, 10);
             if (longInt >= ADDRESS_INDEX_MAX) {
@@ -1294,7 +1293,7 @@ static void AddressLongModeCut(char *out, const char *address)
     uint32_t len = strnlen_s(address, 24);
 
     if (len <= 24) {
-        strcpy(out, address);
+        strcpy_s(out, len, address);
     } else {
         strncpy(out, address, 12);
         out[12] = 0;
@@ -1336,7 +1335,7 @@ static ChainType GetChainTypeByIndex(uint32_t index)
 
 static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
 {
-    char hdPath[INPUT_ADDRESS_MAX_LEN];
+    char hdPath[ADDRESS_MAX_LEN];
     sprintf(hdPath, "%s/0/%u", g_addressSettings[g_addressType[g_currentAccountIndex]].path, index);
     item->index = index;
     sprintf(item->address, "tb1qkcp7vdhczgk5eh59d2l0dxvmpzhx%010u", index);
@@ -1373,7 +1372,7 @@ static void GetRootHdPath(char *hdPath)
 
 static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
 {
-    char *xPub, rootPath[INPUT_ADDRESS_MAX_LEN], hdPath[INPUT_ADDRESS_MAX_LEN];
+    char *xPub, rootPath[ADDRESS_MAX_LEN], hdPath[ADDRESS_MAX_LEN];
     ChainType chainType;
     uint8_t addrType = g_addressType[g_currentAccountIndex];
     if (g_utxoReceiveTileNow == UTXO_RECEIVE_TILE_ADDRESS_SETTINGS) {
@@ -1390,8 +1389,8 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
         CHECK_CHAIN_BREAK(result);
     } while (0);
     item->index = index;
-    strcpy(item->address, result->data);
-    strcpy(item->path, hdPath);
+    strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
+    strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
     free_simple_response_c_char(result);
 }
 

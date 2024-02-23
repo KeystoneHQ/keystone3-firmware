@@ -12,6 +12,7 @@
 #include "account_manager.h"
 #include "gui_chain.h"
 #include "gui_connect_wallet_widgets.h"
+#include "version.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
@@ -236,7 +237,7 @@ void GuiStatusBarSetSdCard(bool connected)
         return;
     }
     static int32_t sdStatus = -1;
-    char version[16] = {0};
+    char version[SOFTWARE_VERSION_MAX_LEN] = {0};
     if (sdStatus == (connected ? 1 : 0)) {
         return;
     }

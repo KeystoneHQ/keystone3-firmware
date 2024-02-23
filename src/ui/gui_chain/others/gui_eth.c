@@ -12,6 +12,7 @@
 #include "math.h"
 #include "stdio.h"
 #include "string.h"
+#include "safe_str_lib.h"
 
 static void decodeEthContractData(void *parseResult);
 static bool GetEthErc20ContractData(void *parseResult);
@@ -617,43 +618,43 @@ void *GuiGetEthTypeData(void)
 void GetEthTypedDataDomianName(void *indata, void *param)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    strcpy((char *)indata, message->name);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, message->name);
 }
 
 void GetEthTypedDataDomianVersion(void *indata, void *param)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    strcpy((char *)indata, message->version);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, message->version);
 }
 
 void GetEthTypedDataDomianChainId(void *indata, void *param)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    strcpy((char *)indata, message->chain_id);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, message->chain_id);
 }
 
 void GetEthTypedDataDomianVerifyContract(void *indata, void *param)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    strcpy((char *)indata, message->verifying_contract);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, message->verifying_contract);
 }
 
 void GetEthTypedDataDomianSalt(void *indata, void *param)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    strcpy((char *)indata, message->salt);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, message->salt);
 }
 
 void GetEthTypedDataPrimayType(void *indata, void *param)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    strcpy((char *)indata, message->primary_type);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, message->primary_type);
 }
 
 void GetEthTypedDataMessage(void *indata, void *param)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    strcpy((char *)indata, message->message);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, message->message);
 }
 
 int GetEthTypedDataMessageLen(void *param)
@@ -665,7 +666,7 @@ int GetEthTypedDataMessageLen(void *param)
 void GetEthTypedDataFrom(void *indata, void *param)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    strcpy((char *)indata, message->from);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, message->from);
 }
 
 void *GuiGetEthPersonalMessage(void)
@@ -702,30 +703,30 @@ void GetEthPersonalMessageType(void *indata, void *param)
 {
     DisplayETHPersonalMessage *message = (DisplayETHPersonalMessage *)param;
     if (message->utf8_message) {
-        strcpy((char *)indata, "utf8_message");
+        strcpy_s((char *)indata, BUFFER_SIZE_512, "utf8_message");
     } else {
-        strcpy((char *)indata, "raw_message");
+        strcpy_s((char *)indata, BUFFER_SIZE_512, "raw_message");
     }
 }
 
 void GetMessageFrom(void *indata, void *param)
 {
     DisplayETHPersonalMessage *message = (DisplayETHPersonalMessage *)param;
-    if (strlen(message->from) >= LABEL_MAX_BUFF_LEN) {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN - 3, "%s", message->from);
+    if (strlen(message->from) >= BUFFER_SIZE_512) {
+        snprintf((char *)indata, BUFFER_SIZE_512 - 3, "%s", message->from);
         strcat((char *)indata, "...");
     } else {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN, "%s", message->from);
+        snprintf((char *)indata, BUFFER_SIZE_512, "%s", message->from);
     }
 }
 void GetMessageUtf8(void *indata, void *param)
 {
     DisplayETHPersonalMessage *message = (DisplayETHPersonalMessage *)param;
-    if (strlen(message->utf8_message) >= LABEL_MAX_BUFF_LEN) {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN - 3, "%s", message->utf8_message);
+    if (strlen(message->utf8_message) >= BUFFER_SIZE_512) {
+        snprintf((char *)indata, BUFFER_SIZE_512 - 3, "%s", message->utf8_message);
         strcat((char *)indata, "...");
     } else {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN, "%s", message->utf8_message);
+        snprintf((char *)indata, BUFFER_SIZE_512, "%s", message->utf8_message);
     }
 }
 
@@ -733,11 +734,11 @@ void GetMessageRaw(void *indata, void *param)
 {
     int len = strlen("\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
     DisplayETHPersonalMessage *message = (DisplayETHPersonalMessage *)param;
-    if (strlen(message->raw_message) >= LABEL_MAX_BUFF_LEN - len) {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN - 3 - len, "%s", message->raw_message);
+    if (strlen(message->raw_message) >= BUFFER_SIZE_512 - len) {
+        snprintf((char *)indata, BUFFER_SIZE_512 - 3 - len, "%s", message->raw_message);
         strcat((char *)indata, "...");
     } else {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN, "%s%s", message->raw_message, "\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
+        snprintf((char *)indata, BUFFER_SIZE_512, "%s%s", message->raw_message, "\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
     }
 }
 
@@ -821,7 +822,7 @@ void *GuiGetEthData(void)
     g_fromEnsExist = false;
     g_toEnsExist = true;
     strcpy(g_fromEthEnsName, "kantfish.eth");
-    strcpy(g_toEthEnsName, "xiaoliu.eth");
+    strcpy(g_toEthEnsName, "test.eth");
 #endif
     return g_parseResult;
 }
@@ -841,13 +842,13 @@ PtrT_TransactionCheckResult GuiGetEthCheckResult(void)
 void GetEthTransType(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    strcpy((char *)indata, eth->tx_type);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, eth->tx_type);
 }
 
 void GetEthTxFee(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    sprintf((char *)indata, "%s %s", eth->overview->max_txn_fee, _FindNetwork(eth->chain_id));
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s %s", eth->overview->max_txn_fee, _FindNetwork(eth->chain_id));
 }
 
 EvmNetwork_t _FindNetwork(uint64_t chainId)
@@ -866,22 +867,22 @@ void GetEthValue(void *indata, void *param)
     DisplayETH *eth = (DisplayETH *)param;
     if (isErc20Transfer(eth)) {
         TransactionParseResult_EthParsedErc20Transaction *contract = (TransactionParseResult_EthParsedErc20Transaction *)g_erc20ContractData;
-        sprintf((char *)indata, "%s %s", contract->data->value, CalcSymbol(param));
+        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s %s", contract->data->value, CalcSymbol(param));
     } else {
-        sprintf((char *)indata, "%s %s", eth->overview->value, CalcSymbol(param));
+        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s %s", eth->overview->value, CalcSymbol(param));
     }
 }
 
 void GetEthGasPrice(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    strcpy((char *)indata, eth->overview->gas_price);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, eth->overview->gas_price);
 }
 
 void GetEthGasLimit(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    strcpy((char *)indata, eth->overview->gas_limit);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, eth->overview->gas_limit);
 }
 
 void GetEthNetWork(void *indata, void *param)
@@ -889,40 +890,40 @@ void GetEthNetWork(void *indata, void *param)
     DisplayETH *eth = (DisplayETH *)param;
     EvmNetwork_t network = _FindNetwork(eth->chain_id);
     if (network.chainId == 0) {
-        sprintf((char *)indata, "ID: %lu", eth->chain_id);
+        snprintf_s((char *)indata,  BUFFER_SIZE_512, "ID: %lu", eth->chain_id);
         return;
     }
-    strcpy((char *)indata, network.name);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, network.name);
 }
 
 void GetEthMaxFee(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    sprintf((char *)indata, "%s %s", eth->detail->max_fee, _FindNetwork(eth->chain_id));
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s %s", eth->detail->max_fee, _FindNetwork(eth->chain_id));
 }
 
 void GetEthMaxPriority(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    sprintf((char *)indata, "%s %s", eth->detail->max_priority, _FindNetwork(eth->chain_id));
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s %s", eth->detail->max_priority, _FindNetwork(eth->chain_id));
 }
 
 void GetEthMaxFeePrice(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    strcpy((char *)indata, eth->detail->max_fee_price);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, eth->detail->max_fee_price);
 }
 
 void GetEthMaxPriorityFeePrice(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    strcpy((char *)indata, eth->detail->max_priority_price);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, eth->detail->max_priority_price);
 }
 
 void GetEthGetFromAddress(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    strcpy((char *)indata, eth->overview->from);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, eth->overview->from);
 }
 
 void GetEthGetToAddress(void *indata, void *param)
@@ -930,25 +931,25 @@ void GetEthGetToAddress(void *indata, void *param)
     DisplayETH *eth = (DisplayETH *)param;
     if (isErc20Transfer(eth)) {
         TransactionParseResult_EthParsedErc20Transaction *contract = (TransactionParseResult_EthParsedErc20Transaction *)g_erc20ContractData;
-        strcpy((char *)indata, contract->data->to);
+        strcpy_s((char *)indata, BUFFER_SIZE_512, contract->data->to);
     } else {
-        strcpy((char *)indata, eth->overview->to);
+        strcpy_s((char *)indata, BUFFER_SIZE_512, eth->overview->to);
     }
 }
 
 void GetTxnFeeDesc(void *indata, void *param)
 {
-    strcpy((char *)indata, "  \xE2\x80\xA2  Max Txn Fee = Gas Price * Gas Limit");
+    strcpy_s((char *)indata, BUFFER_SIZE_512, "  \xE2\x80\xA2  Max Txn Fee = Gas Price * Gas Limit");
 }
 
 void GetEthEnsName(void *indata, void *param)
 {
-    strcpy((char *)indata, g_fromEthEnsName);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, g_fromEthEnsName);
 }
 
 void GetToEthEnsName(void *indata, void *param)
 {
-    strcpy((char *)indata, g_toEthEnsName);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, g_toEthEnsName);
 }
 
 bool GetEthEnsExist(void *indata, void *param)
@@ -996,29 +997,29 @@ void GetEthTransactionData(void *indata, void *param)
         char data[49];
         strncpy(data, eth->detail->input, 48);
         data[48] = '\0';
-        sprintf((char *)indata, "0x%s...", data);
+        snprintf_s((char *)indata,  BUFFER_SIZE_512, "0x%s...", data);
     } else {
-        sprintf((char *)indata, "0x%s", eth->detail->input);
+        snprintf_s((char *)indata,  BUFFER_SIZE_512, "0x%s", eth->detail->input);
     }
 }
 
 void GetEthMethodName(void *indata, void *param)
 {
     Response_DisplayContractData *contractData = (Response_DisplayContractData *)g_contractData;
-    strcpy((char *)indata, contractData->data->method_name);
+    strcpy_s((char *)indata, BUFFER_SIZE_512, contractData->data->method_name);
 }
 
 void GetEthContractName(void *indata, void *param)
 {
     Response_DisplayContractData *contractData = (Response_DisplayContractData *)g_contractData;
     if (g_erc20Name != NULL && strlen(g_erc20Name) > 0) {
-        strcpy((char *)indata, g_erc20Name);
+        strcpy_s((char *)indata, BUFFER_SIZE_512, g_erc20Name);
         return;
     }
     if (strlen(contractData->data->contract_name) > 0) {
-        strcpy((char *)indata, contractData->data->contract_name);
+        strcpy_s((char *)indata, BUFFER_SIZE_512, contractData->data->contract_name);
     } else {
-        sprintf((char *)indata, "Unknown Contract Name");
+        snprintf_s((char *)indata,  BUFFER_SIZE_512, "Unknown Contract Name");
     }
 }
 
@@ -1061,10 +1062,11 @@ void *GetEthContractData(uint8_t *row, uint8_t *col, void *param)
             DisplayContractParam param = contractData->data->params->data[index];
             if (!(j % 2)) {
                 indata[i][j] = SRAM_MALLOC(strlen(param.name) + 10);
-                sprintf(indata[i][j], "#919191 %s#", param.name);
+                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "#919191 %s#", param.name);
             } else {
-                indata[i][j] = SRAM_MALLOC(strlen(param.value) + 1);
-                strcpy(indata[i][j], param.value);
+                uint32_t len = strlen(param.value) + 1;
+                indata[i][j] = SRAM_MALLOC(len);
+                strcpy_s(indata[i][j], len, param.value);
             }
         }
     }

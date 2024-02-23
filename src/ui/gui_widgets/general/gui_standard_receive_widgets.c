@@ -22,8 +22,7 @@
 
 #define GENERAL_ADDRESS_INDEX_MAX                           999999999
 #define LEDGER_LIVE_ADDRESS_INDEX_MAX                       9
-#define ADDRESS_MAX_LEN                                     (128)
-#define PATH_ITEM_MAX_LEN                                   (32)
+#define ADDRESS_LONE_MODE_LEN                               (24)
 
 typedef enum {
     RECEIVE_TILE_QRCODE = 0,
@@ -291,7 +290,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
         tempObj = GuiCreateLittleTitleLabel(g_standardReceiveWidgets.attentionCont, _("Attention"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
-        char attentionText[150];
+        char attentionText[BUFFER_SIZE_256];
         GetAttentionText(attentionText);
         tempObj = GuiCreateLabelWithFont(g_standardReceiveWidgets.attentionCont, attentionText, &openSans_20);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
@@ -309,10 +308,10 @@ void GetAttentionText(char* text)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TRX:
-        strcpy(text, _("receive_trx_hint"));
+        strcpy_s(text, BUFFER_SIZE_256, _("receive_trx_hint"));
         break;
     default:
-        sprintf(text, _("receive_coin_hint_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
+        snprintf_s(text, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
     }
 }
 
@@ -602,10 +601,10 @@ static void OpenSwitchAddressHandler(lv_event_t *e)
 
 static void AddressLongModeCut(char *out, const char *address)
 {
-    uint32_t len = strnlen_s(address, 24);
+    uint32_t len = strnlen_s(address, ADDRESS_LONE_MODE_LEN);
 
-    if (len <= 24) {
-        strcpy(out, address);
+    if (len <= ADDRESS_LONE_MODE_LEN) {
+        strcpy_s(out, ADDRESS_LONE_MODE_LEN, address);
     } else {
         strncpy(out, address, 12);
         out[12] = 0;

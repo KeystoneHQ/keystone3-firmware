@@ -25,8 +25,6 @@
 #define SOL_BIP44_ADDRESS_INDEX_MAX                     (9)
 #define SOL_BIP44_ROOT_ADDRESS_INDEX_MAX                (0)
 #define SOL_BIP44_CHANGE_ADDRESS_INDEX_MAX              (9)
-#define ADDRESS_MAX_LEN                                 (128)
-#define PATH_ITEM_MAX_LEN                               (32)
 
 
 typedef enum {
@@ -384,7 +382,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
         tempObj = GuiCreateLittleTitleLabel(g_multiPathCoinReceiveWidgets.attentionCont, "Attention");
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
-        char hint[256];
+        char hint[BUFFER_SIZE_256];
         GetHint(hint);
         tempObj = GuiCreateLabelWithFont(g_multiPathCoinReceiveWidgets.attentionCont, hint, &openSans_20);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
@@ -402,10 +400,10 @@ static void GetHint(char *hint)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
-        strcpy(hint, _("receive_eth_alert_desc"));
+        strcpy_s(hint, BUFFER_SIZE_256 ,_("receive_eth_alert_desc"));
         break;
     case HOME_WALLET_CARD_SOL:
-        sprintf(hint, _("receive_coin_hint_fmt"), "SOL");
+        snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "SOL");
         break;
     default:
         break;
@@ -1075,7 +1073,7 @@ void AddressLongModeCut(char *out, const char *address)
     uint32_t len = strnlen_s(address, 24);
 
     if (len <= 24) {
-        strcpy(out, address);
+        strcpy_s(out, 24, address);
     } else {
         strncpy(out, address, 12);
         out[12] = 0;
@@ -1242,8 +1240,8 @@ static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item)
     SimpleResponse_c_char  *result = solana_get_address(xPub);
     if (result->error_code == 0) {
         item->index = index;
-        strcpy(item->address, result->data);
-        strcpy(item->path, hdPath);
+        strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
+        strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
     } else {
     }
     free_simple_response_c_char(result);
@@ -1260,9 +1258,8 @@ static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item)
     SimpleResponse_c_char  *result = eth_get_address(hdPath, xPub, rootPath);
     if (result->error_code == 0) {
         item->index = index;
-        strcpy(item->address, result->data);
-        strcpy(item->path, hdPath);
-    } else {
+        strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
+        strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
     }
     free_simple_response_c_char(result);
 }

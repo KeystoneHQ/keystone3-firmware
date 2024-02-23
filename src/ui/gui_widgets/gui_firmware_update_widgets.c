@@ -17,6 +17,7 @@
 #include "gui_about_info_widgets.h"
 #include "secret_cache.h"
 #include "safe_str_lib.h"
+#include "version.h"
 #ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
 #endif
@@ -249,7 +250,7 @@ void GuiFirmwareUpdateSha256Percent(uint8_t percent)
     if (g_noticeHintBox == NULL) {
         return;
     }
-    char version[16] = {0};
+    char version[SOFTWARE_VERSION_MAX_LEN] = {0};
     if (percent == 100) {
         CheckOtaBinVersion(version);
     }
@@ -284,7 +285,7 @@ static void GuiCreateSelectTile(lv_obj_t *parent)
         {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 40},},
     };
 
-    char fileVersion[16] = {0};
+    char fileVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
     if (CheckOtaBinVersion(fileVersion)) {
         lv_obj_t *versionLabel = GuiCreateIllustrateLabel(parent, fileVersion);
         lv_obj_set_style_text_color(versionLabel, ORANGE_COLOR, LV_PART_MAIN);
@@ -393,7 +394,7 @@ static void GuiCreateUsbInstructionTile(lv_obj_t *parent)
 
 static void FirmwareSdcardUpdateHandler(lv_event_t *e)
 {
-    char fileVersion[16] = {0};
+    char fileVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
     GUI_DEL_OBJ(g_noticeHintBox)
     lv_event_code_t code = lv_event_get_code(e);
     uint16_t *walletSetIndex = lv_event_get_user_data(e);

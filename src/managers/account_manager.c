@@ -372,7 +372,7 @@ void SetWalletIconIndex(uint8_t iconIndex)
 void SetWalletName(const char *walletName)
 {
     memset(g_currentAccountInfo.walletName, 0, sizeof(g_currentAccountInfo.walletName));
-    strcpy(g_currentAccountInfo.walletName, walletName);
+    strcpy_s(g_currentAccountInfo.walletName, WALLET_NAME_MAX_LEN, walletName);
     SaveCurrentAccountInfo();
 }
 

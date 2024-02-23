@@ -29,6 +29,7 @@
 #define DEFAULT_KB_HEIGHT                                   310
 #define DEFAULT_KB_CONT_HEIGHT                              310
 #define DEFAULT_KB_CONT_WIDTH                               480
+#define MNEMONIC_MATRIX_WORD_MAX_LEN                        24
 
 static void KbTextAreaHandler(lv_event_t *e);
 
@@ -690,8 +691,8 @@ void *GuiCreateMnemonicKeyBoard(lv_obj_t *parent,
         return NULL;
     }
     for (int i = 0; i < 33 * 4 / 3; i++) {
-        mkb->mnemonicWord[i] = SRAM_MALLOC(24);
-        strcpy(mkb->mnemonicWord[i], "\n");
+        mkb->mnemonicWord[i] = SRAM_MALLOC(MNEMONIC_MATRIX_WORD_MAX_LEN);
+        strcpy_s(mkb->mnemonicWord[i], MNEMONIC_MATRIX_WORD_MAX_LEN, "\n");
     }
 
     for (int i = 0, j = 0; i < mkb->wordCnt; j++, i += 3) {
@@ -699,7 +700,7 @@ void *GuiCreateMnemonicKeyBoard(lv_obj_t *parent,
             sprintf(mkb->mnemonicWord[k + j], "%d\n", k + 1);
         }
     }
-    strcpy(mkb->mnemonicWord[(mkb->wordCnt + 1) / 3 * 4 - 1], "\0");
+    strcpy_s(mkb->mnemonicWord[(mkb->wordCnt + 1) / 3 * 4 - 1], MNEMONIC_MATRIX_WORD_MAX_LEN, "\0");
 
     mkb->cont = GuiCreateContainerWithParent(parent, 408, contHeight - 110);
     lv_obj_set_align(mkb->cont, LV_ALIGN_TOP_MID);
@@ -782,7 +783,7 @@ void GuiUpdateMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard, char *mnemo
     uint16_t contHeight = MNEMONIC_KB_12WORD_CONT_HEIGHT;
     uint16_t kbHeight = MNEMONIC_KB_12WORD_HEIGHT;
     for (int i = 0; i < (mnemonicKeyBoard->wordCnt) * 4 / 3; i++) {
-        strcpy(mnemonicKeyBoard->mnemonicWord[i], "\n");
+        strcpy_s(mnemonicKeyBoard->mnemonicWord[i], MNEMONIC_MATRIX_WORD_MAX_LEN, "\n");
     }
     for (int i = 0, j = 0; i < mnemonicKeyBoard->wordCnt; j++, i += 3) {
         for (int k = i; k < i + 3; k++) {
@@ -808,7 +809,7 @@ void GuiUpdateMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard, char *mnemo
             }
         }
     }
-    strcpy(mnemonicKeyBoard->mnemonicWord[(mnemonicKeyBoard->wordCnt + 1) / 3 * 4 - 1], "\0");
+    strcpy_s(mnemonicKeyBoard->mnemonicWord[(mnemonicKeyBoard->wordCnt + 1) / 3 * 4 - 1], MNEMONIC_MATRIX_WORD_MAX_LEN, "\0");
     lv_btnmatrix_set_map(mnemonicKeyBoard->btnm, (const char **)mnemonicKeyBoard->mnemonicWord);
     switch (mnemonicKeyBoard->wordCnt) {
     case 12:
@@ -1069,7 +1070,7 @@ static void LetterKbAssociateHandler(lv_event_t *e)
         if (strlen(text) <= 0) {
             return;
         }
-        strcpy(g_wordChange, text);
+        strcpy_s(g_wordChange, GUI_KEYBOARD_CANDIDATE_WORDS_LEN, text);
         if (g_importPhraseKb != NULL) {
             lv_event_send(g_importPhraseKb->btnm, LV_EVENT_READY, g_wordChange);
         }
@@ -1106,11 +1107,11 @@ void UpdateAssociateLabel(KeyBoard_t *keyBoard, const char *currText)
         }
         int wordcnt = searchTrie(rootTree, currText);
         if (wordcnt == 1) {
-            strcpy(endBuf, g_wordBuf[0]);
+            strcpy_s(endBuf, sizeof(endBuf), g_wordBuf[0]);
             lv_label_set_text(keyBoard->associateLabel[0], endBuf);
         } else while (wordcnt--) {
                 lv_label_set_text(keyBoard->associateLabel[wordcnt], g_wordBuf[wordcnt]);
-                strcpy(endBuf, g_wordBuf[wordcnt]);
+                strcpy_s(endBuf, sizeof(endBuf), g_wordBuf[wordcnt]);
             }
     }
 }

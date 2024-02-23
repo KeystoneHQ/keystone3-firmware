@@ -1,4 +1,5 @@
 #ifndef BTC_ONLY
+#include "define.h"
 #include "rust.h"
 #include "keystore.h"
 #include "user_memory.h"
@@ -75,7 +76,7 @@ int GetSuiDetailLen(void *param)
 void GetSuiDetail(void *indata, void *param)
 {
     DisplaySuiIntentMessage *tx = (DisplaySuiIntentMessage *)param;
-    sprintf((char *)indata, "%s", tx->detail);
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->detail);
 }
 
 UREncodeResult *GuiGetSuiSignQrCodeData(void)

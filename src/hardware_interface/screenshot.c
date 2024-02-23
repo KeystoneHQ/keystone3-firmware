@@ -1,3 +1,4 @@
+#include "define.h"
 #include "screenshot.h"
 #include "stdio.h"
 #include "user_memory.h"
@@ -47,9 +48,9 @@ void ScreenShot(uint8_t *imgData)
     BitMapInfoHead_t *pFfileInfo;
     uint32_t i;
     uint16_t *pixel;
-    char fileName[32];
+    char fileName[BUFFER_SIZE_32];
 
-    imgFilePathName = EXT_MALLOC(128);
+    imgFilePathName = EXT_MALLOC(BUFFER_SIZE_128);
     uint32_t bmpHorByte = LV_HOR_RES * (LV_COLOR_DEPTH / 8);
     if (bmpHorByte % 4 != 0) {
         bmpHorByte = bmpHorByte + (4 - bmpHorByte % 4);
@@ -92,7 +93,7 @@ void ScreenShot(uint8_t *imgData)
     for (i = 0; i < LV_VER_RES; i++) {
         memcpy(screenBuffer + headSize + i * bmpHorByte, imgData + i * LV_HOR_RES * (LV_COLOR_DEPTH / 8), LV_HOR_RES * (LV_COLOR_DEPTH / 8));
     }
-    sprintf(fileName, "0:screenshot_%d.bmp", osKernelGetTickCount());
+    snprintf_s(fileName, BUFFER_SIZE_32, "0:screenshot_%d.bmp", osKernelGetTickCount());
     printf("start save file\r\n");
     FatfsFileWrite(fileName, screenBuffer, fileSize);
     printf("save file over\r\n");

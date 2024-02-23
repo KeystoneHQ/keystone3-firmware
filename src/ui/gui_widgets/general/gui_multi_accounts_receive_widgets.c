@@ -22,8 +22,6 @@
 
 #define GENERAL_ADDRESS_INDEX_MAX                           (999999999)
 #define ACCOUNT_INDEX_MAX                                   (24)
-#define ADDRESS_MAX_LEN                                     (128)
-#define PATH_ITEM_MAX_LEN                                   (32)
 #define INPUT_ADDRESS_MAX_LEN                               (16)
 
 typedef enum {
@@ -704,7 +702,7 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         const char *txt = lv_btnmatrix_get_btn_text(obj, id);
         uint32_t len = strnlen_s(input, INPUT_ADDRESS_MAX_LEN);
-        strcpy(input, lv_label_get_text(g_multiAccountsReceiveWidgets.inputAccountLabel));
+        strcpy_s(input, INPUT_ADDRESS_MAX_LEN, lv_label_get_text(g_multiAccountsReceiveWidgets.inputAccountLabel));
         if (strcmp(txt, LV_SYMBOL_OK) == 0) {
             if (g_inputAccountValid) {
                 if (sscanf(input, "%u", &g_tmpIndex) == 1) {
@@ -1064,7 +1062,7 @@ static void AddressLongModeCut(char *out, const char *address, uint32_t targetLe
     uint32_t len = strnlen_s(address, ADDRESS_MAX_LEN);
 
     if (len <= targetLen) {
-        strcpy(out, address);
+        strcpy_s(out, len, address);
     } else {
         strncpy(out, address, targetLen / 2);
         strcat(out, "...");
@@ -1127,8 +1125,8 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
     if (result->error_code == 0) {
         item->index = index;
         printf("address=%s", item->address);
-        strcpy(item->address, result->data);
-        strcpy(item->path, hdPath);
+        strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
+        strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
     }
     free_simple_response_c_char(result);
 }

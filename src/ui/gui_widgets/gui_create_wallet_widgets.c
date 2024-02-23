@@ -589,7 +589,7 @@ int8_t GuiCreateWalletPrevTile(void)
 void GuiCreateWalletSetPinPass(const char *buf)
 {
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
-    strcpy(g_pinBuf, buf);
+    strcpy_s(g_pinBuf, PASSWORD_MAX_LEN, buf);
 }
 
 void GuiCreateWalletRepeatPinPass(const char *buf)

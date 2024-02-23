@@ -18,6 +18,7 @@
 #include "mhscpu.h"
 #include "drv_otp.h"
 #include "user_utils.h"
+#include "version.h"
 
 #define SD_CARD_OTA_BIN_PATH   "0:/keystone3.bin"
 
@@ -143,8 +144,6 @@ static bool CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t *pH
 
 bool CheckOtaBinVersion(char *version)
 {
-    // strcpy(version, "99.99.99");
-    // return true;
     OtaFileInfo_t otaFileInfo = {0};
     uint32_t headSize;
     bool ret = true;
@@ -213,7 +212,7 @@ static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32
     uint32_t nowVersionNumber = (nowMajor * epoch * epoch)  + (nowMinor * epoch) + nowBuild;
     uint32_t fileVersionNumber = (fileMajor * epoch * epoch)  + (fileMinor * epoch) + fileBuild;
 
-    sprintf(version, "%d.%d.%d", fileMajor, fileMinor, fileBuild);
+    snprintf_s(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", fileMajor, fileMinor, fileBuild);
     if (fileVersionNumber <= nowVersionNumber) {
         SRAM_FREE(g_dataUnit);
         SRAM_FREE(g_fileUnit);

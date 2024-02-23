@@ -178,6 +178,7 @@ impl FromStr for Address {
     fn from_str(s: &str) -> Result<Address, Self::Err> {
         let bech32_network = match find_bech32_prefix(s) {
             "bc" | "BC" => Some(Network::Bitcoin),
+            "tb" | "TB" => Some(Network::BitcoinTestnet),
             "ltc" | "LTC" => Some(Network::Litecoin),
             _ => None,
         };
@@ -262,6 +263,11 @@ impl FromStr for Address {
                     .map_err(|_| Self::Err::AddressError(format!("failed to get pubkey hash")))?;
                 (Network::Bitcoin, Payload::PubkeyHash(pubkey_hash))
             }
+            PUBKEY_ADDRESS_PREFIX_TEST => {
+                let pubkey_hash = PubkeyHash::from_slice(&data[1..])
+                    .map_err(|_| Self::Err::AddressError(format!("failed to get pubkey hash")))?;
+                (Network::BitcoinTestnet, Payload::PubkeyHash(pubkey_hash))
+            }
             PUBKEY_ADDRESS_PREFIX_DASH => {
                 let pubkey_hash = PubkeyHash::from_slice(&data[1..])
                     .map_err(|_| Self::Err::AddressError(format!("failed to get pubkey hash")))?;
@@ -287,6 +293,11 @@ impl FromStr for Address {
                     .map_err(|_| Self::Err::AddressError(format!("failed to get script hash")))?;
                 (Network::Bitcoin, Payload::ScriptHash(script_hash))
             }
+            SCRIPT_ADDRESS_PREFIX_TEST => {
+                let script_hash = ScriptHash::from_slice(&data[1..])
+                    .map_err(|_| Self::Err::AddressError(format!("failed to get script hash")))?;
+                (Network::BitcoinTestnet, Payload::ScriptHash(script_hash))
+            }
             _x => return Err(Self::Err::AddressError(format!("invalid address version"))),
         };
 
@@ -306,10 +317,24 @@ mod tests {
     }
 
     #[test]
+    fn test_address_btc_p2pkh_testnet() {
+        let addr = Address::from_str("mszm85TQkAhvAigVfraWicXNnCypp1TTbH").unwrap();
+        assert_eq!(addr.network.get_unit(), "tBTC");
+        assert_eq!(addr.to_string(), "mszm85TQkAhvAigVfraWicXNnCypp1TTbH");
+    }
+
+    #[test]
     fn test_address_btc_p2sh() {
         let addr = Address::from_str("3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy").unwrap();
         assert_eq!(addr.network.get_unit(), "BTC");
         assert_eq!(addr.to_string(), "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy");
+    }
+
+    #[test]
+    fn test_address_btc_p2sh_testnet() {
+        let addr = Address::from_str("2NCuF1UQSRXn4WTCKQRGBdUhuFtTg1VpjtK").unwrap();
+        assert_eq!(addr.network.get_unit(), "tBTC");
+        assert_eq!(addr.to_string(), "2NCuF1UQSRXn4WTCKQRGBdUhuFtTg1VpjtK");
     }
 
     #[test]
@@ -323,6 +348,16 @@ mod tests {
     }
 
     #[test]
+    fn test_address_btc_p2wpkh_testnet() {
+        let addr = Address::from_str("tb1q6sjunnh9w9epn9z7he2dxmklgfg7x38yefmld7").unwrap();
+        assert_eq!(addr.network.get_unit(), "tBTC");
+        assert_eq!(
+            addr.to_string(),
+            "tb1q6sjunnh9w9epn9z7he2dxmklgfg7x38yefmld7"
+        );
+    }
+
+    #[test]
     fn test_address_btc_p2tr() {
         let addr =
             Address::from_str("bc1p5d7rjq7g6rdk2yhzks9smlaqtedr4dekq08ge8ztwac72sfr9rusxg3297")
@@ -331,6 +366,18 @@ mod tests {
         assert_eq!(
             addr.to_string(),
             "bc1p5d7rjq7g6rdk2yhzks9smlaqtedr4dekq08ge8ztwac72sfr9rusxg3297"
+        );
+    }
+
+    #[test]
+    fn test_address_btc_p2tr_testnet() {
+        let addr =
+            Address::from_str("tb1p8wpt9v4frpf3tkn0srd97pksgsxc5hs52lafxwru9kgeephvs7rqlqt9zj")
+                .unwrap();
+        assert_eq!(addr.network.get_unit(), "tBTC");
+        assert_eq!(
+            addr.to_string(),
+            "tb1p8wpt9v4frpf3tkn0srd97pksgsxc5hs52lafxwru9kgeephvs7rqlqt9zj"
         );
     }
 

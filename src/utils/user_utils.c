@@ -1,5 +1,7 @@
 #include "user_utils.h"
+#include "define.h"
 #include "lvgl.h"
+#include "safe_str_lib.h"
 
 uint32_t StrToHex(uint8_t *pbDest, const char *pbSrc)
 {
@@ -113,8 +115,7 @@ int WordsListSlice(char *words, char wordsList[][10], uint8_t wordsCount)
         if (i < 15) {
             buf[i] = 0;
         }
-//        printf("buf = %s\n", buf);
-        strcpy(wordsList[j], buf);
+        strcpy_s(wordsList[j], 16, buf);
         j++;
 
         while (*p && (*p < 'a' || *p > 'z')) {
@@ -128,35 +129,36 @@ int WordsListSlice(char *words, char wordsList[][10], uint8_t wordsCount)
 void ArrayRandom(char *words, char *out, int count)
 {
 #ifndef BUILD_PRODUCTION
-    strcpy(out, words);
+    strcpy_s(out, BUFFER_SIZE_512, words);
     return;
 #endif
-    int index = count - 1;
     char wordList[33][10];
-    memset(out, 0, 512);
+    memset(out, 0, BUFFER_SIZE_512);
     WordsListSlice(words, wordList, count);
-    char tempBuf1[16] = {0}, tempBuf2[16] = {0};
-    if (count  % 2 == 1) {
-        index = count - 2;
-    }
-    for (int i = 0; i < index; i++) {
-        int num = i + lv_rand(0, 2048) % (index - i);
-        strcpy(tempBuf1, wordList[i]);
-        strcpy(wordList[i], wordList[num]);
-        strcpy(wordList[num], tempBuf1);
+
+    char *pointerList[33];
+    for (int i = 0; i < count; ++i) {
+        pointerList[i] = wordList[i];
     }
 
-    int num = lv_rand(0, 2048) % (index - 1);
-    strcpy(tempBuf1, wordList[count - 1]);
-    strcpy(tempBuf2, wordList[num]);
-    strcpy(wordList[num], tempBuf1);
-    strcpy(wordList[count - 1], tempBuf2);
-
-    for (int i = 0; i < count - 1; i++) {
-        strcat(out, wordList[i]);
-        strcat(out, " ");
+    for (int i = 0; i < count - 1; ++i) {
+        int num = i + lv_rand(0, 2048) % (count - i);
+        char *temp = pointerList[i];
+        pointerList[i] = pointerList[num];
+        pointerList[num] = temp;
     }
-    strcat(out, wordList[count - 1]);
+
+    char *outPtr = out;
+    for (int i = 0; i < count; ++i) {
+        strcpy_s(outPtr, 10, pointerList[i]);
+        outPtr += strlen(pointerList[i]);
+
+        if (i < count - 1) {
+            *outPtr++ = ' ';
+        } else {
+            *outPtr = '\0';
+        }
+    }
 }
 
 void ConvertToLowerCase(char *str)

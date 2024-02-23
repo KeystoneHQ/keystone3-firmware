@@ -75,25 +75,25 @@ void FreeTrxMemory(void)
 void GetTrxValue(void *indata, void *param)
 {
     DisplayTron *trx = (DisplayTron *)param;
-    sprintf((char *)indata, "%s", trx->detail->value);
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", trx->detail->value);
 }
 
 void GetTrxMethod(void *indata, void *param)
 {
     DisplayTron *trx = (DisplayTron *)param;
-    sprintf((char *)indata, "%s", trx->detail->method);
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", trx->detail->method);
 }
 
 void GetTrxFromAddress(void *indata, void *param)
 {
     DisplayTron *trx = (DisplayTron *)param;
-    sprintf((char *)indata, "%s", trx->detail->from);
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", trx->detail->from);
 }
 
 void GetTrxToAddress(void *indata, void *param)
 {
     DisplayTron *trx = (DisplayTron *)param;
-    sprintf((char *)indata, "%s", trx->detail->to);
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", trx->detail->to);
 }
 
 bool GetTrxContractExist(void *indata, void *param)
@@ -105,7 +105,7 @@ bool GetTrxContractExist(void *indata, void *param)
 void GetTrxContract(void *indata, void *param)
 {
     DisplayTron *trx = (DisplayTron *)param;
-    sprintf((char *)indata, "%s", trx->detail->contract_address);
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", trx->detail->contract_address);
 }
 
 bool GetTrxTokenExist(void *indata, void *param)
@@ -117,7 +117,7 @@ bool GetTrxTokenExist(void *indata, void *param)
 void GetTrxToken(void *indata, void *param)
 {
     DisplayTron *trx = (DisplayTron *)param;
-    sprintf((char *)indata, "%s", trx->detail->token);
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", trx->detail->token);
 }
 
 UREncodeResult *GuiGetTrxSignQrCodeData(void)

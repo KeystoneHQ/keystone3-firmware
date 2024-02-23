@@ -1,3 +1,4 @@
+#include "define.h"
 #include "keystore.h"
 #include "string.h"
 #include "stdio.h"
@@ -357,7 +358,7 @@ int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *
         memcpy(g_passphraseInfo[accountIndex].mfp, masterFingerprint, 4);
         free_simple_response_u8(simpleResponse);
         if (strnlen_s(passphrase, PASSPHRASE_MAX_LEN) > 0) {
-            strcpy(g_passphraseInfo[accountIndex].passphrase, passphrase);
+            strcpy_s(g_passphraseInfo[accountIndex].passphrase, PASSPHRASE_MAX_LEN, passphrase);
             g_passphraseInfo[accountIndex].passphraseExist = true;
         } else {
             ClearAccountPassphrase(accountIndex);
@@ -669,9 +670,9 @@ void KeyStoreTest(int argc, char *argv[])
 {
     uint8_t entropy[ENTROPY_MAX_LEN], seed[SEED_LEN], accountIndex, entropyLen, key[32], slip39Ems[SLIP39_EMS_LEN];
     int32_t index, ret, tempI32;
-    uint8_t byte32[32] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
-    char tempStr[32];
-    uint8_t ems[32];
+    uint8_t byte32[BUFFER_SIZE_32] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+    char tempStr[BUFFER_SIZE_32];
+    uint8_t ems[BUFFER_SIZE_32];
     if (strcmp(argv[0], "new_entropy") == 0) {
         VALUE_CHECK(argc, 4);
         sscanf(argv[1], "%d", &index);
@@ -872,7 +873,7 @@ void KeyStoreTest(int argc, char *argv[])
         }
         for (index = 0; index < 10; index++) {
             GetFpEncryptedPassword(index, key);
-            sprintf(tempStr, "encrypted password %d", index);
+            snprintf_s(tempStr, "encrypted password %d", index);
             PrintArray(tempStr, key, 32);
         }
         GetFpStateInfo(byte32);

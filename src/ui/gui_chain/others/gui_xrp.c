@@ -1,4 +1,5 @@
 #ifndef BTC_ONLY
+#include "define.h"
 #include "gui_xrp.h"
 #include "gui_chain.h"
 #include "account_manager.h"
@@ -7,10 +8,10 @@
 #include "secret_cache.h"
 #include "screen_manager.h"
 
-#define XRP_ROOT_PATH "m/44'/144'/0'"
-
-static char g_xrpAddr[40];
-static char g_hdPath[26];
+#define XRP_ROOT_PATH               ("m/44'/144'/0'")
+#define XRP_ADD_MAX_LEN             (40)
+#define HD_PATH_MAX_LEN             (26)
+#define XPUB_KEY_LEN                (68)
 
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
@@ -18,6 +19,8 @@ static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static char *g_cachedPubkey[3] = {NULL};
 static char *g_cachedPath[3] = {NULL};
+static char g_xrpAddr[XRP_ADD_MAX_LEN];
+static char g_hdPath[HD_PATH_MAX_LEN];
 
 char *GuiGetXrpPath(uint16_t index)
 {
@@ -42,7 +45,7 @@ char *GuiGetXrpAddressByIndex(uint16_t index)
     result = xrp_get_address(hdPath, xPub, XRP_ROOT_PATH);
 
     if (result->error_code == 0) {
-        strcpy(g_xrpAddr, result->data);
+        strcpy_s(g_xrpAddr, XRP_ADD_MAX_LEN, result->data);
     }
 
     free_simple_response_c_char(result);
@@ -92,36 +95,38 @@ PtrT_TransactionCheckResult GuiGetXrpCheckResult(void)
 #ifndef COMPILE_SIMULATOR
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     TransactionCheckResult *result = NULL;
-    char pubkey[68] = {0};
+    char pubkey[XPUB_KEY_LEN] = {0};
     if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
-        strcpy(pubkey, g_cachedPubkey[GetCurrentAccountIndex()]);
+        strcpy_s(pubkey, XPUB_KEY_LEN, g_cachedPubkey[GetCurrentAccountIndex()]);
     }
     result = xrp_check_tx(data, GetCurrentAccountPublicKey(XPUB_TYPE_XRP), pubkey);
     if (result != NULL && result->error_code == 0 && strlen(result->error_message) > 0) {
         if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
             SRAM_FREE(g_cachedPubkey[GetCurrentAccountIndex()]);
         }
-        char *res_str = SRAM_MALLOC(strlen(result->error_message) + 1);
-        strcpy(res_str, result->error_message);
+        uint32_t len = strlen(result->error_message) + 1;
+        char *res_str = SRAM_MALLOC(len);
+        strcpy_s(res_str, len, result->error_message);
         char *p = strtok(res_str, ":");
-        g_cachedPubkey[GetCurrentAccountIndex()] = SRAM_MALLOC(strlen(p) + 1);
-        strcpy(g_cachedPubkey[GetCurrentAccountIndex()], p);
+        len = strlen(p) + 1;
+        g_cachedPubkey[GetCurrentAccountIndex()] = SRAM_MALLOC(len);
+        strcpy_s(g_cachedPubkey[GetCurrentAccountIndex()], len, p);
 
         p = strtok(NULL, ":");
         int rootLen = strlen(XRP_ROOT_PATH);
         int extLen = strlen(p) - 1;
-        strcpy(g_hdPath, XRP_ROOT_PATH);
-        strncpy(g_hdPath + rootLen, p + 1, extLen);
+        snprintf_s(g_hdPath, sizeof(g_hdPath), "%s%s", XRP_ROOT_PATH, p + 1);
         g_hdPath[rootLen + extLen] = '\0';
         SRAM_FREE(res_str);
 
         if (g_cachedPath[GetCurrentAccountIndex()] != NULL) {
             SRAM_FREE(g_cachedPath[GetCurrentAccountIndex()]);
         }
-        g_cachedPath[GetCurrentAccountIndex()] = SRAM_MALLOC(strlen(g_hdPath) + 1);
-        strcpy(g_cachedPath[GetCurrentAccountIndex()], g_hdPath);
+        len = strnlen_s(g_hdPath, HD_PATH_MAX_LEN);
+        g_cachedPath[GetCurrentAccountIndex()] = SRAM_MALLOC(len);
+        strcpy_s(g_cachedPath[GetCurrentAccountIndex()], len, g_hdPath);
     } else {
-        strcpy(g_hdPath, g_cachedPath[GetCurrentAccountIndex()]);
+        strcpy_s(g_hdPath, HD_PATH_MAX_LEN, g_cachedPath[GetCurrentAccountIndex()]);
     }
 
     return result;
@@ -148,7 +153,7 @@ int GetXrpDetailLen(void *param)
 void GetXrpDetail(void *indata, void *param)
 {
     DisplayXrpTx *tx = (DisplayXrpTx *)param;
-    sprintf((char *)indata, "%s", tx->detail);
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->detail);
 }
 
 UREncodeResult *GuiGetXrpSignQrCodeData(void)

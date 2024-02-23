@@ -40,7 +40,7 @@ static void UpdateWalletDescHandler(lv_event_t *e)
             .iconIndex = GuiSearchIconIndex(g_walletIcon),
         };
         GuiSetEmojiIconIndex(wallet.iconIndex);
-        strcpy(wallet.name, lv_textarea_get_text(g_setNameKb->ta));
+        strcpy_s(wallet.name, WALLET_NAME_MAX_LEN, lv_textarea_get_text(g_setNameKb->ta));
         GuiModelSettingSaveWalletDesc(&wallet);
     }
 }

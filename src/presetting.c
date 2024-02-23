@@ -24,7 +24,7 @@ int32_t GetSerialNumber(char *serialNumber)
         serialNumber[0] = '\0';
         return ERR_SERIAL_NUMBER_INVALID;
     }
-    strcpy(serialNumber, temp);
+    strcpy_s(serialNumber, SERIAL_NUMBER_MAX_LEN, temp);
     return SUCCESS_CODE;
 }
 
@@ -43,7 +43,7 @@ int32_t SetSerialNumber(const char *serialNumber)
     ASSERT(strnlen_s(serialNumber, SERIAL_NUMBER_MAX_LEN - 1) < SERIAL_NUMBER_MAX_LEN);
     OTP_PowerOn();
     CLEAR_ARRAY(temp);
-    strcpy(temp, serialNumber);
+    strcpy_s(temp, SERIAL_NUMBER_MAX_LEN, serialNumber);
     WriteOtpData(OTP_ADDR_SN, (uint8_t *)temp, SERIAL_NUMBER_MAX_LEN);
     return SUCCESS_CODE;
 }

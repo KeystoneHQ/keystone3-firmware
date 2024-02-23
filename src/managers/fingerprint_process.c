@@ -29,6 +29,7 @@
 #include "low_power.h"
 #include "se_manager.h"
 #include "safe_mem_lib.h"
+#include "safe_str_lib.h"
 
 /* DEFINES */
 #define FINGERPRINT_REG_MAX_TIMES               (18)
@@ -192,9 +193,7 @@ void FpRegRecv(char *indata, uint8_t len)
         MotorCtrl(MOTOR_LEVEL_MIDDLE, MOTOR_SHAKE_SHORT_TIME);
         if (len == 38) {
             printf("save account index = %d\n", GetCurrentAccountIndex());
-            // SetFingerManagerInfoToSE();
             memcpy(g_fpTempAesKey, (uint8_t *)&indata[6], sizeof(g_fpTempAesKey));
-            // FingerSetInfoToSE((uint8_t *)&indata[6], fingerId, GetCurrentAccountIndex(), SecretCacheGetPassword());
         }
         GuiApiEmitSignal(SIG_FINGER_REGISTER_STEP_SUCCESS, &cnt, sizeof(cnt));
     } else {
@@ -685,7 +684,7 @@ void FingerSetInfoToSE(uint8_t *random, uint8_t fingerId, uint8_t accountIndex, 
     uint8_t cipherData[32] = {0};
     uint8_t plainData[128] = {0};
 
-    strcpy((char *)plainData, password);
+    strcpy_s((char *)plainData, PASSWORD_MAX_LEN, password);
     AES256_ctx ctx;
     AES256_init(&ctx, random);
     AES256_encrypt(&ctx, 2, cipherData, plainData);

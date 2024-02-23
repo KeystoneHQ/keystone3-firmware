@@ -410,12 +410,12 @@ static void GetStringValue(const cJSON *obj, const char *key, char *value, uint3
         strTemp = json->valuestring;
         len = strnlen_s(strTemp, maxLen);
         if (len < maxLen) {
-            strcpy(value, strTemp);
+            strcpy_s(value, len, strTemp);
         } else {
-            strcpy(value, "");
+            value[0] = '\0';
         }
     } else {
         printf("key:%s does not exist\r\n", key);
-        strcpy(value, "");
+        value[0] = '\0';
     }
 }

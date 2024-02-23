@@ -507,12 +507,12 @@ static void CountDownHandler(lv_timer_t *timer)
 {
     KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)timer->user_data;
 
-    char buf[32] = {0};
+    char buf[BUFFER_SIZE_32] = {0};
     --(*keyboardWidget->timerCounter);
     if (*keyboardWidget->timerCounter > 0) {
         sprintf(buf, _("unlock_device_error_btn_text_fmt"), *keyboardWidget->timerCounter);
     } else {
-        strcpy(buf, _("unlock_device_error_btn_end_text"));
+        strcpy_s(buf, BUFFER_SIZE_32, _("unlock_device_error_btn_end_text"));
     }
     lv_label_set_text(lv_obj_get_child(keyboardWidget->errHintBoxBtn, 0), buf);
 

@@ -108,9 +108,9 @@ void CountDownTimerHandler(lv_timer_t *timer)
     char buf[16] = {0};
     --countDown;
     if (countDown > 0) {
-        sprintf(buf, "Got it (%d)", countDown);
+        snprintf_s(buf, sizeof(buf), "Got it (%d)", countDown);
     } else {
-        strcpy(buf, "Got it");
+        strcpy_s(buf, sizeof(buf), "Got it");
     }
     lv_label_set_text(lv_obj_get_child(obj, 0), buf);
     if (countDown <= 0) {
@@ -295,7 +295,7 @@ void GuiSettingSetPinPass(const char *buf)
 {
     static uint8_t walletIndex = DEVICE_SETTING_RESET_PASSCODE_SETPIN;
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
-    strcpy(g_passCode, buf);
+    strcpy_s(g_passCode, PASSWORD_MAX_LEN, buf);
 }
 
 void GuiSettingRepeatPinPass(const char *buf)

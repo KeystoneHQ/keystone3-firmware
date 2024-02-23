@@ -51,7 +51,7 @@ static char g_logName[LOG_NAME_MAX_LEN];
 
 void LogSetLogName(char *name)
 {
-    strcpy(g_logName, name);
+    strcpy_s(g_logName, LOG_NAME_MAX_LEN, name);
 }
 
 void WriteLogEvent(uint32_t event)
@@ -60,7 +60,6 @@ void WriteLogEvent(uint32_t event)
         printf("write log before log init!!\r\n");
         return;
     }
-    //printf("WriteLogEvent,event=%d\r\n", event);
     LogData_t logData = {0};
     logData.event = event;
     logData.timeStamp = GetCurrentStampTime();

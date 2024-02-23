@@ -48,7 +48,7 @@ static uint8_t g_phraseCnt = SINGLE_PHRASE_MAX_WORDS;
 static uint8_t g_pressedBtn[SINGLE_PHRASE_MAX_WORDS];
 static uint8_t g_pressedBtnFlag[SINGLE_PHRASE_MAX_WORDS];
 static uint8_t g_currId = 0;
-static char g_randomBuff[512];
+static char g_randomBuff[BUFFER_SIZE_512];
 static lv_obj_t *g_noticeHintBox = NULL;
 static PageWidget_t *g_pageWidget;
 static uint8_t g_entropyMethod = 0;
@@ -157,7 +157,6 @@ static void MnemonicConfirmHandler(lv_event_t * e)
                 g_pressedBtnFlag[g_pressedBtn[g_currId - 1] - 1] = MNEMONIC_BUTTON_PRESSED;
             }
             GuiConfirmMnemonicKeyBoard(g_confirmPhraseKb, g_randomBuff, currentId, g_currId + 1, 1);
-            //strcpy(g_pressedBtnBuf[g_currId], g_confirmPhraseView.words[currentId]);
             g_currId++;
         }
 

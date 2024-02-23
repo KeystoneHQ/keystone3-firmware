@@ -340,9 +340,9 @@ static void ConfirmHandler(lv_event_t *e)
 
         // convert result
         const char *txt = lv_textarea_get_text(ta);
-        char *temp = SRAM_MALLOC(300);
-        size_t len = strnlen_s(txt, 300);
-        strcpy(temp, txt);
+        char *temp = SRAM_MALLOC(BUFFER_SIZE_512);
+        size_t len = strnlen_s(txt, BUFFER_SIZE_512);
+        strcpy_s(temp, BUFFER_SIZE_512, txt);
         for (size_t i = 0; i < len; i++) {
             char c = temp[i];
             if (c == '6') {
@@ -350,7 +350,7 @@ static void ConfirmHandler(lv_event_t *e)
             }
         }
         uint8_t hash[32] = {0};
-        sha256((struct sha256 *)hash, temp, strnlen_s(temp, 300));
+        sha256((struct sha256 *)hash, temp, strnlen_s(temp, BUFFER_SIZE_512));
         uint8_t entropyMethod = 1;
         SecretCacheSetDiceRollHash(hash);
         if (g_seedType == SEED_TYPE_BIP39) {

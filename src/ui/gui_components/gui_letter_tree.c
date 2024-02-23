@@ -3,11 +3,14 @@
 #include "slip39_wordlist.h"
 #include "gui_letter_tree.h"
 #include "user_memory.h"
+#include "safe_str_lib.h"
 
 #pragma GCC optimize ("O0")
 
+#define GUI_KEYBOARD_CANDIDATE_WORDS_CNT                        (3)
+#define GUI_KEYBOARD_CANDIDATE_WORDS_LEN                        (32)
 TrieSTPtr rootTree = NULL;
-extern char g_wordBuf[3][32];
+extern char g_wordBuf[GUI_KEYBOARD_CANDIDATE_WORDS_CNT][GUI_KEYBOARD_CANDIDATE_WORDS_LEN];
 
 TrieNodePtr createTrieNode(char key)
 {
@@ -83,7 +86,7 @@ int searchTrie(TrieSTPtr root, const char *str)
         i++;
     }
     if (tmp->isEndOfWord == true) {
-        strcpy(g_wordBuf[num], str);
+        strcpy_s(g_wordBuf[num], GUI_KEYBOARD_CANDIDATE_WORDS_LEN, str);
         ++num;
     }
     TrieSTPtr record = tmp;
@@ -91,7 +94,7 @@ int searchTrie(TrieSTPtr root, const char *str)
         if (tmp->next[j] != NULL) {
             tmp = tmp->next[j];
             if (strlen(str) >= 3) {
-                strcpy(g_wordBuf[num], str);
+                strcpy_s(g_wordBuf[num], GUI_KEYBOARD_CANDIDATE_WORDS_LEN, str);
                 wordsTraversal(tmp, num, strlen(g_wordBuf[num]));
             }
             ++num;

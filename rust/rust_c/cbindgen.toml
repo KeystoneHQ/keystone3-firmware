@@ -1,6 +1,6 @@
 include_guard = "_LIBRUST_C_H"
 
-after_includes = "#define BUILD_MULTI_COINS\n#define SIMPLERESPONSE_C_CHAR_MAX_LEN 1024"
+after_includes = "#define BUILD_MULTI_COINS\n#define SIMPLERESPONSE_C_CHAR_MAX_LEN 1024\n#define ADDRESS_MAX_LEN 128\n#define PATH_ITEM_MAX_LEN 32"
 
 [defines]
 "feature = multi-coins" = "BUILD_MULTI_COINS"

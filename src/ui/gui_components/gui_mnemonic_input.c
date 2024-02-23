@@ -416,7 +416,7 @@ void GuiMnemonicInputHandler(lv_event_t *e)
                 for (int i = 0; i < wordcnt; i++) {
                     lv_label_set_text(letterKb->associateLabel[i], g_wordBuf[i]);
                 }
-                strcpy(tempBuf, word);
+                strcpy_s(tempBuf, sizeof(tempBuf), word);
             }
             GuiInputMnemonicKeyBoard(mkb, tempBuf, mkb->currentId, 1);
         } else {

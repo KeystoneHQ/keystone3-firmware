@@ -9,6 +9,8 @@
 #define BUFFER_SIZE_64                  (64)
 #define BUFFER_SIZE_128                 (128)
 #define BUFFER_SIZE_256                 (256)
+#define BUFFER_SIZE_512                 (512)
+
 
 #ifndef UNUSED
 #define UNUSED(X) (void)X

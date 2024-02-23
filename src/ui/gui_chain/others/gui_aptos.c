@@ -1,4 +1,5 @@
 #ifndef BTC_ONLY
+#include "define.h"
 #include "rust.h"
 #include "keystore.h"
 #include "user_memory.h"
@@ -80,7 +81,7 @@ int GetAptosDetailLen(void *param)
 void GetAptosDetail(void *indata, void *param)
 {
     DisplayAptosTx *tx = (DisplayAptosTx *)param;
-    sprintf((char *)indata, "%s", tx->detail);
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->detail);
 }
 
 bool IsAptosMsg(ViewType viewType)

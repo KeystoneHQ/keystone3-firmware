@@ -225,8 +225,7 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         };
         GuiSetupKeyboardWidgetMode();
         SetStatusBarEmojiIndex(wallet.iconIndex);
-        strcpy(wallet.name, GetCurrentKbWalletName());
-        printf("wallet.name=%s\r\n", wallet.name);
+        strcpy_s(wallet.name, WALLET_NAME_MAX_LEN, GetCurrentKbWalletName());
         GuiNvsBarSetWalletName(GetCurrentKbWalletName());
         GuiNvsBarSetWalletIcon(GuiGetEmojiIconImg());
         GuiModelSettingSaveWalletDesc(&wallet);

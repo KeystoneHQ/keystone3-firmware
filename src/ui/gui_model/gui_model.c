@@ -1200,7 +1200,7 @@ static int32_t ModeGetWalletDesc(const void *inData, uint32_t inDataLen)
         return SUCCESS_CODE;
     }
     wallet.iconIndex = GetWalletIconIndex();
-    strcpy(wallet.name, GetWalletName());
+    strcpy_s(wallet.name, WALLET_NAME_MAX_LEN, GetWalletName());
     GuiApiEmitSignal(SIG_INIT_GET_CURRENT_WALLET_DESC, &wallet, sizeof(wallet));
     SetLockScreen(enable);
     return SUCCESS_CODE;

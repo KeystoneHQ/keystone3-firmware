@@ -619,7 +619,7 @@ bool GetEnsName(const char *addr, char *name)
 
     char sqlBuf[SQL_BUFF_MAX_SIZE] = {0};
     char lowAddr[SQL_BUFF_MAX_SIZE] = {0};
-    strcpy(lowAddr, addr);
+    strcpy_s(lowAddr, SQL_BUFF_MAX_SIZE, addr);
     snprintf(sqlBuf, SQL_BUFF_MAX_SIZE, "Select name from ens where addr = '%s'", strlwr(lowAddr));
     int ret = db_exec(db, sqlBuf, name);
     if (ret != SQLITE_OK) {

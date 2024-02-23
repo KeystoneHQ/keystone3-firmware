@@ -13,7 +13,6 @@
 #include "gui_ada.h"
 #include "gui_xrp.h"
 #endif
-#define LABEL_MAX_BUFF_LEN                                      (512)
 
 typedef void (*SetChainDataFunc)(void *resultData, void *multiResultData, bool multi);
 

@@ -10,6 +10,7 @@
 #include "account_manager.h"
 #include "assert.h"
 #include "cjson/cJSON.h"
+#include "safe_str_lib.h"
 
 static uint8_t GetSolPublickeyIndex(char* rootPath);
 
@@ -138,9 +139,9 @@ void GetSolMessageType(void *indata, void *param)
 
     DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
     if (message->utf8_message) {
-        strcpy((char *)indata, "utf8_message");
+        strcpy_s((char *)indata, BUFFER_SIZE_512, "utf8_message");
     } else {
-        strcpy((char *)indata, "raw_message");
+        strcpy_s((char *)indata, BUFFER_SIZE_512, "raw_message");
     }
 
 }
@@ -148,22 +149,22 @@ void GetSolMessageType(void *indata, void *param)
 void GetSolMessageFrom(void *indata, void *param)
 {
     DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
-    if (strlen(message->from) >= LABEL_MAX_BUFF_LEN) {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN - 3, "%s", message->from);
+    if (strlen(message->from) >= BUFFER_SIZE_512) {
+        snprintf((char *)indata, BUFFER_SIZE_512 - 3, "%s", message->from);
         strcat((char *)indata, "...");
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN, "%.*s...", LABEL_MAX_BUFF_LEN - 4, message->from);
+        snprintf((char *)indata, BUFFER_SIZE_512, "%.*s...", BUFFER_SIZE_512 - 4, message->from);
     } else {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN, "%s", message->from);
+        snprintf((char *)indata, BUFFER_SIZE_512, "%s", message->from);
     }
 }
 void GetSolMessageUtf8(void *indata, void *param)
 {
     DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
-    if (strlen(message->utf8_message) >= LABEL_MAX_BUFF_LEN) {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN - 3, "%s", message->utf8_message);
+    if (strlen(message->utf8_message) >= BUFFER_SIZE_512) {
+        snprintf((char *)indata, BUFFER_SIZE_512 - 3, "%s", message->utf8_message);
         strcat((char *)indata, "...");
     } else {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN, "%s", message->utf8_message);
+        snprintf((char *)indata, BUFFER_SIZE_512, "%s", message->utf8_message);
     }
 }
 
@@ -171,11 +172,11 @@ void GetSolMessageRaw(void *indata, void *param)
 {
     int len = strlen("\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
     DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
-    if (strlen(message->raw_message) >= LABEL_MAX_BUFF_LEN - len) {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN - 3 - len, "%s", message->raw_message);
+    if (strlen(message->raw_message) >= BUFFER_SIZE_512 - len) {
+        snprintf((char *)indata, BUFFER_SIZE_512 - 3 - len, "%s", message->raw_message);
         strcat((char *)indata, "...");
     } else {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN, "%s%s", message->raw_message, "\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
+        snprintf((char *)indata, BUFFER_SIZE_512, "%s%s", message->raw_message, "\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
     }
 }
 

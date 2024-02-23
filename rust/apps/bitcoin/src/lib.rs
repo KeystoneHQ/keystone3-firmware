@@ -295,8 +295,8 @@ mod test {
             "2250 sats",
             vec!["qpfs2gcfwg322segkj4h30du4vtjyvsxtq6msk90a5"],
             vec![
+                "qpfs2gcfwg322segkj4h30du4vtjyvsxtq6msk90a5",
                 "qpt4cr4juduwl36w35rwfwvz6am2z7mxcg8a84k28n",
-                "qpfs2gcfwg322segkj4h30du4vtjyvsxtq6msk90a5"
             ],
             "Bitcoin Cash",
             false
@@ -456,8 +456,8 @@ mod test {
             "1000 sats",
             "4300 sats",
             vec![
+                "1NVWpSCxyzpPgSeGRs4zqFciZ7N1UEQtEc",
                 "1PCUEmiFARh3FSLJXgzDGDeKtKqg8eMMPm",
-                "1NVWpSCxyzpPgSeGRs4zqFciZ7N1UEQtEc"
             ],
             vec!["bc1qksq4ax9jpqqmumwfhg54ktwh29627zf78237wp"],
             "Bitcoin Mainnet",

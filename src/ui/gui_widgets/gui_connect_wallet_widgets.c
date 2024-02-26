@@ -984,8 +984,11 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         AddOkxWalletCoins();
         break;
     case WALLET_LIST_BLUE:
-    case WALLET_LIST_SPARROW:
         func = GuiGetBlueWalletBtcData;
+        AddBlueWalletCoins();
+        break;
+    case WALLET_LIST_SPARROW:
+        func = GuiGetSparrowWalletBtcData;
         AddBlueWalletCoins();
         break;
 #ifndef BTC_ONLY

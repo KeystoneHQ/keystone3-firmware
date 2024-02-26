@@ -290,7 +290,7 @@ void GuiReceiveRefresh(void)
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("receive_btc_more_address_settings"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_selectType = g_addressType[g_currentAccountIndex];
-        for (uint32_t i = 0; i < 3; i++) {
+        for (uint32_t i = 0; i < sizeof(g_addressSettings) / sizeof(g_addressSettings[0]; i++) {
             UpdateAddrTypeCheckbox(i, g_selectType == i);
         }
         UpdateConfirmAddrTypeBtn();

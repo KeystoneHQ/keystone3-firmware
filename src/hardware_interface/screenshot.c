@@ -90,7 +90,7 @@ void ScreenShot(uint8_t *imgData)
         pixel[i] = (pixel[i] >> 8) | (pixel[i] << 8);
     }
     for (i = 0; i < LV_VER_RES; i++) {
-        memcpy(screenBuffer + headSize + i * bmpHorByte, imgData + i * LV_HOR_RES * (LV_COLOR_DEPTH / 8), LV_HOR_RES * (LV_COLOR_DEPTH / 8));
+        memcpy_s(screenBuffer + headSize + i * bmpHorByte, LV_HOR_RES * (LV_COLOR_DEPTH / 8), imgData + i * LV_HOR_RES * (LV_COLOR_DEPTH / 8), LV_HOR_RES * (LV_COLOR_DEPTH / 8));
     }
     snprintf_s(fileName, BUFFER_SIZE_32, "0:screenshot_%d.bmp", osKernelGetTickCount());
     printf("start save file\r\n");

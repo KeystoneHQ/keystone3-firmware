@@ -51,7 +51,7 @@ bool CheckApp(void)
 {
     uint8_t read[4096];
     uint32_t major, minor, build;
-    memcpy(read, (void *)APP_VERSION_ADDR, 4096);
+    memcpy_s(read, 4096, (void *)APP_VERSION_ADDR, 4096);
     return GetSoftwareVersionFormData(&major, &minor, &build, read, 4096) == 0;
 }
 
@@ -59,7 +59,7 @@ void GetSoftwareVersion(uint32_t *major, uint32_t *minor, uint32_t *build)
 {
     uint8_t read[4096];
 
-    memcpy(read, (void *)APP_VERSION_ADDR, 4096);
+    memcpy_s(read, 4096, (void *)APP_VERSION_ADDR, 4096);
     GetSoftwareVersionFormData(major, minor, build, read, 4096);
 }
 
@@ -84,7 +84,7 @@ int32_t GetSoftwareVersionFormData(uint32_t *major, uint32_t *minor, uint32_t *b
             printf("version string not found in fixed segment\n");
             break;
         }
-        memcpy(read, &data[versionInfoOffset], 64);
+        memcpy_s(read, 64, &data[versionInfoOffset], 64);
         read[31] = '\0';
         if (strncmp(read, APP_VERSION_HEAD, headLen) != 0) {
             break;

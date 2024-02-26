@@ -26,11 +26,11 @@ uint8_t *BuildFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlvLen)
     pHead->length = totalLen - sizeof(FrameHead_t) - 4;
     printf("totalLen=%d\n", totalLen);
     sendData = SRAM_MALLOC(totalLen);
-    memcpy(sendData, pHead, sizeof(FrameHead_t));
+    memcpy_s(sendData, totalLen, pHead, sizeof(FrameHead_t));
     index = sizeof(FrameHead_t);
     for (i = 0; i < tlvLen; i++) {
         //t
-        sendData[index++] = tlvArray[i].type;
+        sendData[index++] = tlvArray[i].type;   
         //l
         ASSERT(tlvArray[i].length <= 0x7FFF);
         if (tlvArray[i].length > 127) {
@@ -42,15 +42,15 @@ uint8_t *BuildFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlvLen)
         //v
         if (tlvArray[i].pValue == NULL) {
             ASSERT(tlvArray[i].length <= 4);
-            memcpy(&sendData[index], &tlvArray[i].value, tlvArray[i].length);
+            memcpy_s(&sendData[index], totalLen - index,&tlvArray[i].value, tlvArray[i].length);
         } else {
-            memcpy(&sendData[index], tlvArray[i].pValue, tlvArray[i].length);
+            memcpy_s(&sendData[index], totalLen - index, tlvArray[i].pValue, tlvArray[i].length);
         }
         index += tlvArray[i].length;
     }
     crc32Calc = crc32_ieee(0, sendData, totalLen - 4);
     printf("crc32Calc=0x%X\n", crc32Calc);
-    memcpy(&sendData[index], &crc32Calc, 4);
+    memcpy_s(&sendData[index], 4,   &crc32Calc, 4);
     //PrintArray("sendData", sendData, totalLen);
     return sendData;
 }
@@ -124,7 +124,7 @@ void PrintProtocolFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlv
     pHead->length = totalLen - sizeof(FrameHead_t) - 4;
     printf("totalLen=%d\n", totalLen);
     sendData = SRAM_MALLOC(totalLen);
-    memcpy(sendData, pHead, sizeof(FrameHead_t));
+    memcpy_s(sendData, totalLen, pHead, sizeof(FrameHead_t));
     index = sizeof(FrameHead_t);
     for (i = 0; i < tlvLen; i++) {
         //t
@@ -140,15 +140,15 @@ void PrintProtocolFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlv
         //v
         if (tlvArray[i].pValue == NULL) {
             ASSERT(tlvArray[i].length <= 4);
-            memcpy(&sendData[index], &tlvArray[i].value, tlvArray[i].length);
+            memcpy_s(&sendData[index], totalLen - index, &tlvArray[i].value, tlvArray[i].length);
         } else {
-            memcpy(&sendData[index], tlvArray[i].pValue, tlvArray[i].length);
+            memcpy_s(&sendData[index], totalLen - index, tlvArray[i].pValue, tlvArray[i].length);
         }
         index += tlvArray[i].length;
     }
     crc32Calc = crc32_ieee(0, sendData, totalLen - 4);
     printf("crc32Calc=0x%X\n", crc32Calc);
-    memcpy(&sendData[index], &crc32Calc, 4);
+    memcpy_s(&sendData[index], 4, &crc32Calc, 4);
     PrintArray("sendData", sendData, totalLen);
     SRAM_FREE(sendData);
 }

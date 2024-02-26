@@ -58,7 +58,7 @@ void SendEApduResponse(EAPDUResponsePayload_t *payload)
         insert_16bit_value(packet, OFFSET_P1, totalPackets);
         insert_16bit_value(packet, OFFSET_P2, packetIndex);
         insert_16bit_value(packet, OFFSET_LC, payload->requestID);
-        memcpy(packet + OFFSET_CDATA, payload->data + offset, packetDataSize);
+        memcpy_s(packet + OFFSET_CDATA, MAX_PACKETS_LENGTH - OFFSET_CDATA, payload->data + offset, packetDataSize);
         insert_16bit_value(packet, OFFSET_CDATA + packetDataSize, payload->status);
         g_sendFunc(packet, OFFSET_CDATA + packetDataSize + EAPDU_RESPONSE_STATUS_LENGTH);
         offset += packetDataSize;
@@ -171,7 +171,7 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
 
     assert(eapduFrame->dataLen <= MAX_PACKETS_LENGTH);
     assert(eapduFrame->p2 < MAX_PACKETS);
-    memcpy(g_protocolRcvBuffer[eapduFrame->p2], eapduFrame->data, eapduFrame->dataLen);
+    memcpy_s(g_protocolRcvBuffer[eapduFrame->p2], sizeof(g_protocolRcvBuffer[eapduFrame->p2]), eapduFrame->data, eapduFrame->dataLen);
     g_packetLengths[eapduFrame->p2] = eapduFrame->dataLen;
     g_receivedPackets[eapduFrame->p2] = 1;
 
@@ -190,7 +190,7 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
     uint8_t *fullData = (uint8_t *)SRAM_MALLOC(fullDataLen + 1);
     uint32_t offset = 0;
     for (uint32_t i = 0; i < g_totalPackets; i++) {
-        memcpy(fullData + offset, g_protocolRcvBuffer[i], g_packetLengths[i]);
+        memcpy_s(fullData + offset, fullDataLen - offset, g_protocolRcvBuffer[i], g_packetLengths[i]);
         offset += g_packetLengths[i];
     }
     fullData[fullDataLen] = '\0';

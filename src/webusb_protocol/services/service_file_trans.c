@@ -143,7 +143,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
                 printf("file md5 err\n");
                 return NULL;
             }
-            memcpy(g_fileTransInfo.md5, tlvArray[i].pValue, 16);
+            memcpy_s(g_fileTransInfo.md5, sizeof(g_fileTransInfo.md5), tlvArray[i].pValue, 16);
         }
         break;
         case TYPE_FILE_INFO_FILE_SIGN: {
@@ -151,7 +151,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
                 printf("file signature err\n");
                 return NULL;
             }
-            memcpy(g_fileTransInfo.signature, tlvArray[i].pValue, 64);
+            memcpy_s(g_fileTransInfo.signature, sizeof(g_fileTransInfo.signature), tlvArray[i].pValue, 64);
         }
         break;
         default:

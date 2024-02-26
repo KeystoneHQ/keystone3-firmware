@@ -76,7 +76,7 @@ int32_t SetWebAuthRsaKey(const uint8_t *key)
         return ERR_WEB_AUTH_KEY_ALREADY_EXIST;
     }
     OTP_PowerOn();
-    memcpy(data, key, WEB_AUTH_RSA_KEY_LEN);
+    memcpy_s(data, WEB_AUTH_RSA_KEY_LEN, key, WEB_AUTH_RSA_KEY_LEN);
     for (uint32_t i = 0; i < WEB_AUTH_RSA_KEY_LEN; i += 256) {
         WriteOtpData(OTP_ADDR_WEB_AUTH_RSA_KEY + i, data + i, 256);
     }
@@ -126,14 +126,14 @@ int32_t GetUpdatePubKey(uint8_t *pubKey)
 
     OTP_PowerOn();
     for (addr = OTP_ADDR_UPDATE_PUB_KEY + 1024 - UPDATE_PUB_KEY_LEN; addr >= OTP_ADDR_UPDATE_PUB_KEY; addr -= UPDATE_PUB_KEY_LEN) {
-        memcpy(data, (uint8_t *)addr, UPDATE_PUB_KEY_LEN);
+        memcpy_s(data, sizeof(data), (uint8_t *)addr, UPDATE_PUB_KEY_LEN);
         PrintArray("read pub key", data, UPDATE_PUB_KEY_LEN);
         if (CheckAllFF(data, UPDATE_PUB_KEY_LEN) == false) {
             if (CheckEntropy(data, UPDATE_PUB_KEY_LEN)) {
                 //Found
                 printf("found,addr=0x%X\n", addr);
                 pubKey[0] = 4;
-                memcpy(pubKey + 1, data, UPDATE_PUB_KEY_LEN);
+                memcpy_s(pubKey + 1, UPDATE_PUB_KEY_LEN, data, UPDATE_PUB_KEY_LEN);
                 memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
                 return SUCCESS_CODE;
             }
@@ -160,12 +160,12 @@ int32_t SetUpdatePubKey(const uint8_t *pubKey)
 
     OTP_PowerOn();
     for (addr = OTP_ADDR_UPDATE_PUB_KEY; addr < OTP_ADDR_UPDATE_PUB_KEY + 1024; addr += UPDATE_PUB_KEY_LEN) {
-        memcpy(data, (uint8_t *)addr, UPDATE_PUB_KEY_LEN);
+        memcpy_s(data, UPDATE_PUB_KEY_LEN, (uint8_t *)addr, UPDATE_PUB_KEY_LEN);
         PrintArray("read pub key", data, UPDATE_PUB_KEY_LEN);
         if (CheckAllFF(data, UPDATE_PUB_KEY_LEN)) {
             printf("writeable addr found:0x%08X\n", addr);
             //write OTP
-            memcpy(data, pubKey + 1, UPDATE_PUB_KEY_LEN);
+            memcpy_s(data, UPDATE_PUB_KEY_LEN, pubKey + 1, UPDATE_PUB_KEY_LEN);
             WriteOtpData(addr, data, UPDATE_PUB_KEY_LEN);
             return SUCCESS_CODE;
         }

@@ -50,7 +50,7 @@ void PrintOnLcd(const lv_font_t *font, uint16_t color, const char *format, ...)
         while (LcdBusy());
         for (uint32_t i = 0; i < GetLvglGramSize() / 2; i++) {
             pColor = (LcdDrawColor_t *)&gram[i * 2];
-            memcpy(pColor, &g_bgColor, sizeof(LcdDrawColor_t));
+            memcpy_s(pColor, sizeof(LcdDrawColor_t), &g_bgColor, sizeof(LcdDrawColor_t));
         }
         LcdDraw(0, 0, LCD_DISPLAY_WIDTH - 1, 400 - 1, (uint16_t *)gram);
         while (LcdBusy());
@@ -191,7 +191,7 @@ static void DrawLetterOnLcd(uint16_t x, uint16_t y, uint16_t width, uint16_t hei
     uint32_t maxHeight = height > (height - dsc->box_h - dsc->ofs_y) ? height : (height - dsc->box_h - dsc->ofs_y);
     uint16_t pixelMap[width * maxHeight];
 
-    memcpy(&color16, &color, sizeof(LcdDrawColor_t));
+    memcpy_s(&color16, sizeof(LcdDrawColor_t), &color, sizeof(LcdDrawColor_t));
     r = color16.red;
     g = (color16.green_h << 3) + color16.green_l;
     b = color16.blue;
@@ -200,7 +200,7 @@ static void DrawLetterOnLcd(uint16_t x, uint16_t y, uint16_t width, uint16_t hei
         while (LcdBusy());
         for (j = 0; j < (height - dsc->box_h - dsc->ofs_y) * width; j++) {
             pColor = (LcdDrawColor_t *)&pixelMap[j];
-            memcpy(pColor, &g_bgColor, sizeof(LcdDrawColor_t));
+            memcpy_s(pColor, sizeof(LcdDrawColor_t), &g_bgColor, sizeof(LcdDrawColor_t));
         }
         LcdDraw(x, y, x + width - 1, y + (height - dsc->box_h - dsc->ofs_y) - 1, pixelMap);
         while (LcdBusy());
@@ -210,13 +210,13 @@ static void DrawLetterOnLcd(uint16_t x, uint16_t y, uint16_t width, uint16_t hei
         for (col = 0; col < dsc->box_w; col++) {
             pixel = (map_p[i / 2] >> ((i % 2) == 0 ? 4 : 0)) & 0x0F;
             if (pixel == 0) {
-                memcpy(&pixelMap[i], &g_bgColor, sizeof(uint16_t));
+                memcpy_s(&pixelMap[i], sizeof(uint16_t), &g_bgColor, sizeof(uint16_t));
             } else {
                 pixelColor.red = ((r * pixel / 15) & 0x1F) + g_bgColor.red;
                 pixelColor.green_l = ((g * pixel / 15) & 0x07) + g_bgColor.green_l;
                 pixelColor.green_h = (((g * pixel / 15) >> 3) & 0x07) + g_bgColor.green_h;
                 pixelColor.blue = ((b * pixel / 15) & 0x1F) + g_bgColor.blue;
-                memcpy(&pixelMap[i], &pixelColor, sizeof(uint16_t));
+                memcpy_s(&pixelMap[i], sizeof(uint16_t), &pixelColor, sizeof(uint16_t));
             }
             i++;
         }
@@ -236,7 +236,7 @@ static void DrawLetterOnLcd(uint16_t x, uint16_t y, uint16_t width, uint16_t hei
         while (LcdBusy());
         for (j = 0; j < gapW * gapH; j++) {
             pColor = (LcdDrawColor_t *)&pixelMap[j];
-            memcpy(pColor, &g_bgColor, sizeof(LcdDrawColor_t));
+            memcpy_s(pColor, sizeof(LcdDrawColor_t), &g_bgColor, sizeof(LcdDrawColor_t));
         }
         LcdDraw(gapX, gapY, gapX + gapW - 1, gapY + gapH - 1, pixelMap);
         while (LcdBusy());

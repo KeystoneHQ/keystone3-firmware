@@ -468,7 +468,7 @@ static void SetCheckboxState(uint8_t i, bool isChecked)
 static void RefreshPathType()
 {
     g_tmpSelectIndex = GetPathType();
-    for (uint8_t i = 0; i < sizeof(g_btcPathTypeList) / sizeof(g_btcPathTypeList[0]; i++) {
+    for (uint8_t i = 0; i < 3; i++) {
         SetCheckboxState(i, i == g_tmpSelectIndex);
     }
     SetEgContent(g_tmpSelectIndex);

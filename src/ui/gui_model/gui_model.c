@@ -40,7 +40,6 @@
 #include "mhscpu_qspi.h"
 #include "safe_mem_lib.h"
 #include "usb_task.h"
-#include "safe_str_lib.h"
 #endif
 
 #define SECTOR_SIZE                         4096
@@ -318,10 +317,10 @@ static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
     memset_s(mnemonic, strnlen_s(mnemonic, MNEMONIC_MAX_LEN), 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
     SRAM_FREE(mnemonic);
 #else
-    mnemonic = SRAM_MALLOC(256);
+    mnemonic = SRAM_MALLOC(BUFFER_SIZE_256);
     uint16_t buffLen = 0;
     for (int i = 0; i < mnemonicNum; i++) {
-        buffLen += sprintf(mnemonic + buffLen, "%s ", wordlist[lv_rand(0, 2047)]);
+        buffLen += snprintf_s(mnemonic + buffLen, BUFFER_SIZE_256, "%s ", wordlist[lv_rand(0, 2047)]);
     }
     mnemonic[strlen(mnemonic) - 1] = '\0';
     SecretCacheSetMnemonic(mnemonic);
@@ -638,7 +637,7 @@ static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen
     }
 
     for (int i = 0; i < memberCnt; i++) {
-        memset(wordsList[i], 0, strnlen_s(wordsList[i], MNEMONIC_MAX_LEN));
+        memset_s(wordsList[i], strlen(wordsList[i]), 0, strlen(wordsList[i]));
         // todo There is a problem with SRAM FREE here
         free(wordsList[i]);
     }
@@ -1437,7 +1436,7 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
         if (g_stopCalChecksum == true) {
             return SUCCESS_CODE;
         }
-        memset(buffer, 0, SECTOR_SIZE);
+        memset_s(buffer, SECTOR_SIZE, 0, SECTOR_SIZE);
         memcpy(buffer, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
         sha256_update(&ctx, buffer, SECTOR_SIZE);
         if (percent != i * 100 / num) {
@@ -1448,7 +1447,7 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
         }
     }
     sha256_done(&ctx, (struct sha256 *)hash);
-    memset(buffer, 0, SECTOR_SIZE);
+    memset_s(buffer, SECTOR_SIZE, 0, SECTOR_SIZE);
     percent = 100;
     SetPageLockScreen(true);
     SecretCacheSetChecksum(hash);

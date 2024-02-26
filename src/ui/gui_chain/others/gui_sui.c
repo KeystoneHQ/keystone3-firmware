@@ -2,12 +2,12 @@
 #include "define.h"
 #include "rust.h"
 #include "keystore.h"
-#include "user_memory.h"
 #include "gui_chain.h"
 #include "screen_manager.h"
 #include "keystore.h"
 #include "account_manager.h"
 #include "secret_cache.h"
+#include "user_memory.h"
 
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;

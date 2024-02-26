@@ -17,8 +17,6 @@
 #include "fingerprint_process.h"
 #ifndef COMPILE_SIMULATOR
 #include "usb_task.h"
-#include "safe_mem_lib.h"
-#include "safe_str_lib.h"
 #undef memset_s
 #define memset_s(dest, dmax, value, n)          memset(dest, value, n)
 #endif
@@ -157,7 +155,7 @@ static void SetPinEventHandler(lv_event_t *e)
             }
         } else {
             if (keyboardWidget->currentNum < CREATE_PIN_NUM) {
-                sprintf(g_pinBuf + keyboardWidget->currentNum, "%s", txt);
+                snprintf_s(g_pinBuf + keyboardWidget->currentNum, PASSWORD_MAX_LEN - keyboardWidget->currentNum, "%s", txt);
                 keyboardWidget->currentNum++;
                 for (int i = 0; i < keyboardWidget->currentNum; i++) {
                     GuiSetLedStatus(keyboardWidget->led[i], PASSCODE_LED_ON);
@@ -448,18 +446,18 @@ void GuiHideErrorLabel(KeyboardWidget_t *keyboardWidget)
 
 void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t *passwordVerifyResult)
 {
-    memset(g_pinBuf, 0, sizeof(g_pinBuf));
+    memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
     keyboardWidget->currentNum = 0;
     printf("GuiShowErrorNumber error count is %d\n", passwordVerifyResult->errorCount);
-    char hint[128];
-    char tempBuf[128];
+    char hint[BUFFER_SIZE_128];
+    char tempBuf[BUFFER_SIZE_128];
     uint8_t cnt = MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX - passwordVerifyResult->errorCount;
     if (cnt > 1) {
-        sprintf(hint, _("unlock_device_attempts_left_plural_times_fmt"), cnt);
+        snprintf_s(hint, BUFFER_SIZE_128, _("unlock_device_attempts_left_plural_times_fmt"), cnt);
     } else {
-        sprintf(hint, _("unlock_device_attempts_left_singular_times_fmt"), cnt);
+        snprintf_s(hint, BUFFER_SIZE_128, _("unlock_device_attempts_left_singular_times_fmt"), cnt);
     }
-    sprintf(tempBuf, "#F55831 %s#", hint);
+    snprintf_s(tempBuf, BUFFER_SIZE_128, "#F55831 %s#", hint);
     GuiSetErrorLabel(keyboardWidget, tempBuf);
     if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
         CloseUsb();
@@ -511,7 +509,7 @@ static void CountDownHandler(lv_timer_t *timer)
     char buf[BUFFER_SIZE_32] = {0};
     --(*keyboardWidget->timerCounter);
     if (*keyboardWidget->timerCounter > 0) {
-        sprintf(buf, _("unlock_device_error_btn_text_fmt"), *keyboardWidget->timerCounter);
+        snprintf_s(buf, BUFFER_SIZE_32, _("unlock_device_error_btn_text_fmt"), *keyboardWidget->timerCounter);
     } else {
         strcpy_s(buf, BUFFER_SIZE_32, _("unlock_device_error_btn_end_text"));
     }

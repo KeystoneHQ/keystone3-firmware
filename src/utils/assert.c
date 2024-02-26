@@ -1,5 +1,6 @@
-#include "assert.h"
 #include "stdio.h"
+#include "define.h"
+#include "assert.h"
 #include "presetting.h"
 #include "log_print.h"
 #include "drv_gd25qxx.h"
@@ -25,10 +26,10 @@ LV_FONT_DECLARE(openSans_20);
 
 void ShowAssert(const char *file, uint32_t len)
 {
-    char assertStr[256];
+    char assertStr[BUFFER_SIZE_256];
     PrintOnLcd(&openSans_20, 0xFFFF, "assert,file=%s\nline=%d\n\n", file, len);
     PrintErrorInfoOnLcd();
-    sprintf(assertStr, "assert,file=%s,line=%d", file, len);
+    snprintf_s(assertStr, BUFFER_SIZE_256, "assert,file=%s,line=%d", file, len);
     Gd25FlashWriteBufferNoMutex(SPI_FLASH_ADDR_ERR_INFO, (uint8_t *)assertStr, strnlen_s(assertStr, sizeof(assertStr) - 1) + 1);
     while (1);
 }

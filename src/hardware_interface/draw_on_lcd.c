@@ -51,7 +51,6 @@ void PrintOnLcd(const lv_font_t *font, uint16_t color, const char *format, ...)
             pColor = (LcdDrawColor_t *)&gram[i * 2];
             memcpy(pColor, &g_bgColor, sizeof(LcdDrawColor_t));
         }
-        //memset(gram, 0, GetLvglGramSize());
         LcdDraw(0, 0, LCD_DISPLAY_WIDTH - 1, 400 - 1, (uint16_t *)gram);
         while (LcdBusy());
         LcdDraw(0, 400, LCD_DISPLAY_WIDTH, 800 - 1, (uint16_t *)gram);
@@ -195,7 +194,6 @@ static void DrawLetterOnLcd(uint16_t x, uint16_t y, uint16_t width, uint16_t hei
             pColor = (LcdDrawColor_t *)&pixelMap[j];
             memcpy(pColor, &g_bgColor, sizeof(LcdDrawColor_t));
         }
-        //memset(pixelMap, 0x00, (height - dsc->box_h - dsc->ofs_y) * width * 2);
         LcdDraw(x, y, x + width - 1, y + (height - dsc->box_h - dsc->ofs_y) - 1, pixelMap);
         while (LcdBusy());
     }
@@ -232,10 +230,8 @@ static void DrawLetterOnLcd(uint16_t x, uint16_t y, uint16_t width, uint16_t hei
             pColor = (LcdDrawColor_t *)&pixelMap[j];
             memcpy(pColor, &g_bgColor, sizeof(LcdDrawColor_t));
         }
-        //memset(pixelMap, 0x00, gapW * gapH * 2);
         LcdDraw(gapX, gapY, gapX + gapW - 1, gapY + gapH - 1, pixelMap);
         while (LcdBusy());
-        //printf("width=%d,box_w=%d,gapX=%d,gapY=%d,gapW=%d,gapH=%d\r\n", width, dsc->box_w, gapX, gapY, gapW, gapH);
     }
 }
 

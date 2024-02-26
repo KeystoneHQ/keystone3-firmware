@@ -304,13 +304,13 @@ static void LogExportHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        char logName[64] = {0};
-        char sn[32] = {0};
-        char buf[80] = "File name:\n";
+        char logName[BUFFER_SIZE_64] = {0};
+        char sn[BUFFER_SIZE_32] = {0};
+        char buf[BUFFER_SIZE_128] = "File name:\n";
         GetSerialNumber(sn);
-        sprintf(logName, "0:Log_%s_%d.bin", sn, GetCurrentStampTime());
+        snprintf_s(logName, BUFFER_SIZE_64, "0:Log_%s_%d.bin", sn, GetCurrentStampTime());
         LogSetLogName(logName);
-        sprintf(logName, "Log_%s_%d.bin", sn, GetCurrentStampTime());
+        snprintf_s(logName, BUFFER_SIZE_64, "Log_%s_%d.bin", sn, GetCurrentStampTime());
         strcat(buf, logName);
         g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgSdCardL,
                           _("about_info_export_to_sdcard"), buf, _("Cancel"), DARK_GRAY_COLOR, _("Export"), ORANGE_COLOR);

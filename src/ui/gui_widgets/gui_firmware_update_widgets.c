@@ -83,7 +83,7 @@ void GuiCreateSdCardUpdateHintbox(char *version, bool checkSumDone)
     static uint32_t param = SIG_INIT_SD_CARD_OTA_COPY;
     char desc[150] = {0};
 
-    sprintf(desc, _("firmware_update_sd_dialog_desc"));
+    strcpy_s(desc, sizeof(desc), _("firmware_update_sd_dialog_desc"));
     uint16_t height = checkSumDone ? 518 : 458;
     g_noticeHintBox = GuiCreateUpdateHintbox(lv_scr_act(), height, &imgFirmwareUp, _("firmware_update_sd_dialog_title"),
                       desc, _("not_now"), DARK_GRAY_COLOR, _("Update"), ORANGE_COLOR, checkSumDone);

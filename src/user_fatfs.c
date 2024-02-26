@@ -688,7 +688,7 @@ void CopyToFlash(void)
             FatfsError(res);
             return;
         }
-        memset(fileBuf, 0, COPY_TO_FLASH_PAGE_SIZE);
+        memset_s(fileBuf, COPY_TO_FLASH_PAGE_SIZE, 0, COPY_TO_FLASH_PAGE_SIZE);
         if (fileSize == 0) {
             break;
         }

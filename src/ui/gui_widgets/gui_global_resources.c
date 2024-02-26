@@ -1,6 +1,6 @@
-#include "gui_global_resources.h"
-#include "user_memory.h"
 #include "lv_i18n.h"
+#include "user_memory.h"
+#include "gui_global_resources.h"
 
 #define ETH_DERIVATION_PATH_MAX_LEN                     (128)
 

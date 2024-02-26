@@ -6,8 +6,6 @@
 #include "user_memory.h"
 #include "err_code.h"
 #include "assert.h"
-#include "safe_mem_lib.h"
-#include "safe_str_lib.h"
 
 #define FACTORY_RESULT_CHECK_ENABLE         1
 
@@ -136,18 +134,18 @@ int32_t GetUpdatePubKey(uint8_t *pubKey)
                 printf("found,addr=0x%X\n", addr);
                 pubKey[0] = 4;
                 memcpy(pubKey + 1, data, UPDATE_PUB_KEY_LEN);
-                memset(data, 0, UPDATE_PUB_KEY_LEN);
+                memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
                 return SUCCESS_CODE;
             }
             printf("not found,addr=0x%X\n", addr);
-            memset(data, 0, UPDATE_PUB_KEY_LEN);
-            memset(pubKey, 0, UPDATE_PUB_KEY_LEN + 1);
+            memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
+            memset_s(pubKey, UPDATE_PUB_KEY_LEN + 1, 0, UPDATE_PUB_KEY_LEN + 1);
             return ERR_UPDATE_PUB_KEY_NOT_EXIST;
         }
     }
     printf("not found,addr=0x%X\n", addr);
-    memset(data, 0, UPDATE_PUB_KEY_LEN);
-    memset(pubKey, 0, UPDATE_PUB_KEY_LEN + 1);
+    memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
+    memset_s(pubKey, UPDATE_PUB_KEY_LEN + 1, 0, UPDATE_PUB_KEY_LEN + 1);
     return ERR_UPDATE_PUB_KEY_NOT_EXIST;
 }
 
@@ -172,7 +170,7 @@ int32_t SetUpdatePubKey(const uint8_t *pubKey)
             return SUCCESS_CODE;
         }
     }
-    memset(data, 0, UPDATE_PUB_KEY_LEN);
+    memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
     return ERR_UPDATE_PUB_KEY_NO_SPACE;
 }
 

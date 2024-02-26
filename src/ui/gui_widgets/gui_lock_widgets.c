@@ -170,10 +170,10 @@ void GuiLockScreenWipeDevice(void)
     lv_obj_set_style_text_color(label, LIGHT_BLUE_COLOR, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 570 - GUI_STATUS_BAR_HEIGHT);
 
-    char tempBuf[32] = {0};
-    char showString[64] = {0};
+    char tempBuf[BUFFER_SIZE_32] = {0};
+    char showString[BUFFER_SIZE_64] = {0};
     GetSerialNumber(tempBuf);
-    sprintf(showString, "SN:%s", tempBuf);
+    snprintf_s(showString, BUFFER_SIZE_64, "SN:%s", tempBuf);
     label = GuiCreateNoticeLabel(cont, showString);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 620 - GUI_STATUS_BAR_HEIGHT);
 
@@ -313,8 +313,8 @@ void GuiLockScreenErrorCount(void *param)
     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
     printf("GuiLockScreenErrorCount  errorcount is %d\n", passwordVerifyResult->errorCount);
     if (g_verifyLock != NULL) {
-        char hint[128];
-        char tempBuf[128];
+        char hint[BUFFER_SIZE_128];
+        char tempBuf[BUFFER_SIZE_128];
         int leftCount = 0;
 
         if (*(uint16_t *)passwordVerifyResult->signal == SIG_LOCK_VIEW_VERIFY_PIN
@@ -322,11 +322,11 @@ void GuiLockScreenErrorCount(void *param)
             leftCount = MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount;
             ASSERT(leftCount >= 0);
             if (leftCount > 1) {
-                sprintf(hint, _("unlock_device_attempts_left_plural_times_fmt"), leftCount - 4);
+                snprintf_s(hint, BUFFER_SIZE_128, _("unlock_device_attempts_left_plural_times_fmt"), leftCount - 4);
             } else {
-                sprintf(hint, _("unlock_device_attempts_left_singular_times_fmt"), leftCount - 4);
+                snprintf_s(hint, BUFFER_SIZE_128, _("unlock_device_attempts_left_singular_times_fmt"), leftCount - 4);
             }
-            sprintf(tempBuf, "#F55831 %s #", hint);
+            snprintf_s(tempBuf, BUFFER_SIZE_128, "#F55831 %s #", hint);
             lv_label_set_text(g_verifyLock->errLabel, tempBuf);
             GuiPassowrdToLockTimePage(leftCount);
             if (passwordVerifyResult->errorCount == MAX_LOGIN_PASSWORD_ERROR_COUNT) {
@@ -399,7 +399,7 @@ void GuiLockScreenPasscodeSwitch(bool isPin)
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, GuiJudgeTitle());
 }
 
-static const char *GuiJudgeTitle()
+static const char *GuiJudgeTitle(void)
 {
     char *title;
     //no fingerprint presents
@@ -412,12 +412,12 @@ static const char *GuiJudgeTitle()
         return title;
     }
     if (GetFingerUnlockFlag() && g_purpose == LOCK_SCREEN_PURPOSE_UNLOCK) {
-        title = SRAM_MALLOC(64);
-        memset(title, 0, 64);
+        title = SRAM_MALLOC(BUFFER_SIZE_64);
+        memset_s(title, BUFFER_SIZE_64, 0, BUFFER_SIZE_64);
         if (g_verifyLock->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN || g_verifyLock->mode == ENTER_PASSCODE_VERIFY_PIN) {
-            sprintf(title, _("unlock_device_title_fmt"), _("unlock_device_use_pin"), _("unlock_device_use_fingerprint"));
+            snprintf_s(title, BUFFER_SIZE_64, _("unlock_device_title_fmt"), _("unlock_device_use_pin"), _("unlock_device_use_fingerprint"));
         } else {
-            sprintf(title, _("unlock_device_title_fmt"), _("unlock_device_use_password"), _("unlock_device_use_fingerprint"));
+            snprintf_s(title, BUFFER_SIZE_64, _("unlock_device_title_fmt"), _("unlock_device_use_password"), _("unlock_device_use_fingerprint"));
         }
         return title;
     }

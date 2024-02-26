@@ -83,21 +83,21 @@ void GuiDevicePublicKeyEntranceWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_color(innerCont, WHITE_COLOR, LV_PART_MAIN);
 
     char hexStr[131] = {0};
-    uint8_t pubkey[65] = {0};
+    uint8_t pubkey[BUFFER_SIZE_64 + 1] = {0};
     int32_t ret = GetDevicePublicKey(pubkey);
     if (ret == 0) {
         ByteArrayToHexStr(pubkey, sizeof(pubkey), hexStr);
     } else {
-        sprintf(hexStr, "%s%d", "get pubkey error, error code is ", ret);
+        snprintf_s(hexStr, sizeof(hexStr), "%s%d", "get pubkey error, error code is ", ret);
     }
 
     printf("pubkey is %s\n", hexStr);
 
-    char serialNumber[64] = {0};
+    char serialNumber[BUFFER_SIZE_64] = {0};
     GetSerialNumber(serialNumber);
 
     char qrData[BUFFER_SIZE_256] = {0};
-    sprintf(qrData, "%s#%s", serialNumber, hexStr);
+    snprintf_s(qrData, BUFFER_SIZE_256, "%s#%s", serialNumber, hexStr);
 
     lv_obj_t * qrCode = lv_qrcode_create(innerCont, 294, BLACK_COLOR, WHITE_COLOR);
     lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
@@ -115,14 +115,14 @@ void GuiDevicePublicKeyEntranceWidget(lv_obj_t *parent)
     lv_obj_clear_flag(contentCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align(contentCont, LV_ALIGN_TOP_MID, 0, 396);
 
-    char sn[65] = {0};
-    sprintf(sn, "SN:%s", serialNumber);
+    char sn[BUFFER_SIZE_64 + 1] = {0};
+    snprintf_s(sn, sizeof(sn), "SN:%s", serialNumber);
 
-    char uid[135] = {0};
-    sprintf(uid, "UID:%s", hexStr);
+    char uid[BUFFER_SIZE_256] = {0};
+    snprintf_s(uid, BUFFER_SIZE_256, "UID:%s", hexStr);
 
-    char show[200] = {0};
-    sprintf(show, "%s\n%s", sn, uid);
+    char show[BUFFER_SIZE_256] = {0};
+    snprintf_s(show, BUFFER_SIZE_256, "%s\n%s", sn, uid);
 
     lv_obj_t * label = GuiCreateLabel(contentCont, show);
     lv_obj_set_width(label, 336);

@@ -39,7 +39,7 @@ typedef struct {
     ChainType pubkeyType;
 } PathTypeItem_t;
 
-void GetExportPubkey(char *dest, uint16_t chain, uint8_t pathType);
+void GetExportPubkey(char *dest, uint16_t chain, uint8_t pathType, uint32_t maxLen);
 
 static void GuiCreateQrCodeWidget(lv_obj_t *parent);
 static void OpenSwitchPathTypeHandler(lv_event_t *e);
@@ -133,7 +133,7 @@ lv_obj_t* CreateExportPubkeyQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)
 {
     lv_obj_t* qrcode = lv_qrcode_create(parent, w, BLACK_COLOR, WHITE_COLOR);
     char pubkey[BUFFER_SIZE_128] = {0};
-    GetExportPubkey(pubkey, g_chain, GetPathType());
+    GetExportPubkey(pubkey, g_chain, GetPathType(), sizeof(pubkey));
     lv_obj_add_flag(qrcode, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(qrcode, GuiFullscreenModeHandler, LV_EVENT_CLICKED, NULL);
     lv_qrcode_update(qrcode, pubkey, strnlen_s(pubkey, BUFFER_SIZE_128) + 1);
@@ -188,7 +188,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 static void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent)
 {
     lv_obj_t *cont, *line, *label;
-    char desc[32] = {0};
+    char desc[BUFFER_SIZE_64] = {0};
     static lv_point_t points[2] = {{0, 0}, {360, 0}};
 
     cont = GuiCreateContainerWithParent(parent, 408, 411);
@@ -199,7 +199,7 @@ static void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent)
     for (uint32_t i = 0; i < sizeof(g_btcPathTypeList) / sizeof(g_btcPathTypeList[0]); i++) {
         label = GuiCreateLabelWithFont(cont, g_btcPathTypeList[i].title, &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
-        sprintf(desc, "%s (%s)", g_btcPathTypeList[i].subTitle, g_btcPathTypeList[i].path);
+        snprintf_s(desc, BUFFER_SIZE_64, "%s (%s)", g_btcPathTypeList[i].subTitle, g_btcPathTypeList[i].path);
         label = GuiCreateNoticeLabel(cont, desc);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
         if (i != (sizeof(g_btcPathTypeList) / sizeof(g_btcPathTypeList[0]) - 1)) {
@@ -290,11 +290,11 @@ static void ConfirmHandler(lv_event_t *e)
 }
 
 #ifndef COMPILE_SIMULATOR
-static void GetBtcPubkey(char *dest, uint8_t pathType)
+static void GetBtcPubkey(char *dest, uint8_t pathType, uint32_t maxLen)
 {
     char *xpub = GetCurrentAccountPublicKey(g_btcPathTypeList[pathType].pubkeyType);
     if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_LEGACY || g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_TAPROOT) {
-        sprintf(dest, "%s", xpub);
+        strcpy_s(dest, maxLen, xpub);
         return;
     }
 
@@ -307,27 +307,27 @@ static void GetBtcPubkey(char *dest, uint8_t pathType)
         result = xpub_convert_version(xpub, t);
         CHECK_CHAIN_BREAK(result);
     } while (0);
-    sprintf(dest, "%s", result->data);
+    strcpy_s(dest, maxLen, result->data);
     free_simple_response_c_char(result);
 }
 #else
-static void GetBtcPubkey(char *dest, uint8_t pathType)
+static void GetBtcPubkey(char *dest, uint8_t pathType, uint32_t maxLen)
 {
     if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_LEGACY) {
-        sprintf(dest, "xpub6DkencgjwZW2G2ayofjQ9cD76C59JqsjmahLmwffHmm9LpW5urCVeu3UVNr9zULcbagfEVKqdcBAiCaL8PLCxmisgKNLA1br6bqrm8783yu");
+        strcpy_s(dest, maxLen, "xpub6DkencgjwZW2G2ayofjQ9cD76C59JqsjmahLmwffHmm9LpW5urCVeu3UVNr9zULcbagfEVKqdcBAiCaL8PLCxmisgKNLA1br6bqrm8783yu");
     } else if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC) {
-        sprintf(dest, "ypub6YbWuU2sY6ZkEzNkRc8rGk7m6jYqYU9hZJY4y8JtF7K4i2sC5wL9RtB7bRzLJqj1P5J7wR5H8Z6Q2H7nZC6n5z5v9X3a2Wn2m");
+        strcpy_s(dest, maxLen, "ypub6YbWuU2sY6ZkEzNkRc8rGk7m6jYqYU9hZJY4y8JtF7K4i2sC5wL9RtB7bRzLJqj1P5J7wR5H8Z6Q2H7nZC6n5z5v9X3a2Wn2m");
     } else {
-        sprintf(dest, "zpub6YbWuU2sY6ZkEzNkRc8rGk7m6jYqYU9hZJY4y8JtF7K4i2sC5wL9RtB7bRzLJqj1P5J7wR5H8Z6Q2H7nZC6n5z5v9X3a2Wn2m");
+        strcpy_s(dest, maxLen, "zpub6YbWuU2sY6ZkEzNkRc8rGk7m6jYqYU9hZJY4y8JtF7K4i2sC5wL9RtB7bRzLJqj1P5J7wR5H8Z6Q2H7nZC6n5z5v9X3a2Wn2m");
     }
 }
 #endif
 
-void GetExportPubkey(char *dest, uint16_t chain, uint8_t pathType)
+void GetExportPubkey(char *dest, uint16_t chain, uint8_t pathType, uint32_t maxLen)
 {
     switch (chain) {
     case CHAIN_BTC:
-        GetBtcPubkey(dest, pathType);
+        GetBtcPubkey(dest, pathType, maxLen);
         break;
     default:
         printf("(GetExportPubkey) unsupported chain type: %d\r\n", g_chain);
@@ -345,11 +345,11 @@ static char *GetPathTypeTitle(uint16_t chain, uint8_t pathType)
     }
 }
 
-static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType)
+static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType, uint32_t maxLen)
 {
     switch (chain) {
     case CHAIN_BTC:
-        sprintf(dest, "%s (%s)", g_btcPathTypeList[pathType].subTitle, g_btcPathTypeList[pathType].path);
+        snprintf_s(dest, maxLen, "%s (%s)", g_btcPathTypeList[pathType].subTitle, g_btcPathTypeList[pathType].path);
         break;
     default:
         printf("(GetPathTypeDesc) unsupported chain type: %d\r\n", chain);
@@ -360,11 +360,11 @@ static void RefreshQrcode()
 {
     uint8_t pathType = GetPathType();
     char pubkey[BUFFER_SIZE_128];
-    GetExportPubkey(pubkey, g_chain, pathType);
+    GetExportPubkey(pubkey, g_chain, pathType, sizeof(pubkey));
 
     lv_label_set_text(g_widgets.title, GetPathTypeTitle(g_chain, pathType));
-    char desc[32] = {0};
-    GetPathTypeDesc(desc, g_chain, pathType);
+    char desc[BUFFER_SIZE_32] = {0};
+    GetPathTypeDesc(desc, g_chain, pathType, sizeof(desc));
     lv_label_set_text(g_widgets.desc, desc);
     lv_qrcode_update(g_widgets.qrCode, pubkey, strnlen_s(pubkey, BUFFER_SIZE_128));
     lv_qrcode_update(g_widgets.qrCodeFullscreen, pubkey, strnlen_s(pubkey, BUFFER_SIZE_128));
@@ -398,24 +398,24 @@ static void SetPathType(uint8_t pathType)
 }
 
 #ifndef COMPILE_SIMULATOR
-static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index)
+static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, uint32_t maxLen)
 {
-    char *xPub, hdPath[128];
+    char *xPub, hdPath[BUFFER_SIZE_128];
     xPub = GetCurrentAccountPublicKey(g_btcPathTypeList[pathType].pubkeyType);
     ASSERT(xPub);
     SimpleResponse_c_char *result;
-    sprintf(hdPath, "%s/0/%u", g_btcPathTypeList[pathType].path, index);
+    snprintf_s(hdPath, sizeof(hdPath), "%s/0/%u", g_btcPathTypeList[pathType].path, index);
     do {
         result = utxo_get_address(hdPath, xPub);
         CHECK_CHAIN_BREAK(result);
     } while (0);
-    sprintf(dest, "%s", result->data);
+    snprintf_s(dest, maxLen, "%s", result->data);
     free_simple_response_c_char(result);
 }
 #else
-static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index)
+static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, uint32_t maxLen)
 {
-    sprintf(dest, "1JLNi9AmQcfEuobvwJ4FT5YCiq3WLhCh%u%u", pathType, index);
+    snprintf_s(dest, maxLen, "1JLNi9AmQcfEuobvwJ4FT5YCiq3WLhCh%u%u", pathType, index);
 }
 #endif
 
@@ -442,11 +442,11 @@ static void SetEgContent(uint8_t index)
     char addrShot[BUFFER_SIZE_64] = {0};
     int8_t prefixLen = (g_btcPathTypeList[index].pubkeyType == XPUB_TYPE_BTC_NATIVE_SEGWIT || g_btcPathTypeList[index].pubkeyType == XPUB_TYPE_BTC_TAPROOT) ? 4 : 1;
     for (uint8_t i = 0; i < 2; i++) {
-        ModelGetUtxoAddress(addr, index, i);
+        ModelGetUtxoAddress(addr, index, i, sizeof(addr));
         AddressLongModeCut(addrShot, addr);
         strncpy(prefix, addrShot, prefixLen);
         strncpy(rest, addrShot + prefixLen, strnlen_s(addrShot, BUFFER_SIZE_64) - prefixLen);
-        sprintf(eg, "%d  #F5870A %s#%s", i, prefix, rest);
+        snprintf_s(eg, sizeof(eg), "%d  #F5870A %s#%s", i, prefix, rest);
         lv_label_set_text(g_widgets.egs[i], eg);
     }
 }

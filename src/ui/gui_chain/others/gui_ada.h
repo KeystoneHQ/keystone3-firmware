@@ -4,8 +4,6 @@
 #include "stdlib.h"
 #include "stdint.h"
 #include "librust_c.h"
-#include "safe_mem_lib.h"
-#include "safe_str_lib.h"
 
 void GuiSetupAdaUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetAdaData(void);

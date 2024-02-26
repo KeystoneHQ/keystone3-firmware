@@ -3,7 +3,6 @@
 #include "gui_obj.h"
 #include "gui_create_wallet_widgets.h"
 #include "gui_keyboard.h"
-#include "user_memory.h"
 #include "gui_hintbox.h"
 #include "gui_views.h"
 #include "gui_lock_widgets.h"
@@ -20,7 +19,7 @@
 #include "gui_setting_widgets.h"
 #include "keystore.h"
 #include "account_manager.h"
-#include "safe_str_lib.h"
+#include "user_memory.h"
 
 #ifndef COMPILE_MAC_SIMULATOR
 #include "sha256.h"
@@ -55,14 +54,14 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
     // todo slice==0 clear
     if (mkb->currentSlice == 0) {
         for (int i = 0; i < 15; i++) {
-            memset(g_sliceSha256[i], 0, 32);
+            memset_s(g_sliceSha256[i], 32, 0, 32);
         }
-        memset(g_sliceHeadWords, 0, sizeof(g_sliceHeadWords));
+        memset_s(g_sliceHeadWords, sizeof(g_sliceHeadWords), 0, sizeof(g_sliceHeadWords));
     }
     mkb->currentId = 0;
     bool isSame = false;
     char *mnemonic = SRAM_MALLOC(10 * mkb->wordCnt + 1);
-    memset(mnemonic, 0, 10 * mkb->wordCnt + 1);
+    memset_s(mnemonic, 10 * mkb->wordCnt + 1, 0, 10 * mkb->wordCnt + 1);
 
     for (int i = 0, j = 0; i < mkb->wordCnt; j++, i += 3) {
         for (int k = i; k < i + 3; k++) {
@@ -177,14 +176,14 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
         }
     } while (0);
     GuiSetLetterBoardConfirm(letterKb, 0);
-    memset(mnemonic, 0, strlen(mnemonic));
+    memset_s(mnemonic, strlen(mnemonic), 0, strlen(mnemonic));
     SRAM_FREE(mnemonic);
 }
 
 void ImportSinglePhraseWords(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
 {
     char *mnemonic = SRAM_MALLOC(BIP39_MAX_WORD_LEN * mkb->wordCnt + 1);
-    memset(mnemonic, 0, BIP39_MAX_WORD_LEN * mkb->wordCnt + 1);
+    memset_s(mnemonic, BIP39_MAX_WORD_LEN * mkb->wordCnt + 1, 0, BIP39_MAX_WORD_LEN * mkb->wordCnt + 1);
 
     for (int i = 0, j = 0; i < mkb->wordCnt; j++, i += 3) {
         for (int k = i; k < i + 3; k++) {
@@ -216,7 +215,7 @@ void ImportSinglePhraseWords(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
     lv_obj_add_flag(letterKb->cont, LV_OBJ_FLAG_HIDDEN);
     lv_obj_set_height(mkb->cont, 400);
 
-    memset(mnemonic, 0, strlen(mnemonic));
+    memset_s(mnemonic, strlen(mnemonic), 0, strlen(mnemonic));
     SRAM_FREE(mnemonic);
 }
 
@@ -228,7 +227,7 @@ bool GuiMnemonicInputCheck(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
     }
 
     for (int i = 0; i < mkb->wordCnt; i++) {
-        memset(trueText, 0, sizeof(trueText));
+        memset_s(trueText, sizeof(trueText), 0, sizeof(trueText));
         const char *text = lv_btnmatrix_get_btn_text(mkb->btnm, i);
         GuiMnemonicGetTrueWord(text, trueText);
         if (strlen(trueText) > 0 && !GuiWordsWhole(trueText)) {
@@ -268,7 +267,7 @@ static void GuiMnemonicUpdateNextBtn(MnemonicKeyBoard_t *mkb, KeyBoard_t *letter
             mkb->currentId++;
         }
         lv_btnmatrix_set_selected_btn(mkb->btnm, mkb->currentId);
-        memset(trueText, 0, sizeof(trueText));
+        memset_s(trueText, sizeof(trueText), 0, sizeof(trueText));
         currentId = lv_btnmatrix_get_selected_btn(obj);
         const char *nextText = lv_btnmatrix_get_btn_text(obj, currentId);
         GuiMnemonicGetTrueWord(nextText, trueText);
@@ -283,7 +282,7 @@ static void GuiMnemonicUpdateNextBtn(MnemonicKeyBoard_t *mkb, KeyBoard_t *letter
 
 void GuiMnemonicInputHandler(lv_event_t *e)
 {
-    char tempBuf[128 + 1] = {0};
+    char tempBuf[BUFFER_SIZE_128 + 1] = {0};
     static uint8_t isClick = 0;
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
@@ -323,13 +322,13 @@ void GuiMnemonicInputHandler(lv_event_t *e)
             if (i == currentId) {
                 continue;
             }
-            memset(trueText, 0, sizeof(trueText));
+            memset_s(trueText, sizeof(trueText), 0, sizeof(trueText));
             const char *lastText = lv_btnmatrix_get_btn_text(obj, i);
             // const char *lastText = lv_btnmatrix_get_btn_text(obj, mkb->currentId);
             GuiMnemonicGetTrueWord(lastText, trueText);
             if (strlen(trueText) > 0 && !GuiWordsWhole(trueText)) {
-                char buf[32] = { 0 };
-                sprintf(buf, "#FF0000 %s#", trueText);
+                char buf[BUFFER_SIZE_32] = { 0 };
+                snprintf_s(buf, BUFFER_SIZE_32, "#FF0000 %s#", trueText);
                 GuiInputMnemonicKeyBoard(mkb, buf, i, 1);
             }
         }
@@ -384,7 +383,7 @@ void GuiMnemonicInputHandler(lv_event_t *e)
         }
     } else if (code == KEY_STONE_KEYBOARD_VALUE_CHANGE || code == LV_EVENT_CANCEL) {
         for (int i = 0; i < 3; i++) {
-            memset(g_wordBuf[i], 0, sizeof(g_wordBuf[i]));
+            memset_s(g_wordBuf[i], sizeof(g_wordBuf[i]), 0, sizeof(g_wordBuf[i]));
             lv_label_set_text(letterKb->associateLabel[i], "");
         }
         uint32_t currentId = lv_btnmatrix_get_selected_btn(obj);
@@ -409,7 +408,7 @@ void GuiMnemonicInputHandler(lv_event_t *e)
         } else if (strnlen_s(word, GUI_KEYBOARD_CANDIDATE_WORDS_CNT) >= 3) {
             int wordcnt = searchTrie(rootTree, word);
             if (wordcnt <= 1) {
-                sprintf(tempBuf, "%s#999999 %s#", word, &g_wordBuf[0][strnlen_s(word, GUI_KEYBOARD_CANDIDATE_WORDS_LEN)]);
+                snprintf_s(tempBuf, BUFFER_SIZE_128, "%s#999999 %s#", word, &g_wordBuf[0][strnlen_s(word, GUI_KEYBOARD_CANDIDATE_WORDS_LEN)]);
                 lv_label_set_text(letterKb->associateLabel[0], g_wordBuf[0]);
             } else {
                 wordcnt = wordcnt > 3 ? 3 : wordcnt;
@@ -438,16 +437,9 @@ void GuiSetMnemonicCache(KeyBoard_t *keyBoard, char *word)
     GuiKeyBoardRestoreDefault(keyBoard);
     GuiKeyBoardSetMode(keyBoard);
     for (int i = 0; i < 3; i++) {
-        memset(g_wordBuf[i], 0, sizeof(g_wordBuf[i]));
+        memset_s(g_wordBuf[i], sizeof(g_wordBuf[i]), 0, sizeof(g_wordBuf[i]));
         lv_label_set_text(keyBoard->associateLabel[i], "");
     }
-    // int wordcnt = searchTrie(rootTree, word);
-    // printf("wordcnt = %d\n", wordcnt);
-    // wordcnt = wordcnt > 3 ? 3 : wordcnt;
-    // for (int i = 0; i < wordcnt; i++) {
-    //     lv_label_set_text(keyBoard->associateLabel[i], g_wordBuf[i]);
-    // }
-    // UpdateKeyBoard(NULL, word, keyBoard);
 }
 
 void GuiMnemonicHintboxClear(void)

@@ -1,4 +1,5 @@
 #include "string.h"
+#include "define.h"
 #include "user_sqlite3.h"
 #include "user_utils.h"
 #include "user_fatfs.h"
@@ -129,7 +130,7 @@ uint32_t linkedlist_store(linkedlist_t **leaf, uint32_t offset, uint32_t len, co
         if (!block)
             return SQLITE_NOMEM;
 
-        memset(block->data, 0, CACHEBLOCKSZ);
+        memset_s(block->data, CACHEBLOCKSZ, 0, CACHEBLOCKSZ);
         block->blockid = blockid;
     }
 
@@ -320,7 +321,7 @@ int UserOpen(sqlite3_vfs * vfs, const char * path, sqlite3_file * file, int flag
     if (path == NULL) return SQLITE_IOERR;
 
     USER_DEBUG("UserOpen: 1o %s %s\n", path, "r");
-    memset(p, 0, sizeof(UserSqlite3File));
+    memset_s(p, sizeof(UserSqlite3File), 0, sizeof(UserSqlite3File));
 
     strncpy(p->name, path, DEFAULT_MAXNAMESIZE);
     p->name[DEFAULT_MAXNAMESIZE - 1] = '\0';
@@ -330,7 +331,7 @@ int UserOpen(sqlite3_vfs * vfs, const char * path, sqlite3_file * file, int flag
         p->cache = (filecache_t *) sqlite3_malloc(sizeof(filecache_t));
         if (! p->cache)
             return SQLITE_NOMEM;
-        memset(p->cache, 0, sizeof(filecache_t));
+        memset_s(p->cache, sizeof(filecache_t), 0, sizeof(filecache_t));
 
         p->base.pMethods = &g_fileMemMethods;
         return SQLITE_OK;
@@ -637,8 +638,8 @@ bool GetDBContract(const char* address, const char *selector, const uint32_t cha
     sqlite3 *db;
     char index = address[2]; // [0,f]
 
-    char contractDBPath[128] = {0};
-    sprintf(contractDBPath, "0:contracts/%u_%c_contracts.db", chainId, index);
+    char contractDBPath[BUFFER_SIZE_128] = {0};
+    snprintf_s(contractDBPath, BUFFER_SIZE_128, "0:contracts/%u_%c_contracts.db", chainId, index);
     if (OpenDb(contractDBPath, &db)) {
         return NULL;
     }

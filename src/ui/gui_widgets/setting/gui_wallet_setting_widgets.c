@@ -128,8 +128,8 @@ void GuiWalletSelectAddWallet(lv_obj_t *parent)
     lv_obj_t *label = GuiCreateTitleLabel(parent, _("purpose_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
-    char tempBuf[16];
-    sprintf(tempBuf, "#F5870A %d/3#", g_walletAmount);
+    char tempBuf[BUFFER_SIZE_16];
+    snprintf_s(tempBuf, BUFFER_SIZE_16, "#F5870A %d/3#", g_walletAmount);
     lv_obj_t *numLabel = GuiCreateTitleLabel(parent, tempBuf);
     lv_obj_align_to(numLabel, label, LV_ALIGN_OUT_RIGHT_MID, 36, 0);
     lv_label_set_recolor(numLabel, true);
@@ -415,13 +415,13 @@ void GuiVerifyCurrentPasswordErrorCount(void *param)
 
 void GuiSettingStructureCb(void *obj, void *param)
 {
-    char tempBuf[16] = "MFP: ";
+    char tempBuf[BUFFER_SIZE_16] = "MFP: ";
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     for (int i = 0; i < sizeof(mfp); i++) {
-        sprintf(&tempBuf[5 + i * 2], "%02X", mfp[i]);
+        snprintf_s(&tempBuf[5 + i * 2], BUFFER_SIZE_16 - strnlen_s(tempBuf, BUFFER_SIZE_16), "%02X", mfp[i]);
     }
-    memset(mfp, 0, sizeof(mfp));
+    memset_s(mfp, sizeof(mfp), 0, sizeof(mfp));
     lv_label_set_text(g_mfpLabel, tempBuf);
 }
 
@@ -449,13 +449,13 @@ void GuiWalletSetWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
 
-    char tempBuf[16] = "MFP: ";
+    char tempBuf[BUFFER_SIZE_16] = "MFP: ";
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     for (int i = 0; i < sizeof(mfp); i++) {
-        sprintf(&tempBuf[5 + i * 2], "%02X", mfp[i]);
+        snprintf_s(&tempBuf[5 + i * 2], BUFFER_SIZE_16, "%02X", mfp[i]);
     }
-    memset(mfp, 0, sizeof(mfp));
+    memset_s(mfp, sizeof(mfp), 0, sizeof(mfp));
     lv_obj_t *label = GuiCreateTextLabel(parent, GuiNvsBarGetWalletName());
     lv_obj_set_style_text_font(label, &openSansButton, LV_PART_MAIN);
     lv_obj_t *mfpLabel = GuiCreateNoticeLabel(parent, tempBuf);

@@ -18,7 +18,6 @@
 #include "touchpad_task.h"
 #include "gui_analyze.h"
 #include "gui_web_auth_result_widgets.h"
-#include "safe_str_lib.h"
 #include "assert.h"
 #ifndef BTC_ONLY
 #include "gui_key_derivation_request_widgets.h"

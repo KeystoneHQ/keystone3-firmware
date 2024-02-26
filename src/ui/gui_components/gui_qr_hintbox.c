@@ -5,7 +5,6 @@
 #include "gui_views.h"
 #include "gui_qr_hintbox.h"
 #include "gui_hintbox.h"
-#include "safe_str_lib.h"
 
 static lv_obj_t *g_qrHintBox = NULL;
 static lv_obj_t *g_qrHintBoxTitle = NULL;

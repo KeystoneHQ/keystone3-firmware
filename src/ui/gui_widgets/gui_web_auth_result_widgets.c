@@ -188,15 +188,15 @@ void GuiWebAuthResultFailedWidget(lv_obj_t *parent)
     lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 
-    char mail[64] = {0};
-    sprintf(mail, "#1BE0C6 %s#", _("verification_code_failed_link"));
+    char mail[BUFFER_SIZE_64] = {0};
+    snprintf_s(mail, BUFFER_SIZE_64, "#1BE0C6 %s#", _("verification_code_failed_link"));
 
     label = GuiCreateIllustrateLabel(parent, mail);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 420);
     lv_label_set_recolor(label, true);
 
-    char erase[64] = {0};
-    sprintf(erase, "#F55831 %s#", _("wipe_device"));
+    char erase[BUFFER_SIZE_64] = {0};
+    snprintf_s(erase, BUFFER_SIZE_64, "#F55831 %s#", _("wipe_device"));
 
     label = GuiCreateTextLabel(parent, erase);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -64);

@@ -267,9 +267,9 @@ void GuiStatusBarSetUsb()
 
 void GuiStatusBarSetBattery(uint8_t percent, bool charging)
 {
-    char percentStr[16];
+    char percentStr[BUFFER_SIZE_16];
 
-    sprintf(percentStr, "%d%%", percent);
+    snprintf_s(percentStr, BUFFER_SIZE_16, "%d%%", percent);
     lv_label_set_text(g_guiStatusBar.batteryLabel, percentStr);
 
     if (charging) {

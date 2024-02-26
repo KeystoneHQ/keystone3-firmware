@@ -55,7 +55,6 @@
 #include "presetting.h"
 #include "usb_task.h"
 #include "device_setting.h"
-#include "safe_str_lib.h"
 
 #define CMD_MAX_ARGC                                16
 #define DEFAULT_TEST_BUFF_LEN                       1024
@@ -629,7 +628,7 @@ static void TrngTestFunc(int argc, char *argv[])
         printf("malloc err\r\n");
         return;
     }
-    memset(mem, 0, byteNum);
+    memset_s(mem, byteNum, 0, byteNum);
     TrngGet(mem, byteNum);
     PrintArray("trng", mem, byteNum);
     SRAM_FREE(mem);

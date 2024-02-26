@@ -12,10 +12,6 @@
 #include "motor_manager.h"
 #include "account_manager.h"
 #include "gui_keyboard_hintbox.h"
-#ifndef COMPILE_SIMULATOR
-#include "safe_mem_lib.h"
-#include "safe_str_lib.h"
-#endif
 
 typedef enum {
     PASSWORD_STRENGTH_LEN,
@@ -97,7 +93,7 @@ static void SetPinEventHandler(lv_event_t *e)
             }
         } else {
             if (item->currentNum < CREATE_PIN_NUM) {
-                sprintf(g_pinBuf + item->currentNum, "%s", txt);
+                snprintf_s(g_pinBuf + item->currentNum, PASSWORD_MAX_LEN - item->currentNum, "%s", txt);
                 GuiSetLedStatus(item->numLed[item->currentNum], PASSCODE_LED_ON);
                 item->currentNum++;
                 if (item->mode == ENTER_PASSCODE_SET_PIN &&

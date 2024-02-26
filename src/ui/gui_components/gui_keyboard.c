@@ -9,7 +9,6 @@
 #include "gui_views.h"
 #include "gui_lock_widgets.h"
 #include "gui_letter_tree.h"
-#include "safe_str_lib.h"
 
 #pragma GCC optimize ("O0")
 
@@ -697,7 +696,7 @@ void *GuiCreateMnemonicKeyBoard(lv_obj_t *parent,
 
     for (int i = 0, j = 0; i < mkb->wordCnt; j++, i += 3) {
         for (int k = i; k < i + 3; k++) {
-            sprintf(mkb->mnemonicWord[k + j], "%d\n", k + 1);
+            snprintf_s(mkb->mnemonicWord[k + j], MNEMONIC_MATRIX_WORD_MAX_LEN, "%d\n", k + 1);
         }
     }
     strcpy_s(mkb->mnemonicWord[(mkb->wordCnt + 1) / 3 * 4 - 1], MNEMONIC_MATRIX_WORD_MAX_LEN, "\0");
@@ -759,7 +758,7 @@ void ClearMnemonicKeyboard(MnemonicKeyBoard_t *mkb, uint8_t *inputId)
 void GuiClearMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard)
 {
     for (int i = 0; i < 44; i++) {
-        memset(mnemonicKeyBoard->mnemonicWord[i], 0, 20);
+        memset_s(mnemonicKeyBoard->mnemonicWord[i], 20, 0, 20);
     }
     GuiUpdateMnemonicKeyBoard(mnemonicKeyBoard, (char *)NULL, false);
 }
@@ -788,7 +787,7 @@ void GuiUpdateMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard, char *mnemo
     for (int i = 0, j = 0; i < mnemonicKeyBoard->wordCnt; j++, i += 3) {
         for (int k = i; k < i + 3; k++) {
             if (mnemonic == NULL) {
-                sprintf(mnemonicKeyBoard->mnemonicWord[k + j], "%d\n", k + 1);
+                snprintf_s(mnemonicKeyBoard->mnemonicWord[k + j], MNEMONIC_MATRIX_WORD_MAX_LEN, "%d\n", k + 1);
                 continue;
             }
             if (mnemonicKeyBoard->wordCnt == 20 && k >= 18) {
@@ -803,9 +802,9 @@ void GuiUpdateMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard, char *mnemo
             word[tail - find] = 0;
             find = tail + 1;
             if (confirm) {
-                sprintf(mnemonicKeyBoard->mnemonicWord[k + j], "-\n%s", word);
+                snprintf_s(mnemonicKeyBoard->mnemonicWord[k + j], MNEMONIC_MATRIX_WORD_MAX_LEN, "-\n%s", word);
             } else {
-                sprintf(mnemonicKeyBoard->mnemonicWord[k + j], "%d\n%s", k + 1, word);
+                snprintf_s(mnemonicKeyBoard->mnemonicWord[k + j], MNEMONIC_MATRIX_WORD_MAX_LEN, "%d\n%s", k + 1, word);
             }
         }
     }
@@ -856,9 +855,9 @@ void GuiConfirmMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard,
             find = tail + 1;
             if (k == n) {
                 if (dig == 1) {
-                    sprintf(mnemonicKeyBoard->mnemonicWord[k + j], "%d\n%s", num, word);
+                    snprintf_s(mnemonicKeyBoard->mnemonicWord[k + j], MNEMONIC_MATRIX_WORD_MAX_LEN, "%d\n%s", num, word);
                 } else {
-                    sprintf(mnemonicKeyBoard->mnemonicWord[k + j], "-\n%s", word);
+                    snprintf_s(mnemonicKeyBoard->mnemonicWord[k + j], MNEMONIC_MATRIX_WORD_MAX_LEN, "-\n%s", word);
                 }
             }
         }
@@ -873,9 +872,9 @@ void GuiInputMnemonicKeyBoard(MnemonicKeyBoard_t* inputMnemonicKeyBoard, char *w
         for (int k = i; k < i + 3; k++) {
             if (k == n) {
                 if (dig == 1) {
-                    sprintf(inputMnemonicKeyBoard->mnemonicWord[k + j], "%d\n%s", k + j + 1 - k / 3, word);
+                    snprintf_s(inputMnemonicKeyBoard->mnemonicWord[k + j], MNEMONIC_MATRIX_WORD_MAX_LEN, "%d\n%s", k + j + 1 - k / 3, word);
                 } else {
-                    sprintf(inputMnemonicKeyBoard->mnemonicWord[k + j], "%d\n", k + j + 1 - k / 3);
+                    snprintf_s(inputMnemonicKeyBoard->mnemonicWord[k + j], MNEMONIC_MATRIX_WORD_MAX_LEN, "%d\n", k + j + 1 - k / 3);
                 }
             }
         }
@@ -945,7 +944,7 @@ void GuiClearKeyBoard(KeyBoard_t *keyBoard)
     GuiKeyBoardRestoreDefault(keyBoard);
     GuiKeyBoardSetMode(keyBoard);
     for (int i = 0; i < 3; i++) {
-        memset(g_wordBuf[i], 0, sizeof(g_wordBuf[i]));
+        memset_s(g_wordBuf[i], sizeof(g_wordBuf[i]), 0, sizeof(g_wordBuf[i]));
         lv_label_set_text(keyBoard->associateLabel[i], "");
     }
 }
@@ -1043,7 +1042,7 @@ void UpdateKeyBoard(TrieSTPtr root, const char *str, KeyBoard_t *keyBoard)
         }
     }
     if (allDisabled == true) {
-        memset(enable, 0, 'z' - 'a');
+        memset_s(enable, 'z' - 'a', 0, 'z' - 'a');
     }
 
     if (searchTrie(rootTree, str) != 1) {
@@ -1077,7 +1076,7 @@ static void LetterKbAssociateHandler(lv_event_t *e)
         lv_textarea_set_text(keyBoard->ta, "");
         for (int i = 0; i < 3; i++) {
             lv_label_set_text(keyBoard->associateLabel[i], "");
-            memset(g_wordBuf[i], 0, sizeof(g_wordBuf[0]));
+            memset_s(g_wordBuf[i], sizeof(g_wordBuf[0]), 0, sizeof(g_wordBuf[0]));
         }
         UpdateKeyBoard(rootTree, buf, keyBoard);
     }
@@ -1102,7 +1101,7 @@ void UpdateAssociateLabel(KeyBoard_t *keyBoard, const char *currText)
     char endBuf[8] = { 0 };
     if (strlen(currText) >= 3) {
         for (int i = 0; i < 3; i++) {
-            memset(g_wordBuf[i], 0, sizeof(g_wordBuf[i]));
+            memset_s(g_wordBuf[i], GUI_KEYBOARD_CANDIDATE_WORDS_LEN, 0, GUI_KEYBOARD_CANDIDATE_WORDS_LEN);
             lv_label_set_text(keyBoard->associateLabel[i], "");
         }
         int wordcnt = searchTrie(rootTree, currText);
@@ -1119,7 +1118,7 @@ void UpdateAssociateLabel(KeyBoard_t *keyBoard, const char *currText)
 void ClearKbCache(void)
 {
     for (int i = 0; i < 3; i++) {
-        memset(g_wordBuf[i], 0, sizeof(g_wordBuf[i]));
+        memset_s(g_wordBuf[i], GUI_KEYBOARD_CANDIDATE_WORDS_LEN, 0, GUI_KEYBOARD_CANDIDATE_WORDS_LEN);
     }
 }
 
@@ -1184,7 +1183,7 @@ void KbTextAreaHandler(lv_event_t * e)
         if (keyBoard->mode == KEY_STONE_LETTER) {
             if (strlen(currText) < 3) {
                 for (int i = 0; i < 3; i++) {
-                    memset(g_wordBuf[i], 0, sizeof(g_wordBuf[i]));
+                    memset_s(g_wordBuf[i], GUI_KEYBOARD_CANDIDATE_WORDS_LEN, 0, GUI_KEYBOARD_CANDIDATE_WORDS_LEN);
                     lv_label_set_text(keyBoard->associateLabel[i], "");
                 }
             }

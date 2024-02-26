@@ -28,8 +28,6 @@
 #include "screen_manager.h"
 #include "low_power.h"
 #include "se_manager.h"
-#include "safe_mem_lib.h"
-#include "safe_str_lib.h"
 
 /* DEFINES */
 #define FINGERPRINT_REG_MAX_TIMES               (18)
@@ -234,7 +232,7 @@ static void FpDeleteRecv(char *indata, uint8_t len)
         printf("delete success %d\n", g_fpIndex);
         DeleteFingerManager(g_fpIndex);
         if (g_fpManager.fingerNum == 0) {
-            memset(&g_fpManager, 0, sizeof(g_fpManager));
+            memset_s(&g_fpManager, sizeof(g_fpManager), 0, sizeof(g_fpManager));
         }
         SetFingerManagerInfoToSE();
         GuiApiEmitSignal(SIG_FINGER_DELETE_SUCCESS, NULL, 0);
@@ -246,7 +244,7 @@ void FpDeleteAllRecv(char *indata, uint8_t len)
     uint8_t result = indata[0];
     if (result == FP_SUCCESS_CODE) {
         printf("delete success\n");
-        memset(&g_fpManager, 0, sizeof(g_fpManager));
+        memset_s(&g_fpManager, sizeof(g_fpManager), 0, sizeof(g_fpManager));
     }
 }
 
@@ -268,10 +266,10 @@ static void FpGetNumberRecv(char *indata, uint8_t len)
         printf("fingerprints currently exist %d\n", indata[1]);
         GuiApiEmitSignal(GUI_EVENT_REFRESH, NULL, 0);
         if (g_fpManager.fingerNum == 0) {
-            memset(&g_fpManager, 0, sizeof(g_fpManager));
+            memset_s(&g_fpManager, sizeof(g_fpManager), 0, sizeof(g_fpManager));
         }
         if (indata[1] != g_fpManager.fingerNum) {
-            memset(&g_fpManager, 0, sizeof(g_fpManager));
+            memset_s(&g_fpManager, sizeof(g_fpManager), 0, sizeof(g_fpManager));
             SetFingerManagerInfoToSE();
             FpDeleteSend(FINGERPRINT_CMD_DELETE_ALL, 1);
         }
@@ -298,7 +296,7 @@ void FpSaveKeyInfo(bool add)
     }
     SetFingerManagerInfoToSE();
     FingerSetInfoToSE(g_fpTempAesKey, 0, GetCurrentAccountIndex(), SecretCacheGetPassword());
-    memset(g_fpTempAesKey, 0,  sizeof(g_fpTempAesKey));
+    memset_s(g_fpTempAesKey, sizeof(g_fpTempAesKey), 0,  sizeof(g_fpTempAesKey));
     ClearSecretCache();
 }
 
@@ -325,8 +323,8 @@ static void FpRecognizeRecv(char *indata, uint8_t len)
                 GetFpEncryptedPassword(GetCurrentAccountIndex(), encryptedPassword);
                 decryptFunc((uint8_t *)decryptPasscode, encryptedPassword, (uint8_t *)&indata[6]);
                 SecretCacheSetPassword(decryptPasscode);
-                memset(decryptPasscode, 0, sizeof(decryptPasscode));
-                memset(encryptedPassword, 0, sizeof(encryptedPassword));
+                memset_s(decryptPasscode, sizeof(decryptPasscode), 0, sizeof(decryptPasscode));
+                memset_s(encryptedPassword, sizeof(encryptedPassword), 0, sizeof(encryptedPassword));
             }
         }
 
@@ -1037,7 +1035,7 @@ static int SendDataToFp(uint8_t *pBuffer, int size)
 void SendPackFingerMsg(uint16_t cmd, uint8_t *data, uint16_t frameId, uint32_t len, Encryption_Type isEncrypt)
 {
     static FpSendMsg_t sendData;
-    memset(&sendData, 0, sizeof(sendData));
+    memset_s(&sendData, sizeof(sendData), 0, sizeof(sendData));
 
     sendData.header    = FINGERPRINT_CMD_FRAME_SYNC_HEAD;
     sendData.packetLen =  16 + (len + 10) / 16 * 16 + 16 + 4;
@@ -1100,7 +1098,7 @@ void __inline FingerprintIsrRecvProcess(uint8_t byte)
     if (rcvByteCount != 0) {
         if (tick - lastTick > 200) {
             rcvByteCount = 0;
-            memset(g_intrRecvBuffer, 0, RCV_MSG_MAX_LEN);
+            memset_s(g_intrRecvBuffer, RCV_MSG_MAX_LEN, 0, RCV_MSG_MAX_LEN);
         }
     }
     lastTick = tick;
@@ -1110,7 +1108,7 @@ void __inline FingerprintIsrRecvProcess(uint8_t byte)
         if (byte == 0xAA) {
             intrRecvBuffer[rcvByteCount++] = byte;
         } else {
-            memset(intrRecvBuffer, 0, RCV_MSG_MAX_LEN);
+            memset_s(intrRecvBuffer, RCV_MSG_MAX_LEN, 0, RCV_MSG_MAX_LEN);
             rcvByteCount = 0;
         }
     } else if (rcvByteCount == 1 || rcvByteCount == 2) {       //frame len
@@ -1131,7 +1129,7 @@ void __inline FingerprintIsrRecvProcess(uint8_t byte)
                 xEventGroupSetBitsFromISR(g_fpEventGroup, 0x1, NULL);
                 memcpy(g_intrRecvBuffer, intrRecvBuffer, rcvByteCount);
             }
-            memset(intrRecvBuffer, 0, RCV_MSG_MAX_LEN);
+            memset_s(intrRecvBuffer, RCV_MSG_MAX_LEN, 0, RCV_MSG_MAX_LEN);
             rcvByteCount = 0;
             totalLen = 0;
         }
@@ -1140,7 +1138,7 @@ void __inline FingerprintIsrRecvProcess(uint8_t byte)
 
 void FpWipeManageInfo(void)
 {
-    memset(&g_fpManager, 0, sizeof(g_fpManager));
+    memset_s(&g_fpManager, sizeof(g_fpManager), 0, sizeof(g_fpManager));
     SetFingerManagerInfoToSE();
     FpDeleteSend(FINGERPRINT_CMD_DELETE_ALL, 1);
 }

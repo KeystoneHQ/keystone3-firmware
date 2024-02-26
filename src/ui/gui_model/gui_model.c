@@ -639,7 +639,7 @@ static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen
     for (int i = 0; i < memberCnt; i++) {
         memset(wordsList[i], 0, strlen(wordsList[i]));
         // todo There is a problem with SRAM FREE here
-        free(wordsList[i]);
+        SRAM_FREE(wordsList[i]);
     }
     retData = SUCCESS_CODE;
     GuiApiEmitSignal(SIG_CREATE_SHARE_UPDATE_MNEMONIC, &retData, sizeof(retData));
@@ -697,7 +697,7 @@ static int32_t ModelGenerateSlip39EntropyWithDiceRolls(const void *inData, uint3
     for (int i = 0; i < memberCnt; i++) {
         memset(wordsList[i], 0, strlen(wordsList[i]));
         // todo There is a problem with SRAM FREE here
-        free(wordsList[i]);
+        SRAM_FREE(wordsList[i]);
     }
     retData = SUCCESS_CODE;
     GuiApiEmitSignal(SIG_CREATE_SHARE_UPDATE_MNEMONIC, &retData, sizeof(retData));

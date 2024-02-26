@@ -39,7 +39,7 @@ typedef struct {
     ChainType pubkeyType;
 } PathTypeItem_t;
 
-void GetExportPubkey(char *dest, uint16_t chain, uint8_t pathType);
+static void GetExportPubkey(char *dest, uint16_t chain, uint8_t pathType);
 
 static void GuiCreateQrCodeWidget(lv_obj_t *parent);
 static void OpenSwitchPathTypeHandler(lv_event_t *e);
@@ -290,23 +290,59 @@ static void ConfirmHandler(lv_event_t *e)
 }
 
 #ifndef COMPILE_SIMULATOR
+#ifdef BTC_ONLY
+static ChainType ConvertChainType(ChainType chainType)
+{
+    switch (chainType) {
+    case XPUB_TYPE_BTC_TAPROOT:
+        return GetIsTestNet() ? XPUB_TYPE_BTC_TAPROOT_TEST : XPUB_TYPE_BTC_TAPROOT;
+    case XPUB_TYPE_BTC_NATIVE_SEGWIT:
+        return GetIsTestNet() ? XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST : XPUB_TYPE_BTC_NATIVE_SEGWIT;
+    case XPUB_TYPE_BTC:
+        return GetIsTestNet() ? XPUB_TYPE_BTC_TEST : XPUB_TYPE_BTC;
+    case XPUB_TYPE_BTC_LEGACY:
+        return GetIsTestNet() ? XPUB_TYPE_BTC_LEGACY_TEST : XPUB_TYPE_BTC_LEGACY;
+    default:
+        break;
+    }
+    return chainType;
+}
+#endif
 static void GetBtcPubkey(char *dest, uint8_t pathType)
 {
-    char *xpub = GetCurrentAccountPublicKey(g_btcPathTypeList[pathType].pubkeyType);
-    if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_LEGACY || g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_TAPROOT) {
+    SimpleResponse_c_char *result;
+#ifndef BTC_ONLY
+    ChainType chainType = g_btcPathTypeList[pathType].pubkeyType;
+#else
+    ChainType chainType = ConvertChainType(g_btcPathTypeList[pathType].pubkeyType);
+#endif
+    char *xpub = GetCurrentAccountPublicKey(chainType);
+    char head[] = "ypub";
+    switch (chainType) {
+    case XPUB_TYPE_BTC_LEGACY:
+    case XPUB_TYPE_BTC_TAPROOT:
         sprintf(dest, "%s", xpub);
         return;
+    case XPUB_TYPE_BTC_NATIVE_SEGWIT:
+        head[0] = 'z';
+        break;
+#ifdef BTC_ONLY
+    case XPUB_TYPE_BTC_LEGACY_TEST:
+    case XPUB_TYPE_BTC_TAPROOT_TEST:
+        head[0] = 't';
+        break;
+    case XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST:
+        head[0] = 'v';
+        break;
+    case XPUB_TYPE_BTC_TEST:
+        head[0] = 'u';
+        break;
+#endif
+    default:
+        break;
     }
-
-    char *t = "ypub";
-    if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_NATIVE_SEGWIT) {
-        t = "zpub";
-    }
-    SimpleResponse_c_char *result;
-    do {
-        result = xpub_convert_version(xpub, t);
-        CHECK_CHAIN_BREAK(result);
-    } while (0);
+    result = xpub_convert_version(xpub, head);
+    ASSERT(result);
     sprintf(dest, "%s", result->data);
     free_simple_response_c_char(result);
 }
@@ -323,7 +359,7 @@ static void GetBtcPubkey(char *dest, uint8_t pathType)
 }
 #endif
 
-void GetExportPubkey(char *dest, uint16_t chain, uint8_t pathType)
+static void GetExportPubkey(char *dest, uint16_t chain, uint8_t pathType)
 {
     switch (chain) {
     case CHAIN_BTC:

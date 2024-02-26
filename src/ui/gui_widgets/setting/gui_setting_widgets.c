@@ -346,15 +346,14 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
     line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 543 - GUI_MAIN_AREA_OFFSET);
 
-    char showString[64] = {0};
+    char showString[BUFFER_SIZE_64] = {0};
     char version[SOFTWARE_VERSION_MAX_LEN] = {0};
     char fileVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
     GetSoftWareVersionNumber(version);
     if (CheckOtaBinVersion(fileVersion)) {
-        sprintf(showString, "#8E8E8E v%s#  /  #F5870A v%s  Available#", version, fileVersion);
-        // sprintf(showString, "#8E8E8E %s#", version);
+        snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E v%s#  /  #F5870A v%s  Available#", version, fileVersion);
     } else {
-        sprintf(showString, "#8E8E8E %s#", version);
+        snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E %s#", version);
     }
 
     label = GuiCreateTextLabel(parent, _("device_setting_about_title"));

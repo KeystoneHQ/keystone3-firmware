@@ -396,7 +396,7 @@ void SetWalletIconIndex(uint8_t iconIndex)
 /// @param[in] walletName
 void SetWalletName(const char *walletName)
 {
-    memset(g_currentAccountInfo.walletName, 0, sizeof(g_currentAccountInfo.walletName));
+    memset_s(g_currentAccountInfo.walletName, sizeof(g_currentAccountInfo.walletName), 0, sizeof(g_currentAccountInfo.walletName));
     strcpy_s(g_currentAccountInfo.walletName, WALLET_NAME_MAX_LEN, walletName);
     SaveCurrentAccountInfo();
 }
@@ -546,7 +546,7 @@ void AccountsDataCheck(void)
         }
         if (validCount == 1) {
             printf("illegal data:%d\n", accountIndex);
-            memset(data, 0, sizeof(data));
+            memset_s(data, sizeof(data), 0, sizeof(data));
             for (i = 0; i < PAGE_NUM_PER_ACCOUNT; i++) {
                 printf("erase index=%d\n", i);
                 ret = SE_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + i);

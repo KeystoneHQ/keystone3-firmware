@@ -546,11 +546,11 @@ uint8_t GuiGetCosmosTxChain(void)
     if (parseResult == NULL) {
         return CHAIN_ATOM;
     }
-    char* chain_id = SRAM_MALLOC(64);
+    char* chain_id = SRAM_MALLOC(BUFFER_SIZE_64);
     if (strcmp(parseResult->data->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_MESSAGE)) == 0 || strcmp(parseResult->data->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_UNKNOWN)) == 0) {
         cJSON* detail = cJSON_Parse(parseResult->data->detail);
         cJSON* value = cJSON_GetObjectItem(detail, "Chain ID");
-        sprintf(chain_id, "%s", value->valuestring);
+        snprintf_s(chain_id, BUFFER_SIZE_64, "%s", value->valuestring);
     } else {
         GetCosmosDetailCommon(chain_id, parseResult->data, "Chain ID");
     }

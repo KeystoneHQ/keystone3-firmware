@@ -333,7 +333,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
         tempObj = GuiCreateLittleTitleLabel(g_multiAccountsReceiveWidgets.attentionCont, _("Attention"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
-        char attentionText[150];
+        char attentionText[BUFFER_SIZE_256];
         GetAttentionText(attentionText);
         tempObj = GuiCreateLabelWithFont(g_multiAccountsReceiveWidgets.attentionCont, attentionText, &openSans_20);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
@@ -351,7 +351,7 @@ void GetAttentionText(char *text)
 {
     switch (g_chainCard) {
     default:
-        sprintf(text, _("receive_coin_hint_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
+        snprintf_s(text, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
     }
 }
 
@@ -1006,13 +1006,13 @@ static void GuiCreateSwitchAccountWidget()
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
     index = 0;
     for (uint32_t i = 0; i < ACCOUNT_INDEX_MAX; i++) {
-        char temp[64];
-        sprintf(temp, "Account-%u", i);
+        char temp[BUFFER_SIZE_64];
+        snprintf_s(temp, BUFFER_SIZE_64, "Account-%u", i);
         label = GuiCreateLabelWithFont(cont, temp, &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 102 * i);
         g_multiAccountsReceiveWidgets.switchAccountWidgets[index].addressCountLabel = label;
 
-        sprintf(temp, "m/1852'/1815'/%u'", i);
+        snprintf_s(temp, BUFFER_SIZE_64, "m/1852'/1815'/%u'", i);
         label = GuiCreateNoticeLabel(cont, temp);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 102 * i);
         g_multiAccountsReceiveWidgets.switchAccountWidgets[index].addressLabel = label;
@@ -1073,14 +1073,14 @@ static void AddressLongModeCut(char *out, const char *address, uint32_t targetLe
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
 {
-    char *xPub = NULL, hdPath[128];
+    char *xPub = NULL, hdPath[BUFFER_SIZE_128];
     SimpleResponse_c_char *result = NULL;
     uint32_t currentAccount = g_selectedAccount[GetCurrentAccountIndex()];
 
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ADA:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0 + currentAccount);
-        sprintf(hdPath, "m/1852'/1815'/%u'/0/%u", currentAccount, index);
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'/0/%u", currentAccount, index);
         // cardano mainnet;
         switch (type) {
         case 1:

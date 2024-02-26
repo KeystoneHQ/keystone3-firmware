@@ -3,7 +3,6 @@
 #include "slip39_wordlist.h"
 #include "gui_letter_tree.h"
 #include "user_memory.h"
-#include "safe_str_lib.h"
 
 #pragma GCC optimize ("O0")
 
@@ -18,7 +17,7 @@ TrieNodePtr createTrieNode(char key)
     if (t == NULL) {
         return NULL;
     }
-    memset(t, 0, sizeof(TrieNode));
+    memset_s(t, sizeof(TrieNode), 0, sizeof(TrieNode));
     t->value = key;
     return t;
 }
@@ -26,7 +25,7 @@ TrieNodePtr createTrieNode(char key)
 TrieSTPtr createTrie(void)
 {
     TrieSTPtr t = (TrieSTPtr)EXT_MALLOC(sizeof(TrieNode));
-    memset(t, 0, sizeof(TrieNode));
+    memset_s(t, sizeof(TrieNode), 0, sizeof(TrieNode));
     return t;
 }
 

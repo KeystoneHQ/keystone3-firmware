@@ -15,9 +15,6 @@
 #include "motor_manager.h"
 #include "user_delay.h"
 #include "gui_page.h"
-#ifndef COMPILE_SIMULATOR
-#include "safe_mem_lib.h"
-#endif
 
 #define SINGLE_PHRASE_MAX_WORDS         24
 typedef enum {

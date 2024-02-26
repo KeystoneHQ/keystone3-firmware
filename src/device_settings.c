@@ -17,7 +17,6 @@
 #include "power_manager.h"
 #include "account_manager.h"
 #include "version.h"
-#include "safe_str_lib.h"
 
 
 #define VERSION_MAX_LENGTH      32
@@ -410,7 +409,7 @@ static void GetStringValue(const cJSON *obj, const char *key, char *value, uint3
         strTemp = json->valuestring;
         len = strnlen_s(strTemp, maxLen);
         if (len < maxLen) {
-            strcpy_s(value, len, strTemp);
+            strcpy_s(value, maxLen, strTemp);
         } else {
             value[0] = '\0';
         }

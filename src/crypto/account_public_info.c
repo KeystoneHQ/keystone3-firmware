@@ -22,7 +22,6 @@
 #define PUB_KEY_MAX_LENGTH                  256
 #define VERSION_MAX_LENGTH                  64
 #define INVALID_ACCOUNT_INDEX               255
-#define USER1_MUTABLE_DATA_MAX_SIZE         (SPI_FLASH_SIZE_USER1_MUTABLE_DATA - 4)
 
 typedef struct {
     char *pubKey;
@@ -181,6 +180,7 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
     addr = SPI_FLASH_ADDR_USER1_MUTABLE_DATA + account * SPI_FLASH_ADDR_EACH_SIZE;
     ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
     ASSERT(ret == 4);
+    printf("size = %d.............\n", size);
 
     if (size == 0xffffffff || size == 0) {
         needSet = true;
@@ -207,9 +207,12 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
             cJSON_AddItemToObject(rootJson, walletList[i].name, jsonItem);
         }
         retStr = cJSON_Print(rootJson);
+        printf("retStr = %s\n", retStr);
         cJSON_Delete(rootJson);
         RemoveFormatChar(retStr);
-        size = strnlen_s(retStr, USER1_MUTABLE_DATA_MAX_SIZE);
+        printf("retStr = %s\n", retStr);
+        size = strlen(retStr);
+        printf("size = %d............\n", size);
         Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
         Gd25FlashWriteBuffer(addr + 4, (uint8_t *)retStr, size);
     }
@@ -218,6 +221,7 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
     ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
     ASSERT(ret == size);
     jsonString[size] = 0;
+    printf("jsonString=%s...\r\n", jsonString);
 
     cJSON *rootJson = cJSON_Parse(jsonString);
     SRAM_FREE(jsonString);
@@ -290,7 +294,7 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
         }
         jsonString = cJSON_Print(rootJson);
         RemoveFormatChar(jsonString);
-        size = strnlen_s(jsonString, USER1_MUTABLE_DATA_MAX_SIZE);
+        size = strlen(jsonString);
         Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
         Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
         EXT_FREE(jsonString);
@@ -427,10 +431,10 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         }
         printf("erase done\n");
         jsonString = GetJsonStringFromPublicKey();
-        sha256((struct sha256 *)hash, jsonString, strnlen_s(jsonString, USER1_MUTABLE_DATA_MAX_SIZE));
+        sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
         SetWalletDataHash(accountIndex, hash);
         CLEAR_ARRAY(hash);
-        size = strnlen_s(jsonString, USER1_MUTABLE_DATA_MAX_SIZE);
+        size = strlen(jsonString);
         printf("size = %d........\n", size);
         Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
         Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
@@ -626,6 +630,8 @@ void AccountPublicInfoTest(int argc, char *argv[])
     char *result;
     uint8_t accountIndex;
     uint32_t addr, eraseAddr, size;
+
+    printf("argv[0] = %s\n", argv[0]);
 
     if (strcmp(argv[0], "info") == 0) {
         PrintInfo();
@@ -849,7 +855,7 @@ void SetFirstReceive(const char* chainName, bool isFirst)
     jsonString = cJSON_Print(rootJson);
     cJSON_Delete(rootJson);
     RemoveFormatChar(jsonString);
-    size = strnlen_s(jsonString, USER1_MUTABLE_DATA_MAX_SIZE);
+    size = strlen(jsonString);
     Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
     Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
 }

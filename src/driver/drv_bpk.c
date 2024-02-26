@@ -3,6 +3,7 @@
 #include <string.h>
 #include "define.h"
 #include "drv_bpk.h"
+#include "safe_mem_lib.h"
 
 /* macro */
 
@@ -22,7 +23,7 @@ ErrorStatus ClearBpkValue(uint32_t offset)
 {
     while (BPK_IsReady() == RESET);
     uint32_t data[BPK_KEY_LENGTH] = {0};
-    memset(data, 0x0, sizeof(data));
+    memset_s(data, sizeof(data), 0x0, sizeof(data));
     return SetBpkValue(data, BPK_KEY_LENGTH, offset);
 }
 

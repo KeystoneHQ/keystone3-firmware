@@ -383,7 +383,7 @@ void GetMasterFingerPrint(uint8_t *mfp)
 {
     uint8_t accountIndex = GetCurrentAccountIndex();
     if (accountIndex > 2) {
-        memset(mfp, 0, 4);
+        memset_s(mfp, 4, 0, 4);
     } else {
         if (PassphraseExist(accountIndex)) {
             memcpy(mfp, g_passphraseInfo[accountIndex].mfp, 4);
@@ -852,7 +852,7 @@ void KeyStoreTest(int argc, char *argv[])
         PrintArray("fp rest key", key, 32);
         SetFpResetKey(key);
         for (index = 0; index < 10; index++) {
-            memset(key, index + 1, 32);
+            memset_s(key, 32, index + 1, 32);
             SetFpEncryptedPassword(index, key);
         }
         SetFpStateInfo(byte32);
@@ -873,14 +873,14 @@ void KeyStoreTest(int argc, char *argv[])
         }
         for (index = 0; index < 10; index++) {
             GetFpEncryptedPassword(index, key);
-            snprintf_s(tempStr, "encrypted password %d", index);
+            snprintf_s(tempStr, BUFFER_SIZE_32, "encrypted password %d", index);
             PrintArray(tempStr, key, 32);
         }
         GetFpStateInfo(byte32);
         PrintArray("fp state info", byte32, 32);
     } else if (strcmp(argv[0], "clear_fp_info") == 0) {
         printf("clear fp info test\r\n");
-        memset(key, 0, 32);
+        memset_s(key, 32, 0, 32);
         SetFpCommAesKey(key);
         SetFpResetKey(key);
         for (index = 0; index < 10; index++) {

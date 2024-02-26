@@ -10,7 +10,7 @@
 #include "account_manager.h"
 #include "assert.h"
 #include "cjson/cJSON.h"
-#include "safe_str_lib.h"
+#include "user_memory.h"
 
 static uint8_t GetSolPublickeyIndex(char* rootPath);
 
@@ -322,8 +322,8 @@ static void GuiShowSolTxVoteOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOverv
     PtrT_VecFFI_DisplaySolanaTxOverviewVotesOn votesOn = overviewData->votes_on;
     for (int i = 0; i < votesOn->size; i++) {
         label = lv_label_create(votesOnContainer);
-        char order[12] = {0};
-        sprintf(order, "%d.", i + 1);
+        char order[BUFFER_SIZE_16] = {0};
+        snprintf_s(order, BUFFER_SIZE_16, "%d.", i + 1);
         lv_label_set_text(label, order);
         SetVotesOnOrderLableStyle(label);
         lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
@@ -385,8 +385,8 @@ static void GuiShowSolTxGeneralOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOv
 
         char *program = general->data[i].program;
         lv_obj_t *orderLabel = lv_label_create(container);
-        char order[10] = {0};
-        sprintf(order, "#%d", i + 1);
+        char order[BUFFER_SIZE_16] = {0};
+        snprintf_s(order, BUFFER_SIZE_16, "#%d", i + 1);
         lv_label_set_text(orderLabel, order);
         lv_obj_set_style_text_font(orderLabel, &openSans_20, LV_PART_MAIN);
         lv_obj_set_style_text_color(orderLabel, lv_color_hex(0xF5870A), LV_PART_MAIN);

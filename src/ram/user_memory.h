@@ -28,6 +28,7 @@ void PrintHeapInfo(void);
 #define SRAM_REALLOC(p, size)       realloc(p, size)
 #else
 #include "safe_str_lib.h"
+#include "safe_mem_lib.h"
 #define SRAM_MALLOC(size)           SramMallocTrack(size, __FILE__, __LINE__, __func__)
 #define SRAM_FREE(p)                SramFreeTrack(p, __FILE__, __LINE__, __func__)
 #define SRAM_REALLOC(p, size)       SramReallocTrack(p, size, __FILE__, __LINE__, __func__)

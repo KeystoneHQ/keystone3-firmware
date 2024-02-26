@@ -1,7 +1,6 @@
 #ifndef BTC_ONLY
 #include "rust.h"
 #include "keystore.h"
-#include "user_memory.h"
 #include "gui_chain.h"
 #include "screen_manager.h"
 #include "keystore.h"
@@ -11,6 +10,7 @@
 #include "gui_ada.h"
 #include "gui_hintbox.h"
 #include "gui.h"
+#include "user_memory.h"
 
 static bool g_isMulti = false;
 static struct URParseResult *g_urResult = NULL;
@@ -216,7 +216,7 @@ void *GetAdaInputDetail(uint8_t *row, uint8_t *col, void *param)
                 if (tx->from->data[index].has_path) {
                     strcpy_s(indata[i][j], BUFFER_SIZE_128, tx->from->data[index].path);
                 } else {
-                    memset(indata[i][j], 0, 128);
+                    memset_s(indata[i][j], BUFFER_SIZE_128, 0, BUFFER_SIZE_128);
                 }
             }
         }

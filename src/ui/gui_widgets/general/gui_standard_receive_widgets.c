@@ -615,37 +615,37 @@ static void AddressLongModeCut(char *out, const char *address)
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {
-    char *xPub, hdPath[128];
+    char *xPub, hdPath[BUFFER_SIZE_128];
     SimpleResponse_c_char *result;
 
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TRX:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
-        sprintf(hdPath, "m/44'/195'/0'/0/%u", index);
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/195'/0'/0/%u", index);
         result = tron_get_address(hdPath, xPub);
         break;
     case HOME_WALLET_CARD_SUI:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_SUI_0 + index);
-        sprintf(hdPath, "m/44'/784'/%u'/0'/0'", index);
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/784'/%u'/0'/0'", index);
         result = sui_generate_address(xPub);
         break;
     case HOME_WALLET_CARD_APT:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + index);
-        sprintf(hdPath, "m/44'/637'/%u'/0'/0'", index);
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/637'/%u'/0'/0'", index);
         result = aptos_generate_address(xPub);
         break;
     case HOME_WALLET_CARD_XRP:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
-        sprintf(hdPath, "m/44'/144'/0'/0/%u", index);
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/144'/0'/0/%u", index);
         result = xrp_get_address(hdPath, xPub, "m/44'/144'/0'/");
         break;
 
     default:
         if (IsCosmosChain(g_chainCard)) {
-            char rootPath[128];
+            char rootPath[BUFFER_SIZE_128];
             const CosmosChain_t *chain = GuiGetCosmosChain(g_chainCard);
-            sprintf(rootPath, "M/44'/%u'/0'", chain->coinType);
-            sprintf(hdPath, "%s/0/%u", rootPath, index);
+            snprintf_s(rootPath, BUFFER_SIZE_128, "M/44'/%u'/0'", chain->coinType);
+            snprintf_s(hdPath, BUFFER_SIZE_128, "%s/0/%u", rootPath, index);
             xPub = GetCurrentAccountPublicKey(chain->xpubType);
             result = cosmos_get_address(hdPath, xPub, rootPath, (char*)chain->prefix);
         } else {
@@ -676,10 +676,10 @@ void GuiResetCurrentStandardAddressIndex(uint8_t index)
 
 void GuiResetAllStandardAddressIndex(void)
 {
-    memset(g_selectIndex, 0, sizeof(g_selectIndex));
-    memset(g_suiSelectIndex, 0, sizeof(g_suiSelectIndex));
-    memset(g_aptosSelectIndex, 0, sizeof(g_aptosSelectIndex));
-    memset(g_xrpSelectIndex, 0, sizeof(g_xrpSelectIndex));
+    memset_s(g_selectIndex, sizeof(g_selectIndex), 0, sizeof(g_selectIndex));
+    memset_s(g_suiSelectIndex, sizeof(g_suiSelectIndex), 0, sizeof(g_suiSelectIndex));
+    memset_s(g_aptosSelectIndex, sizeof(g_aptosSelectIndex), 0, sizeof(g_aptosSelectIndex));
+    memset_s(g_xrpSelectIndex, sizeof(g_xrpSelectIndex), 0, sizeof(g_xrpSelectIndex));
 }
 
 static void SetCurrentSelectIndex(uint32_t selectIndex)

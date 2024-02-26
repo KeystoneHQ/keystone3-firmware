@@ -24,14 +24,14 @@ static char g_hdPath[HD_PATH_MAX_LEN];
 
 char *GuiGetXrpPath(uint16_t index)
 {
-    sprintf(g_hdPath, "%s/0/%u", XRP_ROOT_PATH, index);
+    snprintf_s(g_hdPath, HD_PATH_MAX_LEN, "%s/0/%u", XRP_ROOT_PATH, index);
     return g_hdPath;
 }
 
 #ifdef COMPILE_SIMULATOR
 char *GuiGetXrpAddressByIndex(uint16_t index)
 {
-    sprintf(g_xrpAddr, "rHsMGQEkVNJmpGWs8XUBoTBiAAbwxZ%d", index);
+    snprintf_s(g_xrpAddr, XRP_ADD_MAX_LEN, "rHsMGQEkVNJmpGWs8XUBoTBiAAbwxZ%d", index);
     return g_xrpAddr;
 }
 #else

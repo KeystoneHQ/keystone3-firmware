@@ -4,6 +4,7 @@
 #include "eapdu_protocol_parser.h"
 #include "keystore.h"
 #include "user_msg.h"
+#include "user_memory.h"
 #include "eapdu_services/service_resolve_ur.h"
 #include "eapdu_services/service_check_lock.h"
 #include "eapdu_services/service_echo_test.h"
@@ -86,9 +87,9 @@ void SendEApduResponseError(uint8_t cla, CommandType ins, uint16_t requestID, St
 static void free_parser()
 {
     g_totalPackets = 0;
-    memset(g_receivedPackets, 0, sizeof(g_receivedPackets));
-    memset(g_packetLengths, 0, sizeof(g_packetLengths));
-    memset(g_protocolRcvBuffer, 0, sizeof(g_protocolRcvBuffer));
+    memset_s(g_receivedPackets, sizeof(g_receivedPackets), 0, sizeof(g_receivedPackets));
+    memset_s(g_packetLengths, sizeof(g_receivedPackets), 0, sizeof(g_packetLengths));
+    memset_s(g_protocolRcvBuffer, sizeof(g_receivedPackets), 0, sizeof(g_protocolRcvBuffer));
 }
 
 static void EApduRequestHandler(EAPDURequestPayload_t *request)
@@ -165,7 +166,7 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
         g_totalPackets = eapduFrame->p1;
         assert(g_totalPackets <= MAX_PACKETS);
         printf("Total number of packets: %d\n", g_totalPackets);
-        memset(g_receivedPackets, 0, sizeof(g_receivedPackets));
+        memset_s(g_receivedPackets, sizeof(g_receivedPackets), 0, sizeof(g_receivedPackets));
     }
 
     assert(eapduFrame->dataLen <= MAX_PACKETS_LENGTH);

@@ -133,7 +133,7 @@ void ArrayRandom(char *words, char *out, int count)
     return;
 #endif
     char wordList[33][10];
-    memset(out, 0, BUFFER_SIZE_512);
+    memset_s(out, BUFFER_SIZE_512, 0, BUFFER_SIZE_512);
     WordsListSlice(words, wordList, count);
 
     char *pointerList[33];

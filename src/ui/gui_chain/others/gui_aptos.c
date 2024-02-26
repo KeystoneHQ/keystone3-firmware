@@ -2,13 +2,13 @@
 #include "define.h"
 #include "rust.h"
 #include "keystore.h"
-#include "user_memory.h"
 #include "gui_chain.h"
 #include "screen_manager.h"
 #include "keystore.h"
 #include "account_manager.h"
 #include "secret_cache.h"
 #include "assert.h"
+#include "user_memory.h"
 
 static uint8_t GetAptosPublickeyIndex(char* rootPath);
 

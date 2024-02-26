@@ -13,9 +13,6 @@
 #include "gui_tutorial_widgets.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
-#ifndef COMPILE_SIMULATOR
-#include "safe_mem_lib.h"
-#endif
 
 typedef enum {
     CREATE_WALLET_SETPIN = 0,
@@ -115,7 +112,7 @@ static void OpenEmojiKbHandler(lv_event_t *e)
 
 static void GuiCreateNameWalletWidget(lv_obj_t *parent)
 {
-    char tempBuf[16] = {0};
+    char tempBuf[BUFFER_SIZE_16] = {0};
     lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_backup_namewallet_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
@@ -132,7 +129,7 @@ static void GuiCreateNameWalletWidget(lv_obj_t *parent)
     lv_textarea_set_placeholder_text(g_nameWalletKb->ta, "Wallet Name");
     lv_textarea_set_max_length(g_nameWalletKb->ta, 16);
     lv_textarea_set_one_line(g_nameWalletKb->ta, true);
-    sprintf(tempBuf, "%d/16", strnlen_s(GuiNvsBarGetWalletName(), 16));
+    snprintf_s(tempBuf, BUFFER_SIZE_16, "%d/16", strnlen_s(GuiNvsBarGetWalletName(), 16));
     lv_obj_t *progresslabel = GuiCreateNoticeLabel(parent, tempBuf);
     lv_obj_align(progresslabel, LV_ALIGN_TOP_RIGHT, -36, 384 - GUI_MAIN_AREA_OFFSET);
     GuiSetEnterProgressLabel(progresslabel);

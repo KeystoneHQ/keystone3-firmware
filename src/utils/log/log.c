@@ -16,7 +16,6 @@
 #include "gui_api.h"
 #include "gui_views.h"
 #include "version.h"
-#include "safe_str_lib.h"
 
 
 #define LOG_NAME_MAX_LEN            64
@@ -298,7 +297,7 @@ static void WriteLogAsync(LogData_t *pLogData)
     dataLength = LOG_DATA_HEAD_SIZE + pLogData->length * 4;
 
     data = SRAM_MALLOC(dataLength);
-    memset(data, 0, dataLength);
+    memset_s(data, dataLength, 0, dataLength);
     memcpy(data, pLogData, LOG_DATA_HEAD_SIZE);
     memcpy(data + LOG_DATA_HEAD_SIZE, pLogData->pData, pLogData->length * 4);
     PubBufferMsg(LOG_MSG_WRITE, data, dataLength);

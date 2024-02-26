@@ -12,7 +12,6 @@
 #include "math.h"
 #include "stdio.h"
 #include "string.h"
-#include "safe_str_lib.h"
 
 static void decodeEthContractData(void *parseResult);
 static bool GetEthErc20ContractData(void *parseResult);
@@ -761,8 +760,8 @@ static uint8_t GetEthPublickeyIndex(char* rootPath)
 // pase result
 void *GuiGetEthData(void)
 {
-    memset(g_fromEthEnsName, 0, sizeof(g_fromEthEnsName));
-    memset(g_toEthEnsName, 0, sizeof(g_toEthEnsName));
+    memset_s(g_fromEthEnsName, sizeof(g_fromEthEnsName), 0, sizeof(g_fromEthEnsName));
+    memset_s(g_toEthEnsName, sizeof(g_toEthEnsName), 0, sizeof(g_toEthEnsName));
     g_contractDataExist = false;
     g_erc20Name = NULL;
 #ifndef COMPILE_SIMULATOR
@@ -1167,7 +1166,7 @@ void EthContractLearnMore(lv_event_t *e)
 bool GetEthContractFromExternal(char *address, char *selectorId, uint64_t chainId, char *inputData)
 {
     char *contractMethodJson = SRAM_MALLOC(SQL_ABI_BUFF_MAX_SIZE);
-    memset(contractMethodJson, 0, SQL_ABI_BUFF_MAX_SIZE);
+    memset_s(contractMethodJson, SQL_ABI_BUFF_MAX_SIZE, 0, SQL_ABI_BUFF_MAX_SIZE);
     char contractName[64] = {0};
     if (GetDBContract(address, selectorId, chainId, contractMethodJson, contractName)) {
         Response_DisplayContractData *contractData = eth_parse_contract_data_by_method(inputData, contractName, contractMethodJson);

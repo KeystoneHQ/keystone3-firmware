@@ -504,7 +504,7 @@ static void CountDownHandler(lv_timer_t *timer)
 {
     KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)timer->user_data;
 
-    char buf[32] = {0};
+    char buf[64] = {0};
     --(*keyboardWidget->timerCounter);
     if (*keyboardWidget->timerCounter > 0) {
         sprintf(buf, _("unlock_device_error_btn_text_fmt"), *keyboardWidget->timerCounter);

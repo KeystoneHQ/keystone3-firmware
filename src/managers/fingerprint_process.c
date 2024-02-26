@@ -191,7 +191,7 @@ void FpRegRecv(char *indata, uint8_t len)
         MotorCtrl(MOTOR_LEVEL_MIDDLE, MOTOR_SHAKE_SHORT_TIME);
         if (len == 38) {
             printf("save account index = %d\n", GetCurrentAccountIndex());
-            memcpy(g_fpTempAesKey, (uint8_t *)&indata[6], sizeof(g_fpTempAesKey));
+            memcpy_s(g_fpTempAesKey, sizeof(g_fpTempAesKey), (uint8_t *)&indata[6], sizeof(g_fpTempAesKey));
         }
         GuiApiEmitSignal(SIG_FINGER_REGISTER_STEP_SUCCESS, &cnt, sizeof(cnt));
     } else {
@@ -312,7 +312,7 @@ static void FpRecognizeRecv(char *indata, uint8_t len)
         if (len == 38) {
             if (g_fingerRecognizeType == RECOGNIZE_OPEN_SIGN) {
                 if (GetCurrentAccountIndex() != 0xFF) {
-                    memcpy(g_fpTempAesKey, (uint8_t *)&indata[6], sizeof(g_fpTempAesKey));
+                    memcpy_s(g_fpTempAesKey, sizeof(g_fpTempAesKey), (uint8_t *)&indata[6], sizeof(g_fpTempAesKey));
                     FpSaveKeyInfo(false);
                 } else {
                     return;
@@ -418,7 +418,7 @@ static void FpGetVersion(char *indata, uint8_t len)
         g_fpStatusExist = true;
     }
     printf("version:%d.%d.%d.%d\n", indata[0], indata[1], indata[2], indata[3]);
-    memcpy(g_fpVersion, indata, sizeof(g_fpVersion));
+    memcpy_s(g_fpVersion, sizeof(g_fpVersion), indata, sizeof(g_fpVersion));
 }
 
 static void FpGetAesKeyState(char *indata, uint8_t len)
@@ -506,7 +506,7 @@ static void FpUpdateUpdateRandom(char *indata, uint8_t len)
 {
     uint8_t result = indata[0];
     if (result == FP_SUCCESS_CODE) {
-        memcpy(g_fpRandomKey, &indata[1], 16);
+        memcpy_s(g_fpRandomKey, sizeof(g_fpRandomKey), &indata[1], 16);
         FpDelayMsgSend();
     } else {
         printf("update random failed\n");
@@ -801,7 +801,7 @@ void SetFpAesKey(void)
     uint8_t aesKey[16] = {0};
     TrngGet(aesKey, sizeof(aesKey));
     SetFpCommAesKey(aesKey);
-    memcpy(g_communicateAesKey, aesKey, 16);
+    memcpy_s(g_communicateAesKey, sizeof(g_communicateAesKey), aesKey, 16);
 }
 
 void FingerPrintModuleRestart(void)
@@ -929,7 +929,7 @@ void FingerprintRcvMsgHandle(char *recvBuff, uint8_t len)
 
     uint16_t totalDataLen = (((uint16_t)recvBuff[2]) << 8 | recvBuff[1]) + 3;
     uint32_t totalCrc = 0;
-    memcpy(&totalCrc, &recvBuff[totalDataLen - 4], sizeof(totalCrc));
+    memcpy_s(&totalCrc, sizeof(totalCrc), &recvBuff[totalDataLen - 4], sizeof(totalCrc));
     uint32_t checkCrc = crc32_update_fast((const uint8_t *)&recvBuff[0], totalDataLen - 4);
     if (totalCrc != checkCrc) {
         printf("UnPickFingerMsg error:total packet crc error, rcvCrc is 0x%X, check dataCrc is 0x%X\r\n", totalCrc, checkCrc);
@@ -937,7 +937,7 @@ void FingerprintRcvMsgHandle(char *recvBuff, uint8_t len)
     }
 
     FpRecvMsg_t msg = {0};
-    memcpy(&msg, recvBuff, len);
+    memcpy_s(&msg, sizeof(msg), recvBuff, len);
 
     bool isEncrypt = false;
     recvFunc = GetFpDataHandelFunc(msg.data.cmd0 * 256 + msg.data.cmd1, &isEncrypt);
@@ -1044,13 +1044,13 @@ void SendPackFingerMsg(uint16_t cmd, uint8_t *data, uint16_t frameId, uint32_t l
     sendData.data.reserve = 0;
     sendData.data.frameNum = frameId;
     sendData.data.dataLen = len;
-    memcpy(&sendData.data.data[0], data, sendData.data.dataLen);
+    memcpy_s(&sendData.data.data[0], MAX_MSG_DATA_LENGTH, data, sendData.data.dataLen);
 
     if (isEncrypt != NO_ENCRYPTION) {
         uint8_t aesKey[32] = {0};
         osDelay(10);
         UpdateHostRandom();
-        memcpy(sendData.random, GetRandomAesKey(g_hostRandomKey, g_fpRandomKey, g_communicateAesKey), 16);
+        memcpy_s(sendData.random, 16, GetRandomAesKey(g_hostRandomKey, g_fpRandomKey, g_communicateAesKey), 16);
         CLEAR_ARRAY(aesKey);
     }
 
@@ -1064,7 +1064,7 @@ void SendPackFingerMsg(uint16_t cmd, uint8_t *data, uint16_t frameId, uint32_t l
     }
 
     uint32_t totalCrc = crc32_update_fast((const uint8_t *)&sendData.header, sendData.packetLen + 3 - 4);
-    memcpy((uint8_t *)&sendData.data.signature + (len + 10) / 16 * 16 + 16, &totalCrc, 4);
+    memcpy_s((uint8_t *)&sendData.data.signature + (len + 10) / 16 * 16 + 16, 4, &totalCrc, 4);
 
     SendDataToFp((uint8_t *)&sendData, sendData.packetLen + 3);
 }
@@ -1121,13 +1121,13 @@ void __inline FingerprintIsrRecvProcess(uint8_t byte)
         if (rcvByteCount == totalLen) {
             if (g_delayCmd == FINGERPRINT_CMD_LOW_POWER && totalLen == 0x27) {
                 uint8_t passwd = 0;
-                memcpy(g_fpRandomKey, &intrRecvBuffer[15], 16);
+                memcpy_s(g_fpRandomKey, sizeof(g_fpRandomKey), &intrRecvBuffer[15], 16);
                 SendPackFingerMsg(FINGERPRINT_CMD_LOW_POWER, &passwd, 0, 1, AES_KEY_ENCRYPTION);
                 g_delayCmd = 0;
                 FpSendTimerStart(FINGERPRINT_CMD_LOW_POWER);
             } else {
                 xEventGroupSetBitsFromISR(g_fpEventGroup, 0x1, NULL);
-                memcpy(g_intrRecvBuffer, intrRecvBuffer, rcvByteCount);
+                memcpy_s(g_intrRecvBuffer, RCV_MSG_MAX_LEN, intrRecvBuffer, rcvByteCount);
             }
             memset_s(intrRecvBuffer, RCV_MSG_MAX_LEN, 0, RCV_MSG_MAX_LEN);
             rcvByteCount = 0;

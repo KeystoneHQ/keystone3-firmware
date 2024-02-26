@@ -345,7 +345,7 @@ static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t in
     entropyLen = (mnemonicNum == 24) ? 32 : 16;
     // GenerateEntropy(entropy, entropyLen, SecretCacheGetNewPassword());
     hash = SecretCacheGetDiceRollHash();
-    memcpy(entropy, hash, entropyLen);
+    memcpy_s(entropy, sizeof(entropy), hash, entropyLen);
     SecretCacheSetEntropy(entropy, entropyLen);
     bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
     SecretCacheSetMnemonic(mnemonic);
@@ -684,7 +684,7 @@ static int32_t ModelGenerateSlip39EntropyWithDiceRolls(const void *inData, uint3
     threShold = slip39->threShold;
     char *wordsList[memberCnt];
     hash = SecretCacheGetDiceRollHash();
-    memcpy(entropy, hash, entropyLen);
+    memcpy_s(entropy, sizeof(entropy), hash, entropyLen);
     SecretCacheSetEntropy(entropy, entropyLen);
     GetSlip39MnemonicsWords(entropy, ems, 33, memberCnt, threShold, wordsList, &id, &ie);
     SecretCacheSetEms(ems, entropyLen);
@@ -807,7 +807,7 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
         printf("get master secret error\n");
         break;
     }
-    memcpy(emsBak, ems, entropyLen);
+    memcpy_s(emsBak, sizeof(emsBak), ems, entropyLen);
 
     if (slip39->forget) {
         ret = ModelComparePubkey(false, ems, entropyLen, id, ie, &newAccount);
@@ -1406,7 +1406,7 @@ static uint32_t BinarySearchLastNonFFSector(void)
         if (g_stopCalChecksum == true) {
             return SUCCESS_CODE;
         }
-        memcpy(buffer, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
+        memcpy_s(buffer, sizeof(buffer), (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
         if ((i - startIndex) % 200 == 0) {
             percent++;
             GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
@@ -1437,7 +1437,7 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
             return SUCCESS_CODE;
         }
         memset_s(buffer, SECTOR_SIZE, 0, SECTOR_SIZE);
-        memcpy(buffer, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
+        memcpy_s(buffer, sizeof(buffer), (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
         sha256_update(&ctx, buffer, SECTOR_SIZE);
         if (percent != i * 100 / num) {
             percent = i * 100 / num;

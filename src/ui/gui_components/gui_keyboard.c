@@ -798,7 +798,7 @@ void GuiUpdateMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard, char *mnemo
             } else {
                 tail = strchr(find, ' ');
             }
-            memcpy(word, find, tail - find);
+            memcpy_s(word, sizeof(word), find, tail - find);
             word[tail - find] = 0;
             find = tail + 1;
             if (confirm) {
@@ -850,7 +850,7 @@ void GuiConfirmMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard,
             } else {
                 tail = strchr(find, ' ');
             }
-            memcpy(word, find, tail - find);
+            memcpy_s(word, sizeof(word), find, tail - find);
             word[tail - find] = 0;
             find = tail + 1;
             if (k == n) {

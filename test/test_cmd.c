@@ -541,7 +541,7 @@ static void MemoryTestFunc(int argc, char *argv[])
     printf("\r\nstart SRAM to SRAM test:\r\n");
     startTick = osKernelGetTickCount();
     for (i = 0; i < times; i++) {
-        memcpy(sramAddr, sramAddrSource, byteNum);
+        memcpy_s(sramAddr, byteNum, sramAddrSource, byteNum);
     }
     endTick = osKernelGetTickCount();
     printf("used tick: %d ms, %d bytes/s\r\n", endTick - startTick, (uint32_t)(((uint64_t)byteNum * 1000 * times) / (endTick - startTick)));
@@ -550,7 +550,7 @@ static void MemoryTestFunc(int argc, char *argv[])
     tempAddr = (uint8_t *)(0x01010000);
     startTick = osKernelGetTickCount();
     for (i = 0; i < times; i++) {
-        memcpy(sramAddr, tempAddr, byteNum);
+        memcpy_s(sramAddr, byteNum, tempAddr, byteNum);
     }
     endTick = osKernelGetTickCount();
     printf("used tick: %d ms, %d bytes/s\r\n", endTick - startTick, (uint32_t)(((uint64_t)byteNum * 1000 * times) / (endTick - startTick)));
@@ -559,7 +559,7 @@ static void MemoryTestFunc(int argc, char *argv[])
     tempAddr = (uint8_t *)(0x01010000);
     startTick = osKernelGetTickCount();
     for (i = 0; i < times; i++) {
-        memcpy(psramAddr, tempAddr, byteNum);
+        memcpy_s(psramAddr, byteNum, tempAddr, byteNum);
     }
     endTick = osKernelGetTickCount();
     printf("used tick: %d ms, %d bytes/s\r\n", endTick - startTick, (uint32_t)(((uint64_t)byteNum * 1000 * times) / (endTick - startTick)));
@@ -567,7 +567,7 @@ static void MemoryTestFunc(int argc, char *argv[])
     printf("\r\nstart SRAM to PSRAM test:\r\n");
     startTick = osKernelGetTickCount();
     for (i = 0; i < times; i++) {
-        memcpy(psramAddr, sramAddrSource, byteNum);
+        memcpy_s(psramAddr, byteNum, sramAddrSource, byteNum);
     }
     endTick = osKernelGetTickCount();
     printf("used tick: %d ms, %d bytes/s\r\n", endTick - startTick, (uint32_t)(((uint64_t)byteNum * 1000 * times) / (endTick - startTick)));
@@ -575,7 +575,7 @@ static void MemoryTestFunc(int argc, char *argv[])
     printf("\r\nstart PSRAM to SRAM test:\r\n");
     startTick = osKernelGetTickCount();
     for (i = 0; i < times; i++) {
-        memcpy(sramAddr, psramAddrSource, byteNum);
+        memcpy_s(sramAddr, byteNum, psramAddrSource, byteNum);
     }
     endTick = osKernelGetTickCount();
     printf("used tick: %d ms, %d bytes/s\r\n", endTick - startTick, (uint32_t)(((uint64_t)byteNum * 1000 * times) / (endTick - startTick)));
@@ -583,7 +583,7 @@ static void MemoryTestFunc(int argc, char *argv[])
     printf("\r\nstart PSRAM to PSRAM test:\r\n");
     startTick = osKernelGetTickCount();
     for (i = 0; i < times; i++) {
-        memcpy(psramAddr, psramAddrSource, byteNum);
+        memcpy_s(psramAddr, byteNum, psramAddrSource, byteNum);
     }
     endTick = osKernelGetTickCount();
     printf("used tick: %d ms, %d bytes/s\r\n", endTick - startTick, (uint32_t)(((uint64_t)byteNum * 1000 * times) / (endTick - startTick)));
@@ -603,7 +603,7 @@ static void PsramTestFunc(int argc, char *argv[])
     printf("addr=0x%08X\r\n", (uint32_t)mem);
     memSram = SRAM_MALLOC(byteNum);
     TrngGet(memSram, byteNum);
-    memcpy(mem, memSram, byteNum);
+    memcpy_s(mem, byteNum, memSram, byteNum);
     PrintArray("mem", mem, byteNum);
     for (i = 0; i < byteNum; i++) {
         if (mem[i] != memSram[i]) {

@@ -298,8 +298,8 @@ static void WriteLogAsync(LogData_t *pLogData)
 
     data = SRAM_MALLOC(dataLength);
     memset_s(data, dataLength, 0, dataLength);
-    memcpy(data, pLogData, LOG_DATA_HEAD_SIZE);
-    memcpy(data + LOG_DATA_HEAD_SIZE, pLogData->pData, pLogData->length * 4);
+    memcpy_s(data, LOG_DATA_HEAD_SIZE, pLogData, LOG_DATA_HEAD_SIZE);
+    memcpy_s(data + LOG_DATA_HEAD_SIZE, dataLength - LOG_DATA_HEAD_SIZE, pLogData->pData, pLogData->length * 4);
     PubBufferMsg(LOG_MSG_WRITE, data, dataLength);
     SRAM_FREE(data);
 }
@@ -318,8 +318,8 @@ static void WriteLogSync(LogData_t *pLogData)
     dataLength = LOG_DATA_HEAD_SIZE + pLogData->length * 4;
 
     data = SRAM_MALLOC(dataLength);
-    memcpy(data, pLogData, LOG_DATA_HEAD_SIZE);
-    memcpy(data + LOG_DATA_HEAD_SIZE, pLogData->pData, pLogData->length * 4);
+    memcpy_s(data, LOG_DATA_HEAD_SIZE, pLogData, LOG_DATA_HEAD_SIZE);
+    memcpy_s(data + LOG_DATA_HEAD_SIZE, dataLength - LOG_DATA_HEAD_SIZE, pLogData->pData, pLogData->length * 4);
     WriteLogDataToFlash(data, dataLength);
     SRAM_FREE(data);
 }
@@ -417,7 +417,7 @@ static void CheckLogData(void)
             //return;
         }
         readAddr = GetNextSectorAddr(readAddr);
-        memcpy(&logData, &originalData[readAddr - SPI_FLASH_ADDR_LOG], LOG_DATA_HEAD_SIZE);
+        memcpy_s(&logData, LOG_DATA_HEAD_SIZE, &originalData[readAddr - SPI_FLASH_ADDR_LOG], LOG_DATA_HEAD_SIZE);
         if (logData.event != 0xFFFF) {
             break;
         }
@@ -425,8 +425,7 @@ static void CheckLogData(void)
     printf("the earliest log addr=0x%08X\r\n", readAddr);
     if (needErase == false) {
         while (1) {
-            memcpy(&logData, &originalData[readAddr - SPI_FLASH_ADDR_LOG], LOG_DATA_HEAD_SIZE);
-            //printf("readAddr=0x%08X,event=0x%X,timeStamp=%d\n", readAddr, logData.event, logData.timeStamp);
+            memcpy_s(&logData, LOG_DATA_HEAD_SIZE, &originalData[readAddr - SPI_FLASH_ADDR_LOG], LOG_DATA_HEAD_SIZE);
             if (readAddr >= SPI_FLASH_ADDR_LOG + SPI_FLASH_SIZE_LOG) {
                 printf("log data overlap,addr=0x%08X\n", readAddr);
                 needErase = true;

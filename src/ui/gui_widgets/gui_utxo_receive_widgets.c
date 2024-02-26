@@ -707,9 +707,9 @@ static void Highlight(char *address, uint8_t highlightStart, uint8_t highlightEn
     char highlight[addressLength];
     char afterHighlight[addressLength];
 
-    memcpy(beforeHighlight, address, highlightStart);
+    memcpy_s(beforeHighlight, sizeof(beforeHighlight), address, highlightStart);
     beforeHighlight[highlightStart] = '\0';
-    memcpy(highlight, &address[highlightStart], highlightEnd - highlightStart);
+    memcpy_s(highlight, sizeof(highlight), &address[highlightStart], highlightEnd - highlightStart);
     highlight[highlightEnd - highlightStart] = '\0';
     strcpy_s(afterHighlight, addressLength, &address[highlightEnd]);
 

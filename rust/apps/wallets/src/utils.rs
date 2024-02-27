@@ -10,7 +10,7 @@ use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts
 
 pub const DEVICE_TYPE: &str = "keystone 3";
 
-fn get_origin(
+pub fn get_origin(
     master_fingerprint: &[u8; 4],
     depth: usize,
     path: DerivationPath,

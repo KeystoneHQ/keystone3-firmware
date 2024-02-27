@@ -2,13 +2,11 @@
 
 extern crate alloc;
 
-use alloc::string::String;
+use alloc::collections::BTreeMap;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use alloc::{format, vec};
 use app_utils::normalize_path;
-use app_wallets::DEVICE_TYPE;
-use app_wallets::DEVICE_VERSION;
 use common_rust_c::errors::RustCError;
 use common_rust_c::extract_array;
 use common_rust_c::ffi::CSliceFFI;
@@ -137,6 +135,56 @@ pub extern "C" fn get_connect_sparrow_wallet_ur(
         } else {
             UREncodeResult::from(URError::UrEncodeError(format!("getting key error"))).c_ptr()
         };
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn get_connect_unisat_wallet_ur(
+    master_fingerprint: *mut u8,
+    length: u32,
+    public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
+) -> *mut UREncodeResult {
+    if length != 4 {
+        return UREncodeResult::from(URError::UrEncodeError(format!(
+            "master fingerprint length must be 4, current is {}",
+            length
+        )))
+        .c_ptr();
+    }
+    unsafe {
+        let mfp = match <&[u8; 4]>::try_from(slice::from_raw_parts(master_fingerprint, 4)) {
+            Ok(mfp) => mfp,
+            Err(e) => {
+                return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr();
+            }
+        };
+        let keys = recover_c_array(public_keys);
+        let mut keys_map = BTreeMap::new();
+        for k in keys {
+            let pubkey = recover_c_char(k.xpub);
+            let path = recover_c_char(k.path);
+            match DerivationPath::from_str(path.to_lowercase().as_str()) {
+                Ok(path) => {
+                    keys_map.insert(path, pubkey);
+                }
+                Err(_e) => {
+                    return UREncodeResult::from(RustCError::InvalidHDPath).c_ptr();
+                }
+            };
+        }
+        let result = app_wallets::btc::generate_sync_ur(mfp, keys_map);
+        match result.map(|v| v.try_into()) {
+            Ok(v) => match v {
+                Ok(data) => UREncodeResult::encode(
+                    data,
+                    CryptoMultiAccounts::get_registry_type().get_type(),
+                    FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                )
+                .c_ptr(),
+                Err(e) => UREncodeResult::from(e).c_ptr(),
+            },
+            Err(e) => UREncodeResult::from(e).c_ptr(),
+        }
     }
 }
 

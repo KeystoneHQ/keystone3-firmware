@@ -39,6 +39,7 @@ WalletListItem_t g_walletListArray[] = {
 #endif
     {WALLET_LIST_BLUE, &walletListBlue, true},
     {WALLET_LIST_SPARROW, &walletListSparrow, true},
+    {WALLET_LIST_UNISAT, &walletListSparrow, true},
 #ifndef BTC_ONLY
     {WALLET_LIST_RABBY, &walletListRabby, true},
     {WALLET_LIST_ETERNL, &walletListEternl, true},
@@ -989,6 +990,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         break;
     case WALLET_LIST_SPARROW:
         func = GuiGetSparrowWalletBtcData;
+        AddBlueWalletCoins();
+        break;
+    case WALLET_LIST_UNISAT:
+        func = GuiGetUniSatWalletData;
         AddBlueWalletCoins();
         break;
 #ifndef BTC_ONLY

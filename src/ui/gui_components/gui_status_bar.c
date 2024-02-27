@@ -113,6 +113,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_SAFE, "Connect Safe", &walletSafe},
 #endif
     {WALLET_LIST_SPARROW, "Connect Sparrow", &walletSparrow},
+    {WALLET_LIST_UNISAT, "Connect UniSat", &walletSparrow},
 #ifndef BTC_ONLY
     {WALLET_LIST_IMTOKEN, "Connect imToken", &walletImToken},
     {WALLET_LIST_BLOCK_WALLET, "Connect Block Wallet", &walletBlockWallet},

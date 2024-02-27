@@ -16,6 +16,7 @@ extern crate std;
 
 pub mod aptos;
 pub mod blue_wallet;
+pub mod btc;
 mod common;
 pub mod companion_app;
 pub mod keplr;

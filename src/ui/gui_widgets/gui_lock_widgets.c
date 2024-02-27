@@ -544,7 +544,7 @@ static void HardwareInitAfterWake(void)
     AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
 #if (USB_POP_WINDOW_ENABLE == 1)
     if (GetUSBSwitch() == true && GetUsbDetectState()) {
-        OpenMsgBox(&g_guiMsgBoxUsbConnection);
+        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
     }
 #endif
 }

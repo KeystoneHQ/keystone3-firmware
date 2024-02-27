@@ -28,6 +28,7 @@
 #include "screen_manager.h"
 #include "usb_task.h"
 #include "gui_setup_widgets.h"
+#include "device_setting.h"
 
 #define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                //80 seconds
 #define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                (60 * 8)            //8 minutes
@@ -84,6 +85,10 @@ uint32_t EnterLowPower(void)
     TouchClose();
     UserDelay(10);
     SetLvglHandlerAndSnapShot(false);
+    CloseUsb();
+    while (GetUsbState()) {
+        UserDelay(1);
+    }
     DisableAllHardware();
     ExtInterruptInit();
     SetRtcWakeUp(sleepSecond);
@@ -127,10 +132,11 @@ void RecoverFromLowPower(void)
     SetLvglHandlerAndSnapShot(true);
     g_lowPowerState = LOW_POWER_STATE_WORKING;
     PubValueMsg(BACKGROUND_MSG_SD_CARD_CHANGE, 0);
-    SetUsbState(false);
     LcdBacklightOn();
 #if (USB_POP_WINDOW_ENABLE == 0)
-    UsbInit();
+    if (GetUSBSwitch()) {
+        OpenUsb();
+    }
 #else
     AsyncExecute(GetWalletAmountAfterWakeup, NULL, 0);
 #endif
@@ -162,9 +168,6 @@ void RecoverFromDeepSleep(void)
     SYSCTRL->ANA_CTRL &= ~BIT(7);
     /************************* for MSR *************************/
     SYSCTRL->MSR_CR1 &= ~BIT(27);
-    /************************** for usb ************************/
-    *(uint32_t *)(0x40000C00 + 0x0000) = 0x0;
-    *(uint32_t *)(0x40000C00 + 0x0060) = 0x81;
 }
 
 void EnterCpuSleep(void)

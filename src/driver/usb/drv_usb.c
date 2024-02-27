@@ -47,7 +47,6 @@ void UsbDeInit(void)
     if (g_usbInit == true) {
         USBD_DeInit(&g_usbDev);
         g_usbInit = false;
-        ConnectUsbMutexRestrict();
     }
 }
 

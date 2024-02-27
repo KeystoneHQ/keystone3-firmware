@@ -143,12 +143,12 @@ static MultiPathCoinReceiveWidgets_t g_multiPathCoinReceiveWidgets;
 static EthereumReceiveTile g_multiPathCoinReceiveTileNow;
 
 static const PathItem_t g_ethPaths[] = {
-    {"BIP44 Standard",     "",     "m/44'/60'/0'"  },
+    {"BIP44 Standard",      "",     "m/44'/60'/0'"  },
     {"Ledger Live",         "",     "m/44'/60'"     },
     {"Ledger Legacy",       "",     "m/44'/60'/0'"  },
 };
 static const PathItem_t g_solPaths[] = {
-    {"Account-based Path",                "",     "m/44'/501'"  },
+    {"Account-based Path",      "",     "m/44'/501'"  },
     {"Single Account Path",     "",     "m/44'/501'"  },
     {"Sub-account Path",        "",     "m/44'/501'"  },
 };
@@ -315,7 +315,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, TutorialHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgTutorial);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, "Tutorial", &buttonFont);
+    label = GuiCreateLabelWithFont(btn, _("Tutorial"), &buttonFont);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 }
 
@@ -379,13 +379,13 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         g_multiPathCoinReceiveWidgets.attentionCont = GuiCreateHintBox(parent, 480, 386, false);
         tempObj = GuiCreateImg(g_multiPathCoinReceiveWidgets.attentionCont, &imgInformation);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
-        tempObj = GuiCreateLittleTitleLabel(g_multiPathCoinReceiveWidgets.attentionCont, "Attention");
+        tempObj = GuiCreateLittleTitleLabel(g_multiPathCoinReceiveWidgets.attentionCont, _("receive_btc_alert_title"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
         char hint[256];
         GetHint(hint);
         tempObj = GuiCreateLabelWithFont(g_multiPathCoinReceiveWidgets.attentionCont, hint, g_defIllustrateFont);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
-        tempObj = GuiCreateBtn(g_multiPathCoinReceiveWidgets.attentionCont, "Got It");
+        tempObj = GuiCreateBtn(g_multiPathCoinReceiveWidgets.attentionCont, _("receive_btc_alert_button"));
         lv_obj_set_size(tempObj, 122, 66);
         lv_obj_set_style_radius(tempObj, 24, LV_PART_MAIN);
         lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
@@ -564,7 +564,13 @@ static char* GetChangePathItemTitle(uint32_t i)
     case HOME_WALLET_CARD_ETH:
         return (char *)g_ethPaths[i].title;
     case HOME_WALLET_CARD_SOL:
-        return (char *)g_solPaths[i].title;
+        if (i == 0) {
+            return _("receive_sol_more_t_base_path");
+        } else if (i == 1) {
+            return _("receive_sol_more_t_single_path");
+        } else if (i == 2) {
+            return _("receive_sol_more_t_sub_path");
+        }
     default:
         break;
     }
@@ -722,7 +728,7 @@ static void RefreshQrCode(void)
         lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strlen(addressDataItem.address));
     }
     lv_label_set_text(g_multiPathCoinReceiveWidgets.addressLabel, addressDataItem.address);
-    lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.addressCountLabel, "Account-%u", (addressDataItem.index + 1));
+    lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.addressCountLabel, "%s-%u", _("account_head"), (addressDataItem.index + 1));
 }
 
 static void RefreshSwitchAccount(void)
@@ -733,7 +739,7 @@ static void RefreshSwitchAccount(void)
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetAddress(index, &addressDataItem);
-        lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "Account-%u", (addressDataItem.index + 1));
+        lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("account_head"), (addressDataItem.index + 1));
         AddressLongModeCut(string, addressDataItem.address);
         lv_label_set_text(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {

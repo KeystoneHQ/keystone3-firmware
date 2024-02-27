@@ -112,6 +112,7 @@ void GuiWebAuthResultCreateAuthCode(lv_obj_t *parent, char *code, int xOffset)
 
 void GuiWebAuthResultRenderAuthCode(lv_obj_t *parent)
 {
+    printf("%s %d..\n", __func__, __LINE__);
     if (g_authCode != NULL && strlen(g_authCode) >= 8) {
         char c1[2] = {g_authCode[0], '\0'};
         char c2[2] = {g_authCode[1], '\0'};
@@ -180,29 +181,23 @@ void GuiWebAuthResultFailedWidget(lv_obj_t *parent)
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 36);
 
     label = GuiCreateLittleTitleLabel(parent, _("verification_code_failed_title"));
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 140);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 8);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 
     label = GuiCreateIllustrateLabel(parent, _("verification_code_failed_desc"));
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 232);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 8);
     lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 
-    char mail[64] = {0};
-    sprintf(mail, "#1BE0C6 %s#", _("verification_code_failed_link"));
+    label = GuiCreateIllustrateLabel(parent, _("verification_code_failed_link"));
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 8);
+    lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);
 
-    label = GuiCreateIllustrateLabel(parent, mail);
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 420);
-    lv_label_set_recolor(label, true);
-
-    char erase[64] = {0};
-    sprintf(erase, "#F55831 %s#", _("wipe_device"));
-
-    label = GuiCreateTextLabel(parent, erase);
+    label = GuiCreateTextLabel(parent, _("wipe_device"));
+    lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -64);
     lv_obj_add_flag(label, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(label, WebAuthWipeDeviceHandler, LV_EVENT_CLICKED, NULL);
-    lv_label_set_recolor(label, true);
 }
 
 void GuiWebAuthResultAreaInit()

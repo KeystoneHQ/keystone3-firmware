@@ -87,6 +87,7 @@ void *GuiCreateAnimView(lv_obj_t *parent, uint16_t animHeight);
 void *GuiCreateArc(lv_obj_t *parent);
 void *GuiCreateSwitch(lv_obj_t *parent);
 void *GuiCreateBtn(lv_obj_t *parent, const char *text);
+void *GuiCreateAdaptButton(lv_obj_t *parent, const char *text);
 void GuiAlignToPrevObj(lv_obj_t *obj, lv_align_t align, int16_t x, int16_t y);
 void GuiAddObjFlag(void *obj, lv_obj_flag_t flag);
 void *GuiCreateSpacer(void *parent, uint16_t height);

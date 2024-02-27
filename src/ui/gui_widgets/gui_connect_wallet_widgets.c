@@ -631,7 +631,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 
     lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 482);
     lv_obj_add_flag(qrCont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_align(qrCont, LV_ALIGN_TOP_MID, 0, 62);
+    lv_obj_align_to(qrCont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 6);
     lv_obj_set_style_bg_color(qrCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_radius(qrCont, 24, LV_PART_MAIN);
 
@@ -642,9 +642,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_t *qrcode = GuiCreateContainerWithParent(qrBgCont, 294, 294);
     lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 21);
 
-    // lv_obj_t *qrcode = lv_qrcode_create(qrBgCont, 294, BLACK_COLOR, WHITE_COLOR);
-    // lv_qrcode_update(qrcode, "", 0);
-    lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 21);
+        lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 21);
     g_connectWalletTileView.qrCode = qrcode;
 
     g_bottomCont = GuiCreateContainerWithParent(qrCont, 408, 104);
@@ -829,7 +827,7 @@ static void AddXrpToolkitAddress(void)
     lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
 
     char name[20] = {0};
-    sprintf(name, "Account-%d", g_xrpAddressIndex[GetCurrentAccountIndex()] + 1);
+    sprintf(name, "%s-%d", _("account_head"), g_xrpAddressIndex[GetCurrentAccountIndex()] + 1);
     lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 
@@ -1249,7 +1247,13 @@ static const char *GetChangeDerivationAccountType(int i)
 {
     switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
-        return g_solChangeDerivationList[i].accountType;
+        if (i == 0) {
+            return _("receive_sol_more_t_base_path");
+        } else if (i == 1) {
+            return _("receive_sol_more_t_single_path");
+        } else if (i == 2) {
+            return _("receive_sol_more_t_sub_path");
+        }
     default:
         return g_changeDerivationList[i].accountType;
     }
@@ -1364,7 +1368,7 @@ static void OpenDerivationPath()
         lv_obj_t *path = GuiCreateIllustrateLabel(cont, GetChangeDerivationPath(i));
         lv_label_set_recolor(path, true);
         lv_obj_t *checkBox = GuiCreateSingleCheckBox(cont, _(""));
-        lv_obj_set_size(checkBox, 36, 36);
+        lv_obj_set_size(checkBox, 45, 45);
         g_derivationCheck[i] = checkBox;
         if (i == GetCurrentSelectedIndex()) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);

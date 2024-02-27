@@ -173,7 +173,8 @@ void GuiModelStopCalculateCheckSum(void)
 
 void GuiModelCalculateWebAuthCode(void *webAuthData)
 {
-    AsyncExecuteWithPtr(ModelCalculateWebAuthCode, webAuthData);
+    // AsyncExecuteWithPtr(ModelCalculateWebAuthCode, webAuthData);
+    AsyncExecute(ModelCalculateWebAuthCode, webAuthData, 0);
 }
 
 void GuiModelSlip39ForgetPassword(Slip39Data_t slip39)
@@ -1055,9 +1056,11 @@ static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
     uint8_t entropyLen;
     int32_t ret;
     uint8_t *accountIndex = (uint8_t *)inData;
+    printf("%s.......%d........\n", __func__, __LINE__);
 
     // GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_FAIL, &ret, sizeof(ret));
-    GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_PASS, &ret, sizeof(ret));
+    char *authCode = "12345Yyq";
+    GuiEmitSignal(SIG_WEB_AUTH_CODE_SUCCESS, authCode, strlen(authCode));
 #endif
     SetLockScreen(enable);
     return SUCCESS_CODE;

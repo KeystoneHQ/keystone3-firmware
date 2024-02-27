@@ -434,7 +434,7 @@ void *GuiCreateEmojiKeyBoard(lv_obj_t *parent, lv_obj_t *icon)
     g_walletIcon = icon;
     lv_obj_t *hintbox = GuiCreateHintBox(parent, 480, 534, true);
     lv_obj_add_event_cb(lv_obj_get_child(hintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
-    lv_obj_t *label = GuiCreateNoticeLabel(hintbox, "Pick an icon for your wallet");
+    lv_obj_t *label = GuiCreateNoticeLabel(hintbox, _("single_backup_namewallet_previntput_2"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 296);
 
     lv_obj_t *img = GuiCreateImg(hintbox, &imgClose);

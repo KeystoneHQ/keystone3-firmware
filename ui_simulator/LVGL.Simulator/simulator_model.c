@@ -434,7 +434,7 @@ bool GetPassphraseQuickAccess(void)
 
 bool PassphraseExist(uint8_t accountIndex)
 {
-    return true;
+    return false;
 }
 
 uint8_t GetFingerSignFlag(void)

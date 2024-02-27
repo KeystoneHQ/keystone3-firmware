@@ -175,16 +175,22 @@ void *GuiCreateResultHintbox(lv_obj_t *parent, uint16_t h, const void *src, cons
     return cont;
 }
 
-void *GuiCreateGeneralHintBox(lv_obj_t *parent, uint16_t h, const void *src, const char *titleText,
+void *GuiCreateGeneralHintBox(lv_obj_t *parent, const void *src, const char *titleText,
                               const char *desc1Text, const char *desc2Text, const char *leftBtnText, lv_color_t leftColor,
                               const char *rightBtnText, lv_color_t rightColor)
 {
-    lv_obj_t *img, *title, *desc1, *desc2, *leftBtn, *rightBtn;
-    lv_obj_t *cont = GuiCreateHintBox(lv_scr_act(), 480, h, false);
-    desc2 = GuiCreateIllustrateLabel(cont, desc2Text);
-    lv_obj_align(desc2, LV_ALIGN_BOTTOM_LEFT, 36, -130);
+    lv_obj_t *img = NULL, *title = NULL, *desc1 = NULL, *desc2 = NULL, *leftBtn = NULL, *rightBtn = NULL;
+    lv_obj_t *cont = GuiCreateHintBox(lv_scr_act(), 480, 800, false);
+    if (desc2Text != NULL) {
+        desc2 = GuiCreateIllustrateLabel(cont, desc2Text);
+        lv_obj_align(desc2, LV_ALIGN_BOTTOM_LEFT, 36, -130);
+    }
     desc1 = GuiCreateIllustrateLabel(cont, desc1Text);
-    lv_obj_align_to(desc1, desc2, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
+    if (desc2 == NULL) {
+        lv_obj_align(desc1, LV_ALIGN_BOTTOM_LEFT, 36, -130);
+    } else {    
+        lv_obj_align_to(desc1, desc2, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
+    }
     title = GuiCreateLittleTitleLabel(cont, titleText);
     lv_obj_align_to(title, desc1, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
     img = GuiCreateImg(cont, src);

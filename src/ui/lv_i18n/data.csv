@@ -14,6 +14,7 @@ Verify Your Device,verify_title,Verify Your Device,Проверка устрой
 ,verify_cont3,Enter the code on the website to check for any potential tampering with your device.,"Введите код на веб-сайте, чтобы завершить проверку устройства на подлинность.",웹 사이트에 코드를 입력하여 장치의 위 변조 여부를 확인합니다.,在“设备验证”页面上输入验证码，检查您的设备是否被篡改。,,
 ,verify_scan_qr_code,Scan QR Code,Сканировать QR-код,QR코드 스캔,扫描二维码,,
 ,verify_modal_title,Verifying,Идет проверка,확인중,验证中...,,
+,calculat_modal_title,Calculating,Вычисление,확인중,计算中...,,
 ,verify_modal_desc,Calculating Auth Code...,Вычисление кода авторизации...,검증 코드 계산 중...,获取验证码...,,
 ,verification_code_title,Verification Code,Код проверки,검증 코드,验证码,,
 ,verification_failed,Failed,Ошибка,실패,验证失败,,
@@ -21,8 +22,7 @@ Verify Your Device,verify_title,Verify Your Device,Проверка устрой
 ,verification_code_desc,Enter this code on Keystone's official website to verify your device's security.,"Введите этот код на официальном сайте Keystone, чтобы проверить подлинность устройства.",키스톤 공식 웹사이트에 이 코드를 입력하면 장치의 보안을 확인할 수 있습니다.,在“设备验证”页面上输入验证码，检查您的设备是否安全。,,
 ,verification_code_failed_title,Unauthorized breach attempt detected!,Осторожно! Ваше устройство скомпрометировано!,무단 침입 시도가 탐지되었습니다!,未经授权的违规尝试检测到！,,
 ,verification_code_failed_desc,"Your device may have been compromised, posing a risk to your sensitive data and digital assets.
-For your safety, we recommend erasing all personal data and contacting Keystone Support team immediately for assistance.","Ваше устройство могло быть скомпрометировано, что представляет угрозу для ваших конфиденциальных данных и цифровых активов.
-В целях безопасности мы рекомендуем удалить все личные данные и немедленно обратиться в службу поддержки Keystone за помощью.","장치가 손상되어 민감한 데이터와 디지털 자산에 위험이 발생했을 수 있습니다.
+For your safety, we recommend erasing all personal data and contacting Keystone Support team immediately for assistance.","Ваше устройство могло быть скомпрометировано, что представляет угрозу для ваших конфиденциальных данных и цифровых активов.В целях безопасности мы рекомендуем удалить все личные данные и немедленно обратиться в службу поддержки Keystone за помощью.","장치가 손상되어 민감한 데이터와 디지털 자산에 위험이 발생했을 수 있습니다.
  귀하의 안전을 위해 모든 개인 데이터를 삭제하고 즉시 키스톤 지원팀에 연락하여 지원을 받을 것을 권장합니다.","您的设备存在潜在篡改可能，这将会对您的隐私数据和数字资产造成威胁。
 为了您的资产安全，我们建议您删除所有个人数据，并立即与Keystone支持团队联系以寻求帮助。",,
 ,verification_code_failed_link,support@keyst.one,support@keyst.one,support@keyst.one,support@keyst.one,,
@@ -261,6 +261,7 @@ device setting,device_setting_mid_btn,Device Settings,Настройки уст�
 ,fingerprint_nth,Finger %d,Палец %d,손가락 %d,指纹 ％d,,
 ,fingerprint_add_btn,+ Add Fingerprint,+ Добавить отпечаток,#ERROR!,+添加指纹,,
 ,fingerprint_up_to_3,You can add up to 3 fingerprints,Можно добавить 3 отпечатка,지문을 3개까지 추가할 수 있습니다,您最多可以添加 3 个指纹,,
+,fingerprint_remove_confirm,Remove,Удалить,지문,删除,,
 ,fingerprint_remove,Remove Fingerprint,Удалить отпечаток,지문 제거,删除指纹,,
 ,fingerprint_nth_remove_title,Remove Fingerprint?,Удалить отпечаток? ,지문 제거?,删除指纹？,,
 ,fingerprint_add_password,Now we need you to enter your passcode to encrypt and store the fingerprint.,Теперь нужно ввести код-пароль для шифрования и хранения отпечатка пальца.,,请输入设备密码来加密存储您的指纹。,,
@@ -294,8 +295,7 @@ device setting,device_setting_mid_btn,Device Settings,Настройки уст�
 ,passphrase_learn_more_qr_link,https://keyst.one/t/3rd/passphrase,https://keyst.one/t/3rd/passphrase,https://keyst.one/t/3rd/passphrase,https://keyst.one/t/3rd/passphrase,,
 ,passphrase_add_password,Now we need you to enter your passcode to setup passphrase wallet.,"Теперь нужно ввести код-пароль, чтобы настроить кошелек с кодовой фразой.",,现在，请输入设备密码来设置密语钱包。,,
 ,seed_check_mid_btn,Seed Phrase Check,Проверка сид фразы,시드 프레이즈 체크,,,
-,seed_check_passphrase_notice,"You are presently using a passphrase-protected wallet. Prior to proceeding with the seed phrase verification process, please restart your device without entering the passphrase.","В настоящее время вы используете кошелек, защищенный паролем. Перед началом процесса проверки семенной фразы, пожалуйста, перезагрузите устройство без ввода ключевой фразы.
-",,,,
+,seed_check_passphrase_notice,"You are presently using a passphrase-protected wallet. Prior to proceeding with the seed phrase verification process, please restart your device without entering the passphrase.","В настоящее время вы используете кошелек, защищенный паролем. Перед началом процесса проверки семенной фразы, пожалуйста, перезагрузите устройство без ввода ключевой фразы.",,,,
 ,seed_check_passphrase_title,Disable Passphrase Wallet,Отключите кошелек с ключевой фразой,,助记词检查,,
 ,seed_check_single_phrase,Standard Seed Phrase,Стандартная фраза,표준 시드 구문,标准助记词,,
 ,seed_check_share_phrase,Shamir Backup,Фраза Шамира,샤미르 백업,分片助记词,,
@@ -373,9 +373,9 @@ Receive,receive_btc_alert_title,Attention,Внимание,주목,注意,,
 1. Native SegWit is the most efficient and secure Bitcoin address format. It provides cost savings and improved security compared to other traditional address formats, typically starting with ""bc1""
 2. Legacy format is one of the earliest versions of Bitcoin, typically starting with ""1""
 3. Nested SegWit is a solution designed to facilitate the transition to Native SegWit in a smooth manner, typically starting with ""3""","Bitcoin (BTC) поддерживает три формата адресов:
-1. Native SegWit ?это наиболее эффективный и безопасный формат, который уменьшает комиссии в сети в отличие от других адресов. Адреса этого формата начинаются с символов \""bc1\"". 
-2. Устаревший формат ?одна из самых ранних версий адресов Bitcoin, обычно начинающаяся с \""1\"".
-3. Nested SegWit ?это решение, предназначенное для плавного перехода на Native SegWit, обычно начинается с \""3\"".""","비트코인(BTC)은 자금을 받기 위해 세 가지 주소 형식을 사용합니다:
+1. Native SegWit ?это наиболее эффективный и безопасный формат, который уменьшает комиссии в сети в отличие от других адресов. Адреса этого формата начинаются с символов ""bc1"". 
+2. Устаревший формат ?одна из самых ранних версий адресов Bitcoin, обычно начинающаяся с ""1\"".
+3. Nested SegWit ?это решение, предназначенное для плавного перехода на Native SegWit, обычно начинается с ""3\"".""","비트코인(BTC)은 자금을 받기 위해 세 가지 주소 형식을 사용합니다:
  1. 네이티브 세그윗(Native SegWit)은 가장 효율적이고 안전한 비트코인 주소 포맷이다. 일반적으로 ""bc1""로 시작하는 다른 전통적인 주소 포맷에 비해 비용 절감 및 향상된 보안을 제공한다
  2. 레거시 형식은 일반적으로 ""1""로 시작하는 비트코인의 초기 버전 중 하나이다
  3. Nested SegWit은 Native SegWit으로 원활하게 전환할 수 있도록 설계된 솔루션으로, 일반적으로 ""3""으로 시작한다","比特币（BTC）的三种地址格式：
@@ -458,6 +458,9 @@ In short, not reusing addresses safeguards privacy, optimizes transactions, and 
 ,receive_generate_new_address,Generate New Address,Создать новый адрес,새 주소 생성,生成新地址,,
 ,receive_sol_more_t,Tutorial,Руководство,튜토리얼,教程,,
 ,receive_sol_more_t_title1,Exploring Solana Path Options,Узнать о путях вывода Solana,Solana 경로 옵션 탐색,了解 Solana 的各派生路径,,
+,receive_sol_more_t_base_path,Account-based Path,УПуть на основе учетной записи,,,,
+,receive_sol_more_t_single_path,Single Account Path,Путь к единой учетной записи,,,,
+,receive_sol_more_t_sub_path,Sub-account Path,Путь субсчета,,,,
 ,receive_sol_more_t_desc1,"1. Account-based Path: Widely adopted across numerous Solana wallets. An example of such a wallet is Solflare.
 2. Single Account Path: Choose this path if you intend to import a seed phrase from Sollet / MathWallet. Please note that Keystone supports synchronizing only the initial 10 addresses using this format.
 3. Sub-account Path: Transition to this path if you manage your digital assets with software wallets like Phantom / Exodus.","1. Путь на основе учетной записи: широко применяется во многих кошельках Solana. Примером такого кошелька является Solflare.
@@ -703,6 +706,7 @@ Common,OK,OK,Хорошо,OK,好的,,
 ,shamir_backup,Shamir Backup,Фраза Шамира,샤미르 백업,分片助记词,,
 ,FORGET,FORGET,ЗАБЫТЬ,잊었어요,忘记,,
 ,pin_code,PIN CODE,PIN-КОД,PIN 코드,PIN码,,
+,account_head,Account,счет,계정 전환,账户,,
 ,switch_account,Switch Account,Сменить счет,계정 전환,更换账户,,
 ,switch_address,Switch Address,Сменить адрес,주소 전환,更换地址,,
 ,Attention,Attention,Внимание,주의,注意,,
@@ -730,6 +734,7 @@ Common,OK,OK,Хорошо,OK,好的,,
 ,learn_more,Learn More,Узнать больше,,了解更多,,
 ,path,Path,Путь,,路径,,
 About Info,about_info_firmware_version,Firmware Version,Версия прошивки,펌웨어 버전,固件版本,,
+,about_info_firmware_version_head,Firmware,прошивки,,,,
 ,about_info_serial_number,Serial Number,Серийный номер,제조 번호,序列号,,
 ,about_info_export_log,Export System Log,Выгрузка логов,시스템 로그 내보내기,导出系统日志,,
 ,about_info_device_uid,Device UID,IOD устройства,장치 UID,设备UID,,
@@ -740,12 +745,13 @@ About Info,about_info_firmware_version,Firmware Version,Версия проши�
 ,about_info_result_export_failed,Export Failed,Ошибка выгрузки,내보내기 실패,导出失败,,
 ,about_info_result_export_failed_desc_no_sdcard,Please ensure you've inserted a MicroSD Card formatted in FAT32.,"Убедитесь, что вы вставили MicroSD карту, отформатированную в FAT32.",FAT32로 포맷된 MicroSD 카드를 삽입했는지 확인하십시오.,请确保您插入了FAT32格式的microSD卡。,,
 ,about_info_result_export_failed_desc_no_space,Please make sure your MicroSD card has enough memory.,"Убедитесь, что на MicroSD карте достаточно памяти.",MicroSD 카드에 충분한 메모리가 있는지 확인해 주세요.,请确保您的microSD卡具有足够的内存。,,
+,about_info_export_file_name,File name:\n,,,文件名,,
 ,about_info_export_to_sdcard,Export Log to MicroSD Card,Выгрузить логи на MicroSD,MicroSD 카드로 로그 내보내기,将日志导出到microSD卡,,
 ,about_info_verify_firmware_title,Verify Firmware,Убедитесь в прошивке,,验证固件,,
 ,about_info_verify_firmware_desc,This is an advanced feature for developers to verify that the firmware running on your Keystone device is consistent with the one we open-sourced.,Это расширенная функция для разработчиков, чтобы убедиться,这是一个高级功能，用于开发人员验证在Keystone设备上运行的固件是否与我们开源的固件相一致。, которую мы открыли.,
 ,about_info_verify_firmware_step1,Go to Keystone's open-sourced GitHub repo and follow the instructions to build your firmware and get the checksum.,Перейдите на открытый GitHub repo компании Keystone и следуйте инструкциям, чтобы создать прошивку и получить контрольную сумму.,进入Keystone的开源GitHub页面，并按照说明进行构建固件并计算对应校验和。,,
 ,about_info_verify_firmware_step2,Click the #F5870A Checksum# button next to the firmware download.,Нажмите кнопку #F5870A Checksum# рядом с загрузкой микропрограммы.,,点击固件页面中，“固件下载”按钮旁的 #F5870A Checksum#。,,
-,about_info_verify_firmware_step3,Tap the #F5870A Show Checksum# button below and compare the info shown on the webpage and your device.,Нажмите кнопку #F5870A Show Checksum# ниже и сравните информацию, показанную на веб-странице и устройстве.,点击下面的 #F5870A Show Checksum# 按钮，然后将第二步的校验和与之进行对比。,,
+,about_info_verify_firmware_step3,Tap the #F5870A Show Checksum# button below and compare the info shown on the webpage and your device.,Нажмите кнопку #F5870A Показать контрольную сумму# ниже и сравните информацию, показанную на веб-странице и устройстве.,点击下面的 #F5870A Show Checksum# 按钮，然后将第二步的校验和与之进行对比。,,
 ,about_info_verify_source_code_title,Verify Source Code,Проверить исходный код,,验证源代码,,
 ,about_info_verify_checksum_title,Checksum,Контрольная сумма,,校验和,,
 ,about_info_verify_checksum_desc,"Please check if the above information matches the webpage. If it does not match, it means that your firmware may have been tampered with. Please stop using it immediately.","Проверьте, соответствует ли приведенная выше информация веб-странице. Если он не совпадает, это означает, что ваша прошивка могла быть подделана. Прекратите использование устройства.",,如果以上信息与您自行计算的 mh1903.bin 文件的校验和匹配，则意味着我们的开源固件与设备中的固件一致。,,
@@ -804,6 +810,9 @@ USB connect,usb_connection_title,Connection,Соединение,연결,连接,,
 ,usb_connection_desc,"When disabled, the usb can only be used for charging battery","Если отключено, USB можно использовать только для зарядки аккумулятора.",비활성화된 경우 usb는 배터리 충전에만 사용할 수 있습니다,禁用后，USB接口将仅用于充电,,
 password,password_error_too_short,Password must be at least 6 characters,Пароль должен быть не менее 6 символов,비밀번호는 6자 이상이어야 합니다,密码必须至少6个字符,,
 ,password_error_not_match,Passcode mismatch,Неверный код-пароль,비밀번호 불일치,密码不匹配,,
+,password_score_weak,Weak,,,密码弱,,
+,password_score_normal,Normal,,,密码中,,
+,password_score_good,Good,,,密码强,,
 ,password_error_cannot_verify_fingerprint,Couldn’t verify fingerprint,Не удалось проверить отпечаток пальца,지문을 확인할 수 없습니다,无法验证指纹,,
 ,password_label,PASSWORD,ПАРОЛЬ,비밀번호,密码,,
 ,pin_label,PIN,Пин-код,,PIN码,,

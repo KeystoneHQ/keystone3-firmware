@@ -92,7 +92,6 @@ void GuiWalletRecoveryMethodCheck(lv_obj_t *parent)
 
         lv_obj_t *disableDesc = GuiCreateNoticeLabel(cont, _("seed_check_passphrase_notice"));
         lv_obj_set_style_text_align(disableDesc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
-        lv_label_set_long_mode(disableDesc, LV_LABEL_LONG_WRAP);
         lv_obj_set_width(disableDesc, 336);
         lv_obj_align_to(disableDesc, disableTitle, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
@@ -105,8 +104,9 @@ void GuiWalletRecoveryMethodCheck(lv_obj_t *parent)
                 .position = {0, 0},
             },
         };
-        button = GuiCreateButton(cont, 200, 66, restartTable, NUMBER_OF_ARRAYS(restartTable), RebootHandler, NULL);
-        lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -26);
+        button = GuiCreateButton(cont, lv_obj_get_self_width(restartLabel) + 60, 66, restartTable, NUMBER_OF_ARRAYS(restartTable), RebootHandler, NULL);
+        lv_obj_align_to(button, disableDesc, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+
         return;
     }
     static uint8_t walletSetting[2] = {

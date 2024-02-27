@@ -440,7 +440,7 @@ static void FirmwareSdcardCheckSha256Handler(lv_event_t *e)
             return;
         }
         g_noticeHintBox = GuiCreateAnimHintBox(lv_scr_act(), 480, 400, 76);
-        lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("Calculating"));
+        lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("calculat_modal_title"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
         lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("Cancel"));
         lv_obj_set_size(btn, 408, 66);

@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include "gui.h"
 #include "version.h"
 
 #define SOFTWARE_VERSION_MAX_LEN            (32)
@@ -17,9 +18,9 @@ const char g_softwareVersionString[] __attribute__((section(".fixSection"))) = S
 void GetSoftWareVersion(char *version)
 {
 #ifdef BETA_DESC
-    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "Firmware v%d.%d.%d_%s", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, BETA_DESC);
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d_%s", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, BETA_DESC);
 #else
-    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "Firmware v%d.%d.%d", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
 #endif
 }
 

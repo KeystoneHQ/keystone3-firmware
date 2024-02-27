@@ -166,7 +166,7 @@ static void OpenNoticeHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        g_noticeHintBox = GuiCreateConfirmHintBox(lv_scr_act(), 518, &imgRedEye, _("single_backup_notice_title"), _("single_backup_notice_desc1"), _("single_backup_notice_desc2"), USR_SYMBOL_CHECK, ORANGE_COLOR);
+        g_noticeHintBox = GuiCreateConfirmHintBox(lv_scr_act(), &imgRedEye, _("single_backup_notice_title"), _("single_backup_notice_desc1"), _("single_backup_notice_desc2"), USR_SYMBOL_CHECK, ORANGE_COLOR);
         lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
 
         lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeHintBox);

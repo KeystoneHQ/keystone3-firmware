@@ -52,7 +52,8 @@ static void MainEventHandler(void)
             // GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
             // GuiWalletRecoveryWriteSe(false);
             // GuiWriteSeResult(false, ERR_KEYSTORE_MNEMONIC_INVALID);
-            GuiCloseToTargetView(&g_homeView);
+            // GuiCloseToTargetView(&g_homeView);
+            GuiWalletRecoveryMethodCheck(lv_scr_act());
             break;
         case 'c':
             GuiCLoseCurrentWorkingView();

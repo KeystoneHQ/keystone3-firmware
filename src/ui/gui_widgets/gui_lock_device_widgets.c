@@ -76,7 +76,7 @@ void GuiLockDeviceInit(void *param)
         sprintf(lockHint, "%s", _("unlock_device_time_limited_error_max_title"));
     }
 
-    lv_obj_t *label =  GuiCreateLabelWithFont(cont, lockHint, &openSansEnLittleTitle);
+    lv_obj_t *label =  GuiCreateLittleTitleLabel(cont, lockHint);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 236 - 96);
 
     if (!IsLockTimePage()) {

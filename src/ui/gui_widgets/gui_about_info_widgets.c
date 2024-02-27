@@ -290,7 +290,7 @@ static void ConfirmLogExportHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeHintBox)
+        GUI_DEL_OBJ(g_noticeHintBox)    
         if (!SdCardInsert()) {
             GuiAboutWidgetsLogExport(false, ERROR_LOG_HAVE_NO_SD_CARD);
         } else {
@@ -305,7 +305,8 @@ static void LogExportHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         char logName[64] = {0};
         char sn[32] = {0};
-        char buf[80] = "File name:\n";
+        char buf[80] = {0};
+        strcpy(buf, _("about_info_export_file_name"));
         GetSerialNumber(sn);
         sprintf(logName, "0:Log_%s_%d.bin", sn, GetCurrentStampTime());
         LogSetLogName(logName);
@@ -373,7 +374,7 @@ static void StartFirmwareCheckSumHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         g_noticeHintBox = GuiCreateAnimHintBox(lv_scr_act(), 480, 400, 76);
-        lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("Calculating"));
+        lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("calculat_modal_title"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
         lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("Cancel"));
         lv_obj_set_size(btn, 408, 66);

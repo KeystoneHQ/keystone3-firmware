@@ -107,6 +107,14 @@ void *GuiCreateBtn(lv_obj_t *parent, const char *text)
     return btn;
 }
 
+void *GuiCreateAdaptButton(lv_obj_t *parent, const char *text)
+{
+    lv_obj_t *btn = GuiCreateBtnWithFont(parent, text, &buttonFont);
+    uint16_t width = lv_obj_get_self_width(lv_obj_get_child(btn, 0)) + 24;
+    lv_obj_set_size(btn, width, 66);
+    return btn;
+}
+
 void *GuiCreateCheckBoxWithFont(lv_obj_t *parent, const char *text, bool single, const lv_font_t *font)
 {
     lv_obj_t *checkBox = lv_checkbox_create(parent);

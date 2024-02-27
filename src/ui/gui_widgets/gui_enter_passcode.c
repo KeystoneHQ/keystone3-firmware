@@ -45,7 +45,7 @@ typedef struct EnterPassLabel {
 } EnterPassLabel_t;
 static EnterPassLabel_t g_enterPassLabel[ENTER_PASSCODE_BUTT];
 
-void GuiEnterPassLabelInit(void)
+void GuiEnterPassLabelRefresh(void)
 {
     g_enterPassLabel[ENTER_PASSCODE_SET_PIN].title = _("single_backup_setpin_title");
     g_enterPassLabel[ENTER_PASSCODE_SET_PIN].desc = _("single_backup_setpin_desc");
@@ -241,15 +241,15 @@ static void SetPassWordHandler(lv_event_t *e)
                     if (score <= 40) {
                         lv_style_set_bg_color(item->scoreBarStyle, ORANGE_COLOR);
                         lv_obj_set_style_text_color(item->scoreLevel, ORANGE_COLOR, LV_PART_MAIN);
-                        lv_label_set_text(item->scoreLevel, "Weak");
+                        lv_label_set_text(item->scoreLevel, _("password_score_weak"));
                     } else if (score <= 70) {
                         lv_style_set_bg_color(item->scoreBarStyle, BLUE_COLOR);
                         lv_obj_set_style_text_color(item->scoreLevel, BLUE_COLOR, LV_PART_MAIN);
-                        lv_label_set_text(item->scoreLevel, "Normal");
+                        lv_label_set_text(item->scoreLevel, _("password_score_normal"));
                     } else {
                         lv_style_set_bg_color(item->scoreBarStyle, GREEN_COLOR);
                         lv_obj_set_style_text_color(item->scoreLevel, GREEN_COLOR, LV_PART_MAIN);
-                        lv_label_set_text(item->scoreLevel, "Good");
+                        lv_label_set_text(item->scoreLevel, _("password_score_good"));
                     }
                 }
             }

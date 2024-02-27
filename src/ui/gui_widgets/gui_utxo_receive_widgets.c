@@ -475,7 +475,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         g_utxoReceiveWidgets.attentionCont = GuiCreateHintBox(parent, 480, 386, false);
         tempObj = GuiCreateImg(g_utxoReceiveWidgets.attentionCont, &imgInformation);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
-        tempObj = GuiCreateLittleTitleLabel(g_utxoReceiveWidgets.attentionCont, _("Attention"));
+        tempObj = GuiCreateLittleTitleLabel(g_utxoReceiveWidgets.attentionCont, _("receive_btc_alert_title"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
         char hint[256];
         GetHint(hint);
@@ -877,7 +877,8 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
         label = GuiCreateLabelWithFont(cont, _("receive_btc_receive_change_address_title"), g_defIllustrateFont);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 30 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        label = GuiCreateLabelWithFont(cont, "Address-", &buttonFont);
+        label = GuiCreateLabelWithFont(cont, "", &buttonFont);
+        lv_label_set_text_fmt(label, "%s-", _("receive_ada_base_address"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 108 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
         g_utxoReceiveWidgets.inputAddressLabel = GuiCreateLabelWithFont(cont, "", &buttonFont);
@@ -926,7 +927,7 @@ static void RefreshQrCode(void)
         lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strlen(addressDataItem.address));
     }
     lv_label_set_text(g_utxoReceiveWidgets.addressLabel, addressDataItem.address);
-    lv_label_set_text_fmt(g_utxoReceiveWidgets.addressCountLabel, "Address-%u", addressDataItem.index);
+    lv_label_set_text_fmt(g_utxoReceiveWidgets.addressCountLabel, "%s-%u", _("receive_ada_base_address"), addressDataItem.index);
     lv_label_set_text(g_utxoReceiveWidgets.pathLabel, addressDataItem.path);
 }
 
@@ -938,7 +939,7 @@ static void RefreshSwitchAccount(void)
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetUtxoAddress(index, &addressDataItem);
-        lv_label_set_text_fmt(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "Address-%u", addressDataItem.index);
+        lv_label_set_text_fmt(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("receive_ada_base_address"), addressDataItem.index);
         AddressLongModeCut(string, addressDataItem.address);
         lv_label_set_text(g_utxoReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {

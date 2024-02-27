@@ -116,7 +116,7 @@ static void RefreshSwitchAccount(void)
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetAddress(index, &addressDataItem);
-        lv_label_set_text_fmt(g_selectAddressWidgets[i].addressCountLabel, "Account-%u", (addressDataItem.index + 1));
+        lv_label_set_text_fmt(g_selectAddressWidgets[i].addressCountLabel, "%s-%u", _("account_head"), (addressDataItem.index + 1));
         AddressLongModeCut(string, addressDataItem.address);
         lv_label_set_text(g_selectAddressWidgets[i].addressLabel, string);
         if (end) {

@@ -169,26 +169,13 @@ void GuiWalletSelectAddWallet(lv_obj_t *parent)
     line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 443 - GUI_MAIN_AREA_OFFSET);
 
-    img = GuiCreateImg(parent, &imgImport);
-    label = GuiCreateTextLabel(parent, _("purpose_import_wallet"));
-    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
-    table[0].obj = img;
-    table[0].position.x = -lv_obj_get_self_width(label) / 2 - 10;
-    table[0].position.y = 0;
-    table[0].align = LV_ALIGN_CENTER;
-
-    table[1].obj = label;
-    table[1].position.x = lv_obj_get_self_width(img) / 2 + 10;
-    table[1].position.y = 0;
-    table[1].align = LV_ALIGN_CENTER;
-    button = GuiCreateButton(parent, 228, 50, table, 2, OpenImportWalletHandler, NULL);
+    button = GuiCreateImgLabelAdaptButton(parent, _("purpose_import_wallet"), &imgImport, OpenImportWalletHandler, NULL);
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 684 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
 }
 
 void GuiWalletAddWalletNotice(lv_obj_t *parent)
 {
-    // static uint32_t walletSetting = DEVICE_SETTING_ADD_WALLET_SETPIN;
     static uint32_t walletSetting = DEVICE_SETTING_ADD_WALLET_CREATE_OR_IMPORT;
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);

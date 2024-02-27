@@ -235,7 +235,6 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         GuiFrameOpenView(&g_homeView);
         GuiUpdateOldAccountIndex();
     } else {
-        int height = 370;
         lv_obj_t *desc = NULL;
         lv_obj_t *title = NULL;
         lv_event_cb_t cb = CloseCurrentUserDataHandler;
@@ -243,7 +242,6 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         const char *descText = _("error_box_invalid_seed_phrase_desc");
         switch (errCode) {
         case ERR_KEYSTORE_MNEMONIC_REPEAT:
-            height = 400;
             titleText = _("error_box_duplicated_seed_phrase");
             descText = _("error_box_duplicated_seed_phrase_desc");
             cb = DuplicateShareHandler;
@@ -251,27 +249,14 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         case ERR_KEYSTORE_MNEMONIC_INVALID:
             break;
         case ERR_KEYSTORE_SAVE_LOW_POWER:
-            height = 400;
             titleText = _("error_box_low_power");
             descText = _("error_box_low_power_desc");
             break;
         }
 
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-        g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, height, false);
-        lv_obj_t *btn = GuiCreateBtn(g_hintBox, _("OK"));
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-        lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
+        g_hintBox = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
+        lv_obj_t *btn = GuiGetHintBoxRightBtn(g_hintBox);
         lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, NULL);
-
-        desc = GuiCreateIllustrateLabel(g_hintBox, descText);
-        lv_obj_align_to(desc, btn, LV_ALIGN_OUT_TOP_LEFT, -320, -40);
-
-        title = GuiCreateLittleTitleLabel(g_hintBox, titleText);
-        lv_obj_align_to(title, desc, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
-
-        lv_obj_t *img = GuiCreateImg(g_hintBox, &imgFailed);
-        lv_obj_align_to(img, title, LV_ALIGN_OUT_TOP_LEFT, 0, -24);
     }
 }
 

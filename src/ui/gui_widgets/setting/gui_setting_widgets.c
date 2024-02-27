@@ -224,16 +224,14 @@ static void GuiOpenPassphraseLearnMore()
 
     label = GuiCreateIllustrateLabel(cont, _("passphrase_learn_more_link"));
     lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 0, 0);
 
     lv_obj_t *img = GuiCreateImg(cont, &imgQrcodeTurquoise);
-    lv_obj_align(img, LV_ALIGN_DEFAULT, 120, 3);
+    lv_obj_align_to(img, label, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+    lv_obj_set_width(cont, lv_obj_get_self_width(label) + lv_obj_get_self_width(img) + 10);
 
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseCurrentPage, NULL);
-
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "");
-
 }
 
 static void OpenPassphraseLearnMoreHandler(lv_event_t *e)
@@ -396,48 +394,26 @@ void OpenSinglePhraseHandler(lv_event_t *e)
             DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_18WORDS,
             DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_24WORDS,
         };
-        g_selectAmountHintbox = GuiCreateHintBox(lv_scr_act(), 480, 378, true);
+        g_selectAmountHintbox = GuiCreateHintBox(lv_scr_act(), 480, 378, true); 
+        uint16_t height = 348;
         lv_obj_add_event_cb(lv_obj_get_child(g_selectAmountHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_selectAmountHintbox);
-        lv_obj_t *label = GuiCreateTextLabel(g_selectAmountHintbox, _("seed_check_word_select"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 30, 451);
-        lv_obj_t *img = GuiCreateImg(g_selectAmountHintbox, &imgClose);
-        GuiButton_t table[2] = {
-            {
-                .obj = img,
-                .align = LV_ALIGN_CENTER,
-                .position = {0, 0},
-            },
-        };
-        lv_obj_t *btn = GuiCreateButton(g_selectAmountHintbox, 36, 36, table, 1, CloseHintBoxHandler, &g_selectAmountHintbox);
-        lv_obj_align(btn, LV_ALIGN_DEFAULT, 408, 449);
+        
+        lv_obj_t *btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_phrase_24words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[2]);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -12);
 
-        label = GuiCreateTextLabel(g_selectAmountHintbox, _("import_wallet_phrase_12words"));
-        img = GuiCreateImg(g_selectAmountHintbox, &imgArrowRight);
-        table[0].obj = label;
-        table[0].position.x = 24;
-        table[0].position.y = 0;
-        table[0].align = LV_ALIGN_LEFT_MID;
-        table[1].obj = img;
-        table[1].position.x = 411;
-        table[1].position.y = 0;
-        table[1].align = LV_ALIGN_LEFT_MID;
+        btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_phrase_18words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[1]);
+        GuiAlignToPrevObj(btn, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
 
-        btn = GuiCreateButton(g_selectAmountHintbox, 456, 84, table, NUMBER_OF_ARRAYS(table), SelectPhraseAmountHandler, &walletSetting[0]);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 510);
+        btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_phrase_12words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[0]);
+        GuiAlignToPrevObj(btn, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
 
-        label = GuiCreateTextLabel(g_selectAmountHintbox, _("import_wallet_phrase_18words"));
-        img = GuiCreateImg(g_selectAmountHintbox, &imgArrowRight);
-        table[0].obj = label;
-        table[1].obj = img;
-        btn = GuiCreateButton(g_selectAmountHintbox, 456, 84, table, NUMBER_OF_ARRAYS(table), SelectPhraseAmountHandler, &walletSetting[1]);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 608);
+        lv_obj_t *closeBtn = GuiCreateImgButton(g_selectAmountHintbox,  &imgClose, 64, CloseHintBoxHandler, &g_selectAmountHintbox);
+        GuiAlignToPrevObj(closeBtn, LV_ALIGN_OUT_TOP_RIGHT, -10, -12);
 
-        label = GuiCreateTextLabel(g_selectAmountHintbox, _("import_wallet_phrase_24words"));
-        img = GuiCreateImg(g_selectAmountHintbox, &imgArrowRight);
-        table[0].obj = label;
-        table[1].obj = img;
-        btn = GuiCreateButton(g_selectAmountHintbox, 456, 84, table, NUMBER_OF_ARRAYS(table), SelectPhraseAmountHandler, &walletSetting[2]);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 704);
+        lv_obj_t *label = GuiCreateNoticeLabel(g_selectAmountHintbox, _("seed_check_word_select"));
+        lv_obj_align_to(label, btn, LV_ALIGN_OUT_TOP_LEFT, 26, -30);
+        height += lv_obj_get_self_height(label);
+        GuiHintBoxResize(g_selectAmountHintbox, height);
     }
 }
 
@@ -451,41 +427,24 @@ void OpenSharePhraseHandler(lv_event_t *e)
             DEVICE_SETTING_RECOVERY_SHARE_PHRASE_20WORDS,
             DEVICE_SETTING_RECOVERY_SHARE_PHRASE_33WORDS
         };
-        g_selectAmountHintbox = GuiCreateHintBox(lv_scr_act(), 480, 282, true);
+
+        g_selectAmountHintbox = GuiCreateHintBox(lv_scr_act(), 480, 282, true); 
+        uint16_t height = 252;
         lv_obj_add_event_cb(lv_obj_get_child(g_selectAmountHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_selectAmountHintbox);
-        lv_obj_t *label = GuiCreateTextLabel(g_selectAmountHintbox, _("seed_check_word_select"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 30, 546);
-        lv_obj_t *img = GuiCreateImg(g_selectAmountHintbox, &imgClose);
-        GuiButton_t table[2] = {
-            {
-                .obj = img,
-                .align = LV_ALIGN_CENTER,
-                .position = {0, 0},
-            },
-        };
-        lv_obj_t *btn = GuiCreateButton(g_selectAmountHintbox, 36, 36, table, 1, CloseHintBoxHandler, &g_selectAmountHintbox);
-        lv_obj_align(btn, LV_ALIGN_DEFAULT, 408, 545);
+        
+        lv_obj_t *btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_ssb_33words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[1]);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -12);
 
-        label = GuiCreateTextLabel(g_selectAmountHintbox, _("import_wallet_ssb_20words"));
-        img = GuiCreateImg(g_selectAmountHintbox, &imgArrowRight);
-        table[0].obj = label;
-        table[0].position.x = 24;
-        table[0].position.y = 0;
-        table[0].align = LV_ALIGN_LEFT_MID;
-        table[1].obj = img;
-        table[1].position.x = 411;
-        table[1].position.y = 0;
-        table[1].align = LV_ALIGN_LEFT_MID;
+        btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_ssb_20words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[0]);
+        GuiAlignToPrevObj(btn, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
 
-        btn = GuiCreateButton(g_selectAmountHintbox, 456, 84, table, NUMBER_OF_ARRAYS(table), SelectPhraseAmountHandler, &walletSetting[0]);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 607);
+        lv_obj_t *closeBtn = GuiCreateImgButton(g_selectAmountHintbox,  &imgClose, 64, CloseHintBoxHandler, &g_selectAmountHintbox);
+        GuiAlignToPrevObj(closeBtn, LV_ALIGN_OUT_TOP_RIGHT, -10, -12);
 
-        label = GuiCreateTextLabel(g_selectAmountHintbox, _("import_wallet_ssb_33words"));
-        img = GuiCreateImg(g_selectAmountHintbox, &imgArrowRight);
-        table[0].obj = label;
-        table[1].obj = img;
-        btn = GuiCreateButton(g_selectAmountHintbox, 456, 84, table, NUMBER_OF_ARRAYS(table), SelectPhraseAmountHandler, &walletSetting[1]);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 703);
+        lv_obj_t *label = GuiCreateNoticeLabel(g_selectAmountHintbox, _("seed_check_word_select"));
+        lv_obj_align_to(label, btn, LV_ALIGN_OUT_TOP_LEFT, 26, -30);
+        height += lv_obj_get_self_height(label);
+        GuiHintBoxResize(g_selectAmountHintbox, height);
     }
 }
 

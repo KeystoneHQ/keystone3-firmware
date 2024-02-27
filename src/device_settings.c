@@ -60,7 +60,7 @@ static char *GetJsonStringFromDeviceSettings(void);
 static int32_t GetIntValue(const cJSON *obj, const char *key, int32_t defaultValue);
 static void GetStringValue(const cJSON *obj, const char *key, char *value, uint32_t maxLen);
 
-static const char g_deviceSettingsVersion[] = "1.0.1";
+static const char g_deviceSettingsVersion[] = "1.0.0";
 DeviceSettings_t g_deviceSettings;
 
 void DeviceSettingsInit(void)

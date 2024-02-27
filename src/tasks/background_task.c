@@ -184,8 +184,7 @@ static void BackgroundTask(void *argument)
                 battState |= 0x8000;
             }
             if (GetUsbDetectState() == false) {
-                SetUsbState(false);
-                UsbDeInit();
+                CloseUsb();
                 GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 0);
             } else if (GetUSBSwitch()) {
 #if (USB_POP_WINDOW_ENABLE == 1)

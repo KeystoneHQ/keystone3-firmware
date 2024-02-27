@@ -133,14 +133,13 @@ static void UsbConnectionSwitchHandler(lv_event_t * e)
 
     if (code == LV_EVENT_VALUE_CHANGED) {
         if (lv_obj_has_state(obj, LV_STATE_CHECKED)) {
-            printf("air gap off\n");
-            SetUsbState(false);
+            printf("air gap on\n");
             SetUSBSwitch(1);
             CloseUsb();
         } else {
             SetUSBSwitch(0);
             GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
-            printf("air gap on\n");
+            printf("air gap off\n");
         }
         SaveDeviceSettings();
     }

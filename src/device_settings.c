@@ -39,7 +39,7 @@
 #define DEFAULT_AUTO_POWER_OFF          0
 #define DEFAULT_VIBRATION               1
 #define DEFAULT_DARK_MODE               1
-#define DEFAULT_USB_SWITCH              0
+#define DEFAULT_USB_SWITCH              1
 #define DEFAULT_LAST_VERSION            0
 
 typedef struct {
@@ -188,7 +188,7 @@ void SetDarkMode(uint32_t darkMode)
 
 uint32_t GetUSBSwitch(void)
 {
-    return !g_deviceSettings.usbSwitch;
+    return g_deviceSettings.usbSwitch;
 }
 
 

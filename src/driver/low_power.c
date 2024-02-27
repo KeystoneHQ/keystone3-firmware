@@ -28,6 +28,7 @@
 #include "screen_manager.h"
 #include "usb_task.h"
 #include "gui_setup_widgets.h"
+#include "device_setting.h"
 
 #define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                //80 seconds
 #define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                (60 * 8)            //8 minutes
@@ -133,7 +134,9 @@ void RecoverFromLowPower(void)
     PubValueMsg(BACKGROUND_MSG_SD_CARD_CHANGE, 0);
     LcdBacklightOn();
 #if (USB_POP_WINDOW_ENABLE == 0)
-    OpenUsb();
+    if (GetUSBSwitch()) {
+        OpenUsb();
+    }
 #else
     AsyncExecute(GetWalletAmountAfterWakeup, NULL, 0);
 #endif

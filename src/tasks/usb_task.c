@@ -21,7 +21,6 @@ static void UsbTask(void *argument);
 
 static osThreadId_t g_usbTaskHandle;
 static volatile bool g_usbState = false;
-static volatile bool g_usbConnectMutex = false;
 
 void CreateUsbTask(void)
 {
@@ -62,6 +61,8 @@ static void UsbTask(void *argument)
     osDelay(1000);
 #if (USB_POP_WINDOW_ENABLE == 1)
     CloseUsb();
+#else
+    OpenUsb();
 #endif
     while (1) {
         ret = osMessageQueueGet(g_usbQueue, &rcvMsg, NULL, 10000);
@@ -99,17 +100,6 @@ static void UsbTask(void *argument)
         }
     }
 }
-
-void ConnectUsbMutexRelease(void)
-{
-    g_usbConnectMutex = true;
-}
-
-void ConnectUsbMutexRestrict(void)
-{
-    g_usbConnectMutex = false;
-}
-
 
 /// @brief
 /// @param argc Test arg count.

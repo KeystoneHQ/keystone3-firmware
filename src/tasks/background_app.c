@@ -11,7 +11,6 @@
 static void ChangerInsertIntCallback(void);
 static void MinuteTimerFunc(void *argument);
 static void BatteryTimerFunc(void *argument);
-void SetUsbStateInt(bool enable);
 
 static osTimerId_t g_minuteTimer, g_batteryTimer;
 static bool g_powerOff = false;
@@ -69,10 +68,6 @@ void ExecuteSystemReset(SystemResetType type)
 /// @param
 static void ChangerInsertIntCallback(void)
 {
-    if (GetUsbDetectState() == false) {
-        UsbDeInit();
-        SetUsbStateInt(false);
-    }
     PubValueMsg(BACKGROUND_MSG_CHANGER_INSERT, 0);
 }
 

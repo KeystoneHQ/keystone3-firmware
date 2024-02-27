@@ -24,7 +24,6 @@ void UsbLoop(void);
 void UsbDeInit(void);
 bool UsbInitState(void);
 void UsbSetIRQ(bool enable);
-void ConnectUsbMutexRestrict(void);
 
 #endif /* _DRV_USB_H */
 

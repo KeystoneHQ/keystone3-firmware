@@ -539,12 +539,34 @@ static void GuiCloseGenerateXPubLoading(void)
     }
 }
 
+#if (USB_POP_WINDOW_ENABLE == 1)
+#include "cmsis_os.h"
+static int32_t SendUsbConnectionMsg(const void *inData, uint32_t inDataLen)
+{
+    uint32_t count = 0;
+    while (lv_anim_count_running() > 0) {
+        osDelay(10);
+        if (count++ > 1000) {
+            break;
+        }
+    }
+    printf("count=%d\n", count);
+    if (GetUSBSwitch() == true && GetUsbDetectState()) {
+        //make sure the conditions satisfied after delay.
+        printf("send msg\n");
+        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+    }
+    return 0;
+}
+#endif
+
+
 static void HardwareInitAfterWake(void)
 {
     AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
 #if (USB_POP_WINDOW_ENABLE == 1)
     if (GetUSBSwitch() == true && GetUsbDetectState()) {
-        OpenMsgBox(&g_guiMsgBoxUsbConnection);
+        AsyncExecute(SendUsbConnectionMsg, NULL, 0);
     }
 #endif
 }

@@ -125,7 +125,6 @@ static void LockScreen(void)
     if (FpModuleIsExist()) {
         SetFpLowPowerMode();
     }
-    UsbDeInit();
     ClearLockScreenTime();
     ClearShutdownTime();
     LcdBacklightOff();

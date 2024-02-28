@@ -41,7 +41,10 @@ void GuiBtcWalletProfileInit(void)
 void GuiBtcWalletProfileDeInit(void)
 {
     printf("%s\n", __func__);
-
+    if (g_networkCont != NULL) {
+        lv_obj_del(g_networkCont);
+        g_networkCont = NULL;
+    }
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;

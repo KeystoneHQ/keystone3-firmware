@@ -212,7 +212,7 @@ static void GuiShareSelectSliceWidget(lv_obj_t *parent)
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("shamir_phrase_number"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateIllustrateLabel(parent, _("Threshold"));
+    label = GuiCreateIllustrateLabel(parent, _("shamir_phrase_threold"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 438 - GUI_MAIN_AREA_OFFSET);
 
     g_selectSliceTile.memberCnt = SLIP39_DEFAULT_MEMBER_COUNT;

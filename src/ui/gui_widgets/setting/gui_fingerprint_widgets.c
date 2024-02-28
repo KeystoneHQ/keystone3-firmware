@@ -143,7 +143,8 @@ void GuiWalletFingerOpenSign(void)
     g_labelSignFailed = GuiCreateIllustrateLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint_failed"));
     lv_obj_set_style_text_color(g_labelSignFailed, RED_COLOR, LV_PART_MAIN);
     lv_obj_add_flag(g_labelSignFailed, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_align(g_labelSignFailed, LV_ALIGN_BOTTOM_MID, 0, -100);
+    lv_obj_align(g_labelSignFailed, LV_ALIGN_TOP_MID, 0, 670);
+    lv_obj_set_style_text_align(g_labelSignFailed, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
     lv_obj_t *arc = GuiCreateArc(cont);
     lv_obj_align(arc, LV_ALIGN_BOTTOM_MID, 0, -154);
@@ -215,11 +216,13 @@ void GuiWalletFingerAddFpWidget(lv_obj_t *parent, bool success)
         label = GuiCreateLittleTitleLabel(parent, _("fingerprint_add_failed"));
         btn = GuiCreateBtn(parent, _("try_again"));
         desc = GuiCreateNoticeLabel(parent, _("fingerprint_add_failed_use_another"));
-        lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -404);
         lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     }
-    lv_obj_align(img, LV_ALIGN_BOTTOM_MID, 0, -548);
-    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -476);
+    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 180);
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 284);
+    if (desc != NULL) {
+        lv_obj_align_to(desc, label, LV_ALIGN_OUT_BOTTOM_MID, 0, 12);
+    }
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);

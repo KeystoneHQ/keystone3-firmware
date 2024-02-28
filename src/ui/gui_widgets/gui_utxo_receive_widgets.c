@@ -736,14 +736,14 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     }
     lv_obj_clean(egCont);
     lv_obj_t *prevLabel, *label;
-    int egContHeight = 12;
+    int egContHeight = 12 + 4 + 4 + 12 + 30 + 30;
 
     label = GuiCreateNoticeLabel(egCont, g_derivationPathDescs[g_selectType]);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
     lv_obj_update_layout(label);
-    egContHeight += lv_obj_get_height(label);
+    egContHeight += lv_obj_get_self_height(label);
     prevLabel = label;
 
     const char *desc = _("derivation_path_address_eg");
@@ -752,15 +752,14 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
     lv_obj_update_layout(label);
+    egContHeight += lv_obj_get_self_height(label);
 
-    egContHeight = egContHeight + 4 + lv_obj_get_height(label);
     prevLabel = label;
 
     lv_obj_t *index = GuiCreateNoticeLabel(egCont, _("0"));
     lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
     lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);
     lv_obj_update_layout(index);
-    egContHeight = egContHeight + 4 + lv_obj_get_height(index);
     prevLabel = index;
 
     label = GuiCreateIllustrateLabel(egCont, "");
@@ -771,11 +770,12 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
     lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);
     lv_obj_update_layout(index);
-    egContHeight =  egContHeight + 4 + lv_obj_get_height(index);
     prevLabel = index;
     label = GuiCreateIllustrateLabel(egCont, "");
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
     g_addressLabel[1] = label;
+
+    lv_obj_set_height(egCont, egContHeight);
 
     RefreshDefaultAddress();
 }

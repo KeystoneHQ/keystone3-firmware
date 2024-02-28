@@ -112,7 +112,6 @@ void GuiWebAuthResultCreateAuthCode(lv_obj_t *parent, char *code, int xOffset)
 
 void GuiWebAuthResultRenderAuthCode(lv_obj_t *parent)
 {
-    printf("%s %d..\n", __func__, __LINE__);
     if (g_authCode != NULL && strlen(g_authCode) >= 8) {
         char c1[2] = {g_authCode[0], '\0'};
         char c2[2] = {g_authCode[1], '\0'};

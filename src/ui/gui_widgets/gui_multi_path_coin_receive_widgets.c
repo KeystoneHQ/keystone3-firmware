@@ -125,7 +125,7 @@ static void SetPathIndex(uint32_t index);
 static int GetSOLMaxAddressIndex(void);
 static int GetEthMaxAddressIndex(void);
 
-static char* GetChangePathItemTitle(uint32_t i);
+static const char* GetChangePathItemTitle(uint32_t i);
 static void GetChangePathLabelHint(char* hint);
 
 static void SetCurrentSelectIndex(uint32_t selectIndex);
@@ -248,7 +248,7 @@ void GuiMultiPathCoinReceiveRefresh(void)
         break;
     case RECEIVE_TILE_SWITCH_ACCOUNT:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Switch Account");
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_selectIndex = GetCurrentSelectIndex();
         g_showIndex = g_selectIndex / 5 * 5;
@@ -558,7 +558,7 @@ static void GetChangePathLabelHint(char* hint)
     }
 }
 
-static char* GetChangePathItemTitle(uint32_t i)
+static const char* GetChangePathItemTitle(uint32_t i)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
@@ -668,9 +668,8 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
 
     for (uint32_t i = 0; i < 3; i++) {
-
-        label = GuiCreateLabelWithFont(cont, GetChangePathItemTitle(i), &buttonFont);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
+        label = GuiCreateTextLabel(cont, GetChangePathItemTitle(i));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 26 + 103 * i);
         GetPathItemSubTitle(string, i);
         label = GuiCreateLabelWithFontAndTextColor(cont, string, g_defIllustrateFont, 0x919191);
         lv_label_set_recolor(label, true);

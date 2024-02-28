@@ -222,10 +222,10 @@ void *GuiCreateGeneralHintBox(lv_obj_t *parent, const void *src, const char *tit
     return cont;
 }
 
-void *GuiCreateUpdateHintbox(lv_obj_t *parent, uint16_t h, const void *src, const char *titleText,
+void *GuiCreateUpdateHintbox(lv_obj_t *parent, const void *src, const char *titleText,
                              const char *descText, const char *leftBtnText, lv_color_t leftColor,  const char *rightBtnText, lv_color_t rightColor, bool checkSumDone)
 {
-    lv_obj_t *cont = GuiCreateHintBox(lv_scr_act(), 480, h, false);
+    lv_obj_t *cont = GuiCreateHintBox(lv_scr_act(), 480, 800, false);
     lv_obj_t *checksum = GuiCreateIllustrateLabel(cont, _("firmware_update_sd_checksum_desc"));
     if (checkSumDone) {
         lv_label_set_text(checksum, _("firmware_update_sd_checksum_done"));
@@ -251,6 +251,10 @@ void *GuiCreateUpdateHintbox(lv_obj_t *parent, uint16_t h, const void *src, cons
     lv_obj_align(rightBtn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_set_size(rightBtn, lv_obj_get_self_width(lv_obj_get_child(rightBtn, 0)) + 60, 66);
     lv_obj_set_style_bg_color(rightBtn, rightColor, LV_PART_MAIN);
+    uint32_t height = 48 + lv_obj_get_self_width(img) + 24 + lv_obj_get_self_height(title) + 12 + lv_obj_get_self_height(desc) + 12 + 
+                      lv_obj_get_self_height(checksum) + 16 + 24 + 66 + 24;
+    printf("height = %d.........\n", height);
+    GuiHintBoxResize(cont, height);
 
     return cont;
 }

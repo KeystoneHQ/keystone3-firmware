@@ -691,7 +691,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
     case DEVICE_SETTING_FINGER_MANAGER:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         GuiWalletFingerManagerWidget(tile);
-        strcpy(midLabel, "Fingerprint Settings");
+        strcpy(midLabel, _("fingerprint_passcode_fingerprint_setting"));
         structureCb = GuiFingerMangerStructureCb;
         destructCb = GuiFingerManagerDestruct;
         break;

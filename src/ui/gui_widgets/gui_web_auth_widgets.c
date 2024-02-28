@@ -49,17 +49,12 @@ void GuiWebAuthScanQRCodeHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        GuiCLoseCurrentWorkingView();
-        GuiFrameOpenView(&g_webAuthResultView);
-        printf("%s.......%d........\n", __func__, __LINE__);
-        GuiModelCalculateWebAuthCode("1234");
-        printf("%s.......%d........\n", __func__, __LINE__);
-        // GuiFrameOpenView(&g_scanView);
-        // if (g_webAuthEntry == WEB_AUTH_ENTRY_SETUP) {
-        //     GuiWebAuthResultSetSuccessCb(GuiWebAuthSuccessCbSetup);
-        // } else {
-        //     GuiWebAuthResultSetSuccessCb(GuiWebAuthSuccessCbSetting);
-        // }
+        GuiFrameOpenView(&g_scanView);
+        if (g_webAuthEntry == WEB_AUTH_ENTRY_SETUP) {
+            GuiWebAuthResultSetSuccessCb(GuiWebAuthSuccessCbSetup);
+        } else {
+            GuiWebAuthResultSetSuccessCb(GuiWebAuthSuccessCbSetting);
+        }
     }
 }
 

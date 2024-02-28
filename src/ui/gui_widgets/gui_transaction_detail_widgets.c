@@ -159,7 +159,7 @@ static void GuiDealParseErrorResult(int errorType)
     label = GuiCreateIllustrateLabel(g_parseErrorHintBox, _("scan_qr_code_error_invalid_qrcode_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
-    lv_obj_t *btn = GuiCreateBtnWithFont(g_parseErrorHintBox, _("OK"), &openSansEnText);
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_parseErrorHintBox, _("OK"), g_defTextFont);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_add_event_cb(btn, CloseParseErrorDataHandler, LV_EVENT_CLICKED, NULL);
 }

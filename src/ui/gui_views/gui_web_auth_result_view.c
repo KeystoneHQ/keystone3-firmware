@@ -40,7 +40,6 @@ int32_t GuiWebAuthResultViewEventProcess(void *self, uint16_t usEvent, void *par
     case GUI_EVENT_DISACTIVE:
         break;
     case SIG_WEB_AUTH_CODE_SUCCESS:
-        printf("%s.......%d........\n", __func__, __LINE__);
         GuiWebAuthShowAuthCode(param);
         break;
     default:

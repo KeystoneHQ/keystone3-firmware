@@ -242,7 +242,7 @@ void GuiSinglePhraseInit(uint8_t entropyMethod)
     g_singlePhraseTileView.writeSe = tile;
     GuiWriteSeWidget(tile);
 
-    g_singlePhraseTileView.currentTile = SINGLE_PHRASE_RANDOM_PHRASE;
+    g_singlePhraseTileView.currentTile = SINGLE_PHRASE_WRITE_SE;
     g_singlePhraseTileView.tileView = tileView;
     g_singlePhraseTileView.cont = cont;
 

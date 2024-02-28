@@ -8,6 +8,7 @@
 #include "gui_views.h"
 #include "gui_lock_widgets.h"
 #include "gui_letter_tree.h"
+#include "gui_button.h"
 #include "string.h"
 #include "motor_manager.h"
 
@@ -435,12 +436,11 @@ void *GuiCreateEmojiKeyBoard(lv_obj_t *parent, lv_obj_t *icon)
     lv_obj_t *hintbox = GuiCreateHintBox(parent, 480, 534, true);
     lv_obj_add_event_cb(lv_obj_get_child(hintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_t *label = GuiCreateNoticeLabel(hintbox, _("single_backup_namewallet_previntput_2"));
+    lv_obj_set_width(label, 380);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 296);
 
-    lv_obj_t *img = GuiCreateImg(hintbox, &imgClose);
+    lv_obj_t *img = GuiCreateImgButton(hintbox, &imgClose, 45, CloseCurrentParentHandler, NULL);
     lv_obj_align(img, LV_ALIGN_TOP_RIGHT, -36, 293);
-    lv_obj_add_event_cb(img, CloseCurrentParentHandler, LV_EVENT_CLICKED, NULL);
-    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
 
     lv_obj_t *btnm = lv_btnmatrix_create(hintbox);
     lv_btnmatrix_set_map(btnm, (const char **)g_emojiBtnmMap);

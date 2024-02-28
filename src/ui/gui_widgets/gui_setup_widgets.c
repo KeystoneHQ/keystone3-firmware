@@ -278,7 +278,6 @@ void GuiSetupAreaRefresh(void)
 void GuiSetupAreaRestart(void)
 {
     uint8_t oldTile = g_setupTileView.currentTile;
-    GuiEnterPassLabelRefresh();
     GuiSetupAreaDeInit();
     GuiSetupAreaInit();
     g_setupTileView.currentTile = oldTile;

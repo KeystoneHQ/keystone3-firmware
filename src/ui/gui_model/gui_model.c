@@ -173,8 +173,7 @@ void GuiModelStopCalculateCheckSum(void)
 
 void GuiModelCalculateWebAuthCode(void *webAuthData)
 {
-    // AsyncExecuteWithPtr(ModelCalculateWebAuthCode, webAuthData);
-    AsyncExecute(ModelCalculateWebAuthCode, webAuthData, 0);
+    AsyncExecuteWithPtr(ModelCalculateWebAuthCode, webAuthData);
 }
 
 void GuiModelSlip39ForgetPassword(Slip39Data_t slip39)
@@ -1458,8 +1457,10 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
     SecretCacheSetChecksum(hash);
     GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
 #else
+    uint8_t percent = 100;
     char *hash = "131b3a1e9314ba076f8e459a1c4c6713eeb38862f3eb6f9371360aa234cdde1f";
     SecretCacheSetChecksum(hash);
+    GuiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
 #endif
     return SUCCESS_CODE;
 }

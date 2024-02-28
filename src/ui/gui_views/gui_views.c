@@ -183,10 +183,11 @@ void GuiWriteSeWidget(lv_obj_t *parent)
 {
     lv_obj_t *label = GuiCreateTextLabel(parent, _("create_wallet_generating_title"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 403 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
-    label = GuiCreateIllustrateLabel(parent, _("create_wallet_generating_desc"));
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 457 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
+    label = GuiCreateNoticeLabel(parent, _("create_wallet_generating_desc"));
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 18);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 }
 
 void DuplicateShareHandler(lv_event_t *e)
@@ -235,8 +236,6 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         GuiFrameOpenView(&g_homeView);
         GuiUpdateOldAccountIndex();
     } else {
-        lv_obj_t *desc = NULL;
-        lv_obj_t *title = NULL;
         lv_event_cb_t cb = CloseCurrentUserDataHandler;
         const char *titleText = _("error_box_invalid_seed_phrase");
         const char *descText = _("error_box_invalid_seed_phrase_desc");
@@ -254,6 +253,7 @@ void GuiWriteSeResult(bool en, int32_t errCode)
             break;
         }
 
+        GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
         g_hintBox = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
         lv_obj_t *btn = GuiGetHintBoxRightBtn(g_hintBox);
         lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, NULL);

@@ -319,11 +319,12 @@ void GuiChangePassWord(bool result)
 void GuiResettingWriteSe(void)
 {
     g_resetingCont = GuiCreateHintBox(lv_scr_act(), 480, 326, false);
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_resetingCont, _("Resetting, Keep Screen ON"));
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_resetingCont, _("change_passcode_reset_title"));
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -124);
-    label = GuiCreateIllustrateLabel(g_resetingCont, _("Writing Secure Element..."));
+    label = GuiCreateNoticeLabel(g_resetingCont, _("change_passcode_reset_desc"));
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -76);
-    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
     GuiCreateCircleAroundAnimation(lv_scr_act(), 165);
 }
 

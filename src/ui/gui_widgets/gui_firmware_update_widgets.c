@@ -82,8 +82,7 @@ void GuiCreateSdCardUpdateHintbox(char *version, bool checkSumDone)
     char desc[150] = {0};
 
     sprintf(desc, _("firmware_update_sd_dialog_desc"));
-    uint16_t height = checkSumDone ? 518 : 458;
-    g_noticeHintBox = GuiCreateUpdateHintbox(lv_scr_act(), height, &imgFirmwareUp, _("firmware_update_sd_dialog_title"),
+    g_noticeHintBox = GuiCreateUpdateHintbox(lv_scr_act(), &imgFirmwareUp, _("firmware_update_sd_dialog_title"),
                       desc, _("not_now"), DARK_GRAY_COLOR, _("Update"), ORANGE_COLOR, checkSumDone);
 
     g_calCheckSumLabel = lv_obj_get_child(g_noticeHintBox, 3);
@@ -98,7 +97,7 @@ void GuiCreateSdCardUpdateHintbox(char *version, bool checkSumDone)
         SecretCacheGetChecksum(hash);
         ConvertToLowerCase(hash);
         snprintf(tempBuf, sizeof(tempBuf), "#F5870A %.8s#%.24s\n%.24s#F5870A %.8s#", hash, &hash[8], &hash[32], &hash[56]);
-        lv_label_set_text_fmt(g_calCheckSumLabel, "Checksum(v%s):\n%s", version, tempBuf);
+        lv_label_set_text_fmt(g_calCheckSumLabel, "%s(v%s):\n%s", _("about_info_verify_checksum_title"), version, tempBuf);
     } else {
         lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _(""));
         lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
@@ -618,25 +617,24 @@ static void GuiFirmwareUpdateViewSha256(char *version, uint8_t percent)
     lv_label_set_text_fmt(label, "%d%%", percent);
     if (percent == 100) {
         GuiDeleteAnimHintBox();
-        g_noticeHintBox = NULL;
         uint32_t hintHeight = 220 + 48;
         g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 482, 300);
-        lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("OK"));
-        lv_obj_set_size(btn, 94, 66);
+
+        lv_obj_t *btn = GuiCreateAdaptButton(g_noticeHintBox, _("OK"));
         lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
 
-        label = GuiCreateIllustrateLabel(g_noticeHintBox, _("Checksum\n\n"));
+        label = GuiCreateIllustrateLabel(g_noticeHintBox, _("firmware_update_sd_checksum_done"));
         lv_label_set_recolor(label, true);
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -130);
 
         lv_obj_t *desc = GuiCreateIllustrateLabel(g_noticeHintBox, _("firmware_update_sd_checksum_notice"));
         lv_obj_align_to(desc, label, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
-        hintHeight = hintHeight + lv_obj_get_height(desc) + 12;
+        hintHeight = hintHeight + lv_obj_get_self_height(desc) + 12;
 
         lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("Verify Firmware"));
         lv_obj_align_to(title, desc, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
-        hintHeight = hintHeight + lv_obj_get_height(title) + 12;
+        hintHeight = hintHeight + lv_obj_get_self_height(title) + 12;
 
         char hash[128] = {0};
         char tempBuf[128] = {0};
@@ -645,6 +643,7 @@ static void GuiFirmwareUpdateViewSha256(char *version, uint8_t percent)
         snprintf(tempBuf, sizeof(tempBuf), "#F5870A %.8s#%.24s\n%.24s#F5870A %.8s#", hash, &hash[8], &hash[32], &hash[56]);
         lv_obj_t *label = lv_obj_get_child(g_noticeHintBox, lv_obj_get_child_cnt(g_noticeHintBox) - 3);
         lv_label_set_text_fmt(label, "Checksum(v%s):\n%s", version, tempBuf);
+        GuiHintBoxResize(g_noticeHintBox, hintHeight);
     }
 }
 

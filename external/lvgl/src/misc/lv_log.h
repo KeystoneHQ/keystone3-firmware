@@ -139,11 +139,11 @@ void _lv_log_add(lv_log_level_t level, const char * file, int line,
 
 /*Do nothing if `LV_USE_LOG 0`*/
 #define _lv_log_add(level, file, line, ...)
-#define LV_LOG_TRACE printf
-#define LV_LOG_INFO printf
-#define LV_LOG_WARN printf
-#define LV_LOG_ERROR printf
-#define LV_LOG_USER printf
+#define LV_LOG_TRACE(...) do {}while(0)
+#define LV_LOG_INFO(...) do {}while(0)
+#define LV_LOG_WARN(...) do {}while(0)
+#define LV_LOG_ERROR(...) do {}while(0)
+#define LV_LOG_USER(...) do {}while(0)
 #define LV_LOG(...) do {}while(0)
 
 #endif /*LV_USE_LOG*/

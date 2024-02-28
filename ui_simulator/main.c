@@ -20,6 +20,7 @@
 #include "gui_views.h"
 #include "gui.h"
 #include "gui_api.h"
+#include "device_setting.h"
 
 /*********************
  *      DEFINES
@@ -70,6 +71,8 @@ int main(int argc, char **argv)
 {
   (void)argc; /*Unused*/
   (void)argv; /*Unused*/
+
+  printf("start");
 
   /*Initialize LVGL*/
   lv_init();

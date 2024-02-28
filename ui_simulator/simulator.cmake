@@ -6,6 +6,9 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
 add_compile_definitions(LV_LVGL_H_INCLUDE_SIMPLE)
 add_compile_definitions(LV_CONF_INCLUDE_SIMPLE)
 add_compile_definitions(COMPILE_SIMULATOR)
+if(CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
+    add_compile_definitions(COMPILE_MAC_SIMULATOR)
+endif()
 add_compile_definitions(HASH_AND_SALT_TEST_MODE)
 
 file(GLOB_RECURSE INCLUDES "ui_simulator/lv_drivers/*.h" "external/lvgl/*.h")
@@ -51,7 +54,8 @@ file(GLOB_RECURSE UTILS
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/build) 
 SET(CMAKE_CXX_FLAGS "-O3")
 
-link_directories(ui_simulator/lib)
+link_directories(ui_simulator/lib/rust)
+
 include_directories(
     external/lvgl/src
     ui_simulator
@@ -60,4 +64,17 @@ include_directories(
     ${GUI_INCLUDE_PATH}
     ${CRYPTO_INCLUDE_PATH}
 )
+
+if(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
+    link_directories(ui_simulator/lib/windows)
+endif()
+
+if(CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
+    SET(SDL2_INCLUDE_DIRS /opt/homebrew/include)
+    link_directories(/opt/homebrew/opt/sdl2/lib)
+endif()
+
+#store simulator json files
+file(MAKE_DIRECTORY ui_simulator/assets)
+
 include_directories(${SDL2_INCLUDE_DIRS})

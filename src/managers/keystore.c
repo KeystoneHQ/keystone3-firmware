@@ -28,7 +28,7 @@
 #include "safe_mem_lib.h"
 #else
 #include "simulator_model.h"
-#include "simulator_storge.h"
+#include "simulator_storage.h"
 #endif
 #define KEYSTORE_DEBUG          0
 

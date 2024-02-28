@@ -43,7 +43,11 @@
         "safe_mem_lib.h": "c",
         "gui_keyboard_hintbox.h": "c",
         "gui_enter_passcode.h": "c",
-        "screen_manager.h": "c"
+        "screen_manager.h": "c",
+        "sdl.h": "c",
+        "monitor.h": "c",
+        "mousewheel.h": "c",
+        "mouse.h": "c"
     },
     "explorer.autoReveal": true
 }

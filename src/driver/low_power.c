@@ -134,7 +134,7 @@ void RecoverFromLowPower(void)
     PubValueMsg(BACKGROUND_MSG_SD_CARD_CHANGE, 0);
     LcdBacklightOn();
 #if (USB_POP_WINDOW_ENABLE == 0)
-    if (GetUSBSwitch()) {
+    if (GetUSBSwitch() && GetUsbDetectState()) {
         OpenUsb();
     }
 #else

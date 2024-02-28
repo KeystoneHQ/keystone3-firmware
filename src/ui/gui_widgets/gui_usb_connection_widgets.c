@@ -5,6 +5,8 @@
 #include "usb_task.h"
 #include "gui_views.h"
 #include "gui_api.h"
+#include "device_setting.h"
+#include "drv_aw32001.h"
 
 
 static void GuiUsbConnectionInit(void);
@@ -83,7 +85,9 @@ static void ConnectUsbHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
 #ifndef COMPILE_SIMULATOR
-        OpenUsb();
+        if (GetUSBSwitch() && GetUsbDetectState()) {
+            OpenUsb();
+        }
 #endif
         CloseMsgBox(&g_guiMsgBoxUsbConnection);
     }

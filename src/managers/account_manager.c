@@ -7,6 +7,11 @@
 #include "account_public_info.h"
 #include "assert.h"
 #include "hash_and_salt.h"
+#include "log_print.h"
+
+#ifdef COMPILE_SIMULATOR
+#include "simulator_storage.h"
+#endif
 
 
 typedef struct {

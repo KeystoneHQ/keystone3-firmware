@@ -1,6 +1,7 @@
 #include "gui_api.h"
 
 #ifdef COMPILE_SIMULATOR
+#include "gui_framework.h"
 #ifndef COMPILE_MAC_SIMULATOR
 #include <Windows.h>
 #else

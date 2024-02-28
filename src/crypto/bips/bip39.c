@@ -233,8 +233,6 @@ int bip39_mnemonic_to_seed(const char *mnemonic, const char *passphrase,
     if (passphrase_len)
         memcpy(salt + prefix_len, passphrase, passphrase_len);
 
-    printf("%s %d..\n", __func__, __LINE__);
-
     ret = pbkdf2_hmac_sha512((unsigned char *)mnemonic, strlen(mnemonic),
                              salt, salt_len, 0,
                              bip9_cost, bytes_out, len);

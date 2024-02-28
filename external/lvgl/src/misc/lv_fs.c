@@ -12,6 +12,7 @@
 #include "lv_ll.h"
 #include <string.h>
 #include "lv_gc.h"
+#include "stdio.h"
 
 /*********************
  *      DEFINES
@@ -57,7 +58,7 @@ bool lv_fs_is_ready(char letter)
 lv_fs_res_t lv_fs_open(lv_fs_file_t * file_p, const char * path, lv_fs_mode_t mode)
 {
     if (path == NULL) {
-        LV_LOG_WARN("Can't open file: path is NULL");
+        printf("Can't open file: path is NULL");
         return LV_FS_RES_INV_PARAM;
     }
 
@@ -65,23 +66,24 @@ lv_fs_res_t lv_fs_open(lv_fs_file_t * file_p, const char * path, lv_fs_mode_t mo
     lv_fs_drv_t * drv = lv_fs_get_drv(letter);
 
     if (drv == NULL) {
-        LV_LOG_WARN("Can't open file (%s): unknown driver letter", path);
+        printf("Can't open file (%s): unknown driver letter", path);
         return LV_FS_RES_NOT_EX;
     }
 
     if (drv->ready_cb) {
         if (drv->ready_cb(drv) == false) {
-            LV_LOG_WARN("Can't open file (%s): driver not ready", path);
+            printf("Can't open file (%s): driver not ready", path);
             return LV_FS_RES_HW_ERR;
         }
     }
 
     if (drv->open_cb == NULL) {
-        LV_LOG_WARN("Can't open file (%s): open function not exists", path);
+        printf("Can't open file (%s): open function not exists", path);
         return LV_FS_RES_NOT_IMP;
     }
 
     const char * real_path = lv_fs_get_real_path(path);
+    printf("real_path = %s\n", real_path);
     void * file_d = drv->open_cb(drv, real_path, mode);
 
     if (file_d == NULL || file_d == (void *)(-1)) {

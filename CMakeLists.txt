@@ -9,7 +9,7 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "Simulato
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g2 -ggdb")
 set(CMAKE_C_FLAGS_RELEASE "-O3")
 
-# add_subdirectory(rust)
+add_subdirectory(rust)
 
 # add definition
 function(add_definition_with_message OPTION_NAME)
@@ -302,7 +302,8 @@ else()
         ${UTILS}
         ${CRYPTO_SLIP39}
     )
-    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2 rust_c)
+    add_dependencies(simulator rust_c)
+    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2 ${CMAKE_SOURCE_DIR}/ui_simulator/lib/rust-builds/librust_c.a)
     if(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
         target_link_libraries(${PROJECT_NAME} PRIVATE windows ntdll)
     endif()

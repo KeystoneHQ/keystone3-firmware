@@ -6,7 +6,14 @@ set(RUST_DIR ${CMAKE_SOURCE_DIR}/rust)
 find_program(RUST_CARGO_EXECUTABLE cargo)
 find_program(BINDGEN_EXE bindgen)
 find_program(CBINDGEN_EXE cbindgen)
-set(TARGET_PATH	${CMAKE_BINARY_DIR}/rust-builds)
+
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Simulator")
+    set(TARGET_PATH	${CMAKE_BINARY_DIR}/rust-builds)
+else()
+    set(TARGET_PATH	${CMAKE_SOURCE_DIR}/ui_simulator/lib/rust-builds)
+endif()
+
+message(STATUS "build target path: " ${TARGET_PATH})
 
 option(LIB_RUST_C "Set to switch to Compile the RUST_C library" OFF)
 

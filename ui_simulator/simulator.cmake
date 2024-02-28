@@ -54,11 +54,10 @@ file(GLOB_RECURSE UTILS
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/build) 
 SET(CMAKE_CXX_FLAGS "-O3")
 
-link_directories(ui_simulator/lib/rust)
-
 include_directories(
     external/lvgl/src
     ui_simulator
+    ui_simulator/lib/rust-builds
     ${SRC_INCLUDE_PATH}
     ${EXTERNAL_INCLUDE_PATH}
     ${GUI_INCLUDE_PATH}
@@ -75,6 +74,9 @@ if(CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
 endif()
 
 #store simulator json files
-file(MAKE_DIRECTORY ui_simulator/assets)
+set(ASSETS_PATH ui_simulator/assets)
+if(NOT EXISTS ${ASSETS_PATH})
+    file(MAKE_DIRECTORY ${ASSETS_PATH})
+endif()
 
 include_directories(${SDL2_INCLUDE_DIRS})

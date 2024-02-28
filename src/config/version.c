@@ -20,18 +20,30 @@ const char g_softwareVersionString[] __attribute__((section(".fixSection"))) = S
 
 void GetSoftWareVersion(char *version)
 {
+#ifndef BTC_ONLY
     snprintf(version, SOFTWARE_VERSION_MAX_LEN, "Firmware v%d.%d.%d", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+#else
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "Firmware v%d.%d.%d-BTC", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+#endif
 }
 
 void GetSoftWareVersionNumber(char *version)
 {
+#ifndef BTC_ONLY
     snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+#else
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d-BTC", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+#endif
 }
 
 const char *GetSoftwareVersionString(void)
 {
     static char version[32] = {0};
+#ifndef BTC_ONLY
     sprintf(version, "Firmware v%d.%d.%d", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+#else
+    sprintf(version, "Firmware v%d.%d.%d-BTC", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+#endif
     return version;
 }
 

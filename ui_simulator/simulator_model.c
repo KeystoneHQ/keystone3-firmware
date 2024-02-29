@@ -131,11 +131,6 @@ bool FpModuleIsChipState(void)
     return true;
 }
 
-void free_Response_DisplayContractData(PtrT_Response_DisplayContractData ptr)
-{
-
-}
-
 int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
 {
 
@@ -383,34 +378,9 @@ uint8_t GetFingerUnlockFlag(void)
     return 1;
 }
 
-PtrT_TransactionParseResult_DisplayETHPersonalMessage eth_parse_personal_message(PtrUR ptr,
-        PtrString xpub)
-{
-    struct TransactionParseResult_DisplayETHPersonalMessage *result = malloc(sizeof(TransactionParseResult_DisplayETHPersonalMessage));
-
-    return result;
-}
-
-Ptr_Response_DisplayContractData eth_parse_contract_data(PtrString input_data,
-        PtrString contract_json)
-{
-    struct Response_DisplayContractData *result = malloc(sizeof(Response_DisplayContractData));
-
-    return result;
-}
-
 bool GetDBContract(const char* address, const char *selector, const uint32_t chainId, char *functionABIJson, char *contractName)
 {
     return false;
-}
-
-Ptr_Response_DisplayContractData eth_parse_contract_data_by_method(PtrString input_data,
-        PtrString contract_name,
-        PtrString contract_method_json)
-{
-    struct Response_DisplayContractData *result = malloc(sizeof(Response_DisplayContractData));
-
-    return result;
 }
 
 void SystemReboot(void)

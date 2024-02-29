@@ -1072,30 +1072,6 @@ static void AddressLongModeCut(char *out, const char *address, uint32_t targetLe
     strcat(out, address + len - targetLen / 2);
 }
 
-#ifdef COMPILE_SIMULATOR
-
-static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
-{
-    char hdPath[128];
-    sprintf(hdPath, "m/1852'/1815'/%u'/0/%u", g_selectedAccount[GetCurrentAccountIndex()], index);
-    printf("hdPath=%s\r\n", hdPath);
-    item->index = index;
-    switch (type) {
-    case 1:
-        sprintf(item->address, "addr1vxg88k7kzt95q9vhpj4a9eewx3afe759a3rq9ggdhsetstgwkxsea%d", index);
-        break;
-    case 2:
-        sprintf(item->address, "stake1u9vtx6ry4e8zculweg3racrnzdgja3yr2neayqnm8zwhd0qj5ln0l%d", index);
-        break;
-    default:
-        sprintf(item->address, "addr1q95l5x7exwzhgupzs0v0ku0censcx8p75jz52cl4uszr463n5nclg6z9gazt9lekgje2k7w53em2xxrljqh73gdul2ks9zxj4d%d", index);
-        break;
-    }
-    strcpy(item->path, hdPath);
-}
-
-#else
-
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
 {
     char *xPub = NULL, hdPath[128];
@@ -1132,8 +1108,6 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
     }
     free_simple_response_c_char(result);
 }
-
-#endif
 
 void GuiResetCurrentMultiAccountsCache(uint8_t index)
 {

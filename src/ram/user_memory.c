@@ -109,6 +109,21 @@ void ExtFree(void *p)
 }
 
 
+void *ExtRealloc(void *p, size_t newSize)
+{
+    if (p == NULL) {
+        return ExtMalloc(newSize);
+    }
+
+    if (newSize == 0) {
+        ExtFree(p);
+        return NULL;
+    }
+
+    ExtFree(p);
+    return ExtMalloc(newSize);
+}
+
 void *RustMalloc(int32_t size)
 {
     return SramMalloc(size);

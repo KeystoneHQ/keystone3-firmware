@@ -18,9 +18,10 @@
 #include "mhscpu.h"
 #include "drv_otp.h"
 #include "user_utils.h"
+#include "librust_c.h"
 
+#define SIGNATURE_ENABLE        (1)
 #define SD_CARD_OTA_BIN_PATH   "0:/keystone3.bin"
-
 #define CHECK_UNIT              256
 #define CHECK_SIZE              4096
 
@@ -40,11 +41,21 @@ LV_FONT_DECLARE(openSans_24);
 
 #define UPDATE_PUB_KEY_LEN                  64
 
+static int32_t GetIntValue(const cJSON *obj, const char *key);
 static uint32_t GetOtaFileInfo(OtaFileInfo_t *info, const char *filePath);
-static bool CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t *pHeadSize);
+static int32_t CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t *pHeadSize);
 static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32_t headSize, char *version);
-
 int32_t GetSoftwareVersionFormData(uint32_t *major, uint32_t *minor, uint32_t *build, const uint8_t *data, uint32_t dataLen);
+#if (SIGNATURE_ENABLE == 1)
+static void GetSignatureValue(const cJSON *obj, char *output, uint32_t maxLength);
+void GetUpdatePubKey(uint8_t *pubKey);
+const uint8_t g_defaultPubKey[] = {
+    0xD9, 0xA5, 0xDB, 0x68, 0x66, 0x36, 0x4B, 0x7F, 0x55, 0xCF, 0x6F, 0x3C, 0x19, 0x9A, 0x96, 0x26,
+    0x5C, 0x6E, 0x71, 0x70, 0x87, 0xBE, 0x9D, 0xA8, 0xF4, 0x1D, 0xEA, 0xF5, 0x70, 0xBC, 0x7C, 0x2E,
+    0x0D, 0x48, 0x4C, 0xB3, 0x9F, 0x0D, 0xDE, 0xFF, 0xB4, 0x17, 0xF9, 0x95, 0xF9, 0x14, 0x06, 0xCB,
+    0xF0, 0xE1, 0x56, 0x63, 0x9A, 0xD8, 0x05, 0x6D, 0x0E, 0xE3, 0x51, 0xC2, 0x58, 0x31, 0xF8, 0xD9
+};
+#endif
 
 bool CheckApp(void)
 {
@@ -114,6 +125,8 @@ static uint32_t GetOtaFileInfo(OtaFileInfo_t *info, const char *filePath)
     FIL fp;
     int32_t ret;
     uint32_t headSize = 0, readSize;
+    char *headJsonStr = NULL;
+    cJSON *jsonRoot;
 
     ret = f_open(&fp, filePath, FA_OPEN_EXISTING | FA_READ);
     do {
@@ -126,19 +139,150 @@ static uint32_t GetOtaFileInfo(OtaFileInfo_t *info, const char *filePath)
             FatfsError((FRESULT)ret);
             break;
         }
+        printf("headSize=%d\r\n", headSize);
+        headJsonStr = SRAM_MALLOC(headSize + 1);
+        if (headJsonStr == NULL) {
+            printf("malloc err\r\n");
+            break;
+        }
+        ret = f_read(&fp, headJsonStr, headSize, (UINT *)&readSize);
+        if (ret) {
+            FatfsError((FRESULT)ret);
+            break;
+        }
+        if (readSize != headSize) {
+            printf("read err,readSize=%d,headSize=%d\r\n", readSize, headSize);
+            break;
+        }
+        headJsonStr[headSize] = '\0';
+        printf("headJsonStr=%s\r\n", headJsonStr);
+        jsonRoot = cJSON_Parse(headJsonStr);
+        if (jsonRoot == NULL) {
+            printf("parse error:%s\n", cJSON_GetErrorPtr());
+            break;
+        }
+        cJSON *json = cJSON_GetObjectItem(jsonRoot, "mark");
+        if (json != NULL) {
+            if (strlen(json->valuestring) < OTA_FILE_INFO_MARK_MAX_LEN) {
+                strcpy(info->mark, json->valuestring);
+            } else {
+                strcpy(info->mark, "");
+            }
+        } else {
+            printf("key:%s does not exist\r\n", "mark");
+        }
+        printf("mark = %s\n", info->mark);
+
+#if (SIGNATURE_ENABLE == 1)
+        GetSignatureValue(jsonRoot, info->signature, SIGNATURE_LEN);
+#endif
+        info->fileSize = GetIntValue(jsonRoot, "fileSize");
+        info->originalFileSize = GetIntValue(jsonRoot, "originalFileSize");
+        info->crc32 = GetIntValue(jsonRoot, "crc32");
+        info->originalCrc32 = GetIntValue(jsonRoot, "originalCrc32");
+        info->encode = GetIntValue(jsonRoot, "encode");
+        info->encodeUnit = GetIntValue(jsonRoot, "encodeUnit");
+        info->encrypt = GetIntValue(jsonRoot, "encrypt");
+        info->originalBriefSize = GetIntValue(jsonRoot, "originalBriefSize");
+        info->originalBriefCrc32 = GetIntValue(jsonRoot, "originalBriefCrc32");
+        cJSON_Delete(jsonRoot);
     } while (0);
+    if (headJsonStr != NULL) {
+        SRAM_FREE(headJsonStr);
+    }
     f_close(&fp);
     return headSize + 5;    //4 byte uint32 and 1 byte json string '\0' end.
 }
 
-static bool CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t *pHeadSize)
+static int32_t CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t *pHeadSize)
 {
-    uint32_t headSize;
+    FIL fp;
+    int32_t ret;
+    uint32_t fileSize, crcCalc, readSize, i, headSize;
+    struct sha256_ctx ctx;
 
     headSize = GetOtaFileInfo(info, filePath);
     *pHeadSize = headSize;
 
-    return !(headSize <= 5);
+    ret = f_open(&fp, filePath, FA_OPEN_EXISTING | FA_READ);
+    if (ret) {
+        FatfsError((FRESULT)ret);
+        return ERR_UPDATE_CHECK_FILE_EXIST;
+    }
+    fileSize = f_size(&fp);
+    printf("mark=%s\r\n", info->mark);
+    printf("fileSize=%d\r\n", info->fileSize);
+    printf("originalFileSize=%d\r\n", info->originalFileSize);
+    printf("crc32=0x%08X\r\n", info->crc32);
+    printf("originalCrc32=0x%08X\r\n", info->originalCrc32);
+    printf("encode=%d\r\n", info->encode);
+    printf("encodeUnit=%d\r\n", info->encodeUnit);
+    printf("encrypt=%d\r\n", info->encrypt);
+    printf("destPath=%s\r\n", info->destPath);
+    printf("originalBriefSize=%d\r\n", info->originalBriefSize);
+    printf("originalBriefCrc32=0x%08X\r\n", info->originalBriefCrc32);
+#if (SIGNATURE_ENABLE == 1)
+    printf("signature=%s\r\n", info->signature);
+#endif
+    uint8_t *fileUnit = SRAM_MALLOC(FILE_UNIT_SIZE + 16);
+    ret = SUCCESS_CODE;
+    do {
+        if (fileSize != info->fileSize + headSize) {
+            printf("file size err,fileSize=%d, info->fileSize=%d\r\n", fileSize, info->fileSize);
+            ret = ERR_UPDATE_CHECK_CRC_FAILED;
+            break;
+        }
+        if (strcmp(info->mark, FILE_MARK_MCU_FIRMWARE) != 0) {
+            printf("file info mark err\r\n");
+            ret = ERR_UPDATE_CHECK_CRC_FAILED;
+            break;
+        }
+        printf("start to check file crc32\r\n");
+        f_lseek(&fp, headSize);
+        crcCalc = 0;
+
+        sha256_init(&ctx);
+        uint8_t contentHash[32];
+        for (i = headSize; i < fileSize; i += readSize) {
+            ret = f_read(&fp, fileUnit, FILE_UNIT_SIZE, (UINT *)&readSize);
+            if (ret) {
+                FatfsError((FRESULT)ret);
+                ret = ERR_UPDATE_CHECK_CRC_FAILED;
+                break;
+            }
+            //printf("i=%d,readSize=%d\r\n", i, readSize);
+            crcCalc = crc32_ieee(crcCalc, fileUnit, readSize);
+            sha256_update(&ctx, fileUnit, readSize);
+        }
+        sha256_done(&ctx, (struct sha256 *)contentHash);
+        PrintArray("hash content:", contentHash, 32);
+        if (crcCalc != info->crc32) {
+            printf("crc err,crcCalc=0x%08X,info->crc32=0x%08X\r\n", crcCalc, info->crc32);
+            ret = ERR_UPDATE_CHECK_CRC_FAILED;
+            break;
+        }
+
+#if (SIGNATURE_ENABLE == 1)
+        printf("signature=%s\r\n", info->signature);
+        if (strlen(info->signature) != 128) {
+            printf("error signature=%s\r\n", info->signature);
+            ret = ERR_UPDATE_CHECK_SIGNATURE_FAILED;
+            break;
+        }
+        // TODO: find this public key from firmware section.
+        uint8_t publickey[65] = {0};
+        GetUpdatePubKey(publickey);
+        PrintArray("pubKey", publickey, 65);
+        if (verify_frimware_signature(info->signature, contentHash, publickey) != true) {
+            printf("signature check error\n");
+            ret = ERR_UPDATE_CHECK_SIGNATURE_FAILED;
+            break;
+        }
+#endif
+    } while (0);
+    f_close(&fp);
+
+    return ret;
 }
 
 bool CheckOtaBinVersion(char *version)
@@ -147,16 +291,16 @@ bool CheckOtaBinVersion(char *version)
     // return true;
     OtaFileInfo_t otaFileInfo = {0};
     uint32_t headSize;
-    bool ret = true;
+    int32_t ret = SUCCESS_CODE;
 
     do {
         ret = CheckOtaFile(&otaFileInfo, SD_CARD_OTA_BIN_PATH, &headSize);
-        if (ret == false) {
+        if (ret != SUCCESS_CODE) {
             break;
         }
 
         ret = CheckVersion(&otaFileInfo, SD_CARD_OTA_BIN_PATH, headSize, version);
-        if (ret == false) {
+        if (ret != SUCCESS_CODE) {
             printf("file %s version err\n", SD_CARD_OTA_BIN_PATH);
             break;
         }
@@ -225,3 +369,24 @@ static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32
 }
 
 
+static int32_t GetIntValue(const cJSON *obj, const char *key)
+{
+    cJSON *intJson = cJSON_GetObjectItem((cJSON *)obj, key);
+    if (intJson != NULL) {
+        return (uint32_t)intJson->valuedouble;
+    }
+    printf("key:%s does not exist\r\n", key);
+    return 0;
+}
+
+static void GetSignatureValue(const cJSON *obj, char *output, uint32_t maxLength)
+{
+    cJSON *signatureValue = cJSON_GetObjectItem((cJSON *)obj, "signature");
+    if (signatureValue->type == cJSON_String) {
+        char *strTemp = signatureValue->valuestring;
+        strncpy(output, strTemp, maxLength);
+        return;
+    }
+    memset(output, 0, maxLength);
+    printf("signature does not exist\r\n");
+}

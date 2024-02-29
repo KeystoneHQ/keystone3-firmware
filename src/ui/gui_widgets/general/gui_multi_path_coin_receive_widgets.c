@@ -1204,34 +1204,6 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 
 }
 
-#ifdef COMPILE_SIMULATOR
-
-static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item)
-{
-    char hdPath[128];
-    //sprintf(hdPath, "m/44'/0'/0'/0/%u", index);
-    sprintf(hdPath, "%s/0/%u", g_ethPaths[g_ethPathIndex[g_currentAccountIndex]].path, index);
-    printf("hdPath=%s\r\n", hdPath);
-    item->index = index;
-    sprintf(item->address, "tb1qkcp7vdhczgk5eh59d2l0dxvmpzhx%010u", index);
-    strcpy(item->path, hdPath);
-}
-
-static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item)
-{
-    char hdPath[128];
-    //sprintf(hdPath, "m/44'/0'/0'/0/%u", index);
-    sprintf(hdPath, "%s/0/%u", g_ethPaths[g_ethPathIndex[g_currentAccountIndex]].path, index);
-    printf("hdPath=%s\r\n", hdPath);
-    item->index = index;
-    sprintf(item->address, "tb1qkcp7vdhczgk5eh59d2l0dxvmpzhx%010u", index);
-    strcpy(item->path, hdPath);
-}
-
-
-#else
-
-
 static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item)
 {
     char *xPub = NULL, hdPath[128] = {0};
@@ -1265,8 +1237,6 @@ static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item)
     }
     free_simple_response_c_char(result);
 }
-
-#endif
 
 void GuiResetCurrentEthAddressIndex(uint8_t index)
 {

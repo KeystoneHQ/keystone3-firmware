@@ -305,7 +305,10 @@ bool CheckOtaBinVersion(char *version)
             break;
         }
     } while (0);
-    return ret;
+    if (ret == SUCCESS_CODE) {
+        return true;
+    }
+    return false;
 }
 
 static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32_t headSize, char *version)

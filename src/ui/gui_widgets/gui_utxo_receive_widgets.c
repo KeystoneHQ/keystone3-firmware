@@ -1421,20 +1421,6 @@ static ChainType GetChainTypeByIndex(uint32_t index)
 #endif
 }
 
-#ifdef COMPILE_SIMULATOR
-
-static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
-{
-    char hdPath[128];
-    // sprintf(hdPath, "m/44'/0'/0'/0/%u", index);
-    sprintf(hdPath, "%s/0/%u", g_addressSettings[g_addressType[g_currentAccountIndex]].path, index);
-    item->index = index;
-    sprintf(item->address, "tb1qkcp7vdhczgk5eh59d2l0dxvmpzhx%010u", index);
-    strcpy(item->path, hdPath);
-}
-
-#else
-
 static void GetRootHdPath(char *hdPath)
 {
     uint8_t addrType = g_addressType[g_currentAccountIndex];
@@ -1487,8 +1473,6 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
     strcpy(item->path, hdPath);
     free_simple_response_c_char(result);
 }
-
-#endif
 
 void GuiResetCurrentUtxoAddressIndex(uint8_t index)
 {

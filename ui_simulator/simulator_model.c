@@ -434,16 +434,6 @@ void SetLockTimeState(bool enable)
 
 }
 
-
-PtrString calculate_auth_code(ConstPtrUR web_auth_data,
-                              PtrBytes rsa_key_n,
-                              uint32_t rsa_key_n_len,
-                              PtrBytes rsa_key_d,
-                              uint32_t rsa_key_d_len)
-{
-
-}
-
 int32_t GetWebAuthRsaKey(uint8_t *key)
 {
 

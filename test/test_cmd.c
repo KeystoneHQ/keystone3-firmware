@@ -202,7 +202,6 @@ static void testEthTx(int argc, char *argv[]);
 static void testSolanaTx(int argc, char *argv[]);
 static void testSolanaCheckTx(int argc, char *argv[]);
 static void testCardanoTx(int argc, char *argv[]);
-static void RustGetEthAddress(int argc, char *argv[]);
 static void RustTestParseAptosTx(int argc, char *argv[]);
 static void RustTestSuiCheckTx(int argc, char *argv[]);
 static void RustTestSuiParseTx(int argc, char *argv[]);
@@ -321,7 +320,7 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust test near tx:", testNearTx},
     {"rust test near check:", testNearCheckTx},
     {"rust test cardano tx:", testCardanoTx},
-    {"rust test get eth address", RustGetEthAddress},
+    {"rust test get eth address:", RustGetEthAddress},
     {"rust test parse eth personal message:", RustParseEthPersonalMessage},
     {"rust test parse eth contract data", RustParseEthContractData},
     {"rust test xrp get address:", testXRPGetAddress},
@@ -370,7 +369,6 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust test solana tx:", testSolanaTx},
     {"rust test solana check", testSolanaCheckTx},
     {"rust test cardano tx:", testCardanoTx},
-    {"rust test get eth address", RustGetEthAddress},
     {"rust test parse aptos tx", RustTestParseAptosTx},
     {"rust test sui check tx:", RustTestSuiCheckTx},
     {"rust test sui parse tx:", RustTestSuiParseTx},
@@ -2541,57 +2539,49 @@ static void testCardanoTx(int argc, char *argv[])
 
 static void RustGetEthAddress(int argc, char *argv[])
 {
-    char *standardHdPath = "44'/60'/0'/0/0";
-    char *rootPath = "44'/60'/0'";
-    char *rootXPub = "xpub6BtigCpsVJrCGVhsuMuAshHuQctVUKUeumxP4wkUtypFpXatQ44ZCHwZi6w4Gf5kMN3vpfyGnHo5hLvgjs2NnkewYHSdVHX4oUbR1Xzxc7E";
-
-    SimpleResponse_c_char *result = eth_get_address(standardHdPath, rootXPub, rootPath);
-
+    //User login is required before this test starts.
+    //argv[0]   : derivation path, 0 - BIP44 standard, 1 - Ledger Live, 2 - Ledger Legacy.
+    //argv[1]   : address index.
+    int32_t path, index;
+    char *xPub, hdPath[32], rootPath[32];
+    VALUE_CHECK(argc, 2);
+    if (GetCurrentAccountIndex() > 2) {
+        printf("User login is required before this test starts\n");
+        return;
+    }
+    sscanf(argv[0], "%d", &path);
+    sscanf(argv[1], "%d", &index);
+    switch (path) {
+        case 0:
+            xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
+            sprintf(hdPath, "m/44'/60'/0'/0/%u", index);
+            strcpy(rootPath, "m/44'/60'/0'");
+            break;
+        case 1:
+            if (index > 9) {
+                printf("Ledger Live index must less than 10\n");
+                return;
+            }
+            xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LIVE_0 + index);
+            sprintf(hdPath, "m/44'/60'/%u'/0/0", index);
+            sprintf(rootPath, "m/44'/60'/%u'", index);
+            break;
+        case 2:
+            xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LEGACY);
+            sprintf(hdPath, "m/44'/60'/0'/%u", index);
+            strcpy(rootPath, "m/44'/60'/0'");
+            break;
+        default:
+            printf("error derivation path, 0 - BIP44 standard, 1 - Ledger Live, 2 - Ledger Legacy\n");
+            return;
+    }
+    SimpleResponse_c_char *result = eth_get_address(hdPath, xPub, rootPath);
     if (result->error_code == 0) {
-        printf("bip44 standard address is %s\r\n", result->data);
+        printf("eth address=%s\n", result->data);
     } else {
-        printf("error_code is %s\r\n", result->error_code);
-        printf("error_message is %s\r\n", result->error_message);
+        printf("err code=%d,err msg=%s\n", result->error_code, result->error_message);
     }
     free_simple_response_c_char(result);
-
-    char *ledgerLegacyHdPath = "44'/60'/0'/0";
-    SimpleResponse_c_char *result1 = eth_get_address(ledgerLegacyHdPath, rootXPub, rootPath);
-
-    if (result1->error_code == 0) {
-        printf("ledger legacy address is %s\r\n", result1->data);
-    } else {
-        printf("error_code is %s\r\n", result1->error_code);
-        printf("error_message is %s\r\n", result1->error_message);
-    }
-    free_simple_response_c_char(result1);
-
-    char *ledgerLiveHdPath = "44'/60'/1'/0/0";
-    char *root_path1 = "44'/60'/1'";
-    char *root_x_pub1 = "xpub6BtigCpsVJrCJZsM7fwcwCX8dhAn5Drg5QnMQY1wgzX1BMHGHPHB9qjmvnqgK6BECXyVTkGdr4CTyNyhaMXKdSmEVkSd4w7ePqaBvzjMxJ9";
-    SimpleResponse_c_char *result2 = eth_get_address(ledgerLiveHdPath, root_x_pub1, root_path1);
-
-    if (result2->error_code == 0) {
-        printf("ledger live address is %s\r\n", result2->data);
-    } else {
-        printf("error_code is %s\r\n", result2->error_code);
-        printf("error_message is %s\r\n", result2->error_message);
-    }
-    free_simple_response_c_char(result2);
-
-    // error case
-    SimpleResponse_c_char *result3 = eth_get_address(ledgerLiveHdPath, root_x_pub1, rootPath);
-
-    if (result3->error_code == 0) {
-        printf("ledger live address is %s\r\n", result3->data);
-    } else {
-        printf("error_code is %s\r\n", result3->error_code);
-        printf("error_message is %s\r\n", result3->error_message);
-    }
-    free_simple_response_c_char(result3);
-
-    PrintRustMemoryStatus();
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
 static void RustTestParseAptosTx(int argc, char *argv[])

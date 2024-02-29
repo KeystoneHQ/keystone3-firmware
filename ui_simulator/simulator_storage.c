@@ -285,11 +285,11 @@ int32_t SimulatorLoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accoun
         cJSON_Delete(rootJson);
         return ret;
     }
+    GetJsonArrayData(rootJson, accountSecret->entropy, ENTROPY_MAX_LEN, "entropy");
+    GetJsonArrayData(rootJson, accountSecret->seed, SEED_LEN, "seed");
+    GetJsonArrayData(rootJson, accountSecret->slip39Ems, SLIP39_EMS_LEN, "slip39_ems");
+    GetJsonArrayData(rootJson, accountSecret->reservedData, SE_DATA_RESERVED_LEN, "reserved_data");
 
-    GetJsonArrayData(rootJson, "entropy", accountSecret->entropy, ENTROPY_MAX_LEN);
-    GetJsonArrayData(rootJson, "seed", accountSecret->seed, SEED_LEN);
-    GetJsonArrayData(rootJson, "slip39_ems", accountSecret->slip39Ems, SLIP39_EMS_LEN);
-    GetJsonArrayData(rootJson, "reserved_data", accountSecret->reservedData, SE_DATA_RESERVED_LEN);
     cJSON *entropyLenJson = cJSON_GetObjectItem(rootJson, "entropy_len");
     if (entropyLenJson != NULL) {
         accountSecret->entropyLen = (uint8_t)entropyLenJson->valueint;

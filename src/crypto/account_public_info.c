@@ -180,7 +180,6 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
     addr = SPI_FLASH_ADDR_USER1_MUTABLE_DATA + account * SPI_FLASH_ADDR_EACH_SIZE;
     ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
     ASSERT(ret == 4);
-    printf("size = %d.............\n", size);
 
     if (size == 0xffffffff || size == 0) {
         needSet = true;
@@ -207,12 +206,9 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
             cJSON_AddItemToObject(rootJson, walletList[i].name, jsonItem);
         }
         retStr = cJSON_Print(rootJson);
-        printf("retStr = %s\n", retStr);
         cJSON_Delete(rootJson);
         RemoveFormatChar(retStr);
-        printf("retStr = %s\n", retStr);
         size = strlen(retStr);
-        printf("size = %d............\n", size);
         Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
         Gd25FlashWriteBuffer(addr + 4, (uint8_t *)retStr, size);
     }
@@ -221,7 +217,6 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
     ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
     ASSERT(ret == size);
     jsonString[size] = 0;
-    printf("jsonString=%s...\r\n", jsonString);
 
     cJSON *rootJson = cJSON_Parse(jsonString);
     SRAM_FREE(jsonString);

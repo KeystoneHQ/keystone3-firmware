@@ -4,6 +4,7 @@
 #define CONCAT(x, y) x ## y
 #define PLUS10(x) CONCAT(1, x)
 
+#define SOFTWARE_VERSION_MAX_LEN            (32)
 #define SOFTWARE_VERSION_MAJOR              0
 #define SOFTWARE_VERSION_MINOR              0
 #define SOFTWARE_VERSION_BUILD              1

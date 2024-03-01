@@ -130,16 +130,16 @@ static void GuiAboutNVSBarInit()
 
 void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
 {
-    char version[32] = {0};
+    char version[BUFFER_SIZE_32] = {0};
     GetSoftWareVersion(version);
-    char *versionPrefix = "Firmware ";
+    const char *versionPrefix = "Firmware ";
     char *startPointer = strstr(version, versionPrefix);
-    char versionStr[32] = {0};
-    char fpVersion[32] = "v";
+    char versionStr[BUFFER_SIZE_32] = {0};
+    char fpVersion[BUFFER_SIZE_32] = "v";
     if (startPointer) {
-        strncpy(versionStr, version + strlen(versionPrefix), strlen(version));
+        strncpy(versionStr, version + strlen(versionPrefix), strnlen_s(version, BUFFER_SIZE_32));
     } else {
-        strncpy(versionStr, version, strlen(version));
+        strncpy(versionStr, version, strnlen_s(version, BUFFER_SIZE_32));
     }
 
     char serialNumber[64] = {0};
@@ -304,13 +304,13 @@ static void LogExportHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        char logName[64] = {0};
-        char sn[32] = {0};
-        char buf[80] = "File name:\n";
+        char logName[BUFFER_SIZE_64] = {0};
+        char sn[BUFFER_SIZE_32] = {0};
+        char buf[BUFFER_SIZE_128] = "File name:\n";
         GetSerialNumber(sn);
-        sprintf(logName, "0:Log_%s_%d.bin", sn, GetCurrentStampTime());
+        snprintf_s(logName, BUFFER_SIZE_64, "0:Log_%s_%d.bin", sn, GetCurrentStampTime());
         LogSetLogName(logName);
-        sprintf(logName, "Log_%s_%d.bin", sn, GetCurrentStampTime());
+        snprintf_s(logName, BUFFER_SIZE_64, "Log_%s_%d.bin", sn, GetCurrentStampTime());
         strcat(buf, logName);
         g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgSdCardL,
                           _("about_info_export_to_sdcard"), buf, _("Cancel"), DARK_GRAY_COLOR, _("Export"), ORANGE_COLOR);

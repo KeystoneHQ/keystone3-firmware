@@ -473,8 +473,8 @@ void GuiWalletFingerDeleteWidget(lv_obj_t *parent)
     lv_obj_t *imgFinger = GuiCreateImg(parent, &imgYellowFinger);
     lv_obj_align(imgFinger, LV_ALIGN_BOTTOM_MID, 0, -548);
 
-    char buf[32] = {0};
-    sprintf(buf, _("fingerprint_nth"), GetFingerRegisteredStatus(g_deleteFingerIndex));
+    char buf[BUFFER_SIZE_32] = {0};
+    snprintf_s(buf, BUFFER_SIZE_32, _("fingerprint_nth"), GetFingerRegisteredStatus(g_deleteFingerIndex));
     lv_obj_t *label = GuiCreateLittleTitleLabel(parent, buf);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -476);
 

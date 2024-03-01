@@ -10,6 +10,8 @@
 #include "drv_atecc608b.h"
 #include "log_print.h"
 #include "hash_and_salt.h"
+#include "secret_cache.h"
+#include "safe_str_lib.h"
 
 #define SHA256_COUNT                            3
 
@@ -27,7 +29,7 @@ static int32_t SetNewKeyPieceToAtecc608b(uint8_t accountIndex, uint8_t *piece, c
 
     ASSERT(accountIndex <= 2);
     do {
-        HashWithSalt(authKey, (uint8_t *)password, strlen(password), "auth_key");
+        HashWithSalt(authKey, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "auth_key");
         GetAccountSlot(&accountSlot, accountIndex);
         //new kdf
         ret = SE_EncryptWrite(accountSlot.auth, 0, authKey);
@@ -38,7 +40,7 @@ static int32_t SetNewKeyPieceToAtecc608b(uint8_t accountIndex, uint8_t *piece, c
         ret = SE_EncryptWrite(accountSlot.hostKdf, 0, hostRandom);
         CHECK_ERRCODE_BREAK("write kdf", ret);
 
-        HashWithSalt(outData, (uint8_t *)password, strlen(password), "password_atecc608b");
+        HashWithSalt(outData, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password_atecc608b");
         memcpy(inData, outData, 32);
         ret = SE_Kdf(accountSlot.rollKdf, authKey, inData, 32, outData);
         CHECK_ERRCODE_BREAK("kdf", ret);
@@ -65,7 +67,7 @@ static int32_t SetNewKeyPieceToDs28s60(uint8_t accountIndex, uint8_t *piece, con
     int32_t ret;
 
     ASSERT(accountIndex <= 2);
-    HashWithSalt(passwordHash, (uint8_t *)password, strlen(password), "ds28s60 digest");
+    HashWithSalt(passwordHash, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "ds28s60 digest");
     TrngGet(randomKey, 32);
     for (uint32_t i = 0; i < 32; i++) {
         xData[i] = passwordHash[i] ^ randomKey[i];
@@ -90,8 +92,8 @@ static int32_t GetKeyPieceFromAtecc608b(uint8_t accountIndex, uint8_t *piece, co
 
     ASSERT(accountIndex <= 2);
     do {
-        HashWithSalt(authKey, (uint8_t *)password, strlen(password), "auth_key");
-        HashWithSalt(outData, (uint8_t *)password, strlen(password), "password_atecc608b");
+        HashWithSalt(authKey, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "auth_key");
+        HashWithSalt(outData, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password_atecc608b");
         memcpy(inData, outData, 32);
 
         GetAccountSlot(&accountSlot, accountIndex);
@@ -120,7 +122,7 @@ static int32_t GetKeyPieceFromDs28s60(uint8_t accountIndex, uint8_t *piece, cons
     int32_t ret;
 
     ASSERT(accountIndex <= 2);
-    HashWithSalt(passwordHash, (uint8_t *)password, strlen(password), "ds28s60 digest");
+    HashWithSalt(passwordHash, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "ds28s60 digest");
     do {
         ret = SE_HmacEncryptRead(xData, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_KEY_PIECE);
         CHECK_ERRCODE_BREAK("write xData", ret);

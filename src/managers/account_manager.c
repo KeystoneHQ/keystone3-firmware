@@ -7,7 +7,8 @@
 #include "account_public_info.h"
 #include "assert.h"
 #include "hash_and_salt.h"
-
+#include "secret_cache.h"
+#include "safe_str_lib.h"
 
 typedef struct {
     uint8_t loginPasswordErrorCount;
@@ -35,7 +36,7 @@ static int32_t ReadCurrentAccountInfo(void)
     ASSERT(accountIndex <= 2);
     ret = SE_HmacEncryptRead(param, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
     if (ret == SUCCESS_CODE) {
-        memcpy(&g_currentAccountInfo, pAccountInfo, sizeof(AccountInfo_t));
+        memcpy_s(&g_currentAccountInfo, sizeof(AccountInfo_t), pAccountInfo, sizeof(AccountInfo_t));
     }
     return ret;
 }
@@ -120,8 +121,8 @@ int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const u
     g_currentAccountInfo.mnemonicType = MNEMONIC_TYPE_SLIP39;
     int32_t ret = SaveNewSlip39Entropy(accountIndex, ems, entropy, entropyLen, password, id, ie);
     CHECK_ERRCODE_RETURN_INT(ret);
-    memcpy(g_currentAccountInfo.slip39Id, &id, 2);
-    memcpy(g_currentAccountInfo.slip39Ie, &ie, 1);
+    memcpy_s(g_currentAccountInfo.slip39Id, sizeof(g_currentAccountInfo.slip39Id), &id, sizeof(id));
+    memcpy_s(g_currentAccountInfo.slip39Ie, sizeof(g_currentAccountInfo.slip39Ie), &ie, sizeof(ie));
     ret = SaveCurrentAccountInfo();
     CHECK_ERRCODE_RETURN_INT(ret);
     ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
@@ -146,7 +147,7 @@ int32_t VerifyCurrentAccountPassword(const char *password)
         }
         ret = SE_HmacEncryptRead(passwordHashStore, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
         CHECK_ERRCODE_BREAK("read password hash", ret);
-        HashWithSalt(passwordHashClac, (const uint8_t *)password, strlen(password), "password hash");
+        HashWithSalt(passwordHashClac, (const uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password hash");
         if (memcmp(passwordHashStore, passwordHashClac, 32) == 0) {
             g_publicInfo.currentPasswordErrorCount = 0;
             ret = SUCCESS_CODE;
@@ -222,7 +223,7 @@ void SetCurrentAccountIndex(void)
 
 void SetCurrentAccountMfp(uint8_t* mfp)
 {
-    memcpy(g_currentAccountInfo.mfp, mfp, 4);
+    memcpy_s(g_currentAccountInfo.mfp, sizeof(g_currentAccountInfo.mfp), mfp, 4);
 }
 
 void SetCurrentAccountEntropyLen(uint8_t entropyLen)
@@ -370,8 +371,8 @@ void SetWalletIconIndex(uint8_t iconIndex)
 /// @param[in] walletName
 void SetWalletName(const char *walletName)
 {
-    memset(g_currentAccountInfo.walletName, 0, sizeof(g_currentAccountInfo.walletName));
-    strcpy(g_currentAccountInfo.walletName, walletName);
+    memset_s(g_currentAccountInfo.walletName, sizeof(g_currentAccountInfo.walletName), 0, sizeof(g_currentAccountInfo.walletName));
+    strcpy_s(g_currentAccountInfo.walletName, WALLET_NAME_MAX_LEN, walletName);
     SaveCurrentAccountInfo();
 }
 
@@ -504,7 +505,7 @@ void AccountsDataCheck(void)
         }
         if (validCount == 1) {
             printf("illegal data:%d\n", accountIndex);
-            memset(data, 0, sizeof(data));
+            memset_s(data, sizeof(data), 0, sizeof(data));
             for (i = 0; i < PAGE_NUM_PER_ACCOUNT; i++) {
                 printf("erase index=%d\n", i);
                 ret = SE_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + i);

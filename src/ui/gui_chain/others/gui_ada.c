@@ -1,7 +1,6 @@
 #ifndef BTC_ONLY
 #include "rust.h"
 #include "keystore.h"
-#include "user_memory.h"
 #include "gui_chain.h"
 #include "screen_manager.h"
 #include "keystore.h"
@@ -11,6 +10,7 @@
 #include "gui_ada.h"
 #include "gui_hintbox.h"
 #include "gui.h"
+#include "user_memory.h"
 
 static bool g_isMulti = false;
 static struct URParseResult *g_urResult = NULL;
@@ -146,54 +146,54 @@ bool GetAdaExtraDataExist(void *indata, void *param)
     if (tx->auxiliary_data == NULL) {
         return false;
     }
-    return strlen(tx->auxiliary_data) > 0;
+    return strnlen_s(tx->auxiliary_data, SIMPLERESPONSE_C_CHAR_MAX_LEN) > 0;
 }
 
 int GetAdaExtraDataLen(void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    return strlen(tx->auxiliary_data);
+    return strnlen_s(tx->auxiliary_data, SIMPLERESPONSE_C_CHAR_MAX_LEN);
 }
 
 void GetAdaExtraData(void *indata, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    sprintf((char *)indata, "%s", tx->auxiliary_data);
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->auxiliary_data);
 }
 
 void GetAdaNetwork(void *indata, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    sprintf((char *)indata, "%s", tx->network);
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->network);
 }
 
 void GetAdaWithdrawalsLabel(void *indata, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    sprintf((char *)indata, "%d Withdraw(s)", tx->withdrawals->size);
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%d Withdraw(s)", tx->withdrawals->size);
 }
 void GetAdaCertificatesLabel(void *indata, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    sprintf((char *)indata, "%d Certificate(s)", tx->certificates->size);
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%d Certificate(s)", tx->certificates->size);
 }
 
 void GetAdaTotalInput(void *indata, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    sprintf((char *)indata, "%s", tx->total_input);
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->total_input);
 }
 
 void GetAdaTotalOutput(void *indata, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    sprintf((char *)indata, "%s", tx->total_output);
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->total_output);
 }
 
 void GetAdaFee(void *indata, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    sprintf((char *)indata, "%s", tx->fee);
+    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->fee);
 }
 
 void *GetAdaInputDetail(uint8_t *row, uint8_t *col, void *param)
@@ -207,16 +207,16 @@ void *GetAdaInputDetail(uint8_t *row, uint8_t *col, void *param)
         indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++) {
             uint32_t index = j / 3;
-            indata[i][j] = SRAM_MALLOC(128);
+            indata[i][j] = SRAM_MALLOC(BUFFER_SIZE_128);
             if (j % 3 == 0) {
-                sprintf(indata[i][j], "%d #F5870A %s#", index + 1, tx->from->data[index].amount);
+                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%d #F5870A %s#", index + 1, tx->from->data[index].amount);
             } else if (j % 3 == 1) {
-                sprintf(indata[i][j], "%s", tx->from->data[index].address);
+                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%s", tx->from->data[index].address);
             } else {
                 if (tx->from->data[index].has_path) {
-                    strcpy(indata[i][j], tx->from->data[index].path);
+                    strcpy_s(indata[i][j], BUFFER_SIZE_128, tx->from->data[index].path);
                 } else {
-                    memset(indata[i][j], 0, 128);
+                    memset_s(indata[i][j], BUFFER_SIZE_128, 0, BUFFER_SIZE_128);
                 }
             }
         }
@@ -235,11 +235,11 @@ void *GetAdaOutputDetail(uint8_t *row, uint8_t *col, void *param)
         indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++) {
             uint32_t index = j / 2;
-            indata[i][j] = SRAM_MALLOC(128);
+            indata[i][j] = SRAM_MALLOC(BUFFER_SIZE_128);
             if (j % 2 == 0) {
-                sprintf(indata[i][j], "%d #F5870A %s#", index + 1, tx->to->data[index].amount);
+                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%d #F5870A %s#", index + 1, tx->to->data[index].amount);
             } else {
-                sprintf(indata[i][j], "%s", tx->to->data[index].address);
+                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%s", tx->to->data[index].address);
             }
         }
     }
@@ -281,14 +281,14 @@ void *GetAdaCertificatesData(uint8_t *row, uint8_t *col, void *param)
         indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++) {
             uint32_t index = j / 3;
-            indata[i][j] = SRAM_MALLOC(128);
+            indata[i][j] = SRAM_MALLOC(BUFFER_SIZE_128);
             if (j % 3 == 0) {
-                sprintf(indata[i][j], "%d #F5870A %s#", index + 1, tx->certificates->data[index].cert_type);
+                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%d #F5870A %s#", index + 1, tx->certificates->data[index].cert_type);
             } else if (j % 3 == 1) {
-                sprintf(indata[i][j], "Address: %s", tx->certificates->data[index].address);
+                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "Address: %s", tx->certificates->data[index].address);
             } else {
                 if (tx->certificates->data[index].pool != NULL) {
-                    sprintf(indata[i][j], "Pool: %s", tx->certificates->data[index].pool);
+                    snprintf_s(indata[i][j], BUFFER_SIZE_128,  "Pool: %s", tx->certificates->data[index].pool);
                 }
             }
         }
@@ -320,11 +320,11 @@ void *GetAdaWithdrawalsData(uint8_t *row, uint8_t *col, void *param)
         indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++) {
             uint32_t index = j / 2;
-            indata[i][j] = SRAM_MALLOC(128);
+            indata[i][j] = SRAM_MALLOC(BUFFER_SIZE_128);
             if (j % 2 == 0) {
-                sprintf(indata[i][j], "%d #F5870A %s#", index + 1, tx->withdrawals->data[index].amount);
+                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%d #F5870A %s#", index + 1, tx->withdrawals->data[index].amount);
             } else {
-                sprintf(indata[i][j], "Address: %s", tx->withdrawals->data[index].address);
+                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "Address: %s", tx->withdrawals->data[index].address);
             }
         }
     }

@@ -861,18 +861,17 @@ static void AddPetraCoins(void)
 
 static void AddressLongModeCutWithLen(char *out, const char *address, uint32_t maxLen)
 {
-    uint32_t len;
-    uint32_t midI = maxLen / 2;
+    uint32_t len = strnlen_s(address, maxLen);
+    uint32_t mid = maxLen / 2;
 
-    len = strlen(address);
     if (len <= maxLen) {
         strcpy(out, address);
-        return;
+    } else {
+        strncpy(out, address, mid);
+        out[mid] = 0;
+        strcat(out, "...");
+        strcat(out, address + len - mid);
     }
-    strncpy(out, address, midI);
-    out[midI] = 0;
-    strcat(out, "...");
-    strcat(out, address + len - midI);
 }
 
 static void AddXrpToolkitAddress(void)
@@ -884,8 +883,8 @@ static void AddXrpToolkitAddress(void)
     }
     lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
 
-    char name[20] = {0};
-    sprintf(name, "Account-%d", g_xrpAddressIndex[GetCurrentAccountIndex()] + 1);
+    char name[BUFFER_SIZE_32] = {0};
+    snprintf_s(name, BUFFER_SIZE_32, "Account-%d", g_xrpAddressIndex[GetCurrentAccountIndex()] + 1);
     lv_obj_t *label = GuiCreateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 
@@ -1352,19 +1351,16 @@ static char *GetChangeDerivationPathDesc(void)
 
 static void ShowEgAddressCont(lv_obj_t *egCont)
 {
-
     if (egCont == NULL) {
         printf("egCont is NULL, cannot show eg address\n");
         return;
     }
-
     lv_obj_clean(egCont);
 
     lv_obj_t *prevLabel = NULL, *label;
-
     int egContHeight = 12;
     char *desc = GetChangeDerivationPathDesc();
-    if (desc != NULL && strlen(desc) > 0) {
+    if (desc != NULL && strnlen_s(desc, BUFFER_SIZE_128) > 0) {
         label = GuiCreateNoticeLabel(egCont, desc);
         lv_obj_set_width(label, 360);
         lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);

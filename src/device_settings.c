@@ -39,7 +39,7 @@
 #define DEFAULT_AUTO_POWER_OFF          0
 #define DEFAULT_VIBRATION               1
 #define DEFAULT_DARK_MODE               1
-#define DEFAULT_USB_SWITCH              0
+#define DEFAULT_USB_SWITCH              1
 #define DEFAULT_LAST_VERSION            0
 
 typedef struct {
@@ -60,7 +60,7 @@ static char *GetJsonStringFromDeviceSettings(void);
 static int32_t GetIntValue(const cJSON *obj, const char *key, int32_t defaultValue);
 static void GetStringValue(const cJSON *obj, const char *key, char *value, uint32_t maxLen);
 
-static const char g_deviceSettingsVersion[] = "1.0.1";
+static const char g_deviceSettingsVersion[] = "1.0.0";
 DeviceSettings_t g_deviceSettings;
 
 void DeviceSettingsInit(void)
@@ -188,7 +188,7 @@ void SetDarkMode(uint32_t darkMode)
 
 uint32_t GetUSBSwitch(void)
 {
-    return !g_deviceSettings.usbSwitch;
+    return g_deviceSettings.usbSwitch;
 }
 
 

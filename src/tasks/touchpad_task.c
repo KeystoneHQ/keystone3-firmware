@@ -6,6 +6,7 @@
 #include "ui_display_task.h"
 #include "screen_manager.h"
 #include "screenshot.h"
+#include "user_utils.h"
 
 //#define TOUCH_TEST_ON_LCD
 #define TOUCH_RING_BUFFER_SIZE          10
@@ -103,6 +104,14 @@ TouchStatus_t *GetLatestTouchStatus(void)
 bool GetTouchPress(void)
 {
     return g_touchPress;
+}
+
+
+void ClearTouchBuffer(void)
+{
+    CLEAR_ARRAY(g_touchStatus);
+    g_touchWriteIndex = 0;
+    g_touchReadIndex = 0;
 }
 
 

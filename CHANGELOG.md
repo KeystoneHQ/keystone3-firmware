@@ -1,3 +1,19 @@
+## 1.3.0 (2024-02-29)
+
+### What's new
+
+1. Support for Taproot through Sparrow
+
+### Improvements
+
+1. Added a success notification page for firmware upgrades
+
+### Bug Fixes
+
+1. Fixed an issue where some transaction types for LTC and DASH couldn't be parsed
+2. Fixed an issue where certain transaction types for ADA would cause the device to restart after parsing
+
+
 ## 1.2.8 (2024-01-19)
 
 ### What's new

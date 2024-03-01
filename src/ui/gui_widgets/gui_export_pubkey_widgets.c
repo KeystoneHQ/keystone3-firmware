@@ -290,24 +290,60 @@ static void ConfirmHandler(lv_event_t *e)
 }
 
 #ifndef COMPILE_SIMULATOR
+#ifdef BTC_ONLY
+static ChainType ConvertChainType(ChainType chainType)
+{
+    switch (chainType) {
+    case XPUB_TYPE_BTC_TAPROOT:
+        return GetIsTestNet() ? XPUB_TYPE_BTC_TAPROOT_TEST : XPUB_TYPE_BTC_TAPROOT;
+    case XPUB_TYPE_BTC_NATIVE_SEGWIT:
+        return GetIsTestNet() ? XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST : XPUB_TYPE_BTC_NATIVE_SEGWIT;
+    case XPUB_TYPE_BTC:
+        return GetIsTestNet() ? XPUB_TYPE_BTC_TEST : XPUB_TYPE_BTC;
+    case XPUB_TYPE_BTC_LEGACY:
+        return GetIsTestNet() ? XPUB_TYPE_BTC_LEGACY_TEST : XPUB_TYPE_BTC_LEGACY;
+    default:
+        break;
+    }
+    return chainType;
+}
+#endif
 static void GetBtcPubkey(char *dest, uint8_t pathType, uint32_t maxLen)
 {
-    char *xpub = GetCurrentAccountPublicKey(g_btcPathTypeList[pathType].pubkeyType);
-    if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_LEGACY || g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_TAPROOT) {
+    SimpleResponse_c_char *result;
+#ifndef BTC_ONLY
+    ChainType chainType = g_btcPathTypeList[pathType].pubkeyType;
+#else
+    ChainType chainType = ConvertChainType(g_btcPathTypeList[pathType].pubkeyType);
+#endif
+    char *xpub = GetCurrentAccountPublicKey(chainType);
+    char head[] = "ypub";
+    switch (chainType) {
+    case XPUB_TYPE_BTC_LEGACY:
+    case XPUB_TYPE_BTC_TAPROOT:
         strcpy_s(dest, maxLen, xpub);
         return;
+    case XPUB_TYPE_BTC_NATIVE_SEGWIT:
+        head[0] = 'z';
+        break;
+#ifdef BTC_ONLY
+    case XPUB_TYPE_BTC_LEGACY_TEST:
+    case XPUB_TYPE_BTC_TAPROOT_TEST:
+        head[0] = 't';
+        break;
+    case XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST:
+        head[0] = 'v';
+        break;
+    case XPUB_TYPE_BTC_TEST:
+        head[0] = 'u';
+        break;
+#endif
+    default:
+        break;
     }
-
-    char *t = "ypub";
-    if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_NATIVE_SEGWIT) {
-        t = "zpub";
-    }
-    SimpleResponse_c_char *result;
-    do {
-        result = xpub_convert_version(xpub, t);
-        CHECK_CHAIN_BREAK(result);
-    } while (0);
-    strcpy_s(dest, maxLen, result->data);
+    result = xpub_convert_version(xpub, head);
+    ASSERT(result);
+    strcpy_s(dest, maxLen, xpub);
     free_simple_response_c_char(result);
 }
 #else
@@ -467,7 +503,7 @@ static void SetCheckboxState(uint8_t i, bool isChecked)
 static void RefreshPathType()
 {
     g_tmpSelectIndex = GetPathType();
-    for (uint8_t i = 0; i < 3; i++) {
+    for (uint8_t i = 0; i < sizeof(g_btcPathTypeList) / sizeof(g_btcPathTypeList[0]); i++) {
         SetCheckboxState(i, i == g_tmpSelectIndex);
     }
     SetEgContent(g_tmpSelectIndex);

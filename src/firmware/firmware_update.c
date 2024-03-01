@@ -212,7 +212,12 @@ static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32
     uint32_t nowVersionNumber = (nowMajor * epoch * epoch)  + (nowMinor * epoch) + nowBuild;
     uint32_t fileVersionNumber = (fileMajor * epoch * epoch)  + (fileMinor * epoch) + fileBuild;
 
-    snprintf_s(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", fileMajor, fileMinor, fileBuild);
+    if (fileMajor >= 10) {
+        fileMajor = fileMajor % 10;
+        snprintf_s(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d-BTC", fileMajor, fileMinor, fileBuild);
+    } else {
+        snprintf_s(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", fileMajor, fileMinor, fileBuild);
+    }
     if (fileVersionNumber <= nowVersionNumber) {
         SRAM_FREE(g_dataUnit);
         SRAM_FREE(g_fileUnit);

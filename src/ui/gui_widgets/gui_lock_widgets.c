@@ -217,6 +217,9 @@ void GuiLockScreenTurnOn(void *param)
     if (*single == SIG_LOCK_VIEW_VERIFY_PIN || *single == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
         GuiNvsBarSetWalletIcon(NULL);
         GuiNvsBarSetWalletName("");
+#ifdef BTC_ONLY
+        ShowWallPaper(false);
+#endif
     }
     lv_obj_clear_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
     // g_lockView.isActive = true;
@@ -544,7 +547,7 @@ static void HardwareInitAfterWake(void)
     AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
 #if (USB_POP_WINDOW_ENABLE == 1)
     if (GetUSBSwitch() == true && GetUsbDetectState()) {
-        OpenMsgBox(&g_guiMsgBoxUsbConnection);
+        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
     }
 #endif
 }

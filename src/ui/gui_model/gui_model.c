@@ -44,7 +44,8 @@
 
 #define SECTOR_SIZE                         4096
 #define APP_ADDR                            (0x1001000 + 0x80000)   //108 1000
-#define APP_END_ADDR                        (0x1001000 + 0x1000000) //200 1000
+#define APP_CHECK_START_ADDR                (0x1400000)
+#define APP_END_ADDR                        (0x2000000)
 
 #ifndef COMPILE_SIMULATOR
 #define MODEL_WRITE_SE_HEAD                 do {                                \
@@ -1393,15 +1394,16 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, Bac
 
 static uint32_t BinarySearchLastNonFFSector(void)
 {
-    uint8_t buffer[SECTOR_SIZE];
-    uint32_t startIndex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE / 2;
-    uint32_t endInex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE;
+    uint8_t *buffer = SRAM_MALLOC(SECTOR_SIZE);
+    uint32_t startIndex = (APP_CHECK_START_ADDR - APP_ADDR) / SECTOR_SIZE;
+    uint32_t endIndex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE;
 
     uint8_t percent = 1;
     GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
 
-    for (int i = startIndex + 1; i < endInex; i++) {
+    for (int i = startIndex + 1; i < endIndex; i++) {
         if (g_stopCalChecksum == true) {
+            SRAM_FREE(buffer);
             return SUCCESS_CODE;
         }
         memcpy_s(buffer, sizeof(buffer), (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
@@ -1410,10 +1412,11 @@ static uint32_t BinarySearchLastNonFFSector(void)
             GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
         }
         if (CheckAllFF(&buffer[2], SECTOR_SIZE - 2) && ((buffer[0] * 256 + buffer[1]) < 4096)) {
+            SRAM_FREE(buffer);
             return i;
         }
     }
-
+    SRAM_FREE(buffer);
     return -1;
 }
 
@@ -1424,6 +1427,7 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
     uint8_t buffer[4096] = {0};
     uint8_t hash[32] = {0};
     int num = BinarySearchLastNonFFSector();
+    ASSERT(num > 0);
     if (g_stopCalChecksum == true) {
         return SUCCESS_CODE;
     }

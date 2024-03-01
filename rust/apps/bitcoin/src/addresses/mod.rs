@@ -34,8 +34,11 @@ pub fn get_address(hd_path: String, extended_pub_key: &String) -> Result<String>
     let compressed_ecdsa_pubkey = derive_public_key(extended_pub_key, address_hd_path)?;
     let address = match account_hd_path.as_str() {
         "m/44'/0'/0'" => Address::p2pkh(&compressed_ecdsa_pubkey, Network::Bitcoin),
+        "m/44'/1'/0'" => Address::p2pkh(&compressed_ecdsa_pubkey, Network::BitcoinTestnet),
         "m/49'/0'/0'" => Address::p2shp2wpkh(&compressed_ecdsa_pubkey, Network::Bitcoin),
+        "m/49'/1'/0'" => Address::p2shp2wpkh(&compressed_ecdsa_pubkey, Network::BitcoinTestnet),
         "m/84'/0'/0'" => Address::p2wpkh(&compressed_ecdsa_pubkey, Network::Bitcoin),
+        "m/84'/1'/0'" => Address::p2wpkh(&compressed_ecdsa_pubkey, Network::BitcoinTestnet),
         "m/49'/2'/0'" => Address::p2shp2wpkh(&compressed_ecdsa_pubkey, Network::Litecoin),
         "m/44'/5'/0'" => Address::p2pkh(&compressed_ecdsa_pubkey, Network::Dash),
         "m/44'/145'/0'" => Address::p2pkh(&compressed_ecdsa_pubkey, Network::BitcoinCash),
@@ -66,11 +69,30 @@ mod tests {
     }
 
     #[test]
+    fn test_btc_p2pkh_address_testnet() {
+        let extended_pubkey = "tpubDDik32ahiYevQ3fTJJDhK3jacpCiHccBSDxbxrmcxUyEt1seiWE6B5REAzxs3upUa5AtG3BSAeY88kxKDwLGsK7e9a98EHkGA76s6d8oSAf";
+        let address = get_address(
+            String::from("M/44'/1'/0'/0/0"),
+            &extended_pubkey.to_string(),
+        )
+        .unwrap();
+        assert_eq!(address, "mszm85TQkAhvAigVfraWicXNnCypp1TTbH".to_string())
+    }
+
+    #[test]
     fn test_btc_p2sh_p2wpkh_address() {
         let extended_pubkey = "ypub6Ww3ibxVfGzLrAH1PNcjyAWenMTbbAosGNB6VvmSEgytSER9azLDWCxoJwW7Ke7icmizBMXrzBx9979FfaHxHcrArf3zbeJJJUZPf663zsP";
         let address =
             get_address("M/49'/0'/0'/0/0".to_string(), &extended_pubkey.to_string()).unwrap();
         assert_eq!(address, "37VucYSaXLCAsxYyAPfbSi9eh4iEcbShgf")
+    }
+
+    #[test]
+    fn test_btc_p2sh_p2wpkh_address_testnet() {
+        let extended_pubkey = "tpubDCkgEBaL4cWekguRDEBqqtCbzx5GB4p7qEZMtNauvSg9dREFU4e2azLXL1XwjY19iw3EBFZJN4zzuJ7Wwz9fkyjjKfRkGAGJrFzGnsTHUK3";
+        let address =
+            get_address("M/49'/1'/0'/0/0".to_string(), &extended_pubkey.to_string()).unwrap();
+        assert_eq!(address, "2NCuF1UQSRXn4WTCKQRGBdUhuFtTg1VpjtK")
     }
 
     #[test]
@@ -82,6 +104,17 @@ mod tests {
         )
         .unwrap();
         assert_eq!(address, "bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu")
+    }
+
+    #[test]
+    fn test_btc_p2wpkh_address_testnet() {
+        let extended_pubkey = "tpubDC3UtAdzUBgmKQdkWxm84kU3dWWp3Da9igpySqHoj8Vt9paj7YncFS7hHvobpfEW3UDkWyuRGXYhFqVgHi8fu2jxSy2LLggiYGKgFyri2wz";
+        let address = get_address(
+            String::from("M/84'/1'/0'/0/0"),
+            &extended_pubkey.to_string(),
+        )
+        .unwrap();
+        assert_eq!(address, "tb1q6sjunnh9w9epn9z7he2dxmklgfg7x38yefmld7")
     }
 
     #[test]

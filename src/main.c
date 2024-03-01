@@ -74,6 +74,7 @@ int main(void)
     UserMsgInit();
     DS28S60_Init();
     Atecc608bInit();
+    AccountsDataCheck();
     MountUsbFatfs();
     UsbInit();
     RtcInit();

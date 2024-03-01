@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "gui_analyze.h"
 #include "rust.h"
 #include "keystore.h"
@@ -595,3 +596,4 @@ UREncodeResult *GuiGetCosmosSignQrCodeData(void)
     return encodeResult;
 #endif
 }
+#endif

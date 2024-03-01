@@ -23,6 +23,9 @@ typedef enum {
     SIG_INIT_SD_CARD_OTA_COPY_SUCCESS,
     SIG_INIT_SD_CARD_OTA_COPY_FAIL,
     SIG_STATUS_BAR_REFRESH,
+#ifdef BTC_ONLY
+    SIG_STATUS_BAR_TEST_NET,
+#endif
     SIG_INIT_VIEW_BUTT,
 
     SIG_LOCK_VIEW_VERIFY_PIN = SIG_INIT_VIEW_BUTT + 50,
@@ -183,6 +186,10 @@ extern GUI_VIEW g_transactionSignatureView;
 extern GUI_VIEW g_diceRollsView;
 extern GUI_VIEW g_exportPubkeyView;
 extern GUI_VIEW g_updateSuccessView;
+#ifdef BTC_ONLY
+extern GUI_VIEW g_btcBtcWalletProfileView;
+#endif
+
 
 void UnHandler(lv_event_t *e);
 void OpenImportWalletHandler(lv_event_t *e);

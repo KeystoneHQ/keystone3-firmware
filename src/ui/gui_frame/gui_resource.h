@@ -16,6 +16,7 @@ LV_IMG_DECLARE(imgBatteryPowerFull);
 LV_IMG_DECLARE(imgCharging);
 LV_IMG_DECLARE(imgSingleBackup);
 LV_IMG_DECLARE(imgWallet);
+LV_IMG_DECLARE(imgWallet2);
 LV_IMG_DECLARE(imgImport);
 LV_IMG_DECLARE(imgFailed);
 LV_IMG_DECLARE(imgLogoGraphL);
@@ -54,6 +55,7 @@ LV_IMG_DECLARE(imgSuccess);
 LV_IMG_DECLARE(imgUnitConversion);
 LV_IMG_DECLARE(imgConfirmSlider);
 LV_IMG_DECLARE(imgScan);
+LV_IMG_DECLARE(imgScan48);
 LV_IMG_DECLARE(imgLTCorner);
 LV_IMG_DECLARE(imgUncheckCircle);
 LV_IMG_DECLARE(imgSkip);
@@ -92,6 +94,7 @@ LV_IMG_DECLARE(imgBrightnessLow);
 LV_IMG_DECLARE(imgBrightnessHigh);
 LV_IMG_DECLARE(imgFirmwareUp);
 LV_IMG_DECLARE(imgUsb);
+LV_IMG_DECLARE(imgTestNet);
 LV_IMG_DECLARE(imgUnknown);
 LV_IMG_DECLARE(imgNextStep);
 LV_IMG_DECLARE(imgInfo);
@@ -106,6 +109,9 @@ LV_IMG_DECLARE(imgDiceGrey);
 LV_IMG_DECLARE(imgUndo);
 LV_IMG_DECLARE(imgExport);
 LV_IMG_DECLARE(imgUpdate);
+LV_IMG_DECLARE(imgReceive);
+LV_IMG_DECLARE(imgDeepLayersVolume11);
+LV_IMG_DECLARE(imgKey);
 
 // connect to do refresh
 LV_IMG_DECLARE(circular);
@@ -211,6 +217,8 @@ LV_IMG_DECLARE(walletPetra);
 LV_IMG_DECLARE(walletXRPToolkit);
 LV_IMG_DECLARE(walletSparrow);
 LV_IMG_DECLARE(walletImToken);
+LV_IMG_DECLARE(walletSpecter);
+LV_IMG_DECLARE(walletNunchuk);
 
 
 //wallet list
@@ -233,6 +241,11 @@ LV_IMG_DECLARE(walletListPetra);
 LV_IMG_DECLARE(walletListXRPToolkit);
 LV_IMG_DECLARE(walletListSparrow);
 LV_IMG_DECLARE(walletListImToken);
+
+LV_IMG_DECLARE(btcWalletListBlue);
+LV_IMG_DECLARE(btcWalletListSpecter);
+LV_IMG_DECLARE(btcWalletListSparrow);
+LV_IMG_DECLARE(btcWalletListNunchuk);
 
 // font
 LV_FONT_DECLARE(openSans_20);

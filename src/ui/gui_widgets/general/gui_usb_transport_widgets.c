@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_page.h"
@@ -198,3 +199,4 @@ void GuiUSBTransportWidgetsRefresh()
 {
     return;
 }
+#endif

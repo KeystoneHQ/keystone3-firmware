@@ -75,7 +75,7 @@ pub fn parse_typed_data_message(tx_hex: Vec<u8>, from_key: PublicKey) -> Result<
 pub fn sign_legacy_tx(sign_data: Vec<u8>, seed: &[u8], path: &String) -> Result<EthereumSignature> {
     let tx = LegacyTransaction::decode_raw(sign_data.as_slice())?;
     let hash = keccak256(sign_data.as_slice());
-    let message = Message::from_slice(&hash).unwrap();
+    let message = Message::from_digest_slice(&hash).unwrap();
     keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
         .map_err(|e| EthereumError::SignFailure(e.to_string()))
         .map(|(rec_id, rs)| {
@@ -100,7 +100,7 @@ pub fn sign_fee_markey_tx(
     }
 
     let hash = keccak256(sign_data.as_slice());
-    let message = Message::from_slice(&hash).unwrap();
+    let message = Message::from_digest_slice(&hash).unwrap();
     keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
         .map_err(|e| EthereumError::SignFailure(e.to_string()))
         .map(|(rec_id, rs)| EthereumSignature(rec_id as u64, rs))
@@ -119,7 +119,7 @@ pub fn sign_personal_message(
     message.extend(sign_data);
     let hash = keccak256(message.as_slice());
     let message =
-        Message::from_slice(&hash).map_err(|e| EthereumError::SignFailure(e.to_string()))?;
+        Message::from_digest_slice(&hash).map_err(|e| EthereumError::SignFailure(e.to_string()))?;
     keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
         .map_err(|e| EthereumError::SignFailure(e.to_string()))
         .map(|(rec_id, rs)| {
@@ -142,7 +142,7 @@ pub fn sign_typed_data_message(
         .encode_eip712()
         .map_err(|e| EthereumError::HashTypedDataError(e.to_string()))?;
     let message =
-        Message::from_slice(&hash).map_err(|e| EthereumError::SignFailure(e.to_string()))?;
+        Message::from_digest_slice(&hash).map_err(|e| EthereumError::SignFailure(e.to_string()))?;
 
     keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
         .map_err(|e| EthereumError::SignFailure(e.to_string()))

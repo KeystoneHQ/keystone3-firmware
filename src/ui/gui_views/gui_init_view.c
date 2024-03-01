@@ -41,11 +41,6 @@ static int32_t GuiInitViewInit(void)
         return SUCCESS_CODE;
     }
     GuiModeGetAccount();
-    // uint8_t entropy = {0xFC,0x67,0xE1,0xEB,0xA4,0xFC,0xF7,0x7E,0x61,0x9E,0x26,0xE3,0x92,0x05,0xA2,0x84};
-    // CreateNewAccount(0, entropy, sizeof(entropy), "111111");
-    // SecretCacheSetNewPassword("123456");
-    // GuiModelBip39UpdateMnemonic(12);
-    // GuiModelWriteSe();
     return SUCCESS_CODE;
 }
 
@@ -67,9 +62,7 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_INIT_GET_ACCOUNT_NUMBER:
         walletNum = *(uint8_t *)param;
         if (walletNum == 0) {
-            // GuiFrameOpenView(&g_setupView);
-            // GuiFrameOpenViewWithParam(&g_singlePhraseView, &walletMethod, sizeof(walletMethod));
-            GuiFrameOpenViewWithParam(&g_createWalletView, &walletMethod, sizeof(walletMethod));
+            GuiFrameOpenView(&g_setupView);
             if (IsUpdateSuccess()) {
                 GuiFrameOpenView(&g_updateSuccessView);
             }
@@ -113,7 +106,9 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_INIT_POWER_OPTION:
         rcvValue = *(uint32_t *)param;
         if (rcvValue != 0) {
-            OpenMsgBox(&g_guiMsgBoxPowerOption);
+            if (lv_anim_count_running() == 0) {
+                OpenMsgBox(&g_guiMsgBoxPowerOption);
+            }
         } else {
             CloseMsgBox(&g_guiMsgBoxPowerOption);
         }
@@ -164,6 +159,11 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_STATUS_BAR_REFRESH:
         GuiStatusBarSetUsb();
         break;
+#ifdef BTC_ONLY
+    case SIG_STATUS_BAR_TEST_NET:
+        GuiStatusBarSetTestNet();
+        break;
+#endif
     default:
         return ERR_GUI_UNHANDLED;
     }

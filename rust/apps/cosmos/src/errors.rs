@@ -1,7 +1,5 @@
 use alloc::string::{String, ToString};
-use bech32::Error as Bech32Error;
 use keystore::errors::KeystoreError;
-use third_party::bitcoin::bech32;
 use third_party::{hex, thiserror};
 use thiserror::Error;
 
@@ -23,8 +21,8 @@ pub enum CosmosError {
 
 pub type Result<T> = core::result::Result<T, CosmosError>;
 
-impl From<Bech32Error> for CosmosError {
-    fn from(value: Bech32Error) -> Self {
+impl From<core::fmt::Error> for CosmosError {
+    fn from(value: core::fmt::Error) -> Self {
         Self::InvalidAddressError(format!("bech32 encode error {:?}", value.to_string()))
     }
 }

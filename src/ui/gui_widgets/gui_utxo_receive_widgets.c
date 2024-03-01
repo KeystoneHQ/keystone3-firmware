@@ -19,6 +19,7 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_global_resources.h"
+#include "assert.h"
 
 #define ADDRESS_INDEX_MAX 999999999
 
@@ -80,9 +81,9 @@ typedef struct {
 } AddressDataItem_t;
 
 typedef struct {
-    char title[32];
-    char subTitle[32];
-    char path[32];
+    char *title;
+    char *subTitle;
+    char *path;
 } AddressSettingsItem_t;
 
 typedef struct {
@@ -137,13 +138,35 @@ static void UpdateAddrTypeCheckbox(uint8_t i, bool isChecked);
 static UtxoReceiveWidgets_t g_utxoReceiveWidgets;
 static UtxoReceiveTile g_utxoReceiveTileNow;
 static bool g_gotoAddressValid = false;
+#ifndef BTC_ONLY
 static const AddressSettingsItem_t g_addressSettings[] = {
     {"Taproot",         "P2TR",             "m/86'/0'/0'"},
     {"Native SegWit",   "P2WPKH",           "m/84'/0'/0'"},
     {"Nested SegWit",   "P2SH-P2WPKH",      "m/49'/0'/0'"},
     {"Legacy",          "P2PKH",            "m/44'/0'/0'"},
-    // {"Custom",          "Edit path",        "m/72'/0'/0'"}
 };
+static uint32_t g_addressSettingsNum = sizeof(g_addressSettings) / sizeof(g_addressSettings[0]);
+#else
+
+static const AddressSettingsItem_t g_mainNetAddressSettings[] = {
+    {"Taproot",         "P2TR",             "m/86'/0'/0'"},
+    {"Native SegWit",   "P2WPKH",           "m/84'/0'/0'"},
+    {"Nested SegWit",   "P2SH-P2WPKH",      "m/49'/0'/0'"},
+    {"Legacy",          "P2PKH",            "m/44'/0'/0'"},
+};
+
+static const AddressSettingsItem_t g_testNetAddressSettings[] = {
+    {"Taproot",         "P2TR",             "m/86'/1'/0'"},
+    {"Native SegWit",   "P2WPKH",           "m/84'/1'/0'"},
+    {"Nested SegWit",   "P2SH-P2WPKH",      "m/49'/1'/0'"},
+    {"Legacy",          "P2PKH",            "m/44'/1'/0'"},
+};
+
+static uint32_t g_addressSettingsNum = sizeof(g_mainNetAddressSettings) / sizeof(g_mainNetAddressSettings[0]);
+static const AddressSettingsItem_t *g_addressSettings = g_mainNetAddressSettings;
+
+#endif
+
 static char * *g_derivationPathDescs = NULL;
 
 #ifndef BTC_ONLY
@@ -290,7 +313,7 @@ void GuiReceiveRefresh(void)
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("receive_btc_more_address_settings"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_selectType = g_addressType[g_currentAccountIndex];
-        for (uint32_t i = 0; i < 3; i++) {
+        for (uint32_t i = 0; i < g_addressSettingsNum; i++) {
             UpdateAddrTypeCheckbox(i, g_selectType == i);
         }
         UpdateConfirmAddrTypeBtn();
@@ -826,14 +849,16 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
-
-    for (uint32_t i = 0; i < sizeof(g_addressSettings) / sizeof(g_addressSettings[0]); i++) {
+#ifdef BTC_ONLY
+    g_addressSettings = GetIsTestNet() ? g_testNetAddressSettings : g_mainNetAddressSettings;
+#endif
+    for (uint32_t i = 0; i < g_addressSettingsNum; i++) {
         label = GuiCreateLabelWithFont(cont, g_addressSettings[i].title, &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         sprintf(string, "%s (%s)", g_addressSettings[i].subTitle, g_addressSettings[i].path);
         label = GuiCreateNoticeLabel(cont, string);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
-        if (i != (sizeof(g_addressSettings) / sizeof(g_addressSettings[0]) - 1)) {
+        if (i != (g_addressSettingsNum - 1)) {
             line = GuiCreateLine(cont, points, 2);
             lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * (i + 1));
         }
@@ -1095,7 +1120,10 @@ static void AddressSettingsCheckHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         checkBox = lv_event_get_target(e);
-        for (uint32_t i = 0; i < sizeof(g_addressSettings) / sizeof(g_addressSettings[0]); i++) {
+#ifdef BTC_ONLY
+        g_addressSettings = GetIsTestNet() ? g_testNetAddressSettings : g_mainNetAddressSettings;
+#endif
+        for (uint32_t i = 0; i < g_addressSettingsNum; i++) {
             UpdateAddrTypeCheckbox(i, checkBox == g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox);
         }
         UpdateConfirmAddrTypeBtn();
@@ -1308,6 +1336,7 @@ static void AddressLongModeCut(char *out, const char *address)
 
 static ChainType GetChainTypeByIndex(uint32_t index)
 {
+#ifndef BTC_ONLY
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC: {
         if (index == 0) {
@@ -1321,18 +1350,28 @@ static ChainType GetChainTypeByIndex(uint32_t index)
         }
         break;
     }
-#ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
         return XPUB_TYPE_LTC;
     case HOME_WALLET_CARD_DASH:
         return XPUB_TYPE_DASH;
     case HOME_WALLET_CARD_BCH:
         return XPUB_TYPE_BCH;
-#endif
     default:
         break;
     }
     return XPUB_TYPE_BTC;
+#else
+    ASSERT(g_chainCard == HOME_WALLET_CARD_BTC);
+    if (index == 0) {
+        return GetIsTestNet() ? XPUB_TYPE_BTC_TAPROOT_TEST : XPUB_TYPE_BTC_TAPROOT;
+    } else if (index == 1) {
+        return GetIsTestNet() ? XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST : XPUB_TYPE_BTC_NATIVE_SEGWIT;
+    } else if (index == 2) {
+        return GetIsTestNet() ? XPUB_TYPE_BTC_TEST : XPUB_TYPE_BTC;
+    } else {
+        return GetIsTestNet() ? XPUB_TYPE_BTC_LEGACY_TEST : XPUB_TYPE_BTC_LEGACY;
+    }
+#endif
 }
 
 static void GetRootHdPath(char *hdPath)
@@ -1343,6 +1382,9 @@ static void GetRootHdPath(char *hdPath)
     }
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
+#ifdef BTC_ONLY
+        g_addressSettings = GetIsTestNet() ? g_testNetAddressSettings : g_mainNetAddressSettings;
+#endif
         sprintf(hdPath, "%s", g_addressSettings[addrType].path);
         break;
 #ifndef BTC_ONLY

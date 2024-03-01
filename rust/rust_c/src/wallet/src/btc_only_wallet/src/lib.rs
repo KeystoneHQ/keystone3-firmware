@@ -19,7 +19,7 @@ use common_rust_c::utils::{recover_c_array, recover_c_char};
 use core::slice;
 use core::str::FromStr;
 use cty::{int32_t, uint32_t};
-use third_party::bitcoin::bip32::{DerivationPath, ExtendedPubKey};
+use third_party::bitcoin::bip32::{DerivationPath, Xpub};
 use third_party::hex;
 use third_party::ur_registry::bytes::Bytes;
 use third_party::ur_registry::crypto_account::CryptoAccount;
@@ -29,6 +29,61 @@ use third_party::ur_registry::traits::RegistryItem;
 
 #[no_mangle]
 pub extern "C" fn get_connect_blue_wallet_ur(
+    master_fingerprint: *mut u8,
+    length: u32,
+    public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
+) -> *mut UREncodeResult {
+    if length != 4 {
+        return UREncodeResult::from(URError::UrEncodeError(format!(
+            "master fingerprint length must be 4, current is {}",
+            length
+        )))
+        .c_ptr();
+    }
+    unsafe {
+        let mfp = slice::from_raw_parts(master_fingerprint, length as usize);
+        let keys = recover_c_array(public_keys);
+        let key1 = keys.get(0);
+        let key2 = keys.get(1);
+        let key3 = keys.get(2);
+        return if let (Some(k1), Some(k2), Some(k3)) = (key1, key2, key3) {
+            let native_x_pub = recover_c_char(k1.xpub);
+            let nested_x_pub = recover_c_char(k2.xpub);
+            let legacy_x_pub = recover_c_char(k3.xpub);
+            let extended_public_keys = [
+                native_x_pub.trim(),
+                legacy_x_pub.trim(),
+                nested_x_pub.trim(),
+            ];
+            let mfp = match <&[u8; 4]>::try_from(mfp) {
+                Ok(mfp) => mfp,
+                Err(e) => {
+                    return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr();
+                }
+            };
+
+            let result =
+                app_wallets::blue_wallet::generate_crypto_account(mfp, &extended_public_keys);
+            match result.map(|v| v.try_into()) {
+                Ok(v) => match v {
+                    Ok(data) => UREncodeResult::encode(
+                        data,
+                        CryptoAccount::get_registry_type().get_type(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                    )
+                    .c_ptr(),
+                    Err(e) => UREncodeResult::from(e).c_ptr(),
+                },
+                Err(e) => UREncodeResult::from(e).c_ptr(),
+            }
+        } else {
+            UREncodeResult::from(URError::UrEncodeError(format!("getting key error"))).c_ptr()
+        };
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn get_connect_sparrow_wallet_ur(
     master_fingerprint: *mut u8,
     length: u32,
     public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
@@ -66,7 +121,7 @@ pub extern "C" fn get_connect_blue_wallet_ur(
             };
 
             let result =
-                app_wallets::blue_wallet::generate_crypto_account(mfp, extended_public_keys);
+                app_wallets::blue_wallet::generate_crypto_account(mfp, &extended_public_keys);
             match result.map(|v| v.try_into()) {
                 Ok(v) => match v {
                     Ok(data) => UREncodeResult::encode(
@@ -227,7 +282,7 @@ fn normalize_xpub(
         let key = match xpub.len() {
             //32 bytes ed25519 public key or 64 bytes bip32-ed25519 xpub;
             64 | 128 => hex::decode(&xpub).map_err(|_e| RustCError::InvalidXPub)?,
-            _ => ExtendedPubKey::from_str(&xpub)
+            _ => Xpub::from_str(&xpub)
                 .map_err(|_e| RustCError::InvalidXPub)?
                 .encode()
                 .to_vec(),

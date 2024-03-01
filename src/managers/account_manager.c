@@ -526,3 +526,33 @@ int32_t DestroyAccount(uint8_t accountIndex)
 
     return ret;
 }
+
+
+void AccountsDataCheck(void)
+{
+    int32_t ret;
+    uint8_t data[32], accountIndex, validCount, i;
+
+    for (accountIndex = 0; accountIndex < 3; accountIndex++) {
+        validCount = 0;
+        ret = SE_HmacEncryptRead(data, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
+        CHECK_ERRCODE_BREAK("read iv", ret);
+        if (CheckEntropy(data, 32)) {
+            validCount++;
+        }
+        ret = SE_HmacEncryptRead(data, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
+        CHECK_ERRCODE_BREAK("read pwd hash", ret);
+        if (CheckEntropy(data, 32)) {
+            validCount++;
+        }
+        if (validCount == 1) {
+            printf("illegal data:%d\n", accountIndex);
+            memset(data, 0, sizeof(data));
+            for (i = 0; i < PAGE_NUM_PER_ACCOUNT; i++) {
+                printf("erase index=%d\n", i);
+                ret = SE_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + i);
+                CHECK_ERRCODE_BREAK("ds28s60 write", ret);
+            }
+        }
+    }
+}

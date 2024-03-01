@@ -26,7 +26,6 @@
 #include "gui_usb_connection_widgets.h"
 #include "gui_pop_message_box.h"
 #include "usb_task.h"
-#include "drv_aw32001.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "assert.h"
@@ -218,6 +217,9 @@ void GuiLockScreenTurnOn(void *param)
     if (*single == SIG_LOCK_VIEW_VERIFY_PIN || *single == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
         GuiNvsBarSetWalletIcon(NULL);
         GuiNvsBarSetWalletName("");
+#ifdef BTC_ONLY
+        ShowWallPaper(false);
+#endif
     }
     lv_obj_clear_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
     // g_lockView.isActive = true;
@@ -263,6 +265,7 @@ void GuiLockScreenToHome(void)
     GuiModeGetWalletDesc();
     GuiEnterPassCodeStatus(g_verifyLock, true);
     GuiCloseToTargetView(&g_homeView);
+    HardwareInitAfterWake();
 }
 
 void GuiLockScreenTurnOffHandler(lv_event_t *e)
@@ -544,7 +547,7 @@ static void HardwareInitAfterWake(void)
     AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
 #if (USB_POP_WINDOW_ENABLE == 1)
     if (GetUSBSwitch() == true && GetUsbDetectState()) {
-        OpenMsgBox(&g_guiMsgBoxUsbConnection);
+        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
     }
 #endif
 }

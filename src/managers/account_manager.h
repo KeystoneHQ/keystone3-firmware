@@ -79,5 +79,6 @@ int32_t ClearCurrentPasswordErrorCount(void);
 uint16_t GetSlip39Id(void);
 uint8_t GetSlip39Ie(void);
 
+void AccountsDataCheck(void);
 
 #endif

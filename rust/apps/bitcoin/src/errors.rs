@@ -1,8 +1,8 @@
 use alloc::string::{String, ToString};
 use keystore::errors::KeystoreError;
 use third_party::bitcoin::base58::Error as Base58Error;
-use third_party::bitcoin::hashes::hex::Error as HashHexError;
 use third_party::bitcoin::script::PushBytesError;
+use third_party::bitcoin_hashes::hex::HexToArrayError;
 use third_party::core2::io;
 use third_party::thiserror;
 use third_party::thiserror::Error;
@@ -43,10 +43,14 @@ pub enum BitcoinError {
     TransactionConsensusEncodeError(String),
     #[error("push bytes failed, reason: {0}")]
     PushBytesFailed(String),
-    #[error("hash hex failed, reason: {0}")]
-    InvalidHashLength(String),
+    #[error("invalid hex: {0}")]
+    InvalidHex(String),
     #[error("base58 operation failed, reason: {0}")]
     Base58Error(String),
+    #[error("bech32 decode failed, reason: {0}")]
+    Bech32DecodeError(String),
+    #[error("witness program error: {0}")]
+    WitnessProgramError(String),
     #[error("keystore operation failed, reason: {0}")]
     KeystoreError(String),
     #[error("Raw Transaction crypto bytes has invalid data, field: {0}")]
@@ -71,9 +75,21 @@ impl From<PushBytesError> for BitcoinError {
     }
 }
 
-impl From<HashHexError> for BitcoinError {
-    fn from(value: HashHexError) -> Self {
-        Self::InvalidHashLength(format!("{}", value))
+impl From<HexToArrayError> for BitcoinError {
+    fn from(value: HexToArrayError) -> Self {
+        Self::InvalidHex(format!("{}", value))
+    }
+}
+
+impl From<third_party::bech32::segwit::DecodeError> for BitcoinError {
+    fn from(value: third_party::bech32::segwit::DecodeError) -> Self {
+        Self::Bech32DecodeError(format!("{}", value))
+    }
+}
+
+impl From<third_party::bitcoin::witness_program::Error> for BitcoinError {
+    fn from(value: third_party::bitcoin::witness_program::Error) -> Self {
+        Self::WitnessProgramError(format!("{}", value))
     }
 }
 

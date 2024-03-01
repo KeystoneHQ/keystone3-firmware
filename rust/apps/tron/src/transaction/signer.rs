@@ -17,7 +17,7 @@ impl Signer for WrappedTron {
     fn sign(&self, seed: &[u8]) -> Result<(String, String)> {
         let sig_hash = self.signature_hash()?;
         let mut tx = self.tron_tx.to_owned();
-        let message = third_party::secp256k1::Message::from_slice(sig_hash.as_slice())
+        let message = third_party::secp256k1::Message::from_digest_slice(sig_hash.as_slice())
             .map_err(|e| TronError::SignFailure(e.to_string()))?;
         let (rec_id, signature) =
             &secp256k1::sign_message_by_seed(seed, &self.hd_path.to_owned(), &message)?;

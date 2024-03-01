@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_button.h"
@@ -831,3 +832,6 @@ void GuiHomeDeInit(void)
         g_pageWidget = NULL;
     }
 }
+
+#endif
+

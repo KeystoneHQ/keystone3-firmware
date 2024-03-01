@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "gui_multi_accounts_receive_widgets.h"
 #include "gui_status_bar.h"
 #include "gui_chain.h"
@@ -1117,3 +1118,4 @@ void GuiResetCurrentMultiAccountsCache(uint8_t index)
     g_selectedIndex[index] = 0;
     g_selectedAccount[index] = 0;
 }
+#endif

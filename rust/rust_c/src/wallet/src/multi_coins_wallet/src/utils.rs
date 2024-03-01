@@ -7,7 +7,7 @@ use common_rust_c::errors::RustCError;
 use common_rust_c::structs::ExtendedPublicKey;
 use common_rust_c::utils::recover_c_char;
 use third_party::{
-    bitcoin::bip32::{DerivationPath, ExtendedPubKey},
+    bitcoin::bip32::{DerivationPath, Xpub},
     hex,
 };
 
@@ -24,7 +24,7 @@ pub fn normalize_xpub(
         let key = match xpub.len() {
             //32 bytes ed25519 public key or 64 bytes bip32-ed25519 xpub;
             64 | 128 => hex::decode(&xpub).map_err(|_e| RustCError::InvalidXPub)?,
-            _ => ExtendedPubKey::from_str(&xpub)
+            _ => Xpub::from_str(&xpub)
                 .map_err(|_e| RustCError::InvalidXPub)?
                 .encode()
                 .to_vec(),

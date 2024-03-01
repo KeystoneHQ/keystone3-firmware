@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #ifndef _VERSION_H
 #define _VERSION_H
 
@@ -15,3 +16,7 @@ void GetSoftWareVersionNumber(char *version);
 const char *GetSoftwareVersionString(void);
 
 #endif /* _VERSION_H */
+
+#else
+#include "version_btc_only.h"
+#endif

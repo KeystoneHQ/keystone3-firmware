@@ -54,6 +54,7 @@ void GuiTransactionSignatureDeInit(void)
 
 void GuiTransactionSignatureRefresh(void)
 {
+    GuiAnimatingQRCodeControl(false);
 }
 
 void GuiTransactionSignatureHandleURGenerate(char *data, uint16_t len)

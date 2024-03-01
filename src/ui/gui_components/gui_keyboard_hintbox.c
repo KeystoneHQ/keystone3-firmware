@@ -462,7 +462,6 @@ void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t
     GuiSetErrorLabel(keyboardWidget, tempBuf);
     if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
         CloseUsb();
-        SetUsbState(false);
         GuiShowPasswordErrorHintBox(keyboardWidget);
     }
 }

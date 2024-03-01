@@ -5,13 +5,14 @@
 #include "usb_task.h"
 #include "gui_views.h"
 #include "gui_api.h"
+#include "device_setting.h"
+#include "drv_aw32001.h"
 
 
 static void GuiUsbConnectionInit(void);
 static void GuiUsbConnectionDeInit(void);
 static void NotNowHandler(lv_event_t *e);
 static void ConnectUsbHandler(lv_event_t *e);
-void ConnectUsbMutexRelease(void);
 
 static lv_obj_t *g_usbConnectionHintBox = NULL;
 
@@ -74,7 +75,7 @@ static void NotNowHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         CloseMsgBox(&g_guiMsgBoxUsbConnection);
-        SetUsbState(false);
+        CloseUsb();
     }
 }
 
@@ -84,9 +85,9 @@ static void ConnectUsbHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
 #ifndef COMPILE_SIMULATOR
-        OpenUsb();
-        SetUsbState(true);
-        ConnectUsbMutexRelease();
+        if (GetUSBSwitch() && GetUsbDetectState()) {
+            OpenUsb();
+        }
 #endif
         CloseMsgBox(&g_guiMsgBoxUsbConnection);
     }

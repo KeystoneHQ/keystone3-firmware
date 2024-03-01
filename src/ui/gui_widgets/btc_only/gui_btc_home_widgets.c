@@ -32,7 +32,7 @@ static PageWidget_t *g_pageWidget;
 static lv_timer_t *g_countDownTimer = NULL; // count down timer
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
-    {HOME_WALLET_CARD_BTC, false, "BTC", true},
+    {HOME_WALLET_CARD_BTC, false, "BTC", true, false},
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 
@@ -164,7 +164,7 @@ static void RcvHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         printf("rcv handler\n");
         coin = HOME_WALLET_CARD_BTC;
-        ShowWallPager(false);
+        ShowWallPaper(false);
         GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
     }
 }
@@ -180,7 +180,7 @@ void ScanQrCodeHandler(lv_event_t *e)
             lv_timer_del(g_countDownTimer);
             g_countDownTimer = NULL;
         }
-        ShowWallPager(false);
+        ShowWallPaper(false);
         GuiFrameOpenView(&g_scanView);
     }
 }
@@ -203,7 +203,7 @@ static void OpenMoreViewHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
         g_moreHintbox = NULL;
-        ShowWallPager(false);
+        ShowWallPaper(false);
         GuiFrameOpenView(lv_event_get_user_data(e));
     }
 }
@@ -250,7 +250,7 @@ static void OpenWalletProfileHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         printf("OpenWalletProfileHandler\n");
-        ShowWallPager(false);
+        ShowWallPaper(false);
         GuiFrameOpenView(&g_btcBtcWalletProfileView);
     }
 }
@@ -267,9 +267,11 @@ void GuiHomeAreaInit(void)
 {
     g_pageWidget = CreatePageWidget();
     g_homeViewCont = g_pageWidget->contentZone;
+#if (WALLPAPER_ENABLE == 1)
     lv_obj_set_style_bg_opa(g_pageWidget->contentZone, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(g_pageWidget->page, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(g_pageWidget->navBar, LV_OPA_TRANSP, LV_PART_MAIN);
+#endif
 
     lv_obj_t *walletCardCont = GuiCreateContainerWithParent(g_homeViewCont, lv_obj_get_width(lv_scr_act()),
                                lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
@@ -279,7 +281,7 @@ void GuiHomeAreaInit(void)
     lv_obj_set_style_bg_opa(walletCardCont, LV_OPA_TRANSP, LV_PART_MAIN);
     g_homeWalletCardCont = walletCardCont;
     CreateHomePageButtons();
-    ShowWallPager(true);
+    ShowWallPaper(true);
 }
 
 void GuiHomeDisActive(void)
@@ -312,7 +314,7 @@ void GuiHomeRefresh(void)
         return;
     }
     printf("GuiHomeRefresh\n");
-    ShowWallPager(true);
+    ShowWallPaper(true);
     g_countDownTimer = lv_timer_create(AddFlagCountDownTimerHandler, 500, NULL);
     GuiSetSetupPhase(SETUP_PAHSE_DONE);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_MANAGE, OpenWalletProfileHandler, NULL);
@@ -323,6 +325,18 @@ void GuiHomeRefresh(void)
     }
     GUI_DEL_OBJ(g_moreHintbox)
     AccountPublicHomeCoinGet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
+}
+
+bool GetIsTestNet(void)
+{
+    return g_walletState[HOME_WALLET_CARD_BTC].testNet;
+}
+
+void SetIsTestNet(bool testNet)
+{
+    printf("testNet=%d\n", testNet);
+    g_walletState[HOME_WALLET_CARD_BTC].testNet = testNet;
+    AccountPublicHomeCoinSet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
 }
 
 const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)

@@ -94,6 +94,7 @@ LV_IMG_DECLARE(imgBrightnessLow);
 LV_IMG_DECLARE(imgBrightnessHigh);
 LV_IMG_DECLARE(imgFirmwareUp);
 LV_IMG_DECLARE(imgUsb);
+LV_IMG_DECLARE(imgTestNet);
 LV_IMG_DECLARE(imgUnknown);
 LV_IMG_DECLARE(imgNextStep);
 LV_IMG_DECLARE(imgInfo);
@@ -216,6 +217,8 @@ LV_IMG_DECLARE(walletPetra);
 LV_IMG_DECLARE(walletXRPToolkit);
 LV_IMG_DECLARE(walletSparrow);
 LV_IMG_DECLARE(walletImToken);
+LV_IMG_DECLARE(walletSpecter);
+LV_IMG_DECLARE(walletNunchuk);
 
 
 //wallet list
@@ -238,6 +241,11 @@ LV_IMG_DECLARE(walletListPetra);
 LV_IMG_DECLARE(walletListXRPToolkit);
 LV_IMG_DECLARE(walletListSparrow);
 LV_IMG_DECLARE(walletListImToken);
+
+LV_IMG_DECLARE(btcWalletListBlue);
+LV_IMG_DECLARE(btcWalletListSpecter);
+LV_IMG_DECLARE(btcWalletListSparrow);
+LV_IMG_DECLARE(btcWalletListNunchuk);
 
 // font
 LV_FONT_DECLARE(openSans_20);

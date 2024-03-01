@@ -12,6 +12,7 @@
 #include "account_manager.h"
 #include "gui_chain.h"
 #include "gui_connect_wallet_widgets.h"
+#include "gui_home_widgets.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
@@ -22,7 +23,9 @@
 
 typedef struct StatusBar {
     lv_obj_t *background;
+#if (WALLPAPER_ENABLE == 1)
     lv_obj_t *wallPaper;
+#endif
     lv_obj_t *cont;
     lv_obj_t *walletIcon;
     lv_obj_t *walletNameLabel;
@@ -33,6 +36,9 @@ typedef struct StatusBar {
     lv_obj_t *batteryCharging;
     lv_obj_t *batteryPadImg;
     lv_obj_t *batteryLabel;
+#ifdef BTC_ONLY
+    lv_obj_t *testNetImg;
+#endif
 } StatusBar_t;
 static StatusBar_t g_guiStatusBar;
 
@@ -100,20 +106,14 @@ const static CoinWalletInfo_t g_walletBtn[] = {
 #ifndef BTC_ONLY
     {WALLET_LIST_KEYSTONE, "Connect Keystone Wallet", &walletKeystone},
     {WALLET_LIST_METAMASK, "Connect MetaMask", &walletMetamask},
-#endif
     {WALLET_LIST_OKX, "Connect OKX Wallet", &walletOkx},
-#ifndef BTC_ONLY
     {WALLET_LIST_ETERNL, "Connect Eternl Wallet", &walletEternl},
-#endif
     {WALLET_LIST_BLUE, "Connect BlueWallet", &walletBluewallet},
-#ifndef BTC_ONLY
     {WALLET_LIST_SUB, "Connect SubWallet", &walletSubwallet},
     {WALLET_LIST_SOLFARE, "Connect Solflare", &walletSolflare},
     {WALLET_LIST_RABBY, "Connect Rabby", &walletRabby},
     {WALLET_LIST_SAFE, "Connect Safe", &walletSafe},
-#endif
     {WALLET_LIST_SPARROW, "Connect Sparrow", &walletSparrow},
-#ifndef BTC_ONLY
     {WALLET_LIST_IMTOKEN, "Connect imToken", &walletImToken},
     {WALLET_LIST_BLOCK_WALLET, "Connect Block Wallet", &walletBlockWallet},
     {WALLET_LIST_ZAPPER, "Connect Zapper", &walletZapper},
@@ -123,6 +123,11 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_FEWCHA, "Connect Fewcha", &walletFewcha},
     {WALLET_LIST_PETRA, "Connect Petra", &walletPetra},
     {WALLET_LIST_XRP_TOOLKIT, "Connect XRP Toolkit", &walletXRPToolkit},
+#else
+    {WALLET_LIST_BLUE, "Connect BlueWallet", &walletBluewallet},
+    {WALLET_LIST_SPECTER, "Connect Specter", &walletSpecter},
+    {WALLET_LIST_SPARROW, "Connect Sparrow", &walletSparrow},
+    {WALLET_LIST_NUNCHUK, "Connect Nunchuk", &walletNunchuk},
 #endif
 };
 
@@ -151,22 +156,24 @@ void GuiNvsBarSetWalletIcon(const void *src)
     lv_obj_align(g_guiStatusBar.walletIcon, LV_ALIGN_LEFT_MID, 26, 0);
 }
 
-void ShowWallPager(bool enable)
+void ShowWallPaper(bool enable)
 {
+#if (WALLPAPER_ENABLE == 1)
     if (enable) {
         lv_obj_clear_flag(g_guiStatusBar.wallPaper, LV_OBJ_FLAG_HIDDEN);
     } else {
         lv_obj_add_flag(g_guiStatusBar.wallPaper, LV_OBJ_FLAG_HIDDEN);
     }
+#endif
 }
 
 void GuiStatusBarInit(void)
 {
     g_guiStatusBar.background = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
-#ifdef BTC_ONLY
+#if (WALLPAPER_ENABLE == 1)
     g_guiStatusBar.wallPaper = GuiCreateImg(g_guiStatusBar.background, NULL);
     lv_img_set_src(g_guiStatusBar.wallPaper, &imgDeepLayersVolume11);
-    ShowWallPager(false);
+    ShowWallPaper(false);
 #endif
     lv_obj_t *cont = GuiCreateContainerWithParent(g_guiStatusBar.background, lv_obj_get_width(lv_scr_act()), GUI_STATUS_BAR_HEIGHT);
     lv_obj_set_size(cont, lv_obj_get_width(lv_scr_act()), GUI_STATUS_BAR_HEIGHT);
@@ -224,6 +231,11 @@ void GuiStatusBarInit(void)
     img = GuiCreateImg(cont, &imgUsb);
     g_guiStatusBar.usbImg = img;
     lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
+#ifdef BTC_ONLY
+    img = GuiCreateImg(cont, &imgTestNet);
+    g_guiStatusBar.testNetImg = img;
+    lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
+#endif
     RefreshStatusBar();
 #ifdef COMPILE_SIMULATOR
     GuiStatusBarSetBattery(88, true);
@@ -254,7 +266,7 @@ void GuiStatusBarSetSdCard(bool connected)
     RefreshStatusBar();
 }
 
-void GuiStatusBarSetUsb()
+void GuiStatusBarSetUsb(void)
 {
     if (GetUsbState() && UsbInitState()) {
         lv_obj_clear_flag(g_guiStatusBar.usbImg, LV_OBJ_FLAG_HIDDEN);
@@ -263,6 +275,19 @@ void GuiStatusBarSetUsb()
     }
     RefreshStatusBar();
 }
+
+#ifdef BTC_ONLY
+void GuiStatusBarSetTestNet(void)
+{
+    if (GetCurrentAccountIndex() >= 3 || GetIsTestNet() == false) {
+        lv_obj_add_flag(g_guiStatusBar.testNetImg, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_clear_flag(g_guiStatusBar.testNetImg, LV_OBJ_FLAG_HIDDEN);
+    }
+    RefreshStatusBar();
+    printf("GuiStatusBarSetTestNet\n");
+}
+#endif
 
 void GuiStatusBarSetBattery(uint8_t percent, bool charging)
 {
@@ -315,6 +340,12 @@ static void RefreshStatusBar(void)
         next = g_guiStatusBar.sdCardImg;
     }
     lv_obj_align_to(g_guiStatusBar.usbImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
+#ifdef BTC_ONLY
+    if (!lv_obj_has_flag(g_guiStatusBar.usbImg, LV_OBJ_FLAG_HIDDEN)) {
+        next = g_guiStatusBar.usbImg;
+    }
+    lv_obj_align_to(g_guiStatusBar.testNetImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
+#endif
 }
 
 static lv_obj_t *CreateReturnBtn(lv_obj_t *navBar)

@@ -15,11 +15,14 @@
 
 #ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
+#include "drv_usb.h"
 #else
 #include "simulator_model.h"
 #endif
 
 typedef struct StatusBar {
+    lv_obj_t *background;
+    lv_obj_t *wallPaper;
     lv_obj_t *cont;
     lv_obj_t *walletIcon;
     lv_obj_t *walletNameLabel;
@@ -45,6 +48,7 @@ static void RefreshStatusBar(void);
 
 const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_BTC, "Confirm Transaction", &coinBtc},
+#ifndef BTC_ONLY
     {CHAIN_ETH, "Confirm Transaction", &coinEth},
     {CHAIN_SOL, "Confirm Transaction", &coinSol},
     {CHAIN_BNB, "Confirm Transaction", &coinBnb},
@@ -89,19 +93,27 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_UMEE, "Confirm Transaction", &coinUmee},
     {CHAIN_QCK, "Confirm Transaction", &coinQck},
     {CHAIN_TGD, "Confirm Transaction", &coinTgd},
+#endif
 };
 
 const static CoinWalletInfo_t g_walletBtn[] = {
+#ifndef BTC_ONLY
     {WALLET_LIST_KEYSTONE, "Connect Keystone Wallet", &walletKeystone},
     {WALLET_LIST_METAMASK, "Connect MetaMask", &walletMetamask},
+#endif
     {WALLET_LIST_OKX, "Connect OKX Wallet", &walletOkx},
+#ifndef BTC_ONLY
     {WALLET_LIST_ETERNL, "Connect Eternl Wallet", &walletEternl},
+#endif
     {WALLET_LIST_BLUE, "Connect BlueWallet", &walletBluewallet},
+#ifndef BTC_ONLY
     {WALLET_LIST_SUB, "Connect SubWallet", &walletSubwallet},
     {WALLET_LIST_SOLFARE, "Connect Solflare", &walletSolflare},
     {WALLET_LIST_RABBY, "Connect Rabby", &walletRabby},
     {WALLET_LIST_SAFE, "Connect Safe", &walletSafe},
+#endif
     {WALLET_LIST_SPARROW, "Connect Sparrow", &walletSparrow},
+#ifndef BTC_ONLY
     {WALLET_LIST_IMTOKEN, "Connect imToken", &walletImToken},
     {WALLET_LIST_BLOCK_WALLET, "Connect Block Wallet", &walletBlockWallet},
     {WALLET_LIST_ZAPPER, "Connect Zapper", &walletZapper},
@@ -111,6 +123,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_FEWCHA, "Connect Fewcha", &walletFewcha},
     {WALLET_LIST_PETRA, "Connect Petra", &walletPetra},
     {WALLET_LIST_XRP_TOOLKIT, "Connect XRP Toolkit", &walletXRPToolkit},
+#endif
 };
 
 void GuiNvsBarSetWalletName(const char *name)
@@ -138,15 +151,32 @@ void GuiNvsBarSetWalletIcon(const void *src)
     lv_obj_align(g_guiStatusBar.walletIcon, LV_ALIGN_LEFT_MID, 26, 0);
 }
 
+void ShowWallPager(bool enable)
+{
+    if (enable) {
+        lv_obj_clear_flag(g_guiStatusBar.wallPaper, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(g_guiStatusBar.wallPaper, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
 void GuiStatusBarInit(void)
 {
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), GUI_STATUS_BAR_HEIGHT);
+    g_guiStatusBar.background = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
+#ifdef BTC_ONLY
+    g_guiStatusBar.wallPaper = GuiCreateImg(g_guiStatusBar.background, NULL);
+    lv_img_set_src(g_guiStatusBar.wallPaper, &imgDeepLayersVolume11);
+    ShowWallPager(false);
+#endif
+    lv_obj_t *cont = GuiCreateContainerWithParent(g_guiStatusBar.background, lv_obj_get_width(lv_scr_act()), GUI_STATUS_BAR_HEIGHT);
     lv_obj_set_size(cont, lv_obj_get_width(lv_scr_act()), GUI_STATUS_BAR_HEIGHT);
     lv_obj_set_style_radius(cont, 0, 0);
+    lv_obj_set_style_bg_opa(cont, LV_OPA_TRANSP, LV_PART_MAIN);
 
-    lv_obj_t *background = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_STATUS_BAR_HEIGHT);
-    lv_obj_set_style_radius(background, 0, 0);
-    lv_obj_align(background, LV_ALIGN_TOP_LEFT, 0, GUI_STATUS_BAR_HEIGHT);
+    lv_obj_t *body = GuiCreateContainerWithParent(g_guiStatusBar.background, lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_STATUS_BAR_HEIGHT);
+    lv_obj_set_style_radius(body, 0, 0);
+    lv_obj_align(body, LV_ALIGN_TOP_LEFT, 0, GUI_STATUS_BAR_HEIGHT);
+    lv_obj_set_style_bg_opa(body, LV_OPA_TRANSP, LV_PART_MAIN);
 
     g_guiStatusBar.cont = cont;
     lv_obj_t *img = GuiCreateImg(cont, NULL);
@@ -164,6 +194,8 @@ void GuiStatusBarInit(void)
     g_guiStatusBar.batteryCharging = GuiCreateImg(cont, &imgCharging);
     lv_obj_align(g_guiStatusBar.batteryCharging, LV_ALIGN_RIGHT_MID, -70, 0);
     lv_obj_add_flag(g_guiStatusBar.batteryCharging, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_set_style_img_opa(g_guiStatusBar.batteryCharging, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_opa(g_guiStatusBar.batteryCharging, LV_OPA_COVER, LV_PART_MAIN);
 
     g_guiStatusBar.batteryPad = lv_obj_create(g_guiStatusBar.batteryImg);
     lv_obj_align(g_guiStatusBar.batteryPad, LV_ALIGN_TOP_LEFT, 6, 7);
@@ -327,7 +359,11 @@ static lv_obj_t *CreateManageBtn(lv_obj_t *navBar)
     lv_obj_set_size(btn, 64, 64);
     lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
 
+#ifdef BTC_ONLY
+    img = GuiCreateImg(btn, &imgWallet2);
+#else
     img = GuiCreateImg(btn, &imgManage);
+#endif
     lv_obj_set_align(img, LV_ALIGN_CENTER);
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);

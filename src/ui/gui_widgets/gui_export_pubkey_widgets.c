@@ -2,6 +2,7 @@
 #include "gui_home_widgets.h"
 #include "gui_page.h"
 #include "gui_fullscreen_mode.h"
+#include "account_public_info.h"
 #include "assert.h"
 
 typedef enum {
@@ -28,7 +29,7 @@ typedef struct {
     lv_obj_t *pubkey;
     lv_obj_t *egs[2];
     lv_obj_t *confirmBtn;
-    SelectItem_t selectItems[3];
+    SelectItem_t selectItems[4];
 } ExportPubkeyWidgets_t;
 
 typedef struct {
@@ -55,6 +56,7 @@ static void SetPathType(uint8_t pathType);
 static void SetCheckboxState(uint8_t i, bool isChecked);
 
 static const PathTypeItem_t g_btcPathTypeList[] = {
+    {"Taproot",       "P2TR",        "m/86'/0'/0'", XPUB_TYPE_BTC_TAPROOT      },
     {"Native SegWit", "P2WPKH",      "m/84'/0'/0'", XPUB_TYPE_BTC_NATIVE_SEGWIT},
     {"Nested SegWit", "P2SH-P2WPKH", "m/49'/0'/0'", XPUB_TYPE_BTC              },
     {"Legacy",        "P2PKH",       "m/44'/0'/0'", XPUB_TYPE_BTC_LEGACY       },
@@ -67,7 +69,7 @@ static TILEVIEW_INDEX_ENUM g_tileviewIndex;
 static uint8_t g_btcPathType[3] = {0};
 static uint8_t g_tmpSelectIndex = 0;
 
-static GuiRefreshTileview()
+static void GuiRefreshTileview()
 {
     switch (g_tileviewIndex) {
     case TILEVIEW_QRCODE:
@@ -89,7 +91,7 @@ static GuiRefreshTileview()
     }
 }
 
-static GuiGotoTileview(TILEVIEW_INDEX_ENUM index)
+static void GuiGotoTileview(TILEVIEW_INDEX_ENUM index)
 {
     g_tileviewIndex = index;
     lv_obj_set_tile_id(g_widgets.tileview, g_tileviewIndex, 0, LV_ANIM_OFF);
@@ -189,18 +191,18 @@ static void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent)
     char desc[32] = {0};
     static lv_point_t points[2] = {{0, 0}, {360, 0}};
 
-    cont = GuiCreateContainerWithParent(parent, 408, 308);
+    cont = GuiCreateContainerWithParent(parent, 408, 411);
     lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
-    for (uint32_t i = 0; i < 3; i++) {
+    for (uint32_t i = 0; i < sizeof(g_btcPathTypeList) / sizeof(g_btcPathTypeList[0]); i++) {
         label = GuiCreateLabelWithFont(cont, g_btcPathTypeList[i].title, &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         sprintf(desc, "%s (%s)", g_btcPathTypeList[i].subTitle, g_btcPathTypeList[i].path);
         label = GuiCreateNoticeLabel(cont, desc);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
-        if (i != 2) {
+        if (i != (sizeof(g_btcPathTypeList) / sizeof(g_btcPathTypeList[0]) - 1)) {
             line = GuiCreateLine(cont, points, 2);
             lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * (i + 1));
         }
@@ -265,7 +267,7 @@ static void SelectItemCheckHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         checkBox = lv_event_get_target(e);
-        for (uint32_t i = 0; i < 3; i++) {
+        for (uint32_t i = 0; i < sizeof(g_btcPathTypeList) / sizeof(g_btcPathTypeList[0]); i++) {
             if (checkBox == g_widgets.selectItems[i].checkBox) {
                 SetCheckboxState(i, true);
                 g_tmpSelectIndex = i;
@@ -291,7 +293,7 @@ static void ConfirmHandler(lv_event_t *e)
 static void GetBtcPubkey(char *dest, uint8_t pathType)
 {
     char *xpub = GetCurrentAccountPublicKey(g_btcPathTypeList[pathType].pubkeyType);
-    if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_LEGACY) {
+    if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_LEGACY || g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_TAPROOT) {
         sprintf(dest, "%s", xpub);
         return;
     }
@@ -359,17 +361,16 @@ static void RefreshQrcode()
     uint8_t pathType = GetPathType();
     char pubkey[128];
     GetExportPubkey(pubkey, g_chain, pathType);
-    if (pubkey != NULL) {
-        lv_label_set_text(g_widgets.title, GetPathTypeTitle(g_chain, pathType));
-        char desc[32] = {0};
-        GetPathTypeDesc(desc, g_chain, pathType);
-        lv_label_set_text(g_widgets.desc, desc);
-        lv_qrcode_update(g_widgets.qrCode, pubkey, strlen(pubkey));
-        lv_qrcode_update(g_widgets.qrCodeFullscreen, pubkey, strlen(pubkey));
-        lv_label_set_text(g_widgets.pubkey, pubkey);
-        lv_obj_update_layout(g_widgets.pubkey);
-        lv_obj_set_height(g_widgets.qrCont, lv_obj_get_height(g_widgets.pubkey) + 484);
-    }
+
+    lv_label_set_text(g_widgets.title, GetPathTypeTitle(g_chain, pathType));
+    char desc[32] = {0};
+    GetPathTypeDesc(desc, g_chain, pathType);
+    lv_label_set_text(g_widgets.desc, desc);
+    lv_qrcode_update(g_widgets.qrCode, pubkey, strlen(pubkey));
+    lv_qrcode_update(g_widgets.qrCodeFullscreen, pubkey, strlen(pubkey));
+    lv_label_set_text(g_widgets.pubkey, pubkey);
+    lv_obj_update_layout(g_widgets.pubkey);
+    lv_obj_set_height(g_widgets.qrCont, lv_obj_get_height(g_widgets.pubkey) + 484);
 }
 
 static uint8_t GetPathType()
@@ -381,6 +382,7 @@ static uint8_t GetPathType()
     default:
         break;
     }
+    return 0;
 }
 
 static void SetPathType(uint8_t pathType)
@@ -439,7 +441,7 @@ static void SetEgContent(uint8_t index)
     char rest[64] = {0};
     char addr[128] = {0};
     char addrShot[64] = {0};
-    int8_t prefixLen = index == 0 ? 3 : 1;
+    int8_t prefixLen = (g_btcPathTypeList[index].pubkeyType == XPUB_TYPE_BTC_NATIVE_SEGWIT || g_btcPathTypeList[index].pubkeyType == XPUB_TYPE_BTC_TAPROOT) ? 4 : 1;
     for (uint8_t i = 0; i < 2; i++) {
         ModelGetUtxoAddress(addr, index, i);
         AddressLongModeCut(addrShot, addr);
@@ -466,7 +468,7 @@ static void SetCheckboxState(uint8_t i, bool isChecked)
 static void RefreshPathType()
 {
     g_tmpSelectIndex = GetPathType();
-    for (uint8_t i = 0; i < 3; i++) {
+    for (uint8_t i = 0; i < sizeof(g_btcPathTypeList) / sizeof(g_btcPathTypeList[0]); i++) {
         SetCheckboxState(i, i == g_tmpSelectIndex);
     }
     SetEgContent(g_tmpSelectIndex);

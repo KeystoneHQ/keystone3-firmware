@@ -25,6 +25,7 @@ fn get_device_id(serial_number: &str) -> String {
 const BTC_LEGACY_PREFIX: &str = "m/44'/0'/0'";
 const BTC_SEGWIT_PREFIX: &str = "m/49'/0'/0'";
 const BTC_NATIVE_SEGWIT_PREFIX: &str = "m/84'/0'/0'";
+const BTC_TAPROOT_PREFIX: &str = "m/86'/0'/0'";
 const ETH_STANDARD_PREFIX: &str = "m/44'/60'/0'";
 const ETH_LEDGER_LIVE_PREFIX: &str = "m/44'/60'"; //overlap with ETH_STANDARD at 0
 const TRX_PREFIX: &str = "m/44'/195'/0'";
@@ -45,6 +46,7 @@ pub fn generate_crypto_multi_accounts(
         BTC_LEGACY_PREFIX.to_string(),
         BTC_SEGWIT_PREFIX.to_string(),
         BTC_NATIVE_SEGWIT_PREFIX.to_string(),
+        BTC_TAPROOT_PREFIX.to_string(),
         TRX_PREFIX.to_string(),
         LTC_PREFIX.to_string(),
         BCH_PREFIX.to_string(),
@@ -106,7 +108,7 @@ fn generate_k1_normal_key(
     key: ExtendedPublicKey,
     note: Option<String>,
 ) -> URResult<CryptoHDKey> {
-    let xpub = third_party::bitcoin::bip32::ExtendedPubKey::decode(&key.get_key())
+    let xpub = third_party::bitcoin::bip32::Xpub::decode(&key.get_key())
         .map_err(|_e| URError::UrEncodeError(_e.to_string()))?;
     let path = key.get_path();
     let key_path = CryptoKeyPath::new(
@@ -137,7 +139,7 @@ fn generate_eth_ledger_live_key(
     key: ExtendedPublicKey,
     note: Option<String>,
 ) -> URResult<CryptoHDKey> {
-    let xpub = third_party::bitcoin::bip32::ExtendedPubKey::decode(&key.get_key())
+    let xpub = third_party::bitcoin::bip32::Xpub::decode(&key.get_key())
         .map_err(|_e| URError::UrEncodeError(_e.to_string()))?;
     let path = key.get_path();
     let sub_path =

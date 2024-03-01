@@ -332,6 +332,25 @@ int32_t Gd25FlashWriteBuffer(uint32_t addr, const uint8_t *buffer, uint32_t size
     return writeCount;
 }
 
+int32_t Gd25FlashWriteBufferNoMutex(uint32_t addr, const uint8_t *buffer, uint32_t size)
+{
+    int32_t writeBytes, writeCount = 0;
+
+    if (addr % GD25QXX_PAGE_SIZE + size > GD25QXX_PAGE_SIZE) {
+        //across page
+        writeBytes = GD25QXX_PAGE_SIZE - addr % GD25QXX_PAGE_SIZE;
+        Gd25FlashPageProgram(addr, buffer, writeBytes);
+        writeCount += writeBytes;
+    }
+    while (writeCount < size) {
+        writeBytes = size - writeCount > GD25QXX_PAGE_SIZE ? GD25QXX_PAGE_SIZE : size - writeCount;
+        Gd25FlashPageProgram(addr + writeCount, buffer + writeCount, writeBytes);
+        writeCount += writeBytes;
+    }
+    return writeCount;
+}
+
+
 static uint8_t Gd25FlashSendByte(uint8_t byte)
 {
     uint8_t sendData = byte;

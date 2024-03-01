@@ -21,7 +21,6 @@ static void UsbTask(void *argument);
 
 static osThreadId_t g_usbTaskHandle;
 static volatile bool g_usbState = false;
-static volatile bool g_usbConnectMutex = false;
 
 void CreateUsbTask(void)
 {
@@ -32,11 +31,6 @@ void CreateUsbTask(void)
     };
     g_usbTaskHandle = osThreadNew(UsbTask, NULL, &usbTaskAttributes);
     printf("g_usbTaskHandle=%d\r\n", g_usbTaskHandle);
-}
-
-void SetUsbStateInt(bool enable)
-{
-    g_usbState = enable;
 }
 
 void SetUsbState(bool enable)
@@ -66,7 +60,11 @@ static void UsbTask(void *argument)
 
     osDelay(1000);
 #if (USB_POP_WINDOW_ENABLE == 1)
-    UsbDeInit();
+    CloseUsb();
+#else
+    if (GetUSBSwitch() && GetUsbDetectState()) {
+        OpenUsb();
+    }
 #endif
     while (1) {
         ret = osMessageQueueGet(g_usbQueue, &rcvMsg, NULL, 10000);
@@ -74,31 +72,25 @@ static void UsbTask(void *argument)
             switch (rcvMsg.id) {
             case USB_MSG_ISR_HANDLER: {
                 ClearLockScreenTime();
-#if (USB_POP_WINDOW_ENABLE == 1)
-
-                if ((GetCurrentAccountIndex() != 0xFF || GuiIsSetup()) && GetUSBSwitch() && g_usbConnectMutex) {
-#else
-                if (GetUSBSwitch()) {
-#endif
-                    USBD_OTG_ISR_Handler((USB_OTG_CORE_HANDLE *)rcvMsg.value);
-                    NVIC_ClearPendingIRQ(USB_IRQn);
-                    NVIC_EnableIRQ(USB_IRQn);
-                }
+                USBD_OTG_ISR_Handler((USB_OTG_CORE_HANDLE *)rcvMsg.value);
+                NVIC_ClearPendingIRQ(USB_IRQn);
+                NVIC_EnableIRQ(USB_IRQn);
             }
             break;
             case USB_MSG_SET_STATE: {
-                g_usbState = rcvMsg.value != 0;
                 GuiApiEmitSignal(SIG_INIT_USB_STATE_CHANGE, NULL, 0);
             }
             break;
             case USB_MSG_INIT: {
                 g_usbState = true;
                 UsbInit();
+                SetUsbState(true);
             }
             break;
             case USB_MSG_DEINIT: {
                 g_usbState = false;
                 UsbDeInit();
+                SetUsbState(false);
             }
             break;
             default:
@@ -111,33 +103,17 @@ static void UsbTask(void *argument)
     }
 }
 
-void ConnectUsbMutexRelease(void)
-{
-    g_usbConnectMutex = true;
-}
-
-void ConnectUsbMutexRestrict(void)
-{
-    g_usbConnectMutex = false;
-}
-
 /// @brief
 /// @param argc Test arg count.
 /// @param argv Test arg values.
 void UsbTest(int argc, char *argv[])
 {
-    if (strcmp(argv[0], "init") == 0) {
-        printf("usb init\n");
-        UsbInit();
-    } else if (strcmp(argv[0], "deinit") == 0) {
-        printf("usb deinit\n");
-        UsbDeInit();
-    } else if (strcmp(argv[0], "enable") == 0) {
-        printf("usb enable\n");
-        SetUsbState(true);
-    } else if (strcmp(argv[0], "disable") == 0) {
-        printf("usb disable\n");
-        SetUsbState(false);
+    if (strcmp(argv[0], "open") == 0) {
+        printf("open usb\n");
+        OpenUsb();
+    } else if (strcmp(argv[0], "close") == 0) {
+        printf("close usb\n");
+        CloseUsb();
     }
 }
 

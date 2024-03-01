@@ -56,8 +56,8 @@ static void FirmwareSdcardCheckSha256HintBoxHandler(lv_event_t *e);
 static void GuiFirmwareUpdateCancelUpdate(lv_event_t *e);
 
 static FirmwareUpdateWidgets_t g_firmwareUpdateWidgets;
-static char *g_firmwareUpdateUrl = NULL;
-static char *g_firmwareSdUpdateUrl = NULL;
+static const char *g_firmwareUpdateUrl = NULL;
+static const char *g_firmwareSdUpdateUrl = NULL;
 static lv_obj_t *g_waitAnimCont = NULL;
 static void *g_param = NULL;
 static lv_obj_t *g_noticeHintBox = NULL;
@@ -80,7 +80,7 @@ void GuiCreateSdCardUpdateHintbox(char *version, bool checkSumDone)
     GUI_DEL_OBJ(g_noticeHintBox)
     static uint32_t param = SIG_INIT_SD_CARD_OTA_COPY;
     char desc[150] = {0};
-    lv_obj_t *label;
+
     sprintf(desc, _("firmware_update_sd_dialog_desc"));
     uint16_t height = checkSumDone ? 518 : 458;
     g_noticeHintBox = GuiCreateUpdateHintbox(lv_scr_act(), height, &imgFirmwareUp, _("firmware_update_sd_dialog_title"),

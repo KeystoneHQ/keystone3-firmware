@@ -15,12 +15,16 @@
 #include "log_task.h"
 #include "gui_api.h"
 #include "gui_views.h"
+#include "version.h"
+
 
 #define LOG_NAME_MAX_LEN            64
 #define LOG_DATA_HEAD_SIZE          8
 #define NEXT_SECTOR_MARK            0x0000
 
 #define LOG_MAX_STRING_LEN          1024
+
+#define EXPORT_ORIGINAL_DATA        0
 
 typedef struct {
     uint16_t event;
@@ -37,6 +41,8 @@ static void WriteLogSync(LogData_t *pLogData);
 static uint32_t FindLogOffsetAddr(void);
 static void EraseNextSector(uint32_t length);
 static uint32_t GetNextSectorAddr(uint32_t addr);
+static void CheckLogData(void);
+void CheckLastErrLog(void);
 
 static uint32_t g_logAddr;
 static bool g_logInit = false;
@@ -128,9 +134,14 @@ void LogErase(void)
 
 void LogInit(void)
 {
+    char version[32];
     g_logAddr = FindLogOffsetAddr();
     printf("g_logAddr=0x%08lX\r\n", g_logAddr);
+    CheckLogData();
     g_logInit = true;
+    GetSoftWareVersionNumber(version);
+    WriteLogFormat(EVENT_ID_BOOT, "v%s", version);
+    CheckLastErrLog();
 }
 
 
@@ -214,14 +225,10 @@ void LogExportSync(void)
             readAddr = SPI_FLASH_ADDR_LOG;
         }
     }
-    //PrintArray("logFileData", logFileData, writeIndex);
-    // printf("delete old log file\r\n");
     printf("logname = %s\n", g_logName);
-    // ret = FatfsFileDelete(logName);
-    // printf("delete old log file ret=%d\r\n", ret);
     do {
         uint32_t leftSize = FatfsGetSize("0:");
-        printf("start save log file,size=%d left size = \r\n", writeIndex, leftSize);
+        printf("start save log file,size=%d left size=%d\r\n", writeIndex, leftSize);
         if (writeIndex >= leftSize) {
             GuiApiEmitSignalWithValue(SIG_SETTING_LOG_EXPORT_NOT_ENOUGH_SPACE, ERROR_LOG_NOT_ENOUGH_SPACE);
             break;
@@ -240,6 +247,12 @@ void LogExportSync(void)
         }
     } while (0);
     EXT_FREE(logFileData);
+#if (EXPORT_ORIGINAL_DATA == 1)
+    uint8_t *originalData = EXT_MALLOC(SPI_FLASH_SIZE_LOG);
+    Gd25FlashReadBuffer(SPI_FLASH_ADDR_LOG, originalData, SPI_FLASH_SIZE_LOG);
+    FatfsFileWrite("0:log_original_data", originalData, SPI_FLASH_SIZE_LOG);
+    EXT_FREE(originalData);
+#endif
 }
 
 
@@ -285,6 +298,7 @@ static void WriteLogAsync(LogData_t *pLogData)
     dataLength = LOG_DATA_HEAD_SIZE + pLogData->length * 4;
 
     data = SRAM_MALLOC(dataLength);
+    memset(data, 0, dataLength);
     memcpy(data, pLogData, LOG_DATA_HEAD_SIZE);
     memcpy(data + LOG_DATA_HEAD_SIZE, pLogData->pData, pLogData->length * 4);
     PubBufferMsg(LOG_MSG_WRITE, data, dataLength);
@@ -316,6 +330,12 @@ static uint32_t FindLogOffsetAddr(void)
 {
     LogData_t logData;
     uint32_t addr;
+    uint8_t *originalData;
+
+    originalData = EXT_MALLOC(SPI_FLASH_SIZE_LOG);
+    for (addr = SPI_FLASH_ADDR_LOG; addr < SPI_FLASH_ADDR_LOG + SPI_FLASH_SIZE_LOG; addr += GD25QXX_SECTOR_SIZE) {
+        Gd25FlashReadBuffer(addr, originalData + addr - SPI_FLASH_ADDR_LOG, GD25QXX_SECTOR_SIZE);
+    }
     for (addr = SPI_FLASH_ADDR_LOG; addr < SPI_FLASH_ADDR_LOG + SPI_FLASH_SIZE_LOG;) {
         Gd25FlashReadBuffer(addr, (uint8_t *)&logData, LOG_DATA_HEAD_SIZE);         //Read a log head
         //printf("addr=0x%08lX,event=0x%04lX\r\n", addr, logData.event);
@@ -372,3 +392,92 @@ static uint32_t GetNextSectorAddr(uint32_t addr)
     return nextSectorAddr;
 }
 
+
+static void CheckLogData(void)
+{
+    LogData_t logData;
+    uint32_t readAddr, sectorCount;
+    //uint8_t *logFileData;
+    //int32_t ret;
+    uint8_t *originalData;
+    uint16_t crcCalc;
+    bool needErase = false;
+
+    originalData = EXT_MALLOC(SPI_FLASH_SIZE_LOG);
+    printf("start read log\n");
+    Gd25FlashReadBuffer(SPI_FLASH_ADDR_LOG, originalData, SPI_FLASH_SIZE_LOG);
+    printf("read log done\n");
+    readAddr = g_logAddr;
+    sectorCount = 0;
+    while (1) {
+        //find the earliest log.
+        if (sectorCount++ >= SPI_FLASH_SIZE_LOG / GD25QXX_SECTOR_SIZE) {
+            printf("log not found\r\n");
+            needErase = true;
+            break;
+            //return;
+        }
+        readAddr = GetNextSectorAddr(readAddr);
+        memcpy(&logData, &originalData[readAddr - SPI_FLASH_ADDR_LOG], LOG_DATA_HEAD_SIZE);
+        if (logData.event != 0xFFFF) {
+            break;
+        }
+    }
+    printf("the earliest log addr=0x%08X\r\n", readAddr);
+    if (needErase == false) {
+        while (1) {
+            memcpy(&logData, &originalData[readAddr - SPI_FLASH_ADDR_LOG], LOG_DATA_HEAD_SIZE);
+            //printf("readAddr=0x%08X,event=0x%X,timeStamp=%d\n", readAddr, logData.event, logData.timeStamp);
+            if (readAddr >= SPI_FLASH_ADDR_LOG + SPI_FLASH_SIZE_LOG) {
+                printf("log data overlap,addr=0x%08X\n", readAddr);
+                needErase = true;
+                break;
+            }
+            if (readAddr == g_logAddr) {
+                printf("complete a cycle reading on log zone\r\n");
+                break;
+            }
+            if (logData.event == NEXT_SECTOR_MARK) {
+                readAddr = GetNextSectorAddr(readAddr);
+                //printf("goto next sector:0x%08X\r\n", readAddr);
+                continue;
+            }
+            if (logData.event == 0xFFFF && readAddr > g_logAddr) {
+                printf("unexpected event\n");
+                printf("readAddr=%d\n");
+                needErase = true;
+                break;
+            }
+            crcCalc = crc16_ccitt((uint8_t *)&logData.timeStamp, 4);
+            if (logData.checksum != (crcCalc & 0x000F)) {
+                printf("log crc err,logData.checksum=0x%X,crcCalc=0x%X\n", logData.checksum, crcCalc);
+                printf("readAddr=%d\n");
+                needErase = true;
+                break;
+            }
+            readAddr += LOG_DATA_HEAD_SIZE;
+            readAddr += logData.length * 4;
+        }
+    }
+    EXT_FREE(originalData);
+    printf("log data check over\n");
+    if (needErase) {
+        printf("need erase log\n");
+        LogEraseSync();
+    }
+}
+
+
+void CheckLastErrLog(void)
+{
+    char errStr[256];
+    Gd25FlashReadBuffer(SPI_FLASH_ADDR_ERR_INFO, (uint8_t *)errStr, sizeof(errStr));
+    if (CheckAllFF((uint8_t *)errStr, sizeof(errStr))) {
+        return;
+    }
+    if (strlen(errStr) < sizeof(errStr)) {
+        printf("last err:%s\n", errStr);
+        WriteLogFormat(EVENT_ID_ERROR, "%s", errStr);
+    }
+    Gd25FlashBlockErase(SPI_FLASH_ADDR_ERR_INFO);
+}

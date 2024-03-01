@@ -58,11 +58,6 @@ int32_t GetDevicePublicKey(uint8_t *pubkey)
 
 }
 
-struct UREncodeMultiResult *get_next_part(PtrEncoder ptr)
-{
-
-}
-
 static uint8_t g_fpVersion[4] = {0};
 
 uint8_t *GuiGetFpVersion(char *version)
@@ -77,15 +72,6 @@ uint8_t *GuiGetFpVersion(char *version)
     return version;
 }
 
-void free_ur_encode_muilt_result(PtrT_UREncodeMultiResult ptr)
-{
-
-}
-
-void free_ur_encode_result(PtrT_UREncodeResult ptr)
-{
-
-}
 
 void UsbDeInit(void)
 {
@@ -514,21 +500,6 @@ void LogoutCurrentAccount(void)
 {
 }
 
-void free_ur_parse_multi_result(PtrT_URParseMultiResult ptr)
-{
-
-}
-
-void free_ur_parse_result(PtrT_URParseResult ur_parse_result)
-{
-
-}
-
-void free_ptr_string(PtrString ptr)
-{
-
-}
-
 PtrString calculate_auth_code(ConstPtrUR web_auth_data,
                               PtrBytes rsa_key_n,
                               uint32_t rsa_key_n_len,
@@ -630,4 +601,8 @@ bool GetUsbDetectState(void)
 bool UsbInitState(void)
 {
     return false;
+}
+
+bool IsUpdateSuccess(){
+    return true;
 }

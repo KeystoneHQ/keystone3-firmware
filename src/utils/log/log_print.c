@@ -27,7 +27,7 @@ void RustMemoryNode_add(void *p, uint32_t size)
         parent = child;
         child = child->next;
     }
-    child = (RustMemoryNode_t *)ExtMalloc(sizeof(RustMemoryNode_t), __FILE__, __LINE__, __func__);
+    child = (RustMemoryNode_t *)ExtMalloc(sizeof(RustMemoryNode_t));
     child -> p = p;
     child -> size = size;
     child -> prev = parent;
@@ -64,7 +64,7 @@ void RustMemoryNode_remove(void *p)
     if (current -> prev == NULL) {
         rustMemoryListHead = current -> next;
     }
-    ExtFree(current, __FILE__, __LINE__, __func__);
+    ExtFree(current);
 }
 
 void RustMemoryNode_print()
@@ -169,6 +169,8 @@ void LogRustPanic(char* panic_info)
 
 #include "draw_on_lcd.h"
 #include "presetting.h"
+#include "version.h"
+#include "hardware_version.h"
 
 LV_FONT_DECLARE(openSans_20);
 
@@ -188,6 +190,8 @@ void PrintErrorInfoOnLcd(void)
     PrintOnLcd(&openSans_20, 0x1927, "support@Keyst.one\n");
     GetSerialNumber(serialNumber);
     PrintOnLcd(&openSans_20, 0xFFFF, "Serial No.%s\n", serialNumber);
+    PrintOnLcd(&openSans_20, 0xFFFF, "Software:%s\n", GetSoftwareVersionString());
+    PrintOnLcd(&openSans_20, 0xFFFF, "Hardware:%s\n", GetHardwareVersionString());
 }
 
 #endif

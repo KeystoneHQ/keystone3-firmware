@@ -19,7 +19,7 @@ GuiFrameDebug_t g_debugView[OPENED_VIEW_MAX];
 
 /* FUNC DECLARATION*/
 bool GuiLockScreenIsTop(void);
-static char *GuiFrameIdToName(SCREEN_ID_ENUM ID);
+static const char *GuiFrameIdToName(SCREEN_ID_ENUM ID);
 
 /* STATIC VARIABLES */
 static GUI_VIEW *g_workingView = NULL;
@@ -37,11 +37,15 @@ static GUI_VIEW *g_viewsTable[] = {
     &g_importShareView,
     &g_settingView,
     &g_connectWalletView,
+#ifndef BTC_ONLY
     &g_USBTransportView,
+#endif
     &g_passphraseView,
     &g_utxoReceiveView,
+#ifndef BTC_ONLY
     &g_multiPathCoinReceiveView,
     &g_standardReceiveView,
+#endif
     &g_forgetPassView,
     &g_lockDeviceView,
     &g_firmwareUpdateView,
@@ -61,8 +65,10 @@ static GUI_VIEW *g_viewsTable[] = {
     &g_tutorialView,
     &g_connectionView,
     &g_DevicePublicKeyView,
+#ifndef BTC_ONLY
     &g_multiAccountsReceiveView,
     &g_keyDerivationRequestView,
+#endif
     &g_scanView,
     &g_transactionDetailView,
     &g_transactionSignatureView,
@@ -262,7 +268,7 @@ int32_t GuiCloseToTargetView(GUI_VIEW *view)
     return SUCCESS_CODE;
 }
 
-static char *GuiFrameIdToName(SCREEN_ID_ENUM ID)
+static const char *GuiFrameIdToName(SCREEN_ID_ENUM ID)
 {
     const char *str =
         "SCREEN_INIT\0" "SCREEN_LOCK\0" "SCREEN_HOME\0" "SCREEN_SETUP\0" "CREATE_WALLET\0" "CREATE_SHARE\0"
@@ -274,14 +280,14 @@ static char *GuiFrameIdToName(SCREEN_ID_ENUM ID)
         "SCREEN_WALLET_TUTORIAL\0" "SCREEN_SELF_DESTRUCT\0" "SCREEN_INACTIVE\0" "SCREEN_DISPLAY\0"
         "SCREEN_TUTORIAL\0" "SCREEN_CONNECTION\0" "SCREEN_MULTI_ACCOUNTS_RECEIVE\0" "SCREEN_KEY_DERIVATION_REQUEST\0"
         "SCREEN_SCAN\0" "SCREEN_TRANSACTION_DETAIL\0" "SCREEN_TRANSACTION_SIGNATURE\0" "SCREEN_USB_TRANSPORT\0"
-        "SCREEN_DEVICE_PUB_KEY\0";
+        "SCREEN_DEVICE_PUB_KEY\0 " "SCREEN_DEVICE_UPDATE_SUCCESS\0";
     SCREEN_ID_ENUM i;
 
     for (i = SCREEN_INIT; i != ID && *str; i++) {
         while (*str++) ;
     }
     printf("id = %d name = %s\n", ID, str);
-    char *name = str;
+    const char *name = str;
     return name;
 }
 

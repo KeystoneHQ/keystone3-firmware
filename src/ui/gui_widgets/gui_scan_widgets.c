@@ -71,21 +71,25 @@ void GuiScanResult(bool result, void *param)
         g_chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
         // Not a chain based transaction, e.g. WebAuth
         if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
+#ifndef BTC_ONLY
             //we don't support ADA in Slip39 Wallet;
             if (g_chainType == CHAIN_ADA || g_qrcodeViewType == KeyDerivationRequest) {
                 ThrowError();
                 return;
             }
+#endif
         }
         if (g_chainType == CHAIN_BUTT) {
             if (g_qrcodeViewType == WebAuthResult) {
                 GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_webAuthResultView);
             }
+#ifndef BTC_ONLY
             if (g_qrcodeViewType == KeyDerivationRequest) {
                 GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_keyDerivationRequestView);
             }
+#endif
             return;
         }
         uint8_t accountNum = 0;

@@ -22,11 +22,12 @@
 #define BATTERY_PRINTF(fmt, args...)
 #endif
 
-#define BATTERY_DIFF_THRESHOLD                          20
+#define BATTERY_DIFF_THRESHOLD                          40
 #define BATTERY_CHARGING_BY_TIME                        75
-#define BATTERY_LOG_PERCENT_INTERVAL                    1
+#define BATTERY_LOG_PERCENT_INTERVAL                    10
+#define BATTERY_LOG_ONLY_LOW_BATTERY                    1
 #define BATTERY_LOG_DETAIL                              1
-#define BATTERY_ADC_TIMES                               100
+#define BATTERY_ADC_TIMES                               50
 #define BATTERY_PCT_CHANGE_MIN_TICK_DISCHARGE           (80 * 1000)
 #define BATTERY_PCT_CHANGE_MIN_TICK_CHARGING            (80 * 1000)
 #define BATTERY_INVALID_PERCENT_VALUE                   101
@@ -132,11 +133,12 @@ void BatteryOpen(void)
 /// @return Battery voltage, in millivolts.
 uint32_t GetBatteryMilliVolt(void)
 {
-    int32_t i, adcAver, temp, max, min;//, temps[BATTERY_ADC_TIMES];
+    int32_t i, adcAver, temp, max, min;
     uint64_t adcSum = 0;
 
     max = 0;
     min = 0xFFF;
+    osKernelLock();
     ADC_StartCmd(ENABLE);
     ADC_ChannelSwitch(BATTERY_CHANNEL);
     for (i = 0; i < BATTERY_ADC_TIMES; i++) {
@@ -151,23 +153,20 @@ uint32_t GetBatteryMilliVolt(void)
         if (temp < min) {
             min = temp;
         }
-        //printf("temp=%d\r\n", temp);
-        //temps[i] = temp;
     }
     ADC_StartCmd(DISABLE);
     BATTERY_PRINTF("max=%d,min=%d\r\n", max, min);
     adcSum -= max;
     adcSum -= min;
     adcAver = adcSum / (BATTERY_ADC_TIMES - 2);
-    //PrintU32Array("temps", temps, BATTERY_ADC_TIMES);
     BATTERY_PRINTF("adcAver=%d\r\n", adcAver);
-
+    osKernelUnlock();
     return ADC_CalVoltage(adcAver, 6200);
 }
 
 uint32_t GetRtcBatteryMilliVolt(void)
 {
-    int32_t i, adcAver, temp, max, min;//, temps[BATTERY_ADC_TIMES];
+    int32_t i, adcAver, temp, max, min;
     uint64_t adcSum = 0;
     uint32_t vol;
 
@@ -228,8 +227,7 @@ bool BatteryIntervalHandler(void)
     milliVolt = GetBatteryMilliVolt();
     percent = GetBatteryPercentByMilliVolt(milliVolt, usbPowerState == USB_POWER_STATE_DISCONNECT);
 
-
-    BATTERY_PRINTF("milliVolt=%d,percent=%d,usbPowerState=%d\r\n", milliVolt, percent, usbPowerState);
+    printf("handler,milliVolt=%d,percent=%d,showPercent=%d,usbPowerState=%d\n", milliVolt, percent, GetBatterPercent(), usbPowerState);
     if (usbPowerState == USB_POWER_STATE_DISCONNECT && milliVolt < dischargeCurve[0]) {
         printf("low volt,power off\n");
         Aw32001PowerOff();
@@ -253,7 +251,7 @@ bool BatteryIntervalHandler(void)
         //The battery percentage only increase when charging.
         //The battery percentage increase by 1% each time.
         if (percent < g_batterPercent && percent >= BATTERY_CHARGING_BY_TIME) {
-            printf("delay increate battery percentage delayIncreate = %d\n", delayIncreate);
+            //printf("delay increate battery percentage delayIncreate = %d\n", delayIncreate);
             delayIncreate++;
         }
 
@@ -270,10 +268,17 @@ bool BatteryIntervalHandler(void)
     BATTERY_PRINTF("g_batterPercent=%d\r\n", g_batterPercent);
     if (change) {
         if (g_batterPercent % BATTERY_LOG_PERCENT_INTERVAL == 0) {
+
+#if BATTERY_LOG_ONLY_LOW_BATTERY == 1
+            if (g_batterPercent <= 20) {
+#endif
 #if BATTERY_LOG_DETAIL == 1
-            WriteLogFormat(EVENT_ID_BATTERY, "%dmv,%d%%,disp=%d%%", milliVolt, percent, g_batterPercent);
+                WriteLogFormat(EVENT_ID_BATTERY, "%dmv,%d%%,disp=%d%%", milliVolt, percent, g_batterPercent);
 #else
-            WriteLogValue(EVENT_ID_BATTERY, g_batterPercent);
+                WriteLogValue(EVENT_ID_BATTERY, g_batterPercent);
+#endif
+#if BATTERY_LOG_ONLY_LOW_BATTERY == 1
+            }
 #endif
         }
         SaveBatteryPercent(g_batterPercent);

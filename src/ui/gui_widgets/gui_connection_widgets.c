@@ -63,9 +63,6 @@ static void GuiConnectionNVSBarInit()
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("usb_connection_title"));
 }
 
-
-
-
 void GuiConnectionEntranceWidget(lv_obj_t *parent)
 {
 
@@ -74,7 +71,7 @@ void GuiConnectionEntranceWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_color(usbConnectionSw, ORANGE_COLOR, LV_STATE_CHECKED | LV_PART_INDICATOR);
     lv_obj_set_style_bg_color(usbConnectionSw, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(usbConnectionSw, LV_OPA_30, LV_PART_MAIN);
-    if (GetUSBSwitch()) {
+    if (!GetUSBSwitch()) {
         lv_obj_add_state(usbConnectionSw, LV_STATE_CHECKED);
     } else {
         lv_obj_clear_state(usbConnectionSw, LV_STATE_CHECKED);
@@ -109,7 +106,7 @@ void GuiConnectionEntranceWidget(lv_obj_t *parent)
         },
     };
 
-    lv_obj_t *button = GuiCreateButton(parent, 456, 148, table, NUMBER_OF_ARRAYS(table),
+    lv_obj_t *button = GuiCreateButton(parent, 456, 178, table, NUMBER_OF_ARRAYS(table),
                                        UsbConnectionHandler, NULL);
     // lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 0);
@@ -127,7 +124,6 @@ static void UsbConnectionHandler(lv_event_t *e)
         }
         lv_event_send(usbConnectionSw, LV_EVENT_VALUE_CHANGED, NULL);
     }
-
 }
 
 static void UsbConnectionSwitchHandler(lv_event_t * e)
@@ -137,14 +133,14 @@ static void UsbConnectionSwitchHandler(lv_event_t * e)
 
     if (code == LV_EVENT_VALUE_CHANGED) {
         if (lv_obj_has_state(obj, LV_STATE_CHECKED)) {
-            printf("usb switch on\n");
-            SetUSBSwitch(1);
-            GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
-        } else {
+            printf("air gap on...\n");
             SetUSBSwitch(0);
-            SetUsbState(false);
             CloseUsb();
-            printf("usb switch off\n");
+        } else {
+            SetUsbState(true);
+            SetUSBSwitch(1);
+            printf("air gap off...\n");
+            GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
         }
         SaveDeviceSettings();
     }

@@ -28,9 +28,8 @@ static void LogExportHandler(lv_event_t *e);
 static void StartFirmwareCheckSumHandler(lv_event_t *e);
 static void CloseVerifyHintBoxHandler(lv_event_t *e);
 static void OpenVerifyFirmwareHandler(lv_event_t *e);
-static void CloseQrcodeHandler(lv_event_t *e);
-static void GuiQrcodeHandler(lv_event_t *e);
 
+uint32_t GetBatteryMilliVolt();
 static lv_obj_t *g_firmwareVerifyCont = NULL;
 static lv_obj_t *g_noticeHintBox = NULL;
 static lv_obj_t *g_cont;
@@ -257,9 +256,9 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
 
 void GuiAboutWidgetsLogExport(bool en, int32_t errCode)
 {
-    char *title = "";
-    char *desc = "";
-    char *right = "";
+    const char *title = "";
+    const char *desc = "";
+    const char *right = "";
     const void *src;
     lv_color_t rightColor;
     if (en) {
@@ -415,53 +414,5 @@ static void OpenVerifyFirmwareHandler(lv_event_t *e)
         g_firmwareVerifyCont = GuiCreateContainerWithParent(g_pageWidget->contentZone, 480, 800 - GUI_MAIN_AREA_OFFSET);
         lv_obj_clear_flag(g_pageWidget->contentZone, LV_OBJ_FLAG_SCROLLABLE);
         GuiCreateVerifyFirmwareInstructionTile(g_firmwareVerifyCont);
-    }
-}
-
-static void GuiQrcodeHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t *parent, *button, *qrCodeCont, *qrCode, *label;
-
-    if (code == LV_EVENT_CLICKED) {
-        if (g_noticeHintBox == NULL) {
-            g_noticeHintBox = GuiCreateHintBox(g_pageWidget->contentZone, 480, 660, true);
-            parent = g_noticeHintBox;
-
-            qrCodeCont = lv_obj_create(parent);
-            lv_obj_set_size(qrCodeCont, 408, 408);
-            lv_obj_set_style_border_width(qrCodeCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_clip_corner(qrCodeCont, 0, 0);
-            lv_obj_set_style_pad_all(qrCodeCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_radius(qrCodeCont, 16, LV_PART_MAIN);
-            lv_obj_clear_flag(qrCodeCont, LV_OBJ_FLAG_SCROLLABLE);
-            lv_obj_clear_flag(qrCodeCont, LV_OBJ_FLAG_CLICKABLE);
-            lv_obj_set_style_bg_color(qrCodeCont, WHITE_COLOR, LV_PART_MAIN);
-            lv_obj_align(qrCodeCont, LV_ALIGN_BOTTOM_MID, 0, -210);
-
-            qrCode = lv_qrcode_create(qrCodeCont, 360, BLACK_COLOR, WHITE_COLOR);
-            lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
-            lv_qrcode_update(qrCode, _("firmware_update_verify_firmware_qr_link"), (uint32_t)strlen(_("firmware_update_verify_firmware_qr_link")));
-
-            label = GuiCreateLittleTitleLabel(parent, _("firmware_update_verify_firmware_title"));
-            lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -156);
-            label = GuiCreateIllustrateLabel(parent, _("firmware_update_verify_firmware_qr_link"));
-            lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
-            lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -114);
-
-            button = GuiCreateBtn(parent, _("OK"));
-            lv_obj_set_size(button, 94, 66);
-            lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
-            lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-            lv_obj_add_event_cb(button, CloseQrcodeHandler, LV_EVENT_CLICKED, NULL);
-        }
-    }
-}
-
-static void CloseQrcodeHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeHintBox)
     }
 }

@@ -118,6 +118,7 @@ USBD_Class_cb_TypeDef USBD_CDC_cb = {
     USBD_WinUSBOSStrDescriptor,
 };
 
+#ifdef USBD_ENABLE_MSC
 /* USB CDC device Configuration Descriptor */
 __ALIGN_BEGIN uint8_t usbd_cdc_CfgDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END = {
     /*Configuration Descriptor*/
@@ -161,7 +162,7 @@ __ALIGN_BEGIN uint8_t usbd_cdc_CfgDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END = {
     HIBYTE(64),
     0x01,                                       /* bInterval: ignore for Bulk transfer */
 };
-
+#else
 #define WINUSB_CONFIG_DESC_SIZE 32
 #define CDC_DATA_HS_MAX_PACKET_SIZE                 64U  /* Endpoint IN & OUT Packet size */
 static __ALIGN_BEGIN uint8_t USBD_CDC_CfgHSDesc[WINUSB_CONFIG_DESC_SIZE] __ALIGN_END = {
@@ -206,7 +207,9 @@ static __ALIGN_BEGIN uint8_t USBD_CDC_CfgHSDesc[WINUSB_CONFIG_DESC_SIZE] __ALIGN
     LOBYTE(CDC_DATA_HS_MAX_PACKET_SIZE),  /* wMaxPacketSize: */
     HIBYTE(CDC_DATA_HS_MAX_PACKET_SIZE),
     0x00                               /* bInterval: ignore for Bulk transfer */
-} ;
+};
+
+#endif
 
 
 /** @defgroup usbd_cdc_Private_Functions

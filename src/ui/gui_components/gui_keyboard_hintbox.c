@@ -16,6 +16,7 @@
 #include "gui_lock_widgets.h"
 #include "fingerprint_process.h"
 #ifndef COMPILE_SIMULATOR
+#include "usb_task.h"
 #include "safe_mem_lib.h"
 #undef memset_s
 #define memset_s(dest, dmax, value, n)          memset(dest, value, n)
@@ -460,6 +461,7 @@ void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t
     sprintf(tempBuf, "#F55831 %s#", hint);
     GuiSetErrorLabel(keyboardWidget, tempBuf);
     if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
+        CloseUsb();
         GuiShowPasswordErrorHintBox(keyboardWidget);
     }
 }

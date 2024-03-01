@@ -9,7 +9,7 @@ edition = "2021"
 keystore = { path = "../../keystore", default-features = false }
 third_party = { path = "../../third_party", default-features = false }
 app_utils = {path = "../utils"}
-sui-types = { git = "https://github.com/KeystoneHQ/sui.git", tag = "0.1.1", package = "sui-types" }
+sui-types = { git = "https://github.com/KeystoneHQ/sui.git", tag = "0.1.2", package = "sui-types" }
 serde = { version = "1.0.139", default-features = false }
 serde_derive = { version = "1.0.159"}
 
@@ -19,6 +19,9 @@ keystore = { path = "../../keystore" }
 [features]
 default = ["std"]
 std = []
+simulator = [
+    "sui-types/keystone-simulator"
+]
 
 [lib]
 doctest = false

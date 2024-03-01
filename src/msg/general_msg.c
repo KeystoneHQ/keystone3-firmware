@@ -44,7 +44,7 @@ uint32_t PubBufferMsg(uint32_t messageID, void *buffer, uint32_t length)
         } else if (osMessageQueueGetSpace(queue) == 0) {  // queue is full
             return MSG_SEND_ERROR;
         }
-        msg.buffer = (uint8_t *)pvPortMalloc(length);
+        msg.buffer = (uint8_t *)SramMalloc(length);
         if (msg.buffer == NULL) {
             printf("msg malloc err\n");
             return MSG_MEM_ERROR;
@@ -52,7 +52,7 @@ uint32_t PubBufferMsg(uint32_t messageID, void *buffer, uint32_t length)
         memcpy(msg.buffer, buffer, length);
         err = osMessageQueuePut(queue, &msg, 0, 0);
         if (err != osOK) {
-            vPortFree(msg.buffer);
+            SramFree(msg.buffer);
             printf("msg bugger write queue err,queue=0x%08X,msgID=0x%08X,errid=0x%08X\r\n", queue, messageID, err);
             continue;
         }
@@ -148,7 +148,7 @@ uint32_t SubMessageID(uint32_t messageID, void* queue)
                 //Need to find the end of the column, and then add queue items at the end of the column.
                 if (p_queueNode == NULL) {
                     //New line.
-                    p_queueNode = (QueueNode_t *)pvPortMalloc(sizeof(QueueNode_t));
+                    p_queueNode = (QueueNode_t *)SramMalloc(sizeof(QueueNode_t));
                     memset(p_queueNode, 0, sizeof(QueueNode_t));
                     p_queueNode->queue = queue;
                     p_queueNode->next = NULL;
@@ -162,7 +162,7 @@ uint32_t SubMessageID(uint32_t messageID, void* queue)
                     return MSG_QUEUE_ALREADY_REG_IN_MID;
                 } else if (p_queueNode->next == NULL) {
                     //The end of the column has been reached, add a column and write to the queue.
-                    p_queueNode->next = (QueueNode_t *)pvPortMalloc(sizeof(QueueNode_t));
+                    p_queueNode->next = (QueueNode_t *)SramMalloc(sizeof(QueueNode_t));
                     memset(p_queueNode->next, 0, sizeof(QueueNode_t));
                     p_queueNode = p_queueNode->next;
                     p_queueNode->queue = queue;
@@ -177,7 +177,7 @@ uint32_t SubMessageID(uint32_t messageID, void* queue)
             }
         } else if (p_messageNode->next == NULL) {
             //The end of the line has been reached, and a new line needs to be created, and the messageID of the new line is assigned the locally registered messageID.
-            p_messageNode->next = (MessageNode_t *)pvPortMalloc(sizeof(MessageNode_t));
+            p_messageNode->next = (MessageNode_t *)SramMalloc(sizeof(MessageNode_t));
             memset(p_messageNode->next, 0, sizeof(MessageNode_t));
             p_messageNode = p_messageNode->next;
             p_messageNode->messageID = messageID;

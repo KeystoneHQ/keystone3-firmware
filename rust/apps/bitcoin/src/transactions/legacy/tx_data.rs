@@ -9,12 +9,12 @@ use third_party::{bitcoin, hex};
 use crate::errors::Result;
 use core::str::FromStr;
 use third_party::bitcoin::consensus::Encodable;
-use third_party::bitcoin::hashes::{sha256, sha256d, Hash};
 use third_party::bitcoin::sighash::{
     EcdsaSighashType, LegacySighash, SegwitV0Sighash, SighashCache,
 };
-use third_party::bitcoin::Script;
+use third_party::bitcoin::{Amount, Script};
 use third_party::bitcoin::{PubkeyHash, ScriptBuf, Transaction};
+use third_party::bitcoin_hashes::{sha256, sha256d, Hash};
 
 use crate::addresses::cashaddr::{Base58Codec, CashAddrCodec};
 use crate::addresses::get_address;
@@ -25,6 +25,7 @@ use crate::transactions::legacy::output::{OutputConverter, TxOut};
 use crate::transactions::script_type::ScriptType;
 use crate::{collect, derivation_address_path};
 use app_utils::keystone;
+use third_party::bitcoin::ecdsa::Signature as EcdsaSignature;
 use third_party::either::{Either, Left, Right};
 use third_party::hex::ToHex;
 use third_party::secp256k1::ecdsa::Signature;
@@ -93,7 +94,7 @@ impl TxData {
             extended_pubkey,
             xfp: payload.xfp,
             transaction: Transaction {
-                version: 2,
+                version: third_party::bitcoin::transaction::Version(2),
                 lock_time: LockTime::from_consensus(0),
                 input: transaction_mapped_input?,
                 output: transaction_mapped_output?,
@@ -260,10 +261,10 @@ impl TxData {
             ScriptType::P2WPKH | ScriptType::P2SHP2WPKH => {
                 let script = ScriptBuf::new_p2pkh(&PubkeyHash::hash(&pubkey_slice));
                 sig_hasher
-                    .segwit_signature_hash(
+                    .p2wsh_signature_hash(
                         input_index,
                         &script,
-                        raw_input.value,
+                        Amount::from_sat(raw_input.value),
                         EcdsaSighashType::All,
                     )
                     .map(|v| Right(v))
@@ -305,14 +306,18 @@ impl TxData {
         if script_type == ScriptType::P2PKH {
             input.script_sig = raw_input.script_sig(signature, signature_type, &script_type)?;
         } else if script_type == ScriptType::P2WPKH {
-            input
-                .witness
-                .push_bitcoin_signature(&signature.serialize_der(), EcdsaSighashType::All);
+            let sig = EcdsaSignature {
+                sig: signature,
+                hash_ty: EcdsaSighashType::All,
+            };
+            input.witness.push_ecdsa_signature(&sig);
             input.witness.push(pubkey_slice);
         } else if script_type == ScriptType::P2SHP2WPKH {
-            input
-                .witness
-                .push_bitcoin_signature(&signature.serialize_der(), EcdsaSighashType::All);
+            let sig = EcdsaSignature {
+                sig: signature.clone(),
+                hash_ty: EcdsaSighashType::All,
+            };
+            input.witness.push_ecdsa_signature(&sig);
             input.witness.push(pubkey_slice);
             input.script_sig = raw_input.script_sig(signature, signature_type, &script_type)?;
         } else {

@@ -1,7 +1,9 @@
 #![no_std]
 
+#[cfg(not(feature = "no-allocator"))]
 use kt_allocator::my_alloc::KTAllocator;
 
+#[cfg(not(feature = "no-allocator"))]
 #[cfg(not(test))]
 #[global_allocator]
 static KT_ALLOCATOR: KTAllocator = KTAllocator;

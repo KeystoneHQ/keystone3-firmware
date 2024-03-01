@@ -54,6 +54,7 @@ void GuiTransactionSignatureDeInit(void)
 
 void GuiTransactionSignatureRefresh(void)
 {
+    GuiAnimatingQRCodeControl(false);
 }
 
 void GuiTransactionSignatureHandleURGenerate(char *data, uint16_t len)
@@ -69,12 +70,15 @@ void GuiTransactionSignatureHandleURUpdate(char *data, uint16_t len)
 static void GuiTransactionSignatureNVSBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, GoToHomeViewHandler, NULL);
+#ifndef BTC_ONLY
     if (IsMessageType(g_viewType)) {
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_broadcast_message"));
     } else {
+#endif
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
+#ifndef BTC_ONLY
     }
-
+#endif
 }
 
 
@@ -101,6 +105,6 @@ static void GuiCreateSignatureQRCode(lv_obj_t *parent)
     GenerateUR func = GetUrGenerator(g_viewType);
 
     if (func) {
-        GuiAnimatingQRCodeInitWithCustomSize(qrCont, func, true, 336, 336, _("sign_transaction"));
+        GuiAnimatingQRCodeInitWithCustomSize(qrCont, func, true, 336, 336, (char *)_("sign_transaction"));
     }
 }

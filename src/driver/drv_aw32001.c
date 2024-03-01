@@ -262,7 +262,7 @@ int32_t Aw32001RefreshState(void)
     do {
         ret = Aw32001ReadReg(AW320XX_REG8_STATR, &byte, 1);
         CHECK_ERRCODE_BREAK("read aw32001 reg", ret);
-        printf("byte=0x%X\n", byte);
+        //printf("byte=0x%X\n", byte);
         g_powerChangeState.chargeState = (ChargeState)((byte >> 3) & 0x03);
         g_powerChangeState.userPowerState = (UsbPowerState)((byte >> 1) & 0x01);
     } while (0);

@@ -41,7 +41,7 @@ pub fn generate_sync_ur(
 ) -> URResult<CryptoMultiAccounts> {
     let mut keys: Vec<CryptoHDKey> = Vec::new();
     sync_infos.into_iter().for_each(|sync_info| {
-        if let Ok(xpub) = bip32::ExtendedPubKey::from_str(sync_info.xpub.as_str()) {
+        if let Ok(xpub) = bip32::Xpub::from_str(sync_info.xpub.as_str()) {
             if let Ok(origin) = get_origin(sync_info, master_fingerprint.clone(), xpub.depth as u32)
             {
                 let hd_key: CryptoHDKey = CryptoHDKey::new_extended_key(

@@ -46,7 +46,7 @@ static void CmdTask(void *pvParameter)
             break;
         }
         if (rcvMsg.buffer != NULL) {
-            vPortFree(rcvMsg.buffer);
+            SramFree(rcvMsg.buffer);
         }
     }
 }

@@ -44,7 +44,8 @@
 
 #define SECTOR_SIZE                         4096
 #define APP_ADDR                            (0x1001000 + 0x80000)   //108 1000
-#define APP_END_ADDR                        (0x1001000 + 0x1000000) //200 1000
+#define APP_CHECK_START_ADDR                (0x1400000)
+#define APP_END_ADDR                        (0x2000000)
 
 #ifndef COMPILE_SIMULATOR
 #define MODEL_WRITE_SE_HEAD                 do {                                \
@@ -95,14 +96,14 @@ static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen);
 static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen);
 static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataLen);
 static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen);
-static int32_t ModelURGenerateQRCode(const void *inData, uint32_t inDataLen, void *getUR);
+static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t getUR);
 static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen);
 static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen);
 static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen);
 static int32_t ModelURClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen);
 static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen);
-static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, void *parseTransactionFunc);
+static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t parseTransactionFunc);
 
 static PasswordVerifyResult_t g_passwordVerifyResult;
 static bool g_stopCalChecksum = false;
@@ -534,7 +535,7 @@ static int32_t ModelBip39ForgetPass(const void *inData, uint32_t inDataLen)
 
 static UREncodeResult *g_urResult = NULL;
 
-static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, void *getUR)
+static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t getUR)
 {
     GenerateUR func = (GenerateUR)getUR;
     g_urResult = func();
@@ -933,14 +934,17 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
         // reset address index in receive page
         {
             void GuiResetCurrentUtxoAddressIndex(uint8_t index);
+#ifndef BTC_ONLY
             void GuiResetCurrentEthAddressIndex(uint8_t index);
             void GuiResetCurrentStandardAddressIndex(uint8_t index);
             void GuiResetCurrentMultiAccountsCache(uint8_t index);
-
+#endif
             GuiResetCurrentUtxoAddressIndex(accountIndex);
+#ifndef BTC_ONLY
             GuiResetCurrentEthAddressIndex(accountIndex);
             GuiResetCurrentStandardAddressIndex(accountIndex);
             GuiResetCurrentMultiAccountsCache(accountIndex);
+#endif
         }
 
         uint8_t accountNum;
@@ -976,7 +980,6 @@ static int32_t ModelDelAllWallet(const void *inData, uint32_t inDataLen)
     WipeDevice();
     SystemReboot();
 #else
-    // GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS_SETUP, NULL, 0);
     GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS, NULL, 0);
 #endif
     SetLockScreen(enable);
@@ -1349,12 +1352,6 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
     }
 #else
     GuiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
-    // for (size_t i = 0; i < 500000000; i++)
-    // {
-    //     if(i == 1000000){
-    //         printf("ddd\n");
-    //     }
-    // }
     GuiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
     GuiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
 #endif
@@ -1371,7 +1368,7 @@ static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inD
 }
 
 
-static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, void *parseTransactionFunc)
+static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t parseTransactionFunc)
 {
     ReturnVoidPointerFunc func = (ReturnVoidPointerFunc)parseTransactionFunc;
     //There is no need to release here, the parsing results will be released when exiting the details page.
@@ -1396,15 +1393,16 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, voi
 
 static uint32_t BinarySearchLastNonFFSector(void)
 {
-    uint8_t buffer[SECTOR_SIZE];
-    uint32_t startIndex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE / 2;
-    uint32_t endInex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE;
+    uint8_t *buffer = SRAM_MALLOC(SECTOR_SIZE);
+    uint32_t startIndex = (APP_CHECK_START_ADDR - APP_ADDR) / SECTOR_SIZE;
+    uint32_t endIndex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE;
 
     uint8_t percent = 1;
     GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
 
-    for (int i = startIndex + 1; i < endInex; i++) {
+    for (int i = startIndex + 1; i < endIndex; i++) {
         if (g_stopCalChecksum == true) {
+            SRAM_FREE(buffer);
             return SUCCESS_CODE;
         }
         memcpy(buffer, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
@@ -1413,10 +1411,11 @@ static uint32_t BinarySearchLastNonFFSector(void)
             GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
         }
         if (CheckAllFF(&buffer[2], SECTOR_SIZE - 2) && ((buffer[0] * 256 + buffer[1]) < 4096)) {
+            SRAM_FREE(buffer);
             return i;
         }
     }
-
+    SRAM_FREE(buffer);
     return -1;
 }
 
@@ -1427,6 +1426,7 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
     uint8_t buffer[4096] = {0};
     uint8_t hash[32] = {0};
     int num = BinarySearchLastNonFFSector();
+    ASSERT(num > 0);
     if (g_stopCalChecksum == true) {
         return SUCCESS_CODE;
     }

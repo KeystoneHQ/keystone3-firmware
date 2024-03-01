@@ -31,14 +31,15 @@ use crate::transactions::psbt::wrapped_psbt::WrappedPsbt;
 use crate::transactions::tx_checker::TxChecker;
 use alloc::string::{String, ToString};
 use app_utils::keystone;
+use third_party::bitcoin::bip32::Fingerprint;
 use third_party::either::{Left, Right};
 use third_party::hex;
 use third_party::ur_registry::pb::protoc;
 
-pub fn sign_psbt(psbt_hex: Vec<u8>, seed: &[u8]) -> Result<Vec<u8>> {
+pub fn sign_psbt(psbt_hex: Vec<u8>, seed: &[u8], mfp: Fingerprint) -> Result<Vec<u8>> {
     let psbt = deserialize_psbt(psbt_hex)?;
     let mut wpsbt = WrappedPsbt { psbt };
-    let result = wpsbt.sign(seed)?;
+    let result = wpsbt.sign(seed, mfp)?;
     Ok(result.serialize())
 }
 
@@ -160,8 +161,7 @@ mod test {
             third_party::bitcoin::bip32::Fingerprint::from_str("73c5da0a").unwrap();
         let extended_pubkey_str = convert_version(pubkey_str, &Version::Xpub).unwrap();
         let extended_pubkey =
-            third_party::bitcoin::bip32::ExtendedPubKey::from_str(extended_pubkey_str.as_str())
-                .unwrap();
+            third_party::bitcoin::bip32::Xpub::from_str(extended_pubkey_str.as_str()).unwrap();
         keystone::ParseContext::new(master_fingerprint, extended_pubkey)
     }
 
@@ -295,8 +295,8 @@ mod test {
             "2250 sats",
             vec!["qpfs2gcfwg322segkj4h30du4vtjyvsxtq6msk90a5"],
             vec![
+                "qpfs2gcfwg322segkj4h30du4vtjyvsxtq6msk90a5",
                 "qpt4cr4juduwl36w35rwfwvz6am2z7mxcg8a84k28n",
-                "qpfs2gcfwg322segkj4h30du4vtjyvsxtq6msk90a5"
             ],
             "Bitcoin Cash",
             false
@@ -456,8 +456,8 @@ mod test {
             "1000 sats",
             "4300 sats",
             vec![
+                "1NVWpSCxyzpPgSeGRs4zqFciZ7N1UEQtEc",
                 "1PCUEmiFARh3FSLJXgzDGDeKtKqg8eMMPm",
-                "1NVWpSCxyzpPgSeGRs4zqFciZ7N1UEQtEc"
             ],
             vec!["bc1qksq4ax9jpqqmumwfhg54ktwh29627zf78237wp"],
             "Bitcoin Mainnet",

@@ -261,7 +261,7 @@ StreamBufferHandle_t xStreamBufferGenericCreate(size_t xBufferSizeBytes,
     }
 
     /* A stream buffer requires a StreamBuffer_t structure and a buffer.
-     * Both are allocated in a single call to pvPortMalloc().  The
+     * Both are allocated in a single call to SramMalloc().  The
      * StreamBuffer_t structure is placed at the start of the allocated memory
      * and the buffer follows immediately after.  The requested size is
      * incremented so the free space is returned as the user would expect -
@@ -270,7 +270,7 @@ StreamBufferHandle_t xStreamBufferGenericCreate(size_t xBufferSizeBytes,
      * expected. */
     if (xBufferSizeBytes < (xBufferSizeBytes + 1 + sizeof(StreamBuffer_t))) {
         xBufferSizeBytes++;
-        pucAllocatedMemory = (uint8_t *) pvPortMalloc(xBufferSizeBytes + sizeof(StreamBuffer_t));       /*lint !e9079 malloc() only returns void*. */
+        pucAllocatedMemory = (uint8_t *) SramMalloc(xBufferSizeBytes + sizeof(StreamBuffer_t));       /*lint !e9079 malloc() only returns void*. */
     } else {
         pucAllocatedMemory = NULL;
     }
@@ -376,8 +376,8 @@ void vStreamBufferDelete(StreamBufferHandle_t xStreamBuffer)
 #if ( configSUPPORT_DYNAMIC_ALLOCATION == 1 )
         {
             /* Both the structure and the buffer were allocated using a single call
-            * to pvPortMalloc(), hence only one call to vPortFree() is required. */
-            vPortFree((void *) pxStreamBuffer);     /*lint !e9087 Standard free() semantics require void *, plus pxStreamBuffer was allocated by pvPortMalloc(). */
+            * to SramMalloc(), hence only one call to SramFree() is required. */
+            SramFree((void *) pxStreamBuffer);     /*lint !e9087 Standard free() semantics require void *, plus pxStreamBuffer was allocated by SramMalloc(). */
         }
 #else
         {

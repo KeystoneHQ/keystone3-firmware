@@ -5,22 +5,30 @@
 #include "psram_heap_4.h"
 #include "assert.h"
 
+#define SRAM_HEAP_TRACK                 0
+#define EXT_HEAP_TRACK                  0
+
 static uint32_t g_sramHeapCount = 0;
 static uint32_t g_extHeapCount = 0;
 
-void *SramMalloc(uint32_t size, const char *file, int line, const char *func)
+
+void *SramMallocTrack(size_t size, const char *file, int line, const char *func)
 {
-    void *p = pvPortMalloc((uint32_t) size);
-    // printf("malloc:%s %s %d 0x%X %d\r\n", file, func, line, p, size);
-    // ASSERT(p != NULL);
+    void *p = pvPortMalloc(size);
+#if (SRAM_HEAP_TRACK == 1)
+    printf("sram malloc:%s %s %d 0x%X %d\n", file, func, line, p, size);
+#endif
+    ASSERT(p != NULL);
     g_sramHeapCount++;
     return p;
 }
 
 
-void SramFree(void *p, const char *file, int line, const char *func)
+void SramFreeTrack(void *p, const char *file, int line, const char *func)
 {
-    // printf("free:%s %s %d 0x%X\r\n", file, func, line, p);
+#if (SRAM_HEAP_TRACK == 1)
+    printf("sram free:%s %s %d 0x%X\n", file, func, line, p);
+#endif
     if (p != NULL) {
         vPortFree(p);
         g_sramHeapCount--;
@@ -28,27 +36,71 @@ void SramFree(void *p, const char *file, int line, const char *func)
 }
 
 
-void *SramRealloc(void *p, uint32_t size, const char *file, int line, const char *func)
+void *SramReallocTrack(void *p, size_t size, const char *file, int line, const char *func)
 {
     void *dest;
+#if (SRAM_HEAP_TRACK == 1)
+    printf("sram realloc:%s %s %d 0x%X %d\n", file, func, line, p, size);
+#endif
     dest = pvPortMalloc(size);
     ASSERT(dest != NULL);
-    memcpy(dest, p, size);      //todo : only copy useful data.
+    memcpy(dest, p, size);
     vPortFree(p);
     return dest;
 }
 
 
-void *ExtMalloc(uint32_t size, const char *file, int line, const char *func)
+void *SramMalloc(size_t size)
 {
-    void *p = PsramMalloc((uint32_t) size);
+    void *p = pvPortMalloc((size_t) size);
+    g_sramHeapCount++;
+    return p;
+}
+
+
+void SramFree(void *p)
+{
+    if (p != NULL) {
+        vPortFree(p);
+        g_sramHeapCount--;
+    }
+}
+
+
+void *ExtMallocTrack(size_t size, const char *file, int line, const char *func)
+{
+#if (EXT_HEAP_TRACK == 1)
+    printf("ext malloc:%s %s %d 0x%X %d\n", file, func, line, p, size);
+#endif
+    void *p = PsramMalloc((size_t) size);
     ASSERT(p != NULL);
     g_extHeapCount++;
     return p;
 }
 
 
-void ExtFree(void *p, const char *file, int line, const char *func)
+void ExtFreeTrack(void *p, const char *file, int line, const char *func)
+{
+#if (EXT_HEAP_TRACK == 1)
+    printf("ext free:%s %s %d 0x%X\n", file, func, line, p);
+#endif
+    if (p != NULL) {
+        PsramFree(p);
+        g_extHeapCount--;
+    }
+}
+
+
+void *ExtMalloc(size_t size)
+{
+    void *p = PsramMalloc(size);
+    ASSERT(p != NULL);
+    g_extHeapCount++;
+    return p;
+}
+
+
+void ExtFree(void *p)
 {
     if (p != NULL) {
         PsramFree(p);
@@ -59,24 +111,24 @@ void ExtFree(void *p, const char *file, int line, const char *func)
 
 void *RustMalloc(int32_t size)
 {
-    return SramMalloc(size, __FILE__, __LINE__, __func__);
+    return SramMalloc(size);
 }
 
 
 void RustFree(void *p)
 {
-    SramFree(p, __FILE__, __LINE__, __func__);
+    SramFree(p);
 }
 
 
 void PrintHeapInfo(void)
 {
-    printf("sram heap info:\r\n");
+    printf("sram heap info:\n");
     printf("g_sramHeapCount = %d\n", g_sramHeapCount);
     printf("TotalHeapSize = %d\n", configTOTAL_HEAP_SIZE);                      // Total heap size
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());                      // Free heap space
     printf("MinEverFreeHeapSize = %d\n", xPortGetMinimumEverFreeHeapSize());    // Minimum amount of unallocated heap space
-    printf("\r\next heap info:\r\n");
+    printf("\next heap info:\n");
     printf("g_extHeapCount = %d\n", g_extHeapCount);
     printf("TotalHeapSize = %d\n", PsramGetTotalSize());                        // Total heap size
     printf("FreeHeapSize = %d\n", PsramGetFreeHeapSize());                      // Free heap space

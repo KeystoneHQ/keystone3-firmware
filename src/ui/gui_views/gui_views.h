@@ -143,11 +143,15 @@ extern GUI_VIEW g_createShareView;
 extern GUI_VIEW g_importShareView;
 extern GUI_VIEW g_settingView;
 extern GUI_VIEW g_connectWalletView;
+#ifndef BTC_ONLY
 extern GUI_VIEW g_USBTransportView;
+#endif
 extern GUI_VIEW g_passphraseView;
 extern GUI_VIEW g_utxoReceiveView;
+#ifndef BTC_ONLY
 extern GUI_VIEW g_multiPathCoinReceiveView;
 extern GUI_VIEW g_standardReceiveView;
+#endif
 extern GUI_VIEW g_forgetPassView;
 extern GUI_VIEW g_lockDeviceView;
 extern GUI_VIEW g_firmwareUpdateView;
@@ -167,13 +171,20 @@ extern GUI_VIEW g_displayView;
 extern GUI_VIEW g_tutorialView;
 extern GUI_VIEW g_connectionView;
 extern GUI_VIEW g_DevicePublicKeyView;
+#ifndef BTC_ONLY
 extern GUI_VIEW g_multiAccountsReceiveView;
 extern GUI_VIEW g_keyDerivationRequestView;
+#endif
 extern GUI_VIEW g_scanView;
 extern GUI_VIEW g_transactionDetailView;
 extern GUI_VIEW g_transactionSignatureView;
 extern GUI_VIEW g_diceRollsView;
 extern GUI_VIEW g_exportPubkeyView;
+extern GUI_VIEW g_updateSuccessView;
+#ifdef BTC_ONLY
+extern GUI_VIEW g_btcBtcWalletProfileView;
+#endif
+
 
 void UnHandler(lv_event_t *e);
 void OpenImportWalletHandler(lv_event_t *e);

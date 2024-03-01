@@ -1,7 +1,5 @@
 use alloc::string::{String, ToString};
 use cardano_serialization_lib::error::DeserializeError;
-use third_party::bitcoin::bech32;
-use third_party::bitcoin::bech32::Error;
 use third_party::ed25519_bip32_core::DerivationError;
 use third_party::thiserror;
 use third_party::thiserror::Error;
@@ -21,12 +19,6 @@ pub enum CardanoError {
 }
 
 pub type R<T> = Result<T, CardanoError>;
-
-impl From<bech32::Error> for CardanoError {
-    fn from(value: Error) -> Self {
-        Self::AddressEncodingError(value.to_string())
-    }
-}
 
 impl From<DeserializeError> for CardanoError {
     fn from(value: DeserializeError) -> Self {

@@ -19,13 +19,13 @@ pub fn sign_legacy_tx(tx_data: &mut TxData, seed: &[u8]) -> Result<Vec<u8>> {
         let raw_input = &tx_data.inputs[index].clone();
         let sig_hash = tx_data.signature_hash(index.clone())?;
         let message = match sig_hash {
-            either::Left(s) => Message::from_slice(s.as_ref()).map_err(|_e| {
+            either::Left(s) => Message::from_digest_slice(s.as_ref()).map_err(|_e| {
                 BitcoinError::SignFailure(format!(
                     "invalid sig hash for input #{}",
                     (index as u8).to_string()
                 ))
             })?,
-            either::Right(r) => Message::from_slice(r.as_ref()).map_err(|_e| {
+            either::Right(r) => Message::from_digest_slice(r.as_ref()).map_err(|_e| {
                 BitcoinError::SignFailure(format!(
                     "invalid sig hash for input #{}",
                     (index as u8).to_string()
@@ -43,6 +43,8 @@ pub fn sign_legacy_tx(tx_data: &mut TxData, seed: &[u8]) -> Result<Vec<u8>> {
 mod tests {
     use crate::test::{prepare_parse_context, prepare_payload};
     use crate::{check_raw_tx, sign_raw_tx};
+    use app_utils::keystone;
+    use core::str::FromStr;
     use third_party::hex;
 
     #[test]
@@ -77,6 +79,34 @@ mod tests {
     }
 
     #[test]
+    fn test_check_ltc_tx_to_p2pkh() {
+        let hex = "1F8B0800000000000003AD8E4F4B5B4114C549134AFA3606576956E151508490993BFFEED04D8D508A49D3D736A56E67EECC104C9A07468AD9765FE807B0B4043F86EEFD02820B3F823BB72E7CAEDDCABD8BC3E11CCEAFF96273E3F3D15E1962B7382A8F4B2AE79D5F8DCA6D2A30521A26F2BB7A561F4DF636DF78D03C78523D9918EF4929630F017C4F80F352586F199AEEC5EDE9FA8A6F37FD79BD797DD368AD1B9DECD3F0A0FBDDCDE7F138FF5BCBDE696B3469AD90A50441899892479094187A6E82061588280A6E2DFA68ADD32C78E38D714CA66045E7433660C08344421DC1842A405A008BCCD8C7B354E1B8E043E40A391AC65DD436393064AD52327060D03EBD7F9D6FFCE84BBBD587AD3EABBECFF27F155F95615C0B070E9935090D3A51D502598A3C0AAA1439D22013A177A81C4A880C5C48C0B991BE557B26C2B33FAF9E10EE6C67F968BA1A8DD360560E97D389F9820545FD7336B013A0024A94D393D6FFDF2F77DE66F9C7E1C1217C5DEE17E3E2FD62B27B323D1C2DC669B65C7E0B6E77B05A2DF65B97EB76BBF664E6011171304D18020000";
+        let extended_pubkey_str = "xpub6BnPH5L8uvcY5gq8GXmN4FXcfbKYq9yijf9SDS8YQEi3q7Ljph3PvSQevxgjP1nUheouxUKKoK7dLTDdxdXnDLujwBXdwdZkpsT1RrhShWY";
+        let master_fingerprint =
+            third_party::bitcoin::bip32::Fingerprint::from_str("52744703").unwrap();
+        let extended_pubkey =
+            third_party::bitcoin::bip32::Xpub::from_str(extended_pubkey_str).unwrap();
+        let context = keystone::ParseContext::new(master_fingerprint, extended_pubkey);
+        let payload = prepare_payload(hex);
+        let check = check_raw_tx(payload, context.clone()).unwrap();
+        assert_eq!((), check);
+    }
+
+    #[test]
+    fn test_check_ltc_tx_to_p2wpkh() {
+        let hex = "1F8B0800000000000003AD8ECD6A53511485890912EFA4A1A398510842A512B2CFFFD938B12D88B4B546ACD8E9397B9FA3B4E90D26B7C4E4154410C78A529CF820CE1C38B00FE07B74D0DB71A765EFC162B116EB6BDF595F7B39DB9972EA8F67D36A4AD349EF63AB76DB463AAD1DA8C165B368EE1FEEAC3F48CA196448C31888871A521C0697CD3060D41A8C489C4DFFEF97FFE717E2613BFE6EB6FF5DB43AE7AD5EF162EFA8FF264C26A91A7C6B144F2C3A4BD61A0F394B362AE51CBDD494C147E1D84AC344949440F43121060B1C5D742E80CE8CAAF7ACD80629587BF23649C77580AC9290C0E1F521698581232761BCF00E44481673908E108DD12C24C8EED7CBFB83B5D391C68D91DC1841FD23187CAFF9EA0C08AB820C1ED065EF7C50758D092989A4A85614C84A9DC9C7E04DF05A269081B314C2E9D869DC12E1CFCFF76E106E8AE2D1A422F1FEECD45BBD602C177382335C562754ADEC62355BD8B76EC525F82573EEFCF87477F3713178BE77742C5FCD77C707E3A7E5E1D68777C7FBE5413E99CF5F73D8DA5E2ECBDDCE9F5FDD6EE3C6DE1509C82F6221020000";
+        let extended_pubkey_str = "xpub6BnPH5L8uvcY5gq8GXmN4FXcfbKYq9yijf9SDS8YQEi3q7Ljph3PvSQevxgjP1nUheouxUKKoK7dLTDdxdXnDLujwBXdwdZkpsT1RrhShWY";
+        let master_fingerprint =
+            third_party::bitcoin::bip32::Fingerprint::from_str("52744703").unwrap();
+        let extended_pubkey =
+            third_party::bitcoin::bip32::Xpub::from_str(extended_pubkey_str).unwrap();
+        let context = keystone::ParseContext::new(master_fingerprint, extended_pubkey);
+        let payload = prepare_payload(hex);
+        let check = check_raw_tx(payload, context.clone()).unwrap();
+        assert_eq!((), check);
+    }
+
+    #[test]
     fn test_sign_dash_p2pkh_transaction() {
         // enroll
         // xpub6DTnbXgbPo6mrRhgim9sg7Jp571onenuioxgfSDJEREH7wudyDQMDSoTdLQiYq3tbvZVkzcPe7nMgL7mbSixQQcShekfhKt3Wdx6dE8MHCk
@@ -105,6 +135,20 @@ mod tests {
             let check = check_raw_tx(payload, context).unwrap();
             assert_eq!((), check);
         }
+    }
+
+    #[test]
+    fn test_check_dash_tx_to_p2sh() {
+        let hex = "1F8B08000000000000035D8DCD4A02510085199190D924AEC4950C812288F7CEFD87165909A145A342D9ECEE2F9A9ABF65B4EA05DCB496885AF61CF504B517A2F768D6C1591DCEF9BE4C2AB7DB9E1F4D8C2D46F3C972A227A3C24F2A6933246418338082AF949F3EAE774F727B9AC1D04AC5AAD85A57C50CD9AAA25A558D934028600DA1BAB8DDBEBF7DC37226DEA4328FEB74F6355DF0CF5BBDE2A51C8DEC3278F6FC03A56C020F9DC30652868950986B6529E5C23021B50C39D60A6A660161D21922A9050010138A1031A1B25EFE77BBF1824310F2E4853541924100B5E6C0526D8860C99C69212014D0191E1A4EACD19C20C51D94883B2210C552F3CAEEB88671A9464A3590A4062A653F603303FBB3F62C7E38EBC8669D98F96C386DC4A7182E5073B8ECDCC6D997F54E65DF0F7A2B79DD5F0D3A0B17A1C6D5859BDE0CA23BDCE975E328A2E356FB5E653F3E9FBCBC17FCF7FC01552A015579010000";
+        let extended_pubkey_str = "xpub6D8VnprVAFFraSRDaj2afaKQJvX1gGMBS5h1iz3Q3RXkEKXK6G2YYmVoU7ke21DghCvpA8AVrpEg1rWw96Cm9dxWjobsFDctPLtQJvk7ohe";
+        let master_fingerprint =
+            third_party::bitcoin::bip32::Fingerprint::from_str("52744703").unwrap();
+        let extended_pubkey =
+            third_party::bitcoin::bip32::Xpub::from_str(extended_pubkey_str).unwrap();
+        let context = keystone::ParseContext::new(master_fingerprint, extended_pubkey);
+        let payload = prepare_payload(hex);
+        let check = check_raw_tx(payload, context.clone()).unwrap();
+        assert_eq!((), check);
     }
 
     #[test]

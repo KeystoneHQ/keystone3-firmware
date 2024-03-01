@@ -16,6 +16,8 @@
 #include "screen_manager.h"
 #include "power_manager.h"
 #include "account_manager.h"
+#include "version.h"
+
 
 #define VERSION_MAX_LENGTH      32
 
@@ -29,6 +31,7 @@
 #define KEY_VIBRATION                   "vibration"
 #define KEY_DARK_MODE                   "dark_mode"
 #define KEY_USB_SWITCH                  "usb_switch"
+#define KEY_LAST_VERSION                "last_version"
 
 #define DEFAULT_SETUP_STEP              0
 #define DEFAULT_BRIGHT                  15
@@ -37,15 +40,17 @@
 #define DEFAULT_VIBRATION               1
 #define DEFAULT_DARK_MODE               1
 #define DEFAULT_USB_SWITCH              1
+#define DEFAULT_LAST_VERSION            0
 
 typedef struct {
     uint32_t setupStep;
     uint32_t bright;
-    uint32_t autoLockScreen;            //second
-    uint32_t autoPowerOff;              //second, value zero for never
+    uint32_t autoLockScreen;
+    uint32_t autoPowerOff;
     uint32_t vibration;
     uint32_t darkMode;
     uint32_t usbSwitch;
+    uint32_t lastVersion;
 } DeviceSettings_t;
 
 static int32_t SaveDeviceSettingsAsyncFunc(const void *inData, uint32_t inDataLen);
@@ -93,6 +98,7 @@ void DeviceSettingsInit(void)
         g_deviceSettings.vibration = DEFAULT_VIBRATION;
         g_deviceSettings.darkMode = DEFAULT_DARK_MODE;
         g_deviceSettings.usbSwitch = DEFAULT_USB_SWITCH;
+        g_deviceSettings.lastVersion = DEFAULT_LAST_VERSION;
         SaveDeviceSettingsSync();
     }
 }
@@ -191,19 +197,42 @@ void SetUSBSwitch(uint32_t usbSwitch)
     g_deviceSettings.usbSwitch = usbSwitch;
 }
 
+bool IsUpdateSuccess(void)
+{
+    uint32_t currentVersion = SOFTWARE_VERSION_MAJOR << 16 | SOFTWARE_VERSION_MINOR << 8 | SOFTWARE_VERSION_BUILD;
+    bool isUpdate = false;
+    if (g_deviceSettings.lastVersion == DEFAULT_LAST_VERSION) {
+        g_deviceSettings.lastVersion = currentVersion;
+        SaveDeviceSettings();
+        isUpdate = false;
+    }
+
+    if (g_deviceSettings.lastVersion < currentVersion) {
+        g_deviceSettings.lastVersion = currentVersion;
+        SaveDeviceSettings();
+        isUpdate = true;
+    }
+    printf("g_deviceSettings.lastVersion=%#x\n", g_deviceSettings.lastVersion);
+
+    return isUpdate;
+}
+
+
 /// @brief Wipe device.
 void WipeDevice(void)
 {
-    int ret = 0;
     // reset all account address index in receive page
     {
         void GuiResetAllUtxoAddressIndex(void);
+#ifndef BTC_ONLY
         void GuiResetAllEthAddressIndex(void);
         void GuiResetAllStandardAddressIndex(void);
-
+#endif
         GuiResetAllUtxoAddressIndex();
+#ifndef BTC_ONLY
         GuiResetAllEthAddressIndex();
         GuiResetAllStandardAddressIndex();
+#endif
     }
 
     uint32_t wipeFlag = DEVICE_WIPE_FLAG_MAGIC_NUM;
@@ -240,13 +269,14 @@ void DeviceSettingsTest(int argc, char *argv[])
         printf("darkMode=%d\n", GetDarkMode());
         printf("usbSwitch=%d\n", GetUSBSwitch());
     } else if (strcmp(argv[0], "set") == 0) {
-        SetSetupStep(5);
+        SetSetupStep(0);
         SetBright(50);
         SetAutoLockScreen(15);
         SetAutoPowerOff(1);
         SetVibration(0);
         SetDarkMode(0);
         SetUSBSwitch(0);
+        g_deviceSettings.lastVersion = 2;
         SaveDeviceSettings();
         printf("set device settings test\n");
     } else {
@@ -305,6 +335,7 @@ static bool GetDeviceSettingsFromJsonString(const char *string)
         g_deviceSettings.vibration = GetIntValue(rootJson, KEY_VIBRATION, DEFAULT_VIBRATION);
         g_deviceSettings.darkMode = GetIntValue(rootJson, KEY_DARK_MODE, DEFAULT_DARK_MODE);
         g_deviceSettings.usbSwitch = GetIntValue(rootJson, KEY_USB_SWITCH, DEFAULT_USB_SWITCH);
+        g_deviceSettings.lastVersion = GetIntValue(rootJson, KEY_LAST_VERSION, DEFAULT_LAST_VERSION);
     } while (0);
     cJSON_Delete(rootJson);
 
@@ -325,6 +356,7 @@ static char *GetJsonStringFromDeviceSettings(void)
     cJSON_AddItemToObject(rootJson, KEY_VIBRATION, cJSON_CreateNumber(g_deviceSettings.vibration));
     cJSON_AddItemToObject(rootJson, KEY_DARK_MODE, cJSON_CreateNumber(g_deviceSettings.darkMode));
     cJSON_AddItemToObject(rootJson, KEY_USB_SWITCH, cJSON_CreateNumber(g_deviceSettings.usbSwitch));
+    cJSON_AddItemToObject(rootJson, KEY_LAST_VERSION, cJSON_CreateNumber(g_deviceSettings.lastVersion));
     retStr = cJSON_Print(rootJson);
     RemoveFormatChar(retStr);
     cJSON_Delete(rootJson);

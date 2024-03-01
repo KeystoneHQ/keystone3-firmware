@@ -5,16 +5,23 @@
 #include "librust_c.h"
 
 typedef enum {
+#ifndef BTC_ONLY
     WALLET_LIST_KEYSTONE,
     WALLET_LIST_METAMASK,
+#endif
     WALLET_LIST_OKX,
+#ifndef BTC_ONLY
     WALLET_LIST_ETERNL,
+#endif
     WALLET_LIST_BLUE,
+#ifndef BTC_ONLY
     WALLET_LIST_SUB,
     WALLET_LIST_SOLFARE,
     WALLET_LIST_RABBY,
     WALLET_LIST_SAFE,
+#endif
     WALLET_LIST_SPARROW,
+#ifndef BTC_ONLY
     WALLET_LIST_IMTOKEN,
     WALLET_LIST_BLOCK_WALLET,
     WALLET_LIST_ZAPPER,
@@ -24,7 +31,7 @@ typedef enum {
     WALLET_LIST_FEWCHA,
     WALLET_LIST_PETRA,
     WALLET_LIST_XRP_TOOLKIT,
-
+#endif
     WALLET_LIST_BUTT,
 } WALLET_LIST_INDEX_ENUM;
 
@@ -34,6 +41,7 @@ typedef struct {
     bool enable;
 } WalletListItem_t;
 
+#ifndef BTC_ONLY
 typedef enum {
     BTC,
     ETH,
@@ -65,6 +73,7 @@ typedef struct {
     lv_obj_t                *uncheckedImg;
     lv_obj_t                *checkedImg;
 } CoinState_t;
+#endif
 
 void GuiConnectWalletInit(void);
 int8_t GuiConnectWalletNextTile(void);
@@ -72,9 +81,13 @@ int8_t GuiConnectWalletPrevTile(void);
 void GuiConnectWalletRefresh(void);
 void GuiConnectWalletDeInit(void);
 void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index);
+#ifndef BTC_ONLY
 ETHAccountType GetMetamaskAccountType(void);
+#endif
 void GuiConnectWalletHandleURGenerate(char *data, uint16_t len);
 void GuiConnectWalletHandleURUpdate(char *data, uint16_t len);
+#ifndef BTC_ONLY
 SOLAccountType GetSolflareAccountType(void);
+#endif
 #endif /* _GUI_CONNECT_WALLET_WIDGETS_H */
 

@@ -8,17 +8,13 @@
 #include "assert.h"
 #include "safe_mem_lib.h"
 
-
-
 #define FACTORY_RESULT_CHECK_ENABLE         1
-
 
 int32_t GetSerialNumber(char *serialNumber)
 {
     char temp[256];
     OTP_PowerOn();
     memcpy(temp, (uint8_t *)OTP_ADDR_SN, 256);
-    //PrintArray("sn otp", (uint8_t *)temp, 256);
     if (CheckEntropy((uint8_t *)temp, 256) == false) {
         serialNumber[0] = '\0';
         return ERR_SERIAL_NUMBER_NOT_EXIST;

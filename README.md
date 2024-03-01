@@ -43,9 +43,16 @@ docker build -t keystone3-baker:local .
 ### Building the Firmware
 Here's how to build the Keystone3 Firmware:
 
+#### Building multi-coins firmware
 ```bash
 # Run the build script at the root of the project.
 python3 build.py
+```
+
+#### Building btc-only firmware
+```bash
+# Run the build script at the root of the project.
+python build.py -t btc_only
 ```
 
 ## Contributing

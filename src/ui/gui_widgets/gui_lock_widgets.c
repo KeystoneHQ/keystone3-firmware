@@ -33,7 +33,9 @@
 #define FINGERPRINT_SING_ERR_TIMES              (3)
 #define FINGERPRINT_SING_DISABLE_ERR_TIMES      (15)
 #else
+#include "drv_aw32001.h"
 #include "drv_usb.h"
+#include "device_setting.h"
 #endif
 
 #ifdef COMPILE_MAC_SIMULATOR
@@ -42,7 +44,7 @@
 
 static void GuiPassowrdToLockTimePage(uint16_t errorCount);
 void GuiLockScreenClearModal(lv_obj_t *cont);
-static char* GuiJudgeTitle();
+static const char *GuiJudgeTitle();
 static void CountDownTimerChangeLabelTextHandler(lv_timer_t *timer);
 static void GuiCloseGenerateXPubLoading(void);
 static void HardwareInitAfterWake(void);
@@ -87,7 +89,7 @@ void GuiFpRecognizeResult(bool en)
             SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("try_again"));
             FpRecognize(RECOGNIZE_UNLOCK);
         } else {
-            char* title;
+            const char *title;
             if (g_verifyLock->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN || g_verifyLock->mode == ENTER_PASSCODE_VERIFY_PIN) {
                 title = _("unlock_device_use_pin");
             } else {
@@ -260,6 +262,7 @@ void GuiLockScreenToHome(void)
     GuiModeGetWalletDesc();
     GuiEnterPassCodeStatus(g_verifyLock, true);
     GuiCloseToTargetView(&g_homeView);
+    HardwareInitAfterWake();
 }
 
 void GuiLockScreenTurnOffHandler(lv_event_t *e)
@@ -279,7 +282,13 @@ void GuiLockScreenPassCode(bool en)
         if (g_oldWalletIndex == 0xFF) {
             g_oldWalletIndex = GetCurrentAccountIndex();
         }
-        if (ModelGetPassphraseQuickAccess()) {
+        if (IsUpdateSuccess()) {
+            lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
+            GuiModeGetWalletDesc();
+            GuiEnterPassCodeStatus(g_verifyLock, true);
+            GuiFrameOpenView(&g_homeView);
+            GuiFrameOpenView(&g_updateSuccessView);
+        } else if (ModelGetPassphraseQuickAccess()) {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiModeGetWalletDesc();
             GuiEnterPassCodeStatus(g_verifyLock, true);
@@ -390,15 +399,15 @@ void GuiLockScreenPasscodeSwitch(bool isPin)
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, GuiJudgeTitle());
 }
 
-static char* GuiJudgeTitle()
+static const char *GuiJudgeTitle()
 {
-    char* title;
+    char *title;
     //no fingerprint presents
     if (g_fpErrorCount >= FINGERPRINT_EN_SING_ERR_TIMES || (GetRegisteredFingerNum() < 1) || GuiLockScreenIsFirstUnlock()) {
         if (g_verifyLock->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN || g_verifyLock->mode == ENTER_PASSCODE_VERIFY_PIN) {
-            title = _("unlock_device_use_pin");
+            title = (char *)_("unlock_device_use_pin");
         } else {
-            title = _("unlock_device_use_password");
+            title = (char *)_("unlock_device_use_password");
         }
         return title;
     }
@@ -413,9 +422,9 @@ static char* GuiJudgeTitle()
         return title;
     }
     if (g_verifyLock->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN || g_verifyLock->mode == ENTER_PASSCODE_VERIFY_PIN) {
-        title = _("unlock_device_use_pin");
+        title = (char *)_("unlock_device_use_pin");
     } else {
-        title = _("unlock_device_use_password");
+        title = (char *)_("unlock_device_use_password");
     }
     return title;
 }
@@ -535,7 +544,7 @@ static void HardwareInitAfterWake(void)
     AsyncExecute(InitSdCardAfterWakeup, NULL, 0);
 #if (USB_POP_WINDOW_ENABLE == 1)
     if (GetUSBSwitch() == true && GetUsbDetectState()) {
-        OpenMsgBox(&g_guiMsgBoxUsbConnection);
+        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
     }
 #endif
 }

@@ -15,9 +15,11 @@ argParser = argparse.ArgumentParser()
 argParser.add_argument("-e", "--environment", help="please specific which enviroment you are building, dev or production")
 argParser.add_argument("-p", "--purpose", help="please specific what purpose you are building, set it to `debug` for building unsigned firmware.")
 argParser.add_argument("-o", "--options", nargs="?", help="specify the required features you are building")
+argParser.add_argument("-t", "--type", help="please specific which type you are building, btc_only or general")
 
-def build_firmware(environment, options):
+def build_firmware(environment, options, bin_type):
     is_release = environment == "production"
+    is_btc_only = bin_type == "btc_only"
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
 
@@ -33,7 +35,8 @@ def build_firmware(environment, options):
         cmd = 'cmake -G "Unix Makefiles" .. -DLIB_RUST_C=ON'
     if is_release:
         cmd += ' -DBUILD_PRODUCTION=true'
-
+    if is_btc_only:
+        cmd += ' -DBTC_ONLY=true'
 
     for option in options:
         if option == "screenshot":
@@ -69,6 +72,7 @@ if __name__ == '__main__':
     print("=============================================")
     print("--")
     print(f"Building firmware for { args.environment if args.environment else 'dev'}")
+    print(f"Building firmware type { args.type if args.type else 'general'}")
     if args.options: 
         print(f"Options: {args.options}")
     print("--")
@@ -77,8 +81,9 @@ if __name__ == '__main__':
     options = []
     if args.options:
         options = args.options.split(",")
+    bin_type = args.type
     shutil.rmtree(build_path, ignore_errors=True)
-    build_result = build_firmware(env, options)
+    build_result = build_firmware(env, options, bin_type)
     if build_result != 0:
         exit(1)
     if platform.system() == 'Darwin':

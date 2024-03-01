@@ -4,7 +4,7 @@
 
 static lv_obj_t *g_pendingHintBox = NULL;
 
-void GuiPendingHintBoxOpen(char* title, char* subtitle)
+void GuiPendingHintBoxOpen(const char *title, const char *subtitle)
 {
     uint16_t h = 278;
     uint16_t animHeight = 76;

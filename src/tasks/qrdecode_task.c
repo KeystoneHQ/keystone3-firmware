@@ -18,7 +18,9 @@
 #include "touchpad_task.h"
 #include "gui_analyze.h"
 #include "gui_web_auth_result_widgets.h"
+#ifndef BTC_ONLY
 #include "gui_key_derivation_request_widgets.h"
+#endif
 #include "assert.h"
 
 static void QrDecodeTask(void *argument);
@@ -28,6 +30,7 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
 // The order of the enumeration must be guaranteed
 static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_BTC, (SetChainDataFunc)GuiSetPsbtUrData},
+#ifndef BTC_ONLY
     {REMAPVIEW_ETH, (SetChainDataFunc)GuiSetEthUrData},
     {REMAPVIEW_ETH_PERSONAL_MESSAGE, (SetChainDataFunc)GuiSetEthUrData},
     {REMAPVIEW_ETH_TYPEDDATA, (SetChainDataFunc)GuiSetEthUrData},
@@ -39,6 +42,7 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_APT, (SetChainDataFunc)GuiSetAptosUrData},
     {REMAPVIEW_ADA, (SetChainDataFunc)GuiSetupAdaUrData},
     {REMAPVIEW_XRP, (SetChainDataFunc)GuiSetXrpUrData},
+#endif
 };
 
 osThreadId_t g_qrDecodeTaskHandle;
@@ -204,15 +208,21 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
     case WebAuthResult:
         GuiSetWebAuthResultData(urResult, urMultiResult, is_multi);
         break;
+#ifndef BTC_ONLY
     case KeyDerivationRequest:
         GuiSetKeyDerivationRequestData(urResult, urMultiResult, is_multi);
         break;
+#endif
     default:
         HandleDefaultViewType(urResult, urMultiResult, urViewType, is_multi);
         break;
     }
 
-    if (urViewType.viewType == WebAuthResult || urViewType.viewType == KeyDerivationRequest || viewType != REMAPVIEW_BUTT) {
+    if (urViewType.viewType == WebAuthResult
+#ifndef BTC_ONLY
+            || urViewType.viewType == KeyDerivationRequest
+#endif
+            || viewType != REMAPVIEW_BUTT) {
         StopQrDecode();
         UserDelay(500);
         GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));

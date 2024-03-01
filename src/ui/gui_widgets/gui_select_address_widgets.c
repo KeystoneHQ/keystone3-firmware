@@ -59,11 +59,12 @@ static void SelectAddressHandler(lv_event_t *e)
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {
     switch (g_chainCoinType) {
+#ifndef BTC_ONLY
     case CHAIN_XRP:
         item->index = index;
         strcpy(item->address, GuiGetXrpAddressByIndex(index));
         break;
-
+#endif
     default:
         printf("ModelGetAddress cannot match %d\r\n", index);
         return;
@@ -101,8 +102,10 @@ static bool IsSelectChanged()
 static int GetMaxAddressIndex(void)
 {
     switch (g_chainCoinType) {
+#ifndef BTC_ONLY
     case CHAIN_XRP:
         return 200;
+#endif
     default:
         return 999999999;
     }
@@ -110,7 +113,7 @@ static int GetMaxAddressIndex(void)
 
 static void RefreshSwitchAccount(void)
 {
-    AddressDataItem_t addressDataItem;
+    AddressDataItem_t addressDataItem = {0};
     char string[128];
     uint32_t index = g_showIndex;
     bool end = false;

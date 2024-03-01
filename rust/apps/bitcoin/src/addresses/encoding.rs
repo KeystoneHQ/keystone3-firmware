@@ -1,4 +1,5 @@
 use core::fmt;
+use third_party::bech32::Hrp;
 use third_party::bitcoin::address::Payload;
 use third_party::bitcoin::base58;
 use third_party::bitcoin::bech32;
@@ -14,12 +15,15 @@ pub struct BTCAddressEncoding<'a> {
 
 pub struct LTCAddressEncoding<'a> {
     pub payload: &'a Payload,
+    pub p2pkh_prefix: u8,
     pub p2sh_prefix: u8,
+    pub bech32_hrp: &'a str,
 }
 
 pub struct DASHAddressEncoding<'a> {
     pub payload: &'a Payload,
     pub p2pkh_prefix: u8,
+    pub p2sh_prefix: u8,
 }
 
 pub struct BCHAddressEncoding<'a> {
@@ -54,20 +58,15 @@ impl<'a> fmt::Display for BTCAddressEncoding<'a> {
                 base58::encode_check_to_fmt(fmt, &prefixed[..])
             }
             Payload::WitnessProgram(witness) => {
-                let mut upper_writer;
-                let writer = if fmt.alternate() {
-                    upper_writer = UpperWriter(fmt);
-                    &mut upper_writer as &mut dyn fmt::Write
+                let hrp = Hrp::parse_unchecked(self.bech32_hrp);
+                let version = witness.version().to_fe();
+                let program = witness.program().as_bytes();
+
+                if fmt.alternate() {
+                    bech32::segwit::encode_upper_to_fmt_unchecked(fmt, &hrp, version, program)
                 } else {
-                    fmt as &mut dyn fmt::Write
-                };
-                let mut bech32_writer = bech32::Bech32Writer::new(
-                    self.bech32_hrp,
-                    witness.version().bech32_variant(),
-                    writer,
-                )?;
-                bech32::WriteBase32::write_u5(&mut bech32_writer, (witness.version()).into())?;
-                bech32::ToBase32::write_base32(&witness.program(), &mut bech32_writer)
+                    bech32::segwit::encode_lower_to_fmt_unchecked(fmt, &hrp, version, program)
+                }
             }
             _ => {
                 write!(fmt, "invalid payload")
@@ -100,11 +99,28 @@ impl<'a> fmt::Display for BCHAddressEncoding<'a> {
 impl<'a> fmt::Display for LTCAddressEncoding<'a> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match self.payload {
+            Payload::PubkeyHash(hash) => {
+                let mut prefixed = [0; 21];
+                prefixed[0] = self.p2pkh_prefix;
+                prefixed[1..].copy_from_slice(&hash[..]);
+                base58::encode_check_to_fmt(fmt, &prefixed[..])
+            }
             Payload::ScriptHash(hash) => {
                 let mut prefixed = [0; 21];
                 prefixed[0] = self.p2sh_prefix;
                 prefixed[1..].copy_from_slice(&hash[..]);
                 base58::encode_check_to_fmt(fmt, &prefixed[..])
+            }
+            Payload::WitnessProgram(witness) => {
+                let hrp = Hrp::parse_unchecked(self.bech32_hrp);
+                let version = witness.version().to_fe();
+                let program = witness.program().as_bytes();
+
+                if fmt.alternate() {
+                    bech32::segwit::encode_upper_to_fmt_unchecked(fmt, &hrp, version, program)
+                } else {
+                    bech32::segwit::encode_lower_to_fmt_unchecked(fmt, &hrp, version, program)
+                }
             }
             _ => {
                 write!(fmt, "invalid payload")
@@ -119,6 +135,12 @@ impl<'a> fmt::Display for DASHAddressEncoding<'a> {
             Payload::PubkeyHash(hash) => {
                 let mut prefixed = [0; 21];
                 prefixed[0] = self.p2pkh_prefix;
+                prefixed[1..].copy_from_slice(&hash[..]);
+                base58::encode_check_to_fmt(fmt, &prefixed[..])
+            }
+            Payload::ScriptHash(hash) => {
+                let mut prefixed = [0; 21];
+                prefixed[0] = self.p2sh_prefix;
                 prefixed[1..].copy_from_slice(&hash[..]);
                 base58::encode_check_to_fmt(fmt, &prefixed[..])
             }

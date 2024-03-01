@@ -69,7 +69,7 @@ typedef struct {
     lv_obj_t *inputAddressLabel;
     lv_obj_t *overflowLabel;
     lv_obj_t *gotoAddressKeyboard;
-    addressSettingsWidgetsItem_t addressSettingsWidgets[3];
+    addressSettingsWidgetsItem_t addressSettingsWidgets[4];
     SwitchAddressWidgetsItem_t switchAddressWidgets[5];
 } UtxoReceiveWidgets_t;
 
@@ -138,20 +138,22 @@ static UtxoReceiveWidgets_t g_utxoReceiveWidgets;
 static UtxoReceiveTile g_utxoReceiveTileNow;
 static bool g_gotoAddressValid = false;
 static const AddressSettingsItem_t g_addressSettings[] = {
-    //{"Taproot",         "P2TR",             "m/86'/0'/0'"},
-    {"Native SegWit", "P2WPKH", "m/84'/0'/0'"},
-    {"Nested SegWit", "P2SH-P2WPKH", "m/49'/0'/0'"},
-    {"Legacy", "P2PKH", "m/44'/0'/0'"},
-    //{"Custom",          "Edit path",        "m/72'/0'/0'"}
+    {"Taproot",         "P2TR",             "m/86'/0'/0'"},
+    {"Native SegWit",   "P2WPKH",           "m/84'/0'/0'"},
+    {"Nested SegWit",   "P2SH-P2WPKH",      "m/49'/0'/0'"},
+    {"Legacy",          "P2PKH",            "m/44'/0'/0'"},
+    // {"Custom",          "Edit path",        "m/72'/0'/0'"}
 };
 static char * *g_derivationPathDescs = NULL;
 
+#ifndef BTC_ONLY
 static const ChainPathItem_t g_chainPathItems[] = {
     {HOME_WALLET_CARD_BTC, ""},
     {HOME_WALLET_CARD_LTC, "m/49'/2'/0'"},
     {HOME_WALLET_CARD_DASH, "m/44'/5'/0'"},
     {HOME_WALLET_CARD_BCH, "m/44'/145'/0'"}
 };
+#endif
 
 static uint32_t g_showIndex;
 static uint32_t g_selectIndex;
@@ -236,11 +238,12 @@ void GuiReceiveDeInit(void)
 static bool HasMoreBtn()
 {
     switch (g_chainCard) {
+#ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
     case HOME_WALLET_CARD_BCH:
     case HOME_WALLET_CARD_DASH:
         return false;
-
+#endif
     default:
         return true;
     }
@@ -287,7 +290,7 @@ void GuiReceiveRefresh(void)
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("receive_btc_more_address_settings"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_selectType = g_addressType[g_currentAccountIndex];
-        for (uint32_t i = 0; i < 3; i++) {
+        for (uint32_t i = 0; i < sizeof(g_addressSettings) / sizeof(g_addressSettings[0]); i++) {
             UpdateAddrTypeCheckbox(i, g_selectType == i);
         }
         UpdateConfirmAddrTypeBtn();
@@ -309,6 +312,7 @@ static void GetCurrentTitle(TitleItem_t *titleItem)
         titleItem->type = CHAIN_BTC;
         sprintf(titleItem->title, _("receive_coin_fmt"), "BTC");
         break;
+#ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
         titleItem->type = CHAIN_LTC;
         sprintf(titleItem->title, _("receive_coin_fmt"), "LTC");
@@ -321,6 +325,7 @@ static void GetCurrentTitle(TitleItem_t *titleItem)
         titleItem->type = CHAIN_BCH;
         sprintf(titleItem->title, _("receive_coin_fmt"), "BCH");
         break;
+#endif
     default:
         break;
     }
@@ -405,6 +410,8 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     uint16_t yOffset = 0;
 
     g_utxoReceiveWidgets.qrCodeCont = GuiCreateContainerWithParent(parent, 408, 552);
+    lv_obj_add_flag(g_utxoReceiveWidgets.qrCodeCont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(g_utxoReceiveWidgets.qrCodeCont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_align(g_utxoReceiveWidgets.qrCodeCont, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_style_bg_color(g_utxoReceiveWidgets.qrCodeCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_radius(g_utxoReceiveWidgets.qrCodeCont, 24, LV_PART_MAIN);
@@ -496,6 +503,7 @@ static void GetHint(char *hint)
     case HOME_WALLET_CARD_BTC:
         strcpy(hint, _("receive_btc_alert_desc"));
         break;
+#ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
         sprintf(hint, _("receive_coin_hint_fmt"), "LTC");
         break;
@@ -505,6 +513,7 @@ static void GetHint(char *hint)
     case HOME_WALLET_CARD_BCH:
         sprintf(hint, _("receive_coin_hint_fmt"), "BCH");
         break;
+#endif
     default:
         break;
     }
@@ -515,12 +524,14 @@ static uint32_t GetCurrentSelectIndex()
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
         return g_btcSelectIndex[g_currentAccountIndex];
+#ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
         return g_ltcSelectIndex[g_currentAccountIndex];
     case HOME_WALLET_CARD_DASH:
         return g_dashSelectIndex[g_currentAccountIndex];
     case HOME_WALLET_CARD_BCH:
         return g_bchSelectIndex[g_currentAccountIndex];
+#endif
     default:
         break;
     }
@@ -533,6 +544,7 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
     case HOME_WALLET_CARD_BTC:
         g_btcSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
+#ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
         g_ltcSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
@@ -542,6 +554,7 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
     case HOME_WALLET_CARD_BCH:
         g_bchSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
+#endif
     default:
         break;
     }
@@ -694,9 +707,9 @@ static void Highlight(char *address, uint8_t highlightStart, uint8_t highlightEn
     char highlight[addressLength];
     char afterHighlight[addressLength];
 
-    strncpy(beforeHighlight, address, highlightStart);
+    memcpy(beforeHighlight, address, highlightStart);
     beforeHighlight[highlightStart] = '\0';
-    strncpy(highlight, &address[highlightStart], highlightEnd - highlightStart);
+    memcpy(highlight, &address[highlightStart], highlightEnd - highlightStart);
     highlight[highlightEnd - highlightStart] = '\0';
     strcpy(afterHighlight, &address[highlightEnd]);
 
@@ -714,7 +727,7 @@ static void RefreshDefaultAddress(void)
     ChainType chainType;
     chainType = GetChainTypeByIndex(g_selectType);
 
-    uint8_t highlightEnd = chainType == XPUB_TYPE_BTC_NATIVE_SEGWIT ? 3 : 1;
+    uint8_t highlightEnd = (chainType == XPUB_TYPE_BTC_NATIVE_SEGWIT || chainType == XPUB_TYPE_BTC_TAPROOT) ? 4 : 1;
     ModelGetUtxoAddress(0, &addressDataItem);
     AddressLongModeCut(address, addressDataItem.address);
     Highlight(address, 0, highlightEnd, highlightAddress);
@@ -746,7 +759,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     egContHeight += lv_obj_get_height(label);
     prevLabel = label;
 
-    char *desc = _("derivation_path_address_eg");
+    const char *desc = _("derivation_path_address_eg");
     label = GuiCreateNoticeLabel(egCont, desc);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
@@ -808,19 +821,19 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
     lv_obj_set_style_text_opa(labelHint, LV_OPA_80, LV_PART_MAIN);
     lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 0, 0);
 
-    cont = GuiCreateContainerWithParent(scrollCont, 408, 308);
+    cont = GuiCreateContainerWithParent(scrollCont, 408, 411);
     lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 84);
     lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
 
-    for (uint32_t i = 0; i < 3; i++) {
+    for (uint32_t i = 0; i < sizeof(g_addressSettings) / sizeof(g_addressSettings[0]); i++) {
         label = GuiCreateLabelWithFont(cont, g_addressSettings[i].title, &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         sprintf(string, "%s (%s)", g_addressSettings[i].subTitle, g_addressSettings[i].path);
         label = GuiCreateNoticeLabel(cont, string);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
-        if (i != 2) {
+        if (i != (sizeof(g_addressSettings) / sizeof(g_addressSettings[0]) - 1)) {
             line = GuiCreateLine(cont, points, 2);
             lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * (i + 1));
         }
@@ -928,6 +941,9 @@ static void RefreshQrCode(void)
     lv_label_set_text(g_utxoReceiveWidgets.addressLabel, addressDataItem.address);
     lv_label_set_text_fmt(g_utxoReceiveWidgets.addressCountLabel, "Address-%u", addressDataItem.index);
     lv_label_set_text(g_utxoReceiveWidgets.pathLabel, addressDataItem.path);
+
+    lv_obj_align_to(g_utxoReceiveWidgets.addressCountLabel, g_utxoReceiveWidgets.addressLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    lv_obj_align_to(g_utxoReceiveWidgets.pathLabel, g_utxoReceiveWidgets.addressCountLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
 }
 
 static void RefreshSwitchAccount(void)
@@ -1079,7 +1095,7 @@ static void AddressSettingsCheckHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         checkBox = lv_event_get_target(e);
-        for (uint32_t i = 0; i < 3; i++) {
+        for (uint32_t i = 0; i < sizeof(g_addressSettings) / sizeof(g_addressSettings[0]); i++) {
             UpdateAddrTypeCheckbox(i, checkBox == g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox);
         }
         UpdateConfirmAddrTypeBtn();
@@ -1295,20 +1311,24 @@ static ChainType GetChainTypeByIndex(uint32_t index)
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC: {
         if (index == 0) {
-            return XPUB_TYPE_BTC_NATIVE_SEGWIT;
+            return XPUB_TYPE_BTC_TAPROOT;
         } else if (index == 1) {
+            return XPUB_TYPE_BTC_NATIVE_SEGWIT;
+        } else if (index == 2) {
             return XPUB_TYPE_BTC;
         } else {
             return XPUB_TYPE_BTC_LEGACY;
         }
         break;
     }
+#ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
         return XPUB_TYPE_LTC;
     case HOME_WALLET_CARD_DASH:
         return XPUB_TYPE_DASH;
     case HOME_WALLET_CARD_BCH:
         return XPUB_TYPE_BCH;
+#endif
     default:
         break;
     }
@@ -1339,6 +1359,7 @@ static void GetRootHdPath(char *hdPath)
     case HOME_WALLET_CARD_BTC:
         sprintf(hdPath, "%s", g_addressSettings[addrType].path);
         break;
+#ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
         sprintf(hdPath, "%s", g_chainPathItems[1].path);
         break;
@@ -1348,6 +1369,7 @@ static void GetRootHdPath(char *hdPath)
     case HOME_WALLET_CARD_BCH:
         sprintf(hdPath, "%s", g_chainPathItems[3].path);
         break;
+#endif
     default:
         break;
     }

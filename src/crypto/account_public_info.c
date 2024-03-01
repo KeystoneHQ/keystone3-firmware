@@ -405,7 +405,6 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         SetWalletDataHash(accountIndex, hash);
         CLEAR_ARRAY(hash);
         size = strlen(jsonString);
-        printf("size = %d........\n", size);
         Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
         Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
         printf("regenerate jsonString=%s\r\n", jsonString);
@@ -600,8 +599,6 @@ void AccountPublicInfoTest(int argc, char *argv[])
     char *result;
     uint8_t accountIndex;
     uint32_t addr, eraseAddr, size;
-
-    printf("argv[0] = %s\n", argv[0]);
 
     if (strcmp(argv[0], "info") == 0) {
         PrintInfo();

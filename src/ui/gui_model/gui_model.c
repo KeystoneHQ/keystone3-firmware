@@ -1052,8 +1052,6 @@ static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
     GetWebAuthRsaKey(key);
     char* authCode = calculate_auth_code(inData, key, 512, &key[512], 512);
     SRAM_FREE(key);
-    printf("authCode = %s\n", authCode);
-    printf("authCode len = %d...............\n\n\n", strlen(authCode));
     GuiApiEmitSignal(SIG_WEB_AUTH_CODE_SUCCESS, authCode, strlen(authCode));
 #else
     uint8_t *entropy;

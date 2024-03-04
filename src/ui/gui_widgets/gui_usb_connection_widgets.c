@@ -6,7 +6,9 @@
 #include "gui_views.h"
 #include "gui_api.h"
 #include "device_setting.h"
+#ifndef COMPILE_SIMULATOR
 #include "drv_aw32001.h"
+#endif
 
 
 static void GuiUsbConnectionInit(void);

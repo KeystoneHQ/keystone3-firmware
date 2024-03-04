@@ -191,7 +191,10 @@ static void NetworkSelHandler(lv_event_t *e)
                 }
             }
         }
-        lv_obj_del(g_networkCont);
+        if (g_networkCont != NULL) {
+            lv_obj_del(g_networkCont);
+            g_networkCont = NULL;
+        }
     }
 }
 

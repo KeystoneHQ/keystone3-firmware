@@ -177,9 +177,7 @@ static void NetworkSelHandler(lv_event_t *e)
             if (target == g_networkCheckbox[i].button) {
                 printf("target is %d\n", i);
                 SetIsTestNet(i == 1);
-#ifdef BTC_ONLY
                 GuiApiEmitSignal(SIG_STATUS_BAR_TEST_NET, NULL, 0);
-#endif
                 for (j = 0; j < 2; j++) {
                     if (i == j) {
                         //checked
@@ -193,6 +191,7 @@ static void NetworkSelHandler(lv_event_t *e)
                 }
             }
         }
+        lv_obj_del(g_networkCont);
     }
 }
 

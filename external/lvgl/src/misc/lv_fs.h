@@ -54,6 +54,7 @@ typedef uint8_t lv_fs_res_t;
 enum {
     LV_FS_MODE_WR = 0x01,
     LV_FS_MODE_RD = 0x02,
+    LV_FS_MODE_ALWAYS = 0x04,   /*Always create a new file. (If it is not set then fail if the file exists)*/
 };
 typedef uint8_t lv_fs_mode_t;
 

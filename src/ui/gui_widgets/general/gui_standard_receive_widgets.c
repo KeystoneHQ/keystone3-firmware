@@ -613,19 +613,6 @@ static void AddressLongModeCut(char *out, const char *address)
     }
 }
 
-#ifdef COMPILE_SIMULATOR
-
-static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
-{
-    char hdPath[BUFFER_SIZE_128];
-    snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/195'/0'/0/%u", index);
-    printf("hdPath=%s\r\n", hdPath);
-    item->index = index;
-    snprintf_s(item->address, BUFFER_SIZE_128, "TUEZSdKsoDHQMeZwihtdoBiN46zxhGWYdH%010u", index);
-    strcpy(item->path, hdPath);
-}
-
-#else
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {
@@ -676,8 +663,6 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     }
     free_simple_response_c_char(result);
 }
-
-#endif
 
 void GuiResetCurrentStandardAddressIndex(uint8_t index)
 {

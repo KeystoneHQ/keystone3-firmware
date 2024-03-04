@@ -61,7 +61,6 @@ static uint8_t g_selectedEntropyMethod = 0;
 
 void GuiSetupKeyboardWidgetMode(void)
 {
-    printf("g_setPassCode->mode = %d\n", g_setPassCode->mode % 2);
     SetKeyboardWidgetMode(KEYBOARD_HINTBOX_PIN + g_setPassCode->mode % 2);
 }
 

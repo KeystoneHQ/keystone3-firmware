@@ -1,5 +1,4 @@
 #include <string.h>
-#include "user_memory.h"
 #include "motor_manager.h"
 #include "gui.h"
 #include "gui_obj.h"
@@ -9,6 +8,7 @@
 #include "gui_views.h"
 #include "gui_lock_widgets.h"
 #include "gui_letter_tree.h"
+#include "user_memory.h"
 
 #pragma GCC optimize ("O0")
 

@@ -5,8 +5,6 @@
 #ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
 #include "safe_str_lib.h"
-#else
-#define memset_s(a1,a2,a3,a4)               memset(a1,a2,a3)
 #endif
 
 static char *g_passwordCache = NULL;
@@ -59,7 +57,7 @@ void SecretCacheSetPassphrase(char *passPhrase)
 
 char *SecretCacheGetPassphrase(void)
 {
-    return g_passphraseCache;
+    return g_passphraseCache ? g_passphraseCache : "";
 }
 
 void SecretCacheSetNewPassword(char *password)

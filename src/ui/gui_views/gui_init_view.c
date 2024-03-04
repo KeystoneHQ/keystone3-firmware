@@ -18,11 +18,11 @@
 #include "gui_about_info_widgets.h"
 #include "account_manager.h"
 #include "gui_setup_widgets.h"
+#include "device_setting.h"
+#include "drv_aw32001.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #else
-#include "drv_aw32001.h"
-#include "device_setting.h"
 #endif
 
 static int32_t GuiInitViewInit(void)
@@ -51,6 +51,7 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     uint16_t battState;
     uint32_t rcvValue;
     uint8_t checkSumPercent = 0;
+    static uint8_t walletMethod = WALLET_METHOD_CREATE;
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:

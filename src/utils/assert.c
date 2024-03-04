@@ -8,16 +8,12 @@
 #include "safe_str_lib.h"
 
 #ifdef COMPILE_SIMULATOR
-
-#ifdef COMPILE_MAC_SIMULATOR
 #include "stdio.h"
 void ShowAssert(const char* file, uint32_t len)
 {
     printf("assert,file=%s\r\nline=%d\r\n", file, len);
     while (1);
 }
-#endif
-
 #else
 
 #include "draw_on_lcd.h"

@@ -10,14 +10,14 @@
 #include "gui_setup_widgets.h"
 #include "background_task.h"
 #include "firmware_update.h"
-#include "keystore.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_about_info_widgets.h"
 #include "secret_cache.h"
-#include "safe_str_lib.h"
 #include "version.h"
+#include "user_memory.h"
+#include "keystore.h"
 #ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
 #endif

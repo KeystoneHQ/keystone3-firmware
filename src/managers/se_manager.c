@@ -3,6 +3,7 @@
 #include "se_manager.h"
 #include "se_interface.h"
 #include "user_utils.h"
+#include "user_memory.h"
 #include "assert.h"
 #include "sha256.h"
 #include "err_code.h"
@@ -11,7 +12,6 @@
 #include "log_print.h"
 #include "hash_and_salt.h"
 #include "secret_cache.h"
-#include "safe_str_lib.h"
 
 #define SHA256_COUNT                            3
 

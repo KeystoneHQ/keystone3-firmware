@@ -1,5 +1,5 @@
 #include "gui_qr_code.h"
-#include "safe_str_lib.h"
+#include "user_memory.h"
 
 static lv_timer_t *g_timer;
 static UREncodeResult *g_result;

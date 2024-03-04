@@ -5,21 +5,22 @@
 #include "gui_button.h"
 #include "gui_hintbox.h"
 #include "gui_model.h"
+#include "gui_about_info_widgets.h"
+#include "gui_page.h"
 #include "user_msg.h"
 #include "user_memory.h"
 #include "presetting.h"
-#include "gui_about_info_widgets.h"
 #include "version.h"
 #include "err_code.h"
-#include "gui_page.h"
 #include "secret_cache.h"
+#include "fingerprint_process.h"
+#include "log.h"
 #ifndef COMPILE_SIMULATOR
 #include "drv_battery.h"
 #endif
 
 #ifdef COMPILE_MAC_SIMULATOR
 #include "simulator_model.h"
-#include "fingerprint_process.h"
 #endif
 
 static void GuiAboutNVSBarInit();

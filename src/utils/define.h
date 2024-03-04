@@ -1,9 +1,9 @@
 #ifndef _DEFINE_H
 #define _DEFINE_H
 
-#define __I                             volatile const
-#define __O                             volatile
-#define __IO                            volatile
+// #define __I                             volatile const
+// #define __O                             volatile
+// #define __IO                            volatile
 
 #define BUFFER_SIZE_16                  (16)
 #define BUFFER_SIZE_32                  (32)

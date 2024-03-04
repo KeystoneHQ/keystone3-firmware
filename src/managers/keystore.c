@@ -24,8 +24,14 @@
 #include "se_manager.h"
 #include "account_manager.h"
 #include "librust_c.h"
+#include "assert.h"
 #include "secret_cache.h"
-
+#ifndef COMPILE_SIMULATOR
+#include "safe_mem_lib.h"
+#else
+#include "simulator_model.h"
+#include "simulator_storage.h"
+#endif
 #define KEYSTORE_DEBUG          0
 
 
@@ -34,38 +40,6 @@
 #else
 #define KEYSTORE_PRINT_ARRAY(fmt, args...)
 #endif
-
-#define AES_BLOCK_SIZE                          16
-
-#define KEY_PIECE_LEN                           32
-
-#define AES_KEY_LEN                             32
-#define AUTH_KEY_LEN                            32
-
-#define AES_IV_LEN                              32              //Use first 16 bytes for AES key, last 16 bytes reserved for future features.
-#define ENTROPY_MAX_LEN                         32
-#define SEED_LEN                                64
-#define SLIP39_EMS_LEN                          32
-#define SE_DATA_RESERVED_LEN                    32
-#define HMAC_LEN                                32
-#define ACCOUNT_TOTAL_LEN                       (AES_IV_LEN + ENTROPY_MAX_LEN + SEED_LEN + SLIP39_EMS_LEN + SE_DATA_RESERVED_LEN + HMAC_LEN)
-#define PARAM_LEN                               32
-
-#define ITERATION_TIME                          700
-
-typedef struct {
-    uint8_t entropy[ENTROPY_MAX_LEN];
-    uint8_t seed[SEED_LEN];
-    uint8_t slip39Ems[SLIP39_EMS_LEN];
-    uint8_t reservedData[SE_DATA_RESERVED_LEN];
-    uint8_t entropyLen;
-} AccountSecret_t;
-
-typedef struct {
-    char passphrase[PASSPHRASE_MAX_LEN + 1];
-    bool passphraseExist;
-    uint8_t mfp[4];
-} PassphraseInfo_t;
 
 static PassphraseInfo_t g_passphraseInfo[3] = {0};
 
@@ -307,6 +281,9 @@ int32_t VerifyPassword(uint8_t *accountIndex, const char *password)
 {
     uint8_t passwordHashClac[32], passwordHashStore[32];
     int32_t ret, i;
+#ifdef COMPILE_SIMULATOR
+    return SimulatorVerifyPassword(accountIndex, password);
+#endif
 
     for (i = 0; i < 3; i++) {
         ret = SE_HmacEncryptRead(passwordHashStore, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
@@ -474,6 +451,9 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
     encryptReservedData = slip39Ems + SLIP39_EMS_LEN;
     hmac = encryptReservedData + SE_DATA_RESERVED_LEN;
     do {
+#ifdef COMPILE_SIMULATOR
+        ret = SimulatorSaveAccountSecret(accountIndex, accountSecret, password);
+#else
         ret = SetNewKeyPieceToSE(accountIndex, pieces, password);
         CHECK_ERRCODE_BREAK("set key to se", ret);
         HashWithSalt(hash, pieces, sizeof(pieces), "combine two pieces");
@@ -511,6 +491,7 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
         CHECK_ERRCODE_BREAK("write encrypt reserved data", ret);
         ret = SE_HmacEncryptWrite(hmac, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC);
         CHECK_ERRCODE_BREAK("write hmac", ret);
+#endif
         if (newAccount) {
             SetCurrentAccountEntropyLen(accountSecret->entropyLen);
             seedLen = GetMnemonicType() == MNEMONIC_TYPE_SLIP39 ? accountSecret->entropyLen : sizeof(accountSecret->seed);
@@ -551,6 +532,9 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
 /// @return err code.
 static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountSecret, const char *password)
 {
+#ifdef COMPILE_SIMULATOR
+    return SimulatorLoadAccountSecret(accountIndex, accountSecret, password);
+#endif
     uint8_t pieces[KEY_PIECE_LEN * 2], hash[32], sha512Hash[64], hmacCalc[32];
     uint8_t *enKey, *authKey;
     uint8_t *iv, *encryptEntropy, *encryptSeed, *slip39Ems, *encryptReservedData, *hmac;
@@ -626,6 +610,7 @@ static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountS
 static void CombineInnerAesKey(uint8_t *aesKey)
 {
     uint8_t aesPiece[AES_KEY_LEN];
+#ifndef COMPILE_SIMULATOR
     OTP_PowerOn();
     memcpy_s(aesPiece, sizeof(aesPiece), (uint8_t *)OTP_ADDR_AES_KEY, AES_KEY_LEN);
     if (CheckEntropy(aesPiece, AES_KEY_LEN) == false) {
@@ -633,6 +618,9 @@ static void CombineInnerAesKey(uint8_t *aesKey)
         TrngGet(aesPiece, AES_KEY_LEN);
         WriteOtpData(OTP_ADDR_AES_KEY, aesPiece, AES_KEY_LEN);
     }
+#else
+    TrngGet(aesPiece, AES_KEY_LEN);
+#endif
     for (uint32_t i = 0; i < AES_KEY_LEN; i++) {
         aesKey[i] ^= aesPiece[i];
     }

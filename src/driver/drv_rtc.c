@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "mhscpu.h"
 #include "define.h"
 #include "drv_rtc.h"
 #include "safe_str_lib.h"

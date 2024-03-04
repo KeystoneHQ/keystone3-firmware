@@ -8,7 +8,12 @@
 #include "assert.h"
 #include "hash_and_salt.h"
 #include "secret_cache.h"
-#include "safe_str_lib.h"
+#include "user_memory.h"
+
+#ifdef COMPILE_SIMULATOR
+#include "simulator_storage.h"
+#endif
+
 
 typedef struct {
     uint8_t loginPasswordErrorCount;
@@ -145,14 +150,19 @@ int32_t VerifyCurrentAccountPassword(const char *password)
             ret = ERR_KEYSTORE_NOT_LOGIN;
             break;
         }
+#ifdef COMPILE_SIMULATOR
+        ret = SimulatorVerifyCurrentPassword(accountIndex, password);
+#else
         ret = SE_HmacEncryptRead(passwordHashStore, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
         CHECK_ERRCODE_BREAK("read password hash", ret);
-        HashWithSalt(passwordHashClac, (const uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password hash");
-        if (memcmp(passwordHashStore, passwordHashClac, 32) == 0) {
+        HashWithSalt(passwordHashClac, (const uint8_t *)password, strlen(password), "password hash");
+        ret = memcmp(passwordHashStore, passwordHashClac, 32);
+#endif
+        if (ret == SUCCESS_CODE) {
             g_publicInfo.currentPasswordErrorCount = 0;
-            ret = SUCCESS_CODE;
         } else {
             g_publicInfo.currentPasswordErrorCount++;
+            printf("password error count=%d\r\n", g_publicInfo.currentPasswordErrorCount);
             ret = ERR_KEYSTORE_PASSWORD_ERR;
         }
         SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
@@ -205,6 +215,7 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
         g_publicInfo.loginPasswordErrorCount++;
     }
     SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+
     return ret;
 }
 
@@ -238,6 +249,11 @@ int32_t GetExistAccountNum(uint8_t *accountNum)
 {
     int32_t ret;
     uint8_t data[32], count = 0;
+
+#ifdef COMPILE_SIMULATOR
+    *accountNum = SimulatorGetAccountNum();
+    return SUCCESS_CODE;
+#endif
 
     for (uint8_t i = 0; i < 3; i++) {
         ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
@@ -443,6 +459,11 @@ int32_t GetBlankAccountIndex(uint8_t *accountIndex)
 {
     int32_t ret;
     uint8_t data[32];
+
+#ifdef COMPILE_SIMULATOR
+    *accountIndex = 0;
+    return SUCCESS_CODE;
+#endif
 
     for (uint8_t i = 0; i < 3; i++) {
         ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);

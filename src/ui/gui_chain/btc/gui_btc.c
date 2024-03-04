@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <string.h>
 #include "gui_analyze.h"
 #include "user_memory.h"
 #include "rust.h"

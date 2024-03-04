@@ -47,7 +47,6 @@
 #define APP_CHECK_START_ADDR                (0x1400000)
 #define APP_END_ADDR                        (0x2000000)
 
-// #ifndef COMPILE_SIMULATOR
 #define MODEL_WRITE_SE_HEAD                 do {                                \
         ret = CHECK_BATTERY_LOW_POWER();                                        \
         CHECK_ERRCODE_BREAK("save low power", ret);                             \
@@ -69,7 +68,6 @@
     } else {                                                                            \
         GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));     \
     }
-// #endif
 
 static int32_t ModelSaveWalletDesc(const void *inData, uint32_t inDataLen);
 static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen);
@@ -308,7 +306,7 @@ static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
     SecretCacheSetMnemonic(mnemonic);
     retData = SUCCESS_CODE;
     GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, &retData, sizeof(retData));
-    memset_s(mnemonic, strlen(mnemonic), 0, strlen(mnemonic));
+    memset_s(mnemonic, strnlen_s(mnemonic, MNEMONIC_MAX_LEN), 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
     SRAM_FREE(mnemonic);
     SetLockScreen(enable);
     return SUCCESS_CODE;
@@ -328,13 +326,13 @@ static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t in
     entropyLen = (mnemonicNum == 24) ? 32 : 16;
     // GenerateEntropy(entropy, entropyLen, SecretCacheGetNewPassword());
     hash = SecretCacheGetDiceRollHash();
-    memcpy(entropy, hash, entropyLen);
+    memcpy_s(entropy, sizeof(entropy), hash, entropyLen);
     SecretCacheSetEntropy(entropy, entropyLen);
     bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
     SecretCacheSetMnemonic(mnemonic);
     retData = SUCCESS_CODE;
     GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, &retData, sizeof(retData));
-    memset_s(mnemonic, strlen(mnemonic), 0, strlen(mnemonic));
+    memset_s(mnemonic, strnlen_s(mnemonic, MNEMONIC_MAX_LEN), 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
     SRAM_FREE(mnemonic);
     SetLockScreen(enable);
 #endif
@@ -347,8 +345,6 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t ret;
-// #ifndef COMPILE_SIMULATOR
-#if 1
     uint8_t *entropy, *entropyCheck;
     uint32_t entropyLen;
     uint8_t newAccount;
@@ -364,24 +360,15 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
         SetLockScreen(enable);
         return 0;
     }
-    printf("%s %d..\n", __func__, __LINE__);
     memset_s(entropyCheck, entropyLen, 0, entropyLen);
     SRAM_FREE(entropyCheck);
     MODEL_WRITE_SE_HEAD
-    printf("%s %d..\n", __func__, __LINE__);
     ret = ModelComparePubkey(true, NULL, 0, 0, 0, NULL);
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
-    printf("%s %d..\n", __func__, __LINE__);
     ret = CreateNewAccount(newAccount, entropy, entropyLen, SecretCacheGetNewPassword());
-    printf("%s %d..\n", __func__, __LINE__);
     ClearAccountPassphrase(newAccount);
     CHECK_ERRCODE_BREAK("save entropy error", ret);
     MODEL_WRITE_SE_END
-#else
-    ret = ERR_KEYSTORE_MNEMONIC_INVALID;
-    GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));
-    // GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));
-#endif
     SetLockScreen(enable);
     return 0;
 }
@@ -529,7 +516,7 @@ static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, Bac
     if (g_urResult->error_code == 0) {
         // printf("%s\r\n", g_urResult->data);
 #ifndef COMPILE_SIMULATOR
-        GuiApiEmitSignal(SIG_BACKGROUND_UR_GENERATE_SUCCESS, g_urResult->data, strlen(g_urResult->data) + 1);
+        GuiApiEmitSignal(SIG_BACKGROUND_UR_GENERATE_SUCCESS, g_urResult->data, strnlen_s(g_urResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
 #else
         GuiEmitSignal(SIG_BACKGROUND_UR_GENERATE_SUCCESS, g_urResult->data, strlen(g_urResult->data) + 1);
 #endif
@@ -545,7 +532,7 @@ static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen)
         UREncodeMultiResult *result = get_next_part(g_urResult->encoder);
         if (result->error_code == 0) {
             // printf("%s\r\n", result->data);
-            GuiApiEmitSignal(SIG_BACKGROUND_UR_UPDATE, result->data, strlen(result->data) + 1);
+            GuiApiEmitSignal(SIG_BACKGROUND_UR_UPDATE, result->data, strnlen_s(result->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
         } else {
             //TODO: deal with error
         }
@@ -575,7 +562,6 @@ static int32_t ModelComparePubkey(bool bip39, uint8_t *ems, uint8_t emsLen, uint
     do {
         if (bip39) {
             ret = bip39_mnemonic_to_seed(SecretCacheGetMnemonic(), NULL, seed, 64, NULL);
-            printf("SecretCacheGetMnemonic = %s\n", SecretCacheGetMnemonic());
             xPubResult = get_extended_pubkey_by_seed(seed, 64, "M/49'/0'/0'");
         } else {
             ret = Slip39GetSeed(ems, seed, emsLen, "", ie, id);
@@ -624,7 +610,7 @@ static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen
     }
 
     for (int i = 0; i < memberCnt; i++) {
-        memset(wordsList[i], 0, strlen(wordsList[i]));
+        memset_s(wordsList[i], strlen(wordsList[i]), 0, strlen(wordsList[i]));
         // todo There is a problem with SRAM FREE here
         free(wordsList[i]);
     }
@@ -671,7 +657,7 @@ static int32_t ModelGenerateSlip39EntropyWithDiceRolls(const void *inData, uint3
     threShold = slip39->threShold;
     char *wordsList[memberCnt];
     hash = SecretCacheGetDiceRollHash();
-    memcpy(entropy, hash, entropyLen);
+    memcpy_s(entropy, sizeof(entropy), hash, entropyLen);
     SecretCacheSetEntropy(entropy, entropyLen);
     GetSlip39MnemonicsWords(entropy, ems, 33, memberCnt, threShold, wordsList, &id, &ie);
     SecretCacheSetEms(ems, entropyLen);
@@ -682,7 +668,7 @@ static int32_t ModelGenerateSlip39EntropyWithDiceRolls(const void *inData, uint3
     }
 
     for (int i = 0; i < memberCnt; i++) {
-        memset(wordsList[i], 0, strlen(wordsList[i]));
+        memset_s(wordsList[i], strnlen_s(wordsList[i], MNEMONIC_MAX_LEN), 0, strnlen_s(wordsList[i], MNEMONIC_MAX_LEN));
         // todo There is a problem with SRAM FREE here
         free(wordsList[i]);
     }
@@ -794,7 +780,7 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
         printf("get master secret error\n");
         break;
     }
-    memcpy(emsBak, ems, entropyLen);
+    memcpy_s(emsBak, sizeof(emsBak), ems, entropyLen);
 
     if (slip39->forget) {
         ret = ModelComparePubkey(false, ems, entropyLen, id, ie, &newAccount);
@@ -892,8 +878,6 @@ static int32_t ModelSaveWalletDesc(const void *inData, uint32_t inDataLen)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     WalletDesc_t *wallet = (WalletDesc_t *)inData;
-    printf("wallet->name = %s...........\n", wallet->name);
-    printf("wallet->iconIndex = %d..........\n", wallet->iconIndex);
     SetWalletName(wallet->name);
     SetWalletIconIndex(wallet->iconIndex);
 
@@ -945,7 +929,7 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
         GuiApiEmitSignal(SIG_SETTING_DEL_WALLET_FAIL, &ret, sizeof(ret));
     }
 #else
-    // GuiEmitSignal(SIG_SETTING _DEL_WALLET_PASS_SETUP, NULL, 0);
+    // GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS_SETUP, NULL, 0);
     GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS, NULL, 0);
 #endif
     SetLockScreen(enable);
@@ -1033,6 +1017,7 @@ static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
     uint8_t *key = SRAM_MALLOC(WEB_AUTH_RSA_KEY_LEN);
     GetWebAuthRsaKey(key);
     char* authCode = calculate_auth_code(inData, key, 512, &key[512], 512);
+    SRAM_FREE(key);
     GuiApiEmitSignal(SIG_WEB_AUTH_CODE_SUCCESS, authCode, strlen(authCode));
 #else
     uint8_t *entropy;
@@ -1149,14 +1134,14 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
     }
 
     // some scene would need clear secret after check
-    if (*param != SIG_SETTING_CHANGE_PASSWORD
-            && *param != SIG_SETTING_WRITE_PASSPHRASE
-            && *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE
-            && *param != SIG_FINGER_SET_SIGN_TRANSITIONS
-            && *param != SIG_FINGER_REGISTER_ADD_SUCCESS
-            && *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD
-            && !strlen(SecretCacheGetPassphrase())
-            && !GuiCheckIfViewOpened(&g_createWalletView)) {
+    if (*param != SIG_SETTING_CHANGE_PASSWORD &&
+            *param != SIG_SETTING_WRITE_PASSPHRASE &&
+            *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE &&
+            *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
+            *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
+            *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&
+            !strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) &&
+            !GuiCheckIfViewOpened(&g_createWalletView)) {
         ClearSecretCache();
     }
     SetLockScreen(enable);
@@ -1196,7 +1181,7 @@ static int32_t ModeGetWalletDesc(const void *inData, uint32_t inDataLen)
         return SUCCESS_CODE;
     }
     wallet.iconIndex = GetWalletIconIndex();
-    strcpy(wallet.name, GetWalletName());
+    strcpy_s(wallet.name, WALLET_NAME_MAX_LEN, GetWalletName());
     GuiApiEmitSignal(SIG_INIT_GET_CURRENT_WALLET_DESC, &wallet, sizeof(wallet));
     SetLockScreen(enable);
     return SUCCESS_CODE;
@@ -1329,7 +1314,7 @@ static uint32_t BinarySearchLastNonFFSector(void)
             SRAM_FREE(buffer);
             return SUCCESS_CODE;
         }
-        memcpy(buffer, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
+        memcpy_s(buffer, sizeof(buffer), (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
         if ((i - startIndex) % 200 == 0) {
             percent++;
             GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
@@ -1361,8 +1346,8 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
         if (g_stopCalChecksum == true) {
             return SUCCESS_CODE;
         }
-        memset(buffer, 0, SECTOR_SIZE);
-        memcpy(buffer, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
+        memset_s(buffer, SECTOR_SIZE, 0, SECTOR_SIZE);
+        memcpy_s(buffer, sizeof(buffer), (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
         sha256_update(&ctx, buffer, SECTOR_SIZE);
         if (percent != i * 100 / num) {
             percent = i * 100 / num;
@@ -1372,7 +1357,7 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
         }
     }
     sha256_done(&ctx, (struct sha256 *)hash);
-    memset(buffer, 0, SECTOR_SIZE);
+    memset_s(buffer, SECTOR_SIZE, 0, SECTOR_SIZE);
     percent = 100;
     SetPageLockScreen(true);
     SecretCacheSetChecksum(hash);

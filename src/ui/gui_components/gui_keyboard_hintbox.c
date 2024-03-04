@@ -19,8 +19,7 @@
 #include "usb_task.h"
 #ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
-#undef memset_s
-#define memset_s(dest, dmax, value, n)          memset(dest, value, n)
+#include "usb_task.h"
 #else
 #define RECOGNIZE_UNLOCK                    0
 #endif
@@ -38,7 +37,7 @@ static void CountDownHandler(lv_timer_t *timer);
 static void GuiCountDownTimerDestruct(KeyboardWidget_t *keyboardWidget);
 
 static uint8_t g_keyboardHintBoxMode = KEYBOARD_HINTBOX_PIN;
-static char g_pinBuf[GUI_DEFINE_MAX_PASSCODE_LEN + 1];
+static char g_pinBuf[PASSWORD_MAX_LEN + 1];
 
 void SetKeyboardWidgetMode(uint8_t mode)
 {
@@ -57,7 +56,7 @@ static void KeyboardConfirmHandler(lv_event_t *e)
 
     if (code == LV_EVENT_READY) {
         const char *currText = GuiGetKeyboardInput(keyboardWidget);
-        if (strlen(currText) > 0) {
+        if (strnlen_s(currText, PASSWORD_MAX_LEN) > 0) {
             SecretCacheSetPassword((char *)currText);
             GuiClearKeyboardInput(keyboardWidget);
             GuiModelVerifyAccountPassWord(keyboardWidget->sig);
@@ -156,7 +155,7 @@ static void SetPinEventHandler(lv_event_t *e)
             }
         } else {
             if (keyboardWidget->currentNum < CREATE_PIN_NUM) {
-                sprintf(g_pinBuf + keyboardWidget->currentNum, "%s", txt);
+                snprintf_s(g_pinBuf + keyboardWidget->currentNum, PASSWORD_MAX_LEN - keyboardWidget->currentNum, "%s", txt);
                 keyboardWidget->currentNum++;
                 for (int i = 0; i < keyboardWidget->currentNum; i++) {
                     GuiSetLedStatus(keyboardWidget->led[i], PASSCODE_LED_ON);
@@ -267,7 +266,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t bu
     lv_obj_set_style_text_opa(ta, LV_OPA_100, LV_PART_MAIN);
     lv_obj_set_style_bg_color(ta, BLACK_COLOR, LV_PART_MAIN);
     lv_textarea_set_password_mode(ta, true);
-    lv_textarea_set_max_length(ta, GUI_DEFINE_MAX_PASSCODE_LEN);
+    lv_textarea_set_max_length(ta, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(ta, true);
 
     keyboardWidget->kb = kb;
@@ -341,7 +340,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
     lv_obj_set_style_text_opa(ta, LV_OPA_100, LV_PART_MAIN);
     lv_obj_set_style_bg_color(ta, DARK_BG_COLOR, LV_PART_MAIN);
     lv_textarea_set_password_mode(ta, true);
-    lv_textarea_set_max_length(ta, GUI_DEFINE_MAX_PASSCODE_LEN);
+    lv_textarea_set_max_length(ta, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(ta, true);
 
     keyboardWidget->kb = kb;
@@ -447,18 +446,18 @@ void GuiHideErrorLabel(KeyboardWidget_t *keyboardWidget)
 
 void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t *passwordVerifyResult)
 {
-    memset(g_pinBuf, 0, sizeof(g_pinBuf));
+    memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
     keyboardWidget->currentNum = 0;
     printf("GuiShowErrorNumber error count is %d\n", passwordVerifyResult->errorCount);
-    char hint[128];
-    char tempBuf[128];
+    char hint[BUFFER_SIZE_128];
+    char tempBuf[BUFFER_SIZE_128];
     uint8_t cnt = MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX - passwordVerifyResult->errorCount;
     if (cnt > 1) {
-        sprintf(hint, _("unlock_device_attempts_left_plural_times_fmt"), cnt);
+        snprintf_s(hint, BUFFER_SIZE_128, _("unlock_device_attempts_left_plural_times_fmt"), cnt);
     } else {
-        sprintf(hint, _("unlock_device_attempts_left_singular_times_fmt"), cnt);
+        snprintf_s(hint, BUFFER_SIZE_128, _("unlock_device_attempts_left_singular_times_fmt"), cnt);
     }
-    sprintf(tempBuf, "#F55831 %s#", hint);
+    snprintf_s(tempBuf, BUFFER_SIZE_128, "#F55831 %s#", hint);
     GuiSetErrorLabel(keyboardWidget, tempBuf);
     if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
         CloseUsb();
@@ -506,12 +505,12 @@ static void CountDownHandler(lv_timer_t *timer)
 {
     KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)timer->user_data;
 
-    char buf[32] = {0};
+    char buf[BUFFER_SIZE_32] = {0};
     --(*keyboardWidget->timerCounter);
     if (*keyboardWidget->timerCounter > 0) {
-        sprintf(buf, _("unlock_device_error_btn_text_fmt"), *keyboardWidget->timerCounter);
+        snprintf_s(buf, BUFFER_SIZE_32, _("unlock_device_error_btn_text_fmt"), *keyboardWidget->timerCounter);
     } else {
-        strcpy(buf, _("unlock_device_error_btn_end_text"));
+        strcpy_s(buf, BUFFER_SIZE_32, _("unlock_device_error_btn_end_text"));
     }
     lv_label_set_text(lv_obj_get_child(keyboardWidget->errHintBoxBtn, 0), buf);
 

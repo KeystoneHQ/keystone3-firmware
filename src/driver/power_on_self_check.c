@@ -35,7 +35,7 @@ void PowerOnSelfCheck(void)
 
     // psram
     uint8_t *data = EXT_MALLOC(SRAM_TEST_LEN);
-    memset(data, SRAM_TEST_CHAR, SRAM_TEST_LEN);
+    memset_s(data, SRAM_TEST_LEN, SRAM_TEST_CHAR, SRAM_TEST_LEN);
     for (int i = 0; i < SRAM_TEST_LEN; i++) {
         if (data[i] != SRAM_TEST_CHAR) {
             ret = ERR_PSRAM_OPERATE_FAILED;

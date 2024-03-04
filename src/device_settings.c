@@ -300,7 +300,7 @@ static void SaveDeviceSettingsSync(void)
     jsonString = GetJsonStringFromDeviceSettings();
     printf("jsonString=%s\n", jsonString);
     Gd25FlashSectorErase(SPI_FLASH_ADDR_NORMAL_PARAM);      //Only one sector for device settings.
-    size = strlen(jsonString);
+    size = strnlen_s(jsonString, SPI_FLASH_SIZE_NORMAL_PARAM - 4 - 1);
     ASSERT(size < SPI_FLASH_SIZE_NORMAL_PARAM - 4);
     Gd25FlashWriteBuffer(SPI_FLASH_ADDR_NORMAL_PARAM, (uint8_t *)&size, 4);
     Gd25FlashWriteBuffer(SPI_FLASH_ADDR_NORMAL_PARAM + 4, (uint8_t *)jsonString, size + 1);
@@ -407,14 +407,14 @@ static void GetStringValue(const cJSON *obj, const char *key, char *value, uint3
     json = cJSON_GetObjectItem((cJSON *)obj, key);
     if (json != NULL) {
         strTemp = json->valuestring;
-        len = strlen(strTemp);
+        len = strnlen_s(strTemp, maxLen);
         if (len < maxLen) {
-            strcpy(value, strTemp);
+            strcpy_s(value, maxLen, strTemp);
         } else {
-            strcpy(value, "");
+            value[0] = '\0';
         }
     } else {
         printf("key:%s does not exist\r\n", key);
-        strcpy(value, "");
+        value[0] = '\0';
     }
 }

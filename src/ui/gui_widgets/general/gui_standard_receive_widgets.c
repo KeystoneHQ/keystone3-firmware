@@ -20,8 +20,9 @@
 #include "gui_tutorial_widgets.h"
 #include "account_manager.h"
 
-#define GENERAL_ADDRESS_INDEX_MAX 999999999
-#define LEDGER_LIVE_ADDRESS_INDEX_MAX 9
+#define GENERAL_ADDRESS_INDEX_MAX                           999999999
+#define LEDGER_LIVE_ADDRESS_INDEX_MAX                       9
+#define ADDRESS_LONE_MODE_LEN                               (24)
 
 typedef enum {
     RECEIVE_TILE_QRCODE = 0,
@@ -289,7 +290,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
         tempObj = GuiCreateLittleTitleLabel(g_standardReceiveWidgets.attentionCont, _("Attention"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
-        char attentionText[150];
+        char attentionText[BUFFER_SIZE_256];
         GetAttentionText(attentionText);
         tempObj = GuiCreateLabelWithFont(g_standardReceiveWidgets.attentionCont, attentionText, &openSans_20);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
@@ -307,10 +308,10 @@ void GetAttentionText(char* text)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TRX:
-        strcpy(text, _("receive_trx_hint"));
+        strcpy_s(text, BUFFER_SIZE_256, _("receive_trx_hint"));
         break;
     default:
-        sprintf(text, _("receive_coin_hint_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
+        snprintf_s(text, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
     }
 }
 
@@ -415,10 +416,10 @@ static void RefreshQrCode(void)
     AddressDataItem_t addressDataItem;
 
     ModelGetAddress(GetCurrentSelectIndex(), &addressDataItem);
-    lv_qrcode_update(g_standardReceiveWidgets.qrCode, addressDataItem.address, strlen(addressDataItem.address));
-    lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
-    if (fullscreen_qrcode) {
-        lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strlen(addressDataItem.address));
+    lv_qrcode_update(g_standardReceiveWidgets.qrCode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
+    lv_obj_t *fullscreenQrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
+    if (fullscreenQrcode) {
+        lv_qrcode_update(fullscreenQrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
     lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressDataItem.address);
     lv_label_set_text_fmt(g_standardReceiveWidgets.addressCountLabel, "Account-%u", (addressDataItem.index + 1));
@@ -600,52 +601,52 @@ static void OpenSwitchAddressHandler(lv_event_t *e)
 
 static void AddressLongModeCut(char *out, const char *address)
 {
-    uint32_t len;
+    uint32_t len = strnlen_s(address, ADDRESS_LONE_MODE_LEN);
 
-    len = strlen(address);
-    if (len <= 24) {
-        strcpy(out, address);
-        return;
+    if (len <= ADDRESS_LONE_MODE_LEN) {
+        strcpy_s(out, ADDRESS_LONE_MODE_LEN, address);
+    } else {
+        strncpy(out, address, 12);
+        out[12] = 0;
+        strcat(out, "...");
+        strcat(out, address + len - 12);
     }
-    strncpy(out, address, 12);
-    out[12] = 0;
-    strcat(out, "...");
-    strcat(out, address + len - 12);
 }
+
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {
-    char *xPub, hdPath[128];
+    char *xPub, hdPath[BUFFER_SIZE_128];
     SimpleResponse_c_char *result;
 
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TRX:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
-        sprintf(hdPath, "m/44'/195'/0'/0/%u", index);
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/195'/0'/0/%u", index);
         result = tron_get_address(hdPath, xPub);
         break;
     case HOME_WALLET_CARD_SUI:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_SUI_0 + index);
-        sprintf(hdPath, "m/44'/784'/%u'/0'/0'", index);
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/784'/%u'/0'/0'", index);
         result = sui_generate_address(xPub);
         break;
     case HOME_WALLET_CARD_APT:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + index);
-        sprintf(hdPath, "m/44'/637'/%u'/0'/0'", index);
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/637'/%u'/0'/0'", index);
         result = aptos_generate_address(xPub);
         break;
     case HOME_WALLET_CARD_XRP:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
-        sprintf(hdPath, "m/44'/144'/0'/0/%u", index);
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/144'/0'/0/%u", index);
         result = xrp_get_address(hdPath, xPub, "m/44'/144'/0'/");
         break;
 
     default:
         if (IsCosmosChain(g_chainCard)) {
-            char rootPath[128];
+            char rootPath[BUFFER_SIZE_128];
             const CosmosChain_t *chain = GuiGetCosmosChain(g_chainCard);
-            sprintf(rootPath, "M/44'/%u'/0'", chain->coinType);
-            sprintf(hdPath, "%s/0/%u", rootPath, index);
+            snprintf_s(rootPath, BUFFER_SIZE_128, "M/44'/%u'/0'", chain->coinType);
+            snprintf_s(hdPath, BUFFER_SIZE_128, "%s/0/%u", rootPath, index);
             xPub = GetCurrentAccountPublicKey(chain->xpubType);
             result = cosmos_get_address(hdPath, xPub, rootPath, (char*)chain->prefix);
         } else {
@@ -676,10 +677,10 @@ void GuiResetCurrentStandardAddressIndex(uint8_t index)
 
 void GuiResetAllStandardAddressIndex(void)
 {
-    memset(g_selectIndex, 0, sizeof(g_selectIndex));
-    memset(g_suiSelectIndex, 0, sizeof(g_suiSelectIndex));
-    memset(g_aptosSelectIndex, 0, sizeof(g_aptosSelectIndex));
-    memset(g_xrpSelectIndex, 0, sizeof(g_xrpSelectIndex));
+    memset_s(g_selectIndex, sizeof(g_selectIndex), 0, sizeof(g_selectIndex));
+    memset_s(g_suiSelectIndex, sizeof(g_suiSelectIndex), 0, sizeof(g_suiSelectIndex));
+    memset_s(g_aptosSelectIndex, sizeof(g_aptosSelectIndex), 0, sizeof(g_aptosSelectIndex));
+    memset_s(g_xrpSelectIndex, sizeof(g_xrpSelectIndex), 0, sizeof(g_xrpSelectIndex));
 }
 
 static void SetCurrentSelectIndex(uint32_t selectIndex)

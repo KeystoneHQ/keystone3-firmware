@@ -18,10 +18,10 @@
 #include "touchpad_task.h"
 #include "gui_analyze.h"
 #include "gui_web_auth_result_widgets.h"
+#include "assert.h"
 #ifndef BTC_ONLY
 #include "gui_key_derivation_request_widgets.h"
 #endif
-#include "assert.h"
 
 static void QrDecodeTask(void *argument);
 static void QrDecodeMinuteTimerFunc(void *argument);
@@ -136,7 +136,7 @@ void ProcessQr(uint32_t count)
 
     if (ret > 0) {
         if (firstQrFlag == true) {
-            assert(strlen(qrString) < QR_DECODE_STRING_LEN);
+            assert(strnlen_s(qrString, QR_DECODE_STRING_LEN + 1) >= QR_DECODE_STRING_LEN);
             urResult = parse_ur(qrString);
             if (urResult->error_code == 0) {
                 if (urResult->is_multi_part == 0) {

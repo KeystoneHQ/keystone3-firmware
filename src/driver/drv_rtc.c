@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "mhscpu.h"
+#include "define.h"
 #include "drv_rtc.h"
+#include "safe_str_lib.h"
 #include "time.h"
 
 #define USE_EXTERN_32K
 static void stampTimeToRealTime(uint32_t stampTime, Times *standardTime);
 
-static char g_currentTimeBuf[32];
+static char g_currentTimeBuf[BUFFER_SIZE_32];
 
 void SetCurrentStampTime(uint32_t stampTime)
 {
@@ -29,7 +31,7 @@ static void stampTimeToRealTime(uint32_t stampTime, Times *standardTime)
 {
     time_t tick = (time_t)stampTime;
     struct tm tm;
-    char tempBuf[32];
+    char tempBuf[BUFFER_SIZE_32];
     tm = *localtime(&tick);
     strftime(tempBuf, sizeof(tempBuf), "%Y-%m-%d %H:%M:%S", &tm);
 
@@ -47,7 +49,7 @@ const char *GetCurrentTime(void)
     uint32_t stampTime = RTC_GetCounter() + RTC_GetRefRegister();
     stampTimeToRealTime(stampTime, &standardTime);
 
-    sprintf(g_currentTimeBuf, "%04d-%02d-%02d %02d:%02d:%02d", standardTime.Year, standardTime.Mon, standardTime.Day,
+    snprintf_s(g_currentTimeBuf, BUFFER_SIZE_32, "%04d-%02d-%02d %02d:%02d:%02d", standardTime.Year, standardTime.Mon, standardTime.Day,
             (standardTime.Hour + 8) > 24 ? standardTime.Hour + 8 - 24 : standardTime.Hour + 8, standardTime.Min, standardTime.Second);
 
     return g_currentTimeBuf;

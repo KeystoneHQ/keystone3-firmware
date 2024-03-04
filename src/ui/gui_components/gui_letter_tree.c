@@ -6,8 +6,10 @@
 
 #pragma GCC optimize ("O0")
 
+#define GUI_KEYBOARD_CANDIDATE_WORDS_CNT                        (3)
+#define GUI_KEYBOARD_CANDIDATE_WORDS_LEN                        (32)
 TrieSTPtr rootTree = NULL;
-extern char g_wordBuf[3][32];
+extern char g_wordBuf[GUI_KEYBOARD_CANDIDATE_WORDS_CNT][GUI_KEYBOARD_CANDIDATE_WORDS_LEN];
 
 TrieNodePtr createTrieNode(char key)
 {
@@ -15,7 +17,7 @@ TrieNodePtr createTrieNode(char key)
     if (t == NULL) {
         return NULL;
     }
-    memset(t, 0, sizeof(TrieNode));
+    memset_s(t, sizeof(TrieNode), 0, sizeof(TrieNode));
     t->value = key;
     return t;
 }
@@ -23,7 +25,7 @@ TrieNodePtr createTrieNode(char key)
 TrieSTPtr createTrie(void)
 {
     TrieSTPtr t = (TrieSTPtr)EXT_MALLOC(sizeof(TrieNode));
-    memset(t, 0, sizeof(TrieNode));
+    memset_s(t, sizeof(TrieNode), 0, sizeof(TrieNode));
     return t;
 }
 
@@ -83,7 +85,7 @@ int searchTrie(TrieSTPtr root, const char *str)
         i++;
     }
     if (tmp->isEndOfWord == true) {
-        strcpy(g_wordBuf[num], str);
+        strcpy_s(g_wordBuf[num], GUI_KEYBOARD_CANDIDATE_WORDS_LEN, str);
         ++num;
     }
     TrieSTPtr record = tmp;
@@ -91,7 +93,7 @@ int searchTrie(TrieSTPtr root, const char *str)
         if (tmp->next[j] != NULL) {
             tmp = tmp->next[j];
             if (strlen(str) >= 3) {
-                strcpy(g_wordBuf[num], str);
+                strcpy_s(g_wordBuf[num], GUI_KEYBOARD_CANDIDATE_WORDS_LEN, str);
                 wordsTraversal(tmp, num, strlen(g_wordBuf[num]));
             }
             ++num;

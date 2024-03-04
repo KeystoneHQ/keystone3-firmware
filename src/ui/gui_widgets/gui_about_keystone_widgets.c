@@ -153,7 +153,7 @@ static void ShowQRDialogHandler(lv_event_t *e)
 
         qrCode = lv_qrcode_create(qrCodeCont, 360, BLACK_COLOR, WHITE_COLOR);
         lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
-        lv_qrcode_update(qrCode, contactItem->url, (uint32_t)strlen(contactItem->url));
+        lv_qrcode_update(qrCode, contactItem->url, (uint32_t)strnlen_s(contactItem->url, 128));
 
         label = GuiCreateLittleTitleLabel(parent, contactItem->title);
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -156);

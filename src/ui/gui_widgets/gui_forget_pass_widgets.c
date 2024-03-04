@@ -19,9 +19,6 @@
 #include "gui_mnemonic_input.h"
 #include "gui_page.h"
 #include "gui_keyboard_hintbox.h"
-#ifndef COMPILE_SIMULATOR
-#include "safe_mem_lib.h"
-#endif
 #ifndef COMPILE_MAC_SIMULATOR
 #include "sha256.h"
 #else
@@ -49,7 +46,7 @@ typedef enum {
 
 // static void ImportPhraseWords(void);
 
-static char g_pinBuf[GUI_DEFINE_MAX_PASSCODE_LEN + 1];
+static char g_pinBuf[PASSWORD_MAX_LEN + 1];
 static KeyBoard_t *g_forgetPhraseKb;
 static lv_obj_t *g_enterMnemonicCont;
 static MnemonicKeyBoard_t *g_forgetMkb;
@@ -179,7 +176,7 @@ void GuiForgetPassResetPass(bool en, int errCode)
 void GuiForgetPassSetPinPass(const char* buf)
 {
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
-    strcpy(g_pinBuf, buf);
+    strcpy_s(g_pinBuf, PASSWORD_MAX_LEN, buf);
 }
 
 void GuiForgetPassRepeatPinPass(const char* buf)

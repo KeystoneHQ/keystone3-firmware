@@ -13,6 +13,7 @@
 #include "gui_chain.h"
 #include "gui_connect_wallet_widgets.h"
 #include "gui_home_widgets.h"
+#include "version.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
@@ -248,7 +249,7 @@ void GuiStatusBarSetSdCard(bool connected)
         return;
     }
     static int32_t sdStatus = -1;
-    char version[16] = {0};
+    char version[SOFTWARE_VERSION_MAX_LEN] = {0};
     if (sdStatus == (connected ? 1 : 0)) {
         return;
     }
@@ -257,7 +258,7 @@ void GuiStatusBarSetSdCard(bool connected)
         lv_obj_clear_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN);
         uint8_t accountCnt = 0;
         GetExistAccountNum(&accountCnt);
-        if (!GuiLockScreenIsTop() && CheckOtaBinVersion(version) && accountCnt > 0 && !GuiCheckIfTopView(&g_forgetPassView)) {
+        if (!GuiLockScreenIsTop() && accountCnt > 0 && CheckOtaBinVersion(version) && !GuiCheckIfTopView(&g_forgetPassView)) {
             GuiCreateSdCardUpdateHintbox(version, false);
         }
     } else {
@@ -291,9 +292,9 @@ void GuiStatusBarSetTestNet(void)
 
 void GuiStatusBarSetBattery(uint8_t percent, bool charging)
 {
-    char percentStr[16];
+    char percentStr[BUFFER_SIZE_16];
 
-    sprintf(percentStr, "%d%%", percent);
+    snprintf_s(percentStr, BUFFER_SIZE_16, "%d%%", percent);
     lv_label_set_text(g_guiStatusBar.batteryLabel, percentStr);
 
     if (charging) {

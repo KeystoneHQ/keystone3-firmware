@@ -13,7 +13,6 @@
 #include "anti_tamper.h"
 #else
 #include "simulator_model.h"
-#define memset_s(a1,a2,a3,a4)               memset(a1,a2,a3)
 #endif
 #include "drv_rtc.h"
 #include "drv_battery.h"
@@ -38,7 +37,7 @@ typedef struct {
 
 typedef struct {
     uint8_t iconIndex;
-    char name[64];
+    char name[WALLET_NAME_MAX_LEN + 1];
 } WalletDesc_t;
 
 typedef struct PasswordVerifyResult {

@@ -4,11 +4,8 @@
 #include "user_utils.h"
 #ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
-#else
-#define memset_s(a1,a2,a3,a4)               memset(a1,a2,a3)
+#include "safe_str_lib.h"
 #endif
-
-#define MAX_SLIP39_MEMBER 16
 
 static char *g_passwordCache = NULL;
 static char *g_newPasswordCache = NULL;
@@ -19,10 +16,11 @@ static uint8_t *g_emsCache = NULL;
 static uint8_t g_checksumCache[32] = {0};
 static uint32_t g_emsLen;
 static char *g_mnemonicCache = NULL;
-static char *g_slip39MnemonicCache[MAX_SLIP39_MEMBER];
+static char *g_slip39MnemonicCache[SLIP39_MAX_MEMBER];
 static uint8_t g_diceRollHashCache[32] = {0};
 static uint16_t g_identifier;
 static uint16_t g_iteration;
+
 
 void SecretCacheSetChecksum(uint8_t *checksum)
 {
@@ -39,7 +37,7 @@ void SecretCacheSetPassword(char *password)
     if (g_passwordCache) {
         SRAM_FREE(g_passwordCache);
     }
-    g_passwordCache = SRAM_MALLOC(strlen(password) + 1);
+    g_passwordCache = SRAM_MALLOC(strnlen_s(password, PASSWORD_MAX_LEN) + 1);
     strcpy(g_passwordCache, password);
 }
 
@@ -53,7 +51,7 @@ void SecretCacheSetPassphrase(char *passPhrase)
     if (g_passphraseCache) {
         SRAM_FREE(g_passphraseCache);
     }
-    g_passphraseCache = SRAM_MALLOC(strlen(passPhrase) + 1);
+    g_passphraseCache = SRAM_MALLOC(strnlen_s(passPhrase, PASSPHRASE_MAX_LEN) + 1);
     strcpy(g_passphraseCache, passPhrase);
 }
 
@@ -67,7 +65,7 @@ void SecretCacheSetNewPassword(char *password)
     if (g_newPasswordCache) {
         SRAM_FREE(g_newPasswordCache);
     }
-    g_newPasswordCache = SRAM_MALLOC(strlen(password) + 1);
+    g_newPasswordCache = SRAM_MALLOC(strnlen_s(password, PASSWORD_MAX_LEN) + 1);
     strcpy(g_newPasswordCache, password);
 }
 
@@ -136,7 +134,7 @@ void SecretCacheSetMnemonic(char *mnemonic)
     if (g_mnemonicCache) {
         SRAM_FREE(g_mnemonicCache);
     }
-    g_mnemonicCache = SRAM_MALLOC(strlen(mnemonic) + 1);
+    g_mnemonicCache = SRAM_MALLOC(strnlen_s(mnemonic, MNEMONIC_MAX_LEN) + 1);
     strcpy(g_mnemonicCache, mnemonic);
 }
 
@@ -150,7 +148,7 @@ void SecretCacheSetSlip39Mnemonic(char *mnemonic, int index)
     if (g_slip39MnemonicCache[index] != NULL) {
         EXT_FREE(g_slip39MnemonicCache[index]);
     }
-    g_slip39MnemonicCache[index] = EXT_MALLOC(strlen(mnemonic) + 1);
+    g_slip39MnemonicCache[index] = EXT_MALLOC(strnlen_s(mnemonic, MNEMONIC_MAX_LEN) + 1);
     strcpy(g_slip39MnemonicCache[index], mnemonic);
 }
 
@@ -176,21 +174,21 @@ void ClearSecretCache(void)
     g_iteration = 0;
 
     if (g_passwordCache != NULL) {
-        len = strlen(g_passwordCache);
+        len = strnlen_s(g_passwordCache, PASSWORD_MAX_LEN);
         memset_s(g_passwordCache, len, 0, len);
         SRAM_FREE(g_passwordCache);
         g_passwordCache = NULL;
     }
 
     if (g_passphraseCache != NULL) {
-        len = strlen(g_passphraseCache);
+        len = strnlen_s(g_passphraseCache, PASSPHRASE_MAX_LEN);
         memset_s(g_passphraseCache, len, 0, len);
         SRAM_FREE(g_passphraseCache);
         g_passphraseCache = NULL;
     }
 
     if (g_newPasswordCache != NULL) {
-        len = strlen(g_newPasswordCache);
+        len = strnlen_s(g_newPasswordCache, PASSWORD_MAX_LEN);
         memset_s(g_newPasswordCache, len, 0, len);
         SRAM_FREE(g_newPasswordCache);
         g_newPasswordCache = NULL;
@@ -211,15 +209,15 @@ void ClearSecretCache(void)
     }
 
     if (g_mnemonicCache != NULL) {
-        len = strlen(g_mnemonicCache);
+        len = strnlen_s(g_mnemonicCache, MNEMONIC_MAX_LEN);
         memset_s(g_mnemonicCache, len, 0, len);
         SRAM_FREE(g_mnemonicCache);
         g_mnemonicCache = NULL;
     }
 
-    for (int i = 0; i < MAX_SLIP39_MEMBER; i++) {
+    for (int i = 0; i < SLIP39_MAX_MEMBER; i++) {
         if (g_slip39MnemonicCache[i] != NULL) {
-            len = strlen(g_slip39MnemonicCache[i]);
+            len = strnlen_s(g_slip39MnemonicCache[i], MNEMONIC_MAX_LEN);
             memset_s(g_slip39MnemonicCache[i], len, 0, len);
             EXT_FREE(g_slip39MnemonicCache[i]);
             g_slip39MnemonicCache[i] = NULL;

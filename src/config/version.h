@@ -2,6 +2,7 @@
 #ifndef _VERSION_H
 #define _VERSION_H
 
+#define SOFTWARE_VERSION_MAX_LEN            (32)
 #define SOFTWARE_VERSION_MAJOR              1
 #define SOFTWARE_VERSION_MINOR              3
 #define SOFTWARE_VERSION_BUILD              0

@@ -27,6 +27,7 @@
 #include "keystore.h"
 #else
 #include "simulator_model.h"
+#include "simulator_mock_define.h"
 #endif
 
 static KeyBoard_t *g_setNameKb = NULL;         // setting keyboard

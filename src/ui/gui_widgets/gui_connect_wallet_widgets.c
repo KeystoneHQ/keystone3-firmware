@@ -22,6 +22,10 @@
 #endif
 #include "gui_select_address_widgets.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 #define DERIVATION_PATH_EG_LEN 2
 
 typedef enum {

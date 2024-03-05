@@ -13,6 +13,10 @@
 #include "hash_and_salt.h"
 #include "secret_cache.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 #define SHA256_COUNT                            3
 
 static int32_t SetNewKeyPieceToAtecc608b(uint8_t accountIndex, uint8_t *piece, const char *password);

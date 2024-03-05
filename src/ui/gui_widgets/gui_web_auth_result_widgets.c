@@ -12,6 +12,10 @@
 #include "screen_manager.h"
 #include "gui_page.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 static void *g_web_auth_data;
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;

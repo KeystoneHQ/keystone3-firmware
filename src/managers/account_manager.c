@@ -12,6 +12,7 @@
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_storage.h"
+#include "simulator_mock_define.h"
 #endif
 
 

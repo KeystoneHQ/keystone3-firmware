@@ -31,6 +31,7 @@
 #else
 #include "simulator_model.h"
 #include "simulator_storage.h"
+#include "simulator_mock_define.h"
 #endif
 #define KEYSTORE_DEBUG          0
 

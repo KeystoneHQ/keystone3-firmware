@@ -300,7 +300,7 @@ int UserFileWrite(sqlite3_file *id, const void *buffer, int amount, sqlite3_int6
 
 int UserFileSync(sqlite3_file *id, int flags)
 {
-    USER_DEBUG("UserFileSync: %s OK\n", file->name);
+    USER_DEBUG("UserFileSync: OK\n");
     return  SQLITE_OK;
 }
 
@@ -503,7 +503,7 @@ void UserDlClose(sqlite3_vfs * vfs, void * handle)
 int UserRandomness(sqlite3_vfs * vfs, int len, char * buffer)
 {
     // int rc = os_get_random((unsigned char *) buffer, len);
-    USER_DEBUG("UserRandomness: %d\n", rc);
+    USER_DEBUG("UserRandomness:\n");
     return SQLITE_OK;
 }
 

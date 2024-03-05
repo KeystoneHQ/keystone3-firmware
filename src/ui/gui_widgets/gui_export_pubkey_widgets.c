@@ -62,6 +62,15 @@ static const PathTypeItem_t g_btcPathTypeList[] = {
     {"Legacy",        "P2PKH",       "m/44'/0'/0'", XPUB_TYPE_BTC_LEGACY       },
 };
 
+#ifdef BTC_ONLY
+static const char *g_btcTestNetPath[] = {
+    "m/86'/1'/0'",
+    "m/84'/1'/0'",
+    "m/49'/1'/0'",
+    "m/44'/1'/0'",
+};
+#endif
+
 static GuiChainCoinType g_chain;
 static PageWidget_t *g_pageWidget;
 static ExportPubkeyWidgets_t g_widgets;
@@ -381,6 +390,7 @@ static char *GetPathTypeTitle(uint16_t chain, uint8_t pathType)
     }
 }
 
+#ifndef BTC_ONLY
 static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType)
 {
     switch (chain) {
@@ -391,6 +401,14 @@ static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType)
         printf("(GetPathTypeDesc) unsupported chain type: %d\r\n", chain);
     }
 }
+#else
+static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType)
+{
+    ASSERT(chain == CHAIN_BTC);
+    const char *path = GetIsTestNet() ? g_btcTestNetPath[pathType] : g_btcPathTypeList[pathType].path;
+    sprintf(dest, "%s (%s)", g_btcPathTypeList[pathType].subTitle, path);
+}
+#endif
 
 static void RefreshQrcode()
 {

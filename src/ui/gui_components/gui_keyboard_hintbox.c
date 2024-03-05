@@ -23,6 +23,7 @@
 #undef memset_s
 #define memset_s(dest, dmax, value, n)          memset(dest, value, n)
 #else
+#include "simulator_mock_define.h"
 #define RECOGNIZE_UNLOCK                    0
 #endif
 #define DEFAULT_TIMER_COUNTER 5

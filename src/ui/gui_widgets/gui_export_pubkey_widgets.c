@@ -5,6 +5,10 @@
 #include "account_public_info.h"
 #include "assert.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 typedef enum {
     TILEVIEW_QRCODE = 0,
     TILEVIEW_SELECT_TYPE,

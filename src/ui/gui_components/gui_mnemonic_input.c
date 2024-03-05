@@ -25,6 +25,7 @@
 #include "sha256.h"
 #else
 #include "simulator_model.h"
+#include "simulator_mock_define.h"
 #endif
 
 #pragma GCC optimize ("O0")

@@ -17,8 +17,14 @@
 #include "gui_about_info_widgets.h"
 #include "secret_cache.h"
 #include "safe_str_lib.h"
+#include "version.h"
+#include "user_memory.h"
+#include "keystore.h"
 #include "user_fatfs.h"
-#include "version.h""
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#include "simulator_model.h"
+#endif
 
 typedef enum {
     FIRMWARE_UPDATE_SELECT = 0,

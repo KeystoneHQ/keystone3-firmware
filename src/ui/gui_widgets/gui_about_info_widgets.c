@@ -21,6 +21,7 @@
 
 #ifdef COMPILE_MAC_SIMULATOR
 #include "simulator_model.h"
+#include "simulator_mock_define.h"
 #endif
 
 static void GuiAboutNVSBarInit();

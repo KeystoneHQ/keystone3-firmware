@@ -11,6 +11,10 @@
 #include "gui_setting_widgets.h"
 #include "gui_page.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 #define CONTACT_ITEM_COUNT 4
 typedef struct {
     const char *url;

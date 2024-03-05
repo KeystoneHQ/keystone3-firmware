@@ -40,6 +40,8 @@
 #include "mhscpu_qspi.h"
 #include "safe_mem_lib.h"
 #include "usb_task.h"
+#else
+#include "simulator_mock_define.h"
 #endif
 
 #define SECTOR_SIZE                         4096

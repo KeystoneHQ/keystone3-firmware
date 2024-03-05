@@ -198,6 +198,9 @@ static void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent)
 {
     lv_obj_t *cont, *line, *label;
     char desc[32] = {0};
+#ifdef BTC_ONLY
+    const char *path;
+#endif
     static lv_point_t points[2] = {{0, 0}, {360, 0}};
 
     cont = GuiCreateContainerWithParent(parent, 408, 411);
@@ -208,7 +211,12 @@ static void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent)
     for (uint32_t i = 0; i < sizeof(g_btcPathTypeList) / sizeof(g_btcPathTypeList[0]); i++) {
         label = GuiCreateLabelWithFont(cont, g_btcPathTypeList[i].title, &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
+#ifndef BTC_ONLY
         sprintf(desc, "%s (%s)", g_btcPathTypeList[i].subTitle, g_btcPathTypeList[i].path);
+#else
+        path = GetIsTestNet() ? g_btcTestNetPath[i] : g_btcPathTypeList[i].path;
+        sprintf(desc, "%s (%s)", g_btcPathTypeList[i].subTitle, path);
+#endif
         label = GuiCreateNoticeLabel(cont, desc);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
         if (i != (sizeof(g_btcPathTypeList) / sizeof(g_btcPathTypeList[0]) - 1)) {
@@ -452,6 +460,7 @@ static void SetPathType(uint8_t pathType)
 }
 
 #ifndef COMPILE_SIMULATOR
+#ifndef BTC_ONLY
 static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index)
 {
     char *xPub, hdPath[128];
@@ -466,6 +475,25 @@ static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index)
     sprintf(dest, "%s", result->data);
     free_simple_response_c_char(result);
 }
+#else
+static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index)
+{
+    char *xPub, hdPath[128];
+    const char *rootPath;
+    ChainType chainType = ConvertChainType(g_btcPathTypeList[pathType].pubkeyType);
+    rootPath = GetIsTestNet() ? g_btcTestNetPath[pathType] : g_btcPathTypeList[pathType].path;
+    xPub = GetCurrentAccountPublicKey(chainType);
+    ASSERT(xPub);
+    SimpleResponse_c_char *result;
+    sprintf(hdPath, "%s/0/%u", rootPath, index);
+    do {
+        result = utxo_get_address(hdPath, xPub);
+        CHECK_CHAIN_BREAK(result);
+    } while (0);
+    sprintf(dest, "%s", result->data);
+    free_simple_response_c_char(result);
+}
+#endif
 #else
 static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index)
 {

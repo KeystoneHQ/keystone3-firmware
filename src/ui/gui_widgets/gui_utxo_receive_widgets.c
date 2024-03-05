@@ -167,7 +167,10 @@ static const AddressSettingsItem_t *g_addressSettings = g_mainNetAddressSettings
 
 #endif
 
-static char * *g_derivationPathDescs = NULL;
+static char **g_derivationPathDescs = NULL;
+#ifdef BTC_ONLY
+static char **g_testNetderivationPathDescs = NULL;
+#endif
 
 #ifndef BTC_ONLY
 static const ChainPathItem_t g_chainPathItems[] = {
@@ -200,6 +203,9 @@ static void InitDerivationPathDesc(uint8_t chain)
     switch (chain) {
     case HOME_WALLET_CARD_BTC:
         g_derivationPathDescs = GetDerivationPathDescs(BTC_DERIVATION_PATH_DESC);
+#ifdef BTC_ONLY
+        g_testNetderivationPathDescs = GetDerivationPathDescs(BTC_TEST_NET_DERIVATION_PATH_DESC);
+#endif
         break;
     default:
         break;
@@ -807,8 +813,15 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     lv_obj_clean(egCont);
     lv_obj_t *prevLabel, *label;
     int egContHeight = 12;
-
+#ifndef BTC_ONLY
     label = GuiCreateNoticeLabel(egCont, g_derivationPathDescs[g_selectType]);
+#else
+    if (GetIsTestNet()) {
+        label = GuiCreateNoticeLabel(egCont, g_testNetderivationPathDescs[g_selectType]);
+    } else {
+        label = GuiCreateNoticeLabel(egCont, g_derivationPathDescs[g_selectType]);
+    }
+#endif
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);

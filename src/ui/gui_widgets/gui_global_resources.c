@@ -5,6 +5,9 @@
 static char **g_ethDerivationPathDesc = NULL;
 static char **g_solDerivationPathDesc = NULL;
 static char **g_btcDerivationPathDesc = NULL;
+#ifdef BTC_ONLY
+static const char *g_btcTestNetDerivationPathDesc[4];
+#endif
 
 void DerivationPathDescsInit(void)
 {
@@ -27,6 +30,12 @@ void DerivationPathDescsInit(void)
         g_btcDerivationPathDesc[BTC_NESTED_SEGWIT] = (char *)_("derivation_path_btc_2_desc");
         g_btcDerivationPathDesc[BTC_LEGACY] = (char *)_("derivation_path_btc_3_desc");
     }
+#ifdef BTC_ONLY
+    g_btcTestNetDerivationPathDesc[BTC_TAPROOT] = (char *)_("derivation_path_btc_test_net_4_desc");
+    g_btcTestNetDerivationPathDesc[BTC_NATIVE_SEGWIT] = (char *)_("derivation_path_btc_test_net_1_desc");
+    g_btcTestNetDerivationPathDesc[BTC_NESTED_SEGWIT] = (char *)_("derivation_path_btc_test_net_2_desc");
+    g_btcTestNetDerivationPathDesc[BTC_LEGACY] = (char *)_("derivation_path_btc_test_net_3_desc");
+#endif
 }
 
 char **GetDerivationPathDescs(uint8_t index)
@@ -40,7 +49,11 @@ char **GetDerivationPathDescs(uint8_t index)
     if (index == BTC_DERIVATION_PATH_DESC) {
         return g_btcDerivationPathDesc;
     }
-
+#ifdef BTC_ONLY
+    if (index == BTC_TEST_NET_DERIVATION_PATH_DESC) {
+        return (char **)g_btcTestNetDerivationPathDesc;
+    }
+#endif
     return NULL;
 }
 

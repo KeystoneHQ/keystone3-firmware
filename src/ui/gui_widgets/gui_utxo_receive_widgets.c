@@ -740,6 +740,7 @@ static void Highlight(char *address, uint8_t highlightStart, uint8_t highlightEn
 #endif
 }
 
+#ifndef BTC_ONLY
 static void RefreshDefaultAddress(void)
 {
     char address[128];
@@ -763,6 +764,39 @@ static void RefreshDefaultAddress(void)
     lv_label_set_text(g_addressLabel[1], highlightAddress);
     lv_label_set_recolor(g_addressLabel[1], true);
 }
+#else
+static void RefreshDefaultAddress(void)
+{
+    char address[128];
+    char highlightAddress[128];
+    uint8_t highlightEnd;
+
+    AddressDataItem_t addressDataItem;
+
+    ChainType chainType;
+    chainType = GetChainTypeByIndex(g_selectType);
+
+    if (chainType == XPUB_TYPE_BTC_NATIVE_SEGWIT ||
+            chainType == XPUB_TYPE_BTC_TAPROOT ||
+            chainType == XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST ||
+            chainType == XPUB_TYPE_BTC_TAPROOT_TEST) {
+        highlightEnd = 4;
+    } else {
+        highlightEnd = 1;
+    }
+    ModelGetUtxoAddress(0, &addressDataItem);
+    AddressLongModeCut(address, addressDataItem.address);
+    Highlight(address, 0, highlightEnd, highlightAddress);
+    lv_label_set_text(g_addressLabel[0], highlightAddress);
+    lv_label_set_recolor(g_addressLabel[0], true);
+
+    ModelGetUtxoAddress(1, &addressDataItem);
+    AddressLongModeCut(address, addressDataItem.address);
+    Highlight(address, 0, highlightEnd, highlightAddress);
+    lv_label_set_text(g_addressLabel[1], highlightAddress);
+    lv_label_set_recolor(g_addressLabel[1], true);
+}
+#endif
 
 static void ShowEgAddressCont(lv_obj_t *egCont)
 {

@@ -294,6 +294,24 @@ UREncodeResult *GuiGetPetraData(void)
 #endif
 }
 
+UREncodeResult *GuiGetYoroiDataByIndex(uint16_t index)
+{
+// #ifndef COMPILE_SIMULATOR
+//     uint8_t mfp[4] = {0};
+//     GetMasterFingerPrint(mfp);
+//     char *xpub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
+//     char *rootPath = "M/1852'/1815'";
+//     char hdPath[BUFFER_SIZE_32] = {0};
+//     snprintf_s(hdPath, BUFFER_SIZE_32, "%s/0/%u'", rootPath, index);
+//     g_urEncode = GetCurrentAccountPublicKey(hdPath);
+//     CHECK_CHAIN_PRINT(g_urEncode);
+//     return g_urEncode;
+// #else
+//     const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+//     return (void *)data;
+// #endif
+}
+
 UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
 {
 #ifndef COMPILE_SIMULATOR

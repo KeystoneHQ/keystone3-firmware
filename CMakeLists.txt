@@ -290,7 +290,6 @@ else()
     project(simulator)
     include(ui_simulator/simulator.cmake)
 
-    # target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIR})
     add_executable(${PROJECT_NAME} 
         ${SIMULATOR_SRC}
         ${EXTERNAL}
@@ -302,7 +301,7 @@ else()
         ${UTILS}
         ${CRYPTO_SLIP39}
     )
-    add_dependencies(simulator rust_c)
+    add_dependencies(${PROJECT_NAME} rust_c)
     target_link_libraries(${PROJECT_NAME} PRIVATE SDL2 ${CMAKE_SOURCE_DIR}/ui_simulator/lib/rust-builds/librust_c.a)
     if(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
         target_link_libraries(${PROJECT_NAME} PRIVATE windows ntdll)

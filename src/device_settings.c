@@ -18,6 +18,9 @@
 #include "account_manager.h"
 #include "version.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
 
 #define VERSION_MAX_LENGTH      32
 

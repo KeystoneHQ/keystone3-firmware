@@ -7,6 +7,10 @@
 #include "sha256.h"
 #include "log_print.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 #define DICE_ROLLS_MAX_LEN                              256
 
 static void GuiCreatePage(lv_obj_t *parent);

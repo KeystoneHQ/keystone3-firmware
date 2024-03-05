@@ -10,6 +10,10 @@
 #include "gui_letter_tree.h"
 #include "user_memory.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 #pragma GCC optimize ("O0")
 
 #define LV_KB_BTN(width)                                    LV_BTNMATRIX_CTRL_POPOVER | LV_BTNMATRIX_CTRL_NO_REPEAT | width

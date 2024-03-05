@@ -10,6 +10,10 @@
 #include "assert.h"
 #include "user_memory.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 static uint8_t GetAptosPublickeyIndex(char* rootPath);
 
 static bool g_isMulti = false;

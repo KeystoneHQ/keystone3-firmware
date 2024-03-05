@@ -12,6 +12,10 @@
 #include "gui.h"
 #include "user_memory.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 static bool g_isMulti = false;
 static struct URParseResult *g_urResult = NULL;
 static struct URParseMultiResult *g_urMultiResult = NULL;

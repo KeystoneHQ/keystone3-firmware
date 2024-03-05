@@ -21,6 +21,10 @@
 #include "gui_global_resources.h"
 #include "assert.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 #define ADDRESS_INDEX_MAX                               (999999999)
 
 typedef enum {

@@ -15,6 +15,10 @@
 #include "motor_manager.h"
 #include "gui_page.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 typedef struct {
     lv_obj_t *cont;
     lv_obj_t *passphraseInputCont;

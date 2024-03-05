@@ -15,6 +15,10 @@
 #include "account_manager.h"
 #include "se_manager.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 static lv_obj_t *g_cont;
 static PageWidget_t *g_pageWidget;
 

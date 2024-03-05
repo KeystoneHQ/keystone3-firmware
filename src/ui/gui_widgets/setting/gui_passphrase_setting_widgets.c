@@ -28,6 +28,7 @@
 #include "keystore.h"
 #else
 #include "simulator_model.h"
+#include "simulator_mock_define.h"
 #endif
 
 typedef struct PassphraseWidget {

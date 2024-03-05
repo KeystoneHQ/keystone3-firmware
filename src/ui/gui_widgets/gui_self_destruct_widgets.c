@@ -5,6 +5,10 @@
 #include "gui_hintbox.h"
 #include "presetting.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 static lv_obj_t *g_selfDestructCont = NULL;
 
 void GuiSelfDestructInit(void)

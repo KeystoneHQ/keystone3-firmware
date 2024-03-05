@@ -174,7 +174,8 @@ static const ChainPathItem_t g_chainPathItems[] = {
     {HOME_WALLET_CARD_BTC, ""},
     {HOME_WALLET_CARD_LTC, "m/49'/2'/0'"},
     {HOME_WALLET_CARD_DASH, "m/44'/5'/0'"},
-    {HOME_WALLET_CARD_BCH, "m/44'/145'/0'"}
+    {HOME_WALLET_CARD_BCH, "m/44'/145'/0'"},
+    {HOME_WALLET_CARD_DOGE, "m/44'/3'/0'"}
 };
 #endif
 
@@ -186,6 +187,7 @@ static uint32_t g_selectType = 0;
 static uint32_t g_addressType[3] = {0};
 static uint32_t g_btcSelectIndex[3] = {0};
 static uint32_t g_ltcSelectIndex[3] = {0};
+static uint32_t g_dogeSelectIndex[3] = {0};
 static uint32_t g_dashSelectIndex[3] = {0};
 static uint32_t g_bchSelectIndex[3] = {0};
 static uint8_t g_currentAccountIndex = 0;
@@ -263,6 +265,7 @@ static bool HasMoreBtn()
     switch (g_chainCard) {
 #ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
+    case HOME_WALLET_CARD_DOGE:
     case HOME_WALLET_CARD_BCH:
     case HOME_WALLET_CARD_DASH:
         return false;
@@ -339,6 +342,10 @@ static void GetCurrentTitle(TitleItem_t *titleItem)
     case HOME_WALLET_CARD_LTC:
         titleItem->type = CHAIN_LTC;
         snprintf_s(titleItem->title, PATH_ITEM_MAX_LEN, _("receive_coin_fmt"), "LTC");
+        break;
+    case HOME_WALLET_CARD_DOGE:
+        titleItem->type = CHAIN_DOGE;
+        snprintf_s(titleItem->title, PATH_ITEM_MAX_LEN, _("receive_coin_fmt"), "DOGE");
         break;
     case HOME_WALLET_CARD_DASH:
         titleItem->type = CHAIN_DASH;
@@ -530,6 +537,9 @@ static void GetHint(char *hint)
     case HOME_WALLET_CARD_LTC:
         snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "LTC");
         break;
+    case HOME_WALLET_CARD_DOGE:
+        snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "DOGE");
+        break;
     case HOME_WALLET_CARD_DASH:
         snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "DASH");
         break;
@@ -550,6 +560,8 @@ static uint32_t GetCurrentSelectIndex()
 #ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
         return g_ltcSelectIndex[g_currentAccountIndex];
+    case HOME_WALLET_CARD_DOGE:
+        return g_dogeSelectIndex[g_currentAccountIndex];
     case HOME_WALLET_CARD_DASH:
         return g_dashSelectIndex[g_currentAccountIndex];
     case HOME_WALLET_CARD_BCH:
@@ -570,6 +582,9 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
 #ifndef BTC_ONLY
     case HOME_WALLET_CARD_LTC:
         g_ltcSelectIndex[g_currentAccountIndex] = selectIndex;
+        break;
+    case HOME_WALLET_CARD_DOGE:
+        g_dogeSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
     case HOME_WALLET_CARD_DASH:
         g_dashSelectIndex[g_currentAccountIndex] = selectIndex;
@@ -1348,6 +1363,8 @@ static ChainType GetChainTypeByIndex(uint32_t index)
     }
     case HOME_WALLET_CARD_LTC:
         return XPUB_TYPE_LTC;
+    case HOME_WALLET_CARD_DOGE:
+        return XPUB_TYPE_DOGE;
     case HOME_WALLET_CARD_DASH:
         return XPUB_TYPE_DASH;
     case HOME_WALLET_CARD_BCH:
@@ -1393,6 +1410,9 @@ static void GetRootHdPath(char *hdPath, uint32_t maxLen)
     case HOME_WALLET_CARD_BCH:
         strcpy_s(hdPath, maxLen, g_chainPathItems[3].path);
         break;
+    case HOME_WALLET_CARD_DOGE:
+        strcpy_s(hdPath, maxLen, g_chainPathItems[4].path);
+        break;
 #endif
     default:
         break;
@@ -1409,6 +1429,7 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
     }
     chainType = GetChainTypeByIndex(addrType);
     xPub = GetCurrentAccountPublicKey(chainType);
+    printf("xPub: %s\n", xPub);
     ASSERT(xPub);
     SimpleResponse_c_char *result;
     GetRootHdPath(rootPath, ADDRESS_MAX_LEN);

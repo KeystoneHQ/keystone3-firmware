@@ -379,7 +379,6 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t ret;
-#ifndef COMPILE_SIMULATOR
     uint8_t *entropy;
     size_t entropyInLen;
     size_t entropyOutLen;
@@ -391,6 +390,7 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     entropyInLen = bip39Data->wordCnt * 16 / 12;
 
     entropy = SRAM_MALLOC(entropyInLen);
+    printf("%s %d..........\n", __func__, __LINE__);
 
     MODEL_WRITE_SE_HEAD
     ret = bip39_mnemonic_to_bytes(NULL, SecretCacheGetMnemonic(), entropy, entropyInLen, &entropyOutLen);
@@ -410,6 +410,7 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     ClearAccountPassphrase(newAccount);
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("login error", ret);
+    printf("%s %d..........\n", __func__, __LINE__);
     if (bip39Data->forget) {
         SetWalletName(accountInfo.walletName);
         SetWalletIconIndex(accountInfo.iconIndex);
@@ -431,11 +432,6 @@ if (ret == SUCCESS_CODE)
 }
 memset_s(entropy, entropyInLen, 0, entropyInLen);
 SRAM_FREE(entropy);
-#else
-    ret = ERR_KEYSTORE_MNEMONIC_REPEAT;
-    // GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));
-    GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, NULL, 0);
-#endif
 SetLockScreen(enable);
 return 0;
 }

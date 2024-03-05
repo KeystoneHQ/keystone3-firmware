@@ -1,3 +1,4 @@
+
 #ifndef BTC_ONLY
 #include "gui.h"
 #include "gui_views.h"
@@ -46,6 +47,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_DOT, false, "DOT", false},
     {HOME_WALLET_CARD_TRX, false, "TRX", true},
     {HOME_WALLET_CARD_LTC, false, "LTC", true},
+    {HOME_WALLET_CARD_DOGE, false, "DOGE", true},
     {HOME_WALLET_CARD_BCH, false, "BCH", true},
     {HOME_WALLET_CARD_APT, false, "APT", true},
     {HOME_WALLET_CARD_SUI, false, "SUI", true},
@@ -148,6 +150,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "LTC",
         .chain = "Litecoin",
         .icon = &coinLtc,
+    },
+    {
+        .index = HOME_WALLET_CARD_DOGE,
+        .coin = "DOGE",
+        .chain = "Dogecoin",
+        .icon = &coinApt,
     },
     {
         .index = HOME_WALLET_CARD_BCH,
@@ -478,6 +486,7 @@ static void CoinDealHandler(lv_event_t *e)
         switch (coin) {
         case HOME_WALLET_CARD_BTC:
         case HOME_WALLET_CARD_LTC:
+        case HOME_WALLET_CARD_DOGE:
         case HOME_WALLET_CARD_DASH:
         case HOME_WALLET_CARD_BCH:
             GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));

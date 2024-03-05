@@ -65,6 +65,12 @@ pub const VERSION_VPUB_MULTISIG: [u8; 4] = [0x02, 0x57, 0x54, 0x83];
 /// Version bytes Vprv: bitcoin testnet private key for multi-signature P2WSH
 pub const VERSION_VPRV_MULTISIG: [u8; 4] = [0x02, 0x57, 0x50, 0x48];
 
+/// Version bytes dpub: bitcoin mainnet private key P2PKH
+pub const VERSION_DPRV: [u8; 4] = [0x02, 0xFA, 0xC3, 0x98];
+
+/// Version bytes dpub: bitcoin mainnet public key P2PKH
+pub const VERSION_DPUB: [u8; 4] = [0x02, 0xFA, 0xCA, 0xFD];
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 /// Enum for version bytes.
 pub enum Version {
@@ -86,6 +92,9 @@ pub enum Version {
     /// Version bytes vpub: bitcoin testnet public key for P2WPKH
     Vpub,
 
+    /// Version bytes dpub: bitcoin mainnet public key P2PKH
+    Dgub,
+
     /// Version bytes xprv: bitcoin mainnet private key P2PKH or P2SH
     Xprv,
 
@@ -103,6 +112,9 @@ pub enum Version {
 
     /// Version bytes vprv: bitcoin testnet private key for P2WPKH
     Vprv,
+
+    /// Version bytes dpub: bitcoin mainnet public key P2PKH
+    Dgpv,
 
     /// Version bytes Ypub: bitcoin mainnet public key for multi-signature P2WSH in P2SH
     YpubMultisig,
@@ -139,12 +151,14 @@ impl Version {
             Version::Tpub => VERSION_TPUB,
             Version::Upub => VERSION_UPUB,
             Version::Vpub => VERSION_VPUB,
+            Version::Dgub => VERSION_DPUB,
             Version::Xprv => VERSION_XPRV,
             Version::Yprv => VERSION_YPRV,
             Version::Zprv => VERSION_ZPRV,
             Version::Tprv => VERSION_TPRV,
             Version::Uprv => VERSION_UPRV,
             Version::Vprv => VERSION_VPRV,
+            Version::Dgpv => VERSION_DPRV,
             Version::YpubMultisig => VERSION_YPUB_MULTISIG,
             Version::ZpubMultisig => VERSION_ZPUB_MULTISIG,
             Version::UpubMultisig => VERSION_UPUB_MULTISIG,
@@ -279,5 +293,17 @@ mod tests {
         let result = convert_version(xpub, &Version::Tpub).unwrap();
 
         assert_eq!(result, expected_tpub);
+    }
+
+
+    #[test]
+    fn xpub_to_dgub() {
+        let xpub = "xpub6E92QB3YivNhH5KqMT3ouRvwzMwjgsdQZXtTPvm5gU4fbX24zZTQp99t9iFTM2xtuotw3ZwEaYPg8nXNdTzJiqrTsv6xtKGbMZpuBkPcFZk";
+        let expected_dgub = "tpubDCBWBScQPGv4Xk3JSbhw6wYYpayMjb2eAYyArpbSqQTbLDpphHGAetB6VQgVeftLML8vDSUEWcC2xDi3qJJ3YCDChJDvqVzpgoYSuT52MhJ";
+
+        let result = convert_version(xpub, &Version::Dgub).unwrap();
+        println!("result = {:?}", result);
+
+        assert_eq!(1, 2);
     }
 }

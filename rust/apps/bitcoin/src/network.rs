@@ -7,6 +7,7 @@ pub enum Network {
     Bitcoin,
     BitcoinTestnet,
     Litecoin,
+    Dogecoin,
     Dash,
     BitcoinCash,
 }
@@ -17,6 +18,7 @@ impl Network {
             Network::Bitcoin => "BTC",
             Network::BitcoinTestnet => "tBTC",
             Network::Litecoin => "LTC",
+            Network::Dogecoin => "DOGE",
             Network::Dash => "DASH",
             Network::BitcoinCash => "BCH",
         }
@@ -27,6 +29,7 @@ impl Network {
             Network::Bitcoin => 0,
             Network::BitcoinTestnet => 1,
             Network::Litecoin => 2,
+            Network::Dogecoin => 3,
             Network::Dash => 5,
             Network::BitcoinCash => 145,
         }
@@ -41,6 +44,7 @@ impl FromStr for Network {
             "BTC" => Ok(Self::Bitcoin),
             "tBTC" => Ok(Self::BitcoinTestnet),
             "LTC" => Ok(Self::Litecoin),
+            "DOGE" => Ok(Self::Dogecoin),
             "DASH" => Ok(Self::Dash),
             "BCH" => Ok(Self::BitcoinCash),
             "BTC_NATIVE_SEGWIT" => Ok(Self::Bitcoin),
@@ -57,6 +61,7 @@ impl Network {
             Network::Bitcoin => "Bitcoin Mainnet",
             Network::BitcoinTestnet => "Bitcoin Testnet",
             Network::Litecoin => "Litecoin",
+            Network::Dogecoin => "Dogecoin",
             Network::Dash => "Dash",
             Network::BitcoinCash => "Bitcoin Cash",
         }

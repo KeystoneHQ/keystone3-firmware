@@ -31,6 +31,11 @@ pub struct BCHAddressEncoding<'a> {
     pub p2pkh_prefix: u8,
 }
 
+pub struct DOGEAddressEncoding<'a> {
+    pub payload: &'a Payload,
+    pub p2pkh_prefix: u8,
+}
+
 struct UpperWriter<W: fmt::Write>(W);
 
 impl<W: fmt::Write> fmt::Write for UpperWriter<W> {
@@ -141,6 +146,22 @@ impl<'a> fmt::Display for DASHAddressEncoding<'a> {
             Payload::ScriptHash(hash) => {
                 let mut prefixed = [0; 21];
                 prefixed[0] = self.p2sh_prefix;
+                prefixed[1..].copy_from_slice(&hash[..]);
+                base58::encode_check_to_fmt(fmt, &prefixed[..])
+            }
+            _ => {
+                write!(fmt, "invalid payload")
+            }
+        }
+    }
+}
+
+impl<'a> fmt::Display for DOGEAddressEncoding<'a> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        match self.payload {
+            Payload::PubkeyHash(hash) => {
+                let mut prefixed = [0; 21];
+                prefixed[0] = self.p2pkh_prefix;
                 prefixed[1..].copy_from_slice(&hash[..]);
                 base58::encode_check_to_fmt(fmt, &prefixed[..])
             }

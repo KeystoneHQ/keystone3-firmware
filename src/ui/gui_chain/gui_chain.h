@@ -28,6 +28,7 @@ typedef enum {
     CHAIN_DOT,
     CHAIN_TRX,
     CHAIN_LTC,
+    CHAIN_DOGE,
     CHAIN_BCH,
     CHAIN_APT,
     CHAIN_SUI,

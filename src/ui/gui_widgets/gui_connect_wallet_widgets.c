@@ -1034,12 +1034,17 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         break;
 #else
     case WALLET_LIST_BLUE:
-    case WALLET_LIST_SPECTER:
     case WALLET_LIST_NUNCHUK:
+        //84 49 44
         func = GuiGetBlueWalletBtcData;
         break;
     case WALLET_LIST_SPARROW:
+        //84 49 44 86
         func = GuiGetSparrowWalletBtcData;
+        break;
+    case WALLET_LIST_SPECTER:
+        //84 49
+        func = GuiGetSpecterWalletBtcData;
         break;
 #endif
     default:

@@ -865,7 +865,7 @@ static void AddPetraCoins(void)
 
 static void AddressLongModeCutWithLen(char *out, const char *address, uint32_t maxLen)
 {
-    uint32_t len = strnlen_s(address, maxLen);
+    uint32_t len = strnlen_s(address, 150);
     uint32_t mid = maxLen / 2;
 
     if (len <= maxLen) {

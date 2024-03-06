@@ -25,14 +25,6 @@ add_definition_with_message(DEBUG_MEMORY)
 
 add_definition_with_message(BUILD_PRODUCTION)
 
-get_cmake_property(_variableNames VARIABLES)
-list (SORT _variableNames)
-foreach (_variableName ${_variableNames})
-    if(_variableName MATCHES "KT_FEATURE_*")
-        add_definition_with_message(${_variableName})
-    endif()
-endforeach()
-
 if(BTC_ONLY)
     add_compile_definitions(BTC_ONLY)
     add_compile_definitions(EXCLUDE_RUSTC)

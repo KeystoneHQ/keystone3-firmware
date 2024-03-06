@@ -81,7 +81,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 
 static void AddressLongModeCut(char *out, const char *address)
 {
-    uint32_t len = strnlen_s(address, 150);
+    uint32_t len = strnlen_s(address, 256);
     if (len <= 24) {
         strcpy(out, address);
         return;

@@ -138,6 +138,11 @@ else()
     list(APPEND INCLUDE_DIR src/ui/gui_chain/others src/ui/gui_widgets/general  src/webusb_protocol/general src/webusb_protocol/general/eapdu_services)
 endif()
 
+if(NOT BUILD_PRODUCTION)
+    list(APPEND INCLUDE_DIR test)
+    set(TEST_CMD test)
+endif()
+
 file(GLOB_RECURSE GUI
     "src/ui/gui_assets/*.c"
     "src/ui/gui_assets/font/*.c"

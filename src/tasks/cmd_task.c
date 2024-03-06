@@ -5,7 +5,6 @@
 #include "test_cmd.h"
 #include "mhscpu.h"
 
-
 #define TEST_CMD_MAX_LENGTH     3072
 
 static void CmdTask(void *pvParameter);

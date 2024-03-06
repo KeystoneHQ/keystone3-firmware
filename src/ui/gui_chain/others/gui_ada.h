@@ -33,6 +33,7 @@ bool GetAdaExtraDataExist(void *indata, void *param);
 void GetAdaExtraData(void *data, void *param);
 int GetAdaExtraDataLen(void *param);
 
+char *GuiGetYoroiBaseAddressByIndex(uint16_t index);
 
 void FreeAdaMemory(void);
 

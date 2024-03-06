@@ -15,11 +15,13 @@
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
 #endif
+#define ADA_ADD_MAX_LEN             (150)
 
 static bool g_isMulti = false;
 static struct URParseResult *g_urResult = NULL;
 static struct URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
+static char g_yoroiAddr[ADA_ADD_MAX_LEN];
 static char *xpub = NULL;
 
 static uint8_t GetXPubIndexByPath(char *path);
@@ -364,6 +366,19 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
     encodeResult->error_message = NULL;
     return encodeResult;
 #endif
+}
+
+char *GuiGetYoroiBaseAddressByIndex(uint16_t index)
+{
+    char *xPub = NULL;
+    SimpleResponse_c_char *result = NULL;
+    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0 + index);
+    result = cardano_get_base_address(xPub, 0, 1);
+    if (result->error_code == 0) {
+        strcpy_s(g_yoroiAddr, ADA_ADD_MAX_LEN, result->data);
+    }
+    free_simple_response_c_char(result);
+    return g_yoroiAddr;
 }
 
 static uint8_t GetXPubIndexByPath(char *path)

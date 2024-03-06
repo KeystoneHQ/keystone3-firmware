@@ -68,6 +68,10 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         item->index = index;
         strcpy(item->address, GuiGetXrpAddressByIndex(index));
         break;
+    case CHAIN_ADA:
+        item->index = index;
+        strcpy(item->address, GuiGetYoroiBaseAddressByIndex(index));
+        break;
 #endif
     default:
         printf("ModelGetAddress cannot match %d\r\n", index);
@@ -110,6 +114,8 @@ static int GetMaxAddressIndex(void)
 #ifndef BTC_ONLY
     case CHAIN_XRP:
         return 200;
+    case CHAIN_ADA:
+        return 20;
 #endif
     default:
         return 999999999;

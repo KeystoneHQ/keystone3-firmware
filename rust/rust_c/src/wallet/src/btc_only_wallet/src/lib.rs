@@ -71,8 +71,11 @@ pub extern "C" fn get_connect_blue_wallet_ur(
                 }
             };
 
-            let result =
-                app_wallets::blue_wallet::generate_crypto_account(mfp, &extended_public_keys, &extend_public_key_paths);
+            let result = app_wallets::blue_wallet::generate_crypto_account(
+                mfp,
+                &extended_public_keys,
+                &extend_public_key_paths,
+            );
             match result.map(|v| v.try_into()) {
                 Ok(v) => match v {
                     Ok(data) => UREncodeResult::encode(
@@ -139,8 +142,11 @@ pub extern "C" fn get_connect_sparrow_wallet_ur(
                 }
             };
 
-            let result =
-                app_wallets::blue_wallet::generate_crypto_account(mfp, &extended_public_keys, &extend_public_key_paths);
+            let result = app_wallets::blue_wallet::generate_crypto_account(
+                mfp,
+                &extended_public_keys,
+                &extend_public_key_paths,
+            );
             match result.map(|v| v.try_into()) {
                 Ok(v) => match v {
                     Ok(data) => UREncodeResult::encode(
@@ -183,14 +189,8 @@ pub extern "C" fn get_connect_specter_wallet_ur(
             let nested_x_pub = recover_c_char(k2.xpub);
             let nested_x_pub_path = recover_c_char(k2.path);
 
-            let extended_public_keys = [
-                native_x_pub.trim(),
-                nested_x_pub.trim(),
-            ];
-            let extend_public_key_paths = [
-                native_x_pub_path.trim(),
-                nested_x_pub_path.trim(),
-            ];
+            let extended_public_keys = [native_x_pub.trim(), nested_x_pub.trim()];
+            let extend_public_key_paths = [native_x_pub_path.trim(), nested_x_pub_path.trim()];
             let mfp = match <&[u8; 4]>::try_from(mfp) {
                 Ok(mfp) => mfp,
                 Err(e) => {
@@ -198,8 +198,11 @@ pub extern "C" fn get_connect_specter_wallet_ur(
                 }
             };
 
-            let result =
-                app_wallets::blue_wallet::generate_crypto_account(mfp, &extended_public_keys, &extend_public_key_paths);
+            let result = app_wallets::blue_wallet::generate_crypto_account(
+                mfp,
+                &extended_public_keys,
+                &extend_public_key_paths,
+            );
             match result.map(|v| v.try_into()) {
                 Ok(v) => match v {
                     Ok(data) => UREncodeResult::encode(

@@ -13,9 +13,11 @@ extern crate std;
 pub mod addresses;
 pub mod errors;
 mod macros;
+pub mod message;
 pub mod network;
 mod transactions;
 pub use addresses::get_address;
+use third_party::secp256k1::Message;
 pub use transactions::legacy::sign_legacy_tx;
 pub use transactions::parsed_tx;
 pub use transactions::psbt::parsed_psbt;
@@ -41,6 +43,21 @@ pub fn sign_psbt(psbt_hex: Vec<u8>, seed: &[u8], mfp: Fingerprint) -> Result<Vec
     let mut wpsbt = WrappedPsbt { psbt };
     let result = wpsbt.sign(seed, mfp)?;
     Ok(result.serialize())
+}
+
+pub fn sign_msg(msg: Vec<u8>, seed: &[u8], path: &String) -> Result<Vec<u8>> {
+    let hash = message::hash(msg);
+    let message =
+        Message::from_digest_slice(&hash).map_err(|e| BitcoinError::SignFailure(e.to_string()))?;
+    keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
+        .map_err(|e| BitcoinError::SignFailure(e.to_string()))
+        .map(|(rec_id, rs)| {
+            let v = rec_id as u64 + 27;
+            let mut ret = Vec::new();
+            ret.extend_from_slice(&v.to_be_bytes());
+            ret.extend_from_slice(&rs);
+            ret
+        })
 }
 
 pub fn parse_psbt(psbt_hex: Vec<u8>, context: ParseContext) -> Result<ParsedTx> {

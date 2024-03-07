@@ -50,7 +50,7 @@ const char *GetCurrentTime(void)
     stampTimeToRealTime(stampTime, &standardTime);
 
     snprintf_s(g_currentTimeBuf, BUFFER_SIZE_32, "%04d-%02d-%02d %02d:%02d:%02d", standardTime.Year, standardTime.Mon, standardTime.Day,
-            (standardTime.Hour + 8) > 24 ? standardTime.Hour + 8 - 24 : standardTime.Hour + 8, standardTime.Min, standardTime.Second);
+               (standardTime.Hour + 8) > 24 ? standardTime.Hour + 8 - 24 : standardTime.Hour + 8, standardTime.Min, standardTime.Second);
 
     return g_currentTimeBuf;
 }

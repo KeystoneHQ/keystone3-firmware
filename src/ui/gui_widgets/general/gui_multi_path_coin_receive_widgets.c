@@ -404,7 +404,7 @@ static void GetHint(char *hint)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
-        strcpy_s(hint, BUFFER_SIZE_256 ,_("receive_eth_alert_desc"));
+        strcpy_s(hint, BUFFER_SIZE_256, _("receive_eth_alert_desc"));
         break;
     case HOME_WALLET_CARD_SOL:
         snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "SOL");

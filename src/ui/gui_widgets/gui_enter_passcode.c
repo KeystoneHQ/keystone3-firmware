@@ -73,11 +73,11 @@ static void SetPinEventHandler(lv_event_t *e)
     if (code == LV_EVENT_RELEASED) {
         Vibrate(SLIGHT);
         GuiEnterPasscodeItem_t *item = g_passParam.setpinParam;
-        #ifndef COMPILE_SIMULATOR
+#ifndef COMPILE_SIMULATOR
         if (!g_isHandle && item->mode == ENTER_PASSCODE_VERIFY_PIN) {
             return;
         }
-        #endif
+#endif
 
         uint32_t id = lv_btnmatrix_get_selected_btn(obj);
         if (id == 9) {

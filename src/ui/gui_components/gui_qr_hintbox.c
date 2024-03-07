@@ -76,7 +76,7 @@ void GuiQRCodeHintBoxOpen(const char *qrdata, const char *title, const char *sub
         label = GuiCreateTextLabel(parent, title);
         lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -156);
-        g_qrHintBoxTitle = label; 
+        g_qrHintBoxTitle = label;
 
         label = GuiCreateIllustrateLabel(parent, subtitle);
         lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);

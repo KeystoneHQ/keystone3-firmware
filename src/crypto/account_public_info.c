@@ -341,10 +341,6 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         } else {
             ret = SUCCESS_CODE;
         }
-        CLEAR_ARRAY(hash);
-        if (GetPublicKeyFromJsonString(jsonString) == false) {
-            printf("GetPublicKeyFromJsonString false, need regenerate\r\n");
-            printf("err jsonString=%s\r\n", jsonString);
             regeneratePubKey = true;
         }
     } while (0);

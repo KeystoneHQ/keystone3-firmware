@@ -178,7 +178,7 @@ uint32_t SubMessageID(uint32_t messageID, void* queue)
         } else if (p_messageNode->next == NULL) {
             //The end of the line has been reached, and a new line needs to be created, and the messageID of the new line is assigned the locally registered messageID.
             p_messageNode->next = (MessageNode_t *)SramMalloc(sizeof(MessageNode_t));
-            memset_s(p_messageNode->next,sizeof(MessageNode_t), 0, sizeof(MessageNode_t));
+            memset_s(p_messageNode->next, sizeof(MessageNode_t), 0, sizeof(MessageNode_t));
             p_messageNode = p_messageNode->next;
             p_messageNode->messageID = messageID;
             p_messageNode->next = NULL;

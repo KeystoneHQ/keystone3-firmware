@@ -87,7 +87,8 @@ const ProtocolServiceCallbackFunc_t g_fileTransInfoServiceFunc[] = {
     ServiceFileTransComplete,                   //2.3
 };
 
-static int ValidateAndSetFileName(Tlv_t *tlvArray, FileTransInfo_t *fileTransInfo) {
+static int ValidateAndSetFileName(Tlv_t *tlvArray, FileTransInfo_t *fileTransInfo)
+{
     if (tlvArray == NULL || fileTransInfo == NULL) {
         printf("Invalid pointers provided.\n");
         return -1;

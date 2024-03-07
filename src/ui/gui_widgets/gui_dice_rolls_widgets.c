@@ -316,7 +316,7 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
             }
         }
 
-        if (lineCount > 4) 
+        if (lineCount > 4)
             return;
         lv_obj_set_height(ta, lineCount * font_height + 2 * lv_obj_get_style_pad_top(ta, LV_PART_MAIN));
         lv_obj_update_layout(ta);

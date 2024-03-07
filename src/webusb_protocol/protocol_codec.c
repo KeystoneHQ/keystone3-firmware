@@ -30,7 +30,7 @@ uint8_t *BuildFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlvLen)
     index = sizeof(FrameHead_t);
     for (i = 0; i < tlvLen; i++) {
         //t
-        sendData[index++] = tlvArray[i].type;   
+        sendData[index++] = tlvArray[i].type;
         //l
         ASSERT(tlvArray[i].length <= 0x7FFF);
         if (tlvArray[i].length > 127) {
@@ -42,7 +42,7 @@ uint8_t *BuildFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlvLen)
         //v
         if (tlvArray[i].pValue == NULL) {
             ASSERT(tlvArray[i].length <= 4);
-            memcpy_s(&sendData[index], totalLen - index,&tlvArray[i].value, tlvArray[i].length);
+            memcpy_s(&sendData[index], totalLen - index, &tlvArray[i].value, tlvArray[i].length);
         } else {
             memcpy_s(&sendData[index], totalLen - index, tlvArray[i].pValue, tlvArray[i].length);
         }

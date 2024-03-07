@@ -468,13 +468,13 @@ static void CheckLogData(void)
 
 void CheckLastErrLog(void)
 {
-    #define ERROR_LOG_STR_MAX_LEN    256
+#define ERROR_LOG_STR_MAX_LEN    256
     char errStr[ERROR_LOG_STR_MAX_LEN];
     Gd25FlashReadBuffer(SPI_FLASH_ADDR_ERR_INFO, (uint8_t *)errStr, sizeof(errStr));
     if (CheckAllFF((uint8_t *)errStr, sizeof(errStr))) {
         return;
     }
-    
+
     if (strnlen_s(errStr, ERROR_LOG_STR_MAX_LEN) < ERROR_LOG_STR_MAX_LEN) {
         printf("last err:%s\n", errStr);
         WriteLogFormat(EVENT_ID_ERROR, "%s", errStr);

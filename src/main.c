@@ -25,7 +25,6 @@
 #include "hal_lcd.h"
 #include "cmsis_os.h"
 #include "user_msg.h"
-#include "test_task.h"
 #include "cmd_task.h"
 #include "ui_display_task.h"
 #include "qrdecode_task.h"
@@ -96,7 +95,6 @@ int main(void)
 #ifndef BUILD_PRODUCTION
     CreateCmdTask();
 #endif
-    CreateTestTask();
     CreateUiDisplayTask();
     CreateQrDecodeTask();
     CreateTouchPadTask();

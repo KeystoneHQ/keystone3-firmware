@@ -39,6 +39,21 @@ file(GLOB_RECURSE USB_DRIVER
     "external/mh1903_lib/USB-ESL/CircularBuffer.c"    
 )
 
+set(TASKS
+    src/tasks/qrdecode_task.c
+    src/tasks/ui_display_task.c
+    src/tasks/background_task.c
+    src/tasks/touchpad_task.c
+    src/tasks/usb_task.c
+    src/tasks/fingerprint_task.c
+    src/tasks/background_app.c
+    src/tasks/log_task.c
+)
+
+if(NOT BUILD_PRODUCTION)
+    list(APPEND TASKS src/tasks/cmd_task.c)
+endif()
+
 file(GLOB_RECURSE SRC
     "src/*.c"
     "src/utils/*.c"

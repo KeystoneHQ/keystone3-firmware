@@ -500,7 +500,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"power_off", "Power Off"},
     {"prepare_wallet_first_step", "New chains support detected"},
     {"prepare_wallet_hint", "Preparing Wallet"},
-    {"prepare_wallet_second_step", "Setting up for coins..."},
+    {"prepare_wallet_second_step", "Setting up for wallet..."},
     {"prepare_wallet_third_step", "Generating extended public key..."},
     {"public_key", "Public Key"},
     {"purpose_desc", "Create a new wallet or import an existing wallet with the seed phrase."},

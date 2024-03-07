@@ -2,7 +2,9 @@
 #include "cmsis_os.h"
 #include "general_msg.h"
 #include "user_msg.h"
+#ifndef BUILD_PRODUCTION
 #include "test_cmd.h"
+#endif
 #include "mhscpu.h"
 
 

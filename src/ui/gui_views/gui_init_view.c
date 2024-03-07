@@ -20,6 +20,7 @@
 #include "gui_setup_widgets.h"
 #include "device_setting.h"
 #include "drv_aw32001.h"
+#include "usb_task.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #else
@@ -95,7 +96,9 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_INIT_USB_CONNECTION:
         rcvValue = *(uint32_t *)param;
         if (rcvValue != 0 && !GuiLockScreenIsTop() && GetUsbDetectState() && ((GetCurrentAccountIndex() != 0xFF) || GuiIsSetup())) {
-            OpenMsgBox(&g_guiMsgBoxUsbConnection);
+            if (GetUsbState() == false) {
+                OpenMsgBox(&g_guiMsgBoxUsbConnection);
+            }
         } else {
             CloseMsgBox(&g_guiMsgBoxUsbConnection);
         }

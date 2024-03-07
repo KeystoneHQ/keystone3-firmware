@@ -27,7 +27,7 @@ void PrintHeapInfo(void);
 #define snprintf_s                          snprintf
 #endif
 #ifndef memset_s
-#define memset_s(dest, destsz, ch, count)   memset(dest, ch, count)            
+#define memset_s(dest, destsz, ch, count)   memset(dest, ch, count)
 #endif
 #ifndef strcpy_s
 #define strcpy_s(dest, destsz, src)         strcpy(dest, src)

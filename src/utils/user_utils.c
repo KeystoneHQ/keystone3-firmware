@@ -169,7 +169,7 @@ void ConvertToLowerCase(char *str)
     }
 }
 
-inline bool CheckContainsNull(const char *str, size_t maxLen) 
+inline bool CheckContainsNull(const char *str, size_t maxLen)
 {
     for (size_t len = 0; len < maxLen; ++len) {
         if (str[len] == '\0') {

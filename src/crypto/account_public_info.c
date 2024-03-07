@@ -334,14 +334,14 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         ASSERT(ret == size);
         jsonString[size] = 0;
         sha256((struct sha256 *)hash, jsonString, size);
-        #ifndef COMPILE_SIMULATOR
+#ifndef COMPILE_SIMULATOR
         if (!VerifyWalletDataHash(accountIndex, hash)) {
             CLEAR_ARRAY(hash);
             return ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH;
         } else {
             ret = SUCCESS_CODE;
         }
-        #endif
+#endif
         CLEAR_ARRAY(hash);
         if (GetPublicKeyFromJsonString(jsonString) == false) {
             printf("GetPublicKeyFromJsonString false, need regenerate\r\n");

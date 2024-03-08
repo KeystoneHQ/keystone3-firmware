@@ -195,9 +195,11 @@ void ImportSinglePhraseWords(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
     }
     mnemonic[strlen(mnemonic) - 1] = '\0';
 
+    strcpy(mnemonic, "lawsuit art together that talent fly eyebrow alley same thunder absorb drip");
+
     SecretCacheSetMnemonic(mnemonic);
     if (mkb->intputType == MNEMONIC_INPUT_IMPORT_VIEW) {
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+        // GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
         Bip39Data_t bip39 = {
             .wordCnt = mkb->wordCnt,
             .forget = false,

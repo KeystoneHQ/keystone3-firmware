@@ -42,6 +42,8 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
 #ifndef BTC_ONLY
     case LtcTx:
         return CHAIN_LTC;
+    case DogeTx:
+        return CHAIN_DOGE;
     case DashTx:
         return CHAIN_DASH;
     case BchTx:
@@ -90,6 +92,7 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
     case BtcTx:
 #ifndef BTC_ONLY
     case LtcTx:
+    case DogeTx:
     case DashTx:
     case BchTx:
 #endif

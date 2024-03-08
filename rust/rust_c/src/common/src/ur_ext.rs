@@ -110,6 +110,8 @@ fn get_view_type_from_keystone(bytes: Vec<u8>) -> Result<ViewType, URError> {
                 #[cfg(feature = "multi-coins")]
                 "LTC" => ViewType::LtcTx,
                 #[cfg(feature = "multi-coins")]
+                "DOGE" => ViewType::DogeTx,
+                #[cfg(feature = "multi-coins")]
                 "DASH" => ViewType::DashTx,
                 #[cfg(feature = "multi-coins")]
                 "BCH" => ViewType::BchTx,

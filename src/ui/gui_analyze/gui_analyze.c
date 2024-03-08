@@ -1434,6 +1434,7 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
     case BtcTx:
 #ifndef BTC_ONLY
     case LtcTx:
+    case DogeTx:
     case DashTx:
     case BchTx:
 #endif

@@ -7,7 +7,7 @@ use core::str::FromStr;
 use third_party::bitcoin::{self, Amount};
 use third_party::ur_registry::pb::protoc;
 use third_party::ur_registry::pb::protoc::sign_transaction::Transaction::{
-    BchTx, BtcTx, DashTx, LtcTx,
+    BchTx, BtcTx, DashTx, LtcTx, DogeTx,
 };
 
 #[derive(Debug, Clone)]
@@ -59,6 +59,7 @@ impl OutputConverter for protoc::sign_transaction::Transaction {
     fn to_tx_out(&self) -> Result<Vec<TxOut>> {
         let outputs = match self {
             LtcTx(tx) => collect!(&tx.outputs),
+            DogeTx(tx) => collect!(&tx.outputs),
             BtcTx(tx) => collect!(&tx.outputs),
             BchTx(tx) => collect!(&tx.outputs),
             DashTx(tx) => collect!(&tx.outputs),

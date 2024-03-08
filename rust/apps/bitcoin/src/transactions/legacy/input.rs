@@ -13,7 +13,7 @@ use third_party::bitcoin_hashes::Hash;
 use third_party::secp256k1::ecdsa::Signature;
 use third_party::ur_registry::pb::protoc;
 use third_party::ur_registry::pb::protoc::sign_transaction::Transaction::{
-    BchTx, BtcTx, DashTx, LtcTx,
+    BchTx, BtcTx, DashTx, LtcTx, DogeTx, 
 };
 use third_party::ur_registry::pb::protoc::{bch_tx, dash_tx, Input};
 
@@ -155,6 +155,7 @@ impl InputConverter for protoc::sign_transaction::Transaction {
     fn to_tx_in(&self) -> Result<Vec<TxIn>> {
         let inputs = match self {
             LtcTx(tx) => collect!(&tx.inputs),
+            DogeTx(tx) => collect!(&tx.inputs),
             BtcTx(tx) => collect!(&tx.inputs),
             BchTx(tx) => collect!(&tx.inputs),
             DashTx(tx) => collect!(&tx.inputs),

@@ -5,7 +5,7 @@ use crate::addresses::constants::{
     PUBKEY_ADDRESS_PREFIX_BCH, PUBKEY_ADDRESS_PREFIX_BTC, PUBKEY_ADDRESS_PREFIX_DASH,
     PUBKEY_ADDRESS_PREFIX_DASH_P2SH, PUBKEY_ADDRESS_PREFIX_TEST, SCRIPT_ADDRESS_PREFIX_BTC,
     SCRIPT_ADDRESS_PREFIX_LTC, SCRIPT_ADDRESS_PREFIX_LTC_P2PKH, SCRIPT_ADDRESS_PREFIX_TEST,
-    PUBKEY_ADDRESS_PREFIX_DOGE, 
+    SCRIPT_ADDRESS_PREFIX_DOGE, SCRIPT_ADDRESS_PREFIX_DOGE_P2PKH,
 };
 use crate::addresses::encoding::{
     BCHAddressEncoding, BTCAddressEncoding, DASHAddressEncoding, LTCAddressEncoding, DOGEAddressEncoding,
@@ -164,9 +164,11 @@ impl fmt::Display for Address {
                 encoding.fmt(fmt)
             }
             Network::Dogecoin => {
-                let encoding = DOGEAddressEncoding {
+                let encoding = LTCAddressEncoding {
                     payload: &self.payload,
-                    p2pkh_prefix: PUBKEY_ADDRESS_PREFIX_DOGE,
+                    p2sh_prefix: SCRIPT_ADDRESS_PREFIX_DOGE,
+                    p2pkh_prefix: SCRIPT_ADDRESS_PREFIX_DOGE_P2PKH,
+                    bech32_hrp: "doge",
                 };
                 encoding.fmt(fmt)
             }

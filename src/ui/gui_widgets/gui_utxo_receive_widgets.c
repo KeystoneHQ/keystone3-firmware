@@ -1429,7 +1429,6 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
     }
     chainType = GetChainTypeByIndex(addrType);
     xPub = GetCurrentAccountPublicKey(chainType);
-    printf("xPub: %s\n", xPub);
     ASSERT(xPub);
     SimpleResponse_c_char *result;
     GetRootHdPath(rootPath, ADDRESS_MAX_LEN);

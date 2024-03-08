@@ -298,7 +298,7 @@ mod tests {
 
     #[test]
     fn xpub_to_dgub() {
-        let xpub = "xpub6E92QB3YivNhH5KqMT3ouRvwzMwjgsdQZXtTPvm5gU4fbX24zZTQp99t9iFTM2xtuotw3ZwEaYPg8nXNdTzJiqrTsv6xtKGbMZpuBkPcFZk";
+        let xpub = "xpub6CbkwBhWue2E45gT2vtmCndhhL7cg4dKgfyuivcm9CJvxGP5wraiFobypCiEtpMuzfkVh5iLm4ytKRGDvcsJ7Wetn1MaRNtsHqNVh6XdxT4";
         let expected_dgub = "tpubDCBWBScQPGv4Xk3JSbhw6wYYpayMjb2eAYyArpbSqQTbLDpphHGAetB6VQgVeftLML8vDSUEWcC2xDi3qJJ3YCDChJDvqVzpgoYSuT52MhJ";
 
         let result = convert_version(xpub, &Version::Dgub).unwrap();

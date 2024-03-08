@@ -171,6 +171,8 @@ pub enum ViewType {
     #[cfg(feature = "multi-coins")]
     LtcTx,
     #[cfg(feature = "multi-coins")]
+    DogeTx,
+    #[cfg(feature = "multi-coins")]
     DashTx,
     #[cfg(feature = "multi-coins")]
     BchTx,

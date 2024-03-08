@@ -9,7 +9,7 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "Simulato
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g2 -ggdb")
 set(CMAKE_C_FLAGS_RELEASE "-O3")
 
-# add_subdirectory(rust)
+add_subdirectory(rust)
 
 # add definition
 function(add_definition_with_message OPTION_NAME)

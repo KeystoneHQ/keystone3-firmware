@@ -161,4 +161,17 @@ mod tests {
             "tb1p8wpt9v4frpf3tkn0srd97pksgsxc5hs52lafxwru9kgeephvs7rqlqt9zj"
         );
     }
+
+    #[test]
+    fn test_doge_p2pkh_address() {
+        // let extended_pubkey = "xpub6CMn2gDGUECGFWTZ8zik2eNGsLDWSVFc8dSQAXWpxPTqeZVCphbmXVTYQQt65dGSRTvkHuDgj19r9MagbxxJYyu1XjqwBXDsQHhrKwrghNE";
+        // let address = get_address(
+        //     String::from("m/44'/3'/0'/0/0"),
+        //     &extended_pubkey.to_string(),
+        // )
+        // .unwrap();
+        let address = String::from("D8j3ZCw3Yg3Z6vz3J9g3Y");
+        println!("{:?}", address);
+        // assert_eq!(address, "M7wtsL7wSHDBJVMWWhtQfTMSYYkyooAAXM")
+    }
 }

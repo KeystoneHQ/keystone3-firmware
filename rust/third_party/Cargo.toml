@@ -17,8 +17,10 @@ rsa = { version = "0.8.2", default-features = false }
 sha1 = { version = "0.10.5", default-features = false }
 cty = "0.2.2"
 cstr_core = "0.2.6"
-ur-registry = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag="0.0.21" }
-ur-parse-lib = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag="0.0.21" }
+ur-registry = { path = "C:/3.git/keystone-sdk-rust/libs/ur-registry" }
+ur-parse-lib = { path = "C:/3.git/keystone-sdk-rust/libs/ur-parse-lib" }
+# ur-registry = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag="0.0.21" }
+# ur-parse-lib = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag="0.0.21" }
 ed25519-bip32-core = { version = "0.1.1", default-features = false }
 cryptoxide = "0.4"
 itertools = { version = "0.10.5", default-features = false, features = ["use_alloc"] }

@@ -43,10 +43,10 @@ fn generate_general_address(key: PublicKey, prefix: &str) -> Result<String> {
 }
 
 fn generate_address(key: PublicKey, prefix: &str) -> Result<String> {
-    if prefix.to_lowercase().eq("evmos") || prefix.to_lowercase().eq("inj") {
-        return generate_evmos_address(key, prefix);
+    match prefix.to_lowercase().as_str() {
+        "evmos" | "inj" | "dym" => generate_evmos_address(key, prefix), 
+        _ => generate_general_address(key, prefix),
     }
-    return generate_general_address(key, prefix);
 }
 
 // pub fn parse_raw_tx(raw_tx: &Vec<u8>) -> Result<String> {

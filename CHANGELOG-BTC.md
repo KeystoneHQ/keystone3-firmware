@@ -1,14 +1,10 @@
-## 0.0.2-BTC (2024-03-06)
+## 0.0.9-BTC (2024-03-08)
 
-### Test CI release
-1. test ci release 2
-
-
-## 0.0.1-BTC (2024-03-06)
-
-### Test CI release
-1. test ci release
-
-
+### v0.9.0 Bitcoin-Only Beta Version
+ A Gift to the Bitcoin Community
+### What’s New:
+1. Bitcoin-only firmware
+2. Blue, Sparrow, Nunchuck and Specter
+3. Both Bitcoin testnet and the main network
 
 

@@ -13,10 +13,12 @@ extern crate std;
 pub mod addresses;
 pub mod errors;
 mod macros;
-pub mod message;
 pub mod network;
 mod transactions;
 pub use addresses::get_address;
+use third_party::bitcoin::sign_message;
+use third_party::bitcoin_hashes::Hash;
+use third_party::secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
 use third_party::secp256k1::Message;
 pub use transactions::legacy::sign_legacy_tx;
 pub use transactions::parsed_tx;
@@ -45,18 +47,20 @@ pub fn sign_psbt(psbt_hex: Vec<u8>, seed: &[u8], mfp: Fingerprint) -> Result<Vec
     Ok(result.serialize())
 }
 
-pub fn sign_msg(msg: Vec<u8>, seed: &[u8], path: &String) -> Result<Vec<u8>> {
-    let hash = message::hash(msg);
+pub fn sign_msg(msg: &str, seed: &[u8], path: &String) -> Result<Vec<u8>> {
+    let hash = sign_message::signed_msg_hash(msg).to_byte_array();
     let message =
         Message::from_digest_slice(&hash).map_err(|e| BitcoinError::SignFailure(e.to_string()))?;
-    keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
-        .map_err(|e| BitcoinError::SignFailure(e.to_string()))
-        .map(|(rec_id, rs)| {
-            let v = rec_id as u64 + 27;
-            let mut ret = Vec::new();
-            ret.extend_from_slice(&v.to_be_bytes());
-            ret.extend_from_slice(&rs);
-            ret
+    let (rec_id, rs) = keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
+        .map_err(|e| BitcoinError::SignFailure(e.to_string()))?;
+    let rec_id =
+        RecoveryId::from_i32(rec_id).map_err(|e| BitcoinError::SignFailure(e.to_string()))?;
+    RecoverableSignature::from_compact(&rs, rec_id)
+        .map_err(|_| BitcoinError::SignFailure("failed to encode signature".to_string()))
+        .map(|signature| {
+            sign_message::MessageSignature::new(signature, false)
+                .serialize()
+                .to_vec()
         })
 }
 
@@ -103,10 +107,10 @@ fn deserialize_psbt(psbt_hex: Vec<u8>) -> Result<Psbt> {
 mod test {
     use crate::addresses::xyzpub::{convert_version, Version};
     use crate::alloc::string::ToString;
-    use crate::parse_raw_tx;
     use crate::transactions::parsed_tx::{
         DetailTx, OverviewTx, ParsedInput, ParsedOutput, ParsedTx,
     };
+    use crate::{parse_raw_tx, sign_msg};
     use alloc::vec::Vec;
     use app_utils::keystone;
     use core::str::FromStr;
@@ -511,5 +515,15 @@ mod test {
         );
         let expected_parsed_tx = ParsedTx { overview, detail };
         assert_eq!(expected_parsed_tx, parsed_tx);
+    }
+
+    #[test]
+    fn test_sign_msg() {
+        let seed = third_party::hex::decode("7bf300876c3927d133c7535cbcb19d22e4ac1aff29998355d2fa7ed749212c7106620e74daf0f3d5e13a48dfb8b17641c711b513d92c7a5023ca5b1ad7b202e5").unwrap();
+        let path = "M/44'/0'/0'/0/0".to_string();
+        let msg = "123";
+
+        let sig = sign_msg(msg, &seed, &path).unwrap();
+        assert_eq!(third_party::base64::encode(&sig), "G8CDgK7sBj7o+OFZ+IVZyrKmcZuJn2/KFNHHv+kAxi+FWCUEYpZCyAGz0fj1OYwFM0E+q/TyQ2uZziqWI8k0eYE=");
     }
 }

@@ -1,4 +1,4 @@
-## 0.0.9-BTC (2024-03-08)
+## 0.9.0-BTC (2024-03-08)
 
 ### v0.9.0 Bitcoin-Only Beta Version
  A Gift to the Bitcoin Community

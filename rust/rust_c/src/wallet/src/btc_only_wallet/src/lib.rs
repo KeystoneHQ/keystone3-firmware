@@ -47,22 +47,22 @@ pub extern "C" fn get_connect_blue_wallet_ur(
         let key2 = keys.get(1);
         let key3 = keys.get(2);
         return if let (Some(k1), Some(k2), Some(k3)) = (key1, key2, key3) {
-            let native_x_pub = recover_c_char(k1.xpub);
-            let native_x_pub_path = recover_c_char(k1.path);
-            let nested_x_pub = recover_c_char(k2.xpub);
-            let nested_x_pub_path = recover_c_char(k2.path);
-            let legacy_x_pub = recover_c_char(k3.xpub);
-            let legacy_x_pub_path = recover_c_char(k3.path);
+            let k1_x_pub = recover_c_char(k1.xpub);
+            let k1_x_pub_path = recover_c_char(k1.path);
+            let k2_x_pub = recover_c_char(k2.xpub);
+            let k2_x_pub_path = recover_c_char(k2.path);
+            let k3_x_pub = recover_c_char(k3.xpub);
+            let k3_x_pub_path = recover_c_char(k3.path);
 
             let extended_public_keys = [
-                native_x_pub.trim(),
-                legacy_x_pub.trim(),
-                nested_x_pub.trim(),
+                k1_x_pub.trim(),
+                k2_x_pub.trim(),
+                k3_x_pub.trim(),
             ];
             let extend_public_key_paths = [
-                native_x_pub_path.trim(),
-                nested_x_pub_path.trim(),
-                legacy_x_pub_path.trim(),
+                k1_x_pub_path.trim(),
+                k2_x_pub_path.trim(),
+                k3_x_pub_path.trim(),
             ];
             let mfp = match <&[u8; 4]>::try_from(mfp) {
                 Ok(mfp) => mfp,
@@ -115,25 +115,25 @@ pub extern "C" fn get_connect_sparrow_wallet_ur(
         let key3 = keys.get(2);
         let key4 = keys.get(3);
         return if let (Some(k1), Some(k2), Some(k3), Some(k4)) = (key1, key2, key3, key4) {
-            let native_x_pub = recover_c_char(k1.xpub);
-            let native_x_pub_path = recover_c_char(k1.path);
-            let nested_x_pub = recover_c_char(k2.xpub);
-            let nested_x_pub_path = recover_c_char(k2.path);
-            let legacy_x_pub = recover_c_char(k3.xpub);
-            let legacy_x_pub_path = recover_c_char(k3.path);
-            let taproot_x_pub = recover_c_char(k4.xpub);
-            let taproot_x_pub_path = recover_c_char(k4.path);
+            let k1_x_pub = recover_c_char(k1.xpub);
+            let k1_x_pub_path = recover_c_char(k1.path);
+            let k2_x_pub = recover_c_char(k2.xpub);
+            let k2_x_pub_path = recover_c_char(k2.path);
+            let k3_x_pub = recover_c_char(k3.xpub);
+            let k3_x_pub_path = recover_c_char(k3.path);
+            let k4_x_pub = recover_c_char(k4.xpub);
+            let k4_x_pub_path = recover_c_char(k4.path);
             let extended_public_keys = [
-                native_x_pub.trim(),
-                legacy_x_pub.trim(),
-                nested_x_pub.trim(),
-                taproot_x_pub.trim(),
+                k1_x_pub.trim(),
+                k2_x_pub.trim(),
+                k3_x_pub.trim(),
+                k4_x_pub.trim(),
             ];
             let extend_public_key_paths = [
-                native_x_pub_path.trim(),
-                nested_x_pub_path.trim(),
-                legacy_x_pub_path.trim(),
-                taproot_x_pub_path.trim(),
+                k1_x_pub_path.trim(),
+                k2_x_pub_path.trim(),
+                k3_x_pub_path.trim(),
+                k4_x_pub_path.trim(),
             ];
             let mfp = match <&[u8; 4]>::try_from(mfp) {
                 Ok(mfp) => mfp,
@@ -184,13 +184,13 @@ pub extern "C" fn get_connect_specter_wallet_ur(
         let key1 = keys.get(0);
         let key2 = keys.get(1);
         return if let (Some(k1), Some(k2)) = (key1, key2) {
-            let native_x_pub = recover_c_char(k1.xpub);
-            let native_x_pub_path = recover_c_char(k1.path);
-            let nested_x_pub = recover_c_char(k2.xpub);
-            let nested_x_pub_path = recover_c_char(k2.path);
+            let k1_x_pub = recover_c_char(k1.xpub);
+            let k1_x_pub_path = recover_c_char(k1.path);
+            let k2_x_pub = recover_c_char(k2.xpub);
+            let k2_x_pub_path = recover_c_char(k2.path);
 
-            let extended_public_keys = [native_x_pub.trim(), nested_x_pub.trim()];
-            let extend_public_key_paths = [native_x_pub_path.trim(), nested_x_pub_path.trim()];
+            let extended_public_keys = [k1_x_pub.trim(), k2_x_pub.trim()];
+            let extend_public_key_paths = [k1_x_pub_path.trim(), k2_x_pub_path.trim()];
             let mfp = match <&[u8; 4]>::try_from(mfp) {
                 Ok(mfp) => mfp,
                 Err(e) => {

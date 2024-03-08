@@ -117,7 +117,10 @@ mod tests {
             "Cronos POS chain"
         );
         assert_eq!(get_network_by_chain_id("evmos_9001-2").unwrap(), "Evmos");
-        assert_eq!(get_network_by_chain_id("dymension_1100-1").unwrap(), "Dymension");
+        assert_eq!(
+            get_network_by_chain_id("dymension_1100-1").unwrap(),
+            "Dymension"
+        );
     }
 
     #[test]
@@ -132,7 +135,7 @@ mod tests {
         );
         assert_eq!(
             get_chain_id_by_address("dym1tqsdz785sqjnlggee0lwxjwfk6dl36ae6q5dx9"),
-            "dymension"
+            "dymension_1100-1"
         );
     }
 }

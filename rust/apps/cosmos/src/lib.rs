@@ -44,7 +44,7 @@ fn generate_general_address(key: PublicKey, prefix: &str) -> Result<String> {
 
 fn generate_address(key: PublicKey, prefix: &str) -> Result<String> {
     match prefix.to_lowercase().as_str() {
-        "evmos" | "inj" | "dym" => generate_evmos_address(key, prefix), 
+        "evmos" | "inj" | "dym" => generate_evmos_address(key, prefix),
         _ => generate_general_address(key, prefix),
     }
 }

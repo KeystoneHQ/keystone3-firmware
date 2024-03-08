@@ -16,6 +16,7 @@ pub fn get_network_by_chain_id(chain_id: &str) -> Result<String> {
     // Registered chains https://github.com/cosmos/chain-registry
     let mut map: BTreeMap<&str, &str> = BTreeMap::new();
     map.insert("celestia", "Celestia");
+    map.insert("dymension_1100", "Dymension");
     map.insert("cosmoshub", "Cosmos Hub");
     map.insert("osmosis", "Osmosis");
     map.insert("secret", "Secret Network");
@@ -62,6 +63,7 @@ pub fn get_network_by_chain_id(chain_id: &str) -> Result<String> {
 pub fn get_chain_id_by_address(address: &str) -> String {
     let mut map: BTreeMap<&str, &str> = BTreeMap::new();
     map.insert("celestia", "celestia");
+    map.insert("dym", "dymension_1100-1");
     map.insert("cosmos", "cosmoshub-4");
     map.insert("osmo", "osmosis-1");
     map.insert("secret", "secret-4");
@@ -115,6 +117,7 @@ mod tests {
             "Cronos POS chain"
         );
         assert_eq!(get_network_by_chain_id("evmos_9001-2").unwrap(), "Evmos");
+        assert_eq!(get_network_by_chain_id("dymension_1100-1").unwrap(), "Dymension");
     }
 
     #[test]
@@ -126,6 +129,10 @@ mod tests {
         assert_eq!(
             get_chain_id_by_address("cosmos17u02f80vkafne9la4wypdx3kxxxxwm6f2qtcj2"),
             "cosmoshub-4"
+        );
+        assert_eq!(
+            get_chain_id_by_address("dym1tqsdz785sqjnlggee0lwxjwfk6dl36ae6q5dx9"),
+            "dymension"
         );
     }
 }

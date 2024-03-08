@@ -34,6 +34,7 @@ typedef enum {
     CHAIN_DASH,
     CHAIN_COSMOS,
     CHAIN_TIA,
+    CHAIN_DYM,
     CHAIN_OSMO,
     CHAIN_INJ,
     CHAIN_ATOM,

@@ -54,11 +54,7 @@ pub extern "C" fn get_connect_blue_wallet_ur(
             let k3_x_pub = recover_c_char(k3.xpub);
             let k3_x_pub_path = recover_c_char(k3.path);
 
-            let extended_public_keys = [
-                k1_x_pub.trim(),
-                k2_x_pub.trim(),
-                k3_x_pub.trim(),
-            ];
+            let extended_public_keys = [k1_x_pub.trim(), k2_x_pub.trim(), k3_x_pub.trim()];
             let extend_public_key_paths = [
                 k1_x_pub_path.trim(),
                 k2_x_pub_path.trim(),

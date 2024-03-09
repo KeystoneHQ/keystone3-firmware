@@ -750,6 +750,7 @@ void GuiDelEnterPasscode(void *obj, void *param)
 void GuiEnterPassCodeStatus(GuiEnterPasscodeItem_t *item, bool en)
 {
     SET_HANDLE_FLAG();
+    printf("%s %d...\n", __func__, __LINE__);
 
     if (!en) {
         if (item->mode % 2 == 0) {

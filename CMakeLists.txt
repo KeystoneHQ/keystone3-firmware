@@ -1,11 +1,12 @@
 set(CMAKE_SYSTEM_NAME Generic)
 cmake_minimum_required(VERSION 3.10)
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+option(COMPILE_KEYSTONE "compile on MAIN target" ON)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Simulator")
+  set(COMPILE_KEYSTONE OFF CACHE BOOL "compile on MAIN target" FORCE)
 endif()
 
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "Simulator")
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g2 -ggdb")
 set(CMAKE_C_FLAGS_RELEASE "-O3")
 
@@ -187,7 +188,8 @@ file(GLOB_RECURSE CRYPTO_SLIP39
     "src/crypto/slip39/trezor-crypto/pbkdf2.c"
 )
 
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Simulator")
+if(COMPILE_KEYSTONE)
+    message(STATUS "Compiling for MAIN target")
     project(mh1903)
     include(firmware.cmake)
 

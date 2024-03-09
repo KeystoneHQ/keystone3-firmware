@@ -39,7 +39,7 @@ static lv_obj_t *g_noticeHintBox = NULL;
 char *GuiMnemonicGetTrueWord(const char *word, char *trueWord)
 {
     char *temp = trueWord;
-    for (int i = 0; i < strnlen_s(word, GUI_KEYBOARD_CANDIDATE_WORDS_CNT); i++) {
+    for (int i = 0; i < strnlen_s(word, GUI_KEYBOARD_CANDIDATE_WORDS_LEN); i++) {
         if (word[i] >= 'a' && word[i] <= 'z') {
             *temp++ = word[i];
         }
@@ -406,7 +406,7 @@ void GuiMnemonicInputHandler(lv_event_t *e)
             }
             lv_btnmatrix_set_selected_btn(mkb->btnm, mkb->currentId);
             GuiSetMnemonicCache(letterKb, word);
-        } else if (strnlen_s(word, GUI_KEYBOARD_CANDIDATE_WORDS_CNT) >= 3) {
+        } else if (strlen(word) >= 3) {
             int wordcnt = searchTrie(rootTree, word);
             if (wordcnt <= 1) {
                 snprintf_s(tempBuf, BUFFER_SIZE_128, "%s#999999 %s#", word, &g_wordBuf[0][strnlen_s(word, GUI_KEYBOARD_CANDIDATE_WORDS_LEN)]);

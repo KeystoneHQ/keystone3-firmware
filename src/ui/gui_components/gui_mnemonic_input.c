@@ -39,7 +39,7 @@ static lv_obj_t *g_noticeHintBox = NULL;
 char *GuiMnemonicGetTrueWord(const char *word, char *trueWord)
 {
     char *temp = trueWord;
-    for (int i = 0; i < strnlen_s(word, GUI_KEYBOARD_CANDIDATE_WORDS_CNT); i++) {
+    for (int i = 0; i < strnlen_s(word, GUI_KEYBOARD_CANDIDATE_WORDS_LEN); i++) {
         if (word[i] >= 'a' && word[i] <= 'z') {
             *temp++ = word[i];
         }
@@ -315,7 +315,6 @@ void GuiMnemonicInputHandler(lv_event_t *e)
         if (strlen(trueText) > 0 && GuiWordsWhole(trueText)) {
             GuiSetLetterBoardNext(letterKb);
         }
-        // GuiClearKeyBoard(letterKb);
         isClick = 2;
 
         // 2.first determine whether the previous word is complete or not
@@ -325,7 +324,6 @@ void GuiMnemonicInputHandler(lv_event_t *e)
             }
             memset_s(trueText, sizeof(trueText), 0, sizeof(trueText));
             const char *lastText = lv_btnmatrix_get_btn_text(obj, i);
-            // const char *lastText = lv_btnmatrix_get_btn_text(obj, mkb->currentId);
             GuiMnemonicGetTrueWord(lastText, trueText);
             if (strlen(trueText) > 0 && !GuiWordsWhole(trueText)) {
                 char buf[BUFFER_SIZE_32] = { 0 };
@@ -392,7 +390,6 @@ void GuiMnemonicInputHandler(lv_event_t *e)
 
         char *word = lv_event_get_param(e);
         if ((strlen(word) == 0 && code == KEY_STONE_KEYBOARD_VALUE_CHANGE)) {
-            // if (isClick || (strlen(word) == 0 && code == KEY_STONE_KEYBOARD_VALUE_CHANGE)) {
             if (isClick > 0) {
                 isClick--;
             }

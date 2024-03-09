@@ -1018,7 +1018,7 @@ void UpdateFullKeyBoard(const char *str, KeyBoard_t *keyBoard)
         size = NUMBER_OF_ARRAYS(g_fullCtrlMap);
     }
 
-    if (strnlen_s(str, keyBoard->taMinLen) >= keyBoard->taMinLen) {
+    if (strlen(str) >= keyBoard->taMinLen) {
         g_kbCtrl[keyBoard->mode - KEY_STONE_FULL_L][size - 1] = LV_BTNMATRIX_CTRL_CHECKED | 2;
     } else {
         g_kbCtrl[keyBoard->mode - KEY_STONE_FULL_L][size - 1] = LV_BTNMATRIX_CTRL_DISABLED | 2;

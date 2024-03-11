@@ -881,7 +881,7 @@ static void AddXrpToolkitAddress(void)
     lv_obj_t *label = GuiCreateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 
-    char addr[36] = {0};
+    char addr[BUFFER_SIZE_256] = {0};
     CutAndFormatAddress(addr, sizeof(addr), GuiGetXrpAddressByIndex(g_xrpAddressIndex[GetCurrentAccountIndex()]), 20);
     label = GuiCreateNoticeLabel(g_bottomCont, addr);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 58);

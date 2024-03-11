@@ -62,12 +62,30 @@ UREncodeResult *GuiGetBlueWalletBtcData(void)
     ExtendedPublicKey keys[3];
     public_keys->data = keys;
     public_keys->size = 3;
+#ifndef BTC_ONLY
     keys[0].path = "m/84'/0'/0'";
     keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
     keys[1].path = "m/49'/0'/0'";
     keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
     keys[2].path = "m/44'/0'/0'";
     keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+#else
+    if (GetIsTestNet()) {
+        keys[0].path = "m/84'/1'/0'";
+        keys[1].path = "m/49'/1'/0'";
+        keys[2].path = "m/44'/1'/0'";
+        keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST);
+        keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TEST);
+        keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY_TEST);
+    } else {
+        keys[0].path = "m/84'/0'/0'";
+        keys[1].path = "m/49'/0'/0'";
+        keys[2].path = "m/44'/0'/0'";
+        keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+        keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+        keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+    }
+#endif
     UREncodeResult *urencode = get_connect_blue_wallet_ur(mfp, sizeof(mfp), public_keys);
     CHECK_CHAIN_PRINT(urencode);
     return urencode;
@@ -86,6 +104,7 @@ UREncodeResult *GuiGetSparrowWalletBtcData(void)
     ExtendedPublicKey keys[4];
     public_keys->data = keys;
     public_keys->size = 4;
+#ifndef BTC_ONLY
     keys[0].path = "m/84'/0'/0'";
     keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
     keys[1].path = "m/49'/0'/0'";
@@ -94,6 +113,27 @@ UREncodeResult *GuiGetSparrowWalletBtcData(void)
     keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
     keys[3].path = "m/86'/0'/0'";
     keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+#else
+    if (GetIsTestNet()) {
+        keys[0].path = "m/84'/1'/0'";
+        keys[1].path = "m/49'/1'/0'";
+        keys[2].path = "m/44'/1'/0'";
+        keys[3].path = "m/86'/1'/0'";
+        keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST);
+        keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TEST);
+        keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY_TEST);
+        keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT_TEST);
+    } else {
+        keys[0].path = "m/84'/0'/0'";
+        keys[1].path = "m/49'/0'/0'";
+        keys[2].path = "m/44'/0'/0'";
+        keys[3].path = "m/86'/0'/0'";
+        keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+        keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+        keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+        keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+    }
+#endif
     UREncodeResult *urencode = get_connect_sparrow_wallet_ur(mfp, sizeof(mfp), public_keys);
     CHECK_CHAIN_PRINT(urencode);
     return urencode;
@@ -112,10 +152,24 @@ UREncodeResult *GuiGetSpecterWalletBtcData(void)
     ExtendedPublicKey keys[2];
     public_keys->data = keys;
     public_keys->size = 2;
+#ifndef BTC_ONLY
     keys[0].path = "m/84'/0'/0'";
     keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
     keys[1].path = "m/49'/0'/0'";
     keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+#else
+    if (GetIsTestNet()) {
+        keys[0].path = "m/84'/1'/0'";
+        keys[1].path = "m/49'/1'/0'";
+        keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST);
+        keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TEST);
+    } else {
+        keys[0].path = "m/84'/0'/0'";
+        keys[1].path = "m/49'/0'/0'";
+        keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+        keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+    }
+#endif
     UREncodeResult *urencode = get_connect_specter_wallet_ur(mfp, sizeof(mfp), public_keys);
     CHECK_CHAIN_PRINT(urencode);
     return urencode;

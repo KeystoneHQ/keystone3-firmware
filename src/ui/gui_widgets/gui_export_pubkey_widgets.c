@@ -58,6 +58,8 @@ static void UpdateConfirmBtn(void);
 static void SetPathType(uint8_t pathType);
 static void SetCheckboxState(uint8_t i, bool isChecked);
 
+void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
+
 static const PathTypeItem_t g_btcPathTypeList[] = {
     {"Taproot",       "P2TR",        "m/86'/0'/0'", XPUB_TYPE_BTC_TAPROOT      },
     {"Native SegWit", "P2WPKH",      "m/84'/0'/0'", XPUB_TYPE_BTC_NATIVE_SEGWIT},
@@ -504,20 +506,6 @@ static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index)
 }
 #endif
 
-static void AddressLongModeCut(char *out, const char *address)
-{
-    uint32_t len = strnlen_s(address, 24);
-
-    if (len <= 24) {
-        strcpy(out, address);
-    } else {
-        strncpy(out, address, 12);
-        out[12] = 0;
-        strcat(out, "...");
-        strcat(out, address + len - 12);
-    }
-}
-
 static void SetEgContent(uint8_t index)
 {
     char eg[BUFFER_SIZE_64] = {0};
@@ -528,7 +516,7 @@ static void SetEgContent(uint8_t index)
     int8_t prefixLen = (g_btcPathTypeList[index].pubkeyType == XPUB_TYPE_BTC_NATIVE_SEGWIT || g_btcPathTypeList[index].pubkeyType == XPUB_TYPE_BTC_TAPROOT) ? 4 : 1;
     for (uint8_t i = 0; i < 2; i++) {
         ModelGetUtxoAddress(addr, index, i, sizeof(addr));
-        AddressLongModeCut(addrShot, addr);
+        CutAndFormatAddress(addrShot, sizeof(addrShot), addr, 24);
         strncpy(prefix, addrShot, prefixLen);
         strncpy(rest, addrShot + prefixLen, strnlen_s(addrShot, BUFFER_SIZE_64) - prefixLen);
         snprintf_s(eg, sizeof(eg), "%d  #F5870A %s#%s", i, prefix, rest);

@@ -122,7 +122,7 @@ static void GetSolHdPath(char *hdPath, int index, uint32_t maxLen);
 static void GetEthRootPath(char *rootPath, int index, uint32_t maxLen);
 static char *GetEthXpub(int index);
 static char *GetSolXpub(int index);
-void AddressLongModeCut(char *out, const char *address);
+void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 
 static uint32_t GetPathIndex(void);
 static void SetPathIndex(uint32_t index);
@@ -738,7 +738,7 @@ static void RefreshSwitchAccount(void)
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetAddress(index, &addressDataItem);
         lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "Account-%u", (addressDataItem.index + 1));
-        AddressLongModeCut(string, addressDataItem.address);
+        CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {
             lv_obj_add_flag(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
@@ -784,12 +784,12 @@ static void RefreshDefaultAddress(void)
     AddressDataItem_t addressDataItem;
 
     ModelGetAddress(0, &addressDataItem);
-    AddressLongModeCut(string, addressDataItem.address);
+    CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 24);
     lv_label_set_text(g_addressLabel[0], string);
 
     if (!IsOnlyOneAddress(g_selectType)) {
         ModelGetAddress(1, &addressDataItem);
-        AddressLongModeCut(string, addressDataItem.address);
+        CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_addressLabel[1], string);
     }
 }
@@ -1069,20 +1069,6 @@ static void GetPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
         break;
     default:
         break;
-    }
-}
-
-void AddressLongModeCut(char *out, const char *address)
-{
-    uint32_t len = strnlen_s(address, 24);
-
-    if (len <= 24) {
-        strcpy_s(out, 24, address);
-    } else {
-        strncpy(out, address, 12);
-        out[12] = 0;
-        strcat(out, "...");
-        strcat(out, address + len - 12);
     }
 }
 

@@ -57,7 +57,6 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     uint16_t battState;
     uint32_t rcvValue;
     uint8_t checkSumPercent = 0;
-    static uint8_t walletMethod = WALLET_METHOD_CREATE;
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
@@ -68,9 +67,7 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_INIT_GET_ACCOUNT_NUMBER:
         walletNum = *(uint8_t *)param;
         if (walletNum == 0) {
-            // GuiFrameOpenView(&g_setupView);
-            // GuiFrameOpenViewWithParam(&g_singlePhraseView, &walletMethod, sizeof(walletMethod));
-            GuiFrameOpenViewWithParam(&g_createWalletView, &walletMethod, sizeof(walletMethod));
+            GuiFrameOpenView(&g_setupView);
             if (IsUpdateSuccess()) {
                 GuiFrameOpenView(&g_updateSuccessView);
             }

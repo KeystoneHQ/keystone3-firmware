@@ -235,6 +235,6 @@ static void VibrationSwitchHandler(lv_event_t * e)
             printf("vibration off\n");
             SetVibration(0);
         }
-        // SaveDeviceSettings();
+        SaveDeviceSettings();
     }
 }

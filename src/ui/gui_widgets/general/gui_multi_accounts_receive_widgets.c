@@ -123,11 +123,11 @@ static void OpenSwitchAddressHandler(lv_event_t *e);
 static void CloseSwitchAddressHandler(lv_event_t *e);
 
 static void ShowAddressDetailHandler(lv_event_t *e);
-static void AddressLongModeCut(char *out, const char *address, uint32_t targetLen);
 static void UpdateConfirmIndexBtn(void);
 static void UpdateConfirmAccountBtn(void);
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type);
+void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 
 static MultiAccountsReceiveWidgets_t g_multiAccountsReceiveWidgets;
 static MultiAccountsReceiveTile g_multiAccountsReceiveTileNow;
@@ -510,7 +510,7 @@ static void RefreshQrCode(void)
         lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
     char string[128] = {0};
-    AddressLongModeCut(string, addressDataItem.address, 20);
+    CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 20);
     lv_label_set_text(g_multiAccountsReceiveWidgets.addressLabel, string);
     lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.addressCountLabel, "Address-%u", (addressDataItem.index));
 }
@@ -525,7 +525,7 @@ static void RefreshSwitchAddress(void)
         ModelGetAddress(index, &addressDataItem, 0);
         lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "Address-%u", (addressDataItem.index));
         char string[128] = {0};
-        AddressLongModeCut(string, addressDataItem.address, 24);
+        CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {
             lv_obj_add_flag(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
@@ -1059,20 +1059,6 @@ static void GuiCreateSwitchAccountWidget()
     lv_obj_add_event_cb(btn, ConfirmAccountHandler, LV_EVENT_CLICKED, NULL);
     g_multiAccountsReceiveWidgets.confirmAccountBtn = btn;
     UpdateConfirmAccountBtn();
-}
-
-static void AddressLongModeCut(char *out, const char *address, uint32_t targetLen)
-{
-    uint32_t len = strnlen_s(address, ADDRESS_MAX_LEN);
-
-    if (len <= targetLen) {
-        strcpy_s(out, len, address);
-    } else {
-        strncpy(out, address, targetLen / 2);
-        strcat(out, "...");
-        strcat(out, address + len - targetLen / 2);
-        out[targetLen] = '\0';
-    }
 }
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)

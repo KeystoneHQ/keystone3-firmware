@@ -341,8 +341,7 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         } else {
             ret = SUCCESS_CODE;
         }
-            regeneratePubKey = true;
-        }
+            regeneratePubKey = true;    
     } while (0);
 
     if (jsonString) {

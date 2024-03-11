@@ -12,16 +12,6 @@ use third_party::ur_registry::crypto_output::CryptoOutput;
 use third_party::ur_registry::error::{URError, URResult};
 use third_party::ur_registry::script_expression::ScriptExpression;
 
-const PURPOSE_LEGACY: u32 = 44;
-const PURPOSE_NESTED_SEGWIT: u32 = 49;
-const PURPOSE_NATIVE_SEGWIT: u32 = 84;
-const PURPOSE_TAPROOT: u32 = 86;
-
-const NATIVE_SEGWIT_PATH: &str = "m/84'/0'/0'";
-const NESTED_SEGWIT_PATH: &str = "m/49'/0'/0'";
-const LEGACY_PATH: &str = "m/44'/0'/0'";
-const TAPROOT_SEGWIT_PATH: &str = "m/86'/0'/0'";
-
 pub fn generate_crypto_account(
     master_fingerprint: &[u8; 4],
     extended_public_keys: &[&str],
@@ -30,86 +20,34 @@ pub fn generate_crypto_account(
     let mut outputs = vec![];
 
     for (index, path) in extended_public_keys_path.iter().enumerate() {
-        match *path {
-            NATIVE_SEGWIT_PATH => outputs.push(generate_native_segwit_output(
-                master_fingerprint,
-                extended_public_keys[index],
-            )?),
-            LEGACY_PATH => outputs.push(generate_legacy_output(
-                master_fingerprint,
-                extended_public_keys[index],
-            )?),
-            NESTED_SEGWIT_PATH => outputs.push(generate_nested_segwit_output(
-                master_fingerprint,
-                extended_public_keys[index],
-            )?),
-            TAPROOT_SEGWIT_PATH => outputs.push(generate_taproot_output(
-                master_fingerprint,
-                extended_public_keys[index],
-            )?),
-            _ => {}
-        }
+        outputs.push(generate_output(
+            master_fingerprint,
+            extended_public_keys[index],
+            extended_public_keys_path[index],
+        )?);
     }
+
     Ok(CryptoAccount::new(master_fingerprint.clone(), outputs))
 }
 
-fn generate_taproot_output(
-    master_fingerprint: &[u8; 4],
-    extended_public_key: &str,
-) -> URResult<CryptoOutput> {
-    let script_expressions = vec![ScriptExpression::Taproot];
-    Ok(CryptoOutput::new(
-        script_expressions,
-        None,
-        Some(generate_crypto_hd_key(
-            master_fingerprint,
-            extended_public_key,
-            PURPOSE_TAPROOT,
-        )?),
-        None,
-    ))
+fn get_path_level_number(path: &str, index: usize) -> Option<u32> {
+    let segments: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
+
+    if index >= segments.len() {
+        return None;
+    }
+
+    let num_str = segments[index].trim_matches('\'');
+    match num_str.parse::<u32>() {
+        Ok(num) => Some(num),
+        Err(_) => None,
+    }
 }
 
-fn generate_legacy_output(
+fn generate_output(
     master_fingerprint: &[u8; 4],
     extended_public_key: &str,
-) -> URResult<CryptoOutput> {
-    let script_expressions = vec![ScriptExpression::PublicKeyHash];
-    Ok(CryptoOutput::new(
-        script_expressions,
-        None,
-        Some(generate_crypto_hd_key(
-            master_fingerprint,
-            extended_public_key,
-            PURPOSE_LEGACY,
-        )?),
-        None,
-    ))
-}
-
-fn generate_nested_segwit_output(
-    master_fingerprint: &[u8; 4],
-    extended_public_key: &str,
-) -> URResult<CryptoOutput> {
-    let script_expressions = vec![
-        ScriptExpression::ScriptHash,
-        ScriptExpression::WitnessPublicKeyHash,
-    ];
-    Ok(CryptoOutput::new(
-        script_expressions,
-        None,
-        Some(generate_crypto_hd_key(
-            master_fingerprint,
-            extended_public_key,
-            PURPOSE_NESTED_SEGWIT,
-        )?),
-        None,
-    ))
-}
-
-fn generate_native_segwit_output(
-    master_fingerprint: &[u8; 4],
-    extended_public_key: &str,
+    extended_public_keys_path: &str,
 ) -> URResult<CryptoOutput> {
     let script_expressions = vec![ScriptExpression::WitnessPublicKeyHash];
     Ok(CryptoOutput::new(
@@ -118,7 +56,8 @@ fn generate_native_segwit_output(
         Some(generate_crypto_hd_key(
             master_fingerprint,
             extended_public_key,
-            PURPOSE_NATIVE_SEGWIT,
+            get_path_level_number(extended_public_keys_path, 1).unwrap_or_default(),
+            get_path_level_number(extended_public_keys_path, 2).unwrap_or_default(),
         )?),
         None,
     ))
@@ -128,6 +67,7 @@ fn generate_crypto_hd_key(
     master_fingerprint: &[u8; 4],
     extended_public_key: &str,
     purpose: u32,
+    coin_type: u32,
 ) -> URResult<CryptoHDKey> {
     let bip32_extended_pub_key = bip32::Xpub::from_str(extended_public_key)
         .map_err(|e| URError::UrEncodeError(e.to_string()))?;
@@ -138,7 +78,7 @@ fn generate_crypto_hd_key(
     let origin = CryptoKeyPath::new(
         vec![
             get_path_component(Some(purpose), true)?,
-            get_path_component(Some(0), true)?,
+            get_path_component(Some(coin_type), true)?,
             get_path_component(Some(0), true)?,
         ],
         Some(master_fingerprint.clone()),

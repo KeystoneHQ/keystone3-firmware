@@ -311,7 +311,7 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
     // save setup phase
     {
         SetSetupStep(4);
-        // SaveDeviceSettings();
+        SaveDeviceSettings();
     }
     SystemReboot();
     return BuildFrame(&sendHead, NULL, 0);

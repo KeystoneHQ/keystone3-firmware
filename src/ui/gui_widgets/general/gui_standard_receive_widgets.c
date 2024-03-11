@@ -102,11 +102,11 @@ static bool IsAccountSwitchable();
 static bool HasMoreBtn();
 static void SwitchAddressHandler(lv_event_t *e);
 static void OpenSwitchAddressHandler(lv_event_t *e);
-static void AddressLongModeCut(char *out, const char *address);
 static void SetCurrentSelectIndex(uint32_t selectIndex);
 static uint32_t GetCurrentSelectIndex();
 static void ConfirmHandler(lv_event_t *e);
 static void UpdateConfirmBtn(void);
+void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
 
@@ -438,7 +438,7 @@ static void RefreshSwitchAccount(void)
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetAddress(index, &addressDataItem);
         lv_label_set_text_fmt(g_standardReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "Account-%u", (addressDataItem.index + 1));
-        AddressLongModeCut(string, addressDataItem.address);
+        CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_standardReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {
             lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
@@ -602,21 +602,6 @@ static void OpenSwitchAddressHandler(lv_event_t *e)
         RefreshSwitchAccount();
     }
 }
-
-static void AddressLongModeCut(char *out, const char *address)
-{
-    uint32_t len = strnlen_s(address, ADDRESS_LONE_MODE_LEN);
-
-    if (len <= ADDRESS_LONE_MODE_LEN) {
-        strcpy_s(out, ADDRESS_LONE_MODE_LEN, address);
-    } else {
-        strncpy(out, address, 12);
-        out[12] = 0;
-        strcat(out, "...");
-        strcat(out, address + len - 12);
-    }
-}
-
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {

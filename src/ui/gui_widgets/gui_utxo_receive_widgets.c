@@ -167,7 +167,10 @@ static const AddressSettingsItem_t *g_addressSettings = g_mainNetAddressSettings
 
 #endif
 
-static char * *g_derivationPathDescs = NULL;
+static char **g_derivationPathDescs = NULL;
+#ifdef BTC_ONLY
+static char **g_testNetderivationPathDescs = NULL;
+#endif
 
 #ifndef BTC_ONLY
 static const ChainPathItem_t g_chainPathItems[] = {
@@ -200,6 +203,9 @@ static void InitDerivationPathDesc(uint8_t chain)
     switch (chain) {
     case HOME_WALLET_CARD_BTC:
         g_derivationPathDescs = GetDerivationPathDescs(BTC_DERIVATION_PATH_DESC);
+#ifdef BTC_ONLY
+        g_testNetderivationPathDescs = GetDerivationPathDescs(BTC_TEST_NET_DERIVATION_PATH_DESC);
+#endif
         break;
     default:
         break;
@@ -740,6 +746,7 @@ static void Highlight(char *address, uint8_t highlightStart, uint8_t highlightEn
 #endif
 }
 
+#ifndef BTC_ONLY
 static void RefreshDefaultAddress(void)
 {
     char address[128];
@@ -763,6 +770,39 @@ static void RefreshDefaultAddress(void)
     lv_label_set_text(g_addressLabel[1], highlightAddress);
     lv_label_set_recolor(g_addressLabel[1], true);
 }
+#else
+static void RefreshDefaultAddress(void)
+{
+    char address[128];
+    char highlightAddress[128];
+    uint8_t highlightEnd;
+
+    AddressDataItem_t addressDataItem;
+
+    ChainType chainType;
+    chainType = GetChainTypeByIndex(g_selectType);
+
+    if (chainType == XPUB_TYPE_BTC_NATIVE_SEGWIT ||
+            chainType == XPUB_TYPE_BTC_TAPROOT ||
+            chainType == XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST ||
+            chainType == XPUB_TYPE_BTC_TAPROOT_TEST) {
+        highlightEnd = 4;
+    } else {
+        highlightEnd = 1;
+    }
+    ModelGetUtxoAddress(0, &addressDataItem);
+    AddressLongModeCut(address, addressDataItem.address);
+    Highlight(address, 0, highlightEnd, highlightAddress);
+    lv_label_set_text(g_addressLabel[0], highlightAddress);
+    lv_label_set_recolor(g_addressLabel[0], true);
+
+    ModelGetUtxoAddress(1, &addressDataItem);
+    AddressLongModeCut(address, addressDataItem.address);
+    Highlight(address, 0, highlightEnd, highlightAddress);
+    lv_label_set_text(g_addressLabel[1], highlightAddress);
+    lv_label_set_recolor(g_addressLabel[1], true);
+}
+#endif
 
 static void ShowEgAddressCont(lv_obj_t *egCont)
 {
@@ -773,8 +813,15 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     lv_obj_clean(egCont);
     lv_obj_t *prevLabel, *label;
     int egContHeight = 12;
-
+#ifndef BTC_ONLY
     label = GuiCreateNoticeLabel(egCont, g_derivationPathDescs[g_selectType]);
+#else
+    if (GetIsTestNet()) {
+        label = GuiCreateNoticeLabel(egCont, g_testNetderivationPathDescs[g_selectType]);
+    } else {
+        label = GuiCreateNoticeLabel(egCont, g_derivationPathDescs[g_selectType]);
+    }
+#endif
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);

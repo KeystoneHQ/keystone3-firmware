@@ -150,10 +150,10 @@ int GetXrpDetailLen(void *param)
     return strlen(tx->detail);
 }
 
-void GetXrpDetail(void *indata, void *param)
+void GetXrpDetail(void *indata, void *param, uint32_t maxLen)
 {
     DisplayXrpTx *tx = (DisplayXrpTx *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->detail);
+    strcpy_s((char *)indata, maxLen, tx->detail);
 }
 
 UREncodeResult *GuiGetXrpSignQrCodeData(void)

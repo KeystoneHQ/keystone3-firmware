@@ -258,66 +258,60 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
 #endif
 }
 
-void GetPsbtFeeValue(void *indata, void *param)
+void GetPsbtTotalOutAmount(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
-    strcpy_s((char *)indata, BUFFER_SIZE_512, psbt->overview->fee_amount);
+    strcpy_s((char *)indata, maxLen, psbt->overview->total_output_amount);
 }
 
-void GetPsbtTotalOutAmount(void *indata, void *param)
-{
-    DisplayTx *psbt = (DisplayTx *)param;
-    strcpy_s((char *)indata, BUFFER_SIZE_512, psbt->overview->total_output_amount);
-}
-
-void GetPsbtFeeAmount(void *indata, void *param)
+void GetPsbtFeeAmount(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
     if (psbt->overview->fee_larger_than_amount) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "#F55831 %s#", psbt->overview->fee_amount);
+        snprintf_s((char *)indata,  maxLen, "#F55831 %s#", psbt->overview->fee_amount);
     } else {
-        strcpy_s((char *)indata, BUFFER_SIZE_512, psbt->overview->fee_amount);
+        strcpy_s((char *)indata, maxLen, psbt->overview->fee_amount);
     }
 }
 
-void GetPsbtTotalOutSat(void *indata, void *param)
+void GetPsbtTotalOutSat(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
-    strcpy_s((char *)indata, BUFFER_SIZE_512, psbt->overview->total_output_sat);
+    strcpy_s((char *)indata, maxLen, psbt->overview->total_output_sat);
 }
 
-void GetPsbtFeeSat(void *indata, void *param)
+void GetPsbtFeeSat(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
     if (psbt->overview->fee_larger_than_amount) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "#F55831 %s#", psbt->overview->fee_sat);
+        snprintf_s((char *)indata,  maxLen, "#F55831 %s#", psbt->overview->fee_sat);
     } else {
-        strcpy_s((char *)indata, BUFFER_SIZE_512, psbt->overview->fee_sat);
+        strcpy_s((char *)indata, maxLen, psbt->overview->fee_sat);
     }
 }
 
-void GetPsbtNetWork(void *indata, void *param)
+void GetPsbtNetWork(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
-    strcpy_s((char *)indata, BUFFER_SIZE_512, psbt->overview->network);
+    strcpy_s((char *)indata, maxLen, psbt->overview->network);
 }
 
-void GetPsbtDetailInputValue(void *indata, void *param)
+void GetPsbtDetailInputValue(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
-    strcpy_s((char *)indata, BUFFER_SIZE_512, psbt->detail->total_input_amount);
+    strcpy_s((char *)indata, maxLen, psbt->detail->total_input_amount);
 }
 
-void GetPsbtDetailOutputValue(void *indata, void *param)
+void GetPsbtDetailOutputValue(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
-    strcpy_s((char *)indata, BUFFER_SIZE_512, psbt->detail->total_output_amount);
+    strcpy_s((char *)indata, maxLen, psbt->detail->total_output_amount);
 }
 
-void GetPsbtDetailFee(void *indata, void *param)
+void GetPsbtDetailFee(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
-    strcpy_s((char *)indata, BUFFER_SIZE_512, psbt->detail->fee_amount);
+    strcpy_s((char *)indata, maxLen, psbt->detail->fee_amount);
 }
 
 void *GetPsbtInputData(uint8_t *row, uint8_t *col, void *param)

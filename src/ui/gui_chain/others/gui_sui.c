@@ -73,10 +73,10 @@ int GetSuiDetailLen(void *param)
     return strlen(tx->detail);
 }
 
-void GetSuiDetail(void *indata, void *param)
+void GetSuiDetail(void *indata, void *param, uint32_t maxLen)
 {
     DisplaySuiIntentMessage *tx = (DisplaySuiIntentMessage *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->detail);
+    strcpy_s((char *)indata, maxLen, tx->detail);
 }
 
 UREncodeResult *GuiGetSuiSignQrCodeData(void)

@@ -652,7 +652,7 @@ void GuiSettingInit(void)
     g_deviceSetTileView.cont = cont;
     g_deviceSettingArray[g_deviceSetTileView.currentTile].tile = tile;
     g_deviceSettingArray[g_deviceSetTileView.currentTile].obj = NULL;
-    strcpy_s(g_deviceSettingArray[g_deviceSetTileView.currentTile].midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, ("device_setting_mid_btn"));
+    strcpy_s(g_deviceSettingArray[g_deviceSetTileView.currentTile].midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("device_setting_mid_btn"));
     g_deviceSettingArray[g_deviceSetTileView.currentTile].destructCb = NULL;
     g_deviceSettingArray[g_deviceSetTileView.currentTile].structureCb = NULL;
     g_deviceSettingArray[g_deviceSetTileView.currentTile].rightBtn = NVS_RIGHT_BUTTON_BUTT;

@@ -24,7 +24,7 @@ pub fn generate_crypto_account(
 ) -> URResult<CryptoAccount> {
     let mut outputs = vec![];
 
-    for (index, _path) in extended_public_keys_path.iter().enumerate() {
+    for (index, _) in extended_public_keys_path.iter().enumerate() {
         outputs.push(generate_output(
             master_fingerprint,
             extended_public_keys[index],
@@ -36,7 +36,7 @@ pub fn generate_crypto_account(
 }
 
 fn get_path_level_number(path: &str, index: usize) -> Option<u32> {
-    let segments: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
+    let segments = path.split('/').collect::<Vec<_>>();
 
     if index >= segments.len() {
         return None;
@@ -54,7 +54,10 @@ fn generate_output(
     extended_public_key: &str,
     extended_public_keys_path: &str,
 ) -> URResult<CryptoOutput> {
-    let purpose = get_path_level_number(extended_public_keys_path, 1).unwrap_or_default();
+    let purpose = get_path_level_number(extended_public_keys_path, 1)
+        .ok_or(URError::UrEncodeError("get purpose err".to_string()))?;
+    let coin_type = get_path_level_number(extended_public_keys_path, 2)
+        .ok_or(URError::UrEncodeError("get coin_type err".to_string()))?;
     let script_expressions = match purpose {
         PURPOSE_TAPROOT => vec![ScriptExpression::Taproot],
         PURPOSE_LEGACY => vec![ScriptExpression::PublicKeyHash],
@@ -78,7 +81,7 @@ fn generate_output(
             master_fingerprint,
             extended_public_key,
             purpose,
-            get_path_level_number(extended_public_keys_path, 2).unwrap_or_default(),
+            coin_type,
         )?),
         None,
     ))

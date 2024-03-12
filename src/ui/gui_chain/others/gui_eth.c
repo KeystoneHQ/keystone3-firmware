@@ -845,7 +845,7 @@ PtrT_TransactionCheckResult GuiGetEthCheckResult(void)
 void GetEthTransType(void *indata, void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    strcpy_s((char *)indata, BUFFER_SIZE_512, eth->tx_type);
+    strcpy((char *)indata, eth->tx_type);
 }
 
 void GetEthTxFee(void *indata, void *param)

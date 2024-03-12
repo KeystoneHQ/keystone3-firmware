@@ -117,6 +117,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_RABBY, "Rabby", &walletRabby},
     {WALLET_LIST_SAFE, "Safe", &walletSafe},
     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
+    {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
     {WALLET_LIST_IMTOKEN, "imToken", &walletImToken},
     {WALLET_LIST_BLOCK_WALLET, "Block Wallet", &walletBlockWallet},
     {WALLET_LIST_ZAPPER, "Zapper", &walletZapper},

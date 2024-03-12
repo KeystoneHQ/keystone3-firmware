@@ -82,10 +82,10 @@ int GetAptosDetailLen(void *param)
     return strnlen_s(tx->detail, SIMPLERESPONSE_C_CHAR_MAX_LEN);
 }
 
-void GetAptosDetail(void *indata, void *param)
+void GetAptosDetail(void *indata, void *param, uint32_t maxLen)
 {
     DisplayAptosTx *tx = (DisplayAptosTx *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->detail);
+    strcpy_s((char *)indata, maxLen, tx->detail);
 }
 
 bool IsAptosMsg(ViewType viewType)

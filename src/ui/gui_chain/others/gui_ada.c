@@ -159,45 +159,46 @@ int GetAdaExtraDataLen(void *param)
     return strnlen_s(tx->auxiliary_data, SIMPLERESPONSE_C_CHAR_MAX_LEN);
 }
 
-void GetAdaExtraData(void *indata, void *param)
+void GetAdaExtraData(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->auxiliary_data);
+    strcpy_s((char *)indata, maxLen, tx->auxiliary_data);
 }
 
-void GetAdaNetwork(void *indata, void *param)
+void GetAdaNetwork(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->network);
+    strcpy_s((char *)indata,  maxLen, tx->network);
 }
 
-void GetAdaWithdrawalsLabel(void *indata, void *param)
+void GetAdaWithdrawalsLabel(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%d Withdraw(s)", tx->withdrawals->size);
-}
-void GetAdaCertificatesLabel(void *indata, void *param)
-{
-    DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%d Certificate(s)", tx->certificates->size);
+    snprintf_s((char *)indata,  maxLen, "%d Withdraw(s)", tx->withdrawals->size);
 }
 
-void GetAdaTotalInput(void *indata, void *param)
+void GetAdaCertificatesLabel(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->total_input);
+    snprintf_s((char *)indata,  maxLen, "%d Certificate(s)", tx->certificates->size);
 }
 
-void GetAdaTotalOutput(void *indata, void *param)
+void GetAdaTotalInput(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->total_output);
+    strcpy_s((char *)indata,  maxLen, tx->total_input);
 }
 
-void GetAdaFee(void *indata, void *param)
+void GetAdaTotalOutput(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->fee);
+    strcpy_s((char *)indata,  maxLen, tx->total_output);
+}
+
+void GetAdaFee(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
+    strcpy_s((char *)indata,  maxLen, tx->fee);
 }
 
 void *GetAdaInputDetail(uint8_t *row, uint8_t *col, void *param)

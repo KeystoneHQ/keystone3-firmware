@@ -72,28 +72,28 @@ void FreeTrxMemory(void)
 #endif
 }
 
-void GetTrxValue(void *indata, void *param)
+void GetTrxValue(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTron *trx = (DisplayTron *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", trx->detail->value);
+    strcpy_s((char *)indata, maxLen, trx->detail->value);
 }
 
-void GetTrxMethod(void *indata, void *param)
+void GetTrxMethod(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTron *trx = (DisplayTron *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", trx->detail->method);
+    strcpy_s((char *)indata, maxLen, trx->detail->method);
 }
 
-void GetTrxFromAddress(void *indata, void *param)
+void GetTrxFromAddress(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTron *trx = (DisplayTron *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", trx->detail->from);
+    strcpy_s((char *)indata, maxLen, trx->detail->from);
 }
 
-void GetTrxToAddress(void *indata, void *param)
+void GetTrxToAddress(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTron *trx = (DisplayTron *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", trx->detail->to);
+    strcpy_s((char *)indata, maxLen, trx->detail->to);
 }
 
 bool GetTrxContractExist(void *indata, void *param)
@@ -102,10 +102,10 @@ bool GetTrxContractExist(void *indata, void *param)
     return strlen(trx->detail->contract_address) > 0;
 }
 
-void GetTrxContract(void *indata, void *param)
+void GetTrxContract(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTron *trx = (DisplayTron *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", trx->detail->contract_address);
+    strcpy_s((char *)indata, maxLen, trx->detail->contract_address);
 }
 
 bool GetTrxTokenExist(void *indata, void *param)
@@ -114,10 +114,10 @@ bool GetTrxTokenExist(void *indata, void *param)
     return strlen(trx->detail->token) > 0 && strcmp(trx->detail->token, "TRX") != 0;
 }
 
-void GetTrxToken(void *indata, void *param)
+void GetTrxToken(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTron *trx = (DisplayTron *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", trx->detail->token);
+    strcpy_s((char *)indata,  maxLen, trx->detail->token);
 }
 
 UREncodeResult *GuiGetTrxSignQrCodeData(void)

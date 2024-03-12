@@ -310,7 +310,6 @@ void GuiWalletRecoverySinglePhraseClear(void)
 {
     if (g_forgetMkb != NULL) {
         lv_obj_del(g_forgetMkb->cont);
-        g_forgetMkb = NULL;
     }
     g_forgetMkb->currentSlice = 0;
     g_forgetMkb->threShold = 0xff;

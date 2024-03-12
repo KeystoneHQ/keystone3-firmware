@@ -12,6 +12,11 @@ use third_party::ur_registry::crypto_output::CryptoOutput;
 use third_party::ur_registry::error::{URError, URResult};
 use third_party::ur_registry::script_expression::ScriptExpression;
 
+const PURPOSE_LEGACY: u32 = 44;
+const PURPOSE_NESTED_SEGWIT: u32 = 49;
+const PURPOSE_NATIVE_SEGWIT: u32 = 84;
+const PURPOSE_TAPROOT: u32 = 86;
+
 pub fn generate_crypto_account(
     master_fingerprint: &[u8; 4],
     extended_public_keys: &[&str],
@@ -19,7 +24,7 @@ pub fn generate_crypto_account(
 ) -> URResult<CryptoAccount> {
     let mut outputs = vec![];
 
-    for (index, path) in extended_public_keys_path.iter().enumerate() {
+    for (index, _path) in extended_public_keys_path.iter().enumerate() {
         outputs.push(generate_output(
             master_fingerprint,
             extended_public_keys[index],
@@ -49,14 +54,30 @@ fn generate_output(
     extended_public_key: &str,
     extended_public_keys_path: &str,
 ) -> URResult<CryptoOutput> {
-    let script_expressions = vec![ScriptExpression::WitnessPublicKeyHash];
+    let purpose = get_path_level_number(extended_public_keys_path, 1).unwrap_or_default();
+    let script_expressions = match purpose {
+        PURPOSE_TAPROOT => vec![ScriptExpression::Taproot],
+        PURPOSE_LEGACY => vec![ScriptExpression::PublicKeyHash],
+        PURPOSE_NESTED_SEGWIT => vec![
+            ScriptExpression::ScriptHash,
+            ScriptExpression::WitnessPublicKeyHash,
+        ],
+        PURPOSE_NATIVE_SEGWIT => vec![ScriptExpression::WitnessPublicKeyHash],
+        _ => {
+            return Err(URError::UrEncodeError(format!(
+                "not supported purpose:{}",
+                purpose
+            )))
+        }
+    };
+
     Ok(CryptoOutput::new(
         script_expressions,
         None,
         Some(generate_crypto_hd_key(
             master_fingerprint,
             extended_public_key,
-            get_path_level_number(extended_public_keys_path, 1).unwrap_or_default(),
+            purpose,
             get_path_level_number(extended_public_keys_path, 2).unwrap_or_default(),
         )?),
         None,

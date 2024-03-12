@@ -142,7 +142,7 @@ set(INCLUDE_DIR
 )
 
 if(BTC_ONLY)
-    list(APPEND INCLUDE_DIR src/ui/gui_widgets/btc_only)
+    list(APPEND INCLUDE_DIR src/ui/gui_widgets/btc_only src/ui/gui_widgets/general)
 else()
     list(APPEND INCLUDE_DIR src/ui/gui_chain/others src/ui/gui_widgets/general  src/webusb_protocol/general src/webusb_protocol/general/eapdu_services)
 endif()

@@ -1316,7 +1316,7 @@ static uint32_t BinarySearchLastNonFFSector(void)
             SRAM_FREE(buffer);
             return SUCCESS_CODE;
         }
-        memcpy_s(buffer, sizeof(buffer), (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
+        memcpy_s(buffer, SECTOR_SIZE, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
         if ((i - startIndex) % 200 == 0) {
             percent++;
             GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));

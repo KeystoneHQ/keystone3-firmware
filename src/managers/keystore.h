@@ -4,6 +4,7 @@
 #include "stdint.h"
 #include "stdbool.h"
 #include "err_code.h"
+#include "secret_cache.h"
 
 #define ACCOUNT_INDEX_LOGOUT                    255
 #define AES_BLOCK_SIZE                          16
@@ -22,7 +23,6 @@
 #define ACCOUNT_TOTAL_LEN                       (AES_IV_LEN + ENTROPY_MAX_LEN + SEED_LEN + SLIP39_EMS_LEN + SE_DATA_RESERVED_LEN + HMAC_LEN)
 #define PARAM_LEN                               32
 
-#define PASSPHRASE_MAX_LEN                      128
 #define ITERATION_TIME                          700
 
 typedef struct {

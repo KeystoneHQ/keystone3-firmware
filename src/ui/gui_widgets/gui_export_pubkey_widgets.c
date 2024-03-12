@@ -44,6 +44,7 @@ typedef struct {
 } PathTypeItem_t;
 
 void GetExportPubkey(char *dest, uint16_t chain, uint8_t pathType, uint32_t maxLen);
+void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 
 static void GuiCreateQrCodeWidget(lv_obj_t *parent);
 static void OpenSwitchPathTypeHandler(lv_event_t *e);
@@ -459,20 +460,6 @@ static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, ui
 }
 #endif
 
-static void AddressLongModeCut(char *out, const char *address)
-{
-    uint32_t len = strnlen_s(address, 24);
-
-    if (len <= 24) {
-        strcpy(out, address);
-    } else {
-        strncpy(out, address, 12);
-        out[12] = 0;
-        strcat(out, "...");
-        strcat(out, address + len - 12);
-    }
-}
-
 static void SetEgContent(uint8_t index)
 {
     char eg[BUFFER_SIZE_64] = {0};
@@ -483,7 +470,7 @@ static void SetEgContent(uint8_t index)
     int8_t prefixLen = (g_btcPathTypeList[index].pubkeyType == XPUB_TYPE_BTC_NATIVE_SEGWIT || g_btcPathTypeList[index].pubkeyType == XPUB_TYPE_BTC_TAPROOT) ? 4 : 1;
     for (uint8_t i = 0; i < 2; i++) {
         ModelGetUtxoAddress(addr, index, i, sizeof(addr));
-        AddressLongModeCut(addrShot, addr);
+        CutAndFormatAddress(addrShot, sizeof(addrShot), addr, 24);
         strncpy(prefix, addrShot, prefixLen);
         strncpy(rest, addrShot + prefixLen, strnlen_s(addrShot, BUFFER_SIZE_64) - prefixLen);
         snprintf_s(eg, sizeof(eg), "%d  #F5870A %s#%s", i, prefix, rest);

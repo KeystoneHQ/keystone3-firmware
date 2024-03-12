@@ -52,7 +52,6 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     uint16_t battState;
     uint32_t rcvValue;
     uint8_t checkSumPercent = 0;
-    static uint8_t walletMethod = WALLET_METHOD_CREATE;
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:

@@ -19,7 +19,7 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_global_resources.h"
-#include "assert.h"
+#include "user_memory.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
@@ -126,7 +126,7 @@ static void GotoAddressHandler(lv_event_t *e);
 static void GotoAddressKeyboardHandler(lv_event_t *e);
 static void CloseGotoAddressHandler(lv_event_t *e);
 
-static void AddressLongModeCut(char *out, const char *address);
+void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item);
 
 static void GetHint(char *hint);
@@ -756,13 +756,13 @@ static void RefreshDefaultAddress(void)
 
     uint8_t highlightEnd = (chainType == XPUB_TYPE_BTC_NATIVE_SEGWIT || chainType == XPUB_TYPE_BTC_TAPROOT) ? 4 : 1;
     ModelGetUtxoAddress(0, &addressDataItem);
-    AddressLongModeCut(address, addressDataItem.address);
+    CutAndFormatAddress(address, sizeof(address), addressDataItem.address, 24);
     Highlight(address, 0, highlightEnd, highlightAddress, sizeof(highlightAddress));
     lv_label_set_text(g_addressLabel[0], highlightAddress);
     lv_label_set_recolor(g_addressLabel[0], true);
 
     ModelGetUtxoAddress(1, &addressDataItem);
-    AddressLongModeCut(address, addressDataItem.address);
+    CutAndFormatAddress(address, sizeof(address), addressDataItem.address, 24);
     Highlight(address, 0, highlightEnd, highlightAddress, sizeof(highlightAddress));
     lv_label_set_text(g_addressLabel[1], highlightAddress);
     lv_label_set_recolor(g_addressLabel[1], true);
@@ -984,7 +984,7 @@ static void RefreshSwitchAccount(void)
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetUtxoAddress(index, &addressDataItem);
         lv_label_set_text_fmt(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "Address-%u", addressDataItem.index);
-        AddressLongModeCut(string, addressDataItem.address);
+        CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_utxoReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {
             lv_obj_add_flag(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
@@ -1320,17 +1320,17 @@ static void CloseGotoAddressHandler(lv_event_t *e)
     }
 }
 
-static void AddressLongModeCut(char *out, const char *address)
+void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen)
 {
-    uint32_t len = strnlen_s(address, 24);
+    uint32_t len = strnlen_s(address, targetLen + 1);
 
-    if (len <= 24) {
-        strcpy_s(out, len, address);
+    if (len < targetLen) {
+        strcpy_s(out, len + 1, address);
     } else {
-        strncpy(out, address, 12);
-        out[12] = 0;
-        strcat(out, "...");
-        strcat(out, address + len - 12);
+        size_t halfLen = targetLen / 2;
+        strncpy_s(out, maxLen, address, halfLen);
+        strcat_s(out, maxLen, "...");
+        strncat_s(out, maxLen, address + len - halfLen, halfLen);
     }
 }
 

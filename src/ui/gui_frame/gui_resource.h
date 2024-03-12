@@ -200,6 +200,10 @@ LV_IMG_DECLARE(coinCosmos);
 LV_IMG_DECLARE(coinCosmosEco);
 LV_IMG_DECLARE(coinTia);
 LV_IMG_DECLARE(coinDym);
+LV_IMG_DECLARE(coinOrdi);
+LV_IMG_DECLARE(coinMubi);
+LV_IMG_DECLARE(coinTrac);
+LV_IMG_DECLARE(coinSats);
 
 // wallet
 LV_IMG_DECLARE(walletKeystone);
@@ -223,6 +227,7 @@ LV_IMG_DECLARE(walletSparrow);
 LV_IMG_DECLARE(walletImToken);
 LV_IMG_DECLARE(walletSpecter);
 LV_IMG_DECLARE(walletNunchuk);
+LV_IMG_DECLARE(walletUniSat);
 
 
 //wallet list
@@ -245,6 +250,7 @@ LV_IMG_DECLARE(walletListPetra);
 LV_IMG_DECLARE(walletListXRPToolkit);
 LV_IMG_DECLARE(walletListSparrow);
 LV_IMG_DECLARE(walletListImToken);
+LV_IMG_DECLARE(walletListUniSat);
 
 LV_IMG_DECLARE(btcWalletListBlue);
 LV_IMG_DECLARE(btcWalletListSpecter);

@@ -116,6 +116,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_RABBY, "Connect Rabby", &walletRabby},
     {WALLET_LIST_SAFE, "Connect Safe", &walletSafe},
     {WALLET_LIST_SPARROW, "Connect Sparrow", &walletSparrow},
+    {WALLET_LIST_UNISAT, "Connect UniSat", &walletUniSat},
     {WALLET_LIST_IMTOKEN, "Connect imToken", &walletImToken},
     {WALLET_LIST_BLOCK_WALLET, "Connect Block Wallet", &walletBlockWallet},
     {WALLET_LIST_ZAPPER, "Connect Zapper", &walletZapper},

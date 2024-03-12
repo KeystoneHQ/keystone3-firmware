@@ -8,10 +8,10 @@ void *GuiGetSolData(void);
 UREncodeResult *GuiGetSolSignQrCodeData(void);
 PtrT_TransactionCheckResult GuiGetSolCheckResult(void);
 void *GuiGetSolMessageData(void);
-void GetSolMessageType(void *indata, void *param);
-void GetSolMessageFrom(void *indata, void *param);
-void GetSolMessageUtf8(void *indata, void *param);
-void GetSolMessageRaw(void *indata, void *param);
+void GetSolMessageType(void *indata, void *param, uint32_t maxLen);
+void GetSolMessageFrom(void *indata, void *param, uint32_t maxLen);
+void GetSolMessageUtf8(void *indata, void *param, uint32_t maxLen);
+void GetSolMessageRaw(void *indata, void *param, uint32_t maxLen);
 
 void FreeSolMemory(void);
 

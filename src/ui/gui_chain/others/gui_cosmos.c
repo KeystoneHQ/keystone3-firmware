@@ -148,15 +148,15 @@ void FreeCosmosMemory(void)
 #endif
 }
 
-void GuiGetCosmosTmpType(void *indata, void *param)
+void GuiGetCosmosTmpType(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
     if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_UNKNOWN)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "unknown");
+        snprintf_s((char *)indata,  maxLen, "unknown");
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_MESSAGE)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "msg");
+        snprintf_s((char *)indata,  maxLen, "msg");
     } else {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "tx");
+        snprintf_s((char *)indata,  maxLen, "tx");
     }
 }
 
@@ -169,158 +169,158 @@ bool IsCosmosMsg(ViewType viewType)
     return strcmp(data->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_MESSAGE)) == 0;
 }
 
-void GetCosmosValue(void *indata, void *param)
+void GetCosmosValue(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
     if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_SEND)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->send_value);
+        strcpy_s((char *)indata, maxLen, tx->overview->send_value);
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_IBC_TRANSFER)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->transfer_value);
+        strcpy_s((char *)indata, maxLen, tx->overview->transfer_value);
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_DELEGATE)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->delegate_value);
+        strcpy_s((char *)indata, maxLen, tx->overview->delegate_value);
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_UNDELEGATE)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->undelegate_value);
+        strcpy_s((char *)indata, maxLen, tx->overview->undelegate_value);
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_REDELEGATE)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->redelegate_value);
+        strcpy_s((char *)indata, maxLen, tx->overview->redelegate_value);
     } else {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "");
+        strcpy_s((char *)indata, maxLen, "");
     }
 }
 
-void GetCosmosMethod(void *indata, void *param)
+void GetCosmosMethod(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->method);
+    strcpy_s((char *)indata, maxLen, tx->overview->method);
 }
 
-void GetCosmosProposal(void *indata, void *param)
+void GetCosmosProposal(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
     // vote_proposal is a string like "#584", but one # is used for color, so need two # to display #.
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "#%s", tx->overview->vote_proposal);
+    snprintf_s((char *)indata,  maxLen, "#%s", tx->overview->vote_proposal);
 }
 
-void GetCosmosVoted(void *indata, void *param)
+void GetCosmosVoted(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->vote_voted);
+    strcpy_s((char *)indata, maxLen, tx->overview->vote_voted);
 }
 
-void GetCosmosAddress1Value(void *indata, void *param)
+void GetCosmosAddress1Value(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
     if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_SEND)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->send_from);
+        strcpy_s((char *)indata, maxLen, tx->overview->send_from);
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_IBC_TRANSFER)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->transfer_from);
+        strcpy_s((char *)indata, maxLen, tx->overview->transfer_from);
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_DELEGATE)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->delegate_from);
+        strcpy_s((char *)indata, maxLen, tx->overview->delegate_from);
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_UNDELEGATE)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->undelegate_validator);
+        strcpy_s((char *)indata, maxLen, tx->overview->undelegate_validator);
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_REDELEGATE)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->redelegate_to);
+        strcpy_s((char *)indata, maxLen, tx->overview->redelegate_to);
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_WITHDRAW_REWARD)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->withdraw_reward_to);
+        strcpy_s((char *)indata, maxLen, tx->overview->withdraw_reward_to);
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_VOTE)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->vote_voter);
+        strcpy_s((char *)indata, maxLen, tx->overview->vote_voter);
     } else {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "");
+        strcpy_s((char *)indata, maxLen, "");
     }
 }
 
-void GetCosmosAddress1Label(void *indata, void *param)
+void GetCosmosAddress1Label(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
     if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_UNDELEGATE)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "Validator");
+        strcpy_s((char *)indata, maxLen, "Validator");
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_VOTE)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "Voter");
+        strcpy_s((char *)indata, maxLen, "Voter");
     } else if (
         strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_REDELEGATE)) == 0 ||
         strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_WITHDRAW_REWARD)) == 0 ||
         strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_VOTE)) == 0
     ) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "To");
+        strcpy_s((char *)indata, maxLen, "To");
     } else {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "From");
+        strcpy_s((char *)indata, maxLen, "From");
     }
 }
 
-void GetCosmosAddress2Value(void *indata, void *param)
+void GetCosmosAddress2Value(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
     if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_SEND)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->send_to);
+        strcpy_s((char *)indata, maxLen, tx->overview->send_to);
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_IBC_TRANSFER)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->transfer_to);
+        strcpy_s((char *)indata, maxLen, tx->overview->transfer_to);
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_DELEGATE)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->delegate_to);
+        strcpy_s((char *)indata, maxLen, tx->overview->delegate_to);
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_UNDELEGATE)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->undelegate_to);
+        strcpy_s((char *)indata, maxLen, tx->overview->undelegate_to);
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_REDELEGATE)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->redelegate_new_validator);
+        strcpy_s((char *)indata, maxLen, tx->overview->redelegate_new_validator);
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_WITHDRAW_REWARD)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->overview->withdraw_reward_validator);
+        strcpy_s((char *)indata, maxLen, tx->overview->withdraw_reward_validator);
     } else {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "");
+        strcpy_s((char *)indata, maxLen, "");
     }
 }
 
-void GetCosmosAddress2Label(void *indata, void *param)
+void GetCosmosAddress2Label(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
     if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_REDELEGATE)) == 0) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "New Validator");
+        snprintf_s((char *)indata,  maxLen, "New Validator");
     } else if (
         strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_WITHDRAW_REWARD)) == 0 ||
         strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_VOTE)) == 0
     ) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "Validator");
+        strcpy_s((char *)indata, maxLen, "Validator");
     } else {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "To");
+        strcpy_s((char *)indata, maxLen, "To");
     }
 }
 
-void GetCosmosDetailCommon(void *indata, void *param, const char* key)
+void GetCosmosDetailCommon(void *indata, void *param, const char* key, uint32_t maxLen)
 {
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
     cJSON* root = cJSON_Parse((const char *)tx->detail);
     cJSON* common = cJSON_GetObjectItem(root, "common");
     if (common == NULL) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "");
+        strcpy_s((char *)indata, maxLen, "");
         return;
     }
     cJSON* value = cJSON_GetObjectItem(common, key);
     if (value == NULL) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "");
+        strcpy_s((char *)indata, maxLen, "");
     } else {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", value->valuestring);
+        strcpy_s((char *)indata, maxLen, value->valuestring);
     }
 }
 
-void GetCosmosMaxFee(void *indata, void *param)
+void GetCosmosMaxFee(void *indata, void *param, uint32_t maxLen)
 {
-    GetCosmosDetailCommon(indata, param, "Max Fee");
+    GetCosmosDetailCommon(indata, param, "Max Fee", maxLen);
 }
 
-void GetCosmosFee(void *indata, void *param)
+void GetCosmosFee(void *indata, void *param, uint32_t maxLen)
 {
-    GetCosmosDetailCommon(indata, param, "Fee");
+    GetCosmosDetailCommon(indata, param, "Fee", maxLen);
 }
 
-void GetCosmosNetwork(void *indata, void *param)
+void GetCosmosNetwork(void *indata, void *param, uint32_t maxLen)
 {
-    GetCosmosDetailCommon(indata, param, "Network");
+    GetCosmosDetailCommon(indata, param, "Network", maxLen);
 }
 
-void GetCosmosGasLimit(void *indata, void *param)
+void GetCosmosGasLimit(void *indata, void *param, uint32_t maxLen)
 {
-    GetCosmosDetailCommon(indata, param, "Gas Limit");
+    GetCosmosDetailCommon(indata, param, "Gas Limit", maxLen);
 }
 
-void GetCosmosChainId(void *indata, void *param)
+void GetCosmosChainId(void *indata, void *param, uint32_t maxLen)
 {
-    GetCosmosDetailCommon(indata, param, "Chain ID");
+    GetCosmosDetailCommon(indata, param, "Chain ID", maxLen);
 }
 
 void GetCosmosDetailNthKind(void *indata, void *param, int n, const char* key)
@@ -334,12 +334,12 @@ void GetCosmosDetailNthKind(void *indata, void *param, int n, const char* key)
     snprintf_s((char *)indata,  BUFFER_SIZE_512, !strcmp(key, "Proposal") ? "#%s" : "%s", value->valuestring);
 }
 
-void GetCosmosChannel(void *indata, void *param)
+void GetCosmosChannel(void *indata, void *param, uint32_t maxLen)
 {
     GetCosmosDetailNthKind(indata, param, 0, "Source Channel");
 }
 
-void GetCosmosOldValidator(void *indata, void *param)
+void GetCosmosOldValidator(void *indata, void *param, uint32_t maxLen)
 {
     GetCosmosDetailNthKind(indata, param, 0, "Old Validator");
 }
@@ -359,26 +359,26 @@ void GetCosmosMsgKey(void *indata, void *param)
     GetCosmosDetailNthKind(indata, param, g_cosmosListIndex, "Method");
 }
 
-void GetCosmosIndex(void *indata, void *param)
+void GetCosmosIndex(void *indata, void *param, uint32_t maxLen)
 {
     // one # is used for color, two # is used for display #.
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "##%d", g_cosmosListIndex + 1);
+    snprintf_s((char *)indata,  maxLen, "##%d", g_cosmosListIndex + 1);
 }
 
-void GetCosmosTextOfKind(void *indata, void *param)
+void GetCosmosTextOfKind(void *indata, void *param, uint32_t maxLen)
 {
     GetCosmosDetailNthKind(indata, param, g_cosmosListIndex, indata);
 }
 
-void GetCosmosDetailItemValue(void *indata, void *param)
+void GetCosmosDetailItemValue(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
     cJSON* detail = cJSON_Parse((const char *)tx->detail);
     cJSON* value = cJSON_GetObjectItem(detail, indata);
     if (value == NULL) {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "");
+        strcpy_s((char *)indata, maxLen, "");
     } else {
-        snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", value->valuestring);
+        strcpy_s((char *)indata, maxLen, value->valuestring);
     }
 }
 
@@ -553,7 +553,7 @@ uint8_t GuiGetCosmosTxChain(void)
         cJSON* value = cJSON_GetObjectItem(detail, "Chain ID");
         snprintf_s(chain_id, BUFFER_SIZE_64, "%s", value->valuestring);
     } else {
-        GetCosmosDetailCommon(chain_id, parseResult->data, "Chain ID");
+        GetCosmosDetailCommon(chain_id, parseResult->data, "Chain ID", BUFFER_SIZE_64);
     }
     if (chain_id != NULL) {
         for (uint8_t i = 0; i < COSMOS_CHAINS_LEN; i++) {

@@ -10,7 +10,7 @@ void GuiSetXrpUrData(URParseResult *urResult, URParseMultiResult *urMultiResult,
 void *GuiGetXrpData(void);
 void FreeXrpMemory(void);
 int GetXrpDetailLen(void *param);
-void GetXrpDetail(void *indata, void *param);
+void GetXrpDetail(void *indata, void *param, uint32_t maxLen);
 UREncodeResult *GuiGetXrpSignQrCodeData(void);
 
 #endif

@@ -8,18 +8,16 @@ void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult
 void FreePsbtUxtoMemory(void);
 void *GuiGetParsedQrData(void);
 PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void);
-void GetPsbtTotalOutAmount(void *indata, void *param);
-void GetPsbtFeeAmount(void *indata, void *param);
-void GetPsbtTotalOutSat(void *indata, void *param);
-void GetPsbtFeeSat(void *indata, void *param);
+void GetPsbtTotalOutAmount(void *indata, void *param, uint32_t maxLen);
+void GetPsbtFeeAmount(void *indata, void *param, uint32_t maxLen);
+void GetPsbtTotalOutSat(void *indata, void *param, uint32_t maxLen);
+void GetPsbtFeeSat(void *indata, void *param, uint32_t maxLen);
 
-void GetPsbtFeeValue(void *indata, void *param);
-void GetPsbtNetWork(void *indata, void *param);
-void GetPsbtHashID(void *indata, void *param);
+void GetPsbtNetWork(void *indata, void *param, uint32_t maxLen);
 
-void GetPsbtDetailInputValue(void *indata, void *param);
-void GetPsbtDetailOutputValue(void *indata, void *param);
-void GetPsbtDetailFee(void *indata, void *param);
+void GetPsbtDetailInputValue(void *indata, void *param, uint32_t maxLen);
+void GetPsbtDetailOutputValue(void *indata, void *param, uint32_t maxLen);
+void GetPsbtDetailFee(void *indata, void *param, uint32_t maxLen);
 
 void *GetPsbtInputData(uint8_t *row, uint8_t *col, void *param);
 void *GetPsbtOutputData(uint8_t *row, uint8_t *col, void *param);

@@ -134,49 +134,49 @@ void FreeSolMemory(void)
 }
 
 
-void GetSolMessageType(void *indata, void *param)
+void GetSolMessageType(void *indata, void *param, uint32_t maxLen)
 {
-
     DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
     if (message->utf8_message) {
-        strcpy_s((char *)indata, BUFFER_SIZE_512, "utf8_message");
+        strcpy_s((char *)indata, maxLen, "utf8_message");
     } else {
-        strcpy_s((char *)indata, BUFFER_SIZE_512, "raw_message");
+        strcpy_s((char *)indata, maxLen, "raw_message");
     }
 
 }
 
-void GetSolMessageFrom(void *indata, void *param)
+void GetSolMessageFrom(void *indata, void *param, uint32_t maxLen)
 {
     DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
-    if (strlen(message->from) >= BUFFER_SIZE_512) {
-        snprintf((char *)indata, BUFFER_SIZE_512 - 3, "%s", message->from);
+    if (strlen(message->from) >= maxLen) {
+        snprintf((char *)indata, maxLen - 3, "%s", message->from);
         strcat((char *)indata, "...");
-        snprintf((char *)indata, BUFFER_SIZE_512, "%.*s...", BUFFER_SIZE_512 - 4, message->from);
+        snprintf((char *)indata, maxLen, "%.*s...", maxLen - 4, message->from);
     } else {
-        snprintf((char *)indata, BUFFER_SIZE_512, "%s", message->from);
-    }
-}
-void GetSolMessageUtf8(void *indata, void *param)
-{
-    DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
-    if (strlen(message->utf8_message) >= BUFFER_SIZE_512) {
-        snprintf((char *)indata, BUFFER_SIZE_512 - 3, "%s", message->utf8_message);
-        strcat((char *)indata, "...");
-    } else {
-        snprintf((char *)indata, BUFFER_SIZE_512, "%s", message->utf8_message);
+        strcpy_s((char *)indata, maxLen, message->from);
     }
 }
 
-void GetSolMessageRaw(void *indata, void *param)
+void GetSolMessageUtf8(void *indata, void *param, uint32_t maxLen)
+{
+    DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
+    if (strlen(message->utf8_message) >= maxLen) {
+        snprintf((char *)indata, maxLen - 3, "%s", message->utf8_message);
+        strcat((char *)indata, "...");
+    } else {
+        snprintf((char *)indata, maxLen, "%s", message->utf8_message);
+    }
+}
+
+void GetSolMessageRaw(void *indata, void *param, uint32_t maxLen)
 {
     int len = strlen("\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
     DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
-    if (strlen(message->raw_message) >= BUFFER_SIZE_512 - len) {
-        snprintf((char *)indata, BUFFER_SIZE_512 - 3 - len, "%s", message->raw_message);
+    if (strlen(message->raw_message) >= maxLen - len) {
+        snprintf((char *)indata, maxLen - 3 - len, "%s", message->raw_message);
         strcat((char *)indata, "...");
     } else {
-        snprintf((char *)indata, BUFFER_SIZE_512, "%s%s", message->raw_message, "\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
+        snprintf((char *)indata, maxLen, "%s%s", message->raw_message, "\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
     }
 }
 

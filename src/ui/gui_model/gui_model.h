@@ -2,22 +2,20 @@
 #define _GUI_MODEL_H
 
 #ifndef COMPILE_SIMULATOR
-#include "drv_battery.h"
 #include "user_sqlite3.h"
 #include "fingerprint_process.h"
 #include "screen_manager.h"
 #include "anti_tamper.h"
 #include "presetting.h"
-#include "drv_rtc.h"
 #include "drv_sdcard.h"
 #include "log.h"
 #include "presetting.h"
 #include "anti_tamper.h"
-#include "drv_battery.h"
 #else
 #include "simulator_model.h"
-#define memset_s(a1,a2,a3,a4)               memset(a1,a2,a3)
 #endif
+#include "drv_rtc.h"
+#include "drv_battery.h"
 #include "gui_animating_qrcode.h"
 #include "account_manager.h"
 
@@ -39,7 +37,7 @@ typedef struct {
 
 typedef struct {
     uint8_t iconIndex;
-    char name[64];
+    char name[WALLET_NAME_MAX_LEN + 1];
 } WalletDesc_t;
 
 typedef struct PasswordVerifyResult {

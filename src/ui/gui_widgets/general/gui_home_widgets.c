@@ -21,7 +21,6 @@
 #include "account_manager.h"
 #include "log_print.h"
 
-// static uint8_t g_manageWalletNum = 2;
 static lv_obj_t *g_manageWalletLabel = NULL;
 static lv_obj_t *g_homeWalletCardCont = NULL;
 static lv_obj_t *g_homeViewCont = NULL;
@@ -53,6 +52,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_DASH, false, "DASH", true},
     {HOME_WALLET_CARD_COSMOS, false, "Cosmos Eco", true},
     {HOME_WALLET_CARD_TIA, false, "TIA", true},
+    {HOME_WALLET_CARD_DYM, false, "DYM", true},
     {HOME_WALLET_CARD_OSMO, false, "OSMO", true},
     {HOME_WALLET_CARD_INJ, false, "INJ", true},
     {HOME_WALLET_CARD_ATOM, false, "ATOM", true},
@@ -185,6 +185,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "TIA",
         .chain = "Celestia",
         .icon = &coinTia,
+    },
+    {
+        .index = HOME_WALLET_CARD_DYM,
+        .coin = "DYM",
+        .chain = "Dymension",
+        .icon = &coinDym,
     },
     {
         .index = HOME_WALLET_CARD_OSMO,
@@ -374,7 +380,7 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count);
 
 static void UpdateManageWalletState(bool needUpdate)
 {
-    char tempBuf[16] = {0};
+    char tempBuf[BUFFER_SIZE_16] = {0};
     uint8_t selectCnt = 0;
     g_isManageOpen = false;
     int total = 0;
@@ -393,7 +399,7 @@ static void UpdateManageWalletState(bool needUpdate)
             lv_obj_clear_state(g_walletState[i].checkBox, LV_STATE_CHECKED);
         }
     }
-    sprintf(tempBuf, _("home_select_coin_count_fmt"), selectCnt, total);
+    snprintf_s(tempBuf, BUFFER_SIZE_16, _("home_select_coin_count_fmt"), selectCnt, total);
     lv_label_set_text(g_manageWalletLabel, tempBuf);
     if (needUpdate) {
         if (memcmp(g_walletState, g_walletBakState, sizeof(g_walletState))) {
@@ -798,8 +804,6 @@ void GuiHomeRefresh(void)
     if (g_manageCont != NULL) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("home_manage_assets"));
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, g_manageCont);
-        // TODO: add search
-        // GuiNvsBarSetRightCb(NVS_BAR_SEARCH, NULL, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     } else {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_MANAGE, OpenManageAssetsHandler, NULL);

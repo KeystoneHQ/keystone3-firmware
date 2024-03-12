@@ -1,27 +1,29 @@
-#include "account_public_info.h"
-#include "string.h"
-#include "stdio.h"
-#include "user_memory.h"
-#include "keystore.h"
+#include <stdio.h>
+#include <string.h>
+#include "define.h"
+#include "cjson/cJSON.h"
+#include "sha256.h"
 #include "flash_address.h"
 #include "drv_gd25qxx.h"
-#include "define.h"
+#include "keystore.h"
+#include "user_memory.h"
+#include "account_public_info.h"
+#include "account_manager.h"
+#include "se_manager.h"
 #include "user_utils.h"
 #include "librust_c.h"
-#include "cjson/cJSON.h"
 #include "assert.h"
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_api.h"
 #include "gui_home_widgets.h"
-#include "sha256.h"
-#include "se_manager.h"
-#include "account_manager.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
 
 #define PUB_KEY_MAX_LENGTH                  256
 #define VERSION_MAX_LENGTH                  64
-
 #define INVALID_ACCOUNT_INDEX               255
 
 typedef struct {
@@ -49,6 +51,7 @@ static char *GetJsonStringFromPublicKey(void);
 static void FreePublicKeyRam(void);
 static void PrintInfo(void);
 static void GetStringValue(cJSON *obj, const char *key, char *value, uint32_t maxLen);
+static bool GetBoolValue(const cJSON *obj, const char *key, bool defaultValue);
 
 static AccountPublicKeyItem_t g_accountPublicKey[XPUB_TYPE_NUM];
 static uint8_t g_tempPublicKeyAccountIndex = INVALID_ACCOUNT_INDEX;
@@ -56,11 +59,11 @@ static uint8_t g_tempPublicKeyAccountIndex = INVALID_ACCOUNT_INDEX;
 static const char g_xpubInfoVersion[] = "1.0.0";
 
 static const ChainItem_t g_chainTable[] = {
+#ifndef BTC_ONLY
     {XPUB_TYPE_BTC,                   SECP256K1,    "btc",                      "M/49'/0'/0'"       },
     {XPUB_TYPE_BTC_LEGACY,            SECP256K1,    "btc_legacy",               "M/44'/0'/0'"       },
     {XPUB_TYPE_BTC_NATIVE_SEGWIT,     SECP256K1,    "btc_nested_segwit",        "M/84'/0'/0'"       },
     {XPUB_TYPE_BTC_TAPROOT,           SECP256K1,    "btc_taproot",              "M/86'/0'/0'"       },
-#ifndef BTC_ONLY
     {XPUB_TYPE_LTC,                   SECP256K1,    "ltc",                      "M/49'/2'/0'"       },
     {XPUB_TYPE_DASH,                  SECP256K1,    "dash",                     "M/44'/5'/0'"       },
     {XPUB_TYPE_BCH,                   SECP256K1,    "bch",                      "M/44'/145'/0'"     },
@@ -150,6 +153,15 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_ADA_21,                BIP32_ED25519, "ada_21",                   "M/1852'/1815'/21'"},
     {XPUB_TYPE_ADA_22,                BIP32_ED25519, "ada_22",                   "M/1852'/1815'/22'"},
     {XPUB_TYPE_ADA_23,                BIP32_ED25519, "ada_23",                   "M/1852'/1815'/23'"},
+#else
+    {XPUB_TYPE_BTC,                     SECP256K1,      "btc_nested_segwit",        "M/49'/0'/0'"   },
+    {XPUB_TYPE_BTC_LEGACY,              SECP256K1,      "btc_legacy",               "M/44'/0'/0'"   },
+    {XPUB_TYPE_BTC_NATIVE_SEGWIT,       SECP256K1,      "btc_native_segwit",        "M/84'/0'/0'"   },
+    {XPUB_TYPE_BTC_TAPROOT,             SECP256K1,      "btc_taproot",              "M/86'/0'/0'"   },
+    {XPUB_TYPE_BTC_TEST,                SECP256K1,      "btc_nested_segwit_test",   "M/49'/1'/0'"   },
+    {XPUB_TYPE_BTC_LEGACY_TEST,         SECP256K1,      "btc_legacy_test",          "M/44'/1'/0'"   },
+    {XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST,  SECP256K1,      "btc_native_segwit_test",   "M/84'/1'/0'"   },
+    {XPUB_TYPE_BTC_TAPROOT_TEST,        SECP256K1,      "btc_taproot_test",         "M/86'/1'/0'"   },
 #endif
 };
 
@@ -191,6 +203,9 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
             } else {
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(false));
             }
+#ifdef BTC_ONLY
+            cJSON_AddItemToObject(jsonItem, "testNet", cJSON_CreateBool(false));
+#endif
             cJSON_AddItemToObject(rootJson, walletList[i].name, jsonItem);
         }
         retStr = cJSON_Print(rootJson);
@@ -211,11 +226,10 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
     for (int i = 0; i < count; i++) {
         cJSON *item = cJSON_GetObjectItem(rootJson, walletList[i].name);
         if (item != NULL) {
-            cJSON *manage = cJSON_GetObjectItem(item, "manage");
-            bool state = manage->valueint;
-            walletList[i].state = state;
-        } else {
-            walletList[i].state = false;
+            walletList[i].state = GetBoolValue(item, "manage", false);
+#ifdef BTC_ONLY
+            walletList[i].testNet = GetBoolValue(item, "testNet", false);
+#endif
         }
     }
     cJSON_Delete(rootJson);
@@ -247,15 +261,28 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
             item = cJSON_CreateObject();
             cJSON_AddItemToObject(item, "firstRecv", cJSON_CreateBool(false));
             cJSON_AddItemToObject(item, "manage", cJSON_CreateBool(walletList[i].state));
+#ifdef BTC_ONLY
+            cJSON_AddItemToObject(item, "testNet", cJSON_CreateBool(walletList[i].testNet));
+#endif
             cJSON_AddItemToObject(rootJson, walletList[i].name, item);
             needUpdate = true;
         } else {
-            cJSON *manage = cJSON_GetObjectItem(item, "manage");
-            bool state = manage->valueint;
-            if (state != walletList[i].state) {
+            if (cJSON_GetObjectItem(item, "manage") == NULL) {
+                cJSON_AddItemToObject(item, "manage", cJSON_CreateBool(walletList[i].state));
                 needUpdate = true;
+            } else if (GetBoolValue(item, "manage", false) != walletList[i].state) {
                 cJSON_ReplaceItemInObject(item, "manage", cJSON_CreateBool(walletList[i].state));
+                needUpdate = true;
             }
+#ifdef BTC_ONLY
+            if (cJSON_GetObjectItem(item, "testNet") == NULL) {
+                cJSON_AddItemToObject(item, "testNet", cJSON_CreateBool(walletList[i].testNet));
+                needUpdate = true;
+            } else if (GetBoolValue(item, "testNet", false) != walletList[i].testNet) {
+                cJSON_ReplaceItemInObject(item, "testNet", cJSON_CreateBool(walletList[i].testNet));
+                needUpdate = true;
+            }
+#endif
         }
     }
 
@@ -306,13 +333,15 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
         ASSERT(ret == size);
         jsonString[size] = 0;
-        sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
+        sha256((struct sha256 *)hash, jsonString, size);
+#ifndef COMPILE_SIMULATOR
         if (!VerifyWalletDataHash(accountIndex, hash)) {
             CLEAR_ARRAY(hash);
             return ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH;
         } else {
             ret = SUCCESS_CODE;
         }
+#endif
         CLEAR_ARRAY(hash);
         if (GetPublicKeyFromJsonString(jsonString) == false) {
             printf("GetPublicKeyFromJsonString false, need regenerate\r\n");
@@ -388,7 +417,7 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
             }
             printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
             ASSERT(xPubResult->data);
-            g_accountPublicKey[i].pubKey = SRAM_MALLOC(strlen(xPubResult->data) + 1);
+            g_accountPublicKey[i].pubKey = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
             strcpy(g_accountPublicKey[i].pubKey, xPubResult->data);
             printf("xPubResult=%s\r\n", xPubResult->data);
             free_simple_response_c_char(xPubResult);
@@ -492,7 +521,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             }
             printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
             ASSERT(xPubResult->data);
-            g_accountPublicKey[i].pubKey = SRAM_MALLOC(strlen(xPubResult->data) + 1);
+            g_accountPublicKey[i].pubKey = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
             strcpy(g_accountPublicKey[i].pubKey, xPubResult->data);
             printf("xPubResult=%s\r\n", xPubResult->data);
             free_simple_response_c_char(xPubResult);
@@ -670,7 +699,7 @@ static bool GetPublicKeyFromJsonString(const char *string)
             } else {
                 GetStringValue(chainJson, "value", pubKeyString, PUB_KEY_MAX_LENGTH);
                 //printf("%s pub key=%s\r\n", g_chainTable[i].name, pubKeyString);
-                g_accountPublicKey[i].pubKey = SRAM_MALLOC(strlen(pubKeyString) + 1);
+                g_accountPublicKey[i].pubKey = SRAM_MALLOC(strnlen_s(pubKeyString, PUB_KEY_MAX_LENGTH) + 1);
                 strcpy(g_accountPublicKey[i].pubKey, pubKeyString);
             }
         }
@@ -738,7 +767,7 @@ static void GetStringValue(cJSON *obj, const char *key, char *value, uint32_t ma
     json = cJSON_GetObjectItem(obj, key);
     if (json != NULL) {
         strTemp = json->valuestring;
-        len = strlen(strTemp);
+        len = strnlen_s(strTemp, 256);
         if (len < maxLen) {
             strcpy(value, strTemp);
         } else {
@@ -747,6 +776,16 @@ static void GetStringValue(cJSON *obj, const char *key, char *value, uint32_t ma
     } else {
         strcpy(value, "");
     }
+}
+
+static bool GetBoolValue(const cJSON *obj, const char *key, bool defaultValue)
+{
+    cJSON *boolJson = cJSON_GetObjectItem((cJSON *)obj, key);
+    if (boolJson != NULL) {
+        return boolJson->valueint != 0;
+    }
+    printf("key:%s does not exist\r\n", key);
+    return defaultValue;
 }
 
 bool GetFirstReceive(const char* chainName)

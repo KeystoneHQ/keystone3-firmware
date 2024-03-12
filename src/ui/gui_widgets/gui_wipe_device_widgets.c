@@ -191,12 +191,12 @@ static void CountDownTimerHandler(lv_timer_t *timer)
 {
     lv_obj_t *obj = (lv_obj_t *)timer->user_data;
     static int8_t countDown = 5;
-    char buf[16] = {0};
+    char buf[BUFFER_SIZE_16] = {0};
     --countDown;
     if (countDown > 0) {
-        sprintf(buf, _("system_settings_wipe_device_wipe_fmt"), countDown);
+        snprintf_s(buf, BUFFER_SIZE_16, _("system_settings_wipe_device_wipe_fmt"), countDown);
     } else {
-        strcpy(buf, _("system_settings_wipe_device_wipe_end_text"));
+        strcpy_s(buf, BUFFER_SIZE_16, _("system_settings_wipe_device_wipe_end_text"));
     }
     lv_label_set_text(lv_obj_get_child(obj, 0), buf);
 

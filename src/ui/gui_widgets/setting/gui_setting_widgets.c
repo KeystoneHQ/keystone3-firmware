@@ -346,15 +346,14 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
     line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 543 - GUI_MAIN_AREA_OFFSET);
 
-    char showString[64] = {0};
-    char version[16] = {0};
-    char fileVersion[16] = {0};
+    char showString[BUFFER_SIZE_64] = {0};
+    char version[SOFTWARE_VERSION_MAX_LEN] = {0};
+    char fileVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
     GetSoftWareVersionNumber(version);
     if (CheckOtaBinVersion(fileVersion)) {
-        sprintf(showString, "#8E8E8E v%s#  /  #F5870A v%s  Available#", version, fileVersion);
-        // sprintf(showString, "#8E8E8E %s#", version);
+        snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E v%s#  /  #F5870A v%s  Available#", version, fileVersion);
     } else {
-        sprintf(showString, "#8E8E8E %s#", version);
+        snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E %s#", version);
     }
 
     label = GuiCreateTextLabel(parent, _("device_setting_about_title"));
@@ -653,7 +652,7 @@ void GuiSettingInit(void)
     g_deviceSetTileView.cont = cont;
     g_deviceSettingArray[g_deviceSetTileView.currentTile].tile = tile;
     g_deviceSettingArray[g_deviceSetTileView.currentTile].obj = NULL;
-    strcpy(g_deviceSettingArray[g_deviceSetTileView.currentTile].midLabel, _("device_setting_mid_btn"));
+    strcpy_s(g_deviceSettingArray[g_deviceSetTileView.currentTile].midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("device_setting_mid_btn"));
     g_deviceSettingArray[g_deviceSetTileView.currentTile].destructCb = NULL;
     g_deviceSettingArray[g_deviceSetTileView.currentTile].structureCb = NULL;
     g_deviceSettingArray[g_deviceSetTileView.currentTile].rightBtn = NVS_RIGHT_BUTTON_BUTT;
@@ -709,7 +708,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
     case DEVICE_SETTING_WALLET_SETTING:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         GuiWalletSetWidget(tile);
-        strcpy(midLabel, _("wallet_settings_mid_btn"));
+        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("wallet_settings_mid_btn"));
         rightBtn = NVS_BAR_MORE_INFO;
         rightCb = OpenDelWalletHandler;
         destructCb = GuiSettingDestruct;
@@ -725,14 +724,14 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
     case DEVICE_SETTING_FINGERPRINT_PASSCODE:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         GuiWalletSetFingerPassCodeWidget(tile);
-        strcpy(midLabel, _("fingerprint_passcode_mid_btn"));
+        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("fingerprint_passcode_mid_btn"));
         break;
 
     // finger module
     case DEVICE_SETTING_FINGER_MANAGER:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         GuiWalletFingerManagerWidget(tile);
-        strcpy(midLabel, "Fingerprint Settings");
+        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, "Fingerprint Settings");
         structureCb = GuiFingerMangerStructureCb;
         destructCb = GuiFingerManagerDestruct;
         break;
@@ -760,7 +759,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
     case DEVICE_SETTING_FINGER_SET_PATTERN: // todo
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         GuiWalletFingerManagerWidget(tile);
-        strcpy(midLabel, _("fingerprint_passcode_mid_btn"));
+        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("fingerprint_passcode_mid_btn"));
         break;
     // reset passcode
     case DEVICE_SETTING_RESET_PASSCODE_VERIFY:
@@ -806,7 +805,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         currTileIndex = DEVICE_SETTING_DEL_WALLET;
-        strcpy(midLabel, _("change_passcode_mid_btn"));
+        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("change_passcode_mid_btn"));
         g_verifyCode = GuiCreateEnterPasscode(tile, NULL, &currTileIndex, ENTER_PASSCODE_VERIFY_PIN);
         break;
     case DEVICE_SETTING_DEL_WALLET_VERIFY:
@@ -820,7 +819,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
         GuiWalletPassphrase(tile);
         rightBtn = NVS_BAR_QUESTION_MARK;
         rightCb = OpenPassphraseLearnMoreHandler;
-        strcpy(midLabel, _("wallet_setting_passphrase"));
+        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("wallet_setting_passphrase"));
         break;
     case DEVICE_SETTING_PASSPHRASE_VERIFY:
         printf("wallet_setting_passphrase...\n");
@@ -829,51 +828,51 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
         destructCb = GuiDelEnterPasscode;
         g_verifyCode = GuiCreateEnterPasscode(tile, NULL, &currTileIndex, ENTER_PASSCODE_VERIFY_PIN);
         obj = g_verifyCode;
-        strcpy(midLabel, _("change_passcode_mid_btn"));
+        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("change_passcode_mid_btn"));
         break;
     case DEVICE_SETTING_PASSPHRASE_ENTER:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         GuiWalletPassphraseEnter(tile);
-        strcpy(midLabel, _("wallet_setting_passphrase"));
+        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("wallet_setting_passphrase"));
         break;
 
     // RECOVERY PHRASE CHECK
     case DEVICE_SETTING_RECOVERY_METHOD_CHECK:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
-        strcpy(midLabel, _("seed_check_mid_btn"));
+        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("seed_check_mid_btn"));
         GuiWalletRecoveryMethodCheck(tile);
         break;
     case DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_12WORDS:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
-        strcpy(rightLabel, _("import_wallet_phrase_clear_btn"));
+        strcpy_s(rightLabel, DEVICE_SETTING_RIGHT_LABEL_MAX_LEN, _("import_wallet_phrase_clear_btn"));
         rightBtn = NVS_BAR_WORD_RESET;
         obj = GuiWalletRecoverySinglePhrase(tile, 12);
         destructCb = GuiWalletRecoveryDestruct;
         break;
     case DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_18WORDS:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
-        strcpy(rightLabel, _("import_wallet_phrase_clear_btn"));
+        strcpy_s(rightLabel, DEVICE_SETTING_RIGHT_LABEL_MAX_LEN, _("import_wallet_phrase_clear_btn"));
         rightBtn = NVS_BAR_WORD_RESET;
         obj = GuiWalletRecoverySinglePhrase(tile, 18);
         destructCb = GuiWalletRecoveryDestruct;
         break;
     case DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_24WORDS:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
-        strcpy(rightLabel, _("import_wallet_phrase_clear_btn"));
+        strcpy_s(rightLabel, DEVICE_SETTING_RIGHT_LABEL_MAX_LEN, _("import_wallet_phrase_clear_btn"));
         rightBtn = NVS_BAR_WORD_RESET;
         obj = GuiWalletRecoverySinglePhrase(tile, 24);
         destructCb = GuiWalletRecoveryDestruct;
         break;
     case DEVICE_SETTING_RECOVERY_SHARE_PHRASE_20WORDS:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
-        strcpy(rightLabel, _("import_wallet_phrase_clear_btn"));
+        strcpy_s(rightLabel, DEVICE_SETTING_RIGHT_LABEL_MAX_LEN, _("import_wallet_phrase_clear_btn"));
         rightBtn = NVS_BAR_WORD_RESET;
         obj = GuiWalletRecoverySharePhrase(tile, 20);
         destructCb = GuiWalletRecoveryDestruct;
         break;
     case DEVICE_SETTING_RECOVERY_SHARE_PHRASE_33WORDS:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
-        strcpy(rightLabel, _("import_wallet_phrase_clear_btn"));
+        strcpy_s(rightLabel, DEVICE_SETTING_RIGHT_LABEL_MAX_LEN, _("import_wallet_phrase_clear_btn"));
         rightBtn = NVS_BAR_WORD_RESET;
         obj = GuiWalletRecoverySharePhrase(tile, 33);
         destructCb = GuiWalletRecoveryDestruct;
@@ -905,8 +904,8 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
     lv_obj_set_tile_id(g_deviceSetTileView.tileView, currentTile, 0, LV_ANIM_OFF);
     g_deviceSettingArray[currentTile].tile = tile;
     g_deviceSettingArray[currentTile].rightCb = rightCb;
-    strcpy(g_deviceSettingArray[currentTile].rightLabel, rightLabel);
-    strcpy(g_deviceSettingArray[currentTile].midLabel, midLabel);
+    strcpy_s(g_deviceSettingArray[currentTile].rightLabel, DEVICE_SETTING_RIGHT_LABEL_MAX_LEN, rightLabel);
+    strcpy_s(g_deviceSettingArray[currentTile].midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, midLabel);
     g_deviceSettingArray[currentTile].obj = obj;
     g_deviceSettingArray[currentTile].destructCb = destructCb;
     g_deviceSettingArray[currentTile].structureCb = structureCb;
@@ -944,8 +943,8 @@ int8_t GuiDevSettingPrevTile(uint8_t tileIndex)
     }
 
     rightCb = g_deviceSettingArray[currentTile].rightCb;
-    strcpy(rightLabel, g_deviceSettingArray[currentTile].rightLabel);
-    strcpy(midLabel, g_deviceSettingArray[currentTile].midLabel);
+    strcpy_s(rightLabel, DEVICE_SETTING_RIGHT_LABEL_MAX_LEN, g_deviceSettingArray[currentTile].rightLabel);
+    strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, g_deviceSettingArray[currentTile].midLabel);
     rightBtn = g_deviceSettingArray[currentTile].rightBtn;
     leftBtn = g_deviceSettingArray[currentTile].leftBtn;
 

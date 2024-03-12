@@ -3,7 +3,6 @@
 
 #include "protocol_parse.h"
 #include "cJSON.h"
-#include "user_memory.h"
 #include "librust_c.h"
 #include "gui_framework.h"
 #include "gui_views.h"

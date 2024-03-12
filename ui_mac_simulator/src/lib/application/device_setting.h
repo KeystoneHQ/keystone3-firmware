@@ -1,1 +1,0 @@
-../../../../src/device_setting.h

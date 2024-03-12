@@ -10,14 +10,18 @@
 #include "gui_setup_widgets.h"
 #include "background_task.h"
 #include "firmware_update.h"
-#include "keystore.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_about_info_widgets.h"
 #include "secret_cache.h"
-#ifndef COMPILE_SIMULATOR
+#include "version.h"
+#include "user_memory.h"
+#include "keystore.h"
 #include "user_fatfs.h"
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#include "simulator_model.h"
 #endif
 
 typedef enum {
@@ -81,7 +85,7 @@ void GuiCreateSdCardUpdateHintbox(char *version, bool checkSumDone)
     static uint32_t param = SIG_INIT_SD_CARD_OTA_COPY;
     char desc[150] = {0};
 
-    sprintf(desc, _("firmware_update_sd_dialog_desc"));
+    strcpy_s(desc, sizeof(desc), _("firmware_update_sd_dialog_desc"));
     uint16_t height = checkSumDone ? 518 : 458;
     g_noticeHintBox = GuiCreateUpdateHintbox(lv_scr_act(), height, &imgFirmwareUp, _("firmware_update_sd_dialog_title"),
                       desc, _("not_now"), DARK_GRAY_COLOR, _("Update"), ORANGE_COLOR, checkSumDone);
@@ -248,7 +252,7 @@ void GuiFirmwareUpdateSha256Percent(uint8_t percent)
     if (g_noticeHintBox == NULL) {
         return;
     }
-    char version[16] = {0};
+    char version[SOFTWARE_VERSION_MAX_LEN] = {0};
     if (percent == 100) {
         CheckOtaBinVersion(version);
     }
@@ -283,7 +287,7 @@ static void GuiCreateSelectTile(lv_obj_t *parent)
         {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 40},},
     };
 
-    char fileVersion[16] = {0};
+    char fileVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
     if (CheckOtaBinVersion(fileVersion)) {
         lv_obj_t *versionLabel = GuiCreateIllustrateLabel(parent, fileVersion);
         lv_obj_set_style_text_color(versionLabel, ORANGE_COLOR, LV_PART_MAIN);
@@ -392,7 +396,7 @@ static void GuiCreateUsbInstructionTile(lv_obj_t *parent)
 
 static void FirmwareSdcardUpdateHandler(lv_event_t *e)
 {
-    char fileVersion[16] = {0};
+    char fileVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
     GUI_DEL_OBJ(g_noticeHintBox)
     lv_event_code_t code = lv_event_get_code(e);
     uint16_t *walletSetIndex = lv_event_get_user_data(e);
@@ -416,8 +420,7 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
                 SetKeyboardWidgetSig(g_keyboardWidget, walletSetIndex);
             }
         } else {
-            if (strlen(fileVersion) == 0) {
-                //no file
+            if (strnlen_s(fileVersion, 16) == 0) {
                 g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
             } else {
                 g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_NO_UPGRADABLE_FIRMWARE, &g_noticeHintBox);
@@ -551,9 +554,9 @@ static void GuiQrcodeHandler(lv_event_t *e)
             qrCode = lv_qrcode_create(qrCodeCont, 360, BLACK_COLOR, WHITE_COLOR);
             lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
             if (g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_USB_INSTRUCTION) {
-                lv_qrcode_update(qrCode, _("firmware_update_usb_qr_link"), (uint32_t)strlen(_("firmware_update_usb_qr_link")));
+                lv_qrcode_update(qrCode, _("firmware_update_usb_qr_link"), (uint32_t)strnlen_s(_("firmware_update_usb_qr_link"), BUFFER_SIZE_128));
             } else {
-                lv_qrcode_update(qrCode, g_firmwareSdUpdateUrl, (uint32_t)strlen(g_firmwareSdUpdateUrl));
+                lv_qrcode_update(qrCode, g_firmwareSdUpdateUrl, (uint32_t)strnlen_s(g_firmwareSdUpdateUrl, BUFFER_SIZE_128));
             }
 
             label = GuiCreateLittleTitleLabel(parent, _("firmware_update_usb_qr_title"));

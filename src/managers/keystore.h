@@ -4,8 +4,40 @@
 #include "stdint.h"
 #include "stdbool.h"
 #include "err_code.h"
+#include "secret_cache.h"
 
 #define ACCOUNT_INDEX_LOGOUT                    255
+#define AES_BLOCK_SIZE                          16
+
+#define KEY_PIECE_LEN                           32
+
+#define AES_KEY_LEN                             32
+#define AUTH_KEY_LEN                            32
+
+#define AES_IV_LEN                              32              //Use first 16 bytes for AES key, last 16 bytes reserved for future features.
+#define ENTROPY_MAX_LEN                         32
+#define SEED_LEN                                64
+#define SLIP39_EMS_LEN                          32
+#define SE_DATA_RESERVED_LEN                    32
+#define HMAC_LEN                                32
+#define ACCOUNT_TOTAL_LEN                       (AES_IV_LEN + ENTROPY_MAX_LEN + SEED_LEN + SLIP39_EMS_LEN + SE_DATA_RESERVED_LEN + HMAC_LEN)
+#define PARAM_LEN                               32
+
+#define ITERATION_TIME                          700
+
+typedef struct {
+    uint8_t entropy[ENTROPY_MAX_LEN];
+    uint8_t seed[SEED_LEN];
+    uint8_t slip39Ems[SLIP39_EMS_LEN];
+    uint8_t reservedData[SE_DATA_RESERVED_LEN];
+    uint8_t entropyLen;
+} AccountSecret_t;
+
+typedef struct {
+    char passphrase[PASSPHRASE_MAX_LEN + 1];
+    bool passphraseExist;
+    uint8_t mfp[4];
+} PassphraseInfo_t;
 
 int32_t GenerateEntropy(uint8_t *entropy, uint8_t entropyLen, const char *password);
 int32_t SaveNewEntropy(uint8_t accountIndex, const uint8_t *entropy, uint8_t entropyLen, const char *password);
@@ -20,7 +52,6 @@ bool CheckPassphraseSame(uint8_t accountIndex, const char *passphrase);
 char* GetPassphrase(uint8_t accountIndex);
 
 int32_t CheckPasswordExisted(const char *password, uint8_t excludeIndex);
-
 
 int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *password);
 void ClearAccountPassphrase(uint8_t accountIndex);

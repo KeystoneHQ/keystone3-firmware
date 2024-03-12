@@ -58,38 +58,6 @@ void SensorInit(void)
     SensorNvicConfiguration();
 }
 
-void SensorRegDebug(void)
-{
-    char tempBuf[16] = {0};
-    SensorRegPrint("SEN_EXT_TYPE", (uint32_t *)&SENSOR->SEN_EXT_TYPE);
-    SensorRegPrint("SEN_EXT_CFG", (uint32_t *)&SENSOR->SEN_EXT_CFG);
-    SensorRegPrint("SEN_SOFT_EN", (uint32_t *)&SENSOR->SEN_SOFT_EN);
-    SensorRegPrint("SEN_STATE", (uint32_t *)&SENSOR->SEN_STATE);
-    SensorRegPrint("SEN_BRIDGE", (uint32_t *)&SENSOR->SEN_BRIDGE);
-    SensorRegPrint("SEN_SOFT_ATTACK", (uint32_t *)&SENSOR->SEN_SOFT_ATTACK);
-    SensorRegPrint("SEN_SOFT_LOCK", (uint32_t *)&SENSOR->SEN_SOFT_LOCK);
-    SensorRegPrint("SEN_ATTACK_CNT", (uint32_t *)&SENSOR->SEN_ATTACK_CNT);
-    SensorRegPrint("SEN_ATTACK_TYP", (uint32_t *)&SENSOR->SEN_ATTACK_TYP);
-    SensorRegPrint("SEN_VG_DETECT", (uint32_t *)&SENSOR->SEN_VG_DETECT);
-    SensorRegPrint("SEN_RNG_INI", (uint32_t *)&SENSOR->SEN_RNG_INI);
-    for (int i = 0; i < 8; i++) {
-        sprintf(tempBuf, "SEN_EN[%d]", i);
-        SensorRegPrint(tempBuf, (uint32_t *) & (SENSOR->SEN_EN[i]));
-    }
-    SensorRegPrint("SEN_VH_EN", (uint32_t *) & (SENSOR->SEN_EN[SENSOR_EN_VH]));
-    SensorRegPrint("SEN_VL_EN", (uint32_t *) & (SENSOR->SEN_EN[SENSOR_EN_VL]));
-    SensorRegPrint("SEN_TH_EN", (uint32_t *) & (SENSOR->SEN_EN[SENSOR_EN_TH]));
-    SensorRegPrint("SEN_TL_EN", (uint32_t *) & (SENSOR->SEN_EN[SENSOR_EN_TL]));
-    SensorRegPrint("SEN_XTAL32_EN", (uint32_t *) & (SENSOR->SEN_EN[SENSOR_EN_XTAL32]));
-    SensorRegPrint("SEN_MESH_EN", (uint32_t *) & (SENSOR->SEN_EN[SENSOR_EN_MESH]));
-    SensorRegPrint("SEN_VOLGLTCH_EN", (uint32_t *) & (SENSOR->SEN_EN[SENSOR_EN_VOLGLITCH]));
-    SensorRegPrint("SEN_EXTS_START", (uint32_t *)&SENSOR->SEN_EXTS_START);
-    SensorRegPrint("SEN_LOCK", (uint32_t *)&SENSOR->SEN_LOCK);
-    SensorRegPrint("SEN_ANA0", (uint32_t *)&SENSOR->SEN_ANA0);
-    SensorRegPrint("SEN_ANA1", (uint32_t *)&SENSOR->SEN_ANA1);
-    SensorRegPrint("SEN_ATTCLR", (uint32_t *)&SENSOR->SEN_ATTCLR);
-}
-
 static void SensorRegPrint(char *regName, uint32_t *regAddr)
 {
     printf("%s addr = %#x, val = %08X\r\n", regName, regAddr, *regAddr);

@@ -6,6 +6,10 @@
 #include "gui_qr_hintbox.h"
 #include "gui_hintbox.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 static lv_obj_t *g_qrHintBox = NULL;
 static lv_obj_t *g_qrHintBoxTitle = NULL;
 static lv_obj_t *g_qrHintBoxQR = NULL;
@@ -87,7 +91,7 @@ void GuiQRCodeHintBoxOpen(const char *qrdata, const char *title, const char *sub
     } else {
         //enhancement
         CheckAndClearFlag(g_qrHintBox, LV_OBJ_FLAG_HIDDEN);
-        lv_qrcode_update(g_qrHintBoxQR, qrdata, (uint32_t)strlen(qrdata));
+        lv_qrcode_update(g_qrHintBoxQR, qrdata, (uint32_t)strnlen_s(qrdata, 1024));
         lv_label_set_text(g_qrHintBoxTitle, title);
         lv_label_set_text(g_qrHintBoxSubTitle, subtitle);
     }

@@ -1,2 +1,0 @@
-target create .pio/build/emulator_64bits/program
-process launch

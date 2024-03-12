@@ -5,6 +5,7 @@
 
 #ifndef LV_LOG_H
 #define LV_LOG_H
+#include "stdio.h"
 
 #ifdef __cplusplus
 extern "C" {

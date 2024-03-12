@@ -13,7 +13,6 @@
 #include "gui_ada.h"
 #include "gui_xrp.h"
 #endif
-#define LABEL_MAX_BUFF_LEN                                      (512)
 
 typedef void (*SetChainDataFunc)(void *resultData, void *multiResultData, bool multi);
 
@@ -35,6 +34,7 @@ typedef enum {
     CHAIN_DASH,
     CHAIN_COSMOS,
     CHAIN_TIA,
+    CHAIN_DYM,
     CHAIN_OSMO,
     CHAIN_INJ,
     CHAIN_ATOM,

@@ -3,6 +3,10 @@
 #include "account_public_info.h"
 #include "gui_page.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 typedef struct {
     lv_obj_t *addressCountLabel;
     lv_obj_t *addressLabel;
@@ -32,6 +36,7 @@ static void SetCurrentSelectIndex(uint32_t selectIndex);
 static void UpdateConfirmBtn(void);
 static void BackHandler(lv_event_t *e);
 static void ConfirmHandler(lv_event_t *e);
+void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 
 static void SelectAddressHandler(lv_event_t *e)
 {
@@ -71,18 +76,6 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     }
 }
 
-static void AddressLongModeCut(char *out, const char *address)
-{
-    uint32_t len = strlen(address);
-    if (len <= 24) {
-        strcpy(out, address);
-        return;
-    }
-    strncpy(out, address, 12);
-    out[12] = 0;
-    strcat(out, "...");
-    strcat(out, address + len - 12);
-}
 
 static void SetCurrentSelectIndex(uint32_t selectIndex)
 {
@@ -120,7 +113,7 @@ static void RefreshSwitchAccount(void)
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetAddress(index, &addressDataItem);
         lv_label_set_text_fmt(g_selectAddressWidgets[i].addressCountLabel, "Account-%u", (addressDataItem.index + 1));
-        AddressLongModeCut(string, addressDataItem.address);
+        CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_selectAddressWidgets[i].addressLabel, string);
         if (end) {
             lv_obj_add_flag(g_selectAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);

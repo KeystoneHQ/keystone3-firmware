@@ -56,7 +56,8 @@
 #include "usb_task.h"
 #include "device_setting.h"
 
-#define CMD_MAX_ARGC 16
+#define CMD_MAX_ARGC                                16
+#define DEFAULT_TEST_BUFF_LEN                       1024
 
 typedef void (*UartTestCmdFunc_t)(int argc, char *argv[]);
 
@@ -540,7 +541,7 @@ static void MemoryTestFunc(int argc, char *argv[])
     printf("\r\nstart SRAM to SRAM test:\r\n");
     startTick = osKernelGetTickCount();
     for (i = 0; i < times; i++) {
-        memcpy(sramAddr, sramAddrSource, byteNum);
+        memcpy_s(sramAddr, byteNum, sramAddrSource, byteNum);
     }
     endTick = osKernelGetTickCount();
     printf("used tick: %d ms, %d bytes/s\r\n", endTick - startTick, (uint32_t)(((uint64_t)byteNum * 1000 * times) / (endTick - startTick)));
@@ -549,7 +550,7 @@ static void MemoryTestFunc(int argc, char *argv[])
     tempAddr = (uint8_t *)(0x01010000);
     startTick = osKernelGetTickCount();
     for (i = 0; i < times; i++) {
-        memcpy(sramAddr, tempAddr, byteNum);
+        memcpy_s(sramAddr, byteNum, tempAddr, byteNum);
     }
     endTick = osKernelGetTickCount();
     printf("used tick: %d ms, %d bytes/s\r\n", endTick - startTick, (uint32_t)(((uint64_t)byteNum * 1000 * times) / (endTick - startTick)));
@@ -558,7 +559,7 @@ static void MemoryTestFunc(int argc, char *argv[])
     tempAddr = (uint8_t *)(0x01010000);
     startTick = osKernelGetTickCount();
     for (i = 0; i < times; i++) {
-        memcpy(psramAddr, tempAddr, byteNum);
+        memcpy_s(psramAddr, byteNum, tempAddr, byteNum);
     }
     endTick = osKernelGetTickCount();
     printf("used tick: %d ms, %d bytes/s\r\n", endTick - startTick, (uint32_t)(((uint64_t)byteNum * 1000 * times) / (endTick - startTick)));
@@ -566,7 +567,7 @@ static void MemoryTestFunc(int argc, char *argv[])
     printf("\r\nstart SRAM to PSRAM test:\r\n");
     startTick = osKernelGetTickCount();
     for (i = 0; i < times; i++) {
-        memcpy(psramAddr, sramAddrSource, byteNum);
+        memcpy_s(psramAddr, byteNum, sramAddrSource, byteNum);
     }
     endTick = osKernelGetTickCount();
     printf("used tick: %d ms, %d bytes/s\r\n", endTick - startTick, (uint32_t)(((uint64_t)byteNum * 1000 * times) / (endTick - startTick)));
@@ -574,7 +575,7 @@ static void MemoryTestFunc(int argc, char *argv[])
     printf("\r\nstart PSRAM to SRAM test:\r\n");
     startTick = osKernelGetTickCount();
     for (i = 0; i < times; i++) {
-        memcpy(sramAddr, psramAddrSource, byteNum);
+        memcpy_s(sramAddr, byteNum, psramAddrSource, byteNum);
     }
     endTick = osKernelGetTickCount();
     printf("used tick: %d ms, %d bytes/s\r\n", endTick - startTick, (uint32_t)(((uint64_t)byteNum * 1000 * times) / (endTick - startTick)));
@@ -582,7 +583,7 @@ static void MemoryTestFunc(int argc, char *argv[])
     printf("\r\nstart PSRAM to PSRAM test:\r\n");
     startTick = osKernelGetTickCount();
     for (i = 0; i < times; i++) {
-        memcpy(psramAddr, psramAddrSource, byteNum);
+        memcpy_s(psramAddr, byteNum, psramAddrSource, byteNum);
     }
     endTick = osKernelGetTickCount();
     printf("used tick: %d ms, %d bytes/s\r\n", endTick - startTick, (uint32_t)(((uint64_t)byteNum * 1000 * times) / (endTick - startTick)));
@@ -602,7 +603,7 @@ static void PsramTestFunc(int argc, char *argv[])
     printf("addr=0x%08X\r\n", (uint32_t)mem);
     memSram = SRAM_MALLOC(byteNum);
     TrngGet(memSram, byteNum);
-    memcpy(mem, memSram, byteNum);
+    memcpy_s(mem, byteNum, memSram, byteNum);
     PrintArray("mem", mem, byteNum);
     for (i = 0; i < byteNum; i++) {
         if (mem[i] != memSram[i]) {
@@ -627,7 +628,7 @@ static void TrngTestFunc(int argc, char *argv[])
         printf("malloc err\r\n");
         return;
     }
-    memset(mem, 0, byteNum);
+    memset_s(mem, byteNum, 0, byteNum);
     TrngGet(mem, byteNum);
     PrintArray("trng", mem, byteNum);
     SRAM_FREE(mem);
@@ -713,7 +714,7 @@ static void Gd25FlashOperateFunc(int argc, char *argv[])
         break;
     case GD25_FLASH_WRITE:
         Gd25FlashSectorErase(addr);
-        size = strlen(argv[2]);
+        size = strnlen_s(argv[2], DEFAULT_TEST_BUFF_LEN);
         if (size == Gd25FlashWriteBuffer(addr, (uint8_t *)argv[2], size)) {
             printf("write %#x success\r\n", addr);
         }
@@ -762,8 +763,8 @@ static void Sha256HmacFunc(int argc, char *argv[])
 
     VALUE_CHECK(argc, 2);
 
-    privateKey = SRAM_MALLOC(strlen(argv[0]) / 2 + 1);
-    msg = SRAM_MALLOC(strlen(argv[1]) / 2 + 1);
+    privateKey = SRAM_MALLOC(strnlen_s(argv[0], DEFAULT_TEST_BUFF_LEN) / 2 + 1);
+    msg = SRAM_MALLOC(strnlen_s(argv[1], DEFAULT_TEST_BUFF_LEN) / 2 + 1);
     keyLen = StrToHex(privateKey, argv[0]);
     msgLen = StrToHex(msg, argv[1]);
     PrintArray("privateKey", privateKey, keyLen);
@@ -814,7 +815,7 @@ static void FatfsFileSha256Func(int argc, char *argv[])
 static void FatfsFileWriteFunc(int argc, char *argv[])
 {
     VALUE_CHECK(argc, 2);
-    FatfsFileWrite(argv[0], (const uint8_t *)argv[1], strlen(argv[1]));
+    FatfsFileWrite(argv[0], (const uint8_t *)argv[1], strnlen_s(argv[1], DEFAULT_TEST_BUFF_LEN));
 }
 
 static void FatfsFileDeleteFunc(int argc, char *argv[])
@@ -964,7 +965,7 @@ static void HashAndSaltFunc(int argc, char *argv[])
     uint32_t inLen;
 
     VALUE_CHECK(argc, 2);
-    inData = SRAM_MALLOC(strlen(argv[0]) / 2 + 1);
+    inData = SRAM_MALLOC(strnlen_s(argv[0], DEFAULT_TEST_BUFF_LEN) / 2 + 1);
     inLen = StrToHex(inData, argv[0]);
     HashWithSalt(hash, inData, inLen, argv[1]);
     PrintArray("hash with salt", hash, 32);
@@ -976,7 +977,7 @@ static void Sha512Func(int argc, char *argv[])
     uint32_t inLen;
 
     VALUE_CHECK(argc, 1);
-    inData = SRAM_MALLOC(strlen(argv[0]) / 2 + 1);
+    inData = SRAM_MALLOC(strnlen_s(argv[0], DEFAULT_TEST_BUFF_LEN) / 2 + 1);
     inLen = StrToHex(inData, argv[0]);
     sha512((struct sha512 *)hash, inData, inLen);
     PrintArray("sha512 hash", hash, sizeof(hash));
@@ -1893,14 +1894,14 @@ static void RustTestDecodeUr(int argc, char *argv[])
 {
     printf("RustTestDecodeUr\r\n");
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
-    char *ur = SRAM_MALLOC(1000);
-    char *xpub = SRAM_MALLOC(124);
-    char *nestedAddress = SRAM_MALLOC(124);
-    char *nativeAddress = SRAM_MALLOC(124);
-    strcpy(ur, "UR:CRYPTO-PSBT/HDRKJOJKIDJYZMADAEGMAOAEAEAEADJNFPVALTEEISYAHTZMKOTSJONYMUQZJSLAWDATLRWEPKSTFDCPLGDWFLFXMTSGGOAEAEAEAEAEZCZMZMZMADNBBSAEAEAEAEAEAECMAEBBIYCNLFLKCTLTRNKSFPPTPASFENBTETPLBKLUJTTIAEAEAEAEAEADADCTISCHAEAEAEAEAEAECMAEBBTISSOTWSASWLMSRPWLNNESKBGYMYVLVECYBYLKOYCPAMAOVDPYDAEMRETYNNMSAXASPKVTJTNNGAWFJZVYSOZERKTYGLSPVTTTSFNBQZYTSRCFCSJKSKTNBKGHAEAELAADAEAELAAEAEAELAAEAEAEAEAEAEAEAEAEAEMNSFFGMW");
-    strcpy(xpub, "xpub6BhcvYN2qwQKRviMKKBTfRcK1RmCTmM7JHsg67r3rwvymhUEt8gPHhnkugQaQ7UN8M5FfhEUfyVuSaK5fQzfUpvAcCxN4bAT9jyySbPGsTs");
-    strcpy(nestedAddress, "xpub6CkG15Jdw866GKs84e7ysjxAhBQUJBdLZTVbQERCjwh2z6wZSSdjfmaXaMvf6Vm5sbWemK43d7HJMicz41G3vEHA9Sa5N2J9j9vgwyiHdMj");
-    strcpy(nativeAddress, "xpub6Bm9M1SxZdzL3TxdNV8897FgtTLBgehR1wVNnMyJ5VLRK5n3tFqXxrCVnVQj4zooN4eFSkf6Sma84reWc5ZCXMxPbLXQs3BcaBdTd4YQa3B");
+    char *ur = SRAM_MALLOC(SIMPLERESPONSE_C_CHAR_MAX_LEN);
+    char *xpub = SRAM_MALLOC(BUFFER_SIZE_128);
+    char *nestedAddress = SRAM_MALLOC(BUFFER_SIZE_128);
+    char *nativeAddress = SRAM_MALLOC(BUFFER_SIZE_128);
+    strcpy_s(ur, SIMPLERESPONSE_C_CHAR_MAX_LEN, "UR:CRYPTO-PSBT/HDRKJOJKIDJYZMADAEGMAOAEAEAEADJNFPVALTEEISYAHTZMKOTSJONYMUQZJSLAWDATLRWEPKSTFDCPLGDWFLFXMTSGGOAEAEAEAEAEZCZMZMZMADNBBSAEAEAEAEAEAECMAEBBIYCNLFLKCTLTRNKSFPPTPASFENBTETPLBKLUJTTIAEAEAEAEAEADADCTISCHAEAEAEAEAEAECMAEBBTISSOTWSASWLMSRPWLNNESKBGYMYVLVECYBYLKOYCPAMAOVDPYDAEMRETYNNMSAXASPKVTJTNNGAWFJZVYSOZERKTYGLSPVTTTSFNBQZYTSRCFCSJKSKTNBKGHAEAELAADAEAELAAEAEAELAAEAEAEAEAEAEAEAEAEAEMNSFFGMW");
+    strcpy_s(xpub, BUFFER_SIZE_128, "xpub6BhcvYN2qwQKRviMKKBTfRcK1RmCTmM7JHsg67r3rwvymhUEt8gPHhnkugQaQ7UN8M5FfhEUfyVuSaK5fQzfUpvAcCxN4bAT9jyySbPGsTs");
+    strcpy_s(nestedAddress, BUFFER_SIZE_128, "xpub6CkG15Jdw866GKs84e7ysjxAhBQUJBdLZTVbQERCjwh2z6wZSSdjfmaXaMvf6Vm5sbWemK43d7HJMicz41G3vEHA9Sa5N2J9j9vgwyiHdMj");
+    strcpy_s(nativeAddress, BUFFER_SIZE_128, "xpub6Bm9M1SxZdzL3TxdNV8897FgtTLBgehR1wVNnMyJ5VLRK5n3tFqXxrCVnVQj4zooN4eFSkf6Sma84reWc5ZCXMxPbLXQs3BcaBdTd4YQa3B");
     URParseResult *result = parse_ur(ur);
     free_ur_parse_result(result);
     SRAM_FREE(ur);
@@ -2835,7 +2836,7 @@ static void CrcTestFunc(int argc, char *argv[])
     uint16_t crc16;
 
     VALUE_CHECK(argc, 1);
-    hex = SRAM_MALLOC(strlen(argv[0]) / 2 + 1);
+    hex = SRAM_MALLOC(strnlen_s(argv[0], DEFAULT_TEST_BUFF_LEN) / 2 + 1);
     len = StrToHex(hex, argv[0]);
     PrintArray("hex", hex, len);
     crc32 = crc32_ieee(0, hex, len);

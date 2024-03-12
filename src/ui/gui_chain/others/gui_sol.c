@@ -10,6 +10,7 @@
 #include "account_manager.h"
 #include "assert.h"
 #include "cjson/cJSON.h"
+#include "user_memory.h"
 
 static uint8_t GetSolPublickeyIndex(char* rootPath);
 
@@ -133,48 +134,49 @@ void FreeSolMemory(void)
 }
 
 
-void GetSolMessageType(void *indata, void *param)
+void GetSolMessageType(void *indata, void *param, uint32_t maxLen)
 {
-
     DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
     if (message->utf8_message) {
-        strcpy((char *)indata, "utf8_message");
+        strcpy_s((char *)indata, maxLen, "utf8_message");
     } else {
-        strcpy((char *)indata, "raw_message");
+        strcpy_s((char *)indata, maxLen, "raw_message");
     }
 
 }
 
-void GetSolMessageFrom(void *indata, void *param)
+void GetSolMessageFrom(void *indata, void *param, uint32_t maxLen)
 {
     DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
-    if (strlen(message->from) >= LABEL_MAX_BUFF_LEN) {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN - 3, "%s", message->from);
+    if (strlen(message->from) >= maxLen) {
+        snprintf((char *)indata, maxLen - 3, "%s", message->from);
         strcat((char *)indata, "...");
+        snprintf((char *)indata, maxLen, "%.*s...", maxLen - 4, message->from);
     } else {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN, "%s", message->from);
-    }
-}
-void GetSolMessageUtf8(void *indata, void *param)
-{
-    DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
-    if (strlen(message->utf8_message) >= LABEL_MAX_BUFF_LEN) {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN - 3, "%s", message->utf8_message);
-        strcat((char *)indata, "...");
-    } else {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN, "%s", message->utf8_message);
+        strcpy_s((char *)indata, maxLen, message->from);
     }
 }
 
-void GetSolMessageRaw(void *indata, void *param)
+void GetSolMessageUtf8(void *indata, void *param, uint32_t maxLen)
+{
+    DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
+    if (strlen(message->utf8_message) >= maxLen) {
+        snprintf((char *)indata, maxLen - 3, "%s", message->utf8_message);
+        strcat((char *)indata, "...");
+    } else {
+        snprintf((char *)indata, maxLen, "%s", message->utf8_message);
+    }
+}
+
+void GetSolMessageRaw(void *indata, void *param, uint32_t maxLen)
 {
     int len = strlen("\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
     DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
-    if (strlen(message->raw_message) >= LABEL_MAX_BUFF_LEN - len) {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN - 3 - len, "%s", message->raw_message);
+    if (strlen(message->raw_message) >= maxLen - len) {
+        snprintf((char *)indata, maxLen - 3 - len, "%s", message->raw_message);
         strcat((char *)indata, "...");
     } else {
-        snprintf((char *)indata, LABEL_MAX_BUFF_LEN, "%s%s", message->raw_message, "\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
+        snprintf((char *)indata, maxLen, "%s%s", message->raw_message, "\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
     }
 }
 
@@ -320,8 +322,8 @@ static void GuiShowSolTxVoteOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOverv
     PtrT_VecFFI_DisplaySolanaTxOverviewVotesOn votesOn = overviewData->votes_on;
     for (int i = 0; i < votesOn->size; i++) {
         label = lv_label_create(votesOnContainer);
-        char order[12] = {0};
-        sprintf(order, "%d.", i + 1);
+        char order[BUFFER_SIZE_16] = {0};
+        snprintf_s(order, BUFFER_SIZE_16, "%d.", i + 1);
         lv_label_set_text(label, order);
         SetVotesOnOrderLableStyle(label);
         lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
@@ -383,8 +385,8 @@ static void GuiShowSolTxGeneralOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOv
 
         char *program = general->data[i].program;
         lv_obj_t *orderLabel = lv_label_create(container);
-        char order[10] = {0};
-        sprintf(order, "#%d", i + 1);
+        char order[BUFFER_SIZE_16] = {0};
+        snprintf_s(order, BUFFER_SIZE_16, "#%d", i + 1);
         lv_label_set_text(orderLabel, order);
         lv_obj_set_style_text_font(orderLabel, &openSans_20, LV_PART_MAIN);
         lv_obj_set_style_text_color(orderLabel, lv_color_hex(0xF5870A), LV_PART_MAIN);

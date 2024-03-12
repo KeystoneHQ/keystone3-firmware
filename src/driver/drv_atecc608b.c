@@ -1,4 +1,5 @@
 #include "drv_atecc608b.h"
+#include "define.h"
 #include "string.h"
 #include "cryptoauthlib.h"
 #include "host/atca_host.h"
@@ -546,7 +547,7 @@ void Atecc608bTest(int argc, char *argv[])
         PrintArray("data", pData, len);
         SRAM_FREE(pData);
     } else if (strcmp(argv[0], "readconfig") == 0) {
-        pData = SRAM_MALLOC(128);
+        pData = SRAM_MALLOC(BUFFER_SIZE_128);
         ret = atcab_read_config_zone(pData);
         printf("atcab_read_config_zone=%d\r\n", ret);
         if (ret == ATCA_SUCCESS) {
@@ -578,7 +579,7 @@ void Atecc608bTest(int argc, char *argv[])
         SRAM_FREE(pData);
     } else if (strcmp(argv[0], "serial") == 0) {
         pData = SRAM_MALLOC(32);
-        memset(pData, 0, 9);
+        memset_s(pData, 9, 0, 9);
         ret = atcab_read_serial_number(pData);
         printf("atcab_read_serial_number=%d\r\n", ret);
         PrintArray("serial number", pData, 9);
@@ -674,7 +675,7 @@ void Atecc608bTest(int argc, char *argv[])
         VALUE_CHECK(argc, 2);
         sscanf(argv[1], "%d", &slot);
         pData = SRAM_MALLOC(36);
-        memset(pData, 0, 4);
+        memset_s(pData, 4, 0, 4);
         TrngGet(pData + 4, 32);
         nonce = SRAM_MALLOC(20);
         PrintArray("prikey", pData, 36);

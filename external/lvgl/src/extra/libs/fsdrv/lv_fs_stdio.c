@@ -116,8 +116,13 @@ static void * fs_open(lv_fs_drv_t * drv, const char * path, lv_fs_mode_t mode)
 
     char buf[MAX_PATH_LEN];
     lv_snprintf(buf, sizeof(buf), LV_FS_STDIO_PATH "%s", path);
-
-    return fopen(buf, flags);
+    FILE *f = fopen(buf, flags);
+    if (f == NULL) {
+        printf("file not exist: %s\r\n", buf);
+        fopen(buf, "wb");
+        f = fopen(buf, flags);
+    }
+    return f;
 }
 
 /**

@@ -18,11 +18,12 @@
 #include "gui_about_info_widgets.h"
 #include "account_manager.h"
 #include "gui_setup_widgets.h"
+#include "device_setting.h"
+#include "drv_aw32001.h"
+#include "usb_task.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #else
-#include "drv_aw32001.h"
-#include "device_setting.h"
 #endif
 
 static int32_t GuiInitViewInit(void)
@@ -94,7 +95,9 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_INIT_USB_CONNECTION:
         rcvValue = *(uint32_t *)param;
         if (rcvValue != 0 && !GuiLockScreenIsTop() && GetUsbDetectState() && ((GetCurrentAccountIndex() != 0xFF) || GuiIsSetup())) {
-            OpenMsgBox(&g_guiMsgBoxUsbConnection);
+            if (GetUsbState() == false) {
+                OpenMsgBox(&g_guiMsgBoxUsbConnection);
+            }
         } else {
             CloseMsgBox(&g_guiMsgBoxUsbConnection);
         }
@@ -158,6 +161,11 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_STATUS_BAR_REFRESH:
         GuiStatusBarSetUsb();
         break;
+#ifdef BTC_ONLY
+    case SIG_STATUS_BAR_TEST_NET:
+        GuiStatusBarSetTestNet();
+        break;
+#endif
     default:
         return ERR_GUI_UNHANDLED;
     }

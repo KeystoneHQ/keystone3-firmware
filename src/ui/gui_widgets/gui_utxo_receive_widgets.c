@@ -1369,7 +1369,7 @@ static void CloseGotoAddressHandler(lv_event_t *e)
 
 void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen)
 {
-    uint32_t len = strnlen_s(address, targetLen + 1);
+    uint32_t len = strnlen_s(address, maxLen + 1);
 
     if (len < targetLen) {
         strcpy_s(out, len + 1, address);

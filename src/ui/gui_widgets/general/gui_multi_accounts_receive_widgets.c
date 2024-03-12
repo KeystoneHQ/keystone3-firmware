@@ -700,33 +700,36 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
     lv_obj_t *obj = lv_event_get_target(e);
     uint32_t id = lv_btnmatrix_get_selected_btn(obj);
     lv_obj_draw_part_dsc_t *dsc;
-    char input[INPUT_ADDRESS_MAX_LEN];
+    const char *txt;
+    char input[16];
+    uint32_t len;
     uint64_t longInt;
 
     if (code == LV_EVENT_CLICKED) {
-        const char *txt = lv_btnmatrix_get_btn_text(obj, id);
-        uint32_t len = strnlen_s(input, INPUT_ADDRESS_MAX_LEN);
-        strcpy_s(input, INPUT_ADDRESS_MAX_LEN, lv_label_get_text(g_multiAccountsReceiveWidgets.inputAccountLabel));
+        txt = lv_btnmatrix_get_btn_text(obj, id);
+        strcpy_s(input, sizeof(input), lv_label_get_text(g_multiAccountsReceiveWidgets.inputAccountLabel));
         if (strcmp(txt, LV_SYMBOL_OK) == 0) {
             if (g_inputAccountValid) {
-                if (sscanf(input, "%u", &g_tmpIndex) == 1) {
-                    g_showIndex = g_tmpIndex / 5 * 5;
-                    RefreshSwitchAddress();
-                    lv_obj_add_flag(g_multiAccountsReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
-                    g_inputAccountValid = false;
-                    UpdateConfirmIndexBtn();
-                }
+                sscanf(input, "%u", &g_tmpIndex);
+                g_showIndex = g_tmpIndex / 5 * 5;
+                RefreshSwitchAddress();
+                lv_obj_add_flag(g_multiAccountsReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
+                g_inputAccountValid = false;
+                UpdateConfirmIndexBtn();
             }
         } else if (strcmp(txt, "-") == 0) {
-            if (len > 0) {
+            len = strlen(input);
+            if (len >= 1) {
                 input[len - 1] = '\0';
                 lv_label_set_text(g_multiAccountsReceiveWidgets.inputAccountLabel, input);
                 lv_obj_add_flag(g_multiAccountsReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
-                g_inputAccountValid = true;
-            } else {
-                g_inputAccountValid = false;
+                if (strlen(input) >= 1) {
+                    g_inputAccountValid = true;
+                } else {
+                    g_inputAccountValid = false;
+                }
             }
-        } else if (len < INPUT_ADDRESS_MAX_LEN - 1) {
+        } else if (strlen(input) < 15) {
             strcat(input, txt);
             longInt = strtol(input, NULL, 10);
             if (longInt >= GENERAL_ADDRESS_INDEX_MAX) {

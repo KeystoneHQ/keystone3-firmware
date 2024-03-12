@@ -707,7 +707,7 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         txt = lv_btnmatrix_get_btn_text(obj, id);
-        strcpy(input, lv_label_get_text(g_multiAccountsReceiveWidgets.inputAccountLabel));
+        strcpy_s(input, sizeof(input), lv_label_get_text(g_multiAccountsReceiveWidgets.inputAccountLabel));
         if (strcmp(txt, LV_SYMBOL_OK) == 0) {
             if (g_inputAccountValid) {
                 sscanf(input, "%u", &g_tmpIndex);

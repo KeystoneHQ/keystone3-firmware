@@ -1064,10 +1064,11 @@ void *GetEthContractData(uint8_t *row, uint8_t *col, void *param)
             int index = j / 2;
             DisplayContractParam param = contractData->data->params->data[index];
             if (!(j % 2)) {
-                indata[i][j] = SRAM_MALLOC(strlen(param.name) + 10);
-                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "#919191 %s#", param.name);
+                uint32_t len = strnlen_s(param.name, BUFFER_SIZE_128) + 10;
+                indata[i][j] = SRAM_MALLOC(len);
+                snprintf_s(indata[i][j], len, "#919191 %s#", param.name);
             } else {
-                uint32_t len = strlen(param.value) + 1;
+                uint32_t len = strnlen_s(param.value, BUFFER_SIZE_128) + 1;
                 indata[i][j] = SRAM_MALLOC(len);
                 strcpy_s(indata[i][j], len, param.value);
             }

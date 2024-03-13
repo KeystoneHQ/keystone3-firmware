@@ -432,11 +432,16 @@ static void FpGetAesKeyState(char *indata, uint8_t len)
     if (len == 0) {
         FpResponseHandle(FINGERPRINT_CMD_GET_AES_KEY_STATE);
     } else {
-        printf("aes key %s\n", indata[0] ? "has been set" : "not set");
         state = indata[0];
         fpAesState = FpAesKeyExist();
-        // assert(!!state == !!fpAesState);
+        printf("aes key %s\n", indata[0] ? "has been set" : "not set");
+        printf("fpAesState %s\n", FpAesKeyExist() ? "has been set" : "not set");
         if (state == 0) {
+            FpSetAesKeySend(0, 0);
+            return;
+        }
+        // assert(!!state == !!fpAesState);
+        if (fpAesState == 0) {
             FpSetAesKeySend(0, 0);
         } else {
             InitFingerManagerInfo();

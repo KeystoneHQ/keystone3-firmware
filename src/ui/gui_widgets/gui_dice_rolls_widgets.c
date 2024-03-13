@@ -55,7 +55,7 @@ static void GuiCreatePage(lv_obj_t *parent)
     lv_obj_t *textArea = lv_textarea_create(parent);
     lv_obj_align(textArea, LV_ALIGN_TOP_LEFT, 48, 26);
     lv_obj_set_width(textArea, 384);
-    lv_obj_set_height(textArea, 49); // 10+29+10
+    lv_obj_set_height(textArea, 60); // 10+29+10
     lv_obj_set_style_pad_hor(textArea, 0, LV_PART_MAIN);
     lv_obj_set_style_bg_color(textArea, BLACK_COLOR, LV_PART_MAIN);
     lv_obj_set_style_radius(textArea, 0, LV_PART_MAIN);

@@ -53,7 +53,8 @@ static void MainEventHandler(void)
             // GuiWalletRecoveryWriteSe(false);
             // GuiWriteSeResult(false, ERR_KEYSTORE_MNEMONIC_INVALID);
             // GuiCloseToTargetView(&g_homeView);
-            GuiWalletRecoveryMethodCheck(lv_scr_act());
+            // GuiWalletRecoveryMethodCheck(lv_scr_act());
+            GuiFirmwareSdCardCopyResult(false);
             break;
         case 'c':
             GuiCLoseCurrentWorkingView();

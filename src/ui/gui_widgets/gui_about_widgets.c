@@ -123,7 +123,7 @@ void GuiAboutEntranceWidget(lv_obj_t *parent)
     if (CheckOtaBinVersion(fileVersion)) {
         lv_obj_t *versionLabel = GuiCreateIllustrateLabel(parent, fileVersion);
         lv_obj_set_style_text_color(versionLabel, ORANGE_COLOR, LV_PART_MAIN);
-        lv_label_set_text_fmt(versionLabel, "v%s Available", fileVersion);
+        lv_label_set_text_fmt(versionLabel, "v%s %s", fileVersion, _("firmware_update_sd_dialog_head"));
         table[2].align = LV_ALIGN_BOTTOM_LEFT;
         table[2].position.x = 24;
         table[2].position.y = -24;

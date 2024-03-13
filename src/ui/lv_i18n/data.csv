@@ -64,6 +64,7 @@ Firmware Update,firmware_update_title,Firmware Update,Обновление пр�
 ,firmware_update_sd_copying_title,Starting Update,Старт обновления,업데이트 시작 중,开始更新,,
 ,firmware_update_sd_copying_desc,Do not remove the MicroSD Card while the update is underway.,Не доставайте MicroSD карту во время загрузки прошивки.,업데이트가 진행되는 동안에는 MicroSD 카드를 제거하지 마십시오.,升级过程中，请勿移除 microSD 卡。,,
 ,firmware_update_sd_dialog_title,Update Available,Доступно обновление,사용 가능한 업데이트,检测到可升级固件,,
+,firmware_update_sd_dialog_head,Available,Доступно,,,,
 ,firmware_update_sd_dialog_desc,A new firmware version is available. Do you want to update your device's firmware to the new version?,Доступна новая версия прошивки. Хотите обновить версию прошивки Keystone?,새 펌웨어 버전을 사용할 수 있습니다. 장치의 펌웨어를 새 버전으로 업데이트하시겠습니까?,检测到新固件。是否将设备的固件更新为新版本？,,
 ,firmware_update_sd_updating_title,Updating,Обновление,업데이트중,升级中......,,
 ,firmware_update_sd_updating_desc,Takes around 5 mins,Это займет около 5 минут ,약 5분 소요,大约需要5分钟,,

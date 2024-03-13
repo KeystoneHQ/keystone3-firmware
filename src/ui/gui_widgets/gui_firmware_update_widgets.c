@@ -286,7 +286,7 @@ static void GuiCreateSelectTile(lv_obj_t *parent)
     if (CheckOtaBinVersion(fileVersion)) {
         lv_obj_t *versionLabel = GuiCreateIllustrateLabel(parent, fileVersion);
         lv_obj_set_style_text_color(versionLabel, ORANGE_COLOR, LV_PART_MAIN);
-        lv_label_set_text_fmt(versionLabel, "v%s Available", fileVersion);
+        lv_label_set_text_fmt(versionLabel, "v%s %s", fileVersion, _("firmware_update_sd_dialog_head"));
         table1[3].align = LV_ALIGN_DEFAULT;
         table1[3].position.x = 76;
         table1[3].position.y = 81;
@@ -580,8 +580,8 @@ static void GuiQrcodeHandler(lv_event_t *e)
             lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
             lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -114);
 
-            button = GuiCreateBtn(parent, _("OK"));
-            lv_obj_set_size(button, 94, 66);
+            button = GuiCreateAdaptButton(parent, _("OK"));
+            // lv_obj_set_size(button, 94, 66);
             lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
             lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
             lv_obj_add_event_cb(button, CloseQrcodeHandler, LV_EVENT_CLICKED, NULL);

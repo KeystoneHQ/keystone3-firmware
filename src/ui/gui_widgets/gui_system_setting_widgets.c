@@ -174,6 +174,8 @@ void GuiSystemSettingAreaRefresh()
 
 void GuiSystemSettingAreaRestart()
 {
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
 }
 
 static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e)

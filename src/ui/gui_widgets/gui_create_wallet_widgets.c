@@ -805,19 +805,19 @@ static void OpenChangeEntropyHandler(lv_event_t *e)
 
         label = GuiCreateIllustrateLabel(descCont, "#F5870A ·#");
         lv_label_set_recolor(label, true);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 88);
+        GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
         label = GuiCreateIllustrateLabel(descCont, _("change_entropy_dice_detail_desc_1"));
         lv_label_set_recolor(label, true);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 40, 88);
+        GuiAlignToPrevObj(label, LV_ALIGN_OUT_RIGHT_TOP, 10, 0);
         lv_obj_set_width(label, 344);
 
         label = GuiCreateIllustrateLabel(descCont, "#F5870A ·#");
         lv_label_set_recolor(label, true);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 220);
+        GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -10, 12);
 
         label = GuiCreateIllustrateLabel(descCont, _("change_entropy_dice_detail_desc_2"));
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 40, 220);
+        GuiAlignToPrevObj(label, LV_ALIGN_OUT_RIGHT_TOP, 10, 0);
         lv_obj_set_width(label, 344);
 
         lv_obj_add_flag(descCont, LV_OBJ_FLAG_HIDDEN);

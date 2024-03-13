@@ -445,7 +445,6 @@ static uint8_t GetPathType()
     switch (g_chain) {
     case CHAIN_BTC:
         return g_btcPathType[GetCurrentAccountIndex()];
-
     default:
         break;
     }

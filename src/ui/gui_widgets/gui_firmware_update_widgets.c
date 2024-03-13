@@ -47,7 +47,6 @@ typedef struct {
     lv_obj_t *tileSdInstruction;
 #ifndef BTC_ONLY
     lv_obj_t *tileMultiToBtcWarning;
-    lv_obj_t *knownWarningBtn;
 #endif
     lv_obj_t *tileUpdating;
     lv_obj_t *qrCodeCont;
@@ -67,6 +66,7 @@ static void GuiCreateMultiToBtcWarningTile(lv_obj_t *parent);
 static void StartKnownWarningCountDownTimer(void);
 static void KnownWarningCountDownTimerHandler(lv_timer_t *timer);
 static void KnownWarningHandler(lv_event_t *e);
+static void KnownWarningCancelHandler(lv_event_t *e);
 #endif
 static void ConfirmSdCardUpdate(void);
 static void FirmwareSdcardUpdateHandler(lv_event_t *e);
@@ -87,6 +87,7 @@ static PageWidget_t *g_pageWidget;
 #ifndef BTC_ONLY
 static lv_timer_t *g_knownWarningCountDownTimer = NULL;
 static uint32_t g_knownWarningCountDown = 0;
+lv_obj_t *g_knownWarningBtn;
 #endif
 
 static void UrlInit()
@@ -479,10 +480,17 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
                 ConfirmSdCardUpdate();
             } else {
                 printf("firmware from MultiCoin to BTC\n");
-                g_firmwareUpdateWidgets.currentTile = FIRMWARE_UPDATE_MULTI_TO_BTC_WARNING;
-                lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, g_firmwareUpdateWidgets.currentTile, 0, LV_ANIM_OFF);
+                if (g_firmwareUpdateWidgets.tileView == NULL) {
+                    g_noticeHintBox = GuiCreateContainerWithParent(lv_scr_act(), lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET_NEW);
+                    lv_obj_align(g_noticeHintBox, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET_NEW);
+                    lv_obj_add_flag(g_noticeHintBox, LV_OBJ_FLAG_CLICKABLE);
+                    GuiCreateMultiToBtcWarningTile(g_noticeHintBox);
+                } else {
+                    g_firmwareUpdateWidgets.currentTile = FIRMWARE_UPDATE_MULTI_TO_BTC_WARNING;
+                    lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, g_firmwareUpdateWidgets.currentTile, 0, LV_ANIM_OFF);
+                    GuiFirmwareUpdateRefresh();
+                }
                 StartKnownWarningCountDownTimer();
-                GuiFirmwareUpdateRefresh();
             }
 #else
             ConfirmSdCardUpdate();
@@ -625,13 +633,13 @@ static void GuiCreateMultiToBtcWarningTile(lv_obj_t *parent)
     lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
     lv_obj_set_size(btn, 192, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
-    lv_obj_add_event_cb(btn, ReturnHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(btn, KnownWarningCancelHandler, LV_EVENT_CLICKED, NULL);
 
     btn = GuiCreateBtn(parent, _("firmware_update_btc_only_button_i_know"));
     lv_obj_set_size(btn, 192, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_add_event_cb(btn, KnownWarningHandler, LV_EVENT_CLICKED, NULL);
-    g_firmwareUpdateWidgets.knownWarningBtn = btn;
+    g_knownWarningBtn = btn;
 }
 
 static void StartKnownWarningCountDownTimer(void)
@@ -641,16 +649,16 @@ static void StartKnownWarningCountDownTimer(void)
     if (g_knownWarningCountDownTimer != NULL) {
         lv_timer_del(g_knownWarningCountDownTimer);
     }
-    lv_obj_clear_flag(g_firmwareUpdateWidgets.knownWarningBtn, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_clear_flag(g_knownWarningBtn, LV_OBJ_FLAG_CLICKABLE);
     snprintf_s(text, sizeof(text), "%s(5)", _("firmware_update_btc_only_button_i_know"));
-    lv_label_set_text(lv_obj_get_child(g_firmwareUpdateWidgets.knownWarningBtn, 0), text);
-    lv_obj_set_style_bg_opa(g_firmwareUpdateWidgets.knownWarningBtn, LV_OPA_60, LV_PART_MAIN);
+    lv_label_set_text(lv_obj_get_child(g_knownWarningBtn, 0), text);
+    lv_obj_set_style_bg_opa(g_knownWarningBtn, LV_OPA_60, LV_PART_MAIN);
     g_knownWarningCountDownTimer = lv_timer_create(KnownWarningCountDownTimerHandler, 1000, NULL);
 }
 
 static void KnownWarningCountDownTimerHandler(lv_timer_t *timer)
 {
-    lv_obj_t *btn = g_firmwareUpdateWidgets.knownWarningBtn;
+    lv_obj_t *btn = g_knownWarningBtn;
     char text[32];
     const char *preText = _("firmware_update_btc_only_button_i_know");
     g_knownWarningCountDown--;
@@ -668,15 +676,30 @@ static void KnownWarningCountDownTimerHandler(lv_timer_t *timer)
     }
 }
 
-
 static void KnownWarningHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
+        GUI_DEL_OBJ(g_noticeHintBox);
         ConfirmSdCardUpdate();
     }
 }
+
+static void KnownWarningCancelHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        if (g_noticeHintBox == NULL) {
+            ReturnHandler(e);
+        } else {
+            GUI_DEL_OBJ(g_noticeHintBox);
+        }
+    }
+}
+
+
 
 #endif
 

@@ -113,6 +113,8 @@ LV_IMG_DECLARE(imgReceive);
 LV_IMG_DECLARE(imgDeepLayersVolume11);
 LV_IMG_DECLARE(imgKey);
 LV_IMG_DECLARE(imgAlpha);
+LV_IMG_DECLARE(imgMultiCoin);
+LV_IMG_DECLARE(imgBtcOnly);
 
 // connect to do refresh
 LV_IMG_DECLARE(circular);

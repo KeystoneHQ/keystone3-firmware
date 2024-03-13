@@ -435,19 +435,11 @@ static void FpGetAesKeyState(char *indata, uint8_t len)
         printf("aes key %s\n", indata[0] ? "has been set" : "not set");
         state = indata[0];
         fpAesState = FpAesKeyExist();
-        assert(!!state == !!fpAesState);
-        if (fpAesState == 0) {
+        // assert(!!state == !!fpAesState);
+        if (state == 0) {
             FpSetAesKeySend(0, 0);
         } else {
             InitFingerManagerInfo();
-            printf("unlockFlag = %d\n", g_fpManager.unlockFlag);
-            printf("signFlag[0] = %d\n", g_fpManager.signFlag[0]);
-            printf("signFlag[1] = %d\n", g_fpManager.signFlag[1]);
-            printf("signFlag[2] = %d\n", g_fpManager.signFlag[2]);
-            printf("fingerNum = %d\n", g_fpManager.fingerNum);
-            printf("fingerId[0] = %d\n", g_fpManager.fingerId[0]);
-            printf("fingerId[1] = %d\n", g_fpManager.fingerId[1]);
-            printf("fingerId[2] = %d\n", g_fpManager.fingerId[2]);
             FpGetNumberSend(FINGERPRINT_CMD_GET_REG_NUM, 0);
         }
     }

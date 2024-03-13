@@ -45,6 +45,7 @@ typedef struct {
     lv_obj_t *tileSdInstruction;
 #ifndef BTC_ONLY
     lv_obj_t *tileMultiToBtcWarning;
+    lv_obj_t *knownWarningBtn;
 #endif
     lv_obj_t *tileUpdating;
     lv_obj_t *qrCodeCont;
@@ -61,6 +62,8 @@ static int GetEntryEnum(void);
 static void GuiCreateSdCardnstructionTile(lv_obj_t *parent);
 #ifndef BTC_ONLY
 static void GuiCreateMultiToBtcWarningTile(lv_obj_t *parent);
+static void StartKnownWarningCountDownTimer(void);
+static void KnownWarningCountDownTimerHandler(lv_timer_t *timer);
 static void KnownWarningHandler(lv_event_t *e);
 #endif
 static void ConfirmSdCardUpdate(void);
@@ -78,6 +81,11 @@ static lv_obj_t *g_noticeHintBox = NULL;
 static lv_obj_t *g_calCheckSumLabel = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static PageWidget_t *g_pageWidget;
+
+#ifndef BTC_ONLY
+static lv_timer_t *g_knownWarningCountDownTimer = NULL;
+static uint32_t g_knownWarningCountDown = 0;
+#endif
 
 static void UrlInit()
 {
@@ -195,6 +203,12 @@ void GuiFirmwareSdCardCopyResult(bool en)
 
 void GuiFirmwareUpdateDeInit(void)
 {
+#ifndef BTC_ONLY
+    if (g_knownWarningCountDownTimer != NULL) {
+        lv_timer_del(g_knownWarningCountDownTimer);
+        g_knownWarningCountDownTimer = NULL;
+    }
+#endif
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     g_param = NULL;
     printf("GuiFirmwareUpdateDeInit\n");
@@ -465,6 +479,7 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
                 printf("firmware from MultiCoin to BTC\n");
                 g_firmwareUpdateWidgets.currentTile = FIRMWARE_UPDATE_MULTI_TO_BTC_WARNING;
                 lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, g_firmwareUpdateWidgets.currentTile, 0, LV_ANIM_OFF);
+                StartKnownWarningCountDownTimer();
                 GuiFirmwareUpdateRefresh();
             }
 #else
@@ -614,7 +629,43 @@ static void GuiCreateMultiToBtcWarningTile(lv_obj_t *parent)
     lv_obj_set_size(btn, 192, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_add_event_cb(btn, KnownWarningHandler, LV_EVENT_CLICKED, NULL);
+    g_firmwareUpdateWidgets.knownWarningBtn = btn;
 }
+
+static void StartKnownWarningCountDownTimer(void)
+{
+    char text[32];
+    g_knownWarningCountDown = 5;
+    if (g_knownWarningCountDownTimer != NULL) {
+        lv_timer_del(g_knownWarningCountDownTimer);
+    }
+    lv_obj_clear_flag(g_firmwareUpdateWidgets.knownWarningBtn, LV_OBJ_FLAG_CLICKABLE);
+    snprintf_s(text, sizeof(text), "%s(5)", _("firmware_update_btc_only_button_i_know"));
+    lv_label_set_text(lv_obj_get_child(g_firmwareUpdateWidgets.knownWarningBtn, 0), text);
+    lv_obj_set_style_bg_opa(g_firmwareUpdateWidgets.knownWarningBtn, LV_OPA_60, LV_PART_MAIN);
+    g_knownWarningCountDownTimer = lv_timer_create(KnownWarningCountDownTimerHandler, 1000, NULL);
+}
+
+static void KnownWarningCountDownTimerHandler(lv_timer_t *timer)
+{
+    lv_obj_t *btn = g_firmwareUpdateWidgets.knownWarningBtn;
+    char text[32];
+    const char *preText = _("firmware_update_btc_only_button_i_know");
+    g_knownWarningCountDown--;
+    if (g_knownWarningCountDown > 0) {
+        snprintf_s(text, sizeof(text), "%s(%d)", preText, g_knownWarningCountDown);
+    } else {
+        strcpy_s(text, sizeof(text), preText);
+    }
+    lv_label_set_text(lv_obj_get_child(btn, 0), text);
+    if (g_knownWarningCountDown <= 0) {
+        lv_obj_set_style_bg_opa(btn, LV_OPA_100, LV_PART_MAIN);
+        lv_obj_add_flag(btn, LV_OBJ_FLAG_CLICKABLE);
+        lv_timer_del(timer);
+        g_knownWarningCountDownTimer = NULL;
+    }
+}
+
 
 static void KnownWarningHandler(lv_event_t *e)
 {

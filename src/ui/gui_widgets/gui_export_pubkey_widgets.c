@@ -294,7 +294,6 @@ static void ConfirmHandler(lv_event_t *e)
     }
 }
 
-#ifndef COMPILE_SIMULATOR
 #ifdef BTC_ONLY
 static ChainType ConvertChainType(ChainType chainType)
 {
@@ -348,21 +347,9 @@ static void GetBtcPubkey(char *dest, uint8_t pathType, uint32_t maxLen)
     }
     result = xpub_convert_version(xpub, head);
     ASSERT(result);
-    strcpy_s(dest, maxLen, xpub);
+    strcpy_s(dest, maxLen, result->data);
     free_simple_response_c_char(result);
 }
-#else
-static void GetBtcPubkey(char *dest, uint8_t pathType, uint32_t maxLen)
-{
-    if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC_LEGACY) {
-        strcpy_s(dest, maxLen, "xpub6DkencgjwZW2G2ayofjQ9cD76C59JqsjmahLmwffHmm9LpW5urCVeu3UVNr9zULcbagfEVKqdcBAiCaL8PLCxmisgKNLA1br6bqrm8783yu");
-    } else if (g_btcPathTypeList[pathType].pubkeyType == XPUB_TYPE_BTC) {
-        strcpy_s(dest, maxLen, "ypub6YbWuU2sY6ZkEzNkRc8rGk7m6jYqYU9hZJY4y8JtF7K4i2sC5wL9RtB7bRzLJqj1P5J7wR5H8Z6Q2H7nZC6n5z5v9X3a2Wn2m");
-    } else {
-        strcpy_s(dest, maxLen, "zpub6YbWuU2sY6ZkEzNkRc8rGk7m6jYqYU9hZJY4y8JtF7K4i2sC5wL9RtB7bRzLJqj1P5J7wR5H8Z6Q2H7nZC6n5z5v9X3a2Wn2m");
-    }
-}
-#endif
 
 void GetExportPubkey(char *dest, uint16_t chain, uint8_t pathType, uint32_t maxLen)
 {

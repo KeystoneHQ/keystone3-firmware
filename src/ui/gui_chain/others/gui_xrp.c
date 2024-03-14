@@ -122,7 +122,7 @@ PtrT_TransactionCheckResult GuiGetXrpCheckResult(void)
         if (g_cachedPath[GetCurrentAccountIndex()] != NULL) {
             SRAM_FREE(g_cachedPath[GetCurrentAccountIndex()]);
         }
-        len = strnlen_s(g_hdPath, HD_PATH_MAX_LEN);
+        len = strnlen_s(g_hdPath, HD_PATH_MAX_LEN) + 1;
         g_cachedPath[GetCurrentAccountIndex()] = SRAM_MALLOC(len);
         strcpy_s(g_cachedPath[GetCurrentAccountIndex()], len, g_hdPath);
     } else {

@@ -613,7 +613,7 @@ static void GuiCreateMultiToBtcWarningTile(lv_obj_t *parent)
 
     img = GuiCreateImg(parent, &imgMultiCoin);
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 134, 132 - GUI_NAV_BAR_HEIGHT);
-    img = GuiCreateImg(parent, &imgArrowNext);
+    img = GuiCreateImg(parent, &imgArrowNextRed);
     lv_obj_set_style_img_recolor(img, lv_color_hex(0xFF4B1F), LV_PART_MAIN);
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 222, 150 - GUI_NAV_BAR_HEIGHT);
 

@@ -5,6 +5,7 @@
 
 // img
 LV_IMG_DECLARE(imgArrowNext);
+LV_IMG_DECLARE(imgArrowNextRed);
 LV_IMG_DECLARE(imgArrowRight);
 LV_IMG_DECLARE(imgArrowRightO);
 LV_IMG_DECLARE(imgBattery);

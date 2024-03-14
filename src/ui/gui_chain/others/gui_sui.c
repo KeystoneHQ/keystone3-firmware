@@ -70,13 +70,14 @@ void FreeSuiMemory(void)
 int GetSuiDetailLen(void *param)
 {
     DisplaySuiIntentMessage *tx = (DisplaySuiIntentMessage *)param;
-    return strlen(tx->detail);
+    return strlen(tx->detail) + 1;
 }
 
 void GetSuiDetail(void *indata, void *param, uint32_t maxLen)
 {
     DisplaySuiIntentMessage *tx = (DisplaySuiIntentMessage *)param;
-    strcpy_s((char *)indata, maxLen, tx->detail);
+    // strcpy_s will exceed the stack size and the copy will fail
+    strcpy((char *)indata, tx->detail);
 }
 
 UREncodeResult *GuiGetSuiSignQrCodeData(void)

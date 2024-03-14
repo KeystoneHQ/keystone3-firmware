@@ -5,6 +5,7 @@
 
 // img
 LV_IMG_DECLARE(imgArrowNext);
+LV_IMG_DECLARE(imgArrowNextRed);
 LV_IMG_DECLARE(imgArrowRight);
 LV_IMG_DECLARE(imgArrowRightO);
 LV_IMG_DECLARE(imgBattery);
@@ -112,6 +113,8 @@ LV_IMG_DECLARE(imgUpdate);
 LV_IMG_DECLARE(imgReceive);
 LV_IMG_DECLARE(imgDeepLayersVolume11);
 LV_IMG_DECLARE(imgKey);
+LV_IMG_DECLARE(imgMultiCoin);
+LV_IMG_DECLARE(imgBtcOnly);
 
 // connect to do refresh
 LV_IMG_DECLARE(circular);

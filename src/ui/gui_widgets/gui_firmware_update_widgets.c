@@ -87,7 +87,7 @@ static PageWidget_t *g_pageWidget;
 #ifndef BTC_ONLY
 static lv_timer_t *g_knownWarningCountDownTimer = NULL;
 static uint32_t g_knownWarningCountDown = 0;
-lv_obj_t *g_knownWarningBtn;
+static lv_obj_t *g_knownWarningBtn;
 #endif
 
 static void UrlInit()
@@ -230,12 +230,9 @@ void GuiFirmwareUpdateRefresh(void)
 {
 #ifndef BTC_ONLY
     if (g_firmwareUpdateWidgets.currentTile != FIRMWARE_UPDATE_MULTI_TO_BTC_WARNING) {
-        printf("line=%d\n", __LINE__);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     } else {
-        printf("line=%d\n", __LINE__);
         if (g_pageWidget->navBarWidget->leftBtn != NULL && lv_obj_is_valid(g_pageWidget->navBarWidget->leftBtn)) {
-            printf("line=%d\n", __LINE__);
             lv_obj_del(g_pageWidget->navBarWidget->leftBtn);
             g_pageWidget->navBarWidget->leftBtn = NULL;
         }

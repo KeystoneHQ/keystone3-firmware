@@ -100,12 +100,6 @@ impl WrappedPsbt {
         if let Some(utxo) = &input.witness_utxo {
             value = utxo.value.to_sat();
         }
-        if value <= 0 {
-            return Err(BitcoinError::InvalidTransaction(format!(
-                "input #{} has negative value",
-                index
-            )));
-        }
         let path = self.get_my_input_path(input, index, context)?;
         Ok(ParsedInput {
             address,

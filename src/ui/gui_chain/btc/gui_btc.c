@@ -438,13 +438,13 @@ void GetPsbtDetailSize(uint16_t *width, uint16_t *height, void *param)
 int GetBtcMsgDetailLen(void *param)
 {
     DisplayBtcMsg *tx = (DisplayBtcMsg *)param;
-    return strlen(tx->detail);
+    return strlen(tx->detail) + 1;
 }
 
 void GetBtcMsgDetail(void *indata, void *param)
 {
     DisplayBtcMsg *tx = (DisplayBtcMsg *)param;
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, "%s", tx->detail);
+    strcpy((char *)indata, tx->detail);
 }
 
 void FreePsbtUxtoMemory(void)

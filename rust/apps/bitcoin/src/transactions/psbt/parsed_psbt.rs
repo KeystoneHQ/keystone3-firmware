@@ -28,10 +28,13 @@ impl TxParser for WrappedPsbt {
     }
     fn determine_network(&self) -> Result<Network> {
         let first_input = self.psbt.inputs.get(0).ok_or(BitcoinError::InvalidInput)?;
-        let (_, (_, path)) = first_input
-            .bip32_derivation
-            .first_key_value()
-            .ok_or(BitcoinError::InvalidInput)?;
+        let path = if let Some((_, (_, path))) = first_input.bip32_derivation.first_key_value() {
+            path
+        } else if let Some((_, (_, (_, path)))) = first_input.tap_key_origins.first_key_value() {
+            path
+        } else {
+            return Err(BitcoinError::InvalidInput);
+        };
         let coin_type = path.index(1);
         match coin_type {
             ChildNumber::Hardened { index } => match index {
@@ -58,12 +61,12 @@ mod tests {
 
     use core::str::FromStr;
     use std::collections::BTreeMap;
-    use third_party::bitcoin::bip32::{DerivationPath, ExtendedPubKey, Fingerprint};
+    use third_party::bitcoin::bip32::{DerivationPath, Fingerprint, Xpub};
 
     use super::*;
     use crate::parsed_tx::TxParser;
-    use third_party::bitcoin::hashes::hex::FromHex;
     use third_party::bitcoin::psbt::Psbt;
+    use third_party::bitcoin_hashes::hex::FromHex;
 
     #[test]
     fn test_parse_psbt() {
@@ -71,7 +74,7 @@ mod tests {
         let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
         let wpsbt = WrappedPsbt { psbt };
         let master_fingerprint = Fingerprint::from_str("73c5da0a").unwrap();
-        let extended_pubkey = ExtendedPubKey::from_str("xpub6Bm9M1SxZdzL3TxdNV8897FgtTLBgehR1wVNnMyJ5VLRK5n3tFqXxrCVnVQj4zooN4eFSkf6Sma84reWc5ZCXMxPbLXQs3BcaBdTd4YQa3B").unwrap();
+        let extended_pubkey = Xpub::from_str("xpub6Bm9M1SxZdzL3TxdNV8897FgtTLBgehR1wVNnMyJ5VLRK5n3tFqXxrCVnVQj4zooN4eFSkf6Sma84reWc5ZCXMxPbLXQs3BcaBdTd4YQa3B").unwrap();
         let path = DerivationPath::from_str("m/84'/1'/0'").unwrap();
         let mut keys = BTreeMap::new();
         keys.insert(path, extended_pubkey);
@@ -106,5 +109,49 @@ mod tests {
         );
         assert_eq!(false, first_output.path.is_some());
         assert_eq!(4000, first_output.value);
+    }
+
+    #[test]
+    fn test_parse_psbt_taproot_tx() {
+        let psbt_hex = "70736274ff01005e02000000013aee4d6b51da574900e56d173041115bd1e1d01d4697a845784cf716a10c98060000000000ffffffff0100190000000000002251202258f2d4637b2ca3fd27614868b33dee1a242b42582d5474f51730005fa99ce8000000000001012bbc1900000000000022512022f3956cc27a6a9b0e0003a0afc113b04f31b95d5cad222a65476e8440371bd1010304000000002116b68df382cad577d8304d5a8e640c3cb42d77c10016ab754caa4d6e68b6cb296d190073c5da0a5600008001000080000000800000000002000000011720b68df382cad577d8304d5a8e640c3cb42d77c10016ab754caa4d6e68b6cb296d011820c913dc9a8009a074e7bbc493b9d8b7e741ba137f725f99d44fbce99300b2bb0a0000";
+        let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
+        let wpsbt = WrappedPsbt { psbt };
+        let master_fingerprint = Fingerprint::from_str("73c5da0a").unwrap();
+        let extended_pubkey = Xpub::from_str("tpubDDfvzhdVV4unsoKt5aE6dcsNsfeWbTgmLZPi8LQDYU2xixrYemMfWJ3BaVneH3u7DBQePdTwhpybaKRU95pi6PMUtLPBJLVQRpzEnjfjZzX").unwrap();
+        let path = DerivationPath::from_str("m/86'/1'/0'").unwrap();
+        let mut keys = BTreeMap::new();
+        keys.insert(path, extended_pubkey);
+
+        let result = wpsbt
+            .parse(Some(&ParseContext {
+                master_fingerprint,
+                extended_public_keys: keys,
+            }))
+            .unwrap();
+
+        assert_eq!("0.00006588 tBTC", result.detail.total_input_amount);
+        assert_eq!("0.000064 tBTC", result.detail.total_output_amount);
+        assert_eq!("0.00000188 tBTC", result.detail.fee_amount);
+
+        assert_eq!("6400 sats", result.overview.total_output_sat);
+        assert_eq!("188 sats", result.overview.fee_sat);
+
+        assert_eq!("Bitcoin Testnet", result.overview.network);
+
+        let first_input = result.detail.from.get(0).unwrap();
+        assert_eq!(
+            "tb1pytee2mxz0f4fkrsqqws2lsgnkp8nrw2atjkjy2n9gahggsphr0gszaxxmv",
+            first_input.address.clone().unwrap()
+        );
+        assert_eq!(true, first_input.path.is_some());
+        assert_eq!(6588, first_input.value);
+
+        let first_output = result.detail.to.get(0).unwrap();
+        assert_eq!(
+            "tb1pyfv094rr0vk28lf8v9yx3veaacdzg26ztqk4ga84zucqqhafnn5q9my9rz",
+            first_output.address
+        );
+        assert_eq!(false, first_output.path.is_some());
+        assert_eq!(6400, first_output.value);
     }
 }

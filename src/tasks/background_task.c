@@ -28,7 +28,7 @@ void CreateBackgroundTask(void)
 {
     const osThreadAttr_t backgroundTask_attributes = {
         .name = "BackgroundTask",
-        .stack_size = 1024 * 16,
+        .stack_size = 1024 * 28,
         .priority = (osPriority_t)osPriorityBelowNormal,
     };
     g_backgroundTaskHandle = osThreadNew(BackgroundTask, NULL, &backgroundTask_attributes);
@@ -184,17 +184,15 @@ static void BackgroundTask(void *argument)
                 battState |= 0x8000;
             }
             if (GetUsbDetectState() == false) {
-                SetUsbState(false);
-                UsbDeInit();
+                CloseUsb();
                 GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 0);
             } else if (GetUSBSwitch()) {
 #if (USB_POP_WINDOW_ENABLE == 1)
                 GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
 #else
-                UsbInit();
+                OpenUsb();
 #endif
             }
-            //printf("send battState=0x%04X\r\n", battState);
             GuiApiEmitSignal(SIG_INIT_BATTERY, &battState, sizeof(battState));
         }
         break;

@@ -71,7 +71,7 @@ void GuiConnectionEntranceWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_color(usbConnectionSw, ORANGE_COLOR, LV_STATE_CHECKED | LV_PART_INDICATOR);
     lv_obj_set_style_bg_color(usbConnectionSw, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(usbConnectionSw, LV_OPA_30, LV_PART_MAIN);
-    if (GetUSBSwitch()) {
+    if (!GetUSBSwitch()) {
         lv_obj_add_state(usbConnectionSw, LV_STATE_CHECKED);
     } else {
         lv_obj_clear_state(usbConnectionSw, LV_STATE_CHECKED);
@@ -125,14 +125,14 @@ static void UsbConnectionSwitchHandler(lv_event_t * e)
 
     if (code == LV_EVENT_VALUE_CHANGED) {
         if (lv_obj_has_state(obj, LV_STATE_CHECKED)) {
-            printf("air gap off\n");
-            SetUsbState(false);
-            SetUSBSwitch(1);
+            printf("air gap on...\n");
+            SetUSBSwitch(0);
             CloseUsb();
         } else {
-            SetUSBSwitch(0);
+            SetUsbState(true);
+            SetUSBSwitch(1);
+            printf("air gap off...\n");
             GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
-            printf("air gap on\n");
         }
         SaveDeviceSettings();
     }

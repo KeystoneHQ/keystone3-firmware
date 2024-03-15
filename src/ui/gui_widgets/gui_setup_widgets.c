@@ -288,14 +288,15 @@ void GuiSetupAreaRestart(void)
 
 uint8_t GuiSetSetupPhase(SETUP_PHASE_ENUM pahaseEnum)
 {
-    SetSetupStep(pahaseEnum);
-    SaveDeviceSettings();
+    if (GetSetupStep() != pahaseEnum) {
+        SetSetupStep(pahaseEnum);
+        SaveDeviceSettings();
+    }
     return 0;
 }
 
 bool GuiJudgeCurrentPahse(SETUP_PHASE_ENUM pahaseEnum)
 {
-    // uint32_t currentPhase = GetSetupStep();
     return lastShutDownPage == pahaseEnum;
 }
 

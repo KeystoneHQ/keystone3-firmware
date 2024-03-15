@@ -1,8 +1,8 @@
-#include "user_memory.h"
 #include "err_code.h"
 #include "sdfat_fns.h"
 #include "user_fatfs.h"
 #include "vfs_int.h"
+#include "user_memory.h"
 
 static FIL g_sdFatFs;
 

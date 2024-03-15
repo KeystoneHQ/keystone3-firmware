@@ -38,7 +38,7 @@ static void WalletTutorialsInit()
 {
     if (!g_tutorialsInitialized) {
         g_tutorialsInitialized = true;
-
+#ifndef BTC_ONLY
         //WALLET_LIST_BLUE
         g_tutorials[WALLET_LIST_BLUE].len = 1;
         g_tutorials[WALLET_LIST_BLUE].desc = _("connect_bw_desc");
@@ -105,7 +105,6 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_RABBY].items[0].qrTitle = _("connect_rabby_qr_title");
         g_tutorials[WALLET_LIST_RABBY].items[0].qrUrl = _("connect_rabby_qr_link");
 
-
         //WALLET_LIST_BLOCK_WALLET
         g_tutorials[WALLET_LIST_BLOCK_WALLET].len = 1;
         g_tutorials[WALLET_LIST_BLOCK_WALLET].desc = _("connect_block_desc");
@@ -127,7 +126,6 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_SAFE].items[1].qrTitle = _("connect_safe_qr_title2");
         g_tutorials[WALLET_LIST_SAFE].items[1].qrUrl = _("connect_safe_qr_link2");
 
-
         //WALLET_LIST_ZAPPER
         g_tutorials[WALLET_LIST_ZAPPER].len = 1;
         g_tutorials[WALLET_LIST_ZAPPER].desc = _("connect_zapper_desc");
@@ -136,7 +134,6 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_ZAPPER].items[0].qrTitle = _("connect_zapper_qr_title");
         g_tutorials[WALLET_LIST_ZAPPER].items[0].qrUrl = _("connect_zapper_qr_link");
 
-
         //WALLET_LIST_YEARN_FINANCE
         g_tutorials[WALLET_LIST_YEARN_FINANCE].len = 1;
         g_tutorials[WALLET_LIST_YEARN_FINANCE].desc = _("connect_yearn_desc");
@@ -144,7 +141,6 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_YEARN_FINANCE].items[0].url = _("connect_yearn_link");
         g_tutorials[WALLET_LIST_YEARN_FINANCE].items[0].qrTitle = _("connect_yearn_qr_title");
         g_tutorials[WALLET_LIST_YEARN_FINANCE].items[0].qrUrl = _("connect_yearn_qr_link");
-
 
         //WALLET_LIST_SUSHISWAP
         g_tutorials[WALLET_LIST_SUSHISWAP].len = 1;
@@ -201,6 +197,35 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_XRP_TOOLKIT].items[0].url = _("connect_xrp_toolkit_link");
         g_tutorials[WALLET_LIST_XRP_TOOLKIT].items[0].qrTitle = _("connect_xrp_toolkit_qr_title");
         g_tutorials[WALLET_LIST_XRP_TOOLKIT].items[0].qrUrl = _("connect_xrp_toolkit_qr_link");
+#else
+        g_tutorials[WALLET_LIST_BLUE].len = 1;
+        g_tutorials[WALLET_LIST_BLUE].desc = _("connect_bw_desc");
+        g_tutorials[WALLET_LIST_BLUE].items[0].walletName = _("connect_bw_title");
+        g_tutorials[WALLET_LIST_BLUE].items[0].url = _("connect_bw_link");
+        g_tutorials[WALLET_LIST_BLUE].items[0].qrTitle = _("connect_bw_qr_title");
+        g_tutorials[WALLET_LIST_BLUE].items[0].qrUrl = _("connect_bw_qr_link");
+
+        g_tutorials[WALLET_LIST_SPECTER].len = 1;
+        g_tutorials[WALLET_LIST_SPECTER].desc = _("connect_specter_desc");
+        g_tutorials[WALLET_LIST_SPECTER].items[0].walletName = _("connect_specter_title");
+        g_tutorials[WALLET_LIST_SPECTER].items[0].url = _("connect_specter_link");
+        g_tutorials[WALLET_LIST_SPECTER].items[0].qrTitle = _("connect_specter_qr_title");
+        g_tutorials[WALLET_LIST_SPECTER].items[0].qrUrl = _("connect_specter_qr_link");
+
+        g_tutorials[WALLET_LIST_SPARROW].len = 1;
+        g_tutorials[WALLET_LIST_SPARROW].desc = _("connect_sparrow_desc");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].walletName = _("connect_sparrow_title");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].url = _("connect_sparrow_link");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].qrTitle = _("connect_sparrow_qr_title");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl = _("connect_sparrow_qr_link");
+
+        g_tutorials[WALLET_LIST_NUNCHUK].len = 1;
+        g_tutorials[WALLET_LIST_NUNCHUK].desc = _("connect_nunchuk_desc");
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].walletName = _("connect_nunchuk_title");
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].url = _("connect_nunchuk_link");
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrTitle = _("connect_nunchuk_qr_title");
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrUrl = _("connect_nunchuk_qr_link");
+#endif
     }
 }
 

@@ -112,7 +112,7 @@ void GuiAboutEntranceWidget(lv_obj_t *parent)
 
     //firmware
     char version[32] = {0};
-    char fileVersion[16] = {0};
+    char fileVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
     GetSoftWareVersion(version);
 
     label = GuiCreateTextLabel(parent, version);

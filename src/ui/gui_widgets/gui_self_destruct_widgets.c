@@ -5,6 +5,10 @@
 #include "gui_hintbox.h"
 #include "presetting.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 static lv_obj_t *g_selfDestructCont = NULL;
 
 void GuiSelfDestructInit(void)
@@ -28,8 +32,8 @@ void GuiSelfDestructInit(void)
         tempObj = GuiCreateIllustrateLabel(g_selfDestructCont, _("support_link"));
         lv_obj_set_style_text_color(tempObj, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
         lv_obj_align(tempObj, LV_ALIGN_BOTTOM_MID, 0, -106);
-        strcpy(serialNum, "SN:");
-        GetSerialNumber(serialNum + strlen(serialNum));
+        strcpy_s(serialNum, 3, "SN:");
+        GetSerialNumber(serialNum + strnlen_s(serialNum, 3));
         tempObj = GuiCreateNoticeLabel(g_selfDestructCont, serialNum);
         lv_obj_align(tempObj, LV_ALIGN_BOTTOM_MID, 0, -36);
     }

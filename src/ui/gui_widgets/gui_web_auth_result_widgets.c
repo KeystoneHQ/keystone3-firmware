@@ -12,6 +12,10 @@
 #include "screen_manager.h"
 #include "gui_page.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 static void *g_web_auth_data;
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
@@ -112,7 +116,7 @@ void GuiWebAuthResultCreateAuthCode(lv_obj_t *parent, char *code, int xOffset)
 
 void GuiWebAuthResultRenderAuthCode(lv_obj_t *parent)
 {
-    if (g_authCode != NULL && strlen(g_authCode) >= 8) {
+    if (g_authCode != NULL && strnlen_s(g_authCode, SIMPLERESPONSE_C_CHAR_MAX_LEN) >= 8) {
         char c1[2] = {g_authCode[0], '\0'};
         char c2[2] = {g_authCode[1], '\0'};
         char c3[2] = {g_authCode[2], '\0'};

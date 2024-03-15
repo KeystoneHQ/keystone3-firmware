@@ -154,8 +154,6 @@ static uint32_t Gd25FlashReadData(uint32_t addr, uint8_t *buffer, uint32_t size)
         return ERR_GD25_BAD_PARAM;
     }
 
-    memset(buffer, 0, size);
-
     FLASH_CS_LOW();
 
     Gd25FlashSendByte(GD25QXX_CMD_READ_DATA);

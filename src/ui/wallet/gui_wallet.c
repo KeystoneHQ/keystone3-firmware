@@ -10,48 +10,48 @@
 
 static UREncodeResult *g_urEncode = NULL;
 
-#ifdef COMPILE_SIMULATOR
-struct UREncodeResult *get_connect_blue_wallet_ur(uint8_t *master_fingerprint,
-        uint32_t length,
-        PtrT_CSliceFFI_ExtendedPublicKey public_keys)
-{
-    struct UREncodeResult *result = malloc(sizeof(struct UREncodeResult));
-    result->is_multi_part = 0;
-    result->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    result->encoder = NULL;
-    result->error_code = 0;
-    result->error_message = NULL;
-    return result;
-}
+// #ifdef COMPILE_SIMULATOR
+// struct UREncodeResult *get_connect_blue_wallet_ur(uint8_t *master_fingerprint,
+//         uint32_t length,
+//         PtrT_CSliceFFI_ExtendedPublicKey public_keys)
+// {
+//     struct UREncodeResult *result = malloc(sizeof(struct UREncodeResult));
+//     result->is_multi_part = 0;
+//     result->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+//     result->encoder = NULL;
+//     result->error_code = 0;
+//     result->error_message = NULL;
+//     return result;
+// }
 
-PtrT_UREncodeResult get_connect_companion_app_ur(PtrBytes master_fingerprint,
-        uint32_t master_fingerprint_length,
-        int device_info,
-        CoinConfig *coin_config,
-        uint32_t coin_config_length)
-{
-    struct UREncodeResult *result = malloc(sizeof(struct UREncodeResult));
-    result->is_multi_part = 0;
-    result->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    result->encoder = NULL;
-    result->error_code = 0;
-    result->error_message = NULL;
-    return result;
-}
+// PtrT_UREncodeResult get_connect_companion_app_ur(PtrBytes master_fingerprint,
+//         uint32_t master_fingerprint_length,
+//         int device_info,
+//         CoinConfig *coin_config,
+//         uint32_t coin_config_length)
+// {
+//     struct UREncodeResult *result = malloc(sizeof(struct UREncodeResult));
+//     result->is_multi_part = 0;
+//     result->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+//     result->encoder = NULL;
+//     result->error_code = 0;
+//     result->error_message = NULL;
+//     return result;
+// }
 
-char *GetCurrentAccountPublicKey(ChainType chain)
-{
-    return "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-}
+// char *GetCurrentAccountPublicKey(ChainType chain)
+// {
+//     return "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+// }
 
-void GetMasterFingerPrint(uint8_t *mfp)
-{
-    mfp[0] = 0x70;
-    mfp[1] = 0x7e;
-    mfp[2] = 0xed;
-    mfp[3] = 0x6c;
-}
-#endif
+// void GetMasterFingerPrint(uint8_t *mfp)
+// {
+//     mfp[0] = 0x70;
+//     mfp[1] = 0x7e;
+//     mfp[2] = 0xed;
+//     mfp[3] = 0x6c;
+// }
+// #endif
 
 UREncodeResult *GuiGetBlueWalletBtcData(void)
 {
@@ -76,6 +76,34 @@ UREncodeResult *GuiGetBlueWalletBtcData(void)
     return (void *)data;
 #endif
 }
+
+UREncodeResult *GuiGetSparrowWalletBtcData(void)
+{
+#ifndef COMPILE_SIMULATOR
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    ExtendedPublicKey keys[4];
+    public_keys->data = keys;
+    public_keys->size = 4;
+    keys[0].path = "m/84'/0'/0'";
+    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+    keys[1].path = "m/49'/0'/0'";
+    keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+    keys[2].path = "m/44'/0'/0'";
+    keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+    keys[3].path = "m/86'/0'/0'";
+    keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+    UREncodeResult *urencode = get_connect_sparrow_wallet_ur(mfp, sizeof(mfp), public_keys);
+    CHECK_CHAIN_PRINT(urencode);
+    return urencode;
+#else
+    const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
+    return (void *)data;
+#endif
+}
+
+#ifndef BTC_ONLY
 
 typedef UREncodeResult *MetamaskUrGetter(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys);
 
@@ -176,8 +204,8 @@ UREncodeResult *GuiGetKeplrData(void)
         const CosmosChain_t *chain = GuiGetCosmosChain(chains[i]);
         keys[i].xpub = GetCurrentAccountPublicKey(chain->xpubType);
         keys[i].name = "Account-1";
-        keys[i].path = SRAM_MALLOC(sizeof(char) * 32);
-        sprintf(keys[i].path, "M/44'/%u'/0'/0/0", chain->coinType);
+        keys[i].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[i].path, BUFFER_SIZE_32, "M/44'/%u'/0'/0/0", chain->coinType);
     }
 
     g_urEncode = get_connect_keplr_wallet_ur(mfp, sizeof(mfp), publicKeys);
@@ -218,8 +246,8 @@ UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin)
         return NULL;
     }
     for (uint8_t i = 0; i < 10; i++) {
-        keys[i].path = SRAM_MALLOC(sizeof(char) * 32);
-        sprintf(keys[i].path, "m/44'/%u'/%u'/0'/0'", coinType, i);
+        keys[i].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[i].path, BUFFER_SIZE_32, "m/44'/%u'/%u'/0'/0'", coinType, i);
         keys[i].xpub = GetCurrentAccountPublicKey(xpubBaseIndex + i);
     }
     if (coin == CHAIN_SUI) {
@@ -249,8 +277,8 @@ UREncodeResult *GuiGetPetraData(void)
     publicKeys->data = keys;
     publicKeys->size = 10;
     for (uint8_t i = 0; i < 10; i++) {
-        keys[i].path = SRAM_MALLOC(sizeof(char) * 32);
-        sprintf(keys[i].path, "m/44'/637'/%u'/0'/0'", i);
+        keys[i].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[i].path, BUFFER_SIZE_32, "m/44'/637'/%u'/0'/0'", i);
         keys[i].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + i);
     }
     g_urEncode = get_connect_aptos_wallet_ur(mfp, sizeof(mfp), publicKeys);
@@ -273,8 +301,8 @@ UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
     GetMasterFingerPrint(mfp);
     char *xpub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
     char *rootPath = "m/44'/144'/0'";
-    char hdPath[32] = {0};
-    sprintf(hdPath, "%s/0/%u", rootPath, index);
+    char hdPath[BUFFER_SIZE_32] = {0};
+    snprintf_s(hdPath, BUFFER_SIZE_32, "%s/0/%u", rootPath, index);
     g_urEncode = get_connect_xrp_toolkit_ur(hdPath, xpub, rootPath);
     CHECK_CHAIN_PRINT(g_urEncode);
     return g_urEncode;
@@ -426,24 +454,28 @@ UREncodeResult *GuiGetCompanionAppData(void)
     return result;
 }
 
+#endif
+
 UREncodeResult *GuiGetOkxWalletData(void)
 {
 #ifndef COMPILE_SIMULATOR
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    //   btc 3
+    //   btc 4
     // + eth 10
     // + trx 1
     // + ltc 1
     // + dash 1
     // + bch 1
-    ExtendedPublicKey keys[17];
+#ifndef BTC_ONLY
+
+    ExtendedPublicKey keys[18];
     public_keys->data = keys;
-    public_keys->size = 17;
+    public_keys->size = 18;
     for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
-        keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = SRAM_MALLOC(64);
-        sprintf(keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
+        keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = SRAM_MALLOC(BUFFER_SIZE_64);
+        snprintf_s(keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path, BUFFER_SIZE_64, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
         keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].xpub = GetCurrentAccountPublicKey(i);
     }
 
@@ -467,11 +499,36 @@ UREncodeResult *GuiGetOkxWalletData(void)
 
     keys[16].path = GetXPubPath(XPUB_TYPE_BCH);
     keys[16].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
+
+    keys[17].path = "m/86'/0'/0'";
+    keys[17].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+
+#else
+    ExtendedPublicKey keys[4];
+    public_keys->data = keys;
+    public_keys->size = 4;
+
+    keys[0].path = "m/44'/0'/0'";
+    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+
+    keys[1].path = "m/49'/0'/0'";
+    keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+
+    keys[2].path = "m/84'/0'/0'";
+    keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+
+    keys[3].path = "m/86'/0'/0'";
+    keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+#endif
     char serialNumber[256];
     GetSerialNumber(serialNumber);
     char firmwareVersion[12];
     GetSoftWareVersionNumber(firmwareVersion);
+#ifndef BTC_ONLY
     g_urEncode = get_okx_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
+#else
+    g_urEncode = get_okx_wallet_ur_btc_only(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
+#endif
     CHECK_CHAIN_PRINT(g_urEncode);
     SRAM_FREE(public_keys);
     return g_urEncode;
@@ -481,6 +538,7 @@ UREncodeResult *GuiGetOkxWalletData(void)
 #endif
 }
 
+#ifndef BTC_ONLY
 UREncodeResult *GuiGetSolflareData(void)
 {
 #ifndef COMPILE_SIMULATOR
@@ -495,22 +553,22 @@ UREncodeResult *GuiGetSolflareData(void)
     if (accountType == SOLBip44) {
         public_keys->size = 10;
         for (int i = XPUB_TYPE_SOL_BIP44_0; i <= XPUB_TYPE_SOL_BIP44_9; i++) {
-            char *path = SRAM_MALLOC(sizeof(char) * 32);
-            sprintf(path, "m/44'/501'/%d'", i - XPUB_TYPE_SOL_BIP44_0);
+            char *path = SRAM_MALLOC(BUFFER_SIZE_32);
+            snprintf_s(path, BUFFER_SIZE_32, "m/44'/501'/%d'", i - XPUB_TYPE_SOL_BIP44_0);
             keys[i - XPUB_TYPE_SOL_BIP44_0].path = path;
             keys[i - XPUB_TYPE_SOL_BIP44_0].xpub = GetCurrentAccountPublicKey(i);
         }
     } else if (accountType == SOLBip44ROOT) {
         public_keys->size = 1;
         char *path = SRAM_MALLOC(sizeof(char) * 32);
-        sprintf(path, "m/44'/501'");
+        snprintf_s(path, BUFFER_SIZE_32, "m/44'/501'");
         keys[0].path = path;
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_ROOT);
     } else if (accountType == SOLBip44Change) {
         public_keys->size = 10;
         for (int i = XPUB_TYPE_SOL_BIP44_CHANGE_0; i <= XPUB_TYPE_SOL_BIP44_CHANGE_9; i++) {
             char *path = SRAM_MALLOC(sizeof(char) * 32);
-            sprintf(path, "m/44'/501'/%d'/0'", i - XPUB_TYPE_SOL_BIP44_CHANGE_0);
+            snprintf_s(path, BUFFER_SIZE_32, "m/44'/501'/%d'/0'", i - XPUB_TYPE_SOL_BIP44_CHANGE_0);
             keys[i - XPUB_TYPE_SOL_BIP44_CHANGE_0].path = path;
             keys[i - XPUB_TYPE_SOL_BIP44_CHANGE_0].xpub = GetCurrentAccountPublicKey(i);
         }
@@ -529,3 +587,5 @@ UREncodeResult *GuiGetSolflareData(void)
 
 
 }
+
+#endif

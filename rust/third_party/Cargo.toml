@@ -6,7 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bitcoin = { version = "0.30.0", default-features = false, features = ["no-std", "secp-recovery"] }
+bitcoin = { version = "0.31.1", default-features = false, features = ["no-std", "secp-recovery"] }
+bech32 = {version = "0.10.0-beta", default-features = false}
+bitcoin_hashes = {version = "0.13.0", default-features = false}
 core2 = { version = "0.3.3", default_features = false }
 thiserror = { version = "1.0", package = "thiserror-core", default-features = false }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
@@ -15,8 +17,8 @@ rsa = { version = "0.8.2", default-features = false }
 sha1 = { version = "0.10.5", default-features = false }
 cty = "0.2.2"
 cstr_core = "0.2.6"
-ur-registry = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag="0.0.20" }
-ur-parse-lib = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag="0.0.20" }
+ur-registry = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag="0.0.21" }
+ur-parse-lib = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag="0.0.21" }
 ed25519-bip32-core = { version = "0.1.1", default-features = false }
 cryptoxide = "0.4"
 itertools = { version = "0.10.5", default-features = false, features = ["use_alloc"] }

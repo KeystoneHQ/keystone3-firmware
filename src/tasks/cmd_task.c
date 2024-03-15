@@ -2,14 +2,14 @@
 #include "cmsis_os.h"
 #include "general_msg.h"
 #include "user_msg.h"
+#ifndef BUILD_PRODUCTION
 #include "test_cmd.h"
+#endif
 #include "mhscpu.h"
-
 
 #define TEST_CMD_MAX_LENGTH     3072
 
 static void CmdTask(void *pvParameter);
-
 
 uint8_t g_testCmdRcvBuffer[TEST_CMD_MAX_LENGTH];
 uint32_t g_testCmdRcvCount = 0;
@@ -46,7 +46,7 @@ static void CmdTask(void *pvParameter)
             break;
         }
         if (rcvMsg.buffer != NULL) {
-            vPortFree(rcvMsg.buffer);
+            SramFree(rcvMsg.buffer);
         }
     }
 }

@@ -25,7 +25,6 @@
 #include "hal_lcd.h"
 #include "cmsis_os.h"
 #include "user_msg.h"
-#include "test_task.h"
 #include "cmd_task.h"
 #include "ui_display_task.h"
 #include "qrdecode_task.h"
@@ -46,6 +45,8 @@
 #include "anti_tamper.h"
 #include "power_on_self_check.h"
 #include "account_manager.h"
+#include "version.h"
+#include "hardware_version.h"
 
 
 int main(void)
@@ -56,7 +57,7 @@ int main(void)
     SensorInit();
     Uart0Init(CmdIsrRcvByte);
     FingerprintInit();
-    cm_backtrace_init("mh1903", "V1.0.0", "V1.0.0");
+    cm_backtrace_init("mh1903", GetHardwareVersionString(), GetSoftwareVersionString());
     TrngInit();
     TamperInit(TamperStartup);
     PowerInit();
@@ -72,6 +73,7 @@ int main(void)
     UserMsgInit();
     DS28S60_Init();
     Atecc608bInit();
+    AccountsDataCheck();
     MountUsbFatfs();
     UsbInit();
     RtcInit();
@@ -93,7 +95,6 @@ int main(void)
 #ifndef BUILD_PRODUCTION
     CreateCmdTask();
 #endif
-    CreateTestTask();
     CreateUiDisplayTask();
     CreateQrDecodeTask();
     CreateTouchPadTask();

@@ -1,3 +1,4 @@
+#include "define.h"
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_views.h"
@@ -10,6 +11,7 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_hintbox.h"
+#include "user_memory.h"
 
 #ifdef COMPILE_MAC_SIMULATOR
 #include "simulator_model.h"
@@ -68,27 +70,27 @@ void GuiLockDeviceInit(void *param)
     lv_obj_t *img = GuiCreateImg(cont, &imgLockedDevice);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 139 - 96);
 
-    char lockHint[128];
+    char lockHint[BUFFER_SIZE_128];
 
     if (!IsLockTimePage()) {
-        sprintf(lockHint, "%s", _("unlock_device_fingerprint_pin_device_locked_title"));
+        strcpy_s(lockHint, BUFFER_SIZE_128, _("unlock_device_fingerprint_pin_device_locked_title"));
     } else {
-        sprintf(lockHint, "%s", _("unlock_device_time_limited_error_max_title"));
+        strcpy_s(lockHint, BUFFER_SIZE_128, _("unlock_device_time_limited_error_max_title"));
     }
 
     lv_obj_t *label =  GuiCreateLittleTitleLabel(cont, lockHint);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 236 - 96);
 
     if (!IsLockTimePage()) {
-        sprintf(lockHint, "%s", _("unlock_device_fingerprint_pin_device_locked_desc"));
+        strcpy_s(lockHint, BUFFER_SIZE_128, _("unlock_device_fingerprint_pin_device_locked_desc"));
     } else {
         uint16_t time = GuiGetLockTimeByLeftErrorCount(*(uint16_t*)pageParam) / 60;
         if (time == 1) {
-            sprintf(lockHint, "%s", _("unlock_device_time_limited_error_max_desc"));
+            strcpy_s(lockHint, BUFFER_SIZE_128, _("unlock_device_time_limited_error_max_desc"));
         } else if (time == 60) {
-            sprintf(lockHint, _("unlock_device_time_limited_error_max_warning_fmt"), time);
+            snprintf_s(lockHint, BUFFER_SIZE_128, _("unlock_device_time_limited_error_max_warning_fmt"), time);
         } else {
-            sprintf(lockHint, _("unlock_device_time_limited_error_max_desc_fmt"), time);
+            snprintf_s(lockHint, BUFFER_SIZE_128, _("unlock_device_time_limited_error_max_desc_fmt"), time);
         }
     }
 
@@ -171,12 +173,12 @@ static void GuiLockedDeviceCountDownDestruct(void *obj, void* param)
 static void CountDownTimerWipeDeviceHandler(lv_timer_t *timer)
 {
     lv_obj_t *obj = (lv_obj_t *)timer->user_data;
-    char buf[32] = {0};
+    char buf[BUFFER_SIZE_32] = {0};
     --countDown;
     if (countDown > 0) {
-        sprintf(buf, _("unlock_device_fingerprint_pin_device_locked_btn_fmt"), countDown);
+        snprintf_s(buf, BUFFER_SIZE_32, _("unlock_device_fingerprint_pin_device_locked_btn_fmt"), countDown);
     } else {
-        strcpy(buf, _("unlock_device_fingerprint_pin_device_locked_btn"));
+        strcpy_s(buf, BUFFER_SIZE_32, ("unlock_device_fingerprint_pin_device_locked_btn"));
     }
     lv_label_set_text(lv_obj_get_child(obj, 0), buf);
     if (countDown <= 0) {

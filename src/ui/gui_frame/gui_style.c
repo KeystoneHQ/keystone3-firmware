@@ -93,7 +93,11 @@ static void GuiDividLineInit(void)
     lv_style_init(&g_dividerLineStyle);
     lv_style_set_line_width(&g_dividerLineStyle, 1);
     lv_style_set_line_color(&g_dividerLineStyle, WHITE_COLOR);
+#ifndef BTC_ONLY
     lv_style_set_line_opa(&g_dividerLineStyle, LV_OPA_10 + LV_OPA_2);
+#else
+    lv_style_set_line_opa(&g_dividerLineStyle, LV_OPA_20);
+#endif
     // lv_style_set_line_rounded(&g_dividerLineStyle, true);
     lv_style_set_radius(&g_dividerLineStyle, 0);
 }

@@ -55,8 +55,7 @@ mod test {
     pub fn prepare_parse_context(pubkey_str: &str) -> keystone::ParseContext {
         let master_fingerprint =
             third_party::bitcoin::bip32::Fingerprint::from_str("73c5da0a").unwrap();
-        let extended_pubkey =
-            third_party::bitcoin::bip32::ExtendedPubKey::from_str(pubkey_str).unwrap();
+        let extended_pubkey = third_party::bitcoin::bip32::Xpub::from_str(pubkey_str).unwrap();
         keystone::ParseContext::new(master_fingerprint, extended_pubkey)
     }
 

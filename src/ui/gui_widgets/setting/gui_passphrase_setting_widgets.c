@@ -28,6 +28,7 @@
 #include "keystore.h"
 #else
 #include "simulator_model.h"
+#include "simulator_mock_define.h"
 #endif
 
 typedef struct PassphraseWidget {
@@ -126,7 +127,7 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent)
     lv_obj_align(img, LV_ALIGN_DEFAULT, 411, 168 - GUI_MAIN_AREA_OFFSET);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, ta);
-    lv_textarea_set_max_length(ta, GUI_DEFINE_MAX_PASSCODE_LEN);
+    lv_textarea_set_max_length(ta, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(ta, true);
     lv_obj_set_scrollbar_mode(ta, LV_SCROLLBAR_MODE_OFF);
     g_passphraseWidget.inputTa = ta;
@@ -148,7 +149,7 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent)
     lv_obj_set_style_text_color(repeatTa, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_border_opa(repeatTa, LV_OPA_0, LV_PART_MAIN);
     lv_obj_set_style_text_font(repeatTa, &buttonFont, LV_PART_MAIN);
-    lv_textarea_set_max_length(repeatTa, GUI_DEFINE_MAX_PASSCODE_LEN);
+    lv_textarea_set_max_length(repeatTa, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(repeatTa, true);
     lv_obj_set_scrollbar_mode(repeatTa, LV_SCROLLBAR_MODE_OFF);
 
@@ -253,9 +254,10 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
         }
 
         if (lv_keyboard_get_textarea(lv_event_get_target(e)) == g_passphraseWidget.inputTa) {
-            if (strlen(intputText) >= GUI_DEFINE_MAX_PASSCODE_LEN) {
+            size_t inputTextLength = strnlen_s(intputText, PASSWORD_MAX_LEN);
+            if (inputTextLength >= PASSWORD_MAX_LEN) {
                 lv_obj_clear_flag(g_passphraseWidget.lenOverLabel, LV_OBJ_FLAG_HIDDEN);
-            } else if (strlen(intputText) < GUI_DEFINE_MAX_PASSCODE_LEN) {
+            } else {
                 lv_obj_add_flag(g_passphraseWidget.lenOverLabel, LV_OBJ_FLAG_HIDDEN);
             }
         }

@@ -54,8 +54,8 @@ static void (*cJSON_free)(void *ptr) = free;
 #include "user_memory.h"
 #include "cmsis_os.h"
 #include "psram_heap_4.h"
-static void *(*cJSON_malloc)(size_t sz) = PsramMalloc;
-static void (*cJSON_free)(void *ptr) = PsramFree;
+static void *(*cJSON_malloc)(size_t sz) = ExtMalloc;
+static void (*cJSON_free)(void *ptr) = ExtFree;
 #endif
 
 

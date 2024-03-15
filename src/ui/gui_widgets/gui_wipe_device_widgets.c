@@ -22,7 +22,7 @@ static void WipeDeviceHandler(lv_event_t *e);
 static void NotNowHandler(lv_event_t *e);
 static void GuiShowWipeDeviceHintBox(void);
 static void ExecWipeDeviceHandler(lv_event_t *e);
-static void WipeDevice(void);
+static void WipeDeviceDeal(void);
 static void CountDownTimerHandler(lv_timer_t *timer);
 static void GuiCountDownDestruct(void *obj, void* param);
 
@@ -125,12 +125,12 @@ static void ExecWipeDeviceHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_wipeDeviceHintBox);
-        WipeDevice();
+        WipeDeviceDeal();
     }
 }
 
 
-static void WipeDevice(void)
+static void WipeDeviceDeal(void)
 {
     if (g_cont != NULL) {
         lv_obj_del(g_cont);
@@ -165,14 +165,13 @@ static void CountDownTimerHandler(lv_timer_t *timer)
 {
     lv_obj_t *obj = (lv_obj_t *)timer->user_data;
     static int8_t countDown = 5;
-    char buf[16] = {0};
+    char buf[BUFFER_SIZE_16] = {0};
     --countDown;
     if (countDown > 0) {
-        sprintf(buf, _("system_settings_wipe_device_wipe_fmt"), countDown);
+        snprintf_s(buf, BUFFER_SIZE_16, _("system_settings_wipe_device_wipe_fmt"), countDown);
     } else {
-        strcpy(buf, _("system_settings_wipe_device_wipe_end_text"));
+        strcpy_s(buf, BUFFER_SIZE_16, _("system_settings_wipe_device_wipe_end_text"));
     }
-    // lv_label_set_text(obj, buf);
     lv_label_set_text(lv_obj_get_child(obj, 0), buf);
 
     if (countDown <= 0) {

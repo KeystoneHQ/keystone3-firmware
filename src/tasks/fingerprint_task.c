@@ -61,7 +61,7 @@ static void FingerprintTask(void *pvParameter)
         case FINGER_PRINT_EVENT_UART_RECV:
             len = g_intrRecvBuffer[2] * 256 + g_intrRecvBuffer[1];
             FingerprintRcvMsgHandle(g_intrRecvBuffer, len + 3);
-            memset(g_intrRecvBuffer, 0, sizeof(g_intrRecvBuffer));
+            memset_s(g_intrRecvBuffer, sizeof(g_intrRecvBuffer), 0, sizeof(g_intrRecvBuffer));
             break;
         case FINGER_PRINT_EVENT_RESTART:
             FpResponseHandleStop();

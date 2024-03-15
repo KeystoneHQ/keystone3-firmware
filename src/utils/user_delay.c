@@ -1,4 +1,4 @@
-#ifndef COMPILE_MAC_SIMULATOR
+#ifndef COMPILE_SIMULATOR
 
 #include "user_delay.h"
 #include "cmsis_os.h"

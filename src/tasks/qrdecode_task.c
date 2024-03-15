@@ -18,8 +18,10 @@
 #include "touchpad_task.h"
 #include "gui_analyze.h"
 #include "gui_web_auth_result_widgets.h"
-#include "gui_key_derivation_request_widgets.h"
 #include "assert.h"
+#ifndef BTC_ONLY
+#include "gui_key_derivation_request_widgets.h"
+#endif
 
 static void QrDecodeTask(void *argument);
 static void QrDecodeMinuteTimerFunc(void *argument);
@@ -28,6 +30,7 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
 // The order of the enumeration must be guaranteed
 static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_BTC, (SetChainDataFunc)GuiSetPsbtUrData},
+#ifndef BTC_ONLY
     {REMAPVIEW_ETH, (SetChainDataFunc)GuiSetEthUrData},
     {REMAPVIEW_ETH_PERSONAL_MESSAGE, (SetChainDataFunc)GuiSetEthUrData},
     {REMAPVIEW_ETH_TYPEDDATA, (SetChainDataFunc)GuiSetEthUrData},
@@ -39,6 +42,7 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_APT, (SetChainDataFunc)GuiSetAptosUrData},
     {REMAPVIEW_ADA, (SetChainDataFunc)GuiSetupAdaUrData},
     {REMAPVIEW_XRP, (SetChainDataFunc)GuiSetXrpUrData},
+#endif
 };
 
 osThreadId_t g_qrDecodeTaskHandle;
@@ -132,7 +136,7 @@ void ProcessQr(uint32_t count)
 
     if (ret > 0) {
         if (firstQrFlag == true) {
-            assert(strlen(qrString) < QR_DECODE_STRING_LEN);
+            assert(!(strnlen_s(qrString, QR_DECODE_STRING_LEN + 1) >= QR_DECODE_STRING_LEN));
             urResult = parse_ur(qrString);
             if (urResult->error_code == 0) {
                 if (urResult->is_multi_part == 0) {
@@ -204,15 +208,21 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
     case WebAuthResult:
         GuiSetWebAuthResultData(urResult, urMultiResult, is_multi);
         break;
+#ifndef BTC_ONLY
     case KeyDerivationRequest:
         GuiSetKeyDerivationRequestData(urResult, urMultiResult, is_multi);
         break;
+#endif
     default:
         HandleDefaultViewType(urResult, urMultiResult, urViewType, is_multi);
         break;
     }
 
-    if (urViewType.viewType == WebAuthResult || urViewType.viewType == KeyDerivationRequest || viewType != REMAPVIEW_BUTT) {
+    if (urViewType.viewType == WebAuthResult
+#ifndef BTC_ONLY
+            || urViewType.viewType == KeyDerivationRequest
+#endif
+            || viewType != REMAPVIEW_BUTT) {
         StopQrDecode();
         UserDelay(500);
         GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
@@ -259,8 +269,11 @@ void QrDecodeTouchQuit(void)
     } else {
         if (quitArea) {
             quitArea = false;
+            osKernelLock();
             StopQrDecode();
             LvglCloseCurrentView();
+            ClearTouchBuffer();
+            osKernelUnlock();
         }
         quitArea = false;
     }

@@ -9,12 +9,13 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::ops::Index;
 
-use third_party::bitcoin::bip32::{ChildNumber, KeySource};
+use third_party::bitcoin::bip32::{ChildNumber, Fingerprint, KeySource};
 use third_party::bitcoin::psbt::{GetKey, KeyRequest, Psbt};
 use third_party::bitcoin::psbt::{Input, Output};
+use third_party::bitcoin::taproot::TapLeafHash;
 use third_party::bitcoin::TxOut;
 use third_party::bitcoin::{Network, PrivateKey};
-use third_party::secp256k1::{Secp256k1, Signing};
+use third_party::secp256k1::{Secp256k1, Signing, XOnlyPublicKey};
 use third_party::{bitcoin, secp256k1};
 
 pub struct WrappedPsbt {
@@ -22,6 +23,7 @@ pub struct WrappedPsbt {
 }
 
 struct Keystore {
+    mfp: Fingerprint,
     seed: Vec<u8>,
 }
 
@@ -34,13 +36,17 @@ impl GetKey for Keystore {
         _: &Secp256k1<C>,
     ) -> core::result::Result<Option<PrivateKey>, Self::Error> {
         match key_request {
-            KeyRequest::Bip32((_, path)) => {
-                let key = keystore::algorithms::secp256k1::get_private_key_by_seed(
-                    &self.seed,
-                    &path.to_string(),
-                )
-                .map_err(|e| BitcoinError::GetKeyError(e.to_string()))?;
-                Ok(Some(PrivateKey::new(key, Network::Bitcoin)))
+            KeyRequest::Bip32((fingerprint, path)) => {
+                if self.mfp == fingerprint {
+                    let key = keystore::algorithms::secp256k1::get_private_key_by_seed(
+                        &self.seed,
+                        &path.to_string(),
+                    )
+                    .map_err(|e| BitcoinError::GetKeyError(e.to_string()))?;
+                    Ok(Some(PrivateKey::new(key, Network::Bitcoin)))
+                } else {
+                    Err(BitcoinError::GetKeyError(format!("mfp is not match")))
+                }
             }
             _ => Err(BitcoinError::GetKeyError(format!(
                 "get private key by public key is not supported"
@@ -50,8 +56,9 @@ impl GetKey for Keystore {
 }
 
 impl WrappedPsbt {
-    pub fn sign(&mut self, seed: &[u8]) -> Result<Psbt> {
+    pub fn sign(&mut self, seed: &[u8], mfp: Fingerprint) -> Result<Psbt> {
         let k = Keystore {
+            mfp,
             seed: seed.to_vec(),
         };
         self.psbt
@@ -67,7 +74,11 @@ impl WrappedPsbt {
         context: &ParseContext,
         network: &network::Network,
     ) -> Result<ParsedInput> {
-        let address = self.calculate_address_for_input(input, network)?;
+        let address = if self.is_taproot_input(input) {
+            self.calculate_address_for_taproot_input(input, network)?
+        } else {
+            self.calculate_address_for_input(input, network)?
+        };
         let unsigned_tx = &self.psbt.unsigned_tx;
         let mut value = 0u64;
         if let Some(prev_tx) = &input.non_witness_utxo {
@@ -81,13 +92,13 @@ impl WrappedPsbt {
             let prevout = prev_tx.output.get(tx_in.previous_output.vout as usize);
             match prevout {
                 Some(out) => {
-                    value = out.value;
+                    value = out.value.to_sat();
                 }
                 None => {}
             }
         }
         if let Some(utxo) = &input.witness_utxo {
-            value = utxo.value;
+            value = utxo.value.to_sat();
         }
         if value <= 0 {
             return Err(BitcoinError::InvalidTransaction(format!(
@@ -136,7 +147,7 @@ impl WrappedPsbt {
             return Ok(false);
         }
         self.check_my_input_derivation(input, index)?;
-        self.check_my_input_signature(input, index)?;
+        self.check_my_input_signature(input, index, context)?;
         self.check_my_input_value_tampered(input, index)?;
         Ok(true)
     }
@@ -151,16 +162,45 @@ impl WrappedPsbt {
         Ok(())
     }
 
-    pub fn check_my_input_signature(&self, input: &Input, index: usize) -> Result<()> {
+    pub fn check_my_input_signature(
+        &self,
+        input: &Input,
+        index: usize,
+        context: &ParseContext,
+    ) -> Result<()> {
         if input.bip32_derivation.len() > 1 {
             // TODO check multisig signatures
             return Ok(());
         }
-        if input.partial_sigs.len() > 0 {
-            return Err(BitcoinError::InvalidTransaction(format!(
-                "input #{} has already been signed",
-                index
-            )));
+        if self.is_taproot_input(input) {
+            if let Some((x_only_pubkey, leasfhashes)) =
+                self.get_my_key_and_leafhashes_pair_for_taproot(input, context)
+            {
+                for leasfhash in leasfhashes.iter() {
+                    if input
+                        .tap_script_sigs
+                        .contains_key(&(x_only_pubkey, *leasfhash))
+                    {
+                        return Err(BitcoinError::InvalidTransaction(format!(
+                            "input #{} has already been signed",
+                            index
+                        )));
+                    }
+                }
+            }
+            if input.tap_key_sig.is_some() {
+                return Err(BitcoinError::InvalidTransaction(format!(
+                    "input #{} has already been signed",
+                    index
+                )));
+            }
+        } else {
+            if input.partial_sigs.len() > 0 {
+                return Err(BitcoinError::InvalidTransaction(format!(
+                    "input #{} has already been signed",
+                    index
+                )));
+            }
         }
         Ok(())
     }
@@ -185,9 +225,6 @@ impl WrappedPsbt {
     }
 
     pub fn check_outputs(&self, context: &ParseContext) -> Result<()> {
-        if self.psbt.outputs.len() == 0 {
-            return Err(BitcoinError::NoOutputs);
-        }
         self.psbt
             .outputs
             .iter()
@@ -204,6 +241,19 @@ impl WrappedPsbt {
     ) -> Result<()> {
         let _ = self.get_my_output_path(output, index, context)?;
         Ok(())
+    }
+
+    pub fn calculate_address_for_taproot_input(
+        &self,
+        input: &Input,
+        network: &network::Network,
+    ) -> Result<Option<String>> {
+        if let Some(internal_key) = input.tap_internal_key {
+            return Ok(Some(
+                Address::p2tr(&internal_key, input.tap_merkle_root, network.clone())?.to_string(),
+            ));
+        }
+        Ok(None)
     }
 
     pub fn calculate_address_for_input(
@@ -262,8 +312,8 @@ impl WrappedPsbt {
         let path = self.get_my_output_path(output, index, context)?;
         Ok(ParsedOutput {
             address: self.calculate_address_for_output(tx_out, network)?,
-            amount: Self::format_amount(tx_out.value, network),
-            value: tx_out.value,
+            amount: Self::format_amount(tx_out.value.to_sat(), network),
+            value: tx_out.value.to_sat(),
             path,
         })
     }
@@ -284,7 +334,11 @@ impl WrappedPsbt {
         index: usize,
         context: &ParseContext,
     ) -> Result<Option<String>> {
-        self.get_my_key_path(&input.bip32_derivation, index, "input", context)
+        if self.is_taproot_input(input) {
+            self.get_my_key_path_for_taproot(&input.tap_key_origins, index, "input", context)
+        } else {
+            self.get_my_key_path(&input.bip32_derivation, index, "input", context)
+        }
     }
 
     pub fn get_my_output_path(
@@ -293,7 +347,11 @@ impl WrappedPsbt {
         index: usize,
         context: &ParseContext,
     ) -> Result<Option<String>> {
-        self.get_my_key_path(&output.bip32_derivation, index, "output", context)
+        let path = self.get_my_key_path(&output.bip32_derivation, index, "output", context)?;
+        if path.is_some() {
+            return Ok(path);
+        }
+        self.get_my_key_path_for_taproot(&output.tap_key_origins, index, "output", context)
     }
 
     pub fn get_my_key_path(
@@ -344,6 +402,7 @@ impl WrappedPsbt {
                         // }
                     }
                 }
+
                 return Err(BitcoinError::InvalidTransaction(format!(
                     "invalid {} #{}, fingerprint matched but cannot derive associated public key",
                     purpose, index
@@ -352,14 +411,61 @@ impl WrappedPsbt {
         }
         Ok(None)
     }
+
+    pub fn get_my_key_path_for_taproot(
+        &self,
+        tap_key_origins: &BTreeMap<XOnlyPublicKey, (Vec<TapLeafHash>, KeySource)>,
+        index: usize,
+        purpose: &str,
+        context: &ParseContext,
+    ) -> Result<Option<String>> {
+        for key in tap_key_origins.keys() {
+            let (_, (fingerprint, path)) =
+                tap_key_origins.get(key).ok_or(BitcoinError::InvalidInput)?;
+            if fingerprint.eq(&context.master_fingerprint) {
+                let child = path.to_string();
+                for parent_path in context.extended_public_keys.keys() {
+                    if child.starts_with(&parent_path.to_string()) {
+                        return Ok(Some(child.to_uppercase()));
+                    }
+                }
+                return Err(BitcoinError::InvalidTransaction(format!(
+                    "invalid {} #{}, fingerprint matched but cannot derive associated public key",
+                    purpose, index
+                )));
+            }
+        }
+        Ok(None)
+    }
+
+    pub fn get_my_key_and_leafhashes_pair_for_taproot(
+        &self,
+        input: &Input,
+        context: &ParseContext,
+    ) -> Option<(XOnlyPublicKey, Vec<TapLeafHash>)> {
+        for (pk, (leaf_hashes, (fingerprint, _))) in input.tap_key_origins.iter() {
+            if *fingerprint == context.master_fingerprint && !leaf_hashes.is_empty() {
+                return Some((pk.clone(), leaf_hashes.clone()));
+            }
+        }
+        None
+    }
+
+    fn is_taproot_input(&self, input: &Input) -> bool {
+        if let Some(witness_utxo) = &input.witness_utxo {
+            return witness_utxo.script_pubkey.is_p2tr();
+        }
+        return false;
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use alloc::string::String;
     use alloc::vec::Vec;
+    use core::str::FromStr;
 
-    use third_party::bitcoin::hashes::hex::FromHex;
+    use third_party::bitcoin_hashes::hex::FromHex;
     use third_party::hex::{self, ToHex};
 
     use super::*;
@@ -371,9 +477,26 @@ mod tests {
             let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
             let mut wrapper = WrappedPsbt { psbt };
             let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
-            let result = wrapper.sign(&seed).unwrap();
+            let master_fingerprint =
+                third_party::bitcoin::bip32::Fingerprint::from_str("73c5da0a").unwrap();
+            let result = wrapper.sign(&seed, master_fingerprint).unwrap();
             let psbt_result = result.serialize().encode_hex::<String>();
             assert_eq!("70736274ff01005202000000016d41e6873468f85aff76d7709a93b47180ea0784edaac748228d2c474396ca550000000000fdffffff01a00f0000000000001600146623828c1f87be7841a9b1cc360d38ae0a8b6ed0000000000001011f6817000000000000160014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1220202e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c319483045022100e2b9a7963bed429203bbd73e5ea000bfe58e3fc46ef8c1939e8cf8d1cf8460810220587ba791fc2a42445db70e2b3373493a19e6d5c47a2af0447d811ff479721b0001220602e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c3191873c5da0a54000080010000800000008000000000000000000000", psbt_result);
+        }
+    }
+
+    #[test]
+    fn test_taproot_sign() {
+        {
+            let psbt_hex = "70736274ff01005e02000000013aee4d6b51da574900e56d173041115bd1e1d01d4697a845784cf716a10c98060000000000ffffffff0100190000000000002251202258f2d4637b2ca3fd27614868b33dee1a242b42582d5474f51730005fa99ce8000000000001012bbc1900000000000022512022f3956cc27a6a9b0e0003a0afc113b04f31b95d5cad222a65476e8440371bd1010304000000002116b68df382cad577d8304d5a8e640c3cb42d77c10016ab754caa4d6e68b6cb296d190073c5da0a5600008001000080000000800000000002000000011720b68df382cad577d8304d5a8e640c3cb42d77c10016ab754caa4d6e68b6cb296d011820c913dc9a8009a074e7bbc493b9d8b7e741ba137f725f99d44fbce99300b2bb0a0000";
+            let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
+            let mut wrapper = WrappedPsbt { psbt };
+            let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+            let master_fingerprint =
+                third_party::bitcoin::bip32::Fingerprint::from_str("73c5da0a").unwrap();
+            let result = wrapper.sign(&seed, master_fingerprint).unwrap();
+            let psbt_result = result.serialize().encode_hex::<String>();
+            assert_eq!("70736274ff01005e02000000013aee4d6b51da574900e56d173041115bd1e1d01d4697a845784cf716a10c98060000000000ffffffff0100190000000000002251202258f2d4637b2ca3fd27614868b33dee1a242b42582d5474f51730005fa99ce8000000000001012bbc1900000000000022512022f3956cc27a6a9b0e0003a0afc113b04f31b95d5cad222a65476e8440371bd10103040000000001134092864dc9e56b6260ecbd54ec16b94bb597a2e6be7cca0de89d75e17921e0e1528cba32dd04217175c237e1835b5db1c8b384401718514f9443dce933c6ba9c872116b68df382cad577d8304d5a8e640c3cb42d77c10016ab754caa4d6e68b6cb296d190073c5da0a5600008001000080000000800000000002000000011720b68df382cad577d8304d5a8e640c3cb42d77c10016ab754caa4d6e68b6cb296d011820c913dc9a8009a074e7bbc493b9d8b7e741ba137f725f99d44fbce99300b2bb0a0000", psbt_result);
         }
     }
 }

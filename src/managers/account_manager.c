@@ -7,6 +7,13 @@
 #include "account_public_info.h"
 #include "assert.h"
 #include "hash_and_salt.h"
+#include "secret_cache.h"
+#include "user_memory.h"
+
+#ifdef COMPILE_SIMULATOR
+#include "simulator_storage.h"
+#include "simulator_mock_define.h"
+#endif
 
 
 typedef struct {
@@ -35,7 +42,7 @@ static int32_t ReadCurrentAccountInfo(void)
     ASSERT(accountIndex <= 2);
     ret = SE_HmacEncryptRead(param, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
     if (ret == SUCCESS_CODE) {
-        memcpy(&g_currentAccountInfo, pAccountInfo, sizeof(AccountInfo_t));
+        memcpy_s(&g_currentAccountInfo, sizeof(AccountInfo_t), pAccountInfo, sizeof(AccountInfo_t));
     }
     return ret;
 }
@@ -120,8 +127,8 @@ int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const u
     g_currentAccountInfo.mnemonicType = MNEMONIC_TYPE_SLIP39;
     int32_t ret = SaveNewSlip39Entropy(accountIndex, ems, entropy, entropyLen, password, id, ie);
     CHECK_ERRCODE_RETURN_INT(ret);
-    memcpy(g_currentAccountInfo.slip39Id, &id, 2);
-    memcpy(g_currentAccountInfo.slip39Ie, &ie, 1);
+    memcpy_s(g_currentAccountInfo.slip39Id, sizeof(g_currentAccountInfo.slip39Id), &id, sizeof(id));
+    memcpy_s(g_currentAccountInfo.slip39Ie, sizeof(g_currentAccountInfo.slip39Ie), &ie, sizeof(ie));
     ret = SaveCurrentAccountInfo();
     CHECK_ERRCODE_RETURN_INT(ret);
     ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
@@ -144,14 +151,19 @@ int32_t VerifyCurrentAccountPassword(const char *password)
             ret = ERR_KEYSTORE_NOT_LOGIN;
             break;
         }
+#ifdef COMPILE_SIMULATOR
+        ret = SimulatorVerifyCurrentPassword(accountIndex, password);
+#else
         ret = SE_HmacEncryptRead(passwordHashStore, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
         CHECK_ERRCODE_BREAK("read password hash", ret);
         HashWithSalt(passwordHashClac, (const uint8_t *)password, strlen(password), "password hash");
-        if (memcmp(passwordHashStore, passwordHashClac, 32) == 0) {
+        ret = memcmp(passwordHashStore, passwordHashClac, 32);
+#endif
+        if (ret == SUCCESS_CODE) {
             g_publicInfo.currentPasswordErrorCount = 0;
-            ret = SUCCESS_CODE;
         } else {
             g_publicInfo.currentPasswordErrorCount++;
+            printf("password error count=%d\r\n", g_publicInfo.currentPasswordErrorCount);
             ret = ERR_KEYSTORE_PASSWORD_ERR;
         }
         SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
@@ -204,6 +216,7 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
         g_publicInfo.loginPasswordErrorCount++;
     }
     SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+
     return ret;
 }
 
@@ -222,7 +235,7 @@ void SetCurrentAccountIndex(void)
 
 void SetCurrentAccountMfp(uint8_t* mfp)
 {
-    memcpy(g_currentAccountInfo.mfp, mfp, 4);
+    memcpy_s(g_currentAccountInfo.mfp, sizeof(g_currentAccountInfo.mfp), mfp, 4);
 }
 
 void SetCurrentAccountEntropyLen(uint8_t entropyLen)
@@ -237,6 +250,11 @@ int32_t GetExistAccountNum(uint8_t *accountNum)
 {
     int32_t ret;
     uint8_t data[32], count = 0;
+
+#ifdef COMPILE_SIMULATOR
+    *accountNum = SimulatorGetAccountNum();
+    return SUCCESS_CODE;
+#endif
 
     for (uint8_t i = 0; i < 3; i++) {
         ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
@@ -370,8 +388,8 @@ void SetWalletIconIndex(uint8_t iconIndex)
 /// @param[in] walletName
 void SetWalletName(const char *walletName)
 {
-    memset(g_currentAccountInfo.walletName, 0, sizeof(g_currentAccountInfo.walletName));
-    strcpy(g_currentAccountInfo.walletName, walletName);
+    memset_s(g_currentAccountInfo.walletName, sizeof(g_currentAccountInfo.walletName), 0, sizeof(g_currentAccountInfo.walletName));
+    strcpy_s(g_currentAccountInfo.walletName, WALLET_NAME_MAX_LEN, walletName);
     SaveCurrentAccountInfo();
 }
 
@@ -443,6 +461,11 @@ int32_t GetBlankAccountIndex(uint8_t *accountIndex)
     int32_t ret;
     uint8_t data[32];
 
+#ifdef COMPILE_SIMULATOR
+    *accountIndex = 0;
+    return SUCCESS_CODE;
+#endif
+
     for (uint8_t i = 0; i < 3; i++) {
         ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
         CHECK_ERRCODE_BREAK("read iv", ret);
@@ -482,4 +505,34 @@ int32_t DestroyAccount(uint8_t accountIndex)
     CLEAR_ARRAY(data);
 
     return ret;
+}
+
+
+void AccountsDataCheck(void)
+{
+    int32_t ret;
+    uint8_t data[32], accountIndex, validCount, i;
+
+    for (accountIndex = 0; accountIndex < 3; accountIndex++) {
+        validCount = 0;
+        ret = SE_HmacEncryptRead(data, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
+        CHECK_ERRCODE_BREAK("read iv", ret);
+        if (CheckEntropy(data, 32)) {
+            validCount++;
+        }
+        ret = SE_HmacEncryptRead(data, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
+        CHECK_ERRCODE_BREAK("read pwd hash", ret);
+        if (CheckEntropy(data, 32)) {
+            validCount++;
+        }
+        if (validCount == 1) {
+            printf("illegal data:%d\n", accountIndex);
+            memset_s(data, sizeof(data), 0, sizeof(data));
+            for (i = 0; i < PAGE_NUM_PER_ACCOUNT; i++) {
+                printf("erase index=%d\n", i);
+                ret = SE_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + i);
+                CHECK_ERRCODE_BREAK("ds28s60 write", ret);
+            }
+        }
+    }
 }

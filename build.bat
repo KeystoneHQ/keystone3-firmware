@@ -1,58 +1,118 @@
 @echo off
-setlocal
 
-set "BUILD_FOLDER=%CD%\build"
-set "TOOLS_FOLDER=%CD%\tools"
-set "MAKE_OAT_FILE_PATH=%TOOLS_FOLDER%\ota_file_maker"
-set "ASTYLE_PATH=%TOOLS_FOLDER%\AStyle.bat"
+SET BUILD_FOLDER=%CD%\build
+SET TOOLS_FOLDER=%CD%\tools
+SET ALWAYSE_BUILD_FILE=%CD%\driver\drv_sys.c
+SET MAKE_OAT_FILE_PATH=%TOOLS_FOLDER%\ota_file_maker
+SET MAKE_PADDING_FILE_PATH=%TOOLS_FOLDER%\padding_bin_file
+SET ASTYLE_PATH=%TOOLS_FOLDER%\AStyle.bat
+SET PACK_PATH=%CD%\pack.bat
 set "LANGUAGE_PATH=%CD%\src\ui\lv_i18n"
 set "LANGUAGE_SCRIPT=py data_loader.py"
 
-set "CLEAN_BUILD=0"
-set "PERFORM_COPY=0"
-set "FORMAT_CODE=0"
-set "BUILD_TYPE="
-set "BUILD_RU=0"
-set "BUILD_CN=0"
+SET build_log=false
+SET build_copy=false
+SET build_production=false
+SET build_screen=false
+SET build_debug=false
+SET build_format=false
+SET build_release=false
+SET build_rebuild=false
+SET build_btc_only=false
+SET build_simulator=false
+SET build_ru=false
+SET build_cn=false
 
-:parse_args
-if "%~1"=="" goto end_parse_args
-if /i "%~1"=="log" set "CLEAN_BUILD=1"
-if /i "%~1"=="copy" set "PERFORM_COPY=1"
-if /i "%~1"=="format" set "FORMAT_CODE=1"
-if /i "%~1"=="debug" set "BUILD_TYPE=-DDEBUG_MEMORY=true"
-if /i "%~1"=="production" set "BUILD_TYPE=-DBUILD_PRODUCTION=true"
-if /i "%~1"=="screen" set "BUILD_TYPE=-DENABLE_SCREEN_SHOT=true"
-if /i "%~1"=="RU" (set "BUILD_TYPE=%BUILD_TYPE% -DRU_SUPPORT=true" & set "BUILD_RU=1")
-if /i "%~1"=="CN" (set "BUILD_TYPE=%BUILD_TYPE% -DCN_SUPPORT=true" & set "BUILD_CN=1")
-shift
-goto parse_args
-:end_parse_args
 
-if "%FORMAT_CODE%"=="1" (
-	pushd %TOOLS_FOLDER%
-	echo format file...
-    call "%ASTYLE_PATH%"
-	exit /b 0
+for %%i in (%*) do (
+    if /I "%%i"=="log" (
+        set build_log=true
+    )
+    if /I "%%i"=="copy" (
+        set build_copy=true
+    )
+    if /I "%%i"=="production" (
+        set build_production=true
+    )
+    if /I "%%i"=="screen" (
+        set build_screen=true
+    )
+    if /I "%%i"=="debug" (
+        set build_debug=true
+    )
+    if /I "%%i"=="format" (
+        set build_format=true
+    )
+    if /I "%%i"=="release" (
+        set build_release=true
+    )
+    if /I "%%i"=="rebuild" (
+        set build_rebuild=true
+    )
+    if /I "%%i"=="btc_only" (
+        set build_btc_only=true
+    )
+    if /I "%%i"=="simulator" (
+        set build_simulator=true
+    )
+    if /I "%%i"=="ru" (
+        set build_ru=true
+    )
+    if /I "%%i"=="cn" (
+        set build_cn=true
+    )
+)
+if "%build_rebuild%"=="true" (
+    rd /s /q %BUILD_FOLDER%
+) 
+
+if "%build_format%"=="true" (
+    pushd %TOOLS_FOLDER%
+    echo format file...
+    call %ASTYLE_PATH%
+    popd
+) 
+
+if not exist %BUILD_FOLDER% (
+    mkdir %BUILD_FOLDER%
 )
 
-if "%CLEAN_BUILD%"=="1" (
-    if exist "%BUILD_FOLDER%" rd /s /q "%BUILD_FOLDER%"
+if not exist %BUILD_FOLDER%\padding_bin_file.py (
+    copy %TOOLS_FOLDER%\padding_bin_file\padding_bin_file.py %BUILD_FOLDER%\padding_bin_file.py /Y
 )
 
-if not exist "%BUILD_FOLDER%" (
-    mkdir "%BUILD_FOLDER%"
+if "%build_copy%"=="true" (
+    del %BUILD_FOLDER%\mh1903.elf
+    del %BUILD_FOLDER%\mh1903.map
+    del %BUILD_FOLDER%\mh1903.hex
+    del %BUILD_FOLDER%\mh1903.bin
 )
 
-if not exist "%BUILD_FOLDER%\padding_bin_file.py" (
-    copy "%TOOLS_FOLDER%\padding_bin_file\padding_bin_file.py" "%BUILD_FOLDER%" /Y
+set cmake_parm= 
+if "%build_production%"=="true" (
+    set cmake_parm=%cmake_parm% -DBUILD_PRODUCTION=true
+)
+if "%build_btc_only%"=="true" (
+    set cmake_parm=%cmake_parm% -DBTC_ONLY=true
+)
+if "%build_screen%"=="true" (
+    set cmake_parm=%cmake_parm% -DENABLE_SCREEN_SHOT=true
+)
+if "%build_debug%"=="true" (
+    set cmake_parm=%cmake_parm% -DDEBUG_MEMORY=true
+)
+if "%build_simulator%"=="true" (
+    set cmake_parm=%cmake_parm% -DCMAKE_BUILD_TYPE=Simulator
 )
 
-if "%PERFORM_COPY%"=="1" (
-    del "%BUILD_FOLDER%\mh1903.elf" 2>nul
-    del "%BUILD_FOLDER%\mh1903.map" 2>nul
-    del "%BUILD_FOLDER%\mh1903.hex" 2>nul
-    del "%BUILD_FOLDER%\mh1903.bin" 2>nul
+if "%build_ru%"=="true" (
+    set cmake_parm=%cmake_parm% -DRU_SUPPORT=true
+    set "BUILD_RU=1"
+)
+
+if "%build_cn%"=="true" (
+    set cmake_parm=%cmake_parm% -DCN_SUPPORT=true
+    set "BUILD_CN=1"
 )
 
 if "%BUILD_CN%"=="1" (
@@ -67,33 +127,36 @@ pushd %LANGUAGE_PATH%
 %LANGUAGE_SCRIPT%
 popd
 
-pushd "%BUILD_FOLDER%"
-if not "%BUILD_TYPE%"=="" (
-    cmake -G "Unix Makefiles" %BUILD_TYPE% ..
-) else (
-    cmake -G "Unix Makefiles" ..
-)
+echo %cmake_parm%
 
-:: Build the project and handle the 'log' argument to output to a file
-if "%CLEAN_BUILD%"=="1" (
+pushd %LANGUAGE_PATH%
+%LANGUAGE_SCRIPT%
+popd
+
+pushd build
+cmake -G "Unix Makefiles" %cmake_parm% ..
+
+if "%build_log%"=="true" (
     make -j16 > makefile.log 2>&1
 ) else (
     make -j16 | stdbuf -oL tr '\n' '\n'
 )
-
-:: Run padding_bin_file.py
-python3 "%BUILD_FOLDER%\padding_bin_file.py" "%BUILD_FOLDER%\mh1903.bin"
+python3 .\padding_bin_file.py .\mh1903.bin
 popd
 
-:: Handle 'copy' argument to generate .bin files
-if "%PERFORM_COPY%"=="1" (
-    pushd "%MAKE_OAT_FILE_PATH%"
-    echo Generating pillar.bin file...
-    call make_ota_file.bat "%BUILD_FOLDER%\pillar.bin"
-    call make_ota_file.bat "%BUILD_FOLDER%\keystone3.bin"
+if "%build_copy%"=="true" (
+    pushd %MAKE_OAT_FILE_PATH%
+    echo generating pillar.bin file...
+    call make_ota_file.bat %CD%\build\pillar.bin
+    call make_ota_file.bat %CD%\build\keystone3.bin
     call make_ota_file.bat d:\pillar.bin
     popd
+) else if "%build_release%"=="true" (
+    pushd %MAKE_OAT_FILE_PATH%
+    echo generating pillar.bin file...
+    call make_ota_file.bat %CD%\build\pillar.bin
+    call make_ota_file.bat %CD%\build\keystone3.bin
+    popd
+) else if "%build_simulator%"=="true" (
+    .\build\simulator.exe
 )
-
-:: End localization of environment changes
-endlocal

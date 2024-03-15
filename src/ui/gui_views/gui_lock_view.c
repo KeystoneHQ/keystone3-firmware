@@ -10,6 +10,10 @@
 #include "gui_status_bar.h"
 #include "account_manager.h"
 #include "gui_lock_device_widgets.h"
+#include "gui_api.h"
+#include "usb_task.h"
+#include "device_setting.h"
+#include "drv_aw32001.h"
 
 static int32_t GuiLockViewInit(void *param)
 {
@@ -63,6 +67,13 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         GuiLockScreenClearFirstUnlock();
         GuiLockScreenPassCode(true);
         QRCodeControl(false);
+#if (USB_POP_WINDOW_ENABLE == 1)
+        if (*(uint16_t *)param == SIG_LOCK_VIEW_VERIFY_PIN) {
+            if (GetUSBSwitch() == true && GetUsbDetectState()) {
+                GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+            }
+        }
+#endif
         break;
     case SIG_VERIFY_FINGER_FAIL:
         if (GuiLockScreenIsFirstUnlock() || g_lockDeviceView.isActive) {

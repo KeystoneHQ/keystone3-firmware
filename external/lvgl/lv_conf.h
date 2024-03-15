@@ -36,7 +36,7 @@
 
 /* Adjust color mix functions rounding. GPUs might calculate color mix (blending) differently.
  * 0: round down, 64: round up from x.75, 128: round up from half, 192: round up from x.25, 254: round up */
-#define LV_COLOR_MIX_ROUND_OFS 0
+#define LV_COLOR_MIX_ROUND_OFS (LV_COLOR_DEPTH == 32 ? 0: 128)
 
 /*Images pixels with this color will not be drawn if they are chroma keyed)*/
 #define LV_COLOR_CHROMA_KEY lv_color_hex(0x00ff00)         /*pure green*/
@@ -220,7 +220,11 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
  *-----------*/
 
 /*Enable the log module*/
+#ifdef COMPILE_SIMULATOR
+#define LV_USE_LOG 1
+#else
 #define LV_USE_LOG 0
+#endif
 #if LV_USE_LOG
 
 /*How important log should be added:
@@ -343,7 +347,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #define LV_EXPORT_CONST_INT(int_value) struct _silence_gcc_warning /*The default value just prevents GCC warning*/
 
 /*Extend the default -32k..32k coordinate range to -4M..4M by using int32_t for coordinates instead of int16_t*/
-#define LV_USE_LARGE_COORD 1
+#define LV_USE_LARGE_COORD 0
 
 /*==================
  *   FONT USAGE
@@ -599,10 +603,12 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 /*File system interfaces for common APIs */
 
 /*API for fopen, fread, etc*/
-#define LV_USE_FS_STDIO 0
+#ifdef COMPILE_MAC_SIMULATOR
+#define LV_USE_FS_STDIO 1
+#endif
 #if LV_USE_FS_STDIO
-#define LV_FS_STDIO_LETTER '\0'     /*Set an upper cased letter on which the drive will accessible (e.g. 'A')*/
-#define LV_FS_STDIO_PATH ""         /*Set the working directory. File/directory paths will be appended to it.*/
+#define LV_FS_STDIO_LETTER 'C'     /*Set an upper cased letter on which the drive will accessible (e.g. 'A')*/
+#define LV_FS_STDIO_PATH "./ui_simulator"         /*Set the working directory. File/directory paths will be appended to it.*/
 #define LV_FS_STDIO_CACHE_SIZE 0    /*>0 to cache this number of bytes in lv_fs_read()*/
 #endif
 
@@ -615,11 +621,17 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #endif
 
 /*API for CreateFile, ReadFile, etc*/
-#define LV_USE_FS_WIN32 0
+#ifdef COMPILE_SIMULATOR
+#ifndef COMPILE_MAC_SIMULATOR
+#define LV_USE_FS_WIN32 1
+#endif
 #if LV_USE_FS_WIN32
-#define LV_FS_WIN32_LETTER '\0'     /*Set an upper cased letter on which the drive will accessible (e.g. 'A')*/
-#define LV_FS_WIN32_PATH ""         /*Set the working directory. File/directory paths will be appended to it.*/
+#define LV_FS_WIN32_LETTER 'C'     /*Set an upper cased letter on which the drive will accessible (e.g. 'A')*/
+#define LV_FS_WIN32_PATH "C:"         /*Set the working directory. File/directory paths will be appended to it.*/
 #define LV_FS_WIN32_CACHE_SIZE 0    /*>0 to cache this number of bytes in lv_fs_read()*/
+#endif
+#else
+#define LV_USE_FS_WIN32 0
 #endif
 
 /*API for FATFS (needs to be added separately). Uses f_open, f_read, etc*/
@@ -718,14 +730,14 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 *==================*/
 
 /*Enable the examples to be built with the library*/
-#define LV_BUILD_EXAMPLES 1
+#define LV_BUILD_EXAMPLES 0
 
 /*===================
  * DEMO USAGE
  ====================*/
 
 /*Show some widget. It might be required to increase `LV_MEM_SIZE` */
-#define LV_USE_DEMO_WIDGETS 1
+#define LV_USE_DEMO_WIDGETS 0
 #if LV_USE_DEMO_WIDGETS
 #define LV_DEMO_WIDGETS_SLIDESHOW 0
 #endif
@@ -734,11 +746,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #define LV_USE_DEMO_KEYPAD_AND_ENCODER 0
 
 /*Benchmark your system*/
-#define LV_USE_DEMO_BENCHMARK 1
-#if LV_USE_DEMO_BENCHMARK
-/*Use RGB565A8 images with 16 bit color depth instead of ARGB8565*/
-#define LV_DEMO_BENCHMARK_RGB565A8 0
-#endif
+#define LV_USE_DEMO_BENCHMARK   0
 
 /*Stress test for LVGL*/
 #define LV_USE_DEMO_STRESS 0

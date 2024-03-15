@@ -16,8 +16,7 @@ use crate::utils::{hash160, keccak256, sha256_digest};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use keystore::algorithms::secp256k1::derive_public_key;
-use third_party::bitcoin::bech32;
-use third_party::bitcoin::bech32::{ToBase32, Variant};
+use third_party::bech32::{self, Bech32, Hrp};
 use third_party::secp256k1::{Message, PublicKey};
 
 mod cosmos_sdk_proto;
@@ -31,21 +30,23 @@ fn generate_evmos_address(key: PublicKey, prefix: &str) -> Result<String> {
     let keccak160: [u8; 20] = keccak[keccak.len() - 20..keccak.len()]
         .try_into()
         .map_err(|_e| CosmosError::InvalidAddressError("keccak160 failed failed".to_string()))?;
-    let address = bech32::encode(prefix, &keccak160.to_base32(), Variant::Bech32)?;
+    let hrp = Hrp::parse_unchecked(prefix);
+    let address = bech32::encode::<Bech32>(hrp, &keccak160)?;
     Ok(address)
 }
 
 fn generate_general_address(key: PublicKey, prefix: &str) -> Result<String> {
     let hash160: [u8; 20] = hash160(&key.serialize());
-    let address = bech32::encode(prefix, hash160.to_base32(), Variant::Bech32)?;
+    let hrp = Hrp::parse_unchecked(prefix);
+    let address = bech32::encode::<Bech32>(hrp, &hash160)?;
     Ok(address)
 }
 
 fn generate_address(key: PublicKey, prefix: &str) -> Result<String> {
-    if prefix.to_lowercase().eq("evmos") || prefix.to_lowercase().eq("inj") {
-        return generate_evmos_address(key, prefix);
+    match prefix.to_lowercase().as_str() {
+        "evmos" | "inj" | "dym" => generate_evmos_address(key, prefix),
+        _ => generate_general_address(key, prefix),
     }
-    return generate_general_address(key, prefix);
 }
 
 // pub fn parse_raw_tx(raw_tx: &Vec<u8>) -> Result<String> {

@@ -4,6 +4,7 @@
 #include "lvgl.h"
 #include "gui_analyze.h"
 #include "gui_chain.h"
+#include "gui_model.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
@@ -52,6 +53,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreePsbtUxtoMemory,
     },
+#ifndef BTC_ONLY
     // temper test the ethereum page view not for production usage
     {
         REMAPVIEW_ETH,
@@ -175,6 +177,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreeXrpMemory,
     },
+#endif
 };
 
 void *GuiTemplateReload(lv_obj_t *parent, uint8_t index);
@@ -233,6 +236,7 @@ GetContSizeFunc GetPsbtContainerSize(char *type)
     return NULL;
 }
 
+#ifndef BTC_ONLY
 GetContSizeFunc GetEthContainerSize(char *type)
 {
     if (!strcmp(type, "GetEthToFromSize")) {
@@ -269,18 +273,21 @@ GetContSizeFunc GetAdaContainerSize(char *type)
     }
     return NULL;
 }
+#endif
 
 GetContSizeFunc GuiTemplateSizeFuncGet(char *type)
 {
     switch (g_reMapIndex) {
     case REMAPVIEW_BTC:
         return GetPsbtContainerSize(type);
+#ifndef BTC_ONLY
     case REMAPVIEW_ETH:
         return GetEthContainerSize(type);
     case REMAPVIEW_COSMOS:
         return GetCosmosContainerSize(type);
     case REMAPVIEW_ADA:
         return GetAdaContainerSize(type);
+#endif
     default:
         return NULL;
     }
@@ -288,6 +295,7 @@ GetContSizeFunc GuiTemplateSizeFuncGet(char *type)
     return NULL;
 }
 
+#ifndef BTC_ONLY
 GetListLenFunc GetCosmosListLen(char *type)
 {
     if (!strcmp(type, "GetCosmosMsgLen")) {
@@ -295,17 +303,21 @@ GetListLenFunc GetCosmosListLen(char *type)
     }
     return NULL;
 }
+#endif
 
 GetListLenFunc GuiTemplateListLenFuncGet(char *type)
 {
     switch (g_reMapIndex) {
+#ifndef BTC_ONLY
     case REMAPVIEW_COSMOS:
         return GetCosmosListLen(type);
+#endif
     default:
         return NULL;
     }
 }
 
+#ifndef BTC_ONLY
 GetListItemKeyFunc GetCosmosListItemKey(char *type)
 {
     if (!strcmp(type, "GetCosmosMsgKey")) {
@@ -313,17 +325,21 @@ GetListItemKeyFunc GetCosmosListItemKey(char *type)
     }
     return NULL;
 }
+#endif
 
 GetListItemKeyFunc GuiTemplateListItemKeyFuncGet(char *type)
 {
     switch (g_reMapIndex) {
+#ifndef BTC_ONLY
     case REMAPVIEW_COSMOS:
         return GetCosmosListItemKey(type);
+#endif
     default:
         return NULL;
     }
 }
 
+#ifndef BTC_ONLY
 GetContSizeFunc GetEthObjPos(char *type)
 {
     if (!strcmp(type, "GetEthToLabelPos")) {
@@ -349,15 +365,17 @@ GetContSizeFunc GetCosmosObjPos(char *type)
     }
     return NULL;
 }
+#endif
 
 GetContSizeFunc GuiTemplatePosFuncGet(char *type)
 {
     switch (g_reMapIndex) {
-    case REMAPVIEW_BTC:
+#ifndef BTC_ONLY
     case REMAPVIEW_ETH:
         return GetEthObjPos(type);
     case REMAPVIEW_COSMOS:
         return GetCosmosObjPos(type);
+#endif
     default:
         return NULL;
     }
@@ -387,6 +405,7 @@ GetLabelDataFunc GuiBtcTextFuncGet(char *type)
     return NULL;
 }
 
+#ifndef BTC_ONLY
 GetLabelDataFunc GuiEthTextFuncGet(char *type)
 {
     if (!strcmp(type, "GetEthValue")) {
@@ -474,6 +493,8 @@ GetLabelDataFunc GuiEthTypedDataTextFuncGet(char *type)
     return NULL;
 }
 
+#endif
+
 GetTableDataFunc GuiBtcTableFuncGet(char *type)
 {
     if (!strcmp(type, "GetPsbtInputData")) {
@@ -488,6 +509,7 @@ GetTableDataFunc GuiBtcTableFuncGet(char *type)
     return NULL;
 }
 
+#ifndef BTC_ONLY
 GetTableDataFunc GuiEthTableFuncGet(char *type)
 {
     if (!strcmp(type, "GetEthContractData")) {
@@ -660,10 +682,12 @@ GetLabelDataLenFunc GuiAdaTextLenFuncGet(char *type)
     }
     return NULL;
 }
+#endif
 
 GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
 {
     switch (g_reMapIndex) {
+#ifndef BTC_ONLY
     case REMAPVIEW_SUI:
         return GuiSuiTextLenFuncGet(type);
     case REMAPVIEW_APT:
@@ -674,6 +698,7 @@ GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
         return GuiXrpTextLenFuncGet(type);
     case REMAPVIEW_ETH_TYPEDDATA:
         return GuiEthTextLenFuncGet(type);
+#endif
     default:
         return NULL;
     }
@@ -684,6 +709,7 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
     switch (g_reMapIndex) {
     case REMAPVIEW_BTC:
         return GuiBtcTextFuncGet(type);
+#ifndef BTC_ONLY
     case REMAPVIEW_ETH:
         return GuiEthTextFuncGet(type);
     case REMAPVIEW_ETH_PERSONAL_MESSAGE:
@@ -704,6 +730,7 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
         return GuiAdaTextFuncGet(type);
     case REMAPVIEW_XRP:
         return GuiXrpTextFuncGet(type);
+#endif
     default:
         return NULL;
     }
@@ -716,10 +743,12 @@ GetTableDataFunc GuiTemplateTableFuncGet(char *type)
     switch (g_reMapIndex) {
     case REMAPVIEW_BTC:
         return GuiBtcTableFuncGet(type);
+#ifndef BTC_ONLY
     case REMAPVIEW_ETH:
         return GuiEthTableFuncGet(type);
     case REMAPVIEW_ADA:
         return GuiAdaTabelFuncGet(type);
+#endif
     default:
         return NULL;
     }
@@ -746,6 +775,7 @@ const void *GetImgSrc(char *type)
 
 GetObjStateFunc GuiTemplateStateFuncGet(char *type)
 {
+#ifndef BTC_ONLY
     if (!strcmp(type, "GetEthEnsExist")) {
         return GetEthEnsExist;
     } else if (!strcmp(type, "GetToEthEnsExist")) {
@@ -783,9 +813,11 @@ GetObjStateFunc GuiTemplateStateFuncGet(char *type)
     } else if (!strcmp(type, "GetAdaExtraDataExist")) {
         return GetAdaExtraDataExist;
     }
+#endif
     return NULL;
 }
 
+#ifndef BTC_ONLY
 static void SwitchHidden(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -810,16 +842,18 @@ static void SwitchHidden(lv_event_t *e)
         }
     }
 }
+#endif
 
 lv_event_cb_t GuiTemplateEventCbGet(char *type)
 {
+#ifndef BTC_ONLY
     if (!strcmp(type, "SwitchHidden")) {
         return SwitchHidden;
     }
     if (!strcmp(type, "EthContractLearnMore")) {
         return EthContractLearnMore;
     }
-
+#endif
     return NULL;
 }
 
@@ -944,7 +978,7 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
     GetLabelDataFunc pFunc = NULL;
     GetLabelDataLenFunc lenFunc = NULL;
     int textWidth = 0;
-    int bufLen = LABEL_MAX_BUFF_LEN;
+    int bufLen = BUFFER_SIZE_512;
     cJSON *item = cJSON_GetObjectItem(json, "text_len_func");
     if (item != NULL) {
         lenFunc = GuiTemplateTextLenFuncGet(item->valuestring);
@@ -986,7 +1020,7 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
         pFunc = GuiTemplateTextFuncGet(item->valuestring);
         item = cJSON_GetObjectItem(json, "text_key");
         if (item != NULL) {
-            strcpy(text, item->valuestring);
+            strcpy_s(text, BUFFER_SIZE_512, item->valuestring);
         }
     }
 
@@ -998,7 +1032,7 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
     lv_label_set_recolor(obj, true);
     lv_obj_set_style_text_letter_space(obj, LV_STATE_DEFAULT | LV_PART_MAIN, 20);
     if (pFunc) {
-        pFunc(text, g_totalData);
+        pFunc(text, g_totalData, bufLen);
         lv_label_set_text(obj, text);
 
         if (lv_obj_get_self_width(obj) >= textWidth) {
@@ -1038,11 +1072,13 @@ void *GuiWidgetContainer(lv_obj_t *parent, cJSON *json)
 
 GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
 {
+#ifndef BTC_ONLY
     if (!strcmp(funcName, "GuiShowSolTxOverview")) {
         return GuiShowSolTxOverview;
     } else if (!strcmp(funcName, "GuiShowSolTxDetail")) {
         return GuiShowSolTxDetail;
     }
+#endif
     return NULL;
 }
 
@@ -1277,7 +1313,7 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
         item = cJSON_GetObjectItem(json, "table");
         if (item != NULL) {
             char typeBuf[16];
-            g_analyzeArray[g_reMapIndex].typeFunc(typeBuf, g_totalData);
+            g_analyzeArray[g_reMapIndex].typeFunc(typeBuf, g_totalData, sizeof(typeBuf));
             item = cJSON_GetObjectItem(item, typeBuf);
             if (item != NULL) {
                 return GuiWidgetFactoryCreate(parent, item);
@@ -1396,10 +1432,13 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
     case BtcSegwitTx:
     case BtcLegacyTx:
     case BtcTx:
+#ifndef BTC_ONLY
     case LtcTx:
     case DashTx:
     case BchTx:
+#endif
         return REMAPVIEW_BTC;
+#ifndef BTC_ONLY
     case EthTx:
         return REMAPVIEW_ETH;
     case EthPersonalMessage:
@@ -1423,6 +1462,7 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_ADA;
     case XRPTx:
         return REMAPVIEW_XRP;
+#endif
     default:
         return REMAPVIEW_BUTT;
     }

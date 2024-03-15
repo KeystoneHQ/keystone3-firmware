@@ -146,9 +146,9 @@ EventGroupHandle_t xEventGroupCreate(void)
     EventGroup_t * pxEventBits;
 
     /* Allocate the event group.  Justification for MISRA deviation as
-     * follows:  pvPortMalloc() always ensures returned memory blocks are
+     * follows:  SramMalloc() always ensures returned memory blocks are
      * aligned per the requirements of the MCU stack.  In this case
-     * pvPortMalloc() must return a pointer that is guaranteed to meet the
+     * SramMalloc() must return a pointer that is guaranteed to meet the
      * alignment requirements of the EventGroup_t structure - which (if you
      * follow it through) is the alignment requirements of the TickType_t type
      * (EventBits_t being of TickType_t itself).  Therefore, whenever the
@@ -158,7 +158,7 @@ EventGroupHandle_t xEventGroupCreate(void)
      * sizeof( TickType_t ), the TickType_t variables will be accessed in two
      * or more reads operations, and the alignment requirements is only that
      * of each individual read. */
-    pxEventBits = (EventGroup_t *) pvPortMalloc(sizeof(EventGroup_t));       /*lint !e9087 !e9079 see comment above. */
+    pxEventBits = (EventGroup_t *) SramMalloc(sizeof(EventGroup_t));       /*lint !e9087 !e9079 see comment above. */
 
     if (pxEventBits != NULL) {
         pxEventBits->uxEventBits = 0;
@@ -586,14 +586,14 @@ void vEventGroupDelete(EventGroupHandle_t xEventGroup)
         {
             /* The event group can only have been allocated dynamically - free
              * it again. */
-            vPortFree(pxEventBits);
+            SramFree(pxEventBits);
         }
 #elif ( ( configSUPPORT_DYNAMIC_ALLOCATION == 1 ) && ( configSUPPORT_STATIC_ALLOCATION == 1 ) )
         {
             /* The event group could have been allocated statically or
              * dynamically, so check before attempting to free the memory. */
             if (pxEventBits->ucStaticallyAllocated == (uint8_t) pdFALSE) {
-                vPortFree(pxEventBits);
+                SramFree(pxEventBits);
             } else {
                 mtCOVERAGE_TEST_MARKER();
             }

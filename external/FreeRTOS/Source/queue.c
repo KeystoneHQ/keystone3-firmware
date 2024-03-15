@@ -394,15 +394,15 @@ QueueHandle_t xQueueGenericCreate(const UBaseType_t uxQueueLength,
         xQueueSizeInBytes = (size_t)(uxQueueLength * uxItemSize);      /*lint !e961 MISRA exception as the casts are only redundant for some ports. */
 
         /* Allocate the queue and storage area.  Justification for MISRA
-         * deviation as follows:  pvPortMalloc() always ensures returned memory
+         * deviation as follows:  SramMalloc() always ensures returned memory
          * blocks are aligned per the requirements of the MCU stack.  In this case
-         * pvPortMalloc() must return a pointer that is guaranteed to meet the
+         * SramMalloc() must return a pointer that is guaranteed to meet the
          * alignment requirements of the Queue_t structure - which in this case
          * is an int8_t *.  Therefore, whenever the stack alignment requirements
          * are greater than or equal to the pointer to char requirements the cast
          * is safe.  In other cases alignment requirements are not strict (one or
          * two bytes). */
-        pxNewQueue = (Queue_t *) pvPortMalloc(sizeof(Queue_t) + xQueueSizeInBytes);       /*lint !e9087 !e9079 see comment above. */
+        pxNewQueue = (Queue_t *) SramMalloc(sizeof(Queue_t) + xQueueSizeInBytes);       /*lint !e9087 !e9079 see comment above. */
 
         if (pxNewQueue != NULL) {
             /* Jump past the queue structure to find the location of the queue
@@ -1807,14 +1807,14 @@ void vQueueDelete(QueueHandle_t xQueue)
     {
         /* The queue can only have been allocated dynamically - free it
          * again. */
-        vPortFree(pxQueue);
+        SramFree(pxQueue);
     }
 #elif ( ( configSUPPORT_DYNAMIC_ALLOCATION == 1 ) && ( configSUPPORT_STATIC_ALLOCATION == 1 ) )
     {
         /* The queue could have been allocated statically or dynamically, so
          * check before attempting to free the memory. */
         if (pxQueue->ucStaticallyAllocated == (uint8_t) pdFALSE) {
-            vPortFree(pxQueue);
+            SramFree(pxQueue);
         } else {
             mtCOVERAGE_TEST_MARKER();
         }

@@ -12,7 +12,7 @@ use common_rust_c::structs::{ExtendedPublicKey, TransactionCheckResult, Transact
 use common_rust_c::types::{PtrBytes, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{recover_c_array, recover_c_char};
-use third_party::bitcoin::bip32::{DerivationPath, ExtendedPubKey};
+use third_party::bitcoin::bip32::{DerivationPath, Xpub};
 use third_party::hex;
 use third_party::ur_registry::crypto_psbt::CryptoPSBT;
 use third_party::ur_registry::traits::RegistryItem;
@@ -44,8 +44,8 @@ pub extern "C" fn btc_parse_psbt(
                 for x in public_keys {
                     let xpub = recover_c_char(x.xpub);
                     let path = recover_c_char(x.path);
-                    let extended_public_key = ExtendedPubKey::from_str(xpub.as_str())
-                        .map_err(|_e| RustCError::InvalidXPub);
+                    let extended_public_key =
+                        Xpub::from_str(xpub.as_str()).map_err(|_e| RustCError::InvalidXPub);
                     let derivation_path = DerivationPath::from_str(path.as_str())
                         .map_err(|_e| RustCError::InvalidHDPath);
                     match extended_public_key.and_then(|k| derivation_path.and_then(|p| Ok((k, p))))
@@ -74,11 +74,32 @@ pub extern "C" fn btc_parse_psbt(
 }
 
 #[no_mangle]
-pub extern "C" fn btc_sign_psbt(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> *mut UREncodeResult {
-    let crypto_psbt = extract_ptr_with_type!(ptr, CryptoPSBT);
+pub extern "C" fn btc_sign_psbt(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+    master_fingerprint: PtrBytes,
+    master_fingerprint_len: u32,
+) -> *mut UREncodeResult {
+    if master_fingerprint_len != 4 {
+        return UREncodeResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
+    }
+    let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
+    let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+        hex::encode(master_fingerprint.to_vec()).as_str(),
+    )
+    .map_err(|_e| RustCError::InvalidMasterFingerprint)
+    {
+        Ok(mfp) => mfp,
+        Err(e) => {
+            return UREncodeResult::from(e).c_ptr();
+        }
+    };
+
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let crypto_psbt = extract_ptr_with_type!(ptr, CryptoPSBT);
     let psbt = crypto_psbt.get_psbt();
-    let result = app_bitcoin::sign_psbt(psbt, seed);
+    let result = app_bitcoin::sign_psbt(psbt, seed, master_fingerprint);
     match result.map(|v| CryptoPSBT::new(v).try_into()) {
         Ok(v) => match v {
             Ok(data) => UREncodeResult::encode(
@@ -118,8 +139,8 @@ pub extern "C" fn btc_check_psbt(
                 for x in public_keys {
                     let xpub = recover_c_char(x.xpub);
                     let path = recover_c_char(x.path);
-                    let extended_public_key = ExtendedPubKey::from_str(xpub.as_str())
-                        .map_err(|_e| RustCError::InvalidXPub);
+                    let extended_public_key =
+                        Xpub::from_str(xpub.as_str()).map_err(|_e| RustCError::InvalidXPub);
                     let derivation_path = DerivationPath::from_str(path.as_str())
                         .map_err(|_e| RustCError::InvalidHDPath);
                     match extended_public_key.and_then(|k| derivation_path.and_then(|p| Ok((k, p))))

@@ -15,6 +15,8 @@
 #include "log_task.h"
 #include "gui_api.h"
 #include "gui_views.h"
+#include "version.h"
+
 
 
 #define LOG_NAME_MAX_LEN            64
@@ -49,7 +51,7 @@ static char g_logName[LOG_NAME_MAX_LEN];
 
 void LogSetLogName(char *name)
 {
-    strcpy(g_logName, name);
+    strcpy_s(g_logName, LOG_NAME_MAX_LEN, name);
 }
 
 void WriteLogEvent(uint32_t event)
@@ -58,7 +60,6 @@ void WriteLogEvent(uint32_t event)
         printf("write log before log init!!\r\n");
         return;
     }
-    //printf("WriteLogEvent,event=%d\r\n", event);
     LogData_t logData = {0};
     logData.event = event;
     logData.timeStamp = GetCurrentStampTime();
@@ -104,7 +105,7 @@ void WriteLogFormat(uint32_t event, const char *format, ...)
     LogData_t logData = {0};
     logData.event = event;
     logData.dataType = 1;
-    logData.length = strlen(str) / 4 + 1;
+    logData.length = strnlen_s(str, LOG_MAX_STRING_LEN - 1) / 4 + 1;
     logData.timeStamp = GetCurrentStampTime();
     logData.pData = (uint8_t *)str;
     //printf("length=%d\r\n", logData.length);
@@ -133,11 +134,13 @@ void LogErase(void)
 
 void LogInit(void)
 {
+    char version[32];
     g_logAddr = FindLogOffsetAddr();
     printf("g_logAddr=0x%08lX\r\n", g_logAddr);
     CheckLogData();
     g_logInit = true;
-    WriteLogEvent(EVENT_ID_BOOT);
+    GetSoftWareVersionNumber(version);
+    WriteLogFormat(EVENT_ID_BOOT, "v%s", version);
     CheckLastErrLog();
 }
 
@@ -295,9 +298,9 @@ static void WriteLogAsync(LogData_t *pLogData)
     dataLength = LOG_DATA_HEAD_SIZE + pLogData->length * 4;
 
     data = SRAM_MALLOC(dataLength);
-    memset(data, 0, dataLength);
-    memcpy(data, pLogData, LOG_DATA_HEAD_SIZE);
-    memcpy(data + LOG_DATA_HEAD_SIZE, pLogData->pData, pLogData->length * 4);
+    memset_s(data, dataLength, 0, dataLength);
+    memcpy_s(data, LOG_DATA_HEAD_SIZE, pLogData, LOG_DATA_HEAD_SIZE);
+    memcpy_s(data + LOG_DATA_HEAD_SIZE, dataLength - LOG_DATA_HEAD_SIZE, pLogData->pData, pLogData->length * 4);
     PubBufferMsg(LOG_MSG_WRITE, data, dataLength);
     SRAM_FREE(data);
 }
@@ -316,8 +319,8 @@ static void WriteLogSync(LogData_t *pLogData)
     dataLength = LOG_DATA_HEAD_SIZE + pLogData->length * 4;
 
     data = SRAM_MALLOC(dataLength);
-    memcpy(data, pLogData, LOG_DATA_HEAD_SIZE);
-    memcpy(data + LOG_DATA_HEAD_SIZE, pLogData->pData, pLogData->length * 4);
+    memcpy_s(data, LOG_DATA_HEAD_SIZE, pLogData, LOG_DATA_HEAD_SIZE);
+    memcpy_s(data + LOG_DATA_HEAD_SIZE, dataLength - LOG_DATA_HEAD_SIZE, pLogData->pData, pLogData->length * 4);
     WriteLogDataToFlash(data, dataLength);
     SRAM_FREE(data);
 }
@@ -415,7 +418,7 @@ static void CheckLogData(void)
             //return;
         }
         readAddr = GetNextSectorAddr(readAddr);
-        memcpy(&logData, &originalData[readAddr - SPI_FLASH_ADDR_LOG], LOG_DATA_HEAD_SIZE);
+        memcpy_s(&logData, LOG_DATA_HEAD_SIZE, &originalData[readAddr - SPI_FLASH_ADDR_LOG], LOG_DATA_HEAD_SIZE);
         if (logData.event != 0xFFFF) {
             break;
         }
@@ -423,8 +426,7 @@ static void CheckLogData(void)
     printf("the earliest log addr=0x%08X\r\n", readAddr);
     if (needErase == false) {
         while (1) {
-            memcpy(&logData, &originalData[readAddr - SPI_FLASH_ADDR_LOG], LOG_DATA_HEAD_SIZE);
-            //printf("readAddr=0x%08X,event=0x%X,timeStamp=%d\n", readAddr, logData.event, logData.timeStamp);
+            memcpy_s(&logData, LOG_DATA_HEAD_SIZE, &originalData[readAddr - SPI_FLASH_ADDR_LOG], LOG_DATA_HEAD_SIZE);
             if (readAddr >= SPI_FLASH_ADDR_LOG + SPI_FLASH_SIZE_LOG) {
                 printf("log data overlap,addr=0x%08X\n", readAddr);
                 needErase = true;
@@ -467,12 +469,14 @@ static void CheckLogData(void)
 
 void CheckLastErrLog(void)
 {
-    char errStr[256];
+#define ERROR_LOG_STR_MAX_LEN    256
+    char errStr[ERROR_LOG_STR_MAX_LEN];
     Gd25FlashReadBuffer(SPI_FLASH_ADDR_ERR_INFO, (uint8_t *)errStr, sizeof(errStr));
     if (CheckAllFF((uint8_t *)errStr, sizeof(errStr))) {
         return;
     }
-    if (strlen(errStr) < sizeof(errStr)) {
+
+    if (strnlen_s(errStr, ERROR_LOG_STR_MAX_LEN) < ERROR_LOG_STR_MAX_LEN) {
         printf("last err:%s\n", errStr);
         WriteLogFormat(EVENT_ID_ERROR, "%s", errStr);
     }

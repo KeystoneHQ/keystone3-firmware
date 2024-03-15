@@ -447,7 +447,7 @@ static portTASK_FUNCTION_PROTO(prvIdleTask, pvParameters) PRIVILEGED_FUNCTION;
  * including the stack pointed to by the TCB.
  *
  * This does not free memory allocated by the task itself (i.e. memory
- * allocated by calls to pvPortMalloc from within the tasks application code).
+ * allocated by calls to SramMalloc from within the tasks application code).
  */
 #if ( INCLUDE_vTaskDelete == 1 )
 
@@ -684,7 +684,7 @@ BaseType_t xTaskCreateRestricted(const TaskParameters_t * const pxTaskDefinition
         /* Allocate space for the TCB.  Where the memory comes from depends
          * on the implementation of the port malloc function and whether or
          * not static allocation is being used. */
-        pxNewTCB = (TCB_t *) pvPortMalloc(sizeof(TCB_t));
+        pxNewTCB = (TCB_t *) SramMalloc(sizeof(TCB_t));
 
         if (pxNewTCB != NULL) {
             /* Store the stack location in the TCB. */
@@ -738,7 +738,7 @@ BaseType_t xTaskCreate(TaskFunction_t pxTaskCode,
         /* Allocate space for the TCB.  Where the memory comes from depends on
          * the implementation of the port malloc function and whether or not static
          * allocation is being used. */
-        pxNewTCB = (TCB_t *) pvPortMalloc(sizeof(TCB_t));
+        pxNewTCB = (TCB_t *) SramMalloc(sizeof(TCB_t));
 
         if (pxNewTCB != NULL) {
             /* Allocate space for the stack used by the task being created.
@@ -748,7 +748,7 @@ BaseType_t xTaskCreate(TaskFunction_t pxTaskCode,
 
             if (pxNewTCB->pxStack == NULL) {
                 /* Could not allocate the stack.  Delete the allocated TCB. */
-                vPortFree(pxNewTCB);
+                SramFree(pxNewTCB);
                 pxNewTCB = NULL;
             }
         }
@@ -758,11 +758,11 @@ BaseType_t xTaskCreate(TaskFunction_t pxTaskCode,
         StackType_t * pxStack;
 
         /* Allocate space for the stack used by the task being created. */
-        pxStack = pvPortMallocStack((((size_t) usStackDepth) * sizeof(StackType_t)));           /*lint !e9079 All values returned by pvPortMalloc() have at least the alignment required by the MCU's stack and this allocation is the stack. */
+        pxStack = pvPortMallocStack((((size_t) usStackDepth) * sizeof(StackType_t)));           /*lint !e9079 All values returned by SramMalloc() have at least the alignment required by the MCU's stack and this allocation is the stack. */
 
         if (pxStack != NULL) {
             /* Allocate space for the TCB. */
-            pxNewTCB = (TCB_t *) pvPortMalloc(sizeof(TCB_t));       /*lint !e9087 !e9079 All values returned by pvPortMalloc() have at least the alignment required by the MCU's stack, and the first member of TCB_t is always a pointer to the task's stack. */
+            pxNewTCB = (TCB_t *) SramMalloc(sizeof(TCB_t));       /*lint !e9087 !e9079 All values returned by SramMalloc() have at least the alignment required by the MCU's stack, and the first member of TCB_t is always a pointer to the task's stack. */
 
             if (pxNewTCB != NULL) {
                 /* Store the stack location in the TCB. */
@@ -3599,7 +3599,7 @@ UBaseType_t uxTaskGetStackHighWaterMark(TaskHandle_t xTask)
 static void prvDeleteTCB(TCB_t * pxTCB)
 {
     /* This call is required specifically for the TriCore port.  It must be
-     * above the vPortFree() calls.  The call is also used by ports/demos that
+     * above the SramFree() calls.  The call is also used by ports/demos that
      * want to allocate and clean RAM statically. */
     portCLEAN_UP_TCB(pxTCB);
 
@@ -3618,7 +3618,7 @@ static void prvDeleteTCB(TCB_t * pxTCB)
         /* The task can only have been allocated dynamically - free both
          * the stack and TCB. */
         vPortFreeStack(pxTCB->pxStack);
-        vPortFree(pxTCB);
+        SramFree(pxTCB);
     }
 #elif ( tskSTATIC_AND_DYNAMIC_ALLOCATION_POSSIBLE != 0 ) /*lint !e731 !e9029 Macro has been consolidated for readability reasons. */
     {
@@ -3629,11 +3629,11 @@ static void prvDeleteTCB(TCB_t * pxTCB)
             /* Both the stack and TCB were allocated dynamically, so both
              * must be freed. */
             vPortFreeStack(pxTCB->pxStack);
-            vPortFree(pxTCB);
+            SramFree(pxTCB);
         } else if (pxTCB->ucStaticallyAllocated == tskSTATICALLY_ALLOCATED_STACK_ONLY) {
             /* Only the stack was statically allocated, so the TCB is the
              * only memory that must be freed. */
-            vPortFree(pxTCB);
+            SramFree(pxTCB);
         } else {
             /* Neither the stack nor the TCB were allocated dynamically, so
              * nothing needs to be freed. */
@@ -4048,9 +4048,9 @@ void vTaskList(char * pcWriteBuffer)
     uxArraySize = uxCurrentNumberOfTasks;
 
     /* Allocate an array index for each task.  NOTE!  if
-     * configSUPPORT_DYNAMIC_ALLOCATION is set to 0 then pvPortMalloc() will
+     * configSUPPORT_DYNAMIC_ALLOCATION is set to 0 then SramMalloc() will
      * equate to NULL. */
-    pxTaskStatusArray = pvPortMalloc(uxCurrentNumberOfTasks * sizeof(TaskStatus_t));     /*lint !e9079 All values returned by pvPortMalloc() have at least the alignment required by the MCU's stack and this allocation allocates a struct that has the alignment requirements of a pointer. */
+    pxTaskStatusArray = SramMalloc(uxCurrentNumberOfTasks * sizeof(TaskStatus_t));     /*lint !e9079 All values returned by SramMalloc() have at least the alignment required by the MCU's stack and this allocation allocates a struct that has the alignment requirements of a pointer. */
 
     if (pxTaskStatusArray != NULL) {
         /* Generate the (binary) data. */
@@ -4096,8 +4096,8 @@ void vTaskList(char * pcWriteBuffer)
         }
 
         /* Free the array again.  NOTE!  If configSUPPORT_DYNAMIC_ALLOCATION
-         * is 0 then vPortFree() will be #defined to nothing. */
-        vPortFree(pxTaskStatusArray);
+         * is 0 then SramFree() will be #defined to nothing. */
+        SramFree(pxTaskStatusArray);
     } else {
         mtCOVERAGE_TEST_MARKER();
     }
@@ -4153,9 +4153,9 @@ void vTaskGetRunTimeStats(char * pcWriteBuffer)
     uxArraySize = uxCurrentNumberOfTasks;
 
     /* Allocate an array index for each task.  NOTE!  If
-     * configSUPPORT_DYNAMIC_ALLOCATION is set to 0 then pvPortMalloc() will
+     * configSUPPORT_DYNAMIC_ALLOCATION is set to 0 then SramMalloc() will
      * equate to NULL. */
-    pxTaskStatusArray = pvPortMalloc(uxCurrentNumberOfTasks * sizeof(TaskStatus_t));     /*lint !e9079 All values returned by pvPortMalloc() have at least the alignment required by the MCU's stack and this allocation allocates a struct that has the alignment requirements of a pointer. */
+    pxTaskStatusArray = SramMalloc(uxCurrentNumberOfTasks * sizeof(TaskStatus_t));     /*lint !e9079 All values returned by SramMalloc() have at least the alignment required by the MCU's stack and this allocation allocates a struct that has the alignment requirements of a pointer. */
 
     if (pxTaskStatusArray != NULL) {
         /* Generate the (binary) data. */
@@ -4213,8 +4213,8 @@ void vTaskGetRunTimeStats(char * pcWriteBuffer)
         }
 
         /* Free the array again.  NOTE!  If configSUPPORT_DYNAMIC_ALLOCATION
-         * is 0 then vPortFree() will be #defined to nothing. */
-        vPortFree(pxTaskStatusArray);
+         * is 0 then SramFree() will be #defined to nothing. */
+        SramFree(pxTaskStatusArray);
     } else {
         mtCOVERAGE_TEST_MARKER();
     }

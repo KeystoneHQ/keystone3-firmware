@@ -57,10 +57,9 @@ pub fn build_parse_context(
     let master_fingerprint =
         third_party::bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
             .map_err(|_| KeystoneError::InvalidParseContext(format!("invalid mfp")))?;
-    let extended_pubkey = third_party::bitcoin::bip32::ExtendedPubKey::from_str(&xpub_str)
-        .map_err(|_| {
-            KeystoneError::InvalidParseContext(format!("invalid extended pub key {}", x_pub))
-        })?;
+    let extended_pubkey = third_party::bitcoin::bip32::Xpub::from_str(&xpub_str).map_err(|_| {
+        KeystoneError::InvalidParseContext(format!("invalid extended pub key {}", x_pub))
+    })?;
     Ok(app_utils::keystone::ParseContext::new(
         master_fingerprint,
         extended_pubkey,

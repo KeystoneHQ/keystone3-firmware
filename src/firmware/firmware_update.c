@@ -18,6 +18,7 @@
 #include "mhscpu.h"
 #include "drv_otp.h"
 #include "user_utils.h"
+#include "version.h"
 
 #define SD_CARD_OTA_BIN_PATH   "0:/keystone3.bin"
 
@@ -50,7 +51,7 @@ bool CheckApp(void)
 {
     uint8_t read[4096];
     uint32_t major, minor, build;
-    memcpy(read, (void *)APP_VERSION_ADDR, 4096);
+    memcpy_s(read, 4096, (void *)APP_VERSION_ADDR, 4096);
     return GetSoftwareVersionFormData(&major, &minor, &build, read, 4096) == 0;
 }
 
@@ -58,7 +59,7 @@ void GetSoftwareVersion(uint32_t *major, uint32_t *minor, uint32_t *build)
 {
     uint8_t read[4096];
 
-    memcpy(read, (void *)APP_VERSION_ADDR, 4096);
+    memcpy_s(read, 4096, (void *)APP_VERSION_ADDR, 4096);
     GetSoftwareVersionFormData(major, minor, build, read, 4096);
 }
 
@@ -83,7 +84,7 @@ int32_t GetSoftwareVersionFormData(uint32_t *major, uint32_t *minor, uint32_t *b
             printf("version string not found in fixed segment\n");
             break;
         }
-        memcpy(read, &data[versionInfoOffset], 64);
+        memcpy_s(read, 64, &data[versionInfoOffset], 64);
         read[31] = '\0';
         if (strncmp(read, APP_VERSION_HEAD, headLen) != 0) {
             break;
@@ -143,8 +144,6 @@ static bool CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t *pH
 
 bool CheckOtaBinVersion(char *version)
 {
-    // strcpy(version, "99.99.99");
-    // return true;
     OtaFileInfo_t otaFileInfo = {0};
     uint32_t headSize;
     bool ret = true;
@@ -213,7 +212,12 @@ static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32
     uint32_t nowVersionNumber = (nowMajor * epoch * epoch)  + (nowMinor * epoch) + nowBuild;
     uint32_t fileVersionNumber = (fileMajor * epoch * epoch)  + (fileMinor * epoch) + fileBuild;
 
-    sprintf(version, "%d.%d.%d", fileMajor, fileMinor, fileBuild);
+    if (fileMajor >= 10) {
+        fileMajor = fileMajor % 10;
+        snprintf_s(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d-BTC", fileMajor, fileMinor, fileBuild);
+    } else {
+        snprintf_s(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", fileMajor, fileMinor, fileBuild);
+    }
     if (fileVersionNumber <= nowVersionNumber) {
         SRAM_FREE(g_dataUnit);
         SRAM_FREE(g_fileUnit);

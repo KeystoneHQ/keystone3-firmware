@@ -6,28 +6,23 @@
 #include "user_memory.h"
 #include "err_code.h"
 #include "assert.h"
-#include "safe_mem_lib.h"
-
-
 
 #define FACTORY_RESULT_CHECK_ENABLE         1
-
 
 int32_t GetSerialNumber(char *serialNumber)
 {
     char temp[256];
     OTP_PowerOn();
     memcpy(temp, (uint8_t *)OTP_ADDR_SN, 256);
-    //PrintArray("sn otp", (uint8_t *)temp, 256);
     if (CheckEntropy((uint8_t *)temp, 256) == false) {
         serialNumber[0] = '\0';
         return ERR_SERIAL_NUMBER_NOT_EXIST;
     }
-    if (strlen(temp) >= SERIAL_NUMBER_MAX_LEN) {
+    if (strnlen_s(temp, SERIAL_NUMBER_MAX_LEN + 1) >= SERIAL_NUMBER_MAX_LEN) {
         serialNumber[0] = '\0';
         return ERR_SERIAL_NUMBER_INVALID;
     }
-    strcpy(serialNumber, temp);
+    strcpy_s(serialNumber, SERIAL_NUMBER_MAX_LEN, temp);
     return SUCCESS_CODE;
 }
 
@@ -43,10 +38,10 @@ int32_t SetSerialNumber(const char *serialNumber)
     } else if (ret == ERR_SERIAL_NUMBER_INVALID) {
         return ret;
     }
-    ASSERT(strlen(serialNumber) < SERIAL_NUMBER_MAX_LEN);
+    ASSERT(strnlen_s(serialNumber, SERIAL_NUMBER_MAX_LEN - 1) < SERIAL_NUMBER_MAX_LEN);
     OTP_PowerOn();
     CLEAR_ARRAY(temp);
-    strcpy(temp, serialNumber);
+    strcpy_s(temp, SERIAL_NUMBER_MAX_LEN, serialNumber);
     WriteOtpData(OTP_ADDR_SN, (uint8_t *)temp, SERIAL_NUMBER_MAX_LEN);
     return SUCCESS_CODE;
 }
@@ -81,7 +76,7 @@ int32_t SetWebAuthRsaKey(const uint8_t *key)
         return ERR_WEB_AUTH_KEY_ALREADY_EXIST;
     }
     OTP_PowerOn();
-    memcpy(data, key, WEB_AUTH_RSA_KEY_LEN);
+    memcpy_s(data, WEB_AUTH_RSA_KEY_LEN, key, WEB_AUTH_RSA_KEY_LEN);
     for (uint32_t i = 0; i < WEB_AUTH_RSA_KEY_LEN; i += 256) {
         WriteOtpData(OTP_ADDR_WEB_AUTH_RSA_KEY + i, data + i, 256);
     }
@@ -131,26 +126,26 @@ int32_t GetUpdatePubKey(uint8_t *pubKey)
 
     OTP_PowerOn();
     for (addr = OTP_ADDR_UPDATE_PUB_KEY + 1024 - UPDATE_PUB_KEY_LEN; addr >= OTP_ADDR_UPDATE_PUB_KEY; addr -= UPDATE_PUB_KEY_LEN) {
-        memcpy(data, (uint8_t *)addr, UPDATE_PUB_KEY_LEN);
+        memcpy_s(data, sizeof(data), (uint8_t *)addr, UPDATE_PUB_KEY_LEN);
         PrintArray("read pub key", data, UPDATE_PUB_KEY_LEN);
         if (CheckAllFF(data, UPDATE_PUB_KEY_LEN) == false) {
             if (CheckEntropy(data, UPDATE_PUB_KEY_LEN)) {
                 //Found
                 printf("found,addr=0x%X\n", addr);
                 pubKey[0] = 4;
-                memcpy(pubKey + 1, data, UPDATE_PUB_KEY_LEN);
-                memset(data, 0, UPDATE_PUB_KEY_LEN);
+                memcpy_s(pubKey + 1, UPDATE_PUB_KEY_LEN, data, UPDATE_PUB_KEY_LEN);
+                memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
                 return SUCCESS_CODE;
             }
             printf("not found,addr=0x%X\n", addr);
-            memset(data, 0, UPDATE_PUB_KEY_LEN);
-            memset(pubKey, 0, UPDATE_PUB_KEY_LEN + 1);
+            memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
+            memset_s(pubKey, UPDATE_PUB_KEY_LEN + 1, 0, UPDATE_PUB_KEY_LEN + 1);
             return ERR_UPDATE_PUB_KEY_NOT_EXIST;
         }
     }
     printf("not found,addr=0x%X\n", addr);
-    memset(data, 0, UPDATE_PUB_KEY_LEN);
-    memset(pubKey, 0, UPDATE_PUB_KEY_LEN + 1);
+    memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
+    memset_s(pubKey, UPDATE_PUB_KEY_LEN + 1, 0, UPDATE_PUB_KEY_LEN + 1);
     return ERR_UPDATE_PUB_KEY_NOT_EXIST;
 }
 
@@ -165,17 +160,17 @@ int32_t SetUpdatePubKey(const uint8_t *pubKey)
 
     OTP_PowerOn();
     for (addr = OTP_ADDR_UPDATE_PUB_KEY; addr < OTP_ADDR_UPDATE_PUB_KEY + 1024; addr += UPDATE_PUB_KEY_LEN) {
-        memcpy(data, (uint8_t *)addr, UPDATE_PUB_KEY_LEN);
+        memcpy_s(data, UPDATE_PUB_KEY_LEN, (uint8_t *)addr, UPDATE_PUB_KEY_LEN);
         PrintArray("read pub key", data, UPDATE_PUB_KEY_LEN);
         if (CheckAllFF(data, UPDATE_PUB_KEY_LEN)) {
             printf("writeable addr found:0x%08X\n", addr);
             //write OTP
-            memcpy(data, pubKey + 1, UPDATE_PUB_KEY_LEN);
+            memcpy_s(data, UPDATE_PUB_KEY_LEN, pubKey + 1, UPDATE_PUB_KEY_LEN);
             WriteOtpData(addr, data, UPDATE_PUB_KEY_LEN);
             return SUCCESS_CODE;
         }
     }
-    memset(data, 0, UPDATE_PUB_KEY_LEN);
+    memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
     return ERR_UPDATE_PUB_KEY_NO_SPACE;
 }
 
@@ -204,7 +199,7 @@ void PresettingTest(int argc, char *argv[])
         SRAM_FREE(data);
     } else if (strcmp(argv[0], "set_web_auth_key") == 0) {
         VALUE_CHECK(argc, 2);
-        len = strlen(argv[1]);
+        len = strnlen_s(argv[1], 1024);
         if (len != 2048) {
             printf("set_web_auth_key err input,len=%d\n", len);
             return;
@@ -228,7 +223,7 @@ void PresettingTest(int argc, char *argv[])
         SRAM_FREE(data);
     } else if (strcmp(argv[0], "set_update_pub_key") == 0) {
         VALUE_CHECK(argc, 2);
-        len = strlen(argv[1]);
+        len = strnlen_s(argv[1], 1024);
         if (len != 130) {
             printf("set_update_pub_key err input,len=%d\n", len);
             return;

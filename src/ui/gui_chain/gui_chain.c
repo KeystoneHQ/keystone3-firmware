@@ -5,6 +5,7 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
     switch (ViewTypeReMap(viewType)) {
     case REMAPVIEW_BTC:
         return GuiGetPsbtCheckResult();
+#ifndef BTC_ONLY
     case REMAPVIEW_ETH:
     case REMAPVIEW_ETH_PERSONAL_MESSAGE:
     case REMAPVIEW_ETH_TYPEDDATA:
@@ -24,6 +25,7 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
         return GuiGetAdaCheckResult();
     case REMAPVIEW_XRP:
         return GuiGetXrpCheckResult();
+#endif
     default:
         return NULL;
     }
@@ -37,6 +39,7 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     case BtcLegacyTx:
     case BtcTx:
         return CHAIN_BTC;
+#ifndef BTC_ONLY
     case LtcTx:
         return CHAIN_LTC;
     case DashTx:
@@ -63,18 +66,21 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
         return CHAIN_ADA;
     case XRPTx:
         return CHAIN_XRP;
+#endif
     default:
         return CHAIN_BUTT;
     }
     return CHAIN_BUTT;
 }
 
+#ifndef BTC_ONLY
 bool IsMessageType(uint8_t type)
 {
     return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type);
 }
+#endif
 
-static GenerateUR UrGenerator(GuiChainCoinType viewType, bool isMulti)
+static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
 {
     GenerateUR func = NULL;
     switch (viewType) {
@@ -82,11 +88,14 @@ static GenerateUR UrGenerator(GuiChainCoinType viewType, bool isMulti)
     case BtcSegwitTx:
     case BtcLegacyTx:
     case BtcTx:
+#ifndef BTC_ONLY
     case LtcTx:
     case DashTx:
     case BchTx:
+#endif
         func = GuiGetSignQrCodeData;
         break;
+#ifndef BTC_ONLY
     case EthTx:
     case EthPersonalMessage:
     case EthTypedData:
@@ -114,18 +123,20 @@ static GenerateUR UrGenerator(GuiChainCoinType viewType, bool isMulti)
         break;
     case XRPTx:
         func = GuiGetXrpSignQrCodeData;
+        break;
+#endif
     default:
         break;
     }
     return func;
 }
 
-GenerateUR GetUrGenerator(GuiChainCoinType viewType)
+GenerateUR GetUrGenerator(ViewType viewType)
 {
     return UrGenerator(viewType, true);
 }
 
-GenerateUR GetSingleUrGenerator(GuiChainCoinType viewType)
+GenerateUR GetSingleUrGenerator(ViewType viewType)
 {
     return UrGenerator(viewType, false);
 }

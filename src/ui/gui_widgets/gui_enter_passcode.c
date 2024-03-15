@@ -12,8 +12,9 @@
 #include "motor_manager.h"
 #include "account_manager.h"
 #include "gui_keyboard_hintbox.h"
-#ifndef COMPILE_SIMULATOR
-#include "safe_mem_lib.h"
+
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
 #endif
 
 typedef enum {
@@ -31,7 +32,7 @@ typedef struct EnterPassCodeParam {
     void *setpinParam;
 } EnterPassCodeParam_t;
 
-static char g_pinBuf[GUI_DEFINE_MAX_PASSCODE_LEN + 1];
+static char g_pinBuf[PASSWORD_MAX_LEN + 1];
 static void *g_userParam;
 static EnterPassCodeParam_t g_passParam;
 static bool g_isHandle = true;
@@ -72,9 +73,11 @@ static void SetPinEventHandler(lv_event_t *e)
     if (code == LV_EVENT_RELEASED) {
         Vibrate(SLIGHT);
         GuiEnterPasscodeItem_t *item = g_passParam.setpinParam;
+#ifndef COMPILE_SIMULATOR
         if (!g_isHandle && item->mode == ENTER_PASSCODE_VERIFY_PIN) {
             return;
         }
+#endif
 
         uint32_t id = lv_btnmatrix_get_selected_btn(obj);
         if (id == 9) {
@@ -96,7 +99,7 @@ static void SetPinEventHandler(lv_event_t *e)
             }
         } else {
             if (item->currentNum < CREATE_PIN_NUM) {
-                sprintf(g_pinBuf + item->currentNum, "%s", txt);
+                snprintf_s(g_pinBuf + item->currentNum, PASSWORD_MAX_LEN - item->currentNum, "%s", txt);
                 GuiSetLedStatus(item->numLed[item->currentNum], PASSCODE_LED_ON);
                 item->currentNum++;
                 if (item->mode == ENTER_PASSCODE_SET_PIN &&
@@ -136,11 +139,11 @@ static void SetPinEventHandler(lv_event_t *e)
                         UnlimitedVibrate(LONG);
                         lv_obj_clear_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
                     } else {
-                        GuiEmitSignal(SIG_SETTING_SET_PIN, g_pinBuf, strlen(g_pinBuf));
+                        GuiEmitSignal(SIG_SETTING_SET_PIN, g_pinBuf, strnlen_s(g_pinBuf, PASSWORD_MAX_LEN));
                     }
                     break;
                 case ENTER_PASSCODE_REPEAT_PIN:
-                    GuiEmitSignal(SIG_SETTING_REPEAT_PIN, g_pinBuf, strlen(g_pinBuf));
+                    GuiEmitSignal(SIG_SETTING_REPEAT_PIN, g_pinBuf, strnlen_s(g_pinBuf, PASSWORD_MAX_LEN));
                     break;
                 default:
                     break;
@@ -168,7 +171,7 @@ static void SetPassWordHandler(lv_event_t *e)
     GuiEnterPasscodeItem_t *item = g_passParam.setpinParam;
     if (code == LV_EVENT_READY) {
         const char *currText = lv_textarea_get_text(ta);
-        if (strlen(currText) < 6 && item->mode == ENTER_PASSCODE_SET_PASSWORD) {
+        if (item->mode == ENTER_PASSCODE_SET_PASSWORD && strnlen_s(currText, CREATE_PIN_NUM) < CREATE_PIN_NUM) {
             UnlimitedVibrate(LONG);
             if (lenLabel == NULL) {
                 lenLabel = GuiCreateIllustrateLabel(lv_obj_get_parent(lv_obj_get_parent(kb)), _("password_error_too_short"));
@@ -192,13 +195,13 @@ static void SetPassWordHandler(lv_event_t *e)
                     lv_obj_clear_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
                     delayFlag = true;
                 } else {
-                    GuiEmitSignal(SIG_SETTING_SET_PIN, (char *)currText, strlen(currText));
+                    GuiEmitSignal(SIG_SETTING_SET_PIN, (char *)currText, strnlen_s(currText, CREATE_PIN_NUM));
                 }
             } else if (item->mode == ENTER_PASSCODE_REPEAT_PASSWORD) {
-                GuiEmitSignal(SIG_SETTING_REPEAT_PIN, (char *)currText, strlen(currText));
+                GuiEmitSignal(SIG_SETTING_REPEAT_PIN, (char *)currText, strnlen_s(currText, CREATE_PIN_NUM));
             } else if ((item->mode == ENTER_PASSCODE_VERIFY_PASSWORD)) {
                 g_userParam = g_passParam.userParam;
-                if (strlen(currText) > 0) {
+                if (strnlen_s(currText, PASSWORD_MAX_LEN) > 0) {
                     SecretCacheSetPassword((char *)currText);
                     GuiModelVerifyAccountPassWord(g_userParam);
                 }
@@ -220,7 +223,7 @@ static void SetPassWordHandler(lv_event_t *e)
 
         if (item->mode == ENTER_PASSCODE_SET_PASSWORD) {
             const char *password = lv_textarea_get_text(item->kb->ta);
-            uint8_t passwordLen = strlen(password);
+            uint8_t passwordLen = strnlen_s(password, PASSWORD_MAX_LEN);
             int8_t score = GetPassWordStrength(password, passwordLen);
             if (item->scoreBar != NULL && item->scoreLevel != NULL) {
                 if (passwordLen < 6) {
@@ -279,9 +282,9 @@ static void SetPassWordHandler(lv_event_t *e)
         }
 
         if (item->mode == ENTER_PASSCODE_SET_PASSWORD && item->lenOverLabel != NULL) {
-            if (strlen(currText) >= GUI_DEFINE_MAX_PASSCODE_LEN) {
+            if (strnlen_s(currText, PASSWORD_MAX_LEN) >= PASSWORD_MAX_LEN) {
                 lv_obj_clear_flag(item->lenOverLabel, LV_OBJ_FLAG_HIDDEN);
-            } else if (strlen(currText) < GUI_DEFINE_MAX_PASSCODE_LEN) {
+            } else {
                 lv_obj_add_flag(item->lenOverLabel, LV_OBJ_FLAG_HIDDEN);
             }
         }
@@ -382,7 +385,7 @@ void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *pa
     lv_obj_set_style_text_opa(kb->ta, LV_OPA_100, 0);
     lv_obj_align(kb->ta, LV_ALIGN_DEFAULT, 36, 292 - GUI_MAIN_AREA_OFFSET);
     lv_textarea_set_placeholder_text(kb->ta, _("password_input_desc"));
-    lv_textarea_set_max_length(kb->ta, GUI_DEFINE_MAX_PASSCODE_LEN);
+    lv_textarea_set_max_length(kb->ta, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(kb->ta, true);
     lv_textarea_set_password_mode(kb->ta, true);
     item->kb = kb;
@@ -438,7 +441,7 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
         lv_obj_align(kb->ta, LV_ALIGN_DEFAULT, 36, 308 - GUI_MAIN_AREA_OFFSET);
         lv_textarea_set_placeholder_text(kb->ta, _("password_error_too_weak"));
         lv_textarea_set_password_mode(kb->ta, true);
-        lv_textarea_set_max_length(kb->ta, GUI_DEFINE_MAX_PASSCODE_LEN);
+        lv_textarea_set_max_length(kb->ta, PASSWORD_MAX_LEN);
         lv_textarea_set_one_line(kb->ta, true);
         item->kb = kb;
 
@@ -490,7 +493,7 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
         lv_obj_align(kb->ta, LV_ALIGN_DEFAULT, 36, 308 - GUI_MAIN_AREA_OFFSET);
         lv_textarea_set_placeholder_text(kb->ta, _("password_error_weak"));
         lv_textarea_set_password_mode(kb->ta, true);
-        lv_textarea_set_max_length(kb->ta, GUI_DEFINE_MAX_PASSCODE_LEN);
+        lv_textarea_set_max_length(kb->ta, PASSWORD_MAX_LEN);
         lv_textarea_set_one_line(kb->ta, true);
         item->kb = kb;
     }
@@ -529,7 +532,7 @@ void GuiCreateEnterPassWord(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *
     lv_obj_align(kb->ta, LV_ALIGN_DEFAULT, 36, 308 - GUI_MAIN_AREA_OFFSET);
     lv_textarea_set_placeholder_text(kb->ta, _("password_error_too_weak"));
     lv_textarea_set_password_mode(kb->ta, true);
-    lv_textarea_set_max_length(kb->ta, GUI_DEFINE_MAX_PASSCODE_LEN);
+    lv_textarea_set_max_length(kb->ta, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(kb->ta, true);
     item->kb = kb;
 

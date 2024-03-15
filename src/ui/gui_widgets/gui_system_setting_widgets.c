@@ -11,7 +11,6 @@
 #include "gui_web_auth_widgets.h"
 #include "gui_setting_widgets.h"
 #include "gui_enter_passcode.h"
-#include "gui_setup_widgets.h"
 #include "secret_cache.h"
 #include "device_setting.h"
 #include "motor_manager.h"
@@ -38,7 +37,7 @@ static void DispalyHandler(lv_event_t *e);
 static void OpenLanguageSelectHandler(lv_event_t *e);
 static void VibrationHandler(lv_event_t *e);
 static void VibrationSwitchHandler(lv_event_t * e);
-
+void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset);
 void OpenForgetPasswordHandler(lv_event_t *e);
 
 void GuiSystemSettingAreaInit()

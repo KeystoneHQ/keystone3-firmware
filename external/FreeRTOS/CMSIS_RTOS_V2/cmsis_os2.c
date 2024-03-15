@@ -637,7 +637,7 @@ uint32_t osThreadEnumerate(osThreadId_t *thread_array, uint32_t array_items)
         vTaskSuspendAll();
 
         count = uxTaskGetNumberOfTasks();
-        task  = pvPortMalloc(count * sizeof(TaskStatus_t));
+        task  = SramMalloc(count * sizeof(TaskStatus_t));
 
         if (task != NULL) {
             count = uxTaskGetSystemState(task, count, NULL);
@@ -649,7 +649,7 @@ uint32_t osThreadEnumerate(osThreadId_t *thread_array, uint32_t array_items)
         }
         (void) xTaskResumeAll();
 
-        vPortFree(task);
+        SramFree(task);
     }
 
     return (count);
@@ -858,7 +858,7 @@ osTimerId_t osTimerNew(osTimerFunc_t func, osTimerType_t type, void *argument, c
 
     if (!IS_IRQ() && (func != NULL)) {
         /* Allocate memory to store callback function and argument */
-        callb = pvPortMalloc(sizeof(TimerCallback_t));
+        callb = SramMalloc(sizeof(TimerCallback_t));
 
         if (callb != NULL) {
             callb->func = func;
@@ -1002,7 +1002,7 @@ osStatus_t osTimerDelete(osTimerId_t timer_id)
         callb = (TimerCallback_t *) pvTimerGetTimerID(hTimer);
 
         if (xTimerDelete(hTimer, 0) == pdPASS) {
-            vPortFree(callb);
+            SramFree(callb);
             stat = osOK;
         } else {
             stat = osErrorResource;

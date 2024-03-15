@@ -14,9 +14,6 @@
 #include "user_utils.h"
 #include "motor_manager.h"
 #include "gui_page.h"
-#ifndef COMPILE_SIMULATOR
-#include "safe_mem_lib.h"
-#endif
 
 typedef enum {
     CREATE_SHARE_SELECT_SLICE = 0,
@@ -71,7 +68,7 @@ static uint8_t g_phraseCnt = 33;
 static uint8_t g_pressedBtn[SLIP39_MNEMONIC_WORDS_MAX + 1];
 static uint8_t g_pressedBtnFlag[SLIP39_MNEMONIC_WORDS_MAX + 1];
 static uint8_t g_currId = 0;
-static char g_randomBuff[512];
+static char g_randomBuff[BUFFER_SIZE_512];
 static lv_obj_t *g_noticeHintBox = NULL;
 static uint8_t g_entropyMethod;
 static PageWidget_t *g_pageWidget;
@@ -199,8 +196,8 @@ static void NumSelectSliceHandler(lv_event_t * e)
             g_selectSliceTile.memberThreshold = currentId + 2;
             lv_btnmatrix_set_selected_btn(g_selectSliceTile.memberCntKb, g_selectSliceTile.memberCnt - 2);
         }
-        char tempBuf[8];
-        sprintf(tempBuf, "%d/%d", g_selectSliceTile.memberThreshold, g_selectSliceTile.memberCnt);
+        char tempBuf[BUFFER_SIZE_16];
+        snprintf_s(tempBuf, BUFFER_SIZE_16, "%d/%d", g_selectSliceTile.memberThreshold, g_selectSliceTile.memberCnt);
         lv_label_set_text(g_selectSliceTile.stepLabel, tempBuf);
     }
 }
@@ -531,10 +528,6 @@ void GuiCreateShareDeInit(void)
     g_currId = 0;
     g_selectSliceTile.memberCnt = SLIP39_DEFAULT_MEMBER_COUNT;
     g_selectSliceTile.memberThreshold = SLIP39_DEFAULT_MEMBER_THRESHOLD;
-    // for (int i = 0; i < SLIP39_MNEMONIC_WORDS_MAX; i++) {
-    //     memset(g_shareBackupTile.words, 0, 10);
-    //     memset(g_shareConfirmTile.words, 0, 10);
-    // }
     memset_s(g_randomBuff, 512, 0, 512);
     GUI_DEL_OBJ(g_shareBackupTile.nextCont)
     GUI_DEL_OBJ(g_selectSliceTile.stepCont)

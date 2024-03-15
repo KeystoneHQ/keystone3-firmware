@@ -58,6 +58,7 @@
     /* Application specific configuration options. */
 #include "FreeRTOSConfig.h"
 #include "rtos_expand.h"
+#include "user_memory.h"
 
     /* Basic FreeRTOS definitions. */
 #include "projdefs.h"

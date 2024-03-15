@@ -24,7 +24,7 @@ void UsbInit(void)
 
         SYSCTRL->USBPHY_CR1 = usbphy_cr1.d32;
 
-        memset(&g_usbDev, 0x00, sizeof(g_usbDev));
+        memset_s(&g_usbDev, sizeof(g_usbDev), 0x00, sizeof(g_usbDev));
 
         USBD_Init(&g_usbDev, USB_OTG_FS_CORE_ID, &USR_desc, DeviceCallback, &USRD_cb);
         g_usbInit = true;
@@ -47,7 +47,6 @@ void UsbDeInit(void)
     if (g_usbInit == true) {
         USBD_DeInit(&g_usbDev);
         g_usbInit = false;
-        ConnectUsbMutexRestrict();
     }
 }
 

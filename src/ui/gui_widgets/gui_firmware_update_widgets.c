@@ -607,22 +607,21 @@ static void GuiCreateMultiToBtcWarningTile(lv_obj_t *parent)
     lv_obj_t *label, *img, *btn;
 
     img = GuiCreateImg(parent, &imgMultiCoin);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 134, 132 - GUI_NAV_BAR_HEIGHT);
+    lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 134, -548);
     img = GuiCreateImg(parent, &imgArrowNextRed);
-    lv_obj_set_style_img_recolor(img, lv_color_hex(0xFF4B1F), LV_PART_MAIN);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 222, 150 - GUI_NAV_BAR_HEIGHT);
-
+    lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 222, -566);
     img = GuiCreateImg(parent, &imgBtcOnly);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 274, 132 - GUI_NAV_BAR_HEIGHT);
+    lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 274, -548);
 
     label = GuiCreateLittleTitleLabel(parent, _("firmware_update_btc_only_warning_title"));
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 236 - GUI_NAV_BAR_HEIGHT);
+    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -476);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_btc_only_warning_desc"));
+    lv_obj_set_style_text_color(label, WHITE_COLOR_OPA64, LV_PART_MAIN);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(label, 408);
     lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 288 - GUI_NAV_BAR_HEIGHT);
+    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -224);
 
     btn = GuiCreateBtn(parent, _("firmware_update_btc_only_button_cancel"));
     lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
@@ -656,6 +655,12 @@ static void KnownWarningCountDownTimerHandler(lv_timer_t *timer)
     lv_obj_t *btn = g_knownWarningBtn;
     char text[32];
     const char *preText = _("firmware_update_btc_only_button_i_know");
+    if (btn == NULL) {
+        g_knownWarningCountDown = 0;
+        lv_timer_del(timer);
+        g_knownWarningCountDownTimer = NULL;
+        return;
+    }
     g_knownWarningCountDown--;
     if (g_knownWarningCountDown > 0) {
         snprintf_s(text, sizeof(text), "%s(%d)", preText, g_knownWarningCountDown);
@@ -676,7 +681,10 @@ static void KnownWarningHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeHintBox);
+        if (g_noticeHintBox != NULL) {
+            GUI_DEL_OBJ(g_noticeHintBox);
+            g_knownWarningBtn = NULL;
+        }
         ConfirmSdCardUpdate();
     }
 }
@@ -690,6 +698,7 @@ static void KnownWarningCancelHandler(lv_event_t *e)
             ReturnHandler(e);
         } else {
             GUI_DEL_OBJ(g_noticeHintBox);
+            g_knownWarningBtn = NULL;
         }
     }
 }

@@ -140,8 +140,8 @@ static UtxoReceiveTile g_utxoReceiveTileNow;
 static bool g_gotoAddressValid = false;
 #ifndef BTC_ONLY
 static const AddressSettingsItem_t g_addressSettings[] = {
-    {"Taproot",         "P2TR",             "m/86'/0'/0'"},
     {"Native SegWit",   "P2WPKH",           "m/84'/0'/0'"},
+    {"Taproot",         "P2TR",             "m/86'/0'/0'"},
     {"Nested SegWit",   "P2SH-P2WPKH",      "m/49'/0'/0'"},
     {"Legacy",          "P2PKH",            "m/44'/0'/0'"},
 };
@@ -1387,9 +1387,9 @@ static ChainType GetChainTypeByIndex(uint32_t index)
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC: {
         if (index == 0) {
-            return XPUB_TYPE_BTC_TAPROOT;
-        } else if (index == 1) {
             return XPUB_TYPE_BTC_NATIVE_SEGWIT;
+        } else if (index == 1) {
+            return XPUB_TYPE_BTC_TAPROOT;
         } else if (index == 2) {
             return XPUB_TYPE_BTC;
         } else {

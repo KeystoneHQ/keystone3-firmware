@@ -251,6 +251,7 @@ void GuiReceiveDeInit(void)
         g_utxoReceiveWidgets.inputAddressCont = NULL;
     }
 
+    g_derivationPathDescs = NULL;
     lv_obj_del(g_utxoReceiveWidgets.cont);
     CLEAR_OBJECT(g_utxoReceiveWidgets);
     g_utxoReceiveTileNow = 0;
@@ -833,6 +834,9 @@ static void GetChangePathLabelHint(char* hint, uint32_t maxLen)
 
 static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
 {
+    if (g_derivationPathDescs == NULL) {
+        return;
+    }
     lv_obj_t *cont, *line, *label;
     static lv_point_t points[2] = {{0, 0}, {360, 0}};
     char string[BUFFER_SIZE_64];
@@ -857,7 +861,7 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
     g_addressSettings = GetIsTestNet() ? g_testNetAddressSettings : g_mainNetAddressSettings;
 #endif
     for (uint32_t i = 0; i < g_addressSettingsNum; i++) {
-        label = GuiCreateLabelWithFont(cont, g_addressSettings[i].title, &openSans_24);
+        label = GuiCreateTextLabel(cont, g_addressSettings[i].title);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         snprintf_s(string, BUFFER_SIZE_64, "%s (%s)", g_addressSettings[i].subTitle, g_addressSettings[i].path);
         label = GuiCreateNoticeLabel(cont, string);

@@ -61,8 +61,8 @@ static void SetCheckboxState(uint8_t i, bool isChecked);
 void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 
 static const PathTypeItem_t g_btcPathTypeList[] = {
-    {"Taproot",       "P2TR",        "m/86'/0'/0'", XPUB_TYPE_BTC_TAPROOT      },
     {"Native SegWit", "P2WPKH",      "m/84'/0'/0'", XPUB_TYPE_BTC_NATIVE_SEGWIT},
+    {"Taproot",       "P2TR",        "m/86'/0'/0'", XPUB_TYPE_BTC_TAPROOT      },
     {"Nested SegWit", "P2SH-P2WPKH", "m/49'/0'/0'", XPUB_TYPE_BTC              },
     {"Legacy",        "P2PKH",       "m/44'/0'/0'", XPUB_TYPE_BTC_LEGACY       },
 };

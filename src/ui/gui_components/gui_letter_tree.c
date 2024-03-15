@@ -97,6 +97,9 @@ int searchTrie(TrieSTPtr root, const char *str)
                 wordsTraversal(tmp, num, strlen(g_wordBuf[num]));
             }
             ++num;
+            if (num >= GUI_KEYBOARD_CANDIDATE_WORDS_CNT) {
+                return num;
+            }
             tmp = record;
         } else {
             //printf("%c need disable\n", j);

@@ -655,6 +655,12 @@ static void KnownWarningCountDownTimerHandler(lv_timer_t *timer)
     lv_obj_t *btn = g_knownWarningBtn;
     char text[32];
     const char *preText = _("firmware_update_btc_only_button_i_know");
+    if (btn == NULL) {
+        g_knownWarningCountDown = 0;
+        lv_timer_del(timer);
+        g_knownWarningCountDownTimer = NULL;
+        return;
+    }
     g_knownWarningCountDown--;
     if (g_knownWarningCountDown > 0) {
         snprintf_s(text, sizeof(text), "%s(%d)", preText, g_knownWarningCountDown);
@@ -676,6 +682,7 @@ static void KnownWarningHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeHintBox);
+        g_knownWarningBtn = NULL;
         ConfirmSdCardUpdate();
     }
 }
@@ -689,6 +696,7 @@ static void KnownWarningCancelHandler(lv_event_t *e)
             ReturnHandler(e);
         } else {
             GUI_DEL_OBJ(g_noticeHintBox);
+            g_knownWarningBtn = NULL;
         }
     }
 }

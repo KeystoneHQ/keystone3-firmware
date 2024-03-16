@@ -294,6 +294,8 @@ void *GuiCreateErrorCodeHintbox(int32_t errCode, lv_obj_t **param)
         break;
     }
 
-    return GuiCreateConfirmHintBox(lv_scr_act(), 
+    lv_obj_t *cont = GuiCreateConfirmHintBox(lv_scr_act(), 
         &imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
+    lv_obj_add_event_cb(GuiGetHintBoxRightBtn(cont), CloseWaringPageHandler, LV_EVENT_CLICKED, cont);
+    return cont;
 }

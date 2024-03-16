@@ -230,6 +230,7 @@ void GuiMultiPathCoinReceiveDeInit(void)
 
 void GuiMultiPathCoinReceiveRefresh(void)
 {
+    char walletTitle[BUFFER_SIZE_32];
     switch (g_multiPathCoinReceiveTileNow) {
     case RECEIVE_TILE_QRCODE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
@@ -238,7 +239,8 @@ void GuiMultiPathCoinReceiveRefresh(void)
             SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_ETH, _("receive_eth_receive_main_title"));
             break;
         case HOME_WALLET_CARD_SOL:
-            SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_SOL, "Receive SOL");
+            snprintf_s(walletTitle, BUFFER_SIZE_32, _("receive_coin_fmt"), "SOL");
+            SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_SOL, walletTitle);
             break;
         default:
             break;

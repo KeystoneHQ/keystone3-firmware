@@ -1015,7 +1015,7 @@ static void GuiCreateSwitchAccountWidget()
     index = 0;
     for (uint32_t i = 0; i < ACCOUNT_INDEX_MAX; i++) {
         char temp[BUFFER_SIZE_64];
-        snprintf_s(temp, "%s-%u", _("account_head"), i);
+        snprintf_s(temp, sizeof(temp), "%s-%u", _("account_head"), i);
         label = GuiCreateLabelWithFont(cont, temp, &buttonFont);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         g_multiAccountsReceiveWidgets.switchAccountWidgets[index].addressCountLabel = label;

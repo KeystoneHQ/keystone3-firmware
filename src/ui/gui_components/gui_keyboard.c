@@ -2,13 +2,14 @@
 #include "motor_manager.h"
 #include "gui.h"
 #include "gui_obj.h"
+#include "gui_views.h"
 #include "gui_create_wallet_widgets.h"
 #include "gui_keyboard.h"
-#include "gui_hintbox.h"
-#include "gui_views.h"
 #include "gui_lock_widgets.h"
 #include "gui_letter_tree.h"
 #include "user_memory.h"
+#include "gui_hintbox.h"
+#include "gui_button.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"

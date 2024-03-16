@@ -603,20 +603,6 @@ static void OpenSwitchAddressHandler(lv_event_t *e)
     }
 }
 
-static void AddressLongModeCut(char *out, const char *address)
-{
-    uint32_t len;
-
-    len = strlen(address);
-    if (len <= 24) {
-        strcpy(out, address);
-        return;
-    }
-    strncpy(out, address, 12);
-    out[12] = 0;
-    strcat(out, "...");
-    strcat(out, address + len - 12);
-}
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {
     char *xPub, hdPath[BUFFER_SIZE_128];

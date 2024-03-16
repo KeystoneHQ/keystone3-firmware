@@ -107,25 +107,25 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
 
 const static CoinWalletInfo_t g_walletBtn[] = {
 #ifndef BTC_ONLY
-    {WALLET_LIST_KEYSTONE, "Connect Keystone Wallet", &walletKeystone},
-    {WALLET_LIST_METAMASK, "Connect MetaMask", &walletMetamask},
-    {WALLET_LIST_OKX, "Connect OKX Wallet", &walletOkx},
-    {WALLET_LIST_ETERNL, "Connect Eternl Wallet", &walletEternl},
-    {WALLET_LIST_BLUE, "Connect BlueWallet", &walletBluewallet},
-    {WALLET_LIST_SUB, "Connect SubWallet", &walletSubwallet},
-    {WALLET_LIST_SOLFARE, "Connect Solflare", &walletSolflare},
-    {WALLET_LIST_RABBY, "Connect Rabby", &walletRabby},
-    {WALLET_LIST_SAFE, "Connect Safe", &walletSafe},
-    {WALLET_LIST_SPARROW, "Connect Sparrow", &walletSparrow},
-    {WALLET_LIST_IMTOKEN, "Connect imToken", &walletImToken},
-    {WALLET_LIST_BLOCK_WALLET, "Connect Block Wallet", &walletBlockWallet},
-    {WALLET_LIST_ZAPPER, "Connect Zapper", &walletZapper},
-    {WALLET_LIST_YEARN_FINANCE, "Connect Yearn Finance", &walletYearn},
-    {WALLET_LIST_SUSHISWAP, "Connect SushiSwap", &walletSushi},
-    {WALLET_LIST_KEPLR, "Connect Keplr", &walletKeplr},
-    {WALLET_LIST_FEWCHA, "Connect Fewcha", &walletFewcha},
-    {WALLET_LIST_PETRA, "Connect Petra", &walletPetra},
-    {WALLET_LIST_XRP_TOOLKIT, "Connect XRP Toolkit", &walletXRPToolkit},
+    {WALLET_LIST_KEYSTONE, "Keystone Wallet", &walletKeystone},
+    {WALLET_LIST_METAMASK, "MetaMask", &walletMetamask},
+    {WALLET_LIST_OKX, "OKX Wallet", &walletOkx},
+    {WALLET_LIST_ETERNL, "Eternl Wallet", &walletEternl},
+    {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
+    {WALLET_LIST_SUB, "SubWallet", &walletSubwallet},
+    {WALLET_LIST_SOLFARE, "Solflare", &walletSolflare},
+    {WALLET_LIST_RABBY, "Rabby", &walletRabby},
+    {WALLET_LIST_SAFE, "Safe", &walletSafe},
+    {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
+    {WALLET_LIST_IMTOKEN, "imToken", &walletImToken},
+    {WALLET_LIST_BLOCK_WALLET, "Block Wallet", &walletBlockWallet},
+    {WALLET_LIST_ZAPPER, "Zapper", &walletZapper},
+    {WALLET_LIST_YEARN_FINANCE, "Yearn Finance", &walletYearn},
+    {WALLET_LIST_SUSHISWAP, "SushiSwap", &walletSushi},
+    {WALLET_LIST_KEPLR, "Keplr", &walletKeplr},
+    {WALLET_LIST_FEWCHA, "Fewcha", &walletFewcha},
+    {WALLET_LIST_PETRA, "Petra", &walletPetra},
+    {WALLET_LIST_XRP_TOOLKIT, "XRP Toolkit", &walletXRPToolkit},
 #else
     {WALLET_LIST_BLUE, "Connect BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPECTER, "Connect Specter", &walletSpecter},
@@ -667,7 +667,9 @@ void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const
 {
     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
     if (name == NULL) {
-        navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, g_walletBtn[index].name,
+        char name[BUFFER_SIZE_64] = {0};
+        snprintf_s(name, BUFFER_SIZE_64, "%s %s", _("connect_head"), g_walletBtn[index].name);
+        navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, name,
                                g_walletBtn[index].icon);
     } else {
         navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, name,

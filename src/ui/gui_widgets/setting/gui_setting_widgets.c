@@ -19,6 +19,7 @@
 #include "gui_page.h"
 #include "fingerprint_process.h"
 #include "screen_manager.h"
+#include <stdlib.h>
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "keystore.h"
@@ -58,6 +59,8 @@ static lv_obj_t *g_passphraseLearnMoreCont = NULL;
 static PageWidget_t *g_pageWidget;
 
 static void OpenPassphraseLearnMoreHandler(lv_event_t *e);
+static void *CreateSettingWidgetsButton(lv_obj_t *parent, const char *title, const char *desc, 
+                                        const void *src, lv_event_cb_t buttonCb, void *param);
 void GuiShowKeyboardHandler(lv_event_t *e);
 
 void GuiSettingCloseToTargetTileView(uint8_t targetIndex)
@@ -276,6 +279,7 @@ static void AboutHandler(lv_event_t *e)
 
 static void GuiSettingEntranceWidget(lv_obj_t *parent)
 {
+    #define DEFAULT_ENGLISH_SETTING_DESC_LEN 31
     static uint32_t walletSetting[4] = {
         DEVICE_SETTING_WALLET_SETTING,
         DEVICE_SETTING_SYSTEM_SETTING,
@@ -283,63 +287,35 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
         DEVICE_SETTING_ABOUT
     };
 
-    lv_obj_t *label = GuiCreateTextLabel(parent, _("device_setting_wallet_setting_title"));
-    lv_obj_t *labelDesc = GuiCreateNoticeLabel(parent, _("device_setting_wallet_setting_desc"));
-    lv_obj_t *img = GuiCreateImg(parent, &imgWalletSetting);
-    lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRight);
+    char descBuff[BUFFER_SIZE_128] = {0};
+    const char *desc = _("device_setting_wallet_setting_desc");
+    printf("desc = %s\n", desc);
+    printf("strlen = %d\n", strlen(desc));
+    int descLen = strnlen_s(desc, sizeof(descBuff));
+    printf("desclen = %d\n", descLen);
+    if (descLen > DEFAULT_ENGLISH_SETTING_DESC_LEN) {
+        int len = FindStringCharPosition(desc, '/', 2);
+        printf("len = %d\n", len);
+        strncpy_s(descBuff, sizeof(descBuff) - 3, desc, FindStringCharPosition(desc, '/', 2) - 1);
+        strcat_s(descBuff, sizeof(descBuff), "...");
+    } else {
+        strcpy_s(descBuff, sizeof(descBuff), desc);
+    }
 
-    GuiButton_t table[4] = {
-        {
-            .obj = img,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {24, 24},
-        },
-        {
-            .obj = label,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {76, 24},
-        },
-        {
-            .obj = labelDesc,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {76, 64},
-        },
-        {
-            .obj = imgArrow,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {396, 24},
-        },
-    };
-    lv_obj_t *button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table),
-                                       WalletSettingHandler, &walletSetting[0]);
+    lv_obj_t *button = CreateSettingWidgetsButton(parent, _("device_setting_wallet_setting_title"), 
+                                                  descBuff, &imgWalletSetting, WalletSettingHandler, &walletSetting[0]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 144 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 274 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateTextLabel(parent, _("device_setting_system_setting_title"));
-    labelDesc = GuiCreateNoticeLabel(parent, _("device_setting_system_setting_desc"));
-    img = GuiCreateImg(parent, &imgSystemSetting);
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    table[0].obj = img;
-    table[1].obj = label;
-    table[2].obj = labelDesc;
-    table[3].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table), UnHandler, NULL);
+    button = CreateSettingWidgetsButton(parent, _("device_setting_system_setting_title"), 
+                                        _("device_setting_system_setting_desc"), &imgSystemSetting, OpenViewHandler, &g_systemSettingView);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 287 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_event_cb(button, OpenViewHandler, LV_EVENT_CLICKED, &g_systemSettingView);
 
-    label = GuiCreateTextLabel(parent, _("device_setting_connection_title"));
-    labelDesc = GuiCreateNoticeLabel(parent, _("device_setting_connection_desc"));
-    img = GuiCreateImg(parent, &imgConnection);
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    table[0].obj = img;
-    table[1].obj = label;
-    table[2].obj = labelDesc;
-    table[3].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table), UnHandler, NULL);
+    button = CreateSettingWidgetsButton(parent, _("device_setting_connection_title"), 
+                                        _("device_setting_connection_desc"), &imgConnection, OpenViewHandler, &g_connectionView);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 413 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_event_cb(button, OpenViewHandler, LV_EVENT_CLICKED, &g_connectionView);
 
     line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 543 - GUI_MAIN_AREA_OFFSET);
@@ -354,16 +330,8 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
         snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E %s#", version);
     }
 
-    label = GuiCreateTextLabel(parent, _("device_setting_about_title"));
-    labelDesc = GuiCreateIllustrateLabel(parent, showString);
-    lv_label_set_recolor(labelDesc, true);
-    img = GuiCreateImg(parent, &imgAbout);
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    table[0].obj = img;
-    table[1].obj = label;
-    table[2].obj = labelDesc;
-    table[3].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table), AboutHandler, NULL);
+    button = CreateSettingWidgetsButton(parent, _("device_setting_about_title"), 
+                                        showString, &imgAbout, AboutHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 556 - GUI_MAIN_AREA_OFFSET);
 }
 
@@ -958,4 +926,35 @@ int GuiSettingGetCurrentTileIndex(void)
 lv_obj_t *GuiSettingGetCurrentCont(void)
 {
     return lv_obj_get_parent(g_deviceSetTileView.cont);
+}
+
+static void *CreateSettingWidgetsButton(lv_obj_t *parent, const char *title, const char *desc, 
+                                        const void *src, lv_event_cb_t buttonCb, void *param)
+{
+    lv_obj_t *label = GuiCreateTextLabel(parent, title);
+    lv_obj_t *labelDesc = GuiCreateNoticeLabel(parent, desc);
+    lv_label_set_recolor(labelDesc, true);
+    lv_obj_t *img = GuiCreateImg(parent, src);
+    lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRight);
+
+    GuiButton_t table[4] = {
+        {
+            .obj = img,
+            .align = LV_ALIGN_DEFAULT,
+            .position = {24, 24},
+        }, {
+            .obj = label,
+            .align = LV_ALIGN_DEFAULT,
+            .position = {76, 24},
+        }, {
+            .obj = labelDesc,
+            .align = LV_ALIGN_DEFAULT,
+            .position = {76, 64},
+        }, {
+            .obj = imgArrow,
+            .align = LV_ALIGN_DEFAULT,
+            .position = {396, 24},
+        }
+    };
+    return GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table), buttonCb, param);
 }

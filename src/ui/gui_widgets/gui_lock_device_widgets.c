@@ -173,12 +173,12 @@ static void GuiLockedDeviceCountDownDestruct(void *obj, void* param)
 static void CountDownTimerWipeDeviceHandler(lv_timer_t *timer)
 {
     lv_obj_t *obj = (lv_obj_t *)timer->user_data;
-    char buf[BUFFER_SIZE_32] = {0};
+    char buf[BUFFER_SIZE_64] = {0};
     --countDown;
     if (countDown > 0) {
-        snprintf_s(buf, BUFFER_SIZE_32, _("unlock_device_fingerprint_pin_device_locked_btn_fmt"), countDown);
+        snprintf_s(buf, BUFFER_SIZE_64, _("unlock_device_fingerprint_pin_device_locked_btn_fmt"), countDown);
     } else {
-        strcpy_s(buf, BUFFER_SIZE_32, ("unlock_device_fingerprint_pin_device_locked_btn"));
+        strcpy_s(buf, BUFFER_SIZE_64, ("unlock_device_fingerprint_pin_device_locked_btn"));
     }
     lv_label_set_text(lv_obj_get_child(obj, 0), buf);
     if (countDown <= 0) {

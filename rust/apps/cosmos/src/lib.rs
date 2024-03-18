@@ -174,9 +174,9 @@ mod tests {
         }
         {
             //general address BLD-0
-            let root_path = "44'/564'/0'";
+            let root_path = "44'/118'/0'";
             let root_xpub = "xpub6Cy2KXVssRUr6QK68mXztCSpmxK7yd68tCLHniaMVnRBxU8XYoFBSjeZ8hfg3VJDPAh3i8z1uhfpxPMy7Ub3FxyKzWu9RJdcmEkz6PL2cLu";
-            let hd_path = "44'/564'/0'/0/0";
+            let hd_path = "44'/118'/0'/0/0";
             let address = derive_address(hd_path, root_xpub, root_path, "agoric").unwrap();
             assert_eq!("agoric1r0q3ltgz67ldu86l9c6hvmwq5qke3af5h489vm", address);
         }

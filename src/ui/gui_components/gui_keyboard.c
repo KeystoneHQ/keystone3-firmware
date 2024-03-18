@@ -1041,6 +1041,10 @@ void UpdateKeyBoard(TrieSTPtr root, const char *str, KeyBoard_t *keyBoard)
     bool allDisabled = true;
     uint8_t enable[CHAR_LENGTH + 2] = {0};
     while (str[i] != '\0') {
+        if (str[i] < 'a' || str[i] > 'z') {
+            printf("%s. Invalid input\n", str);
+            return;
+        }
         if (tmp->next[str[i] - 'a'] != NULL) {
             tmp = tmp->next[str[i] - 'a'];
         }

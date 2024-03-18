@@ -78,6 +78,10 @@ int searchTrie(TrieSTPtr root, const char *str)
     TrieSTPtr tmp = root;
     int i = 0;
     while (str[i] != '\0') {
+        if (str[i] < 'a' || str[i] > 'z') {
+            printf("%s. Invalid input\n", str);
+            return false;
+        }
         if (tmp->next[str[i] - 'a'] != NULL) {
             tmp = tmp->next[str[i] - 'a'];
         } else

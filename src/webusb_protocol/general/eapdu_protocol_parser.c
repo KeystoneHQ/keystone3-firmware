@@ -156,8 +156,8 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
     }
 
     EAPDUFrame_t *eapduFrame = FrameParser(frame, len);
-
     if (CheckFrameValidity(eapduFrame) != FRAME_CHECKSUM_OK) {
+        SRAM_FREE(eapduFrame);
         return;
     }
 
@@ -179,6 +179,7 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
     for (uint8_t i = 0; i < g_totalPackets; i++) {
         if (!g_receivedPackets[i]) {
             printf("Waiting for packet %d\n", i);
+            SRAM_FREE(eapduFrame);
             return; // not all packets have arrived yet
         }
     }

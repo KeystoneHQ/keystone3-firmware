@@ -317,9 +317,14 @@ impl WrappedPsbt {
         tx_out: &TxOut,
         network: &network::Network,
     ) -> Result<String> {
-        let address = Address::from_script(&tx_out.script_pubkey, network.clone())
-            .map_err(|_v| BitcoinError::InvalidOutput)?;
-        Ok(address.to_string())
+        match Address::from_script(&tx_out.script_pubkey, network.clone()) {
+            Ok(address) => {
+                Ok(address.to_string())
+            }
+            Err(_) => {
+                Ok(tx_out.script_pubkey.to_string())
+            }
+        }
     }
 
     pub fn get_my_input_path(

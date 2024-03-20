@@ -318,12 +318,8 @@ impl WrappedPsbt {
         network: &network::Network,
     ) -> Result<String> {
         match Address::from_script(&tx_out.script_pubkey, network.clone()) {
-            Ok(address) => {
-                Ok(address.to_string())
-            }
-            Err(_) => {
-                Ok(tx_out.script_pubkey.to_string())
-            }
+            Ok(address) => Ok(address.to_string()),
+            Err(_) => Ok(tx_out.script_pubkey.to_string()),
         }
     }
 

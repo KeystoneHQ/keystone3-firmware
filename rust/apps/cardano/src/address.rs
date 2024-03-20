@@ -82,10 +82,23 @@ pub fn derive_address(
     }
 }
 
+pub fn derive_pubkey_hash(xpub: String, change: u32, index: u32) -> R<[u8; 28]> {
+    let xpub_bytes = hex::decode(xpub).map_err(|e| CardanoError::DerivationError(e.to_string()))?;
+    let xpub =
+        XPub::from_slice(&xpub_bytes).map_err(|e| CardanoError::DerivationError(e.to_string()))?;
+
+    let payment_key = xpub
+        .derive(DerivationScheme::V2, change)?
+        .derive(DerivationScheme::V2, index.clone())?
+        .public_key();
+    Ok(blake2b_224(&payment_key))
+}
+
 #[cfg(test)]
 mod tests {
     use alloc::string::ToString;
     use alloc::vec;
+    use cardano_serialization_lib::address::{Address, BaseAddress};
     use keystore;
     use third_party::bech32;
     use third_party::cryptoxide::hashing::blake2b_224;

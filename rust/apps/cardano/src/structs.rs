@@ -1,11 +1,13 @@
-use crate::address::{derive_address, AddressType};
+use crate::address::{derive_address, derive_pubkey_hash, AddressType};
 use crate::errors::{CardanoError, R};
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
 use app_utils::{impl_internal_struct, impl_public_struct};
-use cardano_serialization_lib::address::RewardAddress;
+use cardano_serialization_lib::address::{
+    self, Address, BaseAddress, EnterpriseAddress, RewardAddress,
+};
 
 use cardano_serialization_lib::utils::from_bignum;
 use cardano_serialization_lib::{
@@ -460,37 +462,47 @@ impl ParsedCardanoTx {
                             "invalid derivation path".to_string(),
                         )),
                     }?;
-
-                    let mut address = derive_address(
+                    //check utxo address with payment keyhash;
+                    let my_pubkey_hash = hex::encode(derive_pubkey_hash(
                         context.get_cardano_xpub(),
                         change.clone(),
                         index.clone(),
-                        // TODO: get stake_key_index from storage if we integration with Cardano wallet which support multi-delegation
-                        // stakeKey is m/1852'/1815'/X'/2/0 in most cases. except LACE wallet.
-                        0,
-                        AddressType::Base,
-                        network_id,
-                    )?;
+                    )?);
 
-                    // maybe Enterprise address
-                    if !address.eq(&utxo.address) {
-                        address = derive_address(
-                            context.get_cardano_xpub(),
-                            change.clone(),
-                            index.clone(),
-                            // TODO: get stake_key_index from storage if we integration with Cardano wallet which support multi-delegation
-                            // stakeKey is m/1852'/1815'/X'/2/0 in most cases. except LACE wallet.
-                            0,
-                            AddressType::Enterprise,
-                            network_id,
-                        )?;
-                        if !address.eq(&utxo.address) {
-                            return Err(CardanoError::InvalidTransaction(
-                                "invalid address".to_string(),
-                            ));
+                    let mut address = utxo.address.clone();
+
+                    let addr_in_utxo = Address::from_bech32(&utxo.address)
+                        .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?;
+
+                    let mut pubkey_hash_paired = false;
+
+                    if let Some(addr) = BaseAddress::from_address(&addr_in_utxo) {
+                        match addr.payment_cred().to_keyhash() {
+                            Some(keyhash) => {
+                                if my_pubkey_hash.eq(&keyhash.to_hex()) {
+                                    pubkey_hash_paired = true;
+                                }
+                            }
+                            None => {}
                         }
                     }
 
+                    if let Some(addr) = EnterpriseAddress::from_address(&addr_in_utxo) {
+                        match addr.payment_cred().to_keyhash() {
+                            Some(keyhash) => {
+                                if my_pubkey_hash.eq(&keyhash.to_hex()) {
+                                    pubkey_hash_paired = true;
+                                }
+                            }
+                            None => {}
+                        }
+                    }
+
+                    if !pubkey_hash_paired {
+                        return Err(CardanoError::InvalidTransaction(
+                            "invalid address".to_string(),
+                        ));
+                    }
                     parsed_inputs.push(ParsedCardanoInput {
                         transaction_hash: utxo.transaction_hash.clone(),
                         index: utxo.index,

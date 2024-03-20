@@ -19,8 +19,8 @@ use third_party::ur_parse_lib::keystone_ur_decoder::{
     URParseResult as InnerParseResult,
 };
 use third_party::ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
-use third_party::ur_registry::bytes::Bytes;
 use third_party::ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
+use third_party::ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 #[cfg(feature = "multi-coins")]

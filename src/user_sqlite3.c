@@ -548,9 +548,9 @@ static int callback(void *output, int nCol, char **argv, char **azColName)
     int i;
     int maxLen = 0;
     if (nCol == 1) {
-        maxLen = SQL_BUFF_MAX_SIZE;
+        maxLen = SQL_ENS_NAME_MAX_LEN - 1;
     } else if (nCol == 2) {
-        maxLen = SQL_ABI_BUFF_MAX_SIZE;
+        maxLen = SQL_ABI_BUFF_MAX_SIZE - 1;
     } else {
         USER_DEBUG("callback nCol error\n");
         return 0;
@@ -558,7 +558,7 @@ static int callback(void *output, int nCol, char **argv, char **azColName)
     char **data = (char**)output;
     for (i = 0; i < nCol; i++) {
         USER_DEBUG("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-        snprintf(data[i], maxLen, "%s", argv[i] ? argv[i] : "NULL");
+        snprintf_s(data[i], maxLen, "%s", argv[i] ? argv[i] : "NULL");
     }
 
     USER_DEBUG("\n");

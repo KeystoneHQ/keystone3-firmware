@@ -176,12 +176,21 @@ typedef struct {
     uint16_t size;
 } BtnMatrixCtl_t;
 
+#ifndef BTC_ONLY
 static const lv_img_dsc_t *g_emojiMatrix[16] = {
     &emojiBitcoin, &emojiEth,       &emojiLogo,     &emojiAt,
     &emojiSafe,    &emojiFlash,     &emojiAlien,    &emojiHappy,
     &emojiRocket,  &emojiCrown,     &emojiCopper,   &emojiStar,
     &emojiMusic,   &emojiHeart,     &emojiCompass,  &emojiGame,
 };
+#else
+static const lv_img_dsc_t *g_emojiMatrix[16] = {
+    &emojiBitcoin, &emojiCam,       &emojiLogo,     &emojiAt,
+    &emojiSafe,    &emojiFlash,     &emojiAlien,    &emojiHappy,
+    &emojiRocket,  &emojiCrown,     &emojiCopper,   &emojiStar,
+    &emojiMusic,   &emojiHeart,     &emojiCompass,  &emojiGame,
+};
+#endif
 
 static MnemonicKeyBoard_t *g_importPhraseKb = NULL;
 static lv_obj_t *g_walletIcon = NULL;

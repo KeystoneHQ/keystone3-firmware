@@ -1,4 +1,5 @@
 use super::human_readable::lexer::HumanReadableParser;
+use super::serde_helpers::deserialize_salt_opt;
 use super::serde_helpers::deserialize_stringified_array_opt;
 use super::serde_helpers::deserialize_stringified_numeric_opt;
 use super::serde_helpers::StringifiedNumeric;
@@ -73,8 +74,8 @@ pub trait Eip712 {
     type Error: core::error::Error + Send + Sync + alloc::fmt::Debug;
 
     /// Default implementation of the domain separator;
-    fn domain_separator(&self) -> Result<[u8; 32], Self::Error> {
-        Ok(self.domain()?.separator())
+    fn domain_separator(&self, types: Option<&Types>) -> Result<[u8; 32], Self::Error> {
+        Ok(self.domain()?.separator(types))
     }
 
     /// Returns the current domain. The domain depends on the contract and unique domain
@@ -99,7 +100,7 @@ pub trait Eip712 {
         // encode the digest to be compatible with solidity abi.encodePacked()
         // See: https://github.com/gakonst/ethers-rs/blob/master/examples/permit_hash.rs#L72
 
-        let domain_separator = self.domain_separator()?;
+        let domain_separator = self.domain_separator(None)?;
         let struct_hash = self.struct_hash()?;
 
         let digest_input = [&[0x19, 0x01], &domain_separator[..], &struct_hash[..]].concat();
@@ -143,7 +144,7 @@ pub struct EIP712Domain {
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
-        deserialize_with = "deserialize_stringified_array_opt"
+        deserialize_with = "deserialize_salt_opt"
     )]
     pub salt: Option<[u8; 32]>,
 }
@@ -151,15 +152,28 @@ pub struct EIP712Domain {
 impl EIP712Domain {
     // Compute the domain separator;
     // See: https://github.com/gakonst/ethers-rs/blob/master/examples/permit_hash.rs#L41
-    pub fn separator(&self) -> [u8; 32] {
+    pub fn separator(&self, types: Option<&Types>) -> [u8; 32] {
         // full name is `EIP712Domain(string name,string version,uint256 chainId,address
         // verifyingContract,bytes32 salt)`
         let mut ty = "EIP712Domain(".to_string();
 
+        let mut type_map = BTreeMap::new();
+        if let Some(types) = types {
+            if let Some(fields) = types.get("EIP712Domain") {
+                for field in fields {
+                    type_map.insert(field.r#name.clone(), field.r#type.clone());
+                }
+            }
+        }
+
         let mut tokens = Vec::new();
         let mut needs_comma = false;
         if let Some(ref name) = self.name {
-            ty += "string name";
+            ty += format!(
+                "{} name",
+                type_map.get("name").unwrap_or(&"string".to_string())
+            )
+            .as_str();
             tokens.push(Token::Uint(U256::from(keccak256(name.as_ref()))));
             needs_comma = true;
         }
@@ -168,7 +182,11 @@ impl EIP712Domain {
             if needs_comma {
                 ty.push(',');
             }
-            ty += "string version";
+            ty += format!(
+                "{} version",
+                type_map.get("version").unwrap_or(&"string".to_string())
+            )
+            .as_str();
             tokens.push(Token::Uint(U256::from(keccak256(version.as_ref()))));
             needs_comma = true;
         }
@@ -177,7 +195,11 @@ impl EIP712Domain {
             if needs_comma {
                 ty.push(',');
             }
-            ty += "uint256 chainId";
+            ty += format!(
+                "{} chainId",
+                type_map.get("chainId").unwrap_or(&"uint256".to_string())
+            )
+            .as_str();
             tokens.push(Token::Uint(chain_id));
             needs_comma = true;
         }
@@ -186,17 +208,17 @@ impl EIP712Domain {
             if needs_comma {
                 ty.push(',');
             }
-            match Address::from_str(verifying_contract.as_str()) {
-                Ok(address) => {
-                    ty += "address verifyingContract";
-                    tokens.push(Token::Address(address));
-                }
-                _ => {
-                    ty += "string verifyingContract";
-                    tokens.push(Token::Uint(U256::from(keccak256(
-                        verifying_contract.as_ref(),
-                    ))));
-                }
+            let addr_str = "address".to_string();
+            let t = type_map.get("verifyingContract").unwrap_or(&addr_str);
+            ty += format!("{} verifyingContract", t).as_str();
+            if (t == "address") {
+                tokens.push(Token::Address(
+                    Address::from_str(verifying_contract.as_str()).unwrap_or_default(),
+                ));
+            } else {
+                tokens.push(Token::Uint(U256::from(keccak256(
+                    verifying_contract.as_ref(),
+                ))));
             }
             needs_comma = true;
         }
@@ -205,13 +227,12 @@ impl EIP712Domain {
             if needs_comma {
                 ty.push(',');
             }
-            if salt.iter().all(|&x| x == 0) {
-                ty += "string salt";
-                tokens.push(Token::Uint(U256::from(keccak256("0".as_ref()))));
-            } else {
-                ty += "bytes32 salt";
-                tokens.push(Token::Uint(U256::from(salt)));
-            }
+            ty += format!(
+                "{} salt",
+                type_map.get("salt").unwrap_or(&"string".to_string())
+            )
+            .as_str();
+            tokens.push(Token::Uint(U256::from(salt)));
         }
 
         ty.push(')');
@@ -437,7 +458,7 @@ impl Eip712 for TypedData {
     /// prefix, which is "1901", followed by the hash of the domain separator, then the data (if
     /// any). The result is hashed again and returned.
     fn encode_eip712(&self) -> Result<[u8; 32], Self::Error> {
-        let domain_separator = self.domain.separator();
+        let domain_separator = self.domain.separator(Some(&self.types));
         let mut digest_input = [&[0x19, 0x01], &domain_separator[..]].concat().to_vec();
 
         if self.primary_type != "EIP712Domain" {

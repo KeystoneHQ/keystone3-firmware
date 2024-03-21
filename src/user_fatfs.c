@@ -694,6 +694,22 @@ void CopyToFlash(void)
 }
 
 
+int FormatSdFatfs(void)
+{
+    FRESULT res;
+    FatfsMountParam_t *fs = &g_fsMountParamArray[DEV_MMC];
+    BYTE work[FF_MAX_SS];
+
+    res = f_mkfs(fs->volume, 0, work, sizeof(work));
+    FatfsError(res);
+    f_mount(NULL, fs->volume, fs->opt);
+    res = f_mount(fs->fs, fs->volume, fs->opt);
+    printf("%s:", fs->name);
+    FatfsError(res);
+    return res;
+}
+
+
 void FatfsError(FRESULT errNum)
 {
     const char *str =

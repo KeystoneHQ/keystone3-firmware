@@ -229,6 +229,7 @@ static void UsbTestFunc(int argc, char *argv[]);
 static void DeviceSettingsTestFunc(int argc, char *argv[]);
 static void ScreenShotFunc(int argc, char *argv[]);
 static void BpkPrintFunc(int argc, char *argv[]);
+static void SdCardTestFunc(int argc, char *argv[]);
 
 
 
@@ -398,6 +399,7 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"device settings test:", DeviceSettingsTestFunc},
     {"screen shot", ScreenShotFunc},
     {"bpk print:", BpkPrintFunc},
+    {"sd card test:", SdCardTestFunc},
 };
 
 bool CompareAndRunTestCmd(const char *inputString)
@@ -2873,4 +2875,17 @@ static void DeviceSettingsTestFunc(int argc, char *argv[])
 static void ScreenShotFunc(int argc, char *argv[])
 {
     PubValueMsg(UI_MSG_SCREEN_SHOT, 0);
+}
+
+
+static void SdCardTestFunc(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 1);
+    if (strcmp(argv[0], "format") == 0) {
+        printf("format sd card\n");
+        FormatSdFatfs();
+    } else if (strcmp(argv[0], "info") == 0) {
+        printf("SdCardGetSectorSize=%d\n", SdCardGetSectorSize());
+        printf("SdCardGetSectorCount=%d\n", SdCardGetSectorCount());
+    }
 }

@@ -441,4 +441,7 @@ extern bool SDCardTransferBlock(bool isWrite, uint32_t address, uint8_t* buffer,
 bool SdCardInsert(void);
 void SdCardIntHandler(void);
 
+uint32_t SdCardGetSectorSize(void);
+uint32_t SdCardGetSectorCount(void);
+
 #endif /* _DRV_SDCARD_H */

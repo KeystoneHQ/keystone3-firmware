@@ -44,6 +44,7 @@ int FatfsFileAppend(const TCHAR* path, const uint8_t *data, uint32_t len);
 int FatfsFileDelete(const TCHAR* path);
 int FatfsFileCopy(const TCHAR* source, const TCHAR* dest);
 uint32_t FatfsFileGetSize(const TCHAR *path);
+int FormatSdFatfs(void);
 void FatfsError(FRESULT errNum);
 uint32_t FatfsGetSize(const char *path);
 int FatfsFileSha256(const TCHAR* path, uint8_t *sha256);

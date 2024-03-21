@@ -251,7 +251,6 @@ void GuiLockScreenTurnOff(void)
         GuiFirmwareUpdateWidgetRefresh();
     }
     HardwareInitAfterWake();
-    // g_lockView.isActive = false;
 }
 
 void GuiUpdateOldAccountIndex(void)

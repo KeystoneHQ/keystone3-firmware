@@ -558,7 +558,7 @@ static int callback(void *output, int nCol, char **argv, char **azColName)
     char **data = (char**)output;
     for (i = 0; i < nCol; i++) {
         USER_DEBUG("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-        snprintf_s(data[i], maxLen, "%s", argv[i] ? argv[i] : "NULL");
+        snprintf(data[i], maxLen, "%s", argv[i] ? argv[i] : "NULL");
     }
 
     USER_DEBUG("\n");

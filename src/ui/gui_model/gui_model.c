@@ -1137,13 +1137,14 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
 
     // some scene would need clear secret after check
     if (*param != SIG_SETTING_CHANGE_PASSWORD &&
-            *param != SIG_SETTING_WRITE_PASSPHRASE &&
-            *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE &&
-            *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
-            *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
-            *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&
-            !strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) &&
-            !GuiCheckIfViewOpened(&g_createWalletView)) {
+        *param != SIG_SETTING_WRITE_PASSPHRASE &&
+        *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE &&
+        *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
+        *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
+        *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&
+        !strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) &&
+        !GuiCheckIfViewOpened(&g_createWalletView) &&
+        !ModelGetPassphraseQuickAccess()) {
         ClearSecretCache();
     }
     SetLockScreen(enable);

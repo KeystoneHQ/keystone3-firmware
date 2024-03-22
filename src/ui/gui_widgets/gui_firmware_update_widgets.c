@@ -200,6 +200,7 @@ void GuiFirmwareSdCardCopyResult(bool en)
         printf("copy success\n");
     } else {
         printf("copy failed\n");
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
         g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
     }
 }

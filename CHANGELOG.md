@@ -1,3 +1,19 @@
+## 1.3.2 (2024-03-22)
+
+### What's new
+
+1. Added support for Dymension para-chain under the Cosmos ecosystem
+
+### Improvements
+
+1. Optimized display of certain upgrade notification pages
+2. Improved default address display for BTC receiving
+
+### Bug Fixes
+
+1. Fixed issue with device rebooting in certain scenarios
+
+
 ## 1.3.0 (2024-02-29)
 
 ### What's new

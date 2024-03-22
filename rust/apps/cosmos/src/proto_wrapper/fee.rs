@@ -9,6 +9,8 @@ use core::ops::Div;
 use serde::Serialize;
 
 pub const ATOM_TO_UATOM_UNIT: f64 = 1000000f64;
+pub const DYM_TO_ADYM_UNIT: f64 = 1e18f64;
+pub const INJ_TO_INJ_UNIT: f64 = 1e18f64;
 
 #[derive(Debug, Serialize)]
 pub struct Fee {
@@ -61,6 +63,14 @@ pub fn format_coin(coin: Coin) -> Option<String> {
         if let Ok(value) = coin.amount.as_str().parse::<f64>() {
             return Some(format!("{} {}", value.div(ATOM_TO_UATOM_UNIT), "ATOM"));
         }
+    } else if coin.denom.to_lowercase().eq("adym") {
+        if let Ok(value) = coin.amount.as_str().parse::<f64>() {
+            return Some(format!("{} {}", value.div(DYM_TO_ADYM_UNIT), "DYM"));
+        }
+    } else if coin.denom.eq("inj") {
+        if let Ok(value) = coin.amount.as_str().parse::<f64>() {
+            return Some(format!("{} {}", value.div(INJ_TO_INJ_UNIT), "INJ"));
+        }
     } else {
         return Some(format!("{} {}", coin.amount, coin.denom));
     }
@@ -95,6 +105,20 @@ pub fn format_fee_from_value(data: serde_json::Value) -> Result<FeeDetail> {
                             "{} {}",
                             value.div(ATOM_TO_UATOM_UNIT) * gas_limit,
                             "ATOM"
+                        ))
+                    } else if denom.to_lowercase().eq("adym") {
+                        fee.push(format!("{} {}", value.div(DYM_TO_ADYM_UNIT), "DYM"));
+                        max_fee.push(format!(
+                            "{} {}",
+                            value.div(DYM_TO_ADYM_UNIT) * gas_limit,
+                            "DYM"
+                        ))
+                    } else if denom.eq("inj") {
+                        fee.push(format!("{} {}", value.div(INJ_TO_INJ_UNIT), "INJ"));
+                        max_fee.push(format!(
+                            "{} {}",
+                            value.div(INJ_TO_INJ_UNIT) * gas_limit,
+                            "INJ"
                         ))
                     } else {
                         max_fee.push(format!("{} {}", value * gas_limit, denom));

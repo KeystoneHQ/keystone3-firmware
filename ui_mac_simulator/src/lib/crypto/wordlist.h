@@ -1,1 +1,0 @@
-../../../../src/crypto/bips/wordlist.h

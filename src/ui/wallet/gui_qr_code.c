@@ -1,5 +1,9 @@
 #include "gui_qr_code.h"
+#include "safe_str_lib.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
 
 static lv_timer_t *g_timer;
 static UREncodeResult *g_result;
@@ -23,7 +27,7 @@ static void QRTimerHandler(lv_timer_t *timer)
             UREncodeMultiResult *multiResult = get_next_part(encoder);
             if (multiResult->error_code == 0) {
                 char *data = multiResult->data;
-                uint16_t dataLen = strlen(data);
+                uint16_t dataLen = strnlen_s(data, SIMPLERESPONSE_C_CHAR_MAX_LEN);
                 g_updateFunc(g_qr, data, dataLen);
                 free_ur_encode_muilt_result(multiResult);
             }
@@ -43,13 +47,13 @@ void UpdateQrCode(GetUR func, lv_obj_t *qr, UpdateFunc updateFunc)
     if (g_result -> error_code == 0) {
         if (g_result->is_multi_part) {
             char *data = g_result->data;
-            uint16_t dataLen = strlen(data);
+            uint16_t dataLen = strnlen_s(data, SIMPLERESPONSE_C_CHAR_MAX_LEN);
             g_updateFunc(qr, data, dataLen);
             g_qr = qr;
             g_timer = lv_timer_create(QRTimerHandler, 200, NULL);
         } else {
             char *data = g_result->data;
-            uint16_t dataLen = strlen(data);
+            uint16_t dataLen = strnlen_s(data, SIMPLERESPONSE_C_CHAR_MAX_LEN);
             updateFunc(qr, data, dataLen);
             CloseQRTimer();
         }

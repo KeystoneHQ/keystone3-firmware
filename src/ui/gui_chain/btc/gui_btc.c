@@ -256,66 +256,60 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
 #endif
 }
 
-void GetPsbtFeeValue(void *indata, void *param)
+void GetPsbtTotalOutAmount(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
-    strcpy((char *)indata, psbt->overview->fee_amount);
+    strcpy_s((char *)indata, maxLen, psbt->overview->total_output_amount);
 }
 
-void GetPsbtTotalOutAmount(void *indata, void *param)
-{
-    DisplayTx *psbt = (DisplayTx *)param;
-    strcpy((char *)indata, psbt->overview->total_output_amount);
-}
-
-void GetPsbtFeeAmount(void *indata, void *param)
+void GetPsbtFeeAmount(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
     if (psbt->overview->fee_larger_than_amount) {
-        sprintf((char *)indata, "#F55831 %s#", psbt->overview->fee_amount);
+        snprintf_s((char *)indata,  maxLen, "#F55831 %s#", psbt->overview->fee_amount);
     } else {
-        strcpy((char *)indata, psbt->overview->fee_amount);
+        strcpy_s((char *)indata, maxLen, psbt->overview->fee_amount);
     }
 }
 
-void GetPsbtTotalOutSat(void *indata, void *param)
+void GetPsbtTotalOutSat(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
-    strcpy((char *)indata, psbt->overview->total_output_sat);
+    strcpy_s((char *)indata, maxLen, psbt->overview->total_output_sat);
 }
 
-void GetPsbtFeeSat(void *indata, void *param)
+void GetPsbtFeeSat(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
     if (psbt->overview->fee_larger_than_amount) {
-        sprintf((char *)indata, "#F55831 %s#", psbt->overview->fee_sat);
+        snprintf_s((char *)indata,  maxLen, "#F55831 %s#", psbt->overview->fee_sat);
     } else {
-        strcpy((char *)indata, psbt->overview->fee_sat);
+        strcpy_s((char *)indata, maxLen, psbt->overview->fee_sat);
     }
 }
 
-void GetPsbtNetWork(void *indata, void *param)
+void GetPsbtNetWork(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
-    strcpy((char *)indata, psbt->overview->network);
+    strcpy_s((char *)indata, maxLen, psbt->overview->network);
 }
 
-void GetPsbtDetailInputValue(void *indata, void *param)
+void GetPsbtDetailInputValue(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
-    strcpy((char *)indata, psbt->detail->total_input_amount);
+    strcpy_s((char *)indata, maxLen, psbt->detail->total_input_amount);
 }
 
-void GetPsbtDetailOutputValue(void *indata, void *param)
+void GetPsbtDetailOutputValue(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
-    strcpy((char *)indata, psbt->detail->total_output_amount);
+    strcpy_s((char *)indata, maxLen, psbt->detail->total_output_amount);
 }
 
-void GetPsbtDetailFee(void *indata, void *param)
+void GetPsbtDetailFee(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
-    strcpy((char *)indata, psbt->detail->fee_amount);
+    strcpy_s((char *)indata, maxLen, psbt->detail->fee_amount);
 }
 
 void *GetPsbtInputData(uint8_t *row, uint8_t *col, void *param)
@@ -328,11 +322,11 @@ void *GetPsbtInputData(uint8_t *row, uint8_t *col, void *param)
     for (i = 0; i < *col; i++) {
         indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++) {
-            indata[i][j] = SRAM_MALLOC(64);
+            indata[i][j] = SRAM_MALLOC(BUFFER_SIZE_64);
             if (i == 0) {
-                sprintf(indata[i][j], "%d\n", j + 1);
+                snprintf_s(indata[i][j], BUFFER_SIZE_64, "%d\n", j + 1);
             } else {
-                strcpy(indata[i][j], psbt->overview->from->data[j].address);
+                strcpy_s(indata[i][j], BUFFER_SIZE_64, psbt->overview->from->data[j].address);
             }
         }
     }
@@ -349,11 +343,11 @@ void *GetPsbtOutputData(uint8_t *row, uint8_t *col, void *param)
     for (i = 0; i < *col; i++) {
         indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++) {
-            indata[i][j] = SRAM_MALLOC(64);
+            indata[i][j] = SRAM_MALLOC(BUFFER_SIZE_64);
             if (i == 0) {
-                sprintf(indata[i][j], "%d\n", j + 1);
+                snprintf_s(indata[i][j], BUFFER_SIZE_64, "%d\n", j + 1);
             } else {
-                strcpy(indata[i][j], psbt->overview->to->data[j].address);
+                strcpy_s(indata[i][j], BUFFER_SIZE_64, psbt->overview->to->data[j].address);
             }
         }
     }
@@ -370,12 +364,11 @@ void *GetPsbtInputDetailData(uint8_t *row, uint8_t *col, void *param)
     for (i = 0; i < *col; i++) {
         indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++) {
-            indata[i][j] = SRAM_MALLOC(64);
+            indata[i][j] = SRAM_MALLOC(BUFFER_SIZE_64);
             if (i == 0) {
-                sprintf(indata[i][j], "%d\n", j + 1);
+                snprintf_s(indata[i][j], BUFFER_SIZE_64, "%d\n", j + 1);
             } else {
-                // sprintf(indata[i][j], "%d\n", j + 1);
-                strcpy(indata[i][j], psbt->detail->from->data[j].address);
+                strcpy_s(indata[i][j], BUFFER_SIZE_64, psbt->detail->from->data[j].address);
             }
         }
     }
@@ -392,11 +385,11 @@ void *GetPsbtOutputDetailData(uint8_t *row, uint8_t *col, void *param)
     for (i = 0; i < *col; i++) {
         indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++) {
-            indata[i][j] = SRAM_MALLOC(64);
+            indata[i][j] = SRAM_MALLOC(BUFFER_SIZE_64);
             if (i == 0) {
-                sprintf(indata[i][j], "%d\n", j + 1);
+                snprintf_s(indata[i][j], BUFFER_SIZE_64, "%d\n", j + 1);
             } else {
-                strcpy(indata[i][j], psbt->detail->to->data[j].address);
+                strcpy_s(indata[i][j], BUFFER_SIZE_64, psbt->detail->to->data[j].address);
             }
         }
     }

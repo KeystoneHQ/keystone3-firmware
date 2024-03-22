@@ -6,6 +6,7 @@ import platform
 import subprocess
 import argparse
 import os
+from scripts.read_feature_toggle import read_feature_toggle_build_cmd
 
 source_path = os.path.dirname(os.path.abspath(__file__))
 build_dir = "build"
@@ -43,8 +44,11 @@ def build_firmware(environment, options, bin_type):
             cmd += ' -DENABLE_SCREEN_SHOT=true'
         if option == "debugmemory":
             cmd += ' -DDEBUG_MEMORY=true'
+        if option == "simulator":
+            cmd += ' -DCMAKE_BUILD_TYPE=Simulator'
         # add more option here.
 
+    cmd += read_feature_toggle_build_cmd()
 
     cmd_result = os.system(cmd)
     if cmd_result != 0:

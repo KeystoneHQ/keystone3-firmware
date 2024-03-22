@@ -34,7 +34,7 @@
 
 // Guarantees that decompression of corrupted data cannot crash. Decreases decompression
 // speed 10-20%. Compression speed not affected.
-//#define QLZ_MEMORY_SAFE
+#define QLZ_MEMORY_SAFE
 #endif
 
 #define QLZ_VERSION_MAJOR 1

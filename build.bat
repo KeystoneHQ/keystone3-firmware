@@ -17,6 +17,7 @@ SET build_format=false
 SET build_release=false
 SET build_rebuild=false
 SET build_btc_only=false
+SET build_simulator=false
 
 
 for %%i in (%*) do (
@@ -46,6 +47,9 @@ for %%i in (%*) do (
     )
     if /I "%%i"=="btc_only" (
         set build_btc_only=true
+    )
+    if /I "%%i"=="simulator" (
+        set build_simulator=true
     )
 )
 
@@ -88,6 +92,9 @@ if "%build_screen%"=="true" (
 if "%build_debug%"=="true" (
     set cmake_parm=%cmake_parm% -DDEBUG_MEMORY=true ..
 )
+if "%build_simulator%"=="true" (
+    set cmake_parm=%cmake_parm% -DCMAKE_BUILD_TYPE=Simulator ..
+)
 
 echo %cmake_parm%
 
@@ -102,7 +109,6 @@ if "%build_log%"=="true" (
 python3 .\padding_bin_file.py .\mh1903.bin
 popd
 
-
 if "%build_copy%"=="true" (
     pushd %MAKE_OAT_FILE_PATH%
     echo generating pillar.bin file...
@@ -116,5 +122,6 @@ if "%build_copy%"=="true" (
     call make_ota_file.bat %CD%\build\pillar.bin
     call make_ota_file.bat %CD%\build\keystone3.bin
     popd
-    @REM call %PACK_PATH%
+) else if "%build_simulator%"=="true" (
+    .\build\simulator.exe
 )

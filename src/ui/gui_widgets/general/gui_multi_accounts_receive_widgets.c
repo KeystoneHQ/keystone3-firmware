@@ -20,8 +20,13 @@
 #include "gui_tutorial_widgets.h"
 #include "account_manager.h"
 
-#define GENERAL_ADDRESS_INDEX_MAX 999999999
-#define ACCOUNT_INDEX_MAX 24
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
+#define GENERAL_ADDRESS_INDEX_MAX                           (999999999)
+#define ACCOUNT_INDEX_MAX                                   (24)
+#define INPUT_ADDRESS_MAX_LEN                               (16)
 
 typedef enum {
     RECEIVE_TILE_QRCODE = 0,
@@ -73,14 +78,14 @@ typedef struct {
 
 typedef struct {
     uint32_t index;
-    char address[128];
-    char path[32];
+    char address[ADDRESS_MAX_LEN];
+    char path[PATH_ITEM_MAX_LEN];
 } AddressDataItem_t;
 
 typedef struct {
-    char title[32];
-    char subTitle[32];
-    char path[32];
+    char title[PATH_ITEM_MAX_LEN];
+    char subTitle[PATH_ITEM_MAX_LEN];
+    char path[PATH_ITEM_MAX_LEN];
 } PathItem_t;
 
 static void GuiCreateMoreWidgets(lv_obj_t *parent);
@@ -118,11 +123,11 @@ static void OpenSwitchAddressHandler(lv_event_t *e);
 static void CloseSwitchAddressHandler(lv_event_t *e);
 
 static void ShowAddressDetailHandler(lv_event_t *e);
-static void AddressLongModeCut(char *out, const char *address, uint32_t targetLen);
 static void UpdateConfirmIndexBtn(void);
 static void UpdateConfirmAccountBtn(void);
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type);
+void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 
 static MultiAccountsReceiveWidgets_t g_multiAccountsReceiveWidgets;
 static MultiAccountsReceiveTile g_multiAccountsReceiveTileNow;
@@ -332,7 +337,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
         tempObj = GuiCreateLittleTitleLabel(g_multiAccountsReceiveWidgets.attentionCont, _("Attention"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
-        char attentionText[150];
+        char attentionText[BUFFER_SIZE_256];
         GetAttentionText(attentionText);
         tempObj = GuiCreateLabelWithFont(g_multiAccountsReceiveWidgets.attentionCont, attentionText, &openSans_20);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
@@ -350,7 +355,7 @@ void GetAttentionText(char *text)
 {
     switch (g_chainCard) {
     default:
-        sprintf(text, _("receive_coin_hint_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
+        snprintf_s(text, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
     }
 }
 
@@ -499,13 +504,13 @@ static void RefreshQrCode(void)
     AddressDataItem_t addressDataItem;
 
     ModelGetAddress(g_selectedIndex[GetCurrentAccountIndex()], &addressDataItem, 0);
-    lv_qrcode_update(g_multiAccountsReceiveWidgets.qrCode, addressDataItem.address, strlen(addressDataItem.address));
+    lv_qrcode_update(g_multiAccountsReceiveWidgets.qrCode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
     if (fullscreen_qrcode) {
-        lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strlen(addressDataItem.address));
+        lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
     char string[128] = {0};
-    AddressLongModeCut(string, addressDataItem.address, 20);
+    CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 20);
     lv_label_set_text(g_multiAccountsReceiveWidgets.addressLabel, string);
     lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.addressCountLabel, "Address-%u", (addressDataItem.index));
 }
@@ -520,7 +525,7 @@ static void RefreshSwitchAddress(void)
         ModelGetAddress(index, &addressDataItem, 0);
         lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "Address-%u", (addressDataItem.index));
         char string[128] = {0};
-        AddressLongModeCut(string, addressDataItem.address, 24);
+        CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {
             lv_obj_add_flag(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
@@ -702,7 +707,7 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         txt = lv_btnmatrix_get_btn_text(obj, id);
-        strcpy(input, lv_label_get_text(g_multiAccountsReceiveWidgets.inputAccountLabel));
+        strcpy_s(input, sizeof(input), lv_label_get_text(g_multiAccountsReceiveWidgets.inputAccountLabel));
         if (strcmp(txt, LV_SYMBOL_OK) == 0) {
             if (g_inputAccountValid) {
                 sscanf(input, "%u", &g_tmpIndex);
@@ -1008,13 +1013,13 @@ static void GuiCreateSwitchAccountWidget()
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
     index = 0;
     for (uint32_t i = 0; i < ACCOUNT_INDEX_MAX; i++) {
-        char temp[64];
-        sprintf(temp, "Account-%u", i);
+        char temp[BUFFER_SIZE_64];
+        snprintf_s(temp, BUFFER_SIZE_64, "Account-%u", i);
         label = GuiCreateLabelWithFont(cont, temp, &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 102 * i);
         g_multiAccountsReceiveWidgets.switchAccountWidgets[index].addressCountLabel = label;
 
-        sprintf(temp, "m/1852'/1815'/%u'", i);
+        snprintf_s(temp, BUFFER_SIZE_64, "m/1852'/1815'/%u'", i);
         label = GuiCreateNoticeLabel(cont, temp);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 102 * i);
         g_multiAccountsReceiveWidgets.switchAccountWidgets[index].addressLabel = label;
@@ -1059,54 +1064,16 @@ static void GuiCreateSwitchAccountWidget()
     UpdateConfirmAccountBtn();
 }
 
-static void AddressLongModeCut(char *out, const char *address, uint32_t targetLen)
-{
-    uint32_t len;
-
-    len = strlen(address);
-    if (len <= targetLen) {
-        strcpy(out, address);
-        return;
-    }
-    strncpy(out, address, targetLen / 2);
-    strcat(out, "...");
-    strcat(out, address + len - targetLen / 2);
-}
-
-#ifdef COMPILE_SIMULATOR
-
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
 {
-    char hdPath[128];
-    sprintf(hdPath, "m/1852'/1815'/%u'/0/%u", g_selectedAccount[GetCurrentAccountIndex()], index);
-    printf("hdPath=%s\r\n", hdPath);
-    item->index = index;
-    switch (type) {
-    case 1:
-        sprintf(item->address, "addr1vxg88k7kzt95q9vhpj4a9eewx3afe759a3rq9ggdhsetstgwkxsea%d", index);
-        break;
-    case 2:
-        sprintf(item->address, "stake1u9vtx6ry4e8zculweg3racrnzdgja3yr2neayqnm8zwhd0qj5ln0l%d", index);
-        break;
-    default:
-        sprintf(item->address, "addr1q95l5x7exwzhgupzs0v0ku0censcx8p75jz52cl4uszr463n5nclg6z9gazt9lekgje2k7w53em2xxrljqh73gdul2ks9zxj4d%d", index);
-        break;
-    }
-    strcpy(item->path, hdPath);
-}
-
-#else
-
-static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
-{
-    char *xPub = NULL, hdPath[128];
+    char *xPub = NULL, hdPath[BUFFER_SIZE_128];
     SimpleResponse_c_char *result = NULL;
     uint32_t currentAccount = g_selectedAccount[GetCurrentAccountIndex()];
 
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ADA:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0 + currentAccount);
-        sprintf(hdPath, "m/1852'/1815'/%u'/0/%u", currentAccount, index);
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'/0/%u", currentAccount, index);
         // cardano mainnet;
         switch (type) {
         case 1:
@@ -1128,13 +1095,11 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
     if (result->error_code == 0) {
         item->index = index;
         printf("address=%s", item->address);
-        strcpy(item->address, result->data);
-        strcpy(item->path, hdPath);
+        strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
+        strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
     }
     free_simple_response_c_char(result);
 }
-
-#endif
 
 void GuiResetCurrentMultiAccountsCache(uint8_t index)
 {

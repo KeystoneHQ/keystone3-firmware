@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include "version.h"
 
-#define SOFTWARE_VERSION_MAX_LEN            (32)
-
 #define STRINGIFY(x) #x
 #define EXPAND(x) STRINGIFY(x)
 

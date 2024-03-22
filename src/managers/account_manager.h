@@ -6,6 +6,8 @@
 #include "stdlib.h"
 #include "stdio.h"
 
+#define WALLET_NAME_MAX_LEN                 16
+
 typedef enum {
     PASSCODE_TYPE_PIN,
     PASSCODE_TYPE_PASSWORD,
@@ -32,7 +34,7 @@ typedef struct {
     uint8_t slip39Ie[1];                    //slip39 Iteration exponent.
     uint8_t reserved2[5];                   //byte 9~13 reserved.
     uint8_t iconIndex;
-    char walletName[17];
+    char walletName[WALLET_NAME_MAX_LEN + 1];
 } AccountInfo_t;
 
 int32_t AccountManagerInit(void);

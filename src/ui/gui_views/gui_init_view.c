@@ -42,6 +42,11 @@ static int32_t GuiInitViewInit(void)
         return SUCCESS_CODE;
     }
     GuiModeGetAccount();
+    // uint8_t entropy = {0xFC,0x67,0xE1,0xEB,0xA4,0xFC,0xF7,0x7E,0x61,0x9E,0x26,0xE3,0x92,0x05,0xA2,0x84};
+    // CreateNewAccount(0, entropy, sizeof(entropy), "111111");
+    // SecretCacheSetNewPassword("123456");
+    // GuiModelBip39UpdateMnemonic(12);
+    // GuiModelWriteSe();
     return SUCCESS_CODE;
 }
 

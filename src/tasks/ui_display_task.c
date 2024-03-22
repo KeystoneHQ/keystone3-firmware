@@ -207,7 +207,7 @@ static void InputDevReadCb(struct _lv_indev_drv_t *indev_drv, lv_indev_data_t *d
     //data->state = GetVirtualTouch((uint16_t *)&data->point.x, (uint16_t *)&data->point.y) ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
     TouchStatus_t *pStatus;
     pStatus = GetTouchStatus();
-    memset(data, 0, sizeof(lv_indev_data_t));
+    memset_s(data, sizeof(lv_indev_data_t), 0, sizeof(lv_indev_data_t));
     data->state = pStatus->touch ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
     data->point.x = pStatus->x;
     data->point.y = pStatus->y;

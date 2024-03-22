@@ -1,8 +1,6 @@
 #ifndef _DRV_RTC_H
 #define _DRV_RTC_H
 
-#include "mhscpu.h"
-
 typedef struct times {
     int Year;
     int Mon;

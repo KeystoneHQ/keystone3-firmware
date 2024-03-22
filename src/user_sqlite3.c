@@ -1,18 +1,17 @@
 #include "string.h"
+#include "define.h"
 #include "user_sqlite3.h"
 #include "user_utils.h"
 #include "user_fatfs.h"
 #include "sqlite3.h"
 #include "sdfat_fns.h"
 #include "vfs.h"
+#include "safe_str_lib.h"
+#include "assert.h"
 
-// #define USER_DEBUG(fmt, ...)             printf("[%s:%d] " fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__);
 #define USER_DEBUG(fmt, ...)
-#define ENS_DB_FILE_PATH                    "0:ens.db"
-#define SQL_BUFF_MAX_SIZE                   (256)
-#define SQL_ABI_BUFF_MAX_SIZE               (2000)
 #define CACHEBLOCKSZ                        (64)
-#define ESP8266_DEFAULT_MAXNAMESIZE         (32)
+#define DEFAULT_MAXNAMESIZE                 (32)
 
 typedef struct st_linkedlist {
     uint16_t blockid;
@@ -29,7 +28,7 @@ typedef struct UserSqlite3File {
     sqlite3_file base;
     vfs_file *fd;
     filecache_t *cache;
-    char name[ESP8266_DEFAULT_MAXNAMESIZE];
+    char name[DEFAULT_MAXNAMESIZE];
 } UserSqlite3File;
 
 int UserClose(sqlite3_file*);
@@ -55,7 +54,6 @@ void UserDlClose(sqlite3_vfs*, void*);
 int UserRandomness(sqlite3_vfs*, int, char*);
 int UserSleep(sqlite3_vfs*, int);
 int UserCurrentTime(sqlite3_vfs*, double*);
-
 int UserFileClose(sqlite3_file*);
 int UserFileRead(sqlite3_file*, void*, int, sqlite3_int64);
 int UserFileWrite(sqlite3_file*, const void*, int, sqlite3_int64);
@@ -115,6 +113,8 @@ const sqlite3_io_methods g_fileMemMethods = {
     UserDeviceCharacteristics
 };
 
+static sqlite3 *g_db;
+
 uint32_t linkedlist_store(linkedlist_t **leaf, uint32_t offset, uint32_t len, const uint8_t *data)
 {
     const uint8_t blank[CACHEBLOCKSZ] = { 0 };
@@ -130,7 +130,7 @@ uint32_t linkedlist_store(linkedlist_t **leaf, uint32_t offset, uint32_t len, co
         if (!block)
             return SQLITE_NOMEM;
 
-        memset(block->data, 0, CACHEBLOCKSZ);
+        memset_s(block->data, CACHEBLOCKSZ, 0, CACHEBLOCKSZ);
         block->blockid = blockid;
     }
 
@@ -321,17 +321,17 @@ int UserOpen(sqlite3_vfs * vfs, const char * path, sqlite3_file * file, int flag
     if (path == NULL) return SQLITE_IOERR;
 
     USER_DEBUG("UserOpen: 1o %s %s\n", path, "r");
-    memset(p, 0, sizeof(UserSqlite3File));
+    memset_s(p, sizeof(UserSqlite3File), 0, sizeof(UserSqlite3File));
 
-    strncpy(p->name, path, ESP8266_DEFAULT_MAXNAMESIZE);
-    p->name[ESP8266_DEFAULT_MAXNAMESIZE - 1] = '\0';
+    strncpy(p->name, path, DEFAULT_MAXNAMESIZE);
+    p->name[DEFAULT_MAXNAMESIZE - 1] = '\0';
 
     if (flags & SQLITE_OPEN_MAIN_JOURNAL) {
         p->fd = 0;
         p->cache = (filecache_t *) sqlite3_malloc(sizeof(filecache_t));
         if (! p->cache)
             return SQLITE_NOMEM;
-        memset(p->cache, 0, sizeof(filecache_t));
+        memset_s(p->cache, sizeof(filecache_t), 0, sizeof(filecache_t));
 
         p->base.pMethods = &g_fileMemMethods;
         return SQLITE_OK;
@@ -344,7 +344,7 @@ int UserOpen(sqlite3_vfs * vfs, const char * path, sqlite3_file * file, int flag
     }
 
     p->base.pMethods = &g_fileIoMethods;
-    USER_DEBUG("UserOpen: 2o %s %d OK\n", p->name, p->fd);
+    USER_DEBUG("UserOpen: %s %d OK\n", p->name, p->fd);
     return SQLITE_OK;
 }
 
@@ -548,9 +548,9 @@ static int callback(void *output, int nCol, char **argv, char **azColName)
     int i;
     int maxLen = 0;
     if (nCol == 1) {
-        maxLen = SQL_BUFF_MAX_SIZE;
+        maxLen = SQL_ENS_NAME_MAX_LEN - 1;
     } else if (nCol == 2) {
-        maxLen = SQL_ABI_BUFF_MAX_SIZE;
+        maxLen = SQL_ABI_BUFF_MAX_SIZE - 1;
     } else {
         USER_DEBUG("callback nCol error\n");
         return 0;
@@ -610,9 +610,9 @@ void SqliteTest(void)
     sqlite3_close(db1);
 }
 
-sqlite3 *g_db;
 bool GetEnsName(const char *addr, char *name)
 {
+    assert(strnlen_s(addr, SQL_ADDR_MAX_LEN) == SQL_ADDR_MAX_LEN - 1);
     sqlite3 *db;
     if (OpenDb(ENS_DB_FILE_PATH, &db)) {
         return NULL;
@@ -620,7 +620,7 @@ bool GetEnsName(const char *addr, char *name)
 
     char sqlBuf[SQL_BUFF_MAX_SIZE] = {0};
     char lowAddr[SQL_BUFF_MAX_SIZE] = {0};
-    strcpy(lowAddr, addr);
+    strcpy_s(lowAddr, SQL_BUFF_MAX_SIZE, addr);
     snprintf(sqlBuf, SQL_BUFF_MAX_SIZE, "Select name from ens where addr = '%s'", strlwr(lowAddr));
     int ret = db_exec(db, sqlBuf, name);
     if (ret != SQLITE_OK) {
@@ -629,16 +629,17 @@ bool GetEnsName(const char *addr, char *name)
     }
 
     sqlite3_close(db);
-    return strlen(name) ? true : false;
+    return strnlen_s(name, SQL_ENS_NAME_MAX_LEN) ? true : false;
 }
 
 bool GetDBContract(const char* address, const char *selector, const uint32_t chainId, char *functionABIJson, char *contractName)
 {
+    assert(strnlen_s(address, SQL_ADDR_MAX_LEN) == SQL_ADDR_MAX_LEN - 1);
     sqlite3 *db;
     char index = address[2]; // [0,f]
 
-    char contractDBPath[128] = {0};
-    sprintf(contractDBPath, "0:contracts/%u_%c_contracts.db", chainId, index);
+    char contractDBPath[BUFFER_SIZE_128] = {0};
+    snprintf_s(contractDBPath, BUFFER_SIZE_128, "0:contracts/%u_%c_contracts.db", chainId, index);
     if (OpenDb(contractDBPath, &db)) {
         return NULL;
     }
@@ -652,7 +653,7 @@ bool GetDBContract(const char* address, const char *selector, const uint32_t cha
     }
 
     sqlite3_close(db);
-    return strlen(functionABIJson) ? true : false;
+    return strnlen_s(functionABIJson, SQL_ABI_BUFF_MAX_SIZE) ? true : false;
 }
 
 void sqlite_open_close(void)
@@ -686,7 +687,7 @@ void Sqlite3Test(int argc, char *argv[])
         SqliteTest();
     } else if (strcmp(argv[0], "ens") == 0) {
         VALUE_CHECK(argc, 2);
-        char name[256] = {0};
+        char name[SQL_ENS_NAME_MAX_LEN] = {0};
         bool isexist = GetEnsName(argv[1], name);
         if (isexist == true) {
             printf("addr %s found name %s\n", argv[1], name);

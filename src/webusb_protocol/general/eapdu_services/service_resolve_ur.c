@@ -47,15 +47,14 @@ static uint8_t *DataParser(EAPDURequestPayload_t *payload)
 
 static bool CheckURAcceptable(EAPDURequestPayload_t payload)
 {
-    char *data = "";
     if (GuiLockScreenIsTop()) {
-        data = "Device is locked";
+        const char *data = "Device is locked";
         HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
         return false;
     }
     // Only allow URL parsing on specific pages
     if (!GuiHomePageIsTop()) {
-        data = "Export address is just allowed on specific pages";
+        const char *data = "Export address is just allowed on specific pages";
         HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
         return false;
     }

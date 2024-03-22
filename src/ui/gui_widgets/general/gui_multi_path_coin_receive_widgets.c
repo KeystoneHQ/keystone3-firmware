@@ -20,11 +20,15 @@
 #include "gui_home_widgets.h"
 #include "gui_global_resources.h"
 
-#define GENERAL_ADDRESS_INDEX_MAX               999999999
-#define ETH_LEDGER_LIVE_ADDRESS_INDEX_MAX               9
-#define SOL_BIP44_ADDRESS_INDEX_MAX                     9
-#define SOL_BIP44_ROOT_ADDRESS_INDEX_MAX                0
-#define SOL_BIP44_CHANGE_ADDRESS_INDEX_MAX              9
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
+#define GENERAL_ADDRESS_INDEX_MAX                       (999999999)
+#define ETH_LEDGER_LIVE_ADDRESS_INDEX_MAX               (9)
+#define SOL_BIP44_ADDRESS_INDEX_MAX                     (9)
+#define SOL_BIP44_ROOT_ADDRESS_INDEX_MAX                (0)
+#define SOL_BIP44_CHANGE_ADDRESS_INDEX_MAX              (9)
 
 
 typedef enum {
@@ -74,19 +78,19 @@ typedef struct {
 
 typedef struct {
     GuiChainCoinType type;
-    char tittle[32];
+    char tittle[PATH_ITEM_MAX_LEN];
 } TittleItem_t;
 
 typedef struct {
     uint32_t index;
-    char address[128];
-    char path[32];
+    char address[ADDRESS_MAX_LEN];
+    char path[PATH_ITEM_MAX_LEN];
 } AddressDataItem_t;
 
 typedef struct {
-    char title[32];
-    char subTitle[32];
-    char path[32];
+    char title[PATH_ITEM_MAX_LEN];
+    char subTitle[PATH_ITEM_MAX_LEN];
+    char path[PATH_ITEM_MAX_LEN];
 } PathItem_t;
 
 static void GuiCreateMoreWidgets(lv_obj_t *parent);
@@ -111,14 +115,14 @@ static void ChangePathCheckHandler(lv_event_t *e);
 static void SwitchAddressHandler(lv_event_t *e);
 static void OpenSwitchAddressHandler(lv_event_t *e);
 
-static void GetPathItemSubTitle(char* subTitle, int index);
+static void GetPathItemSubTitle(char* subTitle, int index, uint32_t maxLen);
 static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item);
-static void GetEthHdPath(char *hdPath, int index);
-static void GetSolHdPath(char *hdPath, int index);
-static void GetEthRootPath(char *rootPath, int index);
+static void GetEthHdPath(char *hdPath, int index, uint32_t maxLen);
+static void GetSolHdPath(char *hdPath, int index, uint32_t maxLen);
+static void GetEthRootPath(char *rootPath, int index, uint32_t maxLen);
 static char *GetEthXpub(int index);
 static char *GetSolXpub(int index);
-void AddressLongModeCut(char *out, const char *address);
+void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 
 static uint32_t GetPathIndex(void);
 static void SetPathIndex(uint32_t index);
@@ -134,7 +138,7 @@ static uint32_t GetCurrentSelectIndex();
 static void GetHint(char *hint);
 static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item);
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
-static void GetSolPathItemSubTitle(char* subTitle, int index);
+static void GetSolPathItemSubTitle(char* subTitle, int index, uint32_t maxLen);
 static void UpdateConfirmAddrIndexBtn(void);
 static void UpdateConfirmAddrTypeBtn(void);
 static void UpdateAddrTypeCheckbox(uint8_t i, bool isChecked);
@@ -144,12 +148,12 @@ static MultiPathCoinReceiveWidgets_t g_multiPathCoinReceiveWidgets;
 static EthereumReceiveTile g_multiPathCoinReceiveTileNow;
 
 static const PathItem_t g_ethPaths[] = {
-    {"BIP44 Standard",     "",     "m/44'/60'/0'"  },
-    {"Ledger Live",         "",     "m/44'/60'"     },
-    {"Ledger Legacy",       "",     "m/44'/60'/0'"  },
+    {"BIP44 Standard",          "",     "m/44'/60'/0'"  },
+    {"Ledger Live",             "",     "m/44'/60'"     },
+    {"Ledger Legacy",           "",     "m/44'/60'/0'"  },
 };
 static const PathItem_t g_solPaths[] = {
-    {"Account-based Path",                "",     "m/44'/501'"  },
+    {"Account-based Path",      "",     "m/44'/501'"  },
     {"Single Account Path",     "",     "m/44'/501'"  },
     {"Sub-account Path",        "",     "m/44'/501'"  },
 };
@@ -167,7 +171,7 @@ static uint32_t g_solPathIndex[3] = {0};
 static PageWidget_t *g_pageWidget;
 static HOME_WALLET_CARD_ENUM g_chainCard;
 static lv_obj_t *g_derivationPathDescLabel = NULL;
-static char * *g_derivationPathDescs = NULL;
+static char **g_derivationPathDescs = NULL;
 static lv_obj_t *g_egCont = NULL;
 
 static void InitDerivationPathDesc(uint8_t chain)
@@ -382,7 +386,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
         tempObj = GuiCreateLittleTitleLabel(g_multiPathCoinReceiveWidgets.attentionCont, "Attention");
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
-        char hint[256];
+        char hint[BUFFER_SIZE_256];
         GetHint(hint);
         tempObj = GuiCreateLabelWithFont(g_multiPathCoinReceiveWidgets.attentionCont, hint, &openSans_20);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
@@ -400,10 +404,10 @@ static void GetHint(char *hint)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
-        strcpy(hint, _("receive_eth_alert_desc"));
+        strcpy_s(hint, BUFFER_SIZE_256, _("receive_eth_alert_desc"));
         break;
     case HOME_WALLET_CARD_SOL:
-        sprintf(hint, _("receive_coin_hint_fmt"), "SOL");
+        snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "SOL");
         break;
     default:
         break;
@@ -549,10 +553,10 @@ static void GetChangePathLabelHint(char* hint)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
-        sprintf(hint, _("derivation_path_select_eth"));
+        snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_eth"));
         return;
     case HOME_WALLET_CARD_SOL:
-        sprintf(hint, _("derivation_path_select_sol"));
+        snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_sol"));
         return;
     default:
         break;
@@ -596,7 +600,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     prevLabel = label;
 
     int gap = 4;
-    if (strlen(g_derivationPathDescs[g_selectType]) == 0) {
+    if (strnlen_s(g_derivationPathDescs[g_selectType], ADDRESS_MAX_LEN) == 0) {
         egContHeight -= lv_obj_get_height(label);
         lv_obj_set_height(label, 0);
         gap = 0;
@@ -644,8 +648,8 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
 {
     lv_obj_t *cont, *line, *label;
     static lv_point_t points[2] =  {{0, 0}, {360, 0}};
-    char string[64];
-    char lableText[128] = {0};
+    char string[BUFFER_SIZE_64];
+    char lableText[BUFFER_SIZE_128] = {0};
     GetChangePathLabelHint(lableText);
     lv_obj_t *scrollCont = GuiCreateContainerWithParent(parent, 408, 542);
     lv_obj_align(scrollCont, LV_ALIGN_DEFAULT, 36, 0);
@@ -665,7 +669,7 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
     for (uint32_t i = 0; i < 3; i++) {
         label = GuiCreateLabelWithFont(cont, GetChangePathItemTitle(i), &openSans_24);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
-        GetPathItemSubTitle(string, i);
+        GetPathItemSubTitle(string, i, BUFFER_SIZE_64);
         label = GuiCreateLabelWithFontAndTextColor(cont, string, g_defIllustrateFont, 0x919191);
         lv_label_set_recolor(label, true);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
@@ -716,10 +720,10 @@ static void RefreshQrCode(void)
 {
     AddressDataItem_t addressDataItem;
     ModelGetAddress(GetCurrentSelectIndex(), &addressDataItem);
-    lv_qrcode_update(g_multiPathCoinReceiveWidgets.qrCode, addressDataItem.address, strlen(addressDataItem.address));
+    lv_qrcode_update(g_multiPathCoinReceiveWidgets.qrCode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
     if (fullscreen_qrcode) {
-        lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strlen(addressDataItem.address));
+        lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
     lv_label_set_text(g_multiPathCoinReceiveWidgets.addressLabel, addressDataItem.address);
     lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.addressCountLabel, "Account-%u", (addressDataItem.index + 1));
@@ -734,7 +738,7 @@ static void RefreshSwitchAccount(void)
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetAddress(index, &addressDataItem);
         lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "Account-%u", (addressDataItem.index + 1));
-        AddressLongModeCut(string, addressDataItem.address);
+        CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {
             lv_obj_add_flag(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
@@ -780,12 +784,12 @@ static void RefreshDefaultAddress(void)
     AddressDataItem_t addressDataItem;
 
     ModelGetAddress(0, &addressDataItem);
-    AddressLongModeCut(string, addressDataItem.address);
+    CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 24);
     lv_label_set_text(g_addressLabel[0], string);
 
     if (!IsOnlyOneAddress(g_selectType)) {
         ModelGetAddress(1, &addressDataItem);
-        AddressLongModeCut(string, addressDataItem.address);
+        CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_addressLabel[1], string);
     }
 }
@@ -1020,70 +1024,55 @@ static void OpenSwitchAddressHandler(lv_event_t *e)
 
 
 
-static void GetEthPathItemSubTittle(char* subTitle, int index)
+static void GetEthPathItemSubTittle(char* subTitle, int index, uint32_t maxLen)
 {
     switch (index) {
     case 0:
-        sprintf(subTitle, "m/44'/60'/0'/0/#F5870A X#");
+        strcpy_s(subTitle, maxLen, "m/44'/60'/0'/0/#F5870A X#");
         break;
     case 1:
-        sprintf(subTitle, "m/44'/60'/#F5870A X#'/0/0");
+        strcpy_s(subTitle, maxLen, "m/44'/60'/#F5870A X#'/0/0");
         break;
     case 2:
-        sprintf(subTitle, "m/44'/60'/0'/#F5870A X#");
+        strcpy_s(subTitle, maxLen, "m/44'/60'/0'/#F5870A X#");
         break;
     default:
         break;
     }
 }
 
-static void GetSolPathItemSubTitle(char* subTitle, int index)
+static void GetSolPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
 {
     switch (index) {
     case 0:
-        sprintf(subTitle, "m/44'/501'/#F5870A X#'");
+        snprintf_s(subTitle, maxLen, "m/44'/501'/#F5870A X#'");
         break;
     case 1:
-        sprintf(subTitle, "m/44'/501'");
+        snprintf_s(subTitle, maxLen, "m/44'/501'");
         break;
     case 2:
-        sprintf(subTitle, "m/44'/501'/#F5870A X#'/0'");
+        snprintf_s(subTitle, maxLen, "m/44'/501'/#F5870A X#'/0'");
         break;
     default:
         break;
     }
 }
 
-static void GetPathItemSubTitle(char* subTitle, int index)
+static void GetPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
-        GetEthPathItemSubTittle(subTitle, index);
+        GetEthPathItemSubTittle(subTitle, index, maxLen);
         break;
     case HOME_WALLET_CARD_SOL:
-        GetSolPathItemSubTitle(subTitle, index);
+        GetSolPathItemSubTitle(subTitle, index, maxLen);
         break;
     default:
         break;
     }
 }
 
-void AddressLongModeCut(char *out, const char *address)
-{
-    uint32_t len;
-
-    len = strlen(address);
-    if (len <= 24) {
-        strcpy(out, address);
-        return;
-    }
-    strncpy(out, address, 12);
-    out[12] = 0;
-    strcat(out, "...");
-    strcat(out, address + len - 12);
-}
-
-static void GetSolHdPath(char *hdPath, int index)
+static void GetSolHdPath(char *hdPath, int index, uint32_t maxLen)
 {
     uint8_t i = g_solPathIndex[g_currentAccountIndex];
     if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
@@ -1091,20 +1080,20 @@ static void GetSolHdPath(char *hdPath, int index)
     }
     switch (i) {
     case 0:
-        sprintf(hdPath, "%s/%u'", g_solPaths[i].path, index);
+        snprintf_s(hdPath, maxLen, "%s/%u'", g_solPaths[i].path, index);
         break;
     case 1:
-        sprintf(hdPath, "%s", g_solPaths[i].path);
+        snprintf_s(hdPath, maxLen, "%s", g_solPaths[i].path);
         break;
     case 2:
-        sprintf(hdPath, "%s/%u'/0'", g_solPaths[i].path, index);
+        snprintf_s(hdPath, maxLen, "%s/%u'/0'", g_solPaths[i].path, index);
         break;
     default:
         break;
     }
 }
 
-static void GetEthHdPath(char *hdPath, int index)
+static void GetEthHdPath(char *hdPath, int index, uint32_t maxLen)
 {
     uint8_t i = g_ethPathIndex[g_currentAccountIndex];
     if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
@@ -1112,20 +1101,20 @@ static void GetEthHdPath(char *hdPath, int index)
     }
     switch (i) {
     case 0:
-        sprintf(hdPath, "%s/0/%u", g_ethPaths[i].path, index);
+        snprintf_s(hdPath, maxLen, "%s/0/%u", g_ethPaths[i].path, index);
         break;
     case 1:
-        sprintf(hdPath, "%s/%u'/0/0", g_ethPaths[i].path, index);
+        snprintf_s(hdPath, maxLen, "%s/%u'/0/0", g_ethPaths[i].path, index);
         break;
     case 2:
-        sprintf(hdPath, "%s/%u", g_ethPaths[i].path, index);
+        snprintf_s(hdPath, maxLen, "%s/%u", g_ethPaths[i].path, index);
         break;
     default:
         break;
     }
 }
 
-static void GetEthRootPath(char *rootPath, int index)
+static void GetEthRootPath(char *rootPath, int index, uint32_t maxLen)
 {
     uint8_t i = g_ethPathIndex[g_currentAccountIndex];
     if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
@@ -1133,13 +1122,13 @@ static void GetEthRootPath(char *rootPath, int index)
     }
     switch (i) {
     case 0:
-        sprintf(rootPath, "%s", g_ethPaths[i].path);
+        snprintf_s(rootPath, maxLen, "%s", g_ethPaths[i].path);
         break;
     case 1:
-        sprintf(rootPath, "%s/%u'", g_ethPaths[i].path, index);
+        snprintf_s(rootPath, maxLen, "%s/%u'", g_ethPaths[i].path, index);
         break;
     case 2:
-        sprintf(rootPath, "%s", g_ethPaths[i].path);
+        snprintf_s(rootPath, maxLen, "%s", g_ethPaths[i].path);
         break;
     default:
         break;
@@ -1204,45 +1193,17 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 
 }
 
-#ifdef COMPILE_SIMULATOR
-
-static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item)
-{
-    char hdPath[128];
-    //sprintf(hdPath, "m/44'/0'/0'/0/%u", index);
-    sprintf(hdPath, "%s/0/%u", g_ethPaths[g_ethPathIndex[g_currentAccountIndex]].path, index);
-    printf("hdPath=%s\r\n", hdPath);
-    item->index = index;
-    sprintf(item->address, "tb1qkcp7vdhczgk5eh59d2l0dxvmpzhx%010u", index);
-    strcpy(item->path, hdPath);
-}
-
 static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item)
 {
-    char hdPath[128];
-    //sprintf(hdPath, "m/44'/0'/0'/0/%u", index);
-    sprintf(hdPath, "%s/0/%u", g_ethPaths[g_ethPathIndex[g_currentAccountIndex]].path, index);
-    printf("hdPath=%s\r\n", hdPath);
-    item->index = index;
-    sprintf(item->address, "tb1qkcp7vdhczgk5eh59d2l0dxvmpzhx%010u", index);
-    strcpy(item->path, hdPath);
-}
-
-
-#else
-
-
-static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item)
-{
-    char *xPub = NULL, hdPath[128] = {0};
-    GetSolHdPath(hdPath, index);
+    char *xPub = NULL, hdPath[BUFFER_SIZE_128] = {0};
+    GetSolHdPath(hdPath, index, BUFFER_SIZE_128);
     xPub = GetSolXpub(index);
     ASSERT(xPub);
     SimpleResponse_c_char  *result = solana_get_address(xPub);
     if (result->error_code == 0) {
         item->index = index;
-        strcpy(item->address, result->data);
-        strcpy(item->path, hdPath);
+        strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
+        strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
     } else {
     }
     free_simple_response_c_char(result);
@@ -1251,22 +1212,19 @@ static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item)
 
 static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item)
 {
-    char *xPub, hdPath[128], rootPath[128];
-    GetEthHdPath(hdPath, index);
-    GetEthRootPath(rootPath, index);
+    char *xPub, hdPath[BUFFER_SIZE_128], rootPath[BUFFER_SIZE_128];
+    GetEthHdPath(hdPath, index, BUFFER_SIZE_128);
+    GetEthRootPath(rootPath, index, BUFFER_SIZE_128);
     xPub = GetEthXpub(index);
     ASSERT(xPub);
     SimpleResponse_c_char  *result = eth_get_address(hdPath, xPub, rootPath);
     if (result->error_code == 0) {
         item->index = index;
-        strcpy(item->address, result->data);
-        strcpy(item->path, hdPath);
-    } else {
+        strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
+        strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
     }
     free_simple_response_c_char(result);
 }
-
-#endif
 
 void GuiResetCurrentEthAddressIndex(uint8_t index)
 {
@@ -1283,10 +1241,10 @@ void GuiResetCurrentEthAddressIndex(uint8_t index)
 
 void GuiResetAllEthAddressIndex(void)
 {
-    memset(g_ethSelectIndex, 0, sizeof(g_ethSelectIndex));
-    memset(g_solSelectIndex, 0, sizeof(g_solSelectIndex));
-    memset(g_ethPathIndex, 0, sizeof(g_ethPathIndex));
-    memset(g_solPathIndex, 0, sizeof(g_solPathIndex));
+    memset_s(g_ethSelectIndex, sizeof(g_ethSelectIndex), 0, sizeof(g_ethSelectIndex));
+    memset_s(g_solSelectIndex, sizeof(g_solSelectIndex), 0, sizeof(g_solSelectIndex));
+    memset_s(g_ethPathIndex, sizeof(g_ethPathIndex), 0, sizeof(g_ethPathIndex));
+    memset_s(g_solPathIndex, sizeof(g_solPathIndex), 0, sizeof(g_solPathIndex));
 
 }
 

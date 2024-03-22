@@ -211,7 +211,7 @@ checksum = "89b2fd2a0dcf38d7971e2194b6b6eebab45ae01067456a7fd93d5547a61b70be"
 [[package]]
 name = "cardano-serialization-lib"
 version = "11.5.0"
-source = "git+https://git@github.com/KeystoneHQ/cardano-serialization-lib.git?tag=keystone-0.1.0#a74afd23881088ecceaf916c6823e8a084ea8b44"
+source = "git+https://git@github.com/KeystoneHQ/cardano-serialization-lib.git?tag=keystone-0.1.1#c1082c05d0952393ef7cc53ed80041c6d3c34bce"
 dependencies = [
  "bech32 0.9.1",
  "cbor_event",

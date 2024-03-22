@@ -32,7 +32,7 @@ static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_DVPN, "sent", 118, XPUB_TYPE_COSMOS, "sentinelhub-2"},
     {CHAIN_IXO, "ixo", 118, XPUB_TYPE_COSMOS, "ixo-4"},
     {CHAIN_NGM, "emoney", 118, XPUB_TYPE_COSMOS, "emoney-3"},
-    {CHAIN_BLD, "agoric", 564, XPUB_TYPE_BLD, "agoric-3"},
+    {CHAIN_BLD, "agoric", 118, XPUB_TYPE_BLD, "agoric-3"},
     {CHAIN_BOOT, "bostrom", 118, XPUB_TYPE_COSMOS, "bostrom"},
     {CHAIN_JUNO, "juno", 118, XPUB_TYPE_COSMOS, "juno-1"},
     {CHAIN_STARS, "stars", 118, XPUB_TYPE_COSMOS, "stargaze-1"},

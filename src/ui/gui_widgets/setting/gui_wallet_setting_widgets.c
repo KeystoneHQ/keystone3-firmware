@@ -109,9 +109,9 @@ void CountDownTimerHandler(lv_timer_t *timer)
     char buf[32] = {0};
     --countDown;
     if (countDown > 0) {
-        snprintf_s(buf, sizeof(buf), "Got it (%d)", countDown);
+        snprintf_s(buf, sizeof(buf), _("got_it_fmt"), countDown);
     } else {
-        strcpy_s(buf, sizeof(buf), "Got it");
+        strcpy_s(buf, sizeof(buf), _("got_it"));
     }
     lv_label_set_text(lv_obj_get_child(obj, 0), buf);
     if (countDown <= 0) {

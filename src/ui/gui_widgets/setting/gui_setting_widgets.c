@@ -255,10 +255,10 @@ void GuiSettingFullKeyBoardDestruct(void *obj, void *param)
 
 static void GuiWalletAddLimit(lv_obj_t *parent)
 {
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("Add Limited"));
+    lv_obj_t *label = GuiCreateTitleLabel(parent, _("wallet_setting_add_wallet_limit"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateIllustrateLabel(parent, _("You can only add up to a maximum of 3 wallets. Please delete other wallets before adding a new wallet."));
+    label = GuiCreateIllustrateLabel(parent, _("wallet_setting_add_wallet_limit_desc"));
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
 

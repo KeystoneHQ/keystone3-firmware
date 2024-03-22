@@ -324,7 +324,7 @@ void GetCosmosChainId(void *indata, void *param, uint32_t maxLen)
     GetCosmosDetailCommon(indata, param, "Chain ID", maxLen);
 }
 
-void GetCosmosDetailNthKind(void *indata, void *param, int n, const char* key)
+static void GetCosmosDetailNthKind(void *indata, void *param, int n, const char* key, uint32_t maxLen)
 {
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
     cJSON* root = cJSON_Parse((const char *)tx->detail);
@@ -332,17 +332,17 @@ void GetCosmosDetailNthKind(void *indata, void *param, int n, const char* key)
     cJSON* item = cJSON_GetArrayItem(kind, n);
     cJSON* value = cJSON_GetObjectItem(item, key);
     // one # is used for color, two # is used for display #.
-    snprintf_s((char *)indata,  BUFFER_SIZE_512, !strcmp(key, "Proposal") ? "#%s" : "%s", value->valuestring);
+    snprintf_s((char *)indata,  maxLen, !strcmp(key, "Proposal") ? "#%s" : "%s", value->valuestring);
 }
 
 void GetCosmosChannel(void *indata, void *param, uint32_t maxLen)
 {
-    GetCosmosDetailNthKind(indata, param, 0, "Source Channel");
+    GetCosmosDetailNthKind(indata, param, 0, "Source Channel", maxLen);
 }
 
 void GetCosmosOldValidator(void *indata, void *param, uint32_t maxLen)
 {
-    GetCosmosDetailNthKind(indata, param, 0, "Old Validator");
+    GetCosmosDetailNthKind(indata, param, 0, "Old Validator", maxLen);
 }
 
 void GetCosmosMsgLen(uint8_t *len, void *param)
@@ -354,21 +354,21 @@ void GetCosmosMsgLen(uint8_t *len, void *param)
     g_cosmosListIndex = -1;
 }
 
-void GetCosmosMsgKey(void *indata, void *param)
+void GetCosmosMsgKey(void *indata, void *param, uint32_t maxLen)
 {
     ++g_cosmosListIndex;
-    GetCosmosDetailNthKind(indata, param, g_cosmosListIndex, "Method");
+    GetCosmosDetailNthKind(indata, param, g_cosmosListIndex, "Method", maxLen);
 }
 
 void GetCosmosIndex(void *indata, void *param, uint32_t maxLen)
 {
     // one # is used for color, two # is used for display #.
-    snprintf_s((char *)indata,  maxLen, "##%d", g_cosmosListIndex + 1);
+    snprintf_s((char *)indata,  maxLen, "##%d", g_cosmosListIndex + 1, maxLen);
 }
 
 void GetCosmosTextOfKind(void *indata, void *param, uint32_t maxLen)
 {
-    GetCosmosDetailNthKind(indata, param, g_cosmosListIndex, indata);
+    GetCosmosDetailNthKind(indata, param, g_cosmosListIndex, indata, maxLen);
 }
 
 void GetCosmosDetailItemValue(void *indata, void *param, uint32_t maxLen)

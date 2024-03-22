@@ -25,14 +25,15 @@
 #include "account_manager.h"
 #include "librust_c.h"
 #include "assert.h"
-#include "safe_mem_lib.h"
-#include "safe_str_lib.h"
 #include "secret_cache.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #include "simulator_storage.h"
 #include "simulator_mock_define.h"
+#else
+#include "safe_mem_lib.h"
+#include "safe_str_lib.h"
 #endif
 
 #define KEYSTORE_DEBUG          0

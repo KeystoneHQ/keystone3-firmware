@@ -11,7 +11,13 @@
 #include "log_print.h"
 #include "hash_and_salt.h"
 #include "secret_cache.h"
+
+
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#else 
 #include "safe_str_lib.h"
+#endif
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"

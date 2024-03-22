@@ -1,8 +1,9 @@
 #include "gui_qr_code.h"
-#include "safe_str_lib.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
+#else
+#include "safe_str_lib.h"
 #endif
 
 static lv_timer_t *g_timer;

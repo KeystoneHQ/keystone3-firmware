@@ -1121,10 +1121,10 @@ void GuiWidgetList(lv_obj_t *parent, cJSON *json)
         cJSON *itemKeyFunc = cJSON_GetObjectItem(json, "item_key_func");
         cJSON *child = cJSON_GetObjectItem(json, "item");
         keyFunc = GuiTemplateListItemKeyFuncGet(itemKeyFunc->valuestring);
-        char *key = SRAM_MALLOC(50);
+        char *key = SRAM_MALLOC(BUFFER_SIZE_64);
         for (uint8_t i = 0; i < len; i++) {
             if (itemKeyFunc != NULL) {
-                keyFunc(key, g_totalData);
+                keyFunc(key, g_totalData, BUFFER_SIZE_64);
             }
             if (itemMap != NULL) {
                 child = cJSON_GetObjectItem(itemMap, key);

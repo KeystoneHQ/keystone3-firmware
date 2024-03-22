@@ -58,6 +58,7 @@ typedef int errno_t;
 #include <errno.h>
 
 typedef int errno_t;
+#undef CHAR_BIT
 #define CHAR_BIT        8               /* number of bits in a char */
 #define HAVE_TOWLOWER
 #define HAVE_TOWUPPER

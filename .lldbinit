@@ -1,0 +1,2 @@
+target create build/simulator
+process launch

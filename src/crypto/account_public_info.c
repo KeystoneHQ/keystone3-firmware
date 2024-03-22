@@ -1,27 +1,29 @@
-#include "account_public_info.h"
-#include "string.h"
-#include "stdio.h"
-#include "user_memory.h"
-#include "keystore.h"
+#include <stdio.h>
+#include <string.h>
+#include "define.h"
+#include "cjson/cJSON.h"
+#include "sha256.h"
 #include "flash_address.h"
 #include "drv_gd25qxx.h"
-#include "define.h"
+#include "keystore.h"
+#include "user_memory.h"
+#include "account_public_info.h"
+#include "account_manager.h"
+#include "se_manager.h"
 #include "user_utils.h"
 #include "librust_c.h"
-#include "cjson/cJSON.h"
 #include "assert.h"
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_api.h"
 #include "gui_home_widgets.h"
-#include "sha256.h"
-#include "se_manager.h"
-#include "account_manager.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
 
 #define PUB_KEY_MAX_LENGTH                  256
 #define VERSION_MAX_LENGTH                  64
-
 #define INVALID_ACCOUNT_INDEX               255
 
 typedef struct {
@@ -331,13 +333,15 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
         ASSERT(ret == size);
         jsonString[size] = 0;
-        sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
+        sha256((struct sha256 *)hash, jsonString, size);
+#ifndef COMPILE_SIMULATOR
         if (!VerifyWalletDataHash(accountIndex, hash)) {
             CLEAR_ARRAY(hash);
             return ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH;
         } else {
             ret = SUCCESS_CODE;
         }
+#endif
         CLEAR_ARRAY(hash);
         if (GetPublicKeyFromJsonString(jsonString) == false) {
             printf("GetPublicKeyFromJsonString false, need regenerate\r\n");
@@ -413,7 +417,7 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
             }
             printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
             ASSERT(xPubResult->data);
-            g_accountPublicKey[i].pubKey = SRAM_MALLOC(strlen(xPubResult->data) + 1);
+            g_accountPublicKey[i].pubKey = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
             strcpy(g_accountPublicKey[i].pubKey, xPubResult->data);
             printf("xPubResult=%s\r\n", xPubResult->data);
             free_simple_response_c_char(xPubResult);
@@ -517,7 +521,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             }
             printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
             ASSERT(xPubResult->data);
-            g_accountPublicKey[i].pubKey = SRAM_MALLOC(strlen(xPubResult->data) + 1);
+            g_accountPublicKey[i].pubKey = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
             strcpy(g_accountPublicKey[i].pubKey, xPubResult->data);
             printf("xPubResult=%s\r\n", xPubResult->data);
             free_simple_response_c_char(xPubResult);
@@ -695,7 +699,7 @@ static bool GetPublicKeyFromJsonString(const char *string)
             } else {
                 GetStringValue(chainJson, "value", pubKeyString, PUB_KEY_MAX_LENGTH);
                 //printf("%s pub key=%s\r\n", g_chainTable[i].name, pubKeyString);
-                g_accountPublicKey[i].pubKey = SRAM_MALLOC(strlen(pubKeyString) + 1);
+                g_accountPublicKey[i].pubKey = SRAM_MALLOC(strnlen_s(pubKeyString, PUB_KEY_MAX_LENGTH) + 1);
                 strcpy(g_accountPublicKey[i].pubKey, pubKeyString);
             }
         }
@@ -763,7 +767,7 @@ static void GetStringValue(cJSON *obj, const char *key, char *value, uint32_t ma
     json = cJSON_GetObjectItem(obj, key);
     if (json != NULL) {
         strTemp = json->valuestring;
-        len = strlen(strTemp);
+        len = strnlen_s(strTemp, 256);
         if (len < maxLen) {
             strcpy(value, strTemp);
         } else {

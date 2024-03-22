@@ -22,6 +22,10 @@
 #endif
 #include "gui_select_address_widgets.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 #define DERIVATION_PATH_EG_LEN 2
 
 typedef enum {
@@ -256,7 +260,7 @@ static void AddSolflareCoins(void);
 static void ShowEgAddressCont(lv_obj_t *egCont);
 static uint8_t GetCurrentSelectedIndex();
 #endif
-
+void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 
 #ifndef BTC_ONLY
 CoinState_t g_companionAppcoinState[COMPANION_APP_COINS_BUTT];
@@ -863,22 +867,6 @@ static void AddPetraCoins(void)
     }
 }
 
-static void AddressLongModeCutWithLen(char *out, const char *address, uint32_t maxLen)
-{
-    uint32_t len;
-    uint32_t midI = maxLen / 2;
-
-    len = strlen(address);
-    if (len <= maxLen) {
-        strcpy(out, address);
-        return;
-    }
-    strncpy(out, address, midI);
-    out[midI] = 0;
-    strcat(out, "...");
-    strcat(out, address + len - midI);
-}
-
 static void AddXrpToolkitAddress(void)
 {
     if (lv_obj_get_child_cnt(g_bottomCont) > 0) {
@@ -888,13 +876,13 @@ static void AddXrpToolkitAddress(void)
     }
     lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
 
-    char name[20] = {0};
-    sprintf(name, "Account-%d", g_xrpAddressIndex[GetCurrentAccountIndex()] + 1);
+    char name[BUFFER_SIZE_32] = {0};
+    snprintf_s(name, BUFFER_SIZE_32, "Account-%d", g_xrpAddressIndex[GetCurrentAccountIndex()] + 1);
     lv_obj_t *label = GuiCreateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 
-    char addr[36] = {0};
-    AddressLongModeCutWithLen(addr, GuiGetXrpAddressByIndex(g_xrpAddressIndex[GetCurrentAccountIndex()]), 20);
+    char addr[BUFFER_SIZE_256] = {0};
+    CutAndFormatAddress(addr, sizeof(addr), GuiGetXrpAddressByIndex(g_xrpAddressIndex[GetCurrentAccountIndex()]), 20);
     label = GuiCreateNoticeLabel(g_bottomCont, addr);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 58);
 
@@ -1193,27 +1181,27 @@ static void GetEthEgAddress(void)
 #ifndef COMPILE_SIMULATOR
     SimpleResponse_c_char *result;
     result = eth_get_address("44'/60'/0'/0/0", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD), "44'/60'/0'");
-    AddressLongModeCut(g_derivationPathAddr[Bip44Standard][0], result->data);
+    CutAndFormatAddress(g_derivationPathAddr[Bip44Standard][0], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = eth_get_address("44'/60'/0'/0/1", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD), "44'/60'/0'");
-    AddressLongModeCut(g_derivationPathAddr[Bip44Standard][1], result->data);
+    CutAndFormatAddress(g_derivationPathAddr[Bip44Standard][1], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = eth_get_address("44'/60'/0'/0/0", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LIVE_0), "44'/60'/0'");
-    AddressLongModeCut(g_derivationPathAddr[LedgerLive][0], result->data);
+    CutAndFormatAddress(g_derivationPathAddr[LedgerLive][0], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = eth_get_address("44'/60'/1'/0/0", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LIVE_1), "44'/60'/1'");
-    AddressLongModeCut(g_derivationPathAddr[LedgerLive][1], result->data);
+    CutAndFormatAddress(g_derivationPathAddr[LedgerLive][1], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = eth_get_address("44'/60'/0'/0", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LEGACY), "44'/60'/0'");
-    AddressLongModeCut(g_derivationPathAddr[LedgerLegacy][0], result->data);
+    CutAndFormatAddress(g_derivationPathAddr[LedgerLegacy][0], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = eth_get_address("44'/60'/0'/1", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LEGACY), "44'/60'/0'");
-    AddressLongModeCut(g_derivationPathAddr[LedgerLegacy][1], result->data);
+    CutAndFormatAddress(g_derivationPathAddr[LedgerLegacy][1], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 #endif
 }
@@ -1223,23 +1211,23 @@ static void GetSolEgAddress(void)
 #ifndef COMPILE_SIMULATOR
     SimpleResponse_c_char *result;
     result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_0));
-    AddressLongModeCut(g_solDerivationPathAddr[SOLBip44][0], result->data);
+    CutAndFormatAddress(g_solDerivationPathAddr[SOLBip44][0], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_1));
-    AddressLongModeCut(g_solDerivationPathAddr[SOLBip44][1], result->data);
+    CutAndFormatAddress(g_solDerivationPathAddr[SOLBip44][1], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_ROOT));
-    AddressLongModeCut(g_solDerivationPathAddr[SOLBip44ROOT][0], result->data);
+    CutAndFormatAddress(g_solDerivationPathAddr[SOLBip44ROOT][0], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_CHANGE_0));
-    AddressLongModeCut(g_solDerivationPathAddr[SOLBip44Change][0], result->data);
+    CutAndFormatAddress(g_solDerivationPathAddr[SOLBip44Change][0], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_CHANGE_1));
-    AddressLongModeCut(g_solDerivationPathAddr[SOLBip44Change][1], result->data);
+    CutAndFormatAddress(g_solDerivationPathAddr[SOLBip44Change][1], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 #endif
 }
@@ -1361,19 +1349,16 @@ static char *GetChangeDerivationPathDesc(void)
 
 static void ShowEgAddressCont(lv_obj_t *egCont)
 {
-
     if (egCont == NULL) {
         printf("egCont is NULL, cannot show eg address\n");
         return;
     }
-
     lv_obj_clean(egCont);
 
     lv_obj_t *prevLabel = NULL, *label;
-
     int egContHeight = 12;
     char *desc = GetChangeDerivationPathDesc();
-    if (desc != NULL && strlen(desc) > 0) {
+    if (desc != NULL && strnlen_s(desc, BUFFER_SIZE_128) > 0) {
         label = GuiCreateNoticeLabel(egCont, desc);
         lv_obj_set_width(label, 360);
         lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);

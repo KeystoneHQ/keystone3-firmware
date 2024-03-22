@@ -19,6 +19,7 @@ use alloc::string::ToString;
 use alloc::vec;
 use alloc::vec::Vec;
 use core::iter::FromIterator;
+use core::str::FromStr;
 use serde::{Deserialize, Deserializer, Serialize};
 
 use third_party::hex;
@@ -135,7 +136,7 @@ pub struct EIP712Domain {
 
     /// The address of the contract that will verify the signature.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub verifying_contract: Option<Address>,
+    pub verifying_contract: Option<String>,
 
     /// A disambiguating salt for the protocol. This can be used as a domain separator of last
     /// resort.
@@ -181,12 +182,22 @@ impl EIP712Domain {
             needs_comma = true;
         }
 
-        if let Some(verifying_contract) = self.verifying_contract {
+        if let Some(ref verifying_contract) = self.verifying_contract {
             if needs_comma {
                 ty.push(',');
             }
-            ty += "address verifyingContract";
-            tokens.push(Token::Address(verifying_contract));
+            match Address::from_str(verifying_contract.as_str()) {
+                Ok(address) => {
+                    ty += "address verifyingContract";
+                    tokens.push(Token::Address(address));
+                }
+                _ => {
+                    ty += "string verifyingContract";
+                    tokens.push(Token::Uint(U256::from(keccak256(
+                        verifying_contract.as_ref(),
+                    ))));
+                }
+            }
             needs_comma = true;
         }
 
@@ -194,8 +205,13 @@ impl EIP712Domain {
             if needs_comma {
                 ty.push(',');
             }
-            ty += "bytes32 salt";
-            tokens.push(Token::Uint(U256::from(salt)));
+            if salt.iter().all(|&x| x == 0) {
+                ty += "string salt";
+                tokens.push(Token::Uint(U256::from(keccak256("0".as_ref()))));
+            } else {
+                ty += "bytes32 salt";
+                tokens.push(Token::Uint(U256::from(salt)));
+            }
         }
 
         ty.push(')');
@@ -315,9 +331,14 @@ impl Into<StructTypedDta> for TypedData {
                 .chain_id
                 .map_or("".to_string(), |v| v.to_string()),
             verifying_contract: self.domain.verifying_contract.map_or("".to_string(), |v| {
-                let mut s = String::from("0x");
-                s.push_str(&hex::encode(v.0));
-                s
+                match Address::from_str(&v) {
+                    Ok(address) => {
+                        let mut s = String::from("0x");
+                        s.push_str(&hex::encode(address.0));
+                        s
+                    }
+                    Err(_) => v,
+                }
             }),
             salt: self.domain.salt.map_or("".to_string(), |v| {
                 let mut s = String::from("0x");

@@ -149,7 +149,7 @@ uint32_t SubMessageID(uint32_t messageID, void* queue)
                 if (p_queueNode == NULL) {
                     //New line.
                     p_queueNode = (QueueNode_t *)SramMalloc(sizeof(QueueNode_t));
-                    memset(p_queueNode, 0, sizeof(QueueNode_t));
+                    memset_s(p_queueNode, sizeof(QueueNode_t), 0, sizeof(QueueNode_t));
                     p_queueNode->queue = queue;
                     p_queueNode->next = NULL;
                     p_messageNode->queueList = p_queueNode;
@@ -163,7 +163,7 @@ uint32_t SubMessageID(uint32_t messageID, void* queue)
                 } else if (p_queueNode->next == NULL) {
                     //The end of the column has been reached, add a column and write to the queue.
                     p_queueNode->next = (QueueNode_t *)SramMalloc(sizeof(QueueNode_t));
-                    memset(p_queueNode->next, 0, sizeof(QueueNode_t));
+                    memset_s(p_queueNode->next, sizeof(QueueNode_t), 0, sizeof(QueueNode_t));
                     p_queueNode = p_queueNode->next;
                     p_queueNode->queue = queue;
                     p_queueNode->next = NULL;
@@ -178,7 +178,7 @@ uint32_t SubMessageID(uint32_t messageID, void* queue)
         } else if (p_messageNode->next == NULL) {
             //The end of the line has been reached, and a new line needs to be created, and the messageID of the new line is assigned the locally registered messageID.
             p_messageNode->next = (MessageNode_t *)SramMalloc(sizeof(MessageNode_t));
-            memset(p_messageNode->next, 0, sizeof(MessageNode_t));
+            memset_s(p_messageNode->next, sizeof(MessageNode_t), 0, sizeof(MessageNode_t));
             p_messageNode = p_messageNode->next;
             p_messageNode->messageID = messageID;
             p_messageNode->next = NULL;

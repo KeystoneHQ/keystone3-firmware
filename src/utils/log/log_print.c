@@ -6,6 +6,10 @@
 #include "user_memory.h"
 #include "assert.h"
 #include "string.h"
+#include "safe_str_lib.h"
+
+#define MEM_DEBUG_BUF_SIZE 128
+
 struct __RustMemoryNode {
     void *p;
     uint32_t size;
@@ -70,15 +74,15 @@ void RustMemoryNode_remove(void *p)
 void RustMemoryNode_print()
 {
     RustMemoryNode_t *current = rustMemoryListHead;
-    char memBuf[128] = {0};
+    char memBuf[MEM_DEBUG_BUF_SIZE] = {0};
     while (current != NULL) {
-        snprintf(memBuf, sizeof(memBuf), "Rust Memory Usage: address: 0x%x, size: %d\n", current -> p, current -> size);
-        WriteDebugToSdcard(memBuf, strlen(memBuf));
+        snprintf(memBuf, MEM_DEBUG_BUF_SIZE, "Rust Memory Usage: address: 0x%x, size: %d\n", current -> p, current -> size);
+        WriteDebugToSdcard(memBuf, strnlen_s(memBuf, MEM_DEBUG_BUF_SIZE));
         printf("Rust Memory Usage: address: 0x%x, size: %d\r\n", current->p, current->size);
         if (sizeof(current->p[0]) == 1) {
             if (((char *)current->p)[current->size - 1] == '\0') {
                 snprintf(memBuf, sizeof(memBuf), "Rust Memory Possible value: %s\r\n", current->p);
-                WriteDebugToSdcard(memBuf, strlen(memBuf));
+                WriteDebugToSdcard(memBuf, strnlen_s(memBuf, MEM_DEBUG_BUF_SIZE));
                 printf("Rust Memory Possible value: %s\r\n", current->p);
             }
         }

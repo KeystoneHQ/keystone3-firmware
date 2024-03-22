@@ -132,7 +132,7 @@ int32_t QrDecodeProcess(char *result, uint32_t maxLen, uint8_t progress)
 
     if (progressNum != progress) {
         if (progress > 0) {
-            sprintf(progressStr, "%d%%  ", progress);
+            snprintf_s(progressStr, sizeof(progressStr), "%d%%  ", progress);
             DrawStringOnLcd(215, 638, progressStr, 0xFFFF, &openSans_24);
             DrawProgressBarOnLcd(80, 594, 320, 9, progress, 0x21F4);
         }

@@ -27,6 +27,7 @@
 #include "keystore.h"
 #else
 #include "simulator_model.h"
+#include "simulator_mock_define.h"
 #endif
 
 static KeyBoard_t *g_setNameKb = NULL;         // setting keyboard
@@ -40,7 +41,7 @@ static void UpdateWalletDescHandler(lv_event_t *e)
             .iconIndex = GuiSearchIconIndex(g_walletIcon),
         };
         GuiSetEmojiIconIndex(wallet.iconIndex);
-        strcpy(wallet.name, lv_textarea_get_text(g_setNameKb->ta));
+        strcpy_s(wallet.name, WALLET_NAME_MAX_LEN, lv_textarea_get_text(g_setNameKb->ta));
         GuiModelSettingSaveWalletDesc(&wallet);
     }
 }
@@ -107,8 +108,8 @@ void *GuiWalletNameWallet(lv_obj_t *parent, uint8_t tile)
     lv_obj_set_style_border_color(g_setNameKb->ta, ORANGE_COLOR, LV_PART_CURSOR | LV_STATE_FOCUSED);
     lv_textarea_set_text(g_setNameKb->ta, GuiNvsBarGetWalletName());
 
-    char tempBuf[16] = {0};
-    sprintf(tempBuf, "%d/16", strlen(GuiNvsBarGetWalletName()));
+    char tempBuf[BUFFER_SIZE_16] = {0};
+    snprintf_s(tempBuf, BUFFER_SIZE_32, "%d/16", strnlen_s(GuiNvsBarGetWalletName(), 17));
     GuiSetEmojiIconIndex(GUI_KEYBOARD_EMOJI_CANCEL_NEW_INDEX);
     lv_obj_t *progresslabel = GuiCreateNoticeLabel(parent, tempBuf);
     lv_obj_align(progresslabel, LV_ALIGN_DEFAULT, 402, 384 - GUI_MAIN_AREA_OFFSET);

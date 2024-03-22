@@ -25,9 +25,7 @@ void PsramInit(void)
     PSRAM_EnterQuadMode();
 
     //PsramSelfCheck();
-    printf("start memset\r\n");
     memset((void *)MHSCPU_PSRAM_BASE, 0, MHSCPU_PSRAM_SIZE);
-    printf("memset over\r\n");
 }
 
 

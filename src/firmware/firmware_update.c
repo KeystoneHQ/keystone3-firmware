@@ -18,6 +18,7 @@
 #include "mhscpu.h"
 #include "drv_otp.h"
 #include "user_utils.h"
+#include "version.h"
 
 #define SD_CARD_OTA_BIN_PATH   "0:/keystone3.bin"
 
@@ -40,6 +41,8 @@ LV_FONT_DECLARE(openSans_24);
 
 #define UPDATE_PUB_KEY_LEN                  64
 
+#define MAX_OTA_HEAD_SIZE                   0x100000
+
 static uint32_t GetOtaFileInfo(OtaFileInfo_t *info, const char *filePath);
 static bool CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t *pHeadSize);
 static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32_t headSize, char *version);
@@ -50,7 +53,7 @@ bool CheckApp(void)
 {
     uint8_t read[4096];
     uint32_t major, minor, build;
-    memcpy(read, (void *)APP_VERSION_ADDR, 4096);
+    memcpy_s(read, 4096, (void *)APP_VERSION_ADDR, 4096);
     return GetSoftwareVersionFormData(&major, &minor, &build, read, 4096) == 0;
 }
 
@@ -58,7 +61,7 @@ void GetSoftwareVersion(uint32_t *major, uint32_t *minor, uint32_t *build)
 {
     uint8_t read[4096];
 
-    memcpy(read, (void *)APP_VERSION_ADDR, 4096);
+    memcpy_s(read, 4096, (void *)APP_VERSION_ADDR, 4096);
     GetSoftwareVersionFormData(major, minor, build, read, 4096);
 }
 
@@ -83,7 +86,7 @@ int32_t GetSoftwareVersionFormData(uint32_t *major, uint32_t *minor, uint32_t *b
             printf("version string not found in fixed segment\n");
             break;
         }
-        memcpy(read, &data[versionInfoOffset], 64);
+        memcpy_s(read, 64, &data[versionInfoOffset], 64);
         read[31] = '\0';
         if (strncmp(read, APP_VERSION_HEAD, headLen) != 0) {
             break;
@@ -113,7 +116,8 @@ static uint32_t GetOtaFileInfo(OtaFileInfo_t *info, const char *filePath)
 {
     FIL fp;
     int32_t ret;
-    uint32_t headSize = 0, readSize;
+    uint32_t headSize = 0, readSize, fileSize;
+    char *headData = NULL;
 
     ret = f_open(&fp, filePath, FA_OPEN_EXISTING | FA_READ);
     do {
@@ -121,13 +125,40 @@ static uint32_t GetOtaFileInfo(OtaFileInfo_t *info, const char *filePath)
             FatfsError((FRESULT)ret);
             break;
         }
+        fileSize = f_size(&fp);
         ret = f_read(&fp, &headSize, 4, (UINT *)&readSize);
         if (ret) {
             FatfsError((FRESULT)ret);
             break;
         }
+        if (headSize > MAX_OTA_HEAD_SIZE) {
+            printf("headSize>MAX,%d,%d\n", headSize, MAX_OTA_HEAD_SIZE);
+            headSize = 0;
+            break;
+        }
+        if (headSize > fileSize - 4) {
+            printf("headSize>fileSize-4,%d,%d\n", headSize, fileSize);
+            headSize = 0;
+            break;
+        }
+        headData = SRAM_MALLOC(headSize + 2);
+        ret = f_read(&fp, headData, headSize + 1, (UINT *)&readSize);
+        if (ret) {
+            headSize = 0;
+            FatfsError((FRESULT)ret);
+            break;
+        }
+        headData[headSize + 1] = 0;
+        if (strlen(headData) != headSize) {
+            printf("head err,str len=%d,headSize=%d\n", strlen(headData), headSize);
+            headSize = 0;
+            break;
+        }
     } while (0);
     f_close(&fp);
+    if (headData != NULL) {
+        SRAM_FREE(headData);
+    }
     return headSize + 5;    //4 byte uint32 and 1 byte json string '\0' end.
 }
 
@@ -143,8 +174,6 @@ static bool CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t *pH
 
 bool CheckOtaBinVersion(char *version)
 {
-    // strcpy(version, "99.99.99");
-    // return true;
     OtaFileInfo_t otaFileInfo = {0};
     uint32_t headSize;
     bool ret = true;
@@ -215,9 +244,9 @@ static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32
 
     if (fileMajor >= 10) {
         fileMajor = fileMajor % 10;
-        sprintf(version, "%d.%d.%d-BTC", fileMajor, fileMinor, fileBuild);
+        snprintf_s(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d-BTC", fileMajor, fileMinor, fileBuild);
     } else {
-        sprintf(version, "%d.%d.%d", fileMajor, fileMinor, fileBuild);
+        snprintf_s(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", fileMajor, fileMinor, fileBuild);
     }
     if (fileVersionNumber <= nowVersionNumber) {
         SRAM_FREE(g_dataUnit);

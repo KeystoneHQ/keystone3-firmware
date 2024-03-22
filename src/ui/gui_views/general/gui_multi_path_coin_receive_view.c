@@ -12,7 +12,6 @@ static int32_t GuiMultiPathCoinReceiveViewInit(uint8_t chain)
 
 static int32_t GuiMultiPathCoinReceiveViewDeInit(void)
 {
-    printf("GuiEthereumReceiveViewDeInit\r\n");
     GuiMultiPathCoinReceiveDeInit();
     return SUCCESS_CODE;
 }

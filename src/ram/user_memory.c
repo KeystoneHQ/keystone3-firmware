@@ -1,9 +1,9 @@
-#include "user_memory.h"
 #include "stdio.h"
 #include "string.h"
 #include "cmsis_os.h"
 #include "psram_heap_4.h"
 #include "assert.h"
+#include "user_memory.h"
 
 #define SRAM_HEAP_TRACK                 0
 #define EXT_HEAP_TRACK                  0

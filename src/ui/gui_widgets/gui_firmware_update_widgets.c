@@ -10,21 +10,27 @@
 #include "gui_setup_widgets.h"
 #include "background_task.h"
 #include "firmware_update.h"
-#include "keystore.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_about_info_widgets.h"
 #include "secret_cache.h"
-#ifndef COMPILE_SIMULATOR
+#include "version.h"
+#include "user_memory.h"
+#include "keystore.h"
 #include "user_fatfs.h"
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#include "simulator_model.h"
 #endif
 
 typedef enum {
     FIRMWARE_UPDATE_SELECT = 0,
     FIRMWARE_UPDATE_USB_INSTRUCTION,
     FIRMWARE_UPDATE_SD_INSTRUCTION,
-
+#ifndef BTC_ONLY
+    FIRMWARE_UPDATE_MULTI_TO_BTC_WARNING,
+#endif
     FIRMWARE_UPDATE_USB_UPDATING,
 
     FIRMWARE_UPDATE_BUTT,
@@ -37,6 +43,9 @@ typedef struct {
     lv_obj_t *tileSelect;
     lv_obj_t *tileUsbInstruction;
     lv_obj_t *tileSdInstruction;
+#ifndef BTC_ONLY
+    lv_obj_t *tileMultiToBtcWarning;
+#endif
     lv_obj_t *tileUpdating;
     lv_obj_t *qrCodeCont;
 } FirmwareUpdateWidgets_t;
@@ -50,6 +59,14 @@ static void GuiFirmwareUpdateViewSha256(char *version, uint8_t percent);
 static void CloseQrcodeHandler(lv_event_t *e);
 static int GetEntryEnum(void);
 static void GuiCreateSdCardnstructionTile(lv_obj_t *parent);
+#ifndef BTC_ONLY
+static void GuiCreateMultiToBtcWarningTile(lv_obj_t *parent);
+static void StartKnownWarningCountDownTimer(void);
+static void KnownWarningCountDownTimerHandler(lv_timer_t *timer);
+static void KnownWarningHandler(lv_event_t *e);
+static void KnownWarningCancelHandler(lv_event_t *e);
+#endif
+static void ConfirmSdCardUpdate(void);
 static void FirmwareSdcardUpdateHandler(lv_event_t *e);
 static void FirmwareSdcardCheckSha256Handler(lv_event_t *e);
 static void FirmwareSdcardCheckSha256HintBoxHandler(lv_event_t *e);
@@ -64,6 +81,12 @@ static lv_obj_t *g_noticeHintBox = NULL;
 static lv_obj_t *g_calCheckSumLabel = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static PageWidget_t *g_pageWidget;
+
+#ifndef BTC_ONLY
+static lv_timer_t *g_knownWarningCountDownTimer = NULL;
+static uint32_t g_knownWarningCountDown = 0;
+static lv_obj_t *g_knownWarningBtn;
+#endif
 
 static void UrlInit()
 {
@@ -81,7 +104,7 @@ void GuiCreateSdCardUpdateHintbox(char *version, bool checkSumDone)
     static uint32_t param = SIG_INIT_SD_CARD_OTA_COPY;
     char desc[150] = {0};
 
-    sprintf(desc, _("firmware_update_sd_dialog_desc"));
+    strcpy_s(desc, sizeof(desc), _("firmware_update_sd_dialog_desc"));
     uint16_t height = checkSumDone ? 518 : 458;
     g_noticeHintBox = GuiCreateUpdateHintbox(lv_scr_act(), height, &imgFirmwareUp, _("firmware_update_sd_dialog_title"),
                       desc, _("not_now"), DARK_GRAY_COLOR, _("Update"), ORANGE_COLOR, checkSumDone);
@@ -144,6 +167,10 @@ void GuiFirmwareUpdateInit(void *param)
 
     g_firmwareUpdateWidgets.tileSdInstruction = lv_tileview_add_tile(tileView, FIRMWARE_UPDATE_SD_INSTRUCTION, 0, LV_DIR_HOR);
     GuiCreateSdCardnstructionTile(g_firmwareUpdateWidgets.tileSdInstruction);
+#ifndef BTC_ONLY
+    g_firmwareUpdateWidgets.tileMultiToBtcWarning = lv_tileview_add_tile(tileView, FIRMWARE_UPDATE_MULTI_TO_BTC_WARNING, 0, LV_DIR_HOR);
+    GuiCreateMultiToBtcWarningTile(g_firmwareUpdateWidgets.tileMultiToBtcWarning);
+#endif
 
     g_firmwareUpdateWidgets.currentTile = FIRMWARE_UPDATE_SELECT;
 }
@@ -177,6 +204,12 @@ void GuiFirmwareSdCardCopyResult(bool en)
 
 void GuiFirmwareUpdateDeInit(void)
 {
+#ifndef BTC_ONLY
+    if (g_knownWarningCountDownTimer != NULL) {
+        lv_timer_del(g_knownWarningCountDownTimer);
+        g_knownWarningCountDownTimer = NULL;
+    }
+#endif
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     g_param = NULL;
     printf("GuiFirmwareUpdateDeInit\n");
@@ -193,7 +226,18 @@ void GuiFirmwareUpdateDeInit(void)
 
 void GuiFirmwareUpdateRefresh(void)
 {
+#ifndef BTC_ONLY
+    if (g_firmwareUpdateWidgets.currentTile != FIRMWARE_UPDATE_MULTI_TO_BTC_WARNING) {
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+    } else {
+        if (g_pageWidget->navBarWidget->leftBtn != NULL && lv_obj_is_valid(g_pageWidget->navBarWidget->leftBtn)) {
+            lv_obj_del(g_pageWidget->navBarWidget->leftBtn);
+            g_pageWidget->navBarWidget->leftBtn = NULL;
+        }
+    }
+#else
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+#endif
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "");
     if (GetEntryEnum() == FIRMWARE_UPDATE_ENTRY_SETUP && g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_SELECT) {
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_NEW_SKIP, OpenViewHandler, &g_purposeView);
@@ -232,9 +276,15 @@ void GuiFirmwareUpdatePrevTile(void)
     case FIRMWARE_UPDATE_USB_INSTRUCTION:
         g_firmwareUpdateWidgets.currentTile--;
         break;
+#ifndef BTC_ONLY
+    case FIRMWARE_UPDATE_MULTI_TO_BTC_WARNING:
+        g_firmwareUpdateWidgets.currentTile--;
+        break;
+#endif
     default:
         return;
     }
+    printf("g_firmwareUpdateWidgets.currentTile=%d\n", g_firmwareUpdateWidgets.currentTile);
     lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, g_firmwareUpdateWidgets.currentTile, 0, LV_ANIM_OFF);
     if (g_firmwareUpdateWidgets.tileView == FIRMWARE_UPDATE_SELECT) {
         GuiCreateSelectTile(g_firmwareUpdateWidgets.tileSelect);
@@ -248,7 +298,7 @@ void GuiFirmwareUpdateSha256Percent(uint8_t percent)
     if (g_noticeHintBox == NULL) {
         return;
     }
-    char version[16] = {0};
+    char version[SOFTWARE_VERSION_MAX_LEN] = {0};
     if (percent == 100) {
         CheckOtaBinVersion(version);
     }
@@ -283,7 +333,7 @@ static void GuiCreateSelectTile(lv_obj_t *parent)
         {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 40},},
     };
 
-    char fileVersion[16] = {0};
+    char fileVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
     if (CheckOtaBinVersion(fileVersion)) {
         lv_obj_t *versionLabel = GuiCreateIllustrateLabel(parent, fileVersion);
         lv_obj_set_style_text_color(versionLabel, ORANGE_COLOR, LV_PART_MAIN);
@@ -390,12 +440,27 @@ static void GuiCreateUsbInstructionTile(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 510);
 }
 
+static void ConfirmSdCardUpdate(void)
+{
+    static uint16_t walletSetIndex = SIG_INIT_SD_CARD_OTA_COPY;
+    uint8_t accountCnt = 0;
+    GetExistAccountNum(&accountCnt);
+    if (accountCnt == 0) {
+        GuiFirmwareSdCardCopy();
+        GuiModelCopySdCardOta();
+    } else {
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+        g_keyboardWidget = GuiCreateKeyboardWidget(g_firmwareUpdateWidgets.cont);
+        SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+        SetKeyboardWidgetSig(g_keyboardWidget, &walletSetIndex);
+    }
+}
+
 static void FirmwareSdcardUpdateHandler(lv_event_t *e)
 {
-    char fileVersion[16] = {0};
+    char fileVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
     GUI_DEL_OBJ(g_noticeHintBox)
     lv_event_code_t code = lv_event_get_code(e);
-    uint16_t *walletSetIndex = lv_event_get_user_data(e);
     if (code == LV_EVENT_CLICKED) {
         GuiModelStopCalculateCheckSum();
         if (CHECK_BATTERY_LOW_POWER()) {
@@ -404,20 +469,29 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
             //firmware_update_sd_failed_access_title
             g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeHintBox);
         } else if (CheckOtaBinVersion(fileVersion)) {
-            uint8_t accountCnt = 0;
-            GetExistAccountNum(&accountCnt);
-            if (accountCnt == 0) {
-                GuiFirmwareSdCardCopy();
-                GuiModelCopySdCardOta();
+#ifndef BTC_ONLY
+            printf("fileVersion=%s\n", fileVersion);
+            if (strstr(fileVersion, "BTC") == NULL) {
+                ConfirmSdCardUpdate();
             } else {
-                GuiDeleteKeyboardWidget(g_keyboardWidget);
-                g_keyboardWidget = GuiCreateKeyboardWidget(g_firmwareUpdateWidgets.cont);
-                SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
-                SetKeyboardWidgetSig(g_keyboardWidget, walletSetIndex);
+                printf("firmware from MultiCoin to BTC\n");
+                if (g_firmwareUpdateWidgets.tileView == NULL) {
+                    g_noticeHintBox = GuiCreateContainerWithParent(lv_scr_act(), lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET_NEW);
+                    lv_obj_align(g_noticeHintBox, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET_NEW);
+                    lv_obj_add_flag(g_noticeHintBox, LV_OBJ_FLAG_CLICKABLE);
+                    GuiCreateMultiToBtcWarningTile(g_noticeHintBox);
+                } else {
+                    g_firmwareUpdateWidgets.currentTile = FIRMWARE_UPDATE_MULTI_TO_BTC_WARNING;
+                    lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, g_firmwareUpdateWidgets.currentTile, 0, LV_ANIM_OFF);
+                    GuiFirmwareUpdateRefresh();
+                }
+                StartKnownWarningCountDownTimer();
             }
+#else
+            ConfirmSdCardUpdate();
+#endif
         } else {
-            if (strlen(fileVersion) == 0) {
-                //no file
+            if (strnlen_s(fileVersion, 16) == 0) {
                 g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
             } else {
                 g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_NO_UPGRADABLE_FIRMWARE, &g_noticeHintBox);
@@ -527,6 +601,112 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, FirmwareSdcardUpdateHandler, LV_EVENT_CLICKED, &param);
 }
 
+#ifndef BTC_ONLY
+static void GuiCreateMultiToBtcWarningTile(lv_obj_t *parent)
+{
+    lv_obj_t *label, *img, *btn;
+
+    img = GuiCreateImg(parent, &imgMultiCoin);
+    lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 134, -548);
+    img = GuiCreateImg(parent, &imgArrowNextRed);
+    lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 222, -566);
+    img = GuiCreateImg(parent, &imgBtcOnly);
+    lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 274, -548);
+
+    label = GuiCreateLittleTitleLabel(parent, _("firmware_update_btc_only_warning_title"));
+    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -476);
+    label = GuiCreateIllustrateLabel(parent, _("firmware_update_btc_only_warning_desc"));
+    lv_obj_set_style_text_color(label, WHITE_COLOR_OPA64, LV_PART_MAIN);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(label, 408);
+    lv_label_set_recolor(label, true);
+    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -224);
+
+    btn = GuiCreateBtn(parent, _("firmware_update_btc_only_button_cancel"));
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
+    lv_obj_set_size(btn, 192, 66);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
+    lv_obj_add_event_cb(btn, KnownWarningCancelHandler, LV_EVENT_CLICKED, NULL);
+
+    btn = GuiCreateBtn(parent, _("firmware_update_btc_only_button_i_know"));
+    lv_obj_set_size(btn, 192, 66);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_add_event_cb(btn, KnownWarningHandler, LV_EVENT_CLICKED, NULL);
+    g_knownWarningBtn = btn;
+}
+
+static void StartKnownWarningCountDownTimer(void)
+{
+    char text[32];
+    g_knownWarningCountDown = 5;
+    if (g_knownWarningCountDownTimer != NULL) {
+        lv_timer_del(g_knownWarningCountDownTimer);
+    }
+    lv_obj_clear_flag(g_knownWarningBtn, LV_OBJ_FLAG_CLICKABLE);
+    snprintf_s(text, sizeof(text), "%s(5)", _("firmware_update_btc_only_button_i_know"));
+    lv_label_set_text(lv_obj_get_child(g_knownWarningBtn, 0), text);
+    lv_obj_set_style_bg_opa(g_knownWarningBtn, LV_OPA_60, LV_PART_MAIN);
+    g_knownWarningCountDownTimer = lv_timer_create(KnownWarningCountDownTimerHandler, 1000, NULL);
+}
+
+static void KnownWarningCountDownTimerHandler(lv_timer_t *timer)
+{
+    lv_obj_t *btn = g_knownWarningBtn;
+    char text[32];
+    const char *preText = _("firmware_update_btc_only_button_i_know");
+    if (btn == NULL) {
+        g_knownWarningCountDown = 0;
+        lv_timer_del(timer);
+        g_knownWarningCountDownTimer = NULL;
+        return;
+    }
+    g_knownWarningCountDown--;
+    if (g_knownWarningCountDown > 0) {
+        snprintf_s(text, sizeof(text), "%s(%d)", preText, g_knownWarningCountDown);
+    } else {
+        strcpy_s(text, sizeof(text), preText);
+    }
+    lv_label_set_text(lv_obj_get_child(btn, 0), text);
+    if (g_knownWarningCountDown <= 0) {
+        lv_obj_set_style_bg_opa(btn, LV_OPA_100, LV_PART_MAIN);
+        lv_obj_add_flag(btn, LV_OBJ_FLAG_CLICKABLE);
+        lv_timer_del(timer);
+        g_knownWarningCountDownTimer = NULL;
+    }
+}
+
+static void KnownWarningHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        if (g_noticeHintBox != NULL) {
+            GUI_DEL_OBJ(g_noticeHintBox);
+            g_knownWarningBtn = NULL;
+        }
+        ConfirmSdCardUpdate();
+    }
+}
+
+static void KnownWarningCancelHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        if (g_noticeHintBox == NULL) {
+            ReturnHandler(e);
+        } else {
+            GUI_DEL_OBJ(g_noticeHintBox);
+            g_knownWarningBtn = NULL;
+        }
+    }
+}
+
+
+
+#endif
+
 static void GuiQrcodeHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -551,9 +731,9 @@ static void GuiQrcodeHandler(lv_event_t *e)
             qrCode = lv_qrcode_create(qrCodeCont, 360, BLACK_COLOR, WHITE_COLOR);
             lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
             if (g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_USB_INSTRUCTION) {
-                lv_qrcode_update(qrCode, _("firmware_update_usb_qr_link"), (uint32_t)strlen(_("firmware_update_usb_qr_link")));
+                lv_qrcode_update(qrCode, _("firmware_update_usb_qr_link"), (uint32_t)strnlen_s(_("firmware_update_usb_qr_link"), BUFFER_SIZE_128));
             } else {
-                lv_qrcode_update(qrCode, g_firmwareSdUpdateUrl, (uint32_t)strlen(g_firmwareSdUpdateUrl));
+                lv_qrcode_update(qrCode, g_firmwareSdUpdateUrl, (uint32_t)strnlen_s(g_firmwareSdUpdateUrl, BUFFER_SIZE_128));
             }
 
             label = GuiCreateLittleTitleLabel(parent, _("firmware_update_usb_qr_title"));

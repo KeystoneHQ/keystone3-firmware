@@ -977,7 +977,7 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
     GetLabelDataFunc pFunc = NULL;
     GetLabelDataLenFunc lenFunc = NULL;
     int textWidth = 0;
-    int bufLen = LABEL_MAX_BUFF_LEN;
+    int bufLen = BUFFER_SIZE_512;
     cJSON *item = cJSON_GetObjectItem(json, "text_len_func");
     if (item != NULL) {
         lenFunc = GuiTemplateTextLenFuncGet(item->valuestring);
@@ -1019,7 +1019,7 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
         pFunc = GuiTemplateTextFuncGet(item->valuestring);
         item = cJSON_GetObjectItem(json, "text_key");
         if (item != NULL) {
-            strcpy(text, item->valuestring);
+            strcpy_s(text, BUFFER_SIZE_512, item->valuestring);
         }
     }
 
@@ -1031,7 +1031,7 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
     lv_label_set_recolor(obj, true);
     lv_obj_set_style_text_letter_space(obj, LV_STATE_DEFAULT | LV_PART_MAIN, 20);
     if (pFunc) {
-        pFunc(text, g_totalData);
+        pFunc(text, g_totalData, bufLen);
         lv_label_set_text(obj, text);
 
         if (lv_obj_get_self_width(obj) >= textWidth) {
@@ -1120,10 +1120,10 @@ void GuiWidgetList(lv_obj_t *parent, cJSON *json)
         cJSON *itemKeyFunc = cJSON_GetObjectItem(json, "item_key_func");
         cJSON *child = cJSON_GetObjectItem(json, "item");
         keyFunc = GuiTemplateListItemKeyFuncGet(itemKeyFunc->valuestring);
-        char *key = SRAM_MALLOC(50);
+        char *key = SRAM_MALLOC(BUFFER_SIZE_64);
         for (uint8_t i = 0; i < len; i++) {
             if (itemKeyFunc != NULL) {
-                keyFunc(key, g_totalData);
+                keyFunc(key, g_totalData, BUFFER_SIZE_64);
             }
             if (itemMap != NULL) {
                 child = cJSON_GetObjectItem(itemMap, key);
@@ -1312,7 +1312,7 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
         item = cJSON_GetObjectItem(json, "table");
         if (item != NULL) {
             char typeBuf[16];
-            g_analyzeArray[g_reMapIndex].typeFunc(typeBuf, g_totalData);
+            g_analyzeArray[g_reMapIndex].typeFunc(typeBuf, g_totalData, sizeof(typeBuf));
             item = cJSON_GetObjectItem(item, typeBuf);
             if (item != NULL) {
                 return GuiWidgetFactoryCreate(parent, item);

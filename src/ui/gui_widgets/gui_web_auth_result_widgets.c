@@ -12,6 +12,10 @@
 #include "screen_manager.h"
 #include "gui_page.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 static void *g_web_auth_data;
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
@@ -112,7 +116,7 @@ void GuiWebAuthResultCreateAuthCode(lv_obj_t *parent, char *code, int xOffset)
 
 void GuiWebAuthResultRenderAuthCode(lv_obj_t *parent)
 {
-    if (g_authCode != NULL && strlen(g_authCode) >= 8) {
+    if (g_authCode != NULL && strnlen_s(g_authCode, SIMPLERESPONSE_C_CHAR_MAX_LEN) >= 8) {
         char c1[2] = {g_authCode[0], '\0'};
         char c2[2] = {g_authCode[1], '\0'};
         char c3[2] = {g_authCode[2], '\0'};
@@ -188,15 +192,15 @@ void GuiWebAuthResultFailedWidget(lv_obj_t *parent)
     lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 
-    char mail[64] = {0};
-    sprintf(mail, "#1BE0C6 %s#", _("verification_code_failed_link"));
+    char mail[BUFFER_SIZE_64] = {0};
+    snprintf_s(mail, BUFFER_SIZE_64, "#1BE0C6 %s#", _("verification_code_failed_link"));
 
     label = GuiCreateIllustrateLabel(parent, mail);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 420);
     lv_label_set_recolor(label, true);
 
-    char erase[64] = {0};
-    sprintf(erase, "#F55831 %s#", _("wipe_device"));
+    char erase[BUFFER_SIZE_64] = {0};
+    snprintf_s(erase, BUFFER_SIZE_64, "#F55831 %s#", _("wipe_device"));
 
     label = GuiCreateTextLabel(parent, erase);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -64);

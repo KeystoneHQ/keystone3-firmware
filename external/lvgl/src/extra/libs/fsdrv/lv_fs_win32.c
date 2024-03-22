@@ -221,7 +221,9 @@ static void * fs_open(lv_fs_drv_t * drv, const char * path, lv_fs_mode_t mode)
     char buf[MAX_PATH];
     lv_snprintf(buf, sizeof(buf), LV_FS_WIN32_PATH "%s", path);
 
-    return (void *)CreateFileA(
+    HANDLE hFile;
+    if ((mode & LV_FS_MODE_RD) == LV_FS_MODE_RD) {
+        hFile = CreateFileA(
                buf,
                desired_access,
                FILE_SHARE_READ,
@@ -229,6 +231,21 @@ static void * fs_open(lv_fs_drv_t * drv, const char * path, lv_fs_mode_t mode)
                OPEN_EXISTING,
                FILE_ATTRIBUTE_NORMAL,
                NULL);
+        if (hFile != INVALID_HANDLE_VALUE) {
+            return (void *)hFile;
+        }
+    }
+
+    if (hFile == INVALID_HANDLE_VALUE || (mode & LV_FS_MODE_WR) == LV_FS_MODE_WR) {
+        return (void *)CreateFileA(
+                   buf,
+                   desired_access,
+                   FILE_SHARE_READ,
+                   NULL,
+                   CREATE_ALWAYS,
+                   FILE_ATTRIBUTE_NORMAL,
+                   NULL);
+    }
 }
 
 /**

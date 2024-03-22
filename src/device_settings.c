@@ -18,6 +18,9 @@
 #include "account_manager.h"
 #include "version.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
 
 #define VERSION_MAX_LENGTH      32
 
@@ -300,7 +303,7 @@ static void SaveDeviceSettingsSync(void)
     jsonString = GetJsonStringFromDeviceSettings();
     printf("jsonString=%s\n", jsonString);
     Gd25FlashSectorErase(SPI_FLASH_ADDR_NORMAL_PARAM);      //Only one sector for device settings.
-    size = strlen(jsonString);
+    size = strnlen_s(jsonString, SPI_FLASH_SIZE_NORMAL_PARAM - 4 - 1);
     ASSERT(size < SPI_FLASH_SIZE_NORMAL_PARAM - 4);
     Gd25FlashWriteBuffer(SPI_FLASH_ADDR_NORMAL_PARAM, (uint8_t *)&size, 4);
     Gd25FlashWriteBuffer(SPI_FLASH_ADDR_NORMAL_PARAM + 4, (uint8_t *)jsonString, size + 1);
@@ -337,6 +340,14 @@ static bool GetDeviceSettingsFromJsonString(const char *string)
         g_deviceSettings.usbSwitch = GetIntValue(rootJson, KEY_USB_SWITCH, DEFAULT_USB_SWITCH);
         g_deviceSettings.lastVersion = GetIntValue(rootJson, KEY_LAST_VERSION, DEFAULT_LAST_VERSION);
     } while (0);
+    printf("g_deviceSettings.setupStep=%d\n", g_deviceSettings.setupStep);
+    printf("g_deviceSettings.bright=%d\n", g_deviceSettings.bright);
+    printf("g_deviceSettings.autoLockScreen=%d\n", g_deviceSettings.autoLockScreen);
+    printf("g_deviceSettings.autoPowerOff=%d\n", g_deviceSettings.autoPowerOff);
+    printf("g_deviceSettings.vibration=%d\n", g_deviceSettings.vibration);
+    printf("g_deviceSettings.darkMode=%d\n", g_deviceSettings.darkMode);
+    printf("g_deviceSettings.usbSwitch=%d\n", g_deviceSettings.usbSwitch);
+    printf("g_deviceSettings.lastVersion=%d\n", g_deviceSettings.lastVersion);
     cJSON_Delete(rootJson);
 
     return ret;
@@ -399,14 +410,14 @@ static void GetStringValue(const cJSON *obj, const char *key, char *value, uint3
     json = cJSON_GetObjectItem((cJSON *)obj, key);
     if (json != NULL) {
         strTemp = json->valuestring;
-        len = strlen(strTemp);
+        len = strnlen_s(strTemp, maxLen);
         if (len < maxLen) {
-            strcpy(value, strTemp);
+            strcpy_s(value, maxLen, strTemp);
         } else {
-            strcpy(value, "");
+            value[0] = '\0';
         }
     } else {
         printf("key:%s does not exist\r\n", key);
-        strcpy(value, "");
+        value[0] = '\0';
     }
 }

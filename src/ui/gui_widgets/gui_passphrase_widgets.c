@@ -15,6 +15,10 @@
 #include "motor_manager.h"
 #include "gui_page.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 typedef struct {
     lv_obj_t *cont;
     lv_obj_t *passphraseInputCont;
@@ -76,7 +80,7 @@ void GuiPassphraseInit(void)
     lv_obj_set_style_border_opa(ta, LV_OPA_0, LV_PART_MAIN);
     lv_obj_set_style_text_font(ta, &openSans_24, LV_PART_MAIN);
     lv_obj_add_event_cb(ta, SetKeyboardTaHandler, LV_EVENT_ALL, ta);
-    lv_textarea_set_max_length(ta, GUI_DEFINE_MAX_PASSCODE_LEN);
+    lv_textarea_set_max_length(ta, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(ta, true);
     lv_obj_set_scrollbar_mode(ta, LV_SCROLLBAR_MODE_OFF);
     img = GuiCreateImg(g_passphraseWidgets.passphraseInputCont, &imgEyeOff);
@@ -105,7 +109,7 @@ void GuiPassphraseInit(void)
     lv_obj_set_style_text_color(ta, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_border_opa(ta, LV_OPA_0, LV_PART_MAIN);
     lv_obj_set_style_text_font(ta, &openSans_24, LV_PART_MAIN);
-    lv_textarea_set_max_length(ta, GUI_DEFINE_MAX_PASSCODE_LEN);
+    lv_textarea_set_max_length(ta, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(ta, true);
     lv_obj_set_scrollbar_mode(ta, LV_SCROLLBAR_MODE_OFF);
 
@@ -115,7 +119,7 @@ void GuiPassphraseInit(void)
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, ta);
     lv_obj_add_event_cb(img, NULL, LV_EVENT_CLICKED, ta);
-    lv_textarea_set_max_length(ta, GUI_DEFINE_MAX_PASSCODE_LEN);
+    lv_textarea_set_max_length(ta, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(ta, true);
     g_passphraseWidgets.repeatTa = ta;
     line = GuiCreateLine(g_passphraseWidgets.passphraseInputCont, points, 2);
@@ -203,6 +207,7 @@ static void SkipHandler(lv_event_t *e)
     ClearSecretCache();
     if (g_homeView.isActive) {
         GuiLockScreenTurnOff();
+        GuiCloseToTargetView(&g_homeView);
     } else {
         GuiFrameOpenView(&g_homeView);
     }
@@ -247,7 +252,7 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
             const char *input = lv_textarea_get_text(g_passphraseWidgets.inputTa);
             const char *repeat = lv_textarea_get_text(g_passphraseWidgets.repeatTa);
             if (!strcmp(input, repeat)) {
-                if (strlen(repeat) == 0) {
+                if (strnlen_s(repeat, PASSPHRASE_MAX_LEN) == 0) {
                     GuiCLoseCurrentWorkingView();
                     GuiLockScreenHidden();
                     if (g_homeView.isActive) {
@@ -279,9 +284,9 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
         }
 
         if (lv_keyboard_get_textarea(lv_event_get_target(e)) == g_passphraseWidgets.inputTa) {
-            if (strlen(intputText) >= GUI_DEFINE_MAX_PASSCODE_LEN) {
+            if (strnlen_s(intputText, PASSPHRASE_MAX_LEN) >= PASSPHRASE_MAX_LEN) {
                 lv_obj_clear_flag(g_passphraseWidgets.lenOverLabel, LV_OBJ_FLAG_HIDDEN);
-            } else if (strlen(intputText) < GUI_DEFINE_MAX_PASSCODE_LEN) {
+            } else {
                 lv_obj_add_flag(g_passphraseWidgets.lenOverLabel, LV_OBJ_FLAG_HIDDEN);
             }
         }

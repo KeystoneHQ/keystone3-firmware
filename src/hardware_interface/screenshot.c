@@ -1,12 +1,13 @@
+#include "define.h"
 #include "screenshot.h"
 #include "stdio.h"
-#include "user_memory.h"
 #include "lvgl.h"
 #include "user_fatfs.h"
 #include "cmsis_os.h"
 #include "touchpad_task.h"
 #include "user_msg.h"
 #include "drv_motor.h"
+#include "user_memory.h"
 
 #pragma pack(1)
 
@@ -47,9 +48,9 @@ void ScreenShot(uint8_t *imgData)
     BitMapInfoHead_t *pFfileInfo;
     uint32_t i;
     uint16_t *pixel;
-    char fileName[32];
+    char fileName[BUFFER_SIZE_32];
 
-    imgFilePathName = EXT_MALLOC(128);
+    imgFilePathName = EXT_MALLOC(BUFFER_SIZE_128);
     uint32_t bmpHorByte = LV_HOR_RES * (LV_COLOR_DEPTH / 8);
     if (bmpHorByte % 4 != 0) {
         bmpHorByte = bmpHorByte + (4 - bmpHorByte % 4);
@@ -63,15 +64,14 @@ void ScreenShot(uint8_t *imgData)
         goto EXIT;
     }
     printf("start snap screen\r\n");
-    //memset(screenBuffer, 0, fileSize);
     MotorCtrl(MOTOR_LEVEL_MIDDLE, 300);
     pFileHead = (BitMapFileHead_t *)screenBuffer;
     pFfileInfo = (BitMapInfoHead_t *)(screenBuffer + sizeof(BitMapFileHead_t));
-    memset(pFileHead, 0, sizeof(BitMapFileHead_t));
+    memset_s(pFileHead, sizeof(BitMapFileHead_t), 0, sizeof(BitMapFileHead_t));
     pFileHead->bfType = 0x4D42;
     pFileHead->bfSize = LV_HOR_RES * LV_VER_RES * (LV_COLOR_DEPTH / 8) + sizeof(BitMapFileHead_t) + sizeof(BitMapInfoHead_t);
     pFileHead->bfOffBits = sizeof(BitMapFileHead_t) + sizeof(BitMapInfoHead_t);
-    memset(pFfileInfo, 0, sizeof(BitMapInfoHead_t));
+    memset_s(pFfileInfo, sizeof(BitMapInfoHead_t), 0, sizeof(BitMapInfoHead_t));
     pFfileInfo->biSize = sizeof(BitMapInfoHead_t);
     pFfileInfo->width = LV_HOR_RES;
     pFfileInfo->height = -1 * LV_VER_RES;
@@ -90,9 +90,9 @@ void ScreenShot(uint8_t *imgData)
         pixel[i] = (pixel[i] >> 8) | (pixel[i] << 8);
     }
     for (i = 0; i < LV_VER_RES; i++) {
-        memcpy(screenBuffer + headSize + i * bmpHorByte, imgData + i * LV_HOR_RES * (LV_COLOR_DEPTH / 8), LV_HOR_RES * (LV_COLOR_DEPTH / 8));
+        memcpy_s(screenBuffer + headSize + i * bmpHorByte, LV_HOR_RES * (LV_COLOR_DEPTH / 8), imgData + i * LV_HOR_RES * (LV_COLOR_DEPTH / 8), LV_HOR_RES * (LV_COLOR_DEPTH / 8));
     }
-    sprintf(fileName, "0:screenshot_%d.bmp", osKernelGetTickCount());
+    snprintf_s(fileName, BUFFER_SIZE_32, "0:screenshot_%d.bmp", osKernelGetTickCount());
     printf("start save file\r\n");
     FatfsFileWrite(fileName, screenBuffer, fileSize);
     printf("save file over\r\n");

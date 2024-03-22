@@ -1,13 +1,18 @@
 #ifndef BTC_ONLY
+#include "define.h"
 #include "rust.h"
 #include "keystore.h"
-#include "user_memory.h"
 #include "gui_chain.h"
 #include "screen_manager.h"
 #include "keystore.h"
 #include "account_manager.h"
 #include "secret_cache.h"
 #include "assert.h"
+#include "user_memory.h"
+
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
 
 static uint8_t GetAptosPublickeyIndex(char* rootPath);
 
@@ -74,13 +79,13 @@ void FreeAptosMemory(void)
 int GetAptosDetailLen(void *param)
 {
     DisplayAptosTx *tx = (DisplayAptosTx *)param;
-    return strlen(tx->detail);
+    return strlen(tx->detail) + 1;
 }
 
-void GetAptosDetail(void *indata, void *param)
+void GetAptosDetail(void *indata, void *param, uint32_t maxLen)
 {
     DisplayAptosTx *tx = (DisplayAptosTx *)param;
-    sprintf((char *)indata, "%s", tx->detail);
+    strcpy_s((char *)indata, maxLen, tx->detail);
 }
 
 bool IsAptosMsg(ViewType viewType)

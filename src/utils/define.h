@@ -1,9 +1,17 @@
 #ifndef _DEFINE_H
 #define _DEFINE_H
 
-#define __I                             volatile const
-#define __O                             volatile
-#define __IO                            volatile
+// #define __I                             volatile const
+// #define __O                             volatile
+// #define __IO                            volatile
+
+#define BUFFER_SIZE_16                  (16)
+#define BUFFER_SIZE_32                  (32)
+#define BUFFER_SIZE_64                  (64)
+#define BUFFER_SIZE_128                 (128)
+#define BUFFER_SIZE_256                 (256)
+#define BUFFER_SIZE_512                 (512)
+
 
 #ifndef UNUSED
 #define UNUSED(X) (void)X

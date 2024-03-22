@@ -23,10 +23,21 @@ void PrintHeapInfo(void);
 
 #ifdef COMPILE_SIMULATOR
 #include <stdlib.h>
-#define SRAM_MALLOC(size)           malloc(size)
-#define SRAM_FREE(p)                free(p)
-#define SRAM_REALLOC(p, size)       realloc(p)
+#ifndef snprintf_s
+#define snprintf_s                          snprintf
+#endif
+#ifndef memset_s
+#define memset_s(dest, destsz, ch, count)   memset(dest, ch, count)
+#endif
+#ifndef strcpy_s
+#define strcpy_s(dest, destsz, src)         strcpy(dest, src)
+#endif
+#define SRAM_MALLOC(size)                   malloc(size)
+#define SRAM_FREE(p)                        free(p)
+#define SRAM_REALLOC(p, size)               realloc(p, size)
 #else
+#include "safe_str_lib.h"
+#include "safe_mem_lib.h"
 #define SRAM_MALLOC(size)           SramMallocTrack(size, __FILE__, __LINE__, __func__)
 #define SRAM_FREE(p)                SramFreeTrack(p, __FILE__, __LINE__, __func__)
 #define SRAM_REALLOC(p, size)       SramReallocTrack(p, size, __FILE__, __LINE__, __func__)

@@ -256,12 +256,12 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
         cont = GuiCreateContainerWithParent(pathCont, 408, 102);
         lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 0, 102 * i);
         lv_obj_set_style_bg_opa(cont, LV_OPA_0, LV_PART_MAIN);
-        char title[24] = {0};
-        sprintf(title, "Account-%d", i);
+        char title[BUFFER_SIZE_32] = {0};
+        snprintf_s(title, BUFFER_SIZE_32, "Account-%d", i);
         label = GuiCreateIllustrateLabel(cont, title);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
-        char path[36] = {0};
-        sprintf(path, "M/%s", g_response->data->key_derivation->schemas->data[i].key_path);
+        char path[BUFFER_SIZE_64] = {0};
+        snprintf_s(path, BUFFER_SIZE_64, "M/%s", g_response->data->key_derivation->schemas->data[i].key_path);
         label = GuiCreateIllustrateLabel(cont, path);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56);
         if (i > 0) {

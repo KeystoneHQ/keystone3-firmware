@@ -1,7 +1,13 @@
 #include "user_utils.h"
 #include "define.h"
 #include "lvgl.h"
+#include "user_memory.h"
+
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#else
 #include "safe_str_lib.h"
+#endif
 
 uint32_t StrToHex(uint8_t *pbDest, const char *pbSrc)
 {

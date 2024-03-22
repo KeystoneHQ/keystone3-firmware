@@ -450,7 +450,6 @@ static void SetPathType(uint8_t pathType)
     }
 }
 
-#ifndef COMPILE_SIMULATOR
 #ifndef BTC_ONLY
 static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, uint32_t maxLen)
 {
@@ -483,12 +482,6 @@ static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, ui
     } while (0);
     snprintf_s(dest, maxLen, "%s", result->data);
     free_simple_response_c_char(result);
-}
-#endif
-#else
-static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index)
-{
-    sprintf(dest, "1JLNi9AmQcfEuobvwJ4FT5YCiq3WLhCh%u%u", pathType, index);
 }
 #endif
 

@@ -494,7 +494,6 @@ void *GuiCreateNumKeyboard(lv_obj_t *parent, lv_event_cb_t cb, NUM_KEYBOARD_ENUM
         return NULL;
     }
     lv_obj_set_size(btnm, kbWidth, kbHeight);
-    // lv_obj_set_style_text_font(btnm, &openSansButton, LV_PART_MAIN);
     lv_obj_set_style_text_font(btnm, &buttonFont, LV_PART_MAIN);
     lv_obj_set_style_border_width(btnm, 0, LV_PART_MAIN);
     lv_obj_set_style_clip_corner(btnm, 0, LV_PART_MAIN);
@@ -572,7 +571,6 @@ void *GuiCreateKeyBoard(lv_obj_t *parent, lv_event_cb_t cb, lv_keyboard_user_mod
     lv_obj_set_align(keyBoard->cont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_color(keyBoard->cont, DARK_BG_COLOR, LV_PART_MAIN);
     keyBoard->kb = lv_keyboard_create(keyBoard->cont);
-    // lv_obj_set_style_text_font(keyBoard->kb, &openSansButton, 0);
     lv_obj_set_style_text_font(keyBoard->kb, &buttonFont, 0);
     lv_keyboard_set_map(keyBoard->kb, keyMode, (const char **)g_kbMap[keyMode - KEY_STONE_FULL_L],
                         g_kbCtrl[keyMode - KEY_STONE_FULL_L]);

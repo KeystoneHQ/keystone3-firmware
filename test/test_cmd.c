@@ -2005,12 +2005,11 @@ static void RustTestKeyDerivation(int argc, char *argv[])
     sscanf(argv[0], "%d", &index);
     uint8_t seed[64];
     GetAccountSeed(index, seed, argv[1]);
-    // SimpleResponse_c_char *ed25519_key = get_ed25519_pubkey_by_seed(seed, sizeof(seed), "m/0'");
-    // printf("ed25519 pubkey: %s\r\n", ed25519_key);
-    // SimpleResponse_c_char *xpub = get_extended_pubkey_by_seed(seed, sizeof(seed), "m/0'");
-    SimpleResponse_c_char *xpub = get_extended_pubkey_by_seed(seed, sizeof(seed), "m/44'/3'/0'");
+    SimpleResponse_c_char *ed25519_key = get_ed25519_pubkey_by_seed(seed, sizeof(seed), "m/0'");
+    printf("ed25519 pubkey: %s\r\n", ed25519_key);
+    SimpleResponse_c_char *xpub = get_extended_pubkey_by_seed(seed, sizeof(seed), "m/0'");
     printf("xpub: %s\r\n", xpub->data);
-    // free_simple_response_c_char(ed25519_key);
+    free_simple_response_c_char(ed25519_key);
     free_simple_response_c_char(xpub);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());

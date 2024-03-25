@@ -233,10 +233,7 @@ void *GuiCreateUpdateHintbox(lv_obj_t *parent, const void *src, const char *titl
     lv_obj_t *cont = GuiCreateHintBox(lv_scr_act(), 480, 800, false);
     lv_obj_t *checksum = GuiCreateIllustrateLabel(cont, _("firmware_update_sd_checksum_desc"));
     if (checkSumDone) {
-        // lv_obj_refr_size(checksum);
-        printf("checksum = ..%s..\n", _("firmware_update_sd_checksum_done"));
         lv_label_set_text(checksum, _("firmware_update_sd_checksum_done"));
-        // lv_label_set_text(checksum, "\n\n");
     }
     lv_label_set_recolor(checksum, true);
     lv_obj_set_style_text_font(checksum, g_defIllustrateFont, LV_PART_MAIN);

@@ -144,6 +144,7 @@ LV_IMG_DECLARE(emojiMusic);
 LV_IMG_DECLARE(emojiRocket);
 LV_IMG_DECLARE(emojiSafe);
 LV_IMG_DECLARE(emojiStar);
+LV_IMG_DECLARE(emojiCam);
 
 // coin
 LV_IMG_DECLARE(coinApt);

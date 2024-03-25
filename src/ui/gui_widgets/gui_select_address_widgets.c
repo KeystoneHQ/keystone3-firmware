@@ -69,6 +69,10 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         item->index = index;
         strcpy(item->address, GuiGetXrpAddressByIndex(index));
         break;
+    case CHAIN_ADA:
+        item->index = index;
+        strcpy(item->address, GuiGetADABaseAddressByIndex(index));
+        break;
 #endif
     default:
         printf("ModelGetAddress cannot match %d\r\n", index);

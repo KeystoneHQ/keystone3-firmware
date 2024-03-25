@@ -33,6 +33,7 @@ bool GetAdaExtraDataExist(void *indata, void *param);
 void GetAdaExtraData(void *indata, void *param, uint32_t maxLen);
 int GetAdaExtraDataLen(void *param);
 
+char *GuiGetADABaseAddressByIndex(uint16_t index);
 
 void FreeAdaMemory(void);
 

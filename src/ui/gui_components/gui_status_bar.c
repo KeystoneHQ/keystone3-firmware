@@ -110,6 +110,8 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_METAMASK, "Connect MetaMask", &walletMetamask},
     {WALLET_LIST_OKX, "Connect OKX Wallet", &walletOkx},
     {WALLET_LIST_ETERNL, "Connect Eternl Wallet", &walletEternl},
+    // {WALLET_LIST_YOROI, "Connect Yoroi Wallet", &walletYoroi},
+    {WALLET_LIST_TYPHON, "Connect Typhon Wallet", &walletTyphon},
     {WALLET_LIST_BLUE, "Connect BlueWallet", &walletBluewallet},
     {WALLET_LIST_SUB, "Connect SubWallet", &walletSubwallet},
     {WALLET_LIST_SOLFARE, "Connect Solflare", &walletSolflare},

@@ -294,6 +294,78 @@ UREncodeResult *GuiGetPetraData(void)
 #endif
 }
 
+static uint8_t MapAdaIndex2ChainType(uint16_t index)
+{
+    switch (index) {
+    case 0:
+        return XPUB_TYPE_ADA_0;
+    case 1:
+        return XPUB_TYPE_ADA_1;
+    case 2:
+        return XPUB_TYPE_ADA_2;
+    case 3:
+        return XPUB_TYPE_ADA_3;
+    case 4:
+        return XPUB_TYPE_ADA_4;
+    case 5:
+        return XPUB_TYPE_ADA_5;
+    case 6:
+        return XPUB_TYPE_ADA_6;
+    case 7:
+        return XPUB_TYPE_ADA_7;
+    case 8:
+        return XPUB_TYPE_ADA_8;
+    case 9:
+        return XPUB_TYPE_ADA_9;
+    case 10:
+        return XPUB_TYPE_ADA_10;
+    case 11:
+        return XPUB_TYPE_ADA_11;
+    case 12:
+        return XPUB_TYPE_ADA_12;
+    case 13:
+        return XPUB_TYPE_ADA_13;
+    case 14:
+        return XPUB_TYPE_ADA_14;
+    case 15:
+        return XPUB_TYPE_ADA_15;
+    case 16:
+        return XPUB_TYPE_ADA_16;
+    case 17:
+        return XPUB_TYPE_ADA_17;
+    case 18:
+        return XPUB_TYPE_ADA_18;
+    case 19:
+        return XPUB_TYPE_ADA_19;
+    case 20:
+        return XPUB_TYPE_ADA_20;
+    case 21:
+        return XPUB_TYPE_ADA_21;
+    case 22:
+        return XPUB_TYPE_ADA_22;
+    case 23:
+        return XPUB_TYPE_ADA_23;
+    default:
+        return XPUB_TYPE_ADA_0;
+    }
+}
+
+UREncodeResult *GuiGetADADataByIndex(uint16_t index)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    char* xpub = GetCurrentAccountPublicKey(MapAdaIndex2ChainType(index));
+    char path[BUFFER_SIZE_32] = {0};
+    sprintf(path, "1852'/1815'/%u'", index);
+    ExtendedPublicKey xpubs[1];
+    xpubs[0].path = path;
+    xpubs[0].xpub = xpub;
+    CSliceFFI_ExtendedPublicKey keys;
+    keys.data = xpubs;
+    keys.size = 1;
+    return generate_key_derivation_ur(mfp, 4, &keys);
+}
+
 UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
 {
 #ifndef COMPILE_SIMULATOR

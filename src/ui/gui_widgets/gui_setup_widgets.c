@@ -8,6 +8,7 @@
 #include "gui_web_auth_result_widgets.h"
 #include "device_setting.h"
 #include "gui_page.h"
+#include "ui_display_task.h"
 
 typedef enum {
     SETUP_ENGLISH = 0,

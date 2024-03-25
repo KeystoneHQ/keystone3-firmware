@@ -305,6 +305,22 @@ else()
     project(simulator)
     include(ui_simulator/simulator.cmake)
 
+    if(BTC_ONLY)
+        set(excluded_directories
+            src/ui/gui_chain/others
+            src/ui/gui_widgets/general
+            src/ui/gui_views/general
+            src/webusb_protocol/general)
+    else()
+        set(excluded_directories
+            src/ui/gui_widgets/btc_only)
+    endif()
+
+    foreach(directory ${excluded_directories})
+        file(GLOB_RECURSE excluded_files "${directory}/*")
+        list(REMOVE_ITEM objsrc ${excluded_files})
+    endforeach()
+
     add_executable(${PROJECT_NAME} 
         ${SIMULATOR_SRC}
         ${EXTERNAL}

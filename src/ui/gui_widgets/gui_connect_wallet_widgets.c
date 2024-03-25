@@ -470,7 +470,7 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
             {
                 g_coinListCont = GuiCreateSelectAddressWidget(CHAIN_XRP, g_chainAddressIndex[GetCurrentAccountIndex()], RefreshAddressIndex);
             }
-            else if (g_connectWalletTileView.walletIndex == WALLET_LIST_YOROI || g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON)
+            else if (g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON)
             {
                 g_coinListCont = GuiCreateSelectAddressWidget(CHAIN_ADA, g_chainAddressIndex[GetCurrentAccountIndex()], RefreshAddressIndex);
             }
@@ -904,7 +904,7 @@ static void AddChainAddress(void)
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 
     char addr[BUFFER_SIZE_256] = {0};
-    if (g_connectWalletTileView.walletIndex == WALLET_LIST_YOROI || g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON) {
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON) {
         CutAndFormatAddress(addr, sizeof(addr), GuiGetADABaseAddressByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]), 20);
     } else {
         CutAndFormatAddress(addr, sizeof(addr), GuiGetXrpAddressByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]), 20);
@@ -1040,7 +1040,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetKeplrData;
         AddKeplrCoins();
         break;
-    case WALLET_LIST_YOROI:
     case WALLET_LIST_TYPHON:
         func = GuiGetADAData;
         AddChainAddress();
@@ -1173,7 +1172,6 @@ static bool HasSelectAddressWidget()
 {
     return
         g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT ||
-        g_connectWalletTileView.walletIndex == WALLET_LIST_YOROI ||
         g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON;
 }
 
@@ -1644,7 +1642,7 @@ void GuiConnectWalletRefresh(void)
                 GuiDestroySelectAddressWidget();
                 if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
                     g_coinListCont = GuiCreateSelectAddressWidget(CHAIN_XRP, g_chainAddressIndex[GetCurrentAccountIndex()], RefreshAddressIndex);
-                } else if (g_connectWalletTileView.walletIndex == WALLET_LIST_YOROI || g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON) {
+                } else if (g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON) {
                     g_coinListCont = GuiCreateSelectAddressWidget(CHAIN_ADA, g_chainAddressIndex[GetCurrentAccountIndex()], RefreshAddressIndex);
                 }
             } else if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEYSTONE) {

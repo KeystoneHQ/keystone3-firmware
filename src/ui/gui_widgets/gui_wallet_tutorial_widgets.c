@@ -98,12 +98,12 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_ETERNL].items[0].qrUrl = _("connect_eternl_qr_link");
 
         //WALLET_LIST_YOROI
-        g_tutorials[WALLET_LIST_YOROI].len = 1;
-        g_tutorials[WALLET_LIST_YOROI].desc = _("connect_yoroi_desc");
-        g_tutorials[WALLET_LIST_YOROI].items[0].walletName = _("connect_yoroi_title");
-        g_tutorials[WALLET_LIST_YOROI].items[0].url = _("connect_yoroi_link");
-        g_tutorials[WALLET_LIST_YOROI].items[0].qrTitle = _("connect_yoroi_qr_title");
-        g_tutorials[WALLET_LIST_YOROI].items[0].qrUrl = _("connect_yoroi_qr_link");
+        // g_tutorials[WALLET_LIST_YOROI].len = 1;
+        // g_tutorials[WALLET_LIST_YOROI].desc = _("connect_yoroi_desc");
+        // g_tutorials[WALLET_LIST_YOROI].items[0].walletName = _("connect_yoroi_title");
+        // g_tutorials[WALLET_LIST_YOROI].items[0].url = _("connect_yoroi_link");
+        // g_tutorials[WALLET_LIST_YOROI].items[0].qrTitle = _("connect_yoroi_qr_title");
+        // g_tutorials[WALLET_LIST_YOROI].items[0].qrUrl = _("connect_yoroi_qr_link");
 
         //WALLET_LIST_Typhon
         g_tutorials[WALLET_LIST_TYPHON].len = 1;

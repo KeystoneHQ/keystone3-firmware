@@ -24,10 +24,10 @@
 
 static lv_obj_t *container;
 static lv_obj_t *vibrationSw;
-static lv_obj_t *g_selectLanguageCont;
 
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static PageWidget_t *g_pageWidget;
+static PageWidget_t *g_selectLanguagePage;
 
 void GuiSystemSettingNVSBarInit();
 void GuiSystemSettingEntranceWidget(lv_obj_t *parent);
@@ -173,6 +173,10 @@ void GuiSystemSettingAreaRefresh()
 
 void GuiSystemSettingAreaRestart()
 {
+    if (g_selectLanguagePage != NULL) {
+        DestroyPageWidget(g_selectLanguagePage);
+        g_selectLanguagePage = NULL;
+    }
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
 }
@@ -189,8 +193,6 @@ static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e)
         }
     }
 }
-
-
 
 static void GuiShowKeyBoardDialog(lv_obj_t *parent)
 {
@@ -215,11 +217,9 @@ void GuiSystemSettingVerifyPasswordErrorCount(void *param)
 static void DispalyHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-
     if (code == LV_EVENT_CLICKED) {
         GuiFrameOpenView(&g_displayView);
     }
-
 }
 
 static void VibrationHandler(lv_event_t *e)
@@ -257,8 +257,10 @@ static void OpenLanguageSelectHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        g_selectLanguageCont = GuiCreateContainerWithParent(g_pageWidget->contentZone, 480, 800 - GUI_MAIN_AREA_OFFSET);
-        lv_obj_clear_flag(g_pageWidget->contentZone, LV_OBJ_FLAG_SCROLLABLE);
-        GuiCreateLanguageWidget(g_selectLanguageCont, 12);
+        g_selectLanguagePage = CreatePageWidget();
+        lv_obj_clear_flag(g_selectLanguagePage->contentZone, LV_OBJ_FLAG_SCROLLABLE);
+        GuiCreateLanguageWidget(g_selectLanguagePage->contentZone, 12);
+        SetNavBarLeftBtn(g_selectLanguagePage->navBarWidget, NVS_BAR_RETURN, DestroyPageWidgetHandler, g_selectLanguagePage);
+        SetMidBtnLabel(g_selectLanguagePage->navBarWidget, NVS_BAR_MID_LABEL, _("language_title"));
     }
 }

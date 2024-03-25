@@ -20,9 +20,7 @@ SET build_release=false
 SET build_rebuild=false
 SET build_btc_only=false
 SET build_simulator=false
-SET build_ru=false
-SET build_cn=false
-
+SET build_language=false
 
 for %%i in (%*) do (
     if /I "%%i"=="log" (
@@ -55,13 +53,11 @@ for %%i in (%*) do (
     if /I "%%i"=="simulator" (
         set build_simulator=true
     )
-    if /I "%%i"=="ru" (
-        set build_ru=true
-    )
-    if /I "%%i"=="cn" (
-        set build_cn=true
+    if /I "%%i"=="language" (
+        set build_language=true
     )
 )
+
 if "%build_rebuild%"=="true" (
     rd /s /q %BUILD_FOLDER%
 ) 
@@ -88,7 +84,13 @@ if "%build_copy%"=="true" (
     del %BUILD_FOLDER%\mh1903.bin
 )
 
-set cmake_parm= 
+set cmake_parm=
+if "%build_language%"=="true" (
+    pushd %LANGUAGE_PATH%
+    %LANGUAGE_SCRIPT% --zh --ru
+    popd  
+)
+
 if "%build_production%"=="true" (
     set cmake_parm=%cmake_parm% -DBUILD_PRODUCTION=true
 )
@@ -105,34 +107,7 @@ if "%build_simulator%"=="true" (
     set cmake_parm=%cmake_parm% -DCMAKE_BUILD_TYPE=Simulator
 )
 
-if "%build_ru%"=="true" (
-    set cmake_parm=%cmake_parm% -DRU_SUPPORT=true
-    set "BUILD_RU=1"
-)
-
-if "%build_cn%"=="true" (
-    set cmake_parm=%cmake_parm% -DCN_SUPPORT=true
-    set "BUILD_CN=1"
-)
-
-if "%BUILD_CN%"=="1" (
-    set "LANGUAGE_SCRIPT=%LANGUAGE_SCRIPT% --cn"
-)
-
-if "%BUILD_RU%"=="1" (
-    set "LANGUAGE_SCRIPT=%LANGUAGE_SCRIPT% --ru"
-)
-
-pushd %LANGUAGE_PATH%
-%LANGUAGE_SCRIPT%
-popd
-
 echo %cmake_parm%
-
-pushd %LANGUAGE_PATH%
-%LANGUAGE_SCRIPT%
-popd
-
 pushd build
 cmake -G "Unix Makefiles" %cmake_parm% ..
 

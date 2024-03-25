@@ -26,7 +26,7 @@ add_definition_with_message(DEBUG_MEMORY)
 
 add_definition_with_message(BUILD_PRODUCTION)
 
-add_definition_with_message(RU_SUPPORT)
+add_compile_definitions(RU_SUPPORT)
 
 get_cmake_property(_variableNames VARIABLES)
 list (SORT _variableNames)
@@ -194,7 +194,6 @@ if(COMPILE_KEYSTONE)
     message(STATUS "Compiling for MAIN target")
     project(mh1903)
     include(firmware.cmake)
-
 
     file(GLOB_RECURSE SAFE_C
         "external/safec/src/*.c"

@@ -36,10 +36,10 @@ if args.ru:
         yaml.dump({'ru': ru}, f, allow_unicode=True, default_flow_style=False)
     compile_command += ' -l ru'
 
-if args.zh:
-    with open("./zh-CN.yml", 'w', encoding='utf-8') as f:
-        yaml.dump({'zh-CN': cn}, f, allow_unicode=True, default_flow_style=False)
-    compile_command += ' -l zh-CN'
+# if args.zh:
+#     with open("./zh-CN.yml", 'w', encoding='utf-8') as f:
+#         yaml.dump({'zh-CN': cn}, f, allow_unicode=True, default_flow_style=False)
+#     compile_command += ' -l zh-CN'
 
 compile_command += ' -l en'
 

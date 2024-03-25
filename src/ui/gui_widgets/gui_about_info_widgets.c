@@ -307,14 +307,14 @@ static void LogExportHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         char logName[BUFFER_SIZE_64] = {0};
         char sn[BUFFER_SIZE_32] = {0};
-        char buf[BUFFER_SIZE_128] = "File name:\n";
+        char buff[BUFFER_SIZE_128] = {0};
         GetSerialNumber(sn);
-        snprintf_s(logName, BUFFER_SIZE_64, "0:Log_%s_%d.bin", sn, GetCurrentStampTime());
+        snprintf_s(logName, sizeof(logName), "0:Log_%s_%d.bin", sn, GetCurrentStampTime());
         LogSetLogName(logName);
-        snprintf_s(logName, BUFFER_SIZE_64, "Log_%s_%d.bin", sn, GetCurrentStampTime());
-        strcat(buf, logName);
+        snprintf_s(logName, sizeof(logName), "Log_%s_%d.bin", sn, GetCurrentStampTime());
+        snprintf_s(buff, sizeof(buff), "%s\n%s", _("about_info_export_file_name"), logName);
         g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgSdCardL,
-                          _("about_info_export_to_sdcard"), buf, _("Cancel"), DARK_GRAY_COLOR, _("Export"), ORANGE_COLOR);
+                          _("about_info_export_to_sdcard"), buff, _("Cancel"), DARK_GRAY_COLOR, _("Export"), ORANGE_COLOR);
         lv_obj_t *descLabel = lv_obj_get_child(g_noticeHintBox, 1);
         lv_obj_set_style_text_opa(descLabel, LV_OPA_100, LV_PART_MAIN);
         lv_obj_set_style_text_color(descLabel, ORANGE_COLOR, LV_PART_MAIN);

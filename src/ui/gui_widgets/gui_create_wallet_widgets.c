@@ -87,6 +87,14 @@ const char *GetCurrentKbWalletName(void)
     return "";
 }
 
+static void UpdateWalletNameIconHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_READY) {
+        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+    }
+}
+
 static void QuestionMarkEventCb(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -117,7 +125,7 @@ static void GuiCreateNameWalletWidget(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
 
     GuiSetEmojiIconIndex(GUI_KEYBOARD_EMOJI_NEW_INDEX);
-    g_nameWalletKb = GuiCreateFullKeyBoard(parent, NextTileHandler, KEY_STONE_FULL_L, NULL);
+    g_nameWalletKb = GuiCreateFullKeyBoard(parent, UpdateWalletNameIconHandler, KEY_STONE_FULL_L, NULL);
     GuiSetKeyBoardMinTaLen(g_nameWalletKb, 0);
     lv_obj_set_size(g_nameWalletKb->ta, 300, 60);
     lv_obj_set_style_text_opa(g_nameWalletKb->ta, LV_OPA_100, 0);
@@ -408,10 +416,9 @@ static void GuiImportBackupWidget(lv_obj_t *parent)
 
     label = GuiCreateIllustrateLabel(parent, _("import_wallet_single_backup_desc"));
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     lv_obj_t *img = GuiCreateImg(parent, &imgSingleBackup);
-
     label = GuiCreateLittleTitleLabel(parent, _("import_wallet_single_phrase"));
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
 
@@ -443,10 +450,10 @@ static void GuiImportBackupWidget(lv_obj_t *parent)
         },
     };
     lv_obj_t *button = GuiCreateButton(parent, 432, 216, table, NUMBER_OF_ARRAYS(table), ChooseWordsAmountHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 330 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(button, labelNotice, LV_ALIGN_OUT_BOTTOM_LEFT, -12, 24);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 545 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(line, button, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
     label = GuiCreateLittleTitleLabel(parent, _("import_wallet_shamir_backup"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
@@ -461,7 +468,7 @@ static void GuiImportBackupWidget(lv_obj_t *parent)
     table[2].position.x = 372;
     table[2].position.y = 26;
     button = GuiCreateButton(parent, 432, 156, table, 3, SelectImportShareHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 546 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(button, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 }
 
 void GuiCreateWalletInit(uint8_t walletMethod)

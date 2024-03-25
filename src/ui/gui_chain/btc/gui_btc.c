@@ -161,6 +161,7 @@ void *GuiGetParsedQrData(void)
     do {
         if (urType == CryptoPSBT) {
             PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+            #ifdef BTC_ONLY
             ExtendedPublicKey keys[8];
             public_keys->data = keys;
             public_keys->size = 8;
@@ -180,6 +181,19 @@ void *GuiGetParsedQrData(void)
             keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY_TEST);
             keys[7].path = "m/86'/1'/0'";
             keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT_TEST);
+            #else
+            ExtendedPublicKey keys[4];
+            public_keys->data = keys;
+            public_keys->size = 4;
+            keys[0].path = "m/84'/0'/0'";
+            keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+            keys[1].path = "m/49'/0'/0'";
+            keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+            keys[2].path = "m/44'/0'/0'";
+            keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+            keys[3].path = "m/86'/0'/0'";
+            keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+            #endif
             g_parseResult = btc_parse_psbt(crypto, mfp, sizeof(mfp), public_keys);
             CHECK_CHAIN_RETURN(g_parseResult);
             SRAM_FREE(public_keys);
@@ -234,6 +248,7 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
     GetMasterFingerPrint(mfp);
     if (urType == CryptoPSBT) {
         PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+        #ifdef BTC_ONLY
         ExtendedPublicKey keys[8];
         public_keys->data = keys;
         public_keys->size = 8;
@@ -253,6 +268,19 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY_TEST);
         keys[7].path = "m/86'/1'/0'";
         keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT_TEST);
+        #else
+        ExtendedPublicKey keys[4];
+        public_keys->data = keys;
+        public_keys->size = 4;
+        keys[0].path = "m/84'/0'/0'";
+        keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+        keys[1].path = "m/49'/0'/0'";
+        keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+        keys[2].path = "m/44'/0'/0'";
+        keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+        keys[3].path = "m/86'/0'/0'";
+        keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+        #endif
         result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys);
         SRAM_FREE(public_keys);
     }

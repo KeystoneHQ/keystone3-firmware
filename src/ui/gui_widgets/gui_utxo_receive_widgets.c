@@ -219,9 +219,7 @@ void GuiReceiveInit(uint8_t chain)
     g_selectType = g_addressType[g_currentAccountIndex];
     g_pageWidget = CreatePageWidget();
     g_utxoReceiveWidgets.cont = g_pageWidget->contentZone;
-    g_utxoReceiveWidgets.tileView = lv_tileview_create(g_utxoReceiveWidgets.cont);
-    lv_obj_set_style_bg_opa(g_utxoReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR & LV_STATE_SCROLLED);
-    lv_obj_set_style_bg_opa(g_utxoReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
+    g_utxoReceiveWidgets.tileView = GuiCreateTileView(g_utxoReceiveWidgets.cont);
     g_utxoReceiveWidgets.tileQrCode = lv_tileview_add_tile(g_utxoReceiveWidgets.tileView, UTXO_RECEIVE_TILE_QRCODE, 0, LV_DIR_HOR);
     GuiCreateQrCodeWidget(g_utxoReceiveWidgets.tileQrCode);
     g_utxoReceiveWidgets.tileSwitchAccount = lv_tileview_add_tile(g_utxoReceiveWidgets.tileView, UTXO_RECEIVE_TILE_SWITCH_ACCOUNT, 0, LV_DIR_HOR);
@@ -382,7 +380,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
         lv_obj_add_event_cb(btn, AddressSettingsHandler, LV_EVENT_CLICKED, NULL);
         img = GuiCreateImg(btn, &imgAddressType);
         lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-        label = GuiCreateLabelWithFont(btn, _("receive_btc_more_address_settings"), &openSans_24);
+        label = GuiCreateTextLabel(btn, _("receive_btc_more_address_settings"));
         lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
         // export xpub
         btn = lv_btn_create(cont);
@@ -395,7 +393,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
         lv_obj_add_event_cb(btn, ExportXpubHandler, LV_EVENT_CLICKED, NULL);
         img = GuiCreateImg(btn, &imgExport);
         lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-        label = GuiCreateLabelWithFont(btn, _("receive_btc_more_export_xpub"), &openSans_24);
+        label = GuiCreateTextLabel(btn, _("receive_btc_more_export_xpub"));
         lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
         break;
     default:
@@ -862,7 +860,7 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
 #endif
     for (uint32_t i = 0; i < g_addressSettingsNum; i++) {
         label = GuiCreateTextLabel(cont, g_addressSettings[i].title);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 20 + 103 * i);
         snprintf_s(string, BUFFER_SIZE_64, "%s (%s)", g_addressSettings[i].subTitle, g_addressSettings[i].path);
         label = GuiCreateNoticeLabel(cont, string);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);

@@ -1,5 +1,5 @@
 [package]
-name = "app_near"
+name = "app_arweave"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 keystore = { path = "../../keystore", default-features = false }
-third_party = { path = "../../third_party" }
+third_party = { path = "../../third_party", default-features = false }
 app_utils = {path="../utils"}
 rand_chacha = { version="0.3.1", default-features=false }
 sha2 = { version = "0.10.6", default-features = false, features = ["oid"] }

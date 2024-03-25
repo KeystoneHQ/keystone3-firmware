@@ -58,10 +58,10 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true},
 #else
-    {WALLET_LIST_BLUE,      &btcWalletListBlue,     true,   false},
-    {WALLET_LIST_SPARROW,   &btcWalletListSparrow,  true,   false},
-    {WALLET_LIST_NUNCHUK,   &btcWalletListNunchuk,  true,   false},
-    {WALLET_LIST_SPECTER,   &btcWalletListSpecter,  true,   true},
+    {WALLET_LIST_BLUE, &btcWalletListBlue, true},
+    {WALLET_LIST_SPECTER, &btcWalletListSpecter, true},
+    {WALLET_LIST_SPARROW, &btcWalletListSparrow, true},
+    {WALLET_LIST_NUNCHUK, &btcWalletListNunchuk, true},
 #endif
 };
 
@@ -648,7 +648,7 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
         j++;
     }
 #else
-    lv_obj_t *img, *line, *alphaImg;
+    lv_obj_t *img, *line;
     static lv_point_t points[2] = {{0, 0}, {408, 0}};
     line = GuiCreateLine(parent, points, 2);
     lv_obj_align(line, LV_ALIGN_TOP_MID, 0, 0);
@@ -660,10 +660,6 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
         lv_obj_align(img, LV_ALIGN_TOP_MID, 0, i * 99 + 9);
         lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED, &g_walletListArray[i]);
-        if (g_walletListArray[i].alpha) {
-            alphaImg = GuiCreateImg(img, &imgAlpha);
-            lv_obj_align(alphaImg, LV_ALIGN_RIGHT_MID, -219, 0);
-        }
         line = GuiCreateLine(parent, points, 2);
         lv_obj_align(line, LV_ALIGN_TOP_MID, 0, (i + 1) * 99);
     }
@@ -903,15 +899,15 @@ static void AddChainAddress(void)
     lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
 
     char name[BUFFER_SIZE_32] = {0};
-    sprintf(name, "Account-%d", g_chainAddressIndex[GetCurrentAccountIndex()] + 1);
+    snprintf_s(name, BUFFER_SIZE_32, "Account-%d", g_chainAddressIndex[GetCurrentAccountIndex()] + 1);
     lv_obj_t *label = GuiCreateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 
-    char addr[150] = {0};
+    char addr[BUFFER_SIZE_256] = {0};
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_YOROI || g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON) {
-        AddressLongModeCutWithLen(addr, GuiGetADABaseAddressByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]), 20);
+        CutAndFormatAddress(addr, sizeof(addr), GuiGetADABaseAddressByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]), 20);
     } else {
-        AddressLongModeCutWithLen(addr, GuiGetXrpAddressByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]), 20);
+        CutAndFormatAddress(addr, sizeof(addr), GuiGetXrpAddressByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]), 20);
     }
     label = GuiCreateNoticeLabel(g_bottomCont, addr);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 58);
@@ -1066,17 +1062,12 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         break;
 #else
     case WALLET_LIST_BLUE:
+    case WALLET_LIST_SPECTER:
     case WALLET_LIST_NUNCHUK:
-        //84 49 44
         func = GuiGetBlueWalletBtcData;
         break;
     case WALLET_LIST_SPARROW:
-        //84 49 44 86
         func = GuiGetSparrowWalletBtcData;
-        break;
-    case WALLET_LIST_SPECTER:
-        //84 49
-        func = GuiGetSpecterWalletBtcData;
         break;
 #endif
     default:

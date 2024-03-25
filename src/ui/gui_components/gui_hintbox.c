@@ -188,7 +188,7 @@ void *GuiCreateGeneralHintBox(lv_obj_t *parent, const void *src, const char *tit
     desc1 = GuiCreateIllustrateLabel(cont, desc1Text);
     if (desc2 == NULL) {
         lv_obj_align(desc1, LV_ALIGN_BOTTOM_LEFT, 36, -130);
-    } else {    
+    } else {
         lv_obj_align_to(desc1, desc2, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
     }
     title = GuiCreateLittleTitleLabel(cont, titleText);
@@ -259,7 +259,7 @@ void *GuiCreateUpdateHintbox(lv_obj_t *parent, const void *src, const char *titl
     lv_obj_align(rightBtn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_set_size(rightBtn, lv_obj_get_self_width(lv_obj_get_child(rightBtn, 0)) + 60, 66);
     lv_obj_set_style_bg_color(rightBtn, rightColor, LV_PART_MAIN);
-    uint32_t height = 48 + lv_obj_get_self_width(img) + 24 + lv_obj_get_self_height(title) + 12 + lv_obj_get_self_height(desc) + 12 + 
+    uint32_t height = 48 + lv_obj_get_self_width(img) + 24 + lv_obj_get_self_height(title) + 12 + lv_obj_get_self_height(desc) + 12 +
                       lv_obj_get_self_height(checksum) + 16 + 24 + 66 + 24;
     GuiHintBoxResize(cont, height);
 

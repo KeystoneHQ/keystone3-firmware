@@ -700,7 +700,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_t *qrcode = GuiCreateContainerWithParent(qrBgCont, 294, 294);
     lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 21);
 
-        lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 21);
+    lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 21);
     g_connectWalletTileView.qrCode = qrcode;
 
     g_bottomCont = GuiCreateContainerWithParent(qrCont, 408, 104);

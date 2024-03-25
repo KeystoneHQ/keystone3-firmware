@@ -200,7 +200,7 @@ int32_t GuiCLoseCurrentWorkingView(void)
     printf("close view %s freeHeap %d\n", GuiFrameIdToName(g_workingView->id), xPortGetFreeHeapSize());
     g_workingView->isActive = false;
     g_workingView = g_workingView->previous;
-        g_workingView->isActive = true;
+    g_workingView->isActive = true;
     GuiViewHandleEvent(g_workingView, GUI_EVENT_REFRESH, NULL, 0);
 
     return SUCCESS_CODE;

@@ -196,7 +196,7 @@ void SetDarkMode(uint32_t darkMode)
 
 uint32_t GetUSBSwitch(void)
 {
-    return !g_deviceSettings.usbSwitch;
+    return g_deviceSettings.usbSwitch;
 }
 
 
@@ -320,7 +320,7 @@ static void SaveDeviceSettingsSync(void)
     jsonString = GetJsonStringFromDeviceSettings();
     printf("jsonString=%s\n", jsonString);
     Gd25FlashSectorErase(SPI_FLASH_ADDR_NORMAL_PARAM);      //Only one sector for device settings.
-    size = strlen(jsonString);
+    size = strnlen_s(jsonString, SPI_FLASH_SIZE_NORMAL_PARAM - 4 - 1);
     ASSERT(size < SPI_FLASH_SIZE_NORMAL_PARAM - 4);
     Gd25FlashWriteBuffer(SPI_FLASH_ADDR_NORMAL_PARAM, (uint8_t *)&size, 4);
     Gd25FlashWriteBuffer(SPI_FLASH_ADDR_NORMAL_PARAM + 4, (uint8_t *)jsonString, size + 1);
@@ -378,7 +378,6 @@ static char *GetJsonStringFromDeviceSettings(void)
     cJSON_AddItemToObject(rootJson, KEY_DARK_MODE, cJSON_CreateNumber(g_deviceSettings.darkMode));
     cJSON_AddItemToObject(rootJson, KEY_USB_SWITCH, cJSON_CreateNumber(g_deviceSettings.usbSwitch));
     cJSON_AddItemToObject(rootJson, KEY_LAST_VERSION, cJSON_CreateNumber(g_deviceSettings.lastVersion));
-    cJSON_AddItemToObject(rootJson, KEY_USB_SWITCH, cJSON_CreateNumber(g_deviceSettings.usbSwitch));
     cJSON_AddItemToObject(rootJson, KEY_LANGUAGE, cJSON_CreateNumber(g_deviceSettings.language));
     retStr = cJSON_Print(rootJson);
     RemoveFormatChar(retStr);

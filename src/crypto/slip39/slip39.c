@@ -695,11 +695,8 @@ void GetSlip39MnemonicsWords(uint8_t *masterSecret, uint8_t *ems, uint8_t wordCn
     GenerateMnemonics(masterSecret, masterSecretLen, ems, iterationExponent, identifier, passPhrase,
                       groupCnt, groupThereshold, groups, sharesBuff, shareBufferSize);
 
-    printf("%s %d.\n", __func__, __LINE__);
-
     for (int i = 0; i < memberCnt; i++) {
         uint16_t* words = sharesBuff + (i * wordCnt);
-        printf("i = %d %s %d.\n", i, __func__, __LINE__);
         wordsList[i] = slip39_strings_for_words(words, wordCnt);
     }
 }

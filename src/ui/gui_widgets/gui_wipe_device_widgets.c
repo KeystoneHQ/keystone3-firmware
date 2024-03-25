@@ -98,8 +98,8 @@ static void WipeDeviceHandler(lv_event_t *e)
 static void GuiShowWipeDeviceHintBox(void)
 {
     if (g_wipeDeviceHintBox == NULL) {
-        g_wipeDeviceHintBox = GuiCreateGeneralHintBox(lv_scr_act(), &imgWarn, _("wipe_device"), _("system_settings_wipe_device_wipe_alert_desc"), NULL, 
-                                                      _("not_now"), WHITE_COLOR_OPA20, _("system_settings_wipe_device_wipe_start_text"), ORANGE_COLOR);
+        g_wipeDeviceHintBox = GuiCreateGeneralHintBox(lv_scr_act(), &imgWarn, _("wipe_device"), _("system_settings_wipe_device_wipe_alert_desc"), NULL,
+                              _("not_now"), WHITE_COLOR_OPA20, _("system_settings_wipe_device_wipe_start_text"), ORANGE_COLOR);
         lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_wipeDeviceHintBox);
         lv_obj_add_event_cb(leftBtn, NotNowHandler, LV_EVENT_CLICKED, NULL);
         lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_wipeDeviceHintBox);

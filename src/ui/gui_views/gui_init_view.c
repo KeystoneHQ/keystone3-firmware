@@ -41,9 +41,6 @@ static int32_t GuiInitViewInit(void)
         return SUCCESS_CODE;
     }
     GuiModeGetAccount();
-    char *hash = "131b3a1e9314ba076f8e459a1c4c6713eeb38862f3eb6f9371360aa234cdde1f";
-    SecretCacheSetChecksum(hash);
-    GuiCreateSdCardUpdateHintbox("1.1.1", true);
     return SUCCESS_CODE;
 }
 

@@ -102,6 +102,8 @@ static int GetMaxAddressIndex(void)
 #ifndef BTC_ONLY
     case CHAIN_XRP:
         return 200;
+    case CHAIN_ADA:
+        return 20;
 #endif
     default:
         return 999999999;

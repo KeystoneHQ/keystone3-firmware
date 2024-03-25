@@ -402,11 +402,11 @@ static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType, uint32
     }
 }
 #else
-static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType)
+static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType, uint32_t maxLen)
 {
     ASSERT(chain == CHAIN_BTC);
     const char *path = GetIsTestNet() ? g_btcTestNetPath[pathType] : g_btcPathTypeList[pathType].path;
-    sprintf(dest, "%s (%s)", g_btcPathTypeList[pathType].subTitle, path);
+    snprintf_s(dest, maxLen, "%s (%s)", g_btcPathTypeList[pathType].subTitle, path);
 }
 #endif
 

@@ -794,14 +794,14 @@ static void RefreshDefaultAddress(void)
         highlightEnd = 1;
     }
     ModelGetUtxoAddress(0, &addressDataItem);
-    AddressLongModeCut(address, addressDataItem.address);
-    Highlight(address, 0, highlightEnd, highlightAddress);
+    CutAndFormatAddress(address, sizeof(address), addressDataItem.address, 24);
+    Highlight(address, 0, highlightEnd, highlightAddress, sizeof(highlightAddress));
     lv_label_set_text(g_addressLabel[0], highlightAddress);
     lv_label_set_recolor(g_addressLabel[0], true);
 
     ModelGetUtxoAddress(1, &addressDataItem);
-    AddressLongModeCut(address, addressDataItem.address);
-    Highlight(address, 0, highlightEnd, highlightAddress);
+    CutAndFormatAddress(address, sizeof(address), addressDataItem.address, 24);
+    Highlight(address, 0, highlightEnd, highlightAddress, sizeof(highlightAddress));
     lv_label_set_text(g_addressLabel[1], highlightAddress);
     lv_label_set_recolor(g_addressLabel[1], true);
 }

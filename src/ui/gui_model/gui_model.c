@@ -1259,6 +1259,7 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
     if (g_checkResult != NULL && g_checkResult->error_code == 0) {
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
     } else {
+        printf("transaction check fail, error code: %d, error msg: %s\r\n", g_checkResult->error_code, g_checkResult->error_message);
         GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_FAIL, g_checkResult, sizeof(g_checkResult));
     }

@@ -1,2 +1,1 @@
 SET(RUSTC_FEATURES)
-SET(RUSTC_FEATURES ${RUSTC_FEATURES}\ --features\ "test_feature")

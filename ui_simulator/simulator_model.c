@@ -3,7 +3,9 @@
 #include "gui.h"
 #include "gui_home_widgets.h"
 #include "cjson/cJSON.h"
+#ifndef BTC_ONLY
 #include "eapdu_services/service_resolve_ur.h"
+#endif
 
 bool g_fingerUnlockDeviceFlag = true;
 bool g_fingerSingTransitionsFlag = false;
@@ -91,12 +93,6 @@ void SetLockTimeOut(uint32_t timeOut)
 
 }
 
-PtrT_TransactionParseResult_EthParsedErc20Transaction eth_parse_erc20(PtrString input,
-                                                                      uint32_t decimal)
-{
-
-}
-
 
 bool GetUsbDetectState(void)
 {
@@ -151,6 +147,17 @@ void FpSaveKeyInfo(bool add)
 
 }
 
+uint16_t GetCurrentUSParsingRequestID()
+{
+
+}
+
+#ifndef BTC_ONLY
+PtrT_TransactionParseResult_EthParsedErc20Transaction eth_parse_erc20(PtrString input,
+                                                                      uint32_t decimal)
+{
+
+}
 struct UREncodeResult *get_connect_metamask_ur_unlimited(PtrBytes master_fingerprint,
                                                          uint32_t master_fingerprint_length,
                                                          enum ETHAccountType account_type,
@@ -166,16 +173,11 @@ struct UREncodeResult *get_connect_metamask_ur(PtrBytes master_fingerprint,
 {
 
 }
-
-uint16_t GetCurrentUSParsingRequestID()
-{
-
-}
-
 void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
 {
 
 }
+#endif
 
 
 uint32_t GetBatteryMilliVolt(void)

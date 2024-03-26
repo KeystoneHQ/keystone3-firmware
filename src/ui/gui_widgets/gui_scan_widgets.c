@@ -112,7 +112,11 @@ void GuiTransactionCheckPass(void)
     SetPageLockScreen(true);
     GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
 #else
+#ifndef BTC_ONLY
     g_qrcodeViewType =  EthTx;
+#else
+    g_qrcodeViewType =  BtcNativeSegwitTx;
+#endif
     GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
 #endif
 }

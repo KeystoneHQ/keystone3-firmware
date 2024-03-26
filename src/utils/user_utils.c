@@ -185,3 +185,19 @@ inline bool CheckContainsNull(const char *str, size_t maxLen)
 
     return false;
 }
+
+int FindStringCharPosition(const char *str, const char destChar, int index)
+{
+    int slashCount = 0;
+
+    for (int i = 0; str[i] != '\0'; ++i) {
+        if (str[i] == destChar) {
+            ++slashCount;
+            if (slashCount == index) {
+                return i;
+            }
+        }
+    }
+
+    return -1;
+}

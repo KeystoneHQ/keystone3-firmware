@@ -217,27 +217,27 @@ static void SetContainerDefaultStyle(lv_obj_t *container)
 
 static void SetTitleLabelStyle(lv_obj_t *label)
 {
-    lv_obj_set_style_text_font(label, &openSans_20, LV_PART_MAIN);
+    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
 }
 
 static void SetContentLableStyle(lv_obj_t *label)
 {
-    lv_obj_set_style_text_font(label, &openSans_20, LV_PART_MAIN);
+    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
 }
 
 static void SetVotesOnOrderLableStyle(lv_obj_t *label)
 {
-    lv_obj_set_style_text_font(label, &openSansEnLittleTitle, LV_PART_MAIN);
+    lv_obj_set_style_text_font(label, g_defLittleTitleFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
 }
 
 static void SetVotesOnContentLableStyle(lv_obj_t *label)
 {
-    lv_obj_set_style_text_font(label, &openSansEnLittleTitle, LV_PART_MAIN);
+    lv_obj_set_style_text_font(label, g_defLittleTitleFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(label, lv_color_hex(0xF5870A), LV_PART_MAIN);
 }
 
@@ -388,7 +388,7 @@ static void GuiShowSolTxGeneralOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOv
         char order[BUFFER_SIZE_16] = {0};
         snprintf_s(order, BUFFER_SIZE_16, "#%d", i + 1);
         lv_label_set_text(orderLabel, order);
-        lv_obj_set_style_text_font(orderLabel, &openSans_20, LV_PART_MAIN);
+        lv_obj_set_style_text_font(orderLabel, g_defIllustrateFont, LV_PART_MAIN);
         lv_obj_set_style_text_color(orderLabel, lv_color_hex(0xF5870A), LV_PART_MAIN);
         lv_obj_align(orderLabel, LV_ALIGN_TOP_LEFT, 24, 16);
 
@@ -435,13 +435,13 @@ static void GuiShowSolTxUnknownOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOv
     lv_obj_t *label = lv_label_create(container);
     lv_label_set_text(label, "No Transaction Details");
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 144);
-    lv_obj_set_style_text_font(label, &openSans_24, LV_PART_MAIN);
+    lv_obj_set_style_text_font(label, &buttonFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
 
     label = lv_label_create(container);
     lv_label_set_text(label, "All data in this transaction are customized and can’t be decoded currently.");
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 188);
-    lv_obj_set_style_text_font(label, &openSans_20, LV_PART_MAIN);
+    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_width(label, 360);

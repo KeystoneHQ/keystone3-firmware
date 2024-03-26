@@ -256,7 +256,7 @@ LV_IMG_DECLARE(btcWalletListNunchuk);
 // font
 LV_FONT_DECLARE(openSans_20);
 LV_FONT_DECLARE(openSans_24);
-LV_FONT_DECLARE(openSansButton);
+LV_FONT_DECLARE(buttonFont);
 LV_FONT_DECLARE(openSansDesc);
 LV_FONT_DECLARE(openSansLanguage);
 LV_FONT_DECLARE(openSansCnTitle);
@@ -269,5 +269,9 @@ LV_FONT_DECLARE(openSansEnLittleTitle);
 LV_FONT_DECLARE(openSansEnText);
 LV_FONT_DECLARE(openSansEnIllustrate);
 LV_FONT_DECLARE(openSansEnBoldIllustrate);
+LV_FONT_DECLARE(rusTitle);
+LV_FONT_DECLARE(rusLittleTitle);
+LV_FONT_DECLARE(rusText);
+LV_FONT_DECLARE(rusIllustrate);
 #endif /* _GUI_RESOURCE_H */
 

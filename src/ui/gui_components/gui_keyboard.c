@@ -2,13 +2,14 @@
 #include "motor_manager.h"
 #include "gui.h"
 #include "gui_obj.h"
+#include "gui_views.h"
 #include "gui_create_wallet_widgets.h"
 #include "gui_keyboard.h"
-#include "gui_hintbox.h"
-#include "gui_views.h"
 #include "gui_lock_widgets.h"
 #include "gui_letter_tree.h"
 #include "user_memory.h"
+#include "gui_hintbox.h"
+#include "gui_button.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
@@ -447,13 +448,12 @@ void *GuiCreateEmojiKeyBoard(lv_obj_t *parent, lv_obj_t *icon)
     g_walletIcon = icon;
     lv_obj_t *hintbox = GuiCreateHintBox(parent, 480, 534, true);
     lv_obj_add_event_cb(lv_obj_get_child(hintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
-    lv_obj_t *label = GuiCreateNoticeLabel(hintbox, "Pick an icon for your wallet");
+    lv_obj_t *label = GuiCreateNoticeLabel(hintbox, _("single_backup_namewallet_previntput_2"));
+    lv_obj_set_width(label, 380);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 296);
 
-    lv_obj_t *img = GuiCreateImg(hintbox, &imgClose);
+    lv_obj_t *img = GuiCreateImgButton(hintbox, &imgClose, 45, CloseCurrentParentHandler, NULL);
     lv_obj_align(img, LV_ALIGN_TOP_RIGHT, -36, 293);
-    lv_obj_add_event_cb(img, CloseCurrentParentHandler, LV_EVENT_CLICKED, NULL);
-    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
 
     lv_obj_t *btnm = lv_btnmatrix_create(hintbox);
     lv_btnmatrix_set_map(btnm, (const char **)g_emojiBtnmMap);
@@ -503,7 +503,7 @@ void *GuiCreateNumKeyboard(lv_obj_t *parent, lv_event_cb_t cb, NUM_KEYBOARD_ENUM
         return NULL;
     }
     lv_obj_set_size(btnm, kbWidth, kbHeight);
-    lv_obj_set_style_text_font(btnm, &openSansButton, LV_PART_MAIN);
+    lv_obj_set_style_text_font(btnm, &buttonFont, LV_PART_MAIN);
     lv_obj_set_style_border_width(btnm, 0, LV_PART_MAIN);
     lv_obj_set_style_clip_corner(btnm, 0, LV_PART_MAIN);
     lv_obj_set_style_pad_all(btnm, 8, LV_PART_MAIN);
@@ -580,7 +580,7 @@ void *GuiCreateKeyBoard(lv_obj_t *parent, lv_event_cb_t cb, lv_keyboard_user_mod
     lv_obj_set_align(keyBoard->cont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_color(keyBoard->cont, DARK_BG_COLOR, LV_PART_MAIN);
     keyBoard->kb = lv_keyboard_create(keyBoard->cont);
-    lv_obj_set_style_text_font(keyBoard->kb, &openSansButton, 0);
+    lv_obj_set_style_text_font(keyBoard->kb, &buttonFont, 0);
     lv_keyboard_set_map(keyBoard->kb, keyMode, (const char **)g_kbMap[keyMode - KEY_STONE_FULL_L],
                         g_kbCtrl[keyMode - KEY_STONE_FULL_L]);
     lv_keyboard_set_mode(keyBoard->kb, keyMode);
@@ -595,7 +595,8 @@ void *GuiCreateFullKeyBoard(lv_obj_t *parent, lv_event_cb_t kbCb, lv_keyboard_us
     KeyBoard_t *keyBoard = GuiCreateKeyBoard(parent, kbCb, keyMode, param);
     lv_obj_t *textArea = lv_textarea_create(parent);
     lv_obj_add_event_cb(textArea, KbTextAreaHandler, LV_EVENT_ALL, keyBoard);
-    lv_obj_set_style_text_font(textArea, &openSansButton, 0);
+    // lv_obj_set_style_text_font(textArea, &openSansButton, 0);
+    lv_obj_set_style_text_font(textArea, &buttonFont, 0);
     if (GuiDarkMode()) {
         lv_obj_set_style_text_color(textArea, WHITE_COLOR, 0);
     } else {
@@ -723,7 +724,7 @@ void *GuiCreateMnemonicKeyBoard(lv_obj_t *parent,
 
     lv_obj_t *btnm = lv_btnmatrix_create(mkb->cont);
     lv_obj_set_size(btnm, MNEMONIC_KB_CONT_WIDTH, kbHeight);
-    lv_obj_set_style_text_font(btnm, &openSans_20, 0);
+    lv_obj_set_style_text_font(btnm, g_defIllustrateFont, 0);
     lv_btnmatrix_set_map(btnm, (const char **)mkb->mnemonicWord);
     lv_obj_align(btnm, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_style_border_width(btnm, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -746,8 +747,6 @@ void *GuiCreateMnemonicKeyBoard(lv_obj_t *parent,
     } else if (keyMode == KEY_STONE_MNEMONIC_33) {
         lv_btnmatrix_set_ctrl_map(btnm, g_numBtnm33MapCtrl);
     }
-    // lv_obj_t *bottomCont = GuiCreateContainerWithParent(mkb->cont, 408, 50);
-    // lv_obj_align_to(bottomCont, btnm, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
     mkb->btnm = btnm;
     mkb->currentSlice = 0;

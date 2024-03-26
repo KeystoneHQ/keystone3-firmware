@@ -27,16 +27,17 @@ static lv_obj_t *vibrationSw;
 
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static PageWidget_t *g_pageWidget;
+static PageWidget_t *g_selectLanguagePage;
 
 void GuiSystemSettingNVSBarInit();
 void GuiSystemSettingEntranceWidget(lv_obj_t *parent);
 static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e);
 static void GuiShowKeyBoardDialog(lv_obj_t *parent);
 static void DispalyHandler(lv_event_t *e);
-
+static void OpenLanguageSelectHandler(lv_event_t *e);
 static void VibrationHandler(lv_event_t *e);
 static void VibrationSwitchHandler(lv_event_t * e);
-
+void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset);
 void OpenForgetPasswordHandler(lv_event_t *e);
 
 void GuiSystemSettingAreaInit()
@@ -68,7 +69,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
 {
     lv_obj_t *label, *imgArrow, *button;
 
-    label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_title"));
+    label = GuiCreateTextLabel(parent, _("language_title"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     GuiButton_t table[] = {
         {
@@ -83,8 +84,16 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
         },
     };
     button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                             DispalyHandler, NULL);
+                             OpenLanguageSelectHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 0);
+
+    label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_title"));
+    imgArrow = GuiCreateImg(parent, &imgArrowRight);
+    table[0].obj = label,
+            table[1].obj = imgArrow;
+    button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
+                             DispalyHandler, NULL);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 109);
 
     label = GuiCreateTextLabel(parent, _("system_settings_vabiration"));
     vibrationSw = lv_switch_create(parent);
@@ -111,7 +120,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
     };
     button = GuiCreateButton(parent, 456, 84, tableSwitch, NUMBER_OF_ARRAYS(tableSwitch),
                              VibrationHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 109);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 205);
 
 
     label = GuiCreateTextLabel(parent, _("verify_title"));
@@ -120,10 +129,10 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
     table[1].obj = imgArrow;
     button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
                              GuiSystemSettingWebAuthHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 205);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 301);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 301);
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 397);
 
     label = GuiCreateTextLabel(parent, _("wipe_device"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
@@ -133,7 +142,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
                              GuiSystemSettingWipeDeivceHandler, NULL);
     lv_obj_set_style_text_color(lv_obj_get_child(button, 0), lv_color_hex(0xf55831), LV_PART_MAIN);
 
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 301);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 397);
 
 }
 
@@ -162,6 +171,15 @@ void GuiSystemSettingAreaRefresh()
     PassWordPinHintRefresh(g_keyboardWidget);
 }
 
+void GuiSystemSettingAreaRestart()
+{
+    if (g_selectLanguagePage != NULL) {
+        DestroyPageWidget(g_selectLanguagePage);
+        g_selectLanguagePage = NULL;
+    }
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
+}
 
 static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e)
 {
@@ -175,8 +193,6 @@ static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e)
         }
     }
 }
-
-
 
 static void GuiShowKeyBoardDialog(lv_obj_t *parent)
 {
@@ -201,11 +217,9 @@ void GuiSystemSettingVerifyPasswordErrorCount(void *param)
 static void DispalyHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-
     if (code == LV_EVENT_CLICKED) {
         GuiFrameOpenView(&g_displayView);
     }
-
 }
 
 static void VibrationHandler(lv_event_t *e)
@@ -236,5 +250,17 @@ static void VibrationSwitchHandler(lv_event_t * e)
             SetVibration(0);
         }
         SaveDeviceSettings();
+    }
+}
+
+static void OpenLanguageSelectHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        g_selectLanguagePage = CreatePageWidget();
+        lv_obj_clear_flag(g_selectLanguagePage->contentZone, LV_OBJ_FLAG_SCROLLABLE);
+        GuiCreateLanguageWidget(g_selectLanguagePage->contentZone, 12);
+        SetNavBarLeftBtn(g_selectLanguagePage->navBarWidget, NVS_BAR_RETURN, DestroyPageWidgetHandler, g_selectLanguagePage);
+        SetMidBtnLabel(g_selectLanguagePage->navBarWidget, NVS_BAR_MID_LABEL, _("language_title"));
     }
 }

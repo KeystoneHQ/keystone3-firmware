@@ -7,6 +7,8 @@ SET MAKE_OAT_FILE_PATH=%TOOLS_FOLDER%\ota_file_maker
 SET MAKE_PADDING_FILE_PATH=%TOOLS_FOLDER%\padding_bin_file
 SET ASTYLE_PATH=%TOOLS_FOLDER%\AStyle.bat
 SET PACK_PATH=%CD%\pack.bat
+set "LANGUAGE_PATH=%CD%\src\ui\lv_i18n"
+set "LANGUAGE_SCRIPT=py data_loader.py"
 
 SET build_log=false
 SET build_copy=false
@@ -18,7 +20,7 @@ SET build_release=false
 SET build_rebuild=false
 SET build_btc_only=false
 SET build_simulator=false
-
+SET build_language=false
 
 for %%i in (%*) do (
     if /I "%%i"=="log" (
@@ -51,6 +53,9 @@ for %%i in (%*) do (
     if /I "%%i"=="simulator" (
         set build_simulator=true
     )
+    if /I "%%i"=="language" (
+        set build_language=true
+    )
 )
 
 if "%build_rebuild%"=="true" (
@@ -79,7 +84,13 @@ if "%build_copy%"=="true" (
     del %BUILD_FOLDER%\mh1903.bin
 )
 
-set cmake_parm= 
+set cmake_parm=
+if "%build_language%"=="true" (
+    pushd %LANGUAGE_PATH%
+    %LANGUAGE_SCRIPT% --zh --ru
+    popd  
+)
+
 if "%build_production%"=="true" (
     set cmake_parm=%cmake_parm% -DBUILD_PRODUCTION=true
 )
@@ -90,14 +101,13 @@ if "%build_screen%"=="true" (
     set cmake_parm=%cmake_parm% -DENABLE_SCREEN_SHOT=true
 )
 if "%build_debug%"=="true" (
-    set cmake_parm=%cmake_parm% -DDEBUG_MEMORY=true ..
+    set cmake_parm=%cmake_parm% -DDEBUG_MEMORY=true
 )
 if "%build_simulator%"=="true" (
-    set cmake_parm=%cmake_parm% -DCMAKE_BUILD_TYPE=Simulator ..
+    set cmake_parm=%cmake_parm% -DCMAKE_BUILD_TYPE=Simulator
 )
 
 echo %cmake_parm%
-
 pushd build
 cmake -G "Unix Makefiles" %cmake_parm% ..
 

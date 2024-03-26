@@ -1,3 +1,4 @@
+#include "gui_obj.h"
 #include "gui_export_pubkey_widgets.h"
 #include "gui_home_widgets.h"
 #include "gui_page.h"
@@ -214,7 +215,7 @@ static void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
     for (uint32_t i = 0; i < sizeof(g_btcPathTypeList) / sizeof(g_btcPathTypeList[0]); i++) {
-        label = GuiCreateLabelWithFont(cont, g_btcPathTypeList[i].title, &openSans_24);
+        label = GuiCreateTextLabel(cont, g_btcPathTypeList[i].title);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
 #ifndef BTC_ONLY
         snprintf_s(desc, BUFFER_SIZE_64, "%s (%s)", g_btcPathTypeList[i].subTitle, g_btcPathTypeList[i].path);
@@ -258,7 +259,7 @@ static void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent)
     label = GuiCreateNoticeLabel(egCont, _("derivation_path_address_eg"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
     for (uint32_t i = 0; i < 2; i++) {
-        label = GuiCreateLabel(egCont, "");
+        label = GuiCreateIllustrateLabel(egCont, "");
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 50 + 34 * i);
         lv_obj_set_width(label, 360);
         lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);

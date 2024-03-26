@@ -18,6 +18,7 @@
 #include "version.h"
 
 
+
 #define LOG_NAME_MAX_LEN            64
 #define LOG_DATA_HEAD_SIZE          8
 #define NEXT_SECTOR_MARK            0x0000

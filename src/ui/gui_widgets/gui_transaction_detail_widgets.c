@@ -167,7 +167,7 @@ static void GuiDealParseErrorResult(int errorType)
     label = GuiCreateIllustrateLabel(g_parseErrorHintBox, _("scan_qr_code_error_invalid_qrcode_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
-    lv_obj_t *btn = GuiCreateBtnWithFont(g_parseErrorHintBox, _("OK"), &openSansEnText);
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_parseErrorHintBox, _("OK"), g_defTextFont);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_add_event_cb(btn, CloseParseErrorDataHandler, LV_EVENT_CLICKED, NULL);
 }
@@ -354,7 +354,7 @@ static void SignByFinger(void)
     lv_obj_set_style_arc_opa(arc, LV_OPA_10, LV_PART_MAIN);
     lv_obj_align(arc, LV_ALIGN_BOTTOM_MID, 0, -154);
 
-    g_fpErrorLabel = GuiCreateLabel(cont, _("scan_qr_code_sign_unsigned_content_fingerprint_failed_desc"));
+    g_fpErrorLabel = GuiCreateIllustrateLabel(cont, _("scan_qr_code_sign_unsigned_content_fingerprint_failed_desc"));
     lv_obj_set_style_text_color(g_fpErrorLabel, RED_COLOR, LV_PART_MAIN);
     lv_obj_align(g_fpErrorLabel, LV_ALIGN_BOTTOM_MID, 0, -100);
     lv_obj_add_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN);

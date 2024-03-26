@@ -223,7 +223,7 @@ const lv_font_t *GetLvglTextFont(char *fontStr)
         return &openSansDesc;
     }
 
-    return &openSans_20;
+    return &openSansEnIllustrate;
 }
 
 GetContSizeFunc GetPsbtContainerSize(char *type)
@@ -1477,14 +1477,14 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
     lv_obj_add_flag(g_imgCont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(g_imgCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_scrollbar_mode(g_imgCont, LV_SCROLLBAR_MODE_OFF);
-    lv_obj_clear_flag(g_imgCont, LV_OBJ_FLAG_SCROLL_MOMENTUM);
+    lv_obj_clear_flag(g_imgCont, LV_OBJ_FLAG_SCROLL_ELASTIC);
 
     lv_obj_t *tabView = lv_tabview_create(g_imgCont, LV_DIR_TOP, 64);
     lv_obj_set_style_bg_color(tabView, lv_color_hex(0x0), LV_PART_MAIN);
     lv_obj_set_style_bg_color(tabView, lv_color_hex(0x0), LV_PART_ITEMS);
     lv_obj_set_style_border_width(tabView, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(tabView, lv_color_hex(0xffffff), LV_PART_ITEMS);
-    lv_obj_clear_flag(tabView, LV_OBJ_FLAG_SCROLL_MOMENTUM);
+    lv_obj_clear_flag(tabView, LV_OBJ_FLAG_SCROLL_ELASTIC);
 
     lv_obj_set_style_bg_color(tabView, lv_color_hex(0), LV_PART_ITEMS);
     lv_obj_set_style_text_color(tabView, lv_color_hex(0xffffff), LV_PART_ITEMS);

@@ -84,14 +84,8 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
     g_changeCont = cont;
     if (g_entropyMethod == 0) {
-        label = GuiCreateTextLabel(cont, _("single_backup_phrase_regenerate"));
-        lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-        lv_obj_t *img = GuiCreateImg(cont, &imgChange);
-        GuiButton_t table[] = {
-            {.obj = img, .align = LV_ALIGN_LEFT_MID, .position = {14, 0},},
-            {.obj = label, .align = LV_ALIGN_RIGHT_MID, .position = {-12, 0},},
-        };
-        lv_obj_t *button = GuiCreateButton(cont, 186, 66, table, NUMBER_OF_ARRAYS(table), UpdatePhraseHandler, NULL);
+        lv_obj_t *button = GuiCreateImgLabelAdaptButton(cont, _("single_backup_phrase_regenerate"), &imgChange, UpdatePhraseHandler, NULL);
+        lv_obj_set_height(button, 66);
         lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 24);
     }
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_KB_NEXT);
@@ -355,7 +349,7 @@ int8_t GuiSinglePhraseNextTile(void)
         return SUCCESS_CODE;
     case SINGLE_PHRASE_RANDOM_PHRASE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET"Reset");
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("single_phrase_reset"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetBtnHandler, NULL);
         g_confirmPhraseKb->wordCnt = g_phraseCnt;
         lv_obj_add_flag(g_changeCont, LV_OBJ_FLAG_HIDDEN);
@@ -390,7 +384,7 @@ int8_t GuiSinglePhrasePrevTile(void)
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         break;
     case SINGLE_PHRASE_WRITE_SE:
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET"Reset");
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("single_phrase_reset"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetBtnHandler, NULL);
         ResetConfirmInput();
         break;
@@ -430,7 +424,7 @@ void GuiSinglePhraseRefresh(void)
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     } else if (g_singlePhraseTileView.currentTile == SINGLE_PHRASE_CONFIRM_PHRASE) {
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET"Reset");
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("single_phrase_reset"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetBtnHandler, NULL);
     }
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);

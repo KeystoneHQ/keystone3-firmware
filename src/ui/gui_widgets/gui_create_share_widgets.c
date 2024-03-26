@@ -209,7 +209,7 @@ static void GuiShareSelectSliceWidget(lv_obj_t *parent)
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("shamir_phrase_number"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateIllustrateLabel(parent, _("Threshold"));
+    label = GuiCreateIllustrateLabel(parent, _("shamir_phrase_threold"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 438 - GUI_MAIN_AREA_OFFSET);
 
     g_selectSliceTile.memberCnt = SLIP39_DEFAULT_MEMBER_COUNT;
@@ -272,7 +272,6 @@ static void GuiShareCustodianWidget(lv_obj_t *parent)
     lv_obj_t *desc2 = GuiCreateIllustrateLabel(cont, _("shamir_phrase_notice_desc2"));
     lv_obj_align_to(desc2, desc1, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     hintHeight = GetHintBoxReHeight(hintHeight, desc1) + 130;
-    // lv_obj_set_size(cont, 480, hintHeight);
 
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_CHECK);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
@@ -486,7 +485,7 @@ int8_t GuiCreateShareNextTile(void)
         lv_obj_clear_flag(g_shareBackupTile.nextCont, LV_OBJ_FLAG_HIDDEN);
         break;
     case CREATE_SHARE_BACKUPFROM:
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Reset");
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("single_phrase_reset"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetBtnHandler, NULL);
         lv_obj_add_flag(g_shareBackupTile.nextCont, LV_OBJ_FLAG_HIDDEN);
         break;

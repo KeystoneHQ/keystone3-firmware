@@ -105,7 +105,7 @@ void GuiAboutKeystoneEntranceWidget(lv_obj_t *parent)
     lv_obj_t *imgIcon, *label, *imgQr;
     for (int i = 0; i < CONTACT_ITEM_COUNT; i++) {
         imgIcon = GuiCreateImg(parent, g_contactItems[i].icon);
-        label = GuiCreateLabel(parent, g_contactItems[i].url);
+        label = GuiCreateIllustrateLabel(parent, g_contactItems[i].url);
         imgQr = GuiCreateImg(parent, g_contactItems[i].qrIcon);
 
         GuiButton_t table[] = {
@@ -165,8 +165,7 @@ static void ShowQRDialogHandler(lv_event_t *e)
         lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -114);
 
-        button = GuiCreateBtn(parent, _("OK"));
-        lv_obj_set_size(button, 94, 66);
+        button = GuiCreateAdaptButton(parent, _("OK"));
         lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
         lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_add_event_cb(button, GuiCloseQrcodeHandler, LV_EVENT_CLICKED, NULL);

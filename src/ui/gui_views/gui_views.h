@@ -189,6 +189,7 @@ extern GUI_VIEW g_updateSuccessView;
 #ifdef BTC_ONLY
 extern GUI_VIEW g_btcBtcWalletProfileView;
 #endif
+extern GUI_VIEW g_multiSigImportWalletInfoView;
 
 
 void UnHandler(lv_event_t *e);

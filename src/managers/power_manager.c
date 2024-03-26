@@ -2,7 +2,6 @@
 #include "stdio.h"
 #include "drv_aw32001.h"
 #include "drv_button.h"
-#include "gui_power_option_widgets.h"
 #include "drv_lcd_bright.h"
 #include "mhscpu.h"
 #include "gui_views.h"
@@ -33,7 +32,7 @@ void SetShowPowerOffPage(bool isShow)
 static void PowerOption(void)
 {
     if (g_isShowPowerOptionPage) {
-        GuiApiEmitSignalWithValue(SIG_INIT_POWER_OPTION, 1);
+        Aw32001PowerOff();
     }
 }
 

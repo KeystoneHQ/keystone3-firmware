@@ -25,25 +25,20 @@
 #include "hal_lcd.h"
 #include "cmsis_os.h"
 #include "user_msg.h"
-#include "cmd_task.h"
 #include "ui_display_task.h"
-#include "qrdecode_task.h"
 #include "touchpad_task.h"
 #include "background_task.h"
-#include "log_task.h"
 #include "usb_task.h"
 #include "user_fatfs.h"
-#include "user_sqlite3.h"
 #include "screen_manager.h"
 #include "keystore.h"
-#include "log.h"
+
 #include "fingerprint_process.h"
 #include "fingerprint_task.h"
 #include "low_power.h"
 #include "draw_on_lcd.h"
 #include "device_setting.h"
 #include "anti_tamper.h"
-#include "power_on_self_check.h"
 #include "account_manager.h"
 #include "version.h"
 #include "hardware_version.h"
@@ -55,7 +50,7 @@ int main(void)
     SetAllGpioLow();
     SystemClockInit();
     SensorInit();
-    Uart0Init(CmdIsrRcvByte);
+    Uart0Init(NULL);
     FingerprintInit();
     cm_backtrace_init("mh1903", GetHardwareVersionString(), GetSoftwareVersionString());
     TrngInit();
@@ -68,7 +63,6 @@ int main(void)
     Gd25FlashInit();
     NvicInit();
     PsramInit();
-    LogInit();
     DeviceSettingsInit();
     UserMsgInit();
     DS28S60_Init();
@@ -83,23 +77,16 @@ int main(void)
     ButtonInit();
     ExtInterruptInit();
     MountSdFatfs();
-    UserSqlite3Init();
     ScreenManagerInit();
     AccountManagerInit();
-    PowerOnSelfCheck();
 
     PrintSystemInfo();
     osKernelInitialize();
 
     CreateFingerprintTask();
-#ifndef BUILD_PRODUCTION
-    CreateCmdTask();
-#endif
     CreateUiDisplayTask();
-    CreateQrDecodeTask();
     CreateTouchPadTask();
     CreateBackgroundTask();
-    CreateLogTask();
     CreateUsbTask();
 
     printf("start FreeRTOS scheduler\r\n");

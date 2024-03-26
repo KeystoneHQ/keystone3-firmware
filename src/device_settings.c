@@ -224,32 +224,7 @@ bool IsUpdateSuccess(void)
 /// @brief Wipe device.
 void WipeDevice(void)
 {
-    // reset all account address index in receive page
-    {
-        void GuiResetAllUtxoAddressIndex(void);
-#ifndef BTC_ONLY
-        void GuiResetAllEthAddressIndex(void);
-        void GuiResetAllStandardAddressIndex(void);
-#endif
-        GuiResetAllUtxoAddressIndex();
-#ifndef BTC_ONLY
-        GuiResetAllEthAddressIndex();
-        GuiResetAllStandardAddressIndex();
-#endif
-    }
 
-    uint32_t wipeFlag = DEVICE_WIPE_FLAG_MAGIC_NUM;
-    Gd25FlashWriteBuffer(SPI_FLASH_ADDR_PROTECT_PARAM, (uint8_t *)&wipeFlag, sizeof(wipeFlag));
-    SetShowPowerOffPage(false);
-    FpWipeManageInfo();
-    ErasePublicInfo();
-    DestroyAccount(0);
-    DestroyAccount(1);
-    DestroyAccount(2);
-    for (uint32_t addr = 0; addr < GD25QXX_FLASH_SIZE; addr += 1024 * 64) {
-        Gd25FlashBlockErase(addr);
-        printf("flash erase address: %#x\n", addr);
-    }
 }
 
 
@@ -258,33 +233,6 @@ void WipeDevice(void)
 /// @param argv Test arg values.
 void DeviceSettingsTest(int argc, char *argv[])
 {
-    if (strcmp(argv[0], "wipe") == 0) {
-        printf("start wipe\n");
-        WipeDevice();
-        printf("wipe over\n");
-    } else if (strcmp(argv[0], "info") == 0) {
-        printf("device settings verion=%s\n", g_deviceSettingsVersion);
-        printf("setupStep=%d\n", GetSetupStep());
-        printf("bright=%d\n", GetBright());
-        printf("autoLockScreen=%d\n", GetAutoLockScreen());
-        printf("autoPowerOff=%d\n", GetAutoPowerOff());
-        printf("vibration=%d\n", GetVibration());
-        printf("darkMode=%d\n", GetDarkMode());
-        printf("usbSwitch=%d\n", GetUSBSwitch());
-    } else if (strcmp(argv[0], "set") == 0) {
-        SetSetupStep(0);
-        SetBright(50);
-        SetAutoLockScreen(15);
-        SetAutoPowerOff(1);
-        SetVibration(0);
-        SetDarkMode(0);
-        SetUSBSwitch(0);
-        g_deviceSettings.lastVersion = 2;
-        SaveDeviceSettings();
-        printf("set device settings test\n");
-    } else {
-        printf("device settings test arg err\n");
-    }
 }
 
 

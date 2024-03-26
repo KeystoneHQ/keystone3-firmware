@@ -2,7 +2,7 @@
 #include "stdio.h"
 #include "string.h"
 #include "cmsis_os.h"
-#include "qrdecode_task.h"
+
 #include "ui_display_task.h"
 #include "screen_manager.h"
 #include "screenshot.h"
@@ -68,7 +68,7 @@ static void TouchPadTask(void *argument)
 #endif
         osKernelUnlock();
         ActivateUiTaskLoop();
-        QrDecodeTouchQuit();
+        // QrDecodeTouchQuit();
 #ifndef BUILD_PRODUCTION
 #ifdef ENABLE_SCREEN_SHOT
         ScreenShotTouch();

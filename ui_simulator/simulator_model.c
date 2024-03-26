@@ -1,7 +1,7 @@
 #include "simulator_model.h"
-#include "librust_c.h"
+
 #include "gui.h"
-#include "gui_home_widgets.h"
+
 #include "cjson/cJSON.h"
 #include "eapdu_services/service_resolve_ur.h"
 

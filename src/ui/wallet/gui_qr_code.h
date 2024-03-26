@@ -2,7 +2,7 @@
 #define GUI_QR_CODE_H
 
 #include "gui.h"
-#include "rust.h"
+
 
 typedef UREncodeResult *(*GetUR)(void);
 typedef lv_res_t (*UpdateFunc)(lv_obj_t *qrcode, const void *data, uint32_t data_len);

@@ -11,12 +11,11 @@
 #include "account_manager.h"
 #include "se_manager.h"
 #include "user_utils.h"
-#include "librust_c.h"
 #include "assert.h"
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_api.h"
-#include "gui_home_widgets.h"
+
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
@@ -171,400 +170,22 @@ char *GetXPubPath(uint8_t index)
     return g_chainTable[index].path;
 }
 
-void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
-{
-    int32_t ret = SUCCESS_CODE;
-    uint32_t addr, size, eraseAddr;
-    bool needSet = false;
-    char *jsonString = NULL;
-
-    uint8_t account = GetCurrentAccountIndex();
-    ASSERT(account < 3);
-    addr = SPI_FLASH_ADDR_USER1_MUTABLE_DATA + account * SPI_FLASH_ADDR_EACH_SIZE;
-    ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
-    ASSERT(ret == 4);
-
-    if (size == 0xffffffff || size == 0) {
-        needSet = true;
-    }
-
-    if (needSet) {
-        for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_MUTABLE_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
-            Gd25FlashSectorErase(eraseAddr);
-        }
-        cJSON *rootJson, *jsonItem;
-        char *retStr;
-        rootJson = cJSON_CreateObject();
-        for (int i = 0; i < count; i++) {
-            jsonItem = cJSON_CreateObject();
-            cJSON_AddItemToObject(jsonItem, "firstRecv", cJSON_CreateBool(false));
-            if (!strcmp(walletList[i].name, "BTC") || !strcmp(walletList[i].name, "ETH")) {
-                cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
-            } else {
-                cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(false));
-            }
-#ifdef BTC_ONLY
-            cJSON_AddItemToObject(jsonItem, "testNet", cJSON_CreateBool(false));
-#endif
-            cJSON_AddItemToObject(rootJson, walletList[i].name, jsonItem);
-        }
-        retStr = cJSON_Print(rootJson);
-        cJSON_Delete(rootJson);
-        RemoveFormatChar(retStr);
-        size = strlen(retStr);
-        Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
-        Gd25FlashWriteBuffer(addr + 4, (uint8_t *)retStr, size);
-    }
-
-    jsonString = SRAM_MALLOC(size + 1);
-    ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
-    ASSERT(ret == size);
-    jsonString[size] = 0;
-
-    cJSON *rootJson = cJSON_Parse(jsonString);
-    SRAM_FREE(jsonString);
-    for (int i = 0; i < count; i++) {
-        cJSON *item = cJSON_GetObjectItem(rootJson, walletList[i].name);
-        if (item != NULL) {
-            walletList[i].state = GetBoolValue(item, "manage", false);
-#ifdef BTC_ONLY
-            walletList[i].testNet = GetBoolValue(item, "testNet", false);
-#endif
-        }
-    }
-    cJSON_Delete(rootJson);
-}
-
-void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
-{
-    cJSON *rootJson;
-    bool needUpdate = false;
-    int32_t ret = SUCCESS_CODE;
-    uint32_t addr, size, eraseAddr;
-    char *jsonString = NULL;
-
-    uint8_t account = GetCurrentAccountIndex();
-    ASSERT(account < 3);
-    addr = SPI_FLASH_ADDR_USER1_MUTABLE_DATA + account * SPI_FLASH_ADDR_EACH_SIZE;
-    ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
-    ASSERT(ret == 4);
-    jsonString = SRAM_MALLOC(size + 1);
-    ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
-    ASSERT(ret == size);
-    jsonString[size] = 0;
-
-    rootJson = cJSON_Parse(jsonString);
-    SRAM_FREE(jsonString);
-    for (int i = 0; i < count; i++) {
-        cJSON *item = cJSON_GetObjectItem(rootJson, walletList[i].name);
-        if (item == NULL) {
-            item = cJSON_CreateObject();
-            cJSON_AddItemToObject(item, "firstRecv", cJSON_CreateBool(false));
-            cJSON_AddItemToObject(item, "manage", cJSON_CreateBool(walletList[i].state));
-#ifdef BTC_ONLY
-            cJSON_AddItemToObject(item, "testNet", cJSON_CreateBool(walletList[i].testNet));
-#endif
-            cJSON_AddItemToObject(rootJson, walletList[i].name, item);
-            needUpdate = true;
-        } else {
-            if (cJSON_GetObjectItem(item, "manage") == NULL) {
-                cJSON_AddItemToObject(item, "manage", cJSON_CreateBool(walletList[i].state));
-                needUpdate = true;
-            } else if (GetBoolValue(item, "manage", false) != walletList[i].state) {
-                cJSON_ReplaceItemInObject(item, "manage", cJSON_CreateBool(walletList[i].state));
-                needUpdate = true;
-            }
-#ifdef BTC_ONLY
-            if (cJSON_GetObjectItem(item, "testNet") == NULL) {
-                cJSON_AddItemToObject(item, "testNet", cJSON_CreateBool(walletList[i].testNet));
-                needUpdate = true;
-            } else if (GetBoolValue(item, "testNet", false) != walletList[i].testNet) {
-                cJSON_ReplaceItemInObject(item, "testNet", cJSON_CreateBool(walletList[i].testNet));
-                needUpdate = true;
-            }
-#endif
-        }
-    }
-
-    if (needUpdate) {
-        for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_MUTABLE_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
-            Gd25FlashSectorErase(eraseAddr);
-        }
-        jsonString = cJSON_Print(rootJson);
-        RemoveFormatChar(jsonString);
-        size = strlen(jsonString);
-        Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
-        Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
-        EXT_FREE(jsonString);
-    }
-    cJSON_Delete(rootJson);
-}
 
 int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool newKey)
 {
-    uint32_t addr, size, i, eraseAddr;
-    char *jsonString = NULL;
-    SimpleResponse_c_char *xPubResult = NULL;
-    int32_t ret = SUCCESS_CODE;
-    bool regeneratePubKey = newKey;
-    uint8_t seed[64];
-    uint8_t entropy[64];
-    uint8_t hash[32];
-    uint8_t entropyLen = 0;
-    bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
-    int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
-
-    ASSERT(accountIndex < 3);
-    FreePublicKeyRam();
-    addr = SPI_FLASH_ADDR_USER1_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
-
-    do {
-        if (regeneratePubKey) {
-            break;
-        }
-        ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
-        ASSERT(ret == 4);
-        if (size > SPI_FLASH_ADDR_EACH_SIZE - 4) {
-            regeneratePubKey = true;
-            printf("pubkey size err,%d\r\n", size);
-            break;
-        }
-        jsonString = SRAM_MALLOC(size + 1);
-        ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
-        ASSERT(ret == size);
-        jsonString[size] = 0;
-        sha256((struct sha256 *)hash, jsonString, size);
-#ifndef COMPILE_SIMULATOR
-        if (!VerifyWalletDataHash(accountIndex, hash)) {
-            CLEAR_ARRAY(hash);
-            return ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH;
-        } else {
-            ret = SUCCESS_CODE;
-        }
-#endif
-        CLEAR_ARRAY(hash);
-        if (GetPublicKeyFromJsonString(jsonString) == false) {
-            printf("GetPublicKeyFromJsonString false, need regenerate\r\n");
-            printf("err jsonString=%s\r\n", jsonString);
-            regeneratePubKey = true;
-        }
-    } while (0);
-
-    if (jsonString) {
-        SRAM_FREE(jsonString);
-    }
-
-    do {
-        if (regeneratePubKey == false) {
-            break;
-        }
-        GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
-        char* icarusMasterKey = NULL;
-        printf("regenerate pub key!\r\n");
-        FreePublicKeyRam();
-        ret = GetAccountSeed(accountIndex, seed, password);
-        CHECK_ERRCODE_BREAK("get seed", ret);
-        ret = GetAccountEntropy(accountIndex, entropy, &entropyLen, password);
-        CHECK_ERRCODE_BREAK("get entropy", ret);
-        SimpleResponse_c_char* response = NULL;
-        // should setup ADA;
-        if (!isSlip39) {
-            response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
-            ASSERT(response);
-            if (response->error_code != 0) {
-                printf("get_extended_pubkey error\r\n");
-                if (response->error_message != NULL) {
-                    printf("error code = %d\r\nerror msg is: %s\r\n", response->error_code, response->error_message);
-                }
-                free_simple_response_c_char(response);
-                ret = response->error_code;
-                break;
-            }
-            icarusMasterKey = response -> data;
-        }
-
-        for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
-            // SLIP32 wallet does not support ADA
-            if (isSlip39 && g_chainTable[i].curve == BIP32_ED25519) {
-                break;
-            }
-
-            switch (g_chainTable[i].curve) {
-            case SECP256K1:
-                xPubResult = get_extended_pubkey_by_seed(seed, len, g_chainTable[i].path);
-                break;
-            case ED25519:
-                xPubResult = get_ed25519_pubkey_by_seed(seed, len, g_chainTable[i].path);
-                break;
-            case BIP32_ED25519:
-                ASSERT(icarusMasterKey);
-                xPubResult = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, g_chainTable[i].path);
-                break;
-            default:
-                xPubResult = NULL;
-                printf("unsupported curve type: %d\r\n", g_chainTable[i].curve);
-                break;
-            }
-            ASSERT(xPubResult);
-            if (xPubResult->error_code != 0) {
-                printf("get_extended_pubkey error\r\n");
-                if (xPubResult->error_message != NULL) {
-                    printf("error code = %d\r\nerror msg is: %s\r\n", xPubResult->error_code, xPubResult->error_message);
-                }
-                free_simple_response_c_char(xPubResult);
-                ret = xPubResult->error_code;
-                break;
-            }
-            printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
-            ASSERT(xPubResult->data);
-            g_accountPublicKey[i].pubKey = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
-            strcpy(g_accountPublicKey[i].pubKey, xPubResult->data);
-            printf("xPubResult=%s\r\n", xPubResult->data);
-            free_simple_response_c_char(xPubResult);
-        }
-        if (response != NULL) {
-            free_simple_response_c_char(response);
-        }
-        printf("erase user data:0x%X\n", addr);
-        for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_ADDR_EACH_SIZE; eraseAddr += GD25QXX_SECTOR_SIZE) {
-            Gd25FlashSectorErase(eraseAddr);
-        }
-        printf("erase done\n");
-        jsonString = GetJsonStringFromPublicKey();
-        sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
-        SetWalletDataHash(accountIndex, hash);
-        CLEAR_ARRAY(hash);
-        size = strlen(jsonString);
-        Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
-        Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
-        printf("regenerate jsonString=%s\r\n", jsonString);
-        GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
-        EXT_FREE(jsonString);
-    } while (0);
-    printf("AccountPublicInfoSwitch over\r\n");
-    //PrintInfo();
-    CLEAR_ARRAY(seed);
-    return ret;
 }
-
 
 int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool set)
 {
-    uint32_t i;
-    SimpleResponse_c_char *xPubResult;
-    int32_t ret = SUCCESS_CODE;
-    uint8_t seed[64];
-    uint8_t entropy[64];
-    uint8_t entropyLen;
-    bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
-    int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
-
-    if (g_tempPublicKeyAccountIndex == accountIndex && set == false) {
-        // g_accountPublicKey stores the current temp public key.
-        printf("g_accountPublicKey stores the current temp public key.\r\n");
-    } else {
-        GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
-        char* icarusMasterKey = NULL;
-        FreePublicKeyRam();
-        ret = GetAccountSeed(accountIndex, seed, password);
-        CHECK_ERRCODE_RETURN_INT(ret);
-        ret = GetAccountEntropy(accountIndex, entropy, &entropyLen, password);
-        CHECK_ERRCODE_RETURN_INT(ret);
-        SimpleResponse_c_char *response = NULL;
-
-        // should setup ADA;
-        if (!isSlip39) {
-            response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
-            ASSERT(response);
-            if (response->error_code != 0) {
-                printf("get_extended_pubkey error\r\n");
-                if (response->error_message != NULL) {
-                    printf("error code = %d\r\nerror msg is: %s\r\n", response->error_code, response->error_message);
-                }
-                free_simple_response_c_char(response);
-                ret = response->error_code;
-                CLEAR_ARRAY(seed);
-                return ret;
-            }
-            icarusMasterKey = response->data;
-        }
-
-        for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
-            // SLIP32 wallet does not support ADA
-            if (isSlip39 && g_chainTable[i].curve == BIP32_ED25519) {
-                break;
-            }
-            switch (g_chainTable[i].curve) {
-            case SECP256K1:
-                xPubResult = get_extended_pubkey_by_seed(seed, len, g_chainTable[i].path);
-                break;
-            case ED25519:
-                xPubResult = get_ed25519_pubkey_by_seed(seed, len, g_chainTable[i].path);
-                break;
-            case BIP32_ED25519:
-                ASSERT(icarusMasterKey);
-                xPubResult = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, g_chainTable[i].path);
-                break;
-            default:
-                xPubResult = NULL;
-                printf("unsupported curve type: %d\r\n", g_chainTable[i].curve);
-                break;
-            }
-            ASSERT(xPubResult);
-            if (xPubResult->error_code != 0) {
-                printf("get_extended_pubkey error\r\n");
-                if (xPubResult->error_message != NULL) {
-                    printf("error code = %d\r\nerror msg is: %s\r\n", xPubResult->error_code, xPubResult->error_message);
-                }
-                free_simple_response_c_char(xPubResult);
-                break;
-            }
-            printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
-            ASSERT(xPubResult->data);
-            g_accountPublicKey[i].pubKey = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
-            strcpy(g_accountPublicKey[i].pubKey, xPubResult->data);
-            printf("xPubResult=%s\r\n", xPubResult->data);
-            free_simple_response_c_char(xPubResult);
-        }
-        if (!isSlip39) {
-            free_simple_response_c_char(response);
-        }
-        g_tempPublicKeyAccountIndex = accountIndex;
-        GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
-    }
-    CLEAR_ARRAY(seed);
-    return ret;
 }
 
 
 void DeleteAccountPublicInfo(uint8_t accountIndex)
 {
-    uint32_t addr, eraseAddr;
-
-    ASSERT(accountIndex < 3);
-    addr = SPI_FLASH_ADDR_USER1_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
-    for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_ADDR_EACH_SIZE; eraseAddr += GD25QXX_SECTOR_SIZE) {
-        Gd25FlashSectorErase(eraseAddr);
-    }
-
-    addr = SPI_FLASH_ADDR_USER1_MUTABLE_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
-    for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_MUTABLE_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
-        Gd25FlashSectorErase(eraseAddr);
-    }
-    //remove current publickey info to avoid accident reading.
-    FreePublicKeyRam();
 }
-
 
 char *GetCurrentAccountPublicKey(ChainType chain)
 {
-    uint8_t accountIndex;
-
-    accountIndex = GetCurrentAccountIndex();
-    if (accountIndex > 2) {
-        return NULL;
-    }
-    return g_accountPublicKey[chain].pubKey;
 }
 
 
@@ -573,51 +194,6 @@ char *GetCurrentAccountPublicKey(ChainType chain)
 /// @return accountIndex, if not exists, return 255.
 uint8_t SpecifiedXPubExist(const char *xPub)
 {
-    uint32_t addr, index, size;
-    int32_t ret;
-    cJSON *rootJson, *keyJson, *chainJson;
-    char *jsonString = NULL, pubKeyString[PUB_KEY_MAX_LENGTH];
-    uint8_t accountIndex = 255;
-
-    for (index = 0; index < 3; index++) {
-        addr = SPI_FLASH_ADDR_USER1_DATA + index * SPI_FLASH_ADDR_EACH_SIZE;
-        ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
-        ASSERT(ret == 4);
-        if (size > SPI_FLASH_ADDR_EACH_SIZE - 4) {
-            continue;
-        }
-
-        do {
-            jsonString = SRAM_MALLOC(size + 1);
-            ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
-            ASSERT(ret == size);
-            jsonString[size] = 0;
-            rootJson = cJSON_Parse(jsonString);
-            if (rootJson == NULL) {
-                break;
-            }
-            keyJson = cJSON_GetObjectItem(rootJson, "key");
-            if (keyJson == NULL) {
-                break;
-            }
-            chainJson = cJSON_GetObjectItem(keyJson, g_chainTable[0].name);
-            if (chainJson == NULL) {
-                break;
-            }
-            GetStringValue(chainJson, "value", pubKeyString, PUB_KEY_MAX_LENGTH);
-            if (strcmp(pubKeyString, xPub) == 0) {
-                accountIndex = index;
-                break;
-            }
-        } while (0);
-        SRAM_FREE(jsonString);
-        cJSON_Delete(rootJson);
-        if (accountIndex != 255) {
-            break;
-        }
-    }
-
-    return accountIndex;
 }
 
 
@@ -626,111 +202,16 @@ uint8_t SpecifiedXPubExist(const char *xPub)
 /// @param argv Test arg values.
 void AccountPublicInfoTest(int argc, char *argv[])
 {
-    char *result;
-    uint8_t accountIndex;
-    uint32_t addr, eraseAddr, size;
-
-    if (strcmp(argv[0], "info") == 0) {
-        PrintInfo();
-    } else if (strcmp(argv[0], "json_fmt") == 0) {
-        result = GetJsonStringFromPublicKey();
-        printf("json string=%s\r\n", result);
-        EXT_FREE(result);
-
-        for (int i = 0; i < 3; i++) {
-            addr = SPI_FLASH_ADDR_USER1_MUTABLE_DATA + i * SPI_FLASH_ADDR_EACH_SIZE;
-            Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
-            result = SRAM_MALLOC(size + 1);
-            Gd25FlashReadBuffer(addr + 4, (uint8_t *)result, size);
-            printf("%d json string=%s\r\n", i, result);
-            result[size] = 0;
-            SRAM_FREE(result);
-        }
-    } else if (strcmp(argv[0], "xpub_exist") == 0) {
-        VALUE_CHECK(argc, 2);
-        accountIndex = SpecifiedXPubExist(argv[1]);
-        printf("SpecifiedXPubExist=%d\r\n", accountIndex);
-    } else if (strcmp(argv[0], "erase_coin") == 0) {
-        addr = SPI_FLASH_ADDR_USER1_MUTABLE_DATA + GetCurrentAccountIndex() * SPI_FLASH_ADDR_EACH_SIZE;
-        for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_MUTABLE_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
-            Gd25FlashSectorErase(eraseAddr);
-        }
-    } else {
-        printf("account public cmd err\r\n");
-    }
 }
 
 
 static bool GetPublicKeyFromJsonString(const char *string)
 {
-    cJSON *rootJson, *keyJson, *chainJson;
-    char pubKeyString[PUB_KEY_MAX_LENGTH], versionString[VERSION_MAX_LENGTH];
-    bool ret = true;
-    uint32_t i;
-
-    do {
-        rootJson = cJSON_Parse(string);
-        if (rootJson == NULL) {
-            ret = false;
-            break;
-        }
-        GetStringValue(rootJson, "version", versionString, VERSION_MAX_LENGTH);
-        printf("xpub info version:%s\r\n", versionString);
-        printf("g_xpubInfoVersion:%s\r\n", g_xpubInfoVersion);
-        if (strcmp(versionString, g_xpubInfoVersion) != 0) {
-            ret = false;
-            break;
-        }
-        keyJson = cJSON_GetObjectItem(rootJson, "key");
-        if (keyJson == NULL) {
-            ret = false;
-            break;
-        }
-        if (cJSON_GetArraySize(keyJson) != NUMBER_OF_ARRAYS(g_chainTable)) {
-            printf("chain number does not match:%d %d\n", cJSON_GetArraySize(keyJson), NUMBER_OF_ARRAYS(g_chainTable));
-            ret = false;
-            break;
-        }
-        for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
-            chainJson = cJSON_GetObjectItem(keyJson, g_chainTable[i].name);
-            if (chainJson == NULL) {
-                ret = false;
-                break;
-            } else {
-                GetStringValue(chainJson, "value", pubKeyString, PUB_KEY_MAX_LENGTH);
-                //printf("%s pub key=%s\r\n", g_chainTable[i].name, pubKeyString);
-                g_accountPublicKey[i].pubKey = SRAM_MALLOC(strnlen_s(pubKeyString, PUB_KEY_MAX_LENGTH) + 1);
-                strcpy(g_accountPublicKey[i].pubKey, pubKeyString);
-            }
-        }
-    } while (0);
-    cJSON_Delete(rootJson);
-
-    return ret;
 }
 
 
 static char *GetJsonStringFromPublicKey(void)
 {
-    cJSON *rootJson, *chainsJson, *jsonItem;
-    uint32_t i;
-    char *retStr;
-
-    rootJson = cJSON_CreateObject();
-    chainsJson = cJSON_CreateObject();
-    for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
-        jsonItem = cJSON_CreateObject();
-        cJSON_AddItemToObject(jsonItem, "value", cJSON_CreateString(g_accountPublicKey[i].pubKey));
-        //printf("g_accountPublicKey[%d].pubKey=%s\r\n", i, g_accountPublicKey[i].pubKey);
-        cJSON_AddItemToObject(jsonItem, "current", cJSON_CreateNumber(g_accountPublicKey[i].current));
-        cJSON_AddItemToObject(chainsJson, g_chainTable[i].name, jsonItem);
-    }
-    cJSON_AddItemToObject(rootJson, "version", cJSON_CreateString(g_xpubInfoVersion));
-    cJSON_AddItemToObject(rootJson, "key", chainsJson);
-    retStr = cJSON_Print(rootJson);
-    RemoveFormatChar(retStr);
-    cJSON_Delete(rootJson);
-    return retStr;
 }
 
 
@@ -748,13 +229,6 @@ static void FreePublicKeyRam(void)
 
 static void PrintInfo(void)
 {
-    char *pubKey;
-    for (uint32_t i = 0; i < XPUB_TYPE_NUM; i++) {
-        pubKey = GetCurrentAccountPublicKey(i);
-        if (pubKey != NULL) {
-            printf("%s pub key=%s\r\n", g_chainTable[i].name, pubKey);
-        }
-    }
 }
 
 

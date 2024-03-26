@@ -27,7 +27,6 @@
 #include "power_manager.h"
 #include "screen_manager.h"
 #include "usb_task.h"
-#include "gui_setup_widgets.h"
 #include "device_setting.h"
 
 #define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                //80 seconds
@@ -314,23 +313,9 @@ static void SetRtcWakeUp(uint32_t second)
 
 int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
 {
-    bool sdCardState = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_7);
-    if (sdCardState == false) {
-        if (!MountSdFatfs()) {
-            GuiApiEmitSignalWithValue(SIG_INIT_SDCARD_CHANGE, sdCardState);
-        }
-    } else {
-        UnMountSdFatfs();
-        GuiApiEmitSignalWithValue(SIG_INIT_SDCARD_CHANGE, sdCardState);
-    }
-    return 0;
 }
 
 int32_t GetWalletAmountAfterWakeup(const void *inData, uint32_t inDataLen)
 {
-    if (GuiIsSetup()) {
-        UserDelay(200);
-        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
-    }
-    return 0;
+
 }

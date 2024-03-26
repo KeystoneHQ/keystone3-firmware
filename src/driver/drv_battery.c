@@ -5,7 +5,7 @@
 #include "user_delay.h"
 #include "drv_aw32001.h"
 #include "cmsis_os.h"
-#include "log.h"
+
 #include "flash_address.h"
 #include "user_memory.h"
 #include "drv_gd25qxx.h"
@@ -273,9 +273,7 @@ bool BatteryIntervalHandler(void)
             if (g_batterPercent <= 20) {
 #endif
 #if BATTERY_LOG_DETAIL == 1
-                WriteLogFormat(EVENT_ID_BATTERY, "%dmv,%d%%,disp=%d%%", milliVolt, percent, g_batterPercent);
 #else
-                WriteLogValue(EVENT_ID_BATTERY, g_batterPercent);
 #endif
 #if BATTERY_LOG_ONLY_LOW_BATTERY == 1
             }

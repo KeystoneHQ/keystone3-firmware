@@ -28,51 +28,51 @@ static uint32_t g_viewCnt = 0;      // Record how many views are opened
 static GUI_VIEW *g_viewsTable[] = {
     &g_initView,
     &g_lockView,
-    &g_homeView,
-    &g_setupView,
-    &g_createWalletView,
-    &g_singlePhraseView,
-    &g_importPhraseView,
-    &g_createShareView,
-    &g_importShareView,
-    &g_settingView,
-    &g_connectWalletView,
-#ifndef BTC_ONLY
-    &g_USBTransportView,
-#endif
-    &g_passphraseView,
-    &g_utxoReceiveView,
-#ifndef BTC_ONLY
-    &g_multiPathCoinReceiveView,
-    &g_standardReceiveView,
-#endif
-    &g_forgetPassView,
-    &g_lockDeviceView,
-    &g_firmwareUpdateView,
-    &g_webAuthView,
-    &g_webAuthResultView,
-    &g_systemSettingView,
-    &g_purposeView,
-    &g_aboutView,
-    &g_aboutKeystoneView,
-    &g_aboutInfoView,
-    &g_aboutTermsView,
-    &g_wipeDeviceView,
-    &g_walletTutorialView,
-    &g_selfDestructView,
-    &g_inactiveView,
-    &g_displayView,
-    &g_tutorialView,
-    &g_connectionView,
-    &g_DevicePublicKeyView,
-#ifndef BTC_ONLY
-    &g_multiAccountsReceiveView,
-    &g_keyDerivationRequestView,
-#endif
-    &g_scanView,
-    &g_transactionDetailView,
-    &g_transactionSignatureView,
-    &g_diceRollsView
+//     &g_homeView,
+//     &g_setupView,
+//     &g_createWalletView,
+//     &g_singlePhraseView,
+//     &g_importPhraseView,
+//     &g_createShareView,
+//     &g_importShareView,
+//     &g_settingView,
+//     &g_connectWalletView,
+// #ifndef BTC_ONLY
+//     &g_USBTransportView,
+// #endif
+//     &g_passphraseView,
+//     &g_utxoReceiveView,
+// #ifndef BTC_ONLY
+//     &g_multiPathCoinReceiveView,
+//     &g_standardReceiveView,
+// #endif
+//     &g_forgetPassView,
+//     &g_lockDeviceView,
+//     &g_firmwareUpdateView,
+//     &g_webAuthView,
+//     &g_webAuthResultView,
+//     &g_systemSettingView,
+//     &g_purposeView,
+//     &g_aboutView,
+//     &g_aboutKeystoneView,
+//     &g_aboutInfoView,
+//     &g_aboutTermsView,
+//     &g_wipeDeviceView,
+//     &g_walletTutorialView,
+//     &g_selfDestructView,
+//     &g_inactiveView,
+//     &g_displayView,
+//     &g_tutorialView,
+//     &g_connectionView,
+//     &g_DevicePublicKeyView,
+// #ifndef BTC_ONLY
+//     &g_multiAccountsReceiveView,
+//     &g_keyDerivationRequestView,
+// #endif
+//     &g_scanView,
+//     &g_transactionDetailView,
+//     &g_transactionSignatureView,
+//     &g_diceRollsView
 };
 
 bool GuiViewHandleEvent(GUI_VIEW *view, uint16_t usEvent, void *param, uint16_t usLen)
@@ -256,15 +256,15 @@ bool GuiCheckIfTopView(GUI_VIEW *view)
 
 int32_t GuiCloseToTargetView(GUI_VIEW *view)
 {
-    GuiViewHintBoxClear();
-    if (g_workingView == &g_homeView) {
-        GuiViewHandleEvent(view, GUI_EVENT_RESTART, NULL, 0);
-    } else {
-        while (g_workingView != view) {
-            GuiCLoseCurrentWorkingView();
-        }
-        GuiViewHandleEvent(view, GUI_EVENT_REFRESH, NULL, 0);
-    }
+    // GuiViewHintBoxClear();
+    // if (g_workingView == &g_homeView) {
+    //     GuiViewHandleEvent(view, GUI_EVENT_RESTART, NULL, 0);
+    // } else {
+    //     while (g_workingView != view) {
+    //         GuiCLoseCurrentWorkingView();
+    //     }
+    //     GuiViewHandleEvent(view, GUI_EVENT_REFRESH, NULL, 0);
+    // }
     return SUCCESS_CODE;
 }
 

@@ -10,8 +10,6 @@ endif()
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g2 -ggdb")
 set(CMAKE_C_FLAGS_RELEASE "-O3")
 
-add_subdirectory(rust)
-
 # add definition
 function(add_definition_with_message OPTION_NAME)
     if(${OPTION_NAME})
@@ -69,7 +67,6 @@ set(GUI_INCLUDE_PATH
     src/ui/gui_widgets/setting
     src/ui/lv_i18n
     src/ui/gui_model
-    src/ui/gui_analyze
     src/ui/gui_chain
     src/ui/gui_chain/btc
     src/ui/gui_components
@@ -147,11 +144,6 @@ else()
     list(APPEND INCLUDE_DIR src/ui/gui_chain/others src/ui/gui_widgets/general  src/webusb_protocol/general src/webusb_protocol/general/eapdu_services)
 endif()
 
-if(NOT BUILD_PRODUCTION)
-    list(APPEND INCLUDE_DIR test)
-    set(TEST_CMD test)
-endif()
-
 file(GLOB_RECURSE GUI
     "src/ui/gui_assets/*.c"
     "src/ui/gui_assets/font/*.c"
@@ -163,7 +155,6 @@ file(GLOB_RECURSE GUI
     "src/ui/lv_i18n/*.c"
     "src/ui/gui_model/*.c"
     "src/ui/gui_analyze/gui_analyze.c"
-    "src/ui/gui_chain/*.c"
     "src/ui/gui_components/*.c"
     "src/ui/wallet/*.c"
 )
@@ -230,8 +221,6 @@ if(COMPILE_KEYSTONE)
     file(GLOB_RECURSE EXTERNAL
         "external/fatfs/*.c"
         "external/cjson/*.c"
-        "external/quicklz/*.c"
-        "external/sqlite3/*.c"
         ${ccan}
         ${cryptoauthlib}
         ${ctaes}
@@ -247,7 +236,6 @@ if(COMPILE_KEYSTONE)
         ${TASKS} 
         ${TEST_CMD}
         ${CRYPTO}
-        ${CRYPTO_SLIP39}
         ${BIPS}
         ${CHECKSUM}
         ${CRYPTO_UTILS}
@@ -259,16 +247,15 @@ if(COMPILE_KEYSTONE)
         src/cm_backtrace/fault_handler/gcc/cmb_fault.s
     )
 
-    if(BTC_ONLY)
-        set(excluded_directories
-            src/ui/gui_chain/others
-            src/ui/gui_widgets/general
-            src/ui/gui_views/general
-            src/webusb_protocol/general)
-    else()
-        set(excluded_directories
-            src/ui/gui_widgets/btc_only)
-    endif()
+    # if(BTC_ONLY)
+    #     set(excluded_directories
+    #         src/ui/gui_widgets/general
+    #         src/ui/gui_views/general
+    #         src/webusb_protocol/general)
+    # else()
+    #     set(excluded_directories
+    #         src/ui/gui_widgets/btc_only)
+    # endif()
 
     foreach(directory ${excluded_directories})
         file(GLOB_RECURSE excluded_files "${directory}/*")
@@ -278,12 +265,10 @@ if(COMPILE_KEYSTONE)
     add_executable(${PROJECT_NAME}.elf ${objsrc})
     target_compile_definitions(${PROJECT_NAME}.elf PRIVATE ${COMMON_DEFINITIONS})
     target_include_directories(${PROJECT_NAME}.elf PRIVATE ${INCLUDE_DIR})
-    add_dependencies(${PROJECT_NAME}.elf rust_c)
 
     target_link_libraries(${PROJECT_NAME}.elf 
         ${CMAKE_CURRENT_SOURCE_DIR}/external/mh1903_lib/MHSCPU_Driver/lib/MH1903_QRDecodeLib.a
         m
-        ${CMAKE_BINARY_DIR}/rust-builds/librust_c.a
     )
 
     set(ELF_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.elf)

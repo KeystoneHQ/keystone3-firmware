@@ -7,11 +7,11 @@
 #include "secret_cache.h"
 #include "gui_model.h"
 #include "keystore.h"
-#include "gui_setting_widgets.h"
+
 #include "gui_lock_widgets.h"
 #include "motor_manager.h"
 #include "account_manager.h"
-#include "gui_keyboard_hintbox.h"
+
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
@@ -124,15 +124,9 @@ static void SetPinEventHandler(lv_event_t *e)
                 }
 
                 g_userParam = g_passParam.userParam;
-                uint8_t index = 0xff;
-                if (g_userParam != NULL && *(uint16_t *)g_userParam == DEVICE_SETTING_RESET_PASSCODE_VERIFY) {
-                    index = GetCurrentAccountIndex();
-                }
 
                 switch (item->mode) {
                 case ENTER_PASSCODE_VERIFY_PIN:
-                    SecretCacheSetPassword(g_pinBuf);
-                    GuiModelVerifyAccountPassWord(g_userParam);
                     break;
                 case ENTER_PASSCODE_SET_PIN:
                     if (CheckPasswordExisted(g_pinBuf, index)) {
@@ -154,9 +148,6 @@ static void SetPinEventHandler(lv_event_t *e)
                 item->setPassCb = NULL;
             }
         }
-        // if (item->setPassCb != NULL) {
-        //     item->setPassCb(e);
-        // }
     }
 }
 
@@ -187,9 +178,6 @@ static void SetPassWordHandler(lv_event_t *e)
             if (item->mode == ENTER_PASSCODE_SET_PASSWORD) {
                 uint8_t index = 0xff;
 
-                if (g_userParam != NULL && *(uint16_t *)g_userParam == DEVICE_SETTING_RESET_PASSCODE_VERIFY) {
-                    index = GetCurrentAccountIndex();
-                }
                 if (CheckPasswordExisted(currText, index)) {
                     UnlimitedVibrate(LONG);
                     lv_obj_clear_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
@@ -200,11 +188,7 @@ static void SetPassWordHandler(lv_event_t *e)
             } else if (item->mode == ENTER_PASSCODE_REPEAT_PASSWORD) {
                 GuiEmitSignal(SIG_SETTING_REPEAT_PIN, (char *)currText, strnlen_s(currText, CREATE_PIN_NUM));
             } else if ((item->mode == ENTER_PASSCODE_VERIFY_PASSWORD)) {
-                g_userParam = g_passParam.userParam;
-                if (strnlen_s(currText, PASSWORD_MAX_LEN) > 0) {
-                    SecretCacheSetPassword((char *)currText);
-                    GuiModelVerifyAccountPassWord(g_userParam);
-                }
+                printf("currText = %s\n", currText);
             }
             lv_textarea_set_text(ta, "");
         }
@@ -306,7 +290,7 @@ void PassWordPinSwitch(GuiEnterPasscodeItem_t *item)
             GuiSetKeyBoardMinTaLen(item->kb, 6);
         }
         if (item->mode == ENTER_PASSCODE_VERIFY_PASSWORD) {
-            SetKeyboardWidgetMode(KEYBOARD_HINTBOX_PASSWORD);
+            // SetKeyboardWidgetMode(KEYBOARD_HINTBOX_PASSWORD);
         }
     } else {
         lv_obj_add_flag(item->passWdCont, LV_OBJ_FLAG_HIDDEN);
@@ -318,7 +302,7 @@ void PassWordPinSwitch(GuiEnterPasscodeItem_t *item)
             lv_obj_set_parent(item->fpErrLabel, item->pinCont);
         }
         if (item->mode == ENTER_PASSCODE_VERIFY_PIN) {
-            SetKeyboardWidgetMode(KEYBOARD_HINTBOX_PIN);
+            // SetKeyboardWidgetMode(KEYBOARD_HINTBOX_PIN);
         }
     }
     lv_obj_add_flag(item->errLabel, LV_OBJ_FLAG_HIDDEN);
@@ -451,179 +435,10 @@ void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *pa
 
 void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *passCodeParam)
 {
-    lv_obj_t *pinCont = item->pinCont;
-    lv_obj_t *passWdCont = item->passWdCont;
-    lv_obj_t *btnm = GuiCreateNumKeyboard(pinCont, SetPinEventHandler, NUM_KEYBOARD_PIN, passCodeParam);
-    UNUSED(btnm);
-    lv_obj_t *label;
-    lv_obj_t *img;
-    lv_obj_t *button;
-    ENTER_PASSCODE_ENUM mode = item->mode;
-    item->fpErrLabel = NULL;
-
-    if (mode == ENTER_PASSCODE_SET_PIN) {
-        label = GuiCreateNoticeLabel(pinCont, g_enterPassLabel[mode].passSwitch);
-        img = GuiCreateImg(pinCont, &imgSwitch);
-        GuiButton_t table[2] = {
-            {
-                .obj = img,
-                .align = LV_ALIGN_LEFT_MID,
-                .position = {12, 0},
-            },
-            {
-                .obj = label,
-                .align = LV_ALIGN_RIGHT_MID,
-                .position = {-8, 0},
-            },
-        };
-        button = GuiCreateButton(pinCont, 179, 36, table, NUMBER_OF_ARRAYS(table), PassWordPinSwitchHandler, passCodeParam);
-        lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 449 - GUI_MAIN_AREA_OFFSET);
-
-        label = GuiCreateIllustrateLabel(pinCont, _("password_error_duplicated_pincode"));
-        lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 378 - GUI_MAIN_AREA_OFFSET);
-        lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
-        item->repeatLabel = label;
-
-        label = GuiCreateTitleLabel(passWdCont, g_enterPassLabel[ENTER_PASSCODE_SET_PASSWORD].title);
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
-
-        label = GuiCreateIllustrateLabel(passWdCont, g_enterPassLabel[ENTER_PASSCODE_SET_PASSWORD].desc);
-        lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
-
-        KeyBoard_t *kb = GuiCreateFullKeyBoard(passWdCont, SetPassWordHandler, KEY_STONE_FULL_L, passCodeParam);
-        lv_obj_set_size(kb->ta, 352, 60);
-        lv_obj_set_style_text_opa(kb->ta, LV_OPA_100, 0);
-        lv_obj_align(kb->ta, LV_ALIGN_DEFAULT, 36, 308 - GUI_MAIN_AREA_OFFSET);
-        lv_textarea_set_placeholder_text(kb->ta, _("password_error_too_weak"));
-        lv_textarea_set_password_mode(kb->ta, true);
-        lv_textarea_set_max_length(kb->ta, PASSWORD_MAX_LEN);
-        lv_textarea_set_one_line(kb->ta, true);
-        item->kb = kb;
-
-        label = GuiCreateNoticeLabel(passWdCont, g_enterPassLabel[ENTER_PASSCODE_SET_PASSWORD].passSwitch);
-        img = GuiCreateImg(pinCont, &imgSwitch);
-        table[0].obj = img;
-        table[0].align = LV_ALIGN_LEFT_MID;
-        table[0].position.x = 12;
-        table[0].position.y = 0;
-        table[1].obj = label;
-        table[1].align = LV_ALIGN_LEFT_MID;
-        table[1].position.x = 40;
-        table[1].position.y = 0;
-        button = GuiCreateButton(passWdCont, 179, 36, table, NUMBER_OF_ARRAYS(table), PassWordPinSwitchHandler, passCodeParam);
-        lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 449 - GUI_MAIN_AREA_OFFSET);
-
-        static lv_style_t style_indic;
-
-        lv_style_init(&style_indic);
-        lv_style_set_bg_opa(&style_indic, LV_OPA_COVER);
-        lv_style_set_bg_color(&style_indic, lv_palette_main(LV_PALETTE_BLUE));
-        lv_style_set_anim_time(&style_indic, 500);
-        lv_style_set_radius(&style_indic, 0);
-
-        lv_obj_t *bar = lv_bar_create(passWdCont);
-        lv_obj_remove_style_all(bar); /*To have a clean start*/
-        lv_obj_add_style(bar, &style_indic, LV_PART_INDICATOR);
-
-        lv_obj_set_size(bar, 60, 4);
-        lv_obj_center(bar);
-        lv_bar_set_range(bar, 0, 90);
-
-        lv_obj_set_style_radius(bar, 0, LV_PART_MAIN);
-        lv_obj_align(bar, LV_ALIGN_DEFAULT, 36, 390 - GUI_MAIN_AREA_OFFSET);
-        lv_obj_add_flag(bar, LV_OBJ_FLAG_HIDDEN);
-        item->scoreBarStyle = &style_indic;
-        item->scoreBar = bar;
-
-        label = GuiCreateIllustrateLabel(passWdCont, "");
-        lv_obj_set_style_text_color(label, GREEN_COLOR, LV_PART_MAIN);
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 108, 378 - GUI_MAIN_AREA_OFFSET);
-        lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
-        item->scoreLevel = label;
-
-        label = GuiCreateIllustrateLabel(passWdCont, _("password_error_too_long"));
-        lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
-        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 415 - GUI_MAIN_AREA_OFFSET);
-        lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
-        item->lenOverLabel = label;
-
-        img = GuiCreateImg(passWdCont, &imgEyeOff);
-        lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
-        item->eyeImg = img;
-    }
-    if (mode == ENTER_PASSCODE_REPEAT_PIN) {
-        KeyBoard_t *kb = GuiCreateFullKeyBoard(passWdCont, SetPassWordHandler, KEY_STONE_FULL_L, passCodeParam);
-        lv_obj_set_size(kb->ta, 352, 60);
-        lv_obj_set_style_text_opa(kb->ta, LV_OPA_100, 0);
-        lv_obj_align(kb->ta, LV_ALIGN_DEFAULT, 36, 308 - GUI_MAIN_AREA_OFFSET);
-        lv_textarea_set_placeholder_text(kb->ta, _("password_error_weak"));
-        lv_textarea_set_password_mode(kb->ta, true);
-        lv_textarea_set_max_length(kb->ta, PASSWORD_MAX_LEN);
-        lv_textarea_set_one_line(kb->ta, true);
-        item->kb = kb;
-    }
-
-    label = GuiCreateTitleLabel(pinCont, g_enterPassLabel[mode].title);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
-
-    label = GuiCreateIllustrateLabel(pinCont, g_enterPassLabel[mode].desc);
-    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
-
-    label = GuiCreateIllustrateLabel(pinCont, _("password_error_not_match"));
-    lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 378 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
-    item->errLabel = label;
 }
 
 void GuiCreateEnterPassWord(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *passCodeParam)
 {
-    lv_obj_t *passWdCont = item->passWdCont;
-    ENTER_PASSCODE_ENUM mode = item->mode;
-    lv_obj_t *label;
-    item->fpErrLabel = NULL;
-
-    label = GuiCreateTitleLabel(passWdCont, g_enterPassLabel[mode].title);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
-
-    label = GuiCreateIllustrateLabel(passWdCont, g_enterPassLabel[mode].desc);
-    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
-
-    KeyBoard_t *kb = GuiCreateFullKeyBoard(passWdCont, SetPassWordHandler, KEY_STONE_FULL_L, passCodeParam);
-    lv_obj_set_size(kb->ta, 352, 60);
-    lv_obj_set_style_text_opa(kb->ta, LV_OPA_100, 0);
-    lv_obj_align(kb->ta, LV_ALIGN_DEFAULT, 36, 308 - GUI_MAIN_AREA_OFFSET);
-    lv_textarea_set_placeholder_text(kb->ta, _("password_error_too_weak"));
-    lv_textarea_set_password_mode(kb->ta, true);
-    lv_textarea_set_max_length(kb->ta, PASSWORD_MAX_LEN);
-    lv_textarea_set_one_line(kb->ta, true);
-    item->kb = kb;
-
-    label = GuiCreateIllustrateLabel(passWdCont, _("password_error_not_match"));
-    lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 378 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
-    item->errLabel = label;
-
-    label = GuiCreateIllustrateLabel(passWdCont, _(""));
-    lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 210);
-    lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
-    item->repeatLabel = label;
-
-    label = GuiCreateIllustrateLabel(passWdCont, _("password_error_too_long"));
-    lv_obj_set_style_text_color(label, GREEN_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 415 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
-    item->lenOverLabel = label;
-
-    lv_obj_t *img = GuiCreateImg(passWdCont, &imgEyeOff);
-    lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
-    item->eyeImg = img;
 }
 
 void *GuiCreateEnterPasscode(lv_obj_t *parent, lv_event_cb_t Cb, void *param, ENTER_PASSCODE_ENUM mode)

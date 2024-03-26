@@ -1,6 +1,6 @@
 #include "log_print.h"
 #include "stdio.h"
-#include "librust_c.h"
+
 
 #ifdef RUST_MEMORY_DEBUG
 #include "user_memory.h"
@@ -107,7 +107,6 @@ void PrintString(char *str)
 {
     printf("message from rust: %s\r\n", str);
 #ifndef COMPILE_SIMULATOR
-    free_rust_value(str);
 #endif
 }
 

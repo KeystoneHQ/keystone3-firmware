@@ -10,7 +10,6 @@
 #include "gui_views.h"
 #include "gui_framework.h"
 #include "user_memory.h"
-#include "gui_chain.h"
 #include "drv_lcd_bright.h"
 #include "device_setting.h"
 #include "anti_tamper.h"
@@ -107,26 +106,6 @@ static void UiDisplayTask(void *argument)
             break;
             case UI_MSG_CLOSE_CURRENT_VIEW: {
                 GuiCLoseCurrentWorkingView();
-            }
-            break;
-            case UI_MSG_SCREEN_SHOT: {
-#ifndef BUILD_PRODUCTION
-#ifdef ENABLE_SCREEN_SHOT
-                screenData = GetActSnapShot();
-                ScreenShot(screenData);
-                EXT_FREE(screenData);
-#endif
-#endif
-            }
-            break;
-#ifndef BTC_ONLY
-            case UI_MSG_USB_TRANSPORT_VIEW: {
-                GuiFrameOpenViewWithParam(&g_USBTransportView, rcvMsg.buffer, rcvMsg.length);
-            }
-            break;
-#endif
-            case UI_MSG_PREPARE_RECEIVE_UR_USB: {
-                GuiFrameOpenViewWithParam(&g_transactionDetailView, &rcvMsg.value, sizeof(rcvMsg.value));
             }
             break;
             case UI_MSG_OPEN_VIEW: {

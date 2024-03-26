@@ -11,7 +11,6 @@
 #include "usbd_desc.h"
 #include "usbd_req.h"
 #include "log_print.h"
-#include "protocol_parse.h"
 #include "assert.h"
 
 /** @defgroup usbd_cdc
@@ -393,7 +392,7 @@ static uint8_t usbd_cdc_DataOut(void* pdev, uint8_t epnum)
     USB_OTG_EP* ep = &((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[epnum];
     uint16_t rxCount  = ep->xfer_count;
     //PrintArray("WEBUSB rx", USB_Rx_Buffer, rxCount);
-    ProtocolReceivedData(USB_Rx_Buffer, rxCount, USBD_cdc_SendBuffer);
+    // ProtocolReceivedData(USB_Rx_Buffer, rxCount, USBD_cdc_SendBuffer);
     DCD_EP_PrepareRx(pdev, CDC_OUT_EP, (uint8_t*)(USB_Rx_Buffer), CDC_DATA_OUT_PACKET_SIZE);
     return USBD_OK;
 }

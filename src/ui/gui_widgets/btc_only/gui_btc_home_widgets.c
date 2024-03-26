@@ -3,21 +3,21 @@
 #include "gui_views.h"
 #include "gui_button.h"
 #include "gui_resource.h"
-#include "gui_status_bar.h"
+#include 
 #include "gui_keyboard.h"
-#include "gui_home_widgets.h"
+
 #include "user_memory.h"
 #include "gui_hintbox.h"
 #include "gui_obj.h"
 #include "gui_analyze.h"
-#include "gui_chain.h"
+
 #include "account_public_info.h"
 #include "gui_keyboard.h"
 #include "gui_model.h"
 #include "gui_web_auth_widgets.h"
-#include "gui_setup_widgets.h"
+
 #include "keystore.h"
-#include "gui_page.h"
+
 #include "account_manager.h"
 #include "log_print.h"
 

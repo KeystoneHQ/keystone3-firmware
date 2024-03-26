@@ -3,8 +3,8 @@
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_model.h"
-#include "gui_status_bar.h"
-#include "gui_page.h"
+#include 
+
 #include "gui_button.h"
 #include "gui_btc_home_widgets.h"
 #include "gui_hintbox.h"

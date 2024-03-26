@@ -23,7 +23,7 @@ PageWidget_t *CreatePageWidget(void)
     lv_obj_set_style_radius(contentZone, 0, 0);
     pageWidget->contentZone = contentZone;
 
-    pageWidget->navBarWidget = CreateNavBarWidget(navBar);
+    // pageWidget->navBarWidget = CreateNavBarWidget(navBar);
 
     return pageWidget;
 }
@@ -51,7 +51,7 @@ void DestroyPageContentZone(PageWidget_t *pageWidget)
 void DestroyPageWidget(PageWidget_t *pageWidget)
 {
     if (pageWidget != NULL) {
-        DestoryNavBarWidget(pageWidget->navBarWidget);
+        // DestoryNavBarWidget(pageWidget->navBarWidget);
         DestroyPageContentZone(pageWidget);
         if (pageWidget->page != NULL && lv_obj_is_valid(pageWidget->page)) {
             lv_obj_del(pageWidget->page);

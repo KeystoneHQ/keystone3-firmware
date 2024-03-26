@@ -85,7 +85,7 @@ static void UiDisplayTask(void *argument)
     printf("Tampered()=%d\n", Tampered());
     g_reboot = true;
     GuiFrameOpenView(&g_initView);
-    SetLcdBright(GetBright());
+    // SetLcdBright(GetBright());
 
     while (1) {
         RefreshLvglTickMode();

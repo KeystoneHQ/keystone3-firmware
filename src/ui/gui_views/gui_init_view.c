@@ -50,6 +50,7 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         break;
     case SIG_INIT_GET_ACCOUNT_NUMBER:
         walletNum = *(uint8_t *)param;
+        return GuiFrameOpenViewWithParam(&g_lockView, &lockParam, sizeof(lockParam));
         if (walletNum == 0) {
         } else {
             return GuiFrameOpenViewWithParam(&g_lockView, &lockParam, sizeof(lockParam));

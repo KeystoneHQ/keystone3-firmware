@@ -64,8 +64,8 @@ static const PathTypeItem_t g_btcPathTypeList[] = {
 
 #ifdef BTC_ONLY
 static const char *g_btcTestNetPath[] = {
-    "m/86'/1'/0'",
     "m/84'/1'/0'",
+    "m/86'/1'/0'",
     "m/49'/1'/0'",
     "m/44'/1'/0'",
 };

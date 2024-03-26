@@ -587,13 +587,16 @@ UREncodeResult *GuiGetCosmosSignQrCodeData(void)
         for (int i = 0; i < len; i++) {
             printf("%02x", seed[i]);
         }
-        printf("\n");
-        printf("START: xPortGetFreeHeapSize: %d\n", xPortGetFreeHeapSize());
+        printf("\n--- START: xPortGetFreeHeapSize: %d ---\n", xPortGetFreeHeapSize());
+
+        PreparePrintHeapInfo();
         SimpleResponse_c_char *result = c_get_rsa_secret_from_seed(seed, len);
-        printf("IN PROCESSING: xPortGetFreeHeapSize: %d\n", xPortGetFreeHeapSize());
-        printf("[END] c_get_rsa_secret_from_seed: %s\n", result->data);
+        PrintPeakMemoryUsage();
+        PausePrintHeapInfo();
+
+        printf("RESULT: c_get_rsa_secret_from_seed: %s\n", result->data);
         free_simple_response_c_char(result);
-        printf("END: xPortGetFreeHeapSize: %d\n", xPortGetFreeHeapSize());
+        printf("--- END: xPortGetFreeHeapSize: %d --- \n", xPortGetFreeHeapSize());
         printf("\n");
         encodeResult = cosmos_sign_tx(data, urType, seed, len);
         ClearSecretCache();

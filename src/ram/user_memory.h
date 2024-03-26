@@ -15,6 +15,7 @@ void *ExtMallocTrack(size_t size, const char *file, int line, const char *func);
 void ExtFreeTrack(void *p, const char *file, int line, const char *func);
 void *ExtMalloc(size_t size);
 void ExtFree(void *p);
+void *ExtRealloc(void *p, size_t newSize);
 
 void *RustMalloc(int32_t size);
 void RustFree(void *p);

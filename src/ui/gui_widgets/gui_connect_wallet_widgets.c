@@ -56,10 +56,10 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true},
 #else
-    {WALLET_LIST_BLUE, &btcWalletListBlue, true},
-    {WALLET_LIST_SPECTER, &btcWalletListSpecter, true},
-    {WALLET_LIST_SPARROW, &btcWalletListSparrow, true},
-    {WALLET_LIST_NUNCHUK, &btcWalletListNunchuk, true},
+    {WALLET_LIST_BLUE,      &btcWalletListBlue,     true,   false},
+    {WALLET_LIST_SPARROW,   &btcWalletListSparrow,  true,   false},
+    {WALLET_LIST_NUNCHUK,   &btcWalletListNunchuk,  true,   false},
+    {WALLET_LIST_SPECTER,   &btcWalletListSpecter,  true,   true},
 #endif
 };
 
@@ -638,7 +638,7 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
         j++;
     }
 #else
-    lv_obj_t *img, *line;
+    lv_obj_t *img, *line, *alphaImg;
     static lv_point_t points[2] = {{0, 0}, {408, 0}};
     line = GuiCreateLine(parent, points, 2);
     lv_obj_align(line, LV_ALIGN_TOP_MID, 0, 0);
@@ -650,6 +650,10 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
         lv_obj_align(img, LV_ALIGN_TOP_MID, 0, i * 99 + 9);
         lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED, &g_walletListArray[i]);
+        if (g_walletListArray[i].alpha) {
+            alphaImg = GuiCreateImg(img, &imgAlpha);
+            lv_obj_align(alphaImg, LV_ALIGN_RIGHT_MID, -219, 0);
+        }
         line = GuiCreateLine(parent, points, 2);
         lv_obj_align(line, LV_ALIGN_TOP_MID, 0, (i + 1) * 99);
     }
@@ -1020,12 +1024,17 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         break;
 #else
     case WALLET_LIST_BLUE:
-    case WALLET_LIST_SPECTER:
     case WALLET_LIST_NUNCHUK:
+        //84 49 44
         func = GuiGetBlueWalletBtcData;
         break;
     case WALLET_LIST_SPARROW:
+        //84 49 44 86
         func = GuiGetSparrowWalletBtcData;
+        break;
+    case WALLET_LIST_SPECTER:
+        //84 49
+        func = GuiGetSpecterWalletBtcData;
         break;
 #endif
     default:

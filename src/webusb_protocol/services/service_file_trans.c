@@ -18,7 +18,7 @@
 #include "keystore.h"
 #include "device_setting.h"
 #include "account_manager.h"
-#include "safe_str_lib.h"
+#include "user_memory.h"
 
 
 #define TYPE_FILE_INFO_FILE_NAME                        1
@@ -95,14 +95,13 @@ static int ValidateAndSetFileName(Tlv_t *tlvArray, FileTransInfo_t *fileTransInf
     }
 
     size_t pValueLength = strnlen_s(tlvArray->pValue, MAX_FILE_NAME_LENGTH);
-
+    ASSERT((pValueLength + 1) == tlvArray->length);
     if (pValueLength >= MAX_FILE_NAME_LENGTH || tlvArray->length > MAX_FILE_NAME_LENGTH) {
         printf("File name is too long.\n");
         return -1;
     }
 
     int written = snprintf(fileTransInfo->fileName, MAX_FILE_NAME_LENGTH + 3, "1:%s", tlvArray->pValue);
-
     if (written < 0 || written >= MAX_FILE_NAME_LENGTH + 3) {
         printf("Failed to write file name.\n");
         return -1;

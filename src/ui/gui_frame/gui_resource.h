@@ -113,6 +113,7 @@ LV_IMG_DECLARE(imgUpdate);
 LV_IMG_DECLARE(imgReceive);
 LV_IMG_DECLARE(imgDeepLayersVolume11);
 LV_IMG_DECLARE(imgKey);
+LV_IMG_DECLARE(imgAlpha);
 LV_IMG_DECLARE(imgMultiCoin);
 LV_IMG_DECLARE(imgBtcOnly);
 
@@ -146,6 +147,7 @@ LV_IMG_DECLARE(emojiMusic);
 LV_IMG_DECLARE(emojiRocket);
 LV_IMG_DECLARE(emojiSafe);
 LV_IMG_DECLARE(emojiStar);
+LV_IMG_DECLARE(emojiCam);
 
 // coin
 LV_IMG_DECLARE(coinApt);

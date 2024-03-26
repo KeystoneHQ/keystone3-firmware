@@ -817,7 +817,7 @@ GetObjStateFunc GuiTemplateStateFuncGet(char *type)
     return NULL;
 }
 
-#ifndef BTC_ONLY
+
 static void SwitchHidden(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -842,14 +842,13 @@ static void SwitchHidden(lv_event_t *e)
         }
     }
 }
-#endif
 
 lv_event_cb_t GuiTemplateEventCbGet(char *type)
 {
-#ifndef BTC_ONLY
     if (!strcmp(type, "SwitchHidden")) {
         return SwitchHidden;
     }
+#ifndef BTC_ONLY
     if (!strcmp(type, "EthContractLearnMore")) {
         return EthContractLearnMore;
     }
@@ -1121,10 +1120,10 @@ void GuiWidgetList(lv_obj_t *parent, cJSON *json)
         cJSON *itemKeyFunc = cJSON_GetObjectItem(json, "item_key_func");
         cJSON *child = cJSON_GetObjectItem(json, "item");
         keyFunc = GuiTemplateListItemKeyFuncGet(itemKeyFunc->valuestring);
-        char *key = SRAM_MALLOC(50);
+        char *key = SRAM_MALLOC(BUFFER_SIZE_64);
         for (uint8_t i = 0; i < len; i++) {
             if (itemKeyFunc != NULL) {
-                keyFunc(key, g_totalData);
+                keyFunc(key, g_totalData, BUFFER_SIZE_64);
             }
             if (itemMap != NULL) {
                 child = cJSON_GetObjectItem(itemMap, key);

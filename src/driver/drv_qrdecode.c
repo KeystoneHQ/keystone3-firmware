@@ -208,6 +208,9 @@ static void ViewImageOnLcd(void)
 #define START_SCAN_COL  82
     for (line = START_SCAN_LINE; line < START_SCAN_LINE + 320; line += VIEW_IMAGE_LINE) {
         x = 0;
+        while (LcdBusy()) {
+            osDelay(1);
+        }
         for (i = 0; i < 320 * VIEW_IMAGE_LINE; i++) {
             camPixelIndex = ((320 - y) * 3 / 2 + 80) + (x * 3 / 2) * 640;
             u8Addr = (uint8_t *)&buffer1[i];
@@ -222,9 +225,6 @@ static void ViewImageOnLcd(void)
                 x = 0;
                 y++;
             }
-        }
-        while (LcdBusy()) {
-            osDelay(1);
         }
         LcdDraw(START_SCAN_COL, line, START_SCAN_COL + 320 - 1, line + VIEW_IMAGE_LINE - 1, (uint16_t *)buffer1);
     }

@@ -157,12 +157,14 @@ mod tests {
 
     extern crate std;
     use crate::alloc::string::ToString;
+    use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};
     use crate::{
         parse_fee_market_tx, parse_personal_message, parse_typed_data_message,
         sign_personal_message, sign_typed_data_message,
     };
     use keystore::algorithms::secp256k1::get_public_key_by_seed;
     use third_party::hex;
+    use third_party::serde_json;
 
     #[test]
     fn test_parse_personal_message() {
@@ -235,6 +237,7 @@ mod tests {
     }
 
     #[test]
+
     fn test_sign_typed_data() {
         let sign_data =
             hex::decode("7b227479706573223a7b22454950373132446f6d61696e223a5b7b226e616d65223a226e616d65222c2274797065223a22737472696e67227d2c7b226e616d65223a2276657273696f6e222c2274797065223a22737472696e67227d2c7b226e616d65223a22636861696e4964222c2274797065223a2275696e74323536227d2c7b226e616d65223a22766572696679696e67436f6e7472616374222c2274797065223a2261646472657373227d5d2c224f72646572436f6d706f6e656e7473223a5b7b226e616d65223a226f666665726572222c2274797065223a2261646472657373227d2c7b226e616d65223a227a6f6e65222c2274797065223a2261646472657373227d2c7b226e616d65223a226f66666572222c2274797065223a224f666665724974656d5b5d227d2c7b226e616d65223a22737461727454696d65222c2274797065223a2275696e74323536227d2c7b226e616d65223a22656e6454696d65222c2274797065223a2275696e74323536227d2c7b226e616d65223a227a6f6e6548617368222c2274797065223a2262797465733332227d2c7b226e616d65223a2273616c74222c2274797065223a2275696e74323536227d2c7b226e616d65223a22636f6e647569744b6579222c2274797065223a2262797465733332227d2c7b226e616d65223a22636f756e746572222c2274797065223a2275696e74323536227d5d2c224f666665724974656d223a5b7b226e616d65223a22746f6b656e222c2274797065223a2261646472657373227d5d2c22436f6e73696465726174696f6e4974656d223a5b7b226e616d65223a22746f6b656e222c2274797065223a2261646472657373227d2c7b226e616d65223a226964656e7469666965724f724372697465726961222c2274797065223a2275696e74323536227d2c7b226e616d65223a227374617274416d6f756e74222c2274797065223a2275696e74323536227d2c7b226e616d65223a22656e64416d6f756e74222c2274797065223a2275696e74323536227d2c7b226e616d65223a22726563697069656e74222c2274797065223a2261646472657373227d5d7d2c227072696d61727954797065223a224f72646572436f6d706f6e656e7473222c22646f6d61696e223a7b226e616d65223a22536561706f7274222c2276657273696f6e223a22312e31222c22636861696e4964223a2231222c22766572696679696e67436f6e7472616374223a22307830303030303030303030366333383532636245663365303845386446323839313639456445353831227d2c226d657373616765223a7b226f666665726572223a22307866333946643665353161616438384636463463653661423838323732373963666646623932323636222c226f66666572223a5b7b22746f6b656e223a22307841363034303630383930393233466634303065386336663532393034363141383341454441436563227d5d2c22737461727454696d65223a2231363538363435353931222c22656e6454696d65223a2231363539323530333836222c227a6f6e65223a22307830303443303035303030303061443130344437444264303065336165304135433030353630433030222c227a6f6e6548617368223a22307830303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030222c2273616c74223a223136313738323038383937313336363138222c22636f6e647569744b6579223a22307830303030303037623032323330303931613765643031323330303732663730303661303034643630613864346537316435393962383130343235306630303030222c22746f74616c4f726967696e616c436f6e73696465726174696f6e4974656d73223a2232222c22636f756e746572223a2230227d7d").unwrap();
@@ -243,5 +246,251 @@ mod tests {
         let message = sign_typed_data_message(sign_data, &seed, &path).unwrap();
         assert_eq!("042fd02150738ede751c43803d6d7bbbcf32c9afce40c861df87357639862c6a653d3307aa16aff363e3444cb418b72e9d715a6e8e479cb56f4ce3012eed87531b",
                    hex::encode(message.serialize()));
+    }
+
+    #[test]
+    /// EIP-712 standard ambiguity: ethermint treats "string" type as standard, which may differ from the spec (source: https://eips.ethereum.org/EIPS/eip-712).
+    fn test_non_standard_eip712_typed_data_parsing() {
+        let utf8_message = r#"
+        {
+          "types": {
+            "EIP712Domain": [
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "version",
+                "type": "string"
+              },
+              {
+                "name": "chainId",
+                "type": "uint256"
+              },
+              {
+                "name": "verifyingContract",
+                "type": "string"
+              },
+              {
+                "name": "salt",
+                "type": "string"
+              }
+            ],
+            "Tx": [
+              {
+                "name": "account_number",
+                "type": "string"
+              },
+              {
+                "name": "chain_id",
+                "type": "string"
+              },
+              {
+                "name": "fee",
+                "type": "Fee"
+              },
+              {
+                "name": "memo",
+                "type": "string"
+              },
+              {
+                "name": "msgs",
+                "type": "Msg[]"
+              },
+              {
+                "name": "sequence",
+                "type": "string"
+              }
+            ],
+            "Fee": [
+              {
+                "name": "feePayer",
+                "type": "string"
+              },
+              {
+                "name": "amount",
+                "type": "Coin[]"
+              },
+              {
+                "name": "gas",
+                "type": "string"
+              }
+            ],
+            "Coin": [
+              {
+                "name": "denom",
+                "type": "string"
+              },
+              {
+                "name": "amount",
+                "type": "string"
+              }
+            ],
+            "Msg": [
+              {
+                "name": "type",
+                "type": "string"
+              },
+              {
+                "name": "value",
+                "type": "MsgValue"
+              }
+            ],
+            "MsgValue": [
+              {
+                "name": "sender",
+                "type": "string"
+              },
+              {
+                "name": "routes",
+                "type": "TypeRoutes[]"
+              },
+              {
+                "name": "token_in",
+                "type": "TypeTokenIn"
+              },
+              {
+                "name": "token_out_min_amount",
+                "type": "string"
+              }
+            ],
+            "TypeRoutes": [
+              {
+                "name": "pool_id",
+                "type": "uint64"
+              },
+              {
+                "name": "token_out_denom",
+                "type": "string"
+              }
+            ],
+            "TypeTokenIn": [
+              {
+                "name": "denom",
+                "type": "string"
+              },
+              {
+                "name": "amount",
+                "type": "string"
+              }
+            ]
+          },
+          "primaryType": "Tx",
+          "domain": {
+            "name": "Cosmos Web3",
+            "version": "1.0.0",
+            "chainId": 1100,
+            "verifyingContract": "cosmos",
+            "salt": "0"
+          },
+          "message": {
+            "account_number": "832193",
+            "chain_id": "dymension_1100-1",
+            "fee": {
+              "amount": [
+                {
+                  "amount": "4172140000000000",
+                  "denom": "adym"
+                }
+              ],
+              "gas": "208607",
+              "feePayer": "dym1tqsdz785sqjnlggee0lwxjwfk6dl36ae6q5dx9"
+            },
+            "memo": "",
+            "msgs": [
+              {
+                "type": "dymensionxyz/dymension/gamm/SwapExactAmountIn",
+                "value": {
+                  "sender": "dym1tqsdz785sqjnlggee0lwxjwfk6dl36ae6q5dx9",
+                  "token_out_min_amount": "4747",
+                  "token_in": {
+                    "amount": "10000000000000000",
+                    "denom": "adym"
+                  },
+                  "routes": [
+                    {
+                      "pool_id": "4",
+                      "token_out_denom": "ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9"
+                    }
+                  ]
+                }
+              }
+            ],
+            "sequence": "14"
+          }
+        }
+        "#.to_string();
+
+        let typed_data: Eip712TypedData = serde_json::from_str(&utf8_message).unwrap();
+        let hash = typed_data.encode_eip712().unwrap();
+        assert_eq!(
+            Some("cosmos".to_string()),
+            typed_data.domain.verifying_contract
+        );
+        assert_eq!(
+            "61aca3c3989a82c6b606cdcbe6fc7e7d786dad2608b3f1806586261386154b68",
+            hex::encode(&hash[..])
+        );
+    }
+
+    #[test]
+    fn test_non_standard_eip712_typed_data_sign() {
+        let sign_data = r#"
+        {
+            "types": {
+                "EIP712Domain": [
+                    {
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "name": "version",
+                        "type": "string"
+                    },
+                    {
+                        "name": "chainId",
+                        "type": "uint256"
+                    },
+                    {
+                        "name": "verifyingContract",
+                        "type": "address"
+                    },
+                    {
+                        "name": "salt",
+                        "type": "string"
+                    }
+                ],
+                "Tx": [
+                    {
+                        "name": "context",
+                        "type": "string"
+                    },
+                    {
+                        "name": "msgs",
+                        "type": "string"
+                    }
+                ]
+            },
+            "primaryType": "Tx",
+            "domain": {
+                "name": "Injective Web3",
+                "version": "1.0.0",
+                "chainId": "0x1",
+                "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+                "salt": "0"
+            },
+            "message": {
+                "context": "{\"account_number\":37370,\"chain_id\":\"injective-1\",\"fee\":{\"amount\":[{\"denom\":\"inj\",\"amount\":\"50180000000000\"}],\"gas\":100360,\"payer\":\"inj1065f86fh88ptyrg8h5048zu0vyx7ex8ymwgr6h\"},\"memo\":\"\",\"sequence\":15,\"timeout_height\":63590762}",
+                "msgs": "[{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"from_address\":\"inj1tqsdz785sqjnlggee0lwxjwfk6dl36aez5003n\",\"to_address\":\"inj1tqsdz785sqjnlggee0lwxjwfk6dl36aez5003n\",\"amount\":[{\"denom\":\"inj\",\"amount\":\"100000000000000\"}]}]"
+            }
+        }
+        "#;
+        let path = "m/44'/60'/0'/0/0".to_string();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let message = sign_typed_data_message(sign_data.as_bytes().to_vec(), &seed, &path).unwrap();
+        assert_eq!(
+            "cbf0b0d6ef4b47e1624267fb41e00de27f5812d5ff324f1817e73791905554844a80df5ead72fec8ac2be5fa9eebbfddb953577ea6f6f9df3c9dbf490035dd3f1c",
+            hex::encode(message.serialize())
+        );
     }
 }

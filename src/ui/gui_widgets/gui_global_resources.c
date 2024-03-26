@@ -7,6 +7,9 @@
 static char **g_ethDerivationPathDesc = NULL;
 static char **g_solDerivationPathDesc = NULL;
 static char **g_btcDerivationPathDesc = NULL;
+#ifdef BTC_ONLY
+static char **g_btcTestNetDerivationPathDesc = NULL;
+#endif
 
 void DerivationPathDescsInit(void)
 {
@@ -23,26 +26,39 @@ void DerivationPathDescsInit(void)
         g_solDerivationPathDesc[SOL_PHANTOM] = (char *)_("derivation_path_sol_3_desc");
     }
     if (g_btcDerivationPathDesc == NULL) {
-        g_btcDerivationPathDesc = SRAM_MALLOC(3 * ETH_DERIVATION_PATH_MAX_LEN);
+        g_btcDerivationPathDesc = SRAM_MALLOC(4 * ETH_DERIVATION_PATH_MAX_LEN);
         g_btcDerivationPathDesc[BTC_TAPROOT] = (char *)_("derivation_path_btc_4_desc");
         g_btcDerivationPathDesc[BTC_NATIVE_SEGWIT] = (char *)_("derivation_path_btc_1_desc");
         g_btcDerivationPathDesc[BTC_NESTED_SEGWIT] = (char *)_("derivation_path_btc_2_desc");
         g_btcDerivationPathDesc[BTC_LEGACY] = (char *)_("derivation_path_btc_3_desc");
     }
+    #ifdef BTC_ONLY
+    if (g_btcTestNetDerivationPathDesc == NULL) {
+        g_btcTestNetDerivationPathDesc = SRAM_MALLOC(4 * ETH_DERIVATION_PATH_MAX_LEN);
+        g_btcTestNetDerivationPathDesc[BTC_TAPROOT] = (char *)_("derivation_path_btc_test_net_4_desc");
+        g_btcTestNetDerivationPathDesc[BTC_NATIVE_SEGWIT] = (char *)_("derivation_path_btc_test_net_1_desc");
+        g_btcTestNetDerivationPathDesc[BTC_NESTED_SEGWIT] = (char *)_("derivation_path_btc_test_net_2_desc");
+        g_btcTestNetDerivationPathDesc[BTC_LEGACY] = (char *)_("derivation_path_btc_test_net_3_desc");
+    }
+#endif
 }
 
 char **GetDerivationPathDescs(uint8_t index)
 {
     if (index == ETH_DERIVATION_PATH_DESC) {
-        return g_ethDerivationPathDesc;
+        return (char **)g_ethDerivationPathDesc;
     }
     if (index == SOL_DERIVATION_PATH_DESC) {
-        return g_solDerivationPathDesc;
+        return (char **)g_solDerivationPathDesc;
     }
     if (index == BTC_DERIVATION_PATH_DESC) {
-        return g_btcDerivationPathDesc;
+        return (char **)g_btcDerivationPathDesc;
     }
-
+#ifdef BTC_ONLY
+    if (index == BTC_TEST_NET_DERIVATION_PATH_DESC) {
+        return (char **)g_btcTestNetDerivationPathDesc;
+    }
+#endif
     return NULL;
 }
 

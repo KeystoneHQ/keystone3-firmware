@@ -20,90 +20,68 @@ const PURPOSE_TAPROOT: u32 = 86;
 pub fn generate_crypto_account(
     master_fingerprint: &[u8; 4],
     extended_public_keys: &[&str],
+    extended_public_keys_path: &[&str],
 ) -> URResult<CryptoAccount> {
     let mut outputs = vec![];
-    outputs.extend([
-        generate_native_segwit_output(master_fingerprint, extended_public_keys[0])?,
-        generate_legacy_output(master_fingerprint, extended_public_keys[1])?,
-        generate_nested_segwit_output(master_fingerprint, extended_public_keys[2])?,
-    ]);
-    // In the previous step of the call, the length has been checked and it won't be less than 3.
-    let has_taproot_path = extended_public_keys.len() == 4;
-    if has_taproot_path {
-        outputs.extend([generate_taproot_output(
+
+    for (index, _) in extended_public_keys_path.iter().enumerate() {
+        outputs.push(generate_output(
             master_fingerprint,
-            extended_public_keys[3],
-        )?]);
+            extended_public_keys[index],
+            extended_public_keys_path[index],
+        )?);
     }
+
     Ok(CryptoAccount::new(master_fingerprint.clone(), outputs))
 }
 
-fn generate_taproot_output(
-    master_fingerprint: &[u8; 4],
-    extended_public_key: &str,
-) -> URResult<CryptoOutput> {
-    let script_expressions = vec![ScriptExpression::Taproot];
-    Ok(CryptoOutput::new(
-        script_expressions,
-        None,
-        Some(generate_crypto_hd_key(
-            master_fingerprint,
-            extended_public_key,
-            PURPOSE_TAPROOT,
-        )?),
-        None,
-    ))
+fn get_path_level_number(path: &str, index: usize) -> Option<u32> {
+    let segments = path.split('/').collect::<Vec<_>>();
+
+    if index >= segments.len() {
+        return None;
+    }
+
+    let num_str = segments[index].trim_matches('\'');
+    match num_str.parse::<u32>() {
+        Ok(num) => Some(num),
+        Err(_) => None,
+    }
 }
 
-fn generate_legacy_output(
+fn generate_output(
     master_fingerprint: &[u8; 4],
     extended_public_key: &str,
+    extended_public_keys_path: &str,
 ) -> URResult<CryptoOutput> {
-    let script_expressions = vec![ScriptExpression::PublicKeyHash];
-    Ok(CryptoOutput::new(
-        script_expressions,
-        None,
-        Some(generate_crypto_hd_key(
-            master_fingerprint,
-            extended_public_key,
-            PURPOSE_LEGACY,
-        )?),
-        None,
-    ))
-}
+    let purpose = get_path_level_number(extended_public_keys_path, 1)
+        .ok_or(URError::UrEncodeError("get purpose err".to_string()))?;
+    let coin_type = get_path_level_number(extended_public_keys_path, 2)
+        .ok_or(URError::UrEncodeError("get coin_type err".to_string()))?;
+    let script_expressions = match purpose {
+        PURPOSE_TAPROOT => vec![ScriptExpression::Taproot],
+        PURPOSE_LEGACY => vec![ScriptExpression::PublicKeyHash],
+        PURPOSE_NESTED_SEGWIT => vec![
+            ScriptExpression::ScriptHash,
+            ScriptExpression::WitnessPublicKeyHash,
+        ],
+        PURPOSE_NATIVE_SEGWIT => vec![ScriptExpression::WitnessPublicKeyHash],
+        _ => {
+            return Err(URError::UrEncodeError(format!(
+                "not supported purpose:{}",
+                purpose
+            )))
+        }
+    };
 
-fn generate_nested_segwit_output(
-    master_fingerprint: &[u8; 4],
-    extended_public_key: &str,
-) -> URResult<CryptoOutput> {
-    let script_expressions = vec![
-        ScriptExpression::ScriptHash,
-        ScriptExpression::WitnessPublicKeyHash,
-    ];
     Ok(CryptoOutput::new(
         script_expressions,
         None,
         Some(generate_crypto_hd_key(
             master_fingerprint,
             extended_public_key,
-            PURPOSE_NESTED_SEGWIT,
-        )?),
-        None,
-    ))
-}
-
-fn generate_native_segwit_output(
-    master_fingerprint: &[u8; 4],
-    extended_public_key: &str,
-) -> URResult<CryptoOutput> {
-    let script_expressions = vec![ScriptExpression::WitnessPublicKeyHash];
-    Ok(CryptoOutput::new(
-        script_expressions,
-        None,
-        Some(generate_crypto_hd_key(
-            master_fingerprint,
-            extended_public_key,
-            PURPOSE_NATIVE_SEGWIT,
+            purpose,
+            coin_type,
         )?),
         None,
     ))
@@ -113,6 +91,7 @@ fn generate_crypto_hd_key(
     master_fingerprint: &[u8; 4],
     extended_public_key: &str,
     purpose: u32,
+    coin_type: u32,
 ) -> URResult<CryptoHDKey> {
     let bip32_extended_pub_key = bip32::Xpub::from_str(extended_public_key)
         .map_err(|e| URError::UrEncodeError(e.to_string()))?;
@@ -123,7 +102,7 @@ fn generate_crypto_hd_key(
     let origin = CryptoKeyPath::new(
         vec![
             get_path_component(Some(purpose), true)?,
-            get_path_component(Some(0), true)?,
+            get_path_component(Some(coin_type), true)?,
             get_path_component(Some(0), true)?,
         ],
         Some(master_fingerprint.clone()),
@@ -178,7 +157,17 @@ mod tests {
         let x_pub_3 = "xpub6C6nQwHaWbSrzs5tZ1q7m5R9cPK9eYpNMFesiXsYrgc1P8bvLLAet9JfHjYXKjToD8cBRswJXXbbFpXgwsswVPAZzKMa1jUp2kVkGVUaJa7";
         let x_pub_4 = "xpub6BgBgsespWvERF3LHQu6CnqdvfEvtMcQjYrcRzx53QJjSxarj2afYWcLteoGVky7D3UKDP9QyrLprQ3VCECoY49yfdDEHGCtMMj92pReUsQ";
 
-        let account = generate_crypto_account(&mfp, &[x_pub_1, x_pub_2, x_pub_3, x_pub_4]).unwrap();
+        let x_pub_1_path = "m/84'/0'/0'";
+        let x_pub_2_path = "m/44'/0'/0'";
+        let x_pub_3_path = "m/49'/0'/0'";
+        let x_pub_4_path = "m/86'/0'/0'";
+
+        let account = generate_crypto_account(
+            &mfp,
+            &[x_pub_1, x_pub_2, x_pub_3, x_pub_4],
+            &[x_pub_1_path, x_pub_2_path, x_pub_3_path, x_pub_4_path],
+        )
+        .unwrap();
         let cbor: Vec<u8> = account.try_into().unwrap();
 
         assert_eq!("a2011a73c5da0a0284d90194d9012fa702f403582102707a62fdacc26ea9b63b1c197906f56ee0180d0bcf1966e1a2da34f5f3a09a9b0458204a53a0ab21b9dc95869c4e92a161194e03c0ef3ff5014ac692f433c4765490fc05d90131a20100020006d90130a301861854f500f500f5021a73c5da0a030307d90130a2018400f480f40300081a7ef32bdbd90193d9012fa702f403582103774c910fcf07fa96886ea794f0d5caed9afe30b44b83f7e213bb92930e7df4bd0458203da4bc190a2680111d31fadfdc905f2a7f6ce77c6f109919116f253d4344521905d90131a20100020006d90130a30186182cf500f500f5021a73c5da0a030307d90130a2018400f480f40300081a155bca59d90190d90194d9012fa702f403582102f1f347891b20f7568eae3ec9869fbfb67bcab6f358326f10ecc42356bd55939d0458206eaae365ae0e0a0aab84325cfe7cd76c3b909035f889e7d3f1b847a9a0797ecb05d90131a20100020006d90130a301861831f500f500f5021a73c5da0a030307d90130a2018400f480f40300081a3d05ff75d90199d9012fa702f403582103418278a2885c8bb98148158d1474634097a179c642f23cf1cc04da629ac6f0fb045820c61a8f27e98182314d2444da3e600eb5836ec8ad183c86c311f95df8082b18aa05d90131a20100020006d90130a301861856f500f500f5021a73c5da0a030307d90130a2018400f480f40300081a035270da",

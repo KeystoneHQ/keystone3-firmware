@@ -62,11 +62,20 @@ static void SetPathType(uint8_t pathType);
 static void SetCheckboxState(uint8_t i, bool isChecked);
 
 static const PathTypeItem_t g_btcPathTypeList[] = {
-    {"Taproot",       "P2TR",        "m/86'/0'/0'", XPUB_TYPE_BTC_TAPROOT      },
     {"Native SegWit", "P2WPKH",      "m/84'/0'/0'", XPUB_TYPE_BTC_NATIVE_SEGWIT},
+    {"Taproot",       "P2TR",        "m/86'/0'/0'", XPUB_TYPE_BTC_TAPROOT      },
     {"Nested SegWit", "P2SH-P2WPKH", "m/49'/0'/0'", XPUB_TYPE_BTC              },
     {"Legacy",        "P2PKH",       "m/44'/0'/0'", XPUB_TYPE_BTC_LEGACY       },
 };
+
+#ifdef BTC_ONLY
+static const char *g_btcTestNetPath[] = {
+    "m/86'/1'/0'",
+    "m/84'/1'/0'",
+    "m/49'/1'/0'",
+    "m/44'/1'/0'",
+};
+#endif
 
 static GuiChainCoinType g_chain;
 static PageWidget_t *g_pageWidget;
@@ -195,6 +204,9 @@ static void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent)
 {
     lv_obj_t *cont, *line, *label;
     char desc[BUFFER_SIZE_64] = {0};
+#ifdef BTC_ONLY
+    const char *path;
+#endif
     static lv_point_t points[2] = {{0, 0}, {360, 0}};
 
     cont = GuiCreateContainerWithParent(parent, 408, 411);
@@ -205,7 +217,12 @@ static void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent)
     for (uint32_t i = 0; i < sizeof(g_btcPathTypeList) / sizeof(g_btcPathTypeList[0]); i++) {
         label = GuiCreateTextLabel(cont, g_btcPathTypeList[i].title);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
+#ifndef BTC_ONLY
         snprintf_s(desc, BUFFER_SIZE_64, "%s (%s)", g_btcPathTypeList[i].subTitle, g_btcPathTypeList[i].path);
+#else
+        path = GetIsTestNet() ? g_btcTestNetPath[i] : g_btcPathTypeList[i].path;
+        snprintf_s(desc, BUFFER_SIZE_64, "%s (%s)", g_btcPathTypeList[i].subTitle, path);
+#endif
         label = GuiCreateNoticeLabel(cont, desc);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
         if (i != (sizeof(g_btcPathTypeList) / sizeof(g_btcPathTypeList[0]) - 1)) {
@@ -374,6 +391,7 @@ static char *GetPathTypeTitle(uint16_t chain, uint8_t pathType)
     }
 }
 
+#ifndef BTC_ONLY
 static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType, uint32_t maxLen)
 {
     switch (chain) {
@@ -384,6 +402,14 @@ static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType, uint32
         printf("(GetPathTypeDesc) unsupported chain type: %d\r\n", chain);
     }
 }
+#else
+static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType, uint32_t maxLen)
+{
+    ASSERT(chain == CHAIN_BTC);
+    const char *path = GetIsTestNet() ? g_btcTestNetPath[pathType] : g_btcPathTypeList[pathType].path;
+    snprintf_s(dest, maxLen, "%s (%s)", g_btcPathTypeList[pathType].subTitle, path);
+}
+#endif
 
 static void RefreshQrcode()
 {
@@ -425,7 +451,7 @@ static void SetPathType(uint8_t pathType)
     }
 }
 
-#ifndef COMPILE_SIMULATOR
+#ifndef BTC_ONLY
 static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, uint32_t maxLen)
 {
     char *xPub, hdPath[BUFFER_SIZE_128];
@@ -443,7 +469,20 @@ static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, ui
 #else
 static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, uint32_t maxLen)
 {
-    snprintf_s(dest, maxLen, "1JLNi9AmQcfEuobvwJ4FT5YCiq3WLhCh%u%u", pathType, index);
+    char *xPub, hdPath[128];
+    const char *rootPath;
+    ChainType chainType = ConvertChainType(g_btcPathTypeList[pathType].pubkeyType);
+    rootPath = GetIsTestNet() ? g_btcTestNetPath[pathType] : g_btcPathTypeList[pathType].path;
+    xPub = GetCurrentAccountPublicKey(chainType);
+    ASSERT(xPub);
+    SimpleResponse_c_char *result;
+    snprintf_s(hdPath, sizeof(hdPath), "%s/0/%u", rootPath, index);
+    do {
+        result = utxo_get_address(hdPath, xPub);
+        CHECK_CHAIN_BREAK(result);
+    } while (0);
+    snprintf_s(dest, maxLen, "%s", result->data);
+    free_simple_response_c_char(result);
 }
 #endif
 

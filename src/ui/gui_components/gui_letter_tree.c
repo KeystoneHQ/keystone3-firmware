@@ -78,6 +78,10 @@ int searchTrie(TrieSTPtr root, const char *str)
     TrieSTPtr tmp = root;
     int i = 0;
     while (str[i] != '\0') {
+        if (str[i] < 'a' || str[i] > 'z') {
+            printf("%s. Invalid input\n", str);
+            return false;
+        }
         if (tmp->next[str[i] - 'a'] != NULL) {
             tmp = tmp->next[str[i] - 'a'];
         } else
@@ -97,6 +101,9 @@ int searchTrie(TrieSTPtr root, const char *str)
                 wordsTraversal(tmp, num, strlen(g_wordBuf[num]));
             }
             ++num;
+            if (num >= GUI_KEYBOARD_CANDIDATE_WORDS_CNT) {
+                return num;
+            }
             tmp = record;
         } else {
             //printf("%c need disable\n", j);

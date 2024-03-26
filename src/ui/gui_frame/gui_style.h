@@ -11,6 +11,7 @@
 #define DARK_BG_COLOR                       lv_color_hex(0x333333)
 #define WHITE_COLOR_OPA12                   lv_color_hex(0x4b4b4b)
 #define WHITE_COLOR_OPA20                   lv_color_hex(0x5c5c5c)
+#define WHITE_COLOR_OPA64                   lv_color_hex(0xA4A4A4)
 #define BLUE_COLOR                          lv_color_hex(0x5C87FF)
 #define BLUE_GREEN_COLOR                    lv_color_hex(0x1BE0C6)
 #define GREEN_COLOR                         lv_color_hex(0x2EA374)

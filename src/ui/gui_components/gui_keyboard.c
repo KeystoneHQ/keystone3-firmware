@@ -181,12 +181,21 @@ typedef struct {
     uint16_t size;
 } BtnMatrixCtl_t;
 
+#ifndef BTC_ONLY
 static const lv_img_dsc_t *g_emojiMatrix[16] = {
     &emojiBitcoin, &emojiEth,       &emojiLogo,     &emojiAt,
     &emojiSafe,    &emojiFlash,     &emojiAlien,    &emojiHappy,
     &emojiRocket,  &emojiCrown,     &emojiCopper,   &emojiStar,
     &emojiMusic,   &emojiHeart,     &emojiCompass,  &emojiGame,
 };
+#else
+static const lv_img_dsc_t *g_emojiMatrix[16] = {
+    &emojiBitcoin, &emojiCam,       &emojiLogo,     &emojiAt,
+    &emojiSafe,    &emojiFlash,     &emojiAlien,    &emojiHappy,
+    &emojiRocket,  &emojiCrown,     &emojiCopper,   &emojiStar,
+    &emojiMusic,   &emojiHeart,     &emojiCompass,  &emojiGame,
+};
+#endif
 
 static MnemonicKeyBoard_t *g_importPhraseKb = NULL;
 static lv_obj_t *g_walletIcon = NULL;
@@ -1031,6 +1040,10 @@ void UpdateKeyBoard(TrieSTPtr root, const char *str, KeyBoard_t *keyBoard)
     bool allDisabled = true;
     uint8_t enable[CHAR_LENGTH + 2] = {0};
     while (str[i] != '\0') {
+        if (str[i] < 'a' || str[i] > 'z') {
+            printf("%s. Invalid input\n", str);
+            return;
+        }
         if (tmp->next[str[i] - 'a'] != NULL) {
             tmp = tmp->next[str[i] - 'a'];
         }

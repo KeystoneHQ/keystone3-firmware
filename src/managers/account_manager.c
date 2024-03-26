@@ -8,11 +8,13 @@
 #include "assert.h"
 #include "hash_and_salt.h"
 #include "secret_cache.h"
+#include "log_print.h"
 #include "user_memory.h"
-
 #ifdef COMPILE_SIMULATOR
 #include "simulator_storage.h"
 #include "simulator_mock_define.h"
+#else
+#include "safe_str_lib.h"
 #endif
 
 

@@ -208,6 +208,7 @@ static void SkipHandler(lv_event_t *e)
     ClearSecretCache();
     if (g_homeView.isActive) {
         GuiLockScreenTurnOff();
+        GuiCloseToTargetView(&g_homeView);
     } else {
         GuiFrameOpenView(&g_homeView);
     }

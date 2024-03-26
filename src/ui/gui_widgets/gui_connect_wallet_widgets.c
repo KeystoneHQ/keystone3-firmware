@@ -302,8 +302,12 @@ static void GuiInitWalletListArray()
             }
         }
 #else
-        if (GetIsTestNet() && g_walletListArray[i].index == WALLET_LIST_BLUE) {
-            g_walletListArray[i].enable = false;
+        if (g_walletListArray[i].index == WALLET_LIST_BLUE) {
+            if (GetIsTestNet()) {
+                g_walletListArray[i].enable = false;
+            } else {
+                g_walletListArray[i].enable = true;
+            }
         }
 #endif
     }

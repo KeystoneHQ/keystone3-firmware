@@ -20,7 +20,10 @@
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
+#else 
+#include "safe_str_lib.h"
 #endif
+
 
 #define PUB_KEY_MAX_LENGTH                  256
 #define VERSION_MAX_LENGTH                  64

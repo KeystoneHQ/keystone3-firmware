@@ -817,7 +817,7 @@ GetObjStateFunc GuiTemplateStateFuncGet(char *type)
     return NULL;
 }
 
-#ifndef BTC_ONLY
+
 static void SwitchHidden(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -842,14 +842,13 @@ static void SwitchHidden(lv_event_t *e)
         }
     }
 }
-#endif
 
 lv_event_cb_t GuiTemplateEventCbGet(char *type)
 {
-#ifndef BTC_ONLY
     if (!strcmp(type, "SwitchHidden")) {
         return SwitchHidden;
     }
+#ifndef BTC_ONLY
     if (!strcmp(type, "EthContractLearnMore")) {
         return EthContractLearnMore;
     }

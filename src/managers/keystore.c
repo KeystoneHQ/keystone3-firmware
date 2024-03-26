@@ -28,6 +28,7 @@
 #include "secret_cache.h"
 #ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
+#include "safe_str_lib.h"
 #else
 #include "simulator_model.h"
 #include "simulator_storage.h"

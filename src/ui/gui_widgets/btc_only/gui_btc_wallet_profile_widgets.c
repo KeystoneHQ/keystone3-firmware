@@ -30,7 +30,6 @@ Checkbox_t g_networkCheckbox[2];
 
 void GuiBtcWalletProfileInit(void)
 {
-    printf("%s\n", __func__);
     g_pageWidget = CreatePageWidget();
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_profile_mid_btn"));
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
@@ -40,11 +39,7 @@ void GuiBtcWalletProfileInit(void)
 
 void GuiBtcWalletProfileDeInit(void)
 {
-    printf("%s\n", __func__);
-    if (g_networkCont != NULL) {
-        lv_obj_del(g_networkCont);
-        g_networkCont = NULL;
-    }
+    GUI_DEL_OBJ(g_networkCont);
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
@@ -54,20 +49,17 @@ void GuiBtcWalletProfileDeInit(void)
 
 void GuiBtcWalletProfileRefresh(void)
 {
-    printf("%s\n", __func__);
 }
 
 
 int8_t GuiBtcWalletProfilePrevTile(uint8_t tileIndex)
 {
-    printf("%s\n", __func__);
     return 0;
 }
 
 
 int8_t GuiBtcWalletProfileNextTile(uint8_t tileIndex)
 {
-    printf("%s\n", __func__);
     return 0;
 }
 
@@ -177,9 +169,7 @@ static void NetworkSelHandler(lv_event_t *e)
             if (target == g_networkCheckbox[i].button) {
                 printf("target is %d\n", i);
                 SetIsTestNet(i == 1);
-#ifdef BTC_ONLY
                 GuiApiEmitSignal(SIG_STATUS_BAR_TEST_NET, NULL, 0);
-#endif
                 for (j = 0; j < 2; j++) {
                     if (i == j) {
                         //checked
@@ -193,6 +183,7 @@ static void NetworkSelHandler(lv_event_t *e)
                 }
             }
         }
+        GUI_DEL_OBJ(g_networkCont);
     }
 }
 

@@ -28,6 +28,7 @@ typedef struct {
 
 
 static void DrawLetterOnLcd(uint16_t x, uint16_t y, uint16_t width, uint16_t height, lv_font_glyph_dsc_t *dsc, const uint8_t *map_p, uint16_t color);
+static void GetTrueColors(uint16_t *trueColors, const uint8_t *colorData, uint32_t pixelNum, lv_img_cf_t colorFormat);
 
 
 static LcdDrawColor_t g_bgColor = {0};
@@ -154,11 +155,9 @@ void DrawProgressBarOnLcd(uint16_t x, uint16_t y, uint16_t length, uint16_t widt
 void DrawImageOnLcd(uint16_t x, uint16_t y, const lv_img_dsc_t *imgDsc)
 {
     uint16_t *colors;
-    ASSERT(imgDsc->header.cf == LV_IMG_CF_TRUE_COLOR);
-    uint32_t drawSize = imgDsc->header.w * imgDsc->header.h * 2;
 
-    colors = SRAM_MALLOC(drawSize);
-    memcpy_s(colors, drawSize, imgDsc->data, drawSize);
+    colors = SRAM_MALLOC(imgDsc->header.w * imgDsc->header.h * 2);
+    GetTrueColors(colors, imgDsc->data, imgDsc->header.w * imgDsc->header.h, imgDsc->header.cf);
     LcdDraw(x, y, x + imgDsc->header.w - 1, y + imgDsc->header.h - 1, colors);
     while (LcdBusy());
     SRAM_FREE(colors);
@@ -166,10 +165,18 @@ void DrawImageOnLcd(uint16_t x, uint16_t y, const lv_img_dsc_t *imgDsc)
 
 
 extern const lv_img_dsc_t imgBootLogo;
+#ifdef BTC_ONLY
+extern const lv_img_dsc_t imgBootBtc;
+#endif
 
 void DrawBootLogoOnLcd(void)
 {
+#ifndef BTC_ONLY
     DrawImageOnLcd(192, 300, &imgBootLogo);
+#else
+    DrawImageOnLcd(192, 245, &imgBootLogo);
+    DrawImageOnLcd(150, 712, &imgBootBtc);
+#endif
     UserDelay(100);
     SetLcdBright(50);
 }
@@ -233,6 +240,28 @@ static void DrawLetterOnLcd(uint16_t x, uint16_t y, uint16_t width, uint16_t hei
         }
         LcdDraw(gapX, gapY, gapX + gapW - 1, gapY + gapH - 1, pixelMap);
         while (LcdBusy());
+    }
+}
+
+
+static void GetTrueColors(uint16_t *trueColors, const uint8_t *colorData, uint32_t pixelNum, lv_img_cf_t colorFormat)
+{
+    lv_color16_t pixel;
+    uint16_t green;
+    uint32_t i;
+    if (colorFormat == LV_IMG_CF_TRUE_COLOR_ALPHA) {
+        for (i = 0; i < pixelNum; i++) {
+            memcpy(&pixel.full, &colorData[i * 3], 2);
+            pixel.ch.blue = pixel.ch.blue * colorData[i * 3 + 2] / 255;
+            pixel.ch.red = pixel.ch.red * colorData[i * 3 + 2] / 255;
+            green = (pixel.ch.green_h << 3) + pixel.ch.green_l;
+            green = green * colorData[i * 3 + 2] / 255;
+            pixel.ch.green_h = green >> 3;
+            pixel.ch.green_l = green & 0x0007;
+            trueColors[i] = pixel.full;
+        }
+    } else if (colorFormat == LV_IMG_CF_TRUE_COLOR) {
+        memcpy(trueColors, colorData, pixelNum * 2);
     }
 }
 

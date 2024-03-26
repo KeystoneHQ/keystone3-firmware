@@ -93,6 +93,7 @@ btc-only = [
     "wallet_rust_c/btc-only",
     "test_cmd/btc-only",
 ]
+test_feature = []
 [dev-dependencies]
 keystore = { path = "../keystore" }
 

@@ -22,6 +22,8 @@
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
 #include "simulator_model.h"
+#else 
+#include "safe_str_lib.h"
 #endif
 
 typedef enum {
@@ -198,6 +200,7 @@ void GuiFirmwareSdCardCopyResult(bool en)
         printf("copy success\n");
     } else {
         printf("copy failed\n");
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
         g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
     }
 }

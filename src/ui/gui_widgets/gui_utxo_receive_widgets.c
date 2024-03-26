@@ -171,7 +171,10 @@ static const AddressSettingsItem_t *g_addressSettings = g_mainNetAddressSettings
 
 #endif
 
-static char * *g_derivationPathDescs = NULL;
+static char **g_derivationPathDescs = NULL;
+#ifdef BTC_ONLY
+static char **g_testNetderivationPathDescs = NULL;
+#endif
 
 #ifndef BTC_ONLY
 static const ChainPathItem_t g_chainPathItems[] = {
@@ -204,6 +207,9 @@ static void InitDerivationPathDesc(uint8_t chain)
     switch (chain) {
     case HOME_WALLET_CARD_BTC:
         g_derivationPathDescs = GetDerivationPathDescs(BTC_DERIVATION_PATH_DESC);
+#ifdef BTC_ONLY
+        g_testNetderivationPathDescs = GetDerivationPathDescs(BTC_TEST_NET_DERIVATION_PATH_DESC);
+#endif
         break;
     default:
         break;
@@ -219,9 +225,7 @@ void GuiReceiveInit(uint8_t chain)
     g_selectType = g_addressType[g_currentAccountIndex];
     g_pageWidget = CreatePageWidget();
     g_utxoReceiveWidgets.cont = g_pageWidget->contentZone;
-    g_utxoReceiveWidgets.tileView = lv_tileview_create(g_utxoReceiveWidgets.cont);
-    lv_obj_set_style_bg_opa(g_utxoReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR & LV_STATE_SCROLLED);
-    lv_obj_set_style_bg_opa(g_utxoReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
+    g_utxoReceiveWidgets.tileView = GuiCreateTileView(g_utxoReceiveWidgets.cont);
     g_utxoReceiveWidgets.tileQrCode = lv_tileview_add_tile(g_utxoReceiveWidgets.tileView, UTXO_RECEIVE_TILE_QRCODE, 0, LV_DIR_HOR);
     GuiCreateQrCodeWidget(g_utxoReceiveWidgets.tileQrCode);
     g_utxoReceiveWidgets.tileSwitchAccount = lv_tileview_add_tile(g_utxoReceiveWidgets.tileView, UTXO_RECEIVE_TILE_SWITCH_ACCOUNT, 0, LV_DIR_HOR);
@@ -382,7 +386,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
         lv_obj_add_event_cb(btn, AddressSettingsHandler, LV_EVENT_CLICKED, NULL);
         img = GuiCreateImg(btn, &imgAddressType);
         lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-        label = GuiCreateLabelWithFont(btn, _("receive_btc_more_address_settings"), &openSans_24);
+        label = GuiCreateTextLabel(btn, _("receive_btc_more_address_settings"));
         lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
         // export xpub
         btn = lv_btn_create(cont);
@@ -395,7 +399,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
         lv_obj_add_event_cb(btn, ExportXpubHandler, LV_EVENT_CLICKED, NULL);
         img = GuiCreateImg(btn, &imgExport);
         lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-        label = GuiCreateLabelWithFont(btn, _("receive_btc_more_export_xpub"), &openSans_24);
+        label = GuiCreateTextLabel(btn, _("receive_btc_more_export_xpub"));
         lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
         break;
     default:
@@ -745,6 +749,7 @@ static void Highlight(char *address, uint8_t highlightStart, uint8_t highlightEn
 #endif
 }
 
+#ifndef BTC_ONLY
 static void RefreshDefaultAddress(void)
 {
     char address[ADDRESS_MAX_LEN];
@@ -768,6 +773,39 @@ static void RefreshDefaultAddress(void)
     lv_label_set_text(g_addressLabel[1], highlightAddress);
     lv_label_set_recolor(g_addressLabel[1], true);
 }
+#else
+static void RefreshDefaultAddress(void)
+{
+    char address[128];
+    char highlightAddress[128];
+    uint8_t highlightEnd;
+
+    AddressDataItem_t addressDataItem;
+
+    ChainType chainType;
+    chainType = GetChainTypeByIndex(g_selectType);
+
+    if (chainType == XPUB_TYPE_BTC_NATIVE_SEGWIT ||
+            chainType == XPUB_TYPE_BTC_TAPROOT ||
+            chainType == XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST ||
+            chainType == XPUB_TYPE_BTC_TAPROOT_TEST) {
+        highlightEnd = 4;
+    } else {
+        highlightEnd = 1;
+    }
+    ModelGetUtxoAddress(0, &addressDataItem);
+    CutAndFormatAddress(address, sizeof(address), addressDataItem.address, 24);
+    Highlight(address, 0, highlightEnd, highlightAddress, sizeof(highlightAddress));
+    lv_label_set_text(g_addressLabel[0], highlightAddress);
+    lv_label_set_recolor(g_addressLabel[0], true);
+
+    ModelGetUtxoAddress(1, &addressDataItem);
+    CutAndFormatAddress(address, sizeof(address), addressDataItem.address, 24);
+    Highlight(address, 0, highlightEnd, highlightAddress, sizeof(highlightAddress));
+    lv_label_set_text(g_addressLabel[1], highlightAddress);
+    lv_label_set_recolor(g_addressLabel[1], true);
+}
+#endif
 
 static void ShowEgAddressCont(lv_obj_t *egCont)
 {
@@ -778,8 +816,15 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     lv_obj_clean(egCont);
     lv_obj_t *prevLabel, *label;
     int egContHeight = 12;
-
+#ifndef BTC_ONLY
     label = GuiCreateNoticeLabel(egCont, g_derivationPathDescs[g_selectType]);
+#else
+    if (GetIsTestNet()) {
+        label = GuiCreateNoticeLabel(egCont, g_testNetderivationPathDescs[g_selectType]);
+    } else {
+        label = GuiCreateNoticeLabel(egCont, g_derivationPathDescs[g_selectType]);
+    }
+#endif
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
@@ -862,7 +907,7 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
 #endif
     for (uint32_t i = 0; i < g_addressSettingsNum; i++) {
         label = GuiCreateTextLabel(cont, g_addressSettings[i].title);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 20 + 103 * i);
         snprintf_s(string, BUFFER_SIZE_64, "%s (%s)", g_addressSettings[i].subTitle, g_addressSettings[i].path);
         label = GuiCreateNoticeLabel(cont, string);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);

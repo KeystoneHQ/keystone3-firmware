@@ -80,6 +80,7 @@ void GuiModelCalculateCheckSum(void);
 void GuiModelStopCalculateCheckSum(void);
 void GuiModelSettingWritePassphrase(void);
 void GuiModelCalculateBinSha256(void);
+void GuiModelFormatMicroSd(void);
 
 #endif /* _GUI_MODEL_H */
 

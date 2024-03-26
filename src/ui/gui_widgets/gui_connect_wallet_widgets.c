@@ -290,10 +290,10 @@ static lv_obj_t *g_egCont = NULL;
 
 static void QRCodePause(bool);
 
-#ifndef BTC_ONLY
 static void GuiInitWalletListArray()
 {
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+#ifndef BTC_ONLY
         if (g_walletListArray[i].index == WALLET_LIST_ETERNL) {
             if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
                 g_walletListArray[i].enable = false;
@@ -301,10 +301,15 @@ static void GuiInitWalletListArray()
                 g_walletListArray[i].enable = true;
             }
         }
-        continue;
+#else
+        if (GetIsTestNet() && g_walletListArray[i].index == WALLET_LIST_BLUE) {
+            g_walletListArray[i].enable = false;
+        }
+#endif
     }
 }
 
+#ifndef BTC_ONLY
 static bool IsEVMChain(int walletIndex)
 {
     switch (walletIndex) {
@@ -638,12 +643,13 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
     static lv_point_t points[2] = {{0, 0}, {408, 0}};
     line = GuiCreateLine(parent, points, 2);
     lv_obj_align(line, LV_ALIGN_TOP_MID, 0, 0);
-    for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+    for (int i = 0, j = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
         if (!g_walletListArray[i].enable) {
+            j++;
             continue;
         }
         img = GuiCreateImg(parent, g_walletListArray[i].img);
-        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, i * 99 + 9);
+        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, (i - j) * 99 + 9);
         lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED, &g_walletListArray[i]);
         if (g_walletListArray[i].alpha) {
@@ -651,7 +657,7 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
             lv_obj_align(alphaImg, LV_ALIGN_RIGHT_MID, -219, 0);
         }
         line = GuiCreateLine(parent, points, 2);
-        lv_obj_align(line, LV_ALIGN_TOP_MID, 0, (i + 1) * 99);
+        lv_obj_align(line, LV_ALIGN_TOP_MID, 0, (i + 1 - j) * 99);
     }
 #endif
 }
@@ -918,9 +924,7 @@ static void AddSolflareCoins(void)
 
 void GuiConnectWalletInit(void)
 {
-#ifndef BTC_ONLY
     GuiInitWalletListArray();
-#endif
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 

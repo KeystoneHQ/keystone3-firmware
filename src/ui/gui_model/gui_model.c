@@ -1472,4 +1472,6 @@ static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen)
         GuiApiEmitSignal(SIG_SETTING_MICRO_CARD_FORMAT_SUCCESS, NULL, 0);
     }
     SetPageLockScreen(true);
+
+    return SUCCESS_CODE;
 }

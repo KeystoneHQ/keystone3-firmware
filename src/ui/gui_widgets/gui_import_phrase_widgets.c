@@ -34,7 +34,6 @@ static MnemonicKeyBoard_t *g_importMkb;
 static KeyBoard_t *g_importPhraseKb;
 static lv_obj_t *g_importPhraseKbCont = NULL;
 static uint8_t g_inputWordsCnt = 0;
-static lv_obj_t *g_importMkbCont = NULL;
 static lv_obj_t *g_buttonCont = NULL;
 static PageWidget_t *g_pageWidget;
 

@@ -32,7 +32,7 @@ void SetShowPowerOffPage(bool isShow)
 static void PowerOption(void)
 {
     if (g_isShowPowerOptionPage) {
-        Aw32001PowerOff();
+        SystemReboot();
     }
 }
 

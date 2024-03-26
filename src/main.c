@@ -54,7 +54,7 @@ int main(void)
     FingerprintInit();
     cm_backtrace_init("mh1903", GetHardwareVersionString(), GetSoftwareVersionString());
     TrngInit();
-    TamperInit(TamperStartup);
+    // TamperInit(TamperStartup);
     PowerInit();
     LcdBrightInit();
     LcdCheck();

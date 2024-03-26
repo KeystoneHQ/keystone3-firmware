@@ -50,7 +50,7 @@ def build_firmware(environment, options, bin_type):
             cmd += ' -DCMAKE_BUILD_TYPE=Simulator'
         # add more option here.
 
-    cmd += "-DRU_SUPPORT=true"
+    cmd += " -DRU_SUPPORT=true"
     cmd += read_feature_toggle_build_cmd()
 
     cmd_result = os.system(cmd)

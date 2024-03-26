@@ -16,7 +16,7 @@
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
-#else 
+#else
 #include "safe_str_lib.h"
 #endif
 

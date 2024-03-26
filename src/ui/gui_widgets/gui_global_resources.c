@@ -32,7 +32,7 @@ void DerivationPathDescsInit(void)
         g_btcDerivationPathDesc[BTC_NESTED_SEGWIT] = (char *)_("derivation_path_btc_2_desc");
         g_btcDerivationPathDesc[BTC_LEGACY] = (char *)_("derivation_path_btc_3_desc");
     }
-    #ifdef BTC_ONLY
+#ifdef BTC_ONLY
     if (g_btcTestNetDerivationPathDesc == NULL) {
         g_btcTestNetDerivationPathDesc = SRAM_MALLOC(4 * ETH_DERIVATION_PATH_MAX_LEN);
         g_btcTestNetDerivationPathDesc[BTC_TAPROOT] = (char *)_("derivation_path_btc_test_net_4_desc");

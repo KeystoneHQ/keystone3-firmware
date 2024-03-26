@@ -104,6 +104,7 @@ static int32_t ModelURClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen);
 static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t parseTransactionFunc);
+static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen);
 
 static PasswordVerifyResult_t g_passwordVerifyResult;
 static bool g_stopCalChecksum = false;
@@ -164,6 +165,12 @@ void GuiModelCalculateBinSha256(void)
 {
     SetPageLockScreen(false);
     AsyncExecute(ModelCalculateBinSha256, NULL, 0);
+}
+
+void GuiModelFormatMicroSd(void)
+{
+    SetPageLockScreen(false);
+    AsyncExecute(ModelFormatMicroSd, NULL, 0);
 }
 
 void GuiModelStopCalculateCheckSum(void)
@@ -1133,14 +1140,14 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
 
     // some scene would need clear secret after check
     if (*param != SIG_SETTING_CHANGE_PASSWORD &&
-        *param != SIG_SETTING_WRITE_PASSPHRASE &&
-        *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE &&
-        *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
-        *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
-        *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&
-        !strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) &&
-        !GuiCheckIfViewOpened(&g_createWalletView) &&
-        !ModelGetPassphraseQuickAccess()) {
+            *param != SIG_SETTING_WRITE_PASSPHRASE &&
+            *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE &&
+            *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
+            *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
+            *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&
+            !strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) &&
+            !GuiCheckIfViewOpened(&g_createWalletView) &&
+            !ModelGetPassphraseQuickAccess()) {
         ClearSecretCache();
     }
     SetLockScreen(enable);
@@ -1443,7 +1450,6 @@ static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen)
     return SUCCESS_CODE;
 }
 
-
 bool ModelGetPassphraseQuickAccess(void)
 {
 #ifdef COMPILE_SIMULATOR
@@ -1455,4 +1461,15 @@ bool ModelGetPassphraseQuickAccess(void)
         return false;
     }
 #endif
+}
+
+static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen)
+{
+    int ret = FormatSdFatfs();
+    if (ret != SUCCESS_CODE) {
+        GuiApiEmitSignal(SIG_SETTING_MICRO_CARD_FORMAT_FAILED, NULL, 0);
+    } else {
+        GuiApiEmitSignal(SIG_SETTING_MICRO_CARD_FORMAT_SUCCESS, NULL, 0);
+    }
+    SetPageLockScreen(true);
 }

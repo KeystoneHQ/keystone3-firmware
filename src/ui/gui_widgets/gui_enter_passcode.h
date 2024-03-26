@@ -43,7 +43,7 @@ typedef struct GuiEnterPasscodeItem {
 void *GuiCreateEnterPasscode(lv_obj_t *parent, lv_event_cb_t Cb, void *param, ENTER_PASSCODE_ENUM method);
 void GuiDelEnterPasscode(void *obj, void *param);
 void GuiEnterPassCodeStatus(GuiEnterPasscodeItem_t *item, bool en);
-void GuiEnterPassLabelInit(void);
+void GuiEnterPassLabelRefresh(void);
 void SwitchPasswordModeHandler(lv_event_t *e);
 void GuiUpdateEnterPasscodeParam(GuiEnterPasscodeItem_t *item, void *param);
 uint8_t GetPassWordStrength(const char *password, uint8_t len);

@@ -15,6 +15,8 @@
 #include "device_setting.h"
 #include "anti_tamper.h"
 #include "screenshot.h"
+#include "lv_i18n_api.h"
+
 
 #define LVGL_FAST_TICK_MS                   5
 #define LVGL_IDLE_TICK_MS                   100
@@ -85,6 +87,7 @@ static void UiDisplayTask(void *argument)
     printf("LV_HOR_RES=%d,LV_VER_RES=%d\r\n", LV_HOR_RES, LV_VER_RES);
     printf("Tampered()=%d\n", Tampered());
     g_reboot = true;
+    LanguageInit();
     GuiFrameOpenView(&g_initView);
     SetLcdBright(GetBright());
 

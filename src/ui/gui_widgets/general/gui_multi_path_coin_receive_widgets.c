@@ -130,7 +130,7 @@ static void SetPathIndex(uint32_t index);
 static int GetSOLMaxAddressIndex(void);
 static int GetEthMaxAddressIndex(void);
 
-static char* GetChangePathItemTitle(uint32_t i);
+static const char* GetChangePathItemTitle(uint32_t i);
 static void GetChangePathLabelHint(char* hint);
 
 static void SetCurrentSelectIndex(uint32_t selectIndex);
@@ -230,15 +230,17 @@ void GuiMultiPathCoinReceiveDeInit(void)
 
 void GuiMultiPathCoinReceiveRefresh(void)
 {
+    char walletTitle[BUFFER_SIZE_32];
     switch (g_multiPathCoinReceiveTileNow) {
     case RECEIVE_TILE_QRCODE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
         switch (g_chainCard) {
         case HOME_WALLET_CARD_ETH:
-            SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_ETH, "Receive ETH");
+            SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_ETH, _("receive_eth_receive_main_title"));
             break;
         case HOME_WALLET_CARD_SOL:
-            SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_SOL, "Receive SOL");
+            snprintf_s(walletTitle, BUFFER_SIZE_32, _("receive_coin_fmt"), "SOL");
+            SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_SOL, walletTitle);
             break;
         default:
             break;
@@ -253,7 +255,7 @@ void GuiMultiPathCoinReceiveRefresh(void)
         break;
     case RECEIVE_TILE_SWITCH_ACCOUNT:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Switch Account");
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_selectIndex = GetCurrentSelectIndex();
         g_showIndex = g_selectIndex / 5 * 5;
@@ -271,7 +273,7 @@ void GuiMultiPathCoinReceiveRefresh(void)
         break;
     case RECEIVE_TILE_CHANGE_PATH:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "Change Derivation Path");
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_selectType = GetPathIndex();
         for (uint32_t i = 0; i < 3; i++) {
@@ -307,7 +309,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, ChangePathHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgPath);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, "Change Derivation Path", &openSans_24);
+    label = GuiCreateLabelWithFont(btn, _("derivation_path_change"), &buttonFont);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 
     btn = lv_btn_create(cont);
@@ -320,7 +322,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, TutorialHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgTutorial);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, "Tutorial", &openSans_24);
+    label = GuiCreateLabelWithFont(btn, _("Tutorial"), &buttonFont);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 }
 
@@ -384,13 +386,13 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         g_multiPathCoinReceiveWidgets.attentionCont = GuiCreateHintBox(parent, 480, 386, false);
         tempObj = GuiCreateImg(g_multiPathCoinReceiveWidgets.attentionCont, &imgInformation);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
-        tempObj = GuiCreateLittleTitleLabel(g_multiPathCoinReceiveWidgets.attentionCont, "Attention");
+        tempObj = GuiCreateLittleTitleLabel(g_multiPathCoinReceiveWidgets.attentionCont, _("receive_btc_alert_title"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
         char hint[BUFFER_SIZE_256];
         GetHint(hint);
-        tempObj = GuiCreateLabelWithFont(g_multiPathCoinReceiveWidgets.attentionCont, hint, &openSans_20);
+        tempObj = GuiCreateLabelWithFont(g_multiPathCoinReceiveWidgets.attentionCont, hint, g_defIllustrateFont);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
-        tempObj = GuiCreateBtn(g_multiPathCoinReceiveWidgets.attentionCont, "Got It");
+        tempObj = GuiCreateBtn(g_multiPathCoinReceiveWidgets.attentionCont, _("receive_btc_alert_button"));
         lv_obj_set_size(tempObj, 122, 66);
         lv_obj_set_style_radius(tempObj, 24, LV_PART_MAIN);
         lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
@@ -426,7 +428,7 @@ static void GuiCreateSwitchAddressWidget(lv_obj_t *parent)
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
     index = 0;
     for (uint32_t i = 0; i < 5; i++) {
-        g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel = GuiCreateLabelWithFont(cont, "", &openSans_24);
+        g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel = GuiCreateLabelWithFont(cont, "", &buttonFont);
         lv_obj_align(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressLabel = GuiCreateNoticeLabel(cont, "");
         lv_obj_align(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressLabel, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
@@ -563,13 +565,19 @@ static void GetChangePathLabelHint(char* hint)
     }
 }
 
-static char* GetChangePathItemTitle(uint32_t i)
+static const char* GetChangePathItemTitle(uint32_t i)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
         return (char *)g_ethPaths[i].title;
     case HOME_WALLET_CARD_SOL:
-        return (char *)g_solPaths[i].title;
+        if (i == 0) {
+            return _("receive_sol_more_t_base_path");
+        } else if (i == 1) {
+            return _("receive_sol_more_t_single_path");
+        } else if (i == 2) {
+            return _("receive_sol_more_t_sub_path");
+        }
     default:
         break;
     }
@@ -667,9 +675,9 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
 
     for (uint32_t i = 0; i < 3; i++) {
-        label = GuiCreateLabelWithFont(cont, GetChangePathItemTitle(i), &openSans_24);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
-        GetPathItemSubTitle(string, i, BUFFER_SIZE_64);
+        label = GuiCreateTextLabel(cont, GetChangePathItemTitle(i));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 26 + 103 * i);
+        GetPathItemSubTitle(string, i, sizeof(string));
         label = GuiCreateLabelWithFontAndTextColor(cont, string, g_defIllustrateFont, 0x919191);
         lv_label_set_recolor(label, true);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
@@ -726,7 +734,7 @@ static void RefreshQrCode(void)
         lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
     lv_label_set_text(g_multiPathCoinReceiveWidgets.addressLabel, addressDataItem.address);
-    lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.addressCountLabel, "Account-%u", (addressDataItem.index + 1));
+    lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.addressCountLabel, "%s-%u", _("account_head"), (addressDataItem.index + 1));
 }
 
 static void RefreshSwitchAccount(void)
@@ -737,7 +745,7 @@ static void RefreshSwitchAccount(void)
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetAddress(index, &addressDataItem);
-        lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "Account-%u", (addressDataItem.index + 1));
+        lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("account_head"), (addressDataItem.index + 1));
         CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {

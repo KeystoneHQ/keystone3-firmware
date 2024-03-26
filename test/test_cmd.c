@@ -2016,6 +2016,7 @@ static void RustTestKeyDerivation(int argc, char *argv[])
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
+
 static void RustGetSyncCompanionAppUR(int argc, char *argv[])
 {
     printf("RustGetSyncCompanionAppUR\r\n");

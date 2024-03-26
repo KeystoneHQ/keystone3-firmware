@@ -78,15 +78,9 @@ void GuiConnectionEntranceWidget(lv_obj_t *parent)
     }
 
     lv_obj_t *titlelabel = GuiCreateTextLabel(parent, _("usb_connection_subtitle"));
-
-    lv_obj_t *contentLabel = lv_label_create(parent);
-    lv_label_set_text(contentLabel, _("usb_connection_desc"));
-    lv_obj_set_style_text_font(contentLabel, g_defIllustrateFont, LV_PART_MAIN);
-    lv_obj_set_style_text_color(contentLabel, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_t *contentLabel = GuiCreateIllustrateLabel(parent, _("usb_connection_desc"));
     lv_obj_set_style_text_opa(contentLabel, LV_OPA_80, LV_PART_MAIN);
-    lv_label_set_long_mode(contentLabel, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(contentLabel, 346);
-
 
     GuiButton_t table[] = {
         {
@@ -108,9 +102,7 @@ void GuiConnectionEntranceWidget(lv_obj_t *parent)
 
     lv_obj_t *button = GuiCreateButton(parent, 456, 178, table, NUMBER_OF_ARRAYS(table),
                                        UsbConnectionHandler, NULL);
-    // lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 0);
-
 }
 
 static void UsbConnectionHandler(lv_event_t *e)

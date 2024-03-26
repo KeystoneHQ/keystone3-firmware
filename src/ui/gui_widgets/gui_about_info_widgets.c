@@ -88,8 +88,7 @@ void GuiAboutInfoWidgetsInit()
 {
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    GuiAddObjFlag(cont, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
     lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLL_ELASTIC);
     lv_obj_set_scrollbar_mode(cont, LV_SCROLLBAR_MODE_OFF);
     g_cont = cont;
@@ -308,14 +307,14 @@ static void LogExportHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         char logName[BUFFER_SIZE_64] = {0};
         char sn[BUFFER_SIZE_32] = {0};
-        char buf[BUFFER_SIZE_128] = "File name:\n";
+        char buff[BUFFER_SIZE_128] = {0};
         GetSerialNumber(sn);
-        snprintf_s(logName, BUFFER_SIZE_64, "0:Log_%s_%d.bin", sn, GetCurrentStampTime());
+        snprintf_s(logName, sizeof(logName), "0:Log_%s_%d.bin", sn, GetCurrentStampTime());
         LogSetLogName(logName);
-        snprintf_s(logName, BUFFER_SIZE_64, "Log_%s_%d.bin", sn, GetCurrentStampTime());
-        strcat(buf, logName);
+        snprintf_s(logName, sizeof(logName), "Log_%s_%d.bin", sn, GetCurrentStampTime());
+        snprintf_s(buff, sizeof(buff), "%s\n%s", _("about_info_export_file_name"), logName);
         g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgSdCardL,
-                          _("about_info_export_to_sdcard"), buf, _("Cancel"), DARK_GRAY_COLOR, _("Export"), ORANGE_COLOR);
+                          _("about_info_export_to_sdcard"), buff, _("Cancel"), DARK_GRAY_COLOR, _("Export"), ORANGE_COLOR);
         lv_obj_t *descLabel = lv_obj_get_child(g_noticeHintBox, 1);
         lv_obj_set_style_text_opa(descLabel, LV_OPA_100, LV_PART_MAIN);
         lv_obj_set_style_text_color(descLabel, ORANGE_COLOR, LV_PART_MAIN);
@@ -328,38 +327,44 @@ static void LogExportHandler(lv_event_t *e)
 
 void GuiCreateVerifyFirmwareInstructionTile(lv_obj_t *parent)
 {
+#define UPDATE_BTN_X_OFFSET (-30)
+    int16_t btnOffset = UPDATE_BTN_X_OFFSET;
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
-    lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+    GuiAddObjFlag(parent, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
     lv_obj_t *label = GuiCreateTitleLabel(parent, _("about_info_verify_source_code_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
 
     label = GuiCreateNoticeLabel(parent, _("about_info_verify_firmware_desc"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 72);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
 
     label = GuiCreateIllustrateLabel(parent, "1");
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 232);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 40);
 
     label = GuiCreateIllustrateLabel(parent, _("about_info_verify_firmware_step1"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 60, 232);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
     lv_label_set_recolor(label, true);
+
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_verify_firmware_qr_link"));
     lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 326);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
 
     label = GuiCreateIllustrateLabel(parent, "2");
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 398);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
 
     label = GuiCreateIllustrateLabel(parent, _("about_info_verify_firmware_step3"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 60, 398);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
     lv_label_set_recolor(label, true);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("Show Checksum"));
+    lv_obj_t *btn = GuiCreateBtn(parent, _("show_checksum"));
     lv_obj_set_size(btn, 408, 66);
-    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
     lv_obj_add_event_cb(btn, StartFirmwareCheckSumHandler, LV_EVENT_CLICKED, NULL);
+    GuiAlignToPrevObj(btn, LV_ALIGN_OUT_BOTTOM_MID, btnOffset, 20);
+
+    lv_obj_t *spacer = GuiCreateSpacer(parent, 24);
+    GuiAlignToPrevObj(spacer, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseVerifyHintBoxHandler, parent);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "");
@@ -370,7 +375,7 @@ static void StartFirmwareCheckSumHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         g_noticeHintBox = GuiCreateAnimHintBox(lv_scr_act(), 480, 400, 76);
-        lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("Calculating"));
+        lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("calculat_modal_title"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
         lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("Cancel"));
         lv_obj_set_size(btn, 408, 66);

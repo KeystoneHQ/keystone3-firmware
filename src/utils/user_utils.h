@@ -23,6 +23,7 @@ void RemoveFormatChar(char *str);
 void ArrayRandom(char *words, char *out, int count);
 int WordsListSlice(char *words, char wordsList[][10], uint8_t wordsCount);
 void ConvertToLowerCase(char *str);
+int FindStringCharPosition(const char *str, const char destChar, int index);
 
 #endif /* _USER_UTILS_H */
 

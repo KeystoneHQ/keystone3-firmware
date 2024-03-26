@@ -19,6 +19,7 @@
 #include "gui_page.h"
 #include "fingerprint_process.h"
 #include "screen_manager.h"
+#include <stdlib.h>
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "keystore.h"
@@ -36,17 +37,17 @@ typedef struct DeviceSettingWidget {
 static DeviceSettingWidget_t g_deviceSetTileView;
 
 typedef struct DeviceSettingItem {
-    lv_obj_t *tile;                                      // setting item tile
-    lv_obj_t *obj;                                       // setting item object
-    char rightLabel[DEVICE_SETTING_RIGHT_LABEL_MAX_LEN]; // right label
-    char midLabel[DEVICE_SETTING_MID_LABEL_MAX_LEN];     // middle label
+    lv_obj_t *tile;                                     // setting item tile
+    lv_obj_t *obj;                                      // setting item object
+    char rightLabel[BUFFER_SIZE_64];                    // right label
+    char midLabel[BUFFER_SIZE_64];                      // middle label
     NVS_RIGHT_BUTTON_ENUM rightBtn;
-    NVS_LEFT_BUTTON_ENUM leftBtn; // right button
-    void *rightParam;             // right button param
-    lv_event_cb_t rightCb;        // right button callback
+    NVS_LEFT_BUTTON_ENUM leftBtn;                       // right button
+    void *rightParam;                                   // right button param
+    lv_event_cb_t rightCb;                              // right button callback
     lv_event_cb_t leftCb;
-    setting_update_cb destructCb;  // destruct callback
-    setting_update_cb structureCb; // structure callback
+    setting_update_cb destructCb;                       // destruct callback
+    setting_update_cb structureCb;                      // structure callback
 } DeviceSettingItem_t;
 static DeviceSettingItem_t g_deviceSettingArray[DEVICE_SETTING_LEVEL_MAX];
 
@@ -58,6 +59,8 @@ static lv_obj_t *g_passphraseLearnMoreCont = NULL;
 static PageWidget_t *g_pageWidget;
 
 static void OpenPassphraseLearnMoreHandler(lv_event_t *e);
+static void *CreateSettingWidgetsButton(lv_obj_t *parent, const char *title, const char *desc,
+                                        const void *src, lv_event_cb_t buttonCb, void *param);
 void GuiShowKeyboardHandler(lv_event_t *e);
 
 void GuiSettingCloseToTargetTileView(uint8_t targetIndex)
@@ -142,7 +145,7 @@ void GuiWalletResetPassWordHintBox(void)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 558);
     label = GuiCreateIllustrateLabel(g_noticeHintBox, _("change_passcode_warning_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 610);
-    lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("Got it"));
+    lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("got_it"));
     lv_obj_align(btn, LV_ALIGN_DEFAULT, 332, 710);
     lv_obj_set_size(btn, 122, 66);
     lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
@@ -224,16 +227,14 @@ static void GuiOpenPassphraseLearnMore()
 
     label = GuiCreateIllustrateLabel(cont, _("passphrase_learn_more_link"));
     lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 0, 0);
 
     lv_obj_t *img = GuiCreateImg(cont, &imgQrcodeTurquoise);
-    lv_obj_align(img, LV_ALIGN_DEFAULT, 120, 3);
+    lv_obj_align_to(img, label, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+    lv_obj_set_width(cont, lv_obj_get_self_width(label) + lv_obj_get_self_width(img) + 10);
 
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseCurrentPage, NULL);
-
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "");
-
 }
 
 static void OpenPassphraseLearnMoreHandler(lv_event_t *e)
@@ -254,14 +255,14 @@ void GuiSettingFullKeyBoardDestruct(void *obj, void *param)
 
 static void GuiWalletAddLimit(lv_obj_t *parent)
 {
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("Add Limited"));
+    lv_obj_t *label = GuiCreateTitleLabel(parent, _("wallet_setting_add_wallet_limit"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateIllustrateLabel(parent, _("You can only add up to a maximum of 3 wallets. Please delete other wallets before adding a new wallet."));
+    label = GuiCreateIllustrateLabel(parent, _("wallet_setting_add_wallet_limit_desc"));
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("Got it"));
+    lv_obj_t *btn = GuiCreateBtn(parent, _("got_it"));
     lv_obj_set_size(btn, 348, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
@@ -278,6 +279,7 @@ static void AboutHandler(lv_event_t *e)
 
 static void GuiSettingEntranceWidget(lv_obj_t *parent)
 {
+#define DEFAULT_ENGLISH_SETTING_DESC_LEN 31
     static uint32_t walletSetting[4] = {
         DEVICE_SETTING_WALLET_SETTING,
         DEVICE_SETTING_SYSTEM_SETTING,
@@ -285,63 +287,35 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
         DEVICE_SETTING_ABOUT
     };
 
-    lv_obj_t *label = GuiCreateTextLabel(parent, _("device_setting_wallet_setting_title"));
-    lv_obj_t *labelDesc = GuiCreateNoticeLabel(parent, _("device_setting_wallet_setting_desc"));
-    lv_obj_t *img = GuiCreateImg(parent, &imgWalletSetting);
-    lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRight);
+    char descBuff[BUFFER_SIZE_128] = {0};
+    const char *desc = _("device_setting_wallet_setting_desc");
+    printf("desc = %s\n", desc);
+    printf("strlen = %d\n", strlen(desc));
+    int descLen = strnlen_s(desc, sizeof(descBuff));
+    printf("desclen = %d\n", descLen);
+    if (descLen > DEFAULT_ENGLISH_SETTING_DESC_LEN) {
+        int len = FindStringCharPosition(desc, '/', 2);
+        printf("len = %d\n", len);
+        strncpy_s(descBuff, sizeof(descBuff) - 3, desc, FindStringCharPosition(desc, '/', 2) - 1);
+        strcat_s(descBuff, sizeof(descBuff), "...");
+    } else {
+        strcpy_s(descBuff, sizeof(descBuff), desc);
+    }
 
-    GuiButton_t table[4] = {
-        {
-            .obj = img,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {24, 24},
-        },
-        {
-            .obj = label,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {76, 24},
-        },
-        {
-            .obj = labelDesc,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {76, 64},
-        },
-        {
-            .obj = imgArrow,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {396, 24},
-        },
-    };
-    lv_obj_t *button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table),
-                                       WalletSettingHandler, &walletSetting[0]);
+    lv_obj_t *button = CreateSettingWidgetsButton(parent, _("device_setting_wallet_setting_title"),
+                       descBuff, &imgWalletSetting, WalletSettingHandler, &walletSetting[0]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 144 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 274 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateTextLabel(parent, _("device_setting_system_setting_title"));
-    labelDesc = GuiCreateNoticeLabel(parent, _("device_setting_system_setting_desc"));
-    img = GuiCreateImg(parent, &imgSystemSetting);
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    table[0].obj = img;
-    table[1].obj = label;
-    table[2].obj = labelDesc;
-    table[3].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table), UnHandler, NULL);
+    button = CreateSettingWidgetsButton(parent, _("device_setting_system_setting_title"),
+                                        _("device_setting_system_setting_desc"), &imgSystemSetting, OpenViewHandler, &g_systemSettingView);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 287 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_event_cb(button, OpenViewHandler, LV_EVENT_CLICKED, &g_systemSettingView);
 
-    label = GuiCreateTextLabel(parent, _("device_setting_connection_title"));
-    labelDesc = GuiCreateNoticeLabel(parent, _("device_setting_connection_desc"));
-    img = GuiCreateImg(parent, &imgConnection);
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    table[0].obj = img;
-    table[1].obj = label;
-    table[2].obj = labelDesc;
-    table[3].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table), UnHandler, NULL);
+    button = CreateSettingWidgetsButton(parent, _("device_setting_connection_title"),
+                                        _("device_setting_connection_desc"), &imgConnection, OpenViewHandler, &g_connectionView);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 413 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_event_cb(button, OpenViewHandler, LV_EVENT_CLICKED, &g_connectionView);
 
     line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 543 - GUI_MAIN_AREA_OFFSET);
@@ -356,16 +330,8 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
         snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E %s#", version);
     }
 
-    label = GuiCreateTextLabel(parent, _("device_setting_about_title"));
-    labelDesc = GuiCreateIllustrateLabel(parent, showString);
-    lv_label_set_recolor(labelDesc, true);
-    img = GuiCreateImg(parent, &imgAbout);
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    table[0].obj = img;
-    table[1].obj = label;
-    table[2].obj = labelDesc;
-    table[3].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table), AboutHandler, NULL);
+    button = CreateSettingWidgetsButton(parent, _("device_setting_about_title"),
+                                        showString, &imgAbout, AboutHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 556 - GUI_MAIN_AREA_OFFSET);
 }
 
@@ -396,47 +362,25 @@ void OpenSinglePhraseHandler(lv_event_t *e)
             DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_24WORDS,
         };
         g_selectAmountHintbox = GuiCreateHintBox(lv_scr_act(), 480, 378, true);
+        uint16_t height = 348;
         lv_obj_add_event_cb(lv_obj_get_child(g_selectAmountHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_selectAmountHintbox);
-        lv_obj_t *label = GuiCreateTextLabel(g_selectAmountHintbox, _("Seed Phrase Word Count"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 30, 451);
-        lv_obj_t *img = GuiCreateImg(g_selectAmountHintbox, &imgClose);
-        GuiButton_t table[2] = {
-            {
-                .obj = img,
-                .align = LV_ALIGN_CENTER,
-                .position = {0, 0},
-            },
-        };
-        lv_obj_t *btn = GuiCreateButton(g_selectAmountHintbox, 36, 36, table, 1, CloseHintBoxHandler, &g_selectAmountHintbox);
-        lv_obj_align(btn, LV_ALIGN_DEFAULT, 408, 449);
 
-        label = GuiCreateTextLabel(g_selectAmountHintbox, _("import_wallet_phrase_12words"));
-        img = GuiCreateImg(g_selectAmountHintbox, &imgArrowRight);
-        table[0].obj = label;
-        table[0].position.x = 24;
-        table[0].position.y = 0;
-        table[0].align = LV_ALIGN_LEFT_MID;
-        table[1].obj = img;
-        table[1].position.x = 411;
-        table[1].position.y = 0;
-        table[1].align = LV_ALIGN_LEFT_MID;
+        lv_obj_t *btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_phrase_24words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[2]);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -12);
 
-        btn = GuiCreateButton(g_selectAmountHintbox, 456, 84, table, NUMBER_OF_ARRAYS(table), SelectPhraseAmountHandler, &walletSetting[0]);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 510);
+        btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_phrase_18words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[1]);
+        GuiAlignToPrevObj(btn, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
 
-        label = GuiCreateTextLabel(g_selectAmountHintbox, _("import_wallet_phrase_18words"));
-        img = GuiCreateImg(g_selectAmountHintbox, &imgArrowRight);
-        table[0].obj = label;
-        table[1].obj = img;
-        btn = GuiCreateButton(g_selectAmountHintbox, 456, 84, table, NUMBER_OF_ARRAYS(table), SelectPhraseAmountHandler, &walletSetting[1]);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 608);
+        btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_phrase_12words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[0]);
+        GuiAlignToPrevObj(btn, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
 
-        label = GuiCreateTextLabel(g_selectAmountHintbox, _("import_wallet_phrase_24words"));
-        img = GuiCreateImg(g_selectAmountHintbox, &imgArrowRight);
-        table[0].obj = label;
-        table[1].obj = img;
-        btn = GuiCreateButton(g_selectAmountHintbox, 456, 84, table, NUMBER_OF_ARRAYS(table), SelectPhraseAmountHandler, &walletSetting[2]);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 704);
+        lv_obj_t *closeBtn = GuiCreateImgButton(g_selectAmountHintbox,  &imgClose, 64, CloseHintBoxHandler, &g_selectAmountHintbox);
+        GuiAlignToPrevObj(closeBtn, LV_ALIGN_OUT_TOP_RIGHT, -10, -12);
+
+        lv_obj_t *label = GuiCreateNoticeLabel(g_selectAmountHintbox, _("seed_check_word_select"));
+        lv_obj_align_to(label, btn, LV_ALIGN_OUT_TOP_LEFT, 26, -30);
+        height += lv_obj_get_self_height(label);
+        GuiHintBoxResize(g_selectAmountHintbox, height);
     }
 }
 
@@ -450,41 +394,24 @@ void OpenSharePhraseHandler(lv_event_t *e)
             DEVICE_SETTING_RECOVERY_SHARE_PHRASE_20WORDS,
             DEVICE_SETTING_RECOVERY_SHARE_PHRASE_33WORDS
         };
+
         g_selectAmountHintbox = GuiCreateHintBox(lv_scr_act(), 480, 282, true);
+        uint16_t height = 252;
         lv_obj_add_event_cb(lv_obj_get_child(g_selectAmountHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_selectAmountHintbox);
-        lv_obj_t *label = GuiCreateTextLabel(g_selectAmountHintbox, _("Seed Phrase Word Count"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 30, 546);
-        lv_obj_t *img = GuiCreateImg(g_selectAmountHintbox, &imgClose);
-        GuiButton_t table[2] = {
-            {
-                .obj = img,
-                .align = LV_ALIGN_CENTER,
-                .position = {0, 0},
-            },
-        };
-        lv_obj_t *btn = GuiCreateButton(g_selectAmountHintbox, 36, 36, table, 1, CloseHintBoxHandler, &g_selectAmountHintbox);
-        lv_obj_align(btn, LV_ALIGN_DEFAULT, 408, 545);
 
-        label = GuiCreateTextLabel(g_selectAmountHintbox, _("import_wallet_ssb_20words"));
-        img = GuiCreateImg(g_selectAmountHintbox, &imgArrowRight);
-        table[0].obj = label;
-        table[0].position.x = 24;
-        table[0].position.y = 0;
-        table[0].align = LV_ALIGN_LEFT_MID;
-        table[1].obj = img;
-        table[1].position.x = 411;
-        table[1].position.y = 0;
-        table[1].align = LV_ALIGN_LEFT_MID;
+        lv_obj_t *btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_ssb_33words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[1]);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -12);
 
-        btn = GuiCreateButton(g_selectAmountHintbox, 456, 84, table, NUMBER_OF_ARRAYS(table), SelectPhraseAmountHandler, &walletSetting[0]);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 607);
+        btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_ssb_20words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[0]);
+        GuiAlignToPrevObj(btn, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
 
-        label = GuiCreateTextLabel(g_selectAmountHintbox, _("import_wallet_ssb_33words"));
-        img = GuiCreateImg(g_selectAmountHintbox, &imgArrowRight);
-        table[0].obj = label;
-        table[1].obj = img;
-        btn = GuiCreateButton(g_selectAmountHintbox, 456, 84, table, NUMBER_OF_ARRAYS(table), SelectPhraseAmountHandler, &walletSetting[1]);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 703);
+        lv_obj_t *closeBtn = GuiCreateImgButton(g_selectAmountHintbox,  &imgClose, 64, CloseHintBoxHandler, &g_selectAmountHintbox);
+        GuiAlignToPrevObj(closeBtn, LV_ALIGN_OUT_TOP_RIGHT, -10, -12);
+
+        lv_obj_t *label = GuiCreateNoticeLabel(g_selectAmountHintbox, _("seed_check_word_select"));
+        lv_obj_align_to(label, btn, LV_ALIGN_OUT_TOP_LEFT, 26, -30);
+        height += lv_obj_get_self_height(label);
+        GuiHintBoxResize(g_selectAmountHintbox, height);
     }
 }
 
@@ -507,7 +434,7 @@ static void OpenDelWalletHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         g_delWalletHintbox = GuiCreateHintBox(lv_event_get_user_data(e), 480, 132, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_delWalletHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_delWalletHintbox);
-        lv_obj_t *label = GuiCreateTextLabel(g_delWalletHintbox, _("Delete Wallet"));
+        lv_obj_t *label = GuiCreateTextLabel(g_delWalletHintbox, _("wallet_settings_delete_button"));
         lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
         lv_obj_t *img = GuiCreateImg(g_delWalletHintbox, &imgDel);
         GuiButton_t table[2] = {
@@ -652,7 +579,7 @@ void GuiSettingInit(void)
     g_deviceSetTileView.cont = cont;
     g_deviceSettingArray[g_deviceSetTileView.currentTile].tile = tile;
     g_deviceSettingArray[g_deviceSetTileView.currentTile].obj = NULL;
-    strcpy_s(g_deviceSettingArray[g_deviceSetTileView.currentTile].midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("device_setting_mid_btn"));
+    strcpy_s(g_deviceSettingArray[g_deviceSetTileView.currentTile].midLabel, BUFFER_SIZE_64, _("device_setting_mid_btn"));
     g_deviceSettingArray[g_deviceSetTileView.currentTile].destructCb = NULL;
     g_deviceSettingArray[g_deviceSetTileView.currentTile].structureCb = NULL;
     g_deviceSettingArray[g_deviceSetTileView.currentTile].rightBtn = NVS_RIGHT_BUTTON_BUTT;
@@ -693,8 +620,8 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
 {
     lv_obj_t *tile = NULL;
     static uint8_t currTileIndex = DEVICE_SETTING;
-    char rightLabel[16] = {0};
-    char midLabel[32] = {0};
+    char rightLabel[BUFFER_SIZE_64] = {0};
+    char midLabel[BUFFER_SIZE_64] = {0};
     lv_event_cb_t rightCb = NULL;
     lv_event_cb_t leftCb = ReturnHandler;
     NVS_RIGHT_BUTTON_ENUM rightBtn = NVS_RIGHT_BUTTON_BUTT;
@@ -708,7 +635,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
     case DEVICE_SETTING_WALLET_SETTING:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         GuiWalletSetWidget(tile);
-        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("wallet_settings_mid_btn"));
+        strcpy_s(midLabel, sizeof(midLabel), _("wallet_settings_mid_btn"));
         rightBtn = NVS_BAR_MORE_INFO;
         rightCb = OpenDelWalletHandler;
         destructCb = GuiSettingDestruct;
@@ -724,14 +651,14 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
     case DEVICE_SETTING_FINGERPRINT_PASSCODE:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         GuiWalletSetFingerPassCodeWidget(tile);
-        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("fingerprint_passcode_mid_btn"));
+        strcpy_s(midLabel, sizeof(midLabel), _("fingerprint_passcode_mid_btn"));
         break;
 
     // finger module
     case DEVICE_SETTING_FINGER_MANAGER:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         GuiWalletFingerManagerWidget(tile);
-        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, "Fingerprint Settings");
+        strcpy_s(midLabel, sizeof(midLabel), _("fingerprint_passcode_fingerprint_setting"));
         structureCb = GuiFingerMangerStructureCb;
         destructCb = GuiFingerManagerDestruct;
         break;
@@ -759,7 +686,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
     case DEVICE_SETTING_FINGER_SET_PATTERN: // todo
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         GuiWalletFingerManagerWidget(tile);
-        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("fingerprint_passcode_mid_btn"));
+        strcpy_s(midLabel, sizeof(midLabel), _("fingerprint_passcode_mid_btn"));
         break;
     // reset passcode
     case DEVICE_SETTING_RESET_PASSCODE_VERIFY:
@@ -805,7 +732,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         currTileIndex = DEVICE_SETTING_DEL_WALLET;
-        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("change_passcode_mid_btn"));
+        strcpy_s(midLabel, sizeof(midLabel), _("change_passcode_mid_btn"));
         g_verifyCode = GuiCreateEnterPasscode(tile, NULL, &currTileIndex, ENTER_PASSCODE_VERIFY_PIN);
         break;
     case DEVICE_SETTING_DEL_WALLET_VERIFY:
@@ -819,7 +746,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
         GuiWalletPassphrase(tile);
         rightBtn = NVS_BAR_QUESTION_MARK;
         rightCb = OpenPassphraseLearnMoreHandler;
-        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("wallet_setting_passphrase"));
+        strcpy_s(midLabel, sizeof(midLabel), _("wallet_setting_passphrase"));
         break;
     case DEVICE_SETTING_PASSPHRASE_VERIFY:
         printf("wallet_setting_passphrase...\n");
@@ -828,51 +755,51 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
         destructCb = GuiDelEnterPasscode;
         g_verifyCode = GuiCreateEnterPasscode(tile, NULL, &currTileIndex, ENTER_PASSCODE_VERIFY_PIN);
         obj = g_verifyCode;
-        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("change_passcode_mid_btn"));
+        strcpy_s(midLabel, sizeof(midLabel), _("change_passcode_mid_btn"));
         break;
     case DEVICE_SETTING_PASSPHRASE_ENTER:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         GuiWalletPassphraseEnter(tile);
-        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("wallet_setting_passphrase"));
+        strcpy_s(midLabel, sizeof(midLabel), _("wallet_setting_passphrase"));
         break;
 
     // RECOVERY PHRASE CHECK
     case DEVICE_SETTING_RECOVERY_METHOD_CHECK:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
-        strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, _("seed_check_mid_btn"));
+        strcpy_s(midLabel, sizeof(midLabel), _("seed_check_mid_btn"));
         GuiWalletRecoveryMethodCheck(tile);
         break;
     case DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_12WORDS:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
-        strcpy_s(rightLabel, DEVICE_SETTING_RIGHT_LABEL_MAX_LEN, _("import_wallet_phrase_clear_btn"));
+        strcpy_s(rightLabel, sizeof(rightLabel), _("import_wallet_phrase_clear_btn"));
         rightBtn = NVS_BAR_WORD_RESET;
         obj = GuiWalletRecoverySinglePhrase(tile, 12);
         destructCb = GuiWalletRecoveryDestruct;
         break;
     case DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_18WORDS:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
-        strcpy_s(rightLabel, DEVICE_SETTING_RIGHT_LABEL_MAX_LEN, _("import_wallet_phrase_clear_btn"));
+        strcpy_s(rightLabel, sizeof(rightLabel), _("import_wallet_phrase_clear_btn"));
         rightBtn = NVS_BAR_WORD_RESET;
         obj = GuiWalletRecoverySinglePhrase(tile, 18);
         destructCb = GuiWalletRecoveryDestruct;
         break;
     case DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_24WORDS:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
-        strcpy_s(rightLabel, DEVICE_SETTING_RIGHT_LABEL_MAX_LEN, _("import_wallet_phrase_clear_btn"));
+        strcpy_s(rightLabel, sizeof(rightLabel), _("import_wallet_phrase_clear_btn"));
         rightBtn = NVS_BAR_WORD_RESET;
         obj = GuiWalletRecoverySinglePhrase(tile, 24);
         destructCb = GuiWalletRecoveryDestruct;
         break;
     case DEVICE_SETTING_RECOVERY_SHARE_PHRASE_20WORDS:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
-        strcpy_s(rightLabel, DEVICE_SETTING_RIGHT_LABEL_MAX_LEN, _("import_wallet_phrase_clear_btn"));
+        strcpy_s(rightLabel, sizeof(rightLabel), _("import_wallet_phrase_clear_btn"));
         rightBtn = NVS_BAR_WORD_RESET;
         obj = GuiWalletRecoverySharePhrase(tile, 20);
         destructCb = GuiWalletRecoveryDestruct;
         break;
     case DEVICE_SETTING_RECOVERY_SHARE_PHRASE_33WORDS:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
-        strcpy_s(rightLabel, DEVICE_SETTING_RIGHT_LABEL_MAX_LEN, _("import_wallet_phrase_clear_btn"));
+        strcpy_s(rightLabel, sizeof(rightLabel), _("import_wallet_phrase_clear_btn"));
         rightBtn = NVS_BAR_WORD_RESET;
         obj = GuiWalletRecoverySharePhrase(tile, 33);
         destructCb = GuiWalletRecoveryDestruct;
@@ -888,7 +815,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
         break;
     case NVS_BAR_WORD_RESET:
         rightCb = ResetSeedCheckImportHandler;
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("import_wallet_phrase_clear_btn"));
         SetRightBtnCb(g_pageWidget->navBarWidget, rightCb, NULL);
         break;
     case NVS_RIGHT_BUTTON_BUTT:
@@ -904,8 +831,8 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
     lv_obj_set_tile_id(g_deviceSetTileView.tileView, currentTile, 0, LV_ANIM_OFF);
     g_deviceSettingArray[currentTile].tile = tile;
     g_deviceSettingArray[currentTile].rightCb = rightCb;
-    strcpy_s(g_deviceSettingArray[currentTile].rightLabel, DEVICE_SETTING_RIGHT_LABEL_MAX_LEN, rightLabel);
-    strcpy_s(g_deviceSettingArray[currentTile].midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, midLabel);
+    strcpy_s(g_deviceSettingArray[currentTile].rightLabel, sizeof(rightLabel), rightLabel);
+    strcpy_s(g_deviceSettingArray[currentTile].midLabel, sizeof(midLabel), midLabel);
     g_deviceSettingArray[currentTile].obj = obj;
     g_deviceSettingArray[currentTile].destructCb = destructCb;
     g_deviceSettingArray[currentTile].structureCb = structureCb;
@@ -919,8 +846,8 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
 int8_t GuiDevSettingPrevTile(uint8_t tileIndex)
 {
     uint8_t currentTile = g_deviceSetTileView.currentTile;
-    char rightLabel[16] = {0};
-    char midLabel[32] = {0};
+    char rightLabel[BUFFER_SIZE_64] = {0};
+    char midLabel[BUFFER_SIZE_64] = {0};
     lv_event_cb_t rightCb = NULL;
     NVS_RIGHT_BUTTON_ENUM rightBtn = NVS_RIGHT_BUTTON_BUTT;
     NVS_LEFT_BUTTON_ENUM leftBtn = NVS_BAR_RETURN;
@@ -943,8 +870,8 @@ int8_t GuiDevSettingPrevTile(uint8_t tileIndex)
     }
 
     rightCb = g_deviceSettingArray[currentTile].rightCb;
-    strcpy_s(rightLabel, DEVICE_SETTING_RIGHT_LABEL_MAX_LEN, g_deviceSettingArray[currentTile].rightLabel);
-    strcpy_s(midLabel, DEVICE_SETTING_MID_LABEL_MAX_LEN, g_deviceSettingArray[currentTile].midLabel);
+    strcpy_s(rightLabel, BUFFER_SIZE_64, g_deviceSettingArray[currentTile].rightLabel);
+    strcpy_s(midLabel, BUFFER_SIZE_64, g_deviceSettingArray[currentTile].midLabel);
     rightBtn = g_deviceSettingArray[currentTile].rightBtn;
     leftBtn = g_deviceSettingArray[currentTile].leftBtn;
 
@@ -999,4 +926,35 @@ int GuiSettingGetCurrentTileIndex(void)
 lv_obj_t *GuiSettingGetCurrentCont(void)
 {
     return lv_obj_get_parent(g_deviceSetTileView.cont);
+}
+
+static void *CreateSettingWidgetsButton(lv_obj_t *parent, const char *title, const char *desc,
+                                        const void *src, lv_event_cb_t buttonCb, void *param)
+{
+    lv_obj_t *label = GuiCreateTextLabel(parent, title);
+    lv_obj_t *labelDesc = GuiCreateNoticeLabel(parent, desc);
+    lv_label_set_recolor(labelDesc, true);
+    lv_obj_t *img = GuiCreateImg(parent, src);
+    lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRight);
+
+    GuiButton_t table[4] = {
+        {
+            .obj = img,
+            .align = LV_ALIGN_DEFAULT,
+            .position = {24, 24},
+        }, {
+            .obj = label,
+            .align = LV_ALIGN_DEFAULT,
+            .position = {76, 24},
+        }, {
+            .obj = labelDesc,
+            .align = LV_ALIGN_DEFAULT,
+            .position = {76, 64},
+        }, {
+            .obj = imgArrow,
+            .align = LV_ALIGN_DEFAULT,
+            .position = {396, 24},
+        }
+    };
+    return GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table), buttonCb, param);
 }

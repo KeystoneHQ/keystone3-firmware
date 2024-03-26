@@ -614,7 +614,7 @@ static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen
     for (int i = 0; i < memberCnt; i++) {
         memset_s(wordsList[i], strlen(wordsList[i]), 0, strlen(wordsList[i]));
         // todo There is a problem with SRAM FREE here
-        free(wordsList[i]);
+        SRAM_FREE(wordsList[i]);
     }
     retData = SUCCESS_CODE;
     GuiApiEmitSignal(SIG_CREATE_SHARE_UPDATE_MNEMONIC, &retData, sizeof(retData));
@@ -672,7 +672,7 @@ static int32_t ModelGenerateSlip39EntropyWithDiceRolls(const void *inData, uint3
     for (int i = 0; i < memberCnt; i++) {
         memset_s(wordsList[i], strnlen_s(wordsList[i], MNEMONIC_MAX_LEN), 0, strnlen_s(wordsList[i], MNEMONIC_MAX_LEN));
         // todo There is a problem with SRAM FREE here
-        free(wordsList[i]);
+        SRAM_FREE(wordsList[i]);
     }
     retData = SUCCESS_CODE;
     GuiApiEmitSignal(SIG_CREATE_SHARE_UPDATE_MNEMONIC, &retData, sizeof(retData));
@@ -1028,7 +1028,8 @@ static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
     uint8_t *accountIndex = (uint8_t *)inData;
 
     // GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_FAIL, &ret, sizeof(ret));
-    GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_PASS, &ret, sizeof(ret));
+    char *authCode = "12345Yyq";
+    GuiEmitSignal(SIG_WEB_AUTH_CODE_SUCCESS, authCode, strlen(authCode));
 #endif
     SetLockScreen(enable);
     return SUCCESS_CODE;
@@ -1367,8 +1368,10 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
     SecretCacheSetChecksum(hash);
     GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
 #else
+    uint8_t percent = 100;
     char *hash = "131b3a1e9314ba076f8e459a1c4c6713eeb38862f3eb6f9371360aa234cdde1f";
     SecretCacheSetChecksum(hash);
+    GuiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
 #endif
     return SUCCESS_CODE;
 }

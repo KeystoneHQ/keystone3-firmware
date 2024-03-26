@@ -183,10 +183,11 @@ void GuiWriteSeWidget(lv_obj_t *parent)
 {
     lv_obj_t *label = GuiCreateTextLabel(parent, _("create_wallet_generating_title"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 403 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
-    label = GuiCreateIllustrateLabel(parent, _("create_wallet_generating_desc"));
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 457 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
+    label = GuiCreateNoticeLabel(parent, _("create_wallet_generating_desc"));
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 18);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 }
 
 void DuplicateShareHandler(lv_event_t *e)
@@ -235,15 +236,11 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         GuiFrameOpenView(&g_homeView);
         GuiUpdateOldAccountIndex();
     } else {
-        int height = 370;
-        lv_obj_t *desc = NULL;
-        lv_obj_t *title = NULL;
         lv_event_cb_t cb = CloseCurrentUserDataHandler;
         const char *titleText = _("error_box_invalid_seed_phrase");
         const char *descText = _("error_box_invalid_seed_phrase_desc");
         switch (errCode) {
         case ERR_KEYSTORE_MNEMONIC_REPEAT:
-            height = 400;
             titleText = _("error_box_duplicated_seed_phrase");
             descText = _("error_box_duplicated_seed_phrase_desc");
             cb = DuplicateShareHandler;
@@ -251,87 +248,54 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         case ERR_KEYSTORE_MNEMONIC_INVALID:
             break;
         case ERR_KEYSTORE_SAVE_LOW_POWER:
-            height = 400;
             titleText = _("error_box_low_power");
             descText = _("error_box_low_power_desc");
             break;
         }
 
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-        g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, height, false);
-        lv_obj_t *btn = GuiCreateBtn(g_hintBox, _("OK"));
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-        lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
+        g_hintBox = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
+        lv_obj_t *btn = GuiGetHintBoxRightBtn(g_hintBox);
         lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, NULL);
-
-        desc = GuiCreateIllustrateLabel(g_hintBox, descText);
-        lv_obj_align_to(desc, btn, LV_ALIGN_OUT_TOP_LEFT, -320, -40);
-
-        title = GuiCreateLittleTitleLabel(g_hintBox, titleText);
-        lv_obj_align_to(title, desc, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
-
-        lv_obj_t *img = GuiCreateImg(g_hintBox, &imgFailed);
-        lv_obj_align_to(img, title, LV_ALIGN_OUT_TOP_LEFT, 0, -24);
     }
 }
 
 void *GuiCreateErrorCodeHintbox(int32_t errCode, lv_obj_t **param)
 {
     g_hintParam = param;
-    int height = 370;
-    lv_obj_t *desc = NULL;
-    lv_obj_t *title = NULL;
     const char *titleText = _("error_box_invalid_seed_phrase");
     const char *descText = _("error_box_invalid_seed_phrase_desc");
     switch (errCode) {
     case ERR_KEYSTORE_MNEMONIC_REPEAT:
-        height = 400;
         titleText = _("error_box_duplicated_seed_phrase");
         descText = _("error_box_duplicated_seed_phrase_desc");
         break;
     case ERR_KEYSTORE_MNEMONIC_INVALID:
         break;
     case ERR_KEYSTORE_SAVE_LOW_POWER:
-        height = 400;
         titleText = _("error_box_low_power");
         descText = _("error_box_low_power_desc");
         break;
     case ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET:
-        height = 400;
         titleText = (char *)_("error_box_mnemonic_not_match_wallet");
         descText = (char *)_("error_box_mnemonic_not_match_wallet_desc");
         break;
     case ERR_UPDATE_FIRMWARE_NOT_DETECTED:
-        height = 400;
         titleText = _("firmware_update_sd_not_detected_title");
         descText = _("firmware_update_sd_not_detected_desc");
         break;
     case ERR_UPDATE_SDCARD_NOT_DETECTED:
-        height = 400;
         titleText = _("firmware_update_sd_failed_access_title");
         descText = _("firmware_update_sd_failed_access_desc");
         break;
     case ERR_UPDATE_NO_UPGRADABLE_FIRMWARE:
-        height = 400;
         titleText = _("firmware_update_no_upgradable_firmware_title");
         descText = _("firmware_update_no_upgradable_firmware_desc");
         break;
     }
 
-    lv_obj_t *cont = GuiCreateHintBox(lv_scr_act(), 480, height, false);
-    lv_obj_t *btn = GuiCreateBtn(cont, _("OK"));
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-    lv_obj_add_event_cb(btn, CloseWaringPageHandler, LV_EVENT_CLICKED, cont);
-
-    desc = GuiCreateIllustrateLabel(cont, descText);
-    lv_obj_align_to(desc, btn, LV_ALIGN_OUT_TOP_LEFT, -320, -40);
-
-    title = GuiCreateLittleTitleLabel(cont, titleText);
-    lv_obj_align_to(title, desc, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
-
-    lv_obj_t *img = GuiCreateImg(cont, &imgFailed);
-    lv_obj_align_to(img, title, LV_ALIGN_OUT_TOP_LEFT, 0, -24);
-
+    lv_obj_t *cont = GuiCreateConfirmHintBox(lv_scr_act(),
+                     &imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
+    lv_obj_add_event_cb(GuiGetHintBoxRightBtn(cont), CloseWaringPageHandler, LV_EVENT_CLICKED, cont);
     return cont;
 }

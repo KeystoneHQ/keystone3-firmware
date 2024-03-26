@@ -86,17 +86,16 @@ void GuiWalletRecoveryMethodCheck(lv_obj_t *parent)
         lv_obj_t *imgLock = GuiCreateImg(cont, &imgWalletLock);
         lv_obj_align(imgLock, LV_ALIGN_TOP_MID, 0, 36);
 
-        lv_obj_t *disableTitle = GuiCreateTextLabel(cont, _("Disable Passphrase Wallet"));
+        lv_obj_t *disableTitle = GuiCreateTextLabel(cont, _("seed_check_passphrase_title"));
         lv_obj_align(disableTitle, LV_ALIGN_TOP_MID, 0, 140);
         lv_obj_set_style_text_align(disableTitle, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
-        lv_obj_t *disableDesc = GuiCreateNoticeLabel(cont, "You are presently using a passphrase-protected wallet. Prior to proceeding with the seed phrase verification process, please restart your device without entering the passphrase.");
-        lv_obj_align(disableDesc, LV_ALIGN_TOP_MID, 0, 188);
+        lv_obj_t *disableDesc = GuiCreateNoticeLabel(cont, _("seed_check_passphrase_notice"));
         lv_obj_set_style_text_align(disableDesc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
-        lv_label_set_long_mode(disableDesc, LV_LABEL_LONG_WRAP);
         lv_obj_set_width(disableDesc, 336);
+        lv_obj_align_to(disableDesc, disableTitle, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
-        lv_obj_t *restartLabel = GuiCreateTextLabel(cont, _("Restart Now"));
+        lv_obj_t *restartLabel = GuiCreateTextLabel(cont, _("Restart_now"));
         lv_obj_set_style_text_color(restartLabel, ORANGE_COLOR, LV_PART_MAIN);
         GuiButton_t restartTable[] = {
             {
@@ -105,8 +104,9 @@ void GuiWalletRecoveryMethodCheck(lv_obj_t *parent)
                 .position = {0, 0},
             },
         };
-        button = GuiCreateButton(cont, 198, 66, restartTable, NUMBER_OF_ARRAYS(restartTable), RebootHandler, NULL);
-        lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -26);
+        button = GuiCreateButton(cont, lv_obj_get_self_width(restartLabel) + 60, 66, restartTable, NUMBER_OF_ARRAYS(restartTable), RebootHandler, NULL);
+        lv_obj_align_to(button, disableDesc, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+
         return;
     }
     static uint8_t walletSetting[2] = {

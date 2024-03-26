@@ -42,6 +42,7 @@
 #include "usb_task.h"
 #else
 #include "simulator_mock_define.h"
+#include "simulator_model.h"
 #endif
 
 #define SECTOR_SIZE                         4096
@@ -381,7 +382,6 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t ret;
-#ifndef COMPILE_SIMULATOR
     uint8_t *entropy;
     size_t entropyInLen;
     size_t entropyOutLen;
@@ -433,11 +433,6 @@ if (ret == SUCCESS_CODE)
 }
 memset_s(entropy, entropyInLen, 0, entropyInLen);
 SRAM_FREE(entropy);
-#else
-    ret = ERR_KEYSTORE_MNEMONIC_REPEAT;
-    // GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));
-    GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, NULL, 0);
-#endif
 SetLockScreen(enable);
 return 0;
 }

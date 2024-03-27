@@ -597,7 +597,7 @@ static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
     uint16_t id;
     uint8_t ie;
     entropyLen = (slip39->wordCnt == 20) ? 16 : 32;
-    char *wordsList[memberCnt];
+    char *wordsList[slip39->memberCnt];
     if (isDiceRoll) {
         memcpy_s(entropy, sizeof(entropy), SecretCacheGetDiceRollHash(), entropyLen);
     } else {

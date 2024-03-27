@@ -137,10 +137,14 @@ static void FormatMicroSDHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeWindow)
-        g_noticeWindow = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
-        lv_obj_t *title = GuiCreateTextLabel(g_noticeWindow, _("sdcard_formating"));
-        lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -76);
-        GuiModelFormatMicroSd();
+        if (SdCardInsert()) {
+            g_noticeWindow = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
+            lv_obj_t *title = GuiCreateTextLabel(g_noticeWindow, _("sdcard_formating"));
+            lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -76);
+            GuiModelFormatMicroSd();
+        } else {
+            g_noticeWindow = GuiCreateErrorCodeHintbox(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);
+        }
     }
 }
 

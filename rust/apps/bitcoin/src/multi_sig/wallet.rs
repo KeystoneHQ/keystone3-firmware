@@ -123,11 +123,7 @@ pub fn create_wallet(
     Ok(wallet)
 }
 
-pub fn parse_wallet_config(
-    content: &str,
-    xfp: &str,
-    network: Network,
-) -> Result<MultiSigWalletConfig, BitcoinError> {
+fn _parse_plain_wallet_config(content: &str) -> Result<MultiSigWalletConfig, BitcoinError> {
     let mut wallet = MultiSigWalletConfig::default();
 
     for line in content.lines() {
@@ -155,6 +151,15 @@ pub fn parse_wallet_config(
             }
         }
     }
+    Ok(wallet)
+}
+
+pub fn parse_wallet_config(
+    content: &str,
+    xfp: &str,
+    network: Network,
+) -> Result<MultiSigWalletConfig, BitcoinError> {
+    let mut wallet = _parse_plain_wallet_config(content)?;
     verify_wallet_config(&wallet, xfp, &network)?;
     calculate_wallet_verify_code(&mut wallet)?;
     Ok(wallet)
@@ -230,6 +235,17 @@ pub fn import_wallet_by_ur(
         .map_err(|e| BitcoinError::MultiSigWalletImportXpubError(e.to_string()))?;
 
     parse_wallet_config(&data, xfp, network)
+}
+
+pub fn is_valid_wallet_config(bytes: &Bytes) -> bool {
+    if let Ok(d) = String::from_utf8(bytes.get_bytes())
+        .map_err(|e| BitcoinError::MultiSigWalletImportXpubError(e.to_string()))
+    {
+        if let Ok(_) = _parse_plain_wallet_config(&d) {
+            return true;
+        }
+    }
+    false
 }
 
 fn parse_and_set_policy(

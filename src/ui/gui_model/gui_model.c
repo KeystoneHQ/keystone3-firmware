@@ -142,10 +142,10 @@ void GuiModelBip39ForgetPassword(uint8_t wordsCnt)
     AsyncExecute(ModelBip39ForgetPass, &wordsCnt, sizeof(wordsCnt));
 }
 
-void GuiModelSlip39WriteSe(void)
+void GuiModelSlip39WriteSe(uint8_t wordsCnt)
 {
     GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
-    AsyncExecute(ModelSlip39WriteEntropy, NULL, 0);
+    AsyncExecute(ModelSlip39WriteEntropy, &wordsCnt, sizeof(wordsCnt));
 }
 
 void GuiModelSlip39CalWriteSe(Slip39Data_t slip39)
@@ -586,121 +586,52 @@ static int32_t ModelComparePubkey(bool bip39, uint8_t *ems, uint8_t emsLen, uint
     return ret;
 }
 
-// slip39 generate
-static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen)
+static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    int32_t retData;
     uint8_t entropy[32], ems[32];
-    uint32_t memberCnt, threShold, entropyLen = 32;
-#ifndef COMPILE_SIMULATOR
+    uint32_t entropyLen;
     uint16_t id;
     uint8_t ie;
-    Slip39Data_t *slip39 = (Slip39Data_t *)inData;
-    memberCnt = slip39->memberCnt;
-    threShold = slip39->threShold;
+    entropyLen = (slip39->wordCnt == 20) ? 16 : 32;
     char *wordsList[memberCnt];
-    GenerateEntropy(entropy, 32, SecretCacheGetNewPassword());
+    if (isDiceRoll) {
+        memcpy_s(entropy, sizeof(entropy), SecretCacheGetDiceRollHash(), entropyLen);
+    } else {
+        GenerateEntropy(entropy, entropyLen, SecretCacheGetNewPassword());
+    }
+    PrintArray("entropy", entropy, entropyLen);
     SecretCacheSetEntropy(entropy, entropyLen);
-    GetSlip39MnemonicsWords(entropy, ems, 33, memberCnt, threShold, wordsList, &id, &ie);
+    GetSlip39MnemonicsWords(entropy, ems, slip39->wordCnt, slip39->memberCnt, slip39->threShold, wordsList, &id, &ie);
     SecretCacheSetEms(ems, entropyLen);
     SecretCacheSetIdentifier(id);
     SecretCacheSetIteration(ie);
-    for (int i = 0; i < memberCnt; i++) {
+    for (int i = 0; i < slip39->memberCnt; i++) {
         SecretCacheSetSlip39Mnemonic(wordsList[i], i);
     }
 
-    for (int i = 0; i < memberCnt; i++) {
+    for (int i = 0; i < slip39->memberCnt; i++) {
+        printf("%s\n", wordsList[i]);
         memset_s(wordsList[i], strlen(wordsList[i]), 0, strlen(wordsList[i]));
-        // todo There is a problem with SRAM FREE here
         SRAM_FREE(wordsList[i]);
     }
-    retData = SUCCESS_CODE;
-    GuiApiEmitSignal(SIG_CREATE_SHARE_UPDATE_MNEMONIC, &retData, sizeof(retData));
-#else
-#define SRAM_MNEMONIC_LEN 33 * 11
-    memberCnt = 3;
-    char *mnemonic = NULL;
-    mnemonic = SRAM_MALLOC(SRAM_MNEMONIC_LEN);
-    memset(mnemonic, 0, SRAM_MNEMONIC_LEN);
-    uint16_t buffLen = 0;
-    for (int i = 0; i < memberCnt; i++) {
-        for (int j = 0; j < 33; j++) {
-            strcat(mnemonic, wordlist[lv_rand(0, 2047)]);
-            if (j == 32) {
-                break;
-            }
-            mnemonic[strlen(mnemonic)] = ' ';
-        }
-        SecretCacheSetSlip39Mnemonic(mnemonic, i);
-        memset(mnemonic, 0, SRAM_MNEMONIC_LEN);
-    }
-    retData = SUCCESS_CODE;
-    GuiEmitSignal(SIG_CREATE_SHARE_UPDATE_MNEMONIC, NULL, 0);
-#endif
+    GuiApiEmitSignal(SIG_CREATE_SHARE_UPDATE_MNEMONIC, NULL, 0);
     SetLockScreen(enable);
     return SUCCESS_CODE;
+}
+
+// slip39 generate
+static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen)
+{
+    return Slip39CreateGenerate((Slip39Data_t *)inData, false);
 }
 
 // slip39 generate
 static int32_t ModelGenerateSlip39EntropyWithDiceRolls(const void *inData, uint32_t inDataLen)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    int32_t retData;
-    uint8_t entropy[32], ems[32], *hash;
-    uint32_t memberCnt, threShold, entropyLen = 32;
-#ifndef COMPILE_SIMULATOR
-    uint16_t id;
-    uint8_t ie;
-    Slip39Data_t *slip39 = (Slip39Data_t *)inData;
-    memberCnt = slip39->memberCnt;
-    threShold = slip39->threShold;
-    char *wordsList[memberCnt];
-    hash = SecretCacheGetDiceRollHash();
-    memcpy_s(entropy, sizeof(entropy), hash, entropyLen);
-    SecretCacheSetEntropy(entropy, entropyLen);
-    GetSlip39MnemonicsWords(entropy, ems, 33, memberCnt, threShold, wordsList, &id, &ie);
-    SecretCacheSetEms(ems, entropyLen);
-    SecretCacheSetIdentifier(id);
-    SecretCacheSetIteration(ie);
-    for (int i = 0; i < memberCnt; i++) {
-        SecretCacheSetSlip39Mnemonic(wordsList[i], i);
-    }
-
-    for (int i = 0; i < memberCnt; i++) {
-        memset_s(wordsList[i], strnlen_s(wordsList[i], MNEMONIC_MAX_LEN), 0, strnlen_s(wordsList[i], MNEMONIC_MAX_LEN));
-        // todo There is a problem with SRAM FREE here
-        SRAM_FREE(wordsList[i]);
-    }
-    retData = SUCCESS_CODE;
-    GuiApiEmitSignal(SIG_CREATE_SHARE_UPDATE_MNEMONIC, &retData, sizeof(retData));
-#else
-#define SRAM_MNEMONIC_LEN 33 * 11
-    memberCnt = 3;
-    char *mnemonic = NULL;
-    mnemonic = SRAM_MALLOC(SRAM_MNEMONIC_LEN);
-    memset(mnemonic, 0, SRAM_MNEMONIC_LEN);
-    uint16_t buffLen = 0;
-    for (int i = 0; i < memberCnt; i++) {
-        for (int j = 0; j < 33; j++) {
-            strcat(mnemonic, wordlist[lv_rand(0, 2047)]);
-            if (j == 32) {
-                break;
-            }
-            mnemonic[strlen(mnemonic)] = ' ';
-        }
-        SecretCacheSetSlip39Mnemonic(mnemonic, i);
-        memset(mnemonic, 0, SRAM_MNEMONIC_LEN);
-    }
-    retData = SUCCESS_CODE;
-    GuiEmitSignal(SIG_CREATE_SHARE_UPDATE_MNEMONIC, NULL, 0);
-#endif
-    SetLockScreen(enable);
-    return SUCCESS_CODE;
+    return Slip39CreateGenerate((Slip39Data_t *)inData, true);
 }
-
 
 // Generate slip39 wallet writes
 static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
@@ -717,8 +648,8 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     uint8_t ie;
     uint8_t msCheck[32], emsCheck[32];
     uint8_t threShold;
+    uint8_t wordCnt = *(uint8_t *)inData;
     int ret;
-
 
     ems = SecretCacheGetEms(&entropyLen);
     entropy = SecretCacheGetEntropy(&entropyLen);
@@ -726,12 +657,13 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     ie = SecretCacheGetIteration();
 
     MODEL_WRITE_SE_HEAD
-    ret = Slip39CheckFirstWordList(SecretCacheGetSlip39Mnemonic(0), SLIP39_MNEMONIC_WORDS_MAX, &threShold);
+    ret = Slip39CheckFirstWordList(SecretCacheGetSlip39Mnemonic(0), wordCnt, &threShold);
     char *words[threShold];
     for (int i = 0; i < threShold; i++) {
         words[i] = SecretCacheGetSlip39Mnemonic(i);
+        printf("%s\n", words[i]);
     }
-    ret = Sli39GetMasterSecret(threShold, SLIP39_MNEMONIC_WORDS_MAX, emsCheck, msCheck, words, &id, &ie);
+    ret = Sli39GetMasterSecret(threShold, wordCnt, emsCheck, msCheck, words, &id, &ie);
     if ((ret != SUCCESS_CODE) || (memcmp(msCheck, entropy, entropyLen) != 0) || (memcmp(emsCheck, ems, entropyLen) != 0)) {
         ret = ERR_KEYSTORE_MNEMONIC_INVALID;
         break;
@@ -740,7 +672,7 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     CLEAR_ARRAY(msCheck);
     ret = ModelComparePubkey(false, ems, entropyLen, id, ie, NULL);
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
-    ret = CreateNewSlip39Account(newAccount, ems, entropy, 32, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetIteration());
+    ret = CreateNewSlip39Account(newAccount, ems, entropy, entropyLen, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetIteration());
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
     ClearAccountPassphrase(newAccount);
     MODEL_WRITE_SE_END

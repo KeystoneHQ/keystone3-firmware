@@ -55,7 +55,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_BLUE,      &btcWalletListBlue,     true,   false},
     {WALLET_LIST_SPARROW,   &btcWalletListSparrow,  true,   false},
     {WALLET_LIST_NUNCHUK,   &btcWalletListNunchuk,  true,   false},
-    {WALLET_LIST_SPECTER,   &btcWalletListSpecter,  true,   true},
+    // {WALLET_LIST_SPECTER,   &btcWalletListSpecter,  true,   true},
 #endif
 };
 

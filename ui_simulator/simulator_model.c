@@ -315,6 +315,8 @@ uint8_t GetBatterPercent(void)
 }
 
 int FatfsFileWrite(const char* path, const uint8_t *data, uint32_t len){}
+int FormatSdFatfs(void){}
+
 
 void SetLockScreen(bool enable)
 {

@@ -63,7 +63,7 @@ void GuiImportWalletInfoContent(lv_obj_t *parent)
     lv_obj_set_style_radius(section, 24, LV_PART_MAIN);
     lv_obj_t *obj = GuiCreateNoticeLabel(section, _("Wallet Name"));
     lv_obj_align(obj, LV_ALIGN_TOP_LEFT, 24, 16);
-    obj = GuiCreateLabel(section, "My Wallet Name");
+    obj = GuiCreateIllustrateLabel(section, "My Wallet Name");
     lv_obj_align(obj, LV_ALIGN_TOP_LEFT, 24, 54);
 
     lv_obj_t *prev = section;
@@ -73,7 +73,7 @@ void GuiImportWalletInfoContent(lv_obj_t *parent)
     lv_obj_set_style_radius(section, 24, LV_PART_MAIN);
     obj = GuiCreateNoticeLabel(section, _("Policy"));
     lv_obj_align(obj, LV_ALIGN_TOP_LEFT, 24, 16);
-    obj = GuiCreateLabel(section, "2 of 4");
+    obj = GuiCreateIllustrateLabel(section, "2 of 4");
     lv_obj_align(obj, LV_ALIGN_TOP_LEFT, 94, 20);
 
     prev = section;
@@ -83,7 +83,7 @@ void GuiImportWalletInfoContent(lv_obj_t *parent)
     lv_obj_set_style_radius(section, 24, LV_PART_MAIN);
     obj = GuiCreateNoticeLabel(section, _("Format"));
     lv_obj_align(obj, LV_ALIGN_TOP_LEFT, 24, 16);
-    obj = GuiCreateLabel(section, "P2WSH");
+    obj = GuiCreateIllustrateLabel(section, "P2WSH");
     lv_obj_align(obj, LV_ALIGN_TOP_LEFT, 108, 20);
 
     prev = section;
@@ -97,7 +97,7 @@ void GuiImportWalletInfoContent(lv_obj_t *parent)
         lv_obj_align_to(obj, prev, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 16);
         lv_label_set_recolor(obj, true);
         prev = obj;
-        obj = GuiCreateLabel(section, "EB16731F");
+        obj = GuiCreateIllustrateLabel(section, "EB16731F");
         lv_obj_align_to(obj, prev, LV_ALIGN_OUT_TOP_LEFT, 16, 0);
         obj = GuiCreateNoticeLabel(section, "vpub5Y28KoUWVNWQ2xrVHNv6P9CDn3dXTzerd8BwMAj2nt7Uej6MRP7wMF4d7GYNUuVEesDkYAtYy5DŸLT3fYMEJNaNW855TkkZLSX6MHmuXKZ");
         lv_label_set_long_mode(obj, LV_LABEL_LONG_WRAP);

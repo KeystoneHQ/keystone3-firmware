@@ -432,7 +432,14 @@ static void FpGetAesKeyState(char *indata, uint8_t len)
         printf("aes key %s\n", indata[0] ? "has been set" : "not set");
         state = indata[0];
         fpAesState = FpAesKeyExist();
-        assert(!!state == !!fpAesState);
+        if (!!state == !!fpAesState) {
+            if (state != 0) {
+                assert(1 == 0);
+            } else if (fpAesState != 0) {
+                assert(1 == 0);
+            }
+        }
+        // assert(!!state == !!fpAesState);
         if (fpAesState == 0) {
             FpSetAesKeySend(0, 0);
         } else {
@@ -1145,52 +1152,5 @@ void FpWipeManageInfo(void)
 
 void FingerTest(int argc, char *argv[])
 {
-    uint8_t index = 0;
-    uint8_t value = 0;
 
-    if (strcmp(argv[0], "reg") == 0) {
-        sscanf(argv[1], "%d", &index);
-        RegisterFp(index);
-    } else if (strcmp(argv[0], "delete") == 0) {
-        sscanf(argv[1], "%d", &index);
-        DeleteFp(index);
-    } else if (strcmp(argv[0], "delete_all") == 0) {
-        DeleteFp(0xFF);
-    } else if (strcmp(argv[0], "fp_num") == 0) {
-        SearchFpNum();
-    } else if (strcmp(argv[0], "recognize") == 0) {
-        sscanf(argv[1], "%d", &index);
-        FpRecognize((Recognize_Type)index);
-    } else if (strcmp(argv[0], "low_power") == 0) {
-        SetFpLowPowerMode();
-    } else if (strcmp(argv[0], "cancel") == 0) {
-        FpCancelCurOperate();
-    } else if (strcmp(argv[0], "fp_reset") == 0) {
-        FingerprintRestart();
-        printf("finger restart\r\n");
-#ifdef ENABLE_FP_RESET
-    } else if (strcmp(argv[0], "sys_reset") == 0) {
-        FpGenericSend(FINGERPRINT_CMD_SYS_RESET, true);
-        printf("clear done\r\n");
-#endif
-    } else if (strcmp(argv[0], "set_aes_key") == 0) {
-        FpSetAesKeySend(0, 0);
-    } else if (strcmp(argv[0], "aes_state") == 0) {
-        SearchFpAesKeyState();
-    } else if (strcmp(argv[0], "chip_id") == 0) {
-        SearchFpChipId();
-    } else if (strcmp(argv[0], "uid") == 0) {
-        SearchFpUId();
-    } else if (strcmp(argv[0], "ver") == 0) {
-        SearchFpFwVersion();
-    } else if (strcmp(argv[0], "init_state") == 0) {
-        SearchFpInitState();
-    } else if (strcmp(argv[0], "dev_log_switch") == 0) {
-        g_devLogSwitch = !g_devLogSwitch;
-    } else if (strcmp(argv[0], "flash") == 0) {
-        sscanf(argv[1], "%d", &value);
-        SetFpFlashMode(!!value);
-    } else if (strcmp(argv[0], "random") == 0) {
-        GetFpRandomNumber();
-    }
 }

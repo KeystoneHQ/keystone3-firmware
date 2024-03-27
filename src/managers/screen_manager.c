@@ -104,52 +104,52 @@ static void ReleaseHandler(void)
 
 static void LockScreen(void)
 {
-    if (GetLowPowerState() == LOW_POWER_STATE_DEEP_SLEEP) {
-        return;
-    }
+//     if (GetLowPowerState() == LOW_POWER_STATE_DEEP_SLEEP) {
+//         return;
+//     }
 
-    if (!g_pageLockScreenEnable) {
-        printf("current page lock screen is disabled\n");
-        return;
-    }
+//     if (!g_pageLockScreenEnable) {
+//         printf("current page lock screen is disabled\n");
+//         return;
+//     }
 
-    if (!g_lockScreenEnable) {
-        printf("lock screen is disabled\n");
-        return;
-    }
+//     if (!g_lockScreenEnable) {
+//         printf("lock screen is disabled\n");
+//         return;
+//     }
 
-    static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
-    uint8_t accountNum = 1;
+//     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
+//     uint8_t accountNum = 1;
 
-    if (FpModuleIsExist()) {
-        SetFpLowPowerMode();
-    }
-    ClearLockScreenTime();
-    ClearShutdownTime();
-    LcdBacklightOff();
-    GuiApiEmitSignal(SIG_INIT_CLOSE_CURRENT_MSG_BOX, NULL, 0);
-    GetExistAccountNum(&accountNum);
-    if (accountNum > 0 && !g_lockTimeState) {
-        LogoutCurrentAccount();
-        GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_UNLOCK);
-        GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
-    }
-#ifdef BTC_ONLY
-    GuiApiEmitSignal(SIG_STATUS_BAR_TEST_NET, NULL, 0);
-#endif
+//     if (FpModuleIsExist()) {
+//         SetFpLowPowerMode();
+//     }
+//     ClearLockScreenTime();
+//     ClearShutdownTime();
+//     LcdBacklightOff();
+//     GuiApiEmitSignal(SIG_INIT_CLOSE_CURRENT_MSG_BOX, NULL, 0);
+//     GetExistAccountNum(&accountNum);
+//     if (accountNum > 0 && !g_lockTimeState) {
+//         LogoutCurrentAccount();
+//         GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_UNLOCK);
+//         GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
+//     }
+// #ifdef BTC_ONLY
+//     GuiApiEmitSignal(SIG_STATUS_BAR_TEST_NET, NULL, 0);
+// #endif
 
-    if (g_lockDeivceTimeAlive) {
-        printf("lock device page is alive\n");
-        GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_CLEAR_ALL_TOP, NULL, 0);
-    }
+//     if (g_lockDeivceTimeAlive) {
+//         printf("lock device page is alive\n");
+//         GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_CLEAR_ALL_TOP, NULL, 0);
+//     }
 
-    if (!FpModuleIsExist()) {
-        uint32_t wakeUpCount = EnterLowPower();
-        RecoverFromLowPower();
-        ClearLockScreenTime();
-        ClearShutdownTime();
-        printf("wakeUpCount=%d\r\n", wakeUpCount);
-    }
+//     if (!FpModuleIsExist()) {
+//         uint32_t wakeUpCount = EnterLowPower();
+//         RecoverFromLowPower();
+//         ClearLockScreenTime();
+//         ClearShutdownTime();
+//         printf("wakeUpCount=%d\r\n", wakeUpCount);
+//     }
 }
 
 

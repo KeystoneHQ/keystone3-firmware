@@ -495,6 +495,7 @@ static void SetEgContent(uint8_t index)
     char addrShot[BUFFER_SIZE_64] = {0};
     int8_t prefixLen = (g_btcPathTypeList[index].pubkeyType == XPUB_TYPE_BTC_NATIVE_SEGWIT || g_btcPathTypeList[index].pubkeyType == XPUB_TYPE_BTC_TAPROOT) ? 4 : 1;
     for (uint8_t i = 0; i < 2; i++) {
+        memset_s(addrShot, BUFFER_SIZE_64, 0, BUFFER_SIZE_64);
         ModelGetUtxoAddress(addr, index, i, sizeof(addr));
         CutAndFormatAddress(addrShot, sizeof(addrShot), addr, 24);
         strncpy(prefix, addrShot, prefixLen);

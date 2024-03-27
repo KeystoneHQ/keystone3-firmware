@@ -1413,9 +1413,9 @@ static ChainType GetChainTypeByIndex(uint32_t index)
 #else
     ASSERT(g_chainCard == HOME_WALLET_CARD_BTC);
     if (index == 0) {
-        return GetIsTestNet() ? XPUB_TYPE_BTC_TAPROOT_TEST : XPUB_TYPE_BTC_TAPROOT;
-    } else if (index == 1) {
         return GetIsTestNet() ? XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST : XPUB_TYPE_BTC_NATIVE_SEGWIT;
+    } else if (index == 1) {
+        return GetIsTestNet() ? XPUB_TYPE_BTC_TAPROOT_TEST : XPUB_TYPE_BTC_TAPROOT;
     } else if (index == 2) {
         return GetIsTestNet() ? XPUB_TYPE_BTC_TEST : XPUB_TYPE_BTC;
     } else {

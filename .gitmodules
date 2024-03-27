@@ -4,3 +4,6 @@
 [submodule "external/ctaes"]
 	path = external/ctaes
 	url = https://github.com/bitcoin-core/ctaes
+[submodule "keystone3-firmware-release"]
+	path = keystone3-firmware-release
+	url = ../keystone3-firmware-release.git

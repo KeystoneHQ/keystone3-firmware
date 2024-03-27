@@ -8,3 +8,4 @@
 **/.vscode
 /src/ui/lv_i18n/*.yml
 **/__pycache__
+/build_simulator

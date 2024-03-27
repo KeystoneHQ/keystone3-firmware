@@ -133,7 +133,7 @@ void SetFirstReceive(const char* chainName, bool isFirst);
 void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count);
 char *GetXPubPath(uint8_t index);
 
-void ExportMultiSigXpub(uint8_t index);
+void ExportMultiSigXpub(ChainType chainType);
 void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager);
 int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWalletManager_t *manager);
 #endif

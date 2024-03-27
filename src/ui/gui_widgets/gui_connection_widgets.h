@@ -5,6 +5,6 @@ void GuiConnectionWidgetsInit();
 void GuiConnectionWidgetsDeInit();
 void GuiConnectionWidgetsRefresh();
 void GuiConnectionWidgetsRestart();
-void FormatMicroHandleResult(bool en);
+void FormatMicroHandleResult(int32_t errCode);
 
 #endif

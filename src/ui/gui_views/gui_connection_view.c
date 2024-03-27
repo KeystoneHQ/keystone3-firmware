@@ -3,9 +3,12 @@
 #include "gui_views.h"
 #include "gui_status_bar.h"
 #include "gui_connection_widgets.h"
+#include "err_code.h"
 
 int32_t GuiConnectionViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
+    uint32_t rcvValue;
+
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
         GuiConnectionWidgetsInit();
@@ -20,10 +23,16 @@ int32_t GuiConnectionViewEventProcess(void *self, uint16_t usEvent, void *param,
         GuiConnectionWidgetsRestart();
         break;
     case SIG_SETTING_MICRO_CARD_FORMAT_FAILED:
-        FormatMicroHandleResult(false);
+        FormatMicroHandleResult(ERR_GENERAL_FAIL);
         break;
     case SIG_SETTING_MICRO_CARD_FORMAT_SUCCESS:
-        FormatMicroHandleResult(true);
+        FormatMicroHandleResult(SUCCESS_CODE);
+        break;
+    case SIG_INIT_SDCARD_CHANGE:
+        rcvValue = *(uint32_t *)param;
+        if (rcvValue) {
+            FormatMicroHandleResult(ERR_UPDATE_SDCARD_NOT_DETECTED);
+        }
         break;
     default:
         return ERR_GUI_UNHANDLED;

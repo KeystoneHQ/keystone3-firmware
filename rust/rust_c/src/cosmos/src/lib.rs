@@ -19,6 +19,7 @@ use common_rust_c::ur::{UREncodeResult, URType, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
 use core::slice;
 use cty::c_char;
+use keystore::algorithms::rsa::get_rsa_secret_from_seed;
 use third_party::either::Either;
 use third_party::ur_registry::cosmos::cosmos_sign_request::{CosmosSignRequest, DataType};
 use third_party::ur_registry::cosmos::cosmos_signature::CosmosSignature;
@@ -128,6 +129,21 @@ pub extern "C" fn cosmos_check_tx(
         TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr()
     } else {
         TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr()
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn c_get_rsa_secret_from_seed(
+    seed: PtrBytes,
+    seed_len: u32,
+) -> *mut SimpleResponse<c_char> {
+    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    match get_rsa_secret_from_seed(seed) {
+        Ok(secret) => {
+            let sentence = format!("p is {}, q is {}, d is {}, n is {}", secret.p, secret.q, secret.d, secret.n);
+            SimpleResponse::success(convert_c_char(sentence) as *mut c_char).simple_c_ptr()
+        }
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
     }
 }
 

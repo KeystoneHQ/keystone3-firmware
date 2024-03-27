@@ -13,6 +13,7 @@ extern crate std;
 pub mod addresses;
 pub mod errors;
 mod macros;
+pub mod multi_sig;
 pub mod network;
 mod transactions;
 pub use addresses::get_address;

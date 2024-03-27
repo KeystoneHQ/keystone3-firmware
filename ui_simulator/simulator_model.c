@@ -268,7 +268,10 @@ void Vibrate(int strength)
 
 }
 
-
+int FormatSdFatfs(void)
+{
+    return 0;
+}
 
 bool SdCardInsert(void)
 {

@@ -802,7 +802,7 @@ void GuiUpdateMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard, char *mnemo
                 snprintf_s(mnemonicKeyBoard->mnemonicWord[k + j], MNEMONIC_MATRIX_WORD_MAX_LEN, "%d\n", k + 1);
                 continue;
             }
-            if (mnemonicKeyBoard->wordCnt == 20 && k >= 18) {
+            if (mnemonicKeyBoard->wordCnt == 20 && k >= 20) {
                 break;
             }
             if (k == mnemonicKeyBoard->wordCnt - 1) {
@@ -833,7 +833,7 @@ void GuiUpdateMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard, char *mnemo
         break;
     case 20:
         kbHeight = MNEMONIC_KB_20WORD_HEIGHT;
-        contHeight = MNEMONIC_KB_20WORD_HEIGHT - 110;
+        contHeight = MNEMONIC_KB_20WORD_HEIGHT;
         lv_btnmatrix_set_ctrl_map(mnemonicKeyBoard->btnm, g_numBtnm20MapCtrl);
         break;
     case 24:
@@ -854,13 +854,16 @@ void GuiUpdateMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard, char *mnemo
 void GuiConfirmMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard,
                                 char *mnemonic, int n, int num, int dig)
 {
-    char *find = mnemonic, *tail, word[10];
+    char *find = mnemonic, *tail, word[16];
     for (int i = 0, j = 0; i < mnemonicKeyBoard->wordCnt; j++, i += 3) {
         for (int k = i; k < i + 3; k++) {
             if (k == mnemonicKeyBoard->wordCnt - 1) {
                 tail = strchr(find, 0);
             } else {
                 tail = strchr(find, ' ');
+            }
+            if (mnemonicKeyBoard->wordCnt == 20 && k >= 20) {
+                break;
             }
             memcpy_s(word, sizeof(word), find, tail - find);
             word[tail - find] = 0;

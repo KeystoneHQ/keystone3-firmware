@@ -122,6 +122,8 @@ create wallet/phrase,single_phrase_title,Backup Your Seed,Запишите си�
 ,single_phrase_word_amount_select,Seed Phrase Count,Количество слов,시드 구문 카운트,助记词位数,？,,,
 ,single_phrase_12words,12 Words,12 слов,12 단어,12字,,,,
 ,single_phrase_24words,24 Words,24 слова,24 단어,24字,,,,
+,share_backup_20words,20 Words,20 слов,20 단어,20字,,,,
+,share_backup_33words,33 Words,33 слова,33 단어,33字,,,,
 ,single_phrase_confirm_title,Confirm Your Seed,Подтвердите фразу,시드 확인,确认您的助记词,,,,
 ,single_phrase_confirm_desc,Select the words below in the correct order to validate your seed phrase.,"Выберите слова ниже в правильном порядке, чтобы подтвердить сид фразу.",아래 단어를 올바른 순서로 선택하여 시드 문구의 유효성을 확인합니다.,按顺序选择以下单词以验证您所保存的助记词。,,,,
 ,single_phrase_reset,Reset,Сброс,재설정,重置,,,,

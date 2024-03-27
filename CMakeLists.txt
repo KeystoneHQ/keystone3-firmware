@@ -69,6 +69,7 @@ set(GUI_INCLUDE_PATH
     src/ui/gui_frame
     src/ui/gui_widgets
     src/ui/gui_widgets/setting
+    src/ui/gui_widgets/multi_sig
     src/ui/lv_i18n
     src/ui/gui_model
     src/ui/gui_analyze

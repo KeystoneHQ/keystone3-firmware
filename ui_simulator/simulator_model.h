@@ -39,6 +39,7 @@ void SdCardIntHandler(void);
 bool UsbInitState(void);
 void CloseUsb();
 void UpdateFingerSignFlag(uint8_t index, bool signFlag);
+int FormatSdFatfs();
 
 #define LOW_BATTERY_LIMIT               20
 #define CHECK_BATTERY_LOW_POWER()       ((GetBatterPercent() <= LOW_BATTERY_LIMIT) ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE)

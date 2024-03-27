@@ -314,6 +314,8 @@ uint8_t GetBatterPercent(void)
     return 50;
 }
 
+int FormatSdFatfs(void){}
+
 
 void SetLockScreen(bool enable)
 {

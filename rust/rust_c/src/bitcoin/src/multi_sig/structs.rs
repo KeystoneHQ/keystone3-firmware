@@ -1,4 +1,3 @@
-use alloc::format;
 use alloc::string::ToString;
 use alloc::vec;
 use alloc::vec::Vec;
@@ -162,6 +161,7 @@ impl Free for MultiSigWallet {
     fn free(&self) {
         free_str_ptr!(self.creator);
         free_str_ptr!(self.name);
+        free_str_ptr!(self.policy);
         free_vec!(self.derivations);
         free_str_ptr!(self.format);
         free_vec!(self.xpub_items);

@@ -17,6 +17,7 @@
 #include "gui_views.h"
 #include "gui_api.h"
 #include "gui_home_widgets.h"
+#include "user_fatfs.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
@@ -57,9 +58,12 @@ static void GetStringValue(cJSON *obj, const char *key, char *value, uint32_t ma
 static bool GetBoolValue(const cJSON *obj, const char *key, bool defaultValue);
 
 static AccountPublicKeyItem_t g_accountPublicKey[XPUB_TYPE_NUM];
+static MultiSigWalletManager_t *g_multiSigWalletManager = NULL;
+
 static uint8_t g_tempPublicKeyAccountIndex = INVALID_ACCOUNT_INDEX;
 
 static const char g_xpubInfoVersion[] = "1.0.0";
+static const char g_multiSigInfoVersion[] = "1.0.0";
 
 static const ChainItem_t g_chainTable[] = {
 #ifndef BTC_ONLY
@@ -165,8 +169,19 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_BTC_LEGACY_TEST,         SECP256K1,      "btc_legacy_test",          "M/44'/1'/0'"   },
     {XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST,  SECP256K1,      "btc_native_segwit_test",   "M/84'/1'/0'"   },
     {XPUB_TYPE_BTC_TAPROOT_TEST,        SECP256K1,      "btc_taproot_test",         "M/86'/1'/0'"   },
+
+    {XPUB_TYPE_BTC_MULTI_SIG_P2SH,              SECP256K1,      "btc_multi_sig_p2sh",               "M/45'"   },
+    {XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH,        SECP256K1,      "btc_multi_sig_p2wsh_p2sh",         "M/48'/0'/0'/1'"   },
+    {XPUB_TYPE_BTC_MULTI_SIG_P2WSH,             SECP256K1,      "btc_multi_sig_p2wsh",              "M/48'/0'/0'/2'"   },
+
+    {XPUB_TYPE_BTC_MULTI_SIG_P2SH_TEST,              SECP256K1,      "btc_multi_sig_p2sh_test",               "M/45'"   },
+    {XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH_TEST,        SECP256K1,      "btc_multi_sig_p2wsh_p2sh_test",         "M/48'/1'/0'/1'"   },
+    {XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST,             SECP256K1,      "btc_multi_sig_p2wsh_test",              "M/48'/1'/0'/2'"   },
 #endif
 };
+
+static void ConvertXPub(char *dest, ChainType chainType);
+static void replace(char *str, const char *old_str, const char *new_str);
 
 char *GetXPubPath(uint8_t index)
 {
@@ -858,4 +873,286 @@ void SetFirstReceive(const char* chainName, bool isFirst)
     size = strlen(jsonString);
     Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
     Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
+}
+
+void ExportMultiSigXpub(ChainType chainType)
+{
+    ASSERT(chainType >= XPUB_TYPE_BTC_MULTI_SIG_P2SH);
+    ASSERT(chainType <= XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST);
+
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    char mfpHexStr[9] = {0};
+    ByteArrayToHexStr(mfp, sizeof(mfp), mfpHexStr);
+
+    char path[64] = {0};
+    strcpy(path, GetXPubPath(chainType));
+    replace(path, "M", "m");
+
+    char xpub[128] = {0};
+    ConvertXPub(xpub, chainType);
+
+    char *jsonString = NULL;
+    cJSON *rootJson;
+    rootJson = cJSON_CreateObject();
+    cJSON_AddItemToObject(rootJson, "xfp", cJSON_CreateString(mfpHexStr));
+    cJSON_AddItemToObject(rootJson, "xpub", cJSON_CreateString(xpub));
+    cJSON_AddItemToObject(rootJson, "path", cJSON_CreateString(path));
+    jsonString = cJSON_Print(rootJson);
+    RemoveFormatChar(jsonString);
+
+    char exportFileName[32] = {0};
+
+    switch (chainType) {
+    case XPUB_TYPE_BTC_MULTI_SIG_P2SH:
+    case XPUB_TYPE_BTC_MULTI_SIG_P2SH_TEST:
+        sprintf(exportFileName, "0:%s_%s.json", mfpHexStr, "P2SH");
+        break;
+    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH:
+    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH_TEST:
+        sprintf(exportFileName, "0:%s_%s.json", mfpHexStr, "P2SH-P2WSH");
+        break;
+    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH:
+    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST:
+        sprintf(exportFileName, "0:%s_%s.json", mfpHexStr, "P2WSH");
+        break;
+    default:
+        break;
+    }
+
+    int res =  FatfsFileWrite(exportFileName, (uint8_t *)jsonString, strlen(jsonString));
+
+    printf("export data is %s\r\n", jsonString);
+
+    if (res == RES_OK) {
+        printf("multi sig write to sdcard success\r\n");
+    } else {
+        printf("multi sig write to sdcard fail\r\n");
+    }
+
+    cJSON_Delete(rootJson);
+    EXT_FREE(jsonString);
+}
+
+
+static void ConvertXPub(char *dest, ChainType chainType)
+{
+    SimpleResponse_c_char *result;
+
+    char *xpub = GetCurrentAccountPublicKey(chainType);
+    char head[] = "xpub";
+    switch (chainType) {
+    case XPUB_TYPE_BTC_MULTI_SIG_P2SH:
+        sprintf(dest, "%s", xpub);
+        break;
+    case XPUB_TYPE_BTC_MULTI_SIG_P2SH_TEST:
+        head[0] = 't';
+        break;
+    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH:
+        head[0] = 'Y';
+        break;
+    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH_TEST:
+        head[0] = 'U';
+        break;
+    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH:
+        head[0] = 'Z';
+        break;
+    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST:
+        head[0] = 'V';
+        break;
+    default:
+        break;
+    }
+    result = xpub_convert_version(xpub, head);
+    ASSERT(result);
+    sprintf(dest, "%s", result->data);
+    free_simple_response_c_char(result);
+}
+
+static void replace(char *str, const char *old_str, const char *new_str)
+{
+    char *pos = strstr(str, old_str);
+    if (pos != NULL) {
+        size_t old_len = strlen(old_str);
+        size_t new_len = strlen(new_str);
+        size_t tail_len = strlen(pos + old_len);
+
+        memmove(pos + new_len, pos + old_len, tail_len + 1);
+        memcpy(pos, new_str, new_len);
+
+        replace(pos + new_len, old_str, new_str);
+    }
+}
+
+void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)
+{
+    ASSERT(accountIndex >= 0);
+    ASSERT(accountIndex <= 2);
+
+    MultiSigWalletItem_t *multiSigWalletItem = g_multiSigWalletManager->findNode(g_multiSigWalletManager->list, verifyCode);
+    if (multiSigWalletItem == NULL) {
+        printf("multiSigWalletItem == NULL\r\n");
+        return;
+    }
+    // uint8_t mfp[4] = {0};
+    // GetMasterFingerPrint(mfp);
+    // char mfpHexStr[9] = {0};
+    // ByteArrayToHexStr(mfp, sizeof(mfp), mfpHexStr);
+
+    char exportFileName[32] = {0};
+    sprintf(exportFileName, "0:exprot-%s.txt", multiSigWalletItem->name);
+    int res =  FatfsFileWrite(exportFileName, (uint8_t *)multiSigWalletItem->walletConfig, strlen(multiSigWalletItem->walletConfig));
+    printf("export file name  is %s\r\n", exportFileName);
+    printf("export data is %s\r\n", multiSigWalletItem->walletConfig);
+    if (res == RES_OK) {
+        printf("multi sig write to sdcard success\r\n");
+    } else {
+        printf("multi sig write to sdcard fail\r\n");
+    }
+}
+
+void appendWalletItemToJson(MultiSigWalletItem_t *item, void *root)
+{
+    cJSON *walletItem = cJSON_CreateObject();
+    cJSON_AddNumberToObject(walletItem, "order", item->order);
+    cJSON_AddStringToObject(walletItem, "name", item->name);
+    cJSON_AddStringToObject(walletItem, "verify_code", item->verifyCode);
+    cJSON_AddNumberToObject(walletItem, "order", item->network);
+    cJSON_AddStringToObject(walletItem, "wallet_config", item->walletConfig);
+    cJSON_AddItemToArray((cJSON*)root, walletItem);
+}
+
+void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager)
+{
+    uint8_t account = GetCurrentAccountIndex();
+    ASSERT(account < 3);
+    uint32_t addr, eraseAddr, size;
+    uint8_t hash[32];
+
+    addr = SPI_FLASH_ADDR_USER1_MULTI_SIG_DATA + account * SPI_FLASH_ADDR_EACH_SIZE;
+    printf("MultiSigWalletsave save addr is %x\r\n", addr);
+    for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_MULTI_SIG_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
+        Gd25FlashSectorErase(eraseAddr);
+    }
+    cJSON *rootJson = cJSON_CreateObject();
+    cJSON_AddItemToObject(rootJson, "version", cJSON_CreateString(g_multiSigInfoVersion));
+    cJSON *walletList = cJSON_CreateArray();
+    manager->traverseList(manager->list, appendWalletItemToJson, (void*)walletList);
+    cJSON_AddItemToObject(rootJson, "multi_sig_wallet_list", walletList);
+    char *retStr;
+    retStr = cJSON_Print(rootJson);
+    size = strlen(retStr);
+    printf("multi sig wallet save data  is %s\r\n", retStr);
+    assert(size < SPI_FLASH_SIZE_USER1_MULTI_SIG_DATA - 4);
+    cJSON_Delete(rootJson);
+
+    sha256((struct sha256 *)hash, retStr, size);
+    // write se
+    // SetMultiSigWalletDataHash(account, hash);
+    // CLEAR_ARRAY(hash);
+
+    Gd25FlashWriteBuffer(addr, (uint8_t *)&size, sizeof(size));
+    Gd25FlashWriteBuffer(addr + 4, (uint8_t *)retStr, size);
+    EXT_FREE(retStr);
+}
+
+int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWalletManager_t *manager)
+{
+    ASSERT(accountIndex < 3);
+
+    bool needSet = false;
+    uint32_t addr, size, eraseAddr;
+    int32_t ret = SUCCESS_CODE;
+    char *jsonString = NULL;
+    uint8_t hash[32];
+
+    addr = SPI_FLASH_ADDR_USER1_MULTI_SIG_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
+    printf("MultiSigWalletGet read addr is %x\r\n", addr);
+    ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
+    ASSERT(ret == 4);
+    if (size == 0xffffffff || size == 0) {
+        needSet = true;
+    }
+    if (needSet) {
+        for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_MULTI_SIG_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
+            Gd25FlashSectorErase(eraseAddr);
+        }
+
+        cJSON *rootJson;
+
+        rootJson = cJSON_CreateObject();
+        cJSON_AddItemToObject(rootJson, "version", cJSON_CreateString(g_multiSigInfoVersion));
+        cJSON_AddItemToObject(rootJson, "multi_sig_wallet_list", cJSON_CreateArray());
+
+        char *retStr;
+        retStr = cJSON_Print(rootJson);
+        printf("MultiSigWalletGet need set data is  %s\r\n", retStr);
+
+        cJSON_Delete(rootJson);
+        size = strlen(retStr);
+        Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
+        Gd25FlashWriteBuffer(addr + 4, (uint8_t *)retStr, size);
+        EXT_FREE(retStr);
+    }
+
+
+    jsonString = SRAM_MALLOC(size + 1);
+    ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
+    ASSERT(ret == size);
+    jsonString[size] = 0;
+    printf("multi sig wallet get data is %s\r\n", jsonString);
+
+    sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
+
+    // if (!VerifyMulsigWalletDataHash(accountIndex, hash)) {
+    //     CLEAR_ARRAY(hash);
+    //     return ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH;
+    // } else {
+    //     ret = SUCCESS_CODE;
+    // }
+    // CLEAR_ARRAY(hash);
+
+    cJSON *rootJson = cJSON_Parse(jsonString);
+
+    SRAM_FREE(jsonString);
+
+    cJSON *multiSigWalletList = cJSON_GetObjectItem(rootJson, "multi_sig_wallet_list");
+    int walletListSize = cJSON_GetArraySize(multiSigWalletList);
+
+    if (multiSigWalletList != NULL) {
+
+        char *strCache = (char *) MULTI_SIG_MALLOC(MULTI_SIG_STR_CACHE_LENGTH);
+
+        for (int i = 0; i < walletListSize; i++) {
+
+            MultiSigWalletItem_t *multiSigWalletItem = (MultiSigWalletItem_t*) MULTI_SIG_MALLOC(sizeof(MultiSigWalletItem_t));
+
+            cJSON *wallet = cJSON_GetArrayItem(multiSigWalletList, i);
+
+            cJSON *order = cJSON_GetObjectItem(wallet, "order");
+
+            multiSigWalletItem->order = order->valueint;
+
+            GetStringValue(wallet, "name", strCache, MULTI_SIG_STR_CACHE_LENGTH);
+            multiSigWalletItem->name = MULTI_SIG_MALLOC(strlen(strCache) + 1);
+            strcpy(multiSigWalletItem->name, strCache);
+
+            GetStringValue(wallet, "verify_code", strCache, MULTI_SIG_STR_CACHE_LENGTH);
+            multiSigWalletItem->verifyCode = MULTI_SIG_MALLOC(strlen(strCache) + 1);
+            strcpy(multiSigWalletItem->verifyCode, strCache);
+
+            cJSON *network = cJSON_GetObjectItem(wallet, "network");
+
+            multiSigWalletItem->network = network->valueint;
+
+            GetStringValue(wallet, "wallet_config", strCache, MULTI_SIG_STR_CACHE_LENGTH);
+            multiSigWalletItem->walletConfig = MULTI_SIG_MALLOC(strlen(strCache) + 1);
+            strcpy(multiSigWalletItem->walletConfig, strCache);
+
+            manager->insertNode(manager->list, multiSigWalletItem);
+        }
+        MULTI_SIG_FREE(strCache);
+    }
+    cJSON_Delete(rootJson);
+    return ret;
 }

@@ -118,17 +118,19 @@ void GuiConnectionEntranceWidget(lv_obj_t *parent)
     lv_obj_align_to(button, line, LV_ALIGN_OUT_BOTTOM_MID, 0, 12);
 }
 
-void FormatMicroHandleResult(bool en)
+void FormatMicroHandleResult(int32_t errCode)
 {
     GUI_DEL_OBJ(g_noticeWindow)
-    if (en) {
+    if (errCode == SUCCESS_CODE) {
         g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgSuccess, _("sdcard_format_success_title"), _("sdcard_format_success_desc"), NULL, _("Done"), ORANGE_COLOR);
         lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
         lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-    } else {
+    } else if (errCode == ERR_GENERAL_FAIL){
         g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, _("sdcard_format_failed_title"), _("sdcard_format_failed_desc"), NULL, _("Done"), ORANGE_COLOR);
         lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
         lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    } else if (errCode == ERR_UPDATE_SDCARD_NOT_DETECTED){
+        g_noticeWindow = GuiCreateErrorCodeHintbox(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);
     }
 }
 
@@ -138,9 +140,12 @@ static void FormatMicroSDHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeWindow)
         if (SdCardInsert()) {
-            g_noticeWindow = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
+            g_noticeWindow = GuiCreateAnimHintBox(lv_scr_act(), 480, 356, 82);
             lv_obj_t *title = GuiCreateTextLabel(g_noticeWindow, _("sdcard_formating"));
-            lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -76);
+            lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -154);
+            lv_obj_t *desc = GuiCreateNoticeLabel(g_noticeWindow, _("sdcard_formating_desc"));
+            lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -76);
+            lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
             GuiModelFormatMicroSd();
         } else {
             g_noticeWindow = GuiCreateErrorCodeHintbox(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);

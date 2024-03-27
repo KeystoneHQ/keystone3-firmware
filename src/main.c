@@ -33,13 +33,9 @@
 #include "hal_lcd.h"
 #include "cmsis_os.h"
 #include "user_msg.h"
-#include "test_task.h"
-#include "cmd_task.h"
 #include "ui_display_task.h"
-#include "qrdecode_task.h"
 #include "touchpad_task.h"
 #include "background_task.h"
-#include "log_task.h"
 #include "usb_task.h"
 #include "user_fatfs.h"
 #include "user_sqlite3.h"
@@ -61,7 +57,7 @@ int main(void)
     SetAllGpioLow();
     SystemClockInit();
     SensorInit();
-    Uart0Init(CmdIsrRcvByte);
+    Uart0Init(NULL);
     FingerprintInit();
     cm_backtrace_init("mh1903", "V1.0.0", "V1.0.0");
     TrngInit();
@@ -73,7 +69,6 @@ int main(void)
     DrawBootLogoOnLcd();
     Gd25FlashInit();
     NvicInit();
-    LogInit();
     PsramInit();
     DeviceSettingsInit();
     UserMsgInit();
@@ -87,24 +82,15 @@ int main(void)
     Aw32001Init();
     ButtonInit();
     ExtInterruptInit();
-    WriteLogEvent(EVENT_ID_BOOT);
-    MountSdFatfs();
-    UserSqlite3Init();
     ScreenManagerInit();
     KeystoreInit();
-    PowerOnSelfCheck();
 
-    PrintSystemInfo();
     osKernelInitialize();
 
     CreateFingerprintTask();
-    CreateCmdTask();
-    CreateTestTask();
     CreateUiDisplayTask();
-    CreateQrDecodeTask();
     CreateTouchPadTask();
     CreateBackgroundTask();
-    CreateLogTask();
     CreateUsbTask();
 
     printf("start FreeRTOS scheduler\r\n");
@@ -119,7 +105,8 @@ int _write(int fd, char *pBuffer, int size)
         while (!UART_IsTXEmpty(UART0));
 #ifdef BUILD_PRODUCTION
         // disable any log info on the production mode
-        UART_SendData(UART0, '-');
+        // UART_SendData(UART0, '-');
+        UART_SendData(UART0, (uint8_t) pBuffer[i]);
 #else
         UART_SendData(UART0, (uint8_t) pBuffer[i]);
 #endif

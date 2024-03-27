@@ -203,15 +203,15 @@ void GuiFrameDebugging(void)
 
 int32_t GuiCloseToTargetView(GUI_VIEW *view)
 {
-    GuiViewHintBoxClear();
-    if (g_workingView == &g_homeView) {
-        GuiViewHandleEvent(view, GUI_EVENT_RESTART, NULL, 0);
-    } else {
-        while (g_workingView != view) {
-            GuiCLoseCurrentWorkingView();
-        }
-        GuiViewHandleEvent(view, GUI_EVENT_REFRESH, NULL, 0);
-    }
+    // GuiViewHintBoxClear();
+    // if (g_workingView == &g_homeView) {
+    //     GuiViewHandleEvent(view, GUI_EVENT_RESTART, NULL, 0);
+    // } else {
+    //     while (g_workingView != view) {
+    //         GuiCLoseCurrentWorkingView();
+    //     }
+    //     GuiViewHandleEvent(view, GUI_EVENT_REFRESH, NULL, 0);
+    // }
     return SUCCESS_CODE;
 }
 

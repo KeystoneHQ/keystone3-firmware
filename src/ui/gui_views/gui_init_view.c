@@ -4,13 +4,6 @@
 #include "gui_status_bar.h"
 #include "gui_model.h"
 #include "gui_enter_passcode.h"
-#include "gui_pop_message_box.h"
-#include "gui_power_option_widgets.h"
-#include "gui_firmware_process_widgets.h"
-#include "gui_usb_connection_widgets.h"
-#include "gui_low_battery_widgets.h"
-#include "gui_firmware_update_deny_widgets.h"
-#include "gui_firmware_update_widgets.h"
 #include "gui_lock_widgets.h"
 #include "presetting.h"
 #include "anti_tamper.h"
@@ -20,15 +13,14 @@ static int32_t GuiInitViewInit(void)
     LanguageInit();
     GuiEnterPassLabelInit();
     GuiStyleInit();
-    GuiStatusBarInit();
-    if (GetFactoryResult() == false) {
-        GuiFrameOpenView(&g_inactiveView);
-        return SUCCESS_CODE;
-    }
-    if (Tampered()) {
-        GuiFrameOpenView(&g_selfDestructView);
-        return SUCCESS_CODE;
-    }
+    // if (GetFactoryResult() == false) {
+    //     GuiFrameOpenView(&g_inactiveView);
+    //     return SUCCESS_CODE;
+    // }
+    // if (Tampered()) {
+    //     GuiFrameOpenView(&g_selfDestructView);
+    //     return SUCCESS_CODE;
+    // }
     GuiModeGetAmount();
     // GuiFrameOpenView(&g_settingView);
     // GuiFrameOpenView(&g_connectWalletView);
@@ -51,74 +43,10 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_INIT_GET_ACCOUNT_NUMBER:
         walletNum = *(uint8_t *)param;
         if (walletNum == 0) {
-            return GuiFrameOpenView(&g_setupView);
+            // return GuiFrameOpenView(&g_setupView);
         } else {
             return GuiFrameOpenViewWithParam(&g_lockView, &lockParam, sizeof(lockParam));
         }
-        break;
-    case SIG_INIT_BATTERY:
-        battState = *(uint16_t *)param;
-        printf("rcv battState=0x%04X\r\n", battState);
-        GuiStatusBarSetBattery(battState & 0xFF, (battState & 0x8000) != 0);
-        break;
-    case SIG_INIT_FIRMWARE_UPDATE_DENY:
-        rcvValue = *(uint32_t *)param;
-        if (rcvValue != 0) {
-            OpenMsgBox(&g_guiMsgBoxFirmwareUpdateDeny);
-        } else {
-            CloseMsgBox(&g_guiMsgBoxFirmwareUpdateDeny);
-        }
-        break;
-    case SIG_INIT_LOW_BATTERY:
-        rcvValue = *(uint32_t *)param;
-        if (rcvValue != 0) {
-            OpenMsgBox(&g_guiMsgBoxLowBattery);
-        } else {
-            CloseMsgBox(&g_guiMsgBoxLowBattery);
-        }
-        break;
-    case SIG_INIT_USB_CONNECTION:
-        rcvValue = *(uint32_t *)param;
-        if (rcvValue != 0 && !GuiLockScreenIsTop()) {
-            OpenMsgBox(&g_guiMsgBoxUsbConnection);
-        } else {
-            CloseMsgBox(&g_guiMsgBoxUsbConnection);
-        }
-        break;
-    case SIG_INIT_USB_STATE_CHANGE:
-        GuiStatusBarSetUsb();
-        break;
-    case SIG_INIT_POWER_OPTION:
-        rcvValue = *(uint32_t *)param;
-        if (rcvValue != 0) {
-            OpenMsgBox(&g_guiMsgBoxPowerOption);
-        } else {
-            CloseMsgBox(&g_guiMsgBoxPowerOption);
-        }
-        break;
-    case SIG_INIT_FIRMWARE_PROCESS:
-        rcvValue = *(uint32_t *)param;
-        if (rcvValue != 0) {
-            OpenMsgBox(&g_guiMsgBoxFirmwareProcess);
-        } else {
-            CloseMsgBox(&g_guiMsgBoxFirmwareProcess);
-        }
-        break;
-    case SIG_INIT_CLOSE_CURRENT_MSG_BOX:
-        CloseCurrentMsgBox();
-        break;
-    case SIG_INIT_SDCARD_CHANGE:
-        rcvValue = *(uint32_t *)param;
-        GuiStatusBarSetSdCard(!rcvValue);
-        break;
-    case SIG_INIT_SD_CARD_OTA_COPY_SUCCESS:
-        GuiFirmwareSdCardCopyResult(true);
-        break;
-    case SIG_INIT_SD_CARD_OTA_COPY_FAIL:
-        GuiFirmwareSdCardCopyResult(false);
-        break;
-    case SIG_INIT_SD_CARD_OTA_COPY:
-        GuiFirmwareSdCardCopy();
         break;
     default:
         return ERR_GUI_UNHANDLED;

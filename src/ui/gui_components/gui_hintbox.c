@@ -1,7 +1,7 @@
 
 #include <stdio.h>
 #include "gui.h"
-#include "gui_create_wallet_widgets.h"
+
 #include "gui_obj.h"
 #include "user_memory.h"
 #include "gui_views.h"

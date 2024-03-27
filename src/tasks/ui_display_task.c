@@ -14,12 +14,10 @@
 #include "user_msg.h"
 #include "lv_demos.h"
 #include "drv_virtual_touch.h"
-#include "qrcode/gui_qrcode_example.h"
 #include "touchpad_task.h"
 #include "gui_views.h"
 #include "gui_framework.h"
 #include "user_memory.h"
-#include "gui_chain.h"
 #include "drv_lcd_bright.h"
 #include "device_setting.h"
 #include "anti_tamper.h"
@@ -93,7 +91,7 @@ static void UiDisplayTask(void *argument)
     printf("Tampered()=%d\n", Tampered());
     g_reboot = true;
     GuiFrameOpenView(&g_initView);
-    SetLcdBright(GetBright());
+    // SetLcdBright(GetBright());
 
     while (1) {
         RefreshLvglTickMode();

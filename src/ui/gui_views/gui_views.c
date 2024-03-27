@@ -5,36 +5,20 @@
 #include "gui_hintbox.h"
 #include "gui_lock_widgets.h"
 #include "gui_keyboard.h"
-#include "gui_create_wallet_widgets.h"
+
 #include "gui_status_bar.h"
-#include "gui_lock_device_widgets.h"
+
 
 static lv_obj_t *g_hintBox = NULL;
 static lv_obj_t **g_hintParam = NULL;
 void OpenImportWalletHandler(lv_event_t *e)
 {
-    static uint8_t walletMethod = WALLET_METHOD_IMPORT;
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (CHECK_BATTERY_LOW_POWER()) {
-            g_hintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
-        } else {
-            GuiFrameOpenViewWithParam(&g_createWalletView, &walletMethod, sizeof(walletMethod));
-        }
-    }
+
 }
 
 void OpenCreateWalletHandler(lv_event_t *e)
 {
-    static uint8_t walletMethod = WALLET_METHOD_CREATE;
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (CHECK_BATTERY_LOW_POWER()) {
-            g_hintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
-        } else {
-            GuiFrameOpenViewWithParam(&g_createWalletView, &walletMethod, sizeof(walletMethod));
-        }
-    }
+
 }
 
 void OpenViewHandler(lv_event_t *e)
@@ -50,7 +34,7 @@ void CloseTimerCurrentViewHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        CloseQRTimer();
+        // CloseQRTimer();
         GuiCLoseCurrentWorkingView();
     }
 }
@@ -123,17 +107,17 @@ void CloseCurrentUserDataHandler(lv_event_t *e)
 
 void CloseCurrentParentAndCloseViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
+    // lv_event_code_t code = lv_event_get_code(e);
+    // static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
 
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
-        GuiCLoseCurrentWorkingView();
-        GuiLockScreenFpRecognize();
-        GuiLockScreenTurnOn(&single);
-        ResetSuccess();
-        GuiModelWriteLastLockDeviceTime(0);
-    }
+    // if (code == LV_EVENT_CLICKED) {
+    //     lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
+    //     GuiCLoseCurrentWorkingView();
+    //     GuiLockScreenFpRecognize();
+    //     GuiLockScreenTurnOn(&single);
+    //     // ResetSuccess();
+    //     GuiModelWriteLastLockDeviceTime(0);
+    // }
 }
 
 void CloseWaringPageHandler(lv_event_t *e)
@@ -202,109 +186,109 @@ void GuiDoNothingHandler(lv_event_t *e)
 
 void GuiWriteSeResult(bool en, int32_t errCode)
 {
-    GuiStopCircleAroundAnimation();
-    if (en) {
-        WalletDesc_t wallet = {
-            .iconIndex = GuiGetEmojiIconIndex(),
-        };
-        SetStatusBarEmojiIndex(wallet.iconIndex);
-        strcpy(wallet.name, GetCurrentKbWalletName());
-        GuiNvsBarSetWalletName(GetCurrentKbWalletName());
-        GuiNvsBarSetWalletIcon(GuiGetEmojiIconImg());
-        GuiModelSettingSaveWalletDesc(&wallet);
-        GuiCloseToTargetView(&g_initView);
-        GuiFrameOpenViewWithParam(&g_lockView, NULL, 0);
-        GuiLockScreenHidden();
-        GuiFrameOpenView(&g_homeView);
-        GuiUpdateOldAccountIndex();
-    } else {
-        int height = 370;
-        lv_obj_t *desc = NULL;
-        lv_obj_t *title = NULL;
-        lv_event_cb_t cb = CloseCurrentUserDataHandler;
-        char *titleText = (char *)_("Invalid Seed Phrase");
-        char *descText = (char *)_("The phrase you typed is invalid. Please check your backup and try again");
-        switch (errCode) {
-        case ERR_KEYSTORE_MNEMONIC_REPEAT:
-            height = 400;
-            titleText = "Duplicate Seed Phrase";
-            descText = "This phrase you typed is already used in a wallet account, please use another mnemonic to import.";
-            cb = DuplicateShareHandler;
-            break;
-        case ERR_KEYSTORE_MNEMONIC_INVALID:
-            break;
-        case ERR_KEYSTORE_SAVE_LOW_POWER:
-            height = 400;
-            titleText = "Low Power";
-            descText = "The device requires at least 20% power to continue the process";
-            break;
-        }
+    // GuiStopCircleAroundAnimation();
+    // if (en) {
+    //     WalletDesc_t wallet = {
+    //         .iconIndex = GuiGetEmojiIconIndex(),
+    //     };
+    //     SetStatusBarEmojiIndex(wallet.iconIndex);
+    //     // strcpy(wallet.name, GetCurrentKbWalletName());
+    //     GuiNvsBarSetWalletName(GetCurrentKbWalletName());
+    //     GuiNvsBarSetWalletIcon(GuiGetEmojiIconImg());
+    //     GuiModelSettingSaveWalletDesc(&wallet);
+    //     GuiCloseToTargetView(&g_initView);
+    //     GuiFrameOpenViewWithParam(&g_lockView, NULL, 0);
+    //     GuiLockScreenHidden();
+    //     GuiFrameOpenView(&g_homeView);
+    //     GuiUpdateOldAccountIndex();
+    // } else {
+    //     int height = 370;
+    //     lv_obj_t *desc = NULL;
+    //     lv_obj_t *title = NULL;
+    //     lv_event_cb_t cb = CloseCurrentUserDataHandler;
+    //     char *titleText = (char *)_("Invalid Seed Phrase");
+    //     char *descText = (char *)_("The phrase you typed is invalid. Please check your backup and try again");
+    //     switch (errCode) {
+    //     case ERR_KEYSTORE_MNEMONIC_REPEAT:
+    //         height = 400;
+    //         titleText = "Duplicate Seed Phrase";
+    //         descText = "This phrase you typed is already used in a wallet account, please use another mnemonic to import.";
+    //         cb = DuplicateShareHandler;
+    //         break;
+    //     case ERR_KEYSTORE_MNEMONIC_INVALID:
+    //         break;
+    //     case ERR_KEYSTORE_SAVE_LOW_POWER:
+    //         height = 400;
+    //         titleText = "Low Power";
+    //         descText = "The device requires at least 20% power to continue the process";
+    //         break;
+    //     }
 
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-        g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, height, false);
-        lv_obj_t *btn = GuiCreateBtn(g_hintBox, "OK");
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-        lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-        lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, NULL);
+    //     GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
+    //     g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, height, false);
+    //     lv_obj_t *btn = GuiCreateBtn(g_hintBox, "OK");
+    //     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    //     lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
+    //     lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, NULL);
 
-        desc = GuiCreateIllustrateLabel(g_hintBox, descText);
-        lv_obj_align_to(desc, btn, LV_ALIGN_OUT_TOP_LEFT, -320, -40);
+    //     desc = GuiCreateIllustrateLabel(g_hintBox, descText);
+    //     lv_obj_align_to(desc, btn, LV_ALIGN_OUT_TOP_LEFT, -320, -40);
 
-        title = GuiCreateLittleTitleLabel(g_hintBox, titleText);
-        lv_obj_align_to(title, desc, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
+    //     title = GuiCreateLittleTitleLabel(g_hintBox, titleText);
+    //     lv_obj_align_to(title, desc, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
 
-        lv_obj_t *img = GuiCreateImg(g_hintBox, &imgFailed);
-        lv_obj_align_to(img, title, LV_ALIGN_OUT_TOP_LEFT, 0, -24);
-    }
+    //     lv_obj_t *img = GuiCreateImg(g_hintBox, &imgFailed);
+    //     lv_obj_align_to(img, title, LV_ALIGN_OUT_TOP_LEFT, 0, -24);
+    // }
 }
 
 void *GuiCreateErrorCodeHintbox(int32_t errCode, lv_obj_t **param)
 {
-    g_hintParam = param;
-    int height = 370;
-    lv_obj_t *desc = NULL;
-    lv_obj_t *title = NULL;
-    char *titleText = (char *)_("Invalid Seed Phrase");
-    char *descText = (char *)_("The phrase you typed is invalid. Please check your backup and try again");
-    switch (errCode) {
-    case ERR_KEYSTORE_MNEMONIC_REPEAT:
-        height = 400;
-        titleText = "Duplicate Seed Phrase";
-        descText = "This phrase you typed is already used in a wallet account, please use another mnemonic to import.";
-        break;
-    case ERR_KEYSTORE_MNEMONIC_INVALID:
-        break;
-    case ERR_KEYSTORE_SAVE_LOW_POWER:
-        height = 400;
-        titleText = "Low Power";
-        descText = "The device requires at least 20% power to continue the process";
-        break;
-    case ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET:
-        height = 400;
-        titleText = (char *)_("Verification Failed");
-        descText = (char *)_("This seed phrase does not match the current wallet’s. Please check it and try again.");
-        break;
-    case ERR_UPDATE_FIRMWARE_NOT_DETECTED:
-        height = 400;
-        titleText = "Firmware Not Detected";
-        descText = "Please ensure that you have inserted a MicroSD card formatted in FAT32 that contains the firmware.";
-        break;
-    }
+    // g_hintParam = param;
+    // int height = 370;
+    // lv_obj_t *desc = NULL;
+    // lv_obj_t *title = NULL;
+    // char *titleText = (char *)_("Invalid Seed Phrase");
+    // char *descText = (char *)_("The phrase you typed is invalid. Please check your backup and try again");
+    // switch (errCode) {
+    // case ERR_KEYSTORE_MNEMONIC_REPEAT:
+    //     height = 400;
+    //     titleText = "Duplicate Seed Phrase";
+    //     descText = "This phrase you typed is already used in a wallet account, please use another mnemonic to import.";
+    //     break;
+    // case ERR_KEYSTORE_MNEMONIC_INVALID:
+    //     break;
+    // case ERR_KEYSTORE_SAVE_LOW_POWER:
+    //     height = 400;
+    //     titleText = "Low Power";
+    //     descText = "The device requires at least 20% power to continue the process";
+    //     break;
+    // case ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET:
+    //     height = 400;
+    //     titleText = (char *)_("Verification Failed");
+    //     descText = (char *)_("This seed phrase does not match the current wallet’s. Please check it and try again.");
+    //     break;
+    // case ERR_UPDATE_FIRMWARE_NOT_DETECTED:
+    //     height = 400;
+    //     titleText = "Firmware Not Detected";
+    //     descText = "Please ensure that you have inserted a MicroSD card formatted in FAT32 that contains the firmware.";
+    //     break;
+    // }
 
-    lv_obj_t *cont = GuiCreateHintBox(lv_scr_act(), 480, height, false);
-    lv_obj_t *btn = GuiCreateBtn(cont, "OK");
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-    lv_obj_add_event_cb(btn, CloseWaringPageHandler, LV_EVENT_CLICKED, cont);
+    // lv_obj_t *cont = GuiCreateHintBox(lv_scr_act(), 480, height, false);
+    // lv_obj_t *btn = GuiCreateBtn(cont, "OK");
+    // lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    // lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
+    // lv_obj_add_event_cb(btn, CloseWaringPageHandler, LV_EVENT_CLICKED, cont);
 
-    desc = GuiCreateIllustrateLabel(cont, descText);
-    lv_obj_align_to(desc, btn, LV_ALIGN_OUT_TOP_LEFT, -320, -40);
+    // desc = GuiCreateIllustrateLabel(cont, descText);
+    // lv_obj_align_to(desc, btn, LV_ALIGN_OUT_TOP_LEFT, -320, -40);
 
-    title = GuiCreateLittleTitleLabel(cont, titleText);
-    lv_obj_align_to(title, desc, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
+    // title = GuiCreateLittleTitleLabel(cont, titleText);
+    // lv_obj_align_to(title, desc, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
 
-    lv_obj_t *img = GuiCreateImg(cont, &imgFailed);
-    lv_obj_align_to(img, title, LV_ALIGN_OUT_TOP_LEFT, 0, -24);
+    // lv_obj_t *img = GuiCreateImg(cont, &imgFailed);
+    // lv_obj_align_to(img, title, LV_ALIGN_OUT_TOP_LEFT, 0, -24);
 
-    return cont;
+    // return cont;
 }

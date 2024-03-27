@@ -168,7 +168,6 @@ if(COMPILE_MAIN)
     set_property(SOURCE src/cm_backtrace/fault_handler/gcc/cmb_fault.s PROPERTY LANGUAGE C)
     aux_source_directory(external/mh1903_lib/MHSCPU_Driver/src/ mh1903_driver)
     aux_source_directory(src/driver/ driver)
-    aux_source_directory(test/ test)
     aux_source_directory(src/cm_backtrace/ cm_backtrace)
     aux_source_directory(src/tasks/ tasks)
     aux_source_directory(src/crypto crypto)
@@ -185,16 +184,6 @@ if(COMPILE_MAIN)
         "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/cdc/src/*.c"
         "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_OTG_Driver/src/*.c"
         "external/mh1903_lib/USB-ESL/CircularBuffer.c"    
-    )
-    
-    file(GLOB_RECURSE cryptoslip39
-        "src/crypto/slip39/gf256.c"
-        "src/crypto/slip39/rs1024.c"
-        "src/crypto/slip39/slip39.c"
-        "src/crypto/slip39/trezor-crypto/memzero.c"
-        "src/crypto/slip39/trezor-crypto/sha2.c"
-        "src/crypto/slip39/trezor-crypto/rand.c"
-        "src/crypto/slip39/trezor-crypto/pbkdf2.c"
     )
     
     file(GLOB_RECURSE freertos
@@ -247,8 +236,6 @@ if(COMPILE_MAIN)
     file(GLOB_RECURSE external
         "external/fatfs/*.c"
         "external/cjson/*.c"
-        "external/quicklz/*.c"
-        "external/sqlite3/*.c"
         ${ccan}
         ${cryptoauthlib}
         ${ctaes}
@@ -262,10 +249,8 @@ if(COMPILE_MAIN)
         "src/ui/gui_views/*.c"
         "src/ui/gui_widgets/*.c"
         "src/ui/gui_widgets/setting/*.c"
-        "src/ui/pillar_demos/qrcode_sign/*.c"
         "src/ui/lv_i18n/*.c"
         "src/ui/gui_model/*.c"
-		"src/ui/gui_analyze/gui_analyze.c"
 		"src/ui/gui_chain/*"
 		"src/ui/gui_components/*"
 		"src/ui/wallet/*"
@@ -292,7 +277,6 @@ if(COMPILE_MAIN)
         ${external}
         ${cm_backtrace} 
         ${tasks} 
-        ${test}
         ${crypto}
         ${cryptoslip39}
         ${bips}

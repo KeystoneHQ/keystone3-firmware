@@ -589,13 +589,6 @@ void FpLowerPowerRecv(char *indata, uint8_t len)
 void PrintMsg(FpEncryptData_t *msg)
 {
     printf("msg: cmd = 0x%02X%02X, frameIndex = %d, dataLen = %d\n", msg->cmd0, msg->cmd1, msg->frameNum, msg->dataLen);
-    // if (msg->dataLen != 0) {
-    //     printf("data: ");
-    //     for (int j = 0; j < msg->dataLen; j++) {
-    //         printf("%02X ", msg->data[j]);
-    //     }
-    //     printf("\r\n");
-    // }
 }
 
 // 获取指纹信息
@@ -1242,10 +1235,6 @@ void __inline FingerprintIsrRecvProcess(uint8_t byte)
             } else {
                 xEventGroupSetBitsFromISR(g_fpEventGroup, 0x1, NULL);
                 memcpy(g_intrRecvBuffer, intrRecvBuffer, rcvByteCount);
-                // for (int i = 0; i < totalLen + 3; i++) {
-                //     printf("%02x ", intrRecvBuffer[i]);
-                // }
-                // printf("\n");
             }
             memset(intrRecvBuffer, 0, RCV_MSG_MAX_LEN);
             rcvByteCount = 0;

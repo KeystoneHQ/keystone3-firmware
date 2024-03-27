@@ -1,7 +1,7 @@
 
 #include "gui.h"
 #include "gui_obj.h"
-#include "gui_create_wallet_widgets.h"
+
 #include "gui_keyboard.h"
 #include "user_memory.h"
 #include "gui_hintbox.h"
@@ -970,25 +970,11 @@ bool GuiLetterKbStatusError(void)
 
 bool GuiSingleWordsWhole(const char *text)
 {
-    int wordcnt = searchTrie(rootTree, text);
-    if (wordcnt == 1) {
-        if (strcmp(text, g_wordBuf[0]) == 0) {
-            return true;
-        }
-        return false;
-    }
     return false;
 }
 
 bool GuiWordsWhole(const char* text)
 {
-    int wordcnt = searchTrie(rootTree, text);
-    if (wordcnt > 0) {
-        if (!strcmp(text, g_wordBuf[0])) {
-            return true;
-        }
-        return false;
-    }
     return false;
 }
 
@@ -1009,75 +995,12 @@ void UpdateFullKeyBoard(const char *str, KeyBoard_t *keyBoard)
 
 void UpdateKeyBoard(TrieSTPtr root, const char *str, KeyBoard_t *keyBoard)
 {
-    if (keyBoard->mode != KEY_STONE_LETTER || root == NULL) {
-        return;
-    }
-    GuiKeyBoardRestoreDefault(keyBoard);
-    if (strlen(str) == 0) {
-        GuiKeyBoardSetMode(keyBoard);
-        return;
-    }
-    TrieSTPtr tmp = rootTree;
-    int i = 0;
-    bool allDisabled = true;
-    uint8_t enable[CHAR_LENGTH + 2] = {0};
-    while (str[i] != '\0') {
-        if (tmp->next[str[i] - 'a'] != NULL) {
-            tmp = tmp->next[str[i] - 'a'];
-        }
-        i++;
-    }
 
-    for (int j = 0; j <= 'z' - 'a'; j++) {
-        if (tmp->next[j] == NULL) {
-            enable[j] = LV_BTNMATRIX_CTRL_DISABLED;
-        } else {
-            allDisabled = false;
-        }
-    }
-    if (allDisabled == true) {
-        memset(enable, 0, 'z' - 'a');
-    }
-
-    if (searchTrie(rootTree, str) != 1) {
-        if (!g_letterConfirm) {
-            enable[26] = LV_BTNMATRIX_CTRL_DISABLED;
-        }
-    }
-
-    if (strlen(str) < 3) {
-        enable[26] = LV_BTNMATRIX_CTRL_DISABLED;
-    }
-
-    if (strlen(str) == 0) {
-        // enable[27] = LV_BTNMATRIX_CTRL_DISABLED;
-    }
-
-    GuiKeyBoardLetterUpdate(keyBoard, enable);
-    GuiKeyBoardSetMode(keyBoard);
 }
 
 static void LetterKbAssociateHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    KeyBoard_t *keyBoard = lv_event_get_user_data(e);
-    char *text = lv_label_get_text(lv_obj_get_child(lv_event_get_target(e), 0));
-    char buf[1] = {0};
-    if (code == LV_EVENT_CLICKED) {
-        if (strlen(text) <= 0) {
-            return;
-        }
-        strcpy(g_wordChange, text);
-        if (g_importPhraseKb != NULL) {
-            lv_event_send(g_importPhraseKb->btnm, LV_EVENT_READY, g_wordChange);
-        }
-        lv_textarea_set_text(keyBoard->ta, "");
-        for (int i = 0; i < 3; i++) {
-            lv_label_set_text(keyBoard->associateLabel[i], "");
-            memset(g_wordBuf[i], 0, sizeof(g_wordBuf[0]));
-        }
-        UpdateKeyBoard(rootTree, buf, keyBoard);
-    }
+
 }
 
 static void CloseLetterKbHandler(lv_event_t *e)
@@ -1096,21 +1019,6 @@ static void CloseLetterKbHandler(lv_event_t *e)
 
 void UpdateAssociateLabel(KeyBoard_t *keyBoard, const char *currText)
 {
-    char endBuf[8] = { 0 };
-    if (strlen(currText) >= 3) {
-        for (int i = 0; i < 3; i++) {
-            memset(g_wordBuf[i], 0, sizeof(g_wordBuf[i]));
-            lv_label_set_text(keyBoard->associateLabel[i], "");
-        }
-        int wordcnt = searchTrie(rootTree, currText);
-        if (wordcnt == 1) {
-            strcpy(endBuf, g_wordBuf[0]);
-            lv_label_set_text(keyBoard->associateLabel[0], endBuf);
-        } else while (wordcnt--) {
-                lv_label_set_text(keyBoard->associateLabel[wordcnt], g_wordBuf[wordcnt]);
-                strcpy(endBuf, g_wordBuf[wordcnt]);
-            }
-    }
 }
 
 void ClearKbCache(void)
@@ -1122,172 +1030,14 @@ void ClearKbCache(void)
 
 char *GuiGetTrueWord(const lv_obj_t *obj, uint16_t btn_id)
 {
-    const char *tempText = lv_btnmatrix_get_btn_text(obj, btn_id);
-    char *trueText = strstr(tempText, "\n") + 1;
-    if (trueText != NULL) {
-        if (trueText != NULL) {
-            if (strstr(trueText, "#0 ")) {
-                trueText += strlen("#0 ");
-                tempText = strstr(trueText, "#");
-                if (tempText == strstr(trueText, "#")) {
-                    trueText[tempText - trueText] = '\0';
-                }
-            }
-        }
-    }
-    return trueText;
 }
 
 void KbTextAreaHandler(lv_event_t * e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t *ta = lv_event_get_target(e);
-    uint8_t taLen = strlen(lv_textarea_get_text(ta));
-    KeyBoard_t *keyBoard = lv_event_get_user_data(e);
-    const char *currText = lv_textarea_get_text(ta);
-    if (code == LV_EVENT_VALUE_CHANGED) {
-        // Vibrate(SLIGHT);
-        if (keyBoard == NULL) {
-            return;
-        }
-        if (keyBoard->mode == KEY_STONE_LETTER) {
-            if (g_importPhraseKb != NULL && strlen(currText)) {
-                lv_event_send(g_importPhraseKb->btnm, KEY_STONE_KEYBOARD_VALUE_CHANGE, (void *)currText);
-                if (GuiSingleWordsWhole(currText)) {
-                    GuiClearKeyBoard(keyBoard);
-                }
-                UpdateKeyBoard(rootTree, currText, keyBoard);
-            }
-        } else {
-            if (keyBoard->mode == KEY_STONE_FULL_L || keyBoard->mode == KEY_STONE_FULL_U) {
-                UpdateFullKeyBoard(currText, keyBoard);
-            }
-            if (g_enterProgressLabel != NULL) {
-                if (taLen >= 16) {
-                    lv_obj_set_style_text_color(g_enterProgressLabel, RED_COLOR, LV_PART_MAIN);
-                    lv_obj_set_style_text_opa(g_enterProgressLabel, LV_OPA_100, LV_PART_MAIN);
-                }
-                lv_label_set_text_fmt(g_enterProgressLabel, "%d/16", taLen);
-            }
-        }
-    } else if (code == LV_EVENT_READY) {
-        if (keyBoard->mode == KEY_STONE_LETTER) {
-            if (g_importPhraseKb != NULL) {
-                lv_event_send(g_importPhraseKb->btnm, LV_EVENT_READY, (void *)currText);
-            }
-        } else {
-            UpdateFullKeyBoard("", keyBoard);
-        }
-    } else if (code == LV_EVENT_CANCEL) {
-        Vibrate(SLIGHT);
-        if (keyBoard->mode == KEY_STONE_LETTER) {
-            if (strlen(currText) < 3) {
-                for (int i = 0; i < 3; i++) {
-                    memset(g_wordBuf[i], 0, sizeof(g_wordBuf[i]));
-                    lv_label_set_text(keyBoard->associateLabel[i], "");
-                }
-            }
-            if (g_importPhraseKb != NULL) {
-                lv_event_send(g_importPhraseKb->btnm, LV_EVENT_CANCEL, (void *)currText);
-            }
-            UpdateKeyBoard(rootTree, currText, keyBoard);
-        } else {
-            // if (keyBoard->mode == KEY_STONE_FULL_L || keyBoard->mode == KEY_STONE_FULL_U) {
-            //     UpdateFullKeyBoard(currText, keyBoard);
-            // }
-
-            if (g_enterProgressLabel != NULL) {
-                lv_label_set_text_fmt(g_enterProgressLabel, "%d/16", taLen);
-                lv_obj_set_style_text_color(g_enterProgressLabel, WHITE_COLOR, LV_PART_MAIN);
-                lv_obj_set_style_text_opa(g_enterProgressLabel, LV_OPA_56, LV_PART_MAIN);
-            }
-        }
-    } else if (code == KEY_STONE_KEYBOARD_CHANGE) {
-        Vibrate(SLIGHT);
-        lv_keyboard_user_mode_t *keyMode = lv_event_get_param(e);
-        keyBoard->mode = *keyMode;
-        GuiKeyBoardSetMode(keyBoard);
-    } else if (code == LV_EVENT_CLICKED) {
-        Vibrate(SLIGHT);
-    }
 }
 
 void *GuiCreateLetterKeyBoard(lv_obj_t *parent, lv_event_cb_t cb, bool bip39, void *param)
 {
-    static lv_point_t linePoints[2] = {{0, 0}, {0, 40}};
-
-    if (param != NULL) {
-        g_importPhraseKb = param;
-        g_importPhraseKb->btnm = ((MnemonicKeyBoard_t*)param)->btnm;
-    }
-
-    UpdateRootTree(bip39);
-
-    KeyBoard_t *keyBoard = GuiCreateKeyBoard(parent, cb, KEY_STONE_LETTER, NULL);
-    lv_obj_align(keyBoard->kb, LV_ALIGN_TOP_MID, 0, 50);
-
-    lv_obj_t *cont = GuiCreateContainerWithParent(keyBoard->cont, 408, 50);
-    lv_obj_set_style_bg_color(cont, DARK_BG_COLOR, 0);
-    lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 2, 5);
-    lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_ROW);
-
-    lv_obj_t *btn = lv_btn_create(cont);
-    lv_obj_align_to(btn, cont, LV_ALIGN_LEFT_MID, 7, 0);
-    lv_obj_set_height(btn, 40);
-    lv_obj_set_style_bg_opa(btn, 0, 0);
-    lv_obj_set_style_shadow_width(btn, 0, 0);
-    lv_obj_t *label1 = GuiCreateLittleTitleLabel(btn, "");
-    lv_obj_set_align(label1, LV_ALIGN_CENTER);
-    lv_obj_set_style_text_color(label1, WHITE_COLOR, 0);
-    lv_obj_add_event_cb(btn, LetterKbAssociateHandler, LV_EVENT_ALL, keyBoard);
-    keyBoard->associateLabel[0] = label1;
-    lv_obj_t *line = GuiCreateLine(cont, linePoints, 2);
-    lv_obj_align_to(line, btn, LV_ALIGN_OUT_RIGHT_MID, 5, 15);
-
-    btn = lv_btn_create(cont);
-    lv_obj_align_to(btn, line, LV_ALIGN_OUT_RIGHT_MID, 0, 0);
-    lv_obj_set_height(btn, 40);
-    lv_obj_set_style_bg_opa(btn, 0, 0);
-    lv_obj_set_style_shadow_width(btn, 0, 0);
-    lv_obj_t *label2 = GuiCreateLittleTitleLabel(btn, "");
-    lv_obj_set_align(label2, LV_ALIGN_CENTER);
-    lv_obj_set_style_text_color(label2, WHITE_COLOR, 0);
-    lv_obj_add_event_cb(btn, LetterKbAssociateHandler, LV_EVENT_ALL, keyBoard);
-    keyBoard->associateLabel[1] = label2;
-    line = GuiCreateLine(cont, linePoints, 2);
-    lv_obj_align_to(line, btn, LV_ALIGN_OUT_RIGHT_MID, 5, 15);
-
-    btn = lv_btn_create(cont);
-    lv_obj_align_to(btn, line, LV_ALIGN_OUT_RIGHT_MID, 0, 0);
-    lv_obj_set_height(btn, 40);
-    lv_obj_set_style_bg_opa(btn, 0, 0);
-    lv_obj_set_style_shadow_width(btn, 0, 0);
-    lv_obj_t *label3 = GuiCreateLittleTitleLabel(btn, "");
-    lv_obj_set_align(label3, LV_ALIGN_CENTER);
-    lv_obj_set_style_text_color(label3, WHITE_COLOR, 0);
-    lv_obj_add_event_cb(btn, LetterKbAssociateHandler, LV_EVENT_ALL, keyBoard);
-    keyBoard->associateLabel[2] = label3;
-
-    btn = GuiCreateBtn(keyBoard->cont, "");
-    lv_obj_align(btn, LV_ALIGN_TOP_RIGHT, 0, 2);
-    lv_obj_set_size(btn, 70, 50);
-    lv_obj_t *img = GuiCreateImg(btn, &imgArrowDownS);
-    lv_obj_align(img, LV_ALIGN_RIGHT_MID, 0, 0);
-    lv_obj_set_style_radius(btn, 0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_obj_add_event_cb(btn, CloseLetterKbHandler, LV_EVENT_ALL, keyBoard);
-
-    lv_obj_t *ta = lv_textarea_create(keyBoard->cont);
-    lv_obj_set_size(ta, 0, 0);
-    lv_obj_align(ta, LV_ALIGN_TOP_LEFT, 10, 10);
-    lv_obj_add_event_cb(ta, KbTextAreaHandler, LV_EVENT_ALL, keyBoard);
-    lv_obj_set_style_bg_color(ta, DARK_BG_COLOR, 0);
-    lv_obj_set_style_text_opa(ta, 0, 0);
-    keyBoard->ta = ta;
-
-    lv_keyboard_set_textarea(keyBoard->kb, ta);
-    lv_textarea_set_max_length(ta, 12);
-
-    return keyBoard;
 }
 

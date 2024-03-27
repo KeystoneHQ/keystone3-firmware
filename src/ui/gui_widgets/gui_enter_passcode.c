@@ -13,7 +13,7 @@
 #include "secret_cache.h"
 #include "gui_model.h"
 #include "keystore.h"
-#include "gui_setting_widgets.h"
+
 #include "gui_lock_widgets.h"
 #include "motor_manager.h"
 
@@ -144,14 +144,10 @@ static void SetPinEventHandler(lv_event_t *e)
 
                 g_userParam = g_passParam.userParam;
                 uint8_t index = 0xff;
-                if (g_userParam != NULL && *(uint8_t *)g_userParam == DEVICE_SETTING_RESET_PASSCODE_VERIFY) {
-                    index = GetCurrentAccountIndex();
-                }
 
                 switch (item->mode) {
                 case ENTER_PASSCODE_VERIFY_PIN:
                     SecretCacheSetPassword(g_pinBuf);
-                    GuiModelVerifyAmountPassWord(g_userParam);
                     break;
                 case ENTER_PASSCODE_SET_PIN:
                     if (CheckPasswordExisted(g_pinBuf, index)) {
@@ -206,9 +202,6 @@ static void SetPassWordHandler(lv_event_t *e)
             if (item->mode == ENTER_PASSCODE_SET_PASSWORD) {
                 uint8_t index = 0xff;
 
-                if (g_userParam != NULL && *(uint8_t *)g_userParam == DEVICE_SETTING_RESET_PASSCODE_VERIFY) {
-                    index = GetCurrentAccountIndex();
-                }
                 if (CheckPasswordExisted(currText, index)) {
                     UnlimitedVibrate(LONG);
                     lv_obj_clear_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
@@ -222,7 +215,6 @@ static void SetPassWordHandler(lv_event_t *e)
                 g_userParam = g_passParam.userParam;
                 if (strlen(currText) > 0) {
                     SecretCacheSetPassword((char *)currText);
-                    GuiModelVerifyAmountPassWord(g_userParam);
                 }
             }
             lv_textarea_set_text(ta, "");

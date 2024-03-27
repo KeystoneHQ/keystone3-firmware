@@ -201,30 +201,7 @@ void SetUSBSwitch(uint32_t usbSwitch)
 /// @brief Wipe device.
 void WipeDevice(void)
 {
-    int ret = 0;
-    // reset all account address index in receive page
-    {
-        void GuiResetAllUtxoAddressIndex(void);
-        void GuiResetAllEthAddressIndex(void);
-        void GuiResetAllStandardAddressIndex(void);
 
-        GuiResetAllUtxoAddressIndex();
-        GuiResetAllEthAddressIndex();
-        GuiResetAllStandardAddressIndex();
-    }
-
-    uint32_t wipeFlag = DEVICE_WIPE_FLAG_MAGIC_NUM;
-    ret = Gd25FlashWriteBuffer(SPI_FLASH_ADDR_PROTECT_PARAM, (uint8_t *)&wipeFlag, sizeof(wipeFlag));
-    SetShowPowerOffPage(false);
-    FpWipeManageInfo();
-    ErasePublicInfo();
-    DestroyAccount(0);
-    DestroyAccount(1);
-    DestroyAccount(2);
-    for (uint32_t addr = 0; addr < GD25QXX_FLASH_SIZE; addr += 1024 * 64) {
-        Gd25FlashBlockErase(addr);
-        printf("flash erase address: %#x\n", addr);
-    }
 }
 
 

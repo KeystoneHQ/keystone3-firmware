@@ -18,8 +18,8 @@
 #include <stdlib.h>
 #include "err_code.h"
 #include "gui_power_option_widgets.h"
-#include "gui_firmware_process_widgets.h"
-#include "gui_pop_message_box.h"
+
+
 
 HANDLE hStartEvent;
 static DWORD mainThreadId;

@@ -10,10 +10,9 @@
 #include "drv_button.h"
 #include "gui_api.h"
 #include "gui_views.h"
-#include "qrdecode_task.h"
 #include "low_power.h"
 #include "keystore.h"
-#include "gui_power_option_widgets.h"
+
 #include "fingerprint_task.h"
 #include "user_msg.h"
 #include "device_setting.h"

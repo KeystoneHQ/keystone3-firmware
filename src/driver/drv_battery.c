@@ -222,7 +222,7 @@ bool BatteryIntervalHandler(void)
     if (change) {
         if (g_batterPercent % BATTERY_LOG_PERCENT_INTERVAL == 0) {
 #if BATTERY_LOG_DETAIL == 1
-            WriteLogFormat(EVENT_ID_BATTERY, "%dmv,%d%%,disp=%d%%", milliVolt, percent, g_batterPercent);
+            // WriteLogFormat(EVENT_ID_BATTERY, "%dmv,%d%%,disp=%d%%", milliVolt, percent, g_batterPercent);
 #else
             WriteLogValue(EVENT_ID_BATTERY, g_batterPercent);
 #endif

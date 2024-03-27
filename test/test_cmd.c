@@ -5,7 +5,7 @@
  * Create: 2022-12
  ************************************************************************************************/
 
-#include "test_cmd.h"
+
 #include "stdio.h"
 #include "string.h"
 #include "stdlib.h"
@@ -20,7 +20,7 @@
 #include "drv_ds28s60.h"
 #include "drv_gd25qxx.h"
 #include "drv_rtc.h"
-#include "qrdecode_task.h"
+
 #include "hmac.h"
 #include "user_fatfs.h"
 // #include "user_param.h"

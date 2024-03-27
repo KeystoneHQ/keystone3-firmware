@@ -3,8 +3,8 @@
 #define _GUI_STATUS_BAR_H
 
 #include "gui.h"
-#include "gui_chain.h"
-#include "gui_connect_wallet_widgets.h"
+
+
 typedef enum {
     NVS_BAR_RETURN = 0,
     NVS_BAR_CLOSE,
@@ -51,8 +51,6 @@ void GuiStatusBarSetBattery(uint8_t percent, bool charging);
 void GuiNvsBarSetWalletIcon(const void *src);
 void GuiNvsBarSetWalletName(const char *name);
 const char *GuiNvsBarGetWalletName(void);
-void GuiNvsSetCoinWallet(GuiChainCoinType index, const char *name);
-void GuiNvsSetWallet(WALLET_LIST_INDEX_ENUM index, const char *name);
 void GuiNvsBarClear(void);
 void GuiStatusBarSetSdCard(bool connected);
 void GuiStatusBarSetUsb();
@@ -62,8 +60,6 @@ NavBarWidget_t *CreateNavBarWidget(lv_obj_t *navBar);
 void DestoryNavBarWidget(NavBarWidget_t *navBarWidget);
 void SetNavBarLeftBtn(NavBarWidget_t *navBarWidget, NVS_LEFT_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param);
 void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param);
-void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index, const char *name);
-void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const char *name);
 void SetMidBtnLabel(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, const char *text);
 void SetNavBarRightBtn(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param);
 void SetRightBtnLabel(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM button, const char *text);

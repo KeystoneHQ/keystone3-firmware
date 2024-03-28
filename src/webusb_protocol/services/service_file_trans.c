@@ -296,7 +296,9 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
     g_fileTransCtrl.endTick = osKernelGetTickCount();
     PrintArray("tlvData", tlvData, head->length);
     MD5_Final(md5Result, &ctx);
+    PrintArray("g_fileTransInfo.md5", g_fileTransInfo.md5, 16);
     PrintArray("md5Result", md5Result, 16);
+    ASSERT(memcmp(md5Result, g_fileTransInfo.md5, 16) == 0);
     printf("total tick=%d\n", g_fileTransCtrl.endTick - g_fileTransCtrl.startTick);
 
     sendHead.packetIndex = head->packetIndex;
@@ -307,11 +309,8 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
 
     GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 0);
     *outLen = sizeof(FrameHead_t) + 4;
-    // save setup phase
-    {
-        SetSetupStep(4);
-        SaveDeviceSettings();
-    }
+    SetSetupStep(4);
+    SaveDeviceSettings();
     SystemReboot();
     return BuildFrame(&sendHead, NULL, 0);
 }

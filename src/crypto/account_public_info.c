@@ -20,7 +20,8 @@
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
-#else 
+#include "simulator_model.h"
+#else
 #include "safe_str_lib.h"
 #endif
 

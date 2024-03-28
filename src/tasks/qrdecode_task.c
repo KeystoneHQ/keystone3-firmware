@@ -30,6 +30,7 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
 // The order of the enumeration must be guaranteed
 static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_BTC, (SetChainDataFunc)GuiSetPsbtUrData},
+    {REMAPVIEW_BTC_MESSAGE, (SetChainDataFunc)GuiSetPsbtUrData},
 #ifndef BTC_ONLY
     {REMAPVIEW_ETH, (SetChainDataFunc)GuiSetEthUrData},
     {REMAPVIEW_ETH_PERSONAL_MESSAGE, (SetChainDataFunc)GuiSetEthUrData},
@@ -136,7 +137,7 @@ void ProcessQr(uint32_t count)
 
     if (ret > 0) {
         if (firstQrFlag == true) {
-            assert(!(strnlen_s(qrString, QR_DECODE_STRING_LEN + 1) >= QR_DECODE_STRING_LEN));
+            assert(strnlen_s(qrString, QR_DECODE_STRING_LEN) < QR_DECODE_STRING_LEN);
             urResult = parse_ur(qrString);
             if (urResult->error_code == 0) {
                 if (urResult->is_multi_part == 0) {

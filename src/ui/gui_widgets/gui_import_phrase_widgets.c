@@ -34,7 +34,6 @@ static MnemonicKeyBoard_t *g_importMkb;
 static KeyBoard_t *g_importPhraseKb;
 static lv_obj_t *g_importPhraseKbCont = NULL;
 static uint8_t g_inputWordsCnt = 0;
-static lv_obj_t *g_importMkbCont = NULL;
 static lv_obj_t *g_buttonCont = NULL;
 static PageWidget_t *g_pageWidget;
 
@@ -142,8 +141,7 @@ int8_t GuiImportPhraseNextTile(void)
 {
     switch (g_importSinglePhraseTileView.currentTile) {
     case SINGLE_PHRASE_INPUT_PHRASE:
-        lv_obj_add_flag(g_importMkbCont, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(g_buttonCont, LV_OBJ_FLAG_HIDDEN);
+        if (g_buttonCont != NULL) lv_obj_add_flag(g_buttonCont, LV_OBJ_FLAG_HIDDEN);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         break;
@@ -160,8 +158,7 @@ int8_t GuiImportPhrasePrevTile(void)
     case SINGLE_PHRASE_INPUT_PHRASE:
         break;
     case SINGLE_PHRASE_WRITE_SE:
-        lv_obj_clear_flag(g_importMkbCont, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(g_buttonCont, LV_OBJ_FLAG_HIDDEN);
+        if (g_buttonCont != NULL) lv_obj_clear_flag(g_buttonCont, LV_OBJ_FLAG_HIDDEN);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
         GuiImportPhraseRefresh();
         break;

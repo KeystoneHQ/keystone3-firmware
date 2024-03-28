@@ -25,6 +25,7 @@
 #include "keystore.h"
 #else
 #include "simulator_model.h"
+#include "simulator_mock_define.h"
 #endif
 
 typedef void (*setting_update_cb)(void *obj, void *param);

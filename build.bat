@@ -1,6 +1,7 @@
 @echo off
 
 SET BUILD_FOLDER=%CD%\build
+SET BUILD_SIMULATOR_FOLDER=%CD%\build_simulator
 SET TOOLS_FOLDER=%CD%\tools
 SET ALWAYSE_BUILD_FILE=%CD%\driver\drv_sys.c
 SET MAKE_OAT_FILE_PATH=%TOOLS_FOLDER%\ota_file_maker
@@ -104,20 +105,27 @@ if "%build_debug%"=="true" (
     set cmake_parm=%cmake_parm% -DDEBUG_MEMORY=true
 )
 if "%build_simulator%"=="true" (
-    set cmake_parm=%cmake_parm% -DCMAKE_BUILD_TYPE=Simulator
-)
+    if not exist %BUILD_SIMULATOR_FOLDER% (
+        mkdir %BUILD_SIMULATOR_FOLDER%
+    )
 
-echo %cmake_parm%
-pushd build
-cmake -G "Unix Makefiles" %cmake_parm% ..
-
-if "%build_log%"=="true" (
-    make -j16 > makefile.log 2>&1
+    pushd %BUILD_SIMULATOR_FOLDER%
+    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Simulator ..
+    make -j16
+    popd
 ) else (
-    make -j16 | stdbuf -oL tr '\n' '\n'
+    echo %cmake_parm%
+    pushd %BUILD_FOLDER%
+    cmake -G "Unix Makefiles" %cmake_parm% ..
+
+    if "%build_log%"=="true" (
+        make -j16 > makefile.log 2>&1
+    ) else (
+        make -j16 | stdbuf -oL tr '\n' '\n'
+    )
+    python3 .\padding_bin_file.py .\mh1903.bin
+    popd
 )
-python3 .\padding_bin_file.py .\mh1903.bin
-popd
 
 if "%build_copy%"=="true" (
     pushd %MAKE_OAT_FILE_PATH%

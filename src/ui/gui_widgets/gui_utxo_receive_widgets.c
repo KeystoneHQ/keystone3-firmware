@@ -153,15 +153,15 @@ static uint32_t g_addressSettingsNum = sizeof(g_addressSettings) / sizeof(g_addr
 #else
 
 static const AddressSettingsItem_t g_mainNetAddressSettings[] = {
-    {"Taproot",         "P2TR",             "m/86'/0'/0'"},
     {"Native SegWit",   "P2WPKH",           "m/84'/0'/0'"},
+    {"Taproot",         "P2TR",             "m/86'/0'/0'"},
     {"Nested SegWit",   "P2SH-P2WPKH",      "m/49'/0'/0'"},
     {"Legacy",          "P2PKH",            "m/44'/0'/0'"},
 };
 
 static const AddressSettingsItem_t g_testNetAddressSettings[] = {
-    {"Taproot",         "P2TR",             "m/86'/1'/0'"},
     {"Native SegWit",   "P2WPKH",           "m/84'/1'/0'"},
+    {"Taproot",         "P2TR",             "m/86'/1'/0'"},
     {"Nested SegWit",   "P2SH-P2WPKH",      "m/49'/1'/0'"},
     {"Legacy",          "P2PKH",            "m/44'/1'/0'"},
 };
@@ -1413,9 +1413,9 @@ static ChainType GetChainTypeByIndex(uint32_t index)
 #else
     ASSERT(g_chainCard == HOME_WALLET_CARD_BTC);
     if (index == 0) {
-        return GetIsTestNet() ? XPUB_TYPE_BTC_TAPROOT_TEST : XPUB_TYPE_BTC_TAPROOT;
-    } else if (index == 1) {
         return GetIsTestNet() ? XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST : XPUB_TYPE_BTC_NATIVE_SEGWIT;
+    } else if (index == 1) {
+        return GetIsTestNet() ? XPUB_TYPE_BTC_TAPROOT_TEST : XPUB_TYPE_BTC_TAPROOT;
     } else if (index == 2) {
         return GetIsTestNet() ? XPUB_TYPE_BTC_TEST : XPUB_TYPE_BTC;
     } else {

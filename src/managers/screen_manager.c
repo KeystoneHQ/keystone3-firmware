@@ -106,6 +106,8 @@ static void ReleaseHandler(void)
 static void LockScreen(void)
 {
     if (GetLowPowerState() == LOW_POWER_STATE_DEEP_SLEEP) {
+        RecoverFromLowPower();
+        printf("recovery from low power\n");
         return;
     }
 
@@ -122,9 +124,7 @@ static void LockScreen(void)
     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
     uint8_t accountNum = 1;
 
-    if (FpModuleIsExist()) {
-        SetFpLowPowerMode();
-    }
+    SetFpLowPowerMode();
     ClearLockScreenTime();
     ClearShutdownTime();
     LcdBacklightOff();
@@ -144,13 +144,11 @@ static void LockScreen(void)
         GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_CLEAR_ALL_TOP, NULL, 0);
     }
 
-    if (!FpModuleIsExist()) {
-        uint32_t wakeUpCount = EnterLowPower();
-        RecoverFromLowPower();
-        ClearLockScreenTime();
-        ClearShutdownTime();
-        printf("wakeUpCount=%d\r\n", wakeUpCount);
-    }
+    uint32_t wakeUpCount = EnterLowPower();
+    RecoverFromLowPower();
+    ClearLockScreenTime();
+    ClearShutdownTime();
+    printf("wakeUpCount=%d\r\n", wakeUpCount);
 }
 
 

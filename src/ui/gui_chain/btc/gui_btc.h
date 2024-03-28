@@ -6,6 +6,7 @@
 UREncodeResult *GuiGetSignQrCodeData(void);
 void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void FreePsbtUxtoMemory(void);
+void FreeBtcMsgMemory(void);
 void *GuiGetParsedQrData(void);
 PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void);
 void GetPsbtTotalOutAmount(void *indata, void *param, uint32_t maxLen);
@@ -26,5 +27,8 @@ void *GetPsbtOutputDetailData(uint8_t *row, uint8_t *col, void *param);
 
 void GetPsbtOverviewSize(uint16_t *width, uint16_t *height, void *param);
 void GetPsbtDetailSize(uint16_t *width, uint16_t *height, void *param);
+
+int GetBtcMsgDetailLen(void *param);
+void GetBtcMsgDetail(void *indata, void *param);
 
 #endif

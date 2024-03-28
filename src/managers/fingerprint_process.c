@@ -578,7 +578,7 @@ void FpLowerPowerRecv(char *indata, uint8_t len)
     if (len == 0) {
         // FpResponseHandleStop();
     } else {
-        LowerPowerTimerStart();
+        // LowerPowerTimerStart();
     }
 }
 

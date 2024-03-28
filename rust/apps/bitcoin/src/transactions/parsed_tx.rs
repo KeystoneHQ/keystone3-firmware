@@ -94,7 +94,7 @@ pub trait TxParser {
         let total_input_value = inputs.iter().fold(0, |acc, cur| acc + cur.value);
         let total_output_value = outputs.iter().fold(0, |acc, cur| acc + cur.value);
         let fee = total_input_value - total_output_value;
-        if fee <= 0 {
+        if total_input_value < total_output_value {
             return Err(BitcoinError::InvalidTransaction(
                 "inputs total value is less than outputs total value".to_string(),
             ));

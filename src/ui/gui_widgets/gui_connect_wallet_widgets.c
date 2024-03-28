@@ -55,11 +55,13 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_ZAPPER, &walletListZapper, true},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true},
+    {WALLET_LIST_UNISAT, &walletListUniSat, true},
 #else
     {WALLET_LIST_BLUE,      &btcWalletListBlue,     true,   false},
     {WALLET_LIST_SPARROW,   &btcWalletListSparrow,  true,   false},
     {WALLET_LIST_NUNCHUK,   &btcWalletListNunchuk,  true,   false},
     {WALLET_LIST_SPECTER,   &btcWalletListSpecter,  true,   true},
+    {WALLET_LIST_UNISAT,    &walletListUniSat,      true,   true},
 #endif
 };
 
@@ -163,6 +165,14 @@ static const lv_img_dsc_t *g_okxWalletCoinArray[] = {
 
 static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {
     &coinBtc,
+};
+
+static const lv_img_dsc_t *g_UniSatCoinArray[5] = {
+    &coinBtc,
+    &coinOrdi,
+    &coinSats,
+    &coinMubi,
+    &coinTrac,
 };
 
 static const lv_img_dsc_t *g_keplrCoinArray[8] = {
@@ -814,6 +824,25 @@ static void AddBlueWalletCoins(void)
     }
 }
 
+static void AddUniSatWalletCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0; i < 5; i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_UniSatCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+    // Add more
+    lv_obj_t *img = GuiCreateImg(g_coinCont, &imgMore);
+    lv_img_set_zoom(img, 150);
+    lv_img_set_pivot(img, 0, 0);
+    lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * 5, 2);
+}
+
 static void AddKeplrCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -996,6 +1025,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_SPARROW:
         func = GuiGetSparrowWalletBtcData;
         AddBlueWalletCoins();
+        break;
+    case WALLET_LIST_UNISAT:
+        func = GuiGetSparrowWalletBtcData;
+        AddUniSatWalletCoins();
         break;
     case WALLET_LIST_SUB:
         break;

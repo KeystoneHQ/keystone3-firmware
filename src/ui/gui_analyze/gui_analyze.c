@@ -177,6 +177,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreeXrpMemory,
     },
+    {
+        REMAPVIEW_BTC_MESSAGE,
+#ifndef COMPILE_SIMULATOR
+        "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text\":\"Message\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,0],\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,38],\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetBtcMsgDetail\",\"text_len_func\":\"GetBtcMsgDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_btc_msg.json",
+#endif
+        GuiGetParsedQrData,
+        NULL,
+        FreeBtcMsgMemory,
+    },
 #endif
 };
 
@@ -401,6 +412,8 @@ GetLabelDataFunc GuiBtcTextFuncGet(char *type)
         return GetPsbtDetailInputValue;
     } else if (!strcmp(type, "GetPsbtDetailFee")) {
         return GetPsbtDetailFee;
+    } else if (!strcmp(type, "GetBtcMsgDetail")) {
+        return GetBtcMsgDetail;
     }
     return NULL;
 }
@@ -611,6 +624,14 @@ GetLabelDataLenFunc GuiSuiTextLenFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataLenFunc GuiBtcTextLenFuncGet(char *type)
+{
+    if (!strcmp(type, "GetBtcMsgDetailLen")) {
+        return GetBtcMsgDetailLen;
+    }
+    return NULL;
+}
+
 GetLabelDataFunc GuiAptosTextFuncGet(char *type)
 {
     if (!strcmp(type, "GetAptosDetail")) {
@@ -687,6 +708,8 @@ GetLabelDataLenFunc GuiAdaTextLenFuncGet(char *type)
 GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
 {
     switch (g_reMapIndex) {
+    case REMAPVIEW_BTC_MESSAGE:
+        return GuiBtcTextLenFuncGet(type);
 #ifndef BTC_ONLY
     case REMAPVIEW_SUI:
         return GuiSuiTextLenFuncGet(type);
@@ -708,6 +731,7 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
 {
     switch (g_reMapIndex) {
     case REMAPVIEW_BTC:
+    case REMAPVIEW_BTC_MESSAGE:
         return GuiBtcTextFuncGet(type);
 #ifndef BTC_ONLY
     case REMAPVIEW_ETH:
@@ -1437,6 +1461,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
     case BchTx:
 #endif
         return REMAPVIEW_BTC;
+    case BtcMsg:
+        return REMAPVIEW_BTC_MESSAGE;
 #ifndef BTC_ONLY
     case EthTx:
         return REMAPVIEW_ETH;

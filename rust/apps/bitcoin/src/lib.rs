@@ -16,6 +16,10 @@ mod macros;
 pub mod network;
 mod transactions;
 pub use addresses::get_address;
+use third_party::bitcoin::sign_message;
+use third_party::bitcoin_hashes::Hash;
+use third_party::secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
+use third_party::secp256k1::Message;
 pub use transactions::legacy::sign_legacy_tx;
 pub use transactions::parsed_tx;
 pub use transactions::psbt::parsed_psbt;
@@ -41,6 +45,23 @@ pub fn sign_psbt(psbt_hex: Vec<u8>, seed: &[u8], mfp: Fingerprint) -> Result<Vec
     let mut wpsbt = WrappedPsbt { psbt };
     let result = wpsbt.sign(seed, mfp)?;
     Ok(result.serialize())
+}
+
+pub fn sign_msg(msg: &str, seed: &[u8], path: &String) -> Result<Vec<u8>> {
+    let hash = sign_message::signed_msg_hash(msg).to_byte_array();
+    let message =
+        Message::from_digest_slice(&hash).map_err(|e| BitcoinError::SignFailure(e.to_string()))?;
+    let (rec_id, rs) = keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
+        .map_err(|e| BitcoinError::SignFailure(e.to_string()))?;
+    let rec_id =
+        RecoveryId::from_i32(rec_id).map_err(|e| BitcoinError::SignFailure(e.to_string()))?;
+    RecoverableSignature::from_compact(&rs, rec_id)
+        .map_err(|_| BitcoinError::SignFailure("failed to encode signature".to_string()))
+        .map(|signature| {
+            sign_message::MessageSignature::new(signature, false)
+                .serialize()
+                .to_vec()
+        })
 }
 
 pub fn parse_psbt(psbt_hex: Vec<u8>, context: ParseContext) -> Result<ParsedTx> {
@@ -86,10 +107,10 @@ fn deserialize_psbt(psbt_hex: Vec<u8>) -> Result<Psbt> {
 mod test {
     use crate::addresses::xyzpub::{convert_version, Version};
     use crate::alloc::string::ToString;
-    use crate::parse_raw_tx;
     use crate::transactions::parsed_tx::{
         DetailTx, OverviewTx, ParsedInput, ParsedOutput, ParsedTx,
     };
+    use crate::{parse_raw_tx, sign_msg};
     use alloc::vec::Vec;
     use app_utils::keystone;
     use core::str::FromStr;
@@ -494,5 +515,15 @@ mod test {
         );
         let expected_parsed_tx = ParsedTx { overview, detail };
         assert_eq!(expected_parsed_tx, parsed_tx);
+    }
+
+    #[test]
+    fn test_sign_msg() {
+        let seed = third_party::hex::decode("7bf300876c3927d133c7535cbcb19d22e4ac1aff29998355d2fa7ed749212c7106620e74daf0f3d5e13a48dfb8b17641c711b513d92c7a5023ca5b1ad7b202e5").unwrap();
+        let path = "M/44'/0'/0'/0/0".to_string();
+        let msg = "123";
+
+        let sig = sign_msg(msg, &seed, &path).unwrap();
+        assert_eq!(third_party::base64::encode(&sig), "G8CDgK7sBj7o+OFZ+IVZyrKmcZuJn2/KFNHHv+kAxi+FWCUEYpZCyAGz0fj1OYwFM0E+q/TyQ2uZziqWI8k0eYE=");
     }
 }

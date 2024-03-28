@@ -5,6 +5,7 @@ use alloc::vec::Vec;
 use third_party::serde_json::{from_slice, from_value, Value};
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
+use third_party::ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
 use third_party::ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
@@ -161,6 +162,12 @@ impl InferViewType for Bytes {
             }
             Err(_e) => get_view_type_from_keystone(self.get_bytes()),
         }
+    }
+}
+
+impl InferViewType for BtcSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::BtcMsg)
     }
 }
 

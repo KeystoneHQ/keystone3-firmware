@@ -25,25 +25,6 @@
 
 static void QrDecodeTask(void *argument);
 static void QrDecodeMinuteTimerFunc(void *argument);
-void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi);
-
-// The order of the enumeration must be guaranteed
-static SetChainData_t g_chainViewArray[] = {
-    {REMAPVIEW_BTC, (SetChainDataFunc)GuiSetPsbtUrData},
-#ifndef BTC_ONLY
-    {REMAPVIEW_ETH, (SetChainDataFunc)GuiSetEthUrData},
-    {REMAPVIEW_ETH_PERSONAL_MESSAGE, (SetChainDataFunc)GuiSetEthUrData},
-    {REMAPVIEW_ETH_TYPEDDATA, (SetChainDataFunc)GuiSetEthUrData},
-    {REMAPVIEW_TRX, (SetChainDataFunc)GuiSetTrxUrData},
-    {REMAPVIEW_COSMOS, (SetChainDataFunc)GuiSetCosmosUrData},
-    {REMAPVIEW_SUI, (SetChainDataFunc)GuiSetSuiUrData},
-    {REMAPVIEW_SOL, (SetChainDataFunc)GuiSetSolUrData},
-    {REMAPVIEW_SOL_MESSAGE, (SetChainDataFunc)GuiSetSolUrData},
-    {REMAPVIEW_APT, (SetChainDataFunc)GuiSetAptosUrData},
-    {REMAPVIEW_ADA, (SetChainDataFunc)GuiSetupAdaUrData},
-    {REMAPVIEW_XRP, (SetChainDataFunc)GuiSetXrpUrData},
-#endif
-};
 
 osThreadId_t g_qrDecodeTaskHandle;
 static volatile QrDecodeStateType g_qrDecodeState;
@@ -191,44 +172,6 @@ void ProcessQr(uint32_t count)
         printf("decode err=%d\r\n", ret);
     }
     count++;
-}
-
-void HandleDefaultViewType(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi)
-{
-    GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
-    if (viewType != REMAPVIEW_BUTT) {
-        g_chainViewArray[viewType].func(urResult, urMultiResult, is_multi);
-    }
-}
-
-void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi)
-{
-    GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
-    switch (urViewType.viewType) {
-    case WebAuthResult:
-        GuiSetWebAuthResultData(urResult, urMultiResult, is_multi);
-        break;
-#ifndef BTC_ONLY
-    case KeyDerivationRequest:
-        GuiSetKeyDerivationRequestData(urResult, urMultiResult, is_multi);
-        break;
-#endif
-    default:
-        HandleDefaultViewType(urResult, urMultiResult, urViewType, is_multi);
-        break;
-    }
-
-    if (urViewType.viewType == WebAuthResult
-#ifndef BTC_ONLY
-            || urViewType.viewType == KeyDerivationRequest
-#endif
-            || viewType != REMAPVIEW_BUTT) {
-        StopQrDecode();
-        UserDelay(500);
-        GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
-    } else {
-        printf("unhandled viewType=%d\r\n", urViewType.viewType);
-    }
 }
 
 void StartQrDecode(void)

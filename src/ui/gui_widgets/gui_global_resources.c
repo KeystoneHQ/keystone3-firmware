@@ -24,8 +24,8 @@ void DerivationPathDescsInit(void)
     g_btcDerivationPathDesc[BTC_NESTED_SEGWIT] = (char *)_("derivation_path_btc_2_desc");
     g_btcDerivationPathDesc[BTC_LEGACY] = (char *)_("derivation_path_btc_3_desc");
 #ifdef BTC_ONLY
-    g_btcTestNetDerivationPathDesc[BTC_TAPROOT] = (char *)_("derivation_path_btc_test_net_4_desc");
     g_btcTestNetDerivationPathDesc[BTC_NATIVE_SEGWIT] = (char *)_("derivation_path_btc_test_net_1_desc");
+    g_btcTestNetDerivationPathDesc[BTC_TAPROOT] = (char *)_("derivation_path_btc_test_net_4_desc");
     g_btcTestNetDerivationPathDesc[BTC_NESTED_SEGWIT] = (char *)_("derivation_path_btc_test_net_2_desc");
     g_btcTestNetDerivationPathDesc[BTC_LEGACY] = (char *)_("derivation_path_btc_test_net_3_desc");
 #endif

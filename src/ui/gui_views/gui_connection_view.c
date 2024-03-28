@@ -33,7 +33,7 @@ int32_t GuiConnectionViewEventProcess(void *self, uint16_t usEvent, void *param,
         if (rcvValue) {
             FormatMicroHandleResult(ERR_UPDATE_SDCARD_NOT_DETECTED);
         }
-        break;
+        return ERR_GUI_UNHANDLED;
     default:
         return ERR_GUI_UNHANDLED;
     }

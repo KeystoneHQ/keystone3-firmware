@@ -20,7 +20,7 @@
 static lv_obj_t *g_cont;
 static lv_obj_t *usbConnectionSw;
 static PageWidget_t *g_pageWidget;
-static lv_obj_t *g_noticeWindow;
+static lv_obj_t *g_noticeWindow = NULL;
 
 static void GuiConnectionNVSBarInit(void);
 static void GuiConnectionEntranceWidget(lv_obj_t *parent);
@@ -69,7 +69,6 @@ static void GuiConnectionNVSBarInit()
 
 void GuiConnectionEntranceWidget(lv_obj_t *parent)
 {
-
     usbConnectionSw = lv_switch_create(parent);
     lv_obj_add_event_cb(usbConnectionSw, UsbConnectionSwitchHandler, LV_EVENT_ALL, NULL);
     lv_obj_set_style_bg_color(usbConnectionSw, ORANGE_COLOR, LV_STATE_CHECKED | LV_PART_INDICATOR);
@@ -111,27 +110,32 @@ void GuiConnectionEntranceWidget(lv_obj_t *parent)
     lv_obj_t *line = GuiCreateDividerLine(parent);
     lv_obj_align_to(line, button, LV_ALIGN_OUT_BOTTOM_MID, 0, 12);
 
-    table[0].obj = GuiCreateTextLabel(parent, _("sdcard_format_subtitle"));
+    table[0].obj = GuiCreateImg(parent, &imgSdFormat);
     table[0].align = LV_ALIGN_LEFT_MID;
     table[0].position.x = 24;
     table[0].position.y = 0;
-    button = GuiCreateButton(parent, 456, 84, table, 1, FormatMicroSDWindowHandler, NULL);
+    table[1].obj = GuiCreateTextLabel(parent, _("sdcard_format_subtitle"));
+    table[1].position.x = 76;
+    button = GuiCreateButton(parent, 456, 84, table, 2, FormatMicroSDWindowHandler, NULL);
     lv_obj_align_to(button, line, LV_ALIGN_OUT_BOTTOM_MID, 0, 12);
 }
 
 void FormatMicroHandleResult(int32_t errCode)
 {
+    if (errCode == ERR_UPDATE_SDCARD_NOT_DETECTED && g_noticeWindow != NULL) {
+        GUI_DEL_OBJ(g_noticeWindow)
+        g_noticeWindow = GuiCreateErrorCodeHintbox(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);
+        return;
+    }
     GUI_DEL_OBJ(g_noticeWindow)
     if (errCode == SUCCESS_CODE) {
         g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgSuccess, _("sdcard_format_success_title"), _("sdcard_format_success_desc"), NULL, _("Done"), ORANGE_COLOR);
         lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
         lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-    } else if (errCode == ERR_GENERAL_FAIL){
+    } else if (errCode == ERR_GENERAL_FAIL) {
         g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, _("sdcard_format_failed_title"), _("sdcard_format_failed_desc"), NULL, _("Done"), ORANGE_COLOR);
         lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
         lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-    } else if (errCode == ERR_UPDATE_SDCARD_NOT_DETECTED){
-        g_noticeWindow = GuiCreateErrorCodeHintbox(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);
     }
 }
 

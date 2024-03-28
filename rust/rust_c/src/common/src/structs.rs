@@ -82,7 +82,7 @@ make_free_method!(TransactionCheckResult);
 
 #[repr(C)]
 pub struct SimpleResponse<T> {
-    pub data: *mut T,
+    data: *mut T,
     error_code: u32,
     error_message: PtrString,
 }

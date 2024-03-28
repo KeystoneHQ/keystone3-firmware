@@ -38,18 +38,5 @@ mod tests {
 
         assert_eq!(secret_bytes[..256], p[..]);
         assert_eq!(secret_bytes[256..], q[..]);
-
-        let mut secret_bytes_clone = secret_bytes.clone();
-        let ret = SimpleResponse::success(Box::into_raw(Box::new(secret_bytes)) as *mut u8).simple_c_ptr();
-        
-        let ret_bytes = unsafe { Box::from_raw(ret) };
-        
-        let data_len = secret_bytes_clone.len();
-        unsafe {
-            let ret_slice = std::slice::from_raw_parts(ret_bytes.data, data_len);
-            let secret_slice = std::slice::from_raw_parts(secret_bytes_clone.as_mut_ptr(), data_len);
-            assert_eq!(ret_slice, secret_slice);
-            assert_eq!(ret_slice.len(), 512);
-        }
     }
 }

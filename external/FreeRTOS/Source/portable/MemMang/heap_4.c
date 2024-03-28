@@ -112,40 +112,9 @@ PRIVILEGED_DATA static size_t xNumberOfSuccessfulFrees = 0;
 PRIVILEGED_DATA static size_t xBlockAllocatedBit = 0;
 
 /*-----------------------------------------------------------*/
-bool g_shouldPrintHeapInfo = false;
-size_t g_minimumHeapSize = -1;
-size_t g_maximumHeapSize = 0;
-
-void PreparePrintHeapInfo(void)
-{
-    g_minimumHeapSize = -1;
-    g_maximumHeapSize = 0;
-    g_shouldPrintHeapInfo = true;
-}
-
-void PausePrintHeapInfo(void)
-{
-    g_shouldPrintHeapInfo = false;
-}
-
-void PrintPeakMemoryUsage(void)
-{
-    printf("min heap size: %d\n", g_minimumHeapSize);
-    printf("max heap size: %d\n", g_maximumHeapSize);
-}
 
 void * pvPortMalloc(size_t xWantedSize)
 {
-    if (g_shouldPrintHeapInfo) {
-        size_t heapSize = xPortGetFreeHeapSize();
-        if (g_minimumHeapSize < 0) {
-            g_minimumHeapSize = heapSize;
-            g_maximumHeapSize = heapSize;
-        } else {
-            g_minimumHeapSize = heapSize < g_minimumHeapSize ? heapSize : g_minimumHeapSize;
-            g_maximumHeapSize = heapSize > g_maximumHeapSize ? heapSize : g_maximumHeapSize;
-        }
-    }
     BlockLink_t * pxBlock, * pxPreviousBlock, * pxNewBlockLink;
     void * pvReturn = NULL;
 

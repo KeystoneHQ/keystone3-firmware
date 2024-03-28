@@ -8,7 +8,6 @@
 #include "cjson/cJSON.h"
 #include "user_memory.h"
 #include "account_manager.h"
-#include "log_print.h"
 
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
@@ -582,7 +581,6 @@ UREncodeResult *GuiGetCosmosSignQrCodeData(void)
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-
         encodeResult = cosmos_sign_tx(data, urType, seed, len);
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);

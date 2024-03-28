@@ -89,6 +89,11 @@ void GuiScanResult(bool result, void *param)
                 GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_keyDerivationRequestView);
             }
+#else
+            if (g_qrcodeViewType == MultisigWalletImport) {
+                GuiCLoseCurrentWorkingView();
+                GuiFrameOpenView(&g_multiSigImportWalletInfoView);
+            }
 #endif
             return;
         }

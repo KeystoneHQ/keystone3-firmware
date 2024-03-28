@@ -4,10 +4,12 @@
 #include "gui_home_widgets.h"
 #include "cjson/cJSON.h"
 #include "stdint.h"
+#include "gui_resolve_ur.h"
+
 #ifndef BTC_ONLY
 #include "eapdu_services/service_resolve_ur.h"
 #endif
-#include <qrdecode_task.h>
+
 
 bool g_fingerUnlockDeviceFlag = true;
 bool g_fingerSingTransitionsFlag = false;
@@ -488,8 +490,9 @@ int32_t prepare_qrcode()
     return readBytes;
 }
 
-int32_t read_qrcode(UrViewType_t *viewType)
+int32_t read_qrcode()
 {
+    UrViewType_t viewType;
     prepare_qrcode();
     int i = 0;
     int loopTime = 0;
@@ -507,8 +510,9 @@ int32_t read_qrcode(UrViewType_t *viewType)
         {
             // single qr code
             firstQrFlag = true;
-            viewType->viewType = urResult->t;
-            viewType->urType = urResult->ur_type;
+            viewType.viewType = urResult->t;
+            viewType.urType = urResult->ur_type;
+            handleURResult(urResult, NULL, viewType, false);
             return 0;
         }
         else
@@ -539,8 +543,9 @@ int32_t read_qrcode(UrViewType_t *viewType)
             if (MultiurResult->is_complete)
             {
                 firstQrFlag = true;
-                viewType->viewType = MultiurResult->t;
-                viewType->urType = MultiurResult->ur_type;
+                viewType.viewType = MultiurResult->t;
+                viewType.urType = MultiurResult->ur_type;
+                handleURResult(NULL, MultiurResult, viewType, true);
                 return 0;
             }
         }

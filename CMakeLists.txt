@@ -165,7 +165,7 @@ file(GLOB_RECURSE GUI
     "src/ui/gui_widgets/setting/*.c"
     "src/ui/lv_i18n/*.c"
     "src/ui/gui_model/*.c"
-    "src/ui/gui_analyze/gui_analyze.c"
+    "src/ui/gui_analyze/*.c"
     "src/ui/gui_chain/*.c"
     "src/ui/gui_components/*.c"
     "src/ui/wallet/*.c"

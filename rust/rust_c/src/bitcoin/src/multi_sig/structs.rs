@@ -71,6 +71,7 @@ impl Free for MultiSigXPubItem {
 pub struct MultiSigWallet {
     creator: PtrString,
     name: PtrString,
+    policy: PtrString,
     threshold: u32,
     total: u32,
     derivations: PtrT<VecFFI<PtrString>>,
@@ -84,6 +85,7 @@ impl From<MultiSigWalletConfig> for MultiSigWallet {
         MultiSigWallet {
             creator: convert_c_char(value.creator),
             name: convert_c_char(value.name),
+            policy: convert_c_char(format!("{} of {}", value.threshold, value.total)),
             threshold: value.threshold,
             total: value.total,
             derivations: VecFFI::from(

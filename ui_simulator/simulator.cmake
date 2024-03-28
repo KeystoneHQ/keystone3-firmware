@@ -79,4 +79,9 @@ if(NOT EXISTS ${ASSETS_PATH})
     file(MAKE_DIRECTORY ${ASSETS_PATH})
 endif()
 
+set(QRCODE_FILE ui_simulator/assets/qrcode_data.txt)
+if(NOT EXISTS ${QRCODE_FILE})
+    file(TOUCH ${QRCODE_FILE})
+endif()
+
 include_directories(${SDL2_INCLUDE_DIRS})

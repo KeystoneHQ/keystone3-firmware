@@ -876,6 +876,7 @@ void SetFirstReceive(const char* chainName, bool isFirst)
     Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
 }
 
+#ifdef BTC_ONLY
 void ExportMultiSigXpub(ChainType chainType)
 {
     ASSERT(chainType >= XPUB_TYPE_BTC_MULTI_SIG_P2SH);
@@ -946,17 +947,17 @@ static void ConvertXPub(char *dest, ChainType chainType)
     case XPUB_TYPE_BTC_MULTI_SIG_P2SH:
         sprintf(dest, "%s", xpub);
         break;
-    case XPUB_TYPE_BTC_MULTI_SIG_P2SH_TEST:
-        head[0] = 't';
-        break;
     case XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH:
         head[0] = 'Y';
         break;
-    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH_TEST:
-        head[0] = 'U';
-        break;
     case XPUB_TYPE_BTC_MULTI_SIG_P2WSH:
         head[0] = 'Z';
+        break;
+    case XPUB_TYPE_BTC_MULTI_SIG_P2SH_TEST:
+        head[0] = 't';
+        break;
+    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH_TEST:
+        head[0] = 'U';
         break;
     case XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST:
         head[0] = 'V';
@@ -969,6 +970,8 @@ static void ConvertXPub(char *dest, ChainType chainType)
     sprintf(dest, "%s", result->data);
     free_simple_response_c_char(result);
 }
+#endif
+
 
 static void replace(char *str, const char *old_str, const char *new_str)
 {

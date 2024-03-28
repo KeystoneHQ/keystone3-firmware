@@ -1144,6 +1144,7 @@ static int32_t ModeControlQrDecode(const void *inData, uint32_t inDataLen)
     UrViewType_t urViewType = { CardanoTx, CardanoSignRequest };
 #else
     UrViewType_t urViewType = { BtcNativeSegwitTx, CryptoPSBT };
+    read_qrcode(&urViewType);
 #endif
     GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
 #endif

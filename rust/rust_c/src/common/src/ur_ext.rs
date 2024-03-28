@@ -164,7 +164,7 @@ impl InferViewType for Bytes {
             #[cfg(feature = "btc-only")]
             Err(_e) => {
                 if app_bitcoin::multi_sig::wallet::is_valid_wallet_config(&self) {
-                    return Ok(ViewType::MultisigWalletImport)
+                    return Ok(ViewType::MultisigWalletImport);
                 }
                 get_view_type_from_keystone(self.get_bytes())
             }

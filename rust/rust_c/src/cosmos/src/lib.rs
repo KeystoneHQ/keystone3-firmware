@@ -133,21 +133,6 @@ pub extern "C" fn cosmos_check_tx(
 }
 
 #[no_mangle]
-pub extern "C" fn c_get_rsa_secret_from_seed(
-    seed: PtrBytes,
-    seed_len: u32,
-) -> *mut SimpleResponse<c_char> {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
-    match get_rsa_secret_from_seed(seed) {
-        Ok(secret) => {
-            let sentence = format!("p is {}, q is {}, d is {}, n is {}", secret.p, secret.q, secret.d, secret.n);
-            SimpleResponse::success(convert_c_char(sentence) as *mut c_char).simple_c_ptr()
-        }
-        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
-    }
-}
-
-#[no_mangle]
 pub extern "C" fn cosmos_get_address(
     hd_path: PtrString,
     root_x_pub: PtrString,

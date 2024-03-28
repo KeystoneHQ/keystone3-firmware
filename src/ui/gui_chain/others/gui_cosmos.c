@@ -583,21 +583,6 @@ UREncodeResult *GuiGetCosmosSignQrCodeData(void)
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
 
-        printf("[START] c_get_rsa_secret_from_seed\n");
-        for (int i = 0; i < len; i++) {
-            printf("%02x", seed[i]);
-        }
-        printf("\n--- START: xPortGetFreeHeapSize: %d ---\n", xPortGetFreeHeapSize());
-
-        PreparePrintHeapInfo();
-        SimpleResponse_c_char *result = c_get_rsa_secret_from_seed(seed, len);
-        PrintPeakMemoryUsage();
-        PausePrintHeapInfo();
-
-        printf("RESULT: c_get_rsa_secret_from_seed: %s\n", result->data);
-        free_simple_response_c_char(result);
-        printf("--- END: xPortGetFreeHeapSize: %d --- \n", xPortGetFreeHeapSize());
-        printf("\n");
         encodeResult = cosmos_sign_tx(data, urType, seed, len);
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);

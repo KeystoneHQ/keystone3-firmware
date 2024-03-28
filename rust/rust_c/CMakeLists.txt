@@ -43,7 +43,7 @@ else()
 
     set(CARGO_TOML_PATH ${RUST_C_DIR}/Cargo.toml)
     if(BTC_ONLY)
-        set(CARGO_FLAG --manifest-path ${CARGO_TOML_PATH} --release --no-default-features --features btc-only --features simulator)
+        set(CARGO_FLAG --manifest-path ${CARGO_TOML_PATH} --release --no-default-features --features simulator_btc_only)
     else()
         set(CARGO_FLAG --manifest-path ${CARGO_TOML_PATH} --release --no-default-features --features simulator)
     endif()

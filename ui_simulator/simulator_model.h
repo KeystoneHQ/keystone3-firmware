@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "err_code.h"
+#include "qrdecode_task.h"
 
 extern bool g_fingerUnlockDeviceFlag;
 extern bool g_fingerSingTransitionsFlag;
@@ -41,6 +42,7 @@ void CloseUsb();
 void UpdateFingerSignFlag(uint8_t index, bool signFlag);
 int FormatSdFatfs();
 int FatfsFileWrite(const char* path, const uint8_t *data, uint32_t len);
+int32_t read_qrcode(UrViewType_t *viewType);
 
 #define LOW_BATTERY_LIMIT               20
 #define CHECK_BATTERY_LOW_POWER()       ((GetBatterPercent() <= LOW_BATTERY_LIMIT) ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE)

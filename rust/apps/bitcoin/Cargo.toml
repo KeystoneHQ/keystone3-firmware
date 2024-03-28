@@ -9,6 +9,7 @@ edition = "2021"
 keystore = { path = "../../keystore", default-features = false }
 third_party = { path = "../../third_party" }
 app_utils = { path = "../utils" }
+rust_tools = { path = "../../tools" }
 
 [features]
 no_std = []

@@ -8,9 +8,17 @@
 #include "gui_create_wallet_widgets.h"
 #include "gui_status_bar.h"
 #include "gui_lock_device_widgets.h"
+#include "gui_page.h"
+
+#define IMPORT_WALLET_NOTICE                                            false
+#define CREATE_WALLET_NOTICE                                            true
+
+static void CreateWalletNotice(bool isCreate);
 
 static lv_obj_t *g_hintBox = NULL;
 static lv_obj_t **g_hintParam = NULL;
+static PageWidget_t *g_pageViewWidget = NULL;
+
 void UnHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -20,26 +28,24 @@ void UnHandler(lv_event_t *e)
 
 void OpenImportWalletHandler(lv_event_t *e)
 {
-    static uint8_t walletMethod = WALLET_METHOD_IMPORT;
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         if (CHECK_BATTERY_LOW_POWER()) {
             g_hintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
         } else {
-            GuiFrameOpenViewWithParam(&g_createWalletView, &walletMethod, sizeof(walletMethod));
+            CreateWalletNotice(IMPORT_WALLET_NOTICE);
         }
     }
 }
 
 void OpenCreateWalletHandler(lv_event_t *e)
 {
-    static uint8_t walletMethod = WALLET_METHOD_CREATE;
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         if (CHECK_BATTERY_LOW_POWER()) {
             g_hintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
         } else {
-            GuiFrameOpenViewWithParam(&g_createWalletView, &walletMethod, sizeof(walletMethod));
+            CreateWalletNotice(CREATE_WALLET_NOTICE);
         }
     }
 }
@@ -298,4 +304,33 @@ void *GuiCreateErrorCodeHintbox(int32_t errCode, lv_obj_t **param)
                      &imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
     lv_obj_add_event_cb(GuiGetHintBoxRightBtn(cont), CloseWaringPageHandler, LV_EVENT_CLICKED, cont);
     return cont;
+}
+
+static void CreateOrImportWalletHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        GuiFrameOpenViewWithParam(&g_createWalletView, lv_event_get_user_data(e), sizeof(uint8_t));
+        DestroyPageWidget(g_pageViewWidget);
+    }
+}
+
+static void CreateWalletNotice(bool isCreate)
+{
+    static uint8_t walletMethod[] = {WALLET_METHOD_IMPORT, WALLET_METHOD_CREATE};
+    g_pageViewWidget = CreatePageWidget();
+    SetNavBarLeftBtn(g_pageViewWidget->navBarWidget, NVS_BAR_RETURN, DestroyPageWidgetHandler, g_pageViewWidget);
+
+    lv_obj_t *img = GuiCreateImg(g_pageViewWidget->contentZone, &imgInformation);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 36);
+    lv_obj_t *label = GuiCreateTitleLabel(g_pageViewWidget->contentZone, _("wallet_settings_add_info_title"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 130);
+    label = GuiCreateIllustrateLabel(g_pageViewWidget->contentZone, _("wallet_setting_add_wallet_notice"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 200);
+
+    lv_obj_t *btn = GuiCreateBtn(g_pageViewWidget->contentZone, _("wallet_setting_add_wallet_confirm"));
+    lv_obj_set_width(btn, 408);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+
+    lv_obj_add_event_cb(btn, CreateOrImportWalletHandler, LV_EVENT_CLICKED, &walletMethod[isCreate]);
 }

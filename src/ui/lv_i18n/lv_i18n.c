@@ -295,7 +295,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"derivation_path_btc_test_net_1_desc", "Modern format, lower fees, starts with \"tb1q.\""},
     {"derivation_path_btc_test_net_2_desc", "Legacy & SegWit compatible, medium fees, starts with \"2.\""},
     {"derivation_path_btc_test_net_3_desc", "Original format, higher fees, starts with \"m.\" or \"n.\""},
-    {"derivation_path_btc_test_net_4_desc", "Taproot: Enhanced privacy and efficiency, starts with \"tb1q.\""},
+    {"derivation_path_btc_test_net_4_desc", "Taproot: Enhanced privacy and efficiency, starts with \"tb1p.\""},
     {"derivation_path_change", "Change Derivation Path"},
     {"derivation_path_eth_ledger_legacy_desc", "Older Ledger format, less common."},
     {"derivation_path_eth_ledger_live_desc", "Ledger-specific, optimized for Ledger device."},

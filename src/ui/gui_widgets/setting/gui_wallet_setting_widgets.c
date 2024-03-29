@@ -541,15 +541,13 @@ void GuiWalletDelWalletConfirm(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 336 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("wallet_settings_delete_confirm_button1"));
-    lv_obj_set_size(btn, 319, 66);
+    lv_obj_t *btn = GuiCreateAdaptButton(parent, _("wallet_settings_delete_confirm_button1"));
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 580 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), g_defTextFont, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_STATE_DEFAULT);
     lv_obj_add_event_cb(btn, WalletSettingHandler, LV_EVENT_CLICKED, &walletSetting);
 
-    btn = GuiCreateBtn(parent, _("wallet_settings_delete_confirm_button2"));
-    lv_obj_set_size(btn, 230, 66);
+    btn = GuiCreateAdaptButton(parent, _("wallet_settings_delete_confirm_button2"));
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 670 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(lv_obj_get_child(btn, 0), RED_COLOR, LV_PART_MAIN);

@@ -25,6 +25,7 @@ int32_t GuiReceiveViewEventProcess(void *self, uint16_t usEvent, void *param, ui
         } else {
             return ERR_GUI_ERROR;
         }
+        GlobalResourcesInit();
         return GuiReceiveViewInit(chain);
     case GUI_EVENT_OBJ_DEINIT:
         return GuiReceiveViewDeInit();
@@ -32,7 +33,6 @@ int32_t GuiReceiveViewEventProcess(void *self, uint16_t usEvent, void *param, ui
         //GuiBitcoinReceiveDisActive();
         break;
     case GUI_EVENT_REFRESH:
-        // GuiReceiveRefresh();
         break;
     case SIG_SETUP_VIEW_TILE_PREV:
         GuiReceivePrevTile();

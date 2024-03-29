@@ -294,7 +294,7 @@ static void GuiCreateQRCodeWidget(lv_obj_t *parent)
 
     lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 482);
     lv_obj_add_flag(qrCont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_align(qrCont, LV_ALIGN_TOP_MID, 0, 62);
+    lv_obj_align(qrCont, LV_ALIGN_TOP_MID, 0, 80);
     lv_obj_set_style_bg_color(qrCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_radius(qrCont, 24, LV_PART_MAIN);
 

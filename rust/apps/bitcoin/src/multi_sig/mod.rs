@@ -39,6 +39,20 @@ impl From<&NetworkInner> for Network {
     }
 }
 
+impl TryFrom<&crate::network::Network> for Network {
+    type Error = BitcoinError;
+
+    fn try_from(value: &crate::network::Network) -> Result<Self, BitcoinError> {
+        match *value {
+            crate::network::Network::Bitcoin => Ok(Network::MainNet),
+            crate::network::Network::BitcoinTestnet => Ok(Network::TestNet),
+            _ => Err(BitcoinError::MultiSigNetworkError(
+                "not support network".to_string(),
+            )),
+        }
+    }
+}
+
 impl fmt::Display for Network {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -47,15 +61,6 @@ impl fmt::Display for Network {
         }
     }
 }
-
-//  Into<third_party::ur_registry::crypto_coin_info::Network> for Network {
-//     fn into(self) -> third_party::ur_registry::crypto_coin_info::Network {
-//         match self {
-//             Network::MainNet => third_party::ur_registry::crypto_coin_info::Network::MainNet,
-//             Network::TestNet => third_party::ur_registry::crypto_coin_info::Network::TestNet,
-//         }
-//     }
-// }
 
 pub enum MultiSigType {
     P2sh,
@@ -70,6 +75,28 @@ pub enum MultiSigFormat {
     P2sh,
     P2wshP2sh,
     P2wsh,
+}
+
+impl MultiSigFormat {
+    pub fn from(format_str: &str) -> Result<Self, BitcoinError> {
+        match format_str {
+            "P2SH" => Ok(MultiSigFormat::P2sh),
+            "P2WSH-P2SH" => Ok(MultiSigFormat::P2wshP2sh),
+            "P2WSH" => Ok(MultiSigFormat::P2wsh),
+            _ => Err(BitcoinError::MultiSigWalletFormatError(format!(
+                "not support this format {}",
+                format_str
+            ))),
+        }
+    }
+
+    pub fn get_multi_sig_format_string(&self) -> String {
+        match self {
+            MultiSigFormat::P2sh => "P2SH".to_string(),
+            MultiSigFormat::P2wshP2sh => "P2WSH-P2SH".to_string(),
+            MultiSigFormat::P2wsh => "P2WSH".to_string(),
+        }
+    }
 }
 
 //For MULTI_P2SH, the mainnet and testnet share the same path.

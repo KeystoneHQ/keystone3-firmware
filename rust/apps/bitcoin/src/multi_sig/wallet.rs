@@ -338,7 +338,11 @@ fn verify_wallet_config(
         ));
     }
 
-    if !wallet.xpub_items.iter().any(|item| item.xfp.eq_ignore_ascii_case(xfp)) {
+    if !wallet
+        .xpub_items
+        .iter()
+        .any(|item| item.xfp.eq_ignore_ascii_case(xfp))
+    {
         return Err(BitcoinError::MultiSigWalletParseError(
             "have no matched xfp in config file".to_string(),
         ));

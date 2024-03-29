@@ -124,6 +124,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_YEARN_FINANCE, "Yearn Finance", &walletYearn},
     {WALLET_LIST_SUSHISWAP, "SushiSwap", &walletSushi},
     {WALLET_LIST_KEPLR, "Keplr", &walletKeplr},
+    {WALLET_LIST_ARCONNECCT, "ArConnect", &walletArConnect},
     {WALLET_LIST_FEWCHA, "Fewcha", &walletFewcha},
     {WALLET_LIST_PETRA, "Petra", &walletPetra},
     {WALLET_LIST_XRP_TOOLKIT, "XRP Toolkit", &walletXRPToolkit},

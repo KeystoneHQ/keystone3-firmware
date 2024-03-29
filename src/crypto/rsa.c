@@ -18,16 +18,27 @@ static uint32_t GetRsaAddress()
   return SPI_FLASH_RSA_USER1_DATA;
 }
 
-static bool HasMatchingPrimesHash(Rsa_primes_t *primes, const uint8_t hash[SPI_FLASH_RSA_HASH_SIZE])
+static uint8_t *GetDobuleHashOfPrimes(const uint8_t *data)
 {
   struct sha256 sha;
+  struct sha256 dobuleHash;
+  uint8_t mfp[4] = {0};
+  GetMasterFingerPrint(mfp);
+  sha256(&sha, data, SPI_FLASH_RSA_DATA_SIZE);
+  uint32_t sha_u_u8_expanded[SPI_FLASH_RSA_HASH_SIZE + 4] = {0};
+  memcpy_s(sha_u_u8_expanded, SPI_FLASH_RSA_HASH_SIZE, sha.u.u8, SPI_FLASH_RSA_HASH_SIZE);
+  memcpy_s(sha_u_u8_expanded + SPI_FLASH_RSA_HASH_SIZE, 4, mfp, 4);
+  sha256(&dobuleHash, sha_u_u8_expanded, SPI_FLASH_RSA_HASH_SIZE + 4);
+  return dobuleHash.u.u8;
+}
+
+static bool HasMatchingPrimesHash(Rsa_primes_t *primes, const uint8_t targethash[SPI_FLASH_RSA_HASH_SIZE])
+{
   uint8_t bytes[SPI_FLASH_RSA_DATA_SIZE];
   memcpy_s(bytes, SPI_FLASH_RSA_DATA_SIZE, primes->p, SPI_FLASH_RSA_PRIME_SIZE);
   memcpy_s(bytes + SPI_FLASH_RSA_PRIME_SIZE, SPI_FLASH_RSA_DATA_SIZE, primes->q, SPI_FLASH_RSA_PRIME_SIZE);
-
-  sha256(&sha, bytes, SPI_FLASH_RSA_DATA_SIZE);
-
-  return memcmp(sha.u.u8, hash, SPI_FLASH_RSA_HASH_SIZE) == 0;
+  uint8_t *sourceHash = GetDobuleHashOfPrimes(bytes);
+  return memcmp(sourceHash, targethash, SPI_FLASH_RSA_HASH_SIZE) == 0;
 }
 
 Rsa_primes_t *FlashReadRsaPrimes()
@@ -67,9 +78,8 @@ int FlashWriteRsaPrimes(const uint8_t *data)
   uint8_t fullData[SPI_FLASH_RSA_DATA_FULL_SIZE];
   memcpy_s(fullData, SPI_FLASH_RSA_DATA_FULL_SIZE, data, SPI_FLASH_RSA_DATA_SIZE);
 
-  struct sha256 sha;
-  sha256(&sha, data, SPI_FLASH_RSA_DATA_SIZE);
-  memcpy_s(fullData + SPI_FLASH_RSA_DATA_SIZE, SPI_FLASH_RSA_DATA_FULL_SIZE, sha.u.u8, SPI_FLASH_RSA_HASH_SIZE);
+  uint8_t *sourceHash = GetDobuleHashOfPrimes(data);
+  memcpy_s(fullData + SPI_FLASH_RSA_DATA_SIZE, SPI_FLASH_RSA_DATA_FULL_SIZE, sourceHash, SPI_FLASH_RSA_HASH_SIZE);
 
   Gd25FlashSectorErase(GetRsaAddress());
   int32_t ret = Gd25FlashWriteBuffer(GetRsaAddress(), fullData, sizeof(fullData));

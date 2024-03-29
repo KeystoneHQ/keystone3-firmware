@@ -213,6 +213,7 @@ LV_IMG_DECLARE(walletKeystone);
 LV_IMG_DECLARE(walletMetamask);
 LV_IMG_DECLARE(walletOkx);
 LV_IMG_DECLARE(walletEternl);
+LV_IMG_DECLARE(walletArConnect);
 LV_IMG_DECLARE(walletSubwallet);
 LV_IMG_DECLARE(walletBluewallet);
 LV_IMG_DECLARE(walletSolflare);
@@ -254,6 +255,7 @@ LV_IMG_DECLARE(walletListXRPToolkit);
 LV_IMG_DECLARE(walletListSparrow);
 LV_IMG_DECLARE(walletListImToken);
 LV_IMG_DECLARE(walletListUniSat);
+LV_IMG_DECLARE(walletListArConnect);
 
 LV_IMG_DECLARE(btcWalletListBlue);
 LV_IMG_DECLARE(btcWalletListSpecter);

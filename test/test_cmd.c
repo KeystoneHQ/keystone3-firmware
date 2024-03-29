@@ -787,7 +787,18 @@ static void Ds28s60TestFunc(int argc, char *argv[])
 static void FatfsLsFunc(int argc, char *argv[])
 {
     VALUE_CHECK(argc, 1);
-    FatfsDirectoryListing(argv[0]);
+    char *buffer = EXT_MALLOC(1024 * 5);
+    uint32_t number = 0;
+    FatfsGetFileName(argv[0], buffer, &number, 1024 * 5);
+    printf("buffer = %s\n", buffer);
+    char *word[64] = {0};
+    char *token = strtok(buffer, " ");
+    while (token != NULL) {
+        strncpy(word, token, sizeof(word));
+        word[sizeof(word) - 1] = '\0';
+        printf("Current word: %s\n", word);
+        token = strtok(NULL, " ");
+    }
 }
 
 static void FatfsCopyFunc(int argc, char *argv[])
@@ -798,7 +809,9 @@ static void FatfsCopyFunc(int argc, char *argv[])
 static void FatfsCatFunc(int argc, char *argv[])
 {
     VALUE_CHECK(argc, 1);
-    FatfsCatFile(argv[0]);
+    char *buff = FatfsFileRead(argv[0]);
+    printf("buff = %s\n", buff);
+    EXT_FREE(buff);
 }
 
 static void FatfsFileMd5Func(int argc, char *argv[])

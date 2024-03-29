@@ -67,8 +67,12 @@ pub enum BitcoinError {
     MultiSigWalletAddressCalError(String),
     #[error("multi sig wallet import xpub error: {0}")]
     MultiSigWalletImportXpubError(String),
-    #[error("create multi sig wallet  error: {0}")]
+    #[error("create multi sig wallet error: {0}")]
     MultiSigWalletCrateError(String),
+    #[error("get format error: {0}")]
+    MultiSigWalletFormatError(String),
+    #[error("convert network error: {0}")]
+    MultiSigNetworkError(String),
 }
 
 impl From<io::Error> for BitcoinError {

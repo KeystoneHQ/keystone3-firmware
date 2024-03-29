@@ -7,14 +7,15 @@ use crate::addresses::address::Address;
 use crate::addresses::xyzpub::Version;
 use crate::addresses::{derive_public_key, xyzpub};
 use crate::multi_sig::wallet::MultiSigWalletConfig;
-use crate::multi_sig::Network;
+use crate::multi_sig::{MultiSigFormat, Network};
 use crate::{network, BitcoinError};
 
-pub fn create_multi_sig_address(
+pub fn create_multi_sig_address_for_wallet(
     wallet: &MultiSigWalletConfig,
     change: u32,
     account: u32,
 ) -> Result<String, BitcoinError> {
+    let format = MultiSigFormat::from(&wallet.format)?;
     let pub_keys = wallet
         .xpub_items
         .iter()
@@ -23,29 +24,32 @@ pub fn create_multi_sig_address(
             derive_pub_key(&convert_xpub, change, account)
         })
         .collect::<Result<Vec<_>, _>>()?;
+
     let ordered_pub_keys = pub_keys.iter().sorted().collect::<Vec<_>>();
 
-    let network = wallet.get_network();
+    let p2ms = crate_p2ms_script(&ordered_pub_keys, wallet.threshold);
+
+    calculate_multi_address(&p2ms, format, wallet.get_network())
+}
+
+pub fn calculate_multi_address(
+    p2ms: &ScriptBuf,
+    format: MultiSigFormat,
+    network: &Network,
+) -> Result<String, BitcoinError> {
+    let script = match format {
+        MultiSigFormat::P2sh => ScriptBuf::new_p2sh(&p2ms.script_hash()),
+        MultiSigFormat::P2wshP2sh => {
+            let p2wsh = ScriptBuf::new_p2wsh(&p2ms.wscript_hash());
+            ScriptBuf::new_p2sh(&p2wsh.script_hash())
+        }
+        MultiSigFormat::P2wsh => ScriptBuf::new_p2wsh(&p2ms.wscript_hash()),
+    };
+
     let network = if *network == Network::TestNet {
         network::Network::BitcoinTestnet
     } else {
         network::Network::Bitcoin
-    };
-    let script = crate_p2ms_script(&ordered_pub_keys, wallet.threshold);
-
-    let script = match wallet.format.as_str() {
-        "P2SH" => ScriptBuf::new_p2sh(&script.script_hash()),
-        "P2WSH-P2SH" => {
-            let p2wsh = ScriptBuf::new_p2wsh(&script.wscript_hash());
-            ScriptBuf::new_p2sh(&p2wsh.script_hash())
-        }
-        "P2WSH" => ScriptBuf::new_p2wsh(&script.wscript_hash()),
-        _ => {
-            return Err(BitcoinError::MultiSigWalletAddressCalError(format!(
-                "not support this format {}",
-                wallet.format.as_str()
-            )))
-        }
     };
     Ok(Address::from_script(script.as_script(), network)?.to_string())
 }
@@ -73,12 +77,12 @@ fn crate_p2ms_script(pub_keys: &Vec<&PublicKey>, threshold: u32) -> ScriptBuf {
 mod tests {
     extern crate std;
 
-    use crate::multi_sig::address::create_multi_sig_address;
+    use crate::multi_sig::address::create_multi_sig_address_for_wallet;
     use crate::multi_sig::wallet::parse_wallet_config;
     use crate::multi_sig::Network;
 
     #[test]
-    fn test_crate_p2ms_script() {
+    fn test_create_multi_sig_address_for_wallet() {
         // P2SH
         {
             let config = r#"# Keystone Multisig setup file (created by Sparrow)
@@ -93,7 +97,7 @@ mod tests {
             "#;
 
             let config = parse_wallet_config(config, "73C5DA0A", Network::TestNet).unwrap();
-            let address = create_multi_sig_address(&config, 0, 0).unwrap();
+            let address = create_multi_sig_address_for_wallet(&config, 0, 0).unwrap();
             assert_eq!("2N9YWq8XCTGX7qQj5QCFwx3P5knckrspFBH", address);
         }
 
@@ -111,7 +115,7 @@ mod tests {
             "#;
 
             let config = parse_wallet_config(config, "73C5DA0A", Network::TestNet).unwrap();
-            let address = create_multi_sig_address(&config, 0, 0).unwrap();
+            let address = create_multi_sig_address_for_wallet(&config, 0, 0).unwrap();
             assert_eq!("2N77EPE2yfeTLR3CwNUCBQ7LZEUGW6N9B6y", address);
         }
 
@@ -129,7 +133,7 @@ mod tests {
             "#;
 
             let config = parse_wallet_config(config, "73C5DA0A", Network::TestNet).unwrap();
-            let address = create_multi_sig_address(&config, 0, 0).unwrap();
+            let address = create_multi_sig_address_for_wallet(&config, 0, 0).unwrap();
             assert_eq!(
                 "tb1qr7y0qr6uqyspjtst0sex8hyj3g47dfz0v5njs9x22kk6jzz3ee4qd5qrd7",
                 address
@@ -155,7 +159,7 @@ mod tests {
             "#;
 
             let config = parse_wallet_config(config, "73C5DA0A", Network::MainNet).unwrap();
-            let address = create_multi_sig_address(&config, 0, 0).unwrap();
+            let address = create_multi_sig_address_for_wallet(&config, 0, 0).unwrap();
             assert_eq!("3A3vK8133WTMePMpPDmZSqSqK3gobohtG8", address);
         }
     }

@@ -9,12 +9,14 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::ops::Index;
 
+use crate::multi_sig::address::calculate_multi_address;
+use crate::multi_sig::MultiSigFormat;
 use third_party::bitcoin::bip32::{ChildNumber, Fingerprint, KeySource};
 use third_party::bitcoin::psbt::{GetKey, KeyRequest, Psbt};
 use third_party::bitcoin::psbt::{Input, Output};
 use third_party::bitcoin::taproot::TapLeafHash;
-use third_party::bitcoin::TxOut;
 use third_party::bitcoin::{Network, PrivateKey};
+use third_party::bitcoin::{PublicKey, ScriptBuf, TxOut};
 use third_party::secp256k1::{Secp256k1, Signing, XOnlyPublicKey};
 use third_party::{bitcoin, secp256k1};
 
@@ -106,6 +108,7 @@ impl WrappedPsbt {
             amount: Self::format_amount(value, network),
             value,
             path,
+            multi_sig_status: self.get_multi_sig_signed_status(input),
         })
     }
 
@@ -147,12 +150,6 @@ impl WrappedPsbt {
     }
 
     pub fn check_my_input_derivation(&self, input: &Input, index: usize) -> Result<()> {
-        if input.bip32_derivation.len() > 1 {
-            return Err(BitcoinError::UnsupportedTransaction(format!(
-                "multisig input #{} is not supported yet",
-                index
-            )));
-        }
         Ok(())
     }
 
@@ -163,7 +160,21 @@ impl WrappedPsbt {
         context: &ParseContext,
     ) -> Result<()> {
         if input.bip32_derivation.len() > 1 {
-            // TODO check multisig signatures
+            for key in input.bip32_derivation.keys() {
+                let (fingerprint, _) = input
+                    .bip32_derivation
+                    .get(key)
+                    .ok_or(BitcoinError::InvalidInput)?;
+
+                if fingerprint.eq(&context.master_fingerprint) {
+                    if input.partial_sigs.contains_key(&PublicKey::new(*key)) {
+                        return Err(BitcoinError::InvalidTransaction(format!(
+                            "input #{} has already been signed",
+                            index
+                        )));
+                    }
+                }
+            }
             return Ok(());
         }
         if self.is_taproot_input(input) {
@@ -250,12 +261,45 @@ impl WrappedPsbt {
         Ok(None)
     }
 
+    fn get_multi_sig_script_and_format<'a>(
+        &'a self,
+        input: &'a Input,
+    ) -> Result<(&ScriptBuf, MultiSigFormat)> {
+        match (&input.redeem_script, &input.witness_script) {
+            (Some(script), None) => Ok((script, MultiSigFormat::P2sh)),
+            (Some(_), Some(script)) => Ok((script, MultiSigFormat::P2wshP2sh)),
+            (None, Some(script)) => Ok((script, MultiSigFormat::P2wsh)),
+            (_, _) => Err(BitcoinError::MultiSigWalletAddressCalError(
+                "invalid multi sig input".to_string(),
+            )),
+        }
+    }
+
+    fn get_multi_sig_signed_status(&self, input: &Input) -> Option<String> {
+        if input.bip32_derivation.len() > 1 {
+            return Some(format!(
+                "{}/{} Signed",
+                input.partial_sigs.len(),
+                input.bip32_derivation.len()
+            ));
+        }
+        None
+    }
+
     pub fn calculate_address_for_input(
         &self,
         input: &Input,
         network: &network::Network,
     ) -> Result<Option<String>> {
-        // TODO: multisig support
+        if input.bip32_derivation.len() > 1 {
+            let (script, foramt) = self.get_multi_sig_script_and_format(input)?;
+            return Ok(Some(calculate_multi_address(
+                script,
+                foramt,
+                &crate::multi_sig::Network::try_from(network)?,
+            )?));
+        }
+
         match input.bip32_derivation.first_key_value() {
             Some((pubkey, (_, derivation_path))) => {
                 //call generate address here

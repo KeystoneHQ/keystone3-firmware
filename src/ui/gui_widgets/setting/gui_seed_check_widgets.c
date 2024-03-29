@@ -33,7 +33,6 @@ static lv_obj_t *g_buttonCont = NULL;           // next buton cont
 static uint8_t g_inputWordsCnt = 0;
 static MnemonicKeyBoard_t *g_recoveryMkb;       // recovery mnemonic keyboard
 static KeyBoard_t *g_recoveryPhraseKb;          // recovery keyboard
-// static lv_obj_t *g_recoveryTitle; // recovery title label
 
 void ResetSeedCheckImportHandler(lv_event_t *e)
 {

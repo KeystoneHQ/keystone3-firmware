@@ -637,7 +637,7 @@ static void GuiCreateMultiToBtcWarningTile(lv_obj_t *parent)
     lv_label_set_recolor(label, true);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -224);
 
-    btn = GuiCreateBtn(parent, _("firmware_update_btc_only_button_cancel"));
+    btn = GuiCreateBtn(parent, _("Cancel"));
     lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
     lv_obj_set_size(btn, 192, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);

@@ -9,13 +9,35 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
-static inline uint32_t op_i(uint32_t val) { return val; }
+static inline uint32_t op_n(int32_t val)
+{
+    return (uint32_t)(val < 0 ? -val : val);
+}
+static inline uint32_t op_i(uint32_t val)
+{
+    return val;
+}
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
-static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
-static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
-static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_v(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_w(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_f(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_t(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
 
 static lv_i18n_phrase_t en_singulars[] = {
     {"Approve", "Approve"},
@@ -345,7 +367,6 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"fingerprint_sign_tx", "Sign Transactions"},
     {"fingerprint_unlock_device", "Unlock Device"},
     {"fingerprint_up_to_3", "You can add up to 3 fingerprints"},
-    {"firmware_update_btc_only_button_cancel", "Cancel"},
     {"firmware_update_btc_only_button_i_know", "I know"},
     {"firmware_update_btc_only_warning_desc", "You are upgrading from multi-coin firmware to BTC-only firmware. After the upgrade, #F5870A all the wallets on this device will# #F5870A only support BTC currency#, and this process is irreversible. Please confirm that you understand the risks involved. If you have downloaded the wrong firmware, please cancel this progress."},
     {"firmware_update_btc_only_warning_title", "Warning"},
@@ -780,7 +801,8 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"unlock_device_time_limited_error_max_desc_fmt", "Please unlock your device in #F55831 %d# minutes"},
     {"unlock_device_time_limited_error_max_title", "Device Unavailable"},
     {"unlock_device_time_limited_error_max_warning_fmt", "Please unlock your device in #F55831 %d# minutes. One more incorrect attempt, your device will be locked."},
-    {"unlock_device_title_fmt", "%s or %s"},
+    {"unlock_device_title_passcode_fingerprint", "Use Password or Use Fingerprint"},
+    {"unlock_device_title_pin_fingerprint", "Use PIN or Use Fingerprint"},
     {"unlock_device_use_fingerprint", "Use Fingerprint"},
     {"unlock_device_use_password", "Use Password"},
     {"unlock_device_use_pin", "Use PIN"},
@@ -855,9 +877,12 @@ static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
-    uint32_t i = op_i(n); UNUSED(i);
-    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t n = op_n(num);
+    UNUSED(n);
+    uint32_t i = op_i(n);
+    UNUSED(i);
+    uint32_t v = op_v(n);
+    UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -877,7 +902,7 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"Continue", "Продолжить"},
     {"Done", "Сделано"},
     {"Export", "Экспорт"},
-    {"FORGET", "ЗАБЫТЬ"},
+    {"FORGET", "Забыл"},
     {"Failed", "Не удалось"},
     {"Incorrect password, %d attempt left", "잘못된 암호, %d 시도가 남음"},
     {"Keystone", "Keystone"},
@@ -1148,7 +1173,7 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"derivation_path_sol_2_desc", ""},
     {"derivation_path_sol_3_desc", ""},
     {"device_info_title", "Об устройстве"},
-    {"device_setting_about_title", "об"},
+    {"device_setting_about_title", "Об устройстве"},
     {"device_setting_about_title_desc", "v1.0.2"},
     {"device_setting_connection_desc", "USB / MicroSD карта"},
     {"device_setting_connection_title", "Соединение"},
@@ -1198,9 +1223,8 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"fingerprint_sign_tx", "Подпись транзакций"},
     {"fingerprint_unlock_device", "Разблокировка"},
     {"fingerprint_up_to_3", "Можно добавить 3 отпечатка"},
-    {"firmware_update_btc_only_button_cancel", "Отмена"},
     {"firmware_update_btc_only_button_i_know", "Я знаю"},
-    {"firmware_update_btc_only_warning_desc", " #F5870A all the wallets on this device will# #F5870A only support BTC currency#"},
+    {"firmware_update_btc_only_warning_desc", " \"Вы переходите с мультивалютной прошивки на прошивку только для BTC. После обновления #F5870A все кошельки на этом устройстве будут# #F5870A поддерживать только  BTC#"},
     {"firmware_update_btc_only_warning_title", "Предупреждение"},
     {"firmware_update_deny_desc", "Необходимо разблокировать устройство для обновления прошивки."},
     {"firmware_update_deny_input_password", "Введите пароль"},
@@ -1416,7 +1440,7 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"receive_eth_more_t_link1", "Узнать больше"},
     {"receive_eth_more_t_qr_link1", "https://keyst.one/t/3rd/faq"},
     {"receive_eth_more_t_qr_title1", "Узнать различия: стандартные, Ledger Live и устаревшие пути вывода в Ethereum"},
-    {"receive_eth_more_t_title1", " Ledger Live и устаревших путей вывода в Ethereum\""},
+    {"receive_eth_more_t_title1", "Ledger Live и устаревших путей вывода в Ethereum\""},
     {"receive_eth_receive_main_button", "Создать новый адрес"},
     {"receive_eth_receive_main_title", "Получить ETH"},
     {"receive_generate_new_address", "Создать новый адрес"},
@@ -1460,7 +1484,7 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"sdcard_formating", ""},
     {"sdcard_formating_desc", ""},
     {"seed_check_mid_btn", "Проверка сид фразы"},
-    {"seed_check_passphrase_notice", " please restart your device without entering the passphrase."},
+    {"seed_check_passphrase_notice", "В настоящее время вы используете кошелек, защищенный кодовой фразой. Прежде чем приступить к процессу проверки сид фразы, пожалуйста, перезагрузите свое устройство, не вводя кодовую фразу."},
     {"seed_check_passphrase_title", "Отключить кошелек с кодовой фразой"},
     {"seed_check_share_phrase", "Фраза Шамира"},
     {"seed_check_share_phrase_title", "Введите сид фразу, чтобы проверить, соответствует ли она текущему кошельку."},
@@ -1612,7 +1636,7 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"unlock_device_attempts_left_singular_times_fmt", "Неверный пароль, Осталось %d попыток"},
     {"unlock_device_button1", "ПАРОЛЬ"},
     {"unlock_device_button2", "PIN-КОД"},
-    {"unlock_device_button3", "ЗАБЫЛ"},
+    {"unlock_device_button3", "Забыл"},
     {"unlock_device_error_attempts_exceed", "Лимит попыток превышен"},
     {"unlock_device_error_attempts_exceed_desc", "Устройство заблокированно. Разблокируйте, для входа."},
     {"unlock_device_error_btn_end_text", "Разблокировать"},
@@ -1633,7 +1657,8 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"unlock_device_time_limited_error_max_desc_fmt", "Разблокируйте свое устройство через %d минут"},
     {"unlock_device_time_limited_error_max_title", "Недоступно"},
     {"unlock_device_time_limited_error_max_warning_fmt", "Пожалуйста, разблокируйте устройство через #F55831 %d# минут. Еще одна неверная попытка и ваше устройство будет заблокировано"},
-    {"unlock_device_title_fmt", "%s or %s"},
+    {"unlock_device_title_passcode_fingerprint", "Вход по PIN или отпечатку"},
+    {"unlock_device_title_pin_fingerprint", "Вход по PIN или отпечатку"},
     {"unlock_device_use_fingerprint", "Вход по отпечатку"},
     {"unlock_device_use_password", "Вход по паролю"},
     {"unlock_device_use_pin", "Вход по PIN"},
@@ -1708,9 +1733,12 @@ static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
-    uint32_t v = op_v(n); UNUSED(v);
-    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t n = op_n(num);
+    UNUSED(n);
+    uint32_t v = op_v(n);
+    UNUSED(v);
+    uint32_t i = op_i(n);
+    UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -1755,8 +1783,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if(langs == NULL) return -1;
-    if(langs[0] == NULL) return -1;
+    if (langs == NULL) return -1;
+    if (langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -1769,13 +1797,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if(current_lang_pack == NULL) return -1;
+    if (current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for(i = 0; current_lang_pack[i] != NULL; i++) {
+    for (i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -1788,10 +1816,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for(i = 0; trans[i].msg_id != NULL; i++) {
-        if(strcmp(trans[i].msg_id, msg_id) == 0) {
+    for (i = 0; trans[i].msg_id != NULL; i++) {
+        if (strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if(trans[i].translation) return trans[i].translation;
+            if (trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -1806,23 +1834,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if(current_lang == NULL) return msg_id;
+    if (current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if(lang->singulars != NULL) {
+    if (lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if(lang == current_lang_pack[0]) return msg_id;
+    if (lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if(lang->singulars != NULL) {
+    if (lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -1838,31 +1866,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if(current_lang == NULL) return msg_id;
+    if (current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if(lang->locale_plural_fn != NULL) {
+    if (lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if(lang->plurals[ptype] != NULL) {
+        if (lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if(lang == current_lang_pack[0]) return msg_id;
+    if (lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if(lang->locale_plural_fn != NULL) {
+    if (lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if(lang->plurals[ptype] != NULL) {
+        if (lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -1877,6 +1905,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if(!current_lang) return NULL;
+    if (!current_lang) return NULL;
     return current_lang->locale_name;
 }

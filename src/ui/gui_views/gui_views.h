@@ -213,6 +213,7 @@ void CloseCurrentParentAndCloseViewHandler(lv_event_t *e);
 void CloseToTargetTileView(uint8_t currentIndex, uint8_t targetIndex);
 void CloseParentAndNextHandler(lv_event_t *e);
 void GuiViewHintBoxClear(void);
+lv_obj_t *GuiCreateWalletNoticeWidget(lv_obj_t *parent);
 
 #endif /* _GUI_VIEWS_H */
 

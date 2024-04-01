@@ -255,7 +255,7 @@ static void AddMultiSigWalletHandler(lv_event_t *e)
     };
 
     if (code == LV_EVENT_CLICKED) {
-        g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("wallet_profile_add_multi_wallet"), &moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable));
+        g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("wallet_profile_add_multi_wallet"), &moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false);
         lv_obj_t *closeBtn = GuiCreateImgButton(g_noticeWindow,  &imgClose, 64, CloseHintBoxHandler, &g_noticeWindow);
         GuiAlignToPrevObj(closeBtn, LV_ALIGN_LEFT_MID, 358, 0);
     }

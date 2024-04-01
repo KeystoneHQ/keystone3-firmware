@@ -102,11 +102,11 @@ static void ImportMultiXpubHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     MoreInfoTable_t moreInfoTable[] = {
         {.name = _("create_multi_wallet_import_xpub_qr"), .src = &imgScan48, .callBack = UnHandler, NULL},
-        {.name = _("create_multi_wallet_import_xpub_sdcard"), .src = &imgSdCardL, .callBack = UnHandler, NULL},
+        {.name = _("create_multi_wallet_import_xpub_sdcard"), .src = &imgSdCard, .callBack = UnHandler, NULL},
     };
 
     if (code == LV_EVENT_CLICKED) {
-        g_noticeWindow = GuiCreateMoreInfoHintBox(NULL, NULL, &moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable));
+        g_noticeWindow = GuiCreateMoreInfoHintBox(NULL, NULL, &moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true);
     }
 }
 

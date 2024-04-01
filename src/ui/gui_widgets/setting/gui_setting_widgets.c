@@ -366,13 +366,13 @@ void OpenSinglePhraseHandler(lv_event_t *e)
         uint16_t height = 348;
         lv_obj_add_event_cb(lv_obj_get_child(g_selectAmountHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_selectAmountHintbox);
 
-        lv_obj_t *btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_phrase_24words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[2]);
+        lv_obj_t *btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_phrase_24words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[2], false);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -12);
 
-        btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_phrase_18words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[1]);
+        btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_phrase_18words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[1], false);
         GuiAlignToPrevObj(btn, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
 
-        btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_phrase_12words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[0]);
+        btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_phrase_12words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[0], false);
         GuiAlignToPrevObj(btn, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
 
         lv_obj_t *closeBtn = GuiCreateImgButton(g_selectAmountHintbox,  &imgClose, 64, CloseHintBoxHandler, &g_selectAmountHintbox);
@@ -400,10 +400,10 @@ void OpenSharePhraseHandler(lv_event_t *e)
         uint16_t height = 252;
         lv_obj_add_event_cb(lv_obj_get_child(g_selectAmountHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_selectAmountHintbox);
 
-        lv_obj_t *btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_ssb_33words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[1]);
+        lv_obj_t *btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_ssb_33words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[1], false);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -12);
 
-        btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_ssb_20words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[0]);
+        btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_ssb_20words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[0], false);
         GuiAlignToPrevObj(btn, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
 
         lv_obj_t *closeBtn = GuiCreateImgButton(g_selectAmountHintbox,  &imgClose, 64, CloseHintBoxHandler, &g_selectAmountHintbox);

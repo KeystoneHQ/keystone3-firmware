@@ -66,7 +66,7 @@ void *GuiCreateImgLabelAdaptButton(lv_obj_t *parent, const char *text, const voi
     lv_obj_t *img = GuiCreateImg(parent, src);
     GuiButton_t table[] = {
         {.obj = img, .align = LV_ALIGN_LEFT_MID, .position = {12, 0},},
-        {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {40, 0},},
+        {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {16 + lv_obj_get_self_width(img), 0},},
     };
     uint16_t width = lv_obj_get_self_width(label) + lv_obj_get_self_width(img) + 24;
     lv_obj_t *button = GuiCreateButton(parent, width, 36, table, NUMBER_OF_ARRAYS(table),
@@ -76,13 +76,16 @@ void *GuiCreateImgLabelAdaptButton(lv_obj_t *parent, const char *text, const voi
 }
 
 void *GuiCreateSelectButton(lv_obj_t *parent, const char *text, const void *src,
-                            lv_event_cb_t buttonCb, void *param)
+                            lv_event_cb_t buttonCb, void *param, bool isCling)
 {
     lv_obj_t *label = GuiCreateTextLabel(parent, text);
     lv_obj_t *img = GuiCreateImg(parent, src);
+    int16_t imgXpos = isCling ? 24 : 411;
+    int16_t labelXpos = isCling ? 40 + lv_obj_get_self_width(img) : 24;
+
     GuiButton_t table[] = {
-        {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {24, 0},},
-        {.obj = img, .align = LV_ALIGN_LEFT_MID, .position = {411, 0},},
+        {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {labelXpos, 0},},
+        {.obj = img, .align = LV_ALIGN_LEFT_MID, .position = {imgXpos, 0},},
     };
     lv_obj_t *button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
                                        buttonCb, param);

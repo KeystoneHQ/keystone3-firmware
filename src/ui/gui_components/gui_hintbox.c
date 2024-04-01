@@ -275,7 +275,7 @@ void *GuiGetHintBoxLeftBtn(lv_obj_t *parent)
     return lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 2);
 }
 
-void *GuiCreateMoreInfoHintBox(const void *src, const char *titleText, const MoreInfoTable_t *table, uint8_t cnt)
+void *GuiCreateMoreInfoHintBox(const void *src, const char *titleText, const MoreInfoTable_t *table, uint8_t cnt, bool isCling)
 {
     lv_obj_t *imgButton = NULL, *title = NULL, *desc1 = NULL;
     lv_obj_t *cont = GuiCreateHintBox(lv_scr_act(), 480, 800, false);
@@ -287,7 +287,7 @@ void *GuiCreateMoreInfoHintBox(const void *src, const char *titleText, const Mor
     }
 
     for (int8_t i = cnt - 1; i >= 0; --i) {
-        lv_obj_t *btn = GuiCreateSelectButton(cont, table[i].name, table[i].src, table[i].callBack, table[i].param);
+        lv_obj_t *btn = GuiCreateSelectButton(cont, table[i].name, table[i].src, table[i].callBack, table[i].param, isCling);
         if (i == cnt - 1) {
             lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -12);
         } else {

@@ -1021,7 +1021,7 @@ void appendWalletItemToJson(MultiSigWalletItem_t *item, void *root)
     cJSON_AddNumberToObject(walletItem, "order", item->order);
     cJSON_AddStringToObject(walletItem, "name", item->name);
     cJSON_AddStringToObject(walletItem, "verify_code", item->verifyCode);
-    cJSON_AddNumberToObject(walletItem, "order", item->network);
+    cJSON_AddNumberToObject(walletItem, "network", item->network);
     cJSON_AddStringToObject(walletItem, "wallet_config", item->walletConfig);
     cJSON_AddItemToArray((cJSON*)root, walletItem);
 }

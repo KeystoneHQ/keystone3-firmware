@@ -1,9 +1,6 @@
-## 0.9.0-BTC(2024-03-08)
-### v0.9.0-BTC Beta 版
- 献给 BTC 社区的礼物
-### 支持特性：
+## v1.0.0 比特币单币种固件(2024-04-01)
+
+支持特性：
 1. 仅支持 BTC 的固件
-2. 支持 Blue、Sparrow、Nunchuck 和 Specter 钱包
+2. 支持 Blue、Sparrow、Nunchuck 钱包
 3. 支持测试网和 BTC 主网
-
-

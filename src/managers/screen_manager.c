@@ -114,7 +114,9 @@ static void LockScreen(void)
     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
     uint8_t accountNum = 1;
 
-    SetFpLowPowerMode();
+    if (FpModuleIsExist()) {
+        SetFpLowPowerMode();
+    }
     ClearLockScreenTime();
     ClearShutdownTime();
     LcdBacklightOff();
@@ -134,11 +136,14 @@ static void LockScreen(void)
         GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_CLEAR_ALL_TOP, NULL, 0);
     }
 
-    uint32_t wakeUpCount = EnterLowPower();
-    RecoverFromLowPower();
-    ClearLockScreenTime();
-    ClearShutdownTime();
-    printf("wakeUpCount=%d\r\n", wakeUpCount);
+
+    if (!FpModuleIsExist()) {
+        uint32_t wakeUpCount = EnterLowPower();
+        RecoverFromLowPower();
+        ClearLockScreenTime();
+        ClearShutdownTime();
+        printf("wakeUpCount=%d\r\n", wakeUpCount);
+    }
 }
 
 static void LockScreenTimerFunc(void *argument)

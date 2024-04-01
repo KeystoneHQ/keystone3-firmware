@@ -26,10 +26,6 @@
 #include <gui_keyboard_hintbox.h>
 
 #define MAX_LABEL_LENGTH 64
-#define MAX_NAME_LENGTH 64
-#define MAX_NETWORK_LENGTH 24
-#define MAX_VERIFY_CODE_LENGTH 12
-#define MAX_WALLET_CONFIG_TEXT_LENGTH 2048
 
 static lv_obj_t *g_cont;
 static PageWidget_t *g_pageWidget;
@@ -153,31 +149,15 @@ void GuiImportMultisigWalletInfoWidgetsRestart()
 void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void){
     MultiSigWalletManager_t *manager = initMultiSigWalletManager();
     char *password = SecretCacheGetPassword();
-    MultiSigWalletGet(GetCurrentAccountIndex(), password, manager);
-    MultiSigWalletItem_t* wallet = manager->findNode(manager->list, g_wallet->verify_code);
+    loadCurrentAccountMultisigWallet(manager, password);
+    MultiSigWalletItem_t* wallet = getMultisigWalletByVerifyCode(manager, g_wallet->verify_code);
     if(wallet != NULL){
         //throw for existing
         GuiDeleteKeyboardWidget(g_keyboardWidget);
         GuiShowWalletExisted();
         return;
     }
-    MultiSigWalletItem_t *walletItem = SRAM_MALLOC(sizeof(MultiSigWalletItem_t));
-    
-    walletItem->name = SRAM_MALLOC(MAX_NAME_LENGTH);
-    strcpy_s(walletItem->name, MAX_NAME_LENGTH, g_wallet->name);
-    
-    walletItem->network = g_wallet->network;
-    
-    walletItem->order = manager->getLength(manager->list);
-    
-    walletItem->verifyCode = SRAM_MALLOC(MAX_VERIFY_CODE_LENGTH);
-    strcpy_s(walletItem->verifyCode, MAX_VERIFY_CODE_LENGTH, g_wallet->verify_code);
-    
-    walletItem->walletConfig = SRAM_MALLOC(MAX_WALLET_CONFIG_TEXT_LENGTH);
-    strcpy_s(walletItem->walletConfig, MAX_WALLET_CONFIG_TEXT_LENGTH, g_wallet->config_text);
-    
-    manager->insertNode(manager->list, walletItem);
-    manager->saveToFlash(password, manager);
+    addMultisigWalletToCurrentAccount(manager, g_wallet, password);
 }
 
 static void GuiImportWalletInfoNVSBarInit()

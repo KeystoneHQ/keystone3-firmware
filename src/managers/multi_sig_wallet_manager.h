@@ -1,6 +1,8 @@
 #ifndef MULTI_SIG_WALLET_H
 #define MULTI_SIG_WALLET_H
 
+#include "librust_c.h"
+
 #define MULTI_SIG_MALLOC(size)   EXT_MALLOC(size)
 #define MULTI_SIG_FREE(size)     EXT_FREE(size)
 
@@ -32,5 +34,8 @@ typedef struct MultiSigWalletManager {
 } MultiSigWalletManager_t;
 
 MultiSigWalletManager_t* initMultiSigWalletManager();
+void loadCurrentAccountMultisigWallet(MultiSigWalletManager_t* manager, const char* password);
+void addMultisigWalletToCurrentAccount(MultiSigWalletManager_t* manager, MultiSigWallet *wallet, const char *password);
+MultiSigWalletItem_t *getMultisigWalletByVerifyCode(MultiSigWalletManager_t* manager, const char* verifyCode);
 
 #endif

@@ -3,9 +3,10 @@
 
 void GuiSetMultisigImportWalletData(URParseResult *urResult, URParseMultiResult *multiResult, bool multi);
 
-void GuiImportWalletInfoWidgetsInit();
-void GuiImportWalletInfoWidgetsDeInit();
-void GuiImportWalletInfoWidgetsRefresh();
-void GuiImportWalletInfoWidgetsRestart();
+void GuiImportMultisigWalletInfoWidgetsInit();
+void GuiImportMultisigWalletInfoWidgetsDeInit();
+void GuiImportMultisigWalletInfoWidgetsRefresh();
+void GuiImportMultisigWalletInfoWidgetsRestart();
+void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void);
 
 #endif

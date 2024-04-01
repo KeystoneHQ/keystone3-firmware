@@ -6,13 +6,13 @@
 
 static int32_t GuiImportWalletInfoViewInit(void)
 {
-    GuiImportWalletInfoWidgetsInit();
+    GuiImportMultisigWalletInfoWidgetsInit();
     return SUCCESS_CODE;
 }
 
 static int32_t GuiImportWalletInfoViewDeInit(void)
 {
-    GuiImportWalletInfoWidgetsDeInit();
+    GuiImportMultisigWalletInfoWidgetsDeInit();
     return SUCCESS_CODE;
 }
 
@@ -26,10 +26,13 @@ int32_t GuiImportWalletInfoViewEventProcess(void *self, uint16_t usEvent, void *
     case GUI_EVENT_OBJ_DEINIT:
         return GuiImportWalletInfoViewDeInit();
     case GUI_EVENT_REFRESH:
-        GuiImportWalletInfoWidgetsRefresh();
+        GuiImportMultisigWalletInfoWidgetsRefresh();
         break;
     case GUI_EVENT_RESTART:
-        GuiImportWalletInfoWidgetsRestart();
+        GuiImportMultisigWalletInfoWidgetsRestart();
+        break;
+    case SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD:
+        GuiImportMultisigWalletInfoVerifyPasswordSuccess();
         break;
     default:
         return ERR_GUI_UNHANDLED;

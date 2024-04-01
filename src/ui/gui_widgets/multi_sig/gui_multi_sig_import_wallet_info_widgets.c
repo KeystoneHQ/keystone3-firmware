@@ -14,16 +14,19 @@
 #include "gui_multi_sig_import_wallet_info_widgets.h"
 #include "librust_c.h"
 #include "keystore.h"
+#include "fingerprint_process.h"
 #ifndef COMPILE_SIMULATOR
 #include "safe_str_lib.h"
 #else
 #include "simulator_mock_define.h"
 #endif
+#include <gui_keyboard_hintbox.h>
 
 #define MAX_LABEL_LENGTH 64
 
 static lv_obj_t *g_cont;
 static PageWidget_t *g_pageWidget;
+static KeyboardWidget_t *g_keyboardWidget = NULL;
 
 static void *g_multisig_wallet_info_data;
 static bool g_isMulti = false;
@@ -42,7 +45,7 @@ void GuiSetMultisigImportWalletData(URParseResult *urResult, URParseMultiResult 
     g_multisig_wallet_info_data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
 }
 
-void GuiImportWalletInfoWidgetsInit()
+void GuiImportMultisigWalletInfoWidgetsInit()
 {
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
@@ -68,7 +71,7 @@ void GuiImportWalletInfoWidgetsInit()
     GuiImportWalletInfoContent(cont);
 }
 
-void GuiImportWalletInfoWidgetsDeInit()
+void GuiImportMultisigWalletInfoWidgetsDeInit()
 {
     GUI_DEL_OBJ(g_cont)
     if (g_pageWidget != NULL)
@@ -78,19 +81,41 @@ void GuiImportWalletInfoWidgetsDeInit()
     }
 }
 
-void GuiImportWalletInfoWidgetsRefresh()
+void GuiImportMultisigWalletInfoWidgetsRefresh()
 {
     GuiImportWalletInfoNVSBarInit();
 }
 
-void GuiImportWalletInfoWidgetsRestart()
+void GuiImportMultisigWalletInfoWidgetsRestart()
 {
+}
+
+void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void){
+    printf("password: %s\r\n", SecretCacheGetPassword());
 }
 
 static void GuiImportWalletInfoNVSBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Wallet Info"));
+}
+
+static void SignByPasswordCb(bool cancel)
+{
+    if (cancel) {
+        FpCancelCurOperate();
+    }
+    g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
+    SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+    static uint16_t sig = SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD;
+    SetKeyboardWidgetSig(g_keyboardWidget, &sig);
+}
+
+static void GuiConfirmHandler(lv_event_t *e){
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        SignByPasswordCb(false);
+    }
 }
 
 void GuiImportWalletInfoContent(lv_obj_t *parent)
@@ -172,5 +197,6 @@ void GuiImportWalletInfoContent(lv_obj_t *parent)
     lv_obj_t *btn = GuiCreateBtn(parent, _("Confirm"));
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_size(btn, 408, 66);
-    lv_obj_add_event_cb(btn, NULL, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(btn, GuiConfirmHandler, LV_EVENT_CLICKED, NULL);
 }
+

@@ -5,6 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "user_memory.h"
+#include "account_manager.h"
+
+#define MAX_NAME_LENGTH 64
+#define MAX_NETWORK_LENGTH 24
+#define MAX_VERIFY_CODE_LENGTH 12
+#define MAX_WALLET_CONFIG_TEXT_LENGTH 2048
 
 typedef struct MultiSigWalletNode {
     MultiSigWalletItem_t *value;
@@ -41,6 +47,35 @@ MultiSigWalletManager_t* initMultiSigWalletManager()
     createMultiSigWalletList(manager);
     return manager;
 }
+
+void loadCurrentAccountMultisigWallet(MultiSigWalletManager_t* manager, const char* password) {
+    MultiSigWalletGet(GetCurrentAccountIndex(), password, manager);
+}
+
+MultiSigWalletItem_t *getMultisigWalletByVerifyCode(MultiSigWalletManager_t* manager, const char* verifyCode) {
+    return manager->findNode(manager->list, verifyCode);
+}
+
+void addMultisigWalletToCurrentAccount(MultiSigWalletManager_t* manager, MultiSigWallet *wallet, const char *password) {
+    MultiSigWalletItem_t *walletItem = SRAM_MALLOC(sizeof(MultiSigWalletItem_t));
+    
+    walletItem->name = SRAM_MALLOC(MAX_NAME_LENGTH);
+    strcpy_s(walletItem->name, MAX_NAME_LENGTH, wallet->name);
+    
+    walletItem->network = wallet->network;
+    
+    walletItem->order = manager->getLength(manager->list);
+    
+    walletItem->verifyCode = SRAM_MALLOC(MAX_VERIFY_CODE_LENGTH);
+    strcpy_s(walletItem->verifyCode, MAX_VERIFY_CODE_LENGTH, wallet->verify_code);
+    
+    walletItem->walletConfig = SRAM_MALLOC(MAX_WALLET_CONFIG_TEXT_LENGTH);
+    strcpy_s(walletItem->walletConfig, MAX_WALLET_CONFIG_TEXT_LENGTH, wallet->config_text);
+    
+    manager->insertNode(manager->list, walletItem);
+    manager->saveToFlash(password, manager);
+}
+
 
 static void createMultiSigWalletList(MultiSigWalletManager_t* manager)
 {

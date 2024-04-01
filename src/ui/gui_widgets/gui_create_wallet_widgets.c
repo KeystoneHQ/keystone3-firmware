@@ -87,14 +87,6 @@ const char *GetCurrentKbWalletName(void)
     return "";
 }
 
-static void UpdateWalletNameIconHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_READY) {
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
-    }
-}
-
 static void QuestionMarkEventCb(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -125,12 +117,12 @@ static void GuiCreateNameWalletWidget(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
 
     GuiSetEmojiIconIndex(GUI_KEYBOARD_EMOJI_NEW_INDEX);
-    g_nameWalletKb = GuiCreateFullKeyBoard(parent, UpdateWalletNameIconHandler, KEY_STONE_FULL_L, NULL);
+    g_nameWalletKb = GuiCreateFullKeyBoard(parent, ReadyNextTileHandler, KEY_STONE_FULL_L, NULL);
     GuiSetKeyBoardMinTaLen(g_nameWalletKb, 0);
     lv_obj_set_size(g_nameWalletKb->ta, 300, 60);
     lv_obj_set_style_text_opa(g_nameWalletKb->ta, LV_OPA_100, 0);
     lv_obj_align(g_nameWalletKb->ta, LV_ALIGN_DEFAULT, 128, 316 - GUI_MAIN_AREA_OFFSET);
-    lv_textarea_set_placeholder_text(g_nameWalletKb->ta, _("single_backup_namewallet_previntput"));
+    lv_textarea_set_placeholder_text(g_nameWalletKb->ta, _("single_backup_namewallet_previnput"));
     lv_textarea_set_max_length(g_nameWalletKb->ta, 16);
     lv_textarea_set_one_line(g_nameWalletKb->ta, true);
     snprintf_s(tempBuf, BUFFER_SIZE_16, "%d/16", strnlen_s(GuiNvsBarGetWalletName(), 16));
@@ -478,15 +470,7 @@ void GuiCreateWalletInit(uint8_t walletMethod)
 
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
-
-    lv_obj_t *tileView = lv_tileview_create(cont);
-    if (GuiDarkMode()) {
-        lv_obj_set_style_bg_color(tileView, BLACK_COLOR, LV_PART_MAIN);
-    } else {
-        lv_obj_set_style_bg_color(tileView, WHITE_COLOR, LV_PART_MAIN);
-    }
-    lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
-    lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
+    lv_obj_t *tileView = GuiCreateTileView(cont);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, CREATE_WALLET_SETPIN, 0, LV_DIR_HOR);
     g_createWalletTileView.setPin = tile;
     GuiCreateSetpinWidget(tile);

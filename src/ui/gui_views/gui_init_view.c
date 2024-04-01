@@ -32,15 +32,16 @@ static int32_t GuiInitViewInit(void)
     GuiStyleInit();
     GuiStatusBarInit();
     GlobalResourcesInit();
-    if (GetFactoryResult() == false) {
-        GuiFrameOpenView(&g_inactiveView);
-        return SUCCESS_CODE;
-    }
-    if (Tampered()) {
-        GuiFrameOpenView(&g_selfDestructView);
-        return SUCCESS_CODE;
-    }
-    GuiModeGetAccount();
+    GuiFrameOpenView(&g_createMultiView);
+    // if (GetFactoryResult() == false) {
+    //     GuiFrameOpenView(&g_inactiveView);
+    //     return SUCCESS_CODE;
+    // }
+    // if (Tampered()) {
+    //     GuiFrameOpenView(&g_selfDestructView);
+    //     return SUCCESS_CODE;
+    // }
+    // GuiModeGetAccount();
     return SUCCESS_CODE;
 }
 

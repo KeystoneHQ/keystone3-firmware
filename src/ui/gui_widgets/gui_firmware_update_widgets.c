@@ -36,7 +36,7 @@ typedef enum {
     FIRMWARE_UPDATE_USB_UPDATING,
 
     FIRMWARE_UPDATE_BUTT,
-} CREATE_WALLET_ENUM;
+} FIRMWARE_UPDATE_ENUM;
 
 typedef struct {
     uint8_t currentTile;
@@ -149,16 +149,8 @@ void GuiFirmwareUpdateInit(void *param)
     CLEAR_OBJECT(g_firmwareUpdateWidgets);
     g_pageWidget = CreatePageWidget();
     g_firmwareUpdateWidgets.cont = g_pageWidget->contentZone;
-    tileView = lv_tileview_create(g_firmwareUpdateWidgets.cont);
+    tileView = GuiCreateTileView(g_firmwareUpdateWidgets.cont);
     g_firmwareUpdateWidgets.tileView = tileView;
-    if (GuiDarkMode()) {
-        lv_obj_set_style_bg_color(tileView, BLACK_COLOR, LV_PART_MAIN);
-    } else {
-        lv_obj_set_style_bg_color(tileView, WHITE_COLOR, LV_PART_MAIN);
-    }
-    lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
-    lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
-    lv_obj_clear_flag(tileView, LV_OBJ_FLAG_SCROLLABLE);
 
     g_firmwareUpdateWidgets.tileSelect = lv_tileview_add_tile(tileView, FIRMWARE_UPDATE_SELECT, 0, LV_DIR_HOR);
     GuiCreateSelectTile(g_firmwareUpdateWidgets.tileSelect);

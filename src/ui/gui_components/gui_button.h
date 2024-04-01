@@ -31,6 +31,8 @@ void *GuiCreateSelectButton(lv_obj_t *parent, const char *text, const void *src,
                             lv_event_cb_t buttonCb, void *param);
 void *GuiCreateImgButton(lv_obj_t *parent, const void *src, uint16_t width,
                          lv_event_cb_t buttonCb, void *param);
+void *GuiSettingItemButton(lv_obj_t *parent, uint16_t width, const char *text, const char *descText, const void *src, 
+                           lv_event_cb_t buttonCb, void *param);
 
 
 #endif /* _GUI_BUTTON_H */

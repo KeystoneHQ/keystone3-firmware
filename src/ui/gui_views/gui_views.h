@@ -194,6 +194,8 @@ extern GUI_VIEW g_btcBtcWalletProfileView;
 #endif
 extern GUI_VIEW g_multisigImportWalletInfoView;
 extern GUI_VIEW g_multisigImportWalletSuccessView;
+extern GUI_VIEW g_multiSigImportWalletInfoView;
+extern GUI_VIEW g_createMultiView;
 
 
 void UnHandler(lv_event_t *e);
@@ -204,6 +206,7 @@ void CloseTimerCurrentViewHandler(lv_event_t *e);
 void GoToHomeViewHandler(lv_event_t *e);
 void ReturnHandler(lv_event_t *e);
 void NextTileHandler(lv_event_t *e);
+void ReadyNextTileHandler(lv_event_t *e);
 void CloseCurrentParentHandler(lv_event_t *e);
 void CloseCurrentUserDataHandler(lv_event_t *e);
 void ToggleSwitchBoxHandler(lv_event_t *e);

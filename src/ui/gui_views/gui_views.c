@@ -86,6 +86,14 @@ void CloseCurrentViewHandler(lv_event_t *e)
     }
 }
 
+void ReadyNextTileHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_READY) {
+        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+    }
+}
+
 void ReturnHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);

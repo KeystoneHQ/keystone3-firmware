@@ -118,6 +118,8 @@ LV_IMG_DECLARE(imgAlpha);
 LV_IMG_DECLARE(imgMultiCoin);
 LV_IMG_DECLARE(imgBtcOnly);
 LV_IMG_DECLARE(imgSdFormat);
+LV_IMG_DECLARE(imgTwoKey);
+LV_IMG_DECLARE(imgLockMulti);
 
 // connect to do refresh
 LV_IMG_DECLARE(circular);

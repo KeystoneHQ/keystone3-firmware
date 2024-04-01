@@ -31,7 +31,7 @@ int32_t GuiImportWalletInfoViewEventProcess(void *self, uint16_t usEvent, void *
     case GUI_EVENT_RESTART:
         GuiImportMultisigWalletInfoWidgetsRestart();
         break;
-    case SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD:
+    case SIG_VERIFY_PASSWORD_PASS:
         GuiImportMultisigWalletInfoVerifyPasswordSuccess();
         break;
     default:

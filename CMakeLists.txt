@@ -323,6 +323,8 @@ else()
         list(REMOVE_ITEM objsrc ${excluded_files})
     endforeach()
 
+    SET(INCLUDES src/managers/multi_sig_wallet_manager.c)
+
     add_executable(${PROJECT_NAME} 
         ${SIMULATOR_SRC}
         ${EXTERNAL}

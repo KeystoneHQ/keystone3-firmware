@@ -79,34 +79,40 @@ pub struct MultiSigWallet {
     format: PtrString,
     xpub_items: PtrT<VecFFI<MultiSigXPubItem>>,
     verify_code: PtrString,
+    config_text: PtrString,
+    network: u32,
 }
 
 impl From<MultiSigWalletConfig> for MultiSigWallet {
     fn from(value: MultiSigWalletConfig) -> Self {
         MultiSigWallet {
-            creator: convert_c_char(value.creator),
-            name: convert_c_char(value.name),
+            creator: convert_c_char(value.creator.clone()),
+            name: convert_c_char(value.name.clone()),
             policy: convert_c_char(format!("{} of {}", value.threshold, value.total)),
             threshold: value.threshold,
             total: value.total,
             derivations: VecFFI::from(
                 value
                     .derivations
+                    .clone()
                     .iter()
                     .map(|v| convert_c_char(v.to_string()))
                     .collect::<Vec<_>>(),
             )
             .c_ptr(),
-            format: convert_c_char(value.format),
+            format: convert_c_char(value.format.clone()),
             xpub_items: VecFFI::from(
                 value
                     .xpub_items
+                    .clone()
                     .iter()
                     .map(|v| MultiSigXPubItem::from(v))
                     .collect::<Vec<MultiSigXPubItem>>(),
             )
             .c_ptr(),
-            verify_code: convert_c_char(value.verify_code),
+            verify_code: convert_c_char(value.verify_code.clone()),
+            config_text: convert_c_char(value.config_text.clone()),
+            network: value.get_network_u32(),
         }
     }
 }
@@ -147,6 +153,7 @@ impl Into<MultiSigWalletConfig> for &mut MultiSigWallet {
                 rebuilt.iter().map(|v| v.into()).collect::<Vec<_>>()
             },
             verify_code: recover_c_char(self.verify_code),
+            config_text: recover_c_char(self.config_text),
         }
     }
 }
@@ -159,6 +166,7 @@ impl Free for MultiSigWallet {
         free_str_ptr!(self.format);
         free_vec!(self.xpub_items);
         free_str_ptr!(self.verify_code);
+        free_str_ptr!(self.config_text);
     }
 }
 

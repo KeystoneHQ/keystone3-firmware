@@ -906,3 +906,7 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,wallet_profile_export_title,Export (Ext) Public Key,Экспорт открытого ключа,,导出扩展公钥,已改,,,
 ,wallet_profile_network_main,MainNet,Основная сеть,,主网,已改,,,
 ,wallet_profile_network_test,TestNet,Тестовая сеть,,测试网,已改,,,
+,multisig_import_wallet_exist,Wallet Already Exists,,,,,,,
+,multisig_import_wallet_exist_desc,"The multisig wallet you selected already exists on the current device, please import another wallet.",,,,,,,
+
+

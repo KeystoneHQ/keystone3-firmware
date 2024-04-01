@@ -19,7 +19,7 @@ use crate::multi_sig::{
 
 const CHANGE_XPUB_PREFIX_BY_PATH: bool = true;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MultiSigXPubItem {
     pub network: Network,
     pub xfp: String,
@@ -36,6 +36,7 @@ pub struct MultiSigWalletConfig {
     pub format: String,
     pub xpub_items: Vec<MultiSigXPubItem>,
     pub verify_code: String,
+    pub config_text: String,
 }
 
 impl Default for MultiSigWalletConfig {
@@ -49,6 +50,7 @@ impl Default for MultiSigWalletConfig {
             format: String::new(),
             xpub_items: vec![],
             verify_code: String::new(),
+            config_text: String::new(),
         }
     }
 }
@@ -56,6 +58,13 @@ impl Default for MultiSigWalletConfig {
 impl MultiSigWalletConfig {
     pub fn get_network(&self) -> &Network {
         &self.xpub_items[0].network
+    }
+
+    pub fn get_network_u32(&self) -> u32 {
+        match &self.xpub_items[0].network {
+            Network::MainNet => 0,
+            Network::TestNet => 1,
+        }
     }
 
     pub fn get_wallet_path(&self) -> Result<&str, BitcoinError> {
@@ -120,6 +129,7 @@ pub fn create_wallet(
 
     verify_wallet_config(&wallet, xfp, &network)?;
     calculate_wallet_verify_code(&mut wallet)?;
+    wallet.config_text = generate_config_data(&wallet, xfp, network)?;
     Ok(wallet)
 }
 
@@ -151,6 +161,7 @@ fn _parse_plain_wallet_config(content: &str) -> Result<MultiSigWalletConfig, Bit
             }
         }
     }
+    wallet.config_text = content.to_string();
     Ok(wallet)
 }
 

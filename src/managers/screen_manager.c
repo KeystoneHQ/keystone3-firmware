@@ -107,6 +107,9 @@ static void LockScreen(void)
 {
     if (GetLowPowerState() == LOW_POWER_STATE_DEEP_SLEEP) {
         RecoverFromLowPower();
+        printf("g_lockScreenTick = %d..\n", g_lockScreenTick);
+        ClearLockScreenTime();
+        ClearShutdownTime();
         printf("recovery from low power\n");
         return;
     }

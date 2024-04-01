@@ -17,6 +17,7 @@
 #include "fingerprint_process.h"
 #include "account_public_info.h"
 #include "multi_sig_wallet_manager.h"
+#include "gui_chain.h"
 #ifndef COMPILE_SIMULATOR
 #include "safe_str_lib.h"
 #else
@@ -39,9 +40,21 @@ static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static MultiSigWallet *g_wallet = NULL;
+static lv_obj_t *g_errorHintBox = NULL;
 
 static void GuiImportWalletInfoNVSBarInit();
 static void GuiImportWalletInfoContent(lv_obj_t *parent);
+static void GuiOnFailedHandler(lv_event_t *event);
+static void GuiShowInvalidQRCode();
+static void GuiShowWalletExisted();
+
+static void GuiOnFailedHandler(lv_event_t *e){
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        GUI_DEL_OBJ(g_errorHintBox);
+        GuiCLoseCurrentWorkingView();
+    }
+}
 
 void GuiSetMultisigImportWalletData(URParseResult *urResult, URParseMultiResult *multiResult, bool multi)
 {
@@ -49,6 +62,45 @@ void GuiSetMultisigImportWalletData(URParseResult *urResult, URParseMultiResult 
     g_urMultiResult = multiResult;
     g_isMulti = multi;
     g_multisig_wallet_info_data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+}
+
+static void GuiShowInvalidQRCode(){
+    g_errorHintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_errorHintBox, &imgFailed);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
+
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_errorHintBox, _("scan_qr_code_error_invalid_qrcode"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
+
+    label = GuiCreateIllustrateLabel(g_errorHintBox, _("scan_qr_code_error_invalid_qrcode_desc"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
+
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_errorHintBox, _("OK"), g_defTextFont);
+    lv_obj_set_size(btn, 94, 66);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
+    lv_obj_add_event_cb(btn, GuiOnFailedHandler, LV_EVENT_CLICKED, NULL);
+}
+
+static void GuiShowWalletExisted() {
+    #define PLUS_PADDING + 384
+    g_errorHintBox = GuiCreateHintBox(lv_scr_act(), 480, 416, false);
+    lv_obj_t *img = GuiCreateImg(g_errorHintBox, &imgFailed);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 36, 48 PLUS_PADDING);
+
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_errorHintBox, _("multisig_import_wallet_exist"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 144 PLUS_PADDING);
+
+    label = GuiCreateIllustrateLabel(g_errorHintBox, _("multisig_import_wallet_exist_desc"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 196 PLUS_PADDING);
+
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_errorHintBox, _("OK"), g_defTextFont);
+    lv_obj_set_size(btn, 94, 66);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
+    lv_obj_add_event_cb(btn, GuiOnFailedHandler, LV_EVENT_CLICKED, NULL);
 }
 
 void GuiImportMultisigWalletInfoWidgetsInit()
@@ -61,8 +113,7 @@ void GuiImportMultisigWalletInfoWidgetsInit()
     if (result->error_code != 0)
     {
         printf("%s\r\n", result->error_message);
-        // TODO: add error modal;
-        GuiCLoseCurrentWorkingView();
+        GuiShowInvalidQRCode();
         return;
     }
     else
@@ -85,6 +136,9 @@ void GuiImportMultisigWalletInfoWidgetsDeInit()
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
+    CHECK_FREE_UR_RESULT(g_urResult, false);
+    CHECK_FREE_UR_RESULT(g_urMultiResult, true);
+    free_MultiSigWallet(g_wallet);
 }
 
 void GuiImportMultisigWalletInfoWidgetsRefresh()
@@ -103,7 +157,8 @@ void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void){
     MultiSigWalletItem_t* wallet = manager->findNode(manager->list, g_wallet->verify_code);
     if(wallet != NULL){
         //throw for existing
-        GuiCLoseCurrentWorkingView();
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+        GuiShowWalletExisted();
         return;
     }
     MultiSigWalletItem_t *walletItem = SRAM_MALLOC(sizeof(MultiSigWalletItem_t));

@@ -59,7 +59,7 @@ pub static FRAGMENT_UNLIMITED_LENGTH: usize = 11000;
 #[repr(C)]
 pub struct UREncodeResult {
     is_multi_part: bool,
-    data: *mut c_char,
+    pub data: *mut c_char,
     encoder: PtrEncoder,
     error_code: u32,
     error_message: *mut c_char,

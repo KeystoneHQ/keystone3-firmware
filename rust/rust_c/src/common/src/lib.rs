@@ -74,6 +74,18 @@ pub extern "C" fn get_ed25519_pubkey_by_seed(
 }
 
 #[no_mangle]
+pub extern "C" fn get_rsa_pubkey_by_seed(seed: PtrBytes, seed_len: u32) -> *mut SimpleResponse<u8> {
+    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let public_key = keystore::algorithms::rsa::get_rsa_pubkey_by_seed(seed);
+    match public_key {
+        Ok(result) => {
+            SimpleResponse::success(Box::into_raw(Box::new(result)) as *mut u8).simple_c_ptr()
+        }
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn get_bip32_ed25519_extended_pubkey(
     entropy: PtrBytes,
     entropy_len: u32,

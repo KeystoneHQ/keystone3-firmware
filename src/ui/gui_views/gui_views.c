@@ -9,6 +9,7 @@
 #include "gui_status_bar.h"
 #include "gui_lock_device_widgets.h"
 #include "gui_page.h"
+#include <stdio.h>
 
 #define IMPORT_WALLET_NOTICE                                            false
 #define CREATE_WALLET_NOTICE                                            true
@@ -211,9 +212,9 @@ void DuplicateShareHandler(lv_event_t *e)
 
 void GuiViewHintBoxClear(void)
 {
-    if (g_hintBox != NULL) {
-        GUI_DEL_OBJ(g_hintBox)
-    }
+    GUI_DEL_OBJ(g_hintBox)
+    DestroyPageWidget(g_pageViewWidget);
+    g_pageViewWidget = NULL;
 }
 
 void GuiDoNothingHandler(lv_event_t *e)
@@ -312,6 +313,7 @@ static void CreateOrImportWalletHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         GuiFrameOpenViewWithParam(&g_createWalletView, lv_event_get_user_data(e), sizeof(uint8_t));
         DestroyPageWidget(g_pageViewWidget);
+        g_pageViewWidget = NULL;
     }
 }
 

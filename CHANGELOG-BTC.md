@@ -1,10 +1,6 @@
-## 0.9.0-BTC (2024-03-08)
+## v1.0.0 Bitcoin-Only Firmware (2024-04-02)
 
-### v0.9.0 Bitcoin-Only Beta Version
- A Gift to the Bitcoin Community
-### What’s New:
+### What's New:
 1. Bitcoin-only firmware
-2. Blue, Sparrow, Nunchuck and Specter
+2. Blue, Sparrow, Nunchuck
 3. Both Bitcoin testnet and the main network
-
-

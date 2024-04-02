@@ -300,6 +300,15 @@ impl WrappedPsbt {
             )?));
         }
 
+        if input.bip32_derivation.is_empty() {
+            if let Some(utxo) = &input.witness_utxo {
+                return Ok(Some(
+                    Address::from_script(&utxo.script_pubkey, network.clone())?.to_string(),
+                ));
+            }
+            return Err(BitcoinError::InvalidInput);
+        }
+
         match input.bip32_derivation.first_key_value() {
             Some((pubkey, (_, derivation_path))) => {
                 //call generate address here

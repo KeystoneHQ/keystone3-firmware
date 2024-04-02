@@ -1077,6 +1077,7 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
             *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
             *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
             *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&
+            *param != SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD &&
             !strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) &&
             !GuiCheckIfViewOpened(&g_createWalletView) &&
             !ModelGetPassphraseQuickAccess()) {
@@ -1139,13 +1140,7 @@ static int32_t ModeControlQrDecode(const void *inData, uint32_t inDataLen)
         PubValueMsg(QRDECODE_MSG_STOP, 0);
     }
 #else
-    static uint8_t urRet = 0;
-#ifndef BTC_ONLY
-    UrViewType_t urViewType = { CardanoTx, CardanoSignRequest };
-#else
-    UrViewType_t urViewType = { BtcNativeSegwitTx, CryptoPSBT };
-#endif
-    GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
+    read_qrcode();
 #endif
     SetLockScreen(enable);
     return SUCCESS_CODE;

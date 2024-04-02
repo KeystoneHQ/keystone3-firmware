@@ -132,6 +132,7 @@ typedef enum {
     SIG_TRANSACTION_PARSE_SUCCESS,
     SIG_TRANSACTION_PARSE_FAIL,
     SIG_SIGN_TRANSACTION_WITH_PASSWORD,
+    SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD,
     SIG_TRANSACTION_BUTT,
 
 
@@ -191,6 +192,7 @@ extern GUI_VIEW g_updateSuccessView;
 #ifdef BTC_ONLY
 extern GUI_VIEW g_btcBtcWalletProfileView;
 #endif
+extern GUI_VIEW g_multiSigImportWalletInfoView;
 
 
 void UnHandler(lv_event_t *e);

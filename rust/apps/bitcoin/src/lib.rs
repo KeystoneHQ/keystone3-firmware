@@ -13,6 +13,7 @@ extern crate std;
 pub mod addresses;
 pub mod errors;
 mod macros;
+pub mod multi_sig;
 pub mod network;
 mod transactions;
 pub use addresses::get_address;
@@ -129,6 +130,7 @@ mod test {
                 to: $to.iter().map(|i| i.to_string()).collect(),
                 network: $network.to_string(),
                 fee_larger_than_amount: $fee_larger_than_amount,
+                multi_sig_status: None,
             }
         };
     }
@@ -140,6 +142,7 @@ mod test {
                 amount: $amount.to_string(),
                 value: $value,
                 path: Some($path.to_string()),
+                multi_sig_status: None,
             }
         };
     }
@@ -173,6 +176,7 @@ mod test {
                 total_output_sat: $total_output_sat.to_string(),
                 fee_sat: $fee_sat.to_string(),
                 network: $network.to_string(),
+                multi_sig_status: None,
             }
         };
     }

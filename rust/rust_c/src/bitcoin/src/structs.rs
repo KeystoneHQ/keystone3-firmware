@@ -6,10 +6,44 @@ use app_bitcoin;
 use app_bitcoin::parsed_tx::{DetailTx, OverviewTx, ParsedInput, ParsedOutput, ParsedTx};
 use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::Free;
+use common_rust_c::structs::Response;
 use common_rust_c::structs::TransactionParseResult;
 use common_rust_c::types::{PtrString, PtrT};
+use common_rust_c::ur::UREncodeResult;
 use common_rust_c::utils::convert_c_char;
 use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
+
+#[repr(C)]
+pub struct PsbtSignResult {
+    base_str: PtrString,
+    hex_str: PtrString,
+    ur_result: PtrT<UREncodeResult>,
+}
+
+impl PsbtSignResult {
+    pub fn new(psbt_bytes: &Vec<u8>, ur_result: PtrT<UREncodeResult>) -> Self {
+        PsbtSignResult {
+            base_str: convert_c_char(third_party::base64::encode(psbt_bytes)),
+            hex_str: convert_c_char(third_party::hex::encode(psbt_bytes)),
+            ur_result,
+        }
+    }
+}
+
+impl Free for PsbtSignResult {
+    fn free(&self) {
+        free_str_ptr!(self.base_str);
+        free_str_ptr!(self.hex_str);
+        unsafe {
+            let x = Box::from_raw(self.ur_result);
+            x.free();
+        }
+    }
+}
+
+impl_c_ptr!(PsbtSignResult);
+
+make_free_method!(Response<PsbtSignResult>);
 
 #[repr(C)]
 pub struct DisplayTx {
@@ -27,6 +61,7 @@ pub struct DisplayTxOverview {
     to: PtrT<VecFFI<DisplayTxOverviewOutput>>,
     network: PtrString,
     fee_larger_than_amount: bool,
+    multi_sig_status: PtrString,
 }
 
 impl_c_ptr!(DisplayTxOverview);
@@ -42,6 +77,7 @@ pub struct DisplayTxDetail {
     total_input_sat: PtrString,
     total_output_sat: PtrString,
     fee_sat: PtrString,
+    multi_sig_status: PtrString,
 }
 
 impl_c_ptr!(DisplayTxDetail);
@@ -111,6 +147,11 @@ impl From<OverviewTx> for DisplayTxOverview {
             )
             .c_ptr(),
             network: convert_c_char(value.network),
+            multi_sig_status: if let Some(multi_sig_status) = value.multi_sig_status {
+                convert_c_char(multi_sig_status)
+            } else {
+                null_mut()
+            },
         }
     }
 }
@@ -141,6 +182,11 @@ impl From<DetailTx> for DisplayTxDetail {
             total_output_sat: convert_c_char(value.total_output_sat),
             total_input_sat: convert_c_char(value.total_input_sat),
             fee_sat: convert_c_char(value.fee_sat),
+            multi_sig_status: if let Some(multi_sig_status) = value.multi_sig_status {
+                convert_c_char(multi_sig_status)
+            } else {
+                null_mut()
+            },
         }
     }
 }

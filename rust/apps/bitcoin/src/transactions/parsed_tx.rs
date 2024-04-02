@@ -18,6 +18,7 @@ pub struct ParsedInput {
     pub amount: String,
     pub value: u64,
     pub path: Option<String>,
+    pub multi_sig_status: Option<String>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -38,6 +39,7 @@ pub struct OverviewTx {
     pub to: Vec<String>,
     pub network: String,
     pub fee_larger_than_amount: bool,
+    pub multi_sig_status: Option<String>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -51,6 +53,7 @@ pub struct DetailTx {
     pub fee_amount: String,
     pub fee_sat: String,
     pub network: String,
+    pub multi_sig_status: Option<String>,
 }
 
 pub struct ParseContext {
@@ -84,6 +87,26 @@ pub trait TxParser {
     fn parse(&self, context: Option<&ParseContext>) -> Result<ParsedTx>;
 
     fn determine_network(&self) -> Result<Network>;
+
+    fn get_multi_status(parsed_inputs: &[ParsedInput]) -> Option<String> {
+        if parsed_inputs.is_empty() {
+            return None;
+        }
+        let first_multi_status = parsed_inputs[0].multi_sig_status.as_ref();
+        if parsed_inputs
+            .iter()
+            .all(|input| input.multi_sig_status.as_ref() == first_multi_status)
+        {
+            if let Some(value) = first_multi_status {
+                if value.starts_with("0") {
+                    return Some(String::from("Unsigned"));
+                }
+            }
+            first_multi_status.cloned()
+        } else {
+            Some(String::from("Partial Signed"))
+        }
+    }
 
     fn normalize(
         &self,
@@ -124,6 +147,7 @@ pub trait TxParser {
         overview_to.sort();
         overview_to.dedup();
         let overview = OverviewTx {
+            multi_sig_status: Self::get_multi_status(&inputs),
             total_output_amount: Self::format_amount(overview_amount, network),
             fee_amount: Self::format_amount(fee, network),
             total_output_sat: Self::format_sat(overview_amount),
@@ -134,6 +158,7 @@ pub trait TxParser {
             fee_larger_than_amount: fee > overview_amount,
         };
         let detail = DetailTx {
+            multi_sig_status: Self::get_multi_status(&inputs),
             from: inputs,
             to: outputs,
             total_input_amount: Self::format_amount(total_input_value, network),

@@ -69,6 +69,7 @@ set(GUI_INCLUDE_PATH
     src/ui/gui_frame
     src/ui/gui_widgets
     src/ui/gui_widgets/setting
+    src/ui/gui_widgets/multi_sig
     src/ui/lv_i18n
     src/ui/gui_model
     src/ui/gui_analyze
@@ -164,7 +165,7 @@ file(GLOB_RECURSE GUI
     "src/ui/gui_widgets/setting/*.c"
     "src/ui/lv_i18n/*.c"
     "src/ui/gui_model/*.c"
-    "src/ui/gui_analyze/gui_analyze.c"
+    "src/ui/gui_analyze/*.c"
     "src/ui/gui_chain/*.c"
     "src/ui/gui_components/*.c"
     "src/ui/wallet/*.c"
@@ -321,6 +322,8 @@ else()
         file(GLOB_RECURSE excluded_files "${directory}/*")
         list(REMOVE_ITEM objsrc ${excluded_files})
     endforeach()
+
+    SET(INCLUDES src/managers/multi_sig_wallet_manager.c)
 
     add_executable(${PROJECT_NAME} 
         ${SIMULATOR_SRC}

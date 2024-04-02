@@ -205,6 +205,8 @@ pub enum ViewType {
     WebAuthResult,
     #[cfg(feature = "multi-coins")]
     KeyDerivationRequest,
+    #[cfg(feature = "btc-only")]
+    MultisigWalletImport,
     ViewTypeUnKnown,
 }
 

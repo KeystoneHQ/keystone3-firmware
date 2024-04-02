@@ -4,6 +4,7 @@
 #include "stdint.h"
 #include "stdbool.h"
 #include "gui_home_widgets.h"
+#include "multi_sig_wallet_manager.h"
 typedef struct {
     int32_t addressType;
     int32_t addressIndex;
@@ -109,6 +110,14 @@ typedef enum {
     XPUB_TYPE_BTC_LEGACY_TEST,
     XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST,
     XPUB_TYPE_BTC_TAPROOT_TEST,
+
+    XPUB_TYPE_BTC_MULTI_SIG_P2SH,
+    XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH,
+    XPUB_TYPE_BTC_MULTI_SIG_P2WSH,
+    XPUB_TYPE_BTC_MULTI_SIG_P2SH_TEST,
+    XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH_TEST,
+    XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST,
+
 #endif
     XPUB_TYPE_NUM,
 } ChainType;
@@ -124,5 +133,8 @@ void SetFirstReceive(const char* chainName, bool isFirst);
 void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count);
 char *GetXPubPath(uint8_t index);
 
+void ExportMultiSigXpub(ChainType chainType);
+void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager);
+int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWalletManager_t *manager);
 #endif
 

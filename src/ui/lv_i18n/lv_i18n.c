@@ -482,6 +482,8 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"learn_more", "Learn More"},
     {"low_battery_pop_up_desc", "The device needs a minimum of 20% battery life to continue the process."},
     {"low_battery_pop_up_title", "Low Battery"},
+    {"multisig_import_wallet_exist", "Wallet Already Exists"},
+    {"multisig_import_wallet_exist_desc", "The multisig wallet you selected already exists on the current device, please import another wallet."},
     {"not_now", "Not Now"},
     {"passphrase_access_switch_desc", "Create a passphrase shortcut for device boot-up"},
     {"passphrase_access_switch_title", "Passphrase Quick Access"},

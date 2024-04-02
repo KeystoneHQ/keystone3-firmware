@@ -132,6 +132,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_SPECTER, "Connect Specter", &walletSpecter},
     {WALLET_LIST_SPARROW, "Connect Sparrow", &walletSparrow},
     {WALLET_LIST_NUNCHUK, "Connect Nunchuk", &walletNunchuk},
+    {WALLET_LIST_UNISAT, "Connect UniSat", &walletUniSat},
 #endif
 };
 

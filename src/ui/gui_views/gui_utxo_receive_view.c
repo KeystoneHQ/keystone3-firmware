@@ -2,6 +2,7 @@
 #include "gui_obj.h"
 #include "gui_views.h"
 #include "gui_utxo_receive_widgets.h"
+#include "gui_global_resources.h"
 
 static int32_t GuiReceiveViewInit(uint8_t chain)
 {

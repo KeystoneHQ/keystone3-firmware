@@ -522,6 +522,15 @@ GetTableDataFunc GuiBtcTableFuncGet(char *type)
     return NULL;
 }
 
+
+GetLabelDataLenFunc GuiBtcTextLenFuncGet(char *type)
+{
+    if (!strcmp(type, "GetBtcMsgDetailLen")) {
+        return GetBtcMsgDetailLen;
+    }
+    return NULL;
+}
+
 #ifndef BTC_ONLY
 GetTableDataFunc GuiEthTableFuncGet(char *type)
 {
@@ -620,14 +629,6 @@ GetLabelDataLenFunc GuiSuiTextLenFuncGet(char *type)
 {
     if (!strcmp(type, "GetSuiDetailLen")) {
         return GetSuiDetailLen;
-    }
-    return NULL;
-}
-
-GetLabelDataLenFunc GuiBtcTextLenFuncGet(char *type)
-{
-    if (!strcmp(type, "GetBtcMsgDetailLen")) {
-        return GetBtcMsgDetailLen;
     }
     return NULL;
 }

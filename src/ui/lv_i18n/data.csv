@@ -911,6 +911,8 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,wallet_profile_network_test,TestNet,Тестовая сеть,,测试网,已改,,,
 ,multisig_import_wallet_exist,Wallet Already Exists,,,,,,,
 ,multisig_import_wallet_exist_desc,"The multisig wallet you selected already exists on the current device, please import another wallet.",,,,,,,
+,scan_qr_code_error_invalid_wallet_file,"Invalid Wallet File",,,,,,,
+,scan_qr_code_error_invalid_wallet_file_desc,"Please ensure that the file you chose is an multisig wallet file.",,,,,,,
 ,multisig_import_success_hint,"Invite co-signers to scan the QR code to import multisig wallet or scan this QR code with software wallet to finish connection",,,,,,,
 
 

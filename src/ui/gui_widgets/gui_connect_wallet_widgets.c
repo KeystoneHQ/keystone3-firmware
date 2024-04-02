@@ -1069,6 +1069,9 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         //84 49
         func = GuiGetSpecterWalletBtcData;
         break;
+    case WALLET_LIST_UNISAT:
+        func = GuiGetSparrowWalletBtcData;
+        break;
 #endif
     default:
         return;

@@ -93,7 +93,9 @@ MultiSigWalletItem_t *AddMultisigWalletToCurrentAccount(MultiSigWallet *wallet, 
 {
     ASSERT_WALLET_MANAGER_EXIST
     MultiSigWalletManager_t *manager = g_multisigWalletManager;
-    MultiSigWalletItem_t *walletItem = SRAM_MALLOC(sizeof(MultiSigWalletItem_t));
+    MultiSigWalletItem_t *walletItem = findNode(wallet->verify_code);
+    if(walletItem != NULL) return walletItem;
+    walletItem = SRAM_MALLOC(sizeof(MultiSigWalletItem_t));
 
     walletItem->name = SRAM_MALLOC(MAX_NAME_LENGTH);
     strcpy_s(walletItem->name, MAX_NAME_LENGTH, wallet->name);

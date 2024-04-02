@@ -6,6 +6,8 @@
 #include "keystore.h"
 #include "user_memory.h"
 #include "define.h"
+#include "gui_hintbox.h"
+#include "gui_animating_qrcode.h"
 #ifndef COMPILE_SIMULATOR
 #include "safe_str_lib.h"
 #else
@@ -14,7 +16,7 @@
 
 #define MAX_ADDRESS_LEN 256
 
-static lv_obj_t *g_cont, *g_qrcode, *g_eg;
+static lv_obj_t *g_cont, *g_qrcode, *g_eg, *g_hintBox;
 static PageWidget_t *g_pageWidget;
 static MultiSigWalletManager_t *manager = NULL;
 static MultiSigWalletItem_t *g_wallet = NULL;
@@ -23,6 +25,17 @@ static void GuiImportWalletSuccessContent(lv_obj_t *parent);
 static void ModelGenerateAddress(char *addr);
 static void SetEgContent();
 static char* convertFormatLabel(char *format);
+static void GuiSDCardHandler(lv_event_t *);
+static void GuiShowSDCardNotDetected();
+static void GuiCloseHintBoxHandler(lv_event_t *);
+static void GuiShowSDCardExport();
+static void GuiShowSDCardExportSuccess();
+static void GuiShowSDCardExportFailed();
+
+static void QRCodePause(bool pause)
+{
+    GuiAnimatingQRCodeControl(pause);
+}
 
 void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 
@@ -35,10 +48,128 @@ static void GuiDoneHandler(lv_event_t *e)
     }
 }
 
+static void GuiSDCardHandler(lv_event_t *e){
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED)
+    {
+        //TODO: check SD Card exist;
+        if(true){
+            GuiShowSDCardExport();
+        }
+        else {
+            GuiShowSDCardNotDetected();
+        }
+        return;
+    }
+}
+
+static void GuiCloseHintBoxHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED)
+    {
+        GUI_DEL_OBJ(g_hintBox);
+        return;
+    }
+}
+
+static void GuiWriteSDCardHandler(lv_event_t *e){
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED)
+    {
+        GUI_DEL_OBJ(g_hintBox);
+        if(false){
+            GuiShowSDCardExportSuccess();
+        }
+        else {
+            GuiShowSDCardExportFailed();
+        }
+        return;
+    }
+}
+
+static void GuiShowSDCardNotDetected(){
+    g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_hintBox, &imgFailed);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
+
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_hintBox, _("multisig_export_sdcard_not_detected"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
+
+    label = GuiCreateIllustrateLabel(g_hintBox, _("multisig_export_sdcard_not_detected_desc"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
+
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_hintBox, _("OK"), g_defTextFont);
+    lv_obj_set_size(btn, 94, 66);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
+    lv_obj_add_event_cb(btn, GuiCloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
+}
+
+static void GuiShowSDCardExport() {
+    g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_hintBox, &imgSdCardL);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
+
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_hintBox, _("multisig_export_to_sdcard"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
+
+    label = GuiCreateIllustrateLabel(g_hintBox, _("multisig_export_to_sdcard_desc"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
+
+    char* filename = "xxxx.txt";
+    label = GuiCreateIllustrateLabel(g_hintBox, filename);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 670);
+
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_hintBox, _("got_it"), g_defTextFont);
+    lv_obj_set_size(btn, 122, 66);
+    lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
+    lv_obj_add_event_cb(btn, GuiWriteSDCardHandler, LV_EVENT_CLICKED, NULL);
+}
+
+static void GuiShowSDCardExportSuccess() {
+    g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_hintBox, &imgSuccess);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
+
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_hintBox, _("multisig_export_to_sdcard_success"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
+
+    label = GuiCreateIllustrateLabel(g_hintBox, _("multisig_export_to_sdcard_success_desc"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
+
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_hintBox, _("Done"), g_defTextFont);
+    lv_obj_set_size(btn, 122, 66);
+    lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
+    lv_obj_add_event_cb(btn, GuiCloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
+}
+
+static void GuiShowSDCardExportFailed() {
+    g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_hintBox, &imgFailed);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
+
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_hintBox, _("multisig_export_to_sdcard_failed"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
+
+    label = GuiCreateIllustrateLabel(g_hintBox, _("multisig_export_to_sdcard_failed_desc"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
+
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_hintBox, _("OK"), g_defTextFont);
+    lv_obj_set_size(btn, 94, 66);
+    lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
+    lv_obj_add_event_cb(btn, GuiCloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
+}
+
 static void GuiImportWalletSuccessNVSBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Import Success"));
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SDCARD, GuiSDCardHandler, NULL);
 }
 
 void GuiImportMultisigWalletSuccessWidgetsInit(char *verifyCode)

@@ -1,4 +1,4 @@
-,ID(0.0.1),en,Russian,Korean,cn,status,,,
+﻿,ID(0.0.1),en,Russian,Korean,cn,status,,,
 Language,language_title,Language,Язык,언어,语言,已改,,,
 ,language_desc,Select your language,Выберите язык,언어 선택,选择你的语言,已改,,,
 ,language_option1,English,English,English,English,已改,,,
@@ -911,5 +911,6 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,wallet_profile_network_test,TestNet,Тестовая сеть,,测试网,已改,,,
 ,multisig_import_wallet_exist,Wallet Already Exists,,,,,,,
 ,multisig_import_wallet_exist_desc,"The multisig wallet you selected already exists on the current device, please import another wallet.",,,,,,,
+,multisig_import_success_hint,"Invite co-signers to scan the QR code to import multisig wallet or scan this QR code with software wallet to finish connection",,,,,,,
 
 

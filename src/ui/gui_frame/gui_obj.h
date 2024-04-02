@@ -54,7 +54,8 @@ typedef int32_t(*GuiEventProcessFunc)(void *self, uint16_t usEvent, void *param,
     add(SCREEN_DEVICE_PUB_KEY) \
     add(SCREEN_DEVICE_UPDATE_SUCCESS)   \
     add(SCREEN_BTC_WALLET_PROFILE) \
-    add(SCREEN_MULTI_SIG_IMPORT_WALLET_INFO)
+    add(SCREEN_MULTI_SIG_IMPORT_WALLET_INFO) \
+    add(SCREEN_MULTI_SIG_IMPORT_WALLET_SUCCESS) 
 
 typedef enum {
     SCREEN_INVALID = -1,

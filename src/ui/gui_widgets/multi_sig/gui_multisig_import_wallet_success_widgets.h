@@ -1,0 +1,9 @@
+#ifndef _GUI_MULTI_SIG_IMPORT_WALLET_SUCCESS_WIDGETS_H
+#define _GUI_MULTI_SIG_IMPORT_WALLET_SUCCESS_WIDGETS_H
+
+void GuiImportMultisigWalletSuccessWidgetsInit(char* verifyCode);
+void GuiImportMultisigWalletSuccessWidgetsDeInit();
+void GuiImportMultisigWalletSuccessWidgetsRefresh();
+void GuiImportMultisigWalletSuccessWidgetsRestart();
+
+#endif

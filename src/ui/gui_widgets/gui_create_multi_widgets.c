@@ -24,6 +24,7 @@ typedef enum {
     CREATE_MULTI_SELECT_SLICE,
     CREATE_MULTI_SELECT_FORMAT,
     CREATE_MULTI_CONFIRM_CO_SIGNERS,
+    CREATE_MULTI_IMPORT_SDCARD_XPUB,
     CREATE_MULTI_CONFIRM,
     CREATE_MULTI_WRITE_SE,
 
@@ -81,6 +82,7 @@ static PageWidget_t *g_pageWidget;
 static void SelectCheckBoxHandler(lv_event_t* e);
 static void GuiCreateNameWalletWidget(lv_obj_t *parent);
 static void GuiCreateAddressSettingsWidget(lv_obj_t *parent);
+static void ImportSdCardXpubHandler(lv_event_t *e);
 
 static const AddressSettingsItem_t g_mainNetAddressSettings[] = {
     {"Native SegWit",   "P2WPKH",           "m/84'/0'/0'"},
@@ -101,8 +103,8 @@ static void ImportMultiXpubHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     MoreInfoTable_t moreInfoTable[] = {
-        {.name = _("create_multi_wallet_import_xpub_qr"), .src = &imgScan48, .callBack = UnHandler, NULL},
-        {.name = _("create_multi_wallet_import_xpub_sdcard"), .src = &imgSdCard, .callBack = UnHandler, NULL},
+        {.name = _("create_multi_wallet_import_xpub_qr"), .src = &imgScanImport, .callBack = UnHandler, NULL},
+        {.name = _("create_multi_wallet_import_xpub_sdcard"), .src = &imgSdcardImport, .callBack = NextTileHandler, NULL},
     };
 
     if (code == LV_EVENT_CLICKED) {
@@ -299,16 +301,7 @@ static void GuiMultiConfirmSignersWidget(lv_obj_t *parent)
 
 static void GuiMultiConfirmWidget(lv_obj_t *parent)
 {
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("shamir_phrase_confirm_title"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
-
-    label = GuiCreateNoticeLabel(parent, _("shamir_phrase_confirm_desc"));
-    lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
-    g_multiConfirmTile.noticeLabel = label;
-
-    // g_multiConfirmTile.keyBoard = GuiCreateMnemonicKeyBoard(parent, NULL, g_phraseCnt == 20 ? KEY_STONE_MNEMONIC_20 : KEY_STONE_MNEMONIC_33, NULL);
-    // lv_obj_align_to(g_multiConfirmTile.keyBoard->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
+    lv_obj_t *btn = GuiCreateSelectButton(cont, table[i].name, table[i].src, table[i].callBack, table[i].param, false);
 }
 
 void GuiCreateMultiStepCont(void)
@@ -349,7 +342,7 @@ void GuiCreateMultiInit(void)
     tile = lv_tileview_add_tile(tileView, CREATE_MULTI_CONFIRM_CO_SIGNERS, 0, LV_DIR_HOR);
     GuiMultiConfirmSignersWidget(tile);
 
-    tile = lv_tileview_add_tile(tileView, CREATE_MULTI_CONFIRM, 0, LV_DIR_HOR);
+    tile = lv_tileview_add_tile(tileView, CREATE_MULTI_IMPORT_SDCARD_XPUB, 0, LV_DIR_HOR);
     GuiMultiConfirmWidget(tile);
 
     tile = lv_tileview_add_tile(tileView, CREATE_MULTI_WRITE_SE, 0, LV_DIR_HOR);

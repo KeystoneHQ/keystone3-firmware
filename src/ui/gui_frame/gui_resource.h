@@ -120,6 +120,8 @@ LV_IMG_DECLARE(imgBtcOnly);
 LV_IMG_DECLARE(imgSdFormat);
 LV_IMG_DECLARE(imgTwoKey);
 LV_IMG_DECLARE(imgLockMulti);
+LV_IMG_DECLARE(imgSdcardImport);
+LV_IMG_DECLARE(imgScanImport);
 
 // connect to do refresh
 LV_IMG_DECLARE(circular);

@@ -155,7 +155,6 @@ pub extern "C" fn export_multi_sig_wallet_by_ur(
     config: PtrString,
     network: NetworkType,
 ) -> *mut UREncodeResult {
-    rust_tools::debug!(format!("here"));
     if length != 4 {
         return UREncodeResult::from(URError::UrEncodeError(format!(
             "master fingerprint length must be 4, current is {}",

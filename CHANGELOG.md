@@ -1,3 +1,10 @@
+## 1.3.4 (2024-04-02)
+
+### Bug Fixes
+
+1. Fixed issue causing device errors in certain scenarios on Eternl
+
+
 ## 1.3.2 (2024-03-22)
 
 ### What's new

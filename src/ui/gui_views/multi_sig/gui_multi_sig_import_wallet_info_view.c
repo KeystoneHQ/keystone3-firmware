@@ -18,7 +18,7 @@ static int32_t GuiImportWalletInfoViewDeInit(void)
 
 int32_t GuiImportWalletInfoViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
-    GUI_ASSERT(g_multiSigImportWalletInfoView.isActive);
+    GUI_ASSERT(g_multisigImportWalletInfoView.isActive);
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
@@ -40,7 +40,7 @@ int32_t GuiImportWalletInfoViewEventProcess(void *self, uint16_t usEvent, void *
     return SUCCESS_CODE;
 }
 
-GUI_VIEW g_multiSigImportWalletInfoView = {
+GUI_VIEW g_multisigImportWalletInfoView = {
     .id = SCREEN_MULTI_SIG_IMPORT_WALLET_INFO,
     .previous = NULL,
     .isActive = false,

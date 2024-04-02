@@ -18,6 +18,7 @@
 #include "gui_api.h"
 #include "gui_home_widgets.h"
 #include "user_fatfs.h"
+#include "multi_sig_wallet_manager.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
@@ -59,7 +60,6 @@ static void GetStringValue(cJSON *obj, const char *key, char *value, uint32_t ma
 static bool GetBoolValue(const cJSON *obj, const char *key, bool defaultValue);
 
 static AccountPublicKeyItem_t g_accountPublicKey[XPUB_TYPE_NUM];
-static MultiSigWalletManager_t *g_multiSigWalletManager = NULL;
 
 static uint8_t g_tempPublicKeyAccountIndex = INVALID_ACCOUNT_INDEX;
 
@@ -335,6 +335,10 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
 
     ASSERT(accountIndex < 3);
     FreePublicKeyRam();
+    //Load Multisig wallet Manager
+    initMultiSigWalletManager();
+    LoadCurrentAccountMultisigWallet(password);
+    
     addr = SPI_FLASH_ADDR_USER1_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
 
     do {
@@ -993,7 +997,7 @@ void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)
     ASSERT(accountIndex >= 0);
     ASSERT(accountIndex <= 2);
 
-    MultiSigWalletItem_t *multiSigWalletItem = g_multiSigWalletManager->findNode(g_multiSigWalletManager->list, verifyCode);
+    MultiSigWalletItem_t *multiSigWalletItem = GetMultisigWalletByVerifyCode(verifyCode);
     if (multiSigWalletItem == NULL) {
         printf("multiSigWalletItem == NULL\r\n");
         return;
@@ -1023,6 +1027,7 @@ void appendWalletItemToJson(MultiSigWalletItem_t *item, void *root)
     cJSON_AddStringToObject(walletItem, "verify_code", item->verifyCode);
     cJSON_AddNumberToObject(walletItem, "network", item->network);
     cJSON_AddStringToObject(walletItem, "wallet_config", item->walletConfig);
+    cJSON_AddStringToObject(walletItem, "format", item->format);
     cJSON_AddItemToArray((cJSON*)root, walletItem);
 }
 
@@ -1041,7 +1046,7 @@ void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager)
     cJSON *rootJson = cJSON_CreateObject();
     cJSON_AddItemToObject(rootJson, "version", cJSON_CreateString(g_multiSigInfoVersion));
     cJSON *walletList = cJSON_CreateArray();
-    manager->traverseList(manager->list, appendWalletItemToJson, (void*)walletList);
+    manager->traverseList(appendWalletItemToJson, (void*)walletList);
     cJSON_AddItemToObject(rootJson, "multi_sig_wallet_list", walletList);
     char *retStr;
     retStr = cJSON_Print(rootJson);
@@ -1153,7 +1158,11 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
             multiSigWalletItem->walletConfig = MULTI_SIG_MALLOC(strlen(strCache) + 1);
             strcpy(multiSigWalletItem->walletConfig, strCache);
 
-            manager->insertNode(manager->list, multiSigWalletItem);
+            GetStringValue(wallet, "format", strCache, MULTI_SIG_STR_CACHE_LENGTH);
+            multiSigWalletItem->format = MULTI_SIG_MALLOC(strlen(strCache) + 1);
+            strcpy(multiSigWalletItem->format, strCache);
+
+            manager->insertNode(multiSigWalletItem);
         }
         MULTI_SIG_FREE(strCache);
     }

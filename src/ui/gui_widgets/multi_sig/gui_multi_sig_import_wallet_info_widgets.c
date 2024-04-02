@@ -18,6 +18,7 @@
 #include "account_public_info.h"
 #include "multi_sig_wallet_manager.h"
 #include "gui_chain.h"
+#include "stdint.h"
 #ifndef COMPILE_SIMULATOR
 #include "safe_str_lib.h"
 #else
@@ -26,17 +27,18 @@
 #include <gui_keyboard_hintbox.h>
 
 #define MAX_LABEL_LENGTH 64
+#define MAX_VERIFY_CODE_LENGTH 24
 
 static lv_obj_t *g_cont;
 static PageWidget_t *g_pageWidget;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
-
 static void *g_multisig_wallet_info_data;
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static MultiSigWallet *g_wallet = NULL;
 static lv_obj_t *g_errorHintBox = NULL;
+static MultiSigWalletManager_t *manager = NULL;
 
 static void GuiImportWalletInfoNVSBarInit();
 static void GuiImportWalletInfoContent(lv_obj_t *parent);
@@ -103,7 +105,6 @@ void GuiImportMultisigWalletInfoWidgetsInit()
 {
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-    g_wallet = NULL;
 
     Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_ur(g_multisig_wallet_info_data, mfp, 4, MainNet);
     if (result->error_code != 0)
@@ -135,6 +136,7 @@ void GuiImportMultisigWalletInfoWidgetsDeInit()
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     free_MultiSigWallet(g_wallet);
+    ClearSecretCache();
 }
 
 void GuiImportMultisigWalletInfoWidgetsRefresh()
@@ -147,17 +149,12 @@ void GuiImportMultisigWalletInfoWidgetsRestart()
 }
 
 void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void){
-    MultiSigWalletManager_t *manager = initMultiSigWalletManager();
     char *password = SecretCacheGetPassword();
-    loadCurrentAccountMultisigWallet(manager, password);
-    MultiSigWalletItem_t* wallet = getMultisigWalletByVerifyCode(manager, g_wallet->verify_code);
-    if(wallet != NULL){
-        //throw for existing
-        GuiDeleteKeyboardWidget(g_keyboardWidget);
-        GuiShowWalletExisted();
-        return;
-    }
-    addMultisigWalletToCurrentAccount(manager, g_wallet, password);
+    MultiSigWalletItem_t *wallet = AddMultisigWalletToCurrentAccount(g_wallet, password);
+    char *verifyCode = wallet->verifyCode;
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
+    GuiCLoseCurrentWorkingView();
+    GuiFrameOpenViewWithParam(&g_multisigImportWalletSuccessView, verifyCode, strnlen_s(verifyCode, MAX_VERIFY_CODE_LENGTH));
 }
 
 static void GuiImportWalletInfoNVSBarInit()
@@ -180,6 +177,11 @@ static void SignByPasswordCb(bool cancel)
 static void GuiConfirmHandler(lv_event_t *e){
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
+        MultiSigWalletItem_t* wallet = GetMultisigWalletByVerifyCode(g_wallet->verify_code);
+        if(wallet != NULL){
+            GuiShowWalletExisted();
+            return;
+        }
         SignByPasswordCb(false);
     }
 }

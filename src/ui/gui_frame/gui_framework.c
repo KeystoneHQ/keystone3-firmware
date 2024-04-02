@@ -73,7 +73,8 @@ static GUI_VIEW *g_viewsTable[] = {
     &g_transactionDetailView,
     &g_transactionSignatureView,
     &g_diceRollsView,
-    &g_multiSigImportWalletInfoView
+    &g_multisigImportWalletInfoView,
+    &g_multisigImportWalletSuccessView
 };
 
 bool GuiViewHandleEvent(GUI_VIEW *view, uint16_t usEvent, void *param, uint16_t usLen)

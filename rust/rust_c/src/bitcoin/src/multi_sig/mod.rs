@@ -5,11 +5,13 @@ use alloc::string::ToString;
 use alloc::vec::Vec;
 use alloc::{format, slice, vec};
 use app_bitcoin::errors::BitcoinError;
+use app_bitcoin::multi_sig::address::create_multi_sig_address_for_wallet;
 use app_bitcoin::multi_sig::wallet::{
     export_wallet_by_ur, generate_config_data, parse_wallet_config, MultiSigWalletConfig,
 };
 use app_bitcoin::multi_sig::{export_xpub_by_crypto_account, Network};
 use core::str::FromStr;
+use cty::c_char;
 use third_party::hex;
 use third_party::serde_json::Value::String;
 use third_party::ur_registry::bytes::Bytes;
@@ -17,7 +19,7 @@ use third_party::ur_registry::bytes::Bytes;
 use common_rust_c::errors::RustCError;
 use common_rust_c::ffi::{CSliceFFI, VecFFI};
 use common_rust_c::free::Free;
-use common_rust_c::structs::{ExtendedPublicKey, Response};
+use common_rust_c::structs::{ExtendedPublicKey, Response, SimpleResponse};
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_array, recover_c_char};
@@ -153,6 +155,7 @@ pub extern "C" fn export_multi_sig_wallet_by_ur(
     config: PtrString,
     network: NetworkType,
 ) -> *mut UREncodeResult {
+    rust_tools::debug!(format!("here"));
     if length != 4 {
         return UREncodeResult::from(URError::UrEncodeError(format!(
             "master fingerprint length must be 4, current is {}",
@@ -273,5 +276,38 @@ pub extern "C" fn import_multi_sig_wallet_by_file(
     match result {
         Ok(wallet) => Response::success_ptr(MultiSigWallet::from(wallet).c_ptr()).c_ptr(),
         Err(e) => Response::from(e).c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn generate_address_for_multisig_wallet_config(
+    wallet_config: PtrString,
+    account: u32,
+    index: u32,
+    master_fingerprint: PtrBytes,
+    master_fingerprint_len: u32,
+    network: NetworkType,
+) -> Ptr<SimpleResponse<c_char>> {
+    if master_fingerprint_len != 4 {
+        return SimpleResponse::from(RustCError::InvalidMasterFingerprint).simple_c_ptr();
+    }
+    let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
+    let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+        hex::encode(master_fingerprint.to_vec()).as_str(),
+    )
+    .map_err(|_e| RustCError::InvalidMasterFingerprint)
+    {
+        Ok(mfp) => mfp,
+        Err(e) => {
+            return SimpleResponse::from(e).simple_c_ptr();
+        }
+    };
+    let content = recover_c_char(wallet_config);
+    match parse_wallet_config(&content, &master_fingerprint.to_string(), network.into()) {
+        Ok(config) => match create_multi_sig_address_for_wallet(&config, account, index) {
+            Ok(result) => SimpleResponse::success(convert_c_char(result)).simple_c_ptr(),
+            Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+        },
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
     }
 }

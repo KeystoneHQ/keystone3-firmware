@@ -92,7 +92,7 @@ void GuiScanResult(bool result, void *param)
 #else
             if (g_qrcodeViewType == MultisigWalletImport) {
                 GuiCLoseCurrentWorkingView();
-                GuiFrameOpenView(&g_multiSigImportWalletInfoView);
+                GuiFrameOpenView(&g_multisigImportWalletInfoView);
             }
 #endif
             return;

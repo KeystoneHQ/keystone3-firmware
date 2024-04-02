@@ -525,6 +525,7 @@ static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, Bac
         GuiEmitSignal(SIG_BACKGROUND_UR_GENERATE_SUCCESS, g_urResult->data, strlen(g_urResult->data) + 1);
 #endif
     } else {
+        printf("error message: %s\r\n", g_urResult->error_message);
         //TODO: deal with error
     }
     return SUCCESS_CODE;

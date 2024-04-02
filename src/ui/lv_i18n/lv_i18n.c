@@ -588,6 +588,8 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"repeat_passcode_title", "Re-Enter PIN Code"},
     {"scan_qr_code_error_invalid_qrcode", "Invalid QR Code"},
     {"scan_qr_code_error_invalid_qrcode_desc", "QR code data not recognized. Please try again."},
+    {"scan_qr_code_error_invalid_wallet_file", "Invalid Wallet File"},
+    {"scan_qr_code_error_invalid_wallet_file_desc", "Please ensure that the file you chose is an multisig wallet file."},
     {"scan_qr_code_invalid_b_desc", "The transaction does not belong to the current wallet. Please ensure you are using the correct wallet to authorize the transaction."},
     {"scan_qr_code_invalid_b_title", "Unpermitted Authorization"},
     {"scan_qr_code_invalid_c_desc", "Keystone cannot facilitate transaction signing for the current address path. Please try again using a different address path."},

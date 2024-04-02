@@ -55,7 +55,7 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
         break;
 #else
     case MultisigWalletImport:
-        GuiSetMultisigImportWalletData(urResult, urMultiResult, is_multi);
+        GuiSetMultisigImportWalletDataByQRCode(urResult, urMultiResult, is_multi);
         break;
 #endif
     default:

@@ -1,4 +1,3 @@
-#define BTC_ONLY
 #ifdef BTC_ONLY
 #include "gui.h"
 #include "gui_views.h"

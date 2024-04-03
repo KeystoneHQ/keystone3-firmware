@@ -32,7 +32,6 @@ static int32_t GuiInitViewInit(void)
     GuiStyleInit();
     GuiStatusBarInit();
     GlobalResourcesInit();
-    GuiFrameOpenView(&g_createMultiView);
     // if (GetFactoryResult() == false) {
     //     GuiFrameOpenView(&g_inactiveView);
     //     return SUCCESS_CODE;
@@ -41,7 +40,8 @@ static int32_t GuiInitViewInit(void)
     //     GuiFrameOpenView(&g_selfDestructView);
     //     return SUCCESS_CODE;
     // }
-    // GuiModeGetAccount();
+    GuiModeGetAccount();
+    // GuiFrameOpenView(&g_createMultiView);
     return SUCCESS_CODE;
 }
 

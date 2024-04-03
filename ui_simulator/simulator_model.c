@@ -427,6 +427,33 @@ static uint8_t buffer[100 * 1024];
 static char *qrcode[100];
 static uint32_t qrcode_size;
 
+char *FatfsFileRead(const char* path)
+{
+    int32_t readBytes = 0;
+    lv_fs_file_t fd;
+    lv_fs_res_t ret = LV_FS_RES_OK;
+    char *buffer = SRAM_MALLOC(1024 * 100);
+    char truePath[64] = "C:/assets/sd/";
+    strcat(truePath, path);
+    printf("truePath: %s\n", truePath);
+
+    ret = lv_fs_open(&fd, truePath, LV_FS_MODE_RD);
+    if (ret != LV_FS_RES_OK) {
+        printf("lv_fs_open failed %s ret = %d line = %d\n", path, ret, __LINE__);
+        return NULL;
+    }
+
+    ret = lv_fs_read(&fd, buffer, 1024 * 100, &readBytes);
+    if (ret != LV_FS_RES_OK) {
+        printf("lv_fs_read failed %s ret = %d line = %d\n", path, ret, __LINE__);
+        return NULL;
+    }
+    printf("readBytes: %d\n", readBytes);
+    lv_fs_close(&fd);
+    
+    return buffer;
+}
+
 int32_t prepare_qrcode()
 {
     printf("prepare_qrcode\r\n");

@@ -167,6 +167,7 @@ void DrawImageOnLcd(uint16_t x, uint16_t y, const lv_img_dsc_t *imgDsc)
 extern const lv_img_dsc_t imgBootLogo;
 #ifdef BTC_ONLY
 extern const lv_img_dsc_t imgBootBtc;
+LV_FONT_DECLARE(openSans_24);
 #endif
 
 void DrawBootLogoOnLcd(void)
@@ -176,6 +177,8 @@ void DrawBootLogoOnLcd(void)
 #else
     DrawImageOnLcd(192, 245, &imgBootLogo);
     DrawImageOnLcd(150, 712, &imgBootBtc);
+    uint32_t c = 0x666666;
+    DrawStringOnLcd(194, 712, "Bitcoin Only", (uint16_t)(((c & 0xF80000) >> 16) | ((c & 0xFC00) >> 13) | ((c & 0x1C00) << 3) | ((c & 0xF8) << 5)), &openSans_24);
 #endif
     UserDelay(100);
     SetLcdBright(50);

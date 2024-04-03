@@ -201,3 +201,61 @@ int FindStringCharPosition(const char *str, const char destChar, int index)
 
     return -1;
 }
+
+
+
+/**
+ * @brief       Get integer value from cJSON object.
+ * @param[in]   obj : cJSON object.
+ * @param[in]   key : key name.
+ * @param[in]   defaultValue : if key does not exist, return this value.
+ * @retval      integer value to get.
+ */
+int32_t GetIntValue(const cJSON *obj, const char *key, int32_t defaultValue)
+{
+    cJSON *intJson = cJSON_GetObjectItem((cJSON *)obj, key);
+    if (intJson != NULL) {
+        return (uint32_t)intJson->valuedouble;
+    }
+    printf("key:%s does not exist\r\n", key);
+    return defaultValue;
+}
+
+
+/**
+ * @brief       Get string value from cJSON object.
+ * @param[in]   obj : cJSON object.
+ * @param[in]   key : key name.
+ * @param[out]  value : return string value, if the acquisition fails, the string will be cleared.
+ * @retval
+ */
+void GetStringValue(const cJSON *obj, const char *key, char *value, uint32_t maxLen)
+{
+    cJSON *json;
+    uint32_t len;
+    char *strTemp;
+
+    json = cJSON_GetObjectItem((cJSON *)obj, key);
+    if (json != NULL) {
+        strTemp = json->valuestring;
+        len = strnlen_s(strTemp, maxLen);
+        if (len < maxLen) {
+            strcpy_s(value, maxLen, strTemp);
+        } else {
+            value[0] = '\0';
+        }
+    } else {
+        printf("key:%s does not exist\r\n", key);
+        value[0] = '\0';
+    }
+}
+
+bool GetBoolValue(const cJSON *obj, const char *key, bool defaultValue)
+{
+    cJSON *boolJson = cJSON_GetObjectItem((cJSON *)obj, key);
+    if (boolJson != NULL) {
+        return boolJson->valueint != 0;
+    }
+    printf("key:%s does not exist\r\n", key);
+    return defaultValue;
+}

@@ -5,8 +5,8 @@
 int32_t GuiCreateMultiViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     int32_t ret = SUCCESS_CODE;
+    uint16_t sig = 0;
     GUI_ASSERT(g_createMultiView.isActive);
-    uint8_t entropyMethod;
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
@@ -22,7 +22,15 @@ int32_t GuiCreateMultiViewEventProcess(void *self, uint16_t usEvent, void *param
         GuiCreateMultiPrevTile();
         break;
     case SIG_SETUP_VIEW_TILE_NEXT:
-        GuiCreateMultiNextTile();
+        GuiCreateMultiNextTile(0xFF);
+        break;
+    case SIG_VERIFY_PASSWORD_PASS:
+        if (param != NULL) {
+            sig = *(uint16_t *)param;
+        } else {
+            return ERR_GUI_ERROR;
+        }
+        GuiCreateMultiNextTile(0xFF);
         break;
     // case SIG_CREATE_Multi_VIEW_NEXT_SLICE:
     //     GuiCreateMultiNextSlice();

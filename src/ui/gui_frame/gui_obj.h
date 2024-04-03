@@ -95,6 +95,7 @@ void *GuiCreateBtn(lv_obj_t *parent, const char *text);
 void *GuiCreateAdaptButton(lv_obj_t *parent, const char *text);
 void GuiAlignToPrevObj(lv_obj_t *obj, lv_align_t align, int16_t x, int16_t y);
 void GuiAddObjFlag(void *obj, lv_obj_flag_t flag);
+void GuiClearObjFlag(void *obj, lv_obj_flag_t flag);
 void *GuiCreateSpacer(void *parent, uint16_t height);
 
 #define GuiCreateContainer(w, h) GuiCreateContainerWithParent(lv_scr_act(), w, h)

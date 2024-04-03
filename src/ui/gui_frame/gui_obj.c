@@ -307,6 +307,18 @@ void GuiAddObjFlag(void *obj, lv_obj_flag_t flag)
         lv_obj_set_scrollbar_mode(obj, LV_SCROLLBAR_MODE_OFF);
         lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLL_ELASTIC);
     }
+
+    if (flag & LV_OBJ_FLAG_CLICKABLE) {
+        lv_obj_set_style_bg_opa(obj, LV_OPA_100, LV_STATE_DEFAULT);
+    }
+}
+
+void GuiClearObjFlag(void *obj, lv_obj_flag_t flag)
+{
+    lv_obj_clear_flag(obj, flag);
+    if (flag & LV_OBJ_FLAG_CLICKABLE) {
+        lv_obj_set_style_bg_opa(obj, LV_OPA_60, LV_STATE_DEFAULT);
+    }
 }
 
 void *GuiCreateSpacer(void *parent, uint16_t height)

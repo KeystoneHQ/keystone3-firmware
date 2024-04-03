@@ -550,3 +550,33 @@ int32_t SE_DeriveKey(uint8_t slot, const uint8_t *authKey)
     }
     return 0;
 }
+
+void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32_t maxLen)
+{
+    lv_fs_dir_t dir;
+    char *listPtr = nameList;
+    char fname[64];
+    uint32_t count = 0;
+    lv_fs_res_t res = lv_fs_dir_open(&dir, path);
+    if (res != LV_FS_RES_OK) {
+        return;
+    }
+
+    while (lv_fs_dir_read(&dir, fname) == LV_FS_RES_OK) {
+        uint32_t nameLen = strlen(fname);
+        uint32_t spaceNeeded = (listPtr == nameList) ? nameLen : nameLen + 1; 
+        if (listPtr + spaceNeeded - nameList >= maxLen) break;
+
+        if (listPtr != nameList) {
+            *listPtr++ = ' ';
+        }
+        strcpy(listPtr, fname);
+        listPtr += nameLen;
+        count++;
+        if (strlen(fname) == 0) {
+            break;
+        }
+    }
+    lv_fs_dir_close(&dir);
+    *number = count;
+}

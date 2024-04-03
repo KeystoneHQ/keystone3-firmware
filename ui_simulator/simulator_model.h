@@ -43,6 +43,7 @@ void UpdateFingerSignFlag(uint8_t index, bool signFlag);
 int FormatSdFatfs();
 int FatfsFileWrite(const char* path, const uint8_t *data, uint32_t len);
 int32_t read_qrcode();
+char *FatfsFileRead(const char* path);
 
 #define LOW_BATTERY_LIMIT               20
 #define CHECK_BATTERY_LOW_POWER()       ((GetBatterPercent() <= LOW_BATTERY_LIMIT) ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE)

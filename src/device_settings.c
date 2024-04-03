@@ -64,8 +64,6 @@ static int32_t SaveDeviceSettingsAsyncFunc(const void *inData, uint32_t inDataLe
 static void SaveDeviceSettingsSync(void);
 static bool GetDeviceSettingsFromJsonString(const char *string);
 static char *GetJsonStringFromDeviceSettings(void);
-static int32_t GetIntValue(const cJSON *obj, const char *key, int32_t defaultValue);
-static void GetStringValue(const cJSON *obj, const char *key, char *value, uint32_t maxLen);
 
 static const char g_deviceSettingsVersion[] = "1.0.0";
 DeviceSettings_t g_deviceSettings;
@@ -384,51 +382,4 @@ static char *GetJsonStringFromDeviceSettings(void)
     cJSON_Delete(rootJson);
 
     return retStr;
-}
-
-
-/**
- * @brief       Get integer value from cJSON object.
- * @param[in]   obj : cJSON object.
- * @param[in]   key : key name.
- * @param[in]   defaultValue : if key does not exist, return this value.
- * @retval      integer value to get.
- */
-static int32_t GetIntValue(const cJSON *obj, const char *key, int32_t defaultValue)
-{
-    cJSON *intJson = cJSON_GetObjectItem((cJSON *)obj, key);
-    if (intJson != NULL) {
-        return (uint32_t)intJson->valuedouble;
-    }
-    printf("key:%s does not exist\r\n", key);
-    return defaultValue;
-}
-
-
-/**
- * @brief       Get string value from cJSON object.
- * @param[in]   obj : cJSON object.
- * @param[in]   key : key name.
- * @param[out]  value : return string value, if the acquisition fails, the string will be cleared.
- * @retval
- */
-static void GetStringValue(const cJSON *obj, const char *key, char *value, uint32_t maxLen)
-{
-    cJSON *json;
-    uint32_t len;
-    char *strTemp;
-
-    json = cJSON_GetObjectItem((cJSON *)obj, key);
-    if (json != NULL) {
-        strTemp = json->valuestring;
-        len = strnlen_s(strTemp, maxLen);
-        if (len < maxLen) {
-            strcpy_s(value, maxLen, strTemp);
-        } else {
-            value[0] = '\0';
-        }
-    } else {
-        printf("key:%s does not exist\r\n", key);
-        value[0] = '\0';
-    }
 }

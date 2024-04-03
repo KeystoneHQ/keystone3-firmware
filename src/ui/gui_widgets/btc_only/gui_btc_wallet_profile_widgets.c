@@ -246,16 +246,26 @@ static void EmptyHandler(lv_event_t *e)
     }
 }
 
+static void OpenCreateMultiViewHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        GUI_DEL_OBJ(g_noticeWindow)
+        GuiFrameOpenView(lv_event_get_user_data(e));
+    }
+}
+
 static void AddMultiSigWalletHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     MoreInfoTable_t moreInfoTable[] = {
-        {.name = _("wallet_profile_create_multi_wallet"), .src = &imgArrowRight, .callBack = OpenViewHandler, &g_createMultiView},
-        {.name = _("wallet_profile_import_multi_wallet"), .src = &imgArrowRight, .callBack = OpenViewHandler, NULL},
+        {.name = _("wallet_profile_create_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_createMultiView},
+        {.name = _("wallet_profile_import_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_createMultiView},
     };
 
     if (code == LV_EVENT_CLICKED) {
-        g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("wallet_profile_add_multi_wallet"), &moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false);
+        g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("wallet_profile_add_multi_wallet"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false);
         lv_obj_t *closeBtn = GuiCreateImgButton(g_noticeWindow,  &imgClose, 64, CloseHintBoxHandler, &g_noticeWindow);
         GuiAlignToPrevObj(closeBtn, LV_ALIGN_LEFT_MID, 358, 0);
     }

@@ -400,6 +400,72 @@ void FatfsDirectoryListing(char *ptr)
     f_closedir(&Dir);
 }
 
+void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32_t maxLen)
+{
+    FRESULT res;
+    DIR dir;
+    FILINFO fno;
+    uint32_t count = 0;
+    char *listPtr = nameList;
+
+    res = f_opendir(&dir, path);
+    if (res != FR_OK) {
+        *number = 0;
+        return;
+    }
+
+    while(1) {
+        res = f_readdir(&dir, &fno);
+        if (res != FR_OK || fno.fname[0] == 0) {
+            break;
+        }
+
+        if (!(fno.fattrib & AM_DIR)) {
+            uint32_t nameLen = strlen(fno.fname);
+            uint32_t spaceNeeded = (listPtr == nameList) ? nameLen : nameLen + 1; 
+            if (listPtr + spaceNeeded - nameList >= maxLen) break;
+
+            if (listPtr != nameList) {
+                *listPtr++ = ' ';
+            }
+            strcpy(listPtr, fno.fname);
+            listPtr += nameLen;
+            count++;
+        }
+    }
+
+    f_closedir(&dir);
+
+    *number = count;
+}
+
+char *FatfsFileRead(const TCHAR* path)
+{
+    FIL fp;
+    char *fileBuf;
+    uint16_t fileSize = 0;
+    uint32_t readBytes = 0;
+    FRESULT res = f_open(&fp, path, FA_OPEN_EXISTING | FA_READ);
+    if (res) {
+        FatfsError(res);
+        return NULL;
+    }
+    fileSize = f_size(&fp);
+    fileBuf = EXT_MALLOC(fileSize);
+    printf("%s size = %d\n", path, fileSize);
+    res = f_read(&fp, (void*)fileBuf, fileSize, &readBytes);
+    if (res) {
+        FatfsError(res);
+        f_close(&fp);
+        EXT_FREE(fileBuf);
+        return NULL;
+    }
+
+    printf("\n");
+    f_close(&fp);
+    return fileBuf;
+}
+
 uint32_t FatfsGetSize(const char *path)
 {
     FRESULT res;

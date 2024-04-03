@@ -136,7 +136,7 @@ typedef enum {
     SIG_TRANSACTION_BUTT,
 
 
-
+    SIG_MULTISIG_WALLET_CREATE,
 
 } GUI_VIEW_SIG_ENUM;
 

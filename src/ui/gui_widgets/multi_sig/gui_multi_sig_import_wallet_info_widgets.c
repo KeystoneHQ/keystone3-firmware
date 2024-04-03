@@ -33,7 +33,7 @@ static lv_obj_t *g_cont;
 static PageWidget_t *g_pageWidget;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static MultiSigWallet *g_wallet = NULL;
-static lv_obj_t *g_errorHintBox = NULL;
+static lv_obj_t *g_hintBox = NULL;
 static MultiSigWalletManager_t *manager = NULL;
 static bool isQRCode = false;
 
@@ -51,7 +51,7 @@ static void GuiOnFailedHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED)
     {
-        GUI_DEL_OBJ(g_errorHintBox);
+        GUI_DEL_OBJ(g_hintBox);
         GuiCLoseCurrentWorkingView();
     }
 }
@@ -101,17 +101,17 @@ void GuiSetMultisigImportWalletDataBySDCard(char *walletConfig)
 
 static void GuiShowInvalidQRCode()
 {
-    g_errorHintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
-    lv_obj_t *img = GuiCreateImg(g_errorHintBox, &imgFailed);
+    g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_hintBox, &imgFailed);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
 
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_errorHintBox, _("scan_qr_code_error_invalid_qrcode"));
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_hintBox, _("scan_qr_code_error_invalid_qrcode"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
 
-    label = GuiCreateIllustrateLabel(g_errorHintBox, _("scan_qr_code_error_invalid_qrcode_desc"));
+    label = GuiCreateIllustrateLabel(g_hintBox, _("scan_qr_code_error_invalid_qrcode_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
-    lv_obj_t *btn = GuiCreateBtnWithFont(g_errorHintBox, _("OK"), g_defTextFont);
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_hintBox, _("OK"), g_defTextFont);
     lv_obj_set_size(btn, 94, 66);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
@@ -121,17 +121,17 @@ static void GuiShowInvalidQRCode()
 
 static void GuiShowInvalidWalletFile()
 {
-    g_errorHintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
-    lv_obj_t *img = GuiCreateImg(g_errorHintBox, &imgFailed);
+    g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_hintBox, &imgFailed);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
 
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_errorHintBox, _("scan_qr_code_error_invalid_wallet_file"));
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_hintBox, _("scan_qr_code_error_invalid_wallet_file"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
 
-    label = GuiCreateIllustrateLabel(g_errorHintBox, _("scan_qr_code_error_invalid_wallet_file_desc"));
+    label = GuiCreateIllustrateLabel(g_hintBox, _("scan_qr_code_error_invalid_wallet_file_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
-    lv_obj_t *btn = GuiCreateBtnWithFont(g_errorHintBox, _("OK"), g_defTextFont);
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_hintBox, _("OK"), g_defTextFont);
     lv_obj_set_size(btn, 94, 66);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
@@ -142,17 +142,17 @@ static void GuiShowInvalidWalletFile()
 static void GuiShowWalletExisted()
 {
 #define PLUS_PADDING +384
-    g_errorHintBox = GuiCreateHintBox(lv_scr_act(), 480, 416, false);
-    lv_obj_t *img = GuiCreateImg(g_errorHintBox, &imgFailed);
+    g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, 416, false);
+    lv_obj_t *img = GuiCreateImg(g_hintBox, &imgFailed);
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 36, 48 PLUS_PADDING);
 
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_errorHintBox, _("multisig_import_wallet_exist"));
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_hintBox, _("multisig_import_wallet_exist"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 144 PLUS_PADDING);
 
-    label = GuiCreateIllustrateLabel(g_errorHintBox, _("multisig_import_wallet_exist_desc"));
+    label = GuiCreateIllustrateLabel(g_hintBox, _("multisig_import_wallet_exist_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 196 PLUS_PADDING);
 
-    lv_obj_t *btn = GuiCreateBtnWithFont(g_errorHintBox, _("OK"), g_defTextFont);
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_hintBox, _("OK"), g_defTextFont);
     lv_obj_set_size(btn, 94, 66);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
@@ -212,6 +212,7 @@ void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
     char *password = SecretCacheGetPassword();
     MultiSigWalletItem_t *wallet = AddMultisigWalletToCurrentAccount(g_wallet, password);
     char *verifyCode = wallet->verifyCode;
+    
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     GuiCLoseCurrentWorkingView();
     GuiFrameOpenViewWithParam(&g_multisigImportWalletSuccessView, verifyCode, strnlen_s(verifyCode, MAX_VERIFY_CODE_LENGTH));

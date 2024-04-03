@@ -569,6 +569,22 @@ static lv_obj_t *CreateUndo(lv_obj_t *navBar)
     return btn;
 }
 
+static lv_obj_t *CreateSDCard(lv_obj_t *navBar)
+{
+    lv_obj_t *btn, *textLabel, *img;
+
+    btn = GuiCreateBtn(navBar, "");
+    lv_obj_set_size(btn, 64, 64);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
+    img = GuiCreateImg(btn, &imgSdCardColor);
+    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
+
+    return btn;
+}
+
 
 NavBarWidget_t *CreateNavBarWidget(lv_obj_t *navBar)
 {
@@ -757,6 +773,10 @@ void SetNavBarRightBtn(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM butto
         break;
     case NVS_BAR_UNDO:
         navBarWidget->rightBtn = CreateUndo(navBarWidget->navBar);
+        rightButtonCb = eventCb;
+        break;
+    case NVS_BAR_SDCARD:
+        navBarWidget->rightBtn = CreateSDCard(navBarWidget->navBar);
         rightButtonCb = eventCb;
         break;
     default:

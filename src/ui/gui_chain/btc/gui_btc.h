@@ -27,4 +27,8 @@ void *GetPsbtOutputDetailData(uint8_t *row, uint8_t *col, void *param);
 void GetPsbtOverviewSize(uint16_t *width, uint16_t *height, void *param);
 void GetPsbtDetailSize(uint16_t *width, uint16_t *height, void *param);
 
+
+void GuiBtcTxOverview(lv_obj_t *parent, void *g_totalData);
+void GuiBtcTxDetail(lv_obj_t *parent, void *g_totalData);
+
 #endif

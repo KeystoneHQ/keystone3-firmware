@@ -1071,6 +1071,11 @@ void *GuiWidgetContainer(lv_obj_t *parent, cJSON *json)
 
 GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
 {
+    if (!strcmp(funcName, "GuiBtcTxOverview")) {
+        return GuiBtcTxOverview;
+    } else if (!strcmp(funcName, "GuiBtcTxDetail")) {
+        return GuiBtcTxDetail;
+    }
 #ifndef BTC_ONLY
     if (!strcmp(funcName, "GuiShowSolTxOverview")) {
         return GuiShowSolTxOverview;

@@ -5,6 +5,7 @@
 #include "stdint.h"
 #include "stdbool.h"
 #include "string.h"
+#include "cjson/cJSON.h"
 #ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
 #endif
@@ -24,6 +25,9 @@ void ArrayRandom(char *words, char *out, int count);
 int WordsListSlice(char *words, char wordsList[][10], uint8_t wordsCount);
 void ConvertToLowerCase(char *str);
 int FindStringCharPosition(const char *str, const char destChar, int index);
+int32_t GetIntValue(const cJSON *obj, const char *key, int32_t defaultValue);
+void GetStringValue(const cJSON *obj, const char *key, char *value, uint32_t maxLen);
+bool GetBoolValue(const cJSON *obj, const char *key, bool defaultValue);
 
 #endif /* _USER_UTILS_H */
 

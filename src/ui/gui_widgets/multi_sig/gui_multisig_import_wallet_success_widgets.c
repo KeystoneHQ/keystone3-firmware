@@ -16,9 +16,8 @@
 
 #define MAX_ADDRESS_LEN 256
 
-static lv_obj_t *g_cont, *g_qrcode, *g_eg, *g_hintBox;
+static lv_obj_t *g_cont, *g_eg, *g_hintBox;
 static PageWidget_t *g_pageWidget;
-static MultiSigWalletManager_t *manager = NULL;
 static MultiSigWalletItem_t *g_wallet = NULL;
 
 static void GuiImportWalletSuccessContent(lv_obj_t *parent);
@@ -42,21 +41,19 @@ void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32
 static void GuiDoneHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GuiCLoseCurrentWorkingView();
     }
 }
 
-static void GuiSDCardHandler(lv_event_t *e){
+static void GuiSDCardHandler(lv_event_t *e)
+{
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         //TODO: check SD Card exist;
-        if(true){
+        if (true) {
             GuiShowSDCardExport();
-        }
-        else {
+        } else {
             GuiShowSDCardNotDetected();
         }
         return;
@@ -66,29 +63,28 @@ static void GuiSDCardHandler(lv_event_t *e){
 static void GuiCloseHintBoxHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_hintBox);
         return;
     }
 }
 
-static void GuiWriteSDCardHandler(lv_event_t *e){
+static void GuiWriteSDCardHandler(lv_event_t *e)
+{
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_hintBox);
-        if(false){
+        if (false) {
             GuiShowSDCardExportSuccess();
-        }
-        else {
+        } else {
             GuiShowSDCardExportFailed();
         }
         return;
     }
 }
 
-static void GuiShowSDCardNotDetected(){
+static void GuiShowSDCardNotDetected()
+{
     g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
     lv_obj_t *img = GuiCreateImg(g_hintBox, &imgFailed);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
@@ -107,7 +103,8 @@ static void GuiShowSDCardNotDetected(){
     lv_obj_add_event_cb(btn, GuiCloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
 }
 
-static void GuiShowSDCardExport() {
+static void GuiShowSDCardExport()
+{
     g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
     lv_obj_t *img = GuiCreateImg(g_hintBox, &imgSdCardL);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
@@ -129,7 +126,8 @@ static void GuiShowSDCardExport() {
     lv_obj_add_event_cb(btn, GuiWriteSDCardHandler, LV_EVENT_CLICKED, NULL);
 }
 
-static void GuiShowSDCardExportSuccess() {
+static void GuiShowSDCardExportSuccess()
+{
     g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
     lv_obj_t *img = GuiCreateImg(g_hintBox, &imgSuccess);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
@@ -147,7 +145,8 @@ static void GuiShowSDCardExportSuccess() {
     lv_obj_add_event_cb(btn, GuiCloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
 }
 
-static void GuiShowSDCardExportFailed() {
+static void GuiShowSDCardExportFailed()
+{
     g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
     lv_obj_t *img = GuiCreateImg(g_hintBox, &imgFailed);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
@@ -175,8 +174,7 @@ static void GuiImportWalletSuccessNVSBarInit()
 void GuiImportMultisigWalletSuccessWidgetsInit(char *verifyCode)
 {
     g_wallet = GetMultisigWalletByVerifyCode(verifyCode);
-    if (g_wallet == NULL)
-    {
+    if (g_wallet == NULL) {
         // TODO: Throw error;
         GuiCLoseCurrentWorkingView();
         return;
@@ -237,11 +235,12 @@ static void GuiImportWalletSuccessContent(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, GuiDoneHandler, LV_EVENT_CLICKED, NULL);
 }
 
-static char* convertFormatLabel(char *format){
-    if(strcmp(format, FORMAT_P2WSH) == 0) {
+static char* convertFormatLabel(char *format)
+{
+    if (strcmp(format, FORMAT_P2WSH) == 0) {
         return "Native Segwit";
     }
-    if(strcmp(format, FORMAT_P2WSH_P2SH) == 0) {
+    if (strcmp(format, FORMAT_P2WSH_P2SH) == 0) {
         return "Nested Segwit";
     }
     return "Legacy";
@@ -267,8 +266,7 @@ static void SetEgContent()
 void GuiImportMultisigWalletSuccessWidgetsDeInit()
 {
     GUI_DEL_OBJ(g_cont)
-    if (g_pageWidget != NULL)
-    {
+    if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
@@ -287,8 +285,7 @@ static void ModelGenerateAddress(char *address)
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     SimpleResponse_c_char *result = generate_address_for_multisig_wallet_config(g_wallet->walletConfig, 0, 0, mfp, 4, MainNet);
-    if (result->error_code != 0)
-    {
+    if (result->error_code != 0) {
         printf("errorMessage: %s\r\n", result->error_message);
         GuiCLoseCurrentWorkingView();
         return;

@@ -485,10 +485,10 @@ int GetBtcMsgDetailLen(void *param)
     return strlen(tx->detail) + 1;
 }
 
-void GetBtcMsgDetail(void *indata, void *param)
+void GetBtcMsgDetail(void *indata, void *param, uint32_t maxLen)
 {
     DisplayBtcMsg *tx = (DisplayBtcMsg *)param;
-    strcpy((char *)indata, tx->detail);
+    strcpy_s((char *)indata, maxLen, tx->detail);
 }
 
 void FreePsbtUxtoMemory(void)

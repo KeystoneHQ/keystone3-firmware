@@ -29,6 +29,6 @@ void GetPsbtOverviewSize(uint16_t *width, uint16_t *height, void *param);
 void GetPsbtDetailSize(uint16_t *width, uint16_t *height, void *param);
 
 int GetBtcMsgDetailLen(void *param);
-void GetBtcMsgDetail(void *indata, void *param);
+void GetBtcMsgDetail(void *indata, void *param, uint32_t maxLen);
 
 #endif

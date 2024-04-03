@@ -56,8 +56,6 @@ static char *GetJsonStringFromPublicKey(void);
 
 static void FreePublicKeyRam(void);
 static void PrintInfo(void);
-static void GetStringValue(cJSON *obj, const char *key, char *value, uint32_t maxLen);
-static bool GetBoolValue(const cJSON *obj, const char *key, bool defaultValue);
 
 static AccountPublicKeyItem_t g_accountPublicKey[XPUB_TYPE_NUM];
 
@@ -338,7 +336,7 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     //Load Multisig wallet Manager
     initMultiSigWalletManager();
     LoadCurrentAccountMultisigWallet(password);
-    
+
     addr = SPI_FLASH_ADDR_USER1_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
 
     do {
@@ -778,37 +776,6 @@ static void PrintInfo(void)
             printf("%s pub key=%s\r\n", g_chainTable[i].name, pubKey);
         }
     }
-}
-
-
-static void GetStringValue(cJSON *obj, const char *key, char *value, uint32_t maxLen)
-{
-    cJSON *json;
-    uint32_t len;
-    char *strTemp;
-
-    json = cJSON_GetObjectItem(obj, key);
-    if (json != NULL) {
-        strTemp = json->valuestring;
-        len = strnlen_s(strTemp, 256);
-        if (len < maxLen) {
-            strcpy(value, strTemp);
-        } else {
-            strcpy(value, "");
-        }
-    } else {
-        strcpy(value, "");
-    }
-}
-
-static bool GetBoolValue(const cJSON *obj, const char *key, bool defaultValue)
-{
-    cJSON *boolJson = cJSON_GetObjectItem((cJSON *)obj, key);
-    if (boolJson != NULL) {
-        return boolJson->valueint != 0;
-    }
-    printf("key:%s does not exist\r\n", key);
-    return defaultValue;
 }
 
 bool GetFirstReceive(const char* chainName)

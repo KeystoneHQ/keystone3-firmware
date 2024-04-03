@@ -5,6 +5,8 @@
 #include "gui_obj.h"
 #include "user_memory.h"
 #include "gui_views.h"
+#include "gui_hintbox.h"
+#include "gui_button.h"
 
 static lv_obj_t *g_animHintBox = NULL;
 static lv_obj_t *g_imgRing = NULL;
@@ -271,4 +273,36 @@ void *GuiGetHintBoxRightBtn(lv_obj_t *parent)
 void *GuiGetHintBoxLeftBtn(lv_obj_t *parent)
 {
     return lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 2);
+}
+
+void *GuiCreateMoreInfoHintBox(const void *src, const char *titleText, MoreInfoTable_t *table, uint8_t cnt, bool isCling)
+{
+    lv_obj_t *title = NULL;
+    lv_obj_t *cont = GuiCreateHintBox(lv_scr_act(), 480, 800, false);
+    uint32_t height = 12 + 12;
+
+    if (src != NULL) {
+        // imgButton = GuiCreateImgButton(cont,  &imgClose, 64, CloseHintBoxHandler, &g_selectAmountHintbox);
+        // GuiAlignToPrevObj(closeBtn, LV_ALIGN_OUT_TOP_RIGHT, -10, -12);
+    }
+
+    for (int8_t i = cnt - 1; i >= 0; --i) {
+        lv_obj_t *btn = GuiCreateSelectButton(cont, table[i].name, table[i].src, table[i].callBack, table[i].param, isCling);
+        if (i == cnt - 1) {
+            lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -12);
+        } else {
+            GuiAlignToPrevObj(btn, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
+        }
+        height += 96;
+    }
+
+    if (titleText != NULL) {
+        title = GuiCreateIllustrateLabel(cont, titleText);
+        GuiAlignToPrevObj(title, LV_ALIGN_OUT_TOP_LEFT, 24, -30);
+        height += 66;
+    }
+
+    GuiHintBoxResize(cont, height);
+
+    return cont;
 }

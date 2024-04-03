@@ -22,7 +22,7 @@ int32_t GuiImportWalletSuccessViewEventProcess(void *self, uint16_t usEvent, voi
     char* verifyCode;
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        if(param == NULL){
+        if (param == NULL) {
             return ERR_GUI_ERROR;
         }
         verifyCode = (char *)param;

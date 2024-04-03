@@ -19,6 +19,7 @@
 #include "gui_analyze.h"
 #include "gui_web_auth_result_widgets.h"
 #include "assert.h"
+#include "qrdecode_task.h"
 #ifndef BTC_ONLY
 #include "gui_key_derivation_request_widgets.h"
 #endif

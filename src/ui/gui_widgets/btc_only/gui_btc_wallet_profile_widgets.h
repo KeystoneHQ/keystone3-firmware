@@ -6,8 +6,8 @@
 void GuiBtcWalletProfileInit(void);
 void GuiBtcWalletProfileDeInit(void);
 void GuiBtcWalletProfileRefresh(void);
-int8_t GuiBtcWalletProfilePrevTile(uint8_t tileIndex);
-int8_t GuiBtcWalletProfileNextTile(uint8_t tileIndex);
+int8_t GuiBtcWalletProfilePrevTile(void);
+int8_t GuiBtcWalletProfileNextTile(void);
 
 
 #endif

@@ -34,7 +34,6 @@ static PageWidget_t *g_pageWidget;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static MultiSigWallet *g_wallet = NULL;
 static lv_obj_t *g_hintBox = NULL;
-static MultiSigWalletManager_t *manager = NULL;
 static bool isQRCode = false;
 
 static void GuiImportWalletInfoNVSBarInit();
@@ -49,8 +48,7 @@ static void prepareWalletBySDCard(char *);
 static void GuiOnFailedHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_hintBox);
         GuiCLoseCurrentWorkingView();
     }
@@ -58,13 +56,10 @@ static void GuiOnFailedHandler(lv_event_t *e)
 
 static void processResult(Ptr_Response_MultiSigWallet result)
 {
-    if (result->error_code != 0)
-    {
+    if (result->error_code != 0) {
         printf("%s\r\n", result->error_message);
         return;
-    }
-    else
-    {
+    } else {
         g_wallet = result->data;
     }
 }
@@ -162,14 +157,10 @@ static void GuiShowWalletExisted()
 
 void GuiImportMultisigWalletInfoWidgetsInit()
 {
-    if (g_wallet == NULL)
-    {
-        if (isQRCode)
-        {
+    if (g_wallet == NULL) {
+        if (isQRCode) {
             GuiShowInvalidQRCode();
-        }
-        else
-        {
+        } else {
             GuiShowInvalidWalletFile();
         }
         GuiCLoseCurrentWorkingView();
@@ -185,13 +176,11 @@ void GuiImportMultisigWalletInfoWidgetsInit()
 void GuiImportMultisigWalletInfoWidgetsDeInit()
 {
     GUI_DEL_OBJ(g_cont)
-    if (g_pageWidget != NULL)
-    {
+    if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
-    if (g_wallet != NULL)
-    {
+    if (g_wallet != NULL) {
         free_MultiSigWallet(g_wallet);
         g_wallet = NULL;
     }
@@ -212,7 +201,7 @@ void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
     char *password = SecretCacheGetPassword();
     MultiSigWalletItem_t *wallet = AddMultisigWalletToCurrentAccount(g_wallet, password);
     char *verifyCode = wallet->verifyCode;
-    
+
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     GuiCLoseCurrentWorkingView();
     GuiFrameOpenViewWithParam(&g_multisigImportWalletSuccessView, verifyCode, strnlen_s(verifyCode, MAX_VERIFY_CODE_LENGTH));
@@ -226,8 +215,7 @@ static void GuiImportWalletInfoNVSBarInit()
 
 static void SignByPasswordCb(bool cancel)
 {
-    if (cancel)
-    {
+    if (cancel) {
         FpCancelCurOperate();
     }
     g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
@@ -239,11 +227,9 @@ static void SignByPasswordCb(bool cancel)
 static void GuiConfirmHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         MultiSigWalletItem_t *wallet = GetMultisigWalletByVerifyCode(g_wallet->verify_code);
-        if (wallet != NULL)
-        {
+        if (wallet != NULL) {
             GuiShowWalletExisted();
             return;
         }
@@ -294,15 +280,11 @@ void GuiImportWalletInfoContent(lv_obj_t *parent)
     lv_obj_align_to(section, prev, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     lv_obj_set_style_bg_color(section, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_radius(section, 24, LV_PART_MAIN);
-    for (int i = 0; i < g_wallet->derivations->size; i++)
-    {
+    for (int i = 0; i < g_wallet->derivations->size; i++) {
         lv_obj_t *container = GuiCreateContainerWithParent(section, 360, 188);
-        if (i == 0)
-        {
+        if (i == 0) {
             lv_obj_align(container, LV_ALIGN_TOP_LEFT, 24, 16);
-        }
-        else
-        {
+        } else {
             lv_obj_align_to(container, prev, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
         }
         lv_obj_set_style_bg_color(container, DARK_BG_COLOR, LV_PART_MAIN);

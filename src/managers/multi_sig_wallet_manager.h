@@ -3,8 +3,8 @@
 
 #include "librust_c.h"
 
-#define MULTI_SIG_MALLOC(size)   EXT_MALLOC(size)
-#define MULTI_SIG_FREE(ptr)     EXT_FREE(ptr)
+#define MULTI_SIG_MALLOC(size)      EXT_MALLOC(size)
+#define MULTI_SIG_FREE(ptr)         EXT_FREE(ptr)
 
 #define MULTI_SIG_STR_CACHE_LENGTH 3*1024
 

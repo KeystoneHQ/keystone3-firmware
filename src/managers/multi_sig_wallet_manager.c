@@ -53,6 +53,7 @@ MultiSigWalletManager_t *initMultiSigWalletManager()
     g_multisigWalletManager->saveToFlash = saveToFlash;
     g_multisigWalletManager->modifyNode = modifyNode;
     g_multisigWalletManager->findNode = findNode;
+    g_multisigWalletManager->list = NULL;
     createMultiSigWalletList();
     return g_multisigWalletManager;
 }

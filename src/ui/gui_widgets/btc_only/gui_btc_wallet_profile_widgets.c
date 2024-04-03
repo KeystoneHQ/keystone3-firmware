@@ -1,5 +1,4 @@
-// #ifdef BTC_ONLY
-#if 1
+#ifdef BTC_ONLY
 #include "gui_btc_wallet_profile_widgets.h"
 #include "gui.h"
 #include "gui_views.h"
@@ -78,7 +77,6 @@ void GuiBtcWalletProfileRefresh(void)
     } else {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_profile_multi_sign_title"));
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        // SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, MoreHandler, NULL);
     }
 }
 
@@ -133,7 +131,7 @@ static void CreateMultiSigWalletWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 436);
     lv_obj_add_event_cb(button, AddMultiSigWalletHandler, LV_EVENT_CLICKED, NULL);
-    
+
     button = GuiCreateBtn(parent, _("wallet_profile_multi_wallet_show_xpub"));
     lv_obj_set_width(button, 408);
     lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);

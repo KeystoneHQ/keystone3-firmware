@@ -277,7 +277,7 @@ void *GuiGetHintBoxLeftBtn(lv_obj_t *parent)
 
 void *GuiCreateMoreInfoHintBox(const void *src, const char *titleText, MoreInfoTable_t *table, uint8_t cnt, bool isCling)
 {
-    lv_obj_t *title = NULL, *desc1 = NULL;
+    lv_obj_t *title = NULL;
     lv_obj_t *cont = GuiCreateHintBox(lv_scr_act(), 480, 800, false);
     uint32_t height = 12 + 12;
 

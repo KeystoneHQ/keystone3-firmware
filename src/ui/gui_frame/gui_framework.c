@@ -74,8 +74,7 @@ static GUI_VIEW *g_viewsTable[] = {
     &g_transactionSignatureView,
     &g_diceRollsView,
     &g_multisigImportWalletInfoView,
-    &g_multisigImportWalletSuccessView
-    &g_multiSigImportWalletInfoView,
+    &g_multisigImportWalletSuccessView,
     &g_createMultiView
 };
 

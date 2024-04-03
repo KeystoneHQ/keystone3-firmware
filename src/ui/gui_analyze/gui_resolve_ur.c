@@ -70,13 +70,13 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
             || urViewType.viewType == MultisigWalletImport
 #endif
             || viewType != REMAPVIEW_BUTT) {
-        #ifndef COMPILE_SIMULATOR
+#ifndef COMPILE_SIMULATOR
         StopQrDecode();
         UserDelay(500);
         GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
-        #else
+#else
         GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
-        #endif
+#endif
     } else {
         printf("unhandled viewType=%d\r\n", urViewType.viewType);
     }

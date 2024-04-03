@@ -414,7 +414,7 @@ void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32
         return;
     }
 
-    while(1) {
+    while (1) {
         res = f_readdir(&dir, &fno);
         if (res != FR_OK || fno.fname[0] == 0) {
             break;
@@ -422,7 +422,7 @@ void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32
 
         if (!(fno.fattrib & AM_DIR)) {
             uint32_t nameLen = strlen(fno.fname);
-            uint32_t spaceNeeded = (listPtr == nameList) ? nameLen : nameLen + 1; 
+            uint32_t spaceNeeded = (listPtr == nameList) ? nameLen : nameLen + 1;
             if (listPtr + spaceNeeded - nameList >= maxLen) break;
 
             if (listPtr != nameList) {

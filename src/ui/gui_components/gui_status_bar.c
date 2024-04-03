@@ -571,7 +571,7 @@ static lv_obj_t *CreateUndo(lv_obj_t *navBar)
 
 static lv_obj_t *CreateSDCard(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *textLabel, *img;
+    lv_obj_t *btn, *img;
 
     btn = GuiCreateBtn(navBar, "");
     lv_obj_set_size(btn, 64, 64);

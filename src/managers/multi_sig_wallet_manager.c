@@ -15,14 +15,12 @@
 
 #define ASSERT_WALLET_MANAGER_EXIST assert(g_multisigWalletManager != NULL);
 
-typedef struct MultiSigWalletNode
-{
+typedef struct MultiSigWalletNode {
     MultiSigWalletItem_t *value;
     struct MultiSigWalletNode *next;
 } MultiSigWalletNode_t;
 
-struct MultiSigWalletList
-{
+struct MultiSigWalletList {
     MultiSigWalletNode_t *head;
     int length;
 };
@@ -42,8 +40,7 @@ static void DestoryMultisigWalletManager(MultiSigWalletManager_t *manager);
 
 MultiSigWalletManager_t *initMultiSigWalletManager()
 {
-    if (g_multisigWalletManager != NULL)
-    {
+    if (g_multisigWalletManager != NULL) {
         DestoryMultisigWalletManager(g_multisigWalletManager);
     }
     g_multisigWalletManager = (MultiSigWalletManager_t *)MULTI_SIG_MALLOC(sizeof(MultiSigWalletManager_t));
@@ -75,13 +72,12 @@ void LoadCurrentAccountMultisigWallet(const char *password)
 MultiSigWalletItem_t *GetMultisigWalletByVerifyCode(const char *verifyCode)
 {
     ASSERT_WALLET_MANAGER_EXIST
-    return g_multisigWalletManager->findNode(verifyCode);
+    return g_multisigWalletManager->findNode((char *)verifyCode);
 }
 
 static void DestoryMultisigWalletManager(MultiSigWalletManager_t *manager)
 {
-    if (manager == NULL)
-    {
+    if (manager == NULL) {
         return;
     }
     manager->destroyMultiSigWalletList(manager);
@@ -94,7 +90,7 @@ MultiSigWalletItem_t *AddMultisigWalletToCurrentAccount(MultiSigWallet *wallet, 
     ASSERT_WALLET_MANAGER_EXIST
     MultiSigWalletManager_t *manager = g_multisigWalletManager;
     MultiSigWalletItem_t *walletItem = findNode(wallet->verify_code);
-    if(walletItem != NULL) return walletItem;
+    if (walletItem != NULL) return walletItem;
     walletItem = SRAM_MALLOC(sizeof(MultiSigWalletItem_t));
 
     walletItem->name = SRAM_MALLOC(MAX_NAME_LENGTH);
@@ -122,8 +118,7 @@ static void createMultiSigWalletList()
 {
     ASSERT_WALLET_MANAGER_EXIST
     MultiSigWalletManager_t *manager = g_multisigWalletManager;
-    if (manager->list != NULL)
-    {
+    if (manager->list != NULL) {
         destroyMultiSigWalletList(manager);
         manager->list = NULL;
     }
@@ -142,15 +137,11 @@ static void insertNode(MultiSigWalletItem_t *item)
     newNode->value = item;
     newNode->next = NULL;
 
-    if (list->head == NULL)
-    {
+    if (list->head == NULL) {
         list->head = newNode;
-    }
-    else
-    {
+    } else {
         MultiSigWalletNode_t *temp = list->head;
-        while (temp->next != NULL)
-        {
+        while (temp->next != NULL) {
             temp = temp->next;
         }
         temp->next = newNode;
@@ -164,10 +155,8 @@ static void modifyNode(char *verifyCode, MultiSigWalletItem_t *newItem)
     MultiSigWalletList_t *list = g_multisigWalletManager->list;
     MultiSigWalletNode_t *temp = list->head;
 
-    while (temp != NULL)
-    {
-        if (strcmp(temp->value->verifyCode, verifyCode) == 0)
-        {
+    while (temp != NULL) {
+        if (strcmp(temp->value->verifyCode, verifyCode) == 0) {
             MULTI_SIG_FREE(temp->value->verifyCode);
             MULTI_SIG_FREE(temp->value->name);
             MULTI_SIG_FREE(temp->value->walletConfig);
@@ -185,10 +174,8 @@ static MultiSigWalletItem_t *findNode(char *verifyCode)
     MultiSigWalletList_t *list = g_multisigWalletManager->list;
     MultiSigWalletNode_t *temp = list->head;
 
-    while (temp != NULL)
-    {
-        if (strcmp(temp->value->verifyCode, verifyCode) == 0)
-        {
+    while (temp != NULL) {
+        if (strcmp(temp->value->verifyCode, verifyCode) == 0) {
             return temp->value;
         }
         temp = temp->next;
@@ -203,8 +190,7 @@ static void deleteNode(char *verifyCode)
     MultiSigWalletNode_t *temp = list->head;
     MultiSigWalletNode_t *prev = NULL;
 
-    if (temp != NULL && strcmp(temp->value->verifyCode, verifyCode) == 0)
-    {
+    if (temp != NULL && strcmp(temp->value->verifyCode, verifyCode) == 0) {
         list->head = temp->next;
         MULTI_SIG_FREE(temp->value->verifyCode);
         MULTI_SIG_FREE(temp->value->name);
@@ -215,14 +201,12 @@ static void deleteNode(char *verifyCode)
         return;
     }
 
-    while (temp != NULL && strcmp(temp->value->verifyCode, verifyCode) != 0)
-    {
+    while (temp != NULL && strcmp(temp->value->verifyCode, verifyCode) != 0) {
         prev = temp;
         temp = temp->next;
     }
 
-    if (temp == NULL)
-    {
+    if (temp == NULL) {
         return;
     }
 
@@ -248,8 +232,7 @@ static void traverseList(void (*callback)(MultiSigWalletItem_t *, void *), void 
     MultiSigWalletList_t *list = g_multisigWalletManager->list;
     MultiSigWalletNode_t *current = list->head;
 
-    while (current != NULL)
-    {
+    while (current != NULL) {
         callback(current->value, any);
         current = current->next;
     }
@@ -262,8 +245,7 @@ static void destroyMultiSigWalletList()
     MultiSigWalletNode_t *current = manager->list->head;
     MultiSigWalletNode_t *next;
 
-    while (current != NULL)
-    {
+    while (current != NULL) {
         next = current->next;
         MULTI_SIG_FREE(current->value->verifyCode);
         MULTI_SIG_FREE(current->value->name);

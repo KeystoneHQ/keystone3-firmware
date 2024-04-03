@@ -194,7 +194,6 @@ extern GUI_VIEW g_btcBtcWalletProfileView;
 #endif
 extern GUI_VIEW g_multisigImportWalletInfoView;
 extern GUI_VIEW g_multisigImportWalletSuccessView;
-extern GUI_VIEW g_multiSigImportWalletInfoView;
 extern GUI_VIEW g_createMultiView;
 
 

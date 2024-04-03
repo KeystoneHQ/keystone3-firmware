@@ -121,7 +121,7 @@ if "%build_simulator%"=="true" (
     if "%build_log%"=="true" (
         make -j16 > makefile.log 2>&1
     ) else (
-        make -j16
+        make -j16 | stdbuf -oL tr '\n' '\n'
     )
     python3 .\padding_bin_file.py .\mh1903.bin
     popd

@@ -439,7 +439,7 @@ static void GuiMultiCreateSuccessWidget(lv_obj_t *parent)
     lv_obj_t *btn = GuiCreateBtn(parent, _("Done"));
     lv_obj_add_event_cb(btn, GoToHomeViewHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 666);
-    lv_obj_set_size(btn, 408, 66);    
+    lv_obj_set_size(btn, 408, 66);
     lv_obj_set_style_outline_pad(btn, 24, LV_STATE_DEFAULT);
 }
 
@@ -455,7 +455,7 @@ static void GuiCreateMultiStepCont(void)
     lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_HIDDEN);
     g_createMultiTileView.stepBtn = btn;
-    
+
     btn = GuiCreateBtn(cont, _("Confirm"));
     lv_obj_add_event_cb(btn, GuiShowKeyboardHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
@@ -603,7 +603,7 @@ int8_t GuiCreateMultiPrevTile(void)
     case CREATE_MULTI_SELECT_FORMAT:
         lv_obj_clear_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
         break;
-    case CREATE_MULTI_CONFIRM_CO_SIGNERS: 
+    case CREATE_MULTI_CONFIRM_CO_SIGNERS:
         break;
     }
 
@@ -698,11 +698,11 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
         g_formatCheckBox[i] = checkBox;
 
         GuiButton_t table[] = {
-            {.obj = accountType, .align = LV_ALIGN_DEFAULT,.position = {24, 16},},
+            {.obj = accountType, .align = LV_ALIGN_DEFAULT, .position = {24, 16},},
             {.obj = path, .align = LV_ALIGN_DEFAULT, .position = {24, 56},},
             {.obj = checkBox, .align = LV_ALIGN_RIGHT_MID, .position = {-24, 0}},
         };
-    
+
         if (i == g_chainType - XPUB_TYPE_BTC_MULTI_SIG_P2SH) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
@@ -737,10 +737,10 @@ void GetMultiInfoFromFile(const char *path, XpubWidgetCache_t *xpub, ChainType c
         xpubKey = "p2sh";
     } else if (chainType == XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH) {
         derivKey = "p2sh_p2wsh_deriv";
-        xpubKey = "p2sh_p2wsh";    
+        xpubKey = "p2sh_p2wsh";
     } else if (chainType == XPUB_TYPE_BTC_MULTI_SIG_P2WSH) {
         derivKey = "p2wsh_deriv";
-        xpubKey = "p2wsh";    
+        xpubKey = "p2wsh";
     }
 
     do {

@@ -120,7 +120,7 @@ void *GuiUpdateStatusCoinButton(lv_obj_t *button, const char *text, const void *
     return button;
 }
 
-void *GuiSettingItemButton(lv_obj_t *parent, uint16_t width, const char *text, const char *descText, const void *src, 
+void *GuiSettingItemButton(lv_obj_t *parent, uint16_t width, const char *text, const char *descText, const void *src,
                            lv_event_cb_t buttonCb, void *param)
 {
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, text);

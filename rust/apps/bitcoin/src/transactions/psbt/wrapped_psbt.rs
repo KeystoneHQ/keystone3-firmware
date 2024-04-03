@@ -79,7 +79,7 @@ impl WrappedPsbt {
         let address = if self.is_taproot_input(input) {
             self.calculate_address_for_taproot_input(input, network)?
         } else {
-            self.calculate_address_for_input(input, network)?
+            self.calculate_address_for_input(input, network, index)?
         };
         let unsigned_tx = &self.psbt.unsigned_tx;
         let mut value = 0u64;
@@ -290,6 +290,7 @@ impl WrappedPsbt {
         &self,
         input: &Input,
         network: &network::Network,
+        index: usize,
     ) -> Result<Option<String>> {
         if input.bip32_derivation.len() > 1 {
             let (script, foramt) = self.get_multi_sig_script_and_format(input)?;
@@ -304,6 +305,16 @@ impl WrappedPsbt {
             if let Some(utxo) = &input.witness_utxo {
                 return Ok(Some(
                     Address::from_script(&utxo.script_pubkey, network.clone())?.to_string(),
+                ));
+            }
+            if let Some(tx) = &input.non_witness_utxo {
+                let i = self.psbt.unsigned_tx.input[index].previous_output.vout;
+                return Ok(Some(
+                    Address::from_script(
+                        &tx.output[i as usize].script_pubkey,
+                        network.clone(),
+                    )?
+                    .to_string(),
                 ));
             }
             return Err(BitcoinError::InvalidInput);

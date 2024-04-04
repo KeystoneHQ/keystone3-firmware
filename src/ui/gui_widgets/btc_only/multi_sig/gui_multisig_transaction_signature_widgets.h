@@ -1,0 +1,8 @@
+#ifndef _GUI_MULTISIG_TRANSACTION_SIGNATURE_WIDGETS_H
+#define _GUI_MULTISIG_TRANSACTION_SIGNATURE_WIDGETS_H
+
+void GuiMultisigTransactionSignaureWidgetsInit();
+void GuiMultisigTransactionSignaureWidgetsDeInit();
+void GuiMultisigTransactionSignaureWidgetsRefresh();
+
+#endif

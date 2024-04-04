@@ -61,7 +61,7 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_INIT_GET_ACCOUNT_NUMBER:
         walletNum = *(uint8_t *)param;
         if (walletNum == 0) {
-            GuiFrameOpenView(&g_multisigImportWalletInfoView);
+            GuiFrameOpenView(&g_setupView);
             if (IsUpdateSuccess()) {
                 GuiFrameOpenView(&g_updateSuccessView);
             }

@@ -33,8 +33,8 @@ typedef struct {
 } ImportMultiWalletWidget_t;
 
 static ImportMultiWalletWidget_t g_importMultiWallet;
-static lv_obj_t *g_eg, *g_noticeWindow;
-static lv_obj_t *g_qrCode = NULL;
+static lv_obj_t *g_noticeWindow;
+static lv_obj_t *g_qrCodeCont = NULL;
 static PageWidget_t *g_pageWidget;
 static char *g_walletConfig = NULL;
 static MultiSigWallet *g_wallet = NULL;
@@ -47,8 +47,8 @@ static void GuiOnFailedHandler(lv_event_t *event);
 static void GuiShowInvalidQRCode();
 static void GuiShowWalletExisted();
 static void GuiImportWalletSuccessContent(lv_obj_t *parent);
-static void ModelGenerateAddress(char *addr);
-static void SetEgContent();
+static void ModelGenerateAddress(char *addr, uint32_t maxLen);
+static void SetEgContent(lv_obj_t *label);
 static char* convertFormatLabel(char *format);
 static void GuiSDCardHandler(lv_event_t *);
 static void GuiShowSDCardNotDetected();
@@ -320,9 +320,8 @@ static void GuiImportWalletSuccessContent(lv_obj_t *parent)
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
     lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 36, 122);
 
-    qr_cont = GuiCreateContainerWithParent(cont, 336, 336);
-    lv_obj_align(qr_cont, LV_ALIGN_TOP_LEFT, 36, 36);
-    GuiAnimatingQRCodeInitWithCustomSize(qr_cont, GuiGenerateUR, false, 336, 336, NULL);
+    g_qrCodeCont = GuiCreateContainerWithParent(cont, 336, 336);
+    lv_obj_align(g_qrCodeCont, LV_ALIGN_TOP_LEFT, 36, 36);
 
     text = GuiCreateIllustrateLabel(cont, convertFormatLabel(g_wallet->format));
     lv_obj_align(text, LV_ALIGN_TOP_LEFT, 36, 12 + 384);
@@ -334,8 +333,7 @@ static void GuiImportWalletSuccessContent(lv_obj_t *parent)
     lv_obj_set_width(text, 360);
     lv_obj_align(text, LV_ALIGN_TOP_LEFT, 36, 12 + 34 + 384 + 30);
     lv_label_set_recolor(text, true);
-    g_eg = text;
-    SetEgContent();
+    SetEgContent(text);
 
     btn = GuiCreateBtn(parent, _("Done"));
     lv_obj_set_size(btn, 408, 66);
@@ -354,7 +352,7 @@ static char* convertFormatLabel(char *format)
     return "Legacy";
 }
 
-static void SetEgContent()
+static void SetEgContent(lv_obj_t *label)
 {
     char eg[BUFFER_SIZE_64] = {0};
     char prefix[8] = {0};
@@ -362,17 +360,22 @@ static void SetEgContent()
     char addr[BUFFER_SIZE_128] = {0};
     char addrShot[BUFFER_SIZE_64] = {0};
     int8_t prefixLen = (strcmp(g_wallet->format, FORMAT_P2WSH) == 0) ? 4 : 1;
-    memset_s(addrShot, BUFFER_SIZE_64, 0, BUFFER_SIZE_64);
-    ModelGenerateAddress(addr);
+    memset_s(addrShot, sizeof(addrShot), 0, sizeof(addrShot));
+    ModelGenerateAddress(addr, sizeof(addr));
     CutAndFormatAddress(addrShot, sizeof(addrShot), addr, 24);
     strncpy(prefix, addrShot, prefixLen);
     strncpy(rest, addrShot + prefixLen, strnlen_s(addrShot, BUFFER_SIZE_64) - prefixLen);
     snprintf_s(eg, sizeof(eg), "#F5870A %s#%s", prefix, rest);
-    lv_label_set_text(g_eg, eg);
+    lv_label_set_text(label, addrShot);
 }
 
 void GuiImportMultisigWalletWidgetsDeInit()
 {
+    if (g_walletConfig != NULL) {
+        EXT_FREE(g_walletConfig);
+        g_walletConfig = NULL;
+    }
+    
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
@@ -401,6 +404,7 @@ int8_t GuiImportMultiNextTile(void)
     switch (g_importMultiWallet.currentTile) {
     case IMPORT_MULTI_SHOW_WALLET_INFO:
         GuiDeleteKeyboardWidget(g_keyboardWidget);
+        GuiAnimatingQRCodeInitWithCustomSize(g_qrCodeCont, GuiGenerateUR, false, 336, 336, NULL);
         break;
     case IMPORT_MULTI_WALLET_SUCCESS:
         break;
@@ -425,7 +429,7 @@ int8_t GuiImportMultiPrevTile(void)
 }
 
 
-static void ModelGenerateAddress(char *address)
+static void ModelGenerateAddress(char *address, uint32_t maxLen)
 {
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
@@ -435,7 +439,7 @@ static void ModelGenerateAddress(char *address)
         GuiCLoseCurrentWorkingView();
         return;
     }
-    strncpy_s(address, MAX_ADDRESS_LEN, result->data, strnlen_s(result->data, MAX_ADDRESS_LEN));
+    strncpy_s(address, maxLen, result->data, strnlen_s(result->data, maxLen));
 }
 
 static void processResult(Ptr_Response_MultiSigWallet result)

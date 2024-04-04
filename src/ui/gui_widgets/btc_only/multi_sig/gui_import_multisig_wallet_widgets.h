@@ -5,5 +5,7 @@ void GuiImportMultisigWalletWidgetsInit(char* verifyCode);
 void GuiImportMultisigWalletWidgetsDeInit();
 void GuiImportMultisigWalletWidgetsRefresh();
 void GuiImportMultisigWalletSuccessWidgetsRestart();
+int8_t GuiImportMultiNextTile(void);
+int8_t GuiImportMultiPrevTile(void);
 
 #endif

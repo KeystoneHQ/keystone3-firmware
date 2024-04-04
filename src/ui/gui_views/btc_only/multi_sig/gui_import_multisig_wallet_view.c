@@ -1,3 +1,4 @@
+#include "stdio.h"
 #include "gui_obj.h"
 #include "gui_resource.h"
 #include "gui_views.h"
@@ -12,7 +13,7 @@ static int32_t GuiImportWalletSuccessViewDeInit(void)
 
 int32_t GuiImportMultiSigWalletViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
-    GUI_ASSERT(g_importMultiSigWalletView.isActive);
+    GUI_ASSERT(g_importMultisigWalletView.isActive);
     char* walletConifg;
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
@@ -21,12 +22,22 @@ int32_t GuiImportMultiSigWalletViewEventProcess(void *self, uint16_t usEvent, vo
         }
         walletConifg = (char *)param;
         GuiImportMultisigWalletWidgetsInit(walletConifg);
-        break; 
+        break;
     case GUI_EVENT_OBJ_DEINIT:
         GuiImportMultisigWalletWidgetsDeInit();
         break;
     case GUI_EVENT_REFRESH:
         GuiImportMultisigWalletWidgetsRefresh();
+        break;
+    case SIG_SETUP_VIEW_TILE_PREV:
+        GuiImportMultiPrevTile();
+        break;
+    case SIG_SETUP_VIEW_TILE_NEXT:
+        GuiImportMultiNextTile();
+        break;
+    case SIG_VERIFY_PASSWORD_PASS:
+        GuiImportMultiNextTile();
+        GuiImportMultisigWalletInfoVerifyPasswordSuccess();
         break;
     case SIG_BACKGROUND_UR_GENERATE_SUCCESS:
         GuiAnimantingQRCodeFirstUpdate((char*)param, usLen);
@@ -40,7 +51,7 @@ int32_t GuiImportMultiSigWalletViewEventProcess(void *self, uint16_t usEvent, vo
     return SUCCESS_CODE;
 }
 
-GUI_VIEW g_importMultiSigWalletView = {
+GUI_VIEW g_importMultisigWalletView = {
     .id = SCREEN_MULTI_SIG_IMPORT_WALLET_SUCCESS,
     .previous = NULL,
     .isActive = false,

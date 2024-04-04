@@ -1,5 +1,3 @@
-#include "gui_import_multisig_wallet_widgets.h"
-#include "gui_fullscreen_mode.h"
 #include "gui_page.h"
 #include "gui_obj.h"
 #include "multi_sig_wallet_manager.h"
@@ -8,6 +6,9 @@
 #include "define.h"
 #include "gui_hintbox.h"
 #include "gui_animating_qrcode.h"
+#include "gui_keyboard_hintbox.h"
+#include "gui_fullscreen_mode.h"
+#include "gui_import_multisig_wallet_widgets.h"
 #ifndef COMPILE_SIMULATOR
 #include "safe_str_lib.h"
 #else
@@ -15,11 +16,36 @@
 #endif
 
 #define MAX_ADDRESS_LEN 256
+#define MAX_LABEL_LENGTH 64
+#define MAX_VERIFY_CODE_LENGTH 24
 
-static lv_obj_t *g_cont, *g_eg, *g_hintBox;
+typedef enum {
+    IMPORT_MULTI_SHOW_WALLET_INFO = 0,
+    IMPORT_MULTI_WALLET_SUCCESS,
+
+    IMPORT_MULTI_WALLET_BUTT,
+} IMPORT_MULTI_WALLET_ENUM;
+
+
+typedef struct {
+    uint8_t currentTile;
+    lv_obj_t *tileView;
+} ImportMultiWalletWidget_t;
+
+static ImportMultiWalletWidget_t g_importMultiWallet;
+static lv_obj_t *g_eg, *g_noticeWindow;
+static lv_obj_t *g_qrCode = NULL;
 static PageWidget_t *g_pageWidget;
-static MultiSigWalletItem_t *g_wallet = NULL;
+static char *g_walletConfig = NULL;
+static MultiSigWallet *g_wallet = NULL;
+static bool isQRCode = false;
+static KeyboardWidget_t *g_keyboardWidget = NULL;
 
+void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
+static void GuiConfirmHandler(lv_event_t *e);
+static void GuiOnFailedHandler(lv_event_t *event);
+static void GuiShowInvalidQRCode();
+static void GuiShowWalletExisted();
 static void GuiImportWalletSuccessContent(lv_obj_t *parent);
 static void ModelGenerateAddress(char *addr);
 static void SetEgContent();
@@ -30,20 +56,27 @@ static void GuiCloseHintBoxHandler(lv_event_t *);
 static void GuiShowSDCardExport();
 static void GuiShowSDCardExportSuccess();
 static void GuiShowSDCardExportFailed();
+void GuiSetMultisigImportWalletDataBySDCard(char *walletConfig);
+lv_obj_t* CreateUTXOReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h);
+static void GuiMultiShowWalletInfoWidget(lv_obj_t *parent);
+static void GuiMultiCreateSuccessWidget(lv_obj_t *parent);
+static void ImportMultisigGoToHomeViewHandler(lv_event_t *e);
+
+static void prepareWalletByQRCode(void *);
+static void prepareWalletBySDCard(char *);
+
+static void GuiOnFailedHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        GUI_DEL_OBJ(g_noticeWindow);
+        GuiCLoseCurrentWorkingView();
+    }
+}
 
 static void QRCodePause(bool pause)
 {
     GuiAnimatingQRCodeControl(pause);
-}
-
-void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
-
-static void GuiDoneHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiCLoseCurrentWorkingView();
-    }
 }
 
 static void GuiSDCardHandler(lv_event_t *e)
@@ -64,7 +97,7 @@ static void GuiCloseHintBoxHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_hintBox);
+        GUI_DEL_OBJ(g_noticeWindow);
         return;
     }
 }
@@ -73,7 +106,7 @@ static void GuiWriteSDCardHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_hintBox);
+        GUI_DEL_OBJ(g_noticeWindow);
         if (false) {
             GuiShowSDCardExportSuccess();
         } else {
@@ -85,17 +118,17 @@ static void GuiWriteSDCardHandler(lv_event_t *e)
 
 static void GuiShowSDCardNotDetected()
 {
-    g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
-    lv_obj_t *img = GuiCreateImg(g_hintBox, &imgFailed);
+    g_noticeWindow = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgFailed);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
 
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_hintBox, _("multisig_export_sdcard_not_detected"));
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeWindow, _("multisig_export_sdcard_not_detected"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
 
-    label = GuiCreateIllustrateLabel(g_hintBox, _("multisig_export_sdcard_not_detected_desc"));
+    label = GuiCreateIllustrateLabel(g_noticeWindow, _("multisig_export_sdcard_not_detected_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
-    lv_obj_t *btn = GuiCreateBtnWithFont(g_hintBox, _("OK"), g_defTextFont);
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_noticeWindow, _("OK"), g_defTextFont);
     lv_obj_set_size(btn, 94, 66);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
@@ -105,21 +138,21 @@ static void GuiShowSDCardNotDetected()
 
 static void GuiShowSDCardExport()
 {
-    g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
-    lv_obj_t *img = GuiCreateImg(g_hintBox, &imgSdCardL);
+    g_noticeWindow = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgSdCardL);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
 
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_hintBox, _("multisig_export_to_sdcard"));
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeWindow, _("multisig_export_to_sdcard"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
 
-    label = GuiCreateIllustrateLabel(g_hintBox, _("multisig_export_to_sdcard_desc"));
+    label = GuiCreateIllustrateLabel(g_noticeWindow, _("multisig_export_to_sdcard_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
     char* filename = "xxxx.txt";
-    label = GuiCreateIllustrateLabel(g_hintBox, filename);
+    label = GuiCreateIllustrateLabel(g_noticeWindow, filename);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 670);
 
-    lv_obj_t *btn = GuiCreateBtnWithFont(g_hintBox, _("got_it"), g_defTextFont);
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_noticeWindow, _("got_it"), g_defTextFont);
     lv_obj_set_size(btn, 122, 66);
     lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
@@ -128,17 +161,17 @@ static void GuiShowSDCardExport()
 
 static void GuiShowSDCardExportSuccess()
 {
-    g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
-    lv_obj_t *img = GuiCreateImg(g_hintBox, &imgSuccess);
+    g_noticeWindow = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgSuccess);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
 
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_hintBox, _("multisig_export_to_sdcard_success"));
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeWindow, _("multisig_export_to_sdcard_success"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
 
-    label = GuiCreateIllustrateLabel(g_hintBox, _("multisig_export_to_sdcard_success_desc"));
+    label = GuiCreateIllustrateLabel(g_noticeWindow, _("multisig_export_to_sdcard_success_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
-    lv_obj_t *btn = GuiCreateBtnWithFont(g_hintBox, _("Done"), g_defTextFont);
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_noticeWindow, _("Done"), g_defTextFont);
     lv_obj_set_size(btn, 122, 66);
     lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
@@ -147,17 +180,17 @@ static void GuiShowSDCardExportSuccess()
 
 static void GuiShowSDCardExportFailed()
 {
-    g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
-    lv_obj_t *img = GuiCreateImg(g_hintBox, &imgFailed);
+    g_noticeWindow = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgFailed);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
 
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_hintBox, _("multisig_export_to_sdcard_failed"));
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeWindow, _("multisig_export_to_sdcard_failed"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
 
-    label = GuiCreateIllustrateLabel(g_hintBox, _("multisig_export_to_sdcard_failed_desc"));
+    label = GuiCreateIllustrateLabel(g_noticeWindow, _("multisig_export_to_sdcard_failed_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
-    lv_obj_t *btn = GuiCreateBtnWithFont(g_hintBox, _("OK"), g_defTextFont);
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_noticeWindow, _("OK"), g_defTextFont);
     lv_obj_set_size(btn, 94, 66);
     lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
@@ -173,8 +206,13 @@ static void GuiImportWalletSuccessNVSBarInit()
 
 void GuiImportMultisigWalletWidgetsInit(char *walletConfig)
 {
-    // Ptr_Response_MultiSigWallet walletResult = GuiSetMultisigImportWalletDataBySDCard(walletConfig);
-    g_wallet = GetMultisigWalletByVerifyCode(walletConfig);
+    GuiSetMultisigImportWalletDataBySDCard(walletConfig);
+    g_walletConfig = walletConfig;
+    printf("GuiImportMultisigWalletWidgetsInit\n");
+    for (int i = 0; i < 3; i++) {
+        printf("g_wallet%d xfp = %s\n", i, g_wallet->xpub_items->data[i].xfp);
+        printf("g_wallet%d xpub = %s\n", i, g_wallet->xpub_items->data[i].xpub);
+    }
     if (g_wallet == NULL) {
         // TODO: Throw error;
         GuiCLoseCurrentWorkingView();
@@ -182,17 +220,86 @@ void GuiImportMultisigWalletWidgetsInit(char *walletConfig)
     }
 
     g_pageWidget = CreatePageWidget();
-    lv_obj_t *cont = g_pageWidget->contentZone;
-    g_cont = cont;
-    GuiImportWalletSuccessNVSBarInit();
-    GuiImportWalletSuccessContent(cont);
+    lv_obj_t *tileView = GuiCreateTileView(g_pageWidget->contentZone);
+    lv_obj_t *tile = lv_tileview_add_tile(tileView, IMPORT_MULTI_SHOW_WALLET_INFO, 0, LV_DIR_HOR);
+    GuiMultiShowWalletInfoWidget(tile);
+
+    tile = lv_tileview_add_tile(tileView, IMPORT_MULTI_WALLET_SUCCESS, 0, LV_DIR_HOR);
+    GuiImportWalletSuccessContent(tile);
+
+    g_importMultiWallet.currentTile = IMPORT_MULTI_SHOW_WALLET_INFO;
+    g_importMultiWallet.tileView = tileView;
+
+    lv_obj_set_tile_id(g_importMultiWallet.tileView, g_importMultiWallet.currentTile, 0, LV_ANIM_OFF);
 }
 
 static UREncodeResult *GuiGenerateUR()
 {
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-    return export_multi_sig_wallet_by_ur(mfp, 4, g_wallet->walletConfig, MainNet);
+    return export_multi_sig_wallet_by_ur(mfp, 4, g_walletConfig,  MainNet);
+}
+
+static void GuiMultiShowWalletInfoWidget(lv_obj_t *parent)
+{
+    lv_obj_t *bgCont = GuiCreateContainerWithParent(parent, 480, 542);
+    GuiAddObjFlag(bgCont, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
+
+    lv_obj_t *cont = GuiCreateContainerWithParent(bgCont, 408, 100);
+    lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(cont, WHITE_COLOR_OPA12, LV_PART_MAIN);
+    lv_obj_align(cont, LV_ALIGN_DEFAULT, 36, 0);
+
+    lv_obj_t *label = GuiCreateNoticeLabel(cont, _("single_backup_namewallet_previnput"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
+    label = GuiCreateIllustrateLabel(cont, g_wallet->name);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 54);
+
+    cont = GuiCreateContainerWithParent(bgCont, 408, 62);
+    lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(cont, WHITE_COLOR_OPA12, LV_PART_MAIN);
+    lv_obj_align(cont, LV_ALIGN_DEFAULT, 36, 116);
+
+    label = GuiCreateNoticeLabel(cont, _("Policy"));
+    lv_obj_align(label, LV_ALIGN_LEFT_MID, 24, 0);
+    char buff[8] = {0};
+    label = GuiCreateIllustrateLabel(cont, g_wallet->policy);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+
+    cont = GuiCreateContainerWithParent(bgCont, 408, 62);
+    lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(cont, WHITE_COLOR_OPA12, LV_PART_MAIN);
+    lv_obj_align(cont, LV_ALIGN_DEFAULT, 36, 194);
+
+    label = GuiCreateNoticeLabel(cont, _("sdcard_format_confirm"));
+    lv_obj_align(label, LV_ALIGN_LEFT_MID, 24, 0);
+    label = GuiCreateIllustrateLabel(cont, g_wallet->format);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+
+    cont = GuiCreateContainerWithParent(bgCont, 408, g_wallet->total * 220 - 16);
+    lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(cont, WHITE_COLOR_OPA12, LV_PART_MAIN);
+    lv_obj_align(cont, LV_ALIGN_DEFAULT, 36, 272);
+    for (int i = 0; i < g_wallet->total; i++) {
+        char buff[8] = {0};
+        snprintf(buff, sizeof(buff), "%d/%d", i + 1, g_wallet->total);
+        lv_obj_t *label = GuiCreateIllustrateLabel(cont, buff);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 24, i * 204 + 16);
+        lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+
+        label = GuiCreateNoticeLabel(cont, g_wallet->xpub_items->data[i].xfp);
+        GuiAlignToPrevObj(label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+        label = GuiCreateIllustrateLabel(cont, g_wallet->xpub_items->data[i].xpub);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 24, i * 204 + 50);
+        lv_obj_set_width(label, 360);
+        label = GuiCreateNoticeLabel(cont, g_wallet->derivations->data[i]);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 24, i * 204 + 174);
+    }
+
+    lv_obj_t *btn = GuiCreateBtn(parent, _("Confirm"));
+    lv_obj_add_event_cb(btn, GuiConfirmHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+    lv_obj_set_size(btn, 408, 66);
 }
 
 static void GuiImportWalletSuccessContent(lv_obj_t *parent)
@@ -233,7 +340,7 @@ static void GuiImportWalletSuccessContent(lv_obj_t *parent)
     btn = GuiCreateBtn(parent, _("Done"));
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
-    lv_obj_add_event_cb(btn, GuiDoneHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(btn, ImportMultisigGoToHomeViewHandler, LV_EVENT_CLICKED, NULL);
 }
 
 static char* convertFormatLabel(char *format)
@@ -266,15 +373,55 @@ static void SetEgContent()
 
 void GuiImportMultisigWalletWidgetsDeInit()
 {
-    GUI_DEL_OBJ(g_cont)
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
+    }
+
+    if (g_wallet != NULL) {
+        free_MultiSigWallet(g_wallet);
+        g_wallet = NULL;
     }
 }
 
 void GuiImportMultisigWalletWidgetsRefresh()
 {
+    SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+    if (g_importMultiWallet.currentTile == IMPORT_MULTI_SHOW_WALLET_INFO) {
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("import_multi_wallet_info_title"));
+    } else if (g_importMultiWallet.currentTile == IMPORT_MULTI_WALLET_SUCCESS) {
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("import_multi_wallet_success_title"));
+    }
+}
+
+int8_t GuiImportMultiNextTile(void)
+{
+    switch (g_importMultiWallet.currentTile) {
+    case IMPORT_MULTI_SHOW_WALLET_INFO:
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+        break;
+    case IMPORT_MULTI_WALLET_SUCCESS:
+        break;
+    }
+    g_importMultiWallet.currentTile++;
+    GuiImportMultisigWalletWidgetsRefresh();
+    lv_obj_set_tile_id(g_importMultiWallet.tileView, g_importMultiWallet.currentTile, 0, LV_ANIM_OFF);
+    return SUCCESS_CODE;
+}
+
+int8_t GuiImportMultiPrevTile(void)
+{
+    switch (g_importMultiWallet.currentTile) {
+    case IMPORT_MULTI_SHOW_WALLET_INFO:
+        break;
+    case IMPORT_MULTI_WALLET_SUCCESS:
+        break;
+    }
+    g_importMultiWallet.currentTile--;
+    GuiImportMultisigWalletWidgetsRefresh();
+    lv_obj_set_tile_id(g_importMultiWallet.tileView, g_importMultiWallet.currentTile, 0, LV_ANIM_OFF);
 }
 
 
@@ -282,11 +429,152 @@ static void ModelGenerateAddress(char *address)
 {
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-    SimpleResponse_c_char *result = generate_address_for_multisig_wallet_config(g_wallet->walletConfig, 0, 0, mfp, 4, MainNet);
+    SimpleResponse_c_char *result = generate_address_for_multisig_wallet_config(g_walletConfig, 0, 0, mfp, 4, MainNet);
     if (result->error_code != 0) {
         printf("errorMessage: %s\r\n", result->error_message);
         GuiCLoseCurrentWorkingView();
         return;
     }
     strncpy_s(address, MAX_ADDRESS_LEN, result->data, strnlen_s(result->data, MAX_ADDRESS_LEN));
+}
+
+static void processResult(Ptr_Response_MultiSigWallet result)
+{
+    if (result->error_code != 0) {
+        printf("%s\r\n", result->error_message);
+        return;
+    } else {
+        g_wallet = result->data;
+    }
+}
+
+static void prepareWalletByQRCode(void *wallet_info_data)
+{
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_ur(wallet_info_data, mfp, 4, MainNet);
+    processResult(result);
+}
+
+static void prepareWalletBySDCard(char *walletConfig)
+{
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(walletConfig, mfp, 4, MainNet);
+    processResult(result);
+}
+
+void GuiSetMultisigImportWalletDataByQRCode(URParseResult *urResult, URParseMultiResult *multiResult, bool multi)
+{
+    isQRCode = true;
+    prepareWalletByQRCode(multi ? multiResult->data : urResult->data);
+    CHECK_FREE_UR_RESULT(urResult, false);
+    CHECK_FREE_UR_RESULT(multiResult, true);
+}
+
+void GuiSetMultisigImportWalletDataBySDCard(char *walletConfig)
+{
+    isQRCode = false;
+    prepareWalletBySDCard(walletConfig);
+}
+
+static void GuiShowInvalidQRCode()
+{
+    g_noticeWindow = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgFailed);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
+
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeWindow, _("scan_qr_code_error_invalid_qrcode"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
+
+    label = GuiCreateIllustrateLabel(g_noticeWindow, _("scan_qr_code_error_invalid_qrcode_desc"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
+
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_noticeWindow, _("OK"), g_defTextFont);
+    lv_obj_set_size(btn, 94, 66);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
+    lv_obj_add_event_cb(btn, GuiOnFailedHandler, LV_EVENT_CLICKED, NULL);
+}
+
+static void GuiShowInvalidWalletFile()
+{
+    g_noticeWindow = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgFailed);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
+
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeWindow, _("scan_qr_code_error_invalid_wallet_file"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
+
+    label = GuiCreateIllustrateLabel(g_noticeWindow, _("scan_qr_code_error_invalid_wallet_file_desc"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
+
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_noticeWindow, _("OK"), g_defTextFont);
+    lv_obj_set_size(btn, 94, 66);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
+    lv_obj_add_event_cb(btn, GuiOnFailedHandler, LV_EVENT_CLICKED, NULL);
+}
+
+static void GuiShowWalletExisted()
+{
+#define PLUS_PADDING +384
+    g_noticeWindow = GuiCreateHintBox(lv_scr_act(), 480, 416, false);
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgFailed);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 36, 48 PLUS_PADDING);
+
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeWindow, _("multisig_import_wallet_exist"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 144 PLUS_PADDING);
+
+    label = GuiCreateIllustrateLabel(g_noticeWindow, _("multisig_import_wallet_exist_desc"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 196 PLUS_PADDING);
+
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_noticeWindow, _("OK"), g_defTextFont);
+    lv_obj_set_size(btn, 94, 66);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
+    lv_obj_add_event_cb(btn, GuiOnFailedHandler, LV_EVENT_CLICKED, NULL);
+}
+
+static void SignByPasswordCb(bool cancel)
+{
+    g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
+    SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+    static uint16_t sig = SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD;
+    SetKeyboardWidgetSig(g_keyboardWidget, &sig);
+}
+
+static void GuiConfirmHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        MultiSigWalletItem_t *wallet = GetMultisigWalletByVerifyCode(g_wallet->verify_code);
+        if (wallet != NULL) {
+            GuiShowWalletExisted();
+            return;
+        }
+        SignByPasswordCb(false);
+    }
+}
+
+void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
+{
+    printf("SecretCacheGetPassword = %S\n", SecretCacheGetPassword());
+    MultiSigWalletItem_t *wallet = AddMultisigWalletToCurrentAccount(g_wallet, SecretCacheGetPassword());
+    if (wallet == NULL) {
+        printf("multi sigwallet not found\n");
+        return;
+    }
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
+}
+
+static void ImportMultisigGoToHomeViewHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        GuiCloseToTargetView(&g_homeView);
+    }
 }

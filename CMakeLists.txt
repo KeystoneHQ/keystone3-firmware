@@ -269,6 +269,7 @@ if(COMPILE_KEYSTONE)
             src/webusb_protocol/general)
     else()
         set(excluded_directories
+            src/ui/gui_views/btc_only
             src/ui/gui_widgets/btc_only)
     endif()
 

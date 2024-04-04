@@ -20,6 +20,7 @@
 #include "keystore.h"
 #include "gui_multisig_import_wallet_success_widgets.h"
 #include "multi_sig_wallet_manager.h"
+#include "account_public_info.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #else

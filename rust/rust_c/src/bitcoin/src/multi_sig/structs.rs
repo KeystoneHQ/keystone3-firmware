@@ -1,7 +1,7 @@
+use alloc::format;
 use alloc::string::ToString;
 use alloc::vec;
 use alloc::vec::Vec;
-use alloc::format;
 use app_bitcoin::multi_sig::wallet::MultiSigWalletConfig;
 use app_bitcoin::multi_sig::Network;
 use common_rust_c::ffi::VecFFI;

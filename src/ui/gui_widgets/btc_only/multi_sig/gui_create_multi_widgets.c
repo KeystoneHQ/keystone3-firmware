@@ -23,8 +23,10 @@
 #include "account_public_info.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
+#include "simulator_mock_define.h"
 #else
 #include "user_fatfs.h"
+#include "safe_str_lib.h"
 #endif
 #define MULTI_WALLET_DEFAULT_CO_SINGERS             (3)
 #define MULTI_WALLET_DEFAULT_SIGNERS                (2)

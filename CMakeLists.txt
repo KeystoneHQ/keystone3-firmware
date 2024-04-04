@@ -69,7 +69,8 @@ set(GUI_INCLUDE_PATH
     src/ui/gui_frame
     src/ui/gui_widgets
     src/ui/gui_widgets/setting
-    src/ui/gui_widgets/multi_sig
+    src/ui/gui_widgets/btc_only
+    src/ui/gui_widgets/btc_only/multi_sig
     src/ui/lv_i18n
     src/ui/gui_model
     src/ui/gui_analyze
@@ -145,7 +146,7 @@ set(INCLUDE_DIR
 )
 
 if(BTC_ONLY)
-    list(APPEND INCLUDE_DIR src/ui/gui_widgets/btc_only src/ui/gui_widgets/general)
+    list(APPEND INCLUDE_DIR src/ui/gui_widgets/btc_only src/ui/gui_widgets/btc_only/multi_sig src/ui/gui_widgets/general)
 else()
     list(APPEND INCLUDE_DIR src/ui/gui_chain/others src/ui/gui_widgets/general  src/webusb_protocol/general src/webusb_protocol/general/eapdu_services)
 endif()

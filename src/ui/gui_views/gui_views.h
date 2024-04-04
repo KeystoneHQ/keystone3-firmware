@@ -195,6 +195,7 @@ extern GUI_VIEW g_btcBtcWalletProfileView;
 extern GUI_VIEW g_importMultisigWalletInfoView;
 extern GUI_VIEW g_importMultisigWalletView;
 extern GUI_VIEW g_createMultisigWalletView;
+extern GUI_VIEW g_manageMultisigWalletView;
 
 
 void UnHandler(lv_event_t *e);

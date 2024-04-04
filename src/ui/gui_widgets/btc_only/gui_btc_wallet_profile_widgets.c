@@ -1,4 +1,3 @@
-#ifdef BTC_ONLY
 #include "gui_btc_wallet_profile_widgets.h"
 #include "gui.h"
 #include "gui_views.h"
@@ -34,7 +33,7 @@ static void CreateBtcNetworkWidget(lv_obj_t *parent);
 static void NetworkHandler(lv_event_t *e);
 static void ExportXpubHandler(lv_event_t *e);
 static void EmptyHandler(lv_event_t *e);
-static void AddMultiSigWalletHandler(lv_event_t *e);
+static void ManageMultiSigWalletHandler(lv_event_t *e);
 
 static PageWidget_t *g_pageWidget;
 static lv_obj_t *g_networkCont;
@@ -157,13 +156,13 @@ static void CreateMultiSigWalletWidget(lv_obj_t *parent)
     lv_obj_set_style_text_color(lv_obj_get_child(button, 0), ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 436);
-    lv_obj_add_event_cb(button, AddMultiSigWalletHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(button, ManageMultiSigWalletHandler, LV_EVENT_CLICKED, NULL);
 
     button = GuiCreateBtn(parent, _("wallet_profile_multi_wallet_show_xpub"));
     lv_obj_set_width(button, 408);
     lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 526);
-    lv_obj_add_event_cb(button, AddMultiSigWalletHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(button, ManageMultiSigWalletHandler, LV_EVENT_CLICKED, NULL);
 }
 
 static void ExportXpubHandler(lv_event_t *e)
@@ -194,18 +193,21 @@ static void OpenCreateMultiViewHandler(lv_event_t *e)
     }
 }
 
-static void AddMultiSigWalletHandler(lv_event_t *e)
+static void ManageMultiSigWalletHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    MoreInfoTable_t moreInfoTable[] = {
-        {.name = _("wallet_profile_create_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_createMultisigWalletView},
-        {.name = _("wallet_profile_import_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_importMultisigWalletInfoView},
-    };
 
     if (code == LV_EVENT_CLICKED) {
+        void *paramView = &g_createMultisigWalletView;
+        if (GetCurrentAccountMultisigWalletNum() != 0) {
+            paramView = &g_manageMultisigWalletView;
+        }
+        MoreInfoTable_t moreInfoTable[] = {
+            {.name = _("wallet_profile_create_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, paramView},
+            {.name = _("wallet_profile_import_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_importMultisigWalletInfoView},
+        };
         g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("wallet_profile_add_multi_wallet"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false);
         lv_obj_t *closeBtn = GuiCreateImgButton(g_noticeWindow,  &imgClose, 64, CloseHintBoxHandler, &g_noticeWindow);
         GuiAlignToPrevObj(closeBtn, LV_ALIGN_LEFT_MID, 358, 0);
     }
 }
-#endif

@@ -76,6 +76,12 @@ MultiSigWalletItem_t *GetMultisigWalletByVerifyCode(const char *verifyCode)
     return g_multisigWalletManager->findNode((char *)verifyCode);
 }
 
+int GetCurrentAccountMultisigWalletNum(void)
+{
+    g_multisigWalletManager->getLength();
+    return getLength();
+}
+
 static void DestoryMultisigWalletManager(MultiSigWalletManager_t *manager)
 {
     if (manager == NULL) {

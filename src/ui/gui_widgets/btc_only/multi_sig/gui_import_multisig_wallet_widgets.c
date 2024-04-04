@@ -566,7 +566,6 @@ static void GuiConfirmHandler(lv_event_t *e)
 
 void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
 {
-    printf("SecretCacheGetPassword = %S\n", SecretCacheGetPassword());
     MultiSigWalletItem_t *wallet = AddMultisigWalletToCurrentAccount(g_wallet, SecretCacheGetPassword());
     if (wallet == NULL) {
         printf("multi sigwallet not found\n");

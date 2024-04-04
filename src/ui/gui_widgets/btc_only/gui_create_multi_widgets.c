@@ -18,6 +18,8 @@
 #include "gui_fullscreen_mode.h"
 #include "cjson/cJSON.h"
 #include "keystore.h"
+#include "gui_multisig_import_wallet_success_widgets.h"
+#include "multi_sig_wallet_manager.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #else
@@ -103,9 +105,11 @@ static lv_obj_t *g_formatCheckBox[3];
 static KeyBoard_t *g_nameWalletKb = NULL;
 static lv_obj_t *g_noticeWindow = NULL;
 static lv_obj_t *g_importXpubBtn = NULL;
+static lv_obj_t *g_qrCode = NULL;
 static PageWidget_t *g_pageWidget;
-static ChainType g_chainType = XPUB_TYPE_BTC_MULTI_SIG_P2WSH;
+static ChainType g_chainType = XPUB_TYPE_BTC_MULTI_SIG_P2SH;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
+static void GetAndCreateMultiWallet(void);
 static char g_fileList[10][64] = {0};
 
 static void SelectCheckBoxHandler(lv_event_t* e);
@@ -117,16 +121,16 @@ lv_obj_t* CreateUTXOReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h);
 static void SelectFormatHandler(lv_event_t *e);
 
 static const AddressSettingsItem_t g_mainNetAddressSettings[] = {
-    {"Native SegWit", "P2WPKH", "m/48'/0'/0'/2'", XPUB_TYPE_BTC_MULTI_SIG_P2WSH},
-    {"Nested SegWit", "P2SH-P2WPKH", "m/48'/0'/0'/1'", XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH},
-    {"Legacy", "P2PKH", "m/45'", XPUB_TYPE_BTC_MULTI_SIG_P2SH},
+    {"Native SegWit", "P2WSH", "m/48'/0'/0'/2'", XPUB_TYPE_BTC_MULTI_SIG_P2WSH},
+    {"Nested SegWit", "P2WSH-P2SH", "m/48'/0'/0'/1'", XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH},
+    {"Legacy", "P2SH", "m/45'", XPUB_TYPE_BTC_MULTI_SIG_P2SH},
 };
 
 
 static const AddressSettingsItem_t g_testNetAddressSettings[] = {
-    {"Native SegWit",   "P2WPKH",           "m/84'/1'/0'"},
-    {"Nested SegWit",   "P2SH-P2WPKH",      "m/49'/1'/0'"},
-    {"Legacy",          "P2PKH",            "m/44'/1'/0'"},
+    {"Native SegWit",   "P2WSH",           "m/84'/1'/0'"},
+    {"Nested SegWit",   "P2WSH-P2SH",      "m/49'/1'/0'"},
+    {"Legacy",          "P2SH",            "m/44'/1'/0'"},
 };
 
 static uint32_t g_addressSettingsNum = sizeof(g_mainNetAddressSettings) / sizeof(g_mainNetAddressSettings[0]);
@@ -401,7 +405,7 @@ static void GuiMultiShowWalletInfoWidget(lv_obj_t *parent)
 
     label = GuiCreateNoticeLabel(cont, _("sdcard_format_confirm"));
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 24, 0);
-    label = GuiCreateIllustrateLabel(cont, "");
+    label = GuiCreateIllustrateLabel(cont, "P2WSH");
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
     g_multiWalletInfo.format = label;
 
@@ -428,6 +432,7 @@ static void GuiMultiCreateSuccessWidget(lv_obj_t *parent)
     GuiFullscreenModeInit(480, 800, WHITE_COLOR);
     GuiFullscreenModeCreateObject(CreateUTXOReceiveQRCode, 420, 420);
     lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 36);
+    g_qrCode = qrcode;
 
     label = GuiCreateIllustrateLabel(cont, _("Native SegWit"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 396);
@@ -500,6 +505,25 @@ void GuiCreateMultiInit(void)
     lv_obj_set_tile_id(g_createMultiTileView.tileView, 0, 0, LV_ANIM_OFF);
 }
 
+void UpdateCurrentWalletInfo(void)
+{
+    char tempBuf[BUFFER_SIZE_16] = "";
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    for (int i = 0; i < sizeof(mfp); i++) {
+        snprintf_s(&tempBuf[i * 2], BUFFER_SIZE_16 - strnlen_s(tempBuf, BUFFER_SIZE_16), "%02X", mfp[i]);
+    }
+    strcpy_s(g_xpubCache[g_createMultiTileView.currentSinger].mfp, sizeof(g_xpubCache[g_createMultiTileView.currentSinger].mfp), tempBuf);
+    for (int i = 0; i < g_addressSettingsNum; i++) {
+        if (g_addressSettings[i].type == g_chainType) {
+            strcpy_s(g_xpubCache[g_createMultiTileView.currentSinger].path, sizeof(g_xpubCache[g_createMultiTileView.currentSinger].path), g_addressSettings[i].multiPath);
+            break;
+        }
+    }
+    strcpy_s(g_xpubCache[g_createMultiTileView.currentSinger].xpub, sizeof(g_xpubCache[g_createMultiTileView.currentSinger].xpub), GetCurrentAccountPublicKey(g_chainType));
+    lv_label_set_text(g_custodianTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
+}
+
 int8_t GuiCreateMultiNextTile(uint8_t index)
 {
     switch (g_createMultiTileView.currentTile) {
@@ -514,30 +538,17 @@ int8_t GuiCreateMultiNextTile(uint8_t index)
         lv_label_set_text_fmt(g_multiWalletInfo.policy, "%d of %d", g_selectSliceTile.singers, g_selectSliceTile.coSingers);
         lv_label_set_text_fmt(g_selectSliceTile.stepLabel, "%d of %d", g_selectSliceTile.singers, g_selectSliceTile.coSingers);
         g_xpubCache = SRAM_MALLOC(sizeof(XpubWidgetCache_t) * g_selectSliceTile.coSingers);
-        char tempBuf[BUFFER_SIZE_16] = "12345";
-        uint8_t mfp[4];
-        GetMasterFingerPrint(mfp);
-        for (int i = 0; i < sizeof(mfp); i++) {
-            snprintf_s(&tempBuf[i * 2], BUFFER_SIZE_16 - strnlen_s(tempBuf, BUFFER_SIZE_16), "%02X", mfp[i]);
-        }
-        strcpy_s(g_xpubCache[g_createMultiTileView.currentSinger].mfp, sizeof(g_xpubCache[g_createMultiTileView.currentSinger].mfp), tempBuf);
-        for (int i = 0; i < g_addressSettingsNum; i++) {
-            if (g_addressSettings[i].type == g_chainType) {
-                strcpy_s(g_xpubCache[g_createMultiTileView.currentSinger].path, sizeof(g_xpubCache[g_createMultiTileView.currentSinger].path), g_addressSettings[i].multiPath);
-                break;
-            }
-        }
-        strcpy_s(g_xpubCache[g_createMultiTileView.currentSinger].xpub, sizeof(g_xpubCache[g_createMultiTileView.currentSinger].xpub), GetCurrentAccountPublicKey(g_chainType));
-        lv_label_set_text(g_custodianTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
+        UpdateCurrentWalletInfo();
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, StopCreateViewHandler, NULL);
         break;
     case CREATE_MULTI_SELECT_FORMAT:
         for (int i = 0; i < g_addressSettingsNum; i++) {
             if (g_addressSettings[i].type == g_chainType) {
-                lv_label_set_text(g_multiWalletInfo.format, g_addressSettings[i].multiPath);
+                lv_label_set_text(g_multiWalletInfo.format, g_addressSettings[i].subTitle);
                 break;
             }
         }
+        UpdateCurrentWalletInfo();
         lv_label_set_text(g_custodianTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
         break;
     case CREATE_MULTI_CONFIRM_CO_SIGNERS:
@@ -584,6 +595,7 @@ int8_t GuiCreateMultiNextTile(uint8_t index)
         GuiDeleteKeyboardWidget(g_keyboardWidget);
         lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
         g_keyboardWidget = NULL;
+        GetAndCreateMultiWallet();
         break;
     }
     g_createMultiTileView.currentTile++;
@@ -788,4 +800,44 @@ static void GuiShowKeyboardHandler(lv_event_t *e)
         SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
         SetKeyboardWidgetSig(g_keyboardWidget, &walletSetIndex);
     }
+}
+
+
+static void GetAndCreateMultiWallet(void)
+{
+    char *walletConfig = EXT_MALLOC(1024);
+    char *tempBuf = EXT_MALLOC(256);
+
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+
+    snprintf_s(tempBuf, 256, "# Keystone Multisig setup file (created on %02X%02X%02X%02X)\n#\n", mfp[0], mfp[1], mfp[2], mfp[3]);
+    int len = snprintf_s(walletConfig, 1024, "%s", tempBuf);
+    snprintf_s(tempBuf, 256, "Name: %s\n", lv_label_get_text(g_multiWalletInfo.walletName));
+    len += snprintf_s(walletConfig + len, 1024 - len, "%s", tempBuf);
+    snprintf_s(tempBuf, 256, "Policy: %d of %d\n", g_selectSliceTile.singers, g_selectSliceTile.coSingers);
+    len += snprintf_s(walletConfig + len, 1024 - len, "%s", tempBuf);
+    snprintf_s(tempBuf, 256, "Format: %s\n\n", lv_label_get_text(g_multiWalletInfo.format));
+    len += snprintf_s(walletConfig + len, 1024 - len, "%s", tempBuf);
+    for (int i = 0; i < g_selectSliceTile.coSingers; i++) {
+        snprintf_s(tempBuf, 256, "Derivation: %s\n", g_xpubCache[i].path);
+        len += snprintf_s(walletConfig + len, 1024 - len, "%s", tempBuf);
+        snprintf_s(tempBuf, 256, "%s: %s\n", g_xpubCache[i].mfp, g_xpubCache[i].xpub);
+        len += snprintf_s(walletConfig + len, 1024 - len, "%s", tempBuf);    
+    }
+
+    Ptr_Response_MultiSigWallet walletResult = import_multi_sig_wallet_by_file(walletConfig, mfp, 4, MainNet);
+    if (walletResult->error_code == 0) {
+        MultiSigWalletItem_t *wallet = AddMultisigWalletToCurrentAccount(walletResult->data, SecretCacheGetPassword());
+        char *verifyCode = wallet->verifyCode;
+        printf("verifyCode: %s\n", verifyCode);
+    }
+
+    struct UREncodeResult *result = export_multi_sig_wallet_by_ur(mfp, 4, walletConfig, MainNet);
+    if (result->error_code == 0) {
+        lv_qrcode_update(g_qrCode, result->data, strlen(result->data));
+    }
+    
+    EXT_FREE(tempBuf);
+    EXT_FREE(walletConfig);
 }

@@ -110,7 +110,7 @@ if "%build_simulator%"=="true" (
     )
 
     pushd %BUILD_SIMULATOR_FOLDER%
-    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Simulator ..
+    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Simulator %cmake_parm% ..
     make -j16
     popd
 ) else (

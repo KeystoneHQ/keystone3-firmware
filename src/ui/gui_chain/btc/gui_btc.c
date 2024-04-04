@@ -22,13 +22,11 @@
         g_parseMsgResult = NULL;                                       \
     }
 
-#ifndef COMPILE_SIMULATOR
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static TransactionParseResult_DisplayTx *g_parseResult = NULL;
 static TransactionParseResult_DisplayBtcMsg *g_parseMsgResult = NULL;
-#endif
 
 #ifndef BTC_ONLY
 typedef struct UtxoViewToChain {
@@ -504,11 +502,9 @@ void FreePsbtUxtoMemory(void)
 
 void FreeBtcMsgMemory(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_MSG_RESULT(g_parseMsgResult);
-#endif
 }
 
 static bool IsMultiSigTx(DisplayTx *data)

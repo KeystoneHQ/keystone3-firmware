@@ -20,10 +20,13 @@
 #include "keystore.h"
 #include "gui_multisig_import_wallet_success_widgets.h"
 #include "multi_sig_wallet_manager.h"
+#include "account_public_info.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
+#include "simulator_mock_define.h"
 #else
 #include "user_fatfs.h"
+#include "safe_str_lib.h"
 #endif
 #define MULTI_WALLET_DEFAULT_CO_SINGERS             (3)
 #define MULTI_WALLET_DEFAULT_SIGNERS                (2)

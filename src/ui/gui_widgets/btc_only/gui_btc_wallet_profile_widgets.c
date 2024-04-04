@@ -198,8 +198,8 @@ static void AddMultiSigWalletHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     MoreInfoTable_t moreInfoTable[] = {
-        {.name = _("wallet_profile_create_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_createMultiView},
-        {.name = _("wallet_profile_import_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_createMultiView},
+        {.name = _("wallet_profile_create_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_createMultiSigWalletView},
+        {.name = _("wallet_profile_import_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_importMultiSigWalletInfoView},
     };
 
     if (code == LV_EVENT_CLICKED) {

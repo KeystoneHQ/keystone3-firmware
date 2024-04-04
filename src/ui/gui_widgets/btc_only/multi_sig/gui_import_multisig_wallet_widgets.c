@@ -1,4 +1,4 @@
-#include "gui_multisig_import_wallet_success_widgets.h"
+#include "gui_import_multisig_wallet_widgets.h"
 #include "gui_fullscreen_mode.h"
 #include "gui_page.h"
 #include "gui_obj.h"
@@ -171,9 +171,10 @@ static void GuiImportWalletSuccessNVSBarInit()
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SDCARD, GuiSDCardHandler, NULL);
 }
 
-void GuiImportMultisigWalletSuccessWidgetsInit(char *verifyCode)
+void GuiImportMultisigWalletWidgetsInit(char *walletConfig)
 {
-    g_wallet = GetMultisigWalletByVerifyCode(verifyCode);
+    // Ptr_Response_MultiSigWallet walletResult = GuiSetMultisigImportWalletDataBySDCard(walletConfig);
+    g_wallet = GetMultisigWalletByVerifyCode(walletConfig);
     if (g_wallet == NULL) {
         // TODO: Throw error;
         GuiCLoseCurrentWorkingView();
@@ -263,7 +264,7 @@ static void SetEgContent()
     lv_label_set_text(g_eg, eg);
 }
 
-void GuiImportMultisigWalletSuccessWidgetsDeInit()
+void GuiImportMultisigWalletWidgetsDeInit()
 {
     GUI_DEL_OBJ(g_cont)
     if (g_pageWidget != NULL) {
@@ -272,13 +273,10 @@ void GuiImportMultisigWalletSuccessWidgetsDeInit()
     }
 }
 
-void GuiImportMultisigWalletSuccessWidgetsRefresh()
+void GuiImportMultisigWalletWidgetsRefresh()
 {
 }
 
-void GuiImportMultisigWalletSuccessWidgetsRestart()
-{
-}
 
 static void ModelGenerateAddress(char *address)
 {

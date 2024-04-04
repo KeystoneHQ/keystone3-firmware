@@ -11,7 +11,7 @@
 #include "err_code.h"
 #include "firmware_update.h"
 #include "gui_page.h"
-#include "gui_multi_sig_import_wallet_info_widgets.h"
+#include "gui_import_multisig_wallet_info_widgets.h"
 #include "librust_c.h"
 #include "keystore.h"
 #include "fingerprint_process.h"
@@ -204,7 +204,7 @@ void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
 
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     GuiCLoseCurrentWorkingView();
-    GuiFrameOpenViewWithParam(&g_multisigImportWalletSuccessView, verifyCode, strnlen_s(verifyCode, MAX_VERIFY_CODE_LENGTH));
+    GuiFrameOpenViewWithParam(&g_importMultiSigWalletView, verifyCode, strnlen_s(verifyCode, MAX_VERIFY_CODE_LENGTH));
 }
 
 static void GuiImportWalletInfoNVSBarInit()

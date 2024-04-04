@@ -1,10 +1,10 @@
 #include "gui.h"
 #include "gui_views.h"
-#include "gui_create_multi_widgets.h"
+#include "gui_create_multisig_wallet_widgets.h"
 
 int32_t GuiCreateMultiViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
-    GUI_ASSERT(g_createMultiView.isActive);
+    GUI_ASSERT(g_createMultiSigWalletView.isActive);
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
@@ -31,7 +31,7 @@ int32_t GuiCreateMultiViewEventProcess(void *self, uint16_t usEvent, void *param
     return SUCCESS_CODE;
 }
 
-GUI_VIEW g_createMultiView = {
+GUI_VIEW g_createMultiSigWalletView = {
     .id = SCREEN_CREATE_MULTI,
     .previous = NULL,
     .isActive = false,

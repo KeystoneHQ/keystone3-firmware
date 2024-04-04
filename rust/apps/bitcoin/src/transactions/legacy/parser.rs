@@ -41,7 +41,8 @@ impl TxData {
             amount: Self::format_amount(input.value, &Network::from_str(network)?),
             value: input.value,
             path: Some(path.to_string()),
-            multi_sig_status: None,
+            is_multisig: false,
+            sign_status: (0, 1),
         })
     }
     fn parse_raw_tx_output(&self, output: &TxOut) -> Result<ParsedOutput> {

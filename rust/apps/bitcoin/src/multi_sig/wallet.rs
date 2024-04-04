@@ -291,7 +291,7 @@ fn process_xpub_and_xfp(
     value: &str,
 ) -> Result<(), BitcoinError> {
     if is_valid_xfp(label) {
-        if is_valid_xpub(value) {
+        if is_valid_xyzpub(value) {
             wallet.xpub_items.push(MultiSigXPubItem {
                 network: detect_network(value),
                 xfp: label.to_string(),
@@ -326,8 +326,13 @@ fn is_valid_xfp(xfp: &str) -> bool {
     true
 }
 
-fn is_valid_xpub(xpub: &str) -> bool {
-    Xpub::from_str(xpub).is_ok()
+fn is_valid_xyzpub(xpub: &str) -> bool {
+    let result = xyzpub::convert_version(xpub, &Version::Xpub);
+
+    match result {
+        Ok(xpub) => Xpub::from_str(&xpub).is_ok(),
+        Err(e) => false,
+    }
 }
 
 fn detect_network(xpub: &str) -> Network {

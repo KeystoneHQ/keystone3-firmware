@@ -1,4 +1,5 @@
 #![no_std]
+#![feature(vec_into_raw_parts)]
 
 extern crate alloc;
 

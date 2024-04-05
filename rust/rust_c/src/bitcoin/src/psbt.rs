@@ -10,7 +10,7 @@ use app_bitcoin::parsed_tx::ParseContext;
 use app_bitcoin::{self, parse_psbt_sign_status, PsbtSignStatus};
 use common_rust_c::errors::RustCError;
 use common_rust_c::extract_ptr_with_type;
-use common_rust_c::ffi::CSliceFFI;
+use common_rust_c::ffi::{CSliceFFI, VecFFI};
 use common_rust_c::structs::{
     ExtendedPublicKey, Response, TransactionCheckResult, TransactionParseResult,
 };
@@ -101,6 +101,8 @@ pub extern "C" fn btc_sign_multisig_psbt(
             ur_result: UREncodeResult::from(RustCError::InvalidMasterFingerprint).c_ptr(),
             sign_status: null_mut(),
             is_completed: false,
+            psbt_hex: null_mut(),
+            psbt_len: 0,
         }
         .c_ptr();
     }
@@ -116,6 +118,8 @@ pub extern "C" fn btc_sign_multisig_psbt(
                 ur_result: UREncodeResult::from(e).c_ptr(),
                 sign_status: null_mut(),
                 is_completed: false,
+                psbt_hex: null_mut(),
+                psbt_len: 0,
             }
             .c_ptr();
         }
@@ -130,24 +134,33 @@ pub extern "C" fn btc_sign_multisig_psbt(
     match result.map(|v| {
         let buf = v.serialize();
         let sign_state = parse_psbt_sign_status(v);
-        CryptoPSBT::new(buf).try_into().map(|v| (sign_state, v))
+        CryptoPSBT::new(buf.clone())
+            .try_into()
+            .map(|v| (sign_state, v, buf))
     }) {
         Ok(v) => match v {
-            Ok((sign_state, data)) => MultisigSignResult {
-                ur_result: UREncodeResult::encode(
-                    data,
-                    CryptoPSBT::get_registry_type().get_type(),
-                    FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
-                )
-                .c_ptr(),
-                sign_status: convert_c_char(sign_state.sign_status.unwrap_or("".to_string())),
-                is_completed: sign_state.is_completed,
+            Ok((sign_state, data, psbt_hex)) => {
+                let (ptr, size, _cap) = psbt_hex.into_raw_parts();
+                MultisigSignResult {
+                    ur_result: UREncodeResult::encode(
+                        data,
+                        CryptoPSBT::get_registry_type().get_type(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                    )
+                    .c_ptr(),
+                    sign_status: convert_c_char(sign_state.sign_status.unwrap_or("".to_string())),
+                    is_completed: sign_state.is_completed,
+                    psbt_hex: ptr,
+                    psbt_len: size as u32,
+                }
+                .c_ptr()
             }
-            .c_ptr(),
             Err(e) => MultisigSignResult {
                 ur_result: UREncodeResult::from(e).c_ptr(),
                 sign_status: null_mut(),
                 is_completed: false,
+                psbt_hex: null_mut(),
+                psbt_len: 0,
             }
             .c_ptr(),
         },
@@ -155,6 +168,8 @@ pub extern "C" fn btc_sign_multisig_psbt(
             ur_result: UREncodeResult::from(e).c_ptr(),
             sign_status: null_mut(),
             is_completed: false,
+            psbt_hex: null_mut(),
+            psbt_len: 0,
         }
         .c_ptr(),
     }

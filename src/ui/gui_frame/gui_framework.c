@@ -74,9 +74,9 @@ static GUI_VIEW *g_viewsTable[] = {
     &g_transactionSignatureView,
     &g_diceRollsView,
 #ifdef BTC_ONLY
-    &g_multisigImportWalletInfoView,
-    &g_multisigImportWalletSuccessView,
-    &g_createMultiView
+    &g_importMultisigWalletInfoView,
+    &g_importMultisigWalletView,
+    &g_createMultisigWalletView
 #endif
 };
 

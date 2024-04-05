@@ -104,7 +104,7 @@ static void SwitchTestnetHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         bool en = lv_obj_has_state(g_networkSwitch, LV_STATE_CHECKED);
         SetIsTestNet(!en);
-        GuiApiEmitSignal(SIG_STATUS_BAR_TEST_NET, NULL, 0);        
+        GuiApiEmitSignal(SIG_STATUS_BAR_TEST_NET, NULL, 0);
         if (en) {
             lv_obj_clear_state(g_networkSwitch, LV_STATE_CHECKED);
         } else {
@@ -198,8 +198,8 @@ static void AddMultiSigWalletHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     MoreInfoTable_t moreInfoTable[] = {
-        {.name = _("wallet_profile_create_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_createMultiView},
-        {.name = _("wallet_profile_import_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_createMultiView},
+        {.name = _("wallet_profile_create_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_createMultisigWalletView},
+        {.name = _("wallet_profile_import_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_importMultisigWalletInfoView},
     };
 
     if (code == LV_EVENT_CLICKED) {

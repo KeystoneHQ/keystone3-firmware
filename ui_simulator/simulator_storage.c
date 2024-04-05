@@ -371,12 +371,10 @@ int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
     }
 
     uint8_t account = SE_GetAccountIndexFromPage(page);
-    printf("account = %d\n", account);
     OperateStorageDataFunc func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + account * 0x1000, true);
     if (func) {
         func(SIMULATOR_USER1_SECRET_ADDR + account * 0x1000, buffer, JSON_MAX_LEN);
     }
-    printf("buffer1111 = %s\n", buffer);
 
     cJSON *rootJson = cJSON_Parse(buffer);
     if (page == account * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV) {

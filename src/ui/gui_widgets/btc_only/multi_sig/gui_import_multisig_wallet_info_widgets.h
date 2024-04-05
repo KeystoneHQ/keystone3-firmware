@@ -4,10 +4,10 @@
 void GuiSetMultisigImportWalletDataByQRCode(URParseResult *urResult, URParseMultiResult *multiResult, bool multi);
 void GuiSetMultisigImportWalletDataBySDCard(char* walletConfig);
 
-void GuiImportMultisigWalletInfoWidgetsInit();
-void GuiImportMultisigWalletInfoWidgetsDeInit();
-void GuiImportMultisigWalletInfoWidgetsRefresh();
-void GuiImportMultisigWalletInfoWidgetsRestart();
+void GuiImportMultisigWalletInfoWidgetsInit(void);
+void GuiImportMultisigWalletInfoWidgetsDeInit(void);
+void GuiImportMultisigWalletInfoWidgetsRefresh(void);
+void GuiImportMultisigWalletInfoWidgetsRestart(void);
 void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void);
 
 #endif

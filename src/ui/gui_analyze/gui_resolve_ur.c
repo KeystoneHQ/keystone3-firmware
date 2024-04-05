@@ -11,7 +11,7 @@
 #ifndef BTC_ONLY
 #include "gui_key_derivation_request_widgets.h"
 #else
-#include "gui_multi_sig_import_wallet_info_widgets.h"
+#include "gui_import_multisig_wallet_info_widgets.h"
 #endif
 #include <gui_views.h>
 

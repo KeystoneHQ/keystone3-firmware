@@ -198,7 +198,7 @@ extern GUI_VIEW g_importMultisigWalletInfoView;
 extern GUI_VIEW g_importMultisigWalletView;
 extern GUI_VIEW g_createMultisigWalletView;
 extern GUI_VIEW g_manageMultisigWalletView;
-
+#endif
 
 void UnHandler(lv_event_t *e);
 void OpenImportWalletHandler(lv_event_t *e);

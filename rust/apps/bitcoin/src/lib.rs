@@ -195,7 +195,6 @@ mod test {
                 fee_sat: $fee_sat.to_string(),
                 network: $network.to_string(),
                 sign_status: Some("Unsigned".to_string()),
-                is_multisig: false,
             }
         };
     }

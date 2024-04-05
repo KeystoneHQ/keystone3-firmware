@@ -84,6 +84,15 @@ static TILEVIEW_INDEX_ENUM g_tileviewIndex;
 static uint8_t g_btcPathType[3] = {0};
 static uint8_t g_tmpSelectIndex = 0;
 
+void OpenExportViewHandler(lv_event_t *e)
+{
+    HOME_WALLET_CARD_ENUM chainCard = HOME_WALLET_CARD_BTC;
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        GuiFrameOpenViewWithParam(&g_exportPubkeyView, &chainCard, sizeof(chainCard));
+    }
+}
+
 static void GuiRefreshTileview()
 {
     switch (g_tileviewIndex) {

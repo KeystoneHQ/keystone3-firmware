@@ -105,7 +105,6 @@ static void SelectCheckBoxHandler(lv_event_t* e);
 static void GuiCreateNameWalletWidget(lv_obj_t *parent);
 static void GuiCreateAddressSettingsWidget(lv_obj_t *parent);
 static void OpenFileNextTileHandler(lv_event_t *e);
-lv_obj_t* CreateUTXOReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h);
 static void SelectFormatHandler(lv_event_t *e);
 
 static const AddressSettingsItem_t g_mainNetAddressSettings[] = {

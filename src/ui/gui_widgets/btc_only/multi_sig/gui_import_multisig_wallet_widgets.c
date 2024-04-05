@@ -57,7 +57,6 @@ static void GuiShowSDCardExport();
 static void GuiShowSDCardExportSuccess();
 static void GuiShowSDCardExportFailed();
 void GuiSetMultisigImportWalletDataBySDCard(char *walletConfig);
-lv_obj_t* CreateUTXOReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h);
 static void GuiMultiShowWalletInfoWidget(lv_obj_t *parent);
 static void GuiMultiCreateSuccessWidget(lv_obj_t *parent);
 static void ImportMultisigGoToHomeViewHandler(lv_event_t *e);

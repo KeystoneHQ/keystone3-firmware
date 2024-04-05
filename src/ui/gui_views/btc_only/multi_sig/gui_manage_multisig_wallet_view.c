@@ -4,7 +4,7 @@
 
 int32_t GuiManageMultiViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
-    GUI_ASSERT(g_createMultisigWalletView.isActive);
+    GUI_ASSERT(g_manageMultisigWalletView.isActive);
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:

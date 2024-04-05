@@ -82,6 +82,21 @@ int GetCurrentAccountMultisigWalletNum(void)
     return getLength();
 }
 
+MultiSigWalletItem_t *GetCurrenMultisigWalletByIndex(int index)
+{
+    ASSERT_WALLET_MANAGER_EXIST
+    MultiSigWalletList_t *list = g_multisigWalletManager->list;
+    MultiSigWalletNode_t *temp = list->head;
+
+    while (temp != NULL) {
+        if (temp->value->order == index) {
+            return temp->value;
+        }
+        temp = temp->next;
+    }
+    return NULL;
+}
+
 static void DestoryMultisigWalletManager(MultiSigWalletManager_t *manager)
 {
     if (manager == NULL) {

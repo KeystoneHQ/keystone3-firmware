@@ -16,6 +16,8 @@
 #include "keystore.h"
 #include "multi_sig_wallet_manager.h"
 #include "account_public_info.h"
+#include "gui_export_pubkey_widgets.h"
+#include <stdio.h>
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #include "simulator_mock_define.h"
@@ -23,85 +25,43 @@
 #include "user_fatfs.h"
 #include "safe_str_lib.h"
 #endif
-#define MULTI_WALLET_DEFAULT_CO_SINGERS             (3)
-#define MULTI_WALLET_DEFAULT_SIGNERS                (2)
+#define MULTI_SIG_WALLET_MAX_NUM               (3)
 
 typedef enum {
-    CREATE_MULTI_SET_NAME = 0,
-    CREATE_MULTI_SELECT_SLICE,
-    CREATE_MULTI_SELECT_FORMAT,
-    CREATE_MULTI_CONFIRM_CO_SIGNERS,
-    CREATE_MULTI_SELECT_SDCARD_XPUB,
-    CREATE_MULTI_IMPORT_SDCARD_XPUB,
+    MULTI_MULTI_SIG_HOME = 0,
+    MULTI_MULTI_SIG_DETAIL,
+    MULTI_MULTI_SIG_CO_SIGNERS_DETAIL,
 
-    CREATE_MULTI_BUTT,
-} CREATE_MULTI_ENUM;
+    MULTI_MULTI_SIG_BUTTON,
+} MULTI_MULTI_SIG_ENUM;
 
-
-typedef struct CreateMultiWidget {
+typedef struct {
     uint8_t currentTile;
-    uint8_t currentSinger;
     lv_obj_t *tileView;
-    lv_obj_t *selectSlice;
-    lv_obj_t *stepCont;
-    lv_obj_t *stepBtn;
-} CreateMultiWidget_t;
+    lv_obj_t *homeTile;
+    lv_obj_t *showCoSingersTile;
+} ManageMultisigWidget_t;
 
 typedef struct {
-    lv_obj_t *cont;
-    uint8_t coSingers;
-    uint8_t singers;
-    lv_obj_t *stepLabel;
-    lv_obj_t *noticeLabel;
-    lv_obj_t *coSingersKb;
-    lv_obj_t *singersKb;
-} SelectSliceWidget_t;
+    lv_obj_t *walletName;
+    lv_obj_t *policy;
+} MultisigWidgetItem_t;
 
-typedef struct {
-    lv_obj_t *titleLabel;
-    lv_obj_t *noticeLabel;
-    lv_obj_t *xpubLabel;
-} CustodianWidget_t;
-
-typedef struct {
-    lv_obj_t *mfpLabel;
-    lv_obj_t *xpubLabel;
-    lv_obj_t *pathLabel;
-} XpubWidget_t;
-
-typedef struct {
-    char mfp[9];
-    char xpub[BUFFER_SIZE_128 - 9];
-    char path[16];
-} XpubWidgetCache_t;
-
-
-typedef struct {
-    char *title;
-    char *subTitle;
-    char *multiPath;
-    ChainType type;
-} AddressSettingsItem_t;
-
-static CreateMultiWidget_t g_createMultiTileView;
-static SelectSliceWidget_t g_selectSliceTile;
-static CustodianWidget_t g_custodianTile;
-static XpubWidget_t g_xPubTile;
-static XpubWidgetCache_t *g_xpubCache;
-static lv_obj_t *g_formatCheckBox[3];
-static KeyBoard_t *g_nameWalletKb = NULL;
+static ManageMultisigWidget_t g_manageMultisig;
+static MultisigWidgetItem_t g_multisigItem;
 static lv_obj_t *g_noticeWindow = NULL;
-static lv_obj_t *g_importXpubBtn = NULL;
 static PageWidget_t *g_pageWidget;
-static ChainType g_chainType = XPUB_TYPE_BTC_MULTI_SIG_P2SH;
-static void GetAndCreateMultiWallet(void);
-static char g_fileList[10][64] = {0};
+static MultiSigWalletItem_t *g_walletItem;
+static MultiSigWallet *g_multiSigWallet = NULL;
 
-static void SelectCheckBoxHandler(lv_event_t* e);
-static void GuiCreateNameWalletWidget(lv_obj_t *parent);
 static void OpenFileNextTileHandler(lv_event_t *e);
-lv_obj_t* CreateUTXOReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h);
 static void SelectFormatHandler(lv_event_t *e);
+static void ReloadAndUpdateMultisigConfig(void);
+static void CreateMultiSigWalletWidget(lv_obj_t *parent);
+static void ManageMultiSigWalletHandler(lv_event_t *e);
+static void CreateMultiSigWalletDetailWidget(lv_obj_t *parent);
+static void CreateCoSignerDetailWidget(lv_obj_t *parent);
+static void ReloadAndUpdateMultisigItem(void);
 
 static void ImportMultiXpubHandler(lv_event_t *e)
 {
@@ -140,59 +100,10 @@ static void StopCreateViewHandler(lv_event_t *e)
     }
 }
 
-static void NumSelectSliceHandler(lv_event_t * e)
-{
-}
+
 
 static void GuiMultiSelectSliceWidget(lv_obj_t *parent)
 {
-    lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
-    lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
-    lv_obj_t *label = GuiCreateNoticeLabel(parent, _("create_multi_wallet_co_signers"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
-
-    label = GuiCreateNoticeLabel(parent, _("create_multi_wallet_signers"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 294);
-
-    label = GuiCreateNoticeLabel(parent, _("sdcard_format_confirm"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 576 - GUI_MAIN_AREA_OFFSET);
-
-    label = GuiCreateIllustrateLabel(parent, "Native Segwit");
-    lv_obj_t *img = GuiCreateImg(parent, &imgArrowRight);
-
-    GuiButton_t table[] = {
-        {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {24, 0},},
-        {.obj = img, .align = LV_ALIGN_RIGHT_MID, .position = {-18, 0},},
-    };
-    lv_obj_t *button = GuiCreateButton(parent, 408, 60, table, NUMBER_OF_ARRAYS(table),
-                                       SelectFormatHandler, NULL);
-    lv_obj_set_style_radius(button, 12, LV_PART_MAIN);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 36, 474);
-
-    g_selectSliceTile.coSingers = MULTI_WALLET_DEFAULT_CO_SINGERS;
-    g_selectSliceTile.singers = MULTI_WALLET_DEFAULT_SIGNERS;
-
-    lv_obj_t *btnm = GuiCreateNumKeyboard(parent, NumSelectSliceHandler, NUM_KEYBOARD_SLICE, NULL);
-    lv_obj_align(btnm, LV_ALIGN_DEFAULT, 36, 198 - GUI_MAIN_AREA_OFFSET);
-    lv_btnmatrix_set_selected_btn(btnm, g_selectSliceTile.coSingers - 2);
-    g_selectSliceTile.coSingersKb = btnm;
-
-    btnm = GuiCreateNumKeyboard(parent, NumSelectSliceHandler, NUM_KEYBOARD_SLICE, g_selectSliceTile.singersKb);
-    lv_obj_align(btnm, LV_ALIGN_DEFAULT, 36, 336);
-    lv_btnmatrix_set_selected_btn(btnm, g_selectSliceTile.singers - 2);
-    g_selectSliceTile.singersKb = btnm;
-    GuiUpdateSsbKeyBoard(g_selectSliceTile.singersKb, g_selectSliceTile.coSingers);
-
-    label = GuiCreateTextLabel(g_createMultiTileView.stepCont, "3 of 5");
-    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 24);
-    lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
-    g_selectSliceTile.stepLabel = label;
-
-    label = GuiCreateNoticeLabel(g_createMultiTileView.stepCont, _("create_multi_wallet_co_sign_policy"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 60);
-    g_selectSliceTile.noticeLabel = label;
-    lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
 }
 
 static void GuiMultiSelectFormatWidget(lv_obj_t *parent)
@@ -204,351 +115,93 @@ static void GuiMultiSelectFormatWidget(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 0);
 }
 
-static void GuiMultiConfirmSignersWidget(lv_obj_t *parent)
-{
-    char tempBuff[BUFFER_SIZE_32] = {0};
-    snprintf(tempBuff, sizeof(tempBuff), "%s %d/%d", _("create_multi_wallet_co_signers"), 1, g_selectSliceTile.coSingers);
-    lv_obj_t *label = GuiCreateTitleLabel(parent, tempBuff);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
-    g_custodianTile.titleLabel = label;
-
-    label = GuiCreateIllustrateLabel(parent, _("create_multi_wallet_co_signers_desc"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
-    g_custodianTile.noticeLabel = label;
-
-    lv_obj_t *cont = GuiCreateContainerWithParent(parent, 408, 296);
-    lv_obj_set_style_bg_color(cont, WHITE_COLOR_OPA12, LV_PART_MAIN);
-    lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 36, 382 - GUI_MAIN_AREA_OFFSET);
-
-    label = GuiCreateNoticeLabel(cont, _("create_multi_wallet_multi_xpub"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 24);
-
-    label = GuiCreateIllustrateLabel(cont, "");
-    lv_obj_set_width(label, 360);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 70);
-    g_custodianTile.xpubLabel = label;
-
-    lv_obj_t *button = GuiCreateImgLabelAdaptButton(cont, _("Import"), &imgImport, ImportMultiXpubHandler, NULL);
-    lv_obj_set_style_text_color(lv_obj_get_child(button, 1), ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_align(button, LV_ALIGN_BOTTOM_LEFT, 12, -12);
-    lv_obj_set_size(button, 384, 56);
-    lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);
-    g_importXpubBtn = button;
-}
-
-static void GuiMultiImportSdCardListWidget(lv_obj_t *parent)
-{
-    GuiAddObjFlag(parent, LV_OBJ_FLAG_SCROLLABLE);
-    char *buffer = EXT_MALLOC(1024 * 5);
-    uint32_t number = 0;
-    int i = 0;
-#ifdef COMPILE_SIMULATOR
-    FatfsGetFileName("C:/assets/sd", buffer, &number, 1024 * 5);
-#else
-    FatfsGetFileName("0:", buffer, &number, 1024 * 5);
-#endif
-    char *token = strtok(buffer, " ");
-    while (token != NULL) {
-        strncpy(g_fileList[i], token, sizeof(g_fileList[i]));
-        token = strtok(NULL, " ");
-        lv_obj_t *btn = GuiCreateSelectButton(parent, g_fileList[i], &imgArrowRight, OpenFileNextTileHandler, g_fileList[i], false);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 84 * i);
-        i++;
-        if (i == 10) {
-            break;
-        }
-    }
-    EXT_FREE(buffer);
-}
-
-static void GuiMultiImportSdCardXpubWidget(lv_obj_t *parent)
-{
-    lv_obj_t *cont = GuiCreateContainerWithParent(parent, 408, 220);
-    lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(cont, WHITE_COLOR_OPA12, LV_PART_MAIN);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 36, 0);
-
-    lv_obj_t *label = GuiCreateNoticeLabel(cont, "");
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
-    g_xPubTile.mfpLabel = label;
-
-    label = GuiCreateIllustrateLabel(cont, "");
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 50);
-    lv_obj_set_width(label, 360);
-    g_xPubTile.xpubLabel = label;
-
-    label = GuiCreateNoticeLabel(cont, "");
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 174);
-    g_xPubTile.pathLabel = label;
-
-    lv_obj_t *btn = GuiCreateBtn(parent, _("Import"));
-    lv_obj_set_size(btn, 408, 66);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
-    lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, NULL);
-}
-
-static void GuiCreateMultiStepCont(void)
-{
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 114);
-    lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
-    g_createMultiTileView.stepCont = cont;
-    lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
-
-    lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_CHECK);
-    lv_obj_align(btn, LV_ALIGN_DEFAULT, 348, 24);
-    lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, NULL);
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_HIDDEN);
-    g_createMultiTileView.stepBtn = btn;
-}
-
 void GuiManageMultisigWalletInit(void)
 {
     g_pageWidget = CreatePageWidget();
     lv_obj_t *tileView = GuiCreateTileView(g_pageWidget->contentZone);
-    lv_obj_t *tile = lv_tileview_add_tile(tileView, CREATE_MULTI_SET_NAME, 0, LV_DIR_HOR);
-    GuiCreateNameWalletWidget(tile);
+    lv_obj_t *tile = lv_tileview_add_tile(tileView, MULTI_MULTI_SIG_HOME, 0, LV_DIR_HOR);
+    g_manageMultisig.homeTile = tile;
 
-    GuiCreateMultiStepCont();
+    tile = lv_tileview_add_tile(tileView, MULTI_MULTI_SIG_DETAIL, 0, LV_DIR_HOR);
+    CreateMultiSigWalletDetailWidget(tile);
 
-    tile = lv_tileview_add_tile(tileView, CREATE_MULTI_SELECT_SLICE, 0, LV_DIR_HOR);
-    GuiMultiSelectSliceWidget(tile);
+    tile = lv_tileview_add_tile(tileView, MULTI_MULTI_SIG_CO_SIGNERS_DETAIL, 0, LV_DIR_HOR);
+    g_manageMultisig.showCoSingersTile = tile;
+   
+    g_manageMultisig.currentTile = MULTI_MULTI_SIG_HOME;
+    g_manageMultisig.tileView = tileView;
 
-    tile = lv_tileview_add_tile(tileView, CREATE_MULTI_SELECT_FORMAT, 0, LV_DIR_HOR);
-    GuiMultiSelectFormatWidget(tile);
-
-    tile = lv_tileview_add_tile(tileView, CREATE_MULTI_CONFIRM_CO_SIGNERS, 0, LV_DIR_HOR);
-    GuiMultiConfirmSignersWidget(tile);
-
-    tile = lv_tileview_add_tile(tileView, CREATE_MULTI_SELECT_SDCARD_XPUB, 0, LV_DIR_HOR);
-    GuiMultiImportSdCardListWidget(tile);
-
-    tile = lv_tileview_add_tile(tileView, CREATE_MULTI_IMPORT_SDCARD_XPUB, 0, LV_DIR_HOR);
-    GuiMultiImportSdCardXpubWidget(tile);
-
-    g_createMultiTileView.currentTile = CREATE_MULTI_SET_NAME;
-    g_createMultiTileView.tileView = tileView;
-
-    lv_obj_set_tile_id(g_createMultiTileView.tileView, 0, 0, LV_ANIM_OFF);
+    lv_obj_set_tile_id(g_manageMultisig.tileView, 0, 0, LV_ANIM_OFF);
 }
 
-// void UpdateCurrentWalletInfo(void)
-// {
-//     char tempBuf[BUFFER_SIZE_16] = "";
-//     uint8_t mfp[4];
-//     GetMasterFingerPrint(mfp);
-//     for (int i = 0; i < sizeof(mfp); i++) {
-//         snprintf_s(&tempBuf[i * 2], BUFFER_SIZE_16 - strnlen_s(tempBuf, BUFFER_SIZE_16), "%02X", mfp[i]);
-//     }
-//     strcpy_s(g_xpubCache[g_createMultiTileView.currentSinger].mfp, sizeof(g_xpubCache[g_createMultiTileView.currentSinger].mfp), tempBuf);
-//     strcpy_s(g_xpubCache[g_createMultiTileView.currentSinger].xpub, sizeof(g_xpubCache[g_createMultiTileView.currentSinger].xpub), GetCurrentAccountPublicKey(g_chainType));
-//     lv_label_set_text(g_custodianTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
-// }
 
 static void UpdateCustodianTileLabel(void)
 {
-    char tempBuff[BUFFER_SIZE_64];
-    snprintf(tempBuff, sizeof(tempBuff), "%s %d/%d", _("create_multi_wallet_co_signers"), g_createMultiTileView.currentSinger + 1, g_selectSliceTile.coSingers);
-    lv_label_set_text(g_custodianTile.titleLabel, tempBuff);
-    lv_label_set_text_fmt(g_custodianTile.noticeLabel, _("create_multi_wallet_co_signers_desc_fmt"), g_createMultiTileView.currentSinger + 1);
-    lv_label_set_text(g_custodianTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
 }
 
 int8_t GuiManageMultisigWalletNextTile(uint8_t index)
 {
-    switch (g_createMultiTileView.currentTile) {
-    case CREATE_MULTI_SET_NAME:
-        lv_obj_clear_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
+    switch (g_manageMultisig.currentTile) {
+    case MULTI_MULTI_SIG_HOME:
+        ReloadAndUpdateMultisigItem();
+        lv_label_set_text(g_multisigItem.walletName, g_walletItem->name);
+        lv_label_set_text(g_multisigItem.policy, g_multiSigWallet->policy);
         break;
-    case CREATE_MULTI_SELECT_SLICE:
-        if (index == 0xFF) {
-            g_createMultiTileView.currentTile++;
-        }
-        lv_label_set_text_fmt(g_selectSliceTile.stepLabel, "%d of %d", g_selectSliceTile.singers, g_selectSliceTile.coSingers);
-        g_xpubCache = SRAM_MALLOC(sizeof(XpubWidgetCache_t) * g_selectSliceTile.coSingers);
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, StopCreateViewHandler, NULL);
+    case MULTI_MULTI_SIG_DETAIL:
+        CreateCoSignerDetailWidget(g_manageMultisig.showCoSingersTile);
         break;
-    case CREATE_MULTI_SELECT_FORMAT:
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        lv_label_set_text(g_custodianTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
-        break;
-    case CREATE_MULTI_CONFIRM_CO_SIGNERS:
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
-        if (g_createMultiTileView.currentSinger == g_selectSliceTile.coSingers - 1) {
-            lv_obj_clear_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_HIDDEN);
-            GetAndCreateMultiWallet();
-            return SUCCESS_CODE;
-        } else if (g_createMultiTileView.currentSinger == 0) {
-            GuiClearObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
-            lv_obj_clear_flag(g_importXpubBtn, LV_OBJ_FLAG_HIDDEN);
-        }
-        g_createMultiTileView.currentSinger++;
-        UpdateCustodianTileLabel();
-        lv_label_set_text(g_custodianTile.xpubLabel, "");
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("create_multi_wallet_import_xpub_sdcard_title"));
-        break;
-    case CREATE_MULTI_SELECT_SDCARD_XPUB:
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("create_multi_wallet_import_xpub_title"));
-        lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
-        lv_label_set_text(g_xPubTile.pathLabel, g_xpubCache[g_createMultiTileView.currentSinger].path);
-        lv_label_set_text(g_xPubTile.mfpLabel, g_xpubCache[g_createMultiTileView.currentSinger].mfp);
-        lv_label_set_text(g_xPubTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
-        break;
-    case CREATE_MULTI_IMPORT_SDCARD_XPUB:
-        lv_label_set_text(g_custodianTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
-        lv_obj_clear_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
-        g_createMultiTileView.currentTile = CREATE_MULTI_SELECT_FORMAT;
-        if (g_createMultiTileView.currentSinger == g_selectSliceTile.coSingers - 1) {
-            lv_obj_add_flag(g_importXpubBtn, LV_OBJ_FLAG_HIDDEN);
-            GuiAddObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
-        } else {
-            GuiClearObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
-        }
+    case MULTI_MULTI_SIG_CO_SIGNERS_DETAIL:
         break;
     }
-    g_createMultiTileView.currentTile++;
-    lv_obj_set_tile_id(g_createMultiTileView.tileView, g_createMultiTileView.currentTile, 0, LV_ANIM_OFF);
+    g_manageMultisig.currentTile++;
+    lv_obj_set_tile_id(g_manageMultisig.tileView, g_manageMultisig.currentTile, 0, LV_ANIM_OFF);
     return SUCCESS_CODE;
 }
 
 int8_t GuiManageMultiWalletPrevTile(void)
 {
-    switch (g_createMultiTileView.currentTile) {
-    case CREATE_MULTI_SET_NAME:
+    switch (g_manageMultisig.currentTile) {
+    case MULTI_MULTI_SIG_HOME:
         GuiCLoseCurrentWorkingView();
         break;
-    case CREATE_MULTI_SELECT_SLICE:
-        lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
-        break;
-    case CREATE_MULTI_SELECT_FORMAT:
-        lv_obj_clear_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
-        break;
-    case CREATE_MULTI_CONFIRM_CO_SIGNERS:
-        --g_createMultiTileView.currentSinger;
-        UpdateCustodianTileLabel();
-        if (g_createMultiTileView.currentSinger == 0) {
-            SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, StopCreateViewHandler, NULL);
-        } else {
-            lv_obj_set_tile_id(g_createMultiTileView.tileView, CREATE_MULTI_CONFIRM_CO_SIGNERS, 0, LV_ANIM_OFF);
-        }
-        return SUCCESS_CODE;
-    case CREATE_MULTI_SELECT_SDCARD_XPUB:
+    case MULTI_MULTI_SIG_DETAIL:
         break;
     }
-
-    g_createMultiTileView.currentTile--;
-    lv_obj_set_tile_id(g_createMultiTileView.tileView, g_createMultiTileView.currentTile, 0, LV_ANIM_OFF);
+    g_manageMultisig.currentTile--;
+    lv_obj_set_tile_id(g_manageMultisig.tileView, g_manageMultisig.currentTile, 0, LV_ANIM_OFF);
     return SUCCESS_CODE;
 }
 
 void GuiManageMultisigWalletDeInit(void)
 {
     GUI_DEL_OBJ(g_noticeWindow)
-    // GuiDeleteKeyBoard(g_nameWalletKb);
-    // g_nameWalletKb = NULL;
-    g_selectSliceTile.coSingers = MULTI_WALLET_DEFAULT_CO_SINGERS;
-    g_selectSliceTile.singers = MULTI_WALLET_DEFAULT_SIGNERS;
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
-    GUI_DEL_OBJ(g_createMultiTileView.stepCont)
+
+    if (g_multiSigWallet != NULL) {
+        free_MultiSigWallet(g_multiSigWallet);
+        g_multiSigWallet = NULL;
+    }
 }
 
 void GuiManageMultisigWalletRefresh(void)
 {
-    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-    SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
-}
-
-static void GuiCreateNameWalletWidget(lv_obj_t *parent)
-{
-    char tempBuf[BUFFER_SIZE_16] = {0};
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_backup_namewallet_title"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
-
-    label = GuiCreateNoticeLabel(parent, _("create_multi_wallet_name_desc"));
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
-
-    g_nameWalletKb = GuiCreateFullKeyBoard(parent, ReadyNextTileHandler, KEY_STONE_FULL_L, NULL);
-    GuiSetKeyBoardMinTaLen(g_nameWalletKb, 0);
-    lv_obj_set_size(g_nameWalletKb->ta, 300, 60);
-    lv_obj_set_style_text_opa(g_nameWalletKb->ta, LV_OPA_100, 0);
-    lv_obj_align(g_nameWalletKb->ta, LV_ALIGN_DEFAULT, 36, 164);
-    lv_textarea_set_max_length(g_nameWalletKb->ta, 16);
-    lv_textarea_set_one_line(g_nameWalletKb->ta, true);
-    lv_textarea_set_text(g_nameWalletKb->ta, _("create_multi_wallet_default_name"));
-    snprintf_s(tempBuf, BUFFER_SIZE_16, "%d/16", strnlen_s(_("create_multi_wallet_default_name"), 16));
-    lv_obj_t *progressLabel = GuiCreateNoticeLabel(parent, tempBuf);
-    lv_obj_align(progressLabel, LV_ALIGN_TOP_RIGHT, -36, 384 - GUI_MAIN_AREA_OFFSET);
-    GuiSetEnterProgressLabel(progressLabel);
-
-    lv_obj_t *line = GuiCreateDividerLine(parent);
-    lv_obj_align_to(line, g_nameWalletKb->ta, LV_ALIGN_BOTTOM_LEFT, -50, 10);
-}
-
-static void SelectCheckBoxHandler(lv_event_t* e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_t *newCheckBox = lv_event_get_user_data(e);
-        for (int i = 0; i < 3; i++) {
-            if (newCheckBox == g_formatCheckBox[i]) {
-                lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
-                g_chainType = i + XPUB_TYPE_BTC_MULTI_SIG_P2SH;
-            } else {
-                lv_obj_clear_state(g_formatCheckBox[i], LV_STATE_CHECKED);
-            }
-        }
+    if (g_manageMultisig.currentTile == MULTI_MULTI_SIG_HOME) {
+        ReloadAndUpdateMultisigConfig();
     }
+    // SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+    // SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    // SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
 }
-
-// void GetMultiInfoFromFile(const char *path, XpubWidgetCache_t *xpub, ChainType chainType)
-// {
-//     char *jsonString = FatfsFileRead(path);
-//     cJSON *rootJson;
-//     char *derivKey = NULL;
-//     char *xpubKey = NULL;
-//     if (jsonString == NULL) {
-//         printf("Failed to read\n");
-//         return;
-//     }
-
-//     if (chainType == XPUB_TYPE_BTC_MULTI_SIG_P2SH) {
-//         derivKey = "p2sh_deriv";
-//         xpubKey = "p2sh";
-//     } else if (chainType == XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH) {
-//         derivKey = "p2sh_p2wsh_deriv";
-//         xpubKey = "p2sh_p2wsh";
-//     } else if (chainType == XPUB_TYPE_BTC_MULTI_SIG_P2WSH) {
-//         derivKey = "p2wsh_deriv";
-//         xpubKey = "p2wsh";
-//     }
-
-//     do {
-//         rootJson = cJSON_Parse(jsonString);
-//         if (rootJson == NULL) {
-//             break;
-//         }
-
-//         GetStringValue(rootJson, derivKey, xpub->path, sizeof(xpub->path));
-//         GetStringValue(rootJson, xpubKey, xpub->xpub, sizeof(xpub->xpub));
-//         GetStringValue(rootJson, "xfp", xpub->mfp, sizeof(xpub->mfp));
-//     } while (0);
-//     cJSON_Delete(rootJson);
-//     EXT_FREE(jsonString);
-// }
 
 static void SelectFormatHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        GuiManageMultisigWalletNextTile(CREATE_MULTI_SELECT_SLICE);
+        GuiManageMultisigWalletNextTile(0);
     }
 }
 
@@ -558,35 +211,144 @@ static void OpenFileNextTileHandler(lv_event_t *e)
     char *path = lv_event_get_user_data(e);
 
     if (code == LV_EVENT_CLICKED) {
-        GetMultiInfoFromFile(path, &g_xpubCache[g_createMultiTileView.currentSinger], g_chainType);
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
     }
 }
 
-static void GetAndCreateMultiWallet(void)
+static void ReloadAndUpdateMultisigConfig(void)
 {
-    char *walletConfig = EXT_MALLOC(1024);
-    char *tempBuf = EXT_MALLOC(256);
+    static HOME_WALLET_CARD_ENUM chainCard = HOME_WALLET_CARD_BTC;
+    int multiSigNum = GetCurrentAccountMultisigWalletNum();
+    lv_obj_clean(g_manageMultisig.homeTile);
+    if (multiSigNum == 0) {
+        return CreateMultiSigWalletWidget(g_manageMultisig.homeTile);
+    }
+    for (int i = 0; i < multiSigNum; ++i) {
+        lv_obj_t *button = GuiCreateSettingItemButton(g_manageMultisig.homeTile, 456, GetCurrenMultisigWalletByIndex(i)->name, NULL, 
+                                                      &imgTwoKey, &imgArrowRight, NextTileHandler, NULL);
+        lv_obj_align(button, LV_ALIGN_TOP_LEFT, 12, 96 * i);
+    }
+    if (MULTI_SIG_WALLET_MAX_NUM != multiSigNum) {
+        lv_obj_t *button = GuiCreateSelectButton(g_manageMultisig.homeTile, _("wallet_profile_add_multi_wallet"), &imgKey, 
+                            OpenFileNextTileHandler, NULL, true);
+        lv_obj_align(button, LV_ALIGN_TOP_LEFT, 12, 96 * multiSigNum);
+    }
+
+    lv_obj_t *line = GuiCreateDividerLine(g_manageMultisig.homeTile);
+    uint32_t offSet = 0;
+    if (multiSigNum == 3) {
+        offSet = 354;
+    } else if (0) {     // testnet
+    } else {
+        offSet = (multiSigNum + 1) * 96;
+    }
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, offSet);
+    lv_obj_t *button = GuiCreateSelectButton(g_manageMultisig.homeTile, _("wallet_profile_multi_wallet_show_xpub"), &imgExport, 
+                        OpenExportViewHandler, &chainCard, true);
+    GuiAlignToPrevObj(button, LV_ALIGN_OUT_BOTTOM_LEFT, 12, 12);
+}
+
+static void CreateMultiSigWalletWidget(lv_obj_t *parent)
+{
+    lv_obj_t *label = GuiCreateTextLabel(parent, _("wallet_profile_no_multi_wallet_notice"));
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 232);
+
+    lv_obj_t *button = GuiCreateBtn(parent, _("wallet_profile_add_multi_wallet"));
+    lv_obj_set_width(button, 408);
+    lv_obj_set_style_text_color(lv_obj_get_child(button, 0), ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
+    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 436);
+    lv_obj_add_event_cb(button, ManageMultiSigWalletHandler, LV_EVENT_CLICKED, NULL);
+
+    button = GuiCreateBtn(parent, _("wallet_profile_multi_wallet_show_xpub"));
+    lv_obj_set_width(button, 408);
+    lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
+    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 526);
+    lv_obj_add_event_cb(button, ManageMultiSigWalletHandler, LV_EVENT_CLICKED, NULL);
+}
+
+static void CreateMultiSigWalletDetailWidget(lv_obj_t *parent)
+{
+    lv_obj_t *button = GuiCreateSettingItemButton(parent, 456, "", NULL, 
+                                                  &imgWallet2, &imgEdit, UnHandler, NULL);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 0);
+    g_multisigItem.walletName = lv_obj_get_child(button, 1);
+
+    button = GuiCreateSettingItemButton(parent, 456, "", NULL, 
+                                        &imgTwoKey, &imgArrowRight, NextTileHandler, NULL);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 96);
+    g_multisigItem.policy = lv_obj_get_child(button, 1);
+
+    button = GuiCreateSettingItemButton(parent, 456, _("manage_multi_wallet_set_default"), NULL, 
+                                        &imgDelWallet, NULL, UnHandler, NULL);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 96 * 2);
+
+    button = GuiCreateSettingItemButton(parent, 456, _("manage_multi_wallet_export_config"), NULL, 
+                                        &imgWallet, NULL, UnHandler, NULL);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 96 * 3);
+
+    button = GuiCreateSettingItemButton(parent, 456, _("wallet_settings_delete_button"), NULL, 
+                                        &imgDelWallet, NULL, UnHandler, NULL);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 96 * 4);
+}
+
+static void ReloadAndUpdateMultisigItem(void)
+{
+    if (g_multiSigWallet != NULL) {
+        free_MultiSigWallet(g_multiSigWallet);
+        g_multiSigWallet = NULL;
+    }
 
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-
-    snprintf_s(tempBuf, 256, "# Keystone Multisig setup file (created on %02X%02X%02X%02X)\n#\n", mfp[0], mfp[1], mfp[2], mfp[3]);
-    uint32_t len = snprintf_s(walletConfig, 1024, "%s", tempBuf);
-    snprintf_s(tempBuf, 256, "Name: %s\n", lv_textarea_get_text(g_nameWalletKb->ta));
-    len += snprintf_s(walletConfig + len, 1024 - len, "%s", tempBuf);
-    snprintf_s(tempBuf, 256, "Policy: %d of %d\n", g_selectSliceTile.singers, g_selectSliceTile.coSingers);
-    len += snprintf_s(walletConfig + len, 1024 - len, "%s", tempBuf);
-    len += snprintf_s(walletConfig + len, 1024 - len, "%s", tempBuf);
-    for (int i = 0; i < g_selectSliceTile.coSingers; i++) {
-        snprintf_s(tempBuf, 256, "Derivation: %s\n", g_xpubCache[i].path);
-        len += snprintf_s(walletConfig + len, 1024 - len, "%s", tempBuf);
-        snprintf_s(tempBuf, 256, "%s: %s\n", g_xpubCache[i].mfp, g_xpubCache[i].xpub);
-        len += snprintf_s(walletConfig + len, 1024 - len, "%s", tempBuf);
+    g_walletItem = GetCurrenMultisigWalletByIndex(0);
+    Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(g_walletItem->walletConfig, mfp, 4, MainNet);
+    if (result->error_code != 0) {
+        return;
     }
+    g_multiSigWallet = result->data;
+}
 
-    printf("len: %d\n", len);
-    GuiFrameOpenViewWithParam(&g_importMultisigWalletView, walletConfig, len);
-    EXT_FREE(tempBuf);
-    // EXT_FREE(walletConfig);
+static void CreateCoSignerDetailWidget(lv_obj_t *parent)
+{
+    for (int i = 0; i < g_multiSigWallet->total; i++) {
+        char buff[8] = {0};
+        snprintf(buff, sizeof(buff), "%d/%d", i + 1, g_multiSigWallet->total);
+        lv_obj_t *label = GuiCreateIllustrateLabel(parent, buff);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 24, i * 204 + 16);
+        lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+
+        label = GuiCreateNoticeLabel(parent, g_multiSigWallet->xpub_items->data[i].xfp);
+        GuiAlignToPrevObj(label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+        label = GuiCreateIllustrateLabel(parent, g_multiSigWallet->xpub_items->data[i].xpub);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 24, i * 204 + 50);
+        lv_obj_set_width(label, 360);
+        label = GuiCreateNoticeLabel(parent, g_multiSigWallet->derivations->data[i]);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 24, i * 204 + 174);
+    }
+}
+
+static void OpenCreateMultiViewHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        GUI_DEL_OBJ(g_noticeWindow)
+        GuiFrameOpenView(lv_event_get_user_data(e));
+    }
+}
+
+static void ManageMultiSigWalletHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        MoreInfoTable_t moreInfoTable[] = {
+            {.name = _("wallet_profile_create_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_createMultisigWalletView},
+            {.name = _("wallet_profile_import_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_importMultisigWalletInfoView},
+        };
+        g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("wallet_profile_add_multi_wallet"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false);
+        lv_obj_t *closeBtn = GuiCreateImgButton(g_noticeWindow,  &imgClose, 64, CloseHintBoxHandler, &g_noticeWindow);
+        GuiAlignToPrevObj(closeBtn, LV_ALIGN_LEFT_MID, 358, 0);
+    }
 }

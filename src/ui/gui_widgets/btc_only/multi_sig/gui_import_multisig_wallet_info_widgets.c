@@ -184,11 +184,9 @@ static void OpenFileNextTileHandler(lv_event_t *e)
     char *path = lv_event_get_user_data(e);
 
     if (code == LV_EVENT_CLICKED) {
-        printf("path = %s\n", path);
         char *walletConfig = FatfsFileRead(path);
         uint32_t len = strnlen_s(walletConfig, 1024);
         GuiFrameOpenViewWithParam(&g_importMultisigWalletView, walletConfig, len);
-        // GetMultiInfoFromFile(path, &g_xpubCache[g_createMultiTileView.currentSinger], g_chainType);
     }
 }
 

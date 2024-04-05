@@ -12,6 +12,8 @@ use app_bitcoin::multi_sig::wallet::{
 use app_bitcoin::multi_sig::{export_xpub_by_crypto_account, Network};
 use core::str::FromStr;
 use cty::c_char;
+use third_party::bitcoin::psbt;
+use third_party::cryptoxide::hashing::sha256;
 use third_party::hex;
 use third_party::serde_json::Value::String;
 use third_party::ur_registry::bytes::Bytes;
@@ -309,4 +311,31 @@ pub extern "C" fn generate_address_for_multisig_wallet_config(
         },
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
     }
+}
+
+#[no_mangle]
+pub extern "C" fn generate_psbt_file_name(
+    // origin_file_name: PtrString,
+    // wallet_name: PtrString,
+    psbt_hex: PtrBytes,
+    psbt_len: u32,
+    time_stamp: u32,
+) -> Ptr<SimpleResponse<c_char>> {
+    // let wallet_name = recover_c_char(wallet_name);
+    let psbt_hex = unsafe { slice::from_raw_parts(psbt_hex, psbt_len as usize) };
+    let hash = sha256(psbt_hex);
+    let checksum = hex::encode(&hash[0..4]);
+    let name = format!("tx_{checksum}_{time_stamp}_signed.psbt");
+    SimpleResponse::success(convert_c_char(name)).simple_c_ptr()
+    // if origin_file_name.is_null() {
+
+    // } else {
+    //     let origin_file_name = recover_c_char(origin_file_name);
+    //     if origin_file_name.contains("signed") {
+    //         return SimpleResponse::success(convert_c_char(origin_file_name)).simple_c_ptr()
+    //     }
+    //     else {
+
+    //     }
+    // }
 }

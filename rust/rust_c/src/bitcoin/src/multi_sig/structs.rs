@@ -1,12 +1,13 @@
+use alloc::boxed::Box;
 use alloc::format;
 use alloc::string::ToString;
 use alloc::vec;
 use alloc::vec::Vec;
 use app_bitcoin::multi_sig::wallet::MultiSigWalletConfig;
 use app_bitcoin::multi_sig::Network;
-use common_rust_c::ffi::VecFFI;
+use common_rust_c::ffi::{CSliceFFI, VecFFI};
 use common_rust_c::free::Free;
-use common_rust_c::types::{Ptr, PtrString, PtrT};
+use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT};
 use common_rust_c::ur::UREncodeResult;
 use common_rust_c::utils::{convert_c_char, recover_c_char};
 use common_rust_c::{check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, make_free_method};
@@ -181,11 +182,18 @@ pub struct MultisigSignResult {
     pub ur_result: Ptr<UREncodeResult>,
     pub sign_status: PtrString,
     pub is_completed: bool,
+    pub psbt_hex: PtrBytes,
+    pub psbt_len: u32,
 }
 
 impl Free for MultisigSignResult {
     fn free(&self) {
         free_str_ptr!(self.sign_status);
+        unsafe {
+            if !self.psbt_hex.is_null() {
+                let _x = Box::from_raw(self.psbt_hex);
+            }
+        }
         //do not free ur_result because it will be released by itself;
     }
 }

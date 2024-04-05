@@ -45,6 +45,7 @@ int FatfsFileWrite(const char* path, const uint8_t *data, uint32_t len);
 int32_t read_qrcode();
 char *FatfsFileRead(const char* path);
 void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32_t maxLen);
+uint32_t GetCurrentStampTime(void);
 
 #define LOW_BATTERY_LIMIT               20
 #define CHECK_BATTERY_LOW_POWER()       ((GetBatterPercent() <= LOW_BATTERY_LIMIT) ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE)

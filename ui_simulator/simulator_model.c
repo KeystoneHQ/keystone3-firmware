@@ -318,7 +318,30 @@ uint8_t GetBatterPercent(void)
     return 50;
 }
 
-int FatfsFileWrite(const char* path, const uint8_t *data, uint32_t len){}
+int FatfsFileWrite(const char* path, const uint8_t *data, uint32_t len){
+    int32_t readBytes = 0;
+    lv_fs_file_t fd;
+    lv_fs_res_t ret = LV_FS_RES_OK;
+
+    if (path == NULL) {
+        return -1;
+    }
+
+    ret = lv_fs_open(&fd, path, LV_FS_MODE_WR);
+    if (ret != LV_FS_RES_OK) {
+        printf("lv_fs_open failed %s ret = %d line = %d\n", path, ret, __LINE__);
+        return -1;
+    }
+
+    ret = lv_fs_write(&fd, data, len, &readBytes);
+    if (ret != LV_FS_RES_OK) {
+        printf("lv_fs_write failed %s ret = %d line = %d\n", path, ret, __LINE__);
+        return -1;
+    }
+    lv_fs_close(&fd);
+    
+    return 0;
+}
 
 void SetLockScreen(bool enable)
 {

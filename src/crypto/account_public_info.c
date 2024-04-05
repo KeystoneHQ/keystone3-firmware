@@ -17,6 +17,7 @@
 #include "gui_views.h"
 #include "gui_api.h"
 #include "gui_home_widgets.h"
+#include "gui_btc_home_widgets.h"
 #include "user_fatfs.h"
 #include "multi_sig_wallet_manager.h"
 
@@ -222,6 +223,7 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
             }
 #ifdef BTC_ONLY
             cJSON_AddItemToObject(jsonItem, "testNet", cJSON_CreateBool(false));
+            cJSON_AddItemToObject(jsonItem, "defaultWallet", cJSON_CreateNumber(SINGLE_WALLET));
 #endif
             cJSON_AddItemToObject(rootJson, walletList[i].name, jsonItem);
         }
@@ -246,6 +248,7 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
             walletList[i].state = GetBoolValue(item, "manage", false);
 #ifdef BTC_ONLY
             walletList[i].testNet = GetBoolValue(item, "testNet", false);
+            walletList[i].defaultWallet = GetIntValue(item, "defaultWallet", SINGLE_WALLET);
 #endif
         }
     }
@@ -280,6 +283,7 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
             cJSON_AddItemToObject(item, "manage", cJSON_CreateBool(walletList[i].state));
 #ifdef BTC_ONLY
             cJSON_AddItemToObject(item, "testNet", cJSON_CreateBool(walletList[i].testNet));
+            cJSON_AddItemToObject(item, "defaultWallet", cJSON_CreateNumber(walletList[i].defaultWallet));
 #endif
             cJSON_AddItemToObject(rootJson, walletList[i].name, item);
             needUpdate = true;
@@ -297,6 +301,13 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
                 needUpdate = true;
             } else if (GetBoolValue(item, "testNet", false) != walletList[i].testNet) {
                 cJSON_ReplaceItemInObject(item, "testNet", cJSON_CreateBool(walletList[i].testNet));
+                needUpdate = true;
+            }
+            if (cJSON_GetObjectItem(item, "defaultWallet") == NULL) {
+                cJSON_AddItemToObject(item, "defaultWallet", cJSON_CreateNumber(walletList[i].defaultWallet));
+                needUpdate = true;
+            } else if (GetIntValue(item, "defaultWallet", SINGLE_WALLET) != walletList[i].defaultWallet) {
+                cJSON_ReplaceItemInObject(item, "defaultWallet", cJSON_CreateNumber(walletList[i].defaultWallet));
                 needUpdate = true;
             }
 #endif

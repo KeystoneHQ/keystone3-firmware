@@ -1,4 +1,3 @@
-#ifdef BTC_ONLY
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_model.h"
@@ -17,6 +16,12 @@ static int32_t GuiBtcWalletProfileViewEventProcess(void *self, uint16_t usEvent,
     case GUI_EVENT_REFRESH:
         GuiBtcWalletProfileRefresh();
         break;
+    case SIG_SETUP_VIEW_TILE_PREV:
+        GuiBtcWalletProfilePrevTile();
+        break;
+    case SIG_SETUP_VIEW_TILE_NEXT:
+        GuiBtcWalletProfileNextTile();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }
@@ -30,4 +35,3 @@ GUI_VIEW g_btcBtcWalletProfileView = {
     .optimization = false,
     .pEvtHandler = GuiBtcWalletProfileViewEventProcess,
 };
-#endif

@@ -105,6 +105,7 @@ static void SelectCheckBoxHandler(lv_event_t* e);
 static void GuiCreateNameWalletWidget(lv_obj_t *parent);
 static void GuiCreateAddressSettingsWidget(lv_obj_t *parent);
 static void OpenFileNextTileHandler(lv_event_t *e);
+lv_obj_t* CreateUTXOReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h);
 static void SelectFormatHandler(lv_event_t *e);
 
 static const AddressSettingsItem_t g_mainNetAddressSettings[] = {
@@ -463,13 +464,15 @@ int8_t GuiCreateMultiNextTile(uint8_t index)
         lv_label_set_text(g_xPubTile.pathLabel, g_xpubCache[g_createMultiTileView.currentSinger].path);
         lv_label_set_text(g_xPubTile.mfpLabel, g_xpubCache[g_createMultiTileView.currentSinger].mfp);
         lv_label_set_text(g_xPubTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
+        if (g_createMultiTileView.currentSinger == g_selectSliceTile.coSingers - 1) {
+            lv_obj_set_tile_id(g_createMultiTileView.tileView, CREATE_MULTI_CONFIRM_CO_SIGNERS, 0, LV_ANIM_OFF);
+        }
         break;
     case CREATE_MULTI_IMPORT_SDCARD_XPUB:
         lv_label_set_text(g_custodianTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
         lv_obj_clear_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
         g_createMultiTileView.currentTile = CREATE_MULTI_SELECT_FORMAT;
         if (g_createMultiTileView.currentSinger == g_selectSliceTile.coSingers - 1) {
-            lv_obj_add_flag(g_importXpubBtn, LV_OBJ_FLAG_HIDDEN);
             GuiAddObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
         } else {
             GuiClearObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
@@ -704,8 +707,7 @@ static void GetAndCreateMultiWallet(void)
         len += snprintf_s(walletConfig + len, 1024 - len, "%s", tempBuf);
     }
 
-    printf("len: %d\n", len);
     GuiFrameOpenViewWithParam(&g_importMultisigWalletView, walletConfig, len);
     EXT_FREE(tempBuf);
-    // EXT_FREE(walletConfig);
+    EXT_FREE(walletConfig);
 }

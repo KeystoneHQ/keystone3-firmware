@@ -34,11 +34,13 @@ typedef struct {
 
 static ImportMultiWalletWidget_t g_importMultiWallet;
 static lv_obj_t *g_noticeWindow;
+static lv_obj_t *g_confirmLabel;
 static lv_obj_t *g_qrCodeCont = NULL;
 static PageWidget_t *g_pageWidget;
 static char *g_walletConfig = NULL;
 static MultiSigWallet *g_wallet = NULL;
-static bool isQRCode = false;
+static bool g_isQRCode = false;
+static bool g_isExportMultiWallet = false;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 
 void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
@@ -203,11 +205,11 @@ static void GuiImportWalletSuccessNVSBarInit()
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SDCARD, GuiSDCardHandler, NULL);
 }
 
-void GuiImportMultisigWalletWidgetsInit(char *walletConfig)
+void GuiImportMultisigWalletWidgetsInit(char *walletConfig, uint16_t len)
 {
     GuiSetMultisigImportWalletDataBySDCard(walletConfig);
-    g_walletConfig = walletConfig;
-    printf("GuiImportMultisigWalletWidgetsInit\n");
+    g_walletConfig = SRAM_MALLOC(len + 1);
+    strcpy_s(g_walletConfig, len + 1, walletConfig);
     for (int i = 0; i < 3; i++) {
         printf("g_wallet%d xfp = %s\n", i, g_wallet->xpub_items->data[i].xfp);
         printf("g_wallet%d xpub = %s\n", i, g_wallet->xpub_items->data[i].xpub);
@@ -299,6 +301,7 @@ static void GuiMultiShowWalletInfoWidget(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, GuiConfirmHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_size(btn, 408, 66);
+    g_confirmLabel = lv_obj_get_child(btn, 0);
 }
 
 static void GuiImportWalletSuccessContent(lv_obj_t *parent)
@@ -371,10 +374,10 @@ static void SetEgContent(lv_obj_t *label)
 void GuiImportMultisigWalletWidgetsDeInit()
 {
     if (g_walletConfig != NULL) {
-        EXT_FREE(g_walletConfig);
+        SRAM_FREE(g_walletConfig);
         g_walletConfig = NULL;
     }
-    
+
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
@@ -394,7 +397,11 @@ void GuiImportMultisigWalletWidgetsRefresh()
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("import_multi_wallet_info_title"));
     } else if (g_importMultiWallet.currentTile == IMPORT_MULTI_WALLET_SUCCESS) {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("import_multi_wallet_success_title"));
+        if (g_isExportMultiWallet) {
+            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("manage_multi_wallet_export_title"));
+        } else {
+            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("import_multi_wallet_success_title"));
+        }
     }
 }
 
@@ -469,7 +476,7 @@ static void prepareWalletBySDCard(char *walletConfig)
 
 void GuiSetMultisigImportWalletDataByQRCode(URParseResult *urResult, URParseMultiResult *multiResult, bool multi)
 {
-    isQRCode = true;
+    g_isQRCode = true;
     prepareWalletByQRCode(multi ? multiResult->data : urResult->data);
     CHECK_FREE_UR_RESULT(urResult, false);
     CHECK_FREE_UR_RESULT(multiResult, true);
@@ -477,7 +484,7 @@ void GuiSetMultisigImportWalletDataByQRCode(URParseResult *urResult, URParseMult
 
 void GuiSetMultisigImportWalletDataBySDCard(char *walletConfig)
 {
-    isQRCode = false;
+    g_isQRCode = false;
     prepareWalletBySDCard(walletConfig);
 }
 
@@ -554,6 +561,9 @@ static void GuiConfirmHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
+        if (g_isExportMultiWallet) {
+            return GuiImportMultiNextTile();
+        }
         MultiSigWalletItem_t *wallet = GetMultisigWalletByVerifyCode(g_wallet->verify_code);
         if (wallet != NULL) {
             GuiShowWalletExisted();
@@ -577,6 +587,14 @@ static void ImportMultisigGoToHomeViewHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
+        g_isExportMultiWallet = false;
+        GuiAnimatingQRCodeDestroyTimer();
         GuiCloseToTargetView(&g_homeView);
     }
+}
+
+void GuiSetExportMultiSigSwitch(void)
+{
+    g_isExportMultiWallet = true;
+    lv_label_set_text(g_confirmLabel, _("Export"));
 }

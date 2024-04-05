@@ -22,6 +22,9 @@ int32_t GuiManageMultiViewEventProcess(void *self, uint16_t usEvent, void *param
     case SIG_SETUP_VIEW_TILE_NEXT:
         GuiManageMultisigWalletNextTile(0xFF);
         break;
+    case SIG_VERIFY_PASSWORD_PASS:
+        DeleteMultisigWallet();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

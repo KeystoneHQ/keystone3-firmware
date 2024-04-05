@@ -9,5 +9,6 @@ void GuiImportMultisigWalletInfoVerifyPasswordSuccess();
 int8_t GuiImportMultiNextTile(void);
 int8_t GuiImportMultiPrevTile(void);
 void GuiSetExportMultiSigSwitch(void);
+void ModelGenerateMultiSigAddress(char *address, uint32_t maxLen, char *walletConfig, uint32_t index);
 
 #endif

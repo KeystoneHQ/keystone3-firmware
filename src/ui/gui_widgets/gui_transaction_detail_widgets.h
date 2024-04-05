@@ -6,7 +6,7 @@ typedef enum {
     TRANSACTION_TYPE_NORMAL,
     //for btc multisig transaction, with different destination.
     TRANSACTION_TYPE_BTC_MULTISIG,
-    
+
     TRANSACTION_TYPE_BUTT,
 } TransactionType;
 

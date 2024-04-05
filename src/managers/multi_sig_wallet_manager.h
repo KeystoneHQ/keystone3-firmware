@@ -46,5 +46,6 @@ MultiSigWalletManager_t* GetMultisigWalletManager();
 int GetCurrentAccountMultisigWalletNum(void);
 MultiSigWalletItem_t *GetCurrenMultisigWalletByIndex(int index);
 void DeleteMultisigWalletByVerifyCode(const char *verifyCode, const char *password);
+MultiSigWalletItem_t *GetDefaultMultisigWallet(void);
 
 #endif

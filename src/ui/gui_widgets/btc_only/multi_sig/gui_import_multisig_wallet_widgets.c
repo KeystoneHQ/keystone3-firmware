@@ -49,7 +49,6 @@ static void GuiOnFailedHandler(lv_event_t *event);
 static void GuiShowInvalidQRCode();
 static void GuiShowWalletExisted();
 static void GuiImportWalletSuccessContent(lv_obj_t *parent);
-static void ModelGenerateAddress(char *addr, uint32_t maxLen);
 static void SetEgContent(lv_obj_t *label);
 static char* convertFormatLabel(char *format);
 static void GuiSDCardHandler(lv_event_t *);
@@ -208,17 +207,13 @@ static void GuiImportWalletSuccessNVSBarInit()
 void GuiImportMultisigWalletWidgetsInit(char *walletConfig, uint16_t len)
 {
     GuiSetMultisigImportWalletDataBySDCard(walletConfig);
-    g_walletConfig = SRAM_MALLOC(len + 1);
-    strcpy_s(g_walletConfig, len + 1, walletConfig);
-    for (int i = 0; i < 3; i++) {
-        printf("g_wallet%d xfp = %s\n", i, g_wallet->xpub_items->data[i].xfp);
-        printf("g_wallet%d xpub = %s\n", i, g_wallet->xpub_items->data[i].xpub);
-    }
     if (g_wallet == NULL) {
         // TODO: Throw error;
         GuiCLoseCurrentWorkingView();
         return;
     }
+    g_walletConfig = SRAM_MALLOC(len + 1);
+    strcpy_s(g_walletConfig, len + 1, walletConfig);
 
     g_pageWidget = CreatePageWidget();
     lv_obj_t *tileView = GuiCreateTileView(g_pageWidget->contentZone);
@@ -363,7 +358,7 @@ static void SetEgContent(lv_obj_t *label)
     char addrShot[BUFFER_SIZE_64] = {0};
     int8_t prefixLen = (strcmp(g_wallet->format, FORMAT_P2WSH) == 0) ? 4 : 1;
     memset_s(addrShot, sizeof(addrShot), 0, sizeof(addrShot));
-    ModelGenerateAddress(addr, sizeof(addr));
+    ModelGenerateMultiSigAddress(addr, sizeof(addr), g_walletConfig, 0);
     CutAndFormatAddress(addrShot, sizeof(addrShot), addr, 24);
     strncpy(prefix, addrShot, prefixLen);
     strncpy(rest, addrShot + prefixLen, strnlen_s(addrShot, BUFFER_SIZE_64) - prefixLen);
@@ -434,18 +429,19 @@ int8_t GuiImportMultiPrevTile(void)
     lv_obj_set_tile_id(g_importMultiWallet.tileView, g_importMultiWallet.currentTile, 0, LV_ANIM_OFF);
 }
 
-
-static void ModelGenerateAddress(char *address, uint32_t maxLen)
+void ModelGenerateMultiSigAddress(char *address, uint32_t maxLen, char *walletConfig, uint32_t index)
 {
+    printf("walletconfig = \n%s\n", walletConfig);
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-    SimpleResponse_c_char *result = generate_address_for_multisig_wallet_config(g_walletConfig, 0, 0, mfp, 4, MainNet);
+    SimpleResponse_c_char *result = generate_address_for_multisig_wallet_config(walletConfig, 0, index, mfp, 4, MainNet);
     if (result->error_code != 0) {
         printf("errorMessage: %s\r\n", result->error_message);
         GuiCLoseCurrentWorkingView();
         return;
     }
     strncpy_s(address, maxLen, result->data, strnlen_s(result->data, maxLen));
+    address[strnlen_s(result->data, maxLen)] = '\0';
 }
 
 static void processResult(Ptr_Response_MultiSigWallet result)

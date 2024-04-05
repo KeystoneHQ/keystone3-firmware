@@ -7,6 +7,7 @@
 #include "user_memory.h"
 #include "account_manager.h"
 #include "assert.h"
+#include "gui_btc_home_widgets.h"
 
 #define MAX_NAME_LENGTH 64
 #define MAX_FORMAT_LENGTH 12
@@ -98,6 +99,22 @@ MultiSigWalletItem_t *GetCurrenMultisigWalletByIndex(int index)
 
     while (temp != NULL) {
         if (temp->value->order == index) {
+            return temp->value;
+        }
+        temp = temp->next;
+    }
+    return NULL;
+}
+
+MultiSigWalletItem_t *GetDefaultMultisigWallet(void)
+{
+    ASSERT_WALLET_MANAGER_EXIST
+    DEFAULT_WALLET_INDEX_ENUM defaultIndex = GetDefaultWalletIndex();
+    MultiSigWalletList_t *list = g_multisigWalletManager->list;
+    MultiSigWalletNode_t *temp = list->head;
+
+    while (temp != NULL) {
+        if (temp->value->order == defaultIndex) {
             return temp->value;
         }
         temp = temp->next;

@@ -110,17 +110,19 @@ static void TransactionGoToHomeViewHandler(lv_event_t *e)
     }
 }
 
-void GuiSetCurrentTransactionType(TransactionType t){
+void GuiSetCurrentTransactionType(TransactionType t)
+{
     g_transactionType = t;
 }
 
-TransactionType GuiGetCurrentTransactionType() {
+TransactionType GuiGetCurrentTransactionType()
+{
     return g_transactionType;
 }
 
 void GuiTransactionDetailInit(uint8_t viewType)
 {
-    //assume the transaction is a normal one. 
+    //assume the transaction is a normal one.
     //btc multisig will change g_transactionType when parsing transaction;
     g_transactionType = TRANSACTION_TYPE_NORMAL;
     g_viewType = viewType;
@@ -220,11 +222,10 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
         return;
     }
 #endif
-    if(g_transactionType == TRANSACTION_TYPE_BTC_MULTISIG) {
+    if (g_transactionType == TRANSACTION_TYPE_BTC_MULTISIG) {
         printf("transaction type is btc multisig\r\n");
         GuiFrameOpenView(&g_multisigTransactionSignatureView);
-    }
-    else {
+    } else {
         GuiFrameOpenViewWithParam(&g_transactionSignatureView, &g_viewType, sizeof(g_viewType));
     }
 }

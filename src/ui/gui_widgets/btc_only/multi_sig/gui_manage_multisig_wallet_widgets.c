@@ -158,6 +158,7 @@ int8_t GuiManageMultiWalletPrevTile(void)
 {
     switch (g_manageMultisig.currentTile) {
     case MULTI_MULTI_SIG_HOME:
+        GuiCLoseCurrentWorkingView();
         break;
     case MULTI_MULTI_SIG_DETAIL:
         break;
@@ -240,7 +241,7 @@ static void ReloadAndUpdateMultisigConfig(void)
     }
     if (MULTI_SIG_WALLET_MAX_NUM != multiSigNum) {
         lv_obj_t *button = GuiCreateSelectButton(g_manageMultisig.homeTile, _("wallet_profile_add_multi_wallet"), &imgAdd,
-                           OpenViewHandler, &g_createMultisigWalletView, true);
+                           ManageMultiSigWalletHandler, NULL, true);
         lv_obj_align(button, LV_ALIGN_TOP_LEFT, 12, 96 * multiSigNum);
     }
 

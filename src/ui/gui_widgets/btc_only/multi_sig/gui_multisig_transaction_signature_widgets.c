@@ -244,8 +244,7 @@ static void GuiMultisigTransactionSignatureContent(lv_obj_t *parent)
     lv_obj_align_to(text, g_signStatusLabel, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
 
     char *hint = _("multisig_signature_hint_1");
-    if (g_signCompleted)
-    {
+    if (g_signCompleted) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Broadcast Transaction"));
         hint = _("multisig_signature_hint_2");
     }
@@ -270,8 +269,7 @@ void GuiMultisigTransactionSignatureNVSBarInit()
 
 void GuiMultisigTransactionSignaureWidgetsDeInit()
 {
-    if (g_pageWidget != NULL)
-    {
+    if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }

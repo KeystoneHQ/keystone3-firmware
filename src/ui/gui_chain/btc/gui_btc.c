@@ -117,8 +117,7 @@ UREncodeResult *GuiGetSignQrCodeData(void)
             encodeResult = result->ur_result;
             GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
             free_MultisigSignResult(result);
-        }
-        else {
+        } else {
             encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
         }
     }
@@ -221,8 +220,7 @@ void *GuiGetParsedQrData(void)
 #endif
             g_parseResult = btc_parse_psbt(crypto, mfp, sizeof(mfp), public_keys);
             CHECK_CHAIN_RETURN(g_parseResult);
-            if (IsMultiSigTx(g_parseResult->data))
-            {
+            if (IsMultiSigTx(g_parseResult->data)) {
                 GuiSetCurrentTransactionType(TRANSACTION_TYPE_BTC_MULTISIG);
             }
             SRAM_FREE(public_keys);

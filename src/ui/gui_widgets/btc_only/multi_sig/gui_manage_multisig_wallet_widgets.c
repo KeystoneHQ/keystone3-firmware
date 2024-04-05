@@ -20,6 +20,8 @@
 #include "gui_export_pubkey_widgets.h"
 #include "gui_btc_home_widgets.h"
 #include "gui_manage_multisig_wallet_widgets.h"
+#include "gui_import_multisig_wallet_info_widgets.h"
+#include "gui_multisig_wallet_export_widgets.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #include "simulator_mock_define.h"
@@ -142,11 +144,20 @@ void GuiManageMultisigWalletDeInit(void)
     }
 }
 
+static void GuiMoreHandler(lv_event_t *e) {
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED)
+    {
+        GuiFrameOpenView(&g_multisigSelectImportMethodView);
+        return;
+    }
+}
+
 void GuiManageMultisigWalletRefresh(void)
 {
     char tempBuff[BUFFER_SIZE_32] = {0};
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, NULL, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, GuiMoreHandler, NULL);
     if (g_manageMultisig.currentTile == MULTI_MULTI_SIG_HOME) {
         ReloadAndUpdateMultisigConfig();
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
@@ -358,7 +369,9 @@ static void ExportMultiWalletHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        GuiFrameOpenViewWithParam(&g_importMultisigWalletView, g_walletItem->walletConfig, strnlen_s(g_walletItem->walletConfig, 1024));
+        GuiSetMultisigImportWalletDataBySDCard(g_walletItem->walletConfig);
+        GuiSetExportMultiSigSwitch();
+        GuiFrameOpenView(&g_importMultisigWalletInfoView);
         GuiEmitSignal(SIG_MULTISIG_WALLET_SET_WALLET_EXPORT, NULL, 0);
     }
 }

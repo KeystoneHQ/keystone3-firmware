@@ -6,10 +6,6 @@ void GuiSetMultisigImportWalletDataBySDCard(char* walletConfig);
 
 void GuiImportMultisigWalletInfoWidgetsInit(void);
 void GuiImportMultisigWalletInfoWidgetsDeInit(void);
-void GuiImportMultisigWalletInfoWidgetsRefresh(void);
-void GuiImportMultisigWalletInfoWidgetsRestart(void);
 void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void);
-int8_t GuiImportMultiInfoPrevTile(void);
-int8_t GuiImportMultiInfoNextTile(void);
 
 #endif

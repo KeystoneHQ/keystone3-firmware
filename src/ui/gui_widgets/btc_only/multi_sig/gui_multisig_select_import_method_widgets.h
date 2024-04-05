@@ -1,0 +1,7 @@
+#ifndef _GUI_MULTISIG_SELECT_IMPORT_METHOD_WIDGETS_H_
+#define _GUI_MULTISIG_SELECT_IMPORT_METHOD_WIDGETS_H_
+
+void GuiMultisigSelectImportMethodWidgetsInit();
+void GuiMultisigSelectImportMethodWidgetsDeInit();
+
+#endif

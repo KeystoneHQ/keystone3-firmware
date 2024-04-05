@@ -222,6 +222,8 @@ static MultiSigWalletItem_t *findNode(char *verifyCode)
     MultiSigWalletNode_t *temp = list->head;
 
     while (temp != NULL) {
+        printf("code :%s\r\n", verifyCode);
+        printf("code :%s\r\n", temp->value->verifyCode);
         if (strcmp(temp->value->verifyCode, verifyCode) == 0) {
             return temp->value;
         }

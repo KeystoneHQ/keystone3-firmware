@@ -28,7 +28,7 @@
 #ifdef BTC_ONLY
 #include "gui_btc_home_widgets.h"
 #include "multi_sig_wallet_manager.h"
-#include "gui_import_multisig_wallet_widgets.h"
+#include "gui_multisig_wallet_export_widgets.h"
 static MultiSigWallet *g_multiSigWallet = NULL;
 #endif
 

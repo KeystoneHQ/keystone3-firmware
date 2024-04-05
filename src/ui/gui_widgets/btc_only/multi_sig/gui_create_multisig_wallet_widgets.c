@@ -20,6 +20,7 @@
 #include "keystore.h"
 #include "multi_sig_wallet_manager.h"
 #include "account_public_info.h"
+#include "gui_import_multisig_wallet_info_widgets.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #include "simulator_mock_define.h"
@@ -707,8 +708,8 @@ static void GetAndCreateMultiWallet(void)
         snprintf_s(tempBuf, 256, "%s: %s\n", g_xpubCache[i].mfp, g_xpubCache[i].xpub);
         len += snprintf_s(walletConfig + len, 1024 - len, "%s", tempBuf);
     }
-
-    GuiFrameOpenViewWithParam(&g_importMultisigWalletView, walletConfig, len);
+    GuiSetMultisigImportWalletDataBySDCard(walletConfig);
+    GuiFrameOpenView(&g_importMultisigWalletInfoView);
     EXT_FREE(tempBuf);
     EXT_FREE(walletConfig);
 }

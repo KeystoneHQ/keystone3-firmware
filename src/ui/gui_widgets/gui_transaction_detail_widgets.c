@@ -71,7 +71,7 @@ typedef enum {
 static TransactionType g_transactionType = TRANSACTION_TYPE_NORMAL;
 static void GuiTransactionDetailNavBarInit();
 static void CheckSliderProcessHandler(lv_event_t *e);
-static void SignByPasswordCb(bool cancel);
+static void VerifyPassword(bool cancel);
 static void SignByPasswordCbHandler(lv_event_t *e);
 static void CloseContHandler(lv_event_t *e);
 static void SignByFinger(void);
@@ -268,7 +268,7 @@ void GuiSignDealFingerRecognize(void *param)
             FpRecognize(RECOGNIZE_SIGN);
             g_fpRecognizeTimer = lv_timer_create(RecognizeFailHandler, 1000, NULL);
         } else {
-            SignByPasswordCb(false);
+            VerifyPassword(false);
         }
         printf("g_fingerSignErrCount.... = %d\n", g_fingerSignErrCount);
         if (g_fingerSignErrCount >= FINGERPRINT_SING_DISABLE_ERR_TIMES) {
@@ -307,7 +307,7 @@ static void CheckSliderProcessHandler(lv_event_t *e)
             if ((GetCurrentAccountIndex() < 3) && GetFingerSignFlag() && g_fingerSignCount < 3) {
                 SignByFinger();
             } else {
-                SignByPasswordCb(false);
+                VerifyPassword(false);
             }
             lv_slider_set_value(lv_event_get_target(e), 0, LV_ANIM_OFF);
         } else {
@@ -316,7 +316,7 @@ static void CheckSliderProcessHandler(lv_event_t *e)
     }
 }
 
-static void SignByPasswordCb(bool cancel)
+static void VerifyPassword(bool cancel)
 {
     GUI_DEL_OBJ(g_fingerSingContainer)
     if (cancel) {
@@ -332,7 +332,7 @@ static void SignByPasswordCbHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        SignByPasswordCb(true);
+        VerifyPassword(true);
     }
 }
 

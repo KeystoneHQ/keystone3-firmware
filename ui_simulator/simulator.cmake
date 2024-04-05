@@ -34,11 +34,10 @@ file(GLOB_RECURSE SIMULATOR_SRC
     ui_simulator/*.c
 )
 
-if(BTC_ONLY)
-    list(APPEND GUI_INCLUDE_PATH src/ui/gui_widgets/btc_only src/ui/gui_widgets/general)
-else()
-    list(APPEND GUI_INCLUDE_PATH src/ui/gui_chain/others src/ui/gui_widgets/general  src/webusb_protocol/general src/webusb_protocol/general/eapdu_services)
+if(NOT BTC_ONLY) 
+    list(APPEND SRC_INCLUDE_PATH src/webusb_protocol/general src/webusb_protocol/general/eapdu_services)
     list(FILTER GUI EXCLUDE REGEX src/ui/gui_widgets/btc_only)
+    list(FILTER GUI EXCLUDE REGEX src/ui/gui_views/btc_only)
 endif()
 
 file(GLOB_RECURSE UTILS

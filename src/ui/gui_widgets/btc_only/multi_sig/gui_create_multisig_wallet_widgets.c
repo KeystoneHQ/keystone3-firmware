@@ -526,6 +526,7 @@ void GuiCreateMultiDeInit(void)
         g_pageWidget = NULL;
     }
     GUI_DEL_OBJ(g_createMultiTileView.stepCont)
+    printf("%s %d..\n", __func__, __LINE__);
 }
 
 void GuiCreateMultiRefresh(void)

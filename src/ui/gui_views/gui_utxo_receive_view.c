@@ -4,18 +4,6 @@
 #include "gui_utxo_receive_widgets.h"
 #include "gui_global_resources.h"
 
-static int32_t GuiReceiveViewInit(uint8_t chain)
-{
-    GuiReceiveInit(chain);
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiReceiveViewDeInit(void)
-{
-    GuiReceiveDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiReceiveViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     uint8_t chain = 0;
@@ -27,9 +15,11 @@ int32_t GuiReceiveViewEventProcess(void *self, uint16_t usEvent, void *param, ui
             return ERR_GUI_ERROR;
         }
         GlobalResourcesInit();
-        return GuiReceiveViewInit(chain);
+        GuiReceiveInit(chain);
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiReceiveViewDeInit();
+        GuiReceiveDeInit();
+        break;
     case GUI_EVENT_DISACTIVE:
         //GuiBitcoinReceiveDisActive();
         break;

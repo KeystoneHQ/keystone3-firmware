@@ -43,7 +43,8 @@ void GuiMultisigTransactionSignaureWidgetsInit()
     GuiMultisigTransactionSignatureSetupUR(g_cont);
 }
 
-static void GuiMultisigTransactionSignatureSetupUR(lv_obj_t *parent) {
+static void GuiMultisigTransactionSignatureSetupUR(lv_obj_t *parent)
+{
     g_qrCont = GuiCreateContainerWithParent(parent, 408, 450);
     lv_obj_set_style_bg_color(g_qrCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_radius(g_qrCont, 24, LV_PART_MAIN);
@@ -63,11 +64,11 @@ static void GuiMultisigTransactionSignatureContent(lv_obj_t *parent)
     lv_obj_align_to(text, g_signStatusLabel, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
 
     char *hint = _("multisig_signature_hint_1");
-    if(g_signCompleted) {
+    if (g_signCompleted) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Broadcast Transaction"));
         hint = _("multisig_signature_hint_2");
     }
-    
+
     text = GuiCreateIllustrateLabel(g_cont, hint);
     lv_obj_align_to(text, g_qrCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
     lv_obj_set_style_text_align(text, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
@@ -88,8 +89,7 @@ void GuiMultisigTransactionSignatureNVSBarInit()
 
 void GuiMultisigTransactionSignaureWidgetsDeInit()
 {
-    if (g_pageWidget != NULL)
-    {
+    if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }

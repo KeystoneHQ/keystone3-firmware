@@ -185,6 +185,7 @@ static void OpenFileNextTileHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         char *walletConfig = FatfsFileRead(path);
+        printf("walletconfig: %s\n", walletConfig);
         GuiFrameOpenViewWithParam(&g_importMultisigWalletView, walletConfig, strnlen_s(walletConfig, 1024));
     }
 }

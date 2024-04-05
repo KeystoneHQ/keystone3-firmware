@@ -6,7 +6,8 @@ use app_bitcoin::multi_sig::wallet::MultiSigWalletConfig;
 use app_bitcoin::multi_sig::Network;
 use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::Free;
-use common_rust_c::types::{PtrString, PtrT};
+use common_rust_c::types::{Ptr, PtrString, PtrT};
+use common_rust_c::ur::UREncodeResult;
 use common_rust_c::utils::{convert_c_char, recover_c_char};
 use common_rust_c::{check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, make_free_method};
 
@@ -174,3 +175,20 @@ impl Free for MultiSigWallet {
 impl_c_ptr!(MultiSigWallet);
 
 make_free_method!(MultiSigWallet);
+
+#[repr(C)]
+pub struct MultisigSignResult {
+    pub ur_result: Ptr<UREncodeResult>,
+    pub sign_status: PtrString,
+    pub is_completed: bool,
+}
+
+impl Free for MultisigSignResult {
+    fn free(&self) {
+        free_str_ptr!(self.sign_status);
+        //do not free ur_result because it will be released by itself;
+    }
+}
+
+impl_c_ptr!(MultisigSignResult);
+make_free_method!(MultisigSignResult);

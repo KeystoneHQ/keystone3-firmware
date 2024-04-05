@@ -1,4 +1,4 @@
-mod structs;
+pub mod structs;
 
 use alloc::boxed::Box;
 use alloc::string::ToString;

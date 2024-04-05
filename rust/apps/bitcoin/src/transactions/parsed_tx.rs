@@ -93,7 +93,7 @@ pub trait TxParser {
     fn determine_network(&self) -> Result<Network>;
 
     fn get_sign_status(parsed_inputs: &[ParsedInput]) -> Option<String> {
-        //should combine with wrapped_psbt.get_overall_multisig_signed_status later;
+        //should combine with wrapped_psbt.get_overall_sign_status later;
         if parsed_inputs.is_empty() {
             return None;
         }

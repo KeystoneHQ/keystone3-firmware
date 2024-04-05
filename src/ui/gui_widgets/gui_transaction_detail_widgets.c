@@ -114,6 +114,10 @@ void GuiSetCurrentTransactionType(TransactionType t){
     g_transactionType = t;
 }
 
+TransactionType GuiGetCurrentTransactionType() {
+    return g_transactionType;
+}
+
 void GuiTransactionDetailInit(uint8_t viewType)
 {
     //assume the transaction is a normal one. 
@@ -218,8 +222,11 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
 #endif
     if(g_transactionType == TRANSACTION_TYPE_BTC_MULTISIG) {
         printf("transaction type is btc multisig\r\n");
+        GuiFrameOpenView(&g_multisigTransactionSignatureView);
     }
-    GuiFrameOpenViewWithParam(&g_transactionSignatureView, &g_viewType, sizeof(g_viewType));
+    else {
+        GuiFrameOpenViewWithParam(&g_transactionSignatureView, &g_viewType, sizeof(g_viewType));
+    }
 }
 
 void GuiSignVerifyPasswordErrorCount(void *param)

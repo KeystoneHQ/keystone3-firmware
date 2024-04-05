@@ -10,6 +10,7 @@
 #include "screen_manager.h"
 #include "account_manager.h"
 #include "gui_transaction_detail_widgets.h"
+#include "gui_multisig_transaction_signature_widgets.h"
 
 #define CHECK_FREE_PARSE_RESULT(result)                             \
     if (result != NULL) {                                           \
@@ -111,7 +112,15 @@ UREncodeResult *GuiGetSignQrCodeData(void)
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
+        if (GuiGetCurrentTransactionType() == TRANSACTION_TYPE_BTC_MULTISIG) {
+            MultisigSignResult *result = btc_sign_multisig_psbt(data, seed, len, mfp, sizeof(mfp));
+            encodeResult = result->ur_result;
+            GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed);
+            free_MultisigSignResult(result);
+        }
+        else {
+            encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
+        }
     }
 #ifndef BTC_ONLY
     else if (urType == Bytes || urType == KeystoneSignRequest) {

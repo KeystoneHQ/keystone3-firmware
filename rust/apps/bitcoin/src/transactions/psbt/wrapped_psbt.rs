@@ -26,6 +26,15 @@ pub struct WrappedPsbt {
     pub(crate) psbt: Psbt,
 }
 
+//TODO: use it later
+pub enum SignStatus {
+    Completed,
+    PartlySigned,
+    IdenticalPartlySigned(u32, u32),
+    Unsigned,
+    Invalid,
+}
+
 struct Keystore {
     mfp: Fingerprint,
     seed: Vec<u8>,
@@ -329,7 +338,7 @@ impl WrappedPsbt {
         )
     }
 
-    fn get_overall_multisig_signed_status(&self) -> Option<String> {
+    pub fn get_overall_sign_status(&self) -> Option<String> {
         if self.psbt.inputs.is_empty() {
             return None;
         }
@@ -360,6 +369,13 @@ impl WrappedPsbt {
         } else {
             return Some(String::from("Partly Signed"));
         }
+    }
+
+    pub fn is_sign_completed(&self) -> bool {
+        if let Some(res) = self.get_overall_sign_status() {
+            return res.eq("Completed");
+        }
+        return false;
     }
 
     pub fn calculate_address_for_input(

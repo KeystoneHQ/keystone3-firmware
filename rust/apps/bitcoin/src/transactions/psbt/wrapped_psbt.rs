@@ -1,5 +1,7 @@
 use crate::errors::{BitcoinError, Result};
 use alloc::format;
+use third_party::bitcoin::opcodes::all::OP_PUSHNUM_1;
+use third_party::bitcoin::script::Instruction;
 
 use crate::addresses::address::Address;
 use crate::network;
@@ -15,13 +17,22 @@ use third_party::bitcoin::bip32::{ChildNumber, Fingerprint, KeySource};
 use third_party::bitcoin::psbt::{GetKey, KeyRequest, Psbt};
 use third_party::bitcoin::psbt::{Input, Output};
 use third_party::bitcoin::taproot::TapLeafHash;
-use third_party::bitcoin::{Network, PrivateKey};
+use third_party::bitcoin::{script, Network, PrivateKey, Script};
 use third_party::bitcoin::{PublicKey, ScriptBuf, TxOut};
 use third_party::secp256k1::{Secp256k1, Signing, XOnlyPublicKey};
 use third_party::{bitcoin, secp256k1};
 
 pub struct WrappedPsbt {
     pub(crate) psbt: Psbt,
+}
+
+//TODO: use it later
+pub enum SignStatus {
+    Completed,
+    PartlySigned,
+    IdenticalPartlySigned(u32, u32),
+    Unsigned,
+    Invalid,
 }
 
 struct Keystore {
@@ -103,12 +114,15 @@ impl WrappedPsbt {
             value = utxo.value.to_sat();
         }
         let path = self.get_my_input_path(input, index, context)?;
+        let sign_status = self.get_input_sign_status(input);
+        let is_multisig = sign_status.1 > 1;
         Ok(ParsedInput {
             address,
             amount: Self::format_amount(value, network),
             value,
             path,
-            multi_sig_status: self.get_multi_sig_signed_status(input),
+            sign_status,
+            is_multisig,
         })
     }
 
@@ -275,15 +289,93 @@ impl WrappedPsbt {
         }
     }
 
-    fn get_multi_sig_signed_status(&self, input: &Input) -> Option<String> {
+    // fn get_input_sign_status_text(&self, input: &Input) -> String {
+    //     //this might be a multisig input;
+    //     if input.bip32_derivation.len() > 1 {
+    //         let result = self.get_multi_sig_script_and_format(input);
+    //         if let Ok((script, _)) = result {
+    //             if script.is_multisig() {
+    //                 let mut instructions = script.instructions();
+    //                 if let Some(Ok(Instruction::Op(op))) = instructions.next() {
+    //                     //OP_PUSHNUM_1 to OP_PUSHNUM_16
+    //                     if op.to_u8() >= 0x51 && op.to_u8() <= 0x60 {
+    //                         let required_sigs = op.to_u8() - 0x50;
+    //                         return Some(format!(
+    //                             "{}/{} Signed",
+    //                             input.partial_sigs.len(),
+    //                             required_sigs,
+    //                         ));
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     None
+    // }
+
+    //return: (sigs, required_sigs)
+    fn get_input_sign_status(&self, input: &Input) -> (u32, u32) {
+        //this might be a multisig input;
         if input.bip32_derivation.len() > 1 {
-            return Some(format!(
-                "{}/{} Signed",
-                input.partial_sigs.len(),
-                input.bip32_derivation.len()
-            ));
+            let result = self.get_multi_sig_script_and_format(input);
+            if let Ok((script, _)) = result {
+                if script.is_multisig() {
+                    let mut instructions = script.instructions();
+                    if let Some(Ok(Instruction::Op(op))) = instructions.next() {
+                        //OP_PUSHNUM_1 to OP_PUSHNUM_16
+                        if op.to_u8() >= 0x51 && op.to_u8() <= 0x60 {
+                            let required_sigs = op.to_u8() - 0x50;
+                            return (input.partial_sigs.len() as u32, required_sigs as u32);
+                        }
+                    }
+                }
+            }
         }
-        None
+        //there might be a (x, 0) forms of sign status which we don't care;
+        (
+            input.partial_sigs.len() as u32,
+            input.bip32_derivation.len() as u32,
+        )
+    }
+
+    pub fn get_overall_sign_status(&self) -> Option<String> {
+        if self.psbt.inputs.is_empty() {
+            return None;
+        }
+        let (first_sigs, first_requires) = self.get_input_sign_status(&self.psbt.inputs[0]);
+        let all_inputs_status: Vec<(u32, u32)> = self
+            .psbt
+            .inputs
+            .iter()
+            .map(|v| self.get_input_sign_status(v))
+            .collect();
+        //none of inputs is signed
+        if all_inputs_status.iter().all(|(sigs, _)| sigs.eq(&0)) {
+            return Some(String::from("Unsigned"));
+        }
+        //or some inputs are signed and completed
+        else if all_inputs_status
+            .iter()
+            .all(|(sigs, requires)| sigs.ge(&requires))
+        {
+            return Some(String::from("Completed"));
+        }
+        //or inputs are partially signed and all of them are multisig inputs
+        else if all_inputs_status
+            .iter()
+            .all(|(sigs, requires)| sigs.eq(&first_sigs) && requires.eq(&first_requires))
+        {
+            return Some(format!("{}/{} Signed", first_sigs, first_requires));
+        } else {
+            return Some(String::from("Partly Signed"));
+        }
+    }
+
+    pub fn is_sign_completed(&self) -> bool {
+        if let Some(res) = self.get_overall_sign_status() {
+            return res.eq("Completed");
+        }
+        return false;
     }
 
     pub fn calculate_address_for_input(

@@ -3,10 +3,11 @@ use alloc::collections::BTreeMap;
 use alloc::slice;
 use alloc::string::ToString;
 use alloc::vec::Vec;
+use core::ptr::null_mut;
 use core::str::FromStr;
 
-use app_bitcoin;
 use app_bitcoin::parsed_tx::ParseContext;
+use app_bitcoin::{self, parse_psbt_sign_status, PsbtSignStatus};
 use common_rust_c::errors::RustCError;
 use common_rust_c::extract_ptr_with_type;
 use common_rust_c::ffi::CSliceFFI;
@@ -15,12 +16,13 @@ use common_rust_c::structs::{
 };
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
-use common_rust_c::utils::{recover_c_array, recover_c_char};
+use common_rust_c::utils::{convert_c_char, recover_c_array, recover_c_char};
 use third_party::bitcoin::bip32::{DerivationPath, Xpub};
 use third_party::hex;
 use third_party::ur_registry::crypto_psbt::CryptoPSBT;
 use third_party::ur_registry::traits::RegistryItem;
 
+use crate::multi_sig::structs::MultisigSignResult;
 use crate::structs::{DisplayTx, PsbtSignResult};
 
 #[no_mangle]
@@ -83,6 +85,78 @@ pub extern "C" fn btc_sign_psbt(
             Err(e) => UREncodeResult::from(e).c_ptr(),
         },
         Err(e) => UREncodeResult::from(e).c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn btc_sign_multisig_psbt(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+    master_fingerprint: PtrBytes,
+    master_fingerprint_len: u32,
+) -> *mut MultisigSignResult {
+    if master_fingerprint_len != 4 {
+        return MultisigSignResult {
+            ur_result: UREncodeResult::from(RustCError::InvalidMasterFingerprint).c_ptr(),
+            sign_status: null_mut(),
+            is_completed: false,
+        }
+        .c_ptr();
+    }
+    let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
+    let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+        hex::encode(master_fingerprint.to_vec()).as_str(),
+    )
+    .map_err(|_e| RustCError::InvalidMasterFingerprint)
+    {
+        Ok(mfp) => mfp,
+        Err(e) => {
+            return MultisigSignResult {
+                ur_result: UREncodeResult::from(e).c_ptr(),
+                sign_status: null_mut(),
+                is_completed: false,
+            }
+            .c_ptr();
+        }
+    };
+
+    let crypto_psbt = extract_ptr_with_type!(ptr, CryptoPSBT);
+    let psbt = crypto_psbt.get_psbt();
+
+    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+
+    let result = app_bitcoin::sign_psbt_no_serialize(psbt, seed, master_fingerprint);
+    match result.map(|v| {
+        let buf = v.serialize();
+        let sign_state = parse_psbt_sign_status(v);
+        CryptoPSBT::new(buf).try_into().map(|v| (sign_state, v))
+    }) {
+        Ok(v) => match v {
+            Ok((sign_state, data)) => MultisigSignResult {
+                ur_result: UREncodeResult::encode(
+                    data,
+                    CryptoPSBT::get_registry_type().get_type(),
+                    FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                )
+                .c_ptr(),
+                sign_status: convert_c_char(sign_state.sign_status.unwrap_or("".to_string())),
+                is_completed: sign_state.is_completed,
+            }
+            .c_ptr(),
+            Err(e) => MultisigSignResult {
+                ur_result: UREncodeResult::from(e).c_ptr(),
+                sign_status: null_mut(),
+                is_completed: false,
+            }
+            .c_ptr(),
+        },
+        Err(e) => MultisigSignResult {
+            ur_result: UREncodeResult::from(e).c_ptr(),
+            sign_status: null_mut(),
+            is_completed: false,
+        }
+        .c_ptr(),
     }
 }
 

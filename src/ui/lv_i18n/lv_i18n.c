@@ -525,6 +525,8 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"multisig_import_success_hint", "Invite co-signers to scan the QR code to import multisig wallet or scan this QR code with software wallet to finish connection"},
     {"multisig_import_wallet_exist", "Wallet Already Exists"},
     {"multisig_import_wallet_exist_desc", "The multisig wallet you selected already exists on the current device, please import another wallet."},
+    {"multisig_signature_hint_1", "Please ask the 2nd co-signer to scan the QR code and sign."},
+    {"multisig_signature_hint_2", "Scan the QR code with your software wallet"},
     {"not_now", "Not Now"},
     {"passphrase_access_switch_desc", "Create a passphrase shortcut for device boot-up"},
     {"passphrase_access_switch_title", "Passphrase Quick Access"},

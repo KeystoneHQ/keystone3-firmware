@@ -9,6 +9,8 @@
 #include "secret_cache.h"
 #include "screen_manager.h"
 #include "account_manager.h"
+#include "gui_transaction_detail_widgets.h"
+#include "gui_multisig_transaction_signature_widgets.h"
 
 #define CHECK_FREE_PARSE_RESULT(result)                             \
     if (result != NULL) {                                           \
@@ -27,6 +29,8 @@ static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static TransactionParseResult_DisplayTx *g_parseResult = NULL;
 static TransactionParseResult_DisplayBtcMsg *g_parseMsgResult = NULL;
+
+static bool IsMultiSigTx(DisplayTx *data);
 
 #ifndef BTC_ONLY
 typedef struct UtxoViewToChain {
@@ -108,7 +112,15 @@ UREncodeResult *GuiGetSignQrCodeData(void)
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
+        if (GuiGetCurrentTransactionType() == TRANSACTION_TYPE_BTC_MULTISIG) {
+            MultisigSignResult *result = btc_sign_multisig_psbt(data, seed, len, mfp, sizeof(mfp));
+            encodeResult = result->ur_result;
+            GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed);
+            free_MultisigSignResult(result);
+        }
+        else {
+            encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
+        }
     }
 #ifndef BTC_ONLY
     else if (urType == Bytes || urType == KeystoneSignRequest) {
@@ -209,6 +221,10 @@ void *GuiGetParsedQrData(void)
 #endif
             g_parseResult = btc_parse_psbt(crypto, mfp, sizeof(mfp), public_keys);
             CHECK_CHAIN_RETURN(g_parseResult);
+            if (IsMultiSigTx(g_parseResult->data))
+            {
+                GuiSetCurrentTransactionType(TRANSACTION_TYPE_BTC_MULTISIG);
+            }
             SRAM_FREE(public_keys);
             return g_parseResult;
         }
@@ -493,9 +509,7 @@ void GetBtcMsgDetail(void *indata, void *param, uint32_t maxLen)
 
 void FreePsbtUxtoMemory(void)
 {
-    printf("free g_urResult: %p\r\n", g_urResult);
     CHECK_FREE_UR_RESULT(g_urResult, false);
-    printf("free g_urMultiResult: %p\r\n", g_urMultiResult);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
 }
@@ -509,10 +523,7 @@ void FreeBtcMsgMemory(void)
 
 static bool IsMultiSigTx(DisplayTx *data)
 {
-    if (data->overview->multi_sig_status == NULL) {
-        return false;
-    }
-    return true;
+    return data->overview->is_multisig;
 }
 
 static void SetContainerDefaultStyle(lv_obj_t *container)
@@ -970,7 +981,7 @@ void GuiBtcTxOverview(lv_obj_t *parent, void *totalData)
     lv_obj_t *lastView = NULL;
 
     if (IsMultiSigTx(txData)) {
-        lastView = CreateSignStatusView(parent, overviewData->multi_sig_status);
+        lastView = CreateSignStatusView(parent, overviewData->sign_status);
     }
     lastView = CreateOverviewAmountView(parent, overviewData, lastView);
     lastView = CreateNetworkView(parent, overviewData->network, lastView);
@@ -991,7 +1002,7 @@ void GuiBtcTxDetail(lv_obj_t *parent, void *totalData)
 
     lv_obj_t *lastView = NULL;
     if (IsMultiSigTx(txData)) {
-        lastView = CreateSignStatusView(parent, detailData->multi_sig_status);
+        lastView = CreateSignStatusView(parent, detailData->sign_status);
     }
     lastView = CreateNetworkView(parent, detailData->network, lastView);
     lastView = CreateDetailAmountView(parent, detailData, lastView);

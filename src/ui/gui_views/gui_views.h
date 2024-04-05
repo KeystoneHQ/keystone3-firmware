@@ -193,7 +193,7 @@ extern GUI_VIEW g_exportPubkeyView;
 extern GUI_VIEW g_updateSuccessView;
 #ifdef BTC_ONLY
 extern GUI_VIEW g_btcBtcWalletProfileView;
-#endif
+extern GUI_VIEW g_multisigTransactionSignatureView;
 extern GUI_VIEW g_importMultisigWalletInfoView;
 extern GUI_VIEW g_importMultisigWalletView;
 extern GUI_VIEW g_createMultisigWalletView;

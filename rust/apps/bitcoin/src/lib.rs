@@ -41,11 +41,27 @@ use third_party::either::{Left, Right};
 use third_party::hex;
 use third_party::ur_registry::pb::protoc;
 
+pub struct PsbtSignStatus {
+    pub sign_status: Option<String>,
+    pub is_completed: bool,
+}
+
 pub fn sign_psbt(psbt_hex: Vec<u8>, seed: &[u8], mfp: Fingerprint) -> Result<Vec<u8>> {
+    sign_psbt_no_serialize(psbt_hex, seed, mfp).map(|v| v.serialize())
+}
+
+pub fn sign_psbt_no_serialize(psbt_hex: Vec<u8>, seed: &[u8], mfp: Fingerprint) -> Result<Psbt> {
     let psbt = deserialize_psbt(psbt_hex)?;
     let mut wpsbt = WrappedPsbt { psbt };
-    let result = wpsbt.sign(seed, mfp)?;
-    Ok(result.serialize())
+    wpsbt.sign(seed, mfp)
+}
+
+pub fn parse_psbt_sign_status(psbt: Psbt) -> PsbtSignStatus {
+    let wpsbt = WrappedPsbt { psbt };
+    PsbtSignStatus {
+        sign_status: wpsbt.get_overall_sign_status(),
+        is_completed: wpsbt.is_sign_completed(),
+    }
 }
 
 pub fn sign_msg(msg: &str, seed: &[u8], path: &String) -> Result<Vec<u8>> {
@@ -130,7 +146,8 @@ mod test {
                 to: $to.iter().map(|i| i.to_string()).collect(),
                 network: $network.to_string(),
                 fee_larger_than_amount: $fee_larger_than_amount,
-                multi_sig_status: None,
+                sign_status: Some("Unsigned".to_string()),
+                is_multisig: false,
             }
         };
     }
@@ -142,7 +159,8 @@ mod test {
                 amount: $amount.to_string(),
                 value: $value,
                 path: Some($path.to_string()),
-                multi_sig_status: None,
+                is_multisig: false,
+                sign_status: (0, 1),
             }
         };
     }
@@ -176,7 +194,7 @@ mod test {
                 total_output_sat: $total_output_sat.to_string(),
                 fee_sat: $fee_sat.to_string(),
                 network: $network.to_string(),
-                multi_sig_status: None,
+                sign_status: Some("Unsigned".to_string()),
             }
         };
     }

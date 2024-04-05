@@ -68,6 +68,7 @@ typedef enum {
     TRANSACTION_MODE_USB,
 } TransactionMode;
 
+static TransactionType g_transactionType = TRANSACTION_TYPE_NORMAL;
 static void GuiTransactionDetailNavBarInit();
 static void CheckSliderProcessHandler(lv_event_t *e);
 static void SignByPasswordCb(bool cancel);
@@ -109,8 +110,19 @@ static void TransactionGoToHomeViewHandler(lv_event_t *e)
     }
 }
 
+void GuiSetCurrentTransactionType(TransactionType t){
+    g_transactionType = t;
+}
+
+TransactionType GuiGetCurrentTransactionType() {
+    return g_transactionType;
+}
+
 void GuiTransactionDetailInit(uint8_t viewType)
 {
+    //assume the transaction is a normal one. 
+    //btc multisig will change g_transactionType when parsing transaction;
+    g_transactionType = TRANSACTION_TYPE_NORMAL;
     g_viewType = viewType;
     g_chainType = ViewTypeToChainTypeSwitch(g_viewType);
     g_pageWidget = CreatePageWidget();
@@ -120,8 +132,6 @@ void GuiTransactionDetailInit(uint8_t viewType)
     GuiCreateConfirmSlider(g_pageWidget->contentZone, CheckSliderProcessHandler);
     GuiPendingHintBoxMoveToTargetParent(lv_scr_act());
 }
-
-
 
 void GuiTransactionDetailDeInit()
 {
@@ -210,7 +220,13 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
         return;
     }
 #endif
-    GuiFrameOpenViewWithParam(&g_transactionSignatureView, &g_viewType, sizeof(g_viewType));
+    if(g_transactionType == TRANSACTION_TYPE_BTC_MULTISIG) {
+        printf("transaction type is btc multisig\r\n");
+        GuiFrameOpenView(&g_multisigTransactionSignatureView);
+    }
+    else {
+        GuiFrameOpenViewWithParam(&g_transactionSignatureView, &g_viewType, sizeof(g_viewType));
+    }
 }
 
 void GuiSignVerifyPasswordErrorCount(void *param)

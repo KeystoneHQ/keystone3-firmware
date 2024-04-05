@@ -57,7 +57,8 @@ typedef int32_t(*GuiEventProcessFunc)(void *self, uint16_t usEvent, void *param,
     add(SCREEN_MULTI_SIG_IMPORT_WALLET_INFO)    \
     add(SCREEN_MULTI_SIG_IMPORT_WALLET_SUCCESS) \
     add(SCREEN_CREATE_MULTI)                    \
-    add(SCREEN_MANAGE_MULTI_SIG)
+    add(SCREEN_MANAGE_MULTI_SIG)                \
+    add(SCREEN_MULTISIG_TRANSACTION_SIGNATURE)
 
 typedef enum {
     SCREEN_INVALID = -1,

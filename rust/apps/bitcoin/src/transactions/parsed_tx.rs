@@ -6,6 +6,8 @@ use alloc::vec::Vec;
 use core::ops::Div;
 use third_party::bitcoin::bip32::{DerivationPath, Fingerprint, Xpub};
 
+use super::legacy::input;
+
 #[derive(Debug, Eq, PartialEq)]
 pub struct ParsedTx {
     pub overview: OverviewTx,
@@ -18,7 +20,8 @@ pub struct ParsedInput {
     pub amount: String,
     pub value: u64,
     pub path: Option<String>,
-    pub multi_sig_status: Option<String>,
+    pub sign_status: (u32, u32),
+    pub is_multisig: bool,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -39,7 +42,8 @@ pub struct OverviewTx {
     pub to: Vec<String>,
     pub network: String,
     pub fee_larger_than_amount: bool,
-    pub multi_sig_status: Option<String>,
+    pub is_multisig: bool,
+    pub sign_status: Option<String>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -53,7 +57,7 @@ pub struct DetailTx {
     pub fee_amount: String,
     pub fee_sat: String,
     pub network: String,
-    pub multi_sig_status: Option<String>,
+    pub sign_status: Option<String>,
 }
 
 pub struct ParseContext {
@@ -88,23 +92,34 @@ pub trait TxParser {
 
     fn determine_network(&self) -> Result<Network>;
 
-    fn get_multi_status(parsed_inputs: &[ParsedInput]) -> Option<String> {
+    fn get_sign_status(parsed_inputs: &[ParsedInput]) -> Option<String> {
+        //should combine with wrapped_psbt.get_overall_sign_status later;
         if parsed_inputs.is_empty() {
             return None;
         }
-        let first_multi_status = parsed_inputs[0].multi_sig_status.as_ref();
-        if parsed_inputs
+        let first_multi_status = parsed_inputs[0].sign_status;
+        //none of inputs is signed
+        if parsed_inputs.iter().all(|input| input.sign_status.0 == 0) {
+            return Some(String::from("Unsigned"));
+        }
+        //or some inputs are signed and completed
+        else if parsed_inputs
             .iter()
-            .all(|input| input.multi_sig_status.as_ref() == first_multi_status)
+            .all(|input| input.sign_status.0 >= input.sign_status.1)
         {
-            if let Some(value) = first_multi_status {
-                if value.starts_with("0") {
-                    return Some(String::from("Unsigned"));
-                }
-            }
-            first_multi_status.cloned()
+            return Some(String::from("Completed"));
+        }
+        //or inputs are partially signed and all of them are multisig inputs
+        else if parsed_inputs.iter().all(|input| {
+            input.sign_status.0 == first_multi_status.0
+                && input.sign_status.1 == first_multi_status.1
+        }) {
+            return Some(format!(
+                "{}/{} Signed",
+                first_multi_status.0, first_multi_status.1
+            ));
         } else {
-            Some(String::from("Partial Signed"))
+            return Some(String::from("Partly Signed"));
         }
     }
 
@@ -147,7 +162,7 @@ pub trait TxParser {
         overview_to.sort();
         overview_to.dedup();
         let overview = OverviewTx {
-            multi_sig_status: Self::get_multi_status(&inputs),
+            sign_status: Self::get_sign_status(&inputs),
             total_output_amount: Self::format_amount(overview_amount, network),
             fee_amount: Self::format_amount(fee, network),
             total_output_sat: Self::format_sat(overview_amount),
@@ -156,9 +171,10 @@ pub trait TxParser {
             to: overview_to,
             network: network.normalize(),
             fee_larger_than_amount: fee > overview_amount,
+            is_multisig: inputs.iter().any(|v| v.is_multisig),
         };
         let detail = DetailTx {
-            multi_sig_status: Self::get_multi_status(&inputs),
+            sign_status: Self::get_sign_status(&inputs),
             from: inputs,
             to: outputs,
             total_input_amount: Self::format_amount(total_input_value, network),

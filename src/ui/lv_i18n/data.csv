@@ -963,3 +963,5 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,manage_multi_wallet_add_limit_desc,"You can add up to 3 multisig wallets",,,,,,,
 ,manage_multi_wallet_delete_desc,"This wallet can not be restored after the deletion",,,,,,,
 ,manage_multi_wallet_export_title,"Export Wallet",,,,,,,
+,multisig_signature_hint_1,"Please ask the 2nd co-signer to scan the QR code and sign.",,,,,,,
+,multisig_signature_hint_2,"Scan the QR code with your software wallet",,,,,,,

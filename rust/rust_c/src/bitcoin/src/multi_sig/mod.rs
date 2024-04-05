@@ -7,7 +7,7 @@ use alloc::{format, slice, vec};
 use app_bitcoin::errors::BitcoinError;
 use app_bitcoin::multi_sig::address::create_multi_sig_address_for_wallet;
 use app_bitcoin::multi_sig::wallet::{
-    export_wallet_by_ur, generate_config_data, parse_wallet_config, MultiSigWalletConfig,
+    self, export_wallet_by_ur, generate_config_data, parse_wallet_config, MultiSigWalletConfig,
 };
 use app_bitcoin::multi_sig::{export_xpub_by_crypto_account, Network};
 use core::str::FromStr;

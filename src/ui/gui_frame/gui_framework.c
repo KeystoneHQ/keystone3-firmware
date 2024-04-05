@@ -75,7 +75,9 @@ static GUI_VIEW *g_viewsTable[] = {
     &g_diceRollsView,
 #ifdef BTC_ONLY
     &g_importMultisigWalletInfoView,
-    &g_importMultisigWalletView,
+    &g_multisigSelectImportMethodView,
+    &g_multisigWalletExportView,
+    &g_multisigReadSdcardView,
     &g_createMultisigWalletView,
     &g_manageMultisigWalletView,
 #endif
@@ -287,7 +289,7 @@ static const char *GuiFrameIdToName(SCREEN_ID_ENUM ID)
         "SCREEN_TUTORIAL\0" "SCREEN_CONNECTION\0" "SCREEN_MULTI_ACCOUNTS_RECEIVE\0" "SCREEN_KEY_DERIVATION_REQUEST\0"
         "SCREEN_SCAN\0" "SCREEN_TRANSACTION_DETAIL\0" "SCREEN_TRANSACTION_SIGNATURE\0" "SCREEN_USB_TRANSPORT\0"
         "SCREEN_DEVICE_PUB_KEY\0" "SCREEN_DEVICE_UPDATE_SUCCESS\0" "SCREEN_BTC_WALLET_PROFILE\0" "SCREEN_MULTI_SIG_IMPORT_WALLET_INFO\0"
-        "SCREEN_MULTI_SIG_IMPORT_WALLET_SUCCESS\0" "SCREEN_CREATE_MULTI\0" "SCREEN_MANAGE_MULTI_SIG\0";
+        "SCREEN_MULTISIG_WALLET_EXPORT\0" "SCREEN_CREATE_MULTI\0" "SCREEN_MANAGE_MULTI_SIG\0";
     SCREEN_ID_ENUM i;
 
     for (i = SCREEN_INIT; i != ID && *str; i++) {

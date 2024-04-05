@@ -195,7 +195,9 @@ extern GUI_VIEW g_updateSuccessView;
 extern GUI_VIEW g_btcBtcWalletProfileView;
 extern GUI_VIEW g_multisigTransactionSignatureView;
 extern GUI_VIEW g_importMultisigWalletInfoView;
-extern GUI_VIEW g_importMultisigWalletView;
+extern GUI_VIEW g_multisigSelectImportMethodView;
+extern GUI_VIEW g_multisigWalletExportView;
+extern GUI_VIEW g_multisigReadSdcardView;
 extern GUI_VIEW g_createMultisigWalletView;
 extern GUI_VIEW g_manageMultisigWalletView;
 #endif
@@ -222,6 +224,7 @@ void CloseToTargetTileView(uint8_t currentIndex, uint8_t targetIndex);
 void CloseParentAndNextHandler(lv_event_t *e);
 void GuiViewHintBoxClear(void);
 lv_obj_t *GuiCreateWalletNoticeWidget(lv_obj_t *parent);
+void *GuiCreateErrorCodeHintbox(int32_t errCode, lv_obj_t **param);
 
 #endif /* _GUI_VIEWS_H */
 

@@ -55,9 +55,11 @@ typedef int32_t(*GuiEventProcessFunc)(void *self, uint16_t usEvent, void *param,
     add(SCREEN_DEVICE_UPDATE_SUCCESS)           \
     add(SCREEN_BTC_WALLET_PROFILE)              \
     add(SCREEN_MULTI_SIG_IMPORT_WALLET_INFO)    \
-    add(SCREEN_MULTI_SIG_IMPORT_WALLET_SUCCESS) \
+    add(SCREEN_MULTISIG_WALLET_EXPORT) \
     add(SCREEN_CREATE_MULTI)                    \
     add(SCREEN_MANAGE_MULTI_SIG)                \
+    add(SCREEN_MULTISIG_SELECT_IMPORT_METHOD)   \
+    add(SCREEN_MULTISIG_READ_SDCARD)            \
     add(SCREEN_MULTISIG_TRANSACTION_SIGNATURE)
 
 typedef enum {

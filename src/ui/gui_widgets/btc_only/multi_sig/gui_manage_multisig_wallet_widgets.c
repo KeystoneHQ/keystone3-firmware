@@ -451,7 +451,6 @@ static void UpdateDefaultWalletState(void)
         lv_label_set_text(label, _("wallet_profile_current_default_desc"));
         label = lv_obj_get_child(g_multisigItem.deleteBtn, 1);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        lv_label_set_text(label, _("wallet_profile_current_default_desc"));
     } else {
         lv_obj_add_flag(g_multisigItem.deleteBtn, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_flag(g_multisigItem.setDefaultBtn, LV_OBJ_FLAG_CLICKABLE);
@@ -459,6 +458,5 @@ static void UpdateDefaultWalletState(void)
         lv_label_set_text(label, _("manage_multi_wallet_set_default"));
         label = lv_obj_get_child(g_multisigItem.deleteBtn, 1);
         lv_obj_set_style_text_opa(label, LV_OPA_100, LV_PART_MAIN);
-        lv_label_set_text(label, _("manage_multi_wallet_set_default"));
     }
 }

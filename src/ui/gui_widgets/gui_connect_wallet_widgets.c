@@ -713,8 +713,6 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 
     lv_obj_t *qrcode = GuiCreateContainerWithParent(qrBgCont, 294, 294);
     lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 21);
-
-    lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 21);
     g_connectWalletTileView.qrCode = qrcode;
 
     g_bottomCont = GuiCreateContainerWithParent(qrCont, 408, 104);
@@ -939,16 +937,7 @@ void GuiConnectWalletInit(void)
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 
-    lv_obj_t *tileView = lv_tileview_create(cont);
-    lv_obj_clear_flag(tileView, LV_OBJ_FLAG_SCROLLABLE);
-    if (GuiDarkMode()) {
-        lv_obj_set_style_bg_color(tileView, BLACK_COLOR, LV_PART_MAIN);
-    } else {
-        lv_obj_set_style_bg_color(tileView, WHITE_COLOR, LV_PART_MAIN);
-    }
-    lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR & LV_STATE_SCROLLED);
-    lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
-
+    lv_obj_t *tileView = GuiCreateTileView(cont); 
     lv_obj_t *tile = lv_tileview_add_tile(tileView, CONNECT_WALLET_SELECT_WALLET, 0, LV_DIR_HOR);
     GuiCreateSelectWalletWidget(tile);
 
@@ -980,7 +969,6 @@ UREncodeResult *GuiGetXrpToolkitData(void)
 
 void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
 {
-#ifndef COMPILE_SIMULATOR
     GenerateUR func = NULL;
     SetWallet(g_pageWidget->navBarWidget, index, NULL);
 #ifndef BTC_ONLY
@@ -1079,20 +1067,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     if (func) {
         GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
     }
-#else
-    SetWallet(g_pageWidget->navBarWidget, index, NULL);
-    GenerateUR func = NULL;
-    lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
-    if (g_manageImg != NULL) {
-        lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
-    }
-#ifndef BTC_ONLY
-    func = GuiGetOkxWalletData;
-    AddOkxWalletCoins();
-#else
-    func = GuiGetBlueWalletBtcData;
-#endif
-#endif
 }
 
 static void QRCodePause(bool pause)
@@ -1557,32 +1531,13 @@ static void OpenMoreHandler(lv_event_t *e)
 #endif
         g_openMoreHintBox = GuiCreateHintBox(lv_scr_act(), 480, hintboxHeight, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
-        lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, _("Tutorial"));
-        lv_obj_t *img = GuiCreateImg(g_openMoreHintBox, &imgTutorial);
-
-        GuiButton_t table[] = {
-            {
-                .obj = img,
-                .align = LV_ALIGN_LEFT_MID,
-                .position = {24, 0},
-            },
-            {
-                .obj = label,
-                .align = LV_ALIGN_LEFT_MID,
-                .position = {76, 0},
-            },
-        };
-        lv_obj_t *btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                                        OpenTutorialHandler, wallet);
+        lv_obj_t *btn = GuiCreateSelectButton(g_openMoreHintBox, _("Tutorial"), &imgTutorial,
+                                              OpenTutorialHandler, wallet, true);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 #ifndef BTC_ONLY
         if (IsEVMChain(*wallet) || IsSOL(*wallet)) {
-            label = GuiCreateTextLabel(g_openMoreHintBox, _("derivation_path_change"));
-            img = GuiCreateImg(g_openMoreHintBox, &imgPath);
-            table[0].obj = img;
-            table[1].obj = label;
-            btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                                  ChangeDerivationPathHandler, NULL);
+            btn = GuiCreateSelectButton(g_openMoreHintBox, _("derivation_path_change"), &imgPath,
+                                              ChangeDerivationPathHandler, wallet, true);
             lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -120);
         }
 #endif

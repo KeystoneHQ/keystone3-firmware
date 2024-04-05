@@ -78,6 +78,11 @@ if(NOT EXISTS ${ASSETS_PATH})
     file(MAKE_DIRECTORY ${ASSETS_PATH})
 endif()
 
+set(SD_PATH ui_simulator/assets/sd)
+if(NOT EXISTS ${SD_PATH})
+    file(MAKE_DIRECTORY ${SD_PATH})
+endif()
+
 set(QRCODE_FILE ui_simulator/assets/qrcode_data.txt)
 if(NOT EXISTS ${QRCODE_FILE})
     file(TOUCH ${QRCODE_FILE})

@@ -63,15 +63,6 @@ int32_t SE_GetAtecc608bRng(uint8_t *rngArray, uint32_t num)
     return 0;
 }
 
-PtrT_UREncodeResult get_connect_companion_app_ur(PtrBytes master_fingerprint,
-                                                 uint32_t master_fingerprint_length,
-                                                 int32_t cold_version,
-                                                 PtrT_CoinConfig coin_config,
-                                                 uint32_t coin_config_length)
-{
-
-}
-
 void SetLcdBright(uint32_t bright)
 {
 

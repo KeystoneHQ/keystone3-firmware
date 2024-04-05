@@ -59,7 +59,6 @@ static MultiSigWalletItem_t *g_walletItem;
 static MultiSigWallet *g_multiSigWallet = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 
-static void SelectFormatHandler(lv_event_t *e);
 static void ReloadAndUpdateMultisigConfig(void);
 static void CreateMultiSigWalletWidget(lv_obj_t *parent);
 static void ManageMultiSigWalletHandler(lv_event_t *e);
@@ -72,42 +71,6 @@ static void SelectWalletIndexAndNextHandler(lv_event_t *e);
 static void GuiConfirmDeleteHandler(lv_event_t *e);
 static void ExportMultiWalletHandler(lv_event_t *e);
 static void UpdateDefaultWalletState(void);
-
-static void ImportMultiXpubHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    MoreInfoTable_t moreInfoTable[] = {
-        {.name = _("create_multi_wallet_import_xpub_qr"), .src = &imgScanImport, .callBack = UnHandler, NULL},
-        {.name = _("create_multi_wallet_import_xpub_sdcard"), .src = &imgSdcardImport, .callBack = CloseParentAndNextHandler, &g_noticeWindow},
-    };
-
-    if (code == LV_EVENT_CLICKED) {
-        g_noticeWindow = GuiCreateMoreInfoHintBox(NULL, NULL, moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true);
-    }
-}
-
-static void CancelCreateMultisigWalletHanler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeWindow)
-        GuiCLoseCurrentWorkingView();
-    }
-}
-
-static void GuiMultiSelectSliceWidget(lv_obj_t *parent)
-{
-}
-
-static void GuiMultiSelectFormatWidget(lv_obj_t *parent)
-{
-    lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
-    lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
-    lv_obj_t *label = GuiCreateNoticeLabel(parent, _("create_multi_wallet_select_format"));
-    lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 0);
-}
 
 void GuiManageMultisigWalletInit(void)
 {
@@ -128,10 +91,6 @@ void GuiManageMultisigWalletInit(void)
     lv_obj_set_tile_id(g_manageMultisig.tileView, 0, 0, LV_ANIM_OFF);
 }
 
-
-static void UpdateCustodianTileLabel(void)
-{
-}
 
 int8_t GuiManageMultisigWalletNextTile(uint8_t index)
 {
@@ -200,14 +159,6 @@ void GuiManageMultisigWalletRefresh(void)
     }
 }
 
-static void SelectFormatHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiManageMultisigWalletNextTile(0);
-    }
-}
 
 
 static void ReloadAndUpdateMultisigConfig(void)

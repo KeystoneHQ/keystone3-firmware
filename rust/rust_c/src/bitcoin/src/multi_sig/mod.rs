@@ -317,21 +317,16 @@ pub extern "C" fn generate_address_for_multisig_wallet_config(
 pub extern "C" fn generate_psbt_file_name(
     // origin_file_name: PtrString,
     // wallet_name: PtrString,
-    psbt_hex: PtrString,
+    psbt_hex: PtrBytes,
+    psbt_len: u32,
+    time_stamp: u32,
 ) -> Ptr<SimpleResponse<c_char>> {
     // let wallet_name = recover_c_char(wallet_name);
-    let psbt_hex = recover_c_char(psbt_hex);
-    match hex::decode(psbt_hex) {
-        Ok(psbt) => {
-            let hash = sha256(&psbt);
-            let checksum = hex::encode(&hash[0..4]);
-            let name = format!("tx_{checksum}_signed.psbt");
-            return SimpleResponse::success(convert_c_char(name)).simple_c_ptr();
-        }
-        Err(e) => {
-            return SimpleResponse::from(RustCError::InvalidHex(e.to_string())).simple_c_ptr()
-        }
-    }
+    let psbt_hex = unsafe { slice::from_raw_parts(psbt_hex, psbt_len as usize) };
+    let hash = sha256(psbt_hex);
+    let checksum = hex::encode(&hash[0..4]);
+    let name = format!("tx_{checksum}_{time_stamp}_signed.psbt");
+    SimpleResponse::success(convert_c_char(name)).simple_c_ptr()
     // if origin_file_name.is_null() {
 
     // } else {

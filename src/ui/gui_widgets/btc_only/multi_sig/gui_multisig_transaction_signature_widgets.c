@@ -11,6 +11,7 @@
 #else
 #include "safe_str_lib.h"
 #include "user_fatfs.h"
+#include "drv_rtc.h"
 #endif
 
 #define MAX_SIGN_STATUS_LEN 24
@@ -22,7 +23,6 @@ static lv_obj_t *g_noticeWindow;
 static lv_obj_t *g_cont = NULL;
 static lv_obj_t *g_qrCont = NULL;
 static lv_obj_t *g_signStatusLabel = NULL;
-
 
 static char *g_signStatus = NULL;
 static bool g_signCompleted = false;
@@ -73,24 +73,23 @@ static void GuiWriteSDCardHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED)
     {
         GUI_DEL_OBJ(g_noticeWindow);
-        char* filname = lv_event_get_param(e);
-        char* path = SRAM_MALLOC(MAX_PSBT_NAME_LEN);
-        #ifdef COMPILE_SIMULATOR
-        strcpy_s(path, MAX_PSBT_NAME_LEN, "C:/assets/sd");
-        strcat_s(path, MAX_PSBT_NAME_LEN, filname);
-        FatfsFileWrite(path, g_psbtHex, g_psbtLen);
-        #else
+        char *filename = lv_event_get_user_data(e);
+        printf("filename: %s\r\n", filename);
+        char *path = SRAM_MALLOC(MAX_PSBT_NAME_LEN);
+#ifdef COMPILE_SIMULATOR
+        strcpy_s(path, MAX_PSBT_NAME_LEN, "C:/assets/sd/");
+#else
         strcpy_s(path, MAX_PSBT_NAME_LEN, "0:/");
-        strcat_s(path, MAX_PSBT_NAME_LEN, filname);
-        FatfsFileWrite(path, g_psbtHex, g_psbtLen);
-        #endif
-        if (false)
+#endif
+        strcat_s(path, MAX_PSBT_NAME_LEN, filename);
+        int ret = FatfsFileWrite(path, g_psbtHex, g_psbtLen);
+        if (ret)
         {
-            GuiShowSDCardExportSuccess();
+            GuiShowSDCardExportFailed();
         }
         else
         {
-            GuiShowSDCardExportFailed();
+            GuiShowSDCardExportSuccess();
         }
         return;
     }
@@ -128,7 +127,7 @@ static void GuiShowSDCardExport()
     label = GuiCreateIllustrateLabel(g_noticeWindow, _("multisig_export_to_sdcard_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
-    SimpleResponse_c_char *result = generate_psbt_file_name(g_psbtHex);
+    SimpleResponse_c_char *result = generate_psbt_file_name(g_psbtHex, g_psbtLen, GetCurrentStampTime());
     if (result->error_code != 0)
     {
         printf("errorMessage: %s\r\n", result->error_message);

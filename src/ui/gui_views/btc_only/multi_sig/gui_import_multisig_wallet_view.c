@@ -5,12 +5,6 @@
 #include "gui_status_bar.h"
 #include "gui_import_multisig_wallet_widgets.h"
 
-static int32_t GuiImportWalletSuccessViewDeInit(void)
-{
-    GuiImportMultisigWalletWidgetsDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiImportMultiSigWalletViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     GUI_ASSERT(g_importMultisigWalletView.isActive);

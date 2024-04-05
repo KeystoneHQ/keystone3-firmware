@@ -48,6 +48,7 @@ typedef struct {
     lv_obj_t *walletName;
     lv_obj_t *policy;
     lv_obj_t *deleteBtn;
+    lv_obj_t *setDefaultBtn;
 } MultisigWidgetItem_t;
 
 static ManageMultisigWidget_t g_manageMultisig;
@@ -70,6 +71,7 @@ static void SetDefaultMultiWalletHandler(lv_event_t *e);
 static void SelectWalletIndexAndNextHandler(lv_event_t *e);
 static void GuiConfirmDeleteHandler(lv_event_t *e);
 static void ExportMultiWalletHandler(lv_event_t *e);
+static void UpdateDefaultWalletState(void);
 
 static void ImportMultiXpubHandler(lv_event_t *e)
 {
@@ -138,9 +140,7 @@ int8_t GuiManageMultisigWalletNextTile(uint8_t index)
         ReloadAndUpdateMultisigItem((DEFAULT_WALLET_INDEX_ENUM)index);
         lv_label_set_text(g_multisigItem.walletName, g_walletItem->name);
         lv_label_set_text(g_multisigItem.policy, g_multiSigWallet->policy);
-        if (GetDefaultWalletIndex() == g_walletItem->order + 1) {
-            lv_obj_clear_flag(g_multisigItem.deleteBtn, LV_OBJ_FLAG_CLICKABLE);
-        }
+        UpdateDefaultWalletState();
         break;
     case MULTI_MULTI_SIG_DETAIL:
         CreateCoSignerDetailWidget(g_manageMultisig.showCoSingersTile);
@@ -158,7 +158,6 @@ int8_t GuiManageMultiWalletPrevTile(void)
 {
     switch (g_manageMultisig.currentTile) {
     case MULTI_MULTI_SIG_HOME:
-        GuiCLoseCurrentWorkingView();
         break;
     case MULTI_MULTI_SIG_DETAIL:
         break;
@@ -217,8 +216,8 @@ static void ReloadAndUpdateMultisigConfig(void)
     int multiSigNum = GetCurrentAccountMultisigWalletNum();
     DEFAULT_WALLET_INDEX_ENUM defaultWallet = GetDefaultWalletIndex();
     printf("getdefaultwallet = %d\n", defaultWallet);
-    lv_obj_clean(g_manageMultisig.homeTile);
     printf("multisignum = %d\n", multiSigNum);
+    lv_obj_clean(g_manageMultisig.homeTile);
     if (multiSigNum == 0) {
         return CreateMultiSigWalletWidget(g_manageMultisig.homeTile);
     }
@@ -226,14 +225,15 @@ static void ReloadAndUpdateMultisigConfig(void)
         char desc[BUFFER_SIZE_16] = {0};
         uint16_t height = 84;
         uint16_t offSet = 0;
-        if (defaultWallet == GetCurrenMultisigWalletByIndex(i)->order) {
+        MultiSigWalletItem_t *item = GetCurrenMultisigWalletByIndex(i);
+        if (defaultWallet == item->order) {
             strcpy_s(desc, sizeof(desc), _("wallet_profile_default_desc"));
             height = 118;
             offSet += 96;
         } else if (i != 0) {
             offSet += 96;
         }
-        lv_obj_t *button = GuiCreateSettingItemButton(g_manageMultisig.homeTile, 456, GetCurrenMultisigWalletByIndex(i)->name, desc,
+        lv_obj_t *button = GuiCreateSettingItemButton(g_manageMultisig.homeTile, 456, item->name, desc,
                            &imgTwoKey, &imgArrowRight, SelectWalletIndexAndNextHandler, &defaultIndex[i]);
         lv_obj_set_height(button, height);
         lv_obj_align(button, LV_ALIGN_TOP_LEFT, 12, 96 * i);
@@ -294,6 +294,7 @@ static void CreateMultiSigWalletDetailWidget(lv_obj_t *parent)
     button = GuiCreateSettingItemButton(parent, 456, _("manage_multi_wallet_set_default"), NULL,
                                         &imgDefaultWallet, NULL, SetDefaultMultiWalletHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 96 * 2);
+    g_multisigItem.setDefaultBtn = button;
 
     button = GuiCreateSettingItemButton(parent, 456, _("manage_multi_wallet_export_config"), NULL,
                                         &imgWalletExport, NULL, ExportMultiWalletHandler, NULL);
@@ -396,6 +397,7 @@ static void SetDefaultMultiWalletHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         SetDefaultWalletIndex((DEFAULT_WALLET_INDEX_ENUM)g_walletItem->order);
+        UpdateDefaultWalletState();
     }
 }
 
@@ -414,8 +416,6 @@ static void SelectWalletIndexAndNextHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        uint8_t index = *(uint8_t *)lv_event_get_user_data(e);
-        printf("index = %d\n", index);
         GuiManageMultisigWalletNextTile(*(uint8_t *)lv_event_get_user_data(e));
     }
 }
@@ -439,4 +439,26 @@ void DeleteMultisigWallet(void)
     ClearSecretCache();
     GuiManageMultiWalletPrevTile();
     GuiManageMultiWalletPrevTile();
+}
+
+static void UpdateDefaultWalletState(void)
+{
+    lv_obj_t *label = lv_obj_get_child(g_multisigItem.setDefaultBtn, 1);
+    if (GetDefaultWalletIndex() == g_walletItem->order) {
+        lv_obj_clear_flag(g_multisigItem.deleteBtn, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_clear_flag(g_multisigItem.setDefaultBtn, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
+        lv_label_set_text(label, _("wallet_profile_current_default_desc"));
+        label = lv_obj_get_child(g_multisigItem.deleteBtn, 1);
+        lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
+        lv_label_set_text(label, _("wallet_profile_current_default_desc"));
+    } else {
+        lv_obj_add_flag(g_multisigItem.deleteBtn, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_add_flag(g_multisigItem.setDefaultBtn, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_set_style_text_opa(label, LV_OPA_100, LV_PART_MAIN);
+        lv_label_set_text(label, _("manage_multi_wallet_set_default"));
+        label = lv_obj_get_child(g_multisigItem.deleteBtn, 1);
+        lv_obj_set_style_text_opa(label, LV_OPA_100, LV_PART_MAIN);
+        lv_label_set_text(label, _("manage_multi_wallet_set_default"));
+    }
 }

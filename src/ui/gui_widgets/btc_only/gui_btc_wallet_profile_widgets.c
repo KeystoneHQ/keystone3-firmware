@@ -24,10 +24,6 @@ typedef struct {
 } WalletProfileWidgets_t;
 
 static void CreateBtcWalletProfileEntranceWidget(lv_obj_t *parent);
-static void CreateBtcNetworkWidget(lv_obj_t *parent);
-static void NetworkHandler(lv_event_t *e);
-static void ManageMultiSigWalletHandler(lv_event_t *e);
-static void CreateMultiSigWalletWidget(lv_obj_t *parent);
 static void SetDefaultSingleWalletHandler(lv_event_t *e);
 static void CreateSingleSigWalletWidget(lv_obj_t *parent);
 
@@ -116,12 +112,12 @@ static void SwitchTestnetHandler(lv_event_t *e)
 static void CreateBtcWalletProfileEntranceWidget(lv_obj_t *parent)
 {
     DEFAULT_WALLET_INDEX_ENUM defaultWallet = GetDefaultWalletIndex();
-    char *singleWalletDesc = _("wallet_profile_default_desc"), *multiWalletDesc = NULL;
+    char *singleWalletDesc = (char *)_("wallet_profile_default_desc"), *multiWalletDesc = NULL;
     uint16_t singleWalletHeight = 118, multiWalletDescHeight = 84;
     if (defaultWallet != SINGLE_WALLET) {
         singleWalletDesc = NULL;
         singleWalletHeight = 84;
-        multiWalletDesc = _("wallet_profile_default_desc");
+        multiWalletDesc = (char *)_("wallet_profile_default_desc");
         multiWalletDescHeight = 118;
     }
     lv_obj_t *button = GuiCreateSettingItemButton(parent, 456, _("wallet_profile_single_sign_title"), singleWalletDesc, &imgKey,

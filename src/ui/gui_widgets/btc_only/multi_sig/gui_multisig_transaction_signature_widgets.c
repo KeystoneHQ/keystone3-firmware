@@ -243,10 +243,10 @@ static void GuiMultisigTransactionSignatureContent(lv_obj_t *parent)
     lv_obj_t *text = GuiCreateIllustrateLabel(g_qrCont, g_signStatus);
     lv_obj_align_to(text, g_signStatusLabel, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
 
-    char *hint = _("multisig_signature_hint_1");
+    char *hint = (char *)_("multisig_signature_hint_1");
     if (g_signCompleted) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Broadcast Transaction"));
-        hint = _("multisig_signature_hint_2");
+        hint = (char *)_("multisig_signature_hint_2");
     }
 
     text = GuiCreateIllustrateLabel(g_cont, hint);

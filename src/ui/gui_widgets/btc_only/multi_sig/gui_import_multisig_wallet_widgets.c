@@ -59,7 +59,6 @@ static void GuiShowSDCardExportSuccess();
 static void GuiShowSDCardExportFailed();
 void GuiSetMultisigImportWalletDataBySDCard(char *walletConfig);
 static void GuiMultiShowWalletInfoWidget(lv_obj_t *parent);
-static void GuiMultiCreateSuccessWidget(lv_obj_t *parent);
 static void ImportMultisigGoToHomeViewHandler(lv_event_t *e);
 
 static void prepareWalletByQRCode(void *);
@@ -258,7 +257,6 @@ static void GuiMultiShowWalletInfoWidget(lv_obj_t *parent)
 
     label = GuiCreateNoticeLabel(cont, _("Policy"));
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 24, 0);
-    char buff[8] = {0};
     label = GuiCreateIllustrateLabel(cont, g_wallet->policy);
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
 
@@ -301,7 +299,7 @@ static void GuiMultiShowWalletInfoWidget(lv_obj_t *parent)
 
 static void GuiImportWalletSuccessContent(lv_obj_t *parent)
 {
-    lv_obj_t *cont, *text, *qr_cont, *btn;
+    lv_obj_t *cont, *text, *btn;
 
     cont = GuiCreateContainerWithParent(parent, 480, 800 - 48 - 96 - 114);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);

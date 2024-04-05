@@ -965,3 +965,7 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,manage_multi_wallet_export_title,"Export Wallet",,,,,,,
 ,multisig_signature_hint_1,"Please ask the 2nd co-signer to scan the QR code and sign.",,,,,,,
 ,multisig_signature_hint_2,"Scan the QR code with your software wallet",,,,,,,
+,multisig_signature_export_to_sdcard,"Export Transaction to MicroSD Card",,,,,,,
+,multisig_signature_export_to_sdcard_desc,"File Name:",,,,,,,
+,multisig_signature_export_to_sdcard_success,"Exported Successfully",,,,,,,
+,multisig_signature_export_to_sdcard_success_desc,"Your signed transaction has been exported to MicoSD card successfully.",,,,,,,

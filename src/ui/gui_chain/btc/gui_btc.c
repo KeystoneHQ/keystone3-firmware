@@ -115,7 +115,7 @@ UREncodeResult *GuiGetSignQrCodeData(void)
         if (GuiGetCurrentTransactionType() == TRANSACTION_TYPE_BTC_MULTISIG) {
             MultisigSignResult *result = btc_sign_multisig_psbt(data, seed, len, mfp, sizeof(mfp));
             encodeResult = result->ur_result;
-            GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed);
+            GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
             free_MultisigSignResult(result);
         }
         else {

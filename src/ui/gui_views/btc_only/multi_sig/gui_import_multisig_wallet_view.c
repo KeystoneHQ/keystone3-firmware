@@ -5,12 +5,6 @@
 #include "gui_status_bar.h"
 #include "gui_import_multisig_wallet_widgets.h"
 
-static int32_t GuiImportWalletSuccessViewDeInit(void)
-{
-    GuiImportMultisigWalletWidgetsDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiImportMultiSigWalletViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     GUI_ASSERT(g_importMultisigWalletView.isActive);
@@ -21,7 +15,7 @@ int32_t GuiImportMultiSigWalletViewEventProcess(void *self, uint16_t usEvent, vo
             return ERR_GUI_ERROR;
         }
         walletConifg = (char *)param;
-        GuiImportMultisigWalletWidgetsInit(walletConifg);
+        GuiImportMultisigWalletWidgetsInit(walletConifg, usLen);
         break;
     case GUI_EVENT_OBJ_DEINIT:
         GuiImportMultisigWalletWidgetsDeInit();
@@ -44,6 +38,9 @@ int32_t GuiImportMultiSigWalletViewEventProcess(void *self, uint16_t usEvent, vo
         break;
     case SIG_BACKGROUND_UR_UPDATE:
         GuiAnimatingQRCodeUpdate((char*)param, usLen);
+        break;
+    case SIG_MULTISIG_WALLET_SET_WALLET_EXPORT:
+        GuiSetExportMultiSigSwitch();
         break;
     default:
         return ERR_GUI_UNHANDLED;

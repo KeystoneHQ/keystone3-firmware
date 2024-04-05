@@ -19,6 +19,7 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "log_print.h"
+#include "gui_btc_home_widgets.h"
 
 static lv_obj_t *g_manageWalletLabel = NULL;
 static lv_obj_t *g_homeWalletCardCont = NULL;
@@ -31,7 +32,7 @@ static PageWidget_t *g_pageWidget;
 static lv_timer_t *g_countDownTimer = NULL; // count down timer
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
-    {HOME_WALLET_CARD_BTC, false, "BTC", true, false},
+    {HOME_WALLET_CARD_BTC, false, "BTC", true, false, SINGLE_WALLET},
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 
@@ -335,6 +336,18 @@ void SetIsTestNet(bool testNet)
 {
     printf("testNet=%d\n", testNet);
     g_walletState[HOME_WALLET_CARD_BTC].testNet = testNet;
+    AccountPublicHomeCoinSet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
+}
+
+DEFAULT_WALLET_INDEX_ENUM GetDefaultWalletIndex(void)
+{
+    return g_walletState[HOME_WALLET_CARD_BTC].defaultWallet;
+}
+
+void SetDefaultWalletIndex(DEFAULT_WALLET_INDEX_ENUM walletIndex)
+{
+    printf("walletIndex = %d\n", walletIndex);
+    g_walletState[HOME_WALLET_CARD_BTC].defaultWallet = walletIndex;
     AccountPublicHomeCoinSet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
 }
 

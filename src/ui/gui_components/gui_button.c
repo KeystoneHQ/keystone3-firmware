@@ -120,20 +120,21 @@ void *GuiUpdateStatusCoinButton(lv_obj_t *button, const char *text, const void *
     return button;
 }
 
-void *GuiSettingItemButton(lv_obj_t *parent, uint16_t width, const char *text, const char *descText, const void *src,
-                           lv_event_cb_t buttonCb, void *param)
+void *GuiCreateSettingItemButton(lv_obj_t *parent, uint16_t width, const char *text, const char *descText, const void *src,
+                                 const void *rightSrc, lv_event_cb_t buttonCb, void *param)
 {
-    lv_obj_t *label = GuiCreateIllustrateLabel(parent, text);
-    lv_obj_t *img = GuiCreateImg(parent, src);
-    lv_obj_t *desc = NULL;
+    lv_obj_t *desc = NULL, *rightImg = NULL;
     if (descText != NULL) {
         desc = GuiCreateNoticeLabel(parent, descText);
     }
+    if (rightSrc != NULL) {
+        rightImg = GuiCreateImg(parent, rightSrc);
+    }
     GuiButton_t table[] = {
-        {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 24},},
-        {.obj = label, .align = LV_ALIGN_DEFAULT, .position = {76, 24},},
+        {.obj = GuiCreateImg(parent, src), .align = LV_ALIGN_DEFAULT, .position = {24, 24},},
+        {.obj = GuiCreateIllustrateLabel(parent, text), .align = LV_ALIGN_DEFAULT, .position = {76, 24},},
         {.obj = desc, .align = LV_ALIGN_DEFAULT, .position = {76, 64},},
-        {.obj = GuiCreateImg(parent, &imgArrowRight), .align = LV_ALIGN_TOP_RIGHT, .position = {-24, 24},},
+        {.obj = rightImg, .align = LV_ALIGN_TOP_RIGHT, .position = {-24, 24},},
     };
     lv_obj_t *button = GuiCreateButton(parent, width, 84, table, NUMBER_OF_ARRAYS(table),
                                        buttonCb, param);

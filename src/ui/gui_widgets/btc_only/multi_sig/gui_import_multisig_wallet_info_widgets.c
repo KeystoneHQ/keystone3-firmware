@@ -22,6 +22,7 @@
 #include "user_memory.h"
 #ifndef COMPILE_SIMULATOR
 #include "drv_sdcard.h"
+#include "user_fatfs.h"
 #else
 #include "simulator_mock_define.h"
 #endif
@@ -41,7 +42,6 @@ typedef struct {
 
 static ImportMultiInfoWidget_t g_importMultiInfo;
 static PageWidget_t *g_pageWidget;
-static MultiSigWallet *g_wallet = NULL;
 static lv_obj_t *g_noticeWindow = NULL;
 static char g_fileList[10][64] = {0};
 
@@ -150,7 +150,7 @@ static void GuiMultiImportSdCardListWidget(lv_obj_t *parent)
     EXT_FREE(buffer);
 }
 
-int8_t GuiImportMultiInfoNextTile(uint8_t index)
+int8_t GuiImportMultiInfoNextTile(void)
 {
     switch (g_importMultiInfo.currentTile) {
     case IMPORT_MULTI_SELECT_METHOD:
@@ -164,7 +164,7 @@ int8_t GuiImportMultiInfoNextTile(uint8_t index)
     return SUCCESS_CODE;
 }
 
-int8_t GuiImportMultiInfoPrevTile(uint8_t index)
+int8_t GuiImportMultiInfoPrevTile(void)
 {
     switch (g_importMultiInfo.currentTile) {
     case IMPORT_MULTI_SELECT_METHOD:
@@ -184,11 +184,8 @@ static void OpenFileNextTileHandler(lv_event_t *e)
     char *path = lv_event_get_user_data(e);
 
     if (code == LV_EVENT_CLICKED) {
-        printf("path = %s\n", path);
         char *walletConfig = FatfsFileRead(path);
-        uint32_t len = strnlen_s(walletConfig, 1024);
-        GuiFrameOpenViewWithParam(&g_importMultisigWalletView, walletConfig, len);
-        // GetMultiInfoFromFile(path, &g_xpubCache[g_createMultiTileView.currentSinger], g_chainType);
+        GuiFrameOpenViewWithParam(&g_importMultisigWalletView, walletConfig, strnlen_s(walletConfig, 1024));
     }
 }
 

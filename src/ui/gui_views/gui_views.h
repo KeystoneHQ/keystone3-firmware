@@ -133,6 +133,8 @@ typedef enum {
     SIG_TRANSACTION_PARSE_FAIL,
     SIG_SIGN_TRANSACTION_WITH_PASSWORD,
     SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD,
+    SIG_MULTISIG_WALLET_DELETE_VERIFY_PASSWORD,
+    SIG_MULTISIG_WALLET_SET_WALLET_EXPORT,
     SIG_TRANSACTION_BUTT,
 
 
@@ -195,7 +197,7 @@ extern GUI_VIEW g_multisigTransactionSignatureView;
 extern GUI_VIEW g_importMultisigWalletInfoView;
 extern GUI_VIEW g_importMultisigWalletView;
 extern GUI_VIEW g_createMultisigWalletView;
-#endif
+extern GUI_VIEW g_manageMultisigWalletView;
 
 
 void UnHandler(lv_event_t *e);

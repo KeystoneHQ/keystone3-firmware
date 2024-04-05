@@ -43,5 +43,8 @@ void LoadCurrentAccountMultisigWallet(const char* password);
 MultiSigWalletItem_t *AddMultisigWalletToCurrentAccount(MultiSigWallet *wallet, const char *password);
 MultiSigWalletItem_t *GetMultisigWalletByVerifyCode(const char* verifyCode);
 MultiSigWalletManager_t* GetMultisigWalletManager();
+int GetCurrentAccountMultisigWalletNum(void);
+MultiSigWalletItem_t *GetCurrenMultisigWalletByIndex(int index);
+void DeleteMultisigWalletByVerifyCode(const char *verifyCode, const char *password);
 
 #endif

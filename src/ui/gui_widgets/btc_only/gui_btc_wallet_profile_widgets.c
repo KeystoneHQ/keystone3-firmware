@@ -1,4 +1,3 @@
-#ifdef BTC_ONLY
 #include "gui_btc_wallet_profile_widgets.h"
 #include "gui.h"
 #include "gui_views.h"
@@ -9,10 +8,13 @@
 #include "gui_btc_home_widgets.h"
 #include "gui_hintbox.h"
 #include "gui_api.h"
+#include "multi_sig_wallet_manager.h"
+#include "gui_export_pubkey_widgets.h"
+#include <stdio.h>
 
 typedef enum {
     WALLET_PROFILE_SELECT = 0,
-    WALLET_PROFILE_MULTI_WALLET,
+    WALLET_PROFILE_SINGLE_WALLET,
 
 } WALLET_PROFILE_ENUM;
 
@@ -21,26 +23,14 @@ typedef struct {
     lv_obj_t *tileView;
 } WalletProfileWidgets_t;
 
-typedef struct {
-    lv_obj_t *button;
-    lv_obj_t *label;
-    lv_obj_t *checkedImg;
-    lv_obj_t *uncheckedImg;
-} Checkbox_t;
-
 static void CreateBtcWalletProfileEntranceWidget(lv_obj_t *parent);
-static void CreateMultiSigWalletWidget(lv_obj_t *parent);
-static void CreateBtcNetworkWidget(lv_obj_t *parent);
-static void NetworkHandler(lv_event_t *e);
-static void ExportXpubHandler(lv_event_t *e);
-static void EmptyHandler(lv_event_t *e);
-static void AddMultiSigWalletHandler(lv_event_t *e);
+static void SetDefaultSingleWalletHandler(lv_event_t *e);
+static void CreateSingleSigWalletWidget(lv_obj_t *parent);
 
-static PageWidget_t *g_pageWidget;
-static lv_obj_t *g_networkCont;
 static WalletProfileWidgets_t g_walletProfile;
-static lv_obj_t *g_noticeWindow = NULL;
+static PageWidget_t *g_pageWidget;
 static lv_obj_t *g_networkSwitch = NULL;
+static lv_obj_t *g_setDefaultBtn = NULL;
 
 void GuiBtcWalletProfileInit(void)
 {
@@ -49,24 +39,21 @@ void GuiBtcWalletProfileInit(void)
     lv_obj_t *tile = lv_tileview_add_tile(g_walletProfile.tileView, WALLET_PROFILE_SELECT, 0, LV_DIR_HOR);
     CreateBtcWalletProfileEntranceWidget(tile);
 
-    tile = lv_tileview_add_tile(g_walletProfile.tileView, WALLET_PROFILE_MULTI_WALLET, 0, LV_DIR_HOR);
-    CreateMultiSigWalletWidget(tile);
+    tile = lv_tileview_add_tile(g_walletProfile.tileView, WALLET_PROFILE_SINGLE_WALLET, 0, LV_DIR_HOR);
+    CreateSingleSigWalletWidget(tile);
 
     g_walletProfile.currentTile = WALLET_PROFILE_SELECT;
 
     GuiBtcWalletProfileRefresh();
 }
 
-
 void GuiBtcWalletProfileDeInit(void)
 {
-    GUI_DEL_OBJ(g_networkCont);
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
 }
-
 
 void GuiBtcWalletProfileRefresh(void)
 {
@@ -74,11 +61,20 @@ void GuiBtcWalletProfileRefresh(void)
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_profile_mid_btn"));
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     } else {
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_profile_multi_sign_title"));
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_profile_single_sign_title"));
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+        lv_obj_t *label = lv_obj_get_child(g_setDefaultBtn, 0);
+        if (GetDefaultWalletIndex() == SINGLE_WALLET) {
+            lv_obj_clear_flag(g_setDefaultBtn, LV_OBJ_FLAG_CLICKABLE);
+            lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
+            lv_label_set_text(label, _("wallet_profile_current_default_desc"));
+        } else {
+            lv_obj_add_flag(g_setDefaultBtn, LV_OBJ_FLAG_CLICKABLE);
+            lv_obj_set_style_text_opa(label, LV_OPA_100, LV_PART_MAIN);
+            lv_label_set_text(label, _("manage_multi_wallet_set_default"));
+        }
     }
 }
-
 
 int8_t GuiBtcWalletProfilePrevTile(void)
 {
@@ -115,12 +111,24 @@ static void SwitchTestnetHandler(lv_event_t *e)
 
 static void CreateBtcWalletProfileEntranceWidget(lv_obj_t *parent)
 {
-    lv_obj_t *button = GuiSettingItemButton(parent, 456, _("wallet_profile_single_sign_title"), _("wallet_profile_single_sign_desc"), &imgKey, EmptyHandler, NULL);
-    lv_obj_set_height(button, 118);
+    DEFAULT_WALLET_INDEX_ENUM defaultWallet = GetDefaultWalletIndex();
+    char *singleWalletDesc = (char *)_("wallet_profile_default_desc"), *multiWalletDesc = NULL;
+    uint16_t singleWalletHeight = 118, multiWalletDescHeight = 84;
+    if (defaultWallet != SINGLE_WALLET) {
+        singleWalletDesc = NULL;
+        singleWalletHeight = 84;
+        multiWalletDesc = (char *)_("wallet_profile_default_desc");
+        multiWalletDescHeight = 118;
+    }
+    lv_obj_t *button = GuiCreateSettingItemButton(parent, 456, _("wallet_profile_single_sign_title"), singleWalletDesc, &imgKey,
+                       &imgArrowRight, NextTileHandler, NULL);
+    lv_obj_set_height(button, singleWalletHeight);
     lv_obj_align(button, LV_ALIGN_TOP_LEFT, 12, 0);
 
-    button = GuiSettingItemButton(parent, 456, _("wallet_profile_multi_sign_title"), NULL, &imgTwoKey, NextTileHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_TOP_LEFT, 12, 130);
+    button = GuiCreateSettingItemButton(parent, 456, _("wallet_profile_multi_sign_title"), multiWalletDesc, &imgTwoKey,
+                                        &imgArrowRight, OpenViewHandler, &g_manageMultisigWalletView);
+    lv_obj_align(button, LV_ALIGN_TOP_LEFT, 12, singleWalletHeight + 12);
+    lv_obj_set_height(button, multiWalletDescHeight);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, 226);
@@ -139,73 +147,31 @@ static void CreateBtcWalletProfileEntranceWidget(lv_obj_t *parent)
     };
     button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table), SwitchTestnetHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 239);
-
-    // button = GuiSettingItemButton(parent, 456, _("wallet_profile_export_title"), NULL, &imgExport, ExportXpubHandler, NULL);
-    // lv_obj_align(button, LV_ALIGN_TOP_LEFT, 12, 346);
 }
 
-static void CreateMultiSigWalletWidget(lv_obj_t *parent)
+static void CreateSingleSigWalletWidget(lv_obj_t *parent)
 {
-    lv_obj_t *img = GuiCreateImg(parent, &imgLockMulti);
-    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 128);
+    static HOME_WALLET_CARD_ENUM chainCard = HOME_WALLET_CARD_BTC;
 
-    lv_obj_t *label = GuiCreateTextLabel(parent, _("wallet_profile_no_multi_wallet_notice"));
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 232);
+    lv_obj_t *button = GuiCreateSelectButton(parent, _("manage_multi_wallet_set_default"), &imgDefaultWallet,
+                       SetDefaultSingleWalletHandler, NULL, true);
+    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 0);
+    g_setDefaultBtn = button;
 
-    lv_obj_t *button = GuiCreateBtn(parent, _("wallet_profile_add_multi_wallet"));
-    lv_obj_set_width(button, 408);
-    lv_obj_set_style_text_color(lv_obj_get_child(button, 0), ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
-    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 436);
-    lv_obj_add_event_cb(button, AddMultiSigWalletHandler, LV_EVENT_CLICKED, NULL);
-
-    button = GuiCreateBtn(parent, _("wallet_profile_multi_wallet_show_xpub"));
-    lv_obj_set_width(button, 408);
-    lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
-    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 526);
-    lv_obj_add_event_cb(button, AddMultiSigWalletHandler, LV_EVENT_CLICKED, NULL);
+    button = GuiCreateSelectButton(parent, _("manage_multi_wallet_export_config"), &imgWalletExport,
+                                   OpenExportViewHandler, &chainCard, true);
+    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 92);
 }
 
-static void ExportXpubHandler(lv_event_t *e)
-{
-    HOME_WALLET_CARD_ENUM chainCard = HOME_WALLET_CARD_BTC;
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiFrameOpenViewWithParam(&g_exportPubkeyView, &chainCard, sizeof(chainCard));
-    }
-}
-
-
-static void EmptyHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        printf("do nothing\n");
-    }
-}
-
-static void OpenCreateMultiViewHandler(lv_event_t *e)
+static void SetDefaultSingleWalletHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeWindow)
-        GuiFrameOpenView(lv_event_get_user_data(e));
+        SetDefaultWalletIndex((DEFAULT_WALLET_INDEX_ENUM)SINGLE_WALLET);
+        lv_obj_t *label = lv_obj_get_child(g_setDefaultBtn, 0);
+        lv_obj_clear_flag(g_setDefaultBtn, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
+        lv_label_set_text(label, _("wallet_profile_current_default_desc"));
     }
 }
-
-static void AddMultiSigWalletHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    MoreInfoTable_t moreInfoTable[] = {
-        {.name = _("wallet_profile_create_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_createMultisigWalletView},
-        {.name = _("wallet_profile_import_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_importMultisigWalletInfoView},
-    };
-
-    if (code == LV_EVENT_CLICKED) {
-        g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("wallet_profile_add_multi_wallet"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false);
-        lv_obj_t *closeBtn = GuiCreateImgButton(g_noticeWindow,  &imgClose, 64, CloseHintBoxHandler, &g_noticeWindow);
-        GuiAlignToPrevObj(closeBtn, LV_ALIGN_LEFT_MID, 358, 0);
-    }
-}
-#endif

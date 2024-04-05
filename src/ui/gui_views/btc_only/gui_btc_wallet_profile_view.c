@@ -1,4 +1,3 @@
-#ifdef BTC_ONLY
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_model.h"
@@ -36,4 +35,3 @@ GUI_VIEW g_btcBtcWalletProfileView = {
     .optimization = false,
     .pEvtHandler = GuiBtcWalletProfileViewEventProcess,
 };
-#endif

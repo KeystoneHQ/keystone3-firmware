@@ -122,6 +122,10 @@ LV_IMG_DECLARE(imgTwoKey);
 LV_IMG_DECLARE(imgLockMulti);
 LV_IMG_DECLARE(imgSdcardImport);
 LV_IMG_DECLARE(imgScanImport);
+LV_IMG_DECLARE(imgAdd);
+LV_IMG_DECLARE(imgDefaultWallet);
+LV_IMG_DECLARE(imgWalletExport);
+
 
 // connect to do refresh
 LV_IMG_DECLARE(circular);

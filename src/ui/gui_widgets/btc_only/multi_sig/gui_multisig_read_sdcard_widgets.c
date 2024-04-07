@@ -4,6 +4,7 @@
 #include "stdlib.h"
 #include "gui_button.h"
 #include "gui_import_multisig_wallet_info_widgets.h"
+#include "gui_btc.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "drv_sdcard.h"
@@ -18,9 +19,14 @@ static char g_fileList[10][64] = {0};
 
 static void GuiContent(lv_obj_t *);
 static void GuiSelectFileHandler(lv_event_t *e);
+static int endsWith(const char *str, const char *suffix);
+static FileFilterType g_fileFilterType = ALL;
 
-void GuiMultisigReadSdcardWidgetsInit()
+
+
+void GuiMultisigReadSdcardWidgetsInit(uint8_t fileFilterType)
 {
+    g_fileFilterType = fileFilterType;
     g_pageWidget = CreatePageWidget();
     GuiContent(g_pageWidget->contentZone);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
@@ -46,8 +52,36 @@ static void GuiContent(lv_obj_t *parent)
 #endif
     char *token = strtok(buffer, " ");
     while (token != NULL) {
-        strncpy(g_fileList[i], token, sizeof(g_fileList[i]));
+        bool shouldGo = true;
+        switch (g_fileFilterType) {
+        case ALL:
+            strncpy(g_fileList[i], token, sizeof(g_fileList[i]) - 1);
+            break;
+        case ONLY_TXT:
+            shouldGo = endsWith(token, ".txt");
+            if (shouldGo) {
+                strncpy(g_fileList[i], token, sizeof(g_fileList[i]) - 1);
+            }
+            break;
+        case ONLY_PSBT:
+            shouldGo = endsWith(token, ".psbt");
+            if (shouldGo) {
+                strncpy(g_fileList[i], token, sizeof(g_fileList[i]) - 1);
+            }
+            break;
+        case ONLY_JSON:
+            shouldGo = endsWith(token, ".json");
+            if (shouldGo) {
+                strncpy(g_fileList[i], token, sizeof(g_fileList[i]) - 1);
+            }
+            break;
+        default:
+            break;
+        }
         token = strtok(NULL, " ");
+        if (!shouldGo) {
+            continue;
+        }
         lv_obj_t *btn = GuiCreateSelectButton(parent, g_fileList[i], &imgArrowRight, GuiSelectFileHandler, g_fileList[i], false);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 84 * i);
         i++;
@@ -64,8 +98,56 @@ static void GuiSelectFileHandler(lv_event_t *e)
     char *path = lv_event_get_user_data(e);
 
     if (code == LV_EVENT_CLICKED) {
-        char *walletConfig = FatfsFileRead(path);
-        GuiSetMultisigImportWalletDataBySDCard(walletConfig);
-        GuiFrameOpenView(&g_importMultisigWalletInfoView);
+
+        switch (g_fileFilterType) {
+        case ALL:
+            break;
+        case ONLY_TXT: {
+            char *walletConfig = FatfsFileRead(path);
+            GuiSetMultisigImportWalletDataBySDCard(walletConfig);
+            GuiFrameOpenView(&g_importMultisigWalletInfoView);
+        }
+        break;
+        case ONLY_PSBT: {
+            uint32_t readBytes = 0;
+            uint8_t *psbtBytes = FatfsFileReadBytes(path, &readBytes);
+
+            // for debug
+            char *psbtStr = EXT_MALLOC(readBytes * 2 + 1);
+            psbtStr[readBytes * 2] = 0;
+            ByteArrayToHexStr(psbtBytes, readBytes, psbtStr);
+            printf("psbt is %s\n", psbtStr);
+            EXT_FREE(psbtStr);
+
+            GuiSetPsbtStrData(psbtBytes, readBytes);
+            static ViewType viewType = BtcTx;
+            GuiFrameOpenViewWithParam(&g_transactionDetailView, &viewType, sizeof(viewType));
+        }
+        break;
+        case ONLY_JSON:
+
+            break;
+        default:
+            break;
+        }
+
+
     }
+}
+
+static int endsWith(const char *str, const char *suffix)
+{
+    size_t strLen = strlen(str);
+    size_t suffixLen = strlen(suffix);
+
+    if (suffixLen > strLen) {
+        return 0;
+    }
+
+    const char *strEnd = str + (strLen - suffixLen);
+    if (strcmp(strEnd, suffix) == 0) {
+        return 1;
+    }
+
+    return 0;
 }

@@ -9,9 +9,15 @@ int32_t GuiMultisigReadSdcardViewEventProcess(void *self, uint16_t usEvent, void
 {
     GUI_ASSERT(g_multisigReadSdcardView.isActive);
 
+    uint8_t fileFilterType = 0;
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        GuiMultisigReadSdcardWidgetsInit();
+        if (param != NULL) {
+            fileFilterType = *(uint8_t *)param;
+        } else {
+            return ERR_GUI_ERROR;
+        }
+        GuiMultisigReadSdcardWidgetsInit(fileFilterType);
         break;
     case GUI_EVENT_OBJ_DEINIT:
         GuiMultisigReadSdcardWidgetsDeInit();

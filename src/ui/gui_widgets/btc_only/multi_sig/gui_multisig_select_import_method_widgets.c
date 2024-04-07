@@ -2,6 +2,7 @@
 #include "gui_page.h"
 #include "gui_button.h"
 #include "gui_views.h"
+#include "gui_multisig_read_sdcard_widgets.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "drv_sdcard.h"
@@ -83,7 +84,8 @@ static void SelectMicroCardFileHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         if (SdCardInsert()) {
-            GuiFrameOpenView(&g_multisigReadSdcardView);
+            static uint8_t fileFilterType = ONLY_TXT;
+            GuiFrameOpenViewWithParam(&g_multisigReadSdcardView, &fileFilterType, sizeof(fileFilterType));
         } else {
             g_noticeWindow = GuiCreateErrorCodeHintbox(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);
         }

@@ -29,6 +29,11 @@
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
+
+static uint8_t* g_psbtBytes = NULL;
+static uint32_t g_psbtBytesLen = 0;
+
+
 static TransactionParseResult_DisplayTx *g_parseResult = NULL;
 static TransactionParseResult_DisplayBtcMsg *g_parseMsgResult = NULL;
 
@@ -58,6 +63,12 @@ void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult
     g_isMulti = multi;
 }
 
+void GuiSetPsbtStrData(char *psbtBytes, uint32_t psbtBytesLen)
+{
+    g_psbtBytes = psbtBytes;
+    g_psbtBytesLen = psbtBytesLen;
+}
+
 #ifndef BTC_ONLY
 static int32_t GuiGetUtxoPubKeyAndHdPath(ViewType viewType, char **xPub, char **hdPath)
 {
@@ -81,11 +92,37 @@ static int32_t GuiGetUtxoPubKeyAndHdPath(ViewType viewType, char **xPub, char **
 }
 #endif
 
+#ifdef BTC_ONLY
+static UREncodeResult *GuiGetSignPsbtBytesCodeData(void)
+{
+    UREncodeResult *encodeResult = NULL;
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    uint8_t seed[64];
+    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+    MultisigSignResult *result = btc_sign_multisig_psbt_bytes(g_psbtBytes, g_psbtBytesLen, seed, len, mfp, sizeof(mfp));
+    encodeResult = result->ur_result;
+    GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
+    free_MultisigSignResult(result);
+    CHECK_CHAIN_PRINT(encodeResult);
+    ClearSecretCache();
+    return encodeResult;
+}
+#endif
+
 // The results here are released in the close qr timer species
 UREncodeResult *GuiGetSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
+
+#ifdef BTC_ONLY
+    if (g_psbtBytes != NULL) {
+        return GuiGetSignPsbtBytesCodeData();
+    }
+#endif
+
     enum URType urType = URTypeUnKnown;
 #ifndef BTC_ONLY
     enum ViewType viewType = ViewTypeUnKnown;
@@ -152,8 +189,64 @@ UREncodeResult *GuiGetSignQrCodeData(void)
     return encodeResult;
 }
 
+#ifdef BTC_ONLY
+static void *GuiGetParsedPsbtStrData(void)
+{
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    ExtendedPublicKey keys[14];
+    public_keys->data = keys;
+    public_keys->size = 14;
+    keys[0].path = "m/84'/0'/0'";
+    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+    keys[1].path = "m/49'/0'/0'";
+    keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+    keys[2].path = "m/44'/0'/0'";
+    keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+    keys[3].path = "m/86'/0'/0'";
+    keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+    keys[4].path = "m/84'/1'/0'";
+    keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST);
+    keys[5].path = "m/49'/1'/0'";
+    keys[5].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TEST);
+    keys[6].path = "m/44'/1'/0'";
+    keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY_TEST);
+    keys[7].path = "m/86'/1'/0'";
+    keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT_TEST);
+
+    keys[8].path = "m/45'";
+    keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2SH);
+    keys[9].path = "m/48'/0'/0'/1'";
+    keys[9].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH);
+    keys[10].path = "m/48'/0'/0'/2'";
+    keys[10].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH);
+    keys[11].path = "m/45'";
+    keys[11].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2SH_TEST);
+    keys[12].path = "m/48'/1'/0'/1'";
+    keys[12].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH_TEST);
+    keys[13].path = "m/48'/1'/0'/2'";
+    keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST);
+
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+
+    g_parseResult = btc_parse_psbt_bytes(g_psbtBytes, g_psbtBytesLen, mfp, sizeof(mfp), public_keys);
+    CHECK_CHAIN_RETURN(g_parseResult);
+    if (IsMultiSigTx(g_parseResult->data)) {
+        GuiSetCurrentTransactionType(TRANSACTION_TYPE_BTC_MULTISIG);
+    }
+    SRAM_FREE(public_keys);
+    return g_parseResult;
+
+}
+#endif
+
 void *GuiGetParsedQrData(void)
 {
+#ifdef BTC_ONLY
+    if (g_psbtBytes != NULL) {
+        return GuiGetParsedPsbtStrData();
+    }
+#endif
     enum URType urType = URTypeUnKnown;
 #ifndef BTC_ONLY
     enum ViewType viewType = ViewTypeUnKnown;
@@ -253,8 +346,59 @@ void *GuiGetParsedQrData(void)
     return g_parseResult;
 }
 
+#ifdef BTC_ONLY
+PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
+{
+    PtrT_TransactionCheckResult result = NULL;
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    ExtendedPublicKey keys[14];
+    public_keys->data = keys;
+    public_keys->size = 14;
+    keys[0].path = "m/84'/0'/0'";
+    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+    keys[1].path = "m/49'/0'/0'";
+    keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+    keys[2].path = "m/44'/0'/0'";
+    keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+    keys[3].path = "m/86'/0'/0'";
+    keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+    keys[4].path = "m/84'/1'/0'";
+    keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST);
+    keys[5].path = "m/49'/1'/0'";
+    keys[5].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TEST);
+    keys[6].path = "m/44'/1'/0'";
+    keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY_TEST);
+    keys[7].path = "m/86'/1'/0'";
+    keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT_TEST);
+
+    keys[8].path = "m/45'";
+    keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2SH);
+    keys[9].path = "m/48'/0'/0'/1'";
+    keys[9].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH);
+    keys[10].path = "m/48'/0'/0'/2'";
+    keys[10].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH);
+    keys[11].path = "m/45'";
+    keys[11].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2SH_TEST);
+    keys[12].path = "m/48'/1'/0'/1'";
+    keys[12].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH_TEST);
+    keys[13].path = "m/48'/1'/0'/2'";
+    keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST);
+
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+
+    result = btc_check_psbt_bytes(g_psbtBytes, g_psbtBytesLen, mfp, sizeof(mfp), public_keys);
+    SRAM_FREE(public_keys);
+}
+#endif
+
 PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
 {
+#ifdef BTC_ONLY
+    if (g_psbtBytes != NULL) {
+        return GuiGetPsbtStrCheckResult();
+    }
+#endif
     PtrT_TransactionCheckResult result = NULL;
     enum URType urType = URTypeUnKnown;
 #ifndef BTC_ONLY
@@ -516,6 +660,10 @@ void FreePsbtUxtoMemory(void)
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
+    if (g_psbtBytes != NULL) {
+        EXT_FREE(g_psbtBytes);
+        g_psbtBytes = NULL;
+    }
 }
 
 void FreeBtcMsgMemory(void)

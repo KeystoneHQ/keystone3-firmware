@@ -50,7 +50,7 @@ uint32_t FatfsGetSize(const char *path);
 int FatfsFileSha256(const TCHAR* path, uint8_t *sha256);
 bool FatfsFileExist(const char *path);
 char *FatfsFileRead(const TCHAR* path);
-void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32_t maxLen);
+void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32_t maxLen, const char *contain);
 
 #endif /* _USER_FATFS_H */
 

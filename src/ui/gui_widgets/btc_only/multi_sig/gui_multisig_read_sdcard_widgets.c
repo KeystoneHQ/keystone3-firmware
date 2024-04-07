@@ -40,9 +40,9 @@ static void GuiContent(lv_obj_t *parent)
     uint32_t number = 0;
     int i = 0;
 #ifdef COMPILE_SIMULATOR
-    FatfsGetFileName("C:/assets/sd", buffer, &number, 1024 * 5);
+    FatfsGetFileName("C:/assets/sd", buffer, &number, 1024 * 5, NULL);
 #else
-    FatfsGetFileName("0:", buffer, &number, 1024 * 5);
+    FatfsGetFileName("0:", buffer, &number, 1024 * 5, NULL);
 #endif
     char *token = strtok(buffer, " ");
     while (token != NULL) {

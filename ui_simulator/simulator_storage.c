@@ -549,7 +549,7 @@ int32_t SE_DeriveKey(uint8_t slot, const uint8_t *authKey)
     return 0;
 }
 
-void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32_t maxLen)
+void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32_t maxLen, const char *contain)
 {
     lv_fs_dir_t dir;
     char *listPtr = nameList;
@@ -561,6 +561,10 @@ void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32
     }
 
     while (lv_fs_dir_read(&dir, fname) == LV_FS_RES_OK) {
+        if (contain != NULL && !strstr(fname, contain)) {
+            continue;
+        }
+            
         uint32_t nameLen = strlen(fname);
         uint32_t spaceNeeded = (listPtr == nameList) ? nameLen : nameLen + 1; 
         if (listPtr + spaceNeeded - nameList >= maxLen) break;

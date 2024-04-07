@@ -91,7 +91,7 @@ static void GuiWriteSDCardHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeWindow);
-        
+
         char *filename = lv_event_get_user_data(e);
         int ret = FileWrite(filename, g_multisigWalletItem->walletConfig, strnlen(g_multisigWalletItem->walletConfig, MAX_WALLET_CONTENT_LEN));
         if (ret == 0) {
@@ -134,10 +134,10 @@ static void GuiShowSDCardExport()
 
     label = GuiCreateIllustrateLabel(g_noticeWindow, _("multisig_export_to_sdcard_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
-    
+
     char *filename = SRAM_MALLOC(MAX_WALLET_NAME_LEN);
     snprintf_s(filename, MAX_WALLET_NAME_LEN, "%s.txt", g_multisigWalletItem->name);
-    if(FileExists(filename)) {
+    if (FileExists(filename)) {
         snprintf_s(filename, MAX_WALLET_NAME_LEN, "%s_%d.txt", g_multisigWalletItem->name, GetCurrentStampTime());
     }
     label = GuiCreateIllustrateLabel(g_noticeWindow, filename);

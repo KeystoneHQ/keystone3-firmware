@@ -534,7 +534,7 @@ int8_t GuiCreateMultiPrevTile(void)
     case CREATE_MULTI_CONFIRM_CO_SIGNERS:
         if (g_createMultiTileView.currentSinger == 0) {
             g_noticeWindow = GuiCreateGeneralHintBox(lv_scr_act(), &imgWarn, _("create_multi_wallet_cancel_title"), _("create_multi_wallet_cancel_desc"), NULL,
-                         _("not_now"), WHITE_COLOR_OPA20, _("Cancel"), DEEP_ORANGE_COLOR);
+                             _("not_now"), WHITE_COLOR_OPA20, _("Cancel"), DEEP_ORANGE_COLOR);
             lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
             lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
             lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);

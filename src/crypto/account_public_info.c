@@ -21,13 +21,14 @@
 #include "multi_sig_wallet_manager.h"
 
 #ifdef COMPILE_SIMULATOR
-#include "gui_btc_home_widgets.h"
 #include "simulator_mock_define.h"
 #include "simulator_model.h"
 #else
 #include "safe_str_lib.h"
 #endif
-
+#ifdef BTC_ONLY
+#include "gui_btc_home_widgets.h"
+#endif
 
 #define PUB_KEY_MAX_LENGTH                  256
 #define VERSION_MAX_LENGTH                  64

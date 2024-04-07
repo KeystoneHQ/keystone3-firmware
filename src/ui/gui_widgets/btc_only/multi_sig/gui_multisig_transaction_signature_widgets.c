@@ -4,6 +4,7 @@
 #include "gui_views.h"
 #include "gui_btc.h"
 #include "gui_hintbox.h"
+#include "sdcard_manager.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
@@ -68,15 +69,7 @@ static void GuiWriteSDCardHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeWindow);
         char *filename = lv_event_get_user_data(e);
-        printf("filename: %s\r\n", filename);
-        char *path = SRAM_MALLOC(MAX_PSBT_NAME_LEN);
-#ifdef COMPILE_SIMULATOR
-        strcpy_s(path, MAX_PSBT_NAME_LEN, "C:/assets/sd/");
-#else
-        strcpy_s(path, MAX_PSBT_NAME_LEN, "0:/");
-#endif
-        strcat_s(path, MAX_PSBT_NAME_LEN, filename);
-        int ret = FatfsFileWrite(path, g_psbtHex, g_psbtLen);
+        int ret = WriteFile(filename, g_psbtHex, g_psbtLen);
         if (ret) {
             GuiShowSDCardExportFailed();
         } else {

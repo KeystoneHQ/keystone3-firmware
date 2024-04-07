@@ -119,8 +119,6 @@ static void * fs_open(lv_fs_drv_t * drv, const char * path, lv_fs_mode_t mode)
     FILE *f = fopen(buf, flags);
     if (f == NULL) {
         printf("file not exist: %s\r\n", buf);
-        fopen(buf, "wb");
-        f = fopen(buf, flags);
     }
     return f;
 }

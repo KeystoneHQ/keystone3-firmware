@@ -225,13 +225,15 @@ static void InitDerivationPathDesc(uint8_t chain)
 void InitMultisigWalletConfig(void)
 {
 #ifdef BTC_ONLY
-    uint8_t mfp[4];
-    GetMasterFingerPrint(mfp);
-    Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(GetDefaultMultisigWallet()->walletConfig, mfp, 4, MainNet);
-    if (result->error_code != 0) {
-        return;
+    if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+        uint8_t mfp[4];
+        GetMasterFingerPrint(mfp);
+        Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(GetDefaultMultisigWallet()->walletConfig, mfp, 4, MainNet);
+        if (result->error_code != 0) {
+            return;
+        }
+        g_multiSigWallet = result->data;
     }
-    g_multiSigWallet = result->data;
 #endif
 }
 

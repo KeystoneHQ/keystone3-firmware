@@ -21,10 +21,11 @@ bool FileExists(char *filename)
     return FatfsFileExist(target);
 }
 
-int WriteFile(const char *filename, const uint8_t *content, uint32_t len)
+int FileWrite(const char *filename, const uint8_t *content, uint32_t len)
 {
     char *path = SRAM_MALLOC(MAX_FILENAME_LEN);
     snprintf_s(path, MAX_FILENAME_LEN, "%s%s", SD_ROOT, filename);
     int ret = FatfsFileWrite(path, content, len);
+    SRAM_FREE(path);
     return ret;
 }

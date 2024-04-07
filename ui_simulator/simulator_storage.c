@@ -88,7 +88,7 @@ int32_t StorageGetDataSize(uint32_t addr, uint8_t *buffer, uint32_t size)
         return -1;
     }
 
-    ret = lv_fs_open(&fd, path, LV_FS_MODE_ALWAYS);
+    ret = lv_fs_open(&fd, path, LV_FS_MODE_ALWAYS | LV_FS_MODE_RD);
     if (ret != LV_FS_RES_OK) {
         printf("lv_fs_open failed %s ret = %d line = %d\n", path, ret, __LINE__);
         return -1;
@@ -122,7 +122,7 @@ int32_t StorageGetData(uint32_t addr, uint8_t *buffer, uint32_t size)
         return -1;
     }
 
-    ret = lv_fs_open(&fd, path, LV_FS_MODE_ALWAYS);
+    ret = lv_fs_open(&fd, path, LV_FS_MODE_ALWAYS | LV_FS_MODE_RD);
     if (ret != LV_FS_RES_OK) {
         printf("lv_fs_open failed %s ret = %d line = %d\n", path, ret, __LINE__);
         return -1;

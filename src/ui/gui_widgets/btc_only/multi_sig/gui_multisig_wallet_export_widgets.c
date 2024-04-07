@@ -93,7 +93,7 @@ static void GuiWriteSDCardHandler(lv_event_t *e)
         GUI_DEL_OBJ(g_noticeWindow);
         
         char *filename = lv_event_get_user_data(e);
-        int ret = WriteFile(filename, g_multisigWalletItem->walletConfig, strnlen(g_multisigWalletItem->walletConfig, MAX_WALLET_CONTENT_LEN));
+        int ret = FileWrite(filename, g_multisigWalletItem->walletConfig, strnlen(g_multisigWalletItem->walletConfig, MAX_WALLET_CONTENT_LEN));
         if (ret == 0) {
             GuiShowSDCardExportSuccess();
         } else {

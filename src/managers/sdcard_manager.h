@@ -2,9 +2,9 @@
 #define _SDCARD_MANAGER_H_
 
 #include "stdbool.h"
-#include "stdint.h""
+#include "stdint.h"
 
 bool FileExists(char* filename);
-int WriteFile(const char *filename, const uint8_t *content, uint32_t len);
+int FileWrite(const char *filename, const uint8_t *content, uint32_t len);
 
 #endif

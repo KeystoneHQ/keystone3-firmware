@@ -318,7 +318,6 @@ static void ModelGenerateAddress(char *address, uint32_t maxLen)
 
 void ModelGenerateMultiSigAddress(char *address, uint32_t maxLen, char *walletConfig, uint32_t index)
 {
-    printf("walletconfig = \n%s\n", walletConfig);
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     SimpleResponse_c_char *result = generate_address_for_multisig_wallet_config(walletConfig, 0, index, mfp, 4, MainNet);

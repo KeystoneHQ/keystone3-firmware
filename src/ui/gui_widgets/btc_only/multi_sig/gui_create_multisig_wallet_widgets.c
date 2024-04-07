@@ -443,7 +443,7 @@ static void UpdateStepItemAndImportStatus(int8_t addOrSub)
         lv_obj_clear_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
     }
     if (g_createMultiTileView.currentSinger == 0) { // must be returned
-        lv_obj_add_flag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
+        GuiAddObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_flag(g_custodianTile.importXpubBtn, LV_OBJ_FLAG_HIDDEN);
     } else {
         if (strlen(lv_label_get_text(g_custodianTile.xpubLabel)) > 0 || g_createMultiTileView.currentSinger == g_selectSliceTile.coSingers - 1) {
@@ -493,21 +493,26 @@ int8_t GuiCreateMultiNextTile(uint8_t index)
             lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
             GetAndCreateMultiWallet();
             return SUCCESS_CODE;
-        }
-        UpdateCustodianTileLabel(1);
-        lv_label_set_text(g_custodianTile.xpubLabel, "");
-        if (g_createMultiTileView.currentSinger == 1) {
-            lv_obj_clear_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
+         } else if (g_createMultiTileView.currentSinger == 1 && (strlen(g_xpubCache[g_createMultiTileView.currentSinger].xpub) == 0)) {
+            g_createMultiTileView.currentTile++;
+            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("create_multi_wallet_import_xpub_sdcard_title"));
+            lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
             lv_obj_set_tile_id(g_createMultiTileView.tileView, g_createMultiTileView.currentTile, 0, LV_ANIM_OFF);
             return SUCCESS_CODE;
         }
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("create_multi_wallet_import_xpub_sdcard_title"));
+        UpdateCustodianTileLabel(1);
+        if (g_createMultiTileView.currentSinger == 1) {
+            GuiAddObjFlag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_set_tile_id(g_createMultiTileView.tileView, g_createMultiTileView.currentTile, 0, LV_ANIM_OFF);
+            return SUCCESS_CODE;
+        }
         break;
     case CREATE_MULTI_SELECT_SDCARD_XPUB:
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("create_multi_wallet_import_xpub_title"));
         lv_label_set_text(g_xPubTile.pathLabel, g_xpubCache[g_createMultiTileView.currentSinger].path);
         lv_label_set_text(g_xPubTile.mfpLabel, g_xpubCache[g_createMultiTileView.currentSinger].mfp);
         lv_label_set_text(g_xPubTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
+        printf("g_createMultiTileView.currentSinger = %d\n", g_createMultiTileView.currentSinger);
         break;
     case CREATE_MULTI_IMPORT_SDCARD_XPUB:
         UpdateStepItemAndImportStatus(-1);
@@ -751,6 +756,7 @@ static void GetAndCreateMultiWallet(void)
         snprintf_s(tempBuf, 256, "%s: %s\n", g_xpubCache[i].mfp, g_xpubCache[i].xpub);
         len += snprintf_s(walletConfig + len, 1024 - len, "%s", tempBuf);
     }
+    printf("walletConfig: %s\n", walletConfig);
     GuiSetMultisigImportWalletDataBySDCard(walletConfig);
     GuiFrameOpenView(&g_importMultisigWalletInfoView);
     EXT_FREE(tempBuf);

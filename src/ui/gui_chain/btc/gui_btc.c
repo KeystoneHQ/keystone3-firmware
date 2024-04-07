@@ -121,7 +121,7 @@ UREncodeResult *GuiGetSignQrCodeData(void)
             GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
             free_MultisigSignResult(result);
         } else {
-#else   
+#else
         {
             encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
 #endif

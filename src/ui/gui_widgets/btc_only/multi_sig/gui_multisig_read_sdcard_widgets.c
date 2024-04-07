@@ -45,15 +45,13 @@ static void GuiContent(lv_obj_t *parent)
     FatfsGetFileName("0:", buffer, &number, 1024 * 5);
 #endif
     char *token = strtok(buffer, " ");
-    while (token != NULL)
-    {
+    while (token != NULL) {
         strncpy(g_fileList[i], token, sizeof(g_fileList[i]));
         token = strtok(NULL, " ");
         lv_obj_t *btn = GuiCreateSelectButton(parent, g_fileList[i], &imgArrowRight, GuiSelectFileHandler, g_fileList[i], false);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 84 * i);
         i++;
-        if (i == 10)
-        {
+        if (i == 10) {
             break;
         }
     }
@@ -65,8 +63,7 @@ static void GuiSelectFileHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     char *path = lv_event_get_user_data(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         char *walletConfig = FatfsFileRead(path);
         GuiSetMultisigImportWalletDataBySDCard(walletConfig);
         GuiFrameOpenView(&g_importMultisigWalletInfoView);

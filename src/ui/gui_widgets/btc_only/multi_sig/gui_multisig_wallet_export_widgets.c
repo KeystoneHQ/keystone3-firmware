@@ -19,16 +19,14 @@
 #define MAX_LABEL_LENGTH 64
 #define MAX_VERIFY_CODE_LENGTH 24
 
-typedef enum
-{
+typedef enum {
     IMPORT_MULTI_SHOW_WALLET_INFO = 0,
     IMPORT_MULTI_WALLET_SUCCESS,
 
     IMPORT_MULTI_WALLET_BUTT,
 } IMPORT_MULTI_WALLET_ENUM;
 
-typedef struct
-{
+typedef struct {
     uint8_t currentTile;
     lv_obj_t *tileView;
 } ImportMultiWalletWidget_t;
@@ -62,15 +60,11 @@ static void QRCodePause(bool pause)
 static void GuiSDCardHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         // TODO: check SD Card exist;
-        if (true)
-        {
+        if (true) {
             GuiShowSDCardExport();
-        }
-        else
-        {
+        } else {
             GuiShowSDCardNotDetected();
         }
         return;
@@ -80,8 +74,7 @@ static void GuiSDCardHandler(lv_event_t *e)
 static void GuiCloseHintBoxHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeWindow);
         return;
     }
@@ -90,15 +83,11 @@ static void GuiCloseHintBoxHandler(lv_event_t *e)
 static void GuiWriteSDCardHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeWindow);
-        if (false)
-        {
+        if (false) {
             GuiShowSDCardExportSuccess();
-        }
-        else
-        {
+        } else {
             GuiShowSDCardExportFailed();
         }
         return;
@@ -191,8 +180,7 @@ void GuiMultisigWalletExportWidgetsInit(char *verifyCode, uint16_t len)
     g_pageWidget = CreatePageWidget();
     MultiSigWalletItem_t *wallet = GetMultisigWalletByVerifyCode(verifyCode);
     g_multisigWalletItem = wallet;
-    if (g_multisigWalletItem == NULL)
-    {
+    if (g_multisigWalletItem == NULL) {
         // TODO: Throw error;
         GuiCLoseCurrentWorkingView();
         return;
@@ -201,12 +189,9 @@ void GuiMultisigWalletExportWidgetsInit(char *verifyCode, uint16_t len)
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SDCARD, NULL, NULL);
-    if (g_isExportMultiWallet)
-    {
+    if (g_isExportMultiWallet) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("manage_multi_wallet_export_title"));
-    }
-    else
-    {
+    } else {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("import_multi_wallet_success_title"));
     }
 }
@@ -260,12 +245,10 @@ static void GuiContent(lv_obj_t *parent)
 
 static char *convertFormatLabel(char *format)
 {
-    if (strcmp(format, FORMAT_P2WSH) == 0)
-    {
+    if (strcmp(format, FORMAT_P2WSH) == 0) {
         return "Native Segwit";
     }
-    if (strcmp(format, FORMAT_P2WSH_P2SH) == 0)
-    {
+    if (strcmp(format, FORMAT_P2WSH_P2SH) == 0) {
         return "Nested Segwit";
     }
     return "Legacy";
@@ -290,8 +273,7 @@ static void SetEgContent(lv_obj_t *label)
 
 void GuiMultisigWalletExportWidgetsDeInit()
 {
-    if (g_pageWidget != NULL)
-    {
+    if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
@@ -307,8 +289,7 @@ static void ModelGenerateAddress(char *address, uint32_t maxLen)
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     SimpleResponse_c_char *result = generate_address_for_multisig_wallet_config(g_multisigWalletItem->walletConfig, 0, 0, mfp, 4, MainNet);
-    if (result->error_code != 0)
-    {
+    if (result->error_code != 0) {
         printf("errorMessage: %s\r\n", result->error_message);
         GuiCLoseCurrentWorkingView();
         return;
@@ -333,8 +314,7 @@ void ModelGenerateMultiSigAddress(char *address, uint32_t maxLen, char *walletCo
 static void ImportMultisigGoToHomeViewHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         g_isExportMultiWallet = false;
         GuiAnimatingQRCodeDestroyTimer();
         GuiCloseToTargetView(&g_homeView);

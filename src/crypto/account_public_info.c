@@ -345,10 +345,10 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     ASSERT(accountIndex < 3);
     FreePublicKeyRam();
     //Load Multisig wallet Manager
-    #ifdef BTC_ONLY
+#ifdef BTC_ONLY
     initMultiSigWalletManager();
     LoadCurrentAccountMultisigWallet(password);
-    #endif
+#endif
 
     addr = SPI_FLASH_ADDR_USER1_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
 

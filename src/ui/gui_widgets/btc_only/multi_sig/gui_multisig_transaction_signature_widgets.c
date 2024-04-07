@@ -42,15 +42,11 @@ static void GuiShowSDCardExportFailed();
 static void GuiSDCardHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         // TODO: check SD Card exist;
-        if (true)
-        {
+        if (true) {
             GuiShowSDCardExport();
-        }
-        else
-        {
+        } else {
             GuiShowSDCardNotDetected();
         }
         return;
@@ -60,8 +56,7 @@ static void GuiSDCardHandler(lv_event_t *e)
 static void GuiCloseHintBoxHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeWindow);
         return;
     }
@@ -70,8 +65,7 @@ static void GuiCloseHintBoxHandler(lv_event_t *e)
 static void GuiWriteSDCardHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeWindow);
         char *filename = lv_event_get_user_data(e);
         printf("filename: %s\r\n", filename);
@@ -83,12 +77,9 @@ static void GuiWriteSDCardHandler(lv_event_t *e)
 #endif
         strcat_s(path, MAX_PSBT_NAME_LEN, filename);
         int ret = FatfsFileWrite(path, g_psbtHex, g_psbtLen);
-        if (ret)
-        {
+        if (ret) {
             GuiShowSDCardExportFailed();
-        }
-        else
-        {
+        } else {
             GuiShowSDCardExportSuccess();
         }
         return;
@@ -128,8 +119,7 @@ static void GuiShowSDCardExport()
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
     SimpleResponse_c_char *result = generate_psbt_file_name(g_psbtHex, g_psbtLen, GetCurrentStampTime());
-    if (result->error_code != 0)
-    {
+    if (result->error_code != 0) {
         printf("errorMessage: %s\r\n", result->error_message);
         GUI_DEL_OBJ(g_noticeWindow);
         GuiShowSDCardExportFailed();
@@ -188,8 +178,7 @@ static void GuiShowSDCardExportFailed()
 
 void GuiMultisigTransactionSginatureSetPsbtName(char *psbtName)
 {
-    if (g_psbtName)
-    {
+    if (g_psbtName) {
         SRAM_FREE(g_psbtName);
     }
     g_psbtName = SRAM_MALLOC(MAX_PSBT_NAME_LEN);

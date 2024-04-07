@@ -498,9 +498,9 @@ int8_t GuiCreateMultiPrevTile(void)
         lv_obj_clear_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
         break;
     case CREATE_MULTI_CONFIRM_CO_SIGNERS:
-            if (g_createMultiTileView.currentSinger == 0) {
-                break;
-            }
+        if (g_createMultiTileView.currentSinger == 0) {
+            break;
+        }
         --g_createMultiTileView.currentSinger;
         UpdateCustodianTileLabel();
         if (g_createMultiTileView.currentSinger == 0) {

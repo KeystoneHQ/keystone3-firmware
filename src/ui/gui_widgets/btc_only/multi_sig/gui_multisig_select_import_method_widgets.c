@@ -81,14 +81,10 @@ static void SelectMicroCardFileHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
-        if (SdCardInsert())
-        {
+    if (code == LV_EVENT_CLICKED) {
+        if (SdCardInsert()) {
             GuiFrameOpenView(&g_multisigReadSdcardView);
-        }
-        else
-        {
+        } else {
             g_noticeWindow = GuiCreateErrorCodeHintbox(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);
         }
     }
@@ -98,8 +94,7 @@ static void SelectCameraHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED)
-    {
+    if (code == LV_EVENT_CLICKED) {
         GuiFrameOpenView(&g_scanView);
     }
 }

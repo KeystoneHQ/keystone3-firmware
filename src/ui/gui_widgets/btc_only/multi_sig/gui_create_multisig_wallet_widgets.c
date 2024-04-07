@@ -327,9 +327,9 @@ static void GuiMultiImportSdCardListWidget(lv_obj_t *parent)
     uint32_t number = 0;
     int i = 0;
 #ifdef COMPILE_SIMULATOR
-    FatfsGetFileName("C:/assets/sd", buffer, &number, 1024 * 5);
+    FatfsGetFileName("C:/assets/sd", buffer, &number, 1024 * 5, "json");
 #else
-    FatfsGetFileName("0:", buffer, &number, 1024 * 5);
+    FatfsGetFileName("0:", buffer, &number, 1024 * 5, "json");
 #endif
     char *token = strtok(buffer, " ");
     while (token != NULL) {
@@ -496,6 +496,11 @@ int8_t GuiCreateMultiNextTile(uint8_t index)
         }
         UpdateCustodianTileLabel(1);
         lv_label_set_text(g_custodianTile.xpubLabel, "");
+        if (g_createMultiTileView.currentSinger == 1) {
+            lv_obj_clear_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_set_tile_id(g_createMultiTileView.tileView, g_createMultiTileView.currentTile, 0, LV_ANIM_OFF);
+            return SUCCESS_CODE;
+        }
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("create_multi_wallet_import_xpub_sdcard_title"));
         break;
     case CREATE_MULTI_SELECT_SDCARD_XPUB:
@@ -534,6 +539,7 @@ int8_t GuiCreateMultiPrevTile(void)
             lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
             lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
             lv_obj_add_event_cb(rightBtn, CancelCreateMultisigWalletHandler, LV_EVENT_CLICKED, NULL);
+            GuiAddObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
         } else {
             UpdateCustodianTileLabel(-1);
             lv_obj_set_tile_id(g_createMultiTileView.tileView, CREATE_MULTI_CONFIRM_CO_SIGNERS, 0, LV_ANIM_OFF);

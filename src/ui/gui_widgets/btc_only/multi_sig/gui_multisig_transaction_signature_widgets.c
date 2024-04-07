@@ -69,7 +69,7 @@ static void GuiWriteSDCardHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeWindow);
         char *filename = lv_event_get_user_data(e);
-        int ret = WriteFile(filename, g_psbtHex, g_psbtLen);
+        int ret = FileWrite(filename, g_psbtHex, g_psbtLen);
         if (ret) {
             GuiShowSDCardExportFailed();
         } else {

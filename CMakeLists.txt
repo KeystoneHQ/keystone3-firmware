@@ -26,9 +26,7 @@ add_definition_with_message(DEBUG_MEMORY)
 
 add_definition_with_message(BUILD_PRODUCTION)
 
-add_compile_definitions(CN_SUPPORT)
 add_compile_definitions(RU_SUPPORT)
-add_compile_definitions(KO_SUPPORT)
 
 get_cmake_property(_variableNames VARIABLES)
 list(SORT _variableNames)
@@ -321,7 +319,7 @@ else()
             src/ui/gui_widgets/general
             src/ui/gui_views/general
             src/webusb_protocol/general)
-        SET(INCLUDES src/managers/btc_only/multi_sig_wallet_manager.c)
+        SET(INCLUDES src/managers/btc_only/multi_sig_wallet_manager.c src/managers/sdcard_manager.c)
     else()
         set(excluded_directories
             src/ui/gui_views/btc_only
@@ -332,7 +330,6 @@ else()
         file(GLOB_RECURSE excluded_files "${directory}/*")
         list(REMOVE_ITEM objsrc ${excluded_files})
     endforeach()
-
 
     add_executable(${PROJECT_NAME}
         ${SIMULATOR_SRC}

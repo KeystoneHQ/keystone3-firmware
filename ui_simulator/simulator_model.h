@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <string.h>
 #include "err_code.h"
 #include "qrdecode_task.h"
 
@@ -46,6 +45,7 @@ int32_t read_qrcode();
 char *FatfsFileRead(const char* path);
 void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32_t maxLen);
 uint32_t GetCurrentStampTime(void);
+bool FatfsFileExist(const char *path);
 
 #define LOW_BATTERY_LIMIT               20
 #define CHECK_BATTERY_LOW_POWER()       ((GetBatterPercent() <= LOW_BATTERY_LIMIT) ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE)

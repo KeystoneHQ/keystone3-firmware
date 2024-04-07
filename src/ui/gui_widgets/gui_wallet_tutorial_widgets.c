@@ -174,13 +174,13 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_KEPLR].items[0].qrTitle = _("connect_keplr_qr_title");
         g_tutorials[WALLET_LIST_KEPLR].items[0].qrUrl = _("connect_keplr_qr_link");
 
-        //WALLET_LIST_ARCONNECCT
-        g_tutorials[WALLET_LIST_ARCONNECCT].len = 1;
-        g_tutorials[WALLET_LIST_ARCONNECCT].desc = _("connect_keplr_desc");
-        g_tutorials[WALLET_LIST_ARCONNECCT].items[0].walletName = _("connect_keplr_title");
-        g_tutorials[WALLET_LIST_ARCONNECCT].items[0].url = _("connect_keplr_link");
-        g_tutorials[WALLET_LIST_ARCONNECCT].items[0].qrTitle = _("connect_keplr_qr_title");
-        g_tutorials[WALLET_LIST_ARCONNECCT].items[0].qrUrl = _("connect_keplr_qr_link");
+        //WALLET_LIST_ARCONNECT
+        g_tutorials[WALLET_LIST_ARCONNECT].len = 1;
+        g_tutorials[WALLET_LIST_ARCONNECT].desc = _("connect_keplr_desc");
+        g_tutorials[WALLET_LIST_ARCONNECT].items[0].walletName = _("connect_keplr_title");
+        g_tutorials[WALLET_LIST_ARCONNECT].items[0].url = _("connect_keplr_link");
+        g_tutorials[WALLET_LIST_ARCONNECT].items[0].qrTitle = _("connect_keplr_qr_title");
+        g_tutorials[WALLET_LIST_ARCONNECT].items[0].qrUrl = _("connect_keplr_qr_link");
 
         //WALLET_LIST_FEWCHA
         g_tutorials[WALLET_LIST_FEWCHA].len = 1;

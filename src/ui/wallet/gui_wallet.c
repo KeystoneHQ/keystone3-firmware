@@ -226,6 +226,11 @@ UREncodeResult *GuiGetArConnectData(void)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     Rsa_primes_t *primes = FlashReadRsaPrimes();
+    if (primes == NULL) {
+        GuiSetupArConnectWallet();
+        primes = FlashReadRsaPrimes();
+    }
+    ASSERT(primes != NULL);
     g_urEncode = get_connect_arconnect_wallet_ur(mfp, sizeof(mfp), primes->p, 256, primes->q, 256);
     printf("\ng_urEncode: %s\n", g_urEncode->data);
     CHECK_CHAIN_PRINT(g_urEncode);

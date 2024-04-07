@@ -22,7 +22,7 @@ typedef enum {
     WALLET_LIST_YEARN_FINANCE,
     WALLET_LIST_SUSHISWAP,
     WALLET_LIST_KEPLR,
-    WALLET_LIST_ARCONNECCT,
+    WALLET_LIST_ARCONNECT,
     WALLET_LIST_FEWCHA,
     WALLET_LIST_PETRA,
     WALLET_LIST_XRP_TOOLKIT,
@@ -88,6 +88,8 @@ void GuiConnectWalletHandleURGenerate(char *data, uint16_t len);
 void GuiConnectWalletHandleURUpdate(char *data, uint16_t len);
 #ifndef BTC_ONLY
 SOLAccountType GetSolflareAccountType(void);
+void GuiPrepareArConnectWalletView(void);
+void GuiSetupArConnectWallet(void);
 #endif
 #endif /* _GUI_CONNECT_WALLET_WIDGETS_H */
 

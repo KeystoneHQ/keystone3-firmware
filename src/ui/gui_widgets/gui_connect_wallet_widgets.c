@@ -11,6 +11,8 @@
 #include "rust.h"
 #ifndef BTC_ONLY
 #include "gui_multi_path_coin_receive_widgets.h"
+#include "gui_keyboard_hintbox.h"
+#include "gui_pending_hintbox.h"
 #endif
 #include "gui_animating_qrcode.h"
 #include "gui_page.h"
@@ -50,7 +52,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_XRP_TOOLKIT, &walletListXRPToolkit, true},
     {WALLET_LIST_PETRA, &walletListPetra, true},
     {WALLET_LIST_KEPLR, &walletListKeplr, true},
-    {WALLET_LIST_ARCONNECCT, &walletListArConnect, true},
+    {WALLET_LIST_ARCONNECT, &walletListArConnect, true},
     {WALLET_LIST_IMTOKEN, &walletListImToken, true},
     {WALLET_LIST_FEWCHA, &walletListFewcha, true},
     {WALLET_LIST_ZAPPER, &walletListZapper, true},
@@ -229,6 +231,8 @@ const static ChangeDerivationItem_t g_solChangeDerivationList[] = {
 static uint16_t g_xrpAddressIndex[3] = {0};
 static uint8_t g_currentSelectedPathIndex[3] = {0};
 static lv_obj_t *g_coinListCont = NULL;
+static KeyboardWidget_t *g_keyboardWidget = NULL;
+
 #endif
 
 static ConnectWalletWidget_t g_connectWalletTileView;
@@ -357,6 +361,13 @@ static void OpenQRCodeHandler(lv_event_t *e)
         }
         if (g_connectWalletTileView.walletIndex == WALLET_LIST_ETERNL) {
             GuiCreateConnectEternlWidget();
+            return;
+        }
+        if (g_connectWalletTileView.walletIndex == WALLET_LIST_ARCONNECT && !HasGeneratedRsaPrimes()) {
+            g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
+            SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+            static uint16_t sig = SIG_SETUO_RSA_PRIVATE_KEY_WITH_PASSWORD;
+            SetKeyboardWidgetSig(g_keyboardWidget, &sig);
             return;
         }
 #endif
@@ -962,6 +973,24 @@ UREncodeResult *GuiGetXrpToolkitData(void)
 {
     return GuiGetXrpToolkitDataByIndex(g_xrpAddressIndex[GetCurrentAccountIndex()]);
 }
+
+void GuiPrepareArConnectWalletView(void)
+{
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+}
+
+void GuiSetupArConnectWallet(void)
+{
+    uint8_t seed[64];
+    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    int32_t ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+    ASSERT(ret == 0);
+    SimpleResponse_u8 *result = generate_arweave_secret(seed, len);
+    FlashWriteRsaPrimes(result->data);
+    ClearSecretCache();
+}
+
 #endif
 
 void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
@@ -1022,7 +1051,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetKeplrData;
         AddKeplrCoins();
         break;
-    case WALLET_LIST_ARCONNECCT:
+    case WALLET_LIST_ARCONNECT:
         func = GuiGetArConnectData;
         AddArConnectCoins();
         break;

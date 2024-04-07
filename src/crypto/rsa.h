@@ -7,6 +7,8 @@
 #include "drv_gd25qxx.h"
 #include "sha256.h"
 #include "log_print.h"
+#include "hash_and_salt.h"
+#include "keystore.h"
 
 #define SPI_FLASH_RSA_DATA_SIZE 512
 #define SPI_FLASH_RSA_HASH_SIZE 32
@@ -20,3 +22,4 @@ typedef struct {
 
 Rsa_primes_t *FlashReadRsaPrimes();
 int FlashWriteRsaPrimes(const uint8_t *data);
+bool HasGeneratedRsaPrimes();

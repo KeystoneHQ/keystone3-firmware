@@ -9,11 +9,18 @@
 #include "gui_keyboard_hintbox.h"
 #include "gui_fullscreen_mode.h"
 #include "gui_multisig_wallet_export_widgets.h"
+#include "sdcard_manager.h"
+
 #ifndef COMPILE_SIMULATOR
 #include "safe_str_lib.h"
+#include "drv_sdcard.h"
 #else
 #include "simulator_mock_define.h"
+#include "simulator_model.h"
 #endif
+
+#define MAX_WALLET_NAME_LEN 48
+#define MAX_WALLET_CONTENT_LEN 1024
 
 #define MAX_ADDRESS_LEN 256
 #define MAX_LABEL_LENGTH 64
@@ -61,8 +68,7 @@ static void GuiSDCardHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        // TODO: check SD Card exist;
-        if (true) {
+        if (SdCardInsert()) {
             GuiShowSDCardExport();
         } else {
             GuiShowSDCardNotDetected();
@@ -85,7 +91,10 @@ static void GuiWriteSDCardHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeWindow);
-        if (false) {
+        
+        char *filename = lv_event_get_user_data(e);
+        int ret = WriteFile(filename, g_multisigWalletItem->walletConfig, strnlen(g_multisigWalletItem->walletConfig, MAX_WALLET_CONTENT_LEN));
+        if (ret == 0) {
             GuiShowSDCardExportSuccess();
         } else {
             GuiShowSDCardExportFailed();
@@ -125,8 +134,12 @@ static void GuiShowSDCardExport()
 
     label = GuiCreateIllustrateLabel(g_noticeWindow, _("multisig_export_to_sdcard_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
-
-    char *filename = "xxxx.txt";
+    
+    char *filename = SRAM_MALLOC(MAX_WALLET_NAME_LEN);
+    snprintf_s(filename, MAX_WALLET_NAME_LEN, "%s.txt", g_multisigWalletItem->name);
+    if(FileExists(filename)) {
+        snprintf_s(filename, MAX_WALLET_NAME_LEN, "%s_%d.txt", g_multisigWalletItem->name, GetCurrentStampTime());
+    }
     label = GuiCreateIllustrateLabel(g_noticeWindow, filename);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 670);
 
@@ -134,7 +147,7 @@ static void GuiShowSDCardExport()
     lv_obj_set_size(btn, 122, 66);
     lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
-    lv_obj_add_event_cb(btn, GuiWriteSDCardHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(btn, GuiWriteSDCardHandler, LV_EVENT_CLICKED, filename);
 }
 
 static void GuiShowSDCardExportSuccess()
@@ -188,7 +201,7 @@ void GuiMultisigWalletExportWidgetsInit(char *verifyCode, uint16_t len)
     GuiContent(g_pageWidget->contentZone);
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SDCARD, NULL, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SDCARD, GuiSDCardHandler, NULL);
     if (g_isExportMultiWallet) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("manage_multi_wallet_export_title"));
     } else {

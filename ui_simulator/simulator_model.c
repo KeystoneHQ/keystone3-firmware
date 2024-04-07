@@ -114,7 +114,14 @@ void ExportAddressApprove()
 
 bool FatfsFileExist(const char *path)
 {
-    return true;
+    lv_fs_file_t fp;
+    lv_fs_res_t res = LV_FS_RES_OK;
+    res = lv_fs_open(&fp, path, LV_FS_MODE_RD);
+    if (res == LV_FS_RES_OK) {
+        lv_fs_close(&fp);
+        return true;
+    }
+    return false;
 }
 
 bool FpModuleIsChipState(void)

@@ -330,7 +330,7 @@ else()
         list(REMOVE_ITEM objsrc ${excluded_files})
     endforeach()
 
-    SET(INCLUDES src/managers/btc_only/multi_sig_wallet_manager.c)
+    SET(INCLUDES src/managers/btc_only/multi_sig_wallet_manager.c src/managers/sdcard_manager.c)
 
     add_executable(${PROJECT_NAME}
         ${SIMULATOR_SRC}

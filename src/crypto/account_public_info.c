@@ -17,11 +17,11 @@
 #include "gui_views.h"
 #include "gui_api.h"
 #include "gui_home_widgets.h"
-#include "gui_btc_home_widgets.h"
 #include "user_fatfs.h"
 #include "multi_sig_wallet_manager.h"
 
 #ifdef COMPILE_SIMULATOR
+#include "gui_btc_home_widgets.h"
 #include "simulator_mock_define.h"
 #include "simulator_model.h"
 #else
@@ -345,8 +345,10 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     ASSERT(accountIndex < 3);
     FreePublicKeyRam();
     //Load Multisig wallet Manager
+    #ifdef BTC_ONLY
     initMultiSigWalletManager();
     LoadCurrentAccountMultisigWallet(password);
+    #endif
 
     addr = SPI_FLASH_ADDR_USER1_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
 
@@ -970,6 +972,7 @@ static void replace(char *str, const char *old_str, const char *new_str)
     }
 }
 
+#ifdef BTC_ONLY
 void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)
 {
     ASSERT(accountIndex >= 0);
@@ -996,6 +999,7 @@ void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)
         printf("multi sig write to sdcard fail\r\n");
     }
 }
+#endif
 
 void appendWalletItemToJson(MultiSigWalletItem_t *item, void *root)
 {

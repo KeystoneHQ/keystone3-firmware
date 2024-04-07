@@ -1,4 +1,3 @@
-#include "multi_sig_wallet_manager.h"
 #include "account_public_info.h"
 #include "stdint.h"
 #include "stdbool.h"
@@ -8,6 +7,7 @@
 #include "account_manager.h"
 #include "assert.h"
 #include "gui_btc_home_widgets.h"
+#include "multi_sig_wallet_manager.h"
 
 #define MAX_NAME_LENGTH 64
 #define MAX_FORMAT_LENGTH 12

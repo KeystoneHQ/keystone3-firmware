@@ -132,6 +132,7 @@ set(SRC_INCLUDE_PATH
     src/utils
     src/utils/log
     src/managers
+    src/managers/btc_only
     src/error_codes
     src/firmware
     src/msg

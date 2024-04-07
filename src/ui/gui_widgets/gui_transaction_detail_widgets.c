@@ -207,7 +207,12 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
     GUI_DEL_OBJ(g_fingerSingContainer)
     GuiDeleteKeyboardWidget(g_keyboardWidget);
 
-#ifndef BTC_ONLY
+#ifdef BTC_ONLY
+    if (g_transactionType == TRANSACTION_TYPE_BTC_MULTISIG) {
+        printf("transaction type is btc multisig\r\n");
+        GuiFrameOpenView(&g_multisigTransactionSignatureView);
+    }
+#else
     if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
         GenerateUR func = GetSingleUrGenerator(g_viewType);
         if (func == NULL) {
@@ -221,13 +226,11 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
         }
         return;
     }
-#endif
-    if (g_transactionType == TRANSACTION_TYPE_BTC_MULTISIG) {
-        printf("transaction type is btc multisig\r\n");
-        GuiFrameOpenView(&g_multisigTransactionSignatureView);
-    } else {
+
+    if (g_transactionType == TRANSACTION_TYPE_NORMAL) {
         GuiFrameOpenViewWithParam(&g_transactionSignatureView, &g_viewType, sizeof(g_viewType));
     }
+#endif
 }
 
 void GuiSignVerifyPasswordErrorCount(void *param)

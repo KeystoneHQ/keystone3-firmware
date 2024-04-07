@@ -98,7 +98,7 @@ static KeyBoard_t *g_nameWalletKb = NULL;
 static lv_obj_t *g_noticeWindow = NULL;
 static lv_obj_t *g_importXpubBtn = NULL;
 static PageWidget_t *g_pageWidget;
-static ChainType g_chainType = XPUB_TYPE_BTC_MULTI_SIG_P2SH;
+static ChainType g_chainType = XPUB_TYPE_BTC_MULTI_SIG_P2WSH;
 static void GetAndCreateMultiWallet(void);
 static char g_fileList[10][64] = {0};
 
@@ -498,9 +498,9 @@ int8_t GuiCreateMultiPrevTile(void)
         lv_obj_clear_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
         break;
     case CREATE_MULTI_CONFIRM_CO_SIGNERS:
-        if (g_createMultiTileView.currentSinger == 0) {
-            break;
-        }
+            if (g_createMultiTileView.currentSinger == 0) {
+                break;
+            }
         --g_createMultiTileView.currentSinger;
         UpdateCustodianTileLabel();
         if (g_createMultiTileView.currentSinger == 0) {
@@ -575,7 +575,8 @@ static void SelectCheckBoxHandler(lv_event_t* e)
         for (int i = 0; i < 3; i++) {
             if (newCheckBox == g_formatCheckBox[i]) {
                 lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
-                g_chainType = i + XPUB_TYPE_BTC_MULTI_SIG_P2SH;
+                g_chainType = XPUB_TYPE_BTC_MULTI_SIG_P2WSH - i;
+                printf("g_chaintype = %d\n", g_chainType);
             } else {
                 lv_obj_clear_state(g_formatCheckBox[i], LV_STATE_CHECKED);
             }
@@ -610,7 +611,7 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
             {.obj = checkBox, .align = LV_ALIGN_RIGHT_MID, .position = {-24, 0}},
         };
 
-        if (i == g_chainType - XPUB_TYPE_BTC_MULTI_SIG_P2SH) {
+        if (i == XPUB_TYPE_BTC_MULTI_SIG_P2WSH - g_chainType) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
         lv_obj_t *button = GuiCreateButton(cont, 408, 102, table, NUMBER_OF_ARRAYS(table),

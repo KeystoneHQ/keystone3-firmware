@@ -43,7 +43,6 @@ for %%i in (%*) do (
         echo format file...
         call %ASTYLE_PATH%
         popd
-        exit()
     )
     if /I "%%i"=="release" (
         set build_release=true

@@ -16,7 +16,6 @@ SET build_copy=false
 SET build_production=false
 SET build_screen=false
 SET build_debug=false
-SET build_format=false
 SET build_release=false
 SET build_rebuild=false
 SET build_btc_only=false
@@ -40,7 +39,11 @@ for %%i in (%*) do (
         set build_debug=true
     )
     if /I "%%i"=="format" (
-        set build_format=true
+        pushd %TOOLS_FOLDER%
+        echo format file...
+        call %ASTYLE_PATH%
+        popd
+        exit()
     )
     if /I "%%i"=="release" (
         set build_release=true
@@ -61,13 +64,6 @@ for %%i in (%*) do (
 
 if "%build_rebuild%"=="true" (
     rd /s /q %BUILD_FOLDER%
-) 
-
-if "%build_format%"=="true" (
-    pushd %TOOLS_FOLDER%
-    echo format file...
-    call %ASTYLE_PATH%
-    popd
 ) 
 
 if not exist %BUILD_FOLDER% (

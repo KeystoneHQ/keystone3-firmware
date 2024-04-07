@@ -937,7 +937,7 @@ void GuiConnectWalletInit(void)
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 
-    lv_obj_t *tileView = GuiCreateTileView(cont); 
+    lv_obj_t *tileView = GuiCreateTileView(cont);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, CONNECT_WALLET_SELECT_WALLET, 0, LV_DIR_HOR);
     GuiCreateSelectWalletWidget(tile);
 
@@ -1537,7 +1537,7 @@ static void OpenMoreHandler(lv_event_t *e)
 #ifndef BTC_ONLY
         if (IsEVMChain(*wallet) || IsSOL(*wallet)) {
             btn = GuiCreateSelectButton(g_openMoreHintBox, _("derivation_path_change"), &imgPath,
-                                              ChangeDerivationPathHandler, wallet, true);
+                                        ChangeDerivationPathHandler, wallet, true);
             lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -120);
         }
 #endif

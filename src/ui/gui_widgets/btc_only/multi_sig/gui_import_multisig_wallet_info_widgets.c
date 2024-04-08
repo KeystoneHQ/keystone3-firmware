@@ -127,6 +127,12 @@ void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
     GuiFrameOpenViewWithParam(&g_multisigWalletExportView, verifyCode, strnlen_s(verifyCode, MAX_VERIFY_CODE_LEN));
 }
 
+void GuiImportMultisigPasswordErrorCount(void *param)
+{
+    PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
+    GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
+}
+
 static void prepareWalletByQRCode(void *wallet_info_data)
 {
     uint8_t mfp[4];

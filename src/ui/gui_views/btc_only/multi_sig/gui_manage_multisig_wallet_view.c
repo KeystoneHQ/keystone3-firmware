@@ -23,6 +23,13 @@ int32_t GuiManageMultiViewEventProcess(void *self, uint16_t usEvent, void *param
         GuiManageMultisigWalletNextTile(0xFF);
         break;
     case SIG_VERIFY_PASSWORD_PASS:
+        if (param != NULL) {
+            uint16_t sig = *(uint16_t *)param;
+            if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
+                GuiLockScreenToHome();
+                return SUCCESS_CODE;
+            }
+        }
         DeleteMultisigWallet();
         break;
     default:

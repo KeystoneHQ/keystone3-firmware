@@ -401,7 +401,6 @@ void DeleteMultisigWallet(void)
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     ClearSecretCache();
     GuiManageMultiWalletPrevTile();
-    GuiManageMultiWalletPrevTile();
 }
 
 static void UpdateDefaultWalletState(void)

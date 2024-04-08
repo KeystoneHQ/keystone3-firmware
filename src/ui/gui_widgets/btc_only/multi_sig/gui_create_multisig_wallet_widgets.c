@@ -21,6 +21,7 @@
 #include "multi_sig_wallet_manager.h"
 #include "account_public_info.h"
 #include "gui_import_multisig_wallet_info_widgets.h"
+#include <string.h>
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #include "simulator_mock_define.h"
@@ -91,7 +92,7 @@ static CreateMultiWidget_t g_createMultiTileView;
 static SelectSliceWidget_t g_selectSliceTile;
 static CustodianWidget_t g_custodianTile;
 static XpubWidget_t g_xPubTile;
-static XpubWidgetCache_t *g_xpubCache;
+static XpubWidgetCache_t *g_xpubCache = NULL;
 static lv_obj_t *g_formatCheckBox[3];
 static KeyBoard_t *g_nameWalletKb = NULL;
 static lv_obj_t *g_noticeWindow = NULL;
@@ -406,6 +407,7 @@ void GuiCreateMultiInit(void)
     tile = lv_tileview_add_tile(tileView, CREATE_MULTI_IMPORT_SDCARD_XPUB, 0, LV_DIR_HOR);
     GuiMultiImportSdCardXpubWidget(tile);
 
+    g_createMultiTileView.currentSinger = 0;
     g_createMultiTileView.currentTile = CREATE_MULTI_SET_NAME;
     g_createMultiTileView.tileView = tileView;
 
@@ -443,7 +445,9 @@ static void UpdateStepItemAndImportStatus(int8_t addOrSub)
         GuiAddObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_flag(g_custodianTile.importXpubBtn, LV_OBJ_FLAG_HIDDEN);
     } else {
-        if (strlen(lv_label_get_text(g_custodianTile.xpubLabel)) > 0 || g_createMultiTileView.currentSinger == g_selectSliceTile.coSingers - 1) {
+        if (strlen(lv_label_get_text(g_custodianTile.xpubLabel)) > 0 || 
+            g_createMultiTileView.currentSinger == g_selectSliceTile.coSingers - 1 || 
+            strlen(g_xpubCache[g_createMultiTileView.currentSinger].xpub) > 0) {
             GuiAddObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
         } else {
             GuiClearObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
@@ -499,6 +503,7 @@ int8_t GuiCreateMultiNextTile(uint8_t index)
         UpdateCustodianTileLabel(1);
         if (g_createMultiTileView.currentSinger == 1) {
             GuiAddObjFlag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
             lv_obj_set_tile_id(g_createMultiTileView.tileView, g_createMultiTileView.currentTile, 0, LV_ANIM_OFF);
             return SUCCESS_CODE;
         }
@@ -571,6 +576,12 @@ void GuiCreateMultiDeInit(void)
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
+
+    if (g_xpubCache != NULL) {
+        SRAM_FREE(g_xpubCache);
+        g_xpubCache = NULL;
+    }
+
     GUI_DEL_OBJ(g_createMultiTileView.stepCont)
 }
 

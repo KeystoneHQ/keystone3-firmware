@@ -19,7 +19,6 @@ static char g_fileList[10][64] = {0};
 
 static void GuiContent(lv_obj_t *);
 static void GuiSelectFileHandler(lv_event_t *e);
-static int endsWith(const char *str, const char *suffix);
 static FileFilterType g_fileFilterType = ALL;
 
 
@@ -45,43 +44,33 @@ static void GuiContent(lv_obj_t *parent)
     char *buffer = EXT_MALLOC(1024 * 5);
     uint32_t number = 0;
     int i = 0;
-#ifdef COMPILE_SIMULATOR
-    FatfsGetFileName("C:/assets/sd", buffer, &number, 1024 * 5, NULL);
-#else
-    FatfsGetFileName("0:", buffer, &number, 1024 * 5, NULL);
-#endif
-    char *token = strtok(buffer, " ");
-    while (token != NULL) {
-        bool shouldGo = true;
-        switch (g_fileFilterType) {
+    char *suffix = NULL;
+    switch (g_fileFilterType) {
         case ALL:
-            strncpy(g_fileList[i], token, sizeof(g_fileList[i]) - 1);
             break;
         case ONLY_TXT:
-            shouldGo = endsWith(token, ".txt");
-            if (shouldGo) {
-                strncpy(g_fileList[i], token, sizeof(g_fileList[i]) - 1);
-            }
+            suffix = ".txt";
             break;
         case ONLY_PSBT:
-            shouldGo = endsWith(token, ".psbt");
-            if (shouldGo) {
-                strncpy(g_fileList[i], token, sizeof(g_fileList[i]) - 1);
-            }
+            suffix = ".psbt";
             break;
         case ONLY_JSON:
-            shouldGo = endsWith(token, ".json");
-            if (shouldGo) {
-                strncpy(g_fileList[i], token, sizeof(g_fileList[i]) - 1);
-            }
+            suffix = ".json";
             break;
         default:
             break;
-        }
+    }
+    printf("suffix is %s\r\n", suffix);
+#ifdef COMPILE_SIMULATOR
+    FatfsGetFileName("C:/assets/sd", buffer, &number, 1024 * 5, suffix);
+#else
+    FatfsGetFileName("0:", buffer, &number, 1024 * 5, suffix);
+#endif
+    char *token = strtok(buffer, " ");
+    while (token != NULL) {
+        printf("token is %s\r\n", token);
+        strncpy(g_fileList[i], token, sizeof(g_fileList[i]) - 1);
         token = strtok(NULL, " ");
-        if (!shouldGo) {
-            continue;
-        }
         lv_obj_t *btn = GuiCreateSelectButton(parent, g_fileList[i], &imgArrowRight, GuiSelectFileHandler, g_fileList[i], false);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 84 * i);
         i++;
@@ -133,21 +122,4 @@ static void GuiSelectFileHandler(lv_event_t *e)
 
 
     }
-}
-
-static int endsWith(const char *str, const char *suffix)
-{
-    size_t strLen = strlen(str);
-    size_t suffixLen = strlen(suffix);
-
-    if (suffixLen > strLen) {
-        return 0;
-    }
-
-    const char *strEnd = str + (strLen - suffixLen);
-    if (strcmp(strEnd, suffix) == 0) {
-        return 1;
-    }
-
-    return 0;
 }

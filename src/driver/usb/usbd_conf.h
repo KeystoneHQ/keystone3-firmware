@@ -22,7 +22,6 @@
 #define USBD_SELF_POWERED
 /* USB Device Config End */
 
-
 #if CONFIG_USB_DEVICE_MSC
 /* MSC Config Start */
 #if USB_OTG_MAX_EP_COUNT > 4
@@ -40,9 +39,6 @@
 #define MSC_MEDIA_PACKET 4096
 /* MSC Config End */
 #endif // CONFIG_USB_DEVICE_MSC
-
-
-
 
 #endif //__USBD_CONF__H__
 

@@ -55,8 +55,6 @@ void GuiPendingHintBoxOpen(const char *title, const char *subtitle)
     g_pendingHintBox = bgCont;
 }
 
-
-
 void GuiPendingHintBoxRemove()
 {
     if (g_pendingHintBox != NULL) {
@@ -64,7 +62,6 @@ void GuiPendingHintBoxRemove()
         lv_anim_del_all();
     }
 }
-
 
 void GuiPendingHintBoxMoveToTargetParent(lv_obj_t *parent)
 {

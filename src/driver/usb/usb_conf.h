@@ -50,12 +50,9 @@
 
 /****************** USB OTG FS CONFIGURATION **********************************/
 
-
-
 #if CONFIG_MHSCPU_MH1903
 #define USB_OTG_MAX_EP_COUNT 8
 #endif // CONFIG_MHSCPU_MH1903
-
 
 // RX/TX{X}_FIFO_FS_SIZE was not used anymore for the FIFO size will be dynamically allocated!
 

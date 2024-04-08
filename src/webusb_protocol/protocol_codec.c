@@ -8,8 +8,6 @@
 #include "crc.h"
 #include "protocol_parse.h"
 
-
-
 /// @brief Build frame.
 /// @param pHead
 /// @param tlvArray
@@ -55,7 +53,6 @@ uint8_t *BuildFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlvLen)
     return sendData;
 }
 
-
 /// @brief Get the frame total length by tlv array.
 /// @param tlvArray
 /// @return The frame total length.
@@ -73,7 +70,6 @@ uint32_t GetFrameTotalLength(const Tlv_t tlvArray[], uint32_t tlvLen)
 
     return totalLen;
 }
-
 
 /// @brief Get TLV array from data.
 /// @param[out] tlvArray
@@ -107,7 +103,6 @@ uint32_t GetTlvFromData(Tlv_t tlvArray[], uint32_t maxTlvLen, const uint8_t *dat
     }
     return count;
 }
-
 
 void PrintProtocolFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlvLen)
 {
@@ -153,7 +148,6 @@ void PrintProtocolFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlv
     SRAM_FREE(sendData);
 }
 
-
 void PrintFrameHead(const FrameHead_t *pHead)
 {
     printf("head=0x%X\n", pHead->head);
@@ -166,12 +160,10 @@ void PrintFrameHead(const FrameHead_t *pHead)
     printf("length=%d\n", pHead->length);
 }
 
-
 static void ProtocolTestSend(const uint8_t *data, uint32_t len)
 {
     PrintArray("protocol test send", data, len);
 }
-
 
 void ProtocolCodecTest(int argc, char *argv[])
 {
@@ -217,5 +209,3 @@ void ProtocolCodecTest(int argc, char *argv[])
         ProtocolReceivedData(inData, length, ProtocolTestSend);
     }
 }
-
-

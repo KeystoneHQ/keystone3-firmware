@@ -1,10 +1,8 @@
 #ifndef _DRV_AW32001_H
 #define _DRV_AW32001_H
 
-
 #include "stdint.h"
 #include "stdbool.h"
-
 
 typedef enum {
     CHARGE_STATE_NOT_CHARGING,
@@ -20,7 +18,6 @@ typedef enum {
 
 typedef void (*ChangerInsertIntCallbackFunc_t)(void);
 
-
 void Aw32001Init(void);
 void RegisterChangerInsertCallback(ChangerInsertIntCallbackFunc_t func);
 int32_t Aw32001PowerOff(void);
@@ -31,6 +28,4 @@ bool GetUsbDetectState(void);
 void ChangerInsertHandler(void);
 void Aw32001Test(int argc, char *argv[]);
 
-
 #endif
-

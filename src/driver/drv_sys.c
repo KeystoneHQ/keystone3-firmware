@@ -3,7 +3,6 @@
 #include "stdio.h"
 #include "version.h"
 
-
 void SystemClockInit(void)
 {
     SYSCTRL_SYSCLKSourceSelect(SELECT_EXT12M);
@@ -13,7 +12,6 @@ void SystemClockInit(void)
     SYSCTRL_HCLKConfig(SYSCTRL_HCLK_Div_None);
     SYSCTRL_PCLKConfig(SYSCTRL_PCLK_Div2);
 }
-
 
 void NvicInit(void)
 {
@@ -26,7 +24,6 @@ void NvicInit(void)
     NVIC_SetPriority(PendSV_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_3, 7, 0));
     NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_3, 7, 0));
 }
-
 
 void PrintSystemInfo(void)
 {

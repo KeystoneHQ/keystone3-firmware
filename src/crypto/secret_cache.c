@@ -24,7 +24,6 @@ static uint8_t g_diceRollHashCache[32] = {0};
 static uint16_t g_identifier;
 static uint16_t g_iteration;
 
-
 void SecretCacheSetChecksum(uint8_t *checksum)
 {
     memcpy(g_checksumCache, checksum, sizeof(g_checksumCache));
@@ -107,7 +106,6 @@ void SecretCacheSetEntropy(uint8_t *entropy, uint32_t len)
     memcpy(g_entropyCache, entropy, len);
 }
 
-
 uint8_t *SecretCacheGetEntropy(uint32_t *len)
 {
     *len = g_entropyLen;
@@ -124,13 +122,11 @@ void SecretCacheSetEms(uint8_t *ems, uint32_t len)
     memcpy(g_emsCache, ems, len);
 }
 
-
 uint8_t *SecretCacheGetEms(uint32_t *len)
 {
     *len = g_emsLen;
     return g_emsCache;
 }
-
 
 void SecretCacheSetMnemonic(char *mnemonic)
 {

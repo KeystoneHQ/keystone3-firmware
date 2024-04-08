@@ -144,7 +144,6 @@ void GuiTransactionCheckFiald(PtrT_TransactionCheckResult result)
     ThrowError();
 }
 
-
 static void GuiScanNavBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseTimerCurrentViewHandler, NULL);
@@ -225,13 +224,11 @@ static void CloseScanErrorDataHandler(lv_event_t *e)
     }
 }
 
-
 static void GuiScanStart()
 {
     GuiSetScanCorner();
     GuiModeControlQrDecode(true);
 }
-
 
 #ifdef BTC_ONLY
 static void SelectMicroCardFileHandler(lv_event_t *e)

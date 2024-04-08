@@ -26,7 +26,6 @@
 #include "account_manager.h"
 #include "gui_animating_qrcode.h"
 
-
 static void GuiTransactionSignatureNVSBarInit();
 static void GuiCreateSignatureQRCode(lv_obj_t *parent);
 
@@ -80,7 +79,6 @@ static void GuiTransactionSignatureNVSBarInit()
     }
 #endif
 }
-
 
 static void GuiCreateSignatureQRCode(lv_obj_t *parent)
 {

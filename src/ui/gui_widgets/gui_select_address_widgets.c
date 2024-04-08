@@ -76,7 +76,6 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     }
 }
 
-
 static void SetCurrentSelectIndex(uint32_t selectIndex)
 {
     g_selectIndex = selectIndex;

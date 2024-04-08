@@ -93,10 +93,8 @@ void GuiDisplayWidgetsRefresh()
     GuiDisplayNVSBarInit();
 }
 
-
 void GuiDisplayWidgetsRestart()
 {}
-
 
 static void GuiDisplayNVSBarInit()
 {
@@ -104,7 +102,6 @@ static void GuiDisplayNVSBarInit()
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("system_settings_screen_lock_title"));
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
 }
-
 
 static lv_obj_t* GuiCreateSlider(lv_obj_t *parent)
 {
@@ -138,7 +135,6 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
 {
     lv_obj_t *label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_brightness"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 36);
-
 
     lv_obj_t *leftContainer = GuiCreateContainerWithParent(parent, 64, 64);
     lv_obj_t *leftImg = GuiCreateImg(leftContainer, &imgBrightnessLow);
@@ -219,7 +215,6 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
                              ChooseAutoLockTimeHandler, NULL);
 
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 173);
-
 
     label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_auto_shutdown"));
 
@@ -313,7 +308,6 @@ static void ChooseAutoLockTimeHandler(lv_event_t *e)
 
         lv_obj_t *button = GuiCreateButton(g_autoLockHintBox, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoLockTimeHandler, g_autoLockCheck[0]);
         lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 320);
-
 
         label = GuiCreateTextLabel(g_autoLockHintBox, _("system_settings_screen_lock_auto_lock_30secs"));
         checkBox = GuiCreateSingleCheckBox(g_autoLockHintBox, "");
@@ -480,7 +474,6 @@ static void ChooseAutoShutdownHandler(lv_event_t *e)
         lv_obj_t *button = GuiCreateButton(g_autoShutdownHintBox, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoShutdownHandler, g_autoShutdownCheck[0]);
         lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 320);
 
-
         label = GuiCreateTextLabel(g_autoShutdownHintBox, _("system_settings_screen_lock_auto_power_off_6h"));
         checkBox = GuiCreateSingleCheckBox(g_autoShutdownHintBox, "");
         if (g_currentShutdownIndex == 1) {
@@ -536,7 +529,6 @@ static void CloseChooseAutoShutdownHandler(lv_event_t* e)
         GUI_DEL_OBJ(g_autoShutdownHintBox)
     }
 }
-
 
 static void SelectAutoShutdownHandler(lv_event_t *e)
 {

@@ -8,7 +8,6 @@
 //DS28S60 RETURN CODE, err code in err_code.h
 #define DS28S60_SUCCESS                             SUCCESS_CODE
 
-
 //DS28S60 COMMAND
 #define DS28S60_CMD_READ_MEM                        0x44
 #define DS28S60_CMD_WRITE_MEM                       0x96
@@ -31,7 +30,6 @@
 #define DS28S60_CMD_CMPT_SESSION                    0x37
 #define DS28S60_CMD_HMAC                            0xB3
 #define DS28S60_CMD_READ_RNG                        0xD2
-
 
 //Specialty pages
 #define PUB_KEY_AX                                  92
@@ -83,7 +81,6 @@
 #define SECRET_C_BLOCK                              33
 #define SECRET_D_BLOCK                              34
 
-
 //DS28S60 result byte
 #define DS28S60_RESULT_BYTE_CMD_UNEXPECTEDLY        0x22
 #define DS28S60_RESULT_BYTE_RNG_FAILURE             0x22
@@ -92,7 +89,6 @@
 #define DS28S60_RESULT_BYTE_SUCCESS                 0xAA
 
 #define DS28S60_INFO_VALID                          0xA5
-
 
 #define DS28S60_SECRET_KEY_A                        0x04
 #define DS28S60_SECRET_KEY_B                        0x05
@@ -104,7 +100,6 @@ typedef struct {
     uint8_t MANID[2];
     uint8_t valid;
 } DS28S60_Info_t;
-
 
 typedef struct {
     union {
@@ -128,7 +123,6 @@ typedef struct {
         } b;
     } Prot;
 } DS28S60_BlockProtection_t;
-
 
 void DS28S60_Init(void);
 void DS28S60_Open(void);

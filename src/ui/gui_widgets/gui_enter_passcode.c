@@ -65,7 +65,6 @@ void GuiEnterPassLabelRefresh(void)
     g_enterPassLabel[ENTER_PASSCODE_REPEAT_PASSWORD].passSwitch = "";
 }
 
-
 static void SetPinEventHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);

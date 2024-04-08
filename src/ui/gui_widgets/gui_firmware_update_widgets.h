@@ -4,7 +4,6 @@
 #include "stdint.h"
 #include "stdbool.h"
 
-
 typedef enum {
     FIRMWARE_UPDATE_ENTRY_SETUP = 0,
     FIRMWARE_UPDATE_ENTRY_SETTING,
@@ -24,4 +23,3 @@ void GuiFirmwareUpdateWidgetRefresh(void);
 void GuiFirmwareUpdateSha256Percent(uint8_t percent);
 
 #endif
-

@@ -362,7 +362,6 @@ void GuiLockScreenTurnOnHandler(lv_event_t *e)
     }
 }
 
-
 void GuiLockScreenInit(void *param)
 {
     g_pageWidget = CreatePageWidget();
@@ -374,7 +373,6 @@ void GuiLockScreenInit(void *param)
 
     GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_GO_LOCK_DEVICE_PASS, NULL, 0);
 }
-
 
 void GuiJumpToLockDevicePage(void)
 {

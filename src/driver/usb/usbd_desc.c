@@ -231,8 +231,6 @@ uint8_t* USBD_USR_InterfaceStrDescriptor(uint8_t speed, uint16_t* length)
     return USBD_StrDesc;
 }
 
-
-
 const uint8_t USBD_OS_STRING[8] = {
     'M',
     'S',
@@ -243,8 +241,6 @@ const uint8_t USBD_OS_STRING[8] = {
     '0',
     USB_REQ_MS_VENDOR_CODE,
 };
-
-
 
 #define USB_LEN_OS_FEATURE_DESC 0x28
 #if defined ( __ICCARM__ ) /* IAR Compiler */
@@ -264,7 +260,6 @@ __ALIGN_BEGIN uint8_t USBD_WINUSB_OSFeatureDesc[USB_LEN_OS_FEATURE_DESC] __ALIGN
     0, 0, 0, 0, 0, 0, 0, 0,                 // second ID
     0, 0, 0, 0, 0, 0                        // reserved 6 bytes
 };
-
 
 #define USB_LEN_OS_PROPERTY_DESC 0x8E
 __ALIGN_BEGIN uint8_t USBD_WINUSB_OSPropertyDesc[USB_LEN_OS_PROPERTY_DESC] __ALIGN_END = {
@@ -340,7 +335,6 @@ __ALIGN_BEGIN uint8_t USBD_WINUSB_OSPropertyDesc[USB_LEN_OS_PROPERTY_DESC] __ALI
     0, 0,
 };
 
-
 //#include "stdio.h"
 
 uint8_t *USBD_WinUSBOSStrDescriptor(uint16_t *length)
@@ -350,7 +344,6 @@ uint8_t *USBD_WinUSBOSStrDescriptor(uint16_t *length)
     return USBD_StrDesc;
 }
 
-
 uint8_t *USBD_WinUSBOSFeatureDescriptor(uint16_t *length)
 {
     //printf("USBD_WinUSBOSFeatureDescriptor!\r\n");
@@ -358,15 +351,12 @@ uint8_t *USBD_WinUSBOSFeatureDescriptor(uint16_t *length)
     return USBD_WINUSB_OSFeatureDesc;
 }
 
-
 uint8_t *USBD_WinUSBOSPropertyDescriptor(uint16_t *length)
 {
     //printf("USBD_WinUSBOSPropertyDescriptor!\r\n");
     *length = USB_LEN_OS_PROPERTY_DESC;
     return USBD_WINUSB_OSPropertyDesc;
 }
-
-
 
 /**
  * @}

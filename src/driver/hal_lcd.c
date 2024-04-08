@@ -7,7 +7,6 @@
 #include "hardware_version.h"
 #include "user_memory.h"
 
-
 HalLcdOpt_t g_lcdOpt;
 
 void LcdCheck(void)
@@ -29,24 +28,20 @@ void LcdInit(void)
     LcdFullScreen(0);
 }
 
-
 bool LcdBusy(void)
 {
     return Parallel8080Busy();
 }
-
 
 void LcdClear(uint16_t color)
 {
     g_lcdOpt.Clear(color);
 }
 
-
 void LcdDraw(uint16_t xStart, uint16_t yStart, uint16_t xEnd, uint16_t yEnd, uint16_t *colors)
 {
     g_lcdOpt.Draw(xStart, yStart, xEnd, yEnd, colors);
 }
-
 
 void LcdFullScreen(uint16_t color)
 {
@@ -64,7 +59,6 @@ void LcdFullScreen(uint16_t color)
     SRAM_FREE(colors);
 }
 
-
 void LcdTest(int argc, char *argv[])
 {
     uint32_t color;
@@ -76,4 +70,3 @@ void LcdTest(int argc, char *argv[])
         printf("lcd test input err\r\n");
     }
 }
-

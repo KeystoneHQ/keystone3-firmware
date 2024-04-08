@@ -986,7 +986,6 @@ void SetFpFlashMode(bool flash)
     }
 }
 
-
 // finger print module restart
 void FingerprintRestart(void)
 {

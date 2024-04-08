@@ -282,7 +282,6 @@ static lv_obj_t *g_derivationCheck[LedgerLegacy + 1];
 static ETHAccountType g_currentEthPathIndex[3] = {Bip44Standard, Bip44Standard, Bip44Standard};
 static SOLAccountType g_currentSOLPathIndex[3] = {SOLBip44, SOLBip44, SOLBip44};
 
-
 static lv_obj_t *g_egAddress[DERIVATION_PATH_EG_LEN];
 static lv_obj_t *g_egAddressIndex[DERIVATION_PATH_EG_LEN];
 
@@ -1423,7 +1422,6 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     GetEgAddress();
     UpdategAddress();
 }
-
 
 static void OpenDerivationPath()
 {

@@ -45,7 +45,6 @@ static const SPI_Cfg_t FLASH_SPI_CONFIG = {
     .dummyByte = Dummy_Byte
 };
 
-
 #if (FLASH_USE_MUTEX)
 #include "cmsis_os.h"
 static osMutexId_t g_flashMutex;
@@ -87,7 +86,6 @@ void Gd25FlashInit(void)
 #endif
 }
 
-
 void Gd25FlashOpen(void)
 {
     GPIO_InitTypeDef gpioInit = {0};
@@ -112,7 +110,6 @@ void Gd25FlashOpen(void)
 
     FLASH_CS_HIGH();
 }
-
 
 uint32_t Gd25FlashReadID(void)
 {
@@ -194,7 +191,6 @@ static uint32_t Gd25FlashPageProgram(uint32_t addr, const uint8_t *buffer, uint3
 
     return size;
 }
-
 
 /***********************************************************************
  flash supports fatfs, use with caution
@@ -348,7 +344,6 @@ int32_t Gd25FlashWriteBufferNoMutex(uint32_t addr, const uint8_t *buffer, uint32
     return writeCount;
 }
 
-
 static uint8_t Gd25FlashSendByte(uint8_t byte)
 {
     uint8_t sendData = byte;
@@ -358,9 +353,7 @@ static uint8_t Gd25FlashSendByte(uint8_t byte)
     return recvData;
 }
 
-
 static void Gd25FlashSendData(uint32_t length, const uint8_t *sendData, uint8_t *rcvData)
 {
     SpiSendRecv(&FLASH_SPI_CONFIG, sendData, rcvData, length);
 }
-

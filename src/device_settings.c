@@ -25,7 +25,6 @@
 
 #define VERSION_MAX_LENGTH      32
 
-
 #define KEY_VERSION                     "version"
 
 #define KEY_SETUP_STEP                  "setup_step"
@@ -109,31 +108,26 @@ void DeviceSettingsInit(void)
     }
 }
 
-
 /// @brief Save device settings to FLASH in background task.
 void SaveDeviceSettings(void)
 {
     AsyncExecute(SaveDeviceSettingsAsyncFunc, NULL, 0);
 }
 
-
 uint32_t GetSetupStep(void)
 {
     return g_deviceSettings.setupStep;
 }
-
 
 void SetSetupStep(uint32_t setupStep)
 {
     g_deviceSettings.setupStep = setupStep;
 }
 
-
 uint32_t GetBright(void)
 {
     return g_deviceSettings.bright;
 }
-
 
 void SetBright(uint32_t bight)
 {
@@ -141,12 +135,10 @@ void SetBright(uint32_t bight)
     g_deviceSettings.bright = bight;
 }
 
-
 uint32_t GetAutoLockScreen(void)
 {
     return g_deviceSettings.autoLockScreen;
 }
-
 
 void SetAutoLockScreen(uint32_t autoLockScreen)
 {
@@ -154,12 +146,10 @@ void SetAutoLockScreen(uint32_t autoLockScreen)
     g_deviceSettings.autoLockScreen = autoLockScreen;
 }
 
-
 uint32_t GetAutoPowerOff(void)
 {
     return g_deviceSettings.autoPowerOff;
 }
-
 
 void SetAutoPowerOff(uint32_t autoPowerOff)
 {
@@ -167,36 +157,30 @@ void SetAutoPowerOff(uint32_t autoPowerOff)
     g_deviceSettings.autoPowerOff = autoPowerOff;
 }
 
-
 uint32_t GetVibration(void)
 {
     return g_deviceSettings.vibration;
 }
-
 
 void SetVibration(uint32_t vibration)
 {
     g_deviceSettings.vibration = vibration;
 }
 
-
 uint32_t GetDarkMode(void)
 {
     return g_deviceSettings.darkMode;
 }
-
 
 void SetDarkMode(uint32_t darkMode)
 {
     g_deviceSettings.darkMode = darkMode;
 }
 
-
 uint32_t GetUSBSwitch(void)
 {
     return g_deviceSettings.usbSwitch;
 }
-
 
 void SetUSBSwitch(uint32_t usbSwitch)
 {
@@ -227,7 +211,6 @@ uint32_t GetLanguage(void)
 {
     return g_deviceSettings.language;
 }
-
 
 void SetLanguage(uint32_t language)
 {
@@ -265,7 +248,6 @@ void WipeDevice(void)
     }
 }
 
-
 /// @brief Device settings test.
 /// @param argc Test arg count.
 /// @param argv Test arg values.
@@ -302,13 +284,11 @@ void DeviceSettingsTest(int argc, char *argv[])
     }
 }
 
-
 static int32_t SaveDeviceSettingsAsyncFunc(const void *inData, uint32_t inDataLen)
 {
     SaveDeviceSettingsSync();
     return 0;
 }
-
 
 static void SaveDeviceSettingsSync(void)
 {
@@ -324,7 +304,6 @@ static void SaveDeviceSettingsSync(void)
     Gd25FlashWriteBuffer(SPI_FLASH_ADDR_NORMAL_PARAM + 4, (uint8_t *)jsonString, size + 1);
     EXT_FREE(jsonString);
 }
-
 
 static bool GetDeviceSettingsFromJsonString(const char *string)
 {

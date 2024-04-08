@@ -45,7 +45,6 @@ int32_t GuiApiEmitSignal(uint16_t signal, void *param, uint16_t usLen)
     return SUCCESS_CODE;
 }
 
-
 int32_t GuiApiEmitSignalWithValue(uint16_t signal, uint32_t value)
 {
 #ifdef COMPILE_SIMULATOR

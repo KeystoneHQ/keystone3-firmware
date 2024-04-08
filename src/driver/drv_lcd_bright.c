@@ -24,14 +24,12 @@ static uint32_t g_lastBright = 0;
 static void LcdBrightAsGpio(bool set);
 static void LcdBrightAsPwm(uint32_t bright);
 
-
 /// @brief Init.
 /// @param
 void LcdBrightInit(void)
 {
     SetLcdBright(0);
 }
-
 
 /// @brief Set lcd bright.
 /// @param bright 0-100
@@ -48,19 +46,16 @@ void SetLcdBright(uint32_t bright)
     }
 }
 
-
 void LcdBacklightOff(void)
 {
     LcdBrightAsGpio(0);
 }
-
 
 void LcdBacklightOn(void)
 {
     lcdBrightState = LCD_BRIGHT_STATE_INIT;
     SetLcdBright(g_lastBright);
 }
-
 
 void LcdFadesOut(void)
 {
@@ -77,7 +72,6 @@ void LcdFadesOut(void)
     }
     LcdBrightAsGpio(0);
 }
-
 
 static void LcdBrightAsGpio(bool set)
 {
@@ -97,7 +91,6 @@ static void LcdBrightAsGpio(bool set)
         GPIO_ResetBits(LCD_BRIGHT_PWM_PORT, LCD_BRIGHT_PWM_PIN);
     }
 }
-
 
 static void LcdBrightAsPwm(uint32_t bright)
 {

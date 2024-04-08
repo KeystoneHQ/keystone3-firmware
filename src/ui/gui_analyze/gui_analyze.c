@@ -522,7 +522,6 @@ GetTableDataFunc GuiBtcTableFuncGet(char *type)
     return NULL;
 }
 
-
 GetLabelDataLenFunc GuiBtcTextLenFuncGet(char *type)
 {
     if (!strcmp(type, "GetBtcMsgDetailLen")) {
@@ -841,7 +840,6 @@ GetObjStateFunc GuiTemplateStateFuncGet(char *type)
 #endif
     return NULL;
 }
-
 
 static void SwitchHidden(lv_event_t *e)
 {

@@ -25,7 +25,6 @@ void CreateCmdTask(void)
     g_cmdTaskId = osThreadNew(CmdTask, NULL, &cmdTaskAttributes);
 }
 
-
 static void CmdTask(void *pvParameter)
 {
     Message_t rcvMsg;
@@ -50,7 +49,6 @@ static void CmdTask(void *pvParameter)
         }
     }
 }
-
 
 void __inline CmdIsrRcvByte(uint8_t byte)
 {
@@ -94,4 +92,3 @@ void __inline CmdIsrRcvByte(uint8_t byte)
         g_testCmdRcvCount++;
     }
 }
-

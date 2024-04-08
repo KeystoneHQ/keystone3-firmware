@@ -217,7 +217,6 @@ void GuiFirmwareUpdateDeInit(void)
     }
 }
 
-
 void GuiFirmwareUpdateRefresh(void)
 {
 #ifndef BTC_ONLY
@@ -257,7 +256,6 @@ void GuiFirmwareUpdateWidgetRefresh(void)
 {
     PassWordPinHintRefresh(g_keyboardWidget);
 }
-
 
 void GuiFirmwareUpdatePrevTile(void)
 {
@@ -360,7 +358,6 @@ static void GuiCreateSelectTile(lv_obj_t *parent)
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 450);
 }
 
-
 static void GuiViaSdCardHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -382,7 +379,6 @@ static void GuiViaUsbHandler(lv_event_t *e)
         GuiFirmwareUpdateRefresh();
     }
 }
-
 
 static void GuiCreateUsbInstructionTile(lv_obj_t *parent)
 {
@@ -709,8 +705,6 @@ static void KnownWarningCancelHandler(lv_event_t *e)
     }
 }
 
-
-
 #endif
 
 static void GuiQrcodeHandler(lv_event_t *e)
@@ -759,7 +753,6 @@ static void GuiQrcodeHandler(lv_event_t *e)
         }
     }
 }
-
 
 static void CloseQrcodeHandler(lv_event_t *e)
 {

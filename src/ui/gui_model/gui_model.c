@@ -298,7 +298,6 @@ void GuiModelParseTransaction(ReturnVoidPointerFunc func)
     AsyncExecuteRunnable(ModelParseTransaction, NULL, 0, (BackgroundAsyncRunnable_t)func);
 }
 
-
 // bip39 generate
 static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
 {
@@ -1148,7 +1147,6 @@ static int32_t ModeControlQrDecode(const void *inData, uint32_t inDataLen)
     return SUCCESS_CODE;
 }
 
-
 static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
@@ -1214,7 +1212,6 @@ static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inD
     }
     return SUCCESS_CODE;
 }
-
 
 static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t parseTransactionFunc)
 {

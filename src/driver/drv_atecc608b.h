@@ -5,7 +5,6 @@
 #include "stdbool.h"
 #include "err_code.h"
 
-
 //shared keys
 #define SLOT_IO_PROTECT_KEY             0
 #define SLOT_AUTH_KEY                   1
@@ -25,7 +24,6 @@
 #define SLOT_HOST_KDF_KEY_3             12
 #define SLOT_DEVICE_KEY                 14
 #define SLOT_DEVICE_TAMPER_FLAG         15
-
 
 #pragma pack(1)
 typedef struct __Atecc608bConfig_t {
@@ -58,7 +56,6 @@ typedef struct __Atecc608bConfig_t {
     uint16_t keyConfig[16];
 } Atecc608bConfig_t;
 #pragma pack()
-
 
 void Atecc608bInit(void);
 int32_t Atecc608bGetRng(uint8_t *rngArray, uint32_t num);

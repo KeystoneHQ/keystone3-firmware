@@ -35,12 +35,9 @@
 #define FINGERPRINT_EN_SING_ERR_TIMES                                               (5)
 #endif
 
-
 /* DEFINES */
 
-
 /* TYPEDEFS */
-
 
 /* FUNC DECLARATION*/
 static void RecognizeSuccussHandler(lv_timer_t *timer);
@@ -53,7 +50,6 @@ static void FingerCancelDeleteHandler(lv_event_t *e);
 static void FirstAddFingerToManagerView(lv_event_t *e);
 static void AddFingerToManagerView(lv_event_t *e);
 static void ClearFingerErrorStateView(lv_event_t *e);
-
 
 /* STATIC VARIABLES */
 static lv_obj_t *g_fpDeleteCont = NULL;
@@ -71,7 +67,6 @@ static lv_timer_t *g_fpRecognizeTimer = NULL;
 static bool g_firstAddFingerFlag = false;
 static uint8_t g_fpEnSignCnt = 0;
 static uint8_t g_deleteFingerIndex = 0;
-
 
 /* FUNC */
 uint8_t GuiGetFingerSettingIndex(void)
@@ -195,7 +190,6 @@ void GuiSettingDealFingerRecognize(void *param)
         }
     }
 }
-
 
 void GuiWalletFingerAddFpWidget(lv_obj_t *parent, bool success)
 {

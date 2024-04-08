@@ -32,7 +32,6 @@ void hmac_sha512_impl(struct sha512 *sha,
                       const unsigned char *key, size_t key_len,
                       const unsigned char *msg, size_t msg_len);
 
-
 /**
  * Compute an HMAC using SHA-256.
  *
@@ -48,7 +47,6 @@ int hmac_sha256(
     const unsigned char *bytes,
     size_t bytes_len,
     unsigned char *bytes_out);
-
 
 /**
  * Compute an HMAC using SHA-512.

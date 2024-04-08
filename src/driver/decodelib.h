@@ -215,7 +215,6 @@ void CloseDecode(void);
   */
 uint32_t GetDecodeLibVerison(void);
 
-
 /**
   * Get Gray array of image,640*480
   *

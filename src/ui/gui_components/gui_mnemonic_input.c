@@ -35,7 +35,6 @@ static char g_sliceHeadWords[GUI_KEYBOARD_CANDIDATE_WORDS_LEN];                 
 static uint8_t g_sliceSha256[15][GUI_KEYBOARD_CANDIDATE_WORDS_LEN];                                       // slip39 words hash
 static lv_obj_t *g_noticeHintBox = NULL;
 
-
 char *GuiMnemonicGetTrueWord(const char *word, char *trueWord)
 {
     char *temp = trueWord;

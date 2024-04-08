@@ -6,10 +6,8 @@
 #include "user_delay.h"
 #include "user_utils.h"
 
-
 static void LcdInterfaceInit(void);
 static void LcdDmaInit(void);
-
 
 static LCD_InitTypeDef LCD_InitStructure;
 static DMA_InitTypeDef DMA_InitStruct;
@@ -17,19 +15,16 @@ static uint8_t *g_dmaBuff;
 static uint32_t g_dmaIndex, g_dmaTotal;
 static volatile bool g_dmaBusy = false;
 
-
 void Parallel8080Init(void)
 {
     LcdInterfaceInit();
     LcdDmaInit();
 }
 
-
 bool Parallel8080Busy(void)
 {
     return g_dmaBusy;
 }
-
 
 void Parallel8080Reset(void)
 {
@@ -39,7 +34,6 @@ void Parallel8080Reset(void)
     PARALLEL_8080_RST_SET;
     UserDelay(50);
 }
-
 
 void Parallel8080SendDmaData(uint8_t *data, uint32_t len)
 {
@@ -61,7 +55,6 @@ void Parallel8080SendDmaData(uint8_t *data, uint32_t len)
     DMA_ChannelCmd(PARALLEL_8080_DMA_CHANNEL, ENABLE);
 }
 
-
 //void Ili9806ReadData(uint8_t cmd, uint8_t len)
 //{
 //    uint8_t data = 0x55;
@@ -78,7 +71,6 @@ void Parallel8080SendDmaData(uint8_t *data, uint32_t len)
 //    PARALLEL_8080_CS_SET;
 //    printf("\r\n");
 //}
-
 
 static void LcdInterfaceInit(void)
 {
@@ -113,7 +105,6 @@ static void LcdInterfaceInit(void)
     LCDI_Init(LCD, &LCD_InitStructure);
 }
 
-
 static void LcdDmaInit(void)
 {
     //memory to peripheral
@@ -147,7 +138,6 @@ static void LcdDmaInit(void)
     DMA_ITConfig(PARALLEL_8080_DMA_CHANNEL, DMA_IT_DMATransferComplete, ENABLE);
 }
 
-
 void DMA0_IRQHandler(void)
 {
     uint32_t transNum;
@@ -175,4 +165,3 @@ void DMA0_IRQHandler(void)
     }
     NVIC_ClearPendingIRQ(DMA_IRQn);
 }
-

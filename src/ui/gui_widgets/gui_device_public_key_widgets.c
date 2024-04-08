@@ -22,7 +22,6 @@
 static lv_obj_t *g_cont;
 static PageWidget_t *g_pageWidget;
 
-
 static void GuiDevicePublicKeyNVSBarInit(void);
 static void GuiDevicePublicKeyEntranceWidget(lv_obj_t *parent);
 
@@ -51,19 +50,14 @@ void GuiDevicePublicKeyWidgetsRefresh()
     GuiDevicePublicKeyNVSBarInit();
 }
 
-
 void GuiDevicePublicKeyWidgetsRestart()
 {}
-
 
 static void GuiDevicePublicKeyNVSBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("about_info_device_uid"));
 }
-
-
-
 
 void GuiDevicePublicKeyEntranceWidget(lv_obj_t *parent)
 {

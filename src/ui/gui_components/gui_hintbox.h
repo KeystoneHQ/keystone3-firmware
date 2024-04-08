@@ -28,8 +28,6 @@ void CloseHintBoxHandler(lv_event_t *e);
 void GuiHintBoxResize(lv_obj_t *obj, uint16_t height);
 void *GuiCreateMoreInfoHintBox(const void *src, const char *titleText, MoreInfoTable_t *table, uint8_t cnt, bool isCling);
 
-
 #define GuiCreateConfirmHintBox(parent, src, title, desc1, desc2, btnText, color) GuiCreateGeneralHintBox(parent, src, title, desc1, desc2, NULL, color, btnText, color)
 
 #endif /* _GUI_HINTBOX_H */
-

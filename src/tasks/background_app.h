@@ -9,10 +9,8 @@ typedef enum {
     SYSTEM_RESET_TYPE_POWEROFF,
 } SystemResetType;
 
-
 void BackGroundAppInit(void);
 void ChangerRefreshState(void);
 void ExecuteSystemReset(SystemResetType type);
 
 #endif
-

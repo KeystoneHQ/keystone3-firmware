@@ -5,7 +5,6 @@
 #include "librust_c.h"
 #include "log_print.h"
 
-
 void hkdf(uint8_t *password, const uint8_t *salt, uint8_t *output, uint32_t iterations)
 {
     SimpleResponse_u8 *simpleResponse = pbkdf2_rust(password, (uint8_t *)salt, iterations);

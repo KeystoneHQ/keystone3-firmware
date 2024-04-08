@@ -19,7 +19,6 @@
 #define LOCK_SCREEN_TICK                                    1000
 #define LOCK_SCREEN_TIME_OUT                                60 * 1000
 
-
 static void ShortPressHandler(void);
 static void ReleaseHandler(void);
 static void LockScreen(void);
@@ -74,7 +73,6 @@ bool IsPreviousLockScreenEnable(void)
     return g_lockScreenEnable;
 }
 
-
 void ClearLockScreenTime(void)
 {
     g_lockScreenTick = 0;
@@ -96,12 +94,10 @@ static void ShortPressHandler(void)
 
 }
 
-
 static void ReleaseHandler(void)
 {
     LockScreen();
 }
-
 
 static void LockScreen(void)
 {
@@ -151,7 +147,6 @@ static void LockScreen(void)
     printf("wakeUpCount=%d\r\n", wakeUpCount);
 }
 
-
 static void LockScreenTimerFunc(void *argument)
 {
     g_lockScreenTick += LOCK_SCREEN_TICK;
@@ -159,4 +154,3 @@ static void LockScreenTimerFunc(void *argument)
         LockScreen();
     }
 }
-

@@ -14,7 +14,6 @@
 #include "user_memory.h"
 #include "drv_lcd_bright.h"
 
-
 #define TEXT_LINE_GAP               3
 #define DRAW_MAX_STRING_LEN         256
 #define PAGE_MARGINS                15
@@ -26,10 +25,8 @@ typedef struct {
     uint16_t green_l : 3;
 } LcdDrawColor_t;
 
-
 static void DrawLetterOnLcd(uint16_t x, uint16_t y, uint16_t width, uint16_t height, lv_font_glyph_dsc_t *dsc, const uint8_t *map_p, uint16_t color);
 static void GetTrueColors(uint16_t *trueColors, const uint8_t *colorData, uint32_t pixelNum, lv_img_cf_t colorFormat);
-
 
 static LcdDrawColor_t g_bgColor = {0};
 
@@ -62,7 +59,6 @@ void PrintOnLcd(const lv_font_t *font, uint16_t color, const char *format, ...)
     yCursor = DrawStringOnLcd(PAGE_MARGINS, yCursor, str, color, font);
     va_end(argList);
 }
-
 
 /// @brief Draw string on lcd.
 /// @param[in] x Coordinate x.
@@ -105,7 +101,6 @@ int16_t DrawStringOnLcd(uint16_t x, uint16_t y, const char *string, uint16_t col
     //return y + charHeight + TEXT_LINE_GAP;
     return y;
 }
-
 
 /// @brief Draw progress bar on lcd.
 /// @param[in] x Coordinate x.
@@ -151,7 +146,6 @@ void DrawProgressBarOnLcd(uint16_t x, uint16_t y, uint16_t length, uint16_t widt
     while (LcdBusy());
 }
 
-
 void DrawImageOnLcd(uint16_t x, uint16_t y, const lv_img_dsc_t *imgDsc)
 {
     uint16_t *colors;
@@ -162,7 +156,6 @@ void DrawImageOnLcd(uint16_t x, uint16_t y, const lv_img_dsc_t *imgDsc)
     while (LcdBusy());
     SRAM_FREE(colors);
 }
-
 
 extern const lv_img_dsc_t imgBootLogo;
 #ifdef BTC_ONLY
@@ -183,7 +176,6 @@ void DrawBootLogoOnLcd(void)
     UserDelay(100);
     SetLcdBright(50);
 }
-
 
 static void DrawLetterOnLcd(uint16_t x, uint16_t y, uint16_t width, uint16_t height, lv_font_glyph_dsc_t *dsc, const uint8_t *map_p, uint16_t color)
 {
@@ -246,7 +238,6 @@ static void DrawLetterOnLcd(uint16_t x, uint16_t y, uint16_t width, uint16_t hei
     }
 }
 
-
 static void GetTrueColors(uint16_t *trueColors, const uint8_t *colorData, uint32_t pixelNum, lv_img_cf_t colorFormat)
 {
     lv_color16_t pixel;
@@ -267,4 +258,3 @@ static void GetTrueColors(uint16_t *trueColors, const uint8_t *colorData, uint32
         memcpy(trueColors, colorData, pixelNum * 2);
     }
 }
-

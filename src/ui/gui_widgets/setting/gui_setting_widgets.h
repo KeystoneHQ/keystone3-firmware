@@ -8,7 +8,6 @@
  * @Path:
  */
 
-
 #ifndef _GUI_SETTING_WIDGETS_H
 #define _GUI_SETTING_WIDGETS_H
 
@@ -180,4 +179,3 @@ void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount);
 void GuiWalletRecoveryUpdateKeyboard(void);
 
 #endif /* _GUI_SETTING_WIDGETS_H */
-

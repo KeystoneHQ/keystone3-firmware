@@ -137,7 +137,6 @@ typedef enum {
     SIG_MULTISIG_WALLET_SET_WALLET_EXPORT,
     SIG_TRANSACTION_BUTT,
 
-
     SIG_MULTISIG_WALLET_CREATE,
 
 } GUI_VIEW_SIG_ENUM;
@@ -227,4 +226,3 @@ lv_obj_t *GuiCreateWalletNoticeWidget(lv_obj_t *parent);
 void *GuiCreateErrorCodeHintbox(int32_t errCode, lv_obj_t **param);
 
 #endif /* _GUI_VIEWS_H */
-

@@ -48,7 +48,6 @@
 #include "version.h"
 #include "hardware_version.h"
 
-
 int main(void)
 {
     __enable_irq();
@@ -107,7 +106,6 @@ int main(void)
     while (1);
 }
 
-
 int _write(int fd, char *pBuffer, int size)
 {
     for (int i = 0; i < size; i++) {
@@ -130,7 +128,6 @@ int fputc(int ch, FILE *f)
 
     return ch;
 }
-
 
 #ifdef  USE_FULL_ASSERT
 

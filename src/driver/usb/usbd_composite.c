@@ -21,7 +21,6 @@ static uint8_t *GetCompositeConfigDescriptor(uint8_t speed, uint16_t *length);
 static uint8_t *USBD_Composite_GetDeviceQualifierDescriptor(uint16_t *length);
 static uint8_t *USBD_Composite_WinUSBOSStrDescriptor(uint16_t *length);
 
-
 __ALIGN_BEGIN static uint8_t CompositeConfigDescriptor[USB_COMPOSITE_CONFIG_DESC_MAX_SIZE] __ALIGN_END = {
     0x09,                              /* bLength: Configuration Descriptor size */
     USB_CONFIGURATION_DESCRIPTOR_TYPE, /* bDescriptorType: Configuration */
@@ -44,9 +43,7 @@ __ALIGN_BEGIN static uint8_t CompositeConfigDescriptor[USB_COMPOSITE_CONFIG_DESC
     //0x32,   /* MaxPower 50*2 mA */
 };
 
-
 static uint8_t g_interfaceCount = 0;
-
 
 USBD_Class_cb_TypeDef USBCompositeCb = {
     CompositeInit,
@@ -67,7 +64,6 @@ USBD_Class_cb_TypeDef USBCompositeCb = {
     USBD_Composite_WinUSBOSStrDescriptor,
 };
 
-
 static uint8_t CompositeInit(void *pdev, uint8_t cfgidx)
 {
 #ifdef USBD_ENABLE_MSC
@@ -77,7 +73,6 @@ static uint8_t CompositeInit(void *pdev, uint8_t cfgidx)
     return USBD_OK;
 }
 
-
 static uint8_t CompositeDeInit(void *pdev, uint8_t cfgidx)
 {
 #ifdef USBD_ENABLE_MSC
@@ -86,7 +81,6 @@ static uint8_t CompositeDeInit(void *pdev, uint8_t cfgidx)
     USBD_CDC_cb.DeInit(pdev, cfgidx);
     return USBD_OK;
 }
-
 
 static uint8_t CompositeSetup(void *pdev, USB_SETUP_REQ *req)
 {
@@ -99,7 +93,6 @@ static uint8_t CompositeSetup(void *pdev, USB_SETUP_REQ *req)
     }
 }
 
-
 static uint8_t CompositeEP0_TxSent(void *pdev)
 {
     return USBD_OK;
@@ -109,7 +102,6 @@ static uint8_t CompositeEP0_RxReady(void *pdev)
 {
     return USBD_CDC_cb.EP0_RxReady(pdev);
 }
-
 
 static uint8_t CompositeDataIn(void *pdev, uint8_t epnum)
 {
@@ -135,7 +127,6 @@ static uint8_t CompositeSOF(void* pdev)
 {
     return USBD_CDC_cb.SOF(pdev);
 }
-
 
 static uint8_t *GetCompositeConfigDescriptor(uint8_t speed, uint16_t *length)
 {
@@ -172,7 +163,6 @@ static uint8_t *GetCompositeConfigDescriptor(uint8_t speed, uint16_t *length)
     return CompositeConfigDescriptor;
 }
 
-
 __ALIGN_BEGIN static uint8_t USBD_Composite_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC] __ALIGN_END = {
     USB_LEN_DEV_QUALIFIER_DESC,
     USB_DESC_TYPE_DEVICE_QUALIFIER,
@@ -186,18 +176,13 @@ __ALIGN_BEGIN static uint8_t USBD_Composite_DeviceQualifierDesc[USB_LEN_DEV_QUAL
     0x00,
 };
 
-
 static uint8_t *USBD_Composite_GetDeviceQualifierDescriptor(uint16_t *length)
 {
     *length = sizeof(USBD_Composite_DeviceQualifierDesc);
     return USBD_Composite_DeviceQualifierDesc;
 }
 
-
 static uint8_t *USBD_Composite_WinUSBOSStrDescriptor(uint16_t *length)
 {
     return USBD_CDC_cb.GetWinUSBOSDescriptor(length);
 }
-
-
-

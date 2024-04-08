@@ -42,7 +42,6 @@ typedef enum {
     CREATE_MULTI_BUTT,
 } CREATE_MULTI_ENUM;
 
-
 typedef struct CreateMultiWidget {
     uint8_t currentTile;
     uint8_t currentSinger;
@@ -81,7 +80,6 @@ typedef struct {
     char path[16];
 } XpubWidgetCache_t;
 
-
 typedef struct {
     char *title;
     char *subTitle;
@@ -115,7 +113,6 @@ static const AddressSettingsItem_t g_mainNetAddressSettings[] = {
     {"Nested SegWit", "P2WSH-P2SH", "m/48'/0'/0'/1'", XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH},
     {"Legacy", "P2SH", "m/45'", XPUB_TYPE_BTC_MULTI_SIG_P2SH},
 };
-
 
 static const AddressSettingsItem_t g_testNetAddressSettings[] = {
     {"Native SegWit",   "P2WSH",           "m/84'/1'/0'"},
@@ -492,7 +489,7 @@ int8_t GuiCreateMultiNextTile(uint8_t index)
         if (g_createMultiTileView.currentSinger == g_selectSliceTile.coSingers - 1) {
             GetAndCreateMultiWallet();
             return SUCCESS_CODE;
-         } else if (g_createMultiTileView.currentSinger == 1 && (strlen(g_xpubCache[g_createMultiTileView.currentSinger].xpub) == 0)) {
+        } else if (g_createMultiTileView.currentSinger == 1 && (strlen(g_xpubCache[g_createMultiTileView.currentSinger].xpub) == 0)) {
             g_createMultiTileView.currentTile++;
             SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("create_multi_wallet_import_xpub_sdcard_title"));
             GuiAddObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);

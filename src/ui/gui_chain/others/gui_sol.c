@@ -37,7 +37,6 @@ static ViewType g_viewType = ViewTypeUnKnown;
         result = NULL;                                                                                                            \
     }
 
-
 void GuiSetSolUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
 #ifndef COMPILE_SIMULATOR
@@ -132,7 +131,6 @@ void FreeSolMemory(void)
     CHECK_FREE_PARSE_SOL_RESULT(g_parseResult);
 #endif
 }
-
 
 void GetSolMessageType(void *indata, void *param, uint32_t maxLen)
 {
@@ -281,7 +279,6 @@ static void GuiShowSolTxTransferOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxO
     lv_label_set_text(label, "From");
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     SetTitleLabelStyle(label);
-
 
     label = lv_label_create(addressContainer);
     lv_label_set_text(label, overviewData->transfer_from);

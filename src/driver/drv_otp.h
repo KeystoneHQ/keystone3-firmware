@@ -24,15 +24,12 @@
 #error "OTP_ADDR_BASE must be 256 byte aligned."
 #endif
 
-
 #if (OTP_ADDR_TAMPER + 4 - OTP_ADDR_BASE > 512)
 #error "OTP overlap"
 #endif
-
 
 int32_t WriteOtpData(uint32_t addr, const uint8_t *data, uint32_t len);
 bool ReadTamperFlag(void);
 int32_t WriteTamperFlag(void);
 
 #endif
-

@@ -6,14 +6,12 @@
 #include "user_msg.h"
 #include "low_power.h"
 
-
 #define BUTTON_INT_PORT                 GPIOE
 #define BUTTON_INT_PIN                  GPIO_Pin_14
 
 #define BUTTON_TIMER_TICK               10
 #define SHORT_PRESS_BUTTON_TICK         50
 #define LONG_PRESS_BUTTON_TICK          2000
-
 
 static osTimerId_t g_buttonTickTimer;
 static volatile bool g_buttonTimerBusy;
@@ -22,7 +20,6 @@ static volatile uint32_t g_buttonPressTick;
 static ButtonEventCallbackFunc_t g_shortPressEventCallback;
 static ButtonEventCallbackFunc_t g_releaseEventCallback;
 static ButtonEventCallbackFunc_t g_longPressEventCallback;
-
 
 static void ButtonTickTimerFunc(void *argument);
 
@@ -38,7 +35,6 @@ void ButtonInit(void)
 
     g_buttonTickTimer = osTimerNew(ButtonTickTimerFunc, osTimerPeriodic, NULL, NULL);
 }
-
 
 /// @brief Register a call back function for the specific button event.
 /// @param[in] event The specific button event.
@@ -63,7 +59,6 @@ void RegisterButtonEvent(ButtonEventType event, ButtonEventCallbackFunc_t func)
     }
 }
 
-
 void ButtonIntHandler(void)
 {
     //printf("btn int\r\n");
@@ -75,7 +70,6 @@ void ButtonIntHandler(void)
         g_buttonTimerBusy = true;
     }
 }
-
 
 static void ButtonTickTimerFunc(void *argument)
 {
@@ -107,12 +101,9 @@ static void ButtonTickTimerFunc(void *argument)
     }
 }
 
-
 /// @brief Get the state if the button is pressed now.
 /// @return true-press, false-not press.
 bool ButtonPress(void)
 {
     return GPIO_ReadInputDataBit(BUTTON_INT_PORT, BUTTON_INT_PIN) == Bit_RESET;
 }
-
-

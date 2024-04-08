@@ -126,7 +126,6 @@ LV_IMG_DECLARE(imgAdd);
 LV_IMG_DECLARE(imgDefaultWallet);
 LV_IMG_DECLARE(imgWalletExport);
 
-
 // connect to do refresh
 LV_IMG_DECLARE(circular);
 LV_IMG_DECLARE(ring);
@@ -241,7 +240,6 @@ LV_IMG_DECLARE(walletSpecter);
 LV_IMG_DECLARE(walletNunchuk);
 LV_IMG_DECLARE(walletUniSat);
 
-
 //wallet list
 LV_IMG_DECLARE(walletListKeyStone);
 LV_IMG_DECLARE(walletListMetaMask);
@@ -290,4 +288,3 @@ LV_FONT_DECLARE(rusLittleTitle);
 LV_FONT_DECLARE(rusText);
 LV_FONT_DECLARE(rusIllustrate);
 #endif /* _GUI_RESOURCE_H */
-

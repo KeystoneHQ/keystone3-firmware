@@ -236,7 +236,6 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
     lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 36, 8);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
 
-
     label = GuiCreateIllustrateLabel(cont, _("connect_wallet_key_request_fmt"));
     lv_label_set_text_fmt(label, _("connect_wallet_key_request_fmt"), g_response->data->origin);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 0);

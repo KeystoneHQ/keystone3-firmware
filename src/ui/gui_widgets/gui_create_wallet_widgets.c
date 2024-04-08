@@ -62,7 +62,6 @@ static lv_obj_t *g_openMoreHintBox;
 static PageWidget_t *g_changeEntropyPage;
 static uint8_t g_selectedEntropyMethod = 0;
 
-
 void GuiSetupKeyboardWidgetMode(void)
 {
     SetKeyboardWidgetMode(KEYBOARD_HINTBOX_PIN + g_setPassCode->mode % 2);
@@ -877,7 +876,6 @@ static void ChangeEntropyMethodHandler(lv_event_t *e)
         }
     }
 }
-
 
 static void OpenChangeEntropyTutorialHandler(lv_event_t *e)
 {

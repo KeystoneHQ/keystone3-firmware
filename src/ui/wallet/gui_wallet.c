@@ -618,7 +618,6 @@ UREncodeResult *GuiGetSolflareData(void)
     return (void *)data;
 #endif
 
-
 }
 
 #endif

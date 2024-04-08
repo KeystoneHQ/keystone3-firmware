@@ -56,7 +56,6 @@ bool CheckEntropy(const uint8_t *array, uint32_t len)
     return false;
 }
 
-
 /// @brief Check the array if all data are 0xFF.
 /// @param[in] array Array to be checked.
 /// @param[in] len Array length.
@@ -70,7 +69,6 @@ bool CheckAllFF(const uint8_t *array, uint32_t len)
     }
     return true;
 }
-
 
 /// @brief Check the array if all data are zero.
 /// @param[in] array Array to be checked.
@@ -86,7 +84,6 @@ bool CheckAllZero(const uint8_t *array, uint32_t len)
     return true;
 }
 
-
 void RemoveFormatChar(char *str)
 {
 #ifndef COMPILE_SIMULATOR
@@ -100,7 +97,6 @@ void RemoveFormatChar(char *str)
     str = str_c;
 #endif
 }
-
 
 int WordsListSlice(char *words, char wordsList[][10], uint8_t wordsCount)
 {
@@ -202,8 +198,6 @@ int FindStringCharPosition(const char *str, const char destChar, int index)
     return -1;
 }
 
-
-
 /**
  * @brief       Get integer value from cJSON object.
  * @param[in]   obj : cJSON object.
@@ -220,7 +214,6 @@ int32_t GetIntValue(const cJSON *obj, const char *key, int32_t defaultValue)
     printf("key:%s does not exist\r\n", key);
     return defaultValue;
 }
-
 
 /**
  * @brief       Get string value from cJSON object.

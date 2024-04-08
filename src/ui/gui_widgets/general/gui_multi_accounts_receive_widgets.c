@@ -1065,7 +1065,6 @@ static void GuiCreateSwitchAccountWidget()
     UpdateConfirmAccountBtn();
 }
 
-
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
 {
     char *xPub = NULL, hdPath[BUFFER_SIZE_128];

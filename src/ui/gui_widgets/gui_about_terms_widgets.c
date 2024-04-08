@@ -63,19 +63,16 @@ void GuiAboutTermsWidgetsRefresh()
     GuiAboutNVSBarInit();
 }
 
-
 void GuiAboutTermsWidgetsRestart()
 {
 
 }
-
 
 static void GuiAboutNVSBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("about_terms_title"));
 }
-
 
 static lv_obj_t* GuiGetTermsItemContainer(lv_obj_t* parent, const char *title, const char *content, int *height)
 {

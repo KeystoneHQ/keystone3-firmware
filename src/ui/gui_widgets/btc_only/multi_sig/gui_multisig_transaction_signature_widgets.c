@@ -255,6 +255,15 @@ void GuiMultisigTransactionSignaureWidgetsDeInit()
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
+    if (g_signStatus) {
+        SRAM_FREE(g_signStatus);
+        g_signStatus = NULL;
+    }
+    if (g_psbtName) {
+        SRAM_FREE(g_psbtName);
+        g_psbtName = NULL;
+    }
+    g_signCompleted = false;
 }
 
 void GuiMultisigTransactionSignaureWidgetsRefresh()

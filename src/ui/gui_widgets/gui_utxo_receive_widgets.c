@@ -410,22 +410,27 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
                                 TutorialHandler, NULL, true);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 120 + 572);
 
-#ifndef BTC_ONLY
-    switch (g_chainCard) {
-    case HOME_WALLET_CARD_BTC:
-        btn = GuiCreateSelectButton(cont, _("receive_btc_more_address_settings"), &imgAddressType,
-                                    AddressSettingsHandler, NULL, true);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 24 + 476);
-
-        // export xpub
-        btn = GuiCreateSelectButton(cont, _("receive_btc_more_export_xpub"), &imgExport,
-                                    ExportXpubHandler, NULL, true);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 120 + 476);
-        break;
-    default:
-        break;
+#ifdef BTC_ONLY
+    if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+        return;
     }
 #endif
+    {
+        switch (g_chainCard) {
+        case HOME_WALLET_CARD_BTC:
+            btn = GuiCreateSelectButton(cont, _("receive_btc_more_address_settings"), &imgAddressType,
+                                        AddressSettingsHandler, NULL, true);
+            lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 24 + 476);
+
+            // export xpub
+            btn = GuiCreateSelectButton(cont, _("receive_btc_more_export_xpub"), &imgExport,
+                                        ExportXpubHandler, NULL, true);
+            lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 120 + 476);
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 static void GuiBitcoinReceiveGotoTile(UtxoReceiveTile tile)

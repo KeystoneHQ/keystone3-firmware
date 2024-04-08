@@ -2,6 +2,7 @@
 #include "gui_resource.h"
 #include "gui_views.h"
 #include "gui_status_bar.h"
+#include "gui_lock_widgets.h"
 #include "gui_import_multisig_wallet_info_widgets.h"
 
 int32_t GuiImportMultisigWalletInfoViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)

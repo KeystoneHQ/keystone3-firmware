@@ -48,6 +48,7 @@ typedef struct CreateMultiWidget {
     uint8_t currentTile;
     uint8_t currentSinger;
     lv_obj_t *tileView;
+    lv_obj_t *listTile;
     lv_obj_t *selectSlice;
     lv_obj_t *stepCont;
     lv_obj_t *stepBtn;
@@ -104,14 +105,14 @@ static ChainType g_chainType = XPUB_TYPE_BTC_MULTI_SIG_P2WSH;
 static void GetAndCreateMultiWallet(void);
 static char g_fileList[10][64] = {0};
 
+void GetMultiInfoFromFile(const char *path, XpubWidgetCache_t *xpub, ChainType chainType);
+void ListMicroCardXpubFile(void);
 static void SelectCheckBoxHandler(lv_event_t* e);
 static void GuiCreateNameWalletWidget(lv_obj_t *parent);
 static void GuiCreateAddressSettingsWidget(lv_obj_t *parent);
 static void OpenFileNextTileHandler(lv_event_t *e);
-lv_obj_t* CreateUTXOReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h);
 static void SelectFormatHandler(lv_event_t *e);
 static void UpdateCustodianTileLabel(void);
-void GetMultiInfoFromFile(const char *path, XpubWidgetCache_t *xpub, ChainType chainType);
 
 static const AddressSettingsItem_t g_mainNetAddressSettings[] = {
     {"Native SegWit", "P2WSH", "m/48'/0'/0'/2'", XPUB_TYPE_BTC_MULTI_SIG_P2WSH},
@@ -137,6 +138,10 @@ static void CloseParentAndSetItemHandler(lv_event_t *e)
         void **param = lv_event_get_user_data(e);
         if (param != NULL) {
             *param = NULL;
+        }
+        if (!SdCardInsert()) {
+            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);
+            return;
         }
         g_createMultiTileView.currentTile = CREATE_MULTI_SELECT_SDCARD_XPUB;
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("import_multi_wallet_via_micro_title"));
@@ -349,12 +354,12 @@ static void GuiMultiSelectSliceWidget(lv_obj_t *parent)
     g_selectSliceTile.coSingers = MULTI_WALLET_DEFAULT_CO_SINGERS;
     g_selectSliceTile.singers = MULTI_WALLET_DEFAULT_SIGNERS;
 
-    lv_obj_t *btnm = GuiCreateNumKeyboard(parent, NumSelectSliceHandler, NUM_KEYBOARD_SLICE, NULL);
+    lv_obj_t *btnm = GuiCreateNumKeyboard(parent, NumSelectSliceHandler, NUM_KEYBOARD_MULTISIG, NULL);
     lv_obj_align(btnm, LV_ALIGN_DEFAULT, 36, 198 - GUI_MAIN_AREA_OFFSET);
     lv_btnmatrix_set_selected_btn(btnm, g_selectSliceTile.coSingers - 2);
     g_selectSliceTile.coSingersKb = btnm;
 
-    btnm = GuiCreateNumKeyboard(parent, NumSelectSliceHandler, NUM_KEYBOARD_SLICE, g_selectSliceTile.singersKb);
+    btnm = GuiCreateNumKeyboard(parent, NumSelectSliceHandler, NUM_KEYBOARD_MULTISIG, g_selectSliceTile.singersKb);
     lv_obj_align(btnm, LV_ALIGN_DEFAULT, 36, 336);
     lv_btnmatrix_set_selected_btn(btnm, g_selectSliceTile.singers - 2);
     g_selectSliceTile.singersKb = btnm;
@@ -417,26 +422,7 @@ static void GuiMultiConfirmSignersWidget(lv_obj_t *parent)
 static void GuiMultiImportSdCardListWidget(lv_obj_t *parent)
 {
     GuiAddObjFlag(parent, LV_OBJ_FLAG_SCROLLABLE);
-    char *buffer = EXT_MALLOC(1024 * 5);
-    uint32_t number = 0;
-    int i = 0;
-#ifdef COMPILE_SIMULATOR
-    FatfsGetFileName("C:/assets/sd", buffer, &number, 1024 * 5, "json");
-#else
-    FatfsGetFileName("0:", buffer, &number, 1024 * 5, "json");
-#endif
-    char *token = strtok(buffer, " ");
-    while (token != NULL) {
-        strncpy(g_fileList[i], token, sizeof(g_fileList[i]));
-        token = strtok(NULL, " ");
-        lv_obj_t *btn = GuiCreateSelectButton(parent, g_fileList[i], &imgArrowRight, OpenFileNextTileHandler, g_fileList[i], false);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 84 * i);
-        i++;
-        if (i == 10) {
-            break;
-        }
-    }
-    EXT_FREE(buffer);
+    ListMicroCardXpubFile();
 }
 
 static void GuiMultiImportSdCardXpubWidget(lv_obj_t *parent)
@@ -498,6 +484,7 @@ void GuiCreateMultiInit(void)
     GuiMultiConfirmSignersWidget(tile);
 
     tile = lv_tileview_add_tile(tileView, CREATE_MULTI_SELECT_SDCARD_XPUB, 0, LV_DIR_HOR);
+    g_createMultiTileView.listTile = tile;
     GuiMultiImportSdCardListWidget(tile);
 
     tile = lv_tileview_add_tile(tileView, CREATE_MULTI_IMPORT_SDCARD_XPUB, 0, LV_DIR_HOR);
@@ -742,7 +729,7 @@ void GetMultiInfoFromFile(const char *path, XpubWidgetCache_t *xpub, ChainType c
         printf("Failed to read\n");
         return;
     }
-    memset_s(xpub, 0, sizeof(xpub), 0);
+    memset_s(xpub, sizeof(xpub), 0, 0);
 
     if (chainType == XPUB_TYPE_BTC_MULTI_SIG_P2SH) {
         derivKey = "p2sh_deriv";
@@ -810,4 +797,35 @@ static void GetAndCreateMultiWallet(void)
     GuiFrameOpenView(&g_importMultisigWalletInfoView);
     EXT_FREE(tempBuf);
     EXT_FREE(walletConfig);
+}
+
+void ListMicroCardXpubFile(void)
+{
+    lv_obj_clean(g_createMultiTileView.listTile);
+    for (int i = 0; i < 10; i++) {
+        memset_s(g_fileList[i], sizeof(g_fileList[0]), 0, sizeof(g_fileList[0]));
+    }
+    char *buffer = EXT_MALLOC(1024 * 5);
+    uint32_t number = 0;
+    int i = 0;
+#ifdef COMPILE_SIMULATOR
+    FatfsGetFileName("C:/assets/sd", buffer, &number, 1024 * 5, "json");
+#else
+    FatfsGetFileName("0:", buffer, &number, 1024 * 5, "json");
+    if (number == 0) {
+        return;
+    }
+#endif
+    char *token = strtok(buffer, " ");
+    while (token != NULL) {
+        strncpy(g_fileList[i], token, sizeof(g_fileList[i]));
+        token = strtok(NULL, " ");
+        lv_obj_t *btn = GuiCreateSelectButton(g_createMultiTileView.listTile, g_fileList[i], &imgArrowRight, OpenFileNextTileHandler, g_fileList[i], false);
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 84 * i);
+        i++;
+        if (i == 10) {
+            break;
+        }
+    }
+    EXT_FREE(buffer);
 }

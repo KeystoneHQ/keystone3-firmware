@@ -142,6 +142,11 @@ void GuiManageMultisigWalletDeInit(void)
         free_MultiSigWallet(g_multiSigWallet);
         g_multiSigWallet = NULL;
     }
+
+    if (g_keyboardWidget != NULL) {
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+        g_keyboardWidget == NULL;
+    }
 }
 
 static void GuiMoreHandler(lv_event_t *e)
@@ -323,6 +328,12 @@ static void OpenCreateMultiViewHandler(lv_event_t *e)
         GUI_DEL_OBJ(g_noticeWindow)
         GuiFrameOpenView(lv_event_get_user_data(e));
     }
+}
+
+void GuiManageMultisigPasswordErrorCount(void *param)
+{
+    PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
+    GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
 }
 
 static void ManageMultiSigWalletHandler(lv_event_t *e)

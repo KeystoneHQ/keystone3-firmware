@@ -737,6 +737,12 @@ static void OpenFileNextTileHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         GetMultiInfoFromFile(path, &g_xpubCache[g_createMultiTileView.currentSinger], g_chainType);
+        for (int i = 0; i < g_createMultiTileView.currentSinger; i++) {
+            if (0 == strcmp(g_xpubCache[i].xpub, g_xpubCache[g_createMultiTileView.currentSinger].xpub)) {
+                g_noticeWindow = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_IMPORT_XPUB_DUPLICATE, &g_noticeWindow);
+                return;
+            }
+        }
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
     }
 }

@@ -3,7 +3,7 @@
 extern crate alloc;
 
 use alloc::boxed::Box;
-use app_arweave::{generate_public_key_from_primes, generate_secret};
+use app_arweave::{generate_public_key_from_primes, generate_secret, aes128_encrypt, aes128_decrypt};
 use common_rust_c::structs::SimpleResponse;
 use common_rust_c::types::PtrBytes;
 use core::slice;
@@ -33,6 +33,32 @@ pub extern "C" fn generate_arweave_public_key_from_primes(
     let q = unsafe { slice::from_raw_parts(q, q_len as usize) };
     let public = generate_public_key_from_primes(p, q).unwrap();
     return SimpleResponse::success(Box::into_raw(Box::new(public)) as *mut u8).simple_c_ptr();
+}
+
+#[no_mangle]
+pub extern "C" fn aes128_encrypt_primes(
+    key: PtrBytes,
+    key_len: u32,
+    data: PtrBytes,
+    data_len: u32,
+) -> *mut SimpleResponse<u8> {
+    let key = unsafe { slice::from_raw_parts(key, key_len as usize) };
+    let data = unsafe { slice::from_raw_parts(data, data_len as usize) };
+    let encrypted_data = aes128_encrypt(key, data).unwrap();
+    return SimpleResponse::success(Box::into_raw(Box::new(encrypted_data)) as *mut u8).simple_c_ptr();
+}
+
+#[no_mangle]
+pub extern "C" fn aes128_decrypt_primes(
+    key: PtrBytes,
+    key_len: u32,
+    data: PtrBytes,
+    data_len: u32,
+) -> *mut SimpleResponse<u8> {
+    let key = unsafe { slice::from_raw_parts(key, key_len as usize) };
+    let data = unsafe { slice::from_raw_parts(data, data_len as usize) };
+    let decrypted_data = aes128_decrypt(key, data).unwrap();
+    return SimpleResponse::success(Box::into_raw(Box::new(decrypted_data)) as *mut u8).simple_c_ptr();
 }
 
 #[cfg(test)]

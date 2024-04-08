@@ -11,6 +11,7 @@ third_party = { path = "../../third_party" }
 app_utils = {path="../utils"}
 rand_chacha = { version="0.3.1", default-features=false }
 sha2 = { version = "0.10.6", default-features = false, features = ["oid"] }
+aes = { version = "0.8.4", default-features = false }
 
 [dev-dependencies]
 keystore = { path = "../../keystore"}

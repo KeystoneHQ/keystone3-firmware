@@ -9,6 +9,8 @@
 #include "log_print.h"
 #include "hash_and_salt.h"
 #include "keystore.h"
+#include "rust.h"
+#include "account_manager.h"
 
 #define SPI_FLASH_RSA_DATA_SIZE 512
 #define SPI_FLASH_RSA_HASH_SIZE 32

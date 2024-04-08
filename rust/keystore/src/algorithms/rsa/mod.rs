@@ -1,6 +1,6 @@
 use crate::errors::{KeystoreError, Result};
 
-use alloc::string::{String, ToString};
+use alloc::string::ToString;
 use alloc::vec::Vec;
 use arrayref::array_ref;
 use rand_chacha::ChaCha20Rng;
@@ -9,15 +9,12 @@ use rand_core::SeedableRng;
 use sha2;
 use sha2::{Digest, Sha256};
 
-use third_party::hex;
 use third_party::rsa::{rand_core, BigUint, PublicKeyParts, RsaPrivateKey};
 
 pub const MODULUS_LENGTH: usize = 4096;
-// secret = p || q || d || n
 pub const PRIME_LENGTH_IN_BYTE: usize = MODULUS_LENGTH / 8 / 2;
 pub const MODULUS_LENGTH_IN_BYTE: usize = MODULUS_LENGTH / 8;
 pub const SECRET_LENGTH_IN_BYTE: usize = PRIME_LENGTH_IN_BYTE * 2 + MODULUS_LENGTH_IN_BYTE * 2;
-pub const RSA_DERIVATION_PATH: &str = "m/44'/472'";
 
 fn get_rsa_seed(seed: &[u8]) -> Result<[u8; 32]> {
     let mut intermediate;

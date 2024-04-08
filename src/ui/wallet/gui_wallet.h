@@ -3,6 +3,7 @@
 
 #include "rust.h"
 #include "gui_chain.h"
+#include "rsa.h"
 
 UREncodeResult *GuiGetBlueWalletBtcData(void);
 UREncodeResult *GuiGetSparrowWalletBtcData(void);

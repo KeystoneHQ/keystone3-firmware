@@ -471,6 +471,33 @@ char *FatfsFileRead(const TCHAR* path)
     return fileBuf;
 }
 
+uint8_t *FatfsFileReadBytes(const TCHAR* path, uint32_t* readBytes)
+{
+    FIL fp;
+    uint8_t *fileBuf;
+    uint16_t fileSize = 0;
+    // uint32_t readBytes = 0;
+    FRESULT res = f_open(&fp, path, FA_OPEN_EXISTING | FA_READ);
+    if (res) {
+        FatfsError(res);
+        return NULL;
+    }
+    fileSize = f_size(&fp);
+    fileBuf = EXT_MALLOC(fileSize);
+    res = f_read(&fp, (void*)fileBuf, fileSize, readBytes);
+    printf("%s filesize = %u  readSize = %u\n", path, fileSize, *readBytes);
+    if (res) {
+        FatfsError(res);
+        f_close(&fp);
+        EXT_FREE(fileBuf);
+        return NULL;
+    }
+
+    printf("\n");
+    f_close(&fp);
+    return fileBuf;
+}
+
 uint32_t FatfsGetSize(const char *path)
 {
     FRESULT res;

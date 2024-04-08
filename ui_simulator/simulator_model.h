@@ -43,6 +43,7 @@ int FormatSdFatfs();
 int FatfsFileWrite(const char* path, const uint8_t *data, uint32_t len);
 int32_t read_qrcode();
 char *FatfsFileRead(const char* path);
+uint8_t *FatfsFileReadBytes(const char* path, uint32_t* readBytes);
 void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32_t maxLen, const char *contain);
 uint32_t GetCurrentStampTime(void);
 bool FatfsFileExist(const char *path);

@@ -474,6 +474,32 @@ char *FatfsFileRead(const char* path)
     return buffer;
 }
 
+uint8_t *FatfsFileReadBytes(const char* path, uint32_t* readBytes)
+{
+    lv_fs_file_t fd;
+    lv_fs_res_t ret = LV_FS_RES_OK;
+    uint8_t *buffer = SRAM_MALLOC(1024 * 100);
+    char truePath[64] = "C:/assets/sd/";
+    strcat(truePath, path);
+    printf("truePath: %s\n", truePath);
+
+    ret = lv_fs_open(&fd, truePath, LV_FS_MODE_RD);
+    if (ret != LV_FS_RES_OK) {
+        printf("lv_fs_open failed %s ret = %d line = %d\n", path, ret, __LINE__);
+        return NULL;
+    }
+
+    ret = lv_fs_read(&fd, buffer, 1024 * 100, readBytes);
+    if (ret != LV_FS_RES_OK) {
+        printf("lv_fs_read failed %s ret = %d line = %d\n", path, ret, __LINE__);
+        return NULL;
+    }
+    printf("readBytes: %u\n", *readBytes);
+    lv_fs_close(&fd);
+    
+    return buffer;
+}
+
 int32_t prepare_qrcode()
 {
     printf("prepare_qrcode\r\n");

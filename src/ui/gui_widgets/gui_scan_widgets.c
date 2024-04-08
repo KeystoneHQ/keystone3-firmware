@@ -24,6 +24,9 @@
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
 #include "account_manager.h"
+#ifdef BTC_ONLY
+#include "gui_multisig_read_sdcard_widgets.h"
+#endif
 
 static void GuiScanNavBarInit();
 static void GuiSetScanCorner(void);
@@ -31,6 +34,11 @@ static void ThrowError();
 static void GuiDealScanErrorResult(int errorType);
 static void CloseScanErrorDataHandler(lv_event_t *e);
 static void GuiScanStart();
+
+#ifdef BTC_ONLY
+static void SelectMicroCardFileHandler(lv_event_t *e);
+static lv_obj_t *g_noticeWindow;
+#endif
 
 static PageWidget_t *g_pageWidget;
 static lv_obj_t *g_scanErrorHintBox = NULL;
@@ -54,6 +62,9 @@ void GuiScanDeInit()
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
+#ifdef BTC_ONLY
+    GUI_DEL_OBJ(g_noticeWindow);
+#endif
 
     SetPageLockScreen(true);
 }
@@ -137,6 +148,9 @@ void GuiTransactionCheckFiald(PtrT_TransactionCheckResult result)
 static void GuiScanNavBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseTimerCurrentViewHandler, NULL);
+#ifdef BTC_ONLY
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SDCARD, SelectMicroCardFileHandler, NULL);
+#endif
 }
 
 static void GuiSetScanCorner(void)
@@ -217,3 +231,20 @@ static void GuiScanStart()
     GuiSetScanCorner();
     GuiModeControlQrDecode(true);
 }
+
+
+#ifdef BTC_ONLY
+static void SelectMicroCardFileHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        if (SdCardInsert()) {
+            static uint8_t fileFilterType = ONLY_PSBT;
+            GuiFrameOpenViewWithParam(&g_multisigReadSdcardView, &fileFilterType, sizeof(fileFilterType));
+        } else {
+            g_noticeWindow = GuiCreateErrorCodeHintbox(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);
+        }
+    }
+}
+#endif

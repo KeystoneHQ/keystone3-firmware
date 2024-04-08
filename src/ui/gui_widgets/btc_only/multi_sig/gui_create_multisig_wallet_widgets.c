@@ -574,7 +574,7 @@ int8_t GuiCreateMultiPrevTile(void)
         UpdateCustodianTileLabel(-1);
         break;
     case CREATE_MULTI_IMPORT_SDCARD_XPUB:
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("create_multi_wallet_import_xpub_title"));
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("import_multi_wallet_via_micro_title"));
         break;
     }
 

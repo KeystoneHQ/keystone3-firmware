@@ -395,7 +395,10 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
 {
     lv_obj_t *cont, *btn;
 #ifdef BTC_ONLY
-    int height = 132;
+    int height = 324;
+    if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+        height = 132;
+    }    
 #else
     int height = 324;
     if (g_chainCard != HOME_WALLET_CARD_BTC) {

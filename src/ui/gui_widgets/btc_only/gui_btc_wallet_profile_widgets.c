@@ -26,6 +26,7 @@ typedef struct {
 static void CreateBtcWalletProfileEntranceWidget(lv_obj_t *parent);
 static void SetDefaultSingleWalletHandler(lv_event_t *e);
 static void CreateSingleSigWalletWidget(lv_obj_t *parent);
+void GuiResetCurrentUtxoAddressIndex(uint8_t index);
 
 static WalletProfileWidgets_t g_walletProfile;
 static PageWidget_t *g_pageWidget;
@@ -172,5 +173,6 @@ static void SetDefaultSingleWalletHandler(lv_event_t *e)
         lv_obj_clear_flag(g_setDefaultBtn, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
         lv_label_set_text(label, _("wallet_profile_current_default_desc"));
+        GuiResetCurrentUtxoAddressIndex(GetCurrentAccountIndex());
     }
 }

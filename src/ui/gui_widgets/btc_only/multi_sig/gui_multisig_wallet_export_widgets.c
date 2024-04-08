@@ -26,14 +26,16 @@
 #define MAX_LABEL_LENGTH 64
 #define MAX_VERIFY_CODE_LENGTH 24
 
-typedef enum {
+typedef enum
+{
     IMPORT_MULTI_SHOW_WALLET_INFO = 0,
     IMPORT_MULTI_WALLET_SUCCESS,
 
     IMPORT_MULTI_WALLET_BUTT,
 } IMPORT_MULTI_WALLET_ENUM;
 
-typedef struct {
+typedef struct
+{
     uint8_t currentTile;
     lv_obj_t *tileView;
 } ImportMultiWalletWidget_t;
@@ -45,6 +47,7 @@ static lv_obj_t *g_confirmLabel;
 static lv_obj_t *g_qrCodeCont = NULL;
 static PageWidget_t *g_pageWidget;
 static MultiSigWalletItem_t *g_multisigWalletItem = NULL;
+static char *g_filename = NULL;
 
 void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 static void GuiContent(lv_obj_t *parent);
@@ -67,10 +70,14 @@ static void QRCodePause(bool pause)
 static void GuiSDCardHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (SdCardInsert()) {
+    if (code == LV_EVENT_CLICKED)
+    {
+        if (SdCardInsert())
+        {
             GuiShowSDCardExport();
-        } else {
+        }
+        else
+        {
             GuiShowSDCardNotDetected();
         }
         return;
@@ -80,7 +87,8 @@ static void GuiSDCardHandler(lv_event_t *e)
 static void GuiCloseHintBoxHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         GUI_DEL_OBJ(g_noticeWindow);
         return;
     }
@@ -89,14 +97,18 @@ static void GuiCloseHintBoxHandler(lv_event_t *e)
 static void GuiWriteSDCardHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         GUI_DEL_OBJ(g_noticeWindow);
 
         char *filename = lv_event_get_user_data(e);
-        int ret = FileWrite(filename, g_multisigWalletItem->walletConfig, strnlen(g_multisigWalletItem->walletConfig, MAX_WALLET_CONTENT_LEN));
-        if (ret == 0) {
+        int ret = WriteFile(filename, g_multisigWalletItem->walletConfig, strnlen(g_multisigWalletItem->walletConfig, MAX_WALLET_CONTENT_LEN));
+        if (ret == 0)
+        {
             GuiShowSDCardExportSuccess();
-        } else {
+        }
+        else
+        {
             GuiShowSDCardExportFailed();
         }
         return;
@@ -135,19 +147,20 @@ static void GuiShowSDCardExport()
     label = GuiCreateIllustrateLabel(g_noticeWindow, _("multisig_export_to_sdcard_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
-    char *filename = SRAM_MALLOC(MAX_WALLET_NAME_LEN);
-    snprintf_s(filename, MAX_WALLET_NAME_LEN, "%s.txt", g_multisigWalletItem->name);
-    if (FileExists(filename)) {
-        snprintf_s(filename, MAX_WALLET_NAME_LEN, "%s_%d.txt", g_multisigWalletItem->name, GetCurrentStampTime());
+    g_filename = SRAM_MALLOC(MAX_WALLET_NAME_LEN);
+    snprintf_s(g_filename, MAX_WALLET_NAME_LEN, "%s.txt", g_multisigWalletItem->name);
+    if (FileExists(g_filename))
+    {
+        snprintf_s(g_filename, MAX_WALLET_NAME_LEN, "%s_%d.txt", g_multisigWalletItem->name, GetCurrentStampTime());
     }
-    label = GuiCreateIllustrateLabel(g_noticeWindow, filename);
+    label = GuiCreateIllustrateLabel(g_noticeWindow, g_filename);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 670);
 
     lv_obj_t *btn = GuiCreateBtnWithFont(g_noticeWindow, _("got_it"), g_defTextFont);
     lv_obj_set_size(btn, 122, 66);
     lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
-    lv_obj_add_event_cb(btn, GuiWriteSDCardHandler, LV_EVENT_CLICKED, filename);
+    lv_obj_add_event_cb(btn, GuiWriteSDCardHandler, LV_EVENT_CLICKED, g_filename);
 }
 
 static void GuiShowSDCardExportSuccess()
@@ -193,7 +206,8 @@ void GuiMultisigWalletExportWidgetsInit(char *verifyCode, uint16_t len)
     g_pageWidget = CreatePageWidget();
     MultiSigWalletItem_t *wallet = GetMultisigWalletByVerifyCode(verifyCode);
     g_multisigWalletItem = wallet;
-    if (g_multisigWalletItem == NULL) {
+    if (g_multisigWalletItem == NULL)
+    {
         // TODO: Throw error;
         GuiCLoseCurrentWorkingView();
         return;
@@ -202,9 +216,12 @@ void GuiMultisigWalletExportWidgetsInit(char *verifyCode, uint16_t len)
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SDCARD, GuiSDCardHandler, NULL);
-    if (g_isExportMultiWallet) {
+    if (g_isExportMultiWallet)
+    {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("manage_multi_wallet_export_title"));
-    } else {
+    }
+    else
+    {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("import_multi_wallet_success_title"));
     }
 }
@@ -258,10 +275,12 @@ static void GuiContent(lv_obj_t *parent)
 
 static char *convertFormatLabel(char *format)
 {
-    if (strcmp(format, FORMAT_P2WSH) == 0) {
+    if (strcmp(format, FORMAT_P2WSH) == 0)
+    {
         return "Native Segwit";
     }
-    if (strcmp(format, FORMAT_P2WSH_P2SH) == 0) {
+    if (strcmp(format, FORMAT_P2WSH_P2SH) == 0)
+    {
         return "Nested Segwit";
     }
     return "Legacy";
@@ -286,11 +305,17 @@ static void SetEgContent(lv_obj_t *label)
 
 void GuiMultisigWalletExportWidgetsDeInit()
 {
-    if (g_pageWidget != NULL) {
+    if (g_pageWidget != NULL)
+    {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
     g_isExportMultiWallet = false;
+    if (g_filename)
+    {
+        SRAM_FREE(g_filename);
+        g_filename = NULL;
+    }
 }
 
 void GuiMultisigWalletExportWidgetsRefresh()
@@ -302,7 +327,8 @@ static void ModelGenerateAddress(char *address, uint32_t maxLen)
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     SimpleResponse_c_char *result = generate_address_for_multisig_wallet_config(g_multisigWalletItem->walletConfig, 0, 0, mfp, 4, MainNet);
-    if (result->error_code != 0) {
+    if (result->error_code != 0)
+    {
         printf("errorMessage: %s\r\n", result->error_message);
         GuiCLoseCurrentWorkingView();
         return;
@@ -315,7 +341,8 @@ void ModelGenerateMultiSigAddress(char *address, uint32_t maxLen, char *walletCo
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     SimpleResponse_c_char *result = generate_address_for_multisig_wallet_config(walletConfig, 0, index, mfp, 4, MainNet);
-    if (result->error_code != 0) {
+    if (result->error_code != 0)
+    {
         printf("errorMessage: %s\r\n", result->error_message);
         GuiCLoseCurrentWorkingView();
         return;
@@ -327,7 +354,8 @@ void ModelGenerateMultiSigAddress(char *address, uint32_t maxLen, char *walletCo
 static void ImportMultisigGoToHomeViewHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         g_isExportMultiWallet = false;
         GuiAnimatingQRCodeDestroyTimer();
         GuiCloseToTargetView(&g_homeView);

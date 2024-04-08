@@ -952,6 +952,8 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,create_multi_wallet_success_title,"Invite co-signers to scan the QR code to import multisig wallet or scan this QR code with software wallet to finish connection",,,,,,,
 ,create_multi_wallet_cancel_title,"Cancel Wallet Creation?",,,,,,,
 ,create_multi_wallet_cancel_desc,"If you cancel, any confirmed information will be lost.",,,,,,,
+,create_multi_wallet_xpub_duplicated_title,"Duplicate Xpub",,,,,,,
+,create_multi_wallet_xpub_duplicated_desc,"The imported xpub file is duplicated",,,,,,,
 ,import_multi_wallet_via_camera,"Via Camera",,,,,,,
 ,import_multi_wallet_via_micro_card,"Via MicroSD Card",,,,,,,
 ,import_multi_wallet_via_micro_title,"MicroSD Card",,,,,,,

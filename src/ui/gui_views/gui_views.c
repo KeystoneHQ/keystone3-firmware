@@ -10,6 +10,7 @@
 #include "gui_lock_device_widgets.h"
 #include "gui_page.h"
 #include <stdio.h>
+#include <string.h>
 
 #define IMPORT_WALLET_NOTICE                                            false
 #define CREATE_WALLET_NOTICE                                            true
@@ -306,6 +307,10 @@ void *GuiCreateErrorCodeHintbox(int32_t errCode, lv_obj_t **param)
     case ERR_UPDATE_NO_UPGRADABLE_FIRMWARE:
         titleText = _("firmware_update_no_upgradable_firmware_title");
         descText = _("firmware_update_no_upgradable_firmware_desc");
+        break;
+    case ERR_KEYSTORE_IMPORT_XPUB_DUPLICATE:
+        titleText = _("create_multi_wallet_xpub_duplicated_title");
+        descText = _("create_multi_wallet_xpub_duplicated_desc");
         break;
     }
 

@@ -73,6 +73,7 @@ static void SelectWalletIndexAndNextHandler(lv_event_t *e);
 static void GuiConfirmDeleteHandler(lv_event_t *e);
 static void ExportMultiWalletHandler(lv_event_t *e);
 static void UpdateDefaultWalletState(void);
+void GuiResetCurrentUtxoAddressIndex(uint8_t index);
 
 void GuiManageMultisigWalletInit(void)
 {
@@ -362,6 +363,7 @@ static void SetDefaultMultiWalletHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         SetDefaultWalletIndex((DEFAULT_WALLET_INDEX_ENUM)g_walletItem->order);
         UpdateDefaultWalletState();
+        GuiResetCurrentUtxoAddressIndex(GetCurrentAccountIndex());
     }
 }
 

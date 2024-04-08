@@ -1,6 +1,7 @@
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_manage_multisig_wallet_widgets.h"
+#include "gui_lock_widgets.h"
 
 int32_t GuiManageMultiViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {

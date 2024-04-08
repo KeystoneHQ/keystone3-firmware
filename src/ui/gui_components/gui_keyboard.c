@@ -1082,9 +1082,9 @@ static void LetterKbAssociateHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     KeyBoard_t *keyBoard = lv_event_get_user_data(e);
-    char *text = lv_label_get_text(lv_obj_get_child(lv_event_get_target(e), 0));
-    char buf[1] = {0};
     if (code == LV_EVENT_CLICKED) {
+        char *text = lv_label_get_text(lv_obj_get_child(lv_event_get_target(e), 0));
+        char buf[1] = {0};
         if (strlen(text) <= 0) {
             return;
         }

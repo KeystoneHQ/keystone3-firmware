@@ -33,7 +33,7 @@ void OpenImportWalletHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         if (CHECK_BATTERY_LOW_POWER()) {
-            g_hintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
+            g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
         } else {
             CreateWalletNotice(IMPORT_WALLET_NOTICE);
         }
@@ -45,7 +45,7 @@ void OpenCreateWalletHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         if (CHECK_BATTERY_LOW_POWER()) {
-            g_hintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
+            g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
         } else {
             CreateWalletNotice(CREATE_WALLET_NOTICE);
         }
@@ -276,7 +276,7 @@ void GuiWriteSeResult(bool en, int32_t errCode)
     }
 }
 
-void *GuiCreateErrorCodeHintbox(int32_t errCode, lv_obj_t **param)
+void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param)
 {
     g_hintParam = param;
     const char *titleText = _("error_box_invalid_seed_phrase");
@@ -311,6 +311,10 @@ void *GuiCreateErrorCodeHintbox(int32_t errCode, lv_obj_t **param)
     case ERR_KEYSTORE_IMPORT_XPUB_DUPLICATE:
         titleText = _("create_multi_wallet_xpub_duplicated_title");
         descText = _("create_multi_wallet_xpub_duplicated_desc");
+        break;
+    case ERR_KEYSTORE_IMPORT_XPUB_INVALID:
+        titleText = _("multisig_import_xpub_error_title");
+        descText = _("multisig_import_xpub_error_desc");
         break;
     }
 

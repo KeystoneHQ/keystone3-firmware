@@ -226,6 +226,9 @@ static void ReloadAndUpdateMultisigConfig(void)
 
 static void CreateMultiSigWalletWidget(lv_obj_t *parent)
 {
+    lv_obj_t *img = GuiCreateImg(parent, &imgLockMulti);
+    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 128);
+
     lv_obj_t *label = GuiCreateTextLabel(parent, _("wallet_profile_no_multi_wallet_notice"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 232);
 

@@ -448,9 +448,9 @@ static void UpdateStepItemAndImportStatus(int8_t addOrSub)
         GuiAddObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_flag(g_custodianTile.importXpubBtn, LV_OBJ_FLAG_HIDDEN);
     } else {
-        if (strlen(lv_label_get_text(g_custodianTile.xpubLabel)) > 0 || 
-            g_createMultiTileView.currentSinger == g_selectSliceTile.coSingers - 1 || 
-            strlen(g_xpubCache[g_createMultiTileView.currentSinger].xpub) > 0) {
+        if (strlen(lv_label_get_text(g_custodianTile.xpubLabel)) > 0 ||
+                g_createMultiTileView.currentSinger == g_selectSliceTile.coSingers - 1 ||
+                strlen(g_xpubCache[g_createMultiTileView.currentSinger].xpub) > 0) {
             GuiAddObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
         } else {
             GuiClearObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
@@ -779,4 +779,4 @@ static void GetAndCreateMultiWallet(void)
     GuiFrameOpenView(&g_importMultisigWalletInfoView);
     EXT_FREE(tempBuf);
     EXT_FREE(walletConfig);
- }
+}

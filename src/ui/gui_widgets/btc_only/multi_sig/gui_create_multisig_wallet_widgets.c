@@ -573,6 +573,7 @@ void GuiCreateMultiDeInit(void)
     GUI_DEL_OBJ(g_noticeWindow)
     GuiDeleteKeyBoard(g_nameWalletKb);
     GuiDelEnterProgressLabel();
+    g_chainType = XPUB_TYPE_BTC_MULTI_SIG_P2WSH;
     g_selectSliceTile.coSingers = MULTI_WALLET_DEFAULT_CO_SINGERS;
     g_selectSliceTile.singers = MULTI_WALLET_DEFAULT_SIGNERS;
     if (g_pageWidget != NULL) {
@@ -772,4 +773,4 @@ static void GetAndCreateMultiWallet(void)
     GuiFrameOpenView(&g_importMultisigWalletInfoView);
     EXT_FREE(tempBuf);
     EXT_FREE(walletConfig);
-}
+ }

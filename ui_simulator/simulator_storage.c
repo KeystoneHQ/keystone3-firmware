@@ -561,10 +561,13 @@ void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32
     }
 
     while (lv_fs_dir_read(&dir, fname) == LV_FS_RES_OK) {
+        if (strlen(fname) == 0) {
+            break;
+        }
         if (contain != NULL && !strstr(fname, contain)) {
             continue;
         }
-            
+        
         uint32_t nameLen = strlen(fname);
         uint32_t spaceNeeded = (listPtr == nameList) ? nameLen : nameLen + 1; 
         if (listPtr + spaceNeeded - nameList >= maxLen) break;
@@ -575,9 +578,6 @@ void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32
         strcpy(listPtr, fname);
         listPtr += nameLen;
         count++;
-        if (strlen(fname) == 0) {
-            break;
-        }
     }
     lv_fs_dir_close(&dir);
     *number = count;

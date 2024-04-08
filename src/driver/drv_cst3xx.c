@@ -6,7 +6,6 @@
 #include "user_delay.h"
 #include "hardware_version.h"
 
-
 /// @brief CST3xx touch pad init.
 void Cst3xxInit(void)
 {
@@ -18,13 +17,11 @@ void Cst3xxInit(void)
     I2cSendData(CST3XX_I2C_ADDR, cmd, 2);
 }
 
-
 /// @brief CST3xx open.
 void Cst3xxOpen(void)
 {
     Cst3xxInit();
 }
-
 
 /// @brief Get touch status, including touch state, X/Y coordinate.
 /// @param status TouchStatus struct addr.
@@ -45,4 +42,3 @@ int32_t Cst3xxGetStatus(TouchStatus_t *status)
     }
     return SUCCESS_CODE;
 }
-

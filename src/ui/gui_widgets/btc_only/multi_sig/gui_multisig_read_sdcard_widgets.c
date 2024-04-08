@@ -21,8 +21,6 @@ static void GuiContent(lv_obj_t *);
 static void GuiSelectFileHandler(lv_event_t *e);
 static FileFilterType g_fileFilterType = ALL;
 
-
-
 void GuiMultisigReadSdcardWidgetsInit(uint8_t fileFilterType)
 {
     g_fileFilterType = fileFilterType;
@@ -46,19 +44,19 @@ static void GuiContent(lv_obj_t *parent)
     int i = 0;
     char *suffix = NULL;
     switch (g_fileFilterType) {
-        case ALL:
-            break;
-        case ONLY_TXT:
-            suffix = ".txt";
-            break;
-        case ONLY_PSBT:
-            suffix = ".psbt";
-            break;
-        case ONLY_JSON:
-            suffix = ".json";
-            break;
-        default:
-            break;
+    case ALL:
+        break;
+    case ONLY_TXT:
+        suffix = ".txt";
+        break;
+    case ONLY_PSBT:
+        suffix = ".psbt";
+        break;
+    case ONLY_JSON:
+        suffix = ".json";
+        break;
+    default:
+        break;
     }
     printf("suffix is %s\r\n", suffix);
 #ifdef COMPILE_SIMULATOR
@@ -119,7 +117,6 @@ static void GuiSelectFileHandler(lv_event_t *e)
         default:
             break;
         }
-
 
     }
 }

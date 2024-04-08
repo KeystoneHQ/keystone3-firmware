@@ -5,9 +5,7 @@
 #include "stdbool.h"
 #include "err_code.h"
 
-
 void ScreenShot(uint8_t *imgData);
 void ScreenShotTouch(void);
-
 
 #endif

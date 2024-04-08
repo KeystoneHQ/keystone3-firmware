@@ -33,7 +33,6 @@ static URParseMultiResult *g_urMultiResult = NULL;
 static uint8_t* g_psbtBytes = NULL;
 static uint32_t g_psbtBytesLen = 0;
 
-
 static TransactionParseResult_DisplayTx *g_parseResult = NULL;
 static TransactionParseResult_DisplayBtcMsg *g_parseMsgResult = NULL;
 
@@ -937,7 +936,6 @@ static lv_obj_t *CreateOverviewToView(lv_obj_t *parent, DisplayTxOverview *overv
 
 }
 
-
 static lv_obj_t *CreateDetailAmountView(lv_obj_t *parent, DisplayTxDetail *detailData, lv_obj_t *lastView)
 {
     lv_obj_t *amountContainer = GuiCreateContainerWithParent(parent, 408, 138);
@@ -1140,7 +1138,6 @@ void GuiBtcTxOverview(lv_obj_t *parent, void *totalData)
     lastView = CreateOverviewFromView(parent, overviewData, lastView);
     CreateOverviewToView(parent, overviewData, lastView);
 }
-
 
 void GuiBtcTxDetail(lv_obj_t *parent, void *totalData)
 {

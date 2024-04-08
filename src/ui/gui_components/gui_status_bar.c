@@ -335,7 +335,6 @@ void GuiStatusBarSetBattery(uint8_t percent, bool charging)
     RefreshStatusBar();
 }
 
-
 static void RefreshStatusBar(void)
 {
     lv_obj_t *next;
@@ -585,7 +584,6 @@ static lv_obj_t *CreateSDCard(lv_obj_t *navBar)
     return btn;
 }
 
-
 NavBarWidget_t *CreateNavBarWidget(lv_obj_t *navBar)
 {
 
@@ -609,7 +607,6 @@ void DestoryNavBarWidget(NavBarWidget_t *navBarWidget)
         SRAM_FREE(navBarWidget);
     }
 }
-
 
 void SetNavBarLeftBtn(NavBarWidget_t *navBarWidget, NVS_LEFT_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param)
 {
@@ -644,7 +641,6 @@ void SetNavBarLeftBtn(NavBarWidget_t *navBarWidget, NVS_LEFT_BUTTON_ENUM button,
     }
 }
 
-
 void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param)
 {
     if (navBarWidget->midBtn != NULL && lv_obj_is_valid(navBarWidget->midBtn)) {
@@ -672,7 +668,6 @@ void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, l
         lv_obj_add_event_cb(navBarWidget->midBtn, midButtonCb, LV_EVENT_CLICKED, param);
     }
 }
-
 
 void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index, const char *name)
 {

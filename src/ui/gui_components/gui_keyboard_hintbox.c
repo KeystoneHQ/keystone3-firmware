@@ -26,7 +26,6 @@
 #endif
 #define DEFAULT_TIMER_COUNTER 5
 
-
 static KeyboardWidget_t *CreateKeyboardWidget();
 static void KeyboardConfirmHandler(lv_event_t *e);
 static void ForgetHandler(lv_event_t *e);
@@ -443,7 +442,6 @@ void GuiHideErrorLabel(KeyboardWidget_t *keyboardWidget)
         lv_obj_add_flag(keyboardWidget->errLabel, LV_OBJ_FLAG_HIDDEN);
     }
 }
-
 
 void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t *passwordVerifyResult)
 {

@@ -7,7 +7,6 @@
 #include "mhscpu.h"
 #include "mhscpu_sdio.h"
 
-
 #define DEBUG 1
 #define DEBUG_SDIOcsrd printf
 
@@ -315,7 +314,6 @@ typedef enum {
 #define SDIO_FLAG_RXEND            ((uint32_t)0x000000D0) //Rx resp end bit
 #define SDIO_FLAG_CMDPATHWITNCC    ((uint32_t)0x000000E0) //Cmd path wait NCC
 #define SDIO_FLAG_WAITTURNAROUND   ((uint32_t)0x000000F0) //Wait; CMD-to-response turnaround
-
 
 #if 1
 /** @defgroup SDIO_Data_Block_Size

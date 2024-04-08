@@ -416,7 +416,6 @@ void OpenSharePhraseHandler(lv_event_t *e)
     }
 }
 
-
 static void DelWalletHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);

@@ -5,9 +5,7 @@
 
 #define VER_DET_ADC_TIMES           100
 
-
 static uint32_t GetVerDetAdcValue(void);
-
 
 HardwareVersion GetHardwareVersion(void)
 {
@@ -41,7 +39,6 @@ HardwareVersion GetHardwareVersion(void)
     return version;
 }
 
-
 /// @brief Get hardware version string.
 /// @return char pointer to a const zone.
 char *GetHardwareVersionString(void)
@@ -65,7 +62,6 @@ char *GetHardwareVersionString(void)
         return "NONE";
     }
 }
-
 
 static uint32_t GetVerDetAdcValue(void)
 {
@@ -107,4 +103,3 @@ static uint32_t GetVerDetAdcValue(void)
     adcAver = adcSum / (VER_DET_ADC_TIMES - 2);
     return (uint32_t)adcAver;
 }
-

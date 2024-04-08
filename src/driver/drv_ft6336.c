@@ -6,7 +6,6 @@
 #include "user_delay.h"
 #include "drv_i2c_io.h"
 
-
 /// @brief FT6336 touch pad init.
 /// @param func Interrupt callback function, called when EXTINT gpio rasing/falling.
 void Ft6336Init(void)
@@ -14,13 +13,11 @@ void Ft6336Init(void)
     I2cInit();
 }
 
-
 /// @brief FT6336 open.
 void Ft6336Open(void)
 {
     I2cInit();
 }
-
 
 /// @brief Get touch status, including touch state, X/Y coordinate.
 /// @param status TouchStatus struct addr.
@@ -44,5 +41,3 @@ int32_t Ft6336GetStatus(TouchStatus_t *status)
 
     return SUCCESS_CODE;
 }
-
-

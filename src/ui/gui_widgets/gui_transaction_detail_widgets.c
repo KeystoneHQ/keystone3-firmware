@@ -195,7 +195,6 @@ static void CloseParseErrorDataHandler(lv_event_t *e)
     }
 }
 
-
 void GuiTransactionDetailParseSuccess(void *param)
 {
     SetParseTransactionResult(param);

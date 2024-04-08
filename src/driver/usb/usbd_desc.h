@@ -56,7 +56,6 @@ uint8_t* USBD_USR_ConfigStrDescriptor(uint8_t speed, uint16_t* length);
 uint8_t* USBD_USR_InterfaceStrDescriptor(uint8_t speed, uint16_t* length);
 uint8_t* USBD_USR_QualifierDescriptor(uint8_t speed, uint16_t* length);
 
-
 uint8_t* USBD_WinUSBOSStrDescriptor(uint16_t *length);
 uint8_t *USBD_WinUSBOSFeatureDescriptor(uint16_t *length);
 uint8_t *USBD_WinUSBOSPropertyDescriptor(uint16_t *length);

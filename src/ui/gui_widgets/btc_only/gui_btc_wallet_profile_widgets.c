@@ -84,7 +84,6 @@ int8_t GuiBtcWalletProfilePrevTile(void)
     return 0;
 }
 
-
 int8_t GuiBtcWalletProfileNextTile(void)
 {
     ++g_walletProfile.currentTile;

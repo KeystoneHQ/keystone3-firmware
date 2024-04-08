@@ -9,7 +9,6 @@ static void GuiFirmwareUpdateDenyInit(void);
 static void GuiFirmwareUpdateDenyDeInit(void);
 static void ButtonHandler(lv_event_t *e);
 
-
 static lv_obj_t *g_firmwareUpdateDenyHintBox = NULL;
 
 const GuiMsgBox_t g_guiMsgBoxFirmwareUpdateDeny = {
@@ -40,7 +39,6 @@ static void GuiFirmwareUpdateDenyInit(void)
     }
 }
 
-
 static void GuiFirmwareUpdateDenyDeInit(void)
 {
     if (g_firmwareUpdateDenyHintBox) {
@@ -49,7 +47,6 @@ static void GuiFirmwareUpdateDenyDeInit(void)
     }
 }
 
-
 static void ButtonHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -57,6 +54,3 @@ static void ButtonHandler(lv_event_t *e)
         GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_UPDATE_DENY, 0);
     }
 }
-
-
-

@@ -28,7 +28,6 @@ void PsramInit(void)
     memset((void *)MHSCPU_PSRAM_BASE, 0, MHSCPU_PSRAM_SIZE);
 }
 
-
 void PsramOpen(void)
 {
     PSRAM_InitTypeDef PSRAM_InitStruct = {0};
@@ -48,8 +47,6 @@ void PsramOpen(void)
     PSRAM_EnterQuadMode();
 }
 
-
-
 void PsramTest(void)
 {
     uint32_t i;
@@ -64,7 +61,6 @@ void PsramTest(void)
         printf("psramAddr[%d]=%d\r\n", i, psramAddr[i]);
     }
 }
-
 
 void PsramSelfCheck(void)
 {
@@ -89,15 +85,12 @@ void PsramSelfCheck(void)
     printf("psram self check ok!\r\n");
 }
 
-
 uint32_t GetPsramMappedAddr(void)
 {
     return MHSCPU_PSRAM_BASE;
 }
 
-
 uint32_t GetPsramTotalSize(void)
 {
     return MHSCPU_PSRAM_SIZE;
 }
-

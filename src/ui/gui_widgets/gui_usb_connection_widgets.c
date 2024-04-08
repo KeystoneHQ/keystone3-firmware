@@ -8,7 +8,6 @@
 #include "device_setting.h"
 #include "drv_aw32001.h"
 
-
 static void GuiUsbConnectionInit(void);
 static void GuiUsbConnectionDeInit(void);
 static void NotNowHandler(lv_event_t *e);
@@ -60,7 +59,6 @@ static void GuiUsbConnectionInit(void)
     }
 }
 
-
 static void GuiUsbConnectionDeInit(void)
 {
     if (g_usbConnectionHintBox) {
@@ -68,7 +66,6 @@ static void GuiUsbConnectionDeInit(void)
         g_usbConnectionHintBox = NULL;
     }
 }
-
 
 static void NotNowHandler(lv_event_t *e)
 {
@@ -78,7 +75,6 @@ static void NotNowHandler(lv_event_t *e)
         CloseUsb();
     }
 }
-
 
 static void ConnectUsbHandler(lv_event_t *e)
 {
@@ -92,4 +88,3 @@ static void ConnectUsbHandler(lv_event_t *e)
         CloseMsgBox(&g_guiMsgBoxUsbConnection);
     }
 }
-

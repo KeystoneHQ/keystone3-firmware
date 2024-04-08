@@ -201,7 +201,6 @@ static void SetKeyboardTaHandler(lv_event_t *e)
     }
 }
 
-
 static void PassphraseQuickAccessHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);

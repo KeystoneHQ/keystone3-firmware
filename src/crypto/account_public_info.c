@@ -52,7 +52,6 @@ typedef struct {
     char *path;
 } ChainItem_t;
 
-
 static bool GetPublicKeyFromJsonString(const char *string);
 static char *GetJsonStringFromPublicKey(void);
 
@@ -482,7 +481,6 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     return ret;
 }
 
-
 int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool set)
 {
     uint32_t i;
@@ -571,7 +569,6 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     return ret;
 }
 
-
 void DeleteAccountPublicInfo(uint8_t accountIndex)
 {
     uint32_t addr, eraseAddr;
@@ -590,7 +587,6 @@ void DeleteAccountPublicInfo(uint8_t accountIndex)
     FreePublicKeyRam();
 }
 
-
 char *GetCurrentAccountPublicKey(ChainType chain)
 {
     uint8_t accountIndex;
@@ -601,7 +597,6 @@ char *GetCurrentAccountPublicKey(ChainType chain)
     }
     return g_accountPublicKey[chain].pubKey;
 }
-
 
 /// @brief Get if the xPub already Exists.
 /// @param[in] xPub
@@ -655,7 +650,6 @@ uint8_t SpecifiedXPubExist(const char *xPub)
     return accountIndex;
 }
 
-
 /// @brief
 /// @param argc Test arg count.
 /// @param argv Test arg values.
@@ -694,7 +688,6 @@ void AccountPublicInfoTest(int argc, char *argv[])
         printf("account public cmd err\r\n");
     }
 }
-
 
 static bool GetPublicKeyFromJsonString(const char *string)
 {
@@ -744,7 +737,6 @@ static bool GetPublicKeyFromJsonString(const char *string)
     return ret;
 }
 
-
 static char *GetJsonStringFromPublicKey(void)
 {
     cJSON *rootJson, *chainsJson, *jsonItem;
@@ -768,7 +760,6 @@ static char *GetJsonStringFromPublicKey(void)
     return retStr;
 }
 
-
 static void FreePublicKeyRam(void)
 {
     g_tempPublicKeyAccountIndex = INVALID_ACCOUNT_INDEX;
@@ -779,7 +770,6 @@ static void FreePublicKeyRam(void)
         }
     }
 }
-
 
 static void PrintInfo(void)
 {
@@ -921,7 +911,6 @@ void ExportMultiSigXpub(ChainType chainType)
     EXT_FREE(jsonString);
 }
 
-
 static void ConvertXPub(char *dest, ChainType chainType)
 {
     SimpleResponse_c_char *result;
@@ -956,7 +945,6 @@ static void ConvertXPub(char *dest, ChainType chainType)
     free_simple_response_c_char(result);
 }
 #endif
-
 
 static void replace(char *str, const char *old_str, const char *new_str)
 {
@@ -1086,7 +1074,6 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
         Gd25FlashWriteBuffer(addr + 4, (uint8_t *)retStr, size);
         EXT_FREE(retStr);
     }
-
 
     jsonString = SRAM_MALLOC(size + 1);
     ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);

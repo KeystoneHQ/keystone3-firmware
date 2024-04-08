@@ -521,7 +521,6 @@ int8_t GuiForgetPassPrevTile(uint8_t tileIndex)
     return SUCCESS_CODE;
 }
 
-
 void GuiForgetPassRefresh(void)
 {
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _(""));

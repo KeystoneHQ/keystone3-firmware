@@ -238,8 +238,6 @@ int32_t GuiFrameCLoseView(GUI_VIEW *view)
     return SUCCESS_CODE;
 }
 
-
-
 int32_t GuiFrameWorkViewHandleMsg(void *data, uint16_t len)
 {
     GuiEmitMsg_t *msg = data;

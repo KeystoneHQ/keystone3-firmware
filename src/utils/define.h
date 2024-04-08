@@ -12,7 +12,6 @@
 #define BUFFER_SIZE_256                 (256)
 #define BUFFER_SIZE_512                 (512)
 
-
 #ifndef UNUSED
 #define UNUSED(X) (void)X
 #endif
@@ -28,6 +27,4 @@
 
 #define GET_MULTIPLE_NUM(x, y)       ((((x) + (y - 1)) / y ) * y)
 
-
 #endif /* _DEFINE_H */
-

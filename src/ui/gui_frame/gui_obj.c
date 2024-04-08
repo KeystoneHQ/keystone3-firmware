@@ -76,7 +76,6 @@ void *GuiCreateImg(lv_obj_t *parent, const void *src)
     return img;
 }
 
-
 void *GuiCreateScaleImg(lv_obj_t *parent, const void *src, int scale)
 {
     lv_obj_t *img = lv_img_create(parent);
@@ -182,7 +181,6 @@ void* GuiCreateCircleAroundAnimation(lv_obj_t *parent, int w)
     lv_anim_start(&g_circleAnimation);
     return NULL;
 }
-
 
 void GuiStopCircleAroundAnimation(void)
 {

@@ -16,7 +16,6 @@ PageWidget_t *CreatePageWidget(void)
     lv_obj_set_style_radius(navBar, 0, 0);
     pageWidget->navBar = navBar;
 
-
     lv_obj_t *contentZone = GuiCreateContainerWithParent(page, lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET_NEW - GUI_NAV_BAR_HEIGHT);
     lv_obj_align(contentZone, LV_ALIGN_DEFAULT, 0, GUI_NAV_BAR_HEIGHT);
     lv_obj_add_flag(contentZone, LV_OBJ_FLAG_CLICKABLE);

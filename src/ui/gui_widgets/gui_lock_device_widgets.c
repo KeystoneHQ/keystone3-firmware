@@ -127,7 +127,6 @@ void GuiLockDeviceInit(void *param)
     }
 }
 
-
 void GuiLockDeviceRefresh(void)
 {
     uint32_t currentTime = GetCurrentStampTime();
@@ -157,7 +156,6 @@ void GuiLockDeviceDeInit(void)
     }
     SetLockTimeState(false);
 }
-
 
 static void GuiLockedDeviceCountDownDestruct(void *obj, void* param)
 {

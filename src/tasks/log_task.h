@@ -4,9 +4,7 @@
 #include "stdint.h"
 #include "stdbool.h"
 
-
 void CreateLogTask(void);
 bool LogLoopStart(void);
 
 #endif
-

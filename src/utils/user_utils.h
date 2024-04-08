@@ -14,7 +14,6 @@
 #define CLEAR_OBJECT(obj)                       memset_s(&obj, sizeof(obj), 0, sizeof(obj))
 #define VALUE_CHECK(value, expect)              {if (value != expect) {printf("input err!\r\n"); return; }}
 
-
 uint32_t StrToHex(uint8_t *pbDest, const char *pbSrc);
 void ByteArrayToHexStr(uint8_t *array, uint32_t len, char *hex);
 bool CheckEntropy(const uint8_t *array, uint32_t len);
@@ -30,4 +29,3 @@ void GetStringValue(const cJSON *obj, const char *key, char *value, uint32_t max
 bool GetBoolValue(const cJSON *obj, const char *key, bool defaultValue);
 
 #endif /* _USER_UTILS_H */
-

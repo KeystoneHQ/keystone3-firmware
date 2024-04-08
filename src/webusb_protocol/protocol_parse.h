@@ -14,7 +14,6 @@ enum {
 
 #define TYPE_GENERAL_RESULT_ACK             0xFF
 
-
 typedef uint8_t *(*ProtocolServiceCallbackFunc_t)(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 typedef void (*ProtocolSendCallbackFunc_t)(const uint8_t *data, uint32_t len);
 

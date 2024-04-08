@@ -1,7 +1,6 @@
 #ifndef _FLASH_ADDRESS_H
 #define _FLASH_ADDRESS_H
 
-
 //SPI FLASH ADDR
 
 //USB FATFS, 8MB
@@ -66,6 +65,4 @@
 #define SPI_FLASH_ADDR_PROTECT_PARAM            0x00FFF000
 #define SPI_FLASH_SIZE_PROTECT_PARAM            0x1000
 
-
 #endif
-

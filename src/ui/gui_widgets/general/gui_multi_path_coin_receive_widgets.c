@@ -30,7 +30,6 @@
 #define SOL_BIP44_ROOT_ADDRESS_INDEX_MAX                (0)
 #define SOL_BIP44_CHANGE_ADDRESS_INDEX_MAX              (9)
 
-
 typedef enum {
     RECEIVE_TILE_QRCODE = 0,
     RECEIVE_TILE_SWITCH_ACCOUNT,
@@ -514,7 +513,6 @@ static void ConfirmAddrTypeHandler(lv_event_t *e)
     }
 }
 
-
 static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
 {
     lv_obj_t *btn;
@@ -584,7 +582,6 @@ static const char* GetChangePathItemTitle(uint32_t i)
     return "";
 }
 
-
 static void ShowEgAddressCont(lv_obj_t *egCont)
 {
 
@@ -650,7 +647,6 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
 
     RefreshDefaultAddress();
 }
-
 
 static void GuiCreateChangePathWidget(lv_obj_t *parent)
 {
@@ -830,7 +826,6 @@ static int GetSOLMaxAddressIndex(void)
     return GENERAL_ADDRESS_INDEX_MAX;
 }
 
-
 static int GetMaxAddressIndex(void)
 {
     switch (g_chainCard) {
@@ -903,7 +898,6 @@ static void TutorialHandler(lv_event_t *e)
     }
 }
 
-
 static void LeftBtnHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -918,7 +912,6 @@ static void LeftBtnHandler(lv_event_t *e)
         }
     }
 }
-
 
 static void RightBtnHandler(lv_event_t *e)
 {
@@ -1029,8 +1022,6 @@ static void OpenSwitchAddressHandler(lv_event_t *e)
         RefreshSwitchAccount();
     }
 }
-
-
 
 static void GetEthPathItemSubTittle(char* subTitle, int index, uint32_t maxLen)
 {
@@ -1201,7 +1192,6 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 
 }
 
-
 static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item)
 {
     char *xPub = NULL, hdPath[BUFFER_SIZE_128] = {0};
@@ -1217,7 +1207,6 @@ static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item)
     }
     free_simple_response_c_char(result);
 }
-
 
 static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item)
 {

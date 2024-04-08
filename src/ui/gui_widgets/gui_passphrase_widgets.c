@@ -34,7 +34,6 @@ typedef struct ContLabelWidget_t {
     lv_obj_t *cont;
 } ContLabelWidget_t;
 
-
 static void SkipHandler(lv_event_t *e);
 static void SetKeyboardTaHandler(lv_event_t *e);
 static void UpdatePassPhraseHandler(lv_event_t *e);
@@ -148,7 +147,6 @@ void GuiPassphraseInit(void)
     lv_obj_set_style_bg_opa(baffle, LV_OPA_0, LV_PART_MAIN);
 }
 
-
 void GuiPassphraseDeInit(void)
 {
     GUI_DEL_OBJ(g_passphraseWidgets.passphraseInputCont)
@@ -161,19 +159,16 @@ void GuiPassphraseDeInit(void)
     }
 }
 
-
 void GuiPassphraseRefresh(void)
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_setting_passphrase"));
 }
 
-
 void GuiPassphrasePrevTile(void)
 {
 
 }
-
 
 void GuiPassphraseDone(void)
 {
@@ -197,7 +192,6 @@ bool GuiPassphraseLoadingIsTop(void)
     return false;
 }
 
-
 static void SkipHandler(lv_event_t *e)
 {
 #ifndef COMPILE_SIMULATOR
@@ -213,7 +207,6 @@ static void SkipHandler(lv_event_t *e)
         GuiFrameOpenView(&g_homeView);
     }
 }
-
 
 static void SetKeyboardTaHandler(lv_event_t *e)
 {
@@ -238,7 +231,6 @@ static void SetKeyboardTaHandler(lv_event_t *e)
         }
     }
 }
-
 
 static void UpdatePassPhraseHandler(lv_event_t *e)
 {
@@ -294,5 +286,3 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
         Vibrate(SLIGHT);
     }
 }
-
-

@@ -2,7 +2,6 @@
 #include "stdio.h"
 #include "mhscpu.h"
 
-
 /// @brief I2C hardware init
 /// @param
 void I2cInit(void)
@@ -25,7 +24,6 @@ void I2cInit(void)
     I2C_Cmd(I2C0, ENABLE);
 }
 
-
 /// @brief I2C send data sequence.
 /// @param addr I2C addr(high 7-bit).
 /// @param data send data buffer.
@@ -42,7 +40,6 @@ void I2cSendData(uint8_t addr, const uint8_t *data, uint32_t len)
         }
     }
 }
-
 
 /// @brief Send u16 cmd and then send data sequence.
 /// @param addr I2C addr(high 7-bit).
@@ -61,7 +58,6 @@ void I2cSendCmdAndData(uint8_t addr, uint16_t cmd, const uint8_t *data, uint32_t
     printf("IC_TX_ABRT_SOURCE=0x%08X\r\n", I2C0->IC_TX_ABRT_SOURCE);
 }
 
-
 /// @brief Send u16 cmd and then get i2c data sequence.
 /// @param addr I2C addr(high 7-bit).
 /// @param cmd u16 cmd, send MSB first.
@@ -78,8 +74,6 @@ void I2cSendCmdAndReceiveData(uint8_t addr, uint16_t cmd, uint8_t *data, uint32_
     I2C_ReceiveBytes(I2C0, data, len, I2C_DataEndCondition_Stop);
 }
 
-
-
 /// @brief Send u8 addr and then get i2c data sequence.
 /// @param addr I2C addr(high 7-bit).
 /// @param sendData send data.
@@ -92,5 +86,3 @@ void I2cSendAndReceiveData(uint8_t addr, const uint8_t *sendData, uint32_t sendL
     I2C_SendBytes(I2C0, (uint8_t *)sendData, sendLen, I2C_DataEndCondition_Stop);
     I2C_ReceiveBytes(I2C0, rcvData, rcvLen, I2C_DataEndCondition_Stop);
 }
-
-

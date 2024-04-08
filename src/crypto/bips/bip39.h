@@ -1,7 +1,6 @@
 #ifndef _BIP39_H
 #define _BIP39_H
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif

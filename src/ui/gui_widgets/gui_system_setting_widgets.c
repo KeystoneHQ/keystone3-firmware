@@ -122,7 +122,6 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
                              VibrationHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 205);
 
-
     label = GuiCreateTextLabel(parent, _("verify_title"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     table[0].obj = label;
@@ -199,7 +198,6 @@ static void GuiShowKeyBoardDialog(lv_obj_t *parent)
     g_keyboardWidget = GuiCreateKeyboardWidget(parent);
     SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
 }
-
 
 void GuiSystemSettingVerifyPasswordSuccess(void)
 {

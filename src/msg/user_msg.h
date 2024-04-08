@@ -19,19 +19,15 @@
 #define USB_MSG_BASE                    0x00070000
 #define LOW_POWER_MSG_BASE              0x00080000
 
-
-
 enum {
     MSG_TEST_CMD_FRAME = CMD_MSG_BASE,
 };
-
 
 enum {
     TEST_MSG_MEASUREMENT = TEST_MSG_BASE,
     TEST_MSG_ASYNPRINT,
     TEST_MSG_LEDGER_DATA_RCV,
 };
-
 
 enum {
     QRDECODE_MSG_START = QRDECODE_MSG_BASE,
@@ -68,7 +64,6 @@ enum {
     LOG_MSG_EXPORT,
     LOG_MSG_WRITE_TO_SDCARD,
 };
-
 
 enum {
     USB_MSG_ISR_HANDLER = USB_MSG_BASE,

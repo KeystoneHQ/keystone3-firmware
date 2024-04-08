@@ -22,11 +22,7 @@ void GuiInactiveInit(void)
     }
 }
 
-
 void GuiInactiveDeInit(void)
 {
 
 }
-
-
-

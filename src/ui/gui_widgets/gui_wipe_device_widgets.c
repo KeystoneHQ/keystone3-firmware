@@ -55,16 +55,13 @@ void GuiWipeDeviceWidgetsRefresh()
     GuiWipeDeviceNVSBarInit();
 }
 
-
 void GuiWipeDeviceWidgetsRestart()
 {}
-
 
 static void GuiWipeDeviceNVSBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
 }
-
 
 void GuiWipeDeviceEntranceWidget(lv_obj_t *parent)
 {
@@ -83,7 +80,6 @@ void GuiWipeDeviceEntranceWidget(lv_obj_t *parent)
     lv_obj_add_flag(label, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(label, WipeDeviceHandler, LV_EVENT_CLICKED, NULL);
 
-
 }
 
 static void WipeDeviceHandler(lv_event_t *e)
@@ -93,7 +89,6 @@ static void WipeDeviceHandler(lv_event_t *e)
         GuiShowWipeDeviceHintBox();
     }
 }
-
 
 static void GuiShowWipeDeviceHintBox(void)
 {
@@ -109,7 +104,6 @@ static void GuiShowWipeDeviceHintBox(void)
         g_countDownTimer = lv_timer_create(CountDownTimerHandler, 1000, rightBtn);
     }
 }
-
 
 static void NotNowHandler(lv_event_t *e)
 {
@@ -128,7 +122,6 @@ static void ExecWipeDeviceHandler(lv_event_t *e)
         WipeDeviceDeal();
     }
 }
-
 
 static void WipeDeviceDeal(void)
 {
@@ -159,7 +152,6 @@ static void WipeDeviceDeal(void)
 
     GuiModelLockedDeviceDelAllWalletDesc();
 }
-
 
 static void CountDownTimerHandler(lv_timer_t *timer)
 {

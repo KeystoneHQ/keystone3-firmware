@@ -27,8 +27,6 @@ void BackGroundAppInit(void)
     PowerManagerInit();
 }
 
-
-
 /// @brief Executed in background task.
 /// @param
 void ChangerRefreshState(void)
@@ -36,7 +34,6 @@ void ChangerRefreshState(void)
     Aw32001RefreshState();
     //todo: notify UI to refresh the charging state display.
 }
-
 
 /// @brief Restarts the device using the specified reset type.
 /// @param type The reset type to use.
@@ -63,7 +60,6 @@ void ExecuteSystemReset(SystemResetType type)
     }
 }
 
-
 /// @brief Note: Executed in ISR, notify the background task to refresh state.
 /// @param
 static void ChangerInsertIntCallback(void)
@@ -71,13 +67,10 @@ static void ChangerInsertIntCallback(void)
     PubValueMsg(BACKGROUND_MSG_CHANGER_INSERT, 0);
 }
 
-
-
 static void MinuteTimerFunc(void *argument)
 {
     PubValueMsg(BACKGROUND_MSG_MINUTE, 0);
 }
-
 
 static void BatteryTimerFunc(void *argument)
 {

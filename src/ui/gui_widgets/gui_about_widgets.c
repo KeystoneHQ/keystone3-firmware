@@ -44,7 +44,6 @@ void GuiAboutWidgetsRefresh()
     GuiAboutNVSBarInit();
 }
 
-
 void GuiAboutWidgetsRestart()
 {}
 
@@ -53,7 +52,6 @@ static void GuiAboutNVSBarInit()
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("device_setting_about_title"));
 }
-
 
 void GuiAboutEntranceWidget(lv_obj_t *parent)
 {

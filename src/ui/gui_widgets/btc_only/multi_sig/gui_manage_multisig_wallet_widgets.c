@@ -93,7 +93,6 @@ void GuiManageMultisigWalletInit(void)
     lv_obj_set_tile_id(g_manageMultisig.tileView, 0, 0, LV_ANIM_OFF);
 }
 
-
 int8_t GuiManageMultisigWalletNextTile(uint8_t index)
 {
     switch (g_manageMultisig.currentTile) {
@@ -170,8 +169,6 @@ void GuiManageMultisigWalletRefresh(void)
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, tempBuff);
     }
 }
-
-
 
 static void ReloadAndUpdateMultisigConfig(void)
 {

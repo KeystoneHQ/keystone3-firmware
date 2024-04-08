@@ -13,7 +13,6 @@
 #include "hash_and_salt.h"
 #include "secret_cache.h"
 
-
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
 #else
@@ -222,7 +221,6 @@ int32_t SetFpStateInfo(uint8_t *info)
     return ret;
 }
 
-
 /// @brief Get the fingerprint state info.
 /// @param[out] info 32 byte info.
 /// @return err code.
@@ -252,7 +250,6 @@ int32_t SetWalletDataHash(uint8_t index, uint8_t *info)
     ret = SE_HmacEncryptWrite(data, PAGE_WALLET1_PUB_KEY_HASH + index);
     return ret;
 }
-
 
 /// @brief Get the wallet data hash.
 /// @param[in] index
@@ -305,7 +302,6 @@ int32_t GetFpEncryptedPassword(uint32_t index, uint8_t *encryptedPassword)
     return SE_HmacEncryptRead(encryptedPassword, PAGE_PF_ENCRYPTED_PASSWORD + index);
 }
 
-
 /// @brief Set the fingerprint communication AES key.
 /// @param[in] aesKey length 16bytes.
 /// @return err code.
@@ -313,7 +309,6 @@ int32_t SetFpCommAesKey(const uint8_t *aesKey)
 {
     return SE_HmacEncryptWrite(aesKey, PAGE_PF_AES_KEY);
 }
-
 
 /// @brief Get the fingerprint communication AES key.
 /// @param[out] aesKey length 16bytes.
@@ -323,7 +318,6 @@ int32_t GetFpCommAesKey(uint8_t *aesKey)
     return SE_HmacEncryptRead(aesKey, PAGE_PF_AES_KEY);
 }
 
-
 /// @brief Set the fingerprint reset AES key.
 /// @param[in] resetKey length 16bytes.
 /// @return err code.
@@ -331,7 +325,6 @@ int32_t SetFpResetKey(const uint8_t *resetKey)
 {
     return SE_HmacEncryptWrite(resetKey, PAGE_PF_RESET_KEY);
 }
-
 
 /// @brief Get the fingerprint reset AES key.
 /// @param[out] resetKey length 16bytes.

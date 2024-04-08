@@ -39,7 +39,6 @@ void Uart0Init(UartRcvByteCallbackFunc_t func)
     NVIC_Init(&NVIC_InitStructure);
 }
 
-
 void Uart0OpenPort(void)
 {
     UART_InitTypeDef UART_InitStructure;
@@ -51,7 +50,6 @@ void Uart0OpenPort(void)
     UART_InitStructure.UART_Parity = UART_Parity_No;
     UART_Init(UART0, &UART_InitStructure);
 }
-
 
 void Uart1Init(UartRcvByteCallbackFunc_t func)
 {
@@ -92,7 +90,6 @@ void Uart1Init(UartRcvByteCallbackFunc_t func)
     NVIC_Init(&NVIC_InitStructure);
 #endif
 }
-
 
 void Uart1OpenPort(void)
 {
@@ -205,8 +202,6 @@ void UART0_IRQHandler(void)
         break;
     }
 }
-
-
 
 void UART1_IRQHandler(void)
 {

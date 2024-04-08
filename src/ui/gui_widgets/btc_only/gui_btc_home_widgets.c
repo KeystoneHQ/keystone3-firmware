@@ -96,7 +96,6 @@ void ReturnManageWalletHandler(lv_event_t *e)
     }
 }
 
-
 static void CreateHomePageButtons(void)
 {
     lv_obj_t *img, *label, *arrow, *rcvButton, *scanButton;
@@ -156,7 +155,6 @@ static void CreateHomePageButtons(void)
     lv_obj_set_style_bg_opa(scanButton, LV_OPA_80, LV_STATE_PRESSED | LV_PART_MAIN);
 }
 
-
 static void RcvHandler(lv_event_t *e)
 {
     static HOME_WALLET_CARD_ENUM coin;
@@ -168,7 +166,6 @@ static void RcvHandler(lv_event_t *e)
         GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
     }
 }
-
 
 void ScanQrCodeHandler(lv_event_t *e)
 {
@@ -361,7 +358,6 @@ const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)
     return NULL;
 }
 
-
 void GuiHomeDeInit(void)
 {
     if (g_pageWidget != NULL) {
@@ -369,4 +365,3 @@ void GuiHomeDeInit(void)
         g_pageWidget = NULL;
     }
 }
-

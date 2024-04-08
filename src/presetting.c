@@ -26,7 +26,6 @@ int32_t GetSerialNumber(char *serialNumber)
     return SUCCESS_CODE;
 }
 
-
 int32_t SetSerialNumber(const char *serialNumber)
 {
     int32_t ret;
@@ -46,7 +45,6 @@ int32_t SetSerialNumber(const char *serialNumber)
     return SUCCESS_CODE;
 }
 
-
 int32_t GetWebAuthRsaKey(uint8_t *key)
 {
     uint8_t *data;
@@ -62,7 +60,6 @@ int32_t GetWebAuthRsaKey(uint8_t *key)
     memcpy(key, data, WEB_AUTH_RSA_KEY_LEN);
     return SUCCESS_CODE;
 }
-
 
 int32_t SetWebAuthRsaKey(const uint8_t *key)
 {
@@ -84,7 +81,6 @@ int32_t SetWebAuthRsaKey(const uint8_t *key)
     SRAM_FREE(data);
     return SUCCESS_CODE;
 }
-
 
 bool GetFactoryResult(void)
 {
@@ -149,7 +145,6 @@ int32_t GetUpdatePubKey(uint8_t *pubKey)
     return ERR_UPDATE_PUB_KEY_NOT_EXIST;
 }
 
-
 /// @brief
 /// @param key Key with it's 0x04 head, 65 bytes.
 /// @return err code.
@@ -173,7 +168,6 @@ int32_t SetUpdatePubKey(const uint8_t *pubKey)
     memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
     return ERR_UPDATE_PUB_KEY_NO_SPACE;
 }
-
 
 void PresettingTest(int argc, char *argv[])
 {
@@ -250,4 +244,3 @@ void PresettingTest(int argc, char *argv[])
         printf("presetting cmd err\r\n");
     }
 }
-

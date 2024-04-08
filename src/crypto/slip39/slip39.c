@@ -466,7 +466,6 @@ int MasterSecretEncrypt(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t 
     return 0;
 }
 
-
 /***********************************************************************
  * name       : GenerateMnemonics
  * author     : stone wang
@@ -927,4 +926,3 @@ void Slip39Error(int errNum)
     }
     printf("errNum = %d %s\n", errNum, str);
 }
-

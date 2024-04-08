@@ -230,24 +230,20 @@ void PsramFree(void *pv)
     }
 }
 
-
 size_t PsramGetFreeHeapSize(void)
 {
     return xFreeBytesRemaining;
 }
-
 
 size_t PsramGetMinimumEverFreeHeapSize(void)
 {
     return xMinimumEverFreeBytesRemaining;
 }
 
-
 size_t PsramGetTotalSize(void)
 {
     return GetPsramTotalSize();
 }
-
 
 static void prvHeapInit(void)   /* PRIVILEGED_FUNCTION */
 {
@@ -348,4 +344,3 @@ static void prvInsertBlockIntoFreeList(BlockLink_t * pxBlockToInsert)   /* PRIVI
         mtCOVERAGE_TEST_MARKER();
     }
 }
-

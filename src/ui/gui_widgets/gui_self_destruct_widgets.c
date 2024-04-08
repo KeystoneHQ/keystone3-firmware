@@ -39,9 +39,7 @@ void GuiSelfDestructInit(void)
     }
 }
 
-
 void GuiSelfDestructDeInit(void)
 {
 
 }
-

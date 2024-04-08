@@ -23,7 +23,6 @@ void UserMsgInit(void)
     g_usbQueue = osMessageQueueNew(32, sizeof(Message_t), NULL);
     g_lowPowerQueue = osMessageQueueNew(5, sizeof(Message_t), NULL);
 
-
     //All messages are registered here
     SubMessageID(MSG_TEST_CMD_FRAME, g_cmdQueue);
 
@@ -67,4 +66,3 @@ void UserMsgInit(void)
     SubMessageID(LOW_POWER_ENTER, g_lowPowerQueue);
     SubMessageID(LOW_POWER_QUIT, g_lowPowerQueue);
 }
-

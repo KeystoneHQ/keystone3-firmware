@@ -20,7 +20,6 @@ typedef enum {
     SETUP_LANGUAGE_BUTT,
 } SETUP_LANGUAGE_ENUM;
 
-
 static const char *g_languageList[] = {
     "English",
     "Русский язык",
@@ -64,7 +63,6 @@ static void GuiWelcomeWidget(lv_obj_t *parent)
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 84 - GUI_NAV_BAR_HEIGHT);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, GoToDeviceUIDPage, LV_EVENT_ALL, NULL);
-
 
     lv_obj_t *label = GuiCreateTitleLabel(parent, _("Keystone"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 268 - GUI_NAV_BAR_HEIGHT);
@@ -285,7 +283,6 @@ void GuiSetupAreaRestart(void)
     lv_obj_set_tile_id(g_setupTileView.tileView, oldTile, 0, LV_ANIM_OFF);
     GuiSetupAreaRefresh();
 }
-
 
 uint8_t GuiSetSetupPhase(SETUP_PHASE_ENUM pahaseEnum)
 {

@@ -9,5 +9,4 @@ void GuiBtcWalletProfileRefresh(void);
 int8_t GuiBtcWalletProfilePrevTile(void);
 int8_t GuiBtcWalletProfileNextTile(void);
 
-
 #endif

@@ -42,7 +42,6 @@ void SpiInit(const SPI_Cfg_t *cfg)
     //DMA_Cmd(ENABLE);
 }
 
-
 //sendData or recvData could be NULL when do not need send or receive.
 void SpiSendRecv(const SPI_Cfg_t *cfg, const uint8_t *sendData, uint8_t *recvData, uint32_t len)
 {
@@ -59,18 +58,15 @@ void SpiSendRecv(const SPI_Cfg_t *cfg, const uint8_t *sendData, uint8_t *recvDat
     }
 }
 
-
 void SpiSendData(const SPI_Cfg_t *cfg, uint8_t *data, uint32_t len)
 {
     SpiSendRecv(cfg, data, NULL, len);
 }
 
-
 void SpiRecvData(const SPI_Cfg_t *cfg, uint8_t *data, uint32_t len)
 {
     SpiSendRecv(cfg, NULL, data, len);
 }
-
 
 void Spi2Test(uint32_t num)
 {
@@ -93,7 +89,6 @@ void Spi2Test(uint32_t num)
     //PrintArray("recv", recvData, num);
 }
 
-
 void SPI2_IRQHandler(void)
 {
     if (SPI_GetITStatus(SPIM2, SPI_IT_TXE) == SET) {
@@ -102,4 +97,3 @@ void SPI2_IRQHandler(void)
     }
     NVIC_ClearPendingIRQ(SPI2_IRQn);
 }
-

@@ -3,12 +3,10 @@
 #include "mhscpu.h"
 #include "user_delay.h"
 
-
 #define TAMPER_READ_COUNT           1000
 
 #define TAMPER_PORT                 GPIOA
 #define TAMPER_PIN                  GPIO_Pin_2
-
 
 TamperProcessCallbackFunc_t g_tamperProcessCallback;
 
@@ -26,8 +24,6 @@ void TamperInit(TamperProcessCallbackFunc_t func)
     g_tamperProcessCallback = func;
     g_tamperProcessCallback();
 }
-
-
 
 /// @brief Read tamper input GPIO.
 /// @return true:fine. false:tamper occurred.
@@ -52,6 +48,3 @@ bool ReadTamperInput(void)
     }
     return readLevel == Bit_SET;
 }
-
-
-

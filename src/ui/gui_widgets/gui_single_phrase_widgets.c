@@ -100,7 +100,6 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     }
 }
 
-
 static void MnemonicConfirmHandler(lv_event_t * e)
 {
     int i = 0, j;
@@ -246,7 +245,6 @@ void GuiSinglePhraseInit(uint8_t entropyMethod)
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, SelectPhraseCntHandler, NULL);
 }
-
 
 void GuiSinglePhraseUpdateMnemonic(void *signalParam, uint16_t paramLen)
 {

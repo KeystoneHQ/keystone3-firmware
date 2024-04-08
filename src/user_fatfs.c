@@ -640,7 +640,6 @@ int MMC_disk_write(
     return status;
 }
 
-
 int USB_disk_initialize(void)
 {
     return RES_OK;
@@ -694,7 +693,6 @@ int FatfsMount(void)
     return res;
 }
 
-
 int MountUsbFatfs(void)
 {
     FRESULT res;
@@ -712,7 +710,6 @@ int MountUsbFatfs(void)
     FatfsError(res);
     return res;
 }
-
 
 int MountSdFatfs(void)
 {
@@ -796,7 +793,6 @@ void CopyToFlash(void)
     SRAM_FREE(fileBuf);
 }
 
-
 int FormatSdFatfs(void)
 {
     FRESULT res;
@@ -811,7 +807,6 @@ int FormatSdFatfs(void)
     FatfsError(res);
     return res;
 }
-
 
 void FatfsError(FRESULT errNum)
 {

@@ -21,5 +21,4 @@ void DestroyPageWidgetHandler(lv_event_t *e);
     obj = NULL;                                 \
 }
 
-
 #endif /* _GUI_PAGE_H */

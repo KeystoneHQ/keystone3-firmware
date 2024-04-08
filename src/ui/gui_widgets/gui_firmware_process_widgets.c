@@ -38,7 +38,6 @@ static void GuiFirmwareProcessInit(void)
     GuiCreateCircleAroundAnimation(container, -51);
 }
 
-
 static void GuiFirmwareProcessDeInit(void)
 {
     if (container != NULL) {
@@ -48,4 +47,3 @@ static void GuiFirmwareProcessDeInit(void)
     container = NULL;
     SetLockScreen(g_lockable);
 }
-

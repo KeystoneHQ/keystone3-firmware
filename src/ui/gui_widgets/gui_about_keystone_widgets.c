@@ -87,17 +87,14 @@ void GuiAboutKeystoneWidgetsRefresh()
     GuiAboutNVSBarInit();
 }
 
-
 void GuiAboutKeystoneWidgetsRestart()
 {}
-
 
 static void GuiAboutNVSBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("about_keystone_title"));
 }
-
 
 void GuiAboutKeystoneEntranceWidget(lv_obj_t *parent)
 {
@@ -130,8 +127,6 @@ void GuiAboutKeystoneEntranceWidget(lv_obj_t *parent)
         lv_obj_align(button, LV_ALIGN_DEFAULT, 10, 12 + 84 * i);
     }
 }
-
-
 
 static void ShowQRDialogHandler(lv_event_t *e)
 {

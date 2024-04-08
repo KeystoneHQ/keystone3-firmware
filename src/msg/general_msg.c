@@ -19,7 +19,6 @@ struct __MessageNode {
 };
 typedef struct __MessageNode MessageNode_t;
 
-
 MessageNode_t messageListHead;
 
 uint32_t PubBufferMsg(uint32_t messageID, void *buffer, uint32_t length)
@@ -59,7 +58,6 @@ uint32_t PubBufferMsg(uint32_t messageID, void *buffer, uint32_t length)
     }
 }
 
-
 uint32_t PubValueMsg(uint32_t messageID, uint32_t value)
 {
     Message_t msg;
@@ -70,7 +68,6 @@ uint32_t PubValueMsg(uint32_t messageID, uint32_t value)
     msg.value = value;
     msg.buffer = NULL;
     msg.length = 0;
-
 
     for (uint32_t i = 0;; i++) {
         queue = GetQueueFromMid(messageID, i);
@@ -92,7 +89,6 @@ uint32_t PubValueMsg(uint32_t messageID, uint32_t value)
     }
 }
 
-
 /// @brief Get the number of queued messages for all corresponding queues.
 /// @param messageID
 /// @return Number of queued messages.
@@ -111,8 +107,6 @@ uint32_t GetWaitingMsgCount(uint32_t messageID)
         }
     }
 }
-
-
 
 //Subscription, that is, the message registry, is managed using a two-dimensional linked list: one messageID per line
 //

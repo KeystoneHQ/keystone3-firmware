@@ -55,7 +55,6 @@ void GuiConnectionWidgetsRefresh()
     GuiConnectionNVSBarInit();
 }
 
-
 void GuiConnectionWidgetsRestart()
 {
 

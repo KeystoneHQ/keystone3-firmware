@@ -116,10 +116,8 @@ void GuiAboutInfoWidgetsRefresh()
     }
 }
 
-
 void GuiAboutInfoWidgetsRestart()
 {}
-
 
 static void GuiAboutNVSBarInit()
 {
@@ -127,7 +125,6 @@ static void GuiAboutNVSBarInit()
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("device_info_title"));
     lv_obj_add_flag(g_pageWidget->contentZone, LV_OBJ_FLAG_SCROLLABLE);
 }
-
 
 void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
 {

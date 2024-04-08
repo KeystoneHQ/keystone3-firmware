@@ -489,10 +489,10 @@ int8_t GuiCreateMultiNextTile(uint8_t index)
         lv_label_set_text_fmt(g_selectSliceTile.stepLabel, "%d of %d", g_selectSliceTile.singers, g_selectSliceTile.coSingers);
         g_xpubCache = SRAM_MALLOC(sizeof(XpubWidgetCache_t) * g_selectSliceTile.coSingers);
         UpdateCurrentWalletInfo();
-        break;
-    case CREATE_MULTI_SELECT_FORMAT:
         lv_obj_add_flag(g_selectSliceTile.stepLabel, LV_OBJ_FLAG_HIDDEN);
         lv_obj_add_flag(g_selectSliceTile.noticeLabel, LV_OBJ_FLAG_HIDDEN);
+        break;
+    case CREATE_MULTI_SELECT_FORMAT:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         UpdateCurrentWalletInfo();
         lv_label_set_text(g_custodianTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
@@ -533,6 +533,9 @@ int8_t GuiCreateMultiNextTile(uint8_t index)
     g_createMultiTileView.currentTile++;
     if (g_createMultiTileView.currentTile == CREATE_MULTI_CONFIRM_CO_SIGNERS && g_createMultiTileView.currentSinger == 0) {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, StopCreateViewHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _(""));
+    } else if (g_createMultiTileView.currentTile == CREATE_MULTI_SELECT_FORMAT) {
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("sdcard_format_confirm"));
     }
     lv_obj_set_tile_id(g_createMultiTileView.tileView, g_createMultiTileView.currentTile, 0, LV_ANIM_OFF);
     return SUCCESS_CODE;

@@ -16,7 +16,20 @@ int32_t GuiImportMultisigWalletInfoViewEventProcess(void *self, uint16_t usEvent
         GuiImportMultisigWalletInfoWidgetsDeInit();
         break;
     case SIG_VERIFY_PASSWORD_PASS:
+        if (param != NULL) {
+            uint16_t sig = *(uint16_t *)param;
+            if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
+                GuiLockScreenToHome();
+                return SUCCESS_CODE;
+            }
+        }
         GuiImportMultisigWalletInfoVerifyPasswordSuccess();
+        break;
+    case SIG_VERIFY_PASSWORD_FAIL:
+        if (param == NULL) {
+            return ERR_GUI_ERROR;
+        }
+        GuiImportMultisigPasswordErrorCount(param);
         break;
     default:
         return ERR_GUI_UNHANDLED;

@@ -926,6 +926,8 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,multisig_import_wallet_exist_desc,"The multisig wallet you selected already exists on the current device, please import another wallet.",,,,,,,
 ,scan_qr_code_error_invalid_wallet_file,"Invalid Wallet File",,,,,,,
 ,scan_qr_code_error_invalid_wallet_file_desc,"Please ensure that the file you chose is an multisig wallet file.",,,,,,,
+,multisig_import_xpub_error_title,"Invalid File",,,,,,,
+,multisig_import_xpub_error_desc,"The date of file not recognized. Please try again.",,,,,,,
 ,multisig_import_success_hint,"Invite co-signers to scan the QR code to import multisig wallet or scan this QR code with software wallet to finish connection",,,,,,,
 ,multisig_export_sdcard_not_detected,"MicroSD Card Not Detected",,,,,,,
 ,multisig_export_sdcard_not_detected_desc,"Please ensure that you have properly inserted the MicroSD Card.",,,,,,,

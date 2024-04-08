@@ -223,6 +223,6 @@ void CloseToTargetTileView(uint8_t currentIndex, uint8_t targetIndex);
 void CloseParentAndNextHandler(lv_event_t *e);
 void GuiViewHintBoxClear(void);
 lv_obj_t *GuiCreateWalletNoticeWidget(lv_obj_t *parent);
-void *GuiCreateErrorCodeHintbox(int32_t errCode, lv_obj_t **param);
+void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param);
 
 #endif /* _GUI_VIEWS_H */

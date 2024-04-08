@@ -192,7 +192,7 @@ void GuiFirmwareSdCardCopyResult(bool en)
     } else {
         printf("copy failed\n");
         GuiDeleteKeyboardWidget(g_keyboardWidget);
-        g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
+        g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
     }
 }
 
@@ -459,10 +459,10 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         GuiModelStopCalculateCheckSum();
         if (CHECK_BATTERY_LOW_POWER()) {
-            g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox);
+            g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox);
         } else if (!SdCardInsert()) {
             //firmware_update_sd_failed_access_title
-            g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeHintBox);
+            g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeHintBox);
         } else if (CheckOtaBinVersion(fileVersion)) {
 #ifndef BTC_ONLY
             printf("fileVersion=%s\n", fileVersion);
@@ -487,9 +487,9 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
 #endif
         } else {
             if (strnlen_s(fileVersion, 16) == 0) {
-                g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
+                g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox);
             } else {
-                g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_UPDATE_NO_UPGRADABLE_FIRMWARE, &g_noticeHintBox);
+                g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_UPDATE_NO_UPGRADABLE_FIRMWARE, &g_noticeHintBox);
             }
 
         }

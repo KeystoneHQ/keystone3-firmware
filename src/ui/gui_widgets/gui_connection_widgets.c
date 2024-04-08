@@ -123,7 +123,7 @@ void FormatMicroHandleResult(int32_t errCode)
 {
     if (errCode == ERR_UPDATE_SDCARD_NOT_DETECTED && g_noticeWindow != NULL) {
         GUI_DEL_OBJ(g_noticeWindow)
-        g_noticeWindow = GuiCreateErrorCodeHintbox(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);
         return;
     }
     GUI_DEL_OBJ(g_noticeWindow)
@@ -152,7 +152,7 @@ static void FormatMicroSDHandler(lv_event_t *e)
             lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
             GuiModelFormatMicroSd();
         } else {
-            g_noticeWindow = GuiCreateErrorCodeHintbox(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);
+            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);
         }
     }
 }

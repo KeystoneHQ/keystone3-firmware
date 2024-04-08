@@ -1,5 +1,6 @@
 #include "./lv_i18n.h"
 
+
 ////////////////////////////////////////////////////////////////////////////////
 // Define plural operands
 // http://unicode.org/reports/tr35/tr35-numbers.html#Operands
@@ -526,6 +527,8 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"multisig_import_success_hint", "Invite co-signers to scan the QR code to import multisig wallet or scan this QR code with software wallet to finish connection"},
     {"multisig_import_wallet_exist", "Wallet Already Exists"},
     {"multisig_import_wallet_exist_desc", "The multisig wallet you selected already exists on the current device, please import another wallet."},
+    {"multisig_import_xpub_error_desc", "The date of file not recognized. Please try again."},
+    {"multisig_import_xpub_error_title", "Invalid File"},
     {"multisig_signature_export_to_sdcard", "Export Transaction to MicroSD Card"},
     {"multisig_signature_export_to_sdcard_desc", "File Name:"},
     {"multisig_signature_export_to_sdcard_success", "Exported Successfully"},
@@ -933,6 +936,8 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"wipe_device", "Wipe Device"},
     {NULL, NULL} // End mark
 };
+
+
 
 static uint8_t en_plural_fn(int32_t num)
 {
@@ -1442,6 +1447,8 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"multisig_import_success_hint", ""},
     {"multisig_import_wallet_exist", ""},
     {"multisig_import_wallet_exist_desc", ""},
+    {"multisig_import_xpub_error_desc", ""},
+    {"multisig_import_xpub_error_title", ""},
     {"multisig_signature_export_to_sdcard", ""},
     {"multisig_signature_export_to_sdcard_desc", ""},
     {"multisig_signature_export_to_sdcard_success", ""},
@@ -1850,6 +1857,8 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {NULL, NULL} // End mark
 };
 
+
+
 static uint8_t ru_plural_fn(int32_t num)
 {
     uint32_t n = op_n(num);
@@ -1881,9 +1890,11 @@ const lv_i18n_language_pack_t lv_i18n_language_pack[] = {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+
 // Internal state
 static const lv_i18n_language_pack_t * current_lang_pack;
 static const lv_i18n_lang_t * current_lang;
+
 
 /**
  * Reset internal state. For testing.
@@ -1929,6 +1940,7 @@ int lv_i18n_set_locale(const char * l_name)
     return -1;
 }
 
+
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
@@ -1941,6 +1953,7 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
 
     return NULL;
 }
+
 
 /**
  * Get the translation from a message ID

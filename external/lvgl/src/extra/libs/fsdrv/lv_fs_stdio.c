@@ -111,7 +111,7 @@ static void * fs_open(lv_fs_drv_t * drv, const char * path, lv_fs_mode_t mode)
     if (mode == LV_FS_MODE_WR) flags = "wb";
     else if (mode == LV_FS_MODE_RD) flags = "rb";
     else if (mode == (LV_FS_MODE_WR | LV_FS_MODE_RD)) flags = "rb+";
-    else if (mode == (LV_FS_MODE_ALWAYS)) flags = "rb+";
+    else if (mode & (LV_FS_MODE_ALWAYS)) flags = "rb+";
 
     /*Make the path relative to the current directory (the projects root folder)*/
 
@@ -120,7 +120,7 @@ static void * fs_open(lv_fs_drv_t * drv, const char * path, lv_fs_mode_t mode)
     FILE *f = fopen(buf, flags);
     if (f == NULL) {
         printf("file not exist: %s\r\n", buf);
-        if(mode == LV_FS_MODE_ALWAYS) {
+        if(mode & LV_FS_MODE_ALWAYS) {
             fopen(buf, "wb");
             f = fopen(buf, flags);
         }

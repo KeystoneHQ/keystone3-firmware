@@ -60,6 +60,8 @@ typedef struct {
     lv_obj_t *noticeLabel;
     lv_obj_t *coSingersKb;
     lv_obj_t *singersKb;
+    lv_obj_t *formatBtn;
+    lv_obj_t *formatLabel;
 } SelectSliceWidget_t;
 
 typedef struct {
@@ -220,6 +222,10 @@ static void NumSelectSliceHandler(lv_event_t * e)
         char tempBuf[BUFFER_SIZE_16];
         snprintf_s(tempBuf, BUFFER_SIZE_16, "%d/%d", g_selectSliceTile.singers, g_selectSliceTile.coSingers);
         lv_label_set_text(g_selectSliceTile.stepLabel, tempBuf);
+        lv_obj_refr_size(g_selectSliceTile.singersKb);
+
+        lv_obj_align_to(g_selectSliceTile.formatLabel, g_selectSliceTile.singersKb, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
+        lv_obj_align_to(g_selectSliceTile.formatBtn, g_selectSliceTile.singersKb, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 78);
     }
 }
 
@@ -227,6 +233,8 @@ static void GuiMultiSelectSliceWidget(lv_obj_t *parent)
 {
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
+    GuiAddObjFlag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_height(parent, 542);
     lv_obj_t *label = GuiCreateNoticeLabel(parent, _("create_multi_wallet_co_signers"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
 
@@ -235,6 +243,7 @@ static void GuiMultiSelectSliceWidget(lv_obj_t *parent)
 
     label = GuiCreateNoticeLabel(parent, _("sdcard_format_confirm"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 576 - GUI_MAIN_AREA_OFFSET);
+    g_selectSliceTile.formatLabel = label;
 
     label = GuiCreateIllustrateLabel(parent, "Native Segwit");
     lv_obj_t *img = GuiCreateImg(parent, &imgArrowRight);
@@ -247,6 +256,7 @@ static void GuiMultiSelectSliceWidget(lv_obj_t *parent)
                                        SelectFormatHandler, NULL);
     lv_obj_set_style_radius(button, 12, LV_PART_MAIN);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 36, 474);
+    g_selectSliceTile.formatBtn = button;
 
     g_selectSliceTile.coSingers = MULTI_WALLET_DEFAULT_CO_SINGERS;
     g_selectSliceTile.singers = MULTI_WALLET_DEFAULT_SIGNERS;
@@ -262,16 +272,14 @@ static void GuiMultiSelectSliceWidget(lv_obj_t *parent)
     g_selectSliceTile.singersKb = btnm;
     GuiUpdateSsbKeyBoard(g_selectSliceTile.singersKb, g_selectSliceTile.coSingers);
 
-    label = GuiCreateTextLabel(g_createMultiTileView.stepCont, "3 of 5");
+    label = GuiCreateTextLabel(g_createMultiTileView.stepCont, "2 of 3");
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 24);
-    lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
     g_selectSliceTile.stepLabel = label;
 
     label = GuiCreateNoticeLabel(g_createMultiTileView.stepCont, _("create_multi_wallet_co_sign_policy"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 60);
     g_selectSliceTile.noticeLabel = label;
-    lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
 }
 
 static void GuiMultiSelectFormatWidget(lv_obj_t *parent)
@@ -481,9 +489,10 @@ int8_t GuiCreateMultiNextTile(uint8_t index)
         lv_label_set_text_fmt(g_selectSliceTile.stepLabel, "%d of %d", g_selectSliceTile.singers, g_selectSliceTile.coSingers);
         g_xpubCache = SRAM_MALLOC(sizeof(XpubWidgetCache_t) * g_selectSliceTile.coSingers);
         UpdateCurrentWalletInfo();
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, StopCreateViewHandler, NULL);
         break;
     case CREATE_MULTI_SELECT_FORMAT:
+        lv_obj_add_flag(g_selectSliceTile.stepLabel, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_selectSliceTile.noticeLabel, LV_OBJ_FLAG_HIDDEN);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         UpdateCurrentWalletInfo();
         lv_label_set_text(g_custodianTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
@@ -514,7 +523,6 @@ int8_t GuiCreateMultiNextTile(uint8_t index)
         lv_label_set_text(g_xPubTile.pathLabel, g_xpubCache[g_createMultiTileView.currentSinger].path);
         lv_label_set_text(g_xPubTile.mfpLabel, g_xpubCache[g_createMultiTileView.currentSinger].mfp);
         lv_label_set_text(g_xPubTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
-        printf("g_createMultiTileView.currentSinger = %d\n", g_createMultiTileView.currentSinger);
         break;
     case CREATE_MULTI_IMPORT_SDCARD_XPUB:
         UpdateStepItemAndImportStatus(-1);
@@ -523,6 +531,9 @@ int8_t GuiCreateMultiNextTile(uint8_t index)
         break;
     }
     g_createMultiTileView.currentTile++;
+    if (g_createMultiTileView.currentTile == CREATE_MULTI_CONFIRM_CO_SIGNERS && g_createMultiTileView.currentSinger == 0) {
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, StopCreateViewHandler, NULL);
+    }
     lv_obj_set_tile_id(g_createMultiTileView.tileView, g_createMultiTileView.currentTile, 0, LV_ANIM_OFF);
     return SUCCESS_CODE;
 }
@@ -536,7 +547,11 @@ int8_t GuiCreateMultiPrevTile(void)
         lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
         break;
     case CREATE_MULTI_SELECT_FORMAT:
+        lv_obj_clear_flag(g_selectSliceTile.stepLabel, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_selectSliceTile.noticeLabel, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
+        lv_btnmatrix_set_selected_btn(g_selectSliceTile.coSingersKb, g_selectSliceTile.coSingers - 2);
+        lv_btnmatrix_set_selected_btn(g_selectSliceTile.singersKb, g_selectSliceTile.singers - 2);
         break;
     case CREATE_MULTI_CONFIRM_CO_SIGNERS:
         if (g_createMultiTileView.currentSinger == 0) {
@@ -629,7 +644,6 @@ static void SelectCheckBoxHandler(lv_event_t* e)
             if (newCheckBox == g_formatCheckBox[i]) {
                 lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
                 g_chainType = XPUB_TYPE_BTC_MULTI_SIG_P2WSH - i;
-                printf("g_chaintype = %d\n", g_chainType);
             } else {
                 lv_obj_clear_state(g_formatCheckBox[i], LV_STATE_CHECKED);
             }

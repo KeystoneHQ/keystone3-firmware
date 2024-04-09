@@ -2,6 +2,7 @@ use alloc::fmt::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::str::FromStr;
+use keystore::algorithms::secp256k1::get_extended_public_key_by_seed;
 use third_party::bitcoin::bip32::Xpub;
 use third_party::cryptoxide::hashing::sha256;
 use third_party::hex;
@@ -399,6 +400,43 @@ fn calculate_wallet_verify_code(wallet: &mut MultiSigWalletConfig) -> Result<(),
         wallet.get_wallet_path()?,
     );
     wallet.verify_code = hex::encode(sha256(data.as_bytes()))[0..8].to_string();
+    Ok(())
+}
+
+pub fn strict_verify_wallet_config(
+    seed: &[u8],
+    wallet: &MultiSigWalletConfig,
+    xfp: &str,
+    network: &Network,
+) -> Result<(), BitcoinError> {
+    verify_wallet_config(wallet, xfp, network)?;
+    let same_derivation = wallet.derivations.len() > 1;
+    for (index, xpub_item) in wallet.xpub_items.iter().enumerate() {
+        if xpub_item.xfp.eq_ignore_ascii_case(xfp) {
+            let true_index = match same_derivation {
+                true => 0,
+                false => index,
+            };
+            let true_derivation =
+                wallet
+                    .derivations
+                    .get(true_index)
+                    .ok_or(BitcoinError::MultiSigWalletParseError(format!(
+                        "Invalid derivations"
+                    )))?;
+            let true_xpub = get_extended_public_key_by_seed(seed, true_derivation)
+                .map_err(|e| {
+                    BitcoinError::MultiSigWalletParseError(format!("Unable to generate xpub"))
+                })?
+                .to_string();
+            if !true_xpub.eq_ignore_ascii_case(&xpub_item.xpub) {
+                return Err(BitcoinError::MultiSigWalletParseError(format!(
+                    "extended public key not match, xfp: {}",
+                    xfp
+                )));
+            }
+        }
+    }
     Ok(())
 }
 

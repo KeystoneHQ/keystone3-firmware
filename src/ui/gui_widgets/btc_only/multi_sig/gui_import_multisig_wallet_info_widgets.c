@@ -115,6 +115,19 @@ void GuiImportMultisigWalletInfoWidgetsRestart()
 
 void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
 {
+    uint8_t seed[64] = {0};
+    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    Response_MultiSigWallet *response = parse_and_verify_multisig_config(seed, len, g_wallet->config_text, mfp, 4, MainNet);
+    if (response->error_code != 0) {
+        //TODO: throw error;
+        printf("errorMessage: %s\r\n", response->error_message);
+        GuiCLoseCurrentWorkingView();
+        free_MultiSigWallet(response->data);
+        return;
+    }
     MultiSigWalletItem_t *wallet = AddMultisigWalletToCurrentAccount(g_wallet, SecretCacheGetPassword());
     if (wallet == NULL) {
         printf("multi sigwallet not found\n");

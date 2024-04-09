@@ -456,7 +456,8 @@ char *FatfsFileRead(const TCHAR* path)
         return NULL;
     }
     fileSize = f_size(&fp);
-    fileBuf = EXT_MALLOC(fileSize);
+    fileBuf = EXT_MALLOC(fileSize+1);
+    fileBuf[fileSize] = "\0";
     printf("%s size = %d\n", path, fileSize);
     res = f_read(&fp, (void*)fileBuf, fileSize, &readBytes);
     if (res) {

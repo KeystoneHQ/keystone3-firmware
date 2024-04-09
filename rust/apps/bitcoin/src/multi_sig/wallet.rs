@@ -417,13 +417,9 @@ pub fn strict_verify_wallet_config(
                 true => 0,
                 false => index,
             };
-            let true_derivation =
-                wallet
-                    .derivations
-                    .get(true_index)
-                    .ok_or(BitcoinError::MultiSigWalletParseError(format!(
-                        "Invalid derivations"
-                    )))?;
+            let true_derivation = wallet.derivations.get(true_index).ok_or(
+                BitcoinError::MultiSigWalletParseError(format!("Invalid derivations")),
+            )?;
             let true_xpub = get_extended_public_key_by_seed(seed, true_derivation)
                 .map_err(|e| {
                     BitcoinError::MultiSigWalletParseError(format!("Unable to generate xpub"))

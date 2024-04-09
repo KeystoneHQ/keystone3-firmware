@@ -7,7 +7,8 @@ use alloc::{format, slice, vec};
 use app_bitcoin::errors::BitcoinError;
 use app_bitcoin::multi_sig::address::create_multi_sig_address_for_wallet;
 use app_bitcoin::multi_sig::wallet::{
-    self, export_wallet_by_ur, generate_config_data, parse_wallet_config, MultiSigWalletConfig, strict_verify_wallet_config
+    self, export_wallet_by_ur, generate_config_data, parse_wallet_config,
+    strict_verify_wallet_config, MultiSigWalletConfig,
 };
 use app_bitcoin::multi_sig::{export_xpub_by_crypto_account, Network};
 use core::str::FromStr;
@@ -368,15 +369,15 @@ pub extern "C" fn parse_and_verify_multisig_config(
     let network: Network = network.into();
     match parse_wallet_config(&content, &master_fingerprint.to_string(), network.clone()) {
         Ok(mut config) => {
-            match strict_verify_wallet_config(seed, &mut config, &master_fingerprint.to_string(), &network){
-                Ok(()) => {
-                    Response::success(MultiSigWallet::from(config)).c_ptr()
-                }
-                Err(e) => {
-                    Response::from(e).c_ptr()
-                }
+            match strict_verify_wallet_config(
+                seed,
+                &mut config,
+                &master_fingerprint.to_string(),
+                &network,
+            ) {
+                Ok(()) => Response::success(MultiSigWallet::from(config)).c_ptr(),
+                Err(e) => Response::from(e).c_ptr(),
             }
-            
         }
         Err(e) => Response::from(e).c_ptr(),
     }

@@ -86,7 +86,6 @@ void GuiImportMultisigWalletInfoWidgetsInit(void)
         } else {
             GuiShowInvalidWalletFile();
         }
-        GuiCLoseCurrentWorkingView();
         return;
     }
     GuiContent(g_pageWidget->contentZone);

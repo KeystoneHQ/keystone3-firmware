@@ -33,6 +33,12 @@ int32_t GuiManageMultiViewEventProcess(void *self, uint16_t usEvent, void *param
         }
         DeleteMultisigWallet();
         break;
+    case SIG_VERIFY_PASSWORD_FAIL:
+        if (param == NULL) {
+            return ERR_GUI_ERROR;
+        }
+        GuiManageMultisigPasswordErrorCount(param);
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

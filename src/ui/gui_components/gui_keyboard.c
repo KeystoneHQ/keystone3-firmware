@@ -122,6 +122,12 @@ static const char *g_selectSliceBtnmMap[] = {
     "12", "13", "14", "15", "16", "\0",
 };
 
+static const char *g_selectMultisigBtnmMap[] = {
+    "2", "3", "4", "5", "6", "\n",
+    "7", "8", "9", "10", "11", "\n",
+    "12", "13", "14", "15", "\0",
+};
+
 static const char *g_selectSlice2BtnmMap[] = {"2", "\0"};
 static const char *g_selectSlice3BtnmMap[] = {"2", "3", "\0"};
 static const char *g_selectSlice4BtnmMap[] = {"2", "3", "4", "\0"};
@@ -487,6 +493,14 @@ void *GuiCreateNumKeyboard(lv_obj_t *parent, lv_event_cb_t cb, NUM_KEYBOARD_ENUM
 
         lv_obj_add_style(btnm, &g_numShareStyle, LV_PART_ITEMS);
         lv_btnmatrix_set_map(btnm, (const char **)g_selectSliceBtnmMap);
+        lv_obj_set_style_bg_color(btnm, BLACK_COLOR, LV_PART_MAIN);
+        break;
+    case NUM_KEYBOARD_MULTISIG:
+        kbHeight = 204;
+        kbWidth = 408;
+
+        lv_obj_add_style(btnm, &g_numShareStyle, LV_PART_ITEMS);
+        lv_btnmatrix_set_map(btnm, (const char **)g_selectMultisigBtnmMap);
         lv_obj_set_style_bg_color(btnm, BLACK_COLOR, LV_PART_MAIN);
         break;
     case NUM_KEYBOARD_NORMAL:

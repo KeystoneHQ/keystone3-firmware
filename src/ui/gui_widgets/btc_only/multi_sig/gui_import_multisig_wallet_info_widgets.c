@@ -106,6 +106,11 @@ void GuiImportMultisigWalletInfoWidgetsDeInit()
         g_wallet = NULL;
     }
 
+    if (g_keyboardWidget != NULL) {
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+        g_keyboardWidget == NULL;
+    }
+
     ClearSecretCache();
 }
 

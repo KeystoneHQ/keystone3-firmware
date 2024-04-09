@@ -4,6 +4,7 @@
 
 int32_t GuiCreateMultiViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
+    uint32_t rcvValue;
     GUI_ASSERT(g_createMultisigWalletView.isActive);
 
     switch (usEvent) {
@@ -22,6 +23,9 @@ int32_t GuiCreateMultiViewEventProcess(void *self, uint16_t usEvent, void *param
     case SIG_SETUP_VIEW_TILE_NEXT:
         GuiCreateMultiNextTile(0xFF);
         break;
+    case SIG_INIT_SDCARD_CHANGE:
+        ListMicroCardXpubFile();
+        return ERR_GUI_UNHANDLED;
     default:
         return ERR_GUI_UNHANDLED;
     }

@@ -7,7 +7,8 @@ use alloc::{format, slice, vec};
 use app_bitcoin::errors::BitcoinError;
 use app_bitcoin::multi_sig::address::create_multi_sig_address_for_wallet;
 use app_bitcoin::multi_sig::wallet::{
-    self, export_wallet_by_ur, generate_config_data, parse_wallet_config, MultiSigWalletConfig,
+    self, export_wallet_by_ur, generate_config_data, parse_wallet_config,
+    strict_verify_wallet_config, MultiSigWalletConfig,
 };
 use app_bitcoin::multi_sig::{export_xpub_by_crypto_account, Network};
 use core::str::FromStr;
@@ -338,4 +339,46 @@ pub extern "C" fn generate_psbt_file_name(
 
     //     }
     // }
+}
+
+#[no_mangle]
+pub extern "C" fn parse_and_verify_multisig_config(
+    seed: PtrBytes,
+    seed_len: u32,
+    wallet_config: PtrString,
+    master_fingerprint: PtrBytes,
+    master_fingerprint_len: u32,
+    network: NetworkType,
+) -> Ptr<Response<MultiSigWallet>> {
+    if master_fingerprint_len != 4 {
+        return Response::from(RustCError::InvalidMasterFingerprint).c_ptr();
+    }
+    let seed = unsafe { core::slice::from_raw_parts(seed, seed_len as usize) };
+    let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
+    let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+        hex::encode(master_fingerprint.to_vec()).as_str(),
+    )
+    .map_err(|_e| RustCError::InvalidMasterFingerprint)
+    {
+        Ok(mfp) => mfp,
+        Err(e) => {
+            return Response::from(e).c_ptr();
+        }
+    };
+    let content = recover_c_char(wallet_config);
+    let network: Network = network.into();
+    match parse_wallet_config(&content, &master_fingerprint.to_string(), network.clone()) {
+        Ok(mut config) => {
+            match strict_verify_wallet_config(
+                seed,
+                &mut config,
+                &master_fingerprint.to_string(),
+                &network,
+            ) {
+                Ok(()) => Response::success(MultiSigWallet::from(config)).c_ptr(),
+                Err(e) => Response::from(e).c_ptr(),
+            }
+        }
+        Err(e) => Response::from(e).c_ptr(),
+    }
 }

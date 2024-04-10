@@ -116,6 +116,7 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent);
 static void OpenFileNextTileHandler(lv_event_t *e);
 static void SelectFormatHandler(lv_event_t *e);
 static void UpdateCustodianTileLabel(void);
+static void ImportXpubToTile(void);
 
 static const AddressSettingsItem_t g_mainNetAddressSettings[] = {
     {"Native SegWit", "P2WSH", "m/48'/0'/0'/2'", XPUB_TYPE_BTC_MULTI_SIG_P2WSH},
@@ -131,6 +132,19 @@ static const AddressSettingsItem_t g_testNetAddressSettings[] = {
 
 static uint32_t g_addressSettingsNum = sizeof(g_mainNetAddressSettings) / sizeof(g_mainNetAddressSettings[0]);
 static const AddressSettingsItem_t *g_addressSettings = g_mainNetAddressSettings;
+
+void GuiSetMultisigImportXpubByQRCode(URParseResult *urResult)
+{
+    Ptr_Response_MultiSigXPubInfoItem item;
+    item = export_xpub_info_by_ur(urResult->data, P2wsh, urResult->t);
+    if (item->error_code == 0) {
+        ImportXpubToTile();
+        GUI_DEL_OBJ(g_noticeWindow)
+        free_MultiSigXPubInfoItem(item->data);
+    } else {
+        printf("error message = %s\n", item->error_message);
+    }
+}
 
 static void CloseParentAndSetItemHandler(lv_event_t *e)
 {
@@ -171,6 +185,27 @@ static void ImportXpubHandler(lv_event_t *e)
     }
 }
 
+static void ImportXpubToTile(void)
+{
+    lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
+    if (strnlen_s(g_xpubCache[g_createMultiTileView.currentSinger].path, sizeof(g_xpubCache[g_createMultiTileView.currentSinger].path)) == 0) {
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_KEYSTORE_IMPORT_XPUB_INVALID, &g_noticeWindow);
+        return;
+    }
+    for (int i = 0; i < g_createMultiTileView.currentSinger; i++) {
+        if (0 == strcmp(g_xpubCache[i].xpub, g_xpubCache[g_createMultiTileView.currentSinger].xpub)) {
+            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_KEYSTORE_IMPORT_XPUB_DUPLICATE, &g_noticeWindow);
+            return;
+        }
+    }
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("create_multi_wallet_import_xpub_title"));
+    lv_label_set_text(g_xPubTile.pathLabel, g_xpubCache[g_createMultiTileView.currentSinger].path);
+    lv_label_set_text(g_xPubTile.mfpLabel, g_xpubCache[g_createMultiTileView.currentSinger].mfp);
+    lv_label_set_text(g_xPubTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
+    g_createMultiTileView.currentTile = CREATE_MULTI_IMPORT_SDCARD_XPUB;
+    lv_obj_set_tile_id(g_createMultiTileView.tileView, g_createMultiTileView.currentTile, 0, LV_ANIM_OFF);
+}
+
 static void OpenFileNextTileHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -178,23 +213,7 @@ static void OpenFileNextTileHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         GetMultiInfoFromFile(path, &g_xpubCache[g_createMultiTileView.currentSinger], g_chainType);
-        lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
-        if (strnlen_s(g_xpubCache[g_createMultiTileView.currentSinger].path, sizeof(g_xpubCache[g_createMultiTileView.currentSinger].path)) == 0) {
-            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_KEYSTORE_IMPORT_XPUB_INVALID, &g_noticeWindow);
-            return;
-        }
-        for (int i = 0; i < g_createMultiTileView.currentSinger; i++) {
-            if (0 == strcmp(g_xpubCache[i].xpub, g_xpubCache[g_createMultiTileView.currentSinger].xpub)) {
-                g_noticeWindow = GuiCreateErrorCodeWindow(ERR_KEYSTORE_IMPORT_XPUB_DUPLICATE, &g_noticeWindow);
-                return;
-            }
-        }
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("create_multi_wallet_import_xpub_title"));
-        lv_label_set_text(g_xPubTile.pathLabel, g_xpubCache[g_createMultiTileView.currentSinger].path);
-        lv_label_set_text(g_xPubTile.mfpLabel, g_xpubCache[g_createMultiTileView.currentSinger].mfp);
-        lv_label_set_text(g_xPubTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
-        g_createMultiTileView.currentTile = CREATE_MULTI_IMPORT_SDCARD_XPUB;
-        lv_obj_set_tile_id(g_createMultiTileView.tileView, g_createMultiTileView.currentTile, 0, LV_ANIM_OFF);
+        ImportXpubToTile();
     }
 }
 
@@ -247,7 +266,7 @@ static void ImportMultiXpubHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     MoreInfoTable_t moreInfoTable[] = {
-        {.name = _("create_multi_wallet_import_xpub_qr"), .src = &imgScanImport, .callBack = UnHandler, NULL},
+        {.name = _("create_multi_wallet_import_xpub_qr"), .src = &imgScanImport, .callBack = OpenViewHandler, &g_scanView},
         {.name = _("create_multi_wallet_import_xpub_sdcard"), .src = &imgSdcardImport, .callBack = CloseParentAndSetItemHandler, &g_noticeWindow},
     };
 

@@ -115,6 +115,17 @@ pub struct MultiSigXPubInfo {
     pub xpub: String,
 }
 
+pub fn extract_xpub_info_from_ur_bytes(
+    bytes: Bytes,
+    format: &MultiSigFormat,
+) -> Result<MultiSigXPubInfo, BitcoinError> {
+    let data = String::from_utf8(bytes.get_bytes())
+        .map_err(|e| BitcoinError::MultiSigWalletImportXpubError(e.to_string()))?;
+
+    extract_xpub_info_from_str(&data, format)
+}
+
+
 pub fn extract_xpub_info_from_bytes(
     bytes: Bytes,
     format: &MultiSigFormat,
@@ -289,9 +300,13 @@ fn crypto_output_to_multi_sig_xpub_info(
         BitcoinError::MultiSigWalletImportXpubError("get source fingerprint error".to_string())
     })?;
 
-    let use_info = hdkey.get_use_info().ok_or_else(|| {
-        BitcoinError::MultiSigWalletImportXpubError("get use info error".to_string())
-    })?;
+    let net_work = match hdkey.get_use_info() {
+        Some(use_info) => {
+            use_info.get_network()
+        },
+        None => NetworkInner::MainNet,
+    };
+
     let parent_fingerprint = hdkey.get_parent_fingerprint().ok_or_else(|| {
         BitcoinError::MultiSigWalletImportXpubError("get parent fingerprint error".to_string())
     })?;
@@ -321,7 +336,7 @@ fn crypto_output_to_multi_sig_xpub_info(
     let xpub = Xpub::decode(&ret)
         .map_err(|e| BitcoinError::MultiSigWalletImportXpubError(e.to_string()))?
         .to_string();
-    let xpub = convert_xpub(&path, &xpub, &Network::from(&use_info.get_network()))?;
+    let xpub = convert_xpub(&path, &xpub, &Network::from(&net_work))?;
 
     Ok(MultiSigXPubInfo {
         path,

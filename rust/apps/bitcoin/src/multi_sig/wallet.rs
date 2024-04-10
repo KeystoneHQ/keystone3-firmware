@@ -87,6 +87,64 @@ impl MultiSigWalletConfig {
     }
 }
 
+#[derive(Debug)]
+pub struct BsmsWallet {
+    pub bsms_version: String,
+    pub encryption: String,
+    pub xfp: String,
+    pub derivation_path: String,
+    pub extended_pubkey: String,
+}
+
+
+impl Default for BsmsWallet {
+    fn default() -> Self {
+        BsmsWallet {
+            bsms_version: String::new(),
+            encryption: String::new(),
+            xfp: String::new(),
+            derivation_path: String::new(),
+            extended_pubkey: String::new(),
+        }
+    }
+}
+
+fn _parse_plain_xpub_config(content: &str) -> Result<BsmsWallet, BitcoinError> {
+    let mut lines = content.lines();
+    let mut bsmsWallet = BsmsWallet::default();
+
+    for line in content.lines() {
+        if line.trim().starts_with("BSMS") {
+            if line.contains("BSMS 1.0") {
+                bsmsWallet.bsms_version = String::from("BSMS 1.0");
+            }
+        }
+
+        if line.starts_with("[") {
+            let end_bracket_pos = line.find(']').unwrap();
+            let xfp = &line[1..=8].trim();
+            let derivation_path = &line[9..=end_bracket_pos - 1].trim();
+            let extended_pubkey = &line[end_bracket_pos + 1..].trim();
+            bsmsWallet.xfp = xfp.to_string();
+            bsmsWallet.derivation_path = format!("m{}", derivation_path);
+            bsmsWallet.extended_pubkey = extended_pubkey.to_string();
+            return Ok(bsmsWallet);
+        }
+    }
+    Err(BitcoinError::MultiSigWalletImportXpubError(String::from("not a valid xpub config")))
+}
+
+
+pub fn parse_bsms_wallet_config(
+    bytes: Bytes
+) -> Result<BsmsWallet, BitcoinError> {
+    let content = String::from_utf8(bytes.get_bytes())
+        .map_err(|e| BitcoinError::MultiSigWalletImportXpubError(e.to_string()))?;
+    let mut wallet = _parse_plain_xpub_config(&content)?;
+    // calculate_wallet_verify_code(&mut wallet)?;
+    Ok(wallet)
+}
+
 pub fn create_wallet(
     creator: &str,
     name: &str,
@@ -256,6 +314,17 @@ pub fn import_wallet_by_ur(bytes: &Bytes, xfp: &str) -> Result<MultiSigWalletCon
         .map_err(|e| BitcoinError::MultiSigWalletImportXpubError(e.to_string()))?;
 
     parse_wallet_config(&data, xfp)
+}
+
+pub fn is_valid_xpub_config(bytes: &Bytes) -> bool {
+    if let Ok(d) = String::from_utf8(bytes.get_bytes())
+        .map_err(|e| BitcoinError::MultiSigWalletImportXpubError(e.to_string()))
+    {
+        if let Ok(_) = _parse_plain_xpub_config(&d) {
+            return true;
+        }
+    }
+    false
 }
 
 pub fn is_valid_wallet_config(bytes: &Bytes) -> bool {

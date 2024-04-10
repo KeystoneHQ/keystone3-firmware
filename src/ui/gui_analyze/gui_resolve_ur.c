@@ -10,6 +10,7 @@
 
 #ifndef BTC_ONLY
 #include "gui_key_derivation_request_widgets.h"
+void GuiSetMultisigImportXpubByQRCode(URParseResult *urResult);
 #else
 #include "gui_import_multisig_wallet_info_widgets.h"
 #endif
@@ -56,6 +57,10 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
 #else
     case MultisigWalletImport:
         GuiSetMultisigImportWalletDataByQRCode(urResult, urMultiResult, is_multi);
+        break;
+    case MultisigCryptoImportXpub:
+    case MultisigBytesImportXpub:
+        GuiSetMultisigImportXpubByQRCode(urResult);
         break;
 #endif
     default:

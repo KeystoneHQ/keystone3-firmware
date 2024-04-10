@@ -19,6 +19,7 @@ use third_party::ur_registry::error::URError;
 use third_party::ur_registry::ethereum::eth_sign_request;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::ethereum::eth_sign_request::EthSignRequest;
+use third_party::ur_registry::crypto_account::CryptoAccount;
 use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::extend::qr_hardware_call::{CallType, QRHardwareCall};
@@ -50,6 +51,12 @@ impl InferViewType for CryptoMultiAccounts {
     // ToDo
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::ViewTypeUnKnown)
+    }
+}
+
+impl InferViewType for CryptoAccount {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::MultisigCryptoImportXpub)
     }
 }
 
@@ -164,6 +171,9 @@ impl InferViewType for Bytes {
             Err(_e) => get_view_type_from_keystone(self.get_bytes()),
             #[cfg(feature = "btc-only")]
             Err(_e) => {
+                if app_bitcoin::multi_sig::wallet::is_valid_xpub_config(&self) {
+                    return Ok(ViewType::MultisigBytesImportXpub);
+                }
                 if app_bitcoin::multi_sig::wallet::is_valid_wallet_config(&self) {
                     return Ok(ViewType::MultisigWalletImport);
                 }

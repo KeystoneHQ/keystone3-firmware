@@ -293,6 +293,14 @@ fn process_xpub_and_xfp(
 ) -> Result<(), BitcoinError> {
     if is_valid_xfp(label) {
         if is_valid_xyzpub(value) {
+            let mut exist = false;
+            for (index, xpub_item) in wallet.xpub_items.iter().enumerate() {
+                let result1 = xyzpub::convert_version(xpub_item.xpub.clone(), &Version::Xpub)?;
+                let result2 = xyzpub::convert_version(value, &Version::Xpub)?;
+                if result1.eq_ignore_ascii_case(&result2) {
+                    return Err(BitcoinError::MultiSigWalletParseError(format!("found duplicated xpub")));
+                }
+            }
             wallet.xpub_items.push(MultiSigXPubItem {
                 network: detect_network(value),
                 xfp: label.to_string(),
@@ -352,6 +360,12 @@ fn verify_wallet_config(
     if wallet.xpub_items.is_empty() {
         return Err(BitcoinError::MultiSigWalletParseError(
             "have no xpub in config file".to_string(),
+        ));
+    }
+
+    if wallet.total != wallet.xpub_items.len() as u32 {
+        return Err(BitcoinError::MultiSigWalletParseError(
+            format!("multisig wallet requires {} cosigners, but found {}", wallet.total, wallet.xpub_items.len())
         ));
     }
 

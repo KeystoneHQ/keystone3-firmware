@@ -12,6 +12,11 @@
 #include "gui_setup_widgets.h"
 #include "account_manager.h"
 
+#define MAX_FILE_CONTENT_LEN 1000000
+
+char* g_fileContent = NULL;
+
+
 void FatfsError(FRESULT errNum);
 
 typedef struct FatfsMountParam {
@@ -447,7 +452,6 @@ void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32
 char *FatfsFileRead(const TCHAR* path)
 {
     FIL fp;
-    char *fileBuf;
     uint16_t fileSize = 0;
     uint32_t readBytes = 0;
     FRESULT res = f_open(&fp, path, FA_OPEN_EXISTING | FA_READ);
@@ -455,21 +459,22 @@ char *FatfsFileRead(const TCHAR* path)
         FatfsError(res);
         return NULL;
     }
+    if(g_fileContent) EXT_FREE(g_fileContent);
     fileSize = f_size(&fp);
-    fileBuf = EXT_MALLOC(fileSize+1);
-    fileBuf[fileSize] = "\0";
+    g_fileContent = EXT_MALLOC(MAX_FILE_CONTENT_LEN);
+    memset_s(g_fileContent, MAX_FILE_CONTENT_LEN, 0, MAX_FILE_CONTENT_LEN);
     printf("%s size = %d\n", path, fileSize);
-    res = f_read(&fp, (void*)fileBuf, fileSize, &readBytes);
+    res = f_read(&fp, (void*)g_fileContent, fileSize, &readBytes);
     if (res) {
         FatfsError(res);
         f_close(&fp);
-        EXT_FREE(fileBuf);
+        EXT_FREE(g_fileContent);
         return NULL;
     }
 
     printf("\n");
     f_close(&fp);
-    return fileBuf;
+    return g_fileContent;
 }
 
 uint8_t *FatfsFileReadBytes(const TCHAR* path, uint32_t* readBytes)

@@ -1,3 +1,4 @@
+#include "define.h"
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_status_bar.h"
@@ -22,6 +23,7 @@
 #include "account_public_info.h"
 #include "gui_import_multisig_wallet_info_widgets.h"
 #include "gui_create_multisig_wallet_widgets.h"
+#include <stdlib.h>
 #include <string.h>
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
@@ -30,8 +32,9 @@
 #include "user_fatfs.h"
 #include "safe_str_lib.h"
 #endif
-#define MULTI_WALLET_DEFAULT_CO_SINGERS             (3)
-#define MULTI_WALLET_DEFAULT_SIGNERS                (2)
+#define MULTI_WALLET_DEFAULT_CO_SINGERS                     (3)
+#define MULTI_WALLET_DEFAULT_SIGNERS                        (2)
+#define FATFS_MAX_FILE_NUMBER                               (50)
 
 typedef enum {
     CREATE_MULTI_SET_NAME = 0,
@@ -103,7 +106,7 @@ static lv_obj_t *g_noticeWindow = NULL;
 static PageWidget_t *g_pageWidget;
 static ChainType g_chainType = XPUB_TYPE_BTC_MULTI_SIG_P2WSH;
 static void GetAndCreateMultiWallet(void);
-static char g_fileList[10][64] = {0};
+static char *g_fileList[FATFS_MAX_FILE_NUMBER];
 
 void GetMultiInfoFromFile(const char *path, XpubWidgetCache_t *xpub, ChainType chainType);
 void ListMicroCardXpubFile(void);
@@ -467,6 +470,9 @@ static void GuiCreateMultiStepCont(void)
 
 void GuiCreateMultiInit(void)
 {
+    for (int i = 0; i < FATFS_MAX_FILE_NUMBER; i++) {
+        g_fileList[i] = EXT_MALLOC(BUFFER_SIZE_32);
+    }
     g_pageWidget = CreatePageWidget();
     lv_obj_t *tileView = GuiCreateTileView(g_pageWidget->contentZone);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, CREATE_MULTI_SET_NAME, 0, LV_DIR_HOR);
@@ -619,6 +625,13 @@ void GuiCreateMultiDeInit(void)
     if (g_xpubCache != NULL) {
         SRAM_FREE(g_xpubCache);
         g_xpubCache = NULL;
+    }
+
+    for (int i = 0; i < FATFS_MAX_FILE_NUMBER; i++) {
+        if (g_fileList[i] != NULL) {
+            EXT_FREE(g_fileList[i]);
+            g_fileList[i] = NULL;
+        }
     }
 
     GUI_DEL_OBJ(g_createMultiTileView.stepCont)
@@ -802,30 +815,18 @@ static void GetAndCreateMultiWallet(void)
 void ListMicroCardXpubFile(void)
 {
     lv_obj_clean(g_createMultiTileView.listTile);
-    for (int i = 0; i < 10; i++) {
-        memset_s(g_fileList[i], sizeof(g_fileList[0]), 0, sizeof(g_fileList[0]));
-    }
-    char *buffer = EXT_MALLOC(1024 * 5);
     uint32_t number = 0;
-    int i = 0;
 #ifdef COMPILE_SIMULATOR
-    FatfsGetFileName("C:/assets/sd", buffer, &number, 1024 * 5, "json");
+    FatfsGetFileName("C:/assets/sd", g_fileList, BUFFER_SIZE_32, &number, "json");
 #else
-    FatfsGetFileName("0:", buffer, &number, 1024 * 5, "json");
+    FatfsGetFileName("0:", g_fileList, BUFFER_SIZE_32, &number, "json");
+#endif
     if (number == 0) {
         return;
     }
-#endif
-    char *token = strtok(buffer, " ");
-    while (token != NULL) {
-        strncpy(g_fileList[i], token, sizeof(g_fileList[i]));
-        token = strtok(NULL, " ");
+
+    for (int i = 0; i < number; i++) {
         lv_obj_t *btn = GuiCreateSelectButton(g_createMultiTileView.listTile, g_fileList[i], &imgArrowRight, OpenFileNextTileHandler, g_fileList[i], false);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 84 * i);
-        i++;
-        if (i == 10) {
-            break;
-        }
     }
-    EXT_FREE(buffer);
 }

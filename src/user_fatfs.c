@@ -405,13 +405,12 @@ void FatfsDirectoryListing(char *ptr)
     f_closedir(&Dir);
 }
 
-void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32_t maxLen, const char *contain)
+void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint32_t *number, const char *contain)
 {
     FRESULT res;
     DIR dir;
     FILINFO fno;
     uint32_t count = 0;
-    char *listPtr = nameList;
 
     res = f_opendir(&dir, path);
     if (res != FR_OK) {
@@ -429,17 +428,7 @@ void FatfsGetFileName(const char *path, char *nameList, uint32_t *number, uint32
             if (!strstr(fno.fname, contain)) {
                 continue;
             }
-            uint32_t nameLen = strlen(fno.fname);
-            uint32_t spaceNeeded = (listPtr == nameList) ? nameLen : nameLen + 1;
-            if (listPtr + spaceNeeded - nameList >= maxLen) {
-                break;
-            }
-
-            if (listPtr != nameList) {
-                *listPtr++ = ' ';
-            }
-            strcpy(listPtr, fno.fname);
-            listPtr += nameLen;
+            strcpy_s(fileName[count], maxLen, fno.fname);
             count++;
         }
     }

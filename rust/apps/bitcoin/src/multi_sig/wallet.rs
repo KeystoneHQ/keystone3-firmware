@@ -14,8 +14,8 @@ use crate::addresses::xyzpub::Version;
 use crate::BitcoinError;
 
 use crate::multi_sig::{
-    convert_xpub, MultiSigXPubInfo, Network, MULTI_P2SH_PATH, MULTI_P2WSH_P2SH_PATH,
-    MULTI_P2WSH_P2SH_PATH_TEST, MULTI_P2WSH_PATH, MULTI_P2WSH_PATH_TEST,
+    convert_xpub, MultiSigFormat, MultiSigXPubInfo, Network, MULTI_P2SH_PATH,
+    MULTI_P2WSH_P2SH_PATH, MULTI_P2WSH_P2SH_PATH_TEST, MULTI_P2WSH_PATH, MULTI_P2WSH_PATH_TEST,
 };
 
 const CHANGE_XPUB_PREFIX_BY_PATH: bool = true;
@@ -383,24 +383,48 @@ fn verify_wallet_config(
 }
 
 fn calculate_wallet_verify_code(wallet: &mut MultiSigWalletConfig) -> Result<(), BitcoinError> {
-    let join_xpubs = wallet
+    let xpubs = wallet
         .xpub_items
         .iter()
-        .map(|x| xyzpub::convert_version(&x.xpub, &Version::Xpub))
+        .map(|x| x.xpub.to_string())
+        .collect::<Vec<_>>();
+
+    wallet.verify_code = calculate_multi_sig_verify_code(
+        &xpubs,
+        wallet.threshold as u8,
+        wallet.total as u8,
+        MultiSigFormat::from(&wallet.format)?,
+        wallet.get_network(),
+    )?;
+    Ok(())
+}
+
+pub fn calculate_multi_sig_verify_code(
+    xpubs: &Vec<String>,
+    threshold: u8,
+    total: u8,
+    format: MultiSigFormat,
+    network: &Network,
+) -> Result<String, BitcoinError> {
+    let join_xpubs = xpubs
+        .iter()
+        .map(|x| xyzpub::convert_version(x, &Version::Xpub))
         .collect::<Result<Vec<_>, _>>()?
         .iter()
         .sorted()
         .join(" ");
 
-    let data = format!(
-        "{}{}of{}{}",
-        join_xpubs,
-        wallet.threshold,
-        wallet.xpub_items.len(),
-        wallet.get_wallet_path()?,
-    );
-    wallet.verify_code = hex::encode(sha256(data.as_bytes()))[0..8].to_string();
-    Ok(())
+    let path = match (format, network) {
+        (MultiSigFormat::P2sh, _) => MULTI_P2SH_PATH,
+        (MultiSigFormat::P2wshP2sh, Network::MainNet) => MULTI_P2WSH_P2SH_PATH,
+        (MultiSigFormat::P2wshP2sh, Network::TestNet) => MULTI_P2WSH_P2SH_PATH_TEST,
+        (MultiSigFormat::P2wsh, Network::MainNet) => MULTI_P2WSH_PATH,
+        (MultiSigFormat::P2wsh, Network::TestNet) => MULTI_P2WSH_PATH_TEST,
+    };
+
+    let data = format!("{}{}of{}{}", join_xpubs, threshold, total, path,);
+
+    Ok(hex::encode(sha256(data.as_bytes()))[0..8].to_string())
 }
 
 pub fn strict_verify_wallet_config(

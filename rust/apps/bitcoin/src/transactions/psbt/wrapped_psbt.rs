@@ -10,10 +10,12 @@ use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::ops::Index;
+use keystore::algorithms::secp256k1::derive_public_key;
 
 use crate::multi_sig::address::calculate_multi_address;
+use crate::multi_sig::wallet::calculate_multi_sig_verify_code;
 use crate::multi_sig::MultiSigFormat;
-use third_party::bitcoin::bip32::{ChildNumber, Fingerprint, KeySource};
+use third_party::bitcoin::bip32::{ChildNumber, DerivationPath, Fingerprint, KeySource, Xpub};
 use third_party::bitcoin::psbt::{GetKey, KeyRequest, Psbt};
 use third_party::bitcoin::psbt::{Input, Output};
 use third_party::bitcoin::taproot::TapLeafHash;
@@ -160,7 +162,53 @@ impl WrappedPsbt {
         self.check_my_input_derivation(input, index)?;
         self.check_my_input_signature(input, index, context)?;
         self.check_my_input_value_tampered(input, index)?;
+        self.check_my_wallet_type(input, context)?;
         Ok(true)
+    }
+
+    fn get_my_input_verify_code(&self, input: &Input) -> Option<String> {
+        return if input.bip32_derivation.len() > 1 {
+            match self.get_multi_sig_input_verify_code(input) {
+                Ok(verify_code) => Some(verify_code),
+                Err(_) => None,
+            }
+        } else {
+            None
+        };
+    }
+
+    fn check_my_wallet_type(&self, input: &Input, context: &ParseContext) -> Result<()> {
+        let input_verify_code = self.get_my_input_verify_code(input);
+        match &context.verify_code {
+            //single sig
+            None => {
+                if input_verify_code.is_none() {
+                    return Ok(());
+                }
+            }
+            //multi sig
+            Some(verify_code) => {
+                if let Some(inner_verify_code) = &input_verify_code {
+                    if verify_code == inner_verify_code {
+                        return Ok(());
+                    }
+                }
+            }
+        };
+
+        let input_verify_code = match input_verify_code {
+            None => "null".to_string(),
+            Some(verify_code) => verify_code,
+        };
+
+        let wallet_verify_code = match &context.verify_code {
+            None => "null".to_string(),
+            Some(verify_code) => verify_code.to_string(),
+        };
+        return Err(BitcoinError::WalletTypeError(format!(
+            "wallet type mismatch wallet verify code is {} input verify code is {}",
+            input_verify_code, wallet_verify_code
+        )));
     }
 
     pub fn check_my_input_derivation(&self, input: &Input, index: usize) -> Result<()> {
@@ -336,6 +384,100 @@ impl WrappedPsbt {
             input.partial_sigs.len() as u32,
             input.bip32_derivation.len() as u32,
         )
+    }
+
+    fn get_multi_sig_input_threshold_and_total(&self, script: &ScriptBuf) -> Result<(u8, u8)> {
+        if !script.is_multisig() {
+            return Err(BitcoinError::MultiSigInputError(
+                "it's not a multi sig script".to_string(),
+            ));
+        }
+        let mut required_sigs = 0;
+        let mut total = 0;
+
+        let mut instructions = script.instructions();
+
+        if let Some(Ok(Instruction::Op(op))) = instructions.next() {
+            if op.to_u8() >= 0x51 && op.to_u8() <= 0x60 {
+                required_sigs = op.to_u8() - 0x50;
+            }
+        }
+        while let Some(Ok(instruction)) = instructions.next() {
+            match instruction {
+                Instruction::Op(op) => {
+                    if op.to_u8() >= 0x51 && op.to_u8() <= 0x60 {
+                        total = op.to_u8() - 0x50;
+                    }
+                }
+                _ => {}
+            }
+        }
+        Ok((required_sigs, total))
+    }
+
+    fn get_xpub_from_psbt_by_fingerprint(
+        &self,
+        fp: &Fingerprint,
+    ) -> Result<(&Xpub, &DerivationPath)> {
+        for key in self.psbt.xpub.keys() {
+            let (fingerprint, path) = self.psbt.xpub.get(key).ok_or(BitcoinError::InvalidInput)?;
+            if fp == fingerprint {
+                return Ok((key, path));
+            }
+        }
+        Err(BitcoinError::MultiSigInputError(
+            "have no match fingerprint in xpub".to_string(),
+        ))
+    }
+
+    fn get_multi_sig_input_verify_code(&self, input: &Input) -> Result<String> {
+        if self.psbt.xpub.is_empty() {
+            return Err(BitcoinError::MultiSigInputError(
+                "xpub is empty".to_string(),
+            ));
+        }
+
+        let mut xpubs = vec![];
+        for key in input.bip32_derivation.keys() {
+            let (fingerprint, path) = input
+                .bip32_derivation
+                .get(key)
+                .ok_or(BitcoinError::InvalidInput)?;
+            let (xpub, derivation_path) = self.get_xpub_from_psbt_by_fingerprint(fingerprint)?;
+            let public_key = derive_public_key_by_path(xpub, derivation_path, path)?;
+            if public_key == *key {
+                xpubs.push(xpub.to_string());
+            }
+        }
+
+        if xpubs.is_empty() || xpubs.len() != input.bip32_derivation.len() {
+            return Err(BitcoinError::MultiSigInputError(
+                "xpub does not match bip32_derivation".to_string(),
+            ));
+        }
+
+        let (script, format) = self.get_multi_sig_script_and_format(input)?;
+        let (threshold, total) = self.get_multi_sig_input_threshold_and_total(script)?;
+
+        let network = if let Some((xpub, _)) = self.psbt.xpub.first_key_value() {
+            if xpub.network == third_party::bitcoin::network::Network::Bitcoin {
+                network::Network::Bitcoin
+            } else {
+                network::Network::BitcoinTestnet
+            }
+        } else {
+            return Err(BitcoinError::MultiSigNetworkError(
+                "can not get network type".to_string(),
+            ));
+        };
+
+        Ok(calculate_multi_sig_verify_code(
+            &xpubs,
+            threshold,
+            total,
+            format,
+            &crate::multi_sig::Network::try_from(&network)?,
+        )?)
     }
 
     pub fn get_overall_sign_status(&self) -> Option<String> {
@@ -590,13 +732,37 @@ impl WrappedPsbt {
     }
 }
 
+fn derive_public_key_by_path(
+    xpub: &Xpub,
+    root_path: &DerivationPath,
+    hd_path: &DerivationPath,
+) -> Result<secp256k1::PublicKey> {
+    let root_path = if !root_path.to_string().ends_with('/') {
+        root_path.to_string() + "/"
+    } else {
+        root_path.to_string()
+    };
+    let sub_path = hd_path
+        .to_string()
+        .strip_prefix(&root_path)
+        .ok_or(BitcoinError::InvalidPsbt(hd_path.to_string()))?
+        .to_string();
+
+    let public_key = derive_public_key(&xpub.to_string(), &format!("m/{}", sub_path))
+        .map_err(|e| BitcoinError::DerivePublicKeyError(e.to_string()))?;
+
+    Ok(public_key)
+}
+
 #[cfg(test)]
 mod tests {
     use alloc::string::String;
     use alloc::vec::Vec;
     use core::str::FromStr;
 
+    use crate::TxChecker;
     use third_party::bitcoin_hashes::hex::FromHex;
+    use third_party::either::Left;
     use third_party::hex::{self, ToHex};
 
     use super::*;
@@ -628,6 +794,108 @@ mod tests {
             let result = wrapper.sign(&seed, master_fingerprint).unwrap();
             let psbt_result = result.serialize().encode_hex::<String>();
             assert_eq!("70736274ff01005e02000000013aee4d6b51da574900e56d173041115bd1e1d01d4697a845784cf716a10c98060000000000ffffffff0100190000000000002251202258f2d4637b2ca3fd27614868b33dee1a242b42582d5474f51730005fa99ce8000000000001012bbc1900000000000022512022f3956cc27a6a9b0e0003a0afc113b04f31b95d5cad222a65476e8440371bd10103040000000001134092864dc9e56b6260ecbd54ec16b94bb597a2e6be7cca0de89d75e17921e0e1528cba32dd04217175c237e1835b5db1c8b384401718514f9443dce933c6ba9c872116b68df382cad577d8304d5a8e640c3cb42d77c10016ab754caa4d6e68b6cb296d190073c5da0a5600008001000080000000800000000002000000011720b68df382cad577d8304d5a8e640c3cb42d77c10016ab754caa4d6e68b6cb296d011820c913dc9a8009a074e7bbc493b9d8b7e741ba137f725f99d44fbce99300b2bb0a0000", psbt_result);
+        }
+    }
+
+    #[test]
+    fn test_check_psbt() {
+        // single sig wallet and single sig input
+        {
+            let psbt_hex = "70736274ff01005e02000000013aee4d6b51da574900e56d173041115bd1e1d01d4697a845784cf716a10c98060000000000ffffffff0100190000000000002251202258f2d4637b2ca3fd27614868b33dee1a242b42582d5474f51730005fa99ce8000000000001012bbc1900000000000022512022f3956cc27a6a9b0e0003a0afc113b04f31b95d5cad222a65476e8440371bd1010304000000002116b68df382cad577d8304d5a8e640c3cb42d77c10016ab754caa4d6e68b6cb296d190073c5da0a5600008001000080000000800000000002000000011720b68df382cad577d8304d5a8e640c3cb42d77c10016ab754caa4d6e68b6cb296d011820c913dc9a8009a074e7bbc493b9d8b7e741ba137f725f99d44fbce99300b2bb0a0000";
+            let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
+            let wpsbt = WrappedPsbt { psbt };
+            let master_fingerprint = Fingerprint::from_str("73c5da0a").unwrap();
+            let extended_pubkey = Xpub::from_str("tpubDDfvzhdVV4unsoKt5aE6dcsNsfeWbTgmLZPi8LQDYU2xixrYemMfWJ3BaVneH3u7DBQePdTwhpybaKRU95pi6PMUtLPBJLVQRpzEnjfjZzX").unwrap();
+            let path = DerivationPath::from_str("m/86'/1'/0'").unwrap();
+            let mut keys = BTreeMap::new();
+            keys.insert(path, extended_pubkey);
+
+            let reust = wpsbt.check(Left(&ParseContext {
+                master_fingerprint: master_fingerprint.clone(),
+                extended_public_keys: keys.clone(),
+                verify_code: None,
+            }));
+            assert_eq!(Ok(()), reust);
+        }
+
+        // single sig wallet and multi sig input
+        {
+            let psbt_hex= "70736274ff01005e0200000001d8d89245a905abe9e2ab7bb834ebbc50a75947c82f96eeec7b38e0b399a62c490000000000fdffffff0158070000000000002200202b9710701f5c944606bb6bab82d2ef969677d8b9d04174f59e2a631812ae739bf76c27004f01043587cf0473f7e9418000000147f2d1b4bef083e346eb1949bcd8e2b59f95d8391a9eb4e1ea9005df926585480365fd7b1eca553df2c4e17bc5b88384ceda3d0d98fa3145cff5e61e471671a0b214c45358fa300000800100008000000080010000804f01043587cf04bac1483980000001a73adbe2878487634dcbfc3f7ebde8b1fc994f1ec06860cf01c3fe2ea791ddb602e62a2a9973ee6b3a7af47c229a5bde70bca59bd04bbb297f5693d7aa256b976d1473c5da0a3000008001000080000000800100008000010120110800000000000017a914980ec372495334ee232575505208c0b2e142dbb5872202032ed737f53936afb128247fc71a0b0b5be4d9348e9a48bfda9ef31efe3e45fa2e47304402203109d97095c61395881d6f75093943b16a91e1a4fff73bf193fcfe6e7689a35c02203bd187fed5bba45ee2c322911b8abb07f1d091520f5598259047d0dee058a75e01010304010000000104220020ffac81e598dd9856d08bd6c55b712fd23ea8522bd075fcf48ed467ced2ee015601054752210267ea4562439356307e786faf40503730d8d95a203a0e345cb355a5dfa03fce0321032ed737f53936afb128247fc71a0b0b5be4d9348e9a48bfda9ef31efe3e45fa2e52ae2206032ed737f53936afb128247fc71a0b0b5be4d9348e9a48bfda9ef31efe3e45fa2e1cc45358fa30000080010000800000008001000080000000000000000022060267ea4562439356307e786faf40503730d8d95a203a0e345cb355a5dfa03fce031c73c5da0a3000008001000080000000800100008000000000000000000000";
+            let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
+            let wpsbt = WrappedPsbt { psbt };
+
+            let master_fingerprint = Fingerprint::from_str("73c5da0a").unwrap();
+            let extended_pubkey = Xpub::from_str("tpubDFH9dgzveyD8yHQb8VrpG8FYAuwcLMHMje2CCcbBo1FpaGzYVtJeYYxcYgRqSTta5utUFts8nPPHs9C2bqoxrey5jia6Dwf9mpwrPq7YvcJ").unwrap();
+            let path = DerivationPath::from_str("m/48'/1'/0'/1'").unwrap();
+            let mut keys = BTreeMap::new();
+            keys.insert(path, extended_pubkey);
+
+            let reust = wpsbt.check(Left(&ParseContext {
+                master_fingerprint: master_fingerprint.clone(),
+                extended_public_keys: keys.clone(),
+                verify_code: None,
+            }));
+            assert_eq!(true, reust.is_err());
+        }
+
+        // multi sig wallet and single sig input
+        {
+            let psbt_hex = "70736274ff01005e02000000013aee4d6b51da574900e56d173041115bd1e1d01d4697a845784cf716a10c98060000000000ffffffff0100190000000000002251202258f2d4637b2ca3fd27614868b33dee1a242b42582d5474f51730005fa99ce8000000000001012bbc1900000000000022512022f3956cc27a6a9b0e0003a0afc113b04f31b95d5cad222a65476e8440371bd1010304000000002116b68df382cad577d8304d5a8e640c3cb42d77c10016ab754caa4d6e68b6cb296d190073c5da0a5600008001000080000000800000000002000000011720b68df382cad577d8304d5a8e640c3cb42d77c10016ab754caa4d6e68b6cb296d011820c913dc9a8009a074e7bbc493b9d8b7e741ba137f725f99d44fbce99300b2bb0a0000";
+            let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
+            let wpsbt = WrappedPsbt { psbt };
+
+            let master_fingerprint = Fingerprint::from_str("73c5da0a").unwrap();
+            let extended_pubkey = Xpub::from_str("tpubDFH9dgzveyD8yHQb8VrpG8FYAuwcLMHMje2CCcbBo1FpaGzYVtJeYYxcYgRqSTta5utUFts8nPPHs9C2bqoxrey5jia6Dwf9mpwrPq7YvcJ").unwrap();
+            let path = DerivationPath::from_str("m/48'/1'/0'/1'").unwrap();
+            let mut keys = BTreeMap::new();
+            keys.insert(path, extended_pubkey);
+
+            let reust = wpsbt.check(Left(&ParseContext {
+                master_fingerprint: master_fingerprint.clone(),
+                extended_public_keys: keys.clone(),
+                verify_code: Some("03669e02".to_string()),
+            }));
+            assert_eq!(true, reust.is_err());
+        }
+
+        // multi sig wallet and multi sig input, verify code is equal
+        {
+            let psbt_hex= "70736274ff01005e0200000001d8d89245a905abe9e2ab7bb834ebbc50a75947c82f96eeec7b38e0b399a62c490000000000fdffffff0158070000000000002200202b9710701f5c944606bb6bab82d2ef969677d8b9d04174f59e2a631812ae739bf76c27004f01043587cf0473f7e9418000000147f2d1b4bef083e346eb1949bcd8e2b59f95d8391a9eb4e1ea9005df926585480365fd7b1eca553df2c4e17bc5b88384ceda3d0d98fa3145cff5e61e471671a0b214c45358fa300000800100008000000080010000804f01043587cf04bac1483980000001a73adbe2878487634dcbfc3f7ebde8b1fc994f1ec06860cf01c3fe2ea791ddb602e62a2a9973ee6b3a7af47c229a5bde70bca59bd04bbb297f5693d7aa256b976d1473c5da0a3000008001000080000000800100008000010120110800000000000017a914980ec372495334ee232575505208c0b2e142dbb5872202032ed737f53936afb128247fc71a0b0b5be4d9348e9a48bfda9ef31efe3e45fa2e47304402203109d97095c61395881d6f75093943b16a91e1a4fff73bf193fcfe6e7689a35c02203bd187fed5bba45ee2c322911b8abb07f1d091520f5598259047d0dee058a75e01010304010000000104220020ffac81e598dd9856d08bd6c55b712fd23ea8522bd075fcf48ed467ced2ee015601054752210267ea4562439356307e786faf40503730d8d95a203a0e345cb355a5dfa03fce0321032ed737f53936afb128247fc71a0b0b5be4d9348e9a48bfda9ef31efe3e45fa2e52ae2206032ed737f53936afb128247fc71a0b0b5be4d9348e9a48bfda9ef31efe3e45fa2e1cc45358fa30000080010000800000008001000080000000000000000022060267ea4562439356307e786faf40503730d8d95a203a0e345cb355a5dfa03fce031c73c5da0a3000008001000080000000800100008000000000000000000000";
+            let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
+            let wpsbt = WrappedPsbt { psbt };
+
+            let master_fingerprint = Fingerprint::from_str("73c5da0a").unwrap();
+            let extended_pubkey = Xpub::from_str("tpubDFH9dgzveyD8yHQb8VrpG8FYAuwcLMHMje2CCcbBo1FpaGzYVtJeYYxcYgRqSTta5utUFts8nPPHs9C2bqoxrey5jia6Dwf9mpwrPq7YvcJ").unwrap();
+            let path = DerivationPath::from_str("m/48'/1'/0'/1'").unwrap();
+            let mut keys = BTreeMap::new();
+            keys.insert(path, extended_pubkey);
+
+            let reust = wpsbt.check(Left(&ParseContext {
+                master_fingerprint: master_fingerprint.clone(),
+                extended_public_keys: keys.clone(),
+                verify_code: Some("03669e02".to_string()),
+            }));
+            assert_eq!(Ok(()), reust);
+        }
+
+        // multi sig wallet and multi sig input, verify code is not equal
+        {
+            let psbt_hex= "70736274ff01005e0200000001d8d89245a905abe9e2ab7bb834ebbc50a75947c82f96eeec7b38e0b399a62c490000000000fdffffff0158070000000000002200202b9710701f5c944606bb6bab82d2ef969677d8b9d04174f59e2a631812ae739bf76c27004f01043587cf0473f7e9418000000147f2d1b4bef083e346eb1949bcd8e2b59f95d8391a9eb4e1ea9005df926585480365fd7b1eca553df2c4e17bc5b88384ceda3d0d98fa3145cff5e61e471671a0b214c45358fa300000800100008000000080010000804f01043587cf04bac1483980000001a73adbe2878487634dcbfc3f7ebde8b1fc994f1ec06860cf01c3fe2ea791ddb602e62a2a9973ee6b3a7af47c229a5bde70bca59bd04bbb297f5693d7aa256b976d1473c5da0a3000008001000080000000800100008000010120110800000000000017a914980ec372495334ee232575505208c0b2e142dbb5872202032ed737f53936afb128247fc71a0b0b5be4d9348e9a48bfda9ef31efe3e45fa2e47304402203109d97095c61395881d6f75093943b16a91e1a4fff73bf193fcfe6e7689a35c02203bd187fed5bba45ee2c322911b8abb07f1d091520f5598259047d0dee058a75e01010304010000000104220020ffac81e598dd9856d08bd6c55b712fd23ea8522bd075fcf48ed467ced2ee015601054752210267ea4562439356307e786faf40503730d8d95a203a0e345cb355a5dfa03fce0321032ed737f53936afb128247fc71a0b0b5be4d9348e9a48bfda9ef31efe3e45fa2e52ae2206032ed737f53936afb128247fc71a0b0b5be4d9348e9a48bfda9ef31efe3e45fa2e1cc45358fa30000080010000800000008001000080000000000000000022060267ea4562439356307e786faf40503730d8d95a203a0e345cb355a5dfa03fce031c73c5da0a3000008001000080000000800100008000000000000000000000";
+            let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
+            let wpsbt = WrappedPsbt { psbt };
+
+            let master_fingerprint = Fingerprint::from_str("73c5da0a").unwrap();
+            let extended_pubkey = Xpub::from_str("tpubDFH9dgzveyD8yHQb8VrpG8FYAuwcLMHMje2CCcbBo1FpaGzYVtJeYYxcYgRqSTta5utUFts8nPPHs9C2bqoxrey5jia6Dwf9mpwrPq7YvcJ").unwrap();
+            let path = DerivationPath::from_str("m/48'/1'/0'/1'").unwrap();
+            let mut keys = BTreeMap::new();
+            keys.insert(path, extended_pubkey);
+
+            let reust = wpsbt.check(Left(&ParseContext {
+                master_fingerprint: master_fingerprint.clone(),
+                extended_public_keys: keys.clone(),
+                verify_code: Some("12345678".to_string()),
+            }));
+            assert_eq!(true, reust.is_err());
         }
     }
 }

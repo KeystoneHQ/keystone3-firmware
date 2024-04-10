@@ -22,6 +22,12 @@ int32_t GuiMultisigReadSdcardViewEventProcess(void *self, uint16_t usEvent, void
     case GUI_EVENT_OBJ_DEINIT:
         GuiMultisigReadSdcardWidgetsDeInit();
         break;
+    case SIG_TRANSACTION_CHECK_PASS:
+        GuiPSBtTransactionCheckPass();
+        break;
+    case SIG_TRANSACTION_CHECK_FAIL:
+        GuiPSBTTransactionCheckFaild((PtrT_TransactionCheckResult)param);
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

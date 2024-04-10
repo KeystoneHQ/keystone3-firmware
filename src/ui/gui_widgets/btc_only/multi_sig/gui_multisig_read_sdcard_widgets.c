@@ -34,7 +34,6 @@ void GuiMultisigReadSdcardWidgetsInit(uint8_t fileFilterType)
     GuiContent(g_pageWidget->contentZone);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("import_multi_wallet_via_micro_title"));
-    SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
 }
 void GuiMultisigReadSdcardWidgetsDeInit()
 {
@@ -52,33 +51,7 @@ void GuiMultisigReadSdcardWidgetsDeInit()
 static void GuiContent(lv_obj_t *parent)
 {
     GuiAddObjFlag(parent, LV_OBJ_FLAG_SCROLLABLE);
-    uint32_t number = 0;
-    char *suffix = NULL;
-    switch (g_fileFilterType) {
-    case ALL:
-        break;
-    case ONLY_TXT:
-        suffix = ".txt";
-        break;
-    case ONLY_PSBT:
-        suffix = ".psbt";
-        break;
-    case ONLY_JSON:
-        suffix = ".json";
-        break;
-    default:
-        break;
-    }
-    printf("suffix is %s\r\n", suffix);
-#ifdef COMPILE_SIMULATOR
-    FatfsGetFileName("C:/assets/sd", g_fileList, BUFFER_SIZE_32, &number, suffix);
-#else
-    FatfsGetFileName("0:", g_fileList, BUFFER_SIZE_32, &number, suffix);
-#endif
-    for (int i = 0; i < number; i++) {
-        lv_obj_t *btn = GuiCreateSelectButton(parent, g_fileList[i], &imgArrowRight, GuiSelectFileHandler, g_fileList[i], false);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 84 * i);
-    }
+    ListMicroCardMultisigConfigFile();
 }
 
 static void GuiSelectFileHandler(lv_event_t *e)
@@ -87,7 +60,6 @@ static void GuiSelectFileHandler(lv_event_t *e)
     char *path = lv_event_get_user_data(e);
 
     if (code == LV_EVENT_CLICKED) {
-
         switch (g_fileFilterType) {
         case ALL:
             break;
@@ -120,5 +92,45 @@ static void GuiSelectFileHandler(lv_event_t *e)
             break;
         }
 
+    }
+}
+
+void ListMicroCardMultisigConfigFile(void)
+{
+    lv_obj_t *parent = g_pageWidget->contentZone;
+    lv_obj_clean(parent);
+    uint32_t number = 0;
+    char *suffix = NULL;
+    switch (g_fileFilterType) {
+    case ALL:
+        break;
+    case ONLY_TXT:
+        suffix = ".txt";
+        break;
+    case ONLY_PSBT:
+        suffix = ".psbt";
+        break;
+    case ONLY_JSON:
+        suffix = ".json";
+        break;
+    default:
+        break;
+    }
+    printf("suffix is %s\r\n", suffix);
+#ifdef COMPILE_SIMULATOR
+    FatfsGetFileName("C:/assets/sd", g_fileList, BUFFER_SIZE_32, &number, suffix);
+#else
+    FatfsGetFileName("0:", g_fileList, BUFFER_SIZE_32, &number, suffix);
+#endif
+    if (number == 0) {
+        lv_obj_t *img = GuiCreateImg(parent, &imgFile);
+        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 128);
+        lv_obj_t *label = GuiCreateTextLabel(parent, _("import_multi_wallet_info_no_config_file"));
+        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 232);
+    }
+
+    for (int i = 0; i < number; i++) {
+        lv_obj_t *btn = GuiCreateSelectButton(g_pageWidget->contentZone, g_fileList[i], &imgArrowRight, GuiSelectFileHandler, g_fileList[i], false);
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 84 * i);
     }
 }

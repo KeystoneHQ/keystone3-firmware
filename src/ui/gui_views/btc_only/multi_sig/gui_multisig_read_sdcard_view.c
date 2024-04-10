@@ -22,6 +22,9 @@ int32_t GuiMultisigReadSdcardViewEventProcess(void *self, uint16_t usEvent, void
     case GUI_EVENT_OBJ_DEINIT:
         GuiMultisigReadSdcardWidgetsDeInit();
         break;
+    case SIG_INIT_SDCARD_CHANGE:
+        ListMicroCardMultisigConfigFile();
+        return ERR_GUI_UNHANDLED;
     default:
         return ERR_GUI_UNHANDLED;
     }

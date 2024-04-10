@@ -1,3 +1,4 @@
+#include "define.h"
 #include "gui_multisig_read_sdcard_widgets.h"
 #include "gui.h"
 #include "gui_page.h"
@@ -15,8 +16,10 @@
 #include "simulator_model.h"
 #endif
 
+#define FATFS_MAX_FILE_NUMBER                             (50)
+
 static PageWidget_t *g_pageWidget;
-static char g_fileList[10][64] = {0};
+static char *g_fileList[FATFS_MAX_FILE_NUMBER];
 
 static void GuiContent(lv_obj_t *);
 static void GuiSelectFileHandler(lv_event_t *e);
@@ -31,6 +34,9 @@ static void CloseErrorDataHandler(lv_event_t *e);
 
 void GuiMultisigReadSdcardWidgetsInit(uint8_t fileFilterType)
 {
+    for (int i = 0; i < FATFS_MAX_FILE_NUMBER; i++) {
+        g_fileList[i] = EXT_MALLOC(BUFFER_SIZE_32);
+    }
     g_fileFilterType = fileFilterType;
     g_pageWidget = CreatePageWidget();
     GuiContent(g_pageWidget->contentZone);
@@ -42,14 +48,19 @@ void GuiMultisigReadSdcardWidgetsDeInit()
 {
     DestroyPageWidget(g_pageWidget);
     g_pageWidget = NULL;
+
+    for (int i = 0; i < FATFS_MAX_FILE_NUMBER; i++) {
+        if (g_fileList[i] != NULL) {
+            EXT_FREE(g_fileList[i]);
+            g_fileList[i] = NULL;
+        }
+    }
 }
 
 static void GuiContent(lv_obj_t *parent)
 {
     GuiAddObjFlag(parent, LV_OBJ_FLAG_SCROLLABLE);
-    char *buffer = EXT_MALLOC(1024 * 5);
     uint32_t number = 0;
-    int i = 0;
     char *suffix = NULL;
     switch (g_fileFilterType) {
     case ALL:
@@ -68,23 +79,14 @@ static void GuiContent(lv_obj_t *parent)
     }
     printf("suffix is %s\r\n", suffix);
 #ifdef COMPILE_SIMULATOR
-    FatfsGetFileName("C:/assets/sd", buffer, &number, 1024 * 5, suffix);
+    FatfsGetFileName("C:/assets/sd", g_fileList, BUFFER_SIZE_32, &number, suffix);
 #else
-    FatfsGetFileName("0:", buffer, &number, 1024 * 5, suffix);
+    FatfsGetFileName("0:", g_fileList, BUFFER_SIZE_32, &number, suffix);
 #endif
-    char *token = strtok(buffer, " ");
-    while (token != NULL) {
-        printf("token is %s\r\n", token);
-        strncpy(g_fileList[i], token, sizeof(g_fileList[i]) - 1);
-        token = strtok(NULL, " ");
+    for (int i = 0; i < number; i++) {
         lv_obj_t *btn = GuiCreateSelectButton(parent, g_fileList[i], &imgArrowRight, GuiSelectFileHandler, g_fileList[i], false);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 84 * i);
-        i++;
-        if (i == 10) {
-            break;
-        }
     }
-    EXT_FREE(buffer);
 }
 
 static void GuiSelectFileHandler(lv_event_t *e)

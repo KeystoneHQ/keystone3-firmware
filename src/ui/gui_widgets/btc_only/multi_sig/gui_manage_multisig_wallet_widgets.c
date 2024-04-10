@@ -181,8 +181,6 @@ static void ReloadAndUpdateMultisigConfig(void)
     static DEFAULT_WALLET_INDEX_ENUM defaultIndex[] = {0, 1, 2};
     int multiSigNum = GetCurrentAccountMultisigWalletNum();
     DEFAULT_WALLET_INDEX_ENUM defaultWallet = GetDefaultWalletIndex();
-    printf("getdefaultwallet = %d\n", defaultWallet);
-    printf("multisignum = %d\n", multiSigNum);
     lv_obj_clean(g_manageMultisig.homeTile);
     if (multiSigNum == 0) {
         return CreateMultiSigWalletWidget(g_manageMultisig.homeTile);

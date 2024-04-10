@@ -29,6 +29,7 @@ static lv_obj_t *g_moreHintbox = NULL;
 static bool g_isManageOpen = false;
 static bool g_isManageClick = true;
 static PageWidget_t *g_pageWidget;
+static lv_obj_t *g_twoKeyImg = NULL;
 static lv_timer_t *g_countDownTimer = NULL; // count down timer
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
@@ -103,6 +104,7 @@ static void CreateHomePageButtons(void)
     img = GuiCreateImg(g_homeWalletCardCont, &imgReceive);
     label = GuiCreateLittleTitleLabel(g_homeWalletCardCont, _("home_button_receive"));
     arrow = GuiCreateImg(g_homeWalletCardCont, &imgArrowRight);
+    g_twoKeyImg = arrow;
     GuiButton_t rcvButtonTable[3] = {
         {
             .obj = img,
@@ -322,6 +324,11 @@ void GuiHomeRefresh(void)
     }
     GUI_DEL_OBJ(g_moreHintbox)
     AccountPublicHomeCoinGet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
+    if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+        lv_img_set_src(g_twoKeyImg, &imgTwoKey);
+    } else {
+        lv_img_set_src(g_twoKeyImg, &imgArrowRight);
+    }
 }
 
 bool GetIsTestNet(void)

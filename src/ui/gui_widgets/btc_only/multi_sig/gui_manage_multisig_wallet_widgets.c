@@ -178,7 +178,6 @@ void GuiManageMultisigWalletRefresh(void)
 
 static void ReloadAndUpdateMultisigConfig(void)
 {
-    static HOME_WALLET_CARD_ENUM chainCard = HOME_WALLET_CARD_BTC;
     static DEFAULT_WALLET_INDEX_ENUM defaultIndex[] = {0, 1, 2};
     int multiSigNum = GetCurrentAccountMultisigWalletNum();
     DEFAULT_WALLET_INDEX_ENUM defaultWallet = GetDefaultWalletIndex();
@@ -223,7 +222,7 @@ static void ReloadAndUpdateMultisigConfig(void)
     }
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, offSet);
     lv_obj_t *button = GuiCreateSelectButton(g_manageMultisig.homeTile, _("wallet_profile_multi_wallet_show_xpub"), &imgWalletExport,
-                       OpenExportViewHandler, &chainCard, true);
+                       OpenExportMultisigViewHandler, GetCurrenMultisigWalletByIndex(0), true);
     lv_obj_align_to(button, line, LV_ALIGN_OUT_BOTTOM_LEFT, 12, 12);
 }
 

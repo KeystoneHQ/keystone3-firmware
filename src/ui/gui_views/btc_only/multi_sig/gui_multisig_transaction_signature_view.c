@@ -19,7 +19,6 @@ static int32_t GuiMultisigTransactionSignatureViewDeInit(void)
 
 int32_t GuiMultisigTransactionSignatureViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
-    uint8_t viewType = 0;
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
         return GuiMultisigTransactionSignatureViewInit();

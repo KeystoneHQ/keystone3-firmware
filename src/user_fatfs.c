@@ -459,7 +459,7 @@ char *FatfsFileRead(const TCHAR* path)
         FatfsError(res);
         return NULL;
     }
-    if(g_fileContent) EXT_FREE(g_fileContent);
+    if (g_fileContent) EXT_FREE(g_fileContent);
     fileSize = f_size(&fp);
     g_fileContent = EXT_MALLOC(MAX_FILE_CONTENT_LEN);
     memset_s(g_fileContent, MAX_FILE_CONTENT_LEN, 0, MAX_FILE_CONTENT_LEN);

@@ -1,3 +1,4 @@
+#ifdef BTC_ONLY
 #ifndef _GUI_BTC_HOME_WIDGETS_H
 #define _GUI_BTC_HOME_WIDGETS_H
 
@@ -6,6 +7,7 @@
 
 typedef enum {
     HOME_WALLET_CARD_BTC,
+    HOME_WALLET_CARD_BTC_MULTISIG,
 
     HOME_WALLET_CARD_BUTT,      // This represents the end of the array (the number of arrays) and needs to be placed at the end.
 } HOME_WALLET_CARD_ENUM;
@@ -50,3 +52,4 @@ DEFAULT_WALLET_INDEX_ENUM GetDefaultWalletIndex(void);
 const ChainCoinCard_t* GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index);
 void GuiHomeDeInit(void);
 #endif /* _GUI_BTC_HOME_WIDGETS_H */
+#endif

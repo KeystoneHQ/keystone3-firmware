@@ -142,6 +142,20 @@ void *GuiCreateCheckBoxWithFont(lv_obj_t *parent, const char *text, bool single,
     return checkBox;
 }
 
+void *GuiCreateSelectPathCheckBox(lv_obj_t *parent)
+{
+    lv_obj_t *checkBox = lv_btn_create(parent);
+    lv_obj_set_size(checkBox, 408, 82);
+    lv_obj_set_style_bg_opa(checkBox, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(checkBox, LV_OPA_TRANSP, LV_STATE_CHECKED);
+    lv_obj_set_style_border_width(checkBox, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_width(checkBox, 0, LV_PART_MAIN);
+    lv_obj_set_style_shadow_width(checkBox, 0, LV_PART_MAIN);
+    lv_obj_add_flag(checkBox, LV_OBJ_FLAG_CHECKABLE);
+
+    return checkBox;
+}
+
 void *GuiCreateLine(lv_obj_t *parent, lv_point_t linePoints[], uint16_t pointNum)
 {
     lv_obj_t *line = lv_line_create(parent);

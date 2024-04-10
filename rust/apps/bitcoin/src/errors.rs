@@ -73,6 +73,12 @@ pub enum BitcoinError {
     MultiSigWalletFormatError(String),
     #[error("convert network error: {0}")]
     MultiSigNetworkError(String),
+    #[error("multi sig input error: {0}")]
+    MultiSigInputError(String),
+    #[error("derive public key error: {0}")]
+    DerivePublicKeyError(String),
+    #[error("wallet type error: {0}")]
+    WalletTypeError(String),
 }
 
 impl From<io::Error> for BitcoinError {

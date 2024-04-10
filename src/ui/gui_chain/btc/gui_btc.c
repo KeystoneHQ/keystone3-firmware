@@ -12,6 +12,7 @@
 #include "gui_transaction_detail_widgets.h"
 #ifdef BTC_ONLY
 #include "gui_multisig_transaction_signature_widgets.h"
+#include "gui_btc_home_widgets.h"
 #endif
 
 #define CHECK_FREE_PARSE_RESULT(result)                             \
@@ -386,8 +387,17 @@ PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
 
-    result = btc_check_psbt_bytes(g_psbtBytes, g_psbtBytesLen, mfp, sizeof(mfp), public_keys);
+    char verify_code = NULL;
+    if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+        MultiSigWalletItem_t *item = GetDefaultMultisigWallet();
+        if (item != NULL) {
+            verify_code = item->verifyCode;
+        }
+    }
+
+    result = btc_check_psbt_bytes(g_psbtBytes, g_psbtBytesLen, mfp, sizeof(mfp), public_keys, verify_code);
     SRAM_FREE(public_keys);
+    return result;
 }
 #endif
 
@@ -467,7 +477,18 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         keys[3].path = "m/86'/0'/0'";
         keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
 #endif
-        result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys);
+#ifdef BTC_ONLY
+        char verify_code = NULL;
+        if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+            MultiSigWalletItem_t *item = GetDefaultMultisigWallet();
+            if (item != NULL) {
+                verify_code = item->verifyCode;
+            }
+        }
+        result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys, verify_code);
+#else
+        result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys, NULL);
+#endif
         SRAM_FREE(public_keys);
     }
 #ifndef BTC_ONLY

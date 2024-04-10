@@ -5,7 +5,8 @@
 #include "gui_button.h"
 #include "gui_import_multisig_wallet_info_widgets.h"
 #include "gui_btc.h"
-
+#include "gui_model.h"
+#include "gui_hintbox.h"
 #ifndef COMPILE_SIMULATOR
 #include "drv_sdcard.h"
 #include "user_fatfs.h"
@@ -20,6 +21,13 @@ static char g_fileList[10][64] = {0};
 static void GuiContent(lv_obj_t *);
 static void GuiSelectFileHandler(lv_event_t *e);
 static FileFilterType g_fileFilterType = ALL;
+static ViewType g_viewType;
+static lv_obj_t *g_scanErrorHintBox = NULL;
+
+static void ThrowError();
+static void GuiDealScanErrorResult(int errorType);
+static void CloseErrorDataHandler(lv_event_t *e);
+
 
 void GuiMultisigReadSdcardWidgetsInit(uint8_t fileFilterType)
 {
@@ -107,8 +115,8 @@ static void GuiSelectFileHandler(lv_event_t *e)
             EXT_FREE(psbtStr);
 
             GuiSetPsbtStrData(psbtBytes, readBytes);
-            static ViewType viewType = BtcTx;
-            GuiFrameOpenViewWithParam(&g_transactionDetailView, &viewType, sizeof(viewType));
+            g_viewType = BtcTx;
+            GuiModelCheckTransaction(g_viewType);
         }
         break;
         case ONLY_JSON:
@@ -118,5 +126,50 @@ static void GuiSelectFileHandler(lv_event_t *e)
             break;
         }
 
+    }
+}
+
+
+
+void GuiPSBtTransactionCheckPass(void)
+{
+    GuiModelTransactionCheckResultClear();
+    GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_viewType, sizeof(g_viewType));
+}
+
+void GuiPSBTTransactionCheckFaild(PtrT_TransactionCheckResult result)
+{
+    GuiModelTransactionCheckResultClear();
+    ThrowError();
+}
+
+static void ThrowError()
+{
+    GuiDealScanErrorResult(0);
+}
+
+static void GuiDealScanErrorResult(int errorType)
+{
+    g_scanErrorHintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_scanErrorHintBox, &imgFailed);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
+
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_scanErrorHintBox, _("scan_qr_code_error_invalid_qrcode"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
+
+    label = GuiCreateIllustrateLabel(g_scanErrorHintBox, _("scan_qr_code_error_invalid_qrcode_desc"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
+
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_scanErrorHintBox, _("OK"), g_defTextFont);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_add_event_cb(btn, CloseErrorDataHandler, LV_EVENT_CLICKED, NULL);
+}
+
+static void CloseErrorDataHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        GUI_DEL_OBJ(g_scanErrorHintBox)
     }
 }

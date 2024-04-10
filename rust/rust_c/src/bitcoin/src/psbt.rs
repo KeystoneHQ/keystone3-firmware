@@ -1,7 +1,7 @@
 use alloc::boxed::Box;
 use alloc::collections::BTreeMap;
 use alloc::slice;
-use alloc::string::ToString;
+use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::ptr::null_mut;
 use core::str::FromStr;
@@ -181,6 +181,7 @@ pub extern "C" fn btc_check_psbt(
     master_fingerprint: PtrBytes,
     length: u32,
     public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
+    verify_code: PtrString,
 ) -> PtrT<TransactionCheckResult> {
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
@@ -189,9 +190,14 @@ pub extern "C" fn btc_check_psbt(
     let psbt = crypto_psbt.get_psbt();
 
     unsafe {
+        let verify_code = if verify_code.is_null() {
+            None
+        } else {
+            Some(recover_c_char(verify_code))
+        };
         let mfp = core::slice::from_raw_parts(master_fingerprint, 4);
         let public_keys = recover_c_array(public_keys);
-        check_psbt(mfp, public_keys, psbt)
+        check_psbt(mfp, public_keys, psbt, verify_code)
     }
 }
 
@@ -202,6 +208,7 @@ pub extern "C" fn btc_check_psbt_bytes(
     master_fingerprint: PtrBytes,
     length: u32,
     public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
+    verify_code: PtrString,
 ) -> PtrT<TransactionCheckResult> {
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
@@ -213,9 +220,14 @@ pub extern "C" fn btc_check_psbt_bytes(
             Err(e) => return TransactionCheckResult::from(e).c_ptr(),
         };
 
+        let verify_code = if verify_code.is_null() {
+            None
+        } else {
+            Some(recover_c_char(verify_code))
+        };
         let mfp = core::slice::from_raw_parts(master_fingerprint, 4);
         let public_keys = recover_c_array(public_keys);
-        check_psbt(mfp, public_keys, psbt)
+        check_psbt(mfp, public_keys, psbt, verify_code)
     }
 }
 
@@ -372,7 +384,7 @@ fn parse_psbt(
                     }
                 }
             }
-            let context = ParseContext::new(fp, keys);
+            let context = ParseContext::new(fp, keys, None);
             let parsed_psbt = app_bitcoin::parse_psbt(psbt, context);
             match parsed_psbt {
                 Ok(res) => {
@@ -390,6 +402,7 @@ fn check_psbt(
     mfp: &[u8],
     public_keys: &[ExtendedPublicKey],
     psbt: Vec<u8>,
+    verify_code: Option<String>,
 ) -> PtrT<TransactionCheckResult> {
     let master_fingerprint =
         third_party::bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
@@ -413,7 +426,7 @@ fn check_psbt(
                     }
                 }
             }
-            let context = ParseContext::new(fp, keys);
+            let context = ParseContext::new(fp, keys, verify_code);
             let check_result = app_bitcoin::check_psbt(psbt, context);
             match check_result {
                 Ok(_) => TransactionCheckResult::new().c_ptr(),

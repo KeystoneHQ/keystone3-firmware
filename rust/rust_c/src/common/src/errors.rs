@@ -97,6 +97,9 @@ pub enum ErrorCodes {
     BitcoinMultiSigWalletCrateError,
     BitcoinMultiSigWalletFormatError,
     BitcoinMultiSigNetworkError,
+    BitcoinMultiSigInputError,
+    BitcoinDerivePublicKeyError,
+    BitcoinWalletTypeError,
 
     //Ethereum
     EthereumRlpDecodingError = 200,
@@ -213,6 +216,9 @@ impl From<&BitcoinError> for ErrorCodes {
             BitcoinError::MultiSigWalletCrateError(_) => Self::BitcoinMultiSigWalletCrateError,
             BitcoinError::MultiSigWalletFormatError(_) => Self::BitcoinMultiSigWalletFormatError,
             BitcoinError::MultiSigNetworkError(_) => Self::BitcoinMultiSigNetworkError,
+            BitcoinError::MultiSigInputError(_) => Self::BitcoinMultiSigInputError,
+            BitcoinError::DerivePublicKeyError(_) => Self::BitcoinDerivePublicKeyError,
+            BitcoinError::WalletTypeError(_) => Self::BitcoinWalletTypeError,
         }
     }
 }

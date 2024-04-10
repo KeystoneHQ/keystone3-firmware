@@ -587,6 +587,9 @@ int8_t GuiCreateMultiPrevTile(void)
             lv_obj_add_event_cb(rightBtn, CancelCreateMultisigWalletHandler, LV_EVENT_CLICKED, NULL);
         } else {
             g_createMultiTileView.currentSinger--;
+            if (g_createMultiTileView.currentSinger == 0) {
+                lv_obj_add_flag(g_custodianTile.importXpubBtn, LV_OBJ_FLAG_HIDDEN);
+            }
             UpdateCustodianTileLabel();
             if (strlen(g_xpubCache[g_createMultiTileView.currentSinger].xpub) > 0) {
                 GuiAddObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);

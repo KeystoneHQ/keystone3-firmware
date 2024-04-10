@@ -54,7 +54,6 @@ impl From<&app_bitcoin::multi_sig::wallet::MultiSigXPubItem> for MultiSigXPubIte
 impl Into<app_bitcoin::multi_sig::wallet::MultiSigXPubItem> for &MultiSigXPubItem {
     fn into(self) -> app_bitcoin::multi_sig::wallet::MultiSigXPubItem {
         app_bitcoin::multi_sig::wallet::MultiSigXPubItem {
-            network: Network::MainNet,
             xfp: recover_c_char(self.xfp),
             xpub: recover_c_char(self.xpub),
         }
@@ -156,6 +155,11 @@ impl Into<MultiSigWalletConfig> for &mut MultiSigWallet {
             },
             verify_code: recover_c_char(self.verify_code),
             config_text: recover_c_char(self.config_text),
+            network: if self.network == 0 {
+                Network::MainNet
+            } else {
+                Network::TestNet
+            },
         }
     }
 }

@@ -3,18 +3,6 @@
 #include "gui_views.h"
 #include "gui_export_pubkey_widgets.h"
 
-static int32_t GuiExportPubkeyViewInit(uint8_t chain)
-{
-    GuiExportPubkeyInit(chain);
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiExportPubkeyViewDeInit(void)
-{
-    GuiExportPubkeyDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiExportPubkeyViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     uint8_t chain = 0;
@@ -25,9 +13,11 @@ int32_t GuiExportPubkeyViewEventProcess(void *self, uint16_t usEvent, void *para
         } else {
             return ERR_GUI_ERROR;
         }
-        return GuiExportPubkeyViewInit(chain);
+        GuiExportPubkeyInit(chain);
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiExportPubkeyViewDeInit();
+        GuiExportPubkeyDeInit();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

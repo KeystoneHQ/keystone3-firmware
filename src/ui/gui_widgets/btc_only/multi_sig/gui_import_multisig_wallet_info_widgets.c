@@ -12,7 +12,6 @@
 #include "firmware_update.h"
 #include "gui_page.h"
 #include "gui_import_multisig_wallet_info_widgets.h"
-#include "gui_multisig_wallet_export_widgets.h"
 #include "librust_c.h"
 #include "keystore.h"
 #include "fingerprint_process.h"
@@ -31,19 +30,6 @@
 
 #define MAX_VERIFY_CODE_LEN 24
 
-typedef enum {
-    IMPORT_MULTI_SELECT_METHOD = 0,
-    IMPORT_MULTI_SELECT_SDCARD_FILE,
-
-    IMPORT_MULTI_BUTT,
-} IMPORT_MULTI_ENUM;
-
-typedef struct {
-    uint8_t currentTile;
-    lv_obj_t *tileView;
-} ImportMultiInfoWidget_t;
-
-static ImportMultiInfoWidget_t g_importMultiInfo;
 static PageWidget_t *g_pageWidget;
 static lv_obj_t *g_noticeWindow = NULL;
 static MultiSigWallet *g_wallet = NULL;
@@ -120,7 +106,7 @@ void GuiImportMultisigWalletInfoWidgetsRestart()
 void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
 {
     uint8_t seed[64] = {0};
-    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    int len = (GetMnemonicType() == MNEMONIC_TYPE_BIP39) ? sizeof(seed) : GetCurrentAccountEntropyLen();
     GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
@@ -198,7 +184,6 @@ static void GuiContent(lv_obj_t *parent)
 
     label = GuiCreateNoticeLabel(cont, _("Policy"));
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 24, 0);
-    char buff[8] = {0};
     label = GuiCreateIllustrateLabel(cont, g_wallet->policy);
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
 

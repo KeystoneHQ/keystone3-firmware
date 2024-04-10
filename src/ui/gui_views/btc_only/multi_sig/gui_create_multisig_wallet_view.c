@@ -4,7 +4,6 @@
 
 int32_t GuiCreateMultiViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
-    uint32_t rcvValue;
     GUI_ASSERT(g_createMultisigWalletView.isActive);
 
     switch (usEvent) {

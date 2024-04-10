@@ -138,7 +138,7 @@ pub fn create_wallet(
 fn _parse_plain_wallet_config(content: &str) -> Result<MultiSigWalletConfig, BitcoinError> {
     let mut wallet = MultiSigWalletConfig::default();
 
-    let mut is_first_xpub = true;
+    let mut is_first = true;
 
     for line in content.lines() {
         if line.trim().starts_with("#") {
@@ -161,10 +161,25 @@ fn _parse_plain_wallet_config(content: &str) -> Result<MultiSigWalletConfig, Bit
                 "Policy" => parse_and_set_policy(&mut wallet, value)?,
                 "Format" => wallet.format = String::from(value),
                 "Derivation" => wallet.derivations.push(value.replace("h", "\'")),
-                _ => process_xpub_and_xfp(&mut wallet, label, value, is_first_xpub)?,
+                _ => process_xpub_and_xfp(&mut wallet, label, value)?,
             }
         }
     }
+
+    for (_, xpub_item) in wallet.xpub_items.iter().enumerate() {
+        if is_first {
+            wallet.network = detect_network(&xpub_item.xpub);
+            is_first = false;
+        } else {
+            let this_network = detect_network(&xpub_item.xpub);
+            if (wallet.network != this_network) {
+                return Err(BitcoinError::MultiSigWalletParseError(format!(
+                    "xpub networks inconsistent"
+                )));
+            }
+        }
+    }
+
     wallet.config_text = content.to_string();
     Ok(wallet)
 }
@@ -284,27 +299,15 @@ fn process_xpub_and_xfp(
     wallet: &mut MultiSigWalletConfig,
     label: &str,
     value: &str,
-    mut is_first: bool,
 ) -> Result<(), BitcoinError> {
     if is_valid_xfp(label) {
         if is_valid_xyzpub(value) {
-            for (index, xpub_item) in wallet.xpub_items.iter().enumerate() {
+            for (_, xpub_item) in wallet.xpub_items.iter().enumerate() {
                 let result1 = xyzpub::convert_version(xpub_item.xpub.clone(), &Version::Xpub)?;
                 let result2 = xyzpub::convert_version(value, &Version::Xpub)?;
                 if result1.eq_ignore_ascii_case(&result2) {
                     return Err(BitcoinError::MultiSigWalletParseError(format!(
                         "found duplicated xpub"
-                    )));
-                }
-            }
-            if is_first {
-                wallet.network = detect_network(value);
-                is_first = false;
-            } else {
-                let this_network = detect_network(value);
-                if (wallet.network != this_network) {
-                    return Err(BitcoinError::MultiSigWalletParseError(format!(
-                        "xpub networks inconsistent"
                     )));
                 }
             }
@@ -470,10 +473,13 @@ pub fn strict_verify_wallet_config(
 
 #[cfg(test)]
 mod tests {
+    use core::result;
+
     use alloc::string::ToString;
 
     use crate::multi_sig::wallet::{
-        create_wallet, export_wallet_by_ur, generate_config_data, parse_wallet_config,
+        create_wallet, export_wallet_by_ur, generate_config_data, is_valid_xyzpub,
+        parse_wallet_config, strict_verify_wallet_config,
     };
     use crate::multi_sig::{MultiSigXPubInfo, Network};
     use alloc::vec::Vec;
@@ -556,6 +562,133 @@ mod tests {
             assert_eq!("c2202a77", config.xpub_items[2].xfp);
             assert_eq!("7cb85a16", config.verify_code);
         }
+    }
+
+    #[test]
+    fn test_parse_multisig_wallet_config_with_err() {
+        {
+            // inconsistent network
+            let config = r#"/*
+            # Coldcard Multisig setup file (exported from unchained-wallets)
+            # https://github.com/unchained-capital/unchained-wallets
+            # v1.0.0
+            #
+            Name: My Multisig Wallet
+            Policy: 2 of 3
+            Format: P2WSH-P2SH
+
+            Derivation: m/48'/0'/0'/1'/12/32/5
+            748cc6aa: xpub6KMfgiWkVW33LfMbZoGjk6M3CvdZtrzkn38RP2SjbGGU9E85JTXDaX6Jn6bXVqnmq2EnRzWTZxeF3AZ1ZLcssM4DT9GY5RSuJBt1GRx3xm2
+            Derivation: m/48'/0'/0'/1'/5/6/7
+            5271c071: xpub6LfFMiP3hcgrKeTrho9MgKj2zdKGPsd6ufJzrsQNaHSFZ7uj8e1vnSwibBVQ33VfXYJM5zn9G7E9VrMkFPVcdRtH3Brg9ndHLJs8v2QtwHa
+            Derivation: m/48'/0'/0'/1'/110/8/9
+            c2202a77: tpubDLwR6XWHKEw25ztJX88aHHXWLxgDBYMuwSEu2q6yceKfMVzdTxBp57EGZNyrwWLy2j8hzTWev3issuALM4kZM6rFHAEgAtp1NhFrwr9MzF5
+            */"#;
+
+            let config = parse_wallet_config(config, "748cc6aa");
+            assert_eq!(false, config.is_ok());
+        }
+
+        {
+            //total is 4 but only provide 3 keys
+            let config = r#"/*
+            # Coldcard Multisig setup file (exported from unchained-wallets)
+            # https://github.com/unchained-capital/unchained-wallets
+            # v1.0.0
+            #
+            Name: My Multisig Wallet
+            Policy: 2 of 4
+            Format: P2WSH-P2SH
+
+            Derivation: m/48'/0'/0'/1'/12/32/5
+            748cc6aa: xpub6KMfgiWkVW33LfMbZoGjk6M3CvdZtrzkn38RP2SjbGGU9E85JTXDaX6Jn6bXVqnmq2EnRzWTZxeF3AZ1ZLcssM4DT9GY5RSuJBt1GRx3xm2
+            Derivation: m/48'/0'/0'/1'/5/6/7
+            5271c071: xpub6LfFMiP3hcgrKeTrho9MgKj2zdKGPsd6ufJzrsQNaHSFZ7uj8e1vnSwibBVQ33VfXYJM5zn9G7E9VrMkFPVcdRtH3Brg9ndHLJs8v2QtwHa
+            Derivation: m/48'/0'/0'/1'/110/8/9
+            c2202a77: xpub6LZnaHgbbxyZpChT4w9V5NC91qaZC9rrPoebgH3qGjZmcDKvPjLivfZSKLu5R1PjEpboNsznNwtqBifixCuKTfPxDZVNVN9mnjfTBpafqQf
+            */"#;
+
+            let config = parse_wallet_config(config, "748cc6aa");
+            assert_eq!(false, config.is_ok());
+        }
+
+        {
+            let config = r#"/*
+                # Coldcard Multisig setup file (exported from unchained-wallets)
+                # https://github.com/unchained-capital/unchained-wallets
+                # v1.0.0
+                #
+                Name: My Multisig Wallet
+                Policy: 2 of 3
+                Format: P2WSH-P2SH
+    
+                52744703: Zpub75TRDhcAARKcWjwnLvoUP5AkszA13W5EnHTxL3vfnKtEXZYQsHKjPFxWLGT98ztfRY1ttG5RKhNChZuoTkFFfXEqyKSKDi99LtJcSKzUfDx
+                50659928: xpub6E9nHcM3Q2cBHFhYHfz7cghFutBpKWsAGXukyyd13TkHczjDaazdCZwbKXJCWkCeH4KcNtuCAmVycVNugJh1UcHMJeVi25csjzLxChEpCW4
+                50659928: xpub6E9nHcM3Q2cBHFhYHfz7cghFutBpKWsAGXukyyd13TkHczjDaazdCZwbKXJCWkCeH4KcNtuCAmVycVNugJh1UcHMJeVi25csjzLxChEpCW4
+                */"#;
+
+            let config = parse_wallet_config(config, "748cc6aa");
+            let x = is_valid_xyzpub("Zpub75TRDhcAARKcWjwnLvoUP5AkszA13W5EnHTxL3vfnKtEXZYQsHKjPFxWLGT98ztfRY1ttG5RKhNChZuoTkFFfXEqyKSKDi99LtJcSKzUfDx");
+            let y = is_valid_xyzpub("xpub6E9nHcM3Q2cBHFhYHfz7cghFutBpKWsAGXukyyd13TkHczjDaazdCZwbKXJCWkCeH4KcNtuCAmVycVNugJh1UcHMJeVi25csjzLxChEpCW4");
+            extern crate std;
+            use std::println;
+            println!("{}", x);
+            println!("{}", y);
+            assert_eq!(false, config.is_ok());
+        }
+    }
+
+    #[test]
+    fn test_strict_verify_wallet_config() {
+        let config = r#"/*
+            # Coldcard Multisig setup file (exported from unchained-wallets)
+            # https://github.com/unchained-capital/unchained-wallets
+            # v1.0.0
+            #
+            Name: My Multisig Wallet
+            Policy: 2 of 3
+            Format: P2WSH-P2SH
+
+            Derivation: m/48'/0'/0'/1'
+            73c5da0a: xpub6DkFAXWQ2dHxnMKoSBogHrw1rgNJKR4umdbnNVNTYeCGcduxWnNUHgGptqEQWPKRmeW4Zn4FHSbLMBKEWYaMDYu47Ytg6DdFnPNt8hwn5mE
+            Derivation: m/48'/0'/0'/1'/5/6/7
+            5271c071: xpub6LfFMiP3hcgrKeTrho9MgKj2zdKGPsd6ufJzrsQNaHSFZ7uj8e1vnSwibBVQ33VfXYJM5zn9G7E9VrMkFPVcdRtH3Brg9ndHLJs8v2QtwHa
+            Derivation: m/48'/0'/0'/1'/110/8/9
+            c2202a77: xpub6LZnaHgbbxyZpChT4w9V5NC91qaZC9rrPoebgH3qGjZmcDKvPjLivfZSKLu5R1PjEpboNsznNwtqBifixCuKTfPxDZVNVN9mnjfTBpafqQf
+            */"#;
+
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let config = parse_wallet_config(config, "73c5da0a").unwrap();
+        let result = strict_verify_wallet_config(&seed, &config, "73c5da0a");
+        assert_eq!(true, result.is_ok());
+    }
+
+    #[test]
+    fn test_strict_verify_wallet_config_wrong_xpub() {
+        let config = r#"/*
+            # Coldcard Multisig setup file (exported from unchained-wallets)
+            # https://github.com/unchained-capital/unchained-wallets
+            # v1.0.0
+            #
+            Name: My Multisig Wallet
+            Policy: 2 of 3
+            Format: P2WSH-P2SH
+
+            Derivation: m/48'/0'/0'/1'
+            73c5da0a: xpub661MyMwAqRbcFkPHucMnrGNzDwb6teAX1RbKQmqtEF8kK3Z7LZ59qafCjB9eCRLiTVG3uxBxgKvRgbubRhqSKXnGGb1aoaqLrpMBDrVxga8
+            Derivation: m/48'/0'/0'/1'/5/6/7
+            5271c071: xpub6LfFMiP3hcgrKeTrho9MgKj2zdKGPsd6ufJzrsQNaHSFZ7uj8e1vnSwibBVQ33VfXYJM5zn9G7E9VrMkFPVcdRtH3Brg9ndHLJs8v2QtwHa
+            Derivation: m/48'/0'/0'/1'/110/8/9
+            c2202a77: xpub6LZnaHgbbxyZpChT4w9V5NC91qaZC9rrPoebgH3qGjZmcDKvPjLivfZSKLu5R1PjEpboNsznNwtqBifixCuKTfPxDZVNVN9mnjfTBpafqQf
+            */"#;
+
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let config = parse_wallet_config(config, "73c5da0a").unwrap();
+        let config = strict_verify_wallet_config(&seed, &config, "73c5da0a");
+        // extern crate std;
+        // use std::println;
+        // println!("{:?}", config);
+        assert_eq!(false, config.is_ok());
     }
 
     #[test]

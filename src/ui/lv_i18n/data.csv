@@ -938,7 +938,6 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,multisig_export_to_sdcard_failed,"Exported Failed",,,,,,,
 ,multisig_export_to_sdcard_failed_desc,"Something went wrong. Please try again.",,,,,,,
 ,create_multi_wallet_name_desc,Name your multi-sigature wallet,,,,,,,
-,create_multi_wallet_default_name,Multisig-1,,,,,,,
 ,create_multi_wallet_co_signers,Co-Signers,,,,,,,
 ,create_multi_wallet_signers,Signers,,,,,,,
 ,create_multi_wallet_co_sign_policy,Co-Sign Policy,,,,,,,

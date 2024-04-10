@@ -649,7 +649,6 @@ void GuiCreateMultiRefresh(void)
 
 static void GuiCreateNameWalletWidget(lv_obj_t *parent)
 {
-    char tempBuf[BUFFER_SIZE_16] = {0};
     lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_backup_namewallet_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
@@ -658,14 +657,14 @@ static void GuiCreateNameWalletWidget(lv_obj_t *parent)
 
     g_nameWalletKb = GuiCreateFullKeyBoard(parent, ReadyNextTileHandler, KEY_STONE_FULL_L, NULL);
     GuiSetKeyBoardMinTaLen(g_nameWalletKb, 0);
+    lv_obj_add_state(g_nameWalletKb->ta, LV_STATE_FOCUSED);
     lv_obj_set_size(g_nameWalletKb->ta, 300, 60);
     lv_obj_set_style_text_opa(g_nameWalletKb->ta, LV_OPA_100, 0);
     lv_obj_align(g_nameWalletKb->ta, LV_ALIGN_DEFAULT, 36, 164);
     lv_textarea_set_max_length(g_nameWalletKb->ta, 16);
     lv_textarea_set_one_line(g_nameWalletKb->ta, true);
-    lv_textarea_set_text(g_nameWalletKb->ta, _("create_multi_wallet_default_name"));
-    snprintf_s(tempBuf, BUFFER_SIZE_16, "%d/16", strnlen_s(_("create_multi_wallet_default_name"), 16));
-    lv_obj_t *progressLabel = GuiCreateNoticeLabel(parent, tempBuf);
+    lv_textarea_set_text(g_nameWalletKb->ta, _(""));
+    lv_obj_t *progressLabel = GuiCreateNoticeLabel(parent, "0/16");
     lv_obj_align(progressLabel, LV_ALIGN_TOP_RIGHT, -36, 384 - GUI_MAIN_AREA_OFFSET);
     GuiSetEnterProgressLabel(progressLabel);
 

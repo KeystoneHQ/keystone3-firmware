@@ -10,9 +10,9 @@
 
 #ifndef BTC_ONLY
 #include "gui_key_derivation_request_widgets.h"
-void GuiSetMultisigImportXpubByQRCode(URParseResult *urResult);
 #else
 #include "gui_import_multisig_wallet_info_widgets.h"
+#include "gui_create_multisig_wallet_widgets.h"
 #endif
 #include <gui_views.h>
 
@@ -73,6 +73,8 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
             || urViewType.viewType == KeyDerivationRequest
 #else
             || urViewType.viewType == MultisigWalletImport
+            || urViewType.viewType == MultisigBytesImportXpub
+            || urViewType.viewType == MultisigCryptoImportXpub
 #endif
             || viewType != REMAPVIEW_BUTT) {
 #ifndef COMPILE_SIMULATOR
@@ -80,6 +82,7 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
         UserDelay(500);
         GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
 #else
+        printf("urViewType: %d\n", urViewType.viewType);
         GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
 #endif
     } else {

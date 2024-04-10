@@ -116,7 +116,7 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent);
 static void OpenFileNextTileHandler(lv_event_t *e);
 static void SelectFormatHandler(lv_event_t *e);
 static void UpdateCustodianTileLabel(void);
-static void ImportXpubToTile(void);
+static void ImportXpubToTile(CREATE_MULTI_ENUM tile);
 
 static const AddressSettingsItem_t g_mainNetAddressSettings[] = {
     {"Native SegWit", "P2WSH", "m/48'/0'/0'/2'", XPUB_TYPE_BTC_MULTI_SIG_P2WSH},
@@ -135,10 +135,17 @@ static const AddressSettingsItem_t *g_addressSettings = g_mainNetAddressSettings
 
 void GuiSetMultisigImportXpubByQRCode(URParseResult *urResult)
 {
+    if (g_xpubCache == NULL) {
+        return;
+    }
     Ptr_Response_MultiSigXPubInfoItem item;
     item = export_xpub_info_by_ur(urResult->data, P2wsh, urResult->t);
     if (item->error_code == 0) {
-        ImportXpubToTile();
+        strcpy_s(g_xpubCache[g_createMultiTileView.currentSinger].mfp, sizeof(g_xpubCache[0].mfp), item->data->xfp);
+        strcpy_s(g_xpubCache[g_createMultiTileView.currentSinger].path, sizeof(g_xpubCache[0].path), item->data->path);
+        strcpy_s(g_xpubCache[g_createMultiTileView.currentSinger].xpub, sizeof(g_xpubCache[0].xpub), item->data->xpub);
+        UpdateCustodianTileLabel();
+        GuiAddObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
         GUI_DEL_OBJ(g_noticeWindow)
         free_MultiSigXPubInfoItem(item->data);
     } else {
@@ -185,7 +192,7 @@ static void ImportXpubHandler(lv_event_t *e)
     }
 }
 
-static void ImportXpubToTile(void)
+static void ImportXpubToTile(CREATE_MULTI_ENUM tile)
 {
     lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
     if (strnlen_s(g_xpubCache[g_createMultiTileView.currentSinger].path, sizeof(g_xpubCache[g_createMultiTileView.currentSinger].path)) == 0) {
@@ -198,12 +205,13 @@ static void ImportXpubToTile(void)
             return;
         }
     }
+
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("create_multi_wallet_import_xpub_title"));
     lv_label_set_text(g_xPubTile.pathLabel, g_xpubCache[g_createMultiTileView.currentSinger].path);
     lv_label_set_text(g_xPubTile.mfpLabel, g_xpubCache[g_createMultiTileView.currentSinger].mfp);
     lv_label_set_text(g_xPubTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
-    g_createMultiTileView.currentTile = CREATE_MULTI_IMPORT_SDCARD_XPUB;
-    lv_obj_set_tile_id(g_createMultiTileView.tileView, g_createMultiTileView.currentTile, 0, LV_ANIM_OFF);
+    g_createMultiTileView.currentTile = tile;
+    lv_obj_set_tile_id(g_createMultiTileView.tileView, tile, 0, LV_ANIM_OFF);
 }
 
 static void OpenFileNextTileHandler(lv_event_t *e)
@@ -213,7 +221,7 @@ static void OpenFileNextTileHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         GetMultiInfoFromFile(path, &g_xpubCache[g_createMultiTileView.currentSinger], g_chainType);
-        ImportXpubToTile();
+        ImportXpubToTile(CREATE_MULTI_IMPORT_SDCARD_XPUB);
     }
 }
 

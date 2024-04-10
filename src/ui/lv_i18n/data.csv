@@ -973,3 +973,4 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,multisig_signature_export_to_sdcard_desc,"File Name:",,,,,,,
 ,multisig_signature_export_to_sdcard_success,"Exported Successfully",,,,,,,
 ,multisig_signature_export_to_sdcard_success_desc,"Your signed transaction has been exported to MicoSD card successfully.",,,,,,,
+,multisig_connect_wallet_notice,"You are using multisig wallet",,,,,,,

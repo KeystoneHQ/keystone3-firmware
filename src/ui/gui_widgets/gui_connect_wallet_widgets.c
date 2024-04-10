@@ -36,7 +36,6 @@ typedef enum {
 } CONNECT_WALLET_ENUM;
 
 WalletListItem_t g_walletListArray[] = {
-    // {WALLET_LIST_KEYSTONE, &walletListKeyStone},
 #ifndef BTC_ONLY
     {WALLET_LIST_OKX, &walletListOkx, true},
     {WALLET_LIST_METAMASK, &walletListMetaMask, true},
@@ -303,10 +302,10 @@ static lv_obj_t *g_egCont = NULL;
 
 static void QRCodePause(bool);
 
-#ifndef BTC_ONLY
 static void GuiInitWalletListArray()
 {
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+#ifndef BTC_ONLY
         if (g_walletListArray[i].index == WALLET_LIST_ETERNL) {
             if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
                 g_walletListArray[i].enable = false;
@@ -314,10 +313,23 @@ static void GuiInitWalletListArray()
                 g_walletListArray[i].enable = true;
             }
         }
-        continue;
+#else
+        if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+            if (g_walletListArray[i].index == WALLET_LIST_SPECTER ||
+                    g_walletListArray[i].index == WALLET_LIST_UNISAT) {
+                g_walletListArray[i].enable = false;
+            } else {
+                g_walletListArray[i].enable = true;
+            }
+
+        } else {
+            g_walletListArray[i].enable = true;
+        }
+#endif
     }
 }
 
+#ifndef BTC_ONLY
 static bool IsEVMChain(int walletIndex)
 {
     switch (walletIndex) {
@@ -720,6 +732,12 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(g_bottomCont, LV_OPA_0, LV_STATE_DEFAULT | LV_PART_MAIN);
 #ifndef BTC_ONLY
     GuiCreateSupportedNetworks();
+#else
+    if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+        lv_obj_t *button = GuiCreateImgLabelAdaptButton(parent, _("multisig_connect_wallet_notice"), &imgTwoSmallKey, UnHandler, NULL);
+        lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -24);
+        lv_obj_set_style_text_opa(lv_obj_get_child(button, 1), LV_OPA_80, LV_PART_MAIN);
+    }
 #endif
 }
 
@@ -930,9 +948,7 @@ static void AddSolflareCoins(void)
 
 void GuiConnectWalletInit(void)
 {
-#ifndef BTC_ONLY
     GuiInitWalletListArray();
-#endif
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 

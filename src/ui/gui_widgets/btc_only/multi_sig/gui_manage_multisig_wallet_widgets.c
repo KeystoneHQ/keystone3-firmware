@@ -289,7 +289,7 @@ static void ReloadAndUpdateMultisigItem(DEFAULT_WALLET_INDEX_ENUM index)
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     g_walletItem = GetCurrenMultisigWalletByIndex(index);
-    Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(g_walletItem->walletConfig, mfp, 4, MainNet);
+    Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(g_walletItem->walletConfig, mfp, 4);
     if (result->error_code != 0) {
         return;
     }

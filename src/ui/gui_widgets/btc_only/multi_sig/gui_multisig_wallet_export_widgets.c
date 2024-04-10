@@ -214,7 +214,7 @@ static UREncodeResult *GuiGenerateUR()
 {
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-    return export_multi_sig_wallet_by_ur(mfp, 4, g_multisigWalletItem->walletConfig, MainNet);
+    return export_multi_sig_wallet_by_ur(mfp, 4, g_multisigWalletItem->walletConfig);
 }
 
 static void GuiContent(lv_obj_t *parent)
@@ -306,7 +306,7 @@ static void ModelGenerateAddress(char *address, uint32_t maxLen)
 {
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-    SimpleResponse_c_char *result = generate_address_for_multisig_wallet_config(g_multisigWalletItem->walletConfig, 0, 0, mfp, 4, MainNet);
+    SimpleResponse_c_char *result = generate_address_for_multisig_wallet_config(g_multisigWalletItem->walletConfig, 0, 0, mfp, 4);
     if (result->error_code != 0) {
         printf("errorMessage: %s\r\n", result->error_message);
         GuiCLoseCurrentWorkingView();
@@ -319,7 +319,7 @@ void ModelGenerateMultiSigAddress(char *address, uint32_t maxLen, char *walletCo
 {
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-    SimpleResponse_c_char *result = generate_address_for_multisig_wallet_config(walletConfig, 0, index, mfp, 4, MainNet);
+    SimpleResponse_c_char *result = generate_address_for_multisig_wallet_config(walletConfig, 0, index, mfp, 4);
     if (result->error_code != 0) {
         printf("errorMessage: %s\r\n", result->error_message);
         GuiCLoseCurrentWorkingView();

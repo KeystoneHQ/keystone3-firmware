@@ -102,7 +102,6 @@ pub extern "C" fn export_multi_sig_wallet_by_ur_test(
     master_fingerprint: *mut u8,
     length: u32,
     multi_sig_wallet: PtrT<MultiSigWallet>,
-    network: NetworkType,
 ) -> *mut UREncodeResult {
     if length != 4 {
         return UREncodeResult::from(URError::UrEncodeError(format!(
@@ -126,11 +125,7 @@ pub extern "C" fn export_multi_sig_wallet_by_ur_test(
 
         let multi_sig_wallet = extract_ptr_with_type!(multi_sig_wallet, MultiSigWallet);
 
-        let result = export_wallet_by_ur(
-            &multi_sig_wallet.into(),
-            &master_fingerprint.to_string(),
-            (&network).into(),
-        );
+        let result = export_wallet_by_ur(&multi_sig_wallet.into(), &master_fingerprint.to_string());
 
         result.map_or_else(
             |e| UREncodeResult::from(e).c_ptr(),
@@ -156,7 +151,6 @@ pub extern "C" fn export_multi_sig_wallet_by_ur(
     master_fingerprint: *mut u8,
     length: u32,
     config: PtrString,
-    network: NetworkType,
 ) -> *mut UREncodeResult {
     if length != 4 {
         return UREncodeResult::from(URError::UrEncodeError(format!(
@@ -179,20 +173,13 @@ pub extern "C" fn export_multi_sig_wallet_by_ur(
         };
         // let xfp = hex::encode(xfp);
         let config = recover_c_char(config);
-        let multi_sig_wallet = match parse_wallet_config(
-            config.as_str(),
-            &master_fingerprint.to_string(),
-            (&network).into(),
-        ) {
-            Ok(wallet) => wallet,
-            Err(e) => return UREncodeResult::from(e).c_ptr(),
-        };
+        let multi_sig_wallet =
+            match parse_wallet_config(config.as_str(), &master_fingerprint.to_string()) {
+                Ok(wallet) => wallet,
+                Err(e) => return UREncodeResult::from(e).c_ptr(),
+            };
 
-        let result = export_wallet_by_ur(
-            &multi_sig_wallet,
-            &master_fingerprint.to_string(),
-            (&network).into(),
-        );
+        let result = export_wallet_by_ur(&multi_sig_wallet, &master_fingerprint.to_string());
 
         result.map_or_else(
             |e| UREncodeResult::from(e).c_ptr(),
@@ -218,7 +205,6 @@ pub extern "C" fn import_multi_sig_wallet_by_ur(
     ur: PtrUR,
     master_fingerprint: PtrBytes,
     master_fingerprint_len: u32,
-    network: NetworkType,
 ) -> Ptr<Response<MultiSigWallet>> {
     if master_fingerprint_len != 4 {
         return Response::from(RustCError::InvalidMasterFingerprint).c_ptr();
@@ -237,11 +223,8 @@ pub extern "C" fn import_multi_sig_wallet_by_ur(
 
     let bytes = extract_ptr_with_type!(ur, Bytes);
 
-    let result = app_bitcoin::multi_sig::wallet::import_wallet_by_ur(
-        bytes,
-        &master_fingerprint.to_string(),
-        network.into(),
-    );
+    let result =
+        app_bitcoin::multi_sig::wallet::import_wallet_by_ur(bytes, &master_fingerprint.to_string());
 
     match result {
         Ok(wallet) => Response::success_ptr(MultiSigWallet::from(wallet).c_ptr()).c_ptr(),
@@ -254,7 +237,6 @@ pub extern "C" fn import_multi_sig_wallet_by_file(
     content: PtrString,
     master_fingerprint: PtrBytes,
     master_fingerprint_len: u32,
-    network: NetworkType,
 ) -> Ptr<Response<MultiSigWallet>> {
     if master_fingerprint_len != 4 {
         return Response::from(RustCError::InvalidMasterFingerprint).c_ptr();
@@ -273,7 +255,7 @@ pub extern "C" fn import_multi_sig_wallet_by_file(
 
     let content = recover_c_char(content);
 
-    let result = parse_wallet_config(&content, &master_fingerprint.to_string(), network.into());
+    let result = parse_wallet_config(&content, &master_fingerprint.to_string());
 
     match result {
         Ok(wallet) => Response::success_ptr(MultiSigWallet::from(wallet).c_ptr()).c_ptr(),
@@ -288,7 +270,6 @@ pub extern "C" fn generate_address_for_multisig_wallet_config(
     index: u32,
     master_fingerprint: PtrBytes,
     master_fingerprint_len: u32,
-    network: NetworkType,
 ) -> Ptr<SimpleResponse<c_char>> {
     if master_fingerprint_len != 4 {
         return SimpleResponse::from(RustCError::InvalidMasterFingerprint).simple_c_ptr();
@@ -305,7 +286,7 @@ pub extern "C" fn generate_address_for_multisig_wallet_config(
         }
     };
     let content = recover_c_char(wallet_config);
-    match parse_wallet_config(&content, &master_fingerprint.to_string(), network.into()) {
+    match parse_wallet_config(&content, &master_fingerprint.to_string()) {
         Ok(config) => match create_multi_sig_address_for_wallet(&config, account, index) {
             Ok(result) => SimpleResponse::success(convert_c_char(result)).simple_c_ptr(),
             Err(e) => SimpleResponse::from(e).simple_c_ptr(),
@@ -348,7 +329,6 @@ pub extern "C" fn parse_and_verify_multisig_config(
     wallet_config: PtrString,
     master_fingerprint: PtrBytes,
     master_fingerprint_len: u32,
-    network: NetworkType,
 ) -> Ptr<Response<MultiSigWallet>> {
     if master_fingerprint_len != 4 {
         return Response::from(RustCError::InvalidMasterFingerprint).c_ptr();
@@ -366,15 +346,9 @@ pub extern "C" fn parse_and_verify_multisig_config(
         }
     };
     let content = recover_c_char(wallet_config);
-    let network: Network = network.into();
-    match parse_wallet_config(&content, &master_fingerprint.to_string(), network.clone()) {
+    match parse_wallet_config(&content, &master_fingerprint.to_string()) {
         Ok(mut config) => {
-            match strict_verify_wallet_config(
-                seed,
-                &mut config,
-                &master_fingerprint.to_string(),
-                &network,
-            ) {
+            match strict_verify_wallet_config(seed, &mut config, &master_fingerprint.to_string()) {
                 Ok(()) => Response::success(MultiSigWallet::from(config)).c_ptr(),
                 Err(e) => Response::from(e).c_ptr(),
             }

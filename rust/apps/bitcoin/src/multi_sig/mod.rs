@@ -24,7 +24,7 @@ use third_party::ur_registry::crypto_output::CryptoOutput;
 use third_party::ur_registry::error::{URError, URResult};
 use third_party::ur_registry::script_expression::ScriptExpression;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Network {
     MainNet,
     TestNet,

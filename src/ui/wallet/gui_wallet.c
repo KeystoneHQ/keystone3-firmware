@@ -16,7 +16,7 @@ UREncodeResult *GuiGetBlueWalletBtcData(void)
     GetMasterFingerPrint(mfp);
 #ifdef BTC_ONLY
     if (GetDefaultWalletIndex() != SINGLE_WALLET) {
-        return export_multi_sig_wallet_by_ur(mfp, sizeof(mfp), GetDefaultMultisigWallet()->walletConfig, MainNet);
+        return export_multi_sig_wallet_by_ur(mfp, sizeof(mfp), GetDefaultMultisigWallet()->walletConfig);
     }
 #endif
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
@@ -58,7 +58,7 @@ UREncodeResult *GuiGetSparrowWalletBtcData(void)
     GetMasterFingerPrint(mfp);
 #ifdef BTC_ONLY
     if (GetDefaultWalletIndex() != SINGLE_WALLET) {
-        return export_multi_sig_wallet_by_ur(mfp, sizeof(mfp), GetDefaultMultisigWallet()->walletConfig, MainNet);
+        return export_multi_sig_wallet_by_ur(mfp, sizeof(mfp), GetDefaultMultisigWallet()->walletConfig);
     }
 #endif
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
@@ -106,7 +106,7 @@ UREncodeResult *GuiGetSpecterWalletBtcData(void)
     GetMasterFingerPrint(mfp);
 #ifdef BTC_ONLY
     if (GetDefaultWalletIndex() != SINGLE_WALLET) {
-        return export_multi_sig_wallet_by_ur(mfp, sizeof(mfp), GetDefaultMultisigWallet()->walletConfig, MainNet);
+        return export_multi_sig_wallet_by_ur(mfp, sizeof(mfp), GetDefaultMultisigWallet()->walletConfig);
     }
 #endif
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));

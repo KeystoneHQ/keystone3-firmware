@@ -96,6 +96,8 @@ void GuiImportMultisigWalletInfoWidgetsDeInit()
         g_keyboardWidget == NULL;
     }
 
+    GUI_DEL_OBJ(g_noticeWindow);
+
     ClearSecretCache();
 }
 

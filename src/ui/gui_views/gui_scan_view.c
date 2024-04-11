@@ -38,7 +38,7 @@ int32_t GuiScanViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         GuiTransactionCheckPass();
         break;
     case SIG_TRANSACTION_CHECK_FAIL:
-        GuiTransactionCheckFiald((PtrT_TransactionCheckResult)param);
+        GuiTransactionCheckFailed((PtrT_TransactionCheckResult)param);
         break;
     case SIG_SHOW_TRANSACTION_LOADING:
         GuiPendingHintBoxOpen(_("Loading"), "");

@@ -225,5 +225,6 @@ void CloseParentAndNextHandler(lv_event_t *e);
 void GuiViewHintBoxClear(void);
 lv_obj_t *GuiCreateWalletNoticeWidget(lv_obj_t *parent);
 void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param);
+void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t **param);
 
 #endif /* _GUI_VIEWS_H */

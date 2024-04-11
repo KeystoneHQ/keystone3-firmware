@@ -509,7 +509,7 @@ pub fn strict_verify_wallet_config(
     xfp: &str,
 ) -> Result<(), BitcoinError> {
     verify_wallet_config(wallet, xfp)?;
-    let same_derivation = wallet.derivations.len() > 1;
+    let same_derivation = wallet.derivations.len() == 1;
     for (index, xpub_item) in wallet.xpub_items.iter().enumerate() {
         if xpub_item.xfp.eq_ignore_ascii_case(xfp) {
             let true_index = match same_derivation {
@@ -519,12 +519,17 @@ pub fn strict_verify_wallet_config(
             let true_derivation = wallet.derivations.get(true_index).ok_or(
                 BitcoinError::MultiSigWalletParseError(format!("Invalid derivations")),
             )?;
-            let true_xpub = get_extended_public_key_by_seed(seed, true_derivation)
-                .map_err(|e| {
-                    BitcoinError::MultiSigWalletParseError(format!("Unable to generate xpub"))
-                })?
-                .to_string();
-            if !true_xpub.eq_ignore_ascii_case(&xpub_item.xpub) {
+            let true_xpub =
+                get_extended_public_key_by_seed(seed, true_derivation).map_err(|e| {
+                    BitcoinError::MultiSigWalletParseError(format!(
+                        "Unable to generate xpub, {}",
+                        e.to_string()
+                    ))
+                })?;
+            let this_xpub = Xpub::from_str(&xpub_item.xpub).map_err(|e| {
+                BitcoinError::MultiSigWalletParseError(format!("invalid xpub, {}", e.to_string()))
+            })?;
+            if !true_xpub.to_string().eq(&this_xpub.to_string()) {
                 return Err(BitcoinError::MultiSigWalletParseError(format!(
                     "extended public key not match, xfp: {}",
                     xfp
@@ -738,12 +743,12 @@ mod tests {
             Policy: 2 of 3
             Format: P2WSH-P2SH
 
-            Derivation: m/48'/0'/0'/1'
-            73c5da0a: xpub661MyMwAqRbcFkPHucMnrGNzDwb6teAX1RbKQmqtEF8kK3Z7LZ59qafCjB9eCRLiTVG3uxBxgKvRgbubRhqSKXnGGb1aoaqLrpMBDrVxga8
             Derivation: m/48'/0'/0'/1'/5/6/7
             5271c071: xpub6LfFMiP3hcgrKeTrho9MgKj2zdKGPsd6ufJzrsQNaHSFZ7uj8e1vnSwibBVQ33VfXYJM5zn9G7E9VrMkFPVcdRtH3Brg9ndHLJs8v2QtwHa
             Derivation: m/48'/0'/0'/1'/110/8/9
             c2202a77: xpub6LZnaHgbbxyZpChT4w9V5NC91qaZC9rrPoebgH3qGjZmcDKvPjLivfZSKLu5R1PjEpboNsznNwtqBifixCuKTfPxDZVNVN9mnjfTBpafqQf
+            Derivation: m/48'/0'/0'/1'
+            73c5da0a: xpub661MyMwAqRbcFkPHucMnrGNzDwb6teAX1RbKQmqtEF8kK3Z7LZ59qafCjB9eCRLiTVG3uxBxgKvRgbubRhqSKXnGGb1aoaqLrpMBDrVxga8
             */"#;
 
         let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();

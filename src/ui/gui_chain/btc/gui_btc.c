@@ -393,11 +393,12 @@ PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
 
-    char verify_code = NULL;
+    char *verify_code = NULL;
     if (GetDefaultWalletIndex() != SINGLE_WALLET) {
         MultiSigWalletItem_t *item = GetDefaultMultisigWallet();
         if (item != NULL) {
-            verify_code = item->verifyCode;
+            verify_code = SRAM_MALLOC(12);
+            strncpy_s(verify_code, 12, item->verifyCode, strnlen_s(item->verifyCode, 12));
         }
     }
 

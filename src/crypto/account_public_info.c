@@ -376,6 +376,8 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         } else {
             ret = SUCCESS_CODE;
         }
+#else
+        ret = SUCCESS_CODE;
 #endif
         CLEAR_ARRAY(hash);
         if (GetPublicKeyFromJsonString(jsonString) == false) {
@@ -1092,10 +1094,11 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
         ret = SUCCESS_CODE;
     }
     CLEAR_ARRAY(hash);
+#else
+    ret = SUCCESS_CODE;
 #endif
 
     cJSON *rootJson = cJSON_Parse(jsonString);
-
     SRAM_FREE(jsonString);
 
     cJSON *multiSigWalletList = cJSON_GetObjectItem(rootJson, "multi_sig_wallet_list");

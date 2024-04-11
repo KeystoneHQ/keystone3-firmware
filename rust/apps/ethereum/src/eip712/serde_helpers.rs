@@ -84,11 +84,9 @@ impl TryFrom<StringifiedNumeric> for [u8; 32] {
     type Error = String;
 
     fn try_from(value: StringifiedNumeric) -> Result<Self, Self::Error> {
-        let value = U256::try_from(value)?;
-        let zero_num = value.leading_zeros() as usize / 8 * 8;
-        let value = value << zero_num;
+        let u256_value = U256::try_from(value)?;
         let mut be_bytes = [0u8; 32];
-        value.to_big_endian(&mut be_bytes);
+        u256_value.to_big_endian(&mut be_bytes);
         Ok(be_bytes)
     }
 }

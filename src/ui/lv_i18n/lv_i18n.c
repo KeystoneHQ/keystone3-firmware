@@ -639,6 +639,8 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"receive_trx_hint", "This address is only for TRX, TRC-20 tokens and TRC-10 tokens, other digital assets sent to this address will be lost."},
     {"repeat_passcode_desc", "Double confirm the PIN code you've entered."},
     {"repeat_passcode_title", "Re-Enter PIN Code"},
+    {"rust_error_bitcoin_no_my_inputs", "Incongruent Transaction"},
+    {"rust_error_bitcoin_no_my_inputs_desc", "The transaction doesn't belong to the current wallet. Please check the transaction information."},
     {"scan_qr_code_error_invalid_qrcode", "Invalid QR Code"},
     {"scan_qr_code_error_invalid_qrcode_desc", "QR code data not recognized. Please try again."},
     {"scan_qr_code_error_invalid_wallet_file", "Invalid Wallet File"},

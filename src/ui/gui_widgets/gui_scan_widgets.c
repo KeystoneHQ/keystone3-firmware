@@ -143,10 +143,18 @@ void GuiTransactionCheckPass(void)
 }
 
 //Here return the error code and error message so that we can distinguish the error type later.
-void GuiTransactionCheckFiald(PtrT_TransactionCheckResult result)
+void GuiTransactionCheckFailed(PtrT_TransactionCheckResult result)
 {
+    switch (result->error_code)
+    {
+    case BitcoinNoMyInputs:
+        GuiCreateRustErrorWindow(result->error_code, result->error_message, NULL);
+        break;
+    default:
+        ThrowError();
+        break;
+    }
     GuiModelTransactionCheckResultClear();
-    ThrowError();
 }
 
 static void GuiScanNavBarInit()

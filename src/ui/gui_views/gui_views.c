@@ -12,8 +12,15 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifndef COMPILE_SIMULATOR
+#include "safe_str_lib.h"
+#else
+#include "simulator_mock_define.h"
+#endif
+
 #define IMPORT_WALLET_NOTICE                                            false
 #define CREATE_WALLET_NOTICE                                            true
+#define MAX_RUST_ERR_MESSAGE_LEN                                        1024
 
 static void CreateWalletNotice(bool isCreate);
 
@@ -332,6 +339,26 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param)
         titleText = _("scan_qr_code_error_invalid_wallet_file");
         descText = _("scan_qr_code_error_invalid_wallet_file_desc");
         break;
+    }
+
+    lv_obj_t *cont = GuiCreateConfirmHintBox(lv_scr_act(),
+                     &imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
+    lv_obj_add_event_cb(GuiGetHintBoxRightBtn(cont), CloseWaringPageHandler, LV_EVENT_CLICKED, cont);
+    return cont;
+}
+
+void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t **param)
+{
+    g_hintParam = param;
+    const char *titleText = _("Error");
+    const char *descText = SRAM_MALLOC(MAX_RUST_ERR_MESSAGE_LEN);
+    strncpy_s(descText, MAX_RUST_ERR_MESSAGE_LEN, errMessage, strnlen_s(errMessage, MAX_RUST_ERR_MESSAGE_LEN));
+
+    switch (errCode) {
+        case BitcoinNoMyInputs:
+            titleText = _("rust_error_bitcoin_no_my_inputs");
+            descText = _("rust_error_bitcoin_no_my_inputs_desc");
+            break;
     }
 
     lv_obj_t *cont = GuiCreateConfirmHintBox(lv_scr_act(),

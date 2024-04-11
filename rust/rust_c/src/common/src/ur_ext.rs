@@ -54,9 +54,17 @@ impl InferViewType for CryptoMultiAccounts {
     }
 }
 
+#[cfg(feature = "btc-only")]
 impl InferViewType for CryptoAccount {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::MultisigCryptoImportXpub)
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for CryptoAccount {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::ViewTypeUnKnown);
     }
 }
 

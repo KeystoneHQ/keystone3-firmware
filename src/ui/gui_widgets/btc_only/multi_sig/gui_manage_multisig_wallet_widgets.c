@@ -220,7 +220,7 @@ static void ReloadAndUpdateMultisigConfig(void)
     }
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, offSet);
     lv_obj_t *button = GuiCreateSelectButton(g_manageMultisig.homeTile, _("wallet_profile_multi_wallet_show_xpub"), &imgWalletExport,
-                       OpenExportMultisigViewHandler, GetCurrenMultisigWalletByIndex(0), true);
+                       OpenExportMultisigViewHandler, NULL, true);
     lv_obj_align_to(button, line, LV_ALIGN_OUT_BOTTOM_LEFT, 12, 12);
 }
 
@@ -243,7 +243,7 @@ static void CreateMultiSigWalletWidget(lv_obj_t *parent)
     lv_obj_set_width(button, 408);
     lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 526);
-    lv_obj_add_event_cb(button, ManageMultiSigWalletHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(button, OpenExportMultisigViewHandler, LV_EVENT_CLICKED, NULL);
 }
 
 static void CreateMultiSigWalletDetailWidget(lv_obj_t *parent)

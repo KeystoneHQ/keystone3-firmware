@@ -206,7 +206,7 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
             TempAccountPublicInfo(g_currentAccountIndex, password, false);
         } else {
             printf("passphrase not exist, info switch\r\n");
-            AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
+            ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
         }
     } else {
         g_publicInfo.loginPasswordErrorCount++;

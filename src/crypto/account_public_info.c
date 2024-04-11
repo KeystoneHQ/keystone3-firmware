@@ -347,7 +347,8 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     //Load Multisig wallet Manager
 #ifdef BTC_ONLY
     initMultiSigWalletManager();
-    LoadCurrentAccountMultisigWallet(password);
+    ret = LoadCurrentAccountMultisigWallet(password);
+    CHECK_ERRCODE_RETURN_INT(ret);
 #endif
 
     addr = SPI_FLASH_ADDR_USER1_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
@@ -1028,8 +1029,8 @@ void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager)
 
     sha256((struct sha256 *)hash, retStr, size);
     // write se
-    // SetMultiSigWalletDataHash(account, hash);
-    // CLEAR_ARRAY(hash);
+    SetMultisigDataHash(account, hash);
+    CLEAR_ARRAY(hash);
 
     Gd25FlashWriteBuffer(addr, (uint8_t *)&size, sizeof(size));
     Gd25FlashWriteBuffer(addr + 4, (uint8_t *)retStr, size);
@@ -1083,13 +1084,15 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
 
     sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
 
-    // if (!VerifyMulsigWalletDataHash(accountIndex, hash)) {
-    //     CLEAR_ARRAY(hash);
-    //     return ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH;
-    // } else {
-    //     ret = SUCCESS_CODE;
-    // }
-    // CLEAR_ARRAY(hash);
+#ifndef COMPILE_SIMULATOR
+    if (!VerifyMultisigWalletDataHash(accountIndex, hash)) {
+        CLEAR_ARRAY(hash);
+        return ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH;
+    } else {
+        ret = SUCCESS_CODE;
+    }
+    CLEAR_ARRAY(hash);
+#endif
 
     cJSON *rootJson = cJSON_Parse(jsonString);
 

@@ -110,7 +110,7 @@ void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
     GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
-    Response_MultiSigWallet *response = parse_and_verify_multisig_config(seed, len, g_wallet->config_text, mfp, 4, MainNet);
+    Response_MultiSigWallet *response = parse_and_verify_multisig_config(seed, len, g_wallet->config_text, mfp, 4);
     if (response->error_code != 0) {
         //TODO: throw error;
         printf("errorMessage: %s\r\n", response->error_message);
@@ -140,7 +140,7 @@ static void prepareWalletByQRCode(void *wallet_info_data)
 {
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-    Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_ur(wallet_info_data, mfp, 4, MainNet);
+    Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_ur(wallet_info_data, mfp, 4);
     processResult(result);
 }
 
@@ -148,7 +148,7 @@ static void prepareWalletBySDCard(char *walletConfig)
 {
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-    Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(walletConfig, mfp, 4, MainNet);
+    Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(walletConfig, mfp, 4);
     processResult(result);
 }
 

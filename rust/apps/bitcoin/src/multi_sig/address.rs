@@ -96,7 +96,7 @@ mod tests {
             73C5DA0A: tpubD97UxEEVXiRtzRBmHvR38R7QXNz6Dx3A7gKtoe9UgxepdJXExmJCd5Nxsv8YYLgHd3MEBKPzRwgVaJ62kvBSvMtntbkPnv6Pf8Zkny5rC89
             "#;
 
-            let config = parse_wallet_config(config, "73C5DA0A", Network::TestNet).unwrap();
+            let config = parse_wallet_config(config, "73C5DA0A").unwrap();
             let address = create_multi_sig_address_for_wallet(&config, 0, 0).unwrap();
             assert_eq!("2N9YWq8XCTGX7qQj5QCFwx3P5knckrspFBH", address);
         }
@@ -114,7 +114,7 @@ mod tests {
             73C5DA0A: tpubDFH9dgzveyD8yHQb8VrpG8FYAuwcLMHMje2CCcbBo1FpaGzYVtJeYYxcYgRqSTta5utUFts8nPPHs9C2bqoxrey5jia6Dwf9mpwrPq7YvcJ
             "#;
 
-            let config = parse_wallet_config(config, "73C5DA0A", Network::TestNet).unwrap();
+            let config = parse_wallet_config(config, "73C5DA0A").unwrap();
             let address = create_multi_sig_address_for_wallet(&config, 0, 0).unwrap();
             assert_eq!("2N77EPE2yfeTLR3CwNUCBQ7LZEUGW6N9B6y", address);
         }
@@ -132,7 +132,7 @@ mod tests {
             73C5DA0A: tpubDFH9dgzveyD8zTbPUFuLrGmCydNvxehyNdUXKJAQN8x4aZ4j6UZqGfnqFrD4NqyaTVGKbvEW54tsvPTK2UoSbCC1PJY8iCNiwTL3RWZEheQ
             "#;
 
-            let config = parse_wallet_config(config, "73C5DA0A", Network::TestNet).unwrap();
+            let config = parse_wallet_config(config, "73C5DA0A").unwrap();
             let address = create_multi_sig_address_for_wallet(&config, 0, 0).unwrap();
             assert_eq!(
                 "tb1qr7y0qr6uqyspjtst0sex8hyj3g47dfz0v5njs9x22kk6jzz3ee4qd5qrd7",
@@ -158,7 +158,7 @@ mod tests {
             73C5DA0A: xpub6EuX7TBEwhFgifQY24vFeMRqeWHGyGCupztDxk7G2ECAqGQ22Fik8E811p8GrM2LfajQzLidXy4qECxhdcxChkjiKhnq2fiVMVjdfSoZQwg
             "#;
 
-            let config = parse_wallet_config(config, "73C5DA0A", Network::MainNet).unwrap();
+            let config = parse_wallet_config(config, "73C5DA0A").unwrap();
             let address = create_multi_sig_address_for_wallet(&config, 0, 0).unwrap();
             assert_eq!("3A3vK8133WTMePMpPDmZSqSqK3gobohtG8", address);
         }

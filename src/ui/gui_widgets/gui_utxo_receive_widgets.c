@@ -228,7 +228,7 @@ void InitMultisigWalletConfig(void)
     if (GetDefaultWalletIndex() != SINGLE_WALLET) {
         uint8_t mfp[4];
         GetMasterFingerPrint(mfp);
-        Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(GetDefaultMultisigWallet()->walletConfig, mfp, 4, MainNet);
+        Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(GetDefaultMultisigWallet()->walletConfig, mfp, 4);
         if (result->error_code != 0) {
             return;
         }

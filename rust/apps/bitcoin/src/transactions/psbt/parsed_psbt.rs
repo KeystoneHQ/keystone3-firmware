@@ -66,14 +66,17 @@ mod tests {
 
     use alloc::vec::Vec;
 
+    use alloc::string::ToString;
     use core::str::FromStr;
     use std::collections::BTreeMap;
     use third_party::bitcoin::bip32::{DerivationPath, Fingerprint, Xpub};
 
     use super::*;
     use crate::parsed_tx::TxParser;
+    use crate::TxChecker;
     use third_party::bitcoin::psbt::Psbt;
     use third_party::bitcoin_hashes::hex::FromHex;
+    use third_party::either::Left;
 
     #[test]
     fn test_parse_psbt() {
@@ -90,6 +93,7 @@ mod tests {
             .parse(Some(&ParseContext {
                 master_fingerprint,
                 extended_public_keys: keys,
+                verify_code: None,
             }))
             .unwrap();
         assert_eq!("0.00005992 tBTC", result.detail.total_input_amount);
@@ -133,6 +137,7 @@ mod tests {
             .parse(Some(&ParseContext {
                 master_fingerprint,
                 extended_public_keys: keys,
+                verify_code: None,
             }))
             .unwrap();
 
@@ -157,6 +162,7 @@ mod tests {
             .parse(Some(&ParseContext {
                 master_fingerprint,
                 extended_public_keys: keys,
+                verify_code: None,
             }))
             .unwrap();
 
@@ -201,6 +207,7 @@ mod tests {
             .parse(Some(&ParseContext {
                 master_fingerprint,
                 extended_public_keys: keys,
+                verify_code: None,
             }))
             .unwrap();
 

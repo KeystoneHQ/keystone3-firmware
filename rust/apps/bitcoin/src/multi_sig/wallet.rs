@@ -14,15 +14,14 @@ use crate::addresses::xyzpub::Version;
 use crate::BitcoinError;
 
 use crate::multi_sig::{
-    convert_xpub, MultiSigXPubInfo, Network, MULTI_P2SH_PATH, MULTI_P2WSH_P2SH_PATH,
-    MULTI_P2WSH_P2SH_PATH_TEST, MULTI_P2WSH_PATH, MULTI_P2WSH_PATH_TEST,
+    convert_xpub, MultiSigFormat, MultiSigXPubInfo, Network, MULTI_P2SH_PATH,
+    MULTI_P2WSH_P2SH_PATH, MULTI_P2WSH_P2SH_PATH_TEST, MULTI_P2WSH_PATH, MULTI_P2WSH_PATH_TEST,
 };
 
 const CHANGE_XPUB_PREFIX_BY_PATH: bool = true;
 
 #[derive(Debug, Clone)]
 pub struct MultiSigXPubItem {
-    pub network: Network,
     pub xfp: String,
     pub xpub: String,
 }
@@ -38,6 +37,7 @@ pub struct MultiSigWalletConfig {
     pub xpub_items: Vec<MultiSigXPubItem>,
     pub verify_code: String,
     pub config_text: String,
+    pub network: Network,
 }
 
 impl Default for MultiSigWalletConfig {
@@ -52,17 +52,18 @@ impl Default for MultiSigWalletConfig {
             xpub_items: vec![],
             verify_code: String::new(),
             config_text: String::new(),
+            network: Network::MainNet,
         }
     }
 }
 
 impl MultiSigWalletConfig {
     pub fn get_network(&self) -> &Network {
-        &self.xpub_items[0].network
+        &self.network
     }
 
     pub fn get_network_u32(&self) -> u32 {
-        match &self.xpub_items[0].network {
+        match &self.network {
             Network::MainNet => 0,
             Network::TestNet => 1,
         }
@@ -103,6 +104,7 @@ pub fn create_wallet(
     }
 
     let mut wallet = MultiSigWalletConfig::default();
+    wallet.network = network;
 
     let is_same_path = xpub_infos.iter().all(|x| x.path == xpub_infos[0].path);
 
@@ -117,7 +119,6 @@ pub fn create_wallet(
     wallet
         .xpub_items
         .extend(xpub_infos.iter().map(|x| MultiSigXPubItem {
-            network: network.clone(),
             xfp: x.xfp.to_string(),
             xpub: x.xpub.to_string(),
         }));
@@ -128,14 +129,16 @@ pub fn create_wallet(
     wallet.format = format.to_string();
     wallet.name = name.to_string();
 
-    verify_wallet_config(&wallet, xfp, &network)?;
+    verify_wallet_config(&wallet, xfp)?;
     calculate_wallet_verify_code(&mut wallet)?;
-    wallet.config_text = generate_config_data(&wallet, xfp, network)?;
+    wallet.config_text = generate_config_data(&wallet, xfp)?;
     Ok(wallet)
 }
 
 fn _parse_plain_wallet_config(content: &str) -> Result<MultiSigWalletConfig, BitcoinError> {
     let mut wallet = MultiSigWalletConfig::default();
+
+    let mut is_first = true;
 
     for line in content.lines() {
         if line.trim().starts_with("#") {
@@ -162,17 +165,28 @@ fn _parse_plain_wallet_config(content: &str) -> Result<MultiSigWalletConfig, Bit
             }
         }
     }
+
+    for (_, xpub_item) in wallet.xpub_items.iter().enumerate() {
+        if is_first {
+            wallet.network = detect_network(&xpub_item.xpub);
+            is_first = false;
+        } else {
+            let this_network = detect_network(&xpub_item.xpub);
+            if (wallet.network != this_network) {
+                return Err(BitcoinError::MultiSigWalletParseError(format!(
+                    "xpub networks inconsistent"
+                )));
+            }
+        }
+    }
+
     wallet.config_text = content.to_string();
     Ok(wallet)
 }
 
-pub fn parse_wallet_config(
-    content: &str,
-    xfp: &str,
-    network: Network,
-) -> Result<MultiSigWalletConfig, BitcoinError> {
+pub fn parse_wallet_config(content: &str, xfp: &str) -> Result<MultiSigWalletConfig, BitcoinError> {
     let mut wallet = _parse_plain_wallet_config(content)?;
-    verify_wallet_config(&wallet, xfp, &network)?;
+    verify_wallet_config(&wallet, xfp)?;
     calculate_wallet_verify_code(&mut wallet)?;
     Ok(wallet)
 }
@@ -180,18 +194,17 @@ pub fn parse_wallet_config(
 pub fn export_wallet_by_ur(
     config: &MultiSigWalletConfig,
     xfp: &str,
-    network: Network,
 ) -> Result<Bytes, BitcoinError> {
-    let config_data = generate_config_data(config, xfp, network)?;
+    let config_data = generate_config_data(config, xfp)?;
     Ok(Bytes::new(config_data.into_bytes()))
 }
 
 pub fn generate_config_data(
     config: &MultiSigWalletConfig,
     xfp: &str,
-    network: Network,
 ) -> Result<String, BitcoinError> {
     let mut config_data = String::new();
+    let network = config.network;
 
     let policy = format!("{} of {}", config.threshold, config.total);
     config_data.push_str(&format!(
@@ -238,15 +251,11 @@ pub fn generate_config_data(
     Ok(config_data)
 }
 
-pub fn import_wallet_by_ur(
-    bytes: &Bytes,
-    xfp: &str,
-    network: Network,
-) -> Result<MultiSigWalletConfig, BitcoinError> {
+pub fn import_wallet_by_ur(bytes: &Bytes, xfp: &str) -> Result<MultiSigWalletConfig, BitcoinError> {
     let data = String::from_utf8(bytes.get_bytes())
         .map_err(|e| BitcoinError::MultiSigWalletImportXpubError(e.to_string()))?;
 
-    parse_wallet_config(&data, xfp, network)
+    parse_wallet_config(&data, xfp)
 }
 
 pub fn is_valid_wallet_config(bytes: &Bytes) -> bool {
@@ -293,8 +302,16 @@ fn process_xpub_and_xfp(
 ) -> Result<(), BitcoinError> {
     if is_valid_xfp(label) {
         if is_valid_xyzpub(value) {
+            for (_, xpub_item) in wallet.xpub_items.iter().enumerate() {
+                let result1 = xyzpub::convert_version(xpub_item.xpub.clone(), &Version::Xpub)?;
+                let result2 = xyzpub::convert_version(value, &Version::Xpub)?;
+                if result1.eq_ignore_ascii_case(&result2) {
+                    return Err(BitcoinError::MultiSigWalletParseError(format!(
+                        "found duplicated xpub"
+                    )));
+                }
+            }
             wallet.xpub_items.push(MultiSigXPubItem {
-                network: detect_network(value),
                 xfp: label.to_string(),
                 xpub: value.to_string(),
             });
@@ -344,15 +361,19 @@ fn detect_network(xpub: &str) -> Network {
     }
 }
 
-fn verify_wallet_config(
-    wallet: &MultiSigWalletConfig,
-    xfp: &str,
-    network: &Network,
-) -> Result<(), BitcoinError> {
+fn verify_wallet_config(wallet: &MultiSigWalletConfig, xfp: &str) -> Result<(), BitcoinError> {
     if wallet.xpub_items.is_empty() {
         return Err(BitcoinError::MultiSigWalletParseError(
             "have no xpub in config file".to_string(),
         ));
+    }
+
+    if wallet.total != wallet.xpub_items.len() as u32 {
+        return Err(BitcoinError::MultiSigWalletParseError(format!(
+            "multisig wallet requires {} cosigners, but found {}",
+            wallet.total,
+            wallet.xpub_items.len()
+        )));
     }
 
     if !wallet
@@ -370,46 +391,60 @@ fn verify_wallet_config(
             "num of derivations is not right".to_string(),
         ));
     }
-
-    for item in &wallet.xpub_items {
-        if item.network != *network {
-            return Err(BitcoinError::MultiSigWalletParseError(format!(
-                "the network does not match the current mode, network is {}, current mode is {}",
-                item.network, network
-            )));
-        }
-    }
     Ok(())
 }
 
 fn calculate_wallet_verify_code(wallet: &mut MultiSigWalletConfig) -> Result<(), BitcoinError> {
-    let join_xpubs = wallet
+    let xpubs = wallet
         .xpub_items
         .iter()
-        .map(|x| xyzpub::convert_version(&x.xpub, &Version::Xpub))
+        .map(|x| x.xpub.to_string())
+        .collect::<Vec<_>>();
+
+    wallet.verify_code = calculate_multi_sig_verify_code(
+        &xpubs,
+        wallet.threshold as u8,
+        wallet.total as u8,
+        MultiSigFormat::from(&wallet.format)?,
+        wallet.get_network(),
+    )?;
+    Ok(())
+}
+
+pub fn calculate_multi_sig_verify_code(
+    xpubs: &Vec<String>,
+    threshold: u8,
+    total: u8,
+    format: MultiSigFormat,
+    network: &Network,
+) -> Result<String, BitcoinError> {
+    let join_xpubs = xpubs
+        .iter()
+        .map(|x| xyzpub::convert_version(x, &Version::Xpub))
         .collect::<Result<Vec<_>, _>>()?
         .iter()
         .sorted()
         .join(" ");
 
-    let data = format!(
-        "{}{}of{}{}",
-        join_xpubs,
-        wallet.threshold,
-        wallet.xpub_items.len(),
-        wallet.get_wallet_path()?,
-    );
-    wallet.verify_code = hex::encode(sha256(data.as_bytes()))[0..8].to_string();
-    Ok(())
+    let path = match (format, network) {
+        (MultiSigFormat::P2sh, _) => MULTI_P2SH_PATH,
+        (MultiSigFormat::P2wshP2sh, Network::MainNet) => MULTI_P2WSH_P2SH_PATH,
+        (MultiSigFormat::P2wshP2sh, Network::TestNet) => MULTI_P2WSH_P2SH_PATH_TEST,
+        (MultiSigFormat::P2wsh, Network::MainNet) => MULTI_P2WSH_PATH,
+        (MultiSigFormat::P2wsh, Network::TestNet) => MULTI_P2WSH_PATH_TEST,
+    };
+
+    let data = format!("{}{}of{}{}", join_xpubs, threshold, total, path,);
+
+    Ok(hex::encode(sha256(data.as_bytes()))[0..8].to_string())
 }
 
 pub fn strict_verify_wallet_config(
     seed: &[u8],
     wallet: &MultiSigWalletConfig,
     xfp: &str,
-    network: &Network,
 ) -> Result<(), BitcoinError> {
-    verify_wallet_config(wallet, xfp, network)?;
+    verify_wallet_config(wallet, xfp)?;
     let same_derivation = wallet.derivations.len() > 1;
     for (index, xpub_item) in wallet.xpub_items.iter().enumerate() {
         if xpub_item.xfp.eq_ignore_ascii_case(xfp) {
@@ -438,10 +473,13 @@ pub fn strict_verify_wallet_config(
 
 #[cfg(test)]
 mod tests {
+    use core::result;
+
     use alloc::string::ToString;
 
     use crate::multi_sig::wallet::{
-        create_wallet, export_wallet_by_ur, generate_config_data, parse_wallet_config,
+        create_wallet, export_wallet_by_ur, generate_config_data, is_valid_xyzpub,
+        parse_wallet_config, strict_verify_wallet_config,
     };
     use crate::multi_sig::{MultiSigXPubInfo, Network};
     use alloc::vec::Vec;
@@ -465,7 +503,7 @@ mod tests {
             5271C071: xpub6EWksRHwPbDmXWkjQeA6wbCmXZeDPXieMob9hhbtJjmrmk647bWkh7om5rk2eoeDKcKG6NmD8nT7UZAFxXQMjTnhENTwTEovQw3MDQ8jJ16
             */"#;
 
-            let config = parse_wallet_config(config, "748CC6AA", Network::MainNet).unwrap();
+            let config = parse_wallet_config(config, "748CC6AA").unwrap();
 
             assert_eq!("Coldcard", config.creator);
             assert_eq!("CC-2-of-3", config.name);
@@ -477,13 +515,11 @@ mod tests {
             assert_eq!(3, config.xpub_items.len());
             assert_eq!("xpub6F6iZVTmc3KMgAUkV9JRNaouxYYwChRswPN1ut7nTfecn6VPRYLXFgXar1gvPUX27QH1zaVECqVEUoA2qMULZu5TjyKrjcWcLTQ6LkhrZAj", config.xpub_items[0].xpub);
             assert_eq!("748CC6AA", config.xpub_items[0].xfp);
-            assert_eq!(Network::MainNet, config.xpub_items[0].network);
+            assert_eq!(Network::MainNet, config.network);
             assert_eq!("xpub6EiTGcKqBQy2uTat1QQPhYQWt8LGmZStNqKDoikedkB72sUqgF9fXLUYEyPthqLSb6VP4akUAsy19MV5LL8SvqdzvcABYUpKw45jA1KZMhm", config.xpub_items[1].xpub);
             assert_eq!("C2202A77", config.xpub_items[1].xfp);
-            assert_eq!(Network::MainNet, config.xpub_items[1].network);
             assert_eq!("xpub6EWksRHwPbDmXWkjQeA6wbCmXZeDPXieMob9hhbtJjmrmk647bWkh7om5rk2eoeDKcKG6NmD8nT7UZAFxXQMjTnhENTwTEovQw3MDQ8jJ16", config.xpub_items[2].xpub);
             assert_eq!("5271C071", config.xpub_items[2].xfp);
-            assert_eq!(Network::MainNet, config.xpub_items[2].network);
             assert_eq!("d4637859", config.verify_code);
         }
 
@@ -506,7 +542,7 @@ mod tests {
             c2202a77: xpub6LZnaHgbbxyZpChT4w9V5NC91qaZC9rrPoebgH3qGjZmcDKvPjLivfZSKLu5R1PjEpboNsznNwtqBifixCuKTfPxDZVNVN9mnjfTBpafqQf
             */"#;
 
-            let config = parse_wallet_config(config, "748cc6aa", Network::MainNet).unwrap();
+            let config = parse_wallet_config(config, "748cc6aa").unwrap();
             assert_eq!("Coldcard", config.creator);
             assert_eq!("My Multisig Wallet", config.name);
             assert_eq!(2, config.threshold);
@@ -519,15 +555,140 @@ mod tests {
             assert_eq!(3, config.xpub_items.len());
             assert_eq!("xpub6KMfgiWkVW33LfMbZoGjk6M3CvdZtrzkn38RP2SjbGGU9E85JTXDaX6Jn6bXVqnmq2EnRzWTZxeF3AZ1ZLcssM4DT9GY5RSuJBt1GRx3xm2", config.xpub_items[0].xpub);
             assert_eq!("748cc6aa", config.xpub_items[0].xfp);
-            assert_eq!(Network::MainNet, config.xpub_items[0].network);
+            assert_eq!(Network::MainNet, config.network);
             assert_eq!("xpub6LfFMiP3hcgrKeTrho9MgKj2zdKGPsd6ufJzrsQNaHSFZ7uj8e1vnSwibBVQ33VfXYJM5zn9G7E9VrMkFPVcdRtH3Brg9ndHLJs8v2QtwHa", config.xpub_items[1].xpub);
             assert_eq!("5271c071", config.xpub_items[1].xfp);
-            assert_eq!(Network::MainNet, config.xpub_items[1].network);
             assert_eq!("xpub6LZnaHgbbxyZpChT4w9V5NC91qaZC9rrPoebgH3qGjZmcDKvPjLivfZSKLu5R1PjEpboNsznNwtqBifixCuKTfPxDZVNVN9mnjfTBpafqQf", config.xpub_items[2].xpub);
             assert_eq!("c2202a77", config.xpub_items[2].xfp);
-            assert_eq!(Network::MainNet, config.xpub_items[2].network);
             assert_eq!("7cb85a16", config.verify_code);
         }
+    }
+
+    #[test]
+    fn test_parse_multisig_wallet_config_with_err() {
+        {
+            // inconsistent network
+            let config = r#"/*
+            # Coldcard Multisig setup file (exported from unchained-wallets)
+            # https://github.com/unchained-capital/unchained-wallets
+            # v1.0.0
+            #
+            Name: My Multisig Wallet
+            Policy: 2 of 3
+            Format: P2WSH-P2SH
+
+            Derivation: m/48'/0'/0'/1'/12/32/5
+            748cc6aa: xpub6KMfgiWkVW33LfMbZoGjk6M3CvdZtrzkn38RP2SjbGGU9E85JTXDaX6Jn6bXVqnmq2EnRzWTZxeF3AZ1ZLcssM4DT9GY5RSuJBt1GRx3xm2
+            Derivation: m/48'/0'/0'/1'/5/6/7
+            5271c071: xpub6LfFMiP3hcgrKeTrho9MgKj2zdKGPsd6ufJzrsQNaHSFZ7uj8e1vnSwibBVQ33VfXYJM5zn9G7E9VrMkFPVcdRtH3Brg9ndHLJs8v2QtwHa
+            Derivation: m/48'/0'/0'/1'/110/8/9
+            c2202a77: tpubDLwR6XWHKEw25ztJX88aHHXWLxgDBYMuwSEu2q6yceKfMVzdTxBp57EGZNyrwWLy2j8hzTWev3issuALM4kZM6rFHAEgAtp1NhFrwr9MzF5
+            */"#;
+
+            let config = parse_wallet_config(config, "748cc6aa");
+            assert_eq!(false, config.is_ok());
+        }
+
+        {
+            //total is 4 but only provide 3 keys
+            let config = r#"/*
+            # Coldcard Multisig setup file (exported from unchained-wallets)
+            # https://github.com/unchained-capital/unchained-wallets
+            # v1.0.0
+            #
+            Name: My Multisig Wallet
+            Policy: 2 of 4
+            Format: P2WSH-P2SH
+
+            Derivation: m/48'/0'/0'/1'/12/32/5
+            748cc6aa: xpub6KMfgiWkVW33LfMbZoGjk6M3CvdZtrzkn38RP2SjbGGU9E85JTXDaX6Jn6bXVqnmq2EnRzWTZxeF3AZ1ZLcssM4DT9GY5RSuJBt1GRx3xm2
+            Derivation: m/48'/0'/0'/1'/5/6/7
+            5271c071: xpub6LfFMiP3hcgrKeTrho9MgKj2zdKGPsd6ufJzrsQNaHSFZ7uj8e1vnSwibBVQ33VfXYJM5zn9G7E9VrMkFPVcdRtH3Brg9ndHLJs8v2QtwHa
+            Derivation: m/48'/0'/0'/1'/110/8/9
+            c2202a77: xpub6LZnaHgbbxyZpChT4w9V5NC91qaZC9rrPoebgH3qGjZmcDKvPjLivfZSKLu5R1PjEpboNsznNwtqBifixCuKTfPxDZVNVN9mnjfTBpafqQf
+            */"#;
+
+            let config = parse_wallet_config(config, "748cc6aa");
+            assert_eq!(false, config.is_ok());
+        }
+
+        {
+            let config = r#"/*
+                # Coldcard Multisig setup file (exported from unchained-wallets)
+                # https://github.com/unchained-capital/unchained-wallets
+                # v1.0.0
+                #
+                Name: My Multisig Wallet
+                Policy: 2 of 3
+                Format: P2WSH-P2SH
+    
+                52744703: Zpub75TRDhcAARKcWjwnLvoUP5AkszA13W5EnHTxL3vfnKtEXZYQsHKjPFxWLGT98ztfRY1ttG5RKhNChZuoTkFFfXEqyKSKDi99LtJcSKzUfDx
+                50659928: xpub6E9nHcM3Q2cBHFhYHfz7cghFutBpKWsAGXukyyd13TkHczjDaazdCZwbKXJCWkCeH4KcNtuCAmVycVNugJh1UcHMJeVi25csjzLxChEpCW4
+                50659928: xpub6E9nHcM3Q2cBHFhYHfz7cghFutBpKWsAGXukyyd13TkHczjDaazdCZwbKXJCWkCeH4KcNtuCAmVycVNugJh1UcHMJeVi25csjzLxChEpCW4
+                */"#;
+
+            let config = parse_wallet_config(config, "748cc6aa");
+            let x = is_valid_xyzpub("Zpub75TRDhcAARKcWjwnLvoUP5AkszA13W5EnHTxL3vfnKtEXZYQsHKjPFxWLGT98ztfRY1ttG5RKhNChZuoTkFFfXEqyKSKDi99LtJcSKzUfDx");
+            let y = is_valid_xyzpub("xpub6E9nHcM3Q2cBHFhYHfz7cghFutBpKWsAGXukyyd13TkHczjDaazdCZwbKXJCWkCeH4KcNtuCAmVycVNugJh1UcHMJeVi25csjzLxChEpCW4");
+            extern crate std;
+            use std::println;
+            println!("{}", x);
+            println!("{}", y);
+            assert_eq!(false, config.is_ok());
+        }
+    }
+
+    #[test]
+    fn test_strict_verify_wallet_config() {
+        let config = r#"/*
+            # Coldcard Multisig setup file (exported from unchained-wallets)
+            # https://github.com/unchained-capital/unchained-wallets
+            # v1.0.0
+            #
+            Name: My Multisig Wallet
+            Policy: 2 of 3
+            Format: P2WSH-P2SH
+
+            Derivation: m/48'/0'/0'/1'
+            73c5da0a: xpub6DkFAXWQ2dHxnMKoSBogHrw1rgNJKR4umdbnNVNTYeCGcduxWnNUHgGptqEQWPKRmeW4Zn4FHSbLMBKEWYaMDYu47Ytg6DdFnPNt8hwn5mE
+            Derivation: m/48'/0'/0'/1'/5/6/7
+            5271c071: xpub6LfFMiP3hcgrKeTrho9MgKj2zdKGPsd6ufJzrsQNaHSFZ7uj8e1vnSwibBVQ33VfXYJM5zn9G7E9VrMkFPVcdRtH3Brg9ndHLJs8v2QtwHa
+            Derivation: m/48'/0'/0'/1'/110/8/9
+            c2202a77: xpub6LZnaHgbbxyZpChT4w9V5NC91qaZC9rrPoebgH3qGjZmcDKvPjLivfZSKLu5R1PjEpboNsznNwtqBifixCuKTfPxDZVNVN9mnjfTBpafqQf
+            */"#;
+
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let config = parse_wallet_config(config, "73c5da0a").unwrap();
+        let result = strict_verify_wallet_config(&seed, &config, "73c5da0a");
+        assert_eq!(true, result.is_ok());
+    }
+
+    #[test]
+    fn test_strict_verify_wallet_config_wrong_xpub() {
+        let config = r#"/*
+            # Coldcard Multisig setup file (exported from unchained-wallets)
+            # https://github.com/unchained-capital/unchained-wallets
+            # v1.0.0
+            #
+            Name: My Multisig Wallet
+            Policy: 2 of 3
+            Format: P2WSH-P2SH
+
+            Derivation: m/48'/0'/0'/1'
+            73c5da0a: xpub661MyMwAqRbcFkPHucMnrGNzDwb6teAX1RbKQmqtEF8kK3Z7LZ59qafCjB9eCRLiTVG3uxBxgKvRgbubRhqSKXnGGb1aoaqLrpMBDrVxga8
+            Derivation: m/48'/0'/0'/1'/5/6/7
+            5271c071: xpub6LfFMiP3hcgrKeTrho9MgKj2zdKGPsd6ufJzrsQNaHSFZ7uj8e1vnSwibBVQ33VfXYJM5zn9G7E9VrMkFPVcdRtH3Brg9ndHLJs8v2QtwHa
+            Derivation: m/48'/0'/0'/1'/110/8/9
+            c2202a77: xpub6LZnaHgbbxyZpChT4w9V5NC91qaZC9rrPoebgH3qGjZmcDKvPjLivfZSKLu5R1PjEpboNsznNwtqBifixCuKTfPxDZVNVN9mnjfTBpafqQf
+            */"#;
+
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let config = parse_wallet_config(config, "73c5da0a").unwrap();
+        let config = strict_verify_wallet_config(&seed, &config, "73c5da0a");
+        // extern crate std;
+        // use std::println;
+        // println!("{:?}", config);
+        assert_eq!(false, config.is_ok());
     }
 
     #[test]
@@ -541,8 +702,8 @@ Format: P2SH
 
 C45358FA: tpubD9hphZzCi9u5Wcbtq3jQYTzbPv6igoaRWDuhxLUDv5VTffE3gEVovYaqwfVMCa6q8VMdwAcPpFgAdajgmLML6XgYrKBquyYEDQg1HnKm3wQ
 73C5DA0A: tpubD97UxEEVXiRtzRBmHvR38R7QXNz6Dx3A7gKtoe9UgxepdJXExmJCd5Nxsv8YYLgHd3MEBKPzRwgVaJ62kvBSvMtntbkPnv6Pf8Zkny5rC89";
-        let config = parse_wallet_config(config_str, "73C5DA0A", Network::TestNet).unwrap();
-        let data = generate_config_data(&config, "73C5DA0A", Network::TestNet).unwrap();
+        let config = parse_wallet_config(config_str, "73C5DA0A").unwrap();
+        let data = generate_config_data(&config, "73C5DA0A").unwrap();
         assert_eq!(data, config_str);
     }
 
@@ -557,8 +718,8 @@ Format: P2SH
 
 C45358FA: tpubD9hphZzCi9u5Wcbtq3jQYTzbPv6igoaRWDuhxLUDv5VTffE3gEVovYaqwfVMCa6q8VMdwAcPpFgAdajgmLML6XgYrKBquyYEDQg1HnKm3wQ
 73C5DA0A: tpubD97UxEEVXiRtzRBmHvR38R7QXNz6Dx3A7gKtoe9UgxepdJXExmJCd5Nxsv8YYLgHd3MEBKPzRwgVaJ62kvBSvMtntbkPnv6Pf8Zkny5rC89";
-        let config = parse_wallet_config(config_str, "73C5DA0A", Network::TestNet).unwrap();
-        let data = export_wallet_by_ur(&config, "73C5DA0A", Network::TestNet).unwrap();
+        let config = parse_wallet_config(config_str, "73C5DA0A").unwrap();
+        let data = export_wallet_by_ur(&config, "73C5DA0A").unwrap();
         assert_eq!(
             "59016823204B657973746F6E65204D756C74697369672073657475702066696C65202863726561746564206F6E203733433544413041290A230A4E616D653A20746573746E6574310A506F6C6963793A2032206F6620320A44657269766174696F6E3A206D2F3435270A466F726D61743A20503253480A0A43343533353846413A207470756244396870685A7A43693975355763627471336A5159547A6250763669676F615257447568784C554476355654666645336745566F765961717766564D4361367138564D64774163507046674164616A676D4C4D4C36586759724B42717579594544516731486E4B6D3377510A37334335444130413A20747075624439375578454556586952747A52426D4876523338523751584E7A364478334137674B746F65395567786570644A5845786D4A4364354E7873763859594C674864334D45424B507A52776756614A36326B764253764D746E74626B506E76365066385A6B6E793572433839",
             hex::encode::<Vec<u8>>(data.clone().try_into().unwrap()).to_uppercase()
@@ -606,7 +767,7 @@ C45358FA: tpubD9hphZzCi9u5Wcbtq3jQYTzbPv6igoaRWDuhxLUDv5VTffE3gEVovYaqwfVMCa6q8V
             )
             .unwrap();
 
-            let data = generate_config_data(&wallet, "73C5DA0A", Network::TestNet).unwrap();
+            let data = generate_config_data(&wallet, "73C5DA0A").unwrap();
             assert_eq!(config, data);
         }
 
@@ -655,7 +816,7 @@ c2202a77: Ypub6rJ91C5xKc5R653wqxQ67XdSubmGM8XwdBpVNwDG2Wn4HVi4QntZdr5W9Fp8yMGYsv
             )
             .unwrap();
 
-            let data = generate_config_data(&wallet, "748cc6aa", Network::MainNet).unwrap();
+            let data = generate_config_data(&wallet, "748cc6aa").unwrap();
 
             assert_eq!(config, data);
         }

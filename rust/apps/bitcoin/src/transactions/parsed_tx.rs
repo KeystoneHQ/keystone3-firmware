@@ -63,16 +63,19 @@ pub struct DetailTx {
 pub struct ParseContext {
     pub master_fingerprint: Fingerprint,
     pub extended_public_keys: BTreeMap<DerivationPath, Xpub>,
+    pub verify_code: Option<String>,
 }
 
 impl ParseContext {
     pub fn new(
         master_fingerprint: Fingerprint,
         extended_public_keys: BTreeMap<DerivationPath, Xpub>,
+        verify_code: Option<String>,
     ) -> Self {
         ParseContext {
             master_fingerprint,
             extended_public_keys,
+            verify_code,
         }
     }
 }

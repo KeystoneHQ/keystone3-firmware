@@ -127,7 +127,6 @@ static void UpdateConfirmIndexBtn(void);
 static void UpdateConfirmAccountBtn(void);
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type);
-void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 
 static MultiAccountsReceiveWidgets_t g_multiAccountsReceiveWidgets;
 static MultiAccountsReceiveTile g_multiAccountsReceiveTileNow;
@@ -510,7 +509,7 @@ static void RefreshQrCode(void)
         lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
     char string[128] = {0};
-    CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 20);
+    CutAndFormatString(string, sizeof(string), addressDataItem.address, 20);
     lv_label_set_text(g_multiAccountsReceiveWidgets.addressLabel, string);
     lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.addressCountLabel, "%s-%u", _("receive_ada_base_address"), (addressDataItem.index));
 }
@@ -525,7 +524,7 @@ static void RefreshSwitchAddress(void)
         ModelGetAddress(index, &addressDataItem, 0);
         lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("receive_ada_base_address"), (addressDataItem.index));
         char string[128] = {0};
-        CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 24);
+        CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {
             lv_obj_add_flag(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);

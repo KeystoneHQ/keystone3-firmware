@@ -428,6 +428,7 @@ void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint3
             if (!strstr(fno.fname, contain)) {
                 continue;
             }
+            printf("fno.name = %s\n", fno.fname);
             strcpy_s(fileName[count], maxLen, fno.fname);
             count++;
         }

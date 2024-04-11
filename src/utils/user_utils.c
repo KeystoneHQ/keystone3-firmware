@@ -252,3 +252,30 @@ bool GetBoolValue(const cJSON *obj, const char *key, bool defaultValue)
     printf("key:%s does not exist\r\n", key);
     return defaultValue;
 }
+
+void CutAndFormatFileName(char *out, uint32_t maxLen, const char *fileName, const char *contain)
+{
+    if (strlen(fileName) >= 20 + strlen(contain)) {
+        char fname[BUFFER_SIZE_64] = {0};
+        strncpy_s(fname, BUFFER_SIZE_64, fileName, strrchr(fileName, '.') - fileName);
+        CutAndFormatString(out, maxLen, fname, 16);
+        printf("out = %s\n", out);
+        strcat_s(out, maxLen, contain);
+    } else {
+        strcpy_s(out, maxLen, fileName);
+    }
+}
+
+void CutAndFormatString(char *out, uint32_t maxLen, const char *string, uint32_t targetLen)
+{
+    uint32_t len = strnlen_s(string, maxLen + 1);
+
+    if (len < targetLen) {
+        strcpy_s(out, len + 1, string);
+    } else {
+        size_t halfLen = targetLen / 2;
+        strncpy_s(out, maxLen, string, halfLen);
+        strcat_s(out, maxLen, "...");
+        strncat_s(out, maxLen, string + len - halfLen, halfLen);
+    }
+}

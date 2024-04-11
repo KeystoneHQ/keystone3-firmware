@@ -27,5 +27,7 @@ int FindStringCharPosition(const char *str, const char destChar, int index);
 int32_t GetIntValue(const cJSON *obj, const char *key, int32_t defaultValue);
 void GetStringValue(const cJSON *obj, const char *key, char *value, uint32_t maxLen);
 bool GetBoolValue(const cJSON *obj, const char *key, bool defaultValue);
+void CutAndFormatString(char *out, uint32_t maxLen, const char *string, uint32_t targetLen);
+void CutAndFormatFileName(char *out, uint32_t maxLen, const char *fileName, const char *contain);
 
 #endif /* _USER_UTILS_H */

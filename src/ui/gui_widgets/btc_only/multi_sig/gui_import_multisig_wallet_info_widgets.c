@@ -42,6 +42,7 @@ static void GuiConfirmHandler(lv_event_t *e);
 static void GuiVerifyPassword();
 static void GuiOnFailedHandler(lv_event_t *e);
 static void GuiShowWalletExisted();
+static void GuiShowInvalidWalletConfig();
 static void GuiShowInvalidQRCode();
 static void GuiShowInvalidWalletFile();
 static void prepareWalletByQRCode(void *);
@@ -116,9 +117,8 @@ void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
     GetMasterFingerPrint(mfp);
     Response_MultiSigWallet *response = parse_and_verify_multisig_config(seed, len, g_wallet->config_text, mfp, 4);
     if (response->error_code != 0) {
-        //TODO: throw error;
         printf("errorMessage: %s\r\n", response->error_message);
-        GuiCLoseCurrentWorkingView();
+        GuiShowInvalidWalletConfig();
         free_MultiSigWallet(response->data);
         return;
     }
@@ -290,6 +290,26 @@ static void GuiShowInvalidWalletFile()
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
 
     label = GuiCreateIllustrateLabel(g_noticeWindow, _("scan_qr_code_error_invalid_wallet_file_desc"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
+
+    lv_obj_t *btn = GuiCreateBtnWithFont(g_noticeWindow, _("OK"), g_defTextFont);
+    lv_obj_set_size(btn, 94, 66);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
+    lv_obj_add_event_cb(btn, GuiOnFailedHandler, LV_EVENT_CLICKED, NULL);
+}
+
+static void GuiShowInvalidWalletConfig()
+{
+    g_noticeWindow = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgFailed);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
+
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeWindow, _("multisig_import_wallet_invalid"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
+
+    label = GuiCreateIllustrateLabel(g_noticeWindow, _("multisig_import_wallet_invalid_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
     lv_obj_t *btn = GuiCreateBtnWithFont(g_noticeWindow, _("OK"), g_defTextFont);

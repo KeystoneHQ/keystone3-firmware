@@ -356,6 +356,7 @@ void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t
 
     switch (errCode) {
         case BitcoinNoMyInputs:
+        case BitcoinWalletTypeError:
             titleText = _("rust_error_bitcoin_no_my_inputs");
             descText = _("rust_error_bitcoin_no_my_inputs_desc");
             break;

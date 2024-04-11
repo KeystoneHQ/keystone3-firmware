@@ -15,6 +15,12 @@
 #include "gui_btc_home_widgets.h"
 #endif
 
+#ifndef COMPILE_SIMULATOR
+#include "safe_str_lib.h"
+#else
+#include "simulator_mock_define.h"
+#endif
+
 #define CHECK_FREE_PARSE_RESULT(result)                             \
     if (result != NULL) {                                           \
         free_TransactionParseResult_DisplayTx(g_parseResult);       \
@@ -478,11 +484,12 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
 #endif
 #ifdef BTC_ONLY
-        char verify_code = NULL;
+        char *verify_code = NULL;
         if (GetDefaultWalletIndex() != SINGLE_WALLET) {
             MultiSigWalletItem_t *item = GetDefaultMultisigWallet();
             if (item != NULL) {
-                verify_code = item->verifyCode;
+                verify_code = SRAM_MALLOC(12);
+                strncpy_s(verify_code, 12, item->verifyCode, strnlen_s(item->verifyCode, 12));
             }
         }
         result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys, verify_code);

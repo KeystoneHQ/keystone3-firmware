@@ -207,7 +207,7 @@ impl WrappedPsbt {
         };
         return Err(BitcoinError::WalletTypeError(format!(
             "wallet type mismatch wallet verify code is {} input verify code is {}",
-            input_verify_code, wallet_verify_code
+            wallet_verify_code, input_verify_code
         )));
     }
 

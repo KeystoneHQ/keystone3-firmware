@@ -316,6 +316,22 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param)
         titleText = _("multisig_import_xpub_error_title");
         descText = _("multisig_import_xpub_error_desc");
         break;
+    case ERR_MULTISIG_WALLET_CONFIG_INVALID:
+        titleText = _("multisig_import_wallet_invalid");
+        descText = _("multisig_import_wallet_invalid_desc");
+        break;
+    case ERR_MULTISIG_WALLET_EXIST:
+        titleText = _("multisig_import_wallet_exist");
+        descText = _("multisig_import_wallet_exist_desc");
+        break;
+    case ERR_INVALID_QRCODE:
+        titleText = _("scan_qr_code_error_invalid_qrcode");
+        descText = _("scan_qr_code_error_invalid_qrcode_desc");
+        break;
+    case ERR_MULTISIG_INVALID_FILE:
+        titleText = _("scan_qr_code_error_invalid_wallet_file");
+        descText = _("scan_qr_code_error_invalid_wallet_file_desc");
+        break;
     }
 
     lv_obj_t *cont = GuiCreateConfirmHintBox(lv_scr_act(),

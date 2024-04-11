@@ -27,6 +27,7 @@ use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 use third_party::ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::cosmos::evm_sign_request::EvmSignRequest;
+use third_party::ur_registry::crypto_account::CryptoAccount;
 use third_party::ur_registry::crypto_psbt::CryptoPSBT;
 use third_party::ur_registry::error::{URError, URResult};
 #[cfg(feature = "multi-coins")]
@@ -207,6 +208,10 @@ pub enum ViewType {
     KeyDerivationRequest,
     #[cfg(feature = "btc-only")]
     MultisigWalletImport,
+    #[cfg(feature = "btc-only")]
+    MultisigCryptoImportXpub,
+    #[cfg(feature = "btc-only")]
+    MultisigBytesImportXpub,
     ViewTypeUnKnown,
 }
 
@@ -214,6 +219,7 @@ pub enum ViewType {
 pub enum URType {
     CryptoPSBT,
     CryptoMultiAccounts,
+    CryptoAccount,
     Bytes,
     BtcSignRequest,
     #[cfg(feature = "multi-coins")]
@@ -244,6 +250,7 @@ impl URType {
         match value {
             InnerURType::CryptoPsbt(_) => Ok(URType::CryptoPSBT),
             InnerURType::CryptoMultiAccounts(_) => Ok(URType::CryptoMultiAccounts),
+            InnerURType::CryptoAccount(_) => Ok(URType::CryptoAccount),
             InnerURType::Bytes(_) => Ok(URType::Bytes),
             InnerURType::BtcSignRequest(_) => Ok(URType::BtcSignRequest),
             #[cfg(feature = "multi-coins")]
@@ -338,6 +345,9 @@ fn free_ur(ur_type: &URType, data: PtrUR) {
         }
         URType::CryptoMultiAccounts => {
             free_ptr_with_type!(data, CryptoMultiAccounts);
+        }
+        URType::CryptoAccount => {
+            free_ptr_with_type!(data, CryptoAccount);
         }
         #[cfg(feature = "multi-coins")]
         URType::EthSignRequest => {
@@ -503,6 +513,7 @@ pub fn decode_ur(ur: String) -> URParseResult {
 
     match ur_type {
         URType::CryptoPSBT => _decode_ur::<CryptoPSBT>(ur, ur_type),
+        URType::CryptoAccount => _decode_ur::<CryptoAccount>(ur, ur_type),
         URType::CryptoMultiAccounts => _decode_ur::<CryptoMultiAccounts>(ur, ur_type),
         URType::Bytes => _decode_ur::<Bytes>(ur, ur_type),
         URType::BtcSignRequest => _decode_ur::<BtcSignRequest>(ur, ur_type),
@@ -571,6 +582,7 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
     };
     match ur_type {
         URType::CryptoPSBT => _receive_ur::<CryptoPSBT>(ur, ur_type, decoder),
+        URType::CryptoAccount => _receive_ur::<CryptoAccount>(ur, ur_type, decoder),
         URType::CryptoMultiAccounts => _receive_ur::<CryptoMultiAccounts>(ur, ur_type, decoder),
         URType::Bytes => _receive_ur::<Bytes>(ur, ur_type, decoder),
         URType::BtcSignRequest => _receive_ur::<BtcSignRequest>(ur, ur_type, decoder),

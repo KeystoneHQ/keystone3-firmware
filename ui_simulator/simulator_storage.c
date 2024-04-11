@@ -218,7 +218,6 @@ void ModifyJsonArrayData(cJSON *root, uint8_t *data, uint8_t len, char *key)
 {
     cJSON *item = cJSON_GetObjectItem(root, key);
     if (item == NULL) {
-        printf("%s %d..\n", __func__, __LINE__);
         return InsertJsonU8Array(root, data, len, key);
     }
     printf("cJSON_GetArraySize(item) = %d\n", cJSON_GetArraySize(item));

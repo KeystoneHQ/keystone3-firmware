@@ -3,8 +3,8 @@ use alloc::format;
 use alloc::string::ToString;
 use alloc::vec;
 use alloc::vec::Vec;
-use app_bitcoin::multi_sig::wallet::MultiSigWalletConfig;
-use app_bitcoin::multi_sig::Network;
+use app_bitcoin::multi_sig::wallet::{BsmsWallet, MultiSigWalletConfig};
+use app_bitcoin::multi_sig::{MultiSigFormat, MultiSigType, MultiSigXPubInfo, Network};
 use common_rust_c::ffi::{CSliceFFI, VecFFI};
 use common_rust_c::free::Free;
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT};
@@ -35,6 +35,127 @@ impl Into<Network> for &NetworkType {
         }
     }
 }
+
+#[repr(C)]
+pub enum MultiSigFormatType {
+    P2sh,
+    P2wshP2sh,
+    P2wsh,
+    P2shTest,
+    P2wshP2shTest,
+    P2wshTest,
+}
+
+impl Into<MultiSigType> for MultiSigFormatType {
+    fn into(self) -> MultiSigType {
+        match self {
+            MultiSigFormatType::P2sh => MultiSigType::P2sh,
+            MultiSigFormatType::P2wshP2sh => MultiSigType::P2wshP2sh,
+            MultiSigFormatType::P2wsh => MultiSigType::P2wsh,
+            MultiSigFormatType::P2shTest => MultiSigType::P2shTest,
+            MultiSigFormatType::P2wshP2shTest => MultiSigType::P2wshP2shTest,
+            MultiSigFormatType::P2wshTest => MultiSigType::P2wshTest,
+        }
+    }
+}
+
+impl Into<MultiSigType> for &MultiSigFormatType {
+    fn into(self) -> MultiSigType {
+        match self {
+            MultiSigFormatType::P2sh => MultiSigType::P2sh,
+            MultiSigFormatType::P2wshP2sh => MultiSigType::P2wshP2sh,
+            MultiSigFormatType::P2wsh => MultiSigType::P2wsh,
+            MultiSigFormatType::P2shTest => MultiSigType::P2shTest,
+            MultiSigFormatType::P2wshP2shTest => MultiSigType::P2wshP2shTest,
+            MultiSigFormatType::P2wshTest => MultiSigType::P2wshTest,
+        }
+    }
+}
+
+impl Into<MultiSigFormat> for MultiSigFormatType {
+    fn into(self) -> MultiSigFormat {
+        match self {
+            MultiSigFormatType::P2sh => MultiSigFormat::P2sh,
+            MultiSigFormatType::P2wshP2sh => MultiSigFormat::P2wshP2sh,
+            MultiSigFormatType::P2wsh => MultiSigFormat::P2wsh,
+            MultiSigFormatType::P2shTest => MultiSigFormat::P2sh,
+            MultiSigFormatType::P2wshP2shTest => MultiSigFormat::P2wshP2sh,
+            MultiSigFormatType::P2wshTest => MultiSigFormat::P2wsh,
+        }
+    }
+}
+
+impl Into<MultiSigFormat> for &MultiSigFormatType {
+    fn into(self) -> MultiSigFormat {
+        match self {
+            MultiSigFormatType::P2sh => MultiSigFormat::P2sh,
+            MultiSigFormatType::P2wshP2sh => MultiSigFormat::P2wshP2sh,
+            MultiSigFormatType::P2wsh => MultiSigFormat::P2wsh,
+            MultiSigFormatType::P2shTest => MultiSigFormat::P2sh,
+            MultiSigFormatType::P2wshP2shTest => MultiSigFormat::P2wshP2sh,
+            MultiSigFormatType::P2wshTest => MultiSigFormat::P2wsh,
+        }
+    }
+}
+
+#[repr(C)]
+pub struct MultiSigXPubInfoItem {
+    path: PtrString,
+    xfp: PtrString,
+    xpub: PtrString,
+}
+
+impl From<MultiSigXPubInfo> for MultiSigXPubInfoItem {
+    fn from(value: MultiSigXPubInfo) -> Self {
+        MultiSigXPubInfoItem {
+            path: convert_c_char(value.path.to_string()),
+            xfp: convert_c_char(value.xfp.to_string()),
+            xpub: convert_c_char(value.xpub.to_string()),
+        }
+    }
+}
+
+impl Into<MultiSigXPubInfo> for &MultiSigXPubInfoItem {
+    fn into(self) -> MultiSigXPubInfo {
+        MultiSigXPubInfo {
+            path: recover_c_char(self.path),
+            xfp: recover_c_char(self.xfp),
+            xpub: recover_c_char(self.xpub),
+        }
+    }
+}
+
+impl From<BsmsWallet> for MultiSigXPubInfoItem {
+    fn from(value: BsmsWallet) -> Self {
+        MultiSigXPubInfoItem {
+            path: convert_c_char(value.derivation_path.to_string()),
+            xfp: convert_c_char(value.xfp.to_string()),
+            xpub: convert_c_char(value.extended_pubkey.to_string()),
+        }
+    }
+}
+
+impl Into<BsmsWallet> for &MultiSigXPubInfoItem {
+    fn into(self) -> BsmsWallet {
+        BsmsWallet {
+            bsms_version: "BSMS 1.0".to_string(),
+            derivation_path: recover_c_char(self.path),
+            xfp: recover_c_char(self.xfp),
+            extended_pubkey: recover_c_char(self.xpub),
+        }
+    }
+}
+
+impl_c_ptr!(MultiSigXPubInfoItem);
+
+impl Free for MultiSigXPubInfoItem {
+    fn free(&self) {
+        free_str_ptr!(self.xfp);
+        free_str_ptr!(self.xpub);
+        free_str_ptr!(self.path);
+    }
+}
+make_free_method!(MultiSigXPubInfoItem);
 
 #[repr(C)]
 pub struct MultiSigXPubItem {

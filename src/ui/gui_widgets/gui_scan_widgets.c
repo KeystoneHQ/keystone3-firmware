@@ -105,6 +105,12 @@ void GuiScanResult(bool result, void *param)
                 GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_importMultisigWalletInfoView);
             }
+
+            if (g_qrcodeViewType == MultisigCryptoImportXpub ||
+                    g_qrcodeViewType ==  MultisigBytesImportXpub) {
+
+                GuiCLoseCurrentWorkingView();
+            }
 #endif
             return;
         }
@@ -118,7 +124,6 @@ void GuiScanResult(bool result, void *param)
     } else {
         ThrowError();
     }
-
 }
 
 void GuiTransactionCheckPass(void)

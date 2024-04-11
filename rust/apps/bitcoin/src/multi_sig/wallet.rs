@@ -87,6 +87,59 @@ impl MultiSigWalletConfig {
     }
 }
 
+#[derive(Debug)]
+pub struct BsmsWallet {
+    pub bsms_version: String,
+    pub xfp: String,
+    pub derivation_path: String,
+    pub extended_pubkey: String,
+}
+
+impl Default for BsmsWallet {
+    fn default() -> Self {
+        BsmsWallet {
+            bsms_version: String::from("BSMS 1.0"),
+            xfp: String::new(),
+            derivation_path: String::new(),
+            extended_pubkey: String::new(),
+        }
+    }
+}
+
+fn _parse_plain_xpub_config(content: &str) -> Result<BsmsWallet, BitcoinError> {
+    let mut bsmsWallet = BsmsWallet::default();
+
+    for line in content.lines() {
+        if line.trim().starts_with("BSMS") {
+            if line.contains("BSMS 1.0") {
+                bsmsWallet.bsms_version = String::from("BSMS 1.0");
+            }
+        } else if line.starts_with("[") {
+            if let Some(end_bracket_pos) = line.find(']') {
+                if end_bracket_pos >= 9 {
+                    let xfp = &line[1..=8].trim();
+                    let derivation_path = &line[9..=end_bracket_pos - 1].trim();
+                    let extended_pubkey = &line[end_bracket_pos + 1..].trim();
+                    bsmsWallet.xfp = xfp.to_string();
+                    bsmsWallet.derivation_path = format!("m{}", derivation_path);
+                    bsmsWallet.extended_pubkey = extended_pubkey.to_string();
+                    return Ok(bsmsWallet);
+                }
+            }
+        }
+    }
+    Err(BitcoinError::MultiSigWalletImportXpubError(String::from(
+        "not a valid xpub config",
+    )))
+}
+
+pub fn parse_bsms_wallet_config(bytes: Bytes) -> Result<BsmsWallet, BitcoinError> {
+    let content = String::from_utf8(bytes.get_bytes())
+        .map_err(|e| BitcoinError::MultiSigWalletImportXpubError(e.to_string()))?;
+    let mut wallet = _parse_plain_xpub_config(&content)?;
+    Ok(wallet)
+}
+
 pub fn create_wallet(
     creator: &str,
     name: &str,
@@ -256,6 +309,17 @@ pub fn import_wallet_by_ur(bytes: &Bytes, xfp: &str) -> Result<MultiSigWalletCon
         .map_err(|e| BitcoinError::MultiSigWalletImportXpubError(e.to_string()))?;
 
     parse_wallet_config(&data, xfp)
+}
+
+pub fn is_valid_xpub_config(bytes: &Bytes) -> bool {
+    if let Ok(d) = String::from_utf8(bytes.get_bytes())
+        .map_err(|e| BitcoinError::MultiSigWalletImportXpubError(e.to_string()))
+    {
+        if let Ok(_) = _parse_plain_xpub_config(&d) {
+            return true;
+        }
+    }
+    false
 }
 
 pub fn is_valid_wallet_config(bytes: &Bytes) -> bool {
@@ -479,7 +543,7 @@ mod tests {
 
     use crate::multi_sig::wallet::{
         create_wallet, export_wallet_by_ur, generate_config_data, is_valid_xyzpub,
-        parse_wallet_config, strict_verify_wallet_config,
+        parse_bsms_wallet_config, parse_wallet_config, strict_verify_wallet_config,
     };
     use crate::multi_sig::{MultiSigXPubInfo, Network};
     use alloc::vec::Vec;
@@ -820,5 +884,19 @@ c2202a77: Ypub6rJ91C5xKc5R653wqxQ67XdSubmGM8XwdBpVNwDG2Wn4HVi4QntZdr5W9Fp8yMGYsv
 
             assert_eq!(config, data);
         }
+    }
+
+    #[test]
+    fn test_parse_bsms_wallet_config() {
+        let config_str = Bytes::new("BSMS 1.0
+00
+[73c5da0a/48'/0'/0'/2']xpub6DkFAXWQ2dHxq2vatrt9qyA3bXYU4ToWQwCHbf5XB2mSTexcHZCeKS1VZYcPoBd5X8yVcbXFHJR9R8UCVpt82VX1VhR28mCyxUFL4r6KFrf
+BIP39 4".as_bytes().to_vec());
+        let wallet = parse_bsms_wallet_config(config_str).unwrap();
+
+        assert_eq!(wallet.bsms_version, "BSMS 1.0");
+        assert_eq!(wallet.xfp, "73c5da0a");
+        assert_eq!(wallet.derivation_path, "m/48'/0'/0'/2'");
+        assert_eq!(wallet.extended_pubkey, "xpub6DkFAXWQ2dHxq2vatrt9qyA3bXYU4ToWQwCHbf5XB2mSTexcHZCeKS1VZYcPoBd5X8yVcbXFHJR9R8UCVpt82VX1VhR28mCyxUFL4r6KFrf");
     }
 }

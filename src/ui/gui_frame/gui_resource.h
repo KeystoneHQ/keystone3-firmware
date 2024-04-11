@@ -126,6 +126,8 @@ LV_IMG_DECLARE(imgAdd);
 LV_IMG_DECLARE(imgDefaultWallet);
 LV_IMG_DECLARE(imgWalletExport);
 LV_IMG_DECLARE(imgLockMulti);
+LV_IMG_DECLARE(imgFile);
+LV_IMG_DECLARE(imgTwoSmallKey);
 
 // connect to do refresh
 LV_IMG_DECLARE(circular);

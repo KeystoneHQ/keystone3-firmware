@@ -28,6 +28,9 @@ int32_t GuiMultisigReadSdcardViewEventProcess(void *self, uint16_t usEvent, void
     case SIG_TRANSACTION_CHECK_FAIL:
         GuiPSBTTransactionCheckFaild((PtrT_TransactionCheckResult)param);
         break;
+    case SIG_INIT_SDCARD_CHANGE:
+        ListMicroCardMultisigConfigFile();
+        return ERR_GUI_UNHANDLED;
     default:
         return ERR_GUI_UNHANDLED;
     }

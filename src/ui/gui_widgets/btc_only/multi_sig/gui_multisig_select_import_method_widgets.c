@@ -22,7 +22,7 @@ void GuiMultisigSelectImportMethodWidgetsInit()
     g_pageWidget = CreatePageWidget();
     GuiContent(g_pageWidget->contentZone);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, CloseCurrentViewHandler, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, UnHandler, NULL);
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
 }
 

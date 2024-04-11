@@ -959,6 +959,7 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,import_multi_wallet_via_micro_card,"Via MicroSD Card",,,,,,,
 ,import_multi_wallet_via_micro_title,"MicroSD Card",,,,,,,
 ,import_multi_wallet_info_title,"Wallet Info",,,,,,,
+,import_multi_wallet_info_no_config_file,No Wallet Files,,,,,,,
 ,import_multi_wallet_success_title,"Import Success",,,,,,,
 ,manage_multi_wallet_set_default,"Set as Default Wallet",,,,,,,
 ,manage_multi_wallet_detail_title,"Wallet Details",,,,,,,
@@ -972,3 +973,4 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,multisig_signature_export_to_sdcard_desc,"File Name:",,,,,,,
 ,multisig_signature_export_to_sdcard_success,"Exported Successfully",,,,,,,
 ,multisig_signature_export_to_sdcard_success_desc,"Your signed transaction has been exported to MicoSD card successfully.",,,,,,,
+,multisig_connect_wallet_notice,"You are using multisig wallet",,,,,,,

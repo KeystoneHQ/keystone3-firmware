@@ -128,11 +128,11 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_PETRA, "Petra", &walletPetra},
     {WALLET_LIST_XRP_TOOLKIT, "XRP Toolkit", &walletXRPToolkit},
 #else
-    {WALLET_LIST_BLUE, "Connect BlueWallet", &walletBluewallet},
-    {WALLET_LIST_SPECTER, "Connect Specter", &walletSpecter},
-    {WALLET_LIST_SPARROW, "Connect Sparrow", &walletSparrow},
-    {WALLET_LIST_NUNCHUK, "Connect Nunchuk", &walletNunchuk},
-    {WALLET_LIST_UNISAT, "Connect UniSat", &walletUniSat},
+    {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
+    {WALLET_LIST_SPECTER, "Specter", &walletSpecter},
+    {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
+    {WALLET_LIST_NUNCHUK, "Nunchuk", &walletNunchuk},
+    {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
 #endif
 };
 
@@ -434,7 +434,7 @@ static lv_obj_t *CreateCoinBtn(lv_obj_t *navBar)
 {
     lv_obj_t *btn;
 
-    btn = GuiCreateStatusCoinButton(navBar, _("Connect BlueWallet"), &walletBluewallet);
+    btn = GuiCreateStatusCoinButton(navBar, _(""), &walletBluewallet);
     lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
 
     return btn;

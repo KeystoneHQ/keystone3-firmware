@@ -12,6 +12,7 @@ typedef enum {
 
 void GuiMultisigReadSdcardWidgetsInit(uint8_t fileFilterType);
 void GuiMultisigReadSdcardWidgetsDeInit();
+void ListMicroCardMultisigConfigFile(void);
 void GuiPSBtTransactionCheckPass(void);
 void GuiPSBTTransactionCheckFaild(PtrT_TransactionCheckResult result);
 #endif

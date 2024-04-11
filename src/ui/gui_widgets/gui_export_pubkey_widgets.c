@@ -15,9 +15,7 @@
 #ifdef BTC_ONLY
 #include "keystore.h"
 #include "gui_btc_home_widgets.h"
-#include "multi_sig_wallet_manager.h"
-#include "gui_multisig_wallet_export_widgets.h"
-static MultiSigWalletItem_t *g_walletItem;
+static bool g_isMultisig;
 #endif
 
 typedef enum {
@@ -123,7 +121,7 @@ void OpenExportMultisigViewHandler(lv_event_t *e)
     static HOME_WALLET_CARD_ENUM chainCard = HOME_WALLET_CARD_BTC_MULTISIG;
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        g_walletItem = lv_event_get_user_data(e);
+        g_isMultisig = true;
         GuiFrameOpenViewWithParam(&g_exportPubkeyView, &chainCard, sizeof(chainCard));
     }
 }
@@ -208,9 +206,7 @@ void GuiExportPubkeyDeInit(void)
     }
 
 #ifdef BTC_ONLY
-    if (g_walletItem != NULL) {
-        g_walletItem = NULL;
-    }
+    g_isMultisig = false;
 #endif
 }
 
@@ -258,7 +254,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_align(g_widgets.desc, LV_ALIGN_TOP_LEFT, 24, 50);
 
 #ifdef BTC_ONLY
-    if (g_walletItem != NULL) {
+    if (g_isMultisig) {
         lv_obj_t *label = GuiCreateNoticeLabel(btn, "");
         uint8_t mfp[4];
         GetMasterFingerPrint(mfp);
@@ -339,7 +335,7 @@ static void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent)
         g_widgets.egs[i] = label;
     }
 #ifdef BTC_ONLY
-    if (g_walletItem != NULL) {
+    if (g_isMultisig) {
         lv_obj_add_flag(egCont, LV_OBJ_FLAG_HIDDEN);
     }
 #endif
@@ -494,10 +490,10 @@ static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType, uint32
 {
     ASSERT(chain == CHAIN_BTC);
     const char *path = GetIsTestNet() ? g_btcTestNetPath[pathType] : g_pathTypeList[pathType].path;
-    if (g_walletItem == NULL) {
-        snprintf_s(dest, maxLen, "%s (%s)", g_pathTypeList[pathType].subTitle, path);
-    } else {
+    if (g_isMultisig) {
         strcpy_s(dest, maxLen, path);
+    } else {
+        snprintf_s(dest, maxLen, "%s (%s)", g_pathTypeList[pathType].subTitle, path);
     }
 }
 #endif
@@ -560,8 +556,7 @@ static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, ui
 #else
 static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, uint32_t maxLen)
 {
-    if (g_walletItem != NULL) {
-        ModelGenerateMultiSigAddress(dest, maxLen, g_walletItem->walletConfig, index);
+    if (g_isMultisig) {
         return;
     }
     char *xPub, hdPath[128];
@@ -584,7 +579,7 @@ static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, ui
 static void SetEgContent(uint8_t index)
 {
 #ifdef BTC_ONLY
-    if (g_walletItem != NULL) {
+    if (g_isMultisig) {
         return;
     }
 #endif
@@ -621,7 +616,7 @@ static void SetCheckboxState(uint8_t i, bool isChecked)
 static void RefreshPathType()
 {
     g_tmpSelectIndex = GetPathType();
-    for (uint8_t i = 0; i < sizeof(g_pathTypeList) / sizeof(g_pathTypeList[0]); i++) {
+    for (uint8_t i = 0; i < g_btcPathNum; i++) {
         SetCheckboxState(i, i == g_tmpSelectIndex);
     }
     SetEgContent(g_tmpSelectIndex);

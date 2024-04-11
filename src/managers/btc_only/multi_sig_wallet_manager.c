@@ -138,22 +138,22 @@ MultiSigWalletItem_t *AddMultisigWalletToCurrentAccount(MultiSigWallet *wallet, 
     MultiSigWalletManager_t *manager = g_multisigWalletManager;
     MultiSigWalletItem_t *walletItem = findNode(wallet->verify_code);
     if (walletItem != NULL) return walletItem;
-    walletItem = SRAM_MALLOC(sizeof(MultiSigWalletItem_t));
+    walletItem = MULTI_SIG_MALLOC(sizeof(MultiSigWalletItem_t));
 
-    walletItem->name = SRAM_MALLOC(MAX_NAME_LENGTH);
+    walletItem->name = MULTI_SIG_MALLOC(MAX_NAME_LENGTH);
     strcpy_s(walletItem->name, MAX_NAME_LENGTH, wallet->name);
 
     walletItem->network = wallet->network;
 
     walletItem->order = manager->getLength(manager->list);
 
-    walletItem->verifyCode = SRAM_MALLOC(MAX_VERIFY_CODE_LENGTH);
+    walletItem->verifyCode = MULTI_SIG_MALLOC(MAX_VERIFY_CODE_LENGTH);
     strcpy_s(walletItem->verifyCode, MAX_VERIFY_CODE_LENGTH, wallet->verify_code);
 
-    walletItem->format = SRAM_MALLOC(MAX_FORMAT_LENGTH);
+    walletItem->format = MULTI_SIG_MALLOC(MAX_FORMAT_LENGTH);
     strcpy_s(walletItem->format, MAX_FORMAT_LENGTH, wallet->format);
 
-    walletItem->walletConfig = SRAM_MALLOC(MAX_WALLET_CONFIG_TEXT_LENGTH);
+    walletItem->walletConfig = MULTI_SIG_MALLOC(MAX_WALLET_CONFIG_TEXT_LENGTH);
     strcpy_s(walletItem->walletConfig, MAX_WALLET_CONFIG_TEXT_LENGTH, wallet->config_text);
 
     manager->insertNode(walletItem);

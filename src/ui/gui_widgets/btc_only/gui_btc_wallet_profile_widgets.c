@@ -21,11 +21,13 @@ typedef enum {
 typedef struct {
     uint8_t currentTile;
     lv_obj_t *tileView;
+    lv_obj_t *profileView;
 } WalletProfileWidgets_t;
 
 static void CreateBtcWalletProfileEntranceWidget(lv_obj_t *parent);
 static void SetDefaultSingleWalletHandler(lv_event_t *e);
 static void CreateSingleSigWalletWidget(lv_obj_t *parent);
+static void CreateBtcWalletProfileEntranceRefresh(lv_obj_t *parent);
 void GuiResetCurrentUtxoAddressIndex(uint8_t index);
 
 static WalletProfileWidgets_t g_walletProfile;
@@ -39,6 +41,7 @@ void GuiBtcWalletProfileInit(void)
     g_walletProfile.tileView = GuiCreateTileView(g_pageWidget->contentZone);
     lv_obj_t *tile = lv_tileview_add_tile(g_walletProfile.tileView, WALLET_PROFILE_SELECT, 0, LV_DIR_HOR);
     CreateBtcWalletProfileEntranceWidget(tile);
+    g_walletProfile.profileView = tile;
 
     tile = lv_tileview_add_tile(g_walletProfile.tileView, WALLET_PROFILE_SINGLE_WALLET, 0, LV_DIR_HOR);
     CreateSingleSigWalletWidget(tile);
@@ -61,6 +64,7 @@ void GuiBtcWalletProfileRefresh(void)
     if (g_walletProfile.currentTile == WALLET_PROFILE_SELECT) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_profile_mid_btn"));
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+        CreateBtcWalletProfileEntranceRefresh(g_walletProfile.profileView);
     } else {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_profile_single_sign_title"));
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
@@ -111,6 +115,12 @@ static void SwitchTestnetHandler(lv_event_t *e)
 
 static void CreateBtcWalletProfileEntranceWidget(lv_obj_t *parent)
 {
+    CreateBtcWalletProfileEntranceRefresh(parent);
+}
+
+static void CreateBtcWalletProfileEntranceRefresh(lv_obj_t *parent)
+{
+    lv_obj_clean(parent);
     DEFAULT_WALLET_INDEX_ENUM defaultWallet = GetDefaultWalletIndex();
     char *singleWalletDesc = (char *)_("wallet_profile_default_desc"), *multiWalletDesc = NULL;
     uint16_t singleWalletHeight = 118, multiWalletDescHeight = 84;

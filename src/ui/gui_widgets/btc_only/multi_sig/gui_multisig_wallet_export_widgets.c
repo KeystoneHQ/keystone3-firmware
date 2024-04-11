@@ -272,6 +272,7 @@ static void SetEgContent(lv_obj_t *label)
 
 void GuiMultisigWalletExportWidgetsDeInit()
 {
+    GUI_DEL_OBJ(g_noticeWindow);
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;

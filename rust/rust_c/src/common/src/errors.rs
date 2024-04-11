@@ -4,6 +4,8 @@ use alloc::string::String;
 use app_aptos::errors::AptosError;
 use app_bitcoin::errors::BitcoinError;
 #[cfg(feature = "multi-coins")]
+use app_arweave::errors::ArweaveError;
+#[cfg(feature = "multi-coins")]
 use app_cardano::errors::CardanoError;
 #[cfg(feature = "multi-coins")]
 use app_cosmos::errors::CosmosError;
@@ -159,6 +161,12 @@ pub enum ErrorCodes {
     SuiSignFailure = 1100,
     SuiInvalidData,
     SuiParseTxError,
+
+    // Arweave
+    ArweaveSignFailure = 1200,
+    ArweaveKeystoreError,
+    ArweaveInvalidData,
+    ArweaveParseTxError,
 }
 
 impl ErrorCodes {
@@ -306,6 +314,18 @@ impl From<&NearError> for ErrorCodes {
             NearError::KeystoreError(_) => Self::NearKeystoreError,
             NearError::SignFailure(_) => Self::NearSignFailure,
             NearError::ParseTxError(_) => Self::NearParseTxError,
+        }
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl From<&ArweaveError> for ErrorCodes {
+    fn from(value: &ArweaveError) -> Self {
+        match value {
+            ArweaveError::InvalidHDPath(_) => Self::InvalidHDPath,
+            ArweaveError::KeystoreError(_) => Self::ArweaveKeystoreError,
+            ArweaveError::SignFailure(_) => Self::ArweaveSignFailure,
+            ArweaveError::ParseTxError(_) => Self::ArweaveParseTxError,
         }
     }
 }

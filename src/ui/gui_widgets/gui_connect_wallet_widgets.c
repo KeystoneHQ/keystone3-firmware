@@ -363,7 +363,7 @@ static void OpenQRCodeHandler(lv_event_t *e)
             GuiCreateConnectEternlWidget();
             return;
         }
-        if (g_connectWalletTileView.walletIndex == WALLET_LIST_ARCONNECT && !HasGeneratedRsaPrimes()) {
+        if (g_connectWalletTileView.walletIndex == WALLET_LIST_ARCONNECT) {
             g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
             SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
             static uint16_t sig = SIG_SETUO_RSA_PRIVATE_KEY_WITH_PASSWORD;
@@ -988,7 +988,6 @@ void GuiSetupArConnectWallet(void)
     ASSERT(ret == 0);
     SimpleResponse_u8 *result = generate_arweave_secret(seed, len);
     FlashWriteRsaPrimes(result->data);
-    ClearSecretCache();
 }
 
 #endif

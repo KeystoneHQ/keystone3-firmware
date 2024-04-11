@@ -230,6 +230,7 @@ UREncodeResult *GuiGetArConnectData(void)
         GuiSetupArConnectWallet();
         primes = FlashReadRsaPrimes();
     }
+    ClearSecretCache();
     ASSERT(primes != NULL);
     g_urEncode = get_connect_arconnect_wallet_ur(mfp, sizeof(mfp), primes->p, 256, primes->q, 256);
     printf("\ng_urEncode: %s\n", g_urEncode->data);

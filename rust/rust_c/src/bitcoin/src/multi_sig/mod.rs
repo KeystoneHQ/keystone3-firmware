@@ -7,11 +7,14 @@ use alloc::{format, slice, vec};
 use app_bitcoin::errors::BitcoinError;
 use app_bitcoin::multi_sig::address::create_multi_sig_address_for_wallet;
 use app_bitcoin::multi_sig::wallet::{
-    self, export_wallet_by_ur, generate_config_data, parse_wallet_config,
-    strict_verify_wallet_config, MultiSigWalletConfig, parse_bsms_wallet_config,
+    self, export_wallet_by_ur, generate_config_data, parse_bsms_wallet_config, parse_wallet_config,
+    strict_verify_wallet_config, MultiSigWalletConfig,
 };
 use app_bitcoin::multi_sig::{
-    export_xpub_by_crypto_account, extract_xpub_info_from_bytes, extract_xpub_info_from_crypto_account, extract_xpub_info_from_ur_bytes, MultiSigXPubInfo, Network};
+    export_xpub_by_crypto_account, extract_xpub_info_from_bytes,
+    extract_xpub_info_from_crypto_account, extract_xpub_info_from_ur_bytes, MultiSigXPubInfo,
+    Network,
+};
 use core::str::FromStr;
 use cty::c_char;
 use third_party::bitcoin::psbt;
@@ -25,10 +28,12 @@ use common_rust_c::ffi::{CSliceFFI, VecFFI};
 use common_rust_c::free::Free;
 use common_rust_c::structs::{ExtendedPublicKey, Response, SimpleResponse};
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, ViewType};
+use common_rust_c::ur::{UREncodeResult, ViewType, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_array, recover_c_char};
 
-use crate::multi_sig::structs::{MultiSigWallet, NetworkType, MultiSigFormatType, MultiSigXPubInfoItem};
+use crate::multi_sig::structs::{
+    MultiSigFormatType, MultiSigWallet, MultiSigXPubInfoItem, NetworkType,
+};
 use app_bitcoin::multi_sig::MultiSigFormat;
 use common_rust_c::extract_ptr_with_type;
 use third_party::ur_registry::crypto_account::CryptoAccount;
@@ -152,22 +157,31 @@ pub extern "C" fn export_multi_sig_wallet_by_ur_test(
 pub extern "C" fn export_xpub_info_by_ur(
     ur: PtrUR,
     multi_sig_type: MultiSigFormatType,
-    viewType: ViewType
+    viewType: ViewType,
 ) -> Ptr<Response<MultiSigXPubInfoItem>> {
-    if viewType == ViewType::MultisigCryptoImportXpub {
-        let crypto_account = extract_ptr_with_type!(ur, CryptoAccount);
-        let result = extract_xpub_info_from_crypto_account(&crypto_account, multi_sig_type.into());
-        match result {
-            Ok(wallet) => Response::success_ptr(MultiSigXPubInfoItem::from(wallet).c_ptr()).c_ptr(),
-            Err(e) => Response::from(e).c_ptr(),
+    match viewType {
+        ViewType::MultisigCryptoImportXpub => {
+            let crypto_account = extract_ptr_with_type!(ur, CryptoAccount);
+            let result =
+                extract_xpub_info_from_crypto_account(&crypto_account, multi_sig_type.into());
+            match result {
+                Ok(wallet) => {
+                    Response::success_ptr(MultiSigXPubInfoItem::from(wallet).c_ptr()).c_ptr()
+                }
+                Err(e) => Response::from(e).c_ptr(),
+            }
         }
-    } else {
-        let bytes = extract_ptr_with_type!(ur, Bytes).clone();
-        let result = parse_bsms_wallet_config(bytes);
-        match result {
-            Ok(wallet) => Response::success_ptr(MultiSigXPubInfoItem::from(wallet).c_ptr()).c_ptr(),
-            Err(e) => Response::from(e).c_ptr(),
+        ViewType::MultisigBytesImportXpub => {
+            let bytes = extract_ptr_with_type!(ur, Bytes).clone();
+            let result = parse_bsms_wallet_config(bytes);
+            match result {
+                Ok(wallet) => {
+                    Response::success_ptr(MultiSigXPubInfoItem::from(wallet).c_ptr()).c_ptr()
+                }
+                Err(e) => Response::from(e).c_ptr(),
+            }
         }
+        _ => Response::from(BitcoinError::InvalidInput).c_ptr(),
     }
 }
 

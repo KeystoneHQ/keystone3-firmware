@@ -125,7 +125,6 @@ pub fn extract_xpub_info_from_ur_bytes(
     extract_xpub_info_from_str(&data, format)
 }
 
-
 pub fn extract_xpub_info_from_bytes(
     bytes: Bytes,
     format: &MultiSigFormat,
@@ -301,9 +300,7 @@ fn crypto_output_to_multi_sig_xpub_info(
     })?;
 
     let net_work = match hdkey.get_use_info() {
-        Some(use_info) => {
-            use_info.get_network()
-        },
+        Some(use_info) => use_info.get_network(),
         None => NetworkInner::MainNet,
     };
 

@@ -3,8 +3,8 @@ use alloc::format;
 use alloc::string::ToString;
 use alloc::vec;
 use alloc::vec::Vec;
-use app_bitcoin::multi_sig::wallet::{MultiSigWalletConfig, BsmsWallet};
-use app_bitcoin::multi_sig::{Network, MultiSigType, MultiSigXPubInfo, MultiSigFormat};
+use app_bitcoin::multi_sig::wallet::{BsmsWallet, MultiSigWalletConfig};
+use app_bitcoin::multi_sig::{MultiSigFormat, MultiSigType, MultiSigXPubInfo, Network};
 use common_rust_c::ffi::{CSliceFFI, VecFFI};
 use common_rust_c::free::Free;
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT};
@@ -80,7 +80,7 @@ impl Into<MultiSigFormat> for MultiSigFormatType {
             MultiSigFormatType::P2wsh => MultiSigFormat::P2wsh,
             MultiSigFormatType::P2shTest => MultiSigFormat::P2sh,
             MultiSigFormatType::P2wshP2shTest => MultiSigFormat::P2wshP2sh,
-            MultiSigFormatType::P2wshTest => MultiSigFormat::P2wsh,        
+            MultiSigFormatType::P2wshTest => MultiSigFormat::P2wsh,
         }
     }
 }
@@ -93,7 +93,7 @@ impl Into<MultiSigFormat> for &MultiSigFormatType {
             MultiSigFormatType::P2wsh => MultiSigFormat::P2wsh,
             MultiSigFormatType::P2shTest => MultiSigFormat::P2sh,
             MultiSigFormatType::P2wshP2shTest => MultiSigFormat::P2wshP2sh,
-            MultiSigFormatType::P2wshTest => MultiSigFormat::P2wsh,       
+            MultiSigFormatType::P2wshTest => MultiSigFormat::P2wsh,
         }
     }
 }
@@ -139,7 +139,6 @@ impl Into<BsmsWallet> for &MultiSigXPubInfoItem {
     fn into(self) -> BsmsWallet {
         BsmsWallet {
             bsms_version: "BSMS 1.0".to_string(),
-            encryption: "00".to_string(),
             derivation_path: recover_c_char(self.path),
             xfp: recover_c_char(self.xfp),
             extended_pubkey: recover_c_char(self.xpub),
@@ -157,7 +156,6 @@ impl Free for MultiSigXPubInfoItem {
     }
 }
 make_free_method!(MultiSigXPubInfoItem);
-
 
 #[repr(C)]
 pub struct MultiSigXPubItem {

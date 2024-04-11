@@ -13,13 +13,13 @@ use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 use third_party::ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::cosmos::evm_sign_request::EvmSignRequest;
+use third_party::ur_registry::crypto_account::CryptoAccount;
 use third_party::ur_registry::crypto_psbt::CryptoPSBT;
 use third_party::ur_registry::error::URError;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::ethereum::eth_sign_request;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::ethereum::eth_sign_request::EthSignRequest;
-use third_party::ur_registry::crypto_account::CryptoAccount;
 use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::extend::qr_hardware_call::{CallType, QRHardwareCall};

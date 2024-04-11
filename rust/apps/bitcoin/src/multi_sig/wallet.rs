@@ -90,18 +90,15 @@ impl MultiSigWalletConfig {
 #[derive(Debug)]
 pub struct BsmsWallet {
     pub bsms_version: String,
-    pub encryption: String,
     pub xfp: String,
     pub derivation_path: String,
     pub extended_pubkey: String,
 }
 
-
 impl Default for BsmsWallet {
     fn default() -> Self {
         BsmsWallet {
-            bsms_version: String::new(),
-            encryption: String::new(),
+            bsms_version: String::from("BSMS 1.0"),
             xfp: String::new(),
             derivation_path: String::new(),
             extended_pubkey: String::new(),
@@ -110,7 +107,6 @@ impl Default for BsmsWallet {
 }
 
 fn _parse_plain_xpub_config(content: &str) -> Result<BsmsWallet, BitcoinError> {
-    let mut lines = content.lines();
     let mut bsmsWallet = BsmsWallet::default();
 
     for line in content.lines() {
@@ -118,26 +114,26 @@ fn _parse_plain_xpub_config(content: &str) -> Result<BsmsWallet, BitcoinError> {
             if line.contains("BSMS 1.0") {
                 bsmsWallet.bsms_version = String::from("BSMS 1.0");
             }
-        }
-
-        if line.starts_with("[") {
-            let end_bracket_pos = line.find(']').unwrap();
-            let xfp = &line[1..=8].trim();
-            let derivation_path = &line[9..=end_bracket_pos - 1].trim();
-            let extended_pubkey = &line[end_bracket_pos + 1..].trim();
-            bsmsWallet.xfp = xfp.to_string();
-            bsmsWallet.derivation_path = format!("m{}", derivation_path);
-            bsmsWallet.extended_pubkey = extended_pubkey.to_string();
-            return Ok(bsmsWallet);
+        } else if line.starts_with("[") {
+            if let Some(end_bracket_pos) = line.find(']') {
+                if end_bracket_pos >= 9 {
+                    let xfp = &line[1..=8].trim();
+                    let derivation_path = &line[9..=end_bracket_pos - 1].trim();
+                    let extended_pubkey = &line[end_bracket_pos + 1..].trim();
+                    bsmsWallet.xfp = xfp.to_string();
+                    bsmsWallet.derivation_path = format!("m{}", derivation_path);
+                    bsmsWallet.extended_pubkey = extended_pubkey.to_string();
+                    return Ok(bsmsWallet);
+                }
+            }
         }
     }
-    Err(BitcoinError::MultiSigWalletImportXpubError(String::from("not a valid xpub config")))
+    Err(BitcoinError::MultiSigWalletImportXpubError(String::from(
+        "not a valid xpub config",
+    )))
 }
 
-
-pub fn parse_bsms_wallet_config(
-    bytes: Bytes
-) -> Result<BsmsWallet, BitcoinError> {
+pub fn parse_bsms_wallet_config(bytes: Bytes) -> Result<BsmsWallet, BitcoinError> {
     let content = String::from_utf8(bytes.get_bytes())
         .map_err(|e| BitcoinError::MultiSigWalletImportXpubError(e.to_string()))?;
     let mut wallet = _parse_plain_xpub_config(&content)?;

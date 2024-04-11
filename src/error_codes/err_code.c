@@ -69,6 +69,7 @@ static const ErrCodeDesc_t g_faults[] = {
     {ERR_MULTISIG_INVALID_FILE, "Invalid Multisig wallet file"},
     {ERR_MULTISIG_WALLET_CONFIG_INVALID, "Invalid multisig wallet config data"},
     {ERR_MULTISIG_WALLET_EXIST, "Multisig wallet exists"},
+    {ERR_EXPORT_FILE_TO_MICRO_CARD_FAILED, "export file to micro card failed"},
 
     {ERR_END, "Unknown Error"},
 };

@@ -920,6 +920,7 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,wallet_profile_multi_wallet_show_xpub,Show/Export xPub,,,,,,,
 ,wallet_profile_network_title,Network,Сеть,,网络,已改,,,
 ,wallet_profile_export_title,Export (Ext) Public Key,Экспорт открытого ключа,,导出扩展公钥,已改,,,
+,wallet_profile_export_to_sdcard_title,Export xPub to MicroSD Card,,,,,,,
 ,wallet_profile_network_main,MainNet,Основная сеть,,主网,已改,,,
 ,wallet_profile_network_test,TestNet,Тестовая сеть,,测试网,已改,,,
 ,multisig_import_wallet_exist,Wallet Already Exists,,,,,,,

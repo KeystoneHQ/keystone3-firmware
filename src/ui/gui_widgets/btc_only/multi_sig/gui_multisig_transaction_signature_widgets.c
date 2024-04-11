@@ -251,6 +251,7 @@ void GuiMultisigTransactionSignatureNVSBarInit()
 
 void GuiMultisigTransactionSignaureWidgetsDeInit()
 {
+    GUI_DEL_OBJ(g_noticeWindow);
     GuiAnimatingQRCodeDestroyTimer();
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);

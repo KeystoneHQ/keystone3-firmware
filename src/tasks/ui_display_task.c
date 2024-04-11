@@ -16,6 +16,7 @@
 #include "anti_tamper.h"
 #include "screenshot.h"
 #include "lv_i18n_api.h"
+#include "gui_api.h"
 
 #define LVGL_FAST_TICK_MS                   5
 #define LVGL_IDLE_TICK_MS                   100
@@ -263,6 +264,11 @@ void SetLvglHandlerAndSnapShot(bool enable)
 void LvglCloseCurrentView(void)
 {
     PubValueMsg(UI_MSG_CLOSE_CURRENT_VIEW, 0);
+}
+
+void LvglImportMicroCardSigView(void)
+{
+    GuiApiEmitSignal(SIG_IMPORT_TRANSACTION_FROM_FILE, NULL, 0);
 }
 
 uint8_t *GetLvglGramAddr(void)

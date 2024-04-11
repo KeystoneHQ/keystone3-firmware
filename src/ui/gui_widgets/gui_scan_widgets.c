@@ -53,7 +53,6 @@ void GuiScanInit()
     }
     g_pageWidget = CreatePageWidget();
     GuiScanNavBarInit();
-    GuiScanStart();
 }
 
 void GuiScanDeInit()
@@ -72,6 +71,7 @@ void GuiScanDeInit()
 void GuiScanRefresh()
 {
     SetPageLockScreen(false);
+    GuiScanStart();
 }
 
 void GuiScanResult(bool result, void *param)
@@ -236,17 +236,22 @@ static void GuiScanStart()
 }
 
 #ifdef BTC_ONLY
+void SelectMicroCardFile(void)
+{
+    if (SdCardInsert()) {
+        static uint8_t fileFilterType = ONLY_PSBT;
+        GuiFrameOpenViewWithParam(&g_multisigReadSdcardView, &fileFilterType, sizeof(fileFilterType));
+    } else {
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);
+    }
+}
+
 static void SelectMicroCardFileHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        if (SdCardInsert()) {
-            static uint8_t fileFilterType = ONLY_PSBT;
-            GuiFrameOpenViewWithParam(&g_multisigReadSdcardView, &fileFilterType, sizeof(fileFilterType));
-        } else {
-            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);
-        }
+        SelectMicroCardFile();
     }
 }
 #endif

@@ -145,7 +145,7 @@ void GuiManageMultisigWalletDeInit(void)
 
     if (g_keyboardWidget != NULL) {
         GuiDeleteKeyboardWidget(g_keyboardWidget);
-        g_keyboardWidget == NULL;
+        g_keyboardWidget = NULL;
     }
 }
 

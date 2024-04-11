@@ -46,6 +46,11 @@ int32_t GuiScanViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case SIG_HIDE_TRANSACTION_LOADING:
         GuiPendingHintBoxRemove();
         break;
+#ifdef BTC_ONLY
+    case SIG_IMPORT_TRANSACTION_FROM_FILE:
+        SelectMicroCardFile();
+        break;
+#endif
     default:
         return ERR_GUI_UNHANDLED;
     }

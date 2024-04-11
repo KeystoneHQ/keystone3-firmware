@@ -13,6 +13,7 @@
 #include "safe_str_lib.h"
 #include "user_fatfs.h"
 #include "drv_rtc.h"
+#include "drv_sdcard.h"
 #endif
 
 #define MAX_SIGN_STATUS_LEN 24

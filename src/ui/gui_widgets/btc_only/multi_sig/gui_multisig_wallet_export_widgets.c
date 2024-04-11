@@ -26,22 +26,8 @@
 #define MAX_LABEL_LENGTH 64
 #define MAX_VERIFY_CODE_LENGTH 24
 
-typedef enum {
-    IMPORT_MULTI_SHOW_WALLET_INFO = 0,
-    IMPORT_MULTI_WALLET_SUCCESS,
-
-    IMPORT_MULTI_WALLET_BUTT,
-} IMPORT_MULTI_WALLET_ENUM;
-
-typedef struct {
-    uint8_t currentTile;
-    lv_obj_t *tileView;
-} ImportMultiWalletWidget_t;
-
-static ImportMultiWalletWidget_t g_importMultiWallet;
 static bool g_isExportMultiWallet;
 static lv_obj_t *g_noticeWindow;
-static lv_obj_t *g_confirmLabel;
 static lv_obj_t *g_qrCodeCont = NULL;
 static PageWidget_t *g_pageWidget;
 static MultiSigWalletItem_t *g_multisigWalletItem = NULL;
@@ -219,7 +205,7 @@ static UREncodeResult *GuiGenerateUR()
 
 static void GuiContent(lv_obj_t *parent)
 {
-    lv_obj_t *cont, *text, *qr_cont, *btn;
+    lv_obj_t *cont, *text, *btn;
 
     cont = GuiCreateContainerWithParent(parent, 480, 800 - 48 - 96 - 114);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);

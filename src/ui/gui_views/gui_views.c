@@ -237,7 +237,6 @@ void GuiSDCardExportHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     void (*func)(void) = lv_event_get_user_data(e);
-    printf("func = %p\n", func);
     if (code == LV_EVENT_CLICKED) {
         if (SdCardInsert()) {
             func();

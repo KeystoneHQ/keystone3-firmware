@@ -190,7 +190,6 @@ static void GuiRefreshTileview()
         RefreshQrcode();
 #ifdef BTC_ONLY
         if (g_isMultisig) {
-            printf("GuiExportXpubToMicroCard = %p\n", GuiExportXpubToMicroCard);
             SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SDCARD, GuiSDCardExportHandler, GuiExportXpubToMicroCard);
         }
 #endif

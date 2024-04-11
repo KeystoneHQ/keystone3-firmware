@@ -25,6 +25,23 @@
 #include "gui_key_derivation_request_widgets.h"
 #endif
 
+#define QUIT_AREA_X_START                   10
+#define QUIT_AREA_Y_START                   64
+#define MICRO_CARD_AREA_X_START             406
+#define MICRO_CARD_AREA_Y_START             64
+#define TOUCH_AREA_OFFSET                   64
+
+typedef struct {
+    GuiPosition_t start;
+    GuiPosition_t end;
+    void (*func)(void);
+} QrDecodeViewTouchArea_t;
+
+const static QrDecodeViewTouchArea_t g_qrDecodeObjects[2] = {
+    {{QUIT_AREA_X_START, QUIT_AREA_Y_START}, {QUIT_AREA_X_START + TOUCH_AREA_OFFSET, QUIT_AREA_Y_START + TOUCH_AREA_OFFSET}, LvglCloseCurrentView},
+    {{MICRO_CARD_AREA_X_START, MICRO_CARD_AREA_Y_START}, {MICRO_CARD_AREA_X_START + TOUCH_AREA_OFFSET, MICRO_CARD_AREA_Y_START + TOUCH_AREA_OFFSET}, LvglImportMicroCardSigView}
+};
+
 static void QrDecodeTask(void *argument);
 static void QrDecodeMinuteTimerFunc(void *argument);
 
@@ -191,35 +208,32 @@ static void QrDecodeMinuteTimerFunc(void *argument)
     PubValueMsg(QRDECODE_MSG_MINUTE, 0);
 }
 
-#define QUIT_AREA_X_START 10
-#define QUIT_AREA_Y_START 64
-#define QUIT_AREA_X_END QUIT_AREA_X_START + 64
-#define QUIT_AREA_Y_END QUIT_AREA_Y_START + 64
-
 void QrDecodeTouchQuit(void)
 {
     static bool quitArea = false;
+    static uint8_t handleIndex = 0xFF;
     TouchStatus_t *pStatus;
     if (g_qrDecodeState == QR_DECODE_STATE_OFF) {
         return;
     }
     pStatus = GetLatestTouchStatus();
     if (pStatus->touch) {
-        if (pStatus->x >= QUIT_AREA_X_START && pStatus->x <= QUIT_AREA_X_END &&
-                pStatus->y >= QUIT_AREA_Y_START && pStatus->y <= QUIT_AREA_Y_END) {
-            quitArea = true;
-        } else {
-            quitArea = false;
-        }
+        quitArea = true;
     } else {
         if (quitArea) {
+            for (int i = 0; i < 2; i++) {
+                if (pStatus->x >= g_qrDecodeObjects[i].start.x && pStatus->x <= g_qrDecodeObjects[i].end.x &&
+                        pStatus->y >= g_qrDecodeObjects[i].start.y && pStatus->y <= g_qrDecodeObjects[i].end.y) {
+                    osKernelLock();
+                    StopQrDecode();
+                    g_qrDecodeObjects[i].func();
+                    ClearTouchBuffer();
+                    osKernelUnlock();
+                    quitArea = false;
+                    return;
+                }
+            }
             quitArea = false;
-            osKernelLock();
-            StopQrDecode();
-            LvglCloseCurrentView();
-            ClearTouchBuffer();
-            osKernelUnlock();
         }
-        quitArea = false;
     }
 }

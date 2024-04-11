@@ -9,4 +9,9 @@ void GuiScanRefresh();
 void GuiScanResult(bool result, void *param);
 void GuiTransactionCheckPass(void);
 void GuiTransactionCheckFiald(PtrT_TransactionCheckResult result);
+
+#ifdef BTC_ONLY
+void SelectMicroCardFile(void);
+#endif
+
 #endif /* _GUI_SCAN_WIDGETS_H */

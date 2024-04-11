@@ -12,6 +12,7 @@
 #include "firmware_update.h"
 #include "gui_page.h"
 #include "gui_import_multisig_wallet_info_widgets.h"
+#include "gui_multisig_wallet_export_widgets.h"
 #include "librust_c.h"
 #include "keystore.h"
 #include "fingerprint_process.h"
@@ -93,7 +94,7 @@ void GuiImportMultisigWalletInfoWidgetsDeInit()
 
     if (g_keyboardWidget != NULL) {
         GuiDeleteKeyboardWidget(g_keyboardWidget);
-        g_keyboardWidget == NULL;
+        g_keyboardWidget = NULL;
     }
 
     GUI_DEL_OBJ(g_noticeWindow);

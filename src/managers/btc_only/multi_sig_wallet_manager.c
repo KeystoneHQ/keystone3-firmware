@@ -65,10 +65,10 @@ MultiSigWalletManager_t *GetMultisigWalletManager()
     return g_multisigWalletManager;
 }
 
-void LoadCurrentAccountMultisigWallet(const char *password)
+int32_t LoadCurrentAccountMultisigWallet(const char *password)
 {
     ASSERT_WALLET_MANAGER_EXIST
-    MultiSigWalletGet(GetCurrentAccountIndex(), password, g_multisigWalletManager);
+    return MultiSigWalletGet(GetCurrentAccountIndex(), password, g_multisigWalletManager);
 }
 
 MultiSigWalletItem_t *GetMultisigWalletByVerifyCode(const char *verifyCode)

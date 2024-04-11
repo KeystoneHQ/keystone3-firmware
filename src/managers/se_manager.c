@@ -251,23 +251,6 @@ int32_t SetWalletDataHash(uint8_t index, uint8_t *info)
     return ret;
 }
 
-/// @brief Get the wallet data hash.
-/// @param[in] index
-/// @param[out] info 32 byte info.
-/// @return err code.
-int32_t GetWalletDataHash(uint8_t index, uint8_t *info)
-{
-    uint8_t data[32];
-    int32_t ret;
-
-    ASSERT(index <= 2);
-
-    ret = SE_HmacEncryptRead(data, PAGE_WALLET1_PUB_KEY_HASH + index);
-    CHECK_ERRCODE_RETURN_INT(ret);
-    memcpy(info, data, 32);
-    return ret;
-}
-
 /// @brief verify the wallet data hash.
 /// @param[in] index
 /// @param[in] info 32 byte info.
@@ -280,6 +263,38 @@ bool VerifyWalletDataHash(uint8_t index, uint8_t *info)
     ASSERT(index <= 2);
 
     ret = SE_HmacEncryptRead(data, PAGE_WALLET1_PUB_KEY_HASH + index);
+    if (ret == SUCCESS_CODE && !memcmp(data, info, 32)) {
+        return true;
+    } else {
+        if (CheckAllFF(data, 32) || CheckAllZero(data, 32)) {
+            SetWalletDataHash(index, data);
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+int32_t SetMultisigDataHash(uint8_t index, uint8_t *info)
+{
+    uint8_t data[32] = {0};
+    int32_t ret;
+
+    ASSERT(index <= 2);
+
+    memcpy(data, info, 32);
+    ret = SE_HmacEncryptWrite(data, index * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_MULTISIG_PUB_KEY_HASH);
+    return ret;
+}
+
+bool VerifyMultisigWalletDataHash(uint8_t index, uint8_t *info)
+{
+    uint8_t data[32];
+    int32_t ret;
+
+    ASSERT(index <= 2);
+
+    ret = SE_HmacEncryptRead(data, index * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_MULTISIG_PUB_KEY_HASH);
     if (ret == SUCCESS_CODE && !memcmp(data, info, 32)) {
         return true;
     } else {

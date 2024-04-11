@@ -39,7 +39,7 @@ typedef struct MultiSigWalletManager {
 } MultiSigWalletManager_t;
 
 MultiSigWalletManager_t* initMultiSigWalletManager();
-void LoadCurrentAccountMultisigWallet(const char* password);
+int32_t LoadCurrentAccountMultisigWallet(const char* password);
 MultiSigWalletItem_t *AddMultisigWalletToCurrentAccount(MultiSigWallet *wallet, const char *password);
 MultiSigWalletItem_t *GetMultisigWalletByVerifyCode(const char* verifyCode);
 MultiSigWalletManager_t* GetMultisigWalletManager();

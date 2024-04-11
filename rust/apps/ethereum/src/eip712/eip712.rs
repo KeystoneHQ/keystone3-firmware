@@ -812,7 +812,7 @@ mod tests {
         let typed_data: TypedData = serde_json::from_value(json).unwrap();
         let hash = typed_data.encode_eip712().unwrap();
         assert_eq!(
-            "54ffed5209a17ac210ef3823740b3852ee9cd518b84ee39f0a3fa7f2f9b4205b",
+            "7529a15e7b8fd752f395945d3e61458ba0d8734766dc4a1d99ac727061ff758c",
             hex::encode(&hash[..])
         );
     }

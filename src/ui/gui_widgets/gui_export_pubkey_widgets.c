@@ -53,7 +53,6 @@ typedef struct {
 } PathTypeItem_t;
 
 void GetExportPubkey(char *dest, uint16_t chain, uint8_t pathType, uint32_t maxLen);
-void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 
 static void GuiCreateQrCodeWidget(lv_obj_t *parent);
 static void OpenSwitchPathTypeHandler(lv_event_t *e);
@@ -592,7 +591,7 @@ static void SetEgContent(uint8_t index)
     for (uint8_t i = 0; i < 2; i++) {
         memset_s(addrShot, BUFFER_SIZE_64, 0, BUFFER_SIZE_64);
         ModelGetUtxoAddress(addr, index, i, sizeof(addr));
-        CutAndFormatAddress(addrShot, sizeof(addrShot), addr, 24);
+        CutAndFormatString(addrShot, sizeof(addrShot), addr, 24);
         strncpy(prefix, addrShot, prefixLen);
         strncpy(rest, addrShot + prefixLen, strnlen_s(addrShot, BUFFER_SIZE_64) - prefixLen);
         snprintf_s(eg, sizeof(eg), "%d  #F5870A %s#%s", i, prefix, rest);

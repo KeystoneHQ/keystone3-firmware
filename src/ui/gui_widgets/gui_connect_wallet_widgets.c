@@ -269,7 +269,6 @@ static void AddSolflareCoins(void);
 static void ShowEgAddressCont(lv_obj_t *egCont);
 static uint8_t GetCurrentSelectedIndex();
 #endif
-void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 
 #ifndef BTC_ONLY
 CoinState_t g_companionAppcoinState[COMPANION_APP_COINS_BUTT];
@@ -924,7 +923,7 @@ static void AddXrpToolkitAddress(void)
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 
     char addr[BUFFER_SIZE_256] = {0};
-    CutAndFormatAddress(addr, sizeof(addr), GuiGetXrpAddressByIndex(g_xrpAddressIndex[GetCurrentAccountIndex()]), 20);
+    CutAndFormatString(addr, sizeof(addr), GuiGetXrpAddressByIndex(g_xrpAddressIndex[GetCurrentAccountIndex()]), 20);
     label = GuiCreateNoticeLabel(g_bottomCont, addr);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 58);
 
@@ -1204,27 +1203,27 @@ static void GetEthEgAddress(void)
 #ifndef COMPILE_SIMULATOR
     SimpleResponse_c_char *result;
     result = eth_get_address("44'/60'/0'/0/0", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD), "44'/60'/0'");
-    CutAndFormatAddress(g_derivationPathAddr[Bip44Standard][0], BUFFER_SIZE_64, result->data, 24);
+    CutAndFormatString(g_derivationPathAddr[Bip44Standard][0], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = eth_get_address("44'/60'/0'/0/1", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD), "44'/60'/0'");
-    CutAndFormatAddress(g_derivationPathAddr[Bip44Standard][1], BUFFER_SIZE_64, result->data, 24);
+    CutAndFormatString(g_derivationPathAddr[Bip44Standard][1], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = eth_get_address("44'/60'/0'/0/0", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LIVE_0), "44'/60'/0'");
-    CutAndFormatAddress(g_derivationPathAddr[LedgerLive][0], BUFFER_SIZE_64, result->data, 24);
+    CutAndFormatString(g_derivationPathAddr[LedgerLive][0], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = eth_get_address("44'/60'/1'/0/0", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LIVE_1), "44'/60'/1'");
-    CutAndFormatAddress(g_derivationPathAddr[LedgerLive][1], BUFFER_SIZE_64, result->data, 24);
+    CutAndFormatString(g_derivationPathAddr[LedgerLive][1], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = eth_get_address("44'/60'/0'/0", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LEGACY), "44'/60'/0'");
-    CutAndFormatAddress(g_derivationPathAddr[LedgerLegacy][0], BUFFER_SIZE_64, result->data, 24);
+    CutAndFormatString(g_derivationPathAddr[LedgerLegacy][0], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = eth_get_address("44'/60'/0'/1", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LEGACY), "44'/60'/0'");
-    CutAndFormatAddress(g_derivationPathAddr[LedgerLegacy][1], BUFFER_SIZE_64, result->data, 24);
+    CutAndFormatString(g_derivationPathAddr[LedgerLegacy][1], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 #endif
 }
@@ -1234,23 +1233,23 @@ static void GetSolEgAddress(void)
 #ifndef COMPILE_SIMULATOR
     SimpleResponse_c_char *result;
     result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_0));
-    CutAndFormatAddress(g_solDerivationPathAddr[SOLBip44][0], BUFFER_SIZE_64, result->data, 24);
+    CutAndFormatString(g_solDerivationPathAddr[SOLBip44][0], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_1));
-    CutAndFormatAddress(g_solDerivationPathAddr[SOLBip44][1], BUFFER_SIZE_64, result->data, 24);
+    CutAndFormatString(g_solDerivationPathAddr[SOLBip44][1], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_ROOT));
-    CutAndFormatAddress(g_solDerivationPathAddr[SOLBip44ROOT][0], BUFFER_SIZE_64, result->data, 24);
+    CutAndFormatString(g_solDerivationPathAddr[SOLBip44ROOT][0], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_CHANGE_0));
-    CutAndFormatAddress(g_solDerivationPathAddr[SOLBip44Change][0], BUFFER_SIZE_64, result->data, 24);
+    CutAndFormatString(g_solDerivationPathAddr[SOLBip44Change][0], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 
     result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_CHANGE_1));
-    CutAndFormatAddress(g_solDerivationPathAddr[SOLBip44Change][1], BUFFER_SIZE_64, result->data, 24);
+    CutAndFormatString(g_solDerivationPathAddr[SOLBip44Change][1], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
 #endif
 }

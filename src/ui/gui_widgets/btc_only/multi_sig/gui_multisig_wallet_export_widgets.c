@@ -33,7 +33,6 @@ static PageWidget_t *g_pageWidget;
 static MultiSigWalletItem_t *g_multisigWalletItem = NULL;
 static char *g_filename = NULL;
 
-void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 static void GuiContent(lv_obj_t *parent);
 static void ModelGenerateAddress(char *addr, uint32_t maxLen);
 static void SetEgContent(lv_obj_t *label);
@@ -264,7 +263,7 @@ static void SetEgContent(lv_obj_t *label)
     int8_t prefixLen = (strcmp(g_multisigWalletItem->format, FORMAT_P2WSH) == 0) ? 4 : 1;
     memset_s(addrShot, sizeof(addrShot), 0, sizeof(addrShot));
     ModelGenerateAddress(addr, sizeof(addr));
-    CutAndFormatAddress(addrShot, sizeof(addrShot), addr, 24);
+    CutAndFormatString(addrShot, sizeof(addrShot), addr, 24);
     strncpy(prefix, addrShot, prefixLen);
     strncpy(rest, addrShot + prefixLen, strnlen_s(addrShot, BUFFER_SIZE_64) - prefixLen);
     snprintf_s(eg, sizeof(eg), "#F5870A %s#%s", prefix, rest);

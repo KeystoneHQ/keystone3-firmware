@@ -498,7 +498,7 @@ static void GuiCreateMultiStepCont(void)
 void GuiCreateMultiInit(void)
 {
     for (int i = 0; i < FATFS_MAX_FILE_NUMBER; i++) {
-        g_fileList[i] = EXT_MALLOC(BUFFER_SIZE_32);
+        g_fileList[i] = EXT_MALLOC(BUFFER_SIZE_64);
     }
     g_pageWidget = CreatePageWidget();
     lv_obj_t *tileView = GuiCreateTileView(g_pageWidget->contentZone);
@@ -845,17 +845,20 @@ void ListMicroCardXpubFile(void)
 {
     lv_obj_clean(g_createMultiTileView.listTile);
     uint32_t number = 0;
+    const char *suffix = ".json";
 #ifdef COMPILE_SIMULATOR
-    FatfsGetFileName("C:/assets/sd", g_fileList, BUFFER_SIZE_32, &number, "json");
+    FatfsGetFileName("C:/assets/sd", g_fileList, BUFFER_SIZE_32, &number, suffix);
 #else
-    FatfsGetFileName("0:", g_fileList, BUFFER_SIZE_32, &number, "json");
+    FatfsGetFileName("0:", g_fileList, BUFFER_SIZE_32, &number, suffix);
 #endif
     if (number == 0) {
         return;
     }
 
     for (int i = 0; i < number; i++) {
-        lv_obj_t *btn = GuiCreateSelectButton(g_createMultiTileView.listTile, g_fileList[i], &imgArrowRight, OpenFileNextTileHandler, g_fileList[i], false);
+        char fileName[BUFFER_SIZE_32] = {0};
+        CutAndFormatFileName(fileName, sizeof(fileName), g_fileList[i], suffix);
+        lv_obj_t *btn = GuiCreateSelectButton(g_createMultiTileView.listTile, fileName, &imgArrowRight, OpenFileNextTileHandler, g_fileList[i], false);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 84 * i);
     }
 }

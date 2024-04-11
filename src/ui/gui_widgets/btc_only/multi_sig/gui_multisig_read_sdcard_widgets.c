@@ -35,7 +35,7 @@ static void CloseErrorDataHandler(lv_event_t *e);
 void GuiMultisigReadSdcardWidgetsInit(uint8_t fileFilterType)
 {
     for (int i = 0; i < FATFS_MAX_FILE_NUMBER; i++) {
-        g_fileList[i] = EXT_MALLOC(BUFFER_SIZE_32);
+        g_fileList[i] = EXT_MALLOC(BUFFER_SIZE_128);
     }
     g_fileFilterType = fileFilterType;
     g_pageWidget = CreatePageWidget();
@@ -126,9 +126,9 @@ void ListMicroCardMultisigConfigFile(void)
     }
     printf("suffix is %s\r\n", suffix);
 #ifdef COMPILE_SIMULATOR
-    FatfsGetFileName("C:/assets/sd", g_fileList, BUFFER_SIZE_32, &number, suffix);
+    FatfsGetFileName("C:/assets/sd", g_fileList, BUFFER_SIZE_128, &number, suffix);
 #else
-    FatfsGetFileName("0:", g_fileList, BUFFER_SIZE_32, &number, suffix);
+    FatfsGetFileName("0:", g_fileList, BUFFER_SIZE_128, &number, suffix);
 #endif
     if (number == 0) {
         lv_obj_t *img = GuiCreateImg(parent, &imgFile);
@@ -138,7 +138,9 @@ void ListMicroCardMultisigConfigFile(void)
     }
 
     for (int i = 0; i < number; i++) {
-        lv_obj_t *btn = GuiCreateSelectButton(g_pageWidget->contentZone, g_fileList[i], &imgArrowRight, GuiSelectFileHandler, g_fileList[i], false);
+        char fileName[BUFFER_SIZE_32] = {0};
+        CutAndFormatFileName(fileName, sizeof(fileName), g_fileList[i], suffix);
+        lv_obj_t *btn = GuiCreateSelectButton(g_pageWidget->contentZone, fileName, &imgArrowRight, GuiSelectFileHandler, g_fileList[i], false);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 84 * i);
     }
 }

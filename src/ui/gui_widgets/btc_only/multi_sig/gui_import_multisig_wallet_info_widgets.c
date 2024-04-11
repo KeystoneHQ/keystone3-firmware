@@ -21,6 +21,7 @@
 #include "gui_chain.h"
 #include "stdint.h"
 #include "user_memory.h"
+#include "gui_multisig_wallet_export_widgets.h"
 #ifndef COMPILE_SIMULATOR
 #include "drv_sdcard.h"
 #include "user_fatfs.h"

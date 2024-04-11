@@ -39,6 +39,10 @@ void PrintHeapInfo(void);
 #ifndef strncpy_s
 #define strncpy_s(dest, destsz, src, size)  strncpy(dest, src, size)
 #endif
+#define memcpy_s(dest, destsz, src, count)  memcpy(dest, src, count)
+#define strnlen_s(sstr, smax)               strnlen(sstr, smax)
+#define strncat_s(str, max, src, len)       strncat(str, src, len)
+
 #define SRAM_MALLOC(size)                   malloc(size)
 #define SRAM_FREE(p)                        free(p)
 #define SRAM_REALLOC(p, size)               realloc(p, size)

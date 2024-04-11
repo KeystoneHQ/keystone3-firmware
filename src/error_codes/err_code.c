@@ -65,7 +65,7 @@ static const ErrCodeDesc_t g_faults[] = {
     {ERR_UPDATE_FIRMWARE_NOT_DETECTED, "Update firmware not detected"},
 
     {ERR_INVALID_QRCODE, "Invalid QR code"},
-    
+
     {ERR_MULTISIG_INVALID_FILE, "Invalid Multisig wallet file"},
     {ERR_MULTISIG_WALLET_CONFIG_INVALID, "Invalid multisig wallet config data"},
     {ERR_MULTISIG_WALLET_EXIST, "Multisig wallet exists"},

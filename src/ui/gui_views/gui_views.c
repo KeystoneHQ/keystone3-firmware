@@ -355,11 +355,11 @@ void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t
     strncpy_s(descText, MAX_RUST_ERR_MESSAGE_LEN, errMessage, strnlen_s(errMessage, MAX_RUST_ERR_MESSAGE_LEN));
 
     switch (errCode) {
-        case BitcoinNoMyInputs:
-        case BitcoinWalletTypeError:
-            titleText = _("rust_error_bitcoin_no_my_inputs");
-            descText = _("rust_error_bitcoin_no_my_inputs_desc");
-            break;
+    case BitcoinNoMyInputs:
+    case BitcoinWalletTypeError:
+        titleText = _("rust_error_bitcoin_no_my_inputs");
+        descText = _("rust_error_bitcoin_no_my_inputs_desc");
+        break;
     }
 
     lv_obj_t *cont = GuiCreateConfirmHintBox(lv_scr_act(),

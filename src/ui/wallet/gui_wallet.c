@@ -15,7 +15,7 @@ UREncodeResult *GuiGetBlueWalletBtcData(void)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
 #ifdef BTC_ONLY
-    if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         return export_multi_sig_wallet_by_ur(mfp, sizeof(mfp), GetDefaultMultisigWallet()->walletConfig);
     }
 #endif
@@ -57,7 +57,7 @@ UREncodeResult *GuiGetSparrowWalletBtcData(void)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
 #ifdef BTC_ONLY
-    if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         return export_multi_sig_wallet_by_ur(mfp, sizeof(mfp), GetDefaultMultisigWallet()->walletConfig);
     }
 #endif
@@ -105,7 +105,7 @@ UREncodeResult *GuiGetSpecterWalletBtcData(void)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
 #ifdef BTC_ONLY
-    if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         return export_multi_sig_wallet_by_ur(mfp, sizeof(mfp), GetDefaultMultisigWallet()->walletConfig);
     }
 #endif

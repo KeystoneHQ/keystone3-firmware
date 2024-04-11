@@ -394,7 +394,7 @@ PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
     GetMasterFingerPrint(mfp);
 
     char *verify_code = NULL;
-    if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         MultiSigWalletItem_t *item = GetDefaultMultisigWallet();
         if (item != NULL) {
             verify_code = SRAM_MALLOC(12);
@@ -486,7 +486,7 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
 #endif
 #ifdef BTC_ONLY
         char *verify_code = NULL;
-        if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+        if (GetCurrentWalletIndex() != SINGLE_WALLET) {
             MultiSigWalletItem_t *item = GetDefaultMultisigWallet();
             if (item != NULL) {
                 verify_code = SRAM_MALLOC(12);

@@ -313,7 +313,7 @@ static void GuiInitWalletListArray()
             }
         }
 #else
-        if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+        if (GetCurrentWalletIndex() != SINGLE_WALLET) {
             if (g_walletListArray[i].index == WALLET_LIST_SPECTER ||
                     g_walletListArray[i].index == WALLET_LIST_UNISAT) {
                 g_walletListArray[i].enable = false;
@@ -732,7 +732,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 #ifndef BTC_ONLY
     GuiCreateSupportedNetworks();
 #else
-    if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         lv_obj_t *button = GuiCreateImgLabelAdaptButton(parent, _("multisig_connect_wallet_notice"), &imgTwoSmallKey, UnHandler, NULL);
         lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -24);
         lv_obj_set_style_text_opa(lv_obj_get_child(button, 1), LV_OPA_80, LV_PART_MAIN);

@@ -19,7 +19,7 @@
 #define PAGE_INDEX_KEY_PIECE                    7
 #define PAGE_INDEX_PASSWORD_HASH                8
 #define PAGE_INDEX_PARAM                        9
-#define PAGE_INDEX_MULTISIG_PUB_KEY_HASH        10
+#define PAGE_INDEX_MULTISIG_CONFIG_HASH         10
 //page 76~85 encrypted password
 #define PAGE_PF_ENCRYPTED_PASSWORD              72
 #define PAGE_PF_AES_KEY                         82

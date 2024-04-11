@@ -283,7 +283,7 @@ int32_t SetMultisigDataHash(uint8_t index, uint8_t *info)
     ASSERT(index <= 2);
 
     memcpy(data, info, 32);
-    ret = SE_HmacEncryptWrite(data, index * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_MULTISIG_PUB_KEY_HASH);
+    ret = SE_HmacEncryptWrite(data, index * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_MULTISIG_CONFIG_HASH);
     return ret;
 }
 
@@ -294,7 +294,7 @@ bool VerifyMultisigWalletDataHash(uint8_t index, uint8_t *info)
 
     ASSERT(index <= 2);
 
-    ret = SE_HmacEncryptRead(data, index * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_MULTISIG_PUB_KEY_HASH);
+    ret = SE_HmacEncryptRead(data, index * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_MULTISIG_CONFIG_HASH);
     if (ret == SUCCESS_CODE && !memcmp(data, info, 32)) {
         return true;
     } else {

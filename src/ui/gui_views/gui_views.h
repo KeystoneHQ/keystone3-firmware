@@ -226,5 +226,6 @@ void GuiViewHintBoxClear(void);
 lv_obj_t *GuiCreateWalletNoticeWidget(lv_obj_t *parent);
 void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param);
 void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t **param);
+void GuiSDCardExportHandler(lv_event_t *e);
 
 #endif /* _GUI_VIEWS_H */

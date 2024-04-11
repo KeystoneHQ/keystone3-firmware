@@ -1,4 +1,3 @@
-#include "btc_only/gui_btc_home_widgets.h"
 #include "gui_chain.h"
 #include "gui_obj.h"
 #include "gui_export_pubkey_widgets.h"
@@ -7,6 +6,8 @@
 #include "gui_fullscreen_mode.h"
 #include "account_public_info.h"
 #include "assert.h"
+#include "gui_hintbox.h"
+#include "btc_only/gui_btc_home_widgets.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
@@ -16,6 +17,8 @@
 #include "keystore.h"
 #include "gui_btc_home_widgets.h"
 static bool g_isMultisig;
+static lv_obj_t *g_noticeWindow = NULL;
+static char *g_xpubConfigName = NULL;
 #endif
 
 typedef enum {
@@ -124,7 +127,58 @@ void OpenExportMultisigViewHandler(lv_event_t *e)
         GuiFrameOpenViewWithParam(&g_exportPubkeyView, &chainCard, sizeof(chainCard));
     }
 }
+
+static int CreateExportPubkeyComponent(char *xpub, uint32_t maxLen)
+{
+    char *temp = xpub;
+    char *derivHead[3] = {
+        "p2wsh_deriv",
+        "p2sh_p2wsh_deriv",
+        "p2sh_deriv"
+    };
+    char *xpubHead[3] = {
+        "p2wsh",
+        "p2sh_p2wsh",
+        "p2sh"
+    };
+    int len = 0;
+    len += snprintf_s(xpub + len, maxLen - len, "{\n");
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_btcMultisigPathList); i++) {
+        len += snprintf_s(xpub + len, maxLen - len, "  \"%s\": \"%s\",\n", derivHead[i], g_btcMultisigPathList[i].path);
+        len += snprintf_s(xpub + len, maxLen - len, "  \"%s\": \"%s\",\n", xpubHead[i], GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH - i));
+    }
+
+    len += snprintf_s(xpub + len, maxLen - len, "  \"account\": \"0\",\n");
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    len += snprintf_s(xpub + len, maxLen - len, "  \"xfp\": \"%02X%02X%02X%02X\"\n", mfp[0], mfp[1], mfp[2], mfp[3]);
+    len += snprintf_s(xpub + len, maxLen - len, "}");
+    return len;
+}
+
+static void GuiWriteToMicroCardHandler(lv_event_t *e)
+{
+    GUI_DEL_OBJ(g_noticeWindow)
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        char *xPubBuff = EXT_MALLOC(1024);
+        int len = CreateExportPubkeyComponent(xPubBuff, 1024);
+        int ret = FileWrite(g_xpubConfigName, xPubBuff, len);
+        if (ret) {
+            g_noticeWindow =  GuiCreateErrorCodeWindow(ERR_EXPORT_FILE_TO_MICRO_CARD_FAILED, &g_noticeWindow);
+        }
+        EXT_FREE(xPubBuff);
+    }
+}
+
+static void GuiExportXpubToMicroCard(void)
+{
+    g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgSdCardL, _("wallet_profile_export_to_sdcard_title"), _("about_info_export_file_name"), g_xpubConfigName, _("got_it"), ORANGE_COLOR);
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_add_event_cb(btn, GuiWriteToMicroCardHandler, LV_EVENT_CLICKED, NULL);
+}
 #endif
+
 
 static void GuiRefreshTileview()
 {
@@ -134,6 +188,11 @@ static void GuiRefreshTileview()
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("receive_btc_extended_public_key"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         RefreshQrcode();
+#ifdef BTC_ONLY
+        if (g_isMultisig) {
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SDCARD, GuiSDCardExportHandler, GuiExportXpubToMicroCard);
+        }
+#endif
         break;
 
     case TILEVIEW_SELECT_TYPE:
@@ -169,6 +228,10 @@ static void InitPathAndChain(uint8_t chain)
     } else {
         g_chain = chain;
     }
+    g_xpubConfigName = SRAM_MALLOC(BUFFER_SIZE_64);
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    snprintf_s(g_xpubConfigName, BUFFER_SIZE_64, "%s-%02X%02X%02X%02X.json", GetWalletName(), mfp[0], mfp[1], mfp[2], mfp[3]);
 #else
     g_chain = chain;
     g_pathTypeList = (PathTypeItem_t *)g_btcPathTypeList;
@@ -206,6 +269,8 @@ void GuiExportPubkeyDeInit(void)
 
 #ifdef BTC_ONLY
     g_isMultisig = false;
+    GUI_DEL_OBJ(g_noticeWindow)
+    SRAM_MALLOC(g_xpubConfigName);
 #endif
 }
 

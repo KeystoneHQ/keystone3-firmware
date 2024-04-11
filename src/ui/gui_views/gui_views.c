@@ -233,10 +233,17 @@ void GuiViewHintBoxClear(void)
     g_pageViewWidget = NULL;
 }
 
-void GuiDoNothingHandler(lv_event_t *e)
+void GuiSDCardExportHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
+    void (*func)(void) = lv_event_get_user_data(e);
     if (code == LV_EVENT_CLICKED) {
+        if (SdCardInsert()) {
+            func();
+        } else {
+            g_hintBox = GuiCreateErrorCodeWindow(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_hintBox);
+        }
+        return;
     }
 }
 
@@ -338,6 +345,10 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param)
     case ERR_MULTISIG_INVALID_FILE:
         titleText = _("scan_qr_code_error_invalid_wallet_file");
         descText = _("scan_qr_code_error_invalid_wallet_file_desc");
+        break;
+    case ERR_EXPORT_FILE_TO_MICRO_CARD_FAILED:
+        titleText = _("multisig_export_to_sdcard_failed");
+        descText = _("multisig_export_to_sdcard_failed_desc");
         break;
     }
 

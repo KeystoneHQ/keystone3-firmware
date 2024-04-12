@@ -64,7 +64,7 @@ impl InferViewType for CryptoAccount {
 #[cfg(feature = "multi-coins")]
 impl InferViewType for CryptoAccount {
     fn infer(&self) -> Result<ViewType, URError> {
-        Ok(ViewType::ViewTypeUnKnown);
+        Ok(ViewType::ViewTypeUnKnown)
     }
 }
 

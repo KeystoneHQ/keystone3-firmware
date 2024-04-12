@@ -128,6 +128,7 @@ void GuiTransactionCheckPass(void)
 #ifndef COMPILE_SIMULATOR
     GuiModelTransactionCheckResultClear();
     SetPageLockScreen(true);
+    GuiCLoseCurrentWorkingView();
     GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
 #else
 #ifndef BTC_ONLY

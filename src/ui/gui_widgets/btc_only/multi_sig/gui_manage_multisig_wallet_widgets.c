@@ -113,7 +113,6 @@ int8_t GuiManageMultiWalletPrevTile(void)
 
 void GuiManageMultisigWalletDeInit(void)
 {
-    printf("%s %d..\n", __func__, __LINE__);
     GUI_DEL_OBJ(g_noticeWindow)
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
@@ -219,7 +218,11 @@ static void CreateCoSignerDetailWidget(lv_obj_t *parent)
         label = GuiCreateIllustrateLabel(cont, g_multiSigWallet->xpub_items->data[i].xpub);
         lv_obj_align(label, LV_ALIGN_DEFAULT, 24, i * 204 + 50);
         lv_obj_set_width(label, 360);
-        label = GuiCreateNoticeLabel(cont, g_multiSigWallet->derivations->data[i]);
+        if (g_multiSigWallet->derivations->size == 1) {
+            label = GuiCreateNoticeLabel(cont, g_multiSigWallet->derivations->data[0]);
+        } else {
+            label = GuiCreateNoticeLabel(cont, g_multiSigWallet->derivations->data[i]);
+        }
         lv_obj_align(label, LV_ALIGN_DEFAULT, 24, i * 204 + 174);
     }
 }

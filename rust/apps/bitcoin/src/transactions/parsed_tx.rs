@@ -1,4 +1,5 @@
 use crate::errors::{BitcoinError, Result};
+use crate::multi_sig::wallet::MultiSigWalletConfig;
 use crate::network::Network;
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
@@ -30,6 +31,7 @@ pub struct ParsedOutput {
     pub amount: String,
     pub value: u64,
     pub path: Option<String>,
+    pub is_external: bool,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -64,6 +66,7 @@ pub struct ParseContext {
     pub master_fingerprint: Fingerprint,
     pub extended_public_keys: BTreeMap<DerivationPath, Xpub>,
     pub verify_code: Option<String>,
+    pub multisig_wallet_config: Option<MultiSigWalletConfig>,
 }
 
 impl ParseContext {
@@ -71,11 +74,13 @@ impl ParseContext {
         master_fingerprint: Fingerprint,
         extended_public_keys: BTreeMap<DerivationPath, Xpub>,
         verify_code: Option<String>,
+        multisig_wallet_config: Option<MultiSigWalletConfig>,
     ) -> Self {
         ParseContext {
             master_fingerprint,
             extended_public_keys,
             verify_code,
+            multisig_wallet_config,
         }
     }
 }

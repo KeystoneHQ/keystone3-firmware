@@ -85,6 +85,14 @@ impl MultiSigWalletConfig {
         };
         Ok(path)
     }
+
+    pub fn get_derivation_by_index(&self, index: usize) -> Option<&String> {
+        if self.derivations.len() == 1 {
+            self.derivations.get(0)
+        } else {
+            return self.derivations.get(index);
+        }
+    }
 }
 
 #[derive(Debug)]

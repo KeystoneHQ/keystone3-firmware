@@ -12,6 +12,7 @@
 #include "multi_sig_wallet_manager.h"
 #include "gui_export_pubkey_widgets.h"
 #include "gui_btc_wallet_profile_widgets.h"
+#include "gui_manage_multisig_wallet_widgets.h"
 
 #define MULTI_SIG_WALLET_MAX_NUM               (4)
 

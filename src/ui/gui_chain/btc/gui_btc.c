@@ -21,6 +21,9 @@
 #include "simulator_mock_define.h"
 #endif
 
+#define MAX_WALLET_CONFIG_LEN 3000
+#define MAX_VERIFY_CODE_LEN 12
+
 #define CHECK_FREE_PARSE_RESULT(result)                             \
     if (result != NULL) {                                           \
         free_TransactionParseResult_DisplayTx(g_parseResult);       \
@@ -235,12 +238,22 @@ static void *GuiGetParsedPsbtStrData(void)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
 
-    g_parseResult = btc_parse_psbt_bytes(g_psbtBytes, g_psbtBytesLen, mfp, sizeof(mfp), public_keys);
+    char *wallet_config = NULL;
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+        MultiSigWalletItem_t *item = GetDefaultMultisigWallet();
+        if (item != NULL) {
+            wallet_config = SRAM_MALLOC(MAX_WALLET_CONFIG_LEN);
+            memset_s(wallet_config, MAX_WALLET_CONFIG_LEN, '\0', MAX_WALLET_CONFIG_LEN);
+            strncpy_s(wallet_config, MAX_WALLET_CONFIG_LEN, item->walletConfig, strnlen_s(item->walletConfig, MAX_WALLET_CONFIG_LEN));
+        }
+    }
+    g_parseResult = btc_parse_psbt_bytes(g_psbtBytes, g_psbtBytesLen, mfp, sizeof(mfp), public_keys, wallet_config);
     CHECK_CHAIN_RETURN(g_parseResult);
     if (IsMultiSigTx(g_parseResult->data)) {
         GuiSetCurrentTransactionType(TRANSACTION_TYPE_BTC_MULTISIG);
     }
     SRAM_FREE(public_keys);
+    SRAM_FREE(wallet_config);
     return g_parseResult;
 
 }
@@ -323,7 +336,21 @@ void *GuiGetParsedQrData(void)
             keys[3].path = "m/86'/0'/0'";
             keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
 #endif
-            g_parseResult = btc_parse_psbt(crypto, mfp, sizeof(mfp), public_keys);
+#ifdef BTC_ONLY
+            char *wallet_config = NULL;
+            if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+                MultiSigWalletItem_t *item = GetDefaultMultisigWallet();
+                if (item != NULL) {
+                    wallet_config = SRAM_MALLOC(MAX_WALLET_CONFIG_LEN);
+                    memset_s(wallet_config, MAX_WALLET_CONFIG_LEN, '\0', MAX_WALLET_CONFIG_LEN);
+                    strncpy_s(wallet_config, MAX_WALLET_CONFIG_LEN, item->walletConfig, strnlen_s(item->walletConfig, MAX_WALLET_CONFIG_LEN));
+                }
+            }
+            g_parseResult = btc_parse_psbt(crypto, mfp, sizeof(mfp), public_keys, wallet_config);
+            SRAM_FREE(wallet_config);
+#else
+            g_parseResult = btc_parse_psbt(crypto, mfp, sizeof(mfp), public_keys, NULL);
+#endif
             CHECK_CHAIN_RETURN(g_parseResult);
             if (IsMultiSigTx(g_parseResult->data)) {
                 GuiSetCurrentTransactionType(TRANSACTION_TYPE_BTC_MULTISIG);
@@ -394,16 +421,23 @@ PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
     GetMasterFingerPrint(mfp);
 
     char *verify_code = NULL;
+    char *wallet_config = NULL;
     if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         MultiSigWalletItem_t *item = GetDefaultMultisigWallet();
         if (item != NULL) {
-            verify_code = SRAM_MALLOC(12);
-            strncpy_s(verify_code, 12, item->verifyCode, strnlen_s(item->verifyCode, 12));
+            verify_code = SRAM_MALLOC(MAX_VERIFY_CODE_LEN);
+            memset_s(verify_code, MAX_VERIFY_CODE_LEN, '\0', MAX_VERIFY_CODE_LEN);
+            strncpy_s(verify_code, MAX_VERIFY_CODE_LEN, item->verifyCode, strnlen_s(item->verifyCode, MAX_VERIFY_CODE_LEN));
+            wallet_config = SRAM_MALLOC(MAX_WALLET_CONFIG_LEN);
+            memset_s(wallet_config, MAX_WALLET_CONFIG_LEN, '\0', MAX_WALLET_CONFIG_LEN);
+            strncpy_s(wallet_config, MAX_WALLET_CONFIG_LEN, item->walletConfig, strnlen_s(item->walletConfig, MAX_WALLET_CONFIG_LEN));
         }
     }
 
-    result = btc_check_psbt_bytes(g_psbtBytes, g_psbtBytesLen, mfp, sizeof(mfp), public_keys, verify_code);
+    result = btc_check_psbt_bytes(g_psbtBytes, g_psbtBytesLen, mfp, sizeof(mfp), public_keys, verify_code, wallet_config);
     SRAM_FREE(public_keys);
+    SRAM_FREE(verify_code);
+    SRAM_FREE(wallet_config);
     return result;
 }
 #endif
@@ -486,16 +520,23 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
 #endif
 #ifdef BTC_ONLY
         char *verify_code = NULL;
+        char *wallet_config = NULL;
         if (GetCurrentWalletIndex() != SINGLE_WALLET) {
             MultiSigWalletItem_t *item = GetDefaultMultisigWallet();
             if (item != NULL) {
-                verify_code = SRAM_MALLOC(12);
-                strncpy_s(verify_code, 12, item->verifyCode, strnlen_s(item->verifyCode, 12));
+                verify_code = SRAM_MALLOC(MAX_VERIFY_CODE_LEN);
+                memset_s(verify_code, MAX_VERIFY_CODE_LEN, '\0', MAX_VERIFY_CODE_LEN);
+                strncpy_s(verify_code, MAX_VERIFY_CODE_LEN, item->verifyCode, strnlen_s(item->verifyCode, MAX_VERIFY_CODE_LEN));
+                wallet_config = SRAM_MALLOC(MAX_WALLET_CONFIG_LEN);
+                memset_s(wallet_config, MAX_WALLET_CONFIG_LEN, '\0', MAX_WALLET_CONFIG_LEN);
+                strncpy_s(wallet_config, MAX_WALLET_CONFIG_LEN, item->walletConfig, strnlen_s(item->walletConfig, MAX_WALLET_CONFIG_LEN));
             }
         }
-        result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys, verify_code);
+        result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys, verify_code, wallet_config);
+        SRAM_FREE(verify_code);
+        SRAM_FREE(wallet_config);
 #else
-        result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys, NULL);
+        result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys, NULL, NULL);
 #endif
         SRAM_FREE(public_keys);
     }
@@ -1116,7 +1157,12 @@ static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailDat
             lv_obj_set_style_bg_opa(changeContainer, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
 
             lv_obj_t *changeLabel = lv_label_create(changeContainer);
-            lv_label_set_text(changeLabel, "Change");
+            if(to->data[i].is_external) {
+                lv_label_set_text(changeLabel, "Receive");
+            }
+            else {
+                lv_label_set_text(changeLabel, "Change");
+            }
             lv_obj_set_style_text_font(changeLabel, g_defIllustrateFont, LV_PART_MAIN);
             lv_obj_set_style_text_color(changeLabel, WHITE_COLOR, LV_PART_MAIN);
             lv_obj_set_style_text_opa(changeLabel, 163, LV_PART_MAIN);

@@ -2,6 +2,7 @@ use crate::errors::{BitcoinError, Result};
 use alloc::format;
 use third_party::bitcoin::opcodes::all::OP_PUSHNUM_1;
 use third_party::bitcoin::script::Instruction;
+use third_party::itertools::Itertools;
 
 use crate::addresses::address::Address;
 use crate::network;
@@ -10,12 +11,15 @@ use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::ops::Index;
+use core::str::Chars;
 use keystore::algorithms::secp256k1::derive_public_key;
 
 use crate::multi_sig::address::calculate_multi_address;
 use crate::multi_sig::wallet::calculate_multi_sig_verify_code;
 use crate::multi_sig::MultiSigFormat;
-use third_party::bitcoin::bip32::{ChildNumber, DerivationPath, Fingerprint, KeySource, Xpub};
+use third_party::bitcoin::bip32::{
+    self, ChildNumber, DerivationPath, Fingerprint, KeySource, Xpub,
+};
 use third_party::bitcoin::psbt::{GetKey, KeyRequest, Psbt};
 use third_party::bitcoin::psbt::{Input, Output};
 use third_party::bitcoin::taproot::TapLeafHash;
@@ -122,7 +126,7 @@ impl WrappedPsbt {
             address,
             amount: Self::format_amount(value, network),
             value,
-            path,
+            path: path.map(|v| v.0),
             sign_status,
             is_multisig,
         })
@@ -160,6 +164,7 @@ impl WrappedPsbt {
             return Ok(false);
         }
         self.check_my_input_derivation(input, index)?;
+        self.check_my_input_script(input, index)?;
         self.check_my_input_signature(input, index, context)?;
         self.check_my_input_value_tampered(input, index)?;
         self.check_my_wallet_type(input, context)?;
@@ -209,6 +214,10 @@ impl WrappedPsbt {
             "wallet type mismatch wallet verify code is {} input verify code is {}",
             wallet_verify_code, input_verify_code
         )));
+    }
+
+    pub fn check_my_input_script(&self, input: &Input, index: usize) -> Result<()> {
+        Ok(())
     }
 
     pub fn check_my_input_derivation(&self, input: &Input, index: usize) -> Result<()> {
@@ -586,7 +595,8 @@ impl WrappedPsbt {
             address: self.calculate_address_for_output(tx_out, network)?,
             amount: Self::format_amount(tx_out.value.to_sat(), network),
             value: tx_out.value.to_sat(),
-            path,
+            path: path.clone().map(|v| v.0),
+            is_external: path.clone().map_or(false, |v| v.1),
         })
     }
 
@@ -606,7 +616,14 @@ impl WrappedPsbt {
         input: &Input,
         index: usize,
         context: &ParseContext,
-    ) -> Result<Option<String>> {
+    ) -> Result<Option<(String, bool)>> {
+        if context.multisig_wallet_config.is_some() {
+            if self.is_taproot_input(input) {
+                return Err(BitcoinError::InvalidPsbt(format!(
+                    "multisig with taproot is not supported"
+                )));
+            }
+        }
         if self.is_taproot_input(input) {
             self.get_my_key_path_for_taproot(&input.tap_key_origins, index, "input", context)
         } else {
@@ -619,7 +636,7 @@ impl WrappedPsbt {
         output: &Output,
         index: usize,
         context: &ParseContext,
-    ) -> Result<Option<String>> {
+    ) -> Result<Option<(String, bool)>> {
         let path = self.get_my_key_path(&output.bip32_derivation, index, "output", context)?;
         if path.is_some() {
             return Ok(path);
@@ -633,56 +650,86 @@ impl WrappedPsbt {
         index: usize,
         purpose: &str,
         context: &ParseContext,
-    ) -> Result<Option<String>> {
+    ) -> Result<Option<(String, bool)>> {
+        if let Some(config) = &context.multisig_wallet_config {
+            let total = config.total;
+            // not my key
+            if bip32_derivation.keys().len() as u32 != total {
+                return Ok(None);
+            }
+
+            let wallet_xfps = config
+                .xpub_items
+                .iter()
+                .map(|v| v.xfp.clone())
+                .sorted()
+                .fold("".to_string(), |acc, cur| format!("{}{}", acc, cur));
+            let xfps = bip32_derivation
+                .values()
+                .map(|(fp, _)| fp.to_string())
+                .sorted()
+                .fold("".to_string(), |acc, cur| format!("{}{}", acc, cur));
+            // not my multisig key
+            if !wallet_xfps.eq_ignore_ascii_case(&xfps) {
+                return Ok(None);
+            }
+        }
+        //it's a singlesig or it's my multisig input
         for key in bip32_derivation.keys() {
             let (fingerprint, path) = bip32_derivation
                 .get(key)
                 .ok_or(BitcoinError::InvalidInput)?;
             if fingerprint.eq(&context.master_fingerprint) {
                 let child = path.to_string();
-                for parent_path in context.extended_public_keys.keys() {
-                    if child.starts_with(&parent_path.to_string()) {
-                        return Ok(Some(child.to_uppercase()));
-                        // let extended_key = context.extended_public_keys.get(parent_path).unwrap();
-                        // let xpub = bip32::XPub::from_str(extended_key.to_string().as_str())
-                        //     .map_err(|e| BitcoinError::GetKeyError(e.to_string()))?;
-                        // let sub = child
-                        //     .strip_prefix(&parent_path.to_string())
-                        //     .map(|v| {
-                        //         v.split('/').fold("m".to_string(), |acc, cur| {
-                        //             match cur.is_empty() {
-                        //                 true => acc,
-                        //                 false => acc + "/" + cur,
-                        //             }
-                        //         })
-                        //     })
-                        //     .unwrap();
-                        // let sub_path = bip32::DerivationPath::from_str(sub.as_str())
-                        //     .map_err(|_e| BitcoinError::InvalidInput)?;
-                        // let child_key =
-                        //     sub_path
-                        //         .into_iter()
-                        //         .fold(Ok(xpub), |acc: Result<XPub>, cur| {
-                        //             acc.and_then(|v| {
-                        //                 v.derive_child(cur)
-                        //                     .map_err(|e| BitcoinError::GetKeyError(e.to_string()))
-                        //             })
-                        //         })?;
-                        // let lk = child_key.public_key().to_bytes();
-                        // let rk = key.serialize();
-                        // if lk.eq(&rk) {
-                        //     return Ok(Some(child.to_uppercase()));
-                        // }
+                match &context.multisig_wallet_config {
+                    Some(config) => {
+                        for (i, xpub_item) in config.xpub_items.iter().enumerate() {
+                            if xpub_item.xfp.eq_ignore_ascii_case(&fingerprint.to_string()) {
+                                if let Some(parent_path) = config.get_derivation_by_index(i) {
+                                    if child.starts_with(parent_path) {
+                                        return Ok(Some((
+                                            child.to_uppercase(),
+                                            Self::judge_external_key(child, parent_path.clone()),
+                                        )));
+                                    }
+                                }
+                            }
+                        }
+                        return Err(BitcoinError::InvalidTransaction(format!(
+                            "invalid {} #{}, fingerprint matched but cannot derive associated public key",
+                            purpose, index
+                        )));
+                    }
+                    None => {
+                        for parent_path in context.extended_public_keys.keys() {
+                            if child.starts_with(&parent_path.to_string()) {
+                                return Ok(Some((
+                                    child.to_uppercase(),
+                                    Self::judge_external_key(child, parent_path.to_string()),
+                                )));
+                            }
+                        }
+                        return Err(BitcoinError::InvalidTransaction(format!(
+                            "invalid {} #{}, fingerprint matched but cannot derive associated public key",
+                            purpose, index
+                        )));
                     }
                 }
-
-                return Err(BitcoinError::InvalidTransaction(format!(
-                    "invalid {} #{}, fingerprint matched but cannot derive associated public key",
-                    purpose, index
-                )));
             }
         }
         Ok(None)
+    }
+
+    fn judge_external_key(child: String, parent: String) -> bool {
+        let mut sub_path = &child[parent.len()..];
+        fn judge(v: &mut Chars) -> bool {
+            match v.next() {
+                Some('/') => judge(v),
+                Some('0') => true,
+                _ => false,
+            }
+        }
+        judge(&mut sub_path.chars())
     }
 
     pub fn get_my_key_path_for_taproot(
@@ -691,7 +738,7 @@ impl WrappedPsbt {
         index: usize,
         purpose: &str,
         context: &ParseContext,
-    ) -> Result<Option<String>> {
+    ) -> Result<Option<(String, bool)>> {
         for key in tap_key_origins.keys() {
             let (_, (fingerprint, path)) =
                 tap_key_origins.get(key).ok_or(BitcoinError::InvalidInput)?;
@@ -699,7 +746,10 @@ impl WrappedPsbt {
                 let child = path.to_string();
                 for parent_path in context.extended_public_keys.keys() {
                     if child.starts_with(&parent_path.to_string()) {
-                        return Ok(Some(child.to_uppercase()));
+                        return Ok(Some((
+                            child.to_uppercase(),
+                            Self::judge_external_key(child, parent_path.to_string()),
+                        )));
                     }
                 }
                 return Err(BitcoinError::InvalidTransaction(format!(
@@ -814,6 +864,7 @@ mod tests {
                 master_fingerprint: master_fingerprint.clone(),
                 extended_public_keys: keys.clone(),
                 verify_code: None,
+                multisig_wallet_config: None,
             }));
             assert_eq!(Ok(()), reust);
         }
@@ -834,6 +885,7 @@ mod tests {
                 master_fingerprint: master_fingerprint.clone(),
                 extended_public_keys: keys.clone(),
                 verify_code: None,
+                multisig_wallet_config: None,
             }));
             assert_eq!(true, reust.is_err());
         }
@@ -854,6 +906,7 @@ mod tests {
                 master_fingerprint: master_fingerprint.clone(),
                 extended_public_keys: keys.clone(),
                 verify_code: Some("03669e02".to_string()),
+                multisig_wallet_config: None,
             }));
             assert_eq!(true, reust.is_err());
         }
@@ -874,6 +927,7 @@ mod tests {
                 master_fingerprint: master_fingerprint.clone(),
                 extended_public_keys: keys.clone(),
                 verify_code: Some("03669e02".to_string()),
+                multisig_wallet_config: None,
             }));
             assert_eq!(Ok(()), reust);
         }
@@ -894,6 +948,7 @@ mod tests {
                 master_fingerprint: master_fingerprint.clone(),
                 extended_public_keys: keys.clone(),
                 verify_code: Some("12345678".to_string()),
+                multisig_wallet_config: None,
             }));
             assert_eq!(true, reust.is_err());
         }

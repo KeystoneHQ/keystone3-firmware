@@ -8,6 +8,7 @@
 #include "assert.h"
 #include "gui_hintbox.h"
 #include "btc_only/gui_btc_home_widgets.h"
+#include "sdcard_manager.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"

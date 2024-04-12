@@ -3,6 +3,7 @@
 #include "gui_button.h"
 #include "gui_views.h"
 #include "gui_multisig_read_sdcard_widgets.h"
+#include "gui_scan_widgets.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "drv_sdcard.h"
@@ -97,6 +98,7 @@ static void SelectCameraHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        GuiFrameOpenView(&g_scanView);
+        static FromPageEnum fromPage = IMPORT_MULTI_SIG_WALLET_PAGE;
+        GuiFrameOpenViewWithParam(&g_scanView, &fromPage, sizeof(fromPage));
     }
 }

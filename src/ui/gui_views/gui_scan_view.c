@@ -10,6 +10,11 @@ int32_t GuiScanViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
 {
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
+#ifdef BTC_ONLY
+        if (param != NULL) {
+             GuiScanSetFromPage(*(uint8_t *)param);
+        }
+#endif
         GuiScanInit();
         break;
     case GUI_EVENT_OBJ_DEINIT:

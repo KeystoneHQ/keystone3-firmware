@@ -82,6 +82,7 @@ impl MultiSigFormat {
         match format_str {
             "P2SH" => Ok(MultiSigFormat::P2sh),
             "P2WSH-P2SH" => Ok(MultiSigFormat::P2wshP2sh),
+            "P2SH-P2WSH" => Ok(MultiSigFormat::P2wshP2sh),
             "P2WSH" => Ok(MultiSigFormat::P2wsh),
             _ => Err(BitcoinError::MultiSigWalletFormatError(format!(
                 "not support this format {}",

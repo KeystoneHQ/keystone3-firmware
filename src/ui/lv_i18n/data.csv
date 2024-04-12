@@ -971,6 +971,8 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,manage_multi_wallet_set_default,"Set as Default Wallet",,,,,,,
 ,manage_multi_wallet_detail_title,"Wallet Details",,,,,,,
 ,manage_multi_wallet_export_config,"Export MultiSig Wallet",,,,,,,
+,manage_multi_wallet_add_limit_title,"Multisig Limit Reached",,,,,,,
+,manage_multi_wallet_add_scan_limit_title,"A maximum of 4 multisig wallets are supported; unable to add more multisig wallets.",,,,,,,
 ,manage_multi_wallet_add_limit_desc,"Add up to 4 multisig wallets, including test net and main net.",,,,,,,
 ,manage_multi_wallet_delete_desc,"This wallet can not be restored after the deletion",,,,,,,
 ,manage_multi_wallet_export_title,"Export Wallet",,,,,,,

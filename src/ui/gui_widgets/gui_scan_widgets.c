@@ -31,7 +31,6 @@
 static void GuiScanNavBarInit();
 static void GuiSetScanCorner(void);
 static void ThrowError(int32_t errorCode);
-static void CloseScanErrorDataHandler(lv_event_t *e);
 static void GuiScanStart();
 
 #ifdef BTC_ONLY
@@ -107,7 +106,6 @@ void GuiScanResult(bool result, void *param)
 
             if (g_qrcodeViewType == MultisigCryptoImportXpub ||
                     g_qrcodeViewType ==  MultisigBytesImportXpub) {
-
                 GuiCLoseCurrentWorkingView();
             }
 #endif
@@ -207,16 +205,6 @@ static void ThrowError(int32_t errorCode)
 {
     GuiSetScanCorner();
     g_scanErrorHintBox = GuiCreateErrorCodeWindow(errorCode, &g_scanErrorHintBox);
-}
-
-static void CloseScanErrorDataHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_scanErrorHintBox)
-        GuiScanStart();
-    }
 }
 
 static void GuiScanStart()

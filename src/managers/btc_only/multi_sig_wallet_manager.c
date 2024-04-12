@@ -178,6 +178,9 @@ static void createMultiSigWalletList()
 
 static void insertNode(MultiSigWalletItem_t *item)
 {
+    if (g_multisigWalletManager->list->length >= MAX_MULTI_SIG_WALLET_NUMBER) {
+        return;
+    }
     ASSERT_WALLET_MANAGER_EXIST
     MultiSigWalletList_t *list = g_multisigWalletManager->list;
     MultiSigWalletNode_t *newNode = (MultiSigWalletNode_t *)MULTI_SIG_MALLOC(sizeof(MultiSigWalletNode_t));

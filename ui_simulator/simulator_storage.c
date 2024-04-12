@@ -551,7 +551,7 @@ int32_t SE_DeriveKey(uint8_t slot, const uint8_t *authKey)
 void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint32_t *number, const char *contain)
 {
     lv_fs_dir_t dir;
-    char fname[64];
+    char fname[256];
     uint32_t count = 0;
     lv_fs_res_t res = lv_fs_dir_open(&dir, path);
     if (res != LV_FS_RES_OK) {

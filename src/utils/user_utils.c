@@ -256,8 +256,8 @@ bool GetBoolValue(const cJSON *obj, const char *key, bool defaultValue)
 void CutAndFormatFileName(char *out, uint32_t maxLen, const char *fileName, const char *contain)
 {
     if (strlen(fileName) >= 20 + strlen(contain)) {
-        char fname[BUFFER_SIZE_64] = {0};
-        strncpy_s(fname, BUFFER_SIZE_64, fileName, strrchr(fileName, '.') - fileName);
+        char fname[BUFFER_SIZE_128] = {0};
+        strncpy_s(fname, BUFFER_SIZE_128, fileName, strrchr(fileName, '.') - fileName);
         CutAndFormatString(out, maxLen, fname, 16);
         printf("out = %s\n", out);
         strcat_s(out, maxLen, contain);

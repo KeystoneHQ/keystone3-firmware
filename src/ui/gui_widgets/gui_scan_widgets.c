@@ -222,7 +222,7 @@ static void CloseScanErrorDataHandler(lv_event_t *e)
 static void GuiScanStart()
 {
     GuiSetScanCorner();
-    // GuiModeControlQrDecode(true);
+    GuiModeControlQrDecode(true);
 }
 
 #ifdef BTC_ONLY

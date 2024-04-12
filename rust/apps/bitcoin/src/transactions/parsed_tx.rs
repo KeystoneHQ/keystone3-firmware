@@ -64,6 +64,7 @@ pub struct ParseContext {
     pub master_fingerprint: Fingerprint,
     pub extended_public_keys: BTreeMap<DerivationPath, Xpub>,
     pub verify_code: Option<String>,
+    pub multisig_wallet_config: Option<String>,
 }
 
 impl ParseContext {
@@ -71,11 +72,13 @@ impl ParseContext {
         master_fingerprint: Fingerprint,
         extended_public_keys: BTreeMap<DerivationPath, Xpub>,
         verify_code: Option<String>,
+        multisig_wallet_config: Option<String>,
     ) -> Self {
         ParseContext {
             master_fingerprint,
             extended_public_keys,
             verify_code,
+            multisig_wallet_config
         }
     }
 }

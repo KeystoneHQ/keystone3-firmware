@@ -94,6 +94,7 @@ mod tests {
                 master_fingerprint,
                 extended_public_keys: keys,
                 verify_code: None,
+                multisig_wallet_config: None,
             }))
             .unwrap();
         assert_eq!("0.00005992 tBTC", result.detail.total_input_amount);
@@ -138,6 +139,7 @@ mod tests {
                 master_fingerprint,
                 extended_public_keys: keys,
                 verify_code: None,
+                multisig_wallet_config: None,
             }))
             .unwrap();
 
@@ -163,6 +165,7 @@ mod tests {
                 master_fingerprint,
                 extended_public_keys: keys,
                 verify_code: None,
+                multisig_wallet_config: None,
             }))
             .unwrap();
 
@@ -208,6 +211,7 @@ mod tests {
                 master_fingerprint,
                 extended_public_keys: keys,
                 verify_code: None,
+                multisig_wallet_config: None,
             }))
             .unwrap();
 

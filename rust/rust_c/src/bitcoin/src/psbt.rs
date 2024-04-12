@@ -31,6 +31,7 @@ pub extern "C" fn btc_parse_psbt(
     master_fingerprint: PtrBytes,
     length: u32,
     public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
+    multisig_wallet_config: PtrString,
 ) -> *mut TransactionParseResult<DisplayTx> {
     if length != 4 {
         return TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
@@ -39,9 +40,14 @@ pub extern "C" fn btc_parse_psbt(
     let psbt = crypto_psbt.get_psbt();
 
     unsafe {
+        let multisig_wallet_config = if multisig_wallet_config.is_null() {
+            None
+        } else {
+            Some(recover_c_char(multisig_wallet_config))
+        };
         let mfp = core::slice::from_raw_parts(master_fingerprint, 4);
         let public_keys = recover_c_array(public_keys);
-        parse_psbt(mfp, public_keys, psbt)
+        parse_psbt(mfp, public_keys, psbt, multisig_wallet_config)
     }
 }
 
@@ -182,6 +188,7 @@ pub extern "C" fn btc_check_psbt(
     length: u32,
     public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
     verify_code: PtrString,
+    multisig_wallet_config: PtrString,
 ) -> PtrT<TransactionCheckResult> {
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
@@ -195,9 +202,14 @@ pub extern "C" fn btc_check_psbt(
         } else {
             Some(recover_c_char(verify_code))
         };
+        let multisig_wallet_config = if multisig_wallet_config.is_null() {
+            None
+        } else {
+            Some(recover_c_char(multisig_wallet_config))
+        };
         let mfp = core::slice::from_raw_parts(master_fingerprint, 4);
         let public_keys = recover_c_array(public_keys);
-        check_psbt(mfp, public_keys, psbt, verify_code)
+        check_psbt(mfp, public_keys, psbt, verify_code, multisig_wallet_config)
     }
 }
 
@@ -209,6 +221,7 @@ pub extern "C" fn btc_check_psbt_bytes(
     length: u32,
     public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
     verify_code: PtrString,
+    multisig_wallet_config: PtrString,
 ) -> PtrT<TransactionCheckResult> {
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
@@ -225,9 +238,15 @@ pub extern "C" fn btc_check_psbt_bytes(
         } else {
             Some(recover_c_char(verify_code))
         };
+
+        let multisig_wallet_config = if multisig_wallet_config.is_null() {
+            None
+        } else {
+            Some(recover_c_char(multisig_wallet_config))
+        };
         let mfp = core::slice::from_raw_parts(master_fingerprint, 4);
         let public_keys = recover_c_array(public_keys);
-        check_psbt(mfp, public_keys, psbt, verify_code)
+        check_psbt(mfp, public_keys, psbt, verify_code, multisig_wallet_config)
     }
 }
 
@@ -238,6 +257,7 @@ pub extern "C" fn btc_parse_psbt_bytes(
     master_fingerprint: PtrBytes,
     length: u32,
     public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
+    multisig_wallet_config: PtrString,
 ) -> *mut TransactionParseResult<DisplayTx> {
     if length != 4 {
         return TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
@@ -248,9 +268,14 @@ pub extern "C" fn btc_parse_psbt_bytes(
             Ok(psbt) => psbt,
             Err(e) => return TransactionParseResult::from(e).c_ptr(),
         };
+        let multisig_wallet_config = if multisig_wallet_config.is_null() {
+            None
+        } else {
+            Some(recover_c_char(multisig_wallet_config))
+        };
         let mfp = core::slice::from_raw_parts(master_fingerprint, 4);
         let public_keys = recover_c_array(public_keys);
-        parse_psbt(mfp, public_keys, psbt)
+        parse_psbt(mfp, public_keys, psbt, multisig_wallet_config)
     }
 }
 
@@ -361,6 +386,7 @@ fn parse_psbt(
     mfp: &[u8],
     public_keys: &[ExtendedPublicKey],
     psbt: Vec<u8>,
+    multisig_wallet_config: Option<String>,
 ) -> *mut TransactionParseResult<DisplayTx> {
     let master_fingerprint =
         third_party::bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
@@ -384,7 +410,7 @@ fn parse_psbt(
                     }
                 }
             }
-            let context = ParseContext::new(fp, keys, None);
+            let context = ParseContext::new(fp, keys, None, multisig_wallet_config);
             let parsed_psbt = app_bitcoin::parse_psbt(psbt, context);
             match parsed_psbt {
                 Ok(res) => {
@@ -403,6 +429,7 @@ fn check_psbt(
     public_keys: &[ExtendedPublicKey],
     psbt: Vec<u8>,
     verify_code: Option<String>,
+    multisig_wallet_config: Option<String>
 ) -> PtrT<TransactionCheckResult> {
     let master_fingerprint =
         third_party::bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
@@ -426,7 +453,7 @@ fn check_psbt(
                     }
                 }
             }
-            let context = ParseContext::new(fp, keys, verify_code);
+            let context = ParseContext::new(fp, keys, verify_code, multisig_wallet_config);
             let check_result = app_bitcoin::check_psbt(psbt, context);
             match check_result {
                 Ok(_) => TransactionCheckResult::new().c_ptr(),

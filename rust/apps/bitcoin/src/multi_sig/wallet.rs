@@ -534,10 +534,8 @@ pub fn strict_verify_wallet_config(
                         e.to_string()
                     ))
                 })?;
-            let this_xpub = Xpub::from_str(&xpub_item.xpub).map_err(|e| {
-                BitcoinError::MultiSigWalletParseError(format!("invalid xpub, {}", e.to_string()))
-            })?;
-            if !true_xpub.to_string().eq(&this_xpub.to_string()) {
+            let this_xpub = xyzpub::convert_version(&xpub_item.xpub, &Version::Xpub)?;
+            if !true_xpub.to_string().eq(&this_xpub) {
                 return Err(BitcoinError::MultiSigWalletParseError(format!(
                     "extended public key not match, xfp: {}",
                     xfp

@@ -61,16 +61,33 @@ int32_t GuiSetMultisigImportWalletDataBySDCard(char *walletConfig)
     return prepareWalletBySDCard(walletConfig);
 }
 
+static void CloseWaringAndCurrentPageHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        GUI_DEL_OBJ(g_noticeWindow)
+        GuiCLoseCurrentWorkingView();
+    }
+}
+
 void GuiImportMultisigWalletInfoWidgetsInit(void)
 {
+    if (GetCurrentAccountMultisigWalletNum() >= MAX_MULTI_SIG_WALLET_NUMBER) {
+        g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, _("manage_multi_wallet_add_limit_title"),
+                         _("manage_multi_wallet_add_scan_limit_title"), NULL, _("OK"), WHITE_COLOR_OPA20);
+        lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseWaringAndCurrentPageHandler, LV_EVENT_CLICKED, NULL);
+        return;
+    }
     g_pageWidget = CreatePageWidget();
     if (g_wallet == NULL) {
         if (g_isQRCode) {
-            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_INVALID_QRCODE, &g_noticeWindow);
+            g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, _("scan_qr_code_error_invalid_qrcode"),
+                             _("scan_qr_code_error_invalid_qrcode_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
         } else {
-            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_INVALID_FILE, &g_noticeWindow);
+            g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, _("scan_qr_code_error_invalid_wallet_file"),
+                             _("scan_qr_code_error_invalid_wallet_file_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
         }
-        GuiCLoseCurrentWorkingView();
+        lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseWaringAndCurrentPageHandler, LV_EVENT_CLICKED, NULL);
         return;
     }
     GuiContent(g_pageWidget->contentZone);

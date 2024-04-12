@@ -6,25 +6,15 @@
 #include "gui_lock_widgets.h"
 #include "gui_pending_hintbox.h"
 
-static int32_t GuiScanViewInit(void)
-{
-    GuiScanInit();
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiScanViewDeInit(void)
-{
-    GuiScanDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiScanViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiScanViewInit();
+        GuiScanInit();
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiScanViewDeInit();
+        GuiScanDeInit();
+        break;
     case GUI_EVENT_REFRESH:
         GuiScanRefresh();
         break;

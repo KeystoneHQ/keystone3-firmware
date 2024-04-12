@@ -108,6 +108,7 @@ pub struct DisplayTxDetailOutput {
     amount: PtrString,
     is_mine: bool,
     path: PtrString,
+    is_external: bool,
 }
 
 impl From<ParsedTx> for DisplayTx {
@@ -215,6 +216,7 @@ impl From<ParsedOutput> for DisplayTxDetailOutput {
             amount: convert_c_char(value.amount),
             is_mine: value.path.is_some(),
             path: value.path.map(|v| convert_c_char(v)).unwrap_or(null_mut()),
+            is_external: value.is_external,
         }
     }
 }

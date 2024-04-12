@@ -172,6 +172,7 @@ mod test {
                 amount: $amount.to_string(),
                 value: $value,
                 path: Some($path.to_string()),
+                is_external: false,
             }
         };
     }

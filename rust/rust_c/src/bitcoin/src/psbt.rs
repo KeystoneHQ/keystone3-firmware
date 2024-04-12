@@ -3,6 +3,7 @@ use alloc::collections::BTreeMap;
 use alloc::slice;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use app_bitcoin::multi_sig::wallet::parse_wallet_config;
 use core::ptr::null_mut;
 use core::str::FromStr;
 
@@ -410,7 +411,14 @@ fn parse_psbt(
                     }
                 }
             }
-            let context = ParseContext::new(fp, keys, None, multisig_wallet_config);
+            let wallet_config = match multisig_wallet_config
+                .map(|v| parse_wallet_config(&v, &fp.to_string()))
+                .transpose()
+            {
+                Ok(t) => t,
+                Err(e) => return TransactionParseResult::from(e).c_ptr(),
+            };
+            let context = ParseContext::new(fp, keys, None, wallet_config);
             let parsed_psbt = app_bitcoin::parse_psbt(psbt, context);
             match parsed_psbt {
                 Ok(res) => {
@@ -429,7 +437,7 @@ fn check_psbt(
     public_keys: &[ExtendedPublicKey],
     psbt: Vec<u8>,
     verify_code: Option<String>,
-    multisig_wallet_config: Option<String>
+    multisig_wallet_config: Option<String>,
 ) -> PtrT<TransactionCheckResult> {
     let master_fingerprint =
         third_party::bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
@@ -453,7 +461,14 @@ fn check_psbt(
                     }
                 }
             }
-            let context = ParseContext::new(fp, keys, verify_code, multisig_wallet_config);
+            let wallet_config = match multisig_wallet_config
+                .map(|v| parse_wallet_config(&v, &fp.to_string()))
+                .transpose()
+            {
+                Ok(t) => t,
+                Err(e) => return TransactionCheckResult::from(e).c_ptr(),
+            };
+            let context = ParseContext::new(fp, keys, verify_code, wallet_config);
             let check_result = app_bitcoin::check_psbt(psbt, context);
             match check_result {
                 Ok(_) => TransactionCheckResult::new().c_ptr(),

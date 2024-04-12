@@ -59,6 +59,7 @@ impl TxData {
             amount: Self::format_amount(output.value, &Network::from_str(&self.network)?),
             value: output.value,
             path: Some(output.change_address_path.to_string()),
+            is_external: false,
         })
     }
 }

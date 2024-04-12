@@ -16,7 +16,6 @@
 #ifdef BTC_ONLY
 #include "keystore.h"
 #include "gui_btc_home_widgets.h"
-static bool g_isMultisig;
 static lv_obj_t *g_noticeWindow = NULL;
 static char *g_xpubConfigName = NULL;
 #endif
@@ -107,12 +106,15 @@ static uint8_t g_btcPathType[3] = {0};
 static uint8_t g_tmpSelectIndex = 0;
 static PathTypeItem_t *g_pathTypeList = NULL;
 static uint8_t g_btcPathNum = 0;
+static bool g_isTest = false;
+static bool g_isMultisig = false;
 
 void OpenExportViewHandler(lv_event_t *e)
 {
     static HOME_WALLET_CARD_ENUM chainCard = HOME_WALLET_CARD_BTC;
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
+        g_isTest = *(bool *)lv_event_get_user_data(e);
         GuiFrameOpenViewWithParam(&g_exportPubkeyView, &chainCard, sizeof(chainCard));
     }
 }
@@ -261,6 +263,7 @@ void GuiExportPubkeyDeInit(void)
     GuiFullscreenModeCleanUp();
     g_btcPathNum = 0;
     g_tmpSelectIndex = 0;
+    g_isTest = false;
 
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
@@ -270,7 +273,7 @@ void GuiExportPubkeyDeInit(void)
 #ifdef BTC_ONLY
     g_isMultisig = false;
     GUI_DEL_OBJ(g_noticeWindow)
-    SRAM_MALLOC(g_xpubConfigName);
+    SRAM_FREE(g_xpubConfigName);
 #endif
 }
 
@@ -360,7 +363,7 @@ static void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent)
 #ifndef BTC_ONLY
         snprintf_s(desc, BUFFER_SIZE_64, "%s (%s)", g_pathTypeList[i].subTitle, g_pathTypeList[i].path);
 #else
-        path = GetIsTestNet() ? g_btcTestNetPath[i] : g_pathTypeList[i].path;
+        path = g_isTest ? g_btcTestNetPath[i] : g_pathTypeList[i].path;
         snprintf_s(desc, BUFFER_SIZE_64, "%s (%s)", g_pathTypeList[i].subTitle, path);
 #endif
         label = GuiCreateNoticeLabel(cont, desc);
@@ -454,13 +457,13 @@ static ChainType ConvertChainType(ChainType chainType)
 {
     switch (chainType) {
     case XPUB_TYPE_BTC_TAPROOT:
-        return GetIsTestNet() ? XPUB_TYPE_BTC_TAPROOT_TEST : XPUB_TYPE_BTC_TAPROOT;
+        return g_isTest ? XPUB_TYPE_BTC_TAPROOT_TEST : XPUB_TYPE_BTC_TAPROOT;
     case XPUB_TYPE_BTC_NATIVE_SEGWIT:
-        return GetIsTestNet() ? XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST : XPUB_TYPE_BTC_NATIVE_SEGWIT;
+        return g_isTest ? XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST : XPUB_TYPE_BTC_NATIVE_SEGWIT;
     case XPUB_TYPE_BTC:
-        return GetIsTestNet() ? XPUB_TYPE_BTC_TEST : XPUB_TYPE_BTC;
+        return g_isTest ? XPUB_TYPE_BTC_TEST : XPUB_TYPE_BTC;
     case XPUB_TYPE_BTC_LEGACY:
-        return GetIsTestNet() ? XPUB_TYPE_BTC_LEGACY_TEST : XPUB_TYPE_BTC_LEGACY;
+        return g_isTest ? XPUB_TYPE_BTC_LEGACY_TEST : XPUB_TYPE_BTC_LEGACY;
     default:
         break;
     }
@@ -553,7 +556,7 @@ static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType, uint32
 static void GetPathTypeDesc(char *dest, uint16_t chain, uint8_t pathType, uint32_t maxLen)
 {
     ASSERT(chain == CHAIN_BTC);
-    const char *path = GetIsTestNet() ? g_btcTestNetPath[pathType] : g_pathTypeList[pathType].path;
+    const char *path = g_isTest ? g_btcTestNetPath[pathType] : g_pathTypeList[pathType].path;
     if (g_isMultisig) {
         strcpy_s(dest, maxLen, path);
     } else {
@@ -581,20 +584,27 @@ static void RefreshQrcode()
 
 static uint8_t GetPathType()
 {
+    int index = GetCurrentAccountIndex();
+    int shift = g_isMultisig ? 4 : 0;
+    uint8_t type = 0;
     switch (g_chain) {
     case CHAIN_BTC:
-        return g_btcPathType[GetCurrentAccountIndex()];
+        type = 0xF & (g_btcPathType[index] >> shift);
+        break;
     default:
         break;
     }
-    return 0;
+    return type;
 }
 
 static void SetPathType(uint8_t pathType)
 {
+    int index = GetCurrentAccountIndex();
+    int shift = g_isMultisig ? 4 : 0;
     switch (g_chain) {
     case CHAIN_BTC:
-        g_btcPathType[GetCurrentAccountIndex()] = pathType;
+        g_btcPathType[index] &= ~(0xF << shift);
+        g_btcPathType[index] |= (pathType & 0x0F) << shift;
         break;
 
     default:
@@ -626,7 +636,7 @@ static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, ui
     char *xPub, hdPath[128];
     const char *rootPath;
     ChainType chainType = ConvertChainType(g_pathTypeList[pathType].pubkeyType);
-    rootPath = GetIsTestNet() ? g_btcTestNetPath[pathType] : g_pathTypeList[pathType].path;
+    rootPath = g_isTest ? g_btcTestNetPath[pathType] : g_pathTypeList[pathType].path;
     xPub = GetCurrentAccountPublicKey(chainType);
     ASSERT(xPub);
     SimpleResponse_c_char *result;

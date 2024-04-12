@@ -362,7 +362,7 @@ void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t
 {
     g_hintParam = param;
     const char *titleText = _("Error");
-    const char *descText = SRAM_MALLOC(MAX_RUST_ERR_MESSAGE_LEN);
+    char *descText = SRAM_MALLOC(MAX_RUST_ERR_MESSAGE_LEN);
     strncpy_s(descText, MAX_RUST_ERR_MESSAGE_LEN, errMessage, strnlen_s(errMessage, MAX_RUST_ERR_MESSAGE_LEN));
 
     switch (errCode) {

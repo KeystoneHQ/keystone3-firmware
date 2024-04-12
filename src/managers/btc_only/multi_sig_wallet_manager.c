@@ -97,11 +97,13 @@ MultiSigWalletItem_t *GetCurrenMultisigWalletByIndex(int index)
     MultiSigWalletList_t *list = g_multisigWalletManager->list;
     MultiSigWalletNode_t *temp = list->head;
 
+    int innerIndex = 0;
     while (temp != NULL) {
-        if (temp->value->order == index) {
+        if (innerIndex == index) {
             return temp->value;
         }
         temp = temp->next;
+        innerIndex++;
     }
     return NULL;
 }

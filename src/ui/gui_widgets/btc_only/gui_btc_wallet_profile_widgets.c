@@ -144,16 +144,15 @@ static void CreateBtcWalletProfileEntranceRefresh(lv_obj_t *parent)
     lv_obj_set_height(button, singleWalletHeight);
     lv_obj_align(button, LV_ALIGN_TOP_LEFT, 12, 0);
 
-    for (int i = 0; i + skipIndex < MAX_MULTI_SIG_WALLET_NUMBER;) {
+    for (int i = 0; i < MAX_MULTI_SIG_WALLET_NUMBER;) {
         char desc[BUFFER_SIZE_16] = {0};
         uint16_t height = 84;
         uint16_t offSet = 0;
-        MultiSigWalletItem_t *item = GetCurrenMultisigWalletByIndex(i + skipIndex);
+        MultiSigWalletItem_t *item = GetCurrenMultisigWalletByIndex(i);
         if (item == NULL) {
-            skipIndex++;
-            continue;
+            break;;
         }
-        if (currentWallet == item->order) {
+        if (currentWallet == i) {
             strcpy_s(desc, sizeof(desc), _("wallet_profile_default_desc"));
             height = 118;
             offSet += 96;

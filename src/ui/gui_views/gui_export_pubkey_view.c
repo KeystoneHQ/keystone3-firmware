@@ -18,6 +18,12 @@ int32_t GuiExportPubkeyViewEventProcess(void *self, uint16_t usEvent, void *para
     case GUI_EVENT_OBJ_DEINIT:
         GuiExportPubkeyDeInit();
         break;
+    case SIG_BACKGROUND_UR_GENERATE_SUCCESS:
+        GuiAnimantingQRCodeFirstUpdate((char*)param, usLen);
+        break;
+    case SIG_BACKGROUND_UR_UPDATE:
+        GuiAnimatingQRCodeUpdate((char*)param, usLen);
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

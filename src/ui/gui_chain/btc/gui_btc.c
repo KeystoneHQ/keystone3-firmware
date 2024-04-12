@@ -1158,10 +1158,9 @@ static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailDat
             lv_obj_set_style_bg_opa(changeContainer, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
 
             lv_obj_t *changeLabel = lv_label_create(changeContainer);
-            if(to->data[i].is_external) {
+            if (to->data[i].is_external) {
                 lv_label_set_text(changeLabel, "Receive");
-            }
-            else {
+            } else {
                 lv_label_set_text(changeLabel, "Change");
             }
             lv_obj_set_style_text_font(changeLabel, g_defIllustrateFont, LV_PART_MAIN);

@@ -15,6 +15,7 @@
 #endif
 
 #ifdef BTC_ONLY
+#include "gui_animating_qrcode.h"
 #include "keystore.h"
 #include "gui_btc_home_widgets.h"
 static lv_obj_t *g_noticeWindow = NULL;
@@ -180,6 +181,22 @@ static void GuiExportXpubToMicroCard(void)
     lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
     lv_obj_add_event_cb(btn, GuiWriteToMicroCardHandler, LV_EVENT_CLICKED, NULL);
 }
+
+static UREncodeResult *GuiGenerateUR()
+{
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    ExtendedPublicKey keys[1];
+    public_keys->data = keys;
+    public_keys->size = 1;
+    keys[0].path = g_btcMultisigPathList[GetPathType()].path;
+    keys[0].xpub = GetCurrentAccountPublicKey(g_btcMultisigPathList[GetPathType()].pubkeyType);
+
+    struct UREncodeResult *result = export_multi_sig_xpub_by_ur(mfp, sizeof(mfp), public_keys, MainNet);
+    SRAM_FREE(public_keys);
+    return result;
+}
 #endif
 
 
@@ -333,6 +350,17 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         GetMasterFingerPrint(mfp);
         lv_label_set_text_fmt(label, "%02X%02X%02X%02X", mfp[0], mfp[1], mfp[2], mfp[3]);
         lv_obj_align(label, LV_ALIGN_TOP_RIGHT, -80, 50);
+
+        lv_obj_t *qrCont = GuiCreateContainerWithParent(g_widgets.qrCont, 336, 336);
+        lv_obj_align(qrCont, LV_ALIGN_TOP_MID, 0, 116);
+        GuiAnimatingQRCodeInitWithCustomSize(qrCont, GuiGenerateUR, false, 336, 336, NULL);
+        yOffset += 344;
+
+        yOffset += 8;
+        g_widgets.pubkey = GuiCreateNoticeLabel(g_widgets.qrCont, "");
+        lv_obj_set_width(g_widgets.pubkey, 336);
+        lv_obj_align(g_widgets.pubkey, LV_ALIGN_TOP_MID, 0, yOffset);
+        return;
     }
 #endif
 
@@ -576,14 +604,21 @@ static void RefreshQrcode()
     uint8_t pathType = GetPathType();
     char pubkey[BUFFER_SIZE_128];
     GetExportPubkey(pubkey, g_chain, pathType, sizeof(pubkey));
-
+    lv_label_set_text(g_widgets.pubkey, pubkey);
     lv_label_set_text(g_widgets.title, GetPathTypeTitle(g_chain, pathType));
     char desc[BUFFER_SIZE_32] = {0};
     GetPathTypeDesc(desc, g_chain, pathType, sizeof(desc));
     lv_label_set_text(g_widgets.desc, desc);
+#ifdef BTC_ONLY
+    if (g_isMultisig) {
+        lv_obj_t *qrCont = GuiCreateContainerWithParent(g_widgets.qrCont, 336, 336);
+        lv_obj_align(qrCont, LV_ALIGN_TOP_MID, 0, 116);
+        GuiAnimatingQRCodeInitWithCustomSize(qrCont, GuiGenerateUR, false, 336, 336, NULL);
+        return;
+    }
+#endif
     lv_qrcode_update(g_widgets.qrCode, pubkey, strnlen_s(pubkey, BUFFER_SIZE_128));
     lv_qrcode_update(g_widgets.qrCodeFullscreen, pubkey, strnlen_s(pubkey, BUFFER_SIZE_128));
-    lv_label_set_text(g_widgets.pubkey, pubkey);
     lv_obj_update_layout(g_widgets.pubkey);
     lv_obj_set_height(g_widgets.qrCont, lv_obj_get_height(g_widgets.pubkey) + 484);
 }

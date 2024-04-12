@@ -187,7 +187,6 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
 {
     GUI_DEL_OBJ(g_fingerSingContainer)
     GuiDeleteKeyboardWidget(g_keyboardWidget);
-
 #ifdef BTC_ONLY
     if (g_transactionType == TRANSACTION_TYPE_BTC_MULTISIG) {
         printf("transaction type is btc multisig\r\n");
@@ -207,11 +206,10 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
         }
         return;
     }
-
+#endif
     if (g_transactionType == TRANSACTION_TYPE_NORMAL) {
         GuiFrameOpenViewWithParam(&g_transactionSignatureView, &g_viewType, sizeof(g_viewType));
     }
-#endif
 }
 
 void GuiSignVerifyPasswordErrorCount(void *param)

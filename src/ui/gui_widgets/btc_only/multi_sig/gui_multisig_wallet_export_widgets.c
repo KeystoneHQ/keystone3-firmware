@@ -282,10 +282,12 @@ void GuiMultisigWalletExportWidgetsDeInit()
         SRAM_FREE(g_filename);
         g_filename = NULL;
     }
+    GuiAnimatingQRCodeDestroyTimer();
 }
 
 void GuiMultisigWalletExportWidgetsRefresh()
 {
+    GuiAnimatingQRCodeControl(false);
 }
 
 static void ModelGenerateAddress(char *address, uint32_t maxLen)

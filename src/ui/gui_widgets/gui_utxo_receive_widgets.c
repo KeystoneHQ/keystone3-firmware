@@ -224,7 +224,7 @@ static void InitDerivationPathDesc(uint8_t chain)
 void InitMultisigWalletConfig(void)
 {
 #ifdef BTC_ONLY
-    if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         uint8_t mfp[4];
         GetMasterFingerPrint(mfp);
         Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(GetDefaultMultisigWallet()->walletConfig, mfp, 4);
@@ -395,7 +395,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_t *cont, *btn;
 #ifdef BTC_ONLY
     int height = 324;
-    if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         height = 132;
     }
 #else
@@ -413,7 +413,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 120 + 572);
 
 #ifdef BTC_ONLY
-    if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         return;
     }
 #endif
@@ -1431,7 +1431,7 @@ static void GetRootHdPath(char *hdPath, uint32_t maxLen)
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
 #ifdef BTC_ONLY
-        if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+        if (GetCurrentWalletIndex() != SINGLE_WALLET) {
             strcpy_s(hdPath, maxLen, g_multiSigWallet->derivations->data[0]);
             return;
         }
@@ -1463,7 +1463,7 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
     snprintf_s(hdPath, ADDRESS_MAX_LEN, "%s/0/%u", rootPath, index);
     strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
 #if BTC_ONLY
-    if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         ModelGenerateMultiSigAddress(item->address, sizeof(item->address), GetDefaultMultisigWallet()->walletConfig, index);
         return;
     }

@@ -145,8 +145,7 @@ void GuiTransactionCheckPass(void)
 //Here return the error code and error message so that we can distinguish the error type later.
 void GuiTransactionCheckFailed(PtrT_TransactionCheckResult result)
 {
-    switch (result->error_code)
-    {
+    switch (result->error_code) {
     case BitcoinNoMyInputs:
     case BitcoinWalletTypeError:
         GuiCreateRustErrorWindow(result->error_code, result->error_message, NULL);

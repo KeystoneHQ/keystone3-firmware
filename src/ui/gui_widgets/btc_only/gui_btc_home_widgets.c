@@ -324,7 +324,7 @@ void GuiHomeRefresh(void)
     }
     GUI_DEL_OBJ(g_moreHintbox)
     AccountPublicHomeCoinGet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
-    if (GetDefaultWalletIndex() != SINGLE_WALLET) {
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         lv_img_set_src(g_twoKeyImg, &imgTwoKey);
     } else {
         lv_img_set_src(g_twoKeyImg, &imgArrowRight);
@@ -343,12 +343,12 @@ void SetIsTestNet(bool testNet)
     AccountPublicHomeCoinSet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
 }
 
-DEFAULT_WALLET_INDEX_ENUM GetDefaultWalletIndex(void)
+CURRENT_WALLET_INDEX_ENUM GetCurrentWalletIndex(void)
 {
     return g_walletState[HOME_WALLET_CARD_BTC].defaultWallet;
 }
 
-void SetDefaultWalletIndex(DEFAULT_WALLET_INDEX_ENUM walletIndex)
+void SetCurrentWalletIndex(CURRENT_WALLET_INDEX_ENUM walletIndex)
 {
     printf("walletIndex = %d\n", walletIndex);
     g_walletState[HOME_WALLET_CARD_BTC].defaultWallet = walletIndex;

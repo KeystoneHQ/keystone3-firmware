@@ -109,7 +109,7 @@ MultiSigWalletItem_t *GetCurrenMultisigWalletByIndex(int index)
 MultiSigWalletItem_t *GetDefaultMultisigWallet(void)
 {
     ASSERT_WALLET_MANAGER_EXIST
-    DEFAULT_WALLET_INDEX_ENUM defaultIndex = GetDefaultWalletIndex();
+    CURRENT_WALLET_INDEX_ENUM defaultIndex = GetCurrentWalletIndex();
     MultiSigWalletList_t *list = g_multisigWalletManager->list;
     MultiSigWalletNode_t *temp = list->head;
 

@@ -25,11 +25,7 @@ static void GuiContent(lv_obj_t *);
 static void GuiSelectFileHandler(lv_event_t *e);
 static FileFilterType g_fileFilterType = ALL;
 static ViewType g_viewType;
-static lv_obj_t *g_scanErrorHintBox = NULL;
-
-static void ThrowError(int32_t errorCode);
-static void CloseErrorDataHandler(lv_event_t *e);
-
+static lv_obj_t *g_noticeWindow = NULL;
 
 void GuiMultisigReadSdcardWidgetsInit(uint8_t fileFilterType)
 {
@@ -72,8 +68,11 @@ static void GuiSelectFileHandler(lv_event_t *e)
             break;
         case ONLY_TXT: {
             char *walletConfig = FatfsFileRead(path);
-            GuiSetMultisigImportWalletDataBySDCard(walletConfig);
-            GuiFrameOpenView(&g_importMultisigWalletInfoView);
+            if (SUCCESS_CODE == GuiSetMultisigImportWalletDataBySDCard(walletConfig)) {
+                GuiFrameOpenView(&g_importMultisigWalletInfoView);
+            } else {
+                g_noticeWindow = GuiCreateErrorCodeWindow(ERR_INVALID_FILE, &g_noticeWindow);
+            }
         }
         break;
         case ONLY_PSBT: {
@@ -153,20 +152,6 @@ void GuiPSBtTransactionCheckPass(void)
 void GuiPSBTTransactionCheckFaild(PtrT_TransactionCheckResult result)
 {
     GuiModelTransactionCheckResultClear();
-    ThrowError(ERR_INVALID_FILE);
-}
-
-static void ThrowError(int32_t errorCode)
-{
-    g_scanErrorHintBox = GuiCreateErrorCodeWindow(errorCode, &g_scanErrorHintBox);
-}
-
-static void CloseErrorDataHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_scanErrorHintBox)
-    }
+    g_noticeWindow = GuiCreateErrorCodeWindow(ERR_INVALID_FILE, &g_noticeWindow);
 }
 

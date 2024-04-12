@@ -265,10 +265,11 @@ static void ExportMultiWalletHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        GuiSetMultisigImportWalletDataBySDCard(g_walletItem->walletConfig);
-        GuiSetExportMultiSigSwitch();
-        GuiFrameOpenView(&g_importMultisigWalletInfoView);
-        GuiEmitSignal(SIG_MULTISIG_WALLET_SET_WALLET_EXPORT, NULL, 0);
+        if (SUCCESS_CODE == GuiSetMultisigImportWalletDataBySDCard(g_walletItem->walletConfig)) {
+            GuiSetExportMultiSigSwitch();
+            GuiFrameOpenView(&g_importMultisigWalletInfoView);
+            GuiEmitSignal(SIG_MULTISIG_WALLET_SET_WALLET_EXPORT, NULL, 0);
+        }
     }
 }
 

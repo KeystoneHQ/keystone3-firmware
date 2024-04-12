@@ -1011,6 +1011,7 @@ void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager)
     ASSERT(account < 3);
     uint32_t addr, eraseAddr, size;
     uint8_t hash[32];
+    int len = 0;
 
     addr = SPI_FLASH_ADDR_USER1_MULTI_SIG_DATA + account * SPI_FLASH_ADDR_EACH_SIZE;
     printf("MultiSigWalletsave save addr is %x\r\n", addr);
@@ -1030,12 +1031,13 @@ void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager)
     cJSON_Delete(rootJson);
 
     sha256((struct sha256 *)hash, retStr, size);
+
+    Gd25FlashWriteBuffer(addr, (uint8_t *)&size, sizeof(size));
+    len = Gd25FlashWriteBuffer(addr + 4, (uint8_t *)retStr, size);
+    assert(len == size);
     // write se
     SetMultisigDataHash(account, hash);
     CLEAR_ARRAY(hash);
-
-    Gd25FlashWriteBuffer(addr, (uint8_t *)&size, sizeof(size));
-    Gd25FlashWriteBuffer(addr + 4, (uint8_t *)retStr, size);
     EXT_FREE(retStr);
 }
 

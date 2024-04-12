@@ -40,10 +40,9 @@ static lv_obj_t *g_confirmLabel;
 
 static void GuiConfirmHandler(lv_event_t *e);
 static void GuiVerifyPassword();
-static void GuiOnFailedHandler(lv_event_t *e);
 static void prepareWalletByQRCode(void *);
-static void prepareWalletBySDCard(char *);
-static void processResult(Ptr_Response_MultiSigWallet result);
+static int32_t prepareWalletBySDCard(char *);
+static int32_t processResult(Ptr_Response_MultiSigWallet result);
 static void GuiContent(lv_obj_t *);
 
 static bool g_isQRCode = false;
@@ -56,10 +55,10 @@ void GuiSetMultisigImportWalletDataByQRCode(URParseResult *urResult, URParseMult
     CHECK_FREE_UR_RESULT(multiResult, true);
 }
 
-void GuiSetMultisigImportWalletDataBySDCard(char *walletConfig)
+int32_t GuiSetMultisigImportWalletDataBySDCard(char *walletConfig)
 {
     g_isQRCode = false;
-    prepareWalletBySDCard(walletConfig);
+    return prepareWalletBySDCard(walletConfig);
 }
 
 void GuiImportMultisigWalletInfoWidgetsInit(void)
@@ -67,9 +66,9 @@ void GuiImportMultisigWalletInfoWidgetsInit(void)
     g_pageWidget = CreatePageWidget();
     if (g_wallet == NULL) {
         if (g_isQRCode) {
-            GuiCreateErrorCodeWindow(ERR_INVALID_QRCODE, &g_noticeWindow);
+            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_INVALID_QRCODE, &g_noticeWindow);
         } else {
-            GuiCreateErrorCodeWindow(ERR_MULTISIG_INVALID_FILE, &g_noticeWindow);
+            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_INVALID_FILE, &g_noticeWindow);
         }
         GuiCLoseCurrentWorkingView();
         return;
@@ -115,7 +114,7 @@ void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
     Response_MultiSigWallet *response = parse_and_verify_multisig_config(seed, len, g_wallet->config_text, mfp, 4);
     if (response->error_code != 0) {
         printf("errorMessage: %s\r\n", response->error_message);
-        GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_CONFIG_INVALID, &g_noticeWindow);
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_CONFIG_INVALID, &g_noticeWindow);
         free_MultiSigWallet(response->data);
         return;
     }
@@ -145,22 +144,22 @@ static void prepareWalletByQRCode(void *wallet_info_data)
     processResult(result);
 }
 
-static void prepareWalletBySDCard(char *walletConfig)
+static int32_t prepareWalletBySDCard(char *walletConfig)
 {
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(walletConfig, mfp, 4);
-    processResult(result);
+    return processResult(result);
 }
 
-static void processResult(Ptr_Response_MultiSigWallet result)
+static int32_t processResult(Ptr_Response_MultiSigWallet result)
 {
     if (result->error_code != 0) {
         printf("%s\r\n", result->error_message);
-        return;
-    } else {
-        g_wallet = result->data;
+        return ERR_INVALID_FILE;
     }
+    g_wallet = result->data;
+    return SUCCESS_CODE;
 }
 
 static void GuiContent(lv_obj_t *parent)
@@ -242,7 +241,7 @@ static void GuiConfirmHandler(lv_event_t *e)
         }
         MultiSigWalletItem_t *wallet = GetMultisigWalletByVerifyCode(g_wallet->verify_code);
         if (wallet != NULL) {
-            GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow);
+            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow);
             GuiCLoseCurrentWorkingView();
             return;
         }
@@ -256,13 +255,4 @@ static void GuiVerifyPassword()
     SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
     static uint16_t sig = SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD;
     SetKeyboardWidgetSig(g_keyboardWidget, &sig);
-}
-
-static void GuiOnFailedHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeWindow);
-        GuiCLoseCurrentWorkingView();
-    }
 }

@@ -835,8 +835,9 @@ static void GetAndCreateMultiWallet(void)
         len += snprintf_s(walletConfig + len, 1024 - len, "%s", tempBuf);
     }
     printf("walletConfig: %s\n", walletConfig);
-    GuiSetMultisigImportWalletDataBySDCard(walletConfig);
-    GuiFrameOpenView(&g_importMultisigWalletInfoView);
+    if (SUCCESS_CODE == GuiSetMultisigImportWalletDataBySDCard(walletConfig)) {
+        GuiFrameOpenView(&g_importMultisigWalletInfoView);
+    }
     EXT_FREE(tempBuf);
     EXT_FREE(walletConfig);
 }

@@ -41,6 +41,7 @@ void GuiMultisigReadSdcardWidgetsInit(uint8_t fileFilterType)
 void GuiMultisigReadSdcardWidgetsDeInit()
 {
     DestroyPageWidget(g_pageWidget);
+    GUI_DEL_OBJ(g_noticeWindow)
     g_pageWidget = NULL;
 
     for (int i = 0; i < FATFS_MAX_FILE_NUMBER; i++) {

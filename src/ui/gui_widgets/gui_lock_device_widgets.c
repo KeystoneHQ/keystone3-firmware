@@ -181,7 +181,7 @@ static void CountDownTimerWipeDeviceHandler(lv_timer_t *timer)
     lv_label_set_text(lv_obj_get_child(obj, 0), buf);
     if (countDown <= 0) {
         if (CHECK_BATTERY_LOW_POWER()) {
-            g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
+            g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
         } else {
             WipeDevice();
         }
@@ -211,7 +211,7 @@ static void WipeDeviceHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         if (CHECK_BATTERY_LOW_POWER()) {
-            g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
+            g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
         } else {
             WipeDevice();
             GuiLockedDeviceCountDownDestruct(NULL, NULL);

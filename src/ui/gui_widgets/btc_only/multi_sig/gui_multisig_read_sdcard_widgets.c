@@ -72,7 +72,7 @@ static void GuiSelectFileHandler(lv_event_t *e)
             if (SUCCESS_CODE == GuiSetMultisigImportWalletDataBySDCard(walletConfig)) {
                 GuiFrameOpenView(&g_importMultisigWalletInfoView);
             } else {
-                g_noticeWindow = GuiCreateErrorCodeWindow(ERR_INVALID_FILE, &g_noticeWindow);
+                g_noticeWindow = GuiCreateErrorCodeWindow(ERR_INVALID_FILE, &g_noticeWindow, NULL);
             }
         }
         break;
@@ -152,7 +152,15 @@ void GuiPSBtTransactionCheckPass(void)
 
 void GuiPSBTTransactionCheckFaild(PtrT_TransactionCheckResult result)
 {
+    switch (result->error_code) {
+    case BitcoinNoMyInputs:
+    case BitcoinWalletTypeError:
+        GuiCreateRustErrorWindow(result->error_code, result->error_message, NULL, NULL);
+        break;
+    default:
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_INVALID_FILE, &g_noticeWindow, NULL);
+        break;
+    }
     GuiModelTransactionCheckResultClear();
-    g_noticeWindow = GuiCreateErrorCodeWindow(ERR_INVALID_FILE, &g_noticeWindow);
 }
 

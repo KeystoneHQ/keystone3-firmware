@@ -23,7 +23,6 @@ void *GuiCreateGeneralHintBox(lv_obj_t *parent, const void *src, const char *tit
                               const char *rightBtnText, lv_color_t rightColor);
 void *GuiGetHintBoxLeftBtn(lv_obj_t *parent);
 void *GuiGetHintBoxRightBtn(lv_obj_t *parent);
-void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param);
 void CloseHintBoxHandler(lv_event_t *e);
 void GuiHintBoxResize(lv_obj_t *obj, uint16_t height);
 void *GuiCreateMoreInfoHintBox(const void *src, const char *titleText, MoreInfoTable_t *table, uint8_t cnt, bool isCling);

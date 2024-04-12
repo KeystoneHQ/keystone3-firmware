@@ -145,7 +145,7 @@ void GuiTransactionCheckFailed(PtrT_TransactionCheckResult result)
     switch (result->error_code) {
     case BitcoinNoMyInputs:
     case BitcoinWalletTypeError:
-        GuiCreateRustErrorWindow(result->error_code, result->error_message, NULL);
+        GuiCreateRustErrorWindow(result->error_code, result->error_message, NULL, GuiScanStart);
         break;
     default:
         ThrowError(ERR_INVALID_QRCODE);
@@ -204,7 +204,7 @@ static void GuiSetScanCorner(void)
 static void ThrowError(int32_t errorCode)
 {
     GuiSetScanCorner();
-    g_scanErrorHintBox = GuiCreateErrorCodeWindow(errorCode, &g_scanErrorHintBox);
+    g_scanErrorHintBox = GuiCreateErrorCodeWindow(errorCode, &g_scanErrorHintBox, GuiScanStart);
 }
 
 static void GuiScanStart()
@@ -220,7 +220,7 @@ void SelectMicroCardFile(void)
         static uint8_t fileFilterType = ONLY_PSBT;
         GuiFrameOpenViewWithParam(&g_multisigReadSdcardView, &fileFilterType, sizeof(fileFilterType));
     } else {
-        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
     }
 }
 

@@ -342,6 +342,10 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param)
         titleText = _("scan_qr_code_error_invalid_qrcode");
         descText = _("scan_qr_code_error_invalid_qrcode_desc");
         break;
+    case ERR_INVALID_FILE:
+        titleText = _("scan_qr_code_error_invalid_file");
+        descText = _("scan_qr_code_error_invalid_file_desc");
+        break;
     case ERR_MULTISIG_INVALID_FILE:
         titleText = _("scan_qr_code_error_invalid_wallet_file");
         descText = _("scan_qr_code_error_invalid_wallet_file_desc");
@@ -376,6 +380,7 @@ void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t
     lv_obj_t *cont = GuiCreateConfirmHintBox(lv_scr_act(),
                      &imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
     lv_obj_add_event_cb(GuiGetHintBoxRightBtn(cont), CloseWaringPageHandler, LV_EVENT_CLICKED, cont);
+    SRAM_FREE(descText);
     return cont;
 }
 

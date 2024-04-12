@@ -67,6 +67,8 @@ void GuiBtcWalletProfileDeInit(void)
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
+
+    GUI_DEL_OBJ(g_noticeWindow)
 }
 
 void GuiBtcWalletProfileRefresh(void)

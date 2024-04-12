@@ -202,6 +202,8 @@ extern GUI_VIEW g_createMultisigWalletView;
 extern GUI_VIEW g_manageMultisigWalletView;
 #endif
 
+typedef void (*ErrorWindowCallback)(void);
+
 void UnHandler(lv_event_t *e);
 void OpenImportWalletHandler(lv_event_t *e);
 void OpenCreateWalletHandler(lv_event_t *e);
@@ -224,8 +226,8 @@ void CloseToTargetTileView(uint8_t currentIndex, uint8_t targetIndex);
 void CloseParentAndNextHandler(lv_event_t *e);
 void GuiViewHintBoxClear(void);
 lv_obj_t *GuiCreateWalletNoticeWidget(lv_obj_t *parent);
-void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param);
-void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t **param);
+void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCallback cb);
+void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t **param, ErrorWindowCallback cb);
 void GuiSDCardExportHandler(lv_event_t *e);
 
 #endif /* _GUI_VIEWS_H */

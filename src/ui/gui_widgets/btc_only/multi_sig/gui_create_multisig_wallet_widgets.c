@@ -164,7 +164,7 @@ static void CloseParentAndSetItemHandler(lv_event_t *e)
             *param = NULL;
         }
         if (!SdCardInsert()) {
-            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow);
+            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
             return;
         }
         g_createMultiTileView.currentTile = CREATE_MULTI_SELECT_SDCARD_XPUB;
@@ -196,12 +196,12 @@ static void ImportXpubToTile(CREATE_MULTI_ENUM tile)
 {
     lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
     if (strnlen_s(g_xpubCache[g_createMultiTileView.currentSinger].path, sizeof(g_xpubCache[g_createMultiTileView.currentSinger].path)) == 0) {
-        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_KEYSTORE_IMPORT_XPUB_INVALID, &g_noticeWindow);
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_KEYSTORE_IMPORT_XPUB_INVALID, &g_noticeWindow, NULL);
         return;
     }
     for (int i = 0; i < g_createMultiTileView.currentSinger; i++) {
         if (0 == strcmp(g_xpubCache[i].xpub, g_xpubCache[g_createMultiTileView.currentSinger].xpub)) {
-            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_KEYSTORE_IMPORT_XPUB_DUPLICATE, &g_noticeWindow);
+            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_KEYSTORE_IMPORT_XPUB_DUPLICATE, &g_noticeWindow, NULL);
             return;
         }
     }

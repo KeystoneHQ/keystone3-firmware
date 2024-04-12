@@ -163,7 +163,7 @@ void GuiTransactionDetailRefresh()
 
 static void ThrowError(int32_t errorCode)
 {
-    g_parseErrorHintBox = GuiCreateErrorCodeWindow(errorCode, &g_parseErrorHintBox);
+    g_parseErrorHintBox = GuiCreateErrorCodeWindow(errorCode, &g_parseErrorHintBox, NULL);
 }
 
 static void CloseParseErrorDataHandler(lv_event_t *e)

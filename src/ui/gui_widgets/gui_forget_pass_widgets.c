@@ -151,7 +151,7 @@ void GuiForgetPassVerifyResult(bool en, int errCode)
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         GuiForgetPassNextTile(0);
     } else {
-        g_noticeHintBox = GuiCreateErrorCodeWindow(errCode, &g_noticeHintBox);
+        g_noticeHintBox = GuiCreateErrorCodeWindow(errCode, &g_noticeHintBox, NULL);
     }
     if (g_waitAnimCont != NULL) {
         lv_obj_del(g_waitAnimCont);
@@ -435,7 +435,7 @@ int8_t GuiForgetPassNextTile(uint8_t tileIndex)
     switch (g_forgetPassTileView.currentTile) {
     case FORGET_PASSWORD_ENTRANCE:
         if (CHECK_BATTERY_LOW_POWER()) {
-            g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox);
+            g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox, NULL);
             return ERR_GUI_ERROR;
         } else {
             SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);

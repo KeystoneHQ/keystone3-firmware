@@ -28,6 +28,8 @@ static lv_obj_t *g_hintBox = NULL;
 static lv_obj_t **g_hintParam = NULL;
 static PageWidget_t *g_pageViewWidget = NULL;
 
+static ErrorWindowCallback g_errorWindowCallback = NULL;
+
 void UnHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -40,7 +42,7 @@ void OpenImportWalletHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         if (CHECK_BATTERY_LOW_POWER()) {
-            g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
+            g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
         } else {
             CreateWalletNotice(IMPORT_WALLET_NOTICE);
         }
@@ -52,7 +54,7 @@ void OpenCreateWalletHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         if (CHECK_BATTERY_LOW_POWER()) {
-            g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
+            g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
         } else {
             CreateWalletNotice(CREATE_WALLET_NOTICE);
         }
@@ -183,6 +185,10 @@ void CloseWaringPageHandler(lv_event_t *e)
         if (g_hintParam != NULL) {
             *g_hintParam = NULL;
         }
+        if(g_errorWindowCallback){
+            g_errorWindowCallback();
+            g_errorWindowCallback = NULL;
+        }
     }
 }
 
@@ -241,7 +247,7 @@ void GuiSDCardExportHandler(lv_event_t *e)
         if (SdCardInsert()) {
             func();
         } else {
-            g_hintBox = GuiCreateErrorCodeWindow(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_hintBox);
+            g_hintBox = GuiCreateErrorCodeWindow(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_hintBox, NULL);
         }
         return;
     }
@@ -290,8 +296,9 @@ void GuiWriteSeResult(bool en, int32_t errCode)
     }
 }
 
-void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param)
+void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCallback cb)
 {
+    g_errorWindowCallback = cb;
     g_hintParam = param;
     const char *titleText = _("error_box_invalid_seed_phrase");
     const char *descText = _("error_box_invalid_seed_phrase_desc");
@@ -342,10 +349,6 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param)
         titleText = _("scan_qr_code_error_invalid_qrcode");
         descText = _("scan_qr_code_error_invalid_qrcode_desc");
         break;
-    case ERR_INVALID_FILE:
-        titleText = _("scan_qr_code_error_invalid_file");
-        descText = _("scan_qr_code_error_invalid_file_desc");
-        break;
     case ERR_MULTISIG_INVALID_FILE:
         titleText = _("scan_qr_code_error_invalid_wallet_file");
         descText = _("scan_qr_code_error_invalid_wallet_file_desc");
@@ -362,12 +365,12 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param)
     return cont;
 }
 
-void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t **param)
+void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t **param, ErrorWindowCallback cb)
 {
+    g_errorWindowCallback = cb;
     g_hintParam = param;
     const char *titleText = _("Error");
-    char *descText = SRAM_MALLOC(MAX_RUST_ERR_MESSAGE_LEN);
-    strncpy_s(descText, MAX_RUST_ERR_MESSAGE_LEN, errMessage, strnlen_s(errMessage, MAX_RUST_ERR_MESSAGE_LEN));
+    const char *descText = _("Oops, Something happened");
 
     switch (errCode) {
     case BitcoinNoMyInputs:
@@ -380,7 +383,6 @@ void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t
     lv_obj_t *cont = GuiCreateConfirmHintBox(lv_scr_act(),
                      &imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
     lv_obj_add_event_cb(GuiGetHintBoxRightBtn(cont), CloseWaringPageHandler, LV_EVENT_CLICKED, cont);
-    SRAM_FREE(descText);
     return cont;
 }
 

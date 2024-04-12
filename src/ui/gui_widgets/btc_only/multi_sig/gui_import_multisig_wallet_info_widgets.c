@@ -131,7 +131,7 @@ void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
     Response_MultiSigWallet *response = parse_and_verify_multisig_config(seed, len, g_wallet->config_text, mfp, 4);
     if (response->error_code != 0) {
         printf("errorMessage: %s\r\n", response->error_message);
-        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_CONFIG_INVALID, &g_noticeWindow);
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_CONFIG_INVALID, &g_noticeWindow, NULL);
         free_MultiSigWallet(response->data);
         return;
     }
@@ -258,7 +258,7 @@ static void GuiConfirmHandler(lv_event_t *e)
         }
         MultiSigWalletItem_t *wallet = GetMultisigWalletByVerifyCode(g_wallet->verify_code);
         if (wallet != NULL) {
-            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow);
+            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, NULL);
             GuiCLoseCurrentWorkingView();
             return;
         }

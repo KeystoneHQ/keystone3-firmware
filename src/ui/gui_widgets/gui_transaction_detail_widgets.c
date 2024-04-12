@@ -81,8 +81,7 @@ static TransactionMode GetCurrentTransactionMode(void);
 #endif
 static void TransactionGoToHomeViewHandler(lv_event_t *e);
 static void CloseParseErrorDataHandler(lv_event_t *e);
-static void GuiDealParseErrorResult(int errorType);
-static void ThrowError();
+static void ThrowError(int32_t errorCode);
 
 #ifndef BTC_ONLY
 static TransactionMode GetCurrentTransactionMode(void)
@@ -153,7 +152,7 @@ void GuiTransactionDetailDeInit()
 //should get error cod here
 void GuiTransactionParseFailed()
 {
-    ThrowError();
+    ThrowError(ERR_INVALID_FILE);
 }
 
 void GuiTransactionDetailRefresh()
@@ -162,26 +161,9 @@ void GuiTransactionDetailRefresh()
     GUI_DEL_OBJ(g_fingerSingContainer)
 }
 
-static void ThrowError()
+static void ThrowError(int32_t errorCode)
 {
-    GuiDealParseErrorResult(0);
-}
-
-static void GuiDealParseErrorResult(int errorType)
-{
-    g_parseErrorHintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
-    lv_obj_t *img = GuiCreateImg(g_parseErrorHintBox, &imgFailed);
-    lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
-
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_parseErrorHintBox, _("scan_qr_code_error_invalid_qrcode"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
-
-    label = GuiCreateIllustrateLabel(g_parseErrorHintBox, _("scan_qr_code_error_invalid_qrcode_desc"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
-
-    lv_obj_t *btn = GuiCreateBtnWithFont(g_parseErrorHintBox, _("OK"), g_defTextFont);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-    lv_obj_add_event_cb(btn, CloseParseErrorDataHandler, LV_EVENT_CLICKED, NULL);
+    g_parseErrorHintBox = GuiCreateErrorCodeWindow(errorCode, &g_parseErrorHintBox);
 }
 
 static void CloseParseErrorDataHandler(lv_event_t *e)

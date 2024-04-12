@@ -1185,7 +1185,6 @@ static PtrT_TransactionCheckResult g_checkResult = NULL;
 
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
 {
-#ifndef COMPILE_SIMULATOR
     GuiApiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
     ViewType viewType = *((ViewType *)inData);
     g_checkResult = CheckUrResult(viewType);
@@ -1196,18 +1195,7 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
         GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_FAIL, g_checkResult, sizeof(g_checkResult));
     }
-#else
-    GuiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
-    ViewType viewType = *((ViewType *)inData);
-    g_checkResult = CheckUrResult(viewType);
-    if (g_checkResult != NULL && g_checkResult->error_code == 0) {
-        GuiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
-    } else {
-        printf("transaction check fail, error code: %d, error msg: %s\r\n", g_checkResult->error_code, g_checkResult->error_message);
-        GuiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
-        GuiEmitSignal(SIG_TRANSACTION_CHECK_FAIL, g_checkResult, sizeof(g_checkResult));
-    }
-#endif
+
     return SUCCESS_CODE;
 }
 

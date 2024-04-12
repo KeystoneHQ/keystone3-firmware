@@ -201,6 +201,11 @@ static void GuiRefreshTileview()
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseSwitchPathTypeHandler, NULL);
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("receive_btc_address_type"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+#ifdef BTC_ONLY
+        if (g_isMultisig) {
+            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("connect_wallet_xpub_script_format"));
+        }
+#endif
         RefreshPathType();
         break;
 

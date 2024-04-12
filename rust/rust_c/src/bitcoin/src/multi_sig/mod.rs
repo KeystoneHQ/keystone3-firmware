@@ -154,6 +154,7 @@ pub extern "C" fn export_multi_sig_wallet_by_ur_test(
 }
 
 #[no_mangle]
+#[cfg(feature = "btc-only")]
 pub extern "C" fn export_xpub_info_by_ur(
     ur: PtrUR,
     multi_sig_type: MultiSigFormatType,

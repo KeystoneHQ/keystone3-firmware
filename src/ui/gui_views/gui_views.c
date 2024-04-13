@@ -185,7 +185,7 @@ void CloseWaringPageHandler(lv_event_t *e)
         if (g_hintParam != NULL) {
             *g_hintParam = NULL;
         }
-        if(g_errorWindowCallback){
+        if (g_errorWindowCallback) {
             g_errorWindowCallback();
             g_errorWindowCallback = NULL;
         }

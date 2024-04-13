@@ -70,8 +70,7 @@ static void GuiSelectFileHandler(lv_event_t *e)
         case ONLY_TXT: {
             char *walletConfig = FatfsFileRead(path);
             uint32_t ret = GuiSetMultisigImportWalletDataBySDCard(walletConfig);
-            switch (ret)
-            {
+            switch (ret) {
             case Success:
                 GuiFrameOpenView(&g_importMultisigWalletInfoView);
                 break;
@@ -172,4 +171,3 @@ void GuiPSBTTransactionCheckFaild(PtrT_TransactionCheckResult result)
     }
     GuiModelTransactionCheckResultClear();
 }
-

@@ -107,7 +107,6 @@ static uint32_t GetCurrentSelectIndex();
 static void ConfirmHandler(lv_event_t *e);
 static void UpdateConfirmBtn(void);
 
-
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
 
 static StandardReceiveWidgets_t g_standardReceiveWidgets;

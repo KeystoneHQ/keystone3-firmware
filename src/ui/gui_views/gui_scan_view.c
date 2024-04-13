@@ -59,4 +59,3 @@ GUI_VIEW g_scanView = {
     .optimization = false,
     .pEvtHandler = GuiScanViewEventProcess,
 };
-

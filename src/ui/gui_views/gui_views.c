@@ -349,7 +349,7 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
         titleText = _("scan_qr_code_error_invalid_qrcode");
         descText = _("scan_qr_code_error_invalid_qrcode_desc");
         break;
-    case ERR_MULTISIG_INVALID_FILE:
+    case ERR_INVALID_FILE:
         titleText = _("scan_qr_code_error_invalid_wallet_file");
         descText = _("scan_qr_code_error_invalid_wallet_file_desc");
         break;

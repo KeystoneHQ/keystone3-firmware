@@ -277,4 +277,5 @@ void GuiMultisigTransactionSignaureWidgetsDeInit()
 void GuiMultisigTransactionSignaureWidgetsRefresh()
 {
     GuiMultisigTransactionSignatureContent(g_cont);
+    GuiAnimatingQRCodeControl(false);
 }

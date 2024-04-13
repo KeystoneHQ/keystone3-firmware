@@ -17,6 +17,7 @@ void GuiScanRefresh();
 void GuiScanResult(bool result, void *param);
 void GuiTransactionCheckPass(void);
 void GuiTransactionCheckFailed(PtrT_TransactionCheckResult result);
+void GuiScanSetRestartFlag(bool flag);
 
 #ifdef BTC_ONLY
 void SelectMicroCardFile(void);

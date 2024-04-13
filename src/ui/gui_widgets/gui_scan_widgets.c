@@ -36,6 +36,7 @@ static void GuiScanStart();
 #ifdef BTC_ONLY
 static void SelectMicroCardFileHandler(lv_event_t *e);
 static lv_obj_t *g_noticeWindow;
+static FromPageEnum g_fromPage = OTHER_PAGE;
 #endif
 
 static PageWidget_t *g_pageWidget;
@@ -61,6 +62,7 @@ void GuiScanDeInit()
     }
 #ifdef BTC_ONLY
     GUI_DEL_OBJ(g_noticeWindow);
+    g_fromPage = OTHER_PAGE;
 #endif
 
     SetPageLockScreen(true);
@@ -159,7 +161,13 @@ static void GuiScanNavBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseTimerCurrentViewHandler, NULL);
 #ifdef BTC_ONLY
-    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SDCARD, SelectMicroCardFileHandler, NULL);
+    switch (g_fromPage) {
+        case OTHER_PAGE:
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SDCARD, SelectMicroCardFileHandler, NULL);
+        break;
+        case IMPORT_MULTI_SIG_WALLET_PAGE:
+        break;
+    }
 #endif
 }
 
@@ -223,6 +231,10 @@ void SelectMicroCardFile(void)
     } else {
         g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
     }
+}
+
+void GuiScanSetFromPage(FromPageEnum fromPage) {
+    g_fromPage = fromPage;
 }
 
 static void SelectMicroCardFileHandler(lv_event_t *e)

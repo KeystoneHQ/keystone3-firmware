@@ -44,6 +44,7 @@ static void prepareWalletByQRCode(void *);
 static int32_t prepareWalletBySDCard(char *);
 static int32_t processResult(Ptr_Response_MultiSigWallet result);
 static void GuiContent(lv_obj_t *);
+static void GuiCloseWarnningDialog();
 
 static bool g_isQRCode = false;
 
@@ -131,7 +132,7 @@ void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
     Response_MultiSigWallet *response = parse_and_verify_multisig_config(seed, len, g_wallet->config_text, mfp, 4);
     if (response->error_code != 0) {
         printf("errorMessage: %s\r\n", response->error_message);
-        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_CONFIG_INVALID, &g_noticeWindow, NULL);
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_CONFIG_INVALID, &g_noticeWindow, GuiCloseWarnningDialog);
         free_MultiSigWallet(response->data);
         return;
     }
@@ -151,6 +152,11 @@ void GuiImportMultisigPasswordErrorCount(void *param)
 {
     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
     GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
+}
+
+static void GuiCloseWarnningDialog()
+{
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
 }
 
 static void prepareWalletByQRCode(void *wallet_info_data)

@@ -8,7 +8,7 @@ use core::ptr::null_mut;
 use core::str::FromStr;
 
 use app_bitcoin::parsed_tx::ParseContext;
-use app_bitcoin::{self, parse_psbt_sign_status, PsbtSignStatus};
+use app_bitcoin::{self, parse_psbt_hex_sign_status, parse_psbt_sign_status};
 use common_rust_c::errors::RustCError;
 use common_rust_c::extract_ptr_with_type;
 use common_rust_c::ffi::{CSliceFFI, VecFFI};
@@ -179,6 +179,77 @@ pub extern "C" fn btc_sign_multisig_psbt(
             psbt_len: 0,
         }
         .c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn btc_export_multisig_psbt(ptr: PtrUR) -> *mut MultisigSignResult {
+    let crypto_psbt = extract_ptr_with_type!(ptr, CryptoPSBT);
+    let psbt = crypto_psbt.get_psbt();
+    let sign_state = parse_psbt_hex_sign_status(&psbt);
+    match sign_state {
+        Ok(state) => {
+            let (ptr, size, _cap) = psbt.clone().into_raw_parts();
+            MultisigSignResult {
+                ur_result: UREncodeResult::encode(
+                    psbt,
+                    CryptoPSBT::get_registry_type().get_type(),
+                    FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                )
+                .c_ptr(),
+                sign_status: convert_c_char(state.sign_status.unwrap_or("".to_string())),
+                is_completed: state.is_completed,
+                psbt_hex: ptr,
+                psbt_len: size as u32,
+            }
+            .c_ptr()
+        }
+        Err(e) => MultisigSignResult {
+            ur_result: UREncodeResult::from(e).c_ptr(),
+            sign_status: null_mut(),
+            is_completed: false,
+            psbt_hex: null_mut(),
+            psbt_len: 0,
+        }
+        .c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn btc_export_multisig_psbt_bytes(
+    psbt_bytes: PtrBytes,
+    psbt_bytes_length: u32,
+) -> *mut MultisigSignResult {
+    unsafe {
+        let psbt = core::slice::from_raw_parts(psbt_bytes, psbt_bytes_length as usize);
+        let psbt = psbt.to_vec();
+        let sign_state = parse_psbt_hex_sign_status(&psbt);
+        match sign_state {
+            Ok(state) => {
+                let (ptr, size, _cap) = psbt.clone().into_raw_parts();
+                MultisigSignResult {
+                    ur_result: UREncodeResult::encode(
+                        psbt,
+                        CryptoPSBT::get_registry_type().get_type(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                    )
+                    .c_ptr(),
+                    sign_status: convert_c_char(state.sign_status.unwrap_or("".to_string())),
+                    is_completed: state.is_completed,
+                    psbt_hex: ptr,
+                    psbt_len: size as u32,
+                }
+                .c_ptr()
+            }
+            Err(e) => MultisigSignResult {
+                ur_result: UREncodeResult::from(e).c_ptr(),
+                sign_status: null_mut(),
+                is_completed: false,
+                psbt_hex: null_mut(),
+                psbt_len: 0,
+            }
+            .c_ptr(),
+        }
     }
 }
 

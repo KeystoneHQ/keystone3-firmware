@@ -44,6 +44,7 @@ impl TxData {
             is_multisig: false,
             is_external: false,
             sign_status: (0, 1),
+            need_sign: true,
         })
     }
     fn parse_raw_tx_output(&self, output: &TxOut) -> Result<ParsedOutput> {

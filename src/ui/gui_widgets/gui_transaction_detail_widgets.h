@@ -21,5 +21,7 @@ void GuiClearQrcodeSignCnt(void);
 void GuiTransactionParseFailed(void);
 void GuiSetCurrentTransactionType(TransactionType);
 TransactionType GuiGetCurrentTransactionType();
+void GuiSetCurrentTransactionNeedSign(bool);
+bool GuiGetCurrentTransactionNeedSign();
 
 #endif /* _GUI_TRANSACTION_DETAIL_WIDGETS_H */

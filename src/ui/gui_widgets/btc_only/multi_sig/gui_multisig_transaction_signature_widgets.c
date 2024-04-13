@@ -25,6 +25,8 @@ static lv_obj_t *g_noticeWindow;
 static lv_obj_t *g_cont = NULL;
 static lv_obj_t *g_qrCont = NULL;
 static lv_obj_t *g_signStatusLabel = NULL;
+static lv_obj_t *g_signStatusView = NULL;
+static lv_obj_t *g_hintView = NULL;
 
 static char *g_signStatus = NULL;
 static bool g_signCompleted = false;
@@ -226,9 +228,13 @@ static void GuiMultisigTransactionSignatureContent(lv_obj_t *parent)
     if (g_signStatus != NULL) {
         char signStatus[64] = {0};
         sprintf(signStatus, "#F5870A %s#", g_signStatus);
-        lv_obj_t *text = GuiCreateIllustrateLabel(g_qrCont, signStatus);
-        lv_label_set_recolor(text, true);
-        lv_obj_align_to(text, g_signStatusLabel, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
+        if (g_signStatusView != NULL) {
+            lv_obj_del(g_signStatusView);
+            g_signStatusView = NULL;
+        }
+        g_signStatusView = GuiCreateIllustrateLabel(g_qrCont, signStatus);
+        lv_label_set_recolor(g_signStatusView, true);
+        lv_obj_align_to(g_signStatusView, g_signStatusLabel, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
     }
 
     char *hint = (char *)_("multisig_signature_hint_1");
@@ -237,9 +243,13 @@ static void GuiMultisigTransactionSignatureContent(lv_obj_t *parent)
         hint = (char *)_("multisig_signature_hint_2");
     }
 
-    lv_obj_t *text = GuiCreateIllustrateLabel(g_cont, hint);
-    lv_obj_align_to(text, g_qrCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
-    lv_obj_set_style_text_align(text, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+    if (g_hintView != NULL) {
+        lv_obj_del(g_hintView);
+        g_hintView = NULL;
+    }
+    g_hintView = GuiCreateIllustrateLabel(g_cont, hint);
+    lv_obj_align_to(g_hintView, g_qrCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
+    lv_obj_set_style_text_align(g_hintView, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
     lv_obj_t *btn = GuiCreateBtn(g_cont, _("Done"));
     lv_obj_set_size(btn, 408, 66);

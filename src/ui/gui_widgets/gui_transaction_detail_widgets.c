@@ -62,6 +62,7 @@ static uint32_t g_fingerSignCount = FINGER_SIGN_MAX_COUNT;
 static uint32_t g_fingerSignErrCount = 0;
 static lv_timer_t *g_fpRecognizeTimer;
 static lv_obj_t *g_parseErrorHintBox = NULL;
+static bool g_needSign = true;
 
 typedef enum {
     TRANSACTION_MODE_QR_CODE = 0,
@@ -119,6 +120,33 @@ TransactionType GuiGetCurrentTransactionType()
     return g_transactionType;
 }
 
+void GuiSetCurrentTransactionNeedSign(bool flag)
+{
+    g_needSign = flag;
+}
+
+bool GuiGetCurrentTransactionNeedSign()
+{
+    return g_needSign;
+}
+
+static void GuiBroadcastBtnHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        GuiTransactionDetailVerifyPasswordSuccess();
+    }
+}
+
+void *GuiCreateBroadcastBtn(lv_obj_t *parent, lv_event_cb_t cb)
+{
+    lv_obj_t *btn = GuiCreateBtn(parent, _("Export Signed Transaction"));
+    lv_obj_set_size(btn, 408, 66);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+    lv_obj_add_event_cb(btn, GuiBroadcastBtnHandler, LV_EVENT_CLICKED, NULL);
+    return btn;
+}
+
 void GuiTransactionDetailInit(uint8_t viewType)
 {
     //assume the transaction is a normal one.
@@ -127,10 +155,12 @@ void GuiTransactionDetailInit(uint8_t viewType)
     g_viewType = viewType;
     g_chainType = ViewTypeToChainTypeSwitch(g_viewType);
     g_pageWidget = CreatePageWidget();
+    g_needSign = true;
     GuiTransactionDetailNavBarInit();
     ParseTransaction(g_viewType);
     g_fingerSignCount = 0;
-    GuiCreateConfirmSlider(g_pageWidget->contentZone, CheckSliderProcessHandler);
+    if (g_needSign)GuiCreateConfirmSlider(g_pageWidget->contentZone, CheckSliderProcessHandler);
+    else GuiCreateBroadcastBtn(g_pageWidget->contentZone, NULL);
     GuiPendingHintBoxMoveToTargetParent(lv_scr_act());
 }
 

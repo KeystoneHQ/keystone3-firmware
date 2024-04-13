@@ -1464,6 +1464,8 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
     strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
 #if BTC_ONLY
     if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+        snprintf_s(hdPath, ADDRESS_MAX_LEN, "*/0/%u", index);
+        strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
         ModelGenerateMultiSigAddress(item->address, sizeof(item->address), GetDefaultMultisigWallet()->walletConfig, index);
         return;
     }

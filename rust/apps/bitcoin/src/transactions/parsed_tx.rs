@@ -24,6 +24,7 @@ pub struct ParsedInput {
     pub sign_status: (u32, u32),
     pub is_multisig: bool,
     pub is_external: bool,
+    pub need_sign: bool,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -47,6 +48,7 @@ pub struct OverviewTx {
     pub fee_larger_than_amount: bool,
     pub is_multisig: bool,
     pub sign_status: Option<String>,
+    pub need_sign: bool,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -101,7 +103,7 @@ pub trait TxParser {
 
     fn determine_network(&self) -> Result<Network>;
 
-    fn get_sign_status(parsed_inputs: &[ParsedInput]) -> Option<String> {
+    fn get_sign_status_text(parsed_inputs: &[ParsedInput]) -> Option<String> {
         //should combine with wrapped_psbt.get_overall_sign_status later;
         if parsed_inputs.is_empty() {
             return None;
@@ -130,6 +132,15 @@ pub trait TxParser {
         } else {
             return Some(String::from("Partly Signed"));
         }
+    }
+
+    fn is_need_sign(parsed_inputs: &[ParsedInput]) -> bool {
+        for (index, input) in parsed_inputs.iter().enumerate() {
+            if input.need_sign {
+                return true;
+            }
+        }
+        return false;
     }
 
     fn normalize(
@@ -171,7 +182,7 @@ pub trait TxParser {
         overview_to.sort();
         overview_to.dedup();
         let overview = OverviewTx {
-            sign_status: Self::get_sign_status(&inputs),
+            sign_status: Self::get_sign_status_text(&inputs),
             total_output_amount: Self::format_amount(overview_amount, network),
             fee_amount: Self::format_amount(fee, network),
             total_output_sat: Self::format_sat(overview_amount),
@@ -181,9 +192,10 @@ pub trait TxParser {
             network: network.normalize(),
             fee_larger_than_amount: fee > overview_amount,
             is_multisig: inputs.iter().any(|v| v.is_multisig),
+            need_sign: Self::is_need_sign(&inputs),
         };
         let detail = DetailTx {
-            sign_status: Self::get_sign_status(&inputs),
+            sign_status: Self::get_sign_status_text(&inputs),
             from: inputs,
             to: outputs,
             total_input_amount: Self::format_amount(total_input_value, network),

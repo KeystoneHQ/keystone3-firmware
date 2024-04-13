@@ -122,6 +122,10 @@ impl WrappedPsbt {
         let path = self.get_my_input_path(input, index, context)?;
         let sign_status = self.get_input_sign_status(input);
         let is_multisig = sign_status.1 > 1;
+        let mut need_sign = false;
+        if path.is_some() {
+            need_sign = self.need_sign_input(input, context)?;
+        }
         Ok(ParsedInput {
             address,
             amount: Self::format_amount(value, network),
@@ -130,6 +134,7 @@ impl WrappedPsbt {
             sign_status,
             is_multisig,
             is_external: path.clone().map_or(false, |v| v.1),
+            need_sign,
         })
     }
 
@@ -232,21 +237,23 @@ impl WrappedPsbt {
         context: &ParseContext,
     ) -> Result<()> {
         if input.bip32_derivation.len() > 1 {
-            for key in input.bip32_derivation.keys() {
-                let (fingerprint, _) = input
-                    .bip32_derivation
-                    .get(key)
-                    .ok_or(BitcoinError::InvalidInput)?;
+            // we consider this situation to be OK currently.
 
-                if fingerprint.eq(&context.master_fingerprint) {
-                    if input.partial_sigs.contains_key(&PublicKey::new(*key)) {
-                        return Err(BitcoinError::InvalidTransaction(format!(
-                            "input #{} has already been signed",
-                            index
-                        )));
-                    }
-                }
-            }
+            // for key in input.bip32_derivation.keys() {
+            //     let (fingerprint, _) = input
+            //         .bip32_derivation
+            //         .get(key)
+            //         .ok_or(BitcoinError::InvalidInput)?;
+
+            //     if fingerprint.eq(&context.master_fingerprint) {
+            //         if input.partial_sigs.contains_key(&PublicKey::new(*key)) {
+            //             return Err(BitcoinError::InvalidTransaction(format!(
+            //                 "input #{} has already been signed",
+            //                 index
+            //             )));
+            //         }
+            //     }
+            // }
             return Ok(());
         }
         if self.is_taproot_input(input) {
@@ -394,6 +401,33 @@ impl WrappedPsbt {
             input.partial_sigs.len() as u32,
             input.bip32_derivation.len() as u32,
         )
+    }
+
+    // assume this is my input because we checked it before;
+    fn need_sign_input(&self, input: &Input, context: &ParseContext) -> Result<bool> {
+        if input.bip32_derivation.len() > 1 {
+            let (cur, req) = self.get_input_sign_status(input);
+            //already collected needed signatures
+            if (cur >= req) {
+                return Ok(false);
+            }
+            // or I have signed this input
+            for key in input.bip32_derivation.keys() {
+                let (fingerprint, _) = input
+                    .bip32_derivation
+                    .get(key)
+                    .ok_or(BitcoinError::InvalidInput)?;
+
+                if fingerprint.eq(&context.master_fingerprint) {
+                    if input.partial_sigs.contains_key(&PublicKey::new(*key)) {
+                        return Ok(false);
+                    }
+                }
+            }
+            Ok(true)
+        } else {
+            Ok(input.partial_sigs.len() < 1)
+        }
     }
 
     fn get_multi_sig_input_threshold_and_total(&self, script: &ScriptBuf) -> Result<(u8, u8)> {

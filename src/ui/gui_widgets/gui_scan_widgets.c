@@ -43,10 +43,20 @@ static PageWidget_t *g_pageWidget;
 static lv_obj_t *g_scanErrorHintBox = NULL;
 static ViewType g_qrcodeViewType;
 static uint8_t g_chainType = CHAIN_BUTT;
+static ViewType g_viewTypeFilter[2];
 static bool g_restartScanFlag = true;
+static ViewType g_viewTypeFilter[2];
 
-void GuiScanInit()
+void GuiSetScanViewTypeFiler(ViewType *viewType, int number)
 {
+    memcpy_s(g_viewTypeFilter, sizeof(g_viewTypeFilter), viewType, number * sizeof(ViewType));
+}
+
+void GuiScanInit(void)
+{
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_viewTypeFilter); i++) {
+        g_viewTypeFilter[i] = 0xFF;
+    }
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
@@ -79,11 +89,27 @@ void GuiScanRefresh()
     
 }
 
+static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, size_t filterSize)
+{
+    for (size_t i = 0; i < filterSize; i++) {
+        if (viewType == viewTypeFilter[i]) {
+            return true;
+        }
+    }
+    g_scanErrorHintBox = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_CONFIG_INVALID, &g_scanErrorHintBox, GuiScanStart);
+    return false;
+}
+
 void GuiScanResult(bool result, void *param)
 {
     if (result) {
         UrViewType_t urViewType = *(UrViewType_t *)param;
         g_qrcodeViewType = urViewType.viewType;
+        if (g_viewTypeFilter[0] != 0xFF) {
+            if (!IsViewTypeSupported(g_qrcodeViewType, g_viewTypeFilter, NUMBER_OF_ARRAYS(g_viewTypeFilter))) {
+                return;
+            }
+        }
         g_chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
         // Not a chain based transaction, e.g. WebAuth
         if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {

@@ -357,6 +357,10 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
         titleText = _("multisig_export_to_sdcard_failed");
         descText = _("multisig_export_to_sdcard_failed_desc");
         break;
+    case ERR_MULTISIG_IMPORT_PASSPHRASE_INVALID:
+        titleText = _("manage_import_wallet_passphrase_error_title");
+        descText = _("manage_import_wallet_passphrase_error_desc");
+        break;
     }
 
     lv_obj_t *cont = GuiCreateConfirmHintBox(lv_scr_act(),

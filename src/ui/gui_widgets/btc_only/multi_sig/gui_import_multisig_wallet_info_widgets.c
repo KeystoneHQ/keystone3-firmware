@@ -89,8 +89,13 @@ void GuiImportMultisigWalletInfoWidgetsInit(void)
     g_pageWidget = CreatePageWidget();
     if (g_wallet == NULL) {
         if (g_isQRCode) {
-            g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, _("scan_qr_code_error_invalid_qrcode"),
-                             _("scan_qr_code_error_invalid_qrcode_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
+            if (PassphraseExist(GetCurrentAccountIndex()) == true) {
+                g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, _("manage_import_wallet_passphrase_error_title"),
+                                 _("manage_import_wallet_passphrase_error_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
+            } else {
+                g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, _("scan_qr_code_error_invalid_qrcode"),
+                                 _("scan_qr_code_error_invalid_qrcode_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
+            }
         } else {
             g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, _("scan_qr_code_error_invalid_wallet_file"),
                              _("scan_qr_code_error_invalid_wallet_file_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);

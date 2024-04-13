@@ -254,7 +254,6 @@ static char *convertFormatLabel(char *format)
     } else if (strcmp(format, FORMAT_P2WSH) == 0) {
         return "Legacy";
     }
-
     return NULL;
 }
 

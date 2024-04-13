@@ -144,7 +144,7 @@ void GuiManageMultisigWalletRefresh(void)
 {
     char tempBuff[BUFFER_SIZE_32] = {0};
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, GuiMoreHandler, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     if (g_manageMultisig.currentTile == MULTI_MULTI_SIG_DETAIL) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("manage_multi_wallet_detail_title"));
     } else if (g_manageMultisig.currentTile == MULTI_MULTI_SIG_CO_SIGNERS_DETAIL) {
@@ -156,7 +156,7 @@ void GuiManageMultisigWalletRefresh(void)
 static void CreateMultiSigWalletDetailWidget(lv_obj_t *parent)
 {
     lv_obj_t *button = GuiCreateSettingItemButton(parent, 456, g_multiSigWallet->name, NULL,
-                       &imgWallet2, &imgEdit, UnHandler, NULL);
+                       &imgWallet2, NULL, UnHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 0);
 
     button = GuiCreateSettingItemButton(parent, 456, g_multiSigWallet->policy, NULL,

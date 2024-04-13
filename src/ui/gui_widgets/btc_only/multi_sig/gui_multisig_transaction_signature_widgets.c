@@ -216,14 +216,20 @@ static void GuiMultisigTransactionSignatureSetupUR(lv_obj_t *parent)
     lv_obj_align(qrcode, LV_ALIGN_TOP_LEFT, 36, 36);
     GuiAnimatingQRCodeInitWithCustomSize(qrcode, GuiGetSignQrCodeData, false, 336, 336, NULL);
 
-    g_signStatusLabel = GuiCreateIllustrateLabel(g_qrCont, "Signature Status: ");
+    g_signStatusLabel = GuiCreateIllustrateLabel(g_qrCont, "Signature Status:");
     lv_obj_align_to(g_signStatusLabel, qrcode, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 }
 
 static void GuiMultisigTransactionSignatureContent(lv_obj_t *parent)
 {
-    lv_obj_t *text = GuiCreateIllustrateLabel(g_qrCont, g_signStatus);
-    lv_obj_align_to(text, g_signStatusLabel, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
+
+    if (g_signStatus != NULL) {
+        char signStatus[64] = {0};
+        sprintf(signStatus, "#F5870A %s#", g_signStatus);
+        lv_obj_t *text = GuiCreateIllustrateLabel(g_qrCont, signStatus);
+        lv_label_set_recolor(text, true);
+        lv_obj_align_to(text, g_signStatusLabel, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
+    }
 
     char *hint = (char *)_("multisig_signature_hint_1");
     if (g_signCompleted) {
@@ -231,7 +237,7 @@ static void GuiMultisigTransactionSignatureContent(lv_obj_t *parent)
         hint = (char *)_("multisig_signature_hint_2");
     }
 
-    text = GuiCreateIllustrateLabel(g_cont, hint);
+    lv_obj_t *text = GuiCreateIllustrateLabel(g_cont, hint);
     lv_obj_align_to(text, g_qrCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
     lv_obj_set_style_text_align(text, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 

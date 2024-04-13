@@ -106,12 +106,16 @@ static int32_t GuiGetUtxoPubKeyAndHdPath(ViewType viewType, char **xPub, char **
 #ifdef BTC_ONLY
 static UREncodeResult *GuiGetSignPsbtBytesCodeData(void)
 {
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
     UREncodeResult *encodeResult = NULL;
-    if (GuiGetCurrentTransactionType() == TRANSACTION_TYPE_BTC_MULTISIG) {
-        MultisigSignResult *result = btc_export_multisig_psbt_bytes(g_psbtBytes, g_psbtBytesLen);
-        encodeResult = result->ur_result;
-        GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
-        free_MultisigSignResult(result);
+    if (!GuiGetCurrentTransactionNeedSign()) { 
+        if (GuiGetCurrentTransactionType() == TRANSACTION_TYPE_BTC_MULTISIG) {
+            MultisigSignResult *result = btc_export_multisig_psbt_bytes(g_psbtBytes, g_psbtBytesLen);
+            encodeResult = result->ur_result;
+            GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
+            free_MultisigSignResult(result);
+        }
     } else {
         uint8_t mfp[4] = {0};
         GetMasterFingerPrint(mfp);
@@ -123,9 +127,9 @@ static UREncodeResult *GuiGetSignPsbtBytesCodeData(void)
         GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
         free_MultisigSignResult(result);
     }
-
     CHECK_CHAIN_PRINT(encodeResult);
     ClearSecretCache();
+    SetLockScreen(enable);
     return encodeResult;
 }
 #endif
@@ -133,15 +137,14 @@ static UREncodeResult *GuiGetSignPsbtBytesCodeData(void)
 // The results here are released in the close qr timer species
 UREncodeResult *GuiGetSignQrCodeData(void)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
 
 #ifdef BTC_ONLY
     if (g_psbtBytes != NULL) {
         return GuiGetSignPsbtBytesCodeData();
     }
 #endif
-
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
     enum URType urType = URTypeUnKnown;
 #ifndef BTC_ONLY
     enum ViewType viewType = ViewTypeUnKnown;

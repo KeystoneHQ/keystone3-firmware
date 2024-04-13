@@ -272,6 +272,8 @@ void GuiMultisigTransactionSignaureWidgetsDeInit()
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
+        g_signStatusView = NULL;
+        g_hintView = NULL;
     }
     if (g_signStatus) {
         SRAM_FREE(g_signStatus);

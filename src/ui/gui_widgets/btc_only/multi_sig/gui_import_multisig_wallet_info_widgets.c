@@ -71,9 +71,16 @@ static void CloseWaringAndCurrentPageHandler(lv_event_t *e)
     }
 }
 
+static void CreateCheckTheWalletInfoNotice(lv_obj_t *parent)
+{
+    g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgObserve, _("manage_import_wallet_notice_title"),
+                     _("manage_import_wallet_notice_desc1"), _("manage_import_wallet_notice_desc1"), _("OK"), ORANGE_COLOR);
+    lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+}
+
 void GuiImportMultisigWalletInfoWidgetsInit(void)
 {
-    if (GetCurrentAccountMultisigWalletNum() >= MAX_MULTI_SIG_WALLET_NUMBER) {
+    if ((GetCurrentAccountMultisigWalletNum() >= MAX_MULTI_SIG_WALLET_NUMBER) && (!GuiGetExportMultisigWalletSwitch())) {
         g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, _("manage_multi_wallet_add_limit_title"),
                          _("manage_multi_wallet_add_scan_limit_title"), NULL, _("OK"), WHITE_COLOR_OPA20);
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseWaringAndCurrentPageHandler, LV_EVENT_CLICKED, NULL);
@@ -91,6 +98,11 @@ void GuiImportMultisigWalletInfoWidgetsInit(void)
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseWaringAndCurrentPageHandler, LV_EVENT_CLICKED, NULL);
         return;
     }
+
+    if (!GuiGetExportMultisigWalletSwitch()) {
+        CreateCheckTheWalletInfoNotice(g_pageWidget->contentZone);
+    }
+
     GuiContent(g_pageWidget->contentZone);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("import_multi_wallet_info_title"));
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);

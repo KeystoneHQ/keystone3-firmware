@@ -296,14 +296,14 @@ bool VerifyMultisigWalletDataHash(uint8_t index, uint8_t *info)
 
     ret = SE_HmacEncryptRead(data, index * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_MULTISIG_CONFIG_HASH);
     if (ret == SUCCESS_CODE && !memcmp(data, info, 32)) {
-        PrintArray("set multi hash", info, 32);
-        PrintArray("get multi hash", data, 32);
         return true;
     } else {
         if (CheckAllFF(data, 32) || CheckAllZero(data, 32)) {
             SetMultisigDataHash(index, data);
             return true;
         } else {
+            PrintArray("set multi hash", info, 32);
+            PrintArray("get multi hash", data, 32);
             return false;
         }
     }

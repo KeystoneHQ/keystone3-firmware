@@ -86,7 +86,7 @@ void GuiScanRefresh()
         GuiScanStart();
     }
     g_restartScanFlag = true;
-    
+
 }
 
 static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, size_t filterSize)

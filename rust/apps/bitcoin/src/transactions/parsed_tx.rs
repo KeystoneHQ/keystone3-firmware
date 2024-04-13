@@ -23,6 +23,7 @@ pub struct ParsedInput {
     pub path: Option<String>,
     pub sign_status: (u32, u32),
     pub is_multisig: bool,
+    pub is_external: bool,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]

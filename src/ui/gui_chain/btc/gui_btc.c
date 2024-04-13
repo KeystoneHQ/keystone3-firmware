@@ -1078,12 +1078,30 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
         SetTitleLabelStyle(orderLabel);
 
         lv_obj_t *valueLabel = lv_label_create(formInnerContainer);
-        lv_obj_set_width(valueLabel, 332);
-        lv_label_set_long_mode(valueLabel, LV_LABEL_LONG_WRAP);
         lv_label_set_text(valueLabel, from->data[i].amount);
         lv_obj_set_style_text_font(valueLabel, &openSansEnIllustrate, LV_PART_MAIN);
         lv_obj_set_style_text_color(valueLabel, lv_color_hex(0xf5870a), LV_PART_MAIN);
         lv_obj_align_to(valueLabel, orderLabel, LV_ALIGN_OUT_RIGHT_TOP, 16, 0);
+
+        if (from->data[i].is_mine) {
+            lv_obj_t *changeContainer = GuiCreateContainerWithParent(formInnerContainer, 87, 30);
+            lv_obj_set_style_radius(changeContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_color(changeContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(changeContainer, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+            lv_obj_t *changeLabel = lv_label_create(changeContainer);
+            if (from->data[i].is_external) {
+                lv_label_set_text(changeLabel, "Receive");
+            } else {
+                lv_label_set_text(changeLabel, "Change");
+            }
+            lv_obj_set_style_text_font(changeLabel, g_defIllustrateFont, LV_PART_MAIN);
+            lv_obj_set_style_text_color(changeLabel, WHITE_COLOR, LV_PART_MAIN);
+            lv_obj_set_style_text_opa(changeLabel, 163, LV_PART_MAIN);
+            lv_obj_align(changeLabel, LV_ALIGN_CENTER, 0, 0);
+
+            lv_obj_align_to(changeContainer, valueLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+        }
 
         lv_obj_t *addressLabel = lv_label_create(formInnerContainer);
         lv_obj_set_width(addressLabel, 332);

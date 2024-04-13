@@ -19,6 +19,7 @@
 #include "gui_home_widgets.h"
 #include "user_fatfs.h"
 #include "multi_sig_wallet_manager.h"
+#include "log_print.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"

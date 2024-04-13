@@ -30,6 +30,9 @@
 #include "simulator_mock_define.h"
 #endif
 
+#ifdef BTC_ONLY
+#include "gui_btc_home_widgets.h"
+#endif
 /* DEFINES */
 
 /* TYPEDEFS */
@@ -428,6 +431,7 @@ void GuiWalletSettingSetIconLabel(const lv_img_dsc_t *src, const char *name)
 // wallet setting
 void GuiWalletSetWidget(lv_obj_t *parent)
 {
+    lv_event_cb_t passphraseCb = WalletSettingHandler;
     static uint32_t walletSetting[5] = {
         DEVICE_SETTING_CHANGE_WALLET_DESC,
         DEVICE_SETTING_FINGERPRINT_PASSCODE,
@@ -498,13 +502,26 @@ void GuiWalletSetWidget(lv_obj_t *parent)
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     table[0].obj = label;
     table[1].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 84, table, 2, WalletSettingHandler, &walletSetting[2]);
+#ifdef BTC_ONLY
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+        passphraseCb = UnHandler;
+    }
+#endif
+    button = GuiCreateButton(parent, 456, 84, table, 2, passphraseCb, &walletSetting[2]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 383 - GUI_MAIN_AREA_OFFSET);
+#ifdef BTC_ONLY
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+        lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_set_style_text_opa(lv_obj_get_child(button, 0), LV_OPA_80, LV_PART_MAIN);
+        lv_obj_set_style_img_opa(lv_obj_get_child(button, 1), LV_OPA_80, LV_PART_MAIN);
+    }
+#endif
 
     label = GuiCreateTextLabel(parent, _("wallet_setting_seed_phrase"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     table[0].obj = label;
     table[1].obj = imgArrow;
+
     button = GuiCreateButton(parent, 456, 84, table, 2, WalletSettingHandler, &walletSetting[3]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 479 - GUI_MAIN_AREA_OFFSET);
 

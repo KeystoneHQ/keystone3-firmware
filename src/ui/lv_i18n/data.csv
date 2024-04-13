@@ -981,6 +981,8 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,manage_import_wallet_notice_desc2,"If it has been modified or the information is inconsistent, it may result in loss of assets.",,,,,,,
 ,manage_import_wallet_passphrase_error_title,"Import Error",,,,,,,
 ,manage_import_wallet_passphrase_error_desc,"Unable to import multisig wallet into the Passphrase wallet. Please exit Passphrase mode and retry.",,,,,,,
+,manage_wallet_passphrase_error_limit,"Passphrase wallet can't add multisig",,,,,,,
+,multisig_signature_hint_1,"Please ask the 2nd co-signer to scan the QR code and sign.",,,,,,,
 ,multisig_signature_hint_1,"Please ask the co-signers to scan the QR code and sign.",,,,,,,
 ,multisig_signature_hint_2,"Scan the QR code with your software wallet",,,,,,,
 ,multisig_signature_export_to_sdcard,"Export Transaction to MicroSD Card",,,,,,,

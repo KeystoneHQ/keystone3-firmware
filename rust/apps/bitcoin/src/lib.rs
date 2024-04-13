@@ -56,6 +56,15 @@ pub fn sign_psbt_no_serialize(psbt_hex: Vec<u8>, seed: &[u8], mfp: Fingerprint) 
     wpsbt.sign(seed, mfp)
 }
 
+pub fn parse_psbt_hex_sign_status(psbt: &[u8]) -> Result<PsbtSignStatus> {
+    let psbt = deserialize_psbt(psbt.to_vec())?;
+    let wpsbt = WrappedPsbt { psbt };
+    Ok(PsbtSignStatus {
+        sign_status: wpsbt.get_overall_sign_status(),
+        is_completed: wpsbt.is_sign_completed(),
+    })
+}
+
 pub fn parse_psbt_sign_status(psbt: Psbt) -> PsbtSignStatus {
     let wpsbt = WrappedPsbt { psbt };
     PsbtSignStatus {
@@ -148,6 +157,7 @@ mod test {
                 fee_larger_than_amount: $fee_larger_than_amount,
                 sign_status: Some("Unsigned".to_string()),
                 is_multisig: false,
+                need_sign: true,
             }
         };
     }
@@ -161,6 +171,7 @@ mod test {
                 path: Some($path.to_string()),
                 is_multisig: false,
                 is_external: false,
+                need_sign: true,
                 sign_status: (0, 1),
             }
         };

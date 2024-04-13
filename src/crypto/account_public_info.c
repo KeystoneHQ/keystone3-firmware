@@ -1031,7 +1031,6 @@ void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager)
     assert(size < SPI_FLASH_SIZE_USER1_MULTI_SIG_DATA - 4);
     cJSON_Delete(rootJson);
 
-
     Gd25FlashWriteBuffer(addr, (uint8_t *)&size, sizeof(size));
     len = Gd25FlashWriteBuffer(addr + 4, (uint8_t *)retStr, size);
     assert(len == size);

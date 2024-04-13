@@ -103,7 +103,7 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         GuiLockScreenPasscodeSwitch(false);
         break;
     case SIG_EXTENDED_PUBLIC_KEY_NOT_MATCH:
-        // GuiLockScreenWipeDevice();
+        GuiLockScreenWipeDevice();
         break;
     case SIG_START_GENERATE_XPUB:
         GuiShowGenerateXPubLoading();

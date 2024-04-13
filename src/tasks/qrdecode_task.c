@@ -211,7 +211,6 @@ static void QrDecodeMinuteTimerFunc(void *argument)
 void QrDecodeTouchQuit(void)
 {
     static bool quitArea = false;
-    static uint8_t handleIndex = 0xFF;
     TouchStatus_t *pStatus;
     if (g_qrDecodeState == QR_DECODE_STATE_OFF) {
         return;

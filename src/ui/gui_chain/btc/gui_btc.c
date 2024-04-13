@@ -107,17 +107,17 @@ static int32_t GuiGetUtxoPubKeyAndHdPath(ViewType viewType, char **xPub, char **
 static UREncodeResult *GuiGetSignPsbtBytesCodeData(void)
 {
     UREncodeResult *encodeResult = NULL;
-    uint8_t mfp[4] = {0};
-    GetMasterFingerPrint(mfp);
-    uint8_t seed[64];
-    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-    GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
     if (GuiGetCurrentTransactionType() == TRANSACTION_TYPE_BTC_MULTISIG) {
         MultisigSignResult *result = btc_export_multisig_psbt_bytes(g_psbtBytes, g_psbtBytesLen);
         encodeResult = result->ur_result;
         GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
         free_MultisigSignResult(result);
     } else {
+        uint8_t mfp[4] = {0};
+        GetMasterFingerPrint(mfp);
+        uint8_t seed[64];
+        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         MultisigSignResult *result = btc_sign_multisig_psbt_bytes(g_psbtBytes, g_psbtBytesLen, seed, len, mfp, sizeof(mfp));
         encodeResult = result->ur_result;
         GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);

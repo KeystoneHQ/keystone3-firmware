@@ -42,6 +42,7 @@ impl TxData {
             value: input.value,
             path: Some(path.to_string()),
             is_multisig: false,
+            is_external: false,
             sign_status: (0, 1),
         })
     }

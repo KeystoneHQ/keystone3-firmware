@@ -126,9 +126,10 @@ impl WrappedPsbt {
             address,
             amount: Self::format_amount(value, network),
             value,
-            path: path.map(|v| v.0),
+            path: path.clone().map(|v| v.0),
             sign_status,
             is_multisig,
+            is_external: path.clone().map_or(false, |v| v.1),
         })
     }
 

@@ -122,9 +122,12 @@ static void GuiShowSDCardExport()
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
     g_filename = SRAM_MALLOC(MAX_WALLET_NAME_LEN);
-    snprintf_s(g_filename, MAX_WALLET_NAME_LEN, "%s.txt", g_multisigWalletItem->name);
-    if (FileExists(g_filename)) {
-        snprintf_s(g_filename, MAX_WALLET_NAME_LEN, "%s_%d.txt", g_multisigWalletItem->name, GetCurrentStampTime());
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(g_multisigWalletItem->walletConfig, mfp, 4);
+    if (result->error_code == 0) {
+        snprintf_s(g_filename, MAX_WALLET_NAME_LEN, "%s_%s_%d.txt", g_multisigWalletItem->name, result->data->policy, GetCurrentStampTime());
+        free_MultiSigWallet(result->data);
     }
     label = GuiCreateIllustrateLabel(g_noticeWindow, g_filename);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 670);
@@ -251,7 +254,7 @@ static char *convertFormatLabel(char *format)
     } else if (strcmp(format, FORMAT_P2WSH) == 0) {
         return "Legacy";
     }
-    
+
     return NULL;
 }
 

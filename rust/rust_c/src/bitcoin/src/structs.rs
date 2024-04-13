@@ -63,6 +63,7 @@ pub struct DisplayTxOverview {
     is_multisig: bool,
     fee_larger_than_amount: bool,
     sign_status: PtrString,
+    need_sign: bool,
 }
 
 impl_c_ptr!(DisplayTxOverview);
@@ -156,6 +157,7 @@ impl From<OverviewTx> for DisplayTxOverview {
             } else {
                 null_mut()
             },
+            need_sign: value.need_sign,
         }
     }
 }

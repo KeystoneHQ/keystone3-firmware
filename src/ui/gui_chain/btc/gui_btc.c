@@ -24,23 +24,25 @@
 #define MAX_WALLET_CONFIG_LEN 3000
 #define MAX_VERIFY_CODE_LEN 12
 
-#define CHECK_FREE_PARSE_RESULT(result)                             \
-    if (result != NULL) {                                           \
-        free_TransactionParseResult_DisplayTx(g_parseResult);       \
-        g_parseResult = NULL;                                       \
+#define CHECK_FREE_PARSE_RESULT(result)                       \
+    if (result != NULL)                                       \
+    {                                                         \
+        free_TransactionParseResult_DisplayTx(g_parseResult); \
+        g_parseResult = NULL;                                 \
     }
 
-#define CHECK_FREE_PARSE_MSG_RESULT(result)                             \
-    if (result != NULL) {                                           \
-        free_TransactionParseResult_DisplayBtcMsg(g_parseMsgResult);       \
-        g_parseMsgResult = NULL;                                       \
+#define CHECK_FREE_PARSE_MSG_RESULT(result)                          \
+    if (result != NULL)                                              \
+    {                                                                \
+        free_TransactionParseResult_DisplayBtcMsg(g_parseMsgResult); \
+        g_parseMsgResult = NULL;                                     \
     }
 
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 
-static uint8_t* g_psbtBytes = NULL;
+static uint8_t *g_psbtBytes = NULL;
 static uint32_t g_psbtBytesLen = 0;
 
 static TransactionParseResult_DisplayTx *g_parseResult = NULL;
@@ -57,11 +59,11 @@ typedef struct UtxoViewToChain {
 
 static UtxoViewToChain_t g_UtxoViewToChainMap[] = {
     {BtcNativeSegwitTx, XPUB_TYPE_BTC_NATIVE_SEGWIT, "m/84'/0'/0'"},
-    {BtcSegwitTx,       XPUB_TYPE_BTC,               "m/49'/0'/0'"},
-    {BtcLegacyTx,       XPUB_TYPE_BTC_LEGACY,        "m/44'/0'/0'"},
-    {LtcTx,             XPUB_TYPE_LTC,               "m/49'/2'/0'"},
-    {DashTx,            XPUB_TYPE_DASH,              "m/44'/5'/0'"},
-    {BchTx,             XPUB_TYPE_BCH,               "m/44'/145'/0'"},
+    {BtcSegwitTx, XPUB_TYPE_BTC, "m/49'/0'/0'"},
+    {BtcLegacyTx, XPUB_TYPE_BTC_LEGACY, "m/44'/0'/0'"},
+    {LtcTx, XPUB_TYPE_LTC, "m/49'/2'/0'"},
+    {DashTx, XPUB_TYPE_DASH, "m/44'/5'/0'"},
+    {BchTx, XPUB_TYPE_BCH, "m/44'/145'/0'"},
 };
 #endif
 
@@ -110,10 +112,18 @@ static UREncodeResult *GuiGetSignPsbtBytesCodeData(void)
     uint8_t seed[64];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
     GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-    MultisigSignResult *result = btc_sign_multisig_psbt_bytes(g_psbtBytes, g_psbtBytesLen, seed, len, mfp, sizeof(mfp));
-    encodeResult = result->ur_result;
-    GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
-    free_MultisigSignResult(result);
+    if (GuiGetCurrentTransactionType() == TRANSACTION_TYPE_BTC_MULTISIG) {
+        MultisigSignResult *result = btc_export_multisig_psbt_bytes(g_psbtBytes, g_psbtBytesLen);
+        encodeResult = result->ur_result;
+        GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
+        free_MultisigSignResult(result);
+    } else {
+        MultisigSignResult *result = btc_sign_multisig_psbt_bytes(g_psbtBytes, g_psbtBytesLen, seed, len, mfp, sizeof(mfp));
+        encodeResult = result->ur_result;
+        GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
+        free_MultisigSignResult(result);
+    }
+
     CHECK_CHAIN_PRINT(encodeResult);
     ClearSecretCache();
     return encodeResult;
@@ -155,24 +165,34 @@ UREncodeResult *GuiGetSignQrCodeData(void)
     GetMasterFingerPrint(mfp);
 
     if (urType == CryptoPSBT) {
-        uint8_t mfp[4] = {0};
-        GetMasterFingerPrint(mfp);
-        uint8_t seed[64];
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        if (!GuiGetCurrentTransactionNeedSign()) {
 #ifdef BTC_ONLY
-        if (GuiGetCurrentTransactionType() == TRANSACTION_TYPE_BTC_MULTISIG) {
-            MultisigSignResult *result = btc_sign_multisig_psbt(data, seed, len, mfp, sizeof(mfp));
-            encodeResult = result->ur_result;
-            GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
-            free_MultisigSignResult(result);
-        } else {
-            encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
-        }
-#else
-        encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
+            if (GuiGetCurrentTransactionType() == TRANSACTION_TYPE_BTC_MULTISIG) {
+                MultisigSignResult *result = btc_export_multisig_psbt(data);
+                encodeResult = result->ur_result;
+                GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
+                free_MultisigSignResult(result);
+            }
 #endif
-
+        } else {
+            uint8_t mfp[4] = {0};
+            GetMasterFingerPrint(mfp);
+            uint8_t seed[64];
+            int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+            GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+#ifdef BTC_ONLY
+            if (GuiGetCurrentTransactionType() == TRANSACTION_TYPE_BTC_MULTISIG) {
+                MultisigSignResult *result = btc_sign_multisig_psbt(data, seed, len, mfp, sizeof(mfp));
+                encodeResult = result->ur_result;
+                GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
+                free_MultisigSignResult(result);
+            } else {
+                encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
+            }
+#else
+            encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
+#endif
+        }
     }
 #ifndef BTC_ONLY
     else if (urType == Bytes || urType == KeystoneSignRequest) {
@@ -250,13 +270,13 @@ static void *GuiGetParsedPsbtStrData(void)
     }
     g_parseResult = btc_parse_psbt_bytes(g_psbtBytes, g_psbtBytesLen, mfp, sizeof(mfp), public_keys, wallet_config);
     CHECK_CHAIN_RETURN(g_parseResult);
+    GuiSetCurrentTransactionNeedSign(g_parseResult->data->overview->need_sign);
     if (IsMultiSigTx(g_parseResult->data)) {
         GuiSetCurrentTransactionType(TRANSACTION_TYPE_BTC_MULTISIG);
     }
     SRAM_FREE(public_keys);
     SRAM_FREE(wallet_config);
     return g_parseResult;
-
 }
 #endif
 
@@ -348,6 +368,7 @@ void *GuiGetParsedQrData(void)
                 }
             }
             g_parseResult = btc_parse_psbt(crypto, mfp, sizeof(mfp), public_keys, wallet_config);
+            GuiSetCurrentTransactionNeedSign(g_parseResult->data->overview->need_sign);
             SRAM_FREE(wallet_config);
 #else
             g_parseResult = btc_parse_psbt(crypto, mfp, sizeof(mfp), public_keys, NULL);
@@ -567,7 +588,7 @@ void GetPsbtFeeAmount(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
     if (psbt->overview->fee_larger_than_amount) {
-        snprintf_s((char *)indata,  maxLen, "#F55831 %s#", psbt->overview->fee_amount);
+        snprintf_s((char *)indata, maxLen, "#F55831 %s#", psbt->overview->fee_amount);
     } else {
         strcpy_s((char *)indata, maxLen, psbt->overview->fee_amount);
     }
@@ -583,7 +604,7 @@ void GetPsbtFeeSat(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
     if (psbt->overview->fee_larger_than_amount) {
-        snprintf_s((char *)indata,  maxLen, "#F55831 %s#", psbt->overview->fee_sat);
+        snprintf_s((char *)indata, maxLen, "#F55831 %s#", psbt->overview->fee_sat);
     } else {
         strcpy_s((char *)indata, maxLen, psbt->overview->fee_sat);
     }
@@ -891,7 +912,7 @@ static lv_obj_t *CreateOverviewFromView(lv_obj_t *parent, DisplayTxOverview *ove
     SetContainerDefaultStyle(formContainer);
     lv_obj_align_to(formContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
-    lv_obj_t * label = lv_label_create(formContainer);
+    lv_obj_t *label = lv_label_create(formContainer);
     lv_label_set_text(label, "From");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
     SetTitleLabelStyle(label);
@@ -930,7 +951,7 @@ static lv_obj_t *CreateOverviewFromView(lv_obj_t *parent, DisplayTxOverview *ove
             lv_obj_update_layout(addressLabel);
         }
 
-        int addressLabelHeight =  lv_obj_get_y2(addressLabel);
+        int addressLabelHeight = lv_obj_get_y2(addressLabel);
 
         lv_obj_set_height(formInnerContainer, addressLabelHeight);
 
@@ -991,7 +1012,7 @@ static lv_obj_t *CreateOverviewToView(lv_obj_t *parent, DisplayTxOverview *overv
             lv_obj_update_layout(addressLabel);
         }
 
-        int addressLabelHeight =  lv_obj_get_y2(addressLabel);
+        int addressLabelHeight = lv_obj_get_y2(addressLabel);
 
         lv_obj_set_height(toInnerContainer, addressLabelHeight);
 
@@ -1004,7 +1025,6 @@ static lv_obj_t *CreateOverviewToView(lv_obj_t *parent, DisplayTxOverview *overv
     lv_obj_set_height(toContainer, toContainerHeight);
 
     return toContainer;
-
 }
 
 static lv_obj_t *CreateDetailAmountView(lv_obj_t *parent, DisplayTxDetail *detailData, lv_obj_t *lastView)
@@ -1054,7 +1074,7 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
     SetContainerDefaultStyle(formContainer);
     lv_obj_align_to(formContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
-    lv_obj_t * label = lv_label_create(formContainer);
+    lv_obj_t *label = lv_label_create(formContainer);
     lv_label_set_text(label, "From");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
     SetTitleLabelStyle(label);
@@ -1119,7 +1139,7 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
         lv_obj_align_to(pathLabel, addressLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_obj_update_layout(pathLabel);
 
-        int pathLabelBottom =  lv_obj_get_y2(pathLabel);
+        int pathLabelBottom = lv_obj_get_y2(pathLabel);
 
         lv_obj_set_height(formInnerContainer, pathLabelBottom);
 
@@ -1140,7 +1160,7 @@ static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailDat
     SetContainerDefaultStyle(toContainer);
     lv_obj_align_to(toContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
-    lv_obj_t * label = lv_label_create(toContainer);
+    lv_obj_t *label = lv_label_create(toContainer);
     lv_label_set_text(label, "To");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
     SetTitleLabelStyle(label);
@@ -1187,7 +1207,6 @@ static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailDat
             lv_obj_align(changeLabel, LV_ALIGN_CENTER, 0, 0);
 
             lv_obj_align_to(changeContainer, valueLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
-
         }
 
         lv_obj_t *addressLabel = lv_label_create(toInnerContainer);
@@ -1198,7 +1217,7 @@ static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailDat
         lv_obj_align_to(addressLabel, orderLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_obj_update_layout(addressLabel);
 
-        int bottom =  lv_obj_get_y2(addressLabel);
+        int bottom = lv_obj_get_y2(addressLabel);
 
         lv_obj_set_height(toInnerContainer, bottom);
         lv_obj_align_to(toInnerContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
@@ -1214,8 +1233,8 @@ static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailDat
 
 void GuiBtcTxOverview(lv_obj_t *parent, void *totalData)
 {
-    DisplayTx *txData = (DisplayTx*)totalData;
-    DisplayTxOverview *overviewData  = txData->overview;
+    DisplayTx *txData = (DisplayTx *)totalData;
+    DisplayTxOverview *overviewData = txData->overview;
 
     lv_obj_set_size(parent, 408, 444);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
@@ -1235,8 +1254,8 @@ void GuiBtcTxOverview(lv_obj_t *parent, void *totalData)
 void GuiBtcTxDetail(lv_obj_t *parent, void *totalData)
 {
 
-    DisplayTx *txData = (DisplayTx*)totalData;
-    DisplayTxDetail *detailData  = txData->detail;
+    DisplayTx *txData = (DisplayTx *)totalData;
+    DisplayTxDetail *detailData = txData->detail;
 
     lv_obj_set_size(parent, 408, 444);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);

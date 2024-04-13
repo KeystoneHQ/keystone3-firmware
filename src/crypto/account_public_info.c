@@ -1026,7 +1026,6 @@ static uint32_t MultiSigWalletSaveDefault(uint32_t addr, uint8_t accountIndex)
     printf("MultiSigWalletGet need set data is  %s\r\n", retStr);
 
     cJSON_Delete(rootJson);
-    RemoveFormatChar(retStr);
     size = strlen(retStr);
     Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
     int len = Gd25FlashWriteBuffer(addr + 4, (uint8_t *)retStr, size);
@@ -1059,7 +1058,6 @@ void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager)
     cJSON_AddItemToObject(rootJson, "multi_sig_wallet_list", walletList);
     char *retStr;
     retStr = cJSON_Print(rootJson);
-    RemoveFormatChar(retStr);
     size = strlen(retStr);
     printf("multi sig wallet save data  is %s\r\n", retStr);
     assert(size < SPI_FLASH_SIZE_USER1_MULTI_SIG_DATA - 4);

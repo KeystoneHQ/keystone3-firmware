@@ -10,6 +10,7 @@
 #include "gui_fullscreen_mode.h"
 #include "gui_multisig_wallet_export_widgets.h"
 #include "sdcard_manager.h"
+#include "gui_button.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "safe_str_lib.h"
@@ -205,6 +206,12 @@ static UREncodeResult *GuiGenerateUR()
     return export_multi_sig_wallet_by_ur(mfp, 4, g_multisigWalletItem->walletConfig);
 }
 
+static void GuiCreateVerifyAddressNotice(lv_event_t *e)
+{
+    g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgInformation, _("manage_wallet_confirm_address_title"), _("manage_wallet_confirm_address_desc"), NULL, _("got_it"), WHITE_COLOR_OPA20);
+    lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+}
+
 static void GuiContent(lv_obj_t *parent)
 {
     lv_obj_t *cont, *text, *btn;
@@ -229,6 +236,9 @@ static void GuiContent(lv_obj_t *parent)
 
     text = GuiCreateIllustrateLabel(cont, convertFormatLabel(g_multisigWalletItem->format));
     lv_obj_align(text, LV_ALIGN_TOP_LEFT, 36, 12 + 384);
+
+    lv_obj_t *button = GuiCreateImgButton(cont, &imgInfoS, 40, GuiCreateVerifyAddressNotice, NULL);
+    lv_obj_align(button, LV_ALIGN_TOP_RIGHT, -24, 416);
 
     text = GuiCreateNoticeLabel(cont, _("Sample Address:"));
     lv_obj_align(text, LV_ALIGN_TOP_LEFT, 36, 12 + 34 + 384);

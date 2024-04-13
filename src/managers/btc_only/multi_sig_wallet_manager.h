@@ -11,6 +11,7 @@
 
 #define FORMAT_P2WSH "P2WSH"
 #define FORMAT_P2WSH_P2SH "P2WSH_P2SH"
+#define FORMAT_P2SH_P2WSH "P2SH_P2WSH"
 #define FORMAT_P2SH "P2SH"
 
 typedef struct MultiSigWalletItem {

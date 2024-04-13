@@ -32,9 +32,8 @@ static PageWidget_t *g_pageWidget;
 static lv_obj_t *g_twoKeyImg = NULL;
 static lv_timer_t *g_countDownTimer = NULL; // count down timer
 
-static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
-    {HOME_WALLET_CARD_BTC, false, "BTC", true, false, SINGLE_WALLET},
-};
+static WalletState_t g_walletState[] = {
+    {HOME_WALLET_CARD_BTC, false, "BTC", true, false, SINGLE_WALLET}};
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 
 static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {

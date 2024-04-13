@@ -378,6 +378,14 @@ void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t
         titleText = _("rust_error_bitcoin_no_my_inputs");
         descText = _("rust_error_bitcoin_no_my_inputs_desc");
         break;
+    case BitcoinMultiSigWalletNotMyWallet:
+        titleText = _("rust_error_bitcoin_not_my_multisig_wallet");
+        descText = _("rust_error_bitcoin_not_my_multisig_wallet_desc");
+        break;
+    case BitcoinMultiSigWalletParseError:
+        titleText = _("scan_qr_code_error_invalid_wallet_file");
+        descText = _("scan_qr_code_error_invalid_wallet_file_desc");
+        break;
     }
 
     lv_obj_t *cont = GuiCreateConfirmHintBox(lv_scr_act(),

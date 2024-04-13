@@ -41,8 +41,8 @@ static lv_obj_t *g_confirmLabel;
 static void GuiConfirmHandler(lv_event_t *e);
 static void GuiVerifyPassword();
 static void prepareWalletByQRCode(void *);
-static int32_t prepareWalletBySDCard(char *);
-static int32_t processResult(Ptr_Response_MultiSigWallet result);
+static uint32_t prepareWalletBySDCard(char *);
+static uint32_t processResult(Ptr_Response_MultiSigWallet result);
 static void GuiContent(lv_obj_t *);
 static void GuiCloseWarnningDialog();
 
@@ -56,7 +56,7 @@ void GuiSetMultisigImportWalletDataByQRCode(URParseResult *urResult, URParseMult
     CHECK_FREE_UR_RESULT(multiResult, true);
 }
 
-int32_t GuiSetMultisigImportWalletDataBySDCard(char *walletConfig)
+uint32_t GuiSetMultisigImportWalletDataBySDCard(char *walletConfig)
 {
     g_isQRCode = false;
     return prepareWalletBySDCard(walletConfig);
@@ -167,7 +167,7 @@ static void prepareWalletByQRCode(void *wallet_info_data)
     processResult(result);
 }
 
-static int32_t prepareWalletBySDCard(char *walletConfig)
+static uint32_t prepareWalletBySDCard(char *walletConfig)
 {
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
@@ -175,11 +175,11 @@ static int32_t prepareWalletBySDCard(char *walletConfig)
     return processResult(result);
 }
 
-static int32_t processResult(Ptr_Response_MultiSigWallet result)
+static uint32_t processResult(Ptr_Response_MultiSigWallet result)
 {
     if (result->error_code != 0) {
         printf("%s\r\n", result->error_message);
-        return ERR_INVALID_FILE;
+        return result->error_code;
     }
     g_wallet = result->data;
     return SUCCESS_CODE;
@@ -264,8 +264,7 @@ static void GuiConfirmHandler(lv_event_t *e)
         }
         MultiSigWalletItem_t *wallet = GetMultisigWalletByVerifyCode(g_wallet->verify_code);
         if (wallet != NULL) {
-            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, NULL);
-            GuiCLoseCurrentWorkingView();
+            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, GuiCLoseCurrentWorkingView);
             return;
         }
         GuiVerifyPassword();

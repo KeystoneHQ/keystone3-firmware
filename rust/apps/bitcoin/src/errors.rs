@@ -63,6 +63,8 @@ pub enum BitcoinError {
     UnsupportedScriptType(String),
     #[error("multi sig wallet parse error: {0}")]
     MultiSigWalletParseError(String),
+    #[error("This wallet doesn't belong to this seed")]
+    MultiSigWalletNotMyWallet,
     #[error("multi sig wallet address calculate error: {0}")]
     MultiSigWalletAddressCalError(String),
     #[error("multi sig wallet import xpub error: {0}")]

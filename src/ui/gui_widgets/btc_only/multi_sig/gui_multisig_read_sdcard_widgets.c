@@ -69,10 +69,19 @@ static void GuiSelectFileHandler(lv_event_t *e)
             break;
         case ONLY_TXT: {
             char *walletConfig = FatfsFileRead(path);
-            if (SUCCESS_CODE == GuiSetMultisigImportWalletDataBySDCard(walletConfig)) {
+            uint32_t ret = GuiSetMultisigImportWalletDataBySDCard(walletConfig);
+            switch (ret)
+            {
+            case Success:
                 GuiFrameOpenView(&g_importMultisigWalletInfoView);
-            } else {
+                break;
+            case BitcoinMultiSigWalletNotMyWallet:
+            case BitcoinMultiSigWalletParseError:
+                g_noticeWindow = GuiCreateRustErrorWindow(ret, NULL, &g_noticeWindow, NULL);
+                break;
+            default:
                 g_noticeWindow = GuiCreateErrorCodeWindow(ERR_INVALID_FILE, &g_noticeWindow, NULL);
+                break;
             }
         }
         break;

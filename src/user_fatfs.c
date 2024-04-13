@@ -16,7 +16,6 @@
 
 char* g_fileContent = NULL;
 
-
 void FatfsError(FRESULT errNum);
 
 typedef struct FatfsMountParam {

@@ -2,6 +2,7 @@
 #include "gui_obj.h"
 #include "gui_views.h"
 #include "gui_export_pubkey_widgets.h"
+#include "gui_animating_qrcode.h"
 
 int32_t GuiExportPubkeyViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {

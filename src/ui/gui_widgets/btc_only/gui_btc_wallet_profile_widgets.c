@@ -14,7 +14,6 @@
 #include "gui_btc_wallet_profile_widgets.h"
 #include "gui_manage_multisig_wallet_widgets.h"
 
-
 typedef enum {
     WALLET_PROFILE_SELECT = 0,
     WALLET_PROFILE_SINGLE_WALLET,

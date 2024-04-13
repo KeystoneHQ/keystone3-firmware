@@ -92,6 +92,7 @@ pub enum ErrorCodes {
     BitcoinBech32DecodeError,
     BitcoinWitnessProgramError,
     BitcoinMultiSigWalletParseError,
+    BitcoinMultiSigWalletNotMyWallet,
     BitcoinMultiSigWalletAddressCalError,
     BitcoinMultiSigWalletImportXpubError,
     BitcoinMultiSigWalletCrateError,
@@ -207,6 +208,7 @@ impl From<&BitcoinError> for ErrorCodes {
             BitcoinError::InvalidTxData(_) => Self::BitcoinInvalidTxData,
             BitcoinError::UnsupportedScriptType(_) => Self::BitcoinUnsupportedScriptType,
             BitcoinError::MultiSigWalletParseError(_) => Self::BitcoinMultiSigWalletParseError,
+            BitcoinError::MultiSigWalletNotMyWallet => Self::BitcoinMultiSigWalletNotMyWallet,
             BitcoinError::MultiSigWalletAddressCalError(_) => {
                 Self::BitcoinMultiSigWalletAddressCalError
             }

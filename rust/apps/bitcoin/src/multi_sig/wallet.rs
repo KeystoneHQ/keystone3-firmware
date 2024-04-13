@@ -453,9 +453,7 @@ fn verify_wallet_config(wallet: &MultiSigWalletConfig, xfp: &str) -> Result<(), 
         .iter()
         .any(|item| item.xfp.eq_ignore_ascii_case(xfp))
     {
-        return Err(BitcoinError::MultiSigWalletParseError(
-            "have no matched xfp in config file".to_string(),
-        ));
+        return Err(BitcoinError::MultiSigWalletNotMyWallet);
     }
 
     if wallet.derivations.len() != 1 && wallet.derivations.len() != wallet.xpub_items.len() {

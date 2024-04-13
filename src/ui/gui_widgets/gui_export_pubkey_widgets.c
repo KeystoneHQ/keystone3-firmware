@@ -199,7 +199,6 @@ static UREncodeResult *GuiGenerateUR()
 }
 #endif
 
-
 static void GuiRefreshTileview()
 {
     switch (g_tileviewIndex) {

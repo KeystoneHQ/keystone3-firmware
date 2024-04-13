@@ -185,7 +185,7 @@ void CloseWaringPageHandler(lv_event_t *e)
         if (g_hintParam != NULL) {
             *g_hintParam = NULL;
         }
-        if(g_errorWindowCallback){
+        if (g_errorWindowCallback) {
             g_errorWindowCallback();
             g_errorWindowCallback = NULL;
         }
@@ -349,7 +349,7 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
         titleText = _("scan_qr_code_error_invalid_qrcode");
         descText = _("scan_qr_code_error_invalid_qrcode_desc");
         break;
-    case ERR_MULTISIG_INVALID_FILE:
+    case ERR_INVALID_FILE:
         titleText = _("scan_qr_code_error_invalid_wallet_file");
         descText = _("scan_qr_code_error_invalid_wallet_file_desc");
         break;
@@ -377,6 +377,14 @@ void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t
     case BitcoinWalletTypeError:
         titleText = _("rust_error_bitcoin_no_my_inputs");
         descText = _("rust_error_bitcoin_no_my_inputs_desc");
+        break;
+    case BitcoinMultiSigWalletNotMyWallet:
+        titleText = _("rust_error_bitcoin_not_my_multisig_wallet");
+        descText = _("rust_error_bitcoin_not_my_multisig_wallet_desc");
+        break;
+    case BitcoinMultiSigWalletParseError:
+        titleText = _("scan_qr_code_error_invalid_wallet_file");
+        descText = _("scan_qr_code_error_invalid_wallet_file_desc");
         break;
     }
 

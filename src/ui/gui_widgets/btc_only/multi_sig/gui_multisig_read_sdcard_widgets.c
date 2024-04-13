@@ -8,6 +8,7 @@
 #include "gui_btc.h"
 #include "gui_model.h"
 #include "gui_hintbox.h"
+#include "gui_scan_widgets.h"
 #ifndef COMPILE_SIMULATOR
 #include "drv_sdcard.h"
 #include "user_fatfs.h"
@@ -23,6 +24,7 @@ static char *g_fileList[FATFS_MAX_FILE_NUMBER];
 
 static void GuiContent(lv_obj_t *);
 static void GuiSelectFileHandler(lv_event_t *e);
+static void GuiMultiReadScardViewCloseHandler(lv_event_t *e);
 static FileFilterType g_fileFilterType = ALL;
 static ViewType g_viewType;
 static lv_obj_t *g_noticeWindow = NULL;
@@ -35,9 +37,10 @@ void GuiMultisigReadSdcardWidgetsInit(uint8_t fileFilterType)
     g_fileFilterType = fileFilterType;
     g_pageWidget = CreatePageWidget();
     GuiContent(g_pageWidget->contentZone);
-    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, GuiMultiReadScardViewCloseHandler, NULL);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("import_multi_wallet_via_micro_title"));
 }
+
 void GuiMultisigReadSdcardWidgetsDeInit()
 {
     DestroyPageWidget(g_pageWidget);
@@ -56,6 +59,12 @@ static void GuiContent(lv_obj_t *parent)
 {
     GuiAddObjFlag(parent, LV_OBJ_FLAG_SCROLLABLE);
     ListMicroCardMultisigConfigFile();
+}
+
+static void GuiMultiReadScardViewCloseHandler(lv_event_t *e)
+{
+    GuiScanSetRestartFlag(true);
+    CloseCurrentViewHandler(e);
 }
 
 static void GuiSelectFileHandler(lv_event_t *e)

@@ -588,6 +588,11 @@ void DeleteAccountPublicInfo(uint8_t accountIndex)
     for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_MUTABLE_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
         Gd25FlashSectorErase(eraseAddr);
     }
+
+    addr = SPI_FLASH_ADDR_USER1_MULTI_SIG_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
+    for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_MULTI_SIG_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
+        Gd25FlashSectorErase(eraseAddr);
+    }
     //remove current publickey info to avoid accident reading.
     FreePublicKeyRam();
 }
@@ -1023,7 +1028,7 @@ static uint32_t MultiSigWalletSaveDefault(uint32_t addr, uint8_t accountIndex)
 
     char *retStr;
     retStr = cJSON_Print(rootJson);
-    printf("MultiSigWalletGet need set data is  %s\r\n", retStr);
+    printf("%s MultiSigWalletGet need set data is  %s\r\n", __func__, retStr);
 
     cJSON_Delete(rootJson);
     size = strlen(retStr);
@@ -1059,7 +1064,7 @@ void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager)
     char *retStr;
     retStr = cJSON_Print(rootJson);
     size = strlen(retStr);
-    printf("multi sig wallet save data  is %s\r\n", retStr);
+    printf("size = %d multi sig wallet save data  is %s\r\n", size, retStr);
     assert(size < SPI_FLASH_SIZE_USER1_MULTI_SIG_DATA - 4);
     cJSON_Delete(rootJson);
 
@@ -1139,13 +1144,9 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
         for (int i = 0; i < walletListSize; i++) {
 
             MultiSigWalletItem_t *multiSigWalletItem = (MultiSigWalletItem_t*) MULTI_SIG_MALLOC(sizeof(MultiSigWalletItem_t));
-
             cJSON *wallet = cJSON_GetArrayItem(multiSigWalletList, i);
-
             cJSON *order = cJSON_GetObjectItem(wallet, "order");
-
             multiSigWalletItem->order = order->valueint;
-
             GetStringValue(wallet, "name", strCache, MULTI_SIG_STR_CACHE_LENGTH);
             multiSigWalletItem->name = MULTI_SIG_MALLOC(strlen(strCache) + 1);
             strcpy(multiSigWalletItem->name, strCache);

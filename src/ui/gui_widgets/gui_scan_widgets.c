@@ -259,7 +259,7 @@ void SelectMicroCardFile(void)
         static uint8_t fileFilterType = ONLY_PSBT;
         GuiFrameOpenViewWithParam(&g_multisigReadSdcardView, &fileFilterType, sizeof(fileFilterType));
     } else {
-        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, GuiScanStart);
     }
 }
 

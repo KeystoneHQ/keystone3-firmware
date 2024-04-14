@@ -268,6 +268,7 @@ void CutAndFormatFileName(char *out, uint32_t maxLen, const char *fileName, cons
 
 void CutAndFormatString(char *out, uint32_t maxLen, const char *string, uint32_t targetLen)
 {
+    memset_s(out, maxLen, '\0', maxLen);
     uint32_t len = strnlen_s(string, maxLen + 1);
 
     if (len < targetLen) {

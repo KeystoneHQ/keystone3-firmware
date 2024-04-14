@@ -262,7 +262,7 @@ static char *convertFormatLabel(char *format)
     } else if ((strcmp(format, FORMAT_P2WSH_P2SH) == 0) || (strcmp(format, FORMAT_P2SH_P2WSH)) == 0 ||
                (strcmp(format, FORMAT_P2WSH_P2SH_MID) == 0) || (strcmp(format, FORMAT_P2SH_P2WSH_MID)) == 0) {
         return "Nested Segwit";
-    } else if (strcmp(format, FORMAT_P2WSH) == 0) {
+    } else if (strcmp(format, FORMAT_P2SH) == 0) {
         return "Legacy";
     }
     return NULL;

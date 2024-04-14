@@ -662,12 +662,21 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
     static lv_point_t points[2] = {{0, 0}, {408, 0}};
     line = GuiCreateLine(parent, points, 2);
     lv_obj_align(line, LV_ALIGN_TOP_MID, 0, 0);
+    lv_obj_t *baseView = NULL;
     for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
         if (!g_walletListArray[i].enable) {
             continue;
         }
+        if (GetIsTestNet() && g_walletListArray[i].index == WALLET_LIST_BLUE) {
+            continue;
+        }
         img = GuiCreateImg(parent, g_walletListArray[i].img);
-        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, i * 99 + 9);
+        if (baseView == NULL) {
+            lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 9);
+        } else {
+            lv_obj_align_to(img, baseView, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+        }
+        baseView = img;
         lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED, &g_walletListArray[i]);
         if (g_walletListArray[i].alpha) {
@@ -675,7 +684,7 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
             lv_obj_align(alphaImg, LV_ALIGN_RIGHT_MID, -219, 0);
         }
         line = GuiCreateLine(parent, points, 2);
-        lv_obj_align(line, LV_ALIGN_TOP_MID, 0, (i + 1) * 99);
+        lv_obj_align_to(line, baseView, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
     }
 #endif
 }

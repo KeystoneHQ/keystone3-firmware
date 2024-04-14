@@ -255,6 +255,7 @@ void SelectMicroCardFile(void)
 {
     if (SdCardInsert()) {
         GuiScanSetRestartFlag(false);
+        SetPageLockScreen(true);
         static uint8_t fileFilterType = ONLY_PSBT;
         GuiFrameOpenViewWithParam(&g_multisigReadSdcardView, &fileFilterType, sizeof(fileFilterType));
     } else {

@@ -289,7 +289,7 @@ static void OpenExportShowXpubHandler(lv_event_t *e)
         g_noticeWindow = GuiCreateHintBox(lv_scr_act(), 480, 408 - offset, false);
         lv_obj_t *title = GuiCreateIllustrateLabel(g_noticeWindow, _("wallet_profile_multi_wallet_show_xpub"));
         lv_obj_align(title, LV_ALIGN_DEFAULT, 36, 422 + offset);
-        lv_obj_t *closeBtn = GuiCreateImgButton(g_noticeWindow,  &imgClose, 64, CloseHintBoxHandler, NULL);
+        lv_obj_t *closeBtn = GuiCreateImgButton(g_noticeWindow,  &imgClose, 64, CloseHintBoxHandler, &g_noticeWindow);
         lv_obj_align(closeBtn, LV_ALIGN_DEFAULT, 394, 405 + offset);
 
         lv_obj_t *button = GuiCreateSelectButton(g_noticeWindow, _("wallet_profile_single_wallet_title"), &imgArrowRight, OpenBtcExportViewHandler, &testStatus[0], false);

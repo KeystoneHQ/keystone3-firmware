@@ -361,6 +361,10 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
         titleText = _("manage_import_wallet_passphrase_error_title");
         descText = _("manage_import_wallet_passphrase_error_desc");
         break;
+    case ERR_MULTISIG_TRANSACTION_ALREADY_SIGNED:
+        titleText = _("mutlisig_transaction_already_signed");
+        descText = _("mutlisig_transaction_already_signed_desc");
+        break;
     }
 
     lv_obj_t *cont = GuiCreateConfirmHintBox(lv_scr_act(),

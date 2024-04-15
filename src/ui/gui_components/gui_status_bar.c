@@ -20,6 +20,11 @@
 #include "drv_usb.h"
 #else
 #include "simulator_model.h"
+static void SwitchWalletHandler(lv_event_t * e)
+{
+    static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
+    GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
+}
 #endif
 
 typedef struct StatusBar {
@@ -244,6 +249,10 @@ void GuiStatusBarInit(void)
     RefreshStatusBar();
 #ifdef COMPILE_SIMULATOR
     GuiStatusBarSetBattery(88, true);
+    lv_obj_t *btn = GuiCreateBtn(cont, "switch");
+    lv_obj_set_style_bg_opa(btn, LV_OPA_0, 0);
+    lv_obj_add_event_cb(btn, SwitchWalletHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 0);
 #endif
 }
 

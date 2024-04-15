@@ -45,6 +45,7 @@ typedef struct {
 } ManageMultisigWidget_t;
 
 typedef struct {
+    lv_obj_t *deleteNotice;
     lv_obj_t *deleteBtn;
     lv_obj_t *setDefaultBtn;
 } MultisigWidgetItem_t;
@@ -181,6 +182,10 @@ static void CreateMultiSigWalletDetailWidget(lv_obj_t *parent)
                                         &imgDel, NULL, DeleteMultiWalletHandler, NULL);
     g_multisigItem.deleteBtn = button;
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 96 * 4);
+
+    lv_obj_t *label = GuiCreateNoticeLabel(parent, _("manage_multi_wallet_delete_current_wallet_desc"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 481);
+    g_multisigItem.deleteNotice = label;
     UpdateCurrentWalletState();
 }
 
@@ -314,6 +319,7 @@ static void UpdateCurrentWalletState(void)
     lv_obj_t *label = lv_obj_get_child(g_multisigItem.setDefaultBtn, 1);
     GuiApiEmitSignal(SIG_STATUS_BAR_TEST_NET, NULL, 0);
     if (GetCurrentWalletIndex() == g_currentIndex) {
+        lv_obj_clear_flag(g_multisigItem.deleteNotice, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_multisigItem.deleteBtn, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_clear_flag(g_multisigItem.setDefaultBtn, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
@@ -321,6 +327,7 @@ static void UpdateCurrentWalletState(void)
         label = lv_obj_get_child(g_multisigItem.deleteBtn, 1);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
     } else {
+        lv_obj_add_flag(g_multisigItem.deleteNotice, LV_OBJ_FLAG_HIDDEN);
         lv_obj_add_flag(g_multisigItem.deleteBtn, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_flag(g_multisigItem.setDefaultBtn, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_set_style_text_opa(label, LV_OPA_100, LV_PART_MAIN);

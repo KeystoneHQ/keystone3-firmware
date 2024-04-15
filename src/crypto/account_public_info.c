@@ -343,7 +343,7 @@ int32_t AccountPublicInfoReadFromFlash(uint8_t accountIndex, uint32_t addr)
     printf("len = %d\n", len);
     ASSERT(len == 4);
     printf("size = %d\n", size);
-    if (size > SPI_FLASH_ADDR_EACH_SIZE - 4) {
+    if (size > SPI_FLASH_SIZE_USER1_DATA - 4) {
         printf("pubkey size err,%d\r\n", size);
         return ERR_GENERAL_FAIL;
     }
@@ -473,7 +473,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
 
 int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool newKey)
 {
-    printf("%s %d..\n", __func__, __LINE__);
+    printf("accountIndex = %d %s %d..\n", accountIndex, __func__, __LINE__);
     uint32_t addr;
     int32_t ret = SUCCESS_CODE;
     bool regeneratePubKey = newKey;
@@ -483,6 +483,7 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     //Load Multisig wallet Manager
 
     addr = SPI_FLASH_ADDR_USER1_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
+    printf("address = %0x..\n", addr);
     if (!regeneratePubKey) {
         ret = AccountPublicInfoReadFromFlash(accountIndex, addr);
         if (ret == ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH) {
@@ -600,7 +601,7 @@ void DeleteAccountPublicInfo(uint8_t accountIndex)
 
     ASSERT(accountIndex < 3);
     addr = SPI_FLASH_ADDR_USER1_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
-    for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_ADDR_EACH_SIZE; eraseAddr += GD25QXX_SECTOR_SIZE) {
+    for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
         Gd25FlashSectorErase(eraseAddr);
     }
 
@@ -643,7 +644,7 @@ uint8_t SpecifiedXPubExist(const char *xPub)
         addr = SPI_FLASH_ADDR_USER1_DATA + index * SPI_FLASH_ADDR_EACH_SIZE;
         ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
         ASSERT(ret == 4);
-        if (size > SPI_FLASH_ADDR_EACH_SIZE - 4) {
+        if (size > SPI_FLASH_SIZE_USER1_DATA - 4) {
             continue;
         }
 

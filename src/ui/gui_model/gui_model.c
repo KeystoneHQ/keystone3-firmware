@@ -532,7 +532,7 @@ static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, Bac
 
 static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen)
 {
-    if(g_urResult == NULL) return SUCCESS_CODE;
+    if (g_urResult == NULL) return SUCCESS_CODE;
     if (g_urResult->is_multi_part) {
         UREncodeMultiResult *result = get_next_part(g_urResult->encoder);
         if (result->error_code == 0) {

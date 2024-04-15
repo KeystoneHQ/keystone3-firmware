@@ -287,7 +287,6 @@ void GuiExportPubkeyDeInit(void)
     g_tmpSelectIndex = 0;
     g_isTest = false;
 
-
 #ifdef BTC_ONLY
     g_isMultisig = false;
     GuiAnimatingQRCodeDestroyTimer();

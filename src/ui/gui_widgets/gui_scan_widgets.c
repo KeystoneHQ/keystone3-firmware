@@ -187,15 +187,6 @@ void GuiScanSetRestartFlag(bool flag)
 static void GuiScanNavBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseTimerCurrentViewHandler, NULL);
-#ifdef BTC_ONLY
-    switch (g_fromPage) {
-    case OTHER_PAGE:
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SDCARD, SelectMicroCardFileHandler, NULL);
-        break;
-    case IMPORT_MULTI_SIG_WALLET_PAGE:
-        break;
-    }
-#endif
 }
 
 static void GuiSetScanCorner(void)

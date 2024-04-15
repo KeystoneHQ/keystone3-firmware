@@ -20,6 +20,7 @@
 #include "account_manager.h"
 #include "log_print.h"
 #include "gui_btc_home_widgets.h"
+#include "gui_multisig_read_sdcard_widgets.h"
 
 static lv_obj_t *g_manageWalletLabel = NULL;
 static lv_obj_t *g_homeWalletCardCont = NULL;
@@ -207,6 +208,44 @@ static void OpenMoreViewHandler(lv_event_t *e)
     }
 }
 
+static void GuiOpenSignBySDCardHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        ShowWallPaper(false);
+        if (SdCardInsert()) {
+            static uint8_t fileFilterType = ONLY_PSBT;
+            GuiFrameOpenViewWithParam(&g_multisigReadSdcardView, &fileFilterType, sizeof(fileFilterType));
+        } else {
+            g_moreHintbox = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_moreHintbox, NULL);
+        }
+    }
+}
+
+static void GuiMoreHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+        MoreInfoTable_t moreInfoTable[] = {
+            {.name = _("home_more_connect_wallet"), .src = &imgConnect, .callBack = OpenMoreViewHandler, &g_connectWalletView},
+            {.name = _("home_more_sign_by_sdcard"), .src = &imgSdCardColor, .callBack = GuiOpenSignBySDCardHandler, NULL},
+            {.name = _("home_more_device_setting"), .src = &imgSettings, .callBack = OpenMoreViewHandler, &g_settingView},
+        };
+        if (code == LV_EVENT_CLICKED) {
+            g_moreHintbox = GuiCreateMoreInfoHintBox(NULL, NULL, moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true);
+        }
+    } else {
+        MoreInfoTable_t moreInfoTable[] = {
+            {.name = _("home_more_connect_wallet"), .src = &imgConnect, .callBack = OpenMoreViewHandler, &g_connectWalletView},
+            {.name = _("home_more_device_setting"), .src = &imgSettings, .callBack = OpenMoreViewHandler, &g_settingView},
+        };
+        if (code == LV_EVENT_CLICKED) {
+            g_moreHintbox = GuiCreateMoreInfoHintBox(NULL, NULL, moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true);
+        }
+    }
+}
+
 static void OpenMoreSettingHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -318,7 +357,7 @@ void GuiHomeRefresh(void)
     GuiSetSetupPhase(SETUP_PAHSE_DONE);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_MANAGE, OpenWalletProfileHandler, NULL);
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
-    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreSettingHandler, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, GuiMoreHandler, NULL);
     if (g_homeWalletCardCont != NULL) {
         lv_obj_clear_flag(g_homeWalletCardCont, LV_OBJ_FLAG_HIDDEN);
     }

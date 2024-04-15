@@ -996,3 +996,5 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,rust_error_bitcoin_no_my_inputs_desc,"The transaction doesn't belong to the current wallet. Please check the transaction information.",,,,,,,
 ,rust_error_bitcoin_not_my_multisig_wallet,"Invalid Multisig Wallet Config",,,,,,,
 ,rust_error_bitcoin_not_my_multisig_wallet_desc,"This multisig wallet config doesn't belong to the current wallet. Please check the multisig wallet config information.",,,,,,,
+,mutlisig_transaction_already_signed,"Signed Transaction",,,,,,,
+,mutlisig_transaction_already_signed_desc,"Please reselect the transaction file.",,,,,,,

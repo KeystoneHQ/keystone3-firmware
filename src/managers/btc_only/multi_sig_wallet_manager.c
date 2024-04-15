@@ -30,7 +30,7 @@ static MultiSigWalletManager_t *g_multisigWalletManager = NULL;
 
 static void createMultiSigWalletList();
 static void insertNode(MultiSigWalletItem_t *item);
-static void deleteNode(char *verifyCode);
+static int deleteNode(char *verifyCode);
 static int getLength();
 static void traverseList(void (*callback)(MultiSigWalletItem_t *, void *), void *any);
 static void destroyMultiSigWalletList();
@@ -77,11 +77,12 @@ MultiSigWalletItem_t *GetMultisigWalletByVerifyCode(const char *verifyCode)
     return g_multisigWalletManager->findNode((char *)verifyCode);
 }
 
-void DeleteMultisigWalletByVerifyCode(const char *verifyCode, const char *password)
+int DeleteMultisigWalletByVerifyCode(const char *verifyCode, const char *password)
 {
     ASSERT_WALLET_MANAGER_EXIST
-    g_multisigWalletManager->deleteNode((char *)verifyCode);
+    int index = g_multisigWalletManager->deleteNode((char *)verifyCode);
     g_multisigWalletManager->saveToFlash(password);
+    return index;
 }
 
 int GetCurrentAccountMultisigWalletNum(void)
@@ -114,12 +115,13 @@ MultiSigWalletItem_t *GetDefaultMultisigWallet(void)
     CURRENT_WALLET_INDEX_ENUM defaultIndex = GetCurrentWalletIndex();
     MultiSigWalletList_t *list = g_multisigWalletManager->list;
     MultiSigWalletNode_t *temp = list->head;
-
+    int innerIndex = 0;
     while (temp != NULL) {
-        if (temp->value->order == defaultIndex) {
+        if (innerIndex == defaultIndex) {
             return temp->value;
         }
         temp = temp->next;
+        innerIndex++;
     }
     return NULL;
 }
@@ -235,12 +237,14 @@ static MultiSigWalletItem_t *findNode(char *verifyCode)
     return NULL;
 }
 
-static void deleteNode(char *verifyCode)
+static int deleteNode(char *verifyCode)
 {
     ASSERT_WALLET_MANAGER_EXIST
     MultiSigWalletList_t *list = g_multisigWalletManager->list;
     MultiSigWalletNode_t *temp = list->head;
     MultiSigWalletNode_t *prev = NULL;
+
+    int index = 0;
 
     if (temp != NULL && strcmp(temp->value->verifyCode, verifyCode) == 0) {
         list->head = temp->next;
@@ -250,16 +254,17 @@ static void deleteNode(char *verifyCode)
         MULTI_SIG_FREE(temp->value);
         MULTI_SIG_FREE(temp);
         list->length--;
-        return;
+        return index;
     }
 
     while (temp != NULL && strcmp(temp->value->verifyCode, verifyCode) != 0) {
         prev = temp;
         temp = temp->next;
+        index++;
     }
 
     if (temp == NULL) {
-        return;
+        return -1;
     }
 
     prev->next = temp->next;
@@ -269,6 +274,7 @@ static void deleteNode(char *verifyCode)
     MULTI_SIG_FREE(temp->value);
     MULTI_SIG_FREE(temp);
     list->length--;
+    return index;
 }
 
 static int getLength()

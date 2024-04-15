@@ -287,16 +287,17 @@ void GuiExportPubkeyDeInit(void)
     g_tmpSelectIndex = 0;
     g_isTest = false;
 
+
+#ifdef BTC_ONLY
+    g_isMultisig = false;
+    GuiAnimatingQRCodeDestroyTimer();
+    GUI_DEL_OBJ(g_noticeWindow)
+    SRAM_FREE(g_xpubConfigName);
+#endif
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
-
-#ifdef BTC_ONLY
-    g_isMultisig = false;
-    GUI_DEL_OBJ(g_noticeWindow)
-    SRAM_FREE(g_xpubConfigName);
-#endif
 }
 
 lv_obj_t* CreateExportPubkeyQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)

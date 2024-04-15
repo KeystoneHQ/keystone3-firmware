@@ -56,6 +56,7 @@ static PageWidget_t *g_pageWidget;
 static MultiSigWalletItem_t *g_walletItem;
 static MultiSigWallet *g_multiSigWallet = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
+static CURRENT_WALLET_INDEX_ENUM g_currentIndex;
 
 static void CreateMultiSigWalletDetailWidget(lv_obj_t *parent);
 static void CreateCoSignerDetailWidget(lv_obj_t *parent);
@@ -69,6 +70,7 @@ void GuiResetCurrentUtxoAddressIndex(uint8_t index);
 
 void GuiManageMultisigWalletInit(CURRENT_WALLET_INDEX_ENUM index)
 {
+    g_currentIndex = index;
     ReloadAndUpdateMultisigItem(index);
     g_pageWidget = CreatePageWidget();
     lv_obj_t *tileView = GuiCreateTileView(g_pageWidget->contentZone);
@@ -254,7 +256,7 @@ static void SetDefaultMultiWalletHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        SetCurrentWalletIndex((CURRENT_WALLET_INDEX_ENUM)g_walletItem->order);
+        SetCurrentWalletIndex(g_currentIndex);
         UpdateCurrentWalletState();
         GuiResetCurrentUtxoAddressIndex(GetCurrentAccountIndex());
     }
@@ -285,9 +287,23 @@ static void GuiConfirmDeleteHandler(lv_event_t *e)
     }
 }
 
+static void CorrectDefalutWalletIndex(int deleteIndex)
+{
+    if (deleteIndex != -1) {
+       if (GetCurrentWalletIndex() == deleteIndex) {
+            SetCurrentWalletIndex(SINGLE_WALLET);
+       } else if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+            if (GetCurrentWalletIndex() > deleteIndex) {
+                SetCurrentWalletIndex(GetCurrentWalletIndex() - 1);
+            } 
+       }
+    }
+}
+
 void DeleteMultisigWallet(void)
 {
-    DeleteMultisigWalletByVerifyCode(g_walletItem->verifyCode, SecretCacheGetPassword());
+    int index = DeleteMultisigWalletByVerifyCode(g_walletItem->verifyCode, SecretCacheGetPassword());
+    CorrectDefalutWalletIndex(index);
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     ClearSecretCache();
     GuiManageMultiWalletPrevTile();
@@ -297,7 +313,7 @@ static void UpdateCurrentWalletState(void)
 {
     lv_obj_t *label = lv_obj_get_child(g_multisigItem.setDefaultBtn, 1);
     GuiApiEmitSignal(SIG_STATUS_BAR_TEST_NET, NULL, 0);
-    if (GetCurrentWalletIndex() == g_walletItem->order) {
+    if (GetCurrentWalletIndex() == g_currentIndex) {
         lv_obj_clear_flag(g_multisigItem.deleteBtn, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_clear_flag(g_multisigItem.setDefaultBtn, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);

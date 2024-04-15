@@ -158,9 +158,8 @@ void GuiTransactionDetailInit(uint8_t viewType)
     g_needSign = true;
     GuiTransactionDetailNavBarInit();
     ParseTransaction(g_viewType);
+    GuiCreateConfirmSlider(g_pageWidget->contentZone, CheckSliderProcessHandler);
     g_fingerSignCount = 0;
-    if (g_needSign)GuiCreateConfirmSlider(g_pageWidget->contentZone, CheckSliderProcessHandler);
-    else GuiCreateBroadcastBtn(g_pageWidget->contentZone, NULL);
     GuiPendingHintBoxMoveToTargetParent(lv_scr_act());
 }
 
@@ -211,6 +210,9 @@ void GuiTransactionDetailParseSuccess(void *param)
 {
     SetParseTransactionResult(param);
     GuiTemplateReload(g_pageWidget->contentZone, g_viewType);
+    if (!g_needSign){
+        GuiCreateErrorCodeWindow(ERR_MULTISIG_TRANSACTION_ALREADY_SIGNED, NULL, GuiCLoseCurrentWorkingView);
+    }
 }
 
 void GuiTransactionDetailVerifyPasswordSuccess(void)

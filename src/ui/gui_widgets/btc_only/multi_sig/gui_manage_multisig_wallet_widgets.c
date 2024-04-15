@@ -290,13 +290,13 @@ static void GuiConfirmDeleteHandler(lv_event_t *e)
 static void CorrectDefalutWalletIndex(int deleteIndex)
 {
     if (deleteIndex != -1) {
-       if (GetCurrentWalletIndex() == deleteIndex) {
+        if (GetCurrentWalletIndex() == deleteIndex) {
             SetCurrentWalletIndex(SINGLE_WALLET);
-       } else if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+        } else if (GetCurrentWalletIndex() != SINGLE_WALLET) {
             if (GetCurrentWalletIndex() > deleteIndex) {
                 SetCurrentWalletIndex(GetCurrentWalletIndex() - 1);
-            } 
-       }
+            }
+        }
     }
 }
 

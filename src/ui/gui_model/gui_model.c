@@ -532,7 +532,7 @@ static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, Bac
 
 static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen)
 {
-    if(g_urResult == NULL) return SUCCESS_CODE;
+    if (g_urResult == NULL) return SUCCESS_CODE;
     if (g_urResult->is_multi_part) {
         UREncodeMultiResult *result = get_next_part(g_urResult->encoder);
         if (result->error_code == 0) {
@@ -996,11 +996,11 @@ static void ModelVerifyPassSuccess(uint16_t *param)
             SecretCacheSetPassphrase("");
         }
         ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
-        #ifdef BTC_ONLY
+#ifdef BTC_ONLY
         if (strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) == 0) {
             AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), false);
         }
-        #endif
+#endif
         SetPageLockScreen(true);
         if (ret == SUCCESS_CODE) {
             GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);

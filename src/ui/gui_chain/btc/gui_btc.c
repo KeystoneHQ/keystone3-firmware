@@ -109,7 +109,7 @@ static UREncodeResult *GuiGetSignPsbtBytesCodeData(void)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     UREncodeResult *encodeResult = NULL;
-    if (!GuiGetCurrentTransactionNeedSign()) { 
+    if (!GuiGetCurrentTransactionNeedSign()) {
         if (GuiGetCurrentTransactionType() == TRANSACTION_TYPE_BTC_MULTISIG) {
             MultisigSignResult *result = btc_export_multisig_psbt_bytes(g_psbtBytes, g_psbtBytesLen);
             encodeResult = result->ur_result;

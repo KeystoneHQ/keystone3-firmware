@@ -1029,7 +1029,7 @@ static void RustTestParseCryptoPSBT(int argc, char *argv[])
     keys[1].xpub = "xpub6CkG15Jdw866GKs84e7ysjxAhBQUJBdLZTVbQERCjwh2z6wZSSdjfmaXaMvf6Vm5sbWemK43d7HJMicz41G3vEHA9Sa5N2J9j9vgwyiHdMj";
     keys[2].path = "m/84'/0'/0'";
     keys[2].xpub = "xpub6Bm9M1SxZdzL3TxdNV8897FgtTLBgehR1wVNnMyJ5VLRK5n3tFqXxrCVnVQj4zooN4eFSkf6Sma84reWc5ZCXMxPbLXQs3BcaBdTd4YQa3B";
-    TransactionParseResult_DisplayTx *result = btc_parse_psbt(crypto_psbt, mfp, sizeof(mfp), public_keys);
+    TransactionParseResult_DisplayTx *result = btc_parse_psbt(crypto_psbt, mfp, sizeof(mfp), public_keys, NULL);
     VecFFI_DisplayTxDetailInput *inputs = result->data->detail->from;
     VecFFI_DisplayTxOverviewOutput *overview_to = result->data->overview->to;
     for (size_t i = 0; i < result->data->overview->from->size; i++) {

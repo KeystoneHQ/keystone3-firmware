@@ -268,15 +268,27 @@ static void GuiContent(lv_obj_t *parent)
     g_confirmLabel = lv_obj_get_child(btn, 0);
 }
 
+static void GuiConfirmExportHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        GUI_DEL_OBJ(g_noticeWindow)
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, GuiCLoseCurrentWorkingView);
+        char *verifyCode = SRAM_MALLOC(MAX_VERIFY_CODE_LEN);
+        strcpy_s(verifyCode, MAX_VERIFY_CODE_LEN, g_wallet->verify_code);
+        GuiCLoseCurrentWorkingView();
+        GuiFrameOpenViewWithParam(&g_multisigWalletExportView, verifyCode, strnlen_s(verifyCode, MAX_VERIFY_CODE_LEN));
+    }
+}
+
 static void GuiConfirmHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         if (GuiGetExportMultisigWalletSwitch()) {
-            char *verifyCode = SRAM_MALLOC(MAX_VERIFY_CODE_LEN);
-            strcpy_s(verifyCode, MAX_VERIFY_CODE_LEN, g_wallet->verify_code);
-            GuiCLoseCurrentWorkingView();
-            GuiFrameOpenViewWithParam(&g_multisigWalletExportView, verifyCode, strnlen_s(verifyCode, MAX_VERIFY_CODE_LEN));
+            g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(),
+                             &imgObserve, _("manage_multi_wallet_export_attention_title"), _("manage_multi_wallet_export_attention_desc1"), _("manage_multi_wallet_export_attention_desc2"), _("OK"), ORANGE_COLOR);
+            lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), GuiConfirmExportHandler, LV_EVENT_CLICKED, NULL);
             return;
         }
         MultiSigWalletItem_t *wallet = GetMultisigWalletByVerifyCode(g_wallet->verify_code);

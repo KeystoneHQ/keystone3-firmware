@@ -72,13 +72,13 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
 
 #ifndef BTC_ONLY
     button = GuiCreateSelectButton(parent, _("language_title"), &imgArrowRight,
-                       OpenLanguageSelectHandler, NULL, false);
+                                   OpenLanguageSelectHandler, NULL, false);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
     offset += 100;
 #endif
 
     button = GuiCreateSelectButton(parent, _("system_settings_screen_lock_title"), &imgArrowRight,
-                       DispalyHandler, NULL, false);
+                                   DispalyHandler, NULL, false);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
     offset += 100;
 
@@ -103,7 +103,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
     offset += 100;
 
     button = GuiCreateSelectButton(parent, _("verify_title"), &imgArrowRight,
-                       GuiSystemSettingWebAuthHandler, NULL, false);
+                                   GuiSystemSettingWebAuthHandler, NULL, false);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
     offset += 100;
 
@@ -111,7 +111,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 397);
 
     button = GuiCreateSelectButton(parent, _("wipe_device"), &imgArrowRight,
-                       GuiSystemSettingWipeDeivceHandler, NULL, false);
+                                   GuiSystemSettingWipeDeivceHandler, NULL, false);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
     lv_obj_set_style_text_color(lv_obj_get_child(button, 0), lv_color_hex(0xf55831), LV_PART_MAIN);
 }

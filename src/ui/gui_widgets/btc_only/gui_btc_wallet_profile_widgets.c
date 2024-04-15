@@ -222,7 +222,8 @@ static void CreateSingleSigWalletWidget(lv_obj_t *parent)
     }
     lv_obj_clear_flag(checkBox, LV_OBJ_FLAG_CLICKABLE);
     GuiButton_t table[] = {
-        {.obj = GuiCreateTextLabel(parent, _("wallet_profile_network_test")), .align = LV_ALIGN_LEFT_MID, .position = {24, 0}},
+        {.obj = GuiCreateImg(parent, &imgNetwork), .align = LV_ALIGN_LEFT_MID, .position = {24, 0}},
+        {.obj = GuiCreateTextLabel(parent, _("wallet_profile_network_test")), .align = LV_ALIGN_LEFT_MID, .position = {76, 0}},
         {.obj = checkBox, .align = LV_ALIGN_LEFT_MID, .position = {376, 0}}
     };
     g_networkBtn = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table), SwitchTestnetHandler, checkBox);
@@ -266,6 +267,7 @@ static void ManageMultiSigWalletHandler(lv_event_t *e)
         g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("wallet_profile_add_multi_wallet"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false);
         lv_obj_t *closeBtn = GuiCreateImgButton(g_noticeWindow,  &imgClose, 64, CloseHintBoxHandler, &g_noticeWindow);
         GuiAlignToPrevObj(closeBtn, LV_ALIGN_LEFT_MID, 358, 0);
+        lv_obj_add_event_cb(lv_obj_get_child(g_moreHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_moreHintbox);
 #endif
     }
 }

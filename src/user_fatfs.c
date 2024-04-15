@@ -424,7 +424,7 @@ void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint3
         }
 
         if (!(fno.fattrib & AM_DIR)) {
-            if (!strstr(fno.fname, contain)) {
+            if (!strstr(fno.fname, contain) || (fno.fname[0] == '.')) {
                 continue;
             }
             printf("fno.name = %s\n", fno.fname);

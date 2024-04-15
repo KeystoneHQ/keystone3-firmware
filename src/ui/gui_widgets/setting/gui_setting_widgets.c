@@ -595,16 +595,11 @@ void GuiSettingDeInit(void)
     GUI_DEL_OBJ(g_noticeHintBox)
     GUI_DEL_OBJ(g_selectAmountHintbox)
     GUI_DEL_OBJ(g_passphraseLearnMoreCont)
-    printf("%s %d..\n", __func__, __LINE__);
     GuiFpVerifyDestruct();
-    printf("%s %d..\n", __func__, __LINE__);
     GuiWalletSeedCheckClearObject();
     GuiWalletSettingDeinit();
-    printf("%s %d..\n", __func__, __LINE__);
     CloseToTargetTileView(g_deviceSetTileView.currentTile, DEVICE_SETTING);
-    printf("%s %d..\n", __func__, __LINE__);
     CLEAR_OBJECT(g_deviceSetTileView);
-    printf("%s %d..\n", __func__, __LINE__);
     if (GuiQRHintBoxIsActive()) {
         GuiQRHintBoxRemove();
     }

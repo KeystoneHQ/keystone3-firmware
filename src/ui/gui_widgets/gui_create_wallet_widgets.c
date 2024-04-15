@@ -587,7 +587,6 @@ void GuiCreateWalletDeInit(void)
     GUI_DEL_OBJ(g_noticeHintBox)
     GUI_DEL_OBJ(g_wordsAmountView)
     GuiDelEnterProgressLabel();
-
     if (g_setPassCode != NULL) {
         GuiDelEnterPasscode(g_setPassCode, NULL);
         g_setPassCode = NULL;
@@ -597,8 +596,6 @@ void GuiCreateWalletDeInit(void)
         g_repeatPassCode = NULL;
     }
 
-    lv_obj_del(g_createWalletTileView.tileView);
-    lv_obj_del(g_createWalletTileView.cont);
     g_createWalletTileView.currentTile = 0;
     CLEAR_OBJECT(g_createWalletTileView);
     ClearSecretCache();

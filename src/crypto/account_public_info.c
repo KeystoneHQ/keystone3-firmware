@@ -331,73 +331,71 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
     cJSON_Delete(rootJson);
 }
 
-int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool newKey)
+int32_t AccountPublicInfoReadFromFlash(uint8_t accountIndex, uint32_t addr)
 {
-    uint32_t addr, size, i, eraseAddr;
-    char *jsonString = NULL;
-    SimpleResponse_c_char *xPubResult = NULL;
-    int32_t ret = SUCCESS_CODE;
-    bool regeneratePubKey = newKey;
-    uint8_t seed[64];
-    uint8_t entropy[64];
+    printf("%s %d..\n", __func__, __LINE__);
+    uint32_t size;
     uint8_t hash[32];
-    uint8_t entropyLen = 0;
-    bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
-    int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
-
-    ASSERT(accountIndex < 3);
-    FreePublicKeyRam();
-    //Load Multisig wallet Manager
-#ifdef BTC_ONLY
-    initMultiSigWalletManager();
-    ret = LoadCurrentAccountMultisigWallet(password);
-    CHECK_ERRCODE_RETURN_INT(ret);
-#endif
-
-    addr = SPI_FLASH_ADDR_USER1_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
-
-    do {
-        if (regeneratePubKey) {
-            break;
-        }
-        ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
-        ASSERT(ret == 4);
-        if (size > SPI_FLASH_ADDR_EACH_SIZE - 4) {
-            regeneratePubKey = true;
-            printf("pubkey size err,%d\r\n", size);
-            break;
-        }
-        jsonString = SRAM_MALLOC(size + 1);
-        ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
-        ASSERT(ret == size);
-        jsonString[size] = 0;
-        sha256((struct sha256 *)hash, jsonString, size);
+    int32_t ret = SUCCESS_CODE;
+    int len = 0;
+    char *jsonString;
+    len = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
+    printf("len = %d\n", len);
+    ASSERT(len == 4);
+    printf("size = %d\n", size);
+    if (size > SPI_FLASH_ADDR_EACH_SIZE - 4) {
+        printf("pubkey size err,%d\r\n", size);
+        return ERR_GENERAL_FAIL;
+    }
+    jsonString = SRAM_MALLOC(size + 1);
+    len = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
+    ASSERT(len == size);
+    jsonString[size] = 0;
+    printf("jsonString = %s\n", jsonString);
 #ifndef COMPILE_SIMULATOR
-        if (!VerifyWalletDataHash(accountIndex, hash)) {
-            CLEAR_ARRAY(hash);
-            return ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH;
-        } else {
-            ret = SUCCESS_CODE;
-        }
-#else
-        ret = SUCCESS_CODE;
-#endif
+    sha256((struct sha256 *)hash, jsonString, size);
+    if (!VerifyWalletDataHash(accountIndex, hash)) {
         CLEAR_ARRAY(hash);
-        if (GetPublicKeyFromJsonString(jsonString) == false) {
-            printf("GetPublicKeyFromJsonString false, need regenerate\r\n");
-            printf("err jsonString=%s\r\n", jsonString);
-            regeneratePubKey = true;
-        }
-    } while (0);
-
-    if (jsonString) {
-        SRAM_FREE(jsonString);
+        return ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH;
+    } else {
+        ret = SUCCESS_CODE;
+    }
+#else
+    ret = SUCCESS_CODE;
+#endif
+    CLEAR_ARRAY(hash);
+    if (GetPublicKeyFromJsonString(jsonString) == false) {
+        printf("GetPublicKeyFromJsonString false, need regenerate\r\n");
+        printf("err jsonString=%s\r\n", jsonString);
+        ret = ERR_GENERAL_FAIL;
     }
 
+    SRAM_FREE(jsonString);
+    return ret;
+}
+
+#define CHECK_AND_FREE_XPUB(x)              ASSERT(x);          \
+            if (x->error_code != 0) {                           \
+                printf("get_extended_pubkey error\r\n");        \
+                if (x->error_message != NULL) {                 \
+                    printf("error code = %d\r\nerror msg is: %s\r\n", x->error_code, x->error_message); \
+                }                                               \
+                free_simple_response_c_char(x);                 \
+                ret = x->error_code;                            \
+                break;                                          \
+            }
+
+int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, uint32_t addr)
+{
+    uint8_t entropyLen = 0;
+    uint8_t seed[64], entropy[64], hash[32];
+    char *jsonString;
+    int32_t ret = SUCCESS_CODE;
+    SimpleResponse_c_char *xPubResult = NULL;
+    bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
+    int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
     do {
-        if (regeneratePubKey == false) {
-            break;
-        }
+
         GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
         char* icarusMasterKey = NULL;
         printf("regenerate pub key!\r\n");
@@ -410,20 +408,11 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         // should setup ADA;
         if (!isSlip39) {
             response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
-            ASSERT(response);
-            if (response->error_code != 0) {
-                printf("get_extended_pubkey error\r\n");
-                if (response->error_message != NULL) {
-                    printf("error code = %d\r\nerror msg is: %s\r\n", response->error_code, response->error_message);
-                }
-                free_simple_response_c_char(response);
-                ret = response->error_code;
-                break;
-            }
+            CHECK_AND_FREE_XPUB(response)
             icarusMasterKey = response -> data;
         }
 
-        for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
+        for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
             // SLIP32 wallet does not support ADA
             if (isSlip39 && g_chainTable[i].curve == BIP32_ED25519) {
                 break;
@@ -445,45 +434,75 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
                 printf("unsupported curve type: %d\r\n", g_chainTable[i].curve);
                 break;
             }
-            ASSERT(xPubResult);
-            if (xPubResult->error_code != 0) {
-                printf("get_extended_pubkey error\r\n");
-                if (xPubResult->error_message != NULL) {
-                    printf("error code = %d\r\nerror msg is: %s\r\n", xPubResult->error_code, xPubResult->error_message);
-                }
-                free_simple_response_c_char(xPubResult);
-                ret = xPubResult->error_code;
-                break;
-            }
-            printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
+            CHECK_AND_FREE_XPUB(xPubResult)
+            // printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
             ASSERT(xPubResult->data);
             g_accountPublicKey[i].pubKey = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
             strcpy(g_accountPublicKey[i].pubKey, xPubResult->data);
-            printf("xPubResult=%s\r\n", xPubResult->data);
+            // printf("xPubResult=%s\r\n", xPubResult->data);
             free_simple_response_c_char(xPubResult);
         }
-        if (response != NULL) {
-            free_simple_response_c_char(response);
-        }
         printf("erase user data:0x%X\n", addr);
-        for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_ADDR_EACH_SIZE; eraseAddr += GD25QXX_SECTOR_SIZE) {
+        for (uint32_t eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
             Gd25FlashSectorErase(eraseAddr);
         }
         printf("erase done\n");
         jsonString = GetJsonStringFromPublicKey();
+
+        printf("save jsonString = \r\n%s\n", jsonString);
         sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
         SetWalletDataHash(accountIndex, hash);
         CLEAR_ARRAY(hash);
-        size = strlen(jsonString);
-        Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
-        Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
-        printf("regenerate jsonString=%s\r\n", jsonString);
-        GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
+        uint32_t size = strlen(jsonString);
+        len = Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
+        ASSERT(len == 4);
+        len = Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
+        ASSERT(len == size);
+        // printf("regenerate jsonString=%s\r\n", jsonString);
+        char *buff = SRAM_MALLOC(size + 1);
+        len = Gd25FlashReadBuffer(addr + 4, (uint8_t *)buff, size);
+        printf("len = %d size = %d\n", len, size);
+        printf("buff = \r\n%s\n", buff);
         EXT_FREE(jsonString);
+        GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
     } while (0);
-    printf("AccountPublicInfoSwitch over\r\n");
-    //PrintInfo();
+
     CLEAR_ARRAY(seed);
+    return ret;
+}
+
+int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool newKey)
+{
+    printf("%s %d..\n", __func__, __LINE__);
+    uint32_t addr;
+    int32_t ret = SUCCESS_CODE;
+    bool regeneratePubKey = newKey;
+
+    ASSERT(accountIndex < 3);
+    FreePublicKeyRam();
+    //Load Multisig wallet Manager
+
+    addr = SPI_FLASH_ADDR_USER1_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
+    if (!regeneratePubKey) {
+        ret = AccountPublicInfoReadFromFlash(accountIndex, addr);
+        if (ret == ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH) {
+            return ret;
+        } else if (ret == ERR_GENERAL_FAIL) {
+            regeneratePubKey = true;
+        }
+    }
+
+    if (regeneratePubKey) {
+        AccountPublicSavePublicInfo(accountIndex, password, addr);
+    }
+
+#ifdef BTC_ONLY
+    initMultiSigWalletManager();
+    ret = LoadCurrentAccountMultisigWallet(password);
+    CHECK_ERRCODE_RETURN_INT(ret);
+#endif
+    printf("acount public key info sitch over\r\n");
+    //PrintInfo();
     return ret;
 }
 
@@ -1027,15 +1046,15 @@ static uint32_t MultiSigWalletSaveDefault(uint32_t addr, uint8_t accountIndex)
     assert(rootJson != NULL);
     cJSON_AddItemToObject(rootJson, "version", cJSON_CreateString(g_multiSigInfoVersion));
     retStr = cJSON_Print(rootJson);
-    printf("%d %s %s\r\n", __func__, __LINE__, retStr);
+    printf("%s %d %s\r\n", __func__, __LINE__, retStr);
     EXT_FREE(retStr);
     cJSON_AddItemToObject(rootJson, "multi_sig_wallet_list", cJSON_CreateArray());
     retStr = cJSON_Print(rootJson);
-    printf("%d %s %s\r\n", __func__, __LINE__, retStr);
+    printf("%s %d %s\r\n", __func__, __LINE__, retStr);
     EXT_FREE(retStr);
 
     retStr = cJSON_Print(rootJson);
-    printf("%d %s %s\r\n", __func__, __LINE__, retStr);
+    printf("%s %d %s\r\n", __func__, __LINE__, retStr);
 
     cJSON_Delete(rootJson);
     size = strlen(retStr);
@@ -1093,7 +1112,6 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
 {
     ASSERT(accountIndex < 3);
 
-    bool needSet = false;
     uint32_t addr, size;
     int32_t ret = SUCCESS_CODE;
     char *jsonString = NULL;
@@ -1105,9 +1123,6 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
     ASSERT(ret == 4);
     printf("size = %d\r\n", size);
     if (size == 0xffffffff || size == 0) {
-        needSet = true;
-    }
-    if (needSet) {
         size = MultiSigWalletSaveDefault(addr, accountIndex);
     }
 
@@ -1118,16 +1133,16 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
     jsonString[size] = 0;
     printf("multi sig wallet get data is %s\r\n", jsonString);
 
-    sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
-    char *debugInfo = EXT_MALLOC(0x3000);
-    uint32_t len = snprintf(debugInfo, 0x3000, "json : .%s.\n", jsonString);
-    len += snprintf(debugInfo + len, 0x3000 - len, "hash:\n");
-    for (int i = 0; i < 32; i++) {
-        len += snprintf(debugInfo + len, 0x3000 - len, "%02x", hash[i]);
-    }
-    WriteDebugInfoToMicroCard(debugInfo, len);
 #ifndef COMPILE_SIMULATOR
+    sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
     if (!VerifyMultisigWalletDataHash(accountIndex, hash)) {
+        char *debugInfo = EXT_MALLOC(0x3000);
+        uint32_t len = snprintf(debugInfo, 0x3000, "json : .%s.\n", jsonString);
+        len += snprintf(debugInfo + len, 0x3000 - len, "hash:\n");
+        for (int i = 0; i < 32; i++) {
+            len += snprintf(debugInfo + len, 0x3000 - len, "%02x", hash[i]);
+        }
+        WriteDebugInfoToMicroCard(debugInfo, len);
         MultiSigWalletSaveDefault(addr, accountIndex);
         CLEAR_ARRAY(hash);
     } else {

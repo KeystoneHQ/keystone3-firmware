@@ -52,7 +52,6 @@ typedef struct DeviceSettingItem {
 } DeviceSettingItem_t;
 static DeviceSettingItem_t g_deviceSettingArray[DEVICE_SETTING_LEVEL_MAX];
 
-static lv_obj_t *g_delWalletHintbox = NULL;    // del wallet hintbox
 static lv_obj_t *g_selectAmountHintbox = NULL; // select amount hintbox
 static lv_obj_t *g_noticeHintBox = NULL;       // notice hintbox
 static GuiEnterPasscodeItem_t *g_verifyCode = NULL;
@@ -421,7 +420,7 @@ static void DelWalletHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
-        g_delWalletHintbox = NULL;
+        g_noticeHintBox = NULL;
         GuiShowKeyboardHandler(e);
     }
 }
@@ -432,11 +431,11 @@ static void OpenDelWalletHandler(lv_event_t *e)
     static uint16_t walletIndex = DEVICE_SETTING_DEL_WALLET;
 
     if (code == LV_EVENT_CLICKED) {
-        g_delWalletHintbox = GuiCreateHintBox(lv_event_get_user_data(e), 480, 132, true);
-        lv_obj_add_event_cb(lv_obj_get_child(g_delWalletHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_delWalletHintbox);
-        lv_obj_t *label = GuiCreateTextLabel(g_delWalletHintbox, _("wallet_settings_delete_button"));
+        g_noticeHintBox = GuiCreateHintBox(lv_event_get_user_data(e), 480, 132, true);
+        lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+        lv_obj_t *label = GuiCreateTextLabel(g_noticeHintBox, _("wallet_settings_delete_button"));
         lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
-        lv_obj_t *img = GuiCreateImg(g_delWalletHintbox, &imgDel);
+        lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgDel);
         GuiButton_t table[2] = {
             {
                 .obj = img,
@@ -449,7 +448,7 @@ static void OpenDelWalletHandler(lv_event_t *e)
                 .position = {88, 0},
             },
         };
-        lv_obj_t *btn = GuiCreateButton(g_delWalletHintbox, 456, 84, table, NUMBER_OF_ARRAYS(table),
+        lv_obj_t *btn = GuiCreateButton(g_noticeHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
                                         DelWalletHandler, &walletIndex);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 692);
     }
@@ -593,20 +592,19 @@ void GuiSettingInit(void)
 void GuiSettingDeInit(void)
 {
     GuiShowKeyboardDestruct();
-    GUI_DEL_OBJ(g_delWalletHintbox)
     GUI_DEL_OBJ(g_noticeHintBox)
     GUI_DEL_OBJ(g_selectAmountHintbox)
     GUI_DEL_OBJ(g_passphraseLearnMoreCont)
+    printf("%s %d..\n", __func__, __LINE__);
     GuiFpVerifyDestruct();
-    // if (g_recoveryMkb->cont != NULL) {
-    //     GUI_DEL_OBJ(g_recoveryMkb->cont)
-    // }
+    printf("%s %d..\n", __func__, __LINE__);
     GuiWalletSeedCheckClearObject();
     GuiWalletSettingDeinit();
+    printf("%s %d..\n", __func__, __LINE__);
     CloseToTargetTileView(g_deviceSetTileView.currentTile, DEVICE_SETTING);
-    lv_obj_del(g_deviceSetTileView.tileView);
-    lv_obj_del(g_deviceSetTileView.cont);
+    printf("%s %d..\n", __func__, __LINE__);
     CLEAR_OBJECT(g_deviceSetTileView);
+    printf("%s %d..\n", __func__, __LINE__);
     if (GuiQRHintBoxIsActive()) {
         GuiQRHintBoxRemove();
     }

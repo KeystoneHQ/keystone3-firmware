@@ -995,11 +995,11 @@ static void ModelVerifyPassSuccess(uint16_t *param)
             SecretCacheSetPassphrase("");
         }
         ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
-        #ifdef BTC_ONLY
+#ifdef BTC_ONLY
         if (strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) == 0) {
             AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), false);
         }
-        #endif
+#endif
         SetPageLockScreen(true);
         if (ret == SUCCESS_CODE) {
             GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);

@@ -296,6 +296,7 @@ void DeleteMultisigWallet(void)
 static void UpdateCurrentWalletState(void)
 {
     lv_obj_t *label = lv_obj_get_child(g_multisigItem.setDefaultBtn, 1);
+    GuiApiEmitSignal(SIG_STATUS_BAR_TEST_NET, NULL, 0);
     if (GetCurrentWalletIndex() == g_walletItem->order) {
         lv_obj_clear_flag(g_multisigItem.deleteBtn, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_clear_flag(g_multisigItem.setDefaultBtn, LV_OBJ_FLAG_CLICKABLE);

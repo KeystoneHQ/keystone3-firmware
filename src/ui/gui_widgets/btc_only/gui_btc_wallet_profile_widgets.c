@@ -85,7 +85,9 @@ void GuiBtcWalletProfileRefresh(void)
             lv_obj_clear_flag(g_setDefaultBtn, LV_OBJ_FLAG_CLICKABLE);
             lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
             lv_label_set_text(label, _("wallet_profile_current_default_desc"));
+            lv_obj_clear_flag(g_networkBtn, LV_OBJ_FLAG_HIDDEN);
         } else {
+            lv_obj_add_flag(g_networkBtn, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(g_setDefaultBtn, LV_OBJ_FLAG_CLICKABLE);
             lv_obj_set_style_text_opa(label, LV_OPA_100, LV_PART_MAIN);
             lv_label_set_text(label, _("manage_multi_wallet_set_default"));
@@ -242,6 +244,7 @@ static void SetDefaultSingleWalletHandler(lv_event_t *e)
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
         lv_label_set_text(label, _("wallet_profile_current_default_desc"));
         GuiResetCurrentUtxoAddressIndex(GetCurrentAccountIndex());
+        GuiApiEmitSignal(SIG_STATUS_BAR_TEST_NET, NULL, 0);
     }
 }
 

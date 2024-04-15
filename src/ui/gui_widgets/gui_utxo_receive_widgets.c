@@ -1037,8 +1037,7 @@ static void RefreshQrCode(void)
     if (GetCurrentWalletIndex() == SINGLE_WALLET) {
         lv_label_set_text(g_utxoReceiveWidgets.pathLabel, addressDataItem.path);
         lv_obj_align_to(g_utxoReceiveWidgets.pathLabel, g_utxoReceiveWidgets.addressCountLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
-    }
-    else {
+    } else {
         lv_obj_align(g_utxoReceiveWidgets.addressCountLabel, LV_ALIGN_TOP_LEFT, 36, 480);
     }
 #else

@@ -20,6 +20,7 @@
 #include "account_manager.h"
 #include "log_print.h"
 #include "gui_btc_home_widgets.h"
+#include "gui_multisig_read_sdcard_widgets.h"
 
 static lv_obj_t *g_manageWalletLabel = NULL;
 static lv_obj_t *g_homeWalletCardCont = NULL;
@@ -33,8 +34,7 @@ static lv_obj_t *g_twoKeyImg = NULL;
 static lv_timer_t *g_countDownTimer = NULL; // count down timer
 
 static WalletState_t g_walletState[] = {
-    {HOME_WALLET_CARD_BTC, false, "BTC", true, false, SINGLE_WALLET}
-};
+    {HOME_WALLET_CARD_BTC, false, "BTC", true, false, SINGLE_WALLET}};
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 
 static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
@@ -90,7 +90,8 @@ void ReturnManageWalletHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         UpdateManageWalletState(false);
         GUI_DEL_OBJ(g_manageCont);
         GuiEmitSignal(GUI_EVENT_REFRESH, NULL, 0);
@@ -161,7 +162,8 @@ static void RcvHandler(lv_event_t *e)
 {
     static HOME_WALLET_CARD_ENUM coin;
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         printf("rcv handler\n");
         coin = HOME_WALLET_CARD_BTC;
         ShowWallPaper(false);
@@ -173,9 +175,11 @@ void ScanQrCodeHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         g_isManageClick = false;
-        if (g_countDownTimer != NULL) {
+        if (g_countDownTimer != NULL)
+        {
             lv_timer_del(g_countDownTimer);
             g_countDownTimer = NULL;
         }
@@ -188,7 +192,8 @@ void ConfirmManageAssetsHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         UpdateManageWalletState(true);
         GUI_DEL_OBJ(g_manageCont)
         GuiHomeRefresh();
@@ -199,7 +204,8 @@ static void OpenMoreViewHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
         g_moreHintbox = NULL;
         ShowWallPaper(false);
@@ -207,11 +213,59 @@ static void OpenMoreViewHandler(lv_event_t *e)
     }
 }
 
+static void GuiOpenSignBySDCardHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED)
+    {
+        ShowWallPaper(false);
+        if (SdCardInsert())
+        {
+            static uint8_t fileFilterType = ONLY_PSBT;
+            GuiFrameOpenViewWithParam(&g_multisigReadSdcardView, &fileFilterType, sizeof(fileFilterType));
+        }
+        else
+        {
+            g_moreHintbox = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_moreHintbox, NULL);
+        }
+    }
+}
+
+static void GuiMoreHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (GetCurrentWalletIndex() != SINGLE_WALLET)
+    {
+        MoreInfoTable_t moreInfoTable[] = {
+            {.name = _("home_more_connect_wallet"), .src = &imgConnect, .callBack = OpenMoreViewHandler, &g_connectWalletView},
+            {.name = _("home_more_sign_by_sdcard"), .src = &imgSdCardColor, .callBack = GuiOpenSignBySDCardHandler, NULL},
+            {.name = _("home_more_device_setting"), .src = &imgSettings, .callBack = OpenMoreViewHandler, &g_settingView},
+        };
+        if (code == LV_EVENT_CLICKED)
+        {
+            g_moreHintbox = GuiCreateMoreInfoHintBox(NULL, NULL, moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true);
+        }
+    }
+    else
+    {
+        MoreInfoTable_t moreInfoTable[] = {
+            {.name = _("home_more_connect_wallet"), .src = &imgConnect, .callBack = OpenMoreViewHandler, &g_connectWalletView},
+            {.name = _("home_more_device_setting"), .src = &imgSettings, .callBack = OpenMoreViewHandler, &g_settingView},
+        };
+        if (code == LV_EVENT_CLICKED)
+        {
+            g_moreHintbox = GuiCreateMoreInfoHintBox(NULL, NULL, moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true);
+        }
+    }
+}
+
 static void OpenMoreSettingHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         g_moreHintbox = GuiCreateHintBox(lv_scr_act(), 480, 228, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_moreHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_moreHintbox);
         lv_obj_t *label = GuiCreateTextLabel(g_moreHintbox, _("home_more_connect_wallet"));
@@ -247,7 +301,8 @@ static void OpenWalletProfileHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED)
+    {
         printf("OpenWalletProfileHandler\n");
         ShowWallPaper(false);
         GuiFrameOpenView(&g_btcBtcWalletProfileView);
@@ -273,7 +328,7 @@ void GuiHomeAreaInit(void)
 #endif
 
     lv_obj_t *walletCardCont = GuiCreateContainerWithParent(g_homeViewCont, lv_obj_get_width(lv_scr_act()),
-                               lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
+                                                            lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_align(walletCardCont, LV_ALIGN_DEFAULT);
     lv_obj_add_flag(walletCardCont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_scrollbar_mode(walletCardCont, LV_SCROLLBAR_MODE_OFF);
@@ -285,7 +340,8 @@ void GuiHomeAreaInit(void)
 
 void GuiHomeDisActive(void)
 {
-    if (g_homeWalletCardCont != NULL) {
+    if (g_homeWalletCardCont != NULL)
+    {
         lv_obj_add_flag(g_homeWalletCardCont, LV_OBJ_FLAG_HIDDEN);
     }
 }
@@ -309,7 +365,8 @@ void GuiHomeRefresh(void)
 #ifdef RUST_MEMORY_DEBUG
     PrintRustMemoryStatus();
 #endif
-    if (GetCurrentAccountIndex() > 2) {
+    if (GetCurrentAccountIndex() > 2)
+    {
         return;
     }
     printf("GuiHomeRefresh\n");
@@ -318,15 +375,19 @@ void GuiHomeRefresh(void)
     GuiSetSetupPhase(SETUP_PAHSE_DONE);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_MANAGE, OpenWalletProfileHandler, NULL);
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
-    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreSettingHandler, NULL);
-    if (g_homeWalletCardCont != NULL) {
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, GuiMoreHandler, NULL);
+    if (g_homeWalletCardCont != NULL)
+    {
         lv_obj_clear_flag(g_homeWalletCardCont, LV_OBJ_FLAG_HIDDEN);
     }
     GUI_DEL_OBJ(g_moreHintbox)
     AccountPublicHomeCoinGet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
-    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+    if (GetCurrentWalletIndex() != SINGLE_WALLET)
+    {
         lv_img_set_src(g_twoKeyImg, &imgTwoKey);
-    } else {
+    }
+    else
+    {
         lv_img_set_src(g_twoKeyImg, &imgArrowRight);
     }
 }
@@ -357,8 +418,10 @@ void SetCurrentWalletIndex(CURRENT_WALLET_INDEX_ENUM walletIndex)
 
 const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)
 {
-    for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-        if (g_coinCardArray[i].index == index) {
+    for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++)
+    {
+        if (g_coinCardArray[i].index == index)
+        {
             return &g_coinCardArray[i];
         }
     }
@@ -367,7 +430,8 @@ const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)
 
 void GuiHomeDeInit(void)
 {
-    if (g_pageWidget != NULL) {
+    if (g_pageWidget != NULL)
+    {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }

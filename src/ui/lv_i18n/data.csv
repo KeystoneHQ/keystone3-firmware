@@ -361,6 +361,7 @@ home,home_more_connect_wallet,Connect Software Wallet,Программные к�
 ,home_upgrade_hint,Please upgrade to the latest version for access to expanded crypto compatibility.,"Обновитесь до последней версии, чтобы расширить возможности устройства.",확장된 암호 호환성에 액세스하려면 최신 버전으로 업그레이드하십시오.,请升级到最新版本，以访问更多加密货币。,,,,
 ,home_manage_assets,Manage Assets,Управление активами,자산관리,管理资产,已改,,,
 ,home_more_device_setting,Device Settings,Настройки устройства,장치 설정,设备设置,,,,
+,home_more_sign_by_sdcard,Sign from Micro SD card,,,,,,,
 Receive,receive_btc_alert_title,Attention,Внимание,주목,注意,,,,
 ,receive_btc_alert_desc,This address is exclusively for BTC transactions only. Sending other types of digital assets to this address will result in their loss.,"Этот адрес предназначен только для Bitcoin, другие цифровые активы, отправленные на этот адрес, будут потеряны.",이 주소는 BTC 거래만을 위한 것이다. 이 주소로 다른 종류의 디지털 자산을 전송하면 손실이 발생한다.,此地址仅用于BTC交易。将其他类型的数字资产发送到此地址将会导致资产丢失。,,,,
 ,receive_btc_alert_button,Got It,Понятно,알겠습니다.,知道了,,,,

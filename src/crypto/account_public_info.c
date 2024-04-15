@@ -235,6 +235,7 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
         size = strlen(retStr);
         Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
         Gd25FlashWriteBuffer(addr + 4, (uint8_t *)retStr, size);
+        EXT_FREE(retStr);
     }
 
     jsonString = SRAM_MALLOC(size + 1);
@@ -859,6 +860,7 @@ void SetFirstReceive(const char* chainName, bool isFirst)
     size = strlen(jsonString);
     Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
     Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
+    EXT_FREE(jsonString);
 }
 
 #ifdef BTC_ONLY
@@ -1015,20 +1017,25 @@ void appendWalletItemToJson(MultiSigWalletItem_t *item, void *root)
 static uint32_t MultiSigWalletSaveDefault(uint32_t addr, uint8_t accountIndex)
 {
     uint32_t eraseAddr, size;
+    char *retStr;
     uint8_t hash[32];
     for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_MULTI_SIG_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
         Gd25FlashSectorErase(eraseAddr);
     }
 
-    cJSON *rootJson;
-
-    rootJson = cJSON_CreateObject();
+    cJSON *rootJson = cJSON_CreateObject();
+    assert(rootJson != NULL);
     cJSON_AddItemToObject(rootJson, "version", cJSON_CreateString(g_multiSigInfoVersion));
-    cJSON_AddItemToObject(rootJson, "multi_sig_wallet_list", cJSON_CreateArray());
-
-    char *retStr;
     retStr = cJSON_Print(rootJson);
-    printf("%s MultiSigWalletGet need set data is  %s\r\n", __func__, retStr);
+    printf("%d %s %s\r\n", __func__, __LINE__, retStr);
+    EXT_FREE(retStr);
+    cJSON_AddItemToObject(rootJson, "multi_sig_wallet_list", cJSON_CreateArray());
+    retStr = cJSON_Print(rootJson);
+    printf("%d %s %s\r\n", __func__, __LINE__, retStr);
+    EXT_FREE(retStr);
+
+    retStr = cJSON_Print(rootJson);
+    printf("%d %s %s\r\n", __func__, __LINE__, retStr);
 
     cJSON_Delete(rootJson);
     size = strlen(retStr);

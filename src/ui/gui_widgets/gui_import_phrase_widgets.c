@@ -183,14 +183,22 @@ void GuiImportPhraseRefresh(void)
 void GuiImportPhraseDeInit(void)
 {
     GuiMnemonicHintboxClear();
+    printf("%s %d..\n", __func__, __LINE__);
     GuiClearKeyBoard(g_importPhraseKb);
+    printf("%s %d..\n", __func__, __LINE__);
     GuiClearMnemonicKeyBoard(g_importMkb);
+    printf("%s %d..\n", __func__, __LINE__);
     lv_obj_del(g_importPhraseKbCont);
+    printf("%s %d..\n", __func__, __LINE__);
     lv_obj_del(g_buttonCont);
+    printf("%s %d..\n", __func__, __LINE__);
     lv_obj_del(g_importSinglePhraseTileView.cont);
+    printf("%s %d..\n", __func__, __LINE__);
     CLEAR_OBJECT(g_importMkb);
+    printf("%s %d..\n", __func__, __LINE__);
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
+    printf("%s %d..\n", __func__, __LINE__);
 }

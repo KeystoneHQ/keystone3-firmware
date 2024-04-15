@@ -597,7 +597,6 @@ void GuiCreateWalletDeInit(void)
         g_repeatPassCode = NULL;
     }
 
-    GuiDeleteKeyBoard(g_nameWalletKb);
     lv_obj_del(g_createWalletTileView.tileView);
     lv_obj_del(g_createWalletTileView.cont);
     g_createWalletTileView.currentTile = 0;

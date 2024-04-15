@@ -492,7 +492,9 @@ void GuiShowSolTxDetail(lv_obj_t *parent, void *totalData)
 
     lv_obj_t *label = lv_label_create(cont);
     cJSON *root = cJSON_Parse((const char *)txDetail);
-    lv_label_set_text(label, cJSON_Print(root));
+    char *retStr = cJSON_Print(root);
+    lv_label_set_text(label, retStr);
+    EXT_FREE(retStr);
     cJSON_Delete(root);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(label, 360);

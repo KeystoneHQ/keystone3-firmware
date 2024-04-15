@@ -81,6 +81,7 @@ void SendEApduResponseError(uint8_t cla, CommandType ins, uint16_t requestID, St
     result->commandType = ins;
     result->requestID = requestID;
     SendEApduResponse(result);
+    EXT_FREE(json_str);
     SRAM_FREE(result);
 }
 

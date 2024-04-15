@@ -232,7 +232,7 @@ static void GuiContent(lv_obj_t *parent)
 
     g_qrCodeCont = GuiCreateContainerWithParent(cont, 336, 336);
     lv_obj_align(g_qrCodeCont, LV_ALIGN_TOP_LEFT, 36, 36);
-    GuiAnimatingQRCodeInitWithCustomSize(g_qrCodeCont, GuiGenerateUR, true, 336, 336, NULL);
+    GuiAnimatingQRCodeInitWithCustomSize(g_qrCodeCont, GuiGenerateUR, false, 336, 336, NULL);
 
     text = GuiCreateIllustrateLabel(cont, convertFormatLabel(g_multisigWalletItem->format));
     lv_obj_align(text, LV_ALIGN_TOP_LEFT, 36, 12 + 384);

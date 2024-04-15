@@ -108,7 +108,7 @@ int32_t StorageGetDataSize(uint32_t addr, uint8_t *buffer, uint32_t size)
 
 int32_t StorageSetDataSize(uint32_t addr, uint8_t *buffer, uint32_t size)
 {
-    return 0;
+    return size;
 }
 
 int32_t StorageGetData(uint32_t addr, uint8_t *buffer, uint32_t size)

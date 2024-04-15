@@ -68,32 +68,19 @@ void GuiSystemSettingWebAuthHandler(lv_event_t *e)
 void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
 {
     lv_obj_t *label, *imgArrow, *button;
+    uint16_t offset = 0;
 
-    label = GuiCreateTextLabel(parent, _("language_title"));
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    GuiButton_t table[] = {
-        {
-            .obj = label,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {36, 24},
-        },
-        {
-            .obj = imgArrow,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {396, 24},
-        },
-    };
-    button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                             OpenLanguageSelectHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 0);
+#ifndef BTC_ONLY
+    button = GuiCreateSelectButton(parent, _("language_title"), &imgArrowRight,
+                       OpenLanguageSelectHandler, NULL, false);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
+    offset += 100;
+#endif
 
-    label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_title"));
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    table[0].obj = label,
-            table[1].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                             DispalyHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 109);
+    button = GuiCreateSelectButton(parent, _("system_settings_screen_lock_title"), &imgArrowRight,
+                       DispalyHandler, NULL, false);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
+    offset += 100;
 
     label = GuiCreateTextLabel(parent, _("system_settings_vabiration"));
     vibrationSw = lv_switch_create(parent);
@@ -107,42 +94,26 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
         lv_obj_clear_state(vibrationSw, LV_STATE_CHECKED);
     }
     GuiButton_t tableSwitch[] = {
-        {
-            .obj = label,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {36, 24},
-        },
-        {
-            .obj = vibrationSw,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {372, 24},
-        },
+        {.obj = label, .align = LV_ALIGN_DEFAULT, .position = {24, 24},},
+        {.obj = vibrationSw, .align = LV_ALIGN_DEFAULT, .position = {372, 24},},
     };
     button = GuiCreateButton(parent, 456, 84, tableSwitch, NUMBER_OF_ARRAYS(tableSwitch),
                              VibrationHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 205);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
+    offset += 100;
 
-    label = GuiCreateTextLabel(parent, _("verify_title"));
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    table[0].obj = label;
-    table[1].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                             GuiSystemSettingWebAuthHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 301);
+    button = GuiCreateSelectButton(parent, _("verify_title"), &imgArrowRight,
+                       GuiSystemSettingWebAuthHandler, NULL, false);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
+    offset += 100;
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 397);
 
-    label = GuiCreateTextLabel(parent, _("wipe_device"));
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    table[0].obj = label;
-    table[1].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                             GuiSystemSettingWipeDeivceHandler, NULL);
+    button = GuiCreateSelectButton(parent, _("wipe_device"), &imgArrowRight,
+                       GuiSystemSettingWipeDeivceHandler, NULL, false);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
     lv_obj_set_style_text_color(lv_obj_get_child(button, 0), lv_color_hex(0xf55831), LV_PART_MAIN);
-
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 397);
-
 }
 
 void GuiSystemSettingNVSBarInit()

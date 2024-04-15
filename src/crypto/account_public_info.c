@@ -1088,7 +1088,7 @@ void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager)
     manager->traverseList(appendWalletItemToJson, (void*)walletList);
     cJSON_AddItemToObject(rootJson, "multi_sig_wallet_list", walletList);
     char *retStr;
-    retStr = cJSON_Print(rootJson);
+    retStr = cJSON_PrintBuffered(rootJson, 1024 * 8, 0);
     size = strlen(retStr);
     printf("size = %d multi sig wallet save data  is %s\r\n", size, retStr);
     assert(size < SPI_FLASH_SIZE_USER1_MULTI_SIG_DATA - 4);

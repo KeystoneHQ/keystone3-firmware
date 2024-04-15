@@ -74,7 +74,7 @@ static void CloseWaringAndCurrentPageHandler(lv_event_t *e)
 static void CreateCheckTheWalletInfoNotice(lv_obj_t *parent)
 {
     g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgObserve, _("manage_import_wallet_notice_title"),
-                     _("manage_import_wallet_notice_desc1"), _("manage_import_wallet_notice_desc1"), _("OK"), ORANGE_COLOR);
+                     _("manage_import_wallet_notice_desc1"), _("manage_import_wallet_notice_desc2"), _("OK"), ORANGE_COLOR);
     lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 }
 

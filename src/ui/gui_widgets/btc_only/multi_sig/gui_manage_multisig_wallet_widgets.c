@@ -151,18 +151,20 @@ void GuiManageMultisigWalletRefresh(void)
     if (g_manageMultisig.currentTile == MULTI_MULTI_SIG_DETAIL) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("manage_multi_wallet_detail_title"));
     } else if (g_manageMultisig.currentTile == MULTI_MULTI_SIG_CO_SIGNERS_DETAIL) {
-        snprintf_s(tempBuff, sizeof(tempBuff), "%s", g_multiSigWallet->policy);
+        snprintf_s(tempBuff, sizeof(tempBuff), "%s %s", g_multiSigWallet->policy, _("create_multi_wallet_co_sign"));
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, tempBuff);
     }
 }
 
 static void CreateMultiSigWalletDetailWidget(lv_obj_t *parent)
 {
+    char tempBuffer[BUFFER_SIZE_32];
     lv_obj_t *button = GuiCreateSettingItemButton(parent, 456, g_multiSigWallet->name, NULL,
                        &imgWallet2, NULL, UnHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 0);
 
-    button = GuiCreateSettingItemButton(parent, 456, g_multiSigWallet->policy, NULL,
+    snprintf_s(tempBuffer, sizeof(tempBuffer), "%s %s", g_multiSigWallet->policy, _("create_multi_wallet_co_sign"));
+    button = GuiCreateSettingItemButton(parent, 456, tempBuffer, NULL,
                                         &imgTwoKey, &imgArrowRight, NextTileHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 96);
 

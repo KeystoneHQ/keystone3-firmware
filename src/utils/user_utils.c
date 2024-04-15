@@ -259,7 +259,6 @@ void CutAndFormatFileName(char *out, uint32_t maxLen, const char *fileName, cons
         char fname[BUFFER_SIZE_128] = {0};
         strncpy_s(fname, BUFFER_SIZE_128, fileName, strrchr(fileName, '.') - fileName);
         CutAndFormatString(out, maxLen, fname, 16);
-        printf("out = %s\n", out);
         strcat_s(out, maxLen, contain);
     } else {
         strcpy_s(out, maxLen, fileName);

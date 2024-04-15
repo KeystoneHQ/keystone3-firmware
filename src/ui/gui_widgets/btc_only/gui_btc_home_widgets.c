@@ -228,8 +228,8 @@ static void GuiMoreHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         MoreInfoTable_t moreInfoTable[] = {
-            {.name = _("home_more_connect_wallet"), .src = &imgConnect, .callBack = OpenMoreViewHandler, &g_connectWalletView},
             {.name = _("home_more_sign_by_sdcard"), .src = &imgSdCardColor, .callBack = GuiOpenSignBySDCardHandler, NULL},
+            {.name = _("home_more_connect_wallet"), .src = &imgConnect, .callBack = OpenMoreViewHandler, &g_connectWalletView},
             {.name = _("home_more_device_setting"), .src = &imgSettings, .callBack = OpenMoreViewHandler, &g_settingView},
         };
         if (code == LV_EVENT_CLICKED) {

@@ -166,6 +166,7 @@ LV_IMG_DECLARE(coinLtc);
 LV_IMG_DECLARE(coinBch);
 LV_IMG_DECLARE(coinDash);
 LV_IMG_DECLARE(coinAtom);
+LV_IMG_DECLARE(coinAr);
 LV_IMG_DECLARE(coinOsmo);
 LV_IMG_DECLARE(coinScrt);
 LV_IMG_DECLARE(coinAkt);

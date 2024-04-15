@@ -180,7 +180,7 @@ static const lv_img_dsc_t *g_keplrCoinArray[8] = {
 };
 
 static const lv_img_dsc_t *g_arconnectCoinArray[1] = {
-    &coinBtc,
+    &coinAr,
 };
 
 static const lv_img_dsc_t *g_fewchaCoinArray[FEWCHA_COINS_BUTT] = {

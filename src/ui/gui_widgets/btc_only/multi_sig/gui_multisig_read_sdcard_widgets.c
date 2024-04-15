@@ -159,6 +159,9 @@ void ListMicroCardMultisigConfigFile(void)
         lv_obj_t *btn = GuiCreateSelectButton(g_pageWidget->contentZone, fileName, &imgArrowRight, GuiSelectFileHandler, g_fileList[i], false);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 84 * i);
     }
+    lv_obj_t *label = GuiCreateNoticeLabel(g_pageWidget->contentZone, _("import_multi_wallet_file_limit_desc"));
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 20, 16);
+    lv_obj_set_style_pad_bottom(label, 16, LV_PART_MAIN);
 }
 
 void GuiPSBtTransactionCheckPass(void)

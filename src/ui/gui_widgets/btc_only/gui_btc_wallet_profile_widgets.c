@@ -250,13 +250,20 @@ static void ManageMultiSigWalletHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
+        if (CHECK_BATTERY_LOW_POWER()) {
+            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeWindow, NULL);
+        } else {
+            GuiFrameOpenView(&g_multisigSelectImportMethodView);
+        }
+#if 0 // hide the create multisig entrance
         MoreInfoTable_t moreInfoTable[] = {
-            // {.name = _("wallet_profile_create_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_createMultisigWalletView},
+            {.name = _("wallet_profile_create_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_createMultisigWalletView},
             {.name = _("wallet_profile_import_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_multisigSelectImportMethodView},
         };
         g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("wallet_profile_add_multi_wallet"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false);
         lv_obj_t *closeBtn = GuiCreateImgButton(g_noticeWindow,  &imgClose, 64, CloseHintBoxHandler, &g_noticeWindow);
         GuiAlignToPrevObj(closeBtn, LV_ALIGN_LEFT_MID, 358, 0);
+#endif
     }
 }
 

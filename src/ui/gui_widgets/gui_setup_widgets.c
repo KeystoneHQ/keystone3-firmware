@@ -56,6 +56,11 @@ static void DestroyTimer(void);
 
 SETUP_PHASE_ENUM lastShutDownPage;
 static PageWidget_t *g_pageWidget;
+#ifdef BTC_ONLY
+#define SUPPORT_WALLET_INDEX SETUP_ENGLISH
+#else
+#define SUPPORT_WALLET_INDEX SETUP_RUSSIAN
+#endif
 
 static void GuiWelcomeWidget(lv_obj_t *parent)
 {
@@ -84,7 +89,7 @@ static void SelectLanguageHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         int newCheckIndex = 0;
         lv_obj_t *newCheckBox = lv_event_get_user_data(e);
-        for (int i = SETUP_ENGLISH; i <= SETUP_RUSSIAN; i++) {
+        for (int i = SETUP_ENGLISH; i <= SUPPORT_WALLET_INDEX; i++) {
             if (newCheckBox == g_languageCheck[i]) {
                 newCheckIndex = i;
                 lv_obj_add_state(g_languageCheck[i], LV_STATE_CHECKED);
@@ -114,8 +119,7 @@ void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
     uint8_t lang = LanguageGetIndex();
     static lv_point_t linePoints[2] = {{36, 0}, {444, 0}};
     lv_obj_t *label;
-    for (int i = SETUP_ENGLISH; i < SETUP_ENGLISH + 2; i++) {
-        // for (int i = SETUP_ENGLISH; i < SETUP_LANGUAGE_BUTT; i++) {
+    for (int i = SETUP_ENGLISH; i <= SUPPORT_WALLET_INDEX; i++) {
         lv_obj_t *checkBox = GuiCreateSingleCheckBox(parent, "");
         g_languageCheck[i] = checkBox;
         if (i == SETUP_CHINESE) {

@@ -190,11 +190,12 @@ void GuiMultisigWalletExportWidgetsInit(char *verifyCode, uint16_t len)
     }
     GuiContent(g_pageWidget->contentZone);
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
-    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SDCARD, GuiSDCardHandler, NULL);
     if (g_isExportMultiWallet) {
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("manage_multi_wallet_export_title"));
     } else {
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("import_multi_wallet_success_title"));
     }
 }
@@ -287,6 +288,7 @@ static void SetEgContent(lv_obj_t *label)
 
 void GuiMultisigWalletExportWidgetsDeInit()
 {
+    GuiAnimatingQRCodeDestroyTimer();
     GUI_DEL_OBJ(g_noticeWindow);
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
@@ -297,7 +299,6 @@ void GuiMultisigWalletExportWidgetsDeInit()
         SRAM_FREE(g_filename);
         g_filename = NULL;
     }
-    GuiAnimatingQRCodeDestroyTimer();
 }
 
 void GuiMultisigWalletExportWidgetsRefresh()
@@ -337,7 +338,6 @@ static void ImportMultisigGoToHomeViewHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         g_isExportMultiWallet = false;
-        GuiAnimatingQRCodeDestroyTimer();
         GuiCloseToTargetView(&g_homeView);
     }
 }

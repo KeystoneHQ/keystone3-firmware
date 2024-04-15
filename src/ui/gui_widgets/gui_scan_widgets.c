@@ -24,6 +24,7 @@
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
 #include "account_manager.h"
+#include "gui_btc.h"
 #ifdef BTC_ONLY
 #include "gui_multisig_read_sdcard_widgets.h"
 #endif
@@ -177,6 +178,9 @@ void GuiTransactionCheckFailed(PtrT_TransactionCheckResult result)
         break;
     }
     GuiModelTransactionCheckResultClear();
+#if BTC_ONLY
+    FreePsbtUxtoMemory();
+#endif
 }
 
 void GuiScanSetRestartFlag(bool flag)

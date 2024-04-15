@@ -17,6 +17,6 @@ void CheckDeviceLockStatusService(EAPDURequestPayload_t payload)
     result->requestID = payload.requestID;
 
     SendEApduResponse(result);
-
+    EXT_FREE(json_str);
     SRAM_FREE(result);
 }

@@ -251,7 +251,7 @@ static void ManageMultiSigWalletHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         MoreInfoTable_t moreInfoTable[] = {
-            {.name = _("wallet_profile_create_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_createMultisigWalletView},
+            // {.name = _("wallet_profile_create_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_createMultisigWalletView},
             {.name = _("wallet_profile_import_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_multisigSelectImportMethodView},
         };
         g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("wallet_profile_add_multi_wallet"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false);

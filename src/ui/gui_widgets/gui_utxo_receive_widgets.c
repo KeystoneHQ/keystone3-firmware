@@ -1031,10 +1031,20 @@ static void RefreshQrCode(void)
     }
     lv_label_set_text(g_utxoReceiveWidgets.addressLabel, addressDataItem.address);
     lv_label_set_text_fmt(g_utxoReceiveWidgets.addressCountLabel, "%s-%u", _("receive_ada_base_address"), addressDataItem.index);
-    lv_label_set_text(g_utxoReceiveWidgets.pathLabel, addressDataItem.path);
-
     lv_obj_align_to(g_utxoReceiveWidgets.addressCountLabel, g_utxoReceiveWidgets.addressLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+
+#if BTC_ONLY
+    if (GetCurrentWalletIndex() == SINGLE_WALLET) {
+        lv_label_set_text(g_utxoReceiveWidgets.pathLabel, addressDataItem.path);
+        lv_obj_align_to(g_utxoReceiveWidgets.pathLabel, g_utxoReceiveWidgets.addressCountLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    }
+    else {
+        lv_obj_align(g_utxoReceiveWidgets.addressCountLabel, LV_ALIGN_TOP_LEFT, 36, 480);
+    }
+#else
+    lv_label_set_text(g_utxoReceiveWidgets.pathLabel, addressDataItem.path);
     lv_obj_align_to(g_utxoReceiveWidgets.pathLabel, g_utxoReceiveWidgets.addressCountLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+#endif
 }
 
 static void RefreshSwitchAccount(void)

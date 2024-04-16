@@ -302,8 +302,6 @@ bool VerifyMultisigWalletDataHash(uint8_t index, uint8_t *info)
             SetMultisigDataHash(index, data);
             return true;
         } else {
-            PrintArray("set multi hash", info, 32);
-            PrintArray("get multi hash", data, 32);
             return false;
         }
     }

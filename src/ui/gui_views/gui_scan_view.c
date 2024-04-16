@@ -10,7 +10,7 @@ int32_t GuiScanViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
 {
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        GuiScanInit();
+        GuiScanInit(param, usLen);
         break;
     case GUI_EVENT_OBJ_DEINIT:
         GuiScanDeInit();

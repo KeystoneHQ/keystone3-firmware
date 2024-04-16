@@ -116,14 +116,17 @@ void ListMicroCardMultisigConfigFile(void)
     lv_obj_clean(parent);
     uint32_t number = 0;
     char *suffix = NULL;
+    char *notice = NULL;
     switch (g_fileFilterType) {
     case ALL:
         break;
     case ONLY_TXT:
         suffix = ".txt";
+        notice = _("import_multi_wallet_info_no_config_file");
         break;
     case ONLY_PSBT:
         suffix = ".psbt";
+        notice = _("multi_wallet_no_psbt_file");
         break;
     case ONLY_JSON:
         suffix = ".json";
@@ -140,8 +143,12 @@ void ListMicroCardMultisigConfigFile(void)
     if (number == 0) {
         lv_obj_t *img = GuiCreateImg(parent, &imgFile);
         lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 128);
-        lv_obj_t *label = GuiCreateTextLabel(parent, _("import_multi_wallet_info_no_config_file"));
+        lv_obj_t *label = GuiCreateTextLabel(parent, notice);
         lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 232);
+        label = GuiCreateNoticeLabel(parent, _("multi_wallet_no_file_notice"));
+        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 284);
+        lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+        return;
     }
 
     for (int i = 0; i < number; i++) {

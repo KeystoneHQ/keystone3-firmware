@@ -122,11 +122,11 @@ void ListMicroCardMultisigConfigFile(void)
         break;
     case ONLY_TXT:
         suffix = ".txt";
-        notice = _("import_multi_wallet_info_no_config_file");
+        notice = (char *)_("import_multi_wallet_info_no_config_file");
         break;
     case ONLY_PSBT:
         suffix = ".psbt";
-        notice = _("multi_wallet_no_psbt_file");
+        notice = (char *)_("multi_wallet_no_psbt_file");
         break;
     case ONLY_JSON:
         suffix = ".json";

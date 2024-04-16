@@ -55,7 +55,6 @@ typedef struct {
 
 static bool GetPublicKeyFromJsonString(const char *string);
 static char *GetJsonStringFromPublicKey(void);
-static void WriteDebugInfoToMicroCard(char *debugInfo, uint32_t len);
 
 static void FreePublicKeyRam(void);
 static void PrintInfo(void);
@@ -229,7 +228,7 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
 #endif
             cJSON_AddItemToObject(rootJson, walletList[i].name, jsonItem);
         }
-        retStr = cJSON_Print(rootJson);
+        retStr = cJSON_PrintBuffered(rootJson, SPI_FLASH_SIZE_USER1_MUTABLE_DATA - 4, false);
         cJSON_Delete(rootJson);
         RemoveFormatChar(retStr);
         size = strlen(retStr);
@@ -321,7 +320,7 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
         for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_MUTABLE_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
             Gd25FlashSectorErase(eraseAddr);
         }
-        jsonString = cJSON_Print(rootJson);
+        jsonString = cJSON_PrintBuffered(rootJson, SPI_FLASH_SIZE_USER1_MUTABLE_DATA - 4, false);
         RemoveFormatChar(jsonString);
         size = strlen(jsonString);
         Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
@@ -395,7 +394,6 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
     bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
     int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
     do {
-
         GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
         char* icarusMasterKey = NULL;
         printf("regenerate pub key!\r\n");
@@ -785,7 +783,7 @@ static char *GetJsonStringFromPublicKey(void)
     }
     cJSON_AddItemToObject(rootJson, "version", cJSON_CreateString(g_xpubInfoVersion));
     cJSON_AddItemToObject(rootJson, "key", chainsJson);
-    retStr = cJSON_Print(rootJson);
+    retStr = cJSON_PrintBuffered(rootJson, SPI_FLASH_SIZE_USER1_DATA - 4, 0);
     RemoveFormatChar(retStr);
     cJSON_Delete(rootJson);
     return retStr;
@@ -874,7 +872,7 @@ void SetFirstReceive(const char* chainName, bool isFirst)
     for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_MUTABLE_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
         Gd25FlashSectorErase(eraseAddr);
     }
-    jsonString = cJSON_Print(rootJson);
+    jsonString = cJSON_PrintBuffered(rootJson, SPI_FLASH_SIZE_USER1_MUTABLE_DATA - 4, false);
     cJSON_Delete(rootJson);
     RemoveFormatChar(jsonString);
     size = strlen(jsonString);
@@ -907,7 +905,7 @@ void ExportMultiSigXpub(ChainType chainType)
     cJSON_AddItemToObject(rootJson, "xfp", cJSON_CreateString(mfpHexStr));
     cJSON_AddItemToObject(rootJson, "xpub", cJSON_CreateString(xpub));
     cJSON_AddItemToObject(rootJson, "path", cJSON_CreateString(path));
-    jsonString = cJSON_Print(rootJson);
+    jsonString = cJSON_PrintBuffered(rootJson, 1024, false);
     RemoveFormatChar(jsonString);
 
     char exportFileName[32] = {0};
@@ -1046,16 +1044,8 @@ static uint32_t MultiSigWalletSaveDefault(uint32_t addr, uint8_t accountIndex)
     cJSON *rootJson = cJSON_CreateObject();
     assert(rootJson != NULL);
     cJSON_AddItemToObject(rootJson, "version", cJSON_CreateString(g_multiSigInfoVersion));
-    retStr = cJSON_Print(rootJson);
-    printf("%s %d %s\r\n", __func__, __LINE__, retStr);
-    EXT_FREE(retStr);
     cJSON_AddItemToObject(rootJson, "multi_sig_wallet_list", cJSON_CreateArray());
-    retStr = cJSON_Print(rootJson);
-    printf("%s %d %s\r\n", __func__, __LINE__, retStr);
-    EXT_FREE(retStr);
-
-    retStr = cJSON_Print(rootJson);
-    printf("%s %d %s\r\n", __func__, __LINE__, retStr);
+    retStr = cJSON_PrintBuffered(rootJson, SPI_FLASH_SIZE_USER1_MULTI_SIG_DATA - 4, false);
 
     cJSON_Delete(rootJson);
     size = strlen(retStr);
@@ -1121,7 +1111,7 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
     addr = SPI_FLASH_ADDR_USER1_MULTI_SIG_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
     printf("MultiSigWalletGet read addr is %x\r\n", addr);
     ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
-    ASSERT(ret == 4);
+    ASSERT(ret == 4); 
     printf("size = %d\r\n", size);
     if (size == 0xffffffff || size == 0) {
         size = MultiSigWalletSaveDefault(addr, accountIndex);
@@ -1137,15 +1127,8 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
 #ifndef COMPILE_SIMULATOR
     sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
     if (!VerifyMultisigWalletDataHash(accountIndex, hash)) {
-        char *debugInfo = EXT_MALLOC(0x3000);
-        uint32_t len = snprintf(debugInfo, 0x3000, "json : .%s.\n", jsonString);
-        len += snprintf(debugInfo + len, 0x3000 - len, "hash:\n");
-        for (int i = 0; i < 32; i++) {
-            len += snprintf(debugInfo + len, 0x3000 - len, "%02x", hash[i]);
-        }
-        WriteDebugInfoToMicroCard(debugInfo, len);
-        MultiSigWalletSaveDefault(addr, accountIndex);
         CLEAR_ARRAY(hash);
+        return ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH;
     } else {
         ret = SUCCESS_CODE;
     }
@@ -1196,11 +1179,4 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
     }
     cJSON_Delete(rootJson);
     return ret;
-}
-
-static void WriteDebugInfoToMicroCard(char *debugInfo, uint32_t len)
-{
-    char fileName[BUFFER_SIZE_64];
-    snprintf_s(fileName, BUFFER_SIZE_64, "1:debug_%d.txt", GetCurrentStampTime());
-    FatfsFileWrite(fileName, debugInfo, len);
 }

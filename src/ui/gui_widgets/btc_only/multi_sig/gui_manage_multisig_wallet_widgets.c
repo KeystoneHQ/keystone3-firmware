@@ -22,6 +22,7 @@
 #include "gui_manage_multisig_wallet_widgets.h"
 #include "gui_import_multisig_wallet_info_widgets.h"
 #include "gui_multisig_wallet_export_widgets.h"
+#include "gui_api.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #include "simulator_mock_define.h"

@@ -7,7 +7,10 @@ use alloc::string::ToString;
 use app_arweave::{generate_public_key_from_primes, generate_secret, aes256_encrypt, aes256_decrypt};
 use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
 use common_rust_c::structs::SimpleResponse;
+use common_rust_c::utils::convert_c_char;
 use common_rust_c::types::PtrBytes;
+use cty::c_char;
+use third_party::hex;
 use core::slice;
 
 fn generate_aes_key_iv(seed: &[u8]) -> ([u8; 32], [u8; 16]) {
@@ -50,6 +53,19 @@ pub extern "C" fn generate_arweave_public_key_from_primes(
 }
 
 #[no_mangle]
+pub extern "C" fn generate_rsa_public_key(
+    p: PtrBytes,
+    p_len: u32,
+    q: PtrBytes,
+    q_len: u32,
+) -> *mut SimpleResponse<c_char> {
+    let p = unsafe { slice::from_raw_parts(p, p_len as usize) };
+    let q = unsafe { slice::from_raw_parts(q, q_len as usize) };
+    let public = generate_public_key_from_primes(p, q).unwrap();
+    return SimpleResponse::success(convert_c_char(hex::encode(public))).simple_c_ptr();
+}
+
+#[no_mangle]
 pub extern "C" fn aes256_encrypt_primes(
     seed: PtrBytes,
     seed_len: u32,
@@ -87,7 +103,6 @@ pub extern "C" fn aes256_decrypt_primes(
 mod tests {
     use super::*;
     extern crate std;
-    use third_party::{bech32::primitives::encode, hex};
 
     #[test]
     fn test_generate_arweave_secret() {

@@ -225,14 +225,15 @@ UREncodeResult *GuiGetArConnectData(void)
 {
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
-    Rsa_primes_t *primes = FlashReadRsaPrimes();
-    if (primes == NULL) {
+    char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_AR);
+    if (arXpub == NULL || strlen(arXpub) != 1024) {
         GuiSetupArConnectWallet();
-        primes = FlashReadRsaPrimes();
+        AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), true);
+        arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_AR);
+        ClearSecretCache();
     }
-    ClearSecretCache();
-    ASSERT(primes != NULL);
-    g_urEncode = get_connect_arconnect_wallet_ur(mfp, sizeof(mfp), primes->p, 256, primes->q, 256);
+    ASSERT(arXpub != NULL);
+    g_urEncode = get_connect_arconnect_wallet_ur_from_xpub(mfp, sizeof(mfp), arXpub);
     printf("\ng_urEncode: %s\n", g_urEncode->data);
     CHECK_CHAIN_PRINT(g_urEncode);
     return g_urEncode;

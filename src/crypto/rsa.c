@@ -47,7 +47,13 @@ bool HasGeneratedRsaPrimes()
 {
   Gd25FlashSectorErase(GetRsaAddress());
   Rsa_primes_t *primes = FlashReadRsaPrimes();
-  return primes != NULL;
+  bool ret = false;
+  if (primes != NULL)
+  {
+    SRAM_FREE(primes);
+    ret = true;
+  }
+  return ret;
 }
 
 Rsa_primes_t *FlashReadRsaPrimes()
@@ -56,6 +62,7 @@ Rsa_primes_t *FlashReadRsaPrimes()
   if (!primes)
   {
     printf("Failed to allocate memory for RSA primes\n");
+    SRAM_FREE(primes);
     return NULL;
   }
 
@@ -64,7 +71,11 @@ Rsa_primes_t *FlashReadRsaPrimes()
   uint8_t seed[64];
   int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
   int32_t ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-  ASSERT(ret == 0);
+  if (ret != 0)
+  {
+    SRAM_FREE(primes);
+    return NULL;
+  }
   uint8_t cryptData[SPI_FLASH_RSA_DATA_SIZE];
   memcpy_s(cryptData, SPI_FLASH_RSA_DATA_SIZE, fullData, SPI_FLASH_RSA_DATA_SIZE);
   SimpleResponse_u8 *encData = aes256_decrypt_primes(seed, len, cryptData);

@@ -1,3 +1,6 @@
+#ifndef _RSA_H
+#define _RSA_H
+
 #include "flash_address.h"
 #include "stdio.h"
 #include "define.h"
@@ -27,3 +30,5 @@ typedef struct {
 Rsa_primes_t *FlashReadRsaPrimes();
 int FlashWriteRsaPrimes(const uint8_t *data);
 bool HasGeneratedRsaPrimes();
+
+#endif

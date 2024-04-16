@@ -1,9 +1,11 @@
 use alloc::slice;
 use alloc::vec::Vec;
 use app_arweave::generate_public_key_from_primes;
-use common_rust_c::types::{Ptr, PtrBytes};
+use common_rust_c::types::{Ptr, PtrBytes, PtrString};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
+use common_rust_c::utils::recover_c_char;
 use cty::uint32_t;
+use third_party::hex;
 use third_party::ur_registry::arweave::arweave_crypto_account::ArweaveCryptoAccount;
 use third_party::ur_registry::traits::{RegistryItem, To};
 
@@ -50,11 +52,36 @@ pub extern "C" fn get_connect_arconnect_wallet_ur(
     }
 }
 
+#[no_mangle]
+pub extern "C" fn get_connect_arconnect_wallet_ur_from_xpub(
+    master_fingerprint: PtrBytes,
+    master_fingerprint_length: uint32_t,
+    xpub: PtrString,
+) -> Ptr<UREncodeResult> {
+    unsafe {
+        let mfp = unsafe {
+            slice::from_raw_parts(master_fingerprint, master_fingerprint_length as usize)
+        };
+        let xpub = recover_c_char(xpub);
+        let device = Option::None;
+        let arweave_account = ArweaveCryptoAccount::new(
+            vec_to_array(mfp.to_vec()).unwrap(),
+            hex::decode(xpub).unwrap(),
+            device,
+        );
+        return UREncodeResult::encode(
+            arweave_account.to_bytes().unwrap(),
+            ArweaveCryptoAccount::get_registry_type().get_type(),
+            FRAGMENT_MAX_LENGTH_DEFAULT,
+        )
+        .c_ptr();
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     extern crate std;
-    use third_party::{hex, rsa::PublicKeyParts};
 
     #[test]
     fn test_get_connect_arconnect_wallet_ur() {

@@ -4,6 +4,8 @@
 #include "stdint.h"
 #include "stdbool.h"
 #include "gui_home_widgets.h"
+#include "rsa.h"
+
 typedef struct {
     int32_t addressType;
     int32_t addressIndex;
@@ -104,6 +106,7 @@ typedef enum {
     XPUB_TYPE_ADA_21,
     XPUB_TYPE_ADA_22,
     XPUB_TYPE_ADA_23,
+    XPUB_TYPE_AR,
 #else
     XPUB_TYPE_BTC,
     XPUB_TYPE_BTC_LEGACY,

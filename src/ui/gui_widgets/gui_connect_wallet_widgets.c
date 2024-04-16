@@ -363,7 +363,9 @@ static void OpenQRCodeHandler(lv_event_t *e)
             GuiCreateConnectEternlWidget();
             return;
         }
-        if (g_connectWalletTileView.walletIndex == WALLET_LIST_ARCONNECT) {
+        char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_AR);
+        bool skipGenerateArwareKey = arXpub != NULL && strlen(arXpub) == 1024;
+        if (g_connectWalletTileView.walletIndex == WALLET_LIST_ARCONNECT && !skipGenerateArwareKey) {
             g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
             SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
             static uint16_t sig = SIG_SETUO_RSA_PRIVATE_KEY_WITH_PASSWORD;

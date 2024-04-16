@@ -45,8 +45,6 @@ static lv_obj_t *g_scanErrorHintBox = NULL;
 static ViewType g_qrcodeViewType;
 static uint8_t g_chainType = CHAIN_BUTT;
 static ViewType g_viewTypeFilter[2];
-static bool g_restartScanFlag = true;
-static ViewType g_viewTypeFilter[2];
 
 void GuiSetScanViewTypeFiler(ViewType *viewType, int number)
 {
@@ -82,12 +80,8 @@ void GuiScanDeInit()
 
 void GuiScanRefresh()
 {
-    //rescans are allowed by default unless explicitly prohibited
-    if (g_restartScanFlag) {
-        GuiScanStart();
-    }
-    g_restartScanFlag = true;
-
+    SetPageLockScreen(false);
+    GuiScanStart();
 }
 
 static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, size_t filterSize)
@@ -161,7 +155,7 @@ void GuiTransactionCheckPass(void)
 {
     GuiModelTransactionCheckResultClear();
     SetPageLockScreen(true);
-    GuiScanSetRestartFlag(false);
+    GuiCLoseCurrentWorkingView();
     GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
 }
 
@@ -181,11 +175,6 @@ void GuiTransactionCheckFailed(PtrT_TransactionCheckResult result)
 #if BTC_ONLY
     FreePsbtUxtoMemory();
 #endif
-}
-
-void GuiScanSetRestartFlag(bool flag)
-{
-    g_restartScanFlag = flag;
 }
 
 static void GuiScanNavBarInit()
@@ -240,7 +229,6 @@ static void ThrowError(int32_t errorCode)
 
 static void GuiScanStart()
 {
-    SetPageLockScreen(false);
     GuiSetScanCorner();
     GuiModeControlQrDecode(true);
 }
@@ -249,8 +237,6 @@ static void GuiScanStart()
 void SelectMicroCardFile(void)
 {
     if (SdCardInsert()) {
-        GuiScanSetRestartFlag(false);
-        SetPageLockScreen(true);
         static uint8_t fileFilterType = ONLY_PSBT;
         GuiFrameOpenViewWithParam(&g_multisigReadSdcardView, &fileFilterType, sizeof(fileFilterType));
     } else {

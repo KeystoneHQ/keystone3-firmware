@@ -695,7 +695,7 @@ Unlock Device,unlock_device_fingerprint_pin_title,Use PIN or Fingerprint,PIN и�
 ,unlock_device_time_limited_error_max_warning_fmt,"Please unlock your device in #F55831 %d# minutes. One more incorrect attempt, your device will be locked.","Пожалуйста, разблокируйте устройство через #F55831 %d# минут. Еще одна неверная попытка и ваше устройство будет заблокировано",,请在 #F55831 %d# 分钟后解锁您的设备。如果再次解锁失败，您的设备将被锁定。,,,,
 ,unlock_device_time_limited_error_max_desc,Please unlock your device in #F55831 1# minute,Разблокируйте ваше устройство в течение 1 минуты.,1분 후에 장치 잠금을 해제하십시오,请在 #F55831 1#  分钟后解锁您的设备,,,,
 ,forgot_password_reset_passcode_intro_title,Forgot passcode?,Забыли код-пароль?,비밀번호를 잊어버렸습니까?,忘记密码？,,,,
-,forgot_password_reset_passcode_intro_desc,Verify the seed phrase associated with this wallet to reset the passcode.,"Проверьте сид фразу текущего кошелька, чтобы сбросить код-пароль.",이 지갑과 연결된 시드 문구를 확인하여 암호를 재설정합니다.,验证与此钱包相关的助记词以重置密码。,,,,
+,forgot_password_reset_passcode_intro_desc,Verify the seed phrase associated with this wallet to reset the passcode.Resetting your password may erase your wallet or multisig wallet data,,,,,,,
 ,forget_password_cancel,Cancel Password Reset?,Отменить сброс пароля?,암호 재설정 취소?,取消密码重置？,,,,
 ,forgot_password_reset_passcode_intro_button,Reset Passcode,Сбросить пароль,암호 재설정,重置密码,,,,
 Error,error_box_invalid_seed_phrase,Invalid Seed Phrase,Неверная сид фраза,잘못된 시드 구문,助记词无效,,,,
@@ -1007,3 +1007,4 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,mutlisig_transaction_already_signed_desc,"Please reselect the transaction file.",,,,,,,
 ,multisig_decoding_qr_title,How to import multisig wallet,,,,,,,
 ,multisig_decoding_qr_link,https://keyst.one/t/3rd/Multisig/import,,,,,,,
+,multisig_scan_multisig_notice,Scan the multisig wallet QR code to import,,,,,,,

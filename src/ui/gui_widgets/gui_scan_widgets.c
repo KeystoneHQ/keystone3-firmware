@@ -216,6 +216,13 @@ static void GuiSetScanCorner(void)
     lv_obj_align(img, LV_ALIGN_BOTTOM_RIGHT, -77 + 28, -254 + 28 + 1);
     lv_img_set_angle(img, 1800);
     lv_img_set_pivot(img, 0, 0);
+
+#ifdef BTC_ONLY
+    if (IMPORT_MULTI_SIG_WALLET_PAGE == g_fromPage) {
+        lv_obj_t *label = GuiCreateNoticeLabel(cont, _("multisig_scan_multisig_notice"));
+        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 466);
+    }
+#endif
 }
 
 static void ThrowError(int32_t errorCode)

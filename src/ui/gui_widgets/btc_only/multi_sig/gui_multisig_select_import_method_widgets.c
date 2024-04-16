@@ -98,9 +98,8 @@ static void SelectCameraHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        static FromPageEnum fromPage = IMPORT_MULTI_SIG_WALLET_PAGE;
         ViewType viewType = MultisigWalletImport;
-        GuiFrameOpenViewWithParam(&g_scanView, &fromPage, sizeof(fromPage));
+        GuiFrameOpenView(&g_scanView);
         GuiSetScanViewTypeFiler(&viewType, 1);
     }
 }

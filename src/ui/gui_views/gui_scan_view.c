@@ -10,11 +10,6 @@ int32_t GuiScanViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
 {
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-#ifdef BTC_ONLY
-        if (param != NULL) {
-            GuiScanSetFromPage(*(uint8_t *)param);
-        }
-#endif
         GuiScanInit();
         break;
     case GUI_EVENT_OBJ_DEINIT:
@@ -41,11 +36,6 @@ int32_t GuiScanViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case SIG_HIDE_TRANSACTION_LOADING:
         GuiPendingHintBoxRemove();
         break;
-#ifdef BTC_ONLY
-    case SIG_IMPORT_TRANSACTION_FROM_FILE:
-        SelectMicroCardFile();
-        break;
-#endif
     default:
         return ERR_GUI_UNHANDLED;
     }

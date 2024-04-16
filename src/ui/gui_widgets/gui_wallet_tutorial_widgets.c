@@ -307,7 +307,7 @@ void GuiWalletTutorialInit(WALLET_LIST_INDEX_ENUM tutorialIndex)
         lv_obj_update_layout(label);
         lv_coord_t height = lv_obj_get_height(label) - 30;
 
-        if(height > 0) {
+        if (height > 0) {
             lv_obj_set_height(cont, 102 + height);
             lv_obj_align(img, LV_ALIGN_DEFAULT, 348, 33 + height / 2);
             lv_obj_update_layout(cont);

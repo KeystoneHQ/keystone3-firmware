@@ -1010,6 +1010,9 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,multisig_decoding_qr_title,How to import multisig wallet,,,,,,,
 ,multisig_decoding_qr_link,https://keyst.one/t/3rd/Multisig/import,,,,,,,
 ,multisig_scan_multisig_notice,Scan the multisig wallet QR code to import,,,,,,,
-,connect_nunchuk_multisig_link,https://keyst.one/t/3rd/Multisig/\nnunchuk,https://keyst.one/t/3rd/Multisig/\nnunchuk,,https://keyst.one/t/3rd/Multisig/nunchuk,,,,
-,connect_sparrow_multisig_link,https://keyst.one/t/3rd/Multisig/sparrow,https://keyst.one/t/3rd/Multisig/sparrow,,https://keyst.one/t/3rd/Multisig/sparrow,,,,
-,connect_bw_multisig_link,https://keyst.one/t/3rd/Multisig/bw,https://keyst.one/t/3rd/Multisig/bw,,https://keyst.one/t/3rd/Multisig/bw,,,,
+,connect_nunchuk_multisig_link,"https://keyst.one/t/3rd/Multisig/
+nunchuk",https://keyst.one/t/3rd/Multisig/\nnunchuk,,https://keyst.one/t/3rd/Multisig/nunchuk,,,,
+,connect_sparrow_multisig_link,"https://keyst.one/t/3rd/Multisig/
+sparrow",https://keyst.one/t/3rd/Multisig/sparrow,,https://keyst.one/t/3rd/Multisig/sparrow,,,,
+,connect_bw_multisig_link,"https://keyst.one/t/3rd/Multisig/
+bw",https://keyst.one/t/3rd/Multisig/bw,,https://keyst.one/t/3rd/Multisig/bw,,,,

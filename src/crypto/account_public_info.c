@@ -1111,7 +1111,7 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
     addr = SPI_FLASH_ADDR_USER1_MULTI_SIG_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
     printf("MultiSigWalletGet read addr is %x\r\n", addr);
     ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
-    ASSERT(ret == 4); 
+    ASSERT(ret == 4);
     printf("size = %d\r\n", size);
     if (size == 0xffffffff || size == 0) {
         size = MultiSigWalletSaveDefault(addr, accountIndex);

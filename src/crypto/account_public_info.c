@@ -181,9 +181,6 @@ static const ChainItem_t g_chainTable[] = {
 #endif
 };
 
-static void ConvertXPub(char *dest, ChainType chainType);
-static void replace(char *str, const char *old_str, const char *new_str);
-
 char *GetXPubPath(uint8_t index)
 {
     ASSERT(index < XPUB_TYPE_NUM);
@@ -332,16 +329,13 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
 
 int32_t AccountPublicInfoReadFromFlash(uint8_t accountIndex, uint32_t addr)
 {
-    printf("%s %d..\n", __func__, __LINE__);
     uint32_t size;
     uint8_t hash[32];
     int32_t ret = SUCCESS_CODE;
     int len = 0;
     char *jsonString;
     len = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
-    printf("len = %d\n", len);
     ASSERT(len == 4);
-    printf("size = %d\n", size);
     if (size > SPI_FLASH_SIZE_USER1_DATA - 4) {
         printf("pubkey size err,%d\r\n", size);
         return ERR_GENERAL_FAIL;
@@ -350,7 +344,6 @@ int32_t AccountPublicInfoReadFromFlash(uint8_t accountIndex, uint32_t addr)
     len = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
     ASSERT(len == size);
     jsonString[size] = 0;
-    printf("jsonString = %s\n", jsonString);
 #ifndef COMPILE_SIMULATOR
     sha256((struct sha256 *)hash, jsonString, size);
     if (!VerifyWalletDataHash(accountIndex, hash)) {
@@ -456,13 +449,9 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
         ASSERT(len == 4);
         len = Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
         ASSERT(len == size);
-        // printf("regenerate jsonString=%s\r\n", jsonString);
-        char *buff = SRAM_MALLOC(size + 1);
-        len = Gd25FlashReadBuffer(addr + 4, (uint8_t *)buff, size);
-        printf("len = %d size = %d\n", len, size);
-        printf("buff = \r\n%s\n", buff);
-        EXT_FREE(jsonString);
+        printf("regenerate jsonString=%s\r\n", jsonString);
         GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
+        EXT_FREE(jsonString);
     } while (0);
 
     CLEAR_ARRAY(seed);
@@ -481,7 +470,6 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     //Load Multisig wallet Manager
 
     addr = SPI_FLASH_ADDR_USER1_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
-    printf("address = %0x..\n", addr);
     if (!regeneratePubKey) {
         ret = AccountPublicInfoReadFromFlash(accountIndex, addr);
         if (ret == ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH) {
@@ -492,7 +480,7 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     }
 
     if (regeneratePubKey) {
-        AccountPublicSavePublicInfo(accountIndex, password, addr);
+        ret = AccountPublicSavePublicInfo(accountIndex, password, addr);
     }
 
 #ifdef BTC_ONLY
@@ -882,6 +870,23 @@ void SetFirstReceive(const char* chainName, bool isFirst)
 }
 
 #ifdef BTC_ONLY
+static void ConvertXPub(char *dest, ChainType chainType);
+
+static void replace(char *str, const char *old_str, const char *new_str)
+{
+    char *pos = strstr(str, old_str);
+    if (pos != NULL) {
+        size_t old_len = strlen(old_str);
+        size_t new_len = strlen(new_str);
+        size_t tail_len = strlen(pos + old_len);
+
+        memmove(pos + new_len, pos + old_len, tail_len + 1);
+        memcpy(pos, new_str, new_len);
+
+        replace(pos + new_len, old_str, new_str);
+    }
+}
+
 void ExportMultiSigXpub(ChainType chainType)
 {
     ASSERT(chainType >= XPUB_TYPE_BTC_MULTI_SIG_P2SH);
@@ -976,20 +981,6 @@ static void ConvertXPub(char *dest, ChainType chainType)
 }
 #endif
 
-static void replace(char *str, const char *old_str, const char *new_str)
-{
-    char *pos = strstr(str, old_str);
-    if (pos != NULL) {
-        size_t old_len = strlen(old_str);
-        size_t new_len = strlen(new_str);
-        size_t tail_len = strlen(pos + old_len);
-
-        memmove(pos + new_len, pos + old_len, tail_len + 1);
-        memcpy(pos, new_str, new_len);
-
-        replace(pos + new_len, old_str, new_str);
-    }
-}
 
 #ifdef BTC_ONLY
 void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)
@@ -1081,7 +1072,6 @@ void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager)
     char *retStr;
     retStr = cJSON_PrintBuffered(rootJson, 1024 * 8, 0);
     size = strlen(retStr);
-    printf("size = %d multi sig wallet save data  is %s\r\n", size, retStr);
     assert(size < SPI_FLASH_SIZE_USER1_MULTI_SIG_DATA - 4);
     cJSON_Delete(rootJson);
 
@@ -1089,8 +1079,6 @@ void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager)
     len = Gd25FlashWriteBuffer(addr + 4, (uint8_t *)retStr, size);
     assert(len == size);
     // write se
-    PrintArray("set multi hash", hash, 32);
-    printf("retStr = %s\r\n", retStr);
     sha256((struct sha256 *)hash, retStr, size);
     if (SetMultisigDataHash(account, hash) != SUCCESS_CODE) {
         printf("set multi hash failed\r\n");
@@ -1111,14 +1099,12 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
     addr = SPI_FLASH_ADDR_USER1_MULTI_SIG_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
     printf("MultiSigWalletGet read addr is %x\r\n", addr);
     ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
-    ASSERT(ret == 4); 
-    printf("size = %d\r\n", size);
+    ASSERT(ret == 4);
     if (size == 0xffffffff || size == 0) {
         size = MultiSigWalletSaveDefault(addr, accountIndex);
     }
 
     jsonString = SRAM_MALLOC(size + 1);
-    printf("size = %d\r\n", size);
     ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
     ASSERT(ret == size);
     jsonString[size] = 0;

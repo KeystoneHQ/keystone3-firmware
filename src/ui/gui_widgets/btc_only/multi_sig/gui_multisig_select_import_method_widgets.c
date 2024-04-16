@@ -4,6 +4,7 @@
 #include "gui_views.h"
 #include "gui_multisig_read_sdcard_widgets.h"
 #include "gui_scan_widgets.h"
+#include "gui_qr_hintbox.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "drv_sdcard.h"
@@ -17,13 +18,14 @@ static lv_obj_t *g_noticeWindow;
 static void GuiContent(lv_obj_t *parent);
 static void SelectMicroCardFileHandler(lv_event_t *e);
 static void SelectCameraHandler(lv_event_t *e);
+static void OpenMultisigMoreInfoHandler(lv_event_t *e);
 
 void GuiMultisigSelectImportMethodWidgetsInit()
 {
     g_pageWidget = CreatePageWidget();
     GuiContent(g_pageWidget->contentZone);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, UnHandler, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenMultisigMoreInfoHandler, NULL);
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
 }
 
@@ -102,4 +104,9 @@ static void SelectCameraHandler(lv_event_t *e)
         GuiFrameOpenView(&g_scanView);
         GuiSetScanViewTypeFiler(&viewType, 1);
     }
+}
+
+static void OpenMultisigMoreInfoHandler(lv_event_t *e)
+{
+    GuiQRCodeHintBoxOpen(_("multisig_decoding_qr_link"), _("multisig_decoding_qr_title"), _("multisig_decoding_qr_link"));
 }

@@ -181,6 +181,11 @@ static const ChainItem_t g_chainTable[] = {
 #endif
 };
 
+char *GetXPubPath(uint8_t index)
+{
+    ASSERT(index < XPUB_TYPE_NUM);
+    return g_chainTable[index].path;
+}
 
 void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
 {
@@ -866,12 +871,6 @@ void SetFirstReceive(const char* chainName, bool isFirst)
 
 #ifdef BTC_ONLY
 static void ConvertXPub(char *dest, ChainType chainType);
-
-char *GetXPubPath(uint8_t index)
-{
-    ASSERT(index < XPUB_TYPE_NUM);
-    return g_chainTable[index].path;
-}
 
 static void replace(char *str, const char *old_str, const char *new_str)
 {

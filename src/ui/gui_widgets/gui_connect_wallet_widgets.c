@@ -1608,6 +1608,12 @@ int8_t GuiConnectWalletNextTile(void)
     return SUCCESS_CODE;
 }
 
+void GuiConnectWalletPasswordErrorCount(void *param)
+{
+    PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
+    GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
+}
+
 int8_t GuiConnectWalletPrevTile(void)
 {
     switch (g_connectWalletTileView.currentTile) {

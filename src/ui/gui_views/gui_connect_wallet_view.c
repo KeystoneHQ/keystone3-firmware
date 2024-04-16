@@ -45,12 +45,12 @@ int32_t GuiConnectWalletViewEventProcess(void* self, uint16_t usEvent, void* par
             uint16_t sig = *(uint16_t *) passwordVerifyResult->signal;
             if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
                 GuiLockScreenPassCode(false);
-                GuiLockScreenErrorCount(param);
+                GuiConnectWalletPasswordErrorCount(param);
                 return SUCCESS_CODE;
             }
         }
         GuiLockScreenPassCode(false);
-        GuiSignVerifyPasswordErrorCount(param);
+        GuiConnectWalletPasswordErrorCount(param);
         break;
     case SIG_VERIFY_PASSWORD_PASS:
         printf("SIG_VERIFY_PASSWORD_PASS\n");

@@ -90,6 +90,7 @@ void GuiConnectWalletHandleURUpdate(char *data, uint16_t len);
 SOLAccountType GetSolflareAccountType(void);
 void GuiPrepareArConnectWalletView(void);
 void GuiSetupArConnectWallet(void);
+void GuiConnectWalletPasswordErrorCount(void *param);
 #endif
 #endif /* _GUI_CONNECT_WALLET_WIDGETS_H */
 

@@ -768,44 +768,43 @@ mod tests {
         // println!("{:?}", config);
         assert_eq!(false, config.is_ok());
     }
+    // comment because we disable testnet currently;
+    //     #[test]
+    //     fn test_generate_wallet_config() {
+    //         let config_str = "# Keystone Multisig setup file (created on 73C5DA0A)
+    // #
+    // Name: testnet1
+    // Policy: 2 of 2
+    // Derivation: m/45'
+    // Format: P2SH
 
-    #[test]
-    fn test_generate_wallet_config() {
-        let config_str = "# Keystone Multisig setup file (created on 73C5DA0A)
-#
-Name: testnet1
-Policy: 2 of 2
-Derivation: m/45'
-Format: P2SH
+    // C45358FA: tpubD9hphZzCi9u5Wcbtq3jQYTzbPv6igoaRWDuhxLUDv5VTffE3gEVovYaqwfVMCa6q8VMdwAcPpFgAdajgmLML6XgYrKBquyYEDQg1HnKm3wQ
+    // 73C5DA0A: tpubD97UxEEVXiRtzRBmHvR38R7QXNz6Dx3A7gKtoe9UgxepdJXExmJCd5Nxsv8YYLgHd3MEBKPzRwgVaJ62kvBSvMtntbkPnv6Pf8Zkny5rC89";
+    //         let config = parse_wallet_config(config_str, "73C5DA0A").unwrap();
+    //         let data = generate_config_data(&config, "73C5DA0A").unwrap();
+    //         assert_eq!(data, config_str);
+    //     }
+    //     #[test]
+    //     fn test_generate_wallet_config_ur() {
+    //         let config_str = "# Keystone Multisig setup file (created on 73C5DA0A)
+    // #
+    // Name: testnet1
+    // Policy: 2 of 2
+    // Derivation: m/45'
+    // Format: P2SH
 
-C45358FA: tpubD9hphZzCi9u5Wcbtq3jQYTzbPv6igoaRWDuhxLUDv5VTffE3gEVovYaqwfVMCa6q8VMdwAcPpFgAdajgmLML6XgYrKBquyYEDQg1HnKm3wQ
-73C5DA0A: tpubD97UxEEVXiRtzRBmHvR38R7QXNz6Dx3A7gKtoe9UgxepdJXExmJCd5Nxsv8YYLgHd3MEBKPzRwgVaJ62kvBSvMtntbkPnv6Pf8Zkny5rC89";
-        let config = parse_wallet_config(config_str, "73C5DA0A").unwrap();
-        let data = generate_config_data(&config, "73C5DA0A").unwrap();
-        assert_eq!(data, config_str);
-    }
+    // C45358FA: tpubD9hphZzCi9u5Wcbtq3jQYTzbPv6igoaRWDuhxLUDv5VTffE3gEVovYaqwfVMCa6q8VMdwAcPpFgAdajgmLML6XgYrKBquyYEDQg1HnKm3wQ
+    // 73C5DA0A: tpubD97UxEEVXiRtzRBmHvR38R7QXNz6Dx3A7gKtoe9UgxepdJXExmJCd5Nxsv8YYLgHd3MEBKPzRwgVaJ62kvBSvMtntbkPnv6Pf8Zkny5rC89";
+    //         let config = parse_wallet_config(config_str, "73C5DA0A").unwrap();
+    //         let data = export_wallet_by_ur(&config, "73C5DA0A").unwrap();
+    //         assert_eq!(
+    //             "59016823204B657973746F6E65204D756C74697369672073657475702066696C65202863726561746564206F6E203733433544413041290A230A4E616D653A20746573746E6574310A506F6C6963793A2032206F6620320A44657269766174696F6E3A206D2F3435270A466F726D61743A20503253480A0A43343533353846413A207470756244396870685A7A43693975355763627471336A5159547A6250763669676F615257447568784C554476355654666645336745566F765961717766564D4361367138564D64774163507046674164616A676D4C4D4C36586759724B42717579594544516731486E4B6D3377510A37334335444130413A20747075624439375578454556586952747A52426D4876523338523751584E7A364478334137674B746F65395567786570644A5845786D4A4364354E7873763859594C674864334D45424B507A52776756614A36326B764253764D746E74626B506E76365066385A6B6E793572433839",
+    //             hex::encode::<Vec<u8>>(data.clone().try_into().unwrap()).to_uppercase()
+    //         );
 
-    #[test]
-    fn test_generate_wallet_config_ur() {
-        let config_str = "# Keystone Multisig setup file (created on 73C5DA0A)
-#
-Name: testnet1
-Policy: 2 of 2
-Derivation: m/45'
-Format: P2SH
-
-C45358FA: tpubD9hphZzCi9u5Wcbtq3jQYTzbPv6igoaRWDuhxLUDv5VTffE3gEVovYaqwfVMCa6q8VMdwAcPpFgAdajgmLML6XgYrKBquyYEDQg1HnKm3wQ
-73C5DA0A: tpubD97UxEEVXiRtzRBmHvR38R7QXNz6Dx3A7gKtoe9UgxepdJXExmJCd5Nxsv8YYLgHd3MEBKPzRwgVaJ62kvBSvMtntbkPnv6Pf8Zkny5rC89";
-        let config = parse_wallet_config(config_str, "73C5DA0A").unwrap();
-        let data = export_wallet_by_ur(&config, "73C5DA0A").unwrap();
-        assert_eq!(
-            "59016823204B657973746F6E65204D756C74697369672073657475702066696C65202863726561746564206F6E203733433544413041290A230A4E616D653A20746573746E6574310A506F6C6963793A2032206F6620320A44657269766174696F6E3A206D2F3435270A466F726D61743A20503253480A0A43343533353846413A207470756244396870685A7A43693975355763627471336A5159547A6250763669676F615257447568784C554476355654666645336745566F765961717766564D4361367138564D64774163507046674164616A676D4C4D4C36586759724B42717579594544516731486E4B6D3377510A37334335444130413A20747075624439375578454556586952747A52426D4876523338523751584E7A364478334137674B746F65395567786570644A5845786D4A4364354E7873763859594C674864334D45424B507A52776756614A36326B764253764D746E74626B506E76365066385A6B6E793572433839",
-            hex::encode::<Vec<u8>>(data.clone().try_into().unwrap()).to_uppercase()
-        );
-
-        let bytes = Bytes::try_from(TryInto::<Vec<u8>>::try_into(data.clone()).unwrap()).unwrap();
-        assert_eq!(data.get_bytes(), bytes.get_bytes());
-    }
+    //         let bytes = Bytes::try_from(TryInto::<Vec<u8>>::try_into(data.clone()).unwrap()).unwrap();
+    //         assert_eq!(data.get_bytes(), bytes.get_bytes());
+    //     }
 
     #[test]
     fn test_create_wallet_config() {

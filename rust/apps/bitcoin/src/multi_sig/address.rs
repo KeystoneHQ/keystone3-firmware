@@ -92,13 +92,13 @@ mod tests {
             Derivation: m/45'
             Format: P2SH
 
-            C45358FA: tpubD9hphZzCi9u5Wcbtq3jQYTzbPv6igoaRWDuhxLUDv5VTffE3gEVovYaqwfVMCa6q8VMdwAcPpFgAdajgmLML6XgYrKBquyYEDQg1HnKm3wQ
-            73C5DA0A: tpubD97UxEEVXiRtzRBmHvR38R7QXNz6Dx3A7gKtoe9UgxepdJXExmJCd5Nxsv8YYLgHd3MEBKPzRwgVaJ62kvBSvMtntbkPnv6Pf8Zkny5rC89
+            C45358FA: xpub69LCBLAWzswdEpR3NrkKLYfE4o14hR5MxbKQbnR5aAjZvNZLc1ein6v1hdQZg59bLapjKb6XH9r7wQF5NUW6D6EFniSYESszdT5bXrn35WE
+            73C5DA0A: xpub68jrRzQopSUSiczuqjRwvVn3CFtSEZY6a3jbT66LM3tvt1rXtYT7Udi8dt3m1qj3q8pKZjt7tqrSt7bRN4LD2vSVq1167PSA5AyM31FUHwU
             "#;
 
             let config = parse_wallet_config(config, "73C5DA0A").unwrap();
             let address = create_multi_sig_address_for_wallet(&config, 0, 0).unwrap();
-            assert_eq!("2N9YWq8XCTGX7qQj5QCFwx3P5knckrspFBH", address);
+            assert_eq!("3HzJmPbAqp1mdd6Xj4e5L6PpYSQb35WiWp", address);
         }
 
         // P2WSH-P2SH
@@ -110,13 +110,13 @@ mod tests {
             Derivation: m/48'/1'/0'/1'
             Format: P2WSH-P2SH
 
-            C45358FA: tpubDEkyN1rhRi4YRLDbKSRNtP8WhqngeiF3HYw4PNfXuwBgzGZDDZUwmhCWDzNh7Uvy41cqGP3yAo7g1QxRdQMWVt97HmkxsZqYv35d2diniQS
-            73C5DA0A: tpubDFH9dgzveyD8yHQb8VrpG8FYAuwcLMHMje2CCcbBo1FpaGzYVtJeYYxcYgRqSTta5utUFts8nPPHs9C2bqoxrey5jia6Dwf9mpwrPq7YvcJ
+            C45358FA: xpub6EPLqn31iS769Y2jsFSHgTo9Nih2fKjyjvLm2pcPa2RoEytW9LdrdFXfyxHuayyjG75veoY6dhHdKETpEYWGcSgpEB1fC3BKL5VDGcyrEAq
+            73C5DA0A: xpub6EuX7TBEwhFghVDjgJsj4CvAqnqxLxnJC1Rtr4Y3T6VvpzKqRfTZQ7HnJeM3uxwLJ1MZeKMGFHZFAxhRCyxiyDWng7pnYQzvBsMSdmog9kW
             "#;
 
             let config = parse_wallet_config(config, "73C5DA0A").unwrap();
             let address = create_multi_sig_address_for_wallet(&config, 0, 0).unwrap();
-            assert_eq!("2N77EPE2yfeTLR3CwNUCBQ7LZEUGW6N9B6y", address);
+            assert_eq!("3FZ2KV6x4BwzDFaPhLaJnAMJ284LGAsKV6", address);
         }
 
         // P2WSH
@@ -128,14 +128,14 @@ mod tests {
             Derivation: m/48'/1'/0'/2'
             Format: P2WSH
 
-            C45358FA: tpubDEkyN1rhRi4YTeUvpev7Fo9imQo9QNqjtDEYtZVtrVhCUmFfvACyi2czyccg31Aoad24vHCki4edpnVw6kkmJahyvBD35MHooGp7iSXcCjk
-            73C5DA0A: tpubDFH9dgzveyD8zTbPUFuLrGmCydNvxehyNdUXKJAQN8x4aZ4j6UZqGfnqFrD4NqyaTVGKbvEW54tsvPTK2UoSbCC1PJY8iCNiwTL3RWZEheQ
+            C45358FA: xpub6EPLqn31iS76BrJ5NTw23spMSHhVQzLgLaeFY1SkWawJjUaxqwMtZaxAjaXtWWDZniVAJhgtAxpb8c1KhtuXR9FgraTjPpdaDKDhxSXRk4R
+            73C5DA0A: xpub6EuX7TBEwhFgifQY24vFeMRqeWHGyGCupztDxk7G2ECAqGQ22Fik8E811p8GrM2LfajQzLidXy4qECxhdcxChkjiKhnq2fiVMVjdfSoZQwg
             "#;
 
             let config = parse_wallet_config(config, "73C5DA0A").unwrap();
             let address = create_multi_sig_address_for_wallet(&config, 0, 0).unwrap();
             assert_eq!(
-                "tb1qr7y0qr6uqyspjtst0sex8hyj3g47dfz0v5njs9x22kk6jzz3ee4qd5qrd7",
+                "bc1qr7y0qr6uqyspjtst0sex8hyj3g47dfz0v5njs9x22kk6jzz3ee4q6ukvh3",
                 address
             );
         }

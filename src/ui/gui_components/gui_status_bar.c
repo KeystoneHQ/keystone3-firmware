@@ -293,7 +293,7 @@ void GuiStatusBarSetUsb(void)
 #ifdef BTC_ONLY
 void GuiStatusBarSetTestNet(void)
 {
-    if ((GetIsTestNet() == true) && (GetCurrentWalletIndex() == SINGLE_WALLET)) {
+    if ((GetIsTestNet() == true) && (GetCurrentWalletIndex() == SINGLE_WALLET) && GetCurrentAccountIndex() < 3) {
         lv_obj_clear_flag(g_guiStatusBar.testNetImg, LV_OBJ_FLAG_HIDDEN);
     } else {
         lv_obj_add_flag(g_guiStatusBar.testNetImg, LV_OBJ_FLAG_HIDDEN);

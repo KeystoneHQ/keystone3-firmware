@@ -34,6 +34,9 @@ void GuiMultisigSelectImportMethodWidgetsDeInit()
     DestroyPageWidget(g_pageWidget);
     g_pageWidget = NULL;
     GUI_DEL_OBJ(g_noticeWindow);
+    if (GuiQRHintBoxIsActive()) {
+        GuiQRHintBoxRemove();
+    }
 }
 
 static void GuiContent(lv_obj_t *parent)

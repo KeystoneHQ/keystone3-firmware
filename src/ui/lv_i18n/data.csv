@@ -857,7 +857,7 @@ modal ,generating_qr_codes,Generating QR Codes,Генерируются QR-ко�
 ,enter_passcode,Please Enter Passcode,Введите код-пароль,비밀번호를 입력해주세요,请输入密码,,,,
 loading,prepare_wallet_hint,Preparing Wallet,Подготовка кошелька,지갑 준비 중,准备钱包,已改,,,
 ,prepare_wallet_first_step,New chains support detected,Обнаружены новые сети,새 체인 지원이 감지됨,检测到的新区块链支持,已改,,,
-,prepare_wallet_second_step,Setting up for coins...,Настройка монет...,코인 설정 중...,设置硬币...,已改,,,
+,prepare_wallet_second_step,Setting up for wallet...,Настройка кошелька...,지갑 설정 중...,设置钱包...,已改,,,
 ,prepare_wallet_third_step,Generating extended public key...,Генерация расширенного публичного ключа...,확장 공개 키를 생성하는 중...,生成扩展的公钥...,,,,
 Change Entropy,change_entropy,Change Entropy,Изменение Энтропии,,更改熵,已改,,,
 ,change_entropy_desc,Select the Entropy you'd like to use for creating wallets,"Выберите энтропию, которую вы хотите использовать для создания кошельков",,选择要创建钱包的熵,已改,,,

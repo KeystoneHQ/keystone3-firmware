@@ -44,15 +44,17 @@ static ViewType g_qrcodeViewType;
 static uint8_t g_chainType = CHAIN_BUTT;
 static ViewType g_viewTypeFilter[2];
 
-void GuiSetScanViewTypeFiler(ViewType *viewType, int number)
+void GuiScanInit(void *param, uint16_t len)
 {
-    memcpy_s(g_viewTypeFilter, sizeof(g_viewTypeFilter), viewType, number * sizeof(ViewType));
-}
-
-void GuiScanInit(void)
-{
-    for (int i = 0; i < NUMBER_OF_ARRAYS(g_viewTypeFilter); i++) {
-        g_viewTypeFilter[i] = 0xFF;
+    if (param == NULL) {
+        for (int i = 0; i < NUMBER_OF_ARRAYS(g_viewTypeFilter); i++) {
+            g_viewTypeFilter[i] = 0xFF;
+        }
+    } else {
+        memcpy_s(g_viewTypeFilter, sizeof(g_viewTypeFilter), param, len);
+        for (int i = 0; i < NUMBER_OF_ARRAYS(g_viewTypeFilter); i++) {
+            printf("g_viewTypeFilter %d = %d\n", i, g_viewTypeFilter[i]);
+        }
     }
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
@@ -88,7 +90,6 @@ static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, siz
             return true;
         }
     }
-    g_scanErrorHintBox = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_CONFIG_INVALID, &g_scanErrorHintBox, GuiScanStart);
     return false;
 }
 
@@ -99,6 +100,7 @@ void GuiScanResult(bool result, void *param)
         g_qrcodeViewType = urViewType.viewType;
         if (g_viewTypeFilter[0] != 0xFF) {
             if (!IsViewTypeSupported(g_qrcodeViewType, g_viewTypeFilter, NUMBER_OF_ARRAYS(g_viewTypeFilter))) {
+                g_scanErrorHintBox = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_CONFIG_INVALID, &g_scanErrorHintBox, GuiScanStart);
                 return;
             }
         }
@@ -218,7 +220,7 @@ static void GuiSetScanCorner(void)
     lv_img_set_pivot(img, 0, 0);
 
 #ifdef BTC_ONLY
-    if (IMPORT_MULTI_SIG_WALLET_PAGE == g_fromPage) {
+    if (IsViewTypeSupported(MultisigWalletImport, g_viewTypeFilter, NUMBER_OF_ARRAYS(g_viewTypeFilter))) {
         lv_obj_t *label = GuiCreateNoticeLabel(cont, _("multisig_scan_multisig_notice"));
         lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 466);
     }

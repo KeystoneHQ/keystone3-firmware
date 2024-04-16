@@ -970,6 +970,8 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,import_multi_wallet_via_micro_title,"MicroSD Card",,,,,,,
 ,import_multi_wallet_info_title,"Wallet Info",,,,,,,
 ,import_multi_wallet_info_no_config_file,No Wallet Files,,,,,,,
+,multi_wallet_no_psbt_file,No PSBT Files,,,,,,,
+,multi_wallet_no_file_notice,Please make sure the file is named with English letters and located in the root path,,,,,,,
 ,import_multi_wallet_success_title,"Import Success",,,,,,,
 ,manage_multi_wallet_set_default,"Set as Current Wallet",,,,,,,
 ,manage_multi_wallet_detail_title,"Wallet Details",,,,,,,

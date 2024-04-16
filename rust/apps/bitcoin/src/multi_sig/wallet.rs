@@ -228,11 +228,16 @@ fn _parse_plain_wallet_config(content: &str) -> Result<MultiSigWalletConfig, Bit
     }
 
     for (_, xpub_item) in wallet.xpub_items.iter().enumerate() {
+        let this_network = detect_network(&xpub_item.xpub);
+        if this_network == Network::TestNet {
+            return Err(BitcoinError::MultiSigWalletParseError(format!(
+                "we don't support testnet for multisig yet"
+            )));
+        }
         if is_first {
-            wallet.network = detect_network(&xpub_item.xpub);
+            wallet.network = this_network;
             is_first = false;
         } else {
-            let this_network = detect_network(&xpub_item.xpub);
             if (wallet.network != this_network) {
                 return Err(BitcoinError::MultiSigWalletParseError(format!(
                     "xpub networks inconsistent"

@@ -13,6 +13,7 @@
 #include "account_manager.h"
 
 #define MAX_FILE_CONTENT_LEN 1000000
+#define MAX_FILE_SIZE_LIST (1024 * 256)
 
 char* g_fileContent = NULL;
 
@@ -419,7 +420,7 @@ void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint3
 
     while (1) {
         res = f_readdir(&dir, &fno);
-        if (res != FR_OK || fno.fname[0] == 0) {
+        if (res != FR_OK || fno.fname[0] == 0 || (FatfsFileGetSize(fno.fname) > MAX_FILE_SIZE_LIST)) {
             break;
         }
 

@@ -16,6 +16,8 @@ int32_t GuiExportPubkeyViewEventProcess(void *self, uint16_t usEvent, void *para
         }
         GuiExportPubkeyInit(chain);
         break;
+    case GUI_EVENT_REFRESH:
+        break;
     case GUI_EVENT_OBJ_DEINIT:
         GuiExportPubkeyDeInit();
         break;

@@ -31,6 +31,15 @@ void GetSoftWareVersion(char *version)
 #endif
 }
 
+void GetUpdateVersionNumber(char *version)
+{
+#ifndef BTC_ONLY
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+#else
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d-B", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+#endif
+}
+
 void GetSoftWareVersionNumber(char *version)
 {
 #ifndef BTC_ONLY

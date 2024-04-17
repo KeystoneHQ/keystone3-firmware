@@ -667,7 +667,8 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
         if (!g_walletListArray[i].enable) {
             continue;
         }
-        if (GetIsTestNet() && g_walletListArray[i].index == WALLET_LIST_BLUE) {
+        // temporary fix, when the multi-signature testnet is opened, the logic here needs to be rewritten
+        if (GetCurrentWalletIndex() == SINGLE_WALLET && GetIsTestNet() && g_walletListArray[i].index == WALLET_LIST_BLUE) {
             continue;
         }
         img = GuiCreateImg(parent, g_walletListArray[i].img);

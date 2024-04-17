@@ -80,7 +80,7 @@ void GuiQRCodeHintBoxOpen(const char *qrdata, const char *title, const char *sub
 
         label = GuiCreateIllustrateLabel(parent, subtitle);
         lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);
-        lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -114);
+        GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 0, 40);
         g_qrHintBoxSubTitle = label;
 
         button = GuiCreateAdaptButton(parent, _("OK"));

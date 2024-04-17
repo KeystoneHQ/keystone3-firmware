@@ -249,7 +249,7 @@ device setting,device_setting_mid_btn,Device Settings,Настройки уст�
 ,wallet_setting_add_wallet_limit,Add Limited,Добавить лимит,,,,,,
 ,wallet_setting_add_wallet_limit_desc,You can only add up to a maximum of 3 wallets. Please delete other wallets before adding a new wallet.,Вы можете добавить максимум 3 кошелька. Пожалуйста,,,,,,
 ,wallet_setting_add_wallet_notice,"Hardware wallet is for personal use only. Do not share to avoid asset risks.",,,,,,,
-,wallet_setting_add_wallet_confirm,"I Understand".,,,,,,,
+,wallet_setting_add_wallet_confirm,"I Understand",,,,,,,
 ,wallet_setting_add_wallet,+ Add Wallet,+ Добавить,#ERROR!,+添加钱包,,,,
 ,fingerprint_passcode_mid_btn,Fingerprint & Passcode,Биометрия и код-пароль,지문 & 패스코드,指纹/密码,,,,
 ,fingerprint_passcode_fingerprint_setting,Fingerprint Settings,Настройки отпечатков,지문 설정,指纹设置,,,,
@@ -1010,9 +1010,6 @@ Wallet Profile,wallet_profile_mid_btn,Wallet Profile,Профиль кошель
 ,multisig_decoding_qr_title,How to import multisig wallet,,,,,,,
 ,multisig_decoding_qr_link,https://keyst.one/t/3rd/Multisig/import,,,,,,,
 ,multisig_scan_multisig_notice,Scan the multisig wallet QR code to import,,,,,,,
-,connect_nunchuk_multisig_link,"https://keyst.one/t/3rd/Multisig/
-nunchuk",https://keyst.one/t/3rd/Multisig/\nnunchuk,,https://keyst.one/t/3rd/Multisig/nunchuk,,,,
-,connect_sparrow_multisig_link,"https://keyst.one/t/3rd/Multisig/
-sparrow",https://keyst.one/t/3rd/Multisig/sparrow,,https://keyst.one/t/3rd/Multisig/sparrow,,,,
-,connect_bw_multisig_link,"https://keyst.one/t/3rd/Multisig/
-bw",https://keyst.one/t/3rd/Multisig/bw,,https://keyst.one/t/3rd/Multisig/bw,,,,
+,connect_nunchuk_multisig_link,"https://keyst.one/t/3rd/Multisig/nunchuk",https://keyst.one/t/3rd/Multisig/\nnunchuk,,https://keyst.one/t/3rd/Multisig/nunchuk,,,,
+,connect_sparrow_multisig_link,"https://keyst.one/t/3rd/Multisig/sparrow",https://keyst.one/t/3rd/Multisig/sparrow,,https://keyst.one/t/3rd/Multisig/sparrow,,,,
+,connect_bw_multisig_link,https://keyst.one/t/3rd/Multisig/bw,https://keyst.one/t/3rd/Multisig/bw,,https://keyst.one/t/3rd/Multisig/bw,,,,

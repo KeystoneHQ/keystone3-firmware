@@ -771,8 +771,7 @@ static void CreateChangeEntropyView(void)
     g_entropyMethods[1].descCont = descCont;
     lv_obj_align_to(descCont, method_cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
     lv_obj_set_style_radius(descCont, 24, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(descCont, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(descCont, LV_OPA_12, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(descCont, WHITE_COLOR_OPA12, LV_PART_MAIN);
 
     label = GuiCreateIllustrateLabel(descCont, _("change_entropy_dice_desc"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);

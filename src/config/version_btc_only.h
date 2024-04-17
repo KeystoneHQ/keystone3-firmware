@@ -5,8 +5,8 @@
 #define PLUS10(x) CONCAT(1, x)
 
 #define SOFTWARE_VERSION_MAX_LEN            (32)
-#define SOFTWARE_VERSION_MAJOR              0
-#define SOFTWARE_VERSION_MINOR              9
+#define SOFTWARE_VERSION_MAJOR              1
+#define SOFTWARE_VERSION_MINOR              1
 #define SOFTWARE_VERSION_BUILD              0
 #define SOFTWARE_VERSION                    (SOFTWARE_VERSION_MAJOR * 10000 + SOFTWARE_VERSION_MINOR * 100 + SOFTWARE_VERSION_BUILD)
 

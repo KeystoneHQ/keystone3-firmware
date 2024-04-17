@@ -152,19 +152,6 @@ uint16_t GetCurrentUSParsingRequestID()
 }
 
 #ifndef BTC_ONLY
-struct UREncodeResult *get_connect_metamask_ur_unlimited(PtrBytes master_fingerprint,
-                                                         uint32_t master_fingerprint_length,
-                                                         enum ETHAccountType account_type,
-                                                         PtrT_CSliceFFI_ExtendedPublicKey public_keys)
-{
-}
-
-struct UREncodeResult *get_connect_metamask_ur(PtrBytes master_fingerprint,
-                                               uint32_t master_fingerprint_length,
-                                               enum ETHAccountType account_type,
-                                               PtrT_CSliceFFI_ExtendedPublicKey public_keys)
-{
-}
 void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
 {
 }
@@ -615,4 +602,8 @@ int32_t read_qrcode()
 
         i++;
     }
+}
+
+bool GetEnsName(const char *addr, char *name) {
+    return false;
 }

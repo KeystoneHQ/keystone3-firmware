@@ -1344,6 +1344,8 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
             item = cJSON_GetObjectItem(item, typeBuf);
             if (item != NULL) {
                 return GuiWidgetFactoryCreate(parent, item);
+            } else {
+                return NULL;
             }
         } else {
             return NULL;
@@ -1531,8 +1533,6 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
         } else if (i == 1) {
             tabChild = lv_tabview_add_tab(tabView, "Details");
         }
-        // lv_obj_set_size(tabChild, 408, 530);
-        // lv_obj_align(g_imgCont, LV_ALIGN_TOP_MID, 0, 0);
         lv_obj_set_style_pad_all(tabChild, 0, LV_PART_MAIN);
         lv_obj_set_style_border_width(tabChild, 0, LV_PART_MAIN);
         lv_obj_set_style_shadow_width(tabChild, 0, LV_PART_MAIN);

@@ -951,7 +951,7 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"wallet_profile_single_sign_title", "Single-Sig Wallet"},
     {"wallet_profile_single_wallet_title", "Singlesig Wallet"},
     {"wallet_setting_add_wallet", "+ Add Wallet"},
-    {"wallet_setting_add_wallet_confirm", "I Understand."},
+    {"wallet_setting_add_wallet_confirm", "I Understand"},
     {"wallet_setting_add_wallet_limit", "Add Limited"},
     {"wallet_setting_add_wallet_limit_desc", "You can only add up to a maximum of 3 wallets. Please delete other wallets before adding a new wallet."},
     {"wallet_setting_add_wallet_notice", "Hardware wallet is for personal use only. Do not share to avoid asset risks."},

@@ -488,12 +488,10 @@ static uint8_t GetEthPublickeyIndex(char* rootPath);
 
 void GuiSetEthUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
-#ifndef COMPILE_SIMULATOR
     g_urResult = urResult;
     g_urMultiResult = urMultiResult;
     g_isMulti = multi;
     g_viewType = g_isMulti ? g_urMultiResult->t : g_urResult->t;
-#endif
 }
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                                                           \
@@ -768,7 +766,6 @@ void *GuiGetEthData(void)
     memset_s(g_toEthEnsName, sizeof(g_toEthEnsName), 0, sizeof(g_toEthEnsName));
     g_contractDataExist = false;
     g_erc20Name = NULL;
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
@@ -786,60 +783,16 @@ void *GuiGetEthData(void)
         printf("decode finish\n");
     } while (0);
     free_ptr_string(rootPath);
-#else
-    TransactionParseResult_DisplayETH *g_parseResult = SRAM_MALLOC(sizeof(TransactionParseResult_DisplayETH));
-    DisplayETH *eth = SRAM_MALLOC(sizeof(DisplayETH));
-    g_parseResult->data = eth;
-    g_parseResult->error_code = 0;
-    // eth->tx_type = "legacy";
-    eth->tx_type = "FeeMarket";
-    eth->overview = SRAM_MALLOC(sizeof(DisplayETHOverview));
-    eth->overview->from = SRAM_MALLOC(sizeof(PtrT_VecFFI_DisplayTxOverviewInput));
-    eth->overview->value = "0.024819276 ETH";
 
-    eth->overview->gas_price = "0.000000001 gwei";
-    eth->overview->gas_limit = "21000";
-    // eth->overview->network = "ETH Mainnet";
-    eth->overview->max_txn_fee = "0.00000021 ETH";
-    eth->overview->from = "0x1q3qqt6mthrlgshy542tpf408lcfa7je92scxtz8";
-    eth->overview->to = "0x12Z82nWhvUfFC4tn6iKb1jzuoCnnmsgN";
-
-    eth->detail = SRAM_MALLOC(sizeof(DisplayETHDetail));
-    eth->detail->max_fee = "49.8089 Gwei";
-    eth->detail->max_priority = "49.8089 Gwei";
-    eth->detail->max_fee_price = "49.8089 Gwei";
-    eth->detail->max_priority_price = "49.8089 Gwei";
-    eth->detail->input = "123";
-    g_contractDataExist = false;
-    struct Response_DisplayContractData *contractData = SRAM_MALLOC(sizeof(Response_DisplayContractData));
-    contractData->data = SRAM_MALLOC(sizeof(DisplayContractData));
-    contractData->data->contract_name = "contract name";
-    contractData->data->method_name = "method_name name";
-    contractData->data->params = SRAM_MALLOC(sizeof(VecFFI_DisplayContractParam));
-    contractData->data->params[0].size = 1;
-    contractData->data->params[0].cap = 1;
-    contractData->data->params[0].data = SRAM_MALLOC(sizeof(DisplayContractParam));
-    contractData->data->params[0].data->name = "name1";
-    contractData->data->params[0].data->value = "value";
-    g_contractData = contractData;
-    g_fromEnsExist = false;
-    g_toEnsExist = true;
-    strcpy(g_fromEthEnsName, "kantfish.eth");
-    strcpy(g_toEthEnsName, "test.eth");
-#endif
     return g_parseResult;
 }
 
 PtrT_TransactionCheckResult GuiGetEthCheckResult(void)
 {
-#ifndef COMPILE_SIMULATOR
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
     return eth_check(data, mfp, sizeof(mfp));
-#else
-    return NULL;
-#endif
 }
 
 void GetEthTransType(void *indata, void *param, uint32_t maxLen)

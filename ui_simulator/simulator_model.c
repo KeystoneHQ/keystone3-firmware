@@ -152,10 +152,6 @@ uint16_t GetCurrentUSParsingRequestID()
 }
 
 #ifndef BTC_ONLY
-PtrT_TransactionParseResult_EthParsedErc20Transaction eth_parse_erc20(PtrString input,
-                                                                      uint32_t decimal)
-{
-}
 struct UREncodeResult *get_connect_metamask_ur_unlimited(PtrBytes master_fingerprint,
                                                          uint32_t master_fingerprint_length,
                                                          enum ETHAccountType account_type,

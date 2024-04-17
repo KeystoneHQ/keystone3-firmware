@@ -247,7 +247,7 @@ void GuiSDCardExportHandler(lv_event_t *e)
         if (SdCardInsert()) {
             func();
         } else {
-            g_hintBox = GuiCreateErrorCodeWindow(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_hintBox, NULL);
+            g_hintBox = GuiCreateErrorCodeWindow(ERR_EXPORT_XPUB_SDCARD_NOT_DETECTED, &g_hintBox, NULL);
         }
         return;
     }
@@ -364,6 +364,10 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
     case ERR_MULTISIG_TRANSACTION_ALREADY_SIGNED:
         titleText = _("mutlisig_transaction_already_signed");
         descText = _("mutlisig_transaction_already_signed_desc");
+        break;
+    case ERR_EXPORT_XPUB_SDCARD_NOT_DETECTED:
+        titleText = _("multisig_export_sdcard_not_detected");
+        descText = _("multisig_export_sdcard_not_detected_desc");
         break;
     }
 

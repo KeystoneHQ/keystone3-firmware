@@ -519,7 +519,6 @@ static UREncodeResult *GetEthSignDataDynamic(bool isUnlimited)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
@@ -536,15 +535,6 @@ static UREncodeResult *GetEthSignDataDynamic(bool isUnlimited)
     } while (0);
     SetLockScreen(enable);
     return encodeResult;
-#else
-    UREncodeResult *encodeResult = SRAM_MALLOC(sizeof(UREncodeResult));
-    encodeResult->is_multi_part = 0;
-    encodeResult->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    encodeResult->encoder = NULL;
-    encodeResult->error_code = 0;
-    encodeResult->error_message = NULL;
-    return encodeResult;
-#endif
 }
 
 static bool isErc20Transfer(void *param)
@@ -593,7 +583,6 @@ UREncodeResult *GuiGetEthSignUrDataUnlimited(void)
 
 void *GuiGetEthTypeData(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
@@ -611,9 +600,6 @@ void *GuiGetEthTypeData(void)
     free_TransactionCheckResult(result);
     free_ptr_string(rootPath);
     return g_parseResult;
-#else
-    return NULL;
-#endif
 }
 
 void GetEthTypedDataDomianName(void *indata, void *param, uint32_t maxLen)
@@ -672,7 +658,6 @@ void GetEthTypedDataFrom(void *indata, void *param, uint32_t maxLen)
 
 void *GuiGetEthPersonalMessage(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
@@ -689,14 +674,6 @@ void *GuiGetEthPersonalMessage(void)
     } while (0);
     free_TransactionCheckResult(result);
     free_ptr_string(rootPath);
-#else
-    PtrT_TransactionParseResult_DisplayETHPersonalMessage parseResult = SRAM_MALLOC(sizeof(TransactionParseResult_DisplayETHPersonalMessage));
-    parseResult->data = SRAM_MALLOC(sizeof(DisplayETHPersonalMessage));
-    parseResult->data->from = "0x6c2ecd7f1a7c4c2a4a4f4d6b8f3c1d7f9f2a4f4d";
-    parseResult->data->utf8_message = "hello world";
-    parseResult->data->raw_message = "0x68656c6c6f20776f726c64";
-    g_parseResult = (void *)parseResult;
-#endif
     return g_parseResult;
 }
 
@@ -783,7 +760,6 @@ void *GuiGetEthData(void)
         printf("decode finish\n");
     } while (0);
     free_ptr_string(rootPath);
-
     return g_parseResult;
 }
 
@@ -1073,9 +1049,7 @@ static bool GetEthErc20ContractData(void *parseResult)
         g_contractDataExist = true;
         g_contractData = contractData;
     } else {
-#ifndef COMPILE_SIMULATOR
         free_Response_DisplayContractData(contractData);
-#endif
         return false;
     }
     char *to = result->data->detail->to;
@@ -1102,9 +1076,7 @@ bool GetEthContractFromInternal(char *address, char *inputData)
                 g_contractDataExist = true;
                 g_contractData = contractData;
             } else {
-#ifndef COMPILE_SIMULATOR
                 free_Response_DisplayContractData(contractData);
-#endif
                 return false;
             }
             return true;
@@ -1133,9 +1105,7 @@ bool GetEthContractFromExternal(char *address, char *selectorId, uint64_t chainI
             g_contractData = contractData;
         } else {
             SRAM_FREE(contractMethodJson);
-#ifndef COMPILE_SIMULATOR
             free_Response_DisplayContractData(contractData);
-#endif
             return false;
         }
         SRAM_FREE(contractMethodJson);
@@ -1147,7 +1117,6 @@ bool GetEthContractFromExternal(char *address, char *selectorId, uint64_t chainI
 
 void FreeContractData(void)
 {
-#ifndef COMPILE_SIMULATOR
     if (g_contractData != NULL) {
         free_Response_DisplayContractData(g_contractData);
         g_contractData = NULL;
@@ -1156,16 +1125,13 @@ void FreeContractData(void)
         free_TransactionParseResult_EthParsedErc20Transaction(g_erc20ContractData);
         g_erc20ContractData = NULL;
     }
-#endif
 }
 
 void FreeEthMemory(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     FreeContractData();
-#endif
 }
 #endif

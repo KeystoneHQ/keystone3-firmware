@@ -10,7 +10,7 @@ def extract_unique_characters(df, font_size, column):
         additional_chars = "QWERTYUIOPASDFGHJKLZXCVBNM,/:\";'[]<>~!@#$%^&*()_+=0987654321·qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM[]{}#%^*+=_\\|~<>€£¥·-/:;()$&`.?!'@"
         unique_chars = set(additional_chars)
     else:
-        additional_chars = "QWERTYUIOPASDFGHJKLZXCVBNM0987654321qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM"
+        additional_chars = "0987654321"
         unique_chars = set(additional_chars)
     subset = df[df['font'] == font_size][column].dropna()
     subset.apply(lambda x: unique_chars.update(set(x)))

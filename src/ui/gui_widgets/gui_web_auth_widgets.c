@@ -80,7 +80,7 @@ void GuiWebAuthIntroWidget(lv_obj_t *parent)
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(cont, GuiWebAuthQrcodeHandler, LV_EVENT_CLICKED, NULL);
 
-    label = GuiCreateIllustrateLabel(cont, _("verify_cont1_link"));
+    label = GuiCreateIllustrateLabel(cont, _("verify_qr_link"));
     lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 0, 0);
 
@@ -103,7 +103,7 @@ void GuiWebAuthIntroWidget(lv_obj_t *parent)
     label = GuiCreateIllustrateLabel(parent, _("verify_cont3"));
     GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("verify_scan_qr_code"));
+    lv_obj_t *btn = GuiCreateBtnWithFont(parent, _("verify_scan_qr_code"), g_defTextFont);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_size(btn, 408, 66);
     lv_obj_add_event_cb(btn, GuiWebAuthScanQRCodeHandler, LV_EVENT_CLICKED, NULL);

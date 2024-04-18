@@ -666,6 +666,10 @@ void AccountPublicInfoTest(int argc, char *argv[])
     }
 }
 
+static int GetChainTableSizeFromJson(cJSON *keyJson)
+{
+    return cJSON_GetObjectItem(keyJson, "ar") != NULL ? NUMBER_OF_ARRAYS(g_chainTable) : NUMBER_OF_ARRAYS(g_chainTable) - 1;
+}
 
 static bool GetPublicKeyFromJsonString(const char *string)
 {
@@ -692,12 +696,15 @@ static bool GetPublicKeyFromJsonString(const char *string)
             ret = false;
             break;
         }
-        if (cJSON_GetArraySize(keyJson) > NUMBER_OF_ARRAYS(g_chainTable)) {
-            printf("chain number does not match:%d %d\n", cJSON_GetArraySize(keyJson), NUMBER_OF_ARRAYS(g_chainTable));
+
+        int arraySize = GetChainTableSizeFromJson(keyJson);
+
+        if (cJSON_GetArraySize(keyJson) != arraySize) {
+            printf("chain number does not match:%d %d\n", cJSON_GetArraySize(keyJson), arraySize);
             ret = false;
             break;
         }
-        for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
+        for (i = 0; i < arraySize; i++) {
             chainJson = cJSON_GetObjectItem(keyJson, g_chainTable[i].name);
             if (g_chainTable[i].cryptoKey == RSA_KEY && chainJson == NULL) {
                 continue;

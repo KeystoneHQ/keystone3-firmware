@@ -67,7 +67,10 @@ pub fn sign_msg(msg: &str, seed: &[u8], path: &String) -> Result<Vec<u8>> {
 pub fn parse_psbt(psbt_hex: Vec<u8>, context: ParseContext) -> Result<ParsedTx> {
     let psbt = deserialize_psbt(psbt_hex)?;
     let wpsbt = WrappedPsbt { psbt };
-    wpsbt.parse(Some(&context))
+
+    let result = wpsbt.parse(Some(&context));
+    rust_tools::debug!(format!("{:?}", result));
+    result
 }
 
 pub fn check_psbt(psbt_hex: Vec<u8>, context: ParseContext) -> Result<()> {

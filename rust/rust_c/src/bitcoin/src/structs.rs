@@ -9,7 +9,7 @@ use common_rust_c::free::Free;
 use common_rust_c::structs::TransactionParseResult;
 use common_rust_c::types::{PtrString, PtrT};
 use common_rust_c::utils::convert_c_char;
-use common_rust_c::{check_and_free_ptr, impl_c_ptr, make_free_method};
+use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
 
 #[repr(C)]
 pub struct DisplayTx {
@@ -267,3 +267,18 @@ impl Free for DisplayTxDetailOutput {
         }
     }
 }
+
+#[repr(C)]
+pub struct DisplayBtcMsg {
+    pub detail: PtrString,
+}
+
+impl_c_ptr!(DisplayBtcMsg);
+
+impl Free for DisplayBtcMsg {
+    fn free(&self) {
+        free_str_ptr!(self.detail);
+    }
+}
+
+make_free_method!(TransactionParseResult<DisplayBtcMsg>);

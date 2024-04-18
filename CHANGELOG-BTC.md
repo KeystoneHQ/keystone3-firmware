@@ -1,10 +1,18 @@
-## 0.9.0-BTC (2024-03-08)
+## 1.1.0-BTC (2024-04-19)
 
-### v0.9.0 Bitcoin-Only Beta Version
- A Gift to the Bitcoin Community
-### What’s New:
+### v1.1.0 Bitcoin-Only Firmware
+
+### What's New:
+1. Added support for multi-signature wallets on the BTC mainnet
+2. Implemented the capability to generate 20-word Shamir Backup phrases
+3. Introduced support for formatting MicroSD cards
+
+
+## 1.0.0-BTC (2024-04-02)
+
+### v1.0.0 Bitcoin-Only Firmware
+
+### What's New:
 1. Bitcoin-only firmware
-2. Blue, Sparrow, Nunchuck and Specter
+2. Blue, Sparrow, Nunchuck
 3. Both Bitcoin testnet and the main network
-
-

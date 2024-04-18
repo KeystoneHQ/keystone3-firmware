@@ -113,7 +113,7 @@ void GuiLockDeviceInit(void *param)
         g_countDownTimer = lv_timer_create(CountDownTimerWipeDeviceHandler, 1000, btn);
     } else {
         lv_obj_set_style_text_color(label, lv_color_hex(0xc4c4c4), LV_PART_MAIN);
-        lv_obj_t *btn = GuiCreateBtn(cont, _("forgot_password_reset_passcode_intro_title"));
+        lv_obj_t *btn = GuiCreateBtnWithFont(cont, _("forgot_password_reset_passcode_intro_title"), g_defTextFont);
         lv_obj_set_size(btn, 302, 66);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 622 - 96);
         lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_STATE_DEFAULT);

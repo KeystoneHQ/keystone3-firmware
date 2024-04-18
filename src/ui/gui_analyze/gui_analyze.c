@@ -228,8 +228,6 @@ const lv_font_t *GetLvglTextFont(char *fontStr)
         return &openSansEnText;
     } else if (!strcmp(fontStr, "openSansEnIllustrate")) {
         return &openSansEnIllustrate;
-    } else if (!strcmp(fontStr, "openSansEnBoldIllustrate")) {
-        return &openSansEnBoldIllustrate;
     } else if (!strcmp(fontStr, "openSansDesc")) {
         return &openSansDesc;
     }

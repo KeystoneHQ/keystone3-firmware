@@ -65,7 +65,7 @@ static void GuiWipeDeviceNVSBarInit()
 
 void GuiWipeDeviceEntranceWidget(lv_obj_t *parent)
 {
-    lv_obj_t *label = GuiCreateLittleTitleLabel(parent, _("wipe_device"));
+    lv_obj_t *label = GuiCreateLittleTitleLabel(parent, _("system_settings_wipe_device_wipe_title"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 140);
 
     label = GuiCreateNoticeLabel(parent, _("system_settings_wipe_device_wipe_desc"));

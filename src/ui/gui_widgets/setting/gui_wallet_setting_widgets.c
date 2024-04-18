@@ -133,7 +133,7 @@ void GuiWalletSelectAddWallet(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     char tempBuf[BUFFER_SIZE_16];
-    snprintf_s(tempBuf, BUFFER_SIZE_16, "#F5870A %d/3#", g_walletAmount);
+    snprintf_s(tempBuf, sizeof(tempBuf), "#F5870A %d/3#", g_walletAmount);
     lv_obj_t *numLabel = GuiCreateTitleLabel(parent, tempBuf);
     lv_obj_align_to(numLabel, label, LV_ALIGN_OUT_RIGHT_MID, 36, 0);
     lv_label_set_recolor(numLabel, true);

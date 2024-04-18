@@ -1,3 +1,4 @@
+#include "gui_style.h"
 #ifndef BTC_ONLY
 #include "gui_multi_accounts_receive_widgets.h"
 #include "gui_status_bar.h"
@@ -1015,7 +1016,7 @@ static void GuiCreateSwitchAccountWidget()
     for (uint32_t i = 0; i < ACCOUNT_INDEX_MAX; i++) {
         char temp[BUFFER_SIZE_64];
         snprintf_s(temp, sizeof(temp), "%s-%u", _("account_head"), i);
-        label = GuiCreateLabelWithFont(cont, temp, &buttonFont);
+        label = GuiCreateLabelWithFont(cont, temp, g_defTextFont);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         g_multiAccountsReceiveWidgets.switchAccountWidgets[index].addressCountLabel = label;
 

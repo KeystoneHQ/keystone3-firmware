@@ -580,46 +580,19 @@ static void OpenMoreViewHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
-        g_moreHintbox = NULL;
+        GUI_DEL_OBJ(g_moreHintbox)
         GuiFrameOpenView(lv_event_get_user_data(e));
     }
 }
 
 static void OpenMoreSettingHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        g_moreHintbox = GuiCreateHintBox(lv_scr_act(), 480, 228, true);
-        lv_obj_add_event_cb(lv_obj_get_child(g_moreHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_moreHintbox);
-        lv_obj_t *label = GuiCreateTextLabel(g_moreHintbox, _("home_more_connect_wallet"));
-        lv_obj_t *img = GuiCreateImg(g_moreHintbox, &imgConnect);
-        GuiButton_t table[2] = {
-            {
-                .obj = img,
-                .align = LV_ALIGN_LEFT_MID,
-                .position = {24, 0},
-            },
-            {
-                .obj = label,
-                .align = LV_ALIGN_LEFT_MID,
-                .position = {76, 0},
-            },
-        };
-        lv_obj_t *btn = GuiCreateButton(g_moreHintbox, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                                        OpenMoreViewHandler, &g_connectWalletView);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 596);
-
-        label = GuiCreateTextLabel(g_moreHintbox, _("home_more_device_setting"));
-        img = GuiCreateImg(g_moreHintbox, &imgSettings);
-        table[0].obj = img;
-        table[1].obj = label;
-
-        btn = GuiCreateButton(g_moreHintbox, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                              OpenMoreViewHandler, &g_settingView);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 692);
-    }
+    MoreInfoTable_t moreInfoTable[] = {
+        {.name = _("home_more_connect_wallet"), .src = &imgConnect, .callBack = OpenMoreViewHandler, &g_connectWalletView},
+        {.name = _("home_more_device_setting"), .src = &imgSettings, .callBack = OpenMoreViewHandler, &g_settingView},
+    };
+    g_moreHintbox = GuiCreateMoreInfoHintBox(NULL, NULL, moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true);
+    lv_obj_add_event_cb(lv_obj_get_child(g_moreHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_moreHintbox);
 }
 
 static void OpenManageAssetsHandler(lv_event_t *e)

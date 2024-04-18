@@ -40,7 +40,7 @@ static void VibrationSwitchHandler(lv_event_t * e);
 void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset);
 void OpenForgetPasswordHandler(lv_event_t *e);
 
-void GuiSystemSettingAreaInit()
+void GuiSystemSettingAreaInit(void)
 {
     g_pageWidget = CreatePageWidget();
     container = g_pageWidget->contentZone;
@@ -71,7 +71,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
     uint16_t offset = 0;
 
 #ifndef BTC_ONLY
-    button = GuiCreateSelectButton(parent, _("language_title"), &imgArrowRight,
+    button = GuiCreateSelectButton(parent, _("language_little_title"), &imgArrowRight,
                                    OpenLanguageSelectHandler, NULL, false);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
     offset += 100;
@@ -116,13 +116,13 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
     lv_obj_set_style_text_color(lv_obj_get_child(button, 0), lv_color_hex(0xf55831), LV_PART_MAIN);
 }
 
-void GuiSystemSettingNVSBarInit()
+void GuiSystemSettingNVSBarInit(void)
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("device_setting_system_setting_title"));
 }
 
-void GuiSystemSettingAreaDeInit()
+void GuiSystemSettingAreaDeInit(void)
 {
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     if (container != NULL) {
@@ -135,7 +135,7 @@ void GuiSystemSettingAreaDeInit()
     }
 }
 
-void GuiSystemSettingAreaRefresh()
+void GuiSystemSettingAreaRefresh(void)
 {
     GuiSystemSettingNVSBarInit();
     PassWordPinHintRefresh(g_keyboardWidget);

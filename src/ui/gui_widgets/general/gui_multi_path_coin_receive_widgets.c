@@ -307,7 +307,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, ChangePathHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgPath);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, _("derivation_path_change"), &buttonFont);
+    label = GuiCreateLabelWithFont(btn, _("derivation_path_change"), g_defTextFont);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 
     btn = lv_btn_create(cont);
@@ -320,7 +320,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, TutorialHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgTutorial);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, _("Tutorial"), &buttonFont);
+    label = GuiCreateLabelWithFont(btn, _("Tutorial"), g_defTextFont);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 }
 

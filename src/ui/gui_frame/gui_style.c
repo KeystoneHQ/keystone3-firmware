@@ -23,7 +23,10 @@ static const GuiFontDesc_t g_langFontArr[] = {
     {LANG_RU, &rusTitle, &rusLittleTitle, &rusText, &rusIllustrate, &rusIllustrate},
 #endif
 #ifdef CN_SUPPORT
-    {LANG_ZH_CN, &cnTitle, &openSansCnLittleTitle, &openSansCnText, &openSansCnIllustrate, &openSansCnIllustrate},
+    {LANG_ZH_CN, &cnTitle, &cnLittleTitle, &cnText, &cnIllustrate, &cnIllustrate},
+#endif
+#ifdef KO_SUPPORT
+    {LANG_KO, &koTitle, &koLittleTitle, &koText, &koIllustrate, &koIllustrate},
 #endif
 };
 

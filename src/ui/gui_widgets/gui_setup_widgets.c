@@ -24,9 +24,7 @@ static const char *g_languageList[] = {
     "English",
     "Русский язык",
     "简体中文",
-    "Español",
     "korean", // "한국인",
-    "Japanese",
     "German",
 };
 
@@ -122,7 +120,7 @@ void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
         lv_obj_t *checkBox = GuiCreateSingleCheckBox(parent, "");
         g_languageCheck[i] = checkBox;
         if (i == SETUP_CHINESE) {
-            label = GuiCreateLabelWithFont(parent, g_languageList[i], &openSansCnText);
+            label = GuiCreateLabelWithFont(parent, g_languageList[i], &cnText);
         } else {
             label = GuiCreateLabelWithFont(parent, g_languageList[i], &openSansLanguage);
         }
@@ -130,8 +128,7 @@ void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
         GuiButton_t table[] = {
-            {
-                .obj = label,
+            {.obj = label,
                 .align = LV_ALIGN_LEFT_MID,
                 .position = {24, 0},
             },

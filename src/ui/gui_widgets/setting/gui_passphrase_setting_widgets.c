@@ -121,7 +121,7 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent)
     lv_obj_set_style_bg_color(ta, BLACK_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_color(ta, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_border_opa(ta, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_text_font(ta, &buttonFont, LV_PART_MAIN);
+    lv_obj_set_style_text_font(ta, g_defTextFont, 0);
     lv_obj_add_event_cb(ta, SetKeyboardTaHandler, LV_EVENT_ALL, ta);
     lv_obj_t *img = GuiCreateImg(parent, &imgEyeOff);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 411, 168 - GUI_MAIN_AREA_OFFSET);
@@ -152,6 +152,7 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent)
     lv_textarea_set_max_length(repeatTa, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(repeatTa, true);
     lv_obj_set_scrollbar_mode(repeatTa, LV_SCROLLBAR_MODE_OFF);
+    lv_obj_set_style_text_font(repeatTa, g_defTextFont, 0);
 
     lv_obj_add_event_cb(repeatTa, SetKeyboardTaHandler, LV_EVENT_ALL, repeatTa);
     img = GuiCreateImg(parent, &imgEyeOff);

@@ -594,9 +594,9 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
         btnOffset = 0;
     }
 
-    btn = GuiCreateBtn(parent, _("Update"));
+    btn = GuiCreateBtnWithFont(parent, _("Update"), g_defTextFont);
     lv_obj_set_size(btn, 408, 66);
-    GuiAlignToPrevObj(btn, LV_ALIGN_OUT_BOTTOM_MID, btnOffset, 20);
+    GuiAlignToPrevObj(btn, LV_ALIGN_OUT_BOTTOM_LEFT, btnOffset, 20);
     lv_obj_add_event_cb(btn, FirmwareSdcardUpdateHandler, LV_EVENT_CLICKED, &param);
 
     lv_obj_t *spacer = GuiCreateSpacer(parent, 24);

@@ -289,13 +289,9 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
 
     char descBuff[BUFFER_SIZE_128] = {0};
     const char *desc = _("device_setting_wallet_setting_desc");
-    printf("desc = %s\n", desc);
-    printf("strlen = %d\n", strlen(desc));
     int descLen = strnlen_s(desc, sizeof(descBuff));
-    printf("desclen = %d\n", descLen);
     if (descLen > DEFAULT_ENGLISH_SETTING_DESC_LEN) {
         int len = FindStringCharPosition(desc, '/', 2);
-        printf("len = %d\n", len);
         strncpy_s(descBuff, sizeof(descBuff) - 3, desc, FindStringCharPosition(desc, '/', 2) - 1);
         strcat_s(descBuff, sizeof(descBuff), "...");
     } else {
@@ -742,7 +738,6 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
         strcpy_s(midLabel, sizeof(midLabel), _("wallet_setting_passphrase"));
         break;
     case DEVICE_SETTING_PASSPHRASE_VERIFY:
-        printf("wallet_setting_passphrase...\n");
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         currTileIndex = DEVICE_SETTING_PASSPHRASE_VERIFY;
         destructCb = GuiDelEnterPasscode;

@@ -337,7 +337,6 @@ static void GuiCreateBackupWidget(lv_obj_t *parent)
     lv_obj_set_style_text_opa(labelNotice, LV_OPA_60, LV_PART_MAIN);
 
     lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRightO);
-
     GuiButton_t table[] = {
         {
             .obj = img,

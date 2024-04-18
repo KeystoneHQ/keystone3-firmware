@@ -15,7 +15,10 @@ const LanguageInfo_t g_languageList[] = {
     {LANG_RU, "ru"},
 #endif
 #if CN_SUPPORT
-    {LANG_ZH_CN, "zh"},
+    {LANG_ZH_CN, "zh-CN"},
+#endif
+#if KO_SUPPORT
+    {LANG_KO, "ko"},
 #endif
 };
 

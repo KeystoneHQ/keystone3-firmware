@@ -620,6 +620,7 @@ void *GuiCreateFullKeyBoard(lv_obj_t *parent, lv_event_cb_t kbCb, lv_keyboard_us
     lv_obj_set_style_bg_color(textArea, BLACK_COLOR, 0);
     lv_obj_set_style_text_opa(textArea, 0, 0);
     lv_obj_clear_flag(textArea, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_text_font(textArea, g_defTextFont, 0);
     lv_obj_set_style_border_width(textArea, 0, LV_PART_MAIN);
     lv_keyboard_set_textarea(keyBoard->kb, textArea);
     keyBoard->ta = textArea;

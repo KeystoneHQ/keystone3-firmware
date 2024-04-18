@@ -337,7 +337,7 @@ void GuiForgetPassEntranceWidget(void *parent)
     lv_obj_align(desc, LV_ALIGN_TOP_MID, 0, 336 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("forgot_password_reset_passcode_intro_button"));
+    lv_obj_t *btn = GuiCreateBtnWithFont(parent, _("forgot_password_reset_passcode_intro_button"), g_defTextFont);
     lv_obj_set_size(btn, 233, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -64);
     lv_obj_set_style_bg_color(btn, BLACK_COLOR, LV_PART_MAIN);

@@ -34,14 +34,25 @@ impl TxParser for WrappedPsbt {
                 Ok(Network::BitcoinTestnet)
             };
         }
-        let first_input = self.psbt.inputs.get(0).ok_or(BitcoinError::InvalidInput)?;
-        let path = if let Some((_, (_, path))) = first_input.bip32_derivation.first_key_value() {
-            path
-        } else if let Some((_, (_, (_, path)))) = first_input.tap_key_origins.first_key_value() {
-            path
-        } else {
-            return Err(BitcoinError::InvalidInput);
-        };
+        let possible_my_input = self
+            .psbt
+            .inputs
+            .iter()
+            .find(|v| {
+                v.bip32_derivation.first_key_value().is_some()
+                    || v.tap_key_origins.first_key_value().is_some()
+            })
+            .ok_or(BitcoinError::InvalidInput)?;
+        let path =
+            if let Some((_, (_, path))) = possible_my_input.bip32_derivation.first_key_value() {
+                path
+            } else if let Some((_, (_, (_, path)))) =
+                possible_my_input.tap_key_origins.first_key_value()
+            {
+                path
+            } else {
+                return Err(BitcoinError::InvalidInput);
+            };
         let coin_type = path.index(1);
         match coin_type {
             ChildNumber::Hardened { index } => match index {

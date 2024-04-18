@@ -173,6 +173,7 @@ mod test {
                 is_external: false,
                 need_sign: true,
                 sign_status: (0, 1),
+                ecdsa_sighash_type: 0x1,
             }
         };
     }

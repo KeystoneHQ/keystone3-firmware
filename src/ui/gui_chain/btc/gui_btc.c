@@ -693,7 +693,7 @@ void *GetPsbtInputDetailData(uint8_t *row, uint8_t *col, void *param)
             if (i == 0) {
                 snprintf_s(indata[i][j], BUFFER_SIZE_64, "%d\n", j + 1);
             } else {
-                strcpy_s(indata[i][j], BUFFER_SIZE_64, psbt->detail->from->data[j].address);
+                strcpy_s(indata[i][j], BUFFER_SIZE_64, psbt->detail->from->data[i].has_address ? psbt->detail->from->data[j].address: "Empty");
             }
         }
     }

@@ -45,6 +45,7 @@ impl TxData {
             is_external: false,
             sign_status: (0, 1),
             need_sign: true,
+            ecdsa_sighash_type: 0x01,
         })
     }
     fn parse_raw_tx_output(&self, output: &TxOut) -> Result<ParsedOutput> {

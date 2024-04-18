@@ -14,8 +14,8 @@ typedef enum {
     SETUP_ENGLISH = 0,
     SETUP_RUSSIAN,
     SETUP_CHINESE,
-    SETUP_SPANISH,
     SETUP_KOREAN,
+    SETUP_SPANISH,
 
     SETUP_LANGUAGE_BUTT,
 } SETUP_LANGUAGE_ENUM;
@@ -23,7 +23,7 @@ typedef enum {
 static const char *g_languageList[] = {
     "English",
     "Русский язык",
-    "繁體中文",
+    "简体中文",
     "Español",
     "korean", // "한국인",
     "Japanese",
@@ -59,7 +59,7 @@ static PageWidget_t *g_pageWidget;
 #ifdef BTC_ONLY
 #define SUPPORT_WALLET_INDEX SETUP_ENGLISH
 #else
-#define SUPPORT_WALLET_INDEX SETUP_RUSSIAN
+#define SUPPORT_WALLET_INDEX SETUP_KOREAN
 #endif
 
 static void GuiWelcomeWidget(lv_obj_t *parent)
@@ -98,8 +98,7 @@ static void SelectLanguageHandler(lv_event_t *e)
             }
         }
 
-        if (newCheckIndex != SETUP_CHINESE)
-            LanguageSwitch(newCheckIndex);
+        LanguageSwitch(newCheckIndex);
         GuiEmitSignal(GUI_EVENT_CHANGE_LANGUAGE, NULL, 0);
     }
 }

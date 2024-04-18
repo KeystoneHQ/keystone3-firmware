@@ -279,7 +279,7 @@ LV_FONT_DECLARE(openSans_24);
 LV_FONT_DECLARE(buttonFont);
 LV_FONT_DECLARE(openSansDesc);
 LV_FONT_DECLARE(openSansLanguage);
-LV_FONT_DECLARE(openSansCnTitle);
+LV_FONT_DECLARE(cnTitle);
 LV_FONT_DECLARE(openSansCnLittleTitle);
 LV_FONT_DECLARE(openSansCnText);
 LV_FONT_DECLARE(openSansCnIllustrate);

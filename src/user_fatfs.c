@@ -420,12 +420,14 @@ void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint3
 
     while (1) {
         res = f_readdir(&dir, &fno);
-        if (res != FR_OK || fno.fname[0] == 0 || (FatfsFileGetSize(fno.fname) > MAX_FILE_SIZE_LIST)) {
+        if (res != FR_OK || fno.fname[0] == 0) {
             break;
         }
 
         if (!(fno.fattrib & AM_DIR)) {
-            if (!strstr(fno.fname, contain) || (fno.fname[0] == '.')) {
+            if (!strstr(fno.fname, contain) || (fno.fname[0] == '.') || 
+                (FatfsFileGetSize(fno.fname) > MAX_FILE_SIZE_LIST) || 
+                (strnlen_s(fno.fname, maxLen) >= maxLen)) {
                 continue;
             }
             strcpy_s(fileName[count], maxLen, fno.fname);

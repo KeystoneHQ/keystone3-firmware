@@ -7,8 +7,8 @@ use alloc::string::ToString;
 use app_arweave::{generate_public_key_from_primes, generate_secret, aes256_encrypt, aes256_decrypt};
 use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
 use common_rust_c::structs::SimpleResponse;
-use common_rust_c::utils::convert_c_char;
-use common_rust_c::types::PtrBytes;
+use common_rust_c::utils::{convert_c_char, recover_c_char};
+use common_rust_c::types::{PtrBytes, PtrString};
 use cty::c_char;
 use third_party::hex;
 use core::slice;
@@ -97,6 +97,15 @@ pub extern "C" fn aes256_decrypt_primes(
         },
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
     }
+}
+
+#[no_mangle]
+pub extern "C" fn arweave_get_address(
+    xpub: PtrString,
+) -> *mut SimpleResponse<c_char> {
+    let xpub = recover_c_char(xpub);
+    let address = app_arweave::generate_address(hex::decode(xpub).unwrap()).unwrap();
+    return SimpleResponse::success(convert_c_char(address)).simple_c_ptr();
 }
 
 #[cfg(test)]

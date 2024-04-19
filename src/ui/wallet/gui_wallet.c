@@ -225,11 +225,11 @@ UREncodeResult *GuiGetArConnectData(void)
 {
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
-    char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_AR);
+    char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
     if (arXpub == NULL || strlen(arXpub) != 1024) {
         GuiSetupArConnectWallet();
         AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), true);
-        arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_AR);
+        arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
         ClearSecretCache();
     }
     ASSERT(arXpub != NULL);

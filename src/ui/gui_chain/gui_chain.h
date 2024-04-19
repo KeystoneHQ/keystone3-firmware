@@ -32,6 +32,7 @@ typedef enum {
     CHAIN_APT,
     CHAIN_SUI,
     CHAIN_DASH,
+    CHAIN_ARWEAVE,
     CHAIN_COSMOS,
     CHAIN_TIA,
     CHAIN_DYM,

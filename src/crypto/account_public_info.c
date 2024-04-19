@@ -154,7 +154,7 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_ADA_21,                BIP32_ED25519, "ada_21",                   "M/1852'/1815'/21'"},
     {XPUB_TYPE_ADA_22,                BIP32_ED25519, "ada_22",                   "M/1852'/1815'/22'"},
     {XPUB_TYPE_ADA_23,                BIP32_ED25519, "ada_23",                   "M/1852'/1815'/23'"},
-    {XPUB_TYPE_AR,                    RSA_KEY,       "ar",                       ""              },
+    {XPUB_TYPE_ARWEAVE,               RSA_KEY,       "ar",                       ""                 },
 #else
     {XPUB_TYPE_BTC,                     SECP256K1,      "btc_nested_segwit",        "M/49'/0'/0'"   },
     {XPUB_TYPE_BTC_LEGACY,              SECP256K1,      "btc_legacy",               "M/44'/0'/0'"   },

@@ -629,7 +629,10 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/144'/0'/0/%u", index);
         result = xrp_get_address(hdPath, xPub, "m/44'/144'/0'/");
         break;
-
+    case HOME_WALLET_CARD_ARWEAVE:
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
+        result = arweave_get_address(xPub);
+        break;
     default:
         if (IsCosmosChain(g_chainCard)) {
             char rootPath[BUFFER_SIZE_128];

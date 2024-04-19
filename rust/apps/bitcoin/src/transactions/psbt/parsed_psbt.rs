@@ -27,14 +27,32 @@ impl TxParser for WrappedPsbt {
         self.normalize(inputs, outputs, &network)
     }
     fn determine_network(&self) -> Result<Network> {
-        let first_input = self.psbt.inputs.get(0).ok_or(BitcoinError::InvalidInput)?;
-        let path = if let Some((_, (_, path))) = first_input.bip32_derivation.first_key_value() {
-            path
-        } else if let Some((_, (_, (_, path)))) = first_input.tap_key_origins.first_key_value() {
-            path
-        } else {
-            return Err(BitcoinError::InvalidInput);
-        };
+        if let Some((xpub, _)) = self.psbt.xpub.first_key_value() {
+            return if xpub.network == third_party::bitcoin::network::Network::Bitcoin {
+                Ok(Network::Bitcoin)
+            } else {
+                Ok(Network::BitcoinTestnet)
+            };
+        }
+        let possible_my_input = self
+            .psbt
+            .inputs
+            .iter()
+            .find(|v| {
+                v.bip32_derivation.first_key_value().is_some()
+                    || v.tap_key_origins.first_key_value().is_some()
+            })
+            .ok_or(BitcoinError::InvalidInput)?;
+        let path =
+            if let Some((_, (_, path))) = possible_my_input.bip32_derivation.first_key_value() {
+                path
+            } else if let Some((_, (_, (_, path)))) =
+                possible_my_input.tap_key_origins.first_key_value()
+            {
+                path
+            } else {
+                return Err(BitcoinError::InvalidInput);
+            };
         let coin_type = path.index(1);
         match coin_type {
             ChildNumber::Hardened { index } => match index {

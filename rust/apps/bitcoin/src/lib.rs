@@ -140,6 +140,7 @@ mod test {
                 amount: $amount.to_string(),
                 value: $value,
                 path: Some($path.to_string()),
+                ecdsa_sighash_type: 0x1,
             }
         };
     }

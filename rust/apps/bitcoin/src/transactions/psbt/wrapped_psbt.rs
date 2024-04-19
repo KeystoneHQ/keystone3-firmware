@@ -106,6 +106,11 @@ impl WrappedPsbt {
             amount: Self::format_amount(value, network),
             value,
             path,
+            ecdsa_sighash_type: input
+                .sighash_type
+                .map(|v| v.ecdsa_hash_ty().unwrap_or(bitcoin::EcdsaSighashType::All))
+                .unwrap_or(bitcoin::EcdsaSighashType::All)
+                .to_u32() as u8,
         })
     }
 

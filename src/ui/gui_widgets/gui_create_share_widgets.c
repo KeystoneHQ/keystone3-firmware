@@ -140,7 +140,7 @@ static void StopCreateViewHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 416, false);
+        g_noticeHintBox = GuiCreateHintBox(416, false);
         lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgWarn);
         lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 432);
         lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("shamir_phrase_cancel_create_title"));
@@ -347,7 +347,7 @@ static void MnemonicConfirmHandler(lv_event_t * e)
                 lv_obj_scroll_to_y(g_shareBackupTile.keyBoard->cont, 0, LV_ANIM_OFF);
                 lv_obj_scroll_to_y(g_shareConfirmTile.keyBoard->cont, 0, LV_ANIM_OFF);
             } else {
-                g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 370, false);
+                g_noticeHintBox = GuiCreateHintBox(370, false);
                 lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgFailed);
                 lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 478);
                 lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("shamir_phrase_not_match_title"));
@@ -571,7 +571,7 @@ static void SelectPhraseCntHandler(lv_event_t *e)
     lv_obj_t *checkBox = NULL;
 
     if (code == LV_EVENT_CLICKED) {
-        g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 282, true);
+        g_noticeHintBox = GuiCreateHintBox(282, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
         lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_phrase_word_amount_select"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 560);

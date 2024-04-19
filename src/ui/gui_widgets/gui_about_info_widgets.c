@@ -277,7 +277,7 @@ void GuiAboutWidgetsLogExport(bool en, int32_t errCode)
         }
     }
     printf("errcode = %d\n", errCode);
-    g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, src,
+    g_noticeHintBox = GuiCreateResultHintbox(386, src,
                       title, desc, NULL, DARK_GRAY_COLOR, right, rightColor);
     lv_obj_t *descLabel = lv_obj_get_child(g_noticeHintBox, 0);
     lv_obj_set_style_text_opa(descLabel, LV_OPA_100, LV_PART_MAIN);
@@ -310,7 +310,7 @@ static void LogExportHandler(lv_event_t *e)
         LogSetLogName(logName);
         snprintf_s(logName, sizeof(logName), "Log_%s_%d.bin", sn, GetCurrentStampTime());
         snprintf_s(buff, sizeof(buff), "%s\n%s", _("about_info_export_file_name"), logName);
-        g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgSdCardL,
+        g_noticeHintBox = GuiCreateResultHintbox(386, &imgSdCardL,
                           _("about_info_export_to_sdcard"), buff, _("Cancel"), DARK_GRAY_COLOR, _("Export"), ORANGE_COLOR);
         lv_obj_t *descLabel = lv_obj_get_child(g_noticeHintBox, 1);
         lv_obj_set_style_text_opa(descLabel, LV_OPA_100, LV_PART_MAIN);
@@ -371,7 +371,7 @@ static void StartFirmwareCheckSumHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        g_noticeHintBox = GuiCreateAnimHintBox(lv_scr_act(), 480, 400, 76);
+        g_noticeHintBox = GuiCreateAnimHintBox(480, 400, 76);
         lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("calculat_modal_title"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
         lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("Cancel"));

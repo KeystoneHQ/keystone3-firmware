@@ -101,7 +101,7 @@ static void StopCreateViewHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 416, false);
+        g_noticeHintBox = GuiCreateHintBox(416, false);
         lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgWarn);
         lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 432);
         lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("forget_password_cancel"));
@@ -130,7 +130,7 @@ void GuiForgetAnimContDel(int errCode)
     }
 
     if (errCode == 0) {
-        g_waitAnimCont = GuiCreateAnimHintBox(lv_scr_act(), 480, 326, 82);
+        g_waitAnimCont = GuiCreateAnimHintBox(480, 326, 82);
         printf("g_waitAnimCont = %p\n", g_waitAnimCont);
         lv_obj_t *title = GuiCreateTextLabel(g_waitAnimCont, _("change_passcode_reset_title"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -124);
@@ -138,7 +138,7 @@ void GuiForgetAnimContDel(int errCode)
         lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -76);
         lv_obj_add_flag(g_waitAnimCont, LV_OBJ_FLAG_CLICKABLE);
     } else {
-        g_waitAnimCont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
+        g_waitAnimCont = GuiCreateAnimHintBox(480, 278, 82);
         lv_obj_t *title = GuiCreateTextLabel(g_waitAnimCont, _("seed_check_wait_verify"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -76);
         lv_obj_add_flag(g_waitAnimCont, LV_OBJ_FLAG_CLICKABLE);
@@ -163,7 +163,7 @@ void GuiForgetPassResetPass(bool en, int errCode)
 {
     g_isForgetPass = true;
     SetKeyboardWidgetMode((g_setPassCode->mode == ENTER_PASSCODE_SET_PIN) ? KEYBOARD_HINTBOX_PIN : KEYBOARD_HINTBOX_PASSWORD);
-    lv_obj_t *cont = GuiCreateResultHintbox(lv_scr_act(), 356, &imgSuccess, _("change_passcode_reset_success_title"),
+    lv_obj_t *cont = GuiCreateResultHintbox(356, &imgSuccess, _("change_passcode_reset_success_title"),
                                             _("change_passcode_reset_success_desc"), NULL, DARK_GRAY_COLOR, _("Done"), ORANGE_COLOR);
     lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(cont);
     lv_obj_add_event_cb(rightBtn, CloseCurrentParentAndCloseViewHandler, LV_EVENT_CLICKED, NULL);
@@ -337,7 +337,7 @@ void GuiForgetPassEntranceWidget(void *parent)
     lv_obj_align(desc, LV_ALIGN_TOP_MID, 0, 336 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
-    lv_obj_t *btn = GuiCreateBtnWithFont(parent, _("forgot_password_reset_passcode_intro_button"), g_defTextFont);
+    lv_obj_t *btn = GuiCreateTextBtn(parent, _("fingerprint_passcode_reset_passcode"));
     lv_obj_set_size(btn, 233, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -64);
     lv_obj_set_style_bg_color(btn, BLACK_COLOR, LV_PART_MAIN);

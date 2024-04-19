@@ -62,7 +62,7 @@ static void StopCreateViewHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 416, false);
+        g_noticeHintBox = GuiCreateHintBox(416, false);
         lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgWarn);
         lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 432);
         lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("import_wallet_ssb_cancel_title"));

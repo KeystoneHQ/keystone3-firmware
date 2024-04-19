@@ -250,7 +250,7 @@ static void DeleteMultiWalletHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         char tempBuff[BUFFER_SIZE_32] = {0};
         snprintf_s(tempBuff, sizeof(tempBuff), "%s %s?", _("Delete"), g_walletItem->name);
-        g_noticeWindow = GuiCreateGeneralHintBox(lv_scr_act(), &imgWarn, tempBuff, _("manage_multi_wallet_delete_desc"), NULL,
+        g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, tempBuff, _("manage_multi_wallet_delete_desc"), NULL,
                          _("Cancel"), WHITE_COLOR_OPA20, _("Delete"), DEEP_ORANGE_COLOR);
         lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
         lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);

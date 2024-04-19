@@ -128,11 +128,11 @@ void FormatMicroHandleResult(int32_t errCode)
     }
     GUI_DEL_OBJ(g_noticeWindow)
     if (errCode == SUCCESS_CODE) {
-        g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgSuccess, _("sdcard_format_success_title"), _("sdcard_format_success_desc"), NULL, _("Done"), ORANGE_COLOR);
+        g_noticeWindow = GuiCreateConfirmHintBox(&imgSuccess, _("sdcard_format_success_title"), _("sdcard_format_success_desc"), NULL, _("Done"), ORANGE_COLOR);
         lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
         lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
     } else if (errCode == ERR_GENERAL_FAIL) {
-        g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, _("sdcard_format_failed_title"), _("sdcard_format_failed_desc"), NULL, _("Done"), ORANGE_COLOR);
+        g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("sdcard_format_failed_title"), _("sdcard_format_failed_desc"), NULL, _("Done"), ORANGE_COLOR);
         lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
         lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
     }
@@ -144,7 +144,7 @@ static void FormatMicroSDHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeWindow)
         if (SdCardInsert()) {
-            g_noticeWindow = GuiCreateAnimHintBox(lv_scr_act(), 480, 356, 82);
+            g_noticeWindow = GuiCreateAnimHintBox(480, 356, 82);
             lv_obj_t *title = GuiCreateTextLabel(g_noticeWindow, _("sdcard_formating"));
             lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -154);
             lv_obj_t *desc = GuiCreateNoticeLabel(g_noticeWindow, _("sdcard_formating_desc"));
@@ -161,7 +161,7 @@ static void FormatMicroSDWindowHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        g_noticeWindow = GuiCreateGeneralHintBox(lv_scr_act(), &imgWarn, _("sdcard_format_subtitle"), _("sdcard_format_desc"), NULL,
+        g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("sdcard_format_subtitle"), _("sdcard_format_desc"), NULL,
                          _("Cancel"), WHITE_COLOR_OPA20, _("sdcard_format_confirm"), DEEP_ORANGE_COLOR);
         lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
         lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);

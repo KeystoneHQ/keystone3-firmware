@@ -73,7 +73,7 @@ bool GuiSettingGetDeleteFlag(void)
 
 void GuiSettingAnimSetLabel(const char *text)
 {
-    g_waitAnimWidget.cont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
+    g_waitAnimWidget.cont = GuiCreateAnimHintBox(480, 278, 82);
     g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, text);
     lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
     lv_obj_add_flag(g_waitAnimWidget.cont, LV_OBJ_FLAG_CLICKABLE);
@@ -90,7 +90,7 @@ void GuiSetPinDestruct(void *obj, void *param)
 
 void GuiSettingRecoveryCheck(void)
 {
-    g_waitAnimWidget.cont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
+    g_waitAnimWidget.cont = GuiCreateAnimHintBox(480, 278, 82);
     g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("seed_check_wait_verify"));
     lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
 }
@@ -218,7 +218,7 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
     lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 372 - GUI_MAIN_AREA_OFFSET);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("got_it_start"));
+    lv_obj_t *btn = GuiCreateTextBtn(parent, _("got_it_start"));
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_bg_opa(btn, LV_OPA_60, LV_STATE_DEFAULT);
@@ -322,7 +322,7 @@ void GuiChangePassWord(bool result)
 
 void GuiResettingWriteSe(void)
 {
-    g_resetingCont = GuiCreateHintBox(lv_scr_act(), 480, 326, false);
+    g_resetingCont = GuiCreateHintBox(326, false);
     lv_obj_t *label = GuiCreateLittleTitleLabel(g_resetingCont, _("change_passcode_reset_title"));
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -124);
@@ -364,7 +364,7 @@ void StopAddNewFingerHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
-        g_hintBox = GuiCreateResultHintbox(lv_scr_act(), 416, &imgWarn, _("wallet_setting_stop_add_fingerprint"),
+        g_hintBox = GuiCreateResultHintbox(416, &imgWarn, _("wallet_setting_stop_add_fingerprint"),
                                            _("wallet_setting_stop_add_fingerprint_desc"), _("Not Now"), DARK_GRAY_COLOR, _("Cancel"), RED_COLOR);
         lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_hintBox);
         lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_hintBox);
@@ -587,7 +587,7 @@ static void DelWalletConfirmHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        g_waitAnimWidget.cont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
+        g_waitAnimWidget.cont = GuiCreateAnimHintBox(480, 278, 82);
         g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("wallet_settings_delete_laoding_title"));
         lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
         GuiModelSettingDelWalletDesc();

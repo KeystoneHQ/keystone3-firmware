@@ -103,6 +103,7 @@ void GuiClearObjFlag(void *obj, lv_obj_flag_t flag);
 void *GuiCreateSpacer(void *parent, uint16_t height);
 void *GuiCreateSelectPathCheckBox(lv_obj_t *parent);
 
+#define GuiCreateTextBtn(parent, text) GuiCreateBtnWithFont(parent, text, g_defTextFont)
 #define GuiCreateContainer(w, h) GuiCreateContainerWithParent(lv_scr_act(), w, h)
 #define GuiCreateSingleCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, true, g_defTextFont)
 #define GuiCreateMultiCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, false, g_defTextFont)

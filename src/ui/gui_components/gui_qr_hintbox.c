@@ -54,7 +54,7 @@ void GuiQRCodeHintBoxOpen(const char *qrdata, const char *title, const char *sub
     lv_obj_t *parent, *button, *qrCodeCont, *qrCode, *label;
 
     if (g_qrHintBox == NULL) {
-        g_qrHintBox = GuiCreateHintBox(lv_scr_act(), 480, 656, true);
+        g_qrHintBox = GuiCreateHintBox(656, true);
         parent = g_qrHintBox;
 
         qrCodeCont = lv_obj_create(parent);

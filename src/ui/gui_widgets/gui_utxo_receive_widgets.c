@@ -404,7 +404,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
         height = 132;
     }
 #endif
-    g_utxoReceiveWidgets.moreCont = GuiCreateHintBox(parent, 480, height, true);
+    g_utxoReceiveWidgets.moreCont = GuiCreateHintBox(height, true);
     lv_obj_add_event_cb(lv_obj_get_child(g_utxoReceiveWidgets.moreCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_utxoReceiveWidgets.moreCont);
     cont = g_utxoReceiveWidgets.moreCont;
 
@@ -526,7 +526,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 
     const char* coin = GetCoinCardByIndex(g_chainCard)->coin;
     if (!GetFirstReceive(coin)) {
-        g_utxoReceiveWidgets.attentionCont = GuiCreateHintBox(parent, 480, 386, false);
+        g_utxoReceiveWidgets.attentionCont = GuiCreateHintBox(386, false);
         tempObj = GuiCreateImg(g_utxoReceiveWidgets.attentionCont, &imgInformation);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
         tempObj = GuiCreateLittleTitleLabel(g_utxoReceiveWidgets.attentionCont, _("receive_btc_alert_title"));
@@ -973,7 +973,7 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
     g_gotoAddressValid = false;
 
     if (g_utxoReceiveWidgets.inputAddressCont == NULL) {
-        g_utxoReceiveWidgets.inputAddressCont = GuiCreateHintBox(parent, 480, 530, true);
+        g_utxoReceiveWidgets.inputAddressCont = GuiCreateHintBox(530, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_utxoReceiveWidgets.inputAddressCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_utxoReceiveWidgets.inputAddressCont);
         cont = g_utxoReceiveWidgets.inputAddressCont;
 

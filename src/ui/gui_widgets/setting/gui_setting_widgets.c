@@ -138,7 +138,7 @@ void DelCurrCloseToSubtopViewHandler(lv_event_t *e)
 void GuiWalletResetPassWordHintBox(void)
 {
     lv_obj_t *label;
-    g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 386, false);
+    g_noticeHintBox = GuiCreateHintBox(386, false);
     lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgWarn);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 462);
     label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("change_passcode_warning_title"));
@@ -357,7 +357,7 @@ void OpenSinglePhraseHandler(lv_event_t *e)
             DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_18WORDS,
             DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_24WORDS,
         };
-        g_selectAmountHintbox = GuiCreateHintBox(lv_scr_act(), 480, 378, true);
+        g_selectAmountHintbox = GuiCreateHintBox(378, true);
         uint16_t height = 348;
         lv_obj_add_event_cb(lv_obj_get_child(g_selectAmountHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_selectAmountHintbox);
 
@@ -391,7 +391,7 @@ void OpenSharePhraseHandler(lv_event_t *e)
             DEVICE_SETTING_RECOVERY_SHARE_PHRASE_33WORDS
         };
 
-        g_selectAmountHintbox = GuiCreateHintBox(lv_scr_act(), 480, 282, true);
+        g_selectAmountHintbox = GuiCreateHintBox(282, true);
         uint16_t height = 252;
         lv_obj_add_event_cb(lv_obj_get_child(g_selectAmountHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_selectAmountHintbox);
 
@@ -427,7 +427,7 @@ static void OpenDelWalletHandler(lv_event_t *e)
     static uint16_t walletIndex = DEVICE_SETTING_DEL_WALLET;
 
     if (code == LV_EVENT_CLICKED) {
-        g_noticeHintBox = GuiCreateHintBox(lv_event_get_user_data(e), 480, 132, true);
+        g_noticeHintBox = GuiCreateHintBox(132, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
         lv_obj_t *label = GuiCreateTextLabel(g_noticeHintBox, _("wallet_settings_delete_button"));
         lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
@@ -459,7 +459,7 @@ void GuiWalletRecoveryWriteSe(bool result)
     if (result) {
         GuiWalletSeedCheckClearKb();
 
-        g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+        g_noticeHintBox = GuiCreateHintBox(356, false);
         img = GuiCreateImg(g_noticeHintBox, &imgSuccess);
         lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 36, -236);
         label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("seed_check_verify_match_title"));
@@ -472,7 +472,7 @@ void GuiWalletRecoveryWriteSe(bool result)
         lv_obj_set_size(btn, 122, 66);
         lv_obj_add_event_cb(btn, DelCurrCloseToSubtopViewHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
     } else {
-        g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+        g_noticeHintBox = GuiCreateHintBox(356, false);
         img = GuiCreateImg(g_noticeHintBox, &imgFailed);
         lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 36, -236);
         label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("seed_check_verify_not_match_title"));
@@ -546,7 +546,7 @@ void GuiDevSettingPassCode(bool result, uint16_t tileIndex)
 
 void GuiResettingPassWordSuccess(void)
 {
-    g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
+    g_noticeHintBox = GuiCreateHintBox(356, false);
     lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgSuccess);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 492);
     lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("change_passcode_reset_success_title"));

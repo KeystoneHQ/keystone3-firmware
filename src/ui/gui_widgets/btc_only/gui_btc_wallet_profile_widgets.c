@@ -264,10 +264,7 @@ static void ManageMultiSigWalletHandler(lv_event_t *e)
             {.name = _("wallet_profile_create_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_createMultisigWalletView},
             {.name = _("wallet_profile_import_multi_wallet"), .src = &imgArrowRight, .callBack = OpenCreateMultiViewHandler, &g_multisigSelectImportMethodView},
         };
-        g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("wallet_profile_add_multi_wallet"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false);
-        lv_obj_t *closeBtn = GuiCreateImgButton(g_noticeWindow,  &imgClose, 64, CloseHintBoxHandler, &g_noticeWindow);
-        GuiAlignToPrevObj(closeBtn, LV_ALIGN_LEFT_MID, 358, 0);
-        lv_obj_add_event_cb(lv_obj_get_child(g_moreHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_moreHintbox);
+        g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("wallet_profile_add_multi_wallet"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false, &g_noticeWindow);
 #endif
     }
 }
@@ -298,7 +295,7 @@ static void OpenExportShowXpubHandler(lv_event_t *e)
         static bool testStatus[] = {false, true};
         bool isPassPhrase = PassphraseExist(GetCurrentAccountIndex());
         uint16_t offset = isPassPhrase ? 96 : 0;
-        g_noticeWindow = GuiCreateHintBox(lv_scr_act(), 480, 408 - offset, false);
+        g_noticeWindow = GuiCreateHintBox(408 - offset, false);
         lv_obj_t *title = GuiCreateIllustrateLabel(g_noticeWindow, _("wallet_profile_multi_wallet_show_xpub"));
         lv_obj_align(title, LV_ALIGN_DEFAULT, 36, 422 + offset);
         lv_obj_t *closeBtn = GuiCreateImgButton(g_noticeWindow,  &imgClose, 64, CloseHintBoxHandler, &g_noticeWindow);

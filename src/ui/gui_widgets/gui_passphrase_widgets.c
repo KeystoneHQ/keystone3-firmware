@@ -50,7 +50,7 @@ void GuiPassphraseInit(void)
 
     g_pageWidget = CreatePageWidget();
     g_passphraseWidgets.cont = g_pageWidget->contentZone;
-    g_passphraseWidgets.passphraseInputCont = GuiCreateHintBox(g_passphraseWidgets.cont, 480, 614, false);
+    g_passphraseWidgets.passphraseInputCont = GuiCreateHintBox(614, false);
     label = GuiCreateIllustrateLabel(g_passphraseWidgets.passphraseInputCont, _("wallet_setting_passphrase"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 216);
     lv_obj_set_style_text_opa(label, LV_OPA_70, LV_PART_MAIN);
@@ -256,7 +256,7 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
                     }
                 } else {
                     SecretCacheSetPassphrase((char *)repeat);
-                    g_waitAnimWidget.cont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
+                    g_waitAnimWidget.cont = GuiCreateAnimHintBox(480, 278, 82);
                     g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("seed_check_wait_verify"));
                     lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
                     lv_obj_add_flag(g_waitAnimWidget.cont, LV_OBJ_FLAG_CLICKABLE);

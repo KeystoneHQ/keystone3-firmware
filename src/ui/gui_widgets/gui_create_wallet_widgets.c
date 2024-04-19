@@ -41,7 +41,6 @@ typedef struct CreateWalletWidget {
 } CreateWalletWidget_t;
 static CreateWalletWidget_t g_createWalletTileView;
 
-static void CloseChooseWordsAmountHandler(lv_event_t *e);
 static void OpenMoreHandler(lv_event_t *e);
 static void OpenChangeEntropyHandler(lv_event_t *e);
 static void GuiRefreshNavBar(void);
@@ -51,12 +50,11 @@ static void OpenChangeEntropyTutorialHandler(lv_event_t *e);
 static PageWidget_t *g_pageWidget;
 static KeyBoard_t *g_nameWalletKb = NULL;
 static lv_obj_t *g_nameWalletIcon = NULL;
-static lv_obj_t *g_wordsAmountView = NULL;
 static GuiEnterPasscodeItem_t *g_setPassCode = NULL;
 static GuiEnterPasscodeItem_t *g_repeatPassCode = NULL;
 static lv_obj_t *g_setPinTile = NULL;
 static lv_obj_t *g_repeatPinTile = NULL;
-static lv_obj_t *g_noticeHintBox = NULL;
+static lv_obj_t *g_noticeWindow = NULL;
 static char g_pinBuf[PASSWORD_MAX_LEN + 1];
 static lv_obj_t *g_openMoreHintBox;
 static PageWidget_t *g_changeEntropyPage;
@@ -154,33 +152,25 @@ static void GuiCreateNameWalletWidget(lv_obj_t *parent)
 
 static void OpenNoticeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
+    g_noticeWindow = GuiCreateConfirmHintBox(&imgRedEye, _("single_backup_notice_title"), _("single_backup_notice_desc1"), _("single_backup_notice_desc2"), USR_SYMBOL_CHECK, ORANGE_COLOR);
+    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
-    if (code == LV_EVENT_CLICKED) {
-        g_noticeHintBox = GuiCreateConfirmHintBox(lv_scr_act(), &imgRedEye, _("single_backup_notice_title"), _("single_backup_notice_desc1"), _("single_backup_notice_desc2"), USR_SYMBOL_CHECK, ORANGE_COLOR);
-        lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_add_event_cb(btn, CloseParentAndNextHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
-        lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeHintBox);
-        lv_obj_add_event_cb(btn, CloseParentAndNextHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-
-        lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgClose);
-        lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-        lv_obj_align_to(img, lv_obj_get_child(g_noticeHintBox, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
-    }
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
+    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
 }
 
 static void OpenSecretShareHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        if (g_selectedEntropyMethod == 0) {
-            GuiFrameOpenViewWithParam(&g_createShareView, &g_selectedEntropyMethod, sizeof(g_selectedEntropyMethod));
-        } else {
-            uint8_t index = SEED_TYPE_SLIP39;
-            GuiFrameOpenViewWithParam(&g_diceRollsView, &index, sizeof(index));
-        }
+    if (g_selectedEntropyMethod == 0) {
+        GuiFrameOpenViewWithParam(&g_createShareView, &g_selectedEntropyMethod, sizeof(g_selectedEntropyMethod));
+    } else {
+        uint8_t index = SEED_TYPE_SLIP39;
+        GuiFrameOpenViewWithParam(&g_diceRollsView, &index, sizeof(index));
     }
 }
 
@@ -188,134 +178,38 @@ static void OpenImportPhraseHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     uint8_t *wordsAmount = lv_event_get_user_data(e);
-    if (code == LV_EVENT_CLICKED) {
-        // todo
-        Vibrate(SLIGHT);
-        lv_obj_add_flag(lv_obj_get_parent(lv_event_get_target(e)), LV_OBJ_FLAG_HIDDEN);
-        GuiFrameOpenViewWithParam(&g_importPhraseView, wordsAmount, sizeof(*wordsAmount));
-    }
+    Vibrate(SLIGHT);
+    lv_obj_add_flag(lv_obj_get_parent(lv_event_get_target(e)), LV_OBJ_FLAG_HIDDEN);
+    GuiFrameOpenViewWithParam(&g_importPhraseView, wordsAmount, sizeof(*wordsAmount));
 }
 
 static void ChooseWordsAmountHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        static uint8_t wordsAmount12 = 12;
-        static uint8_t wordsAmount18 = 18;
-        static uint8_t wordsAmount24 = 24;
-        g_wordsAmountView = GuiCreateHintBox(lv_scr_act(), 480, 378, true);
-        lv_obj_add_event_cb(lv_obj_get_child(g_wordsAmountView, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_wordsAmountView);
-        lv_obj_t *label = GuiCreateIllustrateLabel(g_wordsAmountView, _("import_wallet_phrase_words_title"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 460);
-        lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
-        lv_obj_t *img = GuiCreateImg(g_wordsAmountView, &imgClose);
-        GuiButton_t tableHintbox = {img, .position = {10, 10}};
-        lv_obj_t *buttonClose = GuiCreateButton(g_wordsAmountView, 40, 40, &tableHintbox, 1, CloseChooseWordsAmountHandler, g_wordsAmountView);
-        lv_obj_align(buttonClose, LV_ALIGN_DEFAULT, 407, 450);
-
-        label = GuiCreateTextLabel(g_wordsAmountView, _("import_wallet_phrase_24words"));
-        img = GuiCreateImg(g_wordsAmountView, &imgArrowRight);
-        GuiButton_t next24[2] = {
-            {
-                .obj = img,
-                .position = {423, 20},
-            },
-            {
-                .obj = label,
-                .position = {36, 20},
-            },
-        };
-        lv_obj_t *nextbutton24 = GuiCreateButton(g_wordsAmountView, 480, 110, next24, NUMBER_OF_ARRAYS(next24), OpenImportPhraseHandler, &wordsAmount24);
-        lv_obj_align(nextbutton24, LV_ALIGN_DEFAULT, 0, 860 - GUI_MAIN_AREA_OFFSET);
-
-        label = GuiCreateTextLabel(g_wordsAmountView, _("import_wallet_phrase_18words"));
-        img = GuiCreateImg(g_wordsAmountView, &imgArrowRight);
-        GuiButton_t next18[2] = {
-            {
-                .obj = img,
-                .position = {423, 20},
-            },
-            {
-                .obj = label,
-                .position = {36, 20},
-            },
-        };
-        lv_obj_t *nextbutton18 = GuiCreateButton(g_wordsAmountView, 480, 110, next18, NUMBER_OF_ARRAYS(next18), OpenImportPhraseHandler, &wordsAmount18);
-        lv_obj_align(nextbutton18, LV_ALIGN_DEFAULT, 0, 760 - GUI_MAIN_AREA_OFFSET);
-
-        label = GuiCreateTextLabel(g_wordsAmountView, _("import_wallet_phrase_12words"));
-        img = GuiCreateImg(g_wordsAmountView, &imgArrowRight);
-        GuiButton_t next12[2] = {
-            {
-                .obj = img,
-                .position = {423, 20},
-            },
-            {
-                .obj = label,
-                .position = {36, 20},
-            },
-        };
-        lv_obj_t *nextbutton12 = GuiCreateButton(g_wordsAmountView, 480, 110, next12, NUMBER_OF_ARRAYS(next12), OpenImportPhraseHandler, &wordsAmount12);
-        lv_obj_align(nextbutton12, LV_ALIGN_DEFAULT, 0, 660 - GUI_MAIN_AREA_OFFSET);
-    }
-}
-
-static void CloseChooseWordsAmountHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_wordsAmountView)
-    }
+    static uint8_t walletAmounts[] = {24, 18, 12};
+    MoreInfoTable_t moreInfoTable[] = {
+        {.name = _("import_wallet_phrase_24words"), .src = &imgArrowRight, .callBack = OpenImportPhraseHandler, &walletAmounts[0]},
+        {.name = _("import_wallet_phrase_18words"), .src = &imgArrowRight, .callBack = OpenImportPhraseHandler, &walletAmounts[1]},
+        {.name = _("import_wallet_phrase_12words"), .src = &imgArrowRight, .callBack = OpenImportPhraseHandler, &walletAmounts[2]},
+    };
+    g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("import_wallet_phrase_words_title"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false, &g_noticeWindow);
 }
 
 static void OpenImportShareHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        Vibrate(SLIGHT);
-        lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
-        g_noticeHintBox = NULL;
-        GuiFrameOpenViewWithParam(&g_importShareView, (uint8_t *)lv_event_get_user_data(e), sizeof(uint8_t));
-    }
+    Vibrate(SLIGHT);
+    lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
+    g_noticeWindow = NULL;
+    GuiFrameOpenViewWithParam(&g_importShareView, (uint8_t *)lv_event_get_user_data(e), sizeof(uint8_t));
 }
 
 static void SelectImportShareHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        static uint8_t wordsAmount[] = {33, 20};
-        g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 282, true);
-        lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-        lv_obj_t *label = GuiCreateNoticeLabel(g_noticeHintBox, _("import_wallet_phrase_words_title"));
-        lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -222);
-
-        lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgClose);
-        lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_add_event_cb(img, CloseCurrentParentHandler, LV_EVENT_CLICKED, NULL);
-        lv_obj_align(img, LV_ALIGN_BOTTOM_RIGHT, -36, -222);
-
-        for (int i = 0; i < 2; i++) {
-            GuiButton_t table[] = {
-                {
-                    .obj = GuiCreateTextLabel(g_noticeHintBox, _("import_wallet_ssb_33words")),
-                    .align = LV_ALIGN_LEFT_MID,
-                    .position = {24, 0},
-                },
-                {
-                    .obj = GuiCreateImg(g_noticeHintBox, &imgArrowRight),
-                    .align = LV_ALIGN_RIGHT_MID,
-                    .position = {-24, 0},
-                },
-            };
-            if (i == 1) {
-                lv_label_set_text(table[0].obj, _("import_wallet_ssb_20words"));
-            }
-            lv_obj_t *button = GuiCreateButton(g_noticeHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table), OpenImportShareHandler, &wordsAmount[i]);
-            lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -12 - 96 * i);
-        }
-    }
+    static uint8_t walletAmounts[] = {33, 20};
+    MoreInfoTable_t moreInfoTable[] = {
+        {.name = _("import_wallet_ssb_33words"), .src = &imgArrowRight, .callBack = OpenImportShareHandler, &walletAmounts[0]},
+        {.name = _("import_wallet_ssb_20words"), .src = &imgArrowRight, .callBack = OpenImportShareHandler, &walletAmounts[1]},
+    };
+    g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("import_wallet_phrase_words_title"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false, &g_noticeWindow);
 }
 
 static void GuiCreateBackupWidget(lv_obj_t *parent)
@@ -583,8 +477,7 @@ void GuiCreateWalletNameUpdate(const void *src)
 
 void GuiCreateWalletDeInit(void)
 {
-    GUI_DEL_OBJ(g_noticeHintBox)
-    GUI_DEL_OBJ(g_wordsAmountView)
+    GUI_DEL_OBJ(g_noticeWindow)
     GuiDelEnterProgressLabel();
     if (g_setPassCode != NULL) {
         GuiDelEnterPasscode(g_setPassCode, NULL);
@@ -644,7 +537,7 @@ static void OpenMoreHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         int hintboxHeight = 228;
-        g_openMoreHintBox = GuiCreateHintBox(lv_scr_act(), 480, hintboxHeight, true);
+        g_openMoreHintBox = GuiCreateHintBox(hintboxHeight, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
         lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, _("Tutorial"));
         lv_obj_t *img = GuiCreateImg(g_openMoreHintBox, &imgTutorial);

@@ -290,7 +290,7 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         }
 
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-        g_hintBox = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
+        g_hintBox = GuiCreateConfirmHintBox(&imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
         lv_obj_t *btn = GuiGetHintBoxRightBtn(g_hintBox);
         lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, NULL);
     }
@@ -371,8 +371,7 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
         break;
     }
 
-    lv_obj_t *cont = GuiCreateConfirmHintBox(lv_scr_act(),
-                     &imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
+    lv_obj_t *cont = GuiCreateConfirmHintBox(&imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
     lv_obj_add_event_cb(GuiGetHintBoxRightBtn(cont), CloseWaringPageHandler, LV_EVENT_CLICKED, cont);
     return cont;
 }
@@ -400,20 +399,16 @@ void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t
         break;
     }
 
-    lv_obj_t *cont = GuiCreateConfirmHintBox(lv_scr_act(),
-                     &imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
+    lv_obj_t *cont = GuiCreateConfirmHintBox(&imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
     lv_obj_add_event_cb(GuiGetHintBoxRightBtn(cont), CloseWaringPageHandler, LV_EVENT_CLICKED, cont);
     return cont;
 }
 
 static void CreateOrImportWalletHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiFrameOpenViewWithParam(&g_createWalletView, lv_event_get_user_data(e), sizeof(uint8_t));
-        DestroyPageWidget(g_pageViewWidget);
-        g_pageViewWidget = NULL;
-    }
+    GuiFrameOpenViewWithParam(&g_createWalletView, lv_event_get_user_data(e), sizeof(uint8_t));
+    DestroyPageWidget(g_pageViewWidget);
+    g_pageViewWidget = NULL;
 }
 
 static void CreateWalletNotice(bool isCreate)
@@ -429,8 +424,8 @@ static void CreateWalletNotice(bool isCreate)
     label = GuiCreateIllustrateLabel(g_pageViewWidget->contentZone, _("wallet_setting_add_wallet_notice"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 200);
 
-    lv_obj_t *btn = GuiCreateBtn(g_pageViewWidget->contentZone, _("wallet_setting_add_wallet_confirm"));
-    lv_obj_set_width(btn, 408);
+    lv_obj_t *btn = GuiCreateTextBtn(g_pageViewWidget->contentZone, _("wallet_setting_add_wallet_confirm"));
+    lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 
     lv_obj_add_event_cb(btn, CreateOrImportWalletHandler, LV_EVENT_CLICKED, &walletMethod[isCreate]);

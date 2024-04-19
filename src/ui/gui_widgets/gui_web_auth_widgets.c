@@ -103,7 +103,7 @@ void GuiWebAuthIntroWidget(lv_obj_t *parent)
     label = GuiCreateIllustrateLabel(parent, _("verify_cont3"));
     GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
 
-    lv_obj_t *btn = GuiCreateBtnWithFont(parent, _("verify_scan_qr_code"), g_defTextFont);
+    lv_obj_t *btn = GuiCreateTextBtn(parent, _("verify_scan_qr_code"));
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_size(btn, 408, 66);
     lv_obj_add_event_cb(btn, GuiWebAuthScanQRCodeHandler, LV_EVENT_CLICKED, NULL);
@@ -180,7 +180,7 @@ static void GuiGoToFirmwareUpdateViewHandler(lv_event_t *e)
 
 static void GuiOpenQRCodeHintBox()
 {
-    GuiQRCodeHintBoxOpen(_("verify_qr_link"), _("verify_qr_title"), _("verify_qr_link"));
+    GuiQRCodeHintBoxOpen(_("verify_qr_link"), _("verify_title"), _("verify_qr_link"));
 }
 
 static void GuiWebAuthQrcodeHandler(lv_event_t *e)

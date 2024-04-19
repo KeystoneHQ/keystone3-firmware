@@ -164,7 +164,7 @@ static void MnemonicConfirmHandler(lv_event_t * e)
                 GuiModelWriteSe();
                 GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
             } else {
-                g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 370, false);
+                g_noticeHintBox = GuiCreateHintBox(370, false);
                 lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgFailed);
                 lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 478);
                 lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("single_phrase_not_match_title"));
@@ -303,7 +303,7 @@ static void SelectPhraseCntHandler(lv_event_t *e)
     lv_obj_t *checkBox = NULL;
 
     if (code == LV_EVENT_CLICKED) {
-        g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 282, true);
+        g_noticeHintBox = GuiCreateHintBox(282, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
         lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_phrase_word_amount_select"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 560);

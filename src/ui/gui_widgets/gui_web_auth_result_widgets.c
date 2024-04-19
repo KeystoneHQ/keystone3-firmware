@@ -89,7 +89,7 @@ void GuiWebAuthResultCodeWidget(lv_obj_t *parent)
     label = GuiCreateIllustrateLabel(parent, _("verification_code_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 352 - GUI_MAIN_AREA_OFFSET);
 
-    btn = GuiCreateBtn(parent, _("verification_failed"));
+    btn = GuiCreateBtn(parent, _("Failed"));
     lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
     lv_obj_set_size(btn, 192, 66);
@@ -313,7 +313,7 @@ static lv_obj_t *g_WebAuthResultPendingCont;
 
 void GuiWebAuthResultShowPending()
 {
-    g_WebAuthResultPendingCont = GuiCreateAnimHintBox(lv_scr_act(), 480, 326, 82);
+    g_WebAuthResultPendingCont = GuiCreateAnimHintBox(480, 326, 82);
     lv_obj_t *title = GuiCreateTextLabel(g_WebAuthResultPendingCont, _("verify_modal_title"));
     lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -124);
     lv_obj_t *desc = GuiCreateNoticeLabel(g_WebAuthResultPendingCont, _("verify_modal_desc"));

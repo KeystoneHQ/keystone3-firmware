@@ -452,7 +452,7 @@ void SetStatusBarEmojiIndex(uint8_t index)
 void *GuiCreateEmojiKeyBoard(lv_obj_t *parent, lv_obj_t *icon)
 {
     g_walletIcon = icon;
-    lv_obj_t *hintbox = GuiCreateHintBox(parent, 480, 534, true);
+    lv_obj_t *hintbox = GuiCreateHintBox(534, true);
     lv_obj_add_event_cb(lv_obj_get_child(hintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_t *label = GuiCreateNoticeLabel(hintbox, _("single_backup_namewallet_previnput_2"));
     lv_obj_set_width(label, 380);

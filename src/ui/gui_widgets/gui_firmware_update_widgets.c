@@ -107,7 +107,7 @@ void GuiCreateSdCardUpdateHintbox(char *version, bool checkSumDone)
     char desc[150] = {0};
 
     strcpy_s(desc, sizeof(desc), _("firmware_update_sd_dialog_desc"));
-    g_noticeHintBox = GuiCreateUpdateHintbox(lv_scr_act(), &imgFirmwareUp, _("firmware_update_sd_dialog_title"),
+    g_noticeHintBox = GuiCreateUpdateHintbox(&imgFirmwareUp, _("firmware_update_sd_dialog_title"),
                       desc, _("not_now"), DARK_GRAY_COLOR, _("Update"), ORANGE_COLOR, checkSumDone);
 
     g_calCheckSumLabel = lv_obj_get_child(g_noticeHintBox, 3);
@@ -176,7 +176,7 @@ void GuiFirmwareSdCardCopy(void)
     GUI_DEL_OBJ(g_waitAnimCont)
     GUI_DEL_OBJ(g_noticeHintBox)
 
-    g_waitAnimCont = GuiCreateAnimHintBox(lv_scr_act(), 480, 386, 82);
+    g_waitAnimCont = GuiCreateAnimHintBox(480, 386, 82);
     lv_obj_t *title = GuiCreateTextLabel(g_waitAnimCont, _("firmware_update_sd_copying_title"));
     lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
     lv_obj_t *desc = GuiCreateNoticeLabel(g_waitAnimCont, _("firmware_update_sd_copying_desc"));
@@ -503,7 +503,7 @@ static void FirmwareSdcardCheckSha256Handler(lv_event_t *e)
         if (!SdCardInsert()) {
             return;
         }
-        g_noticeHintBox = GuiCreateAnimHintBox(lv_scr_act(), 480, 400, 76);
+        g_noticeHintBox = GuiCreateAnimHintBox(480, 400, 76);
         lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("calculat_modal_title"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
         lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("Cancel"));
@@ -594,7 +594,7 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
         btnOffset = 0;
     }
 
-    btn = GuiCreateBtnWithFont(parent, _("Update"), g_defTextFont);
+    btn = GuiCreateTextBtn(parent, _("Update"));
     lv_obj_set_size(btn, 408, 66);
     GuiAlignToPrevObj(btn, LV_ALIGN_OUT_BOTTOM_LEFT, btnOffset, 20);
     lv_obj_add_event_cb(btn, FirmwareSdcardUpdateHandler, LV_EVENT_CLICKED, &param);
@@ -714,7 +714,7 @@ static void GuiQrcodeHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         if (g_firmwareUpdateWidgets.qrCodeCont == NULL) {
-            g_firmwareUpdateWidgets.qrCodeCont = GuiCreateHintBox(g_firmwareUpdateWidgets.tileUsbInstruction, 480, 654, true);
+            g_firmwareUpdateWidgets.qrCodeCont = GuiCreateHintBox(654, true);
             parent = g_firmwareUpdateWidgets.qrCodeCont;
 
             qrCodeCont = lv_obj_create(parent);
@@ -787,7 +787,7 @@ static void GuiFirmwareUpdateViewSha256(char *version, uint8_t percent)
         ConvertToLowerCase(hash);
         snprintf(tempBuf, sizeof(tempBuf), "#F5870A %.8s#%.24s\n%.24s#F5870A %.8s#", hash, &hash[8], &hash[32], &hash[56]);
 
-        g_noticeHintBox = GuiCreateConfirmHintBox(lv_scr_act(), NULL, _("firmware_update_verify_firmware_title"), _("firmware_update_sd_checksum_notice"), "\n\n", _("OK"), WHITE_COLOR_OPA20);
+        g_noticeHintBox = GuiCreateConfirmHintBox(NULL, _("firmware_update_verify_firmware_title"), _("firmware_update_sd_checksum_notice"), "\n\n", _("OK"), WHITE_COLOR_OPA20);
         lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeHintBox);
         lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
         lv_obj_t *label = lv_obj_get_child(g_noticeHintBox, lv_obj_get_child_cnt(g_noticeHintBox) - 4);

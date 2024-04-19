@@ -21,7 +21,7 @@ static void GuiFirmwareUpdateDenyInit(void)
 {
     lv_obj_t *img, *label, *button;
     if (g_firmwareUpdateDenyHintBox == NULL) {
-        g_firmwareUpdateDenyHintBox = GuiCreateHintBox(lv_scr_act(), 480, 386, false);
+        g_firmwareUpdateDenyHintBox = GuiCreateHintBox(386, false);
         img = GuiCreateImg(g_firmwareUpdateDenyHintBox, &imgWarn);
         lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 36, -266);
 
@@ -31,7 +31,7 @@ static void GuiFirmwareUpdateDenyInit(void)
         lv_obj_set_width(label, 408);
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -130);
 
-        button = GuiCreateBtnWithFont(g_firmwareUpdateDenyHintBox, _("firmware_update_deny_input_password"), g_defTextFont);
+        button = GuiCreateTextBtn(g_firmwareUpdateDenyHintBox, _("firmware_update_deny_input_password"));
         lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_set_size(button, 234, 66);
         lv_obj_set_style_bg_color(button, DARK_GRAY_COLOR, LV_PART_MAIN);

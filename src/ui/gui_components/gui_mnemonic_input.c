@@ -87,12 +87,12 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
         }
         if (ret < 0) {
             if (ret == SLIP39_NOT_BELONG_THIS_WALLET && mkb->intputType == MNEMONIC_INPUT_SETTING_VIEW) { // recovery
-                g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 356, &imgFailed, _("seed_check_verify_not_match_title"),
+                g_noticeHintBox = GuiCreateResultHintbox(356, &imgFailed, _("seed_check_verify_not_match_title"),
                                   _("seed_check_verify_not_match_desc"), NULL, DARK_GRAY_COLOR, _("OK"), DARK_GRAY_COLOR);
                 lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeHintBox);
                 lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
             } else {
-                g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgFailed,
+                g_noticeHintBox = GuiCreateResultHintbox(386, &imgFailed,
                                   _("import_wallet_invalid_phrase_title"), _("import_wallet_invalid_phrase_desc"),
                                   NULL, DARK_GRAY_COLOR, _("OK"), DARK_GRAY_COLOR);
                 lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeHintBox);
@@ -114,7 +114,7 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                 sha256((struct sha256 *)tempHash, mnemonic, strlen(mnemonic));
                 for (int i = 0; i < mkb->currentSlice; i++) {
                     if (!memcmp(tempHash, g_sliceSha256[i], 32)) {
-                        g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgFailed, _("import_wallet_ssb_incorrect_title"),
+                        g_noticeHintBox = GuiCreateResultHintbox(386, &imgFailed, _("import_wallet_ssb_incorrect_title"),
                                           _("import_wallet_ssb_repeat_desc"), NULL, DARK_GRAY_COLOR, _("OK"), DARK_GRAY_COLOR);
                         lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeHintBox);
                         lv_obj_add_event_cb(rightBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
@@ -134,7 +134,7 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                     mkb->currentSlice++;
                     lv_label_set_text_fmt(mkb->titleLabel, _("import_wallet_ssb_title_fmt"), mkb->currentSlice + 1);
                     lv_label_set_text_fmt(mkb->descLabel, _("import_wallet_ssb_desc_fmt"), mkb->wordCnt, mkb->currentSlice + 1);
-                    g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgSuccess, _("shamir_phrase_verify_success_title"),
+                    g_noticeHintBox = GuiCreateResultHintbox(386, &imgSuccess, _("shamir_phrase_verify_success_title"),
                                       _("import_wallet_share_success_desc"), _("Continue"), DARK_GRAY_COLOR, _("Done"), ORANGE_COLOR);
                     lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeHintBox);
                     lv_obj_add_event_cb(rightBtn, CloseToSubtopViewHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
@@ -373,7 +373,7 @@ void GuiMnemonicInputHandler(lv_event_t *e)
                 }
                 if (mkb->threShold != 0xff) {
                     if (strcmp(tempBuf, g_sliceHeadWords)) {
-                        g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 416, &imgFailed, _("import_wallet_ssb_incorrect_title"),
+                        g_noticeHintBox = GuiCreateResultHintbox(416, &imgFailed, _("import_wallet_ssb_incorrect_title"),
                                           _("import_wallet_ssb_notbelong_desc"), NULL, DARK_GRAY_COLOR, _("OK"), DARK_GRAY_COLOR);
                         lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeHintBox);
                         lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);

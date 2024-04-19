@@ -135,8 +135,7 @@ static void ShowQRDialogHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         ContactItem_t *contactItem = (ContactItem_t*)lv_event_get_user_data(e);
-
-        g_qrCodeCont = GuiCreateHintBox(g_cont, 480, 656, true);
+        g_qrCodeCont = GuiCreateHintBox(656, true);
         parent = g_qrCodeCont;
 
         qrCodeCont = lv_obj_create(parent);

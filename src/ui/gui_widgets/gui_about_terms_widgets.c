@@ -207,7 +207,7 @@ static void GuiQrcodeHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         if (g_qrCodeCont == NULL) {
-            g_qrCodeCont = GuiCreateHintBox(g_cont, 480, 654, true);
+            g_qrCodeCont = GuiCreateHintBox(654, true);
             parent = g_qrCodeCont;
 
             qrCodeCont = lv_obj_create(parent);

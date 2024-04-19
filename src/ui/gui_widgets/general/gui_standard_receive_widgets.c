@@ -201,7 +201,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
 {
     lv_obj_t *cont, *btn, *img, *label;
 
-    g_standardReceiveWidgets.moreCont = GuiCreateHintBox(parent, 480, 132, true);
+    g_standardReceiveWidgets.moreCont = GuiCreateHintBox(132, true);
     lv_obj_add_event_cb(lv_obj_get_child(g_standardReceiveWidgets.moreCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_standardReceiveWidgets.moreCont);
     cont = g_standardReceiveWidgets.moreCont;
 
@@ -288,7 +288,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 
     const char* coin = GetCoinCardByIndex(g_chainCard)->coin;
     if (!GetFirstReceive(coin)) {
-        g_standardReceiveWidgets.attentionCont = GuiCreateHintBox(parent, 480, 386, false);
+        g_standardReceiveWidgets.attentionCont = GuiCreateHintBox(386, false);
         tempObj = GuiCreateImg(g_standardReceiveWidgets.attentionCont, &imgInformation);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
         tempObj = GuiCreateLittleTitleLabel(g_standardReceiveWidgets.attentionCont, _("receive_btc_alert_title"));

@@ -21,7 +21,7 @@ static void GuiLowBatteryInit(void)
 {
     lv_obj_t *img, *label, *button;
     if (g_lowBatteryHintBox == NULL) {
-        g_lowBatteryHintBox = GuiCreateHintBox(lv_scr_act(), 480, 416, false);
+        g_lowBatteryHintBox = GuiCreateHintBox(416, false);
         img = GuiCreateImg(g_lowBatteryHintBox, &imgWarn);
         lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 36, -296);
 
@@ -31,7 +31,7 @@ static void GuiLowBatteryInit(void)
         lv_obj_set_width(label, 408);
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -130);
 
-        button = GuiCreateBtnWithFont(g_lowBatteryHintBox, _("OK"), g_defTextFont);
+        button = GuiCreateTextBtn(g_lowBatteryHintBox, _("OK"));
         lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_set_size(button, 94, 66);
         lv_obj_set_style_bg_color(button, DARK_GRAY_COLOR, LV_PART_MAIN);

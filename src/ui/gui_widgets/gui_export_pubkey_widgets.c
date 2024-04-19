@@ -177,7 +177,7 @@ static void GuiWriteToMicroCardHandler(lv_event_t *e)
 
 static void GuiExportXpubToMicroCard(void)
 {
-    g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgSdCardL, _("wallet_profile_export_to_sdcard_title"), _("about_info_export_file_name"), g_xpubConfigName, _("got_it"), ORANGE_COLOR);
+    g_noticeWindow = GuiCreateConfirmHintBox(&imgSdCardL, _("wallet_profile_export_to_sdcard_title"), _("about_info_export_file_name"), g_xpubConfigName, _("got_it"), ORANGE_COLOR);
     lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
     lv_obj_add_event_cb(btn, GuiWriteToMicroCardHandler, LV_EVENT_CLICKED, NULL);
 }

@@ -73,7 +73,7 @@ static void CloseWaringAndCurrentPageHandler(lv_event_t *e)
 
 static void CreateCheckTheWalletInfoNotice(lv_obj_t *parent)
 {
-    g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgObserve, _("manage_import_wallet_notice_title"),
+    g_noticeWindow = GuiCreateConfirmHintBox(&imgObserve, _("manage_import_wallet_notice_title"),
                      _("manage_import_wallet_notice_desc1"), _("manage_import_wallet_notice_desc2"), _("OK"), ORANGE_COLOR);
     lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 }
@@ -81,7 +81,7 @@ static void CreateCheckTheWalletInfoNotice(lv_obj_t *parent)
 void GuiImportMultisigWalletInfoWidgetsInit(void)
 {
     if ((GetCurrentAccountMultisigWalletNum() >= MAX_MULTI_SIG_WALLET_NUMBER) && (!GuiGetExportMultisigWalletSwitch())) {
-        g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, _("manage_multi_wallet_add_limit_title"),
+        g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("manage_multi_wallet_add_limit_title"),
                          _("manage_multi_wallet_add_scan_limit_title"), NULL, _("OK"), WHITE_COLOR_OPA20);
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseWaringAndCurrentPageHandler, LV_EVENT_CLICKED, NULL);
         return;
@@ -90,14 +90,14 @@ void GuiImportMultisigWalletInfoWidgetsInit(void)
     if (g_wallet == NULL) {
         if (g_isQRCode) {
             if (PassphraseExist(GetCurrentAccountIndex()) == true) {
-                g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, _("manage_import_wallet_passphrase_error_title"),
+                g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("manage_import_wallet_passphrase_error_title"),
                                  _("manage_import_wallet_passphrase_error_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
             } else {
-                g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, _("scan_qr_code_error_invalid_qrcode"),
+                g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("scan_qr_code_error_invalid_qrcode"),
                                  _("scan_qr_code_error_invalid_qrcode_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
             }
         } else {
-            g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, _("scan_qr_code_error_invalid_wallet_file"),
+            g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("scan_qr_code_error_invalid_wallet_file"),
                              _("scan_qr_code_error_invalid_wallet_file_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
         }
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseWaringAndCurrentPageHandler, LV_EVENT_CLICKED, NULL);
@@ -270,34 +270,27 @@ static void GuiContent(lv_obj_t *parent)
 
 static void GuiConfirmExportHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeWindow)
-        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, GuiCLoseCurrentWorkingView);
-        char *verifyCode = SRAM_MALLOC(MAX_VERIFY_CODE_LEN);
-        strcpy_s(verifyCode, MAX_VERIFY_CODE_LEN, g_wallet->verify_code);
-        GuiCLoseCurrentWorkingView();
-        GuiFrameOpenViewWithParam(&g_multisigWalletExportView, verifyCode, strnlen_s(verifyCode, MAX_VERIFY_CODE_LEN));
-    }
+    GUI_DEL_OBJ(g_noticeWindow)
+    g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, GuiCLoseCurrentWorkingView);
+    char *verifyCode = SRAM_MALLOC(MAX_VERIFY_CODE_LEN);
+    strcpy_s(verifyCode, MAX_VERIFY_CODE_LEN, g_wallet->verify_code);
+    GuiCLoseCurrentWorkingView();
+    GuiFrameOpenViewWithParam(&g_multisigWalletExportView, verifyCode, strnlen_s(verifyCode, MAX_VERIFY_CODE_LEN));
 }
 
 static void GuiConfirmHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (GuiGetExportMultisigWalletSwitch()) {
-            g_noticeWindow = GuiCreateConfirmHintBox(lv_scr_act(),
-                             &imgObserve, _("manage_multi_wallet_export_attention_title"), _("manage_multi_wallet_export_attention_desc1"), _("manage_multi_wallet_export_attention_desc2"), _("OK"), ORANGE_COLOR);
-            lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), GuiConfirmExportHandler, LV_EVENT_CLICKED, NULL);
-            return;
-        }
-        MultiSigWalletItem_t *wallet = GetMultisigWalletByVerifyCode(g_wallet->verify_code);
-        if (wallet != NULL) {
-            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, GuiCLoseCurrentWorkingView);
-            return;
-        }
-        GuiVerifyPassword();
+    if (GuiGetExportMultisigWalletSwitch()) {
+        g_noticeWindow = GuiCreateConfirmHintBox(&imgObserve, _("manage_multi_wallet_export_attention_title"), _("manage_multi_wallet_export_attention_desc1"), _("manage_multi_wallet_export_attention_desc2"), _("OK"), ORANGE_COLOR);
+        lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), GuiConfirmExportHandler, LV_EVENT_CLICKED, NULL);
+        return;
     }
+    MultiSigWalletItem_t *wallet = GetMultisigWalletByVerifyCode(g_wallet->verify_code);
+    if (wallet != NULL) {
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, GuiCLoseCurrentWorkingView);
+        return;
+    }
+    GuiVerifyPassword();
 }
 
 static void GuiVerifyPassword()

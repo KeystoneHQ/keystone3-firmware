@@ -131,7 +131,7 @@ static void OpenMoreHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         int hintboxHeight = 132;
-        g_openMoreHintBox = GuiCreateHintBox(lv_scr_act(), 480, hintboxHeight, true);
+        g_openMoreHintBox = GuiCreateHintBox(hintboxHeight, true);
         lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
         lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, _("receive_sol_more_t"));
         lv_obj_t *img = GuiCreateImg(g_openMoreHintBox, &imgTutorial);

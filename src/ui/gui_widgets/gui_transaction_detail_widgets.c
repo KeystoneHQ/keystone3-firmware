@@ -362,7 +362,7 @@ static void SignByFinger(void)
 {
     GUI_DEL_OBJ(g_fingerSingContainer)
 
-    g_fingerSingContainer = GuiCreateHintBox(lv_scr_act(), 480, 428, true);
+    g_fingerSingContainer = GuiCreateHintBox(428, true);
     lv_obj_t *cont = g_fingerSingContainer;
     lv_obj_t *label = GuiCreateNoticeLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 402);

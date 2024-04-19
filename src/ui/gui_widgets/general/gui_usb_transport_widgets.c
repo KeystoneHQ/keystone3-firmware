@@ -86,13 +86,13 @@ static void GuiExportXPubViewInit()
     lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 236);
 
-    lv_obj_t *button = GuiCreateBtnWithFont(cont, _("usb_transport_connection_reject"), g_defTextFont);
+    lv_obj_t *button = GuiCreateTextBtn(cont, _("usb_transport_connection_reject"));
     lv_obj_align(button, LV_ALIGN_BOTTOM_LEFT, 36, -24);
     lv_obj_set_size(button, 192, 66);
     lv_obj_set_style_bg_color(button, DARK_GRAY_COLOR, LV_PART_MAIN);
     lv_obj_add_event_cb(button, RejectButtonHandler, LV_EVENT_CLICKED, NULL);
 
-    button = GuiCreateBtnWithFont(cont, _("usb_transport_connection_approve"), g_defTextFont);
+    button = GuiCreateTextBtn(cont, _("usb_transport_connection_approve"));
     lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_set_size(button, 192, 66);
     lv_obj_set_style_bg_color(button, ORANGE_COLOR, LV_PART_MAIN);

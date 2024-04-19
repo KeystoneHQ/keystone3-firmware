@@ -314,7 +314,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t bu
 KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
 {
     KeyboardWidget_t *keyboardWidget = CreateKeyboardWidget();
-    lv_obj_t *keyboardHintBox = GuiCreateHintBox(parent, 480, 576, true);
+    lv_obj_t *keyboardHintBox = GuiCreateHintBox(576, true);
 
     lv_obj_add_event_cb(lv_obj_get_child(keyboardHintBox, 0), CloseKeyBoardWidgetHandler, LV_EVENT_CLICKED, keyboardWidget);
 
@@ -466,7 +466,7 @@ void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t
 
 static void GuiShowPasswordErrorHintBox(KeyboardWidget_t *keyboardWidget)
 {
-    lv_obj_t *errHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgFailed,
+    lv_obj_t *errHintBox = GuiCreateResultHintbox(386, &imgFailed,
                            _("unlock_device_error_attempts_exceed"), _("unlock_device_error_attempts_exceed_desc"),
                            NULL, DARK_GRAY_COLOR, _("unlock_device_error_btn_start_text"), DARK_GRAY_COLOR);
 

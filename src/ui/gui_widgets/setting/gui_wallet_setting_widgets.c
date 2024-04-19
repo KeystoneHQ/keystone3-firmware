@@ -322,7 +322,7 @@ void GuiChangePassWord(bool result)
 
 void GuiResettingWriteSe(void)
 {
-    g_resetingCont = GuiCreateHintBox(326, false);
+    g_resetingCont = GuiCreateHintBox(326);
     lv_obj_t *label = GuiCreateLittleTitleLabel(g_resetingCont, _("change_passcode_reset_title"));
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -124);

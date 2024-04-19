@@ -92,7 +92,7 @@ static void GuiWriteSDCardHandler(lv_event_t *e)
 
 static void GuiShowSDCardNotDetected()
 {
-    g_noticeWindow = GuiCreateHintBox(356, false);
+    g_noticeWindow = GuiCreateHintBox(356);
     lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgFailed);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
 
@@ -112,7 +112,7 @@ static void GuiShowSDCardNotDetected()
 
 static void GuiShowSDCardExport()
 {
-    g_noticeWindow = GuiCreateHintBox(356, false);
+    g_noticeWindow = GuiCreateHintBox(356);
     lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgSdCardL);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
 
@@ -142,7 +142,7 @@ static void GuiShowSDCardExport()
 
 static void GuiShowSDCardExportSuccess()
 {
-    g_noticeWindow = GuiCreateHintBox(356, false);
+    g_noticeWindow = GuiCreateHintBox(356);
     lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgSuccess);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
 
@@ -161,7 +161,7 @@ static void GuiShowSDCardExportSuccess()
 
 static void GuiShowSDCardExportFailed()
 {
-    g_noticeWindow = GuiCreateHintBox(356, false);
+    g_noticeWindow = GuiCreateHintBox(356);
     lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgFailed);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
 
@@ -250,7 +250,7 @@ static void GuiContent(lv_obj_t *parent)
     lv_label_set_recolor(text, true);
     SetEgContent(text);
 
-    btn = GuiCreateBtn(parent, _("Done"));
+    btn = GuiCreateTextBtn(parent, _("Done"));
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_add_event_cb(btn, ImportMultisigGoToHomeViewHandler, LV_EVENT_CLICKED, NULL);

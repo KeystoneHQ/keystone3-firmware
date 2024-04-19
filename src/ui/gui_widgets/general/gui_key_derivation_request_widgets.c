@@ -272,14 +272,14 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
     cont = GuiCreateContainerWithParent(parent, 480, 114);
     lv_obj_align(cont, LV_ALIGN_BOTTOM_LEFT, 0, 0);
 
-    btn = GuiCreateBtn(cont, _("Cancel"));
+    btn = GuiCreateTextBtn(cont, _("Cancel"));
     lv_obj_set_size(btn, 192, 66);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 36, 24);
     lv_obj_add_event_cb(btn, CloseCurrentViewHandler, LV_EVENT_CLICKED, NULL);
 
-    btn = GuiCreateBtn(cont, _("Approve"));
+    btn = GuiCreateTextBtn(cont, _("Approve"));
     lv_obj_set_size(btn, 192, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 252, 24);
     lv_obj_add_event_cb(btn, OnApproveHandler, LV_EVENT_CLICKED, NULL);
@@ -359,7 +359,7 @@ static void OpenMoreHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         int hintboxHeight = 132;
-        g_openMoreHintBox = GuiCreateHintBox(hintboxHeight, true);
+        g_openMoreHintBox = GuiCreateHintBox(hintboxHeight);
         lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
         lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, _("Tutorial"));
         lv_obj_t *img = GuiCreateImg(g_openMoreHintBox, &imgTutorial);

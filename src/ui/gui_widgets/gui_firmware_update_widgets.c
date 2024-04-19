@@ -506,7 +506,7 @@ static void FirmwareSdcardCheckSha256Handler(lv_event_t *e)
         g_noticeHintBox = GuiCreateAnimHintBox(480, 400, 76);
         lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("calculat_modal_title"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
-        lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("Cancel"));
+        lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _("Cancel"));
         lv_obj_set_size(btn, 408, 66);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
         lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
@@ -583,7 +583,7 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
     GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
 
     if (FatfsFileExist(OTA_FILE_PATH)) {
-        btn = GuiCreateBtn(parent, _("about_info_verify_firmware_title"));
+        btn = GuiCreateTextBtn(parent, _("about_info_verify_firmware_title"));
         lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
         label = lv_obj_get_child(btn, 0);
         lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
@@ -625,13 +625,13 @@ static void GuiCreateMultiToBtcWarningTile(lv_obj_t *parent)
     lv_label_set_recolor(label, true);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -224);
 
-    btn = GuiCreateBtn(parent, _("Cancel"));
+    btn = GuiCreateTextBtn(parent, _("Cancel"));
     lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
     lv_obj_set_size(btn, 192, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
     lv_obj_add_event_cb(btn, KnownWarningCancelHandler, LV_EVENT_CLICKED, NULL);
 
-    btn = GuiCreateBtn(parent, _("firmware_update_btc_only_button_i_know"));
+    btn = GuiCreateTextBtn(parent, _("firmware_update_btc_only_button_i_know"));
     lv_obj_set_size(btn, 192, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_add_event_cb(btn, KnownWarningHandler, LV_EVENT_CLICKED, NULL);
@@ -714,7 +714,7 @@ static void GuiQrcodeHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         if (g_firmwareUpdateWidgets.qrCodeCont == NULL) {
-            g_firmwareUpdateWidgets.qrCodeCont = GuiCreateHintBox(654, true);
+            g_firmwareUpdateWidgets.qrCodeCont = GuiCreateHintBox(654);
             parent = g_firmwareUpdateWidgets.qrCodeCont;
 
             qrCodeCont = lv_obj_create(parent);

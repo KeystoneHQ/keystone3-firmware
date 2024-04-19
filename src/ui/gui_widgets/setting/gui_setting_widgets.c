@@ -53,7 +53,7 @@ typedef struct DeviceSettingItem {
 static DeviceSettingItem_t g_deviceSettingArray[DEVICE_SETTING_LEVEL_MAX];
 
 static lv_obj_t *g_selectAmountHintbox = NULL; // select amount hintbox
-static lv_obj_t *g_noticeHintBox = NULL;       // notice hintbox
+static lv_obj_t *g_noticeWindow = NULL;       // notice hintbox
 static GuiEnterPasscodeItem_t *g_verifyCode = NULL;
 static lv_obj_t *g_passphraseLearnMoreCont = NULL;
 static PageWidget_t *g_pageWidget;
@@ -86,7 +86,7 @@ static void CloseToFingerAndPassView(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeHintBox)
+        GUI_DEL_OBJ(g_noticeWindow)
         for (int i = g_deviceSetTileView.currentTile; i > 2; i--) {
             GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
         }
@@ -127,10 +127,10 @@ void DelCurrCloseToSubtopViewHandler(lv_event_t *e)
             for (int i = g_deviceSetTileView.currentTile; i > 3; i--) {
                 GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
             }
-            g_noticeHintBox = NULL;
+            g_noticeWindow = NULL;
         } else {
             CloseToTargetTileView(g_deviceSetTileView.currentTile, DEVICE_SETTING_WALLET_SETTING);
-            g_noticeHintBox = NULL;
+            g_noticeWindow = NULL;
         }
     }
 }
@@ -138,17 +138,17 @@ void DelCurrCloseToSubtopViewHandler(lv_event_t *e)
 void GuiWalletResetPassWordHintBox(void)
 {
     lv_obj_t *label;
-    g_noticeHintBox = GuiCreateHintBox(386, false);
-    lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgWarn);
+    g_noticeWindow = GuiCreateHintBox(386);
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgWarn);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 462);
-    label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("change_passcode_warning_title"));
+    label = GuiCreateLittleTitleLabel(g_noticeWindow, _("change_passcode_warning_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 558);
-    label = GuiCreateIllustrateLabel(g_noticeHintBox, _("change_passcode_warning_desc"));
+    label = GuiCreateIllustrateLabel(g_noticeWindow, _("change_passcode_warning_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 610);
-    lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("got_it"));
+    lv_obj_t *btn = GuiCreateTextBtn(g_noticeWindow, _("got_it"));
     lv_obj_align(btn, LV_ALIGN_DEFAULT, 332, 710);
     lv_obj_set_size(btn, 122, 66);
-    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 }
 
 static void CloseCurrentPage(lv_event_t *e)
@@ -262,7 +262,7 @@ static void GuiWalletAddLimit(lv_obj_t *parent)
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("got_it"));
+    lv_obj_t *btn = GuiCreateTextBtn(parent, _("got_it"));
     lv_obj_set_size(btn, 348, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
@@ -291,7 +291,6 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
     const char *desc = _("device_setting_wallet_setting_desc");
     int descLen = strnlen_s(desc, sizeof(descBuff));
     if (descLen > DEFAULT_ENGLISH_SETTING_DESC_LEN) {
-        int len = FindStringCharPosition(desc, '/', 2);
         strncpy_s(descBuff, sizeof(descBuff) - 3, desc, FindStringCharPosition(desc, '/', 2) - 1);
         strcat_s(descBuff, sizeof(descBuff), "...");
     } else {
@@ -349,105 +348,41 @@ void GuiSettingCloseSelectAmountHintBox()
 // open select cont
 void OpenSinglePhraseHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        static uint8_t walletSetting[3] = {
-            DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_12WORDS,
-            DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_18WORDS,
-            DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_24WORDS,
-        };
-        g_selectAmountHintbox = GuiCreateHintBox(378, true);
-        uint16_t height = 348;
-        lv_obj_add_event_cb(lv_obj_get_child(g_selectAmountHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_selectAmountHintbox);
-
-        lv_obj_t *btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_phrase_24words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[2], false);
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -12);
-
-        btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_phrase_18words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[1], false);
-        GuiAlignToPrevObj(btn, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
-
-        btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_phrase_12words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[0], false);
-        GuiAlignToPrevObj(btn, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
-
-        lv_obj_t *closeBtn = GuiCreateImgButton(g_selectAmountHintbox,  &imgClose, 64, CloseHintBoxHandler, &g_selectAmountHintbox);
-        GuiAlignToPrevObj(closeBtn, LV_ALIGN_OUT_TOP_RIGHT, -10, -12);
-
-        lv_obj_t *label = GuiCreateNoticeLabel(g_selectAmountHintbox, _("seed_check_word_select"));
-        lv_obj_align_to(label, btn, LV_ALIGN_OUT_TOP_LEFT, 26, -30);
-        height += lv_obj_get_self_height(label);
-        GuiHintBoxResize(g_selectAmountHintbox, height);
-    }
+    static uint8_t walletAmounts[] = {DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_12WORDS, DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_18WORDS, DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_24WORDS};
+    MoreInfoTable_t moreInfoTable[] = {
+        {.name = _("import_wallet_phrase_24words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[0]},
+        {.name = _("import_wallet_phrase_18words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[1]},
+        {.name = _("import_wallet_phrase_12words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[2]},
+    };
+    g_selectAmountHintbox = GuiCreateMoreInfoHintBox(&imgClose, _("seed_check_word_select"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false, &g_selectAmountHintbox);
 }
 
 // share phrase
 void OpenSharePhraseHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        static uint8_t walletSetting[2] = {
-            DEVICE_SETTING_RECOVERY_SHARE_PHRASE_20WORDS,
-            DEVICE_SETTING_RECOVERY_SHARE_PHRASE_33WORDS
-        };
-
-        g_selectAmountHintbox = GuiCreateHintBox(282, true);
-        uint16_t height = 252;
-        lv_obj_add_event_cb(lv_obj_get_child(g_selectAmountHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_selectAmountHintbox);
-
-        lv_obj_t *btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_ssb_33words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[1], false);
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -12);
-
-        btn = GuiCreateSelectButton(g_selectAmountHintbox, _("import_wallet_ssb_20words"), &imgArrowRight, SelectPhraseAmountHandler, &walletSetting[0], false);
-        GuiAlignToPrevObj(btn, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
-
-        lv_obj_t *closeBtn = GuiCreateImgButton(g_selectAmountHintbox,  &imgClose, 64, CloseHintBoxHandler, &g_selectAmountHintbox);
-        GuiAlignToPrevObj(closeBtn, LV_ALIGN_OUT_TOP_RIGHT, -10, -12);
-
-        lv_obj_t *label = GuiCreateNoticeLabel(g_selectAmountHintbox, _("seed_check_word_select"));
-        lv_obj_align_to(label, btn, LV_ALIGN_OUT_TOP_LEFT, 26, -30);
-        height += lv_obj_get_self_height(label);
-        GuiHintBoxResize(g_selectAmountHintbox, height);
-    }
+    static uint8_t walletAmounts[] = {DEVICE_SETTING_RECOVERY_SHARE_PHRASE_20WORDS, DEVICE_SETTING_RECOVERY_SHARE_PHRASE_33WORDS};
+    MoreInfoTable_t moreInfoTable[] = {
+        {.name = _("import_wallet_ssb_33words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[0]},
+        {.name = _("import_wallet_ssb_20words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[1]},
+    };
+    g_selectAmountHintbox = GuiCreateMoreInfoHintBox(&imgClose, _("seed_check_word_select"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false, &g_selectAmountHintbox);
 }
 
 static void DelWalletHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
-        g_noticeHintBox = NULL;
-        GuiShowKeyboardHandler(e);
-    }
+    lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
+    g_noticeWindow = NULL;
+    GuiShowKeyboardHandler(e);
 }
 
 static void OpenDelWalletHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     static uint16_t walletIndex = DEVICE_SETTING_DEL_WALLET;
-
-    if (code == LV_EVENT_CLICKED) {
-        g_noticeHintBox = GuiCreateHintBox(132, true);
-        lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-        lv_obj_t *label = GuiCreateTextLabel(g_noticeHintBox, _("wallet_settings_delete_button"));
-        lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
-        lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgDel);
-        GuiButton_t table[2] = {
-            {
-                .obj = img,
-                .align = LV_ALIGN_LEFT_MID,
-                .position = {24, 0},
-            },
-            {
-                .obj = label,
-                .align = LV_ALIGN_LEFT_MID,
-                .position = {88, 0},
-            },
-        };
-        lv_obj_t *btn = GuiCreateButton(g_noticeHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                                        DelWalletHandler, &walletIndex);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 692);
-    }
+    g_noticeWindow = GuiCreateHintBox(132);
+    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_t *btn = GuiCreateSelectButton(g_noticeWindow, _("wallet_settings_delete_button"), &imgDel, DelWalletHandler, &walletIndex, true);
+    lv_obj_set_style_text_color(lv_obj_get_child(btn, 0), RED_COLOR, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 692);
 }
 
 void GuiWalletRecoveryWriteSe(bool result)
@@ -458,33 +393,11 @@ void GuiWalletRecoveryWriteSe(bool result)
     lv_obj_t *img;
     if (result) {
         GuiWalletSeedCheckClearKb();
-
-        g_noticeHintBox = GuiCreateHintBox(356, false);
-        img = GuiCreateImg(g_noticeHintBox, &imgSuccess);
-        lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 36, -236);
-        label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("seed_check_verify_match_title"));
-        lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -172);
-        label = GuiCreateNoticeLabel(g_noticeHintBox, _("seed_check_verify_match_desc"));
-        lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -110);
-
-        btn = GuiCreateBtn(g_noticeHintBox, _("Done"));
-        lv_obj_align(btn, LV_ALIGN_DEFAULT, 332, 710);
-        lv_obj_set_size(btn, 122, 66);
-        lv_obj_add_event_cb(btn, DelCurrCloseToSubtopViewHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+        g_noticeWindow = GuiCreateConfirmHintBox(&imgSuccess, _("seed_check_verify_match_title"), _("seed_check_verify_match_desc"), NULL, _("Done"), ORANGE_COLOR);
+        lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), DelCurrCloseToSubtopViewHandler, LV_EVENT_CLICKED, &g_noticeWindow);
     } else {
-        g_noticeHintBox = GuiCreateHintBox(356, false);
-        img = GuiCreateImg(g_noticeHintBox, &imgFailed);
-        lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 36, -236);
-        label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("seed_check_verify_not_match_title"));
-        lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -172);
-        label = GuiCreateIllustrateLabel(g_noticeHintBox, _("seed_check_verify_not_match_desc"));
-        lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -110);
-        lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-
-        btn = GuiCreateBtn(g_noticeHintBox, _("Done"));
-        lv_obj_align(btn, LV_ALIGN_DEFAULT, 332, 710);
-        lv_obj_set_size(btn, 122, 66);
-        lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+        g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("seed_check_verify_not_match_title"), _("seed_check_verify_not_match_desc"), NULL, _("Done"), ORANGE_COLOR);
+        lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
     }
 }
 
@@ -546,17 +459,8 @@ void GuiDevSettingPassCode(bool result, uint16_t tileIndex)
 
 void GuiResettingPassWordSuccess(void)
 {
-    g_noticeHintBox = GuiCreateHintBox(356, false);
-    lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgSuccess);
-    lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 492);
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("change_passcode_reset_success_title"));
-    lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -170);
-    label = GuiCreateIllustrateLabel(g_noticeHintBox, _("change_passcode_reset_success_desc"));
-    lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -130);
-    lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("Done"));
-    lv_obj_align(btn, LV_ALIGN_DEFAULT, 332, 710);
-    lv_obj_set_size(btn, 122, 66);
-    lv_obj_add_event_cb(btn, CloseToFingerAndPassView, LV_EVENT_CLICKED, g_noticeHintBox);
+    g_noticeWindow = GuiCreateConfirmHintBox(&imgSuccess, _("change_passcode_reset_success_title"), _("change_passcode_reset_success_desc"), NULL, _("Done"), ORANGE_COLOR);
+    lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseToFingerAndPassView, LV_EVENT_CLICKED, NULL);
 }
 
 void GuiSettingInit(void)
@@ -588,7 +492,7 @@ void GuiSettingInit(void)
 void GuiSettingDeInit(void)
 {
     GuiShowKeyboardDestruct();
-    GUI_DEL_OBJ(g_noticeHintBox)
+    GUI_DEL_OBJ(g_noticeWindow)
     GUI_DEL_OBJ(g_selectAmountHintbox)
     GUI_DEL_OBJ(g_passphraseLearnMoreCont)
     GuiFpVerifyDestruct();

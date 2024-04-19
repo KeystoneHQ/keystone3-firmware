@@ -452,7 +452,7 @@ void SetStatusBarEmojiIndex(uint8_t index)
 void *GuiCreateEmojiKeyBoard(lv_obj_t *parent, lv_obj_t *icon)
 {
     g_walletIcon = icon;
-    lv_obj_t *hintbox = GuiCreateHintBox(534, true);
+    lv_obj_t *hintbox = GuiCreateHintBox(534);
     lv_obj_add_event_cb(lv_obj_get_child(hintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_t *label = GuiCreateNoticeLabel(hintbox, _("single_backup_namewallet_previnput_2"));
     lv_obj_set_width(label, 380);
@@ -1118,16 +1118,13 @@ static void LetterKbAssociateHandler(lv_event_t *e)
 
 static void CloseLetterKbHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     KeyBoard_t *keyBoard = lv_event_get_user_data(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (keyBoard->mode == KEY_STONE_LETTER) {
-            if (g_importPhraseKb != NULL) {
-                lv_event_send(g_importPhraseKb->btnm, KEY_STONE_KEYBOARD_HIDDEN, NULL);
-            }
+    if (keyBoard->mode == KEY_STONE_LETTER) {
+        if (g_importPhraseKb != NULL) {
+            lv_event_send(g_importPhraseKb->btnm, KEY_STONE_KEYBOARD_HIDDEN, NULL);
         }
-        lv_obj_add_flag(keyBoard->cont, LV_OBJ_FLAG_HIDDEN);
     }
+    lv_obj_add_flag(keyBoard->cont, LV_OBJ_FLAG_HIDDEN);
 }
 
 void UpdateAssociateLabel(KeyBoard_t *keyBoard, const char *currText)
@@ -1304,15 +1301,8 @@ void *GuiCreateLetterKeyBoard(lv_obj_t *parent, lv_event_cb_t cb, bool bip39, vo
     lv_obj_add_event_cb(btn, LetterKbAssociateHandler, LV_EVENT_ALL, keyBoard);
     keyBoard->associateLabel[2] = label3;
 
-    btn = GuiCreateBtn(keyBoard->cont, "");
+    btn = GuiCreateImgButton(keyBoard->cont, &imgArrowDownS, 50, CloseLetterKbHandler, keyBoard);
     lv_obj_align(btn, LV_ALIGN_TOP_RIGHT, 0, 2);
-    lv_obj_set_size(btn, 70, 50);
-    lv_obj_t *img = GuiCreateImg(btn, &imgArrowDownS);
-    lv_obj_align(img, LV_ALIGN_RIGHT_MID, 0, 0);
-    lv_obj_set_style_radius(btn, 0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_obj_add_event_cb(btn, CloseLetterKbHandler, LV_EVENT_ALL, keyBoard);
-
     lv_obj_t *ta = lv_textarea_create(keyBoard->cont);
     lv_obj_set_size(ta, 0, 0);
     lv_obj_align(ta, LV_ALIGN_TOP_LEFT, 10, 10);

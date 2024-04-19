@@ -475,7 +475,7 @@ static void GuiMultiImportSdCardXpubWidget(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 174);
     g_xPubTile.pathLabel = label;
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("Import"));
+    lv_obj_t *btn = GuiCreateTextBtn(parent, _("Import"));
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_add_event_cb(btn, ImportXpubHandler, LV_EVENT_CLICKED, NULL);

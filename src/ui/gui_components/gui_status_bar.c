@@ -463,9 +463,7 @@ static lv_obj_t *CreateWordCntSelect(lv_obj_t *navBar)
 
 static lv_obj_t *CreateResetButton(lv_obj_t *navBar)
 {
-    lv_obj_t *btn;
-
-    btn = GuiCreateBtnWithFont(navBar, _("single_phrase_reset"), g_defIllustrateFont);
+    lv_obj_t *btn = GuiCreateImgLabelAdaptButton(navBar, _("single_phrase_reset"), &imgReset, UnHandler, NULL);
     lv_obj_set_size(btn, 106, 42);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
@@ -718,15 +716,12 @@ void SetMidBtnLabel(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, co
 void SetRightBtnLabel(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM button, const char *text)
 {
     SetNavBarRightBtn(navBarWidget, button, NULL, NULL);
-    char btnBuf[64] = {0};
     switch (button) {
     case NVS_BAR_WORD_SELECT:
         lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 0), text);
         break;
     case NVS_BAR_WORD_RESET:
-        sprintf(btnBuf, "%s %s", USR_SYMBOL_RESET, text);
-        lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 0), btnBuf);
-        GuiStatusBarReSetWidth(navBarWidget->rightBtn);
+        lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 1), text);
         break;
     default:
         return;

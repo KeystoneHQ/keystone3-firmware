@@ -100,6 +100,13 @@ void *GuiCreateBtnWithFont(lv_obj_t *parent, const char *text, const lv_font_t *
     return btn;
 }
 
+void *GuiCreateTextBtn(lv_obj_t *parent, const char *text)
+{
+    lv_obj_t *btn = GuiCreateBtnWithFont(parent, text, g_defTextFont);
+    lv_obj_set_size(btn, 96, 66);
+    return btn;
+}
+
 void *GuiCreateBtn(lv_obj_t *parent, const char *text)
 {
     lv_obj_t *btn = GuiCreateBtnWithFont(parent, text, &buttonFont);

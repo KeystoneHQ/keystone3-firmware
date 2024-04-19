@@ -140,7 +140,7 @@ static void GuiBroadcastBtnHandler(lv_event_t *e)
 
 void *GuiCreateBroadcastBtn(lv_obj_t *parent, lv_event_cb_t cb)
 {
-    lv_obj_t *btn = GuiCreateBtn(parent, _("Export Signed Transaction"));
+    lv_obj_t *btn = GuiCreateTextBtn(parent, _("Export Signed Transaction"));
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_add_event_cb(btn, GuiBroadcastBtnHandler, LV_EVENT_CLICKED, NULL);
@@ -362,7 +362,7 @@ static void SignByFinger(void)
 {
     GUI_DEL_OBJ(g_fingerSingContainer)
 
-    g_fingerSingContainer = GuiCreateHintBox(428, true);
+    g_fingerSingContainer = GuiCreateHintBox(428);
     lv_obj_t *cont = g_fingerSingContainer;
     lv_obj_t *label = GuiCreateNoticeLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 402);

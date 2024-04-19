@@ -74,7 +74,7 @@ void GuiUpdateCheckSumPercent(uint8_t percent)
 
         label = GuiCreateIllustrateLabel(g_firmwareVerifyCont, _("about_info_verify_checksum_desc"));
 
-        lv_obj_t *btn = GuiCreateBtn(g_firmwareVerifyCont, _("Done"));
+        lv_obj_t *btn = GuiCreateTextBtn(g_firmwareVerifyCont, _("Done"));
         lv_obj_set_size(btn, 408, 66);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
         lv_obj_add_event_cb(btn, CloseVerifyHintBoxHandler, LV_EVENT_CLICKED, NULL);
@@ -355,7 +355,7 @@ void GuiCreateVerifyFirmwareInstructionTile(lv_obj_t *parent)
     GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
     lv_label_set_recolor(label, true);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("show_checksum"));
+    lv_obj_t *btn = GuiCreateTextBtn(parent, _("show_checksum"));
     lv_obj_set_size(btn, 408, 66);
     lv_obj_add_event_cb(btn, StartFirmwareCheckSumHandler, LV_EVENT_CLICKED, NULL);
     GuiAlignToPrevObj(btn, LV_ALIGN_OUT_BOTTOM_MID, btnOffset, 20);
@@ -374,7 +374,7 @@ static void StartFirmwareCheckSumHandler(lv_event_t *e)
         g_noticeHintBox = GuiCreateAnimHintBox(480, 400, 76);
         lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("calculat_modal_title"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
-        lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("Cancel"));
+        lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _("Cancel"));
         lv_obj_set_size(btn, 408, 66);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
         lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);

@@ -89,13 +89,13 @@ void GuiWebAuthResultCodeWidget(lv_obj_t *parent)
     label = GuiCreateIllustrateLabel(parent, _("verification_code_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 352 - GUI_MAIN_AREA_OFFSET);
 
-    btn = GuiCreateBtn(parent, _("Failed"));
+    btn = GuiCreateTextBtn(parent, _("Failed"));
     lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
     lv_obj_set_size(btn, 192, 66);
     lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_ALL, NULL);
 
-    btn = GuiCreateBtn(parent, _("verification_success"));
+    btn = GuiCreateTextBtn(parent, _("verification_success"));
     lv_obj_set_style_bg_color(btn, GREEN_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 252, -24);
     lv_obj_set_size(btn, 192, 66);

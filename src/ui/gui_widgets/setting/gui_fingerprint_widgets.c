@@ -115,7 +115,7 @@ void GuiFpVerifyDestruct(void)
 
 void GuiWalletFingerOpenSign(void)
 {
-    g_verifyFingerCont = GuiCreateHintBox(428, true);
+    g_verifyFingerCont = GuiCreateHintBox(428);
     lv_obj_t *cont = g_verifyFingerCont;
     lv_obj_t *label = GuiCreateIllustrateLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint"));
     lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
@@ -204,11 +204,11 @@ void GuiWalletFingerAddFpWidget(lv_obj_t *parent, bool success)
     if (success) {
         img = GuiCreateImg(parent, &imgSuccess);
         label = GuiCreateLittleTitleLabel(parent, _("fingerprint_add_success"));
-        btn = GuiCreateBtn(parent, _("Done"));
+        btn = GuiCreateTextBtn(parent, _("Done"));
     } else {
         img = GuiCreateImg(parent, &imgFailed);
         label = GuiCreateLittleTitleLabel(parent, _("fingerprint_add_failed"));
-        btn = GuiCreateBtn(parent, _("try_again"));
+        btn = GuiCreateTextBtn(parent, _("try_again"));
         desc = GuiCreateNoticeLabel(parent, _("fingerprint_add_failed_use_another"));
         lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     }

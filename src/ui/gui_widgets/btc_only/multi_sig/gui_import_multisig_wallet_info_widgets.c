@@ -261,7 +261,7 @@ static void GuiContent(lv_obj_t *parent)
         lv_obj_align(label, LV_ALIGN_DEFAULT, 24, i * 204 + 174);
     }
     bool isExport = GuiGetExportMultisigWalletSwitch();
-    lv_obj_t *btn = GuiCreateBtn(parent, isExport ? _("Export") : _("Confirm"));
+    lv_obj_t *btn = GuiCreateTextBtn(parent, isExport ? _("Export") : _("Confirm"));
     lv_obj_add_event_cb(btn, GuiConfirmHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_size(btn, 408, 66);

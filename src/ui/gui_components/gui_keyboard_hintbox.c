@@ -314,20 +314,14 @@ KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t bu
 KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
 {
     KeyboardWidget_t *keyboardWidget = CreateKeyboardWidget();
-    lv_obj_t *keyboardHintBox = GuiCreateHintBox(576, true);
+    lv_obj_t *keyboardHintBox = GuiCreateHintBox(576);
 
     lv_obj_add_event_cb(lv_obj_get_child(keyboardHintBox, 0), CloseKeyBoardWidgetHandler, LV_EVENT_CLICKED, keyboardWidget);
 
     lv_obj_t *label = GuiCreateIllustrateLabel(keyboardHintBox, _("enter_passcode"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 254);
 
-    lv_obj_t *img = GuiCreateImg(keyboardHintBox, &imgClose);
-    lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, NULL);
-    GuiButton_t table[] = {
-        {.obj = img, .align = LV_ALIGN_CENTER, .position = {0, 0},},
-    };
-    lv_obj_t *button = GuiCreateButton(keyboardHintBox, 36, 36, table, NUMBER_OF_ARRAYS(table),
-                                       CloseKeyBoardWidgetHandler, keyboardWidget);
+    lv_obj_t *button = GuiCreateImgButton(keyboardHintBox, &imgClose, 64, CloseKeyBoardWidgetHandler, keyboardWidget);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 408, 251);
 
     keyboardWidget->keyboardHintBox = keyboardHintBox;
@@ -345,7 +339,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
 
     keyboardWidget->kb = kb;
 
-    img = GuiCreateImg(keyboardHintBox, &imgEyeOff);
+    lv_obj_t *img = GuiCreateImg(keyboardHintBox, &imgEyeOff);
     lv_obj_align_to(img, ta, LV_ALIGN_OUT_RIGHT_MID, 20, 0);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, ta);

@@ -21,7 +21,7 @@ static void GuiFirmwareUpdateDenyInit(void)
 {
     lv_obj_t *img, *label, *button;
     if (g_firmwareUpdateDenyHintBox == NULL) {
-        g_firmwareUpdateDenyHintBox = GuiCreateHintBox(386, false);
+        g_firmwareUpdateDenyHintBox = GuiCreateHintBox(386);
         img = GuiCreateImg(g_firmwareUpdateDenyHintBox, &imgWarn);
         lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 36, -266);
 

@@ -8,7 +8,7 @@ typedef struct {
     void *param;
 } MoreInfoTable_t;
 
-void *GuiCreateHintBox(uint16_t h, bool en);
+void *GuiCreateHintBox(uint16_t h);
 void *GuiCreateHintBoxWithoutTop(lv_obj_t *parent, uint16_t w, uint16_t h);
 void *GuiCreateAnimHintBox(uint16_t w, uint16_t h, uint16_t animH);
 void GuiDeleteAnimHintBox(void);

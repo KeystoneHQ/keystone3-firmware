@@ -223,7 +223,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
 {
     lv_obj_t *cont, *btn, *img, *label;
 
-    g_multiAccountsReceiveWidgets.moreCont = GuiCreateHintBox(228, true);
+    g_multiAccountsReceiveWidgets.moreCont = GuiCreateHintBox(228);
     lv_obj_add_event_cb(lv_obj_get_child(g_multiAccountsReceiveWidgets.moreCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_multiAccountsReceiveWidgets.moreCont);
     cont = g_multiAccountsReceiveWidgets.moreCont;
 
@@ -332,7 +332,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 
     const char *coin = GetCoinCardByIndex(g_chainCard)->coin;
     if (!GetFirstReceive(coin)) {
-        g_multiAccountsReceiveWidgets.attentionCont = GuiCreateHintBox(386, false);
+        g_multiAccountsReceiveWidgets.attentionCont = GuiCreateHintBox(386);
         tempObj = GuiCreateImg(g_multiAccountsReceiveWidgets.attentionCont, &imgInformation);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
         tempObj = GuiCreateLittleTitleLabel(g_multiAccountsReceiveWidgets.attentionCont, _("receive_btc_alert_title"));
@@ -341,7 +341,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         GetAttentionText(attentionText);
         tempObj = GuiCreateLabelWithFont(g_multiAccountsReceiveWidgets.attentionCont, attentionText, g_defIllustrateFont);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
-        tempObj = GuiCreateBtn(g_multiAccountsReceiveWidgets.attentionCont, _("got_it"));
+        tempObj = GuiCreateTextBtn(g_multiAccountsReceiveWidgets.attentionCont, _("got_it"));
         lv_obj_set_size(tempObj, 122, 66);
         lv_obj_set_style_radius(tempObj, 24, LV_PART_MAIN);
         lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
@@ -465,31 +465,23 @@ static void ConfirmAccountHandler(lv_event_t *e)
 
 static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
 {
-    lv_obj_t *btn;
-    lv_obj_t *img;
-
-    btn = GuiCreateBtn(parent, "");
+    lv_obj_t *btn = GuiCreateImgButton(parent, &imgArrowLeft, 66, LeftBtnHandler, NULL);
     lv_obj_set_size(btn, 96, 66);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
-    img = GuiCreateImg(btn, &imgArrowLeft);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_t *img = lv_obj_get_child(btn, 0);
     if (g_showIndex < 5) {
         lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
     }
-    lv_obj_add_event_cb(btn, LeftBtnHandler, LV_EVENT_CLICKED, NULL);
     g_multiAccountsReceiveWidgets.leftBtnImg = img;
 
-    btn = GuiCreateBtn(parent, "");
+    btn = GuiCreateImgButton(parent, &imgArrowRight, 66, RightBtnHandler, NULL);
     lv_obj_set_size(btn, 96, 66);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 156, -24);
-    img = GuiCreateImg(btn, &imgArrowRight);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_opa(img, LV_OPA_COVER, LV_PART_MAIN);
-    lv_obj_add_event_cb(btn, RightBtnHandler, LV_EVENT_CLICKED, NULL);
+    img = lv_obj_get_child(btn, 0);
     g_multiAccountsReceiveWidgets.rightBtnImg = img;
 
     btn = GuiCreateBtn(parent, USR_SYMBOL_CHECK);
@@ -591,7 +583,7 @@ static void GuiCreateAddressDetailWidgets(lv_obj_t *parent)
     lv_obj_t *cont, *label, *last;
 
     if (g_multiAccountsReceiveWidgets.addressDetailCont == NULL) {
-        g_multiAccountsReceiveWidgets.addressDetailCont = GuiCreateHintBox(530, true);
+        g_multiAccountsReceiveWidgets.addressDetailCont = GuiCreateHintBox(530);
         lv_obj_add_event_cb(lv_obj_get_child(g_multiAccountsReceiveWidgets.addressDetailCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_multiAccountsReceiveWidgets.addressDetailCont);
         cont = g_multiAccountsReceiveWidgets.addressDetailCont;
 
@@ -649,7 +641,7 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
     g_inputAccountValid = false;
 
     if (g_multiAccountsReceiveWidgets.inputAccountCont == NULL) {
-        g_multiAccountsReceiveWidgets.inputAccountCont = GuiCreateHintBox(530, true);
+        g_multiAccountsReceiveWidgets.inputAccountCont = GuiCreateHintBox(530);
         lv_obj_add_event_cb(lv_obj_get_child(g_multiAccountsReceiveWidgets.inputAccountCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_multiAccountsReceiveWidgets.inputAccountCont);
         cont = g_multiAccountsReceiveWidgets.inputAccountCont;
 

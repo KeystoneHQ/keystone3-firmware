@@ -280,7 +280,7 @@ static void ChooseAutoLockTimeHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
 
-        g_autoLockHintBox = GuiCreateHintBox(570, true);
+        g_autoLockHintBox = GuiCreateHintBox(570);
 
         lv_obj_add_event_cb(lv_obj_get_child(g_autoLockHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_autoLockHintBox);
 
@@ -446,7 +446,7 @@ static void ChooseAutoShutdownHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
 
-        g_autoShutdownHintBox = GuiCreateHintBox(570, true);
+        g_autoShutdownHintBox = GuiCreateHintBox(570);
 
         lv_obj_add_event_cb(lv_obj_get_child(g_autoShutdownHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_autoShutdownHintBox);
 

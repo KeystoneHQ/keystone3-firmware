@@ -21,7 +21,7 @@ static void GuiLowBatteryInit(void)
 {
     lv_obj_t *img, *label, *button;
     if (g_lowBatteryHintBox == NULL) {
-        g_lowBatteryHintBox = GuiCreateHintBox(416, false);
+        g_lowBatteryHintBox = GuiCreateHintBox(416);
         img = GuiCreateImg(g_lowBatteryHintBox, &imgWarn);
         lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 36, -296);
 

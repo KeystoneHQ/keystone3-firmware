@@ -251,7 +251,7 @@ static void OpenMoreSettingHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        g_moreHintbox = GuiCreateHintBox(228, true);
+        g_moreHintbox = GuiCreateHintBox(228);
         lv_obj_add_event_cb(lv_obj_get_child(g_moreHintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_moreHintbox);
         lv_obj_t *label = GuiCreateTextLabel(g_moreHintbox, _("home_more_connect_wallet"));
         lv_obj_t *img = GuiCreateImg(g_moreHintbox, &imgConnect);

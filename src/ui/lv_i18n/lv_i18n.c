@@ -17,7 +17,7 @@ static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
 static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
 static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
-static lv_i18n_phrase_t en_singulars[] = {
+const static lv_i18n_phrase_t en_singulars[] = {
     {"", ""},
     {"Approve", "Approve"},
     {"Attention", "Attention"},
@@ -463,7 +463,6 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"import_wallet_ssb_repeat_desc", "The Share entered has already been previously inputted. Please submit a different Share."},
     {"import_wallet_ssb_step_fmt", "%d of %d"},
     {"import_wallet_ssb_title_fmt", "Share #F5870A %d#"},
-    {"import_wallet_ssb_words_title", "Seed Phrase Count"},
     {"language_desc", "Select your language"},
     {"language_little_title", "Language"},
     {"language_option1", "English"},
@@ -930,7 +929,7 @@ static const lv_i18n_lang_t en_lang = {
     .locale_plural_fn = en_plural_fn
 };
 
-static lv_i18n_phrase_t ko_singulars[] = {
+const static lv_i18n_phrase_t ko_singulars[] = {
     {"", ""},
     {"Approve", "승인"},
     {"Attention", "주의"},
@@ -1376,7 +1375,6 @@ static lv_i18n_phrase_t ko_singulars[] = {
     {"import_wallet_ssb_repeat_desc", "입력한 공유가 이미 입력되어 있습니다. 다른 공유를 제출하십시오."},
     {"import_wallet_ssb_step_fmt", "%d of %d"},
     {"import_wallet_ssb_title_fmt", "공유 #F5870A %d#"},
-    {"import_wallet_ssb_words_title", "시드 구문 수"},
     {"language_desc", "언어 선택"},
     {"language_little_title", "언어"},
     {"language_option1", "English"},
@@ -1841,7 +1839,7 @@ static const lv_i18n_lang_t ko_lang = {
     .locale_plural_fn = ko_plural_fn
 };
 
-static lv_i18n_phrase_t ru_singulars[] = {
+const static lv_i18n_phrase_t ru_singulars[] = {
     {"", ""},
     {"Approve", "Разрешить"},
     {"Attention", "Внимание"},
@@ -2287,7 +2285,6 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"import_wallet_ssb_repeat_desc", "Введенная часть была введена ранее. Пожалуйста, введите другую часть."},
     {"import_wallet_ssb_step_fmt", "%d из %d"},
     {"import_wallet_ssb_title_fmt", "Часть #F5870A %d#"},
-    {"import_wallet_ssb_words_title", "Количество слов"},
     {"language_desc", "Выберите язык"},
     {"language_little_title", "Язык"},
     {"language_option1", "English"},
@@ -2757,7 +2754,7 @@ static const lv_i18n_lang_t ru_lang = {
     .locale_plural_fn = ru_plural_fn
 };
 
-static lv_i18n_phrase_t zh_cn_singulars[] = {
+const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"", ""},
     {"Approve", "允许"},
     {"Attention", "注意"},
@@ -3203,7 +3200,6 @@ static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"import_wallet_ssb_repeat_desc", "该分片已经被倒入过，请输入其他分片助记词。"},
     {"import_wallet_ssb_step_fmt", "%d 的 %d"},
     {"import_wallet_ssb_title_fmt", "分片#F5870A%D#"},
-    {"import_wallet_ssb_words_title", "助记词数"},
     {"language_desc", "选择你的语言"},
     {"language_little_title", "语言"},
     {"language_option1", "English"},

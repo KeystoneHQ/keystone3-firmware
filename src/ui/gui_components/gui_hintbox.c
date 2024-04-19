@@ -38,7 +38,7 @@ void GuiHintBoxResize(lv_obj_t *obj, uint16_t height)
     lv_obj_align(downCont, LV_ALIGN_BOTTOM_MID, 0, 0);
 }
 
-void *GuiCreateHintBox(uint16_t h, bool en)
+void *GuiCreateHintBox(uint16_t h)
 {
     lv_obj_t *bgCont = GuiCreateContainer(480, 800);
     lv_obj_set_style_bg_opa(bgCont, 0, 0);
@@ -155,7 +155,7 @@ uint16_t GetHintBoxReHeight(uint16_t oldHeight, lv_obj_t *obj)
 void *GuiCreateResultHintbox(uint16_t h, const void *src, const char *titleText,
                              const char *descText, const char *leftBtnText, lv_color_t leftColor,  const char *rightBtnText, lv_color_t rightColor)
 {
-    lv_obj_t *cont = GuiCreateHintBox(h, false);
+    lv_obj_t *cont = GuiCreateHintBox(h);
     lv_obj_t *desc = GuiCreateNoticeLabel(cont, descText);
     lv_obj_align(desc, LV_ALIGN_BOTTOM_LEFT, 36, -130);
     lv_obj_t *title = GuiCreateLittleTitleLabel(cont, titleText);
@@ -164,13 +164,13 @@ void *GuiCreateResultHintbox(uint16_t h, const void *src, const char *titleText,
     lv_obj_align_to(img, title, LV_ALIGN_OUT_TOP_LEFT, 0, -24);
 
     if (leftBtnText != NULL) {
-        lv_obj_t *leftBtn = GuiCreateBtn(cont, leftBtnText);
+        lv_obj_t *leftBtn = GuiCreateTextBtn(cont, leftBtnText);
         lv_obj_align(leftBtn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
         lv_obj_set_size(leftBtn, lv_obj_get_self_width(lv_obj_get_child(leftBtn, 0)) + 60, 66);
         lv_obj_set_style_bg_color(leftBtn, leftColor, LV_PART_MAIN);
     }
 
-    lv_obj_t *rightBtn = GuiCreateBtn(cont, rightBtnText);
+    lv_obj_t *rightBtn = GuiCreateTextBtn(cont, rightBtnText);
     lv_obj_align(rightBtn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_set_size(rightBtn, lv_obj_get_self_width(lv_obj_get_child(rightBtn, 0)) + 60, 66);
     lv_obj_set_style_bg_color(rightBtn, rightColor, LV_PART_MAIN);
@@ -182,7 +182,7 @@ void *GuiCreateGeneralHintBox(const void *src, const char *titleText,
                               const char *rightBtnText, lv_color_t rightColor)
 {
     lv_obj_t *img = NULL, *title = NULL, *desc1 = NULL, *desc2 = NULL, *leftBtn = NULL, *rightBtn = NULL;
-    lv_obj_t *cont = GuiCreateHintBox(800, false);
+    lv_obj_t *cont = GuiCreateHintBox(800);
     if (desc2Text != NULL) {
         desc2 = GuiCreateIllustrateLabel(cont, desc2Text);
         lv_obj_align(desc2, LV_ALIGN_BOTTOM_LEFT, 36, -130);
@@ -201,14 +201,14 @@ void *GuiCreateGeneralHintBox(const void *src, const char *titleText,
     }
 
     if (leftBtnText != NULL) {
-        leftBtn = GuiCreateBtn(cont, leftBtnText);
+        leftBtn = GuiCreateTextBtn(cont, leftBtnText);
         lv_obj_align(leftBtn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
         lv_obj_set_size(leftBtn, lv_obj_get_self_width(lv_obj_get_child(leftBtn, 0)) + 60, 66);
         lv_obj_set_style_bg_color(leftBtn, leftColor, LV_PART_MAIN);
     }
 
     if (rightBtnText != NULL) {
-        rightBtn = GuiCreateBtn(cont, rightBtnText);
+        rightBtn = GuiCreateTextBtn(cont, rightBtnText);
         lv_obj_align(rightBtn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_set_size(rightBtn, lv_obj_get_self_width(lv_obj_get_child(rightBtn, 0)) + 60, 66);
         lv_obj_set_style_bg_color(rightBtn, rightColor, LV_PART_MAIN);
@@ -232,7 +232,7 @@ void *GuiCreateGeneralHintBox(const void *src, const char *titleText,
 void *GuiCreateUpdateHintbox(const void *src, const char *titleText,
                              const char *descText, const char *leftBtnText, lv_color_t leftColor,  const char *rightBtnText, lv_color_t rightColor, bool checkSumDone)
 {
-    lv_obj_t *cont = GuiCreateHintBox(800, false);
+    lv_obj_t *cont = GuiCreateHintBox(800);
     lv_obj_t *checksum = GuiCreateIllustrateLabel(cont, _("firmware_update_sd_checksum_desc"));
     if (checkSumDone) {
         lv_label_set_text(checksum, _("firmware_update_sd_checksum_done"));
@@ -248,13 +248,13 @@ void *GuiCreateUpdateHintbox(const void *src, const char *titleText,
     lv_obj_align_to(img, title, LV_ALIGN_OUT_TOP_LEFT, 0, -24);
 
     if (leftBtnText != NULL) {
-        lv_obj_t *leftBtn = GuiCreateBtn(cont, leftBtnText);
+        lv_obj_t *leftBtn = GuiCreateTextBtn(cont, leftBtnText);
         lv_obj_align(leftBtn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
         lv_obj_set_size(leftBtn, lv_obj_get_self_width(lv_obj_get_child(leftBtn, 0)) + 60, 66);
         lv_obj_set_style_bg_color(leftBtn, leftColor, LV_PART_MAIN);
     }
 
-    lv_obj_t *rightBtn = GuiCreateBtn(cont, rightBtnText);
+    lv_obj_t *rightBtn = GuiCreateTextBtn(cont, rightBtnText);
     lv_obj_align(rightBtn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_set_size(rightBtn, lv_obj_get_self_width(lv_obj_get_child(rightBtn, 0)) + 60, 66);
     lv_obj_set_style_bg_color(rightBtn, rightColor, LV_PART_MAIN);
@@ -278,7 +278,7 @@ void *GuiGetHintBoxLeftBtn(lv_obj_t *parent)
 void *GuiCreateMoreInfoHintBox(const void *src, const char *titleText, MoreInfoTable_t *table, uint8_t cnt, bool isCling, void *parent)
 {
     lv_obj_t *title = NULL;
-    lv_obj_t *cont = GuiCreateHintBox(800, false);
+    lv_obj_t *cont = GuiCreateHintBox(800);
     uint32_t height = 12 + 12;
 
     for (int8_t i = cnt - 1; i >= 0; --i) {
@@ -299,8 +299,7 @@ void *GuiCreateMoreInfoHintBox(const void *src, const char *titleText, MoreInfoT
 
     if (src != NULL) {
         lv_obj_t *btn = GuiCreateImgButton(cont, src, 64, CloseHintBoxHandler, parent);
-        lv_obj_align(btn, LV_ALIGN_TOP_RIGHT, -24, height - 24);
-    } else {
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -24, 64 + 24 - height);
         lv_obj_add_event_cb(lv_obj_get_child(cont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, parent);
     }
 

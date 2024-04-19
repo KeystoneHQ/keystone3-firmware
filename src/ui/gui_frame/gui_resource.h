@@ -4,6 +4,7 @@
 #include "lvgl.h"
 
 // img
+LV_IMG_DECLARE(imgReset);
 LV_IMG_DECLARE(imgArrowNext);
 LV_IMG_DECLARE(imgArrowNextRed);
 LV_IMG_DECLARE(imgArrowRight);

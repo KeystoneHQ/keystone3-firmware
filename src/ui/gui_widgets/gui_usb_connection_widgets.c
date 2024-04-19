@@ -25,7 +25,7 @@ static void GuiUsbConnectionInit(void)
 {
     lv_obj_t *arc, *img, *label, *button;
     if (g_usbConnectionHintBox == NULL) {
-        g_usbConnectionHintBox = GuiCreateHintBox(416, false);
+        g_usbConnectionHintBox = GuiCreateHintBox(416);
         //&imgUsbConnection
         arc = lv_arc_create(g_usbConnectionHintBox);
         lv_obj_set_size(arc, 72, 72);

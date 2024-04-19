@@ -1551,7 +1551,7 @@ static void OpenMoreHandler(lv_event_t *e)
             hintboxHeight = 228;
         }
 #endif
-        g_openMoreHintBox = GuiCreateHintBox(hintboxHeight, true);
+        g_openMoreHintBox = GuiCreateHintBox(hintboxHeight);
         lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
         lv_obj_t *btn = GuiCreateSelectButton(g_openMoreHintBox, _("Tutorial"), &imgTutorial,
                                               OpenTutorialHandler, wallet, true);

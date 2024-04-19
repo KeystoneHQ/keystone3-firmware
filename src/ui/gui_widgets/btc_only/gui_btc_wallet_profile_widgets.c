@@ -295,7 +295,7 @@ static void OpenExportShowXpubHandler(lv_event_t *e)
         static bool testStatus[] = {false, true};
         bool isPassPhrase = PassphraseExist(GetCurrentAccountIndex());
         uint16_t offset = isPassPhrase ? 96 : 0;
-        g_noticeWindow = GuiCreateHintBox(408 - offset, false);
+        g_noticeWindow = GuiCreateHintBox(408 - offset);
         lv_obj_t *title = GuiCreateIllustrateLabel(g_noticeWindow, _("wallet_profile_multi_wallet_show_xpub"));
         lv_obj_align(title, LV_ALIGN_DEFAULT, 36, 422 + offset);
         lv_obj_t *closeBtn = GuiCreateImgButton(g_noticeWindow,  &imgClose, 64, CloseHintBoxHandler, &g_noticeWindow);

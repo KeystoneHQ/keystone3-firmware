@@ -189,15 +189,13 @@ static void GuiCreateSelectAddressList(lv_obj_t *parent)
 static void LeftBtnHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_set_style_img_opa(g_rightBtn, LV_OPA_COVER, LV_PART_MAIN);
-        if (g_showIndex >= 5) {
-            g_showIndex -= 5;
-            RefreshSwitchAccount();
-        }
-        if (g_showIndex < 5) {
-            lv_obj_set_style_img_opa(g_leftBtn, LV_OPA_30, LV_PART_MAIN);
-        }
+    lv_obj_set_style_img_opa(g_rightBtn, LV_OPA_COVER, LV_PART_MAIN);
+    if (g_showIndex >= 5) {
+        g_showIndex -= 5;
+        RefreshSwitchAccount();
+    }
+    if (g_showIndex < 5) {
+        lv_obj_set_style_img_opa(g_leftBtn, LV_OPA_30, LV_PART_MAIN);
     }
 }
 
@@ -229,31 +227,23 @@ static void UpdateConfirmBtn(void)
 
 static void GuiCreatePaginationBtns(lv_obj_t *parent)
 {
-    lv_obj_t *btn;
-    lv_obj_t *img;
-
-    btn = GuiCreateBtn(parent, "");
+    lv_obj_t *btn = GuiCreateImgButton(parent, &imgArrowLeft, 66, LeftBtnHandler, NULL);
     lv_obj_set_size(btn, 96, 66);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
-    img = GuiCreateImg(btn, &imgArrowLeft);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_t *img = lv_obj_get_child(btn, 0);
     if (g_showIndex < 5) {
         lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
     }
-    lv_obj_add_event_cb(btn, LeftBtnHandler, LV_EVENT_CLICKED, NULL);
     g_leftBtn = img;
 
-    btn = GuiCreateBtn(parent, "");
+    btn = GuiCreateImgButton(parent, &imgArrowRight, 66, RightBtnHandler, NULL);
     lv_obj_set_size(btn, 96, 66);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 156, -24);
-    img = GuiCreateImg(btn, &imgArrowRight);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_opa(img, LV_OPA_COVER, LV_PART_MAIN);
-    lv_obj_add_event_cb(btn, RightBtnHandler, LV_EVENT_CLICKED, NULL);
+    img = lv_obj_get_child(btn, 0);
     g_rightBtn = img;
 
     btn = GuiCreateBtn(parent, USR_SYMBOL_CHECK);

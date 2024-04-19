@@ -596,120 +596,116 @@ static void OpenMoreSettingHandler(lv_event_t *e)
 
 static void OpenManageAssetsHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        if (g_isManageClick == false) {
-            return;
-        }
-        memcpy(&g_walletBakState, &g_walletState, sizeof(g_walletState));
-        g_manageCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                          GUI_MAIN_AREA_OFFSET);
-        lv_obj_add_flag(g_manageCont, LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_align(g_manageCont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
-        lv_obj_t *checkBoxCont = GuiCreateContainerWithParent(g_manageCont, lv_obj_get_width(lv_scr_act()), 542);
-        lv_obj_set_align(checkBoxCont, LV_ALIGN_DEFAULT);
-        lv_obj_add_flag(checkBoxCont, LV_OBJ_FLAG_SCROLLABLE);
-        lv_obj_set_scrollbar_mode(checkBoxCont, LV_SCROLLBAR_MODE_OFF);
-
-        lv_obj_t *coinLabel;
-        lv_obj_t *chainLabel;
-        lv_obj_t *icon;
-        lv_obj_t *checkbox;
-        int heightIndex = 0;
-        for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-            coinLabel = GuiCreateTextLabel(checkBoxCont, g_coinCardArray[i].coin);
-            chainLabel = GuiCreateNoticeLabel(checkBoxCont, g_coinCardArray[i].chain);
-            icon = GuiCreateImg(checkBoxCont, g_coinCardArray[i].icon);
-            checkbox = GuiCreateMultiCheckBox(checkBoxCont, _(""));
-            lv_obj_set_style_pad_top(checkbox, 32, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_size(checkbox, 446, 96);
-            g_walletState[i].checkBox = checkbox;
-            uint8_t tableLen = 4;
-            GuiButton_t table[4] = {
-                {
-                    .obj = icon,
-                    .align = LV_ALIGN_LEFT_MID,
-                    .position = {24, 0},
-                },
-                {
-                    .obj = coinLabel,
-                    .align = LV_ALIGN_DEFAULT,
-                    .position = {100, 13},
-                },
-                {
-                    .obj = chainLabel,
-                    .align = LV_ALIGN_DEFAULT,
-                    .position = {100, 53},
-                },
-                {
-                    .obj = checkbox,
-                    .align = LV_ALIGN_TOP_MID,
-                    .position = {-10, 0},
-                },
-            };
-            if (IsCosmosChain(g_coinCardArray[i].index)) {
-                table[0].position.x += 12;
-                table[1].position.x += 12;
-                table[2].position.x += 12;
-            }
-
-            if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS) {
-                // lv_obj_del(table[2].obj);
-                lv_obj_t *line = GuiCreateDividerLine(checkBoxCont);
-                lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 96 * heightIndex);
-                g_endCosmosLine = GuiCreateDividerLine(checkBoxCont);
-                lv_obj_align(g_endCosmosLine, LV_ALIGN_DEFAULT, 0, 96 * (heightIndex + 1));
-                lv_obj_t *cosmosCoinImg = GuiCreateImg(checkBoxCont, &coinCosmosEco);
-                table[2].obj = cosmosCoinImg;
-                table[2].align = LV_ALIGN_DEFAULT;
-                table[2].position.x = 100;
-                table[2].position.y = 53;
-
-                lv_obj_del(table[3].obj);
-                g_cosmosPulldownImg = GuiCreateImg(checkBoxCont, &imgArrowRight);
-                table[3].obj = g_cosmosPulldownImg;
-                table[3].align = LV_ALIGN_RIGHT_MID;
-                table[3].position.x = -12;
-                table[3].position.y = 0;
-            }
-
-            lv_obj_t *button = GuiCreateButton(checkBoxCont, 456, 96, table, tableLen,
-                                               ManageCoinChainHandler, &g_walletState[i]);
-            g_walletButton[i] = button;
-            if (IsCosmosChain(g_coinCardArray[i].index)) {
-                lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);
-                GUI_DEL_OBJ(g_lastCosmosLine);
-                g_lastCosmosLine = GuiCreateDividerLine(checkBoxCont);
-                lv_obj_add_flag(g_lastCosmosLine, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_align(g_lastCosmosLine, LV_ALIGN_DEFAULT, 0, 96 * (heightIndex + 1));
-            }
-            if (!g_walletState[i].enable) {
-                lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);
-                continue;
-            }
-            lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 96 * heightIndex);
-            heightIndex++;
-        }
-
-        lv_obj_t *btn = GuiCreateBtn(g_manageCont, USR_SYMBOL_CHECK);
-        lv_obj_add_event_cb(btn, ConfirmManageAssetsHandler, LV_EVENT_ALL, NULL);
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-
-        lv_obj_t *label = GuiCreateTextLabel(g_manageCont, "");
-        lv_obj_align_to(label, btn, LV_ALIGN_OUT_LEFT_MID, -300, 0);
-        lv_label_set_recolor(label, true);
-
-        g_manageWalletLabel = label;
-
-        UpdateManageWalletState(false);
-
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("home_manage_assets"));
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, g_manageCont);
-        // TODO: add search
-        // GuiNvsBarSetRightCb(NVS_BAR_SEARCH, NULL, NULL);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    if (g_isManageClick == false) {
+        return;
     }
+    memcpy(&g_walletBakState, &g_walletState, sizeof(g_walletState));
+    g_manageCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
+                                        GUI_MAIN_AREA_OFFSET);
+    lv_obj_add_flag(g_manageCont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_align(g_manageCont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
+    lv_obj_t *checkBoxCont = GuiCreateContainerWithParent(g_manageCont, lv_obj_get_width(lv_scr_act()), 542);
+    lv_obj_set_align(checkBoxCont, LV_ALIGN_DEFAULT);
+    lv_obj_add_flag(checkBoxCont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_scrollbar_mode(checkBoxCont, LV_SCROLLBAR_MODE_OFF);
+
+    lv_obj_t *coinLabel;
+    lv_obj_t *chainLabel;
+    lv_obj_t *icon;
+    lv_obj_t *checkbox;
+    int heightIndex = 0;
+    for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+        coinLabel = GuiCreateTextLabel(checkBoxCont, g_coinCardArray[i].coin);
+        chainLabel = GuiCreateNoticeLabel(checkBoxCont, g_coinCardArray[i].chain);
+        icon = GuiCreateImg(checkBoxCont, g_coinCardArray[i].icon);
+        checkbox = GuiCreateMultiCheckBox(checkBoxCont, _(""));
+        lv_obj_set_style_pad_top(checkbox, 32, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_size(checkbox, 446, 96);
+        g_walletState[i].checkBox = checkbox;
+        uint8_t tableLen = 4;
+        GuiButton_t table[4] = {
+            {
+                .obj = icon,
+                .align = LV_ALIGN_LEFT_MID,
+                .position = {24, 0},
+            },
+            {
+                .obj = coinLabel,
+                .align = LV_ALIGN_DEFAULT,
+                .position = {100, 13},
+            },
+            {
+                .obj = chainLabel,
+                .align = LV_ALIGN_DEFAULT,
+                .position = {100, 53},
+            },
+            {
+                .obj = checkbox,
+                .align = LV_ALIGN_TOP_MID,
+                .position = {-10, 0},
+            },
+        };
+        if (IsCosmosChain(g_coinCardArray[i].index)) {
+            table[0].position.x += 12;
+            table[1].position.x += 12;
+            table[2].position.x += 12;
+        }
+
+        if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS) {
+            // lv_obj_del(table[2].obj);
+            lv_obj_t *line = GuiCreateDividerLine(checkBoxCont);
+            lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 96 * heightIndex);
+            g_endCosmosLine = GuiCreateDividerLine(checkBoxCont);
+            lv_obj_align(g_endCosmosLine, LV_ALIGN_DEFAULT, 0, 96 * (heightIndex + 1));
+            lv_obj_t *cosmosCoinImg = GuiCreateImg(checkBoxCont, &coinCosmosEco);
+            table[2].obj = cosmosCoinImg;
+            table[2].align = LV_ALIGN_DEFAULT;
+            table[2].position.x = 100;
+            table[2].position.y = 53;
+
+            lv_obj_del(table[3].obj);
+            g_cosmosPulldownImg = GuiCreateImg(checkBoxCont, &imgArrowRight);
+            table[3].obj = g_cosmosPulldownImg;
+            table[3].align = LV_ALIGN_RIGHT_MID;
+            table[3].position.x = -12;
+            table[3].position.y = 0;
+        }
+
+        lv_obj_t *button = GuiCreateButton(checkBoxCont, 456, 96, table, tableLen,
+                                            ManageCoinChainHandler, &g_walletState[i]);
+        g_walletButton[i] = button;
+        if (IsCosmosChain(g_coinCardArray[i].index)) {
+            lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);
+            GUI_DEL_OBJ(g_lastCosmosLine);
+            g_lastCosmosLine = GuiCreateDividerLine(checkBoxCont);
+            lv_obj_add_flag(g_lastCosmosLine, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_align(g_lastCosmosLine, LV_ALIGN_DEFAULT, 0, 96 * (heightIndex + 1));
+        }
+        if (!g_walletState[i].enable) {
+            lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);
+            continue;
+        }
+        lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 96 * heightIndex);
+        heightIndex++;
+    }
+
+    lv_obj_t *btn = GuiCreateBtn(g_manageCont, USR_SYMBOL_CHECK);
+    lv_obj_add_event_cb(btn, ConfirmManageAssetsHandler, LV_EVENT_ALL, NULL);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+
+    lv_obj_t *label = GuiCreateTextLabel(g_manageCont, "");
+    lv_obj_align_to(label, btn, LV_ALIGN_OUT_LEFT_MID, -300, 0);
+    lv_label_set_recolor(label, true);
+
+    g_manageWalletLabel = label;
+
+    UpdateManageWalletState(false);
+
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("home_manage_assets"));
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, g_manageCont);
+    // TODO: add search
+    // GuiNvsBarSetRightCb(NVS_BAR_SEARCH, NULL, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
 }
 
 void GuiHomeSetWalletDesc(WalletDesc_t *wallet)
@@ -808,5 +804,4 @@ void GuiHomeDeInit(void)
         g_pageWidget = NULL;
     }
 }
-
 #endif

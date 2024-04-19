@@ -177,7 +177,7 @@ void GuiLockScreenWipeDevice(void)
     label = GuiCreateNoticeLabel(cont, showString);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 620 - GUI_STATUS_BAR_HEIGHT);
 
-    lv_obj_t *btn = GuiCreateBtn(cont, _("wipe_device"));
+    lv_obj_t *btn = GuiCreateTextBtn(cont, _("wipe_device"));
     lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 690 - GUI_STATUS_BAR_HEIGHT);

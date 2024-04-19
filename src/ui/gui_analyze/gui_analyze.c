@@ -53,6 +53,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreePsbtUxtoMemory,
     },
+    {
+        REMAPVIEW_BTC_MESSAGE,
+#ifndef COMPILE_SIMULATOR
+        "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text\":\"Message\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,0],\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,38],\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetBtcMsgDetail\",\"text_len_func\":\"GetBtcMsgDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_btc_msg.json",
+#endif
+        GuiGetParsedQrData,
+        NULL,
+        FreeBtcMsgMemory,
+    },
 #ifndef BTC_ONLY
     // temper test the ethereum page view not for production usage
     {
@@ -176,17 +187,6 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         GuiGetXrpData,
         NULL,
         FreeXrpMemory,
-    },
-    {
-        REMAPVIEW_BTC_MESSAGE,
-#ifndef COMPILE_SIMULATOR
-        "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text\":\"Message\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,0],\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,38],\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetBtcMsgDetail\",\"text_len_func\":\"GetBtcMsgDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_btc_msg.json",
-#endif
-        GuiGetParsedQrData,
-        NULL,
-        FreeBtcMsgMemory,
     },
 #endif
 };

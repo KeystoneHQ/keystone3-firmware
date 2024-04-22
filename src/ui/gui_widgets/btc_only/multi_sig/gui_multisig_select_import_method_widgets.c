@@ -86,13 +86,10 @@ static void GuiContent(lv_obj_t *parent)
 
 static void SelectMicroCardFileHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         if (SdCardInsert()) {
             static uint8_t fileFilterType = ONLY_TXT;
             GuiFrameOpenViewWithParam(&g_multisigReadSdcardView, &fileFilterType, sizeof(fileFilterType));
-        } else {
             g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
         }
     }
@@ -100,12 +97,9 @@ static void SelectMicroCardFileHandler(lv_event_t *e)
 
 static void SelectCameraHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         const static ViewType viewType = MultisigWalletImport;
         GuiFrameOpenViewWithParam(&g_scanView, &viewType, sizeof(viewType));
-    }
 }
 
 static void OpenMultisigMoreInfoHandler(lv_event_t *e)

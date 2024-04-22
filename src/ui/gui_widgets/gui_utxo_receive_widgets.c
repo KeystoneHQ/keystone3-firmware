@@ -687,24 +687,20 @@ static void UpdateConfirmAddrTypeBtn(void)
 
 static void ConfirmAddrIndexHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED && IsAddrIndexSelectChanged()) {
         SetCurrentSelectIndex(g_selectIndex);
         ReturnHandler(e);
-    }
 }
 
 static void ConfirmAddrTypeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED && IsAddrTypeSelectChanged()) {
         g_addressType[g_currentAccountIndex] = g_selectType;
         g_selectIndex = 0;
         SetCurrentSelectIndex(g_selectIndex);
         ReturnHandler(e);
-    }
 }
 
 static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
@@ -1074,19 +1070,13 @@ static void RefreshSwitchAccount(void)
 
 static void CloseAttentionHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_add_flag(g_utxoReceiveWidgets.attentionCont, LV_OBJ_FLAG_HIDDEN);
-    }
 }
 
 static void MoreHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         if (g_utxoReceiveWidgets.moreCont == NULL) {
             GuiCreateMoreWidgets(g_utxoReceiveWidgets.tileQrCode);
-        } else {
             lv_obj_del(g_utxoReceiveWidgets.moreCont);
             g_utxoReceiveWidgets.moreCont = NULL;
         }
@@ -1095,37 +1085,28 @@ static void MoreHandler(lv_event_t *e)
 
 static void AddressSettingsHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         if (g_utxoReceiveWidgets.moreCont != NULL) {
             lv_obj_del(g_utxoReceiveWidgets.moreCont);
             g_utxoReceiveWidgets.moreCont = NULL;
-        }
         GuiBitcoinReceiveGotoTile(UTXO_RECEIVE_TILE_ADDRESS_SETTINGS);
     }
 }
 
 static void ExportXpubHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         if (g_utxoReceiveWidgets.moreCont != NULL) {
             lv_obj_del(g_utxoReceiveWidgets.moreCont);
             g_utxoReceiveWidgets.moreCont = NULL;
-        }
         GuiFrameOpenViewWithParam(&g_exportPubkeyView, &g_chainCard, sizeof(g_chainCard));
     }
 }
 
 static void TutorialHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_utxoReceiveWidgets.moreCont);
         if (g_chainCard == HOME_WALLET_CARD_BTC) {
             TUTORIAL_LIST_INDEX_ENUM tIndex = TUTORIAL_BTC_RECEIVE;
             GuiFrameOpenViewWithParam(&g_tutorialView, &tIndex, sizeof(tIndex));
-        }
     }
 }
 
@@ -1143,13 +1124,10 @@ static void LeftBtnHandler(lv_event_t *e)
 
 static void RightBtnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_set_style_img_opa(g_utxoReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
         if (g_showIndex < ADDRESS_INDEX_MAX - 5) {
             g_showIndex += 5;
             RefreshSwitchAccount();
-        }
         if (g_showIndex >= ADDRESS_INDEX_MAX - 5) {
             lv_obj_set_style_img_opa(g_utxoReceiveWidgets.rightBtnImg, LV_OPA_30, LV_PART_MAIN);
         }
@@ -1173,27 +1151,22 @@ static void UpdateAddrTypeCheckbox(uint8_t i, bool isChecked)
 
 static void AddressSettingsCheckHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *checkBox;
 
-    if (code == LV_EVENT_CLICKED) {
         checkBox = lv_event_get_target(e);
 #ifdef BTC_ONLY
         g_addressSettings = GetIsTestNet() ? g_testNetAddressSettings : g_mainNetAddressSettings;
 #endif
         for (uint32_t i = 0; i < g_addressSettingsNum; i++) {
             UpdateAddrTypeCheckbox(i, checkBox == g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox);
-        }
         UpdateConfirmAddrTypeBtn();
     }
 }
 
 static void SwitchAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *checkBox;
 
-    if (code == LV_EVENT_CLICKED) {
         checkBox = lv_event_get_target(e);
         for (uint32_t i = 0; i < 5; i++) {
             if (checkBox == g_utxoReceiveWidgets.switchAddressWidgets[i].checkBox) {
@@ -1201,7 +1174,6 @@ static void SwitchAddressHandler(lv_event_t *e)
                 lv_obj_clear_flag(g_utxoReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(g_utxoReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
                 g_selectIndex = g_showIndex + i;
-            } else {
                 lv_obj_clear_state(g_utxoReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_add_flag(g_utxoReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_clear_flag(g_utxoReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
@@ -1213,14 +1185,11 @@ static void SwitchAddressHandler(lv_event_t *e)
 
 static void ChangeAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         uint32_t i = GetCurrentSelectIndex();
         if (i < ADDRESS_INDEX_MAX) {
             i++;
             SetCurrentSelectIndex(i);
-        }
         RefreshQrCode();
         if (i == ADDRESS_INDEX_MAX) {
             lv_obj_set_style_img_opa(g_utxoReceiveWidgets.changeImg, LV_OPA_60, LV_PART_MAIN);
@@ -1234,21 +1203,15 @@ static void ChangeAddressHandler(lv_event_t *e)
 
 static void OpenSwitchAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         GuiBitcoinReceiveGotoTile(UTXO_RECEIVE_TILE_SWITCH_ACCOUNT);
         RefreshSwitchAccount();
-    }
 }
 
 static void GotoAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         GuiCreateGotoAddressWidgets(g_utxoReceiveWidgets.tileSwitchAccount);
-    }
 }
 
 static void SetKeyboardValid(bool validation)
@@ -1268,14 +1231,12 @@ static void SetKeyboardValid(bool validation)
 
 static void GotoAddressKeyboardHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
     uint32_t id = lv_btnmatrix_get_selected_btn(obj);
     lv_obj_draw_part_dsc_t *dsc;
     char input[ADDRESS_MAX_LEN];
     uint64_t longInt;
 
-    if (code == LV_EVENT_CLICKED) {
         const char *txt = lv_btnmatrix_get_btn_text(obj, id);
         uint32_t len = strnlen_s(input, ADDRESS_MAX_LEN);
         strcpy_s(input, ADDRESS_MAX_LEN, lv_label_get_text(g_utxoReceiveWidgets.inputAddressLabel));
@@ -1287,7 +1248,6 @@ static void GotoAddressKeyboardHandler(lv_event_t *e)
                     UpdateConfirmAddrIndexBtn();
                     lv_obj_add_flag(g_utxoReceiveWidgets.inputAddressCont, LV_OBJ_FLAG_HIDDEN);
                     g_gotoAddressValid = false;
-                }
             }
         } else if (strcmp(txt, "-") == 0) {
             if (len > 0) {
@@ -1367,11 +1327,8 @@ static void GotoAddressKeyboardHandler(lv_event_t *e)
 
 static void CloseGotoAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_add_flag(g_utxoReceiveWidgets.inputAddressCont, LV_OBJ_FLAG_HIDDEN);
-    }
 }
 
 static ChainType GetChainTypeByIndex(uint32_t index)

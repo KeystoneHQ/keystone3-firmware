@@ -84,10 +84,7 @@ void GuiWipeDeviceEntranceWidget(lv_obj_t *parent)
 
 static void WipeDeviceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GuiShowWipeDeviceHintBox();
-    }
 }
 
 static void GuiShowWipeDeviceHintBox(void)
@@ -107,20 +104,14 @@ static void GuiShowWipeDeviceHintBox(void)
 
 static void NotNowHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GuiCountDownDestruct(NULL, NULL);
         GUI_DEL_OBJ(g_wipeDeviceHintBox);
-    }
 }
 
 static void ExecWipeDeviceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_wipeDeviceHintBox);
         WipeDeviceDeal();
-    }
 }
 
 static void WipeDeviceDeal(void)

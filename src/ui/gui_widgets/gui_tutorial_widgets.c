@@ -129,11 +129,8 @@ static void GuiOpenQRHintBox(Tutorial_t *tutorial)
 
 static void GuiOpenQRHintBoxHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         Tutorial_t *t = lv_event_get_user_data(e);
         GuiOpenQRHintBox(t);
-    }
 }
 
 void GuiTutorialInit(TUTORIAL_LIST_INDEX_ENUM tutorialIndex)

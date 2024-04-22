@@ -102,34 +102,23 @@ static void GuiCreatePageContent(lv_obj_t *parent)
 
 static void CleanHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         CleanConnectEternlWidget();
-    }
 }
 
 static void GotoScanQRCodeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GuiFrameOpenView(&g_scanView);
-    }
 }
 
 static void OpenTutorialHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
         GuiFrameOpenViewWithParam(&g_walletTutorialView, wallet, sizeof(WALLET_LIST_INDEX_ENUM));
         GUI_DEL_OBJ(g_openMoreHintBox);
-    }
 }
 
 static void OpenMoreHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         int hintboxHeight = 132;
         g_openMoreHintBox = GuiCreateHintBox(hintboxHeight);
         lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
@@ -140,7 +129,6 @@ static void OpenMoreHandler(lv_event_t *e)
             {
                 .obj = img,
                 .align = LV_ALIGN_LEFT_MID,
-                .position = {24, 0},
             },
             {
                 .obj = label,

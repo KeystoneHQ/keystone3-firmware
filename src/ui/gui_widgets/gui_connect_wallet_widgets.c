@@ -299,15 +299,12 @@ static bool IsSOL(int walletIndex)
 
 static void OpenQRCodeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         WalletListItem_t *wallet = lv_event_get_user_data(e);
         g_connectWalletTileView.walletIndex = wallet->index;
 #ifndef BTC_ONLY
         if (IsEVMChain(g_connectWalletTileView.walletIndex)) {
             g_derivationPathDescs = GetDerivationPathDescs(ETH_DERIVATION_PATH_DESC);
-        }
         if (IsSOL(g_connectWalletTileView.walletIndex)) {
             g_derivationPathDescs = GetDerivationPathDescs(SOL_DERIVATION_PATH_DESC);
         }
@@ -325,26 +322,20 @@ static void OpenQRCodeHandler(lv_event_t *e)
 
 static void ReturnShowQRHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_coinListCont)
         QRCodePause(false);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
-    }
 }
 
 static void UpdateFewchaCoinStateHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_t *checkBox = lv_event_get_target(e);
         for (int i = 0; i < FEWCHA_COINS_BUTT; i++) {
             g_tempFewchaCoinState[i].state = checkBox == g_defaultFewchaState[i].checkBox;
             if (g_tempFewchaCoinState[i].state) {
                 lv_obj_add_flag(g_defaultFewchaState[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_clear_flag(g_defaultFewchaState[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
-            } else {
                 lv_obj_clear_flag(g_defaultFewchaState[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(g_defaultFewchaState[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
             }
@@ -355,8 +346,6 @@ static void UpdateFewchaCoinStateHandler(lv_event_t *e)
 
 static void ConfirmSelectFewchaCoinsHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         g_isCoinReselected = true;
         memcpy(g_fewchaCoinState, g_tempFewchaCoinState, sizeof(g_tempFewchaCoinState));
         GUI_DEL_OBJ(g_coinListCont)
@@ -364,7 +353,6 @@ static void ConfirmSelectFewchaCoinsHandler(lv_event_t *e)
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ConnectWalletReturnHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
-    }
 }
 
 static void RefreshAddressIndex(uint32_t index)
@@ -381,11 +369,8 @@ static void RefreshAddressIndex(uint32_t index)
 
 static void JumpSelectCoinPageHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         if (g_coinListCont != NULL) {
             return;
-        }
 #ifndef COMPILE_SIMULATOR
         QRCodePause(true);
 #endif
@@ -906,14 +891,11 @@ void GuiConnectWalletHandleURUpdate(char *data, uint16_t len)
 
 void ConnectWalletReturnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
 #ifndef COMPILE_SIMULATOR
         // CloseQRTimer();
 #endif
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-    }
 }
 
 #ifndef BTC_ONLY
@@ -962,20 +944,16 @@ static bool IsSelectChanged(void)
 
 static void CloseDerivationHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         QRCodePause(false);
         GUI_DEL_OBJ(g_derivationPathCont);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         SetWallet(g_pageWidget->navBarWidget, g_connectWalletTileView.walletIndex, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
-    }
 }
 
 static void ConfirmDerivationHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED && IsSelectChanged()) {
         SetAccountType(GetCurrentSelectedIndex());
         GuiAnimatingQRCodeDestroyTimer();
@@ -984,7 +962,6 @@ static void ConfirmDerivationHandler(lv_event_t *e)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         SetWallet(g_pageWidget->navBarWidget, g_connectWalletTileView.walletIndex, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
-    }
 }
 
 static void UpdateConfirmBtn(void)
@@ -1104,9 +1081,7 @@ static uint8_t GetCurrentSelectedIndex()
 
 static void SelectDerivationHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_t *newCheckBox = lv_event_get_user_data(e);
         for (int i = 0; i < 3; i++) {
             if (newCheckBox == g_derivationCheck[i]) {
@@ -1114,7 +1089,6 @@ static void SelectDerivationHandler(lv_event_t *e)
                 SetCurrentSelectedIndex(i);
                 ShowEgAddressCont(g_egCont);
                 UpdateConfirmBtn();
-            } else {
                 lv_obj_clear_state(g_derivationCheck[i], LV_STATE_CHECKED);
             }
         }
@@ -1125,12 +1099,9 @@ static void SelectDerivationHandler(lv_event_t *e)
 static void OpenTutorialHandler(lv_event_t *e)
 {
     QRCodePause(true);
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
         GuiFrameOpenViewWithParam(&g_walletTutorialView, wallet, sizeof(wallet));
         GUI_DEL_OBJ(g_openMoreHintBox);
-    }
 }
 
 #ifndef BTC_ONLY
@@ -1323,24 +1294,18 @@ static void OpenDerivationPath()
 
 static void ChangeDerivationPathHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         OpenDerivationPath();
         QRCodePause(true);
-    }
 }
 #endif
 
 static void OpenMoreHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         int hintboxHeight = 132;
         WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
 #ifndef BTC_ONLY
         if (IsEVMChain(*wallet) || IsSOL(*wallet)) {
             hintboxHeight = 228;
-        }
 #endif
         g_openMoreHintBox = GuiCreateHintBox(hintboxHeight);
         lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);

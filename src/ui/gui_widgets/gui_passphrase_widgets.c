@@ -211,13 +211,10 @@ static void SkipHandler(lv_event_t *e)
 
 static void SetKeyboardTaHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_t *ta = lv_event_get_user_data(e);
         if (ta == g_passphraseWidgets.repeatTa) {
             GuiSetFullKeyBoardConfirm(g_passphraseWidgets.keyboard, true);
             lv_obj_clear_state(g_passphraseWidgets.inputTa, LV_STATE_FOCUSED);
-        } else {
             GuiSetFullKeyBoardConfirm(g_passphraseWidgets.keyboard, false);
             lv_obj_clear_state(g_passphraseWidgets.repeatTa, LV_STATE_FOCUSED);
         }
@@ -236,13 +233,11 @@ static void SetKeyboardTaHandler(lv_event_t *e)
 static void UpdatePassPhraseHandler(lv_event_t *e)
 {
     static bool delayFlag = false;
-    lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_READY) {
         if (lv_keyboard_get_textarea(g_passphraseWidgets.keyboard->kb) == g_passphraseWidgets.inputTa) {
             lv_keyboard_set_textarea(g_passphraseWidgets.keyboard->kb, g_passphraseWidgets.repeatTa);
             lv_obj_clear_state(g_passphraseWidgets.inputTa, LV_STATE_FOCUSED);
             lv_obj_add_state(g_passphraseWidgets.repeatTa, LV_STATE_FOCUSED);
-        } else {
             const char *input = lv_textarea_get_text(g_passphraseWidgets.inputTa);
             const char *repeat = lv_textarea_get_text(g_passphraseWidgets.repeatTa);
             if (!strcmp(input, repeat)) {

@@ -179,13 +179,10 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent)
 
 static void SetKeyboardTaHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_t *ta = lv_event_get_user_data(e);
         if (ta == g_passphraseWidget.repeatTa) {
             GuiSetFullKeyBoardConfirm(g_setPassPhraseKb, true);
             lv_obj_clear_state(g_passphraseWidget.inputTa, LV_STATE_FOCUSED);
-        } else {
             lv_obj_clear_state(g_passphraseWidget.repeatTa, LV_STATE_FOCUSED);
             GuiSetFullKeyBoardConfirm(g_setPassPhraseKb, false);
         }
@@ -204,14 +201,11 @@ static void SetKeyboardTaHandler(lv_event_t *e)
 
 static void PassphraseQuickAccessHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_t *switchBox = g_passphraseQuickAccessSwitch;
         bool en = lv_obj_has_state(switchBox, LV_STATE_CHECKED);
         if (en) {
             lv_obj_clear_state(switchBox, LV_STATE_CHECKED);
-        } else {
             lv_obj_add_state(switchBox, LV_STATE_CHECKED);
         }
         SetPassphraseQuickAccess(!en);
@@ -222,13 +216,11 @@ static void PassphraseQuickAccessHandler(lv_event_t *e)
 static void UpdatePassPhraseHandler(lv_event_t *e)
 {
     static bool delayFlag = false;
-    lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_READY) {
         if (lv_keyboard_get_textarea(g_setPassPhraseKb->kb) == g_passphraseWidget.inputTa) {
             lv_keyboard_set_textarea(g_setPassPhraseKb->kb, g_passphraseWidget.repeatTa);
             lv_obj_clear_state(g_passphraseWidget.inputTa, LV_STATE_FOCUSED);
             lv_obj_add_state(g_passphraseWidget.repeatTa, LV_STATE_FOCUSED);
-        } else {
             const char *input = lv_textarea_get_text(g_passphraseWidget.inputTa);
             const char *repeat = lv_textarea_get_text(g_passphraseWidget.repeatTa);
             if (!strcmp(input, repeat)) {

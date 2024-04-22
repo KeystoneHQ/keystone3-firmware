@@ -444,17 +444,14 @@ static void UpdateConfirmAccountBtn(void)
 
 static void ConfirmIndexHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED && IsIndexSelectChanged()) {
         SetCurrentSelectIndex(g_tmpIndex);
         ReturnHandler(e);
-    }
 }
 
 static void ConfirmAccountHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED && IsAccountSelectChanged()) {
         g_selectedAccount[GetCurrentAccountIndex()] = g_tmpAccount;
@@ -462,7 +459,6 @@ static void ConfirmAccountHandler(lv_event_t *e)
         SetCurrentSelectIndex(g_tmpIndex);
         CloseSwitchAccountHandler(e);
         RefreshQrCode();
-    }
 }
 
 static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
@@ -557,27 +553,18 @@ static int GetMaxAddressIndex(void)
 
 static void CloseAttentionHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_add_flag(g_multiAccountsReceiveWidgets.attentionCont, LV_OBJ_FLAG_HIDDEN);
-    }
 }
 
 static void JumpToAccountHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GuiCreateGotoAddressWidgets(g_multiAccountsReceiveWidgets.tileSwitchAddress);
-    }
 }
 
 static void ShowAddressDetailHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
         GuiCreateAddressDetailWidgets(g_multiAccountsReceiveWidgets.tileQrCode);
-    }
 }
 
 static void GuiCreateAddressDetailWidgets(lv_obj_t *parent)
@@ -630,10 +617,7 @@ static void GuiCreateAddressDetailWidgets(lv_obj_t *parent)
 
 static void CloseSwitchAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_add_flag(g_multiAccountsReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
-    }
 }
 
 static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
@@ -691,7 +675,6 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
 
 static void InputAddressIndexKeyboardHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
     uint32_t id = lv_btnmatrix_get_selected_btn(obj);
     lv_obj_draw_part_dsc_t *dsc;
@@ -700,7 +683,6 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
     uint32_t len;
     uint64_t longInt;
 
-    if (code == LV_EVENT_CLICKED) {
         txt = lv_btnmatrix_get_btn_text(obj, id);
         strcpy_s(input, sizeof(input), lv_label_get_text(g_multiAccountsReceiveWidgets.inputAccountLabel));
         if (strcmp(txt, LV_SYMBOL_OK) == 0) {
@@ -711,7 +693,6 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
                 lv_obj_add_flag(g_multiAccountsReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
                 g_inputAccountValid = false;
                 UpdateConfirmIndexBtn();
-            }
         } else if (strcmp(txt, "-") == 0) {
             len = strlen(input);
             if (len >= 1) {
@@ -793,11 +774,8 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
 
 static void MoreHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         if (g_multiAccountsReceiveWidgets.moreCont == NULL) {
             GuiCreateMoreWidgets(g_multiAccountsReceiveWidgets.tileQrCode);
-        } else {
             lv_obj_del(g_multiAccountsReceiveWidgets.moreCont);
             g_multiAccountsReceiveWidgets.moreCont = NULL;
         }
@@ -806,13 +784,10 @@ static void MoreHandler(lv_event_t *e)
 
 static void TutorialHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
 
         TUTORIAL_LIST_INDEX_ENUM index = TUTORIAL_ADA_RECEIVE;
         GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
-    }
 }
 
 static void SetKeyboardValid(bool validation)
@@ -832,13 +807,10 @@ static void SetKeyboardValid(bool validation)
 
 static void LeftBtnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_set_style_img_opa(g_multiAccountsReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
         if (g_showIndex >= 5) {
             g_showIndex -= 5;
             RefreshSwitchAddress();
-        }
         if (g_showIndex < 5) {
             lv_obj_set_style_img_opa(g_multiAccountsReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);
         }
@@ -847,13 +819,10 @@ static void LeftBtnHandler(lv_event_t *e)
 
 static void RightBtnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_set_style_img_opa(g_multiAccountsReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
         if (g_showIndex < GetMaxAddressIndex() - 5) {
             g_showIndex += 5;
             RefreshSwitchAddress();
-        }
         if (g_showIndex >= GetMaxAddressIndex() - 5) {
             lv_obj_set_style_img_opa(g_multiAccountsReceiveWidgets.rightBtnImg, LV_OPA_30, LV_PART_MAIN);
         }
@@ -883,10 +852,8 @@ static bool HasMoreBtn()
 
 static void SwitchAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *checkBox;
 
-    if (code == LV_EVENT_CLICKED) {
         checkBox = lv_event_get_target(e);
         for (uint32_t i = 0; i < 5; i++) {
             if (checkBox == g_multiAccountsReceiveWidgets.switchAddressWidgets[i].checkBox) {
@@ -894,7 +861,6 @@ static void SwitchAddressHandler(lv_event_t *e)
                 lv_obj_clear_flag(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
                 g_tmpIndex = g_showIndex + i;
-            } else {
                 lv_obj_clear_state(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_add_flag(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_clear_flag(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
@@ -906,10 +872,8 @@ static void SwitchAddressHandler(lv_event_t *e)
 
 static void SwitchAccountHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *checkBox;
 
-    if (code == LV_EVENT_CLICKED) {
         checkBox = lv_event_get_target(e);
         for (uint32_t i = 0; i < ACCOUNT_INDEX_MAX; i++) {
             if (checkBox == g_multiAccountsReceiveWidgets.switchAccountWidgets[i].checkBox) {
@@ -917,7 +881,6 @@ static void SwitchAccountHandler(lv_event_t *e)
                 lv_obj_clear_flag(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
                 g_tmpAccount = i;
-            } else {
                 lv_obj_clear_state(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_add_flag(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_clear_flag(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
@@ -929,32 +892,23 @@ static void SwitchAccountHandler(lv_event_t *e)
 
 static void OpenSwitchAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         GuiMultiAccountsReceiveGotoTile(RECEIVE_TILE_SWITCH_ACCOUNT);
         RefreshSwitchAddress();
-    }
 }
 
 static void OpenSwitchAccountHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         g_tmpAccount = g_selectedAccount[GetCurrentAccountIndex()];
         GuiCreateSwitchAccountWidget();
         GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
-    }
 }
 
 static void CloseSwitchAccountHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         GUI_PAGE_DEL(g_multiAccountsReceiveWidgets.switchAccountCont);
-    }
 }
 
 static void RefreshSwitchAccount(void)

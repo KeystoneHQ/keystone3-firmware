@@ -362,8 +362,6 @@ void GuiShowKeyboardDestruct(void)
 
 void StopAddNewFingerHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         g_hintBox = GuiCreateResultHintbox(416, &imgWarn, _("wallet_setting_stop_add_fingerprint"),
                                            _("wallet_setting_stop_add_fingerprint_desc"), _("Not Now"), DARK_GRAY_COLOR, _("Cancel"), RED_COLOR);
         lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_hintBox);
@@ -371,7 +369,6 @@ void StopAddNewFingerHandler(lv_event_t *e)
 
         lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_hintBox);
         lv_obj_add_event_cb(rightBtn, FingerCancelRegisterHandler, LV_EVENT_CLICKED, lv_event_get_user_data(e));
-    }
 }
 
 void GuiShowKeyboard(uint16_t *signal, bool isView, lv_event_cb_t cb)
@@ -388,15 +385,12 @@ void GuiShowKeyboard(uint16_t *signal, bool isView, lv_event_cb_t cb)
 
 void GuiShowKeyboardHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         uint16_t *walletSetIndex = lv_event_get_user_data(e);
         GuiDeleteKeyboardWidget(g_keyboardWidget);
         g_keyboardWidget = GuiCreateKeyboardWidget(GuiSettingGetCurrentCont());
         SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
         SetKeyboardWidgetSig(g_keyboardWidget, walletSetIndex);
-    }
 }
 
 void GuiVerifyCurrentPasswordErrorCount(void *param)
@@ -584,23 +578,17 @@ void GuiFingerCancelRegister(void)
 /* STATIC FUNC */
 static void DelWalletConfirmHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         g_waitAnimWidget.cont = GuiCreateAnimHintBox(480, 278, 82);
         g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("wallet_settings_delete_laoding_title"));
         lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
         GuiModelSettingDelWalletDesc();
-    }
 }
 
 static void FingerCancelRegisterHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         for (int i = 0; i < 3; i++) {
             UpdateFingerSignFlag(i, false);
-        }
         GUI_DEL_OBJ(g_hintBox)
         SetPageLockScreen(true);
         KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);

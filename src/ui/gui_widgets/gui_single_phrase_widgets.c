@@ -55,10 +55,7 @@ static void SelectPhraseCntHandler(lv_event_t *e);
 
 static void UpdatePhraseHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GuiModelBip39UpdateMnemonic(g_phraseCnt);
-    }
 }
 
 static void GuiRandomPhraseWidget(lv_obj_t *parent)
@@ -103,14 +100,12 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
 static void MnemonicConfirmHandler(lv_event_t * e)
 {
     int i = 0, j;
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
     if (code == LV_EVENT_DRAW_PART_BEGIN) {
         lv_obj_draw_part_dsc_t *dsc = lv_event_get_draw_part_dsc(e);
         if (dsc->class_p == &lv_btnmatrix_class && dsc->type == LV_BTNMATRIX_DRAW_PART_BTN) {
             if (g_pressedBtnFlag[dsc->id] == MNEMONIC_BUTTON_UNPRESSED) {
                 dsc->rect_dsc->bg_color = DARK_BG_COLOR;
-            } else if (g_pressedBtnFlag[dsc->id] == MNEMONIC_BUTTON_CURRENT_PRESS) {
                 dsc->rect_dsc->bg_color = GREEN_COLOR;
             } else if (g_pressedBtnFlag[dsc->id] == MNEMONIC_BUTTON_PRESSED) {
                 dsc->rect_dsc->bg_color = WHITE_COLOR;
@@ -299,10 +294,8 @@ static void SelectCheckBoxHandler(lv_event_t* e)
 static void SelectPhraseCntHandler(lv_event_t *e)
 {
     static uint32_t currentIndex = 0;
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *checkBox = NULL;
 
-    if (code == LV_EVENT_CLICKED) {
         g_noticeHintBox = GuiCreateHintBox(282);
         lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
         lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_phrase_word_amount_select"));
@@ -317,7 +310,6 @@ static void SelectPhraseCntHandler(lv_event_t *e)
             checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("wallet_phrase_24words"));
             lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
-        } else {
             checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("wallet_phrase_12words"));
             lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
@@ -331,10 +323,7 @@ static void SelectPhraseCntHandler(lv_event_t *e)
 
 static void ResetBtnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         ResetConfirmInput();
-    }
 }
 
 int8_t GuiSinglePhraseNextTile(void)

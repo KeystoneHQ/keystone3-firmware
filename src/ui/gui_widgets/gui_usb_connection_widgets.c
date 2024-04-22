@@ -69,21 +69,15 @@ static void GuiUsbConnectionDeInit(void)
 
 static void NotNowHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         CloseMsgBox(&g_guiMsgBoxUsbConnection);
         CloseUsb();
-    }
 }
 
 static void ConnectUsbHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
 #ifndef COMPILE_SIMULATOR
         if (GetUSBSwitch() && GetUsbDetectState()) {
             OpenUsb();
-        }
 #endif
         CloseMsgBox(&g_guiMsgBoxUsbConnection);
     }

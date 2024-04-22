@@ -67,7 +67,6 @@ void GuiEnterPassLabelRefresh(void)
 
 static void SetPinEventHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
     if (code == LV_EVENT_RELEASED) {
         Vibrate(SLIGHT);
@@ -75,7 +74,6 @@ static void SetPinEventHandler(lv_event_t *e)
 #ifndef COMPILE_SIMULATOR
         if (!g_isHandle && item->mode == ENTER_PASSCODE_VERIFY_PIN) {
             return;
-        }
 #endif
 
         uint32_t id = lv_btnmatrix_get_selected_btn(obj);
@@ -161,7 +159,6 @@ static void SetPinEventHandler(lv_event_t *e)
 
 static void SetPassWordHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *kb = lv_event_get_target(e);
     lv_obj_t *ta = lv_keyboard_get_textarea(kb);
     static bool delayFlag = false;
@@ -177,7 +174,6 @@ static void SetPassWordHandler(lv_event_t *e)
                 lv_obj_align(lenLabel, LV_ALIGN_TOP_MID, 0, 375 - GUI_MAIN_AREA_OFFSET);
                 lv_obj_set_style_text_color(lenLabel, RED_COLOR, LV_PART_MAIN);
                 delayFlag = true;
-            } else {
                 delayFlag = true;
                 lv_obj_clear_flag(lenLabel, LV_OBJ_FLAG_HIDDEN);
             }
@@ -332,11 +328,8 @@ void PassWordPinSwitch(GuiEnterPasscodeItem_t *item)
 
 static void PassWordPinSwitchHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GuiEnterPasscodeItem_t *item = g_passParam.setpinParam;
         PassWordPinSwitch(item);
-    }
 }
 
 void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *passCodeParam)
@@ -728,15 +721,12 @@ void GuiFingerPrintStatus(GuiEnterPasscodeItem_t *item, bool en, uint8_t errCnt)
 
 void SwitchPasswordModeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_t *ta = lv_event_get_user_data(e);
         lv_obj_t *img = lv_event_get_target(e);
         bool en = lv_textarea_get_password_mode(ta);
         lv_textarea_set_password_mode(ta, !en);
         if (en) {
             lv_img_set_src(img, &imgEyeOn);
-        } else {
             lv_img_set_src(img, &imgEyeOff);
         }
     }

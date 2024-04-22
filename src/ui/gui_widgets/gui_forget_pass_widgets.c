@@ -71,36 +71,28 @@ bool GuiIsForgetPass(void)
 
 static void GuiQuitHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         // printf("g_prevView ID = %d\n", g_prevView->id);
         if (g_prevView != NULL && g_prevView->id == SCREEN_LOCK) {
             GuiLockScreenUpdatePassCode();
             GuiLockScreenFpRecognize();
-        }
         GuiCLoseCurrentWorkingView();
     }
 }
 
 static void ContinueStopCreateHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         if (lv_event_get_user_data(e) != NULL) {
             g_forgetMkb->currentSlice = 0;
             SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
             CloseToTargetTileView(g_forgetPassTileView.currentTile, FORGET_PASSWORD_METHOD_SELECT);
-        }
         GUI_DEL_OBJ(g_noticeHintBox)
     }
 }
 
 static void StopCreateViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         g_noticeHintBox = GuiCreateHintBox(416);
         lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgWarn);
         lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 432);
@@ -119,7 +111,6 @@ static void StopCreateViewHandler(lv_event_t *e)
         lv_obj_align(btn, LV_ALIGN_DEFAULT, 229, 710);
         lv_obj_set_size(btn, 215, 66);
         lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, g_noticeHintBox);
-    }
 }
 
 void GuiForgetAnimContDel(int errCode)
@@ -217,29 +208,20 @@ static void GuiCreateRepeatPinWidget(lv_obj_t *parent)
 
 static void ImportPhraseWordsHandler(lv_event_t* e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         ImportSinglePhraseWords(g_forgetMkb, g_forgetPhraseKb);
-    }
 }
 
 static void ImportShareNextSliceHandler(lv_event_t* e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         ImportShareNextSlice(g_forgetMkb, g_forgetPhraseKb);
-    }
 }
 
 static void ResetClearImportHandler(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         ClearMnemonicKeyboard(g_forgetMkb, &g_forgetMkb->currentId);
         GuiClearKeyBoard(g_forgetPhraseKb);
-    }
 }
 
 static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)

@@ -32,18 +32,12 @@ static ErrorWindowCallback g_errorWindowCallback = NULL;
 
 void UnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-    }
 }
 
 void OpenImportWalletHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         if (CHECK_BATTERY_LOW_POWER()) {
             g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
-        } else {
             CreateWalletNotice(IMPORT_WALLET_NOTICE);
         }
     }
@@ -51,11 +45,8 @@ void OpenImportWalletHandler(lv_event_t *e)
 
 void OpenCreateWalletHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         if (CHECK_BATTERY_LOW_POWER()) {
             g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
-        } else {
             CreateWalletNotice(CREATE_WALLET_NOTICE);
         }
     }
@@ -63,63 +54,43 @@ void OpenCreateWalletHandler(lv_event_t *e)
 
 void OpenViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         GuiFrameOpenView(lv_event_get_user_data(e));
-    }
 }
 
 void CloseTimerCurrentViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         CloseQRTimer();
         GuiCLoseCurrentWorkingView();
-    }
 }
 
 void GoToHomeViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         CloseQRTimer();
         GuiCloseToTargetView(&g_homeView);
-    }
 }
 
 void CloseCurrentViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GuiCLoseCurrentWorkingView();
-    }
 }
 
 void ReadyNextTileHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_READY) {
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
-    }
 }
 
 void ReturnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-    }
 }
 
 void NextTileHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
-    }
 }
 
 void CloseToTargetTileView(uint8_t currentIndex, uint8_t targetIndex)
@@ -131,60 +102,45 @@ void CloseToTargetTileView(uint8_t currentIndex, uint8_t targetIndex)
 
 void CloseCurrentParentHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
-    }
 }
 
 void CloseParentAndNextHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
         void **param = lv_event_get_user_data(e);
         if (param != NULL) {
             *param = NULL;
-        }
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
     }
 }
 
 void CloseCurrentUserDataHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         GuiViewHintBoxClear();
         GuiEmitSignal(GUI_EVENT_REFRESH, NULL, 0);
-    }
 }
 
 void CloseCurrentParentAndCloseViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
 
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
         GuiCLoseCurrentWorkingView();
         GuiLockScreenFpRecognize();
         GuiLockScreenTurnOn(&single);
         ResetSuccess();
         GuiModelWriteLastLockDeviceTime(0);
-    }
 }
 
 void CloseWaringPageHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_del(lv_event_get_user_data(e));
         if (g_hintParam != NULL) {
             *g_hintParam = NULL;
-        }
         if (g_errorWindowCallback) {
             g_errorWindowCallback();
             g_errorWindowCallback = NULL;
@@ -194,14 +150,11 @@ void CloseWaringPageHandler(lv_event_t *e)
 
 void ToggleSwitchBoxHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_t *switchBox = lv_event_get_user_data(e);
         bool en = lv_obj_has_state(switchBox, LV_STATE_CHECKED);
         if (en) {
             lv_obj_clear_state(switchBox, LV_STATE_CHECKED);
-        } else {
             lv_obj_add_state(switchBox, LV_STATE_CHECKED);
         }
         lv_event_send(switchBox, LV_EVENT_VALUE_CHANGED, NULL);
@@ -221,15 +174,12 @@ void GuiWriteSeWidget(lv_obj_t *parent)
 
 void DuplicateShareHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         GuiCLoseCurrentWorkingView();
         GuiCLoseCurrentWorkingView();
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
         GuiViewHintBoxClear();
-    }
 }
 
 void GuiViewHintBoxClear(void)
@@ -241,12 +191,9 @@ void GuiViewHintBoxClear(void)
 
 void GuiSDCardExportHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     void (*func)(void) = lv_event_get_user_data(e);
-    if (code == LV_EVENT_CLICKED) {
         if (SdCardInsert()) {
             func();
-        } else {
             g_hintBox = GuiCreateErrorCodeWindow(ERR_EXPORT_XPUB_SDCARD_NOT_DETECTED, &g_hintBox, NULL);
         }
         return;

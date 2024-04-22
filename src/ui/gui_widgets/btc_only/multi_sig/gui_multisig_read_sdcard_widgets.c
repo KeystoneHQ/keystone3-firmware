@@ -60,10 +60,8 @@ static void GuiContent(lv_obj_t *parent)
 
 static void GuiSelectFileHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     char *path = lv_event_get_user_data(e);
 
-    if (code == LV_EVENT_CLICKED) {
         switch (g_fileFilterType) {
         case ALL:
             break;
@@ -81,7 +79,6 @@ static void GuiSelectFileHandler(lv_event_t *e)
             default:
                 g_noticeWindow = GuiCreateErrorCodeWindow(ERR_INVALID_FILE, &g_noticeWindow, NULL);
                 break;
-            }
         }
         break;
         case ONLY_PSBT: {

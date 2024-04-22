@@ -234,22 +234,16 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
 
 static void SetLowestBrightness(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_t * slider = (lv_obj_t *)lv_event_get_user_data(e);
         lv_slider_set_value(slider, 0, LV_ANIM_OFF);
         lv_event_send(slider, LV_EVENT_VALUE_CHANGED, NULL);
-    }
 }
 
 static void SetHighestBrightness(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_t * slider = (lv_obj_t *)lv_event_get_user_data(e);
         lv_slider_set_value(slider, 100, LV_ANIM_OFF);
         lv_event_send(slider, LV_EVENT_VALUE_CHANGED, NULL);
-    }
 
 }
 
@@ -276,9 +270,7 @@ static void SaveSystemSetting(lv_timer_t *timer)
 
 static void ChooseAutoLockTimeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
 
         g_autoLockHintBox = GuiCreateHintBox(570);
 
@@ -289,7 +281,6 @@ static void ChooseAutoLockTimeHandler(lv_event_t *e)
         lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
 
         lv_obj_t *img = GuiCreateImg(g_autoLockHintBox, &imgClose);
-        GuiButton_t tableHintbox = {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {0, 0} };
         lv_obj_t *buttonClose = GuiCreateButton(g_autoLockHintBox, 36, 36, &tableHintbox, 1, CloseChooseAutoLockTimeHandler, &g_autoLockHintBox);
         lv_obj_align(buttonClose, LV_ALIGN_DEFAULT, 408, 257);
 
@@ -358,21 +349,15 @@ static void ChooseAutoLockTimeHandler(lv_event_t *e)
 
 static void CloseChooseAutoLockTimeHandler(lv_event_t* e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_autoLockHintBox)
-    }
 }
 
 static void SelectAutoLockTimeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         for (int i = 0; i < AUTO_LOCK_TIME_BUTT; i++) {
             lv_obj_clear_state(g_autoLockCheck[i], LV_STATE_CHECKED);
-        }
 
         int newCheckIndex = 0;
         lv_obj_t *newCheckBox = lv_event_get_user_data(e);
@@ -442,9 +427,7 @@ static const char *GetAutoLockTimeDescByLockTime()
 
 static void ChooseAutoShutdownHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
 
         g_autoShutdownHintBox = GuiCreateHintBox(570);
 
@@ -455,7 +438,6 @@ static void ChooseAutoShutdownHandler(lv_event_t *e)
         lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
 
         lv_obj_t *img = GuiCreateImg(g_autoShutdownHintBox, &imgClose);
-        GuiButton_t tableHintbox = {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {0, 0} };
         lv_obj_t *buttonClose = GuiCreateButton(g_autoShutdownHintBox, 36, 36, &tableHintbox, 1, CloseChooseAutoShutdownHandler, &g_autoShutdownHintBox);
         lv_obj_align(buttonClose, LV_ALIGN_DEFAULT, 408, 257);
 
@@ -523,21 +505,15 @@ static void ChooseAutoShutdownHandler(lv_event_t *e)
 
 static void CloseChooseAutoShutdownHandler(lv_event_t* e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_autoShutdownHintBox)
-    }
 }
 
 static void SelectAutoShutdownHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         for (int i = 0; i < AUTO_SHUTDOWN_BUTT; i++) {
             lv_obj_clear_state(g_autoShutdownCheck[i], LV_STATE_CHECKED);
-        }
         int newCheckIndex = 0;
         lv_obj_t *newCheckBox = lv_event_get_user_data(e);
         for (int i = ONE_HOUR; i < AUTO_SHUTDOWN_BUTT; i++) {

@@ -113,16 +113,13 @@ int8_t GuiBtcWalletProfileNextTile(void)
 
 static void SwitchTestnetHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_t *networkSwitch = lv_event_get_user_data(e);
         bool en = lv_obj_has_state(networkSwitch, LV_STATE_CHECKED);
         SetIsTestNet(!en);
         GuiApiEmitSignal(SIG_STATUS_BAR_TEST_NET, NULL, 0);
         if (en) {
             lv_obj_clear_state(networkSwitch, LV_STATE_CHECKED);
-        } else {
             lv_obj_add_state(networkSwitch, LV_STATE_CHECKED);
         }
     }
@@ -235,9 +232,7 @@ static void CreateSingleSigWalletWidget(lv_obj_t *parent)
 
 static void SetDefaultSingleWalletHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         SetCurrentWalletIndex((CURRENT_WALLET_INDEX_ENUM)SINGLE_WALLET);
         lv_obj_t *label = lv_obj_get_child(g_setDefaultBtn, 0);
         lv_obj_clear_flag(g_setDefaultBtn, LV_OBJ_FLAG_CLICKABLE);
@@ -246,17 +241,13 @@ static void SetDefaultSingleWalletHandler(lv_event_t *e)
         lv_label_set_text(label, _("wallet_profile_current_default_desc"));
         GuiResetCurrentUtxoAddressIndex(GetCurrentAccountIndex());
         GuiApiEmitSignal(SIG_STATUS_BAR_TEST_NET, NULL, 0);
-    }
 }
 
 static void ManageMultiSigWalletHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         if (CHECK_BATTERY_LOW_POWER()) {
             g_noticeWindow = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeWindow, NULL);
-        } else {
             GuiFrameOpenView(&g_multisigSelectImportMethodView);
         }
 #if 0 // hide the create multisig entrance
@@ -271,28 +262,19 @@ static void ManageMultiSigWalletHandler(lv_event_t *e)
 
 static void OpenCreateMultiViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeWindow)
         GuiFrameOpenView(lv_event_get_user_data(e));
-    }
 }
 
 static void OpenManageMultisigViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         GuiFrameOpenViewWithParam(&g_manageMultisigWalletView, lv_event_get_user_data(e), sizeof(CURRENT_WALLET_INDEX_ENUM));
-    }
 }
 
 static void OpenExportShowXpubHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        static bool testStatus[] = {false, true};
         bool isPassPhrase = PassphraseExist(GetCurrentAccountIndex());
         uint16_t offset = isPassPhrase ? 96 : 0;
         g_noticeWindow = GuiCreateHintBox(408 - offset);
@@ -323,18 +305,12 @@ static void OpenExportShowXpubHandler(lv_event_t *e)
 
 static void OpenBtcExportViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeWindow)
         OpenExportViewHandler(e);
-    }
 }
 
 static void OpenBtcExportMultisigViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeWindow)
         OpenExportMultisigViewHandler(e);
-    }
 }

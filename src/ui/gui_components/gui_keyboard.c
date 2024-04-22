@@ -364,7 +364,6 @@ static const BtnMatrixCtl_t g_kbCtrlBak[4] = {
 
 static void EmojiDrawEventHandler(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
     lv_obj_t *bgCont = lv_event_get_user_data(e);
     if (code == LV_EVENT_DRAW_PART_BEGIN) {
@@ -381,7 +380,6 @@ static void EmojiDrawEventHandler(lv_event_t * e)
                 dsc->rect_dsc->border_color = ORANGE_COLOR;
                 if (g_walletIcon != NULL) {
                     lv_img_set_src(g_walletIcon, g_emojiMatrix[dsc->id]);
-                }
                 g_currEmojiIndex = currentId;
             } else {
                 dsc->rect_dsc->border_opa = LV_OPA_10 + LV_OPA_2;
@@ -1095,11 +1093,8 @@ void UpdateKeyBoard(TrieSTPtr root, const char *str, KeyBoard_t *keyBoard)
 
 static void LetterKbAssociateHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     KeyBoard_t *keyBoard = lv_event_get_user_data(e);
-    if (code == LV_EVENT_CLICKED) {
         char *text = lv_label_get_text(lv_obj_get_child(lv_event_get_target(e), 0));
-        char buf[1] = {0};
         if (strlen(text) <= 0) {
             return;
         }
@@ -1173,7 +1168,6 @@ char *GuiGetTrueWord(const lv_obj_t *obj, uint16_t btn_id)
 
 void KbTextAreaHandler(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *ta = lv_event_get_target(e);
     uint8_t taLen = strlen(lv_textarea_get_text(ta));
     KeyBoard_t *keyBoard = lv_event_get_user_data(e);
@@ -1182,7 +1176,6 @@ void KbTextAreaHandler(lv_event_t * e)
         // Vibrate(SLIGHT);
         if (keyBoard == NULL) {
             return;
-        }
         if (keyBoard->mode == KEY_STONE_LETTER) {
             if (g_importPhraseKb != NULL && strlen(currText)) {
                 lv_event_send(g_importPhraseKb->btnm, KEY_STONE_KEYBOARD_VALUE_CHANGE, (void *)currText);

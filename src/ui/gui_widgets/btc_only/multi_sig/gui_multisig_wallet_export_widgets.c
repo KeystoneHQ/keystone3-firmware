@@ -53,11 +53,8 @@ static void QRCodePause(bool pause)
 
 static void GuiSDCardHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         if (SdCardInsert()) {
             GuiShowSDCardExport();
-        } else {
             GuiShowSDCardNotDetected();
         }
         return;
@@ -66,24 +63,18 @@ static void GuiSDCardHandler(lv_event_t *e)
 
 static void GuiCloseHintBoxHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeWindow);
         return;
-    }
 }
 
 static void GuiWriteSDCardHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_noticeWindow);
 
         char *filename = lv_event_get_user_data(e);
         int ret = FileWrite(filename, g_multisigWalletItem->walletConfig, strnlen(g_multisigWalletItem->walletConfig, MAX_WALLET_CONTENT_LEN));
         if (ret == 0) {
             GuiShowSDCardExportSuccess();
-        } else {
             GuiShowSDCardExportFailed();
         }
         return;
@@ -335,11 +326,8 @@ void ModelGenerateMultiSigAddress(char *address, uint32_t maxLen, char *walletCo
 
 static void ImportMultisigGoToHomeViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         g_isExportMultiWallet = false;
         GuiCloseToTargetView(&g_homeView);
-    }
 }
 
 void GuiSetExportMultiSigSwitch(void)

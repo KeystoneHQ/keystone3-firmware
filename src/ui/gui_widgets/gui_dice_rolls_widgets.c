@@ -155,8 +155,6 @@ static void GuiCreatePage(lv_obj_t *parent)
 
 static void OpenQuitHintBoxHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_quitHintBox);
         g_quitHintBox = GuiCreateGeneralHintBox(&imgWarn, _("dice_roll_cancel_title"), _("dice_roll_cancel_desc"), NULL,
                                                 _("not_now"), WHITE_COLOR_OPA20, _("Cancel"), DEEP_ORANGE_COLOR);
@@ -164,29 +162,22 @@ static void OpenQuitHintBoxHandler(lv_event_t *e)
         lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_quitHintBox);
         lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_quitHintBox);
         lv_obj_add_event_cb(rightBtn, QuitConfirmHandler, LV_EVENT_CLICKED, NULL);
-    }
 }
 
 static void QuitConfirmHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_quitHintBox);
         GuiCLoseCurrentWorkingView();
-    }
 }
 
 static void ClickDiceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_t *img = lv_event_get_target(e);
         for (size_t i = 0; i < 6; i++) {
             if (g_diceImgs[i] == img) {
                 const char *txt = lv_textarea_get_text(g_diceTextArea);
                 if (strnlen_s(txt, DICE_ROLLS_MAX_LEN) >= DICE_ROLLS_MAX_LEN) {
                     return;
-                }
 
                 lv_textarea_set_cursor_pos(g_diceTextArea, LV_TEXTAREA_CURSOR_LAST);
                 lv_textarea_add_char(g_diceTextArea, '1' + i);
@@ -207,7 +198,6 @@ static void InitDiceImg(lv_obj_t *img, lv_obj_t *parent, size_t x, size_t y)
 
 static void OnTextareaValueChangeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *ta = lv_event_get_target(e);
     if (code == LV_EVENT_VALUE_CHANGED) {
         const char *txt = lv_textarea_get_text(ta);
@@ -218,7 +208,6 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
 
         if (length > 0 && length < 50) {
             lv_obj_clear_flag(g_hintLabel, LV_OBJ_FLAG_HIDDEN);
-        } else {
             lv_obj_add_flag(g_hintLabel, LV_OBJ_FLAG_HIDDEN);
         }
 
@@ -303,18 +292,13 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
 
 static void UndoClickHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_t *ta = (lv_obj_t *)lv_event_get_user_data(e);
         lv_textarea_set_cursor_pos(ta, LV_TEXTAREA_CURSOR_LAST);
         lv_textarea_del_char(ta);
-    }
 }
 
 static void ConfirmHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_t *ta = (lv_obj_t *)lv_event_get_user_data(e);
 
         // convert result
@@ -326,7 +310,6 @@ static void ConfirmHandler(lv_event_t *e)
             char c = temp[i];
             if (c == '6') {
                 temp[i] = '0';
-            }
         }
         uint8_t hash[32] = {0};
         sha256((struct sha256 *)hash, temp, strnlen_s(temp, BUFFER_SIZE_512));

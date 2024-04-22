@@ -481,19 +481,13 @@ static int GetMaxAddressIndex(void)
 
 static void CloseAttentionHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_add_flag(g_standardReceiveWidgets.attentionCont, LV_OBJ_FLAG_HIDDEN);
-    }
 }
 
 static void MoreHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         if (g_standardReceiveWidgets.moreCont == NULL) {
             GuiCreateMoreWidgets(g_standardReceiveWidgets.tileQrCode);
-        } else {
             lv_obj_del(g_standardReceiveWidgets.moreCont);
             g_standardReceiveWidgets.moreCont = NULL;
         }
@@ -502,24 +496,18 @@ static void MoreHandler(lv_event_t *e)
 
 static void TutorialHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_standardReceiveWidgets.moreCont);
 
         TUTORIAL_LIST_INDEX_ENUM index = TUTORIAL_ETH_RECEIVE;
         GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
-    }
 }
 
 static void LeftBtnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_set_style_img_opa(g_standardReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
         if (g_showIndex >= 5) {
             g_showIndex -= 5;
             RefreshSwitchAccount();
-        }
         if (g_showIndex < 5) {
             lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);
         }
@@ -528,13 +516,10 @@ static void LeftBtnHandler(lv_event_t *e)
 
 static void RightBtnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
         if (g_showIndex < GetMaxAddressIndex() - 5) {
             g_showIndex += 5;
             RefreshSwitchAccount();
-        }
         if (g_showIndex >= GetMaxAddressIndex() - 5) {
             lv_obj_set_style_img_opa(g_standardReceiveWidgets.rightBtnImg, LV_OPA_30, LV_PART_MAIN);
         }
@@ -543,11 +528,9 @@ static void RightBtnHandler(lv_event_t *e)
 
 static void ConfirmHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED && IsSelectChanged()) {
         SetCurrentSelectIndex(g_tmpIndex);
         ReturnHandler(e);
-    }
 }
 
 static bool IsAccountSwitchable()
@@ -571,10 +554,8 @@ static bool HasMoreBtn()
 
 static void SwitchAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *checkBox;
 
-    if (code == LV_EVENT_CLICKED) {
         checkBox = lv_event_get_target(e);
         for (uint32_t i = 0; i < 5; i++) {
             if (checkBox == g_standardReceiveWidgets.switchAddressWidgets[i].checkBox) {
@@ -582,7 +563,6 @@ static void SwitchAddressHandler(lv_event_t *e)
                 lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
                 g_tmpIndex = g_showIndex + i;
-            } else {
                 lv_obj_clear_state(g_standardReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
                 lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
@@ -594,12 +574,9 @@ static void SwitchAddressHandler(lv_event_t *e)
 
 static void OpenSwitchAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         GuiStandardReceiveGotoTile(RECEIVE_TILE_SWITCH_ACCOUNT);
         RefreshSwitchAccount();
-    }
 }
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)

@@ -208,11 +208,8 @@ static void CountDownTimerLockTimeHandler(lv_timer_t *timer)
 
 static void WipeDeviceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         if (CHECK_BATTERY_LOW_POWER()) {
             g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
-        } else {
             WipeDevice();
             GuiLockedDeviceCountDownDestruct(NULL, NULL);
         }
@@ -284,12 +281,9 @@ static uint32_t CalculateLockDeiceTime(void)
 
 static void ForgetHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         OpenForgetPasswordHandler(e);
         SetLockDeviceAlive(true);
-    }
 }
 
 void ResetSuccess(void)

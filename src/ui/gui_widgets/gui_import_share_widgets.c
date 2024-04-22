@@ -45,23 +45,18 @@ static PageWidget_t *g_pageWidget;
 
 static void ContinueStopCreateHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         if (lv_event_get_user_data(e) != NULL) {
             g_importMkb->currentSlice = 0;
             SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
             GuiCLoseCurrentWorkingView();
-        }
         GUI_DEL_OBJ(g_noticeHintBox)
     }
 }
 
 static void StopCreateViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         g_noticeHintBox = GuiCreateHintBox(416);
         lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgWarn);
         lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 432);
@@ -80,17 +75,13 @@ static void StopCreateViewHandler(lv_event_t *e)
         lv_obj_align(btn, LV_ALIGN_DEFAULT, 229, 710);
         lv_obj_set_size(btn, 215, 66);
         lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, g_noticeHintBox);
-    }
 }
 
 static void ConfirmClearHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         ClearMnemonicKeyboard(g_importMkb, &g_importMkb->currentId);
         GuiClearKeyBoard(g_ssbImportKb);
-    }
 }
 
 void GuiImportShareWriteSe(bool en, int32_t errCode)
@@ -109,11 +100,8 @@ void GuiImportShareWriteSe(bool en, int32_t errCode)
 
 static void ImportShareNextSliceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         ImportShareNextSlice(g_importMkb, g_ssbImportKb);
-    }
 }
 
 static void GuiShareSsbInputWidget(lv_obj_t *parent)

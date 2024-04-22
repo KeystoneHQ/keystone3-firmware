@@ -1087,10 +1087,7 @@ bool GetEthContractFromInternal(char *address, char *inputData)
 
 void EthContractLearnMore(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GuiQRCodeHintBoxOpen(_("tx_details_eth_decoding_qr_link"), _("tx_details_eth_decoding_qr_title"), _("tx_details_eth_decoding_qr_link"));
-    }
 }
 
 bool GetEthContractFromExternal(char *address, char *selectorId, uint64_t chainId, char *inputData)

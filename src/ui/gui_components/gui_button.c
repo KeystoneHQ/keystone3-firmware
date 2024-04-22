@@ -3,10 +3,7 @@
 
 static void CloseButtonContHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_del(lv_event_get_user_data(e));
-    }
 }
 
 void *GuiCreateButton(lv_obj_t *parent, uint16_t w, uint16_t h, GuiButton_t *member,

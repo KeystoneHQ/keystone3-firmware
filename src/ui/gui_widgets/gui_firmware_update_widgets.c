@@ -360,24 +360,18 @@ static void GuiCreateSelectTile(lv_obj_t *parent)
 
 static void GuiViaSdCardHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         g_firmwareUpdateWidgets.currentTile = FIRMWARE_UPDATE_SD_INSTRUCTION;
         lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, g_firmwareUpdateWidgets.currentTile, 0, LV_ANIM_OFF);
         GuiFirmwareUpdateRefresh();
-    }
 }
 
 static void GuiViaUsbHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         g_firmwareUpdateWidgets.currentTile = FIRMWARE_UPDATE_USB_INSTRUCTION;
         lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, g_firmwareUpdateWidgets.currentTile, 0, LV_ANIM_OFF);
         GuiFirmwareUpdateRefresh();
-    }
 }
 
 static void GuiCreateUsbInstructionTile(lv_obj_t *parent)
@@ -455,12 +449,9 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
 {
     char fileVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
     GUI_DEL_OBJ(g_noticeHintBox)
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GuiModelStopCalculateCheckSum();
         if (CHECK_BATTERY_LOW_POWER()) {
             g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox, NULL);
-        } else if (!SdCardInsert()) {
             //firmware_update_sd_failed_access_title
             g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeHintBox, NULL);
         } else if (CheckOtaBinVersion(fileVersion)) {
@@ -498,11 +489,8 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
 
 static void FirmwareSdcardCheckSha256Handler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         if (!SdCardInsert()) {
             return;
-        }
         g_noticeHintBox = GuiCreateAnimHintBox(480, 400, 76);
         lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("calculat_modal_title"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
@@ -521,12 +509,9 @@ static void FirmwareSdcardCheckSha256Handler(lv_event_t *e)
 
 static void FirmwareSdcardCheckSha256HintBoxHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         if (SdCardInsert()) {
             lv_obj_del(lv_event_get_target(e));
             GuiModelCalculateBinSha256();
-        }
     }
 }
 
@@ -680,25 +665,19 @@ static void KnownWarningCountDownTimerHandler(lv_timer_t *timer)
 
 static void KnownWarningHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         if (g_noticeHintBox != NULL) {
             GUI_DEL_OBJ(g_noticeHintBox);
             g_knownWarningBtn = NULL;
-        }
         ConfirmSdCardUpdate();
     }
 }
 
 static void KnownWarningCancelHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         if (g_noticeHintBox == NULL) {
             ReturnHandler(e);
-        } else {
             GUI_DEL_OBJ(g_noticeHintBox);
             g_knownWarningBtn = NULL;
         }
@@ -709,10 +688,8 @@ static void KnownWarningCancelHandler(lv_event_t *e)
 
 static void GuiQrcodeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *parent, *button, *qrCodeCont, *qrCode, *label;
 
-    if (code == LV_EVENT_CLICKED) {
         if (g_firmwareUpdateWidgets.qrCodeCont == NULL) {
             g_firmwareUpdateWidgets.qrCodeCont = GuiCreateHintBox(654);
             parent = g_firmwareUpdateWidgets.qrCodeCont;
@@ -732,7 +709,6 @@ static void GuiQrcodeHandler(lv_event_t *e)
             lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
             if (g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_USB_INSTRUCTION) {
                 lv_qrcode_update(qrCode, _("firmware_update_usb_qr_link"), (uint32_t)strnlen_s(_("firmware_update_usb_qr_link"), BUFFER_SIZE_128));
-            } else {
                 lv_qrcode_update(qrCode, g_firmwareSdUpdateUrl, (uint32_t)strnlen_s(g_firmwareSdUpdateUrl, BUFFER_SIZE_128));
             }
 
@@ -756,10 +732,7 @@ static void GuiQrcodeHandler(lv_event_t *e)
 
 static void CloseQrcodeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_firmwareUpdateWidgets.qrCodeCont)
-    }
 }
 
 void GuiFirmwareUpdateVerifyPasswordErrorCount(void *param)
@@ -798,13 +771,10 @@ static void GuiFirmwareUpdateViewSha256(char *version, uint8_t percent)
 
 static void GuiFirmwareUpdateCancelUpdate(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GuiModelStopCalculateCheckSum();
         lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
         void **param = lv_event_get_user_data(e);
         if (param != NULL) {
             *param = NULL;
-        }
     }
 }

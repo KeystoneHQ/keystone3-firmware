@@ -801,14 +801,11 @@ typedef struct ClickParamItem {
 
 static void SwitchValueUnit(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         ClickParamItem_t *item = (ClickParamItem_t *)lv_event_get_user_data(e);
         if (item != NULL) {
             if (*(item->isSat) == true) {
                 lv_label_set_text(item->amountValue, item->overviewData->total_output_amount);
                 lv_label_set_text(item->feeValue, item->overviewData->fee_amount);
-            } else {
                 lv_label_set_text(item->amountValue, item->overviewData->total_output_sat);
                 lv_label_set_text(item->feeValue, item->overviewData->fee_sat);
             }

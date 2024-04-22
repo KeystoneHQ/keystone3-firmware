@@ -70,11 +70,8 @@ void GuiSetWebAuthResultData(URParseResult *urResult, URParseMultiResult *multiR
 
 void GuiWebAuthResultSuccessHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         if (g_webAuthSuccessCb != NULL) {
             g_webAuthSuccessCb();
-        }
         GuiFrameCLoseView(&g_webAuthResultView);
     }
 }
@@ -140,11 +137,8 @@ void GuiWebAuthResultRenderAuthCode(lv_obj_t *parent)
 
 static void WebAuthWipeDeviceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         if (CHECK_BATTERY_LOW_POWER()) {
             g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
-        } else {
             WebAuthWipeDevice();
         }
     }

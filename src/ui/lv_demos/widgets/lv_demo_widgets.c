@@ -1042,7 +1042,6 @@ static void color_changer_event_cb(lv_event_t * e)
 }
 static void color_event_cb(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t * obj = lv_event_get_target(e);
 
     if (code == LV_EVENT_FOCUSED) {
@@ -1055,7 +1054,6 @@ static void color_event_cb(lv_event_t * e)
             lv_anim_set_values(&a, 0, 256);
             lv_anim_set_time(&a, 200);
             lv_anim_start(&a);
-        }
     } else if (code == LV_EVENT_CLICKED) {
         lv_palette_t * palette_primary = lv_event_get_user_data(e);
         lv_palette_t palette_secondary = (lv_palette_t)((*palette_primary) + 3); /*Use another palette as secondary*/
@@ -1176,7 +1174,6 @@ static lv_obj_t * create_shop_item(lv_obj_t * parent, const void * img_src, cons
 
 static void ta_event_cb(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t * ta = lv_event_get_target(e);
     lv_obj_t * kb = lv_event_get_user_data(e);
     if (code == LV_EVENT_FOCUSED) {
@@ -1187,7 +1184,6 @@ static void ta_event_cb(lv_event_t * e)
             lv_obj_set_height(tv, LV_VER_RES - lv_obj_get_height(kb));
             lv_obj_clear_flag(kb, LV_OBJ_FLAG_HIDDEN);
             lv_obj_scroll_to_view_recursive(ta, LV_ANIM_OFF);
-        }
     } else if (code == LV_EVENT_DEFOCUSED) {
         lv_keyboard_set_textarea(kb, NULL);
         lv_obj_set_height(tv, LV_VER_RES);
@@ -1204,7 +1200,6 @@ static void ta_event_cb(lv_event_t * e)
 
 static void birthday_event_cb(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t * ta = lv_event_get_target(e);
 
     if (code == LV_EVENT_FOCUSED) {
@@ -1222,14 +1217,12 @@ static void birthday_event_cb(lv_event_t * e)
                 lv_obj_add_event_cb(calendar, calendar_event_cb, LV_EVENT_ALL, ta);
 
                 lv_calendar_header_dropdown_create(calendar);
-            }
         }
     }
 }
 
 static void calendar_event_cb(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t * ta = lv_event_get_user_data(e);
     lv_obj_t * obj = lv_event_get_current_target(e);
     if (code == LV_EVENT_VALUE_CHANGED) {
@@ -1243,18 +1236,15 @@ static void calendar_event_cb(lv_event_t * e)
         calendar = NULL;
         lv_obj_clear_flag(lv_layer_top(), LV_OBJ_FLAG_CLICKABLE);
         lv_obj_set_style_bg_opa(lv_layer_top(), LV_OPA_TRANSP, 0);
-    }
 }
 
 static void slider_event_cb(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t * obj = lv_event_get_target(e);
 
     if (code == LV_EVENT_REFR_EXT_DRAW_SIZE) {
         lv_coord_t * s = lv_event_get_param(e);
         *s = LV_MAX(*s, 60);
-    } else if (code == LV_EVENT_DRAW_PART_END) {
         lv_obj_draw_part_dsc_t * dsc = lv_event_get_param(e);
         if (dsc->part == LV_PART_KNOB && lv_obj_has_state(obj, LV_STATE_PRESSED)) {
             char buf[8];
@@ -1292,12 +1282,10 @@ static void slider_event_cb(lv_event_t * e)
 
 static void chart_event_cb(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t * obj = lv_event_get_target(e);
 
     if (code == LV_EVENT_PRESSED || code == LV_EVENT_RELEASED) {
         lv_obj_invalidate(obj); /*To make the value boxes visible*/
-    } else if (code == LV_EVENT_DRAW_PART_BEGIN) {
         lv_obj_draw_part_dsc_t * dsc = lv_event_get_param(e);
         /*Set the markers' text*/
         if (dsc->part == LV_PART_TICKS && dsc->id == LV_CHART_AXIS_PRIMARY_X) {
@@ -1413,12 +1401,10 @@ static void chart_event_cb(lv_event_t * e)
 
 static void shop_chart_event_cb(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_DRAW_PART_BEGIN) {
         lv_obj_draw_part_dsc_t * dsc = lv_event_get_param(e);
         /*Set the markers' text*/
         if (dsc->part == LV_PART_TICKS && dsc->id == LV_CHART_AXIS_PRIMARY_X) {
-            const char * month[] = {"Jan", "Febr", "March", "Apr", "May", "Jun", "July", "Aug", "Sept", "Oct", "Nov", "Dec"};
             lv_snprintf(dsc->text, dsc->text_length, "%s", month[dsc->value]);
         }
         if (dsc->part == LV_PART_ITEMS) {

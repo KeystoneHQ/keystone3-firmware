@@ -284,11 +284,9 @@ void GuiMnemonicInputHandler(lv_event_t *e)
 {
     char tempBuf[BUFFER_SIZE_128 + 1] = {0};
     static uint8_t isClick = 0;
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
     MnemonicKeyBoard_t *mkb = lv_event_get_user_data(e);
     KeyBoard_t *letterKb = mkb->letterKb;
-    char trueText[12] = {0};
     if (code == LV_EVENT_DRAW_PART_BEGIN) {
         lv_obj_draw_part_dsc_t *dsc = lv_event_get_draw_part_dsc(e);
         if (dsc->class_p == &lv_btnmatrix_class && dsc->type == LV_BTNMATRIX_DRAW_PART_BTN) {

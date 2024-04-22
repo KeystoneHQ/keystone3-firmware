@@ -127,8 +127,6 @@ bool GuiLockScreenIsFirstUnlock(void)
 
 static void LockViewWipeDeviceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
                                             GUI_STATUS_BAR_HEIGHT);
         lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
@@ -146,7 +144,6 @@ static void LockViewWipeDeviceHandler(lv_event_t *e)
         lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
         lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 612);
         GuiModelLockedDeviceDelAllWalletDesc();
-    }
 }
 
 void GuiLockScreenWipeDevice(void)
@@ -201,14 +198,11 @@ void GuiLockScreenHidden(void)
 
 void OpenForgetPasswordHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         GUI_VIEW *view = (GUI_VIEW *)lv_event_get_user_data(e);
         FpCancelCurOperate();
         lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
         GuiFrameOpenViewWithParam(&g_forgetPassView, view, sizeof(view));
-    }
 }
 
 void GuiLockScreenTurnOn(void *param)
@@ -269,10 +263,7 @@ void GuiLockScreenToHome(void)
 
 void GuiLockScreenTurnOffHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GuiLockScreenTurnOff();
-    }
 }
 
 void GuiLockScreenPassCode(bool en)
@@ -352,14 +343,11 @@ static void GuiPassowrdToLockTimePage(uint16_t leftErrorCount)
 void GuiLockScreenTurnOnHandler(lv_event_t *e)
 {
     static uint16_t single = 0;
-    lv_event_code_t code = lv_event_get_code(e);
     GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_VERIFY);
-    if (code == LV_EVENT_CLICKED) {
         uint16_t *walletSetIndex = lv_event_get_user_data(e);
         single = *walletSetIndex;
         GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, GuiLockScreenTurnOffHandler, NULL);
-    }
 }
 
 void GuiLockScreenInit(void *param)

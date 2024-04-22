@@ -77,13 +77,10 @@ static void SelectCheckBoxHandler(lv_event_t* e);
 
 static void ShareUpdateTileHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
 
-    if (code == LV_EVENT_CLICKED) {
         if (lv_event_get_user_data(e) == NULL) {
             GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
-        } else if (lv_event_get_user_data(e) != NULL) {
             lv_obj_del(lv_obj_get_parent(obj));
             GuiEmitSignal(SIG_CREATE_SHARE_VIEW_NEXT_SLICE, &g_createShareTileView.currentSlice,
                           sizeof(g_createShareTileView.currentSlice));
@@ -93,16 +90,13 @@ static void ShareUpdateTileHandler(lv_event_t *e)
 
 static void ContinueStopCreateHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
 
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_del(lv_obj_get_parent(obj));
         g_noticeHintBox = NULL;
         if (lv_event_get_user_data(e) != NULL) {
             g_createShareTileView.currentSlice = 0;
             GuiCLoseCurrentWorkingView();
-        }
     }
 }
 
@@ -119,10 +113,7 @@ static void ResetBtnTest(void)
 
 static void ResetBtnHandler(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         ResetBtnTest();
-    }
 }
 
 void GuiCreateShareUpdateMnemonic(void *signalParam, uint16_t paramLen)
@@ -137,9 +128,7 @@ void GuiCreateShareUpdateMnemonic(void *signalParam, uint16_t paramLen)
 
 static void StopCreateViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         g_noticeHintBox = GuiCreateHintBox(416);
         lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgWarn);
         lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 432);
@@ -158,18 +147,15 @@ static void StopCreateViewHandler(lv_event_t *e)
         lv_obj_align(btn, LV_ALIGN_DEFAULT, 229, 710);
         lv_obj_set_size(btn, 215, 66);
         lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, g_noticeHintBox);
-    }
 }
 
 static void NumSelectSliceHandler(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
     uint32_t currentId = lv_btnmatrix_get_selected_btn(obj);
     if (code == LV_EVENT_DRAW_PART_BEGIN) {
         if (currentId >= 0xFFFF) {
             return;
-        }
         lv_obj_draw_part_dsc_t * dsc = lv_event_get_draw_part_dsc(e);
         if (dsc->class_p == &lv_btnmatrix_class && dsc->type == LV_BTNMATRIX_DRAW_PART_BTN) {
             if (currentId == dsc->id) {
@@ -282,14 +268,12 @@ static void GuiShareCustodianWidget(lv_obj_t *parent)
 static void MnemonicConfirmHandler(lv_event_t * e)
 {
     int i, j;
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
     if (code == LV_EVENT_DRAW_PART_BEGIN) {
         lv_obj_draw_part_dsc_t * dsc = lv_event_get_draw_part_dsc(e);
         if (dsc->class_p == &lv_btnmatrix_class && dsc->type == LV_BTNMATRIX_DRAW_PART_BTN) {
             if (g_pressedBtnFlag[dsc->id] == MNEMONIC_BUTTON_UNPRESSED) {
                 dsc->rect_dsc->bg_color = DARK_BG_COLOR;
-            } else if (g_pressedBtnFlag[dsc->id] == MNEMONIC_BUTTON_CURRENT_PRESS) {
                 dsc->rect_dsc->bg_color = GREEN_COLOR;
             } else if (g_pressedBtnFlag[dsc->id] == MNEMONIC_BUTTON_PRESSED) {
                 dsc->rect_dsc->bg_color = WHITE_COLOR;
@@ -567,17 +551,14 @@ void GuiCreateShareRefresh(void)
 static void SelectPhraseCntHandler(lv_event_t *e)
 {
     static uint32_t currentIndex = 0;
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *checkBox = NULL;
 
-    if (code == LV_EVENT_CLICKED) {
         g_noticeHintBox = GuiCreateHintBox(282);
         lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
         lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_phrase_word_amount_select"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 560);
         lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
         lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgClose);
-        GuiButton_t table = {img, .position = {10, 10}};
 
         lv_obj_t *button = GuiCreateButton(g_noticeHintBox, 36, 36, &table, 1, NULL, g_noticeHintBox);
         lv_obj_align(button, LV_ALIGN_DEFAULT, 407, 550);

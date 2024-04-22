@@ -202,10 +202,8 @@ static int GetLvObjHeight(lv_obj_t *obj)
 
 static void GuiQrcodeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *parent, *button, *qrCodeCont, *qrCode, *label;
 
-    if (code == LV_EVENT_CLICKED) {
         if (g_qrCodeCont == NULL) {
             g_qrCodeCont = GuiCreateHintBox(654);
             parent = g_qrCodeCont;
@@ -235,7 +233,6 @@ static void GuiQrcodeHandler(lv_event_t *e)
             lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
             lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
             lv_obj_add_event_cb(button, CloseQrcodeHandler, LV_EVENT_CLICKED, NULL);
-        } else {
             lv_obj_clear_flag(g_qrCodeCont, LV_OBJ_FLAG_HIDDEN);
         }
     }
@@ -243,8 +240,5 @@ static void GuiQrcodeHandler(lv_event_t *e)
 
 static void CloseQrcodeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         lv_obj_add_flag(g_qrCodeCont, LV_OBJ_FLAG_HIDDEN);
-    }
 }

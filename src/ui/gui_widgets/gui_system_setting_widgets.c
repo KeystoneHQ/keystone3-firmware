@@ -57,12 +57,9 @@ void GuiSystemSettingAreaInit(void)
 
 void GuiSystemSettingWebAuthHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         GuiWebAuthSetEntry(WEB_AUTH_ENTRY_SETTING);
         GuiFrameOpenView(&g_webAuthView);
-    }
 }
 
 void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
@@ -153,12 +150,9 @@ void GuiSystemSettingAreaRestart()
 
 static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
         if (GetBatterPercent() < LOW_BATTERY_PERCENT) {
             GuiApiEmitSignalWithValue(SIG_INIT_LOW_BATTERY, 1);
-        } else {
             GuiShowKeyBoardDialog(container);
         }
     }
@@ -185,19 +179,13 @@ void GuiSystemSettingVerifyPasswordErrorCount(void *param)
 
 static void DispalyHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         GuiFrameOpenView(&g_displayView);
-    }
 }
 
 static void VibrationHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         if (lv_obj_has_state(vibrationSw, LV_STATE_CHECKED)) {
             lv_obj_clear_state(vibrationSw, LV_STATE_CHECKED);
-        } else {
             lv_obj_add_state(vibrationSw, LV_STATE_CHECKED);
         }
         lv_event_send(vibrationSw, LV_EVENT_VALUE_CHANGED, NULL);
@@ -206,7 +194,6 @@ static void VibrationHandler(lv_event_t *e)
 
 static void VibrationSwitchHandler(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t * obj = lv_event_get_target(e);
 
     if (code == LV_EVENT_VALUE_CHANGED) {
@@ -214,7 +201,6 @@ static void VibrationSwitchHandler(lv_event_t * e)
             printf("vibration on\n");
             SetVibration(1);
             UnlimitedVibrate(SLIGHT);
-        } else {
             printf("vibration off\n");
             SetVibration(0);
         }
@@ -224,12 +210,9 @@ static void VibrationSwitchHandler(lv_event_t * e)
 
 static void OpenLanguageSelectHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
         g_selectLanguagePage = CreatePageWidget();
         lv_obj_clear_flag(g_selectLanguagePage->contentZone, LV_OBJ_FLAG_SCROLLABLE);
         GuiCreateLanguageWidget(g_selectLanguagePage->contentZone, 12);
         SetNavBarLeftBtn(g_selectLanguagePage->navBarWidget, NVS_BAR_RETURN, DestroyPageWidgetHandler, g_selectLanguagePage);
         SetMidBtnLabel(g_selectLanguagePage->navBarWidget, NVS_BAR_MID_LABEL, _("language_title"));
-    }
 }

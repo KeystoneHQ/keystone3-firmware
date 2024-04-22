@@ -1,4 +1,6 @@
 #include "gui_style.h"
+#include "gui_obj.h"
+#include "gui_button.h"
 #ifndef BTC_ONLY
 #include "gui_multi_accounts_receive_widgets.h"
 #include "gui_status_bar.h"
@@ -251,7 +253,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
 
     img = GuiCreateImg(btn, &imgAddressType);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, _("switch_account"), &buttonFont);
+    label = GuiCreateTextLabel(btn, _("switch_account"));
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 }
 
@@ -339,7 +341,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
         char attentionText[BUFFER_SIZE_256];
         GetAttentionText(attentionText);
-        tempObj = GuiCreateLabelWithFont(g_multiAccountsReceiveWidgets.attentionCont, attentionText, g_defIllustrateFont);
+        tempObj = GuiCreateIllustrateLabel(g_multiAccountsReceiveWidgets.attentionCont, attentionText);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
         tempObj = GuiCreateTextBtn(g_multiAccountsReceiveWidgets.attentionCont, _("got_it"));
         lv_obj_set_size(tempObj, 122, 66);
@@ -371,7 +373,7 @@ static void GuiCreateSwitchAddressWidget(lv_obj_t *parent)
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
     index = 0;
     for (uint32_t i = 0; i < 5; i++) {
-        g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel = GuiCreateLabelWithFont(cont, "", &buttonFont);
+        g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel = GuiCreateTextLabel(cont, "");
         lv_obj_align(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressLabel = GuiCreateNoticeLabel(cont, "");
         lv_obj_align(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressLabel, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
@@ -598,7 +600,7 @@ static void GuiCreateAddressDetailWidgets(lv_obj_t *parent)
         lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
         last = label;
 
-        label = GuiCreateTextLabel(cont, _("receive_ada_base_address"));
+        label = GuiCreateTextLabel(cont, _("Address"));
         lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
         last = label;
 
@@ -1008,7 +1010,7 @@ static void GuiCreateSwitchAccountWidget()
     for (uint32_t i = 0; i < ACCOUNT_INDEX_MAX; i++) {
         char temp[BUFFER_SIZE_64];
         snprintf_s(temp, sizeof(temp), "%s-%u", _("account_head"), i);
-        label = GuiCreateLabelWithFont(cont, temp, g_defTextFont);
+        label = GuiCreateTextLabel(cont, temp);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         g_multiAccountsReceiveWidgets.switchAccountWidgets[index].addressCountLabel = label;
 

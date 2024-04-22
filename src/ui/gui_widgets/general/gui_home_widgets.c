@@ -690,7 +690,7 @@ static void OpenManageAssetsHandler(lv_event_t *e)
     }
 
     lv_obj_t *btn = GuiCreateBtn(g_manageCont, USR_SYMBOL_CHECK);
-    lv_obj_add_event_cb(btn, ConfirmManageAssetsHandler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn, ConfirmManageAssetsHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
 
     lv_obj_t *label = GuiCreateTextLabel(g_manageCont, "");

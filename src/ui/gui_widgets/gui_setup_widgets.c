@@ -65,7 +65,7 @@ static void GuiWelcomeWidget(lv_obj_t *parent)
     lv_obj_t *img = GuiCreateImg(parent, &imgLogoGraphL);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 84 - GUI_NAV_BAR_HEIGHT);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(img, GoToDeviceUIDPage, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(img, GoToDeviceUIDPage, LV_EVENT_CLICKED, NULL);
 
     lv_obj_t *label = GuiCreateTitleLabel(parent, _("Keystone"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 268 - GUI_NAV_BAR_HEIGHT);
@@ -77,7 +77,7 @@ static void GuiWelcomeWidget(lv_obj_t *parent)
     lv_obj_set_size(btn, 96, 96);
     lv_obj_set_style_radius(btn, LV_RADIUS_CIRCLE, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -96);
-    lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, NULL);
 }
 
 static void SelectLanguageHandler(lv_event_t *e)
@@ -160,7 +160,7 @@ static void GuiSetLanguageWidget(lv_obj_t *parent)
 
     lv_obj_t *btn = GuiCreateBtn(parent, USR_SYMBOL_ARROW_NEXT);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-    lv_obj_add_event_cb(btn, GuiOpenWebAuthHandler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn, GuiOpenWebAuthHandler, LV_EVENT_CLICKED, NULL);
 }
 
 void GuiSetupAreaInit(void)

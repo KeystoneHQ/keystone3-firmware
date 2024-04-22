@@ -84,7 +84,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
 
     label = GuiCreateTextLabel(parent, _("system_settings_vabiration"));
     vibrationSw = lv_switch_create(parent);
-    lv_obj_add_event_cb(vibrationSw, VibrationSwitchHandler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(vibrationSw, VibrationSwitchHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_set_style_bg_color(vibrationSw, ORANGE_COLOR, LV_STATE_CHECKED | LV_PART_INDICATOR);
     lv_obj_set_style_bg_color(vibrationSw, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(vibrationSw, LV_OPA_30, LV_PART_MAIN);

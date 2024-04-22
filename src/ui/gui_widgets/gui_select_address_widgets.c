@@ -3,6 +3,7 @@
 #include "account_public_info.h"
 #include "gui_page.h"
 #include "gui_obj.h"
+#include "gui_button.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
@@ -155,7 +156,7 @@ static void GuiCreateSelectAddressList(lv_obj_t *parent)
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
     index = 0;
     for (uint32_t i = 0; i < 5; i++) {
-        g_selectAddressWidgets[i].addressCountLabel = GuiCreateLabelWithFont(cont, "account", &buttonFont);
+        g_selectAddressWidgets[i].addressCountLabel = GuiCreateTextLabel(cont, "account");
         lv_obj_align(g_selectAddressWidgets[i].addressCountLabel, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         g_selectAddressWidgets[i].addressLabel = GuiCreateNoticeLabel(cont, "address");
         lv_obj_align(g_selectAddressWidgets[i].addressLabel, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);

@@ -93,7 +93,7 @@ void GuiWebAuthResultCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
     lv_obj_set_size(btn, 192, 66);
-    lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, NULL);
 
     btn = GuiCreateTextBtn(parent, _("verification_success"));
     lv_obj_set_style_bg_color(btn, GREEN_COLOR, LV_PART_MAIN);

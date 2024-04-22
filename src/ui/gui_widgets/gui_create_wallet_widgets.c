@@ -156,6 +156,7 @@ static void OpenNoticeHandler(lv_event_t *e)
     lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
     lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
     lv_obj_add_event_cb(btn, CloseParentAndNextHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
     lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
@@ -176,11 +177,9 @@ static void OpenSecretShareHandler(lv_event_t *e)
 
 static void OpenImportPhraseHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    uint8_t *wordsAmount = lv_event_get_user_data(e);
     Vibrate(SLIGHT);
     lv_obj_add_flag(lv_obj_get_parent(lv_event_get_target(e)), LV_OBJ_FLAG_HIDDEN);
-    GuiFrameOpenViewWithParam(&g_importPhraseView, wordsAmount, sizeof(*wordsAmount));
+    GuiFrameOpenViewWithParam(&g_importPhraseView, lv_event_get_user_data(e), sizeof(uint8_t));
 }
 
 static void ChooseWordsAmountHandler(lv_event_t *e)
@@ -670,18 +669,19 @@ static void CreateChangeEntropyView(void)
     lv_obj_set_width(label, 360);
     lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
-    label = GuiCreateIllustrateLabel(descCont, "#F5870A ·#");
-    lv_label_set_recolor(label, true);
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    lv_obj_t *dot = GuiCreateIllustrateLabel(descCont, "·");
+    lv_obj_set_style_text_color(dot, ORANGE_COLOR, LV_PART_MAIN);
+    GuiAlignToPrevObj(dot, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
     label = GuiCreateIllustrateLabel(descCont, _("change_entropy_dice_detail_desc_1"));
     lv_label_set_recolor(label, true);
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_RIGHT_TOP, 10, 0);
     lv_obj_set_width(label, 344);
+    height = lv_obj_get_self_height(label) + 12;
 
-    label = GuiCreateIllustrateLabel(descCont, "#F5870A ·#");
-    lv_label_set_recolor(label, true);
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -10, 12);
+    label = GuiCreateIllustrateLabel(descCont, "·");
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_align_to(label, dot, LV_ALIGN_OUT_BOTTOM_LEFT, 0, height);
 
     label = GuiCreateIllustrateLabel(descCont, _("change_entropy_dice_detail_desc_2"));
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_RIGHT_TOP, 10, 0);

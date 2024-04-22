@@ -300,9 +300,8 @@ void *GuiCreateMoreInfoHintBox(const void *src, const char *titleText, MoreInfoT
     if (src != NULL) {
         lv_obj_t *btn = GuiCreateImgButton(cont, src, 64, CloseHintBoxHandler, parent);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -24, 64 + 24 - height);
-        lv_obj_add_event_cb(lv_obj_get_child(cont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, parent);
     }
-
+    lv_obj_add_event_cb(lv_obj_get_child(cont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, parent);
     GuiHintBoxResize(cont, height);
 
     return cont;

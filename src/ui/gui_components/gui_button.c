@@ -75,6 +75,22 @@ void *GuiCreateImgLabelAdaptButton(lv_obj_t *parent, const char *text, const voi
     return button;
 }
 
+void *GuiCreateLabelImgAdaptButton(lv_obj_t *parent, const char *text, const void *src,
+                                   lv_event_cb_t buttonCb, void *param)
+{
+    lv_obj_t *label = GuiCreateIllustrateLabel(parent, text);
+    lv_obj_t *img = GuiCreateImg(parent, src);
+    GuiButton_t table[] = {
+        {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {12, 0},},
+        {.obj = img, .align = LV_ALIGN_LEFT_MID, .position = {16 + lv_obj_get_self_width(label), 0},},
+    };
+    uint16_t width = lv_obj_get_self_width(label) + lv_obj_get_self_width(img) + 24;
+    lv_obj_t *button = GuiCreateButton(parent, width, 36, table, NUMBER_OF_ARRAYS(table),
+                                       buttonCb, param);
+    lv_obj_set_style_radius(button, 12, LV_PART_MAIN);
+    return button;
+}
+
 void *GuiCreateSelectButton(lv_obj_t *parent, const char *text, const void *src,
                             lv_event_cb_t buttonCb, void *param, bool isCling)
 {

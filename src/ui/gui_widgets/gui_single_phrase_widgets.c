@@ -84,14 +84,14 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
     g_changeCont = cont;
     if (g_entropyMethod == 0) {
-        lv_obj_t *button = GuiCreateImgLabelAdaptButton(cont, _("single_backup_phrase_regenerate"), &imgChange, UpdatePhraseHandler, NULL);
+        lv_obj_t *button = GuiCreateImgLabelAdaptButton(cont, _("Regenerate"), &imgChange, UpdatePhraseHandler, NULL);
         lv_obj_set_height(button, 66);
         lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 24);
     }
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_KB_NEXT);
     lv_obj_align(btn, LV_ALIGN_DEFAULT, 348, 24);
     lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, cont);
-    SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12    "USR_SYMBOL_DOWN : "24    "USR_SYMBOL_DOWN);
+    SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
     SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
     if (g_entropyMethod == 0) {
         GuiModelBip39UpdateMnemonic(g_phraseCnt);
@@ -270,7 +270,7 @@ static void SelectCheckBoxHandler(lv_event_t* e)
     //TODO: use id to identity position
     const char *currText = lv_checkbox_get_text(actCb);
     if (!strcmp(currText, _("wallet_phrase_12words"))) {
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "12    "USR_SYMBOL_DOWN);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "12");
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 12) {
             g_phraseCnt = 12;
@@ -281,7 +281,7 @@ static void SelectCheckBoxHandler(lv_event_t* e)
             }
         }
     } else if (!strcmp(currText, _("wallet_phrase_24words"))) {
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "24    "USR_SYMBOL_DOWN);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "24");
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 24) {
             g_phraseCnt = 24;
@@ -308,10 +308,7 @@ static void SelectPhraseCntHandler(lv_event_t *e)
         lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_phrase_word_amount_select"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 560);
         lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
-        lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgClose);
-        GuiButton_t table = {img, .position = {10, 10}};
-
-        lv_obj_t *button = GuiCreateButton(g_noticeHintBox, 36, 36, &table, 1, NULL, g_noticeHintBox);
+        lv_obj_t *button = GuiCreateImgButton(g_noticeHintBox,  &imgClose, 50, CloseHintBoxHandler, &g_noticeHintBox);
         lv_obj_align(button, LV_ALIGN_DEFAULT, 407, 550);
 
         if (g_phraseCnt == 24) {
@@ -378,7 +375,7 @@ int8_t GuiSinglePhrasePrevTile(void)
         ResetConfirmInput();
         lv_obj_clear_flag(g_changeCont, LV_OBJ_FLAG_HIDDEN);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12    "USR_SYMBOL_DOWN : "24    "USR_SYMBOL_DOWN);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         break;
     case SINGLE_PHRASE_WRITE_SE:
@@ -418,7 +415,7 @@ void GuiSinglePhraseRefresh(void)
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     if (g_singlePhraseTileView.currentTile == SINGLE_PHRASE_RANDOM_PHRASE) {
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12    "USR_SYMBOL_DOWN : "24    "USR_SYMBOL_DOWN);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     } else if (g_singlePhraseTileView.currentTile == SINGLE_PHRASE_CONFIRM_PHRASE) {

@@ -240,7 +240,7 @@ static void GuiShareSelectSliceWidget(lv_obj_t *parent)
 
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_CHECK);
     lv_obj_align(btn, LV_ALIGN_DEFAULT, 348, 24);
-    lv_obj_add_event_cb(btn, ShareUpdateTileHandler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn, ShareUpdateTileHandler, LV_EVENT_CLICKED, NULL);
 }
 
 static void GuiShareCustodianWidget(lv_obj_t *parent)
@@ -262,7 +262,7 @@ static void GuiShareCustodianWidget(lv_obj_t *parent)
     lv_obj_t *img = GuiCreateImg(cont, &imgRedEye);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 39, 48);
     hintHeight = GetHintBoxReHeight(hintHeight, img) + 24;
-    label = GuiCreateLittleTitleLabel(cont, _("single_backup_learn_more_qr_title"));
+    label = GuiCreateLittleTitleLabel(cont, _("single_backup_notice_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 108);
     hintHeight = GetHintBoxReHeight(hintHeight, label) + 12;
 
@@ -390,7 +390,7 @@ static void GuiShareBackupWidget(lv_obj_t *parent)
     lv_obj_t *img = GuiCreateImg(btn, &imgArrowNext);
     lv_obj_set_align(img, LV_ALIGN_CENTER);
     lv_obj_align(btn, LV_ALIGN_DEFAULT, 348, 24);
-    lv_obj_add_event_cb(btn, ShareUpdateTileHandler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn, ShareUpdateTileHandler, LV_EVENT_CLICKED, NULL);
 }
 
 static void GuiShareConfirmWidget(lv_obj_t *parent)
@@ -485,7 +485,7 @@ int8_t GuiCreateShareNextTile(void)
     case CREATE_SHARE_CUSTODIAN:
         lv_obj_clear_flag(g_shareBackupTile.nextCont, LV_OBJ_FLAG_HIDDEN);
         if (g_createShareTileView.currentSlice == 0) {
-            SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 20 ? "20    "USR_SYMBOL_DOWN : "33    "USR_SYMBOL_DOWN);
+            SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 20 ? "20" : "33");
             SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         }
         break;
@@ -553,7 +553,7 @@ void GuiCreateShareRefresh(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     } else if (g_createShareTileView.currentTile == CREATE_SHARE_BACKUPFROM) {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 20 ? "20    "USR_SYMBOL_DOWN : "33    "USR_SYMBOL_DOWN);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 20 ? "20" : "33");
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
     } else if (g_createShareTileView.currentTile == CREATE_SHARE_CONFIRM) {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
@@ -622,7 +622,7 @@ static void SelectCheckBoxHandler(lv_event_t* e)
     const char *currText = lv_checkbox_get_text(actCb);
     printf("currText = %s\n", currText);
     if (!strcmp(currText, _("wallet_phrase_20words"))) {
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "20    "USR_SYMBOL_DOWN);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "20");
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 20) {
             g_phraseCnt = 20;
@@ -634,7 +634,7 @@ static void SelectCheckBoxHandler(lv_event_t* e)
             }
         }
     } else if (!strcmp(currText, _("wallet_phrase_33words"))) {
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "33    "USR_SYMBOL_DOWN);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "33");
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 33) {
             g_phraseCnt = 33;

@@ -9,37 +9,16 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val)
-{
-    return (uint32_t)(val < 0 ? -val : val);
-}
-static inline uint32_t op_i(uint32_t val)
-{
-    return val;
-}
+static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
+static inline uint32_t op_i(uint32_t val) { return val; }
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_w(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_f(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_t(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
+static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
+static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
-const static lv_i18n_phrase_t en_singulars[] = {
+const static lv_i18n_phrase_t  en_singulars[] = {
+    {"Address", "Address"},
     {"Approve", "Approve"},
     {"Attention", "Attention"},
     {"Cancel", "Cancel"},
@@ -327,7 +306,7 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"firmware_update_usb_qr_link", "https://keyst.one/webusb"},
     {"firmware_update_usb_qr_title", "Firmware Update"},
     {"firmware_update_usb_title", "USB Update"},
-    {"firmware_update_usb_title2", "#F5870A Caution#"},
+    {"firmware_update_usb_title2", "Caution"},
     {"firmware_update_usb_updating_hint", "Do not disconnect the USB cable during the installation process."},
     {"firmware_update_verify_firmware_qr_link", "KeystoneHQ/keystone3-firmware/docs/verify.md"},
     {"firmware_update_via_sd", "Via MicroSD Card"},
@@ -742,12 +721,9 @@ const static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -760,7 +736,8 @@ static const lv_i18n_lang_t en_lang = {
     .locale_plural_fn = en_plural_fn
 };
 
-const static lv_i18n_phrase_t ko_singulars[] = {
+const static lv_i18n_phrase_t  ko_singulars[] = {
+    {"Address", "주소"},
     {"Approve", "승인"},
     {"Attention", "주의"},
     {"Cancel", "취소"},
@@ -1048,7 +1025,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"firmware_update_usb_qr_link", "https://keyst.one/webusb"},
     {"firmware_update_usb_qr_title", "펌웨어 업데이트"},
     {"firmware_update_usb_title", "USB 업데이트"},
-    {"firmware_update_usb_title2", "#F5870A경고#"},
+    {"firmware_update_usb_title2", "경고"},
     {"firmware_update_usb_updating_hint", "업그레이드 중, USB 연결을 유지해 주세요."},
     {"firmware_update_verify_firmware_qr_link", "KeystoneHQ/keystone3-firmware/docs/\r\nverify.md "},
     {"firmware_update_via_sd", "MicroSD 카드"},
@@ -1183,7 +1160,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"purpose_import_wallet", "지갑 가져오기"},
     {"purpose_new_wallet", "지갑 만들기"},
     {"purpose_title", "새 지갑"},
-    {"receive_ada_base_address", "주소."},
+    {"receive_ada_base_address", "주소"},
     {"receive_ada_enterprise_address", "주소(위임되지 않음)"},
     {"receive_ada_more_t_desc1", "카르다노 블록체인에서 24개의 계정을 제공하고 있으며, 각 계정은 사용할 수 있는 수많은 주소를 생성할 수 있다. 필요한 계정을 쉽게 전환할 수 있다."},
     {"receive_ada_more_t_desc2", "\"1. Payment & Stake Key: Cardano의 모든 계정에는 정기적인 ADA 거래(전송 및 수신)를 위한 Payment Key와 Stake and Reception을 위한 Stake Key가 있습니다.\r\n 2. 기본 주소(Base Address): 기본 주소는 결제 키와 지분 키 모두에서 파생됩니다. 정기적인 거래와 스테이킹에 모두 사용할 수 있습니다. \"외부 주소(Delegated)\"라고도 합니다\r\n 3. 기업 주소: 이 주소는 결제 키만 포함되어 있으며, 일반 거래에만 사용되며, 거래소와 같이 지분이 포함되지 않는 \"비즈니스\" 시나리오를 위해 설계되었으며, \"외부 주소(위임되지 않음)\"라고도 합니다\r\n 4. Stake & Reward Address: Stake Key는 스테이킹에 사용되며, 관련된 Stake Address는 스테이킹 보상을 받는 데 사용되는 Reward Address라고도 합니다.\""},
@@ -1218,7 +1195,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"receive_eth_more_t_title1", "차이점 탐색: 표준, 원장 라이브 및 이더리움의 레거시 도출 경로"},
     {"receive_eth_receive_main_title", "ETH 받기"},
     {"receive_generate_new_address", "새 주소 생성"},
-    {"receive_more_t_qr_link", ""},
+    {"receive_more_t_qr_link", "https://keyst.one/t/3rd/faq"},
     {"receive_sol_more_t_base_path", "계정 기반 경로"},
     {"receive_sol_more_t_desc1", "\"1. 계정 기반 경로: 수많은 솔라나 지갑에 널리 채택되고 있습니다. 그러한 지갑의 예로는 솔프라레가 있습니다.\r\n 2. 단일 계정 경로: Sollet / MathWallet에서 시드 구문을 가져오려면 이 경로를 선택하십시오. Keystone은 이 형식을 사용하여 초기 10개 주소만 동기화할 수 있습니다.\r\n 3. 하위 계정 경로: 팬텀/엑소더스와 같은 소프트웨어 지갑으로 디지털 자산을 관리하면 이 경로로 전환하십시오.\""},
     {"receive_sol_more_t_single_path", "단일 계정 경로"},
@@ -1436,7 +1413,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"wallet_profile_single_sign_title", "싱글시그월렛"},
     {"wallet_profile_single_wallet_title", "싱글사인 월렛"},
     {"wallet_setting_add_wallet", "#ERROR!"},
-    {"wallet_setting_add_wallet_confirm", "알겠습니다."},
+    {"wallet_setting_add_wallet_confirm", "알겠습니다"},
     {"wallet_setting_add_wallet_limit", "제한 추가"},
     {"wallet_setting_add_wallet_limit_desc", "지갑은 최대 3개까지만 추가할 수 있습니다.새 지갑을 추가하기 전에 다른 지갑을 삭제해 주세요."},
     {"wallet_setting_add_wallet_notice", "하드웨어 지갑은 개인용으로만 제공됩니다.자산 위험을 피하기 위해 공유하지 마십시오."},
@@ -1476,7 +1453,8 @@ static const lv_i18n_lang_t ko_lang = {
     .locale_plural_fn = ko_plural_fn
 };
 
-const static lv_i18n_phrase_t ru_singulars[] = {
+const static lv_i18n_phrase_t  ru_singulars[] = {
+    {"Address", "Адрес"},
     {"Approve", "Разрешить"},
     {"Attention", "Внимание"},
     {"Cancel", "Отмена"},
@@ -1764,7 +1742,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"firmware_update_usb_qr_link", "https://keyst.one/webusb"},
     {"firmware_update_usb_qr_title", "Обновление прошивки"},
     {"firmware_update_usb_title", "USB обновление"},
-    {"firmware_update_usb_title2", "#F5870A Внимание#"},
+    {"firmware_update_usb_title2", "Внимание"},
     {"firmware_update_usb_updating_hint", "Не отключайте USB кабель во время процесса установки."},
     {"firmware_update_verify_firmware_qr_link", "KeystoneHQ/keystone3-firmware/docs/\\nverify.md"},
     {"firmware_update_via_sd", "Через MicroSD карту"},
@@ -2179,12 +2157,9 @@ const static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t v = op_v(n);
-    UNUSED(v);
-    uint32_t i = op_i(n);
-    UNUSED(i);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t i = op_i(n); UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -2200,7 +2175,8 @@ static const lv_i18n_lang_t ru_lang = {
     .locale_plural_fn = ru_plural_fn
 };
 
-const static lv_i18n_phrase_t zh_cn_singulars[] = {
+const static lv_i18n_phrase_t  zh_cn_singulars[] = {
+    {"Address", "地址"},
     {"Approve", "允许"},
     {"Attention", "注意"},
     {"Cancel", "取消"},
@@ -2488,7 +2464,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"firmware_update_usb_qr_link", "https://keyst.one/webusb"},
     {"firmware_update_usb_qr_title", "固件升级"},
     {"firmware_update_usb_title", "USB更新"},
-    {"firmware_update_usb_title2", "#F5870A警告#"},
+    {"firmware_update_usb_title2", "警告"},
     {"firmware_update_usb_updating_hint", "升级中,请保持USB连接."},
     {"firmware_update_verify_firmware_qr_link", "KeystoneHQ/keystone3-firmware/docs/\r\nverify.md "},
     {"firmware_update_via_sd", "microSD卡"},
@@ -2876,7 +2852,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"wallet_profile_single_sign_title", "单签钱包"},
     {"wallet_profile_single_wallet_title", "单重签名钱包"},
     {"wallet_setting_add_wallet", "+添加钱包"},
-    {"wallet_setting_add_wallet_confirm", "我明白."},
+    {"wallet_setting_add_wallet_confirm", "我明白"},
     {"wallet_setting_add_wallet_limit", "添加限制"},
     {"wallet_setting_add_wallet_limit_desc", "您只能添加最多 3 个钱包.请在添加新钱包之前删除其他钱包."},
     {"wallet_setting_add_wallet_notice", "硬件钱包仅供个人使用.请勿分享,以避免资产风险."},
@@ -2947,8 +2923,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if (langs == NULL) return -1;
-    if (langs[0] == NULL) return -1;
+    if(langs == NULL) return -1;
+    if(langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -2961,13 +2937,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if (current_lang_pack == NULL) return -1;
+    if(current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for (i = 0; current_lang_pack[i] != NULL; i++) {
+    for(i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -2980,10 +2956,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for (i = 0; trans[i].msg_id != NULL; i++) {
-        if (strcmp(trans[i].msg_id, msg_id) == 0) {
+    for(i = 0; trans[i].msg_id != NULL; i++) {
+        if(strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if (trans[i].translation) return trans[i].translation;
+            if(trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -2998,23 +2974,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -3030,31 +3006,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -3069,6 +3045,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if (!current_lang) return NULL;
+    if(!current_lang) return NULL;
     return current_lang->locale_name;
 }

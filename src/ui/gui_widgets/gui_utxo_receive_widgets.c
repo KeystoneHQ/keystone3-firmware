@@ -621,7 +621,7 @@ static void GuiCreateSwitchAddressWidget(lv_obj_t *parent)
     index = 0;
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetUtxoAddress(index, &addressDataItem);
-        g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel = GuiCreateLabelWithFont(cont, "", &buttonFont);
+        g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel = GuiCreateTextLabel(cont, "");
         lv_obj_align(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         g_utxoReceiveWidgets.switchAddressWidgets[i].addressLabel = GuiCreateNoticeLabel(cont, "");
         lv_obj_align(g_utxoReceiveWidgets.switchAddressWidgets[i].addressLabel, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
@@ -960,7 +960,7 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
 
 static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
 {
-    lv_obj_t *cont, *label, *line, *closeBtn, *closeImg;
+    lv_obj_t *cont, *label, *line, *closeBtn;
     static lv_point_t points[2] = {{0, 0}, {408, 0}};
     g_gotoAddressValid = false;
 
@@ -972,8 +972,8 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
         label = GuiCreateIllustrateLabel(cont, _("receive_btc_receive_change_address_title"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 30 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        label = GuiCreateTextBtn(cont, "");
-        lv_label_set_text_fmt(label, "%s-", _("receive_ada_base_address"));
+        label = GuiCreateTextLabel(cont, "");
+        lv_label_set_text_fmt(label, "%s-", _("Address"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 108 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
         g_utxoReceiveWidgets.inputAddressLabel = GuiCreateTextLabel(cont, "");
@@ -994,16 +994,10 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
         lv_btnmatrix_set_btn_ctrl(keyboard, 11, LV_BTNMATRIX_CTRL_DISABLED);
         g_utxoReceiveWidgets.gotoAddressKeyboard = keyboard;
 
-        closeBtn = lv_btn_create(cont);
+        closeBtn = GuiCreateImgButton(cont, &imgClose, 64, CloseGotoAddressHandler, parent);
         lv_obj_set_size(closeBtn, 36, 36);
         lv_obj_align(closeBtn, LV_ALIGN_TOP_RIGHT, -36, 27 + 270);
         lv_obj_set_style_bg_opa(closeBtn, LV_OPA_TRANSP, LV_PART_MAIN);
-        lv_obj_set_style_border_width(closeBtn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-        lv_obj_set_style_outline_width(closeBtn, 0, LV_PART_MAIN);
-        lv_obj_set_style_shadow_width(closeBtn, 0, LV_PART_MAIN);
-        lv_obj_add_event_cb(closeBtn, CloseGotoAddressHandler, LV_EVENT_CLICKED, NULL);
-        closeImg = GuiCreateImg(closeBtn, &imgClose);
-        lv_obj_align(closeImg, LV_ALIGN_CENTER, 0, 0);
     } else {
         lv_label_set_text(g_utxoReceiveWidgets.inputAddressLabel, "");
         lv_obj_clear_flag(g_utxoReceiveWidgets.inputAddressCont, LV_OBJ_FLAG_HIDDEN);
@@ -1046,7 +1040,8 @@ static void RefreshSwitchAccount(void)
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetUtxoAddress(index, &addressDataItem);
-        lv_label_set_text_fmt(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("receive_ada_base_address"), (addressDataItem.index));
+        printf("_(receive_ada_base_address) = %s\n", _("receive_ada_base_address"));
+        lv_label_set_text_fmt(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("receive_ada_base_address"), addressDataItem.index);
         CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_utxoReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {

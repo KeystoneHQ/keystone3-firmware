@@ -81,7 +81,6 @@ static void RecognizeFailHandler(lv_timer_t *timer);
 static TransactionMode GetCurrentTransactionMode(void);
 #endif
 static void TransactionGoToHomeViewHandler(lv_event_t *e);
-static void CloseParseErrorDataHandler(lv_event_t *e);
 static void ThrowError(int32_t errorCode);
 
 #ifndef BTC_ONLY
@@ -193,17 +192,6 @@ void GuiTransactionDetailRefresh()
 static void ThrowError(int32_t errorCode)
 {
     g_parseErrorHintBox = GuiCreateErrorCodeWindow(errorCode, &g_parseErrorHintBox, NULL);
-}
-
-static void CloseParseErrorDataHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_parseErrorHintBox)
-        GuiCLoseCurrentWorkingView();
-        GuiModeControlQrDecode(true);
-    }
 }
 
 void GuiTransactionDetailParseSuccess(void *param)

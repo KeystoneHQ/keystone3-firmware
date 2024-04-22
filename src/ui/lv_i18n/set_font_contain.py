@@ -6,8 +6,8 @@ import pandas as pd
 df = pd.read_csv('data.csv')
 
 def extract_unique_characters(df, font_size, column):
-    if font_size == 24:
-        additional_chars = "QWERTYUIOPASDFGHJKLZXCVBNM,/:\";'[]<>~!@#$%^&*()_+=0987654321·qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM[]{}#%^*+=_\\|~<>€£¥·-/:;()$&`.?!'@"
+    if font_size == 24 or font_size == 20:
+        additional_chars = "·QWERTYUIOPASDFGHJKLZXCVBNM,/:\";'[]<>~!@#$%^&*()_+=0987654321·qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM[]{}#%^*+=_\\|~<>€£¥·-/:;()$&`.?!'@"
         unique_chars = set(additional_chars)
     else:
         additional_chars = "0987654321"

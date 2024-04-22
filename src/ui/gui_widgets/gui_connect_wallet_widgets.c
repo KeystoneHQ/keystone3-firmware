@@ -79,49 +79,6 @@ typedef struct {
     const lv_img_dsc_t *icon;
 } CoinCard_t;
 
-static const CoinCard_t g_companionCoinCardArray[COMPANION_APP_COINS_BUTT] = {
-    {
-        .index = BTC,
-        .coin = "Bitcoin",
-        .icon = &coinBtc,
-    },
-    {
-        .index = ETH,
-        .coin = "Ethereum / BSC",
-        .icon = &coinEth,
-    },
-    {
-        .index = BCH,
-        .coin = "Bitcoin Cash",
-        .icon = &coinBch,
-    },
-    {
-        .index = DASH,
-        .coin = "Dash",
-        .icon = &coinDash,
-    },
-    {
-        .index = LTC,
-        .coin = "LiteCoin",
-        .icon = &coinLtc,
-    },
-    {
-        .index = TRON,
-        .coin = "TRON",
-        .icon = &coinTrx,
-    },
-    {
-        .index = XRP,
-        .coin = "XRP",
-        .icon = &coinXrp,
-    },
-    {
-        .index = DOT,
-        .coin = "Polkadot",
-        .icon = &coinDot,
-    },
-};
-
 static const CoinCard_t g_fewchaCoinCardArray[FEWCHA_COINS_BUTT] = {
     {
         .index = APT,
@@ -505,7 +462,7 @@ static void GuiCreateSelectFewchaCoinWidget()
     }
 
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_CHECK);
-    lv_obj_add_event_cb(btn, ConfirmSelectFewchaCoinsHandler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn, ConfirmSelectFewchaCoinsHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
 
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("connect_wallet_select_network"));

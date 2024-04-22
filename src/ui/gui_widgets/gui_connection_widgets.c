@@ -69,7 +69,7 @@ static void GuiConnectionNVSBarInit()
 void GuiConnectionEntranceWidget(lv_obj_t *parent)
 {
     usbConnectionSw = lv_switch_create(parent);
-    lv_obj_add_event_cb(usbConnectionSw, UsbConnectionSwitchHandler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(usbConnectionSw, UsbConnectionSwitchHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_set_style_bg_color(usbConnectionSw, ORANGE_COLOR, LV_STATE_CHECKED | LV_PART_INDICATOR);
     lv_obj_set_style_bg_color(usbConnectionSw, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(usbConnectionSw, LV_OPA_30, LV_PART_MAIN);

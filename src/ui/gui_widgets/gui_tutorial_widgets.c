@@ -50,7 +50,7 @@ static void TutorialsInit()
         g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].title = _("receive_btc_more_t_title1");
         g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].desc = _("receive_btc_more_t_desc1");
         g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].link = _("learn_more");
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].qrTitle = _("receive_btc_more_t_desc1");
+        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].qrTitle = _("receive_btc_more_t_title1");
         g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].qrSubtitle = _("receive_more_t_qr_link");
         g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].qrCode = _("receive_more_t_qr_link");
 

@@ -354,7 +354,7 @@ static void MnemonicConfirmHandler(lv_event_t * e)
                 lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 574);
                 label = GuiCreateIllustrateLabel(g_noticeHintBox, _("error_box_mnemonic_not_match_wallet_desc"));
                 lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 626);
-                lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("OK"));
+                lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _("OK"));
                 lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
                 lv_obj_align(btn, LV_ALIGN_DEFAULT, 345, 710);
                 lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);

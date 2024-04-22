@@ -102,7 +102,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
     offset += 100;
 
-    button = GuiCreateSelectButton(parent, _("verify_title"), &imgArrowRight,
+    button = GuiCreateSelectButton(parent, _("verify_title_text"), &imgArrowRight,
                                    GuiSystemSettingWebAuthHandler, NULL, false);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
     offset += 100;

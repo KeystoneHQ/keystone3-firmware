@@ -103,7 +103,9 @@ void *GuiCreateBtnWithFont(lv_obj_t *parent, const char *text, const lv_font_t *
 void *GuiCreateTextBtn(lv_obj_t *parent, const char *text)
 {
     lv_obj_t *btn = GuiCreateBtnWithFont(parent, text, g_defTextFont);
-    lv_obj_set_size(btn, 96, 66);
+    uint16_t width = lv_obj_get_self_width(lv_obj_get_child(btn, 0)) + 24;
+    width = width > 96 ? width : 96;
+    lv_obj_set_size(btn, width, 66);
     return btn;
 }
 

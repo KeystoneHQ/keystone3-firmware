@@ -180,7 +180,7 @@ static void GuiGoToFirmwareUpdateViewHandler(lv_event_t *e)
 
 static void GuiOpenQRCodeHintBox()
 {
-    GuiQRCodeHintBoxOpen(_("verify_qr_link"), _("verify_title"), _("verify_qr_link"));
+    GuiQRCodeHintBoxOpen(_("verify_qr_link"), _("verify_title_text"), _("verify_qr_link"));
 }
 
 static void GuiWebAuthQrcodeHandler(lv_event_t *e)

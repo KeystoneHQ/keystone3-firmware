@@ -17,7 +17,8 @@ def extract_unique_characters(df, font_size, column):
     return ''.join(sorted(unique_chars))
 
 # languages = ['Russian', 'Korean', 'cn']
-languages = ['cn']
+# languages = ['cn']
+languages = ['Korean']
 
 for language in languages:
     unique_characters_font_20 = extract_unique_characters(df, 20, language)

@@ -67,7 +67,7 @@ void GuiSystemSettingWebAuthHandler(lv_event_t *e)
 
 void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
 {
-    lv_obj_t *label, *imgArrow, *button;
+    lv_obj_t *label, *button;
     uint16_t offset = 0;
 
 #ifndef BTC_ONLY

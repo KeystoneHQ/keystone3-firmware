@@ -2446,7 +2446,8 @@ static const uint16_t unicode_list_0[] = {
 };
 
 /*Collect the unicode lists and glyph_id offsets*/
-static const lv_font_fmt_txt_cmap_t cmaps[] = {
+static const lv_font_fmt_txt_cmap_t cmaps[] =
+{
     {
         .range_start = 32, .range_length = 39569, .glyph_id_start = 1,
         .unicode_list = unicode_list_0, .glyph_id_ofs_list = NULL, .list_length = 192, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY
@@ -2459,7 +2460,8 @@ static const lv_font_fmt_txt_cmap_t cmaps[] = {
 
 
 /*Pair left and right glyphs for kerning*/
-static const uint8_t kern_pair_glyph_ids[] = {
+static const uint8_t kern_pair_glyph_ids[] =
+{
     3, 22,
     3, 23,
     3, 24,
@@ -2534,20 +2536,22 @@ static const uint8_t kern_pair_glyph_ids[] = {
 
 /* Kerning between the respective left and right glyphs
  * 4.4 format which needs to scaled with `kern_scale`*/
-static const int8_t kern_pair_values[] = {
+static const int8_t kern_pair_values[] =
+{
     -11, -7, -7, -7, -24, -11, -11, -7,
-        -7, -7, -24, -11, -8, -6, -8, -5,
-        -5, -8, -5, -5, -5, -18, -11, -8,
-        -13, -9, -9, -6, -3, -12, -12, -12,
-        -6, 2, -5, -11, -6, 1, -5, -5,
-        -6, -6, -7, -2, -10, -3, -29, -29,
-        12, -6, -6, -6, -3, 12, -7, -11,
-        2, 2, 6, -14, -8, -8, -8, -6,
-        -11, -18, -18, -3, -3, -3
-    };
+    -7, -7, -24, -11, -8, -6, -8, -5,
+    -5, -8, -5, -5, -5, -18, -11, -8,
+    -13, -9, -9, -6, -3, -12, -12, -12,
+    -6, 2, -5, -11, -6, 1, -5, -5,
+    -6, -6, -7, -2, -10, -3, -29, -29,
+    12, -6, -6, -6, -3, 12, -7, -11,
+    2, 2, 6, -14, -8, -8, -8, -6,
+    -11, -18, -18, -3, -3, -3
+};
 
 /*Collect the kern pair's data in one place*/
-static const lv_font_fmt_txt_kern_pair_t kern_pairs = {
+static const lv_font_fmt_txt_kern_pair_t kern_pairs =
+{
     .glyph_ids = kern_pair_glyph_ids,
     .values = kern_pair_values,
     .pair_cnt = 70,
@@ -2596,8 +2600,8 @@ lv_font_t cnLittleTitle = {
 #endif
     .get_glyph_dsc = lv_font_get_glyph_dsc_fmt_txt,    /*Function pointer to get glyph's data*/
     .get_glyph_bitmap = lv_font_get_bitmap_fmt_txt,    /*Function pointer to get glyph's bitmap*/
-    .line_height = 40,          /*The maximum line height required by the font*/
-    .base_line = 9,             /*Baseline measured from the bottom of the line*/
+    .line_height = 31,          /*The maximum line height required by the font*/
+    .base_line = 7,             /*Baseline measured from the bottom of the line*/
 #if !(LVGL_VERSION_MAJOR == 6 && LVGL_VERSION_MINOR == 0)
     .subpx = LV_FONT_SUBPX_NONE,
 #endif

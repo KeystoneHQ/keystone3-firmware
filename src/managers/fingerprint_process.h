@@ -191,7 +191,7 @@ void FpCancelCurOperate(void);
 void SearchFpInitState(void);
 void SetFpAesKey(void);
 void SetFpLowPowerMode(void);
-uint8_t *GuiGetFpVersion(char *version);
+uint8_t *GuiGetFpVersion(char *version, uint32_t maxLen);
 void FpWipeManageInfo(void);
 const char *GetFpErrorMessage(FingerError_Code errCode);
 void FpResponseHandleStop(void);

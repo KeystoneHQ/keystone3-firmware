@@ -1111,7 +1111,6 @@ static int32_t ModeGetAccount(const void *inData, uint32_t inDataLen)
     if (ret != SUCCESS_CODE) {
         walletAmount = 0xFF;
     }
-    walletAmount = 0;
     GuiApiEmitSignal(SIG_INIT_GET_ACCOUNT_NUMBER, &walletAmount, sizeof(walletAmount));
     SetLockScreen(enable);
     return SUCCESS_CODE;

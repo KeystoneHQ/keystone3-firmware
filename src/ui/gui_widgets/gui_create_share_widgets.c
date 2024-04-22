@@ -147,13 +147,13 @@ static void StopCreateViewHandler(lv_event_t *e)
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 528);
         label = GuiCreateIllustrateLabel(g_noticeHintBox, _("shamir_phrase_cancel_create_desc"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 580);
-        lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _("shamir_phrase_continue_btn"));
+        lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _("Continue"));
         lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
         lv_obj_align(btn, LV_ALIGN_DEFAULT, 36, 710);
         lv_obj_set_size(btn, 162, 66);
         lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, NULL);
 
-        btn = GuiCreateTextBtn(g_noticeHintBox, _("shamir_phrase_cancel_create_btn"));
+        btn = GuiCreateTextBtn(g_noticeHintBox, _("Quit"));
         lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
         lv_obj_align(btn, LV_ALIGN_DEFAULT, 229, 710);
         lv_obj_set_size(btn, 215, 66);
@@ -262,15 +262,15 @@ static void GuiShareCustodianWidget(lv_obj_t *parent)
     lv_obj_t *img = GuiCreateImg(cont, &imgRedEye);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 39, 48);
     hintHeight = GetHintBoxReHeight(hintHeight, img) + 24;
-    label = GuiCreateLittleTitleLabel(cont, _("shamir_phrase_notice_title"));
+    label = GuiCreateLittleTitleLabel(cont, _("single_backup_learn_more_qr_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 108);
     hintHeight = GetHintBoxReHeight(hintHeight, label) + 12;
 
-    lv_obj_t *desc1 = GuiCreateIllustrateLabel(cont, _("shamir_phrase_notice_desc1"));
+    lv_obj_t *desc1 = GuiCreateIllustrateLabel(cont, _("single_backup_notice_desc1"));
     lv_obj_align_to(desc1, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     hintHeight = GetHintBoxReHeight(hintHeight, desc1) + 12;
 
-    lv_obj_t *desc2 = GuiCreateIllustrateLabel(cont, _("shamir_phrase_notice_desc2"));
+    lv_obj_t *desc2 = GuiCreateIllustrateLabel(cont, _("single_backup_notice_desc2"));
     lv_obj_align_to(desc2, desc1, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     hintHeight = GetHintBoxReHeight(hintHeight, desc1) + 130;
 
@@ -350,9 +350,9 @@ static void MnemonicConfirmHandler(lv_event_t * e)
                 g_noticeHintBox = GuiCreateHintBox(370);
                 lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgFailed);
                 lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 478);
-                lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("shamir_phrase_not_match_title"));
+                lv_obj_t *label = GuiCreateTextLabel(g_noticeHintBox, _("error_box_mnemonic_not_match_wallet"));
                 lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 574);
-                label = GuiCreateIllustrateLabel(g_noticeHintBox, _("shamir_phrase_not_match_desc"));
+                label = GuiCreateIllustrateLabel(g_noticeHintBox, _("error_box_mnemonic_not_match_wallet_desc"));
                 lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 626);
                 lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("OK"));
                 lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
@@ -369,7 +369,7 @@ static void GuiShareBackupWidget(lv_obj_t *parent)
 {
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
     // lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("shamir_phrase_backup_title"));
+    lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_phrase_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(parent, _("shamir_phrase_backup_desc"));
@@ -395,7 +395,7 @@ static void GuiShareBackupWidget(lv_obj_t *parent)
 
 static void GuiShareConfirmWidget(lv_obj_t *parent)
 {
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("shamir_phrase_confirm_title"));
+    lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_phrase_confirm_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateNoticeLabel(parent, _("shamir_phrase_confirm_desc"));
@@ -583,16 +583,16 @@ static void SelectPhraseCntHandler(lv_event_t *e)
         lv_obj_align(button, LV_ALIGN_DEFAULT, 407, 550);
 
         if (g_phraseCnt == 33) {
-            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("import_wallet_ssb_20words"));
+            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("wallet_phrase_20words"));
             lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
-            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("import_wallet_ssb_33words"));
+            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("wallet_phrase_33words"));
             lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         } else {
-            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("import_wallet_ssb_20words"));
+            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("wallet_phrase_20words"));
             lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
-            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("import_wallet_ssb_33words"));
+            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("wallet_phrase_33words"));
             lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
         }
 
@@ -621,7 +621,7 @@ static void SelectCheckBoxHandler(lv_event_t* e)
     //TODO: use id to identity position
     const char *currText = lv_checkbox_get_text(actCb);
     printf("currText = %s\n", currText);
-    if (!strcmp(currText, _("import_wallet_ssb_20words"))) {
+    if (!strcmp(currText, _("wallet_phrase_20words"))) {
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "20    "USR_SYMBOL_DOWN);
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 20) {
@@ -633,7 +633,7 @@ static void SelectCheckBoxHandler(lv_event_t* e)
                 GuiModelSlip39UpdateMnemonicWithDiceRolls(slip39);
             }
         }
-    } else if (!strcmp(currText, _("import_wallet_ssb_33words"))) {
+    } else if (!strcmp(currText, _("wallet_phrase_33words"))) {
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "33    "USR_SYMBOL_DOWN);
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 33) {

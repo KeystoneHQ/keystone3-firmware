@@ -51,7 +51,7 @@ void GuiPassphraseInit(void)
     g_pageWidget = CreatePageWidget();
     g_passphraseWidgets.cont = g_pageWidget->contentZone;
     g_passphraseWidgets.passphraseInputCont = GuiCreateHintBox(614);
-    label = GuiCreateIllustrateLabel(g_passphraseWidgets.passphraseInputCont, _("wallet_setting_passphrase"));
+    label = GuiCreateIllustrateLabel(g_passphraseWidgets.passphraseInputCont, _("Passphrase"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 216);
     lv_obj_set_style_text_opa(label, LV_OPA_70, LV_PART_MAIN);
     btn = GuiCreateTextBtn(g_passphraseWidgets.passphraseInputCont, _("Skip"));
@@ -163,7 +163,7 @@ void GuiPassphraseDeInit(void)
 void GuiPassphraseRefresh(void)
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_setting_passphrase"));
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Passphrase"));
 }
 
 void GuiPassphrasePrevTile(void)

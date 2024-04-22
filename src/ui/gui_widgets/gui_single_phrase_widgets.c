@@ -167,9 +167,9 @@ static void MnemonicConfirmHandler(lv_event_t * e)
                 g_noticeHintBox = GuiCreateHintBox(370);
                 lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgFailed);
                 lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 478);
-                lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("single_phrase_not_match_title"));
+                lv_obj_t *label = GuiCreateTextLabel(g_noticeHintBox, _("error_box_mnemonic_not_match_wallet"));
                 lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 574);
-                label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_phrase_not_match_desc"));
+                label = GuiCreateIllustrateLabel(g_noticeHintBox, _("error_box_mnemonic_not_match_wallet_desc"));
                 lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 626);
                 lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _("OK"));
                 lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
@@ -269,7 +269,7 @@ static void SelectCheckBoxHandler(lv_event_t* e)
 
     //TODO: use id to identity position
     const char *currText = lv_checkbox_get_text(actCb);
-    if (!strcmp(currText, _("single_phrase_12words"))) {
+    if (!strcmp(currText, _("wallet_phrase_12words"))) {
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "12    "USR_SYMBOL_DOWN);
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 12) {
@@ -280,7 +280,7 @@ static void SelectCheckBoxHandler(lv_event_t* e)
                 GuiModelBip39UpdateMnemonicWithDiceRolls(g_phraseCnt);
             }
         }
-    } else if (!strcmp(currText, _("single_phrase_24words"))) {
+    } else if (!strcmp(currText, _("wallet_phrase_24words"))) {
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "24    "USR_SYMBOL_DOWN);
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 24) {
@@ -315,16 +315,16 @@ static void SelectPhraseCntHandler(lv_event_t *e)
         lv_obj_align(button, LV_ALIGN_DEFAULT, 407, 550);
 
         if (g_phraseCnt == 24) {
-            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("single_phrase_12words"));
+            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("wallet_phrase_12words"));
             lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
-            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("single_phrase_24words"));
+            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("wallet_phrase_24words"));
             lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         } else {
-            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("single_phrase_12words"));
+            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("wallet_phrase_12words"));
             lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
-            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("single_phrase_24words"));
+            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("wallet_phrase_24words"));
             lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
         }
 

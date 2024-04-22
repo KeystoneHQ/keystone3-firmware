@@ -27,7 +27,7 @@ static void GuiLowBatteryInit(void)
 
         label = GuiCreateLittleTitleLabel(g_lowBatteryHintBox, _("low_battery_pop_up_title"));
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -232);
-        label = GuiCreateIllustrateLabel(g_lowBatteryHintBox, _("low_battery_pop_up_desc"));
+        label = GuiCreateIllustrateLabel(g_lowBatteryHintBox, _("error_box_low_power_desc"));
         lv_obj_set_width(label, 408);
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -130);
 

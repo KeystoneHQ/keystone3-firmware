@@ -134,7 +134,7 @@ void GuiForgetAnimContDel(int errCode)
         printf("g_waitAnimCont = %p\n", g_waitAnimCont);
         lv_obj_t *title = GuiCreateTextLabel(g_waitAnimCont, _("change_passcode_reset_title"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -124);
-        lv_obj_t *desc = GuiCreateNoticeLabel(g_waitAnimCont, _("change_passcode_reset_desc"));
+        lv_obj_t *desc = GuiCreateNoticeLabel(g_waitAnimCont, _("write_se_desc"));
         lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -76);
         lv_obj_add_flag(g_waitAnimCont, LV_OBJ_FLAG_CLICKABLE);
     } else {

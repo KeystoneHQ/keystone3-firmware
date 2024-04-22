@@ -214,7 +214,7 @@ void GuiWriteSeWidget(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 403 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
-    label = GuiCreateNoticeLabel(parent, _("create_wallet_generating_desc"));
+    label = GuiCreateNoticeLabel(parent, _("write_se_desc"));
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 18);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 }
@@ -318,8 +318,8 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
         descText = (char *)_("error_box_mnemonic_not_match_wallet_desc");
         break;
     case ERR_UPDATE_FIRMWARE_NOT_DETECTED:
-        titleText = _("firmware_update_sd_not_detected_title");
-        descText = _("firmware_update_sd_not_detected_desc");
+        titleText = _("error_box_firmware_not_detected");
+        descText = _("error_box_firmware_not_detected_desc");
         break;
     case ERR_UPDATE_SDCARD_NOT_DETECTED:
         titleText = _("firmware_update_sd_failed_access_title");
@@ -335,7 +335,7 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
         break;
     case ERR_KEYSTORE_IMPORT_XPUB_INVALID:
         titleText = _("multisig_import_xpub_error_title");
-        descText = _("multisig_import_xpub_error_desc");
+        descText = _("scan_qr_code_error_invalid_file_desc");
         break;
     case ERR_MULTISIG_WALLET_CONFIG_INVALID:
         titleText = _("multisig_import_wallet_invalid");
@@ -366,8 +366,8 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
         descText = _("mutlisig_transaction_already_signed_desc");
         break;
     case ERR_EXPORT_XPUB_SDCARD_NOT_DETECTED:
-        titleText = _("multisig_export_sdcard_not_detected");
-        descText = _("multisig_export_sdcard_not_detected_desc");
+        titleText = _("firmware_update_sd_failed_access_title");
+        descText = _("firmware_update_sd_failed_access_desc");
         break;
     }
 

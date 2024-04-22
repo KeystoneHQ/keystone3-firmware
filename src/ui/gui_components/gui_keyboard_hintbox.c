@@ -318,7 +318,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
 
     lv_obj_add_event_cb(lv_obj_get_child(keyboardHintBox, 0), CloseKeyBoardWidgetHandler, LV_EVENT_CLICKED, keyboardWidget);
 
-    lv_obj_t *label = GuiCreateIllustrateLabel(keyboardHintBox, _("enter_passcode"));
+    lv_obj_t *label = GuiCreateIllustrateLabel(keyboardHintBox, _("please_enter_passcode"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 254);
 
     lv_obj_t *button = GuiCreateImgButton(keyboardHintBox, &imgClose, 64, CloseKeyBoardWidgetHandler, keyboardWidget);
@@ -503,7 +503,7 @@ static void CountDownHandler(lv_timer_t *timer)
     if (*keyboardWidget->timerCounter > 0) {
         lv_label_set_text_fmt(label, _("unlock_device_error_btn_text_fmt"), *keyboardWidget->timerCounter);
     } else {
-        lv_label_set_text(label, _("unlock_device_error_btn_end_text"));
+        lv_label_set_text(label, _("unlock_device"));
     }
 
     if (*keyboardWidget->timerCounter <= 0) {

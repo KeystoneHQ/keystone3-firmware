@@ -589,7 +589,7 @@ static void OpenMoreSettingHandler(lv_event_t *e)
 {
     MoreInfoTable_t moreInfoTable[] = {
         {.name = _("home_more_connect_wallet"), .src = &imgConnect, .callBack = OpenMoreViewHandler, &g_connectWalletView},
-        {.name = _("home_more_device_setting"), .src = &imgSettings, .callBack = OpenMoreViewHandler, &g_settingView},
+        {.name = _("device_setting_mid_btn"), .src = &imgSettings, .callBack = OpenMoreViewHandler, &g_settingView},
     };
     g_moreHintbox = GuiCreateMoreInfoHintBox(NULL, NULL, moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true, &g_moreHintbox);
 }
@@ -601,7 +601,7 @@ static void OpenManageAssetsHandler(lv_event_t *e)
     }
     memcpy(&g_walletBakState, &g_walletState, sizeof(g_walletState));
     g_manageCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
+                                      GUI_MAIN_AREA_OFFSET);
     lv_obj_add_flag(g_manageCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align(g_manageCont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
     lv_obj_t *checkBoxCont = GuiCreateContainerWithParent(g_manageCont, lv_obj_get_width(lv_scr_act()), 542);
@@ -672,7 +672,7 @@ static void OpenManageAssetsHandler(lv_event_t *e)
         }
 
         lv_obj_t *button = GuiCreateButton(checkBoxCont, 456, 96, table, tableLen,
-                                            ManageCoinChainHandler, &g_walletState[i]);
+                                           ManageCoinChainHandler, &g_walletState[i]);
         g_walletButton[i] = button;
         if (IsCosmosChain(g_coinCardArray[i].index)) {
             lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);

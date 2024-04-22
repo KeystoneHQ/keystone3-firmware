@@ -230,7 +230,7 @@ static void GuiMoreHandler(lv_event_t *e)
         MoreInfoTable_t moreInfoTable[] = {
             {.name = _("home_more_connect_wallet"), .src = &imgConnect, .callBack = OpenMoreViewHandler, &g_connectWalletView},
             {.name = _("home_more_sign_by_sdcard"), .src = &imgSdCardColor, .callBack = GuiOpenSignBySDCardHandler, NULL},
-            {.name = _("home_more_device_setting"), .src = &imgSettings, .callBack = OpenMoreViewHandler, &g_settingView},
+            {.name = _("device_setting_mid_btn"), .src = &imgSettings, .callBack = OpenMoreViewHandler, &g_settingView},
         };
         if (code == LV_EVENT_CLICKED) {
             g_moreHintbox = GuiCreateMoreInfoHintBox(NULL, NULL, moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true, &g_moreHintbox);
@@ -238,7 +238,7 @@ static void GuiMoreHandler(lv_event_t *e)
     } else {
         MoreInfoTable_t moreInfoTable[] = {
             {.name = _("home_more_connect_wallet"), .src = &imgConnect, .callBack = OpenMoreViewHandler, &g_connectWalletView},
-            {.name = _("home_more_device_setting"), .src = &imgSettings, .callBack = OpenMoreViewHandler, &g_settingView},
+            {.name = _("device_setting_mid_btn"), .src = &imgSettings, .callBack = OpenMoreViewHandler, &g_settingView},
         };
         if (code == LV_EVENT_CLICKED) {
             g_moreHintbox = GuiCreateMoreInfoHintBox(NULL, NULL, moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true, &g_moreHintbox);
@@ -271,7 +271,7 @@ static void OpenMoreSettingHandler(lv_event_t *e)
                                         OpenMoreViewHandler, &g_connectWalletView);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 596);
 
-        label = GuiCreateTextLabel(g_moreHintbox, _("home_more_device_setting"));
+        label = GuiCreateTextLabel(g_moreHintbox, _("device_setting_mid_btn"));
         img = GuiCreateImg(g_moreHintbox, &imgSettings);
         table[0].obj = img;
         table[1].obj = label;

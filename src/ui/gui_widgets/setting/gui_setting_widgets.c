@@ -160,7 +160,7 @@ static void CloseCurrentPage(lv_event_t *e)
         lv_obj_clear_flag(g_deviceSettingArray[g_deviceSetTileView.currentTile].tile, LV_OBJ_FLAG_HIDDEN);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenPassphraseLearnMoreHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_setting_passphrase"));
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Passphrase"));
     }
 }
 
@@ -225,7 +225,7 @@ static void GuiOpenPassphraseLearnMore()
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(cont, OpenPassphraseQrCodeHandler, LV_EVENT_CLICKED, NULL);
 
-    label = GuiCreateIllustrateLabel(cont, _("passphrase_learn_more_link"));
+    label = GuiCreateIllustrateLabel(cont, _("learn_more"));
     lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);
 
     lv_obj_t *img = GuiCreateImg(cont, &imgQrcodeTurquoise);
@@ -308,7 +308,7 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
                                         _("device_setting_system_setting_desc"), &imgSystemSetting, OpenViewHandler, &g_systemSettingView);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 287 - GUI_MAIN_AREA_OFFSET);
 
-    button = CreateSettingWidgetsButton(parent, _("device_setting_connection_title"),
+    button = CreateSettingWidgetsButton(parent, _("usb_connection_title"),
                                         _("device_setting_connection_desc"), &imgConnection, OpenViewHandler, &g_connectionView);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 413 - GUI_MAIN_AREA_OFFSET);
 
@@ -350,9 +350,9 @@ void OpenSinglePhraseHandler(lv_event_t *e)
 {
     static uint8_t walletAmounts[] = {DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_12WORDS, DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_18WORDS, DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_24WORDS};
     MoreInfoTable_t moreInfoTable[] = {
-        {.name = _("import_wallet_phrase_24words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[0]},
-        {.name = _("import_wallet_phrase_18words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[1]},
-        {.name = _("import_wallet_phrase_12words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[2]},
+        {.name = _("wallet_phrase_24words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[0]},
+        {.name = _("wallet_phrase_18words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[1]},
+        {.name = _("wallet_phrase_12words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[2]},
     };
     g_selectAmountHintbox = GuiCreateMoreInfoHintBox(&imgClose, _("seed_check_word_select"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false, &g_selectAmountHintbox);
 }
@@ -362,8 +362,8 @@ void OpenSharePhraseHandler(lv_event_t *e)
 {
     static uint8_t walletAmounts[] = {DEVICE_SETTING_RECOVERY_SHARE_PHRASE_20WORDS, DEVICE_SETTING_RECOVERY_SHARE_PHRASE_33WORDS};
     MoreInfoTable_t moreInfoTable[] = {
-        {.name = _("import_wallet_ssb_33words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[0]},
-        {.name = _("import_wallet_ssb_20words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[1]},
+        {.name = _("wallet_phrase_33words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[0]},
+        {.name = _("wallet_phrase_20words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[1]},
     };
     g_selectAmountHintbox = GuiCreateMoreInfoHintBox(&imgClose, _("seed_check_word_select"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false, &g_selectAmountHintbox);
 }
@@ -388,15 +388,12 @@ static void OpenDelWalletHandler(lv_event_t *e)
 void GuiWalletRecoveryWriteSe(bool result)
 {
     GuiDeleteAnimHintBox();
-    lv_obj_t *label;
-    lv_obj_t *btn;
-    lv_obj_t *img;
     if (result) {
         GuiWalletSeedCheckClearKb();
         g_noticeWindow = GuiCreateConfirmHintBox(&imgSuccess, _("seed_check_verify_match_title"), _("seed_check_verify_match_desc"), NULL, _("Done"), ORANGE_COLOR);
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), DelCurrCloseToSubtopViewHandler, LV_EVENT_CLICKED, &g_noticeWindow);
     } else {
-        g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("seed_check_verify_not_match_title"), _("seed_check_verify_not_match_desc"), NULL, _("Done"), ORANGE_COLOR);
+        g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("seed_check_verify_not_match_title"), _("error_box_mnemonic_not_match_wallet_desc"), NULL, _("Done"), ORANGE_COLOR);
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
     }
 }
@@ -544,7 +541,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
     case DEVICE_SETTING_FINGERPRINT_PASSCODE:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         GuiWalletSetFingerPassCodeWidget(tile);
-        strcpy_s(midLabel, sizeof(midLabel), _("fingerprint_passcode_mid_btn"));
+        strcpy_s(midLabel, sizeof(midLabel), _("wallet_setting_passcode"));
         break;
 
     // finger module
@@ -579,7 +576,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
     case DEVICE_SETTING_FINGER_SET_PATTERN: // todo
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         GuiWalletFingerManagerWidget(tile);
-        strcpy_s(midLabel, sizeof(midLabel), _("fingerprint_passcode_mid_btn"));
+        strcpy_s(midLabel, sizeof(midLabel), _("wallet_setting_passcode"));
         break;
     // reset passcode
     case DEVICE_SETTING_RESET_PASSCODE_VERIFY:
@@ -639,7 +636,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
         GuiWalletPassphrase(tile);
         rightBtn = NVS_BAR_QUESTION_MARK;
         rightCb = OpenPassphraseLearnMoreHandler;
-        strcpy_s(midLabel, sizeof(midLabel), _("wallet_setting_passphrase"));
+        strcpy_s(midLabel, sizeof(midLabel), _("Passphrase"));
         break;
     case DEVICE_SETTING_PASSPHRASE_VERIFY:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
@@ -652,13 +649,13 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
     case DEVICE_SETTING_PASSPHRASE_ENTER:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
         GuiWalletPassphraseEnter(tile);
-        strcpy_s(midLabel, sizeof(midLabel), _("wallet_setting_passphrase"));
+        strcpy_s(midLabel, sizeof(midLabel), _("Passphrase"));
         break;
 
     // RECOVERY PHRASE CHECK
     case DEVICE_SETTING_RECOVERY_METHOD_CHECK:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
-        strcpy_s(midLabel, sizeof(midLabel), _("seed_check_mid_btn"));
+        strcpy_s(midLabel, sizeof(midLabel), _("wallet_setting_seed_phrase"));
         GuiWalletRecoveryMethodCheck(tile);
         break;
     case DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_12WORDS:

@@ -192,7 +192,7 @@ void GuiWebAuthResultFailedWidget(lv_obj_t *parent)
     lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 
-    label = GuiCreateIllustrateLabel(parent, _("verification_code_failed_link"));
+    label = GuiCreateIllustrateLabel(parent, _("support_link"));
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 8);
     lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);
 

@@ -96,7 +96,7 @@ static void GuiShowSDCardNotDetected()
     lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgFailed);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
 
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeWindow, _("multisig_export_sdcard_not_detected"));
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeWindow, _("firmware_update_sd_failed_access_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
 
     label = GuiCreateIllustrateLabel(g_noticeWindow, _("multisig_export_sdcard_not_detected_desc"));
@@ -119,7 +119,7 @@ static void GuiShowSDCardExport()
     lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeWindow, _("multisig_export_to_sdcard"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
 
-    label = GuiCreateIllustrateLabel(g_noticeWindow, _("multisig_export_to_sdcard_desc"));
+    label = GuiCreateIllustrateLabel(g_noticeWindow, _("about_info_export_file_name"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
     g_filename = SRAM_MALLOC(MAX_WALLET_NAME_LEN);

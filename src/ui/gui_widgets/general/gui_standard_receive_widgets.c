@@ -215,7 +215,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, TutorialHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgTutorial);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, _("Tutorial"), &buttonFont);
+    label = GuiCreateTextLabel(btn, _("Tutorial"));
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 }
 
@@ -291,7 +291,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         g_standardReceiveWidgets.attentionCont = GuiCreateHintBox(386);
         tempObj = GuiCreateImg(g_standardReceiveWidgets.attentionCont, &imgInformation);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
-        tempObj = GuiCreateLittleTitleLabel(g_standardReceiveWidgets.attentionCont, _("receive_btc_alert_title"));
+        tempObj = GuiCreateLittleTitleLabel(g_standardReceiveWidgets.attentionCont, _("Attention"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
         char attentionText[1024];
         GetAttentionText(attentionText);

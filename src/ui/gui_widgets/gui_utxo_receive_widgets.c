@@ -529,7 +529,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         g_utxoReceiveWidgets.attentionCont = GuiCreateHintBox(386);
         tempObj = GuiCreateImg(g_utxoReceiveWidgets.attentionCont, &imgInformation);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
-        tempObj = GuiCreateLittleTitleLabel(g_utxoReceiveWidgets.attentionCont, _("receive_btc_alert_title"));
+        tempObj = GuiCreateLittleTitleLabel(g_utxoReceiveWidgets.attentionCont, _("Attention"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
         char hint[BUFFER_SIZE_256];
         GetHint(hint);
@@ -969,16 +969,16 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
         lv_obj_add_event_cb(lv_obj_get_child(g_utxoReceiveWidgets.inputAddressCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_utxoReceiveWidgets.inputAddressCont);
         cont = g_utxoReceiveWidgets.inputAddressCont;
 
-        label = GuiCreateLabelWithFont(cont, _("receive_btc_receive_change_address_title"), g_defIllustrateFont);
+        label = GuiCreateIllustrateLabel(cont, _("receive_btc_receive_change_address_title"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 30 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        label = GuiCreateLabelWithFont(cont, "", &buttonFont);
+        label = GuiCreateTextBtn(cont, "");
         lv_label_set_text_fmt(label, "%s-", _("receive_ada_base_address"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 108 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        g_utxoReceiveWidgets.inputAddressLabel = GuiCreateLabelWithFont(cont, "", &buttonFont);
+        g_utxoReceiveWidgets.inputAddressLabel = GuiCreateTextLabel(cont, "");
         lv_obj_align(g_utxoReceiveWidgets.inputAddressLabel, LV_ALIGN_TOP_LEFT, 38 + lv_obj_get_self_width(label), 108 + 270);
-        label = GuiCreateLabelWithFont(cont, _("receive_btc_receive_change_address_limit"), g_defIllustrateFont);
+        label = GuiCreateIllustrateLabel(cont, _("receive_btc_receive_change_address_limit"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 170 + 270);
         lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);

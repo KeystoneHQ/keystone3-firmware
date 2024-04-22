@@ -216,7 +216,7 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
 
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 173);
 
-    label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_auto_shutdown"));
+    label = GuiCreateTextLabel(parent, _("auto_shutdown"));
 
     const char *currentShutdownTime = GetAutoShutdownTimeDescByLockTime();
     autoShutDownTimeLabel = GuiCreateNoticeLabel(parent, currentShutdownTime);
@@ -450,7 +450,7 @@ static void ChooseAutoShutdownHandler(lv_event_t *e)
 
         lv_obj_add_event_cb(lv_obj_get_child(g_autoShutdownHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_autoShutdownHintBox);
 
-        lv_obj_t *label = GuiCreateIllustrateLabel(g_autoShutdownHintBox, _("system_settings_screen_lock_auto_power_off_title"));
+        lv_obj_t *label = GuiCreateIllustrateLabel(g_autoShutdownHintBox, _("auto_shutdown_20"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 260);
         lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
 

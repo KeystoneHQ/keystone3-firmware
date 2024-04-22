@@ -365,7 +365,7 @@ void GuiFingerMangerStructureCb(void *obj, void *param)
     if (lv_obj_get_child_cnt(container) > 0) {
         lv_obj_clean(container);
     }
-    label = GuiCreateTextLabel(container, _("fingerprint_unlock_device"));
+    label = GuiCreateTextLabel(container, _("unlock_device"));
     g_fpUnlockSwitch = GuiCreateSwitch(container);
 
     if (GetFingerUnlockFlag() == 1) {

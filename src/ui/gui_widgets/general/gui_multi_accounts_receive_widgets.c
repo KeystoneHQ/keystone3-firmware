@@ -237,7 +237,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, TutorialHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgTutorial);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateLabelWithFont(btn, _("Tutorial"), &buttonFont);
+    label = GuiCreateTextLabel(btn, _("Tutorial"));
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 
     btn = lv_btn_create(cont);
@@ -335,7 +335,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         g_multiAccountsReceiveWidgets.attentionCont = GuiCreateHintBox(386);
         tempObj = GuiCreateImg(g_multiAccountsReceiveWidgets.attentionCont, &imgInformation);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
-        tempObj = GuiCreateLittleTitleLabel(g_multiAccountsReceiveWidgets.attentionCont, _("receive_btc_alert_title"));
+        tempObj = GuiCreateLittleTitleLabel(g_multiAccountsReceiveWidgets.attentionCont, _("Attention"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
         char attentionText[BUFFER_SIZE_256];
         GetAttentionText(attentionText);
@@ -587,7 +587,7 @@ static void GuiCreateAddressDetailWidgets(lv_obj_t *parent)
         lv_obj_add_event_cb(lv_obj_get_child(g_multiAccountsReceiveWidgets.addressDetailCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_multiAccountsReceiveWidgets.addressDetailCont);
         cont = g_multiAccountsReceiveWidgets.addressDetailCont;
 
-        label = GuiCreateTextLabel(cont, _("receive_ada_address_detail_path"));
+        label = GuiCreateTextLabel(cont, _("Path"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 24 + 270);
         last = label;
 
@@ -645,16 +645,16 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
         lv_obj_add_event_cb(lv_obj_get_child(g_multiAccountsReceiveWidgets.inputAccountCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_multiAccountsReceiveWidgets.inputAccountCont);
         cont = g_multiAccountsReceiveWidgets.inputAccountCont;
 
-        label = GuiCreateLabelWithFont(cont, _("receive_btc_receive_change_address_title"), g_defIllustrateFont);
+        label = GuiCreateIllustrateLabel(cont, _("receive_btc_receive_change_address_title"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 30 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        label = GuiCreateLabelWithFont(cont, "", &buttonFont);
+        label = GuiCreateIllustrateLabel(cont, "");
         lv_label_set_text_fmt(label, "%s-", _("receive_ada_base_address"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 108 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        g_multiAccountsReceiveWidgets.inputAccountLabel = GuiCreateLabelWithFont(cont, "", &buttonFont);
+        g_multiAccountsReceiveWidgets.inputAccountLabel = GuiCreateTextBtn(cont, "");
         lv_obj_align(g_multiAccountsReceiveWidgets.inputAccountLabel, LV_ALIGN_TOP_LEFT, 38 + lv_obj_get_self_width(label), 108 + 270);
-        label = GuiCreateLabelWithFont(cont, _("receive_btc_receive_change_address_limit"), g_defIllustrateFont);
+        label = GuiCreateIllustrateLabel(cont, _("receive_btc_receive_change_address_limit"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 170 + 270);
         lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);

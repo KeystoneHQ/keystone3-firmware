@@ -56,8 +56,8 @@ void GuiEnterPassLabelRefresh(void)
     g_enterPassLabel[ENTER_PASSCODE_SET_PASSWORD].desc = _("single_backup_setpass_desc");
     g_enterPassLabel[ENTER_PASSCODE_SET_PASSWORD].passSwitch = _("single_backup_setpin_use_pin");
 
-    g_enterPassLabel[ENTER_PASSCODE_REPEAT_PIN].title = _("single_backup_repeatpin_title");
-    g_enterPassLabel[ENTER_PASSCODE_REPEAT_PIN].desc = _("single_backup_repeatpin_desc");
+    g_enterPassLabel[ENTER_PASSCODE_REPEAT_PIN].title = _("repeat_passcode_title");
+    g_enterPassLabel[ENTER_PASSCODE_REPEAT_PIN].desc = _("repeat_passcode_desc");
     g_enterPassLabel[ENTER_PASSCODE_REPEAT_PIN].passSwitch = "";
 
     g_enterPassLabel[ENTER_PASSCODE_REPEAT_PASSWORD].title = _("single_backup_repeatpass_title");

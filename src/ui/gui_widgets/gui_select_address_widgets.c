@@ -2,6 +2,7 @@
 #include "gui_home_widgets.h"
 #include "account_public_info.h"
 #include "gui_page.h"
+#include "gui_obj.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
@@ -188,7 +189,6 @@ static void GuiCreateSelectAddressList(lv_obj_t *parent)
 
 static void LeftBtnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_set_style_img_opa(g_rightBtn, LV_OPA_COVER, LV_PART_MAIN);
     if (g_showIndex >= 5) {
         g_showIndex -= 5;
@@ -201,16 +201,13 @@ static void LeftBtnHandler(lv_event_t *e)
 
 static void RightBtnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_set_style_img_opa(g_leftBtn, LV_OPA_COVER, LV_PART_MAIN);
-        if (g_showIndex < GetMaxAddressIndex() - 5) {
-            g_showIndex += 5;
-            RefreshSwitchAccount();
-        }
-        if (g_showIndex >= GetMaxAddressIndex() - 5) {
-            lv_obj_set_style_img_opa(g_rightBtn, LV_OPA_30, LV_PART_MAIN);
-        }
+    lv_obj_set_style_img_opa(g_leftBtn, LV_OPA_COVER, LV_PART_MAIN);
+    if (g_showIndex < GetMaxAddressIndex() - 5) {
+        g_showIndex += 5;
+        RefreshSwitchAccount();
+    }
+    if (g_showIndex >= GetMaxAddressIndex() - 5) {
+        lv_obj_set_style_img_opa(g_rightBtn, LV_OPA_30, LV_PART_MAIN);
     }
 }
 

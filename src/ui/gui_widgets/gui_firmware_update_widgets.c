@@ -390,17 +390,17 @@ static void GuiCreateUsbInstructionTile(lv_obj_t *parent)
     label = GuiCreateIllustrateLabel(parent, "#F5870A 1#");
     lv_label_set_recolor(label, true);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 100);
-    label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_desc1"));
+    label = GuiCreateIllustrateLabel(parent, _("firmware_update_desc1"));
     lv_obj_set_width(label, 384);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 100);
 
     label = GuiCreateIllustrateLabel(parent, "#F5870A 2#");
     lv_label_set_recolor(label, true);
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
-    label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_desc2"));
+    label = GuiCreateIllustrateLabel(parent, _("firmware_update_desc2"));
     lv_obj_set_width(label, 384);
     GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
-    label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_desc2_link"));
+    label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_qr_link"));
     lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 236);
     lv_obj_add_flag(label, LV_OBJ_FLAG_CLICKABLE);
@@ -544,7 +544,7 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
     label = GuiCreateIllustrateLabel(parent, "#F5870A 1#");
     lv_label_set_recolor(label, true);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 100);
-    label = GuiCreateIllustrateLabel(parent, _("firmware_update_sd_desc1"));
+    label = GuiCreateIllustrateLabel(parent, _("firmware_update_desc1"));
     lv_obj_set_width(label, 384);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 100);
 
@@ -552,7 +552,7 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
     lv_label_set_recolor(label, true);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 172);
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
-    label = GuiCreateIllustrateLabel(parent, _("firmware_update_sd_desc2"));
+    label = GuiCreateIllustrateLabel(parent, _("firmware_update_desc2"));
     lv_obj_set_width(label, 384);
     GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_sd_desc2_link"));
@@ -583,7 +583,7 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
     GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
 
     if (FatfsFileExist(OTA_FILE_PATH)) {
-        btn = GuiCreateTextBtn(parent, _("about_info_verify_firmware_title"));
+        btn = GuiCreateTextBtn(parent, _("verify_firmware"));
         lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
         label = lv_obj_get_child(btn, 0);
         lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
@@ -615,7 +615,7 @@ static void GuiCreateMultiToBtcWarningTile(lv_obj_t *parent)
     img = GuiCreateImg(parent, &imgBtcOnly);
     lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 274, -548);
 
-    label = GuiCreateLittleTitleLabel(parent, _("firmware_update_btc_only_warning_title"));
+    label = GuiCreateLittleTitleLabel(parent, _("Warning"));
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -476);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_btc_only_warning_desc"));
     lv_obj_set_style_text_color(label, WHITE_COLOR_OPA64, LV_PART_MAIN);
@@ -787,7 +787,7 @@ static void GuiFirmwareUpdateViewSha256(char *version, uint8_t percent)
         ConvertToLowerCase(hash);
         snprintf(tempBuf, sizeof(tempBuf), "#F5870A %.8s#%.24s\n%.24s#F5870A %.8s#", hash, &hash[8], &hash[32], &hash[56]);
 
-        g_noticeHintBox = GuiCreateConfirmHintBox(NULL, _("firmware_update_verify_firmware_title"), _("firmware_update_sd_checksum_notice"), "\n\n", _("OK"), WHITE_COLOR_OPA20);
+        g_noticeHintBox = GuiCreateConfirmHintBox(NULL, _("verify_firmware"), _("firmware_update_sd_checksum_notice"), "\n\n", _("OK"), WHITE_COLOR_OPA20);
         lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeHintBox);
         lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
         lv_obj_t *label = lv_obj_get_child(g_noticeHintBox, lv_obj_get_child_cnt(g_noticeHintBox) - 4);

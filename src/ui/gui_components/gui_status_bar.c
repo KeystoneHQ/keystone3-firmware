@@ -112,7 +112,6 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
 
 const static CoinWalletInfo_t g_walletBtn[] = {
 #ifndef BTC_ONLY
-    {WALLET_LIST_KEYSTONE, "Keystone Wallet", &walletKeystone},
     {WALLET_LIST_METAMASK, "MetaMask", &walletMetamask},
     {WALLET_LIST_OKX, "OKX Wallet", &walletOkx},
     {WALLET_LIST_ETERNL, "Eternl Wallet", &walletEternl},

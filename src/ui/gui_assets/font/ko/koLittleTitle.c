@@ -3430,8 +3430,7 @@ static const uint16_t unicode_list_0[] = {
 };
 
 /*Collect the unicode lists and glyph_id offsets*/
-static const lv_font_fmt_txt_cmap_t cmaps[] =
-{
+static const lv_font_fmt_txt_cmap_t cmaps[] = {
     {
         .range_start = 32, .range_length = 54841, .glyph_id_start = 1,
         .unicode_list = unicode_list_0, .glyph_id_ofs_list = NULL, .list_length = 169, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY
@@ -3444,8 +3443,7 @@ static const lv_font_fmt_txt_cmap_t cmaps[] =
 
 
 /*Pair left and right glyphs for kerning*/
-static const uint8_t kern_pair_glyph_ids[] =
-{
+static const uint8_t kern_pair_glyph_ids[] = {
     3, 20,
     3, 21,
     3, 23,
@@ -3470,16 +3468,14 @@ static const uint8_t kern_pair_glyph_ids[] =
 
 /* Kerning between the respective left and right glyphs
  * 4.4 format which needs to scaled with `kern_scale`*/
-static const int8_t kern_pair_values[] =
-{
+static const int8_t kern_pair_values[] = {
     -11, -7, -7, -11, -7, -7, -8, -8,
-    -9, -9, -6, -12, -12, -6, -6, -7,
-    -29, -29, -6, -6
-};
+        -9, -9, -6, -12, -12, -6, -6, -7,
+        -29, -29, -6, -6
+    };
 
 /*Collect the kern pair's data in one place*/
-static const lv_font_fmt_txt_kern_pair_t kern_pairs =
-{
+static const lv_font_fmt_txt_kern_pair_t kern_pairs = {
     .glyph_ids = kern_pair_glyph_ids,
     .values = kern_pair_values,
     .pair_cnt = 20,

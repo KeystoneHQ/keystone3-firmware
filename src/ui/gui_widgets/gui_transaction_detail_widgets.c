@@ -390,7 +390,7 @@ static void SignByFinger(void)
     lv_obj_align(g_fpErrorLabel, LV_ALIGN_BOTTOM_MID, 0, -100);
     lv_obj_add_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN);
 
-    label = GuiCreateNoticeLabel(cont, _("scan_qr_code_sign_fingerprint_enter_passcode"));
+    label = GuiCreateNoticeLabel(cont, _("enter_passcode"));
     img = GuiCreateImg(cont, &imgLockedLock);
     table[0].obj = label;
     table[0].align = LV_ALIGN_DEFAULT;

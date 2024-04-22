@@ -53,7 +53,7 @@ void GuiWalletPassphrase(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
 
-    lv_obj_t *label = GuiCreateTextLabel(parent, _("passphrase_enter_passcode"));
+    lv_obj_t *label = GuiCreateTextLabel(parent, _("Passphrase"));
     lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRight);
 
     GuiButton_t table[3] = {

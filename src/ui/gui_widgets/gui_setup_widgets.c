@@ -128,7 +128,8 @@ void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
         GuiButton_t table[] = {
-            {.obj = label,
+            {
+                .obj = label,
                 .align = LV_ALIGN_LEFT_MID,
                 .position = {24, 0},
             },

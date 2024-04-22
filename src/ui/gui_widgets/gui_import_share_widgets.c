@@ -69,13 +69,13 @@ static void StopCreateViewHandler(lv_event_t *e)
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 528);
         label = GuiCreateIllustrateLabel(g_noticeHintBox, _("import_wallet_ssb_cancel_desc"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 580);
-        lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _("shamir_phrase_continue_btn"));
+        lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _("Continue"));
         lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
         lv_obj_align(btn, LV_ALIGN_DEFAULT, 36, 710);
         lv_obj_set_size(btn, 162, 66);
         lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, NULL);
 
-        btn = GuiCreateTextBtn(g_noticeHintBox, _("shamir_phrase_cancel_create_btn"));
+        btn = GuiCreateTextBtn(g_noticeHintBox, _("Quit"));
         lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
         lv_obj_align(btn, LV_ALIGN_DEFAULT, 229, 710);
         lv_obj_set_size(btn, 215, 66);

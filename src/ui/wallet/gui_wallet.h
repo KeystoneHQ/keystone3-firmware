@@ -9,7 +9,6 @@ UREncodeResult *GuiGetSparrowWalletBtcData(void);
 UREncodeResult *GuiGetSpecterWalletBtcData(void);
 #ifndef BTC_ONLY
 UREncodeResult *GuiGetKeplrData(void);
-UREncodeResult *GuiGetCompanionAppData(void);
 #ifndef COMPILE_SIMULATOR
 UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType);
 UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountType);

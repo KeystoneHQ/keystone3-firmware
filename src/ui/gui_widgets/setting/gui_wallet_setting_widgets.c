@@ -326,7 +326,7 @@ void GuiResettingWriteSe(void)
     lv_obj_t *label = GuiCreateLittleTitleLabel(g_resetingCont, _("change_passcode_reset_title"));
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -124);
-    label = GuiCreateNoticeLabel(g_resetingCont, _("change_passcode_reset_desc"));
+    label = GuiCreateNoticeLabel(g_resetingCont, _("write_se_desc"));
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -76);
     GuiCreateCircleAroundAnimation(lv_scr_act(), 165);
@@ -498,7 +498,7 @@ void GuiWalletSetWidget(lv_obj_t *parent)
     button = GuiCreateButton(parent, 456, 84, table, 2, WalletSettingHandler, &walletSetting[1]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 287 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateTextLabel(parent, _("wallet_setting_passphrase"));
+    label = GuiCreateTextLabel(parent, _("Passphrase"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     table[0].obj = label;
     table[1].obj = imgArrow;
@@ -558,7 +558,7 @@ void GuiWalletDelWalletConfirm(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 336 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
-    lv_obj_t *btn = GuiCreateAdaptButton(parent, _("wallet_settings_delete_confirm_button1"));
+    lv_obj_t *btn = GuiCreateAdaptButton(parent, _("wallet_setting_seed_phrase"));
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 580 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), g_defTextFont, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_STATE_DEFAULT);

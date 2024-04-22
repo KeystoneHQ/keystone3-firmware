@@ -86,13 +86,13 @@ static void GuiExportXPubViewInit()
     lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 236);
 
-    lv_obj_t *button = GuiCreateTextBtn(cont, _("usb_transport_connection_reject"));
+    lv_obj_t *button = GuiCreateTextBtn(cont, _("Reject"));
     lv_obj_align(button, LV_ALIGN_BOTTOM_LEFT, 36, -24);
     lv_obj_set_size(button, 192, 66);
     lv_obj_set_style_bg_color(button, DARK_GRAY_COLOR, LV_PART_MAIN);
     lv_obj_add_event_cb(button, RejectButtonHandler, LV_EVENT_CLICKED, NULL);
 
-    button = GuiCreateTextBtn(cont, _("usb_transport_connection_approve"));
+    button = GuiCreateTextBtn(cont, _("Approve"));
     lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_set_size(button, 192, 66);
     lv_obj_set_style_bg_color(button, ORANGE_COLOR, LV_PART_MAIN);
@@ -104,7 +104,7 @@ static ResolveUrInfo_t CalcResolveUrPageInfo()
     ResolveUrInfo_t info = {
         .title = _("usb_transport_sign_completed_title"),
         .subTitle = _("usb_transport_sign_completed_subtitle"),
-        .buttonText = _("usb_transport_sign_completed_btn"),
+        .buttonText = _("Done"),
     };
     switch (g_param->error_code) {
     case RSP_SUCCESS_CODE:
@@ -112,12 +112,12 @@ static ResolveUrInfo_t CalcResolveUrPageInfo()
     case PRS_PARSING_MISMATCHED_WALLET:
         info.title = _("usb_transport_mismatched_wallet_title");
         info.subTitle = g_param->error_message;
-        info.buttonText = _("usb_transport_sign_failed_btn");
+        info.buttonText = _("OK");
         break;
     default:
         info.title = _("usb_transport_sign_unkown_error_title");
         info.subTitle = _("usb_transport_sign_unkown_error_message");
-        info.buttonText = _("usb_transport_sign_failed_btn");
+        info.buttonText = _("OK");
         break;
     }
     return info;

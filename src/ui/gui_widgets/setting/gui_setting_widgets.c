@@ -350,9 +350,9 @@ void OpenSinglePhraseHandler(lv_event_t *e)
 {
     static uint8_t walletAmounts[] = {DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_12WORDS, DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_18WORDS, DEVICE_SETTING_RECOVERY_SINGLE_PHRASE_24WORDS};
     MoreInfoTable_t moreInfoTable[] = {
-        {.name = _("wallet_phrase_24words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[0]},
+        {.name = _("wallet_phrase_12words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[0]},
         {.name = _("wallet_phrase_18words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[1]},
-        {.name = _("wallet_phrase_12words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[2]},
+        {.name = _("wallet_phrase_24words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[2]},
     };
     g_selectAmountHintbox = GuiCreateMoreInfoHintBox(&imgClose, _("seed_check_word_select"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false, &g_selectAmountHintbox);
 }
@@ -362,8 +362,8 @@ void OpenSharePhraseHandler(lv_event_t *e)
 {
     static uint8_t walletAmounts[] = {DEVICE_SETTING_RECOVERY_SHARE_PHRASE_20WORDS, DEVICE_SETTING_RECOVERY_SHARE_PHRASE_33WORDS};
     MoreInfoTable_t moreInfoTable[] = {
-        {.name = _("wallet_phrase_33words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[0]},
-        {.name = _("wallet_phrase_20words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[1]},
+        {.name = _("wallet_phrase_20words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[0]},
+        {.name = _("wallet_phrase_33words"), .src = &imgArrowRight, .callBack = SelectPhraseAmountHandler, &walletAmounts[1]},
     };
     g_selectAmountHintbox = GuiCreateMoreInfoHintBox(&imgClose, _("seed_check_word_select"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false, &g_selectAmountHintbox);
 }

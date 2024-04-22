@@ -9,13 +9,35 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
-static inline uint32_t op_i(uint32_t val) { return val; }
+static inline uint32_t op_n(int32_t val)
+{
+    return (uint32_t)(val < 0 ? -val : val);
+}
+static inline uint32_t op_i(uint32_t val)
+{
+    return val;
+}
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
-static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
-static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
-static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_v(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_w(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_f(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_t(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
 
 const static lv_i18n_phrase_t  en_singulars[] = {
     {"Address", "Address"},
@@ -534,7 +556,7 @@ const static lv_i18n_phrase_t  en_singulars[] = {
     {"shamir_phrase_cancel_create_title", "Quit Wallet Setup?"},
     {"shamir_phrase_confirm_desc", "Select the words below in the correct order of your Share 1 phrase to validate your seed phrase."},
     {"shamir_phrase_custodian_desc", "Please confirm you are the custodian of the Share #F5870A 1#"},
-    {"shamir_phrase_custodian_title", "Share Share #F5870A 1#/N"},
+    {"shamir_phrase_custodian_title", "Share Share #F5870A 1#"},
     {"shamir_phrase_number", "Number of Shares"},
     {"shamir_phrase_share_backup_notice_fmt", "Write down your Share #F5870A %d# phrase and keep it properly."},
     {"shamir_phrase_share_confirm_notice_fmt", "Select the words below in the correct order of your Share #F5870A %d# phrase to validate your seed phrase."},
@@ -721,9 +743,12 @@ const static lv_i18n_phrase_t  en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
-    uint32_t i = op_i(n); UNUSED(i);
-    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t n = op_n(num);
+    UNUSED(n);
+    uint32_t i = op_i(n);
+    UNUSED(i);
+    uint32_t v = op_v(n);
+    UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -1253,7 +1278,7 @@ const static lv_i18n_phrase_t  ko_singulars[] = {
     {"shamir_phrase_cancel_create_title", "지갑 만들기 프로세스를 종료하시겠습니까?"},
     {"shamir_phrase_confirm_desc", "아래 단어를 올바른 순서로 선택하여 시드 문구의 유효성을 확인합니다."},
     {"shamir_phrase_custodian_desc", "귀하가 공유 #F5870A 1#의 관리자인지 확인하십시오."},
-    {"shamir_phrase_custodian_title", "공유 #F5870A 1#/N"},
+    {"shamir_phrase_custodian_title", "공유 #F5870A 1#"},
     {"shamir_phrase_number", "공유 수"},
     {"shamir_phrase_share_backup_notice_fmt", "공유 #F5870A%d#의 구문을 적어 잘 보관하십시오."},
     {"shamir_phrase_share_confirm_notice_fmt", "공유 #F5870A%d#의 시드 구문을 올바른 순서로 선택하여 현재 시드 구문의 유효성을 확인합니다. "},
@@ -1970,7 +1995,7 @@ const static lv_i18n_phrase_t  ru_singulars[] = {
     {"shamir_phrase_cancel_create_title", "Прервать создание?"},
     {"shamir_phrase_confirm_desc", "Выберите слова в правильном порядке для подтверждения вашей фразы Части 1."},
     {"shamir_phrase_custodian_desc", "Подтвердите, что вы являетесь держателем части #F5870A 1#."},
-    {"shamir_phrase_custodian_title", "Поделиться Частью #F5870A 1#/N"},
+    {"shamir_phrase_custodian_title", "Поделиться Частью #F5870A 1#"},
     {"shamir_phrase_number", "Количество частей"},
     {"shamir_phrase_share_backup_notice_fmt", "Запишите фразу Часть #F5870A %d# и сохраните ее правильно."},
     {"shamir_phrase_share_confirm_notice_fmt", "Выберите слова в правильном порядке для подтверждения вашей фразы Части #F5870A %d#/%d."},
@@ -2157,9 +2182,12 @@ const static lv_i18n_phrase_t  ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
-    uint32_t v = op_v(n); UNUSED(v);
-    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t n = op_n(num);
+    UNUSED(n);
+    uint32_t v = op_v(n);
+    UNUSED(v);
+    uint32_t i = op_i(n);
+    UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -2692,7 +2720,7 @@ const static lv_i18n_phrase_t  zh_cn_singulars[] = {
     {"shamir_phrase_cancel_create_title", "取消?"},
     {"shamir_phrase_confirm_desc", "按顺序选择以下单词,已验证您保存了当前分片的助记词."},
     {"shamir_phrase_custodian_desc", "请确认您是该分片的持有者#F5870A 1#"},
-    {"shamir_phrase_custodian_title", "分片#F5870A 1#/N"},
+    {"shamir_phrase_custodian_title", "分片#F5870A 1#"},
     {"shamir_phrase_number", "分片数量"},
     {"shamir_phrase_share_backup_notice_fmt", "写下您分片 #F5870A %d# 的助记词,并妥善保管."},
     {"shamir_phrase_share_confirm_notice_fmt", "按照正确顺序选择分片 #F5870A %d# 的助记词,已验证您保存了当前分片的助记词."},
@@ -2923,8 +2951,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if(langs == NULL) return -1;
-    if(langs[0] == NULL) return -1;
+    if (langs == NULL) return -1;
+    if (langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -2937,13 +2965,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if(current_lang_pack == NULL) return -1;
+    if (current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for(i = 0; current_lang_pack[i] != NULL; i++) {
+    for (i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -2956,10 +2984,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for(i = 0; trans[i].msg_id != NULL; i++) {
-        if(strcmp(trans[i].msg_id, msg_id) == 0) {
+    for (i = 0; trans[i].msg_id != NULL; i++) {
+        if (strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if(trans[i].translation) return trans[i].translation;
+            if (trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -2974,23 +3002,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if(current_lang == NULL) return msg_id;
+    if (current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if(lang->singulars != NULL) {
+    if (lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if(lang == current_lang_pack[0]) return msg_id;
+    if (lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if(lang->singulars != NULL) {
+    if (lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -3006,31 +3034,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if(current_lang == NULL) return msg_id;
+    if (current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if(lang->locale_plural_fn != NULL) {
+    if (lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if(lang->plurals[ptype] != NULL) {
+        if (lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if(lang == current_lang_pack[0]) return msg_id;
+    if (lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if(lang->locale_plural_fn != NULL) {
+    if (lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if(lang->plurals[ptype] != NULL) {
+        if (lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -3045,6 +3073,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if(!current_lang) return NULL;
+    if (!current_lang) return NULL;
     return current_lang->locale_name;
 }

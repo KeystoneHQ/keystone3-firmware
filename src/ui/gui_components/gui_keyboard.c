@@ -1269,7 +1269,7 @@ void *GuiCreateLetterKeyBoard(lv_obj_t *parent, lv_event_cb_t cb, bool bip39, vo
     lv_obj_set_height(btn, 40);
     lv_obj_set_style_bg_opa(btn, 0, 0);
     lv_obj_set_style_shadow_width(btn, 0, 0);
-    lv_obj_t *label1 = GuiCreateLittleTitleLabel(btn, "");
+    lv_obj_t *label1 = GuiCreateTextLabel(btn, "");
     lv_obj_set_align(label1, LV_ALIGN_CENTER);
     lv_obj_set_style_text_color(label1, WHITE_COLOR, 0);
     lv_obj_add_event_cb(btn, LetterKbAssociateHandler, LV_EVENT_ALL, keyBoard);
@@ -1282,7 +1282,7 @@ void *GuiCreateLetterKeyBoard(lv_obj_t *parent, lv_event_cb_t cb, bool bip39, vo
     lv_obj_set_height(btn, 40);
     lv_obj_set_style_bg_opa(btn, 0, 0);
     lv_obj_set_style_shadow_width(btn, 0, 0);
-    lv_obj_t *label2 = GuiCreateLittleTitleLabel(btn, "");
+    lv_obj_t *label2 = GuiCreateTextLabel(btn, "");
     lv_obj_set_align(label2, LV_ALIGN_CENTER);
     lv_obj_set_style_text_color(label2, WHITE_COLOR, 0);
     lv_obj_add_event_cb(btn, LetterKbAssociateHandler, LV_EVENT_ALL, keyBoard);
@@ -1295,7 +1295,7 @@ void *GuiCreateLetterKeyBoard(lv_obj_t *parent, lv_event_cb_t cb, bool bip39, vo
     lv_obj_set_height(btn, 40);
     lv_obj_set_style_bg_opa(btn, 0, 0);
     lv_obj_set_style_shadow_width(btn, 0, 0);
-    lv_obj_t *label3 = GuiCreateLittleTitleLabel(btn, "");
+    lv_obj_t *label3 = GuiCreateTextLabel(btn, "");
     lv_obj_set_align(label3, LV_ALIGN_CENTER);
     lv_obj_set_style_text_color(label3, WHITE_COLOR, 0);
     lv_obj_add_event_cb(btn, LetterKbAssociateHandler, LV_EVENT_ALL, keyBoard);

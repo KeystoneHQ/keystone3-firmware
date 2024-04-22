@@ -1040,7 +1040,6 @@ static void RefreshSwitchAccount(void)
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetUtxoAddress(index, &addressDataItem);
-        printf("_(receive_ada_base_address) = %s\n", _("receive_ada_base_address"));
         lv_label_set_text_fmt(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("receive_ada_base_address"), addressDataItem.index);
         CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_utxoReceiveWidgets.switchAddressWidgets[i].addressLabel, string);

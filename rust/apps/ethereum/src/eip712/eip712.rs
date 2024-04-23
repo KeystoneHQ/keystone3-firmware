@@ -632,9 +632,9 @@ pub fn encode_field(
                         ParamType::Int(_) => {
                             // int to be stringified, and then coverted stringfied num to U256
                             let val: StringifiedNumeric = serde_json::from_value(value.clone())
-                            .map_err(|err| {
-                                Eip712Error::Message(format!("serde_json::from_value {err}"))
-                            })?;
+                                .map_err(|err| {
+                                    Eip712Error::Message(format!("serde_json::from_value {err}"))
+                                })?;
                             let val: U256 = val.try_into().map_err(|err| {
                                 Eip712Error::Message(format!("Failed to parse int {err}"))
                             })?;

@@ -248,6 +248,15 @@ static void WalletTutorialsInit()
 
         g_tutorials[WALLET_LIST_NUNCHUK].items[0].url = _("connect_nunchuk_multisig_link");
         g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrUrl = _("connect_nunchuk_multisig_link");
+    } else {
+        g_tutorials[WALLET_LIST_BLUE].items[0].url = _("connect_bw_link");
+        g_tutorials[WALLET_LIST_BLUE].items[0].qrUrl = _("connect_bw_link");
+
+        g_tutorials[WALLET_LIST_SPARROW].items[0].url = _("connect_sparrow_link");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl = _("connect_sparrow_link");
+
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].url = _("connect_nunchuk_link");
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrUrl = _("connect_nunchuk_link");
     }
 #endif
 }

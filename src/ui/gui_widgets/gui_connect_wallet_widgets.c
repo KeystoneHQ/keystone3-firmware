@@ -1313,7 +1313,6 @@ static void ChangeDerivationPathHandler(lv_event_t *e)
 
 static void OpenMoreHandler(lv_event_t *e)
 {
-
     int hintboxHeight = 132;
     WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
 #ifndef BTC_ONLY

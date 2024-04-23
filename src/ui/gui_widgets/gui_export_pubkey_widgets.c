@@ -168,7 +168,6 @@ static void GuiWriteToMicroCardHandler(lv_event_t *e)
     }
     EXT_FREE(xPubBuff);
 }
-}
 
 static void GuiExportXpubToMicroCard(void)
 {

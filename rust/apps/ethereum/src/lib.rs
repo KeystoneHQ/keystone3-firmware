@@ -156,7 +156,6 @@ pub fn sign_typed_data_message(
 mod tests {
 
     extern crate std;
-    use std::println;
 
     use crate::alloc::string::ToString;
     use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};

@@ -238,7 +238,7 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
 
     label = GuiCreateIllustrateLabel(cont, _("connect_wallet_key_request_fmt"));
     lv_label_set_text_fmt(label, _("connect_wallet_key_request_fmt"), g_response->data->origin);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 0);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
 
     pathCont = GuiCreateContainerWithParent(cont, 408, 450);
     lv_obj_align(pathCont, LV_ALIGN_TOP_LEFT, 0, 92);

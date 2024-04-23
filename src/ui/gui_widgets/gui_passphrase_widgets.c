@@ -57,10 +57,7 @@ void GuiPassphraseInit(void)
     btn = GuiCreateTextBtn(g_passphraseWidgets.passphraseInputCont, _("Skip"));
     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-    label = lv_obj_get_child(btn, 0);
-    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
-    lv_obj_set_size(btn, lv_obj_get_self_width(label) + 12, 42);
-
+    lv_obj_set_height(btn, 42);
     lv_obj_align(btn, LV_ALIGN_TOP_RIGHT, -36, 210);
     lv_obj_add_event_cb(btn, SkipHandler, LV_EVENT_CLICKED, NULL);
 

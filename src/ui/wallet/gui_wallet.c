@@ -349,7 +349,6 @@ UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
 
 UREncodeResult *GuiGetOkxWalletData(void)
 {
-#ifndef COMPILE_SIMULATOR
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
@@ -423,10 +422,6 @@ UREncodeResult *GuiGetOkxWalletData(void)
     CHECK_CHAIN_PRINT(g_urEncode);
     SRAM_FREE(public_keys);
     return g_urEncode;
-#else
-    const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    return (void *)data;
-#endif
 }
 
 #ifndef BTC_ONLY

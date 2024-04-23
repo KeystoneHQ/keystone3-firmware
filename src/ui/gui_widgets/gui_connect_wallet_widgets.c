@@ -379,9 +379,7 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
     if (g_coinListCont != NULL) {
         return;
     }
-#ifndef COMPILE_SIMULATOR
     QRCodePause(true);
-#endif
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_FEWCHA) {
         GuiCreateSelectFewchaCoinWidget();
     } else if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
@@ -547,7 +545,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 408);
 #endif
     lv_obj_add_flag(qrCont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_align_to(qrCont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 6);
+    lv_obj_align_to(qrCont, label, LV_ALIGN_OUT_BOTTOM_MID, 0, 6);
     lv_obj_set_style_bg_color(qrCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_radius(qrCont, 24, LV_PART_MAIN);
 
@@ -901,9 +899,7 @@ void ConnectWalletReturnHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-#ifndef COMPILE_SIMULATOR
         // CloseQRTimer();
-#endif
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
     }
 }
@@ -992,7 +988,6 @@ static void UpdateConfirmBtn(void)
 
 static void GetEthEgAddress(void)
 {
-#ifndef COMPILE_SIMULATOR
     SimpleResponse_c_char *result;
     result = eth_get_address("44'/60'/0'/0/0", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD), "44'/60'/0'");
     CutAndFormatString(g_derivationPathAddr[Bip44Standard][0], BUFFER_SIZE_64, result->data, 24);
@@ -1017,12 +1012,10 @@ static void GetEthEgAddress(void)
     result = eth_get_address("44'/60'/0'/1", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LEGACY), "44'/60'/0'");
     CutAndFormatString(g_derivationPathAddr[LedgerLegacy][1], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
-#endif
 }
 
 static void GetSolEgAddress(void)
 {
-#ifndef COMPILE_SIMULATOR
     SimpleResponse_c_char *result;
     result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_0));
     CutAndFormatString(g_solDerivationPathAddr[SOLBip44][0], BUFFER_SIZE_64, result->data, 24);
@@ -1043,7 +1036,6 @@ static void GetSolEgAddress(void)
     result = solana_get_address(GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_CHANGE_1));
     CutAndFormatString(g_solDerivationPathAddr[SOLBip44Change][1], BUFFER_SIZE_64, result->data, 24);
     free_simple_response_c_char(result);
-#endif
 }
 
 static void GetEgAddress(void)

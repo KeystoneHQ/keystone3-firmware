@@ -364,8 +364,8 @@ static void OpenQRCodeHandler(lv_event_t *e)
             return;
         }
         char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
-        bool skipGenerateArwareKey = arXpub != NULL && strlen(arXpub) == 1024;
-        if (g_connectWalletTileView.walletIndex == WALLET_LIST_ARCONNECT && !skipGenerateArwareKey) {
+        bool skipGenerateArweaveKey = arXpub != NULL && strlen(arXpub) == 1024;
+        if (g_connectWalletTileView.walletIndex == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey) {
             g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
             SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
             static uint16_t sig = SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD;
@@ -984,12 +984,7 @@ void GuiPrepareArConnectWalletView(void)
 
 void GuiSetupArConnectWallet(void)
 {
-    uint8_t seed[64];
-    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-    int32_t ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-    ASSERT(ret == 0);
-    SimpleResponse_u8 *result = generate_arweave_secret(seed, len);
-    FlashWriteRsaPrimes(result->data);
+    RsaGenerateKeyPair(false);
 }
 
 #endif

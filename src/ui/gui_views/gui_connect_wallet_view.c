@@ -2,6 +2,7 @@
 #include "gui_views.h"
 #include "gui_status_bar.h"
 #include "gui_connect_wallet_widgets.h"
+#include "gui_pending_hintbox.h"
 
 int32_t GuiConnectWalletViewInit(void)
 {

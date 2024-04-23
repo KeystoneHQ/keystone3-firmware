@@ -38,6 +38,41 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case SIG_INIT_GET_CURRENT_WALLET_DESC:
         GuiHomeSetWalletDesc((WalletDesc_t *)param);
         break;
+    case SIG_VERIFY_PASSWORD_FAIL:
+        if (param != NULL)
+        {
+            PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
+            uint16_t sig = *(uint16_t *)passwordVerifyResult->signal;
+            if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS)
+            {
+                GuiLockScreenPassCode(false);
+                GuiHomePasswordErrorCount(param);
+                return SUCCESS_CODE;
+            }
+        }
+        GuiLockScreenPassCode(false);
+        GuiHomePasswordErrorCount(param);
+        break;
+    case SIG_VERIFY_PASSWORD_PASS:
+        printf("SIG_VERIFY_PASSWORD_PASS\n");
+        if (param != NULL)
+        {
+            uint16_t sig = *(uint16_t *)param;
+            if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS)
+            {
+                GuiLockScreenToHome();
+                return SUCCESS_CODE;
+            }
+        }
+        GuiRemoveKeyboardWidget();
+        break;
+    case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_START:
+        GuiPendingHintBoxOpen(_("Pending"), _("generating_qr_codes"));
+        break;
+    case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS:
+        GuiPendingHintBoxRemove();
+        GuiContinueToReceiveArPage();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

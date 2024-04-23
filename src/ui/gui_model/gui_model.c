@@ -97,6 +97,7 @@ static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataL
 static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen);
 static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t getUR);
 static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen);
+static int32_t ModelRsaGenerateKeyPair();
 static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen);
 static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen);
 static int32_t ModelURClear(const void *inData, uint32_t inDataLen);
@@ -278,6 +279,11 @@ void GuiModelURClear(void)
 void GuiModelCheckTransaction(ViewType viewType)
 {
     AsyncExecute(ModelCheckTransaction, &viewType, sizeof(viewType));
+}
+
+void GuiModelRsaGenerateKeyPair(void)
+{
+    AsyncExecute(ModelRsaGenerateKeyPair, NULL, 0);
 }
 
 void GuiModelTransactionCheckResultClear(void)
@@ -1268,6 +1274,36 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
     GuiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
 #endif
     return SUCCESS_CODE;
+}
+
+int32_t RsaGenerateKeyPair(bool needEmitSignal)
+{
+    bool lockState = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    if (needEmitSignal) {
+        GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_START, NULL, 0);
+    }
+    uint8_t seed[64];
+    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    int32_t ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+    ASSERT(ret == 0);
+    SimpleResponse_u8 *secret = generate_arweave_secret(seed, len);
+    ASSERT(secret != NULL && secret->error_code == 0);
+    FlashWriteRsaPrimes(secret->data);
+    free_simple_response_u8(secret);
+    AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), true);
+    RecalculateManageWalletState();
+    if (needEmitSignal) {
+        GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS, NULL, 0);
+    }
+    ClearLockScreenTime();
+    SetLockScreen(lockState);
+    return SUCCESS_CODE;
+}
+
+static int32_t ModelRsaGenerateKeyPair()
+{
+    return RsaGenerateKeyPair(true);
 }
 
 static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen)

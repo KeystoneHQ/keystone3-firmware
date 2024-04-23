@@ -228,7 +228,6 @@ UREncodeResult *GuiGetArConnectData(void)
     char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
     if (arXpub == NULL || strlen(arXpub) != 1024) {
         GuiSetupArConnectWallet();
-        AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), true);
         arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
         ClearSecretCache();
     }

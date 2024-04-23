@@ -630,9 +630,15 @@ pub fn encode_field(
                             encode_eip712_type(Token::Bytes(data.0.to_vec()))
                         }
                         ParamType::Int(_) => {
-                            Token::Uint(serde_json::from_value(value.clone()).map_err(|err| {
+                            // int to be stringified, and then coverted stringfied num to U256
+                            let val: StringifiedNumeric = serde_json::from_value(value.clone())
+                            .map_err(|err| {
                                 Eip712Error::Message(format!("serde_json::from_value {err}"))
-                            })?)
+                            })?;
+                            let val: U256 = val.try_into().map_err(|err| {
+                                Eip712Error::Message(format!("Failed to parse int {err}"))
+                            })?;
+                            Token::Uint(val)
                         }
                         ParamType::Uint(_) => {
                             // uints are commonly stringified due to how ethers-js encodes

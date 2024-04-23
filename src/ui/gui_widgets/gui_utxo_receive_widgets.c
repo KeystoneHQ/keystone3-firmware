@@ -713,6 +713,7 @@ static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
     lv_obj_set_size(btn, 96, 66);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_100, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
     lv_obj_t *img = lv_obj_get_child(btn, 0);
     if (g_showIndex < 5) {
@@ -724,6 +725,7 @@ static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
     lv_obj_set_size(btn, 96, 66);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_100, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 156, -24);
     img = lv_obj_get_child(btn, 0);
     g_utxoReceiveWidgets.rightBtnImg = img;
@@ -1074,58 +1076,43 @@ static void RefreshSwitchAccount(void)
 
 static void CloseAttentionHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_add_flag(g_utxoReceiveWidgets.attentionCont, LV_OBJ_FLAG_HIDDEN);
-    }
+    lv_obj_add_flag(g_utxoReceiveWidgets.attentionCont, LV_OBJ_FLAG_HIDDEN);
 }
 
 static void MoreHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (g_utxoReceiveWidgets.moreCont == NULL) {
-            GuiCreateMoreWidgets(g_utxoReceiveWidgets.tileQrCode);
-        } else {
-            lv_obj_del(g_utxoReceiveWidgets.moreCont);
-            g_utxoReceiveWidgets.moreCont = NULL;
-        }
+    if (g_utxoReceiveWidgets.moreCont == NULL) {
+        GuiCreateMoreWidgets(g_utxoReceiveWidgets.tileQrCode);
+    } else {
+        lv_obj_del(g_utxoReceiveWidgets.moreCont);
+        g_utxoReceiveWidgets.moreCont = NULL;
     }
 }
 
 static void AddressSettingsHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (g_utxoReceiveWidgets.moreCont != NULL) {
-            lv_obj_del(g_utxoReceiveWidgets.moreCont);
-            g_utxoReceiveWidgets.moreCont = NULL;
-        }
-        GuiBitcoinReceiveGotoTile(UTXO_RECEIVE_TILE_ADDRESS_SETTINGS);
+    if (g_utxoReceiveWidgets.moreCont != NULL) {
+        lv_obj_del(g_utxoReceiveWidgets.moreCont);
+        g_utxoReceiveWidgets.moreCont = NULL;
     }
+    GuiBitcoinReceiveGotoTile(UTXO_RECEIVE_TILE_ADDRESS_SETTINGS);
 }
 
 static void ExportXpubHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (g_utxoReceiveWidgets.moreCont != NULL) {
-            lv_obj_del(g_utxoReceiveWidgets.moreCont);
-            g_utxoReceiveWidgets.moreCont = NULL;
-        }
-        GuiFrameOpenViewWithParam(&g_exportPubkeyView, &g_chainCard, sizeof(g_chainCard));
+    if (g_utxoReceiveWidgets.moreCont != NULL) {
+        lv_obj_del(g_utxoReceiveWidgets.moreCont);
+        g_utxoReceiveWidgets.moreCont = NULL;
     }
+    GuiFrameOpenViewWithParam(&g_exportPubkeyView, &g_chainCard, sizeof(g_chainCard));
 }
 
 static void TutorialHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_utxoReceiveWidgets.moreCont);
-        if (g_chainCard == HOME_WALLET_CARD_BTC) {
-            TUTORIAL_LIST_INDEX_ENUM tIndex = TUTORIAL_BTC_RECEIVE;
-            GuiFrameOpenViewWithParam(&g_tutorialView, &tIndex, sizeof(tIndex));
-        }
+    GUI_DEL_OBJ(g_utxoReceiveWidgets.moreCont);
+    if (g_chainCard == HOME_WALLET_CARD_BTC) {
+        TUTORIAL_LIST_INDEX_ENUM tIndex = TUTORIAL_BTC_RECEIVE;
+        GuiFrameOpenViewWithParam(&g_tutorialView, &tIndex, sizeof(tIndex));
     }
 }
 
@@ -1143,16 +1130,13 @@ static void LeftBtnHandler(lv_event_t *e)
 
 static void RightBtnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_set_style_img_opa(g_utxoReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
-        if (g_showIndex < ADDRESS_INDEX_MAX - 5) {
-            g_showIndex += 5;
-            RefreshSwitchAccount();
-        }
-        if (g_showIndex >= ADDRESS_INDEX_MAX - 5) {
-            lv_obj_set_style_img_opa(g_utxoReceiveWidgets.rightBtnImg, LV_OPA_30, LV_PART_MAIN);
-        }
+    lv_obj_set_style_img_opa(g_utxoReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
+    if (g_showIndex < ADDRESS_INDEX_MAX - 5) {
+        g_showIndex += 5;
+        RefreshSwitchAccount();
+    }
+    if (g_showIndex >= ADDRESS_INDEX_MAX - 5) {
+        lv_obj_set_style_img_opa(g_utxoReceiveWidgets.rightBtnImg, LV_OPA_30, LV_PART_MAIN);
     }
 }
 

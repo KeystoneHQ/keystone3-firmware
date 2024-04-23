@@ -86,12 +86,9 @@ const char *GetCurrentKbWalletName(void)
 
 static void QuestionMarkEventCb(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        uint8_t index = TUTORIAL_SHAMIR_BACKUP;
-        GUI_DEL_OBJ(g_openMoreHintBox);
-        GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
-    }
+    uint8_t index = TUTORIAL_SHAMIR_BACKUP;
+    GUI_DEL_OBJ(g_openMoreHintBox);
+    GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
 }
 
 static void OpenEmojiKbHandler(lv_event_t *e)
@@ -533,38 +530,36 @@ void GuiCreateWalletRefresh(void)
 
 static void OpenMoreHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        int hintboxHeight = 228;
-        g_openMoreHintBox = GuiCreateHintBox(hintboxHeight);
-        lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
-        lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, _("Tutorial"));
-        lv_obj_t *img = GuiCreateImg(g_openMoreHintBox, &imgTutorial);
 
-        GuiButton_t table[] = {
-            {
-                .obj = img,
-                .align = LV_ALIGN_LEFT_MID,
-                .position = {24, 0},
-            },
-            {
-                .obj = label,
-                .align = LV_ALIGN_LEFT_MID,
-                .position = {76, 0},
-            },
-        };
-        lv_obj_t *btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                                        QuestionMarkEventCb, NULL);
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+    int hintboxHeight = 228;
+    g_openMoreHintBox = GuiCreateHintBox(hintboxHeight);
+    lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
+    lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, _("Tutorial"));
+    lv_obj_t *img = GuiCreateImg(g_openMoreHintBox, &imgTutorial);
 
-        label = GuiCreateTextLabel(g_openMoreHintBox, _("change_entropy"));
-        img = GuiCreateImg(g_openMoreHintBox, &imgDice);
-        table[0].obj = img;
-        table[1].obj = label;
-        btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                              OpenChangeEntropyHandler, NULL);
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -120);
-    }
+    GuiButton_t table[] = {
+        {
+            .obj = img,
+            .align = LV_ALIGN_LEFT_MID,
+            .position = {24, 0},
+        },
+        {
+            .obj = label,
+            .align = LV_ALIGN_LEFT_MID,
+            .position = {76, 0},
+        },
+    };
+    lv_obj_t *btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
+                                    QuestionMarkEventCb, NULL);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+
+    label = GuiCreateTextLabel(g_openMoreHintBox, _("change_entropy"));
+    img = GuiCreateImg(g_openMoreHintBox, &imgDice);
+    table[0].obj = img;
+    table[1].obj = label;
+    btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
+                          OpenChangeEntropyHandler, NULL);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -120);
 }
 
 // Change Entropy
@@ -706,69 +701,59 @@ static void CreateChangeEntropyView(void)
 
 static void OpenChangeEntropyHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_openMoreHintBox);
-        CreateChangeEntropyView();
-    }
+
+    GUI_DEL_OBJ(g_openMoreHintBox);
+    CreateChangeEntropyView();
 }
 
 static void CloseChangeEntropyHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_PAGE_DEL(g_changeEntropyPage);
-    }
+
+    GUI_PAGE_DEL(g_changeEntropyPage);
 }
 
 static void ChangeEntropyMethodConfirmHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_PAGE_DEL(g_changeEntropyPage);
-        g_selectedEntropyMethod = g_selectedEntropyMethodCache;
-        if (g_selectedEntropyMethod == 1) {
-            if (lv_obj_has_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN)) {
-                lv_obj_clear_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN);
-            }
-        } else {
-            if (!lv_obj_has_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN)) {
-                lv_obj_add_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN);
-            }
+
+    GUI_PAGE_DEL(g_changeEntropyPage);
+    g_selectedEntropyMethod = g_selectedEntropyMethodCache;
+    if (g_selectedEntropyMethod == 1) {
+        if (lv_obj_has_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN)) {
+            lv_obj_clear_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN);
+        }
+    } else {
+        if (!lv_obj_has_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN)) {
+            lv_obj_add_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN);
         }
     }
 }
 
 static void ChangeEntropyMethodHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_scroll_to_y(g_entropyMethodContainer, 0, LV_ANIM_OFF);
-        lv_obj_t *checkBox = lv_event_get_target(e);
-        for (uint32_t i = 0; i < 2; i++) {
-            if (checkBox == g_entropyMethods[i].checkBox) {
-                lv_obj_add_state(g_entropyMethods[i].checkBox, LV_STATE_CHECKED);
-                lv_obj_clear_flag(g_entropyMethods[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(g_entropyMethods[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_clear_flag(g_entropyMethods[i].descCont, LV_OBJ_FLAG_HIDDEN);
-                if (g_selectedEntropyMethodCache != i) {
-                    g_selectedEntropyMethodCache = i;
-                }
-            } else {
-                lv_obj_clear_state(g_entropyMethods[i].checkBox, LV_STATE_CHECKED);
-                lv_obj_add_flag(g_entropyMethods[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_clear_flag(g_entropyMethods[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(g_entropyMethods[i].descCont, LV_OBJ_FLAG_HIDDEN);
+
+    lv_obj_scroll_to_y(g_entropyMethodContainer, 0, LV_ANIM_OFF);
+    lv_obj_t *checkBox = lv_event_get_target(e);
+    for (uint32_t i = 0; i < 2; i++) {
+        if (checkBox == g_entropyMethods[i].checkBox) {
+            lv_obj_add_state(g_entropyMethods[i].checkBox, LV_STATE_CHECKED);
+            lv_obj_clear_flag(g_entropyMethods[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(g_entropyMethods[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(g_entropyMethods[i].descCont, LV_OBJ_FLAG_HIDDEN);
+            if (g_selectedEntropyMethodCache != i) {
+                g_selectedEntropyMethodCache = i;
             }
+        } else {
+            lv_obj_clear_state(g_entropyMethods[i].checkBox, LV_STATE_CHECKED);
+            lv_obj_add_flag(g_entropyMethods[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(g_entropyMethods[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(g_entropyMethods[i].descCont, LV_OBJ_FLAG_HIDDEN);
         }
     }
 }
 
 static void OpenChangeEntropyTutorialHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        uint8_t index = TUTORIAL_CHANGE_ENTROPY;
-        GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
-    }
+
+    uint8_t index = TUTORIAL_CHANGE_ENTROPY;
+    GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
 }

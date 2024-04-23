@@ -301,14 +301,11 @@ bool GuiJudgeCurrentPahse(SETUP_PHASE_ENUM pahaseEnum)
 
 static void GoToDeviceUIDPage(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        g_clickLogoCount++;
-        DestroyTimer();
-        g_resetClickCountTimer = lv_timer_create(ResetClickCountHandler, 1000, NULL);
-        if (g_clickLogoCount == 3) {
-            GuiFrameOpenView(&g_aboutInfoView);
-        }
+    g_clickLogoCount++;
+    DestroyTimer();
+    g_resetClickCountTimer = lv_timer_create(ResetClickCountHandler, 1000, NULL);
+    if (g_clickLogoCount == 3) {
+        GuiFrameOpenView(&g_aboutInfoView);
     }
 }
 

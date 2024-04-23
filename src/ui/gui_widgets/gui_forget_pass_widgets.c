@@ -71,29 +71,22 @@ bool GuiIsForgetPass(void)
 
 static void GuiQuitHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        // printf("g_prevView ID = %d\n", g_prevView->id);
-        if (g_prevView != NULL && g_prevView->id == SCREEN_LOCK) {
-            GuiLockScreenUpdatePassCode();
-            GuiLockScreenFpRecognize();
-        }
-        GuiCLoseCurrentWorkingView();
+    // printf("g_prevView ID = %d\n", g_prevView->id);
+    if (g_prevView != NULL && g_prevView->id == SCREEN_LOCK) {
+        GuiLockScreenUpdatePassCode();
+        GuiLockScreenFpRecognize();
     }
+    GuiCLoseCurrentWorkingView();
 }
 
 static void ContinueStopCreateHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        if (lv_event_get_user_data(e) != NULL) {
-            g_forgetMkb->currentSlice = 0;
-            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-            CloseToTargetTileView(g_forgetPassTileView.currentTile, FORGET_PASSWORD_METHOD_SELECT);
-        }
-        GUI_DEL_OBJ(g_noticeHintBox)
+    if (lv_event_get_user_data(e) != NULL) {
+        g_forgetMkb->currentSlice = 0;
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        CloseToTargetTileView(g_forgetPassTileView.currentTile, FORGET_PASSWORD_METHOD_SELECT);
     }
+    GUI_DEL_OBJ(g_noticeHintBox)
 }
 
 static void StopCreateViewHandler(lv_event_t *e)
@@ -235,11 +228,8 @@ static void ImportShareNextSliceHandler(lv_event_t* e)
 
 static void ResetClearImportHandler(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        ClearMnemonicKeyboard(g_forgetMkb, &g_forgetMkb->currentId);
-        GuiClearKeyBoard(g_forgetPhraseKb);
-    }
+    ClearMnemonicKeyboard(g_forgetMkb, &g_forgetMkb->currentId);
+    GuiClearKeyBoard(g_forgetPhraseKb);
 }
 
 static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)

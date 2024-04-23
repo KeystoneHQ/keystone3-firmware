@@ -45,40 +45,30 @@ static void GuiShowSDCardExportFailed();
 
 static void GuiSDCardHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (SdCardInsert()) {
-            GuiShowSDCardExport();
-        } else {
-            GuiShowSDCardNotDetected();
-        }
-        return;
+    if (SdCardInsert()) {
+        GuiShowSDCardExport();
+    } else {
+        GuiShowSDCardNotDetected();
     }
+    return;
 }
 
 static void GuiCloseHintBoxHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeWindow);
-        return;
-    }
+    GUI_DEL_OBJ(g_noticeWindow);
 }
 
 static void GuiWriteSDCardHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeWindow);
-        char *filename = lv_event_get_user_data(e);
-        int ret = FileWrite(filename, g_psbtHex, g_psbtLen);
-        if (ret) {
-            GuiShowSDCardExportFailed();
-        } else {
-            GuiShowSDCardExportSuccess();
-        }
-        return;
+    GUI_DEL_OBJ(g_noticeWindow);
+    char *filename = lv_event_get_user_data(e);
+    int ret = FileWrite(filename, g_psbtHex, g_psbtLen);
+    if (ret) {
+        GuiShowSDCardExportFailed();
+    } else {
+        GuiShowSDCardExportSuccess();
     }
+    return;
 }
 
 static void GuiShowSDCardNotDetected()

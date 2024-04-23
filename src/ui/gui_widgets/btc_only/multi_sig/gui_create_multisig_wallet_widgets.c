@@ -155,40 +155,32 @@ void GuiSetMultisigImportXpubByQRCode(URParseResult *urResult)
 
 static void CloseParentAndSetItemHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
-        void **param = lv_event_get_user_data(e);
-        if (param != NULL) {
-            *param = NULL;
-        }
-        if (!SdCardInsert()) {
-            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
-            return;
-        }
-        g_createMultiTileView.currentTile = CREATE_MULTI_SELECT_SDCARD_XPUB;
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("import_multi_wallet_via_micro_title"));
-        lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_set_tile_id(g_createMultiTileView.tileView, CREATE_MULTI_SELECT_SDCARD_XPUB, 0, LV_ANIM_OFF);
+    lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
+    void **param = lv_event_get_user_data(e);
+    if (param != NULL) {
+        *param = NULL;
     }
+    if (!SdCardInsert()) {
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
+        return;
+    }
+    g_createMultiTileView.currentTile = CREATE_MULTI_SELECT_SDCARD_XPUB;
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("import_multi_wallet_via_micro_title"));
+    lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_set_tile_id(g_createMultiTileView.tileView, CREATE_MULTI_SELECT_SDCARD_XPUB, 0, LV_ANIM_OFF);
 }
 
 static void ImportXpubHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _(""));
-        g_createMultiTileView.currentTile = CREATE_MULTI_CONFIRM_CO_SIGNERS;
-        lv_obj_set_tile_id(g_createMultiTileView.tileView, CREATE_MULTI_CONFIRM_CO_SIGNERS, 0, LV_ANIM_OFF);
-        lv_obj_clear_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
-        GuiAddObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        lv_label_set_text(g_custodianTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
-        if (g_createMultiTileView.currentSinger == g_selectSliceTile.coSingers - 1) {
-            lv_label_set_text(lv_obj_get_child(g_createMultiTileView.stepBtn, 0), USR_SYMBOL_CHECK);
-        }
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _(""));
+    g_createMultiTileView.currentTile = CREATE_MULTI_CONFIRM_CO_SIGNERS;
+    lv_obj_set_tile_id(g_createMultiTileView.tileView, CREATE_MULTI_CONFIRM_CO_SIGNERS, 0, LV_ANIM_OFF);
+    lv_obj_clear_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
+    GuiAddObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+    lv_label_set_text(g_custodianTile.xpubLabel, g_xpubCache[g_createMultiTileView.currentSinger].xpub);
+    if (g_createMultiTileView.currentSinger == g_selectSliceTile.coSingers - 1) {
+        lv_label_set_text(lv_obj_get_child(g_createMultiTileView.stepBtn, 0), USR_SYMBOL_CHECK);
     }
 }
 
@@ -216,94 +208,75 @@ static void ImportXpubToTile(CREATE_MULTI_ENUM tile)
 
 static void OpenFileNextTileHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     char *path = lv_event_get_user_data(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GetMultiInfoFromFile(path, &g_xpubCache[g_createMultiTileView.currentSinger], g_chainType);
-        ImportXpubToTile(CREATE_MULTI_IMPORT_SDCARD_XPUB);
-    }
+    GetMultiInfoFromFile(path, &g_xpubCache[g_createMultiTileView.currentSinger], g_chainType);
+    ImportXpubToTile(CREATE_MULTI_IMPORT_SDCARD_XPUB);
 }
 
 static void NextCoSignerHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        if ((g_createMultiTileView.currentSinger == 0)) {
-            if (g_createMultiTileView.currentTile != CREATE_MULTI_CONFIRM_CO_SIGNERS) {
-                GuiCreateMultiNextTile(0xFF);
-                return;
-            }
-            SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-            GuiClearObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
-            lv_obj_clear_flag(g_custodianTile.importXpubBtn, LV_OBJ_FLAG_HIDDEN);
-            g_createMultiTileView.currentSinger++;
-            if (strlen(g_xpubCache[g_createMultiTileView.currentSinger].xpub) > 0) {
-                GuiAddObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
-            }
-            UpdateCustodianTileLabel();
-            lv_obj_set_tile_id(g_createMultiTileView.tileView, CREATE_MULTI_CONFIRM_CO_SIGNERS, 0, LV_ANIM_OFF);
-        } else if (strlen(g_xpubCache[g_createMultiTileView.currentSinger].xpub) > 0) {
-            if (g_createMultiTileView.currentSinger == g_selectSliceTile.coSingers - 1) {
-                g_createMultiTileView.currentTile = CREATE_MULTI_CONFIRM_CO_SIGNERS;
-                GetAndCreateMultiWallet();
-            } else {
-                g_createMultiTileView.currentSinger++;
-            }
-            if (strlen(g_xpubCache[g_createMultiTileView.currentSinger].xpub) == 0) {
-                GuiClearObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
-            }
-            UpdateCustodianTileLabel();
+    if ((g_createMultiTileView.currentSinger == 0)) {
+        if (g_createMultiTileView.currentTile != CREATE_MULTI_CONFIRM_CO_SIGNERS) {
+            GuiCreateMultiNextTile(0xFF);
+            return;
+        }
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+        GuiClearObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_clear_flag(g_custodianTile.importXpubBtn, LV_OBJ_FLAG_HIDDEN);
+        g_createMultiTileView.currentSinger++;
+        if (strlen(g_xpubCache[g_createMultiTileView.currentSinger].xpub) > 0) {
+            GuiAddObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
+        }
+        UpdateCustodianTileLabel();
+        lv_obj_set_tile_id(g_createMultiTileView.tileView, CREATE_MULTI_CONFIRM_CO_SIGNERS, 0, LV_ANIM_OFF);
+    } else if (strlen(g_xpubCache[g_createMultiTileView.currentSinger].xpub) > 0) {
+        if (g_createMultiTileView.currentSinger == g_selectSliceTile.coSingers - 1) {
             g_createMultiTileView.currentTile = CREATE_MULTI_CONFIRM_CO_SIGNERS;
-            lv_obj_set_tile_id(g_createMultiTileView.tileView, CREATE_MULTI_CONFIRM_CO_SIGNERS, 0, LV_ANIM_OFF);
+            GetAndCreateMultiWallet();
         } else {
-            lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
-            UpdateCustodianTileLabel();
-            lv_obj_set_tile_id(g_createMultiTileView.tileView, CREATE_MULTI_CONFIRM_CO_SIGNERS, 0, LV_ANIM_OFF);
+            g_createMultiTileView.currentSinger++;
+        }
+        if (strlen(g_xpubCache[g_createMultiTileView.currentSinger].xpub) == 0) {
+            GuiClearObjFlag(g_createMultiTileView.stepBtn, LV_OBJ_FLAG_CLICKABLE);
+        }
+        UpdateCustodianTileLabel();
+        g_createMultiTileView.currentTile = CREATE_MULTI_CONFIRM_CO_SIGNERS;
+        lv_obj_set_tile_id(g_createMultiTileView.tileView, CREATE_MULTI_CONFIRM_CO_SIGNERS, 0, LV_ANIM_OFF);
+    } else {
+        lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
+        UpdateCustodianTileLabel();
+        lv_obj_set_tile_id(g_createMultiTileView.tileView, CREATE_MULTI_CONFIRM_CO_SIGNERS, 0, LV_ANIM_OFF);
 
-            if (g_createMultiTileView.currentTile == CREATE_MULTI_IMPORT_SDCARD_XPUB) {
-                g_createMultiTileView.currentTile = CREATE_MULTI_CONFIRM_CO_SIGNERS;
-                g_createMultiTileView.currentSinger++;
-            }
+        if (g_createMultiTileView.currentTile == CREATE_MULTI_IMPORT_SDCARD_XPUB) {
+            g_createMultiTileView.currentTile = CREATE_MULTI_CONFIRM_CO_SIGNERS;
+            g_createMultiTileView.currentSinger++;
         }
     }
 }
 
 static void ImportMultiXpubHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     MoreInfoTable_t moreInfoTable[] = {
         {.name = _("create_multi_wallet_import_xpub_qr"), .src = &imgScanImport, .callBack = OpenViewHandler, &g_scanView},
         {.name = _("create_multi_wallet_import_xpub_sdcard"), .src = &imgSdcardImport, .callBack = CloseParentAndSetItemHandler, &g_noticeWindow},
     };
 
-    if (code == LV_EVENT_CLICKED) {
-        g_noticeWindow = GuiCreateMoreInfoHintBox(NULL, NULL, moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true, &g_noticeWindow);
-    }
+    g_noticeWindow = GuiCreateMoreInfoHintBox(NULL, NULL, moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true, &g_noticeWindow);
 }
 
 static void CancelCreateMultisigWalletHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiCLoseCurrentWorkingView();
-    }
+    GuiCLoseCurrentWorkingView();
 }
 
 static void StopCreateViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("create_multi_wallet_cancel_title"), _("create_multi_wallet_cancel_desc"), NULL,
-                         _("not_now"), WHITE_COLOR_OPA20, _("Cancel"), DEEP_ORANGE_COLOR);
-        lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-        lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-        lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
-        lv_obj_add_event_cb(rightBtn, CancelCreateMultisigWalletHandler, LV_EVENT_CLICKED, NULL);
-    }
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("create_multi_wallet_cancel_title"), _("create_multi_wallet_cancel_desc"), NULL,
+                     _("not_now"), WHITE_COLOR_OPA20, _("Cancel"), DEEP_ORANGE_COLOR);
+    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_add_event_cb(rightBtn, CancelCreateMultisigWalletHandler, LV_EVENT_CLICKED, NULL);
 }
 
 static void NumSelectSliceHandler(lv_event_t * e)
@@ -701,17 +674,13 @@ static void GuiCreateNameWalletWidget(lv_obj_t *parent)
 
 static void SelectCheckBoxHandler(lv_event_t* e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_t *newCheckBox = lv_event_get_user_data(e);
-        for (int i = 0; i < 3; i++) {
-            if (newCheckBox == g_formatCheckBox[i]) {
-                lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
-                g_chainType = XPUB_TYPE_BTC_MULTI_SIG_P2WSH - i;
-            } else {
-                lv_obj_clear_state(g_formatCheckBox[i], LV_STATE_CHECKED);
-            }
+    lv_obj_t *newCheckBox = lv_event_get_user_data(e);
+    for (int i = 0; i < 3; i++) {
+        if (newCheckBox == g_formatCheckBox[i]) {
+            lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
+            g_chainType = XPUB_TYPE_BTC_MULTI_SIG_P2WSH - i;
+        } else {
+            lv_obj_clear_state(g_formatCheckBox[i], LV_STATE_CHECKED);
         }
     }
 }
@@ -800,11 +769,7 @@ void GetMultiInfoFromFile(const char *path, XpubWidgetCache_t *xpub, ChainType c
 
 static void SelectFormatHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiCreateMultiNextTile(CREATE_MULTI_SELECT_SLICE);
-    }
+    GuiCreateMultiNextTile(CREATE_MULTI_SELECT_SLICE);
 }
 
 static void GetAndCreateMultiWallet(void)

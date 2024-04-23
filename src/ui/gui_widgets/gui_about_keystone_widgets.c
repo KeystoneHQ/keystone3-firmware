@@ -168,11 +168,8 @@ static void ShowQRDialogHandler(lv_event_t *e)
 
 static void GuiCloseQrcodeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (g_qrCodeCont != NULL) {
-            lv_obj_del(g_qrCodeCont);
-            g_qrCodeCont = NULL;
-        }
+    if (g_qrCodeCont != NULL) {
+        lv_obj_del(g_qrCodeCont);
+        g_qrCodeCont = NULL;
     }
 }

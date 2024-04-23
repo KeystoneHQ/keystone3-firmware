@@ -36,11 +36,8 @@ static KeyBoard_t *g_recoveryPhraseKb;          // recovery keyboard
 
 void ResetSeedCheckImportHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        ClearMnemonicKeyboard(g_recoveryMkb, &g_recoveryMkb->currentId);
-        GuiClearKeyBoard(g_recoveryPhraseKb);
-    }
+    ClearMnemonicKeyboard(g_recoveryMkb, &g_recoveryMkb->currentId);
+    GuiClearKeyBoard(g_recoveryPhraseKb);
 }
 
 void GuiWalletSeedCheckClearKb(void)
@@ -104,7 +101,7 @@ void GuiWalletRecoveryMethodCheck(lv_obj_t *parent)
             },
         };
         button = GuiCreateButton(cont, lv_obj_get_self_width(restartLabel) + 60, 66, restartTable, NUMBER_OF_ARRAYS(restartTable), RebootHandler, NULL);
-        lv_obj_align_to(button, disableDesc, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+        lv_obj_align_to(button, disableDesc, LV_ALIGN_OUT_BOTTOM_MID, 0, 54);
 
         return;
     }

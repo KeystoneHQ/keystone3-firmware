@@ -841,26 +841,22 @@ GetObjStateFunc GuiTemplateStateFuncGet(char *type)
 
 static void SwitchHidden(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
+    SetLvglFlagFunc clearHidden = lv_obj_add_flag;
+    SetLvglFlagFunc addHidden = lv_obj_clear_flag;
+    if (lv_obj_has_flag(g_defaultVector[0], LV_OBJ_FLAG_HIDDEN)) {
+        clearHidden = lv_obj_clear_flag;
+        addHidden = lv_obj_add_flag;
+    } else {
+        clearHidden = lv_obj_add_flag;
+        addHidden = lv_obj_clear_flag;
+    }
 
-    if (code == LV_EVENT_CLICKED) {
-        SetLvglFlagFunc clearHidden = lv_obj_add_flag;
-        SetLvglFlagFunc addHidden = lv_obj_clear_flag;
-        if (lv_obj_has_flag(g_defaultVector[0], LV_OBJ_FLAG_HIDDEN)) {
-            clearHidden = lv_obj_clear_flag;
-            addHidden = lv_obj_add_flag;
-        } else {
-            clearHidden = lv_obj_add_flag;
-            addHidden = lv_obj_clear_flag;
-        }
+    for (int i = 0; i < OBJ_VECTOR_MAX_LEN && g_defaultVector[i] != NULL; i++) {
+        clearHidden(g_defaultVector[i], LV_OBJ_FLAG_HIDDEN);
+    }
 
-        for (int i = 0; i < OBJ_VECTOR_MAX_LEN && g_defaultVector[i] != NULL; i++) {
-            clearHidden(g_defaultVector[i], LV_OBJ_FLAG_HIDDEN);
-        }
-
-        for (int i = 0; i < OBJ_VECTOR_MAX_LEN && g_hiddenVector[i] != NULL; i++) {
-            addHidden(g_hiddenVector[i], LV_OBJ_FLAG_HIDDEN);
-        }
+    for (int i = 0; i < OBJ_VECTOR_MAX_LEN && g_hiddenVector[i] != NULL; i++) {
+        addHidden(g_hiddenVector[i], LV_OBJ_FLAG_HIDDEN);
     }
 }
 

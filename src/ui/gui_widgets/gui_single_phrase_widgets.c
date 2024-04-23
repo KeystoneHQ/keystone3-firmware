@@ -55,10 +55,7 @@ static void SelectPhraseCntHandler(lv_event_t *e);
 
 static void UpdatePhraseHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiModelBip39UpdateMnemonic(g_phraseCnt);
-    }
+    GuiModelBip39UpdateMnemonic(g_phraseCnt);
 }
 
 static void GuiRandomPhraseWidget(lv_obj_t *parent)
@@ -331,10 +328,7 @@ static void SelectPhraseCntHandler(lv_event_t *e)
 
 static void ResetBtnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        ResetConfirmInput();
-    }
+    ResetConfirmInput();
 }
 
 int8_t GuiSinglePhraseNextTile(void)

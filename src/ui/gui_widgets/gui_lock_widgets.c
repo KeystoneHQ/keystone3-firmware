@@ -127,26 +127,23 @@ bool GuiLockScreenIsFirstUnlock(void)
 
 static void LockViewWipeDeviceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                            GUI_STATUS_BAR_HEIGHT);
-        lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT);
-        GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
+    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
+                                        GUI_STATUS_BAR_HEIGHT);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT);
+    GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
 
-        lv_obj_t *label = GuiCreateTextLabel(cont, _("system_settings_wipe_device_generating_title"));
-        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 355);
+    lv_obj_t *label = GuiCreateTextLabel(cont, _("system_settings_wipe_device_generating_title"));
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 355);
 
-        label = GuiCreateNoticeLabel(cont, _("system_settings_wipe_device_generating_desc1"));
-        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 410);
+    label = GuiCreateNoticeLabel(cont, _("system_settings_wipe_device_generating_desc1"));
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 410);
 
-        label = GuiCreateNoticeLabel(cont, _("system_settings_wipe_device_generating_desc2"));
-        lv_obj_set_width(label, 408);
-        lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
-        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 612);
-        GuiModelLockedDeviceDelAllWalletDesc();
-    }
+    label = GuiCreateNoticeLabel(cont, _("system_settings_wipe_device_generating_desc2"));
+    lv_obj_set_width(label, 408);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 612);
+    GuiModelLockedDeviceDelAllWalletDesc();
 }
 
 void GuiLockScreenWipeDevice(void)
@@ -269,10 +266,7 @@ void GuiLockScreenToHome(void)
 
 void GuiLockScreenTurnOffHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiLockScreenTurnOff();
-    }
+    GuiLockScreenTurnOff();
 }
 
 void GuiLockScreenPassCode(bool en)

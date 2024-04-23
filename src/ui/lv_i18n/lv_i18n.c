@@ -39,7 +39,7 @@ static inline uint32_t op_t(uint32_t val)
     return 0;
 }
 
-const static lv_i18n_phrase_t  en_singulars[] = {
+const static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
     {"Approve", "Approve"},
     {"Attention", "Attention"},
@@ -286,6 +286,7 @@ const static lv_i18n_phrase_t  en_singulars[] = {
     {"fingerprint_nth", "Finger %d"},
     {"fingerprint_nth_remove_desc", "Do you really want to delete Finger %d?"},
     {"fingerprint_nth_remove_title", "Remove Fingerprint?"},
+    {"fingerprint_nth_subtitle", "Finger %d"},
     {"fingerprint_passcode_fingerprint_setting", "Fingerprint Settings"},
     {"fingerprint_passcode_reset_passcode", "Reset Passcode"},
     {"fingerprint_remove", "Remove Fingerprint"},
@@ -335,6 +336,7 @@ const static lv_i18n_phrase_t  en_singulars[] = {
     {"firmware_update_via_usb", "Via USB"},
     {"forget_password_cancel", "Cancel Password Reset?"},
     {"forgot_password_reset_passcode_intro_desc", "Verify the seed phrase associated with this wallet to reset the passcode.Resetting your password may erase your wallet or multisig wallet data"},
+    {"forgot_password_reset_passcode_intro_text", "Forgot passcode?"},
     {"forgot_password_reset_passcode_intro_title", "Forgot passcode?"},
     {"generating_qr_codes", "Generating QR Codes"},
     {"got_it", "Got It"},
@@ -533,6 +535,7 @@ const static lv_i18n_phrase_t  en_singulars[] = {
     {"sdcard_format_subtitle", "Format MicroSD Card"},
     {"sdcard_format_success_desc", "How about - The MicroSD Card has been successfully formatted to FAT32."},
     {"sdcard_format_success_title", "Formatting Complete"},
+    {"sdcard_format_text", "Format MicroSD Card"},
     {"sdcard_formating", "Formatting"},
     {"sdcard_formating_desc", "Do not remove the MicroSD card while formatting is in progress."},
     {"seed_check_passphrase_notice", "You are presently using a passphrase-protected wallet. Prior to proceeding with the seed phrase verification process, please restart your device without entering the passphrase."},
@@ -761,7 +764,7 @@ static const lv_i18n_lang_t en_lang = {
     .locale_plural_fn = en_plural_fn
 };
 
-const static lv_i18n_phrase_t  ko_singulars[] = {
+const static lv_i18n_phrase_t ko_singulars[] = {
     {"Address", "주소"},
     {"Approve", "승인"},
     {"Attention", "주의"},
@@ -849,8 +852,8 @@ const static lv_i18n_phrase_t  ko_singulars[] = {
     {"about_terms_title", "이용약관"},
     {"about_terms_website_url", "https://keyst.one/terms"},
     {"account_head", "계정 전환"},
-    {"auto_shutdown", ""},
-    {"auto_shutdown_20", ""},
+    {"auto_shutdown", "자동 종료 시간"},
+    {"auto_shutdown_20", "자동 종료 시간"},
     {"calculat_modal_title", "계산 중 "},
     {"change_entropy", "엔트로피 변경"},
     {"change_entropy_desc", "지갑을 만들 엔트로피 선택"},
@@ -1008,6 +1011,7 @@ const static lv_i18n_phrase_t  ko_singulars[] = {
     {"fingerprint_nth", "손가락 %d"},
     {"fingerprint_nth_remove_desc", "지문 %d을(를) 삭제하시겠습니까?"},
     {"fingerprint_nth_remove_title", "지문 제거?"},
+    {"fingerprint_nth_subtitle", "손가락 %d"},
     {"fingerprint_passcode_fingerprint_setting", "지문 설정"},
     {"fingerprint_passcode_reset_passcode", "암호 재설정"},
     {"fingerprint_remove", "지문 제거"},
@@ -1052,11 +1056,12 @@ const static lv_i18n_phrase_t  ko_singulars[] = {
     {"firmware_update_usb_title", "USB 업데이트"},
     {"firmware_update_usb_title2", "경고"},
     {"firmware_update_usb_updating_hint", "업그레이드 중, USB 연결을 유지해 주세요."},
-    {"firmware_update_verify_firmware_qr_link", "KeystoneHQ/keystone3-firmware/docs/\r\nverify.md "},
+    {"firmware_update_verify_firmware_qr_link", "KeystoneHQ/keystone3-firmware/docs/verify.md"},
     {"firmware_update_via_sd", "MicroSD 카드"},
     {"firmware_update_via_usb", "USB"},
     {"forget_password_cancel", "암호 재설정 취소?"},
     {"forgot_password_reset_passcode_intro_desc", "이 지갑과 연결된 구문을 확인하여 암호를 재설정합니다.암호를 재설정하면 지갑이나 다중 서명 지갑의 데이터를 지울 수 있습니다"},
+    {"forgot_password_reset_passcode_intro_text", "비밀번호를 잊어버렸습니까?"},
     {"forgot_password_reset_passcode_intro_title", "비밀번호를 잊어버렸습니까?"},
     {"generating_qr_codes", "QR 코드 생성"},
     {"got_it", "알겠어요."},
@@ -1255,6 +1260,7 @@ const static lv_i18n_phrase_t  ko_singulars[] = {
     {"sdcard_format_subtitle", "마이크로SD 카드 포맷"},
     {"sdcard_format_success_desc", "MicroSD 카드가 FAT32로 성공적으로 포맷되었습니다."},
     {"sdcard_format_success_title", "포맷 완료"},
+    {"sdcard_format_text", "마이크로SD 카드 포맷"},
     {"sdcard_formating", "포맷 진행중 "},
     {"sdcard_formating_desc", "포맷 과정에서 MicroSD 카드를 제거하지 마십시오."},
     {"seed_check_passphrase_notice", "현재 비밀번호로 보호되는 지갑을 사용하고 있습니다.구문 인증 과정을 계속하기 전에 비밀번호를 입력하지 않고 장치를 재부팅하십시오."},
@@ -1437,7 +1443,7 @@ const static lv_i18n_phrase_t  ko_singulars[] = {
     {"wallet_profile_no_multi_wallet_notice", "다중 서명 지갑 없음"},
     {"wallet_profile_single_sign_title", "싱글시그월렛"},
     {"wallet_profile_single_wallet_title", "싱글사인 월렛"},
-    {"wallet_setting_add_wallet", "#ERROR!"},
+    {"wallet_setting_add_wallet", "+ 지갑 추가"},
     {"wallet_setting_add_wallet_confirm", "알겠습니다"},
     {"wallet_setting_add_wallet_limit", "제한 추가"},
     {"wallet_setting_add_wallet_limit_desc", "지갑은 최대 3개까지만 추가할 수 있습니다.새 지갑을 추가하기 전에 다른 지갑을 삭제해 주세요."},
@@ -1478,7 +1484,7 @@ static const lv_i18n_lang_t ko_lang = {
     .locale_plural_fn = ko_plural_fn
 };
 
-const static lv_i18n_phrase_t  ru_singulars[] = {
+const static lv_i18n_phrase_t ru_singulars[] = {
     {"Address", "Адрес"},
     {"Approve", "Разрешить"},
     {"Attention", "Внимание"},
@@ -1725,6 +1731,7 @@ const static lv_i18n_phrase_t  ru_singulars[] = {
     {"fingerprint_nth", "Палец %d"},
     {"fingerprint_nth_remove_desc", "Вы точно хотите удалить отпечаток %d?"},
     {"fingerprint_nth_remove_title", "Удалить отпечаток?"},
+    {"fingerprint_nth_subtitle", "Палец %d"},
     {"fingerprint_passcode_fingerprint_setting", "Настройки отпечатков"},
     {"fingerprint_passcode_reset_passcode", "Сброс код-пароля"},
     {"fingerprint_remove", "Удалить отпечаток"},
@@ -1774,6 +1781,7 @@ const static lv_i18n_phrase_t  ru_singulars[] = {
     {"firmware_update_via_usb", "Через USB кабель"},
     {"forget_password_cancel", "Отменить сброс пароля?"},
     {"forgot_password_reset_passcode_intro_desc", ""},
+    {"forgot_password_reset_passcode_intro_text", "Забыли код-пароль?"},
     {"forgot_password_reset_passcode_intro_title", "Забыли код-пароль?"},
     {"generating_qr_codes", "Генерируются QR-коды"},
     {"got_it", "Понятно"},
@@ -1972,6 +1980,7 @@ const static lv_i18n_phrase_t  ru_singulars[] = {
     {"sdcard_format_subtitle", ""},
     {"sdcard_format_success_desc", ""},
     {"sdcard_format_success_title", ""},
+    {"sdcard_format_text", ""},
     {"sdcard_formating", ""},
     {"sdcard_formating_desc", ""},
     {"seed_check_passphrase_notice", "В настоящее время вы используете кошелек, защищенный кодовой фразой. Прежде чем приступить к процессу проверки сид фразы, пожалуйста, перезагрузите свое устройство, не вводя кодовую фразу."},
@@ -2203,7 +2212,7 @@ static const lv_i18n_lang_t ru_lang = {
     .locale_plural_fn = ru_plural_fn
 };
 
-const static lv_i18n_phrase_t  zh_cn_singulars[] = {
+const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"Address", "地址"},
     {"Approve", "允许"},
     {"Attention", "注意"},
@@ -2450,6 +2459,7 @@ const static lv_i18n_phrase_t  zh_cn_singulars[] = {
     {"fingerprint_nth", "指纹 %d"},
     {"fingerprint_nth_remove_desc", "您真的想删除Finger%D吗?"},
     {"fingerprint_nth_remove_title", "删除指纹?"},
+    {"fingerprint_nth_subtitle", "指纹 %d"},
     {"fingerprint_passcode_fingerprint_setting", "指纹设置"},
     {"fingerprint_passcode_reset_passcode", "重置密码"},
     {"fingerprint_remove", "删除指纹"},
@@ -2494,11 +2504,12 @@ const static lv_i18n_phrase_t  zh_cn_singulars[] = {
     {"firmware_update_usb_title", "USB更新"},
     {"firmware_update_usb_title2", "警告"},
     {"firmware_update_usb_updating_hint", "升级中,请保持USB连接."},
-    {"firmware_update_verify_firmware_qr_link", "KeystoneHQ/keystone3-firmware/docs/\r\nverify.md "},
+    {"firmware_update_verify_firmware_qr_link", "KeystoneHQ/keystone3-firmware/docs/verify.md"},
     {"firmware_update_via_sd", "microSD卡"},
     {"firmware_update_via_usb", "USB"},
     {"forget_password_cancel", "取消密码重置?"},
     {"forgot_password_reset_passcode_intro_desc", "验证与此钱包关联的助记词以重置密码.重置密码可能会擦除您的钱包或多重签名钱包数据"},
+    {"forgot_password_reset_passcode_intro_text", "忘记密码?"},
     {"forgot_password_reset_passcode_intro_title", "忘记密码?"},
     {"generating_qr_codes", "生成二维码"},
     {"got_it", "知道了"},
@@ -2697,6 +2708,7 @@ const static lv_i18n_phrase_t  zh_cn_singulars[] = {
     {"sdcard_format_subtitle", "格式化 MicroSD 卡"},
     {"sdcard_format_success_desc", "这样就好了 - MicroSD 卡已成功格式化为 FAT32."},
     {"sdcard_format_success_title", "格式化完成"},
+    {"sdcard_format_text", "格式化 MicroSD 卡"},
     {"sdcard_formating", "正在格式化"},
     {"sdcard_formating_desc", "在格式化过程中请勿移除 MicroSD 卡."},
     {"seed_check_passphrase_notice", "您目前正在使用受密码保护的钱包.在继续助记词验证过程之前,请在不输入密码的情况下重新启动您的设备."},
@@ -2879,7 +2891,7 @@ const static lv_i18n_phrase_t  zh_cn_singulars[] = {
     {"wallet_profile_no_multi_wallet_notice", "尚无多重签名钱包"},
     {"wallet_profile_single_sign_title", "单签钱包"},
     {"wallet_profile_single_wallet_title", "单重签名钱包"},
-    {"wallet_setting_add_wallet", "+添加钱包"},
+    {"wallet_setting_add_wallet", "+ 添加钱包"},
     {"wallet_setting_add_wallet_confirm", "我明白"},
     {"wallet_setting_add_wallet_limit", "添加限制"},
     {"wallet_setting_add_wallet_limit_desc", "您只能添加最多 3 个钱包.请在添加新钱包之前删除其他钱包."},

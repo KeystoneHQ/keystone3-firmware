@@ -3,10 +3,7 @@
 
 static void CloseButtonContHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_del(lv_event_get_user_data(e));
-    }
+    lv_obj_del(lv_event_get_user_data(e));
 }
 
 void *GuiCreateButton(lv_obj_t *parent, uint16_t w, uint16_t h, GuiButton_t *member,
@@ -34,9 +31,8 @@ void *GuiCreateButton(lv_obj_t *parent, uint16_t w, uint16_t h, GuiButton_t *mem
 void *GuiCreateImgButton(lv_obj_t *parent, const void *src, uint16_t width,
                          lv_event_cb_t buttonCb, void *param)
 {
-    lv_obj_t *img = GuiCreateImg(parent, src);
     GuiButton_t table[] = {
-        {.obj = img, .align = LV_ALIGN_CENTER, .position = {0, 0},},
+        {.obj = GuiCreateImg(parent, src), .align = LV_ALIGN_CENTER, .position = {0, 0},},
     };
     lv_obj_t *button = GuiCreateButton(parent, width, width, table, NUMBER_OF_ARRAYS(table),
                                        buttonCb, param);
@@ -47,11 +43,9 @@ void *GuiCreateImgButton(lv_obj_t *parent, const void *src, uint16_t width,
 void *GuiCreateImgLabelButton(lv_obj_t *parent, const char *text, const void *src, uint16_t width,
                               lv_event_cb_t buttonCb, void *param)
 {
-    lv_obj_t *label = GuiCreateIllustrateLabel(parent, text);
-    lv_obj_t *img = GuiCreateImg(parent, src);
     GuiButton_t table[] = {
-        {.obj = img, .align = LV_ALIGN_LEFT_MID, .position = {12, 0},},
-        {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {40, 0},},
+        {.obj = GuiCreateImg(parent, src), .align = LV_ALIGN_LEFT_MID, .position = {12, 0},},
+        {.obj = GuiCreateIllustrateLabel(parent, text), .align = LV_ALIGN_LEFT_MID, .position = {40, 0},},
     };
     lv_obj_t *button = GuiCreateButton(parent, width, 36, table, NUMBER_OF_ARRAYS(table),
                                        buttonCb, param);

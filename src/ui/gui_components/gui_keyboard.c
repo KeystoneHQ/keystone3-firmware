@@ -1095,25 +1095,22 @@ void UpdateKeyBoard(TrieSTPtr root, const char *str, KeyBoard_t *keyBoard)
 
 static void LetterKbAssociateHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     KeyBoard_t *keyBoard = lv_event_get_user_data(e);
-    if (code == LV_EVENT_CLICKED) {
-        char *text = lv_label_get_text(lv_obj_get_child(lv_event_get_target(e), 0));
-        char buf[1] = {0};
-        if (strlen(text) <= 0) {
-            return;
-        }
-        strcpy_s(g_wordChange, GUI_KEYBOARD_CANDIDATE_WORDS_LEN, text);
-        if (g_importPhraseKb != NULL) {
-            lv_event_send(g_importPhraseKb->btnm, LV_EVENT_READY, g_wordChange);
-        }
-        lv_textarea_set_text(keyBoard->ta, "");
-        for (int i = 0; i < 3; i++) {
-            lv_label_set_text(keyBoard->associateLabel[i], "");
-            memset_s(g_wordBuf[i], sizeof(g_wordBuf[0]), 0, sizeof(g_wordBuf[0]));
-        }
-        UpdateKeyBoard(rootTree, buf, keyBoard);
+    char *text = lv_label_get_text(lv_obj_get_child(lv_event_get_target(e), 0));
+    char buf[1] = {0};
+    if (strlen(text) <= 0) {
+        return;
     }
+    strcpy_s(g_wordChange, GUI_KEYBOARD_CANDIDATE_WORDS_LEN, text);
+    if (g_importPhraseKb != NULL) {
+        lv_event_send(g_importPhraseKb->btnm, LV_EVENT_READY, g_wordChange);
+    }
+    lv_textarea_set_text(keyBoard->ta, "");
+    for (int i = 0; i < 3; i++) {
+        lv_label_set_text(keyBoard->associateLabel[i], "");
+        memset_s(g_wordBuf[i], sizeof(g_wordBuf[0]), 0, sizeof(g_wordBuf[0]));
+    }
+    UpdateKeyBoard(rootTree, buf, keyBoard);
 }
 
 static void CloseLetterKbHandler(lv_event_t *e)
@@ -1272,7 +1269,7 @@ void *GuiCreateLetterKeyBoard(lv_obj_t *parent, lv_event_cb_t cb, bool bip39, vo
     lv_obj_t *label1 = GuiCreateTextLabel(btn, "");
     lv_obj_set_align(label1, LV_ALIGN_CENTER);
     lv_obj_set_style_text_color(label1, WHITE_COLOR, 0);
-    lv_obj_add_event_cb(btn, LetterKbAssociateHandler, LV_EVENT_ALL, keyBoard);
+    lv_obj_add_event_cb(btn, LetterKbAssociateHandler, LV_EVENT_CLICKED, keyBoard);
     keyBoard->associateLabel[0] = label1;
     lv_obj_t *line = GuiCreateLine(cont, linePoints, 2);
     lv_obj_align_to(line, btn, LV_ALIGN_OUT_RIGHT_MID, 5, 15);
@@ -1285,7 +1282,7 @@ void *GuiCreateLetterKeyBoard(lv_obj_t *parent, lv_event_cb_t cb, bool bip39, vo
     lv_obj_t *label2 = GuiCreateTextLabel(btn, "");
     lv_obj_set_align(label2, LV_ALIGN_CENTER);
     lv_obj_set_style_text_color(label2, WHITE_COLOR, 0);
-    lv_obj_add_event_cb(btn, LetterKbAssociateHandler, LV_EVENT_ALL, keyBoard);
+    lv_obj_add_event_cb(btn, LetterKbAssociateHandler, LV_EVENT_CLICKED, keyBoard);
     keyBoard->associateLabel[1] = label2;
     line = GuiCreateLine(cont, linePoints, 2);
     lv_obj_align_to(line, btn, LV_ALIGN_OUT_RIGHT_MID, 5, 15);
@@ -1298,7 +1295,7 @@ void *GuiCreateLetterKeyBoard(lv_obj_t *parent, lv_event_cb_t cb, bool bip39, vo
     lv_obj_t *label3 = GuiCreateTextLabel(btn, "");
     lv_obj_set_align(label3, LV_ALIGN_CENTER);
     lv_obj_set_style_text_color(label3, WHITE_COLOR, 0);
-    lv_obj_add_event_cb(btn, LetterKbAssociateHandler, LV_EVENT_ALL, keyBoard);
+    lv_obj_add_event_cb(btn, LetterKbAssociateHandler, LV_EVENT_CLICKED, keyBoard);
     keyBoard->associateLabel[2] = label3;
 
     btn = GuiCreateImgButton(keyBoard->cont, &imgArrowDownS, 50, CloseLetterKbHandler, keyBoard);

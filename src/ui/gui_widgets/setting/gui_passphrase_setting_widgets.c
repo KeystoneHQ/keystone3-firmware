@@ -148,7 +148,6 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent)
     lv_obj_set_style_bg_color(repeatTa, BLACK_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_color(repeatTa, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_border_opa(repeatTa, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_text_font(repeatTa, &buttonFont, LV_PART_MAIN);
     lv_textarea_set_max_length(repeatTa, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(repeatTa, true);
     lv_obj_set_scrollbar_mode(repeatTa, LV_SCROLLBAR_MODE_OFF);

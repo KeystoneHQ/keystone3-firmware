@@ -332,11 +332,9 @@ void PassWordPinSwitch(GuiEnterPasscodeItem_t *item)
 
 static void PassWordPinSwitchHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiEnterPasscodeItem_t *item = g_passParam.setpinParam;
-        PassWordPinSwitch(item);
-    }
+
+    GuiEnterPasscodeItem_t *item = g_passParam.setpinParam;
+    PassWordPinSwitch(item);
 }
 
 void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *passCodeParam)
@@ -728,17 +726,15 @@ void GuiFingerPrintStatus(GuiEnterPasscodeItem_t *item, bool en, uint8_t errCnt)
 
 void SwitchPasswordModeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_t *ta = lv_event_get_user_data(e);
-        lv_obj_t *img = lv_event_get_target(e);
-        bool en = lv_textarea_get_password_mode(ta);
-        lv_textarea_set_password_mode(ta, !en);
-        if (en) {
-            lv_img_set_src(img, &imgEyeOn);
-        } else {
-            lv_img_set_src(img, &imgEyeOff);
-        }
+
+    lv_obj_t *ta = lv_event_get_user_data(e);
+    lv_obj_t *img = lv_event_get_target(e);
+    bool en = lv_textarea_get_password_mode(ta);
+    lv_textarea_set_password_mode(ta, !en);
+    if (en) {
+        lv_img_set_src(img, &imgEyeOn);
+    } else {
+        lv_img_set_src(img, &imgEyeOff);
     }
 }
 

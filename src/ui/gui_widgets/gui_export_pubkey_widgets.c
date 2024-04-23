@@ -114,22 +114,18 @@ static bool g_isMultisig = false;
 void OpenExportViewHandler(lv_event_t *e)
 {
     static HOME_WALLET_CARD_ENUM chainCard = HOME_WALLET_CARD_BTC;
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        g_isTest = *(bool *)lv_event_get_user_data(e);
-        GuiFrameOpenViewWithParam(&g_exportPubkeyView, &chainCard, sizeof(chainCard));
-    }
+
+    g_isTest = *(bool *)lv_event_get_user_data(e);
+    GuiFrameOpenViewWithParam(&g_exportPubkeyView, &chainCard, sizeof(chainCard));
 }
 
 #ifdef BTC_ONLY
 void OpenExportMultisigViewHandler(lv_event_t *e)
 {
     static HOME_WALLET_CARD_ENUM chainCard = HOME_WALLET_CARD_BTC_MULTISIG;
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        g_isMultisig = true;
-        GuiFrameOpenViewWithParam(&g_exportPubkeyView, &chainCard, sizeof(chainCard));
-    }
+
+    g_isMultisig = true;
+    GuiFrameOpenViewWithParam(&g_exportPubkeyView, &chainCard, sizeof(chainCard));
 }
 
 static int CreateExportPubkeyComponent(char *xpub, uint32_t maxLen)
@@ -163,16 +159,15 @@ static int CreateExportPubkeyComponent(char *xpub, uint32_t maxLen)
 static void GuiWriteToMicroCardHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_noticeWindow)
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        char *xPubBuff = EXT_MALLOC(1024);
-        int len = CreateExportPubkeyComponent(xPubBuff, 1024);
-        int ret = FileWrite(g_xpubConfigName, xPubBuff, len);
-        if (ret) {
-            g_noticeWindow =  GuiCreateErrorCodeWindow(ERR_EXPORT_FILE_TO_MICRO_CARD_FAILED, &g_noticeWindow, NULL);
-        }
-        EXT_FREE(xPubBuff);
+
+    char *xPubBuff = EXT_MALLOC(1024);
+    int len = CreateExportPubkeyComponent(xPubBuff, 1024);
+    int ret = FileWrite(g_xpubConfigName, xPubBuff, len);
+    if (ret) {
+        g_noticeWindow =  GuiCreateErrorCodeWindow(ERR_EXPORT_FILE_TO_MICRO_CARD_FAILED, &g_noticeWindow, NULL);
     }
+    EXT_FREE(xPubBuff);
+}
 }
 
 static void GuiExportXpubToMicroCard(void)
@@ -458,28 +453,24 @@ static void CloseSwitchPathTypeHandler(lv_event_t *e)
 
 static void SelectItemCheckHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *checkBox;
 
-    if (code == LV_EVENT_CLICKED) {
-        checkBox = lv_event_get_target(e);
-        for (uint32_t i = 0; i < g_btcPathNum; i++) {
-            if (checkBox == g_widgets.selectItems[i].checkBox) {
-                SetCheckboxState(i, true);
-                g_tmpSelectIndex = i;
-                SetEgContent(i);
-                UpdateConfirmBtn();
-            } else {
-                SetCheckboxState(i, false);
-            }
+    checkBox = lv_event_get_target(e);
+    for (uint32_t i = 0; i < g_btcPathNum; i++) {
+        if (checkBox == g_widgets.selectItems[i].checkBox) {
+            SetCheckboxState(i, true);
+            g_tmpSelectIndex = i;
+            SetEgContent(i);
+            UpdateConfirmBtn();
+        } else {
+            SetCheckboxState(i, false);
         }
     }
 }
 
 static void ConfirmHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED && g_tmpSelectIndex != GetPathType()) {
+    if (g_tmpSelectIndex != GetPathType()) {
         SetPathType(g_tmpSelectIndex);
         GuiGotoTileview(TILEVIEW_QRCODE);
     }

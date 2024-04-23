@@ -73,12 +73,9 @@ void GuiSettingCloseToTargetTileView(uint8_t targetIndex)
 void WalletSettingHandler(lv_event_t *e)
 {
     static uint8_t walletIndex = 0;
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        uint8_t *walletSetIndex = lv_event_get_user_data(e);
-        walletIndex = *walletSetIndex;
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
-    }
+    uint8_t *walletSetIndex = lv_event_get_user_data(e);
+    walletIndex = *walletSetIndex;
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
 }
 
 static void CloseToFingerAndPassView(lv_event_t *e)
@@ -171,10 +168,7 @@ static void GuiPassphraseOpenQRCodeHintBox()
 
 static void OpenPassphraseQrCodeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiPassphraseOpenQRCodeHintBox();
-    }
+    GuiPassphraseOpenQRCodeHintBox();
 }
 
 static void GuiOpenPassphraseLearnMore()
@@ -271,10 +265,7 @@ static void GuiWalletAddLimit(lv_obj_t *parent)
 
 static void AboutHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiFrameOpenView(&g_aboutView);
-    }
+    GuiFrameOpenView(&g_aboutView);
 }
 
 static void GuiSettingEntranceWidget(lv_obj_t *parent)
@@ -333,13 +324,10 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
 static void SelectPhraseAmountHandler(lv_event_t *e)
 {
     static uint8_t walletIndex = 0;
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_selectAmountHintbox)
-        uint8_t *walletSetIndex = lv_event_get_user_data(e);
-        walletIndex = *walletSetIndex;
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
-    }
+    GUI_DEL_OBJ(g_selectAmountHintbox)
+    uint8_t *walletSetIndex = lv_event_get_user_data(e);
+    walletIndex = *walletSetIndex;
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
 }
 void GuiSettingCloseSelectAmountHintBox()
 {

@@ -109,7 +109,7 @@ void GuiPassphraseInit(void)
     lv_obj_set_style_bg_color(ta, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_color(ta, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_border_opa(ta, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_text_font(ta, &buttonFont, LV_PART_MAIN);
+    lv_obj_set_style_text_font(ta, g_defTextFont, LV_PART_MAIN);
     lv_textarea_set_max_length(ta, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(ta, true);
     lv_obj_set_scrollbar_mode(ta, LV_SCROLLBAR_MODE_OFF);

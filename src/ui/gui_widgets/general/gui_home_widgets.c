@@ -416,14 +416,10 @@ bool GuiHomePageIsTop(void)
 
 void ReturnManageWalletHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        UpdateManageWalletState(false);
-        GUI_DEL_OBJ(g_lastCosmosLine)
-        GUI_DEL_OBJ(g_manageCont);
-        GuiEmitSignal(GUI_EVENT_REFRESH, NULL, 0);
-    }
+    UpdateManageWalletState(false);
+    GUI_DEL_OBJ(g_lastCosmosLine)
+    GUI_DEL_OBJ(g_manageCont);
+    GuiEmitSignal(GUI_EVENT_REFRESH, NULL, 0);
 }
 
 static void UpdateHomeConnectWalletCard(void)
@@ -476,30 +472,26 @@ static void UpdateHomeConnectWalletCard(void)
 
 static void CoinDealHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     HOME_WALLET_CARD_ENUM coin;
+    coin = *(HOME_WALLET_CARD_ENUM *)lv_event_get_user_data(e);
 
-    if (code == LV_EVENT_CLICKED) {
-        coin = *(HOME_WALLET_CARD_ENUM *)lv_event_get_user_data(e);
-
-        switch (coin) {
-        case HOME_WALLET_CARD_BTC:
-        case HOME_WALLET_CARD_LTC:
-        case HOME_WALLET_CARD_DASH:
-        case HOME_WALLET_CARD_BCH:
-            GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
-            break;
-        case HOME_WALLET_CARD_ETH:
-        case HOME_WALLET_CARD_SOL:
-            GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
-            break;
-        case HOME_WALLET_CARD_ADA:
-            GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
-            break;
-        default:
-            GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
-            break;
-        }
+    switch (coin) {
+    case HOME_WALLET_CARD_BTC:
+    case HOME_WALLET_CARD_LTC:
+    case HOME_WALLET_CARD_DASH:
+    case HOME_WALLET_CARD_BCH:
+        GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
+        break;
+    case HOME_WALLET_CARD_ETH:
+    case HOME_WALLET_CARD_SOL:
+        GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
+        break;
+    case HOME_WALLET_CARD_ADA:
+        GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
+        break;
+    default:
+        GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
+        break;
     }
 }
 
@@ -524,65 +516,49 @@ static void UpdateCosmosEnable(bool en)
 
 static void ManageCoinChainHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        bool state;
-        WalletState_t *wallet = lv_event_get_user_data(e);
-        if (wallet->index == HOME_WALLET_CARD_COSMOS) {
-            state = g_walletBakState[wallet->index].state;
-            if (state) {
-                lv_img_set_src(g_cosmosPulldownImg, &imgArrowRight);
-            } else {
-                lv_img_set_src(g_cosmosPulldownImg, &imgArrowDown);
-            }
-            UpdateCosmosEnable(!state);
-            g_walletBakState[wallet->index].state = !state;
+    bool state;
+    WalletState_t *wallet = lv_event_get_user_data(e);
+    if (wallet->index == HOME_WALLET_CARD_COSMOS) {
+        state = g_walletBakState[wallet->index].state;
+        if (state) {
+            lv_img_set_src(g_cosmosPulldownImg, &imgArrowRight);
         } else {
-            lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
-            state = lv_obj_has_state(lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 1), LV_STATE_CHECKED);
-            g_walletBakState[wallet->index].state = state;
-            UpdateManageWalletState(false);
+            lv_img_set_src(g_cosmosPulldownImg, &imgArrowDown);
         }
+        UpdateCosmosEnable(!state);
+        g_walletBakState[wallet->index].state = !state;
+    } else {
+        lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
+        state = lv_obj_has_state(lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 1), LV_STATE_CHECKED);
+        g_walletBakState[wallet->index].state = state;
+        UpdateManageWalletState(false);
     }
 }
 
 void ScanQrCodeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        g_isManageClick = false;
-        if (g_countDownTimer != NULL) {
-            lv_timer_del(g_countDownTimer);
-            g_countDownTimer = NULL;
-        }
-
-        GuiFrameOpenView(lv_event_get_user_data(e));
+    g_isManageClick = false;
+    if (g_countDownTimer != NULL) {
+        lv_timer_del(g_countDownTimer);
+        g_countDownTimer = NULL;
     }
+
+    GuiFrameOpenView(lv_event_get_user_data(e));
 }
 
 void ConfirmManageAssetsHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        UpdateManageWalletState(true);
-        UpdateHomeConnectWalletCard();
-        GUI_DEL_OBJ(g_lastCosmosLine)
-        GUI_DEL_OBJ(g_manageCont)
-        GuiHomeRefresh();
-    }
+    UpdateManageWalletState(true);
+    UpdateHomeConnectWalletCard();
+    GUI_DEL_OBJ(g_lastCosmosLine)
+    GUI_DEL_OBJ(g_manageCont)
+    GuiHomeRefresh();
 }
 
 static void OpenMoreViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_moreHintbox)
-        GuiFrameOpenView(lv_event_get_user_data(e));
-    }
+    GUI_DEL_OBJ(g_moreHintbox)
+    GuiFrameOpenView(lv_event_get_user_data(e));
 }
 
 static void OpenMoreSettingHandler(lv_event_t *e)

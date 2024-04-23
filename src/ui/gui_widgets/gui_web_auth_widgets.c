@@ -46,15 +46,11 @@ void GuiWebAuthSuccessCbSetting()
 
 void GuiWebAuthScanQRCodeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiFrameOpenView(&g_scanView);
-        if (g_webAuthEntry == WEB_AUTH_ENTRY_SETUP) {
-            GuiWebAuthResultSetSuccessCb(GuiWebAuthSuccessCbSetup);
-        } else {
-            GuiWebAuthResultSetSuccessCb(GuiWebAuthSuccessCbSetting);
-        }
+    GuiFrameOpenView(&g_scanView);
+    if (g_webAuthEntry == WEB_AUTH_ENTRY_SETUP) {
+        GuiWebAuthResultSetSuccessCb(GuiWebAuthSuccessCbSetup);
+    } else {
+        GuiWebAuthResultSetSuccessCb(GuiWebAuthSuccessCbSetting);
     }
 }
 
@@ -172,10 +168,7 @@ void GuiWebAuthInitNVSBar()
 
 static void GuiGoToFirmwareUpdateViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiFrameOpenViewWithParam(&g_firmwareUpdateView, &g_firmwareWareEntry, sizeof(g_firmwareWareEntry));
-    }
+    GuiFrameOpenViewWithParam(&g_firmwareUpdateView, &g_firmwareWareEntry, sizeof(g_firmwareWareEntry));
 }
 
 static void GuiOpenQRCodeHintBox()
@@ -185,9 +178,5 @@ static void GuiOpenQRCodeHintBox()
 
 static void GuiWebAuthQrcodeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiOpenQRCodeHintBox();
-    }
+    GuiOpenQRCodeHintBox();
 }

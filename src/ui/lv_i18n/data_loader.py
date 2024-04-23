@@ -26,11 +26,11 @@ with open("./data.csv", newline="", encoding='utf-8') as csvfile:
         id = row['ID']
         en[id] = row['en']
         if args.ru:
-            ru[id] = row['Russian']
+            ru[id] = row['ru']
         if args.zh:
             cn[id] = row['cn']
         if args.ko:
-            ko[id] = row['Korean']
+            ko[id] = row['ko']
 
 with open("./en.yml", 'w', encoding='utf-8') as f:
     yaml.dump({'en': en}, f, default_flow_style=False)

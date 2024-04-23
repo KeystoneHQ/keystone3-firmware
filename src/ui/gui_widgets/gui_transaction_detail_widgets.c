@@ -96,17 +96,14 @@ static TransactionMode GetCurrentTransactionMode(void)
 
 static void TransactionGoToHomeViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
 #ifndef BTC_ONLY
-        if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
-            const char *data = "UR parsing rejected";
-            HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_REJECTED);
-        }
-#endif
-        CloseQRTimer();
-        GuiCloseToTargetView(&g_homeView);
+    if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
+        const char *data = "UR parsing rejected";
+        HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_REJECTED);
     }
+#endif
+    CloseQRTimer();
+    GuiCloseToTargetView(&g_homeView);
 }
 
 void GuiSetCurrentTransactionType(TransactionType t)
@@ -131,10 +128,7 @@ bool GuiGetCurrentTransactionNeedSign()
 
 static void GuiBroadcastBtnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiTransactionDetailVerifyPasswordSuccess();
-    }
+    GuiTransactionDetailVerifyPasswordSuccess();
 }
 
 void *GuiCreateBroadcastBtn(lv_obj_t *parent, lv_event_cb_t cb)
@@ -332,18 +326,12 @@ static void SignByPasswordCb(bool cancel)
 
 static void SignByPasswordCbHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        SignByPasswordCb(true);
-    }
+    SignByPasswordCb(true);
 }
 
 static void CloseContHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_fingerSingContainer)
-    }
+    GUI_DEL_OBJ(g_fingerSingContainer)
 }
 
 static void SignByFinger(void)

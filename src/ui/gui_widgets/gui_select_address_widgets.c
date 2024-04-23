@@ -258,11 +258,8 @@ void GuiDestroySelectAddressWidget()
 
 static void BackHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiDestroySelectAddressWidget();
-        g_setSelectIndexFunc(g_initedSelectIndex);
-    }
+    GuiDestroySelectAddressWidget();
+    g_setSelectIndexFunc(g_initedSelectIndex);
 }
 
 static void ConfirmHandler(lv_event_t *e)

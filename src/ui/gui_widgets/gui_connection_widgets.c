@@ -113,7 +113,7 @@ void GuiConnectionEntranceWidget(lv_obj_t *parent)
     table[0].align = LV_ALIGN_LEFT_MID;
     table[0].position.x = 24;
     table[0].position.y = 0;
-    table[1].obj = GuiCreateTextLabel(parent, _("sdcard_format_subtitle"));
+    table[1].obj = GuiCreateTextLabel(parent, _("sdcard_format_text"));
     table[1].position.x = 76;
     button = GuiCreateButton(parent, 456, 84, table, 2, FormatMicroSDWindowHandler, NULL);
     lv_obj_align_to(button, line, LV_ALIGN_OUT_BOTTOM_MID, 0, 12);
@@ -140,47 +140,38 @@ void FormatMicroHandleResult(int32_t errCode)
 
 static void FormatMicroSDHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeWindow)
-        if (SdCardInsert()) {
-            g_noticeWindow = GuiCreateAnimHintBox(480, 356, 82);
-            lv_obj_t *title = GuiCreateTextLabel(g_noticeWindow, _("sdcard_formating"));
-            lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -154);
-            lv_obj_t *desc = GuiCreateNoticeLabel(g_noticeWindow, _("sdcard_formating_desc"));
-            lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -76);
-            lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
-            GuiModelFormatMicroSd();
-        } else {
-            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
-        }
+    GUI_DEL_OBJ(g_noticeWindow)
+    if (SdCardInsert()) {
+        g_noticeWindow = GuiCreateAnimHintBox(480, 356, 82);
+        lv_obj_t *title = GuiCreateTextLabel(g_noticeWindow, _("sdcard_formating"));
+        lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -154);
+        lv_obj_t *desc = GuiCreateNoticeLabel(g_noticeWindow, _("sdcard_formating_desc"));
+        lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -76);
+        lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+        GuiModelFormatMicroSd();
+    } else {
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
     }
 }
 
 static void FormatMicroSDWindowHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("sdcard_format_subtitle"), _("sdcard_format_desc"), NULL,
-                         _("Cancel"), WHITE_COLOR_OPA20, _("sdcard_format_confirm"), DEEP_ORANGE_COLOR);
-        lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-        lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-        lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
-        lv_obj_add_event_cb(rightBtn, FormatMicroSDHandler, LV_EVENT_CLICKED, NULL);
-    }
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("sdcard_format_subtitle"), _("sdcard_format_desc"), NULL,
+                     _("Cancel"), WHITE_COLOR_OPA20, _("sdcard_format_confirm"), DEEP_ORANGE_COLOR);
+    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_add_event_cb(rightBtn, FormatMicroSDHandler, LV_EVENT_CLICKED, NULL);
 }
 
 static void UsbConnectionHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (lv_obj_has_state(usbConnectionSw, LV_STATE_CHECKED)) {
-            lv_obj_clear_state(usbConnectionSw, LV_STATE_CHECKED);
-        } else {
-            lv_obj_add_state(usbConnectionSw, LV_STATE_CHECKED);
-        }
-        lv_event_send(usbConnectionSw, LV_EVENT_VALUE_CHANGED, NULL);
+    if (lv_obj_has_state(usbConnectionSw, LV_STATE_CHECKED)) {
+        lv_obj_clear_state(usbConnectionSw, LV_STATE_CHECKED);
+    } else {
+        lv_obj_add_state(usbConnectionSw, LV_STATE_CHECKED);
     }
+    lv_event_send(usbConnectionSw, LV_EVENT_VALUE_CHANGED, NULL);
 }
 
 static void UsbConnectionSwitchHandler(lv_event_t * e)

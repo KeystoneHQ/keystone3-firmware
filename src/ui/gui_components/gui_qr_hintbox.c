@@ -33,10 +33,7 @@ static void CheckAndClearFlag(lv_obj_t *obj, lv_obj_flag_t flag)
 
 static void GuiQRHintBoxCloseHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiQRHintBoxRemove();
-    }
+    GuiQRHintBoxRemove();
 }
 
 void GuiQRHintBoxRemove()

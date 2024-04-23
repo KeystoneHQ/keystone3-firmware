@@ -455,78 +455,69 @@ static void FirmwareSdcardUpdateHandler(lv_event_t *e)
 {
     char fileVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
     GUI_DEL_OBJ(g_noticeHintBox)
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiModelStopCalculateCheckSum();
-        if (CHECK_BATTERY_LOW_POWER()) {
-            g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox, NULL);
-        } else if (!SdCardInsert()) {
-            //firmware_update_sd_failed_access_title
-            g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeHintBox, NULL);
-        } else if (CheckOtaBinVersion(fileVersion)) {
+    GuiModelStopCalculateCheckSum();
+    if (CHECK_BATTERY_LOW_POWER()) {
+        g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox, NULL);
+    } else if (!SdCardInsert()) {
+        //firmware_update_sd_failed_access_title
+        g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeHintBox, NULL);
+    } else if (CheckOtaBinVersion(fileVersion)) {
 #ifndef BTC_ONLY
-            printf("fileVersion=%s\n", fileVersion);
-            if (strstr(fileVersion, "BTC") == NULL) {
-                ConfirmSdCardUpdate();
-            } else {
-                printf("firmware from MultiCoin to BTC\n");
-                if (g_firmwareUpdateWidgets.tileView == NULL) {
-                    g_noticeHintBox = GuiCreateContainerWithParent(lv_scr_act(), lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET_NEW);
-                    lv_obj_align(g_noticeHintBox, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET_NEW);
-                    lv_obj_add_flag(g_noticeHintBox, LV_OBJ_FLAG_CLICKABLE);
-                    GuiCreateMultiToBtcWarningTile(g_noticeHintBox);
-                } else {
-                    g_firmwareUpdateWidgets.currentTile = FIRMWARE_UPDATE_MULTI_TO_BTC_WARNING;
-                    lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, g_firmwareUpdateWidgets.currentTile, 0, LV_ANIM_OFF);
-                    GuiFirmwareUpdateRefresh();
-                }
-                StartKnownWarningCountDownTimer();
-            }
-#else
+        printf("fileVersion=%s\n", fileVersion);
+        if (strstr(fileVersion, "BTC") == NULL) {
             ConfirmSdCardUpdate();
-#endif
         } else {
-            if (strnlen_s(fileVersion, 16) == 0) {
-                g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox, NULL);
+            printf("firmware from MultiCoin to BTC\n");
+            if (g_firmwareUpdateWidgets.tileView == NULL) {
+                g_noticeHintBox = GuiCreateContainerWithParent(lv_scr_act(), lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET_NEW);
+                lv_obj_align(g_noticeHintBox, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET_NEW);
+                lv_obj_add_flag(g_noticeHintBox, LV_OBJ_FLAG_CLICKABLE);
+                GuiCreateMultiToBtcWarningTile(g_noticeHintBox);
             } else {
-                g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_UPDATE_NO_UPGRADABLE_FIRMWARE, &g_noticeHintBox, NULL);
+                g_firmwareUpdateWidgets.currentTile = FIRMWARE_UPDATE_MULTI_TO_BTC_WARNING;
+                lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, g_firmwareUpdateWidgets.currentTile, 0, LV_ANIM_OFF);
+                GuiFirmwareUpdateRefresh();
             }
-
+            StartKnownWarningCountDownTimer();
         }
+#else
+        ConfirmSdCardUpdate();
+#endif
+    } else {
+        if (strnlen_s(fileVersion, 16) == 0) {
+            g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeHintBox, NULL);
+        } else {
+            g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_UPDATE_NO_UPGRADABLE_FIRMWARE, &g_noticeHintBox, NULL);
+        }
+
     }
 }
 
 static void FirmwareSdcardCheckSha256Handler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (!SdCardInsert()) {
-            return;
-        }
-        g_noticeHintBox = GuiCreateAnimHintBox(480, 400, 76);
-        lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("calculat_modal_title"));
-        lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
-        lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _("Cancel"));
-        lv_obj_set_size(btn, 408, 66);
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
-        lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-        lv_obj_add_event_cb(btn, GuiStopFirmwareCheckSumHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-
-        lv_obj_t *desc = GuiCreateNoticeLabel(g_noticeHintBox, "0%");
-        lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -140);
-        lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, 0);
-        GuiModelCalculateBinSha256();
+    if (!SdCardInsert()) {
+        return;
     }
+    g_noticeHintBox = GuiCreateAnimHintBox(480, 400, 76);
+    lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("calculat_modal_title"));
+    lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
+    lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _("Cancel"));
+    lv_obj_set_size(btn, 408, 66);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
+    lv_obj_add_event_cb(btn, GuiStopFirmwareCheckSumHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+
+    lv_obj_t *desc = GuiCreateNoticeLabel(g_noticeHintBox, "0%");
+    lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -140);
+    lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, 0);
+    GuiModelCalculateBinSha256();
 }
 
 static void FirmwareSdcardCheckSha256HintBoxHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (SdCardInsert()) {
-            lv_obj_del(lv_event_get_target(e));
-            GuiModelCalculateBinSha256();
-        }
+    if (SdCardInsert()) {
+        lv_obj_del(lv_event_get_target(e));
+        GuiModelCalculateBinSha256();
     }
 }
 
@@ -756,10 +747,7 @@ static void GuiQrcodeHandler(lv_event_t *e)
 
 static void CloseQrcodeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_firmwareUpdateWidgets.qrCodeCont)
-    }
+    GUI_DEL_OBJ(g_firmwareUpdateWidgets.qrCodeCont)
 }
 
 void GuiFirmwareUpdateVerifyPasswordErrorCount(void *param)
@@ -798,13 +786,10 @@ static void GuiFirmwareUpdateViewSha256(char *version, uint8_t percent)
 
 static void GuiFirmwareUpdateCancelUpdate(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiModelStopCalculateCheckSum();
-        lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
-        void **param = lv_event_get_user_data(e);
-        if (param != NULL) {
-            *param = NULL;
-        }
+    GuiModelStopCalculateCheckSum();
+    lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
+    void **param = lv_event_get_user_data(e);
+    if (param != NULL) {
+        *param = NULL;
     }
 }

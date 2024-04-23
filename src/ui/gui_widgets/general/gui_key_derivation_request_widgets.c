@@ -327,21 +327,15 @@ static void GuiCreateQRCodeWidget(lv_obj_t *parent)
 
 static void OnApproveHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
 #ifndef COMPILE_SIMULATOR
-        GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
+    GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
 #endif
-        GuiKeyDerivationRequestNextTile();
-    }
+    GuiKeyDerivationRequestNextTile();
 }
 
 static void OnReturnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiKeyDerivationRequestPrevTile();
-    }
+    GuiKeyDerivationRequestPrevTile();
 }
 
 void GuiKeyDerivationWidgetHandleURGenerate(char *data, uint16_t len)
@@ -356,39 +350,33 @@ void GuiKeyDerivationWidgetHandleURUpdate(char *data, uint16_t len)
 
 static void OpenMoreHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        int hintboxHeight = 132;
-        g_openMoreHintBox = GuiCreateHintBox(hintboxHeight);
-        lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
-        lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, _("Tutorial"));
-        lv_obj_t *img = GuiCreateImg(g_openMoreHintBox, &imgTutorial);
+    int hintboxHeight = 132;
+    g_openMoreHintBox = GuiCreateHintBox(hintboxHeight);
+    lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
+    lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, _("Tutorial"));
+    lv_obj_t *img = GuiCreateImg(g_openMoreHintBox, &imgTutorial);
 
-        GuiButton_t table[] = {
-            {
-                .obj = img,
-                .align = LV_ALIGN_LEFT_MID,
-                .position = {24, 0},
-            },
-            {
-                .obj = label,
-                .align = LV_ALIGN_LEFT_MID,
-                .position = {76, 0},
-            },
-        };
-        lv_obj_t *btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                                        OpenTutorialHandler, &g_walletIndex);
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
-    }
+    GuiButton_t table[] = {
+        {
+            .obj = img,
+            .align = LV_ALIGN_LEFT_MID,
+            .position = {24, 0},
+        },
+        {
+            .obj = label,
+            .align = LV_ALIGN_LEFT_MID,
+            .position = {76, 0},
+        },
+    };
+    lv_obj_t *btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
+                                    OpenTutorialHandler, &g_walletIndex);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 }
 
 static void OpenTutorialHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
-        GuiFrameOpenViewWithParam(&g_walletTutorialView, wallet, sizeof(WALLET_LIST_INDEX_ENUM));
-        GUI_DEL_OBJ(g_openMoreHintBox);
-    }
+    WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
+    GuiFrameOpenViewWithParam(&g_walletTutorialView, wallet, sizeof(WALLET_LIST_INDEX_ENUM));
+    GUI_DEL_OBJ(g_openMoreHintBox);
 }
 #endif

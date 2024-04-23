@@ -41,7 +41,7 @@ static void UpdateWalletDescHandler(lv_event_t *e)
             .iconIndex = GuiSearchIconIndex(g_walletIcon),
         };
         GuiSetEmojiIconIndex(wallet.iconIndex);
-        strcpy_s(wallet.name, WALLET_NAME_MAX_LEN, lv_textarea_get_text(g_setNameKb->ta));
+        strcpy_s(wallet.name, WALLET_NAME_MAX_LEN + 1, lv_textarea_get_text(g_setNameKb->ta));
         GuiModelSettingSaveWalletDesc(&wallet);
     }
 }
@@ -60,11 +60,7 @@ static void GotoAddWalletHandler(lv_event_t *e)
 
 static void OpenEmojiKbHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiCreateEmojiKeyBoard(lv_scr_act(), g_walletIcon);
-    }
+    GuiCreateEmojiKeyBoard(lv_scr_act(), g_walletIcon);
 }
 
 void GuiChangeWalletDesc(bool result)

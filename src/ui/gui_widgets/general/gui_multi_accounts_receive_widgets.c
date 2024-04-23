@@ -444,9 +444,7 @@ static void UpdateConfirmAccountBtn(void)
 
 static void ConfirmIndexHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED && IsIndexSelectChanged()) {
+    if (IsIndexSelectChanged()) {
         SetCurrentSelectIndex(g_tmpIndex);
         ReturnHandler(e);
     }
@@ -454,9 +452,7 @@ static void ConfirmIndexHandler(lv_event_t *e)
 
 static void ConfirmAccountHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED && IsAccountSelectChanged()) {
+    if (IsAccountSelectChanged()) {
         g_selectedAccount[GetCurrentAccountIndex()] = g_tmpAccount;
         g_tmpIndex = 0;
         SetCurrentSelectIndex(g_tmpIndex);
@@ -471,6 +467,7 @@ static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
     lv_obj_set_size(btn, 96, 66);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_100, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
     lv_obj_t *img = lv_obj_get_child(btn, 0);
     if (g_showIndex < 5) {
@@ -482,6 +479,7 @@ static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
     lv_obj_set_size(btn, 96, 66);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_100, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 156, -24);
     img = lv_obj_get_child(btn, 0);
     g_multiAccountsReceiveWidgets.rightBtnImg = img;
@@ -563,7 +561,6 @@ static void CloseAttentionHandler(lv_event_t *e)
 
 static void JumpToAccountHandler(lv_event_t *e)
 {
-
     GuiCreateGotoAddressWidgets(g_multiAccountsReceiveWidgets.tileSwitchAddress);
 }
 
@@ -630,7 +627,7 @@ static void CloseSwitchAddressHandler(lv_event_t *e)
 
 static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
 {
-    lv_obj_t *cont, *label, *line, *closeBtn, *closeImg;
+    lv_obj_t *cont, *label, *line, *closeBtn;
     static lv_point_t points[2] = {{0, 0}, {408, 0}};
     g_inputAccountValid = false;
 
@@ -639,14 +636,12 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
         lv_obj_add_event_cb(lv_obj_get_child(g_multiAccountsReceiveWidgets.inputAccountCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_multiAccountsReceiveWidgets.inputAccountCont);
         cont = g_multiAccountsReceiveWidgets.inputAccountCont;
 
-        label = GuiCreateIllustrateLabel(cont, _("receive_btc_receive_change_address_title"));
+        label = GuiCreateNoticeLabel(cont, _("receive_btc_receive_change_address_title"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 30 + 270);
-        lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        label = GuiCreateIllustrateLabel(cont, "");
+        label = GuiCreateNoticeLabel(cont, "");
         lv_label_set_text_fmt(label, "%s-", _("receive_ada_base_address"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 108 + 270);
-        lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        g_multiAccountsReceiveWidgets.inputAccountLabel = GuiCreateTextBtn(cont, "");
+        g_multiAccountsReceiveWidgets.inputAccountLabel = GuiCreateTextLabel(cont, "");
         lv_obj_align(g_multiAccountsReceiveWidgets.inputAccountLabel, LV_ALIGN_TOP_LEFT, 38 + lv_obj_get_self_width(label), 108 + 270);
         label = GuiCreateIllustrateLabel(cont, _("receive_btc_receive_change_address_limit"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 170 + 270);
@@ -659,21 +654,12 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
 
         lv_obj_t *keyboard = GuiCreateNumKeyboard(cont, InputAddressIndexKeyboardHandler, NUM_KEYBOARD_NORMAL, NULL);
         lv_obj_align(keyboard, LV_ALIGN_BOTTOM_MID, 0, -2);
-        lv_obj_add_style(keyboard, &g_numBtnmStyle, LV_PART_ITEMS);
         lv_obj_add_style(keyboard, &g_enterPressBtnmStyle, LV_STATE_PRESSED | LV_PART_ITEMS);
         lv_btnmatrix_set_btn_ctrl(keyboard, 11, LV_BTNMATRIX_CTRL_DISABLED);
         g_multiAccountsReceiveWidgets.inputAccountKeyboard = keyboard;
 
-        closeBtn = lv_btn_create(cont);
-        lv_obj_set_size(closeBtn, 36, 36);
+        closeBtn = GuiCreateImgButton(cont, &imgClose, 40, CloseSwitchAddressHandler, NULL);
         lv_obj_align(closeBtn, LV_ALIGN_TOP_RIGHT, -36, 27 + 270);
-        lv_obj_set_style_bg_opa(closeBtn, LV_OPA_TRANSP, LV_PART_MAIN);
-        lv_obj_set_style_border_width(closeBtn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-        lv_obj_set_style_outline_width(closeBtn, 0, LV_PART_MAIN);
-        lv_obj_set_style_shadow_width(closeBtn, 0, LV_PART_MAIN);
-        lv_obj_add_event_cb(closeBtn, CloseSwitchAddressHandler, LV_EVENT_CLICKED, NULL);
-        closeImg = GuiCreateImg(closeBtn, &imgClose);
-        lv_obj_align(closeImg, LV_ALIGN_CENTER, 0, 0);
     } else {
         lv_label_set_text(g_multiAccountsReceiveWidgets.inputAccountLabel, "");
         lv_obj_clear_flag(g_multiAccountsReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
@@ -1051,14 +1037,13 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
 
     if (result->error_code == 0) {
         item->index = index;
-        printf("address=%s", item->address);
         strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
         strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
     }
     free_simple_response_c_char(result);
 }
 
-void GuiResetCurrentMultiAccountsCache(uint8_t index)
+void GuiResetCurrentMultiAccountsCache(uint8_t index) 
 {
     if (index > 2) {
         return;

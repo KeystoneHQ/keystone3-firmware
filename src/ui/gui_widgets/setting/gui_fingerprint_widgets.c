@@ -522,41 +522,29 @@ void GuiWalletSetFingerPassCodeWidget(lv_obj_t *parent)
 /* STATIC FUNC */
 static void ClearFingerErrorStateView(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-        lv_arc_set_value(g_arcProgress, 0);
-        lv_img_set_src(g_imgFinger, &imgWhiteFinger);
-        lv_obj_set_style_arc_color(g_arcProgress, WHITE_COLOR, LV_PART_INDICATOR);
-        lv_label_set_text(g_fpRegLabel, "");
-        for (int i = 0; i < 3; i++) {
-            if (GetFingerRegisteredStatus(i) == 0) {
-                RegisterFp(i);
-                break;
-            }
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
+    lv_arc_set_value(g_arcProgress, 0);
+    lv_img_set_src(g_imgFinger, &imgWhiteFinger);
+    lv_obj_set_style_arc_color(g_arcProgress, WHITE_COLOR, LV_PART_INDICATOR);
+    lv_label_set_text(g_fpRegLabel, "");
+    for (int i = 0; i < 3; i++) {
+        if (GetFingerRegisteredStatus(i) == 0) {
+            RegisterFp(i);
+            break;
         }
     }
 }
 
 static void FirstAddFingerToManagerView(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiSettingCloseToTargetTileView(2);
-        uint8_t walletIndex = DEVICE_SETTING_FINGER_MANAGER;
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
-    }
+    GuiSettingCloseToTargetTileView(2);
+    uint8_t walletIndex = DEVICE_SETTING_FINGER_MANAGER;
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
 }
 
 static void AddFingerToManagerView(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiSettingCloseToTargetTileView(3);
-    }
+    GuiSettingCloseToTargetTileView(3);
 }
 
 static void FingerButtonHandler(lv_event_t *e)

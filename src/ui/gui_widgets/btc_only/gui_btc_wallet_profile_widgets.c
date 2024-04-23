@@ -265,11 +265,7 @@ static void OpenCreateMultiViewHandler(lv_event_t *e)
 
 static void OpenManageMultisigViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiFrameOpenViewWithParam(&g_manageMultisigWalletView, lv_event_get_user_data(e), sizeof(CURRENT_WALLET_INDEX_ENUM));
-    }
+    GuiFrameOpenViewWithParam(&g_manageMultisigWalletView, lv_event_get_user_data(e), sizeof(CURRENT_WALLET_INDEX_ENUM));
 }
 
 static void OpenExportShowXpubHandler(lv_event_t *e)

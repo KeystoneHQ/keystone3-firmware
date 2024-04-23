@@ -609,7 +609,6 @@ void *GuiCreateFullKeyBoard(lv_obj_t *parent, lv_event_cb_t kbCb, lv_keyboard_us
     KeyBoard_t *keyBoard = GuiCreateKeyBoard(parent, kbCb, keyMode, param);
     lv_obj_t *textArea = lv_textarea_create(parent);
     lv_obj_add_event_cb(textArea, KbTextAreaHandler, LV_EVENT_ALL, keyBoard);
-    // lv_obj_set_style_text_font(textArea, &openSansButton, 0);
     lv_obj_set_style_text_font(textArea, &buttonFont, 0);
     if (GuiDarkMode()) {
         lv_obj_set_style_text_color(textArea, WHITE_COLOR, 0);

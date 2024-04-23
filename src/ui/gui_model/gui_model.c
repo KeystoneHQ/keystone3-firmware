@@ -1123,7 +1123,7 @@ static int32_t ModeGetWalletDesc(const void *inData, uint32_t inDataLen)
         return SUCCESS_CODE;
     }
     wallet.iconIndex = GetWalletIconIndex();
-    strcpy_s(wallet.name, WALLET_NAME_MAX_LEN, GetWalletName());
+    strcpy_s(wallet.name, WALLET_NAME_MAX_LEN + 1, GetWalletName());
     GuiApiEmitSignal(SIG_INIT_GET_CURRENT_WALLET_DESC, &wallet, sizeof(wallet));
     SetLockScreen(enable);
     return SUCCESS_CODE;
@@ -1178,7 +1178,6 @@ static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen)
         SetPageLockScreen(true);
         GuiApiEmitSignal(SIG_INIT_SD_CARD_OTA_COPY_FAIL, NULL, 0);
     }
-#else
 #endif
     return SUCCESS_CODE;
 }
@@ -1216,18 +1215,9 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, Bac
     //There is no need to release here, the parsing results will be released when exiting the details page.
     TransactionParseResult_DisplayTx *parsedResult = (TransactionParseResult_DisplayTx *)func();
     if (parsedResult != NULL && parsedResult->error_code == 0 && parsedResult->data != NULL) {
-#ifndef COMPILE_SIMULATOR
         GuiApiEmitSignal(SIG_TRANSACTION_PARSE_SUCCESS, parsedResult, sizeof(parsedResult));
-#else
-        GuiEmitSignal(SIG_TRANSACTION_PARSE_SUCCESS, parsedResult, sizeof(parsedResult));
-#endif
     } else {
-
-#ifndef COMPILE_SIMULATOR
         GuiApiEmitSignal(SIG_TRANSACTION_PARSE_FAIL, parsedResult, sizeof(parsedResult));
-#else
-        GuiEmitSignal(SIG_TRANSACTION_PARSE_FAIL, parsedResult, sizeof(parsedResult));
-#endif
     }
     GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
     return SUCCESS_CODE;

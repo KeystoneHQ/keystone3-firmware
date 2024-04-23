@@ -30,22 +30,14 @@ static void GuiResolveUrResultViewInit();
 
 static void ApproveButtonHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        ExportAddressApprove();
-        GuiCLoseCurrentWorkingView();
-    }
+    ExportAddressApprove();
+    GuiCLoseCurrentWorkingView();
 }
 
 static void RejectButtonHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        ExportAddressReject();
-        GuiCLoseCurrentWorkingView();
-    }
+    ExportAddressReject();
+    GuiCLoseCurrentWorkingView();
 }
 
 static WalletInfo_t GetConnectWalletInfo()

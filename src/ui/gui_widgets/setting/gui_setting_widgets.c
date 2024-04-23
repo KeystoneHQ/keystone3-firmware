@@ -80,55 +80,41 @@ void WalletSettingHandler(lv_event_t *e)
 
 static void CloseToFingerAndPassView(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeWindow)
-        for (int i = g_deviceSetTileView.currentTile; i > 2; i--) {
-            GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-        }
+    GUI_DEL_OBJ(g_noticeWindow)
+    for (int i = g_deviceSetTileView.currentTile; i > 2; i--) {
+        GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
     }
 }
 
 void CloseToSubtopViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
-        void **param = lv_event_get_user_data(e);
-        if (param != NULL) {
-            *param = NULL;
-        }
-        CloseToTargetTileView(g_deviceSetTileView.currentTile, DEVICE_SETTING_WALLET_SETTING);
+    lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
+    void **param = lv_event_get_user_data(e);
+    if (param != NULL) {
+        *param = NULL;
     }
+    CloseToTargetTileView(g_deviceSetTileView.currentTile, DEVICE_SETTING_WALLET_SETTING);
 }
 
 static void AddCloseToSubtopViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        CloseToTargetTileView(g_deviceSetTileView.currentTile, DEVICE_SETTING_WALLET_SETTING);
-    }
+    CloseToTargetTileView(g_deviceSetTileView.currentTile, DEVICE_SETTING_WALLET_SETTING);
 }
 
 void DelCurrCloseToSubtopViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
 
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_del(lv_obj_get_parent(obj));
-        if (GuiSettingGetDeleteFlag()) {
-            for (int i = g_deviceSetTileView.currentTile; i > 3; i--) {
-                GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-            }
-            g_noticeWindow = NULL;
-        } else {
-            CloseToTargetTileView(g_deviceSetTileView.currentTile, DEVICE_SETTING_WALLET_SETTING);
-            g_noticeWindow = NULL;
+    lv_obj_del(lv_obj_get_parent(obj));
+    if (GuiSettingGetDeleteFlag()) {
+        for (int i = g_deviceSetTileView.currentTile; i > 3; i--) {
+            GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
         }
+        g_noticeWindow = NULL;
+    } else {
+        CloseToTargetTileView(g_deviceSetTileView.currentTile, DEVICE_SETTING_WALLET_SETTING);
+        g_noticeWindow = NULL;
     }
 }
 
@@ -150,15 +136,11 @@ void GuiWalletResetPassWordHintBox(void)
 
 static void CloseCurrentPage(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_passphraseLearnMoreCont)
-        lv_obj_clear_flag(g_deviceSettingArray[g_deviceSetTileView.currentTile].tile, LV_OBJ_FLAG_HIDDEN);
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenPassphraseLearnMoreHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Passphrase"));
-    }
+    GUI_DEL_OBJ(g_passphraseLearnMoreCont)
+    lv_obj_clear_flag(g_deviceSettingArray[g_deviceSetTileView.currentTile].tile, LV_OBJ_FLAG_HIDDEN);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenPassphraseLearnMoreHandler, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Passphrase"));
 }
 
 static void GuiPassphraseOpenQRCodeHintBox()

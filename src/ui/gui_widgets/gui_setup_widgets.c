@@ -24,7 +24,7 @@ static const char *g_languageList[] = {
     "English",
     "Русский язык",
     "简体中文",
-    "korean", // "한국인",
+    "한국인", // "한국인",
     "German",
 };
 
@@ -103,12 +103,8 @@ static void SelectLanguageHandler(lv_event_t *e)
 
 void GuiOpenWebAuthHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiWebAuthSetEntry(WEB_AUTH_ENTRY_SETUP);
-        GuiFrameOpenView(&g_webAuthView);
-    }
+    GuiWebAuthSetEntry(WEB_AUTH_ENTRY_SETUP);
+    GuiFrameOpenView(&g_webAuthView);
 }
 
 void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
@@ -121,8 +117,12 @@ void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
         g_languageCheck[i] = checkBox;
         if (i == SETUP_CHINESE) {
             label = GuiCreateLabelWithFont(parent, g_languageList[i], &cnText);
+        } else if (i == SETUP_RUSSIAN) {
+            label = GuiCreateLabelWithFont(parent, g_languageList[i], &rusText);
+        } else if (i == SETUP_KOREAN) {
+            label = GuiCreateLabelWithFont(parent, g_languageList[i], &koText);
         } else {
-            label = GuiCreateLabelWithFont(parent, g_languageList[i], &openSansLanguage);
+            label = GuiCreateLabelWithFont(parent, g_languageList[i], &openSansEnText);
         }
         if (i == lang) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);

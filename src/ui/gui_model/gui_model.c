@@ -1337,7 +1337,7 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
     uint8_t buffer[4096] = {0};
     uint8_t hash[32] = {0};
     int num = BinarySearchLastNonFFSector();
-    ASSERT(num > 0);
+    ASSERT(num >= 0);
     if (g_stopCalChecksum == true) {
         return SUCCESS_CODE;
     }

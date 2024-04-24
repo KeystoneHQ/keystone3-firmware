@@ -24,12 +24,22 @@ test () {
     done
 }
 
+update () {
+    for dir in ${DIRS[@]}; do
+        echo "$dir ==> rust cargo update"
+        cd $CWD/$dir && cargo update
+    done
+}
+
 case $command in
     format)
         format
         ;;
     test)
         test
+        ;;
+    update)
+        update
         ;;
     *)
         echo "invalid command ${command}"

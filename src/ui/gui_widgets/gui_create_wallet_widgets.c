@@ -177,11 +177,11 @@ static void OpenImportPhraseHandler(lv_event_t *e)
 
 static void ChooseWordsAmountHandler(lv_event_t *e)
 {
-    static uint8_t walletAmounts[] = {24, 18, 12};
+    static uint8_t walletAmounts[] = {12, 18, 24};
     MoreInfoTable_t moreInfoTable[] = {
-        {.name = _("wallet_phrase_24words"), .src = &imgArrowRight, .callBack = OpenImportPhraseHandler, &walletAmounts[0]},
+        {.name = _("wallet_phrase_12words"), .src = &imgArrowRight, .callBack = OpenImportPhraseHandler, &walletAmounts[0]},
         {.name = _("wallet_phrase_18words"), .src = &imgArrowRight, .callBack = OpenImportPhraseHandler, &walletAmounts[1]},
-        {.name = _("wallet_phrase_12words"), .src = &imgArrowRight, .callBack = OpenImportPhraseHandler, &walletAmounts[2]},
+        {.name = _("wallet_phrase_24words"), .src = &imgArrowRight, .callBack = OpenImportPhraseHandler, &walletAmounts[2]},
     };
     g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("single_phrase_word_amount_select"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false, &g_noticeWindow);
 }
@@ -196,10 +196,10 @@ static void OpenImportShareHandler(lv_event_t *e)
 
 static void SelectImportShareHandler(lv_event_t *e)
 {
-    static uint8_t walletAmounts[] = {33, 20};
+    static uint8_t walletAmounts[] = {20, 33};
     MoreInfoTable_t moreInfoTable[] = {
-        {.name = _("wallet_phrase_33words"), .src = &imgArrowRight, .callBack = OpenImportShareHandler, &walletAmounts[0]},
-        {.name = _("wallet_phrase_20words"), .src = &imgArrowRight, .callBack = OpenImportShareHandler, &walletAmounts[1]},
+        {.name = _("wallet_phrase_20words"), .src = &imgArrowRight, .callBack = OpenImportShareHandler, &walletAmounts[0]},
+        {.name = _("wallet_phrase_33words"), .src = &imgArrowRight, .callBack = OpenImportShareHandler, &walletAmounts[1]},
     };
     g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("single_phrase_word_amount_select"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false, &g_noticeWindow);
 }

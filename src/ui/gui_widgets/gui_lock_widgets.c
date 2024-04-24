@@ -51,7 +51,6 @@ static void HardwareInitAfterWake(void);
 int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
 
 static GuiEnterPasscodeItem_t *g_verifyLock = NULL;
-static lv_obj_t *g_lockScreenCont;
 static bool g_firstUnlock = true;
 static uint8_t g_fpErrorCount = 0;
 static LOCK_SCREEN_PURPOSE_ENUM g_purpose = LOCK_SCREEN_PURPOSE_UNLOCK;
@@ -359,12 +358,15 @@ void GuiLockScreenTurnOnHandler(lv_event_t *e)
 void GuiLockScreenInit(void *param)
 {
     g_pageWidget = CreatePageWidget();
-    lv_obj_t *cont = g_pageWidget->contentZone;
+    g_verifyLock = GuiCreateEnterPasscode(g_pageWidget->contentZone, NULL, param, ENTER_PASSCODE_VERIFY_PIN);
+    GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_GO_LOCK_DEVICE_PASS, NULL, 0);
+}
 
-    g_lockScreenCont = cont;
-    GuiEnterPasscodeItem_t *item = GuiCreateEnterPasscode(cont, NULL, param, ENTER_PASSCODE_VERIFY_PIN);
-    g_verifyLock = item;
-
+void GuiLockViewRefreshLanguage(void)
+{
+    lv_obj_clean(g_pageWidget->contentZone);
+    static uint16_t lockParam = SIG_LOCK_VIEW_VERIFY_PIN;
+    g_verifyLock = GuiCreateEnterPasscode(g_pageWidget->contentZone, NULL, &lockParam, ENTER_PASSCODE_VERIFY_PIN);
     GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_GO_LOCK_DEVICE_PASS, NULL, 0);
 }
 

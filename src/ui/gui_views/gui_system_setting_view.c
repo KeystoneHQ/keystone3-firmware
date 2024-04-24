@@ -23,7 +23,8 @@ int32_t GuiSystemSettingViewEventProcess(void *self, uint16_t usEvent, void *par
         break;
     case GUI_EVENT_CHANGE_LANGUAGE:
         GuiSystemSettingAreaRestart();
-        break;
+        GuiEnterPassLabelRefresh();
+        return ERR_GUI_UNHANDLED;
     case SIG_VERIFY_PASSWORD_PASS:
         if (param != NULL) {
             uint16_t sig = *(uint16_t *)param;

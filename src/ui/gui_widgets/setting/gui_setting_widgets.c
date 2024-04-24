@@ -222,8 +222,6 @@ static void OpenPassphraseLearnMoreHandler(lv_event_t *e)
     }
 }
 
-static
-
 void GuiSettingFullKeyBoardDestruct(void *obj, void *param)
 {
     GuiWalletNameWalletDestruct();

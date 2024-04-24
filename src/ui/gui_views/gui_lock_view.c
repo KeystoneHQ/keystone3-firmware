@@ -101,6 +101,9 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case SIG_END_GENERATE_XPUB:
         GuiHideGenerateXPubLoading();
         break;
+    case GUI_EVENT_CHANGE_LANGUAGE:
+        GuiLockViewRefreshLanguage();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

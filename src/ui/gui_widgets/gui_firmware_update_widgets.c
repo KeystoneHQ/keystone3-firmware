@@ -122,7 +122,7 @@ void GuiCreateSdCardUpdateHintbox(char *version, bool checkSumDone)
         SecretCacheGetChecksum(hash);
         ConvertToLowerCase(hash);
         snprintf(tempBuf, sizeof(tempBuf), "#F5870A %.8s#%.24s\n%.24s#F5870A %.8s#", hash, &hash[8], &hash[32], &hash[56]);
-        lv_label_set_text_fmt(g_calCheckSumLabel, "%s(v%s):\n%s", _("about_info_verify_checksum_title"), version, tempBuf);
+        lv_label_set_text_fmt(g_calCheckSumLabel, "%s(v%s):\n%s", _("about_info_verify_checksum_text"), version, tempBuf);
     } else {
         lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _(""));
         lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
@@ -286,7 +286,6 @@ void GuiFirmwareUpdatePrevTile(void)
 
 void GuiFirmwareUpdateSha256Percent(uint8_t percent)
 {
-    printf("percent = %d\n", percent);
     if (g_noticeHintBox == NULL) {
         return;
     }
@@ -780,7 +779,7 @@ static void GuiFirmwareUpdateViewSha256(char *version, uint8_t percent)
         lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
         lv_obj_t *label = lv_obj_get_child(g_noticeHintBox, lv_obj_get_child_cnt(g_noticeHintBox) - 4);
         lv_label_set_recolor(label, true);
-        lv_label_set_text_fmt(label, "%s(v%s):\n%s", _("about_info_verify_checksum_title"), version, tempBuf);
+        lv_label_set_text_fmt(label, "%s(v%s):\n%s", _("about_info_verify_checksum_text"), version, tempBuf);
     }
 }
 

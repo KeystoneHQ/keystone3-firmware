@@ -5,7 +5,7 @@ import argparse
 import pandas as pd
 
 ADDITIONAL_CHARS_LARGE = "·QWERTYUIOPASDFGHJKLZXCVBNM,/:\";'[]<>~!@#$%^&*()_+=0987654321·qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM[]{}#%^*+=_\\|~<>€£¥·-/:;()$&`.?!'@"
-ADDITIONAL_CHARS_SMALL = "0987654321"
+ADDITIONAL_CHARS_SMALL = "0987654321/"
 
 def extract_unique_characters(df, font_size, column):
     unique_chars = set(ADDITIONAL_CHARS_LARGE if font_size in [24, 20] else ADDITIONAL_CHARS_SMALL)
@@ -16,14 +16,14 @@ def extract_unique_characters(df, font_size, column):
 def main():
     parser = argparse.ArgumentParser(description='Convert CSV to YAML')
     parser.add_argument('--ru', action='store_true', help='Generate Russian translations')
-    parser.add_argument('--zh', action='store_true', help='Generate Chinese (Simplified) translations')
+    parser.add_argument('--cn', action='store_true', help='Generate Chinese (Simplified) translations')
     parser.add_argument('--ko', action='store_true', help='Generate Korean translations')
     args = parser.parse_args()
 
     language = 'cn'
     if args.ru:
         language = 'ru'
-    elif args.zh:
+    elif args.cn:
         language = 'cn'
     elif args.ko:
         language = 'ko'

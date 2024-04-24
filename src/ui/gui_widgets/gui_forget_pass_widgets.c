@@ -71,7 +71,6 @@ bool GuiIsForgetPass(void)
 
 static void GuiQuitHandler(lv_event_t *e)
 {
-    // printf("g_prevView ID = %d\n", g_prevView->id);
     if (g_prevView != NULL && g_prevView->id == SCREEN_LOCK) {
         GuiLockScreenUpdatePassCode();
         GuiLockScreenFpRecognize();
@@ -128,8 +127,7 @@ void GuiForgetAnimContDel(int errCode)
 
     if (errCode == 0) {
         g_waitAnimCont = GuiCreateAnimHintBox(480, 326, 82);
-        printf("g_waitAnimCont = %p\n", g_waitAnimCont);
-        lv_obj_t *title = GuiCreateTextLabel(g_waitAnimCont, _("change_passcode_reset_title"));
+        lv_obj_t *title = GuiCreateLittleTitleLabel(g_waitAnimCont, _("change_passcode_reset_title"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -124);
         lv_obj_t *desc = GuiCreateNoticeLabel(g_waitAnimCont, _("write_se_desc"));
         lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -76);

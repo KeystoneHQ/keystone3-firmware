@@ -5,26 +5,16 @@
 #include "gui_web_auth_result_widgets.h"
 #include "err_code.h"
 
-static int32_t GuiWebAuthResultViewInit()
-{
-    GuiWebAuthResultAreaInit();
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiWebAuthResultViewDeInit(void)
-{
-    GuiWebAuthResultAreaDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiWebAuthResultViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     GUI_ASSERT(g_webAuthResultView.isActive);
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiWebAuthResultViewInit();
+        GuiWebAuthResultAreaInit();
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiWebAuthResultViewDeInit();
+        GuiWebAuthResultAreaDeInit();
+        break;
     case GUI_EVENT_REFRESH:
         GuiWebAuthResultAreaRefresh();
         break;

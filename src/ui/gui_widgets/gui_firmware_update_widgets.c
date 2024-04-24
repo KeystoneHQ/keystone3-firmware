@@ -124,7 +124,7 @@ void GuiCreateSdCardUpdateHintbox(char *version, bool checkSumDone)
         snprintf(tempBuf, sizeof(tempBuf), "#F5870A %.8s#%.24s\n%.24s#F5870A %.8s#", hash, &hash[8], &hash[32], &hash[56]);
         lv_label_set_text_fmt(g_calCheckSumLabel, "%s(v%s):\n%s", _("about_info_verify_checksum_title"), version, tempBuf);
     } else {
-        lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _(""));
+        lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _(""));
         lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
         lv_obj_set_size(btn, 250, 50);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -120);

@@ -45,6 +45,16 @@ void *GuiCreateLabelWithFont(lv_obj_t *parent, const char *text, const lv_font_t
     return label;
 }
 
+void *GuiCreateWhiteOpa12Container(lv_obj_t *parent, int w, int h)
+{
+    lv_obj_t *cont = GuiCreateContainerWithParent(parent, w, h);
+    lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(cont, LV_OPA_12, LV_PART_MAIN);
+
+    return cont;
+}
+
 void *GuiCreateLabelWithFontAndTextColor(lv_obj_t *parent, const char *text, const lv_font_t *font, int color)
 {
     lv_obj_t *label = lv_label_create(parent);

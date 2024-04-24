@@ -15,17 +15,6 @@
 #include "device_setting.h"
 #include "drv_aw32001.h"
 
-static int32_t GuiLockViewInit(void *param)
-{
-    GuiLockScreenInit(param);
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiLockViewDeInit(void)
-{
-    return SUCCESS_CODE;
-}
-
 int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     if (g_lockView.isActive) {
@@ -44,9 +33,10 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiLockViewInit(param);
+        GuiLockScreenInit(param);
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiLockViewDeInit();
+        break;
     case SIG_INIT_SDCARD_CHANGE:
         rcvValue = *(uint32_t *)param;
         GuiStatusBarSetSdCard(!rcvValue);

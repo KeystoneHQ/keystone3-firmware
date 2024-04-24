@@ -383,9 +383,7 @@ static void GuiShareBackupWidget(lv_obj_t *parent)
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
     g_shareBackupTile.nextCont = cont;
 
-    lv_obj_t *btn = GuiCreateBtn(cont, "");
-    lv_obj_t *img = GuiCreateImg(btn, &imgArrowNext);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_ARROW_NEXT);
     lv_obj_align(btn, LV_ALIGN_DEFAULT, 348, 24);
     lv_obj_add_event_cb(btn, ShareUpdateTileHandler, LV_EVENT_CLICKED, NULL);
 }
@@ -573,10 +571,7 @@ static void SelectPhraseCntHandler(lv_event_t *e)
         lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_phrase_word_amount_select"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 560);
         lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
-        lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgClose);
-        GuiButton_t table = {img, .position = {10, 10}};
-
-        lv_obj_t *button = GuiCreateButton(g_noticeHintBox, 36, 36, &table, 1, NULL, g_noticeHintBox);
+        lv_obj_t *button = GuiCreateImgButton(g_noticeHintBox, &imgClose, 36, CloseHintBoxHandler, &g_noticeHintBox);
         lv_obj_align(button, LV_ALIGN_DEFAULT, 407, 550);
 
         if (g_phraseCnt == 33) {

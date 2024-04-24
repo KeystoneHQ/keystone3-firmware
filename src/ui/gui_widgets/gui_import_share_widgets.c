@@ -109,11 +109,7 @@ void GuiImportShareWriteSe(bool en, int32_t errCode)
 
 static void ImportShareNextSliceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        ImportShareNextSlice(g_importMkb, g_ssbImportKb);
-    }
+    ImportShareNextSlice(g_importMkb, g_ssbImportKb);
 }
 
 static void GuiShareSsbInputWidget(lv_obj_t *parent)
@@ -152,14 +148,12 @@ static void GuiShareSsbInputWidget(lv_obj_t *parent)
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
     g_importMkb->stepLabel = label;
 
-    lv_obj_t *btn = GuiCreateBtn(cont, "");
-    lv_obj_t *img = GuiCreateImg(btn, &imgArrowNext);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_ARROW_NEXT);
     lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 348, 24);
     lv_obj_set_style_bg_opa(btn, LV_OPA_60, LV_PART_MAIN);
     // lv_obj_clear_flag(btn, LV_OBJ_FLAG_CLICKABLE);
     g_importMkb->nextButton = btn;
-    lv_obj_add_event_cb(btn, ImportShareNextSliceHandler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn, ImportShareNextSliceHandler, LV_EVENT_CLICKED, NULL);
 
     cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 242);
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);

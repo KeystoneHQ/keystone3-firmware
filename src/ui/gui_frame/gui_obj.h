@@ -77,6 +77,7 @@ typedef struct GUI_VIEW_ {
 } GUI_VIEW;
 
 void *GuiCreateContainerWithParent(lv_obj_t *parent, int w, int h);
+void *GuiCreateWhiteOpa12Container(lv_obj_t *parent, int w, int h);
 void *GuiCreateLabelWithFont(lv_obj_t *parent, const char *text, const lv_font_t *font);
 void *GuiCreateLabelWithFontAndTextColor(lv_obj_t *parent, const char *text, const lv_font_t *font, int color);
 void *GuiCreateNoticeLabel(lv_obj_t *parent, const char *text);
@@ -105,8 +106,8 @@ void *GuiCreateSpacer(void *parent, uint16_t height);
 void *GuiCreateSelectPathCheckBox(lv_obj_t *parent);
 
 #define GuiCreateContainer(w, h) GuiCreateContainerWithParent(lv_scr_act(), w, h)
-#define GuiCreateSingleCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, true, g_defTextFont)
-#define GuiCreateMultiCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, false, g_defTextFont)
+#define GuiCreateSingleCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, true, g_defIllustrateFont)
+#define GuiCreateMultiCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, false, g_defIllustrateFont)
 #define GuiCreateTitleLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defTitleFont)
 #define GuiCreateLittleTitleLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defLittleTitleFont)
 #define GuiCreateTextLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defTextFont)

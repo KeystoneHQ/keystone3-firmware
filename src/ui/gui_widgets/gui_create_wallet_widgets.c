@@ -589,10 +589,7 @@ static void CreateChangeEntropyView(void)
     lv_obj_t *label;
     label = GuiCreateIllustrateLabel(cont, _("change_entropy_desc"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 0);
-    lv_obj_t *method_cont = GuiCreateContainerWithParent(cont, 408, 205);
-    lv_obj_set_style_radius(method_cont, 24, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(method_cont, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(method_cont, LV_OPA_12, LV_PART_MAIN);
+    lv_obj_t *method_cont = GuiCreateWhiteOpa12Container(cont, 408, 205);
     lv_obj_align(method_cont, LV_ALIGN_TOP_LEFT, 36, 84);
     label = GuiCreateTextLabel(method_cont, _("change_entropy_system"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
@@ -614,15 +611,8 @@ static void CreateChangeEntropyView(void)
     lv_obj_set_height(method_cont, height);
 
     for (size_t i = 0; i < 2; i++) {
-        g_entropyMethods[i].checkBox = lv_btn_create(method_cont);
-        lv_obj_set_size(g_entropyMethods[i].checkBox, 408, 82);
+        g_entropyMethods[i].checkBox = GuiCreateSelectPathCheckBox(method_cont);
         lv_obj_align(g_entropyMethods[i].checkBox, LV_ALIGN_TOP_LEFT, 0, 10 + 102 * i);
-        lv_obj_set_style_bg_opa(g_entropyMethods[i].checkBox, LV_OPA_TRANSP, LV_PART_MAIN);
-        lv_obj_set_style_bg_opa(g_entropyMethods[i].checkBox, LV_OPA_TRANSP, LV_STATE_CHECKED);
-        lv_obj_set_style_border_width(g_entropyMethods[i].checkBox, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-        lv_obj_set_style_outline_width(g_entropyMethods[i].checkBox, 0, LV_PART_MAIN);
-        lv_obj_set_style_shadow_width(g_entropyMethods[i].checkBox, 0, LV_PART_MAIN);
-        lv_obj_add_flag(g_entropyMethods[i].checkBox, LV_OBJ_FLAG_CHECKABLE);
         lv_obj_add_event_cb(g_entropyMethods[i].checkBox, ChangeEntropyMethodHandler, LV_EVENT_CLICKED, NULL);
 
         g_entropyMethods[i].checkedImg = GuiCreateImg(g_entropyMethods[i].checkBox, &imgMessageSelect);
@@ -649,11 +639,9 @@ static void CreateChangeEntropyView(void)
     lv_obj_add_flag(descCont, LV_OBJ_FLAG_HIDDEN);
 
     // Dice Roll Desc Container
-    descCont = GuiCreateContainerWithParent(cont, 408, 200);
+    descCont = GuiCreateWhiteOpa12Container(cont, 408, 200);
     g_entropyMethods[1].descCont = descCont;
     lv_obj_align_to(descCont, method_cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
-    lv_obj_set_style_radius(descCont, 24, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(descCont, WHITE_COLOR_OPA12, LV_PART_MAIN);
 
     label = GuiCreateIllustrateLabel(descCont, _("change_entropy_dice_desc"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
@@ -680,9 +668,7 @@ static void CreateChangeEntropyView(void)
     lv_obj_refr_size(label);
     lv_obj_set_style_pad_bottom(label, 12, LV_STATE_DEFAULT);
 
-    lv_obj_add_flag(descCont, LV_OBJ_FLAG_HIDDEN);
-    GuiAddObjFlag(descCont, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
-
+    lv_obj_add_flag(descCont, LV_OBJ_FLAG_HIDDEN | LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
     lv_obj_clear_flag(g_entropyMethods[g_selectedEntropyMethodCache].checkedImg, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(g_entropyMethods[g_selectedEntropyMethodCache].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
     lv_obj_clear_flag(g_entropyMethods[g_selectedEntropyMethodCache].descCont, LV_OBJ_FLAG_HIDDEN);
@@ -691,13 +677,12 @@ static void CreateChangeEntropyView(void)
     lv_obj_t *bottomCont = GuiCreateContainerWithParent(contentZone, 480, 114);
     lv_obj_align(bottomCont, LV_ALIGN_BOTTOM_LEFT, 0, 0);
     lv_obj_t *btn = GuiCreateBtn(bottomCont, USR_SYMBOL_CHECK);
-    lv_obj_add_event_cb(btn, ChangeEntropyMethodConfirmHandler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn, ChangeEntropyMethodConfirmHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
 }
 
 static void OpenChangeEntropyHandler(lv_event_t *e)
 {
-
     GUI_DEL_OBJ(g_openMoreHintBox);
     CreateChangeEntropyView();
 }
@@ -710,7 +695,6 @@ static void CloseChangeEntropyHandler(lv_event_t *e)
 
 static void ChangeEntropyMethodConfirmHandler(lv_event_t *e)
 {
-
     GUI_PAGE_DEL(g_changeEntropyPage);
     g_selectedEntropyMethod = g_selectedEntropyMethodCache;
     if (g_selectedEntropyMethod == 1) {
@@ -726,7 +710,6 @@ static void ChangeEntropyMethodConfirmHandler(lv_event_t *e)
 
 static void ChangeEntropyMethodHandler(lv_event_t *e)
 {
-
     lv_obj_scroll_to_y(g_entropyMethodContainer, 0, LV_ANIM_OFF);
     lv_obj_t *checkBox = lv_event_get_target(e);
     for (uint32_t i = 0; i < 2; i++) {

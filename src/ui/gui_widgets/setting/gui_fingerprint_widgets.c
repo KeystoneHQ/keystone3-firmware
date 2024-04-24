@@ -405,19 +405,6 @@ void GuiFingerMangerStructureCb(void *obj, void *param)
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, curPositionY);
     curPositionY += 96;
 
-    // bool en = lv_obj_has_state(g_fpSingerSwitch, LV_STATE_CHECKED);
-    // if (en) {
-    //     label = GuiCreateTextLabel(container, "Pattern Verification");
-    //     imgArrow = GuiCreateImg(container, &imgArrowRight);
-    //     table[0].obj = label;
-    //     table[1].obj = imgArrow;
-    //     table[1].position.x = 396;
-    //     button = GuiCreateButton(container, 456, 84, table, 2, WalletSettingHandler, &walletSetting[2]);
-    //     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, curPositionY);
-    //     curPositionY += 84;
-    //     curPositionY += 12;
-    // }
-
     lv_obj_t *line = GuiCreateDividerLine(container);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, curPositionY);
     curPositionY += 12;

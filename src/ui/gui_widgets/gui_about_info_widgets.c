@@ -179,7 +179,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     table[0].obj = titleLabel;
     table[1].obj = contentLabel;
     button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table) - 1,
-                             UnHandler, NULL);
+                             NULL, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 147);
 
     line = GuiCreateDividerLine(parent);
@@ -229,7 +229,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     table[1].position.x = 24;
     table[1].position.y = 64;
     button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table) - 1,
-                             UnHandler, NULL);
+                             NULL, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 484);
 
     line = GuiCreateDividerLine(parent);
@@ -248,7 +248,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     table[1].position.x = 24;
     table[1].position.y = 64;
     button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table) - 1,
-                             UnHandler, NULL);
+                             NULL, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 619);
 }
 

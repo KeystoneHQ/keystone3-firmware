@@ -1043,7 +1043,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
     free_simple_response_c_char(result);
 }
 
-void GuiResetCurrentMultiAccountsCache(uint8_t index) 
+void GuiResetCurrentMultiAccountsCache(uint8_t index)
 {
     if (index > 2) {
         return;

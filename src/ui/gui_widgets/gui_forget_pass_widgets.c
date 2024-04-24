@@ -81,12 +81,16 @@ static void GuiQuitHandler(lv_event_t *e)
 
 static void ContinueStopCreateHandler(lv_event_t *e)
 {
-    if (lv_event_get_user_data(e) != NULL) {
-        g_forgetMkb->currentSlice = 0;
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-        CloseToTargetTileView(g_forgetPassTileView.currentTile, FORGET_PASSWORD_METHOD_SELECT);
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        if (lv_event_get_user_data(e) != NULL) {
+            g_forgetMkb->currentSlice = 0;
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+            CloseToTargetTileView(g_forgetPassTileView.currentTile, FORGET_PASSWORD_METHOD_SELECT);
+        }
+        GUI_DEL_OBJ(g_noticeHintBox)
     }
-    GUI_DEL_OBJ(g_noticeHintBox)
 }
 
 static void StopCreateViewHandler(lv_event_t *e)
@@ -243,9 +247,7 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
     g_nextCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 114);
     lv_obj_set_align(g_nextCont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_opa(g_nextCont, LV_OPA_0, 0);
-    g_forgetMkb->nextButton = GuiCreateBtn(g_nextCont, "");
-    lv_obj_t *img = GuiCreateImg(g_forgetMkb->nextButton, &imgArrowNext);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    g_forgetMkb->nextButton = GuiCreateBtn(g_nextCont, USR_SYMBOL_ARROW_NEXT);
     lv_obj_align(g_forgetMkb->nextButton, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
 
     if (wordAmount == 20 || wordAmount == 33) {

@@ -432,7 +432,7 @@ static void GuiShowSolTxUnknownOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOv
     lv_obj_t *label = lv_label_create(container);
     lv_label_set_text(label, "No Transaction Details");
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 144);
-    lv_obj_set_style_text_font(label, &buttonFont, LV_PART_MAIN);
+    lv_obj_set_style_text_font(label, &openSansEnText, LV_PART_MAIN);
     lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
 
     label = lv_label_create(container);

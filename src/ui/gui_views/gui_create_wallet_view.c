@@ -30,7 +30,8 @@ int32_t GuiCreateWalletViewEventProcess(void *self, uint16_t usEvent, void *para
         }
         return GuiCreateWalletViewInit(walletMethod);
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiCreateWalletViewDeInit();
+        GuiCreateWalletDeInit();
+        break;
     case GUI_EVENT_REFRESH:
         GuiCreateWalletRefresh();
         break;

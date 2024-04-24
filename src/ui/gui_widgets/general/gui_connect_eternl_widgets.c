@@ -89,15 +89,9 @@ static void GuiCreatePageContent(lv_obj_t *parent)
     lv_obj_set_width(label, 384);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 186);
 
-    button = GuiCreateBtn(parent, _(""));
+    button = GuiCreateBtn(parent, USR_SYMBOL_ARROW_NEXT);
     lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_add_event_cb(button, GotoScanQRCodeHandler, LV_EVENT_CLICKED, NULL);
-
-    lv_obj_t *img = GuiCreateImg(button, &imgNextStep);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_opa(button, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(button, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(button, LV_OPA_12, LV_STATE_PRESSED);
 }
 
 static void CleanHandler(lv_event_t *e)

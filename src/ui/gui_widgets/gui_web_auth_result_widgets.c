@@ -60,12 +60,10 @@ typedef enum {
 
 void GuiSetWebAuthResultData(URParseResult *urResult, URParseMultiResult *multiResult, bool multi)
 {
-#ifndef COMPILE_SIMULATOR
     g_urResult = urResult;
     g_urMultiResult = multiResult;
     g_isMulti = multi;
     g_web_auth_data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-#endif
 }
 
 void GuiWebAuthResultSuccessHandler(lv_event_t *e)
@@ -107,7 +105,7 @@ void GuiWebAuthResultCreateAuthCode(lv_obj_t *parent, char *code, int xOffset)
     lv_obj_align(cont, LV_ALIGN_DEFAULT, xOffset, 108);
     lv_obj_set_style_radius(cont, 6, LV_PART_MAIN);
     lv_obj_set_style_bg_color(cont, lv_color_hex(0x2d2d2d), 0);
-    label = GuiCreateLabelWithFont(parent, code, &openSansEnLittleTitle);
+    label = GuiCreateLabelWithFont(cont, code, &openSansEnLittleTitle);
     lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 }
 

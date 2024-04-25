@@ -177,6 +177,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreeXrpMemory,
     },
+    {
+        REMAPVIEW_AR,
+#ifndef COMPILE_SIMULATOR
+        "{}",
+#else
+        PC_SIMULATOR_PATH "/page_ar.json",
+#endif
+        GuiGetArData,
+        NULL,
+        FreeArMemory,
+    },
 #endif
 };
 
@@ -635,10 +646,28 @@ GetLabelDataFunc GuiXrpTextFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataFunc GuiArTextFuncGet(char *type)
+{
+    if (!strcmp(type, "GetArDetail")) {
+        // TODO: GetArDetail
+        return NULL;
+    }
+    return NULL;
+}
+
 GetLabelDataLenFunc GuiXrpTextLenFuncGet(char *type)
 {
     if (!strcmp(type, "GetXrpDetailLen")) {
         return GetXrpDetailLen;
+    }
+    return NULL;
+}
+
+GetLabelDataLenFunc GuiArTextLenFuncGet(char *type)
+{
+    if (!strcmp(type, "GetArDetailLen")) {
+        // TODO: GetArDetailLen
+        return NULL;
     }
     return NULL;
 }
@@ -696,6 +725,8 @@ GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
         return GuiAdaTextLenFuncGet(type);
     case REMAPVIEW_XRP:
         return GuiXrpTextLenFuncGet(type);
+    case REMAPVIEW_AR:
+        return GuiArTextLenFuncGet(type);
     case REMAPVIEW_ETH_TYPEDDATA:
         return GuiEthTextLenFuncGet(type);
 #endif
@@ -730,6 +761,8 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
         return GuiAdaTextFuncGet(type);
     case REMAPVIEW_XRP:
         return GuiXrpTextFuncGet(type);
+    case REMAPVIEW_AR:
+        return GuiArTextFuncGet(type);
 #endif
     default:
         return NULL;
@@ -1462,6 +1495,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_ADA;
     case XRPTx:
         return REMAPVIEW_XRP;
+    case ArweaveTx:
+        return REMAPVIEW_AR;
 #endif
     default:
         return REMAPVIEW_BUTT;

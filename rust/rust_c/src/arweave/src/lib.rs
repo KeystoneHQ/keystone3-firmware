@@ -3,15 +3,29 @@
 extern crate alloc;
 
 use alloc::boxed::Box;
-use alloc::string::ToString;
-use app_arweave::{generate_public_key_from_primes, generate_secret, aes256_encrypt, aes256_decrypt};
+use alloc::vec::Vec;
+use alloc::string::{String, ToString};
+use app_arweave::{generate_public_key_from_primes, generate_secret, aes256_encrypt, aes256_decrypt, errors::ArweaveError, parse};
+
 use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
-use common_rust_c::structs::SimpleResponse;
+use keystore::algorithms::rsa::{sign_message, SigningOption};
+use crate::structs::DisplayArweaveTx;
+use common_rust_c::extract_ptr_with_type;
+use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
-use common_rust_c::types::{PtrBytes, PtrString};
+use common_rust_c::types::{PtrBytes, PtrString, PtrUR, PtrT};
+use common_rust_c::errors::ErrorCodes;
+use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use cty::c_char;
 use third_party::hex;
+use third_party::serde_json;
+use third_party::serde_json::{json, Value};
+use third_party::ur_registry::traits::{RegistryItem, To};
+use third_party::ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SaltLen};
+use third_party::ur_registry::arweave::arweave_signature::ArweaveSignature;
 use core::slice;
+
+pub mod structs;
 
 fn generate_aes_key_iv(seed: &[u8]) -> ([u8; 32], [u8; 16]) {
     let key_path = "m/0'".to_string();
@@ -106,6 +120,75 @@ pub extern "C" fn arweave_get_address(
     let xpub = recover_c_char(xpub);
     let address = app_arweave::generate_address(hex::decode(xpub).unwrap()).unwrap();
     return SimpleResponse::success(convert_c_char(address)).simple_c_ptr();
+}
+
+
+#[no_mangle]
+pub extern "C" fn ar_check_tx() -> PtrT<TransactionCheckResult> {
+    TransactionCheckResult::error(ErrorCodes::Success, "Success".to_string()).c_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn ar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayArweaveTx>> {
+    let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
+    let sign_data = sign_request.get_sign_data();
+    let sign_type = sign_request.get_sign_type();
+    let sign_data_json: serde_json::Value = serde_json::from_slice(sign_data.as_slice()).unwrap();
+    let display_tx = DisplayArweaveTx {
+        from: convert_c_char(sign_data_json.get("last_tx").unwrap().as_str().unwrap().to_string()),
+        to: convert_c_char(sign_data_json.get("target").unwrap().as_str().unwrap().to_string()),
+    };
+    TransactionParseResult::success(Box::into_raw(Box::new(display_tx)) as *mut DisplayArweaveTx).c_ptr()
+}
+
+fn build_sign_result(ptr: PtrUR, p: &[u8], q: &[u8]) -> Result<ArweaveSignature, ArweaveError> {
+    let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
+    let salt_len = match sign_request.get_salt_len() {
+        SaltLen::Zero => 0,
+        SaltLen::Digest => 32,
+    };
+    let sign_data = sign_request.get_sign_data();
+    let raw_tx = parse(&sign_data.to_vec()).unwrap();
+    let raw_json: Value = serde_json::from_str(&raw_tx).unwrap();
+    let signature_data = raw_json["formatted_json"]["signature_data"].as_str().unwrap();
+    let signature_data = hex::decode(signature_data).unwrap();
+    let signature = sign_message(&signature_data, p, q, &SigningOption::PSS { salt_len })?;
+
+    Ok(ArweaveSignature::new(
+        sign_request.get_request_id(),
+        signature,
+    ))
+}
+
+#[no_mangle]
+pub extern "C" fn ar_sign_tx(
+    ptr: PtrUR,
+    p: PtrBytes,
+    p_len: u32,
+    q: PtrBytes,
+    q_len: u32,
+) -> PtrT<UREncodeResult> {
+    let p = unsafe { slice::from_raw_parts(p, p_len as usize) };
+    let q = unsafe { slice::from_raw_parts(q, q_len as usize) };
+
+    build_sign_result(ptr, p, q)
+    .map(|v: ArweaveSignature| v.try_into())
+    .map_or_else(
+        |e| UREncodeResult::from(e).c_ptr(),
+        |v| {
+            v.map_or_else(
+                |e| UREncodeResult::from(e).c_ptr(),
+                |data| {
+                    UREncodeResult::encode(
+                        data,
+                        ArweaveSignature::get_registry_type().get_type(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                    )
+                    .c_ptr()
+                },
+            )
+        },
+    )
 }
 
 #[cfg(test)]

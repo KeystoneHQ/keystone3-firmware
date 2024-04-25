@@ -12,6 +12,7 @@
 #include "gui_aptos.h"
 #include "gui_ada.h"
 #include "gui_xrp.h"
+#include "gui_ar.h"
 #endif
 
 typedef void (*SetChainDataFunc)(void *resultData, void *multiResultData, bool multi);
@@ -85,6 +86,7 @@ typedef enum {
     REMAPVIEW_APT,
     REMAPVIEW_ADA,
     REMAPVIEW_XRP,
+    REMAPVIEW_AR,
     REMAPVIEW_WEB_AUTH,
 #endif
     REMAPVIEW_BUTT,

@@ -41,6 +41,8 @@ use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
 use third_party::ur_registry::traits::RegistryItem;
+#[cfg(feature = "multi-coins")]
+use third_party::ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
 
 use crate::errors::{ErrorCodes, RustCError};
 use crate::free::Free;
@@ -199,6 +201,8 @@ pub enum ViewType {
     #[cfg(feature = "multi-coins")]
     SuiTx,
     #[cfg(feature = "multi-coins")]
+    ArweaveTx,
+    #[cfg(feature = "multi-coins")]
     AptosTx,
     WebAuthResult,
     #[cfg(feature = "multi-coins")]
@@ -231,6 +235,8 @@ pub enum URType {
     AptosSignRequest,
     #[cfg(feature = "multi-coins")]
     QRHardwareCall,
+    #[cfg(feature = "multi-coins")]
+    ArweaveSignRequest,
     URTypeUnKnown,
 }
 
@@ -254,6 +260,8 @@ impl URType {
             InnerURType::EvmSignRequest(_) => Ok(URType::EvmSignRequest),
             #[cfg(feature = "multi-coins")]
             InnerURType::SuiSignRequest(_) => Ok(URType::SuiSignRequest),
+            #[cfg(feature = "multi-coins")]
+            InnerURType::ArweaveSignRequest(_) => Ok(URType::ArweaveSignRequest),
             #[cfg(feature = "multi-coins")]
             InnerURType::AptosSignRequest(_) => Ok(URType::AptosSignRequest),
             #[cfg(feature = "multi-coins")]
@@ -363,6 +371,10 @@ fn free_ur(ur_type: &URType, data: PtrUR) {
         #[cfg(feature = "multi-coins")]
         URType::SuiSignRequest => {
             free_ptr_with_type!(data, SuiSignRequest);
+        }
+        #[cfg(feature = "multi-coins")]
+        URType::ArweaveSignRequest => {
+            free_ptr_with_type!(data, ArweaveSignRequest);
         }
         #[cfg(feature = "multi-coins")]
         URType::AptosSignRequest => {
@@ -513,6 +525,8 @@ pub fn decode_ur(ur: String) -> URParseResult {
         #[cfg(feature = "multi-coins")]
         URType::SuiSignRequest => _decode_ur::<SuiSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
+        URType::ArweaveSignRequest => _decode_ur::<ArweaveSignRequest>(ur, ur_type),
+        #[cfg(feature = "multi-coins")]
         URType::AptosSignRequest => _decode_ur::<AptosSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
         URType::QRHardwareCall => _decode_ur::<QRHardwareCall>(ur, ur_type),
@@ -579,6 +593,8 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         URType::EvmSignRequest => _receive_ur::<EvmSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
         URType::SuiSignRequest => _receive_ur::<SuiSignRequest>(ur, ur_type, decoder),
+        #[cfg(feature = "multi-coins")]
+        URType::ArweaveSignRequest => _receive_ur::<ArweaveSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
         URType::AptosSignRequest => _receive_ur::<AptosSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]

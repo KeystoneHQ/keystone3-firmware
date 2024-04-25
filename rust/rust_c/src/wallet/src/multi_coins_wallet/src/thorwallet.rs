@@ -44,7 +44,6 @@ pub extern "C" fn get_connect_thor_wallet_ur(
         return if let (Some(k1), Some(k2), Some(k3), Some(k4), Some(k5)) =
             (key1, key2, key3, key4, key5)
         {
-
             let mfp = match <&[u8; 4]>::try_from(mfp) {
                 Ok(mfp) => mfp,
                 Err(e) => {

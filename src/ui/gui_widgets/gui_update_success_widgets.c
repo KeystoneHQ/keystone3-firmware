@@ -35,7 +35,7 @@ void GuiUpdateSuccessInit(void)
         lv_obj_add_flag(g_updateSuccessCont, LV_OBJ_FLAG_CLICKABLE);
         tempObj = GuiCreateImg(g_updateSuccessCont, &imgUpdate);
         lv_obj_align(tempObj, LV_ALIGN_TOP_MID, 0, 180);
-        tempObj = GuiCreateLittleTitleLabel(g_updateSuccessCont, "Update Successful");
+        tempObj = GuiCreateLittleTitleLabel(g_updateSuccessCont, _("update_success"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_MID, 0, 284);
         GetSoftWareVersionNumber(&version[1]);
         tempObj = GuiCreateNoticeLabel(g_updateSuccessCont, version);

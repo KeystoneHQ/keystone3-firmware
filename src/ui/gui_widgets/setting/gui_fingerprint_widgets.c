@@ -414,7 +414,6 @@ void GuiFingerMangerStructureCb(void *obj, void *param)
     for (int i = 0; i < 3; i++) {
         textId = GetFingerRegisteredStatus(i);
         if (textId != 0) {
-            printf("text id = %d\n", textId);
             fpRegisteredNum++;
             label = GuiCreateTextLabel(container, "");
             lv_label_set_text_fmt(label, _("fingerprint_nth"), textId);
@@ -564,17 +563,13 @@ static void RecognizeFailHandler(lv_timer_t *timer)
 
 static void FingerUnlockDeviceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        bool en = lv_obj_has_state(g_fpUnlockSwitch, LV_STATE_CHECKED);
-        if (en) {
-            lv_obj_clear_state(g_fpUnlockSwitch, LV_STATE_CHECKED);
-            UpdateFingerUnlockFlag(!en);
-            lv_event_send(g_fpUnlockSwitch, LV_EVENT_VALUE_CHANGED, NULL);
-        } else {
-            GuiShowKeyboardHandler(e);
-        }
+    bool en = lv_obj_has_state(g_fpUnlockSwitch, LV_STATE_CHECKED);
+    if (en) {
+        lv_obj_clear_state(g_fpUnlockSwitch, LV_STATE_CHECKED);
+        UpdateFingerUnlockFlag(!en);
+        lv_event_send(g_fpUnlockSwitch, LV_EVENT_VALUE_CHANGED, NULL);
+    } else {
+        GuiShowKeyboardHandler(e);
     }
 }
 

@@ -1197,42 +1197,30 @@ static void SwitchAddressHandler(lv_event_t *e)
 
 static void ChangeAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        uint32_t i = GetCurrentSelectIndex();
-        if (i < ADDRESS_INDEX_MAX) {
-            i++;
-            SetCurrentSelectIndex(i);
-        }
-        RefreshQrCode();
-        if (i == ADDRESS_INDEX_MAX) {
-            lv_obj_set_style_img_opa(g_utxoReceiveWidgets.changeImg, LV_OPA_60, LV_PART_MAIN);
-            lv_obj_set_style_text_opa(g_utxoReceiveWidgets.changeLabel, LV_OPA_60, LV_PART_MAIN);
-        } else {
-            lv_obj_set_style_img_opa(g_utxoReceiveWidgets.changeImg, LV_OPA_COVER, LV_PART_MAIN);
-            lv_obj_set_style_text_opa(g_utxoReceiveWidgets.changeLabel, LV_OPA_COVER, LV_PART_MAIN);
-        }
+    uint32_t i = GetCurrentSelectIndex();
+    if (i < ADDRESS_INDEX_MAX) {
+        i++;
+        SetCurrentSelectIndex(i);
+    }
+    RefreshQrCode();
+    if (i == ADDRESS_INDEX_MAX) {
+        lv_obj_set_style_img_opa(g_utxoReceiveWidgets.changeImg, LV_OPA_60, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(g_utxoReceiveWidgets.changeLabel, LV_OPA_60, LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_img_opa(g_utxoReceiveWidgets.changeImg, LV_OPA_COVER, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(g_utxoReceiveWidgets.changeLabel, LV_OPA_COVER, LV_PART_MAIN);
     }
 }
 
 static void OpenSwitchAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiBitcoinReceiveGotoTile(UTXO_RECEIVE_TILE_SWITCH_ACCOUNT);
-        RefreshSwitchAccount();
-    }
+    GuiBitcoinReceiveGotoTile(UTXO_RECEIVE_TILE_SWITCH_ACCOUNT);
+    RefreshSwitchAccount();
 }
 
 static void GotoAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiCreateGotoAddressWidgets(g_utxoReceiveWidgets.tileSwitchAccount);
-    }
+    GuiCreateGotoAddressWidgets(g_utxoReceiveWidgets.tileSwitchAccount);
 }
 
 static void SetKeyboardValid(bool validation)
@@ -1351,11 +1339,7 @@ static void GotoAddressKeyboardHandler(lv_event_t *e)
 
 static void CloseGotoAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_add_flag(g_utxoReceiveWidgets.inputAddressCont, LV_OBJ_FLAG_HIDDEN);
-    }
+    lv_obj_add_flag(g_utxoReceiveWidgets.inputAddressCont, LV_OBJ_FLAG_HIDDEN);
 }
 
 static ChainType GetChainTypeByIndex(uint32_t index)

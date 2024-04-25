@@ -341,9 +341,5 @@ static void showQRHintBox(WalletTutorialItem_t *item)
 
 static void GuiWalletTutorialQrcodeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    WalletTutorialItem_t *item = (WalletTutorialItem_t *)lv_event_get_user_data(e);
-    if (code == LV_EVENT_CLICKED) {
-        showQRHintBox(item);
-    }
+    showQRHintBox(lv_event_get_user_data(e));
 }

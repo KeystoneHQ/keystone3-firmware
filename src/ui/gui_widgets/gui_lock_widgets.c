@@ -197,14 +197,10 @@ void GuiLockScreenHidden(void)
 
 void OpenForgetPasswordHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GUI_VIEW *view = (GUI_VIEW *)lv_event_get_user_data(e);
-        FpCancelCurOperate();
-        lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
-        GuiFrameOpenViewWithParam(&g_forgetPassView, view, sizeof(view));
-    }
+    GUI_VIEW *view = (GUI_VIEW *)lv_event_get_user_data(e);
+    FpCancelCurOperate();
+    lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
+    GuiFrameOpenViewWithParam(&g_forgetPassView, view, sizeof(view));
 }
 
 void GuiLockScreenTurnOn(void *param)

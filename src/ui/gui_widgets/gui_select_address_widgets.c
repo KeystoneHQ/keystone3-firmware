@@ -41,23 +41,18 @@ static void ConfirmHandler(lv_event_t *e);
 
 static void SelectAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t *checkBox;
-
-    if (code == LV_EVENT_CLICKED) {
-        checkBox = lv_event_get_target(e);
-        for (uint32_t i = 0; i < 5; i++) {
-            if (checkBox == g_selectAddressWidgets[i].checkBox) {
-                lv_obj_add_state(g_selectAddressWidgets[i].checkBox, LV_STATE_CHECKED);
-                lv_obj_clear_flag(g_selectAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(g_selectAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-                SetCurrentSelectIndex(g_showIndex + i);
-                UpdateConfirmBtn();
-            } else {
-                lv_obj_clear_state(g_selectAddressWidgets[i].checkBox, LV_STATE_CHECKED);
-                lv_obj_add_flag(g_selectAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_clear_flag(g_selectAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-            }
+    lv_obj_t *checkBox = lv_event_get_target(e);
+    for (uint32_t i = 0; i < 5; i++) {
+        if (checkBox == g_selectAddressWidgets[i].checkBox) {
+            lv_obj_add_state(g_selectAddressWidgets[i].checkBox, LV_STATE_CHECKED);
+            lv_obj_clear_flag(g_selectAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(g_selectAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+            SetCurrentSelectIndex(g_showIndex + i);
+            UpdateConfirmBtn();
+        } else {
+            lv_obj_clear_state(g_selectAddressWidgets[i].checkBox, LV_STATE_CHECKED);
+            lv_obj_add_flag(g_selectAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(g_selectAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
         }
     }
 }
@@ -264,8 +259,7 @@ static void BackHandler(lv_event_t *e)
 
 static void ConfirmHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED && IsSelectChanged()) {
+    if (IsSelectChanged()) {
         GuiDestroySelectAddressWidget();
         g_setSelectIndexFunc(GetCurrentSelectAddressIndex());
     }

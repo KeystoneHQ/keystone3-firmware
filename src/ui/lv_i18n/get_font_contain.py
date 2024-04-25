@@ -35,14 +35,14 @@ def main():
     unique_characters_font_28 = extract_unique_characters(df, 28, language)
     unique_characters_font_36 = extract_unique_characters(df, 36, language)
 
-    print(f"\nUnique characters in {language} with font size {language}Illustrate:")
-    print(unique_characters_font_20)
-    print(f"Unique characters in {language} with font size {language}Text:")
-    print(unique_characters_font_24)
-    print(f"\nUnique characters in {language} with font size {language}LittleTitle:")
-    print(unique_characters_font_28)
-    print(f"Unique characters in {language} with font size {language}Title:")
-    print(unique_characters_font_36)
+    print(f"\nUnique characters in {language} with font size 20 {language}Illustrate:")
+    print('.' + unique_characters_font_20)
+    print(f"Unique characters in {language} with font size 24 {language}Text:")
+    print('.' + unique_characters_font_24)
+    print(f"\nUnique characters in {language} with font size 28 {language}LittleTitle:")
+    print('.' + unique_characters_font_28)
+    print(f"Unique characters in {language} with font size 36 {language}Title:")
+    print('.' + unique_characters_font_36)
     print("\n" + "-"*50 + "\n")
 
 if __name__ == '__main__':

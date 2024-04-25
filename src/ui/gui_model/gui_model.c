@@ -323,7 +323,6 @@ static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
 
 static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t inDataLen)
 {
-#ifndef COMPILE_SIMULATOR
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t retData;
@@ -344,7 +343,6 @@ static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t in
     memset_s(mnemonic, strnlen_s(mnemonic, MNEMONIC_MAX_LEN), 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
     SRAM_FREE(mnemonic);
     SetLockScreen(enable);
-#endif
     return SUCCESS_CODE;
 }
 
@@ -449,7 +447,6 @@ static int32_t ModelBip39VerifyMnemonic(const void *inData, uint32_t inDataLen)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t ret = SUCCESS_CODE;
-#ifndef COMPILE_SIMULATOR
     SimpleResponse_c_char *xPubResult;
     uint8_t seed[64];
 
@@ -475,9 +472,6 @@ static int32_t ModelBip39VerifyMnemonic(const void *inData, uint32_t inDataLen)
     } else {
         GuiApiEmitSignal(SIG_CREATE_SINGLE_PHRASE_WRITESE_PASS, NULL, 0);
     }
-#else
-    GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));
-#endif
     SetLockScreen(enable);
     return 0;
 }
@@ -488,7 +482,6 @@ static int32_t ModelBip39ForgetPass(const void *inData, uint32_t inDataLen)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t ret = SUCCESS_CODE;
-#ifndef COMPILE_SIMULATOR
     do {
         ret = CHECK_BATTERY_LOW_POWER();
         CHECK_ERRCODE_BREAK("save low power", ret);
@@ -501,11 +494,6 @@ static int32_t ModelBip39ForgetPass(const void *inData, uint32_t inDataLen)
         ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
     } while (0);
     GuiApiEmitSignal(SIG_FORGET_PASSWORD_FAIL, &ret, sizeof(ret));
-#else
-    ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
-    // GuiEmitSignal(SIG_FORGET_PASSWORD_FAIL, &ret, sizeof(ret));
-    GuiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
-#endif
     SetLockScreen(enable);
     return ret;
 }
@@ -611,7 +599,6 @@ static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
     }
 
     for (int i = 0; i < slip39->memberCnt; i++) {
-        printf("%s\n", wordsList[i]);
         memset_s(wordsList[i], strlen(wordsList[i]), 0, strlen(wordsList[i]));
         SRAM_FREE(wordsList[i]);
     }
@@ -637,7 +624,6 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     uint8_t *entropy;
     uint8_t *ems;
     uint32_t entropyLen;
@@ -660,7 +646,6 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     char *words[threShold];
     for (int i = 0; i < threShold; i++) {
         words[i] = SecretCacheGetSlip39Mnemonic(i);
-        printf("%s\n", words[i]);
     }
     ret = Sli39GetMasterSecret(threShold, wordCnt, emsCheck, msCheck, words, &id, &ie);
     if ((ret != SUCCESS_CODE) || (memcmp(msCheck, entropy, entropyLen) != 0) || (memcmp(emsCheck, ems, entropyLen) != 0)) {
@@ -676,7 +661,6 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     ClearAccountPassphrase(newAccount);
     MODEL_WRITE_SE_END
 
-#endif
     SetLockScreen(enable);
     return SUCCESS_CODE;
 }

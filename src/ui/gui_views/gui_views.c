@@ -243,6 +243,7 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
     g_hintParam = param;
     const char *titleText = _("error_box_invalid_seed_phrase");
     const char *descText = _("error_box_invalid_seed_phrase_desc");
+    void *imgSrc = &imgFailed;
     switch (errCode) {
     case ERR_KEYSTORE_MNEMONIC_REPEAT:
         titleText = _("error_box_duplicated_seed_phrase");
@@ -253,6 +254,7 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
     case ERR_KEYSTORE_SAVE_LOW_POWER:
         titleText = _("error_box_low_power");
         descText = _("error_box_low_power_desc");
+        imgSrc = &imgWarn;
         break;
     case ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET:
         titleText = (char *)_("error_box_mnemonic_not_match_wallet");
@@ -312,7 +314,7 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
         break;
     }
 
-    lv_obj_t *cont = GuiCreateConfirmHintBox(&imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
+    lv_obj_t *cont = GuiCreateConfirmHintBox(imgSrc, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
     lv_obj_add_event_cb(GuiGetHintBoxRightBtn(cont), CloseWaringPageHandler, LV_EVENT_CLICKED, cont);
     return cont;
 }

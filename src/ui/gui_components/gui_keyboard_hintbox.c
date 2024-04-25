@@ -61,9 +61,7 @@ static void KeyboardConfirmHandler(lv_event_t *e)
             GuiClearKeyboardInput(keyboardWidget);
             GuiModelVerifyAccountPassWord(keyboardWidget->sig);
         }
-    }
-
-    if (code == LV_EVENT_VALUE_CHANGED) {
+    } else if (code == LV_EVENT_VALUE_CHANGED) {
         GuiHideErrorLabel(keyboardWidget);
         Vibrate(SLIGHT);
     }

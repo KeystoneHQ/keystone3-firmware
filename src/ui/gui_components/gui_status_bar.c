@@ -28,31 +28,31 @@ static void SwitchWalletHandler(lv_event_t *e)
 #endif
 
 typedef struct StatusBar {
-  lv_obj_t *background;
+    lv_obj_t *background;
 #if (WALLPAPER_ENABLE == 1)
-  lv_obj_t *wallPaper;
+    lv_obj_t *wallPaper;
 #endif
-  lv_obj_t *cont;
-  lv_obj_t *walletIcon;
-  lv_obj_t *walletNameLabel;
-  lv_obj_t *batteryImg;
-  lv_obj_t *sdCardImg;
-  lv_obj_t *usbImg;
-  lv_obj_t *batteryPad;
-  lv_obj_t *batteryCharging;
-  lv_obj_t *batteryPadImg;
-  lv_obj_t *batteryLabel;
-  lv_obj_t *betaImg;
+    lv_obj_t *cont;
+    lv_obj_t *walletIcon;
+    lv_obj_t *walletNameLabel;
+    lv_obj_t *batteryImg;
+    lv_obj_t *sdCardImg;
+    lv_obj_t *usbImg;
+    lv_obj_t *batteryPad;
+    lv_obj_t *batteryCharging;
+    lv_obj_t *batteryPadImg;
+    lv_obj_t *batteryLabel;
+    lv_obj_t *betaImg;
 #ifdef BTC_ONLY
-  lv_obj_t *testNetImg;
+    lv_obj_t *testNetImg;
 #endif
 } StatusBar_t;
 static StatusBar_t g_guiStatusBar;
 
 typedef struct {
-  GuiChainCoinType index;
-  const char *name;
-  const lv_img_dsc_t *icon;
+    GuiChainCoinType index;
+    const char *name;
+    const lv_img_dsc_t *icon;
 } CoinWalletInfo_t;
 
 bool GetLvglHandlerStatus(void);
@@ -121,35 +121,39 @@ const static CoinWalletInfo_t g_walletBtn[] = {
 #endif
 };
 
-void GuiNvsBarSetWalletName(const char *name) {
-  lv_label_set_text(g_guiStatusBar.walletNameLabel, name);
+void GuiNvsBarSetWalletName(const char *name)
+{
+    lv_label_set_text(g_guiStatusBar.walletNameLabel, name);
 }
 
-const char *GuiNvsBarGetWalletName(void) {
-  return lv_label_get_text(g_guiStatusBar.walletNameLabel);
+const char *GuiNvsBarGetWalletName(void)
+{
+    return lv_label_get_text(g_guiStatusBar.walletNameLabel);
 }
 
-void GuiNvsBarSetWalletIcon(const void *src) {
-  if (g_guiStatusBar.walletIcon != NULL) {
-    lv_obj_del(g_guiStatusBar.walletIcon);
-    g_guiStatusBar.walletIcon = NULL;
-  }
-  if (src == NULL) {
-    return;
-  }
-  g_guiStatusBar.walletIcon = lv_img_create(g_guiStatusBar.cont);
-  lv_img_set_src(g_guiStatusBar.walletIcon, src);
-  lv_img_set_zoom(g_guiStatusBar.walletIcon, 200);
-  lv_obj_align(g_guiStatusBar.walletIcon, LV_ALIGN_LEFT_MID, 26, 0);
+void GuiNvsBarSetWalletIcon(const void *src)
+{
+    if (g_guiStatusBar.walletIcon != NULL) {
+        lv_obj_del(g_guiStatusBar.walletIcon);
+        g_guiStatusBar.walletIcon = NULL;
+    }
+    if (src == NULL) {
+        return;
+    }
+    g_guiStatusBar.walletIcon = lv_img_create(g_guiStatusBar.cont);
+    lv_img_set_src(g_guiStatusBar.walletIcon, src);
+    lv_img_set_zoom(g_guiStatusBar.walletIcon, 200);
+    lv_obj_align(g_guiStatusBar.walletIcon, LV_ALIGN_LEFT_MID, 26, 0);
 }
 
-void ShowWallPaper(bool enable) {
+void ShowWallPaper(bool enable)
+{
 #if (WALLPAPER_ENABLE == 1)
-  if (enable) {
-    lv_obj_clear_flag(g_guiStatusBar.wallPaper, LV_OBJ_FLAG_HIDDEN);
-  } else {
-    lv_obj_add_flag(g_guiStatusBar.wallPaper, LV_OBJ_FLAG_HIDDEN);
-  }
+    if (enable) {
+        lv_obj_clear_flag(g_guiStatusBar.wallPaper, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(g_guiStatusBar.wallPaper, LV_OBJ_FLAG_HIDDEN);
+    }
 #endif
 }
 
@@ -158,9 +162,9 @@ void GuiStatusBarInit(void)
     g_guiStatusBar.background = GuiCreateContainer(
                                     lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
 #if (WALLPAPER_ENABLE == 1)
-  g_guiStatusBar.wallPaper = GuiCreateImg(g_guiStatusBar.background, NULL);
-  lv_img_set_src(g_guiStatusBar.wallPaper, &imgDeepLayersVolume11);
-  ShowWallPaper(false);
+    g_guiStatusBar.wallPaper = GuiCreateImg(g_guiStatusBar.background, NULL);
+    lv_img_set_src(g_guiStatusBar.wallPaper, &imgDeepLayersVolume11);
+    ShowWallPaper(false);
 #endif
     lv_obj_t *cont = GuiCreateContainerWithParent(g_guiStatusBar.background,
                      lv_obj_get_width(lv_scr_act()),
@@ -176,18 +180,18 @@ void GuiStatusBarInit(void)
     lv_obj_align(body, LV_ALIGN_TOP_LEFT, 0, GUI_STATUS_BAR_HEIGHT);
     lv_obj_set_style_bg_opa(body, LV_OPA_TRANSP, LV_PART_MAIN);
 
-  g_guiStatusBar.cont = cont;
-  lv_obj_t *img = GuiCreateImg(cont, NULL);
-  lv_obj_align(img, LV_ALIGN_LEFT_MID, 24, 0);
-  g_guiStatusBar.walletIcon = img;
+    g_guiStatusBar.cont = cont;
+    lv_obj_t *img = GuiCreateImg(cont, NULL);
+    lv_obj_align(img, LV_ALIGN_LEFT_MID, 24, 0);
+    g_guiStatusBar.walletIcon = img;
 
-  lv_obj_t *label = GuiCreateIllustrateLabel(cont, "");
-  lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 0);
-  g_guiStatusBar.walletNameLabel = label;
+    lv_obj_t *label = GuiCreateIllustrateLabel(cont, "");
+    lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 0);
+    g_guiStatusBar.walletNameLabel = label;
 
-  img = GuiCreateImg(cont, &imgBattery);
-  lv_obj_align(img, LV_ALIGN_RIGHT_MID, -70, 0);
-  g_guiStatusBar.batteryImg = img;
+    img = GuiCreateImg(cont, &imgBattery);
+    lv_obj_align(img, LV_ALIGN_RIGHT_MID, -70, 0);
+    g_guiStatusBar.batteryImg = img;
 
     g_guiStatusBar.batteryCharging = GuiCreateImg(cont, &imgCharging);
     lv_obj_align(g_guiStatusBar.batteryCharging, LV_ALIGN_RIGHT_MID, -70, 0);
@@ -211,37 +215,37 @@ void GuiStatusBarInit(void)
     g_guiStatusBar.batteryPadImg = lv_img_create(g_guiStatusBar.batteryImg);
     lv_obj_set_pos(g_guiStatusBar.batteryPadImg, 6, 7);
 
-  label = GuiCreateIllustrateLabel(cont, " ");
-  lv_obj_set_style_text_opa(label, LV_OPA_100, LV_PART_MAIN);
-  lv_obj_align(label, LV_ALIGN_LEFT_MID, 414, 0);
-  g_guiStatusBar.batteryLabel = label;
+    label = GuiCreateIllustrateLabel(cont, " ");
+    lv_obj_set_style_text_opa(label, LV_OPA_100, LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_LEFT_MID, 414, 0);
+    g_guiStatusBar.batteryLabel = label;
 
-  img = GuiCreateImg(cont, &imgSdCard);
-  g_guiStatusBar.sdCardImg = img;
-  if (!SdCardInsert()) {
+    img = GuiCreateImg(cont, &imgSdCard);
+    g_guiStatusBar.sdCardImg = img;
+    if (!SdCardInsert()) {
+        lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
+    }
+
+    img = GuiCreateImg(cont, &imgUsb);
+    g_guiStatusBar.usbImg = img;
     lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
-  }
 
-  img = GuiCreateImg(cont, &imgUsb);
-  g_guiStatusBar.usbImg = img;
-  lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
-
-  if (SOFTWARE_VERSION_BUILD % 2) {
-    img = GuiCreateImg(cont, &imgBeta);
-    g_guiStatusBar.betaImg = img;
-  }
+    if (SOFTWARE_VERSION_BUILD % 2) {
+        img = GuiCreateImg(cont, &imgBeta);
+        g_guiStatusBar.betaImg = img;
+    }
 #ifdef BTC_ONLY
-  img = GuiCreateImg(cont, &imgTestNet);
-  g_guiStatusBar.testNetImg = img;
-  lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
+    img = GuiCreateImg(cont, &imgTestNet);
+    g_guiStatusBar.testNetImg = img;
+    lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
 #endif
-  RefreshStatusBar();
+    RefreshStatusBar();
 #ifdef COMPILE_SIMULATOR
-  GuiStatusBarSetBattery(88, true);
-  lv_obj_t *btn = GuiCreateTextBtn(cont, "switch");
-  lv_obj_set_style_bg_opa(btn, LV_OPA_0, 0);
-  lv_obj_add_event_cb(btn, SwitchWalletHandler, LV_EVENT_CLICKED, NULL);
-  lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 0);
+    GuiStatusBarSetBattery(88, true);
+    lv_obj_t *btn = GuiCreateTextBtn(cont, "switch");
+    lv_obj_set_style_bg_opa(btn, LV_OPA_0, 0);
+    lv_obj_add_event_cb(btn, SwitchWalletHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 0);
 #endif
 }
 
@@ -302,44 +306,45 @@ char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
 }
 #endif
 
-void GuiStatusBarSetBattery(uint8_t percent, bool charging) {
-  char percentStr[BUFFER_SIZE_16];
+void GuiStatusBarSetBattery(uint8_t percent, bool charging)
+{
+    char percentStr[BUFFER_SIZE_16];
 
-  snprintf_s(percentStr, BUFFER_SIZE_16, "%d%%", percent);
-  lv_label_set_text(g_guiStatusBar.batteryLabel, percentStr);
+    snprintf_s(percentStr, BUFFER_SIZE_16, "%d%%", percent);
+    lv_label_set_text(g_guiStatusBar.batteryLabel, percentStr);
 
-  if (charging) {
-    lv_obj_align(g_guiStatusBar.batteryImg, LV_ALIGN_RIGHT_MID, -89, 0);
-    lv_obj_clear_flag(g_guiStatusBar.batteryCharging, LV_OBJ_FLAG_HIDDEN);
-  } else {
-    lv_obj_align(g_guiStatusBar.batteryImg, LV_ALIGN_RIGHT_MID, -70, 0);
-    lv_obj_add_flag(g_guiStatusBar.batteryCharging, LV_OBJ_FLAG_HIDDEN);
-  }
-  if (percent == 100 && charging) {
-    lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
-    lv_img_set_src(g_guiStatusBar.batteryPadImg, &imgBatteryPowerFull);
-    lv_obj_clear_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
-  } else if (percent == 0) {
-    lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_add_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
-  } else if (percent < 10) {
-    lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
-    lv_img_set_src(g_guiStatusBar.batteryPadImg, &imgBatteryPower10);
-    lv_obj_clear_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
-  } else if (percent < 20) {
-    lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
-    lv_img_set_src(g_guiStatusBar.batteryPadImg, &imgBatteryPower20);
-    lv_obj_clear_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
-  } else if (percent < 30) {
-    lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
-    lv_img_set_src(g_guiStatusBar.batteryPadImg, &imgBatteryPower30);
-    lv_obj_clear_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
-  } else {
-    lv_obj_add_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_clear_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_set_size(g_guiStatusBar.batteryPad, percent / 10 * 2, 10);
-  }
-  RefreshStatusBar();
+    if (charging) {
+        lv_obj_align(g_guiStatusBar.batteryImg, LV_ALIGN_RIGHT_MID, -89, 0);
+        lv_obj_clear_flag(g_guiStatusBar.batteryCharging, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_align(g_guiStatusBar.batteryImg, LV_ALIGN_RIGHT_MID, -70, 0);
+        lv_obj_add_flag(g_guiStatusBar.batteryCharging, LV_OBJ_FLAG_HIDDEN);
+    }
+    if (percent == 100 && charging) {
+        lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
+        lv_img_set_src(g_guiStatusBar.batteryPadImg, &imgBatteryPowerFull);
+        lv_obj_clear_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
+    } else if (percent == 0) {
+        lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
+    } else if (percent < 10) {
+        lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
+        lv_img_set_src(g_guiStatusBar.batteryPadImg, &imgBatteryPower10);
+        lv_obj_clear_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
+    } else if (percent < 20) {
+        lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
+        lv_img_set_src(g_guiStatusBar.batteryPadImg, &imgBatteryPower20);
+        lv_obj_clear_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
+    } else if (percent < 30) {
+        lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
+        lv_img_set_src(g_guiStatusBar.batteryPadImg, &imgBatteryPower30);
+        lv_obj_clear_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_set_size(g_guiStatusBar.batteryPad, percent / 10 * 2, 10);
+    }
+    RefreshStatusBar();
 }
 
 static void RefreshStatusBar(void)
@@ -366,36 +371,40 @@ static void RefreshStatusBar(void)
     }
 }
 
-static lv_obj_t *CreateReturnBtn(lv_obj_t *navBar) {
-  lv_obj_t *btn = GuiCreateImgButton(navBar, &imgArrowLeft, 64, NULL, NULL);
-  lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
+static lv_obj_t *CreateReturnBtn(lv_obj_t *navBar)
+{
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgArrowLeft, 64, NULL, NULL);
+    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
 
-  return btn;
+    return btn;
 }
 
-static lv_obj_t *CreateCloseBtn(lv_obj_t *navBar) {
-  lv_obj_t *btn = GuiCreateImgButton(navBar, &imgClose, 64, NULL, NULL);
-  lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
+static lv_obj_t *CreateCloseBtn(lv_obj_t *navBar)
+{
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgClose, 64, NULL, NULL);
+    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
 
-  return btn;
+    return btn;
 }
 
-static lv_obj_t *CreateManageBtn(lv_obj_t *navBar) {
+static lv_obj_t *CreateManageBtn(lv_obj_t *navBar)
+{
 #ifdef BTC_ONLY
-  lv_obj_t *btn = GuiCreateImgButton(navBar, &imgWallet2, 64, NULL, NULL);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgWallet2, 64, NULL, NULL);
 #else
-  lv_obj_t *btn = GuiCreateImgButton(navBar, &imgManage, 64, NULL, NULL);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgManage, 64, NULL, NULL);
 #endif
-  lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
+    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
 
-  return btn;
+    return btn;
 }
 
-static lv_obj_t *CreateMidLabel(lv_obj_t *navBar) {
-  lv_obj_t *label = GuiCreateTextLabel(navBar, "");
-  lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+static lv_obj_t *CreateMidLabel(lv_obj_t *navBar)
+{
+    lv_obj_t *label = GuiCreateTextLabel(navBar, "");
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 
-  return label;
+    return label;
 }
 
 static lv_obj_t *CreateMidWordCntSelect(lv_obj_t *navBar)
@@ -407,14 +416,15 @@ static lv_obj_t *CreateMidWordCntSelect(lv_obj_t *navBar)
     lv_obj_set_size(btn, 69, 42);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
 
-  return btn;
+    return btn;
 }
 
-static lv_obj_t *CreateCoinBtn(lv_obj_t *navBar) {
-  lv_obj_t *btn = GuiCreateStatusCoinButton(navBar, _(""), &walletBluewallet);
-  lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
+static lv_obj_t *CreateCoinBtn(lv_obj_t *navBar)
+{
+    lv_obj_t *btn = GuiCreateStatusCoinButton(navBar, _(""), &walletBluewallet);
+    lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
 
-  return btn;
+    return btn;
 }
 
 static lv_obj_t *CreateWordCntSelect(lv_obj_t *navBar)
@@ -426,7 +436,7 @@ static lv_obj_t *CreateWordCntSelect(lv_obj_t *navBar)
     lv_obj_set_size(btn, 69, 42);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
 
-  return btn;
+    return btn;
 }
 
 static lv_obj_t *CreateResetButton(lv_obj_t *navBar)
@@ -440,43 +450,49 @@ static lv_obj_t *CreateResetButton(lv_obj_t *navBar)
     lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
     lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
 
-  return btn;
+    return btn;
 }
 
-static lv_obj_t *CreateQuestion(lv_obj_t *navBar) {
-  lv_obj_t *btn = GuiCreateImgButton(navBar, &imgQuestion, 64, NULL, NULL);
-  lv_obj_set_size(btn, 106, 42);
-  lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
-  return btn;
+static lv_obj_t *CreateQuestion(lv_obj_t *navBar)
+{
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgQuestion, 64, NULL, NULL);
+    lv_obj_set_size(btn, 106, 42);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
+    return btn;
 }
 
-static lv_obj_t *CreateMoreInfo(lv_obj_t *navBar) {
-  lv_obj_t *btn = GuiCreateImgButton(navBar, &imgMore, 64, NULL, NULL);
-  lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-  return btn;
+static lv_obj_t *CreateMoreInfo(lv_obj_t *navBar)
+{
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgMore, 64, NULL, NULL);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
+    return btn;
 }
 
-static lv_obj_t *CreateSkip(lv_obj_t *navBar) {
-  lv_obj_t *btn = GuiCreateImgButton(navBar, &imgSkip, 64, NULL, NULL);
-  lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-  return btn;
+static lv_obj_t *CreateSkip(lv_obj_t *navBar)
+{
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgSkip, 64, NULL, NULL);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
+    return btn;
 }
 
-static lv_obj_t *CreateSearch(lv_obj_t *navBar) {
-  lv_obj_t *btn = GuiCreateImgButton(navBar, &imgSearch, 64, NULL, NULL);
-  lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-  return btn;
+static lv_obj_t *CreateSearch(lv_obj_t *navBar)
+{
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgSearch, 64, NULL, NULL);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
+    return btn;
 }
 
-static lv_obj_t *CreateNewSkip(lv_obj_t *navBar) {
-  lv_obj_t *btn = GuiCreateTextBtn(navBar, _("Skip"));
-  lv_obj_set_style_bg_color(btn, GRAY_COLOR, 0);
-  lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
-  return btn;
+static lv_obj_t *CreateNewSkip(lv_obj_t *navBar)
+{
+    lv_obj_t *btn = GuiCreateTextBtn(navBar, _("Skip"));
+    lv_obj_set_style_bg_color(btn, GRAY_COLOR, 0);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
+    return btn;
 }
 
-static lv_obj_t *CreateUndo(lv_obj_t *navBar) {
-  lv_obj_t *btn, *textLabel, *img;
+static lv_obj_t *CreateUndo(lv_obj_t *navBar)
+{
+    lv_obj_t *btn, *textLabel, *img;
 
     btn = lv_label_create(navBar);
     lv_label_set_text(btn, "");
@@ -490,43 +506,46 @@ static lv_obj_t *CreateUndo(lv_obj_t *navBar) {
     lv_obj_set_style_bg_opa(btn, LV_OPA_10 + LV_OPA_2,
                             LV_STATE_PRESSED | LV_PART_MAIN);
 
-  textLabel = GuiCreateIllustrateLabel(btn, _("Undo"));
-  lv_obj_set_style_text_opa(textLabel, LV_OPA_90, LV_PART_MAIN);
-  lv_label_set_long_mode(textLabel, LV_LABEL_LONG_WRAP);
-  lv_obj_set_style_bg_opa(textLabel, LV_OPA_0, LV_PART_MAIN);
-  lv_obj_align(textLabel, LV_ALIGN_TOP_LEFT, 42, 9);
-  lv_obj_set_style_text_color(textLabel, WHITE_COLOR, LV_PART_MAIN);
+    textLabel = GuiCreateIllustrateLabel(btn, _("Undo"));
+    lv_obj_set_style_text_opa(textLabel, LV_OPA_90, LV_PART_MAIN);
+    lv_label_set_long_mode(textLabel, LV_LABEL_LONG_WRAP);
+    lv_obj_set_style_bg_opa(textLabel, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_align(textLabel, LV_ALIGN_TOP_LEFT, 42, 9);
+    lv_obj_set_style_text_color(textLabel, WHITE_COLOR, LV_PART_MAIN);
 
-  img = GuiCreateImg(btn, &imgUndo);
-  lv_obj_set_size(img, 24, 24);
-  lv_obj_align(img, LV_ALIGN_TOP_LEFT, 12, 12);
+    img = GuiCreateImg(btn, &imgUndo);
+    lv_obj_set_size(img, 24, 24);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 12, 12);
 
-  return btn;
+    return btn;
 }
 
-static lv_obj_t *CreateSDCard(lv_obj_t *navBar) {
-  lv_obj_t *btn = GuiCreateImgButton(navBar, &imgSdCardColor, 64, NULL, NULL);
-  lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-  return btn;
+static lv_obj_t *CreateSDCard(lv_obj_t *navBar)
+{
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgSdCardColor, 64, NULL, NULL);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
+    return btn;
 }
 
-NavBarWidget_t *CreateNavBarWidget(lv_obj_t *navBar) {
+NavBarWidget_t *CreateNavBarWidget(lv_obj_t *navBar)
+{
 
-  NavBarWidget_t *navBarWidget = SRAM_MALLOC(sizeof(NavBarWidget_t));
+    NavBarWidget_t *navBarWidget = SRAM_MALLOC(sizeof(NavBarWidget_t));
 
-  navBarWidget->navBar = navBar;
-  navBarWidget->leftBtn = NULL;
-  navBarWidget->midBtn = NULL;
-  navBarWidget->rightBtn = NULL;
+    navBarWidget->navBar = navBar;
+    navBarWidget->leftBtn = NULL;
+    navBarWidget->midBtn = NULL;
+    navBarWidget->rightBtn = NULL;
 
-  return navBarWidget;
+    return navBarWidget;
 }
 
-void DestoryNavBarWidget(NavBarWidget_t *navBarWidget) {
-  if (navBarWidget != NULL) {
-    if (navBarWidget->navBar != NULL && lv_obj_is_valid(navBarWidget->navBar)) {
-      lv_obj_del(navBarWidget->navBar);
-    }
+void DestoryNavBarWidget(NavBarWidget_t *navBarWidget)
+{
+    if (navBarWidget != NULL) {
+        if (navBarWidget->navBar != NULL && lv_obj_is_valid(navBarWidget->navBar)) {
+            lv_obj_del(navBarWidget->navBar);
+        }
 
     SRAM_FREE(navBarWidget);
   }

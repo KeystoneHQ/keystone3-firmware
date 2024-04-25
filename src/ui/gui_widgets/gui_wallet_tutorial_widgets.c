@@ -113,8 +113,8 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_TYPHON].desc = _("connect_typhon_desc");
         g_tutorials[WALLET_LIST_TYPHON].items[0].walletName = _("connect_typhon_title");
         g_tutorials[WALLET_LIST_TYPHON].items[0].url = _("connect_typhon_link");
-        g_tutorials[WALLET_LIST_TYPHON].items[0].qrTitle = _("connect_typhon_qr_title");
-        g_tutorials[WALLET_LIST_TYPHON].items[0].qrUrl = _("connect_typhon_qr_link");
+        g_tutorials[WALLET_LIST_TYPHON].items[0].qrTitle = _("connect_typhon_title");
+        g_tutorials[WALLET_LIST_TYPHON].items[0].qrUrl = _("connect_typhon_link");
 
         //WALLET_LIST_RABBY
         g_tutorials[WALLET_LIST_RABBY].len = 1;

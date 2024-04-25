@@ -39,7 +39,7 @@ static inline uint32_t op_t(uint32_t val)
     return 0;
 }
 
-static lv_i18n_phrase_t en_singulars[] = {
+const static lv_i18n_phrase_t en_singulars[] = {
     {"Approve", "Approve"},
     {"Attention", "Attention"},
     {"Cancel", "Cancel"},
@@ -258,10 +258,8 @@ static lv_i18n_phrase_t en_singulars[] = {
     {"connect_sushi_qr_title", "SushiSwap"},
     {"connect_sushi_t", "Tutorial"},
     {"connect_sushi_title", "SushiSwap"},
-    {"connect_typhon_desc", "Visit the link below on your computer or mobile device for a guide on syncing Keystone with your software wallet."},
+    {"connect_typhon_desc", "Visit the link below on your computer or mobile device for a guide on syncing Keystone with your software wallet"},
     {"connect_typhon_link", "https://keyst.one/t/3rd/typhon"},
-    {"connect_typhon_qr_link", "https://keyst.one/t/3rd/typhon"},
-    {"connect_typhon_qr_title", "Typhon Wallet"},
     {"connect_typhon_title", "Typhon Wallet"},
     {"connect_wallet_choose_wallet", "Choose Wallet"},
     {"connect_wallet_desc", "Scan the QR code with your software wallet"},
@@ -1003,7 +1001,7 @@ static const lv_i18n_lang_t en_lang = {
     .locale_plural_fn = en_plural_fn
 };
 
-static lv_i18n_phrase_t ru_singulars[] = {
+const static lv_i18n_phrase_t ru_singulars[] = {
     {"Approve", "Разрешить"},
     {"Attention", "Внимание"},
     {"Cancel", "Отмена"},
@@ -1113,7 +1111,7 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"connect_block_title", "BlockWallet (Расширение)"},
     {"connect_bw_desc", "Перейдите по ссылке ниже на своем компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
     {"connect_bw_link", "https://keyst.one/t/3rd/bw"},
-    {"connect_bw_multisig_link", "https://keyst.one/t/3rd/Multisig/bw"},
+    {"connect_bw_multisig_link", "https://keyst.one/t/3rd/multisig/bw"},
     {"connect_bw_qr_link", "https://keyst.one/t/3rd/bw"},
     {"connect_bw_qr_title", "BlueWallet (Мобильный)"},
     {"connect_bw_t", "Руководство"},
@@ -1160,7 +1158,7 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"connect_mm_title2", "MetaMask (Мобильный)"},
     {"connect_nunchuk_desc", "Перейдите по ссылке ниже на своем компьютере или мобильном устройстве"},
     {"connect_nunchuk_link", "https://keyst.one/t/3rd/nunchuk"},
-    {"connect_nunchuk_multisig_link", "https://keyst.one/t/3rd/Multisig/\\nnunchuk"},
+    {"connect_nunchuk_multisig_link", "https://keyst.one/t/3rd/multisig/nunchuk"},
     {"connect_nunchuk_qr_link", "https://keyst.one/t/3rd/nunchuk"},
     {"connect_nunchuk_qr_title", "Nunchuk (Mobile)"},
     {"connect_nunchuk_t", "Руководство"},
@@ -1205,7 +1203,7 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"connect_solflare_title", "Solflare"},
     {"connect_sparrow_desc", "Перейдите по ссылке ниже на своем компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком."},
     {"connect_sparrow_link", "https://keyst.one/t/3rd/sparrow"},
-    {"connect_sparrow_multisig_link", "https://keyst.one/t/3rd/Multisig/sparrow"},
+    {"connect_sparrow_multisig_link", "https://keyst.one/t/3rd/multisig/sparrow"},
     {"connect_sparrow_qr_link", "https://keyst.one/t/3rd/sparrow"},
     {"connect_sparrow_qr_title", "Sparrow"},
     {"connect_sparrow_t", "Руководство"},
@@ -1222,6 +1220,9 @@ static lv_i18n_phrase_t ru_singulars[] = {
     {"connect_sushi_qr_title", "SushiSwap"},
     {"connect_sushi_t", "Руководство"},
     {"connect_sushi_title", "SushiSwap"},
+    {"connect_typhon_desc", "Перейдите по ссылке ниже на своем компьютере или мобильном устройстве"},
+    {"connect_typhon_link", "https://keyst.one/t/3rd/yoroi"},
+    {"connect_typhon_title", "Yoroi Wallet"},
     {"connect_wallet_choose_wallet", "Выберите кошелек"},
     {"connect_wallet_desc", "Сканируйте QR-код программным кошельком"},
     {"connect_wallet_eternl_step1", "Выберите счета, которые вы хотите импортировать в кошелек Eternl."},

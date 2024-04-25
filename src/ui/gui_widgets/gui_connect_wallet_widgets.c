@@ -133,6 +133,12 @@ static const lv_img_dsc_t *g_UniSatCoinArray[5] = {
     &coinTrac,
 };
 
+static const lv_img_dsc_t *g_ThorWalletCoinArray[3] = {
+    &coinBtc,
+    &coinEth,
+    &coinRune,
+};
+
 static const lv_img_dsc_t *g_keplrCoinArray[8] = {
     &coinAtom,
     &coinOsmo,
@@ -667,6 +673,19 @@ static void AddUniSatWalletCoins(void)
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * 5, 2);
 }
 
+static void AddThorWalletCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0; i < 3; i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_ThorWalletCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+}
+
 static void AddKeplrCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -864,6 +883,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_XRP_TOOLKIT:
         func = GuiGetXrpToolkitData;
         AddChainAddress();
+        break;
+    case WALLET_LIST_THORWALLET:
+        func = GuiGetThorWalletBtcData;
+        AddThorWalletCoins();
         break;
 #else
     case WALLET_LIST_BLUE:

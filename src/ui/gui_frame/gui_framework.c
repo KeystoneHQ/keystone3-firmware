@@ -129,7 +129,7 @@ int32_t GuiEmitSignal(uint16_t usEvent, void *param, uint16_t usLen)
     do {
         sigHandled = GuiViewHandleEvent(pView, usEvent, param, usLen);
         if (sigHandled) {
-            printf("usEvENT:%d sig has handled:", usEvent);
+            printf("usEvENT:%d sig has handled! view detail:", usEvent);
             GuiFrameIdToName(pView->id);
             return SUCCESS_CODE;
         }

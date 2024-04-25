@@ -1176,6 +1176,7 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
     ViewType viewType = *((ViewType *)inData);
     g_checkResult = CheckUrResult(viewType);
     if (g_checkResult != NULL && g_checkResult->error_code == 0) {
+        printf("transaction check pass\r\n");
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
     } else {
         printf("transaction check fail, error code: %d, error msg: %s\r\n", g_checkResult->error_code, g_checkResult->error_message);

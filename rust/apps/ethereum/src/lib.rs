@@ -135,9 +135,9 @@ pub fn sign_typed_data_message(
 ) -> Result<EthereumSignature> {
     let utf8_message =
         String::from_utf8(sign_data).map_err(|e| EthereumError::InvalidUtf8Error(e.to_string()))?;
-    let typed_data: Eip712TypedData = serde_json::from_str(&utf8_message)
+    let value: serde_json::Value = serde_json::from_str(&utf8_message).unwrap();
+    let typed_data: Eip712TypedData = serde_json::from_value(value)
         .map_err(|e| EthereumError::InvalidTypedData(e.to_string(), utf8_message))?;
-
     let hash = typed_data
         .encode_eip712()
         .map_err(|e| EthereumError::HashTypedDataError(e.to_string()))?;

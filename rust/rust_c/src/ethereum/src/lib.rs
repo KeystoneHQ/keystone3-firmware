@@ -258,7 +258,6 @@ pub extern "C" fn eth_sign_tx_dynamic(
     if !path.starts_with("m/") {
         path = format!("m/{}", path);
     }
-
     let signature = match TransactionType::from(crypto_eth.get_data_type()) {
         TransactionType::Legacy => {
             app_ethereum::sign_legacy_tx(crypto_eth.get_sign_data().to_vec(), seed, &path)

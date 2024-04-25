@@ -155,6 +155,7 @@ void GuiTransactionCheckPass(void)
     GuiModelTransactionCheckResultClear();
     SetPageLockScreen(true);
     GuiCLoseCurrentWorkingView();
+    printf("open the transaction detail view,qrcodeViewType=%d\n", g_qrcodeViewType);
     GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
 }
 

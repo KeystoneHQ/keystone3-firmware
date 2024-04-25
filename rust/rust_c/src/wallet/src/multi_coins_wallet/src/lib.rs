@@ -8,6 +8,7 @@ pub mod okx;
 pub mod solana;
 pub mod structs;
 pub mod sui;
+pub mod thorwallet;
 mod utils;
 pub mod xrp_toolkit;
 

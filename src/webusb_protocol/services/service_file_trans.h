@@ -6,7 +6,6 @@
 #include "err_code.h"
 #include "protocol_parse.h"
 
-
 enum {
     COMMAND_ID_FILE_TRANS_INFO = 1,
     COMMAND_ID_FILE_TRANS_CONTENT,

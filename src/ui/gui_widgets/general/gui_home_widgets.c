@@ -829,7 +829,6 @@ const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)
     return NULL;
 }
 
-
 void GuiHomeDeInit(void)
 {
     if (g_pageWidget != NULL) {
@@ -839,4 +838,3 @@ void GuiHomeDeInit(void)
 }
 
 #endif
-

@@ -37,7 +37,6 @@ uint32_t s_crc_table[256] = {
     0xafb010b1, 0xab710d06, 0xa6322bdf, 0xa2f33668, 0xbcb4666d, 0xb8757bda, 0xb5365d03, 0xb1f740b4
 };
 
-
 #if FINGER_PRINT_STANDARD_CRC == 0
 static uint32_t reflect(uint32_t data, uint32_t n_bits)
 {

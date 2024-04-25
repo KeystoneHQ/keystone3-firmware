@@ -8,7 +8,6 @@
 #include "drv_parallel8080.h"
 #include "user_delay.h"
 
-
 #define NT35510_SET_CMD_X               0x2A00
 #define NT35510_SET_CMD_Y               0x2B00
 #define NT35510_SET_CMD_WRAM            0x2C00
@@ -21,7 +20,6 @@ static void Nt35510SetWindow(uint16_t xStart, uint16_t yStart, uint16_t xEnd, ui
 static void Nt35510WriteRam(void);
 static void Nt35510InitSequence(void);
 
-
 void Nt35510Init(void)
 {
     Parallel8080Init();
@@ -29,7 +27,6 @@ void Nt35510Init(void)
     Parallel8080Reset();
     Nt35510InitSequence();
 }
-
 
 static void Nt35510WriteReg(uint16_t reg)
 {
@@ -39,7 +36,6 @@ static void Nt35510WriteReg(uint16_t reg)
     PARALLEL_8080_CS_SET;
 }
 
-
 static void Nt35510WriteData(uint8_t data)
 {
     PARALLEL_8080_CS_CLR;
@@ -47,14 +43,12 @@ static void Nt35510WriteData(uint8_t data)
     PARALLEL_8080_CS_SET;
 }
 
-
 static void Nt35510WriteToReg16(uint16_t reg, uint8_t value)
 {
     Nt35510WriteReg(reg);
     Nt35510WriteData(value);
     Nt35510WriteData(value);
 }
-
 
 static void Nt35510SetWindow(uint16_t xStart, uint16_t yStart, uint16_t xEnd, uint16_t yEnd)
 {
@@ -71,18 +65,15 @@ static void Nt35510SetWindow(uint16_t xStart, uint16_t yStart, uint16_t xEnd, ui
     Nt35510WriteRam();      //Writing GRAM mode.
 }
 
-
 static void Nt35510WriteRam(void)
 {
     Nt35510WriteReg(NT35510_SET_CMD_WRAM);
 }
 
-
 bool Nt35510Busy(void)
 {
     return Parallel8080Busy();
 }
-
 
 void Nt35510Clear(uint16_t color)
 {
@@ -109,7 +100,6 @@ void Nt35510Clear(uint16_t color)
     printf("frame tick=%d\r\n", endTick - startTick);
 }
 
-
 void Nt35510Draw(uint16_t xStart, uint16_t yStart, uint16_t xEnd, uint16_t yEnd, uint16_t *colors)
 {
     uint32_t bytes;
@@ -117,7 +107,6 @@ void Nt35510Draw(uint16_t xStart, uint16_t yStart, uint16_t xEnd, uint16_t yEnd,
     bytes = (yEnd - yStart + 1) * (xEnd - xStart + 1) * 2;
     Parallel8080SendDmaData((uint8_t *)colors, bytes);
 }
-
 
 static void Nt35510InitSequence(void)
 {
@@ -957,4 +946,3 @@ static void Nt35510InitSequence(void)
 
     //LCD_BL=1;//Light up the backlight
 }
-

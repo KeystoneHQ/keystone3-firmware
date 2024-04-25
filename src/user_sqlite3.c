@@ -545,23 +545,18 @@ int OpenDb(char *filename, sqlite3 **db)
 
 static int callback(void *output, int nCol, char **argv, char **azColName)
 {
-    int i;
-    int maxLen = 0;
-    if (nCol == 1) {
-        maxLen = SQL_ENS_NAME_MAX_LEN - 1;
-    } else if (nCol == 2) {
-        maxLen = SQL_ABI_BUFF_MAX_SIZE - 1;
-    } else {
-        USER_DEBUG("callback nCol error\n");
-        return 0;
-    }
-    char **data = (char**)output;
-    for (i = 0; i < nCol; i++) {
-        USER_DEBUG("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-        snprintf(data[i], maxLen, "%s", argv[i] ? argv[i] : "NULL");
+    if (nCol != 1 || nCol != 2) {
+        printf("Error: Invalid number of columns %d\n", nCol);
+        return SQLITE_ERROR;
     }
 
-    USER_DEBUG("\n");
+    int maxLen[] = {SQL_ENS_NAME_MAX_LEN, SQL_ABI_BUFF_MAX_SIZE};
+    char **data = (char**)output;
+    for (int i = 0; i < nCol; i++) {
+        USER_DEBUG("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+        snprintf(data[i], maxLen[i], "%s", argv[i] ? argv[i] : "NULL");
+    }
+
     return 0;
 }
 
@@ -580,10 +575,10 @@ int db_exec(sqlite3 *db, const char *sql, char *result1)
     return rc;
 }
 
-int db_exec_2(sqlite3 *db, const char *sql, char *result1, char* result2)
+int db_exec_2(sqlite3 *db, const char *sql, char *contractName, char* functionABIJson)
 {
     USER_DEBUG("sql: %s\n", sql);
-    char *result[2] = {result1, result2};
+    char *result[2] = {contractName, functionABIJson};
     int rc = sqlite3_exec(db, sql, callback, (void*)result, &zErrMsg);
     if (rc != SQLITE_OK) {
         printf("SQL error: %s\n", zErrMsg);
@@ -646,7 +641,7 @@ bool GetDBContract(const char* address, const char *selector, const uint32_t cha
 
     char sqlBuf[SQL_BUFF_MAX_SIZE] = {0};
     snprintf(sqlBuf, SQL_BUFF_MAX_SIZE, "Select functionABI, name from contracts where selectorId = '%s' and address = '%s'", selector, address);
-    int ret = db_exec_2(db, sqlBuf, functionABIJson, contractName);
+    int ret = db_exec_2(db, sqlBuf, contractName, functionABIJson);
     if (ret != SQLITE_OK) {
         sqlite3_close(db);
         return false;

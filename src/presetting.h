@@ -21,5 +21,4 @@ bool GetFactoryResult(void);
 
 void PresettingTest(int argc, char *argv[]);
 
-
 #endif

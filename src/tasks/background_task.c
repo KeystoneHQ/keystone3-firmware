@@ -244,11 +244,9 @@ static void BackgroundTask(void *argument)
     }
 }
 
-
 static void RebootTimerFunc(void *argument)
 {
     uint32_t *arg = argument;
     ExecuteSystemReset(*arg);
     g_rebootTimer = NULL;
 }
-

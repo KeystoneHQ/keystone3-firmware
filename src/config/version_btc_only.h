@@ -5,9 +5,9 @@
 #define PLUS10(x) CONCAT(1, x)
 
 #define SOFTWARE_VERSION_MAX_LEN            (32)
-#define SOFTWARE_VERSION_MAJOR              0
-#define SOFTWARE_VERSION_MINOR              0
-#define SOFTWARE_VERSION_BUILD              1
+#define SOFTWARE_VERSION_MAJOR              1
+#define SOFTWARE_VERSION_MINOR              1
+#define SOFTWARE_VERSION_BUILD              0
 #define SOFTWARE_VERSION                    (SOFTWARE_VERSION_MAJOR * 10000 + SOFTWARE_VERSION_MINOR * 100 + SOFTWARE_VERSION_BUILD)
 
 #define SOFTWARE_VERSION_BTC_ONLY_MAJOR     PLUS10(SOFTWARE_VERSION_MAJOR)
@@ -18,6 +18,7 @@
 
 void GetSoftWareVersion(char *version);
 void GetSoftWareVersionNumber(char *version);
+void GetUpdateVersionNumber(char *version);
 const char *GetSoftwareVersionString(void);
 
 #endif /* _VERSION_H */

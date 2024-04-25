@@ -39,7 +39,6 @@ typedef struct _BitMapInfoHead {
 
 #pragma pack()
 
-
 void ScreenShot(uint8_t *imgData)
 {
     char *imgFilePathName = NULL;
@@ -102,7 +101,6 @@ EXIT:
     EXT_FREE(screenBuffer);
 }
 
-
 #define SCREEN_SHOT_AREA_X_START 413
 #define SCREEN_SHOT_AREA_Y_START 0
 #define SCREEN_SHOT_AREA_X_END SCREEN_SHOT_AREA_X_START + 64
@@ -137,4 +135,3 @@ void ScreenShotTouch(void)
         lastTick = 0;
     }
 }
-

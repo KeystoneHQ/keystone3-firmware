@@ -19,6 +19,7 @@
 #define PAGE_INDEX_KEY_PIECE                    7
 #define PAGE_INDEX_PASSWORD_HASH                8
 #define PAGE_INDEX_PARAM                        9
+#define PAGE_INDEX_MULTISIG_CONFIG_HASH         10
 //page 76~85 encrypted password
 #define PAGE_PF_ENCRYPTED_PASSWORD              72
 #define PAGE_PF_AES_KEY                         82
@@ -52,7 +53,8 @@ void GetAccountSlot(AccountSlot_t *accountSlot, uint8_t accountIndex);
 int32_t SignMessageWithDeviceKey(uint8_t *messageHash, uint8_t *signaure);
 int32_t GetDevicePublicKey(uint8_t *pubkey);
 int32_t SetWalletDataHash(uint8_t index, uint8_t *info);
-int32_t GetWalletDataHash(uint8_t index, uint8_t *info);
 bool VerifyWalletDataHash(uint8_t index, uint8_t *info);
+int32_t SetMultisigDataHash(uint8_t index, uint8_t *info);
+bool VerifyMultisigWalletDataHash(uint8_t index, uint8_t *info);
 
 #endif

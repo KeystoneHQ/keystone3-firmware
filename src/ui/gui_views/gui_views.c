@@ -8,9 +8,28 @@
 #include "gui_create_wallet_widgets.h"
 #include "gui_status_bar.h"
 #include "gui_lock_device_widgets.h"
+#include "gui_page.h"
+#include <stdio.h>
+#include <string.h>
+
+#ifndef COMPILE_SIMULATOR
+#include "safe_str_lib.h"
+#else
+#include "simulator_mock_define.h"
+#endif
+
+#define IMPORT_WALLET_NOTICE                                            false
+#define CREATE_WALLET_NOTICE                                            true
+#define MAX_RUST_ERR_MESSAGE_LEN                                        1024
+
+static void CreateWalletNotice(bool isCreate);
 
 static lv_obj_t *g_hintBox = NULL;
 static lv_obj_t **g_hintParam = NULL;
+static PageWidget_t *g_pageViewWidget = NULL;
+
+static ErrorWindowCallback g_errorWindowCallback = NULL;
+
 void UnHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -20,26 +39,24 @@ void UnHandler(lv_event_t *e)
 
 void OpenImportWalletHandler(lv_event_t *e)
 {
-    static uint8_t walletMethod = WALLET_METHOD_IMPORT;
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         if (CHECK_BATTERY_LOW_POWER()) {
-            g_hintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
+            g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
         } else {
-            GuiFrameOpenViewWithParam(&g_createWalletView, &walletMethod, sizeof(walletMethod));
+            CreateWalletNotice(IMPORT_WALLET_NOTICE);
         }
     }
 }
 
 void OpenCreateWalletHandler(lv_event_t *e)
 {
-    static uint8_t walletMethod = WALLET_METHOD_CREATE;
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         if (CHECK_BATTERY_LOW_POWER()) {
-            g_hintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
+            g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
         } else {
-            GuiFrameOpenViewWithParam(&g_createWalletView, &walletMethod, sizeof(walletMethod));
+            CreateWalletNotice(CREATE_WALLET_NOTICE);
         }
     }
 }
@@ -76,6 +93,14 @@ void CloseCurrentViewHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GuiCLoseCurrentWorkingView();
+    }
+}
+
+void ReadyNextTileHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_READY) {
+        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
     }
 }
 
@@ -160,6 +185,10 @@ void CloseWaringPageHandler(lv_event_t *e)
         if (g_hintParam != NULL) {
             *g_hintParam = NULL;
         }
+        if (g_errorWindowCallback) {
+            g_errorWindowCallback();
+            g_errorWindowCallback = NULL;
+        }
     }
 }
 
@@ -183,10 +212,11 @@ void GuiWriteSeWidget(lv_obj_t *parent)
 {
     lv_obj_t *label = GuiCreateTextLabel(parent, _("create_wallet_generating_title"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 403 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
-    label = GuiCreateIllustrateLabel(parent, _("create_wallet_generating_desc"));
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 457 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
+    label = GuiCreateNoticeLabel(parent, _("create_wallet_generating_desc"));
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 18);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 }
 
 void DuplicateShareHandler(lv_event_t *e)
@@ -204,15 +234,22 @@ void DuplicateShareHandler(lv_event_t *e)
 
 void GuiViewHintBoxClear(void)
 {
-    if (g_hintBox != NULL) {
-        GUI_DEL_OBJ(g_hintBox)
-    }
+    GUI_DEL_OBJ(g_hintBox)
+    DestroyPageWidget(g_pageViewWidget);
+    g_pageViewWidget = NULL;
 }
 
-void GuiDoNothingHandler(lv_event_t *e)
+void GuiSDCardExportHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
+    void (*func)(void) = lv_event_get_user_data(e);
     if (code == LV_EVENT_CLICKED) {
+        if (SdCardInsert()) {
+            func();
+        } else {
+            g_hintBox = GuiCreateErrorCodeWindow(ERR_EXPORT_XPUB_SDCARD_NOT_DETECTED, &g_hintBox, NULL);
+        }
+        return;
     }
 }
 
@@ -235,15 +272,11 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         GuiFrameOpenView(&g_homeView);
         GuiUpdateOldAccountIndex();
     } else {
-        int height = 370;
-        lv_obj_t *desc = NULL;
-        lv_obj_t *title = NULL;
         lv_event_cb_t cb = CloseCurrentUserDataHandler;
         const char *titleText = _("error_box_invalid_seed_phrase");
         const char *descText = _("error_box_invalid_seed_phrase_desc");
         switch (errCode) {
         case ERR_KEYSTORE_MNEMONIC_REPEAT:
-            height = 400;
             titleText = _("error_box_duplicated_seed_phrase");
             descText = _("error_box_duplicated_seed_phrase_desc");
             cb = DuplicateShareHandler;
@@ -251,87 +284,154 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         case ERR_KEYSTORE_MNEMONIC_INVALID:
             break;
         case ERR_KEYSTORE_SAVE_LOW_POWER:
-            height = 400;
             titleText = _("error_box_low_power");
             descText = _("error_box_low_power_desc");
             break;
         }
 
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-        g_hintBox = GuiCreateHintBox(lv_scr_act(), 480, height, false);
-        lv_obj_t *btn = GuiCreateBtn(g_hintBox, _("OK"));
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-        lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
+        g_hintBox = GuiCreateConfirmHintBox(lv_scr_act(), &imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
+        lv_obj_t *btn = GuiGetHintBoxRightBtn(g_hintBox);
         lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, NULL);
-
-        desc = GuiCreateIllustrateLabel(g_hintBox, descText);
-        lv_obj_align_to(desc, btn, LV_ALIGN_OUT_TOP_LEFT, -320, -40);
-
-        title = GuiCreateLittleTitleLabel(g_hintBox, titleText);
-        lv_obj_align_to(title, desc, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
-
-        lv_obj_t *img = GuiCreateImg(g_hintBox, &imgFailed);
-        lv_obj_align_to(img, title, LV_ALIGN_OUT_TOP_LEFT, 0, -24);
     }
 }
 
-void *GuiCreateErrorCodeHintbox(int32_t errCode, lv_obj_t **param)
+void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCallback cb)
 {
+    g_errorWindowCallback = cb;
     g_hintParam = param;
-    int height = 370;
-    lv_obj_t *desc = NULL;
-    lv_obj_t *title = NULL;
     const char *titleText = _("error_box_invalid_seed_phrase");
     const char *descText = _("error_box_invalid_seed_phrase_desc");
     switch (errCode) {
     case ERR_KEYSTORE_MNEMONIC_REPEAT:
-        height = 400;
         titleText = _("error_box_duplicated_seed_phrase");
         descText = _("error_box_duplicated_seed_phrase_desc");
         break;
     case ERR_KEYSTORE_MNEMONIC_INVALID:
         break;
     case ERR_KEYSTORE_SAVE_LOW_POWER:
-        height = 400;
         titleText = _("error_box_low_power");
         descText = _("error_box_low_power_desc");
         break;
     case ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET:
-        height = 400;
         titleText = (char *)_("error_box_mnemonic_not_match_wallet");
         descText = (char *)_("error_box_mnemonic_not_match_wallet_desc");
         break;
     case ERR_UPDATE_FIRMWARE_NOT_DETECTED:
-        height = 400;
         titleText = _("firmware_update_sd_not_detected_title");
         descText = _("firmware_update_sd_not_detected_desc");
         break;
     case ERR_UPDATE_SDCARD_NOT_DETECTED:
-        height = 400;
         titleText = _("firmware_update_sd_failed_access_title");
         descText = _("firmware_update_sd_failed_access_desc");
         break;
     case ERR_UPDATE_NO_UPGRADABLE_FIRMWARE:
-        height = 400;
         titleText = _("firmware_update_no_upgradable_firmware_title");
         descText = _("firmware_update_no_upgradable_firmware_desc");
         break;
+    case ERR_KEYSTORE_IMPORT_XPUB_DUPLICATE:
+        titleText = _("create_multi_wallet_xpub_duplicated_title");
+        descText = _("create_multi_wallet_xpub_duplicated_desc");
+        break;
+    case ERR_KEYSTORE_IMPORT_XPUB_INVALID:
+        titleText = _("multisig_import_xpub_error_title");
+        descText = _("multisig_import_xpub_error_desc");
+        break;
+    case ERR_MULTISIG_WALLET_CONFIG_INVALID:
+        titleText = _("multisig_import_wallet_invalid");
+        descText = _("multisig_import_wallet_invalid_desc");
+        break;
+    case ERR_MULTISIG_WALLET_EXIST:
+        titleText = _("multisig_import_wallet_exist");
+        descText = _("multisig_import_wallet_exist_desc");
+        break;
+    case ERR_INVALID_QRCODE:
+        titleText = _("scan_qr_code_error_invalid_qrcode");
+        descText = _("scan_qr_code_error_invalid_qrcode_desc");
+        break;
+    case ERR_INVALID_FILE:
+        titleText = _("scan_qr_code_error_invalid_wallet_file");
+        descText = _("scan_qr_code_error_invalid_wallet_file_desc");
+        break;
+    case ERR_EXPORT_FILE_TO_MICRO_CARD_FAILED:
+        titleText = _("multisig_export_to_sdcard_failed");
+        descText = _("multisig_export_to_sdcard_failed_desc");
+        break;
+    case ERR_MULTISIG_IMPORT_PASSPHRASE_INVALID:
+        titleText = _("manage_import_wallet_passphrase_error_title");
+        descText = _("manage_import_wallet_passphrase_error_desc");
+        break;
+    case ERR_MULTISIG_TRANSACTION_ALREADY_SIGNED:
+        titleText = _("mutlisig_transaction_already_signed");
+        descText = _("mutlisig_transaction_already_signed_desc");
+        break;
+    case ERR_EXPORT_XPUB_SDCARD_NOT_DETECTED:
+        titleText = _("multisig_export_sdcard_not_detected");
+        descText = _("multisig_export_sdcard_not_detected_desc");
+        break;
     }
 
-    lv_obj_t *cont = GuiCreateHintBox(lv_scr_act(), 480, height, false);
-    lv_obj_t *btn = GuiCreateBtn(cont, _("OK"));
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-    lv_obj_add_event_cb(btn, CloseWaringPageHandler, LV_EVENT_CLICKED, cont);
-
-    desc = GuiCreateIllustrateLabel(cont, descText);
-    lv_obj_align_to(desc, btn, LV_ALIGN_OUT_TOP_LEFT, -320, -40);
-
-    title = GuiCreateLittleTitleLabel(cont, titleText);
-    lv_obj_align_to(title, desc, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
-
-    lv_obj_t *img = GuiCreateImg(cont, &imgFailed);
-    lv_obj_align_to(img, title, LV_ALIGN_OUT_TOP_LEFT, 0, -24);
-
+    lv_obj_t *cont = GuiCreateConfirmHintBox(lv_scr_act(),
+                     &imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
+    lv_obj_add_event_cb(GuiGetHintBoxRightBtn(cont), CloseWaringPageHandler, LV_EVENT_CLICKED, cont);
     return cont;
+}
+
+void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t **param, ErrorWindowCallback cb)
+{
+    g_errorWindowCallback = cb;
+    g_hintParam = param;
+    const char *titleText = _("Error");
+    const char *descText = _("Oops, Something happened");
+
+    switch (errCode) {
+    case BitcoinNoMyInputs:
+    case BitcoinWalletTypeError:
+        titleText = _("rust_error_bitcoin_no_my_inputs");
+        descText = _("rust_error_bitcoin_no_my_inputs_desc");
+        break;
+    case BitcoinMultiSigWalletNotMyWallet:
+        titleText = _("rust_error_bitcoin_not_my_multisig_wallet");
+        descText = _("rust_error_bitcoin_not_my_multisig_wallet_desc");
+        break;
+    case BitcoinMultiSigWalletParseError:
+        titleText = _("scan_qr_code_error_invalid_wallet_file");
+        descText = _("scan_qr_code_error_invalid_wallet_file_desc");
+        break;
+    }
+
+    lv_obj_t *cont = GuiCreateConfirmHintBox(lv_scr_act(),
+                     &imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
+    lv_obj_add_event_cb(GuiGetHintBoxRightBtn(cont), CloseWaringPageHandler, LV_EVENT_CLICKED, cont);
+    return cont;
+}
+
+static void CreateOrImportWalletHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        GuiFrameOpenViewWithParam(&g_createWalletView, lv_event_get_user_data(e), sizeof(uint8_t));
+        DestroyPageWidget(g_pageViewWidget);
+        g_pageViewWidget = NULL;
+    }
+}
+
+static void CreateWalletNotice(bool isCreate)
+{
+    static uint8_t walletMethod[] = {WALLET_METHOD_IMPORT, WALLET_METHOD_CREATE};
+    g_pageViewWidget = CreatePageWidget();
+    SetNavBarLeftBtn(g_pageViewWidget->navBarWidget, NVS_BAR_RETURN, DestroyPageWidgetHandler, g_pageViewWidget);
+
+    lv_obj_t *img = GuiCreateImg(g_pageViewWidget->contentZone, &imgInformation);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 36);
+    lv_obj_t *label = GuiCreateTitleLabel(g_pageViewWidget->contentZone, _("wallet_settings_add_info_title"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 130);
+    label = GuiCreateIllustrateLabel(g_pageViewWidget->contentZone, _("wallet_setting_add_wallet_notice"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 200);
+
+    lv_obj_t *btn = GuiCreateBtn(g_pageViewWidget->contentZone, _("wallet_setting_add_wallet_confirm"));
+    lv_obj_set_width(btn, 408);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+
+    lv_obj_add_event_cb(btn, CreateOrImportWalletHandler, LV_EVENT_CLICKED, &walletMethod[isCreate]);
 }

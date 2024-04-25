@@ -14,7 +14,6 @@
 #include "user_memory.h"
 #include "drv_lcd_bright.h"
 
-
 #define TEXT_LINE_GAP               3
 #define DRAW_MAX_STRING_LEN         256
 #define PAGE_MARGINS                15
@@ -26,9 +25,8 @@ typedef struct {
     uint16_t green_l : 3;
 } LcdDrawColor_t;
 
-
 static void DrawLetterOnLcd(uint16_t x, uint16_t y, uint16_t width, uint16_t height, lv_font_glyph_dsc_t *dsc, const uint8_t *map_p, uint16_t color);
-
+static void GetTrueColors(uint16_t *trueColors, const uint8_t *colorData, uint32_t pixelNum, lv_img_cf_t colorFormat);
 
 static LcdDrawColor_t g_bgColor = {0};
 
@@ -61,7 +59,6 @@ void PrintOnLcd(const lv_font_t *font, uint16_t color, const char *format, ...)
     yCursor = DrawStringOnLcd(PAGE_MARGINS, yCursor, str, color, font);
     va_end(argList);
 }
-
 
 /// @brief Draw string on lcd.
 /// @param[in] x Coordinate x.
@@ -104,7 +101,6 @@ int16_t DrawStringOnLcd(uint16_t x, uint16_t y, const char *string, uint16_t col
     //return y + charHeight + TEXT_LINE_GAP;
     return y;
 }
-
 
 /// @brief Draw progress bar on lcd.
 /// @param[in] x Coordinate x.
@@ -150,30 +146,36 @@ void DrawProgressBarOnLcd(uint16_t x, uint16_t y, uint16_t length, uint16_t widt
     while (LcdBusy());
 }
 
-
 void DrawImageOnLcd(uint16_t x, uint16_t y, const lv_img_dsc_t *imgDsc)
 {
     uint16_t *colors;
-    ASSERT(imgDsc->header.cf == LV_IMG_CF_TRUE_COLOR);
-    uint32_t drawSize = imgDsc->header.w * imgDsc->header.h * 2;
 
-    colors = SRAM_MALLOC(drawSize);
-    memcpy_s(colors, drawSize, imgDsc->data, drawSize);
+    colors = SRAM_MALLOC(imgDsc->header.w * imgDsc->header.h * 2);
+    GetTrueColors(colors, imgDsc->data, imgDsc->header.w * imgDsc->header.h, imgDsc->header.cf);
     LcdDraw(x, y, x + imgDsc->header.w - 1, y + imgDsc->header.h - 1, colors);
     while (LcdBusy());
     SRAM_FREE(colors);
 }
 
-
 extern const lv_img_dsc_t imgBootLogo;
+#ifdef BTC_ONLY
+extern const lv_img_dsc_t imgBootBtc;
+LV_FONT_DECLARE(openSans_24);
+#endif
 
 void DrawBootLogoOnLcd(void)
 {
+#ifndef BTC_ONLY
     DrawImageOnLcd(192, 300, &imgBootLogo);
+#else
+    DrawImageOnLcd(192, 245, &imgBootLogo);
+    DrawImageOnLcd(150, 712, &imgBootBtc);
+    uint32_t c = 0x666666;
+    DrawStringOnLcd(194, 712, "Bitcoin Only", (uint16_t)(((c & 0xF80000) >> 16) | ((c & 0xFC00) >> 13) | ((c & 0x1C00) << 3) | ((c & 0xF8) << 5)), &openSans_24);
+#endif
     UserDelay(100);
     SetLcdBright(50);
 }
-
 
 static void DrawLetterOnLcd(uint16_t x, uint16_t y, uint16_t width, uint16_t height, lv_font_glyph_dsc_t *dsc, const uint8_t *map_p, uint16_t color)
 {
@@ -236,3 +238,23 @@ static void DrawLetterOnLcd(uint16_t x, uint16_t y, uint16_t width, uint16_t hei
     }
 }
 
+static void GetTrueColors(uint16_t *trueColors, const uint8_t *colorData, uint32_t pixelNum, lv_img_cf_t colorFormat)
+{
+    lv_color16_t pixel;
+    uint16_t green;
+    uint32_t i;
+    if (colorFormat == LV_IMG_CF_TRUE_COLOR_ALPHA) {
+        for (i = 0; i < pixelNum; i++) {
+            memcpy(&pixel.full, &colorData[i * 3], 2);
+            pixel.ch.blue = pixel.ch.blue * colorData[i * 3 + 2] / 255;
+            pixel.ch.red = pixel.ch.red * colorData[i * 3 + 2] / 255;
+            green = (pixel.ch.green_h << 3) + pixel.ch.green_l;
+            green = green * colorData[i * 3 + 2] / 255;
+            pixel.ch.green_h = green >> 3;
+            pixel.ch.green_l = green & 0x0007;
+            trueColors[i] = pixel.full;
+        }
+    } else if (colorFormat == LV_IMG_CF_TRUE_COLOR) {
+        memcpy(trueColors, colorData, pixelNum * 2);
+    }
+}

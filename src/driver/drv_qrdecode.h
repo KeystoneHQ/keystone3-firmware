@@ -5,9 +5,7 @@
 #include "stdbool.h"
 #include "decodelib.h"
 
-
 #define QRDECODE_BUFF_SIZE          (410 * 1024)
-
 
 int32_t QrDecodeInit(uint8_t *pool);
 void QrDecodeDeinit(void);

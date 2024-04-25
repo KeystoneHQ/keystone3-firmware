@@ -230,6 +230,7 @@ static void UsbTestFunc(int argc, char *argv[]);
 static void DeviceSettingsTestFunc(int argc, char *argv[]);
 static void ScreenShotFunc(int argc, char *argv[]);
 static void BpkPrintFunc(int argc, char *argv[]);
+static void SdCardTestFunc(int argc, char *argv[]);
 
 
 
@@ -399,6 +400,7 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"device settings test:", DeviceSettingsTestFunc},
     {"screen shot", ScreenShotFunc},
     {"bpk print:", BpkPrintFunc},
+    {"sd card test:", SdCardTestFunc},
 };
 
 bool CompareAndRunTestCmd(const char *inputString)
@@ -1027,7 +1029,7 @@ static void RustTestParseCryptoPSBT(int argc, char *argv[])
     keys[1].xpub = "xpub6CkG15Jdw866GKs84e7ysjxAhBQUJBdLZTVbQERCjwh2z6wZSSdjfmaXaMvf6Vm5sbWemK43d7HJMicz41G3vEHA9Sa5N2J9j9vgwyiHdMj";
     keys[2].path = "m/84'/0'/0'";
     keys[2].xpub = "xpub6Bm9M1SxZdzL3TxdNV8897FgtTLBgehR1wVNnMyJ5VLRK5n3tFqXxrCVnVQj4zooN4eFSkf6Sma84reWc5ZCXMxPbLXQs3BcaBdTd4YQa3B";
-    TransactionParseResult_DisplayTx *result = btc_parse_psbt(crypto_psbt, mfp, sizeof(mfp), public_keys);
+    TransactionParseResult_DisplayTx *result = btc_parse_psbt(crypto_psbt, mfp, sizeof(mfp), public_keys, NULL);
     VecFFI_DisplayTxDetailInput *inputs = result->data->detail->from;
     VecFFI_DisplayTxOverviewOutput *overview_to = result->data->overview->to;
     for (size_t i = 0; i < result->data->overview->from->size; i++) {
@@ -2014,6 +2016,7 @@ static void RustTestKeyDerivation(int argc, char *argv[])
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
+
 static void RustGetSyncCompanionAppUR(int argc, char *argv[])
 {
     printf("RustGetSyncCompanionAppUR\r\n");
@@ -2874,4 +2877,17 @@ static void DeviceSettingsTestFunc(int argc, char *argv[])
 static void ScreenShotFunc(int argc, char *argv[])
 {
     PubValueMsg(UI_MSG_SCREEN_SHOT, 0);
+}
+
+
+static void SdCardTestFunc(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 1);
+    if (strcmp(argv[0], "format") == 0) {
+        printf("format sd card\n");
+        FormatSdFatfs();
+    } else if (strcmp(argv[0], "info") == 0) {
+        printf("SdCardGetSectorSize=%d\n", SdCardGetSectorSize());
+        printf("SdCardGetSectorCount=%d\n", SdCardGetSectorCount());
+    }
 }

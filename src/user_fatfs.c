@@ -12,6 +12,11 @@
 #include "gui_setup_widgets.h"
 #include "account_manager.h"
 
+#define MAX_FILE_CONTENT_LEN 1000000
+#define MAX_FILE_SIZE_LIST (1024 * 256)
+
+char* g_fileContent = NULL;
+
 void FatfsError(FRESULT errNum);
 
 typedef struct FatfsMountParam {
@@ -400,6 +405,96 @@ void FatfsDirectoryListing(char *ptr)
     f_closedir(&Dir);
 }
 
+void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint32_t *number, const char *contain)
+{
+    FRESULT res;
+    DIR dir;
+    FILINFO fno;
+    uint32_t count = 0;
+
+    res = f_opendir(&dir, path);
+    if (res != FR_OK) {
+        *number = 0;
+        return;
+    }
+
+    while (1) {
+        res = f_readdir(&dir, &fno);
+        if (res != FR_OK || fno.fname[0] == 0) {
+            break;
+        }
+
+        if (!(fno.fattrib & AM_DIR)) {
+            if (!strstr(fno.fname, contain) || (fno.fname[0] == '.') || 
+                (FatfsFileGetSize(fno.fname) > MAX_FILE_SIZE_LIST) || 
+                (strnlen_s(fno.fname, maxLen) >= maxLen)) {
+                continue;
+            }
+            strcpy_s(fileName[count], maxLen, fno.fname);
+            count++;
+        }
+    }
+
+    f_closedir(&dir);
+
+    *number = count;
+}
+
+char *FatfsFileRead(const TCHAR* path)
+{
+    FIL fp;
+    uint16_t fileSize = 0;
+    uint32_t readBytes = 0;
+    FRESULT res = f_open(&fp, path, FA_OPEN_EXISTING | FA_READ);
+    if (res) {
+        FatfsError(res);
+        return NULL;
+    }
+    if (g_fileContent) EXT_FREE(g_fileContent);
+    fileSize = f_size(&fp);
+    g_fileContent = EXT_MALLOC(MAX_FILE_CONTENT_LEN);
+    memset_s(g_fileContent, MAX_FILE_CONTENT_LEN, 0, MAX_FILE_CONTENT_LEN);
+    printf("%s size = %d\n", path, fileSize);
+    res = f_read(&fp, (void*)g_fileContent, fileSize, &readBytes);
+    if (res) {
+        FatfsError(res);
+        f_close(&fp);
+        EXT_FREE(g_fileContent);
+        return NULL;
+    }
+
+    printf("\n");
+    f_close(&fp);
+    return g_fileContent;
+}
+
+uint8_t *FatfsFileReadBytes(const TCHAR* path, uint32_t* readBytes)
+{
+    FIL fp;
+    uint8_t *fileBuf;
+    uint16_t fileSize = 0;
+    // uint32_t readBytes = 0;
+    FRESULT res = f_open(&fp, path, FA_OPEN_EXISTING | FA_READ);
+    if (res) {
+        FatfsError(res);
+        return NULL;
+    }
+    fileSize = f_size(&fp);
+    fileBuf = EXT_MALLOC(fileSize);
+    res = f_read(&fp, (void*)fileBuf, fileSize, readBytes);
+    printf("%s filesize = %u  readSize = %u\n", path, fileSize, *readBytes);
+    if (res) {
+        FatfsError(res);
+        f_close(&fp);
+        EXT_FREE(fileBuf);
+        return NULL;
+    }
+
+    printf("\n");
+    f_close(&fp);
+    return fileBuf;
+}
+
 uint32_t FatfsGetSize(const char *path)
 {
     FRESULT res;
@@ -542,7 +637,6 @@ int MMC_disk_write(
     return status;
 }
 
-
 int USB_disk_initialize(void)
 {
     return RES_OK;
@@ -596,7 +690,6 @@ int FatfsMount(void)
     return res;
 }
 
-
 int MountUsbFatfs(void)
 {
     FRESULT res;
@@ -614,7 +707,6 @@ int MountUsbFatfs(void)
     FatfsError(res);
     return res;
 }
-
 
 int MountSdFatfs(void)
 {
@@ -698,6 +790,20 @@ void CopyToFlash(void)
     SRAM_FREE(fileBuf);
 }
 
+int FormatSdFatfs(void)
+{
+    FRESULT res;
+    FatfsMountParam_t *fs = &g_fsMountParamArray[DEV_MMC];
+    BYTE work[FF_MAX_SS];
+
+    res = f_mkfs(fs->volume, 0, work, sizeof(work));
+    FatfsError(res);
+    f_mount(NULL, fs->volume, fs->opt);
+    res = f_mount(fs->fs, fs->volume, fs->opt);
+    printf("%s:", fs->name);
+    FatfsError(res);
+    return res;
+}
 
 void FatfsError(FRESULT errNum)
 {

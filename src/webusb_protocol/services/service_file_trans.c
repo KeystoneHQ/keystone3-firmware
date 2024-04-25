@@ -20,17 +20,14 @@
 #include "account_manager.h"
 #include "user_memory.h"
 
-
 #define TYPE_FILE_INFO_FILE_NAME                        1
 #define TYPE_FILE_INFO_FILE_SIZE                        2
 #define TYPE_FILE_INFO_FILE_MD5                         3
 #define TYPE_FILE_INFO_FILE_SIGN                        4
 
-
 #define TYPE_FILE_INFO_FILE_OFFSET                      1
 #define TYPE_FILE_INFO_FILE_DATA                        2
 #define TYPE_FILE_INFO_FILE_ACK                         3
-
 
 #define MAX_FILE_NAME_LENGTH                            32
 
@@ -43,13 +40,11 @@ typedef struct {
     uint8_t signature[64];
 } FileTransInfo_t;
 
-
 typedef struct  {
     uint32_t startTick;
     uint32_t endTick;
     uint32_t offset;
 } FileTransCtrl_t;
-
 
 static MD5_CTX ctx;
 
@@ -78,7 +73,6 @@ static const uint8_t g_webUsbPubKey[] = {
     0xE0, 0x8D, 0xCC, 0x38, 0x9D, 0xCB, 0x25, 0xA4, 0xCA, 0x2A, 0x52, 0x3D, 0x3E, 0x7B, 0xB3, 0xDD, \
     0x5E
 };
-
 
 const ProtocolServiceCallbackFunc_t g_fileTransInfoServiceFunc[] = {
     NULL,                                       //2.0
@@ -216,7 +210,6 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
     return BuildFrame(&sendHead, sendTlvArray, 1);
 }
 
-
 static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
     Tlv_t tlvArray[2] = {0};
@@ -265,7 +258,6 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
     return GetFileContent(head, g_fileTransCtrl.offset, outLen);
 }
 
-
 static uint8_t *GetFileContent(const FrameHead_t *head, uint32_t offset, uint32_t *outLen)
 {
     Tlv_t tlvArray[1] = {0};
@@ -285,7 +277,6 @@ static uint8_t *GetFileContent(const FrameHead_t *head, uint32_t offset, uint32_
     return BuildFrame(&sendHead, tlvArray, 1);
 }
 
-
 static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
     FrameHead_t sendHead = {0};
@@ -296,7 +287,9 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
     g_fileTransCtrl.endTick = osKernelGetTickCount();
     PrintArray("tlvData", tlvData, head->length);
     MD5_Final(md5Result, &ctx);
+    PrintArray("g_fileTransInfo.md5", g_fileTransInfo.md5, 16);
     PrintArray("md5Result", md5Result, 16);
+    ASSERT(memcmp(md5Result, g_fileTransInfo.md5, 16) == 0);
     printf("total tick=%d\n", g_fileTransCtrl.endTick - g_fileTransCtrl.startTick);
 
     sendHead.packetIndex = head->packetIndex;
@@ -307,19 +300,14 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
 
     GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 0);
     *outLen = sizeof(FrameHead_t) + 4;
-    // save setup phase
-    {
-        SetSetupStep(4);
-        SaveDeviceSettings();
-    }
+    SetSetupStep(4);
+    SaveDeviceSettings();
     SystemReboot();
     return BuildFrame(&sendHead, NULL, 0);
 }
-
 
 static void FileTransTimeOutTimerFunc(void *argument)
 {
     g_isReceivingFile = false;
     GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 0);
 }
-

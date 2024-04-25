@@ -8,23 +8,19 @@
 #include "version.h"
 #include "safe_str_lib.h"
 
-
 #define TYPE_DEVICE_MODEL                       1
 #define TYPE_DEVICE_SERIAL_NUMBER               2
 #define TYPE_DEVICE_HARDWARE_VERSION            3
 #define TYPE_DEVICE_FIRMWARE_VERSION            4
 
-
 static uint8_t *ServiceDeviceInfoBasic(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *ServiceDeviceInfoRunning(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
-
 
 const ProtocolServiceCallbackFunc_t g_deviceInfoServiceFunc[] = {
     NULL,                                       //1.0
     ServiceDeviceInfoBasic,                     //1.1
     ServiceDeviceInfoRunning,                   //1.2
 };
-
 
 static uint8_t *ServiceDeviceInfoBasic(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
@@ -55,7 +51,7 @@ static uint8_t *ServiceDeviceInfoBasic(FrameHead_t *head, const uint8_t *tlvData
     tlvArray[2].length = strnlen_s(GetHardwareVersionString(), 16) + 1;
     tlvArray[2].pValue = GetHardwareVersionString();
 
-    GetSoftWareVersionNumber(version);
+    GetUpdateVersionNumber(version);
     tlvArray[3].type = TYPE_DEVICE_FIRMWARE_VERSION;
     tlvArray[3].length = strnlen_s(version, SOFTWARE_VERSION_MAX_LEN) + 1;
     tlvArray[3].pValue = version;
@@ -64,11 +60,9 @@ static uint8_t *ServiceDeviceInfoBasic(FrameHead_t *head, const uint8_t *tlvData
     return BuildFrame(&sendHead, tlvArray, 4);
 }
 
-
 static uint8_t *ServiceDeviceInfoRunning(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
     printf("ServiceDeviceInfoRunning\n");
     PrintArray("tlvData", tlvData, head->length);
     return NULL;
 }
-

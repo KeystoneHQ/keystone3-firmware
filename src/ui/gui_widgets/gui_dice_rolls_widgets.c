@@ -15,7 +15,6 @@
 
 static void GuiCreatePage(lv_obj_t *parent);
 static void OpenQuitHintBoxHandler(lv_event_t *e);
-static void CloseQuitHintBoxHandler(lv_event_t *e);
 static void ClickDiceHandler(lv_event_t *e);
 static void InitDiceImg(lv_obj_t *img, lv_obj_t *anchor, size_t x, size_t y);
 static void OnTextareaValueChangeHandler(lv_event_t *e);
@@ -61,13 +60,13 @@ static void GuiCreatePage(lv_obj_t *parent)
     lv_obj_t *textArea = lv_textarea_create(parent);
     lv_obj_align(textArea, LV_ALIGN_TOP_LEFT, 48, 26);
     lv_obj_set_width(textArea, 384);
-    lv_obj_set_height(textArea, 49); // 10+29+10
+    lv_obj_set_height(textArea, 60); // 10+29+10
     lv_obj_set_style_pad_hor(textArea, 0, LV_PART_MAIN);
     lv_obj_set_style_bg_color(textArea, BLACK_COLOR, LV_PART_MAIN);
     lv_obj_set_style_radius(textArea, 0, LV_PART_MAIN);
     lv_obj_set_style_border_width(textArea, 0, LV_PART_MAIN);
     lv_obj_set_style_text_color(textArea, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_text_font(textArea, &openSans_24, LV_PART_MAIN);
+    lv_obj_set_style_text_font(textArea, &buttonFont, LV_PART_MAIN);
     lv_obj_set_scrollbar_mode(textArea, LV_SCROLLBAR_MODE_OFF);
     lv_obj_add_event_cb(textArea, OnTextareaValueChangeHandler, LV_EVENT_ALL, NULL);
     lv_obj_clear_flag(textArea, LV_OBJ_FLAG_CLICK_FOCUSABLE);
@@ -159,28 +158,12 @@ static void OpenQuitHintBoxHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_quitHintBox);
-        g_quitHintBox = GuiCreateHintBox(lv_scr_act(), 480, 386, true);
-        lv_obj_t *img, *label, *btn;
-        img = GuiCreateImg(g_quitHintBox, &imgWarn);
-        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 36, 462);
-
-        label = GuiCreateLittleTitleLabel(g_quitHintBox, _("dice_roll_cancel_title"));
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 558);
-
-        label = GuiCreateIllustrateLabel(g_quitHintBox, _("dice_roll_cancel_desc"));
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 610);
-
-        btn = GuiCreateBtn(g_quitHintBox, _("Cancel"));
-        lv_obj_set_size(btn, 192, 66);
-        lv_obj_set_style_bg_color(btn, DEEP_ORANGE_COLOR, LV_PART_MAIN);
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-        lv_obj_add_event_cb(btn, QuitConfirmHandler, LV_EVENT_CLICKED, NULL);
-
-        btn = GuiCreateBtn(g_quitHintBox, _("not_now"));
-        lv_obj_set_size(btn, 192, 66);
-        lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
-        lv_obj_add_event_cb(btn, CloseQuitHintBoxHandler, LV_EVENT_CLICKED, NULL);
+        g_quitHintBox = GuiCreateGeneralHintBox(lv_scr_act(), &imgWarn, _("dice_roll_cancel_title"), _("dice_roll_cancel_desc"), NULL,
+                                                _("not_now"), WHITE_COLOR_OPA20, _("Cancel"), DEEP_ORANGE_COLOR);
+        lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_quitHintBox);
+        lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_quitHintBox);
+        lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_quitHintBox);
+        lv_obj_add_event_cb(rightBtn, QuitConfirmHandler, LV_EVENT_CLICKED, NULL);
     }
 }
 
@@ -190,14 +173,6 @@ static void QuitConfirmHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         GUI_DEL_OBJ(g_quitHintBox);
         GuiCLoseCurrentWorkingView();
-    }
-}
-
-static void CloseQuitHintBoxHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_quitHintBox);
     }
 }
 

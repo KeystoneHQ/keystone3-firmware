@@ -18,5 +18,4 @@ enum {
 void MotorCtrl(uint32_t level, uint32_t tick);
 void MotorInit(void);
 
-
 #endif

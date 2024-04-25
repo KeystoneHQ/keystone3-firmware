@@ -14,8 +14,6 @@
 #include "user_utils.h"
 #include <stdlib.h>
 
-// #define pbkdf2_hmac_sha256_slip39 pbkdf2_hmac_sha256
-
 void Slip39Error(int errNum);
 extern void pbkdf2_hmac_sha256_slip39(const uint8_t *pass, int passlen, const uint8_t *salt,
                                       int saltlen, uint32_t iterations, uint8_t *key,
@@ -219,7 +217,7 @@ char* slip39_strings_for_words(
         strings[i] = slip39_string_for_word(words[i]);
         result_len += strlen(strings[i]);
     }
-    char* result_string = malloc(result_len);
+    char* result_string = SRAM_MALLOC(result_len);
     result_string[0] = '\0';
 
     for (int i = 0; i < words_len; i++) {
@@ -467,7 +465,6 @@ int MasterSecretEncrypt(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t 
 
     return 0;
 }
-
 
 /***********************************************************************
  * name       : GenerateMnemonics
@@ -929,4 +926,3 @@ void Slip39Error(int errNum)
     }
     printf("errNum = %d %s\n", errNum, str);
 }
-

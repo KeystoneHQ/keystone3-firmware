@@ -77,7 +77,6 @@ int32_t QrDecodeInit(uint8_t *pool)
     return ret;
 }
 
-
 /**
  * @brief       QR decode deinit, release hardware/software source.
  * @retval      none.
@@ -89,14 +88,12 @@ void QrDecodeDeinit(void)
     //SYSCTRL_AHBPeriphClockCmd(SYSCTRL_AHBPeriph_OTP, DISABLE);
 }
 
-
 uint32_t QrDecodeGetCamTick(void)
 {
     uint32_t tick = g_camTick;
     g_camTick = 0;
     return tick;
 }
-
 
 uint32_t QrDecodeGetViewTick(void)
 {
@@ -105,14 +102,12 @@ uint32_t QrDecodeGetViewTick(void)
     return tick;
 }
 
-
 uint32_t QrDecodeGetDecodeTick(void)
 {
     uint32_t tick = g_decodeTick;
     g_decodeTick = 0;
     return tick;
 }
-
 
 /// @brief QR decode process, called in the decoding thread loop.
 /// @param[out] result store qrdecode result here if success.
@@ -173,7 +168,6 @@ int32_t QrDecodeProcess(char *result, uint32_t maxLen, uint8_t progress)
 
 #define VIEW_IMAGE_LINE             20
 
-
 static uint8_t *staticImgAddr = NULL;
 
 static uint8_t *GetQrDecodeImageAddr(void)
@@ -208,6 +202,9 @@ static void ViewImageOnLcd(void)
 #define START_SCAN_COL  82
     for (line = START_SCAN_LINE; line < START_SCAN_LINE + 320; line += VIEW_IMAGE_LINE) {
         x = 0;
+        while (LcdBusy()) {
+            osDelay(1);
+        }
         for (i = 0; i < 320 * VIEW_IMAGE_LINE; i++) {
             camPixelIndex = ((320 - y) * 3 / 2 + 80) + (x * 3 / 2) * 640;
             u8Addr = (uint8_t *)&buffer1[i];
@@ -223,15 +220,11 @@ static void ViewImageOnLcd(void)
                 y++;
             }
         }
-        while (LcdBusy()) {
-            osDelay(1);
-        }
         LcdDraw(START_SCAN_COL, line, START_SCAN_COL + 320 - 1, line + VIEW_IMAGE_LINE - 1, (uint16_t *)buffer1);
     }
 }
 
 #endif
-
 
 /* DCMI Interrupt Config */
 static void DCMI_NVICConfig(void)
@@ -259,7 +252,6 @@ static void DCMI_NVICConfig(void)
     DCMI_ClearITPendingBit(DCMI_IT_ERR);
 }
 
-
 /* I2C Pin Config */
 static void CameraI2CGPIOConfig(void)
 {
@@ -269,7 +261,6 @@ static void CameraI2CGPIOConfig(void)
     GPIO_PinRemapConfig(SI2C_PORT, SI2C_SCL_PIN, SI2C_GPIO_REMAP);
     GPIO_PinRemapConfig(SI2C_PORT, SI2C_SDA_PIN, SI2C_GPIO_REMAP);
 }
-
 
 /* Camera Clock Config */
 static void Cameraclk_Configuration(void)
@@ -300,7 +291,6 @@ static void Cameraclk_Configuration(void)
 
     TIM_Cmd(TIMM0, CAM_XCK_TIM, ENABLE);
 }
-
 
 void DCMI_IRQHandler(void)
 {

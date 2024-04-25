@@ -44,16 +44,23 @@ typedef int32_t(*GuiEventProcessFunc)(void *self, uint16_t usEvent, void *param,
     add(SCREEN_DISPLAY)         \
     add(SCREEN_TUTORIAL)        \
     add(SCREEN_CONNECTION)      \
-    add(SCREEN_MULTI_ACCOUNTS_RECEIVE)      \
-    add(SCREEN_KEY_DERIVATION_REQUEST)      \
-    add(SCREEN_SCAN)            \
-    add(SCREEN_TRANSACTION_DETAIL)           \
-    add(SCREEN_TRANSACTION_SIGNATURE)        \
-    add(SCREEN_USB_TRANSPORT)   \
-    add(SCREEN_DICE_ROLLS)   \
-    add(SCREEN_DEVICE_PUB_KEY) \
-    add(SCREEN_DEVICE_UPDATE_SUCCESS)   \
-    add(SCREEN_BTC_WALLET_PROFILE)
+    add(SCREEN_MULTI_ACCOUNTS_RECEIVE)          \
+    add(SCREEN_KEY_DERIVATION_REQUEST)          \
+    add(SCREEN_SCAN)                            \
+    add(SCREEN_TRANSACTION_DETAIL)              \
+    add(SCREEN_TRANSACTION_SIGNATURE)           \
+    add(SCREEN_USB_TRANSPORT)                   \
+    add(SCREEN_DICE_ROLLS)                      \
+    add(SCREEN_DEVICE_PUB_KEY)                  \
+    add(SCREEN_DEVICE_UPDATE_SUCCESS)           \
+    add(SCREEN_BTC_WALLET_PROFILE)              \
+    add(SCREEN_MULTI_SIG_IMPORT_WALLET_INFO)    \
+    add(SCREEN_MULTISIG_WALLET_EXPORT) \
+    add(SCREEN_CREATE_MULTI)                    \
+    add(SCREEN_MANAGE_MULTI_SIG)                \
+    add(SCREEN_MULTISIG_SELECT_IMPORT_METHOD)   \
+    add(SCREEN_MULTISIG_READ_SDCARD)            \
+    add(SCREEN_MULTISIG_TRANSACTION_SIGNATURE)
 
 typedef enum {
     SCREEN_INVALID = -1,
@@ -88,12 +95,17 @@ void *GuiCreateTileView(lv_obj_t *parent);
 void *GuiCreateAnimView(lv_obj_t *parent, uint16_t animHeight);
 void *GuiCreateArc(lv_obj_t *parent);
 void *GuiCreateSwitch(lv_obj_t *parent);
+void *GuiCreateBtn(lv_obj_t *parent, const char *text);
+void *GuiCreateAdaptButton(lv_obj_t *parent, const char *text);
+void GuiAlignToPrevObj(lv_obj_t *obj, lv_align_t align, int16_t x, int16_t y);
+void GuiAddObjFlag(void *obj, lv_obj_flag_t flag);
+void GuiClearObjFlag(void *obj, lv_obj_flag_t flag);
+void *GuiCreateSpacer(void *parent, uint16_t height);
+void *GuiCreateSelectPathCheckBox(lv_obj_t *parent);
 
 #define GuiCreateContainer(w, h) GuiCreateContainerWithParent(lv_scr_act(), w, h)
-#define GuiCreateBtn(parent, text) GuiCreateBtnWithFont(parent, text, &openSansButton)
-#define GuiCreateSingleCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, true, &openSans_24)
-#define GuiCreateMultiCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, false, &openSans_24)
-#define GuiCreateLabel(parent, text) GuiCreateLabelWithFont(parent, text, &openSans_20)
+#define GuiCreateSingleCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, true, g_defTextFont)
+#define GuiCreateMultiCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, false, g_defTextFont)
 #define GuiCreateTitleLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defTitleFont)
 #define GuiCreateLittleTitleLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defLittleTitleFont)
 #define GuiCreateTextLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defTextFont)

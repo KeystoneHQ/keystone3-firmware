@@ -7,7 +7,6 @@
 #include "drv_battery.h"
 #include "hardware_version.h"
 
-
 #define AW32001_SCL_PORT                            GPIOE
 #define AW32001_SDA_PORT                            GPIOF
 #define AW32001_SCL_PIN                             GPIO_Pin_15
@@ -56,7 +55,6 @@
 #define PARM_TJ_REG                                 (0x03 << 4)
 
 /********************AW320XX Set config end*******************/
-
 
 /* reg:0x00 */
 #define AW320XX_BIT_SCR_VIN_MIN_MASK                 (0x0F)
@@ -197,18 +195,14 @@
 #define AW320XX_BIT_RCR_RSTDLY_0S                    (0 << 0)
 #define AW320XX_BIT_RCR_RSTDLY_2S                    (1 << 0)
 
-
 typedef struct {
     ChargeState chargeState;
     UsbPowerState userPowerState;
 } PowerChangeState_t;
 
-
-
 static I2CIO_Cfg_t g_i2cIoCfg;
 static PowerChangeState_t g_powerChangeState;
 static ChangerInsertIntCallbackFunc_t g_changerInsertIntCallback;
-
 
 static void Aw32001RegValueInit(void);
 static void Aw32001ChargingEnable(void);
@@ -227,12 +221,10 @@ void Aw32001Init(void)
     Aw32001ChargingEnable();
 }
 
-
 void RegisterChangerInsertCallback(ChangerInsertIntCallbackFunc_t func)
 {
     g_changerInsertIntCallback = func;
 }
-
 
 int32_t Aw32001PowerOff(void)
 {
@@ -254,7 +246,6 @@ int32_t Aw32001PowerOff(void)
     return ret;
 }
 
-
 int32_t Aw32001RefreshState(void)
 {
     uint8_t byte;
@@ -269,18 +260,15 @@ int32_t Aw32001RefreshState(void)
     return ret;
 }
 
-
 ChargeState GetChargeState(void)
 {
     return g_powerChangeState.chargeState;
 }
 
-
 UsbPowerState GetUsbPowerState(void)
 {
     return g_powerChangeState.userPowerState;
 }
-
 
 bool GetUsbDetectState(void)
 {
@@ -291,14 +279,12 @@ bool GetUsbDetectState(void)
     return GPIO_ReadInputDataBit(USB_DET_INT_PORT, USB_DET_INT_PIN) == state;
 }
 
-
 void ChangerInsertHandler(void)
 {
     if (g_changerInsertIntCallback != NULL) {
         g_changerInsertIntCallback();
     }
 }
-
 
 void Aw32001Test(int argc, char *argv[])
 {
@@ -327,7 +313,6 @@ void Aw32001Test(int argc, char *argv[])
     }
 }
 
-
 static void Aw32001RegValueInit(void)
 {
     Aw32001WriteRegBits(AW320XX_REG2_CCR, AW320XX_BIT_CCR_SOFT_RST_MASK, AW320XX_BIT_CCR_SOFT_RST_RESET);     // Reg Reset
@@ -352,18 +337,15 @@ static void Aw32001RegValueInit(void)
     Aw32001WriteRegBits(AW320XX_REG7_SVCR, AW320XX_BIT_SVCR_EN_PCB_OTP_MASK, AW320XX_BIT_SVCR_EN_PCB_OTP_DISABLE);
 }
 
-
 static void Aw32001ChargingEnable(void)
 {
     Aw32001WriteRegBits(AW320XX_REG1_POCR, AW320XX_BIT_POCR_CEB_MASK, AW320XX_BIT_POCR_CEB_ENABLE);
 }
 
-
 static void Aw32001ChargingDisable(void)
 {
     Aw32001WriteRegBits(AW320XX_REG1_POCR, AW320XX_BIT_POCR_CEB_MASK, AW320XX_BIT_POCR_CEB_DISABLE);
 }
-
 
 static int32_t Aw32001ReadReg(uint8_t regAddr, uint8_t *pData, uint8_t len)
 {
@@ -377,7 +359,6 @@ static int32_t Aw32001ReadReg(uint8_t regAddr, uint8_t *pData, uint8_t len)
 
     return ret;
 }
-
 
 static int32_t Aw32001WriteReg(uint8_t regAddr, const uint8_t *pData, uint8_t len)
 {
@@ -393,7 +374,6 @@ static int32_t Aw32001WriteReg(uint8_t regAddr, const uint8_t *pData, uint8_t le
 
     return ret;
 }
-
 
 static int32_t Aw32001WriteRegBits(uint8_t regAddr, uint8_t mask, uint8_t data)
 {

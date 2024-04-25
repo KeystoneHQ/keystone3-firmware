@@ -15,6 +15,12 @@
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
+#else
+#include "safe_str_lib.h"
+#endif
+
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
 #endif
 
 #define SHA256_COUNT                            3
@@ -215,7 +221,6 @@ int32_t SetFpStateInfo(uint8_t *info)
     return ret;
 }
 
-
 /// @brief Get the fingerprint state info.
 /// @param[out] info 32 byte info.
 /// @return err code.
@@ -246,24 +251,6 @@ int32_t SetWalletDataHash(uint8_t index, uint8_t *info)
     return ret;
 }
 
-
-/// @brief Get the wallet data hash.
-/// @param[in] index
-/// @param[out] info 32 byte info.
-/// @return err code.
-int32_t GetWalletDataHash(uint8_t index, uint8_t *info)
-{
-    uint8_t data[32];
-    int32_t ret;
-
-    ASSERT(index <= 2);
-
-    ret = SE_HmacEncryptRead(data, PAGE_WALLET1_PUB_KEY_HASH + index);
-    CHECK_ERRCODE_RETURN_INT(ret);
-    memcpy(info, data, 32);
-    return ret;
-}
-
 /// @brief verify the wallet data hash.
 /// @param[in] index
 /// @param[in] info 32 byte info.
@@ -288,6 +275,38 @@ bool VerifyWalletDataHash(uint8_t index, uint8_t *info)
     }
 }
 
+int32_t SetMultisigDataHash(uint8_t index, uint8_t *info)
+{
+    uint8_t data[32] = {0};
+    int32_t ret;
+
+    ASSERT(index <= 2);
+
+    memcpy(data, info, 32);
+    ret = SE_HmacEncryptWrite(data, index * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_MULTISIG_CONFIG_HASH);
+    return ret;
+}
+
+bool VerifyMultisigWalletDataHash(uint8_t index, uint8_t *info)
+{
+    uint8_t data[32];
+    int32_t ret;
+
+    ASSERT(index <= 2);
+
+    ret = SE_HmacEncryptRead(data, index * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_MULTISIG_CONFIG_HASH);
+    if (ret == SUCCESS_CODE && !memcmp(data, info, 32)) {
+        return true;
+    } else {
+        if (CheckAllFF(data, 32) || CheckAllZero(data, 32)) {
+            SetMultisigDataHash(index, data);
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
 /// @brief Get the fingerprint encrypted password which stored in SE.
 /// @param[in] index
 /// @param[out] encryptedPassword 32 bytes.
@@ -298,7 +317,6 @@ int32_t GetFpEncryptedPassword(uint32_t index, uint8_t *encryptedPassword)
     return SE_HmacEncryptRead(encryptedPassword, PAGE_PF_ENCRYPTED_PASSWORD + index);
 }
 
-
 /// @brief Set the fingerprint communication AES key.
 /// @param[in] aesKey length 16bytes.
 /// @return err code.
@@ -306,7 +324,6 @@ int32_t SetFpCommAesKey(const uint8_t *aesKey)
 {
     return SE_HmacEncryptWrite(aesKey, PAGE_PF_AES_KEY);
 }
-
 
 /// @brief Get the fingerprint communication AES key.
 /// @param[out] aesKey length 16bytes.
@@ -316,7 +333,6 @@ int32_t GetFpCommAesKey(uint8_t *aesKey)
     return SE_HmacEncryptRead(aesKey, PAGE_PF_AES_KEY);
 }
 
-
 /// @brief Set the fingerprint reset AES key.
 /// @param[in] resetKey length 16bytes.
 /// @return err code.
@@ -324,7 +340,6 @@ int32_t SetFpResetKey(const uint8_t *resetKey)
 {
     return SE_HmacEncryptWrite(resetKey, PAGE_PF_RESET_KEY);
 }
-
 
 /// @brief Get the fingerprint reset AES key.
 /// @param[out] resetKey length 16bytes.

@@ -15,7 +15,6 @@
 
 #define CHECK_ATECC608B_RET(content, ret)   {if (ret != ATCA_SUCCESS) {printf("%s err,0x%X\r\n", content, ret); break; }}
 
-
 static int32_t Atecc608bBinding(void);
 static void GetIoProtectKey(uint8_t *ioProtectKey);
 static void GetAuthKey(uint8_t *authKey);
@@ -25,7 +24,6 @@ static void Atecc608bPrintConfig(const Atecc608bConfig_t *config);
 static int32_t Atecc608bWriteConfig(void);
 static ATCA_STATUS Atecc608bAuthorize(uint8_t authSlot, const uint8_t *authKey);
 
-
 #ifdef ATECC608B_TEST_MODE
 static const uint8_t g_ateccTestIoProtectKey[] = {
     0x5B, 0xF1, 0xC8, 0xB5, 0x0C, 0x27, 0xBC, 0x60,
@@ -34,14 +32,12 @@ static const uint8_t g_ateccTestIoProtectKey[] = {
     0xD7, 0xD0, 0xB7, 0x92, 0x1F, 0x7B, 0x7E, 0x5F
 };
 
-
 static const uint8_t g_ateccTestAuthKey[] = {
     0x24, 0x6C, 0x3D, 0xEA, 0x53, 0xF1, 0x03, 0xF7,
     0xE0, 0x47, 0xBC, 0x16, 0x19, 0xB0, 0x05, 0xAD,
     0x5C, 0x20, 0xE6, 0xE1, 0xA7, 0x4B, 0x40, 0x0B,
     0xE1, 0x76, 0x65, 0x0C, 0x38, 0xDB, 0x26, 0xAE
 };
-
 
 static const uint8_t g_ateccTestEncryptKey[] = {
     0xFB, 0xCA, 0xE6, 0xD6, 0xB5, 0xA9, 0xEE, 0x42,
@@ -55,7 +51,6 @@ static const uint8_t g_ateccTestEncryptKey[] = {
 #define ENCRYPT_KEY_ADDR        AUTH_KEY_ADDR + 32
 #endif
 
-
 /// @brief ATECC608B Init.
 /// @param
 void Atecc608bInit(void)
@@ -63,7 +58,6 @@ void Atecc608bInit(void)
     atcab_init(&cfg_ateccx08a_i2c_default);
     Atecc608bBinding();
 }
-
 
 /// @brief Get random data from ATECC608B.
 /// @param[out] rngArray
@@ -86,7 +80,6 @@ int32_t Atecc608bGetRng(uint8_t *rngArray, uint32_t num)
 
     return ret;
 }
-
 
 /// @brief Write data to ATECC608B on encrypted communication.
 /// @param[in] slot ATECC608B data zone slot.
@@ -115,7 +108,6 @@ int32_t Atecc608bEncryptWrite(uint8_t slot, uint8_t block, const uint8_t *data)
     return ret;
 }
 
-
 /// @brief Read data from ATECC608B on encrypted communication.
 /// @param[in] slot ATECC608B data zone slot.
 /// @param[in] block ATECC608B block.
@@ -142,7 +134,6 @@ int32_t Atecc608bEncryptRead(uint8_t slot, uint8_t block, uint8_t *data)
     CLEAR_ARRAY(authKey);
     return ret;
 }
-
 
 /// @brief Get KDF output.
 /// @param[in] slot KDF key slot.
@@ -189,7 +180,6 @@ int32_t Atecc608bKdf(uint8_t slot, const uint8_t *authKey, const uint8_t *inData
     return ret;
 }
 
-
 /// @brief Derive key at the specified slot.
 /// @param[in] slot Specified slot.
 /// @param[in] authKey auth key.
@@ -218,7 +208,6 @@ int32_t Atecc608bDeriveKey(uint8_t slot, const uint8_t *authKey)
 
     return ret;
 }
-
 
 /// @brief Try to bind SE chip, return a err code if SE chip already binded.
 /// @return err code.
@@ -270,7 +259,6 @@ static int32_t Atecc608bBinding(void)
 #endif
 }
 
-
 /// @brief Get IO protect key from MCU OTP.
 /// @param[out] ioProtectKey IO protect key, 32 bytes.
 static void GetIoProtectKey(uint8_t *ioProtectKey)
@@ -282,7 +270,6 @@ static void GetIoProtectKey(uint8_t *ioProtectKey)
     memcpy(ioProtectKey, (uint8_t *)IO_PROTECT_KEY_ADDR, 32);
 #endif
 }
-
 
 /// @brief Get auth key from MCU OTP.
 /// @param[out] authKey Auth key, 32 bytes.
@@ -296,7 +283,6 @@ static void GetAuthKey(uint8_t *authKey)
 #endif
 }
 
-
 /// @brief Get encrypt key from MCU OTP.
 /// @param[out] ioProtectKey Encrypt key, 32 bytes.
 static void GetEncryptKey(uint8_t *encryptKey)
@@ -308,7 +294,6 @@ static void GetEncryptKey(uint8_t *encryptKey)
     memcpy(encryptKey, (uint8_t *)ENCRYPT_KEY_ADDR, 32);
 #endif
 }
-
 
 /// @brief Get auth slot by key slot.
 /// @param[in] keySlot
@@ -326,7 +311,6 @@ static uint8_t GetAuthSlot(uint8_t keySlot)
     }
     return 255;
 }
-
 
 static void Atecc608bPrintConfig(const Atecc608bConfig_t *config)
 {
@@ -356,7 +340,6 @@ static void Atecc608bPrintConfig(const Atecc608bConfig_t *config)
     PrintU16Array("keyConfig", config->keyConfig, sizeof(config->keyConfig) / 2);
 }
 
-
 static int32_t Atecc608bWriteConfig(void)
 {
     //shared keys
@@ -381,7 +364,6 @@ static int32_t Atecc608bWriteConfig(void)
     //slot 10       user3 auth key,                 slot config=0x42A0, key config=0x005C, lockable=0, encrypt write, limited use.
     //slot 11       user3 roll kdf key,             slot config=0x20A0, key config=0x0ADC, lockable=0, need authorization(slot10), inner derivable, limited use.
     //slot 12       user3 host random kdf key,      slot config=0x42A0, key config=0x0ADC, lockable=0, need authorization(slot10), encrypt write(slot2 as key), limited use.
-
 
     //slot
     //8/13/  user data,currently not used.   slot config=0x42C2, key config=0x005C, lockable=0, encrypt write/read.
@@ -438,7 +420,6 @@ static int32_t Atecc608bWriteConfig(void)
     CLEAR_ARRAY(tempKey);
     return ret;
 }
-
 
 /// @brief Before using a slot as a key, authorizion is required.
 /// @param
@@ -525,7 +506,6 @@ int32_t Atecc608bSignMessageWithDeviceKey(uint8_t *messageHash, uint8_t *signatu
     } while (0);
     return ret;
 }
-
 
 /// @brief
 /// @param argc Test arg count.

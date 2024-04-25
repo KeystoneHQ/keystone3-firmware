@@ -10,7 +10,6 @@
 #define TOUCH_RST_PORT                  GPIOF
 #define TOUCH_RST_PIN                   GPIO_Pin_2
 
-
 HalTouchOpt_t g_halTouchOpt = {0};
 static TouchPadIntCallbackFunc_t g_touchPadIntCallback;
 static volatile bool g_touchOpen = false;
@@ -76,7 +75,6 @@ void TouchInit(TouchPadIntCallbackFunc_t func)
     }
 }
 
-
 void TouchOpen(void)
 {
     GPIO_InitTypeDef gpioInit = {0};
@@ -94,12 +92,10 @@ void TouchOpen(void)
     }
 }
 
-
 void TouchClose(void)
 {
     g_touchOpen = false;
 }
-
 
 /// @brief
 /// @param[out] status Touch status including coordinate and press status.
@@ -113,7 +109,6 @@ int32_t TouchGetStatus(TouchStatus_t *status)
     }
 }
 
-
 /// @brief Touch pad exti handler.
 /// @param
 void TouchPadIntHandler(void)
@@ -122,7 +117,6 @@ void TouchPadIntHandler(void)
         g_touchPadIntCallback();
     }
 }
-
 
 void TouchPadTest(int argc, char *argv[])
 {
@@ -146,4 +140,3 @@ void TouchPadTest(int argc, char *argv[])
         printf("touch pad cmd err\n");
     }
 }
-

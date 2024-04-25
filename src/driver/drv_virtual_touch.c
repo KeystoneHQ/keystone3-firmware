@@ -10,7 +10,6 @@ void SetVirtualTouchCoord(uint16_t x, uint16_t y)
     g_virtualTouchY = y;
 }
 
-
 void SetVirtualTouchState(bool pressed)
 {
     g_virtualPressed = pressed;

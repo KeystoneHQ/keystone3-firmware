@@ -44,10 +44,13 @@ int FatfsFileAppend(const TCHAR* path, const uint8_t *data, uint32_t len);
 int FatfsFileDelete(const TCHAR* path);
 int FatfsFileCopy(const TCHAR* source, const TCHAR* dest);
 uint32_t FatfsFileGetSize(const TCHAR *path);
+int FormatSdFatfs(void);
 void FatfsError(FRESULT errNum);
 uint32_t FatfsGetSize(const char *path);
 int FatfsFileSha256(const TCHAR* path, uint8_t *sha256);
 bool FatfsFileExist(const char *path);
-
+char *FatfsFileRead(const TCHAR* path);
+void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint32_t *number, const char *contain);
+uint8_t *FatfsFileReadBytes(const TCHAR* path, uint32_t* readBytes);
 #endif /* _USER_FATFS_H */
 

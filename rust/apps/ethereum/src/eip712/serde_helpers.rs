@@ -1,15 +1,18 @@
 //! Some convenient serde helpers
 
 use core::{
+    borrow::Borrow,
     convert::{TryFrom, TryInto},
     str::FromStr,
 };
 use ethereum_types::{U256, U64};
 use serde::{Deserialize, Deserializer};
 
-use alloc::string::String;
 use alloc::string::ToString;
+use alloc::{borrow::ToOwned, string::String};
 use third_party::serde_json;
+
+use crate::crypto::keccak256;
 
 /// Helper type to parse both `u64` and `U256`
 #[derive(Copy, Clone, Deserialize)]
@@ -81,11 +84,9 @@ impl TryFrom<StringifiedNumeric> for [u8; 32] {
     type Error = String;
 
     fn try_from(value: StringifiedNumeric) -> Result<Self, Self::Error> {
-        let value = U256::try_from(value)?;
-        let zero_num = value.leading_zeros() as usize / 8 * 8;
-        let value = value << zero_num;
+        let u256_value = U256::try_from(value)?;
         let mut be_bytes = [0u8; 32];
-        value.to_big_endian(&mut be_bytes);
+        u256_value.to_big_endian(&mut be_bytes);
         Ok(be_bytes)
     }
 }
@@ -136,6 +137,22 @@ where
     D: Deserializer<'de>,
 {
     if let Some(num) = Option::<StringifiedNumeric>::deserialize(deserializer)? {
+        num.try_into().map(Some).map_err(serde::de::Error::custom)
+    } else {
+        Ok(None)
+    }
+}
+
+pub fn deserialize_salt_opt<'de, D>(deserializer: D) -> Result<Option<[u8; 32]>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    if let Some(num) = Option::<StringifiedNumeric>::deserialize(deserializer)? {
+        if let StringifiedNumeric::String(s) = num.borrow() {
+            if !s.starts_with("0x") {
+                return Ok(Some(U256::from(keccak256(s.as_bytes())).into()));
+            }
+        }
         num.try_into().map(Some).map_err(serde::de::Error::custom)
     } else {
         Ok(None)

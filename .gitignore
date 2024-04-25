@@ -6,7 +6,6 @@
 **/.idea
 **/.cache
 **/.vscode
-/src/ui/lv_i18n/en.yml
-/src/ui/lv_i18n/zh.yml
-/src/ui/lv_i18n/data_tools/data.csv
+/src/ui/lv_i18n/*.yml
 **/__pycache__
+**/build_simulator

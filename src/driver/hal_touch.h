@@ -4,7 +4,6 @@
 #include "stdint.h"
 #include "stdbool.h"
 
-
 #define TOUCH_PAD_RES_X                 480
 #define TOUCH_PAD_RES_Y                 800
 
@@ -22,7 +21,6 @@ typedef struct {
     void (*Open)(void);
     int32_t (*GetStatus)(TouchStatus_t *status);
 } HalTouchOpt_t;
-
 
 void TouchInit(TouchPadIntCallbackFunc_t func);
 void TouchOpen(void);

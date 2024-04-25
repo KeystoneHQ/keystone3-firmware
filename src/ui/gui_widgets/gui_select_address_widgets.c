@@ -36,7 +36,6 @@ static void SetCurrentSelectIndex(uint32_t selectIndex);
 static void UpdateConfirmBtn(void);
 static void BackHandler(lv_event_t *e);
 static void ConfirmHandler(lv_event_t *e);
-void CutAndFormatAddress(char *out, uint32_t maxLen, const char *address, uint32_t targetLen);
 
 static void SelectAddressHandler(lv_event_t *e)
 {
@@ -80,7 +79,6 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     }
 }
 
-
 static void SetCurrentSelectIndex(uint32_t selectIndex)
 {
     g_selectIndex = selectIndex;
@@ -118,8 +116,8 @@ static void RefreshSwitchAccount(void)
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetAddress(index, &addressDataItem);
-        lv_label_set_text_fmt(g_selectAddressWidgets[i].addressCountLabel, "Account-%u", (addressDataItem.index + 1));
-        CutAndFormatAddress(string, sizeof(string), addressDataItem.address, 24);
+        lv_label_set_text_fmt(g_selectAddressWidgets[i].addressCountLabel, "%s-%u", _("account_head"), (addressDataItem.index + 1));
+        CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_selectAddressWidgets[i].addressLabel, string);
         if (end) {
             lv_obj_add_flag(g_selectAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
@@ -162,7 +160,7 @@ static void GuiCreateSelectAddressList(lv_obj_t *parent)
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
     index = 0;
     for (uint32_t i = 0; i < 5; i++) {
-        g_selectAddressWidgets[i].addressCountLabel = GuiCreateLabelWithFont(cont, "account", &openSans_24);
+        g_selectAddressWidgets[i].addressCountLabel = GuiCreateLabelWithFont(cont, "account", &buttonFont);
         lv_obj_align(g_selectAddressWidgets[i].addressCountLabel, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
         g_selectAddressWidgets[i].addressLabel = GuiCreateNoticeLabel(cont, "address");
         lv_obj_align(g_selectAddressWidgets[i].addressLabel, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);

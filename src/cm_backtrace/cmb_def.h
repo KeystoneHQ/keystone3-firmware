@@ -62,7 +62,6 @@
 #define CMB_PRINT_LANGUAGE                CMB_PRINT_LANGUAGE_ENGLISH
 #endif
 
-
 #if defined(__ARMCC_VERSION)
 /* C stack block name, default is STACK */
 #ifndef CMB_CSTACK_BLOCK_NAME

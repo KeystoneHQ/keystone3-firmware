@@ -26,7 +26,6 @@
 #endif
 #define DEFAULT_TIMER_COUNTER 5
 
-
 static KeyboardWidget_t *CreateKeyboardWidget();
 static void KeyboardConfirmHandler(lv_event_t *e);
 static void ForgetHandler(lv_event_t *e);
@@ -261,7 +260,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t bu
 
     KeyBoard_t *kb = GuiCreateFullKeyBoard(keyboardHintBox, KeyboardConfirmHandler, KEY_STONE_FULL_L, keyboardWidget);
     lv_obj_t *ta = kb->ta;
-    lv_textarea_set_placeholder_text(ta, _("Enter Passcode"));
+    lv_textarea_set_placeholder_text(ta, _("change_passcode_mid_btn"));
     lv_obj_set_size(ta, 352, 100);
     lv_obj_align(ta, LV_ALIGN_DEFAULT, 36, 260);
     lv_obj_set_style_text_opa(ta, LV_OPA_100, LV_PART_MAIN);
@@ -335,7 +334,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
 
     KeyBoard_t *kb = GuiCreateFullKeyBoard(keyboardHintBox, KeyboardConfirmHandler, KEY_STONE_FULL_L, keyboardWidget);
     lv_obj_t *ta = kb->ta;
-    lv_textarea_set_placeholder_text(ta, _("Enter Passcode"));
+    lv_textarea_set_placeholder_text(ta, _("change_passcode_mid_btn"));
     lv_obj_set_size(ta, 352, 100);
     lv_obj_align(ta, LV_ALIGN_DEFAULT, 36, 332);
     lv_obj_set_style_text_opa(ta, LV_OPA_100, LV_PART_MAIN);
@@ -444,7 +443,6 @@ void GuiHideErrorLabel(KeyboardWidget_t *keyboardWidget)
     }
 }
 
-
 void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t *passwordVerifyResult)
 {
     memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
@@ -506,14 +504,13 @@ static void CountDownHandler(lv_timer_t *timer)
 {
     KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)timer->user_data;
 
-    char buf[BUFFER_SIZE_32] = {0};
     --(*keyboardWidget->timerCounter);
+    lv_obj_t *label = lv_obj_get_child(keyboardWidget->errHintBoxBtn, 0);
     if (*keyboardWidget->timerCounter > 0) {
-        snprintf_s(buf, BUFFER_SIZE_32, _("unlock_device_error_btn_text_fmt"), *keyboardWidget->timerCounter);
+        lv_label_set_text_fmt(label, _("unlock_device_error_btn_text_fmt"), *keyboardWidget->timerCounter);
     } else {
-        strcpy_s(buf, BUFFER_SIZE_32, _("unlock_device_error_btn_end_text"));
+        lv_label_set_text(label, _("unlock_device_error_btn_end_text"));
     }
-    lv_label_set_text(lv_obj_get_child(keyboardWidget->errHintBoxBtn, 0), buf);
 
     if (*keyboardWidget->timerCounter <= 0) {
         GuiHintBoxToLockSreen();

@@ -135,7 +135,6 @@ void PrintU16Array(const char *name, const uint16_t *data, uint16_t length)
     printf("\r\n");
 }
 
-
 void PrintU32Array(const char *name, const uint32_t *data, uint16_t length)
 {
     printf("%s,length=%d\r\n", name, length);
@@ -185,7 +184,6 @@ void LogRustPanic(char* panic_info)
     while (1);
 }
 
-
 void PrintErrorInfoOnLcd(void)
 {
     char serialNumber[SERIAL_NUMBER_MAX_LEN];
@@ -199,4 +197,3 @@ void PrintErrorInfoOnLcd(void)
 }
 
 #endif
-

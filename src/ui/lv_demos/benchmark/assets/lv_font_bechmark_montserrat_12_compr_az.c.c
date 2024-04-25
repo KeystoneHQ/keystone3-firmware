@@ -165,7 +165,6 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t gylph_bitmap[] = {
     0xc4, 0x1, 0x23, 0x5f, 0xed
 };
 
-
 /*---------------------
  *  GLYPH DESCRIPTION
  *--------------------*/
@@ -205,8 +204,6 @@ static const lv_font_fmt_txt_glyph_dsc_t glyph_dsc[] = {
  *  CHARACTER MAPPING
  *--------------------*/
 
-
-
 /*Collect the unicode lists and glyph_id offsets*/
 static const lv_font_fmt_txt_cmap_t cmaps[] = {
     {
@@ -222,7 +219,6 @@ static const lv_font_fmt_txt_cmap_t cmaps[] = {
 /*-----------------
  *    KERNING
  *----------------*/
-
 
 /*Map glyph_ids to kern left classes*/
 static const uint8_t kern_left_class_mapping[] = {
@@ -264,7 +260,6 @@ static const int8_t kern_class_values[] = {
     -2, 0
 };
 
-
 /*Collect the kern class' data in one place*/
 static const lv_font_fmt_txt_kern_classes_t kern_classes = {
     .class_pair_values   = kern_class_values,
@@ -290,7 +285,6 @@ static lv_font_fmt_txt_dsc_t font_dsc = {
     .kern_classes = 1,
     .bitmap_format = 1
 };
-
 
 /*-----------------
  *  PUBLIC FONT

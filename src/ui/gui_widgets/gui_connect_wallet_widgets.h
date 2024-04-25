@@ -18,6 +18,7 @@ typedef enum {
     WALLET_LIST_RABBY,
     WALLET_LIST_SAFE,
     WALLET_LIST_SPARROW,
+    WALLET_LIST_UNISAT,
     WALLET_LIST_IMTOKEN,
     WALLET_LIST_BLOCK_WALLET,
     WALLET_LIST_ZAPPER,
@@ -32,6 +33,7 @@ typedef enum {
     WALLET_LIST_SPECTER,
     WALLET_LIST_SPARROW,
     WALLET_LIST_NUNCHUK,
+    WALLET_LIST_UNISAT,
 #endif
     WALLET_LIST_BUTT,
 } WALLET_LIST_INDEX_ENUM;
@@ -40,6 +42,9 @@ typedef struct {
     WALLET_LIST_INDEX_ENUM index;
     const lv_img_dsc_t *img;
     bool enable;
+#ifdef BTC_ONLY
+    bool alpha;
+#endif
 } WalletListItem_t;
 
 #ifndef BTC_ONLY

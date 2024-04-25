@@ -17,6 +17,7 @@ void LvglCloseCurrentView(void);
 uint8_t *GetLvglGramAddr(void);
 uint32_t GetLvglGramSize(void);
 void ActivateUiTaskLoop(void);
+void LvglImportMicroCardSigView(void);
 
 extern bool g_reboot;
 #endif

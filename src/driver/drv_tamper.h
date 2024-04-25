@@ -1,7 +1,6 @@
 #ifndef _DRV_TAMPER_H
 #define _DRV_TAMPER_H
 
-
 #include "stdint.h"
 #include "stdbool.h"
 

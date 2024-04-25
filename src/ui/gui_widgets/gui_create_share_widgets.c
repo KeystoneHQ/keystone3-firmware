@@ -64,7 +64,7 @@ typedef struct {
 static ShareBackupWidget_t g_shareBackupTile;
 static ShareBackupWidget_t g_shareConfirmTile;
 
-static uint8_t g_phraseCnt = 33;
+static uint8_t g_phraseCnt = 20;
 static uint8_t g_pressedBtn[SLIP39_MNEMONIC_WORDS_MAX + 1];
 static uint8_t g_pressedBtnFlag[SLIP39_MNEMONIC_WORDS_MAX + 1];
 static uint8_t g_currId = 0;
@@ -72,6 +72,8 @@ static char g_randomBuff[BUFFER_SIZE_512];
 static lv_obj_t *g_noticeHintBox = NULL;
 static uint8_t g_entropyMethod;
 static PageWidget_t *g_pageWidget;
+static void SelectPhraseCntHandler(lv_event_t *e);
+static void SelectCheckBoxHandler(lv_event_t* e);
 
 static void ShareUpdateTileHandler(lv_event_t *e)
 {
@@ -112,7 +114,6 @@ static void ResetBtnTest(void)
     }
     g_currId = 0;
     lv_btnmatrix_clear_btn_ctrl_all(g_shareConfirmTile.keyBoard->btnm, LV_BTNMATRIX_CTRL_CHECKED);
-    // GuiUpdateMnemonicKeyBoard(g_shareConfirmTile.keyBoard, SecretCacheGetSlip39Mnemonic(g_createShareTileView.currentSlice), true);
     GuiUpdateMnemonicKeyBoard(g_shareConfirmTile.keyBoard, g_randomBuff, true);
 }
 
@@ -209,7 +210,7 @@ static void GuiShareSelectSliceWidget(lv_obj_t *parent)
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("shamir_phrase_number"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateIllustrateLabel(parent, _("Threshold"));
+    label = GuiCreateIllustrateLabel(parent, _("shamir_phrase_threold"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 438 - GUI_MAIN_AREA_OFFSET);
 
     g_selectSliceTile.memberCnt = SLIP39_DEFAULT_MEMBER_COUNT;
@@ -272,7 +273,6 @@ static void GuiShareCustodianWidget(lv_obj_t *parent)
     lv_obj_t *desc2 = GuiCreateIllustrateLabel(cont, _("shamir_phrase_notice_desc2"));
     lv_obj_align_to(desc2, desc1, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     hintHeight = GetHintBoxReHeight(hintHeight, desc1) + 130;
-    // lv_obj_set_size(cont, 480, hintHeight);
 
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_CHECK);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
@@ -377,7 +377,7 @@ static void GuiShareBackupWidget(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
     g_shareBackupTile.noticeLabel = label;
 
-    g_shareBackupTile.keyBoard = GuiCreateMnemonicKeyBoard(parent, NULL, KEY_STONE_MNEMONIC_24, NULL);
+    g_shareBackupTile.keyBoard = GuiCreateMnemonicKeyBoard(parent, NULL, g_phraseCnt == 20 ? KEY_STONE_MNEMONIC_20 : KEY_STONE_MNEMONIC_33, NULL);
     lv_obj_align_to(g_shareBackupTile.keyBoard->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 38);
     lv_obj_set_size(g_shareBackupTile.keyBoard->cont, 408, 360);
 
@@ -403,7 +403,7 @@ static void GuiShareConfirmWidget(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
     g_shareConfirmTile.noticeLabel = label;
 
-    g_shareConfirmTile.keyBoard = GuiCreateMnemonicKeyBoard(parent, MnemonicConfirmHandler, KEY_STONE_MNEMONIC_24, NULL);
+    g_shareConfirmTile.keyBoard = GuiCreateMnemonicKeyBoard(parent, MnemonicConfirmHandler, g_phraseCnt == 20 ? KEY_STONE_MNEMONIC_20 : KEY_STONE_MNEMONIC_33, NULL);
     lv_obj_align_to(g_shareConfirmTile.keyBoard->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
 }
 
@@ -484,16 +484,20 @@ int8_t GuiCreateShareNextTile(void)
         break;
     case CREATE_SHARE_CUSTODIAN:
         lv_obj_clear_flag(g_shareBackupTile.nextCont, LV_OBJ_FLAG_HIDDEN);
+        if (g_createShareTileView.currentSlice == 0) {
+            SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 20 ? "20    "USR_SYMBOL_DOWN : "33    "USR_SYMBOL_DOWN);
+            SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
+        }
         break;
     case CREATE_SHARE_BACKUPFROM:
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Reset");
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("single_phrase_reset"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetBtnHandler, NULL);
         lv_obj_add_flag(g_shareBackupTile.nextCont, LV_OBJ_FLAG_HIDDEN);
         break;
     case CREATE_SHARE_CONFIRM:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-        GuiModelSlip39WriteSe();
+        GuiModelSlip39WriteSe(g_phraseCnt);
         break;
     }
     g_createShareTileView.currentTile++;
@@ -522,11 +526,12 @@ int8_t GuiCreateSharePrevTile(void)
 void GuiCreateShareDeInit(void)
 {
     GUI_DEL_OBJ(g_noticeHintBox)
-    for (int i = 0; i < g_phraseCnt; i++) {
+    for (int i = 0; i < SLIP39_MNEMONIC_WORDS_MAX + 1; i++) {
         g_pressedBtn[i] = 0;
         g_pressedBtnFlag[i] = 0;
     }
     g_currId = 0;
+    g_phraseCnt = 20;
     g_selectSliceTile.memberCnt = SLIP39_DEFAULT_MEMBER_COUNT;
     g_selectSliceTile.memberThreshold = SLIP39_DEFAULT_MEMBER_THRESHOLD;
     memset_s(g_randomBuff, 512, 0, 512);
@@ -548,7 +553,8 @@ void GuiCreateShareRefresh(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     } else if (g_createShareTileView.currentTile == CREATE_SHARE_BACKUPFROM) {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 20 ? "20    "USR_SYMBOL_DOWN : "33    "USR_SYMBOL_DOWN);
+        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
     } else if (g_createShareTileView.currentTile == CREATE_SHARE_CONFIRM) {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, ResetBtnHandler, NULL);
@@ -558,3 +564,88 @@ void GuiCreateShareRefresh(void)
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
 }
 
+static void SelectPhraseCntHandler(lv_event_t *e)
+{
+    static uint32_t currentIndex = 0;
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *checkBox = NULL;
+
+    if (code == LV_EVENT_CLICKED) {
+        g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 282, true);
+        lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+        lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_phrase_word_amount_select"));
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 560);
+        lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
+        lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgClose);
+        GuiButton_t table = {img, .position = {10, 10}};
+
+        lv_obj_t *button = GuiCreateButton(g_noticeHintBox, 36, 36, &table, 1, NULL, g_noticeHintBox);
+        lv_obj_align(button, LV_ALIGN_DEFAULT, 407, 550);
+
+        if (g_phraseCnt == 33) {
+            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("import_wallet_ssb_20words"));
+            lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
+            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("import_wallet_ssb_33words"));
+            lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
+            lv_obj_add_state(checkBox, LV_STATE_CHECKED);
+        } else {
+            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("import_wallet_ssb_20words"));
+            lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
+            lv_obj_add_state(checkBox, LV_STATE_CHECKED);
+            checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("import_wallet_ssb_33words"));
+            lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
+        }
+
+        lv_obj_add_event_cb(g_noticeHintBox, SelectCheckBoxHandler, LV_EVENT_CLICKED, &currentIndex);
+    }
+}
+
+static void SelectCheckBoxHandler(lv_event_t* e)
+{
+    Slip39Data_t slip39 = {
+        .threShold = g_selectSliceTile.memberThreshold,
+        .memberCnt = g_selectSliceTile.memberCnt,
+    };
+    uint32_t* active_id = lv_event_get_user_data(e);
+    lv_obj_t *actCb = lv_event_get_target(e);
+    lv_obj_t *oldCb = lv_obj_get_child(g_noticeHintBox, *active_id);
+
+    if (actCb == g_noticeHintBox) {
+        return;
+    }
+    Vibrate(SLIGHT);
+    lv_obj_clear_state(oldCb, LV_STATE_CHECKED);
+    lv_obj_add_state(actCb, LV_STATE_CHECKED);
+    *active_id = lv_obj_get_index(actCb);
+
+    //TODO: use id to identity position
+    const char *currText = lv_checkbox_get_text(actCb);
+    printf("currText = %s\n", currText);
+    if (!strcmp(currText, _("import_wallet_ssb_20words"))) {
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "20    "USR_SYMBOL_DOWN);
+        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
+        if (g_phraseCnt != 20) {
+            g_phraseCnt = 20;
+            slip39.wordCnt = g_phraseCnt;
+            if (g_entropyMethod == 0) {
+                GuiModelSlip39UpdateMnemonic(slip39);
+            } else {
+                GuiModelSlip39UpdateMnemonicWithDiceRolls(slip39);
+            }
+        }
+    } else if (!strcmp(currText, _("import_wallet_ssb_33words"))) {
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "33    "USR_SYMBOL_DOWN);
+        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
+        if (g_phraseCnt != 33) {
+            g_phraseCnt = 33;
+            slip39.wordCnt = g_phraseCnt;
+            if (g_entropyMethod == 0) {
+                GuiModelSlip39UpdateMnemonic(slip39);
+            } else {
+                GuiModelSlip39UpdateMnemonicWithDiceRolls(slip39);
+            }
+        }
+    }
+    lv_obj_scroll_to_y(g_shareBackupTile.keyBoard->cont, 0, LV_ANIM_ON);
+    GUI_DEL_OBJ(g_noticeHintBox)
+}

@@ -27,16 +27,17 @@ static lv_obj_t *vibrationSw;
 
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static PageWidget_t *g_pageWidget;
+static PageWidget_t *g_selectLanguagePage;
 
 void GuiSystemSettingNVSBarInit();
 void GuiSystemSettingEntranceWidget(lv_obj_t *parent);
 static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e);
 static void GuiShowKeyBoardDialog(lv_obj_t *parent);
 static void DispalyHandler(lv_event_t *e);
-
+static void OpenLanguageSelectHandler(lv_event_t *e);
 static void VibrationHandler(lv_event_t *e);
 static void VibrationSwitchHandler(lv_event_t * e);
-
+void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset);
 void OpenForgetPasswordHandler(lv_event_t *e);
 
 void GuiSystemSettingAreaInit()
@@ -67,24 +68,19 @@ void GuiSystemSettingWebAuthHandler(lv_event_t *e)
 void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
 {
     lv_obj_t *label, *imgArrow, *button;
+    uint16_t offset = 0;
 
-    label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_title"));
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    GuiButton_t table[] = {
-        {
-            .obj = label,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {36, 24},
-        },
-        {
-            .obj = imgArrow,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {396, 24},
-        },
-    };
-    button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                             DispalyHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 0);
+#ifndef BTC_ONLY
+    button = GuiCreateSelectButton(parent, _("language_title"), &imgArrowRight,
+                                   OpenLanguageSelectHandler, NULL, false);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
+    offset += 100;
+#endif
+
+    button = GuiCreateSelectButton(parent, _("system_settings_screen_lock_title"), &imgArrowRight,
+                                   DispalyHandler, NULL, false);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
+    offset += 100;
 
     label = GuiCreateTextLabel(parent, _("system_settings_vabiration"));
     vibrationSw = lv_switch_create(parent);
@@ -98,43 +94,26 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
         lv_obj_clear_state(vibrationSw, LV_STATE_CHECKED);
     }
     GuiButton_t tableSwitch[] = {
-        {
-            .obj = label,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {36, 24},
-        },
-        {
-            .obj = vibrationSw,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {372, 24},
-        },
+        {.obj = label, .align = LV_ALIGN_DEFAULT, .position = {24, 24},},
+        {.obj = vibrationSw, .align = LV_ALIGN_DEFAULT, .position = {372, 24},},
     };
     button = GuiCreateButton(parent, 456, 84, tableSwitch, NUMBER_OF_ARRAYS(tableSwitch),
                              VibrationHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 109);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
+    offset += 100;
 
-
-    label = GuiCreateTextLabel(parent, _("verify_title"));
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    table[0].obj = label;
-    table[1].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                             GuiSystemSettingWebAuthHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 205);
+    button = GuiCreateSelectButton(parent, _("verify_title"), &imgArrowRight,
+                                   GuiSystemSettingWebAuthHandler, NULL, false);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
+    offset += 100;
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 301);
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 397);
 
-    label = GuiCreateTextLabel(parent, _("wipe_device"));
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    table[0].obj = label;
-    table[1].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                             GuiSystemSettingWipeDeivceHandler, NULL);
+    button = GuiCreateSelectButton(parent, _("wipe_device"), &imgArrowRight,
+                                   GuiSystemSettingWipeDeivceHandler, NULL, false);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
     lv_obj_set_style_text_color(lv_obj_get_child(button, 0), lv_color_hex(0xf55831), LV_PART_MAIN);
-
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 301);
-
 }
 
 void GuiSystemSettingNVSBarInit()
@@ -162,6 +141,15 @@ void GuiSystemSettingAreaRefresh()
     PassWordPinHintRefresh(g_keyboardWidget);
 }
 
+void GuiSystemSettingAreaRestart()
+{
+    if (g_selectLanguagePage != NULL) {
+        DestroyPageWidget(g_selectLanguagePage);
+        g_selectLanguagePage = NULL;
+    }
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
+}
 
 static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e)
 {
@@ -176,14 +164,11 @@ static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e)
     }
 }
 
-
-
 static void GuiShowKeyBoardDialog(lv_obj_t *parent)
 {
     g_keyboardWidget = GuiCreateKeyboardWidget(parent);
     SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
 }
-
 
 void GuiSystemSettingVerifyPasswordSuccess(void)
 {
@@ -201,11 +186,9 @@ void GuiSystemSettingVerifyPasswordErrorCount(void *param)
 static void DispalyHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-
     if (code == LV_EVENT_CLICKED) {
         GuiFrameOpenView(&g_displayView);
     }
-
 }
 
 static void VibrationHandler(lv_event_t *e)
@@ -236,5 +219,17 @@ static void VibrationSwitchHandler(lv_event_t * e)
             SetVibration(0);
         }
         SaveDeviceSettings();
+    }
+}
+
+static void OpenLanguageSelectHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        g_selectLanguagePage = CreatePageWidget();
+        lv_obj_clear_flag(g_selectLanguagePage->contentZone, LV_OBJ_FLAG_SCROLLABLE);
+        GuiCreateLanguageWidget(g_selectLanguagePage->contentZone, 12);
+        SetNavBarLeftBtn(g_selectLanguagePage->navBarWidget, NVS_BAR_RETURN, DestroyPageWidgetHandler, g_selectLanguagePage);
+        SetMidBtnLabel(g_selectLanguagePage->navBarWidget, NVS_BAR_MID_LABEL, _("language_title"));
     }
 }

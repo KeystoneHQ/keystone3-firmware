@@ -1,18 +1,14 @@
 #ifndef _LOW_POWER_H
 #define _LOW_POWER_H
 
-
 #include "stdint.h"
 #include "stdbool.h"
 #include "mhscpu.h"
-
 
 typedef enum {
     LOW_POWER_STATE_WORKING,
     LOW_POWER_STATE_DEEP_SLEEP,
 } LowPowerState;
-
-
 
 void LowPowerTest(int argc, char *argv[]);
 uint32_t EnterLowPower(void);

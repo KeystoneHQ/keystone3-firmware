@@ -7,6 +7,4 @@
 
 extern USBD_Class_cb_TypeDef USBCompositeCb;
 
-
 #endif
-

@@ -15,11 +15,12 @@
 #include "device_setting.h"
 #include "anti_tamper.h"
 #include "screenshot.h"
+#include "lv_i18n_api.h"
+#include "gui_api.h"
 
 #define LVGL_FAST_TICK_MS                   5
 #define LVGL_IDLE_TICK_MS                   100
 #define LVGL_GRAM_PIXEL         LCD_DISPLAY_WIDTH * 450
-
 
 bool GuiLetterKbStatusError(void);
 static void UiDisplayTask(void *argument);
@@ -53,7 +54,6 @@ void CreateUiDisplayTask(void)
     g_lvglTickTimer = osTimerNew(LvglTickTimerFunc, osTimerPeriodic, NULL, NULL);
 }
 
-
 static void UiDisplayTask(void *argument)
 {
     static lv_disp_drv_t dispDrv;
@@ -85,6 +85,7 @@ static void UiDisplayTask(void *argument)
     printf("LV_HOR_RES=%d,LV_VER_RES=%d\r\n", LV_HOR_RES, LV_VER_RES);
     printf("Tampered()=%d\n", Tampered());
     g_reboot = true;
+    LanguageInit();
     GuiFrameOpenView(&g_initView);
     SetLcdBright(GetBright());
 
@@ -174,7 +175,6 @@ static void RefreshLvglTickMode(void)
     }
 }
 
-
 static void SetLvglTick(uint32_t dynamicTick)
 {
     if (dynamicTick != g_dynamicTick) {
@@ -184,13 +184,11 @@ static void SetLvglTick(uint32_t dynamicTick)
     }
 }
 
-
 static void LvglTickTimerFunc(void *argument)
 {
     //printf("lvgl tick\r\n");
     lv_tick_inc(g_dynamicTick);
 }
-
 
 static void LcdFlush(struct _lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p)
 {
@@ -200,7 +198,6 @@ static void LcdFlush(struct _lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_
     }
     lv_disp_flush_ready(disp_drv);
 }
-
 
 static void InputDevReadCb(struct _lv_indev_drv_t *indev_drv, lv_indev_data_t *data)
 {
@@ -213,7 +210,6 @@ static void InputDevReadCb(struct _lv_indev_drv_t *indev_drv, lv_indev_data_t *d
     data->point.y = pStatus->y;
     data->continue_reading = pStatus->continueReading;
 }
-
 
 static void __SetLvglHandlerAndSnapShot(uint32_t value)
 {
@@ -265,24 +261,25 @@ void SetLvglHandlerAndSnapShot(bool enable)
     }
 }
 
-
 void LvglCloseCurrentView(void)
 {
     PubValueMsg(UI_MSG_CLOSE_CURRENT_VIEW, 0);
 }
 
+void LvglImportMicroCardSigView(void)
+{
+    GuiApiEmitSignal(SIG_IMPORT_TRANSACTION_FROM_FILE, NULL, 0);
+}
 
 uint8_t *GetLvglGramAddr(void)
 {
     return (uint8_t *)buf_1;
 }
 
-
 uint32_t GetLvglGramSize(void)
 {
     return sizeof(buf_1);
 }
-
 
 static uint8_t *GetActSnapShot(void)
 {
@@ -294,7 +291,6 @@ static uint8_t *GetActSnapShot(void)
     lv_snapshot_take_to_buf(lv_scr_act(), LV_IMG_CF_TRUE_COLOR, &imgDsc, buffer, snapShotSize);
     return buffer;
 }
-
 
 void ActivateUiTaskLoop(void)
 {

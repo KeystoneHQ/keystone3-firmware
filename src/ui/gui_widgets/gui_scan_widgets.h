@@ -3,10 +3,11 @@
 
 #include "rust.h"
 
-void GuiScanInit();
+void GuiScanInit(void *param, uint16_t len);
 void GuiScanDeInit();
 void GuiScanRefresh();
 void GuiScanResult(bool result, void *param);
 void GuiTransactionCheckPass(void);
-void GuiTransactionCheckFiald(PtrT_TransactionCheckResult result);
+void GuiTransactionCheckFailed(PtrT_TransactionCheckResult result);
+
 #endif /* _GUI_SCAN_WIDGETS_H */

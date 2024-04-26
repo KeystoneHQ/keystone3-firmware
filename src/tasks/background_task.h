@@ -4,7 +4,6 @@
 #include "stdint.h"
 #include "stdbool.h"
 
-
 typedef int32_t (*BackgroundAsyncFunc_t)(const void *inData, uint32_t inDataLen);
 typedef void *(*BackgroundAsyncRunnable_t)(void);
 typedef int32_t (*BackgroundAsyncFuncWithRunnable_t)(const void *inData, uint32_t inDataLen, BackgroundAsyncRunnable_t runnable);
@@ -33,4 +32,3 @@ void SystemReboot(void);
 void SystemPoweroff(void);
 
 #endif
-

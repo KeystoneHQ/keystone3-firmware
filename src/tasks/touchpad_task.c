@@ -15,7 +15,6 @@
 #include "hal_lcd.h"
 #endif
 
-
 static void TouchPadTask(void *argument);
 static void TouchIntHandler(void);
 
@@ -35,7 +34,6 @@ void CreateTouchPadTask(void)
     };
     g_touchPadTaskHandle = osThreadNew(TouchPadTask, NULL, &touchPadTask_attributes);
 }
-
 
 static void TouchPadTask(void *argument)
 {
@@ -100,12 +98,10 @@ TouchStatus_t *GetLatestTouchStatus(void)
     return &g_latestTouchStatus;
 }
 
-
 bool GetTouchPress(void)
 {
     return g_touchPress;
 }
-
 
 void ClearTouchBuffer(void)
 {
@@ -114,10 +110,7 @@ void ClearTouchBuffer(void)
     g_touchReadIndex = 0;
 }
 
-
 static void TouchIntHandler(void)
 {
     osSemaphoreRelease(g_touchPadSem);
 }
-
-

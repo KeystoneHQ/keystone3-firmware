@@ -1,7 +1,6 @@
 #ifndef _DRV_SPI_H
 #define _DRV_SPI_H
 
-
 #include "stdint.h"
 #include "stdbool.h"
 #include "mhscpu.h"

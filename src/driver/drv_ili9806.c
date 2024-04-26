@@ -17,7 +17,6 @@ static void Ili9806WriteData(uint8_t data);
 static void Ili9806SetWindow(uint16_t xStart, uint16_t yStart, uint16_t xEnd, uint16_t yEnd);
 static void Ili9806InitSequence(void);
 
-
 static void Ili9806WriteCmd(uint8_t cmd)
 {
     PARALLEL_8080_CS_CLR;
@@ -32,7 +31,6 @@ static void Ili9806WriteData(uint8_t data)
     PARALLEL_8080_CS_SET;
 }
 
-
 void Ili9806Init(void)
 {
     Parallel8080Init();
@@ -41,7 +39,6 @@ void Ili9806Init(void)
     //Reset before initialization
     Ili9806InitSequence();
 }
-
 
 static void Ili9806SetWindow(uint16_t xStart, uint16_t yStart, uint16_t xEnd, uint16_t yEnd)
 {
@@ -60,12 +57,10 @@ static void Ili9806SetWindow(uint16_t xStart, uint16_t yStart, uint16_t xEnd, ui
     Ili9806WriteCmd(0x2C);
 }
 
-
 bool Ili9806Busy(void)
 {
     return Parallel8080Busy();
 }
-
 
 void Ili9806Clear(uint16_t color)
 {
@@ -92,7 +87,6 @@ void Ili9806Clear(uint16_t color)
     printf("frame tick=%d\r\n", endTick - startTick);
 }
 
-
 void Ili9806Draw(uint16_t xStart, uint16_t yStart, uint16_t xEnd, uint16_t yEnd, uint16_t *colors)
 {
     uint32_t bytes;
@@ -100,7 +94,6 @@ void Ili9806Draw(uint16_t xStart, uint16_t yStart, uint16_t xEnd, uint16_t yEnd,
     bytes = (yEnd - yStart + 1) * (xEnd - xStart + 1) * 2;
     Parallel8080SendDmaData((uint8_t *)colors, bytes);
 }
-
 
 static void Ili9806InitSequence(void)
 {

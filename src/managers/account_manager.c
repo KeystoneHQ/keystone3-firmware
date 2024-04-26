@@ -8,13 +8,14 @@
 #include "assert.h"
 #include "hash_and_salt.h"
 #include "secret_cache.h"
+#include "log_print.h"
 #include "user_memory.h"
-
 #ifdef COMPILE_SIMULATOR
 #include "simulator_storage.h"
 #include "simulator_mock_define.h"
+#else
+#include "safe_str_lib.h"
 #endif
-
 
 typedef struct {
     uint8_t loginPasswordErrorCount;
@@ -23,7 +24,6 @@ typedef struct {
     uint32_t lastLockDeviceTime;
     uint8_t reserved2[24];               //byte 1~31 reserved.
 } PublicInfo_t;
-
 
 static uint8_t g_currentAccountIndex = ACCOUNT_INDEX_LOGOUT;
 static uint8_t g_lastAccountIndex = ACCOUNT_INDEX_LOGOUT;
@@ -77,7 +77,6 @@ uint8_t *GetCurrentAccountMfp()
 {
     return g_currentAccountInfo.mfp;
 }
-
 
 /// @brief Get mnemonic type of the current account.
 /// @return Mnemonic type.
@@ -136,7 +135,6 @@ int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const u
     return ret;
 }
 
-
 /// @brief Verify password for the account that was login. PasswordErrorCount++ if err.
 /// @param[in] password Password string.
 /// @return err code.
@@ -174,8 +172,6 @@ int32_t VerifyCurrentAccountPassword(const char *password)
     return ret;
 }
 
-
-
 int32_t ClearCurrentPasswordErrorCount(void)
 {
     printf("clear current password error count\r\n");
@@ -210,7 +206,7 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
             TempAccountPublicInfo(g_currentAccountIndex, password, false);
         } else {
             printf("passphrase not exist, info switch\r\n");
-            AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
+            ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
         }
     } else {
         g_publicInfo.loginPasswordErrorCount++;
@@ -289,7 +285,6 @@ int32_t GetAccountInfo(uint8_t accountIndex, AccountInfo_t *pInfo)
     return ret;
 }
 
-
 /// @brief Erase public info in SE.
 /// @return err code.
 int32_t ErasePublicInfo(void)
@@ -297,9 +292,6 @@ int32_t ErasePublicInfo(void)
     CLEAR_OBJECT(g_publicInfo);
     return SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
 }
-
-
-
 
 /// @brief Get slip39 idrandom identifier of the current account.
 /// @return idrandom identifier.
@@ -310,7 +302,6 @@ uint16_t GetSlip39Id(void)
     return id;
 }
 
-
 /// @brief Get slip39 iteration exponent of the current account.
 /// @return iteration exponent.
 uint8_t GetSlip39Ie(void)
@@ -320,14 +311,12 @@ uint8_t GetSlip39Ie(void)
     return ie;
 }
 
-
 /// @brief Get a boolean representing whether passphrase exists for the current account.
 /// @return passphrase exists.
 bool GetPassphraseQuickAccess(void)
 {
     return g_currentAccountInfo.passphraseQuickAccess != 0;
 }
-
 
 /// @brief Get a boolean representing whether passphrase mark enable for the current account.
 /// @return passphrase exists.
@@ -336,7 +325,6 @@ bool GetPassphraseMark(void)
     return g_currentAccountInfo.passphraseMark != 0;
 }
 
-
 /// @brief Get wallet icon index of the current account.
 /// @return wallet icon index.
 uint8_t GetWalletIconIndex(void)
@@ -344,14 +332,12 @@ uint8_t GetWalletIconIndex(void)
     return g_currentAccountInfo.iconIndex;
 }
 
-
 /// @brief Get wallet name of the current account.
 /// @return wallet name string.
 char *GetWalletName(void)
 {
     return g_currentAccountInfo.walletName;
 }
-
 
 /// @brief Set passphrase quick access enable for the current account.
 /// @param[in] enable Quick access enable.
@@ -365,7 +351,6 @@ void SetPassphraseQuickAccess(bool enable)
     SaveCurrentAccountInfo();
 }
 
-
 /// @brief Set passphrase mark enable for the current account.
 /// @param[in] enable Mark enable.
 void SetPassphraseMark(bool enable)
@@ -374,7 +359,6 @@ void SetPassphraseMark(bool enable)
     SaveCurrentAccountInfo();
 }
 
-
 /// @brief Set wallet icon index for the current account.
 /// @param[in] iconIndex
 void SetWalletIconIndex(uint8_t iconIndex)
@@ -382,7 +366,6 @@ void SetWalletIconIndex(uint8_t iconIndex)
     g_currentAccountInfo.iconIndex = iconIndex;
     SaveCurrentAccountInfo();
 }
-
 
 /// @brief Set wallet name for the current account.
 /// @param[in] walletName
@@ -393,7 +376,6 @@ void SetWalletName(const char *walletName)
     SaveCurrentAccountInfo();
 }
 
-
 /// @brief Get password err count for login.
 /// @return password err count.
 uint8_t GetLoginPasswordErrorCount(void)
@@ -401,14 +383,12 @@ uint8_t GetLoginPasswordErrorCount(void)
     return g_publicInfo.loginPasswordErrorCount;
 }
 
-
 /// @brief Get password err count for current account verify.
 /// @return password err count.
 uint8_t GetCurrentPasswordErrorCount(void)
 {
     return g_publicInfo.currentPasswordErrorCount;
 }
-
 
 /// @brief
 /// @param
@@ -418,7 +398,6 @@ uint32_t GetLastLockDeviceTime(void)
     return g_publicInfo.lastLockDeviceTime;
 }
 
-
 /// @brief
 /// @param timeStamp
 void SetLastLockDeviceTime(uint32_t timeStamp)
@@ -427,15 +406,12 @@ void SetLastLockDeviceTime(uint32_t timeStamp)
     SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
 }
 
-
 /// @brief Get the current account entropy length.
 /// @return Entropy length, also represents the seed length when SLIP39 used.
 uint32_t GetCurrentAccountEntropyLen(void)
 {
     return g_currentAccountInfo.entropyLen;
 }
-
-
 
 /// @brief Save g_currentAccountInfo to SE.
 /// @return err code.
@@ -451,7 +427,6 @@ int32_t SaveCurrentAccountInfo(void)
     ret = SE_HmacEncryptWrite(param, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
     return ret;
 }
-
 
 /// @brief Get a blank account index.
 /// @param[out] accountIndex If there is a blank account, it would be set here.
@@ -506,7 +481,6 @@ int32_t DestroyAccount(uint8_t accountIndex)
 
     return ret;
 }
-
 
 void AccountsDataCheck(void)
 {

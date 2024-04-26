@@ -6,7 +6,6 @@
 #include "assert.h"
 #include "drv_trng.h"
 
-
 //START: Atecc608b
 int32_t SE_EncryptWrite(uint8_t slot, uint8_t block, const uint8_t *data)
 {

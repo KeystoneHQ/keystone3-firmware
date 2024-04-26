@@ -21,7 +21,6 @@ void OpenMsgBox(const GuiMsgBox_t *msgBox)
     g_currentMsgBox = (GuiMsgBox_t *)msgBox;
 }
 
-
 void CloseMsgBox(const GuiMsgBox_t *msgBox)
 {
     ASSERT(msgBox);
@@ -32,11 +31,9 @@ void CloseMsgBox(const GuiMsgBox_t *msgBox)
     }
 }
 
-
 void CloseCurrentMsgBox(void)
 {
     if (g_currentMsgBox) {
         CloseMsgBox(g_currentMsgBox);
     }
 }
-

@@ -2,18 +2,7 @@
 #include "gui_obj.h"
 #include "gui_views.h"
 #include "gui_utxo_receive_widgets.h"
-
-static int32_t GuiReceiveViewInit(uint8_t chain)
-{
-    GuiReceiveInit(chain);
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiReceiveViewDeInit(void)
-{
-    GuiReceiveDeInit();
-    return SUCCESS_CODE;
-}
+#include "gui_global_resources.h"
 
 int32_t GuiReceiveViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
@@ -25,14 +14,16 @@ int32_t GuiReceiveViewEventProcess(void *self, uint16_t usEvent, void *param, ui
         } else {
             return ERR_GUI_ERROR;
         }
-        return GuiReceiveViewInit(chain);
+        GlobalResourcesInit();
+        GuiReceiveInit(chain);
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiReceiveViewDeInit();
+        GuiReceiveDeInit();
+        break;
     case GUI_EVENT_DISACTIVE:
         //GuiBitcoinReceiveDisActive();
         break;
     case GUI_EVENT_REFRESH:
-        // GuiReceiveRefresh();
         break;
     case SIG_SETUP_VIEW_TILE_PREV:
         GuiReceivePrevTile();

@@ -93,6 +93,16 @@ pub enum ErrorCodes {
     BitcoinUnsupportedScriptType,
     BitcoinBech32DecodeError,
     BitcoinWitnessProgramError,
+    BitcoinMultiSigWalletParseError,
+    BitcoinMultiSigWalletNotMyWallet,
+    BitcoinMultiSigWalletAddressCalError,
+    BitcoinMultiSigWalletImportXpubError,
+    BitcoinMultiSigWalletCrateError,
+    BitcoinMultiSigWalletFormatError,
+    BitcoinMultiSigNetworkError,
+    BitcoinMultiSigInputError,
+    BitcoinDerivePublicKeyError,
+    BitcoinWalletTypeError,
 
     //Ethereum
     EthereumRlpDecodingError = 200,
@@ -205,6 +215,20 @@ impl From<&BitcoinError> for ErrorCodes {
             BitcoinError::InvalidRawTxCryptoBytes(_) => Self::BitcoinInvalidRawTxCryptoBytes,
             BitcoinError::InvalidTxData(_) => Self::BitcoinInvalidTxData,
             BitcoinError::UnsupportedScriptType(_) => Self::BitcoinUnsupportedScriptType,
+            BitcoinError::MultiSigWalletParseError(_) => Self::BitcoinMultiSigWalletParseError,
+            BitcoinError::MultiSigWalletNotMyWallet => Self::BitcoinMultiSigWalletNotMyWallet,
+            BitcoinError::MultiSigWalletAddressCalError(_) => {
+                Self::BitcoinMultiSigWalletAddressCalError
+            }
+            BitcoinError::MultiSigWalletImportXpubError(_) => {
+                Self::BitcoinMultiSigWalletImportXpubError
+            }
+            BitcoinError::MultiSigWalletCrateError(_) => Self::BitcoinMultiSigWalletCrateError,
+            BitcoinError::MultiSigWalletFormatError(_) => Self::BitcoinMultiSigWalletFormatError,
+            BitcoinError::MultiSigNetworkError(_) => Self::BitcoinMultiSigNetworkError,
+            BitcoinError::MultiSigInputError(_) => Self::BitcoinMultiSigInputError,
+            BitcoinError::DerivePublicKeyError(_) => Self::BitcoinDerivePublicKeyError,
+            BitcoinError::WalletTypeError(_) => Self::BitcoinWalletTypeError,
         }
     }
 }

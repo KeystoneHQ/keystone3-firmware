@@ -30,6 +30,9 @@
 #include "simulator_mock_define.h"
 #endif
 
+#ifdef BTC_ONLY
+#include "gui_btc_home_widgets.h"
+#endif
 /* DEFINES */
 
 /* TYPEDEFS */
@@ -106,12 +109,12 @@ void CountDownTimerHandler(lv_timer_t *timer)
 {
     lv_obj_t *obj = (lv_obj_t *)timer->user_data;
     static int8_t countDown = 5;
-    char buf[16] = {0};
+    char buf[32] = {0};
     --countDown;
     if (countDown > 0) {
-        snprintf_s(buf, sizeof(buf), "Got it (%d)", countDown);
+        snprintf_s(buf, sizeof(buf), _("got_it_fmt"), countDown);
     } else {
-        strcpy_s(buf, sizeof(buf), "Got it");
+        strcpy_s(buf, sizeof(buf), _("got_it"));
     }
     lv_label_set_text(lv_obj_get_child(obj, 0), buf);
     if (countDown <= 0) {
@@ -170,26 +173,13 @@ void GuiWalletSelectAddWallet(lv_obj_t *parent)
     line = GuiCreateDividerLine(parent);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 443 - GUI_MAIN_AREA_OFFSET);
 
-    img = GuiCreateImg(parent, &imgImport);
-    label = GuiCreateTextLabel(parent, _("purpose_import_wallet"));
-    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
-    table[0].obj = img;
-    table[0].position.x = -lv_obj_get_self_width(label) / 2 - 10;
-    table[0].position.y = 0;
-    table[0].align = LV_ALIGN_CENTER;
-
-    table[1].obj = label;
-    table[1].position.x = lv_obj_get_self_width(img) / 2 + 10;
-    table[1].position.y = 0;
-    table[1].align = LV_ALIGN_CENTER;
-    button = GuiCreateButton(parent, 228, 50, table, 2, OpenImportWalletHandler, NULL);
+    button = GuiCreateImgLabelAdaptButton(parent, _("purpose_import_wallet"), &imgImport, OpenImportWalletHandler, NULL);
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 684 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
 }
 
 void GuiWalletAddWalletNotice(lv_obj_t *parent)
 {
-    // static uint32_t walletSetting = DEVICE_SETTING_ADD_WALLET_SETPIN;
     static uint32_t walletSetting = DEVICE_SETTING_ADD_WALLET_CREATE_OR_IMPORT;
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
@@ -228,7 +218,7 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
     lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 372 - GUI_MAIN_AREA_OFFSET);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("Got it (5)"));
+    lv_obj_t *btn = GuiCreateBtn(parent, _("got_it_start"));
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_bg_opa(btn, LV_OPA_60, LV_STATE_DEFAULT);
@@ -333,11 +323,12 @@ void GuiChangePassWord(bool result)
 void GuiResettingWriteSe(void)
 {
     g_resetingCont = GuiCreateHintBox(lv_scr_act(), 480, 326, false);
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_resetingCont, _("Resetting, Keep Screen ON"));
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_resetingCont, _("change_passcode_reset_title"));
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -124);
-    label = GuiCreateIllustrateLabel(g_resetingCont, _("Writing Secure Element..."));
+    label = GuiCreateNoticeLabel(g_resetingCont, _("change_passcode_reset_desc"));
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -76);
-    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
     GuiCreateCircleAroundAnimation(lv_scr_act(), 165);
 }
 
@@ -440,6 +431,7 @@ void GuiWalletSettingSetIconLabel(const lv_img_dsc_t *src, const char *name)
 // wallet setting
 void GuiWalletSetWidget(lv_obj_t *parent)
 {
+    lv_event_cb_t passphraseCb = WalletSettingHandler;
     static uint32_t walletSetting[5] = {
         DEVICE_SETTING_CHANGE_WALLET_DESC,
         DEVICE_SETTING_FINGERPRINT_PASSCODE,
@@ -458,7 +450,7 @@ void GuiWalletSetWidget(lv_obj_t *parent)
     }
     memset_s(mfp, sizeof(mfp), 0, sizeof(mfp));
     lv_obj_t *label = GuiCreateTextLabel(parent, GuiNvsBarGetWalletName());
-    lv_obj_set_style_text_font(label, &openSansButton, LV_PART_MAIN);
+    lv_obj_set_style_text_font(label, &buttonFont, LV_PART_MAIN);
     lv_obj_t *mfpLabel = GuiCreateNoticeLabel(parent, tempBuf);
     g_mfpLabel = mfpLabel;
     g_walletSetLabel = label;
@@ -510,13 +502,26 @@ void GuiWalletSetWidget(lv_obj_t *parent)
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     table[0].obj = label;
     table[1].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 84, table, 2, WalletSettingHandler, &walletSetting[2]);
+#ifdef BTC_ONLY
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+        passphraseCb = UnHandler;
+    }
+#endif
+    button = GuiCreateButton(parent, 456, 84, table, 2, passphraseCb, &walletSetting[2]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 383 - GUI_MAIN_AREA_OFFSET);
+#ifdef BTC_ONLY
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+        lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_set_style_text_opa(lv_obj_get_child(button, 0), LV_OPA_80, LV_PART_MAIN);
+        lv_obj_set_style_img_opa(lv_obj_get_child(button, 1), LV_OPA_80, LV_PART_MAIN);
+    }
+#endif
 
     label = GuiCreateTextLabel(parent, _("wallet_setting_seed_phrase"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     table[0].obj = label;
     table[1].obj = imgArrow;
+
     button = GuiCreateButton(parent, 456, 84, table, 2, WalletSettingHandler, &walletSetting[3]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 479 - GUI_MAIN_AREA_OFFSET);
 
@@ -553,15 +558,13 @@ void GuiWalletDelWalletConfirm(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 336 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("wallet_settings_delete_confirm_button1"));
-    lv_obj_set_size(btn, 319, 66);
+    lv_obj_t *btn = GuiCreateAdaptButton(parent, _("wallet_settings_delete_confirm_button1"));
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 580 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), g_defTextFont, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_STATE_DEFAULT);
     lv_obj_add_event_cb(btn, WalletSettingHandler, LV_EVENT_CLICKED, &walletSetting);
 
-    btn = GuiCreateBtn(parent, _("wallet_settings_delete_confirm_button2"));
-    lv_obj_set_size(btn, 230, 66);
+    btn = GuiCreateAdaptButton(parent, _("wallet_settings_delete_confirm_button2"));
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 670 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(lv_obj_get_child(btn, 0), RED_COLOR, LV_PART_MAIN);

@@ -45,13 +45,24 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_BTC,
 #ifndef COMPILE_SIMULATOR
-        "{\"name\":\"btc_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,144],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Amount\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text\":\"Fee\",\"pos\":[24,98],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtTotalOutAmount\",\"pos\":[24,50],\"text_color\":16090890,\"font\":\"openSansEnLittleTitle\"},{\"type\":\"label\",\"text_func\":\"GetPsbtFeeAmount\",\"pos\":[73,98],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetPsbtTotalOutSat\",\"pos\":[24,50],\"aflag\":1,\"text_color\":16090890,\"font\":\"openSansEnLittleTitle\"},{\"type\":\"label\",\"text_func\":\"GetPsbtFeeSat\",\"pos\":[73,98],\"text_color\":16777215,\"aflag\":1,\"font\":\"openSansEnIllustrate\"},{\"type\":\"img\",\"default\":[-4,-5],\"hidden\":[-2,-3],\"align\":8,\"pos\":[-24,0],\"aflag\":2,\"cb\":\"SwitchHidden\",\"img_src\":\"imgConversion\",\"is_show\":15}]},{\"type\":\"container\",\"pos\":[0,168],\"size\":[408,62],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtNetWork\",\"pos\":[120,16],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,250],\"size_func\":\"GetPsbtOverviewSize\",\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"align\":2,\"pos\":[0,54],\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetPsbtInputData\",\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[0,5],\"align_to\":-2,\"align\":13,\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"align_to\":-2,\"align\":13,\"pos\":[0,5],\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetPsbtOutputData\",\"font\":\"openSansEnIllustrate\"}]}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,62],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtNetWork\",\"pos\":[120,16],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,100],\"size\":[408,138],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Input Value\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtDetailInputValue\",\"pos\":[20,0],\"text_color\":16777215,\"align_to\":-2,\"align\":20,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Output Value\",\"pos\":[24,54],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtDetailOutputValue\",\"pos\":[20,0],\"text_color\":16777215,\"align_to\":-2,\"align\":20,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Fee\",\"pos\":[24,92],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetPsbtDetailFee\",\"pos\":[20,0],\"text_color\":16777215,\"align_to\":-2,\"align\":20,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,250],\"size_func\":\"GetPsbtDetailSize\",\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"align\":2,\"pos\":[0,54],\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetPsbtInputDetailData\",\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[0,5],\"align_to\":-2,\"align\":13,\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"pos\":[0,5],\"align_to\":-2,\"align\":13,\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetPsbtOutputDetailData\",\"font\":\"openSansEnIllustrate\"}]}]}]}",
+        "{\"name\":\"btc_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiBtcTxOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiBtcTxDetail\"}]}]}",
 #else
         PC_SIMULATOR_PATH "/page_btc.json",
 #endif
         GuiGetParsedQrData,
         NULL,
         FreePsbtUxtoMemory,
+    },
+    {
+        REMAPVIEW_BTC_MESSAGE,
+#ifndef COMPILE_SIMULATOR
+        "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text\":\"Message\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,0],\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,38],\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetBtcMsgDetail\",\"text_len_func\":\"GetBtcMsgDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_btc_msg.json",
+#endif
+        GuiGetParsedQrData,
+        NULL,
+        FreeBtcMsgMemory,
     },
 #ifndef BTC_ONLY
     // temper test the ethereum page view not for production usage
@@ -234,7 +245,7 @@ const lv_font_t *GetLvglTextFont(char *fontStr)
         return &openSansDesc;
     }
 
-    return &openSans_20;
+    return &openSansEnIllustrate;
 }
 
 GetContSizeFunc GetPsbtContainerSize(char *type)
@@ -412,6 +423,8 @@ GetLabelDataFunc GuiBtcTextFuncGet(char *type)
         return GetPsbtDetailInputValue;
     } else if (!strcmp(type, "GetPsbtDetailFee")) {
         return GetPsbtDetailFee;
+    } else if (!strcmp(type, "GetBtcMsgDetail")) {
+        return GetBtcMsgDetail;
     }
     return NULL;
 }
@@ -516,6 +529,14 @@ GetTableDataFunc GuiBtcTableFuncGet(char *type)
         return GetPsbtInputDetailData;
     } else if (!strcmp(type, "GetPsbtOutputDetailData")) {
         return GetPsbtOutputDetailData;
+    }
+    return NULL;
+}
+
+GetLabelDataLenFunc GuiBtcTextLenFuncGet(char *type)
+{
+    if (!strcmp(type, "GetBtcMsgDetailLen")) {
+        return GetBtcMsgDetailLen;
     }
     return NULL;
 }
@@ -716,6 +737,8 @@ GetLabelDataLenFunc GuiAdaTextLenFuncGet(char *type)
 GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
 {
     switch (g_reMapIndex) {
+    case REMAPVIEW_BTC_MESSAGE:
+        return GuiBtcTextLenFuncGet(type);
 #ifndef BTC_ONLY
     case REMAPVIEW_SUI:
         return GuiSuiTextLenFuncGet(type);
@@ -739,6 +762,7 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
 {
     switch (g_reMapIndex) {
     case REMAPVIEW_BTC:
+    case REMAPVIEW_BTC_MESSAGE:
         return GuiBtcTextFuncGet(type);
 #ifndef BTC_ONLY
     case REMAPVIEW_ETH:
@@ -850,7 +874,6 @@ GetObjStateFunc GuiTemplateStateFuncGet(char *type)
     return NULL;
 }
 
-#ifndef BTC_ONLY
 static void SwitchHidden(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -875,14 +898,13 @@ static void SwitchHidden(lv_event_t *e)
         }
     }
 }
-#endif
 
 lv_event_cb_t GuiTemplateEventCbGet(char *type)
 {
-#ifndef BTC_ONLY
     if (!strcmp(type, "SwitchHidden")) {
         return SwitchHidden;
     }
+#ifndef BTC_ONLY
     if (!strcmp(type, "EthContractLearnMore")) {
         return EthContractLearnMore;
     }
@@ -1105,6 +1127,11 @@ void *GuiWidgetContainer(lv_obj_t *parent, cJSON *json)
 
 GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
 {
+    if (!strcmp(funcName, "GuiBtcTxOverview")) {
+        return GuiBtcTxOverview;
+    } else if (!strcmp(funcName, "GuiBtcTxDetail")) {
+        return GuiBtcTxDetail;
+    }
 #ifndef BTC_ONLY
     if (!strcmp(funcName, "GuiShowSolTxOverview")) {
         return GuiShowSolTxOverview;
@@ -1471,6 +1498,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
     case BchTx:
 #endif
         return REMAPVIEW_BTC;
+    case BtcMsg:
+        return REMAPVIEW_BTC_MESSAGE;
 #ifndef BTC_ONLY
     case EthTx:
         return REMAPVIEW_ETH;
@@ -1513,14 +1542,14 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
     lv_obj_add_flag(g_imgCont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(g_imgCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_scrollbar_mode(g_imgCont, LV_SCROLLBAR_MODE_OFF);
-    lv_obj_clear_flag(g_imgCont, LV_OBJ_FLAG_SCROLL_MOMENTUM);
+    lv_obj_clear_flag(g_imgCont, LV_OBJ_FLAG_SCROLL_ELASTIC);
 
     lv_obj_t *tabView = lv_tabview_create(g_imgCont, LV_DIR_TOP, 64);
     lv_obj_set_style_bg_color(tabView, lv_color_hex(0x0), LV_PART_MAIN);
     lv_obj_set_style_bg_color(tabView, lv_color_hex(0x0), LV_PART_ITEMS);
     lv_obj_set_style_border_width(tabView, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(tabView, lv_color_hex(0xffffff), LV_PART_ITEMS);
-    lv_obj_clear_flag(tabView, LV_OBJ_FLAG_SCROLL_MOMENTUM);
+    lv_obj_clear_flag(tabView, LV_OBJ_FLAG_SCROLL_ELASTIC);
 
     lv_obj_set_style_bg_color(tabView, lv_color_hex(0), LV_PART_ITEMS);
     lv_obj_set_style_text_color(tabView, lv_color_hex(0xffffff), LV_PART_ITEMS);
@@ -1537,8 +1566,6 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
         } else if (i == 1) {
             tabChild = lv_tabview_add_tab(tabView, "Details");
         }
-        // lv_obj_set_size(tabChild, 408, 530);
-        // lv_obj_align(g_imgCont, LV_ALIGN_TOP_MID, 0, 0);
         lv_obj_set_style_pad_all(tabChild, 0, LV_PART_MAIN);
         lv_obj_set_style_border_width(tabChild, 0, LV_PART_MAIN);
         lv_obj_set_style_shadow_width(tabChild, 0, LV_PART_MAIN);

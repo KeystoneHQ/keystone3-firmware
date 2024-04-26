@@ -19,7 +19,6 @@ const GuiMsgBox_t g_guiMsgBoxPowerOption = {
     GUI_POWER_OPTION_PRIORITY,
 };
 
-
 static void GuiPowerOptionInit(void)
 {
     lv_obj_t *btn, *img, *label;
@@ -71,7 +70,6 @@ static void GuiPowerOptionInit(void)
     lv_obj_add_event_cb(btn, CancelHandler, LV_EVENT_CLICKED, NULL);
 }
 
-
 static void GuiPowerOptionDeInit(void)
 {
     if (container != NULL) {
@@ -84,7 +82,6 @@ static void GuiPowerOptionDeInit(void)
 #include "background_task.h"
 #endif
 
-
 static void PowerOffHandler(lv_event_t *e)
 {
     printf("power off\r\n");
@@ -92,7 +89,6 @@ static void PowerOffHandler(lv_event_t *e)
     SystemPoweroff();
 #endif
 }
-
 
 void RebootHandler(lv_event_t *e)
 {
@@ -102,10 +98,8 @@ void RebootHandler(lv_event_t *e)
 #endif
 }
 
-
 static void CancelHandler(lv_event_t *e)
 {
     printf("cancel\r\n");
     GuiApiEmitSignalWithValue(SIG_INIT_POWER_OPTION, 0);
 }
-

@@ -90,17 +90,18 @@ void GuiWebAuthIntroWidget(lv_obj_t *parent)
 
     label = GuiCreateIllustrateLabel(parent, "#F5870A 2");
     lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 452 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(label, lv_obj_get_child(lv_obj_get_parent(label), lv_obj_get_child_cnt(lv_obj_get_parent(label)) - 2), LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
 
     label = GuiCreateIllustrateLabel(parent, _("verify_cont2"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 60, 452 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
+    lv_obj_align_to(label, lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 2), LV_ALIGN_DEFAULT, 30, 0);
 
     label = GuiCreateIllustrateLabel(parent, "#F5870A 3");
     lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 524 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
 
     label = GuiCreateIllustrateLabel(parent, _("verify_cont3"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 60, 524 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
 
     lv_obj_t *btn = GuiCreateBtn(parent, _("verify_scan_qr_code"));
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);

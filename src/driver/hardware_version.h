@@ -14,9 +14,7 @@ typedef enum {
     VERSION_NONE,
 } HardwareVersion;
 
-
 HardwareVersion GetHardwareVersion(void);
 char *GetHardwareVersionString(void);
-
 
 #endif

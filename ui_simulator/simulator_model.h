@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <string.h>
 #include "err_code.h"
+#include "qrdecode_task.h"
 
 extern bool g_fingerUnlockDeviceFlag;
 extern bool g_fingerSingTransitionsFlag;
@@ -37,6 +37,17 @@ bool GetPassphraseQuickAccess(void);
 bool SdCardInsert(void);
 void SdCardIntHandler(void);
 bool UsbInitState(void);
+void CloseUsb();
+void UpdateFingerSignFlag(uint8_t index, bool signFlag);
+int FormatSdFatfs();
+int FatfsFileWrite(const char* path, const uint8_t *data, uint32_t len);
+int32_t read_qrcode();
+char *FatfsFileRead(const char* path);
+uint8_t *FatfsFileReadBytes(const char* path, uint32_t* readBytes);
+void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint32_t *number, const char *contain);
+uint32_t GetCurrentStampTime(void);
+bool FatfsFileExist(const char *path);
+bool GetEnsName(const char *addr, char *name);
 
 #define LOW_BATTERY_LIMIT               20
 #define CHECK_BATTERY_LOW_POWER()       ((GetBatterPercent() <= LOW_BATTERY_LIMIT) ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE)

@@ -2695,7 +2695,6 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
     0x0, 0x0, 0x0, 0x0, 0x0, 0x0
 };
 
-
 /*---------------------
  *  GLYPH DESCRIPTION
  *--------------------*/
@@ -2900,7 +2899,6 @@ static const lv_font_fmt_txt_cmap_t cmaps[] = {
  *    KERNING
  *----------------*/
 
-
 /*Pair left and right glyphs for kerning*/
 static const uint8_t kern_pair_glyph_ids[] = {
     36, 34,
@@ -3096,7 +3094,6 @@ static lv_font_fmt_txt_dsc_t font_dsc = {
 #endif
 };
 
-
 /*-----------------
  *  PUBLIC FONT
  *----------------*/
@@ -3121,7 +3118,4 @@ lv_font_t openSansCnBoldIllustrate = {
     .dsc = &font_dsc           /*The custom font data. Will be accessed by `get_glyph_bitmap/dsc` */
 };
 
-
-
 #endif /*#if OPENSANSCNBOLDILLUSTRATE*/
-

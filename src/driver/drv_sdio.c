@@ -2,7 +2,6 @@
 #include "drv_sdcard.h"
 #include "mhscpu_sdio.h"
 
-
 #define SDIO_DEBUG          0
 
 #if SDIO_DEBUG == 1

@@ -1,7 +1,6 @@
 #ifndef _DRV_BUTTON_IO_H
 #define _DRV_BUTTON_IO_H
 
-
 #include "stdint.h"
 #include "stdbool.h"
 
@@ -19,4 +18,3 @@ void ButtonIntHandler(void);
 bool ButtonPress(void);
 
 #endif
-

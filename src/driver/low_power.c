@@ -242,12 +242,10 @@ void DisableAllHardware(void)
     SetGpioFloat(GPIOG, GPIO_Pin_11 | GPIO_Pin_12);
 }
 
-
 LowPowerState GetLowPowerState(void)
 {
     return g_lowPowerState;
 }
-
 
 void SetGpioFloat(GPIO_TypeDef *GpioX, uint32_t pin)
 {
@@ -259,7 +257,6 @@ void SetGpioFloat(GPIO_TypeDef *GpioX, uint32_t pin)
     GPIO_Init(GpioX, &gpioInit);
 }
 
-
 void SetGpioPullUp(GPIO_TypeDef *GpioX, uint32_t pin)
 {
     GPIO_InitTypeDef gpioInit;
@@ -269,7 +266,6 @@ void SetGpioPullUp(GPIO_TypeDef *GpioX, uint32_t pin)
     gpioInit.GPIO_Remap = GPIO_Remap_1;
     GPIO_Init(GpioX, &gpioInit);
 }
-
 
 void SetGpioLow(GPIO_TypeDef *GpioX, uint32_t pin)
 {
@@ -287,7 +283,6 @@ void SetGpioLow(GPIO_TypeDef *GpioX, uint32_t pin)
     }
 }
 
-
 void SetGpioHigh(GPIO_TypeDef *GpioX, uint32_t pin)
 {
     GPIO_InitTypeDef gpioInit;
@@ -303,7 +298,6 @@ void SetGpioHigh(GPIO_TypeDef *GpioX, uint32_t pin)
         }
     }
 }
-
 
 static void SetRtcWakeUp(uint32_t second)
 {

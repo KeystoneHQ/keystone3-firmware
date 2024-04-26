@@ -8,6 +8,9 @@
 #include "gui_wallet_tutorial_widgets.h"
 #include "gui_qr_hintbox.h"
 #include "gui_page.h"
+#if BTC_ONLY
+#include "gui_btc_home_widgets.h"
+#endif
 
 typedef struct WalletTutorialItem {
     const char *walletName;
@@ -97,6 +100,22 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_ETERNL].items[0].qrTitle = _("connect_eternl_qr_title");
         g_tutorials[WALLET_LIST_ETERNL].items[0].qrUrl = _("connect_eternl_qr_link");
 
+        //WALLET_LIST_YOROI
+        // g_tutorials[WALLET_LIST_YOROI].len = 1;
+        // g_tutorials[WALLET_LIST_YOROI].desc = _("connect_yoroi_desc");
+        // g_tutorials[WALLET_LIST_YOROI].items[0].walletName = _("connect_yoroi_title");
+        // g_tutorials[WALLET_LIST_YOROI].items[0].url = _("connect_yoroi_link");
+        // g_tutorials[WALLET_LIST_YOROI].items[0].qrTitle = _("connect_yoroi_qr_title");
+        // g_tutorials[WALLET_LIST_YOROI].items[0].qrUrl = _("connect_yoroi_qr_link");
+
+        //WALLET_LIST_Typhon
+        g_tutorials[WALLET_LIST_TYPHON].len = 1;
+        g_tutorials[WALLET_LIST_TYPHON].desc = _("connect_typhon_desc");
+        g_tutorials[WALLET_LIST_TYPHON].items[0].walletName = _("connect_typhon_title");
+        g_tutorials[WALLET_LIST_TYPHON].items[0].url = _("connect_typhon_link");
+        g_tutorials[WALLET_LIST_TYPHON].items[0].qrTitle = _("connect_typhon_title");
+        g_tutorials[WALLET_LIST_TYPHON].items[0].qrUrl = _("connect_typhon_link");
+
         //WALLET_LIST_RABBY
         g_tutorials[WALLET_LIST_RABBY].len = 1;
         g_tutorials[WALLET_LIST_RABBY].desc = _("connect_rabby_desc");
@@ -166,6 +185,14 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_SPARROW].items[0].qrTitle = _("connect_sparrow_qr_title");
         g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl = _("connect_sparrow_qr_link");
 
+        //WALLET_LIST_UNISAT
+        g_tutorials[WALLET_LIST_UNISAT].len = 1;
+        g_tutorials[WALLET_LIST_UNISAT].desc = _("connect_unisat_desc");
+        g_tutorials[WALLET_LIST_UNISAT].items[0].walletName = _("connect_unisat_title");
+        g_tutorials[WALLET_LIST_UNISAT].items[0].url = _("connect_unisat_link");
+        g_tutorials[WALLET_LIST_UNISAT].items[0].qrTitle = _("connect_unisat_qr_title");
+        g_tutorials[WALLET_LIST_UNISAT].items[0].qrUrl = _("connect_unisat_qr_link");
+
         //WALLET_LIST_KEPLR
         g_tutorials[WALLET_LIST_KEPLR].len = 1;
         g_tutorials[WALLET_LIST_KEPLR].desc = _("connect_keplr_desc");
@@ -227,6 +254,13 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_SPARROW].items[0].qrTitle = _("connect_sparrow_qr_title");
         g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl = _("connect_sparrow_qr_link");
 
+        g_tutorials[WALLET_LIST_UNISAT].len = 1;
+        g_tutorials[WALLET_LIST_UNISAT].desc = _("connect_unisat_desc");
+        g_tutorials[WALLET_LIST_UNISAT].items[0].walletName = _("connect_unisat_title");
+        g_tutorials[WALLET_LIST_UNISAT].items[0].url = _("connect_unisat_link");
+        g_tutorials[WALLET_LIST_UNISAT].items[0].qrTitle = _("connect_unisat_qr_title");
+        g_tutorials[WALLET_LIST_UNISAT].items[0].qrUrl = _("connect_unisat_qr_link");
+
         g_tutorials[WALLET_LIST_NUNCHUK].len = 1;
         g_tutorials[WALLET_LIST_NUNCHUK].desc = _("connect_nunchuk_desc");
         g_tutorials[WALLET_LIST_NUNCHUK].items[0].walletName = _("connect_nunchuk_title");
@@ -235,6 +269,19 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrUrl = _("connect_nunchuk_qr_link");
 #endif
     }
+#if BTC_ONLY
+    //multisig
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+        g_tutorials[WALLET_LIST_BLUE].items[0].url = _("connect_bw_multisig_link");
+        g_tutorials[WALLET_LIST_BLUE].items[0].qrUrl = _("connect_bw_multisig_link");
+
+        g_tutorials[WALLET_LIST_SPARROW].items[0].url = _("connect_sparrow_multisig_link");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl = _("connect_sparrow_multisig_link");
+
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].url = _("connect_nunchuk_multisig_link");
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrUrl = _("connect_nunchuk_multisig_link");
+    }
+#endif
 }
 
 void GuiWalletTutorialInit(WALLET_LIST_INDEX_ENUM tutorialIndex)
@@ -274,10 +321,21 @@ void GuiWalletTutorialInit(WALLET_LIST_INDEX_ENUM tutorialIndex)
         label = GuiCreateIllustrateLabel(cont, tutorial->items[i].url);
         lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 56);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_width(label, 320);
+        lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
 
         img = GuiCreateImg(cont, &imgQrcode36px);
         lv_obj_align(img, LV_ALIGN_DEFAULT, 348, 33);
         lastTarget = cont;
+
+        lv_obj_update_layout(label);
+        lv_coord_t height = lv_obj_get_height(label) - 30;
+
+        if (height > 0) {
+            lv_obj_set_height(cont, 102 + height);
+            lv_obj_align(img, LV_ALIGN_DEFAULT, 348, 33 + height / 2);
+            lv_obj_update_layout(cont);
+        }
     }
 }
 

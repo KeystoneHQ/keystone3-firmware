@@ -5,6 +5,7 @@
 
 static int32_t GuiCreateWalletViewInit(uint8_t walletMethod)
 {
+    GuiEnterPassLabelRefresh();
     GuiCreateWalletInit(walletMethod);
     return SUCCESS_CODE;
 }

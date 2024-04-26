@@ -66,6 +66,13 @@ file(GLOB_RECURSE SRC
     "src/hardware_interface/*.c"    
     "src/config/*"
 )
+
+file(GLOB_RECURSE EXCLUDED_FILES
+     "src/managers/btc_only/*")
+     
+if(NOT BTC_ONLY)
+    list(REMOVE_ITEM SRC ${EXCLUDED_FILES})
+endif()
     
 file(GLOB_RECURSE FREERTOS
     "external/FreeRTOS/Source/croutine.c"

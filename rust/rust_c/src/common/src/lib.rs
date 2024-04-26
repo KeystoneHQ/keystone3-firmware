@@ -12,6 +12,7 @@ use alloc::boxed::Box;
 use alloc::string::ToString;
 use core::slice;
 use cty::c_char;
+use errors::ErrorCodes;
 use third_party::hex;
 use third_party::hex::ToHex;
 
@@ -39,6 +40,11 @@ pub extern "C" fn get_master_fingerprint(seed: PtrBytes, seed_len: u32) -> *mut 
         }
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
     }
+}
+
+#[no_mangle]
+pub extern "C" fn dummy_function_to_export_error_codes() -> ErrorCodes {
+    ErrorCodes::Success
 }
 
 #[no_mangle]

@@ -19,32 +19,31 @@
 #include "gui_analyze.h"
 #include "gui_web_auth_result_widgets.h"
 #include "assert.h"
+#include "qrdecode_task.h"
+#include "gui_resolve_ur.h"
 #ifndef BTC_ONLY
 #include "gui_key_derivation_request_widgets.h"
 #endif
 
+#define QUIT_AREA_X_START                   10
+#define QUIT_AREA_Y_START                   64
+// #define MICRO_CARD_AREA_X_START             406
+// #define MICRO_CARD_AREA_Y_START             64
+#define TOUCH_AREA_OFFSET                   64
+
+typedef struct {
+    GuiPosition_t start;
+    GuiPosition_t end;
+    void (*func)(void);
+} QrDecodeViewTouchArea_t;
+
+const static QrDecodeViewTouchArea_t g_qrDecodeObjects[2] = {
+    {{QUIT_AREA_X_START, QUIT_AREA_Y_START}, {QUIT_AREA_X_START + TOUCH_AREA_OFFSET, QUIT_AREA_Y_START + TOUCH_AREA_OFFSET}, LvglCloseCurrentView},
+    //{{MICRO_CARD_AREA_X_START, MICRO_CARD_AREA_Y_START}, {MICRO_CARD_AREA_X_START + TOUCH_AREA_OFFSET, MICRO_CARD_AREA_Y_START + TOUCH_AREA_OFFSET}, LvglImportMicroCardSigView}
+};
+
 static void QrDecodeTask(void *argument);
 static void QrDecodeMinuteTimerFunc(void *argument);
-void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi);
-
-// The order of the enumeration must be guaranteed
-static SetChainData_t g_chainViewArray[] = {
-    {REMAPVIEW_BTC, (SetChainDataFunc)GuiSetPsbtUrData},
-#ifndef BTC_ONLY
-    {REMAPVIEW_ETH, (SetChainDataFunc)GuiSetEthUrData},
-    {REMAPVIEW_ETH_PERSONAL_MESSAGE, (SetChainDataFunc)GuiSetEthUrData},
-    {REMAPVIEW_ETH_TYPEDDATA, (SetChainDataFunc)GuiSetEthUrData},
-    {REMAPVIEW_TRX, (SetChainDataFunc)GuiSetTrxUrData},
-    {REMAPVIEW_COSMOS, (SetChainDataFunc)GuiSetCosmosUrData},
-    {REMAPVIEW_SUI, (SetChainDataFunc)GuiSetSuiUrData},
-    {REMAPVIEW_SOL, (SetChainDataFunc)GuiSetSolUrData},
-    {REMAPVIEW_SOL_MESSAGE, (SetChainDataFunc)GuiSetSolUrData},
-    {REMAPVIEW_APT, (SetChainDataFunc)GuiSetAptosUrData},
-    {REMAPVIEW_ADA, (SetChainDataFunc)GuiSetupAdaUrData},
-    {REMAPVIEW_XRP, (SetChainDataFunc)GuiSetXrpUrData},
-    {REMAPVIEW_AR, (SetChainDataFunc)GuiSetArUrData},
-#endif
-};
 
 osThreadId_t g_qrDecodeTaskHandle;
 static volatile QrDecodeStateType g_qrDecodeState;
@@ -137,7 +136,7 @@ void ProcessQr(uint32_t count)
 
     if (ret > 0) {
         if (firstQrFlag == true) {
-            assert(!(strnlen_s(qrString, QR_DECODE_STRING_LEN + 1) >= QR_DECODE_STRING_LEN));
+            assert(strnlen_s(qrString, QR_DECODE_STRING_LEN) < QR_DECODE_STRING_LEN);
             urResult = parse_ur(qrString);
             if (urResult->error_code == 0) {
                 if (urResult->is_multi_part == 0) {
@@ -194,44 +193,6 @@ void ProcessQr(uint32_t count)
     count++;
 }
 
-void HandleDefaultViewType(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi)
-{
-    GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
-    if (viewType != REMAPVIEW_BUTT) {
-        g_chainViewArray[viewType].func(urResult, urMultiResult, is_multi);
-    }
-}
-
-void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi)
-{
-    GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
-    switch (urViewType.viewType) {
-    case WebAuthResult:
-        GuiSetWebAuthResultData(urResult, urMultiResult, is_multi);
-        break;
-#ifndef BTC_ONLY
-    case KeyDerivationRequest:
-        GuiSetKeyDerivationRequestData(urResult, urMultiResult, is_multi);
-        break;
-#endif
-    default:
-        HandleDefaultViewType(urResult, urMultiResult, urViewType, is_multi);
-        break;
-    }
-
-    if (urViewType.viewType == WebAuthResult
-#ifndef BTC_ONLY
-            || urViewType.viewType == KeyDerivationRequest
-#endif
-            || viewType != REMAPVIEW_BUTT) {
-        StopQrDecode();
-        UserDelay(500);
-        GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
-    } else {
-        printf("unhandled viewType=%d\r\n", urViewType.viewType);
-    }
-}
-
 void StartQrDecode(void)
 {
     PubValueMsg(QRDECODE_MSG_START, 0);
@@ -247,11 +208,6 @@ static void QrDecodeMinuteTimerFunc(void *argument)
     PubValueMsg(QRDECODE_MSG_MINUTE, 0);
 }
 
-#define QUIT_AREA_X_START 10
-#define QUIT_AREA_Y_START 64
-#define QUIT_AREA_X_END QUIT_AREA_X_START + 64
-#define QUIT_AREA_Y_END QUIT_AREA_Y_START + 64
-
 void QrDecodeTouchQuit(void)
 {
     static bool quitArea = false;
@@ -261,21 +217,22 @@ void QrDecodeTouchQuit(void)
     }
     pStatus = GetLatestTouchStatus();
     if (pStatus->touch) {
-        if (pStatus->x >= QUIT_AREA_X_START && pStatus->x <= QUIT_AREA_X_END &&
-                pStatus->y >= QUIT_AREA_Y_START && pStatus->y <= QUIT_AREA_Y_END) {
-            quitArea = true;
-        } else {
-            quitArea = false;
-        }
+        quitArea = true;
     } else {
         if (quitArea) {
+            for (int i = 0; i < 1; i++) {
+                if (pStatus->x >= g_qrDecodeObjects[i].start.x && pStatus->x <= g_qrDecodeObjects[i].end.x &&
+                        pStatus->y >= g_qrDecodeObjects[i].start.y && pStatus->y <= g_qrDecodeObjects[i].end.y) {
+                    osKernelLock();
+                    StopQrDecode();
+                    g_qrDecodeObjects[i].func();
+                    ClearTouchBuffer();
+                    osKernelUnlock();
+                    quitArea = false;
+                    return;
+                }
+            }
             quitArea = false;
-            osKernelLock();
-            StopQrDecode();
-            LvglCloseCurrentView();
-            ClearTouchBuffer();
-            osKernelUnlock();
         }
-        quitArea = false;
     }
 }

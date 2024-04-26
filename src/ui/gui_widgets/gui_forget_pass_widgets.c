@@ -151,7 +151,7 @@ void GuiForgetPassVerifyResult(bool en, int errCode)
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         GuiForgetPassNextTile(0);
     } else {
-        g_noticeHintBox = GuiCreateErrorCodeHintbox(errCode, &g_noticeHintBox);
+        g_noticeHintBox = GuiCreateErrorCodeWindow(errCode, &g_noticeHintBox, NULL);
     }
     if (g_waitAnimCont != NULL) {
         lv_obj_del(g_waitAnimCont);
@@ -435,7 +435,7 @@ int8_t GuiForgetPassNextTile(uint8_t tileIndex)
     switch (g_forgetPassTileView.currentTile) {
     case FORGET_PASSWORD_ENTRANCE:
         if (CHECK_BATTERY_LOW_POWER()) {
-            g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox);
+            g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox, NULL);
             return ERR_GUI_ERROR;
         } else {
             SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
@@ -444,7 +444,7 @@ int8_t GuiForgetPassNextTile(uint8_t tileIndex)
         break;
     case FORGET_PASSWORD_METHOD_SELECT:
         SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("import_wallet_phrase_clear_btn"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetClearImportHandler, NULL);
         if (tileIndex != 0) {
             switch (tileIndex) {
@@ -497,7 +497,7 @@ int8_t GuiForgetPassPrevTile(uint8_t tileIndex)
         break;
     case FORGET_PASSWORD_SETPIN:
         SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("import_wallet_phrase_clear_btn"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetClearImportHandler, NULL);
         break;
     case FORGET_PASSWORD_REPEATPIN:
@@ -520,7 +520,6 @@ int8_t GuiForgetPassPrevTile(uint8_t tileIndex)
     lv_obj_set_tile_id(g_forgetPassTileView.tileView, g_forgetPassTileView.currentTile, 0, LV_ANIM_OFF);
     return SUCCESS_CODE;
 }
-
 
 void GuiForgetPassRefresh(void)
 {

@@ -236,7 +236,6 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
     lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 36, 8);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
 
-
     label = GuiCreateIllustrateLabel(cont, _("connect_wallet_key_request_fmt"));
     lv_label_set_text_fmt(label, _("connect_wallet_key_request_fmt"), g_response->data->origin);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 0);
@@ -257,7 +256,7 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
         lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 0, 102 * i);
         lv_obj_set_style_bg_opa(cont, LV_OPA_0, LV_PART_MAIN);
         char title[BUFFER_SIZE_32] = {0};
-        snprintf_s(title, BUFFER_SIZE_32, "Account-%d", i);
+        sprintf(title, "%s-%d", _("account_head"), i);
         label = GuiCreateIllustrateLabel(cont, title);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
         char path[BUFFER_SIZE_64] = {0};
@@ -294,7 +293,7 @@ static void GuiCreateQRCodeWidget(lv_obj_t *parent)
 
     lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 482);
     lv_obj_add_flag(qrCont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_align(qrCont, LV_ALIGN_TOP_MID, 0, 62);
+    lv_obj_align(qrCont, LV_ALIGN_TOP_MID, 0, 80);
     lv_obj_set_style_bg_color(qrCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_radius(qrCont, 24, LV_PART_MAIN);
 

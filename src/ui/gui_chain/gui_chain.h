@@ -74,6 +74,7 @@ typedef enum {
 // Enumeration of pages used for transaction resolution
 typedef enum {
     REMAPVIEW_BTC,
+    REMAPVIEW_BTC_MESSAGE,
 #ifndef BTC_ONLY
     REMAPVIEW_ETH,
     REMAPVIEW_ETH_PERSONAL_MESSAGE,

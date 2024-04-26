@@ -1,7 +1,6 @@
 #include "drv_spi_io.h"
 #include "cmsis_os.h"
 
-
 /// @brief SPI implemented by GPIO init.
 /// @param[in] cfg SPI config struct.
 void SpiIoInit(const SPIIO_Cfg_t *cfg)
@@ -27,8 +26,6 @@ void SpiIoInit(const SPIIO_Cfg_t *cfg)
     GPIO_ResetBits(cfg->CLK_PORT, cfg->CLK_PIN);
     GPIO_ResetBits(cfg->MOSI_PORT, cfg->MOSI_PIN);
 }
-
-
 
 /// @brief Send/receive data to/from SPI device.
 /// @param[in] cfg SPI config struct.
@@ -65,7 +62,6 @@ void SpiIoSendRecv(const SPIIO_Cfg_t *cfg, const uint8_t *sendData, uint8_t *rec
     osKernelUnlock();
 }
 
-
 /// @brief Send data to SPI device.
 /// @param[in] cfg SPI config struct.
 /// @param[in] data Data to be sent.
@@ -75,7 +71,6 @@ void SpiIoSendData(const SPIIO_Cfg_t *cfg, const uint8_t *data, uint32_t len)
     SpiIoSendRecv(cfg, data, NULL, len);
 }
 
-
 /// @brief Receive data from SPI device.
 /// @param[in] cfg SPI config struct.
 /// @param[in] data Received data.
@@ -84,4 +79,3 @@ void SpiIoRecvData(const SPIIO_Cfg_t *cfg, uint8_t *data, uint32_t len)
 {
     SpiIoSendRecv(cfg, NULL, data, len);
 }
-

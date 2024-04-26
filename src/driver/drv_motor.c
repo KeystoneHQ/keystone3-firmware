@@ -3,13 +3,11 @@
 #include "cmsis_os.h"
 #include "mhscpu.h"
 
-
 #define MOTOR_PWM_PORT                      GPIOA
 #define MOTOR_PWM_PIN                       GPIO_Pin_4
 #define MOTOR_PWM_TIM                       TIM_4
 
 #define MOTOR_PWM_HZ                        10000
-
 
 typedef enum {
     MOTOR_STATE_IDLE,
@@ -50,7 +48,6 @@ static void MotorTimerFunc(void *argument)
     MotorAsGpio(false);
 }
 
-
 static void MotorAsGpio(bool set)
 {
     GPIO_InitTypeDef gpioInit = {0};
@@ -66,7 +63,6 @@ static void MotorAsGpio(bool set)
         GPIO_ResetBits(MOTOR_PWM_PORT, MOTOR_PWM_PIN);
     }
 }
-
 
 static void MotorAsPwm(uint32_t pwm)
 {
@@ -86,4 +82,3 @@ static void MotorAsPwm(uint32_t pwm)
     GPIO_PinRemapConfig(MOTOR_PWM_PORT, MOTOR_PWM_PIN, GPIO_Remap_2);
     TIM_Cmd(TIMM0, MOTOR_PWM_TIM, ENABLE);
 }
-

@@ -38,6 +38,8 @@ static const ErrCodeDesc_t g_faults[] = {
     {ERR_KEYSTORE_MNEMONIC_INVALID, "Keystore Mnemonic Invalid"},
     {ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET, "Keystore Mnemonic not match"},
     {ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH, "Keystore extend public key not match"},
+    {ERR_KEYSTORE_IMPORT_XPUB_DUPLICATE, "Keystore extend public key import duplicate"},
+    {ERR_KEYSTORE_IMPORT_XPUB_INVALID, "keystone import xpub invalid file"},
 
     {ERR_GD25_BAD_PARAM, "GD25 Bad Param"},
     {ERR_GD25_WEL_FAILED, "GD25 GET WEL State Failed"},
@@ -61,6 +63,15 @@ static const ErrCodeDesc_t g_faults[] = {
     {ERR_UPDATE_PUB_KEY_NO_SPACE, "Update pub key no space"},
 
     {ERR_UPDATE_FIRMWARE_NOT_DETECTED, "Update firmware not detected"},
+
+    {ERR_INVALID_QRCODE, "Invalid QR code"},
+    {ERR_INVALID_FILE, "Invalid file"},
+
+    {ERR_MULTISIG_WALLET_CONFIG_INVALID, "Invalid multisig wallet config data"},
+    {ERR_MULTISIG_WALLET_EXIST, "Multisig wallet exists"},
+    {ERR_MULTISIG_IMPORT_PASSPHRASE_INVALID, "import multisig wallet when passphrase wallet"},
+    {ERR_MULTISIG_TRANSACTION_ALREADY_SIGNED, "transaction already been signed"},
+    {ERR_EXPORT_FILE_TO_MICRO_CARD_FAILED, "export file to micro card failed"},
 
     {ERR_END, "Unknown Error"},
 };

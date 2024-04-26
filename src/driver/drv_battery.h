@@ -10,8 +10,6 @@
 void BatteryInit(void);
 void BatteryOpen(void);
 
-
-
 /// @brief Get battery voltage.
 /// @param
 /// @return Battery voltage, in millivolts.

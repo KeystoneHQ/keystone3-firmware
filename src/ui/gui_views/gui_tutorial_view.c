@@ -5,18 +5,6 @@
 #include "gui_tutorial_widgets.h"
 #include "err_code.h"
 
-static int32_t GuiTutorialViewInit(uint8_t index)
-{
-    GuiTutorialInit(index);
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiTutorialViewDeInit(void)
-{
-    GuiTutorialDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiTutorialViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     GUI_ASSERT(g_tutorialView.isActive);
@@ -30,9 +18,11 @@ int32_t GuiTutorialViewEventProcess(void *self, uint16_t usEvent, void *param, u
         } else {
             return ERR_GUI_ERROR;
         }
-        return GuiTutorialViewInit(index);
+        GuiTutorialInit(index);
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiTutorialViewDeInit();
+        GuiTutorialDeInit();
+        break;
     case GUI_EVENT_REFRESH:
         GuiTutorialRefresh();
         break;

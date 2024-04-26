@@ -47,15 +47,16 @@ void GuiPendingHintBoxOpen(const char *title, const char *subtitle)
     lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
     lv_anim_start(&a);
 
-    lv_obj_t *label = GuiCreateTextLabel(bgCont, title);
-    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -64);
+    if (title) {
+        lv_obj_t *label = GuiCreateTextLabel(bgCont, title);
+        lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -64);
+    }
+
     // label = GuiCreateNoticeLabel(bgCont, subtitle);
     // lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -76);
 
     g_pendingHintBox = bgCont;
 }
-
-
 
 void GuiPendingHintBoxRemove()
 {
@@ -64,7 +65,6 @@ void GuiPendingHintBoxRemove()
         lv_anim_del_all();
     }
 }
-
 
 void GuiPendingHintBoxMoveToTargetParent(lv_obj_t *parent)
 {

@@ -7,7 +7,6 @@
 #define LCD_DISPLAY_WIDTH               480
 #define LCD_DISPLAY_HEIGHT              800
 
-
 typedef struct {
     void (*Init)(void);
     bool (*Busy)(void);

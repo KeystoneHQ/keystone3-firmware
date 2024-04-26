@@ -2,6 +2,7 @@
 #include "string.h"
 #include "user_memory.h"
 #include "user_utils.h"
+#include "stdio.h"
 #ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
 #include "safe_str_lib.h"
@@ -22,7 +23,6 @@ static char *g_slip39MnemonicCache[SLIP39_MAX_MEMBER];
 static uint8_t g_diceRollHashCache[32] = {0};
 static uint16_t g_identifier;
 static uint16_t g_iteration;
-
 
 void SecretCacheSetChecksum(uint8_t *checksum)
 {
@@ -106,7 +106,6 @@ void SecretCacheSetEntropy(uint8_t *entropy, uint32_t len)
     memcpy(g_entropyCache, entropy, len);
 }
 
-
 uint8_t *SecretCacheGetEntropy(uint32_t *len)
 {
     *len = g_entropyLen;
@@ -123,13 +122,11 @@ void SecretCacheSetEms(uint8_t *ems, uint32_t len)
     memcpy(g_emsCache, ems, len);
 }
 
-
 uint8_t *SecretCacheGetEms(uint32_t *len)
 {
     *len = g_emsLen;
     return g_emsCache;
 }
-
 
 void SecretCacheSetMnemonic(char *mnemonic)
 {

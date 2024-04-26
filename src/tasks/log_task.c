@@ -23,8 +23,6 @@ void CreateLogTask(void)
     g_logTaskHandle = osThreadNew(LogTask, NULL, &logTaskAttributes);
 }
 
-
-
 static void LogTask(void *argument)
 {
     Message_t rcvMsg;
@@ -61,7 +59,6 @@ static void LogTask(void *argument)
     }
 }
 
-
 /// @brief Get the status of whether the log task loop has been started.
 /// @param
 /// @return True if the log task loop has been started, False otherwise.
@@ -69,4 +66,3 @@ bool LogLoopStart(void)
 {
     return g_logLoopStart;
 }
-

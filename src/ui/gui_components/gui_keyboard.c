@@ -2,13 +2,14 @@
 #include "motor_manager.h"
 #include "gui.h"
 #include "gui_obj.h"
+#include "gui_views.h"
 #include "gui_create_wallet_widgets.h"
 #include "gui_keyboard.h"
-#include "gui_hintbox.h"
-#include "gui_views.h"
 #include "gui_lock_widgets.h"
 #include "gui_letter_tree.h"
 #include "user_memory.h"
+#include "gui_hintbox.h"
+#include "gui_button.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
@@ -121,6 +122,12 @@ static const char *g_selectSliceBtnmMap[] = {
     "12", "13", "14", "15", "16", "\0",
 };
 
+static const char *g_selectMultisigBtnmMap[] = {
+    "2", "3", "4", "5", "6", "\n",
+    "7", "8", "9", "10", "11", "\n",
+    "12", "13", "14", "15", "\0",
+};
+
 static const char *g_selectSlice2BtnmMap[] = {"2", "\0"};
 static const char *g_selectSlice3BtnmMap[] = {"2", "3", "\0"};
 static const char *g_selectSlice4BtnmMap[] = {"2", "3", "4", "\0"};
@@ -180,12 +187,21 @@ typedef struct {
     uint16_t size;
 } BtnMatrixCtl_t;
 
+#ifndef BTC_ONLY
 static const lv_img_dsc_t *g_emojiMatrix[16] = {
     &emojiBitcoin, &emojiEth,       &emojiLogo,     &emojiAt,
     &emojiSafe,    &emojiFlash,     &emojiAlien,    &emojiHappy,
     &emojiRocket,  &emojiCrown,     &emojiCopper,   &emojiStar,
     &emojiMusic,   &emojiHeart,     &emojiCompass,  &emojiGame,
 };
+#else
+static const lv_img_dsc_t *g_emojiMatrix[16] = {
+    &emojiBitcoin, &emojiCam,       &emojiLogo,     &emojiAt,
+    &emojiSafe,    &emojiFlash,     &emojiAlien,    &emojiHappy,
+    &emojiRocket,  &emojiCrown,     &emojiCopper,   &emojiStar,
+    &emojiMusic,   &emojiHeart,     &emojiCompass,  &emojiGame,
+};
+#endif
 
 static MnemonicKeyBoard_t *g_importPhraseKb = NULL;
 static lv_obj_t *g_walletIcon = NULL;
@@ -438,13 +454,12 @@ void *GuiCreateEmojiKeyBoard(lv_obj_t *parent, lv_obj_t *icon)
     g_walletIcon = icon;
     lv_obj_t *hintbox = GuiCreateHintBox(parent, 480, 534, true);
     lv_obj_add_event_cb(lv_obj_get_child(hintbox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
-    lv_obj_t *label = GuiCreateNoticeLabel(hintbox, "Pick an icon for your wallet");
+    lv_obj_t *label = GuiCreateNoticeLabel(hintbox, _("single_backup_namewallet_previnput_2"));
+    lv_obj_set_width(label, 380);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 296);
 
-    lv_obj_t *img = GuiCreateImg(hintbox, &imgClose);
+    lv_obj_t *img = GuiCreateImgButton(hintbox, &imgClose, 45, CloseCurrentParentHandler, NULL);
     lv_obj_align(img, LV_ALIGN_TOP_RIGHT, -36, 293);
-    lv_obj_add_event_cb(img, CloseCurrentParentHandler, LV_EVENT_CLICKED, NULL);
-    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
 
     lv_obj_t *btnm = lv_btnmatrix_create(hintbox);
     lv_btnmatrix_set_map(btnm, (const char **)g_emojiBtnmMap);
@@ -480,6 +495,14 @@ void *GuiCreateNumKeyboard(lv_obj_t *parent, lv_event_cb_t cb, NUM_KEYBOARD_ENUM
         lv_btnmatrix_set_map(btnm, (const char **)g_selectSliceBtnmMap);
         lv_obj_set_style_bg_color(btnm, BLACK_COLOR, LV_PART_MAIN);
         break;
+    case NUM_KEYBOARD_MULTISIG:
+        kbHeight = 204;
+        kbWidth = 408;
+
+        lv_obj_add_style(btnm, &g_numShareStyle, LV_PART_ITEMS);
+        lv_btnmatrix_set_map(btnm, (const char **)g_selectMultisigBtnmMap);
+        lv_obj_set_style_bg_color(btnm, BLACK_COLOR, LV_PART_MAIN);
+        break;
     case NUM_KEYBOARD_NORMAL:
         lv_obj_add_style(btnm, &g_numBtnmStyle, LV_PART_ITEMS);
         lv_btnmatrix_set_map(btnm, (const char **)g_normalNumBtnmMap);
@@ -494,7 +517,7 @@ void *GuiCreateNumKeyboard(lv_obj_t *parent, lv_event_cb_t cb, NUM_KEYBOARD_ENUM
         return NULL;
     }
     lv_obj_set_size(btnm, kbWidth, kbHeight);
-    lv_obj_set_style_text_font(btnm, &openSansButton, LV_PART_MAIN);
+    lv_obj_set_style_text_font(btnm, &buttonFont, LV_PART_MAIN);
     lv_obj_set_style_border_width(btnm, 0, LV_PART_MAIN);
     lv_obj_set_style_clip_corner(btnm, 0, LV_PART_MAIN);
     lv_obj_set_style_pad_all(btnm, 8, LV_PART_MAIN);
@@ -571,7 +594,7 @@ void *GuiCreateKeyBoard(lv_obj_t *parent, lv_event_cb_t cb, lv_keyboard_user_mod
     lv_obj_set_align(keyBoard->cont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_color(keyBoard->cont, DARK_BG_COLOR, LV_PART_MAIN);
     keyBoard->kb = lv_keyboard_create(keyBoard->cont);
-    lv_obj_set_style_text_font(keyBoard->kb, &openSansButton, 0);
+    lv_obj_set_style_text_font(keyBoard->kb, &buttonFont, 0);
     lv_keyboard_set_map(keyBoard->kb, keyMode, (const char **)g_kbMap[keyMode - KEY_STONE_FULL_L],
                         g_kbCtrl[keyMode - KEY_STONE_FULL_L]);
     lv_keyboard_set_mode(keyBoard->kb, keyMode);
@@ -586,7 +609,8 @@ void *GuiCreateFullKeyBoard(lv_obj_t *parent, lv_event_cb_t kbCb, lv_keyboard_us
     KeyBoard_t *keyBoard = GuiCreateKeyBoard(parent, kbCb, keyMode, param);
     lv_obj_t *textArea = lv_textarea_create(parent);
     lv_obj_add_event_cb(textArea, KbTextAreaHandler, LV_EVENT_ALL, keyBoard);
-    lv_obj_set_style_text_font(textArea, &openSansButton, 0);
+    // lv_obj_set_style_text_font(textArea, &openSansButton, 0);
+    lv_obj_set_style_text_font(textArea, &buttonFont, 0);
     if (GuiDarkMode()) {
         lv_obj_set_style_text_color(textArea, WHITE_COLOR, 0);
     } else {
@@ -714,7 +738,7 @@ void *GuiCreateMnemonicKeyBoard(lv_obj_t *parent,
 
     lv_obj_t *btnm = lv_btnmatrix_create(mkb->cont);
     lv_obj_set_size(btnm, MNEMONIC_KB_CONT_WIDTH, kbHeight);
-    lv_obj_set_style_text_font(btnm, &openSans_20, 0);
+    lv_obj_set_style_text_font(btnm, g_defIllustrateFont, 0);
     lv_btnmatrix_set_map(btnm, (const char **)mkb->mnemonicWord);
     lv_obj_align(btnm, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_style_border_width(btnm, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -737,8 +761,6 @@ void *GuiCreateMnemonicKeyBoard(lv_obj_t *parent,
     } else if (keyMode == KEY_STONE_MNEMONIC_33) {
         lv_btnmatrix_set_ctrl_map(btnm, g_numBtnm33MapCtrl);
     }
-    // lv_obj_t *bottomCont = GuiCreateContainerWithParent(mkb->cont, 408, 50);
-    // lv_obj_align_to(bottomCont, btnm, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
     mkb->btnm = btnm;
     mkb->currentSlice = 0;
@@ -794,7 +816,7 @@ void GuiUpdateMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard, char *mnemo
                 snprintf_s(mnemonicKeyBoard->mnemonicWord[k + j], MNEMONIC_MATRIX_WORD_MAX_LEN, "%d\n", k + 1);
                 continue;
             }
-            if (mnemonicKeyBoard->wordCnt == 20 && k >= 18) {
+            if (mnemonicKeyBoard->wordCnt == 20 && k >= 20) {
                 break;
             }
             if (k == mnemonicKeyBoard->wordCnt - 1) {
@@ -825,7 +847,7 @@ void GuiUpdateMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard, char *mnemo
         break;
     case 20:
         kbHeight = MNEMONIC_KB_20WORD_HEIGHT;
-        contHeight = MNEMONIC_KB_20WORD_HEIGHT - 110;
+        contHeight = MNEMONIC_KB_20WORD_HEIGHT;
         lv_btnmatrix_set_ctrl_map(mnemonicKeyBoard->btnm, g_numBtnm20MapCtrl);
         break;
     case 24:
@@ -846,13 +868,16 @@ void GuiUpdateMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard, char *mnemo
 void GuiConfirmMnemonicKeyBoard(MnemonicKeyBoard_t *mnemonicKeyBoard,
                                 char *mnemonic, int n, int num, int dig)
 {
-    char *find = mnemonic, *tail, word[10];
+    char *find = mnemonic, *tail, word[16];
     for (int i = 0, j = 0; i < mnemonicKeyBoard->wordCnt; j++, i += 3) {
         for (int k = i; k < i + 3; k++) {
             if (k == mnemonicKeyBoard->wordCnt - 1) {
                 tail = strchr(find, 0);
             } else {
                 tail = strchr(find, ' ');
+            }
+            if (mnemonicKeyBoard->wordCnt == 20 && k >= 20) {
+                break;
             }
             memcpy_s(word, sizeof(word), find, tail - find);
             word[tail - find] = 0;
@@ -1071,9 +1096,9 @@ static void LetterKbAssociateHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     KeyBoard_t *keyBoard = lv_event_get_user_data(e);
-    char *text = lv_label_get_text(lv_obj_get_child(lv_event_get_target(e), 0));
-    char buf[1] = {0};
     if (code == LV_EVENT_CLICKED) {
+        char *text = lv_label_get_text(lv_obj_get_child(lv_event_get_target(e), 0));
+        char buf[1] = {0};
         if (strlen(text) <= 0) {
             return;
         }

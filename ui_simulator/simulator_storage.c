@@ -38,6 +38,12 @@ SimulatorFlashPath g_simulatorPathMap[] ={
     {SPI_FLASH_ADDR_USER1_DATA + 4 + SPI_FLASH_ADDR_EACH_SIZE, PC_SIMULATOR_PATH "/user1_data.json", StorageGetData, StorageSetData},
     {SPI_FLASH_ADDR_USER1_DATA + SPI_FLASH_ADDR_EACH_SIZE * 2, PC_SIMULATOR_PATH "/user1_data.json", StorageGetDataSize, StorageSetDataSize},
     {SPI_FLASH_ADDR_USER1_DATA + 4 + SPI_FLASH_ADDR_EACH_SIZE * 2, PC_SIMULATOR_PATH "/user1_data.json", StorageGetData, StorageSetData},
+    {SPI_FLASH_ADDR_USER1_MULTI_SIG_DATA, PC_SIMULATOR_PATH "/user1_multisig.json", StorageGetDataSize, StorageSetDataSize},
+    {SPI_FLASH_ADDR_USER1_MULTI_SIG_DATA + 4, PC_SIMULATOR_PATH "/user1_multisig.json", StorageGetData, StorageSetData},
+    {SPI_FLASH_ADDR_USER2_MULTI_SIG_DATA, PC_SIMULATOR_PATH "/user2_multisig.json", StorageGetDataSize, StorageSetDataSize},
+    {SPI_FLASH_ADDR_USER2_MULTI_SIG_DATA + 4, PC_SIMULATOR_PATH "/user2_multisig.json", StorageGetData, StorageSetData},
+    {SPI_FLASH_ADDR_USER3_MULTI_SIG_DATA, PC_SIMULATOR_PATH "/user3_multisig.json", StorageGetDataSize, StorageSetDataSize},
+    {SPI_FLASH_ADDR_USER3_MULTI_SIG_DATA + 4, PC_SIMULATOR_PATH "/user3_multisig.json", StorageGetData, StorageSetData},
     {SPI_FLASH_ADDR_USER1_MUTABLE_DATA, PC_SIMULATOR_PATH "/coin.json", StorageGetDataSize, StorageSetDataSize},
     {SPI_FLASH_ADDR_USER1_MUTABLE_DATA + 4, PC_SIMULATOR_PATH "/coin.json", StorageGetData, StorageSetData},
     {SPI_FLASH_ADDR_USER1_MUTABLE_DATA + SPI_FLASH_ADDR_EACH_SIZE, PC_SIMULATOR_PATH "/coin.json", StorageGetDataSize, StorageSetDataSize},
@@ -82,7 +88,7 @@ int32_t StorageGetDataSize(uint32_t addr, uint8_t *buffer, uint32_t size)
         return -1;
     }
 
-    ret = lv_fs_open(&fd, path, LV_FS_MODE_RD);
+    ret = lv_fs_open(&fd, path, LV_FS_MODE_ALWAYS | LV_FS_MODE_RD);
     if (ret != LV_FS_RES_OK) {
         printf("lv_fs_open failed %s ret = %d line = %d\n", path, ret, __LINE__);
         return -1;
@@ -102,7 +108,7 @@ int32_t StorageGetDataSize(uint32_t addr, uint8_t *buffer, uint32_t size)
 
 int32_t StorageSetDataSize(uint32_t addr, uint8_t *buffer, uint32_t size)
 {
-    return 0;
+    return size;
 }
 
 int32_t StorageGetData(uint32_t addr, uint8_t *buffer, uint32_t size)
@@ -116,7 +122,7 @@ int32_t StorageGetData(uint32_t addr, uint8_t *buffer, uint32_t size)
         return -1;
     }
 
-    ret = lv_fs_open(&fd, path, LV_FS_MODE_RD);
+    ret = lv_fs_open(&fd, path, LV_FS_MODE_ALWAYS | LV_FS_MODE_RD);
     if (ret != LV_FS_RES_OK) {
         printf("lv_fs_open failed %s ret = %d line = %d\n", path, ret, __LINE__);
         return -1;
@@ -212,7 +218,6 @@ void ModifyJsonArrayData(cJSON *root, uint8_t *data, uint8_t len, char *key)
 {
     cJSON *item = cJSON_GetObjectItem(root, key);
     if (item == NULL) {
-        printf("%s %d..\n", __func__, __LINE__);
         return InsertJsonU8Array(root, data, len, key);
     }
     printf("cJSON_GetArraySize(item) = %d\n", cJSON_GetArraySize(item));
@@ -365,12 +370,10 @@ int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
     }
 
     uint8_t account = SE_GetAccountIndexFromPage(page);
-    printf("account = %d\n", account);
     OperateStorageDataFunc func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + account * 0x1000, true);
     if (func) {
         func(SIMULATOR_USER1_SECRET_ADDR + account * 0x1000, buffer, JSON_MAX_LEN);
     }
-    printf("buffer1111 = %s\n", buffer);
 
     cJSON *rootJson = cJSON_Parse(buffer);
     if (page == account * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV) {
@@ -543,4 +546,30 @@ int32_t SE_DeriveKey(uint8_t slot, const uint8_t *authKey)
 
     }
     return 0;
+}
+
+void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint32_t *number, const char *contain)
+{
+    lv_fs_dir_t dir;
+    char fname[256];
+    uint32_t count = 0;
+    lv_fs_res_t res = lv_fs_dir_open(&dir, path);
+    if (res != LV_FS_RES_OK) {
+        return;
+    }
+
+    while (lv_fs_dir_read(&dir, fname) == LV_FS_RES_OK) {
+        if (strlen(fname) == 0) {
+            break;
+        }
+        if (contain != NULL && !strstr(fname, contain)) {
+            continue;
+        }
+
+        printf("fname = %s\n", fname);
+        strcpy(fileName[count], fname);
+        count++;
+    }
+    lv_fs_dir_close(&dir);
+    *number = count;
 }

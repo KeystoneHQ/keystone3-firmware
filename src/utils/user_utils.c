@@ -3,6 +3,12 @@
 #include "lvgl.h"
 #include "user_memory.h"
 
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#else
+#include "safe_str_lib.h"
+#endif
+
 uint32_t StrToHex(uint8_t *pbDest, const char *pbSrc)
 {
     char h1, h2;
@@ -50,7 +56,6 @@ bool CheckEntropy(const uint8_t *array, uint32_t len)
     return false;
 }
 
-
 /// @brief Check the array if all data are 0xFF.
 /// @param[in] array Array to be checked.
 /// @param[in] len Array length.
@@ -64,7 +69,6 @@ bool CheckAllFF(const uint8_t *array, uint32_t len)
     }
     return true;
 }
-
 
 /// @brief Check the array if all data are zero.
 /// @param[in] array Array to be checked.
@@ -80,7 +84,6 @@ bool CheckAllZero(const uint8_t *array, uint32_t len)
     return true;
 }
 
-
 void RemoveFormatChar(char *str)
 {
 #ifndef COMPILE_SIMULATOR
@@ -94,7 +97,6 @@ void RemoveFormatChar(char *str)
     str = str_c;
 #endif
 }
-
 
 int WordsListSlice(char *words, char wordsList[][10], uint8_t wordsCount)
 {
@@ -178,4 +180,102 @@ inline bool CheckContainsNull(const char *str, size_t maxLen)
     }
 
     return false;
+}
+
+int FindStringCharPosition(const char *str, const char destChar, int index)
+{
+    int slashCount = 0;
+
+    for (int i = 0; str[i] != '\0'; ++i) {
+        if (str[i] == destChar) {
+            ++slashCount;
+            if (slashCount == index) {
+                return i;
+            }
+        }
+    }
+
+    return -1;
+}
+
+/**
+ * @brief       Get integer value from cJSON object.
+ * @param[in]   obj : cJSON object.
+ * @param[in]   key : key name.
+ * @param[in]   defaultValue : if key does not exist, return this value.
+ * @retval      integer value to get.
+ */
+int32_t GetIntValue(const cJSON *obj, const char *key, int32_t defaultValue)
+{
+    cJSON *intJson = cJSON_GetObjectItem((cJSON *)obj, key);
+    if (intJson != NULL) {
+        return (uint32_t)intJson->valuedouble;
+    }
+    printf("key:%s does not exist\r\n", key);
+    return defaultValue;
+}
+
+/**
+ * @brief       Get string value from cJSON object.
+ * @param[in]   obj : cJSON object.
+ * @param[in]   key : key name.
+ * @param[out]  value : return string value, if the acquisition fails, the string will be cleared.
+ * @retval
+ */
+void GetStringValue(const cJSON *obj, const char *key, char *value, uint32_t maxLen)
+{
+    cJSON *json;
+    uint32_t len;
+    char *strTemp;
+
+    json = cJSON_GetObjectItem((cJSON *)obj, key);
+    if (json != NULL) {
+        strTemp = json->valuestring;
+        len = strnlen_s(strTemp, maxLen);
+        if (len < maxLen) {
+            strcpy_s(value, maxLen, strTemp);
+        } else {
+            value[0] = '\0';
+        }
+    } else {
+        printf("key:%s does not exist\r\n", key);
+        value[0] = '\0';
+    }
+}
+
+bool GetBoolValue(const cJSON *obj, const char *key, bool defaultValue)
+{
+    cJSON *boolJson = cJSON_GetObjectItem((cJSON *)obj, key);
+    if (boolJson != NULL) {
+        return boolJson->valueint != 0;
+    }
+    printf("key:%s does not exist\r\n", key);
+    return defaultValue;
+}
+
+void CutAndFormatFileName(char *out, uint32_t maxLen, const char *fileName, const char *contain)
+{
+    if (strlen(fileName) >= 20 + strlen(contain)) {
+        char fname[BUFFER_SIZE_128] = {0};
+        strncpy_s(fname, BUFFER_SIZE_128, fileName, strrchr(fileName, '.') - fileName);
+        CutAndFormatString(out, maxLen, fname, 16);
+        strcat_s(out, maxLen, contain);
+    } else {
+        strcpy_s(out, maxLen, fileName);
+    }
+}
+
+void CutAndFormatString(char *out, uint32_t maxLen, const char *string, uint32_t targetLen)
+{
+    memset_s(out, maxLen, '\0', maxLen);
+    uint32_t len = strnlen_s(string, maxLen + 1);
+
+    if (len < targetLen) {
+        strcpy_s(out, len + 1, string);
+    } else {
+        size_t halfLen = targetLen / 2;
+        strncpy_s(out, maxLen, string, halfLen);
+        strcat_s(out, maxLen, "...");
+        strncat_s(out, maxLen, string + len - halfLen, halfLen);
+    }
 }

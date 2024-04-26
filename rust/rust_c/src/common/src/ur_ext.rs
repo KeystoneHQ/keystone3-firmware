@@ -5,6 +5,7 @@ use alloc::vec::Vec;
 use third_party::serde_json::{from_slice, from_value, Value};
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
+use third_party::ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
 use third_party::ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
@@ -12,6 +13,7 @@ use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 use third_party::ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::cosmos::evm_sign_request::EvmSignRequest;
+use third_party::ur_registry::crypto_account::CryptoAccount;
 use third_party::ur_registry::crypto_psbt::CryptoPSBT;
 use third_party::ur_registry::error::URError;
 #[cfg(feature = "multi-coins")]
@@ -49,6 +51,20 @@ impl InferViewType for CryptoPSBT {
 
 impl InferViewType for CryptoMultiAccounts {
     // ToDo
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::ViewTypeUnKnown)
+    }
+}
+
+#[cfg(feature = "btc-only")]
+impl InferViewType for CryptoAccount {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::MultisigCryptoImportXpub)
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for CryptoAccount {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::ViewTypeUnKnown)
     }
@@ -168,8 +184,25 @@ impl InferViewType for Bytes {
                 #[cfg(feature = "btc-only")]
                 return Err(URError::UrDecodeError(format!("invalid data")));
             }
+            #[cfg(feature = "multi-coins")]
             Err(_e) => get_view_type_from_keystone(self.get_bytes()),
+            #[cfg(feature = "btc-only")]
+            Err(_e) => {
+                if app_bitcoin::multi_sig::wallet::is_valid_xpub_config(&self) {
+                    return Ok(ViewType::MultisigBytesImportXpub);
+                }
+                if app_bitcoin::multi_sig::wallet::is_valid_wallet_config(&self) {
+                    return Ok(ViewType::MultisigWalletImport);
+                }
+                get_view_type_from_keystone(self.get_bytes())
+            }
         }
+    }
+}
+
+impl InferViewType for BtcSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::BtcMsg)
     }
 }
 

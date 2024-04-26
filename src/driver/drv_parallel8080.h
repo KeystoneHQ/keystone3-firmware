@@ -4,7 +4,6 @@
 #include "stdint.h"
 #include "stdbool.h"
 
-
 #define PARALLEL_8080_CS_PORT               GPIOE
 #define PARALLEL_8080_CS_PIN                GPIO_Pin_9
 #define PARALLEL_8080_RST_PORT              GPIOE
@@ -19,7 +18,6 @@
 #define PARALLEL_8080_DMA_MAX_BYTE          4095
 
 #define PARALLEL_8080_DMA_CHANNEL           DMA_Channel_7
-
 
 void Parallel8080Init(void);
 bool Parallel8080Busy(void);

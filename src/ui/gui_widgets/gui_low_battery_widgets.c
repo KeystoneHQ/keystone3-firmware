@@ -9,7 +9,6 @@ static void GuiLowBatteryInit(void);
 static void GuiLowBatteryDeInit(void);
 static void ButtonHandler(lv_event_t *e);
 
-
 static lv_obj_t *g_lowBatteryHintBox = NULL;
 
 const GuiMsgBox_t g_guiMsgBoxLowBattery = {
@@ -40,7 +39,6 @@ static void GuiLowBatteryInit(void)
     }
 }
 
-
 static void GuiLowBatteryDeInit(void)
 {
     if (g_lowBatteryHintBox) {
@@ -49,7 +47,6 @@ static void GuiLowBatteryDeInit(void)
     }
 }
 
-
 static void ButtonHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -57,6 +54,3 @@ static void ButtonHandler(lv_event_t *e)
         GuiApiEmitSignalWithValue(SIG_INIT_LOW_BATTERY, 0);
     }
 }
-
-
-

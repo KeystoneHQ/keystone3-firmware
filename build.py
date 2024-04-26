@@ -36,8 +36,10 @@ def build_firmware(environment, options, bin_type):
         cmd = 'cmake -G "Unix Makefiles" .. -DLIB_RUST_C=ON'
     if is_release:
         cmd += ' -DBUILD_PRODUCTION=true'
+        cmd += ' -DRU_SUPPORT=true'
     if is_btc_only:
         cmd += ' -DBTC_ONLY=true'
+
 
     for option in options:
         if option == "screenshot":
@@ -48,6 +50,7 @@ def build_firmware(environment, options, bin_type):
             cmd += ' -DCMAKE_BUILD_TYPE=Simulator'
         # add more option here.
 
+    cmd += " -DRU_SUPPORT=true"
     cmd += read_feature_toggle_build_cmd()
 
     cmd_result = os.system(cmd)

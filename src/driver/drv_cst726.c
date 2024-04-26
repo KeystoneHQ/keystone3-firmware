@@ -6,20 +6,17 @@
 #include "user_delay.h"
 #include "hardware_version.h"
 
-
 /// @brief CST726 touch pad init.
 void Cst726Init(void)
 {
     I2cInit();
 }
 
-
 /// @brief CST726 open.
 void Cst726Open(void)
 {
     I2cInit();
 }
-
 
 /// @brief Get touch status, including touch state, X/Y coordinate.
 /// @param status TouchStatus struct addr.
@@ -42,4 +39,3 @@ int32_t Cst726GetStatus(TouchStatus_t *status)
     }
     return SUCCESS_CODE;
 }
-

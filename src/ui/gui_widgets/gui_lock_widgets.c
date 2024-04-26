@@ -235,7 +235,6 @@ void GuiLockScreenTurnOff(void)
 {
     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
     lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
-    GuiModeGetWalletDesc();
     GuiEnterPassCodeStatus(g_verifyLock, true);
 
     if (g_oldWalletIndex == 0xFF) {
@@ -362,7 +361,6 @@ void GuiLockScreenTurnOnHandler(lv_event_t *e)
     }
 }
 
-
 void GuiLockScreenInit(void *param)
 {
     g_pageWidget = CreatePageWidget();
@@ -374,7 +372,6 @@ void GuiLockScreenInit(void *param)
 
     GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_GO_LOCK_DEVICE_PASS, NULL, 0);
 }
-
 
 void GuiJumpToLockDevicePage(void)
 {
@@ -417,9 +414,9 @@ static const char *GuiJudgeTitle(void)
         title = SRAM_MALLOC(BUFFER_SIZE_64);
         memset_s(title, BUFFER_SIZE_64, 0, BUFFER_SIZE_64);
         if (g_verifyLock->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN || g_verifyLock->mode == ENTER_PASSCODE_VERIFY_PIN) {
-            snprintf_s(title, BUFFER_SIZE_64, _("unlock_device_title_fmt"), _("unlock_device_use_pin"), _("unlock_device_use_fingerprint"));
+            strcpy_s(title, BUFFER_SIZE_64, _("unlock_device_title_pin_fingerprint"));
         } else {
-            snprintf_s(title, BUFFER_SIZE_64, _("unlock_device_title_fmt"), _("unlock_device_use_password"), _("unlock_device_use_fingerprint"));
+            strcpy_s(title, BUFFER_SIZE_64, _("unlock_device_title_passcode_fingerprint"));
         }
         return title;
     }

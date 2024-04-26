@@ -14,11 +14,11 @@ typedef struct PageWidget {
 PageWidget_t *CreatePageWidget(void);
 void UpdatePageContentZone(PageWidget_t *pageWidget);
 void DestroyPageWidget(PageWidget_t *pageWidget);
+void DestroyPageWidgetHandler(lv_event_t *e);
 
 #define GUI_PAGE_DEL(obj)   if(obj != NULL) {   \
     DestroyPageWidget(obj);                     \
     obj = NULL;                                 \
 }
-
 
 #endif /* _GUI_PAGE_H */

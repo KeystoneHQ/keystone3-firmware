@@ -56,19 +56,19 @@ bool SDCardPowerUp(void)
     return false;
 }
 
-void PrintSdCardInfo(SDCardInfoStruct info)
+void PrintSdCardInfo(void)
 {
     printf("SDCardInfo:\n");
-    printf("  ManufacturerID: %02X\n", info.ManufacturerID);
-    printf("  ApplicationID: %04X\n", info.ApplicationID);
-    printf("  ProductName: %.5s\n", info.ProductName);
-    printf("  ProductRevision: %02X\n", info.ProductRevision);
-    printf("  ProductSN: %08X\n", info.ProductSN);
-    printf("  ManufacturingDate: %06X\n", info.ManufacturingDate);
-    printf("  Class: %d\n", info.Class);
-    printf("  BlockSize: %u\n", info.BlockSize);
-    printf("  DeviceSize: %u MB\n", info.DeviceSize);
-    printf("  TransferRate: %d Kbps\n", info.TransferRate);
+    printf("  ManufacturerID: %02X\n", SDCardInfo.ManufacturerID);
+    printf("  ApplicationID: %04X\n", SDCardInfo.ApplicationID);
+    printf("  ProductName: %.5s\n", SDCardInfo.ProductName);
+    printf("  ProductRevision: %02X\n", SDCardInfo.ProductRevision);
+    printf("  ProductSN: %08X\n", SDCardInfo.ProductSN);
+    printf("  ManufacturingDate: %06X\n", SDCardInfo.ManufacturingDate);
+    printf("  Class: %d\n", SDCardInfo.Class);
+    printf("  BlockSize: %u\n", SDCardInfo.BlockSize);
+    printf("  DeviceSize: %u MB\n", SDCardInfo.DeviceSize);
+    printf("  TransferRate: %d Kbps\n", SDCardInfo.TransferRate);
 }
 
 void GPIO_RemapConfiguration(void)
@@ -113,8 +113,6 @@ bool SDCardSetup(void)
     if (!SDIOExecuteCommand(SD_CMD_ALL_SEND_CID, 0, SDIOResponseR2, SDCardInfo.CID))
         return false;
 
-    // PrintSdCardInfo(SDCardInfo);
-
     // CMD3: Get RCA
     if (!SDIOExecuteCommand(SD_CMD_SET_REL_ADDR, 0, SDIOResponseR6, (uint32_t *)&SDCardInfo.CardStatus))
         return false;
@@ -144,6 +142,7 @@ bool SDCardSetup(void)
     SDIOClockConfig(SDCardInfo.TransferRate, true, true);
 
     printf("%s SDCard Setup Done!\n\n", SDCardInfo.Capacity < SDCardCapacityHigh ? "SDSC" : "SDHC");
+    PrintSdCardInfo();
 
     return true;
 }
@@ -255,4 +254,14 @@ void SdCardIntHandler(void)
     }
 
     PubValueMsg(BACKGROUND_MSG_SD_CARD_CHANGE, 0);
+}
+
+uint32_t SdCardGetSectorSize(void)
+{
+    return SDCardInfo.BlockSize;
+}
+
+uint32_t SdCardGetSectorCount(void)
+{
+    return (uint64_t)SDCardInfo.DeviceSize * 1024 * 1024 / SDCardInfo.BlockSize;
 }

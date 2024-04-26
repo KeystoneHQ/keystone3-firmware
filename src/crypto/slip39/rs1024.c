@@ -27,7 +27,6 @@ static const uint8_t customization[] = {
     's', 'h', 'a', 'm', 'i', 'r',
 };
 
-
 // We need 30 bits of checksum to get 3 words worth (CHECKSUM_LENGTH_WORDS)
 uint32_t rs1024_polymod(
     const uint16_t *values,    // values - 10 bit words
@@ -66,7 +65,6 @@ uint32_t rs1024_polymod(
     return chk;
 }
 
-
 void rs1024_create_checksum(
     uint16_t *values, // data words (10 bit)
     uint32_t n          // length of the data array, including three checksum word
@@ -85,7 +83,6 @@ void rs1024_create_checksum(
     values[n - 2] = (polymod >> 10) & 1023;
     values[n - 1] = (polymod) & 1023;
 }
-
 
 uint8_t rs1024_verify_checksum(
     const uint16_t *values,  // data words

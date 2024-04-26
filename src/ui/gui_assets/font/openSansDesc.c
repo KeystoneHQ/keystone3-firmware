@@ -916,7 +916,6 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
     0x10, 0x0, 0x0
 };
 
-
 /*---------------------
  *  GLYPH DESCRIPTION
  *--------------------*/
@@ -1056,8 +1055,6 @@ static const lv_font_fmt_txt_cmap_t cmaps[] = {
     }
 };
 
-
-
 /*--------------------
  *  ALL CUSTOM DATA
  *--------------------*/
@@ -1083,7 +1080,6 @@ static lv_font_fmt_txt_dsc_t font_dsc = {
 #endif
 };
 
-
 /*-----------------
  *  PUBLIC FONT
  *----------------*/
@@ -1108,7 +1104,4 @@ lv_font_t openSansDesc = {
     .dsc = &font_dsc           /*The custom font data. Will be accessed by `get_glyph_bitmap/dsc` */
 };
 
-
-
 #endif /*#if OPENSANSDESC*/
-

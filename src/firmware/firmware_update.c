@@ -31,7 +31,6 @@
 LV_FONT_DECLARE(openSans_20);
 LV_FONT_DECLARE(openSans_24);
 
-
 #define FILE_MARK_MCU_FIRMWARE              "~update!"
 
 #define FILE_UNIT_SIZE                      0x4000
@@ -106,7 +105,6 @@ int32_t GetSoftwareVersionFormData(uint32_t *major, uint32_t *minor, uint32_t *b
     }
     return succ ? 0 : -1;
 }
-
 
 /// @brief
 /// @param info
@@ -257,5 +255,3 @@ static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32
     SRAM_FREE(g_fileUnit);
     return true;
 }
-
-

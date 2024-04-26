@@ -16,21 +16,22 @@
 #include "simulator_mock_define.h"
 #endif
 
+#define ADA_ADD_MAX_LEN             (150)
+
 static bool g_isMulti = false;
 static struct URParseResult *g_urResult = NULL;
 static struct URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
+static char g_adaBaseAddr[ADA_ADD_MAX_LEN];
 static char *xpub = NULL;
 
 static uint8_t GetXPubIndexByPath(char *path);
 
 void GuiSetupAdaUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
-#ifndef COMPILE_SIMULATOR
     g_urResult = urResult;
     g_urMultiResult = urMultiResult;
     g_isMulti = multi;
-#endif
 }
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                                         \
@@ -42,7 +43,6 @@ void GuiSetupAdaUrData(URParseResult *urResult, URParseMultiResult *urMultiResul
 
 void *GuiGetAdaData(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     uint8_t mfp[4];
@@ -60,63 +60,10 @@ void *GuiGetAdaData(void)
     } while (0);
     free_simple_response_c_char(path);
     return g_parseResult;
-#else
-    TransactionParseResult_DisplayCardanoTx *parseResult = SRAM_MALLOC(sizeof(TransactionParseResult_DisplayCardanoTx));
-    parseResult->error_code = 0;
-    parseResult->error_message = "";
-    DisplayCardanoTx *data = SRAM_MALLOC(sizeof(DisplayCardanoTx));
-    parseResult->data = data;
-    data->auxiliary_data = "test data";
-    data->network = "Cardano Mainnet";
-    data->total_input = "200 ADA";
-    data->total_output = "100 ADA";
-    data->fee = "0.5 ADA";
-    data->from = SRAM_MALLOC(sizeof(VecFFI_DisplayCardanoFrom));
-    data->from->cap = 2;
-    data->from->size = 2;
-    data->from->data = SRAM_MALLOC(2 * sizeof(DisplayCardanoFrom));
-    data->from->data[0].address = "addr1qxmst0syfr5adp29ypq744zwxhrjyghvj7m56my0xhyv044zsqazww2j94e9myatt6ng5a4vqhqclaa394rgumhcw9cqtzv4fg";
-    data->from->data[0].amount = "100 ADA";
-    data->from->data[0].has_path = true;
-    data->from->data[0].path = "m/1852'/1815'/0'/0/0";
-
-    data->from->data[1].address = "addr1q8am662n4zluq5cg8teephya2nznp3vhc6a5xgusuffw93azsqazww2j94e9myatt6ng5a4vqhqclaa394rgumhcw9cqc9wgkc";
-    data->from->data[1].amount = "100 ADA";
-    data->from->data[1].has_path = true;
-    data->from->data[1].path = "m/1852'/1815'/0'/0/1";
-
-    data->to = SRAM_MALLOC(sizeof(VecFFI_DisplayCardanoTo));
-    data->to->cap = 1;
-    data->to->size = 1;
-    data->to->data = SRAM_MALLOC(sizeof(DisplayCardanoTo));
-    data->to->data[0].address = "addr1q8am662n4zluq5cg8teephya2nznp3vhc6a5xgusuffw93azsqazww2j94e9myatt6ng5a4vqhqclaa394rgumhcw9cqc9wgkc";
-    data->to->data[0].amount = "150 ADA";
-
-    data->certificates = SRAM_MALLOC(sizeof(VecFFI_DisplayCardanoCertificate));
-    data->certificates->cap = 3;
-    data->certificates->size = 3;
-    data->certificates->data = SRAM_MALLOC(3 * sizeof(DisplayCardanoCertificate));
-    data->certificates->data[0].address = "stake1ux3gqw3889fz6ujajw44af52w6kqtsv077cj635wdmu8zuqyksq6g";
-    data->certificates->data[0].cert_type = "stake registration";
-    data->certificates->data[1].address = "stake1ux3gqw3889fz6ujajw44af52w6kqtsv077cj635wdmu8zuqyksq6g";
-    data->certificates->data[1].cert_type = "stake deregistration";
-    data->certificates->data[2].address = "stake1ux3gqw3889fz6ujajw44af52w6kqtsv077cj635wdmu8zuqyksq6g";
-    data->certificates->data[2].cert_type = "stake delegation";
-    data->certificates->data[2].pool = "pool1ld9hkah2dkzh73pvh9tf6xr0x28us34msv3zcv2sase5vhvq962";
-
-    data->withdrawals = SRAM_MALLOC(sizeof(VecFFI_DisplayCardanoWithdrawal));
-    data->withdrawals->cap = 1;
-    data->withdrawals->size = 1;
-    data->withdrawals->data = SRAM_MALLOC(sizeof(DisplayCardanoWithdrawal));
-    data->withdrawals->data[0].address = "stake1ux3gqw3889fz6ujajw44af52w6kqtsv077cj635wdmu8zuqyksq6g";
-    data->withdrawals->data[0].amount = "6.00135 ADA";
-    return parseResult;
-#endif
 }
 
 PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
 {
-#ifndef COMPILE_SIMULATOR
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
@@ -130,18 +77,13 @@ PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
     PtrT_TransactionCheckResult result = cardano_check_tx(data, mfp, xpub);
     free_simple_response_c_char(path);
     return result;
-#else
-    return NULL;
-#endif
 }
 
 void FreeAdaMemory(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
-#endif
 }
 
 bool GetAdaExtraDataExist(void *indata, void *param)
@@ -340,7 +282,6 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult;
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
@@ -356,15 +297,19 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
     } while (0);
     SetLockScreen(enable);
     return encodeResult;
-#else
-    UREncodeResult *encodeResult = NULL;
-    encodeResult->is_multi_part = 0;
-    encodeResult->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    encodeResult->encoder = NULL;
-    encodeResult->error_code = 0;
-    encodeResult->error_message = NULL;
-    return encodeResult;
-#endif
+}
+
+char *GuiGetADABaseAddressByIndex(uint16_t index)
+{
+    char *xPub = NULL;
+    SimpleResponse_c_char *result = NULL;
+    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0 + index);
+    result = cardano_get_base_address(xPub, 0, 1);
+    if (result->error_code == 0) {
+        strcpy(g_adaBaseAddr, result->data);
+    }
+    free_simple_response_c_char(result);
+    return g_adaBaseAddr;
 }
 
 static uint8_t GetXPubIndexByPath(char *path)

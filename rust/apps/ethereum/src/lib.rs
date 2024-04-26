@@ -156,9 +156,9 @@ pub fn sign_typed_data_message(
 mod tests {
 
     extern crate std;
+
     use crate::alloc::string::ToString;
     use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};
-    use crate::errors::{EthereumError, Result};
     use crate::{
         parse_fee_market_tx, parse_personal_message, parse_typed_data_message,
         sign_personal_message, sign_typed_data_message,
@@ -166,7 +166,6 @@ mod tests {
     use keystore::algorithms::secp256k1::get_public_key_by_seed;
     use third_party::hex;
     use third_party::serde_json;
-    use third_party::serde_json::json;
 
     #[test]
     fn test_parse_personal_message() {
@@ -431,6 +430,220 @@ mod tests {
         );
         assert_eq!(
             "61aca3c3989a82c6b606cdcbe6fc7e7d786dad2608b3f1806586261386154b68",
+            hex::encode(&hash[..])
+        );
+    }
+
+    #[test]
+    fn test_non_standard_eip712_typed_data_sign() {
+        let sign_data = r#"
+        {
+            "types": {
+                "EIP712Domain": [
+                    {
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "name": "version",
+                        "type": "string"
+                    },
+                    {
+                        "name": "chainId",
+                        "type": "uint256"
+                    },
+                    {
+                        "name": "verifyingContract",
+                        "type": "address"
+                    },
+                    {
+                        "name": "salt",
+                        "type": "string"
+                    }
+                ],
+                "Tx": [
+                    {
+                        "name": "context",
+                        "type": "string"
+                    },
+                    {
+                        "name": "msgs",
+                        "type": "string"
+                    }
+                ]
+            },
+            "primaryType": "Tx",
+            "domain": {
+                "name": "Injective Web3",
+                "version": "1.0.0",
+                "chainId": "0x1",
+                "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+                "salt": "0"
+            },
+            "message": {
+                "context": "{\"account_number\":37370,\"chain_id\":\"injective-1\",\"fee\":{\"amount\":[{\"denom\":\"inj\",\"amount\":\"50180000000000\"}],\"gas\":100360,\"payer\":\"inj1065f86fh88ptyrg8h5048zu0vyx7ex8ymwgr6h\"},\"memo\":\"\",\"sequence\":15,\"timeout_height\":63590762}",
+                "msgs": "[{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"from_address\":\"inj1tqsdz785sqjnlggee0lwxjwfk6dl36aez5003n\",\"to_address\":\"inj1tqsdz785sqjnlggee0lwxjwfk6dl36aez5003n\",\"amount\":[{\"denom\":\"inj\",\"amount\":\"100000000000000\"}]}]"
+            }
+        }
+        "#;
+        let path = "m/44'/60'/0'/0/0".to_string();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let message = sign_typed_data_message(sign_data.as_bytes().to_vec(), &seed, &path).unwrap();
+        assert_eq!(
+            "cbf0b0d6ef4b47e1624267fb41e00de27f5812d5ff324f1817e73791905554844a80df5ead72fec8ac2be5fa9eebbfddb953577ea6f6f9df3c9dbf490035dd3f1c",
+            hex::encode(message.serialize())
+        );
+    }
+
+    #[test]
+    fn test_parse_dym_vote_typed_data_msg() {
+        let utf8_msg = r#"
+        {
+            "domain": {
+                "chainId": 1100,
+                "name": "Cosmos Web3",
+                "salt": "0",
+                "verifyingContract": "cosmos",
+                "version": "1.0.0"
+            },
+            "message": {
+                "account_number": "855752",
+                "chain_id": "dymension_1100-1",
+                "fee": {
+                    "amount": [
+                        {
+                            "amount": "2527440000000000",
+                            "denom": "adym"
+                        }
+                    ],
+                    "feePayer": "dym1g65rdfk4sqxa82u6dwg5eyzwlqqhkjxggf4u0y",
+                    "gas": "126372"
+                },
+                "memo": "",
+                "msgs": [
+                    {
+                        "type": "cosmos-sdk/MsgVote",
+                        "value": {
+                            "option": 3,
+                            "proposal_id": 12,
+                            "voter": "dym1g65rdfk4sqxa82u6dwg5eyzwlqqhkjxggf4u0y"
+                        }
+                    }
+                ],
+                "sequence": "4"
+            },
+            "primaryType": "Tx",
+            "types": {
+                "Coin": [
+                    {
+                        "name": "denom",
+                        "type": "string"
+                    },
+                    {
+                        "name": "amount",
+                        "type": "string"
+                    }
+                ],
+                "EIP712Domain": [
+                    {
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "name": "version",
+                        "type": "string"
+                    },
+                    {
+                        "name": "chainId",
+                        "type": "uint256"
+                    },
+                    {
+                        "name": "verifyingContract",
+                        "type": "string"
+                    },
+                    {
+                        "name": "salt",
+                        "type": "string"
+                    }
+                ],
+                "Fee": [
+                    {
+                        "name": "feePayer",
+                        "type": "string"
+                    },
+                    {
+                        "name": "amount",
+                        "type": "Coin[]"
+                    },
+                    {
+                        "name": "gas",
+                        "type": "string"
+                    }
+                ],
+                "Msg": [
+                    {
+                        "name": "type",
+                        "type": "string"
+                    },
+                    {
+                        "name": "value",
+                        "type": "MsgValue"
+                    }
+                ],
+                "MsgValue": [
+                    {
+                        "name": "proposal_id",
+                        "type": "uint64"
+                    },
+                    {
+                        "name": "voter",
+                        "type": "string"
+                    },
+                    {
+                        "name": "option",
+                        "type": "int32"
+                    }
+                ],
+                "Tx": [
+                    {
+                        "name": "account_number",
+                        "type": "string"
+                    },
+                    {
+                        "name": "chain_id",
+                        "type": "string"
+                    },
+                    {
+                        "name": "fee",
+                        "type": "Fee"
+                    },
+                    {
+                        "name": "memo",
+                        "type": "string"
+                    },
+                    {
+                        "name": "msgs",
+                        "type": "Msg[]"
+                    },
+                    {
+                        "name": "sequence",
+                        "type": "string"
+                    }
+                ]
+            }
+        }        
+        "#;
+        let typed_data: Eip712TypedData = serde_json::from_str(&utf8_msg).unwrap();
+        let hash = typed_data.encode_eip712().unwrap();
+        assert_eq!(
+            "cosmos",
+            typed_data.domain.verifying_contract.unwrap().as_str()
+        );
+        assert_eq!("Cosmos Web3", typed_data.domain.name.unwrap().as_str());
+        assert_eq!(1100, typed_data.domain.chain_id.unwrap().as_u64());
+
+        assert_eq!(
+            "37fe5c140a9d70d91f786f300ce87be665e9551469e5747de4dce35edf129cf6",
             hex::encode(&hash[..])
         );
     }

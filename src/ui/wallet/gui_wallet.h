@@ -22,6 +22,7 @@ UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin);
 UREncodeResult *GuiGetPetraData(void);
 UREncodeResult *GuiGetSolflareData(void);
 UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index);
+UREncodeResult *GuiGetADADataByIndex(uint16_t index);
 UREncodeResult *GuiGetImTokenData(void);
 #endif
 #endif

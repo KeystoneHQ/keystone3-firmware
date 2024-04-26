@@ -1128,6 +1128,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_ARCONNECT:
         func = GuiGetArConnectData;
         AddArConnectCoins();
+        break;
     case WALLET_LIST_TYPHON:
         func = GuiGetADAData;
         AddChainAddress();

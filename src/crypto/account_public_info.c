@@ -31,7 +31,7 @@
 #include "gui_btc_home_widgets.h"
 #endif
 
-#define PUB_KEY_MAX_LENGTH                  1024
+#define PUB_KEY_MAX_LENGTH                  1024 + 1
 #define VERSION_MAX_LENGTH                  64
 #define INVALID_ACCOUNT_INDEX               255
 

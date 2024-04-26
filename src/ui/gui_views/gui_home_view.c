@@ -2,6 +2,7 @@
 #include "gui_obj.h"
 #include "gui_views.h"
 #include "gui_home_widgets.h"
+#include "gui_pending_hintbox.h"
 
 static int32_t GuiHomeViewInit(void)
 {

@@ -141,17 +141,23 @@ pub extern "C" fn ar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayArw
     TransactionParseResult::success(Box::into_raw(Box::new(display_tx)) as *mut DisplayArweaveTx).c_ptr()
 }
 
+fn parse_sign_data(ptr: PtrUR) -> Result<Vec<u8>, ArweaveError> {
+    let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
+    let sign_data = sign_request.get_sign_data();
+    let raw_tx = parse(&sign_data).unwrap();
+    let raw_json: Value = serde_json::from_str(&raw_tx).unwrap();
+    let signature_data = raw_json["formatted_json"]["signature_data"].as_str().unwrap();
+    let signature_data = hex::decode(signature_data).unwrap();
+    Ok(signature_data)
+}
+
 fn build_sign_result(ptr: PtrUR, p: &[u8], q: &[u8]) -> Result<ArweaveSignature, ArweaveError> {
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let salt_len = match sign_request.get_salt_len() {
         SaltLen::Zero => 0,
         SaltLen::Digest => 32,
     };
-    let sign_data = sign_request.get_sign_data();
-    let raw_tx = parse(&sign_data.to_vec()).unwrap();
-    let raw_json: Value = serde_json::from_str(&raw_tx).unwrap();
-    let signature_data = raw_json["formatted_json"]["signature_data"].as_str().unwrap();
-    let signature_data = hex::decode(signature_data).unwrap();
+    let signature_data = parse_sign_data(ptr)?;
     let signature = sign_message(&signature_data, p, q, &SigningOption::PSS { salt_len })?;
 
     Ok(ArweaveSignature::new(

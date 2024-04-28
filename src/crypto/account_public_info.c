@@ -59,6 +59,7 @@ static char *GetJsonStringFromPublicKey(void);
 
 static void FreePublicKeyRam(void);
 static void PrintInfo(void);
+static void SetIsTempAccount(bool isTemp);
 
 static AccountPublicKeyItem_t g_accountPublicKey[XPUB_TYPE_NUM];
 
@@ -434,7 +435,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
         for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
             // SLIP32 wallet does not support ADA
             if (isSlip39 && g_chainTable[i].cryptoKey == BIP32_ED25519) {
-                break;
+                continue;
             }
 
             xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey);

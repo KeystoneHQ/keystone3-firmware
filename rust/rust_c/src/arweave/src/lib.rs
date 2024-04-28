@@ -2,28 +2,30 @@
 
 extern crate alloc;
 
-use alloc::boxed::Box;
-use alloc::vec::Vec;
-use alloc::string::{String, ToString};
-use app_arweave::{generate_public_key_from_primes, generate_secret, aes256_encrypt, aes256_decrypt, errors::ArweaveError, parse};
-
-use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
-use keystore::algorithms::rsa::{sign_message, SigningOption};
 use crate::structs::DisplayArweaveTx;
+use alloc::boxed::Box;
+use alloc::string::ToString;
+use alloc::vec::Vec;
+use app_arweave::{
+    aes256_decrypt, aes256_encrypt, errors::ArweaveError, generate_public_key_from_primes,
+    generate_secret, parse,
+};
+use common_rust_c::errors::ErrorCodes;
 use common_rust_c::extract_ptr_with_type;
 use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
-use common_rust_c::utils::{convert_c_char, recover_c_char};
-use common_rust_c::types::{PtrBytes, PtrString, PtrUR, PtrT};
-use common_rust_c::errors::ErrorCodes;
+use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
+use common_rust_c::utils::{convert_c_char, recover_c_char};
+use core::slice;
 use cty::c_char;
+use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
+use keystore::algorithms::rsa::{sign_message, SigningOption};
 use third_party::hex;
 use third_party::serde_json;
 use third_party::serde_json::{json, Value};
-use third_party::ur_registry::traits::{RegistryItem, To};
 use third_party::ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SaltLen};
 use third_party::ur_registry::arweave::arweave_signature::ArweaveSignature;
-use core::slice;
+use third_party::ur_registry::traits::{RegistryItem, To};
 
 pub mod structs;
 
@@ -91,7 +93,8 @@ pub extern "C" fn aes256_encrypt_primes(
     let encrypted_data = aes256_encrypt(&key, &iv, data).unwrap();
     let mut result_bytes: [u8; 528] = [0; 528];
     result_bytes.copy_from_slice(&encrypted_data);
-    return SimpleResponse::success(Box::into_raw(Box::new(result_bytes)) as *mut u8).simple_c_ptr();
+    return SimpleResponse::success(Box::into_raw(Box::new(result_bytes)) as *mut u8)
+        .simple_c_ptr();
 }
 
 #[no_mangle]
@@ -108,20 +111,17 @@ pub extern "C" fn aes256_decrypt_primes(
             let mut result_bytes: [u8; 512] = [0; 512];
             result_bytes.copy_from_slice(&decrypted_data);
             SimpleResponse::success(Box::into_raw(Box::new(result_bytes)) as *mut u8).simple_c_ptr()
-        },
+        }
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
     }
 }
 
 #[no_mangle]
-pub extern "C" fn arweave_get_address(
-    xpub: PtrString,
-) -> *mut SimpleResponse<c_char> {
+pub extern "C" fn arweave_get_address(xpub: PtrString) -> *mut SimpleResponse<c_char> {
     let xpub = recover_c_char(xpub);
     let address = app_arweave::generate_address(hex::decode(xpub).unwrap()).unwrap();
     return SimpleResponse::success(convert_c_char(address)).simple_c_ptr();
 }
-
 
 #[no_mangle]
 pub extern "C" fn ar_check_tx() -> PtrT<TransactionCheckResult> {
@@ -135,10 +135,25 @@ pub extern "C" fn ar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayArw
     let sign_type = sign_request.get_sign_type();
     let sign_data_json: serde_json::Value = serde_json::from_slice(sign_data.as_slice()).unwrap();
     let display_tx = DisplayArweaveTx {
-        from: convert_c_char(sign_data_json.get("last_tx").unwrap().as_str().unwrap().to_string()),
-        to: convert_c_char(sign_data_json.get("target").unwrap().as_str().unwrap().to_string()),
+        from: convert_c_char(
+            sign_data_json
+                .get("last_tx")
+                .unwrap()
+                .as_str()
+                .unwrap()
+                .to_string(),
+        ),
+        to: convert_c_char(
+            sign_data_json
+                .get("target")
+                .unwrap()
+                .as_str()
+                .unwrap()
+                .to_string(),
+        ),
     };
-    TransactionParseResult::success(Box::into_raw(Box::new(display_tx)) as *mut DisplayArweaveTx).c_ptr()
+    TransactionParseResult::success(Box::into_raw(Box::new(display_tx)) as *mut DisplayArweaveTx)
+        .c_ptr()
 }
 
 fn parse_sign_data(ptr: PtrUR) -> Result<Vec<u8>, ArweaveError> {
@@ -146,7 +161,9 @@ fn parse_sign_data(ptr: PtrUR) -> Result<Vec<u8>, ArweaveError> {
     let sign_data = sign_request.get_sign_data();
     let raw_tx = parse(&sign_data).unwrap();
     let raw_json: Value = serde_json::from_str(&raw_tx).unwrap();
-    let signature_data = raw_json["formatted_json"]["signature_data"].as_str().unwrap();
+    let signature_data = raw_json["formatted_json"]["signature_data"]
+        .as_str()
+        .unwrap();
     let signature_data = hex::decode(signature_data).unwrap();
     Ok(signature_data)
 }
@@ -178,23 +195,23 @@ pub extern "C" fn ar_sign_tx(
     let q = unsafe { slice::from_raw_parts(q, q_len as usize) };
 
     build_sign_result(ptr, p, q)
-    .map(|v: ArweaveSignature| v.try_into())
-    .map_or_else(
-        |e| UREncodeResult::from(e).c_ptr(),
-        |v| {
-            v.map_or_else(
-                |e| UREncodeResult::from(e).c_ptr(),
-                |data| {
-                    UREncodeResult::encode(
-                        data,
-                        ArweaveSignature::get_registry_type().get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
-                    )
-                    .c_ptr()
-                },
-            )
-        },
-    )
+        .map(|v: ArweaveSignature| v.try_into())
+        .map_or_else(
+            |e| UREncodeResult::from(e).c_ptr(),
+            |v| {
+                v.map_or_else(
+                    |e| UREncodeResult::from(e).c_ptr(),
+                    |data| {
+                        UREncodeResult::encode(
+                            data,
+                            ArweaveSignature::get_registry_type().get_type(),
+                            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                        )
+                        .c_ptr()
+                    },
+                )
+            },
+        )
 }
 
 #[cfg(test)]
@@ -233,7 +250,7 @@ mod tests {
             Ok(decrypted_data2) => {
                 assert_eq!(decrypted_data2.len(), 512);
                 assert_eq!(decrypted_data, decrypted_data2);
-            },
+            }
             Err(_) => {}
         }
     }

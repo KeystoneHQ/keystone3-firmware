@@ -19,6 +19,8 @@ use third_party::ur_parse_lib::keystone_ur_decoder::{
     URParseResult as InnerParseResult,
 };
 use third_party::ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
+#[cfg(feature = "multi-coins")]
+use third_party::ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
 use third_party::ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
 use third_party::ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
@@ -43,8 +45,6 @@ use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
 use third_party::ur_registry::traits::RegistryItem;
-#[cfg(feature = "multi-coins")]
-use third_party::ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
 
 use crate::errors::{ErrorCodes, RustCError};
 use crate::free::Free;

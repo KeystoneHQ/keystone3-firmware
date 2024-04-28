@@ -1,8 +1,8 @@
 use alloc::vec::Vec;
 
+use crate::transaction::DeepHashItem;
 use third_party::cryptoxide::digest::Digest;
 use third_party::cryptoxide::sha2::Sha384;
-use crate::transaction::DeepHashItem;
 
 use crate::errors::ArweaveError;
 
@@ -12,7 +12,7 @@ fn concat_u8_48(left: [u8; 48], right: [u8; 48]) -> Result<[u8; 96], ArweaveErro
     Ok(result)
 }
 
-pub fn hash_sha384( message: &[u8]) -> Result<[u8; 48], ArweaveError> {
+pub fn hash_sha384(message: &[u8]) -> Result<[u8; 48], ArweaveError> {
     let mut hasher = Sha384::new();
     hasher.input(message);
     let mut result = [0u8; 48];

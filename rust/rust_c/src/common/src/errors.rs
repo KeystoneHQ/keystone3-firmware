@@ -2,9 +2,9 @@ use alloc::string::String;
 
 #[cfg(feature = "multi-coins")]
 use app_aptos::errors::AptosError;
-use app_bitcoin::errors::BitcoinError;
 #[cfg(feature = "multi-coins")]
 use app_arweave::errors::ArweaveError;
+use app_bitcoin::errors::BitcoinError;
 #[cfg(feature = "multi-coins")]
 use app_cardano::errors::CardanoError;
 #[cfg(feature = "multi-coins")]

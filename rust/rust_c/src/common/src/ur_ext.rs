@@ -5,6 +5,8 @@ use alloc::vec::Vec;
 use third_party::serde_json::{from_slice, from_value, Value};
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
+#[cfg(feature = "multi-coins")]
+use third_party::ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
 use third_party::ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
 use third_party::ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
@@ -34,8 +36,6 @@ use third_party::ur_registry::pb::protoc::Base;
 use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
-#[cfg(feature = "multi-coins")]
-use third_party::ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
 
 pub trait InferViewType {
     fn infer(&self) -> Result<ViewType, URError> {

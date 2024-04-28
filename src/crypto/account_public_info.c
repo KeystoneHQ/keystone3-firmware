@@ -63,6 +63,7 @@ static void PrintInfo(void);
 static AccountPublicKeyItem_t g_accountPublicKey[XPUB_TYPE_NUM];
 
 static uint8_t g_tempPublicKeyAccountIndex = INVALID_ACCOUNT_INDEX;
+static bool g_isTempAccount = false;  
 
 static const char g_xpubInfoVersion[] = "1.0.0";
 static const char g_multiSigInfoVersion[] = "1.0.0";
@@ -509,6 +510,16 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     return ret;
 }
 
+static void SetIsTempAccount(bool isTemp)
+{
+    g_isTempAccount = isTemp;
+}
+
+bool GetIsTempAccount(void)
+{
+    return g_isTempAccount;
+}
+
 int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool set)
 {
     uint32_t i;
@@ -521,9 +532,11 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
 
     if (g_tempPublicKeyAccountIndex == accountIndex && set == false) {
+        SetIsTempAccount(false);
         // g_accountPublicKey stores the current temp public key.
         printf("g_accountPublicKey stores the current temp public key.\r\n");
     } else {
+        SetIsTempAccount(true);
         GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
         char* icarusMasterKey = NULL;
         FreePublicKeyRam();

@@ -92,6 +92,8 @@ static void GuiInitWalletState()
 {
     if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
         g_walletState[HOME_WALLET_CARD_ADA].enable = false;
+    } else if (GetIsTempAccount()) {
+        g_walletState[HOME_WALLET_CARD_ARWEAVE].enable = false;
     } else {
         g_walletState[HOME_WALLET_CARD_ADA].enable = true;
     }

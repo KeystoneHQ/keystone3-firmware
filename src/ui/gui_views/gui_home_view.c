@@ -71,7 +71,6 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         GuiPendingHintBoxOpen(_("Pending"), _("generating_qr_codes"));
         break;
     case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS:
-        GuiPendingHintBoxRemove();
         GuiContinueToReceiveArPage();
         break;
     default:

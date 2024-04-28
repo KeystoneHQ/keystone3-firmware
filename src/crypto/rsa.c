@@ -1,5 +1,10 @@
 #include "rsa.h"
 
+static uint32_t GetRsaAddress();
+static char *GetPassword();
+static void RsaHashWithSalt(const uint8_t *data, uint8_t *hash);
+static bool HasMatchingPrimesHash(Rsa_primes_t *primes, const uint8_t targethash[SPI_FLASH_RSA_HASH_SIZE]);
+
 static uint32_t GetRsaAddress()
 {
   switch (GetCurrentAccountIndex())
@@ -13,6 +18,12 @@ static uint32_t GetRsaAddress()
   default:
     return SPI_FLASH_RSA_USER1_DATA;
   }
+}
+
+static char *GetPassword()
+{
+    char *password = PassphraseExist(GetCurrentAccountIndex()) ? SecretCacheGetPassphrase() : SecretCacheGetPassword();
+    return password;
 }
 
 static void RsaHashWithSalt(const uint8_t *data, uint8_t *hash)
@@ -70,9 +81,10 @@ Rsa_primes_t *FlashReadRsaPrimes()
   Gd25FlashReadBuffer(GetRsaAddress(), fullData, sizeof(fullData));
   uint8_t seed[64];
   int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-  int32_t ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+  int32_t ret = GetAccountSeed(GetCurrentAccountIndex(), seed, GetPassword());
   if (ret != 0)
   {
+    printf("Failed to get account seed\n");
     SRAM_FREE(primes);
     return NULL;
   }
@@ -81,6 +93,8 @@ Rsa_primes_t *FlashReadRsaPrimes()
   SimpleResponse_u8 *encData = aes256_decrypt_primes(seed, len, cryptData);
   if (encData->error_code != 0)
   {
+    PrintArray("Wrong Seed", seed, len);
+    printf("Failed to decrypt RSA primes\n");
     SRAM_FREE(primes);
     return NULL;
   }
@@ -91,6 +105,7 @@ Rsa_primes_t *FlashReadRsaPrimes()
   memcpy_s(hash, SPI_FLASH_RSA_HASH_SIZE, fullData + SPI_FLASH_RSA_DATA_SIZE, SPI_FLASH_RSA_HASH_SIZE);
   if (!HasMatchingPrimesHash(primes, hash))
   {
+    printf("RSA primes hash mismatch\n");
     SRAM_FREE(primes);
     return NULL;
   }
@@ -103,7 +118,7 @@ int FlashWriteRsaPrimes(const uint8_t *data)
   uint8_t fullData[SPI_FLASH_RSA_DATA_FULL_SIZE];
   uint8_t seed[64];
   int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-  int32_t seed_ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+  int32_t seed_ret = GetAccountSeed(GetCurrentAccountIndex(), seed, GetPassword());
   ASSERT(seed_ret == 0);
   SimpleResponse_u8 *cryptData = aes256_encrypt_primes(seed, len, data);
 

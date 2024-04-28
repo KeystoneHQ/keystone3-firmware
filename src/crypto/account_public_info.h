@@ -125,6 +125,8 @@ typedef enum {
     XPUB_TYPE_NUM,
 } ChainType;
 
+void SetIsTempAccount(bool isTemp);
+bool GetIsTempAccount(void);
 int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool newKey);
 int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool set);
 void DeleteAccountPublicInfo(uint8_t accountIndex);

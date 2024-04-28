@@ -7,6 +7,7 @@
 
 static int32_t GuiStandardReceiveViewInit(uint8_t chain)
 {
+    GuiPendingHintBoxMoveToTargetParent(lv_scr_act());
     GuiStandardReceiveInit(chain);
     return SUCCESS_CODE;
 }
@@ -37,6 +38,9 @@ int32_t GuiStandardReceiveViewEventProcess(void *self, uint16_t usEvent, void *p
         break;
     case SIG_SETUP_VIEW_TILE_PREV:
         GuiStandardReceivePrevTile();
+        break;
+    case SIG_SETUP_RSA_PRIVATE_KEY_HIDE_LOADING:
+        GuiPendingHintBoxRemove();
         break;
     default:
         return ERR_GUI_UNHANDLED;

@@ -1231,11 +1231,13 @@ int32_t RsaGenerateKeyPair(bool needEmitSignal)
     free_simple_response_u8(secret);
     AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), true);
     RecalculateManageWalletState();
-    if (needEmitSignal) {
-        GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS, NULL, 0);
-    }
     ClearLockScreenTime();
     SetLockScreen(lockState);
+    if (needEmitSignal)
+    {
+        GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS, NULL, 0);
+        GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_HIDE_LOADING, NULL, 0);
+    }
     return SUCCESS_CODE;
 }
 

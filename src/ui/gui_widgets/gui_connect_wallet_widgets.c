@@ -320,6 +320,8 @@ static void GuiInitWalletListArray()
         if (g_walletListArray[i].index == WALLET_LIST_ETERNL) {
             if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
                 g_walletListArray[i].enable = false;
+            } else if (GetIsTempAccount() && g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
+                g_walletListArray[i].enable = false;
             } else {
                 g_walletListArray[i].enable = true;
             }

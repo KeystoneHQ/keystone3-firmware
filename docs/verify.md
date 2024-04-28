@@ -25,14 +25,12 @@ Start by cloning the Keystone3 firmware repository to your local machine.
 ```bash
 git clone https://github.com/KeystoneHQ/keystone3-firmware
 git -c submodule.keystone3-firmware-release.update=none submodule update --init --recursive
-git checkout tags/<release_tag_name>
 ```
 
 **Highlights:**
 
 - The `git clone` command retrieves the repository.
 - The `--recursive` flag includes all submodules.
-- `git checkout tags/<release_tag_name>` switches to a specific firmware version.
 
 ### 2. Build the Docker Image
 
@@ -43,7 +41,7 @@ A consistent build environment is essential. Docker facilitates this by creating
 **Commands:**
 
 ```bash
-docker build -t keystonedockerhub/keystone3_baker:1.0.1 .
+docker build -t keystonehq/keystone3_baker:1.0.2 .
 ```
 
 #### b. Using a Pre-built Image
@@ -51,22 +49,35 @@ docker build -t keystonedockerhub/keystone3_baker:1.0.1 .
 **Commands:**
 
 ```bash
-docker pull keystonedockerhub/keystone3_baker:1.0.1
+docker pull keystonehq/keystone3_baker:1.0.2
 ```
 
-### 3. Execute the Build Process
+### 3. Switch To a specific firmware version
+```bash
+git checkout tags/<release_tag_name>
+```
+
+### 4. Execute the Build Process
 
 Compile the firmware using Docker.
 
 **Commands:**
 
+**For Multi-Coins Firmware**:
+
 ```bash
-docker run -v $(pwd):/keystone3-firmware keystonedockerhub/keystone3_baker:1.0.1 python3 build.py -e production
+docker run -v $(pwd):/keystone3-firmware keystonedockerhub/keystone3_baker:1.0.2 python3 build.py -e production
+```
+
+**For BTC-only Firmware**:
+
+```bash
+docker run -v $(pwd):/keystone3-firmware keystonedockerhub/keystone3_baker:1.0.2 python3 build.py -e production -t btc_only
 ```
 
 **Note:** This step compiles the source into the `mh1903.bin` file.
 
-### 4. Verify the Firmware Checksum
+### 5. Verify the Firmware Checksum
 
 An integrity check is essential.
 

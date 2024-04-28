@@ -18,7 +18,7 @@
 #include "account_manager.h"
 #include "gui_global_resources.h"
 #ifndef BTC_ONLY
-#include "gui_connect_eternl_widgets.h"
+#include "gui_connect_ada_widgets.h"
 #endif
 #include "gui_select_address_widgets.h"
 
@@ -308,7 +308,7 @@ static void GuiInitWalletListArray()
 {
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
 #ifndef BTC_ONLY
-        if (g_walletListArray[i].index == WALLET_LIST_ETERNL) {
+        if (g_walletListArray[i].index == WALLET_LIST_ETERNL || g_walletListArray[i].index == WALLET_LIST_TYPHON) {
             if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
                 g_walletListArray[i].enable = false;
             } else {
@@ -373,8 +373,8 @@ static void OpenQRCodeHandler(lv_event_t *e)
         if (IsSOL(g_connectWalletTileView.walletIndex)) {
             g_derivationPathDescs = GetDerivationPathDescs(SOL_DERIVATION_PATH_DESC);
         }
-        if (g_connectWalletTileView.walletIndex == WALLET_LIST_ETERNL) {
-            GuiCreateConnectEternlWidget();
+        if (g_connectWalletTileView.walletIndex == WALLET_LIST_ETERNL || g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON) {
+            GuiCreateConnectADAWalletWidget(g_connectWalletTileView.walletIndex);
             return;
         }
 #endif
@@ -489,10 +489,6 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
             if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT)
             {
                 g_coinListCont = GuiCreateSelectAddressWidget(CHAIN_XRP, g_chainAddressIndex[GetCurrentAccountIndex()], RefreshAddressIndex);
-            }
-            else if (g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON)
-            {
-                g_coinListCont = GuiCreateSelectAddressWidget(CHAIN_ADA, g_chainAddressIndex[GetCurrentAccountIndex()], RefreshAddressIndex);
             }
         } else if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEYSTONE) {
             GuiCreateSelectCompanionAppCoinWidget();
@@ -1022,7 +1018,7 @@ UREncodeResult *GuiGetADAData(void)
 }
 #endif
 
-void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
+void GuiConnectWalletSetQrdata(uint8_t index)
 {
     GenerateUR func = NULL;
     SetWallet(g_pageWidget->navBarWidget, index, NULL);
@@ -1082,10 +1078,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_KEPLR:
         func = GuiGetKeplrData;
         AddKeplrCoins();
-        break;
-    case WALLET_LIST_TYPHON:
-        func = GuiGetADAData;
-        AddChainAddress();
         break;
     case WALLET_LIST_FEWCHA:
         if (!g_isCoinReselected) {
@@ -1207,9 +1199,7 @@ static bool IsSelectChanged(void)
 
 static bool HasSelectAddressWidget()
 {
-    return
-        g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT ||
-        g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON;
+    return g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT;
 }
 
 static void CloseDerivationHandler(lv_event_t *e)
@@ -1665,8 +1655,6 @@ void GuiConnectWalletRefresh(void)
                 GuiDestroySelectAddressWidget();
                 if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
                     g_coinListCont = GuiCreateSelectAddressWidget(CHAIN_XRP, g_chainAddressIndex[GetCurrentAccountIndex()], RefreshAddressIndex);
-                } else if (g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON) {
-                    g_coinListCont = GuiCreateSelectAddressWidget(CHAIN_ADA, g_chainAddressIndex[GetCurrentAccountIndex()], RefreshAddressIndex);
                 }
             } else if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEYSTONE) {
                 GUI_DEL_OBJ(g_coinListCont)
@@ -1677,9 +1665,9 @@ void GuiConnectWalletRefresh(void)
         QRCodePause(false);
     }
 #ifndef BTC_ONLY
-    if (ConnectEternlWidgetExist()) {
-        CleanConnectEternlWidget();
-        GuiCreateConnectEternlWidget();
+    if (ConnectADAWidgetExist()) {
+        CleanConnectADAWidget();
+        GuiCreateConnectADAWalletWidget(g_connectWalletTileView.walletIndex);
     }
     if (g_derivationPathCont != NULL) {
         GUI_DEL_OBJ(g_derivationPathCont);
@@ -1708,4 +1696,9 @@ void GuiConnectWalletDeInit(void)
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
+}
+
+uint8_t GuiConnectWalletGetWalletIndex(void)
+{
+    return g_connectWalletTileView.walletIndex;
 }

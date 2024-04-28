@@ -1,6 +1,5 @@
 set(LIB_NAME librust_c.a)
 set(RUST_C_DIR ${RUST_DIR}/rust_c)
-include("features.cmake")
 
 if(NOT CMAKE_BUILD_TYPE STREQUAL "Simulator")
     if(BTC_ONLY)
@@ -21,8 +20,6 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Simulator")
         message(STATUS "build with DEBUG_MEMORY")
         set(CARGO_FLAG ${CARGO_FLAG} --features debug-memory)
     endif()
-
-    set(CARGO_FLAG ${CARGO_FLAG} ${RUSTC_FEATURES})
 
     message(STATUS "cargo build command: " ${CARGO_FLAG})
     message(STATUS ${TARGET_PATH})

@@ -2,7 +2,7 @@
 
 ### What's new
 
-1. Added support for parsing and signing non-standard EIP712 transactions
+1. Added support for parsing and signing non-standard EIP712 messages
 
 ### Bug Fixes
 

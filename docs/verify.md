@@ -66,13 +66,13 @@ Compile the firmware using Docker.
 **For Multi-Coins Firmware**:
 
 ```bash
-docker run -v $(pwd):/keystone3-firmware keystonedockerhub/keystone3_baker:1.0.2 python3 build.py -e production
+docker run -v $(pwd):/keystone3-firmware keystonehq/keystone3_baker:1.0.2 python3 build.py -e production
 ```
 
 **For BTC-only Firmware**:
 
 ```bash
-docker run -v $(pwd):/keystone3-firmware keystonedockerhub/keystone3_baker:1.0.2 python3 build.py -e production -t btc_only
+docker run -v $(pwd):/keystone3-firmware keystonehq/keystone3_baker:1.0.2 python3 build.py -e production -t btc_only
 ```
 
 **Note:** This step compiles the source into the `mh1903.bin` file.

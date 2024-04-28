@@ -44,7 +44,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_SPARROW, &walletListSparrow, true},
     {WALLET_LIST_RABBY, &walletListRabby, true},
     {WALLET_LIST_ETERNL, &walletListEternl, true},
-    {WALLET_LIST_UNISAT, &walletListUniSat, true},
+    // {WALLET_LIST_UNISAT, &walletListUniSat, true},
     {WALLET_LIST_SAFE, &walletListSafe, true},
     {WALLET_LIST_BLOCK_WALLET, &walletListBlockWallet, true},
     {WALLET_LIST_SOLFARE, &walletListSolfare, true},

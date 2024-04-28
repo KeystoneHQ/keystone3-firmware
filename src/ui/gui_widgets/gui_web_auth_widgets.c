@@ -56,6 +56,7 @@ void GuiWebAuthScanQRCodeHandler(lv_event_t *e)
 
 void GuiWebAuthIntroWidget(lv_obj_t *parent)
 {
+    uint16_t height = 46;
     lv_obj_t *label = GuiCreateTitleLabel(parent, _("verify_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
@@ -63,16 +64,16 @@ void GuiWebAuthIntroWidget(lv_obj_t *parent)
     lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateIllustrateLabel(parent, "#F5870A 1");
-    lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 346 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_t *stepLabel = GuiCreateColorIllustrateLabel(parent, "1", 0xF5870A);
+    lv_obj_align_to(stepLabel, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 40);
 
     label = GuiCreateIllustrateLabel(parent, _("verify_cont1"));
     lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 60, 346 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(label, stepLabel, LV_ALIGN_OUT_RIGHT_TOP, 12, 0);
+    height += lv_obj_get_self_height(label);
 
     lv_obj_t *cont = GuiCreateContainerWithParent(parent, 244, 30);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 60, 266);
+    lv_obj_align_to(cont, lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 2), LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(cont, GuiWebAuthQrcodeHandler, LV_EVENT_CLICKED, NULL);
 
@@ -84,20 +85,20 @@ void GuiWebAuthIntroWidget(lv_obj_t *parent)
     img = GuiCreateImg(cont, &imgQrcodeTurquoise);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 220, 0);
 
-    label = GuiCreateIllustrateLabel(parent, "#F5870A 2");
-    lv_label_set_recolor(label, true);
-    lv_obj_align_to(label, lv_obj_get_child(lv_obj_get_parent(label), lv_obj_get_child_cnt(lv_obj_get_parent(label)) - 2), LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
+    label = GuiCreateColorIllustrateLabel(parent, "2", 0xF5870A);
+    lv_obj_align_to(label, stepLabel, LV_ALIGN_TOP_LEFT, 0, height);
+    stepLabel = label;
 
     label = GuiCreateIllustrateLabel(parent, _("verify_cont2"));
-    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
-    lv_obj_align_to(label, lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 2), LV_ALIGN_DEFAULT, 30, 0);
+    lv_obj_align_to(label, stepLabel, LV_ALIGN_OUT_RIGHT_TOP, 12, 0);
+    height = lv_obj_get_self_height(label) + 12;
 
-    label = GuiCreateIllustrateLabel(parent, "#F5870A 3");
-    lv_label_set_recolor(label, true);
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
+    label = GuiCreateColorIllustrateLabel(parent, "3", 0xF5870A);
+    lv_obj_align_to(label, stepLabel, LV_ALIGN_TOP_LEFT, 0, height);
+    stepLabel = label;
 
     label = GuiCreateIllustrateLabel(parent, _("verify_cont3"));
-    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
+    lv_obj_align_to(label, stepLabel, LV_ALIGN_OUT_RIGHT_TOP, 12, 0);
 
     lv_obj_t *btn = GuiCreateTextBtn(parent, _("verify_scan_qr_code"));
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);

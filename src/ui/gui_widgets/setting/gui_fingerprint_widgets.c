@@ -578,8 +578,7 @@ static void FingerDeleteDialogsHandler(lv_event_t *e)
     uint8_t *fingerIndex = lv_event_get_user_data(e);
     char buf[50] = {0};
     lv_snprintf(buf, sizeof(buf), _("fingerprint_nth_remove_desc"), GetFingerRegisteredStatus(*fingerIndex));
-    g_fpDeleteCont = GuiCreateResultHintbox(386, &imgWarn, _("fingerprint_nth_remove_title"),
-                                            buf, _("Cancel"), DARK_GRAY_COLOR, _("fingerprint_remove_confirm"), RED_COLOR);
+    g_fpDeleteCont = GuiCreateGeneralHintBox(&imgWarn, _("fingerprint_nth_remove_title"), buf, NULL, _("Cancel"), DARK_GRAY_COLOR, _("fingerprint_remove_confirm"), RED_COLOR);
     lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_fpDeleteCont);
     lv_obj_add_event_cb(leftBtn, FingerCancelDeleteHandler, LV_EVENT_CLICKED, g_fpDeleteCont);
 

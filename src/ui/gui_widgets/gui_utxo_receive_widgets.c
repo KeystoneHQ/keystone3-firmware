@@ -904,7 +904,7 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
     lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 0, 0);
 
     cont = GuiCreateContainerWithParent(scrollCont, 408, 411);
-    lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 84);
+    lv_obj_align_to(cont, labelHint, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
     lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);

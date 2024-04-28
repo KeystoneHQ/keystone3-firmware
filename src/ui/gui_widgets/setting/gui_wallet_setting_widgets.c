@@ -180,6 +180,7 @@ void GuiWalletSelectAddWallet(lv_obj_t *parent)
 
 void GuiWalletAddWalletNotice(lv_obj_t *parent)
 {
+    uint16_t height;
     static uint32_t walletSetting = DEVICE_SETTING_ADD_WALLET_CREATE_OR_IMPORT;
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
@@ -191,32 +192,31 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
     lv_obj_align(led, LV_ALIGN_DEFAULT, 36, 240 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_size(led, 6, 6);
     lv_led_set_color(led, ORANGE_COLOR);
-
     label = GuiCreateNoticeLabel(parent, _("wallet_settings_add_info_desc1"));
-    lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 228 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(label, led, LV_ALIGN_OUT_RIGHT_TOP, 12, -15);
     lv_label_set_recolor(label, true);
+    height = lv_obj_get_self_height(label) + 12;
 
-    led = lv_led_create(parent);
-    lv_led_set_brightness(led, 150);
-    lv_obj_align(led, LV_ALIGN_DEFAULT, 36, 312 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_set_size(led, 6, 6);
-    lv_led_set_color(led, ORANGE_COLOR);
-
+    lv_obj_t *newLed = lv_led_create(parent);
+    lv_led_set_brightness(newLed, 150);
+    lv_obj_set_size(newLed, 6, 6);
+    lv_led_set_color(newLed, ORANGE_COLOR);
+    lv_obj_align_to(newLed, led, LV_ALIGN_TOP_LEFT, 0, height + 15);
+    led = newLed;
     label = GuiCreateNoticeLabel(parent, _("wallet_settings_add_info_desc2"));
-    lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 300 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(label, led, LV_ALIGN_OUT_RIGHT_TOP, 12, -15);
     lv_label_set_recolor(label, true);
+    height = lv_obj_get_self_height(label) + 12;
 
-    led = lv_led_create(parent);
-    lv_led_set_brightness(led, 150);
-    lv_obj_align(led, LV_ALIGN_DEFAULT, 36, 384 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_set_size(led, 6, 6);
-    lv_led_set_color(led, ORANGE_COLOR);
-
+    newLed = lv_led_create(parent);
+    lv_led_set_brightness(newLed, 150);
+    lv_obj_set_size(newLed, 6, 6);
+    lv_led_set_color(newLed, ORANGE_COLOR);
+    lv_obj_align_to(newLed, led, LV_ALIGN_TOP_LEFT, 0, height + 15);
+    led = newLed;
     label = GuiCreateNoticeLabel(parent, _("wallet_settings_add_info_desc3"));
-    lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 372 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(label, led, LV_ALIGN_OUT_RIGHT_TOP, 12, -15);
+    height = lv_obj_get_self_height(label) + 12;
 
     lv_obj_t *btn = GuiCreateTextBtn(parent, _("got_it_start"));
     lv_obj_set_size(btn, 408, 66);

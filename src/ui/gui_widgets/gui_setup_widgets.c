@@ -114,7 +114,7 @@ void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
         if (i == SETUP_CHINESE) {
             label = GuiCreateLabelWithFont(parent, g_languageList[i], &cnText);
         } else if (i == SETUP_RUSSIAN) {
-            label = GuiCreateLabelWithFont(parent, g_languageList[i], &rusText);
+            label = GuiCreateLabelWithFont(parent, g_languageList[i], &ruText);
         } else if (i == SETUP_KOREAN) {
             label = GuiCreateLabelWithFont(parent, g_languageList[i], &koText);
         } else {

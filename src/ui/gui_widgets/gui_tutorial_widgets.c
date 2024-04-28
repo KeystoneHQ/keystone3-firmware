@@ -172,7 +172,7 @@ void GuiTutorialInit(TUTORIAL_LIST_INDEX_ENUM tutorialIndex)
         last = label;
 
         label = GuiCreateIllustrateLabel(container, tutorialList->tutorials[i].desc);
-        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_update_layout(label);
         last = label;
@@ -184,7 +184,7 @@ void GuiTutorialInit(TUTORIAL_LIST_INDEX_ENUM tutorialIndex)
             learnMoreCont = GuiCreateContainerWithParent(container, 300, 30);
             lv_obj_add_flag(learnMoreCont, LV_OBJ_FLAG_CLICKABLE);
             lv_obj_add_event_cb(learnMoreCont, GuiOpenQRHintBoxHandler, LV_EVENT_CLICKED, &tutorialList->tutorials[i]);
-            lv_obj_align_to(learnMoreCont, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+            lv_obj_align_to(learnMoreCont, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
             last = learnMoreCont;
 
             h = lv_obj_get_height(learnMoreCont);

@@ -68,6 +68,7 @@ static void GuiConnectionNVSBarInit()
 
 void GuiConnectionEntranceWidget(lv_obj_t *parent)
 {
+    uint16_t height = 88;
     usbConnectionSw = lv_switch_create(parent);
     lv_obj_add_event_cb(usbConnectionSw, UsbConnectionSwitchHandler, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_set_style_bg_color(usbConnectionSw, ORANGE_COLOR, LV_STATE_CHECKED | LV_PART_INDICATOR);
@@ -83,26 +84,16 @@ void GuiConnectionEntranceWidget(lv_obj_t *parent)
     lv_obj_t *contentLabel = GuiCreateIllustrateLabel(parent, _("usb_connection_desc"));
     lv_obj_set_style_text_opa(contentLabel, LV_OPA_80, LV_PART_MAIN);
     lv_obj_set_width(contentLabel, 346);
+    lv_obj_refr_size(contentLabel);
+    height += lv_obj_get_self_height(contentLabel);
 
     GuiButton_t table[] = {
-        {
-            .obj = titlelabel,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {24, 24},
-        },
-        {
-            .obj = usbConnectionSw,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {376, 24},
-        },
-        {
-            .obj = contentLabel,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {24, 64},
-        },
+        {.obj = titlelabel, .align = LV_ALIGN_DEFAULT, .position = {24, 24},},
+        {.obj = usbConnectionSw, .align = LV_ALIGN_DEFAULT, .position = {376, 24},},
+        {.obj = contentLabel, .align = LV_ALIGN_DEFAULT, .position = {24, 64},},
     };
 
-    lv_obj_t *button = GuiCreateButton(parent, 456, 178, table, NUMBER_OF_ARRAYS(table),
+    lv_obj_t *button = GuiCreateButton(parent, 456, height, table, NUMBER_OF_ARRAYS(table),
                                        UsbConnectionHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 0);
 

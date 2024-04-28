@@ -731,7 +731,6 @@ static void ChangeEntropyMethodHandler(lv_event_t *e)
 
 static void OpenChangeEntropyTutorialHandler(lv_event_t *e)
 {
-
     uint8_t index = TUTORIAL_CHANGE_ENTROPY;
     GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
 }

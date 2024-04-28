@@ -155,6 +155,7 @@ static void OpenPassphraseQrCodeHandler(lv_event_t *e)
 
 static void GuiOpenPassphraseLearnMore()
 {
+    uint16_t height;
     lv_obj_add_flag(g_deviceSettingArray[g_deviceSetTileView.currentTile].tile, LV_OBJ_FLAG_HIDDEN);
     lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
                                         GUI_MAIN_AREA_OFFSET);
@@ -164,35 +165,42 @@ static void GuiOpenPassphraseLearnMore()
 
     lv_obj_t *led = lv_led_create(cont);
     lv_led_set_brightness(led, 150);
-    lv_obj_align(led, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(led, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12 + 15);
     lv_obj_set_size(led, 12, 12);
     lv_led_set_color(led, ORANGE_COLOR);
     label = GuiCreateNoticeLabel(cont, _("passphrase_learn_more_desc1"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 204 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(label, led, LV_ALIGN_OUT_RIGHT_TOP, 12, -15);
+    height = lv_obj_get_self_height(label) + 12;
 
-    led = lv_led_create(cont);
-    lv_led_set_brightness(led, 150);
-    lv_obj_align(led, LV_ALIGN_DEFAULT, 36, 288 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_set_size(led, 12, 12);
-    lv_led_set_color(led, ORANGE_COLOR);
+    lv_obj_t *newLed = lv_led_create(cont);
+    lv_led_set_brightness(newLed, 150);
+    lv_obj_set_size(newLed, 12, 12);
+    lv_led_set_color(newLed, ORANGE_COLOR);
+    lv_obj_align_to(newLed, led, LV_ALIGN_TOP_LEFT, 0, height + 15);
+    led = newLed;
     label = GuiCreateNoticeLabel(cont, _("passphrase_learn_more_desc2"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 276 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(label, led, LV_ALIGN_OUT_RIGHT_TOP, 12, -15);
+    height = lv_obj_get_self_height(label) + 12;
 
-    led = lv_led_create(cont);
-    lv_led_set_brightness(led, 150);
-    lv_obj_align(led, LV_ALIGN_DEFAULT, 36, 360 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_set_size(led, 12, 12);
-    lv_led_set_color(led, ORANGE_COLOR);
+    newLed = lv_led_create(cont);
+    lv_led_set_brightness(newLed, 150);
+    lv_obj_set_size(newLed, 12, 12);
+    lv_led_set_color(newLed, ORANGE_COLOR);
+    lv_obj_align_to(newLed, led, LV_ALIGN_TOP_LEFT, 0, height + 15);
+    led = newLed;
     label = GuiCreateNoticeLabel(cont, _("passphrase_learn_more_desc3"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 348 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(label, led, LV_ALIGN_OUT_RIGHT_TOP, 12, -15);
+    height = lv_obj_get_self_height(label) + 12;
 
-    led = lv_led_create(cont);
-    lv_led_set_brightness(led, 150);
-    lv_obj_align(led, LV_ALIGN_DEFAULT, 36, 432 - GUI_MAIN_AREA_OFFSET);
-    lv_obj_set_size(led, 12, 12);
-    lv_led_set_color(led, ORANGE_COLOR);
+    newLed = lv_led_create(cont);
+    lv_led_set_brightness(newLed, 150);
+    lv_obj_align(newLed, LV_ALIGN_DEFAULT, 36, 432 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_set_size(newLed, 12, 12);
+    lv_led_set_color(newLed, ORANGE_COLOR);
+    lv_obj_align_to(newLed, led, LV_ALIGN_TOP_LEFT, 0, height + 15);
+    led = newLed;
     label = GuiCreateNoticeLabel(cont, _("passphrase_learn_more_desc4"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 420 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(label, led, LV_ALIGN_OUT_RIGHT_TOP, 12, -15);
 
     g_passphraseLearnMoreCont = cont;
 

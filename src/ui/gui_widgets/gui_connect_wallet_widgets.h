@@ -92,6 +92,7 @@ ETHAccountType GetMetamaskAccountType(void);
 #endif
 void GuiConnectWalletHandleURGenerate(char *data, uint16_t len);
 void GuiConnectWalletHandleURUpdate(char *data, uint16_t len);
+uint8_t GuiConnectWalletGetWalletIndex(void);
 #ifndef BTC_ONLY
 SOLAccountType GetSolflareAccountType(void);
 #endif

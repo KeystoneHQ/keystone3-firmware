@@ -161,17 +161,7 @@ static void MnemonicConfirmHandler(lv_event_t * e)
                 GuiModelWriteSe();
                 GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
             } else {
-                g_noticeHintBox = GuiCreateHintBox(370);
-                lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgFailed);
-                lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 478);
-                lv_obj_t *label = GuiCreateTextLabel(g_noticeHintBox, _("error_box_mnemonic_not_match_wallet"));
-                lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 574);
-                label = GuiCreateIllustrateLabel(g_noticeHintBox, _("error_box_mnemonic_not_match_wallet_desc"));
-                lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 626);
-                lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _("OK"));
-                lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-                lv_obj_align(btn, LV_ALIGN_DEFAULT, 345, 710);
-                lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+                g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET, &g_noticeHintBox, NULL);
             }
             memset_s(confirmMnemonic, BIP39_MAX_WORD_LEN * g_phraseCnt + 1, 0, BIP39_MAX_WORD_LEN * g_phraseCnt + 1);
             SRAM_FREE(confirmMnemonic);

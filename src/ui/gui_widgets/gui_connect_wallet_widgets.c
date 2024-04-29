@@ -719,22 +719,6 @@ static void AddPetraCoins(void)
     }
 }
 
-static void AddressLongModeCutWithLen(char *out, const char *address, uint32_t maxLen)
-{
-    uint32_t len;
-    uint32_t midI = maxLen / 2;
-
-    len = strlen(address);
-    if (len <= maxLen) {
-        strcpy(out, address);
-        return;
-    }
-    strncpy(out, address, midI);
-    out[midI] = 0;
-    strcat(out, "...");
-    strcat(out, address + len - midI);
-}
-
 static void AddChainAddress(void)
 {
     if (lv_obj_get_child_cnt(g_bottomCont) > 0) {
@@ -813,7 +797,7 @@ UREncodeResult *GuiGetADAData(void)
 }
 #endif
 
-void GuiConnectWalletSetQrdata(uint8_t index)
+void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
 {
     GenerateUR func = NULL;
     SetWallet(g_pageWidget->navBarWidget, index, NULL);

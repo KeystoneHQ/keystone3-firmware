@@ -9,37 +9,15 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val)
-{
-    return (uint32_t)(val < 0 ? -val : val);
-}
-static inline uint32_t op_i(uint32_t val)
-{
-    return val;
-}
+static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
+static inline uint32_t op_i(uint32_t val) { return val; }
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_w(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_f(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_t(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
+static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
+static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
-const static lv_i18n_phrase_t en_singulars[] = {
+const static lv_i18n_phrase_t  en_singulars[] = {
     {"Address", "Address"},
     {"Approve", "Approve"},
     {"Attention", "Attention"},
@@ -189,17 +167,6 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"connect_specter_title", "Specter"},
     {"connect_sushi_link", "https://keyst.one/t/3rd/sushi"},
     {"connect_sushi_title", "SushiSwap"},
-    {"connect_typhon_desc", "Visit the link below on your computer or mobile device for a guide on syncing Keystone with your software wallet."},
-    {"connect_typhon_link", "https://keyst.one/t/3rd/typhon"},
-    {"connect_typhon_qr_link", "https://keyst.one/t/3rd/typhon"},
-    {"connect_typhon_qr_title", "Typhon Wallet"},
-    {"connect_typhon_title", "Typhon Wallet"},
-    {"connect_unisat_desc", "Visit the link below on your computer or mobile device for a guide on syncing Keystone with your software wallet."},
-    {"connect_unisat_link", "https://keyst.one/t/3rd/unisat"},
-    {"connect_unisat_qr_link", "https://keyst.one/t/3rd/unisat"},
-    {"connect_unisat_qr_title", "UniSat"},
-    {"connect_unisat_t", "Tutorial"},
-    {"connect_unisat_title", "UniSat"},
     {"connect_wallet_choose_wallet", "Choose Wallet"},
     {"connect_wallet_desc", "Visit the link below on your computer or mobile device for a guide on syncing Keystone with your software wallet."},
     {"connect_wallet_eternl_step1", "Select accounts you’d like to import on your Eternl wallet"},
@@ -761,12 +728,9 @@ const static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -779,7 +743,7 @@ static const lv_i18n_lang_t en_lang = {
     .locale_plural_fn = en_plural_fn
 };
 
-const static lv_i18n_phrase_t ko_singulars[] = {
+const static lv_i18n_phrase_t  ko_singulars[] = {
     {"Address", "주소."},
     {"Approve", "허락"},
     {"Attention", "주목"},
@@ -793,7 +757,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"Failed", "인증 실패 "},
     {"Import", "가져오기"},
     {"Keystone", "키스톤"},
-    {"OK", "OK"},
+    {"OK", "확인"},
     {"Passphrase", "패스프레이즈"},
     {"Path", "경로."},
     {"Pending", "보류중"},
@@ -990,7 +954,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"derivation_path_select_near", "Near의 파생 경로 선택하십시오"},
     {"derivation_path_select_sol", "Solana에 사용할 파생 경로 선택"},
     {"device_info_title", "장치 정보"},
-    {"device_setting_about_title", "About"},
+    {"device_setting_about_title", "에 대해"},
     {"device_setting_connection_desc", "USB/마이크로SD카드"},
     {"device_setting_mid_btn", "장치 설정"},
     {"device_setting_system_setting_desc", "언어 / 화면 / 재설정..."},
@@ -1105,7 +1069,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"import_wallet_phrase_clear_btn", "삭제"},
     {"import_wallet_phrase_desc", "아래 빈칸에 시드 문구를 입력합니다."},
     {"import_wallet_phrase_title", "시드 구문 가져오기"},
-    {"import_wallet_shamir_backup", "샤미르 백업 (Shamir Backup)"},
+    {"import_wallet_shamir_backup", "샤미르 백업"},
     {"import_wallet_shamir_backup_desc", "지갑을 복구하려면 시드 문구 공유 몇 개가 필요합니다"},
     {"import_wallet_share_success_desc", "시드 구문은 지갑과 일치합니다. "},
     {"import_wallet_single_backup_desc", "지갑을 복구하기 위해 특정 시드 구문 유형을 선택합니다.보안 위험이 없도록 설정 과정을 한 번에 완료하십시오."},
@@ -1296,7 +1260,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"self_destruction_hint", "연락처"},
     {"self_destruction_title", "디바이스를 더 이상 사용할 수 없음"},
     {"set_passcode_desc", "이 PIN 코드는 지갑 잠금을 해제하고 거래를 승인하는 데 사용됩니다."},
-    {"shamir_backup", "샤미르 백업 (Shamir Backup)"},
+    {"shamir_backup", "샤미르 백업"},
     {"shamir_phrase_backup_desc", "공유 #F5870A 1# 시드 구문을 적어서 잘 보관하세요."},
     {"shamir_phrase_cancel_create_desc", "취소할 경우 확인된 공유가 저장되지 않습니다."},
     {"shamir_phrase_cancel_create_title", "지갑 만들기 프로세스를 종료하시겠습니까?"},
@@ -1463,7 +1427,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"wallet_profile_single_sign_title", "싱글시그월렛"},
     {"wallet_profile_single_wallet_title", "싱글사인 월렛"},
     {"wallet_setting_add_wallet", "지갑 추가"},
-    {"wallet_setting_add_wallet_confirm", "알겠습니다."},
+    {"wallet_setting_add_wallet_confirm", "알겠습니다"},
     {"wallet_setting_add_wallet_limit", "제한 추가"},
     {"wallet_setting_add_wallet_limit_desc", "지갑은 최대 3개까지만 추가할 수 있습니다.새 지갑을 추가하기 전에 다른 지갑을 삭제해 주세요."},
     {"wallet_setting_add_wallet_notice", "하드웨어 지갑은 개인용으로만 제공됩니다.자산 위험을 피하기 위해 공유하지 마십시오."},
@@ -1503,7 +1467,7 @@ static const lv_i18n_lang_t ko_lang = {
     .locale_plural_fn = ko_plural_fn
 };
 
-const static lv_i18n_phrase_t ru_singulars[] = {
+const static lv_i18n_phrase_t  ru_singulars[] = {
     {"Address", "Адрес"},
     {"Approve", "Разрешить"},
     {"Attention", "Внимание"},
@@ -2214,12 +2178,9 @@ const static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t v = op_v(n);
-    UNUSED(v);
-    uint32_t i = op_i(n);
-    UNUSED(i);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t i = op_i(n); UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -2235,7 +2196,7 @@ static const lv_i18n_lang_t ru_lang = {
     .locale_plural_fn = ru_plural_fn
 };
 
-const static lv_i18n_phrase_t zh_cn_singulars[] = {
+const static lv_i18n_phrase_t  zh_cn_singulars[] = {
     {"Address", "地址"},
     {"Approve", "允许"},
     {"Attention", "注意"},
@@ -2764,7 +2725,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"shamir_phrase_share_confirm_notice_fmt", "按照正确顺序选择分片 #F5870A %d# 的助记词,已验证您保存了当前分片的助记词."},
     {"shamir_phrase_share_notice_fmt", "请确认您是分片 #F5870A %d# 的托管人."},
     {"shamir_phrase_share_number_fmt", "分片 #F5870A %d#/%d"},
-    {"shamir_phrase_threold", "Threshold"},
+    {"shamir_phrase_threold", "门限"},
     {"shamir_phrase_verify_success_desc1", "该分片对应的助记词已成功验证,请进入下一分片助记词的备份."},
     {"shamir_phrase_verify_success_desc2", "点击下面的按钮,然后将 Keystone 交给分片 2 的托管人."},
     {"shamir_phrase_verify_success_title", "验证成功"},
@@ -2990,8 +2951,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if (langs == NULL) return -1;
-    if (langs[0] == NULL) return -1;
+    if(langs == NULL) return -1;
+    if(langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -3004,13 +2965,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if (current_lang_pack == NULL) return -1;
+    if(current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for (i = 0; current_lang_pack[i] != NULL; i++) {
+    for(i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -3023,10 +2984,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for (i = 0; trans[i].msg_id != NULL; i++) {
-        if (strcmp(trans[i].msg_id, msg_id) == 0) {
+    for(i = 0; trans[i].msg_id != NULL; i++) {
+        if(strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if (trans[i].translation) return trans[i].translation;
+            if(trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -3041,23 +3002,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -3073,31 +3034,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -3112,6 +3073,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if (!current_lang) return NULL;
+    if(!current_lang) return NULL;
     return current_lang->locale_name;
 }

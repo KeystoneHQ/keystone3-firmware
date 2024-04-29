@@ -7,7 +7,6 @@
 #include "user_memory.h"
 #include "gui_button.h"
 #include "gui_hintbox.h"
-#include "safe_str_lib.h"
 
 typedef struct KeyDerivationWidget {
     uint8_t currentTile;
@@ -71,12 +70,14 @@ void FreeKeyDerivationRequestMemory(void)
 
 static uint8_t RecalcCurrentWalletIndex(char *origin)
 {
+#ifndef COMPILE_SIMULATOR
     char *originLower = strlwr_s(origin, strlen(origin));
     if (originLower == "eternl") {
         return WALLET_LIST_ETERNL;
     } else if (originLower == "typhon extension") {
         return WALLET_LIST_TYPHON;
     }
+#endif
 }
 
 void GuiKeyDerivationRequestInit()

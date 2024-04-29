@@ -1,3 +1,24 @@
+## 1.3.6 (2024-04-28)
+
+### What's new
+
+1. Added support for parsing and signing non-standard EIP712 messages
+
+### Bug Fixes
+
+1. Fixed an issue where certain transactions on the Dymension chain caused devices to fail signing properly
+2. Corrected display content errors on devices when performing specific exchanges on the Carbon network
+3. Resolved an assert error occurring in specific scenarios on the Checksum page
+4. Fixed an issue where devices experienced loading problems when processing large-volume transactions on the Cardano
+
+
+## 1.3.4 (2024-04-02)
+
+### Bug Fixes
+
+1. Fixed issue causing device errors in certain scenarios on Eternl
+
+
 ## 1.3.2 (2024-03-22)
 
 ### What's new

@@ -387,8 +387,7 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_FEWCHA) {
         GuiCreateSelectFewchaCoinWidget();
     } else if (HasSelectAddressWidget()) {
-        if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT)
-        {
+        if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
             g_coinListCont = GuiCreateSelectAddressWidget(CHAIN_XRP, g_chainAddressIndex[GetCurrentAccountIndex()], RefreshAddressIndex);
         }
     }

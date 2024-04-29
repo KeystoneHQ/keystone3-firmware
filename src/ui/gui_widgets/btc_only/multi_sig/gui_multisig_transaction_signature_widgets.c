@@ -208,7 +208,7 @@ static void GuiMultisigTransactionSignatureSetupUR(lv_obj_t *parent)
     lv_obj_align(qrcode, LV_ALIGN_TOP_LEFT, 36, 36);
     bool showPending = true;
 #if BTC_ONLY
-        showPending = false;
+    showPending = false;
 #endif
     GuiAnimatingQRCodeInitWithCustomSize(qrcode, GuiGetSignQrCodeData, showPending, 336, 336, NULL);
 

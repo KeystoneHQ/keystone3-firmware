@@ -9,6 +9,8 @@ typedef enum {
     WALLET_LIST_METAMASK,
     WALLET_LIST_OKX,
     WALLET_LIST_ETERNL,
+    // WALLET_LIST_YOROI,
+    WALLET_LIST_TYPHON,
     WALLET_LIST_BLUE,
     WALLET_LIST_SUB,
     WALLET_LIST_SOLFARE,
@@ -89,6 +91,7 @@ ETHAccountType GetMetamaskAccountType(void);
 #endif
 void GuiConnectWalletHandleURGenerate(char *data, uint16_t len);
 void GuiConnectWalletHandleURUpdate(char *data, uint16_t len);
+uint8_t GuiConnectWalletGetWalletIndex(void);
 #ifndef BTC_ONLY
 SOLAccountType GetSolflareAccountType(void);
 #endif

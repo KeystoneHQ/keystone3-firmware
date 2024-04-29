@@ -103,6 +103,10 @@ static void GuiCreateSignatureQRCode(lv_obj_t *parent)
     GenerateUR func = GetUrGenerator(g_viewType);
 
     if (func) {
-        GuiAnimatingQRCodeInitWithCustomSize(qrCont, func, true, 336, 336, (char *)_("sign_transaction"));
+        bool showPending = true;
+#if BTC_ONLY
+        showPending = false;
+#endif
+        GuiAnimatingQRCodeInitWithCustomSize(qrCont, func, showPending, 336, 336, (char *)_("sign_transaction"));
     }
 }

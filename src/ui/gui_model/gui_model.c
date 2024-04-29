@@ -1046,6 +1046,8 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
         if (ret == ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH) {
             GuiApiEmitSignal(SIG_EXTENDED_PUBLIC_KEY_NOT_MATCH, NULL, 0);
             return ret;
+        } else if (ret == SUCCESS_CODE) {
+            ModeGetWalletDesc(NULL, 0);
         }
     } else {
         ret = VerifyCurrentAccountPassword(SecretCacheGetPassword());

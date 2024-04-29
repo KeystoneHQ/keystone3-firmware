@@ -1,5 +1,5 @@
 #ifndef BTC_ONLY
-#include "gui_connect_eternl_widgets.h"
+#include "gui_connect_ada_widgets.h"
 #include "gui_connect_wallet_widgets.h"
 #include "gui.h"
 #include "gui_page.h"
@@ -17,26 +17,26 @@ static void CleanHandler(lv_event_t *e);
 static void OpenTutorialHandler(lv_event_t *e);
 static void OpenMoreHandler(lv_event_t *e);
 
-bool ConnectEternlWidgetExist()
+bool ConnectADAWidgetExist()
 {
     return g_pageWidget != NULL;
 }
 
-void CleanConnectEternlWidget()
+void CleanConnectADAWidget()
 {
     GUI_PAGE_DEL(g_pageWidget);
 }
 
-void GuiCreateConnectEternlWidget()
+void GuiCreateConnectADAWalletWidget(uint8_t index)
 {
-    g_walletIndex = WALLET_LIST_ETERNL;
+    g_walletIndex = index;
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
     lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_remove_style(cont, NULL, LV_PART_SCROLLBAR);
     g_cont = cont;
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CleanHandler, NULL);
-    SetWallet(g_pageWidget->navBarWidget, WALLET_LIST_ETERNL, NULL);
+    SetWallet(g_pageWidget->navBarWidget, index, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
     GuiCreatePageContent(g_cont);
 }

@@ -1,2 +1,4 @@
 assets
 lib/rust-builds
+tools/json_str.txt
+tools/json.json

@@ -539,33 +539,35 @@ impl ParsedCardanoTx {
                 value: from_bignum(&output.amount().coin()),
                 assets: output.amount().multiasset().map(|v| {
                     let mut parsed_multi_assets = vec![];
-                    let len = v.keys().len();
-                    for _j in 0..len {
-                        let policy_id = v.keys().get(_j);
-                        let multi_assets = v.get(&policy_id);
-                        if let Some(assets) = multi_assets {
-                            let names = assets.keys();
-                            let names_len = names.len();
-                            for k in 0..names_len {
-                                let name = names.get(k);
-                                let value = assets.get(&name);
-                                if let Some(asset_value) = value {
-                                    let multi_asset = ParsedCardanoMultiAsset {
-                                        policy_id: policy_id.clone().to_bytes(),
-                                        name: name.to_bytes(),
-                                        amount: normalize_value(from_bignum(&asset_value)),
-                                        value: from_bignum(&asset_value),
-                                        id: format!(
-                                            "{}#{}",
-                                            hex::encode(policy_id.to_bytes()),
-                                            hex::encode(name.to_bytes())
-                                        ),
-                                    };
-                                    parsed_multi_assets.push(multi_asset)
-                                }
-                            }
-                        }
-                    }
+                    // temporary comment multi assets parse logic because it consumes a lot of memory but we don't display it on UI
+
+                    // let len = v.keys().len();
+                    // for _j in 0..len {
+                    //     let policy_id = v.keys().get(_j);
+                    //     let multi_assets = v.get(&policy_id);
+                    //     if let Some(assets) = multi_assets {
+                    //         let names = assets.keys();
+                    //         let names_len = names.len();
+                    //         for k in 0..names_len {
+                    //             let name = names.get(k);
+                    //             let value = assets.get(&name);
+                    //             if let Some(asset_value) = value {
+                    //                 let multi_asset = ParsedCardanoMultiAsset {
+                    //                     policy_id: policy_id.clone().to_bytes(),
+                    //                     name: name.to_bytes(),
+                    //                     amount: normalize_value(from_bignum(&asset_value)),
+                    //                     value: from_bignum(&asset_value),
+                    //                     id: format!(
+                    //                         "{}#{}",
+                    //                         hex::encode(policy_id.to_bytes()),
+                    //                         hex::encode(name.to_bytes())
+                    //                     ),
+                    //                 };
+                    //                 parsed_multi_assets.push(multi_asset)
+                    //             }
+                    //         }
+                    //     }
+                    // }
                     parsed_multi_assets
                 }),
             };

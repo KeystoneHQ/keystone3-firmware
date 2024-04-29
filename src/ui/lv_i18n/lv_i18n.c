@@ -9,13 +9,35 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
-static inline uint32_t op_i(uint32_t val) { return val; }
+static inline uint32_t op_n(int32_t val)
+{
+    return (uint32_t)(val < 0 ? -val : val);
+}
+static inline uint32_t op_i(uint32_t val)
+{
+    return val;
+}
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
-static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
-static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
-static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_v(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_w(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_f(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_t(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
 
 const static lv_i18n_phrase_t  en_singulars[] = {
     {"Address", "Address"},
@@ -728,9 +750,12 @@ const static lv_i18n_phrase_t  en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
-    uint32_t i = op_i(n); UNUSED(i);
-    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t n = op_n(num);
+    UNUSED(n);
+    uint32_t i = op_i(n);
+    UNUSED(i);
+    uint32_t v = op_v(n);
+    UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -796,12 +821,12 @@ const static lv_i18n_phrase_t  ko_singulars[] = {
     {"about_info_verify_firmware_step2", "펌웨어 페이지에서 \"펌웨어 다운로드\" 버튼 옆의 #F5870A Checksum#을 클릭합니다."},
     {"about_info_verify_firmware_step3", "показанную на веб-странице и устройстве."},
     {"about_info_verify_source_code_title", "소스 코드 검증"},
-    {"about_keystone_discord", "디스코드"},
+    {"about_keystone_discord", "Discord"},
     {"about_keystone_discord_url", "keyst.one/discord"},
-    {"about_keystone_telegram", "텔레그램"},
+    {"about_keystone_telegram", "Telegram"},
     {"about_keystone_telegram_url", "t.me/keystonewallet"},
     {"about_keystone_title", "About Keystone"},
-    {"about_keystone_twitter", "트위터"},
+    {"about_keystone_twitter", "Twitter"},
     {"about_keystone_twitter_url", "twitter.com/KeystoneWallet"},
     {"about_keystone_website", "웹사이트"},
     {"about_keystone_website_url", "keyst.one"},
@@ -2178,9 +2203,12 @@ const static lv_i18n_phrase_t  ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
-    uint32_t v = op_v(n); UNUSED(v);
-    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t n = op_n(num);
+    UNUSED(n);
+    uint32_t v = op_v(n);
+    UNUSED(v);
+    uint32_t i = op_i(n);
+    UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -2249,12 +2277,12 @@ const static lv_i18n_phrase_t  zh_cn_singulars[] = {
     {"about_info_verify_firmware_step2", "点击固件页面中,\"固件下载\"按钮旁的 #F5870A Checksum#."},
     {"about_info_verify_firmware_step3", "点击下面的 #F5870A 展示校验和# 按钮,然后将第二步的校验和与之进行对比."},
     {"about_info_verify_source_code_title", "验证源代码"},
-    {"about_keystone_discord", "不和谐"},
+    {"about_keystone_discord", "Discord"},
     {"about_keystone_discord_url", "keyst.one/discord"},
-    {"about_keystone_telegram", "电报"},
+    {"about_keystone_telegram", "Telegram"},
     {"about_keystone_telegram_url", "T.Me/KeystoneWallet"},
     {"about_keystone_title", "关于 Keystone"},
-    {"about_keystone_twitter", "推特"},
+    {"about_keystone_twitter", "Twitter"},
     {"about_keystone_twitter_url", "Twitter.com/KeystoneWallet"},
     {"about_keystone_website", "网站"},
     {"about_keystone_website_url", "keyst.one"},
@@ -2491,7 +2519,7 @@ const static lv_i18n_phrase_t  zh_cn_singulars[] = {
     {"firmware_update_usb_title", "USB 更新"},
     {"firmware_update_usb_title2", "警告"},
     {"firmware_update_usb_updating_hint", "升级中,请保持 USB 连接."},
-    {"firmware_update_verify_firmware_qr_link", "KeystoneHQ/keystone3-firmware/docs/verify.md "},
+    {"firmware_update_verify_firmware_qr_link", "KeystoneHQ/keystone3-firmware/docs/verify.md"},
     {"firmware_update_via_sd", "MicroSD卡"},
     {"firmware_update_via_usb", "USB"},
     {"forget_password_cancel", "取消密码重置?"},
@@ -2517,7 +2545,7 @@ const static lv_i18n_phrase_t  zh_cn_singulars[] = {
     {"import_multi_wallet_via_camera", "通过相机"},
     {"import_multi_wallet_via_micro_title", "MicroSD 卡"},
     {"import_wallet_choose_method", "选择导入方法"},
-    {"import_wallet_duplicated_share_desc", "该分片已验证通过,请继续输入下一分片的助记词."},
+    {"import_wallet_duplicated_share_desc", "该分片助记词已验证通过,请继续输入下一分片的助记词."},
     {"import_wallet_invalid_phrase_desc", "您输入的助记词无效.请检查您所备份的助记词,重新尝试."},
     {"import_wallet_phrase_clear_btn", "清除"},
     {"import_wallet_phrase_desc", "请将助记词输入到下列方框内."},
@@ -2530,12 +2558,12 @@ const static lv_i18n_phrase_t  zh_cn_singulars[] = {
     {"import_wallet_single_phrase_desc", "您需要使用 12/18/24 字的助记词来恢复钱包."},
     {"import_wallet_ssb_cancel_desc", "一旦取消,您需要再次输入所有的分片助记词才能进入."},
     {"import_wallet_ssb_cancel_title", "取消钱包导入?"},
-    {"import_wallet_ssb_desc_fmt", "请将您分片#F5870A %d# 的助记词输入到下列空白框内."},
-    {"import_wallet_ssb_incorrect_title", "重复分片"},
+    {"import_wallet_ssb_desc_fmt", "请将您持有的 #F5870A %d# 位的分片助记词输入到下列空白框内."},
+    {"import_wallet_ssb_incorrect_title", "分片助记词重复"},
     {"import_wallet_ssb_notbelong_desc", "您输入的助记词与该钱包不匹配.请检查您所备份的助记词,重新尝试."},
-    {"import_wallet_ssb_repeat_desc", "该分片已经被倒入过,请输入其他分片助记词."},
+    {"import_wallet_ssb_repeat_desc", "该分片助记词已经被倒入过,请输入其他分片助记词."},
     {"import_wallet_ssb_step_fmt", "%d 的 %d"},
-    {"import_wallet_ssb_title_fmt", "分片#F5870A%d#"},
+    {"import_wallet_ssb_title_fmt", "分片助记词 #F5870A%d#"},
     {"language_desc", "选择你的语言"},
     {"language_little_title", "语言"},
     {"language_option1", "English"},
@@ -2719,15 +2747,15 @@ const static lv_i18n_phrase_t  zh_cn_singulars[] = {
     {"shamir_phrase_cancel_create_title", "取消?"},
     {"shamir_phrase_confirm_desc", "按顺序选择以下单词,已验证您保存了当前分片的助记词."},
     {"shamir_phrase_custodian_desc", "请确认您是该分片的持有者#F5870A 1#"},
-    {"shamir_phrase_custodian_title", "分片#F5870A 1#"},
-    {"shamir_phrase_number", "分片数量"},
+    {"shamir_phrase_custodian_title", "分片助记词 #F5870A 1#"},
+    {"shamir_phrase_number", "分片助记词数量"},
     {"shamir_phrase_share_backup_notice_fmt", "写下您分片 #F5870A %d# 的助记词,并妥善保管."},
     {"shamir_phrase_share_confirm_notice_fmt", "按照正确顺序选择分片 #F5870A %d# 的助记词,已验证您保存了当前分片的助记词."},
     {"shamir_phrase_share_notice_fmt", "请确认您是分片 #F5870A %d# 的托管人."},
-    {"shamir_phrase_share_number_fmt", "分片 #F5870A %d#/%d"},
+    {"shamir_phrase_share_number_fmt", "分片助记词 #F5870A %d#/%d"},
     {"shamir_phrase_threold", "门限"},
     {"shamir_phrase_verify_success_desc1", "该分片对应的助记词已成功验证,请进入下一分片助记词的备份."},
-    {"shamir_phrase_verify_success_desc2", "点击下面的按钮,然后将 Keystone 交给分片 2 的托管人."},
+    {"shamir_phrase_verify_success_desc2", "点击下面的按钮,然后将 Keystone 交给分片助记词 2 的托管人."},
     {"shamir_phrase_verify_success_title", "验证成功"},
     {"show_checksum", "显示校验和"},
     {"sign_transaction", "签名"},
@@ -2951,8 +2979,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if(langs == NULL) return -1;
-    if(langs[0] == NULL) return -1;
+    if (langs == NULL) return -1;
+    if (langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -2965,13 +2993,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if(current_lang_pack == NULL) return -1;
+    if (current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for(i = 0; current_lang_pack[i] != NULL; i++) {
+    for (i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -2984,10 +3012,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for(i = 0; trans[i].msg_id != NULL; i++) {
-        if(strcmp(trans[i].msg_id, msg_id) == 0) {
+    for (i = 0; trans[i].msg_id != NULL; i++) {
+        if (strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if(trans[i].translation) return trans[i].translation;
+            if (trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -3002,23 +3030,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if(current_lang == NULL) return msg_id;
+    if (current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if(lang->singulars != NULL) {
+    if (lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if(lang == current_lang_pack[0]) return msg_id;
+    if (lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if(lang->singulars != NULL) {
+    if (lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -3034,31 +3062,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if(current_lang == NULL) return msg_id;
+    if (current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if(lang->locale_plural_fn != NULL) {
+    if (lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if(lang->plurals[ptype] != NULL) {
+        if (lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if(lang == current_lang_pack[0]) return msg_id;
+    if (lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if(lang->locale_plural_fn != NULL) {
+    if (lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if(lang->plurals[ptype] != NULL) {
+        if (lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -3073,6 +3101,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if(!current_lang) return NULL;
+    if (!current_lang) return NULL;
     return current_lang->locale_name;
 }

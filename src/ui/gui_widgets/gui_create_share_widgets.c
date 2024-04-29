@@ -578,7 +578,6 @@ static void SelectCheckBoxHandler(lv_event_t* e)
 
     //TODO: use id to identity position
     const char *currText = lv_checkbox_get_text(actCb);
-    printf("currText = %s\n", currText);
     if (!strcmp(currText, _("wallet_phrase_20words"))) {
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "20");
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);

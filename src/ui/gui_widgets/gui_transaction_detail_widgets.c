@@ -258,7 +258,6 @@ void GuiSignDealFingerRecognize(void *param)
             lv_obj_clear_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN);
         }
         lv_img_set_src(g_fpErrorImg, &imgRedFinger);
-        printf("GuiSignDealFingerRecognize err message is %s\n", GetFpErrorMessage(errCode));
         printf("g_fingerSingCount is %d\n", g_fingerSignCount);
         if (g_fingerSignCount < FINGERPRINT_SING_ERR_TIMES) {
             FpRecognize(RECOGNIZE_SIGN);

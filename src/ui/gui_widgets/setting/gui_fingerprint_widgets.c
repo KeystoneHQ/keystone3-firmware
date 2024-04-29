@@ -265,6 +265,8 @@ void GuiSettingFingerRegisterFail(void *param)
         lv_obj_set_style_arc_color(g_arcProgress, RED_COLOR, LV_PART_INDICATOR);
         if (errCode == 0x93) { // finger registered
             text = _("fingerprint_add_failed_duplicate");
+        } else if (errCode == ERR_FP_RECORDING_AREA_SMALL) {
+            text = _("fingerprint_add_failed_partial");
         } else {
             text = (char *)GetFpErrorMessage(errCode);
         }

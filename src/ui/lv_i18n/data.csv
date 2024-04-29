@@ -351,7 +351,6 @@ In short, not reusing addresses safeguards privacy, optimizes transactions, and 
 3. Ledger Legacy:如果您曾在Ledger Legacy下管理您的资产,请选择此派生路径.",,,,
 ,20,receive_coin_fmt,Receive %s,Получить %s,받기 %s,收到 %s,,,,
 ,20,receive_trx_hint,"This address is only for TRX, TRC-20 tokens and TRC-10 tokens, other digital assets sent to this address will be lost.","Этот адрес предназначен только для TRX, TRC-20 и TRC-10 токенов, другие цифровые активы, отправленные на этот адрес, будут потеряны.","이 주소는 TRX, TRC-20 토큰 및 TRC-10 토큰만을 위한 것이며, 이 주소로 전송된 다른 디지털 자산은 손실됩니다.","此地址仅适用于 TRX,TRC-20 和 TRC-10 代币,将其他数字货币发送到该地址将会造成丢失.",,,,
-,20,receive_ada_base_address,Address,Адрес,주소.,地址,,,,
 ,24,receive_ada_enterprise_address,Address (Not Delegated),Адрес (Не делегированный),주소(위임되지 않음),地址(未委派),,,,
 ,24,receive_ada_stake_address,Reward Address,Адрес для награды,보상 주소,奖励地址,,,,
 ,20,receive_ada_show_address_detail,Show Address Detail,Показать адрес целиком,주소 상세 내역 표시,显示地址细节,,,,

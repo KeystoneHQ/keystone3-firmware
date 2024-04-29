@@ -77,7 +77,6 @@ static uint8_t RecalcCurrentWalletIndex(char *origin)
     } else if (originLower == "typhon extension") {
         return WALLET_LIST_TYPHON;
     }
-    return WALLET_LIST_KEYSTONE;
 }
 
 void GuiKeyDerivationRequestInit()

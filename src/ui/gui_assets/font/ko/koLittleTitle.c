@@ -2547,8 +2547,7 @@ static const uint16_t unicode_list_0[] = {
 };
 
 /*Collect the unicode lists and glyph_id offsets*/
-static const lv_font_fmt_txt_cmap_t cmaps[] =
-{
+static const lv_font_fmt_txt_cmap_t cmaps[] = {
     {
         .range_start = 32, .range_length = 54921, .glyph_id_start = 1,
         .unicode_list = unicode_list_0, .glyph_id_ofs_list = NULL, .list_length = 227, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY
@@ -2561,8 +2560,7 @@ static const lv_font_fmt_txt_cmap_t cmaps[] =
 
 
 /*Pair left and right glyphs for kerning*/
-static const uint8_t kern_pair_glyph_ids[] =
-{
+static const uint8_t kern_pair_glyph_ids[] = {
     6, 26,
     6, 27,
     6, 29,
@@ -2735,34 +2733,32 @@ static const uint8_t kern_pair_glyph_ids[] =
 
 /* Kerning between the respective left and right glyphs
  * 4.4 format which needs to scaled with `kern_scale`*/
-static const int8_t kern_pair_values[] =
-{
+static const int8_t kern_pair_values[] = {
     -51, -11, -7, -7, -7, -7, -24, -12,
-    -51, -11, -7, -7, -7, -7, -24, -12,
-    -6, -13, -17, -17, -17, -6, 12, -17,
-    3, -11, -8, -13, -6, -6, -10, -13,
-    -10, -13, -8, -8, -3, -6, -6, -6,
-    -3, -6, -8, -11, -13, -54, -54, -47,
-    -13, -22, -38, -34, -34, -34, -38, -25,
-    -34, -25, -25, -30, -10, -25, -18, -9,
-    -9, -17, -6, -3, -6, -3, -7, -13,
-    -8, -11, -6, -12, -12, -12, -6, -12,
-    -6, 2, -5, -11, -13, -9, -6, -6,
-    1, 6, 23, -19, -14, -9, -8, -8,
-    -8, -8, -3, -5, -13, 5, 5, -7,
-    -18, -6, -10, -10, -10, -6, -10, -12,
-    -8, -5, -13, -6, -6, -7, -30, -9,
-    -2, -10, -3, -6, -6, -7, -30, -9,
-    -2, -10, -3, -29, -29, -18, -13, -6,
-    -6, -6, -6, -6, -3, 9, -7, -13,
-    -11, 2, 2, 4, -14, -8, -12, -8,
-    -8, -8, -6, -8, -6, -11, -11, -20,
-    -20, -5, -13, -6, -3, -3, -3, -3
-};
+        -51, -11, -7, -7, -7, -7, -24, -12,
+        -6, -13, -17, -17, -17, -6, 12, -17,
+        3, -11, -8, -13, -6, -6, -10, -13,
+        -10, -13, -8, -8, -3, -6, -6, -6,
+        -3, -6, -8, -11, -13, -54, -54, -47,
+        -13, -22, -38, -34, -34, -34, -38, -25,
+        -34, -25, -25, -30, -10, -25, -18, -9,
+        -9, -17, -6, -3, -6, -3, -7, -13,
+        -8, -11, -6, -12, -12, -12, -6, -12,
+        -6, 2, -5, -11, -13, -9, -6, -6,
+        1, 6, 23, -19, -14, -9, -8, -8,
+        -8, -8, -3, -5, -13, 5, 5, -7,
+        -18, -6, -10, -10, -10, -6, -10, -12,
+        -8, -5, -13, -6, -6, -7, -30, -9,
+        -2, -10, -3, -6, -6, -7, -30, -9,
+        -2, -10, -3, -29, -29, -18, -13, -6,
+        -6, -6, -6, -6, -3, 9, -7, -13,
+        -11, 2, 2, 4, -14, -8, -12, -8,
+        -8, -8, -6, -8, -6, -11, -11, -20,
+        -20, -5, -13, -6, -3, -3, -3, -3
+    };
 
 /*Collect the kern pair's data in one place*/
-static const lv_font_fmt_txt_kern_pair_t kern_pairs =
-{
+static const lv_font_fmt_txt_kern_pair_t kern_pairs = {
     .glyph_ids = kern_pair_glyph_ids,
     .values = kern_pair_values,
     .pair_cnt = 168,

@@ -11,7 +11,7 @@ use num_bigint_dig::BigUint;
 use sha2;
 use sha2::{Digest, Sha256};
 use third_party::rsa::pss::SigningKey;
-use third_party::rsa::signature::{RandomizedDigestSigner, SignatureEncoding};
+use third_party::rsa::signature::{RandomizedDigestSigner, SignatureEncoding, RandomizedSigner};
 use third_party::rsa::{rand_core, PublicKeyParts, RsaPrivateKey};
 
 pub const MODULUS_LENGTH: usize = 4096;
@@ -59,6 +59,18 @@ pub fn sign_message(
             digest.update(data);
             let signature = signing_key.sign_digest_with_rng(&mut rng, digest);
             Ok(Vec::from(signature.to_bytes()))
+        }
+        SigningOption::RSA { salt_len } => {
+            let parsed_salt_len: usize = (*salt_len)
+                .try_into()
+                .map_err(|_| KeystoreError::RSASignError)?;
+            let signing_key = SigningKey::<Sha256>::new_with_salt_len(private_key, parsed_salt_len);
+            let mut rng = ChaCha20Rng::from_seed([42; 32]);
+            let mut digest = sha2::Sha256::new();
+            digest.update(data);
+            let hash = digest.finalize().to_vec();
+            let result = signing_key.sign_with_rng(&mut rng, &hash);
+            Ok(Vec::from(result.to_bytes()))
         }
         _ => Err(KeystoreError::RSASignError),
     }
@@ -129,6 +141,7 @@ impl RSA {
 #[derive(Clone, Copy)]
 pub enum SigningOption {
     PSS { salt_len: i32 },
+    RSA { salt_len: i32 }
 }
 
 #[cfg(test)]

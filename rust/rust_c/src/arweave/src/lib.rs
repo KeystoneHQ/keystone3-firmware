@@ -4,26 +4,27 @@ extern crate alloc;
 
 use crate::structs::DisplayArweaveTx;
 use alloc::boxed::Box;
+use alloc::fmt::format;
 use alloc::string::ToString;
+use alloc::{format, slice};
 use alloc::vec::Vec;
 use app_arweave::{
     aes256_decrypt, aes256_encrypt, errors::ArweaveError, generate_public_key_from_primes,
     generate_secret, parse,
 };
-use common_rust_c::errors::ErrorCodes;
+use common_rust_c::errors::{ErrorCodes, RustCError};
 use common_rust_c::extract_ptr_with_type;
 use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
-use core::slice;
 use cty::c_char;
 use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
 use keystore::algorithms::rsa::{sign_message, SigningOption};
 use third_party::hex;
 use third_party::serde_json;
 use third_party::serde_json::{json, Value};
-use third_party::ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SaltLen};
+use third_party::ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SaltLen, SignType};
 use third_party::ur_registry::arweave::arweave_signature::ArweaveSignature;
 use third_party::ur_registry::traits::{RegistryItem, To};
 
@@ -124,8 +125,26 @@ pub extern "C" fn arweave_get_address(xpub: PtrString) -> *mut SimpleResponse<c_
 }
 
 #[no_mangle]
-pub extern "C" fn ar_check_tx() -> PtrT<TransactionCheckResult> {
-    TransactionCheckResult::error(ErrorCodes::Success, "Success".to_string()).c_ptr()
+pub extern "C" fn ar_check_tx(
+    ptr: PtrUR,
+    master_fingerprint: PtrBytes,
+    length: u32,
+) -> PtrT<TransactionCheckResult> {
+    if length != 4 {
+        return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
+    }
+    let mfp = unsafe { slice::from_raw_parts(master_fingerprint, 4) };
+    let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
+    let ur_mfp = sign_request.get_master_fingerprint();
+    
+    if let Ok(mfp) = mfp.try_into() as Result<[u8; 4], _> {
+        if hex::encode(mfp) == hex::encode(ur_mfp) {
+            return TransactionCheckResult::new().c_ptr();
+        } else {
+            return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
+        }
+    }
+    return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
 }
 
 #[no_mangle]
@@ -159,6 +178,9 @@ pub extern "C" fn ar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayArw
 fn parse_sign_data(ptr: PtrUR) -> Result<Vec<u8>, ArweaveError> {
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let sign_data = sign_request.get_sign_data();
+    if sign_request.get_sign_type() != SignType::Transaction {
+        return Ok(sign_data);
+    }
     let raw_tx = parse(&sign_data).unwrap();
     let raw_json: Value = serde_json::from_str(&raw_tx).unwrap();
     let signature_data = raw_json["formatted_json"]["signature_data"]
@@ -175,13 +197,34 @@ fn build_sign_result(ptr: PtrUR, p: &[u8], q: &[u8]) -> Result<ArweaveSignature,
         SaltLen::Digest => 32,
     };
     let signature_data = parse_sign_data(ptr)?;
-    let signature = sign_message(&signature_data, p, q, &SigningOption::PSS { salt_len })?;
+    let sign_type = sign_request.get_sign_type();
+    let signing_option = match sign_type {
+        SignType::Transaction => SigningOption::PSS { salt_len },
+        SignType::Message => SigningOption::RSA { salt_len },
+        SignType::DataItem => 
+            return Err(ArweaveError::SignFailure(format!("Unsupported sign type"))),
+        _ => SigningOption::PSS { salt_len },
+    };
+    let signature = sign_message(&signature_data, p, q, &signing_option)?;
 
     Ok(ArweaveSignature::new(
         sign_request.get_request_id(),
         signature,
     ))
 }
+
+// #[no_mangle]
+// pub extern "C" fn ar_sign_message(
+//     ptr: PtrUR,
+//     p: PtrBytes,
+//     p_len: u32,
+//     q: PtrBytes,
+//     q_len: u32,
+// ) -> PtrT<UREncodeResult> {
+//     let p = unsafe { slice::from_raw_parts(p, p_len as usize) };
+//     let q = unsafe { slice::from_raw_parts(q, q_len as usize) };
+
+// }
 
 #[no_mangle]
 pub extern "C" fn ar_sign_tx(

@@ -15,7 +15,14 @@ static void *g_parseResult = NULL;
 
 PtrT_TransactionCheckResult GuiGetArCheckResult(void)
 {
-    return ar_check_tx();
+#ifndef COMPILE_SIMULATOR
+    uint8_t mfp[4];
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    GetMasterFingerPrint(mfp);
+    return ar_check_tx(data, mfp, sizeof(mfp));
+#else
+    return NULL;
+#endif
 }
 
 void GuiSetArUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)

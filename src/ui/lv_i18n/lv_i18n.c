@@ -9,37 +9,15 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val)
-{
-    return (uint32_t)(val < 0 ? -val : val);
-}
-static inline uint32_t op_i(uint32_t val)
-{
-    return val;
-}
+static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
+static inline uint32_t op_i(uint32_t val) { return val; }
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_w(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_f(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_t(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
+static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
+static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
-const static lv_i18n_phrase_t  en_singulars[] = {
+const static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
     {"Approve", "Approve"},
     {"Attention", "Attention"},
@@ -750,12 +728,9 @@ const static lv_i18n_phrase_t  en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -768,8 +743,8 @@ static const lv_i18n_lang_t en_lang = {
     .locale_plural_fn = en_plural_fn
 };
 
-const static lv_i18n_phrase_t  ko_singulars[] = {
-    {"Address", "주소."},
+const static lv_i18n_phrase_t ko_singulars[] = {
+    {"Address", "주소"},
     {"Approve", "허락"},
     {"Attention", "주목"},
     {"Cancel", "취소"},
@@ -816,10 +791,10 @@ const static lv_i18n_phrase_t  ko_singulars[] = {
     {"about_info_verify_checksum_desc", "만약 위의 정보가 자체적으로 계산한 mh1903.bin 파일의 체크섬 일치하면 오픈 소스 펌웨어가 장치의 펌웨어와 일치함을 의미합니다."},
     {"about_info_verify_checksum_text", "체크섬"},
     {"about_info_verify_checksum_title", "체크섬"},
-    {"about_info_verify_firmware_desc", "чтобы убедиться"},
-    {"about_info_verify_firmware_step1", "чтобы создать прошивку и получить контрольную сумму."},
+    {"about_info_verify_firmware_desc", ""},
+    {"about_info_verify_firmware_step1", ""},
     {"about_info_verify_firmware_step2", "펌웨어 페이지에서 \"펌웨어 다운로드\" 버튼 옆의 #F5870A Checksum#을 클릭합니다."},
-    {"about_info_verify_firmware_step3", "показанную на веб-странице и устройстве."},
+    {"about_info_verify_firmware_step3", ""},
     {"about_info_verify_source_code_title", "소스 코드 검증"},
     {"about_keystone_discord", "Discord"},
     {"about_keystone_discord_url", "keyst.one/discord"},
@@ -1025,7 +1000,7 @@ const static lv_i18n_phrase_t  ko_singulars[] = {
     {"fingerprint_remove_confirm", "지문"},
     {"fingerprint_sign_tx", "서명 트랜잭션"},
     {"fingerprint_up_to_3", "지문을 3개까지 추가할 수 있습니다"},
-    {"firmware_update_btc_only_button_i_know", "잘 알고있습니다."},
+    {"firmware_update_btc_only_button_i_know", "잘 알고있습니다"},
     {"firmware_update_btc_only_warning_desc", "멀티코인 펌웨어에서 BTC-Only 펌웨어로 업그레이드 중입니다.업그레이드 후 #F5870A 이 장치에 있는 모든 지갑은 #F5870A가 BTC코인 #만 지원되며 이 과정은 불가역적입니다.관련된 위험을 알고 있는지 확인하십시오.잘못된 펌웨어를 다운로드하셨다면 진행을 취소해 주세요."},
     {"firmware_update_deny_desc", "펌웨어 버전을 업그레이드하려면 장치의 잠금을 해제해야 합니다."},
     {"firmware_update_deny_input_password", "비밀번호 입력"},
@@ -1492,7 +1467,7 @@ static const lv_i18n_lang_t ko_lang = {
     .locale_plural_fn = ko_plural_fn
 };
 
-const static lv_i18n_phrase_t  ru_singulars[] = {
+const static lv_i18n_phrase_t ru_singulars[] = {
     {"Address", "Адрес"},
     {"Approve", "Разрешить"},
     {"Attention", "Внимание"},
@@ -2203,12 +2178,9 @@ const static lv_i18n_phrase_t  ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t v = op_v(n);
-    UNUSED(v);
-    uint32_t i = op_i(n);
-    UNUSED(i);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t i = op_i(n); UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -2224,7 +2196,7 @@ static const lv_i18n_lang_t ru_lang = {
     .locale_plural_fn = ru_plural_fn
 };
 
-const static lv_i18n_phrase_t  zh_cn_singulars[] = {
+const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"Address", "地址"},
     {"Approve", "允许"},
     {"Attention", "注意"},
@@ -2908,7 +2880,7 @@ const static lv_i18n_phrase_t  zh_cn_singulars[] = {
     {"wallet_profile_single_sign_title", "单签钱包"},
     {"wallet_profile_single_wallet_title", "单重签名钱包"},
     {"wallet_setting_add_wallet", "+添加钱包"},
-    {"wallet_setting_add_wallet_confirm", "我明白."},
+    {"wallet_setting_add_wallet_confirm", "我明白"},
     {"wallet_setting_add_wallet_limit", "添加限制"},
     {"wallet_setting_add_wallet_limit_desc", "您只能添加最多 3 个钱包.请在添加新钱包之前删除其他钱包."},
     {"wallet_setting_add_wallet_notice", "硬件钱包仅供个人使用.请勿分享,以避免资产风险."},
@@ -2979,8 +2951,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if (langs == NULL) return -1;
-    if (langs[0] == NULL) return -1;
+    if(langs == NULL) return -1;
+    if(langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -2993,13 +2965,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if (current_lang_pack == NULL) return -1;
+    if(current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for (i = 0; current_lang_pack[i] != NULL; i++) {
+    for(i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -3012,10 +2984,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for (i = 0; trans[i].msg_id != NULL; i++) {
-        if (strcmp(trans[i].msg_id, msg_id) == 0) {
+    for(i = 0; trans[i].msg_id != NULL; i++) {
+        if(strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if (trans[i].translation) return trans[i].translation;
+            if(trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -3030,23 +3002,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -3062,31 +3034,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -3101,6 +3073,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if (!current_lang) return NULL;
+    if(!current_lang) return NULL;
     return current_lang->locale_name;
 }

@@ -39,7 +39,7 @@ static inline uint32_t op_t(uint32_t val)
     return 0;
 }
 
-const static lv_i18n_phrase_t  en_singulars[] = {
+const static lv_i18n_phrae_t  en_singulars[] = {
     {"Address", "Address"},
     {"Approve", "Approve"},
     {"Attention", "Attention"},
@@ -768,7 +768,7 @@ static const lv_i18n_lang_t en_lang = {
     .locale_plural_fn = en_plural_fn
 };
 
-const static lv_i18n_phrase_t  ko_singulars[] = {
+const static lv_i18n_phrae_t  ko_singulars[] = {
     {"Address", "주소."},
     {"Approve", "허락"},
     {"Attention", "주목"},
@@ -860,7 +860,7 @@ const static lv_i18n_phrase_t  ko_singulars[] = {
     {"account_head", "계정 전환"},
     {"auto_shutdown", "자동 종료 시간"},
     {"auto_shutdown_20", "자동 종료 시간"},
-    {"calculat_modal_title", "계산 중 "},
+    {"calculat_modal_title", "계산중 "},
     {"change_entropy", "엔트로피 변경"},
     {"change_entropy_desc", "지갑을 만들 엔트로피 선택"},
     {"change_entropy_dice_desc", "주사위에서 랜덤하게 생성된 시드 구문을 만듭니다."},
@@ -1037,7 +1037,7 @@ const static lv_i18n_phrase_t  ko_singulars[] = {
     {"firmware_update_no_upgradable_firmware_title", "업그레이드 가능한 펌웨어를 찾을 수 없습니다."},
     {"firmware_update_sd_checksum_desc", "#F5870A 체크섬 표시#"},
     {"firmware_update_sd_checksum_done", "체크섬\r\n"},
-    {"firmware_update_sd_checksum_fmt", "#F5870A 체크섬 표시 (v%s)#"},
+    {"firmware_update_sd_checksum_fmt", "#F5870A 체크섬 표시 (%d%%)#"},
     {"firmware_update_sd_checksum_fmt_version", "#F5870A 체크섬 표시 (v%s)#"},
     {"firmware_update_sd_checksum_notice", "보안성을 더욱 높일 수 있는 옵션 기능입니다.아래 체크섬과 공식 홈페이지에서 다운로드한 패키지의 체크섬을 비교하여 동일하게 유지하여 주시기 바랍니다."},
     {"firmware_update_sd_copying_desc", "업그레이드 중에는 microSD 카드를 제거하지 마십시오."},
@@ -1492,7 +1492,7 @@ static const lv_i18n_lang_t ko_lang = {
     .locale_plural_fn = ko_plural_fn
 };
 
-const static lv_i18n_phrase_t  ru_singulars[] = {
+const static lv_i18n_phrae_t  ru_singulars[] = {
     {"Address", "Адрес"},
     {"Approve", "Разрешить"},
     {"Attention", "Внимание"},
@@ -2224,7 +2224,7 @@ static const lv_i18n_lang_t ru_lang = {
     .locale_plural_fn = ru_plural_fn
 };
 
-const static lv_i18n_phrase_t  zh_cn_singulars[] = {
+const static lv_i18n_phrae_t  zh_cn_singulars[] = {
     {"Address", "地址"},
     {"Approve", "允许"},
     {"Attention", "注意"},
@@ -2493,7 +2493,7 @@ const static lv_i18n_phrase_t  zh_cn_singulars[] = {
     {"firmware_update_no_upgradable_firmware_title", "未检测到可升级固件"},
     {"firmware_update_sd_checksum_desc", "#F5870A 展示校验和#"},
     {"firmware_update_sd_checksum_done", "校验和\r\n"},
-    {"firmware_update_sd_checksum_fmt", "#F5870A 展示校验和 (v%s)#"},
+    {"firmware_update_sd_checksum_fmt", "#F5870A 展示校验和 (%d%%)#"},
     {"firmware_update_sd_checksum_fmt_version", "#F5870A 展示校验和 (v%s)#"},
     {"firmware_update_sd_checksum_notice", "这是一个可选的功能,可以进一步提高安全性.将以下校验和在官方网站上的下载软件包的校验和签到,请确保它们保持一致."},
     {"firmware_update_sd_copying_desc", "升级过程中,请勿移除 microSD 卡."},
@@ -2908,7 +2908,7 @@ const static lv_i18n_phrase_t  zh_cn_singulars[] = {
     {"wallet_profile_single_sign_title", "单签钱包"},
     {"wallet_profile_single_wallet_title", "单重签名钱包"},
     {"wallet_setting_add_wallet", "+添加钱包"},
-    {"wallet_setting_add_wallet_confirm", "我明白."},
+    {"wallet_setting_add_wallet_confirm", "我明白"},
     {"wallet_setting_add_wallet_limit", "添加限制"},
     {"wallet_setting_add_wallet_limit_desc", "您只能添加最多 3 个钱包.请在添加新钱包之前删除其他钱包."},
     {"wallet_setting_add_wallet_notice", "硬件钱包仅供个人使用.请勿分享,以避免资产风险."},

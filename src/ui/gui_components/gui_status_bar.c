@@ -42,6 +42,7 @@ typedef struct StatusBar {
     lv_obj_t *batteryCharging;
     lv_obj_t *batteryPadImg;
     lv_obj_t *batteryLabel;
+    lv_obj_t *betaImg;
 #ifdef BTC_ONLY
     lv_obj_t *testNetImg;
 #endif
@@ -241,6 +242,11 @@ void GuiStatusBarInit(void)
     img = GuiCreateImg(cont, &imgUsb);
     g_guiStatusBar.usbImg = img;
     lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
+
+    if (SOFTWARE_VERSION_BUILD % 2) {
+        img = GuiCreateImg(cont, &imgBeta);
+        g_guiStatusBar.betaImg = img;
+    }
 #ifdef BTC_ONLY
     img = GuiCreateImg(cont, &imgTestNet);
     g_guiStatusBar.testNetImg = img;
@@ -352,12 +358,16 @@ static void RefreshStatusBar(void)
         next = g_guiStatusBar.sdCardImg;
     }
     lv_obj_align_to(g_guiStatusBar.usbImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
-#ifdef BTC_ONLY
     if (!lv_obj_has_flag(g_guiStatusBar.usbImg, LV_OBJ_FLAG_HIDDEN)) {
         next = g_guiStatusBar.usbImg;
     }
+#ifdef BTC_ONLY
     lv_obj_align_to(g_guiStatusBar.testNetImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
+    next = g_guiStatusBar.testNetImg;
 #endif
+    if (SOFTWARE_VERSION_BUILD % 2) {
+        lv_obj_align_to(g_guiStatusBar.betaImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
+    }
 }
 
 static lv_obj_t *CreateReturnBtn(lv_obj_t *navBar)

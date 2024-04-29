@@ -45,6 +45,16 @@ void *GuiCreateLabelWithFont(lv_obj_t *parent, const char *text, const lv_font_t
     return label;
 }
 
+void *GuiCreateWhiteOpa12Container(lv_obj_t *parent, int w, int h)
+{
+    lv_obj_t *cont = GuiCreateContainerWithParent(parent, w, h);
+    lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(cont, LV_OPA_12, LV_PART_MAIN);
+
+    return cont;
+}
+
 void *GuiCreateLabelWithFontAndTextColor(lv_obj_t *parent, const char *text, const lv_font_t *font, int color)
 {
     lv_obj_t *label = lv_label_create(parent);
@@ -97,6 +107,15 @@ void *GuiCreateBtnWithFont(lv_obj_t *parent, const char *text, const lv_font_t *
     lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
     lv_obj_set_size(btn, lv_obj_get_self_width(label) + 24, lv_obj_get_self_height(label) + 6);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
+    return btn;
+}
+
+void *GuiCreateTextBtn(lv_obj_t *parent, const char *text)
+{
+    lv_obj_t *btn = GuiCreateBtnWithFont(parent, text, g_defTextFont);
+    uint16_t width = lv_obj_get_self_width(lv_obj_get_child(btn, 0)) + 24;
+    width = width > 96 ? width : 96;
+    lv_obj_set_size(btn, width, 66);
     return btn;
 }
 

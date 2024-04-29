@@ -74,7 +74,7 @@ void GuiUpdateCheckSumPercent(uint8_t percent)
 
         label = GuiCreateIllustrateLabel(g_firmwareVerifyCont, _("about_info_verify_checksum_desc"));
 
-        lv_obj_t *btn = GuiCreateBtn(g_firmwareVerifyCont, _("Done"));
+        lv_obj_t *btn = GuiCreateTextBtn(g_firmwareVerifyCont, _("Done"));
         lv_obj_set_size(btn, 408, 66);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
         lv_obj_add_event_cb(btn, CloseVerifyHintBoxHandler, LV_EVENT_CLICKED, NULL);
@@ -147,7 +147,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
 
     titleLabel = GuiCreateTextLabel(parent, _("about_info_firmware_version"));
     contentLabel = GuiCreateNoticeLabel(parent, versionStr);
-    GuiGetFpVersion(&fpVersion[1]);
+    GuiGetFpVersion(&fpVersion[1], sizeof(fpVersion) - 1);
 
     GuiButton_t table[] = {
         {
@@ -179,7 +179,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     table[0].obj = titleLabel;
     table[1].obj = contentLabel;
     button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table) - 1,
-                             UnHandler, NULL);
+                             NULL, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 147);
 
     line = GuiCreateDividerLine(parent);
@@ -229,7 +229,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     table[1].position.x = 24;
     table[1].position.y = 64;
     button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table) - 1,
-                             UnHandler, NULL);
+                             NULL, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 484);
 
     line = GuiCreateDividerLine(parent);
@@ -248,7 +248,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     table[1].position.x = 24;
     table[1].position.y = 64;
     button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table) - 1,
-                             UnHandler, NULL);
+                             NULL, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 619);
 }
 
@@ -277,7 +277,7 @@ void GuiAboutWidgetsLogExport(bool en, int32_t errCode)
         }
     }
     printf("errcode = %d\n", errCode);
-    g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, src,
+    g_noticeHintBox = GuiCreateResultHintbox(386, src,
                       title, desc, NULL, DARK_GRAY_COLOR, right, rightColor);
     lv_obj_t *descLabel = lv_obj_get_child(g_noticeHintBox, 0);
     lv_obj_set_style_text_opa(descLabel, LV_OPA_100, LV_PART_MAIN);
@@ -287,39 +287,33 @@ void GuiAboutWidgetsLogExport(bool en, int32_t errCode)
 
 static void ConfirmLogExportHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeHintBox)
-        if (!SdCardInsert()) {
-            GuiAboutWidgetsLogExport(false, ERROR_LOG_HAVE_NO_SD_CARD);
-        } else {
-            PubValueMsg(LOG_MSG_EXPORT, 0);
-        }
+    GUI_DEL_OBJ(g_noticeHintBox)
+    if (!SdCardInsert()) {
+        GuiAboutWidgetsLogExport(false, ERROR_LOG_HAVE_NO_SD_CARD);
+    } else {
+        PubValueMsg(LOG_MSG_EXPORT, 0);
     }
 }
 
 static void LogExportHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        char logName[BUFFER_SIZE_64] = {0};
-        char sn[BUFFER_SIZE_32] = {0};
-        char buff[BUFFER_SIZE_128] = {0};
-        GetSerialNumber(sn);
-        snprintf_s(logName, sizeof(logName), "0:Log_%s_%d.bin", sn, GetCurrentStampTime());
-        LogSetLogName(logName);
-        snprintf_s(logName, sizeof(logName), "Log_%s_%d.bin", sn, GetCurrentStampTime());
-        snprintf_s(buff, sizeof(buff), "%s\n%s", _("about_info_export_file_name"), logName);
-        g_noticeHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgSdCardL,
-                          _("about_info_export_to_sdcard"), buff, _("Cancel"), DARK_GRAY_COLOR, _("Export"), ORANGE_COLOR);
-        lv_obj_t *descLabel = lv_obj_get_child(g_noticeHintBox, 1);
-        lv_obj_set_style_text_opa(descLabel, LV_OPA_100, LV_PART_MAIN);
-        lv_obj_set_style_text_color(descLabel, ORANGE_COLOR, LV_PART_MAIN);
-        lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeHintBox);
-        lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-        lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeHintBox);
-        lv_obj_add_event_cb(rightBtn, ConfirmLogExportHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-    }
+    char logName[BUFFER_SIZE_64] = {0};
+    char sn[BUFFER_SIZE_32] = {0};
+    char buff[BUFFER_SIZE_128] = {0};
+    GetSerialNumber(sn);
+    snprintf_s(logName, sizeof(logName), "0:Log_%s_%d.bin", sn, GetCurrentStampTime());
+    LogSetLogName(logName);
+    snprintf_s(logName, sizeof(logName), "Log_%s_%d.bin", sn, GetCurrentStampTime());
+    snprintf_s(buff, sizeof(buff), "%s\n%s", _("about_info_export_file_name"), logName);
+    g_noticeHintBox = GuiCreateResultHintbox(386, &imgSdCardL,
+                      _("about_info_export_to_sdcard"), buff, _("Cancel"), DARK_GRAY_COLOR, _("Export"), ORANGE_COLOR);
+    lv_obj_t *descLabel = lv_obj_get_child(g_noticeHintBox, 1);
+    lv_obj_set_style_text_opa(descLabel, LV_OPA_100, LV_PART_MAIN);
+    lv_obj_set_style_text_color(descLabel, ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeHintBox);
+    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeHintBox);
+    lv_obj_add_event_cb(rightBtn, ConfirmLogExportHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
 }
 
 void GuiCreateVerifyFirmwareInstructionTile(lv_obj_t *parent)
@@ -355,7 +349,7 @@ void GuiCreateVerifyFirmwareInstructionTile(lv_obj_t *parent)
     GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
     lv_label_set_recolor(label, true);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("show_checksum"));
+    lv_obj_t *btn = GuiCreateTextBtn(parent, _("show_checksum"));
     lv_obj_set_size(btn, 408, 66);
     lv_obj_add_event_cb(btn, StartFirmwareCheckSumHandler, LV_EVENT_CLICKED, NULL);
     GuiAlignToPrevObj(btn, LV_ALIGN_OUT_BOTTOM_MID, btnOffset, 20);
@@ -369,54 +363,42 @@ void GuiCreateVerifyFirmwareInstructionTile(lv_obj_t *parent)
 
 static void StartFirmwareCheckSumHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        g_noticeHintBox = GuiCreateAnimHintBox(lv_scr_act(), 480, 400, 76);
-        lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("calculat_modal_title"));
-        lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
-        lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("Cancel"));
-        lv_obj_set_size(btn, 408, 66);
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
-        lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-        lv_obj_add_event_cb(btn, GuiStopFirmwareCheckSumHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+    g_noticeHintBox = GuiCreateAnimHintBox(480, 400, 76);
+    lv_obj_t *title = GuiCreateTextLabel(g_noticeHintBox, _("calculat_modal_title"));
+    lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -194);
+    lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _("Cancel"));
+    lv_obj_set_size(btn, 408, 66);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
+    lv_obj_add_event_cb(btn, GuiStopFirmwareCheckSumHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
 
-        lv_obj_t *desc = GuiCreateNoticeLabel(g_noticeHintBox, "0%");
-        lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -140);
-        lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, 0);
-        GuiModelCalculateCheckSum();
-    }
+    lv_obj_t *desc = GuiCreateNoticeLabel(g_noticeHintBox, "0%");
+    lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -140);
+    lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, 0);
+    GuiModelCalculateCheckSum();
 }
 
 void GuiStopFirmwareCheckSumHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiModelStopCalculateCheckSum();
-        void **param = lv_event_get_user_data(e);
-        if (param != NULL) {
-            lv_obj_t *obj = *param;
-            lv_obj_del(obj);
-            *param = NULL;
-        }
+    GuiModelStopCalculateCheckSum();
+    void **param = lv_event_get_user_data(e);
+    if (param != NULL) {
+        lv_obj_t *obj = *param;
+        lv_obj_del(obj);
+        *param = NULL;
     }
 }
 
 static void CloseVerifyHintBoxHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_firmwareVerifyCont)
-        GuiAboutNVSBarInit();
-    }
+    GUI_DEL_OBJ(g_firmwareVerifyCont)
+    GuiAboutNVSBarInit();
 }
 
 static void OpenVerifyFirmwareHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_scroll_to_y(g_cont, 0, LV_ANIM_OFF);
-        g_firmwareVerifyCont = GuiCreateContainerWithParent(g_pageWidget->contentZone, 480, 800 - GUI_MAIN_AREA_OFFSET);
-        lv_obj_clear_flag(g_pageWidget->contentZone, LV_OBJ_FLAG_SCROLLABLE);
-        GuiCreateVerifyFirmwareInstructionTile(g_firmwareVerifyCont);
-    }
+    lv_obj_scroll_to_y(g_cont, 0, LV_ANIM_OFF);
+    g_firmwareVerifyCont = GuiCreateContainerWithParent(g_pageWidget->contentZone, 480, 800 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_clear_flag(g_pageWidget->contentZone, LV_OBJ_FLAG_SCROLLABLE);
+    GuiCreateVerifyFirmwareInstructionTile(g_firmwareVerifyCont);
 }

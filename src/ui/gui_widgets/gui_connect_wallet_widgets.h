@@ -6,7 +6,6 @@
 
 typedef enum {
 #ifndef BTC_ONLY
-    WALLET_LIST_KEYSTONE,
     WALLET_LIST_METAMASK,
     WALLET_LIST_OKX,
     WALLET_LIST_ETERNL,

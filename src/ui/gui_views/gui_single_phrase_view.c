@@ -3,24 +3,6 @@
 #include "gui_status_bar.h"
 #include "gui_single_phrase_widgets.h"
 
-int32_t GuiSinglePhraseViewInit(uint8_t entropyMethod)
-{
-    GuiSinglePhraseInit(entropyMethod);
-    return SUCCESS_CODE;
-}
-
-int32_t GuiSinglePhraseViewDeInit(void)
-{
-    GuiSinglePhraseDeInit();
-    return SUCCESS_CODE;
-}
-
-int32_t GuiSinglePhraseViewRefresh(void)
-{
-    GuiSinglePhraseRefresh();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiSinglePhraseViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     int32_t ret = SUCCESS_CODE;
@@ -34,11 +16,14 @@ int32_t GuiSinglePhraseViewEventProcess(void *self, uint16_t usEvent, void *para
         } else {
             return ERR_GUI_ERROR;
         }
-        return GuiSinglePhraseViewInit(entropyMethod);
+        GuiSinglePhraseInit(entropyMethod);
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiSinglePhraseViewDeInit();
+        GuiSinglePhraseDeInit();
+        break;
     case GUI_EVENT_REFRESH:
-        return GuiSinglePhraseViewRefresh();
+        GuiSinglePhraseRefresh();
+        break;
     case SIG_SETUP_VIEW_TILE_PREV:
         GuiSinglePhrasePrevTile();
         break;

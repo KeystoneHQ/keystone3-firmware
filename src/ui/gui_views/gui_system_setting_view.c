@@ -6,17 +6,6 @@
 #include "gui_lock_widgets.h"
 #include "gui_model.h"
 
-static int32_t GuiSystemSettingViewInit(void)
-{
-    GuiSystemSettingAreaInit();
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiSystemSettingViewDeInit(void)
-{
-    GuiSystemSettingAreaDeInit();
-    return SUCCESS_CODE;
-}
 
 int32_t GuiSystemSettingViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
@@ -24,15 +13,18 @@ int32_t GuiSystemSettingViewEventProcess(void *self, uint16_t usEvent, void *par
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiSystemSettingViewInit();
+        GuiSystemSettingAreaInit();
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiSystemSettingViewDeInit();
+        GuiSystemSettingAreaDeInit();
+        break;
     case GUI_EVENT_REFRESH:
         GuiSystemSettingAreaRefresh();
         break;
     case GUI_EVENT_CHANGE_LANGUAGE:
         GuiSystemSettingAreaRestart();
-        break;
+        GuiEnterPassLabelRefresh();
+        return ERR_GUI_UNHANDLED;
     case SIG_VERIFY_PASSWORD_PASS:
         if (param != NULL) {
             uint16_t sig = *(uint16_t *)param;

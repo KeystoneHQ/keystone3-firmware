@@ -33,10 +33,7 @@ static void CheckAndClearFlag(lv_obj_t *obj, lv_obj_flag_t flag)
 
 static void GuiQRHintBoxCloseHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiQRHintBoxRemove();
-    }
+    GuiQRHintBoxRemove();
 }
 
 void GuiQRHintBoxRemove()
@@ -54,7 +51,7 @@ void GuiQRCodeHintBoxOpen(const char *qrdata, const char *title, const char *sub
     lv_obj_t *parent, *button, *qrCodeCont, *qrCode, *label;
 
     if (g_qrHintBox == NULL) {
-        g_qrHintBox = GuiCreateHintBox(lv_scr_act(), 480, 656, true);
+        g_qrHintBox = GuiCreateHintBox(656);
         parent = g_qrHintBox;
 
         qrCodeCont = lv_obj_create(parent);
@@ -83,7 +80,7 @@ void GuiQRCodeHintBoxOpen(const char *qrdata, const char *title, const char *sub
         GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 0, 40);
         g_qrHintBoxSubTitle = label;
 
-        button = GuiCreateAdaptButton(parent, _("OK"));
+        button = GuiCreateTextBtn(parent, _("OK"));
         lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
         lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_add_event_cb(button, GuiQRHintBoxCloseHandler, LV_EVENT_CLICKED, NULL);

@@ -7,18 +7,6 @@
 #include "gui_lock_widgets.h"
 #include "gui_qr_code.h"
 
-static int32_t GuiSettingViewInit(void)
-{
-    GuiSettingInit();
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiSettingViewDeInit(void)
-{
-    GuiSettingDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     uint16_t tileIndex = 0;
@@ -27,9 +15,11 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiSettingViewInit();
+        GuiSettingInit();
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiSettingViewDeInit();
+        GuiSettingDeInit();
+        break;
     case GUI_EVENT_REFRESH:
         GuiSettingRefresh();
         break;

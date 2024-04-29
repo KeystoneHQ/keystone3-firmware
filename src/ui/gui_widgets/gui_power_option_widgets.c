@@ -61,7 +61,7 @@ static void GuiPowerOptionInit(void)
     label = GuiCreateNoticeLabel(container, _("Restart"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 486);
 
-    btn = GuiCreateBtn(container, _("Cancel"));
+    btn = GuiCreateTextBtn(container, _("Cancel"));
     label = lv_obj_get_child(btn, 0);
     lv_obj_set_style_text_font(label, g_defTextFont, LV_PART_MAIN);
     lv_obj_set_size(btn, 135, 66);

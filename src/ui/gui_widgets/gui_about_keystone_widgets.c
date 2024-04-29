@@ -135,8 +135,7 @@ static void ShowQRDialogHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         ContactItem_t *contactItem = (ContactItem_t*)lv_event_get_user_data(e);
-
-        g_qrCodeCont = GuiCreateHintBox(g_cont, 480, 656, true);
+        g_qrCodeCont = GuiCreateHintBox(656);
         parent = g_qrCodeCont;
 
         qrCodeCont = lv_obj_create(parent);
@@ -160,7 +159,7 @@ static void ShowQRDialogHandler(lv_event_t *e)
         lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -114);
 
-        button = GuiCreateAdaptButton(parent, _("OK"));
+        button = GuiCreateTextBtn(parent, _("OK"));
         lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
         lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_add_event_cb(button, GuiCloseQrcodeHandler, LV_EVENT_CLICKED, NULL);
@@ -169,11 +168,8 @@ static void ShowQRDialogHandler(lv_event_t *e)
 
 static void GuiCloseQrcodeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (g_qrCodeCont != NULL) {
-            lv_obj_del(g_qrCodeCont);
-            g_qrCodeCont = NULL;
-        }
+    if (g_qrCodeCont != NULL) {
+        lv_obj_del(g_qrCodeCont);
+        g_qrCodeCont = NULL;
     }
 }

@@ -323,7 +323,6 @@ static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
 
 static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t inDataLen)
 {
-#ifndef COMPILE_SIMULATOR
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t retData;
@@ -344,7 +343,6 @@ static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t in
     memset_s(mnemonic, strnlen_s(mnemonic, MNEMONIC_MAX_LEN), 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
     SRAM_FREE(mnemonic);
     SetLockScreen(enable);
-#endif
     return SUCCESS_CODE;
 }
 
@@ -449,7 +447,6 @@ static int32_t ModelBip39VerifyMnemonic(const void *inData, uint32_t inDataLen)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t ret = SUCCESS_CODE;
-#ifndef COMPILE_SIMULATOR
     SimpleResponse_c_char *xPubResult;
     uint8_t seed[64];
 
@@ -475,9 +472,6 @@ static int32_t ModelBip39VerifyMnemonic(const void *inData, uint32_t inDataLen)
     } else {
         GuiApiEmitSignal(SIG_CREATE_SINGLE_PHRASE_WRITESE_PASS, NULL, 0);
     }
-#else
-    GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));
-#endif
     SetLockScreen(enable);
     return 0;
 }
@@ -488,7 +482,6 @@ static int32_t ModelBip39ForgetPass(const void *inData, uint32_t inDataLen)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t ret = SUCCESS_CODE;
-#ifndef COMPILE_SIMULATOR
     do {
         ret = CHECK_BATTERY_LOW_POWER();
         CHECK_ERRCODE_BREAK("save low power", ret);
@@ -501,11 +494,6 @@ static int32_t ModelBip39ForgetPass(const void *inData, uint32_t inDataLen)
         ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
     } while (0);
     GuiApiEmitSignal(SIG_FORGET_PASSWORD_FAIL, &ret, sizeof(ret));
-#else
-    ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
-    // GuiEmitSignal(SIG_FORGET_PASSWORD_FAIL, &ret, sizeof(ret));
-    GuiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
-#endif
     SetLockScreen(enable);
     return ret;
 }
@@ -518,11 +506,7 @@ static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, Bac
     g_urResult = func();
     if (g_urResult->error_code == 0) {
         // printf("%s\r\n", g_urResult->data);
-#ifndef COMPILE_SIMULATOR
         GuiApiEmitSignal(SIG_BACKGROUND_UR_GENERATE_SUCCESS, g_urResult->data, strnlen_s(g_urResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
-#else
-        GuiEmitSignal(SIG_BACKGROUND_UR_GENERATE_SUCCESS, g_urResult->data, strlen(g_urResult->data) + 1);
-#endif
     } else {
         printf("error message: %s\r\n", g_urResult->error_message);
         //TODO: deal with error
@@ -615,7 +599,6 @@ static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
     }
 
     for (int i = 0; i < slip39->memberCnt; i++) {
-        printf("%s\n", wordsList[i]);
         memset_s(wordsList[i], strlen(wordsList[i]), 0, strlen(wordsList[i]));
         SRAM_FREE(wordsList[i]);
     }
@@ -641,7 +624,6 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     uint8_t *entropy;
     uint8_t *ems;
     uint32_t entropyLen;
@@ -664,7 +646,6 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     char *words[threShold];
     for (int i = 0; i < threShold; i++) {
         words[i] = SecretCacheGetSlip39Mnemonic(i);
-        printf("%s\n", words[i]);
     }
     ret = Sli39GetMasterSecret(threShold, wordCnt, emsCheck, msCheck, words, &id, &ie);
     if ((ret != SUCCESS_CODE) || (memcmp(msCheck, entropy, entropyLen) != 0) || (memcmp(emsCheck, ems, entropyLen) != 0)) {
@@ -680,7 +661,6 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     ClearAccountPassphrase(newAccount);
     MODEL_WRITE_SE_END
 
-#endif
     SetLockScreen(enable);
     return SUCCESS_CODE;
 }
@@ -1129,7 +1109,7 @@ static int32_t ModeGetWalletDesc(const void *inData, uint32_t inDataLen)
         return SUCCESS_CODE;
     }
     wallet.iconIndex = GetWalletIconIndex();
-    strcpy_s(wallet.name, WALLET_NAME_MAX_LEN, GetWalletName());
+    strcpy_s(wallet.name, WALLET_NAME_MAX_LEN + 1, GetWalletName());
     GuiApiEmitSignal(SIG_INIT_GET_CURRENT_WALLET_DESC, &wallet, sizeof(wallet));
     SetLockScreen(enable);
     return SUCCESS_CODE;
@@ -1184,7 +1164,6 @@ static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen)
         SetPageLockScreen(true);
         GuiApiEmitSignal(SIG_INIT_SD_CARD_OTA_COPY_FAIL, NULL, 0);
     }
-#else
 #endif
     return SUCCESS_CODE;
 }
@@ -1222,18 +1201,9 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, Bac
     //There is no need to release here, the parsing results will be released when exiting the details page.
     TransactionParseResult_DisplayTx *parsedResult = (TransactionParseResult_DisplayTx *)func();
     if (parsedResult != NULL && parsedResult->error_code == 0 && parsedResult->data != NULL) {
-#ifndef COMPILE_SIMULATOR
         GuiApiEmitSignal(SIG_TRANSACTION_PARSE_SUCCESS, parsedResult, sizeof(parsedResult));
-#else
-        GuiEmitSignal(SIG_TRANSACTION_PARSE_SUCCESS, parsedResult, sizeof(parsedResult));
-#endif
     } else {
-
-#ifndef COMPILE_SIMULATOR
         GuiApiEmitSignal(SIG_TRANSACTION_PARSE_FAIL, parsedResult, sizeof(parsedResult));
-#else
-        GuiEmitSignal(SIG_TRANSACTION_PARSE_FAIL, parsedResult, sizeof(parsedResult));
-#endif
     }
     GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
     return SUCCESS_CODE;
@@ -1274,7 +1244,7 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
     uint8_t buffer[4096] = {0};
     uint8_t hash[32] = {0};
     int num = BinarySearchLastNonFFSector();
-    ASSERT(num > 0);
+    ASSERT(num >= 0);
     if (g_stopCalChecksum == true) {
         return SUCCESS_CODE;
     }

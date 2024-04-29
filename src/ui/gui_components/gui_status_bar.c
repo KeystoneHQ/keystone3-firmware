@@ -55,7 +55,6 @@ typedef struct {
 } CoinWalletInfo_t;
 
 bool GetLvglHandlerStatus(void);
-static void GuiStatusBarReSetWidth(lv_obj_t *obj);
 
 static void RefreshStatusBar(void);
 
@@ -112,7 +111,6 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
 
 const static CoinWalletInfo_t g_walletBtn[] = {
 #ifndef BTC_ONLY
-    {WALLET_LIST_KEYSTONE, "Keystone Wallet", &walletKeystone},
     {WALLET_LIST_METAMASK, "MetaMask", &walletMetamask},
     {WALLET_LIST_OKX, "OKX Wallet", &walletOkx},
     {WALLET_LIST_ETERNL, "Eternl Wallet", &walletEternl},
@@ -251,7 +249,7 @@ void GuiStatusBarInit(void)
     RefreshStatusBar();
 #ifdef COMPILE_SIMULATOR
     GuiStatusBarSetBattery(88, true);
-    lv_obj_t *btn = GuiCreateBtn(cont, "switch");
+    lv_obj_t *btn = GuiCreateTextBtn(cont, "switch");
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, 0);
     lv_obj_add_event_cb(btn, SwitchWalletHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 0);
@@ -364,64 +362,35 @@ static void RefreshStatusBar(void)
 
 static lv_obj_t *CreateReturnBtn(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *img;
-
-    btn = GuiCreateBtn(navBar, "");
-    lv_obj_set_size(btn, 64, 64);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgArrowLeft, 64, NULL, NULL);
     lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
-
-    img = GuiCreateImg(btn, &imgArrowLeft);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
 
     return btn;
 }
 
 static lv_obj_t *CreateCloseBtn(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *img;
-
-    btn = GuiCreateBtn(navBar, "");
-    lv_obj_set_size(btn, 64, 64);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgClose, 64, NULL, NULL);
     lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
-
-    img = GuiCreateImg(btn, &imgClose);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
 
     return btn;
 }
 
 static lv_obj_t *CreateManageBtn(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *img;
-
-    btn = GuiCreateBtn(navBar, "");
-    lv_obj_set_size(btn, 64, 64);
-    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
-
 #ifdef BTC_ONLY
-    img = GuiCreateImg(btn, &imgWallet2);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgWallet2, 64, NULL, NULL);
 #else
-    img = GuiCreateImg(btn, &imgManage);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgManage, 64, NULL, NULL);
 #endif
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
+    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
 
     return btn;
 }
 
 static lv_obj_t *CreateMidLabel(lv_obj_t *navBar)
 {
-    lv_obj_t *label;
-
-    label = GuiCreateTextLabel(navBar, "");
+    lv_obj_t *label = GuiCreateTextLabel(navBar, "");
     lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 
     return label;
@@ -429,9 +398,7 @@ static lv_obj_t *CreateMidLabel(lv_obj_t *navBar)
 
 static lv_obj_t *CreateMidWordCntSelect(lv_obj_t *navBar)
 {
-    lv_obj_t *btn;
-
-    btn = GuiCreateBtnWithFont(navBar, "20    " USR_SYMBOL_DOWN, g_defIllustrateFont);
+    lv_obj_t *btn = GuiCreateBtnWithFont(navBar, "20    " USR_SYMBOL_DOWN, g_defIllustrateFont);
     lv_obj_align(btn, LV_ALIGN_LEFT_MID, 268, 0);
     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
     lv_obj_set_size(btn, 69, 42);
@@ -442,9 +409,7 @@ static lv_obj_t *CreateMidWordCntSelect(lv_obj_t *navBar)
 
 static lv_obj_t *CreateCoinBtn(lv_obj_t *navBar)
 {
-    lv_obj_t *btn;
-
-    btn = GuiCreateStatusCoinButton(navBar, _(""), &walletBluewallet);
+    lv_obj_t *btn = GuiCreateStatusCoinButton(navBar, _(""), &walletBluewallet);
     lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
 
     return btn;
@@ -452,9 +417,7 @@ static lv_obj_t *CreateCoinBtn(lv_obj_t *navBar)
 
 static lv_obj_t *CreateWordCntSelect(lv_obj_t *navBar)
 {
-    lv_obj_t *btn;
-
-    btn = GuiCreateBtnWithFont(navBar, "24    " USR_SYMBOL_DOWN, g_defIllustrateFont);
+    lv_obj_t *btn = GuiCreateLabelImgAdaptButton(navBar, _("24"), &imgArrowDownS, NULL, NULL);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
     lv_obj_set_size(btn, 69, 42);
@@ -465,9 +428,8 @@ static lv_obj_t *CreateWordCntSelect(lv_obj_t *navBar)
 
 static lv_obj_t *CreateResetButton(lv_obj_t *navBar)
 {
-    lv_obj_t *btn;
-
-    btn = GuiCreateBtnWithFont(navBar, _("single_phrase_reset"), g_defIllustrateFont);
+    lv_obj_t *btn = GuiCreateImgLabelAdaptButton(navBar, _("single_phrase_reset"), &imgReset, NULL, NULL);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_100, LV_PART_MAIN);
     lv_obj_set_size(btn, 106, 42);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
@@ -479,71 +441,36 @@ static lv_obj_t *CreateResetButton(lv_obj_t *navBar)
 
 static lv_obj_t *CreateQuestion(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *img;
-
-    btn = GuiCreateBtn(navBar, "");
-    img = GuiCreateImg(btn, &imgQuestion);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgQuestion, 64, NULL, NULL);
     lv_obj_set_size(btn, 106, 42);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-
     return btn;
 }
 
 static lv_obj_t *CreateMoreInfo(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *img;
-
-    btn = GuiCreateBtn(navBar, "");
-    lv_obj_set_size(btn, 64, 64);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgMore, 64, NULL, NULL);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-    img = GuiCreateImg(btn, &imgMore);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-
     return btn;
 }
 
 static lv_obj_t *CreateSkip(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *img;
-
-    btn = GuiCreateBtn(navBar, "");
-    lv_obj_set_size(btn, 64, 64);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgSkip, 64, NULL, NULL);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-    img = GuiCreateImg(btn, &imgSkip);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-
     return btn;
 }
 
 static lv_obj_t *CreateSearch(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *img;
-
-    btn = GuiCreateBtn(navBar, "");
-    lv_obj_set_size(btn, 64, 64);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgSearch, 64, NULL, NULL);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-    img = GuiCreateImg(btn, &imgSearch);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-
     return btn;
 }
 
 static lv_obj_t *CreateNewSkip(lv_obj_t *navBar)
 {
-    lv_obj_t *btn = GuiCreateBtnWithFont(navBar, _("Skip"), g_defIllustrateFont);
+    lv_obj_t *btn = GuiCreateTextBtn(navBar, _("Skip"));
     lv_obj_set_style_bg_color(btn, GRAY_COLOR, 0);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
     return btn;
@@ -580,17 +507,8 @@ static lv_obj_t *CreateUndo(lv_obj_t *navBar)
 
 static lv_obj_t *CreateSDCard(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *img;
-
-    btn = GuiCreateBtn(navBar, "");
-    lv_obj_set_size(btn, 64, 64);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgSdCardColor, 64, NULL, NULL);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-    img = GuiCreateImg(btn, &imgSdCardColor);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-
     return btn;
 }
 
@@ -720,15 +638,12 @@ void SetMidBtnLabel(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, co
 void SetRightBtnLabel(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM button, const char *text)
 {
     SetNavBarRightBtn(navBarWidget, button, NULL, NULL);
-    char btnBuf[64] = {0};
     switch (button) {
     case NVS_BAR_WORD_SELECT:
         lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 0), text);
         break;
     case NVS_BAR_WORD_RESET:
-        sprintf(btnBuf, "%s %s", USR_SYMBOL_RESET, text);
-        lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 0), btnBuf);
-        GuiStatusBarReSetWidth(navBarWidget->rightBtn);
+        lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 1), text);
         break;
     default:
         return;
@@ -791,9 +706,4 @@ void SetNavBarRightBtn(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM butto
     if (rightButtonCb != NULL) {
         lv_obj_add_event_cb(navBarWidget->rightBtn, rightButtonCb, LV_EVENT_CLICKED, param);
     }
-}
-
-static void GuiStatusBarReSetWidth(lv_obj_t *obj)
-{
-    lv_obj_set_width(obj, lv_obj_get_self_width(lv_obj_get_child(obj, 0)) + 20);
 }

@@ -36,11 +36,8 @@ static KeyBoard_t *g_recoveryPhraseKb;          // recovery keyboard
 
 void ResetSeedCheckImportHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        ClearMnemonicKeyboard(g_recoveryMkb, &g_recoveryMkb->currentId);
-        GuiClearKeyBoard(g_recoveryPhraseKb);
-    }
+    ClearMnemonicKeyboard(g_recoveryMkb, &g_recoveryMkb->currentId);
+    GuiClearKeyBoard(g_recoveryPhraseKb);
 }
 
 void GuiWalletSeedCheckClearKb(void)
@@ -104,7 +101,7 @@ void GuiWalletRecoveryMethodCheck(lv_obj_t *parent)
             },
         };
         button = GuiCreateButton(cont, lv_obj_get_self_width(restartLabel) + 60, 66, restartTable, NUMBER_OF_ARRAYS(restartTable), RebootHandler, NULL);
-        lv_obj_align_to(button, disableDesc, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+        lv_obj_align_to(button, disableDesc, LV_ALIGN_OUT_BOTTOM_MID, 0, 54);
 
         return;
     }
@@ -162,9 +159,7 @@ void *GuiWalletRecoverySinglePhrase(lv_obj_t *parent, uint8_t wordAmount)
     lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 114);
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_opa(cont, LV_OPA_0, 0);
-    lv_obj_t *btn = GuiCreateBtn(cont, "");
-    lv_obj_t *img = GuiCreateImg(btn, &imgArrowNext);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_ARROW_NEXT);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
     g_buttonCont = cont;
     g_recoveryMkb->nextButton = btn;
@@ -215,9 +210,7 @@ void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount)
     lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 114);
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_opa(cont, LV_OPA_0, 0);
-    lv_obj_t *btn = GuiCreateBtn(cont, "");
-    lv_obj_t *img = GuiCreateImg(btn, &imgArrowNext);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_ARROW_NEXT);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
     g_buttonCont = cont;
     g_recoveryMkb->nextButton = btn;

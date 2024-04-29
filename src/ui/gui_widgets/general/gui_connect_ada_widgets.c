@@ -96,7 +96,7 @@ static void GuiCreatePageContent(lv_obj_t *parent)
 
 static void CleanHandler(lv_event_t *e)
 {
-    CleanConnectEternlWidget();
+    CleanConnectADAWidget();
 }
 
 static void GotoScanQRCodeHandler(lv_event_t *e)

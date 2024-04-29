@@ -391,8 +391,6 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
         {
             g_coinListCont = GuiCreateSelectAddressWidget(CHAIN_XRP, g_chainAddressIndex[GetCurrentAccountIndex()], RefreshAddressIndex);
         }
-    } else if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEYSTONE) {
-        GuiCreateSelectCompanionAppCoinWidget();
     }
 }
 
@@ -1427,9 +1425,6 @@ void GuiConnectWalletRefresh(void)
                 if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
                     g_coinListCont = GuiCreateSelectAddressWidget(CHAIN_XRP, g_chainAddressIndex[GetCurrentAccountIndex()], RefreshAddressIndex);
                 }
-            } else if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEYSTONE) {
-                GUI_DEL_OBJ(g_coinListCont)
-                GuiCreateSelectCompanionAppCoinWidget();
             }
         }
 #endif

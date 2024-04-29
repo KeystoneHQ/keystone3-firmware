@@ -427,7 +427,7 @@ static void GuiCreateSwitchAddressWidget(lv_obj_t *parent)
     index = 0;
     for (uint32_t i = 0; i < 5; i++) {
         g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel = GuiCreateTextLabel(cont, "");
-        lv_obj_align(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
+        lv_obj_align(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_ALIGN_TOP_LEFT, 24, 20 + 103 * i);
         g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressLabel = GuiCreateNoticeLabel(cont, "");
         lv_obj_align(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressLabel, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
         if (i > 0) {

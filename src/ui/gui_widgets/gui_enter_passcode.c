@@ -498,9 +498,8 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
     label = GuiCreateTitleLabel(pinCont, g_enterPassLabel[mode].title);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateIllustrateLabel(pinCont, g_enterPassLabel[mode].desc);
-    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_t *subLabel = GuiCreateNoticeLabel(pinCont, g_enterPassLabel[mode].desc);
+    lv_obj_align_to(subLabel, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
 
     label = GuiCreateIllustrateLabel(pinCont, _("password_error_not_match"));
     lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);

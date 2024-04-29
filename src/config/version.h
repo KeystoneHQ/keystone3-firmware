@@ -15,6 +15,7 @@
 void GetSoftWareVersion(char *version);
 void GetSoftWareVersionNumber(char *version);
 const char *GetSoftwareVersionString(void);
+void GetUpdateVersionNumber(char *version);
 
 #endif /* _VERSION_H */
 

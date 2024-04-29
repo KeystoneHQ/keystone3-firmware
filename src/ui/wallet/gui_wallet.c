@@ -148,8 +148,15 @@ UREncodeResult *GuiGetThorWalletBtcData(void)
         keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
         keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
     }
-#endif   
-    UREncodeResult *urencode = get_connect_thor_wallet_ur(mfp, sizeof(mfp), public_keys);
+#endif  
+
+    char serialNumber[256];
+    GetSerialNumber(serialNumber);
+    char firmwareVersion[12];
+    GetSoftWareVersionNumber(firmwareVersion);
+    UREncodeResult *urencode =
+        get_connect_thor_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys,
+                                    "Keystone 3 Pro", firmwareVersion);
     CHECK_CHAIN_PRINT(urencode);
     return urencode;
 }

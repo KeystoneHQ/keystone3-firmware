@@ -201,11 +201,12 @@ static void GuiOpenPassphraseLearnMore()
     led = newLed;
     label = GuiCreateNoticeLabel(cont, _("passphrase_learn_more_desc4"));
     lv_obj_align_to(label, led, LV_ALIGN_OUT_RIGHT_TOP, 12, -15);
+    height = lv_obj_get_self_height(label) + 12;
 
     g_passphraseLearnMoreCont = cont;
 
     cont = GuiCreateContainerWithParent(g_passphraseLearnMoreCont, 144, 30);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 36, 492 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(cont, newLed, LV_ALIGN_TOP_LEFT, 0, height);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(cont, OpenPassphraseQrCodeHandler, LV_EVENT_CLICKED, NULL);
 

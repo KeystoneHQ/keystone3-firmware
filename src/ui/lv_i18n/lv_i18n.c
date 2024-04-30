@@ -769,7 +769,7 @@ static const lv_i18n_lang_t en_lang = {
 };
 
 const static lv_i18n_phrase_t ko_singulars[] = {
-    {"Address", "주소."},
+    {"Address", "주소"},
     {"Approve", "허락"},
     {"Attention", "주목"},
     {"Cancel", "취소"},
@@ -816,10 +816,10 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"about_info_verify_checksum_desc", "만약 위의 정보가 자체적으로 계산한 mh1903.bin 파일의 체크섬 일치하면 오픈 소스 펌웨어가 장치의 펌웨어와 일치함을 의미합니다."},
     {"about_info_verify_checksum_text", "체크섬"},
     {"about_info_verify_checksum_title", "체크섬"},
-    {"about_info_verify_firmware_desc", "чтобы убедиться"},
-    {"about_info_verify_firmware_step1", "чтобы создать прошивку и получить контрольную сумму."},
+    {"about_info_verify_firmware_desc", ""},
+    {"about_info_verify_firmware_step1", ""},
     {"about_info_verify_firmware_step2", "펌웨어 페이지에서 \"펌웨어 다운로드\" 버튼 옆의 #F5870A Checksum#을 클릭합니다."},
-    {"about_info_verify_firmware_step3", "показанную на веб-странице и устройстве."},
+    {"about_info_verify_firmware_step3", ""},
     {"about_info_verify_source_code_title", "소스 코드 검증"},
     {"about_keystone_discord", "Discord"},
     {"about_keystone_discord_url", "keyst.one/discord"},
@@ -1025,7 +1025,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"fingerprint_remove_confirm", "지문"},
     {"fingerprint_sign_tx", "서명 트랜잭션"},
     {"fingerprint_up_to_3", "지문을 3개까지 추가할 수 있습니다"},
-    {"firmware_update_btc_only_button_i_know", "잘 알고있습니다."},
+    {"firmware_update_btc_only_button_i_know", "잘 알고있습니다"},
     {"firmware_update_btc_only_warning_desc", "멀티코인 펌웨어에서 BTC-Only 펌웨어로 업그레이드 중입니다.업그레이드 후 #F5870A 이 장치에 있는 모든 지갑은 #F5870A가 BTC코인 #만 지원되며 이 과정은 불가역적입니다.관련된 위험을 알고 있는지 확인하십시오.잘못된 펌웨어를 다운로드하셨다면 진행을 취소해 주세요."},
     {"firmware_update_deny_desc", "펌웨어 버전을 업그레이드하려면 장치의 잠금을 해제해야 합니다."},
     {"firmware_update_deny_input_password", "비밀번호 입력"},

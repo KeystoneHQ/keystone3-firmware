@@ -622,7 +622,7 @@ static void GuiCreateSwitchAddressWidget(lv_obj_t *parent)
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetUtxoAddress(index, &addressDataItem);
         g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel = GuiCreateTextLabel(cont, "");
-        lv_obj_align(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
+        lv_obj_align(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_ALIGN_TOP_LEFT, 24, 20 + 103 * i);
         g_utxoReceiveWidgets.switchAddressWidgets[i].addressLabel = GuiCreateNoticeLabel(cont, "");
         lv_obj_align(g_utxoReceiveWidgets.switchAddressWidgets[i].addressLabel, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
         if (i > 0) {
@@ -1018,7 +1018,7 @@ static void RefreshQrCode(void)
         lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
     lv_label_set_text(g_utxoReceiveWidgets.addressLabel, addressDataItem.address);
-    lv_label_set_text_fmt(g_utxoReceiveWidgets.addressCountLabel, "%s-%u", _("receive_ada_base_address"), addressDataItem.index);
+    lv_label_set_text_fmt(g_utxoReceiveWidgets.addressCountLabel, "%s-%u", _("Address"), addressDataItem.index);
     lv_obj_align_to(g_utxoReceiveWidgets.addressCountLabel, g_utxoReceiveWidgets.addressLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
 #if BTC_ONLY
@@ -1042,7 +1042,7 @@ static void RefreshSwitchAccount(void)
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetUtxoAddress(index, &addressDataItem);
-        lv_label_set_text_fmt(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("receive_ada_base_address"), addressDataItem.index);
+        lv_label_set_text_fmt(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("Address"), addressDataItem.index);
         CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_utxoReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {

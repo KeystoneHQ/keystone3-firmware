@@ -447,7 +447,7 @@ Scan,20,scan_qr_code_error_invalid_file_desc,The date of file not recognized. Pl
 ,20,scan_qr_code_signing_desc,Signing,Подписание,서명,签名中,,,,
 ,20,scan_qr_code_sign_unsigned_content_fingerprint_failed_desc,Verification failed. Please try again!,Проверка не удалась. Повторите еще раз!,확인에 실패했습니다. 다시 시도하십시오!,验证失败.请重新尝试!,,,,
 ,20,scan_qr_code_sign_unsigned_content_fingerprint_failed_desc2,"If the verification fails again, the fingerprint signing for transactions will automatically be disabled.","Если проверка снова завершится неудачно, подписание транзакции через отпечаток пальцев будет отключен.",검증에 다시 실패하면 거래에 대한 지문 서명이 자동으로 비활성화됩니다.,"如果验证再次失败,则指纹签名的功能将自动失效.",,,,
-USB,20,usb_transport_connection_request,Connection Request,Запрос подключения,연결 요청,连接请求,,,,
+USB,28,usb_transport_connection_request,Connection Request,Запрос подключения,연결 요청,连接请求,,,,
 ,20,usb_transport_connect_rabby,Rabby Wallet wants to connect your Keystone via USB,Кошелек Rabby хочет подключиться к Keystone через USB,Rabby 지갑은 USB를 통해 당신의 키스톤에 접속하고 싶습니다.,Rabby钱包想通过USB连接您的Keystone,,,,
 ,20,usb_transport_connect_wallet,Your software wallet wants to connect to your device via USB,Ваш программный кошелек хочет подключиться к устройству через USB,당신의 소프트웨어 지갑은 USB를 통해 당신의 장치에 연결되기를 바랍니다,您的软件钱包希望通过USB连接到您的设备,,,,
 ,28,usb_transport_sign_completed_title,Signature Completed,Подпись завершена,서명완료,签名完成,,,,

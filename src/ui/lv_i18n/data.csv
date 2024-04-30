@@ -143,7 +143,7 @@ import wallet/SSB,36,import_wallet_ssb_title_fmt,Share #F5870A %d#,Часть #F
 ,20,import_wallet_share_success_desc,This share of your seed phrase matches your wallet.,Эта часть сид фразы соответствует вашему кошельку.,시드 구문은 지갑과 일치합니다. ,您的助记词与您的钱包相匹配.,,,,
 connect wallet,20,connect_wallet_title,Connect Wallet,Подключить кошелек,지갑 연결,连接钱包,,,,
 ,20,connect_head,Connect,Подключить,연결,连接,,,,
-,20,connect_wallet_desc,Scan the QR code with your software wallet,Сканируйте QR-код программным кошельком,소프트웨어 지갑으로 QR 코드 스캔,使用软件钱包扫描该二维码,,,,
+,20,connect_wallet_scan,Scan the QR code with your software wallet,Сканируйте QR-код программным кошельком,소프트웨어 지갑으로 QR 코드 스캔,使用软件钱包扫描该二维码,,,,
 ,20,connect_wallet_xpub_qrformat,QR Code Format,Формат QR-кода,QR 코드 형식,二维码格式,,,,
 ,20,connect_wallet_xpub_script_format,Script Format,Формат скрипта,스크립트 형식,脚本格式,,,,
 ,20,connect_wallet_keystone_hint,Select networks you’d like to manage in the software wallet,"Выберите сети, для добавления в программный кошелек ",소프트웨어 지갑에서 관리할 네트워크 선택,选择您想在软件钱包中管理的网络,,,,

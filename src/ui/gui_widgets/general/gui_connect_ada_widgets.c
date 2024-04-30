@@ -58,7 +58,8 @@ static void GuiCreatePageContent(lv_obj_t *parent)
     lv_label_set_recolor(label, true);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
 
-    label = GuiCreateIllustrateLabel(cont, _("connect_wallet_eternl_step1"));
+    label = GuiCreateIllustrateLabel(cont, _("connect_wallet_ada_step1"));
+    lv_label_set_text_fmt(label, _("connect_wallet_ada_step1"), GetWalletNameByIndex(g_walletIndex));
     lv_obj_set_width(label, 384);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 0);
 
@@ -67,7 +68,7 @@ static void GuiCreatePageContent(lv_obj_t *parent)
     lv_label_set_recolor(label, true);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 72);
 
-    label = GuiCreateIllustrateLabel(cont, _("connect_wallet_eternl_step2"));
+    label = GuiCreateIllustrateLabel(cont, _("connect_wallet_ada_step2"));
     lv_obj_set_width(label, 384);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 72);
 
@@ -76,7 +77,7 @@ static void GuiCreatePageContent(lv_obj_t *parent)
     lv_label_set_recolor(label, true);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 114);
 
-    label = GuiCreateIllustrateLabel(cont, _("connect_wallet_eternl_step3"));
+    label = GuiCreateIllustrateLabel(cont, _("connect_wallet_ada_step3"));
     lv_obj_set_width(label, 384);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 114);
 
@@ -85,7 +86,8 @@ static void GuiCreatePageContent(lv_obj_t *parent)
     lv_label_set_recolor(label, true);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 186);
 
-    label = GuiCreateIllustrateLabel(cont, _("connect_wallet_eternl_step4"));
+    label = GuiCreateIllustrateLabel(cont, _("connect_wallet_ada_step4"));
+    lv_label_set_text_fmt(label, _("connect_wallet_ada_step4"), GetWalletNameByIndex(g_walletIndex));
     lv_obj_set_width(label, 384);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 186);
 

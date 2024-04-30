@@ -604,6 +604,11 @@ void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index, const c
                            g_coinWalletBtn[index].icon);
 }
 
+char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
+{
+    return g_walletBtn[index].name;
+}
+
 void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const char *name)
 {
     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);

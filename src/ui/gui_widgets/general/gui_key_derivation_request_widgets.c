@@ -74,7 +74,8 @@ static uint8_t RecalcCurrentWalletIndex(char *origin)
     char *originLower = strlwr_s(origin, strlen(origin));
     if (originLower == "eternl") {
         return WALLET_LIST_ETERNL;
-    } else if (originLower == "typhon extension") {
+    }
+    else if (originLower == "typhon extension") {
         return WALLET_LIST_TYPHON;
     }
 #endif

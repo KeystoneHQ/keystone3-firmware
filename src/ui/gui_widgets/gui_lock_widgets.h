@@ -38,6 +38,7 @@ bool GuiNeedFpRecognize(void);
 
 void GuiShowGenerateXPubLoading(void);
 void GuiHideGenerateXPubLoading(void);
+void GuiLockViewRefreshLanguage(void);
 #endif /* _GUI_LOCK_WIDGETS_H */
 
 

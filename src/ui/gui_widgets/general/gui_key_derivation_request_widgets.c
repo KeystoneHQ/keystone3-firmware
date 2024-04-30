@@ -330,10 +330,11 @@ static void GuiCreateApproveWidget(lv_obj_t *parent) {
   lv_obj_add_event_cb(btn, OnApproveHandler, LV_EVENT_CLICKED, NULL);
 }
 
-static void GuiCreateQRCodeWidget(lv_obj_t *parent) {
-  lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("connect_wallet_scan"));
-  lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 152 - GUI_MAIN_AREA_OFFSET);
-  lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
+static void GuiCreateQRCodeWidget(lv_obj_t *parent)
+{
+    lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("connect_wallet_scan"));
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 152 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
 
   lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 482);
   lv_obj_add_flag(qrCont, LV_OBJ_FLAG_CLICKABLE);

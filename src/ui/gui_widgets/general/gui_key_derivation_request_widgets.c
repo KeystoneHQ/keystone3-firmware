@@ -331,7 +331,7 @@ static void GuiCreateApproveWidget(lv_obj_t *parent) {
 }
 
 static void GuiCreateQRCodeWidget(lv_obj_t *parent) {
-  lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("connect_wallet_desc"));
+  lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("connect_wallet_scan"));
   lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 152 - GUI_MAIN_AREA_OFFSET);
   lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
 

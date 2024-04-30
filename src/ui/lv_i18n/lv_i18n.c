@@ -40,10 +40,14 @@ static inline uint32_t op_t(uint32_t val)
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 const static lv_i18n_phrase_t en_singulars[] = {
 =======
 const static lv_i18n_phrae_t  en_singulars[] = {
 >>>>>>> 61e887a2 (add beta icon)
+=======
+const static lv_i18n_phrase_t en_singulars[] = {
+>>>>>>> c9bd3fb9 (fix build)
     {"Address", "Address"},
     {"Approve", "Approve"},
     {"Attention", "Attention"},
@@ -773,10 +777,14 @@ static const lv_i18n_lang_t en_lang = {
 };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 const static lv_i18n_phrase_t ko_singulars[] = {
     {"Address", "주소"},
 =======
 const static lv_i18n_phrae_t  ko_singulars[] = {
+=======
+const static lv_i18n_phrase_t ko_singulars[] = {
+>>>>>>> c9bd3fb9 (fix build)
     {"Address", "주소."},
 >>>>>>> 61e887a2 (add beta icon)
     {"Approve", "허락"},
@@ -1502,10 +1510,14 @@ static const lv_i18n_lang_t ko_lang = {
 };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 const static lv_i18n_phrase_t ru_singulars[] = {
 =======
 const static lv_i18n_phrae_t  ru_singulars[] = {
 >>>>>>> 61e887a2 (add beta icon)
+=======
+const static lv_i18n_phrase_t ru_singulars[] = {
+>>>>>>> c9bd3fb9 (fix build)
     {"Address", "Адрес"},
     {"Approve", "Разрешить"},
     {"Attention", "Внимание"},
@@ -2238,10 +2250,14 @@ static const lv_i18n_lang_t ru_lang = {
 };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 const static lv_i18n_phrase_t zh_cn_singulars[] = {
 =======
 const static lv_i18n_phrae_t  zh_cn_singulars[] = {
 >>>>>>> 61e887a2 (add beta icon)
+=======
+const static lv_i18n_phrase_t zh_cn_singulars[] = {
+>>>>>>> c9bd3fb9 (fix build)
     {"Address", "地址"},
     {"Approve", "允许"},
     {"Attention", "注意"},

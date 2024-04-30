@@ -132,6 +132,7 @@ LV_IMG_DECLARE(imgTwoSmallKey);
 LV_IMG_DECLARE(imgAddOrange);
 LV_IMG_DECLARE(imgObserve);
 LV_IMG_DECLARE(imgInfoS);
+LV_IMG_DECLARE(imgBeta);
 
 // connect to do refresh
 LV_IMG_DECLARE(circular);

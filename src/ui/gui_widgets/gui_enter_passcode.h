@@ -49,6 +49,7 @@ void GuiUpdateEnterPasscodeParam(GuiEnterPasscodeItem_t *item, void *param);
 uint8_t GetPassWordStrength(const char *password, uint8_t len);
 void GuiFingerPrintStatus(GuiEnterPasscodeItem_t *item, bool en, uint8_t errCnt);
 void PassWordPinSwitch(GuiEnterPasscodeItem_t *item);
+void GuiEnterPassLabelRefresh(void);
 
 #endif /* _GUI_ENTER_PASSCODE_H */
 

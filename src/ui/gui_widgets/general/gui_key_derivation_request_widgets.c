@@ -32,7 +32,7 @@ static QRHardwareCallData *g_callData;
 static Response_QRHardwareCallData *g_response;
 static WALLET_LIST_INDEX_ENUM g_walletIndex;
 static lv_obj_t *g_openMoreHintBox;
-static uint8_t RecalcCurrentWalletIndex(char *origin);
+static void RecalcCurrentWalletIndex(char *origin);
 
 static void GuiCreateApproveWidget(lv_obj_t *parent);
 static void GuiCreateQRCodeWidget(lv_obj_t *parent);
@@ -68,14 +68,15 @@ void FreeKeyDerivationRequestMemory(void)
 #endif
 }
 
-static uint8_t RecalcCurrentWalletIndex(char *origin)
+static void RecalcCurrentWalletIndex(char *origin)
 {
 #ifndef COMPILE_SIMULATOR
-    char *originLower = strlwr_s(origin, strlen(origin));
-    if (originLower == "eternl") {
-        return WALLET_LIST_ETERNL;
-    } else if (originLower == "typhon extension") {
-        return WALLET_LIST_TYPHON;
+    if (strcmp("eternl", origin) == 0) {
+        g_walletIndex = WALLET_LIST_ETERNL;
+    } else if (strcmp("Typhon Extension", origin) == 0) {
+        g_walletIndex = WALLET_LIST_TYPHON;
+    } else {
+        g_walletIndex = WALLET_LIST_ETERNL;
     }
 #endif
 }
@@ -86,7 +87,6 @@ void GuiKeyDerivationRequestInit()
     g_keyDerivationTileView.pageWidget = CreatePageWidget();
     g_keyDerivationTileView.cont = g_keyDerivationTileView.pageWidget->contentZone;
     SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
     lv_obj_t *tileView = lv_tileview_create(g_keyDerivationTileView.cont);
     lv_obj_clear_flag(tileView, LV_OBJ_FLAG_SCROLLABLE);
     if (GuiDarkMode()) {
@@ -98,8 +98,9 @@ void GuiKeyDerivationRequestInit()
     lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, TILE_APPROVE, 0, LV_DIR_HOR);
     GuiCreateApproveWidget(tile);
-    g_walletIndex = RecalcCurrentWalletIndex(g_response->data->origin);
-    SetWallet(g_keyDerivationTileView.pageWidget->navBarWidget, RecalcCurrentWalletIndex(g_response->data->origin), NULL);
+    RecalcCurrentWalletIndex(g_response->data->origin);
+    SetWallet(g_keyDerivationTileView.pageWidget->navBarWidget, g_walletIndex, NULL);
+    SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
 
     tile = lv_tileview_add_tile(tileView, TILE_QRCODE, 0, LV_DIR_HOR);
     GuiCreateQRCodeWidget(tile);

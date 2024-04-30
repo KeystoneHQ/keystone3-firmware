@@ -53,26 +53,18 @@ static void ContinueStopCreateHandler(lv_event_t *e)
 
 static void StopCreateViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("import_wallet_ssb_cancel_title"), _("import_wallet_ssb_cancel_desc"), NULL,
-                         _("Continue"), WHITE_COLOR_OPA20, _("Quit"), RED_COLOR);
-        lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-        lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-        lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
-        lv_obj_add_event_cb(rightBtn, ContinueStopCreateHandler, LV_EVENT_CLICKED, NULL);
-    }
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("import_wallet_ssb_cancel_title"), _("import_wallet_ssb_cancel_desc"), NULL,
+                     _("Continue"), WHITE_COLOR_OPA20, _("Quit"), RED_COLOR);
+    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_add_event_cb(rightBtn, ContinueStopCreateHandler, LV_EVENT_CLICKED, NULL);
 }
 
 static void ConfirmClearHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        ClearMnemonicKeyboard(g_importMkb, &g_importMkb->currentId);
-        GuiClearKeyBoard(g_ssbImportKb);
-    }
+    ClearMnemonicKeyboard(g_importMkb, &g_importMkb->currentId);
+    GuiClearKeyBoard(g_ssbImportKb);
 }
 
 void GuiImportShareWriteSe(bool en, int32_t errCode)

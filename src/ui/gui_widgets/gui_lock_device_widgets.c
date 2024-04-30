@@ -281,12 +281,8 @@ static uint32_t CalculateLockDeiceTime(void)
 
 static void ForgetHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        OpenForgetPasswordHandler(e);
-        SetLockDeviceAlive(true);
-    }
+    OpenForgetPasswordHandler(e);
+    SetLockDeviceAlive(true);
 }
 
 void ResetSuccess(void)

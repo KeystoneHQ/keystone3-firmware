@@ -203,19 +203,15 @@ static void SetKeyboardTaHandler(lv_event_t *e)
 
 static void PassphraseQuickAccessHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_t *switchBox = g_passphraseQuickAccessSwitch;
-        bool en = lv_obj_has_state(switchBox, LV_STATE_CHECKED);
-        if (en) {
-            lv_obj_clear_state(switchBox, LV_STATE_CHECKED);
-        } else {
-            lv_obj_add_state(switchBox, LV_STATE_CHECKED);
-        }
-        SetPassphraseQuickAccess(!en);
-        lv_event_send(switchBox, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_t *switchBox = g_passphraseQuickAccessSwitch;
+    bool en = lv_obj_has_state(switchBox, LV_STATE_CHECKED);
+    if (en) {
+        lv_obj_clear_state(switchBox, LV_STATE_CHECKED);
+    } else {
+        lv_obj_add_state(switchBox, LV_STATE_CHECKED);
     }
+    SetPassphraseQuickAccess(!en);
+    lv_event_send(switchBox, LV_EVENT_VALUE_CHANGED, NULL);
 }
 
 static void UpdatePassPhraseHandler(lv_event_t *e)

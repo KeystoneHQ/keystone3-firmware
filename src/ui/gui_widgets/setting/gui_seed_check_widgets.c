@@ -229,18 +229,10 @@ void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount)
 
 static void ImportPhraseWordsHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        ImportSinglePhraseWords(g_recoveryMkb, g_recoveryPhraseKb);
-    }
+    ImportSinglePhraseWords(g_recoveryMkb, g_recoveryPhraseKb);
 }
 
 static void ImportShareNextSliceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        ImportShareNextSlice(g_recoveryMkb, g_recoveryPhraseKb);
-    }
+    ImportShareNextSlice(g_recoveryMkb, g_recoveryPhraseKb);
 }

@@ -340,14 +340,11 @@ static void GuiPassowrdToLockTimePage(uint16_t leftErrorCount)
 void GuiLockScreenTurnOnHandler(lv_event_t *e)
 {
     static uint16_t single = 0;
-    lv_event_code_t code = lv_event_get_code(e);
     GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_VERIFY);
-    if (code == LV_EVENT_CLICKED) {
-        uint16_t *walletSetIndex = lv_event_get_user_data(e);
-        single = *walletSetIndex;
-        GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, GuiLockScreenTurnOffHandler, NULL);
-    }
+    uint16_t *walletSetIndex = lv_event_get_user_data(e);
+    single = *walletSetIndex;
+    GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, GuiLockScreenTurnOffHandler, NULL);
 }
 
 void GuiLockScreenInit(void *param)

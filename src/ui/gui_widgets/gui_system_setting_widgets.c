@@ -57,12 +57,8 @@ void GuiSystemSettingAreaInit(void)
 
 void GuiSystemSettingWebAuthHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiWebAuthSetEntry(WEB_AUTH_ENTRY_SETTING);
-        GuiFrameOpenView(&g_webAuthView);
-    }
+    GuiWebAuthSetEntry(WEB_AUTH_ENTRY_SETTING);
+    GuiFrameOpenView(&g_webAuthView);
 }
 
 void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
@@ -153,14 +149,10 @@ void GuiSystemSettingAreaRestart()
 
 static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        if (GetBatterPercent() < LOW_BATTERY_PERCENT) {
-            GuiApiEmitSignalWithValue(SIG_INIT_LOW_BATTERY, 1);
-        } else {
-            GuiShowKeyBoardDialog(container);
-        }
+    if (GetBatterPercent() < LOW_BATTERY_PERCENT) {
+        GuiApiEmitSignalWithValue(SIG_INIT_LOW_BATTERY, 1);
+    } else {
+        GuiShowKeyBoardDialog(container);
     }
 }
 

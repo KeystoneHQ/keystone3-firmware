@@ -6,7 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-
+third_party = { path = "../../third_party" }
+keystore = { path = "../../keystore", default-features = false }
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }

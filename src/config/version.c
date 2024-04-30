@@ -21,11 +21,11 @@ const char g_softwareVersionString[] __attribute__((section(".fixSection"))) = S
 void GetSoftWareVersion(char *version)
 {
 #ifndef BTC_ONLY
-#ifdef BETA_DESC
-    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d_%s", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, BETA_DESC);
-#else
-    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
-#endif
+    if (SOFTWARE_VERSION_BUILD % 2 == 0) {
+        snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+    } else {
+        snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d(beta)", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+    }
 #else
     snprintf(version, SOFTWARE_VERSION_MAX_LEN, "Firmware v%d.%d.%d-BTC", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
 #endif

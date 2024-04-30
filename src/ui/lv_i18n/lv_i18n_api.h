@@ -11,6 +11,9 @@ typedef enum {
 #ifdef CN_SUPPORT
     LANG_ZH_CN,
 #endif
+#ifdef KO_SUPPORT
+    LANG_KO,
+#endif
 
     LANG_TYPE_BUTT,
 } LANG_TYPE_ENUM;

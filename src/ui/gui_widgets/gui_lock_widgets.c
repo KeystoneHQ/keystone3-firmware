@@ -51,7 +51,6 @@ static void HardwareInitAfterWake(void);
 int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
 
 static GuiEnterPasscodeItem_t *g_verifyLock = NULL;
-static lv_obj_t *g_lockScreenCont;
 static bool g_firstUnlock = true;
 static uint8_t g_fpErrorCount = 0;
 static LOCK_SCREEN_PURPOSE_ENUM g_purpose = LOCK_SCREEN_PURPOSE_UNLOCK;
@@ -127,26 +126,23 @@ bool GuiLockScreenIsFirstUnlock(void)
 
 static void LockViewWipeDeviceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                            GUI_STATUS_BAR_HEIGHT);
-        lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT);
-        GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
+    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
+                                        GUI_STATUS_BAR_HEIGHT);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_align(cont, LV_ALIGN_DEFAULT, 0, GUI_STATUS_BAR_HEIGHT);
+    GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
 
-        lv_obj_t *label = GuiCreateTextLabel(cont, _("system_settings_wipe_device_generating_title"));
-        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 355);
+    lv_obj_t *label = GuiCreateTextLabel(cont, _("system_settings_wipe_device_generating_title"));
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 355);
 
-        label = GuiCreateNoticeLabel(cont, _("system_settings_wipe_device_generating_desc1"));
-        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 410);
+    label = GuiCreateNoticeLabel(cont, _("system_settings_wipe_device_generating_desc1"));
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 410);
 
-        label = GuiCreateNoticeLabel(cont, _("system_settings_wipe_device_generating_desc2"));
-        lv_obj_set_width(label, 408);
-        lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
-        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 612);
-        GuiModelLockedDeviceDelAllWalletDesc();
-    }
+    label = GuiCreateNoticeLabel(cont, _("system_settings_wipe_device_generating_desc2"));
+    lv_obj_set_width(label, 408);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 612);
+    GuiModelLockedDeviceDelAllWalletDesc();
 }
 
 void GuiLockScreenWipeDevice(void)
@@ -177,7 +173,7 @@ void GuiLockScreenWipeDevice(void)
     label = GuiCreateNoticeLabel(cont, showString);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 620 - GUI_STATUS_BAR_HEIGHT);
 
-    lv_obj_t *btn = GuiCreateBtn(cont, _("wipe_device"));
+    lv_obj_t *btn = GuiCreateTextBtn(cont, _("wipe_device"));
     lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 690 - GUI_STATUS_BAR_HEIGHT);
@@ -201,14 +197,10 @@ void GuiLockScreenHidden(void)
 
 void OpenForgetPasswordHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GUI_VIEW *view = (GUI_VIEW *)lv_event_get_user_data(e);
-        FpCancelCurOperate();
-        lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
-        GuiFrameOpenViewWithParam(&g_forgetPassView, view, sizeof(view));
-    }
+    GUI_VIEW *view = (GUI_VIEW *)lv_event_get_user_data(e);
+    FpCancelCurOperate();
+    lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
+    GuiFrameOpenViewWithParam(&g_forgetPassView, view, sizeof(view));
 }
 
 void GuiLockScreenTurnOn(void *param)
@@ -268,10 +260,7 @@ void GuiLockScreenToHome(void)
 
 void GuiLockScreenTurnOffHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiLockScreenTurnOff();
-    }
+    GuiLockScreenTurnOff();
 }
 
 void GuiLockScreenPassCode(bool en)
@@ -364,12 +353,15 @@ void GuiLockScreenTurnOnHandler(lv_event_t *e)
 void GuiLockScreenInit(void *param)
 {
     g_pageWidget = CreatePageWidget();
-    lv_obj_t *cont = g_pageWidget->contentZone;
+    g_verifyLock = GuiCreateEnterPasscode(g_pageWidget->contentZone, NULL, param, ENTER_PASSCODE_VERIFY_PIN);
+    GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_GO_LOCK_DEVICE_PASS, NULL, 0);
+}
 
-    g_lockScreenCont = cont;
-    GuiEnterPasscodeItem_t *item = GuiCreateEnterPasscode(cont, NULL, param, ENTER_PASSCODE_VERIFY_PIN);
-    g_verifyLock = item;
-
+void GuiLockViewRefreshLanguage(void)
+{
+    lv_obj_clean(g_pageWidget->contentZone);
+    static uint16_t lockParam = SIG_LOCK_VIEW_VERIFY_PIN;
+    g_verifyLock = GuiCreateEnterPasscode(g_pageWidget->contentZone, NULL, &lockParam, ENTER_PASSCODE_VERIFY_PIN);
     GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_GO_LOCK_DEVICE_PASS, NULL, 0);
 }
 

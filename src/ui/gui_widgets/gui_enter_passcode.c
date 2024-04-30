@@ -56,8 +56,8 @@ void GuiEnterPassLabelRefresh(void)
     g_enterPassLabel[ENTER_PASSCODE_SET_PASSWORD].desc = _("single_backup_setpass_desc");
     g_enterPassLabel[ENTER_PASSCODE_SET_PASSWORD].passSwitch = _("single_backup_setpin_use_pin");
 
-    g_enterPassLabel[ENTER_PASSCODE_REPEAT_PIN].title = _("single_backup_repeatpin_title");
-    g_enterPassLabel[ENTER_PASSCODE_REPEAT_PIN].desc = _("single_backup_repeatpin_desc");
+    g_enterPassLabel[ENTER_PASSCODE_REPEAT_PIN].title = _("repeat_passcode_title");
+    g_enterPassLabel[ENTER_PASSCODE_REPEAT_PIN].desc = _("repeat_passcode_desc");
     g_enterPassLabel[ENTER_PASSCODE_REPEAT_PIN].passSwitch = "";
 
     g_enterPassLabel[ENTER_PASSCODE_REPEAT_PASSWORD].title = _("single_backup_repeatpass_title");
@@ -332,11 +332,9 @@ void PassWordPinSwitch(GuiEnterPasscodeItem_t *item)
 
 static void PassWordPinSwitchHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiEnterPasscodeItem_t *item = g_passParam.setpinParam;
-        PassWordPinSwitch(item);
-    }
+
+    GuiEnterPasscodeItem_t *item = g_passParam.setpinParam;
+    PassWordPinSwitch(item);
 }
 
 void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *passCodeParam)
@@ -432,7 +430,7 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
 
         label = GuiCreateIllustrateLabel(passWdCont, g_enterPassLabel[ENTER_PASSCODE_SET_PASSWORD].desc);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+        GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
         KeyBoard_t *kb = GuiCreateFullKeyBoard(passWdCont, SetPassWordHandler, KEY_STONE_FULL_L, passCodeParam);
         lv_obj_set_size(kb->ta, 352, 60);
@@ -500,9 +498,8 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
     label = GuiCreateTitleLabel(pinCont, g_enterPassLabel[mode].title);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateIllustrateLabel(pinCont, g_enterPassLabel[mode].desc);
-    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_t *subLabel = GuiCreateNoticeLabel(pinCont, g_enterPassLabel[mode].desc);
+    lv_obj_align_to(subLabel, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
 
     label = GuiCreateIllustrateLabel(pinCont, _("password_error_not_match"));
     lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
@@ -523,7 +520,7 @@ void GuiCreateEnterPassWord(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *
 
     label = GuiCreateIllustrateLabel(passWdCont, g_enterPassLabel[mode].desc);
     lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     KeyBoard_t *kb = GuiCreateFullKeyBoard(passWdCont, SetPassWordHandler, KEY_STONE_FULL_L, passCodeParam);
     lv_obj_set_size(kb->ta, 352, 60);
@@ -728,17 +725,15 @@ void GuiFingerPrintStatus(GuiEnterPasscodeItem_t *item, bool en, uint8_t errCnt)
 
 void SwitchPasswordModeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_t *ta = lv_event_get_user_data(e);
-        lv_obj_t *img = lv_event_get_target(e);
-        bool en = lv_textarea_get_password_mode(ta);
-        lv_textarea_set_password_mode(ta, !en);
-        if (en) {
-            lv_img_set_src(img, &imgEyeOn);
-        } else {
-            lv_img_set_src(img, &imgEyeOff);
-        }
+
+    lv_obj_t *ta = lv_event_get_user_data(e);
+    lv_obj_t *img = lv_event_get_target(e);
+    bool en = lv_textarea_get_password_mode(ta);
+    lv_textarea_set_password_mode(ta, !en);
+    if (en) {
+        lv_img_set_src(img, &imgEyeOn);
+    } else {
+        lv_img_set_src(img, &imgEyeOff);
     }
 }
 

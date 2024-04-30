@@ -65,7 +65,7 @@ static void GuiWipeDeviceNVSBarInit()
 
 void GuiWipeDeviceEntranceWidget(lv_obj_t *parent)
 {
-    lv_obj_t *label = GuiCreateLittleTitleLabel(parent, _("wipe_device"));
+    lv_obj_t *label = GuiCreateLittleTitleLabel(parent, _("system_settings_wipe_device_wipe_title"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 140);
 
     label = GuiCreateNoticeLabel(parent, _("system_settings_wipe_device_wipe_desc"));
@@ -84,16 +84,13 @@ void GuiWipeDeviceEntranceWidget(lv_obj_t *parent)
 
 static void WipeDeviceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiShowWipeDeviceHintBox();
-    }
+    GuiShowWipeDeviceHintBox();
 }
 
 static void GuiShowWipeDeviceHintBox(void)
 {
     if (g_wipeDeviceHintBox == NULL) {
-        g_wipeDeviceHintBox = GuiCreateGeneralHintBox(lv_scr_act(), &imgWarn, _("wipe_device"), _("system_settings_wipe_device_wipe_alert_desc"), NULL,
+        g_wipeDeviceHintBox = GuiCreateGeneralHintBox(&imgWarn, _("wipe_device"), _("system_settings_wipe_device_wipe_alert_desc"), NULL,
                               _("not_now"), WHITE_COLOR_OPA20, _("system_settings_wipe_device_wipe_start_text"), ORANGE_COLOR);
         lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_wipeDeviceHintBox);
         lv_obj_add_event_cb(leftBtn, NotNowHandler, LV_EVENT_CLICKED, NULL);
@@ -107,20 +104,14 @@ static void GuiShowWipeDeviceHintBox(void)
 
 static void NotNowHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiCountDownDestruct(NULL, NULL);
-        GUI_DEL_OBJ(g_wipeDeviceHintBox);
-    }
+    GuiCountDownDestruct(NULL, NULL);
+    GUI_DEL_OBJ(g_wipeDeviceHintBox);
 }
 
 static void ExecWipeDeviceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_wipeDeviceHintBox);
-        WipeDeviceDeal();
-    }
+    GUI_DEL_OBJ(g_wipeDeviceHintBox);
+    WipeDeviceDeal();
 }
 
 static void WipeDeviceDeal(void)

@@ -1,14 +1,6 @@
 #include "gui_button.h"
 #include "gui_obj.h"
 
-static void CloseButtonContHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_del(lv_event_get_user_data(e));
-    }
-}
-
 void *GuiCreateButton(lv_obj_t *parent, uint16_t w, uint16_t h, GuiButton_t *member,
                       uint8_t cnt, lv_event_cb_t buttonCb, void *param)
 {
@@ -24,7 +16,9 @@ void *GuiCreateButton(lv_obj_t *parent, uint16_t w, uint16_t h, GuiButton_t *mem
     lv_obj_set_style_bg_opa(cont, LV_OPA_0, 0);
     lv_obj_set_style_bg_color(cont, DARK_BG_COLOR, 0);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(cont, buttonCb ? buttonCb : CloseButtonContHandler, LV_EVENT_CLICKED, param ? param : cont);
+    if (buttonCb != NULL) {
+        lv_obj_add_event_cb(cont, buttonCb, LV_EVENT_CLICKED, param);
+    }
     lv_obj_set_style_bg_color(cont, WHITE_COLOR_OPA12, LV_STATE_PRESSED | LV_PART_MAIN);
     lv_obj_set_style_bg_opa(cont, LV_OPA_100, LV_STATE_PRESSED | LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
@@ -34,9 +28,8 @@ void *GuiCreateButton(lv_obj_t *parent, uint16_t w, uint16_t h, GuiButton_t *mem
 void *GuiCreateImgButton(lv_obj_t *parent, const void *src, uint16_t width,
                          lv_event_cb_t buttonCb, void *param)
 {
-    lv_obj_t *img = GuiCreateImg(parent, src);
     GuiButton_t table[] = {
-        {.obj = img, .align = LV_ALIGN_CENTER, .position = {0, 0},},
+        {.obj = GuiCreateImg(parent, src), .align = LV_ALIGN_CENTER, .position = {0, 0},},
     };
     lv_obj_t *button = GuiCreateButton(parent, width, width, table, NUMBER_OF_ARRAYS(table),
                                        buttonCb, param);
@@ -47,11 +40,9 @@ void *GuiCreateImgButton(lv_obj_t *parent, const void *src, uint16_t width,
 void *GuiCreateImgLabelButton(lv_obj_t *parent, const char *text, const void *src, uint16_t width,
                               lv_event_cb_t buttonCb, void *param)
 {
-    lv_obj_t *label = GuiCreateIllustrateLabel(parent, text);
-    lv_obj_t *img = GuiCreateImg(parent, src);
     GuiButton_t table[] = {
-        {.obj = img, .align = LV_ALIGN_LEFT_MID, .position = {12, 0},},
-        {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {40, 0},},
+        {.obj = GuiCreateImg(parent, src), .align = LV_ALIGN_LEFT_MID, .position = {12, 0},},
+        {.obj = GuiCreateIllustrateLabel(parent, text), .align = LV_ALIGN_LEFT_MID, .position = {40, 0},},
     };
     lv_obj_t *button = GuiCreateButton(parent, width, 36, table, NUMBER_OF_ARRAYS(table),
                                        buttonCb, param);
@@ -67,6 +58,22 @@ void *GuiCreateImgLabelAdaptButton(lv_obj_t *parent, const char *text, const voi
     GuiButton_t table[] = {
         {.obj = img, .align = LV_ALIGN_LEFT_MID, .position = {12, 0},},
         {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {16 + lv_obj_get_self_width(img), 0},},
+    };
+    uint16_t width = lv_obj_get_self_width(label) + lv_obj_get_self_width(img) + 24;
+    lv_obj_t *button = GuiCreateButton(parent, width, 36, table, NUMBER_OF_ARRAYS(table),
+                                       buttonCb, param);
+    lv_obj_set_style_radius(button, 12, LV_PART_MAIN);
+    return button;
+}
+
+void *GuiCreateLabelImgAdaptButton(lv_obj_t *parent, const char *text, const void *src,
+                                   lv_event_cb_t buttonCb, void *param)
+{
+    lv_obj_t *label = GuiCreateIllustrateLabel(parent, text);
+    lv_obj_t *img = GuiCreateImg(parent, src);
+    GuiButton_t table[] = {
+        {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {12, 0},},
+        {.obj = img, .align = LV_ALIGN_LEFT_MID, .position = {16 + lv_obj_get_self_width(label), 0},},
     };
     uint16_t width = lv_obj_get_self_width(label) + lv_obj_get_self_width(img) + 24;
     lv_obj_t *button = GuiCreateButton(parent, width, 36, table, NUMBER_OF_ARRAYS(table),

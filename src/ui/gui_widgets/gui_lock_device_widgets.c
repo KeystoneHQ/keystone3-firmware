@@ -102,7 +102,7 @@ void GuiLockDeviceInit(void *param)
 
     if (!IsLockTimePage()) {
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        lv_obj_t *btn = GuiCreateBtn(cont, _("unlock_device_fingerprint_pin_device_locked_btn_start_text"));
+        lv_obj_t *btn = GuiCreateTextBtn(cont, _("unlock_device_fingerprint_pin_device_locked_btn_start_text"));
         lv_obj_set_size(btn, 302, 66);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 622 - 96);
         lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_STATE_DEFAULT);
@@ -113,7 +113,7 @@ void GuiLockDeviceInit(void *param)
         g_countDownTimer = lv_timer_create(CountDownTimerWipeDeviceHandler, 1000, btn);
     } else {
         lv_obj_set_style_text_color(label, lv_color_hex(0xc4c4c4), LV_PART_MAIN);
-        lv_obj_t *btn = GuiCreateBtn(cont, _("forgot_password_reset_passcode_intro_title"));
+        lv_obj_t *btn = GuiCreateTextBtn(cont, _("forgot_password_reset_passcode_intro_text"));
         lv_obj_set_size(btn, 302, 66);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 622 - 96);
         lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_STATE_DEFAULT);
@@ -176,7 +176,7 @@ static void CountDownTimerWipeDeviceHandler(lv_timer_t *timer)
     if (countDown > 0) {
         snprintf_s(buf, BUFFER_SIZE_64, _("unlock_device_fingerprint_pin_device_locked_btn_fmt"), countDown);
     } else {
-        strcpy_s(buf, BUFFER_SIZE_64, ("unlock_device_fingerprint_pin_device_locked_btn"));
+        strcpy_s(buf, BUFFER_SIZE_64, ("system_settings_wipe_device_wipe_button"));
     }
     lv_label_set_text(lv_obj_get_child(obj, 0), buf);
     if (countDown <= 0) {
@@ -208,14 +208,11 @@ static void CountDownTimerLockTimeHandler(lv_timer_t *timer)
 
 static void WipeDeviceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (CHECK_BATTERY_LOW_POWER()) {
-            g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
-        } else {
-            WipeDevice();
-            GuiLockedDeviceCountDownDestruct(NULL, NULL);
-        }
+    if (CHECK_BATTERY_LOW_POWER()) {
+        g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
+    } else {
+        WipeDevice();
+        GuiLockedDeviceCountDownDestruct(NULL, NULL);
     }
 }
 

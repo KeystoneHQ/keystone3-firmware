@@ -14,8 +14,8 @@ typedef enum {
     SETUP_ENGLISH = 0,
     SETUP_RUSSIAN,
     SETUP_CHINESE,
-    SETUP_SPANISH,
     SETUP_KOREAN,
+    SETUP_SPANISH,
 
     SETUP_LANGUAGE_BUTT,
 } SETUP_LANGUAGE_ENUM;
@@ -23,10 +23,8 @@ typedef enum {
 static const char *g_languageList[] = {
     "English",
     "Русский язык",
-    "繁體中文",
-    "Español",
-    "korean", // "한국인",
-    "Japanese",
+    "简体中文",
+    "한국인", // "한국인",
     "German",
 };
 
@@ -59,7 +57,7 @@ static PageWidget_t *g_pageWidget;
 #ifdef BTC_ONLY
 #define SUPPORT_WALLET_INDEX SETUP_ENGLISH
 #else
-#define SUPPORT_WALLET_INDEX SETUP_RUSSIAN
+#define SUPPORT_WALLET_INDEX SETUP_KOREAN
 #endif
 
 static void GuiWelcomeWidget(lv_obj_t *parent)
@@ -67,7 +65,7 @@ static void GuiWelcomeWidget(lv_obj_t *parent)
     lv_obj_t *img = GuiCreateImg(parent, &imgLogoGraphL);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 84 - GUI_NAV_BAR_HEIGHT);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(img, GoToDeviceUIDPage, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(img, GoToDeviceUIDPage, LV_EVENT_CLICKED, NULL);
 
     lv_obj_t *label = GuiCreateTitleLabel(parent, _("Keystone"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 268 - GUI_NAV_BAR_HEIGHT);
@@ -79,39 +77,30 @@ static void GuiWelcomeWidget(lv_obj_t *parent)
     lv_obj_set_size(btn, 96, 96);
     lv_obj_set_style_radius(btn, LV_RADIUS_CIRCLE, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -96);
-    lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, NULL);
 }
 
 static void SelectLanguageHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        int newCheckIndex = 0;
-        lv_obj_t *newCheckBox = lv_event_get_user_data(e);
-        for (int i = SETUP_ENGLISH; i <= SUPPORT_WALLET_INDEX; i++) {
-            if (newCheckBox == g_languageCheck[i]) {
-                newCheckIndex = i;
-                lv_obj_add_state(g_languageCheck[i], LV_STATE_CHECKED);
-            } else {
-                lv_obj_clear_state(g_languageCheck[i], LV_STATE_CHECKED);
-            }
+    int newCheckIndex = 0;
+    lv_obj_t *newCheckBox = lv_event_get_user_data(e);
+    for (int i = SETUP_ENGLISH; i <= SUPPORT_WALLET_INDEX; i++) {
+        if (newCheckBox == g_languageCheck[i]) {
+            newCheckIndex = i;
+            lv_obj_add_state(g_languageCheck[i], LV_STATE_CHECKED);
+        } else {
+            lv_obj_clear_state(g_languageCheck[i], LV_STATE_CHECKED);
         }
-
-        if (newCheckIndex != SETUP_CHINESE)
-            LanguageSwitch(newCheckIndex);
-        GuiEmitSignal(GUI_EVENT_CHANGE_LANGUAGE, NULL, 0);
     }
+
+    LanguageSwitch(newCheckIndex);
+    GuiEmitSignal(GUI_EVENT_CHANGE_LANGUAGE, NULL, 0);
 }
 
 void GuiOpenWebAuthHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiWebAuthSetEntry(WEB_AUTH_ENTRY_SETUP);
-        GuiFrameOpenView(&g_webAuthView);
-    }
+    GuiWebAuthSetEntry(WEB_AUTH_ENTRY_SETUP);
+    GuiFrameOpenView(&g_webAuthView);
 }
 
 void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
@@ -123,9 +112,13 @@ void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
         lv_obj_t *checkBox = GuiCreateSingleCheckBox(parent, "");
         g_languageCheck[i] = checkBox;
         if (i == SETUP_CHINESE) {
-            label = GuiCreateLabelWithFont(parent, g_languageList[i], &openSansCnText);
+            label = GuiCreateLabelWithFont(parent, g_languageList[i], &cnText);
+        } else if (i == SETUP_RUSSIAN) {
+            label = GuiCreateLabelWithFont(parent, g_languageList[i], &ruText);
+        } else if (i == SETUP_KOREAN) {
+            label = GuiCreateLabelWithFont(parent, g_languageList[i], &koText);
         } else {
-            label = GuiCreateLabelWithFont(parent, g_languageList[i], &openSansLanguage);
+            label = GuiCreateLabelWithFont(parent, g_languageList[i], &openSansEnText);
         }
         if (i == lang) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
@@ -163,7 +156,7 @@ static void GuiSetLanguageWidget(lv_obj_t *parent)
 
     lv_obj_t *btn = GuiCreateBtn(parent, USR_SYMBOL_ARROW_NEXT);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-    lv_obj_add_event_cb(btn, GuiOpenWebAuthHandler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn, GuiOpenWebAuthHandler, LV_EVENT_CLICKED, NULL);
 }
 
 void GuiSetupAreaInit(void)
@@ -304,14 +297,11 @@ bool GuiJudgeCurrentPahse(SETUP_PHASE_ENUM pahaseEnum)
 
 static void GoToDeviceUIDPage(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        g_clickLogoCount++;
-        DestroyTimer();
-        g_resetClickCountTimer = lv_timer_create(ResetClickCountHandler, 1000, NULL);
-        if (g_clickLogoCount == 3) {
-            GuiFrameOpenView(&g_aboutInfoView);
-        }
+    g_clickLogoCount++;
+    DestroyTimer();
+    g_resetClickCountTimer = lv_timer_create(ResetClickCountHandler, 1000, NULL);
+    if (g_clickLogoCount == 3) {
+        GuiFrameOpenView(&g_aboutInfoView);
     }
 }
 

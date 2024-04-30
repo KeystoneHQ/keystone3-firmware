@@ -4,6 +4,7 @@
 #include "lvgl.h"
 
 // img
+LV_IMG_DECLARE(imgReset);
 LV_IMG_DECLARE(imgArrowNext);
 LV_IMG_DECLARE(imgArrowNextRed);
 LV_IMG_DECLARE(imgArrowRight);
@@ -285,19 +286,20 @@ LV_FONT_DECLARE(openSans_20);
 LV_FONT_DECLARE(openSans_24);
 LV_FONT_DECLARE(buttonFont);
 LV_FONT_DECLARE(openSansDesc);
-LV_FONT_DECLARE(openSansLanguage);
-LV_FONT_DECLARE(openSansCnTitle);
-LV_FONT_DECLARE(openSansCnLittleTitle);
-LV_FONT_DECLARE(openSansCnText);
-LV_FONT_DECLARE(openSansCnIllustrate);
-LV_FONT_DECLARE(openSansCnBoldIllustrate);
+LV_FONT_DECLARE(cnTitle);
+LV_FONT_DECLARE(cnLittleTitle);
+LV_FONT_DECLARE(cnText);
+LV_FONT_DECLARE(cnIllustrate);
 LV_FONT_DECLARE(openSansEnTitle);
 LV_FONT_DECLARE(openSansEnLittleTitle);
 LV_FONT_DECLARE(openSansEnText);
 LV_FONT_DECLARE(openSansEnIllustrate);
-LV_FONT_DECLARE(openSansEnBoldIllustrate);
-LV_FONT_DECLARE(rusTitle);
-LV_FONT_DECLARE(rusLittleTitle);
-LV_FONT_DECLARE(rusText);
-LV_FONT_DECLARE(rusIllustrate);
+LV_FONT_DECLARE(ruTitle);
+LV_FONT_DECLARE(ruLittleTitle);
+LV_FONT_DECLARE(ruText);
+LV_FONT_DECLARE(ruIllustrate);
+LV_FONT_DECLARE(koTitle);
+LV_FONT_DECLARE(koLittleTitle);
+LV_FONT_DECLARE(koText);
+LV_FONT_DECLARE(koIllustrate);
 #endif /* _GUI_RESOURCE_H */

@@ -23,9 +23,9 @@ void DerivationPathDescsInit(void)
     if (g_solDerivationPathDesc == NULL) {
         g_solDerivationPathDesc = SRAM_MALLOC(3 * ETH_DERIVATION_PATH_MAX_LEN);
     }
-    g_solDerivationPathDesc[SOL_SOLFLARE] = (char *)_("derivation_path_sol_1_desc");
-    g_solDerivationPathDesc[SOL_SOLLET] = (char *)_("derivation_path_sol_2_desc");
-    g_solDerivationPathDesc[SOL_PHANTOM] = (char *)_("derivation_path_sol_3_desc");
+    g_solDerivationPathDesc[SOL_SOLFLARE] = "";
+    g_solDerivationPathDesc[SOL_SOLLET] = "";
+    g_solDerivationPathDesc[SOL_PHANTOM] = "";
 
     if (g_btcDerivationPathDesc == NULL) {
         g_btcDerivationPathDesc = SRAM_MALLOC(4 * ETH_DERIVATION_PATH_MAX_LEN);

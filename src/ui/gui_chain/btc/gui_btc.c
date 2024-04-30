@@ -693,7 +693,7 @@ void *GetPsbtInputDetailData(uint8_t *row, uint8_t *col, void *param)
             if (i == 0) {
                 snprintf_s(indata[i][j], BUFFER_SIZE_64, "%d\n", j + 1);
             } else {
-                strcpy_s(indata[i][j], BUFFER_SIZE_64, psbt->detail->from->data[j].address);
+                strcpy_s(indata[i][j], BUFFER_SIZE_64, psbt->detail->from->data[j].has_address ? psbt->detail->from->data[j].address : "Empty");
             }
         }
     }
@@ -801,19 +801,16 @@ typedef struct ClickParamItem {
 
 static void SwitchValueUnit(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        ClickParamItem_t *item = (ClickParamItem_t *)lv_event_get_user_data(e);
-        if (item != NULL) {
-            if (*(item->isSat) == true) {
-                lv_label_set_text(item->amountValue, item->overviewData->total_output_amount);
-                lv_label_set_text(item->feeValue, item->overviewData->fee_amount);
-            } else {
-                lv_label_set_text(item->amountValue, item->overviewData->total_output_sat);
-                lv_label_set_text(item->feeValue, item->overviewData->fee_sat);
-            }
-            *item->isSat = !(*item->isSat);
+    ClickParamItem_t *item = (ClickParamItem_t *)lv_event_get_user_data(e);
+    if (item != NULL) {
+        if (*(item->isSat) == true) {
+            lv_label_set_text(item->amountValue, item->overviewData->total_output_amount);
+            lv_label_set_text(item->feeValue, item->overviewData->fee_amount);
+        } else {
+            lv_label_set_text(item->amountValue, item->overviewData->total_output_sat);
+            lv_label_set_text(item->feeValue, item->overviewData->fee_sat);
         }
+        *item->isSat = !(*item->isSat);
     }
 }
 

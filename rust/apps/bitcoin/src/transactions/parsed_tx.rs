@@ -25,6 +25,7 @@ pub struct ParsedInput {
     pub is_multisig: bool,
     pub is_external: bool,
     pub need_sign: bool,
+    pub ecdsa_sighash_type: u8,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -151,8 +152,18 @@ pub trait TxParser {
     ) -> Result<ParsedTx> {
         let total_input_value = inputs.iter().fold(0, |acc, cur| acc + cur.value);
         let total_output_value = outputs.iter().fold(0, |acc, cur| acc + cur.value);
-        let fee = total_input_value - total_output_value;
-        if total_input_value < total_output_value {
+        let has_anyone_can_pay = inputs
+            .iter()
+            .find(|v| v.ecdsa_sighash_type & 0x80 > 0)
+            .is_some();
+        let fee = if has_anyone_can_pay {
+            0
+        } else {
+            total_input_value - total_output_value
+        };
+        // in some special cases like Unisat Listing transaction, transaction input will be less than output value
+        // for these wallet will reassemble the transaction on their end.
+        if !has_anyone_can_pay && (total_input_value < total_output_value) {
             return Err(BitcoinError::InvalidTransaction(
                 "inputs total value is less than outputs total value".to_string(),
             ));

@@ -61,9 +61,7 @@ static void KeyboardConfirmHandler(lv_event_t *e)
             GuiClearKeyboardInput(keyboardWidget);
             GuiModelVerifyAccountPassWord(keyboardWidget->sig);
         }
-    }
-
-    if (code == LV_EVENT_VALUE_CHANGED) {
+    } else if (code == LV_EVENT_VALUE_CHANGED) {
         GuiHideErrorLabel(keyboardWidget);
         Vibrate(SLIGHT);
     }
@@ -71,21 +69,14 @@ static void KeyboardConfirmHandler(lv_event_t *e)
 
 static void ForgetHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiFrameOpenView(&g_forgetPassView);
-    }
+    GuiFrameOpenView(&g_forgetPassView);
 }
 
 static void CloseKeyBoardWidgetHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
-        KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
-        GuiDeleteKeyboardWidget(keyboardWidget);
-    }
+    KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
+    GuiDeleteKeyboardWidget(keyboardWidget);
 }
 
 static KeyboardWidget_t *CreateKeyboardWidget()
@@ -215,21 +206,15 @@ void PassWordPinHintRefresh(KeyboardWidget_t *keyboardWidget)
 
 static void PassWordPinSwitchHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
-    if (code == LV_EVENT_CLICKED) {
-        uint8_t keyboardMode = lv_obj_has_flag(keyboardWidget->btnm, LV_OBJ_FLAG_HIDDEN) ? KEYBOARD_HINTBOX_PIN : KEYBOARD_HINTBOX_PASSWORD;
-        PassWordPinHintSwitch(keyboardWidget, keyboardMode);
-    }
+    uint8_t keyboardMode = lv_obj_has_flag(keyboardWidget->btnm, LV_OBJ_FLAG_HIDDEN) ? KEYBOARD_HINTBOX_PIN : KEYBOARD_HINTBOX_PASSWORD;
+    PassWordPinHintSwitch(keyboardWidget, keyboardMode);
 }
 
 static void CloseKeyboardWidgetViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
-        GuiDeleteKeyboardWidget(keyboardWidget);
-    }
+    KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
+    GuiDeleteKeyboardWidget(keyboardWidget);
 }
 
 KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t buttonCb, uint16_t *signal)
@@ -314,20 +299,14 @@ KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t bu
 KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
 {
     KeyboardWidget_t *keyboardWidget = CreateKeyboardWidget();
-    lv_obj_t *keyboardHintBox = GuiCreateHintBox(parent, 480, 576, true);
+    lv_obj_t *keyboardHintBox = GuiCreateHintBox(576);
 
     lv_obj_add_event_cb(lv_obj_get_child(keyboardHintBox, 0), CloseKeyBoardWidgetHandler, LV_EVENT_CLICKED, keyboardWidget);
 
-    lv_obj_t *label = GuiCreateIllustrateLabel(keyboardHintBox, _("enter_passcode"));
+    lv_obj_t *label = GuiCreateIllustrateLabel(keyboardHintBox, _("please_enter_passcode"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 254);
 
-    lv_obj_t *img = GuiCreateImg(keyboardHintBox, &imgClose);
-    lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, NULL);
-    GuiButton_t table[] = {
-        {.obj = img, .align = LV_ALIGN_CENTER, .position = {0, 0},},
-    };
-    lv_obj_t *button = GuiCreateButton(keyboardHintBox, 36, 36, table, NUMBER_OF_ARRAYS(table),
-                                       CloseKeyBoardWidgetHandler, keyboardWidget);
+    lv_obj_t *button = GuiCreateImgButton(keyboardHintBox, &imgClose, 64, CloseKeyBoardWidgetHandler, keyboardWidget);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 408, 251);
 
     keyboardWidget->keyboardHintBox = keyboardHintBox;
@@ -345,7 +324,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
 
     keyboardWidget->kb = kb;
 
-    img = GuiCreateImg(keyboardHintBox, &imgEyeOff);
+    lv_obj_t *img = GuiCreateImg(keyboardHintBox, &imgEyeOff);
     lv_obj_align_to(img, ta, LV_ALIGN_OUT_RIGHT_MID, 20, 0);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, ta);
@@ -466,7 +445,7 @@ void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t
 
 static void GuiShowPasswordErrorHintBox(KeyboardWidget_t *keyboardWidget)
 {
-    lv_obj_t *errHintBox = GuiCreateResultHintbox(lv_scr_act(), 386, &imgFailed,
+    lv_obj_t *errHintBox = GuiCreateResultHintbox(386, &imgFailed,
                            _("unlock_device_error_attempts_exceed"), _("unlock_device_error_attempts_exceed_desc"),
                            NULL, DARK_GRAY_COLOR, _("unlock_device_error_btn_start_text"), DARK_GRAY_COLOR);
 
@@ -482,12 +461,9 @@ static void GuiShowPasswordErrorHintBox(KeyboardWidget_t *keyboardWidget)
 
 static void LockDeviceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
-        GuiHintBoxToLockSreen();
-        GuiDeleteKeyboardWidget(keyboardWidget);
-    }
+    KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
+    GuiHintBoxToLockSreen();
+    GuiDeleteKeyboardWidget(keyboardWidget);
 }
 
 static void GuiHintBoxToLockSreen(void)
@@ -509,7 +485,7 @@ static void CountDownHandler(lv_timer_t *timer)
     if (*keyboardWidget->timerCounter > 0) {
         lv_label_set_text_fmt(label, _("unlock_device_error_btn_text_fmt"), *keyboardWidget->timerCounter);
     } else {
-        lv_label_set_text(label, _("unlock_device_error_btn_end_text"));
+        lv_label_set_text(label, _("unlock_device"));
     }
 
     if (*keyboardWidget->timerCounter <= 0) {

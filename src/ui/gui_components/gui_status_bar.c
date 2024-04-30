@@ -114,9 +114,9 @@ const static CoinWalletInfo_t g_walletBtn[] = {
 #ifndef BTC_ONLY
     {WALLET_LIST_METAMASK, "MetaMask", &walletMetamask},
     {WALLET_LIST_OKX, "OKX Wallet", &walletOkx},
-    {WALLET_LIST_ETERNL, "Eternl Wallet", &walletEternl},
+    {WALLET_LIST_ETERNL, "Eternl", &walletEternl},
     // {WALLET_LIST_YOROI, "Yoroi Wallet", &walletYoroi},
-    {WALLET_LIST_TYPHON, "Typhon Wallet", &walletTyphon},
+    {WALLET_LIST_TYPHON, "Typhon", &walletTyphon},
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SUB, "SubWallet", &walletSubwallet},
     {WALLET_LIST_SOLFARE, "Solflare", &walletSolflare},

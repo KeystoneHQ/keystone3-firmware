@@ -6,11 +6,19 @@
 #define SOFTWARE_VERSION_MAJOR              1
 #define SOFTWARE_VERSION_MINOR              3
 <<<<<<< HEAD
+<<<<<<< HEAD
 #define SOFTWARE_VERSION_BUILD              7
 =======
 #define SOFTWARE_VERSION_BUILD              6
 #define SOFTWARE_VERSION_BETA               1
 >>>>>>> f736950b (1. fix bug)
+=======
+#define SOFTWARE_VERSION_BUILD              6
+#define SOFTWARE_VERSION_BETA               1
+=======
+#define SOFTWARE_VERSION_BUILD              7
+>>>>>>> 57b8845a (updata—version)
+>>>>>>> f59b695a (updata—version)
 #define SOFTWARE_VERSION                    (SOFTWARE_VERSION_MAJOR * 10000 + SOFTWARE_VERSION_MINOR * 100 + SOFTWARE_VERSION_BUILD)
 
 #if SOFTWARE_VERSION_MAJOR > 99 || SOFTWARE_VERSION_MINOR > 99 || SOFTWARE_VERSION_BUILD > 99

@@ -294,4 +294,9 @@ LV_FONT_DECLARE(koTitle);
 LV_FONT_DECLARE(koLittleTitle);
 LV_FONT_DECLARE(koText);
 LV_FONT_DECLARE(koIllustrate);
+LV_FONT_DECLARE(esTitle);
+LV_FONT_DECLARE(esLittleTitle);
+LV_FONT_DECLARE(esText);
+LV_FONT_DECLARE(esIllustrate);
+
 #endif /* _GUI_RESOURCE_H */

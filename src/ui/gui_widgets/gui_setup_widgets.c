@@ -24,8 +24,8 @@ static const char *g_languageList[] = {
     "English",
     "Русский язык",
     "简体中文",
-    "한국어", // "한국인",
-    "German",
+    "한국인", // "한국인",
+    "Spanish",
 };
 
 typedef enum {
@@ -57,7 +57,7 @@ static PageWidget_t *g_pageWidget;
 #ifdef BTC_ONLY
 #define SUPPORT_WALLET_INDEX SETUP_ENGLISH
 #else
-#define SUPPORT_WALLET_INDEX SETUP_KOREAN
+#define SUPPORT_WALLET_INDEX SETUP_SPANISH
 #endif
 
 static void GuiWelcomeWidget(lv_obj_t *parent)

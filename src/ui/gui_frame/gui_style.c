@@ -28,6 +28,9 @@ static const GuiFontDesc_t g_langFontArr[] = {
 #ifdef KO_SUPPORT
     {LANG_KO, &koTitle, &koLittleTitle, &koText, &koIllustrate, &koIllustrate},
 #endif
+#ifdef ES_SUPPORT
+    {LANG_ES, &esTitle, &esLittleTitle, &esText, &esIllustrate, &esIllustrate},
+#endif
 };
 
 static void GuiBtnmStyleInit(void)

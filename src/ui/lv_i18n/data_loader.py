@@ -21,6 +21,7 @@ with open("./data.csv", newline="", encoding='utf-8') as csvfile:
     ru = {}
     cn = {}
     ko = {}
+    es = {}
 
     for row in reader:
         id = row['ID']
@@ -28,6 +29,7 @@ with open("./data.csv", newline="", encoding='utf-8') as csvfile:
         ru[id] = row['ru']
         cn[id] = row['cn']
         ko[id] = row['ko']
+        es[id] = row['es']
 
 with open("./en.yml", 'w', encoding='utf-8') as f:
     yaml.dump({'en': en}, f, default_flow_style=False)
@@ -43,6 +45,10 @@ compile_command += ' -l zh-CN'
 with open("./ko.yml", 'w', encoding='utf-8') as f:
     yaml.dump({'ko': ko}, f, allow_unicode=True, default_flow_style=False)
 compile_command += ' -l ko'
+
+with open("./es.yml", 'w', encoding='utf-8') as f:
+    yaml.dump({'es': es}, f, allow_unicode=True, default_flow_style=False)
+compile_command += ' -l es'
 
 compile_command += ' -l en'
 

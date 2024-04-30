@@ -9,37 +9,15 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val)
-{
-    return (uint32_t)(val < 0 ? -val : val);
-}
-static inline uint32_t op_i(uint32_t val)
-{
-    return val;
-}
+static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
+static inline uint32_t op_i(uint32_t val) { return val; }
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_w(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_f(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_t(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
+static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
+static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
-const static lv_i18n_phrase_t en_singulars[] = {
+static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
     {"Approve", "Approve"},
     {"Attention", "Attention"},
@@ -777,12 +755,9 @@ const static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -795,7 +770,735 @@ static const lv_i18n_lang_t en_lang = {
     .locale_plural_fn = en_plural_fn
 };
 
-const static lv_i18n_phrase_t ko_singulars[] = {
+static lv_i18n_phrase_t es_singulars[] = {
+    {"Address", "'Dirección'"},
+    {"Approve", "Aprobar"},
+    {"Attention", "Atención"},
+    {"Cancel", "Cancelar"},
+    {"Confirm", "Confirmar"},
+    {"Continue", "Continuar"},
+    {"Delete", "'Borrar'"},
+    {"Done", "Listo"},
+    {"Export", "'Exportar'"},
+    {"FORGET", "OLVIDA"},
+    {"Failed", "'Fracasado'"},
+    {"Import", "Importar"},
+    {"Keystone", "'Keystone' can be translated to Spanish as 'Piedra angular' or 'Clave'."},
+    {"OK", "'OK' translates to 'de acuerdo' or 'OK' in Spanish."},
+    {"Passphrase", "'Frase de contraseña'"},
+    {"Path", "Camino"},
+    {"Pending", "'Pendiente'"},
+    {"Policy", "Política"},
+    {"Quit", "Dejar"},
+    {"Regenerate", "'Regenerate' can be translated to Spanish as 'regenerar'."},
+    {"Reject", "\"Rechazar\""},
+    {"Restart", "\"Reiniciar\""},
+    {"Restart_now", "'Reiniciar ahora'"},
+    {"Skip", "\"Saltar\""},
+    {"Success", "\"Éxito\""},
+    {"Tutorial", "\"Tutorial\" translates to \"Tutorial\" in Spanish."},
+    {"Undo", "'DesHacer'"},
+    {"Update", "Actualización"},
+    {"Updating", "Actualización"},
+    {"Warning", "'Advertencia'"},
+    {"about_info_battery_voltage", "\"Voltaje de la batería\""},
+    {"about_info_device_uid", "'Identificador del dispositivo'"},
+    {"about_info_export_file_name", "Nombre del archivo:"},
+    {"about_info_export_log", "Exportar Registro del Sistema"},
+    {"about_info_export_to_sdcard", "Exportar registro a tarjeta MicroSD"},
+    {"about_info_fingerprint_firmware_version", "\"Versión del firmware de huellas dactilares\""},
+    {"about_info_firmware_version", "'Versión del firmware'"},
+    {"about_info_firmware_version_head", "'Firmware' can be translated to Spanish as 'firmware'."},
+    {"about_info_result_export_failed", "'Exportación fallida'"},
+    {"about_info_result_export_failed_desc_no_sdcard", "Por favor, asegúrese de haber insertado una tarjeta MicroSD formateada en FAT32."},
+    {"about_info_result_export_failed_desc_no_space", "Asegúrate de que tu tarjeta MicroSD tenga suficiente memoria."},
+    {"about_info_result_export_successful", "'Exportación exitosa'"},
+    {"about_info_result_export_successful_desc", "\"El registro de su sistema ha sido exportado exitosamente a la tarjeta MicroSD.\""},
+    {"about_info_serial_number", "'Número de serie'"},
+    {"about_info_verify_checksum_desc", "Por favor, verifica si la información de arriba coincide con la página web. Si no coincide, significa que pueden haber modificado el firmware. Por favor, deja de usarlo inmediatamente."},
+    {"about_info_verify_checksum_text", "'Checksum' translates to 'suma de verificación' in Spanish."},
+    {"about_info_verify_checksum_title", "Checksum"},
+    {"about_info_verify_firmware_desc", "Esta es una función avanzada para que los desarrolladores verifiquen que el firmware que se ejecuta en su dispositivo Keystone sea consistente con el que hemos abierto como código abierto."},
+    {"about_info_verify_firmware_step1", "Ve al repositorio de Keystone en GitHub de código abierto y sigue las instrucciones para compilar tu firmware y obtener el checksum."},
+    {"about_info_verify_firmware_step2", "Haz clic en el botón de #F5870A Checksum# junto a la descarga del firmware."},
+    {"about_info_verify_firmware_step3", "Toque el botón \"#F5870A Mostrar la suma de comprobación#\" que se encuentra debajo y compare la información mostrada en la página web y en su dispositivo."},
+    {"about_info_verify_source_code_title", "Verificar el código fuente"},
+    {"about_keystone_discord", "'Discord' in Spanish is 'Discordia'."},
+    {"about_keystone_discord_url", "'keyst.one/discord' can be translated to Spanish as 'keyst.one/discord'."},
+    {"about_keystone_telegram", "'Telegram' translates to 'Telegrama' in Spanish."},
+    {"about_keystone_telegram_url", "'t.me/keystonewallet' translates to 't.me/keystonewallet' in Spanish as well. There is no change in the translation as it is a URL."},
+    {"about_keystone_title", "Sobre Keystone"},
+    {"about_keystone_twitter", "\"Twitter\" can be translated to Spanish as \"Twitter\" or \"Tuiter\""},
+    {"about_keystone_twitter_url", "'twitter.com/KeystoneWallet' would be translated as 'twitter.com/KeystoneWallet' in Spanish, as it is a website address and does not need to be translated."},
+    {"about_keystone_website", "Sitio web"},
+    {"about_keystone_website_url", "'keyst.one' can be translated to Spanish as 'teclad.o'"},
+    {"about_terms_contact_us", "'Contáctenos'"},
+    {"about_terms_contact_us_desc", "Si tienes alguna pregunta o inquietud, por favor envíanos un correo electrónico a support@keyst.one."},
+    {"about_terms_desc", "Para acceder a la versión completa de los TÉRMINOS DE USO, por favor visita el siguiente enlace:"},
+    {"about_terms_disclaimers", "'AVISOS LEGALES'"},
+    {"about_terms_disclaimers_desc", "La información proporcionada no es un consejo financiero. Busca asesoramiento profesional antes de tomar cualquier decisión."},
+    {"about_terms_discontinuance_service", "'Discontinuación del servicio'"},
+    {"about_terms_discontinuance_service_desc", "Podemos modificar o interrumpir nuestros servicios. Recuerda respaldar tu frase de recuperación para acceder a tus criptomonedas."},
+    {"about_terms_eligibility", "'Elegibilidad'"},
+    {"about_terms_eligibility_desc", "Debes tener 18 años o más para acceder y utilizar nuestros Productos o Servicios."},
+    {"about_terms_indemnity", "'Indemnity' translates to 'indemnización' in Spanish."},
+    {"about_terms_law", "\"Legislación aplicable y resolución de disputas.\""},
+    {"about_terms_law_desc", "Los Términos están regidos por las leyes de la RAE de Hong Kong y cualquier disputa debe ser presentada dentro de un año."},
+    {"about_terms_modification", "\"Modificación de estos Términos\""},
+    {"about_terms_modification_desc", "\"Nos reservamos el derecho de cambiar estos Términos a nuestra discreción.\""},
+    {"about_terms_no_sensitive_information", "\"No recuperación de información sensible\""},
+    {"about_terms_no_sensitive_information_desc", "No almacenamos su información confidencial como contraseñas o frases de semilla. Mantenga seguras sus credenciales."},
+    {"about_terms_ownership", "\"Propiedad y Derechos de Propiedad\""},
+    {"about_terms_ownership_desc", "Eres responsable de tus acciones al utilizar los Productos y Servicios."},
+    {"about_terms_product_and_services", "'Keystone Product & Services' could be translated to Spanish as 'Productos y Servicios Keystone'."},
+    {"about_terms_product_and_services_desc", "Nuestra billetera de hardware maneja de forma segura las criptomonedas."},
+    {"about_terms_prohibited_conduct", "\"Conducta Prohibida\""},
+    {"about_terms_prohibited_product_desc", "'Nuestros productos y servicios están protegidos por las leyes de propiedad intelectual.'"},
+    {"about_terms_risks", "Riesgos"},
+    {"about_terms_risks_desc", "Tenga en cuenta los riesgos asociados con las criptomonedas y las vulnerabilidades tecnológicas."},
+    {"about_terms_subtitle", "'Keystone Términos de Uso'"},
+    {"about_terms_title", "'Términos de Uso'"},
+    {"about_terms_website_url", "'https://keyst.one/terms' can be translated to Spanish as 'https://keyst.one/terminos'."},
+    {"account_head", "'Cuenta'"},
+    {"auto_shutdown", "\"Apagado automático\""},
+    {"auto_shutdown_20", "Apagado automático"},
+    {"beta_version_notice_desc", "El firmware actual es una versión beta y puede contener errores o riesgos desconocidos. Está destinado únicamente para fines de prueba."},
+    {"beta_version_notice_title", "'Versión Beta'"},
+    {"calculat_modal_title", "Calculando"},
+    {"change_entropy", "'Cambio de Entropía'"},
+    {"change_entropy_desc", "\"Selecciona la entropía que te gustaría usar para crear billeteras\""},
+    {"change_entropy_dice_desc", "Crea tu frase de semilla con números aleatorios generados al lanzar los dados."},
+    {"change_entropy_dice_detail_desc_1", "Necesitas lanzar al menos #F5870A 50 veces# para generar una frase de semilla, y se recomienda lanzar más de #F5870A 99 veces# para obtener suficiente aleatoriedad."},
+    {"change_entropy_dice_detail_desc_2", "Recomendamos que uses dados de casino para aumentar la entropía de cada lanzamiento de dado."},
+    {"change_entropy_dice_rolls", "'Lanzamiento de dados'"},
+    {"change_entropy_dice_rolls_subtitle", "Usa los resultados de tiradas de dados como entropía."},
+    {"change_entropy_system", "'Sistema'"},
+    {"change_entropy_system_desc", "Crea tu frase de recuperación a partir del generador de números aleatorios verdaderos 'keystone SEs'."},
+    {"change_entropy_system_subtitle", "Utiliza la entropía de las Keystone SEs"},
+    {"change_passcode_mid_btn", "Ingrese el código de acceso"},
+    {"change_passcode_reset_success_desc", "\"Tu código de acceso ha sido restablecido exitosamente.\""},
+    {"change_passcode_reset_success_title", "\"Restablecimiento exitoso\""},
+    {"change_passcode_reset_title", "'Reiniciar, Mantener Dispositivo ENCENDIDO'"},
+    {"change_passcode_warning_desc", "Si lo olvidas, deberás verificar la frase de recuperación de esta billetera para restablecer el código de acceso."},
+    {"change_passcode_warning_title", "\"Recuerda tu código de acceso\""},
+    {"connect_block_link", "'https://keyst.one/t/3rd/block' can be translated to Spanish as 'https://keyst.one/t/3º/bloque'."},
+    {"connect_block_title", "'BlockWallet (Extensión)'"},
+    {"connect_bw_link", "'https://keyst.one/t/3rd/bw' does not contain any text to be translated."},
+    {"connect_bw_multisig_link", "'https://keyst.one/t/3rd/Multisig/bw' would be 'https://keyst.one/t/3rd/Multisig/bw' in Spanish. This text does not require translation as it is a website URL."},
+    {"connect_bw_title", "'BlueWallet (Móvil)'"},
+    {"connect_eternl_link", "https://keyst.one/t/3rd/eternl would be translated to Spanish as 'https://keyst.one/t/3rd/eternl'. This is a website URL and it does not need to be translated as it is a proper noun."},
+    {"connect_eternl_title", "\"Eternal (Web)\" can be translated to Spanish as \"Eterno (Web)\"."},
+    {"connect_fewcha_link", "\"https://keyst.one/t/3rd/fewcha\" can be translated as \"https://keyst.one/t/3rd/fewcha\" in Spanish as it is a web link and does not require translation."},
+    {"connect_fewcha_title", "'Fewcha (Extensión)' would be translated to Spanish as 'Futuro (Extensión)'."},
+    {"connect_head", "Conectar"},
+    {"connect_imtoken_link", "'https://keyst.one/t/3rd/imtoken' translates to Spanish as 'https://keyst.one/t/3rd/imtoken'. This is because the given text is a website URL and does not have a specific translation in Spanish. It should be understood and used as it is."},
+    {"connect_imtoken_title", "imToken (Móvil)"},
+    {"connect_keplr_link", "'https://keyst.one/t/3rd/keplr' would be translated to Spanish as \"https://keyst.one/t/3rd/keplr\". In this case, the text is a URL and does not require translation."},
+    {"connect_keplr_title", "Keplr (Extensión)."},
+    {"connect_mm_link", "'https://keyst.one/t/3rd/mm' does not contain any text. It appears to be a URL. If you have any specific text or content you would like me to translate into Spanish, please provide that information."},
+    {"connect_mm_link2", "'https://keyst.one/t/3rd/mmm' can be translated to Spanish as 'https://keyst.one/t/3ro/mmm'."},
+    {"connect_mm_title", "MetaMask (Extensión)"},
+    {"connect_mm_title2", "MetaMask (Móvil)"},
+    {"connect_nunchuk_multisig_link", "https://keyst.one/t/3rd/Multisig/nunchuk can be translated to Spanish as 'https://keyst.one/t/3rd/Multisig/nunchuk'. Since the text seems to be an internet link or address, it does not require translation and can be left as is."},
+    {"connect_nunchuk_title", "Nunchuk (Móvil)"},
+    {"connect_okx_link", "'https://keyst.one/t/3rd/okx' - No se puede traducir ya que es un enlace y no un texto en sí."},
+    {"connect_okx_link2", "'https://keyst.one/t/3rd/okxm' can be translated to Spanish as 'https://keyst.one/t/3ra/okxm'."},
+    {"connect_okx_title", "OKX Wallet (Extensión)"},
+    {"connect_okx_title2", "Cartera OKX (móvil)"},
+    {"connect_petra_link", "'https://keyst.one/t/3rd/petra' translates to 'https://keyst.one/t/3rd/petra' in Spanish."},
+    {"connect_petra_title", "Petra (Extensión)"},
+    {"connect_rabby_link", "https://keyst.one/t/3rd/rabby - No se puede traducir un enlace, ya que es una dirección web."},
+    {"connect_rabby_title", "Rabby (Extensión)"},
+    {"connect_safe_link", "https://keyst.one/t/3rd/safe translates to \"https://keyst.one/t/3rd/seguro\" in Spanish."},
+    {"connect_safe_link2", "'https://keyst.one/t/3rd/safem'"},
+    {"connect_safe_title", "Seguro (Web)"},
+    {"connect_safe_title2", "Seguro (Móvil)"},
+    {"connect_solflare_link", "\"https://keyst.one/t/3rd/solflare\" translates to Spanish as \"https://keyst.one/t/3rd/solflare\". This is because it is a web URL and does not have a specific translation in Spanish."},
+    {"connect_solflare_title", "'Solflare' could be translated to Spanish as 'Resplandor solar'."},
+    {"connect_sparrow_link", "'https://keyst.one/t/3rd/sparrow' can be translated to Spanish as 'https://keyst.one/t/3rd/gorrión'."},
+    {"connect_sparrow_multisig_link", "'https://keyst.one/t/3rd/Multisig/sparrow' -> 'https://keyst.one/t/3rd/Multisig/sparrow' (The text does not require translation as it is the same in both English and Spanish)."},
+    {"connect_sparrow_title", "'Gorrión'"},
+    {"connect_specter_link", "https://keyst.one/t/3rd/specter - Por favor, traduzca el siguiente texto al español."},
+    {"connect_specter_title", "'Espectro'"},
+    {"connect_sushi_link", "'https://keyst.one/t/3rd/sushi' can be translated to Spanish as 'https://keyst.one/t/3rd/sushi'. Since it is a URL, it remains the same in both languages."},
+    {"connect_sushi_title", "\"SushiSwap\" translates to \"SushiSwap\" in Spanish."},
+    {"connect_typhon_link", "'https://keyst.one/t/3rd/typhon' can be translated to Spanish as 'https://keyst.one/t/3rd/typhon'."},
+    {"connect_typhon_title", "Typhon (Web) can be translated to \"Tifón (Web)\" in Spanish."},
+    {"connect_wallet_ada_step1", "Seleccione las cuentas que desee importar en su billetera %s."},
+    {"connect_wallet_ada_step2", "Escanee el código QR a través de su Keystone."},
+    {"connect_wallet_ada_step3", "Aprobar la solicitud para generar un nuevo código QR en tu Keystone"},
+    {"connect_wallet_ada_step4", "Escanee el código QR a través de la billetera de %s."},
+    {"connect_wallet_choose_wallet", "'Elegir billetera'"},
+    {"connect_wallet_desc", "Visita el enlace que se encuentra a continuación en tu computadora o dispositivo móvil para obtener una guía sobre cómo sincronizar Keystone con tu billetera de software."},
+    {"connect_wallet_instruction", "Sigue las instrucciones que se indican a continuación:"},
+    {"connect_wallet_key_request_fmt", "'%s Wallet quiere obtener tu clave pública en tu Keystone:'"},
+    {"connect_wallet_keystone_hint", "'Seleccione las redes que le gustaría administrar en la billetera de software.'"},
+    {"connect_wallet_scan", "Escanea el código QR con tu billetera de software."},
+    {"connect_wallet_select_network", "'Seleccionar Red'"},
+    {"connect_wallet_select_network_hint", "Selecciona las redes que deseas mostrar dentro de la billetera de software."},
+    {"connect_wallet_supported_networks", "Redes compatibles"},
+    {"connect_wallet_title", "'Conectar billetera'"},
+    {"connect_wallet_upgrade_hint", "Por favor, actualice a la última versión para acceder a una compatibilidad ampliada de la cartera de software."},
+    {"connect_wallet_xpub_qrformat", "Formato de código QR"},
+    {"connect_wallet_xpub_script_format", "'Formato de guión'"},
+    {"connect_xrp_toolkit_link", "'https://keyst.one/t/3rd/xrptoolkit' would remain the same in Spanish as it is a URL."},
+    {"connect_xrp_toolkit_title", "Herramienta de XRP (Web)"},
+    {"connect_yearn_link", "https://keyst.one/t/3rd/yearn would remain the same in Spanish as it is a web link."},
+    {"connect_yearn_title", "Añorar."},
+    {"connect_zapper_link", "https://keyst.one/t/3rd/zapper - \"https://keyst.one/t/3rd/zapper\""},
+    {"connect_zapper_title", "\"Zapper\" can be translated to Spanish as \"Zapper\"."},
+    {"create_multi_wallet_cancel_desc", "Si cancelas, cualquier información confirmada se perderá."},
+    {"create_multi_wallet_cancel_title", "'¿Cancelar creación de monedero?'"},
+    {"create_multi_wallet_co_sign", "Co-Firmar"},
+    {"create_multi_wallet_co_sign_policy", "\"Política de Co-Firmante\""},
+    {"create_multi_wallet_co_signers", "\"Co-Firmantes\""},
+    {"create_multi_wallet_co_signers_desc", "Esta es la clave xPub de tu billetera multi-firma. También puedes ver esta xPub en la página de inicio de la billetera multi-firma en cualquier momento."},
+    {"create_multi_wallet_co_signers_desc_fmt", "Importa la xPub del %d co-firmante para construir una billetera de múltiples firmas."},
+    {"create_multi_wallet_eg_desc", "Recomendado. Nunchunk y Sparrow Wallet habitualmente usan este formato."},
+    {"create_multi_wallet_import_xpub_qr", "Importar mediante código QR"},
+    {"create_multi_wallet_import_xpub_sdcard", "Importar mediante tarjeta MicroSD."},
+    {"create_multi_wallet_import_xpub_sdcard_title", "Tarjeta microSD"},
+    {"create_multi_wallet_import_xpub_title", "'xPub' can be translated to Spanish as 'xPúb'."},
+    {"create_multi_wallet_multi_xpub", "'Multisig xPub' translate to Spanish as 'XPub de múltiples firmas'."},
+    {"create_multi_wallet_name_desc", "\"Nombrar tu billetera multi-firma\""},
+    {"create_multi_wallet_select_format", "Seleccione el formato que desea utilizar para su billetera multigrado."},
+    {"create_multi_wallet_signers", "Firmantes"},
+    {"create_multi_wallet_xpub_duplicated_desc", "El archivo xpub importado está duplicado."},
+    {"create_multi_wallet_xpub_duplicated_title", "'Duplicate Xpub' translates to 'Duplicar Xpub' in Spanish."},
+    {"create_wallet_generating_title", "Creando bolsa, Mantenga encendido el dispositivo"},
+    {"derivation_path_address", "\"Seleccione la ruta de derivación.\""},
+    {"derivation_path_address_eg", "Direcciones ej."},
+    {"derivation_path_btc_1_desc", "Formato moderno, tarifas más bajas, comienza con \"bc1\"."},
+    {"derivation_path_btc_2_desc", "Compatible con Legacy y SegWit, comisiones moderadas, comienza con \"3\"."},
+    {"derivation_path_btc_3_desc", "Formato original, tarifas más altas, comienza con \"1\"."},
+    {"derivation_path_btc_4_desc", "Taproot: Mayor privacidad y eficiencia, comienza con \"bc1p\"."},
+    {"derivation_path_btc_test_net_1_desc", ""},
+    {"derivation_path_btc_test_net_2_desc", "Compatible con Legacy y SegWit, tarifas moderadas, comienza con \"2\"."},
+    {"derivation_path_btc_test_net_3_desc", "Formato original, tarifas más altas, comienza con \"m\" o \"n\"."},
+    {"derivation_path_btc_test_net_4_desc", "Taproot: Mayor privacidad y eficiencia mejorada, comienza con \"tb1p\"."},
+    {"derivation_path_change", "\"Cambiar Ruta de Derivación\""},
+    {"derivation_path_eth_ledger_legacy_desc", "Formato de libro mayor antiguo, menos común."},
+    {"derivation_path_eth_ledger_live_desc", "Específico de Ledger, optimizado para dispositivo Ledger."},
+    {"derivation_path_eth_standard_desc", "\"Predeterminado, sigue BIP44, ampliamente utilizado.\""},
+    {"derivation_path_near_standard_desc", "Recomendado. Ampliamente adoptado en numerosas billeteras NEAR."},
+    {"derivation_path_select_btc", "\"Seleccione el tipo de dirección que le gustaría utilizar para Bitcoin.\""},
+    {"derivation_path_select_eth", "Seleccione el camino de derivación que le gustaría usar para Ethereum."},
+    {"derivation_path_select_near", "Seleccione la ruta de derivación que desee utilizar para Near."},
+    {"derivation_path_select_sol", "\"Selecciona la ruta de derivación que deseas utilizar para Solana.\""},
+    {"device_info_title", "'Información del dispositivo'"},
+    {"device_setting_about_title", "Acerca de"},
+    {"device_setting_connection_desc", "USB / Tarjeta MicroSD."},
+    {"device_setting_mid_btn", "'Ajustes del dispositivo'"},
+    {"device_setting_system_setting_desc", "Idioma / Pantalla / Restablecer..."},
+    {"device_setting_system_setting_title", "'Ajustes del sistema'"},
+    {"device_setting_wallet_setting_desc", "Nombre / Código de acceso / Frase de contraseña..."},
+    {"device_setting_wallet_setting_title", "\"Ajustes de la billetera\""},
+    {"device_settings_connection_desc1", "Cuando está desactivado, el USB solo se puede usar para cargar la batería."},
+    {"dice_roll_cancel_desc", "Si cancelas, los números que ingresaste se perderán."},
+    {"dice_roll_cancel_title", "¿Cancelar la generación de tiradas de dados?"},
+    {"dice_roll_error_label", "Falta de aleatoriedad"},
+    {"dice_roll_hint_label", "\"Al menos 50 veces\""},
+    {"dice_roll_max_limit_label", "'Haz alcanzado el límite máximo'"},
+    {"dice_rolls_entropy_hint", "'Tiradas de dados como entropía'"},
+    {"enter_passcode", "\"Introduce el código de acceso\""},
+    {"error_box_duplicated_seed_phrase", "'Duplicate Seed Phrase' in Spanish can be translated as 'Frase de semilla duplicada'."},
+    {"error_box_duplicated_seed_phrase_desc", "Esta frase que escribiste ya se utiliza en una cuenta de billetera. Por favor, importa otro conjunto de frases de seguridad."},
+    {"error_box_firmware_not_detected", "'Firmware no detectado'"},
+    {"error_box_firmware_not_detected_desc", "Por favor, asegúrate de que tu tarjeta MicroSD esté formateada en FAT32 y contenga el firmware \"keystone3.bin\"."},
+    {"error_box_invalid_seed_phrase", "\"Frase de semilla inválida\""},
+    {"error_box_invalid_seed_phrase_desc", "La frase semilla que has ingresado no es válida. Por favor, verifica nuevamente tu respaldo e inténtalo de nuevo."},
+    {"error_box_low_power", "'Batería baja'"},
+    {"error_box_low_power_desc", "El dispositivo necesita un mínimo del 20% de vida de la batería para continuar con el proceso."},
+    {"error_box_mnemonic_not_match_wallet", "'Error de frase de recuperación'"},
+    {"error_box_mnemonic_not_match_wallet_desc", "La frase semilla es incorrecta. Por favor, vuelve a verificar y prueba nuevamente."},
+    {"error_unknown_error", "\"Error desconocido\""},
+    {"error_unknown_error_desc", "El dispositivo ha encontrado un problema desconocido y actualmente no está disponible. Para resolver esto, por favor borra y reinicia el dispositivo. Si el problema persiste, por favor comunícate con nuestro equipo de soporte."},
+    {"fingerprint_add", "'Añadir huella dactilar'"},
+    {"fingerprint_add_btn", "'+ Agregar huella dactilar'"},
+    {"fingerprint_add_desc", "Coloca tu dedo sobre el sensor y levántalo una vez que sientas la vibración."},
+    {"fingerprint_add_failed", "'No se pudo agregar'"},
+    {"fingerprint_add_failed_duplicate", "'Duplica el dedo, por favor usa un dedo diferente'"},
+    {"fingerprint_add_failed_partial", "'Huella parcial detectada, por favor intenta de nuevo'"},
+    {"fingerprint_add_failed_use_another", "\"No se pudo añadir la huella dactilar, por favor usa otro dedo e intenta nuevamente.\""},
+    {"fingerprint_add_password", "Ahora necesitamos que ingreses tu código de acceso para encriptar y guardar la huella digital."},
+    {"fingerprint_add_success", "\"Agregado exitosamente\""},
+    {"fingerprint_nth", "'Dedo %d'"},
+    {"fingerprint_nth_remove_desc", "¿Realmente deseas eliminar el dedo %d?"},
+    {"fingerprint_nth_remove_title", "¿Eliminar la huella dactilar?"},
+    {"fingerprint_nth_subtitle", "'Dedo %d'"},
+    {"fingerprint_passcode_fingerprint_setting", "'Ajustes de huella digital'"},
+    {"fingerprint_passcode_reset_passcode", "Restablecer código de acceso"},
+    {"fingerprint_remove", "\"Eliminar huella dactilar\""},
+    {"fingerprint_remove_confirm", "Eliminar"},
+    {"fingerprint_sign_tx", "\"Firmar transacciones\""},
+    {"fingerprint_up_to_3", "Puedes agregar hasta 3 huellas dactilares."},
+    {"firmware_update_btc_only_button_i_know", "Yo sé."},
+    {"firmware_update_btc_only_warning_desc", "Estás actualizando desde un firmware de varias criptomonedas a un firmware solo de BTC. Después de la actualización, #F5870A todas las billeteras en este dispositivo #F5870A solo admitirán la moneda BTC #, y este proceso es irreversible. Por favor, confirma que comprendes los riesgos involucrados. Si has descargado el firmware incorrecto, por favor cancela este progreso."},
+    {"firmware_update_deny_desc", "Necesitas desbloquear tu dispositivo para actualizar la versión del firmware."},
+    {"firmware_update_deny_input_password", "\"Introducir contraseña\""},
+    {"firmware_update_deny_title", "'Desbloqueo de dispositivo requerido'"},
+    {"firmware_update_desc", "Para desbloquear las características más recientes, por favor actualiza tu firmware a la versión más reciente."},
+    {"firmware_update_desc1", "Asegúrese de que su Keystone tenga al menos un 20% de vida útil de la batería restante."},
+    {"firmware_update_desc2", "Ve a la página de actualización de firmware de Keystone utilizando tu computadora o smartphone."},
+    {"firmware_update_no_upgradable_firmware_desc", "La versión de firmware de su dispositivo es superior o igual a la que se encuentra en su tarjeta microSD."},
+    {"firmware_update_no_upgradable_firmware_title", "\"No se detectó firmware actualizable\""},
+    {"firmware_update_sd_checksum_desc", "'#F5870A Mostrar suma de comprobación#'"},
+    {"firmware_update_sd_checksum_done", "Suma de verificación:"},
+    {"firmware_update_sd_checksum_fmt", "'#F5870A Mostrar suma de verificación(%d%%)#'"},
+    {"firmware_update_sd_checksum_fmt_version", "'#F5870A Mostrar Checksum(v%s)#'"},
+    {"firmware_update_sd_checksum_notice", "Esta es una característica opcional para mejorar aún más la seguridad. Compara el siguiente checksum con el checksum de tu paquete de descarga en el sitio web oficial, asegúrate de que sean consistentes."},
+    {"firmware_update_sd_copying_desc", "\"No retire la tarjeta MicroSD mientras se lleva a cabo la actualización.\""},
+    {"firmware_update_sd_copying_title", "'Iniciando actualización'"},
+    {"firmware_update_sd_desc2_link", "'https://keyst.one/firmware' can be translated to Spanish as 'https://keyst.one/firmware'. It is a website URL and does not require translation."},
+    {"firmware_update_sd_desc3", "Transfiere el archivo de firmware (keystone3.bin) a tu Keystone utilizando una tarjeta MicroSD formateada en FAT32."},
+    {"firmware_update_sd_desc4", "Toque el botón de actualización #F5870A a continuación para iniciar el proceso."},
+    {"firmware_update_sd_dialog_desc", "Una nueva versión del firmware está disponible. ¿Deseas actualizar el firmware de tu dispositivo a la nueva versión?"},
+    {"firmware_update_sd_dialog_head", "Disponible"},
+    {"firmware_update_sd_dialog_title", "'Actualización disponible'"},
+    {"firmware_update_sd_failed_access_desc", "Por favor asegúrate de que has insertado correctamente la tarjeta MicroSD."},
+    {"firmware_update_sd_failed_access_title", "'Tarjeta MicroSD no detectada'"},
+    {"firmware_update_sd_title", "'Actualización de MicroSD'"},
+    {"firmware_update_title", "'Actualización de firmware'"},
+    {"firmware_update_updating_desc", "Toma aproximadamente 5 minutos."},
+    {"firmware_update_usb_connect_info_desc", "Una vez conectado, el dispositivo externo obtendrá permiso para transferir datos a tu Keystone."},
+    {"firmware_update_usb_connect_info_title", "\"¿Conectarse a este dispositivo?\""},
+    {"firmware_update_usb_desc3", "Conecta tu Keystone a tu computadora utilizando un cable USB-C."},
+    {"firmware_update_usb_desc4", "Haz clic en el botón #F5870A Instalar Actualización# en la página web y sigue las instrucciones para instalar el último firmware."},
+    {"firmware_update_usb_desc5", "\"No desconectes el cable USB mientras el proceso de instalación esté en curso.\""},
+    {"firmware_update_usb_qr_link", "'https://keyst.one/webusb' can be translated to Spanish as 'https://keyst.one/webusb'."},
+    {"firmware_update_usb_qr_title", "Actualización de firmware"},
+    {"firmware_update_usb_title", "'Actualización USB'"},
+    {"firmware_update_usb_title2", "'Precaución'"},
+    {"firmware_update_usb_updating_hint", "\"No desconectes el cable USB durante el proceso de instalación.\""},
+    {"firmware_update_verify_firmware_qr_link", "'KeystoneHQ/keystone3-firmware/docs/verify.md' translates to Spanish as 'KeystoneHQ/keystone3-firmware/docs/verificar.md'."},
+    {"firmware_update_via_sd", "'Vía tarjeta MicroSD'"},
+    {"firmware_update_via_usb", "A través de USB"},
+    {"forget_password_cancel", "¿Cancelar restablecimiento de contraseña?"},
+    {"forgot_password_reset_passcode_intro_desc", "Verifique la frase de recuperación asociada con esta billetera para restablecer el código de acceso. Restablecer su contraseña puede borrar los datos de su billetera o billetera multisig."},
+    {"forgot_password_reset_passcode_intro_text", "¿Olvidaste el código de acceso?"},
+    {"forgot_password_reset_passcode_intro_title", "¿Olvidaste tu código de acceso?"},
+    {"generating_qr_codes", "Generando códigos QR"},
+    {"got_it", "Entendido"},
+    {"got_it_fmt", "Entendido (%d)"},
+    {"got_it_start", "Entendido (5)"},
+    {"home_button_receive", "RECIBIR"},
+    {"home_button_scan", "ESCANEAR"},
+    {"home_manage_assets", "Gestionar Activos"},
+    {"home_more_connect_wallet", "Conectar billetera de software"},
+    {"home_more_sign_by_sdcard", "'Señal de tarjeta Micro SD'"},
+    {"home_select_coin_count_fmt", "'#F5870A %d#/%d' translates to '#F5870A %d/#%d' in Spanish."},
+    {"home_upgrade_hint", "Por favor, actualícese a la última versión para acceder a una mayor compatibilidad con criptomonedas."},
+    {"illustrate_supplement", "The translation of 'nan' to Spanish is 'nan'."},
+    {"import_multi_wallet_file_limit_desc", "'Los archivos más grandes de 256KB no se pueden mostrar'"},
+    {"import_multi_wallet_info_no_config_file", "\"No hay archivos de billetera\""},
+    {"import_multi_wallet_info_title", "'Información de la billetera'"},
+    {"import_multi_wallet_success_title", "Éxito en la importación"},
+    {"import_multi_wallet_via_camera", "'A través de la cámara'"},
+    {"import_multi_wallet_via_micro_title", "Tarjeta MicroSD"},
+    {"import_wallet_choose_method", "'Elige el método de importación'"},
+    {"import_wallet_duplicated_share_desc", "Ya has verificado esta participación, por favor utiliza otra participación para continuar."},
+    {"import_wallet_invalid_phrase_desc", "La frase que escribiste es inválida. Por favor, verifica tu copia de seguridad y vuelve a intentarlo."},
+    {"import_wallet_phrase_clear_btn", "Claro."},
+    {"import_wallet_phrase_desc", "Ingrese su frase de semilla en los espacios en blanco proporcionados a continuación."},
+    {"import_wallet_phrase_title", "Importa tu semilla"},
+    {"import_wallet_shamir_backup", "'Copias de seguridad Shamir'"},
+    {"import_wallet_shamir_backup_desc", "Necesitarás un par de frases de semilla para recuperar tu billetera."},
+    {"import_wallet_share_success_desc", "Esta parte de tu frase de semilla coincide con tu billetera."},
+    {"import_wallet_single_backup_desc", "Recupere su billetera con la frase de semilla específica. Por favor, complete el proceso de configuración de una sola vez para evitar cualquier riesgo de seguridad."},
+    {"import_wallet_single_phrase", "'Frase secreta única'"},
+    {"import_wallet_single_phrase_desc", "Necesitarás una frase semilla de 12/18/24 palabras para recuperar tu billetera."},
+    {"import_wallet_ssb_cancel_desc", "Al cancelar, se te pedirá que vuelvas a ingresar todas las acciones."},
+    {"import_wallet_ssb_cancel_title", "¿Cancelar la importación de la billetera?"},
+    {"import_wallet_ssb_desc_fmt", "Ingrese su frase de semilla de #F5870A %d# palabras para Share #F5870A %d# en los espacios proporcionados a continuación."},
+    {"import_wallet_ssb_incorrect_title", "'Duplicate Share' can be translated to Spanish as 'Duplicar Compartir'."},
+    {"import_wallet_ssb_notbelong_desc", "El share que has ingresado no corresponde a esta copia de seguridad. Por favor, verifica nuevamente tu copia de seguridad e intenta de nuevo."},
+    {"import_wallet_ssb_repeat_desc", "La acción ingresada ya ha sido previamente ingresada. Por favor, envíe una acción diferente."},
+    {"import_wallet_ssb_step_fmt", "'%d de %d'"},
+    {"import_wallet_ssb_title_fmt", "Comparte #F5870A %d#"},
+    {"language_desc", "\"Seleccione su idioma\""},
+    {"language_little_title", "'Lenguaje'"},
+    {"language_option1", "Translate the following text to Spanish, 'English'"},
+    {"language_option2", "\"简体中文\" translates to \"chino simplificado\" in Spanish."},
+    {"language_option3", "\"Русский язык\" translates to \"Idioma ruso\" in Spanish."},
+    {"language_option4", "Translation: \"Español\""},
+    {"language_option5", "'한국어' does not have a direct translation in Spanish as it is already the name of the Korean language."},
+    {"language_title", "'Idioma'"},
+    {"learn_more", "'Aprende más'"},
+    {"manage_import_wallet_notice_desc1", "Por favor, compare la información de la billetera con la de sus co-firmantes u otras billeteras para asegurarse de que toda la información sea consistente."},
+    {"manage_import_wallet_notice_desc2", "Es crucial realizar una copia de seguridad segura de la configuración de tu billetera; no hacerlo podría resultar en una pérdida irreversible de activos. Si la información ha sido modificada o es inconsistente, esto también puede llevar a una pérdida de activos. Siempre verifica y protege los detalles de tu billetera para evitar cualquier discrepancia."},
+    {"manage_import_wallet_notice_title", "\"Verificar la información de la billetera\""},
+    {"manage_import_wallet_passphrase_error_desc", "No se puede importar una billetera multisig a la billetera de frase secreta. Por favor, sal del modo de frase secreta y vuelve a intentarlo."},
+    {"manage_import_wallet_passphrase_error_title", "Error de importación"},
+    {"manage_multi_wallet_add_limit_desc", "Agregue hasta 4 billeteras multisig, incluyendo la red de prueba y la red principal."},
+    {"manage_multi_wallet_add_limit_title", "'Límite de multisig alcanzado'"},
+    {"manage_multi_wallet_add_scan_limit_title", "Se admite un máximo de 4 billeteras multisig; no es posible agregar más billeteras multisig."},
+    {"manage_multi_wallet_delete_current_wallet_desc", "'La billetera actual no se puede eliminar'"},
+    {"manage_multi_wallet_delete_desc", "\"Esta billetera no puede ser restaurada después de su eliminación.\""},
+    {"manage_multi_wallet_detail_title", "Detalles de la billetera."},
+    {"manage_multi_wallet_export_attention_desc1", "Al exportar o reimportar tu billetera de firma múltiple, asegúrate de que todos los datos se mantengan consistentes para ti y tus co-firmantes."},
+    {"manage_multi_wallet_export_attention_desc2", "Es fundamental sincronizar y verificar detalles como MFP, ruta de derivación  y xPub con cada co-firmante. Datos precisos garantizan el funcionamiento sin problemas y la seguridad de tu billetera."},
+    {"manage_multi_wallet_export_attention_title", "Atención Requerida"},
+    {"manage_multi_wallet_export_config", "\"Exportar billetera MultiSig\""},
+    {"manage_multi_wallet_export_title", "'Exportar Billetera'"},
+    {"manage_multi_wallet_set_default", "'Establecer como billetera actual'"},
+    {"manage_wallet_confirm_address_desc", "Verificar que la dirección 'Recibir' coincide en todos los dispositivos o billeteras de software de todas las partes."},
+    {"manage_wallet_confirm_address_title", "'Verificar dirección'"},
+    {"manage_wallet_passphrase_error_limit", "'Cartera de frase de paso no puede agregar multisig'"},
+    {"multi_wallet_no_file_notice", "Por favor, asegúrate de que el archivo esté nombrado con letras en inglés y ubicado en la ruta principal."},
+    {"multi_wallet_no_psbt_file", "\"No hay archivos PSBT\""},
+    {"multisig_connect_wallet_notice", "Estás usando una billetera multisig."},
+    {"multisig_decoding_qr_link", "'https://keyst.one/t/3rd/Multisig/import' se traduce al español como 'https://keyst.one/t/3rd/Multisig/import'."},
+    {"multisig_decoding_qr_title", "Cómo importar una billetera multisig"},
+    {"multisig_export_to_sdcard", "\"Exportar billetera a tarjeta MicroSD\""},
+    {"multisig_export_to_sdcard_failed", "\"Exportación fallida\""},
+    {"multisig_export_to_sdcard_failed_desc", "Algo salió mal. Por favor, inténtalo de nuevo."},
+    {"multisig_export_to_sdcard_success", "'Exportado con éxito'"},
+    {"multisig_export_to_sdcard_success_desc", "Tu billetera multisig ha sido exportada exitosamente a la tarjeta MicroSD."},
+    {"multisig_import_success_hint", "Invite a los co-firmantes a escanear el código QR para importar una billetera multi-firma o escaneen este código QR con una billetera de software para finalizar la conexión."},
+    {"multisig_import_wallet_exist", "'Cartera ya existe'"},
+    {"multisig_import_wallet_exist_desc", "La billetera multisig que seleccionaste ya existe en el dispositivo actual, por favor importa otra billetera."},
+    {"multisig_import_wallet_invalid", "'Configuración de Billetera Inválida'"},
+    {"multisig_import_wallet_invalid_desc", "La configuración actual de la billetera es incorrecta. Por favor, verifica cuidadosamente si la información de MFP, Path y xPub es precisa."},
+    {"multisig_import_xpub_error_title", "'Archivo no válido'"},
+    {"multisig_scan_multisig_notice", "Escanea el código QR de la billetera multisig para importar."},
+    {"multisig_signature_export_to_sdcard", "Exportar transacción a la tarjeta MicroSD"},
+    {"multisig_signature_export_to_sdcard_success_desc", "Su transacción firmada ha sido exportada exitosamente a la tarjeta MicroSD."},
+    {"multisig_signature_hint_1", "Por favor, pídale a los co-firmantes que escaneen el código QR y firmen."},
+    {"mutlisig_transaction_already_signed", "'Transaction firmada'"},
+    {"mutlisig_transaction_already_signed_desc", "Por favor, vuelva a seleccionar el archivo de transacción."},
+    {"not_now", "\"No ahora\""},
+    {"passphrase_access_switch_desc", "Crea un atajo de frase de acceso para el arranque del dispositivo."},
+    {"passphrase_access_switch_title", "'Acceso rápido a la frase de contraseña'"},
+    {"passphrase_add_password", "Ahora necesitamos que ingreses tu código de acceso para configurar la billetera con frase de paso."},
+    {"passphrase_enter_input", "Ingresa la frase de seguridad"},
+    {"passphrase_enter_repeat", "\"Confirmar frase de acceso\""},
+    {"passphrase_error_not_match", "'Discrepancia de frase de contraseña'"},
+    {"passphrase_error_too_long", "La longitud de entrada no puede exceder los 128 caracteres."},
+    {"passphrase_learn_more_desc1", "\"Una frase de contraseña ofrece un nivel adicional de seguridad a tu frase de semilla actual.\""},
+    {"passphrase_learn_more_desc2", "'Cada frase de paso única genera una billetera diferente.'"},
+    {"passphrase_learn_more_desc3", "Para recuperar tu billetera, tanto la frase de contraseña como la frase de semilla son requeridas."},
+    {"passphrase_learn_more_desc4", "Olvidar la frase de contraseña puede resultar en la pérdida de acceso a tus activos digitales."},
+    {"passphrase_learn_more_title", "¿Qué es una frase de contraseña?"},
+    {"password_error_cannot_verify_fingerprint", "\"No se pudo verificar la huella dactilar.\""},
+    {"password_error_duplicated_pincode", "Se ha detectado un PIN duplicado. Por favor, use uno diferente."},
+    {"password_error_fingerprint_attempts_exceed", "Demasiados intentos. Por favor, ingresa tu código de acceso para desbloquear el dispositivo."},
+    {"password_error_not_match", "'incompatibilidad de código'"},
+    {"password_error_too_long", "La entrada no puede exceder los 128 caracteres."},
+    {"password_error_too_short", "\"La contraseña debe tener al menos 6 caracteres\""},
+    {"password_error_too_weak", "Establecer una contraseña segura"},
+    {"password_input_desc", "\"Ingresa tu contraseña\""},
+    {"password_label", "CONTRASEÑA"},
+    {"password_score_good", "Bueno"},
+    {"password_score_normal", "'Normal' in Spanish is 'normal'."},
+    {"password_score_weak", "Débil"},
+    {"pin_code", "'CÓDIGO PIN'"},
+    {"pin_label", "'PIN' can be translated to Spanish as 'número de identificación personal' or simply 'código PIN'."},
+    {"please_enter_passcode", "Por favor ingrese el código de acceso."},
+    {"power_off", "'Apagar'"},
+    {"prepare_wallet_first_step", "\"Nuevas cadenas de apoyo detectadas\""},
+    {"prepare_wallet_hint", "\"Preparando la billetera\""},
+    {"prepare_wallet_second_step", "'Preparándose para la billetera...'"},
+    {"prepare_wallet_third_step", "Generando clave pública extendida..."},
+    {"public_key", "'Clave pública'"},
+    {"purpose_desc", "'Crea una nueva billetera o importa una billetera existente con la frase semilla.'"},
+    {"purpose_import_wallet", "Importar billetera"},
+    {"purpose_new_wallet", "Crear billetera"},
+    {"purpose_title", "\"Nueva billetera\""},
+    {"receive_ada_enterprise_address", "Dirección (No Delegada)"},
+    {"receive_ada_more_t_desc1", "En la cadena de bloques de Cardano, proporcionamos 24 cuentas, y cada cuenta puede generar numerosas direcciones para su uso. Puede cambiar fácilmente entre las cuentas que necesita."},
+    {"receive_ada_more_t_desc2", "1. Claves de Pago y de Participación: En Cardano, cada cuenta tiene una Clave de Pago para transacciones regulares de ADA (envío y recepción) y una Clave de Participación para hacer participación y recibir recompensas.\r\n2. Dirección Base: Una Dirección Base se deriva tanto de la Clave de Pago como de la Clave de Participación. Puede ser usada tanto para transacciones regulares como para la participación. También conocida como \"Direcciones Externas (Delegadas).\"\r\n3. Dirección de Empresa: Esta dirección solo contiene la Clave de Pago y se utiliza únicamente para transacciones regulares, no para la participación. Está diseñada para escenarios \"empresariales\" que no involucran la participación, como los intercambios. También conocida como \"Direcciones Externas (No Delegadas).\"\r\n4. Direcciones de Participación y Recompensas: La Clave de Participación se utiliza para la participación, y la Dirección de Participación asociada también se llama Dirección de Recompensa, utilizada para recibir las recompensas de la participación."},
+    {"receive_ada_more_t_title1", "Múltiples cuentas de Cardano en Keystone"},
+    {"receive_ada_more_t_title2", "'Conceptos clave en las direcciones de ADA de Cardano'"},
+    {"receive_ada_show_address_detail", "Mostrar Detalle de Dirección"},
+    {"receive_ada_stake_address", "'Dirección de recompensa'"},
+    {"receive_btc_address_type", "Tipo de dirección"},
+    {"receive_btc_alert_desc", "Esta dirección es exclusivamente para transacciones de BTC solamente. Enviar otros tipos de activos digitales a esta dirección resultará en su pérdida."},
+    {"receive_btc_extended_public_key", "'Clave Pública Extendida'"},
+    {"receive_btc_more_address_settings", "\"Ajustes de dirección\""},
+    {"receive_btc_more_export_xpub", "'Exportar xPub'"},
+    {"receive_btc_more_t_desc1", "Bitcoin (BTC) utiliza tres formatos de dirección para recibir fondos:\r\n1. Native SegWit es el formato de dirección de Bitcoin más eficiente y seguro. Proporciona ahorros de costos y mayor seguridad en comparación con otros formatos de dirección tradicionales, que suelen comenzar con \"bc1\".\r\n2. El formato Legacy es una de las primeras versiones de Bitcoin, que generalmente comienza con \"1\".\r\n3. Nested SegWit es una solución diseñada para facilitar la transición a Native SegWit de manera suave, que normalmente comienza con \"3\"."},
+    {"receive_btc_more_t_desc2", "Sí, los tres formatos de direcciones distintas de Bitcoin se pueden utilizar para transferir fondos entre sí. Sin embargo, es importante tener en cuenta los siguientes aspectos:\r\n1. Diferentes tarifas de transacción: La elección del formato de dirección puede influir en las tarifas de transacción, con las direcciones de Native SegWit generalmente teniendo tarifas más bajas.\r\n2. Compatibilidad de billeteras e intercambios: Asegúrate de que la billetera o el intercambio que estás utilizando admita el formato de dirección elegido. Algunas billeteras pueden ser compatibles solo con formatos de dirección específicos."},
+    {"receive_btc_more_t_desc3", "1. Privacidad: Reutilizar direcciones incrementa la trazabilidad de las transacciones, poniendo en peligro la privacidad. Las nuevas direcciones ayudan a mantener la privacidad de las transacciones. \r\n2. Eficiencia de las transacciones: Varios UTXOs vinculados a una dirección pueden aumentar los costos de consolidación, afectando la eficiencia de la billetera. \r\n3. Seguridad: El uso repetido de direcciones aumenta el riesgo de exposición de la clave privada, lo que podría llevar a pérdidas si se compromete. \r\nEn resumen, no reutilizar direcciones protege la privacidad, optimiza las transacciones y reduce los riesgos de seguridad dentro del modelo UTXO."},
+    {"receive_btc_more_t_title1", "\"¿Cuáles son los tres formatos de dirección diferentes para BTC?\""},
+    {"receive_btc_more_t_title2", "¿Se pueden usar los tres diferentes formatos de dirección para transferir fondos entre ellos?"},
+    {"receive_btc_more_t_title3", "Beneficios de no reutilizar direcciones."},
+    {"receive_btc_receive_change_address_limit", "\"No puede superar los 999.999.999\""},
+    {"receive_btc_receive_change_address_title", "\"Ir a\""},
+    {"receive_coin_fmt", "Recibir %s"},
+    {"receive_coin_hint_fmt", "Esta dirección es solo para %s, otros activos digitales enviados a esta dirección se perderán."},
+    {"receive_eth_alert_desc", "Esta dirección es solo para tokens ETH y EVM ERC-20, otros activos digitales enviados a esta dirección se perderán."},
+    {"receive_eth_more_derivation_path_bip", "Estándar BIP 44"},
+    {"receive_eth_more_derivation_path_desc", "Recomendar. Se usa comúnmente en muchas billeteras de software."},
+    {"receive_eth_more_derivation_path_desc2", "Seleccione este camino para la gestión de activos de Ledger Live."},
+    {"receive_eth_more_derivation_path_desc3", "Seleccione este camino para la gestión de activos Legacy de Ledger."},
+    {"receive_eth_more_derivation_path_ledger_legacy", "'Legado Ledger'"},
+    {"receive_eth_more_derivation_path_ledger_live", "'Ledger Live' translates to 'Ledger en vivo' in Spanish."},
+    {"receive_eth_more_derivation_path_title2", "Cuentas, por ejemplo:"},
+    {"receive_eth_more_t_desc1", "1. Camino estándar: Este camino es ampliamente utilizado por numerosas billeteras de software para la generación de direcciones. Ejemplos de estas billeteras incluyen MetaMask, Rabby, BitKeep y Core Wallet.\r\n2. Ledger Live: Elija este camino si tiene la intención de importar una frase de recuperación desde Ledger Live. Tenga en cuenta que Keystone solo admite la sincronización de las 10 direcciones iniciales utilizando este formato.\r\n3. Ledger Legacy: Cambie a este camino si administra sus activos digitales con Ledger Legacy."},
+    {"receive_eth_more_t_title1", "Explorando diferencias: Rutas de derivación estándar, Ledger Live y de legado en Ethereum"},
+    {"receive_eth_receive_main_title", "\"Recibir ETH\""},
+    {"receive_generate_new_address", "Generar nueva dirección"},
+    {"receive_more_t_qr_link", "'https://keyst.one/t/3rd/faq' translated to Spanish is 'https://keyst.one/t/3rd/faq'"},
+    {"receive_sol_more_t_base_path", "'Ruta basada en la cuenta'"},
+    {"receive_sol_more_t_desc1", "1. Ruta basada en cuenta: Ampliamente adoptada en numerosas carteras de Solana. Un ejemplo de dicha cartera es Solflare.\r\n2. Ruta de cuenta única: Elija esta ruta si desea importar una frase de semilla de Sollet / MathWallet. Tenga en cuenta que Keystone solo admite la sincronización de las 10 direcciones iniciales utilizando este formato.\r\n3. Ruta de subcuenta: Realice una transición a esta ruta si administra sus activos digitales con carteras de software como Phantom / Exodus."},
+    {"receive_sol_more_t_single_path", "'Ruta de cuenta única'"},
+    {"receive_sol_more_t_sub_path", "'Ruta de subcuenta'"},
+    {"receive_sol_more_t_title1", "Explorando opciones de rutas en Solana."},
+    {"receive_trx_hint", "Esta dirección es solo para TRX, tokens TRC-20 y tokens TRC-10. Otros activos digitales enviados a esta dirección se perderán."},
+    {"repeat_passcode_desc", "Confirma nuevamente el código PIN que has ingresado."},
+    {"repeat_passcode_title", "'Reingrese el código PIN'"},
+    {"rust_error_bitcoin_no_my_inputs", "\"Incongruent Transaction\" translates to \"Transacción incongruente\" in Spanish."},
+    {"rust_error_bitcoin_no_my_inputs_desc", "La transacción no pertenece a la billetera actual. Por favor, verifique la información de la transacción."},
+    {"rust_error_bitcoin_not_my_multisig_wallet", "Configuración de billetera Multisig inválida"},
+    {"rust_error_bitcoin_not_my_multisig_wallet_desc", "Esta configuración de billetera multisig no pertenece a la billetera actual. Por favor, verifica la información de configuración de la billetera multisig."},
+    {"scan_qr_code_error_invalid_file_desc", "La fecha del archivo no es reconocida. Por favor, inténtalo de nuevo."},
+    {"scan_qr_code_error_invalid_qrcode", "'Código QR inválido'"},
+    {"scan_qr_code_error_invalid_qrcode_desc", "Los datos del código QR no son reconocidos. Por favor, intenta de nuevo."},
+    {"scan_qr_code_error_invalid_wallet_file", "'Archivo de billetera no válido'"},
+    {"scan_qr_code_error_invalid_wallet_file_desc", "Por favor, asegúrese de elegir o escanear la billetera multisig correcta."},
+    {"scan_qr_code_invalid_b_desc", "La transacción no pertenece a la billetera actual. Por favor, asegúrate de usar la billetera correcta para autorizar la transacción."},
+    {"scan_qr_code_invalid_b_title", "\"Autorización no permitida\""},
+    {"scan_qr_code_invalid_c_desc", "Keystone no puede facilitar la firma de la transacción para la ruta de dirección actual. Por favor, inténtalo de nuevo utilizando una ruta de dirección diferente."},
+    {"scan_qr_code_invalid_c_title", "'Ruta no compatible'"},
+    {"scan_qr_code_sign_fingerprint_verify_fingerprint", "'Verificar huella dactilar'"},
+    {"scan_qr_code_sign_fingerprint_verify_fingerprint_failed", "'Verificación fallida. Por favor, intenta de nuevo.'"},
+    {"scan_qr_code_sign_unsigned_content_fingerprint_failed_desc", "La verificación falló. ¡Por favor, inténtalo de nuevo!"},
+    {"scan_qr_code_sign_unsigned_content_fingerprint_failed_desc2", "Si la verificación falla nuevamente, la firma de huellas dactilares para las transacciones se desactivará automáticamente."},
+    {"scan_qr_code_sign_unsigned_content_frame", "\"Desliza para confirmar\""},
+    {"scan_qr_code_signing_desc", "Firma"},
+    {"sdcard_format_confirm", "'Formato'"},
+    {"sdcard_format_desc", "Su tarjeta MicroSD será formateada a FAT32, borrando todos los archivos. Por favor, haz una copia de seguridad de los archivos esenciales antes de formatear."},
+    {"sdcard_format_failed_desc", "\"Fallo de formateo, reemplace la tarjeta MicroSD o formatee en el ordenador.\""},
+    {"sdcard_format_failed_title", "'Error de formato'"},
+    {"sdcard_format_subtitle", "\"Formatear tarjeta MicroSD\""},
+    {"sdcard_format_success_desc", "¿Qué tal - La tarjeta MicroSD ha sido formateada correctamente a FAT32?"},
+    {"sdcard_format_success_title", "'Formateo completo'"},
+    {"sdcard_format_text", "Formatear tarjeta MicroSD"},
+    {"sdcard_formating", "'Formato'"},
+    {"sdcard_formating_desc", "\"No remueva la tarjeta MicroSD mientras se está formateando.\""},
+    {"seed_check_passphrase_notice", "Actualmente estás utilizando una billetera protegida por frase de contraseña. Antes de continuar con el proceso de verificación de la frase semilla, por favor reinicia tu dispositivo sin ingresar la frase de contraseña."},
+    {"seed_check_passphrase_title", "'Desactivar billetera de frase de paso'"},
+    {"seed_check_share_phrase", "'Copia de seguridad Shamir'."},
+    {"seed_check_share_phrase_title", "Ingrese su frase de semilla para verificar si coincide con su billetera actual."},
+    {"seed_check_single_phrase", "\"Frase de Semilla Estándar\""},
+    {"seed_check_single_phrase_title", "\"Ingrese su semilla\""},
+    {"seed_check_verify_match_desc", "\"Tu semilla ha sido validada y verificada exitosamente.\""},
+    {"seed_check_verify_match_title", "'Verificación Exitosa'"},
+    {"seed_check_verify_not_match_title", "'Verification Failed' translates to 'Verificación fallida' in Spanish."},
+    {"seed_check_wait_verify", "'Verifying' translates to 'Verificando' in Spanish."},
+    {"seed_check_word_select", "Recuento de palabras de la frase de semilla."},
+    {"self_destruction_desc", "Se ha detectado un ataque físico, lo que ha llevado al borrado completo de todos los datos almacenados en este dispositivo. Como resultado, este dispositivo ahora es inoperable."},
+    {"self_destruction_hint", "'Contáctenos'"},
+    {"self_destruction_title", "Dispositivo ya no utilizable."},
+    {"set_passcode_desc", "\"Este código PIN se utilizará para desbloquear tu billetera y autorizar transacciones.\""},
+    {"shamir_backup", "'Shamir Backup' in Spanish is 'Respaldo de Shamir'."},
+    {"shamir_phrase_backup_desc", "Escribe tu frase de Share #F5870A 1# y mantenla de manera adecuada."},
+    {"shamir_phrase_cancel_create_desc", "Si cancelas, cualquier Acción confirmada se perderá."},
+    {"shamir_phrase_cancel_create_title", "¿Finalizar configuración de billetera?"},
+    {"shamir_phrase_confirm_desc", "Seleccione las palabras a continuación en el orden correcto de Share 1 frase para validar su frase de seguridad."},
+    {"shamir_phrase_custodian_desc", "Por favor, confirma que eres el custodio de la Acción #F5870A 1#."},
+    {"shamir_phrase_custodian_title", "Comparte Comparte #F5870A 1#"},
+    {"shamir_phrase_number", "'Número de acciones'"},
+    {"shamir_phrase_share_backup_notice_fmt", "Escribe tu frase de Share #F5870A %d# y guárdala correctamente."},
+    {"shamir_phrase_share_confirm_notice_fmt", "Selecciona las palabras a continuación en el orden correcto de tu frase de seguridad #F5870A %d# para validar tu frase de recuperación."},
+    {"shamir_phrase_share_notice_fmt", "Por favor, confirme que usted es el custodio del Share #F5870A %d#."},
+    {"shamir_phrase_share_number_fmt", "Comparte #F5870A %d#/%d"},
+    {"shamir_phrase_threold", "Umbral"},
+    {"shamir_phrase_verify_success_desc1", "La frase semilla para este Compartir ha sido validada, por favor proceda al siguiente Compartir."},
+    {"shamir_phrase_verify_success_desc2", "Toca el botón de abajo y entrega el Keystone al custodio de Share 2."},
+    {"shamir_phrase_verify_success_title", "'Verificado'"},
+    {"show_checksum", "'Mostrar suma de verificación'"},
+    {"sign_transaction", "\"Firma de transacción\""},
+    {"sign_transaction_desc", "'Por favor, espere...'"},
+    {"single_backup_choose_backup_desc", "Selecciona el método preferido para respaldar tu frase de recuperación."},
+    {"single_backup_choose_backup_title", "Opciones de respaldo"},
+    {"single_backup_learn_more_desc", "El método de respaldo Shamir proporciona una forma altamente segura de recuperar una frase semilla. Implica dividir la frase semilla en múltiples fragmentos y especificar el número requerido de fragmentos necesarios para restaurar la frase."},
+    {"single_backup_learn_more_qr_link", "'https://keyst.one/b/3rd/shamir' translates to Spanish as 'https://keyst.one/b/3rd/shamir'."},
+    {"single_backup_learn_more_title", "¿Qué es Shamir Backup?"},
+    {"single_backup_namewallet_desc", "Nombra tu billetera y selecciona un icono para que sea fácilmente distinguible."},
+    {"single_backup_namewallet_previnput", "'Nombre de la billetera'"},
+    {"single_backup_namewallet_previnput_2", "\"Elige un icono para tu billetera\""},
+    {"single_backup_namewallet_title", "'Nombre a tu billetera'"},
+    {"single_backup_notice_desc1", "Nunca compartas tu frase de recuperación con nadie más, ya que otorga acceso a tus activos."},
+    {"single_backup_notice_desc2", "Asegúrate de que no haya espectadores ni cámaras cuando registres tu frase de recuperación."},
+    {"single_backup_notice_title", "Verifica tu entorno"},
+    {"single_backup_phrase_regenerate_desc", "'¿Regenerar un nuevo conjunto de Frase de Semilla?'"},
+    {"single_backup_repeatpass_desc", "Confirma nuevamente la contraseña que has ingresado."},
+    {"single_backup_repeatpass_title", "'Volver a ingresar la contraseña'"},
+    {"single_backup_repeatpin_error", "El código PIN no coincide."},
+    {"single_backup_setpass_desc", "La contraseña se utilizará para desbloquear tu billetera y autorizar transacciones."},
+    {"single_backup_setpass_error_2", "'La contraseña no coincide'"},
+    {"single_backup_setpass_title", "Establecer contraseña"},
+    {"single_backup_setpin_desc", "El código PIN se utilizará para desbloquear tu billetera y autorizar transacciones."},
+    {"single_backup_setpin_title", "Establecer código PIN"},
+    {"single_backup_setpin_use_pass", "'Usar contraseña'"},
+    {"single_backup_setpin_use_pin", "\"Usa el código PIN\""},
+    {"single_backup_shamir_desc", "Un procedimiento avanzado para almacenar de forma segura tu frase de recuperación de semillas."},
+    {"single_backup_shamir_title", "'Copia de seguridad de Shamir'"},
+    {"single_backup_single_phrase_desc", "Respuesta: 'Respaldo de frase semilla de 12 o 24 palabras. Método más comúnmente utilizado'."},
+    {"single_backup_single_phrase_title", "'Frase de Semilla Estándar'"},
+    {"single_phrase_confirm_desc", "Seleccione las palabras a continuación en el orden correcto para validar su frase de recuperación."},
+    {"single_phrase_confirm_title", "'Confirma tu semilla'"},
+    {"single_phrase_desc", "Escribe tu frase de recuperación y guárdala en un lugar seguro."},
+    {"single_phrase_low_battery_desc", "El dispositivo necesita como mínimo un 20% de carga de batería para continuar con el proceso."},
+    {"single_phrase_reset", "'Reset' translates to 'Restablecer' in Spanish."},
+    {"single_phrase_title", "'Copia de seguridad de tu semilla'"},
+    {"single_phrase_word_amount_select", "'Número de Frase Semilla'"},
+    {"support_link", "'support@keyst.one' can be translated to Spanish as 'soporte@keyst.one'."},
+    {"switch_account", "'Cambiar cuenta'"},
+    {"switch_address", "'Cambiar dirección'"},
+    {"system_settings_screen_lock_auto_lock", "'Cierre Automático'"},
+    {"system_settings_screen_lock_auto_lock_10mins", "10 minutos"},
+    {"system_settings_screen_lock_auto_lock_15secs", "'15 segundos'"},
+    {"system_settings_screen_lock_auto_lock_1min", "'1 minuto'"},
+    {"system_settings_screen_lock_auto_lock_30secs", "'30 segundos'"},
+    {"system_settings_screen_lock_auto_lock_5mins", "5 minutos"},
+    {"system_settings_screen_lock_auto_lock_title", "Duración de tiempo de espera"},
+    {"system_settings_screen_lock_auto_power_off_12h", "'12 horas'"},
+    {"system_settings_screen_lock_auto_power_off_1d", "\"1 día\""},
+    {"system_settings_screen_lock_auto_power_off_1h", "'1 hora'"},
+    {"system_settings_screen_lock_auto_power_off_6h", "'6 horas'"},
+    {"system_settings_screen_lock_auto_power_off_never", "'Nunca'"},
+    {"system_settings_screen_lock_brightness", "Brillo"},
+    {"system_settings_screen_lock_title", "'Pantalla de visualización y bloqueo'"},
+    {"system_settings_vabiration", "\"Vibración\""},
+    {"system_settings_wipe_device_generating_desc1", "'Borrando todos los datos...'"},
+    {"system_settings_wipe_device_generating_desc2", "Por favor, no apague su dispositivo durante el proceso de borrado."},
+    {"system_settings_wipe_device_generating_title", "'Reiniciando el dispositivo'"},
+    {"system_settings_wipe_device_wipe_alert_desc", "Por favor, confirma que al continuar se eliminarán permanentemente todos los datos, incluyendo las billeteras, en este dispositivo."},
+    {"system_settings_wipe_device_wipe_button", "'Borrar Dispositivo Ahora'"},
+    {"system_settings_wipe_device_wipe_desc", "Al continuar, todos los datos en este dispositivo, incluyendo todas tus carteras, serán eliminados permanentemente."},
+    {"system_settings_wipe_device_wipe_end_text", "Limpiar"},
+    {"system_settings_wipe_device_wipe_fmt", "\"Limpiar(%d)\""},
+    {"system_settings_wipe_device_wipe_start_text", "Limpiar (5)"},
+    {"system_settings_wipe_device_wipe_title", "'Borrar Dispositivo'"},
+    {"transaction_parse_broadcast_message", "'Mensaje de difusión'."},
+    {"transaction_parse_confirm_message", "\"Confirmar mensaje\""},
+    {"try_again", "'Intenta de nuevo'"},
+    {"tutorial_change_entropy_desc1", "La entropía es una medida de la aleatoriedad. En criptografía, asegura que cosas como las contraseñas o las claves sean impredecibles, haciéndolas más seguras."},
+    {"tutorial_change_entropy_desc2", "Las computadoras no son excelentes para ser verdaderamente aleatorias. Las tiradas de dados proporcionan una fuente física e impredecible de aleatoriedad. Al usarlos, se mejora la seguridad de los procesos criptográficos, lo que dificulta que alguien pueda predecir o descifrar tus códigos."},
+    {"tutorial_change_entropy_title1", "¿Qué es la entropía?"},
+    {"tutorial_change_entropy_title2", "¿Por qué utilizar los lanzamientos de dados como tu entropía?"},
+    {"tx_details_btc_change_desc", "Las transacciones de BTC, basadas en el mecanismo UTXO, asignan algunos activos a una dirección de cambio durante las transferencias. Esta dirección es generada por la billetera de software con fines de anonimato y privacidad. No necesitas preocuparte, ya que la dirección de cambio pertenece a tu propia cuenta y su cantidad será utilizada automáticamente en transacciones posteriores."},
+    {"tx_details_btc_change_qr_link", "'https://keyst.one/change' can be translated to Spanish as 'https://keyst.one/change' (pronounced: és-tes-és-ti-pe-es-col-te-a-so-la-u-ve-e-ne-é-ge-te-sol)."},
+    {"tx_details_btc_change_qr_title", "¿Qué es una dirección de 'Cambio'?"},
+    {"tx_details_eth_decoding_qr_link", "'https://keyst.one/t/3rd/ddt'"},
+    {"tx_details_eth_decoding_qr_title", "Decodificación de las transacciones DeFi"},
+    {"tx_details_general_tab_title1", "Resumen general"},
+    {"unlock_device", "'Desbloquear dispositivo'"},
+    {"unlock_device_attempts_left_plural_times_fmt", "Contraseña incorrecta, %d intentos restantes."},
+    {"unlock_device_attempts_left_singular_times_fmt", "Contraseña incorrecta, %d intento restante."},
+    {"unlock_device_error_attempts_exceed", "'Límite de intentos excedido'"},
+    {"unlock_device_error_attempts_exceed_desc", "Bloqueo del dispositivo inminente. Por favor desbloquear para acceder al dispositivo."},
+    {"unlock_device_error_btn_start_text", "Desbloquear dispositivo (5s)"},
+    {"unlock_device_error_btn_text_fmt", "Desbloquear dispositivo (%ds)"},
+    {"unlock_device_fingerprint_pin_device_locked_btn_fmt", "'Borrar dispositivo ahora (%d)'"},
+    {"unlock_device_fingerprint_pin_device_locked_btn_start_text", "Borrar dispositivo ahora (15)"},
+    {"unlock_device_fingerprint_pin_device_locked_desc", "Todos los datos en este dispositivo serán borrados después de ser limpiado."},
+    {"unlock_device_fingerprint_pin_device_locked_title", "'Dispositivo bloqueado'"},
+    {"unlock_device_fingerprint_pin_title", "Utilice el PIN o la huella digital."},
+    {"unlock_device_time_limited_error_max_desc", "Por favor, desbloquea tu dispositivo en #F55831 1# minuto."},
+    {"unlock_device_time_limited_error_max_desc_fmt", "Por favor, desbloquee su dispositivo en #F55831 %d minutos."},
+    {"unlock_device_time_limited_error_max_title", "'Equipo no disponible'"},
+    {"unlock_device_time_limited_error_max_warning_fmt", "Por favor, desbloquea tu dispositivo en #F55831 %d# minutos. Si cometes un intento incorrecto más, tu dispositivo se bloqueará."},
+    {"unlock_device_title_passcode_fingerprint", "\"Usar contraseña o usar huella dactilar\""},
+    {"unlock_device_title_pin_fingerprint", "'Usar PIN o Usar huella digital'"},
+    {"unlock_device_use_fingerprint", "Utilice la huella digital."},
+    {"unlock_device_use_password", "'Use Password' translates to 'Utilize contraseña' in Spanish."},
+    {"unlock_device_use_pin", "'Usar PIN'"},
+    {"update_success", "Actualización exitosa"},
+    {"usb_connection_desc", "Cuando está habilitado, el puerto USB solo se puede usar para cargar la batería."},
+    {"usb_connection_subtitle", "\"Modo de Aislamiento de Aire\""},
+    {"usb_connection_title", "Conexión"},
+    {"usb_transport_connect_rabby", "'Rabby Wallet quiere conectar tu Keystone mediante USB'"},
+    {"usb_transport_connect_wallet", "Tu billetera de software quiere conectarse a tu dispositivo a través de USB."},
+    {"usb_transport_connection_request", "\"Solicitud de conexión\""},
+    {"usb_transport_mismatched_wallet_title", "'Billetera desparejada'"},
+    {"usb_transport_sign_completed_subtitle", "Ver los detalles de la transacción en tu billetera de software."},
+    {"usb_transport_sign_completed_title", "\"Firma completada\""},
+    {"usb_transport_sign_failed_title", "'Firma fallida'"},
+    {"usb_transport_sign_unkown_error_message", "'Incapaz de reconocer información de datos'"},
+    {"usb_transport_sign_unkown_error_title", "'Error desconocido'"},
+    {"verification_code_desc", "Ingrese este código en el sitio web oficial de Keystone para verificar la seguridad de su dispositivo."},
+    {"verification_code_failed_desc", "Su dispositivo puede haber sido comprometido, lo que representa un riesgo para sus datos sensibles y activos digitales.\r\nPara su seguridad, recomendamos eliminar todos los datos personales y ponerse en contacto de inmediato con el equipo de soporte de Keystone para recibir asistencia."},
+    {"verification_code_failed_title", ""},
+    {"verification_code_title", "'Código de verificación'"},
+    {"verification_success", "'Verificado'"},
+    {"verify_cont1", "Visita nuestro sitio web y haz clic en el botón '#F5870A Comenzar Verificación#'."},
+    {"verify_cont2", "Escanea el código QR mostrado en el sitio web para obtener tu código de verificación del dispositivo."},
+    {"verify_cont3", "Ingrese el código en el sitio web para verificar cualquier posible alteración en su dispositivo."},
+    {"verify_desc", "Este proceso garantiza la integridad de su dispositivo Keystone y el firmware."},
+    {"verify_firmware", "Verificar firmware."},
+    {"verify_modal_desc", "Calculando código de autenticación..."},
+    {"verify_qr_link", "'https://keyst.one/verify' could be translated to Spanish as 'https://keyst.one/verificar'."},
+    {"verify_scan_qr_code", "Escanee el código QR"},
+    {"verify_title", "'Verifica tu dispositivo'"},
+    {"verify_title_text", "'Verifica tu dispositivo'"},
+    {"wallet_phrase_12words", "'12 Palabras'"},
+    {"wallet_phrase_18words", "'18 palabras'"},
+    {"wallet_phrase_20words", "20 palabras"},
+    {"wallet_phrase_24words", "'24 Palabras'"},
+    {"wallet_phrase_33words", "'33 palabras'"},
+    {"wallet_profile_add_multi_wallet", "Añadir billetera Multifirma"},
+    {"wallet_profile_create_multi_wallet", "Crear billetera MultiSig"},
+    {"wallet_profile_current_default_desc", "Actualmente billetera"},
+    {"wallet_profile_default_desc", "'Billetera actual'"},
+    {"wallet_profile_export_title", "Exportar (Ext) Clave Pública."},
+    {"wallet_profile_export_to_sdcard_title", "Exportar xPub a tarjeta MicroSD"},
+    {"wallet_profile_import_multi_wallet", "'Importar billetera MultiSig'"},
+    {"wallet_profile_import_multi_wallet_desc", "Elige el método que te gustaría utilizar para importar billeteras multi-firma."},
+    {"wallet_profile_mid_btn", "Perfil de la billetera"},
+    {"wallet_profile_multi_sign_title", "'Billetera MultiSig'"},
+    {"wallet_profile_multi_wallet_show_xpub", "Mostrar/Exportar xPub"},
+    {"wallet_profile_network_main", "MainNet"},
+    {"wallet_profile_network_test", "'Testnet' in Spanish is 'Red de prueba'."},
+    {"wallet_profile_network_title", "Red de computadoras"},
+    {"wallet_profile_no_multi_wallet_notice", "'Aún no hay una billetera MultiSig'"},
+    {"wallet_profile_single_sign_title", "'Billetera de firma única'"},
+    {"wallet_profile_single_wallet_title", "'Cartera Singlesig'"},
+    {"wallet_setting_add_wallet", "'+ Añadir billetera'"},
+    {"wallet_setting_add_wallet_confirm", "Entiendo"},
+    {"wallet_setting_add_wallet_limit", "'Agregar Limitado'"},
+    {"wallet_setting_add_wallet_limit_desc", "Solo puedes agregar un máximo de 3 carteras. Por favor, borra otras carteras antes de agregar una nueva cartera."},
+    {"wallet_setting_add_wallet_notice", "La billetera de hardware es solo para uso personal. No la compartas para evitar riesgos en tus activos."},
+    {"wallet_setting_passcode", "\"Identificación de huellas dactilares y código de seguridad\""},
+    {"wallet_setting_seed_phrase", "Comprobación de la frase de recuperación de semillas"},
+    {"wallet_setting_stop_add_fingerprint", "'¿Cancelar este proceso?'"},
+    {"wallet_setting_stop_add_fingerprint_desc", "\"Huella digital no guardada. Al cancelar, se te pedirá que vuelvas a ingresar tu huella digital.\""},
+    {"wallet_settings_add_info_desc1", "Keystone admite un máximo de 3 billeteras diferentes con el código #F5870A."},
+    {"wallet_settings_add_info_desc2", "Deberías establecer un código de acceso #F5870A diferente para cada billetera."},
+    {"wallet_settings_add_info_desc3", "Para cambiar de billeteras, desbloquea el dispositivo con el código de acceso específico asociado a cada una. La lista de billeteras no se mostrará para garantizar una seguridad reforzada."},
+    {"wallet_settings_add_info_title", "'Aviso'"},
+    {"wallet_settings_delete_button", "Eliminar la billetera"},
+    {"wallet_settings_delete_confirm_button2", "\"Confirmar eliminación\""},
+    {"wallet_settings_delete_confirm_desc", "Para proteger tus activos digitales, es recomendable verificar la frase de recuperación antes de continuar con su eliminación."},
+    {"wallet_settings_delete_confirm_title", "¿Eliminar billetera?"},
+    {"wallet_settings_delete_laoding_title", "'Borrando'"},
+    {"wallet_settings_mid_btn", "'Ajustes de billetera'"},
+    {"wipe_device", "'Borrar dispositivo'"},
+    {"write_se_desc", "Escribiendo Elemento Seguro..."},
+    {NULL, NULL} // End mark
+};
+
+
+
+static uint8_t es_plural_fn(int32_t num)
+{
+    uint32_t n = op_n(num); UNUSED(n);
+
+
+    if ((n == 1)) return LV_I18N_PLURAL_TYPE_ONE;
+    return LV_I18N_PLURAL_TYPE_OTHER;
+}
+
+static const lv_i18n_lang_t es_lang = {
+    .locale_name = "es",
+    .singulars = es_singulars,
+
+    .locale_plural_fn = es_plural_fn
+};
+
+static lv_i18n_phrase_t ko_singulars[] = {
     {"Address", "주소"},
     {"Approve", "허락"},
     {"Attention", "주목"},
@@ -1546,7 +2249,7 @@ static const lv_i18n_lang_t ko_lang = {
     .locale_plural_fn = ko_plural_fn
 };
 
-const static lv_i18n_phrase_t ru_singulars[] = {
+static lv_i18n_phrase_t ru_singulars[] = {
     {"Address", "Адрес"},
     {"Approve", "Разрешить"},
     {"Attention", "Внимание"},
@@ -2284,12 +2987,9 @@ const static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t v = op_v(n);
-    UNUSED(v);
-    uint32_t i = op_i(n);
-    UNUSED(i);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t i = op_i(n); UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -2305,7 +3005,7 @@ static const lv_i18n_lang_t ru_lang = {
     .locale_plural_fn = ru_plural_fn
 };
 
-const static lv_i18n_phrase_t zh_cn_singulars[] = {
+static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"Address", "地址"},
     {"Approve", "允许"},
     {"Attention", "注意"},
@@ -3058,6 +3758,7 @@ static const lv_i18n_lang_t zh_cn_lang = {
 
 const lv_i18n_language_pack_t lv_i18n_language_pack[] = {
     &en_lang,
+    &es_lang,
     &ko_lang,
     &ru_lang,
     &zh_cn_lang,
@@ -3087,8 +3788,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if (langs == NULL) return -1;
-    if (langs[0] == NULL) return -1;
+    if(langs == NULL) return -1;
+    if(langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -3101,13 +3802,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if (current_lang_pack == NULL) return -1;
+    if(current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for (i = 0; current_lang_pack[i] != NULL; i++) {
+    for(i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -3120,10 +3821,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for (i = 0; trans[i].msg_id != NULL; i++) {
-        if (strcmp(trans[i].msg_id, msg_id) == 0) {
+    for(i = 0; trans[i].msg_id != NULL; i++) {
+        if(strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if (trans[i].translation) return trans[i].translation;
+            if(trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -3138,23 +3839,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -3170,31 +3871,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -3209,6 +3910,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if (!current_lang) return NULL;
+    if(!current_lang) return NULL;
     return current_lang->locale_name;
 }

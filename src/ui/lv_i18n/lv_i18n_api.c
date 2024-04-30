@@ -20,6 +20,9 @@ const LanguageInfo_t g_languageList[] = {
 #if KO_SUPPORT
     {LANG_KO, "ko"},
 #endif
+#if KO_SUPPORT
+    {LANG_ES, "es"},
+#endif
 };
 
 static uint8_t g_curLangIndex = LANG_EN;

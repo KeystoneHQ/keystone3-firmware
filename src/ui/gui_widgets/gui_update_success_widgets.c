@@ -12,17 +12,14 @@ static lv_obj_t *g_updateSuccessCont = NULL;
 
 static void UpdateSuccessNextStepHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     GUI_DEL_OBJ(g_updateSuccessCont)
     GuiCLoseCurrentWorkingView();
 
-    if (code == LV_EVENT_CLICKED) {
-        if (ModelGetPassphraseQuickAccess()) {
-            GuiFrameOpenView(&g_passphraseView);
-        } else if (GuiIsSetup()) {
-        } else {
-            GuiFrameOpenView(&g_homeView);
-        }
+    if (ModelGetPassphraseQuickAccess()) {
+        GuiFrameOpenView(&g_passphraseView);
+    } else if (GuiIsSetup()) {
+    } else {
+        GuiFrameOpenView(&g_homeView);
     }
 }
 

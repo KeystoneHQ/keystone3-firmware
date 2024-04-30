@@ -654,6 +654,7 @@ void SetRightBtnLabel(NavBarWidget_t *navBarWidget,
     break;
   case NVS_BAR_WORD_RESET:
     lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 1), text);
+    GuiImgLabelAdaptButtonResize(navBarWidget->rightBtn);
     break;
   default:
     return;

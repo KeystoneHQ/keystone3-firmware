@@ -77,17 +77,14 @@ static void SelectCheckBoxHandler(lv_event_t* e);
 
 static void ShareUpdateTileHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
 
-    if (code == LV_EVENT_CLICKED) {
-        if (lv_event_get_user_data(e) == NULL) {
-            GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
-        } else if (lv_event_get_user_data(e) != NULL) {
-            lv_obj_del(lv_obj_get_parent(obj));
-            GuiEmitSignal(SIG_CREATE_SHARE_VIEW_NEXT_SLICE, &g_createShareTileView.currentSlice,
-                          sizeof(g_createShareTileView.currentSlice));
-        }
+    if (lv_event_get_user_data(e) == NULL) {
+        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+    } else if (lv_event_get_user_data(e) != NULL) {
+        lv_obj_del(lv_obj_get_parent(obj));
+        GuiEmitSignal(SIG_CREATE_SHARE_VIEW_NEXT_SLICE, &g_createShareTileView.currentSlice,
+                      sizeof(g_createShareTileView.currentSlice));
     }
 }
 
@@ -528,34 +525,30 @@ void GuiCreateShareRefresh(void)
 static void SelectPhraseCntHandler(lv_event_t *e)
 {
     static uint32_t currentIndex = 0;
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *checkBox = NULL;
+    g_noticeWindow = GuiCreateHintBox(282);
+    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeWindow, _("single_phrase_word_amount_select"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 560);
+    lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
+    lv_obj_t *button = GuiCreateImgButton(g_noticeWindow, &imgClose, 36, CloseHintBoxHandler, &g_noticeWindow);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 407, 550);
 
-    if (code == LV_EVENT_CLICKED) {
-        g_noticeWindow = GuiCreateHintBox(282);
-        lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-        lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeWindow, _("single_phrase_word_amount_select"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 560);
-        lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
-        lv_obj_t *button = GuiCreateImgButton(g_noticeWindow, &imgClose, 36, CloseHintBoxHandler, &g_noticeWindow);
-        lv_obj_align(button, LV_ALIGN_DEFAULT, 407, 550);
-
-        if (g_phraseCnt == 33) {
-            checkBox = GuiCreateSingleCheckBox(g_noticeWindow, _("wallet_phrase_20words"));
-            lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
-            checkBox = GuiCreateSingleCheckBox(g_noticeWindow, _("wallet_phrase_33words"));
-            lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
-            lv_obj_add_state(checkBox, LV_STATE_CHECKED);
-        } else {
-            checkBox = GuiCreateSingleCheckBox(g_noticeWindow, _("wallet_phrase_20words"));
-            lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
-            lv_obj_add_state(checkBox, LV_STATE_CHECKED);
-            checkBox = GuiCreateSingleCheckBox(g_noticeWindow, _("wallet_phrase_33words"));
-            lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
-        }
-
-        lv_obj_add_event_cb(g_noticeWindow, SelectCheckBoxHandler, LV_EVENT_CLICKED, &currentIndex);
+    if (g_phraseCnt == 33) {
+        checkBox = GuiCreateSingleCheckBox(g_noticeWindow, _("wallet_phrase_20words"));
+        lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
+        checkBox = GuiCreateSingleCheckBox(g_noticeWindow, _("wallet_phrase_33words"));
+        lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
+        lv_obj_add_state(checkBox, LV_STATE_CHECKED);
+    } else {
+        checkBox = GuiCreateSingleCheckBox(g_noticeWindow, _("wallet_phrase_20words"));
+        lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
+        lv_obj_add_state(checkBox, LV_STATE_CHECKED);
+        checkBox = GuiCreateSingleCheckBox(g_noticeWindow, _("wallet_phrase_33words"));
+        lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
     }
+
+    lv_obj_add_event_cb(g_noticeWindow, SelectCheckBoxHandler, LV_EVENT_CLICKED, &currentIndex);
 }
 
 static void SelectCheckBoxHandler(lv_event_t* e)

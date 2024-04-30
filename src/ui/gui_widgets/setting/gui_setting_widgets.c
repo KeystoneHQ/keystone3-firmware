@@ -224,11 +224,7 @@ static void GuiOpenPassphraseLearnMore()
 
 static void OpenPassphraseLearnMoreHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiOpenPassphraseLearnMore();
-    }
+    GuiOpenPassphraseLearnMore();
 }
 
 void GuiSettingFullKeyBoardDestruct(void *obj, void *param)

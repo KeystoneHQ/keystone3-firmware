@@ -309,26 +309,22 @@ static bool IsSOL(int walletIndex)
 
 static void OpenQRCodeHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        WalletListItem_t *wallet = lv_event_get_user_data(e);
-        g_connectWalletTileView.walletIndex = wallet->index;
+    WalletListItem_t *wallet = lv_event_get_user_data(e);
+    g_connectWalletTileView.walletIndex = wallet->index;
 #ifndef BTC_ONLY
-        if (IsEVMChain(g_connectWalletTileView.walletIndex)) {
-            g_derivationPathDescs = GetDerivationPathDescs(ETH_DERIVATION_PATH_DESC);
-        }
-        if (IsSOL(g_connectWalletTileView.walletIndex)) {
-            g_derivationPathDescs = GetDerivationPathDescs(SOL_DERIVATION_PATH_DESC);
-        }
-        if (g_connectWalletTileView.walletIndex == WALLET_LIST_ETERNL || g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON) {
-            GuiCreateConnectADAWalletWidget(g_connectWalletTileView.walletIndex);
-            return;
-        }
-#endif
-        g_isCoinReselected = false;
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+    if (IsEVMChain(g_connectWalletTileView.walletIndex)) {
+        g_derivationPathDescs = GetDerivationPathDescs(ETH_DERIVATION_PATH_DESC);
     }
+    if (IsSOL(g_connectWalletTileView.walletIndex)) {
+        g_derivationPathDescs = GetDerivationPathDescs(SOL_DERIVATION_PATH_DESC);
+    }
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_ETERNL || g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON) {
+        GuiCreateConnectADAWalletWidget(g_connectWalletTileView.walletIndex);
+        return;
+    }
+#endif
+    g_isCoinReselected = false;
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
 }
 
 #ifndef BTC_ONLY
@@ -932,12 +928,8 @@ void GuiConnectWalletHandleURUpdate(char *data, uint16_t len)
 
 void ConnectWalletReturnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        // CloseQRTimer();
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-    }
+    // CloseQRTimer();
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
 }
 
 #ifndef BTC_ONLY
@@ -991,15 +983,11 @@ static bool HasSelectAddressWidget()
 
 static void CloseDerivationHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        QRCodePause(false);
-        GUI_DEL_OBJ(g_derivationPathCont);
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetWallet(g_pageWidget->navBarWidget, g_connectWalletTileView.walletIndex, NULL);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
-    }
+    QRCodePause(false);
+    GUI_DEL_OBJ(g_derivationPathCont);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+    SetWallet(g_pageWidget->navBarWidget, g_connectWalletTileView.walletIndex, NULL);
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, &g_connectWalletTileView.walletIndex);
 }
 
 static void ConfirmDerivationHandler(lv_event_t *e)
@@ -1129,19 +1117,15 @@ static uint8_t GetCurrentSelectedIndex()
 
 static void SelectDerivationHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_t *newCheckBox = lv_event_get_user_data(e);
-        for (int i = 0; i < 3; i++) {
-            if (newCheckBox == g_derivationCheck[i]) {
-                lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
-                SetCurrentSelectedIndex(i);
-                ShowEgAddressCont(g_egCont);
-                UpdateConfirmBtn();
-            } else {
-                lv_obj_clear_state(g_derivationCheck[i], LV_STATE_CHECKED);
-            }
+    lv_obj_t *newCheckBox = lv_event_get_user_data(e);
+    for (int i = 0; i < 3; i++) {
+        if (newCheckBox == g_derivationCheck[i]) {
+            lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
+            SetCurrentSelectedIndex(i);
+            ShowEgAddressCont(g_egCont);
+            UpdateConfirmBtn();
+        } else {
+            lv_obj_clear_state(g_derivationCheck[i], LV_STATE_CHECKED);
         }
     }
 }

@@ -24,7 +24,7 @@ void GetSoftWareVersion(char *version)
     if (SOFTWARE_VERSION_BUILD % 2 == 0) {
         snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
     } else {
-        snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d(beta)", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+        snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d(beta%d)", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, SOFTWARE_VERSION_BETA);
     }
 #else
     snprintf(version, SOFTWARE_VERSION_MAX_LEN, "Firmware v%d.%d.%d-BTC", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);

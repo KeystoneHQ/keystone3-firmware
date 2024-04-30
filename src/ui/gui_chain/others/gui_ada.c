@@ -151,8 +151,7 @@ void *GetAdaInputDetail(uint8_t *row, uint8_t *col, void *param)
     int i = 0, j = 0;
     char ***indata = (char ***)SRAM_MALLOC(sizeof(char **) * *col);
     for (i = 0; i < *col; i++) {
-        if (*row == 0)
-        {
+        if (*row == 0) {
             indata[i] = NULL;
             break;
         }

@@ -618,19 +618,28 @@ void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index,
       g_coinWalletBtn[index].icon);
 }
 
-void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index,
-               const char *name) {
-  SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
-  if (name == NULL) {
-    char name[BUFFER_SIZE_64] = {0};
-    snprintf_s(name, BUFFER_SIZE_64, "%s %s", _("connect_head"),
-               g_walletBtn[index].name);
-    navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, name,
-                                                     g_walletBtn[index].icon);
-  } else {
-    navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, name,
-                                                     g_walletBtn[index].icon);
-  }
+char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
+{
+    if (index == WALLET_LIST_ETERNL) {
+        return "Eternl";
+    } else if (index == WALLET_LIST_TYPHON) {
+        return "Typhon";
+    }
+    return g_walletBtn[index].name;
+}
+
+void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const char *name)
+{
+    SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
+    if (name == NULL) {
+        char name[BUFFER_SIZE_64] = {0};
+        snprintf_s(name, BUFFER_SIZE_64, "%s %s", _("connect_head"), g_walletBtn[index].name);
+        navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, name,
+                               g_walletBtn[index].icon);
+    } else {
+        navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, name,
+                               g_walletBtn[index].icon);
+    }
 }
 
 void SetMidBtnLabel(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button,

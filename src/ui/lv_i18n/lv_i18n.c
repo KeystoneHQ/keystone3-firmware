@@ -39,7 +39,7 @@ static inline uint32_t op_t(uint32_t val)
     return 0;
 }
 
-const static lv_i18n_phrae_t  en_singulars[] = {
+const static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
     {"Approve", "Approve"},
     {"Attention", "Attention"},
@@ -768,7 +768,7 @@ static const lv_i18n_lang_t en_lang = {
     .locale_plural_fn = en_plural_fn
 };
 
-const static lv_i18n_phrae_t  ko_singulars[] = {
+const static lv_i18n_phrase_t ko_singulars[] = {
     {"Address", "주소."},
     {"Approve", "허락"},
     {"Attention", "주목"},
@@ -1492,7 +1492,7 @@ static const lv_i18n_lang_t ko_lang = {
     .locale_plural_fn = ko_plural_fn
 };
 
-const static lv_i18n_phrae_t  ru_singulars[] = {
+const static lv_i18n_phrase_t ru_singulars[] = {
     {"Address", "Адрес"},
     {"Approve", "Разрешить"},
     {"Attention", "Внимание"},
@@ -2224,7 +2224,7 @@ static const lv_i18n_lang_t ru_lang = {
     .locale_plural_fn = ru_plural_fn
 };
 
-const static lv_i18n_phrae_t  zh_cn_singulars[] = {
+const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"Address", "地址"},
     {"Approve", "允许"},
     {"Attention", "注意"},

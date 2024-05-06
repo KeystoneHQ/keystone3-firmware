@@ -151,7 +151,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
 
     titleLabel = GuiCreateTextLabel(parent, _("about_info_firmware_version"));
     contentLabel = GuiCreateNoticeLabel(parent, versionStr);
-    GuiGetFpVersion(&fpVersion[1]);
+    GuiGetFpVersion(&fpVersion[1], sizeof(fpVersion) - 1);
 
     GuiButton_t table[] = {
         {

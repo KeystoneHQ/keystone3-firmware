@@ -39,7 +39,7 @@ static inline uint32_t op_t(uint32_t val)
     return 0;
 }
 
-const static lv_i18n_phrase_t en_singulars[] = {
+static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
     {"Approve", "Approve"},
     {"Attention", "Attention"},
@@ -646,6 +646,7 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"system_settings_wipe_device_wipe_title", "Wipe Device"},
     {"transaction_parse_broadcast_message", "Broadcast Message"},
     {"transaction_parse_confirm_message", "Confirm Message"},
+    {"transaction_parse_scan_by_software", "Scan the QR code with your software wallet"},
     {"try_again", "Try Again"},
     {"tutorial_change_entropy_desc1", "Entropy is a measure of randomness. In cryptography, it ensures that things like passwords or keys are unpredictable, making them more secure."},
     {"tutorial_change_entropy_desc2", "Computers aren't great at being truly random. Dice rolls provide a physical, unpredictable source of randomness. By using them, you enhance the security of cryptographic processes, making it harder for someone to predict or crack your codes."},
@@ -774,7 +775,7 @@ static const lv_i18n_lang_t en_lang = {
     .locale_plural_fn = en_plural_fn
 };
 
-const static lv_i18n_phrase_t ko_singulars[] = {
+static lv_i18n_phrase_t ko_singulars[] = {
     {"Address", "주소"},
     {"Approve", "허락"},
     {"Attention", "주목"},
@@ -1381,6 +1382,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"system_settings_wipe_device_wipe_title", "장치 초기화"},
     {"transaction_parse_broadcast_message", "브로드캐스트 메시지"},
     {"transaction_parse_confirm_message", "메시지 확인"},
+    {"transaction_parse_scan_by_software", "소프트웨어 지갑으로 QR 코드 스캔"},
     {"try_again", "재시도"},
     {"tutorial_change_entropy_desc1", "엔트로피는 무작위성의 척도입니다.암호학에서는 암호나 열쇠 같은 것을 예측할 수 없도록 하여 더욱 안전하게 만들 수 있습니다."},
     {"tutorial_change_entropy_desc2", "컴퓨터는 진정한 무작위성을 제공할 수 없습니다.주사위는 더 예측 불가능한 무작위성을 제공합니다.주사위를 사용함으로써 암호화 과정의 보안을 강화하여 코드를 예측하거나 깨기 어렵게 만들 수 있습니다."},
@@ -1504,7 +1506,7 @@ static const lv_i18n_lang_t ko_lang = {
     .locale_plural_fn = ko_plural_fn
 };
 
-const static lv_i18n_phrase_t ru_singulars[] = {
+static lv_i18n_phrase_t ru_singulars[] = {
     {"Address", "Адрес"},
     {"Approve", "Разрешить"},
     {"Attention", "Внимание"},
@@ -1554,8 +1556,8 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"about_info_verify_checksum_title", "Контрольная сумма"},
     {"about_info_verify_firmware_desc", "Это расширенная функция, позволяющая разработчикам проверить, соответствует ли прошивка устройства Keystone той версии, исходный код которой мы предоставили в открытом доступе"},
     {"about_info_verify_firmware_step1", "Перейдите в репозиторий Keystone на GitHub с открытым исходным кодом и следуйте инструкциям, чтобы собрать прошивку и получить контрольную сумму"},
-    {"about_info_verify_firmware_step2", "Нажмите кнопку #F5870A Контрольная сумма# рядом с загрузкой прошивки"},
-    {"about_info_verify_firmware_step3", "Нажмите кнопку #F5870A «Показать контрольную сумму#» ниже и сравните информацию, отображаемую на веб-странице и на вашем устройстве"},
+    {"about_info_verify_firmware_step2", "Нажмите кнопку #F5870A Контрольная# #F5870A сумма# рядом с загрузкой прошивки"},
+    {"about_info_verify_firmware_step3", "Нажмите кнопку #F5870A Показать контрольную# #F5870A сумму# ниже и сравните информацию, отображаемую на веб-странице и на вашем устройстве"},
     {"about_info_verify_source_code_title", "Проверка исходного кода"},
     {"about_keystone_discord", "Discord"},
     {"about_keystone_discord_url", "keyst.one/discord"},
@@ -2111,6 +2113,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"system_settings_wipe_device_wipe_title", "Сброс устройства"},
     {"transaction_parse_broadcast_message", "Транслировать сообщение"},
     {"transaction_parse_confirm_message", "Подтвердить сообщение"},
+    {"transaction_parse_scan_by_software", "Сканируйте QR-код программным кошельком"},
     {"try_again", "Попробуйте еще раз"},
     {"tutorial_change_entropy_desc1", "Резервная копия Шамира обеспечивает высокобезопасный способ восстановления исходной фразы. Она включает в себя разделение сид фразы на несколько частей и указание необходимого их количества, необходимых для восстановления фразы."},
     {"tutorial_change_entropy_desc2", "Резервная копия Шамира обеспечивает высокобезопасный способ восстановления исходной фразы. Она включает в себя разделение сид фразы на несколько частей и указание необходимого их количества, необходимых для восстановления фразы."},
@@ -2242,7 +2245,7 @@ static const lv_i18n_lang_t ru_lang = {
     .locale_plural_fn = ru_plural_fn
 };
 
-const static lv_i18n_phrase_t zh_cn_singulars[] = {
+static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"Address", "地址"},
     {"Approve", "允许"},
     {"Attention", "注意"},
@@ -2849,6 +2852,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"system_settings_wipe_device_wipe_title", "擦除设备"},
     {"transaction_parse_broadcast_message", "广播消息"},
     {"transaction_parse_confirm_message", "确认消息"},
+    {"transaction_parse_scan_by_software", "用你的软件钱包扫描二维码"},
     {"try_again", "重试"},
     {"tutorial_change_entropy_desc1", "熵是随机性的量度.在密码学中,它可以确保密码或钥匙之类的东西不可预测,从而使其更加安全."},
     {"tutorial_change_entropy_desc2", "计算机并不是真正随机的.骰子数是不可预测的随机性来源.通过使用它们,您可以增强加密过程的安全性,从而使某人更难预测或破解您的代码."},

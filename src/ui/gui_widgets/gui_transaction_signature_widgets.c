@@ -86,7 +86,7 @@ static void GuiCreateSignatureQRCode(lv_obj_t *parent) {
   lv_obj_t *qrCont = GuiCreateContainerWithParent(qrBgCont, 336, 336);
   lv_obj_align(qrCont, LV_ALIGN_TOP_MID, 0, 36);
 
-    lv_obj_t *label = GuiCreateNoticeLabel(cont, _("connect_wallet_desc"));
+    lv_obj_t *label = GuiCreateNoticeLabel(cont, _("transaction_parse_scan_by_software"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 576 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *btn = GuiCreateTextBtn(cont, _("Done"));

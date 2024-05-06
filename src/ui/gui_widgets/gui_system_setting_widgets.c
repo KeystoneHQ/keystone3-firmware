@@ -34,11 +34,13 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent);
 static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e);
 static void GuiShowKeyBoardDialog(lv_obj_t *parent);
 static void DispalyHandler(lv_event_t *e);
-static void OpenLanguageSelectHandler(lv_event_t *e);
 static void VibrationHandler(lv_event_t *e);
 static void VibrationSwitchHandler(lv_event_t * e);
 void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset);
 void OpenForgetPasswordHandler(lv_event_t *e);
+#ifndef BTC_ONLY
+static void OpenLanguageSelectHandler(lv_event_t *e);
+#endif
 
 void GuiSystemSettingAreaInit(void)
 {
@@ -208,6 +210,7 @@ static void VibrationSwitchHandler(lv_event_t * e)
     }
 }
 
+#ifndef BTC_ONLY
 static void OpenLanguageSelectHandler(lv_event_t *e)
 {
     g_selectLanguagePage = CreatePageWidget();
@@ -216,3 +219,4 @@ static void OpenLanguageSelectHandler(lv_event_t *e)
     SetNavBarLeftBtn(g_selectLanguagePage->navBarWidget, NVS_BAR_RETURN, DestroyPageWidgetHandler, g_selectLanguagePage);
     SetMidBtnLabel(g_selectLanguagePage->navBarWidget, NVS_BAR_MID_LABEL, _("language_title"));
 }
+#endif

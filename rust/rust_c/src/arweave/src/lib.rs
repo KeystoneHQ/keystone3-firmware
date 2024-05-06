@@ -152,24 +152,17 @@ pub extern "C" fn ar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayArw
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let sign_data = sign_request.get_sign_data();
     let sign_type = sign_request.get_sign_type();
-    let sign_data_json: serde_json::Value = serde_json::from_slice(sign_data.as_slice()).unwrap();
+    let raw_tx = parse(&sign_data).unwrap();
+    let raw_json: Value = serde_json::from_str(&raw_tx).unwrap();
+    let value = raw_json["formatted_json"]["quantity"].as_str().unwrap().to_string();
+    let fee = raw_json["formatted_json"]["reward"].as_str().unwrap().to_string();
+    let from = raw_json["formatted_json"]["from"].as_str().unwrap().to_string();
+    let to = raw_json["formatted_json"]["target"].as_str().unwrap().to_string();
     let display_tx = DisplayArweaveTx {
-        from: convert_c_char(
-            sign_data_json
-                .get("last_tx")
-                .unwrap()
-                .as_str()
-                .unwrap()
-                .to_string(),
-        ),
-        to: convert_c_char(
-            sign_data_json
-                .get("target")
-                .unwrap()
-                .as_str()
-                .unwrap()
-                .to_string(),
-        ),
+        value: convert_c_char(value),
+        fee: convert_c_char(fee),
+        from: convert_c_char(from),
+        to: convert_c_char(to),
     };
     TransactionParseResult::success(Box::into_raw(Box::new(display_tx)) as *mut DisplayArweaveTx)
         .c_ptr()

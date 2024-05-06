@@ -5,12 +5,16 @@ use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_meth
 
 #[repr(C)]
 pub struct DisplayArweaveTx {
+    pub value: PtrString,
+    pub fee: PtrString,
     pub from: PtrString,
     pub to: PtrString,
 }
 
 impl Free for DisplayArweaveTx {
     fn free(&self) {
+        free_str_ptr!(self.value);
+        free_str_ptr!(self.fee);
         free_str_ptr!(self.from);
         free_str_ptr!(self.to);
     }

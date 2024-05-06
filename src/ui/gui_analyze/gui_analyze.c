@@ -579,6 +579,8 @@ GetLabelDataFunc GuiTrxTextFuncGet(char *type)
         return GetTrxContract;
     } else if (!strcmp(type, "GetTrxToken")) {
         return GetTrxToken;
+    } else if (!strcmp(type, "GetArweaveValue")) {
+        return GetArweaveValue;
     }
     return NULL;
 }
@@ -667,9 +669,21 @@ GetLabelDataFunc GuiXrpTextFuncGet(char *type)
 
 GetLabelDataFunc GuiArTextFuncGet(char *type)
 {
-    if (!strcmp(type, "GetArDetail")) {
-        // TODO: GetArDetail
-        return NULL;
+    if (!strcmp(type, "GetArweaveValue"))
+    {
+        return GetArweaveValue;
+    }
+    else if (!strcmp(type, "GetArweaveFee"))
+    {
+        return GetArweaveFee;
+    }
+    else if (!strcmp(type, "GetArweaveFromAddress"))
+    {
+        return GetArweaveFromAddress;
+    }
+    else if (!strcmp(type, "GetArweaveToAddress"))
+    {
+        return GetArweaveToAddress;
     }
     return NULL;
 }
@@ -1131,6 +1145,8 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiShowSolTxOverview;
     } else if (!strcmp(funcName, "GuiShowSolTxDetail")) {
         return GuiShowSolTxDetail;
+    } else if (!strcmp(funcName, "GuiShowArweaveTxDetail")) {
+        return GuiShowArweaveTxDetail;
     }
 #endif
     return NULL;

@@ -25,6 +25,50 @@ PtrT_TransactionCheckResult GuiGetArCheckResult(void)
 #endif
 }
 
+void GetArweaveValue(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayArweaveTx *tx = (DisplayArweaveTx *)param;
+    if (tx->value == NULL)
+    {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, tx->value);
+}
+
+void GetArweaveFee(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayArweaveTx *tx = (DisplayArweaveTx *)param;
+    if (tx->fee == NULL)
+    {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, tx->fee);
+}
+
+void GetArweaveFromAddress(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayArweaveTx *tx = (DisplayArweaveTx *)param;
+    if (tx->from == NULL)
+    {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, tx->from);
+}
+
+void GetArweaveToAddress(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayArweaveTx *tx = (DisplayArweaveTx *)param;
+    if (tx->to == NULL)
+    {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, tx->to);
+}
+
+void GuiShowArweaveTxDetail(lv_obj_t *parent, void *totalData)
+{
+}
+
 void GuiSetArUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
     g_urResult = urResult;

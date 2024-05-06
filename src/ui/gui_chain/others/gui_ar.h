@@ -17,6 +17,11 @@ PtrT_TransactionCheckResult GuiGetArCheckResult(void);
 void GuiSetArUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetArData(void);
 void FreeArMemory(void);
+void GetArweaveValue(void *indata, void *param, uint32_t maxLen);
+void GetArweaveFee(void *indata, void *param, uint32_t maxLen);
+void GetArweaveFromAddress(void *indata, void *param, uint32_t maxLen);
+void GetArweaveToAddress(void *indata, void *param, uint32_t maxLen);
+void GuiShowArweaveTxDetail(lv_obj_t *parent, void *totalData);
 UREncodeResult *GuiGetArweaveSignQrCodeData(void);
 
 #endif

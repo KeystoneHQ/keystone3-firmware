@@ -58,7 +58,10 @@ static void ConfirmAttentionHandler(lv_event_t *e)
 
 static bool CheckPowerRequirements()
 {
-    return GetBatterPercent() >= MIN_OPERATE_POWER || GetUsbPowerState() == USB_POWER_STATE_CONNECT;
+#ifdef COMPILE_SIMULATOR
+    return true;
+#endif
+    return GetBatterPercent() >= MIN_OPERATE_POWER && GetUsbPowerState() == USB_POWER_STATE_CONNECT;
 }
 
 void GuiCreateAttentionHintbox(uint16_t confirmSign)

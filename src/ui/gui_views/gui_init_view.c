@@ -40,8 +40,7 @@ static int32_t GuiInitViewInit(void)
         GuiFrameOpenView(&g_selfDestructView);
         return SUCCESS_CODE;
     }
-    // GuiModeGetAccount();
-    GuiCreateShareInit(0);
+    GuiModeGetAccount();
     return SUCCESS_CODE;
 }
 

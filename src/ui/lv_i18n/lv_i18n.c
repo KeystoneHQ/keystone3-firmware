@@ -825,7 +825,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"about_info_verify_checksum_title", "체크섬"},
     {"about_info_verify_firmware_desc", "이 기능은 개발자들이 키스톤 장치에서 실행중인 펌웨어가 우리가 오픈 소스로 공개한 펌웨어와 일치하는지 확인하기 위한 고급 기능입니다"},
     {"about_info_verify_firmware_step1", "Keystone의 오픈 소스 GitHub 저장소로 이동하여 펌웨어를 빌드하고 체크섬을 얻는 지침을 따르세요"},
-    {"about_info_verify_firmware_step2", "펌웨어 페이지에서 \"펌웨어 다운로드\" 버튼 옆의 #F5870A Checksum#을 클390릭합니다."},
+    {"about_info_verify_firmware_step2", "펌웨어 페이지에서 \"펌웨어 다운로드\" 버튼 옆의 #F5870A Checksum#을 클릭합니다."},
     {"about_info_verify_firmware_step3", "아래의 #F5870A 체크섬 보기# 버튼을 눌러 웹페이지에 표시된 정보와 장치의 정보를 비교하세요"},
     {"about_info_verify_source_code_title", "소스 코드 검증"},
     {"about_keystone_discord", "Discord"},

@@ -243,7 +243,7 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
     g_hintParam = param;
     const char *titleText = _("error_box_invalid_seed_phrase");
     const char *descText = _("error_box_invalid_seed_phrase_desc");
-    void *imgSrc = &imgFailed;
+    const void *imgSrc = &imgFailed;
     switch (errCode) {
     case ERR_KEYSTORE_MNEMONIC_REPEAT:
         titleText = _("error_box_duplicated_seed_phrase");

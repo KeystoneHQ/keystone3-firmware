@@ -638,8 +638,7 @@ static const uint16_t unicode_list_1[] = {
 };
 
 /*Collect the unicode lists and glyph_id offsets*/
-static const lv_font_fmt_txt_cmap_t cmaps[] =
-{
+static const lv_font_fmt_txt_cmap_t cmaps[] = {
     {
         .range_start = 32, .range_length = 91, .glyph_id_start = 1,
         .unicode_list = NULL, .glyph_id_ofs_list = glyph_id_ofs_list_0, .list_length = 91, .type = LV_FONT_FMT_TXT_CMAP_FORMAT0_FULL

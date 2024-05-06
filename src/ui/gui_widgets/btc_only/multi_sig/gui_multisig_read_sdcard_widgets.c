@@ -60,53 +60,49 @@ static void GuiContent(lv_obj_t *parent)
 
 static void GuiSelectFileHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
     char *path = lv_event_get_user_data(e);
 
-    if (code == LV_EVENT_CLICKED) {
-        switch (g_fileFilterType) {
-        case ALL:
+    switch (g_fileFilterType) {
+    case ALL:
+        break;
+    case ONLY_TXT: {
+        char *walletConfig = FatfsFileRead(path);
+        uint32_t ret = GuiSetMultisigImportWalletDataBySDCard(walletConfig);
+        switch (ret) {
+        case Success:
+            GuiFrameOpenView(&g_importMultisigWalletInfoView);
             break;
-        case ONLY_TXT: {
-            char *walletConfig = FatfsFileRead(path);
-            uint32_t ret = GuiSetMultisigImportWalletDataBySDCard(walletConfig);
-            switch (ret) {
-            case Success:
-                GuiFrameOpenView(&g_importMultisigWalletInfoView);
-                break;
-            case BitcoinMultiSigWalletNotMyWallet:
-            case BitcoinMultiSigWalletParseError:
-                g_noticeWindow = GuiCreateRustErrorWindow(ret, NULL, &g_noticeWindow, NULL);
-                break;
-            default:
-                g_noticeWindow = GuiCreateErrorCodeWindow(ERR_INVALID_FILE, &g_noticeWindow, NULL);
-                break;
-            }
-        }
-        break;
-        case ONLY_PSBT: {
-            uint32_t readBytes = 0;
-            uint8_t *psbtBytes = FatfsFileReadBytes(path, &readBytes);
-
-            // for debug
-            char *psbtStr = EXT_MALLOC(readBytes * 2 + 1);
-            psbtStr[readBytes * 2] = 0;
-            ByteArrayToHexStr(psbtBytes, readBytes, psbtStr);
-            printf("psbt is %s\n", psbtStr);
-            EXT_FREE(psbtStr);
-
-            GuiSetPsbtStrData(psbtBytes, readBytes);
-            g_viewType = BtcTx;
-            GuiModelCheckTransaction(g_viewType);
-        }
-        break;
-        case ONLY_JSON:
-
+        case BitcoinMultiSigWalletNotMyWallet:
+        case BitcoinMultiSigWalletParseError:
+            g_noticeWindow = GuiCreateRustErrorWindow(ret, NULL, &g_noticeWindow, NULL);
             break;
         default:
+            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_INVALID_FILE, &g_noticeWindow, NULL);
             break;
         }
+    }
+    break;
+    case ONLY_PSBT: {
+        uint32_t readBytes = 0;
+        uint8_t *psbtBytes = FatfsFileReadBytes(path, &readBytes);
 
+        // for debug
+        char *psbtStr = EXT_MALLOC(readBytes * 2 + 1);
+        psbtStr[readBytes * 2] = 0;
+        ByteArrayToHexStr(psbtBytes, readBytes, psbtStr);
+        printf("psbt is %s\n", psbtStr);
+        EXT_FREE(psbtStr);
+
+        GuiSetPsbtStrData(psbtBytes, readBytes);
+        g_viewType = BtcTx;
+        GuiModelCheckTransaction(g_viewType);
+    }
+    break;
+    case ONLY_JSON:
+
+        break;
+    default:
+        break;
     }
 }
 

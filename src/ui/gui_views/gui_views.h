@@ -238,5 +238,6 @@ lv_obj_t *GuiCreateWalletNoticeWidget(lv_obj_t *parent);
 void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCallback cb);
 void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t **param, ErrorWindowCallback cb);
 void GuiSDCardExportHandler(lv_event_t *e);
+void CreateBetaNotice(void);
 
 #endif /* _GUI_VIEWS_H */

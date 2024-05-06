@@ -616,6 +616,16 @@ void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index, const c
                            g_coinWalletBtn[index].icon);
 }
 
+char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
+{
+    if (index == WALLET_LIST_ETERNL) {
+        return "Eternl";
+    } else if (index == WALLET_LIST_TYPHON) {
+        return "Typhon";
+    }
+    return g_walletBtn[index].name;
+}
+
 void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const char *name)
 {
     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
@@ -656,6 +666,7 @@ void SetRightBtnLabel(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM button
         break;
     case NVS_BAR_WORD_RESET:
         lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 1), text);
+        GuiImgLabelAdaptButtonResize(navBarWidget->rightBtn);
         break;
     default:
         return;

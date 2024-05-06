@@ -222,11 +222,11 @@ void GuiAnalyzeFreeTable(uint8_t row, uint8_t col, void *param)
     char ***indata = (char ***)param;
     for (i = 0; i < col; i++) {
         for (j = 0; j < row; j++) {
-            SRAM_FREE(indata[i][j]);
+            if (indata[i][j] != NULL) SRAM_FREE(indata[i][j]);
         }
-        SRAM_FREE(indata[i]);
+        if (indata[i] != NULL) SRAM_FREE(indata[i]);
     }
-    SRAM_FREE(indata);
+    if (indata != NULL) SRAM_FREE(indata);
 }
 
 const lv_font_t *GetLvglTextFont(char *fontStr)

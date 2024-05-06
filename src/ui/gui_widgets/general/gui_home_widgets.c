@@ -20,6 +20,7 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "log_print.h"
+#include "version.h"
 
 static lv_obj_t *g_manageWalletLabel = NULL;
 static lv_obj_t *g_homeWalletCardCont = NULL;
@@ -797,6 +798,7 @@ void GuiHomeRestart(void)
 
 void GuiHomeRefresh(void)
 {
+    static bool isFirstBeta = true;
 #ifdef RUST_MEMORY_DEBUG
     PrintRustMemoryStatus();
 #endif
@@ -822,6 +824,10 @@ void GuiHomeRefresh(void)
     GUI_DEL_OBJ(g_moreHintbox)
     AccountPublicHomeCoinGet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
     UpdateHomeConnectWalletCard();
+    if (isFirstBeta && SOFTWARE_VERSION_BUILD % 2) {
+        CreateBetaNotice();
+        isFirstBeta = false;
+    }
 }
 
 const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)

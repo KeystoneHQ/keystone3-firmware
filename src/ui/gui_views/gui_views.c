@@ -24,7 +24,7 @@
 
 static void CreateWalletNotice(bool isCreate);
 
-static lv_obj_t *g_hintBox = NULL;
+static lv_obj_t *g_noticeWindow = NULL;
 static lv_obj_t **g_hintParam = NULL;
 static PageWidget_t *g_pageViewWidget = NULL;
 
@@ -37,7 +37,7 @@ void UnHandler(lv_event_t *e)
 void OpenImportWalletHandler(lv_event_t *e)
 {
     if (CHECK_BATTERY_LOW_POWER()) {
-        g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeWindow, NULL);
     } else {
         CreateWalletNotice(IMPORT_WALLET_NOTICE);
     }
@@ -46,7 +46,7 @@ void OpenImportWalletHandler(lv_event_t *e)
 void OpenCreateWalletHandler(lv_event_t *e)
 {
     if (CHECK_BATTERY_LOW_POWER()) {
-        g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeWindow, NULL);
     } else {
         CreateWalletNotice(CREATE_WALLET_NOTICE);
     }
@@ -178,7 +178,7 @@ void DuplicateShareHandler(lv_event_t *e)
 
 void GuiViewHintBoxClear(void)
 {
-    GUI_DEL_OBJ(g_hintBox)
+    GUI_DEL_OBJ(g_noticeWindow)
     DestroyPageWidget(g_pageViewWidget);
     g_pageViewWidget = NULL;
 }
@@ -189,7 +189,7 @@ void GuiSDCardExportHandler(lv_event_t *e)
     if (SdCardInsert()) {
         func();
     } else {
-        g_hintBox = GuiCreateErrorCodeWindow(ERR_EXPORT_XPUB_SDCARD_NOT_DETECTED, &g_hintBox, NULL);
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_EXPORT_XPUB_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
     }
     return;
 }
@@ -231,8 +231,8 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         }
 
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-        g_hintBox = GuiCreateConfirmHintBox(&imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
-        lv_obj_t *btn = GuiGetHintBoxRightBtn(g_hintBox);
+        g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
+        lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
         lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, NULL);
     }
 }
@@ -372,4 +372,10 @@ static void CreateWalletNotice(bool isCreate)
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 
     lv_obj_add_event_cb(btn, CreateOrImportWalletHandler, LV_EVENT_CLICKED, &walletMethod[isCreate]);
+}
+
+void CreateBetaNotice(void)
+{
+    g_noticeWindow = GuiCreateConfirmHintBox(&imgWarn, _("beta_version_notice_title"), _("beta_version_notice_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
+    lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 }

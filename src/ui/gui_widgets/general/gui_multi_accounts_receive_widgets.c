@@ -948,8 +948,7 @@ static void GuiCreateSwitchAccountWidget()
     lv_obj_t *cont = GuiCreateContainerWithParent(page->contentZone, 408, 514);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_t *line;
-    lv_obj_t *label, *checkBox, *checkedImg, *uncheckedImg;
+    lv_obj_t *line, *label, *checkBox, *checkedImg, *uncheckedImg, *address;
     static lv_point_t points[2] = {{0, 0}, {360, 0}};
     lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_style_bg_color(cont, DARK_BG_COLOR, LV_PART_MAIN);
@@ -959,13 +958,13 @@ static void GuiCreateSwitchAccountWidget()
         char temp[BUFFER_SIZE_64];
         snprintf_s(temp, sizeof(temp), "%s-%u", _("account_head"), i);
         label = GuiCreateTextLabel(cont, temp);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 10 + 102 * i);
         g_multiAccountsReceiveWidgets.switchAccountWidgets[index].addressCountLabel = label;
 
         snprintf_s(temp, BUFFER_SIZE_64, "m/1852'/1815'/%u'", i);
-        label = GuiCreateNoticeLabel(cont, temp);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 102 * i);
-        g_multiAccountsReceiveWidgets.switchAccountWidgets[index].addressLabel = label;
+        address = GuiCreateNoticeLabel(cont, temp);
+        lv_obj_align_to(address, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, -10);
+        g_multiAccountsReceiveWidgets.switchAccountWidgets[index].addressLabel = address;
         if (i > 0) {
             line = GuiCreateLine(cont, points, 2);
             lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * i);

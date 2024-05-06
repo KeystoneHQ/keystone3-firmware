@@ -80,42 +80,34 @@ static void GuiQuitHandler(lv_event_t *e)
 
 static void ContinueStopCreateHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        if (lv_event_get_user_data(e) != NULL) {
-            g_forgetMkb->currentSlice = 0;
-            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-            CloseToTargetTileView(g_forgetPassTileView.currentTile, FORGET_PASSWORD_METHOD_SELECT);
-        }
-        GUI_DEL_OBJ(g_noticeHintBox)
+    if (lv_event_get_user_data(e) != NULL) {
+        g_forgetMkb->currentSlice = 0;
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        CloseToTargetTileView(g_forgetPassTileView.currentTile, FORGET_PASSWORD_METHOD_SELECT);
     }
+    GUI_DEL_OBJ(g_noticeHintBox)
 }
 
 static void StopCreateViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
+    g_noticeHintBox = GuiCreateHintBox(416);
+    lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgWarn);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 432);
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("forget_password_cancel"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 528);
+    label = GuiCreateIllustrateLabel(g_noticeHintBox, _("import_wallet_ssb_cancel_desc"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 580);
+    lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _("not_now"));
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_DEFAULT, 36, 710);
+    lv_obj_set_size(btn, 162, 66);
+    lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, NULL);
 
-    if (code == LV_EVENT_CLICKED) {
-        g_noticeHintBox = GuiCreateHintBox(416);
-        lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgWarn);
-        lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 432);
-        lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("forget_password_cancel"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 528);
-        label = GuiCreateIllustrateLabel(g_noticeHintBox, _("import_wallet_ssb_cancel_desc"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 580);
-        lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _("not_now"));
-        lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-        lv_obj_align(btn, LV_ALIGN_DEFAULT, 36, 710);
-        lv_obj_set_size(btn, 162, 66);
-        lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, NULL);
-
-        btn = GuiCreateTextBtn(g_noticeHintBox, _("Cancel"));
-        lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
-        lv_obj_align(btn, LV_ALIGN_DEFAULT, 229, 710);
-        lv_obj_set_size(btn, 215, 66);
-        lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, g_noticeHintBox);
-    }
+    btn = GuiCreateTextBtn(g_noticeHintBox, _("Cancel"));
+    lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_DEFAULT, 229, 710);
+    lv_obj_set_size(btn, 215, 66);
+    lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, g_noticeHintBox);
 }
 
 void GuiForgetAnimContDel(int errCode)
@@ -212,20 +204,12 @@ static void GuiCreateRepeatPinWidget(lv_obj_t *parent)
 
 static void ImportPhraseWordsHandler(lv_event_t* e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        ImportSinglePhraseWords(g_forgetMkb, g_forgetPhraseKb);
-    }
+    ImportSinglePhraseWords(g_forgetMkb, g_forgetPhraseKb);
 }
 
 static void ImportShareNextSliceHandler(lv_event_t* e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        ImportShareNextSlice(g_forgetMkb, g_forgetPhraseKb);
-    }
+    ImportShareNextSlice(g_forgetMkb, g_forgetPhraseKb);
 }
 
 static void ResetClearImportHandler(lv_event_t * e)

@@ -66,6 +66,12 @@ void *GuiCreateImgLabelAdaptButton(lv_obj_t *parent, const char *text, const voi
     return button;
 }
 
+void GuiImgLabelAdaptButtonResize(lv_obj_t *button)
+{
+    uint16_t width = lv_obj_get_self_width(lv_obj_get_child(button, 1)) + lv_obj_get_self_width(lv_obj_get_child(button, 0)) + 24;
+    lv_obj_set_width(button, width);
+}
+
 void *GuiCreateLabelImgAdaptButton(lv_obj_t *parent, const char *text, const void *src,
                                    lv_event_cb_t buttonCb, void *param)
 {

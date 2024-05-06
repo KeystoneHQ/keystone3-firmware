@@ -308,6 +308,16 @@ void GuiStatusBarSetTestNet(void)
     }
     RefreshStatusBar();
 }
+#else
+char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
+{
+    if (index == WALLET_LIST_ETERNL) {
+        return "Eternl";
+    } else if (index == WALLET_LIST_TYPHON) {
+        return "Typhon";
+    }
+    return g_walletBtn[index].name;
+}
 #endif
 
 void GuiStatusBarSetBattery(uint8_t percent, bool charging)
@@ -614,16 +624,6 @@ void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index, const c
     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
     navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, (name != NULL) ? name : g_coinWalletBtn[index].name,
                            g_coinWalletBtn[index].icon);
-}
-
-char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
-{
-    if (index == WALLET_LIST_ETERNL) {
-        return "Eternl";
-    } else if (index == WALLET_LIST_TYPHON) {
-        return "Typhon";
-    }
-    return g_walletBtn[index].name;
 }
 
 void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const char *name)

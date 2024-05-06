@@ -1422,6 +1422,7 @@ void GuiConnectWalletDeInit(void)
     } else {
         GUI_DEL_OBJ(g_coinListCont)
     }
+    CleanConnectADAWidget();
 #endif
     CloseToTargetTileView(g_connectWalletTileView.currentTile, CONNECT_WALLET_SELECT_WALLET);
     GUI_DEL_OBJ(g_connectWalletTileView.cont)

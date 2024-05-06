@@ -27,16 +27,13 @@ PtrT_TransactionCheckResult GuiGetArCheckResult(void)
 
 void GuiSetArUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
-#ifndef COMPILE_SIMULATOR
     g_urResult = urResult;
     g_urMultiResult = urMultiResult;
     g_isMulti = multi;
-#endif
 }
 
 void *GuiGetArData(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
@@ -49,18 +46,13 @@ void *GuiGetArData(void)
         g_parseResult = (void *)parseResult;
     } while (0);
     return g_parseResult;
-#else
-    return NULL;
-#endif
 }
 
 void FreeArMemory(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
-#endif
 }
 
 UREncodeResult *GuiGetArweaveSignQrCodeData(void)

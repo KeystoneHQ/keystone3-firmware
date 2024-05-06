@@ -1195,6 +1195,7 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
 
 int32_t RsaGenerateKeyPair(bool needEmitSignal)
 {
+    printf("RsaGenerate RsaGenerate RsaGenerate");
     bool lockState = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     if (needEmitSignal) {
@@ -1212,8 +1213,7 @@ int32_t RsaGenerateKeyPair(bool needEmitSignal)
     RecalculateManageWalletState();
     ClearLockScreenTime();
     SetLockScreen(lockState);
-    if (needEmitSignal)
-    {
+    if (needEmitSignal) {
         GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS, NULL, 0);
         GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_HIDE_LOADING, NULL, 0);
     }

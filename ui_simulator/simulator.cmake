@@ -14,6 +14,7 @@ add_compile_definitions(HASH_AND_SALT_TEST_MODE)
 file(GLOB_RECURSE INCLUDES "ui_simulator/lv_drivers/*.h" "external/lvgl/*.h")
 file(GLOB_RECURSE SOURCES  "ui_simulator/lv_drivers/*.c")
 file(GLOB_RECURSE CRYPTO
+    "src/crypto/rsa.c"
     "src/crypto/secret_cache.c"
     "src/crypto/account_public_info.c"
     "src/crypto/utils/hash_and_salt.c"

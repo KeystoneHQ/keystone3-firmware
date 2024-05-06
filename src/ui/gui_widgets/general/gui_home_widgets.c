@@ -480,6 +480,14 @@ static void UpdateHomeConnectWalletCard(void)
     }
 }
 
+void GuiReceiveShowRsaSetupasswordHintbox(void)
+{
+    g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
+    SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+    static uint16_t sig = SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD;
+    SetKeyboardWidgetSig(g_keyboardWidget, &sig);
+}
+
 static void CoinDealHandler(lv_event_t *e)
 {
     HOME_WALLET_CARD_ENUM coin;
@@ -499,20 +507,20 @@ static void CoinDealHandler(lv_event_t *e)
     case HOME_WALLET_CARD_ADA:
         GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
         break;
-    case HOME_WALLET_CARD_ARWEAVE:
-        {
-            char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
-            bool shouldGenerateArweaveXPub = arXpub == NULL || strlen(arXpub) != 1024;
-            if (shouldGenerateArweaveXPub) {
-                g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
-                SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
-                static uint16_t sig = SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD;
-                SetKeyboardWidgetSig(g_keyboardWidget, &sig);
-                break;
-            }
-            GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
+    case HOME_WALLET_CARD_ARWEAVE: {
+#ifdef COMPILE_SIMULATOR
+        GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);
+        break;
+#endif
+        char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
+        bool shouldGenerateArweaveXPub = arXpub == NULL || strlen(arXpub) != 1024;
+        if (shouldGenerateArweaveXPub) {
+            GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);
             break;
         }
+        GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
+        break;
+    }
     default:
         GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
         break;
@@ -521,8 +529,7 @@ static void CoinDealHandler(lv_event_t *e)
 
 void GuiRemoveKeyboardWidget(void)
 {
-    if (g_keyboardWidget != NULL)
-    {
+    if (g_keyboardWidget != NULL) {
         GuiDeleteKeyboardWidget(g_keyboardWidget);
     }
     GuiModelRsaGenerateKeyPair();

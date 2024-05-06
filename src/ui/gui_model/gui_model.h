@@ -14,6 +14,7 @@
 #else
 #include "simulator_model.h"
 #endif
+#include "rsa.h"
 #include "drv_rtc.h"
 #include "drv_battery.h"
 #include "gui_animating_qrcode.h"

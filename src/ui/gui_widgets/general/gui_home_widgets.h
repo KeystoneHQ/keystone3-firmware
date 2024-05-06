@@ -5,6 +5,7 @@
 #include "gui_model.h"
 #include "lvgl.h"
 #include "gui_keyboard_hintbox.h"
+#include "gui_attention_hintbox.h"
 
 typedef enum {
     HOME_WALLET_CARD_BTC,
@@ -84,6 +85,7 @@ void GuiRemoveKeyboardWidget(void);
 void RecalculateManageWalletState(void);
 const ChainCoinCard_t* GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index);
 void GuiHomeDeInit(void);
+void GuiReceiveShowRsaSetupasswordHintbox(void);
 
 #endif /* _GUI_HOME_WIDGETS_H */
 #else

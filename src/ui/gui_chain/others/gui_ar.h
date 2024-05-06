@@ -6,6 +6,8 @@
 #include "stdio.h"
 #include "librust_c.h"
 #include "gui_chain.h"
+#include "gui_lock_widgets.h"
+#include "screen_manager.h"
 
 PtrT_TransactionCheckResult GuiGetArCheckResult(void);
 void GuiSetArUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);

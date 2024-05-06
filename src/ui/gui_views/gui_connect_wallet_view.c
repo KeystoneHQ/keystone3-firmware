@@ -3,6 +3,7 @@
 #include "gui_status_bar.h"
 #include "gui_connect_wallet_widgets.h"
 #include "gui_pending_hintbox.h"
+#include "gui_lock_widgets.h"
 
 int32_t GuiConnectWalletViewInit(void)
 {
@@ -39,6 +40,9 @@ int32_t GuiConnectWalletViewEventProcess(void* self, uint16_t usEvent, void* par
         break;
     case SIG_BACKGROUND_UR_UPDATE:
         GuiConnectWalletHandleURUpdate((char*)param, usLen);
+        break;
+    case SIG_SETUP_RSA_PRIVATE_KEY_CONNECT_CONFIRM:
+        GuiConnectShowRsaSetupasswordHintbox();
         break;
     case SIG_VERIFY_PASSWORD_FAIL:
         if (param != NULL) {

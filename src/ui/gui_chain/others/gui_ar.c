@@ -41,8 +41,7 @@ void *GuiGetArData(void)
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
-    do
-    {
+    do {
         PtrT_TransactionParseResult_DisplayArweaveTx parseResult = ar_parse(data);
         printf("ar_parse result: %s\n", parseResult->data->from);
         printf("ar_parse result: %s\n", parseResult->data->to);
@@ -71,11 +70,9 @@ UREncodeResult *GuiGetArweaveSignQrCodeData(void)
 #ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult = NULL;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    do
-    {
+    do {
         Rsa_primes_t *primes = FlashReadRsaPrimes();
-        if (primes == NULL)
-        {
+        if (primes == NULL) {
             encodeResult = NULL;
             break;
         }

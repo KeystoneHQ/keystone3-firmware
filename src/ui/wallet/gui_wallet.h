@@ -4,6 +4,7 @@
 #include "rust.h"
 #include "gui_chain.h"
 #include "rsa.h"
+#include "gui_attention_hintbox.h"
 
 UREncodeResult *GuiGetBlueWalletBtcData(void);
 UREncodeResult *GuiGetSparrowWalletBtcData(void);

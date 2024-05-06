@@ -1,11 +1,17 @@
 #ifndef _RSA_H
 #define _RSA_H
 
-#include "flash_address.h"
+#include "string.h"
+#ifndef COMPILE_SIMULATOR
 #include "stdio.h"
-#include "define.h"
 #include "stdlib.h"
 #include "safe_mem_lib.h"
+#else
+#include "simulator_model.h"
+#include "simulator_mock_define.h"
+#endif
+#include "flash_address.h"
+#include "define.h"
 #include "user_memory.h"
 #include "drv_gd25qxx.h"
 #include "sha256.h"
@@ -23,8 +29,8 @@
 #define SPI_FLASH_RSA_PRIME_SIZE SPI_FLASH_RSA_ORIGIN_DATA_SIZE / 2
 
 typedef struct {
-  uint8_t p[SPI_FLASH_RSA_PRIME_SIZE];
-  uint8_t q[SPI_FLASH_RSA_PRIME_SIZE];
+    uint8_t p[SPI_FLASH_RSA_PRIME_SIZE];
+    uint8_t q[SPI_FLASH_RSA_PRIME_SIZE];
 } Rsa_primes_t;
 
 Rsa_primes_t *FlashReadRsaPrimes();

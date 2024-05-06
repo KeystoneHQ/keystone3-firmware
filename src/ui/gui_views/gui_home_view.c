@@ -3,6 +3,7 @@
 #include "gui_views.h"
 #include "gui_home_widgets.h"
 #include "gui_pending_hintbox.h"
+#include "gui_lock_widgets.h"
 
 static int32_t GuiHomeViewInit(void)
 {
@@ -39,13 +40,14 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case SIG_INIT_GET_CURRENT_WALLET_DESC:
         GuiHomeSetWalletDesc((WalletDesc_t *)param);
         break;
+    case SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM:
+        GuiReceiveShowRsaSetupasswordHintbox();
+        break;
     case SIG_VERIFY_PASSWORD_FAIL:
-        if (param != NULL)
-        {
+        if (param != NULL) {
             PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
             uint16_t sig = *(uint16_t *)passwordVerifyResult->signal;
-            if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS)
-            {
+            if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
                 GuiLockScreenPassCode(false);
                 GuiHomePasswordErrorCount(param);
                 return SUCCESS_CODE;
@@ -56,11 +58,9 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         break;
     case SIG_VERIFY_PASSWORD_PASS:
         printf("SIG_VERIFY_PASSWORD_PASS\n");
-        if (param != NULL)
-        {
+        if (param != NULL) {
             uint16_t sig = *(uint16_t *)param;
-            if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS)
-            {
+            if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
                 GuiLockScreenToHome();
                 return SUCCESS_CODE;
             }

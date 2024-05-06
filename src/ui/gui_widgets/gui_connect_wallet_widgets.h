@@ -3,6 +3,7 @@
 
 #include "gui_views.h"
 #include "librust_c.h"
+#include "gui_attention_hintbox.h"
 
 typedef enum {
 #ifndef BTC_ONLY
@@ -98,6 +99,7 @@ SOLAccountType GetSolflareAccountType(void);
 void GuiPrepareArConnectWalletView(void);
 void GuiSetupArConnectWallet(void);
 void GuiConnectWalletPasswordErrorCount(void *param);
+void GuiConnectShowRsaSetupasswordHintbox(void);
 #endif
 #endif /* _GUI_CONNECT_WALLET_WIDGETS_H */
 

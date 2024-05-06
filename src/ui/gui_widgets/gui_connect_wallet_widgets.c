@@ -332,16 +332,21 @@ static void OpenQRCodeHandler(lv_event_t *e)
         char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
         bool skipGenerateArweaveKey = arXpub != NULL && strlen(arXpub) == 1024;
         if (g_connectWalletTileView.walletIndex == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey) {
-            g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
-            SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
-            static uint16_t sig = SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD;
-            SetKeyboardWidgetSig(g_keyboardWidget, &sig);
+            GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_CONNECT_CONFIRM);
             return;
         }
 #endif
         g_isCoinReselected = false;
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
     }
+}
+
+void GuiConnectShowRsaSetupasswordHintbox(void)
+{
+    g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
+    SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+    static uint16_t sig = SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD;
+    SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
 
 #ifndef BTC_ONLY

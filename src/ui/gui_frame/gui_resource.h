@@ -92,6 +92,7 @@ LV_IMG_DECLARE(imgQrcode36px);
 LV_IMG_DECLARE(imgLockDestroy);
 LV_IMG_DECLARE(imgSdCard);
 LV_IMG_DECLARE(imgSdCardL);
+LV_IMG_DECLARE(imgAttentionLock);
 LV_IMG_DECLARE(imgSdCardColor);
 LV_IMG_DECLARE(imgBrightnessLow);
 LV_IMG_DECLARE(imgBrightnessHigh);

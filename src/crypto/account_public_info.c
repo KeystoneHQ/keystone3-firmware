@@ -20,6 +20,7 @@
 #include "user_fatfs.h"
 #include "multi_sig_wallet_manager.h"
 #include "log_print.h"
+#include "rsa.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
@@ -64,7 +65,7 @@ static void SetIsTempAccount(bool isTemp);
 static AccountPublicKeyItem_t g_accountPublicKey[XPUB_TYPE_NUM];
 
 static uint8_t g_tempPublicKeyAccountIndex = INVALID_ACCOUNT_INDEX;
-static bool g_isTempAccount = false;  
+static bool g_isTempAccount = false;
 
 static const char g_xpubInfoVersion[] = "1.0.0";
 static const char g_multiSigInfoVersion[] = "1.0.0";
@@ -187,8 +188,7 @@ static const ChainItem_t g_chainTable[] = {
 
 static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoKey, const char *path, void *icarusMasterKey)
 {
-    switch (cryptoKey)
-    {
+    switch (cryptoKey) {
     case SECP256K1:
         return get_extended_pubkey_by_seed(seed, len, path);
     case ED25519:
@@ -196,8 +196,7 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
     case BIP32_ED25519:
         ASSERT(icarusMasterKey);
         return derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
-    case RSA_KEY:
-    {
+    case RSA_KEY: {
         Rsa_primes_t *primes = FlashReadRsaPrimes();
         if (primes == NULL)
             return NULL;
@@ -439,8 +438,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             }
 
             xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey);
-            if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL)
-            {
+            if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                 continue;
             }
             CHECK_AND_FREE_XPUB(xPubResult)
@@ -571,8 +569,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             }
 
             xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey);
-            if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL)
-            {
+            if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                 continue;
             }
             ASSERT(xPubResult);

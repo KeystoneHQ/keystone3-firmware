@@ -39,7 +39,7 @@ static inline uint32_t op_t(uint32_t val)
     return 0;
 }
 
-static lv_i18n_phrase_t en_singulars[] = {
+const static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
     {"Approve", "Approve"},
     {"Attention", "Attention"},
@@ -775,7 +775,7 @@ static const lv_i18n_lang_t en_lang = {
     .locale_plural_fn = en_plural_fn
 };
 
-static lv_i18n_phrase_t ko_singulars[] = {
+const static lv_i18n_phrase_t ko_singulars[] = {
     {"Address", "주소"},
     {"Approve", "허락"},
     {"Attention", "주목"},
@@ -825,7 +825,7 @@ static lv_i18n_phrase_t ko_singulars[] = {
     {"about_info_verify_checksum_title", "체크섬"},
     {"about_info_verify_firmware_desc", "이 기능은 개발자들이 키스톤 장치에서 실행중인 펌웨어가 우리가 오픈 소스로 공개한 펌웨어와 일치하는지 확인하기 위한 고급 기능입니다"},
     {"about_info_verify_firmware_step1", "Keystone의 오픈 소스 GitHub 저장소로 이동하여 펌웨어를 빌드하고 체크섬을 얻는 지침을 따르세요"},
-    {"about_info_verify_firmware_step2", "펌웨어 페이지에서 \"펌웨어 다운로드\" 버튼 옆의 #F5870A Checksum#을 클릭합니다."},
+    {"about_info_verify_firmware_step2", "펌웨어 페이지에서 \"펌웨어 다운로드\" 버튼 옆의 #F5870A Checksum#을 클390릭합니다."},
     {"about_info_verify_firmware_step3", "아래의 #F5870A 체크섬 보기# 버튼을 눌러 웹페이지에 표시된 정보와 장치의 정보를 비교하세요"},
     {"about_info_verify_source_code_title", "소스 코드 검증"},
     {"about_keystone_discord", "Discord"},
@@ -1506,7 +1506,7 @@ static const lv_i18n_lang_t ko_lang = {
     .locale_plural_fn = ko_plural_fn
 };
 
-static lv_i18n_phrase_t ru_singulars[] = {
+const static lv_i18n_phrase_t ru_singulars[] = {
     {"Address", "Адрес"},
     {"Approve", "Разрешить"},
     {"Attention", "Внимание"},
@@ -2245,7 +2245,7 @@ static const lv_i18n_lang_t ru_lang = {
     .locale_plural_fn = ru_plural_fn
 };
 
-static lv_i18n_phrase_t zh_cn_singulars[] = {
+const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"Address", "地址"},
     {"Approve", "允许"},
     {"Attention", "注意"},
@@ -2274,7 +2274,7 @@ static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"Tutorial", "教程"},
     {"Undo", "撤销"},
     {"Update", "更新"},
-    {"Updating", "升级中......"},
+    {"Updating", "固件升级中......"},
     {"Warning", "警告"},
     {"about_info_battery_voltage", "电池电压"},
     {"about_info_device_uid", "设备UID"},
@@ -2776,12 +2776,12 @@ static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"shamir_phrase_confirm_desc", "按顺序选择以下单词,已验证您保存了当前分片的助记词."},
     {"shamir_phrase_custodian_desc", "请确认您是该分片的持有者#F5870A 1#"},
     {"shamir_phrase_custodian_title", "分片助记词 #F5870A 1#"},
-    {"shamir_phrase_number", "分片助记词数量"},
+    {"shamir_phrase_number", "分片总数"},
     {"shamir_phrase_share_backup_notice_fmt", "写下您分片 #F5870A %d# 的助记词,并妥善保管."},
     {"shamir_phrase_share_confirm_notice_fmt", "按照正确顺序选择分片 #F5870A %d# 的助记词,已验证您保存了当前分片的助记词."},
     {"shamir_phrase_share_notice_fmt", "请确认您是分片 #F5870A %d# 的托管人."},
     {"shamir_phrase_share_number_fmt", "分片助记词 #F5870A %d#/%d"},
-    {"shamir_phrase_threold", "门限"},
+    {"shamir_phrase_threold", "恢复钱包需要的最小分片"},
     {"shamir_phrase_verify_success_desc1", "该分片对应的助记词已成功验证,请进入下一分片助记词的备份."},
     {"shamir_phrase_verify_success_desc2", "点击下面的按钮,然后将 Keystone 交给分片助记词 2 的托管人."},
     {"shamir_phrase_verify_success_title", "验证成功"},
@@ -2865,8 +2865,8 @@ static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"tx_details_eth_decoding_qr_title", "解析 DeFi 交易"},
     {"tx_details_general_tab_title1", "概述"},
     {"unlock_device", "解锁设备"},
-    {"unlock_device_attempts_left_plural_times_fmt", "密码不正确,剩下 %d 的尝试"},
-    {"unlock_device_attempts_left_singular_times_fmt", "密码不正确,剩下 %d 的尝试"},
+    {"unlock_device_attempts_left_plural_times_fmt", "密码错误,剩下 %d 次输入机会"},
+    {"unlock_device_attempts_left_singular_times_fmt", "密码错误,剩下 %d 次输入机会"},
     {"unlock_device_error_attempts_exceed", "超出尝试次数"},
     {"unlock_device_error_attempts_exceed_desc", "设备锁即将锁定,请解锁以访问设备."},
     {"unlock_device_error_btn_start_text", "解锁设备(5s)"},

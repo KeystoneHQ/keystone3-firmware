@@ -267,6 +267,12 @@ void GuiSettingFingerRegisterFail(void *param)
             text = _("fingerprint_add_failed_duplicate");
         } else if (errCode == ERR_FP_RECORDING_AREA_SMALL) {
             text = _("fingerprint_add_failed_partial");
+        } else if (errCode == ERR_FP_AREA_TOO_WET) {
+            text = _("fingerprint_add_too_wet");
+        } else if (errCode == ERR_FP_RECORDING_AREA_OVERLAPS_TOO_MUCH) {
+            text = _("fingerprint_add_overlaps_too_much");
+        } else if (errCode == ERR_FP_ARE_POOR_QUALITY) {
+            text = _("fingerprint_add_poor_qualtiy");
         } else {
             text = (char *)GetFpErrorMessage(errCode);
         }

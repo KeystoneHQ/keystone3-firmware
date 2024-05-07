@@ -1495,6 +1495,7 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
 static lv_obj_t *g_imgCont = NULL;
 void GuiAnalyzeViewInit(lv_obj_t *parent)
 {
+    uint16_t width = 0;
     g_imgCont = (lv_obj_t *)GuiCreateContainerWithParent(parent, 440, 530);
     lv_obj_align(g_imgCont, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_scroll_dir(g_imgCont, LV_DIR_VER);
@@ -1522,6 +1523,9 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
         lv_obj_t *tabChild;
         if (i == 0) {
             tabChild = lv_tabview_add_tab(tabView, _("Overview"));
+            lv_obj_t *temp = GuiCreateIllustrateLabel(tabView, _("Overview"));
+            width = lv_obj_get_self_width(temp) > 100 ? 300 : 200;
+            lv_obj_del(temp);
         } else if (i == 1) {
             tabChild = lv_tabview_add_tab(tabView, _("Details"));
         }
@@ -1536,7 +1540,7 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
         lv_obj_set_style_border_side(tab_btns, LV_BORDER_SIDE_BOTTOM, LV_PART_ITEMS | LV_STATE_CHECKED);
         lv_obj_set_style_text_opa(tab_btns, 255, LV_PART_MAIN | LV_STATE_CHECKED);
         lv_obj_set_style_text_opa(tab_btns, 150, LV_PART_MAIN | LV_STATE_DEFAULT);
-        lv_obj_set_width(tab_btns, 200);
+        lv_obj_set_width(tab_btns, width);
 
         int childCnt = lv_obj_get_child_cnt(g_analyzeTabview.obj[i]);
         int yOffset = 12;

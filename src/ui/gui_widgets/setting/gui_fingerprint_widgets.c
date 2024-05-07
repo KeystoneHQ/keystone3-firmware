@@ -310,7 +310,8 @@ void GuiWalletFingerAddWidget(lv_obj_t *parent)
     lv_obj_set_style_text_color(g_fpRegLabel, RED_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_align(g_fpRegLabel, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(g_fpRegLabel, LV_ALIGN_BOTTOM_MID, 0, -156);
-
+    lv_obj_set_width(g_fpRegLabel, 408);
+    
     for (int i = 0; i < 3; i++) {
         if (GetFingerRegisteredStatus(i) == 0) {
             RegisterFp(i);

@@ -2879,7 +2879,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"tx_details_eth_decoding_qr_link", "https://keyst.one/t/3rd/ddt"},
     {"tx_details_eth_decoding_qr_title", "解析 DeFi 交易"},
     {"unknown_transaction_desc", "该交易中的数据当前无法解码"},
-    {"unknown_transaction_title", " 交易详情不可用"},
+    {"unknown_transaction_title", "交易详情不可用"},
     {"unlock_device", "解锁设备"},
     {"unlock_device_attempts_left_plural_times_fmt", "密码错误,剩下 %d 次输入机会"},
     {"unlock_device_attempts_left_singular_times_fmt", "密码错误,剩下 %d 次输入机会"},

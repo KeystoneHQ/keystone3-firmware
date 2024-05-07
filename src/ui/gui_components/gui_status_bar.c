@@ -438,6 +438,7 @@ static lv_obj_t *CreateCoinBtn(lv_obj_t *navBar)
 static lv_obj_t *CreateWordCntSelect(lv_obj_t *navBar)
 {
     lv_obj_t *btn = GuiCreateLabelImgAdaptButton(navBar, _("24"), &imgArrowDownS, NULL, NULL);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_100, 0);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
     lv_obj_set_size(btn, 69, 42);
@@ -499,6 +500,7 @@ static lv_obj_t *CreateNewSkip(lv_obj_t *navBar)
 static lv_obj_t *CreateUndo(lv_obj_t *navBar)
 {
     lv_obj_t *btn = GuiCreateImgLabelAdaptButton(navBar, _("Undo"), &imgUndo, NULL, NULL);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_100, 0);
     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, GRAY_COLOR, 0);
     lv_obj_add_flag(btn, LV_OBJ_FLAG_CLICKABLE);

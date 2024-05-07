@@ -545,7 +545,7 @@ int OpenDb(char *filename, sqlite3 **db)
 
 static int callback(void *output, int nCol, char **argv, char **azColName)
 {
-    if (nCol != 1 || nCol != 2) {
+    if (nCol != 1 && nCol != 2) {
         printf("Error: Invalid number of columns %d\n", nCol);
         return SQLITE_ERROR;
     }

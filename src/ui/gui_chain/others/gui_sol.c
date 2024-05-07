@@ -420,7 +420,7 @@ static void GuiShowSolTxGeneralOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOv
     }
 }
 
-static void GuiShowSolTxUnknownOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOverview overviewData)
+static void GuiShowSolTxUnknownOverview(lv_obj_t *parent)
 {
     lv_obj_t *container = GuiCreateContainerWithParent(parent, 408, 302);
     lv_obj_align(container, LV_ALIGN_DEFAULT, 0, 0);
@@ -429,18 +429,11 @@ static void GuiShowSolTxUnknownOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOv
     lv_obj_t *img = GuiCreateImg(container, &imgUnknown);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 40);
 
-    lv_obj_t *label = lv_label_create(container);
-    lv_label_set_text(label, "No Transaction Details");
+    lv_obj_t *label = GuiCreateTextLabel(container, _("unknown_transaction_title"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 144);
-    lv_obj_set_style_text_font(label, &openSansEnText, LV_PART_MAIN);
-    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
 
-    label = lv_label_create(container);
-    lv_label_set_text(label, "All data in this transaction are customized and can’t be decoded currently.");
+    label = GuiCreateNoticeLabel(container, _("unknown_transaction_desc"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 188);
-    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
-    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_width(label, 360);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 }
@@ -460,7 +453,7 @@ void GuiShowSolTxOverview(lv_obj_t *parent, void *totalData)
     } else if (0 == strcmp(overviewData->display_type, "General")) {
         GuiShowSolTxGeneralOverview(parent, overviewData);
     } else {
-        GuiShowSolTxUnknownOverview(parent, overviewData);
+        GuiShowSolTxUnknownOverview(parent);
     }
 }
 

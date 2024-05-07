@@ -173,10 +173,10 @@ void GuiWebAuthResultFailedWidget(lv_obj_t *parent)
 {
     lv_obj_t *img, *label;
     img = GuiCreateImg(parent, &imgWarn);
-    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 36);
+    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 6);
 
     label = GuiCreateLittleTitleLabel(parent, _("verification_code_failed_title"));
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 32);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 12);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 
     label = GuiCreateIllustrateLabel(parent, _("verification_code_failed_desc"));
@@ -185,7 +185,7 @@ void GuiWebAuthResultFailedWidget(lv_obj_t *parent)
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 
     label = GuiCreateIllustrateLabel(parent, _("support_link"));
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 24);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 12);
     lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);
 
     label = GuiCreateTextLabel(parent, _("wipe_device"));

@@ -171,6 +171,7 @@ static void WebAuthWipeDevice(void)
 
 void GuiWebAuthResultFailedWidget(lv_obj_t *parent)
 {
+    uint16_t height = 212;
     lv_obj_t *img, *label;
     img = GuiCreateImg(parent, &imgWarn);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 6);
@@ -183,6 +184,8 @@ void GuiWebAuthResultFailedWidget(lv_obj_t *parent)
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 12);
     lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_refr_size(label);
+    height += lv_obj_get_self_height(label);
 
     label = GuiCreateIllustrateLabel(parent, _("support_link"));
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 12);

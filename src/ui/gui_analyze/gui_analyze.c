@@ -1521,9 +1521,9 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
     for (int i = 0; i < 2; i++) {
         lv_obj_t *tabChild;
         if (i == 0) {
-            tabChild = lv_tabview_add_tab(tabView, "Overview");
+            tabChild = lv_tabview_add_tab(tabView, _("Overview"));
         } else if (i == 1) {
-            tabChild = lv_tabview_add_tab(tabView, "Details");
+            tabChild = lv_tabview_add_tab(tabView, _("Details"));
         }
         lv_obj_set_style_pad_all(tabChild, 0, LV_PART_MAIN);
         lv_obj_set_style_border_width(tabChild, 0, LV_PART_MAIN);

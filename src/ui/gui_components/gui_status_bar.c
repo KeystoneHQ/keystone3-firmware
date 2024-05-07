@@ -611,12 +611,11 @@ void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button,
   }
 }
 
-void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index,
-                   const char *name) {
-  SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
-  navBarWidget->midBtn = GuiUpdateStatusCoinButton(
-      navBarWidget->midBtn, (name != NULL) ? name : g_coinWalletBtn[index].name,
-      g_coinWalletBtn[index].icon);
+void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index, const char *name)
+{
+    SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
+    navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, (name != NULL) ? name : _("confirm_transaction"),
+                           g_coinWalletBtn[index].icon);
 }
 
 void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const char *name)

@@ -9,6 +9,7 @@ pub struct DisplayArweaveTx {
     pub fee: PtrString,
     pub from: PtrString,
     pub to: PtrString,
+    pub detail: PtrString,
 }
 
 impl Free for DisplayArweaveTx {

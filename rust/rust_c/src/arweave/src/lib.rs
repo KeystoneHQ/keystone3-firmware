@@ -151,18 +151,19 @@ pub extern "C" fn ar_check_tx(
 pub extern "C" fn ar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayArweaveTx>> {
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let sign_data = sign_request.get_sign_data();
-    let sign_type = sign_request.get_sign_type();
     let raw_tx = parse(&sign_data).unwrap();
     let raw_json: Value = serde_json::from_str(&raw_tx).unwrap();
     let value = raw_json["formatted_json"]["quantity"].as_str().unwrap().to_string();
     let fee = raw_json["formatted_json"]["reward"].as_str().unwrap().to_string();
     let from = raw_json["formatted_json"]["from"].as_str().unwrap().to_string();
     let to = raw_json["formatted_json"]["target"].as_str().unwrap().to_string();
+    let detail = raw_json["formatted_json"]["detail"].as_str().unwrap().to_string();
     let display_tx = DisplayArweaveTx {
         value: convert_c_char(value),
         fee: convert_c_char(fee),
         from: convert_c_char(from),
         to: convert_c_char(to),
+        detail: convert_c_char(detail),
     };
     TransactionParseResult::success(Box::into_raw(Box::new(display_tx)) as *mut DisplayArweaveTx)
         .c_ptr()
@@ -205,19 +206,6 @@ fn build_sign_result(ptr: PtrUR, p: &[u8], q: &[u8]) -> Result<ArweaveSignature,
         signature,
     ))
 }
-
-// #[no_mangle]
-// pub extern "C" fn ar_sign_message(
-//     ptr: PtrUR,
-//     p: PtrBytes,
-//     p_len: u32,
-//     q: PtrBytes,
-//     q_len: u32,
-// ) -> PtrT<UREncodeResult> {
-//     let p = unsafe { slice::from_raw_parts(p, p_len as usize) };
-//     let q = unsafe { slice::from_raw_parts(q, q_len as usize) };
-
-// }
 
 #[no_mangle]
 pub extern "C" fn ar_sign_tx(

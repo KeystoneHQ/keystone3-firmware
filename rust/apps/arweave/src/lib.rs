@@ -91,18 +91,42 @@ fn u64_to_ar(value: u64) -> String {
 pub fn owner_to_address(owner: Base64) -> Result<String> {
     let owner_bytes = owner.clone().0;
     let address = generate_address(owner_bytes)?;
-    Ok(address)
+    Ok(fix_address(&address))
+}
+
+fn fix_address(address: &str) -> String {
+    let mut result = String::new();
+    let mut count = 0;
+    for c in address.chars() {
+        result.push(c);
+        count += 1;
+        if count == 28 {
+            result.push('\n');
+            count = 0;
+        }
+    }
+    result
 }
 
 pub fn parse(data: &Vec<u8>) -> Result<String> {
     let tx = match serde_json::from_slice::<Transaction>(data) {
         Ok(tx) => {
+            let tags_json = tx.tags.iter().map(|tag| {
+                let name = String::from_utf8(tag.name.0.clone()).unwrap();
+                let value = String::from_utf8(tag.value.0.clone()).unwrap();
+                json!({
+                    "name": name,
+                    "value": value
+                })
+            }).collect::<Vec<Value>>();
+            let tags_json = serde_json::to_string(&tags_json).unwrap();
             json!({
                 "raw_json": tx,
                 "formatted_json": {
+                    "detail": tags_json,
                     "owner": tx.owner,
                     "from": owner_to_address(tx.owner.clone())?,
-                    "target": tx.target.clone().to_string(),
+                    "target": fix_address(&tx.target.clone().to_string()),
                     "quantity": u64_to_ar(tx.quantity),
                     "reward": u64_to_ar(tx.reward),
                     "data_size": tx.data_size,

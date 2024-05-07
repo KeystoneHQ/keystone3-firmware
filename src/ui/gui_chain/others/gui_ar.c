@@ -65,10 +65,6 @@ void GetArweaveToAddress(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata, maxLen, tx->to);
 }
 
-void GuiShowArweaveTxDetail(lv_obj_t *parent, void *totalData)
-{
-}
-
 void GuiSetArUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
     g_urResult = urResult;
@@ -97,6 +93,91 @@ void FreeArMemory(void)
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
+}
+
+static void SetTitleLabelStyle(lv_obj_t *label)
+{
+    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+}
+
+void GuiShowArweaveTxDetail(lv_obj_t *parent, void *totalData)
+{
+    cJSON *root;
+    int size;
+    bool shouldShowContainer = true;
+    DisplayArweaveTx *txData = (DisplayArweaveTx *)totalData;
+    PtrString txDetail = txData->detail;
+    if (txDetail == NULL)
+    {
+        shouldShowContainer = false;
+    }
+    else
+    {
+        root = cJSON_Parse((const char *)txDetail);
+        size = cJSON_GetArraySize(root);
+        if (size <= 0)
+        {
+            shouldShowContainer = false;
+        }
+    }
+
+    if (!shouldShowContainer)
+    {
+        lv_obj_add_flag(parent, LV_OBJ_FLAG_HIDDEN);
+        return;
+    }
+    else
+    {
+        lv_obj_clear_flag(parent, LV_OBJ_FLAG_HIDDEN);
+    }
+
+    int height = 62 + 84 * size;
+    lv_obj_set_size(parent, 408, height);
+    lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_clear_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_bg_color(parent, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(parent, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(parent, 31, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_t *label = lv_label_create(parent);
+    lv_label_set_text(label, "#2");
+    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_set_style_text_color(label, lv_color_hex(16090890), LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+
+    // 根据 size 循环取 json 中的元素
+    for (int i = 0; i < size; i++)
+    {
+        cJSON *item = cJSON_GetArrayItem(root, i);
+        cJSON *key = cJSON_GetObjectItem(item, "name");
+        cJSON *value = cJSON_GetObjectItem(item, "value");
+        if (key == NULL || value == NULL)
+        {
+            continue;
+        }
+        lv_obj_t *keyLabel = lv_label_create(parent);
+        lv_label_set_text(keyLabel, "Name");
+        SetTitleLabelStyle(keyLabel);
+        lv_obj_align(keyLabel, LV_ALIGN_TOP_LEFT, 24, 62 + 84 * i);
+
+        lv_obj_t *keyValueLabel = lv_label_create(parent);
+        lv_label_set_text(keyValueLabel, key->valuestring);
+        lv_obj_set_style_text_font(keyValueLabel, g_defIllustrateFont, LV_PART_MAIN);
+        lv_obj_set_style_text_color(keyValueLabel, lv_color_hex(16090890), LV_PART_MAIN);
+        lv_obj_align(keyValueLabel, LV_ALIGN_TOP_LEFT, 96, 62 + 84 * i);
+
+        lv_obj_t *valueLabel = lv_label_create(parent);
+        lv_label_set_text(valueLabel, "Value");
+        SetTitleLabelStyle(valueLabel);
+        lv_obj_align(valueLabel, LV_ALIGN_TOP_LEFT, 24, 62 + 84 * i + 38);
+
+        lv_obj_t *valueValueLabel = lv_label_create(parent);
+        lv_label_set_text(valueValueLabel, value->valuestring);
+        lv_obj_set_style_text_font(valueValueLabel, g_defIllustrateFont, LV_PART_MAIN);
+        lv_obj_set_style_text_color(valueValueLabel, WHITE_COLOR, LV_PART_MAIN);
+        lv_obj_align(valueValueLabel, LV_ALIGN_TOP_LEFT, 96, 62 + 84 * i + 38);
+    }
 }
 
 UREncodeResult *GuiGetArweaveSignQrCodeData(void)

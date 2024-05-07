@@ -13,7 +13,7 @@ pub enum TonError {
 }
 
 #[derive(Debug, Error)]
-pub enum MnemonicError {
+pub(crate) enum MnemonicError {
     #[error("Invalid mnemonic word count (count: {0})")]
     UnexpectedWordCount(usize),
 

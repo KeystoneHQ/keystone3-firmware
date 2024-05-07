@@ -1,9 +1,8 @@
-use core::cmp;
-
-use crate::errors::{MnemonicError, Result, TonError};
+use crate::errors::{MnemonicError, Result};
 use crate::utils::pbkdf2_sha512;
 use alloc::string::String;
 use alloc::vec::Vec;
+use core::cmp;
 use third_party::cryptoxide::ed25519;
 use third_party::cryptoxide::hmac::Hmac;
 use third_party::cryptoxide::mac::Mac;
@@ -111,6 +110,9 @@ mod tests {
         ];
         let result = ton_mnemonic_to_master_seed(words, None);
         assert_eq!(result.is_err(), true);
-        assert_eq!(result.err().unwrap().to_string(), "Invalid TON Mnemonic, Invalid mnemonic word count (count: 12)")
+        assert_eq!(
+            result.err().unwrap().to_string(),
+            "Invalid TON Mnemonic, Invalid mnemonic word count (count: 12)"
+        )
     }
 }

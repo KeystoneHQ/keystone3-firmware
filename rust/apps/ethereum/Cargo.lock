@@ -1330,6 +1330,7 @@ dependencies = [
  "hex",
  "itertools",
  "rsa",
+ "serde",
  "serde_json",
  "sha1",
  "thiserror-core",

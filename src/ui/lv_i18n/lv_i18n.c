@@ -2601,7 +2601,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"import_wallet_ssb_notbelong_desc", "您输入的助记词与该钱包不匹配.请检查您所备份的助记词,重新尝试."},
     {"import_wallet_ssb_repeat_desc", "该分片助记词已经被倒入过,请输入其他分片助记词."},
     {"import_wallet_ssb_step_fmt", "%d 的 %d"},
-    {"import_wallet_ssb_title_fmt", "分片助记词 #F5870A%d#"},
+    {"import_wallet_ssb_title_fmt", "分片助记词 #F5870A %d#"},
     {"language_desc", "选择你的语言"},
     {"language_little_title", "语言"},
     {"language_option1", "English"},

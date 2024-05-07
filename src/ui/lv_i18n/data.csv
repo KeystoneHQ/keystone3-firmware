@@ -131,7 +131,7 @@ to recover your wallet.","Вам понадобится 12/18/24 слова,чт
 shares to recover your wallet","Вам понадобится несколько сид фраз
 для восстановления кошелька",지갑을 복구하려면 시드 문구 공유 몇 개가 필요합니다,您需要多个分片助记词来恢复您的钱包.,,,,
 ,20,import_wallet_invalid_phrase_desc,The phrase you typed is invalid. Please check your backup and try again,Фраза недействительна. Проверьте резервную копию и повторите попытку,입력하신 시드 구문이 잘 못되었습니다. 확인하고 다시 시도하십시오.,"您输入的助记词无效.请检查您所备份的助记词,重新尝试.",,,,
-import wallet/SSB,36,import_wallet_ssb_title_fmt,Share #F5870A %d#,Часть #F5870A %d#,공유 #F5870A %d#,分片助记词 #F5870A%d#,,,,
+import wallet/SSB,36,import_wallet_ssb_title_fmt,Share #F5870A %d#,Часть #F5870A %d#,공유 #F5870A %d#,分片助记词 #F5870A %d#,,,,
 ,20,import_wallet_ssb_step_fmt,%d of %d,%d из %d,%d of %d,%d 的 %d,,,,
 ,20,import_wallet_ssb_desc_fmt,Enter your  #F5870A %d#-word seed phrase for Share #F5870A %d# in the blanks provided below.,"Введите сид фразу #F5870A %d# для части #F5870A %d# в поля, представленные ниже.",공유 #F5870A %d#에 대한 #F5870A %d#-시드 구문을 아래 빈칸에 입력하십시오.,请将您持有的 #F5870A %d# 位的分片助记词输入到下列空白框内.,,,,
 ,28,import_wallet_ssb_incorrect_title,Duplicate Share,Дубликат части,공유 중복 ,分片助记词重复,,,,

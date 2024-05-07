@@ -43,6 +43,12 @@ static void UpdateWalletDescHandler(lv_event_t *e)
         GuiSetEmojiIconIndex(wallet.iconIndex);
         strcpy_s(wallet.name, WALLET_NAME_MAX_LEN + 1, lv_textarea_get_text(g_setNameKb->ta));
         GuiModelSettingSaveWalletDesc(&wallet);
+    } else if (code == LV_EVENT_VALUE_CHANGED) {
+        if (strlen(lv_textarea_get_text(g_setNameKb->ta)) > 0) {
+            lv_obj_set_style_text_font(g_setNameKb->ta, &buttonFont, 0);
+        } else {
+            lv_obj_set_style_text_font(g_setNameKb->ta, g_defTextFont, 0);
+        }
     }
 }
 
@@ -55,6 +61,12 @@ static void GotoAddWalletHandler(lv_event_t *e)
         GuiNvsBarSetWalletName(name);
         GuiNvsBarSetWalletIcon(GuiGetEmojiIconImg());
         GuiFrameOpenView(&g_singlePhraseView);
+    } else if (code == LV_EVENT_VALUE_CHANGED) {
+        if (strlen(lv_textarea_get_text(g_setNameKb->ta)) > 0) {
+            lv_obj_set_style_text_font(g_setNameKb->ta, &buttonFont, 0);
+        } else {
+            lv_obj_set_style_text_font(g_setNameKb->ta, g_defTextFont, 0);
+        }
     }
 }
 

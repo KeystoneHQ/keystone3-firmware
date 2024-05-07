@@ -422,6 +422,7 @@ static void GuiShowSolTxGeneralOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOv
 
 static void GuiShowSolTxUnknownOverview(lv_obj_t *parent)
 {
+    uint16_t height = 212;
     lv_obj_t *container = GuiCreateContainerWithParent(parent, 408, 302);
     lv_obj_align(container, LV_ALIGN_DEFAULT, 0, 0);
     SetContainerDefaultStyle(container);
@@ -436,6 +437,9 @@ static void GuiShowSolTxUnknownOverview(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 188);
     lv_obj_set_width(label, 360);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_refr_size(label);
+    height += lv_obj_get_self_height(label);
+    lv_obj_set_height(container, height);
 }
 
 void GuiShowSolTxOverview(lv_obj_t *parent, void *totalData)

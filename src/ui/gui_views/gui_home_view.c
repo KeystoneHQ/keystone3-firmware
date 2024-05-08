@@ -15,6 +15,7 @@ static int32_t GuiHomeViewInit(void)
 static int32_t GuiHomeViewDeInit(void)
 {
     GuiHomeDeInit();
+    GuiPendingHintBoxMoveToTargetParent(lv_scr_act());
     return SUCCESS_CODE;
 }
 

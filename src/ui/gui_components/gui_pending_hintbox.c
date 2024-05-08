@@ -14,6 +14,7 @@ void GuiPendingHintBoxOpen(const char *title, const char *subtitle)
     lv_obj_align(bgCont, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_set_style_border_width(bgCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_side(bgCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_add_flag(bgCont, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_ADV_HITTEST);
 
     lv_obj_t *upCont = GuiCreateContainerWithParent(bgCont, w, 800 - h);
     lv_obj_set_style_bg_opa(upCont, 0, 0);

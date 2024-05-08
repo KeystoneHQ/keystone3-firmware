@@ -476,6 +476,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
 
 int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool newKey)
 {
+    SetIsTempAccount(false);
     printf("accountIndex = %d %s %d..\n", accountIndex, __func__, __LINE__);
     uint32_t addr;
     int32_t ret = SUCCESS_CODE;

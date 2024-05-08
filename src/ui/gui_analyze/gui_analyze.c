@@ -678,36 +678,21 @@ GetLabelDataFunc GuiXrpTextFuncGet(char *type)
 
 GetLabelDataFunc GuiArTextFuncGet(char *type)
 {
-    if (!strcmp(type, "GetArweaveValue"))
-    {
+    if (!strcmp(type, "GetArweaveValue")) {
         return GetArweaveValue;
-    }
-    else if (!strcmp(type, "GetArweaveFee"))
-    {
+    } else if (!strcmp(type, "GetArweaveFee")) {
         return GetArweaveFee;
-    }
-    else if (!strcmp(type, "GetArweaveFromAddress"))
-    {
+    } else if (!strcmp(type, "GetArweaveFromAddress")) {
         return GetArweaveFromAddress;
-    }
-    else if (!strcmp(type, "GetArweaveToAddress"))
-    {
+    } else if (!strcmp(type, "GetArweaveToAddress")) {
         return GetArweaveToAddress;
-    }
-    else if (!strcmp(type, "GetArweaveValue"))
-    {
+    } else if (!strcmp(type, "GetArweaveValue")) {
         return GetArweaveValue;
-    }
-    else if (!strcmp(type, "GetArweaveMessageText"))
-    {
+    } else if (!strcmp(type, "GetArweaveMessageText")) {
         return GetArweaveMessageText;
-    }
-    else if (!strcmp(type, "GetArweaveRawMessage"))
-    {
+    } else if (!strcmp(type, "GetArweaveRawMessage")) {
         return GetArweaveRawMessage;
-    }
-    else if (!strcmp(type, "GetArweaveMessageAddress"))
-    {
+    } else if (!strcmp(type, "GetArweaveMessageAddress")) {
         return GetArweaveMessageAddress;
     }
     return NULL;

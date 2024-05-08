@@ -328,8 +328,7 @@ static void OpenQRCodeHandler(lv_event_t *e)
     }
     char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
     bool skipGenerateArweaveKey = arXpub != NULL && strlen(arXpub) == 1024;
-    if (g_connectWalletTileView.walletIndex == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey)
-    {
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey) {
         GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_CONNECT_CONFIRM);
         return;
     }
@@ -1475,6 +1474,7 @@ void GuiConnectWalletRefresh(void)
 
 void GuiConnectWalletDeInit(void)
 {
+    GuiCloseAttentionHintbox();
     GUI_DEL_OBJ(g_openMoreHintBox)
     GUI_DEL_OBJ(g_manageImg);
     GUI_DEL_OBJ(g_coinCont)

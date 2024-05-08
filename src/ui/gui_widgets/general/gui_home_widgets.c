@@ -93,10 +93,11 @@ static void GuiInitWalletState()
 {
     if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
         g_walletState[HOME_WALLET_CARD_ADA].enable = false;
-    } else if (GetIsTempAccount()) {
-        g_walletState[HOME_WALLET_CARD_ARWEAVE].enable = false;
     } else {
         g_walletState[HOME_WALLET_CARD_ADA].enable = true;
+    }
+    if (GetIsTempAccount()) {
+        g_walletState[HOME_WALLET_CARD_ARWEAVE].enable = false;
     }
 }
 
@@ -842,6 +843,7 @@ const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)
 
 void GuiHomeDeInit(void)
 {
+    GuiCloseAttentionHintbox();
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;

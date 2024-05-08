@@ -15,5 +15,6 @@ typedef enum {
 } ATTENTION_HINTBOX_TYPE;
 
 void GuiCreateAttentionHintbox(uint16_t confirmSign);
+void GuiCloseAttentionHintbox();
 
 #endif

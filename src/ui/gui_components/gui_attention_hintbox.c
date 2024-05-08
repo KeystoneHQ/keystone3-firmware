@@ -45,8 +45,7 @@ static AttentionHintboxContext *BuildLowPowerHintboxContext()
 
 static void CloseAttentionHandler(lv_event_t *e)
 {
-    lv_obj_add_flag(g_attentionCont, LV_OBJ_FLAG_HIDDEN);
-    GUI_DEL_OBJ(g_attentionCont);
+    GuiCloseAttentionHintbox();
 }
 
 static void ConfirmAttentionHandler(lv_event_t *e)
@@ -62,6 +61,14 @@ static bool CheckPowerRequirements()
     return true;
 #endif
     return GetBatterPercent() >= MIN_OPERATE_POWER && GetUsbPowerState() == USB_POWER_STATE_CONNECT;
+}
+
+void GuiCloseAttentionHintbox()
+{
+    if (g_attentionCont) {
+        lv_obj_add_flag(g_attentionCont, LV_OBJ_FLAG_HIDDEN);
+        GUI_DEL_OBJ(g_attentionCont);
+    }
 }
 
 void GuiCreateAttentionHintbox(uint16_t confirmSign)

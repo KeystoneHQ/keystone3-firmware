@@ -39,8 +39,7 @@ PtrT_TransactionCheckResult GuiGetArCheckResult(void)
 void GetArweaveMessageText(void *indata, void *param, uint32_t maxLen)
 {
     DisplayArweaveMessage *data = (DisplayArweaveMessage *)param;
-    if (data->message == NULL)
-    {
+    if (data->message == NULL) {
         return;
     }
     strcpy_s((char *)indata, maxLen, data->message);
@@ -50,15 +49,13 @@ void GetArweaveRawMessage(void *indata, void *param, uint32_t maxLen)
 {
 #ifndef COMPILE_SIMULATOR
     DisplayArweaveMessage *data = (DisplayArweaveMessage *)param;
-    if (data->raw_message == NULL)
-    {
+    if (data->raw_message == NULL) {
         return;
     }
     strcpy_s((char *)indata, maxLen, data->raw_message);
 #else
     DisplayArweaveMessage *data = (DisplayArweaveMessage *)param;
-    if (data->message == NULL)
-    {
+    if (data->message == NULL) {
         return;
     }
     strcpy_s((char *)indata, maxLen, data->message);
@@ -69,8 +66,7 @@ void GetArweaveMessageAddress(void *indata, void *param, uint32_t maxLen)
 {
     char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
     SimpleResponse_c_char *result = arweave_get_address(xPub);
-    if (result->error_code != 0)
-    {
+    if (result->error_code != 0) {
         return;
     }
     strcpy_s((char *)indata, maxLen, result->data);
@@ -80,8 +76,7 @@ void GetArweaveMessageAddress(void *indata, void *param, uint32_t maxLen)
 void GetArweaveValue(void *indata, void *param, uint32_t maxLen)
 {
     DisplayArweaveTx *tx = (DisplayArweaveTx *)param;
-    if (tx->value == NULL)
-    {
+    if (tx->value == NULL) {
         return;
     }
     strcpy_s((char *)indata, maxLen, tx->value);
@@ -90,8 +85,7 @@ void GetArweaveValue(void *indata, void *param, uint32_t maxLen)
 void GetArweaveFee(void *indata, void *param, uint32_t maxLen)
 {
     DisplayArweaveTx *tx = (DisplayArweaveTx *)param;
-    if (tx->fee == NULL)
-    {
+    if (tx->fee == NULL) {
         return;
     }
     strcpy_s((char *)indata, maxLen, tx->fee);
@@ -100,8 +94,7 @@ void GetArweaveFee(void *indata, void *param, uint32_t maxLen)
 void GetArweaveFromAddress(void *indata, void *param, uint32_t maxLen)
 {
     DisplayArweaveTx *tx = (DisplayArweaveTx *)param;
-    if (tx->from == NULL)
-    {
+    if (tx->from == NULL) {
         return;
     }
     strcpy_s((char *)indata, maxLen, tx->from);
@@ -110,8 +103,7 @@ void GetArweaveFromAddress(void *indata, void *param, uint32_t maxLen)
 void GetArweaveToAddress(void *indata, void *param, uint32_t maxLen)
 {
     DisplayArweaveTx *tx = (DisplayArweaveTx *)param;
-    if (tx->to == NULL)
-    {
+    if (tx->to == NULL) {
         return;
     }
     strcpy_s((char *)indata, maxLen, tx->to);
@@ -121,8 +113,7 @@ static void ParseRequestType()
 {
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     SimpleResponse_ArweaveRequestType *requestType = ar_request_type(data);
-    if (requestType->error_code != 0)
-    {
+    if (requestType->error_code != 0) {
         g_requestType = ArweaveRequestTypeUnknown;
     }
     g_requestType = *requestType->data;
@@ -143,19 +134,15 @@ void *GuiGetArData(void)
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
     do {
-        if (g_requestType == ArweaveRequestTypeUnknown)
-        {
+        if (g_requestType == ArweaveRequestTypeUnknown) {
             printf("Unknown request type\n");
             break;
         }
-        if (g_requestType == ArweaveRequestTypeTransaction)
-        {
+        if (g_requestType == ArweaveRequestTypeTransaction) {
             PtrT_TransactionParseResult_DisplayArweaveTx parseResult = ar_parse(data);
             CHECK_CHAIN_BREAK(parseResult);
             g_parseResult = (void *)parseResult;
-        }
-        else if (g_requestType == ArweaveRequestTypeMessage)
-        {
+        } else if (g_requestType == ArweaveRequestTypeMessage) {
             PtrT_TransactionParseResult_DisplayArweaveMessage parseResult = ar_message_parse(data);
             CHECK_CHAIN_BREAK(parseResult);
             g_parseResult = (void *)parseResult;
@@ -185,27 +172,20 @@ void GuiShowArweaveTxDetail(lv_obj_t *parent, void *totalData)
     bool shouldShowContainer = true;
     DisplayArweaveTx *txData = (DisplayArweaveTx *)totalData;
     PtrString txDetail = txData->detail;
-    if (txDetail == NULL)
-    {
+    if (txDetail == NULL) {
         shouldShowContainer = false;
-    }
-    else
-    {
+    } else {
         root = cJSON_Parse((const char *)txDetail);
         size = cJSON_GetArraySize(root);
-        if (size <= 0)
-        {
+        if (size <= 0) {
             shouldShowContainer = false;
         }
     }
 
-    if (!shouldShowContainer)
-    {
+    if (!shouldShowContainer) {
         lv_obj_add_flag(parent, LV_OBJ_FLAG_HIDDEN);
         return;
-    }
-    else
-    {
+    } else {
         lv_obj_clear_flag(parent, LV_OBJ_FLAG_HIDDEN);
     }
 
@@ -223,13 +203,11 @@ void GuiShowArweaveTxDetail(lv_obj_t *parent, void *totalData)
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
 
     // 根据 size 循环取 json 中的元素
-    for (int i = 0; i < size; i++)
-    {
+    for (int i = 0; i < size; i++) {
         cJSON *item = cJSON_GetArrayItem(root, i);
         cJSON *key = cJSON_GetObjectItem(item, "name");
         cJSON *value = cJSON_GetObjectItem(item, "value");
-        if (key == NULL || value == NULL)
-        {
+        if (key == NULL || value == NULL) {
             continue;
         }
         lv_obj_t *keyLabel = lv_label_create(parent);

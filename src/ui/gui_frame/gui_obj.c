@@ -28,7 +28,8 @@ void *GuiCreateContainerWithParent(lv_obj_t *parent, int w, int h)
     return cont;
 }
 
-void *GuiCreateLabelWithFont(lv_obj_t *parent, const char *text, const lv_font_t *font)
+void *GuiCreateLabelWithFont(lv_obj_t *parent, const char *text,
+                             const lv_font_t *font)
 {
     lv_obj_t *label = lv_label_create(parent);
     lv_label_set_text(label, text);
@@ -55,7 +56,8 @@ void *GuiCreateWhiteOpa12Container(lv_obj_t *parent, int w, int h)
     return cont;
 }
 
-void *GuiCreateLabelWithFontAndTextColor(lv_obj_t *parent, const char *text, const lv_font_t *font, int color)
+void *GuiCreateLabelWithFontAndTextColor(lv_obj_t *parent, const char *text,
+        const lv_font_t *font, int color)
 {
     lv_obj_t *label = lv_label_create(parent);
     lv_label_set_text(label, text);
@@ -63,7 +65,8 @@ void *GuiCreateLabelWithFontAndTextColor(lv_obj_t *parent, const char *text, con
     if (GuiDarkMode()) {
         lv_obj_set_style_text_color(label, lv_color_hex(color), LV_PART_MAIN);
     } else {
-        lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF - color), LV_PART_MAIN);
+        lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF - color),
+                                    LV_PART_MAIN);
     }
     if (lv_obj_get_self_width(label) >= 400) {
         lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
@@ -95,7 +98,8 @@ void *GuiCreateScaleImg(lv_obj_t *parent, const void *src, int scale)
     return img;
 }
 
-void *GuiCreateBtnWithFont(lv_obj_t *parent, const char *text, const lv_font_t *font)
+void *GuiCreateBtnWithFont(lv_obj_t *parent, const char *text,
+                           const lv_font_t *font)
 {
     lv_obj_t *btn = lv_btn_create(parent);
     lv_obj_t *label = GuiCreateTextLabel(btn, text);
@@ -105,7 +109,8 @@ void *GuiCreateBtnWithFont(lv_obj_t *parent, const char *text, const lv_font_t *
     lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
-    lv_obj_set_size(btn, lv_obj_get_self_width(label) + 24, lv_obj_get_self_height(label) + 6);
+    lv_obj_set_size(btn, lv_obj_get_self_width(label) + 24,
+                    lv_obj_get_self_height(label) + 6);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
     return btn;
 }
@@ -135,7 +140,8 @@ void *GuiCreateAdaptButton(lv_obj_t *parent, const char *text)
     return btn;
 }
 
-void *GuiCreateCheckBoxWithFont(lv_obj_t *parent, const char *text, bool single, const lv_font_t *font)
+void *GuiCreateCheckBoxWithFont(lv_obj_t *parent, const char *text, bool single,
+                                const lv_font_t *font)
 {
     lv_obj_t *checkBox = lv_checkbox_create(parent);
     lv_obj_add_flag(checkBox, LV_OBJ_FLAG_EVENT_BUBBLE);
@@ -147,17 +153,23 @@ void *GuiCreateCheckBoxWithFont(lv_obj_t *parent, const char *text, bool single,
     lv_obj_set_style_border_opa(checkBox, LV_OPA_30, LV_PART_INDICATOR);
     lv_obj_set_style_border_color(checkBox, WHITE_COLOR, LV_PART_INDICATOR);
     lv_obj_set_style_border_width(checkBox, 2, LV_PART_INDICATOR);
-    lv_obj_set_style_bg_color(checkBox, DARK_BG_COLOR, LV_PART_MAIN | LV_PART_INDICATOR);
+    lv_obj_set_style_bg_color(checkBox, DARK_BG_COLOR,
+                              LV_PART_MAIN | LV_PART_INDICATOR);
 
     // check
     if (single) {
-        lv_obj_set_style_bg_color(checkBox, ORANGE_COLOR, LV_PART_INDICATOR | LV_STATE_CHECKED);
-        lv_obj_set_style_bg_img_src(checkBox, &messageRight, LV_PART_INDICATOR | LV_STATE_CHECKED);
+        lv_obj_set_style_bg_color(checkBox, ORANGE_COLOR,
+                                  LV_PART_INDICATOR | LV_STATE_CHECKED);
+        lv_obj_set_style_bg_img_src(checkBox, &imgMessageRight,
+                                    LV_PART_INDICATOR | LV_STATE_CHECKED);
     } else {
-        lv_obj_set_style_bg_color(checkBox, ORANGE_COLOR, LV_PART_INDICATOR | LV_STATE_CHECKED);
-        lv_obj_set_style_bg_img_src(checkBox, &messageRight, LV_PART_INDICATOR | LV_STATE_CHECKED);
+        lv_obj_set_style_bg_color(checkBox, ORANGE_COLOR,
+                                  LV_PART_INDICATOR | LV_STATE_CHECKED);
+        lv_obj_set_style_bg_img_src(checkBox, &imgMessageRight,
+                                    LV_PART_INDICATOR | LV_STATE_CHECKED);
     }
-    lv_obj_set_style_border_opa(checkBox, LV_OPA_0, LV_PART_INDICATOR | LV_STATE_CHECKED);
+    lv_obj_set_style_border_opa(checkBox, LV_OPA_0,
+                                LV_PART_INDICATOR | LV_STATE_CHECKED);
     return checkBox;
 }
 
@@ -175,7 +187,8 @@ void *GuiCreateSelectPathCheckBox(lv_obj_t *parent)
     return checkBox;
 }
 
-void *GuiCreateLine(lv_obj_t *parent, lv_point_t linePoints[], uint16_t pointNum)
+void *GuiCreateLine(lv_obj_t *parent, lv_point_t linePoints[],
+                    uint16_t pointNum)
 {
     lv_obj_t *line = lv_line_create(parent);
     lv_line_set_points(line, linePoints, pointNum);
@@ -189,19 +202,19 @@ void *GuiCreateDividerLine(lv_obj_t *parent)
     return GuiCreateLine(parent, linePoints, 2);
 }
 
-void GuiSetAngle(void* img, int32_t v)
+void GuiSetAngle(void *img, int32_t v)
 {
     lv_img_set_angle(img, v);
 }
 
-void* GuiCreateCircleAroundAnimation(lv_obj_t *parent, int w)
+void *GuiCreateCircleAroundAnimation(lv_obj_t *parent, int w)
 {
     GuiStopCircleAroundAnimation();
     lv_obj_set_size(parent, 480, 800);
-    g_ringImg = GuiCreateImg(parent, &ring);
+    g_ringImg = GuiCreateImg(parent, &imgRing);
     lv_obj_align(g_ringImg, LV_ALIGN_CENTER, 0, w);
 
-    g_dotImg = GuiCreateImg(parent, &circular);
+    g_dotImg = GuiCreateImg(parent, &imgCircular);
     lv_obj_align(g_dotImg, LV_ALIGN_CENTER, 0, w - 20);
     lv_img_set_pivot(g_dotImg, 5, 25);
 
@@ -238,7 +251,8 @@ void *GuiCreateConfirmSlider(lv_obj_t *parent, lv_event_cb_t cb)
     lv_obj_set_style_bg_opa(bgCont, LV_OPA_10, LV_PART_MAIN);
     lv_obj_set_align(bgCont, LV_ALIGN_CENTER);
     lv_obj_set_style_radius(bgCont, 24, LV_PART_MAIN);
-    lv_obj_t *label = GuiCreateIllustrateLabel(bgCont, _("scan_qr_code_sign_unsigned_content_frame"));
+    lv_obj_t *label = GuiCreateIllustrateLabel(
+                          bgCont, _("scan_qr_code_sign_unsigned_content_frame"));
     lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_opa(label, LV_OPA_30, LV_PART_MAIN);
     lv_obj_set_align(label, LV_ALIGN_CENTER);
@@ -267,23 +281,26 @@ void *GuiCreateTileView(lv_obj_t *parent)
     } else {
         lv_obj_set_style_bg_color(tileView, WHITE_COLOR, LV_PART_MAIN);
     }
-    lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
-    lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(tileView, LV_OPA_0,
+                            LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
+    lv_obj_set_style_bg_opa(tileView, LV_OPA_0,
+                            LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
     lv_obj_clear_flag(tileView, LV_OBJ_FLAG_SCROLLABLE);
     return tileView;
 }
 
 void *GuiCreateAnimView(lv_obj_t *parent, uint16_t animHeight)
 {
-    lv_obj_t *cont = GuiCreateContainerWithParent(parent, 480, 800 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_t *cont =
+        GuiCreateContainerWithParent(parent, 480, 800 - GUI_MAIN_AREA_OFFSET);
     lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_style_border_width(cont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_side(cont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    lv_obj_t *img = GuiCreateImg(cont, &ring);
+    lv_obj_t *img = GuiCreateImg(cont, &imgRing);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, animHeight - 60);
 
-    img = GuiCreateImg(cont, &circular);
+    img = GuiCreateImg(cont, &imgCircular);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, animHeight - 55);
     lv_img_set_pivot(img, 5, 25);
 
@@ -319,7 +336,8 @@ void *GuiCreateArc(lv_obj_t *parent)
 void *GuiCreateSwitch(lv_obj_t *parent)
 {
     lv_obj_t *switchObj = lv_switch_create(parent);
-    lv_obj_set_style_bg_color(switchObj, ORANGE_COLOR, LV_STATE_CHECKED | LV_PART_INDICATOR);
+    lv_obj_set_style_bg_color(switchObj, ORANGE_COLOR,
+                              LV_STATE_CHECKED | LV_PART_INDICATOR);
     lv_obj_set_style_bg_color(switchObj, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(switchObj, LV_OPA_30, LV_PART_MAIN);
 
@@ -328,7 +346,11 @@ void *GuiCreateSwitch(lv_obj_t *parent)
 
 void GuiAlignToPrevObj(lv_obj_t *obj, lv_align_t align, int16_t x, int16_t y)
 {
-    lv_obj_align_to(obj, lv_obj_get_child(lv_obj_get_parent(obj), lv_obj_get_child_cnt(lv_obj_get_parent(obj)) - 2), align, x, y);
+    lv_obj_align_to(
+        obj,
+        lv_obj_get_child(lv_obj_get_parent(obj),
+                         lv_obj_get_child_cnt(lv_obj_get_parent(obj)) - 2),
+        align, x, y);
 }
 
 void GuiAddObjFlag(void *obj, lv_obj_flag_t flag)
@@ -354,7 +376,8 @@ void GuiClearObjFlag(void *obj, lv_obj_flag_t flag)
 
 void *GuiCreateSpacer(void *parent, uint16_t height)
 {
-    lv_obj_t *spacer = GuiCreateContainerWithParent(parent, lv_obj_get_width(parent), height);
+    lv_obj_t *spacer =
+        GuiCreateContainerWithParent(parent, lv_obj_get_width(parent), height);
     lv_obj_set_style_bg_opa(spacer, LV_OPA_0, LV_PART_MAIN);
     return spacer;
 }

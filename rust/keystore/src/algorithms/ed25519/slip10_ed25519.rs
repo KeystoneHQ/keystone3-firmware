@@ -112,6 +112,17 @@ mod tests {
     }
 
     #[test]
+    fn test_keystone_public_key() {
+        let path = "m/44'/1557192335'/0'/0'/0'".to_string();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let key = get_private_key_by_seed(&seed, &path).unwrap();
+        assert_eq!(
+            "a9986894ceaf91d40256157d153c43c64d541287aca102b918a04bea9e388e46",
+            hex::encode(key)
+        );
+    }
+
+    #[test]
     fn test_slip10_ed25519_public_key() {
         {
             let path = "m".to_string();

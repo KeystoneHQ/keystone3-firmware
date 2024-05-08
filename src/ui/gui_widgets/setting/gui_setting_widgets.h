@@ -8,12 +8,9 @@
  * @Path:
  */
 
-
 #ifndef _GUI_SETTING_WIDGETS_H
 #define _GUI_SETTING_WIDGETS_H
 
-#define DEVICE_SETTING_RIGHT_LABEL_MAX_LEN                      16
-#define DEVICE_SETTING_MID_LABEL_MAX_LEN                        32
 #define DEVICE_SETTING_LEVEL_MAX                                8
 
 typedef enum {
@@ -182,4 +179,3 @@ void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount);
 void GuiWalletRecoveryUpdateKeyboard(void);
 
 #endif /* _GUI_SETTING_WIDGETS_H */
-

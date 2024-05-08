@@ -10,17 +10,10 @@
 #include "gui_status_bar.h"
 #include "account_manager.h"
 #include "gui_lock_device_widgets.h"
-
-static int32_t GuiLockViewInit(void *param)
-{
-    GuiLockScreenInit(param);
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiLockViewDeInit(void)
-{
-    return SUCCESS_CODE;
-}
+#include "gui_api.h"
+#include "usb_task.h"
+#include "device_setting.h"
+#include "drv_aw32001.h"
 
 int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
@@ -40,9 +33,10 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiLockViewInit(param);
+        GuiLockScreenInit(param);
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiLockViewDeInit();
+        break;
     case SIG_INIT_SDCARD_CHANGE:
         rcvValue = *(uint32_t *)param;
         GuiStatusBarSetSdCard(!rcvValue);
@@ -58,11 +52,19 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         }
         SetCurrentAccountIndex();
         GuiFpRecognizeResult(true);
+        GuiModeGetWalletDesc();
     case SIG_LOCK_VIEW_SCREEN_ON_PASSPHRASE_PASS:
     case SIG_VERIFY_PASSWORD_PASS:
         GuiLockScreenClearFirstUnlock();
         GuiLockScreenPassCode(true);
         QRCodeControl(false);
+#if (USB_POP_WINDOW_ENABLE == 1)
+        if (*(uint16_t *)param == SIG_LOCK_VIEW_VERIFY_PIN) {
+            if (GetUSBSwitch() == true && GetUsbDetectState()) {
+                GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+            }
+        }
+#endif
         break;
     case SIG_VERIFY_FINGER_FAIL:
         if (GuiLockScreenIsFirstUnlock() || g_lockDeviceView.isActive) {
@@ -99,6 +101,9 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         break;
     case SIG_END_GENERATE_XPUB:
         GuiHideGenerateXPubLoading();
+        break;
+    case GUI_EVENT_CHANGE_LANGUAGE:
+        GuiLockViewRefreshLanguage();
         break;
     default:
         return ERR_GUI_UNHANDLED;

@@ -4,7 +4,9 @@
 #include "lvgl.h"
 
 // img
+LV_IMG_DECLARE(imgReset);
 LV_IMG_DECLARE(imgArrowNext);
+LV_IMG_DECLARE(imgArrowNextRed);
 LV_IMG_DECLARE(imgArrowRight);
 LV_IMG_DECLARE(imgArrowRightO);
 LV_IMG_DECLARE(imgBattery);
@@ -90,6 +92,7 @@ LV_IMG_DECLARE(imgQrcode36px);
 LV_IMG_DECLARE(imgLockDestroy);
 LV_IMG_DECLARE(imgSdCard);
 LV_IMG_DECLARE(imgSdCardL);
+LV_IMG_DECLARE(imgSdCardColor);
 LV_IMG_DECLARE(imgBrightnessLow);
 LV_IMG_DECLARE(imgBrightnessHigh);
 LV_IMG_DECLARE(imgFirmwareUp);
@@ -112,6 +115,24 @@ LV_IMG_DECLARE(imgUpdate);
 LV_IMG_DECLARE(imgReceive);
 LV_IMG_DECLARE(imgDeepLayersVolume11);
 LV_IMG_DECLARE(imgKey);
+LV_IMG_DECLARE(imgAlpha);
+LV_IMG_DECLARE(imgMultiCoin);
+LV_IMG_DECLARE(imgBtcOnly);
+LV_IMG_DECLARE(imgSdFormat);
+LV_IMG_DECLARE(imgTwoKey);
+LV_IMG_DECLARE(imgLockMulti);
+LV_IMG_DECLARE(imgSdcardImport);
+LV_IMG_DECLARE(imgScanImport);
+LV_IMG_DECLARE(imgAdd);
+LV_IMG_DECLARE(imgDefaultWallet);
+LV_IMG_DECLARE(imgWalletExport);
+LV_IMG_DECLARE(imgLockMulti);
+LV_IMG_DECLARE(imgFile);
+LV_IMG_DECLARE(imgTwoSmallKey);
+LV_IMG_DECLARE(imgAddOrange);
+LV_IMG_DECLARE(imgObserve);
+LV_IMG_DECLARE(imgInfoS);
+LV_IMG_DECLARE(imgBeta);
 
 // connect to do refresh
 LV_IMG_DECLARE(circular);
@@ -143,6 +164,7 @@ LV_IMG_DECLARE(emojiMusic);
 LV_IMG_DECLARE(emojiRocket);
 LV_IMG_DECLARE(emojiSafe);
 LV_IMG_DECLARE(emojiStar);
+LV_IMG_DECLARE(emojiCam);
 
 // coin
 LV_IMG_DECLARE(coinApt);
@@ -197,12 +219,18 @@ LV_IMG_DECLARE(coinCosmos);
 LV_IMG_DECLARE(coinCosmosEco);
 LV_IMG_DECLARE(coinTia);
 LV_IMG_DECLARE(coinDym);
+LV_IMG_DECLARE(coinOrdi);
+LV_IMG_DECLARE(coinMubi);
+LV_IMG_DECLARE(coinTrac);
+LV_IMG_DECLARE(coinSats);
 
 // wallet
 LV_IMG_DECLARE(walletKeystone);
 LV_IMG_DECLARE(walletMetamask);
 LV_IMG_DECLARE(walletOkx);
 LV_IMG_DECLARE(walletEternl);
+// LV_IMG_DECLARE(walletYoroi);
+LV_IMG_DECLARE(walletTyphon);
 LV_IMG_DECLARE(walletSubwallet);
 LV_IMG_DECLARE(walletBluewallet);
 LV_IMG_DECLARE(walletSolflare);
@@ -220,7 +248,7 @@ LV_IMG_DECLARE(walletSparrow);
 LV_IMG_DECLARE(walletImToken);
 LV_IMG_DECLARE(walletSpecter);
 LV_IMG_DECLARE(walletNunchuk);
-
+LV_IMG_DECLARE(walletUniSat);
 
 //wallet list
 LV_IMG_DECLARE(walletListKeyStone);
@@ -228,6 +256,8 @@ LV_IMG_DECLARE(walletListMetaMask);
 LV_IMG_DECLARE(walletListOkx);
 LV_IMG_DECLARE(walletListBlue);
 LV_IMG_DECLARE(walletListEternl);
+// LV_IMG_DECLARE(walletListYoroi);
+LV_IMG_DECLARE(walletListTyphon);
 LV_IMG_DECLARE(walletListSub);
 LV_IMG_DECLARE(walletListSolfare);
 LV_IMG_DECLARE(walletListRabby);
@@ -242,6 +272,7 @@ LV_IMG_DECLARE(walletListPetra);
 LV_IMG_DECLARE(walletListXRPToolkit);
 LV_IMG_DECLARE(walletListSparrow);
 LV_IMG_DECLARE(walletListImToken);
+LV_IMG_DECLARE(walletListUniSat);
 
 LV_IMG_DECLARE(btcWalletListBlue);
 LV_IMG_DECLARE(btcWalletListSpecter);
@@ -251,18 +282,22 @@ LV_IMG_DECLARE(btcWalletListNunchuk);
 // font
 LV_FONT_DECLARE(openSans_20);
 LV_FONT_DECLARE(openSans_24);
-LV_FONT_DECLARE(openSansButton);
+LV_FONT_DECLARE(buttonFont);
 LV_FONT_DECLARE(openSansDesc);
-LV_FONT_DECLARE(openSansLanguage);
-LV_FONT_DECLARE(openSansCnTitle);
-LV_FONT_DECLARE(openSansCnLittleTitle);
-LV_FONT_DECLARE(openSansCnText);
-LV_FONT_DECLARE(openSansCnIllustrate);
-LV_FONT_DECLARE(openSansCnBoldIllustrate);
+LV_FONT_DECLARE(cnTitle);
+LV_FONT_DECLARE(cnLittleTitle);
+LV_FONT_DECLARE(cnText);
+LV_FONT_DECLARE(cnIllustrate);
 LV_FONT_DECLARE(openSansEnTitle);
 LV_FONT_DECLARE(openSansEnLittleTitle);
 LV_FONT_DECLARE(openSansEnText);
 LV_FONT_DECLARE(openSansEnIllustrate);
-LV_FONT_DECLARE(openSansEnBoldIllustrate);
+LV_FONT_DECLARE(ruTitle);
+LV_FONT_DECLARE(ruLittleTitle);
+LV_FONT_DECLARE(ruText);
+LV_FONT_DECLARE(ruIllustrate);
+LV_FONT_DECLARE(koTitle);
+LV_FONT_DECLARE(koLittleTitle);
+LV_FONT_DECLARE(koText);
+LV_FONT_DECLARE(koIllustrate);
 #endif /* _GUI_RESOURCE_H */
-

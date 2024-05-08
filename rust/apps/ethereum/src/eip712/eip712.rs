@@ -1,4 +1,5 @@
 use super::human_readable::lexer::HumanReadableParser;
+use super::serde_helpers::deserialize_salt_opt;
 use super::serde_helpers::deserialize_stringified_array_opt;
 use super::serde_helpers::deserialize_stringified_numeric_opt;
 use super::serde_helpers::StringifiedNumeric;
@@ -19,6 +20,7 @@ use alloc::string::ToString;
 use alloc::vec;
 use alloc::vec::Vec;
 use core::iter::FromIterator;
+use core::str::FromStr;
 use serde::{Deserialize, Deserializer, Serialize};
 
 use third_party::hex;
@@ -72,8 +74,8 @@ pub trait Eip712 {
     type Error: core::error::Error + Send + Sync + alloc::fmt::Debug;
 
     /// Default implementation of the domain separator;
-    fn domain_separator(&self) -> Result<[u8; 32], Self::Error> {
-        Ok(self.domain()?.separator())
+    fn domain_separator(&self, types: Option<&Types>) -> Result<[u8; 32], Self::Error> {
+        Ok(self.domain()?.separator(types))
     }
 
     /// Returns the current domain. The domain depends on the contract and unique domain
@@ -98,7 +100,7 @@ pub trait Eip712 {
         // encode the digest to be compatible with solidity abi.encodePacked()
         // See: https://github.com/gakonst/ethers-rs/blob/master/examples/permit_hash.rs#L72
 
-        let domain_separator = self.domain_separator()?;
+        let domain_separator = self.domain_separator(None)?;
         let struct_hash = self.struct_hash()?;
 
         let digest_input = [&[0x19, 0x01], &domain_separator[..], &struct_hash[..]].concat();
@@ -135,14 +137,14 @@ pub struct EIP712Domain {
 
     /// The address of the contract that will verify the signature.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub verifying_contract: Option<Address>,
+    pub verifying_contract: Option<String>,
 
     /// A disambiguating salt for the protocol. This can be used as a domain separator of last
     /// resort.
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
-        deserialize_with = "deserialize_stringified_array_opt"
+        deserialize_with = "deserialize_salt_opt"
     )]
     pub salt: Option<[u8; 32]>,
 }
@@ -150,54 +152,78 @@ pub struct EIP712Domain {
 impl EIP712Domain {
     // Compute the domain separator;
     // See: https://github.com/gakonst/ethers-rs/blob/master/examples/permit_hash.rs#L41
-    pub fn separator(&self) -> [u8; 32] {
+    pub fn separator(&self, types: Option<&Types>) -> [u8; 32] {
         // full name is `EIP712Domain(string name,string version,uint256 chainId,address
         // verifyingContract,bytes32 salt)`
         let mut ty = "EIP712Domain(".to_string();
-
         let mut tokens = Vec::new();
         let mut needs_comma = false;
-        if let Some(ref name) = self.name {
-            ty += "string name";
-            tokens.push(Token::Uint(U256::from(keccak256(name.as_ref()))));
-            needs_comma = true;
-        }
+        // depends on the order of the fields in the types
+        if let Some(types) = types {
+            if let Some(fields) = types.get("EIP712Domain") {
+                for field in fields {
+                    // add the field to the type string in the field order
+                    match field.r#name.as_str() {
+                        "name" => {
+                            if needs_comma {
+                                ty.push(',');
+                            }
+                            ty += format!("{} name", field.r#type.clone()).as_str();
+                            let name = self.name.as_ref().unwrap();
+                            tokens.push(Token::Uint(U256::from(keccak256(name.as_ref()))));
+                            needs_comma = true;
+                        }
+                        "version" => {
+                            if needs_comma {
+                                ty.push(',');
+                            }
+                            ty += format!("{} version", field.r#type.clone()).as_str();
+                            let version = self.version.as_ref().unwrap();
+                            tokens.push(Token::Uint(U256::from(keccak256(version.as_ref()))));
+                            needs_comma = true;
+                        }
+                        "chainId" => {
+                            if needs_comma {
+                                ty.push(',');
+                            }
+                            ty += format!("{} chainId", field.r#type.clone()).as_str();
+                            let chain_id = self.chain_id.unwrap();
+                            tokens.push(Token::Uint(chain_id));
+                            needs_comma = true;
+                        }
+                        "verifyingContract" => {
+                            if needs_comma {
+                                ty.push(',');
+                            }
+                            let addr_str = "address".to_string();
+                            let t = field.r#type.clone();
+                            ty += format!("{} verifyingContract", t).as_str();
+                            let verifying_contract = self.verifying_contract.as_ref().unwrap();
+                            if (t == "address") {
+                                tokens.push(Token::Address(
+                                    Address::from_str(verifying_contract.as_str())
+                                        .unwrap_or_default(),
+                                ));
+                            } else {
+                                tokens.push(Token::Uint(U256::from(keccak256(
+                                    verifying_contract.as_ref(),
+                                ))));
+                            }
+                            needs_comma = true;
+                        }
+                        "salt" => {
+                            if needs_comma {
+                                ty.push(',');
+                            }
+                            ty += format!("{} salt", field.r#type.clone()).as_str();
+                            tokens.push(Token::Uint(U256::from(self.salt.unwrap())));
+                        }
 
-        if let Some(ref version) = self.version {
-            if needs_comma {
-                ty.push(',');
+                        _ => {}
+                    }
+                }
             }
-            ty += "string version";
-            tokens.push(Token::Uint(U256::from(keccak256(version.as_ref()))));
-            needs_comma = true;
         }
-
-        if let Some(chain_id) = self.chain_id {
-            if needs_comma {
-                ty.push(',');
-            }
-            ty += "uint256 chainId";
-            tokens.push(Token::Uint(chain_id));
-            needs_comma = true;
-        }
-
-        if let Some(verifying_contract) = self.verifying_contract {
-            if needs_comma {
-                ty.push(',');
-            }
-            ty += "address verifyingContract";
-            tokens.push(Token::Address(verifying_contract));
-            needs_comma = true;
-        }
-
-        if let Some(salt) = self.salt {
-            if needs_comma {
-                ty.push(',');
-            }
-            ty += "bytes32 salt";
-            tokens.push(Token::Uint(U256::from(salt)));
-        }
-
         ty.push(')');
 
         tokens.insert(0, Token::Uint(U256::from(keccak256(ty.as_ref()))));
@@ -315,9 +341,14 @@ impl Into<StructTypedDta> for TypedData {
                 .chain_id
                 .map_or("".to_string(), |v| v.to_string()),
             verifying_contract: self.domain.verifying_contract.map_or("".to_string(), |v| {
-                let mut s = String::from("0x");
-                s.push_str(&hex::encode(v.0));
-                s
+                match Address::from_str(&v) {
+                    Ok(address) => {
+                        let mut s = String::from("0x");
+                        s.push_str(&hex::encode(address.0));
+                        s
+                    }
+                    Err(_) => v,
+                }
             }),
             salt: self.domain.salt.map_or("".to_string(), |v| {
                 let mut s = String::from("0x");
@@ -416,7 +447,7 @@ impl Eip712 for TypedData {
     /// prefix, which is "1901", followed by the hash of the domain separator, then the data (if
     /// any). The result is hashed again and returned.
     fn encode_eip712(&self) -> Result<[u8; 32], Self::Error> {
-        let domain_separator = self.domain.separator();
+        let domain_separator = self.domain.separator(Some(&self.types));
         let mut digest_input = [&[0x19, 0x01], &domain_separator[..]].concat().to_vec();
 
         if self.primary_type != "EIP712Domain" {
@@ -594,7 +625,6 @@ pub fn encode_field(
                     let param = HumanReadableParser::parse_type(s).map_err(|err| {
                         Eip712Error::Message(format!("Failed to parse type {s}: {err}",))
                     })?;
-
                     match param {
                         ParamType::Address => {
                             Token::Address(serde_json::from_value(value.clone()).map_err(
@@ -609,9 +639,15 @@ pub fn encode_field(
                             encode_eip712_type(Token::Bytes(data.0.to_vec()))
                         }
                         ParamType::Int(_) => {
-                            Token::Uint(serde_json::from_value(value.clone()).map_err(|err| {
-                                Eip712Error::Message(format!("serde_json::from_value {err}"))
-                            })?)
+                            // int to be stringified, and then coverted stringfied num to U256
+                            let val: StringifiedNumeric = serde_json::from_value(value.clone())
+                                .map_err(|err| {
+                                    Eip712Error::Message(format!("serde_json::from_value {err}"))
+                                })?;
+                            let val: U256 = val.try_into().map_err(|err| {
+                                Eip712Error::Message(format!("Failed to parse int {err}"))
+                            })?;
+                            Token::Uint(val)
                         }
                         ParamType::Uint(_) => {
                             // uints are commonly stringified due to how ethers-js encodes
@@ -770,7 +806,7 @@ mod tests {
         let typed_data: TypedData = serde_json::from_value(json).unwrap();
         let hash = typed_data.encode_eip712().unwrap();
         assert_eq!(
-            "54ffed5209a17ac210ef3823740b3852ee9cd518b84ee39f0a3fa7f2f9b4205b",
+            "7529a15e7b8fd752f395945d3e61458ba0d8734766dc4a1d99ac727061ff758c",
             hex::encode(&hash[..])
         );
     }
@@ -847,6 +883,67 @@ mod tests {
         let hash = typed_data.encode_eip712().unwrap();
         assert_eq!(
             "232cd3ec058eb935a709f093e3536ce26cc9e8e193584b0881992525f6236eef",
+            hex::encode(&hash[..])
+        );
+    }
+
+    #[test]
+    fn test_hash_no_standard_typed_message_with_data() {
+        let json = serde_json::json!( {
+          "types": {
+            "EIP712Domain": [
+              {
+                "name": "version",
+                "type": "string"
+              },
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "chainId",
+                "type": "uint256"
+              },
+              {
+                "name": "verifyingContract",
+                "type": "address"
+              }
+            ],
+            "Message": [
+              {
+                "name": "data",
+                "type": "string"
+              }
+            ]
+          },
+          "primaryType": "Message",
+          "domain": {
+            "name": "example.metamask.io",
+            "version": "1",
+            "chainId": "1",
+            "verifyingContract": "0x0000000000000000000000000000000000000000"
+          },
+          "message": {
+            "data": "Hello!"
+          }
+        });
+
+        let typed_data: TypedData = serde_json::from_value(json).unwrap();
+        let hash = typed_data.encode_eip712().unwrap();
+        assert_eq!(
+            "b88c7d69a075615bb1a29e38d4b3be4ed4ca51471aaa72918f6da232cd845d19",
+            hex::encode(&hash[..])
+        );
+    }
+
+    #[test]
+    fn test_hash_no_standard_typed_message_with_data2() {
+        let json = serde_json::json!( {"types":{"EIP712Domain":[{"name":"chainId","type":"uint256"},{"name":"name","type":"string"},{"name":"verifyingContract","type":"address"},{"name":"version","type":"string"}],"Action":[{"name":"action","type":"string"},{"name":"params","type":"string"}],"Cell":[{"name":"capacity","type":"string"},{"name":"lock","type":"string"},{"name":"type","type":"string"},{"name":"data","type":"string"},{"name":"extraData","type":"string"}],"Transaction":[{"name":"DAS_MESSAGE","type":"string"},{"name":"inputsCapacity","type":"string"},{"name":"outputsCapacity","type":"string"},{"name":"fee","type":"string"},{"name":"action","type":"Action"},{"name":"inputs","type":"Cell[]"},{"name":"outputs","type":"Cell[]"},{"name":"digest","type":"bytes32"}]},"primaryType":"Transaction","domain":{"chainId":1,"name":"da.systems","verifyingContract":"0x0000000000000000000000000000000020210722","version":"1"},"message":{"DAS_MESSAGE":"TRANSFER FROM 0x54366bcd1e73baf55449377bd23123274803236e(906.74221046 CKB) TO ckt1qyqvsej8jggu4hmr45g4h8d9pfkpd0fayfksz44t9q(764.13228446 CKB), 0x54366bcd1e73baf55449377bd23123274803236e(142.609826 CKB)","inputsCapacity":"906.74221046 CKB","outputsCapacity":"906.74211046 CKB","fee":"0.0001 CKB","digest":"0x29cd28dbeb470adb17548563ceb4988953fec7b499e716c16381e5ae4b04021f","action":{"action":"transfer","params":"0x00"},"inputs":[],"outputs":[]}}
+        );
+        let typed_data: TypedData = serde_json::from_value(json).unwrap();
+        let hash = typed_data.encode_eip712().unwrap();
+        assert_eq!(
+            "9f1a1bc718e966d683c544aef6fd0b73c85a1d6244af9b64bb8f4a6fa6716086",
             hex::encode(&hash[..])
         );
     }
@@ -1052,5 +1149,148 @@ mod tests {
             "0b8aa9f3712df0034bc29fe5b24dd88cfdba02c7f499856ab24632e2969709a8",
             hex::encode(&hash[..])
         );
+    }
+
+    #[test]
+    fn test_hash_nested_struct() {
+        let json = serde_json::json!({
+
+            "domain": {
+                "chainId": 1100,
+                "name": "Cosmos Web3",
+                "salt": "0",
+                "verifyingContract": "cosmos",
+                "version": "1.0.0"
+            },
+            "message": {
+                "account_number": "855752",
+                "chain_id": "dymension_1100-1",
+                "fee": {
+                    "amount": [
+                        {
+                            "amount": "2527440000000000",
+                            "denom": "adym"
+                        }
+                    ],
+                    "feePayer": "dym1g65rdfk4sqxa82u6dwg5eyzwlqqhkjxggf4u0y",
+                    "gas": "126372"
+                },
+                "memo": "",
+                "msgs": [
+                    {
+                        "type": "cosmos-sdk/MsgVote",
+                        "value": {
+                            "option": 3,
+                            "proposal_id": 12,
+                            "voter": "dym1g65rdfk4sqxa82u6dwg5eyzwlqqhkjxggf4u0y"
+                        }
+                    }
+                ],
+                "sequence": "4"
+            },
+            "primaryType": "Tx",
+            "types": {
+                "Coin": [
+                    {
+                        "name": "denom",
+                        "type": "string"
+                    },
+                    {
+                        "name": "amount",
+                        "type": "string"
+                    }
+                ],
+                "EIP712Domain": [
+                    {
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "name": "version",
+                        "type": "string"
+                    },
+                    {
+                        "name": "chainId",
+                        "type": "uint256"
+                    },
+                    {
+                        "name": "verifyingContract",
+                        "type": "string"
+                    },
+                    {
+                        "name": "salt",
+                        "type": "string"
+                    }
+                ],
+                "Fee": [
+                    {
+                        "name": "feePayer",
+                        "type": "string"
+                    },
+                    {
+                        "name": "amount",
+                        "type": "Coin[]"
+                    },
+                    {
+                        "name": "gas",
+                        "type": "string"
+                    }
+                ],
+                "Msg": [
+                    {
+                        "name": "type",
+                        "type": "string"
+                    },
+                    {
+                        "name": "value",
+                        "type": "MsgValue"
+                    }
+                ],
+                "MsgValue": [
+                    {
+                        "name": "proposal_id",
+                        "type": "uint64"
+                    },
+                    {
+                        "name": "voter",
+                        "type": "string"
+                    },
+                    {
+                        "name": "option",
+                        "type": "int32"
+                    }
+                ],
+                "Tx": [
+                    {
+                        "name": "account_number",
+                        "type": "string"
+                    },
+                    {
+                        "name": "chain_id",
+                        "type": "string"
+                    },
+                    {
+                        "name": "fee",
+                        "type": "Fee"
+                    },
+                    {
+                        "name": "memo",
+                        "type": "string"
+                    },
+                    {
+                        "name": "msgs",
+                        "type": "Msg[]"
+                    },
+                    {
+                        "name": "sequence",
+                        "type": "string"
+                    }
+                ]
+            }
+        });
+
+        let typed_data: TypedData = serde_json::from_value(json).unwrap();
+        let hash = typed_data.encode_eip712().unwrap();
+        // println!("hash: {:?}", hex::encode(&hash[..]));
     }
 }

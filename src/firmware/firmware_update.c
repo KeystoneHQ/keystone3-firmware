@@ -32,7 +32,6 @@
 LV_FONT_DECLARE(openSans_20);
 LV_FONT_DECLARE(openSans_24);
 
-
 #define FILE_MARK_MCU_FIRMWARE              "~update!"
 
 #define FILE_UNIT_SIZE                      0x4000
@@ -42,7 +41,8 @@ LV_FONT_DECLARE(openSans_24);
 
 #define UPDATE_PUB_KEY_LEN                  64
 
-static int32_t GetIntValue(const cJSON *obj, const char *key);
+#define MAX_OTA_HEAD_SIZE                   0x100000
+
 static uint32_t GetOtaFileInfo(OtaFileInfo_t *info, const char *filePath);
 static int32_t CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t *pHeadSize);
 static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32_t headSize, char *version);
@@ -116,7 +116,6 @@ int32_t GetSoftwareVersionFormData(uint32_t *major, uint32_t *minor, uint32_t *b
     return succ ? 0 : -1;
 }
 
-
 /// @brief
 /// @param info
 /// @param filePath
@@ -125,41 +124,43 @@ static uint32_t GetOtaFileInfo(OtaFileInfo_t *info, const char *filePath)
 {
     FIL fp;
     int32_t ret;
-    uint32_t headSize = 0, readSize;
-    char *headJsonStr = NULL;
+    uint32_t headSize = 0, readSize, fileSize;
+    char *headData = NULL;
     cJSON *jsonRoot;
-
+    
     ret = f_open(&fp, filePath, FA_OPEN_EXISTING | FA_READ);
     do {
         if (ret) {
             FatfsError((FRESULT)ret);
             break;
         }
+        fileSize = f_size(&fp);
         ret = f_read(&fp, &headSize, 4, (UINT *)&readSize);
         if (ret) {
             FatfsError((FRESULT)ret);
             break;
         }
-        printf("headSize=%d\r\n", headSize);
-        headJsonStr = SRAM_MALLOC(headSize + 1);
-        if (headJsonStr == NULL) {
-            printf("malloc err\r\n");
+        if (headSize > MAX_OTA_HEAD_SIZE) {
+            printf("headSize>MAX,%d,%d\n", headSize, MAX_OTA_HEAD_SIZE);
+            headSize = 0;
             break;
         }
-        ret = f_read(&fp, headJsonStr, headSize, (UINT *)&readSize);
+        if (headSize > fileSize - 4) {
+            printf("headSize>fileSize-4,%d,%d\n", headSize, fileSize);
+            headSize = 0;
+            break;
+        }
+        headData = SRAM_MALLOC(headSize + 2);
+        ret = f_read(&fp, headData, headSize + 1, (UINT *)&readSize);
         if (ret) {
+            headSize = 0;
             FatfsError((FRESULT)ret);
             break;
         }
-        if (readSize != headSize) {
-            printf("read err,readSize=%d,headSize=%d\r\n", readSize, headSize);
-            break;
-        }
-        headJsonStr[headSize] = '\0';
-        printf("headJsonStr=%s\r\n", headJsonStr);
-        jsonRoot = cJSON_Parse(headJsonStr);
-        if (jsonRoot == NULL) {
-            printf("parse error:%s\n", cJSON_GetErrorPtr());
+        headData[headSize + 1] = 0;
+        if (strlen(headData) != headSize) {
+            printf("head err,str len=%d,headSize=%d\n", strlen(headData), headSize);
+            headSize = 0;
             break;
         }
         cJSON *json = cJSON_GetObjectItem(jsonRoot, "mark");
@@ -192,6 +193,9 @@ static uint32_t GetOtaFileInfo(OtaFileInfo_t *info, const char *filePath)
         SRAM_FREE(headJsonStr);
     }
     f_close(&fp);
+    if (headData != NULL) {
+        SRAM_FREE(headData);
+    }
     return headSize + 5;    //4 byte uint32 and 1 byte json string '\0' end.
 }
 
@@ -373,17 +377,6 @@ static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32
     SRAM_FREE(g_dataUnit);
     SRAM_FREE(g_fileUnit);
     return true;
-}
-
-
-static int32_t GetIntValue(const cJSON *obj, const char *key)
-{
-    cJSON *intJson = cJSON_GetObjectItem((cJSON *)obj, key);
-    if (intJson != NULL) {
-        return (uint32_t)intJson->valuedouble;
-    }
-    printf("key:%s does not exist\r\n", key);
-    return 0;
 }
 
 static void GetSignatureValue(const cJSON *obj, char *output, uint32_t maxLength)

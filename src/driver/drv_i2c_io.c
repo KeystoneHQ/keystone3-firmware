@@ -5,7 +5,6 @@
 #include "user_delay.h"
 #include "cmsis_os.h"
 
-
 static void I2CIO_Start(const I2CIO_Cfg_t *cfg);
 static void I2CIO_Stop(const I2CIO_Cfg_t *cfg);
 static bool I2CIO_WaitAck(const I2CIO_Cfg_t *cfg);
@@ -15,8 +14,6 @@ static void I2CIO_SendAck(const I2CIO_Cfg_t *cfg);
 static void I2CIO_WriteByte(const I2CIO_Cfg_t *cfg, uint8_t byte);
 static uint8_t I2CIO_ReadByte(const I2CIO_Cfg_t *cfg);
 static void I2CIO_Delay(uint32_t tick);
-
-
 
 static void I2CIO_Start(const I2CIO_Cfg_t *cfg)
 {
@@ -28,7 +25,6 @@ static void I2CIO_Start(const I2CIO_Cfg_t *cfg)
     GPIO_ResetBits(cfg->SCL_PORT, cfg->SCL_PIN);
 }
 
-
 static void I2CIO_Stop(const I2CIO_Cfg_t *cfg)
 {
     GPIO_ResetBits(cfg->SDA_PORT, cfg->SDA_PIN);
@@ -39,7 +35,6 @@ static void I2CIO_Stop(const I2CIO_Cfg_t *cfg)
     GPIO_SetBits(cfg->SDA_PORT, cfg->SDA_PIN);
     I2CIO_Delay(100);
 }
-
 
 static bool I2CIO_WaitAck(const I2CIO_Cfg_t *cfg)
 {
@@ -63,7 +58,6 @@ static bool I2CIO_WaitAck(const I2CIO_Cfg_t *cfg)
     return true;
 }
 
-
 static void I2CIO_SendNoAck(const I2CIO_Cfg_t *cfg)
 {
     GPIO_SetBits(cfg->SDA_PORT, cfg->SDA_PIN);
@@ -73,7 +67,6 @@ static void I2CIO_SendNoAck(const I2CIO_Cfg_t *cfg)
     GPIO_ResetBits(cfg->SCL_PORT, cfg->SCL_PIN);
 }
 
-
 static void I2CIO_SendAck(const I2CIO_Cfg_t *cfg)
 {
     GPIO_ResetBits(cfg->SDA_PORT, cfg->SDA_PIN);
@@ -82,7 +75,6 @@ static void I2CIO_SendAck(const I2CIO_Cfg_t *cfg)
     I2CIO_Delay(100);
     GPIO_ResetBits(cfg->SCL_PORT, cfg->SCL_PIN);
 }
-
 
 static void I2CIO_WriteByte(const I2CIO_Cfg_t *cfg, uint8_t byte)
 {
@@ -103,7 +95,6 @@ static void I2CIO_WriteByte(const I2CIO_Cfg_t *cfg, uint8_t byte)
     }
     GPIO_ResetBits(cfg->SCL_PORT, cfg->SCL_PIN);
 }
-
 
 static uint8_t I2CIO_ReadByte(const I2CIO_Cfg_t *cfg)
 {
@@ -126,7 +117,6 @@ static uint8_t I2CIO_ReadByte(const I2CIO_Cfg_t *cfg)
     return readValue;
 }
 
-
 static void I2CIO_Delay(uint32_t tick)
 {
     tick *= 2;
@@ -135,7 +125,6 @@ static void I2CIO_Delay(uint32_t tick)
         PretendDoingSomething(tick);
     }
 }
-
 
 /// @brief I2C implemented by GPIO, Init.
 /// @param[out] cfg I2C config struct, will be used later.
@@ -166,7 +155,6 @@ void I2CIO_Init(I2CIO_Cfg_t *cfg, GPIO_TypeDef *SCL_Port, uint16_t SCL_Pin, GPIO
     GPIO_SetBits(cfg->SCL_PORT, cfg->SCL_PIN);
 }
 
-
 /// @brief Send data to I2C device.
 /// @param[in] cfg I2C config struct.
 /// @param[in] addr Device I2C address.
@@ -195,7 +183,6 @@ int32_t I2CIO_SendData(const I2CIO_Cfg_t *cfg, uint8_t addr, const uint8_t *data
     osKernelUnlock();
     return SUCCESS_CODE;
 }
-
 
 /// @brief Receive data from I2C device.
 /// @param[in] cfg I2C config struct.
@@ -227,7 +214,6 @@ int32_t I2CIO_ReceiveData(const I2CIO_Cfg_t *cfg, uint8_t addr, uint8_t *data, u
     //PrintArray("i2c io rcv data", data, len);
     return SUCCESS_CODE;
 }
-
 
 /// @brief Search devices from I2C.
 /// @param[in] cfg I2C config struct.

@@ -4,6 +4,7 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
 {
     switch (ViewTypeReMap(viewType)) {
     case REMAPVIEW_BTC:
+    case REMAPVIEW_BTC_MESSAGE:
         return GuiGetPsbtCheckResult();
 #ifndef BTC_ONLY
     case REMAPVIEW_ETH:
@@ -38,6 +39,7 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     case BtcSegwitTx:
     case BtcLegacyTx:
     case BtcTx:
+    case BtcMsg:
         return CHAIN_BTC;
 #ifndef BTC_ONLY
     case LtcTx:
@@ -76,7 +78,7 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
 #ifndef BTC_ONLY
 bool IsMessageType(uint8_t type)
 {
-    return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type);
+    return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type) || type == BtcMsg;
 }
 #endif
 
@@ -88,6 +90,7 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
     case BtcSegwitTx:
     case BtcLegacyTx:
     case BtcTx:
+    case BtcMsg:
 #ifndef BTC_ONLY
     case LtcTx:
     case DashTx:

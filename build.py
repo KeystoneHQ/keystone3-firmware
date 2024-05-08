@@ -6,7 +6,6 @@ import platform
 import subprocess
 import argparse
 import os
-from scripts.read_feature_toggle import read_feature_toggle_build_cmd
 
 source_path = os.path.dirname(os.path.abspath(__file__))
 build_dir = "build"
@@ -36,8 +35,10 @@ def build_firmware(environment, options, bin_type):
         cmd = 'cmake -G "Unix Makefiles" .. -DLIB_RUST_C=ON'
     if is_release:
         cmd += ' -DBUILD_PRODUCTION=true'
+        cmd += ' -DRU_SUPPORT=true'
     if is_btc_only:
         cmd += ' -DBTC_ONLY=true'
+
 
     for option in options:
         if option == "screenshot":
@@ -48,7 +49,7 @@ def build_firmware(environment, options, bin_type):
             cmd += ' -DCMAKE_BUILD_TYPE=Simulator'
         # add more option here.
 
-    cmd += read_feature_toggle_build_cmd()
+    cmd += " -DRU_SUPPORT=true"
 
     cmd_result = os.system(cmd)
     if cmd_result != 0:

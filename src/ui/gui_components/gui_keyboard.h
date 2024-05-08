@@ -37,6 +37,7 @@ typedef struct {
 typedef enum {
     NUM_KEYBOARD_PIN = 0,
     NUM_KEYBOARD_SLICE,
+    NUM_KEYBOARD_MULTISIG,
     NUM_KEYBOARD_NORMAL,
 
     NUM_KEYBOARD_BUTT,

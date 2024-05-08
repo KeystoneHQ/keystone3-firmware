@@ -28,8 +28,7 @@
 
 static int32_t GuiInitViewInit(void)
 {
-    LanguageInit();
-    GuiEnterPassLabelInit();
+    GuiEnterPassLabelRefresh();
     GuiStyleInit();
     GuiStatusBarInit();
     GlobalResourcesInit();

@@ -19,7 +19,6 @@
 #define LOCK_SCREEN_TICK                                    1000
 #define LOCK_SCREEN_TIME_OUT                                60 * 1000
 
-
 static void ShortPressHandler(void);
 static void ReleaseHandler(void);
 static void LockScreen(void);
@@ -74,7 +73,6 @@ bool IsPreviousLockScreenEnable(void)
     return g_lockScreenEnable;
 }
 
-
 void ClearLockScreenTime(void)
 {
     g_lockScreenTick = 0;
@@ -96,16 +94,19 @@ static void ShortPressHandler(void)
 
 }
 
-
 static void ReleaseHandler(void)
 {
     LockScreen();
 }
 
-
 static void LockScreen(void)
 {
     if (GetLowPowerState() == LOW_POWER_STATE_DEEP_SLEEP) {
+        RecoverFromLowPower();
+        printf("g_lockScreenTick = %d..\n", g_lockScreenTick);
+        ClearLockScreenTime();
+        ClearShutdownTime();
+        printf("recovery from low power\n");
         return;
     }
 
@@ -144,6 +145,7 @@ static void LockScreen(void)
         GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_CLEAR_ALL_TOP, NULL, 0);
     }
 
+
     if (!FpModuleIsExist()) {
         uint32_t wakeUpCount = EnterLowPower();
         RecoverFromLowPower();
@@ -153,7 +155,6 @@ static void LockScreen(void)
     }
 }
 
-
 static void LockScreenTimerFunc(void *argument)
 {
     g_lockScreenTick += LOCK_SCREEN_TICK;
@@ -161,4 +162,3 @@ static void LockScreenTimerFunc(void *argument)
         LockScreen();
     }
 }
-

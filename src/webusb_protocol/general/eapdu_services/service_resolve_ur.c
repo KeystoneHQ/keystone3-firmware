@@ -35,6 +35,7 @@ static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t reque
     payload->requestID = requestID;
 
     SendEApduResponse(payload);
+    EXT_FREE(json_str);
 
     g_requestID = REQUEST_ID_IDLE;
     SRAM_FREE(payload);

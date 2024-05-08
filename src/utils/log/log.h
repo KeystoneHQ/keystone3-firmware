@@ -18,13 +18,11 @@ enum {
     ERROR_LOG_EXPORT_ERROR,
 };
 
-
 void WriteLogEvent(uint32_t event);
 void WriteLogValue(uint32_t event, uint32_t value);
 void WriteLogFormat(uint32_t event, const char *format, ...);
 void LogExport(void);
 void LogErase(void);
-
 
 void LogInit(void);
 void WriteLogDataToFlash(const void *data, uint32_t length);
@@ -35,4 +33,3 @@ void LogTest(int argc, char *argv[]);
 void LogSetLogName(char *name);
 
 #endif
-

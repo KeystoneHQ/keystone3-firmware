@@ -23,6 +23,9 @@ void StopQrDecode(void);
 void QrDecodeTouchQuit(void);
 void ProcessQr(uint32_t count);
 void HandleDefaultViewType(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi);
+#ifdef COMPILE_SIMULATOR
+void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi);
+#endif
 
 #endif
 

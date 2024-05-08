@@ -32,6 +32,7 @@ static QRHardwareCallData *g_callData;
 static Response_QRHardwareCallData *g_response;
 static WALLET_LIST_INDEX_ENUM g_walletIndex;
 static lv_obj_t *g_openMoreHintBox;
+static void RecalcCurrentWalletIndex(char *origin);
 
 static void GuiCreateApproveWidget(lv_obj_t *parent);
 static void GuiCreateQRCodeWidget(lv_obj_t *parent);
@@ -67,15 +68,25 @@ void FreeKeyDerivationRequestMemory(void)
 #endif
 }
 
+static void RecalcCurrentWalletIndex(char *origin)
+{
+#ifndef COMPILE_SIMULATOR
+    if (strcmp("eternl", origin) == 0) {
+        g_walletIndex = WALLET_LIST_ETERNL;
+    } else if (strcmp("Typhon Extension", origin) == 0) {
+        g_walletIndex = WALLET_LIST_TYPHON;
+    } else {
+        g_walletIndex = WALLET_LIST_ETERNL;
+    }
+#endif
+}
+
 void GuiKeyDerivationRequestInit()
 {
-    g_walletIndex = WALLET_LIST_ETERNL;
     GUI_PAGE_DEL(g_keyDerivationTileView.pageWidget);
     g_keyDerivationTileView.pageWidget = CreatePageWidget();
     g_keyDerivationTileView.cont = g_keyDerivationTileView.pageWidget->contentZone;
     SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    SetWallet(g_keyDerivationTileView.pageWidget->navBarWidget, WALLET_LIST_ETERNL, NULL);
-    SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
     lv_obj_t *tileView = lv_tileview_create(g_keyDerivationTileView.cont);
     lv_obj_clear_flag(tileView, LV_OBJ_FLAG_SCROLLABLE);
     if (GuiDarkMode()) {
@@ -87,6 +98,9 @@ void GuiKeyDerivationRequestInit()
     lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, TILE_APPROVE, 0, LV_DIR_HOR);
     GuiCreateApproveWidget(tile);
+    RecalcCurrentWalletIndex(g_response->data->origin);
+    SetWallet(g_keyDerivationTileView.pageWidget->navBarWidget, g_walletIndex, NULL);
+    SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
 
     tile = lv_tileview_add_tile(tileView, TILE_QRCODE, 0, LV_DIR_HOR);
     GuiCreateQRCodeWidget(tile);
@@ -236,10 +250,9 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
     lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 36, 8);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
 
-
     label = GuiCreateIllustrateLabel(cont, _("connect_wallet_key_request_fmt"));
     lv_label_set_text_fmt(label, _("connect_wallet_key_request_fmt"), g_response->data->origin);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 0);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
 
     pathCont = GuiCreateContainerWithParent(cont, 408, 450);
     lv_obj_align(pathCont, LV_ALIGN_TOP_LEFT, 0, 92);
@@ -257,7 +270,7 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
         lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 0, 102 * i);
         lv_obj_set_style_bg_opa(cont, LV_OPA_0, LV_PART_MAIN);
         char title[BUFFER_SIZE_32] = {0};
-        snprintf_s(title, BUFFER_SIZE_32, "Account-%d", i);
+        sprintf(title, "%s-%d", _("account_head"), i);
         label = GuiCreateIllustrateLabel(cont, title);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
         char path[BUFFER_SIZE_64] = {0};
@@ -273,14 +286,14 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
     cont = GuiCreateContainerWithParent(parent, 480, 114);
     lv_obj_align(cont, LV_ALIGN_BOTTOM_LEFT, 0, 0);
 
-    btn = GuiCreateBtn(cont, _("Cancel"));
+    btn = GuiCreateTextBtn(cont, _("Cancel"));
     lv_obj_set_size(btn, 192, 66);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 36, 24);
     lv_obj_add_event_cb(btn, CloseCurrentViewHandler, LV_EVENT_CLICKED, NULL);
 
-    btn = GuiCreateBtn(cont, _("Approve"));
+    btn = GuiCreateTextBtn(cont, _("Approve"));
     lv_obj_set_size(btn, 192, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 252, 24);
     lv_obj_add_event_cb(btn, OnApproveHandler, LV_EVENT_CLICKED, NULL);
@@ -294,7 +307,7 @@ static void GuiCreateQRCodeWidget(lv_obj_t *parent)
 
     lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 482);
     lv_obj_add_flag(qrCont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_align(qrCont, LV_ALIGN_TOP_MID, 0, 62);
+    lv_obj_align(qrCont, LV_ALIGN_TOP_MID, 0, 80);
     lv_obj_set_style_bg_color(qrCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_radius(qrCont, 24, LV_PART_MAIN);
 
@@ -328,21 +341,15 @@ static void GuiCreateQRCodeWidget(lv_obj_t *parent)
 
 static void OnApproveHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
 #ifndef COMPILE_SIMULATOR
-        GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
+    GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
 #endif
-        GuiKeyDerivationRequestNextTile();
-    }
+    GuiKeyDerivationRequestNextTile();
 }
 
 static void OnReturnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GuiKeyDerivationRequestPrevTile();
-    }
+    GuiKeyDerivationRequestPrevTile();
 }
 
 void GuiKeyDerivationWidgetHandleURGenerate(char *data, uint16_t len)
@@ -357,39 +364,33 @@ void GuiKeyDerivationWidgetHandleURUpdate(char *data, uint16_t len)
 
 static void OpenMoreHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        int hintboxHeight = 132;
-        g_openMoreHintBox = GuiCreateHintBox(lv_scr_act(), 480, hintboxHeight, true);
-        lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
-        lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, _("Tutorial"));
-        lv_obj_t *img = GuiCreateImg(g_openMoreHintBox, &imgTutorial);
+    int hintboxHeight = 132;
+    g_openMoreHintBox = GuiCreateHintBox(hintboxHeight);
+    lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
+    lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, _("Tutorial"));
+    lv_obj_t *img = GuiCreateImg(g_openMoreHintBox, &imgTutorial);
 
-        GuiButton_t table[] = {
-            {
-                .obj = img,
-                .align = LV_ALIGN_LEFT_MID,
-                .position = {24, 0},
-            },
-            {
-                .obj = label,
-                .align = LV_ALIGN_LEFT_MID,
-                .position = {76, 0},
-            },
-        };
-        lv_obj_t *btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                                        OpenTutorialHandler, &g_walletIndex);
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
-    }
+    GuiButton_t table[] = {
+        {
+            .obj = img,
+            .align = LV_ALIGN_LEFT_MID,
+            .position = {24, 0},
+        },
+        {
+            .obj = label,
+            .align = LV_ALIGN_LEFT_MID,
+            .position = {76, 0},
+        },
+    };
+    lv_obj_t *btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
+                                    OpenTutorialHandler, &g_walletIndex);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 }
 
 static void OpenTutorialHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
-        GuiFrameOpenViewWithParam(&g_walletTutorialView, wallet, sizeof(WALLET_LIST_INDEX_ENUM));
-        GUI_DEL_OBJ(g_openMoreHintBox);
-    }
+    WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
+    GuiFrameOpenViewWithParam(&g_walletTutorialView, wallet, sizeof(WALLET_LIST_INDEX_ENUM));
+    GUI_DEL_OBJ(g_openMoreHintBox);
 }
 #endif

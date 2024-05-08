@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include "define.h"
 #include "assert.h"
+#include "stdio.h"
 #include "presetting.h"
 #include "log_print.h"
 #include "drv_gd25qxx.h"

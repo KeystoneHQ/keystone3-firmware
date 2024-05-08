@@ -79,7 +79,7 @@ void FreeAptosMemory(void)
 int GetAptosDetailLen(void *param)
 {
     DisplayAptosTx *tx = (DisplayAptosTx *)param;
-    return strnlen_s(tx->detail, SIMPLERESPONSE_C_CHAR_MAX_LEN);
+    return strlen(tx->detail) + 1;
 }
 
 void GetAptosDetail(void *indata, void *param, uint32_t maxLen)

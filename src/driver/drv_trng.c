@@ -9,7 +9,6 @@ void TrngInit(void)
     SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_TRNG, ENABLE);
 }
 
-
 void TrngGet(void *buf, uint32_t len)
 {
     uint32_t buf4[4];

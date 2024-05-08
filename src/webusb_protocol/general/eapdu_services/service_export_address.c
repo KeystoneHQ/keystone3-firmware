@@ -119,7 +119,7 @@ static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
     result->requestID = requestID;
 
     SendEApduResponse(result);
-
+    EXT_FREE(json_str);
     SRAM_FREE(result);
 #endif
 }

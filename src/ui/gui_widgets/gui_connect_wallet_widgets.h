@@ -6,16 +6,18 @@
 
 typedef enum {
 #ifndef BTC_ONLY
-    WALLET_LIST_KEYSTONE,
     WALLET_LIST_METAMASK,
     WALLET_LIST_OKX,
     WALLET_LIST_ETERNL,
+    // WALLET_LIST_YOROI,
+    WALLET_LIST_TYPHON,
     WALLET_LIST_BLUE,
     WALLET_LIST_SUB,
     WALLET_LIST_SOLFARE,
     WALLET_LIST_RABBY,
     WALLET_LIST_SAFE,
     WALLET_LIST_SPARROW,
+    WALLET_LIST_UNISAT,
     WALLET_LIST_IMTOKEN,
     WALLET_LIST_BLOCK_WALLET,
     WALLET_LIST_ZAPPER,
@@ -30,6 +32,7 @@ typedef enum {
     WALLET_LIST_SPECTER,
     WALLET_LIST_SPARROW,
     WALLET_LIST_NUNCHUK,
+    WALLET_LIST_UNISAT,
 #endif
     WALLET_LIST_BUTT,
 } WALLET_LIST_INDEX_ENUM;
@@ -38,6 +41,9 @@ typedef struct {
     WALLET_LIST_INDEX_ENUM index;
     const lv_img_dsc_t *img;
     bool enable;
+#ifdef BTC_ONLY
+    bool alpha;
+#endif
 } WalletListItem_t;
 
 #ifndef BTC_ONLY
@@ -85,6 +91,7 @@ ETHAccountType GetMetamaskAccountType(void);
 #endif
 void GuiConnectWalletHandleURGenerate(char *data, uint16_t len);
 void GuiConnectWalletHandleURUpdate(char *data, uint16_t len);
+uint8_t GuiConnectWalletGetWalletIndex(void);
 #ifndef BTC_ONLY
 SOLAccountType GetSolflareAccountType(void);
 #endif

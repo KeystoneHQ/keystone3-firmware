@@ -10,6 +10,7 @@
 #include "ff.h"         /* Obtains integer types */
 #include "diskio.h"     /* Declarations of disk functions */
 #include "user_fatfs.h"
+#include "drv_sdcard.h"
 
 /* Definitions of physical drive number for each drive */
 #if 0
@@ -238,12 +239,12 @@ DRESULT disk_ioctl(
             break;
 
         case GET_SECTOR_COUNT:
-            *(DWORD*)buff = 1024 * 20;
+            *(DWORD*)buff = SdCardGetSectorCount();
             res = RES_OK;
             break;
 
         case GET_SECTOR_SIZE:
-            *(WORD*)buff = 512;
+            *(WORD*)buff = SdCardGetSectorSize();
             res = RES_OK;
             break;
 

@@ -35,12 +35,9 @@
 #define FINGERPRINT_EN_SING_ERR_TIMES                                               (5)
 #endif
 
-
 /* DEFINES */
 
-
 /* TYPEDEFS */
-
 
 /* FUNC DECLARATION*/
 static void RecognizeSuccussHandler(lv_timer_t *timer);
@@ -53,7 +50,6 @@ static void FingerCancelDeleteHandler(lv_event_t *e);
 static void FirstAddFingerToManagerView(lv_event_t *e);
 static void AddFingerToManagerView(lv_event_t *e);
 static void ClearFingerErrorStateView(lv_event_t *e);
-
 
 /* STATIC VARIABLES */
 static lv_obj_t *g_fpDeleteCont = NULL;
@@ -72,7 +68,6 @@ static bool g_firstAddFingerFlag = false;
 static uint8_t g_fpEnSignCnt = 0;
 static uint8_t g_deleteFingerIndex = 0;
 
-
 /* FUNC */
 uint8_t GuiGetFingerSettingIndex(void)
 {
@@ -86,21 +81,17 @@ uint8_t GuiGetFingerSettingIndex(void)
 
 void CancelVerifyFingerHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        ClearSecretCache();
-        FpCancelCurOperate();
-        GUI_DEL_OBJ(g_verifyFingerCont)
-    }
+
+    ClearSecretCache();
+    FpCancelCurOperate();
+    GUI_DEL_OBJ(g_verifyFingerCont)
 }
 
 void CancelCurFingerHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        FpCancelCurOperate();
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-    }
+
+    FpCancelCurOperate();
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
 }
 
 void GuiFingerManagerDestruct(void *obj, void *param)
@@ -120,7 +111,7 @@ void GuiFpVerifyDestruct(void)
 
 void GuiWalletFingerOpenSign(void)
 {
-    g_verifyFingerCont = GuiCreateHintBox(lv_scr_act(), 480, 428, true);
+    g_verifyFingerCont = GuiCreateHintBox(428);
     lv_obj_t *cont = g_verifyFingerCont;
     lv_obj_t *label = GuiCreateIllustrateLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint"));
     lv_obj_set_style_text_opa(label, LV_OPA_56, LV_PART_MAIN);
@@ -140,10 +131,11 @@ void GuiWalletFingerOpenSign(void)
     g_imgSignFinger = GuiCreateImg(cont, &imgYellowFinger);
     lv_obj_align(g_imgSignFinger, LV_ALIGN_BOTTOM_MID, 0, -178);
 
-    g_labelSignFailed = GuiCreateLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint_failed"));
+    g_labelSignFailed = GuiCreateIllustrateLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint_failed"));
     lv_obj_set_style_text_color(g_labelSignFailed, RED_COLOR, LV_PART_MAIN);
     lv_obj_add_flag(g_labelSignFailed, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_align(g_labelSignFailed, LV_ALIGN_BOTTOM_MID, 0, -100);
+    lv_obj_align(g_labelSignFailed, LV_ALIGN_TOP_MID, 0, 670);
+    lv_obj_set_style_text_align(g_labelSignFailed, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
     lv_obj_t *arc = GuiCreateArc(cont);
     lv_obj_align(arc, LV_ALIGN_BOTTOM_MID, 0, -154);
@@ -152,18 +144,14 @@ void GuiWalletFingerOpenSign(void)
 
 void FingerSignHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        bool en = lv_obj_has_state(g_fpSingerSwitch, LV_STATE_CHECKED);
-        if (en) {
-            lv_obj_clear_state(g_fpSingerSwitch, LV_STATE_CHECKED);
-            UpdateFingerSignFlag(GetCurrentAccountIndex(), !en);
-            SetFingerManagerInfoToSE();
-            lv_event_send(g_fpSingerSwitch, LV_EVENT_VALUE_CHANGED, NULL);
-        } else {
-            GuiShowKeyboardHandler(e);
-        }
+    bool en = lv_obj_has_state(g_fpSingerSwitch, LV_STATE_CHECKED);
+    if (en) {
+        lv_obj_clear_state(g_fpSingerSwitch, LV_STATE_CHECKED);
+        UpdateFingerSignFlag(GetCurrentAccountIndex(), !en);
+        SetFingerManagerInfoToSE();
+        lv_event_send(g_fpSingerSwitch, LV_EVENT_VALUE_CHANGED, NULL);
+    } else {
+        GuiShowKeyboardHandler(e);
     }
 }
 
@@ -195,7 +183,6 @@ void GuiSettingDealFingerRecognize(void *param)
     }
 }
 
-
 void GuiWalletFingerAddFpWidget(lv_obj_t *parent, bool success)
 {
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
@@ -209,17 +196,19 @@ void GuiWalletFingerAddFpWidget(lv_obj_t *parent, bool success)
     if (success) {
         img = GuiCreateImg(parent, &imgSuccess);
         label = GuiCreateLittleTitleLabel(parent, _("fingerprint_add_success"));
-        btn = GuiCreateBtn(parent, _("Done"));
+        btn = GuiCreateTextBtn(parent, _("Done"));
     } else {
         img = GuiCreateImg(parent, &imgFailed);
         label = GuiCreateLittleTitleLabel(parent, _("fingerprint_add_failed"));
-        btn = GuiCreateBtn(parent, _("try_again"));
+        btn = GuiCreateTextBtn(parent, _("try_again"));
         desc = GuiCreateNoticeLabel(parent, _("fingerprint_add_failed_use_another"));
-        lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -404);
         lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     }
-    lv_obj_align(img, LV_ALIGN_BOTTOM_MID, 0, -548);
-    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -476);
+    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 180);
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 284);
+    if (desc != NULL) {
+        lv_obj_align_to(desc, label, LV_ALIGN_OUT_BOTTOM_MID, 0, 12);
+    }
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
@@ -276,6 +265,14 @@ void GuiSettingFingerRegisterFail(void *param)
         lv_obj_set_style_arc_color(g_arcProgress, RED_COLOR, LV_PART_INDICATOR);
         if (errCode == 0x93) { // finger registered
             text = _("fingerprint_add_failed_duplicate");
+        } else if (errCode == ERR_FP_RECORDING_AREA_SMALL) {
+            text = _("fingerprint_add_failed_partial");
+        } else if (errCode == ERR_FP_AREA_TOO_WET) {
+            text = _("fingerprint_add_too_wet");
+        } else if (errCode == ERR_FP_RECORDING_AREA_OVERLAPS_TOO_MUCH) {
+            text = _("fingerprint_add_overlaps_too_much");
+        } else if (errCode == ERR_FP_ARE_POOR_QUALITY) {
+            text = _("fingerprint_add_poor_qualtiy");
         } else {
             text = (char *)GetFpErrorMessage(errCode);
         }
@@ -309,7 +306,7 @@ void GuiWalletFingerAddWidget(lv_obj_t *parent)
     lv_arc_set_range(g_arcProgress, 0, 8);
     lv_obj_align(g_arcProgress, LV_ALIGN_BOTTOM_MID, 0, -240);
 
-    g_fpRegLabel = GuiCreateLabel(parent, "");
+    g_fpRegLabel = GuiCreateIllustrateLabel(parent, "");
     lv_obj_set_style_text_color(g_fpRegLabel, RED_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_align(g_fpRegLabel, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(g_fpRegLabel, LV_ALIGN_BOTTOM_MID, 0, -156);
@@ -368,7 +365,7 @@ void GuiFingerMangerStructureCb(void *obj, void *param)
     if (lv_obj_get_child_cnt(container) > 0) {
         lv_obj_clean(container);
     }
-    label = GuiCreateTextLabel(container, _("fingerprint_unlock_device"));
+    label = GuiCreateTextLabel(container, _("unlock_device"));
     g_fpUnlockSwitch = GuiCreateSwitch(container);
 
     if (GetFingerUnlockFlag() == 1) {
@@ -416,19 +413,6 @@ void GuiFingerMangerStructureCb(void *obj, void *param)
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, curPositionY);
     curPositionY += 96;
 
-    // bool en = lv_obj_has_state(g_fpSingerSwitch, LV_STATE_CHECKED);
-    // if (en) {
-    //     label = GuiCreateTextLabel(container, "Pattern Verification");
-    //     imgArrow = GuiCreateImg(container, &imgArrowRight);
-    //     table[0].obj = label;
-    //     table[1].obj = imgArrow;
-    //     table[1].position.x = 396;
-    //     button = GuiCreateButton(container, 456, 84, table, 2, WalletSettingHandler, &walletSetting[2]);
-    //     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, curPositionY);
-    //     curPositionY += 84;
-    //     curPositionY += 12;
-    // }
-
     lv_obj_t *line = GuiCreateDividerLine(container);
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, curPositionY);
     curPositionY += 12;
@@ -438,7 +422,6 @@ void GuiFingerMangerStructureCb(void *obj, void *param)
     for (int i = 0; i < 3; i++) {
         textId = GetFingerRegisteredStatus(i);
         if (textId != 0) {
-            printf("text id = %d\n", textId);
             fpRegisteredNum++;
             label = GuiCreateTextLabel(container, "");
             lv_label_set_text_fmt(label, _("fingerprint_nth"), textId);
@@ -474,7 +457,7 @@ void GuiWalletFingerDeleteWidget(lv_obj_t *parent)
     lv_obj_align(imgFinger, LV_ALIGN_BOTTOM_MID, 0, -548);
 
     char buf[BUFFER_SIZE_32] = {0};
-    snprintf_s(buf, BUFFER_SIZE_32, _("fingerprint_nth"), GetFingerRegisteredStatus(g_deleteFingerIndex));
+    snprintf_s(buf, BUFFER_SIZE_32, _("fingerprint_nth_subtitle"), GetFingerRegisteredStatus(g_deleteFingerIndex));
     lv_obj_t *label = GuiCreateLittleTitleLabel(parent, buf);
     lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -476);
 
@@ -533,52 +516,38 @@ void GuiWalletSetFingerPassCodeWidget(lv_obj_t *parent)
 /* STATIC FUNC */
 static void ClearFingerErrorStateView(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-        lv_arc_set_value(g_arcProgress, 0);
-        lv_img_set_src(g_imgFinger, &imgWhiteFinger);
-        lv_obj_set_style_arc_color(g_arcProgress, WHITE_COLOR, LV_PART_INDICATOR);
-        lv_label_set_text(g_fpRegLabel, "");
-        for (int i = 0; i < 3; i++) {
-            if (GetFingerRegisteredStatus(i) == 0) {
-                RegisterFp(i);
-                break;
-            }
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
+    lv_arc_set_value(g_arcProgress, 0);
+    lv_img_set_src(g_imgFinger, &imgWhiteFinger);
+    lv_obj_set_style_arc_color(g_arcProgress, WHITE_COLOR, LV_PART_INDICATOR);
+    lv_label_set_text(g_fpRegLabel, "");
+    for (int i = 0; i < 3; i++) {
+        if (GetFingerRegisteredStatus(i) == 0) {
+            RegisterFp(i);
+            break;
         }
     }
 }
 
 static void FirstAddFingerToManagerView(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiSettingCloseToTargetTileView(2);
-        uint8_t walletIndex = DEVICE_SETTING_FINGER_MANAGER;
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
-    }
+    GuiSettingCloseToTargetTileView(2);
+    uint8_t walletIndex = DEVICE_SETTING_FINGER_MANAGER;
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
 }
 
 static void AddFingerToManagerView(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiSettingCloseToTargetTileView(3);
-    }
+    GuiSettingCloseToTargetTileView(3);
 }
 
 static void FingerButtonHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        uint8_t *fingerIndex = lv_event_get_user_data(e);
-        g_deleteFingerIndex = *fingerIndex;
-        uint8_t walletIndex = DEVICE_SETTING_FINGER_DELETE;
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
-    }
+
+    uint8_t *fingerIndex = lv_event_get_user_data(e);
+    g_deleteFingerIndex = *fingerIndex;
+    uint8_t walletIndex = DEVICE_SETTING_FINGER_DELETE;
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
 }
 
 static void RecognizeSuccussHandler(lv_timer_t *timer)
@@ -602,51 +571,38 @@ static void RecognizeFailHandler(lv_timer_t *timer)
 
 static void FingerUnlockDeviceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        bool en = lv_obj_has_state(g_fpUnlockSwitch, LV_STATE_CHECKED);
-        if (en) {
-            lv_obj_clear_state(g_fpUnlockSwitch, LV_STATE_CHECKED);
-            UpdateFingerUnlockFlag(!en);
-            lv_event_send(g_fpUnlockSwitch, LV_EVENT_VALUE_CHANGED, NULL);
-        } else {
-            GuiShowKeyboardHandler(e);
-        }
+    bool en = lv_obj_has_state(g_fpUnlockSwitch, LV_STATE_CHECKED);
+    if (en) {
+        lv_obj_clear_state(g_fpUnlockSwitch, LV_STATE_CHECKED);
+        UpdateFingerUnlockFlag(!en);
+        lv_event_send(g_fpUnlockSwitch, LV_EVENT_VALUE_CHANGED, NULL);
+    } else {
+        GuiShowKeyboardHandler(e);
     }
 }
 
 static void FingerDeleteDialogsHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        uint8_t *fingerIndex = lv_event_get_user_data(e);
-        char buf[50] = {0};
-        lv_snprintf(buf, sizeof(buf), _("fingerprint_nth_remove_desc"), GetFingerRegisteredStatus(*fingerIndex));
-        g_fpDeleteCont = GuiCreateResultHintbox(lv_scr_act(), 386, &imgWarn, _("fingerprint_nth_remove_title"),
-                                                buf, _("Cancel"), DARK_GRAY_COLOR, _("Remove"), RED_COLOR);
-        lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_fpDeleteCont);
-        lv_obj_add_event_cb(leftBtn, FingerCancelDeleteHandler, LV_EVENT_CLICKED, g_fpDeleteCont);
+    uint8_t *fingerIndex = lv_event_get_user_data(e);
+    char buf[50] = {0};
+    lv_snprintf(buf, sizeof(buf), _("fingerprint_nth_remove_desc"), GetFingerRegisteredStatus(*fingerIndex));
+    g_fpDeleteCont = GuiCreateGeneralHintBox(&imgWarn, _("fingerprint_nth_remove_title"), buf, NULL, _("Cancel"), DARK_GRAY_COLOR, _("fingerprint_remove_confirm"), RED_COLOR);
+    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_fpDeleteCont);
+    lv_obj_add_event_cb(leftBtn, FingerCancelDeleteHandler, LV_EVENT_CLICKED, g_fpDeleteCont);
 
-        lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_fpDeleteCont);
-        lv_obj_add_event_cb(rightBtn, FingerDeleteHandler, LV_EVENT_CLICKED, g_fpDeleteCont);
-    }
+    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_fpDeleteCont);
+    lv_obj_add_event_cb(rightBtn, FingerDeleteHandler, LV_EVENT_CLICKED, g_fpDeleteCont);
 }
 
 static void FingerDeleteHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        DeleteFp(g_deleteFingerIndex);
-        GUI_DEL_OBJ(g_fpDeleteCont)
-    }
+
+    DeleteFp(g_deleteFingerIndex);
+    GUI_DEL_OBJ(g_fpDeleteCont)
 }
 
 static void FingerCancelDeleteHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_fpDeleteCont)
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-    }
+    GUI_DEL_OBJ(g_fpDeleteCont)
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
 }

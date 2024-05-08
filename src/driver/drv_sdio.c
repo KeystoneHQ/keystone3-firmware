@@ -1,6 +1,6 @@
 #include "drv_sdio.h"
+#include "drv_sdcard.h"
 #include "mhscpu_sdio.h"
-
 
 #define SDIO_DEBUG          0
 
@@ -69,7 +69,11 @@ bool SDIOExecuteCommand(uint8_t cmdIndex, uint32_t argument, SDIOResponseTypeEnu
     SDIO->CMD    = command.Parameter;
 
     // Wait Command Done & Check Command Error
-    while (!(SDIO->RINTSTS & SDIO_IT_CD)) {}
+    while (!(SDIO->RINTSTS & SDIO_IT_CD)) {
+        if (!SdCardInsert()) {
+            return false;
+        }
+    }
     uint16_t error = SDIO->RINTSTS;
 
     SDIO->RINTSTS = SDIO_IT_ALL;
@@ -90,7 +94,11 @@ bool SDIOExecuteCommand(uint8_t cmdIndex, uint32_t argument, SDIOResponseTypeEnu
 
     // Wait Busy
     if (responseType == SDIOResponseR1b) {
-        while (SDIO->STATUS & (BIT9)) {}
+        while (SDIO->STATUS & (BIT9)) {
+            if (!SdCardInsert()) {
+                return false;
+            }
+        }
     }
 
     return true;
@@ -123,7 +131,11 @@ bool SDIOTransferBlock(uint8_t cmdIndex, uint32_t argument, bool isWrite, uint8_
     SDIO->CMD    = command.Parameter;
 
     // Wait Command Done & Check Command Error
-    while (!(SDIO->RINTSTS & SDIO_IT_CD)) {}
+    while (!(SDIO->RINTSTS & SDIO_IT_CD)) {
+        if (!SdCardInsert()) {
+            return false;
+        }
+    }
     uint16_t error = SDIO->RINTSTS;
     if (error & SDIO_IT_CRE) {
         SDIO->RINTSTS = SDIO_IT_ALL;
@@ -132,7 +144,11 @@ bool SDIOTransferBlock(uint8_t cmdIndex, uint32_t argument, bool isWrite, uint8_
     }
 
     // Wait Data End & Check Data Error
-    while (!(SDIO->RINTSTS & SDIO_IT_DTO)) {}
+    while (!(SDIO->RINTSTS & SDIO_IT_DTO)) {
+        if (!SdCardInsert()) {
+            return false;
+        }
+    }
     GPIO_ResetBits(GPIOD, GPIO_Pin_6);
 
     error = SDIO->RINTSTS;
@@ -145,7 +161,11 @@ bool SDIOTransferBlock(uint8_t cmdIndex, uint32_t argument, bool isWrite, uint8_
 
     // Wait Busy (Write)
     if (isWrite) {
-        while (SDIO->STATUS & (BIT9 | BIT10)) {}
+        while (SDIO->STATUS & (BIT9 | BIT10)) {
+            if (!SdCardInsert()) {
+                return false;
+            }
+        }
     }
 
     return true;

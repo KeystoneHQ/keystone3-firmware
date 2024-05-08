@@ -2,18 +2,7 @@
 #include "gui_obj.h"
 #include "gui_views.h"
 #include "gui_export_pubkey_widgets.h"
-
-static int32_t GuiExportPubkeyViewInit(uint8_t chain)
-{
-    GuiExportPubkeyInit(chain);
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiExportPubkeyViewDeInit(void)
-{
-    GuiExportPubkeyDeInit();
-    return SUCCESS_CODE;
-}
+#include "gui_animating_qrcode.h"
 
 int32_t GuiExportPubkeyViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
@@ -25,9 +14,19 @@ int32_t GuiExportPubkeyViewEventProcess(void *self, uint16_t usEvent, void *para
         } else {
             return ERR_GUI_ERROR;
         }
-        return GuiExportPubkeyViewInit(chain);
+        GuiExportPubkeyInit(chain);
+        break;
+    case GUI_EVENT_REFRESH:
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiExportPubkeyViewDeInit();
+        GuiExportPubkeyDeInit();
+        break;
+    case SIG_BACKGROUND_UR_GENERATE_SUCCESS:
+        GuiAnimantingQRCodeFirstUpdate((char*)param, usLen);
+        break;
+    case SIG_BACKGROUND_UR_UPDATE:
+        GuiAnimatingQRCodeUpdate((char*)param, usLen);
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

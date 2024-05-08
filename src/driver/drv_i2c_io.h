@@ -1,7 +1,6 @@
 #ifndef _DRV_I2C_IO_H
 #define _DRV_I2C_IO_H
 
-
 #include "stdint.h"
 #include "stdbool.h"
 #include "mhscpu.h"
@@ -13,7 +12,6 @@ typedef struct {
     uint16_t SDA_PIN;
 } I2CIO_Cfg_t;
 
-
 /// @brief I2C implemented by GPIO, Init.
 /// @param[out] cfg I2C config struct, will be used later.
 /// @param[in] SCL_Port
@@ -21,7 +19,6 @@ typedef struct {
 /// @param[in] SDA_Port
 /// @param[in] SDA_Pin
 void I2CIO_Init(I2CIO_Cfg_t *cfg, GPIO_TypeDef *SCL_Port, uint16_t SCL_Pin, GPIO_TypeDef *SDA_Port, uint16_t SDA_Pin);
-
 
 /// @brief Send data to I2C device.
 /// @param[in] cfg I2C config struct.
@@ -31,7 +28,6 @@ void I2CIO_Init(I2CIO_Cfg_t *cfg, GPIO_TypeDef *SCL_Port, uint16_t SCL_Pin, GPIO
 /// @return Err code.
 int32_t I2CIO_SendData(const I2CIO_Cfg_t *cfg, uint8_t addr, const uint8_t *data, uint32_t len);
 
-
 /// @brief Receive data from I2C device.
 /// @param[in] cfg I2C config struct.
 /// @param[in] addr Device I2C address.
@@ -39,7 +35,6 @@ int32_t I2CIO_SendData(const I2CIO_Cfg_t *cfg, uint8_t addr, const uint8_t *data
 /// @param[in] len Expected length.
 /// @return Err code.
 int32_t I2CIO_ReceiveData(const I2CIO_Cfg_t *cfg, uint8_t addr, uint8_t *data, uint32_t len);
-
 
 /// @brief Search devices from I2C.
 /// @param[in] cfg I2C config struct.

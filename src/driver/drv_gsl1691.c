@@ -6,15 +6,11 @@
 #include "user_delay.h"
 #include "drv_i2c_io.h"
 
-
 #define TOUCH_RST_PORT                  GPIOF
 #define TOUCH_RST_PIN                   GPIO_Pin_2
 
-
 #define TOUCH_RST_LOW                   GPIO_ResetBits(TOUCH_RST_PORT, TOUCH_RST_PIN);
 #define TOUCH_RST_HIGH                  GPIO_SetBits(TOUCH_RST_PORT, TOUCH_RST_PIN);
-
-
 
 typedef struct {
     uint8_t offset;
@@ -37,14 +33,12 @@ void Gsl1691Init(void)
     Gsl1691InitSequence();
 }
 
-
 /// @brief GSL1691 open.
 void Gsl1691Open(void)
 {
     I2cInit();
     Gsl1691InitSequence();
 }
-
 
 /// @brief Get touch status, including touch state, X/Y coordinate.
 /// @param status TouchStatus struct addr.
@@ -61,8 +55,6 @@ int32_t Gsl1691GetStatus(TouchStatus_t *status)
 
     return SUCCESS_CODE;
 }
-
-
 
 static void Gsl1691InitSequence(void)
 {
@@ -103,7 +95,6 @@ static void Gsl1691ClearReg(void)
     UserDelay(20);
 }
 
-
 static void Gsl1691ResetCore(void)
 {
     uint8_t sendBuf[5];
@@ -122,7 +113,6 @@ static void Gsl1691ResetCore(void)
     UserDelay(10);
 }
 
-
 static void Gsl1691StartCore(void)
 {
     uint8_t sendBuf[2];
@@ -133,7 +123,6 @@ static void Gsl1691StartCore(void)
     UserDelay(10);
 }
 
-
 static void Gsl1691CheckData(void)
 {
     uint8_t checkData[4], tempU8;
@@ -143,7 +132,6 @@ static void Gsl1691CheckData(void)
     I2cSendAndReceiveData(GSL1691_I2C_ADDR, &tempU8, 1, checkData, 4);
     PrintArray("0xB0", checkData, 4);
 }
-
 
 Gsl1691FirmwareData_t g_gsl1691FirmwareData[] = {
     {0xf0, 0x2},
@@ -643,8 +631,6 @@ Gsl1691FirmwareData_t g_gsl1691FirmwareData[] = {
     {0x78,0x00000000},
     {0x7c,0x00000000},
     */
-
-
 
     {0xf0, 0x1e},
     {0x00, 0x5a5a0f00},

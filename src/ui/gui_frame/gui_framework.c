@@ -72,7 +72,15 @@ static GUI_VIEW *g_viewsTable[] = {
     &g_scanView,
     &g_transactionDetailView,
     &g_transactionSignatureView,
-    &g_diceRollsView
+    &g_diceRollsView,
+#ifdef BTC_ONLY
+    &g_importMultisigWalletInfoView,
+    &g_multisigSelectImportMethodView,
+    &g_multisigWalletExportView,
+    &g_multisigReadSdcardView,
+    &g_createMultisigWalletView,
+    &g_manageMultisigWalletView,
+#endif
 };
 
 bool GuiViewHandleEvent(GUI_VIEW *view, uint16_t usEvent, void *param, uint16_t usLen)
@@ -201,6 +209,7 @@ int32_t GuiCLoseCurrentWorkingView(void)
     g_workingView->isActive = false;
     g_workingView = g_workingView->previous;
     g_workingView->isActive = true;
+    printf("refresh view %s freeHeap %d\n", GuiFrameIdToName(g_workingView->id), xPortGetFreeHeapSize());
     GuiViewHandleEvent(g_workingView, GUI_EVENT_REFRESH, NULL, 0);
 
     return SUCCESS_CODE;
@@ -229,8 +238,6 @@ int32_t GuiFrameCLoseView(GUI_VIEW *view)
     }
     return SUCCESS_CODE;
 }
-
-
 
 int32_t GuiFrameWorkViewHandleMsg(void *data, uint16_t len)
 {
@@ -273,14 +280,15 @@ static const char *GuiFrameIdToName(SCREEN_ID_ENUM ID)
     const char *str =
         "SCREEN_INIT\0" "SCREEN_LOCK\0" "SCREEN_HOME\0" "SCREEN_SETUP\0" "CREATE_WALLET\0" "CREATE_SHARE\0"
         "IMPORT_SHARE\0" "SINGLE_PHRASE\0" "IMPORT_SINGLE_PHRASE\0" "CONNECT_WALLET\0" "SCREEN_SETTING\0" "SCREEN_QRCODE\0"
-        "SCREEN_PASSPHRASE\0" "SCREEN_BITCOIN_RECEIVE\0" "SCREEN_ETHEREUM_RECEIVE\0" "SCREEN_STANDARD_RECEIVE\0"
+        "SCREEN_PASSPHRASE\0" "SCREEN_BITCOIN_RECEIVE\0" "SCREEN_ETHEREUM_RECEIVE\0" "SCREEN_STANDARD_RECEIVE\0" "SCREEN_EXPORT_PUBKEY\0"
         "SCREEN_FORGET_PASSCODE\0" "SCREEN_LOCK_DEVICE\0" "SCREEN_FIRMWARE_UPDATE\0" "SCREEN_WEB_AUTH\0"
         "SCREEN_PURPOSE\0" "SCREEN_SYSTEM_SETTING\0" "SCREEN_WEB_AUTH_RESULT\0" "SCREEN_ABOUT\0"
         "SCREEN_ABOUT_KEYSTONE\0" "SCREEN_ABOUT_TERMS\0" "SCREEN_ABOUT_INFO\0" "SCREEN_WIPE_DEVICE\0"
         "SCREEN_WALLET_TUTORIAL\0" "SCREEN_SELF_DESTRUCT\0" "SCREEN_INACTIVE\0" "SCREEN_DISPLAY\0"
         "SCREEN_TUTORIAL\0" "SCREEN_CONNECTION\0" "SCREEN_MULTI_ACCOUNTS_RECEIVE\0" "SCREEN_KEY_DERIVATION_REQUEST\0"
         "SCREEN_SCAN\0" "SCREEN_TRANSACTION_DETAIL\0" "SCREEN_TRANSACTION_SIGNATURE\0" "SCREEN_USB_TRANSPORT\0"
-        "SCREEN_DEVICE_PUB_KEY\0 " "SCREEN_DEVICE_UPDATE_SUCCESS\0";
+        "SCREEN_DEVICE_PUB_KEY\0" "SCREEN_DEVICE_UPDATE_SUCCESS\0" "SCREEN_BTC_WALLET_PROFILE\0" "SCREEN_MULTI_SIG_IMPORT_WALLET_INFO\0"
+        "SCREEN_MULTISIG_WALLET_EXPORT\0" "SCREEN_CREATE_MULTI\0" "SCREEN_MANAGE_MULTI_SIG\0";
     SCREEN_ID_ENUM i;
 
     for (i = SCREEN_INIT; i != ID && *str; i++) {

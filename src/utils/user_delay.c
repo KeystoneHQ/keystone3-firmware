@@ -23,7 +23,6 @@ void UserDelay(uint32_t ms)
     }
 }
 
-
 void UserDelayUs(uint32_t us)
 {
     volatile uint32_t i, tick, countPerUs;
@@ -34,7 +33,6 @@ void UserDelayUs(uint32_t us)
         }
     }
 }
-
 
 void PretendDoingSomething(uint32_t i)
 {

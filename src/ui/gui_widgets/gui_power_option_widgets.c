@@ -19,7 +19,6 @@ const GuiMsgBox_t g_guiMsgBoxPowerOption = {
     GUI_POWER_OPTION_PRIORITY,
 };
 
-
 static void GuiPowerOptionInit(void)
 {
     lv_obj_t *btn, *img, *label;
@@ -62,7 +61,7 @@ static void GuiPowerOptionInit(void)
     label = GuiCreateNoticeLabel(container, _("Restart"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 486);
 
-    btn = GuiCreateBtn(container, _("Cancel"));
+    btn = GuiCreateTextBtn(container, _("Cancel"));
     label = lv_obj_get_child(btn, 0);
     lv_obj_set_style_text_font(label, g_defTextFont, LV_PART_MAIN);
     lv_obj_set_size(btn, 135, 66);
@@ -70,7 +69,6 @@ static void GuiPowerOptionInit(void)
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -64);
     lv_obj_add_event_cb(btn, CancelHandler, LV_EVENT_CLICKED, NULL);
 }
-
 
 static void GuiPowerOptionDeInit(void)
 {
@@ -84,7 +82,6 @@ static void GuiPowerOptionDeInit(void)
 #include "background_task.h"
 #endif
 
-
 static void PowerOffHandler(lv_event_t *e)
 {
     printf("power off\r\n");
@@ -92,7 +89,6 @@ static void PowerOffHandler(lv_event_t *e)
     SystemPoweroff();
 #endif
 }
-
 
 void RebootHandler(lv_event_t *e)
 {
@@ -102,10 +98,8 @@ void RebootHandler(lv_event_t *e)
 #endif
 }
 
-
 static void CancelHandler(lv_event_t *e)
 {
     printf("cancel\r\n");
     GuiApiEmitSignalWithValue(SIG_INIT_POWER_OPTION, 0);
 }
-

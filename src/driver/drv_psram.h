@@ -1,7 +1,6 @@
 #ifndef _DRV_PSRAM_H
 #define _DRV_PSRAM_H
 
-
 /*
 //defined in mhscpu.h
 #define MHSCPU_PSRAM_BASE                       (0x80000000UL)  //(0x807FC000UL)
@@ -11,7 +10,6 @@
 
 #include "stdint.h"
 #include "stdbool.h"
-
 
 void PsramInit(void);
 void PsramOpen(void);

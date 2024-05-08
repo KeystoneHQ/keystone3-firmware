@@ -73,7 +73,6 @@ void ExtInterruptInit(void)
     EXTI_LineConfig(EXTI_Line5, EXTI_PinSource15, EXTI_Trigger_Rising_Falling);
 }
 
-
 //PA ext interrupt handler
 void EXTI0_IRQHandler(void)
 {
@@ -89,7 +88,6 @@ void EXTI0_IRQHandler(void)
     EXTI_ClearITPendingBit(EXTI_Line0);
     NVIC_ClearPendingIRQ(EXTI0_IRQn);
 }
-
 
 //PD ext interrupt handler
 void EXTI3_IRQHandler(void)
@@ -107,7 +105,6 @@ void EXTI3_IRQHandler(void)
     NVIC_ClearPendingIRQ(EXTI3_IRQn);
 }
 
-
 //PE ext interrupt handler
 void EXTI4_IRQHandler(void)
 {
@@ -123,7 +120,6 @@ void EXTI4_IRQHandler(void)
     EXTI_ClearITPendingBit(EXTI_Line4);
     NVIC_ClearPendingIRQ(EXTI4_IRQn);
 }
-
 
 //PF ext interrupt handler
 void EXTI5_IRQHandler(void)
@@ -144,7 +140,3 @@ void EXTI5_IRQHandler(void)
     EXTI_ClearITPendingBit(EXTI_Line5);
     NVIC_ClearPendingIRQ(EXTI5_IRQn);
 }
-
-
-
-

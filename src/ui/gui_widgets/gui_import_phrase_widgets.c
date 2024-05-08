@@ -34,7 +34,6 @@ static MnemonicKeyBoard_t *g_importMkb;
 static KeyBoard_t *g_importPhraseKb;
 static lv_obj_t *g_importPhraseKbCont = NULL;
 static uint8_t g_inputWordsCnt = 0;
-static lv_obj_t *g_importMkbCont = NULL;
 static lv_obj_t *g_buttonCont = NULL;
 static PageWidget_t *g_pageWidget;
 
@@ -51,20 +50,13 @@ void GuiImportPhraseWriteSe(bool en, int32_t errCode)
 
 static void ResetClearImportHandler(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        ClearMnemonicKeyboard(g_importMkb, &g_importMkb->currentId);
-        GuiClearKeyBoard(g_importPhraseKb);
-    }
+    ClearMnemonicKeyboard(g_importMkb, &g_importMkb->currentId);
+    GuiClearKeyBoard(g_importPhraseKb);
 }
 
 static void ImportPhraseWordsHandler(lv_event_t* e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        ImportSinglePhraseWords(g_importMkb, g_importPhraseKb);
-    }
+    ImportSinglePhraseWords(g_importMkb, g_importPhraseKb);
 }
 
 static void GuiInputPhraseWidget(lv_obj_t *parent)
@@ -94,9 +86,7 @@ static void GuiInputPhraseWidget(lv_obj_t *parent)
     g_buttonCont = cont;
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_opa(cont, LV_OPA_0, 0);
-    lv_obj_t *btn = GuiCreateBtn(cont, "");
-    lv_obj_t *img = GuiCreateImg(btn, &imgArrowNext);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_ARROW_NEXT);
     lv_obj_add_event_cb(btn, ImportPhraseWordsHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
     g_importMkb->nextButton = btn;
@@ -142,8 +132,7 @@ int8_t GuiImportPhraseNextTile(void)
 {
     switch (g_importSinglePhraseTileView.currentTile) {
     case SINGLE_PHRASE_INPUT_PHRASE:
-        lv_obj_add_flag(g_importMkbCont, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(g_buttonCont, LV_OBJ_FLAG_HIDDEN);
+        if (g_buttonCont != NULL) lv_obj_add_flag(g_buttonCont, LV_OBJ_FLAG_HIDDEN);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         break;
@@ -160,8 +149,7 @@ int8_t GuiImportPhrasePrevTile(void)
     case SINGLE_PHRASE_INPUT_PHRASE:
         break;
     case SINGLE_PHRASE_WRITE_SE:
-        lv_obj_clear_flag(g_importMkbCont, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(g_buttonCont, LV_OBJ_FLAG_HIDDEN);
+        if (g_buttonCont != NULL) lv_obj_clear_flag(g_buttonCont, LV_OBJ_FLAG_HIDDEN);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
         GuiImportPhraseRefresh();
         break;
@@ -179,7 +167,7 @@ void GuiImportPhraseRefresh(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     }
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
-    SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
+    SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("import_wallet_phrase_clear_btn"));
     SetRightBtnCb(g_pageWidget->navBarWidget, ResetClearImportHandler, NULL);
 }
 

@@ -17,7 +17,6 @@
 #include "gui_views.h"
 #include "version.h"
 
-
 #define LOG_NAME_MAX_LEN            64
 #define LOG_DATA_HEAD_SIZE          8
 #define NEXT_SECTOR_MARK            0x0000
@@ -34,7 +33,6 @@ typedef struct {
     uint32_t timeStamp;
     uint8_t *pData;
 } LogData_t;
-
 
 static void WriteLogAsync(LogData_t *pLogData);
 static void WriteLogSync(LogData_t *pLogData);
@@ -69,7 +67,6 @@ void WriteLogEvent(uint32_t event)
     }
 }
 
-
 void WriteLogValue(uint32_t event, uint32_t value)
 {
     if (g_logInit == false) {
@@ -88,7 +85,6 @@ void WriteLogValue(uint32_t event, uint32_t value)
         WriteLogSync(&logData);
     }
 }
-
 
 void WriteLogFormat(uint32_t event, const char *format, ...)
 {
@@ -118,18 +114,15 @@ void WriteLogFormat(uint32_t event, const char *format, ...)
     SRAM_FREE(str);
 }
 
-
 void LogExport(void)
 {
     PubValueMsg(LOG_MSG_EXPORT, 0);
 }
 
-
 void LogErase(void)
 {
     PubValueMsg(LOG_MSG_ERASE, 0);
 }
-
 
 void LogInit(void)
 {
@@ -142,7 +135,6 @@ void LogInit(void)
     WriteLogFormat(EVENT_ID_BOOT, "v%s", version);
     CheckLastErrLog();
 }
-
 
 void WriteLogDataToFlash(const void *data, uint32_t length)
 {
@@ -254,7 +246,6 @@ void LogExportSync(void)
 #endif
 }
 
-
 void LogEraseSync(void)
 {
     uint32_t addr;
@@ -268,7 +259,6 @@ void LogEraseSync(void)
     g_logAddr = SPI_FLASH_ADDR_LOG;
     printf("erase log flash zone over!\r\n");
 }
-
 
 void LogTest(int argc, char *argv[])
 {
@@ -285,8 +275,6 @@ void LogTest(int argc, char *argv[])
         printf("log cmd err\r\n");
     }
 }
-
-
 
 static void WriteLogAsync(LogData_t *pLogData)
 {
@@ -324,7 +312,6 @@ static void WriteLogSync(LogData_t *pLogData)
     SRAM_FREE(data);
 }
 
-
 static uint32_t FindLogOffsetAddr(void)
 {
     LogData_t logData;
@@ -361,8 +348,6 @@ static uint32_t FindLogOffsetAddr(void)
     return SPI_FLASH_ADDR_LOG;
 }
 
-
-
 static void EraseNextSector(uint32_t length)
 {
     uint32_t nextSectorAddr;
@@ -379,7 +364,6 @@ static void EraseNextSector(uint32_t length)
     }
 }
 
-
 static uint32_t GetNextSectorAddr(uint32_t addr)
 {
     uint32_t nextSectorAddr;
@@ -390,7 +374,6 @@ static uint32_t GetNextSectorAddr(uint32_t addr)
     }
     return nextSectorAddr;
 }
-
 
 static void CheckLogData(void)
 {
@@ -464,7 +447,6 @@ static void CheckLogData(void)
         LogEraseSync();
     }
 }
-
 
 void CheckLastErrLog(void)
 {

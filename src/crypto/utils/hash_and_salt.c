@@ -12,7 +12,6 @@
 
 //#define HASH_AND_SALT_TEST_MODE
 
-
 #ifdef HASH_AND_SALT_TEST_MODE
 
 static const uint8_t g_saltData[] = {
@@ -23,7 +22,6 @@ static const uint8_t g_saltData[] = {
 };
 
 #endif
-
 
 void HashWithSalt(uint8_t *outData, const uint8_t *inData, uint32_t inLen, const char *saltString)
 {
@@ -47,4 +45,3 @@ void HashWithSalt(uint8_t *outData, const uint8_t *inData, uint32_t inLen, const
     hmac_sha256((uint8_t *)saltString, strlen(saltString), tempData, 32, outData);
     memset(saltData, 0, sizeof(saltData));
 }
-

@@ -53,7 +53,6 @@
  *
  */
 
-
 /*** SHA-256/384/512 Machine Architecture Definitions *****************/
 /*
  * BYTE_ORDER NOTE:
@@ -166,7 +165,6 @@ typedef uint64_t sha2_word64;   /* Exactly 8 bytes */
  */
 static void sha512_Last(SHA512_CTX*);
 
-
 /*** SHA-XYZ INITIAL HASH VALUES AND CONSTANTS ************************/
 
 /* Hash constant words K for SHA-1: */
@@ -277,7 +275,6 @@ const sha2_word64 sha512_initial_hash_value[8] = {
  * digest to a readable hexadecimal character string:
  */
 static const char *sha2_hex_digits = "0123456789abcdef";
-
 
 /*** SHA-1: ***********************************************************/
 void sha1_Init(SHA1_CTX* context)
@@ -507,7 +504,6 @@ void sha1_Transform(const sha2_word32* state_in, const sha2_word32* data, sha2_w
         a = T1;
         j++;
     } while (j < 80);
-
 
     /* Compute the current intermediate hash value */
     state_out[0] = state_in[0] + a;
@@ -988,7 +984,6 @@ char* sha256_Data(const sha2_byte* data, size_t len, char digest[SHA256_DIGEST_S
     sha256_Update(&context, data, len);
     return sha256_End(&context, digest);
 }
-
 
 /*** SHA-512: *********************************************************/
 void sha512_Init(SHA512_CTX* context)

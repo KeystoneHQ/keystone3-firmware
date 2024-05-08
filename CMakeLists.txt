@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.10)
 option(COMPILE_KEYSTONE "compile on MAIN target" ON)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Simulator")
-  set(COMPILE_KEYSTONE OFF CACHE BOOL "compile on MAIN target" FORCE)
+    set(COMPILE_KEYSTONE OFF CACHE BOOL "compile on MAIN target" FORCE)
 endif()
 
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g2 -ggdb")
@@ -26,9 +26,14 @@ add_definition_with_message(DEBUG_MEMORY)
 
 add_definition_with_message(BUILD_PRODUCTION)
 
+add_compile_definitions(CN_SUPPORT)
+add_compile_definitions(RU_SUPPORT)
+add_compile_definitions(KO_SUPPORT)
+
 get_cmake_property(_variableNames VARIABLES)
-list (SORT _variableNames)
-foreach (_variableName ${_variableNames})
+list(SORT _variableNames)
+
+foreach(_variableName ${_variableNames})
     if(_variableName MATCHES "KT_FEATURE_*")
         add_definition_with_message(${_variableName})
     endif()
@@ -50,7 +55,7 @@ set(COMMON_DEFINITIONS
 )
 
 # add include path
-set(CRYPTO_INCLUDE_PATH 
+set(CRYPTO_INCLUDE_PATH
     src/crypto
     src/crypto/bips
     src/crypto/checksum
@@ -59,7 +64,7 @@ set(CRYPTO_INCLUDE_PATH
     src/crypto/slip39/trezor-crypto
 )
 
-set(GUI_INCLUDE_PATH 
+set(GUI_INCLUDE_PATH
     src/ui
     src/ui/gui_views
     src/ui/gui_assets
@@ -75,6 +80,12 @@ set(GUI_INCLUDE_PATH
     src/ui/gui_components
     src/ui/wallet
 )
+
+if(BTC_ONLY)
+    list(APPEND GUI_INCLUDE_PATH src/ui/gui_widgets/btc_only src/ui/gui_widgets/btc_only/multi_sig src/ui/gui_widgets/general)
+else()
+    list(APPEND GUI_INCLUDE_PATH src/ui/gui_chain/others src/ui/gui_widgets/general)
+endif()
 
 set(EXTERNAL_INCLUDE_PATH
     external
@@ -101,10 +112,10 @@ set(EXTERNAL_INCLUDE_PATH
     external/lvgl/src/core
     external/safec/include
     external/safec/src
-    external/mh1903_lib/MHSCPU_Driver/inc 
-    external/mh1903_lib/Device/MegaHunt/mhscpu/Include 
-    external/mh1903_lib/CMSIS/Include 
-    external/mh1903_lib/MHSCPU_Driver/inc/cryptlib 
+    external/mh1903_lib/MHSCPU_Driver/inc
+    external/mh1903_lib/Device/MegaHunt/mhscpu/Include
+    external/mh1903_lib/CMSIS/Include
+    external/mh1903_lib/MHSCPU_Driver/inc/cryptlib
     external/mh1903_lib/MHSCPU_Driver/inc/emvlib
     external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/msc/inc
     external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/cdc/inc
@@ -122,11 +133,12 @@ set(SRC_INCLUDE_PATH
     src/cm_backtrace
     src/utils
     src/utils/log
-    src/managers 
-    src/error_codes 
-    src/firmware 
-    src/msg 
-    src/ram 
+    src/managers
+    src/managers/btc_only
+    src/error_codes
+    src/firmware
+    src/msg
+    src/ram
     src/hardware_interface
     src/webusb_protocol
     src/webusb_protocol/services
@@ -138,13 +150,11 @@ set(INCLUDE_DIR
     ${CRYPTO_INCLUDE_PATH}
     ${GUI_INCLUDE_PATH}
     ${EXTERNAL_INCLUDE_PATH}
-    ${CMAKE_CURRENT_BINARY_DIR} 
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-if(BTC_ONLY)
-    list(APPEND INCLUDE_DIR src/ui/gui_widgets/btc_only src/ui/gui_widgets/general)
-else()
-    list(APPEND INCLUDE_DIR src/ui/gui_chain/others src/ui/gui_widgets/general  src/webusb_protocol/general src/webusb_protocol/general/eapdu_services)
+if(NOT BTC_ONLY)
+    list(APPEND INCLUDE_DIR src/webusb_protocol/general src/webusb_protocol/general/eapdu_services)
 endif()
 
 if(NOT BUILD_PRODUCTION)
@@ -162,7 +172,7 @@ file(GLOB_RECURSE GUI
     "src/ui/gui_widgets/setting/*.c"
     "src/ui/lv_i18n/*.c"
     "src/ui/gui_model/*.c"
-    "src/ui/gui_analyze/gui_analyze.c"
+    "src/ui/gui_analyze/*.c"
     "src/ui/gui_chain/*.c"
     "src/ui/gui_components/*.c"
     "src/ui/wallet/*.c"
@@ -192,7 +202,6 @@ if(COMPILE_KEYSTONE)
     message(STATUS "Compiling for MAIN target")
     project(mh1903)
     include(firmware.cmake)
-
 
     file(GLOB_RECURSE SAFE_C
         "external/safec/src/*.c"
@@ -237,14 +246,14 @@ if(COMPILE_KEYSTONE)
         ${ctaes}
     )
 
-    set(objsrc ${MH1903_DRIVER} 
+    set(objsrc ${MH1903_DRIVER}
         ${SRC}
-        ${FREERTOS} 
-        ${DRIVER} 
+        ${FREERTOS}
+        ${DRIVER}
         ${USB_DRIVER}
         ${EXTERNAL}
-        ${CM_BACKTRACE} 
-        ${TASKS} 
+        ${CM_BACKTRACE}
+        ${TASKS}
         ${TEST_CMD}
         ${CRYPTO}
         ${CRYPTO_SLIP39}
@@ -267,6 +276,7 @@ if(COMPILE_KEYSTONE)
             src/webusb_protocol/general)
     else()
         set(excluded_directories
+            src/ui/gui_views/btc_only
             src/ui/gui_widgets/btc_only)
     endif()
 
@@ -280,7 +290,7 @@ if(COMPILE_KEYSTONE)
     target_include_directories(${PROJECT_NAME}.elf PRIVATE ${INCLUDE_DIR})
     add_dependencies(${PROJECT_NAME}.elf rust_c)
 
-    target_link_libraries(${PROJECT_NAME}.elf 
+    target_link_libraries(${PROJECT_NAME}.elf
         ${CMAKE_CURRENT_SOURCE_DIR}/external/mh1903_lib/MHSCPU_Driver/lib/MH1903_QRDecodeLib.a
         m
         ${CMAKE_BINARY_DIR}/rust-builds/librust_c.a
@@ -292,7 +302,7 @@ if(COMPILE_KEYSTONE)
 
     add_custom_command(TARGET "${PROJECT_NAME}.elf" POST_BUILD
         COMMAND ${CMAKE_OBJCOPY} -Obinary ${ELF_FILE} ${BIN_FILE}
-        COMMAND ${CMAKE_OBJCOPY} -Oihex  ${ELF_FILE} ${HEX_FILE}
+        COMMAND ${CMAKE_OBJCOPY} -Oihex ${ELF_FILE} ${HEX_FILE}
         COMMENT "Building ${PROJECT_NAME}.bin and ${PROJECT_NAME}.hex"
 
         COMMAND ${CMAKE_COMMAND} -E copy ${HEX_FILE} "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.hex"
@@ -305,10 +315,28 @@ else()
     project(simulator)
     include(ui_simulator/simulator.cmake)
 
-    add_executable(${PROJECT_NAME} 
+    if(BTC_ONLY)
+        set(excluded_directories
+            src/ui/gui_chain/others
+            src/ui/gui_widgets/general
+            src/ui/gui_views/general
+            src/webusb_protocol/general)
+        SET(INCLUDES src/managers/btc_only/multi_sig_wallet_manager.c src/managers/sdcard_manager.c)
+    else()
+        set(excluded_directories
+            src/ui/gui_views/btc_only
+            src/ui/gui_widgets/btc_only)
+    endif()
+
+    foreach(directory ${excluded_directories})
+        file(GLOB_RECURSE excluded_files "${directory}/*")
+        list(REMOVE_ITEM objsrc ${excluded_files})
+    endforeach()
+
+    add_executable(${PROJECT_NAME}
         ${SIMULATOR_SRC}
         ${EXTERNAL}
-        ${SOURCES} 
+        ${SOURCES}
         ${INCLUDES}
         ${GUI}
         ${LVGL}
@@ -318,6 +346,7 @@ else()
     )
     add_dependencies(${PROJECT_NAME} rust_c)
     target_link_libraries(${PROJECT_NAME} PRIVATE SDL2 ${CMAKE_SOURCE_DIR}/ui_simulator/lib/rust-builds/librust_c.a)
+
     if(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
         target_link_libraries(${PROJECT_NAME} PRIVATE windows ntdll)
     endif()

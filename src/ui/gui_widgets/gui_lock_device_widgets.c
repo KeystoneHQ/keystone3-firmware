@@ -1,3 +1,4 @@
+#include "define.h"
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_views.h"
@@ -77,7 +78,7 @@ void GuiLockDeviceInit(void *param)
         strcpy_s(lockHint, BUFFER_SIZE_128, _("unlock_device_time_limited_error_max_title"));
     }
 
-    lv_obj_t *label =  GuiCreateLabelWithFont(cont, lockHint, &openSansEnLittleTitle);
+    lv_obj_t *label =  GuiCreateLittleTitleLabel(cont, lockHint);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 236 - 96);
 
     if (!IsLockTimePage()) {
@@ -93,7 +94,7 @@ void GuiLockDeviceInit(void *param)
         }
     }
 
-    label =  GuiCreateLabelWithFont(cont, lockHint, &openSans_20);
+    label =  GuiCreateLabelWithFont(cont, lockHint, g_defIllustrateFont);
     lv_label_set_recolor(label, true);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 288 - 96);
     lv_obj_set_width(label, 408);
@@ -101,7 +102,7 @@ void GuiLockDeviceInit(void *param)
 
     if (!IsLockTimePage()) {
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        lv_obj_t *btn = GuiCreateBtn(cont, _("unlock_device_fingerprint_pin_device_locked_btn_start_text"));
+        lv_obj_t *btn = GuiCreateTextBtn(cont, _("unlock_device_fingerprint_pin_device_locked_btn_start_text"));
         lv_obj_set_size(btn, 302, 66);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 622 - 96);
         lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_STATE_DEFAULT);
@@ -112,7 +113,7 @@ void GuiLockDeviceInit(void *param)
         g_countDownTimer = lv_timer_create(CountDownTimerWipeDeviceHandler, 1000, btn);
     } else {
         lv_obj_set_style_text_color(label, lv_color_hex(0xc4c4c4), LV_PART_MAIN);
-        lv_obj_t *btn = GuiCreateBtn(cont, _("forgot_password_reset_passcode_intro_title"));
+        lv_obj_t *btn = GuiCreateTextBtn(cont, _("forgot_password_reset_passcode_intro_text"));
         lv_obj_set_size(btn, 302, 66);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 622 - 96);
         lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_STATE_DEFAULT);
@@ -125,7 +126,6 @@ void GuiLockDeviceInit(void *param)
         SetLockTimeState(true);
     }
 }
-
 
 void GuiLockDeviceRefresh(void)
 {
@@ -157,7 +157,6 @@ void GuiLockDeviceDeInit(void)
     SetLockTimeState(false);
 }
 
-
 static void GuiLockedDeviceCountDownDestruct(void *obj, void* param)
 {
     if (g_countDownTimer != NULL) {
@@ -172,17 +171,17 @@ static void GuiLockedDeviceCountDownDestruct(void *obj, void* param)
 static void CountDownTimerWipeDeviceHandler(lv_timer_t *timer)
 {
     lv_obj_t *obj = (lv_obj_t *)timer->user_data;
-    char buf[BUFFER_SIZE_32] = {0};
+    char buf[BUFFER_SIZE_64] = {0};
     --countDown;
     if (countDown > 0) {
-        snprintf_s(buf, BUFFER_SIZE_32, _("unlock_device_fingerprint_pin_device_locked_btn_fmt"), countDown);
+        snprintf_s(buf, BUFFER_SIZE_64, _("unlock_device_fingerprint_pin_device_locked_btn_fmt"), countDown);
     } else {
-        strcpy_s(buf, BUFFER_SIZE_32, ("unlock_device_fingerprint_pin_device_locked_btn"));
+        strcpy_s(buf, BUFFER_SIZE_64, ("system_settings_wipe_device_wipe_button"));
     }
     lv_label_set_text(lv_obj_get_child(obj, 0), buf);
     if (countDown <= 0) {
         if (CHECK_BATTERY_LOW_POWER()) {
-            g_hintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
+            g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
         } else {
             WipeDevice();
         }
@@ -209,14 +208,11 @@ static void CountDownTimerLockTimeHandler(lv_timer_t *timer)
 
 static void WipeDeviceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (CHECK_BATTERY_LOW_POWER()) {
-            g_hintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox);
-        } else {
-            WipeDevice();
-            GuiLockedDeviceCountDownDestruct(NULL, NULL);
-        }
+    if (CHECK_BATTERY_LOW_POWER()) {
+        g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
+    } else {
+        WipeDevice();
+        GuiLockedDeviceCountDownDestruct(NULL, NULL);
     }
 }
 
@@ -285,12 +281,8 @@ static uint32_t CalculateLockDeiceTime(void)
 
 static void ForgetHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        OpenForgetPasswordHandler(e);
-        SetLockDeviceAlive(true);
-    }
+    OpenForgetPasswordHandler(e);
+    SetLockDeviceAlive(true);
 }
 
 void ResetSuccess(void)

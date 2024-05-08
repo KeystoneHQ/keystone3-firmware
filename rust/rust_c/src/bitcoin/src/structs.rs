@@ -6,10 +6,44 @@ use app_bitcoin;
 use app_bitcoin::parsed_tx::{DetailTx, OverviewTx, ParsedInput, ParsedOutput, ParsedTx};
 use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::Free;
+use common_rust_c::structs::Response;
 use common_rust_c::structs::TransactionParseResult;
 use common_rust_c::types::{PtrString, PtrT};
+use common_rust_c::ur::UREncodeResult;
 use common_rust_c::utils::convert_c_char;
-use common_rust_c::{check_and_free_ptr, impl_c_ptr, make_free_method};
+use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
+
+#[repr(C)]
+pub struct PsbtSignResult {
+    base_str: PtrString,
+    hex_str: PtrString,
+    ur_result: PtrT<UREncodeResult>,
+}
+
+impl PsbtSignResult {
+    pub fn new(psbt_bytes: &Vec<u8>, ur_result: PtrT<UREncodeResult>) -> Self {
+        PsbtSignResult {
+            base_str: convert_c_char(third_party::base64::encode(psbt_bytes)),
+            hex_str: convert_c_char(third_party::hex::encode(psbt_bytes)),
+            ur_result,
+        }
+    }
+}
+
+impl Free for PsbtSignResult {
+    fn free(&self) {
+        free_str_ptr!(self.base_str);
+        free_str_ptr!(self.hex_str);
+        unsafe {
+            let x = Box::from_raw(self.ur_result);
+            x.free();
+        }
+    }
+}
+
+impl_c_ptr!(PsbtSignResult);
+
+make_free_method!(Response<PsbtSignResult>);
 
 #[repr(C)]
 pub struct DisplayTx {
@@ -26,7 +60,10 @@ pub struct DisplayTxOverview {
     from: PtrT<VecFFI<DisplayTxOverviewInput>>,
     to: PtrT<VecFFI<DisplayTxOverviewOutput>>,
     network: PtrString,
+    is_multisig: bool,
     fee_larger_than_amount: bool,
+    sign_status: PtrString,
+    need_sign: bool,
 }
 
 impl_c_ptr!(DisplayTxOverview);
@@ -42,6 +79,7 @@ pub struct DisplayTxDetail {
     total_input_sat: PtrString,
     total_output_sat: PtrString,
     fee_sat: PtrString,
+    sign_status: PtrString,
 }
 
 impl_c_ptr!(DisplayTxDetail);
@@ -58,6 +96,7 @@ pub struct DisplayTxDetailInput {
     amount: PtrString,
     is_mine: bool,
     path: PtrString,
+    is_external: bool,
 }
 
 #[repr(C)]
@@ -71,6 +110,7 @@ pub struct DisplayTxDetailOutput {
     amount: PtrString,
     is_mine: bool,
     path: PtrString,
+    is_external: bool,
 }
 
 impl From<ParsedTx> for DisplayTx {
@@ -111,6 +151,13 @@ impl From<OverviewTx> for DisplayTxOverview {
             )
             .c_ptr(),
             network: convert_c_char(value.network),
+            is_multisig: value.is_multisig,
+            sign_status: if let Some(sign_status) = value.sign_status {
+                convert_c_char(sign_status)
+            } else {
+                null_mut()
+            },
+            need_sign: value.need_sign,
         }
     }
 }
@@ -141,6 +188,11 @@ impl From<DetailTx> for DisplayTxDetail {
             total_output_sat: convert_c_char(value.total_output_sat),
             total_input_sat: convert_c_char(value.total_input_sat),
             fee_sat: convert_c_char(value.fee_sat),
+            sign_status: if let Some(sign_status) = value.sign_status {
+                convert_c_char(sign_status)
+            } else {
+                null_mut()
+            },
         }
     }
 }
@@ -156,6 +208,7 @@ impl From<ParsedInput> for DisplayTxDetailInput {
             amount: convert_c_char(value.amount),
             is_mine: value.path.is_some(),
             path: value.path.map(|v| convert_c_char(v)).unwrap_or(null_mut()),
+            is_external: value.is_external,
         }
     }
 }
@@ -167,6 +220,7 @@ impl From<ParsedOutput> for DisplayTxDetailOutput {
             amount: convert_c_char(value.amount),
             is_mine: value.path.is_some(),
             path: value.path.map(|v| convert_c_char(v)).unwrap_or(null_mut()),
+            is_external: value.is_external,
         }
     }
 }
@@ -267,3 +321,18 @@ impl Free for DisplayTxDetailOutput {
         }
     }
 }
+
+#[repr(C)]
+pub struct DisplayBtcMsg {
+    pub detail: PtrString,
+}
+
+impl_c_ptr!(DisplayBtcMsg);
+
+impl Free for DisplayBtcMsg {
+    fn free(&self) {
+        free_str_ptr!(self.detail);
+    }
+}
+
+make_free_method!(TransactionParseResult<DisplayBtcMsg>);

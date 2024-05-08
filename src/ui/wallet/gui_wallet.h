@@ -6,9 +6,9 @@
 
 UREncodeResult *GuiGetBlueWalletBtcData(void);
 UREncodeResult *GuiGetSparrowWalletBtcData(void);
+UREncodeResult *GuiGetSpecterWalletBtcData(void);
 #ifndef BTC_ONLY
 UREncodeResult *GuiGetKeplrData(void);
-UREncodeResult *GuiGetCompanionAppData(void);
 #ifndef COMPILE_SIMULATOR
 UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType);
 UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountType);
@@ -21,6 +21,7 @@ UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin);
 UREncodeResult *GuiGetPetraData(void);
 UREncodeResult *GuiGetSolflareData(void);
 UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index);
+UREncodeResult *GuiGetADADataByIndex(uint16_t index);
 UREncodeResult *GuiGetImTokenData(void);
 #endif
 #endif

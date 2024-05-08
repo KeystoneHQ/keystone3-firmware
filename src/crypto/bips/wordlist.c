@@ -4,7 +4,6 @@
 #include "wordlist.h"
 #include "user_memory.h"
 
-
 static int bstrcmp(const void *l, const void *r)
 {
     return strcmp(l, (*(const char **)r));

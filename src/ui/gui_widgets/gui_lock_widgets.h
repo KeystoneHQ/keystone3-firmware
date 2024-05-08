@@ -28,6 +28,7 @@ bool GuiLockScreenIsFirstUnlock(void);
 void GuiFpRecognizeResult(bool en);
 void GuiLockScreenPasscodeSwitch(bool isPin);
 void GuiLockScreenSetFirstUnlock(void);
+void GuiLockViewRefreshLanguage(void);
 
 void GuiLockScreenErrorCount(void *param);
 void GuiLockScreenToHome(void);
@@ -37,6 +38,7 @@ bool GuiNeedFpRecognize(void);
 
 void GuiShowGenerateXPubLoading(void);
 void GuiHideGenerateXPubLoading(void);
+void GuiLockViewRefreshLanguage(void);
 #endif /* _GUI_LOCK_WIDGETS_H */
 
 

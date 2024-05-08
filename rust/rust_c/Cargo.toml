@@ -71,6 +71,7 @@ debug-memory = [
     "xrp_rust_c/debug-memory",
 ]
 simulator = ["multi-coins", "no-allocator", "sui_rust_c/simulator"]
+simulator_btc_only = ["btc-only", "no-allocator"]
 no-allocator = []
 default = ["multi-coins"]
 multi-coins = [
@@ -95,6 +96,7 @@ btc-only = [
     "wallet_rust_c/btc-only",
     "test_cmd/btc-only",
 ]
+test_feature = []
 [dev-dependencies]
 keystore = { path = "../keystore" }
 

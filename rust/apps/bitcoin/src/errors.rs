@@ -61,6 +61,26 @@ pub enum BitcoinError {
     InvalidTxData(String),
     #[error("Invalid script type, field: {0}")]
     UnsupportedScriptType(String),
+    #[error("multi sig wallet parse error: {0}")]
+    MultiSigWalletParseError(String),
+    #[error("This wallet doesn't belong to this seed")]
+    MultiSigWalletNotMyWallet,
+    #[error("multi sig wallet address calculate error: {0}")]
+    MultiSigWalletAddressCalError(String),
+    #[error("multi sig wallet import xpub error: {0}")]
+    MultiSigWalletImportXpubError(String),
+    #[error("create multi sig wallet error: {0}")]
+    MultiSigWalletCrateError(String),
+    #[error("get format error: {0}")]
+    MultiSigWalletFormatError(String),
+    #[error("convert network error: {0}")]
+    MultiSigNetworkError(String),
+    #[error("multi sig input error: {0}")]
+    MultiSigInputError(String),
+    #[error("derive public key error: {0}")]
+    DerivePublicKeyError(String),
+    #[error("wallet type error: {0}")]
+    WalletTypeError(String),
 }
 
 impl From<io::Error> for BitcoinError {

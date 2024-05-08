@@ -36,6 +36,7 @@ typedef enum {
     NVS_BAR_SEARCH,
     NVS_BAR_NEW_SKIP,
     NVS_BAR_UNDO,
+    NVS_BAR_SDCARD,
 
     NVS_RIGHT_BUTTON_BUTT,
 } NVS_RIGHT_BUTTON_ENUM;
@@ -66,8 +67,9 @@ void GuiStatusBarSetSdCard(bool connected);
 void GuiStatusBarSetUsb(void);
 #ifdef BTC_ONLY
 void GuiStatusBarSetTestNet(void);
+#else
+char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index);
 #endif
-
 NavBarWidget_t *CreateNavBarWidget(lv_obj_t *navBar);
 void DestoryNavBarWidget(NavBarWidget_t *navBarWidget);
 void SetNavBarLeftBtn(NavBarWidget_t *navBarWidget, NVS_LEFT_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param);

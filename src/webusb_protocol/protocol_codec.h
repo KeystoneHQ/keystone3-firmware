@@ -30,14 +30,12 @@ typedef struct {
 } FrameHead_t;
 #pragma pack()
 
-
 typedef struct {
     uint8_t type;
     uint16_t length;
     void *pValue;
     uint32_t value;
 } Tlv_t;
-
 
 uint8_t *BuildFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlvLen);
 uint32_t GetFrameTotalLength(const Tlv_t tlvArray[], uint32_t tlvLen);

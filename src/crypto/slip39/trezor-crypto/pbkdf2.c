@@ -62,7 +62,6 @@ void hmac_sha256_prepare_slip39(const uint8_t *key, const uint32_t keylen,
     memzero(key_pad, sizeof(key_pad));
 }
 
-
 void pbkdf2_hmac_sha256_Init(PBKDF2_HMAC_SHA256_CTX *pctx, const uint8_t *pass,
                              int passlen, const uint8_t *salt, int saltlen,
                              uint32_t blocknr)

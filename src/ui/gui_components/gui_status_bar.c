@@ -20,6 +20,11 @@
 #include "drv_usb.h"
 #else
 #include "simulator_model.h"
+static void SwitchWalletHandler(lv_event_t * e)
+{
+    static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
+    GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
+}
 #endif
 
 typedef struct StatusBar {
@@ -37,6 +42,7 @@ typedef struct StatusBar {
     lv_obj_t *batteryCharging;
     lv_obj_t *batteryPadImg;
     lv_obj_t *batteryLabel;
+    lv_obj_t *betaImg;
 #ifdef BTC_ONLY
     lv_obj_t *testNetImg;
 #endif
@@ -54,82 +60,85 @@ bool GetLvglHandlerStatus(void);
 static void RefreshStatusBar(void);
 
 const static CoinWalletInfo_t g_coinWalletBtn[] = {
-    {CHAIN_BTC, "Confirm Transaction", &coinBtc},
+    {CHAIN_BTC, "", &coinBtc},
 #ifndef BTC_ONLY
-    {CHAIN_ETH, "Confirm Transaction", &coinEth},
-    {CHAIN_SOL, "Confirm Transaction", &coinSol},
-    {CHAIN_BNB, "Confirm Transaction", &coinBnb},
-    {CHAIN_XRP, "Confirm Transaction", &coinXrp},
-    {CHAIN_ADA, "Confirm Transaction", &coinAda},
-    {CHAIN_DOT, "Confirm Transaction", &coinDot},
-    {CHAIN_TRX, "Confirm Transaction", &coinTrx},
-    {CHAIN_LTC, "Confirm Transaction", &coinLtc},
-    {CHAIN_BCH, "Confirm Transaction", &coinBch},
-    {CHAIN_APT, "Confirm Transaction", &coinApt},
-    {CHAIN_SUI, "Confirm Transaction", &coinSui},
-    {CHAIN_DASH, "Confirm Transaction", &coinDash},
-    {CHAIN_COSMOS, "Confirm Transaction", &coinCosmos},
-    {CHAIN_TIA, "Confirm Transaction", &coinTia},
-    {CHAIN_DYM, "Confirm Transaction", &coinDym},
-    {CHAIN_OSMO, "Confirm Transaction", &coinOsmo},
-    {CHAIN_INJ, "Confirm Transaction", &coinInj},
-    {CHAIN_ATOM, "Confirm Transaction", &coinAtom},
-    {CHAIN_CRO, "Confirm Transaction", &coinCro},
-    {CHAIN_KAVA, "Confirm Transaction", &coinKava},
-    {CHAIN_LUNC, "Confirm Transaction", &coinLunc},
-    {CHAIN_AXL, "Confirm Transaction", &coinAxl},
-    {CHAIN_LUNA, "Confirm Transaction", &coinLuna},
-    {CHAIN_AKT, "Confirm Transaction", &coinAkt},
-    {CHAIN_STRD, "Confirm Transaction", &coinStrd},
-    {CHAIN_SCRT, "Confirm Transaction", &coinScrt},
-    {CHAIN_BLD, "Confirm Transaction", &coinBld},
-    {CHAIN_CTK, "Confirm Transaction", &coinCtk},
-    {CHAIN_EVMOS, "Confirm Transaction", &coinEvmos},
-    {CHAIN_STARS, "Confirm Transaction", &coinStars},
-    {CHAIN_XPRT, "Confirm Transaction", &coinXprt},
-    {CHAIN_SOMM, "Confirm Transaction", &coinSomm},
-    {CHAIN_JUNO, "Confirm Transaction", &coinJuno},
-    {CHAIN_IRIS, "Confirm Transaction", &coinIris},
-    {CHAIN_DVPN, "Confirm Transaction", &coinDvpn},
-    {CHAIN_ROWAN, "Confirm Transaction", &coinRowan},
-    {CHAIN_REGEN, "Confirm Transaction", &coinRegen},
-    {CHAIN_BOOT, "Confirm Transaction", &coinBoot},
-    {CHAIN_GRAV, "Confirm Transaction", &coinGrav},
-    {CHAIN_IXO, "Confirm Transaction", &coinIxo},
-    {CHAIN_NGM, "Confirm Transaction", &coinNgm},
-    {CHAIN_IOV, "Confirm Transaction", &coinIov},
-    {CHAIN_UMEE, "Confirm Transaction", &coinUmee},
-    {CHAIN_QCK, "Confirm Transaction", &coinQck},
-    {CHAIN_TGD, "Confirm Transaction", &coinTgd},
+    {CHAIN_ETH, "", &coinEth},
+    {CHAIN_SOL, "", &coinSol},
+    {CHAIN_BNB, "", &coinBnb},
+    {CHAIN_XRP, "", &coinXrp},
+    {CHAIN_ADA, "", &coinAda},
+    {CHAIN_DOT, "", &coinDot},
+    {CHAIN_TRX, "", &coinTrx},
+    {CHAIN_LTC, "", &coinLtc},
+    {CHAIN_BCH, "", &coinBch},
+    {CHAIN_APT, "", &coinApt},
+    {CHAIN_SUI, "", &coinSui},
+    {CHAIN_DASH, "", &coinDash},
+    {CHAIN_COSMOS, "", &coinCosmos},
+    {CHAIN_TIA, "", &coinTia},
+    {CHAIN_DYM, "", &coinDym},
+    {CHAIN_OSMO, "", &coinOsmo},
+    {CHAIN_INJ, "", &coinInj},
+    {CHAIN_ATOM, "", &coinAtom},
+    {CHAIN_CRO, "", &coinCro},
+    {CHAIN_KAVA, "", &coinKava},
+    {CHAIN_LUNC, "", &coinLunc},
+    {CHAIN_AXL, "", &coinAxl},
+    {CHAIN_LUNA, "", &coinLuna},
+    {CHAIN_AKT, "", &coinAkt},
+    {CHAIN_STRD, "", &coinStrd},
+    {CHAIN_SCRT, "", &coinScrt},
+    {CHAIN_BLD, "", &coinBld},
+    {CHAIN_CTK, "", &coinCtk},
+    {CHAIN_EVMOS, "", &coinEvmos},
+    {CHAIN_STARS, "", &coinStars},
+    {CHAIN_XPRT, "", &coinXprt},
+    {CHAIN_SOMM, "", &coinSomm},
+    {CHAIN_JUNO, "", &coinJuno},
+    {CHAIN_IRIS, "", &coinIris},
+    {CHAIN_DVPN, "", &coinDvpn},
+    {CHAIN_ROWAN, "", &coinRowan},
+    {CHAIN_REGEN, "", &coinRegen},
+    {CHAIN_BOOT, "", &coinBoot},
+    {CHAIN_GRAV, "", &coinGrav},
+    {CHAIN_IXO, "", &coinIxo},
+    {CHAIN_NGM, "", &coinNgm},
+    {CHAIN_IOV, "", &coinIov},
+    {CHAIN_UMEE, "", &coinUmee},
+    {CHAIN_QCK, "", &coinQck},
+    {CHAIN_TGD, "", &coinTgd},
 #endif
 };
 
 const static CoinWalletInfo_t g_walletBtn[] = {
 #ifndef BTC_ONLY
-    {WALLET_LIST_KEYSTONE, "Connect Keystone Wallet", &walletKeystone},
-    {WALLET_LIST_METAMASK, "Connect MetaMask", &walletMetamask},
-    {WALLET_LIST_OKX, "Connect OKX Wallet", &walletOkx},
-    {WALLET_LIST_ETERNL, "Connect Eternl Wallet", &walletEternl},
-    {WALLET_LIST_BLUE, "Connect BlueWallet", &walletBluewallet},
-    {WALLET_LIST_SUB, "Connect SubWallet", &walletSubwallet},
-    {WALLET_LIST_SOLFARE, "Connect Solflare", &walletSolflare},
-    {WALLET_LIST_RABBY, "Connect Rabby", &walletRabby},
-    {WALLET_LIST_SAFE, "Connect Safe", &walletSafe},
-    {WALLET_LIST_SPARROW, "Connect Sparrow", &walletSparrow},
-    {WALLET_LIST_IMTOKEN, "Connect imToken", &walletImToken},
-    {WALLET_LIST_BLOCK_WALLET, "Connect Block Wallet", &walletBlockWallet},
-    {WALLET_LIST_ZAPPER, "Connect Zapper", &walletZapper},
-    {WALLET_LIST_YEARN_FINANCE, "Connect Yearn Finance", &walletYearn},
-    {WALLET_LIST_SUSHISWAP, "Connect SushiSwap", &walletSushi},
-    {WALLET_LIST_KEPLR, "Connect Keplr", &walletKeplr},
-    {WALLET_LIST_FEWCHA, "Connect Fewcha", &walletFewcha},
-    {WALLET_LIST_PETRA, "Connect Petra", &walletPetra},
-    {WALLET_LIST_XRP_TOOLKIT, "Connect XRP Toolkit", &walletXRPToolkit},
+    {WALLET_LIST_METAMASK, "MetaMask", &walletMetamask},
+    {WALLET_LIST_OKX, "OKX Wallet", &walletOkx},
+    {WALLET_LIST_ETERNL, "Eternl Wallet", &walletEternl},
+    // {WALLET_LIST_YOROI, "Yoroi Wallet", &walletYoroi},
+    {WALLET_LIST_TYPHON, "Typhon Wallet", &walletTyphon},
+    {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
+    {WALLET_LIST_SUB, "SubWallet", &walletSubwallet},
+    {WALLET_LIST_SOLFARE, "Solflare", &walletSolflare},
+    {WALLET_LIST_RABBY, "Rabby", &walletRabby},
+    {WALLET_LIST_SAFE, "Safe", &walletSafe},
+    {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
+    {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
+    {WALLET_LIST_IMTOKEN, "imToken", &walletImToken},
+    {WALLET_LIST_BLOCK_WALLET, "Block Wallet", &walletBlockWallet},
+    {WALLET_LIST_ZAPPER, "Zapper", &walletZapper},
+    {WALLET_LIST_YEARN_FINANCE, "Yearn Finance", &walletYearn},
+    {WALLET_LIST_SUSHISWAP, "SushiSwap", &walletSushi},
+    {WALLET_LIST_KEPLR, "Keplr", &walletKeplr},
+    {WALLET_LIST_FEWCHA, "Fewcha", &walletFewcha},
+    {WALLET_LIST_PETRA, "Petra", &walletPetra},
+    {WALLET_LIST_XRP_TOOLKIT, "XRP Toolkit", &walletXRPToolkit},
 #else
-    {WALLET_LIST_BLUE, "Connect BlueWallet", &walletBluewallet},
-    {WALLET_LIST_SPECTER, "Connect Specter", &walletSpecter},
-    {WALLET_LIST_SPARROW, "Connect Sparrow", &walletSparrow},
-    {WALLET_LIST_NUNCHUK, "Connect Nunchuk", &walletNunchuk},
+    {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
+    {WALLET_LIST_SPECTER, "Specter", &walletSpecter},
+    {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
+    {WALLET_LIST_NUNCHUK, "Nunchuk", &walletNunchuk},
+    {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
 #endif
 };
 
@@ -233,6 +242,11 @@ void GuiStatusBarInit(void)
     img = GuiCreateImg(cont, &imgUsb);
     g_guiStatusBar.usbImg = img;
     lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
+
+    if (SOFTWARE_VERSION_BUILD % 2) {
+        img = GuiCreateImg(cont, &imgBeta);
+        g_guiStatusBar.betaImg = img;
+    }
 #ifdef BTC_ONLY
     img = GuiCreateImg(cont, &imgTestNet);
     g_guiStatusBar.testNetImg = img;
@@ -241,6 +255,10 @@ void GuiStatusBarInit(void)
     RefreshStatusBar();
 #ifdef COMPILE_SIMULATOR
     GuiStatusBarSetBattery(88, true);
+    lv_obj_t *btn = GuiCreateTextBtn(cont, "switch");
+    lv_obj_set_style_bg_opa(btn, LV_OPA_0, 0);
+    lv_obj_add_event_cb(btn, SwitchWalletHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 0);
 #endif
 }
 
@@ -281,13 +299,22 @@ void GuiStatusBarSetUsb(void)
 #ifdef BTC_ONLY
 void GuiStatusBarSetTestNet(void)
 {
-    if (GetCurrentAccountIndex() >= 3 || GetIsTestNet() == false) {
-        lv_obj_add_flag(g_guiStatusBar.testNetImg, LV_OBJ_FLAG_HIDDEN);
-    } else {
+    if ((GetIsTestNet() == true) && (GetCurrentWalletIndex() == SINGLE_WALLET) && GetCurrentAccountIndex() < 3) {
         lv_obj_clear_flag(g_guiStatusBar.testNetImg, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(g_guiStatusBar.testNetImg, LV_OBJ_FLAG_HIDDEN);
     }
     RefreshStatusBar();
-    printf("GuiStatusBarSetTestNet\n");
+}
+#else
+char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
+{
+    if (index == WALLET_LIST_ETERNL) {
+        return "Eternl";
+    } else if (index == WALLET_LIST_TYPHON) {
+        return "Typhon";
+    }
+    return g_walletBtn[index].name;
 }
 #endif
 
@@ -332,7 +359,6 @@ void GuiStatusBarSetBattery(uint8_t percent, bool charging)
     RefreshStatusBar();
 }
 
-
 static void RefreshStatusBar(void)
 {
     lv_obj_t *next;
@@ -342,74 +368,49 @@ static void RefreshStatusBar(void)
         next = g_guiStatusBar.sdCardImg;
     }
     lv_obj_align_to(g_guiStatusBar.usbImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
-#ifdef BTC_ONLY
     if (!lv_obj_has_flag(g_guiStatusBar.usbImg, LV_OBJ_FLAG_HIDDEN)) {
         next = g_guiStatusBar.usbImg;
     }
+#ifdef BTC_ONLY
     lv_obj_align_to(g_guiStatusBar.testNetImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
+    next = g_guiStatusBar.testNetImg;
 #endif
+    if (SOFTWARE_VERSION_BUILD % 2) {
+        lv_obj_align_to(g_guiStatusBar.betaImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
+    }
 }
 
 static lv_obj_t *CreateReturnBtn(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *img;
-
-    btn = GuiCreateBtn(navBar, "");
-    lv_obj_set_size(btn, 64, 64);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgArrowLeft, 64, NULL, NULL);
     lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
-
-    img = GuiCreateImg(btn, &imgArrowLeft);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
 
     return btn;
 }
 
 static lv_obj_t *CreateCloseBtn(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *img;
-
-    btn = GuiCreateBtn(navBar, "");
-    lv_obj_set_size(btn, 64, 64);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgClose, 64, NULL, NULL);
     lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
-
-    img = GuiCreateImg(btn, &imgClose);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
 
     return btn;
 }
 
 static lv_obj_t *CreateManageBtn(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *img;
-
-    btn = GuiCreateBtn(navBar, "");
-    lv_obj_set_size(btn, 64, 64);
-    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
-
 #ifdef BTC_ONLY
-    img = GuiCreateImg(btn, &imgWallet2);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgWallet2, 64, NULL, NULL);
 #else
-    img = GuiCreateImg(btn, &imgManage);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgManage, 64, NULL, NULL);
 #endif
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
+    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
 
     return btn;
 }
 
 static lv_obj_t *CreateMidLabel(lv_obj_t *navBar)
 {
-    lv_obj_t *label;
-
-    label = GuiCreateTextLabel(navBar, "");
+    lv_obj_t *label = GuiCreateTextLabel(navBar, "");
     lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 
     return label;
@@ -417,9 +418,7 @@ static lv_obj_t *CreateMidLabel(lv_obj_t *navBar)
 
 static lv_obj_t *CreateMidWordCntSelect(lv_obj_t *navBar)
 {
-    lv_obj_t *btn;
-
-    btn = GuiCreateBtnWithFont(navBar, "20    " USR_SYMBOL_DOWN, &openSans_20);
+    lv_obj_t *btn = GuiCreateBtnWithFont(navBar, "20    " USR_SYMBOL_DOWN, g_defIllustrateFont);
     lv_obj_align(btn, LV_ALIGN_LEFT_MID, 268, 0);
     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
     lv_obj_set_size(btn, 69, 42);
@@ -430,9 +429,7 @@ static lv_obj_t *CreateMidWordCntSelect(lv_obj_t *navBar)
 
 static lv_obj_t *CreateCoinBtn(lv_obj_t *navBar)
 {
-    lv_obj_t *btn;
-
-    btn = GuiCreateStatusCoinButton(navBar, _("Connect BlueWallet"), &walletBluewallet);
+    lv_obj_t *btn = GuiCreateStatusCoinButton(navBar, _(""), &walletBluewallet);
     lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
 
     return btn;
@@ -440,10 +437,8 @@ static lv_obj_t *CreateCoinBtn(lv_obj_t *navBar)
 
 static lv_obj_t *CreateWordCntSelect(lv_obj_t *navBar)
 {
-    lv_obj_t *btn;
-
-    btn = GuiCreateBtnWithFont(navBar, "24    " USR_SYMBOL_DOWN, &openSans_20);
-    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 387, 0);
+    lv_obj_t *btn = GuiCreateLabelImgAdaptButton(navBar, _("24"), &imgArrowDownS, NULL, NULL);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
     lv_obj_set_size(btn, 69, 42);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
@@ -453,11 +448,10 @@ static lv_obj_t *CreateWordCntSelect(lv_obj_t *navBar)
 
 static lv_obj_t *CreateResetButton(lv_obj_t *navBar)
 {
-    lv_obj_t *btn;
-
-    btn = GuiCreateBtnWithFont(navBar, _("single_phrase_reset"), &openSansEnIllustrate);
+    lv_obj_t *btn = GuiCreateImgLabelAdaptButton(navBar, _("single_phrase_reset"), &imgReset, NULL, NULL);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_100, LV_PART_MAIN);
     lv_obj_set_size(btn, 106, 42);
-    lv_obj_align(btn, LV_ALIGN_DEFAULT, 350, 27);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
     lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
@@ -467,93 +461,38 @@ static lv_obj_t *CreateResetButton(lv_obj_t *navBar)
 
 static lv_obj_t *CreateQuestion(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *img;
-
-    btn = GuiCreateBtn(navBar, "");
-    img = GuiCreateImg(btn, &imgQuestion);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgQuestion, 64, NULL, NULL);
     lv_obj_set_size(btn, 106, 42);
-    lv_obj_align(btn, LV_ALIGN_DEFAULT, 380, 27);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
     return btn;
 }
 
 static lv_obj_t *CreateMoreInfo(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *img;
-
-    btn = GuiCreateBtn(navBar, "");
-    lv_obj_set_size(btn, 64, 64);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgMore, 64, NULL, NULL);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-    img = GuiCreateImg(btn, &imgMore);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-
     return btn;
 }
 
 static lv_obj_t *CreateSkip(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *img;
-
-    btn = GuiCreateBtn(navBar, "");
-    lv_obj_set_size(btn, 64, 64);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgSkip, 64, NULL, NULL);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-    img = GuiCreateImg(btn, &imgSkip);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-
     return btn;
 }
 
 static lv_obj_t *CreateSearch(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *img;
-
-    btn = GuiCreateBtn(navBar, "");
-    lv_obj_set_size(btn, 64, 64);
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgSearch, 64, NULL, NULL);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-    img = GuiCreateImg(btn, &imgSearch);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
-
     return btn;
 }
 
 static lv_obj_t *CreateNewSkip(lv_obj_t *navBar)
 {
-    lv_obj_t *btn, *textLabel;
-
-    btn = lv_label_create(navBar);
-    lv_label_set_text(btn, "");
-    lv_obj_set_size(btn, 63, 42);
-    lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
+    lv_obj_t *btn = GuiCreateTextBtn(navBar, _("Skip"));
     lv_obj_set_style_bg_color(btn, GRAY_COLOR, 0);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED | LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_10 + LV_OPA_2, LV_STATE_PRESSED | LV_PART_MAIN);
-
-    textLabel = lv_label_create(btn);
-    lv_label_set_text(textLabel, "Skip");
-    lv_obj_set_style_text_font(textLabel, &openSans_20, LV_PART_MAIN);
-    lv_obj_set_style_text_opa(textLabel, LV_OPA_90, LV_PART_MAIN);
-    lv_label_set_long_mode(textLabel, LV_LABEL_LONG_WRAP);
-    lv_obj_set_style_bg_opa(textLabel, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_align(textLabel, LV_ALIGN_CENTER);
-    lv_obj_align(textLabel, LV_ALIGN_CENTER, 0, 2);
-    lv_obj_set_style_text_color(textLabel, WHITE_COLOR, LV_PART_MAIN);
-
     return btn;
 }
 
@@ -586,6 +525,12 @@ static lv_obj_t *CreateUndo(lv_obj_t *navBar)
     return btn;
 }
 
+static lv_obj_t *CreateSDCard(lv_obj_t *navBar)
+{
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgSdCardColor, 64, NULL, NULL);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
+    return btn;
+}
 
 NavBarWidget_t *CreateNavBarWidget(lv_obj_t *navBar)
 {
@@ -610,7 +555,6 @@ void DestoryNavBarWidget(NavBarWidget_t *navBarWidget)
         SRAM_FREE(navBarWidget);
     }
 }
-
 
 void SetNavBarLeftBtn(NavBarWidget_t *navBarWidget, NVS_LEFT_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param)
 {
@@ -645,7 +589,6 @@ void SetNavBarLeftBtn(NavBarWidget_t *navBarWidget, NVS_LEFT_BUTTON_ENUM button,
     }
 }
 
-
 void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param)
 {
     if (navBarWidget->midBtn != NULL && lv_obj_is_valid(navBarWidget->midBtn)) {
@@ -674,11 +617,10 @@ void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, l
     }
 }
 
-
 void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index, const char *name)
 {
     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
-    navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, (name != NULL) ? name : g_coinWalletBtn[index].name,
+    navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, (name != NULL) ? name : _("confirm_transaction"),
                            g_coinWalletBtn[index].icon);
 }
 
@@ -686,7 +628,9 @@ void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const
 {
     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
     if (name == NULL) {
-        navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, g_walletBtn[index].name,
+        char name[BUFFER_SIZE_64] = {0};
+        snprintf_s(name, BUFFER_SIZE_64, "%s %s", _("connect_head"), g_walletBtn[index].name);
+        navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, name,
                                g_walletBtn[index].icon);
     } else {
         navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, name,
@@ -719,7 +663,8 @@ void SetRightBtnLabel(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM button
         lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 0), text);
         break;
     case NVS_BAR_WORD_RESET:
-        lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 0), text);
+        lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 1), text);
+        GuiImgLabelAdaptButtonResize(navBarWidget->rightBtn);
         break;
     default:
         return;
@@ -769,6 +714,10 @@ void SetNavBarRightBtn(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM butto
         break;
     case NVS_BAR_UNDO:
         navBarWidget->rightBtn = CreateUndo(navBarWidget->navBar);
+        rightButtonCb = eventCb;
+        break;
+    case NVS_BAR_SDCARD:
+        navBarWidget->rightBtn = CreateSDCard(navBarWidget->navBar);
         rightButtonCb = eventCb;
         break;
     default:

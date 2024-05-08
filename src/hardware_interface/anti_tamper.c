@@ -17,12 +17,10 @@
 #include "drv_bpk.h"
 #include "drv_otp.h"
 
-
 #define TAMPER_MARK                 0x5A
 // #define TAMPER_OTP_FLAG
 
 static void TamperEraseInfo(void);
-
 
 /// @brief Called when startup.
 void TamperStartup(void)
@@ -62,14 +60,12 @@ void TamperStartup(void)
     }
 }
 
-
 /// @brief Tamper ext interrupt handler.
 void TamperIntHandler(void)
 {
     printf("tamper interrupt\r\n");
     PubValueMsg(BACKGROUND_MSG_TAMPER, 0);
 }
-
 
 /// @brief Tamper handler that processed in background task when the tamper interrupt occurred.
 void TamperBackgroundHandler(void)
@@ -78,7 +74,6 @@ void TamperBackgroundHandler(void)
     TamperEraseInfo();
     SystemReboot();
 }
-
 
 /// @brief Check the device whether be tampered.
 /// @return True if the device has been tampered.
@@ -111,12 +106,10 @@ bool Tampered(void)
     return tampered;
 }
 
-
 void TamperTest(int argc, char *argv[])
 {
     printf("tamper read=%d\r\n", ReadTamperInput());
 }
-
 
 static void TamperEraseInfo(void)
 {
@@ -141,4 +134,3 @@ static void TamperEraseInfo(void)
     DS28S60_HmacEncryptWrite(pageData, 88);
     printf("erase over\n");
 }
-

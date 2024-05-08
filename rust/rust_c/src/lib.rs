@@ -1,4 +1,4 @@
-#![no_std]
+#![cfg_attr(not(feature = "no-allocator"), no_std)]
 
 #[cfg(not(feature = "no-allocator"))]
 use kt_allocator::my_alloc::KTAllocator;

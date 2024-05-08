@@ -100,6 +100,8 @@ typedef enum {
     SIG_SETTING_CHECKSUM_PERCENT,
     SIG_SETTING_SHA256_PERCENT,
     SIG_SETTING_SHA256_PERCENT_ERROR,
+    SIG_SETTING_MICRO_CARD_FORMAT_SUCCESS,
+    SIG_SETTING_MICRO_CARD_FORMAT_FAILED,
     SIG_SETTING_BUTT,
 
     SIG_FINGER_REGISTER_STEP_SUCCESS = SIG_SETTING_BUTT + 50,
@@ -130,10 +132,13 @@ typedef enum {
     SIG_TRANSACTION_PARSE_SUCCESS,
     SIG_TRANSACTION_PARSE_FAIL,
     SIG_SIGN_TRANSACTION_WITH_PASSWORD,
+    SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD,
+    SIG_MULTISIG_WALLET_DELETE_VERIFY_PASSWORD,
+    SIG_MULTISIG_WALLET_SET_WALLET_EXPORT,
+    SIG_IMPORT_TRANSACTION_FROM_FILE,
     SIG_TRANSACTION_BUTT,
 
-
-
+    SIG_MULTISIG_WALLET_CREATE,
 
 } GUI_VIEW_SIG_ENUM;
 
@@ -188,8 +193,16 @@ extern GUI_VIEW g_exportPubkeyView;
 extern GUI_VIEW g_updateSuccessView;
 #ifdef BTC_ONLY
 extern GUI_VIEW g_btcBtcWalletProfileView;
+extern GUI_VIEW g_multisigTransactionSignatureView;
+extern GUI_VIEW g_importMultisigWalletInfoView;
+extern GUI_VIEW g_multisigSelectImportMethodView;
+extern GUI_VIEW g_multisigWalletExportView;
+extern GUI_VIEW g_multisigReadSdcardView;
+extern GUI_VIEW g_createMultisigWalletView;
+extern GUI_VIEW g_manageMultisigWalletView;
 #endif
 
+typedef void (*ErrorWindowCallback)(void);
 
 void UnHandler(lv_event_t *e);
 void OpenImportWalletHandler(lv_event_t *e);
@@ -199,6 +212,7 @@ void CloseTimerCurrentViewHandler(lv_event_t *e);
 void GoToHomeViewHandler(lv_event_t *e);
 void ReturnHandler(lv_event_t *e);
 void NextTileHandler(lv_event_t *e);
+void ReadyNextTileHandler(lv_event_t *e);
 void CloseCurrentParentHandler(lv_event_t *e);
 void CloseCurrentUserDataHandler(lv_event_t *e);
 void ToggleSwitchBoxHandler(lv_event_t *e);
@@ -211,6 +225,10 @@ void CloseCurrentParentAndCloseViewHandler(lv_event_t *e);
 void CloseToTargetTileView(uint8_t currentIndex, uint8_t targetIndex);
 void CloseParentAndNextHandler(lv_event_t *e);
 void GuiViewHintBoxClear(void);
+lv_obj_t *GuiCreateWalletNoticeWidget(lv_obj_t *parent);
+void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCallback cb);
+void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t **param, ErrorWindowCallback cb);
+void GuiSDCardExportHandler(lv_event_t *e);
+void CreateBetaNotice(void);
 
 #endif /* _GUI_VIEWS_H */
-

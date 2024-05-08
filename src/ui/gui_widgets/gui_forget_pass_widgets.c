@@ -71,55 +71,43 @@ bool GuiIsForgetPass(void)
 
 static void GuiQuitHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        // printf("g_prevView ID = %d\n", g_prevView->id);
-        if (g_prevView != NULL && g_prevView->id == SCREEN_LOCK) {
-            GuiLockScreenUpdatePassCode();
-            GuiLockScreenFpRecognize();
-        }
-        GuiCLoseCurrentWorkingView();
+    if (g_prevView != NULL && g_prevView->id == SCREEN_LOCK) {
+        GuiLockScreenUpdatePassCode();
+        GuiLockScreenFpRecognize();
     }
+    GuiCLoseCurrentWorkingView();
 }
 
 static void ContinueStopCreateHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        if (lv_event_get_user_data(e) != NULL) {
-            g_forgetMkb->currentSlice = 0;
-            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-            CloseToTargetTileView(g_forgetPassTileView.currentTile, FORGET_PASSWORD_METHOD_SELECT);
-        }
-        GUI_DEL_OBJ(g_noticeHintBox)
+    if (lv_event_get_user_data(e) != NULL) {
+        g_forgetMkb->currentSlice = 0;
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        CloseToTargetTileView(g_forgetPassTileView.currentTile, FORGET_PASSWORD_METHOD_SELECT);
     }
+    GUI_DEL_OBJ(g_noticeHintBox)
 }
 
 static void StopCreateViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
+    g_noticeHintBox = GuiCreateHintBox(416);
+    lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgWarn);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 432);
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("forget_password_cancel"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 528);
+    label = GuiCreateIllustrateLabel(g_noticeHintBox, _("import_wallet_ssb_cancel_desc"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 580);
+    lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _("not_now"));
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_DEFAULT, 36, 710);
+    lv_obj_set_size(btn, 162, 66);
+    lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, NULL);
 
-    if (code == LV_EVENT_CLICKED) {
-        g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 416, false);
-        lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgWarn);
-        lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 432);
-        lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("forget_password_cancel"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 528);
-        label = GuiCreateIllustrateLabel(g_noticeHintBox, _("import_wallet_ssb_cancel_desc"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 580);
-        lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("not_now"));
-        lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-        lv_obj_align(btn, LV_ALIGN_DEFAULT, 36, 710);
-        lv_obj_set_size(btn, 162, 66);
-        lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, NULL);
-
-        btn = GuiCreateBtn(g_noticeHintBox, _("Cancel"));
-        lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
-        lv_obj_align(btn, LV_ALIGN_DEFAULT, 229, 710);
-        lv_obj_set_size(btn, 215, 66);
-        lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, g_noticeHintBox);
-    }
+    btn = GuiCreateTextBtn(g_noticeHintBox, _("Cancel"));
+    lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_DEFAULT, 229, 710);
+    lv_obj_set_size(btn, 215, 66);
+    lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, g_noticeHintBox);
 }
 
 void GuiForgetAnimContDel(int errCode)
@@ -130,15 +118,14 @@ void GuiForgetAnimContDel(int errCode)
     }
 
     if (errCode == 0) {
-        g_waitAnimCont = GuiCreateAnimHintBox(lv_scr_act(), 480, 326, 82);
-        printf("g_waitAnimCont = %p\n", g_waitAnimCont);
-        lv_obj_t *title = GuiCreateTextLabel(g_waitAnimCont, _("change_passcode_reset_title"));
+        g_waitAnimCont = GuiCreateAnimHintBox(480, 326, 82);
+        lv_obj_t *title = GuiCreateLittleTitleLabel(g_waitAnimCont, _("change_passcode_reset_title"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -124);
-        lv_obj_t *desc = GuiCreateNoticeLabel(g_waitAnimCont, _("change_passcode_reset_desc"));
+        lv_obj_t *desc = GuiCreateNoticeLabel(g_waitAnimCont, _("write_se_desc"));
         lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -76);
         lv_obj_add_flag(g_waitAnimCont, LV_OBJ_FLAG_CLICKABLE);
     } else {
-        g_waitAnimCont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
+        g_waitAnimCont = GuiCreateAnimHintBox(480, 278, 82);
         lv_obj_t *title = GuiCreateTextLabel(g_waitAnimCont, _("seed_check_wait_verify"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -76);
         lv_obj_add_flag(g_waitAnimCont, LV_OBJ_FLAG_CLICKABLE);
@@ -151,7 +138,7 @@ void GuiForgetPassVerifyResult(bool en, int errCode)
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         GuiForgetPassNextTile(0);
     } else {
-        g_noticeHintBox = GuiCreateErrorCodeHintbox(errCode, &g_noticeHintBox);
+        g_noticeHintBox = GuiCreateErrorCodeWindow(errCode, &g_noticeHintBox, NULL);
     }
     if (g_waitAnimCont != NULL) {
         lv_obj_del(g_waitAnimCont);
@@ -163,7 +150,7 @@ void GuiForgetPassResetPass(bool en, int errCode)
 {
     g_isForgetPass = true;
     SetKeyboardWidgetMode((g_setPassCode->mode == ENTER_PASSCODE_SET_PIN) ? KEYBOARD_HINTBOX_PIN : KEYBOARD_HINTBOX_PASSWORD);
-    lv_obj_t *cont = GuiCreateResultHintbox(lv_scr_act(), 356, &imgSuccess, _("change_passcode_reset_success_title"),
+    lv_obj_t *cont = GuiCreateResultHintbox(356, &imgSuccess, _("change_passcode_reset_success_title"),
                                             _("change_passcode_reset_success_desc"), NULL, DARK_GRAY_COLOR, _("Done"), ORANGE_COLOR);
     lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(cont);
     lv_obj_add_event_cb(rightBtn, CloseCurrentParentAndCloseViewHandler, LV_EVENT_CLICKED, NULL);
@@ -217,29 +204,18 @@ static void GuiCreateRepeatPinWidget(lv_obj_t *parent)
 
 static void ImportPhraseWordsHandler(lv_event_t* e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        ImportSinglePhraseWords(g_forgetMkb, g_forgetPhraseKb);
-    }
+    ImportSinglePhraseWords(g_forgetMkb, g_forgetPhraseKb);
 }
 
 static void ImportShareNextSliceHandler(lv_event_t* e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        ImportShareNextSlice(g_forgetMkb, g_forgetPhraseKb);
-    }
+    ImportShareNextSlice(g_forgetMkb, g_forgetPhraseKb);
 }
 
 static void ResetClearImportHandler(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        ClearMnemonicKeyboard(g_forgetMkb, &g_forgetMkb->currentId);
-        GuiClearKeyBoard(g_forgetPhraseKb);
-    }
+    ClearMnemonicKeyboard(g_forgetMkb, &g_forgetMkb->currentId);
+    GuiClearKeyBoard(g_forgetPhraseKb);
 }
 
 static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
@@ -253,9 +229,7 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
     g_nextCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 114);
     lv_obj_set_align(g_nextCont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_opa(g_nextCont, LV_OPA_0, 0);
-    g_forgetMkb->nextButton = GuiCreateBtn(g_nextCont, "");
-    lv_obj_t *img = GuiCreateImg(g_forgetMkb->nextButton, &imgArrowNext);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    g_forgetMkb->nextButton = GuiCreateBtn(g_nextCont, USR_SYMBOL_ARROW_NEXT);
     lv_obj_align(g_forgetMkb->nextButton, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
 
     if (wordAmount == 20 || wordAmount == 33) {
@@ -310,7 +284,6 @@ void GuiWalletRecoverySinglePhraseClear(void)
 {
     if (g_forgetMkb != NULL) {
         lv_obj_del(g_forgetMkb->cont);
-        g_forgetMkb = NULL;
     }
     g_forgetMkb->currentSlice = 0;
     g_forgetMkb->threShold = 0xff;
@@ -338,7 +311,7 @@ void GuiForgetPassEntranceWidget(void *parent)
     lv_obj_align(desc, LV_ALIGN_TOP_MID, 0, 336 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
-    lv_obj_t *btn = GuiCreateBtn(parent, _("forgot_password_reset_passcode_intro_button"));
+    lv_obj_t *btn = GuiCreateTextBtn(parent, _("fingerprint_passcode_reset_passcode"));
     lv_obj_set_size(btn, 233, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -64);
     lv_obj_set_style_bg_color(btn, BLACK_COLOR, LV_PART_MAIN);
@@ -436,7 +409,7 @@ int8_t GuiForgetPassNextTile(uint8_t tileIndex)
     switch (g_forgetPassTileView.currentTile) {
     case FORGET_PASSWORD_ENTRANCE:
         if (CHECK_BATTERY_LOW_POWER()) {
-            g_noticeHintBox = GuiCreateErrorCodeHintbox(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox);
+            g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox, NULL);
             return ERR_GUI_ERROR;
         } else {
             SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
@@ -445,7 +418,7 @@ int8_t GuiForgetPassNextTile(uint8_t tileIndex)
         break;
     case FORGET_PASSWORD_METHOD_SELECT:
         SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("import_wallet_phrase_clear_btn"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetClearImportHandler, NULL);
         if (tileIndex != 0) {
             switch (tileIndex) {
@@ -498,7 +471,7 @@ int8_t GuiForgetPassPrevTile(uint8_t tileIndex)
         break;
     case FORGET_PASSWORD_SETPIN:
         SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, USR_SYMBOL_RESET "Clear");
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("import_wallet_phrase_clear_btn"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetClearImportHandler, NULL);
         break;
     case FORGET_PASSWORD_REPEATPIN:
@@ -521,7 +494,6 @@ int8_t GuiForgetPassPrevTile(uint8_t tileIndex)
     lv_obj_set_tile_id(g_forgetPassTileView.tileView, g_forgetPassTileView.currentTile, 0, LV_ANIM_OFF);
     return SUCCESS_CODE;
 }
-
 
 void GuiForgetPassRefresh(void)
 {

@@ -21,7 +21,7 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Simulator")
         set(CARGO_FLAG ${CARGO_FLAG} --features debug-memory)
     endif()
 
-    message(STATUS ${CARGO_FLAG})
+    message(STATUS "cargo build command: " ${CARGO_FLAG})
     message(STATUS ${TARGET_PATH})
 
     set(COPY_COMMAND  cp ${RUST_C_DIR}/target/${CARGO_ARM_TARGET}/release/${LIB_NAME} ${TARGET_PATH})
@@ -40,7 +40,7 @@ else()
 
     set(CARGO_TOML_PATH ${RUST_C_DIR}/Cargo.toml)
     if(BTC_ONLY)
-        set(CARGO_FLAG --manifest-path ${CARGO_TOML_PATH} --release --no-default-features --features btc-only simulator)
+        set(CARGO_FLAG --manifest-path ${CARGO_TOML_PATH} --release --no-default-features --features simulator_btc_only)
     else()
         set(CARGO_FLAG --manifest-path ${CARGO_TOML_PATH} --release --no-default-features --features simulator)
     endif()

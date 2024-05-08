@@ -9,7 +9,4 @@ int8_t GuiCreateShareNextTile(void);
 int8_t GuiCreateShareNextSlice(void);
 void GuiCreateShareUpdateMnemonic(void *signalParam, uint16_t paramLen);
 
-
-
 #endif /* _GUI_CREATE_WALLET_WIDGETS_H */
-

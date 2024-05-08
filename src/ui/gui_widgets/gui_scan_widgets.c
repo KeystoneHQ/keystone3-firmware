@@ -24,28 +24,44 @@
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
 #include "account_manager.h"
+#include "gui_btc.h"
+#ifdef BTC_ONLY
+#include "gui_multisig_read_sdcard_widgets.h"
+#endif
 
 static void GuiScanNavBarInit();
 static void GuiSetScanCorner(void);
-static void ThrowError();
-static void GuiDealScanErrorResult(int errorType);
-static void CloseScanErrorDataHandler(lv_event_t *e);
+static void ThrowError(int32_t errorCode);
 static void GuiScanStart();
+
+#ifdef BTC_ONLY
+static lv_obj_t *g_noticeWindow;
+#endif
 
 static PageWidget_t *g_pageWidget;
 static lv_obj_t *g_scanErrorHintBox = NULL;
 static ViewType g_qrcodeViewType;
 static uint8_t g_chainType = CHAIN_BUTT;
+static ViewType g_viewTypeFilter[2];
 
-void GuiScanInit()
+void GuiScanInit(void *param, uint16_t len)
 {
+    if (param == NULL) {
+        for (int i = 0; i < NUMBER_OF_ARRAYS(g_viewTypeFilter); i++) {
+            g_viewTypeFilter[i] = 0xFF;
+        }
+    } else {
+        memcpy_s(g_viewTypeFilter, sizeof(g_viewTypeFilter), param, len);
+        for (int i = 0; i < NUMBER_OF_ARRAYS(g_viewTypeFilter); i++) {
+            printf("g_viewTypeFilter %d = %d\n", i, g_viewTypeFilter[i]);
+        }
+    }
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
     g_pageWidget = CreatePageWidget();
     GuiScanNavBarInit();
-    GuiScanStart();
 }
 
 void GuiScanDeInit()
@@ -54,6 +70,9 @@ void GuiScanDeInit()
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
+#ifdef BTC_ONLY
+    GUI_DEL_OBJ(g_noticeWindow);
+#endif
 
     SetPageLockScreen(true);
 }
@@ -61,6 +80,17 @@ void GuiScanDeInit()
 void GuiScanRefresh()
 {
     SetPageLockScreen(false);
+    GuiScanStart();
+}
+
+static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, size_t filterSize)
+{
+    for (size_t i = 0; i < filterSize; i++) {
+        if (viewType == viewTypeFilter[i]) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void GuiScanResult(bool result, void *param)
@@ -68,13 +98,19 @@ void GuiScanResult(bool result, void *param)
     if (result) {
         UrViewType_t urViewType = *(UrViewType_t *)param;
         g_qrcodeViewType = urViewType.viewType;
+        if (g_viewTypeFilter[0] != 0xFF) {
+            if (!IsViewTypeSupported(g_qrcodeViewType, g_viewTypeFilter, NUMBER_OF_ARRAYS(g_viewTypeFilter))) {
+                g_scanErrorHintBox = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_CONFIG_INVALID, &g_scanErrorHintBox, GuiScanStart);
+                return;
+            }
+        }
         g_chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
         // Not a chain based transaction, e.g. WebAuth
         if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
 #ifndef BTC_ONLY
             //we don't support ADA in Slip39 Wallet;
             if (g_chainType == CHAIN_ADA || g_qrcodeViewType == KeyDerivationRequest) {
-                ThrowError();
+                ThrowError(ERR_INVALID_QRCODE);
                 return;
             }
 #endif
@@ -89,41 +125,56 @@ void GuiScanResult(bool result, void *param)
                 GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_keyDerivationRequestView);
             }
+#else
+            if (g_qrcodeViewType == MultisigWalletImport) {
+                GuiCLoseCurrentWorkingView();
+                GuiFrameOpenView(&g_importMultisigWalletInfoView);
+            }
+
+            if (g_qrcodeViewType == MultisigCryptoImportXpub ||
+                    g_qrcodeViewType ==  MultisigBytesImportXpub) {
+                GuiCLoseCurrentWorkingView();
+            }
 #endif
             return;
         }
         uint8_t accountNum = 0;
         GetExistAccountNum(&accountNum);
         if (accountNum <= 0) {
-            ThrowError();
+            ThrowError(ERR_INVALID_QRCODE);
             return;
         }
         GuiModelCheckTransaction(g_qrcodeViewType);
     } else {
-        ThrowError();
+        ThrowError(ERR_INVALID_QRCODE);
     }
-
 }
 
 void GuiTransactionCheckPass(void)
 {
-#ifndef COMPILE_SIMULATOR
     GuiModelTransactionCheckResultClear();
     SetPageLockScreen(true);
+    GuiCLoseCurrentWorkingView();
     GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
-#else
-    g_qrcodeViewType =  EthTx;
-    GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
-#endif
 }
 
 //Here return the error code and error message so that we can distinguish the error type later.
-void GuiTransactionCheckFiald(PtrT_TransactionCheckResult result)
+void GuiTransactionCheckFailed(PtrT_TransactionCheckResult result)
 {
+    switch (result->error_code) {
+    case BitcoinNoMyInputs:
+    case BitcoinWalletTypeError:
+        GuiCreateRustErrorWindow(result->error_code, result->error_message, NULL, GuiScanStart);
+        break;
+    default:
+        ThrowError(ERR_INVALID_QRCODE);
+        break;
+    }
     GuiModelTransactionCheckResultClear();
-    ThrowError();
+#if BTC_ONLY
+    FreePsbtUxtoMemory();
+#endif
 }
-
 
 static void GuiScanNavBarInit()
 {
@@ -167,41 +218,20 @@ static void GuiSetScanCorner(void)
     lv_obj_align(img, LV_ALIGN_BOTTOM_RIGHT, -77 + 28, -254 + 28 + 1);
     lv_img_set_angle(img, 1800);
     lv_img_set_pivot(img, 0, 0);
+
+#ifdef BTC_ONLY
+    if (IsViewTypeSupported(MultisigWalletImport, g_viewTypeFilter, NUMBER_OF_ARRAYS(g_viewTypeFilter))) {
+        lv_obj_t *label = GuiCreateNoticeLabel(cont, _("multisig_scan_multisig_notice"));
+        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 466);
+    }
+#endif
 }
 
-static void ThrowError()
+static void ThrowError(int32_t errorCode)
 {
     GuiSetScanCorner();
-    GuiDealScanErrorResult(0);
+    g_scanErrorHintBox = GuiCreateErrorCodeWindow(errorCode, &g_scanErrorHintBox, GuiScanStart);
 }
-
-static void GuiDealScanErrorResult(int errorType)
-{
-    g_scanErrorHintBox = GuiCreateHintBox(lv_scr_act(), 480, 356, false);
-    lv_obj_t *img = GuiCreateImg(g_scanErrorHintBox, &imgFailed);
-    lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
-
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_scanErrorHintBox, _("scan_qr_code_error_invalid_qrcode"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
-
-    label = GuiCreateIllustrateLabel(g_scanErrorHintBox, _("scan_qr_code_error_invalid_qrcode_desc"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
-
-    lv_obj_t *btn = GuiCreateBtnWithFont(g_scanErrorHintBox, _("OK"), &openSansEnText);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-    lv_obj_add_event_cb(btn, CloseScanErrorDataHandler, LV_EVENT_CLICKED, NULL);
-}
-
-static void CloseScanErrorDataHandler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_scanErrorHintBox)
-        GuiScanStart();
-    }
-}
-
 
 static void GuiScanStart()
 {

@@ -11,7 +11,6 @@
 static uint32_t g_sramHeapCount = 0;
 static uint32_t g_extHeapCount = 0;
 
-
 void *SramMallocTrack(size_t size, const char *file, int line, const char *func)
 {
     void *p = pvPortMalloc(size);
@@ -23,7 +22,6 @@ void *SramMallocTrack(size_t size, const char *file, int line, const char *func)
     return p;
 }
 
-
 void SramFreeTrack(void *p, const char *file, int line, const char *func)
 {
 #if (SRAM_HEAP_TRACK == 1)
@@ -34,7 +32,6 @@ void SramFreeTrack(void *p, const char *file, int line, const char *func)
         g_sramHeapCount--;
     }
 }
-
 
 void *SramReallocTrack(void *p, size_t size, const char *file, int line, const char *func)
 {
@@ -49,14 +46,12 @@ void *SramReallocTrack(void *p, size_t size, const char *file, int line, const c
     return dest;
 }
 
-
 void *SramMalloc(size_t size)
 {
     void *p = pvPortMalloc((size_t) size);
     g_sramHeapCount++;
     return p;
 }
-
 
 void SramFree(void *p)
 {
@@ -65,7 +60,6 @@ void SramFree(void *p)
         g_sramHeapCount--;
     }
 }
-
 
 void *ExtMallocTrack(size_t size, const char *file, int line, const char *func)
 {
@@ -78,7 +72,6 @@ void *ExtMallocTrack(size_t size, const char *file, int line, const char *func)
     return p;
 }
 
-
 void ExtFreeTrack(void *p, const char *file, int line, const char *func)
 {
 #if (EXT_HEAP_TRACK == 1)
@@ -90,7 +83,6 @@ void ExtFreeTrack(void *p, const char *file, int line, const char *func)
     }
 }
 
-
 void *ExtMalloc(size_t size)
 {
     void *p = PsramMalloc(size);
@@ -98,7 +90,6 @@ void *ExtMalloc(size_t size)
     g_extHeapCount++;
     return p;
 }
-
 
 void ExtFree(void *p)
 {
@@ -108,18 +99,30 @@ void ExtFree(void *p)
     }
 }
 
+void *ExtRealloc(void *p, size_t newSize)
+{
+    if (p == NULL) {
+        return ExtMalloc(newSize);
+    }
+
+    if (newSize == 0) {
+        ExtFree(p);
+        return NULL;
+    }
+
+    ExtFree(p);
+    return ExtMalloc(newSize);
+}
 
 void *RustMalloc(int32_t size)
 {
     return SramMalloc(size);
 }
 
-
 void RustFree(void *p)
 {
     SramFree(p);
 }
-
 
 void PrintHeapInfo(void)
 {
@@ -134,4 +137,3 @@ void PrintHeapInfo(void)
     printf("FreeHeapSize = %d\n", PsramGetFreeHeapSize());                      // Free heap space
     printf("MinEverFreeHeapSize = %d\n", PsramGetMinimumEverFreeHeapSize());    // Minimum amount of unallocated heap space
 }
-

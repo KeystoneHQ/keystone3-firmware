@@ -26,7 +26,6 @@
 #include "account_manager.h"
 #include "gui_animating_qrcode.h"
 
-
 static void GuiTransactionSignatureNVSBarInit();
 static void GuiCreateSignatureQRCode(lv_obj_t *parent);
 
@@ -81,7 +80,6 @@ static void GuiTransactionSignatureNVSBarInit()
 #endif
 }
 
-
 static void GuiCreateSignatureQRCode(lv_obj_t *parent)
 {
     lv_obj_t *cont = GuiCreateContainerWithParent(parent, lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
@@ -97,7 +95,7 @@ static void GuiCreateSignatureQRCode(lv_obj_t *parent)
     lv_obj_t *label = GuiCreateNoticeLabel(cont, _("transaction_parse_scan_by_software"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 576 - GUI_MAIN_AREA_OFFSET);
 
-    lv_obj_t *btn = GuiCreateBtn(cont, _("Done"));
+    lv_obj_t *btn = GuiCreateTextBtn(cont, _("Done"));
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_size(btn, 408, 66);
     lv_obj_add_event_cb(btn, GoToHomeViewHandler, LV_EVENT_CLICKED, NULL);
@@ -105,6 +103,10 @@ static void GuiCreateSignatureQRCode(lv_obj_t *parent)
     GenerateUR func = GetUrGenerator(g_viewType);
 
     if (func) {
-        GuiAnimatingQRCodeInitWithCustomSize(qrCont, func, true, 336, 336, (char *)_("sign_transaction"));
+        bool showPending = true;
+#if BTC_ONLY
+        showPending = false;
+#endif
+        GuiAnimatingQRCodeInitWithCustomSize(qrCont, func, showPending, 336, 336, (char *)_("sign_transaction"));
     }
 }

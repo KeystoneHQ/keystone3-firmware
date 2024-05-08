@@ -37,7 +37,6 @@ static ViewType g_viewType = ViewTypeUnKnown;
         result = NULL;                                                                                                            \
     }
 
-
 void GuiSetSolUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
 #ifndef COMPILE_SIMULATOR
@@ -133,7 +132,6 @@ void FreeSolMemory(void)
 #endif
 }
 
-
 void GetSolMessageType(void *indata, void *param, uint32_t maxLen)
 {
     DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
@@ -217,27 +215,27 @@ static void SetContainerDefaultStyle(lv_obj_t *container)
 
 static void SetTitleLabelStyle(lv_obj_t *label)
 {
-    lv_obj_set_style_text_font(label, &openSans_20, LV_PART_MAIN);
+    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
 }
 
 static void SetContentLableStyle(lv_obj_t *label)
 {
-    lv_obj_set_style_text_font(label, &openSans_20, LV_PART_MAIN);
+    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
 }
 
 static void SetVotesOnOrderLableStyle(lv_obj_t *label)
 {
-    lv_obj_set_style_text_font(label, &openSansEnLittleTitle, LV_PART_MAIN);
+    lv_obj_set_style_text_font(label, g_defLittleTitleFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
 }
 
 static void SetVotesOnContentLableStyle(lv_obj_t *label)
 {
-    lv_obj_set_style_text_font(label, &openSansEnLittleTitle, LV_PART_MAIN);
+    lv_obj_set_style_text_font(label, g_defLittleTitleFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(label, lv_color_hex(0xF5870A), LV_PART_MAIN);
 }
 
@@ -281,7 +279,6 @@ static void GuiShowSolTxTransferOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxO
     lv_label_set_text(label, "From");
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     SetTitleLabelStyle(label);
-
 
     label = lv_label_create(addressContainer);
     lv_label_set_text(label, overviewData->transfer_from);
@@ -388,7 +385,7 @@ static void GuiShowSolTxGeneralOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOv
         char order[BUFFER_SIZE_16] = {0};
         snprintf_s(order, BUFFER_SIZE_16, "#%d", i + 1);
         lv_label_set_text(orderLabel, order);
-        lv_obj_set_style_text_font(orderLabel, &openSans_20, LV_PART_MAIN);
+        lv_obj_set_style_text_font(orderLabel, g_defIllustrateFont, LV_PART_MAIN);
         lv_obj_set_style_text_color(orderLabel, lv_color_hex(0xF5870A), LV_PART_MAIN);
         lv_obj_align(orderLabel, LV_ALIGN_TOP_LEFT, 24, 16);
 
@@ -423,8 +420,9 @@ static void GuiShowSolTxGeneralOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOv
     }
 }
 
-static void GuiShowSolTxUnknownOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOverview overviewData)
+static void GuiShowSolTxUnknownOverview(lv_obj_t *parent)
 {
+    uint16_t height = 212;
     lv_obj_t *container = GuiCreateContainerWithParent(parent, 408, 302);
     lv_obj_align(container, LV_ALIGN_DEFAULT, 0, 0);
     SetContainerDefaultStyle(container);
@@ -432,20 +430,16 @@ static void GuiShowSolTxUnknownOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOv
     lv_obj_t *img = GuiCreateImg(container, &imgUnknown);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 40);
 
-    lv_obj_t *label = lv_label_create(container);
-    lv_label_set_text(label, "No Transaction Details");
+    lv_obj_t *label = GuiCreateTextLabel(container, _("unknown_transaction_title"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 144);
-    lv_obj_set_style_text_font(label, &openSans_24, LV_PART_MAIN);
-    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
 
-    label = lv_label_create(container);
-    lv_label_set_text(label, "All data in this transaction are customized and can’t be decoded currently.");
+    label = GuiCreateNoticeLabel(container, _("unknown_transaction_desc"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 188);
-    lv_obj_set_style_text_font(label, &openSans_20, LV_PART_MAIN);
-    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_width(label, 360);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_refr_size(label);
+    height += lv_obj_get_self_height(label);
+    lv_obj_set_height(container, height);
 }
 
 void GuiShowSolTxOverview(lv_obj_t *parent, void *totalData)
@@ -463,7 +457,7 @@ void GuiShowSolTxOverview(lv_obj_t *parent, void *totalData)
     } else if (0 == strcmp(overviewData->display_type, "General")) {
         GuiShowSolTxGeneralOverview(parent, overviewData);
     } else {
-        GuiShowSolTxUnknownOverview(parent, overviewData);
+        GuiShowSolTxUnknownOverview(parent);
     }
 }
 
@@ -495,7 +489,9 @@ void GuiShowSolTxDetail(lv_obj_t *parent, void *totalData)
 
     lv_obj_t *label = lv_label_create(cont);
     cJSON *root = cJSON_Parse((const char *)txDetail);
-    lv_label_set_text(label, cJSON_Print(root));
+    char *retStr = cJSON_Print(root);
+    lv_label_set_text(label, retStr);
+    EXT_FREE(retStr);
     cJSON_Delete(root);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(label, 360);

@@ -15,11 +15,19 @@ lv_font_t *g_defTitleFont = (lv_font_t *)&openSansEnTitle;                  //36
 lv_font_t *g_defLittleTitleFont = (lv_font_t *)&openSansEnLittleTitle;      //28
 lv_font_t *g_defTextFont = (lv_font_t *)&openSansEnText;                    //24
 lv_font_t *g_defIllustrateFont = (lv_font_t *)&openSansEnIllustrate;        //20
-lv_font_t *g_defBoldIllustratFont = (lv_font_t *)&openSansEnBoldIllustrate; //20 bold
+lv_font_t *g_defBoldIllustratFont = (lv_font_t *)&openSansEnIllustrate;     //20 bold
 
 static const GuiFontDesc_t g_langFontArr[] = {
-    {LANG_EN, &openSansEnTitle, &openSansEnLittleTitle, &openSansEnText, &openSansEnIllustrate, &openSansEnBoldIllustrate},
-    {LANG_ZH_CN, &openSansCnTitle, &openSansCnLittleTitle, &openSansCnText, &openSansCnIllustrate, &openSansCnBoldIllustrate},
+    {LANG_EN, &openSansEnTitle, &openSansEnLittleTitle, &openSansEnText, &openSansEnIllustrate, &openSansEnIllustrate},
+#ifdef RU_SUPPORT
+    {LANG_RU, &ruTitle, &ruLittleTitle, &ruText, &ruIllustrate, &ruIllustrate},
+#endif
+#ifdef CN_SUPPORT
+    {LANG_ZH_CN, &cnTitle, &cnLittleTitle, &cnText, &cnIllustrate, &cnIllustrate},
+#endif
+#ifdef KO_SUPPORT
+    {LANG_KO, &koTitle, &koLittleTitle, &koText, &koIllustrate, &koIllustrate},
+#endif
 };
 
 static void GuiBtnmStyleInit(void)

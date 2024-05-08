@@ -6,7 +6,6 @@
 #include "sha512.h"
 #include "user_memory.h"
 
-
 #define alignment_ok(p, n) ((size_t)(p) % (n) == 0)
 
 #ifdef SHA_T
@@ -33,4 +32,3 @@
 #undef PBKDF2_HMAC_SHA_LEN
 #define PBKDF2_HMAC_SHA_LEN 64
 #include "pbkdf2.inl"
-

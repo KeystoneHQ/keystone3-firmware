@@ -13,7 +13,6 @@
 #include "user_utils.h"
 #include "user_msg.h"
 
-
 #define BATTERY_DEBUG          0
 
 #if BATTERY_DEBUG == 1
@@ -77,7 +76,6 @@ void RtcBatAdcDetDisable(void)
     GPIO_ResetBits(GPIOE, GPIO_Pin_0);
 }
 
-
 /// @brief Battery init, ADC init, load FLASH value.
 /// @param
 void BatteryInit(void)
@@ -106,7 +104,6 @@ void BatteryInit(void)
     g_batterPercent = LoadBatteryPercent();
 }
 
-
 /// @brief Battery init, ADC init.
 void BatteryOpen(void)
 {
@@ -125,8 +122,6 @@ void BatteryOpen(void)
 
     ADC_Init(&ADC_InitStruct);
 }
-
-
 
 /// @brief Get battery voltage.
 /// @param
@@ -211,7 +206,6 @@ uint32_t GetRtcBatteryMilliVolt(void)
     return vol;
 }
 
-
 /// @brief Execute once every minimum percent change time interval.
 /// @param
 bool BatteryIntervalHandler(void)
@@ -286,7 +280,6 @@ bool BatteryIntervalHandler(void)
     return change;
 }
 
-
 /// @brief Get the battery percentage after correction.
 /// @return Battery level percentage.
 uint8_t GetBatterPercent(void)
@@ -300,7 +293,6 @@ uint32_t GetBatteryInterval(void)
 {
     return GetUsbPowerState() == USB_POWER_STATE_DISCONNECT ? BATTERY_PCT_CHANGE_MIN_TICK_DISCHARGE : BATTERY_PCT_CHANGE_MIN_TICK_CHARGING;
 }
-
 
 /// @brief Get the saved battery level percentage.
 /// @return Battery level percentage.
@@ -369,7 +361,6 @@ static uint8_t LoadBatteryPercent(void)
     return percent;
 }
 
-
 /// @brief Save the battery level percentage.
 /// @param percent Battery level percentage.
 static void SaveBatteryPercent(uint8_t percent)
@@ -384,7 +375,6 @@ static void SaveBatteryPercent(uint8_t percent)
     BATTERY_PRINTF("save battery percent, addr=%d\r\n", g_batteryFlashAddress);
 }
 
-
 uint8_t GetBatteryPercentByMilliVolt(uint32_t milliVolt, bool discharge)
 {
     uint16_t const *curve = discharge ? dischargeCurve : chargingCurve;
@@ -398,7 +388,6 @@ uint8_t GetBatteryPercentByMilliVolt(uint32_t milliVolt, bool discharge)
 
     return percent;
 }
-
 
 void BatteryTest(int argc, char *argv[])
 {
@@ -424,4 +413,3 @@ void BatteryTest(int argc, char *argv[])
         printf("battery cmd err\r\n");
     }
 }
-

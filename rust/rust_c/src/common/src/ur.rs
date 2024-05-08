@@ -206,6 +206,8 @@ pub enum ViewType {
     #[cfg(feature = "multi-coins")]
     ArweaveTx,
     #[cfg(feature = "multi-coins")]
+    ArweaveMessage,
+    #[cfg(feature = "multi-coins")]
     AptosTx,
     WebAuthResult,
     #[cfg(feature = "multi-coins")]

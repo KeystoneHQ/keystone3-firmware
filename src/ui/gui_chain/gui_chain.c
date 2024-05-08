@@ -27,6 +27,7 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
     case REMAPVIEW_XRP:
         return GuiGetXrpCheckResult();
     case REMAPVIEW_AR:
+    case REMAPVIEW_AR_MESSAGE:
         return GuiGetArCheckResult();
 #endif
     default:
@@ -71,6 +72,7 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     case XRPTx:
         return CHAIN_XRP;
     case ArweaveTx:
+    case ArweaveMessage:
         return CHAIN_ARWEAVE;
 #endif
     default:
@@ -131,6 +133,7 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
     case XRPTx:
         func = GuiGetXrpSignQrCodeData;
         break;
+    case ArweaveMessage:
     case ArweaveTx:
         func = GuiGetArweaveSignQrCodeData;
         break;

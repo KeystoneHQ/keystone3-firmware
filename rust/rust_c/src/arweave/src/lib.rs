@@ -2,10 +2,10 @@
 
 extern crate alloc;
 
-use crate::structs::DisplayArweaveTx;
+use crate::structs::{DisplayArweaveTx, DisplayArweaveMessage, ArweaveRequestType};
 use alloc::boxed::Box;
 use alloc::fmt::format;
-use alloc::string::ToString;
+use alloc::string::{String, ToString};
 use alloc::{format, slice};
 use alloc::vec::Vec;
 use app_arweave::{
@@ -145,6 +145,34 @@ pub extern "C" fn ar_check_tx(
         }
     }
     return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
+}
+
+#[no_mangle]
+pub extern "C" fn ar_request_type(ptr: PtrUR) -> *mut SimpleResponse<ArweaveRequestType> {
+    let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
+    let sign_type = sign_request.get_sign_type();
+    let sign_type_str = match sign_type {
+        SignType::Transaction => ArweaveRequestType::ArweaveRequestTypeTransaction,
+        SignType::Message => ArweaveRequestType::ArweaveRequestTypeMessage,
+        SignType::DataItem => ArweaveRequestType::ArweaveRequestTypeDataItem,
+        _ => ArweaveRequestType::ArweaveRequestTypeUnknown,
+    };
+    SimpleResponse::success(Box::into_raw(Box::new(sign_type_str)) as *mut ArweaveRequestType)
+        .simple_c_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn ar_message_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayArweaveMessage>> {
+    let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
+    let sign_data = sign_request.get_sign_data();
+    let raw_message = hex::encode(sign_request.get_sign_data());
+    let message = String::from_utf8(sign_data).unwrap();
+    let display_message = DisplayArweaveMessage {
+        message: convert_c_char(message),
+        raw_message: convert_c_char(raw_message),
+    };
+    TransactionParseResult::success(Box::into_raw(Box::new(display_message)) as *mut DisplayArweaveMessage)
+        .c_ptr()
 }
 
 #[no_mangle]

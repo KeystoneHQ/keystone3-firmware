@@ -4,13 +4,24 @@
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
+static ArweaveRequestType g_requestType = ArweaveRequestTypeTransaction;
 static void *g_parseResult = NULL;
 
-#define CHECK_FREE_PARSE_RESULT(result)                                                                 \
-    if (result != NULL)                                                                                 \
-    {                                                                                                   \
-        free_TransactionParseResult_DisplayArweaveTx((PtrT_TransactionParseResult_DisplayArweaveTx)result); \
-        result = NULL;                                                                                  \
+#define CHECK_FREE_PARSE_RESULT(result)                                                                                           \
+    if (result != NULL)                                                                                                           \
+    {                                                                                                                             \
+        switch (g_requestType)                                                                                                    \
+        {                                                                                                                         \
+        case ArweaveRequestTypeTransaction:                                                                                       \
+            free_TransactionParseResult_DisplayArweaveTx((PtrT_TransactionParseResult_DisplayArweaveTx)result);                   \
+            break;                                                                                                                \
+        case ArweaveRequestTypeMessage:                                                                                           \
+            free_TransactionParseResult_DisplayArweaveMessage((PtrT_TransactionParseResult_DisplayArweaveMessage)result);         \
+            break;                                                                                                                \
+        default:                                                                                                                  \
+            break;                                                                                                                \
+        }                                                                                                                         \
+        result = NULL;                                                                                                            \
     }
 
 PtrT_TransactionCheckResult GuiGetArCheckResult(void)
@@ -23,6 +34,38 @@ PtrT_TransactionCheckResult GuiGetArCheckResult(void)
 #else
     return NULL;
 #endif
+}
+
+void GetArweaveMessageText(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayArweaveMessage *data = (DisplayArweaveMessage *)param;
+    if (data->message == NULL)
+    {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, data->message);
+}
+
+void GetArweaveRawMessage(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayArweaveMessage *data = (DisplayArweaveMessage *)param;
+    if (data->raw_message == NULL)
+    {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, data->raw_message);
+}
+
+void GetArweaveMessageAddress(void *indata, void *param, uint32_t maxLen)
+{
+    char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
+    SimpleResponse_c_char *result = arweave_get_address(xPub);
+    if (result->error_code != 0)
+    {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, result->data);
+    free_simple_response_c_char(result);
 }
 
 void GetArweaveValue(void *indata, void *param, uint32_t maxLen)
@@ -65,11 +108,23 @@ void GetArweaveToAddress(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata, maxLen, tx->to);
 }
 
+static void ParseRequestType()
+{
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    SimpleResponse_ArweaveRequestType *requestType = ar_request_type(data);
+    if (requestType->error_code != 0)
+    {
+        g_requestType = ArweaveRequestTypeUnknown;
+    }
+    g_requestType = *requestType->data;
+}
+
 void GuiSetArUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
     g_urResult = urResult;
     g_urMultiResult = urMultiResult;
     g_isMulti = multi;
+    ParseRequestType();
 }
 
 void *GuiGetArData(void)
@@ -79,11 +134,23 @@ void *GuiGetArData(void)
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
     do {
-        PtrT_TransactionParseResult_DisplayArweaveTx parseResult = ar_parse(data);
-        printf("ar_parse result: %s\n", parseResult->data->from);
-        printf("ar_parse result: %s\n", parseResult->data->to);
-        CHECK_CHAIN_BREAK(parseResult);
-        g_parseResult = (void *)parseResult;
+        if (g_requestType == ArweaveRequestTypeUnknown)
+        {
+            printf("Unknown request type\n");
+            break;
+        }
+        if (g_requestType == ArweaveRequestTypeTransaction)
+        {
+            PtrT_TransactionParseResult_DisplayArweaveTx parseResult = ar_parse(data);
+            CHECK_CHAIN_BREAK(parseResult);
+            g_parseResult = (void *)parseResult;
+        }
+        else if (g_requestType == ArweaveRequestTypeMessage)
+        {
+            PtrT_TransactionParseResult_DisplayArweaveMessage parseResult = ar_message_parse(data);
+            CHECK_CHAIN_BREAK(parseResult);
+            g_parseResult = (void *)parseResult;
+        }
     } while (0);
     return g_parseResult;
 }

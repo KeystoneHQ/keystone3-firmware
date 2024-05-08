@@ -342,15 +342,7 @@ static void SignByFinger(void)
     lv_obj_t *label = GuiCreateNoticeLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 402);
 
-    lv_obj_t *img = GuiCreateImg(cont, &imgClose);
-    GuiButton_t table[2] = {
-        {
-            .obj = img,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {14, 14},
-        }
-    };
-    lv_obj_t *button = GuiCreateButton(cont, 64, 64, table, 1, CloseContHandler, cont);
+    lv_obj_t *button = GuiCreateImgButton(cont, &imgClose, 64, CloseContHandler, cont);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 384, 394);
 
     g_fpErrorImg = GuiCreateImg(cont, &imgYellowFinger);
@@ -365,18 +357,7 @@ static void SignByFinger(void)
     lv_obj_align(g_fpErrorLabel, LV_ALIGN_BOTTOM_MID, 0, -100);
     lv_obj_add_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN);
 
-    label = GuiCreateNoticeLabel(cont, _("enter_passcode"));
-    img = GuiCreateImg(cont, &imgLockedLock);
-    table[0].obj = label;
-    table[0].align = LV_ALIGN_DEFAULT;
-    table[0].position.x = 40;
-    table[0].position.y = 3;
-    table[1].obj = img;
-    table[1].align = LV_ALIGN_DEFAULT;
-    table[1].position.x = 8;
-    table[1].position.y = 6;
-
-    button = GuiCreateButton(cont, 192, 36, table, NUMBER_OF_ARRAYS(table), SignByPasswordCbHandler, cont);
+    button = GuiCreateImgLabelAdaptButton(cont, _("enter_passcode"), &imgLockedLock, SignByPasswordCbHandler, cont);
     lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -27);
     FpRecognize(RECOGNIZE_SIGN);
 }

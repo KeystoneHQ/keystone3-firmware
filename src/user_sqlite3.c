@@ -550,11 +550,14 @@ static int callback(void *output, int nCol, char **argv, char **azColName)
         return SQLITE_ERROR;
     }
 
-    int maxLen[] = {SQL_ENS_NAME_MAX_LEN, SQL_ABI_BUFF_MAX_SIZE};
     char **data = (char**)output;
+    int maxLen[] = {SQL_ENS_NAME_MAX_LEN, SQL_ENS_NAME_MAX_LEN};
+    if (nCol == 2) {
+        maxLen[0] = SQL_ABI_BUFF_MAX_SIZE;
+    }
     for (int i = 0; i < nCol; i++) {
         USER_DEBUG("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-        snprintf(data[i], maxLen[i], "%s", argv[i] ? argv[i] : "NULL");
+        strncpy_s(data[i], maxLen[i], argv[i], strnlen_s(argv[i], maxLen[i] - 1));
     }
 
     return 0;
@@ -578,7 +581,7 @@ int db_exec(sqlite3 *db, const char *sql, char *result1)
 int db_exec_2(sqlite3 *db, const char *sql, char *contractName, char* functionABIJson)
 {
     USER_DEBUG("sql: %s\n", sql);
-    char *result[2] = {contractName, functionABIJson};
+    char *result[2] = {functionABIJson, contractName};
     int rc = sqlite3_exec(db, sql, callback, (void*)result, &zErrMsg);
     if (rc != SQLITE_OK) {
         printf("SQL error: %s\n", zErrMsg);

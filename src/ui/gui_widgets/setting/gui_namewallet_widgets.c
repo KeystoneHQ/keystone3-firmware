@@ -117,7 +117,11 @@ void *GuiWalletNameWallet(lv_obj_t *parent, uint8_t tile)
     lv_textarea_set_text(g_setNameKb->ta, GuiNvsBarGetWalletName());
 
     char tempBuf[BUFFER_SIZE_16] = {0};
-    snprintf_s(tempBuf, BUFFER_SIZE_32, "%d/16", strnlen_s(GuiNvsBarGetWalletName(), 17));
+    int len = strnlen_s(GuiNvsBarGetWalletName(), 17);
+    snprintf_s(tempBuf, BUFFER_SIZE_32, "%d/16", len);
+    if (len > 0) {
+        lv_obj_set_style_text_font(g_setNameKb->ta, &buttonFont, 0);
+    }
     GuiSetEmojiIconIndex(GUI_KEYBOARD_EMOJI_CANCEL_NEW_INDEX);
     lv_obj_t *progresslabel = GuiCreateNoticeLabel(parent, tempBuf);
     lv_obj_align(progresslabel, LV_ALIGN_DEFAULT, 402, 384 - GUI_MAIN_AREA_OFFSET);
@@ -128,16 +132,8 @@ void *GuiWalletNameWallet(lv_obj_t *parent, uint8_t tile)
     lv_obj_t *arrowDownImg = GuiCreateImg(parent, &imgArrowDownS);
 
     GuiButton_t table[2] = {
-        {
-            .obj = img,
-            .align = LV_ALIGN_LEFT_MID,
-            .position = {15, 0},
-        },
-        {
-            .obj = arrowDownImg,
-            .align = LV_ALIGN_LEFT_MID,
-            .position = {59, 0},
-        },
+        {.obj = img, .align = LV_ALIGN_LEFT_MID, .position = {15, 0}},
+        {.obj = arrowDownImg, .align = LV_ALIGN_LEFT_MID, .position = {59, 0}}
     };
     lv_obj_t *button = GuiCreateButton(parent, 100, 70, table, NUMBER_OF_ARRAYS(table), OpenEmojiKbHandler, parent);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 312 - GUI_MAIN_AREA_OFFSET);

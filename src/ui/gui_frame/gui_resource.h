@@ -265,19 +265,12 @@ LV_IMG_DECLARE(walletListXRPToolkit);
 LV_IMG_DECLARE(walletListSparrow);
 LV_IMG_DECLARE(walletListImToken);
 LV_IMG_DECLARE(walletListUniSat);
-<<<<<<< HEAD
 LV_IMG_DECLARE(walletListThorWallet);
-LV_IMG_DECLARE(btcWalletListBlue);
-LV_IMG_DECLARE(btcWalletListSpecter);
-LV_IMG_DECLARE(btcWalletListSparrow);
-LV_IMG_DECLARE(btcWalletListNunchuk);
-=======
 
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);
 LV_IMG_DECLARE(walletListBtcSparrow);
 LV_IMG_DECLARE(walletListBtcNunchuk);
->>>>>>> 9c9ea78d (refactor: refactor imgs (#985))
 
 // font
 LV_FONT_DECLARE(openSans_20);

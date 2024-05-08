@@ -97,7 +97,7 @@ def build_img_to_c_file(force=False):
         from img_converter import ImgConverter
         img_converter = ImgConverter(filepath=[images_directory],format='true_color_alpha',color_format='RGB565SWAP',output_path='./src/ui/gui_assets')
         img_converter.convert()
-        
+
     hash_file  = "./src/ui/gui_assets/images_hash.txt"
     images_directory = "./images"
 
@@ -128,11 +128,7 @@ if __name__ == '__main__':
         options = args.options.split(",")
     bin_type = args.type
     shutil.rmtree(build_path, ignore_errors=True)
-
-    if args.force:
-        build_img_to_c_file(force=True)
-    else:
-        build_img_to_c_file()
+    build_img_to_c_file(args.force)
     build_result = build_firmware(env, options, bin_type)
     if build_result != 0:
         exit(1)

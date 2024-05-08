@@ -265,6 +265,7 @@ LV_IMG_DECLARE(walletListXRPToolkit);
 LV_IMG_DECLARE(walletListSparrow);
 LV_IMG_DECLARE(walletListImToken);
 LV_IMG_DECLARE(walletListUniSat);
+<<<<<<< HEAD
 LV_IMG_DECLARE(walletListThorWallet);
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);

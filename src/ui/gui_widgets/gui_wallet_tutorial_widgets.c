@@ -13,23 +13,23 @@
 #endif
 
 typedef struct WalletTutorialItem {
-  const char *walletName;
-  const char *url;
-  const char *qrTitle;
-  const char *qrUrl;
+    const char *walletName;
+    const char *url;
+    const char *qrTitle;
+    const char *qrUrl;
 } WalletTutorialItem_t;
 
 typedef struct WalletTutorial {
-  WalletTutorialItem_t items[3];
-  uint8_t len;
-  const char *desc;
-  const char *title;
+    WalletTutorialItem_t items[3];
+    uint8_t len;
+    const char *desc;
+    const char *title;
 } WalletTutorial_t;
 
 static WalletTutorial_t g_tutorials[WALLET_LIST_BUTT];
 
 typedef struct GuiWalletTutorialWidget {
-  lv_obj_t *cont;
+    lv_obj_t *cont;
 } GuiWalletTurorialWidget_t;
 
 static GuiWalletTurorialWidget_t g_walletTutorialWidget;
@@ -191,21 +191,21 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_UNISAT].items[0].qrUrl = _("connect_unisat_qr_link");
 
 
-  //WALLET_LIST_THORWALLET
-  g_tutorials[WALLET_LIST_THORWALLET].len = 1;
-  g_tutorials[WALLET_LIST_THORWALLET].desc = _("connect_unisat_desc");
-  g_tutorials[WALLET_LIST_THORWALLET].items[0].walletName = _("connect_unisat_title");
-  g_tutorials[WALLET_LIST_THORWALLET].items[0].url = _("connect_unisat_link");
-  g_tutorials[WALLET_LIST_THORWALLET].items[0].qrTitle = _("connect_unisat_qr_title");
-  g_tutorials[WALLET_LIST_THORWALLET].items[0].qrUrl = _("connect_unisat_qr_link");
+    //WALLET_LIST_THORWALLET
+    g_tutorials[WALLET_LIST_THORWALLET].len = 1;
+    g_tutorials[WALLET_LIST_THORWALLET].desc = _("connect_unisat_desc");
+    g_tutorials[WALLET_LIST_THORWALLET].items[0].walletName = _("connect_unisat_title");
+    g_tutorials[WALLET_LIST_THORWALLET].items[0].url = _("connect_unisat_link");
+    g_tutorials[WALLET_LIST_THORWALLET].items[0].qrTitle = _("connect_unisat_qr_title");
+    g_tutorials[WALLET_LIST_THORWALLET].items[0].qrUrl = _("connect_unisat_qr_link");
 
-  // WALLET_LIST_KEPLR
-  g_tutorials[WALLET_LIST_KEPLR].len = 1;
-  g_tutorials[WALLET_LIST_KEPLR].desc = _("connect_wallet_desc");
-  g_tutorials[WALLET_LIST_KEPLR].items[0].walletName = _("connect_keplr_title");
-  g_tutorials[WALLET_LIST_KEPLR].items[0].url = _("connect_keplr_link");
-  g_tutorials[WALLET_LIST_KEPLR].items[0].qrTitle = _("connect_keplr_title");
-  g_tutorials[WALLET_LIST_KEPLR].items[0].qrUrl = _("connect_keplr_link");
+    // WALLET_LIST_KEPLR
+    g_tutorials[WALLET_LIST_KEPLR].len = 1;
+    g_tutorials[WALLET_LIST_KEPLR].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_KEPLR].items[0].walletName = _("connect_keplr_title");
+    g_tutorials[WALLET_LIST_KEPLR].items[0].url = _("connect_keplr_link");
+    g_tutorials[WALLET_LIST_KEPLR].items[0].qrTitle = _("connect_keplr_title");
+    g_tutorials[WALLET_LIST_KEPLR].items[0].qrUrl = _("connect_keplr_link");
 
     // WALLET_LIST_FEWCHA
     g_tutorials[WALLET_LIST_FEWCHA].len = 1;
@@ -279,106 +279,111 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_BLUE].items[0].url = _("connect_bw_multisig_link");
         g_tutorials[WALLET_LIST_BLUE].items[0].qrUrl = _("connect_bw_multisig_link");
 
-    g_tutorials[WALLET_LIST_SPARROW].items[0].url =
-        _("connect_sparrow_multisig_link");
-    g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl =
-        _("connect_sparrow_multisig_link");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].url =
+            _("connect_sparrow_multisig_link");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl =
+            _("connect_sparrow_multisig_link");
 
-    g_tutorials[WALLET_LIST_NUNCHUK].items[0].url =
-        _("connect_nunchuk_multisig_link");
-    g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrUrl =
-        _("connect_nunchuk_multisig_link");
-  } else {
-    g_tutorials[WALLET_LIST_BLUE].items[0].url = _("connect_bw_link");
-    g_tutorials[WALLET_LIST_BLUE].items[0].qrUrl = _("connect_bw_link");
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].url =
+            _("connect_nunchuk_multisig_link");
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrUrl =
+            _("connect_nunchuk_multisig_link");
+    } else {
+        g_tutorials[WALLET_LIST_BLUE].items[0].url = _("connect_bw_link");
+        g_tutorials[WALLET_LIST_BLUE].items[0].qrUrl = _("connect_bw_link");
 
-    g_tutorials[WALLET_LIST_SPARROW].items[0].url = _("connect_sparrow_link");
-    g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl = _("connect_sparrow_link");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].url = _("connect_sparrow_link");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl = _("connect_sparrow_link");
 
-    g_tutorials[WALLET_LIST_NUNCHUK].items[0].url = _("connect_nunchuk_link");
-    g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrUrl = _("connect_nunchuk_link");
-  }
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].url = _("connect_nunchuk_link");
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrUrl = _("connect_nunchuk_link");
+    }
 #endif
 }
 
-void GuiWalletTutorialInit(WALLET_LIST_INDEX_ENUM tutorialIndex) {
-  WalletTutorialsInit();
+void GuiWalletTutorialInit(WALLET_LIST_INDEX_ENUM tutorialIndex)
+{
+    WalletTutorialsInit();
 
-  printf("index: %d\r\n", tutorialIndex);
+    printf("index: %d\r\n", tutorialIndex);
 
-  WalletTutorial_t *tutorial = &g_tutorials[tutorialIndex];
+    WalletTutorial_t *tutorial = &g_tutorials[tutorialIndex];
 
-  lv_obj_t *cont, *label, *img, *lastTarget;
-  if (g_pageWidget != NULL) {
-    DestroyPageWidget(g_pageWidget);
-    g_pageWidget = NULL;
-  }
-  g_pageWidget = CreatePageWidget();
-  cont = g_pageWidget->contentZone;
-  g_walletTutorialWidget.cont = cont;
-  label = GuiCreateIllustrateLabel(cont, tutorial->desc);
-  lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
-  lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
-
-  lastTarget = label;
-
-  for (size_t i = 0; i < tutorial->len; i++) {
-    cont = GuiCreateContainerWithParent(g_walletTutorialWidget.cont, 408, 102);
-    lv_obj_align_to(cont, lastTarget, LV_ALIGN_OUT_BOTTOM_LEFT, 0,
-                    i == 0 ? 24 : 16);
-    lv_obj_set_style_bg_color(cont, DARK_GRAY_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(cont, GuiWalletTutorialQrcodeHandler, LV_EVENT_CLICKED,
-                        &tutorial->items[i]);
-
-    label = GuiCreateTextLabel(cont, tutorial->items[i].walletName);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
-    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
-
-    label = GuiCreateIllustrateLabel(cont, tutorial->items[i].url);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 56);
-    lv_obj_set_style_text_opa(label, LV_OPA_80,
-                              LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_width(label, 320);
-    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-
-    img = GuiCreateImg(cont, &imgQrcode36px);
-    lv_obj_align(img, LV_ALIGN_DEFAULT, 348, 33);
-    lastTarget = cont;
-
-    lv_obj_update_layout(label);
-    lv_coord_t height = lv_obj_get_height(label) - 30;
-
-    if (height > 0) {
-      lv_obj_set_height(cont, 102 + height);
-      lv_obj_align(img, LV_ALIGN_DEFAULT, 348, 33 + height / 2);
-      lv_obj_update_layout(cont);
+    lv_obj_t *cont, *label, *img, *lastTarget;
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
     }
-  }
+    g_pageWidget = CreatePageWidget();
+    cont = g_pageWidget->contentZone;
+    g_walletTutorialWidget.cont = cont;
+    label = GuiCreateIllustrateLabel(cont, tutorial->desc);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
+    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lastTarget = label;
+
+    for (size_t i = 0; i < tutorial->len; i++) {
+        cont = GuiCreateContainerWithParent(g_walletTutorialWidget.cont, 408, 102);
+        lv_obj_align_to(cont, lastTarget, LV_ALIGN_OUT_BOTTOM_LEFT, 0,
+                        i == 0 ? 24 : 16);
+        lv_obj_set_style_bg_color(cont, DARK_GRAY_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
+        lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_add_event_cb(cont, GuiWalletTutorialQrcodeHandler, LV_EVENT_CLICKED,
+                            &tutorial->items[i]);
+
+        label = GuiCreateTextLabel(cont, tutorial->items[i].walletName);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
+        lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
+
+        label = GuiCreateIllustrateLabel(cont, tutorial->items[i].url);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 56);
+        lv_obj_set_style_text_opa(label, LV_OPA_80,
+                                  LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_width(label, 320);
+        lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+
+        img = GuiCreateImg(cont, &imgQrcode36px);
+        lv_obj_align(img, LV_ALIGN_DEFAULT, 348, 33);
+        lastTarget = cont;
+
+        lv_obj_update_layout(label);
+        lv_coord_t height = lv_obj_get_height(label) - 30;
+
+        if (height > 0) {
+            lv_obj_set_height(cont, 102 + height);
+            lv_obj_align(img, LV_ALIGN_DEFAULT, 348, 33 + height / 2);
+            lv_obj_update_layout(cont);
+        }
+    }
 }
 
-void GuiWalletTutorialRefresh() {
-  SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE,
-                   CloseCurrentViewHandler, NULL);
-  SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Tutorial"));
+void GuiWalletTutorialRefresh()
+{
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE,
+                     CloseCurrentViewHandler, NULL);
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Tutorial"));
 }
 
-void GuiWalletTutorialDeInit() {
-  GUI_DEL_OBJ(g_walletTutorialWidget.cont);
-  if (GuiQRHintBoxIsActive()) {
-    GuiQRHintBoxRemove();
-  }
-  if (g_pageWidget != NULL) {
-    DestroyPageWidget(g_pageWidget);
-    g_pageWidget = NULL;
-  }
+void GuiWalletTutorialDeInit()
+{
+    GUI_DEL_OBJ(g_walletTutorialWidget.cont);
+    if (GuiQRHintBoxIsActive()) {
+        GuiQRHintBoxRemove();
+    }
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
-static void showQRHintBox(WalletTutorialItem_t *item) {
-  GuiQRCodeHintBoxOpen(item->qrUrl, item->qrTitle, item->qrUrl);
+static void showQRHintBox(WalletTutorialItem_t *item)
+{
+    GuiQRCodeHintBoxOpen(item->qrUrl, item->qrTitle, item->qrUrl);
 }
 
-static void GuiWalletTutorialQrcodeHandler(lv_event_t *e) {
-  showQRHintBox(lv_event_get_user_data(e));
+static void GuiWalletTutorialQrcodeHandler(lv_event_t *e)
+{
+    showQRHintBox(lv_event_get_user_data(e));
 }

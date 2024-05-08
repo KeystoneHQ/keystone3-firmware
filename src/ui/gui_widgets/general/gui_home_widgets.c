@@ -84,7 +84,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_UMEE, false, "UMEE", true},
     {HOME_WALLET_CARD_QCK, false, "QCK", true},
     {HOME_WALLET_CARD_TGD, false, "TGD", true},
-        {HOME_WALLET_CARD_RUNE, false, "RUNE", true},
+    {HOME_WALLET_CARD_RUNE, false, "RUNE", true},
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 

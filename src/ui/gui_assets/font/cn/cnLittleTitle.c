@@ -1654,7 +1654,8 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
     0x3f, 0xe7, 0xff, 0x8c, 0x19, 0xff, 0xc3, 0x6, 0x30, 0x30, 0xff, 0x8c, 0x18,
     0x30, 0x61, 0x86, 0xc, 0x18, 0x73, 0x3, 0x6, 0xd, 0xc0, 0xff, 0x81, 0xe0,
     0x30, 0x60, 0x78, 0xc, 0x18, 0x3f, 0x3, 0x6, 0x3c, 0xf0, 0xcf, 0xbc, 0x1f,
-    0x31, 0xcc, 0x1, 0x80};
+    0x31, 0xcc, 0x1, 0x80
+};
 
 /*---------------------
  *  GLYPH DESCRIPTION
@@ -1935,7 +1936,8 @@ static const uint8_t kern_pair_glyph_ids[] = {
     38, 5,  38, 6,  38, 17, 38, 18, 38, 24, 38, 26, 38, 27, 38, 28, 38, 29, 38,
     30, 38, 35, 38, 37, 38, 38, 39, 4,  39, 5,  39, 6,  39, 24, 39, 26, 39, 27,
     39, 28, 39, 29, 39, 35, 40, 4,  40, 5,  40, 6,  40, 24, 40, 26, 40, 27, 40,
-    28, 40, 29, 40, 35};
+    28, 40, 29, 40, 35
+};
 
 /* Kerning between the respective left and right glyphs
  * 4.4 format which needs to scaled with `kern_scale`*/
@@ -1968,7 +1970,8 @@ static const lv_font_fmt_txt_kern_pair_t kern_pairs = {
     .glyph_ids = kern_pair_glyph_ids,
     .values = kern_pair_values,
     .pair_cnt = 164,
-    .glyph_ids_size = 0};
+    .glyph_ids_size = 0
+};
 
 /*--------------------
  *  ALL CUSTOM DATA
@@ -2009,9 +2012,9 @@ const lv_font_t cnLittleTitle = {
 lv_font_t cnLittleTitle = {
 #endif
     .get_glyph_dsc =
-        lv_font_get_glyph_dsc_fmt_txt, /*Function pointer to get glyph's data*/
+    lv_font_get_glyph_dsc_fmt_txt, /*Function pointer to get glyph's data*/
     .get_glyph_bitmap =
-        lv_font_get_bitmap_fmt_txt, /*Function pointer to get glyph's bitmap*/
+    lv_font_get_bitmap_fmt_txt, /*Function pointer to get glyph's bitmap*/
     .line_height = 40, /*The maximum line height required by the font*/
     .base_line = 9,    /*Baseline measured from the bottom of the line*/
 #if !(LVGL_VERSION_MAJOR == 6 && LVGL_VERSION_MINOR == 0)

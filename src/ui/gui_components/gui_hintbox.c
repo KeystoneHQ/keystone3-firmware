@@ -1,12 +1,13 @@
 
-#include "gui_hintbox.h"
+#include <stdio.h>
 #include "gui.h"
-#include "gui_button.h"
 #include "gui_create_wallet_widgets.h"
 #include "gui_obj.h"
-#include "gui_views.h"
 #include "user_memory.h"
-#include <stdio.h>
+#include "gui_views.h"
+#include "gui_hintbox.h"
+#include "gui_button.h"
+
 
 static lv_obj_t *g_animHintBox = NULL;
 static lv_obj_t *g_imgRing = NULL;

@@ -48,12 +48,21 @@ void GetArweaveMessageText(void *indata, void *param, uint32_t maxLen)
 
 void GetArweaveRawMessage(void *indata, void *param, uint32_t maxLen)
 {
+#ifndef COMPILE_SIMULATOR
     DisplayArweaveMessage *data = (DisplayArweaveMessage *)param;
     if (data->raw_message == NULL)
     {
         return;
     }
     strcpy_s((char *)indata, maxLen, data->raw_message);
+#else
+    DisplayArweaveMessage *data = (DisplayArweaveMessage *)param;
+    if (data->message == NULL)
+    {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, data->message);
+#endif
 }
 
 void GetArweaveMessageAddress(void *indata, void *param, uint32_t maxLen)

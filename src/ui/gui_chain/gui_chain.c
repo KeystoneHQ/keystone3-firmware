@@ -72,8 +72,9 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     case XRPTx:
         return CHAIN_XRP;
     case ArweaveTx:
-    case ArweaveMessage:
         return CHAIN_ARWEAVE;
+    case ArweaveMessage:
+        return CHAIN_ARWEAVE_MESSAGE;
 #endif
     default:
         return CHAIN_BUTT;

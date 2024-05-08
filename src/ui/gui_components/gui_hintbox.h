@@ -3,10 +3,10 @@
 #include "lv_event.h"
 #include "lv_obj.h"
 typedef struct {
-  const char *name;
-  const void *src;
-  lv_event_cb_t callBack;
-  void *param;
+    const char *name;
+    const void *src;
+    lv_event_cb_t callBack;
+    void *param;
 } MoreInfoTable_t;
 
 void *GuiCreateHintBox(uint16_t h);

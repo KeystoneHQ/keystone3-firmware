@@ -71,8 +71,15 @@ def ota_maker():
     popen = subprocess.Popen(args, stdout=subprocess.PIPE)
     popen.wait()
 
+def build_img_to_c_file():
+    from img_converter import ImgConverter
+    img_converter = ImgConverter(filepath=['./images'],format='true_color_alpha',color_format='RGB565SWAP',output_path='./src/ui/gui_assets')
+    img_converter.convert()
 
 if __name__ == '__main__':
+    print("=============================================")
+    print("--")
+    build_img_to_c_file()
     args = argParser.parse_args()
     print("=============================================")
     print("--")
@@ -96,3 +103,4 @@ if __name__ == '__main__':
     purpose = args.purpose
     if purpose and purpose == "debug":
         ota_maker()
+

@@ -3,12 +3,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 typedef enum {
-  // for all single sig transactions.
-  TRANSACTION_TYPE_NORMAL,
-  // for btc multisig transaction, with different destination.
-  TRANSACTION_TYPE_BTC_MULTISIG,
+    // for all single sig transactions.
+    TRANSACTION_TYPE_NORMAL,
+    // for btc multisig transaction, with different destination.
+    TRANSACTION_TYPE_BTC_MULTISIG,
 
-  TRANSACTION_TYPE_BUTT,
+    TRANSACTION_TYPE_BUTT,
 } TransactionType;
 
 void GuiTransactionDetailInit(uint8_t viewType);

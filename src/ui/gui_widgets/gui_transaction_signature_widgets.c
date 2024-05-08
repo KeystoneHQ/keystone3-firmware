@@ -32,59 +32,68 @@ static ViewType g_viewType;
 static uint8_t g_chainType = CHAIN_BUTT;
 static PageWidget_t *g_pageWidget;
 
-void GuiTransactionSignatureInit(uint8_t viewType) {
-  g_viewType = viewType;
-  g_chainType = ViewTypeToChainTypeSwitch(g_viewType);
-  g_pageWidget = CreatePageWidget();
-  GuiTransactionSignatureNVSBarInit();
-  GuiCreateSignatureQRCode(g_pageWidget->contentZone);
+void GuiTransactionSignatureInit(uint8_t viewType)
+{
+    g_viewType = viewType;
+    g_chainType = ViewTypeToChainTypeSwitch(g_viewType);
+    g_pageWidget = CreatePageWidget();
+    GuiTransactionSignatureNVSBarInit();
+    GuiCreateSignatureQRCode(g_pageWidget->contentZone);
 }
 
-void GuiTransactionSignatureDeInit(void) {
-  GuiAnimatingQRCodeDestroyTimer();
-  if (g_pageWidget != NULL) {
-    DestroyPageWidget(g_pageWidget);
-    g_pageWidget = NULL;
-  }
+void GuiTransactionSignatureDeInit(void)
+{
+    GuiAnimatingQRCodeDestroyTimer();
+    if (g_pageWidget != NULL) {
+        DestroyPageWidget(g_pageWidget);
+        g_pageWidget = NULL;
+    }
 }
 
-void GuiTransactionSignatureRefresh(void) { GuiAnimatingQRCodeControl(false); }
-
-void GuiTransactionSignatureHandleURGenerate(char *data, uint16_t len) {
-  GuiAnimantingQRCodeFirstUpdate(data, len);
+void GuiTransactionSignatureRefresh(void)
+{
+    GuiAnimatingQRCodeControl(false);
 }
 
-void GuiTransactionSignatureHandleURUpdate(char *data, uint16_t len) {
-  GuiAnimatingQRCodeUpdate(data, len);
+void GuiTransactionSignatureHandleURGenerate(char *data, uint16_t len)
+{
+    GuiAnimantingQRCodeFirstUpdate(data, len);
 }
 
-static void GuiTransactionSignatureNVSBarInit() {
-  SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN,
-                   GoToHomeViewHandler, NULL);
+void GuiTransactionSignatureHandleURUpdate(char *data, uint16_t len)
+{
+    GuiAnimatingQRCodeUpdate(data, len);
+}
+
+static void GuiTransactionSignatureNVSBarInit()
+{
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN,
+                     GoToHomeViewHandler, NULL);
 #ifndef BTC_ONLY
-  if (IsMessageType(g_viewType)) {
-    SetCoinWallet(g_pageWidget->navBarWidget, g_chainType,
-                  _("transaction_parse_broadcast_message"));
-  } else {
+    if (IsMessageType(g_viewType)) {
+        SetCoinWallet(g_pageWidget->navBarWidget, g_chainType,
+                      _("transaction_parse_broadcast_message"));
+    } else {
 #endif
-    SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
+        SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
 #ifndef BTC_ONLY
-  }
+    }
 #endif
 }
 
-static void GuiCreateSignatureQRCode(lv_obj_t *parent) {
-  lv_obj_t *cont = GuiCreateContainerWithParent(
-      parent, lv_obj_get_width(lv_scr_act()),
-      lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
-  lv_obj_set_align(cont, LV_ALIGN_DEFAULT);
+static void GuiCreateSignatureQRCode(lv_obj_t *parent)
+{
+    lv_obj_t *cont = GuiCreateContainerWithParent(
+                         parent, lv_obj_get_width(lv_scr_act()),
+                         lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
+    lv_obj_set_align(cont, LV_ALIGN_DEFAULT);
 
-  lv_obj_t *qrBgCont = GuiCreateContainerWithParent(cont, 408, 408);
-  lv_obj_align(qrBgCont, LV_ALIGN_TOP_MID, 0, 0);
-  lv_obj_set_style_bg_color(qrBgCont, DARK_BG_COLOR, LV_PART_MAIN);
-  lv_obj_set_style_radius(qrBgCont, 24, LV_PART_MAIN);
-  lv_obj_t *qrCont = GuiCreateContainerWithParent(qrBgCont, 336, 336);
-  lv_obj_align(qrCont, LV_ALIGN_TOP_MID, 0, 36);
+    lv_obj_t *qrBgCont = GuiCreateContainerWithParent(cont, 408, 408);
+    lv_obj_align(qrBgCont, LV_ALIGN_TOP_MID, 0, 0);
+    lv_obj_set_style_bg_color(qrBgCont, DARK_BG_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_radius(qrBgCont, 24, LV_PART_MAIN);
+    lv_obj_t *qrCont = GuiCreateContainerWithParent(qrBgCont, 336, 336);
+    lv_obj_align(qrCont, LV_ALIGN_TOP_MID, 0, 36);
 
     lv_obj_t *label = GuiCreateNoticeLabel(cont, _("transaction_parse_scan_by_software"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 576 - GUI_MAIN_AREA_OFFSET);
@@ -94,14 +103,14 @@ static void GuiCreateSignatureQRCode(lv_obj_t *parent) {
     lv_obj_set_size(btn, 408, 66);
     lv_obj_add_event_cb(btn, GoToHomeViewHandler, LV_EVENT_CLICKED, NULL);
 
-  GenerateUR func = GetUrGenerator(g_viewType);
+    GenerateUR func = GetUrGenerator(g_viewType);
 
-  if (func) {
-    bool showPending = true;
+    if (func) {
+        bool showPending = true;
 #if BTC_ONLY
-    showPending = false;
+        showPending = false;
 #endif
-    GuiAnimatingQRCodeInitWithCustomSize(qrCont, func, showPending, 336, 336,
-                                         (char *)_("sign_transaction"));
-  }
+        GuiAnimatingQRCodeInitWithCustomSize(qrCont, func, showPending, 336, 336,
+                                             (char *)_("sign_transaction"));
+    }
 }

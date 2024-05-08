@@ -3877,7 +3877,8 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
     0xfa, 0xf4, 0xe, 0xe, 0x0, 0xf0, 0x38, 0xb0, 0x1, 0xd0, 0xe2, 0xc0, 0x7,
     0x43, 0x87, 0x0, 0x1c, 0xe, 0xf, 0x1, 0xe0, 0x38, 0xf, 0xff, 0x0, 0xe0, 0x5,
     0x50, 0x3, 0x80, 0x0, 0x0, 0xe, 0x0, 0x0, 0x0, 0x38, 0x0, 0x0, 0x0, 0xe0,
-    0x0, 0x0, 0x3, 0x80};
+    0x0, 0x0, 0x3, 0x80
+};
 
 /*---------------------
  *  GLYPH DESCRIPTION
@@ -4741,7 +4742,8 @@ static const int8_t kern_class_values[] = {
     -4,  0,   -3,  0,   0,   0,   0,   0,   -4,  -2,  0,   0,   -2,  0,   -5,
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   -9,  0,   0,   -9,
     -24, 0,   -10, 0,   -10, -21, -14, 0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   -8,  0,   0,   0};
+    0,   0,   0,   0,   0,   -8,  0,   0,   0
+};
 
 /*Collect the kern class' data in one place*/
 static const lv_font_fmt_txt_kern_classes_t kern_classes = {
@@ -4791,9 +4793,9 @@ const lv_font_t koIllustrate = {
 lv_font_t koIllustrate = {
 #endif
     .get_glyph_dsc =
-        lv_font_get_glyph_dsc_fmt_txt, /*Function pointer to get glyph's data*/
+    lv_font_get_glyph_dsc_fmt_txt, /*Function pointer to get glyph's data*/
     .get_glyph_bitmap =
-        lv_font_get_bitmap_fmt_txt, /*Function pointer to get glyph's bitmap*/
+    lv_font_get_bitmap_fmt_txt, /*Function pointer to get glyph's bitmap*/
     .line_height = 30, /*The maximum line height required by the font*/
     .base_line = 7,    /*Baseline measured from the bottom of the line*/
 #if !(LVGL_VERSION_MAJOR == 6 && LVGL_VERSION_MINOR == 0)

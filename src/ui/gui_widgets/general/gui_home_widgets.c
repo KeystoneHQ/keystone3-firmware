@@ -829,6 +829,7 @@ void GuiHomeRefresh(void)
         CreateBetaNotice();
         isFirstBeta = false;
     }
+    GuiCloseAttentionHintbox();
 }
 
 const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)
@@ -843,7 +844,6 @@ const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)
 
 void GuiHomeDeInit(void)
 {
-    GuiCloseAttentionHintbox();
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;

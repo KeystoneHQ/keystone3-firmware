@@ -1524,6 +1524,7 @@ int8_t GuiConnectWalletPrevTile(void)
 
 void GuiConnectWalletRefresh(void)
 {
+    GuiCloseAttentionHintbox();
     switch (g_connectWalletTileView.currentTile) {
     case CONNECT_WALLET_SELECT_WALLET:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE,
@@ -1571,7 +1572,6 @@ void GuiConnectWalletRefresh(void)
 
 void GuiConnectWalletDeInit(void)
 {
-    GuiCloseAttentionHintbox();
     GUI_DEL_OBJ(g_openMoreHintBox)
     GUI_DEL_OBJ(g_manageImg);
     GUI_DEL_OBJ(g_coinCont)

@@ -878,16 +878,16 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *o
     }
 
     if (urType != Bytes && urType != KeystoneSignRequest) {
-    lv_obj_t *switchIcon = GuiCreateImg(amountContainer, &imgConversion);
-    lv_obj_align(switchIcon, LV_ALIGN_RIGHT_MID, -24, 0);
-    lv_obj_add_flag(switchIcon, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_t *switchIcon = GuiCreateImg(amountContainer, &imgConversion);
+        lv_obj_align(switchIcon, LV_ALIGN_RIGHT_MID, -24, 0);
+        lv_obj_add_flag(switchIcon, LV_OBJ_FLAG_CLICKABLE);
 
-    clickParam.amountValue = amountValue;
-    clickParam.feeValue = feeValue;
-    clickParam.overviewData = overviewData;
-    clickParam.isSat = &isSat;
-    isSat = false;
-    lv_obj_add_event_cb(switchIcon, SwitchValueUnit, LV_EVENT_CLICKED, &clickParam);
+        clickParam.amountValue = amountValue;
+        clickParam.feeValue = feeValue;
+        clickParam.overviewData = overviewData;
+        clickParam.isSat = &isSat;
+        isSat = false;
+        lv_obj_add_event_cb(switchIcon, SwitchValueUnit, LV_EVENT_CLICKED, &clickParam);
     }
 
     return amountContainer;
@@ -1088,7 +1088,6 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
 
     bool showChange = (urType != Bytes && urType != KeystoneSignRequest);
 
-
     lv_obj_t *formContainer = GuiCreateContainerWithParent(parent, 408, 0);
     SetContainerDefaultStyle(formContainer);
     lv_obj_align_to(formContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
@@ -1127,7 +1126,7 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
             lv_obj_set_style_radius(changeContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(changeContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_opa(changeContainer, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
-            
+
             lv_obj_t *changeLabel = lv_label_create(changeContainer);
             if (from->data[i].is_external) {
                 lv_label_set_text(changeLabel, "Receive");
@@ -1235,7 +1234,7 @@ static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailDat
             lv_obj_align(changeLabel, LV_ALIGN_CENTER, 0, 0);
 
             lv_obj_align_to(changeContainer, valueLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
-            
+
         }
 
         lv_obj_t *addressLabel = lv_label_create(toInnerContainer);

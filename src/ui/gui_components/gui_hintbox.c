@@ -8,7 +8,6 @@
 #include "gui_hintbox.h"
 #include "gui_button.h"
 
-
 static lv_obj_t *g_animHintBox = NULL;
 static lv_obj_t *g_imgRing = NULL;
 static lv_obj_t *g_imgCircular = NULL;

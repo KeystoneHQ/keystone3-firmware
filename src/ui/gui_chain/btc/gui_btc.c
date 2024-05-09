@@ -868,7 +868,13 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *o
     lv_obj_align_to(feeValue, label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
 
     lv_obj_set_style_text_font(feeValue, &openSansEnIllustrate, LV_PART_MAIN);
-    lv_obj_set_style_text_color(feeValue, lv_color_hex(0xf55831), LV_PART_MAIN);
+
+    if(overviewData->fee_larger_than_amount){
+        lv_obj_set_style_text_color(feeValue, lv_color_hex(0xf55831), LV_PART_MAIN);
+    }
+    else {
+        lv_obj_set_style_text_color(feeValue, WHITE_COLOR, LV_PART_MAIN);
+    }
 
     enum URType urType = URTypeUnKnown;
     if (g_isMulti) {

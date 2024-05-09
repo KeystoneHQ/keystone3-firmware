@@ -81,10 +81,11 @@ def build_img_to_c_file(force=False, skip_image=False):
         hash_md5 = hashlib.md5()
         for root, dirs, files in os.walk(directory):
             for file in files:
-                file_path = os.path.join(root, file)
-                with open(file_path, 'rb') as f:
-                    for chunk in iter(lambda: f.read(4096), b''):
-                        hash_md5.update(chunk)
+                if file.lower().endswith('.png'):  
+                    file_path = os.path.join(root, file)
+                    with open(file_path, 'rb') as f:
+                        for chunk in iter(lambda: f.read(4096), b''):
+                            hash_md5.update(chunk)
         return hash_md5.hexdigest()
 
     def load_previous_hash(hash_file):

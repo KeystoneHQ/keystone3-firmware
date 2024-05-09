@@ -2281,7 +2281,6 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
     0xff, 0xff, 0xff, 0xff, 0xe0
 };
 
-
 /*---------------------
  *  GLYPH DESCRIPTION
  *--------------------*/
@@ -2563,7 +2562,6 @@ static const lv_font_fmt_txt_cmap_t cmaps[] = {
  *    KERNING
  *----------------*/
 
-
 /*Pair left and right glyphs for kerning*/
 static const uint8_t kern_pair_glyph_ids[] = {
     4, 24,
@@ -2768,8 +2766,6 @@ static lv_font_fmt_txt_dsc_t font_dsc = {
 #endif
 };
 
-
-
 /*-----------------
  *  PUBLIC FONT
  *----------------*/
@@ -2798,7 +2794,4 @@ lv_font_t koLittleTitle = {
     .user_data = NULL,
 };
 
-
-
 #endif /*#if KOLITTLETITLE*/
-

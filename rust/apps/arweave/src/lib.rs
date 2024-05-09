@@ -94,13 +94,13 @@ pub fn owner_to_address(owner: Base64) -> Result<String> {
     Ok(fix_address(&address))
 }
 
-fn fix_address(address: &str) -> String {
+pub fn fix_address(address: &str) -> String {
     let mut result = String::new();
     let mut count = 0;
     for c in address.chars() {
         result.push(c);
         count += 1;
-        if count == 28 {
+        if count == 25 {
             result.push('\n');
             count = 0;
         }

@@ -10,7 +10,7 @@ use alloc::{format, slice};
 use alloc::vec::Vec;
 use app_arweave::{
     aes256_decrypt, aes256_encrypt, errors::ArweaveError, generate_public_key_from_primes,
-    generate_secret, parse,
+    generate_secret, parse, fix_address,
 };
 use common_rust_c::errors::{ErrorCodes, RustCError};
 use common_rust_c::extract_ptr_with_type;
@@ -122,7 +122,7 @@ pub extern "C" fn aes256_decrypt_primes(
 pub extern "C" fn arweave_get_address(xpub: PtrString) -> *mut SimpleResponse<c_char> {
     let xpub = recover_c_char(xpub);
     let address = app_arweave::generate_address(hex::decode(xpub).unwrap()).unwrap();
-    return SimpleResponse::success(convert_c_char(address)).simple_c_ptr();
+    return SimpleResponse::success(convert_c_char(fix_address(&address))).simple_c_ptr();
 }
 
 #[no_mangle]

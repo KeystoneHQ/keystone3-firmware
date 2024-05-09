@@ -69,7 +69,10 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         GuiRemoveKeyboardWidget();
         break;
     case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_START:
-        GuiPendingHintBoxOpen(_("Pending"), _("generating_qr_codes"));
+        GuiPendingHintBoxOpen(_("InitializingRsaTitle"), _("FindingRsaPrimes"));
+        break;
+    case SIG_SETUP_RSA_PRIVATE_KEY_GENERATE_ADDRESS:
+        GuiUpdatePendingHintBoxSubtitle(_("GeneratingRsaAddress"));
         break;
     case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS:
         GuiContinueToReceiveArPage();

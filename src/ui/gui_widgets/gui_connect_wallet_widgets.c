@@ -963,7 +963,13 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         return;
     }
     if (func) {
-        GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
+        char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
+        bool skipGenerateArweaveKey = arXpub != NULL && strlen(arXpub) == 1024;
+        if (index == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey) {
+            GuiAnimatingQRCodeInitWithLoadingParams(g_connectWalletTileView.qrCode, func, true, _("InitializingRsaTitle"), _("FindingRsaPrimes"));
+        } else {
+            GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
+        }
     }
 }
 

@@ -1215,6 +1215,7 @@ int32_t RsaGenerateKeyPair(bool needEmitSignal)
     ASSERT(secret != NULL && secret->error_code == 0);
     FlashWriteRsaPrimes(secret->data);
     free_simple_response_u8(secret);
+    GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_GENERATE_ADDRESS, NULL, 0);
     AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), true);
     RecalculateManageWalletState();
     ClearLockScreenTime();

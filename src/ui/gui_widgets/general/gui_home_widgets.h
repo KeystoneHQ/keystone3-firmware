@@ -6,6 +6,9 @@
 #include "lvgl.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_attention_hintbox.h"
+#ifdef COMPILE_SIMULATOR
+#include "gui_pending_hintbox.h"
+#endif
 
 typedef enum {
     HOME_WALLET_CARD_BTC,

@@ -68,6 +68,9 @@ int32_t GuiConnectWalletViewEventProcess(void* self, uint16_t usEvent, void* par
         }
         GuiPrepareArConnectWalletView();
         break;
+    case SIG_SETUP_RSA_PRIVATE_KEY_GENERATE_ADDRESS:
+        GuiUpdatePendingHintBoxSubtitle(_("GeneratingRsaAddress"));
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

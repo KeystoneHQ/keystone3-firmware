@@ -23,12 +23,12 @@ static void ConfirmAttentionHandler(lv_event_t *e);
 static AttentionHintboxContext *BuildConfirmationHintboxContext()
 {
     AttentionHintboxContext *context = SRAM_MALLOC(sizeof(AttentionHintboxContext));
-    context->title = "AR Blockchain Setup";
-    context->context = "Please enter your password to start the ARWEAVE blockchain setup, which will take about 10 minutes. Ensure your device is at least 60% charged and connected to USB power.";
+    context->title =  _("rsa_confirm_hintbox_title");
+    context->context = _("rsa_confirm_hintbox_context");
     context->icon = &imgAttentionLock;
     context->hintboxHeight = 476;
-    context->okBtnText = "Initial";
-    context->cancelBtnText = "Not Now";
+    context->okBtnText = _("rsa_confirm_hintbox_ok");
+    context->cancelBtnText = _("rsa_confirm_hintbox_cancel");
     return context;
 }
 
@@ -36,10 +36,10 @@ static AttentionHintboxContext *BuildLowPowerHintboxContext()
 {
     AttentionHintboxContext *context = SRAM_MALLOC(sizeof(AttentionHintboxContext));
     context->icon = &imgWarn;
-    context->title = "Power Requirements";
-    context->context = "Ensure the device has at least 60% battery and is connected to a power source to proceed.";
+    context->title = _("power_requirements_hintbox_title");
+    context->context = _("power_requirements_hintbox_context");
     context->hintboxHeight = 416;
-    context->cancelBtnText = "OK";
+    context->cancelBtnText = _("power_requirements_hintbox_cancel");
     return context;
 }
 

@@ -2,7 +2,9 @@ use alloc::string::{String, ToString};
 use third_party::thiserror;
 use third_party::thiserror::Error;
 
-pub type Result<T> = core::result::Result<T, TonError>;
+use crate::vendor::cell::TonCellError;
+
+pub type Result<T: Sized> = core::result::Result<T, TonError>;
 
 #[derive(Error, Debug)]
 pub enum TonError {
@@ -10,6 +12,8 @@ pub enum TonError {
     UnknownError,
     #[error("Invalid TON Mnemonic, {0}")]
     MnemonicError(String),
+    #[error("Invalid TON Transaction, {0}")]
+    TransactionError(#[from] TonCellError),
 }
 
 #[derive(Debug, Error)]

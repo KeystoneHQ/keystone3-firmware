@@ -8,3 +8,5 @@ mod errors;
 mod utils;
 mod transaction;
 mod vendor;
+mod structs;
+mod messages;

@@ -134,19 +134,9 @@ LV_IMG_DECLARE(imgAddOrange);
 LV_IMG_DECLARE(imgObserve);
 LV_IMG_DECLARE(imgInfoS);
 LV_IMG_DECLARE(imgBeta);
-
-// connect to do refresh
-LV_IMG_DECLARE(circular);
-LV_IMG_DECLARE(ring);
-LV_IMG_DECLARE(qrCode);
-LV_IMG_DECLARE(blue);
-LV_IMG_DECLARE(keyStone);
-LV_IMG_DECLARE(nunchuck);
-LV_IMG_DECLARE(sparrow);
-LV_IMG_DECLARE(specter);
-LV_IMG_DECLARE(election);
-LV_IMG_DECLARE(bigQRCode);
-LV_IMG_DECLARE(messageRight);
+LV_IMG_DECLARE(imgCircular);
+LV_IMG_DECLARE(imgRing);
+LV_IMG_DECLARE(imgMessageRight);
 
 // emoji
 LV_IMG_DECLARE(emojiAlien);
@@ -253,7 +243,7 @@ LV_IMG_DECLARE(walletSpecter);
 LV_IMG_DECLARE(walletNunchuk);
 LV_IMG_DECLARE(walletUniSat);
 
-//wallet list
+// wallet list
 LV_IMG_DECLARE(walletListKeyStone);
 LV_IMG_DECLARE(walletListMetaMask);
 LV_IMG_DECLARE(walletListOkx);
@@ -278,10 +268,10 @@ LV_IMG_DECLARE(walletListSparrow);
 LV_IMG_DECLARE(walletListImToken);
 LV_IMG_DECLARE(walletListUniSat);
 
-LV_IMG_DECLARE(btcWalletListBlue);
-LV_IMG_DECLARE(btcWalletListSpecter);
-LV_IMG_DECLARE(btcWalletListSparrow);
-LV_IMG_DECLARE(btcWalletListNunchuk);
+LV_IMG_DECLARE(walletListBtcBlue);
+LV_IMG_DECLARE(walletListBtcSpecter);
+LV_IMG_DECLARE(walletListBtcSparrow);
+LV_IMG_DECLARE(walletListBtcNunchuk);
 
 // font
 LV_FONT_DECLARE(openSans_20);

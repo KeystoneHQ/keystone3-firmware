@@ -1,6 +1,6 @@
 #include "gui.h"
-#include "lvgl.h"
 #include "gui_obj.h"
+#include "lvgl.h"
 
 static lv_obj_t *g_pendingHintBox = NULL;
 
@@ -23,19 +23,21 @@ void GuiPendingHintBoxOpen(const char *title, const char *subtitle)
     lv_obj_set_style_bg_opa(upCont, LV_OPA_30, 0);
 
     lv_obj_t *midCont = GuiCreateContainerWithParent(bgCont, w, 80);
-    lv_obj_set_style_bg_color(midCont, DARK_BG_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(midCont, DARK_BG_COLOR,
+                              LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(midCont, 20, 0);
     lv_obj_align(midCont, LV_ALIGN_TOP_MID, 0, 800 - h);
 
     lv_obj_t *downCont = GuiCreateContainerWithParent(bgCont, w, h - 80 + 12);
-    lv_obj_set_style_bg_color(downCont, DARK_BG_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(downCont, DARK_BG_COLOR,
+                              LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align(downCont, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_set_style_border_width(downCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    lv_obj_t *img = GuiCreateImg(downCont, &ring);
+    lv_obj_t *img = GuiCreateImg(downCont, &imgRing);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, animHeight - 68);
 
-    img = GuiCreateImg(downCont, &circular);
+    img = GuiCreateImg(downCont, &imgCircular);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, animHeight - 63);
     lv_img_set_pivot(img, 5, 25);
 

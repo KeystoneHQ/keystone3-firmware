@@ -1,6 +1,7 @@
 #ifndef _GUI_HINTBOX_H
 #define _GUI_HINTBOX_H
-
+#include "lv_event.h"
+#include "lv_obj.h"
 typedef struct {
     const char *name;
     const void *src;
@@ -15,18 +16,26 @@ void GuiDeleteAnimHintBox(void);
 uint16_t GetHintBoxReHeight(uint16_t oldHeight, lv_obj_t *obj);
 void GuiStopAnimHintBox(void);
 void *GuiCreateResultHintbox(uint16_t h, const void *src, const char *titleText,
-                             const char *descText, const char *leftBtnText, lv_color_t leftColor, const char *rightBtnText, lv_color_t rightColor);
+                             const char *descText, const char *leftBtnText,
+                             lv_color_t leftColor, const char *rightBtnText,
+                             lv_color_t rightColor);
 void *GuiCreateUpdateHintbox(const void *src, const char *titleText,
-                             const char *descText, const char *leftBtnText, lv_color_t leftColor,  const char *rightBtnText, lv_color_t rightColor, bool checkSumDone);
+                             const char *descText, const char *leftBtnText,
+                             lv_color_t leftColor, const char *rightBtnText,
+                             lv_color_t rightColor, bool checkSumDone);
 void *GuiCreateGeneralHintBox(const void *src, const char *titleText,
-                              const char *desc1, const char *desc2, const char *leftBtnText, lv_color_t leftColor,
+                              const char *desc1, const char *desc2,
+                              const char *leftBtnText, lv_color_t leftColor,
                               const char *rightBtnText, lv_color_t rightColor);
 void *GuiGetHintBoxLeftBtn(lv_obj_t *parent);
 void *GuiGetHintBoxRightBtn(lv_obj_t *parent);
 void CloseHintBoxHandler(lv_event_t *e);
 void GuiHintBoxResize(lv_obj_t *obj, uint16_t height);
-void *GuiCreateMoreInfoHintBox(const void *src, const char *titleText, MoreInfoTable_t *table, uint8_t cnt, bool isCling, void *parent);
+void *GuiCreateMoreInfoHintBox(const void *src, const char *titleText,
+                               MoreInfoTable_t *table, uint8_t cnt,
+                               bool isCling, void *parent);
 
-#define GuiCreateConfirmHintBox(src, title, desc1, desc2, btnText, color) GuiCreateGeneralHintBox(src, title, desc1, desc2, NULL, color, btnText, color)
+#define GuiCreateConfirmHintBox(src, title, desc1, desc2, btnText, color)      \
+  GuiCreateGeneralHintBox(src, title, desc1, desc2, NULL, color, btnText, color)
 
 #endif /* _GUI_HINTBOX_H */

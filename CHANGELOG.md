@@ -1,3 +1,17 @@
+## 1.4.0 (2024-05-10)
+
+### What's New
+
+1.Added support for Chinese, Russian, and Korean system languages
+2.Added support for managing ADA assets using Typhon Wallet
+3.Added functionality to format MicroSD cards
+4.Added support for creating wallets with 20-word Shamir Backup
+
+### Improvements
+
+1.Improved BTC transaction analysis
+
+
 ## 1.3.6 (2024-04-28)
 
 ### What's new

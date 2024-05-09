@@ -1,15 +1,14 @@
-#include "gui_obj.h"
-#include "gui_resource.h"
-#include "gui_views.h"
-#include "gui_status_bar.h"
-#include "gui_system_setting_widgets.h"
 #include "gui_enter_passcode.h"
 #include "gui_lock_widgets.h"
 #include "gui_model.h"
-#include "gui_enter_passcode.h"
+#include "gui_obj.h"
+#include "gui_resource.h"
+#include "gui_status_bar.h"
+#include "gui_system_setting_widgets.h"
+#include "gui_views.h"
 
-
-int32_t GuiSystemSettingViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
+int32_t GuiSystemSettingViewEventProcess(void *self, uint16_t usEvent,
+        void *param, uint16_t usLen)
 {
     GUI_ASSERT(g_systemSettingView.isActive);
 
@@ -39,8 +38,9 @@ int32_t GuiSystemSettingViewEventProcess(void *self, uint16_t usEvent, void *par
         break;
     case SIG_VERIFY_PASSWORD_FAIL:
         if (param != NULL) {
-            PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-            uint16_t sig = *(uint16_t *) passwordVerifyResult->signal;
+            PasswordVerifyResult_t *passwordVerifyResult =
+                (PasswordVerifyResult_t *)param;
+            uint16_t sig = *(uint16_t *)passwordVerifyResult->signal;
             if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
                 GuiLockScreenPassCode(false);
                 GuiLockScreenErrorCount(param);

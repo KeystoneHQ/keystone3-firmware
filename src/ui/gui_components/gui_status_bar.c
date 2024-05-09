@@ -84,7 +84,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_GRAV, "", &coinGrav},     {CHAIN_IXO, "", &coinIxo},
     {CHAIN_NGM, "", &coinNgm},       {CHAIN_IOV, "", &coinIov},
     {CHAIN_UMEE, "", &coinUmee},     {CHAIN_QCK, "", &coinQck},
-    {CHAIN_TGD, "", &coinTgd},
+    {CHAIN_TGD, "", &coinTgd},       {CHAIN_RUNE, "", &coinRune}, 
 #endif
 };
 
@@ -111,6 +111,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_FEWCHA, "Fewcha", &walletFewcha},
     {WALLET_LIST_PETRA, "Petra", &walletPetra},
     {WALLET_LIST_XRP_TOOLKIT, "XRP Toolkit", &walletXRPToolkit},
+    {WALLET_LIST_THORWALLET, "THORWallet", &walletThorWallet},
 #else
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},
@@ -273,14 +274,13 @@ void GuiStatusBarSetSdCard(bool connected)
     RefreshStatusBar();
 }
 
-void GuiStatusBarSetUsb(void)
-{
-    if (GetUsbState() && UsbInitState()) {
-        lv_obj_clear_flag(g_guiStatusBar.usbImg, LV_OBJ_FLAG_HIDDEN);
-    } else {
-        lv_obj_add_flag(g_guiStatusBar.usbImg, LV_OBJ_FLAG_HIDDEN);
-    }
-    RefreshStatusBar();
+void GuiStatusBarSetUsb(void) {
+  if (GetUsbState() && UsbInitState()) {
+    lv_obj_clear_flag(g_guiStatusBar.usbImg, LV_OBJ_FLAG_HIDDEN);
+  } else {
+    lv_obj_add_flag(g_guiStatusBar.usbImg, LV_OBJ_FLAG_HIDDEN);
+  }
+  RefreshStatusBar();
 }
 
 #ifdef BTC_ONLY
@@ -547,8 +547,8 @@ void DestoryNavBarWidget(NavBarWidget_t *navBarWidget)
             lv_obj_del(navBarWidget->navBar);
         }
 
-        SRAM_FREE(navBarWidget);
-    }
+    SRAM_FREE(navBarWidget);
+  }
 }
 
 void SetNavBarLeftBtn(NavBarWidget_t *navBarWidget, NVS_LEFT_BUTTON_ENUM button,

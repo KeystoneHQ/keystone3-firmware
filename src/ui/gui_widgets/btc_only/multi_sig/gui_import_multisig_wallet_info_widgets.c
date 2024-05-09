@@ -284,7 +284,7 @@ static void GuiConfirmHandler(lv_event_t *e)
     }
     MultiSigWalletItem_t *wallet = GetMultisigWalletByVerifyCode(g_wallet->verify_code);
     if (wallet != NULL) {
-        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, GuiCLoseCurrentWorkingView);
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, (ErrorWindowCallback)GuiCLoseCurrentWorkingView);
         return;
     }
     GuiVerifyPassword();

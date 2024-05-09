@@ -14,7 +14,7 @@
 #include "usb_task.h"
 #include "device_setting.h"
 #include "drv_aw32001.h"
-
+void GuiLockViewRefreshLanguage(void);
 int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     if (g_lockView.isActive) {

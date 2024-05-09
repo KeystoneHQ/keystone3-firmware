@@ -1,10 +1,10 @@
 #include "gui.h"
-#include "gui_obj.h"
-#include "gui_model.h"
-#include "gui_views.h"
-#include "gui_transaction_detail_widgets.h"
 #include "gui_lock_widgets.h"
+#include "gui_model.h"
+#include "gui_obj.h"
 #include "gui_pending_hintbox.h"
+#include "gui_transaction_detail_widgets.h"
+#include "gui_views.h"
 
 static int32_t GuiTransactionDetailViewInit(uint8_t viewType)
 {
@@ -18,7 +18,8 @@ static int32_t GuiTransactionDetailViewDeInit(void)
     return SUCCESS_CODE;
 }
 
-int32_t GuiTransactionDetailViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
+int32_t GuiTransactionDetailViewEventProcess(void *self, uint16_t usEvent,
+        void *param, uint16_t usLen)
 {
     uint8_t viewType = 0;
     switch (usEvent) {
@@ -46,8 +47,9 @@ int32_t GuiTransactionDetailViewEventProcess(void *self, uint16_t usEvent, void 
         break;
     case SIG_VERIFY_PASSWORD_FAIL:
         if (param != NULL) {
-            PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-            uint16_t sig = *(uint16_t *) passwordVerifyResult->signal;
+            PasswordVerifyResult_t *passwordVerifyResult =
+                (PasswordVerifyResult_t *)param;
+            uint16_t sig = *(uint16_t *)passwordVerifyResult->signal;
             if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
                 GuiLockScreenPassCode(false);
                 GuiLockScreenErrorCount(param);

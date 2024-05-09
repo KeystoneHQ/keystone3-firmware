@@ -1,13 +1,13 @@
+#include "gui_wallet_tutorial_widgets.h"
 #include "define.h"
 #include "gui.h"
-#include "lvgl.h"
-#include "gui_framework.h"
-#include "gui_status_bar.h"
-#include "gui_hintbox.h"
 #include "gui_connect_wallet_widgets.h"
-#include "gui_wallet_tutorial_widgets.h"
-#include "gui_qr_hintbox.h"
+#include "gui_framework.h"
+#include "gui_hintbox.h"
 #include "gui_page.h"
+#include "gui_qr_hintbox.h"
+#include "gui_status_bar.h"
+#include "lvgl.h"
 #if BTC_ONLY
 #include "gui_btc_home_widgets.h"
 #endif
@@ -190,6 +190,15 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_UNISAT].items[0].qrTitle = _("connect_unisat_qr_title");
     g_tutorials[WALLET_LIST_UNISAT].items[0].qrUrl = _("connect_unisat_qr_link");
 
+
+    //WALLET_LIST_THORWALLET
+    g_tutorials[WALLET_LIST_THORWALLET].len = 1;
+    g_tutorials[WALLET_LIST_THORWALLET].desc = _("connect_unisat_desc");
+    g_tutorials[WALLET_LIST_THORWALLET].items[0].walletName = _("connect_unisat_title");
+    g_tutorials[WALLET_LIST_THORWALLET].items[0].url = _("connect_unisat_link");
+    g_tutorials[WALLET_LIST_THORWALLET].items[0].qrTitle = _("connect_unisat_qr_title");
+    g_tutorials[WALLET_LIST_THORWALLET].items[0].qrUrl = _("connect_unisat_qr_link");
+
     // WALLET_LIST_KEPLR
     g_tutorials[WALLET_LIST_KEPLR].len = 1;
     g_tutorials[WALLET_LIST_KEPLR].desc = _("connect_wallet_desc");
@@ -270,11 +279,15 @@ static void WalletTutorialsInit()
         g_tutorials[WALLET_LIST_BLUE].items[0].url = _("connect_bw_multisig_link");
         g_tutorials[WALLET_LIST_BLUE].items[0].qrUrl = _("connect_bw_multisig_link");
 
-        g_tutorials[WALLET_LIST_SPARROW].items[0].url = _("connect_sparrow_multisig_link");
-        g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl = _("connect_sparrow_multisig_link");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].url =
+            _("connect_sparrow_multisig_link");
+        g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl =
+            _("connect_sparrow_multisig_link");
 
-        g_tutorials[WALLET_LIST_NUNCHUK].items[0].url = _("connect_nunchuk_multisig_link");
-        g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrUrl = _("connect_nunchuk_multisig_link");
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].url =
+            _("connect_nunchuk_multisig_link");
+        g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrUrl =
+            _("connect_nunchuk_multisig_link");
     } else {
         g_tutorials[WALLET_LIST_BLUE].items[0].url = _("connect_bw_link");
         g_tutorials[WALLET_LIST_BLUE].items[0].qrUrl = _("connect_bw_link");
@@ -312,11 +325,13 @@ void GuiWalletTutorialInit(WALLET_LIST_INDEX_ENUM tutorialIndex)
 
     for (size_t i = 0; i < tutorial->len; i++) {
         cont = GuiCreateContainerWithParent(g_walletTutorialWidget.cont, 408, 102);
-        lv_obj_align_to(cont, lastTarget, LV_ALIGN_OUT_BOTTOM_LEFT, 0, i == 0 ? 24 : 16);
+        lv_obj_align_to(cont, lastTarget, LV_ALIGN_OUT_BOTTOM_LEFT, 0,
+                        i == 0 ? 24 : 16);
         lv_obj_set_style_bg_color(cont, DARK_GRAY_COLOR, LV_PART_MAIN);
         lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
         lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_add_event_cb(cont, GuiWalletTutorialQrcodeHandler, LV_EVENT_CLICKED, &tutorial->items[i]);
+        lv_obj_add_event_cb(cont, GuiWalletTutorialQrcodeHandler, LV_EVENT_CLICKED,
+                            &tutorial->items[i]);
 
         label = GuiCreateTextLabel(cont, tutorial->items[i].walletName);
         lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
@@ -324,7 +339,8 @@ void GuiWalletTutorialInit(WALLET_LIST_INDEX_ENUM tutorialIndex)
 
         label = GuiCreateIllustrateLabel(cont, tutorial->items[i].url);
         lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 56);
-        lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_text_opa(label, LV_OPA_80,
+                                  LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_width(label, 320);
         lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
 
@@ -345,7 +361,8 @@ void GuiWalletTutorialInit(WALLET_LIST_INDEX_ENUM tutorialIndex)
 
 void GuiWalletTutorialRefresh()
 {
-    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseCurrentViewHandler, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE,
+                     CloseCurrentViewHandler, NULL);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Tutorial"));
 }
 

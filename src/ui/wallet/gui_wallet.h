@@ -7,6 +7,7 @@
 UREncodeResult *GuiGetBlueWalletBtcData(void);
 UREncodeResult *GuiGetSparrowWalletBtcData(void);
 UREncodeResult *GuiGetSpecterWalletBtcData(void);
+UREncodeResult *GuiGetThorWalletBtcData(void);
 #ifndef BTC_ONLY
 UREncodeResult *GuiGetKeplrData(void);
 #ifndef COMPILE_SIMULATOR

@@ -23,6 +23,7 @@ pub mod metamask;
 pub mod okx;
 pub mod solana;
 pub mod sui;
+pub mod thorwallet;
 mod utils;
 pub mod xrp_toolkit;
 

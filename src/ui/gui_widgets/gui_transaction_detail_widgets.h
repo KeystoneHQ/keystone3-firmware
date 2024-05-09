@@ -1,10 +1,11 @@
 #ifndef _GUI_TRANSACTION_DETAIL_WIDGETS_H
 #define _GUI_TRANSACTION_DETAIL_WIDGETS_H
-
+#include <stdbool.h>
+#include <stdint.h>
 typedef enum {
-    //for all single sig transactions.
+    // for all single sig transactions.
     TRANSACTION_TYPE_NORMAL,
-    //for btc multisig transaction, with different destination.
+    // for btc multisig transaction, with different destination.
     TRANSACTION_TYPE_BTC_MULTISIG,
 
     TRANSACTION_TYPE_BUTT,

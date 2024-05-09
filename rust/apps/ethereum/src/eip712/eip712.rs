@@ -1291,6 +1291,9 @@ mod tests {
 
         let typed_data: TypedData = serde_json::from_value(json).unwrap();
         let hash = typed_data.encode_eip712().unwrap();
-        // println!("hash: {:?}", hex::encode(&hash[..]));
+        assert_eq!(
+            "37fe5c140a9d70d91f786f300ce87be665e9551469e5747de4dce35edf129cf6",
+            hex::encode(&hash[..])
+        );
     }
 }

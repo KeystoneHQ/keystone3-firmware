@@ -1,30 +1,29 @@
-#include "gui.h"
-#include "gui_obj.h"
-#include "gui_views.h"
-#include "gui_enter_passcode.h"
-#include "gui_status_bar.h"
-#include "gui_model.h"
-#include "gui_transaction_detail_widgets.h"
-#include "gui_status_bar.h"
-#include "gui_hintbox.h"
-#include "gui_analyze.h"
-#include "gui_button.h"
-#include "gui_qr_code.h"
-#include "secret_cache.h"
-#include "qrdecode_task.h"
-#include "gui_chain.h"
-#include "assert.h"
-#include "gui_web_auth_widgets.h"
-#include "gui_qr_hintbox.h"
-#include "motor_manager.h"
-#include "gui_lock_widgets.h"
-#include "screen_manager.h"
-#include "fingerprint_process.h"
-#include "gui_fullscreen_mode.h"
-#include "gui_keyboard_hintbox.h"
-#include "gui_page.h"
 #include "account_manager.h"
+#include "assert.h"
+#include "fingerprint_process.h"
+#include "gui.h"
+#include "gui_analyze.h"
 #include "gui_animating_qrcode.h"
+#include "gui_button.h"
+#include "gui_chain.h"
+#include "gui_enter_passcode.h"
+#include "gui_fullscreen_mode.h"
+#include "gui_hintbox.h"
+#include "gui_keyboard_hintbox.h"
+#include "gui_lock_widgets.h"
+#include "gui_model.h"
+#include "gui_obj.h"
+#include "gui_page.h"
+#include "gui_qr_code.h"
+#include "gui_qr_hintbox.h"
+#include "gui_status_bar.h"
+#include "gui_transaction_detail_widgets.h"
+#include "gui_views.h"
+#include "gui_web_auth_widgets.h"
+#include "motor_manager.h"
+#include "qrdecode_task.h"
+#include "screen_manager.h"
+#include "secret_cache.h"
 
 static void GuiTransactionSignatureNVSBarInit();
 static void GuiCreateSignatureQRCode(lv_obj_t *parent);
@@ -68,10 +67,12 @@ void GuiTransactionSignatureHandleURUpdate(char *data, uint16_t len)
 
 static void GuiTransactionSignatureNVSBarInit()
 {
-    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, GoToHomeViewHandler, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN,
+                     GoToHomeViewHandler, NULL);
 #ifndef BTC_ONLY
     if (IsMessageType(g_viewType)) {
-        SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_broadcast_message"));
+        SetCoinWallet(g_pageWidget->navBarWidget, g_chainType,
+                      _("transaction_parse_broadcast_message"));
     } else {
 #endif
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
@@ -82,7 +83,9 @@ static void GuiTransactionSignatureNVSBarInit()
 
 static void GuiCreateSignatureQRCode(lv_obj_t *parent)
 {
-    lv_obj_t *cont = GuiCreateContainerWithParent(parent, lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
+    lv_obj_t *cont = GuiCreateContainerWithParent(
+                         parent, lv_obj_get_width(lv_scr_act()),
+                         lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_align(cont, LV_ALIGN_DEFAULT);
 
     lv_obj_t *qrBgCont = GuiCreateContainerWithParent(cont, 408, 408);
@@ -107,6 +110,7 @@ static void GuiCreateSignatureQRCode(lv_obj_t *parent)
 #if BTC_ONLY
         showPending = false;
 #endif
-        GuiAnimatingQRCodeInitWithCustomSize(qrCont, func, showPending, 336, 336, (char *)_("sign_transaction"));
+        GuiAnimatingQRCodeInitWithCustomSize(qrCont, func, showPending, 336, 336,
+                                             (char *)_("sign_transaction"));
     }
 }

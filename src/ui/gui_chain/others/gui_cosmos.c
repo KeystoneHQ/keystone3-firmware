@@ -48,6 +48,7 @@ static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_QCK, "quick", 118, XPUB_TYPE_COSMOS, "quicksilver-1"},
     {CHAIN_LUNA, "terra", 330, XPUB_TYPE_TERRA, "phoenix-1"},
     {CHAIN_LUNC, "terra", 330, XPUB_TYPE_TERRA, "columbus-5"},
+    {CHAIN_RUNE, "thor", 931, XPUB_TYPE_THOR, "thorchain-3"},
 };
 
 const CosmosChain_t *GuiGetCosmosChain(uint8_t index)
@@ -93,11 +94,11 @@ const char* GuiGetCosmosTxTypeName(CosmosMsgType type)
 
 void GuiSetCosmosUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
-#ifndef COMPILE_SIMULATOR
+// #ifndef COMPILE_SIMULATOR
     g_urResult = urResult;
     g_urMultiResult = urMultiResult;
     g_isMulti = multi;
-#endif
+// #endif
 }
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                                   \
@@ -128,15 +129,15 @@ void *GuiGetCosmosData(void)
 
 PtrT_TransactionCheckResult GuiGetCosmosCheckResult(void)
 {
-#ifndef COMPILE_SIMULATOR
+// #ifndef COMPILE_SIMULATOR
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
     URType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     return cosmos_check_tx(data, urType, mfp, sizeof(mfp));
-#else
-    return NULL;
-#endif
+// #else
+    // return NULL;
+// #endif
 }
 
 void FreeCosmosMemory(void)

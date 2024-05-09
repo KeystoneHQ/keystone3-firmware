@@ -75,4 +75,15 @@ mod tests {
         let result = derive_address(hd_path, root_x_pub, root_path).unwrap();
         assert_eq!("0x31eA4a0976ceE79AF136B1Cfa914e20E87546156", result);
     }
+
+    #[test]
+    fn test_derive_address() {
+        {
+            let root_path = "44'/60'/0'";
+            let root_xpub = "xpub6DJvcCRxBqSydGgQ1TZ7xKRaQ1TriTLCpH7bd912nvJfET2HwfQo292zEcGU6pSSH7Q7PpijZf1kAgk8Rt8pkgVd5UJNFSADZN7odCbX314";
+            let hd_path = "44'/60'/0'/0/0";
+            let address = derive_address(hd_path, root_xpub, root_path).unwrap();
+            assert_eq!("0x5820d178f480253Fa119CbfeE349C9b69Bf8EbB9", address);
+        }
+    }
 }

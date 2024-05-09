@@ -1,30 +1,29 @@
-#include "gui.h"
-#include "gui_obj.h"
-#include "gui_views.h"
-#include "gui_enter_passcode.h"
-#include "gui_status_bar.h"
-#include "gui_model.h"
 #include "gui_transaction_detail_widgets.h"
-#include "gui_status_bar.h"
-#include "gui_hintbox.h"
+#include "account_manager.h"
+#include "assert.h"
+#include "fingerprint_process.h"
+#include "gui.h"
 #include "gui_analyze.h"
 #include "gui_button.h"
-#include "gui_qr_code.h"
-#include "secret_cache.h"
-#include "qrdecode_task.h"
 #include "gui_chain.h"
-#include "assert.h"
-#include "gui_web_auth_widgets.h"
-#include "gui_qr_hintbox.h"
-#include "motor_manager.h"
-#include "gui_lock_widgets.h"
-#include "screen_manager.h"
-#include "fingerprint_process.h"
+#include "gui_enter_passcode.h"
 #include "gui_fullscreen_mode.h"
+#include "gui_hintbox.h"
 #include "gui_keyboard_hintbox.h"
+#include "gui_lock_widgets.h"
+#include "gui_model.h"
+#include "gui_obj.h"
 #include "gui_page.h"
-#include "account_manager.h"
 #include "gui_pending_hintbox.h"
+#include "gui_qr_code.h"
+#include "gui_qr_hintbox.h"
+#include "gui_status_bar.h"
+#include "gui_views.h"
+#include "gui_web_auth_widgets.h"
+#include "motor_manager.h"
+#include "qrdecode_task.h"
+#include "screen_manager.h"
+#include "secret_cache.h"
 #ifndef BTC_ONLY
 #include "general/eapdu_services/service_resolve_ur.h"
 #endif
@@ -99,7 +98,8 @@ static void TransactionGoToHomeViewHandler(lv_event_t *e)
 #ifndef BTC_ONLY
     if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
         const char *data = "UR parsing rejected";
-        HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_REJECTED);
+        HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(),
+                                 PRS_PARSING_REJECTED);
     }
 #endif
     CloseQRTimer();
@@ -142,8 +142,8 @@ void *GuiCreateBroadcastBtn(lv_obj_t *parent, lv_event_cb_t cb)
 
 void GuiTransactionDetailInit(uint8_t viewType)
 {
-    //assume the transaction is a normal one.
-    //btc multisig will change g_transactionType when parsing transaction;
+    // assume the transaction is a normal one.
+    // btc multisig will change g_transactionType when parsing transaction;
     g_transactionType = TRANSACTION_TYPE_NORMAL;
     g_viewType = viewType;
     g_chainType = ViewTypeToChainTypeSwitch(g_viewType);
@@ -171,7 +171,7 @@ void GuiTransactionDetailDeInit()
     GuiTemplateClosePage();
 }
 
-//should get error cod here
+// should get error cod here
 void GuiTransactionParseFailed()
 {
     ThrowError(ERR_INVALID_FILE);
@@ -185,7 +185,8 @@ void GuiTransactionDetailRefresh()
 
 static void ThrowError(int32_t errorCode)
 {
-    g_parseErrorHintBox = GuiCreateErrorCodeWindow(errorCode, &g_parseErrorHintBox, NULL);
+    g_parseErrorHintBox =
+        GuiCreateErrorCodeWindow(errorCode, &g_parseErrorHintBox, NULL);
 }
 
 void GuiTransactionDetailParseSuccess(void *param)
@@ -193,7 +194,8 @@ void GuiTransactionDetailParseSuccess(void *param)
     SetParseTransactionResult(param);
     GuiTemplateReload(g_pageWidget->contentZone, g_viewType);
     if (!g_needSign) {
-        GuiCreateErrorCodeWindow(ERR_MULTISIG_TRANSACTION_ALREADY_SIGNED, NULL, (ErrorWindowCallback)GuiCLoseCurrentWorkingView);
+        GuiCreateErrorCodeWindow(ERR_MULTISIG_TRANSACTION_ALREADY_SIGNED, NULL,
+                                 (ErrorWindowCallback)GuiCLoseCurrentWorkingView);
     }
 }
 
@@ -214,26 +216,35 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
         }
         UREncodeResult *urResult = func();
         if (urResult->error_code == 0) {
-            HandleURResultViaUSBFunc(urResult->data, strlen(urResult->data), GetCurrentUSParsingRequestID(), RSP_SUCCESS_CODE);
+            HandleURResultViaUSBFunc(urResult->data, strlen(urResult->data),
+                                     GetCurrentUSParsingRequestID(),
+                                     RSP_SUCCESS_CODE);
         } else {
-            HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), GetCurrentUSParsingRequestID(), PRS_PARSING_ERROR);
+            HandleURResultViaUSBFunc(
+                urResult->error_message, strlen(urResult->error_message),
+                GetCurrentUSParsingRequestID(), PRS_PARSING_ERROR);
         }
         return;
     }
 #endif
     if (g_transactionType == TRANSACTION_TYPE_NORMAL) {
-        GuiFrameOpenViewWithParam(&g_transactionSignatureView, &g_viewType, sizeof(g_viewType));
+        GuiFrameOpenViewWithParam(&g_transactionSignatureView, &g_viewType,
+                                  sizeof(g_viewType));
     }
 }
 
 void GuiSignVerifyPasswordErrorCount(void *param)
 {
-    PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-    if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
+    PasswordVerifyResult_t *passwordVerifyResult =
+        (PasswordVerifyResult_t *)param;
+    if (passwordVerifyResult->errorCount ==
+            MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
 #ifndef BTC_ONLY
         if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
             const char *data = "Please try again after unlocking";
-            HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_VERIFY_PASSWORD_ERROR);
+            HandleURResultViaUSBFunc(data, strlen(data),
+                                     GetCurrentUSParsingRequestID(),
+                                     PRS_PARSING_VERIFY_PASSWORD_ERROR);
         }
 #endif
     }
@@ -254,7 +265,8 @@ void GuiSignDealFingerRecognize(void *param)
     } else {
         g_fingerSignErrCount++;
         g_fingerSignCount++;
-        if (g_fpErrorLabel != NULL && lv_obj_has_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN)) {
+        if (g_fpErrorLabel != NULL &&
+                lv_obj_has_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN)) {
             lv_obj_clear_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN);
         }
         lv_img_set_src(g_fpErrorImg, &imgRedFinger);
@@ -281,10 +293,12 @@ void GuiClearQrcodeSignCnt(void)
 
 static void GuiTransactionDetailNavBarInit()
 {
-    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, TransactionGoToHomeViewHandler, NULL);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN,
+                     TransactionGoToHomeViewHandler, NULL);
 #ifndef BTC_ONLY
     if (IsMessageType(g_viewType)) {
-        SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_confirm_message"));
+        SetCoinWallet(g_pageWidget->navBarWidget, g_chainType,
+                      _("transaction_parse_confirm_message"));
     } else {
 #endif
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
@@ -299,7 +313,8 @@ static void CheckSliderProcessHandler(lv_event_t *e)
     if (code == LV_EVENT_RELEASED) {
         int32_t value = lv_slider_get_value(lv_event_get_target(e));
         if (value >= QRCODE_CONFIRM_SIGN_PROCESS) {
-            if ((GetCurrentAccountIndex() < 3) && GetFingerSignFlag() && g_fingerSignCount < 3) {
+            if ((GetCurrentAccountIndex() < 3) && GetFingerSignFlag() &&
+                    g_fingerSignCount < 3) {
                 SignByFinger();
             } else {
                 SignByPasswordCb(false);
@@ -339,7 +354,8 @@ static void SignByFinger(void)
 
     g_fingerSingContainer = GuiCreateHintBox(428);
     lv_obj_t *cont = g_fingerSingContainer;
-    lv_obj_t *label = GuiCreateNoticeLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint"));
+    lv_obj_t *label = GuiCreateNoticeLabel(
+                          cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 402);
 
     lv_obj_t *button = GuiCreateImgButton(cont, &imgClose, 64, CloseContHandler, cont);
@@ -352,7 +368,8 @@ static void SignByFinger(void)
     lv_obj_set_style_arc_opa(arc, LV_OPA_10, LV_PART_MAIN);
     lv_obj_align(arc, LV_ALIGN_BOTTOM_MID, 0, -154);
 
-    g_fpErrorLabel = GuiCreateIllustrateLabel(cont, _("scan_qr_code_sign_unsigned_content_fingerprint_failed_desc"));
+    g_fpErrorLabel = GuiCreateIllustrateLabel(
+                         cont, _("scan_qr_code_sign_unsigned_content_fingerprint_failed_desc"));
     lv_obj_set_style_text_color(g_fpErrorLabel, RED_COLOR, LV_PART_MAIN);
     lv_obj_align(g_fpErrorLabel, LV_ALIGN_BOTTOM_MID, 0, -100);
     lv_obj_add_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN);

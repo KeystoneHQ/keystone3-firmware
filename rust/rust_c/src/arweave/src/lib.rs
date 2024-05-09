@@ -2,15 +2,15 @@
 
 extern crate alloc;
 
-use crate::structs::{DisplayArweaveTx, DisplayArweaveMessage, ArweaveRequestType};
+use crate::structs::{ArweaveRequestType, DisplayArweaveMessage, DisplayArweaveTx};
 use alloc::boxed::Box;
 use alloc::fmt::format;
 use alloc::string::{String, ToString};
-use alloc::{format, slice};
 use alloc::vec::Vec;
+use alloc::{format, slice};
 use app_arweave::{
-    aes256_decrypt, aes256_encrypt, errors::ArweaveError, generate_public_key_from_primes,
-    generate_secret, parse, fix_address,
+    aes256_decrypt, aes256_encrypt, errors::ArweaveError, fix_address,
+    generate_public_key_from_primes, generate_secret, parse,
 };
 use common_rust_c::errors::{ErrorCodes, RustCError};
 use common_rust_c::extract_ptr_with_type;
@@ -24,7 +24,9 @@ use keystore::algorithms::rsa::{sign_message, SigningOption};
 use third_party::hex;
 use third_party::serde_json;
 use third_party::serde_json::{json, Value};
-use third_party::ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SaltLen, SignType};
+use third_party::ur_registry::arweave::arweave_sign_request::{
+    ArweaveSignRequest, SaltLen, SignType,
+};
 use third_party::ur_registry::arweave::arweave_signature::ArweaveSignature;
 use third_party::ur_registry::traits::{RegistryItem, To};
 
@@ -137,7 +139,7 @@ pub extern "C" fn ar_check_tx(
     let mfp = unsafe { slice::from_raw_parts(master_fingerprint, 4) };
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let ur_mfp = sign_request.get_master_fingerprint();
-    
+
     if let Ok(mfp) = mfp.try_into() as Result<[u8; 4], _> {
         if hex::encode(mfp) == hex::encode(ur_mfp) {
             return TransactionCheckResult::new().c_ptr();
@@ -163,7 +165,9 @@ pub extern "C" fn ar_request_type(ptr: PtrUR) -> *mut SimpleResponse<ArweaveRequ
 }
 
 #[no_mangle]
-pub extern "C" fn ar_message_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayArweaveMessage>> {
+pub extern "C" fn ar_message_parse(
+    ptr: PtrUR,
+) -> PtrT<TransactionParseResult<DisplayArweaveMessage>> {
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let sign_data = sign_request.get_sign_data();
     let raw_message = hex::encode(sign_request.get_sign_data());
@@ -172,8 +176,17 @@ pub extern "C" fn ar_message_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<Di
         message: convert_c_char(message),
         raw_message: convert_c_char(raw_message),
     };
-    TransactionParseResult::success(Box::into_raw(Box::new(display_message)) as *mut DisplayArweaveMessage)
-        .c_ptr()
+    TransactionParseResult::success(
+        Box::into_raw(Box::new(display_message)) as *mut DisplayArweaveMessage
+    )
+    .c_ptr()
+}
+
+fn get_value(raw_json: &Value, key: &str) -> String {
+    raw_json["formatted_json"][key.to_string()]
+        .as_str()
+        .unwrap()
+        .to_string()
 }
 
 #[no_mangle]
@@ -182,11 +195,11 @@ pub extern "C" fn ar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayArw
     let sign_data = sign_request.get_sign_data();
     let raw_tx = parse(&sign_data).unwrap();
     let raw_json: Value = serde_json::from_str(&raw_tx).unwrap();
-    let value = raw_json["formatted_json"]["quantity"].as_str().unwrap().to_string();
-    let fee = raw_json["formatted_json"]["reward"].as_str().unwrap().to_string();
-    let from = raw_json["formatted_json"]["from"].as_str().unwrap().to_string();
-    let to = raw_json["formatted_json"]["target"].as_str().unwrap().to_string();
-    let detail = raw_json["formatted_json"]["detail"].as_str().unwrap().to_string();
+    let value = get_value(&raw_json, "quantity");
+    let fee = get_value(&raw_json, "reward");
+    let from = get_value(&raw_json, "from");
+    let to = get_value(&raw_json, "target");
+    let detail = get_value(&raw_json, "detail");
     let display_tx = DisplayArweaveTx {
         value: convert_c_char(value),
         fee: convert_c_char(fee),
@@ -224,8 +237,9 @@ fn build_sign_result(ptr: PtrUR, p: &[u8], q: &[u8]) -> Result<ArweaveSignature,
     let signing_option = match sign_type {
         SignType::Transaction => SigningOption::PSS { salt_len },
         SignType::Message => SigningOption::RSA { salt_len },
-        SignType::DataItem => 
-            return Err(ArweaveError::SignFailure(format!("Unsupported sign type"))),
+        SignType::DataItem => {
+            return Err(ArweaveError::SignFailure(format!("Unsupported sign type")))
+        }
         _ => SigningOption::PSS { salt_len },
     };
     let signature = sign_message(&signature_data, p, q, &signing_option)?;

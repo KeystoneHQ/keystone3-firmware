@@ -26,7 +26,7 @@ use third_party::hex;
 use third_party::rsa::{BigUint, RsaPrivateKey};
 use third_party::serde_json;
 use third_party::serde_json::{json, Value};
-use transaction::{Transaction, Base64};
+use transaction::{Base64, Transaction};
 
 type Aes256CbcEnc = cbc::Encryptor<aes::Aes256>;
 type Aes256CbcDec = cbc::Decryptor<aes::Aes256>;
@@ -111,14 +111,18 @@ pub fn fix_address(address: &str) -> String {
 pub fn parse(data: &Vec<u8>) -> Result<String> {
     let tx = match serde_json::from_slice::<Transaction>(data) {
         Ok(tx) => {
-            let tags_json = tx.tags.iter().map(|tag| {
-                let name = String::from_utf8(tag.name.0.clone()).unwrap();
-                let value = String::from_utf8(tag.value.0.clone()).unwrap();
-                json!({
-                    "name": name,
-                    "value": value
+            let tags_json = tx
+                .tags
+                .iter()
+                .map(|tag| {
+                    let name = String::from_utf8(tag.name.0.clone()).unwrap();
+                    let value = String::from_utf8(tag.value.0.clone()).unwrap();
+                    json!({
+                        "name": name,
+                        "value": value
+                    })
                 })
-            }).collect::<Vec<Value>>();
+                .collect::<Vec<Value>>();
             let tags_json = serde_json::to_string(&tags_json).unwrap();
             json!({
                 "raw_json": tx,

@@ -11,7 +11,7 @@ use num_bigint_dig::BigUint;
 use sha2;
 use sha2::{Digest, Sha256};
 use third_party::rsa::pss::SigningKey;
-use third_party::rsa::signature::{RandomizedDigestSigner, SignatureEncoding, RandomizedSigner};
+use third_party::rsa::signature::{RandomizedDigestSigner, RandomizedSigner, SignatureEncoding};
 use third_party::rsa::{rand_core, PublicKeyParts, RsaPrivateKey};
 
 pub const MODULUS_LENGTH: usize = 4096;
@@ -141,7 +141,7 @@ impl RSA {
 #[derive(Clone, Copy)]
 pub enum SigningOption {
     PSS { salt_len: i32 },
-    RSA { salt_len: i32 }
+    RSA { salt_len: i32 },
 }
 
 #[cfg(test)]

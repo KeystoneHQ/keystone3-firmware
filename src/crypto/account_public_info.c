@@ -981,7 +981,6 @@ static void ConvertXPub(char *dest, ChainType chainType)
 }
 #endif
 
-
 #ifdef BTC_ONLY
 void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)
 {

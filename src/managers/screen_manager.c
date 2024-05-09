@@ -145,7 +145,6 @@ static void LockScreen(void)
         GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_CLEAR_ALL_TOP, NULL, 0);
     }
 
-
     if (!FpModuleIsExist()) {
         uint32_t wakeUpCount = EnterLowPower();
         RecoverFromLowPower();

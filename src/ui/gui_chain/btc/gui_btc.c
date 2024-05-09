@@ -870,6 +870,14 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *o
     lv_obj_set_style_text_font(feeValue, &openSansEnIllustrate, LV_PART_MAIN);
     lv_obj_set_style_text_color(feeValue, lv_color_hex(0xf55831), LV_PART_MAIN);
 
+    enum URType urType = URTypeUnKnown;
+    if (g_isMulti) {
+        urType = g_urMultiResult->ur_type;
+    } else {
+        urType = g_urResult->ur_type;
+    }
+
+    if (urType != Bytes && urType != KeystoneSignRequest) {
     lv_obj_t *switchIcon = GuiCreateImg(amountContainer, &imgConversion);
     lv_obj_align(switchIcon, LV_ALIGN_RIGHT_MID, -24, 0);
     lv_obj_add_flag(switchIcon, LV_OBJ_FLAG_CLICKABLE);
@@ -880,6 +888,7 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *o
     clickParam.isSat = &isSat;
     isSat = false;
     lv_obj_add_event_cb(switchIcon, SwitchValueUnit, LV_EVENT_CLICKED, &clickParam);
+    }
 
     return amountContainer;
 }
@@ -1070,6 +1079,16 @@ static lv_obj_t *CreateDetailAmountView(lv_obj_t *parent, DisplayTxDetail *detai
 
 static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailData, lv_obj_t *lastView)
 {
+    enum URType urType = URTypeUnKnown;
+    if (g_isMulti) {
+        urType = g_urMultiResult->ur_type;
+    } else {
+        urType = g_urResult->ur_type;
+    }
+
+    bool showChange = (urType != Bytes && urType != KeystoneSignRequest);
+
+
     lv_obj_t *formContainer = GuiCreateContainerWithParent(parent, 408, 0);
     SetContainerDefaultStyle(formContainer);
     lv_obj_align_to(formContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
@@ -1103,12 +1122,12 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
         lv_obj_set_style_text_color(valueLabel, lv_color_hex(0xf5870a), LV_PART_MAIN);
         lv_obj_align_to(valueLabel, orderLabel, LV_ALIGN_OUT_RIGHT_TOP, 16, 0);
 
-        if (from->data[i].is_mine) {
+        if (from->data[i].is_mine && showChange) {
             lv_obj_t *changeContainer = GuiCreateContainerWithParent(formInnerContainer, 87, 30);
             lv_obj_set_style_radius(changeContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(changeContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_opa(changeContainer, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
-
+            
             lv_obj_t *changeLabel = lv_label_create(changeContainer);
             if (from->data[i].is_external) {
                 lv_label_set_text(changeLabel, "Receive");
@@ -1156,6 +1175,15 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
 
 static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailData, lv_obj_t *lastView)
 {
+    enum URType urType = URTypeUnKnown;
+    if (g_isMulti) {
+        urType = g_urMultiResult->ur_type;
+    } else {
+        urType = g_urResult->ur_type;
+    }
+
+    bool showChange = (urType != Bytes && urType != KeystoneSignRequest);
+
     lv_obj_t *toContainer = GuiCreateContainerWithParent(parent, 408, 0);
     SetContainerDefaultStyle(toContainer);
     lv_obj_align_to(toContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
@@ -1189,7 +1217,7 @@ static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailDat
         lv_obj_set_style_text_color(valueLabel, lv_color_hex(0xf5870a), LV_PART_MAIN);
         lv_obj_align_to(valueLabel, orderLabel, LV_ALIGN_OUT_RIGHT_TOP, 16, 0);
 
-        if (to->data[i].is_mine) {
+        if (to->data[i].is_mine && showChange) {
             lv_obj_t *changeContainer = GuiCreateContainerWithParent(toInnerContainer, 87, 30);
             lv_obj_set_style_radius(changeContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(changeContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -1207,6 +1235,7 @@ static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailDat
             lv_obj_align(changeLabel, LV_ALIGN_CENTER, 0, 0);
 
             lv_obj_align_to(changeContainer, valueLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+            
         }
 
         lv_obj_t *addressLabel = lv_label_create(toInnerContainer);

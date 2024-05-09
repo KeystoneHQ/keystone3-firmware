@@ -233,6 +233,7 @@ void *GetAdaCertificatesData(uint8_t *row, uint8_t *col, void *param)
         for (j = 0; j < *row; j++) {
             uint32_t index = j / 3;
             indata[i][j] = SRAM_MALLOC(BUFFER_SIZE_128);
+            memset_s(indata[i][j], BUFFER_SIZE_128, 0, BUFFER_SIZE_128);
             if (j % 3 == 0) {
                 snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%d #F5870A %s#", index + 1, tx->certificates->data[index].cert_type);
             } else if (j % 3 == 1) {

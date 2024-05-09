@@ -138,6 +138,17 @@ void GuiScanResult(bool result, void *param)
 #endif
             return;
         }
+#ifndef BTC_ONLY
+        if (g_chainType == CHAIN_ARWEAVE || g_chainType == CHAIN_ARWEAVE_MESSAGE) {
+            char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
+            bool hasArXpub = arXpub != NULL && strlen(arXpub) == 1024;
+            if (!hasArXpub) {
+                GoToHomeViewHandler(NULL);
+                GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_PARSER_CONFIRM);
+                return;
+            }
+        }
+#endif
         uint8_t accountNum = 0;
         GetExistAccountNum(&accountNum);
         if (accountNum <= 0) {

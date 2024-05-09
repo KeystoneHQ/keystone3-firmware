@@ -43,6 +43,17 @@ static AttentionHintboxContext *BuildLowPowerHintboxContext()
     return context;
 }
 
+static AttentionHintboxContext *BuildInitializationCompleteHintboxContext()
+{
+    AttentionHintboxContext *context = SRAM_MALLOC(sizeof(AttentionHintboxContext));
+    context->icon = &imgSuccess;
+    context->title = _("initialization_complete_hintbox_title");
+    context->context = _("initialization_complete_hintbox_context");
+    context->hintboxHeight = 386;
+    context->okBtnText = _("initialization_complete_hintbox_ok");
+    return context;
+}
+
 static void CloseAttentionHandler(lv_event_t *e)
 {
     GuiCloseAttentionHintbox();
@@ -119,6 +130,29 @@ void GuiCreateAttentionHintbox(uint16_t confirmSign)
     lv_obj_set_style_radius(tempObj, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
     lv_obj_align(tempObj, LV_ALIGN_BOTTOM_LEFT, 36, -24);
+    lv_obj_add_event_cb(tempObj, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
+
+    SRAM_FREE(context);
+}
+
+void GuiCreateInitializatioCompleteHintbox()
+{
+    AttentionHintboxContext *context = BuildInitializationCompleteHintboxContext();
+    g_attentionCont = GuiCreateHintBox(context->hintboxHeight);
+    lv_obj_t *tempObj = GuiCreateImg(g_attentionCont, context->icon);
+    lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
+
+    tempObj = GuiCreateLittleTitleLabel(g_attentionCont, context->title);
+    lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
+
+    tempObj = GuiCreateIllustrateLabel(g_attentionCont, context->context);
+    lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
+
+    tempObj = GuiCreateTextBtn(g_attentionCont, context->okBtnText);
+    lv_obj_set_size(tempObj, 136, 66);
+    lv_obj_set_style_radius(tempObj, 24, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
+    lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_add_event_cb(tempObj, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
 
     SRAM_FREE(context);

@@ -16,5 +16,6 @@ typedef enum {
 
 void GuiCreateAttentionHintbox(uint16_t confirmSign);
 void GuiCloseAttentionHintbox();
+void GuiCreateInitializatioCompleteHintbox();
 
 #endif

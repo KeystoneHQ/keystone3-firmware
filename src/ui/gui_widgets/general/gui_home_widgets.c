@@ -545,6 +545,12 @@ void RecalculateManageWalletState(void)
     AccountPublicHomeCoinSet(walletState, NUMBER_OF_ARRAYS(walletState));
 }
 
+void GuiShowRsaInitializatioCompleteHintbox(void)
+{
+    ClearSecretCache();
+    GuiCreateInitializatioCompleteHintbox();
+}
+
 void GuiContinueToReceiveArPage()
 {
     ClearSecretCache();

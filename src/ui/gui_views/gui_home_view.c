@@ -5,6 +5,8 @@
 #include "gui_pending_hintbox.h"
 #include "gui_lock_widgets.h"
 
+static bool g_generateRsaWhenParse = false;
+
 static int32_t GuiHomeViewInit(void)
 {
     GuiHomeAreaInit();
@@ -41,6 +43,8 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case SIG_INIT_GET_CURRENT_WALLET_DESC:
         GuiHomeSetWalletDesc((WalletDesc_t *)param);
         break;
+    case SIG_SETUP_RSA_PRIVATE_KEY_PARSER_CONFIRM:
+        g_generateRsaWhenParse = true;
     case SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM:
         GuiReceiveShowRsaSetupasswordHintbox();
         break;
@@ -75,7 +79,12 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         GuiUpdatePendingHintBoxSubtitle(_("GeneratingRsaAddress"));
         break;
     case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS:
-        GuiContinueToReceiveArPage();
+        if (g_generateRsaWhenParse) {
+            GuiShowRsaInitializatioCompleteHintbox();
+            g_generateRsaWhenParse = false;
+        } else {
+            GuiContinueToReceiveArPage();
+        }
         break;
     default:
         return ERR_GUI_UNHANDLED;

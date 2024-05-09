@@ -17,6 +17,7 @@ argParser.add_argument("-p", "--purpose", help="please specific what purpose you
 argParser.add_argument("-o", "--options", nargs="?", help="specify the required features you are building")
 argParser.add_argument("-t", "--type", help="please specific which type you are building, btc_only or general")
 argParser.add_argument("-f", "--force", action="store_true" , help="force to build the image even if there is no change in the images")
+argParser.add_argument("-s", "--skip-image", action="store_true", help="skip building images")
 def build_firmware(environment, options, bin_type):
     is_release = environment == "production"
     is_btc_only = bin_type == "btc_only"
@@ -71,7 +72,10 @@ def ota_maker():
     popen = subprocess.Popen(args, stdout=subprocess.PIPE)
     popen.wait()
 
-def build_img_to_c_file(force=False):
+def build_img_to_c_file(force=False, skip_image=False):
+    if skip_image:
+        print("Skip building the images.")
+        return
     import hashlib
     def calculate_directory_hash(directory):
         hash_md5 = hashlib.md5()
@@ -128,7 +132,7 @@ if __name__ == '__main__':
         options = args.options.split(",")
     bin_type = args.type
     shutil.rmtree(build_path, ignore_errors=True)
-    build_img_to_c_file(args.force)
+    build_img_to_c_file(args.force, args.skip_image)
     build_result = build_firmware(env, options, bin_type)
     if build_result != 0:
         exit(1)

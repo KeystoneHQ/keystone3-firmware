@@ -47,19 +47,11 @@ void GetArweaveMessageText(void *indata, void *param, uint32_t maxLen)
 
 void GetArweaveRawMessage(void *indata, void *param, uint32_t maxLen)
 {
-#ifndef COMPILE_SIMULATOR
     DisplayArweaveMessage *data = (DisplayArweaveMessage *)param;
     if (data->raw_message == NULL) {
         return;
     }
     strcpy_s((char *)indata, maxLen, data->raw_message);
-#else
-    DisplayArweaveMessage *data = (DisplayArweaveMessage *)param;
-    if (data->message == NULL) {
-        return;
-    }
-    strcpy_s((char *)indata, maxLen, data->message);
-#endif
 }
 
 void GetArweaveMessageAddress(void *indata, void *param, uint32_t maxLen)
@@ -202,7 +194,6 @@ void GuiShowArweaveTxDetail(lv_obj_t *parent, void *totalData)
     lv_obj_set_style_text_color(label, lv_color_hex(16090890), LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
 
-    // 根据 size 循环取 json 中的元素
     for (int i = 0; i < size; i++) {
         cJSON *item = cJSON_GetArrayItem(root, i);
         cJSON *key = cJSON_GetObjectItem(item, "name");

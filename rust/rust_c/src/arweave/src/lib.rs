@@ -171,15 +171,13 @@ pub extern "C" fn ar_message_parse(
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let sign_data = sign_request.get_sign_data();
     let raw_message = hex::encode(sign_request.get_sign_data());
-    let message = String::from_utf8(sign_data).unwrap();
+    let message = String::from_utf8(sign_data).unwrap_or_default();
     let display_message = DisplayArweaveMessage {
         message: convert_c_char(message),
         raw_message: convert_c_char(raw_message),
     };
-    TransactionParseResult::success(
-        Box::into_raw(Box::new(display_message)) as *mut DisplayArweaveMessage
-    )
-    .c_ptr()
+    TransactionParseResult::success(Box::into_raw(Box::new(display_message)) as *mut DisplayArweaveMessage)
+        .c_ptr()
 }
 
 fn get_value(raw_json: &Value, key: &str) -> String {

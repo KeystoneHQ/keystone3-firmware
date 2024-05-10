@@ -115,8 +115,8 @@ pub fn parse(data: &Vec<u8>) -> Result<String> {
                 .tags
                 .iter()
                 .map(|tag| {
-                    let name = String::from_utf8(tag.name.0.clone()).unwrap();
-                    let value = String::from_utf8(tag.value.0.clone()).unwrap();
+                    let name = base64::encode_config(tag.name.0.as_slice(), base64::URL_SAFE_NO_PAD);
+                    let value = base64::encode_config(tag.value.0.as_slice(), base64::URL_SAFE_NO_PAD);
                     json!({
                         "name": name,
                         "value": value

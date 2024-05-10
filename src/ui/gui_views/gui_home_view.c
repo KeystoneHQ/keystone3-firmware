@@ -38,6 +38,9 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
             GuiModeGetWalletDesc();
         }
         break;
+    case SIG_SETUP_VIEW_TILE_PREV:
+        GuiHomeRefresh();
+        break;
     case SIG_INIT_GET_CURRENT_WALLET_DESC:
         GuiHomeSetWalletDesc((WalletDesc_t *)param);
         break;

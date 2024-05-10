@@ -138,6 +138,7 @@ void GuiWalletRecoveryMethodCheck(lv_obj_t *parent)
 
 void *GuiWalletRecoverySinglePhrase(lv_obj_t *parent, uint8_t wordAmount)
 {
+    uint16_t height = 296;
     lv_keyboard_user_mode_t kbMode = GuiGetMnemonicKbType(wordAmount);
     g_inputWordsCnt = wordAmount;
 
@@ -149,10 +150,12 @@ void *GuiWalletRecoverySinglePhrase(lv_obj_t *parent, uint8_t wordAmount)
     label = GuiCreateIllustrateLabel(parent, _("seed_check_share_phrase_title"));
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 72);
+    lv_obj_refr_size(label);
+    height -= lv_obj_get_self_height(label);
 
     g_recoveryMkb = GuiCreateMnemonicKeyBoard(parent, GuiMnemonicInputHandler, kbMode, NULL);
     g_recoveryMkb->intputType = MNEMONIC_INPUT_SETTING_VIEW;
-    lv_obj_set_size(g_recoveryMkb->cont, 408, 236);
+    lv_obj_set_size(g_recoveryMkb->cont, 408, height);
     lv_obj_align_to(g_recoveryMkb->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
     lv_btnmatrix_set_selected_btn(g_recoveryMkb->btnm, g_recoveryMkb->currentId);
 

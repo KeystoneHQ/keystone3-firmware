@@ -83,7 +83,6 @@ void GuiHomeSetWalletDesc(WalletDesc_t *wallet);
 void GuiHomeRestart(void);
 bool GuiHomePageIsTop(void);
 void GuiHomePasswordErrorCount(void *param);
-void GuiContinueToReceiveArPage();
 void GuiRemoveKeyboardWidget(void);
 void RecalculateManageWalletState(void);
 const ChainCoinCard_t* GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index);

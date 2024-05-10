@@ -552,13 +552,6 @@ void GuiShowRsaInitializatioCompleteHintbox(void)
     GuiCreateInitializatioCompleteHintbox();
 }
 
-void GuiContinueToReceiveArPage()
-{
-    ClearSecretCache();
-    int coinType = HOME_WALLET_CARD_ARWEAVE;
-    GuiFrameOpenViewWithParam(&g_standardReceiveView, &coinType, sizeof(coinType));
-}
-
 void GuiHomePasswordErrorCount(void *param)
 {
     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;

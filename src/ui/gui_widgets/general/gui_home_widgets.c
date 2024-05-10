@@ -446,12 +446,10 @@ static void UpdateHomeConnectWalletCard(void)
 
     for (int i = 0, j = 0; i < HOME_WALLET_CARD_BUTT; i++) {
         if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS ||
+                g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE && GetIsTempAccount() ||
                 g_walletState[i].state == false ||
                 g_walletState[i].enable == false) {
             j++;
-            continue;
-        }
-        if (g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE && GetIsTempAccount()) {
             continue;
         }
 

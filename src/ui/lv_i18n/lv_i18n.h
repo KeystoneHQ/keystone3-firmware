@@ -33,9 +33,7 @@ typedef struct {
 // Null-terminated list of languages. First one used as default.
 typedef const lv_i18n_lang_t * lv_i18n_language_pack_t;
 
-
 extern const lv_i18n_language_pack_t lv_i18n_language_pack[];
-
 
 /**
  * Set the languages for internationalization
@@ -75,13 +73,10 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num);
  */
 const char * lv_i18n_get_current_locale(void);
 
-
 void __lv_i18n_reset(void);
-
 
 #define _(text) lv_i18n_get_text(text)
 #define _p(text, num) lv_i18n_get_text_plural(text, num)
-
 
 #ifdef __cplusplus
 } /* extern "C" */

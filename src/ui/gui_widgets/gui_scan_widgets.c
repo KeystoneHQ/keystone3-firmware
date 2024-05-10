@@ -139,7 +139,7 @@ void GuiScanResult(bool result, void *param)
             return;
         }
 #ifndef BTC_ONLY
-        if (g_chainType == CHAIN_ARWEAVE || g_chainType == CHAIN_ARWEAVE_MESSAGE) {
+        if (g_chainType == CHAIN_ARWEAVE) {
             char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
             bool hasArXpub = arXpub != NULL && strlen(arXpub) == 1024;
             if (!hasArXpub) {

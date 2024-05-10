@@ -517,7 +517,11 @@ static void SetIsTempAccount(bool isTemp)
 
 bool GetIsTempAccount(void)
 {
+#ifndef COMPILE_SIMULATOR
     return g_isTempAccount;
+#else
+    return true;
+#endif
 }
 
 int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool set)

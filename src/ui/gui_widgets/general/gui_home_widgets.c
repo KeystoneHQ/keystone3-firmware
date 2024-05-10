@@ -96,9 +96,6 @@ static void GuiInitWalletState()
     } else {
         g_walletState[HOME_WALLET_CARD_ADA].enable = true;
     }
-    if (GetIsTempAccount()) {
-        g_walletState[HOME_WALLET_CARD_ARWEAVE].enable = false;
-    }
 }
 
 static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
@@ -400,6 +397,9 @@ static void UpdateManageWalletState(bool needUpdate)
         if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS) {
             continue;
         }
+        if (GetIsTempAccount() && g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE) {
+            continue;
+        }
 
         if (g_walletState[i].enable) {
             total++;
@@ -451,6 +451,9 @@ static void UpdateHomeConnectWalletCard(void)
             j++;
             continue;
         }
+        if (g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE && GetIsTempAccount()) {
+            continue;
+        }
 
         coinLabel = GuiCreateTextLabel(walletCardCont, g_coinCardArray[i].coin);
         chainLabel = GuiCreateNoticeLabel(walletCardCont, g_coinCardArray[i].chain);
@@ -482,7 +485,7 @@ static void UpdateHomeConnectWalletCard(void)
     }
 }
 
-void GuiReceiveShowRsaSetupasswordHintbox(void)
+void GuiShowRsaSetupasswordHintbox(void)
 {
     g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
     SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
@@ -654,6 +657,9 @@ static void OpenManageAssetsHandler(lv_event_t *e)
     lv_obj_t *checkbox;
     int heightIndex = 0;
     for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+        if (GetIsTempAccount() && g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE) {
+            continue;
+        }
         coinLabel = GuiCreateTextLabel(checkBoxCont, g_coinCardArray[i].coin);
         chainLabel = GuiCreateNoticeLabel(checkBoxCont, g_coinCardArray[i].chain);
         icon = GuiCreateImg(checkBoxCont, g_coinCardArray[i].icon);

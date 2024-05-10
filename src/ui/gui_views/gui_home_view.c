@@ -43,7 +43,7 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         break;
     case SIG_SETUP_RSA_PRIVATE_KEY_PARSER_CONFIRM:
     case SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM:
-        GuiReceiveShowRsaSetupasswordHintbox();
+        GuiShowRsaSetupasswordHintbox();
         break;
     case SIG_VERIFY_PASSWORD_FAIL:
         if (param != NULL) {

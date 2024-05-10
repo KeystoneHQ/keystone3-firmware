@@ -386,6 +386,15 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
 static void CoinDealHandler(lv_event_t *e);
 static void AddFlagCountDownTimerHandler(lv_timer_t *timer);
 void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count);
+static void CloseArHintbox(void);
+
+static void CloseArHintbox(void)
+{
+    GuiCloseAttentionHintbox();
+    if (g_keyboardWidget != NULL) {
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+    }
+}
 
 static void UpdateManageWalletState(bool needUpdate)
 {
@@ -833,7 +842,7 @@ void GuiHomeRefresh(void)
         CreateBetaNotice();
         isFirstBeta = false;
     }
-    GuiCloseAttentionHintbox();
+    CloseArHintbox();
 }
 
 const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)

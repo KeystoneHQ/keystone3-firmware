@@ -43,7 +43,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_SPARROW, &walletListSparrow, true},
     {WALLET_LIST_RABBY, &walletListRabby, true},
     {WALLET_LIST_ETERNL, &walletListEternl, true},
-    // {WALLET_LIST_UNISAT, &walletListUniSat, true},
+    {WALLET_LIST_UNISAT, &walletListUniSat, true},
     // {WALLET_LIST_YOROI, &walletListYoroi, true},
     {WALLET_LIST_TYPHON, &walletListTyphon, true},
     {WALLET_LIST_SAFE, &walletListSafe, true},
@@ -62,7 +62,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_SPARROW, &walletListBtcSparrow, true, false},
     {WALLET_LIST_NUNCHUK, &walletListBtcNunchuk, true, false},
 // {WALLET_LIST_SPECTER,   &walletListBtcSpecter,  true,   true},
-// {WALLET_LIST_UNISAT,    &walletListBtcUniSat,      true,   true},
+    // {WALLET_LIST_UNISAT,    &walletListBtcUniSat,      true,   true},
 #endif
 };
 

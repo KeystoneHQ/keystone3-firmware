@@ -955,7 +955,7 @@ static lv_obj_t *CreateOverviewFromView(lv_obj_t *parent, DisplayTxOverview *ove
         lv_obj_t *addressLabel = lv_label_create(formInnerContainer);
         lv_obj_set_width(addressLabel, 332);
         lv_label_set_long_mode(addressLabel, LV_LABEL_LONG_WRAP);
-        lv_label_set_text(addressLabel, from->data[i].address != NULL ? from->data[i].address : "Empty");
+        lv_label_set_text(addressLabel, from->data[i].address != NULL? from->data[i].address: "Empty");
         SetContentLableStyle(addressLabel);
 
         if (hasMultiFromAddress) {
@@ -1150,7 +1150,7 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
         lv_obj_t *addressLabel = lv_label_create(formInnerContainer);
         lv_obj_set_width(addressLabel, 332);
         lv_label_set_long_mode(addressLabel, LV_LABEL_LONG_WRAP);
-        lv_label_set_text(addressLabel, from->data[i].has_address ? from->data[i].address : "Empty");
+        lv_label_set_text(addressLabel, from->data[i].has_address? from->data[i].address: "Empty");
         SetContentLableStyle(addressLabel);
         lv_obj_align_to(addressLabel, orderLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_obj_update_layout(addressLabel);

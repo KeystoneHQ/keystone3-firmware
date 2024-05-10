@@ -176,8 +176,10 @@ pub extern "C" fn ar_message_parse(
         message: convert_c_char(message),
         raw_message: convert_c_char(raw_message),
     };
-    TransactionParseResult::success(Box::into_raw(Box::new(display_message)) as *mut DisplayArweaveMessage)
-        .c_ptr()
+    TransactionParseResult::success(
+        Box::into_raw(Box::new(display_message)) as *mut DisplayArweaveMessage
+    )
+    .c_ptr()
 }
 
 fn get_value(raw_json: &Value, key: &str) -> String {

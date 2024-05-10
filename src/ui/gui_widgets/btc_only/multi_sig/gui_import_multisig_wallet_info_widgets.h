@@ -4,8 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 void GuiSetMultisigImportWalletDataByQRCode(URParseResult *urResult,
-        URParseMultiResult *multiResult,
-        bool multi);
+    URParseMultiResult *multiResult,
+    bool multi);
 uint32_t GuiSetMultisigImportWalletDataBySDCard(char *walletConfig);
 
 void GuiImportMultisigWalletInfoWidgetsInit(void);

@@ -1,6 +1,5 @@
 #include "./lv_i18n.h"
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Define plural operands
 // http://unicode.org/reports/tr35/tr35-numbers.html#Operands
@@ -772,8 +771,6 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {NULL, NULL} // End mark
 };
 
-
-
 static uint8_t en_plural_fn(int32_t num)
 {
     uint32_t n = op_n(num);
@@ -1527,12 +1524,8 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {NULL, NULL} // End mark
 };
 
-
-
 static uint8_t ko_plural_fn(int32_t num)
 {
-
-
 
     return LV_I18N_PLURAL_TYPE_OTHER;
 }
@@ -2276,8 +2269,6 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"write_se_desc", "Идет запись на безопасный чип"},
     {NULL, NULL} // End mark
 };
-
-
 
 static uint8_t ru_plural_fn(int32_t num)
 {
@@ -3035,12 +3026,8 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {NULL, NULL} // End mark
 };
 
-
-
 static uint8_t zh_cn_plural_fn(int32_t num)
 {
-
-
 
     return LV_I18N_PLURAL_TYPE_OTHER;
 }
@@ -3062,11 +3049,9 @@ const lv_i18n_language_pack_t lv_i18n_language_pack[] = {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
 // Internal state
 static const lv_i18n_language_pack_t * current_lang_pack;
 static const lv_i18n_lang_t * current_lang;
-
 
 /**
  * Reset internal state. For testing.
@@ -3112,7 +3097,6 @@ int lv_i18n_set_locale(const char * l_name)
     return -1;
 }
 
-
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
@@ -3125,7 +3109,6 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
 
     return NULL;
 }
-
 
 /**
  * Get the translation from a message ID

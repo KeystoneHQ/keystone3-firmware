@@ -9,7 +9,7 @@
 
 #define OTA_FILE_INFO_MARK_MAX_LEN          32
 #define SIGNATURE_LEN                       128
-#define OTA_FILE_PATH                       "0:keystone3.bin"
+#define SD_CARD_OTA_BIN_PATH                "0:/keystone3.bin"
 
 //OTA file head info.
 typedef struct {
@@ -27,7 +27,8 @@ typedef struct {
     char signature[256];
 } OtaFileInfo_t;
 
-bool CheckOtaBinVersion(char *version);
+bool CheckOtaBinVersion(void);
+bool GetOtaBinVersion(char *version, uint32_t maxLen);
 
 /// @brief Update firmware storaged in SD card or USB mass storage device.
 /// @param

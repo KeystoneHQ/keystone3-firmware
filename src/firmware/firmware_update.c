@@ -8,44 +8,32 @@
 #include "quicklz.h"
 #include "log_print.h"
 #include "cjson/cJSON.h"
-#include "hal_lcd.h"
-#include "user_delay.h"
-#include "draw_on_lcd.h"
-#include "drv_power.h"
-#include "drv_lcd_bright.h"
 #include "user_memory.h"
 #include "sha256.h"
-#include "mhscpu.h"
-#include "drv_otp.h"
 #include "user_utils.h"
 #include "librust_c.h"
 #include "version.h"
+#include "gui_views.h"
+#include "gui_api.h"
 
 #define SIGNATURE_ENABLE        (1)
-#define SD_CARD_OTA_BIN_PATH   "0:/keystone3.bin"
 #define CHECK_UNIT              256
 #define CHECK_SIZE              4096
 
 #define APP_VERSION_ADDR        0x01082000
 #define APP_VERSION_HEAD        "Firmware v"
-
-LV_FONT_DECLARE(openSans_20);
-LV_FONT_DECLARE(openSans_24);
-
 #define FILE_MARK_MCU_FIRMWARE              "~update!"
-
 #define FILE_UNIT_SIZE                      0x4000
 #define DATA_UNIT_SIZE                      0x4000
-
 #define FIXED_SEGMENT_OFFSET                0x1000
-
 #define UPDATE_PUB_KEY_LEN                  64
-
 #define MAX_OTA_HEAD_SIZE                   0x100000
+
+static char g_otaBinVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
 
 static uint32_t GetOtaFileInfo(OtaFileInfo_t *info, const char *filePath);
 static int32_t CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t *pHeadSize);
-static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32_t headSize, char *version);
+static int32_t CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32_t headSize, char *version);
 int32_t GetSoftwareVersionFormData(uint32_t *major, uint32_t *minor, uint32_t *build, const uint8_t *data, uint32_t dataLen);
 #if (SIGNATURE_ENABLE == 1)
 static void GetSignatureValue(const cJSON *obj, char *output, uint32_t maxLength);
@@ -127,7 +115,7 @@ static uint32_t GetOtaFileInfo(OtaFileInfo_t *info, const char *filePath)
     uint32_t headSize = 0, readSize, fileSize;
     char *headData = NULL;
     cJSON *jsonRoot;
-    
+
     ret = f_open(&fp, filePath, FA_OPEN_EXISTING | FA_READ);
     do {
         if (ret) {
@@ -163,6 +151,11 @@ static uint32_t GetOtaFileInfo(OtaFileInfo_t *info, const char *filePath)
             headSize = 0;
             break;
         }
+        jsonRoot = cJSON_Parse(headData);
+        if (jsonRoot == NULL) {
+            printf("parse error:%s\n", cJSON_GetErrorPtr());
+            break;
+        }
         cJSON *json = cJSON_GetObjectItem(jsonRoot, "mark");
         if (json != NULL) {
             if (strlen(json->valuestring) < OTA_FILE_INFO_MARK_MAX_LEN) {
@@ -178,20 +171,17 @@ static uint32_t GetOtaFileInfo(OtaFileInfo_t *info, const char *filePath)
 #if (SIGNATURE_ENABLE == 1)
         GetSignatureValue(jsonRoot, info->signature, SIGNATURE_LEN);
 #endif
-        info->fileSize = GetIntValue(jsonRoot, "fileSize");
-        info->originalFileSize = GetIntValue(jsonRoot, "originalFileSize");
-        info->crc32 = GetIntValue(jsonRoot, "crc32");
-        info->originalCrc32 = GetIntValue(jsonRoot, "originalCrc32");
-        info->encode = GetIntValue(jsonRoot, "encode");
-        info->encodeUnit = GetIntValue(jsonRoot, "encodeUnit");
-        info->encrypt = GetIntValue(jsonRoot, "encrypt");
-        info->originalBriefSize = GetIntValue(jsonRoot, "originalBriefSize");
-        info->originalBriefCrc32 = GetIntValue(jsonRoot, "originalBriefCrc32");
+        info->fileSize = GetIntValue(jsonRoot, "fileSize", 0);
+        info->originalFileSize = GetIntValue(jsonRoot, "originalFileSize", 0);
+        info->crc32 = GetIntValue(jsonRoot, "crc32", 0);
+        info->originalCrc32 = GetIntValue(jsonRoot, "originalCrc32", 0);
+        info->encode = GetIntValue(jsonRoot, "encode", 0);
+        info->encodeUnit = GetIntValue(jsonRoot, "encodeUnit", 0);
+        info->encrypt = GetIntValue(jsonRoot, "encrypt", 0);
+        info->originalBriefSize = GetIntValue(jsonRoot, "originalBriefSize", 0);
+        info->originalBriefCrc32 = GetIntValue(jsonRoot, "originalBriefCrc32", 0);
         cJSON_Delete(jsonRoot);
     } while (0);
-    if (headJsonStr != NULL) {
-        SRAM_FREE(headJsonStr);
-    }
     f_close(&fp);
     if (headData != NULL) {
         SRAM_FREE(headData);
@@ -231,6 +221,7 @@ static int32_t CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t 
 #endif
     uint8_t *fileUnit = SRAM_MALLOC(FILE_UNIT_SIZE + 16);
     ret = SUCCESS_CODE;
+    uint8_t percent = 0;
     do {
         if (fileSize != info->fileSize + headSize) {
             printf("file size err,fileSize=%d, info->fileSize=%d\r\n", fileSize, info->fileSize);
@@ -258,11 +249,21 @@ static int32_t CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t 
             //printf("i=%d,readSize=%d\r\n", i, readSize);
             crcCalc = crc32_ieee(crcCalc, fileUnit, readSize);
             sha256_update(&ctx, fileUnit, readSize);
+            if (percent != i * 100 / fileSize) {
+                percent = i * 100 / fileSize;
+                if (percent <= 98) {
+                    GuiApiEmitSignal(SIG_SETTING_VERIFY_OTA_PERCENT, &percent, sizeof(percent));
+                }
+            }
         }
+        percent = 99;
+        GuiApiEmitSignal(SIG_SETTING_VERIFY_OTA_PERCENT, &percent, sizeof(percent));
         sha256_done(&ctx, (struct sha256 *)contentHash);
         PrintArray("hash content:", contentHash, 32);
         if (crcCalc != info->crc32) {
             printf("crc err,crcCalc=0x%08X,info->crc32=0x%08X\r\n", crcCalc, info->crc32);
+            percent = 0xFF;
+            GuiApiEmitSignal(SIG_SETTING_VERIFY_OTA_PERCENT, &percent, sizeof(percent));
             ret = ERR_UPDATE_CHECK_CRC_FAILED;
             break;
         }
@@ -280,6 +281,8 @@ static int32_t CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t 
         PrintArray("pubKey", publickey, 65);
         if (verify_frimware_signature(info->signature, contentHash, publickey) != true) {
             printf("signature check error\n");
+            percent = 0xFF;
+            GuiApiEmitSignal(SIG_SETTING_VERIFY_OTA_PERCENT, &percent, sizeof(percent));
             ret = ERR_UPDATE_CHECK_SIGNATURE_FAILED;
             break;
         }
@@ -290,11 +293,22 @@ static int32_t CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t 
     return ret;
 }
 
-bool CheckOtaBinVersion(char *version)
+bool GetOtaBinVersion(char *version, uint32_t maxLen)
+{
+    int len = strnlen_s(g_otaBinVersion, SOFTWARE_VERSION_MAX_LEN);
+    if (len == 0) {
+        return false;
+    }
+    strncpy_s(version, maxLen, g_otaBinVersion, len);
+    return true;
+}
+
+bool CheckOtaBinVersion(void)
 {
     OtaFileInfo_t otaFileInfo = {0};
     uint32_t headSize;
     int32_t ret = SUCCESS_CODE;
+    memset_s(g_otaBinVersion, SOFTWARE_VERSION_MAX_LEN, 0, SOFTWARE_VERSION_MAX_LEN);
 
     do {
         ret = CheckOtaFile(&otaFileInfo, SD_CARD_OTA_BIN_PATH, &headSize);
@@ -302,11 +316,14 @@ bool CheckOtaBinVersion(char *version)
             break;
         }
 
-        ret = CheckVersion(&otaFileInfo, SD_CARD_OTA_BIN_PATH, headSize, version);
+        ret = CheckVersion(&otaFileInfo, SD_CARD_OTA_BIN_PATH, headSize, g_otaBinVersion);
+        printf("g_otaBinVersion = %s\n", g_otaBinVersion);
         if (ret != SUCCESS_CODE) {
             printf("file %s version err\n", SD_CARD_OTA_BIN_PATH);
             break;
         }
+        uint8_t percent = 100;
+        GuiApiEmitSignal(SIG_SETTING_VERIFY_OTA_PERCENT, &percent, sizeof(percent));
     } while (0);
     if (ret == SUCCESS_CODE) {
         return true;
@@ -314,7 +331,7 @@ bool CheckOtaBinVersion(char *version)
     return false;
 }
 
-static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32_t headSize, char *version)
+static int32_t CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32_t headSize, char *version)
 {
     uint8_t *g_fileUnit = SRAM_MALLOC(FILE_UNIT_SIZE + 16);
     uint8_t *g_dataUnit = SRAM_MALLOC(DATA_UNIT_SIZE);
@@ -329,14 +346,14 @@ static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32
     ret = f_open(&fp, filePath, FA_OPEN_EXISTING | FA_READ);
     if (ret) {
         FatfsError((FRESULT)ret);
-        return false;
+        return ERR_UPDATE_CHECK_VERSION_FAILED;
     }
     f_lseek(&fp, headSize);
     ret = f_read(&fp, g_fileUnit, 16, (UINT *)&readSize);
     if (ret) {
         FatfsError((FRESULT)ret);
         f_close(&fp);
-        return false;
+        return ERR_UPDATE_CHECK_VERSION_FAILED;
     }
     cmpsdSize = qlz_size_compressed((char*)g_fileUnit);
     decmpsdSize = qlz_size_decompressed((char*)g_fileUnit);
@@ -345,7 +362,7 @@ static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32
     if (ret) {
         FatfsError((FRESULT)ret);
         f_close(&fp);
-        return false;
+        return ERR_UPDATE_CHECK_VERSION_FAILED;
     }
     f_close(&fp);
     qlz_decompress((char*)g_fileUnit, g_dataUnit, &qlzState);
@@ -354,7 +371,7 @@ static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32
     if (ret != 0) {
         SRAM_FREE(g_dataUnit);
         SRAM_FREE(g_fileUnit);
-        return false;
+        return ERR_UPDATE_CHECK_VERSION_FAILED;
     }
     printf("now version:%d.%d.%d\n", nowMajor, nowMinor, nowBuild);
     printf("file version:%d.%d.%d\n", fileMajor, fileMinor, fileBuild);
@@ -369,14 +386,12 @@ static bool CheckVersion(const OtaFileInfo_t *info, const char *filePath, uint32
     } else {
         snprintf_s(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", fileMajor, fileMinor, fileBuild);
     }
-    if (fileVersionNumber <= nowVersionNumber) {
-        SRAM_FREE(g_dataUnit);
-        SRAM_FREE(g_fileUnit);
-        return false;
-    }
     SRAM_FREE(g_dataUnit);
     SRAM_FREE(g_fileUnit);
-    return true;
+    if (fileVersionNumber < nowVersionNumber) {
+        return ERR_UPDATE_CHECK_VERSION_FAILED;
+    }
+    return SUCCESS_CODE;
 }
 
 static void GetSignatureValue(const cJSON *obj, char *output, uint32_t maxLength)

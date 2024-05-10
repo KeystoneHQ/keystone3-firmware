@@ -235,9 +235,15 @@ bool SdCardInsert(void)
     return true;
 }
 
-bool CheckOtaBinVersion(char *version)
+bool CheckOtaBinVersion(void)
 {
-    strcpy(version, "1.1.1");
+    return true;
+}
+
+bool GetOtaBinVersion(char *version, uint32_t maxLen)
+{
+    char *otaBinVersion = "1.4.0";
+    strncpy_s(version, maxLen, otaBinVersion, strlen(otaBinVersion));
     return true;
 }
 

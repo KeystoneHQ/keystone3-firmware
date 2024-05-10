@@ -20,6 +20,7 @@
 #include "fingerprint_process.h"
 #include "screen_manager.h"
 #include <stdlib.h>
+#include "user_fatfs.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "keystore.h"
@@ -293,10 +294,9 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
 
     char showString[BUFFER_SIZE_64] = {0};
     char version[SOFTWARE_VERSION_MAX_LEN] = {0};
-    char fileVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
     GetSoftWareVersionNumber(version);
-    if (CheckOtaBinVersion(fileVersion)) {
-        snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E v%s#  /  #F5870A v%s  Available#", version, fileVersion);
+    if (FatfsFileExist(SD_CARD_OTA_BIN_PATH)) {
+        snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E v%s#  /  #F5870A %s#", version, _("firmware_update_title"));
     } else {
         snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E %s#", version);
     }

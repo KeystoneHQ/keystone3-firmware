@@ -12,6 +12,7 @@
 #include "err_code.h"
 #include "firmware_update.h"
 #include "gui_page.h"
+#include "user_fatfs.h"
 
 static lv_obj_t *g_cont;
 static PageWidget_t *g_pageWidget;
@@ -110,7 +111,6 @@ void GuiAboutEntranceWidget(lv_obj_t *parent)
 
     //firmware
     char version[32] = {0};
-    char fileVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
     GetSoftWareVersion(version);
 
     label = GuiCreateTextLabel(parent, version);
@@ -118,10 +118,9 @@ void GuiAboutEntranceWidget(lv_obj_t *parent)
 
     table[0].obj = label;
     table[1].obj = imgArrow;
-    if (CheckOtaBinVersion(fileVersion)) {
-        lv_obj_t *versionLabel = GuiCreateIllustrateLabel(parent, fileVersion);
+    if (FatfsFileExist(SD_CARD_OTA_BIN_PATH)) {
+        lv_obj_t *versionLabel = GuiCreateIllustrateLabel(parent, _("firmware_update_title"));
         lv_obj_set_style_text_color(versionLabel, ORANGE_COLOR, LV_PART_MAIN);
-        lv_label_set_text_fmt(versionLabel, "v%s %s", fileVersion, _("firmware_update_sd_dialog_head"));
         table[2].align = LV_ALIGN_BOTTOM_LEFT;
         table[2].position.x = 24;
         table[2].position.y = -24;

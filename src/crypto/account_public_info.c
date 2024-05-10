@@ -520,7 +520,7 @@ bool GetIsTempAccount(void)
 #ifndef COMPILE_SIMULATOR
     return g_isTempAccount;
 #else
-    return true;
+    return false;
 #endif
 }
 

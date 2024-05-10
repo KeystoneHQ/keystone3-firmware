@@ -424,7 +424,15 @@ static void RefreshQrCode(void)
     if (fullscreenQrcode) {
         lv_qrcode_update(fullscreenQrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
-    lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressDataItem.address);
+    if (g_chainCard == HOME_WALLET_CARD_ARWEAVE) {
+        SimpleResponse_c_char *fixedAddress = fix_arweave_address(addressDataItem.address);
+        if (fixedAddress->error_code == 0) {
+            lv_label_set_text(g_standardReceiveWidgets.addressLabel, fixedAddress->data);
+        }
+        free_simple_response_c_char(fixedAddress);
+    } else {
+        lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressDataItem.address);
+    }
     lv_label_set_text_fmt(g_standardReceiveWidgets.addressCountLabel, "%s-%u", _("account_head"), (addressDataItem.index + 1));
 }
 

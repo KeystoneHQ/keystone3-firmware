@@ -58,10 +58,13 @@ void GetArweaveMessageAddress(void *indata, void *param, uint32_t maxLen)
 {
     char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
     SimpleResponse_c_char *result = arweave_get_address(xPub);
-    if (result->error_code != 0) {
-        return;
+    if (result->error_code == 0) {
+        SimpleResponse_c_char *fixedAddress = fix_arweave_address(result->data);
+        if (fixedAddress->error_code == 0) {
+            strcpy_s((char *)indata, maxLen, fixedAddress->data);
+        }
+        free_simple_response_c_char(fixedAddress);
     }
-    strcpy_s((char *)indata, maxLen, result->data);
     free_simple_response_c_char(result);
 }
 

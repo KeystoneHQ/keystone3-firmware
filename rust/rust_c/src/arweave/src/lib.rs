@@ -124,7 +124,14 @@ pub extern "C" fn aes256_decrypt_primes(
 pub extern "C" fn arweave_get_address(xpub: PtrString) -> *mut SimpleResponse<c_char> {
     let xpub = recover_c_char(xpub);
     let address = app_arweave::generate_address(hex::decode(xpub).unwrap()).unwrap();
-    return SimpleResponse::success(convert_c_char(fix_address(&address))).simple_c_ptr();
+    return SimpleResponse::success(convert_c_char(address)).simple_c_ptr();
+}
+
+#[no_mangle]
+pub extern "C" fn fix_arweave_address(address: PtrString) -> *mut SimpleResponse<c_char> {
+    let address = recover_c_char(address);
+    let fixed_address = fix_address(&address);
+    return SimpleResponse::success(convert_c_char(fixed_address)).simple_c_ptr();
 }
 
 #[no_mangle]

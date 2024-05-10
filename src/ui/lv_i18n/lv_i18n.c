@@ -1,5 +1,6 @@
 #include "./lv_i18n.h"
 
+
 ////////////////////////////////////////////////////////////////////////////////
 // Define plural operands
 // http://unicode.org/reports/tr35/tr35-numbers.html#Operands
@@ -767,6 +768,8 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {NULL, NULL} // End mark
 };
 
+
+
 static uint8_t en_plural_fn(int32_t num)
 {
     uint32_t n = op_n(num);
@@ -800,10 +803,10 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"Export", "내보내기"},
     {"FORGET", "잊었어요"},
     {"Failed", "인증 실패 "},
-    {"FindingRsaPrimes", "P&Q 찾기"},
-    {"GeneratingRsaAddress", "주소 생성"},
+    {"FindingRsaPrimes", "P&Q를 찾는 중"},
+    {"GeneratingRsaAddress", "주소 생성 중"},
     {"Import", "가져오기"},
-    {"InitializingRsaTitle", "초기화 중... 기다려 주세요"},
+    {"InitializingRsaTitle", "초기화 중... 잠시만 기다려 주세요"},
     {"Keystone", "키스톤"},
     {"OK", "확인"},
     {"Overview", "개요"},
@@ -1143,9 +1146,9 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"import_wallet_ssb_repeat_desc", "입력하신 공유가 이미 가져왔습니다. 다른 공유를 입력하십시오."},
     {"import_wallet_ssb_step_fmt", "%d of %d"},
     {"import_wallet_ssb_title_fmt", "공유 #F5870A %d#"},
-    {"initialization_complete_hintbox_context", "Setup is complete. You may now proceed with your next operation."},
-    {"initialization_complete_hintbox_ok", "Confirm"},
-    {"initialization_complete_hintbox_title", "Initialization Complete"},
+    {"initialization_complete_hintbox_context", "설정이 완료되었습니다. 다음 작업을 진행해주세요."},
+    {"initialization_complete_hintbox_ok", "확인"},
+    {"initialization_complete_hintbox_title", "초기화 완료"},
     {"language_desc", "언어 선택"},
     {"language_little_title", "언어"},
     {"language_option", "한국어"},
@@ -1223,8 +1226,8 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"please_enter_passcode", "비밀번호를 입력해주세요"},
     {"power_off", "전원 끄기"},
     {"power_requirements_hintbox_cancel", "확인"},
-    {"power_requirements_hintbox_context", "장치가 최소 60% 이상 충전되어 있고 전원에 연결되어 있는지 확인하세요."},
-    {"power_requirements_hintbox_title", "전원 요구사항"},
+    {"power_requirements_hintbox_context", "장치가 최소 60% 이상 충전되어 있고 전원에 연결되어 있는지 확인해 주세요."},
+    {"power_requirements_hintbox_title", "전원 요구 사항"},
     {"prepare_wallet_first_step", "새 체인 지원이 감지됨"},
     {"prepare_wallet_hint", "지갑 준비 중"},
     {"prepare_wallet_second_step", "지갑 설정 중..."},
@@ -1277,8 +1280,8 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"receive_trx_hint", "이 주소는 TRX, TRC-20 토큰 및 TRC-10 토큰만을 위한 것이며, 이 주소로 전송된 다른 디지털 자산은 손실됩니다."},
     {"repeat_passcode_desc", "입력한 PIN 코드를 다시 확인합니다."},
     {"repeat_passcode_title", "PIN 코드 다시 입력하십시오."},
-    {"rsa_confirm_hintbox_cancel", "지금은 아닙니다"},
-    {"rsa_confirm_hintbox_context", "ARWEAVE 블록체인 구성을 시작하려면 비밀번호를 입력하세요. 이 과정은 약 10분이 걸립니다. 장치가 최소 60% 충전되어 있고 USB 전원에 연결되어 있는지 확인하세요."},
+    {"rsa_confirm_hintbox_cancel", "지금은 아니에요"},
+    {"rsa_confirm_hintbox_context", "ARWEAVE 블록체인 설정을 시작하려면 비밀번호를 입력해 주세요. 프로세스는 약 10분이 소요됩니다. 장치가 최소 60% 충전되어 있고 USB 전원에 연결되어 있는지 확인하세요."},
     {"rsa_confirm_hintbox_ok", "초기 설정"},
     {"rsa_confirm_hintbox_title", "AR 블록체인 설정"},
     {"rust_error_bitcoin_no_my_inputs", "일치하지 않은 거래입니다"},
@@ -1516,8 +1519,12 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {NULL, NULL} // End mark
 };
 
+
+
 static uint8_t ko_plural_fn(int32_t num)
 {
+
+
 
     return LV_I18N_PLURAL_TYPE_OTHER;
 }
@@ -1542,7 +1549,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"Export", "Экспорт"},
     {"FORGET", "Забыл"},
     {"Failed", "Ошибка"},
-    {"FindingRsaPrimes", "Поиск P&Q"},
+    {"FindingRsaPrimes", "P&Q поиска"},
     {"GeneratingRsaAddress", "Генерация адреса"},
     {"Import", "Импорт"},
     {"InitializingRsaTitle", "Инициализация... Пожалуйста, подождите"},
@@ -1885,9 +1892,9 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"import_wallet_ssb_repeat_desc", "Введенная часть была введена ранее. Пожалуйста, введите другую часть."},
     {"import_wallet_ssb_step_fmt", "%d из %d"},
     {"import_wallet_ssb_title_fmt", "Часть #F5870A %d#"},
-    {"initialization_complete_hintbox_context", "Setup is complete. You may now proceed with your next operation."},
-    {"initialization_complete_hintbox_ok", "Confirm"},
-    {"initialization_complete_hintbox_title", "Initialization Complete"},
+    {"initialization_complete_hintbox_context", "Настройка завершена. Можно переходить к следующей операции."},
+    {"initialization_complete_hintbox_ok", "Подтвердить"},
+    {"initialization_complete_hintbox_title", "Инициализация завершена"},
     {"language_desc", "Выберите язык"},
     {"language_little_title", "Язык"},
     {"language_option", "Русский язык"},
@@ -1965,8 +1972,8 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"please_enter_passcode", "Введите код-пароль"},
     {"power_off", "Выключить"},
     {"power_requirements_hintbox_cancel", "ОК"},
-    {"power_requirements_hintbox_context", "Убедитесь, что устройство заряжено на 60% и подключено к источнику питания перед началом."},
-    {"power_requirements_hintbox_title", "Требования к энергопитанию"},
+    {"power_requirements_hintbox_context", "Убедитесь, что устройство заряжено не менее 60% и подключено к источнику питания."},
+    {"power_requirements_hintbox_title", "Требования к питанию"},
     {"prepare_wallet_first_step", "Обнаружены новые сети"},
     {"prepare_wallet_hint", "Подготовка кошелька"},
     {"prepare_wallet_second_step", "Настройка кошелька..."},
@@ -2020,8 +2027,8 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"repeat_passcode_desc", "Введите PIN-код второй раз для подтверждения."},
     {"repeat_passcode_title", "Подтвердите PIN-код"},
     {"rsa_confirm_hintbox_cancel", "Не сейчас"},
-    {"rsa_confirm_hintbox_context", "Введите пароль для начала конфигурации блокчейна ARWEAVE, что займет около 10 минут. Убедитесь, что ваше устройство заряжено не менее чем на 60% и подключено к USB."},
-    {"rsa_confirm_hintbox_ok", "Инициализация"},
+    {"rsa_confirm_hintbox_context", "Введите пароль, чтобы начать настройку блокчейна ARWEAVE, это займет около 10 минут. Убедитесь, что ваше устройство заряжено не менее 60% и подключено к USB."},
+    {"rsa_confirm_hintbox_ok", "Инициализировать"},
     {"rsa_confirm_hintbox_title", "Настройка блокчейна AR"},
     {"rust_error_bitcoin_no_my_inputs", "Несоответствующая транзакция"},
     {"rust_error_bitcoin_no_my_inputs_desc", "Транзакция не относится к текущему кошельку. Пожалуйста, проверьте информацию о транзакции."},
@@ -2258,6 +2265,8 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {NULL, NULL} // End mark
 };
 
+
+
 static uint8_t ru_plural_fn(int32_t num)
 {
     uint32_t n = op_n(num);
@@ -2294,8 +2303,8 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"Export", "导出"},
     {"FORGET", "忘记密码"},
     {"Failed", "验证失败"},
-    {"FindingRsaPrimes", "P&Q 查找"},
-    {"GeneratingRsaAddress", "生成地址"},
+    {"FindingRsaPrimes", "P&Q 寻找中"},
+    {"GeneratingRsaAddress", "地址生成中"},
     {"Import", "导入"},
     {"InitializingRsaTitle", "初始化中... 请稍候"},
     {"Keystone", "Keystone"},
@@ -2637,9 +2646,9 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"import_wallet_ssb_repeat_desc", "该分片助记词已经被倒入过,请输入其他分片助记词."},
     {"import_wallet_ssb_step_fmt", "%d 的 %d"},
     {"import_wallet_ssb_title_fmt", "分片助记词 #F5870A %d#"},
-    {"initialization_complete_hintbox_context", "Setup is complete. You may now proceed with your next operation."},
-    {"initialization_complete_hintbox_ok", "Confirm"},
-    {"initialization_complete_hintbox_title", "Initialization Complete"},
+    {"initialization_complete_hintbox_context", "设置已完成。您现在可以进行下一步操作。"},
+    {"initialization_complete_hintbox_ok", "确认"},
+    {"initialization_complete_hintbox_title", "初始化完成"},
     {"language_desc", "选择你的语言"},
     {"language_little_title", "语言"},
     {"language_option", "简体中文"},
@@ -2717,8 +2726,8 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"please_enter_passcode", "请输入密码"},
     {"power_off", "关机"},
     {"power_requirements_hintbox_cancel", "确定"},
-    {"power_requirements_hintbox_context", "请确保设备至少有60%的电量并连接到电源，然后再继续。"},
-    {"power_requirements_hintbox_title", "电源需求"},
+    {"power_requirements_hintbox_context", "请确保设备至少有60%的电量，并已连接到电源。"},
+    {"power_requirements_hintbox_title", "电源要求"},
     {"prepare_wallet_first_step", "检测到的新区块链支持"},
     {"prepare_wallet_hint", "准备钱包"},
     {"prepare_wallet_second_step", "设置钱包..."},
@@ -2771,10 +2780,10 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"receive_trx_hint", "此地址仅适用于 TRX,TRC-20 和 TRC-10 代币,将其他数字货币发送到该地址将会造成丢失."},
     {"repeat_passcode_desc", "再次确认您输入的 PIN 码."},
     {"repeat_passcode_title", "重新输入 PIN 码"},
-    {"rsa_confirm_hintbox_cancel", "暂不设置"},
-    {"rsa_confirm_hintbox_context", "请输入密码开始配置ARWEAVE区块链，整个过程大约需要10分钟。请确保您的设备电量至少为60%并连接到USB电源。"},
+    {"rsa_confirm_hintbox_cancel", "暂时不设置"},
+    {"rsa_confirm_hintbox_context", "请输入密码以开始ARWEAVE区块链的设置，预计将花费约10分钟。请确保您的设备电量至少为60%并且已连接至USB电源。"},
     {"rsa_confirm_hintbox_ok", "初始化"},
-    {"rsa_confirm_hintbox_title", "AR区块链配置"},
+    {"rsa_confirm_hintbox_title", "AR 区块链设置"},
     {"rust_error_bitcoin_no_my_inputs", "不一致的交易"},
     {"rust_error_bitcoin_no_my_inputs_desc", "此交易不属于当前钱包.请检查交易信息."},
     {"rust_error_bitcoin_not_my_multisig_wallet", "无效的多重签名钱包配置"},
@@ -3010,8 +3019,12 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {NULL, NULL} // End mark
 };
 
+
+
 static uint8_t zh_cn_plural_fn(int32_t num)
 {
+
+
 
     return LV_I18N_PLURAL_TYPE_OTHER;
 }
@@ -3033,9 +3046,11 @@ const lv_i18n_language_pack_t lv_i18n_language_pack[] = {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+
 // Internal state
 static const lv_i18n_language_pack_t * current_lang_pack;
 static const lv_i18n_lang_t * current_lang;
+
 
 /**
  * Reset internal state. For testing.
@@ -3081,6 +3096,7 @@ int lv_i18n_set_locale(const char * l_name)
     return -1;
 }
 
+
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
@@ -3093,6 +3109,7 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
 
     return NULL;
 }
+
 
 /**
  * Get the translation from a message ID

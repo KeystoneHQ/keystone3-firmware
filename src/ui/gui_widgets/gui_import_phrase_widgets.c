@@ -110,9 +110,7 @@ void GuiImportPhraseInit(uint8_t num)
     g_inputWordsCnt = num;
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
-
     lv_obj_t *tileView = GuiCreateTileView(cont);
-
     lv_obj_t *tile = lv_tileview_add_tile(tileView, SINGLE_PHRASE_INPUT_PHRASE, 0, LV_DIR_RIGHT);
     g_importSinglePhraseTileView.inputPhrase = tile;
     GuiInputPhraseWidget(tile);

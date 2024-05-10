@@ -24,7 +24,7 @@ static const char *g_languageList[] = {
     "English",
     "Русский язык",
     "简体中文",
-    "한국인", // "한국인",
+    "한국어", // "한국인",
     "German",
 };
 

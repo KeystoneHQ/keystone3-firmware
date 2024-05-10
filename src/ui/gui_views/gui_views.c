@@ -9,6 +9,7 @@
 #include "gui_status_bar.h"
 #include "gui_lock_device_widgets.h"
 #include "gui_page.h"
+#include "user_memory.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -79,6 +80,15 @@ void ReadyNextTileHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_READY) {
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+    } else if (code == LV_EVENT_VALUE_CHANGED) {
+        if (lv_event_get_user_data(e) != NULL) {
+            KeyBoard_t *kb = *(KeyBoard_t **)lv_event_get_user_data(e);
+            if (strnlen_s(lv_textarea_get_text(kb->ta), WALLET_NAME_MAX_LEN + 1) > 0) {
+                lv_obj_set_style_text_font(kb->ta, &buttonFont, 0);
+            } else {
+                lv_obj_set_style_text_font(kb->ta, g_defTextFont, 0);
+            }
+        }
     }
 }
 

@@ -570,7 +570,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
             // SLIP32 wallet does not support ADA
             if (isSlip39 && g_chainTable[i].cryptoKey == BIP32_ED25519) {
-                break;
+                continue;
             }
 
             xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey);

@@ -246,8 +246,8 @@ static void GuiInitWalletListArray()
             } else {
                 g_walletListArray[i].enable = true;
             }
-        } else if (GetIsTempAccount() && g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
-            g_walletListArray[i].enable = false;
+        } else if (g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
+            g_walletListArray[i].enable = !GetIsTempAccount();
         }
 #else
         if (GetCurrentWalletIndex() != SINGLE_WALLET) {

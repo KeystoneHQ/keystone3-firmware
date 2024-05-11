@@ -96,7 +96,7 @@ bool IsArweaveSetupComplete(void)
 PtrT_TransactionCheckResult GuiGetArCheckResult(void)
 {
 #ifndef COMPILE_SIMULATOR
-    if (!IsArweaveSetupComplete()) {
+    if (GetIsTempAccount()) {
         ThrowError(ERR_INVALID_QRCODE);
     }
     uint8_t mfp[4];

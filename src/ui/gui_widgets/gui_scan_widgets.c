@@ -140,6 +140,10 @@ void GuiScanResult(bool result, void *param)
         }
 #ifndef BTC_ONLY
         if (g_chainType == CHAIN_ARWEAVE) {
+            if (GetIsTempAccount()) {
+                ThrowError(ERR_INVALID_QRCODE);
+                return;
+            }
             bool hasArXpub = IsArweaveSetupComplete();
             if (!hasArXpub) {
                 GoToHomeViewHandler(NULL);

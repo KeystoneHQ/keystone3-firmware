@@ -5,6 +5,7 @@
 #include "stdint.h"
 #include "stdio.h"
 #include "librust_c.h"
+#include "gui_views.h"
 #include "gui_chain.h"
 #include "gui_lock_widgets.h"
 #include "screen_manager.h"

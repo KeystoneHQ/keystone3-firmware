@@ -6,6 +6,7 @@ static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static ArweaveRequestType g_requestType = ArweaveRequestTypeTransaction;
 static void *g_parseResult = NULL;
+static lv_obj_t *g_parseErrorHintBox = NULL;
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                                                           \
     if (result != NULL)                                                                                                           \
@@ -27,6 +28,12 @@ static void *g_parseResult = NULL;
 static void ParseRequestType();
 static void SetTitleLabelStyle(lv_obj_t *label);
 static void TagsRender(cJSON *root, int size, lv_obj_t *parent);
+static void ThrowError(int32_t errorCode);
+
+static void ThrowError(int32_t errorCode)
+{
+    g_parseErrorHintBox = GuiCreateErrorCodeWindow(errorCode, &g_parseErrorHintBox, NULL);
+}
 
 static void ParseRequestType()
 {

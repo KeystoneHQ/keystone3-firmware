@@ -309,8 +309,7 @@ static void OpenQRCodeHandler(lv_event_t *e)
         GuiCreateConnectADAWalletWidget(g_connectWalletTileView.walletIndex);
         return;
     }
-    char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
-    bool skipGenerateArweaveKey = arXpub != NULL && strlen(arXpub) == 1024;
+    bool skipGenerateArweaveKey = IsArweaveSetupComplete();
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey) {
         GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_CONNECT_CONFIRM);
         return;
@@ -963,8 +962,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         return;
     }
     if (func) {
-        char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
-        bool skipGenerateArweaveKey = arXpub != NULL && strlen(arXpub) == 1024;
+        bool skipGenerateArweaveKey = IsArweaveSetupComplete();
         if (index == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey) {
             GuiAnimatingQRCodeInitWithLoadingParams(g_connectWalletTileView.qrCode, func, true, _("InitializingRsaTitle"), _("FindingRsaPrimes"));
         } else {

@@ -24,9 +24,74 @@ static void *g_parseResult = NULL;
         result = NULL;                                                                                                            \
     }
 
+static void ParseRequestType();
+static void SetTitleLabelStyle(lv_obj_t *label);
+static void TagsRender(cJSON *root, int size, lv_obj_t *parent);
+
+static void ParseRequestType()
+{
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    SimpleResponse_ArweaveRequestType *requestType = ar_request_type(data);
+    if (requestType->error_code != 0) {
+        g_requestType = ArweaveRequestTypeUnknown;
+    }
+    g_requestType = *requestType->data;
+}
+
+static void SetTitleLabelStyle(lv_obj_t *label)
+{
+    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+}
+
+static void TagsRender(cJSON *root, int size, lv_obj_t *parent)
+{
+    int height = 62 + 84 * size;
+    for (int i = 0; i < size; i++) {
+        cJSON *item = cJSON_GetArrayItem(root, i);
+        cJSON *key = cJSON_GetObjectItem(item, "name");
+        cJSON *value = cJSON_GetObjectItem(item, "value");
+        if (key == NULL || value == NULL) {
+            continue;
+        }
+        lv_obj_t *keyLabel = lv_label_create(parent);
+        lv_label_set_text(keyLabel, "Name");
+        SetTitleLabelStyle(keyLabel);
+        lv_obj_align(keyLabel, LV_ALIGN_TOP_LEFT, 24, 62 + 84 * i);
+
+        lv_obj_t *keyValueLabel = lv_label_create(parent);
+        lv_label_set_text(keyValueLabel, key->valuestring);
+        lv_obj_set_style_text_font(keyValueLabel, g_defIllustrateFont, LV_PART_MAIN);
+        lv_obj_set_style_text_color(keyValueLabel, lv_color_hex(16090890), LV_PART_MAIN);
+        lv_obj_align(keyValueLabel, LV_ALIGN_TOP_LEFT, 96, 62 + 84 * i);
+
+        lv_obj_t *valueLabel = lv_label_create(parent);
+        lv_label_set_text(valueLabel, "Value");
+        SetTitleLabelStyle(valueLabel);
+        lv_obj_align(valueLabel, LV_ALIGN_TOP_LEFT, 24, 62 + 84 * i + 38);
+
+        lv_obj_t *valueValueLabel = lv_label_create(parent);
+        lv_label_set_text(valueValueLabel, value->valuestring);
+        lv_obj_set_style_text_font(valueValueLabel, g_defIllustrateFont, LV_PART_MAIN);
+        lv_obj_set_style_text_color(valueValueLabel, WHITE_COLOR, LV_PART_MAIN);
+        lv_obj_align(valueValueLabel, LV_ALIGN_TOP_LEFT, 96, 62 + 84 * i + 38);
+    }
+    lv_obj_set_size(parent, 408, height);
+}
+
+bool IsArweaveSetupComplete(void)
+{
+    char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
+    return xPub != NULL && strlen(xPub) == 1024;
+}
+
 PtrT_TransactionCheckResult GuiGetArCheckResult(void)
 {
 #ifndef COMPILE_SIMULATOR
+    if (!IsArweaveSetupComplete()) {
+        ThrowError(ERR_INVALID_QRCODE);
+    }
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
@@ -104,16 +169,6 @@ void GetArweaveToAddress(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata, maxLen, tx->to);
 }
 
-static void ParseRequestType()
-{
-    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    SimpleResponse_ArweaveRequestType *requestType = ar_request_type(data);
-    if (requestType->error_code != 0) {
-        g_requestType = ArweaveRequestTypeUnknown;
-    }
-    g_requestType = *requestType->data;
-}
-
 void GuiSetArUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
     g_urResult = urResult;
@@ -153,13 +208,6 @@ void FreeArMemory(void)
     CHECK_FREE_PARSE_RESULT(g_parseResult);
 }
 
-static void SetTitleLabelStyle(lv_obj_t *label)
-{
-    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
-    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
-}
-
 void GuiShowArweaveTxDetail(lv_obj_t *parent, void *totalData)
 {
     cJSON *root;
@@ -184,8 +232,6 @@ void GuiShowArweaveTxDetail(lv_obj_t *parent, void *totalData)
         lv_obj_clear_flag(parent, LV_OBJ_FLAG_HIDDEN);
     }
 
-    int height = 62 + 84 * size;
-    lv_obj_set_size(parent, 408, height);
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_style_bg_color(parent, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -197,35 +243,7 @@ void GuiShowArweaveTxDetail(lv_obj_t *parent, void *totalData)
     lv_obj_set_style_text_color(label, lv_color_hex(16090890), LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
 
-    for (int i = 0; i < size; i++) {
-        cJSON *item = cJSON_GetArrayItem(root, i);
-        cJSON *key = cJSON_GetObjectItem(item, "name");
-        cJSON *value = cJSON_GetObjectItem(item, "value");
-        if (key == NULL || value == NULL) {
-            continue;
-        }
-        lv_obj_t *keyLabel = lv_label_create(parent);
-        lv_label_set_text(keyLabel, "Name");
-        SetTitleLabelStyle(keyLabel);
-        lv_obj_align(keyLabel, LV_ALIGN_TOP_LEFT, 24, 62 + 84 * i);
-
-        lv_obj_t *keyValueLabel = lv_label_create(parent);
-        lv_label_set_text(keyValueLabel, key->valuestring);
-        lv_obj_set_style_text_font(keyValueLabel, g_defIllustrateFont, LV_PART_MAIN);
-        lv_obj_set_style_text_color(keyValueLabel, lv_color_hex(16090890), LV_PART_MAIN);
-        lv_obj_align(keyValueLabel, LV_ALIGN_TOP_LEFT, 96, 62 + 84 * i);
-
-        lv_obj_t *valueLabel = lv_label_create(parent);
-        lv_label_set_text(valueLabel, "Value");
-        SetTitleLabelStyle(valueLabel);
-        lv_obj_align(valueLabel, LV_ALIGN_TOP_LEFT, 24, 62 + 84 * i + 38);
-
-        lv_obj_t *valueValueLabel = lv_label_create(parent);
-        lv_label_set_text(valueValueLabel, value->valuestring);
-        lv_obj_set_style_text_font(valueValueLabel, g_defIllustrateFont, LV_PART_MAIN);
-        lv_obj_set_style_text_color(valueValueLabel, WHITE_COLOR, LV_PART_MAIN);
-        lv_obj_align(valueValueLabel, LV_ALIGN_TOP_LEFT, 96, 62 + 84 * i + 38);
-    }
+    TagsRender(root, size, parent);
 }
 
 UREncodeResult *GuiGetArweaveSignQrCodeData(void)

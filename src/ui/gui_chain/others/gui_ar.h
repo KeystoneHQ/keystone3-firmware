@@ -26,6 +26,7 @@ void GuiShowArweaveTxDetail(lv_obj_t *parent, void *totalData);
 void GetArweaveMessageText(void *indata, void *param, uint32_t maxLen);
 void GetArweaveRawMessage(void *indata, void *param, uint32_t maxLen);
 void GetArweaveMessageAddress(void *indata, void *param, uint32_t maxLen);
+bool IsArweaveSetupComplete(void);
 UREncodeResult *GuiGetArweaveSignQrCodeData(void);
 
 #endif

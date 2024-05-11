@@ -140,8 +140,7 @@ void GuiScanResult(bool result, void *param)
         }
 #ifndef BTC_ONLY
         if (g_chainType == CHAIN_ARWEAVE) {
-            char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
-            bool hasArXpub = arXpub != NULL && strlen(arXpub) == 1024;
+            bool hasArXpub = IsArweaveSetupComplete();
             if (!hasArXpub) {
                 GoToHomeViewHandler(NULL);
                 GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_PARSER_CONFIRM);

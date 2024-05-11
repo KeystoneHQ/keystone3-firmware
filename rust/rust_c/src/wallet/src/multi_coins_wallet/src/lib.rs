@@ -6,6 +6,7 @@ mod imtoken;
 pub mod keplr;
 pub mod okx;
 pub mod solana;
+pub mod backpack;
 pub mod structs;
 pub mod sui;
 mod utils;

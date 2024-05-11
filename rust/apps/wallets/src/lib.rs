@@ -22,6 +22,7 @@ pub mod keplr;
 pub mod metamask;
 pub mod okx;
 pub mod solana;
+pub mod backpack;
 pub mod sui;
 mod utils;
 pub mod xrp_toolkit;

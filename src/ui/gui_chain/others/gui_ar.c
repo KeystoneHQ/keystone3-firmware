@@ -98,6 +98,7 @@ PtrT_TransactionCheckResult GuiGetArCheckResult(void)
 #ifndef COMPILE_SIMULATOR
     if (GetIsTempAccount()) {
         ThrowError(ERR_INVALID_QRCODE);
+        return NULL;
     }
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;

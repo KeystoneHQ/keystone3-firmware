@@ -525,7 +525,7 @@ static void CoinDealHandler(lv_event_t *e)
         break;
 #endif
         bool shouldGenerateArweaveXPub = IsArweaveSetupComplete();
-        if (shouldGenerateArweaveXPub) {
+        if (!shouldGenerateArweaveXPub) {
             GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);
             break;
         }

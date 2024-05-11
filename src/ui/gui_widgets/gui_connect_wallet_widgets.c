@@ -37,9 +37,9 @@ typedef enum {
 
 WalletListItem_t g_walletListArray[] = {
 #ifndef BTC_ONLY
-    {WALLET_LIST_BACKPACK, &walletListBackpack, true},
     {WALLET_LIST_OKX, &walletListOkx, true},
     {WALLET_LIST_METAMASK, &walletListMetaMask, true},
+    {WALLET_LIST_BACKPACK, &walletListBackpack, true},
     {WALLET_LIST_BLUE, &walletListBlue, true},
     {WALLET_LIST_SPARROW, &walletListSparrow, true},
     {WALLET_LIST_RABBY, &walletListRabby, true},

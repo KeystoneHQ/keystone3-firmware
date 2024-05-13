@@ -1562,12 +1562,12 @@ static const uint8_t kern_pair_glyph_ids[] = {
  * 4.4 format which needs to scaled with `kern_scale`*/
 static const int8_t kern_pair_values[] = {
     -14, -9, -9, -9, -28, -22, -22, 15,
-    -22, -5, -12, -10, -13, -8, -48, -47,
-    -26, -14, -10, -10, -14, -10, -14, -74,
-    -52, -34, -8, -17, -17, -17, -10, -12,
-    -22, -12, -8, -16, -16, -16, -8, -37,
-    -24, -10, -8, -8, -8
-};
+        -22, -5, -12, -10, -13, -8, -48, -47,
+        -26, -14, -10, -10, -14, -10, -14, -74,
+        -52, -34, -8, -17, -17, -17, -10, -12,
+        -22, -12, -8, -16, -16, -16, -8, -37,
+        -24, -10, -8, -8, -8
+    };
 
 /*Collect the kern pair's data in one place*/
 static const lv_font_fmt_txt_kern_pair_t kern_pairs = {

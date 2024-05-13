@@ -777,7 +777,7 @@ Wallet Profile,20,wallet_profile_mid_btn,Wallet Profile,Профиль коше�
 ,20,multisig_signature_export_to_sdcard,Export Transaction to MicroSD Card,Экспорт транзакции на карту microSD,거래를 MicroSD 카드로 내보내기,将交易导出到 microSD 卡,,,,
 ,20,multisig_signature_export_to_sdcard_success_desc,Your signed transaction has been exported to MicoSD card successfully.,Ваша подписанная транзакция была успешно экспортирована на карту Microsd.,서명 거래를 MicroSD 카드로 내보냈습니다,您的签名交易已成功导出到 MicroSD 卡.,,,,
 ,20,multisig_connect_wallet_notice,You are using multisig wallet,Вы используете мультиподписной кошелек,다중 서명 지갑 사용 중,您正在使用多重签名钱包,,,,
-,20,rust_error_bitcoin_no_my_inputs,Incongruent Transaction,Несоответствующая транзакция,일치하지 않은 거래입니다,不一致的交易,,,,
+,28,rust_error_bitcoin_no_my_inputs,Incongruent Transaction,Несоответствующая транзакция,일치하지 않은 거래입니다,不一致的交易,,,,
 ,20,rust_error_bitcoin_no_my_inputs_desc,The transaction doesn't belong to the current wallet. Please check the transaction information.,"Транзакция не относится к текущему кошельку. Пожалуйста, проверьте информацию о транзакции.",이 거래는 현재 지갑에 속하지 않습니다.거래 정보 확인하십시오,此交易不属于当前钱包.请检查交易信息.,,,,
 ,20,rust_error_bitcoin_not_my_multisig_wallet,Invalid Multisig Wallet Config,Неправильная конфигурация мультиподписного кошелька,다중 서명 지갑 설정이 잘못되었습니다,无效的多重签名钱包配置,,,,
 ,20,rust_error_bitcoin_not_my_multisig_wallet_desc,This multisig wallet config doesn't belong to the current wallet. Please check the multisig wallet config information.,"Эта конфигурация мультиподписного кошелька не относится к текущему кошельку. Пожалуйста, проверьте информацию о конфигурации мультиподписного кошелька.",이 다중 서명 지갑 설정은 현재 지갑에 속하지 않습니다.다중 서명 지갑 설정 정보를 확인하십시오,此多重签名钱包配置不属于当前钱包.请检查多重签名钱包配置信息.,,,,

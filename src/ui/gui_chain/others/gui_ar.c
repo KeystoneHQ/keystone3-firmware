@@ -127,7 +127,7 @@ int GetArweaveRawMessageLength(void *param)
 {
     DisplayArweaveMessage *data = (DisplayArweaveMessage *)param;
     if (data->raw_message == NULL) {
-        return;
+        return 0;
     }
     return strlen(data->raw_message) + 1;
 }
@@ -136,7 +136,7 @@ int GetArweaveMessageLength(void *param)
 {
     DisplayArweaveMessage *data = (DisplayArweaveMessage *)param;
     if (data->message == NULL) {
-        return;
+        return 0;
     }
     return strlen(data->message) + 1;
 

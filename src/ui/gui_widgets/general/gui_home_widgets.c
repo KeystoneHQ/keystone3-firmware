@@ -586,41 +586,21 @@ static void OpenManageAssetsHandler(lv_event_t *e)
     lv_obj_add_flag(checkBoxCont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_scrollbar_mode(checkBoxCont, LV_SCROLLBAR_MODE_OFF);
 
-    lv_obj_t *coinLabel;
-    lv_obj_t *chainLabel;
-    lv_obj_t *icon;
-    lv_obj_t *checkbox;
     int heightIndex = 0;
     for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-        coinLabel = GuiCreateTextLabel(checkBoxCont, g_coinCardArray[i].coin);
-        chainLabel = GuiCreateNoticeLabel(checkBoxCont, g_coinCardArray[i].chain);
-        icon = GuiCreateImg(checkBoxCont, g_coinCardArray[i].icon);
-        checkbox = GuiCreateMultiCheckBox(checkBoxCont, _(""));
+        lv_obj_t *coinLabel = GuiCreateTextLabel(checkBoxCont, g_coinCardArray[i].coin);
+        lv_obj_t *chainLabel = GuiCreateNoticeLabel(checkBoxCont, g_coinCardArray[i].chain);
+        lv_obj_t *icon = GuiCreateImg(checkBoxCont, g_coinCardArray[i].icon);
+        lv_obj_t *checkbox = GuiCreateMultiCheckBox(checkBoxCont, _(""));
         lv_obj_set_style_pad_top(checkbox, 32, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_size(checkbox, 446, 96);
         g_walletState[i].checkBox = checkbox;
         uint8_t tableLen = 4;
         GuiButton_t table[4] = {
-            {
-                .obj = icon,
-                .align = LV_ALIGN_LEFT_MID,
-                .position = {24, 0},
-            },
-            {
-                .obj = coinLabel,
-                .align = LV_ALIGN_DEFAULT,
-                .position = {100, 13},
-            },
-            {
-                .obj = chainLabel,
-                .align = LV_ALIGN_DEFAULT,
-                .position = {100, 53},
-            },
-            {
-                .obj = checkbox,
-                .align = LV_ALIGN_TOP_MID,
-                .position = {-10, 0},
-            },
+            {.obj = icon, .align = LV_ALIGN_LEFT_MID, .position = {24, 0}},
+            {.obj = coinLabel, .align = LV_ALIGN_DEFAULT, .position = {100, 13}},
+            {.obj = chainLabel, .align = LV_ALIGN_DEFAULT, .position = {100, 53}},
+            {.obj = checkbox, .align = LV_ALIGN_TOP_MID, .position = {-10, 0}},
         };
         if (IsCosmosChain(g_coinCardArray[i].index)) {
             table[0].position.x += 12;
@@ -653,7 +633,6 @@ static void OpenManageAssetsHandler(lv_event_t *e)
         g_walletButton[i] = button;
         if (IsCosmosChain(g_coinCardArray[i].index)) {
             lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);
-            GUI_DEL_OBJ(g_lastCosmosLine);
             g_lastCosmosLine = GuiCreateDividerLine(checkBoxCont);
             lv_obj_add_flag(g_lastCosmosLine, LV_OBJ_FLAG_HIDDEN);
             lv_obj_align(g_lastCosmosLine, LV_ALIGN_DEFAULT, 0, 96 * (heightIndex + 1));
@@ -679,7 +658,7 @@ static void OpenManageAssetsHandler(lv_event_t *e)
     UpdateManageWalletState(false);
 
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("home_manage_assets"));
-    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, g_manageCont);
+    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, NULL);
     // TODO: add search
     // GuiNvsBarSetRightCb(NVS_BAR_SEARCH, NULL, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
@@ -749,7 +728,7 @@ void GuiHomeRefresh(void)
     GuiSetSetupPhase(SETUP_PAHSE_DONE);
     if (g_manageCont != NULL) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("home_manage_assets"));
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, g_manageCont);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     } else {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_MANAGE, OpenManageAssetsHandler, NULL);

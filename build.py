@@ -12,7 +12,7 @@ build_dir = "build"
 build_path = source_path + '/' + build_dir
 
 argParser = argparse.ArgumentParser()
-argParser.add_argument("-e", "--environment", help="please specific which enviroment you are building, dev or production")
+argParser.add_argument("-e", "--environment", help="please specific which environment you are building, dev or production")
 argParser.add_argument("-p", "--purpose", help="please specific what purpose you are building, set it to `debug` for building unsigned firmware.")
 argParser.add_argument("-o", "--options", nargs="?", help="specify the required features you are building")
 argParser.add_argument("-t", "--type", help="please specific which type you are building, btc_only or general")

@@ -191,6 +191,8 @@ static const lv_i18n_phrase_t en_singulars[] = {
     {"connect_safe_title2", "Safe (Mobile)"},
     {"connect_solflare_link", "https://keyst.one/t/3rd/solflare"},
     {"connect_solflare_title", "Solflare"},
+    {"connect_backpack_link", "https://keyst.one/t/3rd/backpack"},
+    {"connect_backpack_title", "Backpack"},
     {"connect_sparrow_link", "https://keyst.one/t/3rd/sparrow"},
     {"connect_sparrow_multisig_link", "https://keyst.one/t/3rd/Multisig/sparrow"},
     {"connect_sparrow_title", "Sparrow"},

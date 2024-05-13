@@ -15,7 +15,7 @@ use third_party::{
     },
 };
 
-use crate::{common::get_path_component, ExtendedPublicKey};
+use crate::{common::get_path_component, ExtendedPublicKey, DEVICE_TYPE, DEVICE_VERSION};
 
 fn get_device_id(serial_number: &str) -> String {
     use third_party::cryptoxide::hashing::sha256;

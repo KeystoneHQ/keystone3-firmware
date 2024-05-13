@@ -262,7 +262,7 @@ static int32_t CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t 
         PrintArray("hash content:", contentHash, 32);
         if (crcCalc != info->crc32) {
             printf("crc err,crcCalc=0x%08X,info->crc32=0x%08X\r\n", crcCalc, info->crc32);
-            percent = 0xFF;
+            percent = 0xFE;
             GuiApiEmitSignal(SIG_SETTING_VERIFY_OTA_PERCENT, &percent, sizeof(percent));
             ret = ERR_UPDATE_CHECK_CRC_FAILED;
             break;

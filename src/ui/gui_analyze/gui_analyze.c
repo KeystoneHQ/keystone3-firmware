@@ -202,7 +202,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_AR_MESSAGE,
 #ifndef COMPILE_SIMULATOR
-        "{\"name\":\"ar_message_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"size\":[408,130],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Address\",\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetArweaveMessageAddress\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,146],\"size\":[408,766],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Message(UTF-8)\",\"font\":\"openSansEnIllustrate\",\"text_color\":16090890,\"pos\":[24,16]},{\"type\":\"label\",\"text_func\":\"GetArweaveMessageText\",\"pos\":[24,62],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,928],\"size\":[408,900],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Message\",\"font\":\"openSansEnIllustrate\",\"text_color\":16090890,\"pos\":[24,16]},{\"type\":\"label\",\"text_func\":\"GetArweaveRawMessage\",\"pos\":[24,62],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]}]}",
+        "{\"name\":\"ar_message_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"size\":[408,130],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Address\",\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetArweaveMessageAddress\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,146],\"size\":[408,766],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Message(UTF-8)\",\"font\":\"openSansEnIllustrate\",\"text_color\":16090890,\"pos\":[24,16]},{\"type\":\"label\",\"text_func\":\"GetArweaveMessageText\",\"text_len_func\":\"GetArweaveMessageLength\",\"pos\":[24,62],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,928],\"size\":[408,900],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Message\",\"font\":\"openSansEnIllustrate\",\"text_color\":16090890,\"pos\":[24,16]},{\"type\":\"label\",\"text_func\":\"GetArweaveRawMessage\",\"text_len_func\":\"GetArweaveRawMessageLength\",\"pos\":[24,62],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]}]}",
 #else
         PC_SIMULATOR_PATH "/page_ar_message.json",
 #endif
@@ -694,6 +694,10 @@ GetLabelDataFunc GuiArTextFuncGet(char *type)
         return GetArweaveRawMessage;
     } else if (!strcmp(type, "GetArweaveMessageAddress")) {
         return GetArweaveMessageAddress;
+    } else if (!strcmp(type, "GetArweaveRawMessageLength")) {
+        return GetArweaveRawMessageLength;
+    } else if (!strcmp(type, "GetArweaveMessageLength")) {
+        return GetArweaveMessageLength;
     }
     return NULL;
 }

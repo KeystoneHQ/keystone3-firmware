@@ -123,6 +123,25 @@ void GetArweaveRawMessage(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata, maxLen, data->raw_message);
 }
 
+int GetArweaveRawMessageLength(void *param)
+{
+    DisplayArweaveMessage *data = (DisplayArweaveMessage *)param;
+    if (data->raw_message == NULL) {
+        return;
+    }
+    return strlen(data->raw_message) + 1;
+}
+
+int GetArweaveMessageLength(void *param)
+{
+    DisplayArweaveMessage *data = (DisplayArweaveMessage *)param;
+    if (data->message == NULL) {
+        return;
+    }
+    return strlen(data->message) + 1;
+
+}
+
 void GetArweaveMessageAddress(void *indata, void *param, uint32_t maxLen)
 {
     char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);

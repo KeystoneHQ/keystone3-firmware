@@ -25,6 +25,8 @@ void GetArweaveFromAddress(void *indata, void *param, uint32_t maxLen);
 void GetArweaveToAddress(void *indata, void *param, uint32_t maxLen);
 void GuiShowArweaveTxDetail(lv_obj_t *parent, void *totalData);
 void GetArweaveMessageText(void *indata, void *param, uint32_t maxLen);
+int GetArweaveRawMessageLength(void *param);
+int GetArweaveMessageLength(void *param);
 void GetArweaveRawMessage(void *indata, void *param, uint32_t maxLen);
 void GetArweaveMessageAddress(void *indata, void *param, uint32_t maxLen);
 bool IsArweaveSetupComplete(void);

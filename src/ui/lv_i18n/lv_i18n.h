@@ -25,26 +25,23 @@ typedef struct {
 
 typedef struct {
     const char * locale_name;
-    const lv_i18n_phrase_t * singulars;
-    const lv_i18n_phrase_t * plurals[_LV_I18N_PLURAL_TYPE_NUM];
+    lv_i18n_phrase_t * singulars;
+    lv_i18n_phrase_t * plurals[_LV_I18N_PLURAL_TYPE_NUM];
     uint8_t (*locale_plural_fn)(int32_t num);
 } lv_i18n_lang_t;
 
 // Null-terminated list of languages. First one used as default.
 typedef const lv_i18n_lang_t * lv_i18n_language_pack_t;
 
+
 extern const lv_i18n_language_pack_t lv_i18n_language_pack[];
+
 
 /**
  * Set the languages for internationalization
  * @param langs pointer to the array of languages. (Last element has to be `NULL`)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs);
-
-/**
- * Sugar for simplified `lv_i18n_init` call
- */
-int lv_i18n_init_default(void);
 
 /**
  * Change the localization (language)
@@ -73,10 +70,13 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num);
  */
 const char * lv_i18n_get_current_locale(void);
 
+
 void __lv_i18n_reset(void);
+
 
 #define _(text) lv_i18n_get_text(text)
 #define _p(text, num) lv_i18n_get_text_plural(text, num)
+
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -1,22 +1,20 @@
-use alloc::vec::Vec;
+use crate::errors::Result;
 use crate::structs::TonTransaction;
 use crate::{errors::TonError, vendor::cell::BagOfCells};
-use crate::errors::Result;
+use alloc::vec::Vec;
 
-// pub fn parse_transaction(serial: &[u8])-> Result<TonTransaction> {
-//     // let boc = BagOfCells::parse(serial)?.single_root()?.parse_fully(|parser| {
-        
-//     // })
-// }
+pub fn parse_transaction(serial: &[u8]) -> Result<TonTransaction> {
+    TonTransaction::parse_hex(serial)
+}
 
 #[cfg(test)]
 mod tests {
     extern crate std;
-    use std::println;
     use base64::{engine::general_purpose::STANDARD, Engine};
+    use std::println;
     use third_party::hex;
 
-    use crate::vendor::cell::BagOfCells;
+    use crate::{transaction::parse_transaction, vendor::cell::BagOfCells};
 
     #[test]
     fn test_parse_transaction() {
@@ -39,27 +37,10 @@ mod tests {
     fn test_parse_ton_transfer() {
         // tonsign://?network=ton&pk=j7SUzAOty6C3woetBmEXobZoCf6vJZGoQVomHJc42oU%3D&body=te6cckEBAgEARwABHCmpoxdmOz6lAAAACAADAQBoQgArFnMvHAX9tOjTp4%2FRDd3vP2Bn8xG%2BU5MTuKRKUE1NoqHc1lAAAAAAAAAAAAAAAAAAAHBy4G8%3D
         let body = "te6cckEBAgEARwABHCmpoxdmOz6lAAAACAADAQBoQgArFnMvHAX9tOjTp4/RDd3vP2Bn8xG+U5MTuKRKUE1NoqHc1lAAAAAAAAAAAAAAAAAAAHBy4G8=";
-        let result = STANDARD.decode(body).unwrap();
-        let result = BagOfCells::parse(&result).unwrap();
-        println!("{:?}", result);
-        let root = result.single_root().unwrap();
-        root.parse_fully(|parser| {
-            let wallet_id = parser.load_u32(32).unwrap();
-            let timeout = parser.load_u32(32).unwrap();
-            let seq_no = parser.load_u32(32).unwrap();
-            let order = parser.load_u8(8).unwrap();
-            let send_mode = parser.load_u8(8).unwrap();
-            println!("{}", parser.remaining_bits());
-            Ok(())
-        });
-        root.reference(0).unwrap().parse_fully(|parser| {
-            let header = parser.load_bits(6).unwrap();
-            let address = parser.load_address().unwrap();
-            let coins = parser.load_coins().unwrap();
-            println!("{}", address);
-            println!("{}", coins);
-            println!("{}", parser.remaining_bits());
-            Ok(())
-        });
+        let serial = STANDARD.decode(body).unwrap();
+        let tx = parse_transaction(&serial).unwrap();
+        println!("{:?}", tx);
+        let tx_json = tx.to_json().unwrap();
+        println!("{}", tx_json);
     }
 }

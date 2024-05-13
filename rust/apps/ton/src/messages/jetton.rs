@@ -1,9 +1,10 @@
 use alloc::{format, string::{String, ToString}};
+use serde::Serialize;
 use third_party::hex;
 
 use crate::vendor::{address::TonAddress, cell::{ArcCell, Cell, TonCellError}};
 
-use super::traits::ParseCell;
+use super::{traits::ParseCell, InternalMessage};
 
 pub const JETTON_TRANSFER: u32 = 0xf8a7ea5;
 // pub const JETTON_TRANSFER_NOTIFICATION: u32 = 0x7362d09c;
@@ -12,6 +13,7 @@ pub const JETTON_TRANSFER: u32 = 0xf8a7ea5;
 // pub const JETTON_BURN: u32 = 0x595f07bc;
 // pub const JETTON_BURN_NOTIFICATION: u32 = 0x7bdd97de;
 
+#[derive(Clone, Debug, Serialize)]
 pub enum JettonMessage {
     JettonTransferMessage(JettonTransferMessage),
 }
@@ -36,6 +38,7 @@ impl ParseCell for JettonMessage {
     }
 }
 
+#[derive(Clone, Debug, Serialize)]
 pub struct JettonTransferMessage {
     query_id: String,
     destination: String,
@@ -64,7 +67,7 @@ impl ParseCell for JettonTransferMessage {
             };
             let mut ref_index = 0;
             let custom_payload = if parser.load_bit()? {
-                let payload = Some(hex::encode(cell.reference(ref_index)?.data.clone()));
+                let payload = Some( hex::encode(cell.reference(ref_index)?.data.clone()));
                 ref_index = ref_index + 1;
                 payload
             } else {

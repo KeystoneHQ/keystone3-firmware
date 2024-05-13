@@ -2,7 +2,6 @@
 
 extern crate alloc;
 pub mod aptos;
-pub mod backpack;
 mod imtoken;
 pub mod keplr;
 pub mod okx;

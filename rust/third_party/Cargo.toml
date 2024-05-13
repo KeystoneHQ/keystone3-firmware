@@ -12,7 +12,7 @@ bitcoin = { version = "0.31.1", default-features = false, features = [
 ] }
 bech32 = { version = "0.10.0-beta", default-features = false }
 bitcoin_hashes = { version = "0.13.0", default-features = false }
-core2 = { version = "0.4.0", default_features = false, features = ["alloc"]}
+core2 = { version = "0.3.3", default_features = false, features = ["alloc"]}
 thiserror = { version = "1.0", package = "thiserror-core", default-features = false }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 either = { version = "1.8.1", default-features = false }

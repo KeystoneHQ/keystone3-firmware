@@ -1,4 +1,5 @@
 use alloc::{format, string::{String, ToString}};
+use serde::Serialize;
 use third_party::hex;
 
 use super::traits::ParseCell;
@@ -6,6 +7,7 @@ use super::traits::ParseCell;
 
 pub const NFT_TRANSFER: u32 = 0x5fcc3d14;
 
+#[derive(Clone, Debug, Serialize)]
 pub enum NFTMessage {
     NFTTransferMessage(NFTTransferMessage)
 }
@@ -29,6 +31,7 @@ impl ParseCell for NFTMessage {
     }
 }
  
+#[derive(Clone, Debug, Serialize)]
 pub struct NFTTransferMessage {
     query_id: String,
     new_owner_address: String,

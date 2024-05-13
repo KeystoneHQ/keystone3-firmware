@@ -1,5 +1,5 @@
 use alloc::string::{String, ToString};
-use third_party::thiserror;
+use third_party::{serde_json, thiserror};
 use third_party::thiserror::Error;
 
 use crate::vendor::cell::TonCellError;
@@ -14,6 +14,8 @@ pub enum TonError {
     MnemonicError(String),
     #[error("Invalid TON Transaction, {0}")]
     TransactionError(#[from] TonCellError),
+    #[error("Convert Transaction Json error: {0}")]
+    TransactionJsonError(String),
 }
 
 #[derive(Debug, Error)]

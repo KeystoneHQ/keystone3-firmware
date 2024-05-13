@@ -1,6 +1,7 @@
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use serde::Serialize;
 use third_party::hex;
 
 use self::jetton::JettonMessage;
@@ -11,8 +12,9 @@ use crate::vendor::message::JETTON_TRANSFER;
 
 pub mod jetton;
 pub mod nft;
-mod traits;
+pub mod traits;
 
+#[derive(Debug, Clone, Serialize)]
 pub struct SigningMessage {
     wallet_id: Option<u32>,
     timeout: u32,
@@ -46,6 +48,7 @@ impl ParseCell for SigningMessage {
     }
 }
 
+#[derive(Clone, Debug, Serialize)]
 pub struct TransferMessage {
     ihr_disabled: bool,
     bounce: bool,
@@ -106,12 +109,14 @@ impl ParseCell for TransferMessage {
     }
 }
 
+#[derive(Clone, Debug, Serialize)]
 pub struct InternalMessage {
     op_code: String,
     action: Option<String>,
     operation: Operation,
 }
 
+#[derive(Clone, Debug, Serialize)]
 pub enum Operation {
     Comment(Comment),
     JettonMessage(JettonMessage),
@@ -169,6 +174,7 @@ impl ParseCell for InternalMessage {
     }
 }
 
+#[derive(Clone, Debug, Serialize)]
 pub struct OtherMessage {
     payload: String,
 }

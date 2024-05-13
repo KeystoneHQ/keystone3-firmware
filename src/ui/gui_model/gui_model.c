@@ -1392,5 +1392,6 @@ static int32_t ModelVerifyFirmware(const void *indata, uint32_t inDataLen)
     percent = 100;
     GuiApiEmitSignal(SIG_SETTING_VERIFY_OTA_PERCENT, &percent, sizeof(percent));
 #endif
+    SetPageLockScreen(true);
     return SUCCESS_CODE;
 }

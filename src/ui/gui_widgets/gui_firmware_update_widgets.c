@@ -325,6 +325,8 @@ void GuiFirmwareVerifyPercent(uint8_t percent)
         g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("firmware_security_risk_title"), _("firmware_security_risk_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
         return;
+    } else if (percent == 0xFE) {
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
     }
 
     if (lv_obj_is_valid(g_verifyOtaLabel)) {
@@ -791,7 +793,7 @@ static void GuiFirmwareUpdateViewSha256(char *version, uint8_t percent)
         lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
         lv_obj_t *label = lv_obj_get_child(g_noticeWindow, lv_obj_get_child_cnt(g_noticeWindow) - 4);
         lv_label_set_recolor(label, true);
-        lv_label_set_text_fmt(label, "%s(v%s):\n%s", _("about_info_verify_checksum_text"), version, tempBuf);
+        lv_label_set_text_fmt(label, "%s:\n%s", _("about_info_verify_checksum_text"), tempBuf);
     }
 }
 
@@ -822,5 +824,8 @@ static void GuiFirmwareStartVerifyHandler(lv_event_t *e)
 
 static void GuiCreateSdCardVerifyBinWindowHandler(lv_event_t *e)
 {
+    if (!SdCardInsert()) {
+        return;
+    }
     GuiCreateSdCardVerifyBinWindow();
 }

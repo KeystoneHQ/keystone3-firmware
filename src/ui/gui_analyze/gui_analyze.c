@@ -1046,7 +1046,7 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
     GetLabelDataFunc pFunc = NULL;
     GetLabelDataLenFunc lenFunc = NULL;
     int textWidth = 0;
-    int bufLen = BUFFER_SIZE_512 * 4;
+    int bufLen = BUFFER_SIZE_512;
     cJSON *item = cJSON_GetObjectItem(json, "text_len_func");
     if (item != NULL) {
         lenFunc = GuiTemplateTextLenFuncGet(item->valuestring);

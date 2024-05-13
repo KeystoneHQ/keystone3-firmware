@@ -57,7 +57,7 @@ static void WalletTutorialsInit()
 
     g_tutorials[WALLET_LIST_METAMASK].items[1].walletName = _("connect_mm_title2");
     g_tutorials[WALLET_LIST_METAMASK].items[1].url = _("connect_mm_link2");
-    g_tutorials[WALLET_LIST_METAMASK].items[1].qrTitle = _("connect_mm_link2");
+    g_tutorials[WALLET_LIST_METAMASK].items[1].qrTitle = _("connect_mm_title2");
     g_tutorials[WALLET_LIST_METAMASK].items[1].qrUrl = _("connect_mm_link2");
 
     // WALLET_LIST_OKX
@@ -181,7 +181,7 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_UNISAT].items[0].url = _("connect_unisat_link");
     g_tutorials[WALLET_LIST_UNISAT].items[0].qrTitle = _("connect_unisat_title");
     g_tutorials[WALLET_LIST_UNISAT].items[0].qrUrl = _("connect_unisat_link");
-    
+
     // WALLET_LIST_KEPLR
     g_tutorials[WALLET_LIST_KEPLR].len = 1;
     g_tutorials[WALLET_LIST_KEPLR].desc = _("connect_wallet_desc");

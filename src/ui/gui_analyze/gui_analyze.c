@@ -550,6 +550,16 @@ GetLabelDataLenFunc GuiBtcTextLenFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataLenFunc GuiArTextLenFuncGet(char *type)
+{
+    if (!strcmp(type, "GetArweaveRawMessageLength")) {
+        return GetArweaveRawMessageLength;
+    } else if (!strcmp(type, "GetArweaveMessageLength")) {
+        return GetArweaveMessageLength;
+    }
+    return NULL;
+}
+
 #ifndef BTC_ONLY
 GetTableDataFunc GuiEthTableFuncGet(char *type)
 {
@@ -694,10 +704,6 @@ GetLabelDataFunc GuiArTextFuncGet(char *type)
         return GetArweaveRawMessage;
     } else if (!strcmp(type, "GetArweaveMessageAddress")) {
         return GetArweaveMessageAddress;
-    } else if (!strcmp(type, "GetArweaveRawMessageLength")) {
-        return GetArweaveRawMessageLength;
-    } else if (!strcmp(type, "GetArweaveMessageLength")) {
-        return GetArweaveMessageLength;
     }
     return NULL;
 }
@@ -768,6 +774,9 @@ GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
         return GuiXrpTextLenFuncGet(type);
     case REMAPVIEW_ETH_TYPEDDATA:
         return GuiEthTextLenFuncGet(type);
+    case REMAPVIEW_AR:
+    case REMAPVIEW_AR_MESSAGE:
+        return GuiArTextLenFuncGet(type);
 #endif
     default:
         return NULL;

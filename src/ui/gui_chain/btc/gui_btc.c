@@ -1158,7 +1158,7 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
         lv_obj_t *pathLabel = lv_label_create(formInnerContainer);
         lv_obj_set_width(pathLabel, 332);
         lv_label_set_long_mode(pathLabel, LV_LABEL_LONG_WRAP);
-        lv_label_set_text(pathLabel, from->data[i].path);
+        lv_label_set_text(pathLabel, from->data[i].path == NULL? "": from->data[i].path);
         SetTitleLabelStyle(pathLabel);
         lv_obj_align_to(pathLabel, addressLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_obj_update_layout(pathLabel);

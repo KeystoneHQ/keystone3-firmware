@@ -140,6 +140,7 @@ connect wallet,20,connect_wallet_title,Connect Wallet,Подключить ко�
 ,20,connect_wallet_xpub_script_format,Script Format,Формат скрипта,스크립트 형식,脚本格式,,,,
 ,20,connect_wallet_keystone_hint,Select networks you’d like to manage in the software wallet,"Выберите сети, для добавления в программный кошелек ",소프트웨어 지갑에서 관리할 네트워크 선택,选择您想在软件钱包中管理的网络,,,,
 ,20,connect_wallet_supported_networks,Supported Networks,Поддерживаемые сети,지원되는 네트워크,支持的网络,,,,
+,20,connect_wallet_supported_tokens,Supported Tokens,Поддерживаемые токены,지원되는 토큰,支持的代币,,,,
 ,24,connect_wallet_select_network,Select Network,Выберите сеть,네트워크 선택,选择网络,,,,
 ,20,connect_wallet_select_network_hint,Select the networks you'd like to display within the software wallet.,"Выберите сети, для отображения в программном кошельке",소프트웨어 지갑 내에 표시할 네트워크를 선택합니다.,选择要在软件钱包中显示的网络.,,,,
 ,24,connect_wallet_choose_wallet,Choose Wallet,Выберите кошелек,지갑 선택,选择钱包,,,,

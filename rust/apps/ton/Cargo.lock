@@ -1094,7 +1094,7 @@ dependencies = [
  "bitcoin",
  "bitcoin_hashes 0.13.0",
  "blake2",
- "core2 0.4.0",
+ "core2 0.3.3",
  "cryptoxide",
  "cstr_core",
  "cty",

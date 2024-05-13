@@ -32,23 +32,18 @@ pub extern "C" fn get_backpack_wallet_ur(
     unsafe {
         let keys = recover_c_array(public_keys);
         match normalize_xpub(keys) {
-            Ok(_keys) => {
-                match app_wallets::backpack::generate_crypto_multi_accounts(
-                    mfp,
-                    _keys,
-                ) {
-                    Ok(data) => match data.try_into() {
-                        Ok(_v) => UREncodeResult::encode(
-                            _v,
-                            CryptoMultiAccounts::get_registry_type().get_type(),
-                            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
-                        )
-                        .c_ptr(),
-                        Err(_e) => UREncodeResult::from(_e).c_ptr(),
-                    },
+            Ok(_keys) => match app_wallets::backpack::generate_crypto_multi_accounts(mfp, _keys) {
+                Ok(data) => match data.try_into() {
+                    Ok(_v) => UREncodeResult::encode(
+                        _v,
+                        CryptoMultiAccounts::get_registry_type().get_type(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                    )
+                    .c_ptr(),
                     Err(_e) => UREncodeResult::from(_e).c_ptr(),
-                }
-            }
+                },
+                Err(_e) => UREncodeResult::from(_e).c_ptr(),
+            },
             Err(_e) => UREncodeResult::from(_e).c_ptr(),
         }
     }

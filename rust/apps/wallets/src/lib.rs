@@ -15,6 +15,7 @@ extern crate core;
 extern crate std;
 
 pub mod aptos;
+pub mod backpack;
 pub mod blue_wallet;
 mod common;
 pub mod companion_app;
@@ -22,7 +23,6 @@ pub mod keplr;
 pub mod metamask;
 pub mod okx;
 pub mod solana;
-pub mod backpack;
 pub mod sui;
 mod utils;
 pub mod xrp_toolkit;

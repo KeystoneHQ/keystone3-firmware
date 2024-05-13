@@ -30,11 +30,7 @@ pub fn generate_crypto_multi_accounts(
     for ele in extended_public_keys {
         match ele.get_path() {
             _path if _path.to_string().to_lowercase().starts_with(SOL_PREFIX) => {
-                keys.push(generate_ed25519_key(
-                    master_fingerprint,
-                    ele.clone(),
-                    None,
-                )?);
+                keys.push(generate_ed25519_key(master_fingerprint, ele.clone(), None)?);
             }
             _path if _path.to_string().to_lowercase().eq(ETH_STANDARD_PREFIX) => {
                 keys.push(generate_k1_normal_key(
@@ -178,8 +174,6 @@ fn generate_eth_ledger_live_key(
     ))
 }
 
-
-
 #[cfg(test)]
 mod tests {
     extern crate std;
@@ -188,10 +182,10 @@ mod tests {
     use alloc::vec::Vec;
     use core::str::FromStr;
 
+    use crate::ExtendedPublicKey;
+    use third_party::bitcoin::bip32::{DerivationPath, Xpub};
     use third_party::hex;
     use third_party::hex::FromHex;
-    use third_party::bitcoin::bip32::{DerivationPath, Xpub};
-    use crate::ExtendedPublicKey;
 
     #[test]
     fn test_generate_crypto_multi_accounts() {
@@ -212,11 +206,29 @@ mod tests {
         let account = generate_crypto_multi_accounts(
             mfp,
             vec![
-                ExtendedPublicKey::new(DerivationPath::from_str(&sol_pub_1_path).unwrap(),  hex::decode(&sol_pub_1).unwrap()),
-                ExtendedPublicKey::new(DerivationPath::from_str(&sol_pub_2_path).unwrap(),  hex::decode(&sol_pub_2).unwrap()),
-                ExtendedPublicKey::new(DerivationPath::from_str(&eth_bip44_standard_xpub_path).unwrap(),  Xpub::from_str(&eth_bip44_standard_xpub).unwrap().encode().to_vec()),
-                ExtendedPublicKey::new(DerivationPath::from_str(&eth_ledger_live_xpub_1_path).unwrap(),  Xpub::from_str(&eth_ledger_live_xpub_1).unwrap().encode().to_vec())
-            ]
+                ExtendedPublicKey::new(
+                    DerivationPath::from_str(&sol_pub_1_path).unwrap(),
+                    hex::decode(&sol_pub_1).unwrap(),
+                ),
+                ExtendedPublicKey::new(
+                    DerivationPath::from_str(&sol_pub_2_path).unwrap(),
+                    hex::decode(&sol_pub_2).unwrap(),
+                ),
+                ExtendedPublicKey::new(
+                    DerivationPath::from_str(&eth_bip44_standard_xpub_path).unwrap(),
+                    Xpub::from_str(&eth_bip44_standard_xpub)
+                        .unwrap()
+                        .encode()
+                        .to_vec(),
+                ),
+                ExtendedPublicKey::new(
+                    DerivationPath::from_str(&eth_ledger_live_xpub_1_path).unwrap(),
+                    Xpub::from_str(&eth_ledger_live_xpub_1)
+                        .unwrap()
+                        .encode()
+                        .to_vec(),
+                ),
+            ],
         )
         .unwrap();
         let cbor: Vec<u8> = account.try_into().unwrap();

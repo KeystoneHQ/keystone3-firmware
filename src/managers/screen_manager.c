@@ -101,15 +101,6 @@ static void ReleaseHandler(void)
 
 static void LockScreen(void)
 {
-    if (GetLowPowerState() == LOW_POWER_STATE_DEEP_SLEEP) {
-        RecoverFromLowPower();
-        printf("g_lockScreenTick = %d..\n", g_lockScreenTick);
-        ClearLockScreenTime();
-        ClearShutdownTime();
-        printf("recovery from low power\n");
-        return;
-    }
-
     if (!g_pageLockScreenEnable) {
         printf("current page lock screen is disabled\n");
         return;
@@ -123,9 +114,8 @@ static void LockScreen(void)
     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
     uint8_t accountNum = 1;
 
-    if (FpModuleIsExist()) {
-        SetFpLowPowerMode();
-    }
+    SetFpLowPowerMode();
+    UserDelayUs(10);
     ClearLockScreenTime();
     ClearShutdownTime();
     LcdBacklightOff();
@@ -146,13 +136,13 @@ static void LockScreen(void)
     }
 
 
-    if (!FpModuleIsExist()) {
+    // if (!FpModuleIsExist()) {
         uint32_t wakeUpCount = EnterLowPower();
         RecoverFromLowPower();
         ClearLockScreenTime();
         ClearShutdownTime();
         printf("wakeUpCount=%d\r\n", wakeUpCount);
-    }
+    // }
 }
 
 static void LockScreenTimerFunc(void *argument)

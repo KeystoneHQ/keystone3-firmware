@@ -1,7 +1,8 @@
-#include "drv_battery.h"
-#include "mhscpu.h"
 #include "stdio.h"
 #include "stdlib.h"
+#include "define.h"
+#include "drv_battery.h"
+#include "mhscpu.h"
 #include "user_delay.h"
 #include "drv_aw32001.h"
 #include "cmsis_os.h"
@@ -13,7 +14,8 @@
 #include "user_utils.h"
 #include "user_msg.h"
 
-#define BATTERY_DEBUG          0
+#define BATTERY_DEBUG           0
+#define BATTERY_ARRAY_LEN       10
 
 #if BATTERY_DEBUG == 1
 #define BATTERY_PRINTF(fmt, args...)                printf(fmt, ##args)
@@ -206,19 +208,53 @@ uint32_t GetRtcBatteryMilliVolt(void)
     return vol;
 }
 
+
+static int CalculateWeightedAverage(const int *array, int startIndex) 
+{
+    int sum = 0;
+    int weightSum = 0;
+    int index = startIndex;
+    int weight = 10;
+
+    for (int i = 0; i < BATTERY_ARRAY_LEN; i++) {
+        sum += array[index] * weight;
+        weightSum += weight;
+        weight--;
+        index = (index - 1 + BATTERY_ARRAY_LEN) % BATTERY_ARRAY_LEN;
+    }
+
+    return sum / weightSum;
+}
+
+static void UpdateVoltageCache(int *array, int *writeIndex, int newVoltage) {
+    array[*writeIndex] = newVoltage;
+    *writeIndex = (*writeIndex - 1 + BATTERY_ARRAY_LEN) % BATTERY_ARRAY_LEN;
+}
+
 /// @brief Execute once every minimum percent change time interval.
 /// @param
 bool BatteryIntervalHandler(void)
 {
     UsbPowerState usbPowerState;
     uint8_t percent;
-    uint32_t milliVolt;
+    uint32_t milliVolt = 0;
+    static uint32_t milliVoltCache[BATTERY_ARRAY_LEN] = {0};
+    static int writeIndex = BATTERY_ARRAY_LEN - 1;
     bool change = false;
     static bool first = true;
     static uint8_t delayIncreate = 0;
 
+    if (first) {
+        for (int i = 0; i < NUMBER_OF_ARRAYS(milliVoltCache) - 1; i++) {
+            milliVoltCache[i] = GetBatteryMilliVolt();
+        }
+        first = false;
+        change = true;
+    }
+
     usbPowerState = GetUsbPowerState();
-    milliVolt = GetBatteryMilliVolt();
+    UpdateVoltageCache(milliVoltCache, &writeIndex, GetBatteryMilliVolt());
+    milliVolt = CalculateWeightedAverage(milliVoltCache, writeIndex);
     percent = GetBatteryPercentByMilliVolt(milliVolt, usbPowerState == USB_POWER_STATE_DISCONNECT);
 
     printf("handler,milliVolt=%d,percent=%d,showPercent=%d,usbPowerState=%d\n", milliVolt, percent, GetBatterPercent(), usbPowerState);
@@ -226,10 +262,7 @@ bool BatteryIntervalHandler(void)
         printf("low volt,power off\n");
         Aw32001PowerOff();
     }
-    if (first) {
-        first = false;
-        change = true;
-    }
+
     if (g_batterPercent == BATTERY_INVALID_PERCENT_VALUE) {
         //todo: get the stored battery data.
         BATTERY_PRINTF("init battery percent\r\n");
@@ -239,7 +272,7 @@ bool BatteryIntervalHandler(void)
     if (percent < g_batterPercent && usbPowerState == USB_POWER_STATE_DISCONNECT) {
         //The battery percentage only decreases when discharging.
         //The battery percentage decrease by 1% each time.
-        g_batterPercent--;
+        g_batterPercent = percent;
         change = true;
     } else if (usbPowerState == USB_POWER_STATE_CONNECT) {
         //The battery percentage only increase when charging.
@@ -251,7 +284,7 @@ bool BatteryIntervalHandler(void)
 
         // delayIncreate == 4 * 80 320s
         if (percent > g_batterPercent || delayIncreate == 1) {
-            g_batterPercent++;
+            g_batterPercent = percent;
             if (g_batterPercent >= 100) {
                 g_batterPercent = 100;
             }

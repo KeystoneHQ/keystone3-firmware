@@ -15,7 +15,7 @@
 #include "lv_drivers/sdl/sdl.h"
 #include "lvgl/examples/lv_examples.h"
 #include "lvgl/lvgl.h"
-#include <SDL2/SDL.h>
+// #include <SDL2/SDL.h>
 
 
 #include "device_setting.h"

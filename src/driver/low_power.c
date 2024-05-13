@@ -30,8 +30,8 @@
 #include "gui_setup_widgets.h"
 #include "device_setting.h"
 
-#define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                //80 seconds
-#define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                (60 * 8)            //8 minutes
+#define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                    //80 seconds
+#define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                (60 * 30)               //30 minutes
 static void SetRtcWakeUp(uint32_t second);
 int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
 int32_t GetWalletAmountAfterWakeup(const void *inData, uint32_t inDataLen);
@@ -80,7 +80,7 @@ uint32_t EnterLowPower(void)
     uint32_t sleepSecond, wakeUpSecond, wakeUpCount = 0;
     g_lowPowerState = LOW_POWER_STATE_DEEP_SLEEP;
     printf("enter deep sleep\r\n");
-    sleepSecond = 80;
+    sleepSecond = 10;
     printf("sleepSecond=%d\n", sleepSecond);
     TouchClose();
     UserDelay(10);
@@ -99,6 +99,7 @@ uint32_t EnterLowPower(void)
         Uart0OpenPort();
         wakeUpCount++;
         if (GetRtcCounter() >= wakeUpSecond) {
+            printf("wake up.............\n");
             Gd25FlashOpen();
             Aw32001RefreshState();
             BatteryIntervalHandler();

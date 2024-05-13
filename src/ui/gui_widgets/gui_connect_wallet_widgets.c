@@ -526,9 +526,8 @@ static void GuiCreateSupportedNetworks(uint8_t index)
     printf("g_connectWalletTileView.walletIndex = %d\n", index);
     printf("WALLET_LIST_UNISAT = %d\n", WALLET_LIST_UNISAT);
     if (index == WALLET_LIST_UNISAT) {
-        label = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_tokens"));    
-    }
-    else {
+        label = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_tokens"));
+    } else {
         label = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_networks"));
     }
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);

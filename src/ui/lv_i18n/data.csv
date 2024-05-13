@@ -1,4 +1,4 @@
-,font,ID,en,ru,ko,cn,status,,,
+﻿,font,ID,en,ru,ko,cn,status,,,
 Language,36,language_title,Language,Язык,언어,语言,,,,
 ,24,language_little_title,Language,Язык,언어,语言,,,,
 ,20,language_desc,Select your language,Выберите язык,언어 선택,选择你的语言,,,,
@@ -776,3 +776,5 @@ Wallet Profile,20,wallet_profile_mid_btn,Wallet Profile,Профиль коше�
 ,20,connect_bw_multisig_link,https://keyst.one/t/3rd/Multisig/bw,https://keyst.one/t/3rd/Multisig/bw,https://keyst.one/t/3rd/Multisig/bw,https://keyst.one/t/3rd/Multisig/bw,,,,
 ,28,beta_version_notice_title,Beta Version,Тестовая версия,베타 버전,测试版本,,,,
 ,20,beta_version_notice_desc,"The current firmware is a beta version and may contain unknown bugs or risks. It is intended only for testing purposes.","Текущая прошивка является бета-версией и может содержать неизвестные ошибки или риски. Она предназначена только для тестирования.","현재 펌웨어는 베타 버전이며 알려지지 않은 버그 또는 위험을 포함할 수 있습니다. 테스트 목적으로만 사용되어야 합니다.","当前的固件是一个测试版本,可能包含未知的错误或风险.仅供测试目的使用",,,,
+,20,connect_unisat_link,"https://keyst.one/t/3rd/unisat","https://keyst.one/t/3rd/unisat","https://keyst.one/t/3rd/unisat","https://keyst.one/t/3rd/unisat",,,,
+,20,connect_unisat_title,"UniSat","UniSat","UniSat","UniSat",,,,

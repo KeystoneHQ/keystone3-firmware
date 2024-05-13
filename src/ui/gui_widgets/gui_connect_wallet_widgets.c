@@ -516,14 +516,21 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
 }
 
 #ifndef BTC_ONLY
-static void GuiCreateSupportedNetworks()
+static void GuiCreateSupportedNetworks(uint8_t index)
 {
     if (g_coinCont != NULL && g_manageImg != NULL) {
         return;
     }
     lv_obj_clean(g_bottomCont);
-
-    lv_obj_t *label = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_networks"));
+    lv_obj_t *label;
+    printf("g_connectWalletTileView.walletIndex = %d\n", index);
+    printf("WALLET_LIST_UNISAT = %d\n", WALLET_LIST_UNISAT);
+    if (index == WALLET_LIST_UNISAT) {
+        label = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_tokens"));    
+    }
+    else {
+        label = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_networks"));
+    }
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
     lv_obj_add_event_cb(g_bottomCont, JumpSelectCoinPageHandler, LV_EVENT_CLICKED, NULL);
     g_coinCont = GuiCreateContainerWithParent(g_bottomCont, 280, 30);
@@ -565,7 +572,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_color(g_bottomCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(g_bottomCont, LV_OPA_0, LV_STATE_DEFAULT | LV_PART_MAIN);
 #ifndef BTC_ONLY
-    GuiCreateSupportedNetworks();
+    // GuiCreateSupportedNetworks();
 #else
     if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         lv_obj_t *button = GuiCreateImgLabelAdaptButton(parent, _("multisig_connect_wallet_notice"), &imgTwoSmallKey, UnHandler, NULL);
@@ -797,7 +804,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     GenerateUR func = NULL;
     SetWallet(g_pageWidget->navBarWidget, index, NULL);
 #ifndef BTC_ONLY
-    GuiCreateSupportedNetworks();
+    GuiCreateSupportedNetworks(index);
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
 #endif

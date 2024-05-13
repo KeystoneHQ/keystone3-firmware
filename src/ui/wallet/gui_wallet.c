@@ -560,7 +560,7 @@ UREncodeResult *GuiGetBackpackData(void)
     count++;
 
     // SOLBip44
-    for (uint8_t i = XPUB_TYPE_SOL_BIP44_0; i <= XPUB_TYPE_SOL_BIP44_9; i++,count++) {
+    for (uint8_t i = XPUB_TYPE_SOL_BIP44_0; i <= XPUB_TYPE_SOL_BIP44_9; i++, count++) {
         char *path = SRAM_MALLOC(BUFFER_SIZE_32);
         snprintf_s(path, BUFFER_SIZE_32, "m/44'/501'/%d'", i - XPUB_TYPE_SOL_BIP44_0);
         keys[count].path = path;
@@ -568,7 +568,7 @@ UREncodeResult *GuiGetBackpackData(void)
     }
 
     // SOLBip44Change
-    for (uint8_t i = XPUB_TYPE_SOL_BIP44_CHANGE_0; i <= XPUB_TYPE_SOL_BIP44_CHANGE_9; i++,count++) {
+    for (uint8_t i = XPUB_TYPE_SOL_BIP44_CHANGE_0; i <= XPUB_TYPE_SOL_BIP44_CHANGE_9; i++, count++) {
         char *path = SRAM_MALLOC(sizeof(char) * 32);
         snprintf_s(path, BUFFER_SIZE_32, "m/44'/501'/%d'/0'", i - XPUB_TYPE_SOL_BIP44_CHANGE_0);
         keys[count].path = path;
@@ -576,7 +576,7 @@ UREncodeResult *GuiGetBackpackData(void)
     }
 
     // ETH - Bip44Standard + LedgerLive
-    for (uint8_t i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++,count++) {
+    for (uint8_t i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++, count++) {
         char *path = SRAM_MALLOC(sizeof(char) * 32);
         snprintf_s(path, BUFFER_SIZE_32, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
         keys[count].path = path;

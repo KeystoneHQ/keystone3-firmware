@@ -177,3 +177,52 @@ fn generate_eth_ledger_live_key(
         note,
     ))
 }
+
+
+
+#[cfg(test)]
+mod tests {
+    extern crate std;
+
+    use crate::backpack::generate_crypto_multi_accounts;
+    use alloc::vec::Vec;
+    use core::str::FromStr;
+
+    use third_party::hex;
+    use third_party::hex::FromHex;
+    use third_party::bitcoin::bip32::{DerivationPath, Xpub};
+    use crate::ExtendedPublicKey;
+
+    #[test]
+    fn test_generate_crypto_multi_accounts() {
+        let mfp = "73C5DA0A";
+        let mfp = Vec::from_hex(mfp).unwrap();
+        let mfp: [u8; 4] = mfp.try_into().unwrap();
+
+        let sol_pub_1 = "e79ecfa6a398b265da28a2fdad84cf1064a8e2c29300eeb8d7fb9f6977029742";
+        let sol_pub_2 = "add0e011624cc6b3fded0c0bc6591b8338ff723a8829e353469df4f27342a831";
+        let eth_bip44_standard_xpub = "xpub6DCoCpSuQZB2jawqnGMEPS63ePKWkwWPH4TU45Q7LPXWuNd8TMtVxRrgjtEshuqpK3mdhaWHPFsBngh5GFZaM6si3yZdUsT8ddYM3PwnATt";
+        let eth_ledger_live_xpub_1 = "xpub6DCoCpSuQZB2k9PnGSMK9tinTK8kx3hcv7F4BWwhs5N2wnwGiLg17r9J7j2JcYP9gkip3sC87J1F99YxeBHGuFMg6ejA8qQEKSuzzaKvqBR";
+
+        let sol_pub_1_path = "m/44'/501'/0'";
+        let sol_pub_2_path = "m/44'/501'/1'";
+        let eth_bip44_standard_xpub_path = "m/44'/60'/0'";
+        let eth_ledger_live_xpub_1_path = "m/44'/60'/1'";
+
+        let account = generate_crypto_multi_accounts(
+            mfp,
+            vec![
+                ExtendedPublicKey::new(DerivationPath::from_str(&sol_pub_1_path).unwrap(),  hex::decode(&sol_pub_1).unwrap()),
+                ExtendedPublicKey::new(DerivationPath::from_str(&sol_pub_2_path).unwrap(),  hex::decode(&sol_pub_2).unwrap()),
+                ExtendedPublicKey::new(DerivationPath::from_str(&eth_bip44_standard_xpub_path).unwrap(),  Xpub::from_str(&eth_bip44_standard_xpub).unwrap().encode().to_vec()),
+                ExtendedPublicKey::new(DerivationPath::from_str(&eth_ledger_live_xpub_1_path).unwrap(),  Xpub::from_str(&eth_ledger_live_xpub_1).unwrap().encode().to_vec())
+            ]
+        )
+        .unwrap();
+        let cbor: Vec<u8> = account.try_into().unwrap();
+
+        assert_eq!("a2011a73c5da0a0285d9012fa402f4035820e79ecfa6a398b265da28a2fdad84cf1064a8e2c29300eeb8d7fb9f697702974206d90130a20186182cf51901f5f500f5021a73c5da0a09684b657973746f6e65d9012fa402f4035820add0e011624cc6b3fded0c0bc6591b8338ff723a8829e353469df4f27342a83106d90130a20186182cf51901f5f501f5021a73c5da0a09684b657973746f6e65d9012fa702f403582102eae4b876a8696134b868f88cc2f51f715f2dbedb7446b8e6edf3d4541c4eb67b045820d882718b7a42806803eeb17f7483f20620611adb88fc943c898dc5aba94c281906d90130a30186182cf5183cf500f5021a73c5da0a0303081ad32e450809684b657973746f6e650a706163636f756e742e7374616e64617264d9012fa602f40358210237b0bb7a8288d38ed49a524b5dc98cff3eb5ca824c9f9dc0dfdb3d9cd600f29906d90130a3018a182cf5183cf500f500f400f4021a73c5da0a0303081ae438961409684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa602f4035821038ccc8186e5933e845afd096cc6d3f2fdb25fbe4db4864b944619afa8e4e8bd5e06d90130a3018a182cf5183cf501f500f400f4021a73c5da0a0303081a7697b33909684b657973746f6e650a736163636f756e742e6c65646765725f6c697665",
+                   hex::encode(cbor).to_lowercase()
+        );
+    }
+}

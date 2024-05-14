@@ -316,7 +316,6 @@ void GuiFirmwareUpdateSha256Percent(uint8_t percent)
 
 void GuiFirmwareVerifyPercent(uint8_t percent)
 {
-    printf("percent = %d\n", percent);
     char version[SOFTWARE_VERSION_MAX_LEN] = {0};
     if (percent == 100) {
         GetOtaBinVersion(version, sizeof(version));
@@ -825,6 +824,7 @@ static void GuiFirmwareStartVerifyHandler(lv_event_t *e)
 static void GuiCreateSdCardVerifyBinWindowHandler(lv_event_t *e)
 {
     if (!SdCardInsert()) {
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
         return;
     }
     GuiCreateSdCardVerifyBinWindow();

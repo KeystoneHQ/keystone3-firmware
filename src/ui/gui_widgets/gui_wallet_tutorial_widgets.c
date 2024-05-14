@@ -321,7 +321,7 @@ void GuiWalletTutorialInit(WALLET_LIST_INDEX_ENUM tutorialIndex)
         lv_obj_set_width(label, 320);
         lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
 
-        img = GuiCreateImg(cont, &imgQrcode36px);
+        img = GuiCreateImg(cont, &imgQrcodeTurquoise);
         lv_obj_align(img, LV_ALIGN_DEFAULT, 348, 33);
         lastTarget = cont;
 

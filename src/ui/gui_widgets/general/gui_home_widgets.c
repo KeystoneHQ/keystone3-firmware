@@ -711,6 +711,12 @@ void GuiHomeAreaInit(void)
     lv_obj_add_event_cb(img, ScanQrCodeHandler, LV_EVENT_CLICKED, &g_scanView);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     g_scanImg = img;
+    uint8_t publickey[65] = {0};
+    GetUpdatePubKey(publickey);
+    char buff[258];
+    snprintf_s(buff, sizeof(buff), "public key: %s", publickey);
+    lv_obj_t *label = GuiCreateNoticeLabel(g_homeViewCont, buff);
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 }
 
 void GuiHomeDisActive(void)

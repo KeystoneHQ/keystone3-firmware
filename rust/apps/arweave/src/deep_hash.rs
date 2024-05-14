@@ -50,3 +50,50 @@ pub fn deep_hash(deep_hash_item: DeepHashItem) -> Result<[u8; 48], ArweaveError>
     };
     Ok(hash)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::transaction::DeepHashItem;
+    use alloc::vec;
+
+    #[test]
+    fn test_concat_u8_48() {
+        let left = [1u8; 48];
+        let right = [2u8; 48];
+        let result = concat_u8_48(left, right).unwrap();
+        assert_eq!(&result[..48], &left);
+        assert_eq!(&result[48..], &right);
+    }
+
+    #[test]
+    fn test_hash_sha384() {
+        let message = b"test message";
+        let result = hash_sha384(message).unwrap();
+        assert_eq!(result.len(), 48);
+    }
+
+    #[test]
+    fn test_hash_all_sha384() {
+        let messages = vec![b"message1".as_ref(), b"message2".as_ref()];
+        let result = hash_all_sha384(messages).unwrap();
+        assert_eq!(result.len(), 48);
+    }
+
+    #[test]
+    fn test_deep_hash_blob() {
+        let blob = b"test blob";
+        let item = DeepHashItem::Blob(blob.to_vec());
+        let result = deep_hash(item).unwrap();
+        assert_eq!(result.len(), 48);
+    }
+
+    #[test]
+    fn test_deep_hash_list() {
+        let blob1 = DeepHashItem::Blob(b"blob1".to_vec());
+        let blob2 = DeepHashItem::Blob(b"blob2".to_vec());
+        let list = DeepHashItem::List(vec![blob1, blob2]);
+        let result = deep_hash(list).unwrap();
+        assert_eq!(result.len(), 48);
+    }
+}

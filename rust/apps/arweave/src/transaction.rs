@@ -227,3 +227,61 @@ impl DeepHashItem {
         Self::List(children)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use third_party::serde_json;
+
+    fn base64_encode(data: &[u8]) -> String {
+        base64::encode_config(data, base64::URL_SAFE_NO_PAD)
+    }
+
+    #[test]
+    fn test_transaction_serialization() {
+        let transaction = Transaction {
+            format: 2,
+            id: Base64(vec![1, 2, 3]),
+            owner: Base64(vec![4, 5, 6]),
+            reward: 5000,
+            target: Base64(vec![7, 8, 9]),
+            last_tx: Base64(vec![10, 11, 12]),
+            quantity: 1000,
+            tags: vec![Tag {
+                name: Base64(vec![13, 14, 15]),
+                value: Base64(vec![16, 17, 18]),
+            }],
+            data: Base64(vec![19, 20, 21]),
+            data_size: 3,
+            data_root: Base64(vec![22, 23, 24]),
+            signature: Base64(vec![25, 26, 27]),
+            signature_data: vec![28, 29, 30],
+        };
+
+        let json = serde_json::to_string(&transaction).unwrap();
+        let expected_json = format!(
+            r#"{{"format":2,"owner":"{}","reward":"5000","target":"{}","last_tx":"{}","quantity":"1000","tags":[{{"name":"{}","value":"{}"}}],"data_size":"3","data_root":"{}"}}"#,
+            base64_encode(&[4, 5, 6]),
+            base64_encode(&[7, 8, 9]),
+            base64_encode(&[10, 11, 12]),
+            base64_encode(&[13, 14, 15]),
+            base64_encode(&[16, 17, 18]),
+            base64_encode(&[22, 23, 24])
+        );
+
+        assert_eq!(json, expected_json);
+    }
+
+    #[test]
+    fn test_base64_from_str() {
+        let data = "SGVsbG8gd29ybGQ";
+        let base64 = Base64::from_str(data).unwrap();
+        assert_eq!(base64, Base64("Hello world".as_bytes().to_vec()));
+    }
+
+    #[test]
+    fn test_base64_to_string() {
+        let base64 = Base64("Hello world".as_bytes().to_vec());
+        assert_eq!(base64.to_string(), "SGVsbG8gd29ybGQ");
+    }
+}

@@ -310,13 +310,12 @@ bool CheckOtaBinVersion(void)
         }
 
         ret = CheckVersion(&otaFileInfo, SD_CARD_OTA_BIN_PATH, headSize, g_otaBinVersion);
-        printf("g_otaBinVersion = %s\n", g_otaBinVersion);
+        uint8_t percent = 100;
+        GuiApiEmitSignal(SIG_SETTING_VERIFY_OTA_PERCENT, &percent, sizeof(percent));
         if (ret != SUCCESS_CODE) {
             printf("file %s version err\n", SD_CARD_OTA_BIN_PATH);
             break;
         }
-        uint8_t percent = 100;
-        GuiApiEmitSignal(SIG_SETTING_VERIFY_OTA_PERCENT, &percent, sizeof(percent));
     } while (0);
     if (ret == SUCCESS_CODE) {
         return true;
@@ -373,16 +372,16 @@ static int32_t CheckVersion(const OtaFileInfo_t *info, const char *filePath, uin
     uint32_t nowVersionNumber = (nowMajor * epoch * epoch)  + (nowMinor * epoch) + nowBuild;
     uint32_t fileVersionNumber = (fileMajor * epoch * epoch)  + (fileMinor * epoch) + fileBuild;
 
+    SRAM_FREE(g_dataUnit);
+    SRAM_FREE(g_fileUnit);
+    if (fileVersionNumber < nowVersionNumber) {
+        return ERR_UPDATE_CHECK_VERSION_FAILED;
+    }
     if (fileMajor >= 10) {
         fileMajor = fileMajor % 10;
         snprintf_s(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d-BTC", fileMajor, fileMinor, fileBuild);
     } else {
         snprintf_s(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", fileMajor, fileMinor, fileBuild);
-    }
-    SRAM_FREE(g_dataUnit);
-    SRAM_FREE(g_fileUnit);
-    if (fileVersionNumber < nowVersionNumber) {
-        return ERR_UPDATE_CHECK_VERSION_FAILED;
     }
     return SUCCESS_CODE;
 }

@@ -78,6 +78,15 @@ static void GuiWelcomeWidget(lv_obj_t *parent)
     lv_obj_set_style_radius(btn, LV_RADIUS_CIRCLE, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -96);
     lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, NULL);
+    uint8_t publickey[65] = {0};
+    GetUpdatePubKey(publickey);
+    char buff[258];
+    for (int i = 0; i < 64; i++) {
+        snprintf_s(buff + i * 2, sizeof(buff) - i * 2, "%02x", publickey[i]);
+    }
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, buff);
+    label = GuiCreateNoticeLabel(parent, buff);
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 }
 
 static void SelectLanguageHandler(lv_event_t *e)

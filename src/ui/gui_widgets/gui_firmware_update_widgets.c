@@ -318,8 +318,11 @@ void GuiFirmwareVerifyPercent(uint8_t percent)
 {
     char version[SOFTWARE_VERSION_MAX_LEN] = {0};
     if (percent == 100) {
-        GetOtaBinVersion(version, sizeof(version));
-        GuiCreateSdCardUpdateHintbox(version, false);
+        if (GetOtaBinVersion(version, sizeof(version))) {
+            GuiCreateSdCardUpdateHintbox(version, false);
+        } else {
+            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_NO_UPGRADABLE_FIRMWARE, &g_noticeWindow, NULL);
+        }
     } else if (percent == 0xFF) {
         g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("firmware_security_risk_title"), _("firmware_security_risk_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);

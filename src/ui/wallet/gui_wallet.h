@@ -24,6 +24,7 @@ UREncodeResult *GuiGetOkxWalletData(void);
 UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin);
 UREncodeResult *GuiGetPetraData(void);
 UREncodeResult *GuiGetSolflareData(void);
+UREncodeResult *GuiGetBackpackData(void);
 UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index);
 UREncodeResult *GuiGetADADataByIndex(uint16_t index);
 UREncodeResult *GuiGetImTokenData(void);

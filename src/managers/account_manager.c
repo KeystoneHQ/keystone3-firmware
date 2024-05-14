@@ -117,7 +117,7 @@ int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t e
     return ret;
 }
 
-int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const uint8_t *entropy, uint8_t entropyLen, const char *password, uint16_t id, uint8_t ie)
+int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const uint8_t *entropy, uint8_t entropyLen, const char *password, uint16_t id, bool eb, uint8_t ie)
 {
     ASSERT(accountIndex <= 2);
     DestroyAccount(accountIndex);
@@ -127,7 +127,8 @@ int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const u
     int32_t ret = SaveNewSlip39Entropy(accountIndex, ems, entropy, entropyLen, password, id, ie);
     CHECK_ERRCODE_RETURN_INT(ret);
     memcpy_s(g_currentAccountInfo.slip39Id, sizeof(g_currentAccountInfo.slip39Id), &id, sizeof(id));
-    memcpy_s(g_currentAccountInfo.slip39Ie, sizeof(g_currentAccountInfo.slip39Ie), &ie, sizeof(ie));
+    uint8_t ieEb = ie | (eb << 4);
+    memcpy_s(g_currentAccountInfo.slip39IeEb, sizeof(g_currentAccountInfo.slip39IeEb), &ieEb, sizeof(ie));
     ret = SaveCurrentAccountInfo();
     CHECK_ERRCODE_RETURN_INT(ret);
     ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
@@ -306,9 +307,18 @@ uint16_t GetSlip39Id(void)
 /// @return iteration exponent.
 uint8_t GetSlip39Ie(void)
 {
-    uint8_t ie;
-    memcpy(&ie, g_currentAccountInfo.slip39Ie, 1);
-    return ie;
+    uint8_t ieEb;
+    memcpy(&ieEb, g_currentAccountInfo.slip39IeEb, 1);
+    return ieEb & 0x0F;
+}
+
+/// @brief Get slip39 extendable backup flag of the current account.
+/// @return extendable backup flag.
+uint8_t GetSlip39Eb(void)
+{
+    uint8_t ieEb;
+    memcpy(&ieEb, g_currentAccountInfo.slip39IeEb, 1);
+    return ieEb >> 4;
 }
 
 /// @brief Get a boolean representing whether passphrase exists for the current account.

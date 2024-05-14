@@ -81,7 +81,7 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
     do {
         int ret;
         if (mkb->intputType == MNEMONIC_INPUT_SETTING_VIEW) {
-            ret = Slip39OneSliceCheck(mnemonic, mkb->wordCnt, GetSlip39Id(), false, GetSlip39Ie(), &threShold);
+            ret = Slip39OneSliceCheck(mnemonic, mkb->wordCnt, GetSlip39Id(), GetSlip39Eb(), GetSlip39Ie(), &threShold);
         } else {
             ret = Slip39CheckFirstWordList(mnemonic, mkb->wordCnt, &threShold);
         }

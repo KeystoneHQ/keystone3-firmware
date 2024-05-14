@@ -22,6 +22,7 @@ static char *g_mnemonicCache = NULL;
 static char *g_slip39MnemonicCache[SLIP39_MAX_MEMBER];
 static uint8_t g_diceRollHashCache[32] = {0};
 static uint16_t g_identifier;
+static bool g_extendable;
 static uint16_t g_iteration;
 
 void SecretCacheSetChecksum(uint8_t *checksum)
@@ -84,6 +85,16 @@ void SecretCacheSetIteration(uint8_t ie)
 uint8_t SecretCacheGetIteration(void)
 {
     return g_iteration;
+}
+
+void SecretCacheSetExtendable(bool flag)
+{
+    g_extendable = flag;
+}
+
+bool SecretCacheGetExtendable(void)
+{
+    return g_extendable;
 }
 
 void SecretCacheSetIdentifier(uint16_t id)
@@ -170,6 +181,7 @@ void ClearSecretCache(void)
 {
     uint32_t len;
     g_identifier = 0;
+    g_extendable = false;
     g_iteration = 0;
 
     if (g_passwordCache != NULL) {

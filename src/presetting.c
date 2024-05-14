@@ -144,7 +144,7 @@ int32_t GetUpdatePubKey(uint8_t *pubKey)
             memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
             memset_s(pubKey, UPDATE_PUB_KEY_LEN + 1, 0, UPDATE_PUB_KEY_LEN + 1);
             pubKey[0] = 4;
-            memcpy_s(pubKey + 1, UPDATE_PUB_KEY_LEN, g_defaultPubKey, sizeof(g_defaultPubKey));
+            memcpy(pubKey + 1, g_defaultPubKey, sizeof(g_defaultPubKey));
             return ERR_UPDATE_PUB_KEY_NOT_EXIST;
         }
     }

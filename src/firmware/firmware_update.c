@@ -37,7 +37,6 @@ static int32_t CheckVersion(const OtaFileInfo_t *info, const char *filePath, uin
 int32_t GetSoftwareVersionFormData(uint32_t *major, uint32_t *minor, uint32_t *build, const uint8_t *data, uint32_t dataLen);
 #if (SIGNATURE_ENABLE == 1)
 static void GetSignatureValue(const cJSON *obj, char *output, uint32_t maxLength);
-void GetUpdatePubKey(uint8_t *pubKey);
 #endif
 
 bool CheckApp(void)

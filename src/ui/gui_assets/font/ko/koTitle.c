@@ -1371,6 +1371,7 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
     0x0, 0x0, 0x0, 0xe0, 0x0, 0x0, 0x1, 0xc0
 };
 
+
 /*---------------------
  *  GLYPH DESCRIPTION
  *--------------------*/
@@ -1498,7 +1499,8 @@ static const uint16_t unicode_list_0[] = {
 };
 
 /*Collect the unicode lists and glyph_id offsets*/
-static const lv_font_fmt_txt_cmap_t cmaps[] = {
+static const lv_font_fmt_txt_cmap_t cmaps[] =
+{
     {
         .range_start = 32, .range_length = 54838, .glyph_id_start = 1,
         .unicode_list = unicode_list_0, .glyph_id_ofs_list = NULL, .list_length = 98, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY
@@ -1509,8 +1511,10 @@ static const lv_font_fmt_txt_cmap_t cmaps[] = {
  *    KERNING
  *----------------*/
 
+
 /*Pair left and right glyphs for kerning*/
-static const uint8_t kern_pair_glyph_ids[] = {
+static const uint8_t kern_pair_glyph_ids[] =
+{
     4, 24,
     4, 25,
     4, 26,
@@ -1560,7 +1564,8 @@ static const uint8_t kern_pair_glyph_ids[] = {
 
 /* Kerning between the respective left and right glyphs
  * 4.4 format which needs to scaled with `kern_scale`*/
-static const int8_t kern_pair_values[] = {
+static const int8_t kern_pair_values[] =
+{
     -14, -9, -9, -9, -28, -22, -22, 15,
     -22, -5, -12, -10, -13, -8, -48, -47,
     -26, -14, -10, -10, -14, -10, -14, -74,
@@ -1570,7 +1575,8 @@ static const int8_t kern_pair_values[] = {
 };
 
 /*Collect the kern pair's data in one place*/
-static const lv_font_fmt_txt_kern_pair_t kern_pairs = {
+static const lv_font_fmt_txt_kern_pair_t kern_pairs =
+{
     .glyph_ids = kern_pair_glyph_ids,
     .values = kern_pair_values,
     .pair_cnt = 45,
@@ -1605,6 +1611,8 @@ static lv_font_fmt_txt_dsc_t font_dsc = {
 #endif
 };
 
+
+
 /*-----------------
  *  PUBLIC FONT
  *----------------*/
@@ -1618,7 +1626,7 @@ lv_font_t koTitle = {
     .get_glyph_dsc = lv_font_get_glyph_dsc_fmt_txt,    /*Function pointer to get glyph's data*/
     .get_glyph_bitmap = lv_font_get_bitmap_fmt_txt,    /*Function pointer to get glyph's bitmap*/
     .line_height = 37,          /*The maximum line height required by the font*/
-    .base_line = 0,             /*Baseline measured from the bottom of the line*/
+    .base_line = 7,             /*Baseline measured from the bottom of the line*/
 #if !(LVGL_VERSION_MAJOR == 6 && LVGL_VERSION_MINOR == 0)
     .subpx = LV_FONT_SUBPX_NONE,
 #endif
@@ -1633,4 +1641,7 @@ lv_font_t koTitle = {
     .user_data = NULL,
 };
 
+
+
 #endif /*#if KOTITLE*/
+

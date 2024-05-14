@@ -15,6 +15,8 @@ const LanguageInfo_t g_languageList[] = {
     {LANG_ZH_CN, "zh-CN"},
     {LANG_KO, "ko"},
     {LANG_ES, "es"},
+    {LANG_DE, "de"},
+    {LANG_JA, "ja"},
 };
 
 static uint8_t g_curLangIndex = LANG_EN;

@@ -30,6 +30,8 @@ with open("./data.csv", newline="", encoding='utf-8') as csvfile:
     cn = {}
     ko = {}
     es = {}
+    ge = {}
+    ja = {}
 
     for row in reader:
         id = row['ID']
@@ -38,6 +40,8 @@ with open("./data.csv", newline="", encoding='utf-8') as csvfile:
         cn[id] = row['cn']
         ko[id] = row['ko']
         es[id] = row['es']
+        ge[id] = row['ge']
+        ja[id] = row['ja']
 
 with open("./en.yml", 'w', encoding='utf-8') as f:
     yaml.dump({'en': en}, f, default_flow_style=False)
@@ -57,6 +61,14 @@ compile_command += ' -l ko'
 with open("./es.yml", 'w', encoding='utf-8') as f:
     yaml.dump({'es': es}, f, allow_unicode=True, default_flow_style=False)
 compile_command += ' -l es'
+
+with open("./de.yml", 'w', encoding='utf-8') as f:
+    yaml.dump({'de': de}, f, allow_unicode=True, default_flow_style=False)
+compile_command += ' -l de'
+
+with open("./ja.yml", 'w', encoding='utf-8') as f:
+    yaml.dump({'ja': ja}, f, allow_unicode=True, default_flow_style=False)
+compile_command += ' -l ja'
 
 compile_command += ' -l en'
 

@@ -1371,6 +1371,7 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
     0x0, 0x0, 0x0, 0xe0, 0x0, 0x0, 0x1, 0xc0
 };
 
+
 /*---------------------
  *  GLYPH DESCRIPTION
  *--------------------*/
@@ -1509,6 +1510,7 @@ static const lv_font_fmt_txt_cmap_t cmaps[] = {
  *    KERNING
  *----------------*/
 
+
 /*Pair left and right glyphs for kerning*/
 static const uint8_t kern_pair_glyph_ids[] = {
     4, 24,
@@ -1605,6 +1607,8 @@ static lv_font_fmt_txt_dsc_t font_dsc = {
 #endif
 };
 
+
+
 /*-----------------
  *  PUBLIC FONT
  *----------------*/
@@ -1618,7 +1622,7 @@ lv_font_t koTitle = {
     .get_glyph_dsc = lv_font_get_glyph_dsc_fmt_txt,    /*Function pointer to get glyph's data*/
     .get_glyph_bitmap = lv_font_get_bitmap_fmt_txt,    /*Function pointer to get glyph's bitmap*/
     .line_height = 37,          /*The maximum line height required by the font*/
-    .base_line = 0,             /*Baseline measured from the bottom of the line*/
+    .base_line = 7,             /*Baseline measured from the bottom of the line*/
 #if !(LVGL_VERSION_MAJOR == 6 && LVGL_VERSION_MINOR == 0)
     .subpx = LV_FONT_SUBPX_NONE,
 #endif
@@ -1633,4 +1637,7 @@ lv_font_t koTitle = {
     .user_data = NULL,
 };
 
+
+
 #endif /*#if KOTITLE*/
+

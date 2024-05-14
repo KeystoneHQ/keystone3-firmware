@@ -19,6 +19,7 @@ static AttentionHintboxContext *BuildConfirmationHintboxContext();
 static AttentionHintboxContext *BuildLowPowerHintboxContext();
 static void CloseAttentionHandler(lv_event_t *e);
 static void ConfirmAttentionHandler(lv_event_t *e);
+static uint16_t RecalculateButtonWidth(lv_obj_t *button, uint16_t minButtonWidth);
 
 static AttentionHintboxContext *BuildConfirmationHintboxContext()
 {
@@ -52,6 +53,12 @@ static AttentionHintboxContext *BuildInitializationCompleteHintboxContext()
     context->hintboxHeight = 386;
     context->okBtnText = _("initialization_complete_hintbox_ok");
     return context;
+}
+
+static uint16_t RecalculateButtonWidth(lv_obj_t *button, uint16_t minButtonWidth)
+{
+    uint16_t buttonWidth = lv_obj_get_self_width(lv_obj_get_child(button, 0)) + 24;
+    return buttonWidth > minButtonWidth ? buttonWidth : minButtonWidth;
 }
 
 static void CloseAttentionHandler(lv_event_t *e)
@@ -97,7 +104,7 @@ void GuiCreateAttentionHintbox(uint16_t confirmSign)
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 580);
 
         tempObj = GuiCreateTextBtn(g_attentionCont, context->cancelBtnText);
-        lv_obj_set_size(tempObj, 94, 66);
+        lv_obj_set_size(tempObj, RecalculateButtonWidth(tempObj, 94), 66);
         lv_obj_set_style_radius(tempObj, 24, LV_PART_MAIN);
         lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
         lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
@@ -119,14 +126,17 @@ void GuiCreateAttentionHintbox(uint16_t confirmSign)
     lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 520);
 
     tempObj = GuiCreateTextBtn(g_attentionCont, context->okBtnText);
-    lv_obj_set_size(tempObj, 192, 66);
+    uint16_t contentMaxWidth = 408;
+    uint16_t okButtonWidth = RecalculateButtonWidth(tempObj, 192);
+    lv_obj_set_size(tempObj, okButtonWidth, 66);
     lv_obj_set_style_radius(tempObj, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(tempObj, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_add_event_cb(tempObj, ConfirmAttentionHandler, LV_EVENT_CLICKED, NULL);
 
     tempObj = GuiCreateTextBtn(g_attentionCont, context->cancelBtnText);
-    lv_obj_set_size(tempObj, 192, 66);
+    uint16_t cancelBtnWidth = RecalculateButtonWidth(tempObj, contentMaxWidth - okButtonWidth - 24);
+    lv_obj_set_size(tempObj, cancelBtnWidth, 66);
     lv_obj_set_style_radius(tempObj, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
     lv_obj_align(tempObj, LV_ALIGN_BOTTOM_LEFT, 36, -24);
@@ -149,7 +159,7 @@ void GuiCreateInitializatioCompleteHintbox()
     lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
 
     tempObj = GuiCreateTextBtn(g_attentionCont, context->okBtnText);
-    lv_obj_set_size(tempObj, 136, 66);
+    lv_obj_set_size(tempObj, RecalculateButtonWidth(tempObj, 136), 66);
     lv_obj_set_style_radius(tempObj, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
     lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, -36, -24);

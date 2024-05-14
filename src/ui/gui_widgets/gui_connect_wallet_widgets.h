@@ -3,6 +3,8 @@
 
 #include "gui_views.h"
 #include "librust_c.h"
+#include "gui_attention_hintbox.h"
+#include "gui_ar.h"
 
 typedef enum {
 #ifndef BTC_ONLY
@@ -24,6 +26,7 @@ typedef enum {
     WALLET_LIST_YEARN_FINANCE,
     WALLET_LIST_SUSHISWAP,
     WALLET_LIST_KEPLR,
+    WALLET_LIST_ARCONNECT,
     WALLET_LIST_FEWCHA,
     WALLET_LIST_PETRA,
     WALLET_LIST_XRP_TOOLKIT,
@@ -94,6 +97,10 @@ void GuiConnectWalletHandleURUpdate(char *data, uint16_t len);
 uint8_t GuiConnectWalletGetWalletIndex(void);
 #ifndef BTC_ONLY
 SOLAccountType GetSolflareAccountType(void);
+void GuiPrepareArConnectWalletView(void);
+void GuiSetupArConnectWallet(void);
+void GuiConnectWalletPasswordErrorCount(void *param);
+void GuiConnectShowRsaSetupasswordHintbox(void);
 #endif
 #endif /* _GUI_CONNECT_WALLET_WIDGETS_H */
 

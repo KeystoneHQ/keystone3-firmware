@@ -2,6 +2,7 @@
 
 extern crate alloc;
 pub mod aptos;
+pub mod arconnect;
 mod imtoken;
 pub mod keplr;
 pub mod okx;

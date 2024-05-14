@@ -3,10 +3,13 @@
 #include "lvgl.h"
 
 static lv_obj_t *g_pendingHintBox = NULL;
+static bool g_hasSubtitle = false;
+static lv_obj_t *g_subTitleLabel = NULL;
 
 void GuiPendingHintBoxOpen(const char *title, const char *subtitle)
 {
-    uint16_t h = 278;
+    g_hasSubtitle = subtitle != NULL;
+    uint16_t h = g_hasSubtitle ? 326 : 278;
     uint16_t animHeight = 76;
     uint16_t w = 480;
     lv_obj_t *bgCont = GuiCreateContainer(w, 800);
@@ -14,6 +17,7 @@ void GuiPendingHintBoxOpen(const char *title, const char *subtitle)
     lv_obj_align(bgCont, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_set_style_border_width(bgCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_side(bgCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_add_flag(bgCont, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_ADV_HITTEST);
 
     lv_obj_t *upCont = GuiCreateContainerWithParent(bgCont, w, 800 - h);
     lv_obj_set_style_bg_opa(upCont, 0, 0);
@@ -51,13 +55,22 @@ void GuiPendingHintBoxOpen(const char *title, const char *subtitle)
 
     if (title) {
         lv_obj_t *label = GuiCreateTextLabel(bgCont, title);
-        lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -64);
+        lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, g_hasSubtitle ? -112 : -64);
     }
 
-    // label = GuiCreateNoticeLabel(bgCont, subtitle);
-    // lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -76);
+    if (g_hasSubtitle) {
+        g_subTitleLabel = GuiCreateNoticeLabel(bgCont, subtitle);
+        lv_obj_align(g_subTitleLabel, LV_ALIGN_BOTTOM_MID, 0, -64);
+    }
 
     g_pendingHintBox = bgCont;
+}
+
+void GuiUpdatePendingHintBoxSubtitle(const char *subtitle)
+{
+    if (g_hasSubtitle && g_subTitleLabel != NULL) {
+        lv_label_set_text(g_subTitleLabel, subtitle);
+    }
 }
 
 void GuiPendingHintBoxRemove()

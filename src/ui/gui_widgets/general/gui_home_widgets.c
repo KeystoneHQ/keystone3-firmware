@@ -51,6 +51,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_APT, false, "APT", true},
     {HOME_WALLET_CARD_SUI, false, "SUI", true},
     {HOME_WALLET_CARD_DASH, false, "DASH", true},
+    {HOME_WALLET_CARD_ARWEAVE, false, "AR", true},
     {HOME_WALLET_CARD_COSMOS, false, "Cosmos Eco", true},
     {HOME_WALLET_CARD_TIA, false, "TIA", true},
     {HOME_WALLET_CARD_DYM, false, "DYM", true},
@@ -86,6 +87,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_TGD, false, "TGD", true},
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
+static KeyboardWidget_t *g_keyboardWidget = NULL;
 
 static void GuiInitWalletState()
 {
@@ -174,6 +176,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "DASH",
         .chain = "Dash",
         .icon = &coinDash,
+    },
+    {
+        .index = HOME_WALLET_CARD_ARWEAVE,
+        .coin = "AR",
+        .chain = "Arweave",
+        .icon = &coinAr,
     },
     {
         .index = HOME_WALLET_CARD_COSMOS,
@@ -378,6 +386,15 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
 static void CoinDealHandler(lv_event_t *e);
 static void AddFlagCountDownTimerHandler(lv_timer_t *timer);
 void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count);
+static void CloseArHintbox(void);
+
+static void CloseArHintbox(void)
+{
+    GuiCloseAttentionHintbox();
+    if (g_keyboardWidget != NULL) {
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+    }
+}
 
 static void UpdateManageWalletState(bool needUpdate)
 {
@@ -387,6 +404,9 @@ static void UpdateManageWalletState(bool needUpdate)
     int total = 0;
     for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
         if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS) {
+            continue;
+        }
+        if (GetIsTempAccount() && g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE) {
             continue;
         }
 
@@ -435,6 +455,7 @@ static void UpdateHomeConnectWalletCard(void)
 
     for (int i = 0, j = 0; i < HOME_WALLET_CARD_BUTT; i++) {
         if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS ||
+                g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE && GetIsTempAccount() ||
                 g_walletState[i].state == false ||
                 g_walletState[i].enable == false) {
             j++;
@@ -471,6 +492,14 @@ static void UpdateHomeConnectWalletCard(void)
     }
 }
 
+void GuiShowRsaSetupasswordHintbox(void)
+{
+    g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
+    SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+    static uint16_t sig = SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD;
+    SetKeyboardWidgetSig(g_keyboardWidget, &sig);
+}
+
 static void CoinDealHandler(lv_event_t *e)
 {
     HOME_WALLET_CARD_ENUM coin;
@@ -490,10 +519,52 @@ static void CoinDealHandler(lv_event_t *e)
     case HOME_WALLET_CARD_ADA:
         GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
         break;
+    case HOME_WALLET_CARD_ARWEAVE: {
+#ifdef COMPILE_SIMULATOR
+        GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);
+        break;
+#endif
+        bool shouldGenerateArweaveXPub = IsArweaveSetupComplete();
+        if (!shouldGenerateArweaveXPub) {
+            GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);
+            break;
+        }
+        GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
+        break;
+    }
     default:
         GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
         break;
     }
+}
+
+void GuiRemoveKeyboardWidget(void)
+{
+    if (g_keyboardWidget != NULL) {
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+    }
+    GuiModelRsaGenerateKeyPair();
+}
+
+void RecalculateManageWalletState(void)
+{
+    WalletState_t walletState[HOME_WALLET_CARD_BUTT];
+    memcpy(walletState, g_walletState, sizeof(g_walletState));
+    AccountPublicHomeCoinGet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
+    AccountPublicHomeCoinSet(walletState, NUMBER_OF_ARRAYS(walletState));
+}
+
+void GuiShowRsaInitializatioCompleteHintbox(void)
+{
+    GuiPendingHintBoxRemove();
+    ClearSecretCache();
+    GuiCreateInitializatioCompleteHintbox();
+}
+
+void GuiHomePasswordErrorCount(void *param)
+{
+    PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
+    GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
 }
 
 static void UpdateCosmosEnable(bool en)
@@ -592,6 +663,9 @@ static void OpenManageAssetsHandler(lv_event_t *e)
     lv_obj_t *checkbox;
     int heightIndex = 0;
     for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+        if (GetIsTempAccount() && g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE) {
+            continue;
+        }
         coinLabel = GuiCreateTextLabel(checkBoxCont, g_coinCardArray[i].coin);
         chainLabel = GuiCreateNoticeLabel(checkBoxCont, g_coinCardArray[i].chain);
         icon = GuiCreateImg(checkBoxCont, g_coinCardArray[i].icon);
@@ -767,6 +841,7 @@ void GuiHomeRefresh(void)
         CreateBetaNotice();
         isFirstBeta = false;
     }
+    CloseArHintbox();
 }
 
 const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)

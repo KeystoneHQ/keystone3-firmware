@@ -37,7 +37,7 @@ lv_obj_t* CreateQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)
     return qrcode;
 }
 
-void GuiAnimatingQRCodeInit(lv_obj_t* parent, GenerateUR dataFunc, bool showPending)
+void GuiAnimatingQRCodeInitWithLoadingParams(lv_obj_t* parent, GenerateUR dataFunc, bool showPending, char *title, char *subtitle)
 {
     GuiFullscreenModeInit(SCREEN_WIDTH, SCREEN_HEIGHT, QR_BG_COLOR);
     GuiFullscreenModeCreateObject(CreateQRCode, QR_SIZE_FULL, QR_SIZE_FULL);
@@ -53,11 +53,16 @@ void GuiAnimatingQRCodeInit(lv_obj_t* parent, GenerateUR dataFunc, bool showPend
 
     g_showPending = showPending;
     if (showPending) {
-        GuiPendingHintBoxOpen(_("Pending"), _("generating_qr_codes"));
+        GuiPendingHintBoxOpen(title, subtitle);
     }
 
     GuiModelURGenerateQRCode(dataFunc);
 
+}
+
+void GuiAnimatingQRCodeInit(lv_obj_t* parent, GenerateUR dataFunc, bool showPending)
+{
+    GuiAnimatingQRCodeInitWithLoadingParams(parent, dataFunc, showPending, _("Pending"), _("generating_qr_codes"));
 }
 
 void GuiAnimatingQRCodeInitWithCustomSize(lv_obj_t* parent, GenerateUR dataFunc, bool showPending, uint16_t w, uint16_t h, char *loadingTitle)

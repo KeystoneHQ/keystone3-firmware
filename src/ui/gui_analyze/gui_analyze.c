@@ -188,6 +188,28 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreeXrpMemory,
     },
+    {
+        REMAPVIEW_AR,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ar_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,144],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetArweaveValue\",\"pos\":[24,50],\"text_color\":16090890,\"font\":\"openSansEnLittleTitle\"},{\"type\":\"label\",\"text\":\"Fee\",\"pos\":[24,98],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetArweaveFee\",\"pos\":[73,98],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,244],\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetArweaveFromAddress\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,130],\"text_opa\":144,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetArweaveToAddress\",\"text_width\":360,\"pos\":[0,8],\"align_to\":-2,\"align\":13,\"font\":\"openSansEnIllustrate\"}]}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,358],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"##1\",\"font\":\"openSansEnIllustrate\",\"text_color\":16090890,\"pos\":[24,16]},{\"type\":\"label\",\"text\":\"Value\",\"font\":\"openSansEnIllustrate\",\"text_opa\":144,\"pos\":[24,62]},{\"type\":\"label\",\"text_func\":\"GetArweaveValue\",\"pos\":[92,62],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Fee\",\"font\":\"openSansEnIllustrate\",\"text_opa\":144,\"pos\":[24,100]},{\"type\":\"label\",\"text_func\":\"GetArweaveFee\",\"pos\":[73,100],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"From\",\"font\":\"openSansEnIllustrate\",\"text_opa\":144,\"pos\":[24,138]},{\"type\":\"label\",\"text_func\":\"GetArweaveFromAddress\",\"pos\":[24,176],\"text_width\":360,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,244],\"text_opa\":144,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetArweaveToAddress\",\"pos\":[24,282],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"custom_container\",\"pos\":[0,16],\"radius\":24,\"custom_show_func\":\"GuiShowArweaveTxDetail\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_ar.json",
+#endif
+        GuiGetArData,
+        NULL,
+        FreeArMemory,
+    },
+    {
+        REMAPVIEW_AR_MESSAGE,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ar_message_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"size\":[408,130],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Address\",\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetArweaveMessageAddress\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,146],\"size\":[408,766],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Message(UTF-8)\",\"font\":\"openSansEnIllustrate\",\"text_color\":16090890,\"pos\":[24,16]},{\"type\":\"label\",\"text_func\":\"GetArweaveMessageText\",\"text_len_func\":\"GetArweaveMessageLength\",\"pos\":[24,62],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,928],\"size\":[408,900],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Message\",\"font\":\"openSansEnIllustrate\",\"text_color\":16090890,\"pos\":[24,16]},{\"type\":\"label\",\"text_func\":\"GetArweaveRawMessage\",\"text_len_func\":\"GetArweaveRawMessageLength\",\"pos\":[24,62],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_ar_message.json",
+#endif
+        GuiGetArData,
+        NULL,
+        FreeArMemory,
+    },
 #endif
 };
 
@@ -528,6 +550,16 @@ GetLabelDataLenFunc GuiBtcTextLenFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataLenFunc GuiArTextLenFuncGet(char *type)
+{
+    if (!strcmp(type, "GetArweaveRawMessageLength")) {
+        return GetArweaveRawMessageLength;
+    } else if (!strcmp(type, "GetArweaveMessageLength")) {
+        return GetArweaveMessageLength;
+    }
+    return NULL;
+}
+
 #ifndef BTC_ONLY
 GetTableDataFunc GuiEthTableFuncGet(char *type)
 {
@@ -654,6 +686,28 @@ GetLabelDataFunc GuiXrpTextFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataFunc GuiArTextFuncGet(char *type)
+{
+    if (!strcmp(type, "GetArweaveValue")) {
+        return GetArweaveValue;
+    } else if (!strcmp(type, "GetArweaveFee")) {
+        return GetArweaveFee;
+    } else if (!strcmp(type, "GetArweaveFromAddress")) {
+        return GetArweaveFromAddress;
+    } else if (!strcmp(type, "GetArweaveToAddress")) {
+        return GetArweaveToAddress;
+    } else if (!strcmp(type, "GetArweaveValue")) {
+        return GetArweaveValue;
+    } else if (!strcmp(type, "GetArweaveMessageText")) {
+        return GetArweaveMessageText;
+    } else if (!strcmp(type, "GetArweaveRawMessage")) {
+        return GetArweaveRawMessage;
+    } else if (!strcmp(type, "GetArweaveMessageAddress")) {
+        return GetArweaveMessageAddress;
+    }
+    return NULL;
+}
+
 GetLabelDataLenFunc GuiXrpTextLenFuncGet(char *type)
 {
     if (!strcmp(type, "GetXrpDetailLen")) {
@@ -661,6 +715,7 @@ GetLabelDataLenFunc GuiXrpTextLenFuncGet(char *type)
     }
     return NULL;
 }
+
 
 GetLabelDataLenFunc GuiEthTextLenFuncGet(char *type)
 {
@@ -719,6 +774,9 @@ GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
         return GuiXrpTextLenFuncGet(type);
     case REMAPVIEW_ETH_TYPEDDATA:
         return GuiEthTextLenFuncGet(type);
+    case REMAPVIEW_AR:
+    case REMAPVIEW_AR_MESSAGE:
+        return GuiArTextLenFuncGet(type);
 #endif
     default:
         return NULL;
@@ -752,6 +810,9 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
         return GuiAdaTextFuncGet(type);
     case REMAPVIEW_XRP:
         return GuiXrpTextFuncGet(type);
+    case REMAPVIEW_AR:
+    case REMAPVIEW_AR_MESSAGE:
+        return GuiArTextFuncGet(type);
 #endif
     default:
         return NULL;
@@ -1098,6 +1159,8 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiShowSolTxOverview;
     } else if (!strcmp(funcName, "GuiShowSolTxDetail")) {
         return GuiShowSolTxDetail;
+    } else if (!strcmp(funcName, "GuiShowArweaveTxDetail")) {
+        return GuiShowArweaveTxDetail;
     }
 #endif
     return NULL;
@@ -1485,6 +1548,10 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_ADA;
     case XRPTx:
         return REMAPVIEW_XRP;
+    case ArweaveTx:
+        return REMAPVIEW_AR;
+    case ArweaveMessage:
+        return REMAPVIEW_AR_MESSAGE;
 #endif
     default:
         return REMAPVIEW_BUTT;

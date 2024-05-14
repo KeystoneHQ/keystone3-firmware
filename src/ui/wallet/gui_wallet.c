@@ -254,6 +254,23 @@ UREncodeResult *GuiGetKeplrData(void)
 #endif
 }
 
+UREncodeResult *GuiGetArConnectData(void)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
+    if (arXpub == NULL || strlen(arXpub) != 1024) {
+        GuiSetupArConnectWallet();
+        arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
+        ClearSecretCache();
+    }
+    ASSERT(arXpub != NULL);
+    g_urEncode = get_connect_arconnect_wallet_ur_from_xpub(mfp, sizeof(mfp), arXpub);
+    printf("\ng_urEncode: %s\n", g_urEncode->data);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    return g_urEncode;
+}
+
 UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin)
 {
 #ifndef COMPILE_SIMULATOR

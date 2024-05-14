@@ -5,6 +5,8 @@
 #include "stdbool.h"
 #include "gui_home_widgets.h"
 #include "multi_sig_wallet_manager.h"
+#include "rsa.h"
+
 typedef struct {
     int32_t addressType;
     int32_t addressIndex;
@@ -105,6 +107,7 @@ typedef enum {
     XPUB_TYPE_ADA_21,
     XPUB_TYPE_ADA_22,
     XPUB_TYPE_ADA_23,
+    XPUB_TYPE_ARWEAVE,
 #else
     XPUB_TYPE_BTC_TEST,
     XPUB_TYPE_BTC_LEGACY_TEST,
@@ -122,6 +125,7 @@ typedef enum {
     XPUB_TYPE_NUM,
 } ChainType;
 
+bool GetIsTempAccount(void);
 int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool newKey);
 int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool set);
 void DeleteAccountPublicInfo(uint8_t accountIndex);

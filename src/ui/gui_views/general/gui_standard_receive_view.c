@@ -3,6 +3,8 @@
 #include "gui_obj.h"
 #include "gui_views.h"
 #include "gui_standard_receive_widgets.h"
+#include "gui_pending_hintbox.h"
+#include "gui_model.h"
 
 static int32_t GuiStandardReceiveViewInit(uint8_t chain)
 {
@@ -36,6 +38,9 @@ int32_t GuiStandardReceiveViewEventProcess(void *self, uint16_t usEvent, void *p
         break;
     case SIG_SETUP_VIEW_TILE_PREV:
         GuiStandardReceivePrevTile();
+        break;
+    case SIG_SETUP_RSA_PRIVATE_KEY_HIDE_LOADING:
+        GuiPendingHintBoxRemove();
         break;
     default:
         return ERR_GUI_UNHANDLED;

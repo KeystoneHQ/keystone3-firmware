@@ -13,6 +13,7 @@ rust_tools = { path = "../tools" }
 rand_chacha = { version="0.3.1", default-features=false }
 arrayref = "0.3.6"
 sha2 = { version = "0.10.6", default-features = false, features = ["oid"] }
+num-bigint-dig = { version = "0.8.2", default-features=false }
 
 [features]
 default = ["std"]

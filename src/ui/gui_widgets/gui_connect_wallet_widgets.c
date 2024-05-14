@@ -11,6 +11,8 @@
 #include "user_memory.h"
 #ifndef BTC_ONLY
 #include "gui_multi_path_coin_receive_widgets.h"
+#include "gui_keyboard_hintbox.h"
+#include "gui_pending_hintbox.h"
 #endif
 #include "account_manager.h"
 #include "gui_animating_qrcode.h"
@@ -52,6 +54,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_XRP_TOOLKIT, &walletListXRPToolkit, true},
     {WALLET_LIST_PETRA, &walletListPetra, true},
     {WALLET_LIST_KEPLR, &walletListKeplr, true},
+    {WALLET_LIST_ARCONNECT, &walletListArConnect, true},
     {WALLET_LIST_IMTOKEN, &walletListImToken, true},
     {WALLET_LIST_FEWCHA, &walletListFewcha, true},
     {WALLET_LIST_ZAPPER, &walletListZapper, true},
@@ -123,6 +126,10 @@ static const lv_img_dsc_t *g_keplrCoinArray[8] = {
     &coinXprt, &coinAxl,  &coinBoot, &coinCro,
 };
 
+static const lv_img_dsc_t *g_arconnectCoinArray[1] = {
+    &coinAr,
+};
+
 static const lv_img_dsc_t *g_fewchaCoinArray[FEWCHA_COINS_BUTT] = {
     &coinApt,
     &coinSui,
@@ -161,6 +168,8 @@ const static ChangeDerivationItem_t g_solChangeDerivationList[] = {
 static uint16_t g_chainAddressIndex[3] = {0};
 static uint8_t g_currentSelectedPathIndex[3] = {0};
 static lv_obj_t *g_coinListCont = NULL;
+static KeyboardWidget_t *g_keyboardWidget = NULL;
+
 #endif
 
 static ConnectWalletWidget_t g_connectWalletTileView;
@@ -237,6 +246,8 @@ static void GuiInitWalletListArray()
             } else {
                 g_walletListArray[i].enable = true;
             }
+        } else if (g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
+            g_walletListArray[i].enable = !GetIsTempAccount();
         }
 #else
         if (GetCurrentWalletIndex() != SINGLE_WALLET) {
@@ -298,9 +309,22 @@ static void OpenQRCodeHandler(lv_event_t *e)
         GuiCreateConnectADAWalletWidget(g_connectWalletTileView.walletIndex);
         return;
     }
+    bool skipGenerateArweaveKey = IsArweaveSetupComplete();
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey) {
+        GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_CONNECT_CONFIRM);
+        return;
+    }
 #endif
     g_isCoinReselected = false;
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+}
+
+void GuiConnectShowRsaSetupasswordHintbox(void)
+{
+    g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
+    SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+    static uint16_t sig = SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD;
+    SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
 
 #ifndef BTC_ONLY
@@ -697,6 +721,18 @@ static void AddKeplrCoins(void)
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 256, 2);
 }
 
+static void AddArConnectCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+
+    lv_obj_t *img = GuiCreateImg(g_coinCont, g_arconnectCoinArray[0]);
+    lv_img_set_zoom(img, 110);
+    lv_img_set_pivot(img, 0, 0);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 0, 0);
+}
+
 static void AddFewchaCoins()
 {
     lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
@@ -813,6 +849,18 @@ UREncodeResult *GuiGetADAData(void)
 {
     return GuiGetADADataByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]);
 }
+
+void GuiPrepareArConnectWalletView(void)
+{
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+}
+
+void GuiSetupArConnectWallet(void)
+{
+    RsaGenerateKeyPair(false);
+}
+
 #endif
 
 void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
@@ -869,6 +917,14 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetKeplrData;
         AddKeplrCoins();
         break;
+    case WALLET_LIST_ARCONNECT:
+        func = GuiGetArConnectData;
+        AddArConnectCoins();
+        break;
+    case WALLET_LIST_TYPHON:
+        func = GuiGetADAData;
+        AddChainAddress();
+        break;
     case WALLET_LIST_FEWCHA:
         if (!g_isCoinReselected) {
             initFewchaCoinsConfig();
@@ -906,7 +962,12 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         return;
     }
     if (func) {
-        GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
+        bool skipGenerateArweaveKey = IsArweaveSetupComplete();
+        if (index == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey) {
+            GuiAnimatingQRCodeInitWithLoadingParams(g_connectWalletTileView.qrCode, func, true, _("InitializingRsaTitle"), _("FindingRsaPrimes"));
+        } else {
+            GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
+        }
     }
 }
 
@@ -1436,6 +1497,12 @@ int8_t GuiConnectWalletNextTile(void)
     return SUCCESS_CODE;
 }
 
+void GuiConnectWalletPasswordErrorCount(void *param)
+{
+    PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
+    GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
+}
+
 int8_t GuiConnectWalletPrevTile(void)
 {
     switch (g_connectWalletTileView.currentTile) {
@@ -1461,6 +1528,7 @@ int8_t GuiConnectWalletPrevTile(void)
 
 void GuiConnectWalletRefresh(void)
 {
+    GuiCloseAttentionHintbox();
     switch (g_connectWalletTileView.currentTile) {
     case CONNECT_WALLET_SELECT_WALLET:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE,

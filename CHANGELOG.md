@@ -1,3 +1,14 @@
+## 1.4.2 (2024-05-14)
+
+### What's new
+
+1. Added support for managing BTC assets using UniSat Wallet
+
+### Improvements
+
+1. Optimized the copy on some pages
+
+
 ## 1.4.0 (2024-05-10)
 
 ### What's New

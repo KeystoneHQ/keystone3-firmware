@@ -25,30 +25,24 @@ with open("./data.csv", newline="", encoding='utf-8') as csvfile:
     for row in reader:
         id = row['ID']
         en[id] = row['en']
-        if args.ru:
-            ru[id] = row['ru']
-        if args.zh:
-            cn[id] = row['cn']
-        if args.ko:
-            ko[id] = row['ko']
+        ru[id] = row['ru']
+        cn[id] = row['cn']
+        ko[id] = row['ko']
 
 with open("./en.yml", 'w', encoding='utf-8') as f:
     yaml.dump({'en': en}, f, default_flow_style=False)
 
-if args.ru:
-    with open("./ru.yml", 'w', encoding='utf-8') as f:
-        yaml.dump({'ru': ru}, f, allow_unicode=True, default_flow_style=False)
-    compile_command += ' -l ru'
+with open("./ru.yml", 'w', encoding='utf-8') as f:
+    yaml.dump({'ru': ru}, f, allow_unicode=True, default_flow_style=False)
+compile_command += ' -l ru'
 
-if args.zh:
-    with open("./zh-CN.yml", 'w', encoding='utf-8') as f:
-        yaml.dump({'zh-CN': cn}, f, allow_unicode=True, default_flow_style=False)
-    compile_command += ' -l zh-CN'
+with open("./zh-CN.yml", 'w', encoding='utf-8') as f:
+    yaml.dump({'zh-CN': cn}, f, allow_unicode=True, default_flow_style=False)
+compile_command += ' -l zh-CN'
 
-if args.ko:
-    with open("./ko.yml", 'w', encoding='utf-8') as f:
-        yaml.dump({'ko': ko}, f, allow_unicode=True, default_flow_style=False)
-    compile_command += ' -l ko'
+with open("./ko.yml", 'w', encoding='utf-8') as f:
+    yaml.dump({'ko': ko}, f, allow_unicode=True, default_flow_style=False)
+compile_command += ' -l ko'
 
 compile_command += ' -l en'
 

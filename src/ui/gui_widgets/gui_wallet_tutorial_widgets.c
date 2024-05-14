@@ -57,7 +57,7 @@ static void WalletTutorialsInit()
 
     g_tutorials[WALLET_LIST_METAMASK].items[1].walletName = _("connect_mm_title2");
     g_tutorials[WALLET_LIST_METAMASK].items[1].url = _("connect_mm_link2");
-    g_tutorials[WALLET_LIST_METAMASK].items[1].qrTitle = _("connect_mm_link2");
+    g_tutorials[WALLET_LIST_METAMASK].items[1].qrTitle = _("connect_mm_title2");
     g_tutorials[WALLET_LIST_METAMASK].items[1].qrUrl = _("connect_mm_link2");
 
     // WALLET_LIST_OKX

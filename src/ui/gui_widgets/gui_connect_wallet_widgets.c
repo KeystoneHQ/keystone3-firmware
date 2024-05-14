@@ -222,6 +222,7 @@ static CoinState_t g_tempFewchaCoinState[FEWCHA_COINS_BUTT];
 #endif
 
 static lv_obj_t *g_coinCont = NULL;
+static lv_obj_t *g_coinTitleLabel = NULL;
 static lv_obj_t *g_openMoreHintBox = NULL;
 static lv_obj_t *g_bottomCont = NULL;
 static lv_obj_t *g_manageImg = NULL;
@@ -547,18 +548,20 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
 }
 
 #ifndef BTC_ONLY
-static void GuiCreateSupportedNetworks()
+static void GuiCreateSupportedNetworks(uint8_t index)
 {
-    if (g_coinCont != NULL && g_manageImg != NULL) {
+    if (g_coinCont != NULL && g_manageImg != NULL && g_coinTitleLabel != NULL) {
         return;
     }
     lv_obj_clean(g_bottomCont);
-
-    lv_obj_t *label = GuiCreateNoticeLabel(
-                          g_bottomCont, _("connect_wallet_supported_networks"));
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
-    lv_obj_add_event_cb(g_bottomCont, JumpSelectCoinPageHandler, LV_EVENT_CLICKED,
-                        NULL);
+    if (index == WALLET_LIST_UNISAT) {
+        g_coinTitleLabel = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_tokens"));    
+    }
+    else {
+        g_coinTitleLabel = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_networks"));
+    }
+    lv_obj_align(g_coinTitleLabel, LV_ALIGN_TOP_LEFT, 36, 12);
+    lv_obj_add_event_cb(g_bottomCont, JumpSelectCoinPageHandler, LV_EVENT_CLICKED, NULL);
     g_coinCont = GuiCreateContainerWithParent(g_bottomCont, 280, 30);
     lv_obj_align(g_coinCont, LV_ALIGN_TOP_LEFT, 36, 50);
     lv_obj_set_style_bg_color(g_coinCont, DARK_BG_COLOR, LV_PART_MAIN);
@@ -599,7 +602,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(g_bottomCont, LV_OPA_0,
                             LV_STATE_DEFAULT | LV_PART_MAIN);
 #ifndef BTC_ONLY
-    GuiCreateSupportedNetworks();
+    // GuiCreateSupportedNetworks(g_connectWalletTileView.walletIndex);
 #else
     if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         lv_obj_t *button = GuiCreateImgLabelAdaptButton(
@@ -868,7 +871,8 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     GenerateUR func = NULL;
     SetWallet(g_pageWidget->navBarWidget, index, NULL);
 #ifndef BTC_ONLY
-    GuiCreateSupportedNetworks();
+    GuiCreateSupportedNetworks(index);
+    lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_networks"));
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
 #endif
@@ -906,6 +910,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_UNISAT:
         func = GuiGetSparrowWalletBtcData;
         AddUniSatWalletCoins();
+        lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_tokens"));
         break;
     case WALLET_LIST_SUB:
         break;

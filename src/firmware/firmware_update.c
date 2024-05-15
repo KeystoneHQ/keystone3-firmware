@@ -265,6 +265,8 @@ static int32_t CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t 
         printf("signature=%s\r\n", info->signature);
         if (strlen(info->signature) != 128) {
             printf("error signature=%s\r\n", info->signature);
+            percent = 0xFF;
+            GuiApiEmitSignal(SIG_SETTING_VERIFY_OTA_PERCENT, &percent, sizeof(percent));
             ret = ERR_UPDATE_CHECK_SIGNATURE_FAILED;
             break;
         }

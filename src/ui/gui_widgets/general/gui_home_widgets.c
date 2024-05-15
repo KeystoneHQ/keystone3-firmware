@@ -711,15 +711,6 @@ void GuiHomeAreaInit(void)
     lv_obj_add_event_cb(img, ScanQrCodeHandler, LV_EVENT_CLICKED, &g_scanView);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     g_scanImg = img;
-    uint8_t publickey[65] = {0};
-    GetUpdatePubKey(publickey);
-    char buff[258];
-    for (int i = 0; i < 64; i++) {
-        snprintf_s(buff + i * 2, sizeof(buff) - i * 2, "%02x", publickey[i]);
-    }
-    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, buff);
-    lv_obj_t *label = GuiCreateNoticeLabel(g_homeViewCont, buff);
-    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 }
 
 void GuiHomeDisActive(void)
@@ -757,12 +748,12 @@ void GuiHomeRefresh(void)
     g_countDownTimer = lv_timer_create(AddFlagCountDownTimerHandler, 500, NULL);
     GuiSetSetupPhase(SETUP_PAHSE_DONE);
     if (g_manageCont != NULL) {
-        // SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("home_manage_assets"));
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("home_manage_assets"));
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, g_manageCont);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     } else {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_MANAGE, OpenManageAssetsHandler, NULL);
-        // SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreSettingHandler, NULL);
     }
     if (g_homeWalletCardCont != NULL) {

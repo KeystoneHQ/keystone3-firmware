@@ -310,7 +310,7 @@ static void GuiCreateSelectTile(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
     label = GuiCreateNoticeLabel(parent, _("firmware_update_desc"));
     lv_obj_set_width(label, 408);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 72);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     img = GuiCreateImg(parent, &imgMicroSd);
     label = GuiCreateLittleTitleLabel(parent, _("firmware_update_via_sd"));

@@ -19,18 +19,10 @@ lv_font_t *g_defBoldIllustratFont = (lv_font_t *)&openSansEnIllustrate;     //20
 
 static const GuiFontDesc_t g_langFontArr[] = {
     {LANG_EN, &openSansEnTitle, &openSansEnLittleTitle, &openSansEnText, &openSansEnIllustrate, &openSansEnIllustrate},
-#ifdef RU_SUPPORT
     {LANG_RU, &ruTitle, &ruLittleTitle, &ruText, &ruIllustrate, &ruIllustrate},
-#endif
-#ifdef CN_SUPPORT
     {LANG_ZH_CN, &cnTitle, &cnLittleTitle, &cnText, &cnIllustrate, &cnIllustrate},
-#endif
-#ifdef KO_SUPPORT
     {LANG_KO, &koTitle, &koLittleTitle, &koText, &koIllustrate, &koIllustrate},
-#endif
-#ifdef ES_SUPPORT
     {LANG_ES, &esTitle, &esLittleTitle, &esText, &esIllustrate, &esIllustrate},
-#endif
 };
 
 static void GuiBtnmStyleInit(void)

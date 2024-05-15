@@ -39,6 +39,7 @@ def parse_command_line(command_line="cmd_tool --bpp 8 --size 12 --font Arial.ttf
             'cn': 'NotoSansSC-Regular.ttf',
             'ko': 'NotoSansKR-Regular.ttf',
             'ru': 'NotoSans-Regular.ttf',
+            'es': 'NotoSans-Regular.ttf',
             'de': 'NotoSans-Regular.ttf',
             'ja': 'NotoSansJP-Regular.ttf',
         }
@@ -69,7 +70,7 @@ def extract_unique_characters(df, font_size, column):
 
 def main():
     # for language in ['cn', 'ko', 'ru', 'de', 'ja']:
-    for language in ['cn', 'ko', 'ru']:
+    for language in ['cn', 'ko', 'ru', 'es']:
         try:
             df = pd.read_csv('data.csv')
             font_labels = {

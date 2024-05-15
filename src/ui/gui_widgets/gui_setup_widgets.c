@@ -24,13 +24,8 @@ static const char *g_languageList[] = {
     "English",
     "Русский язык",
     "简体中文",
-<<<<<<< HEAD
     "한국인",
     "español",
-=======
-    "한국어", // "한국인",
-    "German",
->>>>>>> master
 };
 
 typedef enum {
@@ -122,6 +117,8 @@ void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
             label = GuiCreateLabelWithFont(parent, g_languageList[i], &ruText);
         } else if (i == SETUP_KOREAN) {
             label = GuiCreateLabelWithFont(parent, g_languageList[i], &koText);
+        } else if (i == SETUP_SPANISH) {
+            label = GuiCreateLabelWithFont(parent, g_languageList[i], &esText);
         } else {
             label = GuiCreateLabelWithFont(parent, g_languageList[i], &openSansEnText);
         }

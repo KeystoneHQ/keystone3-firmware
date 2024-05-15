@@ -586,7 +586,7 @@ About Info,24,about_info_firmware_version,Firmware Version,Версия прош
 ,20,firmware_update_sd_checksum_fmt_version,#F5870A Show Checksum(v%s)#,#F5870A Показать контрольную сумму(v%s)#,#F5870A 체크섬 표시 (v%s)#,#F5870A 展示校验和 (v%s)#,,,,
 ,20,firmware_update_sd_checksum_fmt,#F5870A Show Checksum(%d%%)#,#F5870A Показать контрольную сумму(%d%%)#,#F5870A 체크섬 표시 (%d%%)#,#F5870A 展示校验和 (%d%%)#,,,,
 ,20,firmware_update_sd_checksum_notice,"This is an optional feature to further enhance security. Compare the following checksum with the checksum of your download package on the official website, ensure that they are consistent.","Это дополнительная функция, предназначенная для дальнейшего повышения безопасности. Сравните следующую контрольную сумму с контрольной суммой вашего загружаемого пакета на официальном сайте и убедитесь, что они совпадают",보안성을 더욱 높일 수 있는 옵션 기능입니다.아래 체크섬과 공식 홈페이지에서 다운로드한 패키지의 체크섬을 비교하여 동일하게 유지하여 주시기 바랍니다.,"这是一个可选的功能,可以进一步提高安全性.将以下校验和在官方网站上的下载软件包的校验和签到,请确保它们保持一致.",,,,
-,24,verify_firmware,Verify Firmware,Прове1рка прошивки,펌웨어 검증,验证固件,,,,
+,24,verify_firmware,Verify Firmware,Провека прошивки,펌웨어 검증,验证固件,,,,
 About Keystone,24,about_keystone_title,About Keystone,О Keystone,About Keystone,关于 Keystone,,,,
 ,28,about_keystone_website,WebSite,Сайт,웹사이트,网站,,,,
 ,20,about_keystone_website_url,keyst.one,keyst.one,keyst.one,keyst.one,,,,

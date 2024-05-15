@@ -489,6 +489,7 @@ static lv_obj_t *CreateNewSkip(lv_obj_t *navBar)
     lv_obj_t *btn = GuiCreateTextBtn(navBar, _("Skip"));
     lv_obj_set_style_bg_color(btn, GRAY_COLOR, 0);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
+    lv_obj_set_height(btn, 42);
     return btn;
 }
 

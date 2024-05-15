@@ -184,7 +184,6 @@ void GuiFirmwareUpdateInit(void *param)
 void GuiFirmwareSdCardCopy(void)
 {
     GUI_DEL_OBJ(g_noticeWindow)
-    GuiDeleteAnimHintBox();
 
     g_waitAnimCont = GuiCreateAnimHintBox(480, 386, 82);
     lv_obj_t *title = GuiCreateTextLabel(g_waitAnimCont, _("firmware_update_sd_copying_title"));
@@ -328,6 +327,9 @@ void GuiFirmwareVerifyPercent(uint8_t percent)
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
         return;
     } else if (percent == 0xFE) {
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
+    } else if (percent == 0xFD) {
+        GuiDeleteAnimHintBox();
         g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
     }
 
@@ -802,17 +804,12 @@ static void GuiFirmwareUpdateViewSha256(char *version, uint8_t percent)
 static void GuiFirmwareUpdateCancelUpdate(lv_event_t *e)
 {
     GuiModelStopCalculateCheckSum();
-    lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
-    void **param = lv_event_get_user_data(e);
-    if (param != NULL) {
-        *param = NULL;
-    }
+    GUI_DEL_OBJ(g_noticeWindow)
 }
 
 static void GuiFirmwareStartVerifyHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_noticeWindow)
-    GuiDeleteAnimHintBox();
 
     g_waitAnimCont = GuiCreateAnimHintBox(480, 322, 82);
     lv_obj_t *title = GuiCreateTextLabel(g_waitAnimCont, _("firmware_security_verifying"));
@@ -828,6 +825,9 @@ static void GuiCreateSdCardVerifyBinWindowHandler(lv_event_t *e)
 {
     if (!SdCardInsert()) {
         g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
+        return;
+    } else if (!FatfsFileExist(SD_CARD_OTA_BIN_PATH)) {
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_NO_UPGRADABLE_FIRMWARE, &g_noticeWindow, NULL);
         return;
     }
     GuiCreateSdCardVerifyBinWindow();

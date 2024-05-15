@@ -8,7 +8,6 @@
 #include "gui_model.h"
 #include "gui_enter_passcode.h"
 
-
 int32_t GuiSystemSettingViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     GUI_ASSERT(g_systemSettingView.isActive);

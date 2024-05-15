@@ -4,6 +4,11 @@
 
 #include "gui_model.h"
 #include "lvgl.h"
+#include "gui_keyboard_hintbox.h"
+#include "gui_attention_hintbox.h"
+#ifdef COMPILE_SIMULATOR
+#include "gui_pending_hintbox.h"
+#endif
 
 typedef enum {
     HOME_WALLET_CARD_BTC,
@@ -19,6 +24,7 @@ typedef enum {
     HOME_WALLET_CARD_APT,
     HOME_WALLET_CARD_SUI,
     HOME_WALLET_CARD_DASH,
+    HOME_WALLET_CARD_ARWEAVE,
     HOME_WALLET_CARD_COSMOS,
     HOME_WALLET_CARD_TIA,
     HOME_WALLET_CARD_DYM,
@@ -76,8 +82,13 @@ void GuiHomeDisActive(void);
 void GuiHomeSetWalletDesc(WalletDesc_t *wallet);
 void GuiHomeRestart(void);
 bool GuiHomePageIsTop(void);
+void GuiHomePasswordErrorCount(void *param);
+void GuiRemoveKeyboardWidget(void);
+void RecalculateManageWalletState(void);
 const ChainCoinCard_t* GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index);
 void GuiHomeDeInit(void);
+void GuiShowRsaSetupasswordHintbox(void);
+void GuiShowRsaInitializatioCompleteHintbox(void);
 
 #endif /* _GUI_HOME_WIDGETS_H */
 #else

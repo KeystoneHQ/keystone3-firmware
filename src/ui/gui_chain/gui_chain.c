@@ -26,6 +26,9 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
         return GuiGetAdaCheckResult();
     case REMAPVIEW_XRP:
         return GuiGetXrpCheckResult();
+    case REMAPVIEW_AR:
+    case REMAPVIEW_AR_MESSAGE:
+        return GuiGetArCheckResult();
 #endif
     default:
         return NULL;
@@ -68,6 +71,9 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
         return CHAIN_ADA;
     case XRPTx:
         return CHAIN_XRP;
+    case ArweaveTx:
+    case ArweaveMessage:
+        return CHAIN_ARWEAVE;
 #endif
     default:
         return CHAIN_BUTT;
@@ -78,7 +84,7 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
 #ifndef BTC_ONLY
 bool IsMessageType(uint8_t type)
 {
-    return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type) || type == BtcMsg;
+    return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type) || type == BtcMsg || type == ArweaveMessage;
 }
 #endif
 
@@ -126,6 +132,10 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
         break;
     case XRPTx:
         func = GuiGetXrpSignQrCodeData;
+        break;
+    case ArweaveMessage:
+    case ArweaveTx:
+        func = GuiGetArweaveSignQrCodeData;
         break;
 #endif
     default:

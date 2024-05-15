@@ -5,6 +5,8 @@ use alloc::vec::Vec;
 use third_party::serde_json::{from_slice, from_value, Value};
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
+#[cfg(feature = "multi-coins")]
+use third_party::ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SignType};
 use third_party::ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
 use third_party::ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
@@ -98,6 +100,17 @@ impl InferViewType for EvmSignRequest {
 impl InferViewType for SuiSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::SuiTx)
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for ArweaveSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        match self.get_sign_type() {
+            SignType::Transaction => Ok(ViewType::ArweaveTx),
+            SignType::Message => Ok(ViewType::ArweaveMessage),
+            SignType::DataItem => Ok(ViewType::ViewTypeUnKnown),
+        }
     }
 }
 

@@ -42,3 +42,60 @@ impl From<serde_json::Error> for ArweaveError {
         ))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use keystore::errors::KeystoreError;
+
+    #[test]
+    fn test_invalid_hd_path_error() {
+        let error = ArweaveError::InvalidHDPath("Invalid path".to_string());
+        assert_eq!(error.to_string(), "invalid hd_path: Invalid path");
+    }
+
+    #[test]
+    fn test_keystore_error() {
+        let error = ArweaveError::KeystoreError("Keystore failure".to_string());
+        assert_eq!(
+            error.to_string(),
+            "keystore operation failed, reason: Keystore failure"
+        );
+    }
+
+    #[test]
+    fn test_sign_failure_error() {
+        let error = ArweaveError::SignFailure("Sign failed".to_string());
+        assert_eq!(error.to_string(), "sign failed, reason: Sign failed");
+    }
+
+    #[test]
+    fn test_parse_tx_error() {
+        let error = ArweaveError::ParseTxError("Parse failed".to_string());
+        assert_eq!(
+            error.to_string(),
+            "Could not parse transaction, reason: `Parse failed`"
+        );
+    }
+
+    #[test]
+    fn test_from_keystore_error() {
+        let keystore_error = KeystoreError::DerivePubKey("Derive pub key error".to_string());
+        let error: ArweaveError = keystore_error.into();
+        assert_eq!(
+            error.to_string(),
+            "keystore operation failed, reason: Derive pub key error"
+        );
+    }
+
+    #[test]
+    fn test_from_serde_json_error() {
+        let json_str = "invalid json";
+        let json_error = serde_json::from_str::<serde_json::Value>(json_str).unwrap_err();
+        let error: ArweaveError = json_error.into();
+        assert_eq!(
+            error.to_string(),
+            "Could not parse transaction, reason: `serde json operation failed \"expected value at line 1 column 1\"`"
+        );
+    }
+}

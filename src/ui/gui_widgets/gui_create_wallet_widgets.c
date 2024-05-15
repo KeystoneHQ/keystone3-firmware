@@ -470,6 +470,7 @@ void GuiCreateWalletNameUpdate(const void *src)
 void GuiCreateWalletDeInit(void)
 {
     GUI_DEL_OBJ(g_noticeWindow)
+    GUI_PAGE_DEL(g_changeEntropyPage)
     GuiDelEnterProgressLabel();
     if (g_setPassCode != NULL) {
         GuiDelEnterPasscode(g_setPassCode, NULL);
@@ -688,7 +689,6 @@ static void OpenChangeEntropyHandler(lv_event_t *e)
 
 static void CloseChangeEntropyHandler(lv_event_t *e)
 {
-
     GUI_PAGE_DEL(g_changeEntropyPage);
 }
 

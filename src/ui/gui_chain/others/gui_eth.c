@@ -780,7 +780,11 @@ void GetEthTransType(void *indata, void *param, uint32_t maxLen)
 void GetEthTxFee(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    snprintf_s((char *)indata,  maxLen, "%s %s", eth->overview->max_txn_fee, _FindNetwork(eth->chain_id));
+    if (eth->overview->max_txn_fee != NULL) {
+        snprintf_s((char *)indata,  maxLen, "%s %s", eth->overview->max_txn_fee, _FindNetwork(eth->chain_id).symbol);
+    } else {
+        snprintf_s((char *)indata,  maxLen, "0 %s", _FindNetwork(eth->chain_id).symbol);
+    }
 }
 
 EvmNetwork_t _FindNetwork(uint64_t chainId)
@@ -831,13 +835,21 @@ void GetEthNetWork(void *indata, void *param, uint32_t maxLen)
 void GetEthMaxFee(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    snprintf_s((char *)indata,  maxLen, "%s %s", eth->detail->max_fee, _FindNetwork(eth->chain_id));
+    if (eth->detail->max_fee != NULL) {
+        snprintf_s((char *)indata,  maxLen, "%s %s", eth->detail->max_fee, _FindNetwork(eth->chain_id).symbol);
+    } else {
+        snprintf_s((char *)indata,  maxLen, "0 %s", _FindNetwork(eth->chain_id).symbol);
+    }
 }
 
 void GetEthMaxPriority(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    snprintf_s((char *)indata,  maxLen, "%s %s", eth->detail->max_priority, _FindNetwork(eth->chain_id));
+    if (eth->detail->max_priority != NULL) {
+        snprintf_s((char *)indata,  maxLen, "%s %s", eth->detail->max_priority, _FindNetwork(eth->chain_id).symbol);
+    } else {
+        snprintf_s((char *)indata,  maxLen, "0 %s", _FindNetwork(eth->chain_id).symbol);
+    }
 }
 
 void GetEthMaxFeePrice(void *indata, void *param, uint32_t maxLen)

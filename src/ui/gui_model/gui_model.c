@@ -98,6 +98,7 @@ static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataL
 static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen);
 static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t getUR);
 static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen);
+static int32_t ModelRsaGenerateKeyPair();
 static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen);
 static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen);
 static int32_t ModelURClear(const void *inData, uint32_t inDataLen);
@@ -293,6 +294,11 @@ void GuiModelURClear(void)
 void GuiModelCheckTransaction(ViewType viewType)
 {
     AsyncExecute(ModelCheckTransaction, &viewType, sizeof(viewType));
+}
+
+void GuiModelRsaGenerateKeyPair(void)
+{
+    AsyncExecute(ModelRsaGenerateKeyPair, NULL, 0);
 }
 
 void GuiModelTransactionCheckResultClear(void)
@@ -1072,6 +1078,7 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
             *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
             *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
             *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&
+            *param != SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD &&
             *param != SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD &&
             *param != SIG_MULTISIG_WALLET_DELETE_VERIFY_PASSWORD &&
             !strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) &&
@@ -1179,6 +1186,7 @@ static PtrT_TransactionCheckResult g_checkResult = NULL;
 
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
 {
+#ifndef COMPILE_SIMULATOR
     GuiApiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
     ViewType viewType = *((ViewType *)inData);
     g_checkResult = CheckUrResult(viewType);
@@ -1191,6 +1199,44 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
     }
 
     return SUCCESS_CODE;
+#else
+    GuiApiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
+    GuiApiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
+    return SUCCESS_CODE;
+#endif
+}
+
+int32_t RsaGenerateKeyPair(bool needEmitSignal)
+{
+    printf("RsaGenerate RsaGenerate RsaGenerate");
+    bool lockState = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    if (needEmitSignal) {
+        GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_START, NULL, 0);
+    }
+    uint8_t seed[64];
+    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    int32_t ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+    ASSERT(ret == 0);
+    SimpleResponse_u8 *secret = generate_arweave_secret(seed, len);
+    ASSERT(secret != NULL && secret->error_code == 0);
+    FlashWriteRsaPrimes(secret->data);
+    free_simple_response_u8(secret);
+    GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_GENERATE_ADDRESS, NULL, 0);
+    AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), true);
+    RecalculateManageWalletState();
+    ClearLockScreenTime();
+    SetLockScreen(lockState);
+    if (needEmitSignal) {
+        GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS, NULL, 0);
+        GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_HIDE_LOADING, NULL, 0);
+    }
+    return SUCCESS_CODE;
+}
+
+static int32_t ModelRsaGenerateKeyPair()
+{
+    return RsaGenerateKeyPair(true);
 }
 
 static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen)

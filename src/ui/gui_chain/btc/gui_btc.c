@@ -868,18 +868,32 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *o
     lv_obj_align_to(feeValue, label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
 
     lv_obj_set_style_text_font(feeValue, &openSansEnIllustrate, LV_PART_MAIN);
-    lv_obj_set_style_text_color(feeValue, lv_color_hex(0xf55831), LV_PART_MAIN);
 
-    lv_obj_t *switchIcon = GuiCreateImg(amountContainer, &imgConversion);
-    lv_obj_align(switchIcon, LV_ALIGN_RIGHT_MID, -24, 0);
-    lv_obj_add_flag(switchIcon, LV_OBJ_FLAG_CLICKABLE);
+    if (overviewData->fee_larger_than_amount) {
+        lv_obj_set_style_text_color(feeValue, lv_color_hex(0xf55831), LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_text_color(feeValue, WHITE_COLOR, LV_PART_MAIN);
+    }
 
-    clickParam.amountValue = amountValue;
-    clickParam.feeValue = feeValue;
-    clickParam.overviewData = overviewData;
-    clickParam.isSat = &isSat;
-    isSat = false;
-    lv_obj_add_event_cb(switchIcon, SwitchValueUnit, LV_EVENT_CLICKED, &clickParam);
+    enum URType urType = URTypeUnKnown;
+    if (g_isMulti) {
+        urType = g_urMultiResult->ur_type;
+    } else {
+        urType = g_urResult->ur_type;
+    }
+
+    if (urType != Bytes && urType != KeystoneSignRequest) {
+        lv_obj_t *switchIcon = GuiCreateImg(amountContainer, &imgConversion);
+        lv_obj_align(switchIcon, LV_ALIGN_RIGHT_MID, -24, 0);
+        lv_obj_add_flag(switchIcon, LV_OBJ_FLAG_CLICKABLE);
+
+        clickParam.amountValue = amountValue;
+        clickParam.feeValue = feeValue;
+        clickParam.overviewData = overviewData;
+        clickParam.isSat = &isSat;
+        isSat = false;
+        lv_obj_add_event_cb(switchIcon, SwitchValueUnit, LV_EVENT_CLICKED, &clickParam);
+    }
 
     return amountContainer;
 }
@@ -941,7 +955,7 @@ static lv_obj_t *CreateOverviewFromView(lv_obj_t *parent, DisplayTxOverview *ove
         lv_obj_t *addressLabel = lv_label_create(formInnerContainer);
         lv_obj_set_width(addressLabel, 332);
         lv_label_set_long_mode(addressLabel, LV_LABEL_LONG_WRAP);
-        lv_label_set_text(addressLabel, from->data[i].address);
+        lv_label_set_text(addressLabel, from->data[i].address != NULL ? from->data[i].address : "Empty");
         SetContentLableStyle(addressLabel);
 
         if (hasMultiFromAddress) {
@@ -1070,6 +1084,16 @@ static lv_obj_t *CreateDetailAmountView(lv_obj_t *parent, DisplayTxDetail *detai
 
 static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailData, lv_obj_t *lastView)
 {
+    enum URType urType = URTypeUnKnown;
+    if (g_isMulti) {
+        urType = g_urMultiResult->ur_type;
+    } else {
+        urType = g_urResult->ur_type;
+    }
+
+    bool showChange = (urType != Bytes && urType != KeystoneSignRequest);
+
+
     lv_obj_t *formContainer = GuiCreateContainerWithParent(parent, 408, 0);
     SetContainerDefaultStyle(formContainer);
     lv_obj_align_to(formContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
@@ -1103,7 +1127,7 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
         lv_obj_set_style_text_color(valueLabel, lv_color_hex(0xf5870a), LV_PART_MAIN);
         lv_obj_align_to(valueLabel, orderLabel, LV_ALIGN_OUT_RIGHT_TOP, 16, 0);
 
-        if (from->data[i].is_mine) {
+        if (from->data[i].is_mine && showChange) {
             lv_obj_t *changeContainer = GuiCreateContainerWithParent(formInnerContainer, 87, 30);
             lv_obj_set_style_radius(changeContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(changeContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -1126,7 +1150,7 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
         lv_obj_t *addressLabel = lv_label_create(formInnerContainer);
         lv_obj_set_width(addressLabel, 332);
         lv_label_set_long_mode(addressLabel, LV_LABEL_LONG_WRAP);
-        lv_label_set_text(addressLabel, from->data[i].address);
+        lv_label_set_text(addressLabel, from->data[i].has_address ? from->data[i].address : "Empty");
         SetContentLableStyle(addressLabel);
         lv_obj_align_to(addressLabel, orderLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_obj_update_layout(addressLabel);
@@ -1134,7 +1158,7 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
         lv_obj_t *pathLabel = lv_label_create(formInnerContainer);
         lv_obj_set_width(pathLabel, 332);
         lv_label_set_long_mode(pathLabel, LV_LABEL_LONG_WRAP);
-        lv_label_set_text(pathLabel, from->data[i].path);
+        lv_label_set_text(pathLabel, from->data[i].path == NULL ? "" : from->data[i].path);
         SetTitleLabelStyle(pathLabel);
         lv_obj_align_to(pathLabel, addressLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_obj_update_layout(pathLabel);
@@ -1156,6 +1180,15 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
 
 static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailData, lv_obj_t *lastView)
 {
+    enum URType urType = URTypeUnKnown;
+    if (g_isMulti) {
+        urType = g_urMultiResult->ur_type;
+    } else {
+        urType = g_urResult->ur_type;
+    }
+
+    bool showChange = (urType != Bytes && urType != KeystoneSignRequest);
+
     lv_obj_t *toContainer = GuiCreateContainerWithParent(parent, 408, 0);
     SetContainerDefaultStyle(toContainer);
     lv_obj_align_to(toContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
@@ -1189,7 +1222,7 @@ static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailDat
         lv_obj_set_style_text_color(valueLabel, lv_color_hex(0xf5870a), LV_PART_MAIN);
         lv_obj_align_to(valueLabel, orderLabel, LV_ALIGN_OUT_RIGHT_TOP, 16, 0);
 
-        if (to->data[i].is_mine) {
+        if (to->data[i].is_mine && showChange) {
             lv_obj_t *changeContainer = GuiCreateContainerWithParent(toInnerContainer, 87, 30);
             lv_obj_set_style_radius(changeContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(changeContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -1207,6 +1240,7 @@ static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailDat
             lv_obj_align(changeLabel, LV_ALIGN_CENTER, 0, 0);
 
             lv_obj_align_to(changeContainer, valueLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+
         }
 
         lv_obj_t *addressLabel = lv_label_create(toInnerContainer);

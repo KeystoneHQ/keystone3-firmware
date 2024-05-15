@@ -20,6 +20,7 @@ members = [
     "src/sui",
     "src/tron",
     "src/xrp",
+    "src/arweave",
 
     "src/wallet",
     "src/wallet/src/btc_only_wallet",
@@ -47,8 +48,8 @@ cardano_rust_c = { path = "./src/cardano", optional = true }
 sui_rust_c = { path = "./src/sui", optional = true }
 tron_rust_c = { path = "./src/tron", optional = true }
 xrp_rust_c = { path = "./src/xrp", optional = true }
+arweave_rust_c = { path = "./src/arweave", optional = true }
 signature_rust_c = { path = "./src/signature", optional = true }
-
 
 [lib]
 crate-type = ["staticlib"]
@@ -88,6 +89,7 @@ multi-coins = [
     "sui_rust_c",
     "tron_rust_c",
     "xrp_rust_c",
+    "arweave_rust_c",
     "signature_rust_c"
 ]
 btc-only = [
@@ -105,4 +107,3 @@ git = "https://github.com/KeystoneHQ/rust-bitcoin.git"
 tag = "v0.31.2"
 default-features = false
 features = ["no-std", "secp-recovery"]
-

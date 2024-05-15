@@ -57,7 +57,7 @@ static void WalletTutorialsInit()
 
     g_tutorials[WALLET_LIST_METAMASK].items[1].walletName = _("connect_mm_title2");
     g_tutorials[WALLET_LIST_METAMASK].items[1].url = _("connect_mm_link2");
-    g_tutorials[WALLET_LIST_METAMASK].items[1].qrTitle = _("connect_mm_link2");
+    g_tutorials[WALLET_LIST_METAMASK].items[1].qrTitle = _("connect_mm_title2");
     g_tutorials[WALLET_LIST_METAMASK].items[1].qrUrl = _("connect_mm_link2");
 
     // WALLET_LIST_OKX
@@ -176,19 +176,11 @@ static void WalletTutorialsInit()
 
     // WALLET_LIST_UNISAT
     g_tutorials[WALLET_LIST_UNISAT].len = 1;
-    g_tutorials[WALLET_LIST_UNISAT].desc = _("connect_unisat_desc");
+    g_tutorials[WALLET_LIST_UNISAT].desc = _("connect_wallet_desc");
     g_tutorials[WALLET_LIST_UNISAT].items[0].walletName = _("connect_unisat_title");
     g_tutorials[WALLET_LIST_UNISAT].items[0].url = _("connect_unisat_link");
-    g_tutorials[WALLET_LIST_UNISAT].items[0].qrTitle = _("connect_unisat_qr_title");
-    g_tutorials[WALLET_LIST_UNISAT].items[0].qrUrl = _("connect_unisat_qr_link");
-
-    // WALLET_LIST_UNISAT
-    g_tutorials[WALLET_LIST_UNISAT].len = 1;
-    g_tutorials[WALLET_LIST_UNISAT].desc = _("connect_unisat_desc");
-    g_tutorials[WALLET_LIST_UNISAT].items[0].walletName = _("connect_unisat_title");
-    g_tutorials[WALLET_LIST_UNISAT].items[0].url = _("connect_unisat_link");
-    g_tutorials[WALLET_LIST_UNISAT].items[0].qrTitle = _("connect_unisat_qr_title");
-    g_tutorials[WALLET_LIST_UNISAT].items[0].qrUrl = _("connect_unisat_qr_link");
+    g_tutorials[WALLET_LIST_UNISAT].items[0].qrTitle = _("connect_unisat_title");
+    g_tutorials[WALLET_LIST_UNISAT].items[0].qrUrl = _("connect_unisat_link");
 
     // WALLET_LIST_KEPLR
     g_tutorials[WALLET_LIST_KEPLR].len = 1;
@@ -198,7 +190,15 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_KEPLR].items[0].qrTitle = _("connect_keplr_title");
     g_tutorials[WALLET_LIST_KEPLR].items[0].qrUrl = _("connect_keplr_link");
 
-    // WALLET_LIST_FEWCHA
+    //WALLET_LIST_ARCONNECT
+    g_tutorials[WALLET_LIST_ARCONNECT].len = 1;
+    g_tutorials[WALLET_LIST_ARCONNECT].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_ARCONNECT].items[0].walletName = _("connect_arconnect_title");
+    g_tutorials[WALLET_LIST_ARCONNECT].items[0].url = _("connect_arconnect_link");
+    g_tutorials[WALLET_LIST_ARCONNECT].items[0].qrTitle = _("connect_arconnect_title");
+    g_tutorials[WALLET_LIST_ARCONNECT].items[0].qrUrl = _("connect_arconnect_link");
+
+    //WALLET_LIST_FEWCHA
     g_tutorials[WALLET_LIST_FEWCHA].len = 1;
     g_tutorials[WALLET_LIST_FEWCHA].desc = _("connect_wallet_desc");
     g_tutorials[WALLET_LIST_FEWCHA].items[0].walletName = _("connect_fewcha_title");
@@ -244,14 +244,7 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_SPARROW].items[0].qrUrl = _("connect_sparrow_link");
 
     g_tutorials[WALLET_LIST_UNISAT].len = 1;
-    g_tutorials[WALLET_LIST_UNISAT].desc = _("connect_unisat_desc");
-    g_tutorials[WALLET_LIST_UNISAT].items[0].walletName = _("connect_unisat_title");
-    g_tutorials[WALLET_LIST_UNISAT].items[0].url = _("connect_unisat_link");
-    g_tutorials[WALLET_LIST_UNISAT].items[0].qrTitle = _("connect_unisat_qr_title");
-    g_tutorials[WALLET_LIST_UNISAT].items[0].qrUrl = _("connect_unisat_qr_link");
-
-    g_tutorials[WALLET_LIST_UNISAT].len = 1;
-    g_tutorials[WALLET_LIST_UNISAT].desc = _("connect_unisat_desc");
+    g_tutorials[WALLET_LIST_UNISAT].desc = _("connect_wallet_desc");
     g_tutorials[WALLET_LIST_UNISAT].items[0].walletName = _("connect_unisat_title");
     g_tutorials[WALLET_LIST_UNISAT].items[0].url = _("connect_unisat_link");
     g_tutorials[WALLET_LIST_UNISAT].items[0].qrTitle = _("connect_unisat_qr_title");
@@ -328,7 +321,7 @@ void GuiWalletTutorialInit(WALLET_LIST_INDEX_ENUM tutorialIndex)
         lv_obj_set_width(label, 320);
         lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
 
-        img = GuiCreateImg(cont, &imgQrcode36px);
+        img = GuiCreateImg(cont, &imgQrcodeTurquoise);
         lv_obj_align(img, LV_ALIGN_DEFAULT, 348, 33);
         lastTarget = cont;
 

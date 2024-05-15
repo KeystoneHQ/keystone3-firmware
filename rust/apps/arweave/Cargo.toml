@@ -1,5 +1,5 @@
 [package]
-name = "app_near"
+name = "app_arweave"
 version = "0.1.0"
 edition = "2021"
 
@@ -11,6 +11,10 @@ third_party = { path = "../../third_party" }
 app_utils = {path="../utils"}
 rand_chacha = { version="0.3.1", default-features=false }
 sha2 = { version = "0.10.6", default-features = false, features = ["oid"] }
+aes = { version = "0.8.4", default-features = false }
+cbc = { version = "0.1.2", default-features = false }
+cipher = { version = "0.4.4", default-features = false, features = ["block-padding", "alloc"] }
+serde = { version = "1.0.139", default-features = false }
 
 [dev-dependencies]
 keystore = { path = "../../keystore"}

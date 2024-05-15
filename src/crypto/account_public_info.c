@@ -20,6 +20,7 @@
 #include "user_fatfs.h"
 #include "multi_sig_wallet_manager.h"
 #include "log_print.h"
+#include "rsa.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
@@ -31,7 +32,7 @@
 #include "gui_btc_home_widgets.h"
 #endif
 
-#define PUB_KEY_MAX_LENGTH                  256
+#define PUB_KEY_MAX_LENGTH                  1024 + 1
 #define VERSION_MAX_LENGTH                  64
 #define INVALID_ACCOUNT_INDEX               255
 
@@ -44,11 +45,12 @@ typedef enum {
     ED25519,
     SECP256K1,
     BIP32_ED25519,
-} Curve_t;
+    RSA_KEY,
+} CryptoKey_t;
 
 typedef struct {
     ChainType chain;
-    Curve_t curve;
+    CryptoKey_t cryptoKey;
     char *name;
     char *path;
 } ChainItem_t;
@@ -58,10 +60,12 @@ static char *GetJsonStringFromPublicKey(void);
 
 static void FreePublicKeyRam(void);
 static void PrintInfo(void);
+static void SetIsTempAccount(bool isTemp);
 
 static AccountPublicKeyItem_t g_accountPublicKey[XPUB_TYPE_NUM];
 
 static uint8_t g_tempPublicKeyAccountIndex = INVALID_ACCOUNT_INDEX;
+static bool g_isTempAccount = false;
 
 static const char g_xpubInfoVersion[] = "1.0.0";
 static const char g_multiSigInfoVersion[] = "1.0.0";
@@ -161,6 +165,7 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_ADA_21,                BIP32_ED25519, "ada_21",                   "M/1852'/1815'/21'"},
     {XPUB_TYPE_ADA_22,                BIP32_ED25519, "ada_22",                   "M/1852'/1815'/22'"},
     {XPUB_TYPE_ADA_23,                BIP32_ED25519, "ada_23",                   "M/1852'/1815'/23'"},
+    {XPUB_TYPE_ARWEAVE,               RSA_KEY,       "ar",                       ""                 },
 #else
     {XPUB_TYPE_BTC,                     SECP256K1,      "btc_nested_segwit",        "M/49'/0'/0'"   },
     {XPUB_TYPE_BTC_LEGACY,              SECP256K1,      "btc_legacy",               "M/44'/0'/0'"   },
@@ -180,6 +185,29 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST,             SECP256K1,      "btc_multi_sig_p2wsh_test",              "M/48'/1'/0'/2'"   },
 #endif
 };
+
+static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoKey, const char *path, void *icarusMasterKey)
+{
+    switch (cryptoKey) {
+    case SECP256K1:
+        return get_extended_pubkey_by_seed(seed, len, path);
+    case ED25519:
+        return get_ed25519_pubkey_by_seed(seed, len, path);
+    case BIP32_ED25519:
+        ASSERT(icarusMasterKey);
+        return derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
+    case RSA_KEY: {
+        Rsa_primes_t *primes = FlashReadRsaPrimes();
+        if (primes == NULL)
+            return NULL;
+        SimpleResponse_c_char *result = generate_rsa_public_key(primes->p, 256, primes->q, 256);
+        SRAM_FREE(primes);
+        return result;
+    }
+    default:
+        return NULL;
+    }
+}
 
 char *GetXPubPath(uint8_t index)
 {
@@ -405,25 +433,13 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
 
         for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
             // SLIP32 wallet does not support ADA
-            if (isSlip39 && g_chainTable[i].curve == BIP32_ED25519) {
-                break;
+            if (isSlip39 && g_chainTable[i].cryptoKey == BIP32_ED25519) {
+                continue;
             }
 
-            switch (g_chainTable[i].curve) {
-            case SECP256K1:
-                xPubResult = get_extended_pubkey_by_seed(seed, len, g_chainTable[i].path);
-                break;
-            case ED25519:
-                xPubResult = get_ed25519_pubkey_by_seed(seed, len, g_chainTable[i].path);
-                break;
-            case BIP32_ED25519:
-                ASSERT(icarusMasterKey);
-                xPubResult = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, g_chainTable[i].path);
-                break;
-            default:
-                xPubResult = NULL;
-                printf("unsupported curve type: %d\r\n", g_chainTable[i].curve);
-                break;
+            xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey);
+            if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
+                continue;
             }
             CHECK_AND_FREE_XPUB(xPubResult)
             // printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
@@ -460,6 +476,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
 
 int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool newKey)
 {
+    SetIsTempAccount(false);
     printf("accountIndex = %d %s %d..\n", accountIndex, __func__, __LINE__);
     uint32_t addr;
     int32_t ret = SUCCESS_CODE;
@@ -493,6 +510,20 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     return ret;
 }
 
+static void SetIsTempAccount(bool isTemp)
+{
+    g_isTempAccount = isTemp;
+}
+
+bool GetIsTempAccount(void)
+{
+#ifndef COMPILE_SIMULATOR
+    return g_isTempAccount;
+#else
+    return false;
+#endif
+}
+
 int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool set)
 {
     uint32_t i;
@@ -504,6 +535,8 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
     int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
 
+    char *passphrase = GetPassphrase(accountIndex);
+    SetIsTempAccount(passphrase != NULL && passphrase[0] != 0);
     if (g_tempPublicKeyAccountIndex == accountIndex && set == false) {
         // g_accountPublicKey stores the current temp public key.
         printf("g_accountPublicKey stores the current temp public key.\r\n");
@@ -536,24 +569,13 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
 
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
             // SLIP32 wallet does not support ADA
-            if (isSlip39 && g_chainTable[i].curve == BIP32_ED25519) {
-                break;
+            if (isSlip39 && g_chainTable[i].cryptoKey == BIP32_ED25519) {
+                continue;
             }
-            switch (g_chainTable[i].curve) {
-            case SECP256K1:
-                xPubResult = get_extended_pubkey_by_seed(seed, len, g_chainTable[i].path);
-                break;
-            case ED25519:
-                xPubResult = get_ed25519_pubkey_by_seed(seed, len, g_chainTable[i].path);
-                break;
-            case BIP32_ED25519:
-                ASSERT(icarusMasterKey);
-                xPubResult = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, g_chainTable[i].path);
-                break;
-            default:
-                xPubResult = NULL;
-                printf("unsupported curve type: %d\r\n", g_chainTable[i].curve);
-                break;
+
+            xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey);
+            if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
+                continue;
             }
             ASSERT(xPubResult);
             if (xPubResult->error_code != 0) {
@@ -706,6 +728,11 @@ void AccountPublicInfoTest(int argc, char *argv[])
     }
 }
 
+static int GetChainTableSizeFromJson(cJSON *keyJson)
+{
+    return cJSON_GetObjectItem(keyJson, "ar") != NULL ? NUMBER_OF_ARRAYS(g_chainTable) : NUMBER_OF_ARRAYS(g_chainTable) - 1;
+}
+
 static bool GetPublicKeyFromJsonString(const char *string)
 {
     cJSON *rootJson, *keyJson, *chainJson;
@@ -731,13 +758,19 @@ static bool GetPublicKeyFromJsonString(const char *string)
             ret = false;
             break;
         }
-        if (cJSON_GetArraySize(keyJson) != NUMBER_OF_ARRAYS(g_chainTable)) {
-            printf("chain number does not match:%d %d\n", cJSON_GetArraySize(keyJson), NUMBER_OF_ARRAYS(g_chainTable));
+
+        int arraySize = GetChainTableSizeFromJson(keyJson);
+
+        if (cJSON_GetArraySize(keyJson) != arraySize) {
+            printf("chain number does not match:%d %d\n", cJSON_GetArraySize(keyJson), arraySize);
             ret = false;
             break;
         }
-        for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
+        for (i = 0; i < arraySize; i++) {
             chainJson = cJSON_GetObjectItem(keyJson, g_chainTable[i].name);
+            if (g_chainTable[i].cryptoKey == RSA_KEY && chainJson == NULL) {
+                continue;
+            }
             if (chainJson == NULL) {
                 ret = false;
                 break;
@@ -980,7 +1013,6 @@ static void ConvertXPub(char *dest, ChainType chainType)
     free_simple_response_c_char(result);
 }
 #endif
-
 
 #ifdef BTC_ONLY
 void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)

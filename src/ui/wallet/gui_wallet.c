@@ -175,7 +175,6 @@ static UREncodeResult *BasicGetMetamaskDataForAccountType(ETHAccountType account
     return g_urEncode;
 }
 
-#ifndef COMPILE_SIMULATOR
 // copy from gui_btc, need to use real data
 UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType)
 {
@@ -186,17 +185,11 @@ UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountTyp
 {
     return BasicGetMetamaskDataForAccountType(accountType, get_unlimited_connect_metamask_ur);
 }
-#endif
 
 UREncodeResult *GuiGetMetamaskData(void)
 {
-#ifndef COMPILE_SIMULATOR
     ETHAccountType accountType = GetMetamaskAccountType();
     return GetMetamaskDataForAccountType(accountType);
-#else
-    const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    return (void *)data;
-#endif
 }
 
 UREncodeResult *GuiGetImTokenData(void)
@@ -252,6 +245,23 @@ UREncodeResult *GuiGetKeplrData(void)
     const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
     return (void *)data;
 #endif
+}
+
+UREncodeResult *GuiGetArConnectData(void)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
+    if (arXpub == NULL || strlen(arXpub) != 1024) {
+        GuiSetupArConnectWallet();
+        arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
+        ClearSecretCache();
+    }
+    ASSERT(arXpub != NULL);
+    g_urEncode = get_connect_arconnect_wallet_ur_from_xpub(mfp, sizeof(mfp), arXpub);
+    printf("\ng_urEncode: %s\n", g_urEncode->data);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    return g_urEncode;
 }
 
 UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin)

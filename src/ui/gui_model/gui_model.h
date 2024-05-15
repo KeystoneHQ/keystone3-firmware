@@ -14,6 +14,7 @@
 #else
 #include "simulator_model.h"
 #endif
+#include "rsa.h"
 #include "drv_rtc.h"
 #include "drv_battery.h"
 #include "gui_animating_qrcode.h"
@@ -73,6 +74,8 @@ void GuiModelURGenerateQRCode(GenerateUR func);
 void GuiModelURUpdate(void);
 void GuiModelURClear(void);
 void GuiModelCheckTransaction(ViewType ViewType);
+int32_t RsaGenerateKeyPair(bool needEmitSignal);
+void GuiModelRsaGenerateKeyPair(void);
 void GuiModelTransactionCheckResultClear(void);
 void GuiModelParseTransaction(ReturnVoidPointerFunc func);
 bool ModelGetPassphraseQuickAccess(void);

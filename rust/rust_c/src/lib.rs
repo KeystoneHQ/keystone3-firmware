@@ -16,6 +16,8 @@ use wallet_rust_c;
 #[cfg(feature = "multi-coins")]
 use aptos_rust_c;
 #[cfg(feature = "multi-coins")]
+use arweave_rust_c;
+#[cfg(feature = "multi-coins")]
 use cardano_rust_c;
 #[cfg(feature = "multi-coins")]
 use cosmos_rust_c;

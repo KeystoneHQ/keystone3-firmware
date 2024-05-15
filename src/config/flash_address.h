@@ -22,7 +22,10 @@
 
 //USER1 DATA, 100KB
 #define SPI_FLASH_ADDR_USER1_DATA               0x00FB2000
-#define SPI_FLASH_SIZE_USER1_DATA               0x12000
+#define SPI_FLASH_SIZE_USER1_DATA               0x00010000
+
+#define SPI_FLASH_RSA_USER1_DATA                0x00FC2000
+#define SPI_FLASH_RSA_SIZE_USER1_DATA           0x2000
 
 //multi sig wallet storage zone
 #define SPI_FLASH_ADDR_USER1_MULTI_SIG_DATA     0x00FC4000
@@ -33,7 +36,10 @@
 
 //USER2 DATA, 100KB
 #define SPI_FLASH_ADDR_USER2_DATA               0x00FCB000
-#define SPI_FLASH_SIZE_USER2_DATA               0x12000
+#define SPI_FLASH_SIZE_USER2_DATA               0x10000
+
+#define SPI_FLASH_RSA_USER2_DATA                0x00FDB000
+#define SPI_FLASH_RSA_SIZE_USER2_DATA           0x2000
 
 //multi sig wallet storage zone
 #define SPI_FLASH_ADDR_USER2_MULTI_SIG_DATA     0x00FDD000
@@ -44,7 +50,10 @@
 
 //USER3 DATA, 100KB
 #define SPI_FLASH_ADDR_USER3_DATA               0x00FE4000
-#define SPI_FLASH_SIZE_USER3_DATA               0x12000
+#define SPI_FLASH_SIZE_USER3_DATA               0x10000
+
+#define SPI_FLASH_RSA_USER3_DATA                0x00FF4000
+#define SPI_FLASH_RSA_SIZE_USER3_DATA           0x2000
 
 //multi sig wallet storage zone
 #define SPI_FLASH_ADDR_USER3_MULTI_SIG_DATA     0x00FF6000

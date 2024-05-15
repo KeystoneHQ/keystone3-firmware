@@ -11,6 +11,7 @@ app_wallets = { path = "../../../../../apps/wallets" }
 third_party = { path = "../../../../../third_party" }
 app_utils = { path = "../../../../../apps/utils" }
 rust_tools = {path="../../../../../tools"}
+app_arweave = {path = "../../../../../apps/arweave"}
 cty = "0.2.2"
 cstr_core = "0.2.6"
 

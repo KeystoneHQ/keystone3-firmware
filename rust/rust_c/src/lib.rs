@@ -26,6 +26,8 @@ use ethereum_rust_c;
 #[cfg(feature = "multi-coins")]
 use near_rust_c;
 #[cfg(feature = "multi-coins")]
+use signature_rust_c;
+#[cfg(feature = "multi-coins")]
 use solana_rust_c;
 #[cfg(feature = "multi-coins")]
 use sui_rust_c;
@@ -33,5 +35,3 @@ use sui_rust_c;
 use tron_rust_c;
 #[cfg(feature = "multi-coins")]
 use xrp_rust_c;
-#[cfg(feature = "multi-coins")]
-use signature_rust_c;

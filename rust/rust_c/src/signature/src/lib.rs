@@ -2,19 +2,19 @@
 #![feature(error_in_core)]
 #![allow(unused_unsafe)]
 extern crate alloc;
-mod signature;
 mod errors;
+mod signature;
 
 use common_rust_c::utils::recover_c_char;
-use signature::verify_signature;
 use core::slice;
 use cty::c_char;
+use signature::verify_signature;
 
 #[no_mangle]
 pub extern "C" fn verify_frimware_signature(
     signature_ptr: *mut c_char,
     message_hash_ptr: *mut u8,
-    pubkey_ptr: *mut u8
+    pubkey_ptr: *mut u8,
 ) -> bool {
     let signature = recover_c_char(signature_ptr);
     let message_hash = unsafe { slice::from_raw_parts(message_hash_ptr, 32) };
@@ -24,4 +24,3 @@ pub extern "C" fn verify_frimware_signature(
         Err(_) => false,
     }
 }
-

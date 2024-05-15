@@ -2,11 +2,10 @@ use crate::errors::{Result, RustCError};
 use alloc::string::ToString;
 use secp256k1::{ecdsa, Message, PublicKey, Secp256k1, SecretKey};
 
-
 pub fn verify_signature(signature: &[u8], message_hash: &[u8], pubkey: &[u8]) -> Result<bool> {
     let secp = Secp256k1::verification_only();
-    let public_key = PublicKey::from_slice(pubkey)
-        .map_err(|e| RustCError::FormatTypeError(e.to_string()))?;
+    let public_key =
+        PublicKey::from_slice(pubkey).map_err(|e| RustCError::FormatTypeError(e.to_string()))?;
     let message = Message::from_slice(message_hash)
         .map_err(|e| RustCError::FormatTypeError(e.to_string()))?;
     let mut sig = ecdsa::Signature::from_compact(signature)

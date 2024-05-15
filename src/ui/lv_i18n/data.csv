@@ -194,9 +194,9 @@ device setting,24,device_setting_mid_btn,Device Settings,Настройки ус
 ,20,fingerprint_add_failed_use_another,"Failed to add fingerprint, please use another finger and try again",Не удалось добавить отпечаток пальца. Используйте другой палец и повторите попытку.,지문을 추가하지 못했습니다. 다른 손가락을 사용한 후 다시 시도하십시오,"无法添加指纹,请使用另一根手指","No se pudo agregar la huella digital, por favor utiliza otro dedo e intenta de nuevo.",,,
 ,20,fingerprint_add_failed_duplicate,"Duplicate finger, please use a different finger","Дубликат пальца, используйте другой палец.",지문이 중복되었습니다. 다른 손가락을 사용하십시오,"重复指纹,请尝试使用其他手指","Dedo duplicado, por favor usa un dedo diferente",,,
 ,20,fingerprint_add_failed_partial,"Partial fingerprint detected, please try again",Обнаружены частичные отпечатки пальцев,지문의 일부가 발견되었습니다. 다시 시도하십시오,"检测到部分指纹,请重试","Detectada huella parcial, por favor inténtelo de nuevo",,,
-,20,fingerprint_add_too_wet,Moisture detected. Please wipe your finger\nand try again,"Обнаружена влага. Пожалуйста, вытрите палец и попробуйте снова.",습기가 감지되었습니다. 손가락을 닦고 다시 시도하세요.,"检测到湿气,请擦拭您的手指后重试","Se ha detectado humedad. Por favor, limpie su dedo e inténtelo de nuevo.",,,
-,20,fingerprint_add_overlaps_too_much,"Duplicate area, please adjust your\nfinger's position slightly","Область дублирования, пожалуйста, немного скорректируйте положение вашего пальца.",중복 영역이 있습니다. 손가락 위치를 약간 조정해주세요.,"重复区域,请稍微调整您的手指位置","Área duplicada, por favor ajusta ligeramente la posición de tu dedo.",,,
-,20,fingerprint_add_poor_qualtiy,"Fingerprint unclear, please restart process \nand use different finger to try again","Отпечаток пальца нечеткий, пожалуйста, перезапустите процесс и попробуйте снова с другим пальцем.",지문이 불분명합니다. 절차를 다시 시작하고 다른 손가락으로 다시 시도하세요.,"指纹不清晰,请重启流程并用另一个手指再试一次","La huella dactilar no está clara, por favor reinicie el proceso y use un dedo diferente para intentarlo de nuevo.",,,
+,20,fingerprint_add_too_wet,Moisture detected. Please wipe your finger and try again,"Обнаружена влага. Пожалуйста, вытрите палец и попробуйте снова.",습기가 감지되었습니다. 손가락을 닦고 다시 시도하세요.,"检测到湿气,请擦拭您的手指后重试","Se ha detectado humedad. Por favor, limpie su dedo e inténtelo de nuevo.",,,
+,20,fingerprint_add_overlaps_too_much,"Duplicate area, please adjust your finger's position slightly","Область дублирования, пожалуйста, немного скорректируйте положение вашего пальца.",중복 영역이 있습니다. 손가락 위치를 약간 조정해주세요.,"重复区域,请稍微调整您的手指位置","Área duplicada, por favor ajusta ligeramente la posición de tu dedo.",,,
+,20,fingerprint_add_poor_qualtiy,"Fingerprint unclear, please restart process and use different finger to try again","Отпечаток пальца нечеткий, пожалуйста, перезапустите процесс и попробуйте снова с другим пальцем.",지문이 불분명합니다. 절차를 다시 시작하고 다른 손가락으로 다시 시도하세요.,"指纹不清晰,请重启流程并用另一个手指再试一次","La huella dactilar no está clara, por favor reinicie el proceso y use un dedo diferente para intentarlo de nuevo.",,,
 ,20,fingerprint_sign_tx,Sign Transactions,Подпись транзакций,서명 트랜잭션,交易签名,Firmar transacciones,,,
 ,24,fingerprint_nth,Finger %d,Палец %d,손가락 %d,指纹 %d,Dedo %d,,,
 ,28,fingerprint_nth_subtitle,Finger %d,Палец %d,손가락 %d,指纹 %d,Dedo %d,,,
@@ -305,7 +305,7 @@ Receive,20,receive_btc_alert_desc,This address is exclusively for BTC transactio
 1. SegWit nativo es el formato de dirección de Bitcoin más eficiente y seguro. Proporciona ahorros de costos y una seguridad mejorada en comparación con otros formatos de dirección tradicionales, generalmente comenzando con bc1.
 2. Formato heredado es una de las primeras versiones de Bitcoin, generalmente comenzando con 1.
 3. SegWit anidado es una solución diseñada para facilitar la transición al SegWit nativo de manera fluida, generalmente comenzando con 3.",,,
-,20,receive_more_t_qr_link,https://keyst.one/t/3rd/faq,https://keyst.one/t/3rd/faq,https://keyst.one/t/3rd/faq,https://keyst.one/t/3rd/faq,https://keyst.one/t/3rd/faq ⇒ 'https://keyst.one/t/3rd/faq',,,
+,20,receive_more_t_qr_link,https://keyst.one/t/3rd/faq,https://keyst.one/t/3rd/faq,https://keyst.one/t/3rd/faq,https://keyst.one/t/3rd/faq,https://keyst.one/t/3rd/faq,,,
 ,24,receive_btc_more_t_title2,Can the three different address formats be used to transfer funds to each other?,Можно ли использовать три разных формата адресов для перевода средств между ними?,세 가지 다른 주소 형식을 사용하여 서로 자금을 송금할 수 있습니까?,这三种不同的地址格式可以相互接受资产吗?,¿Se pueden utilizar los tres formatos de dirección diferentes para transferir fondos entre ellos?,,,
 ,20,receive_btc_more_t_desc2,"Yes, the three distinct Bitcoin address formats can be used for transferring funds among each other. However, it’s important to keep in mind the following aspects:
 1. Differing transaction fees: The choice of address format can influence transaction fees, with Native SegWit addresses generally having lower fees.
@@ -430,7 +430,7 @@ Connect,20,connect_wallet_desc,Visit the link below on your computer or mobile d
 ,24,connect_solflare_title,Solflare,Solflare,Solflare,Solflare,Solflare,,,
 ,20,connect_solflare_link,https://keyst.one/t/3rd/solflare,https://keyst.one/t/3rd/solflare,https://keyst.one/t/3rd/solflare,https://keyst.one/t/3rd/solflare,https://keyst.one/t/3rd/solflare,,,
 ,24,connect_zapper_title,Zapper,Zapper,Zapper,Zapper,Zapper,,,
-,20,connect_zapper_link,https://keyst.one/t/3rd/zapper,https://keyst.one/t/3rd/zapper,https://keyst.one/t/3rd/zapper,https://keyst.one/t/3rd/zapper,https://keyst.one/t/3rd/zapper: 'https://keyst.one/t/3rd/zapper',,,
+,20,connect_zapper_link,https://keyst.one/t/3rd/zapper,https://keyst.one/t/3rd/zapper,https://keyst.one/t/3rd/zapper,https://keyst.one/t/3rd/zapper,https://keyst.one/t/3rd/zapper,,,
 ,24,connect_yearn_title,Yearn,Yearn,Yearn,Yearn,Añorar,,,
 ,20,connect_yearn_link,https://keyst.one/t/3rd/yearn,https://keyst.one/t/3rd/yearn,https://keyst.one/t/3rd/yearn,https://keyst.one/t/3rd/yearn,https://keyst.one/t/3rd/yearn,,,
 ,24,connect_sushi_title,SushiSwap,SushiSwap,SushiSwap,Sushiswap,SushiSwap,,,

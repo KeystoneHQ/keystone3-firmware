@@ -104,7 +104,7 @@ static void GuiCreateNameWalletWidget(lv_obj_t *parent)
 
     label = GuiCreateIllustrateLabel(parent, _("single_backup_namewallet_desc"));
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     GuiSetEmojiIconIndex(GUI_KEYBOARD_EMOJI_NEW_INDEX);
     g_nameWalletKb = GuiCreateFullKeyBoard(parent, ReadyNextTileHandler, KEY_STONE_FULL_L, NULL);
@@ -211,7 +211,7 @@ static void GuiCreateBackupWidget(lv_obj_t *parent)
 
     label = GuiCreateIllustrateLabel(parent, _("single_backup_choose_backup_desc"));
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     lv_obj_t *img = GuiCreateImg(parent, &imgSingleBackup);
 

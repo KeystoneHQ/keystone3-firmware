@@ -373,15 +373,13 @@ static void GuiCreateUsbInstructionTile(lv_obj_t *parent)
     label = GuiCreateTitleLabel(parent, _("firmware_update_usb_title"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
 
-    label = GuiCreateIllustrateLabel(parent, "#F5870A 1#");
-    lv_label_set_recolor(label, true);
+    label = GuiCreateOrangeIllustrateLabel(parent, "1");
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 100);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_desc1"));
     lv_obj_set_width(label, 384);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 100);
 
-    label = GuiCreateIllustrateLabel(parent, "#F5870A 2#");
-    lv_label_set_recolor(label, true);
+    label = GuiCreateOrangeIllustrateLabel(parent, "2");
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_desc2"));
     lv_obj_set_width(label, 384);
@@ -398,15 +396,13 @@ static void GuiCreateUsbInstructionTile(lv_obj_t *parent)
     lv_obj_add_event_cb(img, GuiQrcodeHandler, LV_EVENT_CLICKED, NULL);
     GuiAlignToPrevObj(img, LV_ALIGN_RIGHT_MID, 30, 0);
 
-    label = GuiCreateIllustrateLabel(parent, "#F5870A 3#");
-    lv_label_set_recolor(label, true);
+    label = GuiCreateOrangeIllustrateLabel(parent, "3");
     lv_obj_align_to(label, lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 3), LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_desc3"));
     lv_obj_set_width(label, 384);
     GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
 
-    label = GuiCreateIllustrateLabel(parent, "#F5870A 4#");
-    lv_label_set_recolor(label, true);
+    label = GuiCreateOrangeIllustrateLabel(parent, "4");
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
 
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_desc4"));
@@ -414,8 +410,7 @@ static void GuiCreateUsbInstructionTile(lv_obj_t *parent)
     lv_label_set_recolor(label, true);
     GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
 
-    label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_title2"));
-    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+    label = GuiCreateOrangeIllustrateLabel(parent, _("firmware_update_usb_title2"));
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
     label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_desc5"));
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);

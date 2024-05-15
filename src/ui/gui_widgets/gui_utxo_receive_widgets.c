@@ -536,7 +536,6 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         tempObj = GuiCreateLabelWithFont(g_utxoReceiveWidgets.attentionCont, hint, g_defIllustrateFont);
         lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
         tempObj = GuiCreateTextBtn(g_utxoReceiveWidgets.attentionCont, _("got_it"));
-        lv_obj_set_size(tempObj, 122, 66);
         lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
         lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_add_event_cb(tempObj, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);

@@ -152,7 +152,7 @@ static void GuiSetLanguageWidget(lv_obj_t *parent)
 
     label = GuiCreateIllustrateLabel(parent, _("language_desc"));
     lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     GuiCreateLanguageWidget(parent, 270 - GUI_MAIN_AREA_OFFSET);
 

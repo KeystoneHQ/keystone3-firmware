@@ -205,6 +205,11 @@ void GuiFirmwareSdCardCopyResult(bool en)
     }
 }
 
+void GuiFirmwareWindowDeinit(void)
+{
+    GUI_DEL_OBJ(g_noticeWindow)
+}
+
 void GuiFirmwareUpdateDeInit(void)
 {
 #ifndef BTC_ONLY

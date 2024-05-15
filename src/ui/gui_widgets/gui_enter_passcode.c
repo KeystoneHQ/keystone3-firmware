@@ -322,6 +322,7 @@ void PassWordPinSwitch(GuiEnterPasscodeItem_t *item)
     }
     lv_obj_add_flag(item->errLabel, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(item->fpErrLabel, LV_OBJ_FLAG_HIDDEN);
     if (item->mode == ENTER_PASSCODE_VERIFY_PIN || item->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN) {
         GuiEmitSignal(SIG_PASSCODE_SWITCH_TO_PIN, NULL, 0);
     } else if (item -> mode == ENTER_PASSCODE_VERIFY_PASSWORD || item->mode == ENTER_PASSCODE_LOCK_VERIFY_PASSWORD) {
@@ -702,6 +703,7 @@ void GuiEnterPassCodeStatus(GuiEnterPasscodeItem_t *item, bool en)
         lv_obj_add_flag(item->errLabel, LV_OBJ_FLAG_HIDDEN);
         lv_textarea_set_text(item->kb->ta, "");
     }
+    lv_obj_add_flag(item->fpErrLabel, LV_OBJ_FLAG_HIDDEN);
     memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
 }
 
@@ -725,7 +727,6 @@ void GuiFingerPrintStatus(GuiEnterPasscodeItem_t *item, bool en, uint8_t errCnt)
 
 void SwitchPasswordModeHandler(lv_event_t *e)
 {
-
     lv_obj_t *ta = lv_event_get_user_data(e);
     lv_obj_t *img = lv_event_get_target(e);
     bool en = lv_textarea_get_password_mode(ta);

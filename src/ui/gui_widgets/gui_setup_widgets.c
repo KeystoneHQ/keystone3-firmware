@@ -24,8 +24,13 @@ static const char *g_languageList[] = {
     "English",
     "Русский язык",
     "简体中文",
+<<<<<<< HEAD
     "한국인",
     "español",
+=======
+    "한국어", // "한국인",
+    "German",
+>>>>>>> master
 };
 
 typedef enum {

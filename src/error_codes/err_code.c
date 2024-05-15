@@ -63,6 +63,12 @@ static const ErrCodeDesc_t g_faults[] = {
     {ERR_UPDATE_PUB_KEY_NO_SPACE, "Update pub key no space"},
 
     {ERR_UPDATE_FIRMWARE_NOT_DETECTED, "Update firmware not detected"},
+    {ERR_UPDATE_SDCARD_NOT_DETECTED, "Update SD card not detected"},
+    {ERR_UPDATE_CHECK_VERSION_FAILED, "Update check version failed"},
+    {ERR_UPDATE_NO_UPGRADABLE_FIRMWARE, "Update no upgradable firmware"},
+    {ERR_UPDATE_CHECK_FILE_EXIST, "Update check file exist"},
+    {ERR_UPDATE_CHECK_CRC_FAILED, "Update check crc failed"},
+    {ERR_UPDATE_CHECK_SIGNATURE_FAILED, "Update check signature failed"},
 
     {ERR_INVALID_QRCODE, "Invalid QR code"},
     {ERR_INVALID_FILE, "Invalid file"},

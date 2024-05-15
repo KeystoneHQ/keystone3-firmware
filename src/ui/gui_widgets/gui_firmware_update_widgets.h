@@ -21,5 +21,6 @@ void GuiFirmwareSdCardCopyResult(bool en);
 void GuiFirmwareUpdateVerifyPasswordErrorCount(void *param);
 void GuiFirmwareUpdateWidgetRefresh(void);
 void GuiFirmwareUpdateSha256Percent(uint8_t percent);
+void GuiFirmwareVerifyPercent(uint8_t percent);
 
 #endif

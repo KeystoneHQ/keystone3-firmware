@@ -18,6 +18,15 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
+int32_t GetUpdatePubKey(uint8_t *pubKey)
+{
+    sprintf(pubKey, "%02x", 0x4);
+    for (int i = 1; i < 65; i++)
+    {
+        sprintf(&pubKey[i], "%02x", i);
+    }
+}
+
 void TrngGet(void *buf, uint32_t len)
 {
     uint32_t buf4[4];
@@ -47,6 +56,7 @@ void SE_GetTRng(void *buf, uint32_t len)
         data[i] = randNum & 0xFF;
     }
 }
+
 
 int32_t SE_GetDS28S60Rng(uint8_t *rngArray, uint32_t num)
 {
@@ -235,9 +245,15 @@ bool SdCardInsert(void)
     return true;
 }
 
-bool CheckOtaBinVersion(char *version)
+bool CheckOtaBinVersion(void)
 {
-    strcpy(version, "1.1.1");
+    return true;
+}
+
+bool GetOtaBinVersion(char *version, uint32_t maxLen)
+{
+    char *otaBinVersion = "1.4.0";
+    strncpy_s(version, maxLen, otaBinVersion, strlen(otaBinVersion));
     return true;
 }
 

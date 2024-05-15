@@ -8,7 +8,14 @@
 #include "assert.h"
 
 #define FACTORY_RESULT_CHECK_ENABLE         1
-
+#if (SIGNATURE_ENABLE == 1)
+const uint8_t g_defaultPubKey[] = {
+    0xD9, 0xA5, 0xDB, 0x68, 0x66, 0x36, 0x4B, 0x7F, 0x55, 0xCF, 0x6F, 0x3C, 0x19, 0x9A, 0x96, 0x26,
+    0x5C, 0x6E, 0x71, 0x70, 0x87, 0xBE, 0x9D, 0xA8, 0xF4, 0x1D, 0xEA, 0xF5, 0x70, 0xBC, 0x7C, 0x2E,
+    0x0D, 0x48, 0x4C, 0xB3, 0x9F, 0x0D, 0xDE, 0xFF, 0xB4, 0x17, 0xF9, 0x95, 0xF9, 0x14, 0x06, 0xCB,
+    0xF0, 0xE1, 0x56, 0x63, 0x9A, 0xD8, 0x05, 0x6D, 0x0E, 0xE3, 0x51, 0xC2, 0x58, 0x31, 0xF8, 0xD9
+};
+#endif
 int32_t GetSerialNumber(char *serialNumber)
 {
     char temp[256];
@@ -136,12 +143,16 @@ int32_t GetUpdatePubKey(uint8_t *pubKey)
             printf("not found,addr=0x%X\n", addr);
             memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
             memset_s(pubKey, UPDATE_PUB_KEY_LEN + 1, 0, UPDATE_PUB_KEY_LEN + 1);
+            pubKey[0] = 4;
+            memcpy(pubKey + 1, g_defaultPubKey, sizeof(g_defaultPubKey));
             return ERR_UPDATE_PUB_KEY_NOT_EXIST;
         }
     }
     printf("not found,addr=0x%X\n", addr);
     memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
     memset_s(pubKey, UPDATE_PUB_KEY_LEN + 1, 0, UPDATE_PUB_KEY_LEN + 1);
+    pubKey[0] = 4;
+    memcpy(pubKey + 1, g_defaultPubKey, sizeof(g_defaultPubKey));
     return ERR_UPDATE_PUB_KEY_NOT_EXIST;
 }
 

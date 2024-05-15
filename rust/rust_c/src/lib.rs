@@ -26,6 +26,8 @@ use ethereum_rust_c;
 #[cfg(feature = "multi-coins")]
 use near_rust_c;
 #[cfg(feature = "multi-coins")]
+use signature_rust_c;
+#[cfg(feature = "multi-coins")]
 use solana_rust_c;
 #[cfg(feature = "multi-coins")]
 use sui_rust_c;

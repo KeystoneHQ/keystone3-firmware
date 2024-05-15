@@ -21,13 +21,15 @@ static int32_t GuiFirmwareUpdateViewDeInit(void)
 int32_t GuiFirmwareUpdateViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     uint32_t rcvValue;
-    uint8_t checkSumPercent = 0;
+    uint8_t percent = 0;
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiFirmwareUpdateViewInit(param);
+        GuiFirmwareUpdateInit(param);
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiFirmwareUpdateViewDeInit();
+        GuiFirmwareUpdateDeInit();
+        break;
     case GUI_EVENT_DISACTIVE:
         break;
     case SIG_INIT_SDCARD_CHANGE:
@@ -69,11 +71,19 @@ int32_t GuiFirmwareUpdateViewEventProcess(void *self, uint16_t usEvent, void *pa
         break;
     case SIG_SETTING_SHA256_PERCENT:
         if (param != NULL) {
-            checkSumPercent = *(uint8_t *)param;
+            percent = *(uint8_t *)param;
         } else {
             return ERR_GUI_ERROR;
         }
-        GuiFirmwareUpdateSha256Percent(checkSumPercent);
+        GuiFirmwareUpdateSha256Percent(percent);
+        break;
+    case SIG_SETTING_VERIFY_OTA_PERCENT:
+        if (param != NULL) {
+            percent = *(uint8_t *)param;
+        } else {
+            return ERR_GUI_ERROR;
+        }
+        GuiFirmwareVerifyPercent(percent);
         break;
     case SIG_SETTING_SHA256_PERCENT_ERROR:
         GuiFirmwareUpdateSha256Percent(0xFF);

@@ -265,9 +265,8 @@ void GuiStatusBarSetSdCard(bool connected)
         lv_obj_clear_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN);
         uint8_t accountCnt = 0;
         GetExistAccountNum(&accountCnt);
-        if (!GuiLockScreenIsTop() && accountCnt > 0 &&
-                CheckOtaBinVersion(version) && !GuiCheckIfTopView(&g_forgetPassView)) {
-            GuiCreateSdCardUpdateHintbox(version, false);
+        if (!GuiLockScreenIsTop() && accountCnt > 0 && FatfsFileExist(SD_CARD_OTA_BIN_PATH) && !GuiCheckIfTopView(&g_forgetPassView)) {
+            GuiCreateSdCardVerifyBinWindow(version, false);
         }
     } else {
         lv_obj_add_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN);

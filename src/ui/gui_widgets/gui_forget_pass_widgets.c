@@ -305,6 +305,7 @@ void GuiForgetPassEntranceWidget(void *parent)
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 204 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *label = GuiCreateLittleTitleLabel(parent, _("forgot_password_reset_passcode_intro_title"));
+    lv_obj_set_width(label, 480);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 284 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *desc = GuiCreateNoticeLabel(parent, _("forgot_password_reset_passcode_intro_desc"));

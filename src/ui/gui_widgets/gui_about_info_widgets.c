@@ -199,6 +199,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
 
     uint16_t height = 82;
     titleLabel = GuiCreateTextLabel(parent, _("about_info_fingerprint_firmware_version"));
+    lv_obj_refr_size(titleLabel);
     height += lv_obj_get_self_height(titleLabel);
     contentLabel = GuiCreateNoticeLabel(parent, fpVersion);
     if (!FpModuleIsChipState()) {
@@ -215,15 +216,15 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     table[0].position.y = 24;
 
     table[1].obj = contentLabel;
-    table[1].align = LV_ALIGN_DEFAULT;
+    table[1].align = LV_ALIGN_BOTTOM_LEFT;
     table[1].position.x = 24;
-    table[1].position.y = 64;
+    table[1].position.y = -24;
     button = GuiCreateButton(parent, 456, height, table, NUMBER_OF_ARRAYS(table) - 1,
                              NULL, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 484);
 
     line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 610);
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 484 + height + 12);
 
     titleLabel = GuiCreateTextLabel(parent, _("about_info_battery_voltage"));
     contentLabel = GuiCreateNoticeLabel(parent, "");
@@ -239,7 +240,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     table[1].position.y = 64;
     button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table) - 1,
                              NULL, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 619);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 484 + height + 12 + 9);
 }
 
 void GuiAboutWidgetsLogExport(bool en, int32_t errCode)

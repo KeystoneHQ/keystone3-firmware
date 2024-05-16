@@ -9,8 +9,8 @@ use third_party::serde_json::{self, Value};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct TonTransaction {
-    signing_message: SigningMessage,
-    buffer_to_sign: Vec<u8>,
+    pub signing_message: SigningMessage,
+    pub buffer_to_sign: Vec<u8>,
 }
 
 impl TonTransaction {

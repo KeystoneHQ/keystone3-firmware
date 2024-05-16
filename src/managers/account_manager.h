@@ -16,6 +16,7 @@ typedef enum {
 typedef enum {
     MNEMONIC_TYPE_BIP39,
     MNEMONIC_TYPE_SLIP39,
+    MNEMONIC_TYPE_TON,
 } MnemonicType;
 
 // // define the error code by module
@@ -23,12 +24,19 @@ typedef enum {
 //     ERR_KEYSTORE_608B_GENPUBERROR = 0x0100,
 // } Keystone_ERROR_CODE;
 
+// IMPORTANT!
+// DO NOT CHANGE ORDER OF THE MEMBERS IN THE STRUCTURE
 typedef struct {
     uint8_t entropyLen;
     PasscodeType passcodeType       : 1;
-    MnemonicType mnemonicType       : 1;
+    uint8_t isSlip39                : 1;    //true if slip39 wallet.
     uint8_t passphraseQuickAccess   : 1;
     uint8_t passphraseMark          : 1;    //true if Passphrase set, non-volatile storage.
+    uint8_t isTon                   : 1;    //true if TON wallet.
+    //still remain 3 bits for flags.
+    //uint8_t flag1                  : 1;
+    //uint8_t flag2                  : 1;
+    //uint8_t flag3                  : 1;
     uint8_t slip39Id[2];                    //slip39 Idrandom identifier.
     uint8_t mfp[4];
     uint8_t slip39Ie[1];                    //slip39 Iteration exponent.

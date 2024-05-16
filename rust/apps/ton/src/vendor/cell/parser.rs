@@ -166,7 +166,6 @@ impl CellParser<'_> {
 
     pub fn load_address(&mut self) -> Result<TonAddress, TonCellError> {
         let tp = self.bit_reader.read::<u8>(2).map_cell_parser_error()?;
-        extern crate std;
         match tp {
             0 => Ok(TonAddress::null()),
             2 => {

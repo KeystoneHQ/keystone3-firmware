@@ -82,7 +82,13 @@ uint8_t *GetCurrentAccountMfp()
 /// @return Mnemonic type.
 MnemonicType GetMnemonicType(void)
 {
-    return g_currentAccountInfo.mnemonicType;
+    if (g_currentAccountInfo.isSlip39) {
+        return MNEMONIC_TYPE_SLIP39;
+    }
+    if (g_currentAccountInfo.isTon) {
+        return MNEMONIC_TYPE_TON;
+    }
+    return MNEMONIC_TYPE_BIP39;
 }
 
 /// @brief Set passcode type for the current account.
@@ -96,7 +102,18 @@ void SetPasscodeType(PasscodeType type)
 /// @param[in] type Mnemonic type.
 void SetMnemonicType(MnemonicType type)
 {
-    g_currentAccountInfo.mnemonicType = type;
+    g_currentAccountInfo.isSlip39 = 0;
+    g_currentAccountInfo.isTon = 0;
+    switch (type) {
+    case MNEMONIC_TYPE_SLIP39:
+        g_currentAccountInfo.isSlip39 = 1;
+        break;
+    case MNEMONIC_TYPE_TON:
+        g_currentAccountInfo.isTon = 1;
+        break;
+    default:
+        break;
+    }
     SaveCurrentAccountInfo();
 }
 
@@ -107,7 +124,25 @@ int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t e
     CLEAR_OBJECT(g_currentAccountInfo);
     g_currentAccountIndex = accountIndex;
 
-    int32_t ret = SaveNewEntropy(accountIndex, entropy, entropyLen, password);
+    int32_t ret = SaveNewBip39Entropy(accountIndex, entropy, entropyLen, password);
+    CHECK_ERRCODE_RETURN_INT(ret);
+
+    ret = SaveCurrentAccountInfo();
+    CHECK_ERRCODE_RETURN_INT(ret);
+    ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
+    CHECK_ERRCODE_RETURN_INT(ret);
+    return ret;
+}
+
+int32_t CreateNewTonAccount(uint8_t accountIndex, const char *mnemonic, const char *password)
+{
+    ASSERT(accountIndex <= 2);
+    DestroyAccount(accountIndex);
+    CLEAR_OBJECT(g_currentAccountInfo);
+    g_currentAccountIndex = accountIndex;
+    g_currentAccountInfo.isSlip39 = true;
+
+    int32_t ret = SaveNewTonMnemonic(accountIndex, mnemonic, password);
     CHECK_ERRCODE_RETURN_INT(ret);
 
     ret = SaveCurrentAccountInfo();
@@ -123,7 +158,7 @@ int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const u
     DestroyAccount(accountIndex);
     CLEAR_OBJECT(g_currentAccountInfo);
     g_currentAccountIndex = accountIndex;
-    g_currentAccountInfo.mnemonicType = MNEMONIC_TYPE_SLIP39;
+    g_currentAccountInfo.isTon = true;
     int32_t ret = SaveNewSlip39Entropy(accountIndex, ems, entropy, entropyLen, password, id, ie);
     CHECK_ERRCODE_RETURN_INT(ret);
     memcpy_s(g_currentAccountInfo.slip39Id, sizeof(g_currentAccountInfo.slip39Id), &id, sizeof(id));

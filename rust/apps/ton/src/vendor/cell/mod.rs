@@ -173,23 +173,23 @@ impl Cell {
         Ok(URL_SAFE_NO_PAD.encode(self.cell_hash()?))
     }
 
-    ///Snake format when we store part of the data in a cell and the rest of the data in the first child cell (and so recursively).
-    ///
-    ///Must be prefixed with 0x00 byte.
-    ///### TL-B scheme:
-    ///
-    /// ``` tail#_ {bn:#} b:(bits bn) = SnakeData ~0; ```
-    ///
-    /// ``` cons#_ {bn:#} {n:#} b:(bits bn) next:^(SnakeData ~n) = SnakeData ~(n + 1); ```
-    pub fn load_snake_formatted_dict(&self) -> Result<BTreeMap<[u8; 32], Vec<u8>>, TonCellError> {
-        //todo: #79 key in BTreeMap must be [u8;32]
-        let dict_loader = GenericDictLoader::new(
-            key_extractor_256bit,
-            value_extractor_snake_formatted_string,
-            256,
-        );
-        self.load_generic_dict(&dict_loader)
-    }
+    // ///Snake format when we store part of the data in a cell and the rest of the data in the first child cell (and so recursively).
+    // ///
+    // ///Must be prefixed with 0x00 byte.
+    // ///### TL-B scheme:
+    // ///
+    // /// ``` tail#_ {bn:#} b:(bits bn) = SnakeData ~0; ```
+    // ///
+    // /// ``` cons#_ {bn:#} {n:#} b:(bits bn) next:^(SnakeData ~n) = SnakeData ~(n + 1); ```
+    // pub fn load_snake_formatted_dict(&self) -> Result<BTreeMap<[u8; 32], Vec<u8>>, TonCellError> {
+    //     //todo: #79 key in BTreeMap must be [u8;32]
+    //     let dict_loader = GenericDictLoader::new(
+    //         key_extractor_256bit,
+    //         value_extractor_snake_formatted_string,
+    //         256,
+    //     );
+    //     self.load_generic_dict(&dict_loader)
+    // }
 
     pub fn load_snake_formatted_string(&self) -> Result<String, TonCellError> {
         let mut cell: &Cell = self;
@@ -249,93 +249,93 @@ impl Cell {
         }
     }
 
-    pub fn load_generic_dict<K, V, L>(&self, dict_loader: &L) -> Result<BTreeMap<K, V>, TonCellError>
-    where
-        K: Hash + Eq + Clone + core::cmp::Ord,
-        L: DictLoader<K, V>,
-    {
-        let mut map: BTreeMap<K, V> = BTreeMap::new();
-        self.dict_to_hashmap::<K, V, L>(BitString::new(), &mut map, dict_loader)?;
-        Ok(map)
-    }
+    // pub fn load_generic_dict<K, V, L>(&self, dict_loader: &L) -> Result<BTreeMap<K, V>, TonCellError>
+    // where
+    //     K: Hash + Eq + Clone + core::cmp::Ord,
+    //     L: DictLoader<K, V>,
+    // {
+    //     let mut map: BTreeMap<K, V> = BTreeMap::new();
+    //     self.dict_to_hashmap::<K, V, L>(BitString::new(), &mut map, dict_loader)?;
+    //     Ok(map)
+    // }
 
-    ///Port of https://github.com/ton-community/ton/blob/17b7e9e6154131399d57507b0c4a178752342fd8/src/boc/dict/parseDict.ts#L55
-    fn dict_to_hashmap<K, V, L>(
-        &self,
-        prefix: BitString,
-        map: &mut BTreeMap<K, V>,
-        dict_loader: &L,
-    ) -> Result<(), TonCellError>
-    where
-        K: Hash + Eq + core::cmp::Ord,
-        L: DictLoader<K, V>,
-    {
-        let mut parser = self.parser();
+    // ///Port of https://github.com/ton-community/ton/blob/17b7e9e6154131399d57507b0c4a178752342fd8/src/boc/dict/parseDict.ts#L55
+    // fn dict_to_hashmap<K, V, L>(
+    //     &self,
+    //     prefix: BitString,
+    //     map: &mut BTreeMap<K, V>,
+    //     dict_loader: &L,
+    // ) -> Result<(), TonCellError>
+    // where
+    //     K: Hash + Eq + core::cmp::Ord,
+    //     L: DictLoader<K, V>,
+    // {
+    //     let mut parser = self.parser();
 
-        let lb0 = parser.load_bit()?;
-        let mut pp = prefix;
-        let prefix_length;
-        if !lb0 {
-            // Short label detected
-            prefix_length = parser.load_unary_length()?;
-            // Read prefix
-            if prefix_length != 0 {
-                let val = parser.load_uint(prefix_length)?;
-                pp.shl_assign_and_add(prefix_length, val);
-            }
-        } else {
-            let lb1 = parser.load_bit()?;
-            if !lb1 {
-                // Long label detected
-                prefix_length = parser
-                    .load_uint(
-                        ((dict_loader.key_bit_len() - pp.bit_len() + 1) as f32)
-                            .log2()
-                            .ceil() as usize,
-                    )?
-                    .to_usize()
-                    .unwrap();
-                if prefix_length != 0 {
-                    let val = parser.load_uint(prefix_length)?;
-                    pp.shl_assign_and_add(prefix_length, val);
-                }
-            } else {
-                // Same label detected
-                let bit = parser.load_bit()?;
-                prefix_length = parser
-                    .load_uint(
-                        ((dict_loader.key_bit_len() - pp.bit_len() + 1) as f32)
-                            .log2()
-                            .ceil() as usize,
-                    )?
-                    .to_usize()
-                    .unwrap();
-                if bit {
-                    pp.shl_assign_and_fill(prefix_length);
-                } else {
-                    pp.shl_assign(prefix_length)
-                }
-            }
-        }
+    //     let lb0 = parser.load_bit()?;
+    //     let mut pp = prefix;
+    //     let prefix_length;
+    //     if !lb0 {
+    //         // Short label detected
+    //         prefix_length = parser.load_unary_length()?;
+    //         // Read prefix
+    //         if prefix_length != 0 {
+    //             let val = parser.load_uint(prefix_length)?;
+    //             pp.shl_assign_and_add(prefix_length, val);
+    //         }
+    //     } else {
+    //         let lb1 = parser.load_bit()?;
+    //         if !lb1 {
+    //             // Long label detected
+    //             prefix_length = parser
+    //                 .load_uint(
+    //                     ((dict_loader.key_bit_len() - pp.bit_len() + 1) as f32)
+    //                         .log2()
+    //                         .ceil() as usize,
+    //                 )?
+    //                 .to_usize()
+    //                 .unwrap();
+    //             if prefix_length != 0 {
+    //                 let val = parser.load_uint(prefix_length)?;
+    //                 pp.shl_assign_and_add(prefix_length, val);
+    //             }
+    //         } else {
+    //             // Same label detected
+    //             let bit = parser.load_bit()?;
+    //             prefix_length = parser
+    //                 .load_uint(
+    //                     ((dict_loader.key_bit_len() - pp.bit_len() + 1) as f32)
+    //                         .log2()
+    //                         .ceil() as usize,
+    //                 )?
+    //                 .to_usize()
+    //                 .unwrap();
+    //             if bit {
+    //                 pp.shl_assign_and_fill(prefix_length);
+    //             } else {
+    //                 pp.shl_assign(prefix_length)
+    //             }
+    //         }
+    //     }
 
-        if dict_loader.key_bit_len() - pp.bit_len() == 0 {
-            let bytes = pp.get_value_as_bytes();
-            let key: K = dict_loader.extract_key(bytes.as_slice())?;
-            let offset = self.bit_len - parser.remaining_bits();
-            let cell_slice = CellSlice::new_with_offset(self, offset)?;
-            let value = dict_loader.extract_value(&cell_slice)?;
-            map.insert(key, value);
-        } else {
-            // NOTE: Left and right branches are implicitly contain prefixes '0' and '1'
-            let left = self.reference(0)?;
-            let right = self.reference(1)?;
-            pp.shl_assign(1);
-            left.dict_to_hashmap(pp.clone(), map, dict_loader)?;
-            pp = pp + BigUint::one();
-            right.dict_to_hashmap(pp, map, dict_loader)?;
-        }
-        Ok(())
-    }
+    //     if dict_loader.key_bit_len() - pp.bit_len() == 0 {
+    //         let bytes = pp.get_value_as_bytes();
+    //         let key: K = dict_loader.extract_key(bytes.as_slice())?;
+    //         let offset = self.bit_len - parser.remaining_bits();
+    //         let cell_slice = CellSlice::new_with_offset(self, offset)?;
+    //         let value = dict_loader.extract_value(&cell_slice)?;
+    //         map.insert(key, value);
+    //     } else {
+    //         // NOTE: Left and right branches are implicitly contain prefixes '0' and '1'
+    //         let left = self.reference(0)?;
+    //         let right = self.reference(1)?;
+    //         pp.shl_assign(1);
+    //         left.dict_to_hashmap(pp.clone(), map, dict_loader)?;
+    //         pp = pp + BigUint::one();
+    //         right.dict_to_hashmap(pp, map, dict_loader)?;
+    //     }
+    //     Ok(())
+    // }
 
     pub fn to_arc(self) -> ArcCell {
         Arc::new(self)

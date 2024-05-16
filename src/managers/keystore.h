@@ -5,6 +5,7 @@
 #include "stdbool.h"
 #include "err_code.h"
 #include "secret_cache.h"
+#include "account_manager.h"
 
 #define ACCOUNT_INDEX_LOGOUT                    255
 #define AES_BLOCK_SIZE                          16
@@ -25,10 +26,14 @@
 
 #define ITERATION_TIME                          700
 
+#define MNEMONIC_WORD_LEN 13
+#define MNEMONIC_MAX 24
+#define MNEMONIC_WORDS_MAX_LEN MNEMONIC_WORD_LEN * MNEMONIC_MAX
+
 typedef struct {
     uint8_t entropy[ENTROPY_MAX_LEN];
     uint8_t seed[SEED_LEN];
-    uint8_t slip39Ems[SLIP39_EMS_LEN];
+    uint8_t slip39EmsOrTonEntropyL32[SLIP39_EMS_LEN];
     uint8_t reservedData[SE_DATA_RESERVED_LEN];
     uint8_t entropyLen;
 } AccountSecret_t;
@@ -40,7 +45,9 @@ typedef struct {
 } PassphraseInfo_t;
 
 int32_t GenerateEntropy(uint8_t *entropy, uint8_t entropyLen, const char *password);
-int32_t SaveNewEntropy(uint8_t accountIndex, const uint8_t *entropy, uint8_t entropyLen, const char *password);
+int32_t GenerateTonMnemonic(char* mnemonic, const char *password);
+int32_t SaveNewBip39Entropy(uint8_t accountIndex, const uint8_t *entropy, uint8_t entropyLen, const char *password);
+int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const char *password);
 int32_t SaveNewSlip39Entropy(uint8_t accountIndex, const uint8_t *ems, const uint8_t *entropy, uint8_t entropyLen, const char *password, uint16_t id, uint8_t ie);
 int32_t GetAccountEntropy(uint8_t accountIndex, uint8_t *entropy, uint8_t *entropyLen, const char *password);
 int32_t GetAccountSeed(uint8_t accountIndex, uint8_t *seed, const char *password);

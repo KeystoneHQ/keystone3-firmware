@@ -62,7 +62,7 @@ static void FreePublicKeyRam(void);
 static void PrintInfo(void);
 static void SetIsTempAccount(bool isTemp);
 
-static AccountPublicKeyItem_t g_accountPublicKey[XPUB_TYPE_NUM];
+static AccountPublicKeyItem_t g_accountPublicKey[XPUB_TYPE_NUM] = {0};
 
 static uint8_t g_tempPublicKeyAccountIndex = INVALID_ACCOUNT_INDEX;
 static bool g_isTempAccount = false;
@@ -412,7 +412,10 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
     char *jsonString;
     int32_t ret = SUCCESS_CODE;
     SimpleResponse_c_char *xPubResult = NULL;
-    bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
+    MnemonicType mnemonicType = GetMnemonicType();
+    bool isSlip39 = mnemonicType == MNEMONIC_TYPE_SLIP39;
+    bool isTon = mnemonicType == MNEMONIC_TYPE_TON;
+    bool isBip39 = mnemonicType == MNEMONIC_TYPE_BIP39;
     int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
     do {
         GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
@@ -424,18 +427,20 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
         ret = GetAccountEntropy(accountIndex, entropy, &entropyLen, password);
         CHECK_ERRCODE_BREAK("get entropy", ret);
         SimpleResponse_c_char* response = NULL;
-        // should setup ADA;
-        if (!isSlip39) {
+        // should setup ADA for bip39 wallet;
+        if (isBip39) {
             response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
             CHECK_AND_FREE_XPUB(response)
             icarusMasterKey = response -> data;
         }
 
         for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
-            // SLIP32 wallet does not support ADA
+            // slip39 wallet does not support ADA
             if (isSlip39 && g_chainTable[i].cryptoKey == BIP32_ED25519) {
-                continue;
+                break;
             }
+            // do not generate public keys for ton wallet;
+            if (isTon) break;
 
             xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey);
             if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {

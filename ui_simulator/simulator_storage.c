@@ -256,7 +256,7 @@ int32_t SimulatorSaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *
     cJSON *rootJson = cJSON_CreateObject();
     InsertJsonU8Array(rootJson, accountSecret->entropy, ENTROPY_MAX_LEN, "entropy");
     InsertJsonU8Array(rootJson, accountSecret->seed, SEED_LEN, "seed");
-    InsertJsonU8Array(rootJson, accountSecret->slip39Ems, SLIP39_EMS_LEN, "slip39_ems");
+    InsertJsonU8Array(rootJson, accountSecret->slip39EmsOrTonEntropyL32, SLIP39_EMS_LEN, "slip39_ems");
     InsertJsonU8Array(rootJson, accountSecret->reservedData, SE_DATA_RESERVED_LEN, "reserved_data");
     cJSON *item = cJSON_CreateNumber(accountSecret->entropyLen);
     cJSON_AddItemToObject(rootJson, "entropy_len", item);
@@ -292,7 +292,7 @@ int32_t SimulatorLoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accoun
     }
     GetJsonArrayData(rootJson, accountSecret->entropy, ENTROPY_MAX_LEN, "entropy");
     GetJsonArrayData(rootJson, accountSecret->seed, SEED_LEN, "seed");
-    GetJsonArrayData(rootJson, accountSecret->slip39Ems, SLIP39_EMS_LEN, "slip39_ems");
+    GetJsonArrayData(rootJson, accountSecret->slip39EmsOrTonEntropyL32, SLIP39_EMS_LEN, "slip39_ems");
     GetJsonArrayData(rootJson, accountSecret->reservedData, SE_DATA_RESERVED_LEN, "reserved_data");
 
     cJSON *entropyLenJson = cJSON_GetObjectItem(rootJson, "entropy_len");
@@ -378,13 +378,13 @@ int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
     cJSON *rootJson = cJSON_Parse(buffer);
     if (page == account * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV) {
         GetJsonArrayData(rootJson, data, 32, "iv");
-    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY) {
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY_OR_TON_ENTROPY_H32) {
         GetJsonArrayData(rootJson, data, 32, "entropy");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_H32) {
         GetJsonArrayData(rootJson, data, 32, "seed_h32");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_L32) {
         GetJsonArrayData(rootJson, data, 32, "seed_l32");
-    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS) {
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS_OR_TON_ENTROPY_L32) {
         GetJsonArrayData(rootJson, data, 32, "slip39_ems");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC) {
         GetJsonArrayData(rootJson, data, 32, "hmac");
@@ -398,9 +398,10 @@ int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
         printf("read.....\n");
         printf("pAccountInfo->entropyLen = %d\n", pAccountInfo->entropyLen);
         printf("pAccountInfo->passcodeType = %d\n", pAccountInfo->passcodeType);
-        printf("pAccountInfo->mnemonicType = %d\n", pAccountInfo->mnemonicType);
+        printf("pAccountInfo->isSlip39 = %u\n", pAccountInfo->isSlip39);
         printf("pAccountInfo->passphraseQuickAccess = %d\n", pAccountInfo->passphraseQuickAccess);
         printf("pAccountInfo->passphraseMark = %d\n", pAccountInfo->passphraseMark);
+        printf("pAccountInfo->isTon = %u\n", pAccountInfo->isTon);
         printf("pAccountInfo->slip39Id = %d\n", pAccountInfo->slip39Id[0] * 256 + pAccountInfo->slip39Id[1]);
         PrintArray("mfp", pAccountInfo->mfp, 4);
         printf("pAccountInfo->slip39Ie = %d\n", pAccountInfo->slip39Ie[0]);
@@ -437,13 +438,13 @@ int32_t SE_HmacEncryptWrite(const uint8_t *data, uint8_t page)
     }
     if (page == account * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV) {
         // ModifyJsonArrayData(rootJson, data, 32, "iv");
-    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY) {
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY_OR_TON_ENTROPY_H32) {
         // ModifyJsonArrayData(rootJson, data, 32, "entropy");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_H32) {
         // ModifyJsonArrayData(rootJson, data, 32, "seed_h32");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_L32) {
         // ModifyJsonArrayData(rootJson, data, 32, "seed_l32");
-    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS) {
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS_OR_TON_ENTROPY_L32) {
         // ModifyJsonArrayData(rootJson, data, 32, "slip39_ems");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC) {
         // ModifyJsonArrayData(rootJson, data, 32, "hmac");
@@ -457,9 +458,10 @@ int32_t SE_HmacEncryptWrite(const uint8_t *data, uint8_t page)
         printf("write.....\n");
         printf("pAccountInfo->entropyLen = %d\n", pAccountInfo->entropyLen);
         printf("pAccountInfo->passcodeType = %d\n", pAccountInfo->passcodeType);
-        printf("pAccountInfo->mnemonicType = %d\n", pAccountInfo->mnemonicType);
+        printf("pAccountInfo->isSlip39 = %u\n", pAccountInfo->isSlip39);
         printf("pAccountInfo->passphraseQuickAccess = %d\n", pAccountInfo->passphraseQuickAccess);
         printf("pAccountInfo->passphraseMark = %d\n", pAccountInfo->passphraseMark);
+        printf("pAccountInfo->isTon = %u\n", pAccountInfo->isTon);
         printf("pAccountInfo->slip39Id = %d\n", pAccountInfo->slip39Id[0] * 256 + pAccountInfo->slip39Id[1]);
         PrintArray("mfp", pAccountInfo->mfp, 4);
         printf("pAccountInfo->slip39Ie = %d\n", pAccountInfo->slip39Ie[0]);

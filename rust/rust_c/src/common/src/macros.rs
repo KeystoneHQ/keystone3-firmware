@@ -21,7 +21,7 @@ macro_rules! impl_c_ptr {
         }
     };
     ($name:ident<$t: ident>) => {
-        impl<$t: Free> $name<$t> {
+        impl<$t> $name<$t> {
             #[cfg(feature = "debug-memory")]
             #[track_caller]
             pub fn c_ptr(self) -> *mut Self {
@@ -416,6 +416,15 @@ macro_rules! impl_c_ptrs {
             impl_c_ptr!($name<$t>);
         )*
     }
+}
+
+#[macro_export]
+macro_rules! impl_simple_free {
+    ($($name: ident), *) => {
+        $(
+            impl SimpleFree for $name {fn free(&self){}}
+        )*
+    };
 }
 
 #[macro_export]

@@ -20,13 +20,13 @@ use crate::{
 };
 
 #[repr(C)]
-pub struct TransactionParseResult<T: Free> {
+pub struct TransactionParseResult<T> {
     data: *mut T,
     error_code: u32,
     error_message: PtrString,
 }
 
-impl<T: Free> TransactionParseResult<T> {
+impl<T> TransactionParseResult<T> {
     pub fn new() -> Self {
         Self {
             data: null_mut(),
@@ -127,13 +127,13 @@ impl_simple_c_ptr!(SimpleResponse<T>);
 impl_simple_new_error!(SimpleResponse<T>);
 
 #[repr(C)]
-pub struct Response<T: Free> {
+pub struct Response<T> {
     data: *mut T,
     error_code: u32,
     error_message: PtrString,
 }
 
-impl<T: Free> Response<T> {
+impl<T> Response<T> {
     pub fn new() -> Self {
         Self {
             data: null_mut(),

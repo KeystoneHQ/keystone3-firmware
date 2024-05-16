@@ -3,10 +3,10 @@
 
 extern crate alloc;
 
-mod mnemonic;
+pub mod mnemonic;
 mod errors;
 mod utils;
-mod transaction;
+pub mod transaction;
 mod vendor;
-mod structs;
+pub mod structs;
 mod messages;

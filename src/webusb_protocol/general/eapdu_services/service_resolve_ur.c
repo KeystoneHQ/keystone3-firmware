@@ -118,7 +118,7 @@ void ProcessURService(EAPDURequestPayload_t payload)
     if (checkResult != NULL && checkResult->error_code == 0) {
         PubValueMsg(UI_MSG_PREPARE_RECEIVE_UR_USB, urViewType.viewType);
     } else if (checkResult != NULL && checkResult->error_code == 2) {
-        const char *data = "Mismatched wallet, please switch to another wallet and try again";
+        const char *data = _("usb_transport_mismatched_wallet_desc");
         GotoFailPage(PRS_PARSING_MISMATCHED_WALLET, data);
     } else {
         GotoFailPage(PRS_PARSING_ERROR, checkResult->error_message);

@@ -453,6 +453,7 @@ USB,28,usb_transport_connection_request,Connection Request,Запрос подк
 ,28,usb_transport_sign_completed_title,Signature Completed,Подпись завершена,서명완료,签名完成,,,,
 ,20,usb_transport_sign_completed_subtitle,View transaction details at your software wallet,Посмотреть детали транзакций в программном кошельке,소프트웨어 지갑에서 거래 내역을 확인합니다,在您的软件钱包中查看交易详细信息,,,,
 ,28,usb_transport_mismatched_wallet_title,Mismatched Wallet,Разные кошельки,지갑은 일치하지 않습니다,钱包不匹配,,,,
+,20,usb_transport_mismatched_wallet_desc,"Mismatched wallet, please switch to another wallet and try again","Несоответствующий кошелек, пожалуйста, переключитесь на другой кошелек и попробуйте снова.","지갑이 일치하지 않습니다. 다른 지갑으로 전환하고 다시 시도하세요.","钱包不匹配,请切换到另一个钱包再试一次",,,,
 ,28,usb_transport_sign_unkown_error_title,Unknown Error,Неизвестная ошибка,알수 없는 오류입니다,未知错误,,,,
 ,20,usb_transport_sign_unkown_error_message,Unable to recognize data information,Невозможно распознать данные,데이터 정보 인식할 수 없습니다 ,无法识别数据信息,,,,
 ,20,usb_transport_sign_failed_title,Signature Failed,Ошибка подписи,서명 실패,签名失败,,,,

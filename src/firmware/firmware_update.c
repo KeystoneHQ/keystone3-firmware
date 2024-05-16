@@ -236,7 +236,7 @@ static int32_t CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t 
             ret = f_read(&fp, fileUnit, FILE_UNIT_SIZE, (UINT *)&readSize);
             if (ret) {
                 FatfsError((FRESULT)ret);
-                percent = 0xFD; 
+                percent = 0xFD;
                 GuiApiEmitSignal(SIG_SETTING_VERIFY_OTA_PERCENT, &percent, sizeof(percent));
                 f_close(&fp);
                 return ERR_UPDATE_CHECK_CRC_FAILED;
@@ -257,7 +257,7 @@ static int32_t CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t 
         PrintArray("hash content:", contentHash, 32);
         if (crcCalc != info->crc32) {
             printf("crc err,crcCalc=0x%08X,info->crc32=0x%08X\r\n", crcCalc, info->crc32);
-            percent = 0xFE; 
+            percent = 0xFE;
             GuiApiEmitSignal(SIG_SETTING_VERIFY_OTA_PERCENT, &percent, sizeof(percent));
             ret = ERR_UPDATE_CHECK_CRC_FAILED;
             break;

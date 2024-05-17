@@ -248,7 +248,7 @@ static void GuiCreateBackupWidget(lv_obj_t *parent)
     lv_obj_t *button = GuiCreateButton(parent, 432, 216, table, NUMBER_OF_ARRAYS(table), OpenNoticeHandler, NULL);
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 300 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateLittleTitleLabel(parent, _("single_backup_shamir_title"));
+    label = GuiCreateScrollLittleTitleLabel(parent, _("single_backup_shamir_title"), 350);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 510 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
@@ -331,7 +331,7 @@ static void GuiImportBackupWidget(lv_obj_t *parent)
     lv_obj_t *line = GuiCreateDividerLine(parent);
     lv_obj_align_to(line, button, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
-    label = GuiCreateLittleTitleLabel(parent, _("import_wallet_shamir_backup"));
+    label = GuiCreateScrollLittleTitleLabel(parent, _("import_wallet_shamir_backup"), 350);
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     labelNotice = GuiCreateNoticeLabel(parent, _("import_wallet_shamir_backup_desc"));
     table[0].obj = label;
@@ -593,7 +593,7 @@ static void CreateChangeEntropyView(void)
     lv_obj_align(method_cont, LV_ALIGN_TOP_LEFT, 36, 84);
     label = GuiCreateTextLabel(method_cont, _("change_entropy_system"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
-    label = GuiCreateIllustrateLabel(method_cont, _("change_entropy_system_subtitle"));
+    label = GuiCreateScrollIllustrateLabel(method_cont, _("change_entropy_system_subtitle"), 270);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56);
     lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
@@ -603,7 +603,7 @@ static void CreateChangeEntropyView(void)
 
     label = GuiCreateTextLabel(method_cont, _("change_entropy_dice_rolls"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16 + 102);
-    label = GuiCreateIllustrateLabel(method_cont, _("change_entropy_dice_rolls_subtitle"));
+    label = GuiCreateScrollIllustrateLabel(method_cont, _("change_entropy_dice_rolls_subtitle"), 270);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 102);
     lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
     lv_obj_refr_size(label);

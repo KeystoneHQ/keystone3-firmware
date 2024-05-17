@@ -39,7 +39,7 @@ static inline uint32_t op_t(uint32_t val)
     return 0;
 }
 
-const static lv_i18n_phrase_t en_singulars[] = {
+const const static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
     {"Approve", "Approve"},
     {"Attention", "Attention"},
@@ -299,11 +299,11 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"fingerprint_add_failed_duplicate", "Duplicate finger, please use a different finger"},
     {"fingerprint_add_failed_partial", "Partial fingerprint detected, please try again"},
     {"fingerprint_add_failed_use_another", "Failed to add fingerprint, please use another finger and try again"},
-    {"fingerprint_add_overlaps_too_much", "Duplicate area, please adjust your\\nfinger's position slightly"},
+    {"fingerprint_add_overlaps_too_much", "Duplicate area, please adjust your finger's position slightly"},
     {"fingerprint_add_password", "Now we need you to enter your passcode to encrypt and store the fingerprint."},
-    {"fingerprint_add_poor_qualtiy", "Fingerprint unclear, please restart process \\nand use different finger to try again"},
+    {"fingerprint_add_poor_qualtiy", "Fingerprint unclear, please restart process and use different finger to try again"},
     {"fingerprint_add_success", "Add Successfully"},
-    {"fingerprint_add_too_wet", "Moisture detected. Please wipe your finger\\nand try again"},
+    {"fingerprint_add_too_wet", "Moisture detected. Please wipe your finger and try again"},
     {"fingerprint_nth", "Finger %d"},
     {"fingerprint_nth_remove_desc", "Do you really want to delete Finger %d?"},
     {"fingerprint_nth_remove_title", "Remove Fingerprint?"},
@@ -792,7 +792,7 @@ static const lv_i18n_lang_t en_lang = {
     .locale_plural_fn = en_plural_fn
 };
 
-const static lv_i18n_phrase_t es_singulars[] = {
+const const static lv_i18n_phrase_t es_singulars[] = {
     {"Address", "Dirección"},
     {"Approve", "Aprobar"},
     {"Attention", "Atención"},
@@ -800,7 +800,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"Confirm", "Confirmar"},
     {"Continue", "Continuar"},
     {"Delete", "Borrar"},
-    {"Details", ""},
+    {"Details", "Detalles"},
     {"Done", "Hecho"},
     {"Export", "Exportación"},
     {"FORGET", "OLVIDAR"},
@@ -908,7 +908,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"change_passcode_reset_title", "Reiniciando, Mantener el dispositivo ENCENDIDO"},
     {"change_passcode_warning_desc", "Si lo olvidas, tendrás que verificar la frase de recuperación de esta billetera para restablecer el código de acceso."},
     {"change_passcode_warning_title", "Recuerda tu código de acceso"},
-    {"confirm_transaction", ""},
+    {"confirm_transaction", "Confirmar Transacción"},
     {"connect_arconnect_link", ""},
     {"connect_arconnect_title", ""},
     {"connect_block_link", "https://keyst.one/t/3rd/block"},
@@ -976,7 +976,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"connect_xrp_toolkit_title", "Herramienta de XRP (Web)"},
     {"connect_yearn_link", "https://keyst.one/t/3rd/yearn"},
     {"connect_yearn_title", "Añorar"},
-    {"connect_zapper_link", "https://keyst.one/t/3rd/zapper: 'https://keyst.one/t/3rd/zapper'"},
+    {"connect_zapper_link", "https://keyst.one/t/3rd/zapper"},
     {"connect_zapper_title", "Zapper"},
     {"create_multi_wallet_cancel_desc", "Si cancelas, se perderá cualquier información confirmada."},
     {"create_multi_wallet_cancel_title", "¿Cancelar creación de monedero?"},
@@ -1218,7 +1218,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"password_error_not_match", "incompatibilidad de código de acceso"},
     {"password_error_too_long", "El texto ingresado no puede exceder los 128 caracteres"},
     {"password_error_too_short", "La contraseña debe tener al menos 6 caracteres"},
-    {"password_error_too_weak", "Establecer una contraseña segura"},
+    {"password_error_too_weak", "Contraseña segura"},
     {"password_input_desc", "Ingrese su contraseña"},
     {"password_label", "CONTRASEÑA"},
     {"password_score_good", "Bueno"},
@@ -1274,7 +1274,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"receive_eth_more_t_title1", "Explorando diferencias: caminos de derivación estándar, Ledger Live y Legacy en Ethereum"},
     {"receive_eth_receive_main_title", "Recibir ETH"},
     {"receive_generate_new_address", "Generar nueva dirección"},
-    {"receive_more_t_qr_link", "https://keyst.one/t/3rd/faq ⇒ 'https://keyst.one/t/3rd/faq'"},
+    {"receive_more_t_qr_link", "https://keyst.one/t/3rd/faq"},
     {"receive_sol_more_t_base_path", "Camino basado en la cuenta"},
     {"receive_sol_more_t_desc1", "1. Ruta basada en cuentas: Ampliamente adoptada en numerosas billeteras de Solana. Un ejemplo de esta billetera es Solflare.\r\n2. Ruta de cuenta única: Elija esta ruta si desea importar una frase de recuperación desde Sollet / MathWallet. Por favor, tenga en cuenta que Keystone solo admite la sincronización de las 10 direcciones iniciales utilizando este formato.\r\n3. Ruta de subcuenta: Haga la transición a esta ruta si administra sus activos digitales con billeteras de software como Phantom / Exodus."},
     {"receive_sol_more_t_single_path", "Ruta de cuenta única"},
@@ -1541,7 +1541,7 @@ static const lv_i18n_lang_t es_lang = {
     .locale_plural_fn = es_plural_fn
 };
 
-const static lv_i18n_phrase_t ko_singulars[] = {
+const const static lv_i18n_phrase_t ko_singulars[] = {
     {"Address", "주소"},
     {"Approve", "허락"},
     {"Attention", "주목"},
@@ -2289,7 +2289,7 @@ static const lv_i18n_lang_t ko_lang = {
     .locale_plural_fn = ko_plural_fn
 };
 
-const static lv_i18n_phrase_t ru_singulars[] = {
+const const static lv_i18n_phrase_t ru_singulars[] = {
     {"Address", "Адрес"},
     {"Approve", "Разрешить"},
     {"Attention", "Внимание"},
@@ -3045,7 +3045,7 @@ static const lv_i18n_lang_t ru_lang = {
     .locale_plural_fn = ru_plural_fn
 };
 
-const static lv_i18n_phrase_t zh_cn_singulars[] = {
+const const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"Address", "地址"},
     {"Approve", "允许"},
     {"Attention", "注意"},

@@ -79,6 +79,7 @@ typedef struct GUI_VIEW_ {
 void *GuiCreateContainerWithParent(lv_obj_t *parent, int w, int h);
 void *GuiCreateWhiteOpa12Container(lv_obj_t *parent, int w, int h);
 void *GuiCreateLabelWithFont(lv_obj_t *parent, const char *text, const lv_font_t *font);
+void *GuiCreateLabelWithFontScroll(lv_obj_t *parent, const char *text, const lv_font_t *font, uint16_t width);
 void *GuiCreateLabelWithFontAndTextColor(lv_obj_t *parent, const char *text, const lv_font_t *font, int color);
 void *GuiCreateNoticeLabel(lv_obj_t *parent, const char *text);
 void *GuiCreateImg(lv_obj_t *parent, const void *src);
@@ -110,8 +111,11 @@ void *GuiCreateSelectPathCheckBox(lv_obj_t *parent);
 #define GuiCreateMultiCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, false, g_defIllustrateFont)
 #define GuiCreateTitleLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defTitleFont)
 #define GuiCreateLittleTitleLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defLittleTitleFont)
+#define GuiCreateScrollLittleTitleLabel(parent, text, width) GuiCreateLabelWithFontScroll(parent, text, g_defLittleTitleFont, width)
 #define GuiCreateTextLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defTextFont)
+#define GuiCreateScrollTextLabel(parent, text, width) GuiCreateLabelWithFontScroll(parent, text, g_defTextFont, width)
 #define GuiCreateIllustrateLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defIllustrateFont)
+#define GuiCreateScrollIllustrateLabel(parent, text, width) GuiCreateLabelWithFontScroll(parent, text, g_defIllustrateFont, width)
 #define GuiCreateColorIllustrateLabel(parent, text, color) GuiCreateLabelWithFontAndTextColor(parent, text, g_defIllustrateFont, color)
 #define GuiCreateOrangeIllustrateLabel(parent, text) GuiCreateColorIllustrateLabel(parent, text, 0xF5870A)
 #define GuiCreateBoldIllustrateLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defBoldIllustratFont)

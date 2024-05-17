@@ -638,6 +638,12 @@ void SetMidBtnLabel(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button,
     case NVS_BAR_MID_LABEL:
         lv_label_set_text(navBarWidget->midBtn, text);
         lv_obj_clear_flag(navBarWidget->midBtn, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_refr_size(navBarWidget->midBtn);
+        if (lv_obj_get_self_width(navBarWidget->midBtn) > 300) {
+            lv_label_set_long_mode(navBarWidget->midBtn, LV_LABEL_LONG_SCROLL_CIRCULAR);
+            lv_obj_set_width(navBarWidget->midBtn, 300);
+        }
+
         // GuiNvsBarSetMidCb(NVS_BAR_MID_LABEL, NULL, NULL);
         break;
     default:

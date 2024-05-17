@@ -66,11 +66,11 @@ void GuiPassphraseInit(void)
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
-    lv_obj_set_size(btn, 352, 60);
+    lv_obj_set_size(btn, 370, 60);
     lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 36, 294);
     ta = lv_textarea_create(btn);
     lv_obj_set_align(ta, LV_ALIGN_CENTER);
-    lv_obj_set_size(ta, 352, 60);
+    lv_obj_set_size(ta, 370, 60);
     lv_textarea_set_password_mode(ta, true);
     lv_textarea_set_placeholder_text(ta, _("passphrase_enter_input"));
     lv_obj_set_style_bg_color(ta, DARK_BG_COLOR, LV_PART_MAIN);
@@ -96,11 +96,11 @@ void GuiPassphraseInit(void)
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
-    lv_obj_set_size(btn, 352, 60);
+    lv_obj_set_size(btn, 370, 60);
     lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 36, 378);
     ta = lv_textarea_create(btn);
     lv_obj_set_align(ta, LV_ALIGN_CENTER);
-    lv_obj_set_size(ta, 352, 60);
+    lv_obj_set_size(ta, 370, 60);
     lv_textarea_set_password_mode(ta, true);
     lv_textarea_set_placeholder_text(ta, _("passphrase_enter_repeat"));
     lv_obj_set_style_bg_color(ta, DARK_BG_COLOR, LV_PART_MAIN);

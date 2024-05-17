@@ -358,7 +358,6 @@ static void GuiShareConfirmWidget(lv_obj_t *parent)
     label = GuiCreateNoticeLabel(parent, _("shamir_phrase_confirm_desc"));
     lv_label_set_recolor(label, true);
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
-        GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     g_shareConfirmTile.noticeLabel = label;
 

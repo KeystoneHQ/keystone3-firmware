@@ -129,8 +129,7 @@ void GuiWalletResetPassWordHintBox(void)
     label = GuiCreateIllustrateLabel(g_noticeWindow, _("change_passcode_warning_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 610);
     lv_obj_t *btn = GuiCreateTextBtn(g_noticeWindow, _("got_it"));
-    lv_obj_align(btn, LV_ALIGN_DEFAULT, 332, 710);
-    lv_obj_set_size(btn, 122, 66);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
     lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 }
 

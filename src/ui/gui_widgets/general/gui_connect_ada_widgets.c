@@ -60,26 +60,26 @@ static void GuiCreatePageContent(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 0);
 
     label = GuiCreateOrangeIllustrateLabel(cont, "2");
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -24, 12);
 
     label = GuiCreateIllustrateLabel(cont, _("connect_wallet_ada_step2"));
     lv_obj_set_width(label, 384);
-    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 24, 0);
 
     label = GuiCreateOrangeIllustrateLabel(cont, "3");
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -24, 12);
 
     label = GuiCreateIllustrateLabel(cont, _("connect_wallet_ada_step3"));
     lv_obj_set_width(label, 384);
-    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 24, 0);
 
     label = GuiCreateOrangeIllustrateLabel(cont, "4");
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -30, 12);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -24, 12);
 
     label = GuiCreateIllustrateLabel(cont, _("connect_wallet_ada_step4"));
     lv_label_set_text_fmt(label, _("connect_wallet_ada_step4"), GetWalletNameByIndex(g_walletIndex));
     lv_obj_set_width(label, 384);
-    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 24, 0);
 
     button = GuiCreateBtn(parent, USR_SYMBOL_ARROW_NEXT);
     lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);

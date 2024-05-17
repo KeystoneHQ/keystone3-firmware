@@ -28,6 +28,24 @@ void *GuiCreateContainerWithParent(lv_obj_t *parent, int w, int h)
     return cont;
 }
 
+void *GuiCreateLabelWithFontScroll(lv_obj_t *parent, const char *text,
+                                   const lv_font_t *font, uint16_t width)
+{
+    lv_obj_t *label = lv_label_create(parent);
+    lv_label_set_text(label, text);
+    lv_obj_set_style_text_font(label, font, LV_PART_MAIN);
+    if (GuiDarkMode()) {
+        lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_text_color(label, BLACK_COLOR, LV_PART_MAIN);
+    }
+    if (lv_obj_get_self_width(label) >= width) {
+        lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
+        lv_obj_set_width(label, width);
+    }
+    return label;
+}
+
 void *GuiCreateLabelWithFont(lv_obj_t *parent, const char *text,
                              const lv_font_t *font)
 {
@@ -346,11 +364,7 @@ void *GuiCreateSwitch(lv_obj_t *parent)
 
 void GuiAlignToPrevObj(lv_obj_t *obj, lv_align_t align, int16_t x, int16_t y)
 {
-    lv_obj_align_to(
-        obj,
-        lv_obj_get_child(lv_obj_get_parent(obj),
-                         lv_obj_get_child_cnt(lv_obj_get_parent(obj)) - 2),
-        align, x, y);
+    lv_obj_align_to(obj, lv_obj_get_child(lv_obj_get_parent(obj), lv_obj_get_child_cnt(lv_obj_get_parent(obj)) - 2), align, x, y);
 }
 
 void GuiAddObjFlag(void *obj, lv_obj_flag_t flag)

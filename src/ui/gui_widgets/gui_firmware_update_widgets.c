@@ -313,7 +313,7 @@ static void GuiCreateSelectTile(lv_obj_t *parent)
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     img = GuiCreateImg(parent, &imgMicroSd);
-    label = GuiCreateLittleTitleLabel(parent, _("firmware_update_via_sd"));
+    label = GuiCreateScrollLittleTitleLabel(parent, _("firmware_update_via_sd"), 280);
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     GuiButton_t table1[4] = {
         {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 40},},

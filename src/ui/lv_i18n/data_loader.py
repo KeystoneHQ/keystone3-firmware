@@ -8,11 +8,6 @@ import subprocess
 import glob
 import os
 
-parser = argparse.ArgumentParser(description='Convert CSV to YAML')
-parser.add_argument('--ru', action='store_true', help='Generate Russian translations')
-parser.add_argument('--zh', action='store_true', help='Generate Chinese (Simplified) translations')
-parser.add_argument('--ko', action='store_true', help='Generate Koear translations')
-args = parser.parse_args()
 compile_command = 'lv_i18n compile -t "*.yml" -o .'
 
 with open("./data.csv", newline="", encoding='utf-8') as csvfile:

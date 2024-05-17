@@ -468,6 +468,7 @@ dependencies = [
  "arrayref",
  "cstr_core",
  "cty",
+ "num-bigint-dig",
  "rand_chacha",
  "rust_tools",
  "sha2 0.10.8",

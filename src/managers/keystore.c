@@ -101,34 +101,35 @@ int32_t GenerateEntropy(uint8_t *entropy, uint8_t entropyLen, const char *passwo
 /// @return err code.
 int32_t GenerateTonMnemonic(char *mnemonic, const char *password)
 {
-    uint8_t randomBuffer[ENTROPY_MAX_LEN], inputBuffer[ENTROPY_MAX_LEN], outputBuffer[ENTROPY_MAX_LEN];
+    uint8_t randomBuffer[TON_ENTROPY_LEN], inputBuffer[TON_ENTROPY_LEN], outputBuffer[TON_ENTROPY_LEN];
     int32_t ret;
-    char temp_mnemonic[MNEMONIC_WORDS_MAX_LEN] = {'\0'};
+    char temp_mnemonic[MNEMONIC_MAX_LEN] = {'\0'};
 
     while (true) {
-        HashWithSalt(inputBuffer, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "generate entropy");
+        HashWithSalt512(inputBuffer, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "generate entropy");
 
-        SE_GetTRng(randomBuffer, ENTROPY_MAX_LEN);
-        KEYSTORE_PRINT_ARRAY("trng", randomBuffer, ENTROPY_MAX_LEN);
+        SE_GetTRng(randomBuffer, TON_ENTROPY_LEN);
+        KEYSTORE_PRINT_ARRAY("trng", randomBuffer, TON_ENTROPY_LEN);
         // set the initial value
-        memcpy_s(outputBuffer, sizeof(outputBuffer), randomBuffer, ENTROPY_MAX_LEN);
-        hkdf(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
-        KEYSTORE_PRINT_ARRAY("outputBuffer", outputBuffer, ENTROPY_MAX_LEN);
-        memcpy_s(inputBuffer, sizeof(inputBuffer), outputBuffer, ENTROPY_MAX_LEN);
+        memcpy_s(outputBuffer, sizeof(outputBuffer), randomBuffer, TON_ENTROPY_LEN);
+        hkdf64(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
 
-        ret = SE_GetDS28S60Rng(randomBuffer, ENTROPY_MAX_LEN);
+        KEYSTORE_PRINT_ARRAY("outputBuffer", outputBuffer, TON_ENTROPY_LEN);
+        memcpy_s(inputBuffer, sizeof(inputBuffer), outputBuffer, TON_ENTROPY_LEN);
+
+        ret = SE_GetDS28S60Rng(randomBuffer, TON_ENTROPY_LEN);
         CHECK_ERRCODE_BREAK("get ds28s60 trng", ret);
-        KEYSTORE_PRINT_ARRAY("ds28s60 rng", randomBuffer, ENTROPY_MAX_LEN);
-        hkdf(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
-        KEYSTORE_PRINT_ARRAY("outputBuffer", outputBuffer, ENTROPY_MAX_LEN);
-        memcpy_s(inputBuffer, sizeof(inputBuffer), outputBuffer, ENTROPY_MAX_LEN);
+        KEYSTORE_PRINT_ARRAY("ds28s60 rng", randomBuffer, TON_ENTROPY_LEN);
+        hkdf64(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
+        KEYSTORE_PRINT_ARRAY("outputBuffer", outputBuffer, TON_ENTROPY_LEN);
+        memcpy_s(inputBuffer, sizeof(inputBuffer), outputBuffer, TON_ENTROPY_LEN);
 
-        ret = SE_GetAtecc608bRng(randomBuffer, ENTROPY_MAX_LEN);
+        ret = SE_GetAtecc608bRng(randomBuffer, TON_ENTROPY_LEN);
         CHECK_ERRCODE_BREAK("get 608b trng", ret);
-        KEYSTORE_PRINT_ARRAY("608b rng", randomBuffer, ENTROPY_MAX_LEN);
-        hkdf(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
+        KEYSTORE_PRINT_ARRAY("608b rng", randomBuffer, TON_ENTROPY_LEN);
+        hkdf64(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
 
-        KEYSTORE_PRINT_ARRAY("finalEntropy", outputBuffer, ENTROPY_MAX_LEN);
+        KEYSTORE_PRINT_ARRAY("finalEntropy", outputBuffer, TON_ENTROPY_LEN);
 
         // ton mnemonic use 24 words, every word is 11 bits.
         // so we use random buffer to locate the mnemonic;
@@ -153,7 +154,7 @@ int32_t GenerateTonMnemonic(char *mnemonic, const char *password)
     CLEAR_ARRAY(inputBuffer);
     CLEAR_ARRAY(randomBuffer);
 
-    strcpy_s(mnemonic, MNEMONIC_WORDS_MAX_LEN, temp_mnemonic);
+    strcpy_s(mnemonic, MNEMONIC_MAX_LEN, temp_mnemonic);
     return ret;
 }
 

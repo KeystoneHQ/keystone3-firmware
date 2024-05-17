@@ -17,6 +17,7 @@
 
 #define AES_IV_LEN                              32              //Use first 16 bytes for AES key, last 16 bytes reserved for future features.
 #define ENTROPY_MAX_LEN                         32
+#define TON_ENTROPY_LEN                         64
 #define SEED_LEN                                64
 #define SLIP39_EMS_LEN                          32
 #define SE_DATA_RESERVED_LEN                    32
@@ -25,10 +26,6 @@
 #define PARAM_LEN                               32
 
 #define ITERATION_TIME                          700
-
-#define MNEMONIC_WORD_LEN 13
-#define MNEMONIC_MAX 24
-#define MNEMONIC_WORDS_MAX_LEN MNEMONIC_WORD_LEN * MNEMONIC_MAX
 
 typedef struct {
     uint8_t entropy[ENTROPY_MAX_LEN];

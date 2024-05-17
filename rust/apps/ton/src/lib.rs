@@ -4,7 +4,7 @@
 extern crate alloc;
 
 pub mod mnemonic;
-mod errors;
+pub mod errors;
 mod utils;
 pub mod transaction;
 mod vendor;

@@ -46,6 +46,7 @@ typedef enum {
     SECP256K1,
     BIP32_ED25519,
     RSA_KEY,
+    TON_NATIVE,
 } CryptoKey_t;
 
 typedef struct {
@@ -166,6 +167,7 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_ADA_22,                BIP32_ED25519, "ada_22",                   "M/1852'/1815'/22'"},
     {XPUB_TYPE_ADA_23,                BIP32_ED25519, "ada_23",                   "M/1852'/1815'/23'"},
     {XPUB_TYPE_ARWEAVE,               RSA_KEY,       "ar",                       ""                 },
+    {XPUB_TYPE_TON_NATIVE,            TON_NATIVE,    "ton",                      ""                 },
 #else
     {XPUB_TYPE_BTC,                     SECP256K1,      "btc_nested_segwit",        "M/49'/0'/0'"   },
     {XPUB_TYPE_BTC_LEGACY,              SECP256K1,      "btc_legacy",               "M/44'/0'/0'"   },
@@ -204,6 +206,8 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
         SRAM_FREE(primes);
         return result;
     }
+    case TON_NATIVE:
+        return ton_seed_to_publickey(seed, len);
     default:
         return NULL;
     }
@@ -434,25 +438,29 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             icarusMasterKey = response -> data;
         }
 
-        for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
-            // slip39 wallet does not support ADA
-            if (isSlip39 && g_chainTable[i].cryptoKey == BIP32_ED25519) {
-                break;
-            }
-            // do not generate public keys for ton wallet;
-            if (isTon) break;
-
-            xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey);
-            if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
-                continue;
-            }
+        if (isTon) {
+            xPubResult = ProcessKeyType(seed, len, g_chainTable[XPUB_TYPE_TON_NATIVE].cryptoKey, g_chainTable[XPUB_TYPE_TON_NATIVE].path, NULL);
             CHECK_AND_FREE_XPUB(xPubResult)
-            // printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
-            ASSERT(xPubResult->data);
-            g_accountPublicKey[i].pubKey = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
-            strcpy(g_accountPublicKey[i].pubKey, xPubResult->data);
-            // printf("xPubResult=%s\r\n", xPubResult->data);
-            free_simple_response_c_char(xPubResult);
+        } else {
+            for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
+                // slip39 wallet does not support ADA
+                if (isSlip39 && g_chainTable[i].cryptoKey == BIP32_ED25519) {
+                    break;
+                }
+                // do not generate public keys for ton wallet;
+
+                xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey);
+                if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
+                    continue;
+                }
+                CHECK_AND_FREE_XPUB(xPubResult)
+                // printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
+                ASSERT(xPubResult->data);
+                g_accountPublicKey[i].pubKey = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
+                strcpy(g_accountPublicKey[i].pubKey, xPubResult->data);
+                // printf("xPubResult=%s\r\n", xPubResult->data);
+                free_simple_response_c_char(xPubResult);
+            }
         }
         printf("erase user data:0x%X\n", addr);
         for (uint32_t eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {

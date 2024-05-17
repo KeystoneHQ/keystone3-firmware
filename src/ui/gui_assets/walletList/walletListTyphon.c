@@ -109,10 +109,10 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_WALLETLIS
 };
 
 const lv_img_dsc_t walletListTyphon = {
-    .header.always_zero = 0,
-    .header.w = 456,
-    .header.h = 90,
-    .data_size = 41040 * LV_IMG_PX_SIZE_ALPHA_BYTE,
-    .header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA,
-    .data = walletListTyphon_map,
+  .header.always_zero = 0,
+  .header.w = 456,
+  .header.h = 90,
+  .data_size = 41040 * LV_IMG_PX_SIZE_ALPHA_BYTE,
+  .header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA,
+  .data = walletListTyphon_map,
 };

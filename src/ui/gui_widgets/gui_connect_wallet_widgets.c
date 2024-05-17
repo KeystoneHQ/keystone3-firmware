@@ -60,7 +60,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_ZAPPER, &walletListZapper, true},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true},
-    {WALLET_LIST_TONKEEPER, &walletListSushi, false},
+    {WALLET_LIST_TONKEEPER, &walletListTonkeeper, false},
 #else
     {WALLET_LIST_BLUE, &walletListBtcBlue, true, false},
     {WALLET_LIST_SPARROW, &walletListBtcSparrow, true, false},

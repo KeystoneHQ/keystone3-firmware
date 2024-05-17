@@ -1029,6 +1029,9 @@ static void ModelVerifyPassFailed(uint16_t *param)
             UnlimitedVibrate(LONG);
         }
         break;
+    case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD:
+        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_RSA_VERIFY_PASSWORD_FAIL, param, sizeof(*param));
+        break;
     case SIG_INIT_SD_CARD_OTA_COPY:
         signal = SIG_FIRMWARE_VERIFY_PASSWORD_FAIL;
     default:

@@ -224,8 +224,7 @@ int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const cha
 
         accountSecret.entropyLen = 32;
         SimpleResponse_u8 *resultSeed = ton_entropy_to_seed(entropy, 64);
-        if (resultSeed->error_code != 0)
-        {
+        if (resultSeed->error_code != 0) {
             break;
         }
         memcpy_s(seed, 64, resultSeed->data, 64);

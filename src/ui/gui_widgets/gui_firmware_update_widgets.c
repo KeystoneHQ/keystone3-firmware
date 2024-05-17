@@ -183,6 +183,9 @@ void GuiFirmwareUpdateInit(void *param)
 
 void GuiFirmwareSdCardCopy(void)
 {
+    if (!SdCardInsert()) {
+        return;
+    }
     GUI_DEL_OBJ(g_noticeWindow)
 
     g_waitAnimCont = GuiCreateAnimHintBox(480, 386, 82);

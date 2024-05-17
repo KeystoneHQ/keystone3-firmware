@@ -215,16 +215,15 @@ void ImportSinglePhraseWords(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
         GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
         // GuiSetLetterBoardConfirm(letterKb, 0);
     } else if (mkb->intputType == MNEMONIC_INPUT_SETTING_VIEW) {
-        if(isTon) {
+        if (isTon) {
             GuiModelTonRecoveryCheck();
-        }
-        else {
+        } else {
             GuiModelBip39RecoveryCheck(mkb->wordCnt);
         }
         GuiSettingRecoveryCheck();
     } else if (mkb->intputType == MNEMONIC_INPUT_FORGET_VIEW) {
         GuiForgetAnimContDel(1);
-        if(isTon) {
+        if (isTon) {
             GuiModelTonForgetPassword();
         } else {
             GuiModelBip39ForgetPassword(mkb->wordCnt);

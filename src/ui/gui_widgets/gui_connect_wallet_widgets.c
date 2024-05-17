@@ -239,18 +239,16 @@ static void QRCodePause(bool);
 
 static void GuiInitWalletListArray()
 {
-    if(GetMnemonicType() == MNEMONIC_TYPE_TON) {
+    if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
         for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
-            if(g_walletListArray[i].index == WALLET_LIST_TONKEEPER) {
+            if (g_walletListArray[i].index == WALLET_LIST_TONKEEPER) {
                 g_walletListArray[i].enable = true;
-            }
-            else {
+            } else {
                 g_walletListArray[i].enable = false;
             }
 
         }
-    }
-    else {
+    } else {
         for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
 #ifndef BTC_ONLY
             if (g_walletListArray[i].index == WALLET_LIST_ETERNL ||
@@ -509,22 +507,21 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
 #ifndef BTC_ONLY
     bool isTon = GetMnemonicType() == MNEMONIC_TYPE_TON;
-    if(isTon) {
+    if (isTon) {
         WalletListItem_t *t = NULL;
         for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
-            if(g_walletListArray[i].index == WALLET_LIST_TONKEEPER) {
+            if (g_walletListArray[i].index == WALLET_LIST_TONKEEPER) {
                 t = &g_walletListArray[i];
                 break;
             }
         }
-        ASSERT(t!=NULL);
+        ASSERT(t != NULL);
         lv_obj_t *img = GuiCreateImg(parent, t->img);
         lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 0);
         lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED,
                             t);
-    }
-    else {
+    } else {
         lv_obj_t *img = GuiCreateImg(parent, g_walletListArray[0].img);
         lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 0);
         lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
@@ -899,15 +896,14 @@ UREncodeResult *GuiGetADAData(void)
 UREncodeResult *GuiGetTonData(void)
 {
     bool isTon = GetMnemonicType() == MNEMONIC_TYPE_TON;
-    if(isTon) {
+    if (isTon) {
         char* xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
         char* walletName = GetWalletName();
-        if(walletName == NULL) {
+        if (walletName == NULL) {
             walletName = "Keystone";
         }
         return get_tonkeeper_wallet_ur(xpub, walletName, NULL, 0, NULL);
-    }
-    else {
+    } else {
         ASSERT(false);
     }
 }

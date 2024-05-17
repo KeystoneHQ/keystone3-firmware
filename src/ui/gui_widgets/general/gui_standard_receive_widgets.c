@@ -615,20 +615,18 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
         result = arweave_get_address(xPub);
         break;
-    case HOME_WALLET_CARD_TON:
-        {
-            bool isTonNative = GetMnemonicType() == MNEMONIC_TYPE_TON;
-            if(isTonNative){
-                xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
-                result = ton_get_address(xPub);
-                printf("ton_get_address result: %s\n", result->data);
-            }
-            else {
-                ASSERT(false);
-                //remains for bip39 ton
-            }
-        break;
+    case HOME_WALLET_CARD_TON: {
+        bool isTonNative = GetMnemonicType() == MNEMONIC_TYPE_TON;
+        if (isTonNative) {
+            xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
+            result = ton_get_address(xPub);
+            printf("ton_get_address result: %s\n", result->data);
+        } else {
+            ASSERT(false);
+            //remains for bip39 ton
         }
+        break;
+    }
     default:
         if (IsCosmosChain(g_chainCard)) {
             char rootPath[BUFFER_SIZE_128];

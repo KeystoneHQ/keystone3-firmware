@@ -1005,6 +1005,9 @@ static void ModelVerifyPassSuccess(uint16_t *param)
     case SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE:
         GuiApiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_PASSPHRASE_PASS, param, sizeof(*param));
         break;
+    case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD:
+        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_RSA_VERIFY_PASSWORD_PASS, param, sizeof(*param));
+        break;
     default:
         GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
         break;
@@ -1212,7 +1215,7 @@ int32_t RsaGenerateKeyPair(bool needEmitSignal)
     bool lockState = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     if (needEmitSignal) {
-        GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_START, NULL, 0);
+        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_START, NULL, 0);
     }
     uint8_t seed[64];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
@@ -1222,14 +1225,14 @@ int32_t RsaGenerateKeyPair(bool needEmitSignal)
     ASSERT(secret != NULL && secret->error_code == 0);
     FlashWriteRsaPrimes(secret->data);
     free_simple_response_u8(secret);
-    GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_GENERATE_ADDRESS, NULL, 0);
+    GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_GENERATE_ADDRESS, NULL, 0);
     AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), true);
     RecalculateManageWalletState();
     ClearLockScreenTime();
     SetLockScreen(lockState);
     if (needEmitSignal) {
-        GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS, NULL, 0);
-        GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_HIDE_LOADING, NULL, 0);
+        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS, NULL, 0);
+        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_HIDE_LOADING, NULL, 0);
     }
     return SUCCESS_CODE;
 }

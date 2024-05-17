@@ -256,7 +256,6 @@ void GuiStatusBarSetSdCard(bool connected)
         return;
     }
     static int32_t sdStatus = -1;
-    char version[SOFTWARE_VERSION_MAX_LEN] = {0};
     if (sdStatus == (connected ? 1 : 0)) {
         return;
     }
@@ -266,7 +265,7 @@ void GuiStatusBarSetSdCard(bool connected)
         uint8_t accountCnt = 0;
         GetExistAccountNum(&accountCnt);
         if (!GuiLockScreenIsTop() && accountCnt > 0 && FatfsFileExist(SD_CARD_OTA_BIN_PATH) && !GuiCheckIfTopView(&g_forgetPassView)) {
-            GuiCreateSdCardVerifyBinWindow(version, false);
+            GuiCreateSdCardVerifyBinWindow();
         }
     } else {
         GuiFirmwareWindowDeinit();

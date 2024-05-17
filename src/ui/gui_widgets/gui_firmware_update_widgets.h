@@ -16,13 +16,11 @@ void GuiFirmwareUpdateDeInit(void);
 void GuiFirmwareUpdateRefresh(void);
 void GuiFirmwareUpdatePrevTile(void);
 void GuiFirmwareSdCardCopy(void);
-void GuiCreateSdCardUpdateHintbox(char *version, bool checkSumDone);
+void GuiCreateSdCardUpdateHintbox(bool checkSumDone);
 void GuiFirmwareSdCardCopyResult(bool en);
 void GuiFirmwareUpdateVerifyPasswordErrorCount(void *param);
 void GuiFirmwareUpdateWidgetRefresh(void);
 void GuiFirmwareUpdateSha256Percent(uint8_t percent);
-void GuiFirmwareVerifyPercent(uint8_t percent);
 void GuiFirmwareWindowDeinit(void);
-void GuiCreateSdCardVerifyBinWindow(void);
 
 #endif

@@ -17,7 +17,6 @@
 #include "presetting.h"
 #include "assert.h"
 #include "user_memory.h"
-#include "firmware_update.h"
 #include "account_manager.h"
 #include "gui_lock_widgets.h"
 #include "screen_manager.h"

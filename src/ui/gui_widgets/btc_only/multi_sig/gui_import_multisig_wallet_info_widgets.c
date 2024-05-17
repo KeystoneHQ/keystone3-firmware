@@ -9,7 +9,6 @@
 #include "presetting.h"
 #include "version.h"
 #include "err_code.h"
-#include "firmware_update.h"
 #include "gui_page.h"
 #include "gui_import_multisig_wallet_info_widgets.h"
 #include "gui_multisig_wallet_export_widgets.h"

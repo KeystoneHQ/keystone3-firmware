@@ -9,35 +9,13 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val)
-{
-    return (uint32_t)(val < 0 ? -val : val);
-}
-static inline uint32_t op_i(uint32_t val)
-{
-    return val;
-}
+static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
+static inline uint32_t op_i(uint32_t val) { return val; }
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_w(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_f(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_t(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
+static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
+static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
 const static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
@@ -316,11 +294,6 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"fingerprint_remove_confirm", "Remove"},
     {"fingerprint_sign_tx", "Sign Transactions"},
     {"fingerprint_up_to_3", "You can add up to 3 fingerprints"},
-    {"firmware_security_risk_desc", "Firmware is unsigned or has an incorrect signature. Please download it from the official website and carefully check the file."},
-    {"firmware_security_risk_title", "Firmware is at risk"},
-    {"firmware_security_verify_desc", "System firmware detected on the SD card. Please verify the firmware's integrity before proceeding with the update."},
-    {"firmware_security_verify_title", "Security Verification Required"},
-    {"firmware_security_verifying", "Verifying Firmware Integrity"},
     {"firmware_update_btc_only_button_i_know", "I know"},
     {"firmware_update_btc_only_warning_desc", "You are upgrading from multi-coin firmware to BTC-only firmware. After the upgrade, #F5870A all the wallets on this device will# #F5870A only support BTC currency#, and this process is irreversible. Please confirm that you understand the risks involved. If you have downloaded the wrong firmware, please cancel this progress."},
     {"firmware_update_deny_desc", "You need to unlock your device to upgrade the firmware version."},
@@ -334,16 +307,15 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"firmware_update_sd_checksum_desc", "#F5870A Show Checksum#"},
     {"firmware_update_sd_checksum_done", "Checksum:\r\n"},
     {"firmware_update_sd_checksum_fmt", "#F5870A Show Checksum(%d%%)#"},
-    {"firmware_update_sd_checksum_fmt_version", "#F5870A Show Checksum(v%s)#"},
     {"firmware_update_sd_checksum_notice", "This is an optional feature to further enhance security. Compare the following checksum with the checksum of your download package on the official website, ensure that they are consistent."},
     {"firmware_update_sd_copying_desc", "Do not remove the MicroSD Card while the update is underway."},
     {"firmware_update_sd_copying_title", "Starting Update"},
     {"firmware_update_sd_desc2_link", "https://keyst.one/firmware"},
     {"firmware_update_sd_desc3", "Transfer the firmware file (keystone3.bin) to your Keystone using a MicroSD card formatted in FAT32."},
     {"firmware_update_sd_desc4", "Tap the #F5870A Update# button below to initiate the process."},
-    {"firmware_update_sd_dialog_desc", "A new firmware version is available. Do you want to update your device's firmware to the new version?"},
+    {"firmware_update_sd_dialog_desc", "Do you want to update your device's firmware to the new version?"},
     {"firmware_update_sd_dialog_head", "Available"},
-    {"firmware_update_sd_dialog_title", "Update Available"},
+    {"firmware_update_sd_dialog_title", "New Firmware Detected"},
     {"firmware_update_sd_failed_access_desc", "Please ensure that you have properly inserted the MicroSD Card."},
     {"firmware_update_sd_failed_access_title", "MicroSD Card Not Detected"},
     {"firmware_update_sd_title", "MicroSD Update"},
@@ -782,12 +754,9 @@ const static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -1077,11 +1046,6 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"fingerprint_remove_confirm", "지문"},
     {"fingerprint_sign_tx", "서명 트랜잭션"},
     {"fingerprint_up_to_3", "지문을 3개까지 추가할 수 있습니다"},
-    {"firmware_security_risk_desc", "펌웨어가 서명되지 않았거나 잘못된 서명이 있습니다. 공식 웹사이트에서 다운로드하여 파일을 주의 깊게 확인하십시오."},
-    {"firmware_security_risk_title", "펌웨어가 위험합니다"},
-    {"firmware_security_verify_desc", "SD 카드에서 시스템 펌웨어를 감지했습니다. 업데이트를 진행하기 전에 펌웨어의 무결성을 확인하십시오."},
-    {"firmware_security_verify_title", "보안 검증 필요"},
-    {"firmware_security_verifying", "펌웨어 무결성 검증"},
     {"firmware_update_btc_only_button_i_know", "잘 알고있습니다"},
     {"firmware_update_btc_only_warning_desc", "멀티코인 펌웨어에서 BTC-Only 펌웨어로 업그레이드 중입니다.업그레이드 후 #F5870A 이# #F5870A 있는장치에 모든 지갑은 가 BTC코인#만 지원되며 이 과정은 불가역적입니다.관련된 위험을 알고 있는지 확인하십시오.잘못된 펌웨어를 다운로드하셨다면 진행을 취소해 주세요."},
     {"firmware_update_deny_desc", "펌웨어 버전을 업그레이드하려면 장치의 잠금을 해제해야 합니다."},
@@ -1095,16 +1059,15 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"firmware_update_sd_checksum_desc", "#F5870A 체크섬 표시#"},
     {"firmware_update_sd_checksum_done", "체크섬\r\n"},
     {"firmware_update_sd_checksum_fmt", "#F5870A 체크섬 표시 (%d%%)#"},
-    {"firmware_update_sd_checksum_fmt_version", "#F5870A 체크섬 표시 (v%s)#"},
     {"firmware_update_sd_checksum_notice", "보안성을 더욱 높일 수 있는 옵션 기능입니다.아래 체크섬과 공식 홈페이지에서 다운로드한 패키지의 체크섬을 비교하여 동일하게 유지하여 주시기 바랍니다."},
     {"firmware_update_sd_copying_desc", "업그레이드 중에는 microSD 카드를 제거하지 마십시오."},
     {"firmware_update_sd_copying_title", "업데이트 시작"},
     {"firmware_update_sd_desc2_link", "https://keyst.one/firmware"},
     {"firmware_update_sd_desc3", "펌웨어(keystone3.bin)를 microSD(포맷: FAT32)에 다운로드하고 SD 카드를 장치에 연결합니다."},
     {"firmware_update_sd_desc4", "하단의 #F5870A 업데이트 #버튼을 누르시면 업그레이드가 시작됩니다."},
-    {"firmware_update_sd_dialog_desc", "새 펌웨어를 감지했습니다.장치의 펌웨어를 최신 버전으로 업데이트하시겠습니까?"},
+    {"firmware_update_sd_dialog_desc", "새 버전으로 기기의 펌웨어를 업데이트하시겠습니까?"},
     {"firmware_update_sd_dialog_head", "사용 가능"},
-    {"firmware_update_sd_dialog_title", "업그레이드 가능한 펌웨어를 감지했습니다."},
+    {"firmware_update_sd_dialog_title", "새 펌웨어가 감지되었습니다"},
     {"firmware_update_sd_failed_access_desc", "MicroSD 카드가 올바르게 연결되었는지 확인하십시오."},
     {"firmware_update_sd_failed_access_title", "MicroSD 카드가 인지되지 않았습니다."},
     {"firmware_update_sd_title", "microSD 업데이트"},
@@ -1833,11 +1796,6 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"fingerprint_remove_confirm", "Удалить"},
     {"fingerprint_sign_tx", "Подпись транзакций"},
     {"fingerprint_up_to_3", "Можно добавить 3 отпечатка"},
-    {"firmware_security_risk_desc", "Прошивка не подписана или имеет неправильную подпись. Пожалуйста, загрузите ее с официального сайта и тщательно проверьте файл."},
-    {"firmware_security_risk_title", "Прошивка под угрозой"},
-    {"firmware_security_verify_desc", "Обнаружено системное программное обеспечение на SD-карте. Пожалуйста, проверьте целостность прошивки перед обновлением."},
-    {"firmware_security_verify_title", "Требуется проверка безопасности"},
-    {"firmware_security_verifying", "Проверка целостности прошивки"},
     {"firmware_update_btc_only_button_i_know", "Я знаю"},
     {"firmware_update_btc_only_warning_desc", " \"Вы переходите с мультивалютной прошивки на прошивку только для BTC. После обновления #F5870A все кошельки на этом устройстве будут# #F5870A поддерживать только  BTC#"},
     {"firmware_update_deny_desc", "Необходимо разблокировать устройство для обновления прошивки."},
@@ -1851,16 +1809,15 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"firmware_update_sd_checksum_desc", "#F5870A Показать контрольную сумму#"},
     {"firmware_update_sd_checksum_done", "Контрольная сумма:\r\n"},
     {"firmware_update_sd_checksum_fmt", "#F5870A Показать контрольную сумму(%d%%)#"},
-    {"firmware_update_sd_checksum_fmt_version", "#F5870A Показать контрольную сумму(v%s)#"},
     {"firmware_update_sd_checksum_notice", "Это дополнительная функция, предназначенная для дальнейшего повышения безопасности. Сравните следующую контрольную сумму с контрольной суммой вашего загружаемого пакета на официальном сайте и убедитесь, что они совпадают"},
     {"firmware_update_sd_copying_desc", "Не доставайте MicroSD карту во время загрузки прошивки."},
     {"firmware_update_sd_copying_title", "Старт обновления"},
     {"firmware_update_sd_desc2_link", "https://keyst.one/firmware"},
     {"firmware_update_sd_desc3", "Перенесите файл с прошивкой (keystone3.bin) на Keystone используя MicroSD карту с форматированием FAT32."},
     {"firmware_update_sd_desc4", "Нажмите кнопку #F5870A Обновить# ниже, чтобы начать процесс."},
-    {"firmware_update_sd_dialog_desc", "Доступна новая версия прошивки. Хотите обновить версию прошивки Keystone?"},
+    {"firmware_update_sd_dialog_desc", "Вы хотите обновить прошивку вашего устройства до новой версии?"},
     {"firmware_update_sd_dialog_head", "Доступно"},
-    {"firmware_update_sd_dialog_title", "Доступно обновление"},
+    {"firmware_update_sd_dialog_title", "Обнаружено новое программное обеспечение"},
     {"firmware_update_sd_failed_access_desc", "Убедитесь, что вы правильно вставили MicroSD карту"},
     {"firmware_update_sd_failed_access_title", "MicroSD карта не обнаружена"},
     {"firmware_update_sd_title", "MicroSD обновление"},
@@ -2299,12 +2256,9 @@ const static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t v = op_v(n);
-    UNUSED(v);
-    uint32_t i = op_i(n);
-    UNUSED(i);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t i = op_i(n); UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -2597,11 +2551,6 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"fingerprint_remove_confirm", "删除"},
     {"fingerprint_sign_tx", "交易签名"},
     {"fingerprint_up_to_3", "您最多可以添加 3 个指纹"},
-    {"firmware_security_risk_desc", "固件未签名或签名错误.请从官方网站下载并仔细检查文件"},
-    {"firmware_security_risk_title", "固件存在风险"},
-    {"firmware_security_verify_desc", "在SD卡上检测到系统固件,请在继续更新前验证固件的完整性"},
-    {"firmware_security_verify_title", "需要安全验证"},
-    {"firmware_security_verifying", "验证固件完整性"},
     {"firmware_update_btc_only_button_i_know", "已知悉"},
     {"firmware_update_btc_only_warning_desc", "您正在从多币种固件升级至BTC-Only 固件.升级后,#F5870A 该设备上的所有钱包将##F5870A 仅支持BTC币种#,且此过程不可逆.请确认您了解所涉及的风险.如果您下载了错误的固件,请取消此进度."},
     {"firmware_update_deny_desc", "您需要解锁设备以升级固件版本."},
@@ -2615,16 +2564,15 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"firmware_update_sd_checksum_desc", "#F5870A 展示校验和#"},
     {"firmware_update_sd_checksum_done", "校验和\r\n"},
     {"firmware_update_sd_checksum_fmt", "#F5870A 展示校验和 (%d%%)#"},
-    {"firmware_update_sd_checksum_fmt_version", "#F5870A 展示校验和 (v%s)#"},
     {"firmware_update_sd_checksum_notice", "这是一个可选的功能,可以进一步提高安全性.将以下校验和在官方网站上的下载软件包的校验和签到,请确保它们保持一致."},
     {"firmware_update_sd_copying_desc", "升级过程中,请勿移除 microSD 卡."},
     {"firmware_update_sd_copying_title", "开始更新"},
     {"firmware_update_sd_desc2_link", "https://keyst.one/firmware"},
     {"firmware_update_sd_desc3", "将固件(keystone3.bin)下载到 FAT32 格式的 microSD 卡内,插入到设备中."},
     {"firmware_update_sd_desc4", "点击下方的#F5870A 更新#按钮,开始升级."},
-    {"firmware_update_sd_dialog_desc", "检测到新固件.是否将设备的固件更新为新版本?"},
+    {"firmware_update_sd_dialog_desc", "您想将设备的固件更新到新版本吗?"},
     {"firmware_update_sd_dialog_head", ""},
-    {"firmware_update_sd_dialog_title", "检测到可升级固件"},
+    {"firmware_update_sd_dialog_title", "检测到新固件"},
     {"firmware_update_sd_failed_access_desc", "请确保您已正确插入了microSD卡."},
     {"firmware_update_sd_failed_access_title", "未检测到 microSD 卡"},
     {"firmware_update_sd_title", "MicroSD更新"},
@@ -3107,8 +3055,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if (langs == NULL) return -1;
-    if (langs[0] == NULL) return -1;
+    if(langs == NULL) return -1;
+    if(langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -3121,13 +3069,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if (current_lang_pack == NULL) return -1;
+    if(current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for (i = 0; current_lang_pack[i] != NULL; i++) {
+    for(i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -3140,10 +3088,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for (i = 0; trans[i].msg_id != NULL; i++) {
-        if (strcmp(trans[i].msg_id, msg_id) == 0) {
+    for(i = 0; trans[i].msg_id != NULL; i++) {
+        if(strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if (trans[i].translation) return trans[i].translation;
+            if(trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -3158,23 +3106,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -3190,31 +3138,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -3229,6 +3177,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if (!current_lang) return NULL;
+    if(!current_lang) return NULL;
     return current_lang->locale_name;
 }

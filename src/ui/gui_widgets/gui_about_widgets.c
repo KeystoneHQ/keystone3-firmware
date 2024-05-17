@@ -10,7 +10,6 @@
 #include "gui_about_widgets.h"
 #include "version.h"
 #include "err_code.h"
-#include "firmware_update.h"
 #include "gui_page.h"
 #include "user_fatfs.h"
 

@@ -32,6 +32,7 @@ const TRX_PREFIX: &str = "m/44'/195'/0'";
 const LTC_PREFIX: &str = "m/49'/2'/0'";
 const BCH_PREFIX: &str = "m/44'/145'/0'";
 const DASH_PREFIX: &str = "m/44'/5'/0'";
+const SOL_PREFIX: &str = "m/44'/501'";
 
 pub fn generate_crypto_multi_accounts(
     master_fingerprint: [u8; 4],
@@ -54,6 +55,9 @@ pub fn generate_crypto_multi_accounts(
     ];
     for ele in extended_public_keys {
         match ele.get_path() {
+            _path if _path.to_string().to_lowercase().starts_with(SOL_PREFIX) => {
+                keys.push(generate_ed25519_key(master_fingerprint, ele.clone(), None)?);
+            }
             _path if k1_keys.contains(&_path.to_string().to_lowercase()) => {
                 keys.push(generate_k1_normal_key(
                     master_fingerprint,
@@ -169,6 +173,35 @@ fn generate_eth_ledger_live_key(
         Some(key_path),
         None,
         Some(_target_key.parent_fingerprint.to_bytes()),
+        Some("Keystone".to_string()),
+        note,
+    ))
+}
+
+fn generate_ed25519_key(
+    mfp: [u8; 4],
+    key: ExtendedPublicKey,
+    note: Option<String>,
+) -> URResult<CryptoHDKey> {
+    let path = key.get_path();
+    let key_path = CryptoKeyPath::new(
+        path.into_iter()
+            .map(|v| match v {
+                ChildNumber::Normal { index } => get_path_component(Some(index.clone()), false),
+                ChildNumber::Hardened { index } => get_path_component(Some(index.clone()), true),
+            })
+            .collect::<URResult<Vec<PathComponent>>>()?,
+        Some(mfp),
+        None,
+    );
+    Ok(CryptoHDKey::new_extended_key(
+        Some(false),
+        key.get_key(),
+        None,
+        None,
+        Some(key_path),
+        None,
+        None,
         Some("Keystone".to_string()),
         note,
     ))

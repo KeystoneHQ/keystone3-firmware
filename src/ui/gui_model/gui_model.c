@@ -1030,7 +1030,15 @@ static void ModelVerifyPassFailed(uint16_t *param)
         }
         break;
     case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD:
-        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_RSA_VERIFY_PASSWORD_FAIL, param, sizeof(*param));
+        signal = SIG_SETUP_RSA_PRIVATE_KEY_RSA_VERIFY_PASSWORD_FAIL;
+        g_passwordVerifyResult.errorCount = GetCurrentPasswordErrorCount();
+        printf("gui model get current error count %d \n", g_passwordVerifyResult.errorCount);
+        assert(g_passwordVerifyResult.errorCount <= MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX);
+        if (g_passwordVerifyResult.errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
+            UnlimitedVibrate(SUPER_LONG);
+        } else {
+            UnlimitedVibrate(LONG);
+        }
         break;
     case SIG_INIT_SD_CARD_OTA_COPY:
         signal = SIG_FIRMWARE_VERIFY_PASSWORD_FAIL;
@@ -1045,7 +1053,7 @@ static void ModelVerifyPassFailed(uint16_t *param)
         }
         break;
     }
-    g_passwordVerifyResult.signal = param;
+    g_passwordVerifyResult.signal = param; 
     GuiApiEmitSignal(signal, (void*)&g_passwordVerifyResult, sizeof(g_passwordVerifyResult));
 }
 

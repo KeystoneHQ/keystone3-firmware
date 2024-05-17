@@ -440,6 +440,8 @@ UREncodeResult *GuiGetOkxWalletData(void)
     // + ltc 1
     // + dash 1
     // + bch 1
+    // + sol 21
+
 #ifndef BTC_ONLY
 
     ExtendedPublicKey keys[39];
@@ -483,15 +485,15 @@ UREncodeResult *GuiGetOkxWalletData(void)
 
     // SOLBip44
     for (uint8_t i = XPUB_TYPE_SOL_BIP44_0; i <= XPUB_TYPE_SOL_BIP44_9; i++, index++) {
-        keys[index].path = SRAM_MALLOC(BUFFER_SIZE_32);
-        snprintf_s(keys[index].path, BUFFER_SIZE_32, "m/44'/501'/%d'", i - XPUB_TYPE_SOL_BIP44_0);
+        keys[index].path = SRAM_MALLOC(BUFFER_SIZE_64);
+        snprintf_s(keys[index].path, BUFFER_SIZE_64, "m/44'/501'/%d'", i - XPUB_TYPE_SOL_BIP44_0);
         keys[index].xpub = GetCurrentAccountPublicKey(i);
     }
 
     // SOLBip44Change
     for (uint8_t i = XPUB_TYPE_SOL_BIP44_CHANGE_0; i <= XPUB_TYPE_SOL_BIP44_CHANGE_9; i++, index++) {
-        keys[index].path = SRAM_MALLOC(BUFFER_SIZE_32);
-        snprintf_s(keys[index].path, BUFFER_SIZE_32, "m/44'/501'/%d'/0'", i - XPUB_TYPE_SOL_BIP44_CHANGE_0);
+        keys[index].path = SRAM_MALLOC(BUFFER_SIZE_64);
+        snprintf_s(keys[index].path, BUFFER_SIZE_64, "m/44'/501'/%d'/0'", i - XPUB_TYPE_SOL_BIP44_CHANGE_0);
         keys[index].xpub = GetCurrentAccountPublicKey(i);
     }
 

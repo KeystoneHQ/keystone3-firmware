@@ -12,6 +12,8 @@ pub enum TonError {
     UnknownError,
     #[error("Invalid TON Mnemonic, {0}")]
     MnemonicError(String),
+    #[error("Error generate ton address, {0}")]
+    AddressError(String),
     #[error("Invalid TON Transaction, {0}")]
     TransactionError(#[from] TonCellError),
     #[error("Convert Transaction Json error: {0}")]

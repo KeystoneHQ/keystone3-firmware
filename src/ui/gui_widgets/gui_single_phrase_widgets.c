@@ -49,13 +49,22 @@ static char g_randomBuff[BUFFER_SIZE_512];
 static lv_obj_t *g_noticeHintBox = NULL;
 static PageWidget_t *g_pageWidget;
 static uint8_t g_entropyMethod = 0;
+static bool g_isTon = false;
+static bool g_isDiceRolls = false;
 
 static void ResetConfirmInput(void);
 static void SelectPhraseCntHandler(lv_event_t *e);
 
 static void UpdatePhraseHandler(lv_event_t *e)
 {
-    GuiModelBip39UpdateMnemonic(g_phraseCnt);
+    if (g_isTon) GuiModelTonUpdateMnemonic();
+    else GuiModelBip39UpdateMnemonic(g_phraseCnt);
+}
+
+static void WriteSE()
+{
+    if (g_isTon) GuiModelTonWriteSe();
+    else GuiModelWriteSe();
 }
 
 static void GuiRandomPhraseWidget(lv_obj_t *parent)
@@ -82,7 +91,7 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 114);
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
     g_changeCont = cont;
-    if (g_entropyMethod == 0) {
+    if (!g_isDiceRolls) {
         lv_obj_t *button = GuiCreateImgLabelAdaptButton(cont, _("Regenerate"), &imgChange, UpdatePhraseHandler, NULL);
         lv_obj_set_height(button, 66);
         lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 24);
@@ -92,14 +101,18 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, cont);
     SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
     SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
-    if (g_entropyMethod == 0) {
-        GuiModelBip39UpdateMnemonic(g_phraseCnt);
+    if (!g_isDiceRolls) {
+        if (g_isTon) {
+            GuiModelTonUpdateMnemonic();
+        } else {
+            GuiModelBip39UpdateMnemonic(g_phraseCnt);
+        }
     } else {
         GuiModelBip39UpdateMnemonicWithDiceRolls(g_phraseCnt);
     }
 }
 
-static void MnemonicConfirmHandler(lv_event_t * e)
+static void MnemonicConfirmHandler(lv_event_t *e)
 {
     int i = 0, j;
     lv_event_code_t code = lv_event_get_code(e);
@@ -124,7 +137,7 @@ static void MnemonicConfirmHandler(lv_event_t * e)
             return;
         }
         Vibrate(SLIGHT);
-        for (i = 0 ; i < g_currId; i++) {
+        for (i = 0; i < g_currId; i++) {
             if (g_pressedBtn[i] == currentId + 1) {
                 break;
             }
@@ -160,7 +173,7 @@ static void MnemonicConfirmHandler(lv_event_t * e)
                 }
             }
             if (strcmp(confirmMnemonic, SecretCacheGetMnemonic()) == 0) {
-                GuiModelWriteSe();
+                WriteSE();
                 GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
             } else {
                 g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET, &g_noticeHintBox, NULL);
@@ -200,6 +213,8 @@ static void GuiConfirmPhraseWidget(lv_obj_t *parent)
 void GuiSinglePhraseInit(uint8_t entropyMethod)
 {
     g_entropyMethod = entropyMethod;
+    g_isTon = g_entropyMethod & WALLET_TYPE_MASK;
+    g_isDiceRolls = g_entropyMethod & ENTROPY_TYPE_MASK;
     CLEAR_OBJECT(g_singlePhraseTileView);
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
@@ -223,7 +238,9 @@ void GuiSinglePhraseInit(uint8_t entropyMethod)
 
     lv_obj_set_tile_id(g_singlePhraseTileView.tileView, g_singlePhraseTileView.currentTile, 0, LV_ANIM_OFF);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, SelectPhraseCntHandler, NULL);
+    if (!g_isTon) {
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, SelectPhraseCntHandler, NULL);
+    }
 }
 
 void GuiSinglePhraseUpdateMnemonic(void *signalParam, uint16_t paramLen)
@@ -247,14 +264,14 @@ static void SelectCheckBoxHandler(lv_event_t* e)
     lv_obj_add_state(actCb, LV_STATE_CHECKED);
     *active_id = lv_obj_get_index(actCb);
 
-    //TODO: use id to identity position
+    // TODO: use id to identity position
     const char *currText = lv_checkbox_get_text(actCb);
     if (!strcmp(currText, _("wallet_phrase_12words"))) {
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "12");
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 12) {
             g_phraseCnt = 12;
-            if (g_entropyMethod == 0) {
+            if (!g_isDiceRolls) {
                 GuiModelBip39UpdateMnemonic(g_phraseCnt);
             } else {
                 GuiModelBip39UpdateMnemonicWithDiceRolls(g_phraseCnt);
@@ -265,7 +282,7 @@ static void SelectCheckBoxHandler(lv_event_t* e)
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 24) {
             g_phraseCnt = 24;
-            if (g_entropyMethod == 0) {
+            if (!g_isDiceRolls) {
                 GuiModelBip39UpdateMnemonic(g_phraseCnt);
             } else {
                 GuiModelBip39UpdateMnemonicWithDiceRolls(g_phraseCnt);
@@ -286,7 +303,7 @@ static void SelectPhraseCntHandler(lv_event_t *e)
     lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_phrase_word_amount_select"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 560);
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
-    lv_obj_t *button = GuiCreateImgButton(g_noticeHintBox,  &imgClose, 50, CloseHintBoxHandler, &g_noticeHintBox);
+    lv_obj_t *button = GuiCreateImgButton(g_noticeHintBox, &imgClose, 50, CloseHintBoxHandler, &g_noticeHintBox);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 407, 550);
 
     if (g_phraseCnt == 24) {

@@ -140,7 +140,7 @@ int32_t CreateNewTonAccount(uint8_t accountIndex, const char *mnemonic, const ch
     DestroyAccount(accountIndex);
     CLEAR_OBJECT(g_currentAccountInfo);
     g_currentAccountIndex = accountIndex;
-    g_currentAccountInfo.isSlip39 = true;
+    g_currentAccountInfo.isTon = true;
 
     int32_t ret = SaveNewTonMnemonic(accountIndex, mnemonic, password);
     CHECK_ERRCODE_RETURN_INT(ret);
@@ -158,7 +158,7 @@ int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const u
     DestroyAccount(accountIndex);
     CLEAR_OBJECT(g_currentAccountInfo);
     g_currentAccountIndex = accountIndex;
-    g_currentAccountInfo.isTon = true;
+    g_currentAccountInfo.isSlip39 = true;
     int32_t ret = SaveNewSlip39Entropy(accountIndex, ems, entropy, entropyLen, password, id, ie);
     CHECK_ERRCODE_RETURN_INT(ret);
     memcpy_s(g_currentAccountInfo.slip39Id, sizeof(g_currentAccountInfo.slip39Id), &id, sizeof(id));

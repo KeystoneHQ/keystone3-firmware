@@ -13,6 +13,7 @@
 #include "usb_task.h"
 #include "user_memory.h"
 #include "version.h"
+#include "gui_firmware_update_widgets.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "drv_usb.h"

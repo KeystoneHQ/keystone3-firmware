@@ -54,6 +54,7 @@ void SetPasscodeType(PasscodeType type);
 void SetMnemonicType(MnemonicType type);
 
 int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t entropyLen, const char *password);
+int32_t CreateNewTonAccount(uint8_t accountIndex, const char *mnemonic, const char *password);
 int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const uint8_t *entropy, uint8_t entropyLen, const char *password, uint16_t id, uint8_t ie);
 int32_t ClearCurrentPasswordErrorCount(void);
 int32_t VerifyCurrentAccountPassword(const char *password);

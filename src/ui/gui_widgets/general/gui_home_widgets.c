@@ -85,12 +85,29 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_UMEE, false, "UMEE", true},
     {HOME_WALLET_CARD_QCK, false, "QCK", true},
     {HOME_WALLET_CARD_TGD, false, "TGD", true},
+    {HOME_WALLET_CARD_TON, false, "TON", false},
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 
 static void GuiInitWalletState()
 {
+    MnemonicType mnemonicType = GetMnemonicType();
+    switch (mnemonicType) {
+    case MNEMONIC_TYPE_SLIP39:
+        g_walletState[HOME_WALLET_CARD_ADA].enable = false;
+        break;
+    case MNEMONIC_TYPE_BIP39:
+        g_walletState[HOME_WALLET_CARD_ADA].enable = true;
+        break;
+    default:
+        for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+            g_walletState[i].enable = false;
+        }
+        g_walletState[HOME_WALLET_CARD_TON].enable = true;
+        g_walletState[HOME_WALLET_CARD_TON].state = true;
+        break;
+    }
     if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
         g_walletState[HOME_WALLET_CARD_ADA].enable = false;
     } else {
@@ -379,6 +396,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .index = HOME_WALLET_CARD_TGD,
         .coin = "TGD",
         .chain = "Tgrade",
+        .icon = &coinTgd,
+    },
+    {
+        .index = HOME_WALLET_CARD_TON,
+        .coin = "TON",
+        .chain = "The Open Network",
         .icon = &coinTgd,
     },
 };

@@ -729,6 +729,7 @@ dependencies = [
  "app_near",
  "app_solana",
  "app_sui",
+ "app_ton",
  "app_tron",
  "app_utils",
  "app_wallets",

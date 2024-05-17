@@ -49,6 +49,7 @@ typedef struct PasswordVerifyResult {
 typedef void *(*ReturnVoidPointerFunc)(void);
 
 void GuiModelWriteSe(void);
+void GuiModelTonWriteSe(void);
 void GuiModelSlip39CalWriteSe(Slip39Data_t slip39);
 void GuiModelBip39CalWriteSe(Bip39Data_t bip39);
 void GuiModelSettingSaveWalletDesc(WalletDesc_t *wallet);
@@ -58,6 +59,7 @@ void GuiModelChangeAccountPassWord(void);
 void GuiModelVerifyAccountPassWord(uint16_t *param);
 void GuiModelBip39UpdateMnemonic(uint8_t wordCnt);
 void GuiModelBip39UpdateMnemonicWithDiceRolls(uint8_t wordCnt);
+void GuiModelTonUpdateMnemonic(void);
 void GuiModelSlip39UpdateMnemonic(Slip39Data_t slip39);
 void GuiModelSlip39UpdateMnemonicWithDiceRolls(Slip39Data_t slip39);
 void GuiModelBip39RecoveryCheck(uint8_t wordsCnt);

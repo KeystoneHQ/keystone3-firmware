@@ -62,9 +62,7 @@ pub fn ton_mnemonic_validate(
     Ok(())
 }
 
-pub fn ton_entropy_to_seed(
-    entropy: Vec<u8>,
-) -> [u8; 64] {
+pub fn ton_entropy_to_seed(entropy: Vec<u8>) -> [u8; 64] {
     let mut master_seed = [0u8; 64];
     pbkdf2(
         &mut Hmac::new(Sha512::new(), &entropy),
@@ -92,6 +90,12 @@ pub fn ton_master_seed_to_keypair(master_seed: [u8; 64]) -> ([u8; 64], [u8; 32])
     let mut key = [0u8; 32];
     key.copy_from_slice(&master_seed[..32]);
     ed25519::keypair(&key)
+}
+
+pub fn ton_master_seed_to_public_key(master_seed: [u8; 64]) -> [u8; 32] {
+    let mut key = [0u8; 32];
+    key.copy_from_slice(&master_seed[..32]);
+    ed25519::keypair(&key).1
 }
 
 #[cfg(test)]

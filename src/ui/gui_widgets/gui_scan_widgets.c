@@ -163,6 +163,7 @@ void GuiTransactionCheckPass(void)
         }
         bool hasArXpub = IsArweaveSetupComplete();
         if (!hasArXpub) {
+            GuiPendingHintBoxRemove();
             GoToHomeViewHandler(NULL);
             GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_PARSER_CONFIRM);
             return;

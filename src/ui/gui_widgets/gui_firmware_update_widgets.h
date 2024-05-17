@@ -23,5 +23,6 @@ void GuiFirmwareUpdateWidgetRefresh(void);
 void GuiFirmwareUpdateSha256Percent(uint8_t percent);
 void GuiFirmwareVerifyPercent(uint8_t percent);
 void GuiFirmwareWindowDeinit(void);
+void GuiCreateSdCardVerifyBinWindow(void);
 
 #endif

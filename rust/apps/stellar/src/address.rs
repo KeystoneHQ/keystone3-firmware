@@ -21,11 +21,11 @@ mod tests {
 
     #[test]
     fn test_stellar_address() {
-        let seed = hex::decode("e4a5a632e70943ae7f07659df1332160937fad82587216a4c64315a0fb39497ee4a01f76ddab4cba68147977f3a147b6ad584c41808e8238a07f6cc4b582f186").unwrap();
+        let seed = hex::decode("96063c45132c840f7e1665a3b97814d8eb2586f34bd945f06fa15b9327eebe355f654e81c6233a52149d7a95ea7486eb8d699166f5677e507529482599624cdc").unwrap();
         let path = "m/44'/148'/0'".to_string();
         let address = generate_stellar_address(&seed, &path, StrKeyType::STRKEY_PUBKEY).unwrap();
         assert_eq!(
-            "GDRXE2BQUC3AZNPVFSCEZ76NJ3WWL25FYFK6RGZGIEKWE4SOOHSUJUJ6",
+            "GDKLQMRO2LFHLJ5I67VVOBLUOGYXXV6V72SPTKFCSNRWWTLFH7HT33AU",
             address
         );
     }

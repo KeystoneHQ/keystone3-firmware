@@ -8,6 +8,10 @@ use keystore::errors::Result;
 pub enum StrKeyType {
     STRKEY_PUBKEY = 6 << 3,
     STRKEY_PRIVKEY = 18 << 3,
+    STRKEY_PRE_AUTH_TX_KEY = 19 << 3,
+    STRKEY_HASH_X = 23 << 3,
+    STRKEY_MUXED_ACCOUNT = 12 << 3,
+    STRKEY_SIGNED_PAYLOAD = 15 << 3,
 }
 
 
@@ -98,11 +102,11 @@ mod tests {
     #[test]
     fn test_stellar_private_key() {
         // Test1 of https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md
-        let seed = hex::decode("e4a5a632e70943ae7f07659df1332160937fad82587216a4c64315a0fb39497ee4a01f76ddab4cba68147977f3a147b6ad584c41808e8238a07f6cc4b582f186").unwrap();
+        let seed = hex::decode("96063c45132c840f7e1665a3b97814d8eb2586f34bd945f06fa15b9327eebe355f654e81c6233a52149d7a95ea7486eb8d699166f5677e507529482599624cdc").unwrap();
         let path = "m/44'/148'/0'".to_string();
         let private_key = generate_stellar_private_key(&seed, &path).unwrap();
         assert_eq!(
-            "SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2G4O34RMTB343OYPXU5DJDVMN",
+            "SCIA76H6JJZI4O5TNYT7AHNNPAYE57NM66BZVA4VFUNILL3MYGRZWIG5",
             private_key
         );
     }

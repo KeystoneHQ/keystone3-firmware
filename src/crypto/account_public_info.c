@@ -441,6 +441,11 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
         if (isTon) {
             xPubResult = ProcessKeyType(seed, len, g_chainTable[XPUB_TYPE_TON_NATIVE].cryptoKey, g_chainTable[XPUB_TYPE_TON_NATIVE].path, NULL);
             CHECK_AND_FREE_XPUB(xPubResult)
+            ASSERT(xPubResult->data);
+            g_accountPublicKey[XPUB_TYPE_TON_NATIVE].pubKey = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
+            strcpy(g_accountPublicKey[XPUB_TYPE_TON_NATIVE].pubKey, xPubResult->data);
+            // printf("xPubResult=%s\r\n", xPubResult->data);
+            free_simple_response_c_char(xPubResult);
         } else {
             for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
                 // slip39 wallet does not support ADA

@@ -223,8 +223,12 @@ int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const cha
         memcpy_s(accountSecret.slip39EmsOrTonEntropyL32, sizeof(accountSecret.slip39EmsOrTonEntropyL32), entropy + 32, 32);
 
         accountSecret.entropyLen = 32;
-        VecFFI_u8 *resultSeed = ton_entropy_to_seed(entropy, 64);
-        memcpy_s(seed, resultSeed->size, resultSeed->data, resultSeed->size);
+        SimpleResponse_u8 *resultSeed = ton_entropy_to_seed(entropy, 64);
+        if (resultSeed->error_code != 0)
+        {
+            break;
+        }
+        memcpy_s(seed, 64, resultSeed->data, 64);
         free_VecFFI_u8(resultSeed);
         memcpy_s(accountSecret.seed, sizeof(accountSecret.seed), seed, 64);
 

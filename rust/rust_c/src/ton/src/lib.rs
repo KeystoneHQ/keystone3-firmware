@@ -2,8 +2,6 @@
 extern crate alloc;
 
 pub mod structs;
-use core::{ffi::c_char, ptr::slice_from_raw_parts};
-
 use alloc::{
     boxed::Box,
     format, slice,
@@ -17,6 +15,7 @@ use common_rust_c::{
     types::{Ptr, PtrBytes, PtrString},
     utils::recover_c_char,
 };
+use cty::c_char;
 use rust_tools::convert_c_char;
 use third_party::hex;
 
@@ -91,5 +90,20 @@ pub extern "C" fn ton_seed_to_publickey(
             "seed length should be 64"
         )))
         .simple_c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn ton_get_address(public_key: PtrString) -> *mut SimpleResponse<c_char> {
+    let pk = recover_c_char(public_key);
+    match hex::decode(pk) {
+        Ok(pk) => match app_ton::ton_public_key_to_address(pk) {
+            Ok(address) => SimpleResponse::success(convert_c_char(address)).simple_c_ptr(),
+            Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+        },
+        Err(e) => {
+            SimpleResponse::from(common_rust_c::errors::RustCError::InvalidHex(e.to_string()))
+                .simple_c_ptr()
+        }
     }
 }

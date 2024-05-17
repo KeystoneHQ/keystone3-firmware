@@ -138,20 +138,6 @@ void GuiScanResult(bool result, void *param)
 #endif
             return;
         }
-#ifndef BTC_ONLY
-        if (g_chainType == CHAIN_ARWEAVE) {
-            if (GetIsTempAccount()) {
-                ThrowError(ERR_INVALID_QRCODE);
-                return;
-            }
-            bool hasArXpub = IsArweaveSetupComplete();
-            if (!hasArXpub) {
-                GoToHomeViewHandler(NULL);
-                GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_PARSER_CONFIRM);
-                return;
-            }
-        }
-#endif
         uint8_t accountNum = 0;
         GetExistAccountNum(&accountNum);
         if (accountNum <= 0) {
@@ -169,6 +155,20 @@ void GuiTransactionCheckPass(void)
     GuiModelTransactionCheckResultClear();
     SetPageLockScreen(true);
     GuiCLoseCurrentWorkingView();
+#ifndef BTC_ONLY
+    if (g_chainType == CHAIN_ARWEAVE) {
+        if (GetIsTempAccount()) {
+            ThrowError(ERR_INVALID_QRCODE);
+            return;
+        }
+        bool hasArXpub = IsArweaveSetupComplete();
+        if (!hasArXpub) {
+            GoToHomeViewHandler(NULL);
+            GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_PARSER_CONFIRM);
+            return;
+        }
+    }
+#endif
     GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
 }
 

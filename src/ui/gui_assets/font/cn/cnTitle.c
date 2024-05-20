@@ -1640,8 +1640,8 @@ lv_font_t cnTitle = {
 #endif
     .get_glyph_dsc = lv_font_get_glyph_dsc_fmt_txt,    /*Function pointer to get glyph's data*/
     .get_glyph_bitmap = lv_font_get_bitmap_fmt_txt,    /*Function pointer to get glyph's bitmap*/
-    .line_height = 38,          /*The maximum line height required by the font*/
-    .base_line = 8,             /*Baseline measured from the bottom of the line*/
+    .line_height = 37,          /*The maximum line height required by the font*/
+    .base_line = 0,             /*Baseline measured from the bottom of the line*/
 #if !(LVGL_VERSION_MAJOR == 6 && LVGL_VERSION_MINOR == 0)
     .subpx = LV_FONT_SUBPX_NONE,
 #endif

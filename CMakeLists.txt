@@ -33,7 +33,7 @@ foreach(_variableName ${_variableNames})
     if(_variableName MATCHES "KT_FEATURE_*")
         add_definition_with_message(${_variableName})
     endif()
-endforeach()    
+endforeach()
 
 if(BTC_ONLY)
     add_compile_definitions(BTC_ONLY)

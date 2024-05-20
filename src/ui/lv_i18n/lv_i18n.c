@@ -9,15 +9,37 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
-static inline uint32_t op_i(uint32_t val) { return val; }
+static inline uint32_t op_n(int32_t val)
+{
+    return (uint32_t)(val < 0 ? -val : val);
+}
+static inline uint32_t op_i(uint32_t val)
+{
+    return val;
+}
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
-static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
-static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
-static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_v(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_w(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_f(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_t(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
 
-const static lv_i18n_phrase_t en_singulars[] = {
+static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
     {"Approve", "Approve"},
     {"Attention", "Attention"},
@@ -179,6 +201,8 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"connect_sushi_title", "SushiSwap"},
     {"connect_typhon_link", "https://keyst.one/t/3rd/typhon"},
     {"connect_typhon_title", "Typhon (Web)"},
+    {"connect_unisat_link", "https://keyst.one/t/3rd/unisat"},
+    {"connect_unisat_title", "UniSat"},
     {"connect_wallet_ada_step1", "Select accounts you’d like to import on your %s wallet"},
     {"connect_wallet_ada_step2", "Scan the QR code via your Keystone"},
     {"connect_wallet_ada_step3", "Approve the request to generate a new QR code on your Keystone"},
@@ -687,7 +711,7 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"usb_transport_sign_unkown_error_message", "Unable to recognize data information"},
     {"usb_transport_sign_unkown_error_title", "Unknown Error"},
     {"verification_code_desc", "Enter this code on Keystone's official website to verify your device's security."},
-    {"verification_code_failed_desc", "Your device may have been compromised, posing a risk to your sensitive data and digital assets.\r\nFor your safety, we recommend erasing all personal data and contacting Keystone Support team immediately for assistance."},
+    {"verification_code_failed_desc", "Your device may have been compromised, posing a risk to your sensitive data and digital assets.For your safety, we recommend erasing all personal data and contacting Keystone Support team immediately for assistance."},
     {"verification_code_failed_title", "Unauthorized breach attempt detected!"},
     {"verification_code_title", "Verification Code"},
     {"verification_success", "Verified"},
@@ -751,9 +775,12 @@ const static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
-    uint32_t i = op_i(n); UNUSED(i);
-    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t n = op_n(num);
+    UNUSED(n);
+    uint32_t i = op_i(n);
+    UNUSED(i);
+    uint32_t v = op_v(n);
+    UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -766,7 +793,7 @@ static const lv_i18n_lang_t en_lang = {
     .locale_plural_fn = en_plural_fn
 };
 
-const static lv_i18n_phrase_t es_singulars[] = {
+static lv_i18n_phrase_t es_singulars[] = {
     {"Address", "Dirección"},
     {"Approve", "Aprobar"},
     {"Attention", "Atención"},
@@ -817,7 +844,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"about_info_result_export_successful_desc", "El registro de tu sistema ha sido exportado correctamente a la tarjeta MicroSD"},
     {"about_info_serial_number", "Número de serie"},
     {"about_info_verify_checksum_desc", "Por favor verifica si la información anterior coincide con la página web. Si no coincide, significa que tu firmware podría haber sido manipulado. Por favor, deja de usarlo inmediatamente."},
-    {"about_info_verify_checksum_text", "Suma de comprobación"},
+    {"about_info_verify_checksum_text", "Suma de verificación"},
     {"about_info_verify_checksum_title", "Suma de verificación"},
     {"about_info_verify_firmware_desc", "Esta es una función avanzada para los desarrolladores, que les permite verificar que el firmware que se está ejecutando en su dispositivo Keystone es consistente con el que hemos abierto."},
     {"about_info_verify_firmware_step1", "Ve al repositorio de GitHub de Keystone de código abierto y sigue las instrucciones para construir tu firmware y obtener el checksum"},
@@ -928,6 +955,8 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"connect_sushi_title", "SushiSwap"},
     {"connect_typhon_link", "https://keyst.one/t/3rd/typhon"},
     {"connect_typhon_title", "Tifón (Web)"},
+    {"connect_unisat_link", ""},
+    {"connect_unisat_title", ""},
     {"connect_wallet_ada_step1", "Selecciona las cuentas que desees importar en tu billetera de %s"},
     {"connect_wallet_ada_step2", "Escanee el código QR a través de su Keystone"},
     {"connect_wallet_ada_step3", "Apruebe la solicitud para generar un nuevo código QR en su Keystone"},
@@ -1005,7 +1034,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"dice_roll_hint_label", "Al menos 50 veces"},
     {"dice_roll_max_limit_label", "Has alcanzado los límites máximos"},
     {"dice_rolls_entropy_hint", "Los lanzamientos de dados como entropía"},
-    {"enter_passcode", "Ingresar código de acceso"},
+    {"enter_passcode", "Ingrese el código de acceso"},
     {"error_box_duplicated_seed_phrase", "Frase de Semilla Duplicada"},
     {"error_box_duplicated_seed_phrase_desc", "Esta frase que escribiste ya se utiliza en una cuenta de billetera, por favor importa otro conjunto de frase semilla."},
     {"error_box_firmware_not_detected", "Firmware no detectado"},
@@ -1016,7 +1045,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"error_box_low_power_desc", "El dispositivo necesita un mínimo del 20% de carga de batería para continuar con el proceso"},
     {"error_box_mnemonic_not_match_wallet", "Frase de semilla incorrecta"},
     {"error_box_mnemonic_not_match_wallet_desc", "La frase de semilla es incorrecta. Por favor, verifica de nuevo e intenta de nuevo."},
-    {"error_unknown_error", "Error desconocido"},
+    {"error_unknown_error", "Error Desconocido"},
     {"error_unknown_error_desc", "El dispositivo ha encontrado un problema desconocido y actualmente no está disponible. Para resolver esto, por favor reinicie y restablezca el dispositivo. Si el problema persiste, por favor contacte a nuestro equipo de soporte."},
     {"fingerprint_add", "Agregar huella dactilar"},
     {"fingerprint_add_btn", "Añadir huella dactilar"},
@@ -1074,7 +1103,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"firmware_update_usb_desc4", "Haz clic en el botón #F5870A Instalar Actualización# en la página web y sigue las instrucciones para instalar el firmware más reciente"},
     {"firmware_update_usb_desc5", "No desconecte el cable USB mientras el proceso de instalación esté en curso"},
     {"firmware_update_usb_qr_link", "https://keyst.one/webusb"},
-    {"firmware_update_usb_qr_title", "Actualización del firmware"},
+    {"firmware_update_usb_qr_title", "Actualización de firmware"},
     {"firmware_update_usb_title", "Actualización de USB"},
     {"firmware_update_usb_title2", "Precaución"},
     {"firmware_update_usb_updating_hint", "No desconecte el cable USB durante el proceso de instalación"},
@@ -1124,7 +1153,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"import_wallet_ssb_step_fmt", "%d of %d"},
     {"import_wallet_ssb_title_fmt", "Comparte #F5870A %d#"},
     {"initialization_complete_hintbox_context", ""},
-    {"initialization_complete_hintbox_ok", ""},
+    {"initialization_complete_hintbox_ok", "Confirmar"},
     {"initialization_complete_hintbox_title", ""},
     {"language_desc", "Selecciona tu idioma"},
     {"language_little_title", "Idioma"},
@@ -1202,7 +1231,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"pin_label", "PIN"},
     {"please_enter_passcode", "Por favor ingrese el código de acceso"},
     {"power_off", "Apagar"},
-    {"power_requirements_hintbox_cancel", ""},
+    {"power_requirements_hintbox_cancel", "OK"},
     {"power_requirements_hintbox_context", ""},
     {"power_requirements_hintbox_title", ""},
     {"prepare_wallet_first_step", "Nuevo soporte de cadenas detectado"},
@@ -1257,7 +1286,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"receive_trx_hint", "Esta dirección es solo para TRX, tokens TRC-20 y tokens TRC-10, otros activos digitales enviados a esta dirección se perderán."},
     {"repeat_passcode_desc", "Confirma dos veces el código PIN que has ingresado"},
     {"repeat_passcode_title", "Vuelva a ingresar el código PIN"},
-    {"rsa_confirm_hintbox_cancel", ""},
+    {"rsa_confirm_hintbox_cancel", "Ahora no"},
     {"rsa_confirm_hintbox_context", ""},
     {"rsa_confirm_hintbox_ok", ""},
     {"rsa_confirm_hintbox_title", ""},
@@ -1292,7 +1321,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"sdcard_formating_desc", "No retire la tarjeta MicroSD mientras se está formateando"},
     {"seed_check_passphrase_notice", "Actualmente estás utilizando una billetera protegida con frase de contraseña. Antes de continuar con el proceso de verificación de la frase semilla, reinicia tu dispositivo sin ingresar la frase de contraseña."},
     {"seed_check_passphrase_title", "Desactivar billetera de contraseña"},
-    {"seed_check_share_phrase", "Copia de seguridad Shamir"},
+    {"seed_check_share_phrase", "Copia de seguridad de Shamir"},
     {"seed_check_share_phrase_title", "Ingrese su frase de semilla para verificar si coincide con su billetera actual"},
     {"seed_check_single_phrase", "Frase de semilla estándar"},
     {"seed_check_single_phrase_title", "Ingrese su semilla"},
@@ -1305,7 +1334,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"self_destruction_hint", "Contáctenos"},
     {"self_destruction_title", "Dispositivo ya no utilizable"},
     {"set_passcode_desc", "Este código PIN se utilizará para desbloquear su billetera y autorizar transacciones"},
-    {"shamir_backup", "Copia de seguridad Shamir"},
+    {"shamir_backup", "Copia de seguridad de Shamir"},
     {"shamir_phrase_backup_desc", "Escribe tu frase de Share #F5870A 1# y guárdala correctamente"},
     {"shamir_phrase_cancel_create_desc", "Si cancelas, cualquier Acciones confirmadas se perderán."},
     {"shamir_phrase_cancel_create_title", "¿Desea abandonar la configuración de la billetera?"},
@@ -1388,7 +1417,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"system_settings_wipe_device_wipe_title", "Borrar dispositivo"},
     {"transaction_parse_broadcast_message", "Mensaje en vivo"},
     {"transaction_parse_confirm_message", "Confirmar Mensaje"},
-    {"transaction_parse_scan_by_software", ""},
+    {"transaction_parse_scan_by_software", "Escanea el código QR con tu billetera de software"},
     {"try_again", "Inténtalo de nuevo"},
     {"tutorial_change_entropy_desc1", "La entropía es una medida de la aleatoriedad. En criptografía, garantiza que cosas como contraseñas o claves sean impredecibles, haciéndolas más seguras."},
     {"tutorial_change_entropy_desc2", "Las computadoras no son excelentes para ser verdaderamente aleatorias. Los lanzamientos de dados proporcionan una fuente física e impredecible de aleatoriedad. Al usarlos, se aumenta la seguridad de los procesos criptográficos, lo que dificulta que alguien pueda predecir o descifrar tus códigos."},
@@ -1436,7 +1465,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"usb_transport_sign_unkown_error_message", "Incapaz de reconocer la información de los datos"},
     {"usb_transport_sign_unkown_error_title", "Error Desconocido"},
     {"verification_code_desc", "Ingrese este código en el sitio web oficial de Keystone para verificar la seguridad de su dispositivo"},
-    {"verification_code_failed_desc", "Su dispositivo puede haber sido comprometido, lo que representa un riesgo para sus datos sensibles y activos digitales. \r\nPara su seguridad, recomendamos borrar todos los datos personales y contactar de inmediato al equipo de soporte de Keystone para obtener ayuda."},
+    {"verification_code_failed_desc", ""},
     {"verification_code_failed_title", "¡Se ha detectado un intento de violación no autorizada!"},
     {"verification_code_title", "Código de verificación"},
     {"verification_success", "Verificado"},
@@ -1500,7 +1529,8 @@ const static lv_i18n_phrase_t es_singulars[] = {
 
 static uint8_t es_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t n = op_n(num);
+    UNUSED(n);
 
 
     if ((n == 1)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -1514,7 +1544,7 @@ static const lv_i18n_lang_t es_lang = {
     .locale_plural_fn = es_plural_fn
 };
 
-const static lv_i18n_phrase_t ko_singulars[] = {
+static lv_i18n_phrase_t ko_singulars[] = {
     {"Address", "주소"},
     {"Approve", "허락"},
     {"Attention", "주목"},
@@ -1676,6 +1706,8 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"connect_sushi_title", "SushiSwap"},
     {"connect_typhon_link", "https://keyst.one/t/3rd/typhon"},
     {"connect_typhon_title", "Typhon월렛 (웹)"},
+    {"connect_unisat_link", "https://keyst.one/t/3rd/unisat"},
+    {"connect_unisat_title", "UniSat"},
     {"connect_wallet_ada_step1", "%s 지갑에 동기화할 계정 선택"},
     {"connect_wallet_ada_step2", "Keystone을 사용하여 QR 코드 스캔하기"},
     {"connect_wallet_ada_step3", "승인 통과 후 Keystone에서 QR 코드를 생성합니다."},
@@ -2184,7 +2216,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"usb_transport_sign_unkown_error_message", "데이터 정보 인식할 수 없습니다 "},
     {"usb_transport_sign_unkown_error_title", "알수 없는 오류입니다"},
     {"verification_code_desc", "\"창치 확인\" 페이지에 인증 코드를 입력하여 장치 안전성을 확인할 수 있습니다. "},
-    {"verification_code_failed_desc", "장치는 잠재적으로 변조될 수 있으며, 개인 데이터 및 디지털 자산에 위협이 될 수 있습니다.\r\n자산 보안을 위해 모든 개인 데이터를 삭제하고 즉시 키스톤 지원팀에 연락하여 도움을 요청할 것을 권장합니다."},
+    {"verification_code_failed_desc", "장치는 잠재적으로 변조될 수 있으며, 개인 데이터 및 디지털 자산에 위협이 될 수 있습니다.자산 보안을 위해 모든 개인 데이터를 삭제하고 즉시 키스톤 지원팀에 연락하여 도움을 요청할 것을 권장합니다."},
     {"verification_code_failed_title", "무단 위반 시도가 감지되었습니다!"},
     {"verification_code_title", "인증 코드"},
     {"verification_success", "인증 설공 "},
@@ -2261,7 +2293,7 @@ static const lv_i18n_lang_t ko_lang = {
     .locale_plural_fn = ko_plural_fn
 };
 
-const static lv_i18n_phrase_t ru_singulars[] = {
+static lv_i18n_phrase_t ru_singulars[] = {
     {"Address", "Адрес"},
     {"Approve", "Разрешить"},
     {"Attention", "Внимание"},
@@ -2293,7 +2325,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"Skip", "Пропустить"},
     {"Success", "Успех"},
     {"Tutorial", "Руководство"},
-    {"Undo", ""},
+    {"Undo", "отменить"},
     {"Update", "Обновить"},
     {"Updating", "Идет обновление"},
     {"Warning", "Предупреждение"},
@@ -2316,8 +2348,8 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"about_info_verify_checksum_title", "Контрольная сумма"},
     {"about_info_verify_firmware_desc", "Это расширенная функция, позволяющая разработчикам проверить, соответствует ли прошивка устройства Keystone той версии, исходный код которой мы предоставили в открытом доступе"},
     {"about_info_verify_firmware_step1", "Перейдите в репозиторий Keystone на GitHub с открытым исходным кодом и следуйте инструкциям, чтобы собрать прошивку и получить контрольную сумму"},
-    {"about_info_verify_firmware_step2", "Нажмите кнопку #F5870A Контрольная сумма# рядом с загрузкой прошивки"},
-    {"about_info_verify_firmware_step3", "Нажмите кнопку #F5870A «Показать контрольную сумму#» ниже и сравните информацию, отображаемую на веб-странице и на вашем устройстве"},
+    {"about_info_verify_firmware_step2", "Нажмите кнопку #F5870A Контрольная# #F5870A сумма# рядом с загрузкой прошивки"},
+    {"about_info_verify_firmware_step3", "Нажмите кнопку #F5870A Показать контрольную# #F5870A сумму# ниже и сравните информацию, отображаемую на веб-странице и на вашем устройстве"},
     {"about_info_verify_source_code_title", "Проверка исходного кода"},
     {"about_keystone_discord", "Discord"},
     {"about_keystone_discord_url", "keyst.one/discord"},
@@ -2423,6 +2455,8 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"connect_sushi_title", "SushiSwap"},
     {"connect_typhon_link", "https://keyst.one/t/3rd/typhon"},
     {"connect_typhon_title", "Typhon (Веб)"},
+    {"connect_unisat_link", "https://keyst.one/t/3rd/unisat"},
+    {"connect_unisat_title", "UniSat"},
     {"connect_wallet_ada_step1", "Выберите счета, которые вы хотите импортировать в кошелек %s."},
     {"connect_wallet_ada_step2", "Сканируйте QR-код через Keystone"},
     {"connect_wallet_ada_step3", "Подтвердите создание нового QR-кода на Keystone"},
@@ -2521,7 +2555,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"fingerprint_add_failed_partial", "Обнаружены частичные отпечатки пальцев"},
     {"fingerprint_add_failed_use_another", "Не удалось добавить отпечаток пальца. Используйте другой палец и повторите попытку."},
     {"fingerprint_add_overlaps_too_much", "Область дублирования, пожалуйста, немного скорректируйте положение вашего пальца."},
-    {"fingerprint_add_password", "Введите код-пароль для шифрования и сохранения отпечатка пальца.\\"},
+    {"fingerprint_add_password", "Введите код-пароль для шифрования и сохранения отпечатка пальца."},
     {"fingerprint_add_poor_qualtiy", "Отпечаток пальца нечеткий, пожалуйста, перезапустите процесс и попробуйте снова с другим пальцем."},
     {"fingerprint_add_success", "Успешно добавлено"},
     {"fingerprint_add_too_wet", "Обнаружена влага. Пожалуйста, вытрите палец и попробуйте снова."},
@@ -2931,7 +2965,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"usb_transport_sign_unkown_error_message", "Невозможно распознать данные"},
     {"usb_transport_sign_unkown_error_title", "Неизвестная ошибка"},
     {"verification_code_desc", "Введите этот код на официальном сайте Keystone, чтобы проверить подлинность устройства."},
-    {"verification_code_failed_desc", "Ваше устройство могло быть скомпрометировано, что представляет угрозу для ваших конфиденциальных данных и цифровых активов.\r\nВ целях безопасности мы рекомендуем удалить все личные данные и немедленно обратиться в службу поддержки Keystone за помощью."},
+    {"verification_code_failed_desc", "Ваше устройство могло быть скомпрометировано, что представляет угрозу для ваших конфиденциальных данных и цифровых активов.В целях безопасности мы рекомендуем удалить все личные данные и немедленно обратиться в службу поддержки Keystone за помощью."},
     {"verification_code_failed_title", "Осторожно! Ваше устройство скомпрометировано!"},
     {"verification_code_title", "Код проверки"},
     {"verification_success", "Проверено"},
@@ -2939,7 +2973,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"verify_cont2", "Отсканируйте QR-код, отображаемый на веб-сайте, чтобы получить код подтверждения устройства."},
     {"verify_cont3", "Введите код на веб-сайте, чтобы завершить проверку устройства на подлинность."},
     {"verify_desc", "Этот процесс подтвердит подлинность устройства Keystone и его прошивки."},
-    {"verify_firmware", "Проверка прошивки"},
+    {"verify_firmware", "Провека прошивки"},
     {"verify_modal_desc", "Вычисление кода авторизации..."},
     {"verify_qr_link", "https://keyst.one/verify"},
     {"verify_scan_qr_code", "Сканировать QR-код"},
@@ -2995,9 +3029,12 @@ const static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
-    uint32_t v = op_v(n); UNUSED(v);
-    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t n = op_n(num);
+    UNUSED(n);
+    uint32_t v = op_v(n);
+    UNUSED(v);
+    uint32_t i = op_i(n);
+    UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -3013,7 +3050,7 @@ static const lv_i18n_lang_t ru_lang = {
     .locale_plural_fn = ru_plural_fn
 };
 
-const static lv_i18n_phrase_t zh_cn_singulars[] = {
+static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"Address", "地址"},
     {"Approve", "允许"},
     {"Attention", "注意"},
@@ -3047,7 +3084,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"Tutorial", "教程"},
     {"Undo", "撤销"},
     {"Update", "更新"},
-    {"Updating", "升级中......"},
+    {"Updating", "固件升级中......"},
     {"Warning", "警告"},
     {"about_info_battery_voltage", "电池电压"},
     {"about_info_device_uid", "设备UID"},
@@ -3175,6 +3212,8 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"connect_sushi_title", "Sushiswap"},
     {"connect_typhon_link", "https://keyst.one/t/3rd/typhon"},
     {"connect_typhon_title", "Typhon(网页端)"},
+    {"connect_unisat_link", "https://keyst.one/t/3rd/unisat"},
+    {"connect_unisat_title", "UniSat"},
     {"connect_wallet_ada_step1", "选择您想同步到 %s 钱包的帐户"},
     {"connect_wallet_ada_step2", "使用 Keystone 扫描二维码"},
     {"connect_wallet_ada_step3", "通过请求,然后 Keystone 会生成一个二维码"},
@@ -3223,7 +3262,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"derivation_path_btc_1_desc", "当前主流的地址类型,交易费较低,地址以\" bc1\"开头."},
     {"derivation_path_btc_2_desc", "兼容 \"Legacy\" 和 \"Segwit\" 地址类型,交易费中等,地址以\" 3\"开头."},
     {"derivation_path_btc_3_desc", "最初的比特币地址格式,交易费较高,地址以\" 1\"开头."},
-    {"derivation_path_btc_4_desc", "Taproot:增强隐私和效率，以\"bc1p\"开头"},
+    {"derivation_path_btc_4_desc", "Taproot:增强隐私和效率,以\"bc1p\"开头"},
     {"derivation_path_btc_test_net_1_desc", "现代格式,低费用,以 \"tb1q.\" 开头"},
     {"derivation_path_btc_test_net_2_desc", "与传统地址和隔离见证地址兼容,中等费用,以 \"2.\" 开头"},
     {"derivation_path_btc_test_net_3_desc", "原始格式,较高费用,以 \"m.\" 或 \"n.\" 开头"},
@@ -3343,7 +3382,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"home_more_sign_by_sdcard", "从 Micro SD 卡签名"},
     {"home_select_coin_count_fmt", "#F5870A %d#/%d"},
     {"home_upgrade_hint", "请升级到最新版本,以访问更多加密货币."},
-    {"illustrate_supplement", "小秒"},
+    {"illustrate_supplement", "小秒天"},
     {"import_multi_wallet_file_limit_desc", "大于 256KB 的文件无法显示"},
     {"import_multi_wallet_info_no_config_file", "没有钱包文件"},
     {"import_multi_wallet_info_title", "钱包信息"},
@@ -3369,7 +3408,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"import_wallet_ssb_notbelong_desc", "您输入的助记词与该钱包不匹配.请检查您所备份的助记词,重新尝试."},
     {"import_wallet_ssb_repeat_desc", "该分片助记词已经被倒入过,请输入其他分片助记词."},
     {"import_wallet_ssb_step_fmt", "%d 的 %d"},
-    {"import_wallet_ssb_title_fmt", "分片助记词 #F5870A%d#"},
+    {"import_wallet_ssb_title_fmt", "分片助记词 #F5870A %d#"},
     {"initialization_complete_hintbox_context", "设置已完成。您现在可以进行下一步操作。"},
     {"initialization_complete_hintbox_ok", "确认"},
     {"initialization_complete_hintbox_title", "初始化完成"},
@@ -3559,12 +3598,12 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"shamir_phrase_confirm_desc", "按顺序选择以下单词,已验证您保存了当前分片的助记词."},
     {"shamir_phrase_custodian_desc", "请确认您是该分片的持有者#F5870A 1#"},
     {"shamir_phrase_custodian_title", "分片助记词 #F5870A 1#"},
-    {"shamir_phrase_number", "分片助记词数量"},
+    {"shamir_phrase_number", "分片总数"},
     {"shamir_phrase_share_backup_notice_fmt", "写下您分片 #F5870A %d# 的助记词,并妥善保管."},
     {"shamir_phrase_share_confirm_notice_fmt", "按照正确顺序选择分片 #F5870A %d# 的助记词,已验证您保存了当前分片的助记词."},
     {"shamir_phrase_share_notice_fmt", "请确认您是分片 #F5870A %d# 的托管人."},
     {"shamir_phrase_share_number_fmt", "分片助记词 #F5870A %d#/%d"},
-    {"shamir_phrase_threold", "门限"},
+    {"shamir_phrase_threold", "恢复钱包需要的最小分片"},
     {"shamir_phrase_verify_success_desc1", "该分片对应的助记词已成功验证,请进入下一分片助记词的备份."},
     {"shamir_phrase_verify_success_desc2", "点击下面的按钮,然后将 Keystone 交给分片助记词 2 的托管人."},
     {"shamir_phrase_verify_success_title", "验证成功"},
@@ -3649,8 +3688,8 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"unknown_transaction_desc", "该交易中的数据当前无法解码"},
     {"unknown_transaction_title", "交易详情不可用"},
     {"unlock_device", "解锁设备"},
-    {"unlock_device_attempts_left_plural_times_fmt", "密码不正确,剩下 %d 的尝试"},
-    {"unlock_device_attempts_left_singular_times_fmt", "密码不正确,剩下 %d 的尝试"},
+    {"unlock_device_attempts_left_plural_times_fmt", "密码错误,剩下 %d 次输入机会"},
+    {"unlock_device_attempts_left_singular_times_fmt", "密码错误,剩下 %d 次输入机会"},
     {"unlock_device_error_attempts_exceed", "超出尝试次数"},
     {"unlock_device_error_attempts_exceed_desc", "设备锁即将锁定,请解锁以访问设备."},
     {"unlock_device_error_btn_start_text", "解锁设备(5s)"},
@@ -3683,7 +3722,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"usb_transport_sign_unkown_error_message", "无法识别数据信息"},
     {"usb_transport_sign_unkown_error_title", "未知错误"},
     {"verification_code_desc", "在\"设备验证\"页面上输入验证码,检查您的设备是否安全."},
-    {"verification_code_failed_desc", "您的设备存在潜在篡改可能,这将会对您的隐私数据和数字资产造成威胁.\r\n为了您的资产安全,我们建议您删除所有个人数据,并立即与Keystone支持团队联系以寻求帮助."},
+    {"verification_code_failed_desc", "您的设备存在潜在篡改可能,这将会对您的隐私数据和数字资产造成威胁.为了您的资产安全,我们建议您删除所有个人数据,并立即与Keystone支持团队联系以寻求帮助."},
     {"verification_code_failed_title", "设备异常!"},
     {"verification_code_title", "验证码"},
     {"verification_success", "验证成功"},
@@ -3792,8 +3831,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if(langs == NULL) return -1;
-    if(langs[0] == NULL) return -1;
+    if (langs == NULL) return -1;
+    if (langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -3806,13 +3845,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if(current_lang_pack == NULL) return -1;
+    if (current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for(i = 0; current_lang_pack[i] != NULL; i++) {
+    for (i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -3825,10 +3864,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for(i = 0; trans[i].msg_id != NULL; i++) {
-        if(strcmp(trans[i].msg_id, msg_id) == 0) {
+    for (i = 0; trans[i].msg_id != NULL; i++) {
+        if (strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if(trans[i].translation) return trans[i].translation;
+            if (trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -3843,23 +3882,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if(current_lang == NULL) return msg_id;
+    if (current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if(lang->singulars != NULL) {
+    if (lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if(lang == current_lang_pack[0]) return msg_id;
+    if (lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if(lang->singulars != NULL) {
+    if (lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -3875,31 +3914,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if(current_lang == NULL) return msg_id;
+    if (current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if(lang->locale_plural_fn != NULL) {
+    if (lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if(lang->plurals[ptype] != NULL) {
+        if (lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if(lang == current_lang_pack[0]) return msg_id;
+    if (lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if(lang->locale_plural_fn != NULL) {
+    if (lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if(lang->plurals[ptype] != NULL) {
+        if (lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -3914,6 +3953,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if(!current_lang) return NULL;
+    if (!current_lang) return NULL;
     return current_lang->locale_name;
 }

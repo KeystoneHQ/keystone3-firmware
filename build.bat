@@ -47,7 +47,7 @@ GOTO :EOF
 :EXECUTE_BUILD
 IF "%build_language%"=="true" (
     pushd %LANGUAGE_PATH%
-    %LANGUAGE_SCRIPT% --zh --ru --ko --es
+    %LANGUAGE_SCRIPT%
     popd  
 )
 

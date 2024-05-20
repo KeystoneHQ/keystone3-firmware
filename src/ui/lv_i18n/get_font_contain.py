@@ -96,8 +96,7 @@ def extract_unique_characters(df, font_size, column):
     return text
 
 def main():
-    # for language in ['cn', 'ko', 'ru', 'de', 'ja']:
-    for language in ['cn', 'ko', 'ru', 'es']:
+    for language in ['cn', 'ko', 'ru', 'es', 'de', 'ja']:
         try:
             df = pd.read_csv('data.csv')
             font_labels = {

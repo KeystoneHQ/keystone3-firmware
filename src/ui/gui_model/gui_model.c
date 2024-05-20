@@ -1185,6 +1185,8 @@ static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen)
         SetPageLockScreen(true);
         GuiApiEmitSignal(SIG_INIT_SD_CARD_OTA_COPY_FAIL, NULL, 0);
     }
+#else
+    GuiApiEmitSignal(SIG_INIT_SD_CARD_OTA_COPY_FAIL, NULL, 0);
 #endif
     return SUCCESS_CODE;
 }

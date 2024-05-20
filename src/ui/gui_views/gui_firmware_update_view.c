@@ -77,14 +77,6 @@ int32_t GuiFirmwareUpdateViewEventProcess(void *self, uint16_t usEvent, void *pa
         }
         GuiFirmwareUpdateSha256Percent(percent);
         break;
-    case SIG_SETTING_VERIFY_OTA_PERCENT:
-        if (param != NULL) {
-            percent = *(uint8_t *)param;
-        } else {
-            return ERR_GUI_ERROR;
-        }
-        GuiFirmwareVerifyPercent(percent);
-        break;
     case SIG_SETTING_SHA256_PERCENT_ERROR:
         GuiFirmwareUpdateSha256Percent(0xFF);
         break;

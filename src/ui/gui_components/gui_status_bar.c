@@ -1,6 +1,5 @@
 #include "gui_status_bar.h"
 #include "account_manager.h"
-#include "firmware_update.h"
 #include "gui_button.h"
 #include "gui_chain.h"
 #include "gui_connect_wallet_widgets.h"
@@ -265,10 +264,10 @@ void GuiStatusBarSetSdCard(bool connected)
         uint8_t accountCnt = 0;
         GetExistAccountNum(&accountCnt);
         if (!GuiLockScreenIsTop() && accountCnt > 0 && FatfsFileExist(SD_CARD_OTA_BIN_PATH) && !GuiCheckIfTopView(&g_forgetPassView)) {
-            GuiCreateSdCardVerifyBinWindow();
+            GuiCreateSdCardUpdateHintbox(false);
         }
     } else {
-        GuiFirmwareWindowDeinit();
+        // GuiFirmwareWindowDeinit();
         lv_obj_add_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN);
     }
     RefreshStatusBar();

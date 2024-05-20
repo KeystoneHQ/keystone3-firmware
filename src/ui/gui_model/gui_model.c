@@ -27,7 +27,7 @@
 #include "qrdecode_task.h"
 #include "gui_views.h"
 #include "assert.h"
-#include "firmware_update.h"
+#include "version.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "rust.h"
@@ -106,7 +106,6 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen);
 static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t parseTransactionFunc);
 static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen);
-static int32_t ModelVerifyFirmware(const void *indata, uint32_t inDataLen);
 
 static PasswordVerifyResult_t g_passwordVerifyResult;
 static bool g_stopCalChecksum = false;
@@ -173,12 +172,6 @@ void GuiModelFormatMicroSd(void)
 {
     SetPageLockScreen(false);
     AsyncExecute(ModelFormatMicroSd, NULL, 0);
-}
-
-void GuiModelVerifyFirmware(void)
-{
-    SetPageLockScreen(false);
-    AsyncExecute(ModelVerifyFirmware, NULL, 0);
 }
 
 void GuiModelStopCalculateCheckSum(void)
@@ -1053,7 +1046,7 @@ static void ModelVerifyPassFailed(uint16_t *param)
         }
         break;
     }
-    g_passwordVerifyResult.signal = param; 
+    g_passwordVerifyResult.signal = param;
     GuiApiEmitSignal(signal, (void*)&g_passwordVerifyResult, sizeof(g_passwordVerifyResult));
 }
 
@@ -1439,19 +1432,5 @@ static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen)
     }
     SetPageLockScreen(true);
 
-    return SUCCESS_CODE;
-}
-
-static int32_t ModelVerifyFirmware(const void *indata, uint32_t inDataLen)
-{
-#ifndef COMPILE_SIMULATOR
-    CheckOtaBinVersion();
-#else
-    uint8_t percent = 99;
-    GuiApiEmitSignal(SIG_SETTING_VERIFY_OTA_PERCENT, &percent, sizeof(percent));
-    percent = 100;
-    GuiApiEmitSignal(SIG_SETTING_VERIFY_OTA_PERCENT, &percent, sizeof(percent));
-#endif
-    SetPageLockScreen(true);
     return SUCCESS_CODE;
 }

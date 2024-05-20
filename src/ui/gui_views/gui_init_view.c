@@ -149,14 +149,6 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         }
         GuiUpdateCheckSumPercent(percent);
         break;
-    case SIG_SETTING_VERIFY_OTA_PERCENT:
-        if (param != NULL) {
-            percent = *(uint8_t *)param;
-        } else {
-            return ERR_GUI_ERROR;
-        }
-        GuiFirmwareVerifyPercent(percent);
-        break;
     case SIG_SETTING_SHA256_PERCENT:
         if (param != NULL) {
             percent = *(uint8_t *)param;

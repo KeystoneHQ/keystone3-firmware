@@ -10,12 +10,6 @@ static int32_t GuiCreateWalletViewInit(uint8_t walletMethod)
     return SUCCESS_CODE;
 }
 
-static int32_t GuiCreateWalletViewDeInit(void)
-{
-    GuiCreateWalletDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiCreateWalletViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     uint8_t walletMethod = 0;

@@ -9,37 +9,15 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val)
-{
-    return (uint32_t)(val < 0 ? -val : val);
-}
-static inline uint32_t op_i(uint32_t val)
-{
-    return val;
-}
+static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
+static inline uint32_t op_i(uint32_t val) { return val; }
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_w(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_f(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_t(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
+static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
+static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
-const const static lv_i18n_phrase_t en_singulars[] = {
+const static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
     {"Approve", "Approve"},
     {"Attention", "Attention"},
@@ -57,7 +35,6 @@ const const static lv_i18n_phrase_t en_singulars[] = {
     {"Import", "Import"},
     {"InitializingRsaTitle", "Initializing... Please wait"},
     {"Keystone", "Keystone"},
-    {"Loading", "Loading..."},
     {"OK", "OK"},
     {"Overview", "Overview"},
     {"Passphrase", "Passphrase"},
@@ -327,15 +304,16 @@ const const static lv_i18n_phrase_t en_singulars[] = {
     {"firmware_update_sd_checksum_desc", "#F5870A Show Checksum#"},
     {"firmware_update_sd_checksum_done", "Checksum:\r\n"},
     {"firmware_update_sd_checksum_fmt", "#F5870A Show Checksum(%d%%)#"},
+    {"firmware_update_sd_checksum_fmt_version", "#F5870A Show Checksum(v%s)#"},
     {"firmware_update_sd_checksum_notice", "This is an optional feature to further enhance security. Compare the following checksum with the checksum of your download package on the official website, ensure that they are consistent."},
     {"firmware_update_sd_copying_desc", "Do not remove the MicroSD Card while the update is underway."},
     {"firmware_update_sd_copying_title", "Starting Update"},
     {"firmware_update_sd_desc2_link", "https://keyst.one/firmware"},
     {"firmware_update_sd_desc3", "Transfer the firmware file (keystone3.bin) to your Keystone using a MicroSD card formatted in FAT32."},
     {"firmware_update_sd_desc4", "Tap the #F5870A Update# button below to initiate the process."},
-    {"firmware_update_sd_dialog_desc", "Do you want to update your device's firmware to the new version?"},
+    {"firmware_update_sd_dialog_desc", "A new firmware version is available. Do you want to update your device's firmware to the new version?"},
     {"firmware_update_sd_dialog_head", "Available"},
-    {"firmware_update_sd_dialog_title", "New Firmware Detected"},
+    {"firmware_update_sd_dialog_title", "Update Available"},
     {"firmware_update_sd_failed_access_desc", "Please ensure that you have properly inserted the MicroSD Card."},
     {"firmware_update_sd_failed_access_title", "MicroSD Card Not Detected"},
     {"firmware_update_sd_title", "MicroSD Update"},
@@ -702,7 +680,6 @@ const const static lv_i18n_phrase_t en_singulars[] = {
     {"usb_transport_connect_rabby", "Rabby Wallet wants to connect your Keystone via USB"},
     {"usb_transport_connect_wallet", "Your software wallet wants to connect to your device via USB"},
     {"usb_transport_connection_request", "Connection Request"},
-    {"usb_transport_mismatched_wallet_desc", "Mismatched wallet, please switch to another wallet and try again"},
     {"usb_transport_mismatched_wallet_title", "Mismatched Wallet"},
     {"usb_transport_sign_completed_subtitle", "View transaction details at your software wallet"},
     {"usb_transport_sign_completed_title", "Signature Completed"},
@@ -774,12 +751,9 @@ const const static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -792,7 +766,7 @@ static const lv_i18n_lang_t en_lang = {
     .locale_plural_fn = en_plural_fn
 };
 
-const const static lv_i18n_phrase_t es_singulars[] = {
+const static lv_i18n_phrase_t es_singulars[] = {
     {"Address", "Dirección"},
     {"Approve", "Aprobar"},
     {"Attention", "Atención"},
@@ -1077,7 +1051,7 @@ const const static lv_i18n_phrase_t es_singulars[] = {
     {"firmware_update_no_upgradable_firmware_desc", "La versión del firmware de tu dispositivo es superior o igual a la que está en tu tarjeta microSD"},
     {"firmware_update_no_upgradable_firmware_title", "No se detectó firmware actualizable"},
     {"firmware_update_sd_checksum_desc", "#F5870A Mostrar Suma de Verificación#"},
-    {"firmware_update_sd_checksum_done", "Suma de verificación:"},
+    {"firmware_update_sd_checksum_done", "Suma de verificación:\r\n"},
     {"firmware_update_sd_checksum_fmt", "#F5870A Mostrar Checksum(%d%%)#"},
     {"firmware_update_sd_checksum_fmt_version", "#F5870A Mostrar Suma de Verificación(v%s)#"},
     {"firmware_update_sd_checksum_notice", "Esta es una característica opcional para aumentar aún más la seguridad. Compara el siguiente checksum con el checksum de tu paquete de descarga en el sitio web oficial, asegúrate de que sean consistentes."},
@@ -1526,8 +1500,7 @@ const const static lv_i18n_phrase_t es_singulars[] = {
 
 static uint8_t es_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
+    uint32_t n = op_n(num); UNUSED(n);
 
 
     if ((n == 1)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -1541,7 +1514,7 @@ static const lv_i18n_lang_t es_lang = {
     .locale_plural_fn = es_plural_fn
 };
 
-const const static lv_i18n_phrase_t ko_singulars[] = {
+const static lv_i18n_phrase_t ko_singulars[] = {
     {"Address", "주소"},
     {"Approve", "허락"},
     {"Attention", "주목"},
@@ -1559,7 +1532,6 @@ const const static lv_i18n_phrase_t ko_singulars[] = {
     {"Import", "가져오기"},
     {"InitializingRsaTitle", "초기화 중... 잠시만 기다려 주세요"},
     {"Keystone", "키스톤"},
-    {"Loading", "로딩 중..."},
     {"OK", "확인"},
     {"Overview", "개요"},
     {"Passphrase", "패스프레이즈"},
@@ -1829,15 +1801,16 @@ const const static lv_i18n_phrase_t ko_singulars[] = {
     {"firmware_update_sd_checksum_desc", "#F5870A 체크섬 표시#"},
     {"firmware_update_sd_checksum_done", "체크섬\r\n"},
     {"firmware_update_sd_checksum_fmt", "#F5870A 체크섬 표시 (%d%%)#"},
+    {"firmware_update_sd_checksum_fmt_version", "#F5870A 체크섬 표시 (v%s)#"},
     {"firmware_update_sd_checksum_notice", "보안성을 더욱 높일 수 있는 옵션 기능입니다.아래 체크섬과 공식 홈페이지에서 다운로드한 패키지의 체크섬을 비교하여 동일하게 유지하여 주시기 바랍니다."},
     {"firmware_update_sd_copying_desc", "업그레이드 중에는 microSD 카드를 제거하지 마십시오."},
     {"firmware_update_sd_copying_title", "업데이트 시작"},
     {"firmware_update_sd_desc2_link", "https://keyst.one/firmware"},
     {"firmware_update_sd_desc3", "펌웨어(keystone3.bin)를 microSD(포맷: FAT32)에 다운로드하고 SD 카드를 장치에 연결합니다."},
     {"firmware_update_sd_desc4", "하단의 #F5870A 업데이트 #버튼을 누르시면 업그레이드가 시작됩니다."},
-    {"firmware_update_sd_dialog_desc", "새 버전으로 기기의 펌웨어를 업데이트하시겠습니까?"},
+    {"firmware_update_sd_dialog_desc", "새 펌웨어를 감지했습니다.장치의 펌웨어를 최신 버전으로 업데이트하시겠습니까?"},
     {"firmware_update_sd_dialog_head", "사용 가능"},
-    {"firmware_update_sd_dialog_title", "새 펌웨어가 감지되었습니다"},
+    {"firmware_update_sd_dialog_title", "업그레이드 가능한 펌웨어를 감지했습니다."},
     {"firmware_update_sd_failed_access_desc", "MicroSD 카드가 올바르게 연결되었는지 확인하십시오."},
     {"firmware_update_sd_failed_access_title", "MicroSD 카드가 인지되지 않았습니다."},
     {"firmware_update_sd_title", "microSD 업데이트"},
@@ -2204,7 +2177,6 @@ const const static lv_i18n_phrase_t ko_singulars[] = {
     {"usb_transport_connect_rabby", "Rabby 지갑은 USB를 통해 당신의 키스톤에 접속하고 싶습니다."},
     {"usb_transport_connect_wallet", "당신의 소프트웨어 지갑은 USB를 통해 당신의 장치에 연결되기를 바랍니다"},
     {"usb_transport_connection_request", "연결 요청"},
-    {"usb_transport_mismatched_wallet_desc", "지갑이 일치하지 않습니다. 다른 지갑으로 전환하고 다시 시도하세요."},
     {"usb_transport_mismatched_wallet_title", "지갑은 일치하지 않습니다"},
     {"usb_transport_sign_completed_subtitle", "소프트웨어 지갑에서 거래 내역을 확인합니다"},
     {"usb_transport_sign_completed_title", "서명완료"},
@@ -2289,7 +2261,7 @@ static const lv_i18n_lang_t ko_lang = {
     .locale_plural_fn = ko_plural_fn
 };
 
-const const static lv_i18n_phrase_t ru_singulars[] = {
+const static lv_i18n_phrase_t ru_singulars[] = {
     {"Address", "Адрес"},
     {"Approve", "Разрешить"},
     {"Attention", "Внимание"},
@@ -2307,7 +2279,6 @@ const const static lv_i18n_phrase_t ru_singulars[] = {
     {"Import", "Импорт"},
     {"InitializingRsaTitle", "Инициализация... Пожалуйста, подождите"},
     {"Keystone", "Keystone"},
-    {"Loading", "Загрузка..."},
     {"OK", "Хорошо"},
     {"Overview", "Предпросмотр"},
     {"Passphrase", "Кодовая фраза"},
@@ -2577,15 +2548,16 @@ const const static lv_i18n_phrase_t ru_singulars[] = {
     {"firmware_update_sd_checksum_desc", "#F5870A Показать контрольную сумму#"},
     {"firmware_update_sd_checksum_done", "Контрольная сумма:\r\n"},
     {"firmware_update_sd_checksum_fmt", "#F5870A Показать контрольную сумму(%d%%)#"},
+    {"firmware_update_sd_checksum_fmt_version", "#F5870A Показать контрольную сумму(v%s)#"},
     {"firmware_update_sd_checksum_notice", "Это дополнительная функция, предназначенная для дальнейшего повышения безопасности. Сравните следующую контрольную сумму с контрольной суммой вашего загружаемого пакета на официальном сайте и убедитесь, что они совпадают"},
     {"firmware_update_sd_copying_desc", "Не доставайте MicroSD карту во время загрузки прошивки."},
     {"firmware_update_sd_copying_title", "Старт обновления"},
     {"firmware_update_sd_desc2_link", "https://keyst.one/firmware"},
     {"firmware_update_sd_desc3", "Перенесите файл с прошивкой (keystone3.bin) на Keystone используя MicroSD карту с форматированием FAT32."},
     {"firmware_update_sd_desc4", "Нажмите кнопку #F5870A Обновить# ниже, чтобы начать процесс."},
-    {"firmware_update_sd_dialog_desc", "Вы хотите обновить прошивку вашего устройства до новой версии?"},
+    {"firmware_update_sd_dialog_desc", "Доступна новая версия прошивки. Хотите обновить версию прошивки Keystone?"},
     {"firmware_update_sd_dialog_head", "Доступно"},
-    {"firmware_update_sd_dialog_title", "Обнаружено новое программное обеспечение"},
+    {"firmware_update_sd_dialog_title", "Доступно обновление"},
     {"firmware_update_sd_failed_access_desc", "Убедитесь, что вы правильно вставили MicroSD карту"},
     {"firmware_update_sd_failed_access_title", "MicroSD карта не обнаружена"},
     {"firmware_update_sd_title", "MicroSD обновление"},
@@ -2952,7 +2924,6 @@ const const static lv_i18n_phrase_t ru_singulars[] = {
     {"usb_transport_connect_rabby", "Кошелек Rabby хочет подключиться к Keystone через USB"},
     {"usb_transport_connect_wallet", "Ваш программный кошелек хочет подключиться к устройству через USB"},
     {"usb_transport_connection_request", "Запрос подключения"},
-    {"usb_transport_mismatched_wallet_desc", "Несоответствующий кошелек, пожалуйста, переключитесь на другой кошелек и попробуйте снова."},
     {"usb_transport_mismatched_wallet_title", "Разные кошельки"},
     {"usb_transport_sign_completed_subtitle", "Посмотреть детали транзакций в программном кошельке"},
     {"usb_transport_sign_completed_title", "Подпись завершена"},
@@ -3024,12 +2995,9 @@ const const static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t v = op_v(n);
-    UNUSED(v);
-    uint32_t i = op_i(n);
-    UNUSED(i);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t i = op_i(n); UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -3045,7 +3013,7 @@ static const lv_i18n_lang_t ru_lang = {
     .locale_plural_fn = ru_plural_fn
 };
 
-const const static lv_i18n_phrase_t zh_cn_singulars[] = {
+const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"Address", "地址"},
     {"Approve", "允许"},
     {"Attention", "注意"},
@@ -3063,7 +3031,6 @@ const const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"Import", "导入"},
     {"InitializingRsaTitle", "初始化中... 请稍候"},
     {"Keystone", "Keystone"},
-    {"Loading", "加载中..."},
     {"OK", "好的"},
     {"Overview", "概述"},
     {"Passphrase", "密语钱包"},
@@ -3333,15 +3300,16 @@ const const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"firmware_update_sd_checksum_desc", "#F5870A 展示校验和#"},
     {"firmware_update_sd_checksum_done", "校验和\r\n"},
     {"firmware_update_sd_checksum_fmt", "#F5870A 展示校验和 (%d%%)#"},
+    {"firmware_update_sd_checksum_fmt_version", "#F5870A 展示校验和 (v%s)#"},
     {"firmware_update_sd_checksum_notice", "这是一个可选的功能,可以进一步提高安全性.将以下校验和在官方网站上的下载软件包的校验和签到,请确保它们保持一致."},
     {"firmware_update_sd_copying_desc", "升级过程中,请勿移除 microSD 卡."},
     {"firmware_update_sd_copying_title", "开始更新"},
     {"firmware_update_sd_desc2_link", "https://keyst.one/firmware"},
     {"firmware_update_sd_desc3", "将固件(keystone3.bin)下载到 FAT32 格式的 microSD 卡内,插入到设备中."},
     {"firmware_update_sd_desc4", "点击下方的#F5870A 更新#按钮,开始升级."},
-    {"firmware_update_sd_dialog_desc", "您想将设备的固件更新到新版本吗?"},
+    {"firmware_update_sd_dialog_desc", "检测到新固件.是否将设备的固件更新为新版本?"},
     {"firmware_update_sd_dialog_head", ""},
-    {"firmware_update_sd_dialog_title", "检测到新固件"},
+    {"firmware_update_sd_dialog_title", "检测到可升级固件"},
     {"firmware_update_sd_failed_access_desc", "请确保您已正确插入了microSD卡."},
     {"firmware_update_sd_failed_access_title", "未检测到 microSD 卡"},
     {"firmware_update_sd_title", "MicroSD更新"},
@@ -3708,7 +3676,6 @@ const const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"usb_transport_connect_rabby", "Rabby钱包想通过USB连接您的Keystone"},
     {"usb_transport_connect_wallet", "您的软件钱包希望通过USB连接到您的设备"},
     {"usb_transport_connection_request", "连接请求"},
-    {"usb_transport_mismatched_wallet_desc", "钱包不匹配,请切换到另一个钱包再试一次"},
     {"usb_transport_mismatched_wallet_title", "钱包不匹配"},
     {"usb_transport_sign_completed_subtitle", "在您的软件钱包中查看交易详细信息"},
     {"usb_transport_sign_completed_title", "签名完成"},
@@ -3825,8 +3792,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if (langs == NULL) return -1;
-    if (langs[0] == NULL) return -1;
+    if(langs == NULL) return -1;
+    if(langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -3839,13 +3806,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if (current_lang_pack == NULL) return -1;
+    if(current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for (i = 0; current_lang_pack[i] != NULL; i++) {
+    for(i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -3858,10 +3825,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for (i = 0; trans[i].msg_id != NULL; i++) {
-        if (strcmp(trans[i].msg_id, msg_id) == 0) {
+    for(i = 0; trans[i].msg_id != NULL; i++) {
+        if(strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if (trans[i].translation) return trans[i].translation;
+            if(trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -3876,23 +3843,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -3908,31 +3875,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -3947,6 +3914,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if (!current_lang) return NULL;
+    if(!current_lang) return NULL;
     return current_lang->locale_name;
 }

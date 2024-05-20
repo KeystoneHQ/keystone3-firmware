@@ -166,7 +166,7 @@ void GuiFirmwareUpdateInit(void *param)
 
 void GuiFirmwareSdCardCopy(void)
 {
-    if (!SdCardInsert()) {
+    if (!SdCardInsert() || g_waitAnimCont != NULL) {
         return;
     }
     GUI_DEL_OBJ(g_noticeWindow)
@@ -182,6 +182,7 @@ void GuiFirmwareSdCardCopy(void)
 void GuiFirmwareSdCardCopyResult(bool en)
 {
     GuiDeleteAnimHintBox();
+    g_waitAnimCont = NULL;
     if (en) {
         printf("copy success\n");
     } else {
@@ -209,6 +210,7 @@ void GuiFirmwareUpdateDeInit(void)
     printf("GuiFirmwareUpdateDeInit\n");
     GUI_DEL_OBJ(g_noticeWindow)
     GuiDeleteAnimHintBox();
+    g_waitAnimCont = NULL;
     lv_obj_del(g_firmwareUpdateWidgets.cont);
     CLEAR_OBJECT(g_firmwareUpdateWidgets);
     if (g_pageWidget != NULL) {

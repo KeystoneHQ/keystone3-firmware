@@ -1,3 +1,11 @@
+## 1.4.4 (2024-05-20)
+
+### What's new
+
+1. Added support for Ar through integration with ArConnect wallet
+2. Added functionality for MicroSD cards upgrade verification
+
+
 ## 1.4.2 (2024-05-14)
 
 ### What's new

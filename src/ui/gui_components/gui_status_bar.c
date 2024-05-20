@@ -267,7 +267,6 @@ void GuiStatusBarSetSdCard(bool connected)
             GuiCreateSdCardUpdateHintbox(false);
         }
     } else {
-        // GuiFirmwareWindowDeinit();
         lv_obj_add_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN);
     }
     RefreshStatusBar();

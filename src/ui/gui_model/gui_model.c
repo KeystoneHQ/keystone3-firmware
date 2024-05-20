@@ -27,7 +27,7 @@
 #include "qrdecode_task.h"
 #include "gui_views.h"
 #include "assert.h"
-#include "firmware_update.h"
+#include "version.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "rust.h"
@@ -106,7 +106,6 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen);
 static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t parseTransactionFunc);
 static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen);
-static int32_t ModelVerifyFirmware(const void *indata, uint32_t inDataLen);
 
 static PasswordVerifyResult_t g_passwordVerifyResult;
 static bool g_stopCalChecksum = false;
@@ -173,12 +172,6 @@ void GuiModelFormatMicroSd(void)
 {
     SetPageLockScreen(false);
     AsyncExecute(ModelFormatMicroSd, NULL, 0);
-}
-
-void GuiModelVerifyFirmware(void)
-{
-    SetPageLockScreen(false);
-    AsyncExecute(ModelVerifyFirmware, NULL, 0);
 }
 
 void GuiModelStopCalculateCheckSum(void)
@@ -1005,6 +998,9 @@ static void ModelVerifyPassSuccess(uint16_t *param)
     case SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE:
         GuiApiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_PASSPHRASE_PASS, param, sizeof(*param));
         break;
+    case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD:
+        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_RSA_VERIFY_PASSWORD_PASS, param, sizeof(*param));
+        break;
     default:
         GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
         break;
@@ -1021,6 +1017,17 @@ static void ModelVerifyPassFailed(uint16_t *param)
         printf("gui model get login error count %d \n", g_passwordVerifyResult.errorCount);
         assert(g_passwordVerifyResult.errorCount <= MAX_LOGIN_PASSWORD_ERROR_COUNT);
         if (g_passwordVerifyResult.errorCount == MAX_LOGIN_PASSWORD_ERROR_COUNT) {
+            UnlimitedVibrate(SUPER_LONG);
+        } else {
+            UnlimitedVibrate(LONG);
+        }
+        break;
+    case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD:
+        signal = SIG_SETUP_RSA_PRIVATE_KEY_RSA_VERIFY_PASSWORD_FAIL;
+        g_passwordVerifyResult.errorCount = GetCurrentPasswordErrorCount();
+        printf("gui model get current error count %d \n", g_passwordVerifyResult.errorCount);
+        assert(g_passwordVerifyResult.errorCount <= MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX);
+        if (g_passwordVerifyResult.errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
             UnlimitedVibrate(SUPER_LONG);
         } else {
             UnlimitedVibrate(LONG);
@@ -1178,6 +1185,8 @@ static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen)
         SetPageLockScreen(true);
         GuiApiEmitSignal(SIG_INIT_SD_CARD_OTA_COPY_FAIL, NULL, 0);
     }
+#else
+    GuiApiEmitSignal(SIG_INIT_SD_CARD_OTA_COPY_FAIL, NULL, 0);
 #endif
     return SUCCESS_CODE;
 }
@@ -1212,7 +1221,7 @@ int32_t RsaGenerateKeyPair(bool needEmitSignal)
     bool lockState = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     if (needEmitSignal) {
-        GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_START, NULL, 0);
+        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_START, NULL, 0);
     }
     uint8_t seed[64];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
@@ -1222,14 +1231,14 @@ int32_t RsaGenerateKeyPair(bool needEmitSignal)
     ASSERT(secret != NULL && secret->error_code == 0);
     FlashWriteRsaPrimes(secret->data);
     free_simple_response_u8(secret);
-    GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_GENERATE_ADDRESS, NULL, 0);
+    GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_GENERATE_ADDRESS, NULL, 0);
     AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), true);
     RecalculateManageWalletState();
     ClearLockScreenTime();
     SetLockScreen(lockState);
     if (needEmitSignal) {
-        GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS, NULL, 0);
-        GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_HIDE_LOADING, NULL, 0);
+        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS, NULL, 0);
+        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_HIDE_LOADING, NULL, 0);
     }
     return SUCCESS_CODE;
 }
@@ -1425,19 +1434,5 @@ static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen)
     }
     SetPageLockScreen(true);
 
-    return SUCCESS_CODE;
-}
-
-static int32_t ModelVerifyFirmware(const void *indata, uint32_t inDataLen)
-{
-#ifndef COMPILE_SIMULATOR
-    CheckOtaBinVersion();
-#else
-    uint8_t percent = 99;
-    GuiApiEmitSignal(SIG_SETTING_VERIFY_OTA_PERCENT, &percent, sizeof(percent));
-    percent = 100;
-    GuiApiEmitSignal(SIG_SETTING_VERIFY_OTA_PERCENT, &percent, sizeof(percent));
-#endif
-    SetPageLockScreen(true);
     return SUCCESS_CODE;
 }

@@ -18,7 +18,7 @@
 #include "presetting.h"
 #include "assert.h"
 #include "gui_qr_hintbox.h"
-#include "firmware_update.h"
+
 #include "gui_mnemonic_input.h"
 #include "motor_manager.h"
 #include "account_manager.h"

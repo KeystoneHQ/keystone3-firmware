@@ -15,7 +15,6 @@
 #include "version.h"
 #include "presetting.h"
 #include "assert.h"
-#include "firmware_update.h"
 #include "gui_page.h"
 #include "fingerprint_process.h"
 #include "screen_manager.h"

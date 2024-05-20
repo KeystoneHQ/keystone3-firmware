@@ -7,7 +7,6 @@
 #define SERIAL_NUMBER_MAX_LEN               64
 #define WEB_AUTH_RSA_KEY_LEN                1024
 #define UPDATE_PUB_KEY_LEN                  64
-#define SIGNATURE_ENABLE                    1
 
 int32_t GetSerialNumber(char *serialNumber);
 int32_t SetSerialNumber(const char *serialNumber);

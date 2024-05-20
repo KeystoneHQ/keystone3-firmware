@@ -44,7 +44,7 @@ int32_t GuiConnectWalletViewEventProcess(void* self, uint16_t usEvent, void* par
     case SIG_SETUP_RSA_PRIVATE_KEY_CONNECT_CONFIRM:
         GuiConnectShowRsaSetupasswordHintbox();
         break;
-    case SIG_VERIFY_PASSWORD_FAIL:
+    case SIG_SETUP_RSA_PRIVATE_KEY_RSA_VERIFY_PASSWORD_FAIL:
         if (param != NULL) {
             PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
             uint16_t sig = *(uint16_t *) passwordVerifyResult->signal;
@@ -57,7 +57,7 @@ int32_t GuiConnectWalletViewEventProcess(void* self, uint16_t usEvent, void* par
         GuiLockScreenPassCode(false);
         GuiConnectWalletPasswordErrorCount(param);
         break;
-    case SIG_VERIFY_PASSWORD_PASS:
+    case SIG_SETUP_RSA_PRIVATE_KEY_RSA_VERIFY_PASSWORD_PASS:
         printf("SIG_VERIFY_PASSWORD_PASS\n");
         if (param != NULL) {
             uint16_t sig = *(uint16_t *)param;

@@ -31,7 +31,9 @@ int32_t GuiScanViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         GuiTransactionCheckFailed((PtrT_TransactionCheckResult)param);
         break;
     case SIG_SHOW_TRANSACTION_LOADING:
-        GuiPendingHintBoxOpen(_("Loading"), "");
+        // GuiPendingHintBoxOpen(_("Loading"), "");
+        // todo add pending anim
+        GuiNoPendingHintBoxOpen(_("Loading"));
         break;
     case SIG_HIDE_TRANSACTION_LOADING:
         GuiPendingHintBoxRemove();

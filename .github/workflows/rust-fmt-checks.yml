@@ -40,6 +40,8 @@ jobs:
         run: cd rust/apps/aptos && cargo +nightly-2023-06-26 fmt --check
       - name: Run rust/apps/sui
         run: cd rust/apps/sui && cargo +nightly-2023-06-26 fmt --check
+      - name: Run rust/apps/arweave
+        run: cd rust/apps/arweave && cargo +nightly-2023-06-26 fmt --check
       - name: Run rust/apps/utils
         run: cd rust/apps/utils && cargo +nightly-2023-06-26 fmt --check
       - name: Run rust/apps/wallets

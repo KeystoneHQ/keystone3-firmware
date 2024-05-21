@@ -224,7 +224,7 @@ static void GuiShareCustodianWidget(lv_obj_t *parent)
     g_custodianTile.titleLabel = label;
 
     label = GuiCreateIllustrateLabel(parent, _("shamir_phrase_custodian_desc"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     lv_label_set_recolor(label, true);
     g_custodianTile.noticeLabel = label;
 
@@ -328,13 +328,12 @@ static void MnemonicConfirmHandler(lv_event_t * e)
 static void GuiShareBackupWidget(lv_obj_t *parent)
 {
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
-    // lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_phrase_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(parent, _("shamir_phrase_backup_desc"));
     lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     g_shareBackupTile.noticeLabel = label;
 
     g_shareBackupTile.keyBoard = GuiCreateMnemonicKeyBoard(parent, NULL, g_phraseCnt == 20 ? KEY_STONE_MNEMONIC_20 : KEY_STONE_MNEMONIC_33, NULL);
@@ -358,7 +357,8 @@ static void GuiShareConfirmWidget(lv_obj_t *parent)
 
     label = GuiCreateNoticeLabel(parent, _("shamir_phrase_confirm_desc"));
     lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+
     g_shareConfirmTile.noticeLabel = label;
 
     g_shareConfirmTile.keyBoard = GuiCreateMnemonicKeyBoard(parent, MnemonicConfirmHandler, g_phraseCnt == 20 ? KEY_STONE_MNEMONIC_20 : KEY_STONE_MNEMONIC_33, NULL);

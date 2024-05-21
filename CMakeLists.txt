@@ -26,10 +26,6 @@ add_definition_with_message(DEBUG_MEMORY)
 
 add_definition_with_message(BUILD_PRODUCTION)
 
-add_compile_definitions(CN_SUPPORT)
-add_compile_definitions(RU_SUPPORT)
-add_compile_definitions(KO_SUPPORT)
-
 get_cmake_property(_variableNames VARIABLES)
 list(SORT _variableNames)
 

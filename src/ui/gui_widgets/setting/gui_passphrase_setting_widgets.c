@@ -49,6 +49,7 @@ static KeyBoard_t *g_setPassPhraseKb = NULL;         // setting keyboard
 void GuiWalletPassphrase(lv_obj_t *parent)
 {
     static uint16_t walletSetting = DEVICE_SETTING_PASSPHRASE_ENTER;
+    uint16_t height = 60;
 
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
@@ -82,9 +83,14 @@ void GuiWalletPassphrase(lv_obj_t *parent)
     }
     lv_obj_clear_flag(g_passphraseQuickAccessSwitch, LV_OBJ_FLAG_CLICKABLE);
     label = GuiCreateTextLabel(parent, _("passphrase_access_switch_title"));
+    lv_obj_set_width(label, 336);
+    lv_obj_refr_size(label);
+    height += lv_obj_get_self_height(label);
     lv_obj_t *descLabel = GuiCreateIllustrateLabel(parent, _("passphrase_access_switch_desc"));
-    lv_obj_set_style_text_opa(descLabel, LV_OPA_60, LV_PART_MAIN);
     lv_obj_set_width(descLabel, 336);
+    lv_obj_refr_size(descLabel);
+    height += lv_obj_get_self_height(descLabel);
+    lv_obj_set_style_text_opa(descLabel, LV_OPA_60, LV_PART_MAIN);
     table[0].obj = label;
     table[0].align = LV_ALIGN_DEFAULT;
     table[0].position.x = 24;
@@ -94,10 +100,10 @@ void GuiWalletPassphrase(lv_obj_t *parent)
     table[1].position.x = 376;
     table[1].position.y = 24;
     table[2].obj = descLabel;
-    table[2].align = LV_ALIGN_DEFAULT;
+    table[2].align = LV_ALIGN_BOTTOM_LEFT;
     table[2].position.x = 24;
-    table[2].position.y = 64;
-    button = GuiCreateButton(parent, 456, 148, table, NUMBER_OF_ARRAYS(table), PassphraseQuickAccessHandler, NULL);
+    table[2].position.y = -24;
+    button = GuiCreateButton(parent, 456, height, table, NUMBER_OF_ARRAYS(table), PassphraseQuickAccessHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 254 - GUI_MAIN_AREA_OFFSET);
 }
 
@@ -111,11 +117,11 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
-    lv_obj_set_size(btn, 352, 60);
+    lv_obj_set_size(btn, 370, 60);
     lv_obj_align(btn, LV_ALIGN_DEFAULT, 26, 162 - GUI_MAIN_AREA_OFFSET);
     lv_obj_t *ta = lv_textarea_create(btn);
     lv_obj_set_align(ta, LV_ALIGN_CENTER);
-    lv_obj_set_size(ta, 352, 60);
+    lv_obj_set_size(ta, 370, 60);
     lv_textarea_set_password_mode(ta, true);
     lv_textarea_set_placeholder_text(ta, _("passphrase_enter_input"));
     lv_obj_set_style_bg_color(ta, BLACK_COLOR, LV_PART_MAIN);
@@ -138,11 +144,11 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
-    lv_obj_set_size(btn, 352, 60);
+    lv_obj_set_size(btn, 370, 60);
     lv_obj_align(btn, LV_ALIGN_DEFAULT, 26, 246 - GUI_MAIN_AREA_OFFSET);
     lv_obj_t *repeatTa = lv_textarea_create(btn);
     lv_obj_set_align(repeatTa, LV_ALIGN_CENTER);
-    lv_obj_set_size(repeatTa, 352, 60);
+    lv_obj_set_size(repeatTa, 370, 60);
     lv_textarea_set_password_mode(repeatTa, true);
     lv_textarea_set_placeholder_text(repeatTa, _("passphrase_enter_repeat"));
     lv_obj_set_style_bg_color(repeatTa, BLACK_COLOR, LV_PART_MAIN);

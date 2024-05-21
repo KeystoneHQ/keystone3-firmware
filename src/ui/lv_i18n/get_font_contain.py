@@ -9,6 +9,32 @@ from pathlib import Path
 
 g_font_size = 0
 
+def update_font_properties(file_path, font_size):
+    font_properties = {
+        20: (30, 7),
+        24: (40, 11),
+        28: (40, 9),
+        36: (37, 0)
+    }
+
+    line_height, base_line = font_properties.get(font_size, (None, None))
+    if line_height is None or base_line is None:
+        print(f"No properties found for font_size {font_size}.")
+        return
+
+    with open(file_path, 'r', encoding='utf-8') as file:
+        content = file.read()
+
+    import re
+    content = re.sub(r'\.line_height = \d+,\s*/\*\s*The maximum line height required by the font\s*\*/',
+                     f'.line_height = {line_height},          /*The maximum line height required by the font*/', content)
+    content = re.sub(r'\.base_line = \d+,\s*/\*\s*Baseline measured from the bottom of the line\s*\*/',
+                     f'.base_line = {base_line},             /*Baseline measured from the bottom of the line*/', content)
+
+    with open(file_path, 'w', encoding='utf-8') as file:
+        file.write(content)
+    print(f"Updated {file_path} for font_size {font_size} with line_height {line_height} and base_line {base_line}.")
+
 def build_lv_font_conv_command(bpp, size, font, symbols, output_file):
     command = "lv_font_conv"
     command += f" --bpp {bpp}"
@@ -39,6 +65,7 @@ def parse_command_line(command_line="cmd_tool --bpp 8 --size 12 --font Arial.ttf
             'cn': 'NotoSansSC-Regular.ttf',
             'ko': 'NotoSansKR-Regular.ttf',
             'ru': 'NotoSans-Regular.ttf',
+            'es': 'NotoSans-Regular.ttf',
             'de': 'NotoSans-Regular.ttf',
             'ja': 'NotoSansJP-Regular.ttf',
         }
@@ -47,6 +74,7 @@ def parse_command_line(command_line="cmd_tool --bpp 8 --size 12 --font Arial.ttf
         cmd_result = os.system(build_command)
         if cmd_result != 0:
             exit(cmd_result)
+        update_font_properties("../gui_assets/font/" + language + "/" + label, font_size)
         # raise ValueError("Unique characters do not match the symbols provided in the command line.")
 
     return options, language
@@ -69,7 +97,7 @@ def extract_unique_characters(df, font_size, column):
 
 def main():
     # for language in ['cn', 'ko', 'ru', 'de', 'ja']:
-    for language in ['cn', 'ko', 'ru']:
+    for language in ['cn', 'ko', 'ru', 'es']:
         try:
             df = pd.read_csv('data.csv')
             font_labels = {

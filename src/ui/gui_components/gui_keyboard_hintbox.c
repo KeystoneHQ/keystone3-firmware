@@ -239,8 +239,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t bu
     if (*signal == SIG_FINGER_REGISTER_ADD_SUCCESS) {
         lv_label_set_text(label, _("fingerprint_add_password"));
     }
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 72 + GUI_NAV_BAR_HEIGHT);
-
+    lv_obj_align_to(label, lv_obj_get_child(keyboardHintBox, lv_obj_get_child_cnt(keyboardHintBox) - 2), LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     keyboardWidget->keyboardHintBox = keyboardHintBox;
 
     KeyBoard_t *kb = GuiCreateFullKeyBoard(keyboardHintBox, KeyboardConfirmHandler, KEY_STONE_FULL_L, keyboardWidget);
@@ -263,11 +262,11 @@ KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t bu
     keyboardWidget->eyeImg = img;
 
     if (*signal != SIG_FINGER_REGISTER_ADD_SUCCESS) {
-        button = GuiCreateImgLabelButton(keyboardHintBox, _("FORGET"), &imgLock, 124, ForgetHandler, NULL);
+        button = GuiCreateImgLabelAdaptButton(keyboardHintBox, _("FORGET"), &imgLock, ForgetHandler, NULL);
         lv_obj_align(button, LV_ALIGN_DEFAULT, 333, 439 - GUI_STATUS_BAR_HEIGHT);
     }
 
-    button = GuiCreateImgLabelButton(keyboardHintBox, _("password_label"), &imgSwitch, 156, PassWordPinSwitchHandler, keyboardWidget);
+    button = GuiCreateImgLabelAdaptButton(keyboardHintBox, _("password_label"), &imgSwitch, PassWordPinSwitchHandler, keyboardWidget);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 439 - GUI_STATUS_BAR_HEIGHT);
     keyboardWidget->switchLabel = lv_obj_get_child(button, 1);
 
@@ -330,10 +329,10 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
     lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, ta);
     keyboardWidget->eyeImg = img;
 
-    button = GuiCreateImgLabelButton(keyboardHintBox, _("FORGET"), &imgLock, 124, ForgetHandler, NULL);
+    button = GuiCreateImgLabelAdaptButton(keyboardHintBox, _("FORGET"), &imgLock, ForgetHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 333, 439);
 
-    button = GuiCreateImgLabelButton(keyboardHintBox, _("password_label"), &imgSwitch, 156, PassWordPinSwitchHandler, keyboardWidget);
+    button = GuiCreateImgLabelAdaptButton(keyboardHintBox, _("password_label"), &imgSwitch, PassWordPinSwitchHandler, keyboardWidget);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 439);
     keyboardWidget->switchLabel = lv_obj_get_child(button, 1);
 

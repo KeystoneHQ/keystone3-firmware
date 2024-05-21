@@ -103,7 +103,7 @@ void *GuiWalletNameWallet(lv_obj_t *parent, uint8_t tile)
 
     label = GuiCreateIllustrateLabel(parent, _("single_backup_namewallet_desc"));
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     g_setNameKb = GuiCreateFullKeyBoard(parent, cb, KEY_STONE_FULL_L, NULL);
     GuiSetKeyBoardMinTaLen(g_setNameKb, 0);

@@ -139,7 +139,7 @@ void GuiWalletSelectAddWallet(lv_obj_t *parent)
 
     label = GuiCreateIllustrateLabel(parent, _("purpose_desc"));
     lv_obj_set_style_text_line_space(label, 12, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(label, lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 3), LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
@@ -265,7 +265,7 @@ void GuiWalletRepeatPinWidget(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(parent, _("repeat_passcode_desc"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     g_repeatPassCode = GuiCreateEnterPasscode(parent, NULL, NULL, g_setPassCode->mode + 2);
     UNUSED(g_repeatPassCode);

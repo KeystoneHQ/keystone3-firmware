@@ -24,8 +24,8 @@ static const char *g_languageList[] = {
     "English",
     "Русский язык",
     "简体中文",
-    "한국어", // "한국인",
-    "German",
+    "한국인",
+    "español",
 };
 
 typedef enum {
@@ -57,7 +57,7 @@ static PageWidget_t *g_pageWidget;
 #ifdef BTC_ONLY
 #define SUPPORT_WALLET_INDEX SETUP_ENGLISH
 #else
-#define SUPPORT_WALLET_INDEX SETUP_KOREAN
+#define SUPPORT_WALLET_INDEX SETUP_SPANISH
 #endif
 
 static void GuiWelcomeWidget(lv_obj_t *parent)
@@ -117,6 +117,8 @@ void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
             label = GuiCreateLabelWithFont(parent, g_languageList[i], &ruText);
         } else if (i == SETUP_KOREAN) {
             label = GuiCreateLabelWithFont(parent, g_languageList[i], &koText);
+        } else if (i == SETUP_SPANISH) {
+            label = GuiCreateLabelWithFont(parent, g_languageList[i], &esText);
         } else {
             label = GuiCreateLabelWithFont(parent, g_languageList[i], &openSansEnText);
         }
@@ -150,7 +152,7 @@ static void GuiSetLanguageWidget(lv_obj_t *parent)
 
     label = GuiCreateIllustrateLabel(parent, _("language_desc"));
     lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     GuiCreateLanguageWidget(parent, 270 - GUI_MAIN_AREA_OFFSET);
 

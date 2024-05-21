@@ -129,8 +129,7 @@ void GuiWalletResetPassWordHintBox(void)
     label = GuiCreateIllustrateLabel(g_noticeWindow, _("change_passcode_warning_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 610);
     lv_obj_t *btn = GuiCreateTextBtn(g_noticeWindow, _("got_it"));
-    lv_obj_align(btn, LV_ALIGN_DEFAULT, 332, 710);
-    lv_obj_set_size(btn, 122, 66);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
     lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 }
 
@@ -239,7 +238,7 @@ static void GuiWalletAddLimit(lv_obj_t *parent)
 
     label = GuiCreateIllustrateLabel(parent, _("wallet_setting_add_wallet_limit_desc"));
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     lv_obj_t *btn = GuiCreateTextBtn(parent, _("got_it"));
     lv_obj_set_size(btn, 348, 66);

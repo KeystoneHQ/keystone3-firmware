@@ -398,7 +398,7 @@ static void GuiMultiConfirmSignersWidget(lv_obj_t *parent)
     g_custodianTile.titleLabel = label;
 
     label = GuiCreateIllustrateLabel(parent, _("create_multi_wallet_co_signers_desc"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     g_custodianTile.noticeLabel = label;
 
     lv_obj_t *cont = GuiCreateContainerWithParent(parent, 408, 296);

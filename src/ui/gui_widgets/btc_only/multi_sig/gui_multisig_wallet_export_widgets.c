@@ -124,7 +124,6 @@ static void GuiShowSDCardExport()
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 670);
 
     lv_obj_t *btn = GuiCreateTextBtn(g_noticeWindow, _("got_it"));
-    lv_obj_set_size(btn, 122, 66);
     lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
     lv_obj_add_event_cb(btn, GuiWriteSDCardHandler, LV_EVENT_CLICKED, g_filename);

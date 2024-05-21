@@ -37,18 +37,6 @@ void *GuiCreateImgButton(lv_obj_t *parent, const void *src, uint16_t width,
     return button;
 }
 
-void *GuiCreateImgLabelButton(lv_obj_t *parent, const char *text, const void *src, uint16_t width,
-                              lv_event_cb_t buttonCb, void *param)
-{
-    GuiButton_t table[] = {
-        {.obj = GuiCreateImg(parent, src), .align = LV_ALIGN_LEFT_MID, .position = {12, 0},},
-        {.obj = GuiCreateIllustrateLabel(parent, text), .align = LV_ALIGN_LEFT_MID, .position = {40, 0},},
-    };
-    lv_obj_t *button = GuiCreateButton(parent, width, 36, table, NUMBER_OF_ARRAYS(table),
-                                       buttonCb, param);
-    lv_obj_set_style_radius(button, 12, LV_PART_MAIN);
-    return button;
-}
 
 void *GuiCreateImgLabelAdaptButton(lv_obj_t *parent, const char *text, const void *src,
                                    lv_event_cb_t buttonCb, void *param)

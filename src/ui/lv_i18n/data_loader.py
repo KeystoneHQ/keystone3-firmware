@@ -7,8 +7,21 @@ import argparse
 import subprocess
 import glob
 import os
+import re
+import get_font_contain
 
 compile_command = 'lv_i18n compile -t "*.yml" -o .'
+
+def replace_text_in_file(file_path = 'lv_i18n.c'):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        content = file.read()
+
+    modified_content = re.sub(r'\bstatic lv_i18n_phrase_t\b', 'const static lv_i18n_phrase_t', content)
+
+    if content != modified_content:
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write(modified_content)
+        print("File has been modified.")
 
 with open("./data.csv", newline="", encoding='utf-8') as csvfile:
     reader = csv.DictReader(csvfile)
@@ -52,3 +65,6 @@ print(compile_command)
 cmd_result = os.system(compile_command)
 if cmd_result != 0:
     exit(cmd_result)
+
+replace_text_in_file()
+get_font_contain.main()

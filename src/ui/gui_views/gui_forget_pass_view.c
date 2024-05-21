@@ -7,18 +7,6 @@
 #include "gui_hintbox.h"
 #include "gui_lock_widgets.h"
 
-static int32_t GuiForgetViewInit(void *param)
-{
-    GuiForgetPassInit(param);
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiForgetViewDeInit(void)
-{
-    GuiForgetPassDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiForgetViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     uint16_t tileIndex = 0;
@@ -27,9 +15,11 @@ int32_t GuiForgetViewEventProcess(void *self, uint16_t usEvent, void *param, uin
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiForgetViewInit(param);
+        GuiForgetPassInit(param);
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiForgetViewDeInit();
+        GuiForgetPassDeInit();
+        break;
     case GUI_EVENT_REFRESH:
         GuiForgetPassRefresh();
         break;

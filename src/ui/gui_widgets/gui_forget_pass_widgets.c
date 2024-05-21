@@ -305,6 +305,7 @@ void GuiForgetPassEntranceWidget(void *parent)
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 204 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *label = GuiCreateLittleTitleLabel(parent, _("forgot_password_reset_passcode_intro_title"));
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_set_width(label, 480);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 284 - GUI_MAIN_AREA_OFFSET);
 
@@ -313,7 +314,6 @@ void GuiForgetPassEntranceWidget(void *parent)
     lv_obj_set_style_text_align(desc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
     lv_obj_t *btn = GuiCreateTextBtn(parent, _("fingerprint_passcode_reset_passcode"));
-    lv_obj_set_size(btn, 233, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -64);
     lv_obj_set_style_bg_color(btn, BLACK_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED | LV_PART_MAIN);

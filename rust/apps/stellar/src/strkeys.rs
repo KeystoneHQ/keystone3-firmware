@@ -93,10 +93,14 @@ pub fn generate_stellar_private_key(seed: &[u8], path: &String) -> Result<String
     Ok(encode_base32(&data))
 }
 
+pub fn sign(message: &[u8], seed: &[u8], path: &String) -> Result<[u8; 64]> {
+    keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(seed, path, &message)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::string::ToString;
+    use alloc::string::{String, ToString};
     use third_party::hex;
 
     #[test]
@@ -108,6 +112,25 @@ mod tests {
         assert_eq!(
             "SCIA76H6JJZI4O5TNYT7AHNNPAYE57NM66BZVA4VFUNILL3MYGRZWIG5",
             private_key
+        );
+        
+        let private_key = get_private_key_by_seed(&seed, &path).unwrap();
+        let (keypair, _) = third_party::cryptoxide::ed25519::keypair(&private_key);
+        assert_eq!(
+            "900ff8fe4a728e3bb36e27f01dad78304efdacf7839a83952d1a85af6cc1a39bd4b8322ed2ca75a7a8f7eb57057471b17bd7d5fea4f9a8a293636b4d653fcf3d",
+            hex::encode(keypair)
+        );
+    }
+
+    #[test]
+    fn test_xdr_sign() {
+        let seed = hex::decode("96063c45132c840f7e1665a3b97814d8eb2586f34bd945f06fa15b9327eebe355f654e81c6233a52149d7a95ea7486eb8d699166f5677e507529482599624cdc").unwrap();
+        let path = "m/44'/148'/0'".to_string();
+        let mock_message = hex::decode("5a859bfd9b8b7469d59e885ea3eff09050f0d7e1a9b496c91a5b82c9958b4fe7").unwrap();
+        let signed_message = sign(&mock_message, &seed, &path).unwrap();
+        assert_eq!(
+            "baa7bcf26f8ed50d48e3d15d918f1ae684eaf7a2f876bd6913c78df59eeebcb9a5078628391c9e8d83430b9cc358a8548d0da6f0783a72743104a91e97c5f701",
+            hex::encode(&signed_message)
         );
     }
 }

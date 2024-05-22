@@ -1195,7 +1195,6 @@ static PtrT_TransactionCheckResult g_checkResult = NULL;
 
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
 {
-#ifndef COMPILE_SIMULATOR
     GuiApiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
     ViewType viewType = *((ViewType *)inData);
     g_checkResult = CheckUrResult(viewType);
@@ -1208,11 +1207,6 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
     }
 
     return SUCCESS_CODE;
-#else
-    GuiApiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
-    GuiApiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
-    return SUCCESS_CODE;
-#endif
 }
 
 int32_t RsaGenerateKeyPair(bool needEmitSignal)

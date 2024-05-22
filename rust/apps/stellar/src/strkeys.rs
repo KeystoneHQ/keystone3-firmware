@@ -3,6 +3,7 @@ use alloc::vec::Vec;
 use core::str::FromStr;
 use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
 use keystore::errors::Result;
+use third_party::cryptoxide::hashing;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum StrKeyType {
@@ -93,8 +94,13 @@ pub fn generate_stellar_private_key(seed: &[u8], path: &String) -> Result<String
     Ok(encode_base32(&data))
 }
 
-pub fn sign(message: &[u8], seed: &[u8], path: &String) -> Result<[u8; 64]> {
-    keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(seed, path, &message)
+pub fn sign_hash(hash: &[u8], seed: &[u8], path: &String) -> Result<[u8; 64]> {
+    keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(seed, path, &hash)
+}
+
+pub fn sign_signature_base(signature_base: &[u8], seed: &[u8], path: &String) -> Result<[u8; 64]> {
+    let hash = hashing::sha256(signature_base);
+    sign_hash(&hash, seed, path)
 }
 
 #[cfg(test)]
@@ -123,14 +129,26 @@ mod tests {
     }
 
     #[test]
-    fn test_xdr_sign() {
+    fn test_sign_hash() {
         let seed = hex::decode("96063c45132c840f7e1665a3b97814d8eb2586f34bd945f06fa15b9327eebe355f654e81c6233a52149d7a95ea7486eb8d699166f5677e507529482599624cdc").unwrap();
         let path = "m/44'/148'/0'".to_string();
-        let mock_message = hex::decode("5a859bfd9b8b7469d59e885ea3eff09050f0d7e1a9b496c91a5b82c9958b4fe7").unwrap();
-        let signed_message = sign(&mock_message, &seed, &path).unwrap();
+        let hash = hex::decode("5a859bfd9b8b7469d59e885ea3eff09050f0d7e1a9b496c91a5b82c9958b4fe7").unwrap();
+        let signed = sign_hash(&hash, &seed, &path).unwrap();
         assert_eq!(
             "baa7bcf26f8ed50d48e3d15d918f1ae684eaf7a2f876bd6913c78df59eeebcb9a5078628391c9e8d83430b9cc358a8548d0da6f0783a72743104a91e97c5f701",
-            hex::encode(&signed_message)
+            hex::encode(&signed)
+        );
+    }
+
+    #[test]
+    fn test_sign_base() {
+        let seed = hex::decode("96063c45132c840f7e1665a3b97814d8eb2586f34bd945f06fa15b9327eebe355f654e81c6233a52149d7a95ea7486eb8d699166f5677e507529482599624cdc").unwrap();
+        let path = "m/44'/148'/0'".to_string();
+        let base = hex::decode("7ac33997544e3175d266bd022439b22cdb16508c01163f26e5cb2a3e1045a9790000000200000000d4b8322ed2ca75a7a8f7eb57057471b17bd7d5fea4f9a8a293636b4d653fcf3d000027100314996d0000000100000001000000000000000000000000664c6be3000000000000000100000000000000060000000155534443000000003b9911380efe988ba0a8900eb1cfe44f366f7dbe946bed077240f7f624df15c57fffffffffffffff00000000").unwrap();
+        let signed = sign_signature_base(&base, &seed, &path).unwrap();
+        assert_eq!(
+            "baa7bcf26f8ed50d48e3d15d918f1ae684eaf7a2f876bd6913c78df59eeebcb9a5078628391c9e8d83430b9cc358a8548d0da6f0783a72743104a91e97c5f701",
+            hex::encode(&signed)
         );
     }
 }

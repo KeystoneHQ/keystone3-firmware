@@ -104,8 +104,9 @@ int32_t GenerateTonMnemonic(char *mnemonic, const char *password)
     uint8_t randomBuffer[TON_ENTROPY_LEN], inputBuffer[TON_ENTROPY_LEN], outputBuffer[TON_ENTROPY_LEN];
     int32_t ret;
     char temp_mnemonic[MNEMONIC_MAX_LEN] = {'\0'};
-
-    while (true) {
+    int32_t count = 0;
+    //generate the randomness by se;
+    do {
         HashWithSalt512(inputBuffer, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "generate entropy");
 
         SE_GetTRng(randomBuffer, TON_ENTROPY_LEN);
@@ -130,10 +131,12 @@ int32_t GenerateTonMnemonic(char *mnemonic, const char *password)
         hkdf64(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
 
         KEYSTORE_PRINT_ARRAY("finalEntropy", outputBuffer, TON_ENTROPY_LEN);
+    } while (0);
 
-        // ton mnemonic use 24 words, every word is 11 bits.
-        // so we use random buffer to locate the mnemonic;
-
+    //use randomness to generate the mnemonic
+    //if the mnemonic is not valid, hash the randomness and try again
+    while (true) {
+        printf("ton mnemonic generation, count: %d\r\n", count++);
         for (size_t i = 0; i < 24; i++) {
             uint32_t index = ((uint32_t)outputBuffer[i * 2] << 8 | outputBuffer[i * 2 + 1]) & 0x07ff;
             char *word;
@@ -147,6 +150,9 @@ int32_t GenerateTonMnemonic(char *mnemonic, const char *password)
             break;
         } else {
             memset_s(temp_mnemonic, sizeof(temp_mnemonic), 0, sizeof(temp_mnemonic));
+            uint8_t hash[64];
+            memcpy_s(hash, 64, outputBuffer, 64);
+            sha512((struct sha512 *)outputBuffer, hash, sizeof(hash));
         }
     }
 

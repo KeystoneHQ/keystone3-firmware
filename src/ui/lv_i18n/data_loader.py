@@ -30,7 +30,7 @@ with open("./data.csv", newline="", encoding='utf-8') as csvfile:
     cn = {}
     ko = {}
     es = {}
-    ge = {}
+    de = {}
     ja = {}
 
     for row in reader:
@@ -40,7 +40,7 @@ with open("./data.csv", newline="", encoding='utf-8') as csvfile:
         cn[id] = row['cn']
         ko[id] = row['ko']
         es[id] = row['es']
-        ge[id] = row['ge']
+        de[id] = row['de']
         ja[id] = row['ja']
 
 with open("./en.yml", 'w', encoding='utf-8') as f:

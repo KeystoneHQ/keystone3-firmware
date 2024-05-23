@@ -1072,7 +1072,7 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
     lv_obj_t *obj = lv_label_create(parent);
     item = cJSON_GetObjectItem(json, "text");
     if (item != NULL) {
-        lv_label_set_text(obj, item->valuestring);
+        lv_label_set_text(obj, _(item->valuestring));
     } else {
         lv_label_set_text(obj, "");
     }

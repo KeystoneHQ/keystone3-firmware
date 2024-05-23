@@ -99,7 +99,7 @@ static void OpenEmojiKbHandler(lv_event_t *e)
 static void GuiCreateNameWalletWidget(lv_obj_t *parent)
 {
     char tempBuf[BUFFER_SIZE_16] = {0};
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_backup_namewallet_title"));
+    lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("single_backup_namewallet_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(parent, _("single_backup_namewallet_desc"));

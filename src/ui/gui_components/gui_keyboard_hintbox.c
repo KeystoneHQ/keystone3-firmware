@@ -263,7 +263,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t bu
 
     if (*signal != SIG_FINGER_REGISTER_ADD_SUCCESS) {
         button = GuiCreateImgLabelAdaptButton(keyboardHintBox, _("FORGET"), &imgLock, ForgetHandler, NULL);
-        lv_obj_align(button, LV_ALIGN_DEFAULT, 333, 439 - GUI_STATUS_BAR_HEIGHT);
+        lv_obj_align(button, LV_ALIGN_TOP_RIGHT, -24, 439);
     }
 
     button = GuiCreateImgLabelAdaptButton(keyboardHintBox, _("password_label"), &imgSwitch, PassWordPinSwitchHandler, keyboardWidget);
@@ -330,7 +330,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent)
     keyboardWidget->eyeImg = img;
 
     button = GuiCreateImgLabelAdaptButton(keyboardHintBox, _("FORGET"), &imgLock, ForgetHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 333, 439);
+    lv_obj_align(button, LV_ALIGN_TOP_RIGHT, -24, 439);
 
     button = GuiCreateImgLabelAdaptButton(keyboardHintBox, _("password_label"), &imgSwitch, PassWordPinSwitchHandler, keyboardWidget);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 24, 439);

@@ -269,8 +269,7 @@ void *GuiCreateUpdateHintbox(const void *src, const char *titleText,
 
     lv_obj_t *rightBtn = GuiCreateTextBtn(cont, rightBtnText);
     lv_obj_align(rightBtn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-    lv_obj_set_size(
-        rightBtn, lv_obj_get_self_width(lv_obj_get_child(rightBtn, 0)) + 60, 66);
+    lv_obj_set_size(rightBtn, lv_obj_get_self_width(lv_obj_get_child(rightBtn, 0)) + 60, 66);
     lv_obj_set_style_bg_color(rightBtn, rightColor, LV_PART_MAIN);
     uint32_t height = 48 + lv_obj_get_self_width(img) + 24 +
                       lv_obj_get_self_height(title) + 12 +

@@ -287,7 +287,7 @@ static void GuiCreateBackupWidget(lv_obj_t *parent)
 
 static void GuiImportBackupWidget(lv_obj_t *parent)
 {
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("import_wallet_choose_method"));
+    lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("import_wallet_choose_method"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(parent, _("import_wallet_single_backup_desc"));

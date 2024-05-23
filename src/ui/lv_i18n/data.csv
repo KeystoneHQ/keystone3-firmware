@@ -428,7 +428,7 @@ Kurz gesagt, das Nicht-Wiederverwenden von Adressen schützt die Privatsphäre, 
 4. ステークおよび報酬のアドレス:ステークキーはステーキングに使用され、関連するステークアドレスは報酬アドレスとも呼ばれ、ステーキング報酬を受け取るために使用されます.",
 Connect,20,connect_wallet_desc,Visit the link below on your computer or mobile device for a guide on syncing Keystone with your software wallet.,"Перейдите по ссылке ниже на своем компьютере или мобильном устройстве, чтобы получить руководство по синхронизации Keystone с программным кошельком.",키스톤을 소프트웨어 지갑과 동기화하는 방법에 대한 안내를 보려면 컴퓨터 또는 모바일 기기에서 아래 링크를 방문하십시오.,"请使用电脑或者手机访问下方的链接,以获取有关 Keystone 如何连接软件钱包的教程.",Visite el enlace a continuación en su computadora o dispositivo móvil para obtener una guía sobre cómo sincronizar Keystone con su billetera de software,Besuchen Sie den unten stehenden Link auf Ihrem Computer oder Mobilgerät für eine Anleitung zur Synchronisierung von Keystone mit Ihrer Software-Wallet.,「ソフトウェアウォレットとの同期方法に関するガイドは、コンピュータまたはモバイルデバイスで以下のリンクを訪れてください.」,
 ,24,connect_bw_title,BlueWallet (Mobile),BlueWallet (Мобильный),블루월렛(모바일),BlueWallet(移动端),BlueWallet (Móvil),BlueWallet (Mobile),ブルーウォレット(モバイル),
-,20,connect_bw_link,https://keyst.one/t/3rd/bw,https://keyst.one/t/3rd/bw,https://keyst.one/t/3rd/bw,https://keyst.one/t/3rd/bw,https://keyst.one/t/3rd/bw,https://keyst.one/t/3rd/bw,,https://keyst.one/t/3rd/bw,
+,20,connect_bw_link,https://keyst.one/t/3rd/bw,https://keyst.one/t/3rd/bw,https://keyst.one/t/3rd/bw,https://keyst.one/t/3rd/bw,https://keyst.one/t/3rd/bw,https://keyst.one/t/3rd/bw,https://keyst.one/t/3rd/bw,
 ,24,connect_sparrow_title,Sparrow,Sparrow,Sparrow,Sparrow,Sparrow,Sparrow,Sparrow,
 ,20,connect_sparrow_link,https://keyst.one/t/3rd/sparrow,https://keyst.one/t/3rd/sparrow,https://keyst.one/t/3rd/sparrow,https://keyst.one/t/3rd/sparrow,https://keyst.one/t/3rd/sparrow,https://keyst.one/t/3rd/sparrow,https://keyst.one/t/3rd/sparrow,
 ,24,connect_mm_title,MetaMask (Extension),MetaMask (Расширение),메타마스크(확장),MetaMask(扩展程序端),MetaMask (Extensión),MetaMask (Erweiterung),メタマスク(拡張機能),
@@ -632,9 +632,9 @@ About Info,24,about_info_firmware_version,Firmware Version,Версия прош
 ","체크섬
 ","校验和
 ","Suma de verificación:
-",Prüfsumme
-,チェックサム:
-,
+","Prüfsumme
+","チェックサム:
+",
 ,20,firmware_update_sd_checksum_fmt,#F5870A Show Checksum(%d%%)#,#F5870A Показать контрольную сумму(%d%%)#,#F5870A 체크섬 표시 (%d%%)#,#F5870A 展示校验和 (%d%%)#,#F5870A Mostrar Checksum(%d%%)#,#F5870A Prüfsumme anzeigen(%d%%)#,#F5870A チェックサムを表示(%d%%) #,
 ,20,firmware_update_sd_checksum_notice,"This is an optional feature to further enhance security. Compare the following checksum with the checksum of your download package on the official website, ensure that they are consistent.","Это дополнительная функция, предназначенная для дальнейшего повышения безопасности. Сравните следующую контрольную сумму с контрольной суммой вашего загружаемого пакета на официальном сайте и убедитесь, что они совпадают",보안성을 더욱 높일 수 있는 옵션 기능입니다.아래 체크섬과 공식 홈페이지에서 다운로드한 패키지의 체크섬을 비교하여 동일하게 유지하여 주시기 바랍니다.,"这是一个可选的功能,可以进一步提高安全性.将以下校验和在官方网站上的下载软件包的校验和签到,请确保它们保持一致.","Esta es una característica opcional para aumentar aún más la seguridad. Compara el siguiente checksum con el checksum de tu paquete de descarga en el sitio web oficial, asegúrate de que sean consistentes.","Dies ist eine optionale Funktion, um die Sicherheit weiter zu verbessern. Vergleichen Sie die folgende Prüfsumme mit der Prüfsumme Ihres Download-Pakets auf der offiziellen Website, stellen Sie sicher, dass sie übereinstimmen.",これはセキュリティをさらに強化するためのオプション機能です.公式ウェブサイトでのダウンロードパッケージのチェックサムと以下のチェックサムを比較し、一致することを確認してください.,
 ,24,verify_firmware,Verify Firmware,Провека прошивки,펌웨어 검증,验证固件,Verificar firmware,Firmware überprüfen,ファームウェアを検証する,

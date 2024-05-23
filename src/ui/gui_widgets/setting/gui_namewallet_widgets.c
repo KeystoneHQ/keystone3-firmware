@@ -98,7 +98,7 @@ void *GuiWalletNameWallet(lv_obj_t *parent, uint8_t tile)
     } else if (tile == DEVICE_SETTING_ADD_WALLET_NAME_WALLET) {
         cb = GotoAddWalletHandler;
     }
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_backup_namewallet_title"));
+    lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("single_backup_namewallet_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(parent, _("single_backup_namewallet_desc"));

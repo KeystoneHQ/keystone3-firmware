@@ -306,7 +306,7 @@ static void GuiCreateSelectTile(lv_obj_t *parent)
     lv_obj_clean(parent);
     uint8_t memberCnt = 3;
     lv_obj_t *label, *img, *button, *imgArrow, *line;
-    label = GuiCreateTitleLabel(parent, _("firmware_update_title"));
+    label = GuiCreateScrollTitleLabel(parent, _("firmware_update_title"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
     label = GuiCreateNoticeLabel(parent, _("firmware_update_desc"));
     lv_obj_set_width(label, 408);

@@ -426,7 +426,7 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
         item->repeatLabel = label;
 
-        label = GuiCreateTitleLabel(passWdCont, g_enterPassLabel[ENTER_PASSCODE_SET_PASSWORD].title);
+        label = GuiCreateScrollTitleLabel(passWdCont, g_enterPassLabel[ENTER_PASSCODE_SET_PASSWORD].title);
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
         label = GuiCreateIllustrateLabel(passWdCont, g_enterPassLabel[ENTER_PASSCODE_SET_PASSWORD].desc);
@@ -496,7 +496,7 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
         item->kb = kb;
     }
 
-    label = GuiCreateTitleLabel(pinCont, g_enterPassLabel[mode].title);
+    label = GuiCreateScrollTitleLabel(pinCont, g_enterPassLabel[mode].title);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *subLabel = GuiCreateNoticeLabel(pinCont, g_enterPassLabel[mode].desc);
@@ -516,7 +516,7 @@ void GuiCreateEnterPassWord(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *
     lv_obj_t *label;
     item->fpErrLabel = NULL;
 
-    label = GuiCreateTitleLabel(passWdCont, g_enterPassLabel[mode].title);
+    label = GuiCreateScrollTitleLabel(passWdCont, g_enterPassLabel[mode].title);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(passWdCont, g_enterPassLabel[mode].desc);

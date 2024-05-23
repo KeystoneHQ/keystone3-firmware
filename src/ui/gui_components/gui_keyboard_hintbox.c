@@ -233,7 +233,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t bu
     lv_obj_t *button = GuiCreateButton(keyboardHintBox, 64, 64, table, NUMBER_OF_ARRAYS(table), buttonCb ? buttonCb : CloseKeyboardWidgetViewHandler, keyboardWidget);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 10, 16);
 
-    lv_obj_t *label = GuiCreateScrollTitleLabel(keyboardHintBox, _("change_passcode_mid_btn"), 408);
+    lv_obj_t *label = GuiCreateScrollTitleLabel(keyboardHintBox, _("change_passcode_mid_btn"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12 + GUI_NAV_BAR_HEIGHT);
     label = GuiCreateNoticeLabel(keyboardHintBox, _("passphrase_add_password"));
     if (*signal == SIG_FINGER_REGISTER_ADD_SUCCESS) {

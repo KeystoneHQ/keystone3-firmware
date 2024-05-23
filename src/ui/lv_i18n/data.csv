@@ -812,3 +812,4 @@ Wallet Profile,20,wallet_profile_mid_btn,Wallet Profile,Профиль коше�
 ,20,connect_unisat_link,https://keyst.one/t/3rd/unisat,https://keyst.one/t/3rd/unisat,https://keyst.one/t/3rd/unisat,https://keyst.one/t/3rd/unisat,https://keyst.one/t/3rd/unisat,,,
 ,20,connect_unisat_title,UniSat,UniSat,UniSat,UniSat,UniSat,,,
 ,24,Loading,Loading...,Загрузка...,로딩 중...,加载中...,,,,
+,20,unknown_erc20_warning,"Unknown ERC20 Token detected,please carefully verify the transaction.","Unknown ERC20 Token detected,please carefully verify the transaction.","Unknown ERC20 Token detected,please carefully verify the transaction.","未收录的ERC20代币，请谨慎验证交易信息","Unknown ERC20 Token detected,please carefully verify the transaction.",,,

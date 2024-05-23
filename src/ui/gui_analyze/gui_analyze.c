@@ -1116,11 +1116,10 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
     if (pFunc) {
         pFunc(text, g_totalData, bufLen);
         lv_label_set_text(obj, text);
-
-        if (lv_obj_get_self_width(obj) >= textWidth) {
-            lv_label_set_long_mode(obj, LV_LABEL_LONG_WRAP);
-            lv_obj_set_width(obj, textWidth);
-        }
+    }
+    if (lv_obj_get_self_width(obj) >= textWidth) {
+        lv_label_set_long_mode(obj, LV_LABEL_LONG_WRAP);
+        lv_obj_set_width(obj, textWidth);
     }
     EXT_FREE(text);
     return obj;

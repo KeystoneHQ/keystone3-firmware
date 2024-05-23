@@ -695,7 +695,7 @@ static char *CalcSymbol(void *param)
         }
     }
 
-    if(isErc20Transfer(eth)) {
+    if (isErc20Transfer(eth)) {
         return "Unit";
     }
 
@@ -1210,14 +1210,15 @@ static bool GetEthErc20ContractData(void *parseResult)
     return true;
 }
 
-bool GetErc20WarningExist(void *indata, void *param) {
+bool GetErc20WarningExist(void *indata, void *param)
+{
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
     //make sure is erc20 transfer
-    if(!isErc20Transfer(result->data)) {
+    if (!isErc20Transfer(result->data)) {
         return false;
     }
     //make sure contract data exist
-    if(g_erc20ContractData == NULL) {
+    if (g_erc20ContractData == NULL) {
         return false;
     }
     //check known erc20 contract list

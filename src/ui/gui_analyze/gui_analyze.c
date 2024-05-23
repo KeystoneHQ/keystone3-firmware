@@ -716,7 +716,6 @@ GetLabelDataLenFunc GuiXrpTextLenFuncGet(char *type)
     return NULL;
 }
 
-
 GetLabelDataLenFunc GuiEthTextLenFuncGet(char *type)
 {
     if (!strcmp(type, "GetEthTypedDataMessageLen")) {
@@ -869,7 +868,7 @@ GetObjStateFunc GuiTemplateStateFuncGet(char *type)
     } else if (!strcmp(type, "GetEthContractDataExist")) {
         return GetEthContractDataExist;
     } else if (!strcmp(type, "GetErc20WarningExist")) {
-        return GetErc20WarningExist;        
+        return GetErc20WarningExist;
     } else if (!strcmp(type, "GetEthContractDataNotExist")) {
         return GetEthContractDataNotExist;
     } else if (!strcmp(type, "GetEthInputDataExist")) {

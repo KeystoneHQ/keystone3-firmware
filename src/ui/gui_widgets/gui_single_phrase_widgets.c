@@ -15,6 +15,7 @@
 #include "motor_manager.h"
 #include "user_delay.h"
 #include "gui_page.h"
+#include "gui_pending_hintbox.h"
 
 #define SINGLE_PHRASE_MAX_WORDS         24
 typedef enum {
@@ -248,6 +249,15 @@ void GuiSinglePhraseUpdateMnemonic(void *signalParam, uint16_t paramLen)
     g_randomPhraseKb->wordCnt = g_phraseCnt;
     GuiUpdateMnemonicKeyBoard(g_randomPhraseKb, SecretCacheGetMnemonic(), false);
     lv_obj_set_size(g_randomPhraseKb->cont, 408, 360);
+}
+
+void GuiShowTonGeneratingModal(bool enable)
+{
+    if(enable) {
+        GuiPendingHintBoxOpen(_("ton_mnemonic_generating_title"), _("ton_mnemonic_generating_desc"));
+    } else {
+        GuiPendingHintBoxRemove();
+    }
 }
 
 static void SelectCheckBoxHandler(lv_event_t* e)

@@ -848,3 +848,5 @@ Wallet Profile,20,wallet_profile_mid_btn,Wallet Profile,Профиль коше�
 ,20,connect_unisat_title,UniSat,UniSat,UniSat,UniSat,UniSat,UniSat,UniSat,
 ,24,Loading,Loading...,Загрузка...,로딩 중...,加载中...,Cargando...,Laden...,読み込み中...,
 ,20,unknown_erc20_warning,"Unknown ERC20 Token detected, please carefully verify the transaction.","Обнаружен неизвестный токен ERC20, пожалуйста, тщательно проверьте транзакцию.","알려지지 않은 ERC20 토큰이 감지되었습니다. 거래를 주의 깊게 확인해 주세요.","未收录的ERC20代币,请谨慎验证交易信息","Se ha detectado un token ERC20 desconocido, por favor verifique cuidadosamente la transacción","Unbekanntes ERC20-Token erkannt, bitte überprüfen Sie die Transaktion sorgfältig","未知のERC20トークンが検出されました,取引を慎重に確認してください",
+,24,ton_mnemonic_generating_title,"Generating TON Mnemonic",,,,,,,
+,20,ton_mnemonic_generating_desc,"It will take 4 minutes or longer, please wait patiently",,,,,,,

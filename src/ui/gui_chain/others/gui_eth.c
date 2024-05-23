@@ -270,6 +270,7 @@ const static EvmNetwork_t NETWORKS[] = {
     {11297108099, "Palm Testnet", "PALM"},
     {210425, "PlatON Mainnet", "LAT"},
     {2206132, "PlatON Testnet", "LAT"},
+    {324, "zkSync Mainnet", "ETH"},
 };
 
 const static Erc20Contract_t ERC20_CONTRACTS[] = {
@@ -600,6 +601,12 @@ const static Erc20Contract_t ERC20_CONTRACTS[] = {
     {"BNB", "0x96e4069B746bD88Db76eE126acfDA537DdcEe6FF", 18},
     {"TON", "0x4E14EC08875c88f9B0Cf2A075F481EDa0143d1f0", 9},
     {"DAI", "0x4B9eb6c0b6ea15176BBF62841C6B2A8a398cb656", 18},
+    //AVAX C-chain
+    {"USDT", "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7", 6},
+    {"USDT.e", "0xc7198437980c041c805A1EDcbA50c1Ce5db95118", 6},
+    {"USDC", "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E", 6},
+    {"USDC.e", "0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664", 6},
+    {"PNG", "0x60781C2586D68229fde47564546784ab3fACA982", 18},
 };
 #include "abi_ethereum.h"
 #include "gui_constants.h"
@@ -688,7 +695,7 @@ static char *CalcSymbol(void *param)
         }
     }
 
-    if(isErc20Transfer(eth)) {
+    if (isErc20Transfer(eth)) {
         return "Unit";
     }
 
@@ -1203,14 +1210,15 @@ static bool GetEthErc20ContractData(void *parseResult)
     return true;
 }
 
-bool GetErc20WarningExist(void *indata, void *param) {
+bool GetErc20WarningExist(void *indata, void *param)
+{
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
     //make sure is erc20 transfer
-    if(!isErc20Transfer(result->data)) {
+    if (!isErc20Transfer(result->data)) {
         return false;
     }
     //make sure contract data exist
-    if(g_erc20ContractData == NULL) {
+    if (g_erc20ContractData == NULL) {
         return false;
     }
     //check known erc20 contract list

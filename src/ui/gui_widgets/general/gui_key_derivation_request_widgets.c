@@ -237,6 +237,10 @@ static uint8_t GetXPubIndexByPath(char *path)
     if (strcmp("1852'/1815'/21'", path) == 0) return XPUB_TYPE_ADA_21;
     if (strcmp("1852'/1815'/22'", path) == 0) return XPUB_TYPE_ADA_22;
     if (strcmp("1852'/1815'/23'", path) == 0) return XPUB_TYPE_ADA_23;
+    if (strcmp("M/44'/148'/0'", path) == 0) return XPUB_TYPE_STELLAR_0;
+    if (strcmp("M/44'/148'/1'", path) == 0) return XPUB_TYPE_STELLAR_1;
+    if (strcmp("M/44'/148'/2'", path) == 0) return XPUB_TYPE_STELLAR_2;
+    if (strcmp("M/44'/148'/3'", path) == 0) return XPUB_TYPE_STELLAR_3;
     return XPUB_TYPE_ADA_0;
 }
 

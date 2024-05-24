@@ -4,16 +4,14 @@ use alloc::vec::Vec;
 use core::str::FromStr;
 use keystore::algorithms::ed25519::slip10_ed25519::get_public_key_by_seed;
 use keystore::errors::Result;
+use third_party::hex;
 
-pub fn generate_stellar_address(
-    seed: &[u8],
-    path: &String,
-    key_type: StrKeyType,
-) -> Result<String> {
-    let public_key = get_public_key_by_seed(seed, path)?;
+pub fn get_address(pub_key: &String) -> Result<String> {
+    let pub_key = hex::decode(pub_key).unwrap();
+    let key_type = StrKeyType::STRKEY_PUBKEY;
     let key = [key_type as u8]
         .iter()
-        .chain(public_key.iter())
+        .chain(pub_key.iter())
         .cloned()
         .collect::<Vec<u8>>();
     let checksum = calculate_crc16_checksum(&key);
@@ -23,6 +21,15 @@ pub fn generate_stellar_address(
         .cloned()
         .collect::<Vec<u8>>();
     Ok(encode_base32(&data))
+}
+
+pub fn generate_stellar_address(
+    seed: &[u8],
+    path: &String,
+    key_type: StrKeyType,
+) -> Result<String> {
+    let public_key = get_public_key_by_seed(seed, path)?;
+    get_address(&hex::encode(public_key))
 }
 
 #[cfg(test)]

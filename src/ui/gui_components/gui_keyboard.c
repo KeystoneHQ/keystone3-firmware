@@ -702,7 +702,6 @@ void *GuiCreateMnemonicKeyBoard(lv_obj_t *parent,
     case KEY_STONE_MNEMONIC_20:
         mkb->wordCnt = 20;
         kbHeight = MNEMONIC_KB_20WORD_HEIGHT;
-        contHeight = MNEMONIC_KB_20WORD_HEIGHT;
         break;
     case KEY_STONE_MNEMONIC_24:
         mkb->wordCnt = 24;
@@ -711,7 +710,6 @@ void *GuiCreateMnemonicKeyBoard(lv_obj_t *parent,
     case KEY_STONE_MNEMONIC_33:
         mkb->wordCnt = 33;
         kbHeight = MNEMONIC_KB_33WORD_HEIGHT;
-        contHeight = MNEMONIC_KB_33WORD_CONT_HEIGHT;
         break;
     default:
         SRAM_FREE(mkb);
@@ -738,7 +736,7 @@ void *GuiCreateMnemonicKeyBoard(lv_obj_t *parent,
 
     lv_obj_t *btnm = lv_btnmatrix_create(mkb->cont);
     lv_obj_set_size(btnm, MNEMONIC_KB_CONT_WIDTH, kbHeight);
-    lv_obj_set_style_text_font(btnm, g_defIllustrateFont, 0);
+    lv_obj_set_style_text_font(btnm, &openSansEnIllustrate, 0);
     lv_btnmatrix_set_map(btnm, (const char **)mkb->mnemonicWord);
     lv_obj_align(btnm, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_style_border_width(btnm, 0, LV_PART_MAIN | LV_STATE_DEFAULT);

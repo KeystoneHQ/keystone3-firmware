@@ -742,7 +742,6 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
     bool bip39 = mnemonicType == MNEMONIC_TYPE_BIP39;
     bool slip39 = mnemonicType == MNEMONIC_TYPE_SLIP39;
     bool ton = mnemonicType == MNEMONIC_TYPE_TON;
-    SimpleResponse_c_char *xPubResult;
     uint8_t seed[64] = {0};
     int ret = 0;
     uint8_t existIndex = 0;
@@ -763,6 +762,7 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
     }
     else {
         do {
+            SimpleResponse_c_char *xPubResult;
             if (bip39) {
                 ret = bip39_mnemonic_to_seed(SecretCacheGetMnemonic(), NULL, seed, 64, NULL);
                 xPubResult = get_extended_pubkey_by_seed(seed, 64, "M/49'/0'/0'");
@@ -783,9 +783,9 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
             } else {
                 ret = SUCCESS_CODE;
             }
+            free_simple_response_c_char(xPubResult);
         } while (0);
     }
-    free_simple_response_c_char(xPubResult);
     SetLockScreen(enable);
     return ret;
 }

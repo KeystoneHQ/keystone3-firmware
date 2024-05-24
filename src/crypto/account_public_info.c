@@ -237,6 +237,8 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
     bool needSet = false;
     char *jsonString = NULL;
 
+    bool isTon = GetMnemonicType() == MNEMONIC_TYPE_TON;
+
     uint8_t account = GetCurrentAccountIndex();
     ASSERT(account < 3);
     addr = SPI_FLASH_ADDR_USER1_MUTABLE_DATA + account * SPI_FLASH_ADDR_EACH_SIZE;
@@ -257,7 +259,10 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
         for (int i = 0; i < count; i++) {
             jsonItem = cJSON_CreateObject();
             cJSON_AddItemToObject(jsonItem, "firstRecv", cJSON_CreateBool(false));
-            if (!strcmp(walletList[i].name, "BTC") || !strcmp(walletList[i].name, "ETH")) {
+            if(!strcmp(walletList[i].name, "TON") && isTon) {
+                cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
+            }
+            else if ((!strcmp(walletList[i].name, "BTC") || !strcmp(walletList[i].name, "ETH")) && !isTon) {
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
             } else {
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(false));
@@ -704,7 +709,7 @@ uint8_t SpecifiedXPubExist(const char *value, bool isTon)
             if (keyJson == NULL) {
                 break;
             }
-            if(!isTon){
+            if(!isTon) {
                 chainJson = cJSON_GetObjectItem(keyJson, g_chainTable[0].name);
             }
             else {

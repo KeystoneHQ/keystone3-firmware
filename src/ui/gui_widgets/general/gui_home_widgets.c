@@ -103,15 +103,11 @@ static void GuiInitWalletState()
     default:
         for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
             g_walletState[i].enable = false;
+            g_walletState[i].state = false;
         }
         g_walletState[HOME_WALLET_CARD_TON].enable = true;
         g_walletState[HOME_WALLET_CARD_TON].state = true;
         break;
-    }
-    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
-        g_walletState[HOME_WALLET_CARD_ADA].enable = false;
-    } else {
-        g_walletState[HOME_WALLET_CARD_ADA].enable = true;
     }
 }
 
@@ -402,7 +398,7 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .index = HOME_WALLET_CARD_TON,
         .coin = "TON",
         .chain = "The Open Network",
-        .icon = &coinTgd,
+        .icon = &coinTon,
     },
 };
 

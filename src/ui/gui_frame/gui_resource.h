@@ -200,6 +200,7 @@ LV_IMG_DECLARE(coinSomm);
 LV_IMG_DECLARE(coinUmee);
 LV_IMG_DECLARE(coinGrav);
 LV_IMG_DECLARE(coinTgd);
+LV_IMG_DECLARE(coinTon);
 LV_IMG_DECLARE(coinStrd);
 LV_IMG_DECLARE(coinEvmos);
 LV_IMG_DECLARE(coinInj);

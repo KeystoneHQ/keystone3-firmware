@@ -109,7 +109,6 @@ static void GuiShareSsbInputWidget(lv_obj_t *parent)
     g_importMkb->descLabel = label;
     lv_obj_refr_size(label);
     height -= lv_obj_get_self_height(label);
-    printf("height = %d\n", height);
 
     lv_obj_set_size(g_importMkb->cont, 408, height);
     lv_obj_align_to(g_importMkb->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);

@@ -2,6 +2,7 @@
 #![feature(error_in_core)]
 
 pub mod address;
+pub mod errors;
 pub mod strkeys;
 pub mod structs;
 

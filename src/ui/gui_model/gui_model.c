@@ -746,28 +746,12 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
     uint8_t seed[64] = {0};
     int ret = 0;
     uint8_t existIndex = 0;
-    do {
-        if (bip39) {
-            ret = bip39_mnemonic_to_seed(SecretCacheGetMnemonic(), NULL, seed, 64, NULL);
-            xPubResult = get_extended_pubkey_by_seed(seed, 64, "M/49'/0'/0'");
-        }
-        if (slip39) {
-            ret = Slip39GetSeed(ems, seed, emsLen, "", ie, id);
-            xPubResult = get_extended_pubkey_by_seed(seed, emsLen, "M/49'/0'/0'");
-        }
-        if (ton) {
-            SimpleResponse_u8 *seedResponse = ton_mnemonic_to_seed(SecretCacheGetMnemonic());
-            ret = seedResponse->error_code;
-            if (seedResponse->error_code != 0) {
-                break;
-            }
-            memset_s(seed, 64, seedResponse->data, 64);
-            xPubResult = ton_seed_to_publickey(seed, 64);
-        }
-
-        CHECK_CHAIN_BREAK(xPubResult);
-        CLEAR_ARRAY(seed);
-        existIndex = SpecifiedXPubExist(xPubResult->data);
+    if (ton) {
+        VecFFI_u8 *entropyResult = ton_mnemonic_to_entropy(SecretCacheGetMnemonic());
+        char checksum[33] = {'\0'};
+        CalculateTonChecksum(entropyResult->data, checksum);
+        free_VecFFI_u8(entropyResult);
+        existIndex = SpecifiedXPubExist(checksum, ton);
         if (index != NULL) {
             *index = existIndex;
         }
@@ -776,7 +760,31 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
         } else {
             ret = SUCCESS_CODE;
         }
-    } while (0);
+    }
+    else {
+        do {
+            if (bip39) {
+                ret = bip39_mnemonic_to_seed(SecretCacheGetMnemonic(), NULL, seed, 64, NULL);
+                xPubResult = get_extended_pubkey_by_seed(seed, 64, "M/49'/0'/0'");
+            }
+            if (slip39) {
+                ret = Slip39GetSeed(ems, seed, emsLen, "", ie, id);
+                xPubResult = get_extended_pubkey_by_seed(seed, emsLen, "M/49'/0'/0'");
+            }
+
+            CHECK_CHAIN_BREAK(xPubResult);
+            CLEAR_ARRAY(seed);
+            existIndex = SpecifiedXPubExist(xPubResult->data, ton);
+            if (index != NULL) {
+                *index = existIndex;
+            }
+            if (existIndex != 0xFF) {
+                ret = ERR_KEYSTORE_MNEMONIC_REPEAT;
+            } else {
+                ret = SUCCESS_CODE;
+            }
+        } while (0);
+    }
     free_simple_response_c_char(xPubResult);
     SetLockScreen(enable);
     return ret;

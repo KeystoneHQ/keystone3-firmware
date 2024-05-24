@@ -88,6 +88,7 @@ static void ImportShareNextSliceHandler(lv_event_t *e)
 
 static void GuiShareSsbInputWidget(lv_obj_t *parent)
 {
+    uint16_t height = 296;
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
     lv_obj_t *label = NULL;
@@ -106,8 +107,11 @@ static void GuiShareSsbInputWidget(lv_obj_t *parent)
     lv_obj_set_style_text_color(label, DARK_GRAY_COLOR, LV_PART_MAIN);
     lv_label_set_text_fmt(label, _("import_wallet_ssb_desc_fmt"), g_importMkb->wordCnt, g_importMkb->currentSlice + 1);
     g_importMkb->descLabel = label;
+    lv_obj_refr_size(label);
+    height -= lv_obj_get_self_height(label);
+    printf("height = %d\n", height);
 
-    lv_obj_set_size(g_importMkb->cont, 408, 236);
+    lv_obj_set_size(g_importMkb->cont, 408, height);
     lv_obj_align_to(g_importMkb->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
     lv_btnmatrix_set_selected_btn(g_importMkb->btnm, g_importMkb->currentId);
 

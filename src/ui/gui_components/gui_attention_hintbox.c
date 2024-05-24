@@ -115,32 +115,11 @@ void GuiCreateAttentionHintbox(uint16_t confirmSign)
     }
     g_confirmSign = confirmSign;
     AttentionHintboxContext *context = BuildConfirmationHintboxContext();
-    g_attentionCont = GuiCreateHintBox(context->hintboxHeight);
-    lv_obj_t *tempObj = GuiCreateImg(g_attentionCont, context->icon);
-    lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 372);
-
-    tempObj = GuiCreateLittleTitleLabel(g_attentionCont, context->title);
-    lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 468);
-
-    tempObj = GuiCreateIllustrateLabel(g_attentionCont, context->context);
-    lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 520);
-
-    tempObj = GuiCreateTextBtn(g_attentionCont, context->okBtnText);
-    uint16_t contentMaxWidth = 408;
-    uint16_t okButtonWidth = RecalculateButtonWidth(tempObj, 192);
-    lv_obj_set_size(tempObj, okButtonWidth, 66);
-    lv_obj_set_style_radius(tempObj, 24, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(tempObj, ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-    lv_obj_add_event_cb(tempObj, ConfirmAttentionHandler, LV_EVENT_CLICKED, NULL);
-
-    tempObj = GuiCreateTextBtn(g_attentionCont, context->cancelBtnText);
-    uint16_t cancelBtnWidth = RecalculateButtonWidth(tempObj, contentMaxWidth - okButtonWidth - 24);
-    lv_obj_set_size(tempObj, cancelBtnWidth, 66);
-    lv_obj_set_style_radius(tempObj, 24, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
-    lv_obj_align(tempObj, LV_ALIGN_BOTTOM_LEFT, 36, -24);
-    lv_obj_add_event_cb(tempObj, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
+    g_attentionCont = GuiCreateGeneralHintBox(context->icon, context->title, context->context, NULL, context->okBtnText, WHITE_COLOR_OPA20, context->cancelBtnText, DEEP_ORANGE_COLOR);
+    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_attentionCont);
+    lv_obj_add_event_cb(leftBtn, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_attentionCont);
+    lv_obj_add_event_cb(rightBtn, ConfirmAttentionHandler, LV_EVENT_CLICKED, NULL);
 
     SRAM_FREE(context);
 }

@@ -38,6 +38,7 @@ void GetEthTransactionData(void *indata, void *param, uint32_t maxLen);
 bool GetEthEnsExist(void *indata, void *param);
 bool GetToEthEnsExist(void *indata, void *param);
 bool GetEthContractDataExist(void *indata, void *param);
+bool GetErc20WarningExist(void *indata, void *param);
 bool GetEthContractDataNotExist(void *indata, void *param);
 void GetEthContractDataSize(uint16_t *width, uint16_t *height, void *param);
 void *GetEthContractData(uint8_t *row, uint8_t *col, void *param);

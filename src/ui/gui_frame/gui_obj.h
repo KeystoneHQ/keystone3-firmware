@@ -110,6 +110,7 @@ void *GuiCreateSelectPathCheckBox(lv_obj_t *parent);
 #define GuiCreateSingleCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, true, g_defIllustrateFont)
 #define GuiCreateMultiCheckBox(parent, text) GuiCreateCheckBoxWithFont(parent, text, false, g_defIllustrateFont)
 #define GuiCreateTitleLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defTitleFont)
+#define GuiCreateScrollTitleLabel(parent, text, width) GuiCreateLabelWithFontScroll(parent, text, g_defTitleFont, width)
 #define GuiCreateLittleTitleLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defLittleTitleFont)
 #define GuiCreateScrollLittleTitleLabel(parent, text, width) GuiCreateLabelWithFontScroll(parent, text, g_defLittleTitleFont, width)
 #define GuiCreateTextLabel(parent, text) GuiCreateLabelWithFont(parent, text, g_defTextFont)

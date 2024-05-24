@@ -1093,7 +1093,6 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
 
     bool showChange = (urType != Bytes && urType != KeystoneSignRequest);
 
-
     lv_obj_t *formContainer = GuiCreateContainerWithParent(parent, 408, 0);
     SetContainerDefaultStyle(formContainer);
     lv_obj_align_to(formContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);

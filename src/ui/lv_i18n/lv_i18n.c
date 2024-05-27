@@ -2798,7 +2798,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"repeat_passcode_title", "Подтвердите PIN-код"},
     {"rsa_confirm_hintbox_cancel", "Не сейчас"},
     {"rsa_confirm_hintbox_context", "Введите пароль, чтобы начать настройку блокчейна ARWEAVE, это займет около 10 минут. Убедитесь, что ваше устройство заряжено не менее 60% и подключено к USB."},
-    {"rsa_confirm_hintbox_ok", "Инициализировать"},
+    {"rsa_confirm_hintbox_ok", "Задать"},
     {"rsa_confirm_hintbox_title", "Настройка блокчейна AR"},
     {"rust_error_bitcoin_no_my_inputs", "Несоответствующая транзакция"},
     {"rust_error_bitcoin_no_my_inputs_desc", "Транзакция не относится к текущему кошельку. Пожалуйста, проверьте информацию о транзакции."},

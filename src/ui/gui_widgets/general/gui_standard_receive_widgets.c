@@ -430,6 +430,10 @@ static void RefreshQrCode(void)
             lv_label_set_text(g_standardReceiveWidgets.addressLabel, fixedAddress->data);
         }
         free_simple_response_c_char(fixedAddress);
+    } else if (g_chainCard == HOME_WALLET_CARD_XLM) {
+        char addressString[128];
+        CutAndFormatString(addressString, sizeof(addressString), addressDataItem.address, 40);
+        lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressString);
     } else {
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressDataItem.address);
     }

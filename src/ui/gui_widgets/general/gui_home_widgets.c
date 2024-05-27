@@ -188,7 +188,7 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .index = HOME_WALLET_CARD_XLM,
         .coin = "XLM",
         .chain = "Stellar",
-        .icon = &coinAr,
+        .icon = &coinXlm,
     },
     {
         .index = HOME_WALLET_CARD_COSMOS,

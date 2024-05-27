@@ -28,6 +28,8 @@ use near_rust_c;
 #[cfg(feature = "multi-coins")]
 use solana_rust_c;
 #[cfg(feature = "multi-coins")]
+use stellar_rust_c;
+#[cfg(feature = "multi-coins")]
 use sui_rust_c;
 #[cfg(feature = "multi-coins")]
 use tron_rust_c;

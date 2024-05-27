@@ -170,6 +170,7 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_STELLAR_1,             ED25519,       "stellar_1",                "M/44'/148'/1'"},
     {XPUB_TYPE_STELLAR_2,             ED25519,       "stellar_2",                "M/44'/148'/2'"},
     {XPUB_TYPE_STELLAR_3,             ED25519,       "stellar_3",                "M/44'/148'/3'"},
+    {XPUB_TYPE_STELLAR_4,             ED25519,       "stellar_4",                "M/44'/148'/4'"},
 #else
     {XPUB_TYPE_BTC,                     SECP256K1,      "btc_nested_segwit",        "M/49'/0'/0'"   },
     {XPUB_TYPE_BTC_LEGACY,              SECP256K1,      "btc_legacy",               "M/44'/0'/0'"   },

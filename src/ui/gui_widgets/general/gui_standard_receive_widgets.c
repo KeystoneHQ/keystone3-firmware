@@ -118,6 +118,7 @@ static uint32_t g_showIndex;
 static uint32_t g_tmpIndex = 0;
 static uint32_t g_selectIndex[3] = {0};
 static uint32_t g_suiSelectIndex[3] = {0};
+static uint32_t g_stellarSelectIndex[3] = {0};
 static uint32_t g_aptosSelectIndex[3] = {0};
 static uint32_t g_xrpSelectIndex[3] = {0};
 static PageWidget_t *g_pageWidget;
@@ -480,6 +481,9 @@ static int GetMaxAddressIndex(void)
     if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT) {
         return 10;
     }
+    if (g_chainCard == HOME_WALLET_CARD_XLM) {
+        return 5;
+    }
     if (g_chainCard == HOME_WALLET_CARD_XRP) {
         return 200;
     }
@@ -549,6 +553,7 @@ static bool IsAccountSwitchable()
     case HOME_WALLET_CARD_SUI:
     case HOME_WALLET_CARD_APT:
     case HOME_WALLET_CARD_XRP:
+    case HOME_WALLET_CARD_XLM:
         return true;
 
     default:
@@ -615,6 +620,11 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
         result = arweave_get_address(xPub);
         break;
+    case HOME_WALLET_CARD_XLM:
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_STELLAR_0 + index);
+        snprintf_s(hdPath, BUFFER_SIZE_64, "m/44'/148'/%u'", index);
+        result = stellar_get_address(xPub);
+        break;
     default:
         if (IsCosmosChain(g_chainCard)) {
             char rootPath[BUFFER_SIZE_128];
@@ -645,6 +655,7 @@ void GuiResetCurrentStandardAddressIndex(uint8_t index)
     }
     g_selectIndex[index] = 0;
     g_suiSelectIndex[index] = 0;
+    g_stellarSelectIndex[index] = 0;
     g_aptosSelectIndex[index] = 0;
     g_xrpSelectIndex[index] = 0;
 }
@@ -653,6 +664,7 @@ void GuiResetAllStandardAddressIndex(void)
 {
     memset_s(g_selectIndex, sizeof(g_selectIndex), 0, sizeof(g_selectIndex));
     memset_s(g_suiSelectIndex, sizeof(g_suiSelectIndex), 0, sizeof(g_suiSelectIndex));
+    memset_s(g_stellarSelectIndex, sizeof(g_stellarSelectIndex), 0, sizeof(g_stellarSelectIndex));
     memset_s(g_aptosSelectIndex, sizeof(g_aptosSelectIndex), 0, sizeof(g_aptosSelectIndex));
     memset_s(g_xrpSelectIndex, sizeof(g_xrpSelectIndex), 0, sizeof(g_xrpSelectIndex));
 }
@@ -662,6 +674,9 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
     switch (g_chainCard) {
     case HOME_WALLET_CARD_SUI:
         g_suiSelectIndex[GetCurrentAccountIndex()] = selectIndex;
+        break;
+    case HOME_WALLET_CARD_XLM:
+        g_stellarSelectIndex[GetCurrentAccountIndex()] = selectIndex;
         break;
     case HOME_WALLET_CARD_APT:
         g_aptosSelectIndex[GetCurrentAccountIndex()] = selectIndex;
@@ -683,6 +698,8 @@ static uint32_t GetCurrentSelectIndex()
     switch (g_chainCard) {
     case HOME_WALLET_CARD_SUI:
         return g_suiSelectIndex[GetCurrentAccountIndex()];
+    case HOME_WALLET_CARD_XLM:
+        return g_stellarSelectIndex[GetCurrentAccountIndex()];
     case HOME_WALLET_CARD_APT:
         return g_aptosSelectIndex[GetCurrentAccountIndex()];
     case HOME_WALLET_CARD_XRP:

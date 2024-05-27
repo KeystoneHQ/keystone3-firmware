@@ -33,7 +33,6 @@ pub fn get_address(pub_key: &String) -> Result<String> {
 pub fn generate_stellar_address(
     seed: &[u8],
     path: &String,
-    key_type: StrKeyType,
 ) -> Result<String> {
     let public_key = get_public_key_by_seed(seed, path)?;
     get_address(&hex::encode(public_key))
@@ -49,7 +48,7 @@ mod tests {
     fn test_stellar_address() {
         let seed = hex::decode("96063c45132c840f7e1665a3b97814d8eb2586f34bd945f06fa15b9327eebe355f654e81c6233a52149d7a95ea7486eb8d699166f5677e507529482599624cdc").unwrap();
         let path = "m/44'/148'/0'".to_string();
-        let address = generate_stellar_address(&seed, &path, StrKeyType::STRKEY_PUBKEY).unwrap();
+        let address = generate_stellar_address(&seed, &path).unwrap();
         assert_eq!(
             "GDKLQMRO2LFHLJ5I67VVOBLUOGYXXV6V72SPTKFCSNRWWTLFH7HT33AU",
             address

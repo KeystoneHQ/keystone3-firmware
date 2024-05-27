@@ -241,6 +241,7 @@ static uint8_t GetXPubIndexByPath(char *path)
     if (strcmp("M/44'/148'/1'", path) == 0) return XPUB_TYPE_STELLAR_1;
     if (strcmp("M/44'/148'/2'", path) == 0) return XPUB_TYPE_STELLAR_2;
     if (strcmp("M/44'/148'/3'", path) == 0) return XPUB_TYPE_STELLAR_3;
+    if (strcmp("M/44'/148'/4'", path) == 0) return XPUB_TYPE_STELLAR_4;
     return XPUB_TYPE_ADA_0;
 }
 

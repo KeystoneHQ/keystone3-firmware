@@ -34,6 +34,8 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_XRP, (SetChainDataFunc)GuiSetXrpUrData},
     {REMAPVIEW_AR, (SetChainDataFunc)GuiSetArUrData},
     {REMAPVIEW_AR_MESSAGE, (SetChainDataFunc)GuiSetArUrData},
+    {REMAPVIEW_TON, (SetChainDataFunc)GuiSetTonUrData},
+    {REMAPVIEW_TON_SIGNPROOF, (SetChainDataFunc)GuiSetTonUrData},
 #endif
 };
 

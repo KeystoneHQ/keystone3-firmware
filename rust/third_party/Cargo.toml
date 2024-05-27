@@ -20,8 +20,8 @@ rsa = { version = "0.8.2", default-features = false }
 sha1 = { version = "0.10.5", default-features = false }
 cty = "0.2.2"
 cstr_core = "0.2.6"
-ur-registry = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag = "0.0.23" }
-ur-parse-lib = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag = "0.0.23" }
+ur-registry = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag = "0.0.24" }
+ur-parse-lib = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag = "0.0.24" }
 ed25519-bip32-core = { version = "0.1.1", default-features = false }
 cryptoxide = "0.4"
 itertools = { version = "0.10.5", default-features = false, features = [

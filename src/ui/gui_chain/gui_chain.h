@@ -13,6 +13,7 @@
 #include "gui_ada.h"
 #include "gui_xrp.h"
 #include "gui_ar.h"
+#include "gui_ton.h"
 #endif
 
 typedef void (*SetChainDataFunc)(void *resultData, void *multiResultData, bool multi);
@@ -90,6 +91,8 @@ typedef enum {
     REMAPVIEW_XRP,
     REMAPVIEW_AR,
     REMAPVIEW_AR_MESSAGE,
+    REMAPVIEW_TON,
+    REMAPVIEW_TON_SIGNPROOF,
     REMAPVIEW_WEB_AUTH,
 #endif
     REMAPVIEW_BUTT,

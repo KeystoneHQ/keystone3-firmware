@@ -61,7 +61,7 @@ mod tests {
         let serial = STANDARD.decode(urlencoding::decode(body).unwrap().into_owned()).unwrap();
         let master_seed = "b4933a592c18291855b30ea5cc8da7cb20da17936df875f018c6027f2103f6ad8ff409400be6e913e43a3bf9dd23274f918e3bd7ca679b06e7fee04bc0d41f95";
         let master_seed = hex::decode(master_seed).unwrap();
-        let mut sk = [0; 32];
+        let mut sk: [u8; 32] = [0; 32];
         for i in 0..32 {
             sk[i] = master_seed[i]
         }

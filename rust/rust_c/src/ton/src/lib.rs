@@ -10,28 +10,80 @@ use alloc::{
 };
 use app_ton::mnemonic::ton_mnemonic_validate;
 use common_rust_c::{
-    ffi::VecFFI,
-    structs::SimpleResponse,
-    types::{Ptr, PtrBytes, PtrString},
-    utils::recover_c_char,
+    extract_ptr_with_type, ffi::VecFFI, impl_c_ptr, structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult}, types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR}, ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT}, utils::recover_c_char
 };
 use cty::c_char;
 use rust_tools::convert_c_char;
-use third_party::hex;
+use third_party::{
+    hex,
+    ur_registry::{
+        ton::{ton_sign_request::TonSignRequest, ton_signature::TonSignature},
+        traits::RegistryItem,
+    },
+};
+
+#[repr(C)]
+pub struct DisplayTon {
+    text: PtrString,
+}
+
+impl_c_ptr!(DisplayTon);
 
 #[no_mangle]
-pub extern "C" fn ton_parse_transaction() {
-    unimplemented!();
+pub extern "C" fn ton_parse_transaction(
+    ptr: PtrUR,
+    xpub: PtrString,
+) -> PtrT<TransactionParseResult<DisplayTon>> {
+    return TransactionParseResult::success(
+        (DisplayTon {
+            text: convert_c_char("text".to_string()),
+        })
+        .c_ptr(),
+    )
+    .c_ptr();
 }
 
 #[no_mangle]
-pub extern "C" fn ton_check_transaction() {
-    unimplemented!();
+pub extern "C" fn ton_check_transaction(
+    ptr: PtrUR,
+    master_fingerprint: PtrBytes,
+    length: u32,
+) -> PtrT<TransactionCheckResult> {
+    return TransactionCheckResult::new().c_ptr();
 }
 
 #[no_mangle]
-pub extern "C" fn ton_sign_transaction() {
-    unimplemented!();
+pub extern "C" fn ton_sign_transaction(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+) -> PtrT<UREncodeResult> {
+    let ton_tx = extract_ptr_with_type!(ptr, TonSignRequest);
+    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let mut sk: [u8; 32] = [0; 32];
+    for i in 0..32 {
+        sk[i] = seed[i]
+    }
+    let result = app_ton::transaction::sign_transaction(&ton_tx.get_sign_data(), sk);
+    match result {
+        Ok(sig) => {
+            let ton_signature = TonSignature::new(
+                ton_tx.get_request_id(),
+                sig.to_vec(),
+                Some("Keystone".to_string()),
+            );
+            match ton_signature.try_into() {
+                Err(e) => UREncodeResult::from(e).c_ptr(),
+                Ok(v) => UREncodeResult::encode(
+                    v,
+                    TonSignature::get_registry_type().get_type(),
+                    FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                )
+                .c_ptr(),
+            }
+        }
+        Err(e) => UREncodeResult::from(e).c_ptr(),
+    }
 }
 
 #[no_mangle]

@@ -210,6 +210,28 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreeArMemory,
     },
+    {
+        REMAPVIEW_TON,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ton_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,152],\"bg_opa\":51,\"radius\":24,\"bg_color\":16078897,\"children\":[{\"type\":\"label\",\"text\":\"TRANSACTION PLACEHOLDER\",\"pos\":[68,24],\"font\":\"openSansEnText\",\"text_color\":16078897}]}]},{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Details\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,152],\"bg_opa\":51,\"radius\":24,\"bg_color\":16078897,\"children\":[{\"type\":\"label\",\"text\":\"TRANSACTION PLACEHOLDER\",\"pos\":[68,24],\"font\":\"openSansEnText\",\"text_color\":16078897}]}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_ton.json",
+#endif
+        GuiGetTonGUIData,
+        NULL,
+        FreeArMemory,
+    },
+    {
+        REMAPVIEW_TON_SIGNPROOF,
+#ifndef COMPILE_SIMULATOR
+        "",
+#else
+        PC_SIMULATOR_PATH "/page_ton_message.json",
+#endif
+        GuiGetTonGUIData,
+        NULL,
+        FreeArMemory,
+    },
 #endif
 };
 
@@ -1557,6 +1579,10 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_AR;
     case ArweaveMessage:
         return REMAPVIEW_AR_MESSAGE;
+    case TonTx:
+        return REMAPVIEW_TON;
+    case TonSignProof:
+        return REMAPVIEW_TON_SIGNPROOF;    
 #endif
     default:
         return REMAPVIEW_BUTT;

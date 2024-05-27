@@ -33,6 +33,7 @@ static void GuiScanNavBarInit();
 static void GuiSetScanCorner(void);
 static void ThrowError(int32_t errorCode);
 static void GuiScanStart();
+static void GuiModelOpenTransactionDetail();
 
 #ifdef BTC_ONLY
 static lv_obj_t *g_noticeWindow;
@@ -170,7 +171,18 @@ void GuiTransactionCheckPass(void)
         }
     }
 #endif
+    // GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
+    GuiModelOpenTransactionDetail();
+}
+
+static int32_t ModelOpenTransactionDetail(const void *inData, uint32_t inDataLen)
+{
     GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
+}
+
+static void GuiModelOpenTransactionDetail()
+{
+    AsyncExecute(ModelOpenTransactionDetail, NULL, 0);
 }
 
 //Here return the error code and error message so that we can distinguish the error type later.

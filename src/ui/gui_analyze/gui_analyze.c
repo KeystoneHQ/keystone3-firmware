@@ -1415,6 +1415,7 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
     if (!type) {
         return NULL;
     }
+    printf("%s %d. type = %s\n", __func__, __LINE__, type);
 
     item = cJSON_GetObjectItem(json, "exist_func");
     if (item != NULL) {
@@ -1509,6 +1510,10 @@ void ParseTransaction(uint8_t index)
     for (int i = 0; i < NUMBER_OF_ARRAYS(g_analyzeArray); i++) {
         if (g_reMapIndex == g_analyzeArray[i].index) {
             GuiModelParseTransaction(g_analyzeArray[i].func);
+            printf("%s %d.\n", __func__, __LINE__);
+            // TransactionParseResult_DisplayTx *parsedResult = g_analyzeArray[i].func();
+            printf("%s %d.\n", __func__, __LINE__);
+            // GuiEmitSignal(SIG_TRANSACTION_PARSE_SUCCESS, parsedResult, sizeof(parsedResult));
             break;
         }
     }

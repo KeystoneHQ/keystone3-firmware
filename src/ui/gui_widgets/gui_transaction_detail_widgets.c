@@ -106,6 +106,16 @@ static void TransactionGoToHomeViewHandler(lv_event_t *e)
     GuiCloseToTargetView(&g_homeView);
 }
 
+ViewType GetCurrentViewType(void)
+{
+    return g_viewType;
+}
+
+void *GetCurrentContentZone(void)
+{
+    return g_pageWidget->contentZone;
+}
+
 void GuiSetCurrentTransactionType(TransactionType t)
 {
     g_transactionType = t;
@@ -191,7 +201,12 @@ static void ThrowError(int32_t errorCode)
 void GuiTransactionDetailParseSuccess(void *param)
 {
     SetParseTransactionResult(param);
+    printf("g_pageWidget->contentZone is %p\n", g_pageWidget->contentZone);
+    // GuiModelParseTransactionDetail(g_pageWidget->contentZone);
     GuiTemplateReload(g_pageWidget->contentZone, g_viewType);
+    // printf("Current task name: %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+    // GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
+    GuiPendingHintBoxRemove();
     if (!g_needSign) {
         GuiCreateErrorCodeWindow(ERR_MULTISIG_TRANSACTION_ALREADY_SIGNED, NULL, (ErrorWindowCallback)GuiCLoseCurrentWorkingView);
     }

@@ -63,8 +63,7 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_CHECKABLE);
-    lv_obj_set_size(parent, lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                    GUI_MAIN_AREA_OFFSET - 114);
+    lv_obj_set_size(parent, lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET - 114);
     lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_phrase_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
@@ -202,16 +201,7 @@ void GuiSinglePhraseInit(uint8_t entropyMethod)
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 
-    lv_obj_t *tileView = lv_tileview_create(cont);
-    lv_obj_clear_flag(tileView, LV_OBJ_FLAG_SCROLLABLE);
-    if (GuiDarkMode()) {
-        lv_obj_set_style_bg_color(tileView, BLACK_COLOR, LV_PART_MAIN);
-    } else {
-        lv_obj_set_style_bg_color(tileView, WHITE_COLOR, LV_PART_MAIN);
-    }
-    lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
-    lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
-
+    lv_obj_t *tileView = GuiCreateTileView(cont);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, SINGLE_PHRASE_RANDOM_PHRASE, 0, LV_DIR_HOR);
     g_singlePhraseTileView.randomPhrase = tile;
     GuiRandomPhraseWidget(tile);
@@ -237,7 +227,7 @@ void GuiSinglePhraseUpdateMnemonic(void *signalParam, uint16_t paramLen)
 {
     g_randomPhraseKb->wordCnt = g_phraseCnt;
     GuiUpdateMnemonicKeyBoard(g_randomPhraseKb, SecretCacheGetMnemonic(), false);
-    lv_obj_set_size(g_randomPhraseKb->cont, 408, 360);
+    // lv_obj_set_size(g_randomPhraseKb->cont, 408, 360);
 }
 
 static void SelectCheckBoxHandler(lv_event_t* e)

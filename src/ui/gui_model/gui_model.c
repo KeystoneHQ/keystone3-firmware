@@ -106,6 +106,7 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen);
 static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t parseTransactionFunc);
 static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen);
+static int32_t ModelParseTransactionDetail(const void *indata, uint32_t inDataLen);
 
 static PasswordVerifyResult_t g_passwordVerifyResult;
 static bool g_stopCalChecksum = false;
@@ -267,6 +268,11 @@ void GuiModelWriteLastLockDeviceTime(uint32_t time)
 void GuiModelCopySdCardOta(void)
 {
     AsyncExecute(ModelCopySdCardOta, NULL, 0);
+}
+
+void GuiModelParseTransactionDetail(void *obj)
+{
+    AsyncExecute(ModelParseTransactionDetail, obj, sizeof(obj));
 }
 
 void GuiModelURGenerateQRCode(GenerateUR func)
@@ -1195,7 +1201,8 @@ static PtrT_TransactionCheckResult g_checkResult = NULL;
 
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
 {
-    GuiApiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
+    // GuiApiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
+    GuiPendingHintBoxOpen(_("Loading"), "");
     ViewType viewType = *((ViewType *)inData);
     g_checkResult = CheckUrResult(viewType);
     if (g_checkResult != NULL && g_checkResult->error_code == 0) {
@@ -1257,11 +1264,11 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, Bac
     //There is no need to release here, the parsing results will be released when exiting the details page.
     TransactionParseResult_DisplayTx *parsedResult = (TransactionParseResult_DisplayTx *)func();
     if (parsedResult != NULL && parsedResult->error_code == 0 && parsedResult->data != NULL) {
-        GuiApiEmitSignal(SIG_TRANSACTION_PARSE_SUCCESS, parsedResult, sizeof(parsedResult));
+        GuiEmitSignal(SIG_TRANSACTION_PARSE_SUCCESS, parsedResult, sizeof(parsedResult));
     } else {
-        GuiApiEmitSignal(SIG_TRANSACTION_PARSE_FAIL, parsedResult, sizeof(parsedResult));
+        GuiEmitSignal(SIG_TRANSACTION_PARSE_FAIL, parsedResult, sizeof(parsedResult));
     }
-    GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
+    // GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
     return SUCCESS_CODE;
 }
 
@@ -1428,5 +1435,14 @@ static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen)
     }
     SetPageLockScreen(true);
 
+    return SUCCESS_CODE;
+}
+
+static int32_t ModelParseTransactionDetail(const void *indata, uint32_t inDataLen)
+{
+void *GetCurrentContentZone(void);
+ViewType GetCurrentViewType(void);
+    printf("g_pageWidget->contentZone is %p\n", indata);
+    GuiTemplateReload(GetCurrentContentZone(), GetCurrentViewType());
     return SUCCESS_CODE;
 }

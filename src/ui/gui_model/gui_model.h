@@ -84,6 +84,7 @@ void GuiModelStopCalculateCheckSum(void);
 void GuiModelSettingWritePassphrase(void);
 void GuiModelCalculateBinSha256(void);
 void GuiModelFormatMicroSd(void);
+void GuiModelParseTransactionDetail(void *obj);
 
 #endif /* _GUI_MODEL_H */
 

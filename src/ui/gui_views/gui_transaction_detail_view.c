@@ -6,18 +6,6 @@
 #include "gui_lock_widgets.h"
 #include "gui_pending_hintbox.h"
 
-static int32_t GuiTransactionDetailViewInit(uint8_t viewType)
-{
-    GuiTransactionDetailInit(viewType);
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiTransactionDetailViewDeInit(void)
-{
-    GuiTransactionDetailDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiTransactionDetailViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     uint8_t viewType = 0;
@@ -28,9 +16,11 @@ int32_t GuiTransactionDetailViewEventProcess(void *self, uint16_t usEvent, void 
         } else {
             return ERR_GUI_ERROR;
         }
-        return GuiTransactionDetailViewInit(viewType);
+        GuiTransactionDetailInit(viewType);
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiTransactionDetailViewDeInit();
+        GuiTransactionDetailDeInit();
+        break;
     case GUI_EVENT_REFRESH:
         GuiTransactionDetailRefresh();
         break;

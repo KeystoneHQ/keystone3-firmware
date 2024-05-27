@@ -555,4 +555,27 @@ UREncodeResult *GuiGetSolflareData(void)
 
 }
 
+UREncodeResult *GuiGetXBullData(void)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    ExtendedPublicKey keys[5];
+    public_keys->data = keys;
+    public_keys->size = 5;
+    for (int i = XPUB_TYPE_STELLAR_0; i <= XPUB_TYPE_STELLAR_4; i++) {
+        char *path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(path, BUFFER_SIZE_32, "m/44'/148'/%d'", i - XPUB_TYPE_STELLAR_0);
+        keys[i - XPUB_TYPE_STELLAR_0].path = path;
+        keys[i - XPUB_TYPE_STELLAR_0].xpub = GetCurrentAccountPublicKey(i);
+    }
+    g_urEncode = get_connect_xbull_wallet_ur(mfp, sizeof(mfp), public_keys);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    for (int i = 0; i < public_keys->size; i++) {
+        SRAM_FREE(public_keys->data[i].path);
+    }
+    SRAM_FREE(public_keys);
+    return g_urEncode;
+}
+
 #endif

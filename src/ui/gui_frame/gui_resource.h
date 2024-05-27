@@ -264,6 +264,7 @@ LV_IMG_DECLARE(walletListYearn);
 LV_IMG_DECLARE(walletListSushi);
 LV_IMG_DECLARE(walletListKeplr);
 LV_IMG_DECLARE(walletListArConnect);
+LV_IMG_DECLARE(walletListXBull);
 LV_IMG_DECLARE(walletListFewcha);
 LV_IMG_DECLARE(walletListPetra);
 LV_IMG_DECLARE(walletListXRPToolkit);

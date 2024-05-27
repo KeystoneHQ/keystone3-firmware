@@ -253,7 +253,11 @@ void *GuiCreateUpdateHintbox(const void *src, const char *titleText,
     lv_obj_set_style_text_font(checksum, g_defIllustrateFont, LV_PART_MAIN);
     lv_obj_align(checksum, LV_ALIGN_BOTTOM_LEFT, 36, -130);
     lv_obj_t *desc = GuiCreateNoticeLabel(cont, descText);
-    lv_obj_align_to(desc, checksum, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
+    if (checkSumDone) {
+        lv_obj_align(desc, LV_ALIGN_BOTTOM_LEFT, 36, -232);
+    } else {
+        lv_obj_align_to(desc, checksum, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
+    }
     lv_obj_t *title = GuiCreateLittleTitleLabel(cont, titleText);
     lv_obj_align_to(title, desc, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
     lv_obj_t *img = GuiCreateImg(cont, src);

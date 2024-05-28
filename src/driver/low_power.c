@@ -311,7 +311,7 @@ int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
     bool sdCardState = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_7);
     if (sdCardState == false) {
         if (!MountSdFatfs()) {
-            GuiApiEmitSignalWithValue(SIG_INIT_SDCARD_CHANGE, sdCardState);
+            GuiApiEmitSignalWithValue(SIG_INIT_SDCARD_CHANGE_IMG, sdCardState);
         }
     } else {
         UnMountSdFatfs();

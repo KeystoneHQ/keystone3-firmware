@@ -39,7 +39,7 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         break;
     case SIG_INIT_SDCARD_CHANGE:
         rcvValue = *(uint32_t *)param;
-        GuiStatusBarSetSdCard(!rcvValue);
+        GuiStatusBarSetSdCard(!rcvValue, false);
         break;
     case GUI_EVENT_REFRESH:
         GuilockScreenRefresh();

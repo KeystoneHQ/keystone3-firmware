@@ -639,14 +639,28 @@ pub fn encode_field(
                             encode_eip712_type(Token::Bytes(data.0.to_vec()))
                         }
                         ParamType::Int(_) => {
-                            // int to be stringified, and then coverted stringfied num to U256
                             let val: StringifiedNumeric = serde_json::from_value(value.clone())
-                                .map_err(|err| {
-                                    Eip712Error::Message(format!("serde_json::from_value {err}"))
-                                })?;
-                            let val: U256 = val.try_into().map_err(|err| {
-                                Eip712Error::Message(format!("Failed to parse int {err}"))
-                            })?;
+                                .map_err(|err| Eip712Error::Message(format!("serde_json::from_value {err}")))?;
+                            let parse_u256 = |val: &str| -> Result<U256, Eip712Error> {
+                                if val.starts_with('-') {
+                                    let positive_val = val.trim_start_matches('-');
+                                    let mut u256_val: U256 = positive_val.parse().map_err(|err| {
+                                        Eip712Error::Message(format!("Failed to parse int {err}"))
+                                    })?;
+                                    u256_val = !u256_val + U256::one();
+                                    Ok(u256_val)
+                                } else {
+                                    val.parse().map_err(|err| {
+                                        Eip712Error::Message(format!("Failed to parse int {err}"))
+                                    })
+                                }
+                            };
+                            let val: U256 = match val {
+                                StringifiedNumeric::String(s) => parse_u256(&s)?,
+                                StringifiedNumeric::U256(u) => u,
+                                StringifiedNumeric::Num(n) => parse_u256(&n.to_string())?,
+                            };
+
                             Token::Uint(val)
                         }
                         ParamType::Uint(_) => {
@@ -1292,5 +1306,74 @@ mod tests {
         let typed_data: TypedData = serde_json::from_value(json).unwrap();
         let hash = typed_data.encode_eip712().unwrap();
         // println!("hash: {:?}", hex::encode(&hash[..]));
+    }
+
+    #[test]
+    fn test_perp_parse() {
+        let json = serde_json::json!({
+            "types": {
+                "Order": [
+                    {
+                        "name": "sender",
+                        "type": "bytes32"
+                    },
+                    {
+                        "name": "priceX18",
+                        "type": "int128"
+                    },
+                    {
+                        "name": "amount",
+                        "type": "int128"
+                    },
+                    {
+                        "name": "expiration",
+                        "type": "uint64"
+                    },
+                    {
+                        "name": "nonce",
+                        "type": "uint64"
+                    }
+                ],
+                "EIP712Domain": [
+                    {
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "name": "version",
+                        "type": "string"
+                    },
+                    {
+                        "name": "chainId",
+                        "type": "uint256"
+                    },
+                    {
+                        "name": "verifyingContract",
+                        "type": "address"
+                    }
+                ]
+            },
+            "primaryType": "Order",
+            "domain": {
+                "name": "Vertex",
+                "version": "0.0.1",
+                "chainId": "0x13e31",
+                "verifyingContract": "0x8288b2a21fea95b2594cdefb4553bb223697e80b"
+            },
+            "message": {
+                "sender": "0x49ab56b91fc982fd6ec1ec7bb87d74efa6da30ab64656661756c740000000000",
+                "priceX18": "3867500000000000000000",
+                "amount": "-10000000000000000",
+                "expiration": "11529216762868464034",
+                "nonce": "1800195364132749377"
+            }
+        });
+
+        let typed_data: TypedData = serde_json::from_value(json).unwrap();
+        let hash = typed_data.encode_eip712().unwrap();
+        assert_eq!(
+            hex::encode(&hash[..]),
+            "c6093cdd3eeac761c7715cd251fc804e576d7edc90e871ac16a78b83a9da4184",
+        )
     }
 }

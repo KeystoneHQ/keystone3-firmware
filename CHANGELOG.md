@@ -1,3 +1,14 @@
+## 1.4.6 (2024-05-29)
+
+### What's new
+
+1. Added support for Spanish system languages
+
+### Improvements
+
+1. Improved ERC20 token transaction analysis
+
+
 ## 1.4.4 (2024-05-20)
 
 ### What's new

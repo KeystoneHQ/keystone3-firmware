@@ -213,7 +213,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_TON,
 #ifndef COMPILE_SIMULATOR
-        "{\"name\":\"ton_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,152],\"bg_opa\":51,\"radius\":24,\"bg_color\":16078897,\"children\":[{\"type\":\"label\",\"text\":\"TRANSACTION PLACEHOLDER\",\"pos\":[68,24],\"font\":\"openSansEnText\",\"text_color\":16078897}]}]},{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Details\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,152],\"bg_opa\":51,\"radius\":24,\"bg_color\":16078897,\"children\":[{\"type\":\"label\",\"text\":\"TRANSACTION PLACEHOLDER\",\"pos\":[68,24],\"font\":\"openSansEnText\",\"text_color\":16078897}]}]}]}",
+        "{\"name\":\"ton_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonTxOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Raw Data\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonTxRawData\"}]}]}",
 #else
         PC_SIMULATOR_PATH "/page_ton.json",
 #endif
@@ -1188,6 +1188,10 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiShowSolTxDetail;
     } else if (!strcmp(funcName, "GuiShowArweaveTxDetail")) {
         return GuiShowArweaveTxDetail;
+    } else if (!strcmp(funcName, "GuiTonTxOverview")) {
+        return GuiTonTxOverview;
+    } else if (!strcmp(funcName, "GuiTonTxRawData")) {
+        return GuiTonTxRawData;
     }
 #endif
     return NULL;

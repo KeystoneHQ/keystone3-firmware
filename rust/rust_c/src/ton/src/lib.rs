@@ -14,6 +14,7 @@ use common_rust_c::{
 };
 use cty::c_char;
 use rust_tools::convert_c_char;
+use structs::DisplayTonTransaction;
 use third_party::{
     hex,
     ur_registry::{
@@ -32,15 +33,18 @@ impl_c_ptr!(DisplayTon);
 #[no_mangle]
 pub extern "C" fn ton_parse_transaction(
     ptr: PtrUR,
-    xpub: PtrString,
-) -> PtrT<TransactionParseResult<DisplayTon>> {
-    return TransactionParseResult::success(
-        (DisplayTon {
-            text: convert_c_char("text".to_string()),
-        })
-        .c_ptr(),
-    )
-    .c_ptr();
+) -> PtrT<TransactionParseResult<DisplayTonTransaction>> {
+    let ton_tx = extract_ptr_with_type!(ptr, TonSignRequest);
+
+    let serial = ton_tx.get_sign_data();
+    let tx = app_ton::transaction::parse_transaction(&serial);
+    match tx {
+        Ok(tx) => {
+            let display_tx = DisplayTonTransaction::from(&tx);
+            TransactionParseResult::success(display_tx.c_ptr()).c_ptr()
+        }
+        Err(e) => TransactionParseResult::from(e).c_ptr(),
+    }
 }
 
 #[no_mangle]

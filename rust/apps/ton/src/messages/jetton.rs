@@ -40,13 +40,13 @@ impl ParseCell for JettonMessage {
 
 #[derive(Clone, Debug, Serialize)]
 pub struct JettonTransferMessage {
-    query_id: String,
-    destination: String,
-    response_destination: Option<String>,
-    amount: String,
-    custom_payload: Option<String>,
-    forward_ton_amount: String,
-    forward_payload: Option<String>,
+    pub query_id: String,
+    pub destination: String,
+    pub response_destination: Option<String>,
+    pub amount: String,
+    pub custom_payload: Option<String>,
+    pub forward_ton_amount: String,
+    pub forward_payload: Option<String>,
 }
 
 impl ParseCell for JettonTransferMessage {

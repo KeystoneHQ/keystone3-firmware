@@ -1,6 +1,7 @@
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use num_bigint::BigUint;
 use serde::Serialize;
 use third_party::hex;
 
@@ -16,10 +17,10 @@ pub mod traits;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct SigningMessage {
-    wallet_id: Option<u32>,
-    timeout: u32,
-    seq_no: u32,
-    messages: Vec<TransferMessage>,
+    pub wallet_id: Option<u32>,
+    pub timeout: u32,
+    pub seq_no: u32,
+    pub messages: Vec<TransferMessage>,
 }
 
 impl ParseCell for SigningMessage {
@@ -50,16 +51,16 @@ impl ParseCell for SigningMessage {
 
 #[derive(Clone, Debug, Serialize)]
 pub struct TransferMessage {
-    ihr_disabled: bool,
-    bounce: bool,
-    bounced: bool,
-    dest_addr: String,
-    value: String,
-    currency_coll: bool,
-    ihr_fees: String,
-    fwd_fees: String,
-    state_init: Option<String>,
-    data: Option<InternalMessage>,
+    pub ihr_disabled: bool,
+    pub bounce: bool,
+    pub bounced: bool,
+    pub dest_addr: String,
+    pub value: String,
+    pub currency_coll: bool,
+    pub ihr_fees: String,
+    pub fwd_fees: String,
+    pub state_init: Option<String>,
+    pub data: Option<InternalMessage>,
 }
 
 impl ParseCell for TransferMessage {
@@ -75,6 +76,9 @@ impl ParseCell for TransferMessage {
             let _src_addr = parser.load_address()?;
             let dest_addr = parser.load_address()?.to_base64_std();
             let value = parser.load_coins()?.to_string();
+            let coins = u64::from_str_radix(&value, 10)
+                .map_err(|_e| TonCellError::InternalError("Invalid value".to_string()))?;
+            let ton_value = format!("{} Ton", (coins as f64) / 1_000_000_000f64);
             let currency_coll = parser.load_bit()?;
             let ihr_fees = parser.load_coins()?.to_string();
             let fwd_fees = parser.load_coins()?.to_string();
@@ -98,7 +102,7 @@ impl ParseCell for TransferMessage {
                 bounce,
                 bounced,
                 dest_addr,
-                value,
+                value: ton_value,
                 currency_coll,
                 ihr_fees,
                 fwd_fees,
@@ -111,9 +115,9 @@ impl ParseCell for TransferMessage {
 
 #[derive(Clone, Debug, Serialize)]
 pub struct InternalMessage {
-    op_code: String,
-    action: Option<String>,
-    operation: Operation,
+    pub op_code: String,
+    pub action: Option<String>,
+    pub operation: Operation,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -176,7 +180,7 @@ impl ParseCell for InternalMessage {
 
 #[derive(Clone, Debug, Serialize)]
 pub struct OtherMessage {
-    payload: String,
+    pub payload: String,
 }
 
 pub type Comment = String;

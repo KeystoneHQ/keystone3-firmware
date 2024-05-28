@@ -1,6 +1,6 @@
 use crate::errors::Result;
 use crate::structs::TonTransaction;
-use crate::{errors::TonError, vendor::cell::BagOfCells};
+use crate::vendor::cell::BagOfCells;
 use alloc::vec::Vec;
 use third_party::cryptoxide::ed25519;
 
@@ -8,10 +8,17 @@ pub fn parse_transaction(serial: &[u8]) -> Result<TonTransaction> {
     TonTransaction::parse_hex(serial)
 }
 
+pub fn buffer_to_sign(serial: &[u8]) -> Result<Vec<u8>> {
+    let boc = BagOfCells::parse(serial)?;
+    let root = boc.single_root()?;
+    let buffer_to_sign = root.cell_hash()?;
+    Ok(buffer_to_sign)
+}
+
 pub fn sign_transaction(serial: &[u8], sk: [u8; 32]) -> Result<[u8; 64]> {
-    let tx = parse_transaction(serial)?;
+    let tx = buffer_to_sign(serial)?;
     let (keypair, _) = ed25519::keypair(&sk);
-    let signature = ed25519::signature(&tx.buffer_to_sign, &keypair);
+    let signature = ed25519::signature(&tx, &keypair);
     Ok(signature)
 }
 
@@ -58,7 +65,9 @@ mod tests {
         //j7SUzAOty6C3woetBmEXobZoCf6vJZGoQVomHJc42oU=
         // tonsign://?network=ton&pk=j7SUzAOty6C3woetBmEXobZoCf6vJZGoQVomHJc42oU%3D&body=te6cckEBAgEARwABHCmpoxdmQcAiAAAADQADAQBoQgArFnMvHAX9tOjTp4%2FRDd3vP2Bn8xG%2BU5MTuKRKUE1NoqAvrwgAAAAAAAAAAAAAAAAAAPa2C0o%3D
         let body = "te6cckEBAgEARwABHCmpoxdmQcAiAAAADQADAQBoQgArFnMvHAX9tOjTp4%2FRDd3vP2Bn8xG%2BU5MTuKRKUE1NoqAvrwgAAAAAAAAAAAAAAAAAAPa2C0o%3D";
-        let serial = STANDARD.decode(urlencoding::decode(body).unwrap().into_owned()).unwrap();
+        let serial = STANDARD
+            .decode(urlencoding::decode(body).unwrap().into_owned())
+            .unwrap();
         let master_seed = "b4933a592c18291855b30ea5cc8da7cb20da17936df875f018c6027f2103f6ad8ff409400be6e913e43a3bf9dd23274f918e3bd7ca679b06e7fee04bc0d41f95";
         let master_seed = hex::decode(master_seed).unwrap();
         let mut sk: [u8; 32] = [0; 32];
@@ -67,6 +76,9 @@ mod tests {
         }
         let signature = super::sign_transaction(&serial, sk).unwrap();
         println!("{}", hex::encode(&signature));
-        println!("tonkeeper://publish?boc={}", urlencoding::encode(&STANDARD.encode(&signature)));
+        println!(
+            "tonkeeper://publish?boc={}",
+            urlencoding::encode(&STANDARD.encode(&signature))
+        );
     }
 }

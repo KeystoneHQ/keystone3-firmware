@@ -4,7 +4,6 @@ use third_party::hex;
 
 use super::traits::ParseCell;
 
-
 pub const NFT_TRANSFER: u32 = 0x5fcc3d14;
 
 #[derive(Clone, Debug, Serialize)]
@@ -33,12 +32,12 @@ impl ParseCell for NFTMessage {
  
 #[derive(Clone, Debug, Serialize)]
 pub struct NFTTransferMessage {
-    query_id: String,
-    new_owner_address: String,
-    response_address: String,
-    custom_payload: Option<String>,
-    forward_ton_amount: String,
-    forward_payload: Option<String>,
+    pub query_id: String,
+    pub new_owner_address: String,
+    pub response_address: String,
+    pub custom_payload: Option<String>,
+    pub forward_ton_amount: String,
+    pub forward_payload: Option<String>,
 }
 
 impl ParseCell for NFTTransferMessage {

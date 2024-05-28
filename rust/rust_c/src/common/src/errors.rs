@@ -440,6 +440,7 @@ impl From<&TonError> for ErrorCodes {
             TonError::TransactionError(_) => Self::TonTransactionError,
             TonError::TransactionJsonError(_) => Self::TonTransactionJsonError,
             TonError::AddressError(_) => Self::AddressError,
+            TonError::InvalidTransaction(_) => Self::TonTransactionError,
         }
     }
 }

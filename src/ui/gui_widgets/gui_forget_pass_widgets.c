@@ -239,7 +239,7 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
         bip39 = false;
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
     } else {
-        g_forgetMkb->titleLabel = GuiCreateTitleLabel(g_enterMnemonicCont, _("seed_check_single_phrase_title"));
+        g_forgetMkb->titleLabel = GuiCreateScrollTitleLabel(g_enterMnemonicCont, _("seed_check_single_phrase_title"));
         lv_obj_align(g_forgetMkb->titleLabel, LV_ALIGN_DEFAULT, 36, 12);
         g_forgetMkb->descLabel = GuiCreateIllustrateLabel(g_enterMnemonicCont, _("seed_check_share_phrase_title"));
         lv_obj_set_style_text_opa(g_forgetMkb->descLabel, LV_OPA_60, LV_PART_MAIN);

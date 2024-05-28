@@ -293,7 +293,7 @@ void GuiWalletFingerAddWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
     g_fpAddCont = parent;
     lv_obj_t *label = NULL;
-    label = GuiCreateTitleLabel(parent, _("fingerprint_add"));
+    label = GuiCreateScrollTitleLabel(parent, _("fingerprint_add"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
 
     label = GuiCreateNoticeLabel(parent, _("fingerprint_add_desc"));

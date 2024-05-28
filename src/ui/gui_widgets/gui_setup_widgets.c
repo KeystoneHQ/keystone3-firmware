@@ -16,6 +16,8 @@ typedef enum {
     SETUP_CHINESE,
     SETUP_KOREAN,
     SETUP_SPANISH,
+    SETUP_GERMAN,
+    SETUP_JAPANESE,
 
     SETUP_LANGUAGE_BUTT,
 } SETUP_LANGUAGE_ENUM;
@@ -26,6 +28,8 @@ static const char *g_languageList[] = {
     "简体中文",
     "한국인",
     "español",
+    "Deutsch",
+    "日本語",
 };
 
 typedef enum {
@@ -57,7 +61,7 @@ static PageWidget_t *g_pageWidget;
 #ifdef BTC_ONLY
 #define SUPPORT_WALLET_INDEX SETUP_ENGLISH
 #else
-#define SUPPORT_WALLET_INDEX SETUP_SPANISH
+#define SUPPORT_WALLET_INDEX SETUP_JAPANESE
 #endif
 
 static void GuiWelcomeWidget(lv_obj_t *parent)
@@ -119,6 +123,10 @@ void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
             label = GuiCreateLabelWithFont(parent, g_languageList[i], &koText);
         } else if (i == SETUP_SPANISH) {
             label = GuiCreateLabelWithFont(parent, g_languageList[i], &esText);
+        } else if (i == SETUP_GERMAN) {
+            label = GuiCreateLabelWithFont(parent, g_languageList[i], &deText);
+        } else if (i == SETUP_JAPANESE) {
+            label = GuiCreateLabelWithFont(parent, g_languageList[i], &jaText);
         } else {
             label = GuiCreateLabelWithFont(parent, g_languageList[i], &openSansEnText);
         }

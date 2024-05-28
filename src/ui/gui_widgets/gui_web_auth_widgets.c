@@ -57,7 +57,7 @@ void GuiWebAuthScanQRCodeHandler(lv_event_t *e)
 void GuiWebAuthIntroWidget(lv_obj_t *parent)
 {
     uint16_t height = 46;
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("verify_title"));
+    lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("verify_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(parent, _("verify_desc"));

@@ -104,7 +104,7 @@ void GuiConnectionEntranceWidget(lv_obj_t *parent)
     table[0].align = LV_ALIGN_LEFT_MID;
     table[0].position.x = 24;
     table[0].position.y = 0;
-    table[1].obj = GuiCreateTextLabel(parent, _("sdcard_format_text"));
+    table[1].obj = GuiCreateScrollTextLabel(parent, _("sdcard_format_text"), 300);
     table[1].position.x = 76;
     button = GuiCreateButton(parent, 456, 84, table, 2, FormatMicroSDWindowHandler, NULL);
     lv_obj_align_to(button, line, LV_ALIGN_OUT_BOTTOM_MID, 0, 12);

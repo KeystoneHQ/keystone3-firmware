@@ -65,7 +65,7 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_CHECKABLE);
     lv_obj_set_size(parent, lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET - 114);
-    lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("single_phrase_title"), 408);
+    lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("single_phrase_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(parent, _("single_phrase_desc"));

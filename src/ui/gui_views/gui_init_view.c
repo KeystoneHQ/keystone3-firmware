@@ -125,9 +125,13 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_INIT_CLOSE_CURRENT_MSG_BOX:
         CloseCurrentMsgBox();
         break;
+    case SIG_INIT_SDCARD_CHANGE_IMG:
+        rcvValue = *(uint32_t *)param;
+        GuiStatusBarSetSdCard(!rcvValue, true);
+        break;
     case SIG_INIT_SDCARD_CHANGE:
         rcvValue = *(uint32_t *)param;
-        GuiStatusBarSetSdCard(!rcvValue);
+        GuiStatusBarSetSdCard(!rcvValue, false);
         break;
     case SIG_INIT_SD_CARD_OTA_COPY_SUCCESS:
         GuiFirmwareSdCardCopyResult(true);

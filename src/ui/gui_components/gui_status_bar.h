@@ -63,7 +63,7 @@ const char *GuiNvsBarGetWalletName(void);
 void GuiNvsSetCoinWallet(GuiChainCoinType index, const char *name);
 void GuiNvsSetWallet(WALLET_LIST_INDEX_ENUM index, const char *name);
 void GuiNvsBarClear(void);
-void GuiStatusBarSetSdCard(bool connected);
+void GuiStatusBarSetSdCard(bool connected, bool onlyImg);
 void GuiStatusBarSetUsb(void);
 #ifdef BTC_ONLY
 void GuiStatusBarSetTestNet(void);

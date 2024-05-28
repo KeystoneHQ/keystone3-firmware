@@ -640,13 +640,18 @@ pub fn encode_field(
                         }
                         ParamType::Int(_) => {
                             let val: StringifiedNumeric = serde_json::from_value(value.clone())
-                                .map_err(|err| Eip712Error::Message(format!("serde_json::from_value {err}")))?;
+                                .map_err(|err| {
+                                    Eip712Error::Message(format!("serde_json::from_value {err}"))
+                                })?;
                             let parse_u256 = |val: &str| -> Result<U256, Eip712Error> {
                                 if val.starts_with('-') {
                                     let positive_val = val.trim_start_matches('-');
-                                    let mut u256_val: U256 = positive_val.parse().map_err(|err| {
-                                        Eip712Error::Message(format!("Failed to parse int {err}"))
-                                    })?;
+                                    let mut u256_val: U256 =
+                                        positive_val.parse().map_err(|err| {
+                                            Eip712Error::Message(format!(
+                                                "Failed to parse int {err}"
+                                            ))
+                                        })?;
                                     u256_val = !u256_val + U256::one();
                                     Ok(u256_val)
                                 } else {

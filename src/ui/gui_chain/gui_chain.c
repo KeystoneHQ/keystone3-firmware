@@ -74,6 +74,8 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     case ArweaveTx:
     case ArweaveMessage:
         return CHAIN_ARWEAVE;
+    case StellarTx:
+        return CHAIN_STELLAR;
 #endif
     default:
         return CHAIN_BUTT;

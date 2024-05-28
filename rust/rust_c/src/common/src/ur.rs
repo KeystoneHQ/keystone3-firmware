@@ -208,6 +208,8 @@ pub enum ViewType {
     #[cfg(feature = "multi-coins")]
     ArweaveMessage,
     #[cfg(feature = "multi-coins")]
+    StellarTx,
+    #[cfg(feature = "multi-coins")]
     AptosTx,
     WebAuthResult,
     #[cfg(feature = "multi-coins")]
@@ -250,6 +252,8 @@ pub enum URType {
     QRHardwareCall,
     #[cfg(feature = "multi-coins")]
     ArweaveSignRequest,
+    #[cfg(feature = "multi-coins")]
+    StellarSignRequest,
     URTypeUnKnown,
 }
 
@@ -550,6 +554,8 @@ pub fn decode_ur(ur: String) -> URParseResult {
         #[cfg(feature = "multi-coins")]
         URType::ArweaveSignRequest => _decode_ur::<ArweaveSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
+        URType::StellarSignRequest => _decode_ur::<ArweaveSignRequest>(ur, ur_type),
+        #[cfg(feature = "multi-coins")]
         URType::AptosSignRequest => _decode_ur::<AptosSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
         URType::QRHardwareCall => _decode_ur::<QRHardwareCall>(ur, ur_type),
@@ -620,6 +626,8 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         URType::SuiSignRequest => _receive_ur::<SuiSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
         URType::ArweaveSignRequest => _receive_ur::<ArweaveSignRequest>(ur, ur_type, decoder),
+        #[cfg(feature = "multi-coins")]
+        URType::StellarSignRequest => _receive_ur::<ArweaveSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
         URType::AptosSignRequest => _receive_ur::<AptosSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]

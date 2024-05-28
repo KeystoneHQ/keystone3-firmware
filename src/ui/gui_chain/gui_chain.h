@@ -13,6 +13,7 @@
 #include "gui_ada.h"
 #include "gui_xrp.h"
 #include "gui_ar.h"
+#include "gui_stellar.h"
 #endif
 
 typedef void (*SetChainDataFunc)(void *resultData, void *multiResultData, bool multi);
@@ -34,7 +35,7 @@ typedef enum {
     CHAIN_SUI,
     CHAIN_DASH,
     CHAIN_ARWEAVE,
-    CHAIN_XLM,
+    CHAIN_STELLAR,
     CHAIN_COSMOS,
     CHAIN_TIA,
     CHAIN_DYM,

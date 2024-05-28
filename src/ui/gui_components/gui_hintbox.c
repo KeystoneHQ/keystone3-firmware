@@ -210,18 +210,15 @@ void *GuiCreateGeneralHintBox(const void *src, const char *titleText,
 
     if (leftBtnText != NULL) {
         leftBtn = GuiCreateTextBtn(cont, leftBtnText);
-        lv_obj_align(leftBtn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
-        lv_obj_set_size(
-            leftBtn, lv_obj_get_self_width(lv_obj_get_child(leftBtn, 0)) + 60, 66);
+        lv_obj_align(leftBtn, LV_ALIGN_BOTTOM_LEFT, 36, -20);
+        lv_obj_set_size(leftBtn, lv_obj_get_self_width(lv_obj_get_child(leftBtn, 0)) + 40, 66);
         lv_obj_set_style_bg_color(leftBtn, leftColor, LV_PART_MAIN);
     }
 
     if (rightBtnText != NULL) {
         rightBtn = GuiCreateTextBtn(cont, rightBtnText);
-        lv_obj_align(rightBtn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-        lv_obj_set_size(rightBtn,
-                        lv_obj_get_self_width(lv_obj_get_child(rightBtn, 0)) + 60,
-                        66);
+        lv_obj_align(rightBtn, LV_ALIGN_BOTTOM_RIGHT, -36, -20);
+        lv_obj_set_size(rightBtn, lv_obj_get_self_width(lv_obj_get_child(rightBtn, 0)) + 40, 66);
         lv_obj_set_style_bg_color(rightBtn, rightColor, LV_PART_MAIN);
     }
 

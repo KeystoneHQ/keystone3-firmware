@@ -221,7 +221,9 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 710 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_bg_opa(btn, LV_OPA_60, LV_STATE_DEFAULT);
+#ifdef BUILD_PRODUCTION
     lv_obj_clear_flag(btn, LV_OBJ_FLAG_CLICKABLE);
+#endif
     lv_obj_add_event_cb(btn, WalletSettingHandler, LV_EVENT_CLICKED, &walletSetting);
     g_countDownTimer = lv_timer_create(CountDownTimerHandler, 1000, btn);
 }

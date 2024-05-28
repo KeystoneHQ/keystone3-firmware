@@ -329,7 +329,7 @@ static void GuiShareBackupWidget(lv_obj_t *parent)
 {
     uint16_t height = 432;
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
-    lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("single_phrase_title"), 408);
+    lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("single_phrase_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(parent, _("shamir_phrase_backup_desc"));

@@ -156,6 +156,7 @@ checksum = "cf4b9d6a944f767f8e5e0db018570623c85f3d925ac718db4e06d0187adb21c1"
 [[package]]
 name = "bitstream-io"
 version = "2.2.0"
+source = "git+https://github.com/KeystoneHQ/bitstream-io?tag=no_std@0.1.2#cc3159377ebd4e8f521aa9f3a9bc876e3b3336c1"
 dependencies = [
  "core2",
 ]

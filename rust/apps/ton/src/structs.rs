@@ -15,6 +15,7 @@ pub struct TonTransaction {
     pub comment: Option<String>,
     pub data_view: Option<String>,
     pub raw_data: String,
+    
 }
 
 impl TonTransaction {

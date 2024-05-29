@@ -58,6 +58,30 @@ pub enum StringifiedNumeric {
     Num(serde_json::Number),
 }
 
+impl TryFrom<StringifiedNumeric> for i128 {
+    type Error = String;
+
+    fn try_from(value: StringifiedNumeric) -> Result<Self, Self::Error> {
+        match value {
+            StringifiedNumeric::U256(n) => Ok(n.as_u128() as i128),
+            StringifiedNumeric::Num(n) => Ok(n.as_i64().unwrap() as i128),
+            StringifiedNumeric::String(s) => {
+                if let Ok(val) = s.parse::<i128>() {
+                    Ok(val)
+                } else if s.starts_with("0x") {
+                    U256::from_str(&s)
+                        .map(|n| n.as_u128() as i128)
+                        .map_err(|err| err.to_string())
+                } else {
+                    U256::from_dec_str(&s)
+                        .map(|n| n.as_u128() as i128)
+                        .map_err(|err| err.to_string())
+                }
+            }
+        }
+    }
+}
+
 impl TryFrom<StringifiedNumeric> for U256 {
     type Error = String;
 

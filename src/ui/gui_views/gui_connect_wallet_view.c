@@ -5,27 +5,17 @@
 #include "gui_pending_hintbox.h"
 #include "gui_lock_widgets.h"
 
-int32_t GuiConnectWalletViewInit(void)
-{
-    GuiConnectWalletInit();
-    return SUCCESS_CODE;
-}
-
-int32_t GuiConnectWalletViewDeInit(void)
-{
-    GuiConnectWalletDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiConnectWalletViewEventProcess(void* self, uint16_t usEvent, void* param, uint16_t usLen)
 {
     GUI_ASSERT(g_connectWalletView.isActive);
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiConnectWalletViewInit();
+        GuiConnectWalletInit();
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiConnectWalletViewDeInit();
+        GuiConnectWalletDeInit();
+        break;
     case GUI_EVENT_REFRESH:
         GuiConnectWalletRefresh();
         break;

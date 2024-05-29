@@ -2479,7 +2479,7 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"connect_wallet_scan", "QRコードをソフトウェアウォレットでスキャンしてください."},
     {"connect_wallet_select_network", "ネットワークを選択してください."},
     {"connect_wallet_select_network_hint", "ソフトウェアウォレット内に表示するネットワークを選択してください."},
-    {"connect_wallet_supported_networks", "サポートされているネットワーク"},
+    {"connect_wallet_supported_networks", "対応ネットワーク"},
     {"connect_wallet_supported_tokens", "サポートされているトークン"},
     {"connect_wallet_title", "ウォレットを接続する"},
     {"connect_wallet_upgrade_hint", "拡張されたソフトウェアウォレットの互換性にアクセスするために最新バージョンへアップグレードしてください."},

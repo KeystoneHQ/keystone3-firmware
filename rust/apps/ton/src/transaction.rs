@@ -81,4 +81,15 @@ mod tests {
             urlencoding::encode(&STANDARD.encode(&signature))
         );
     }
+
+    #[test]
+    fn test_parse_ston_transfer() {
+        let serial = "b5ee9c7241010301009e00011c29a9a3176656eb410000001000030101686200091c1bd942402db834b5977d2a1313119c3a3800c8e10233fa8eaf36c655ecab202faf0800000000000000000000000000010200a80f8a7ea5546de4ef815e87fb3989680800ac59ccbc7017f6d3a34e9e3f443777bcfd819fcc46f94e4c4ee291294135368b002d48cb0c90c22c52394f297b33990c2f6bbf6c425780862733961fa457f014ec02025f1050ae";
+        let serial = hex::decode(serial).unwrap();
+        let tx = parse_transaction(&serial).unwrap();
+        //true destination UQBWLOZeOAv7adGnTx-iG7vefsDP5iN8pyYncUiUoJqbRdx9
+        //transaction to: EQASODeyhIBbcGlrLvpUJiYjOHRwAZHCBGf1HV5tjKvZVsJb
+        //contract destination: EQBWLOZeOAv7adGnTx+iG7vefsDP5iN8pyYncUiUoJqbRYG4
+        println!("{:?}", tx);
+    }
 }

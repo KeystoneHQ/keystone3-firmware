@@ -200,6 +200,7 @@ dependencies = [
  "num-bigint",
  "num-integer",
  "num-traits",
+ "rust_tools",
  "serde",
  "sha2 0.10.8",
  "third_party",

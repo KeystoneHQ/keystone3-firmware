@@ -6,7 +6,7 @@ use crate::messages::traits::ParseCell;
 use crate::messages::{jetton, Comment, Operation, SigningMessage};
 use crate::vendor::cell::BagOfCells;
 use alloc::string::{String, ToString};
-use alloc::vec;
+use alloc::{format, vec};
 use serde::Serialize;
 use third_party::hex;
 use third_party::serde_json::{self, json, Value};
@@ -74,6 +74,7 @@ impl TryFrom<&SigningMessage> for TonTransaction {
                     Operation::JettonMessage(jetton_message) => match jetton_message {
                         JettonMessage::JettonTransferMessage(jetton_transfer_message) => {
                             let destination = jetton_transfer_message.destination.clone();
+                            let to = message.dest_addr_legacy.clone();
                             let amount = jettons::get_jetton_amount_text(
                                 jetton_transfer_message.amount.clone(),
                                 to.clone(),

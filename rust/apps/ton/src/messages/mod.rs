@@ -55,6 +55,7 @@ pub struct TransferMessage {
     pub bounce: bool,
     pub bounced: bool,
     pub dest_addr: String,
+    pub dest_addr_legacy: String,
     pub value: String,
     pub currency_coll: bool,
     pub ihr_fees: String,
@@ -74,7 +75,9 @@ impl ParseCell for TransferMessage {
             let bounce = parser.load_bit()?;
             let bounced = parser.load_bit()?;
             let _src_addr = parser.load_address()?;
-            let dest_addr = parser.load_address()?.to_base64_std();
+            let addr = parser.load_address()?;
+            let dest_addr = addr.to_base64_std_flags(true, false);
+            let dest_addr_legacy = addr.to_base64_std();
             let value = parser.load_coins()?.to_string();
             let coins = u64::from_str_radix(&value, 10)
                 .map_err(|_e| TonCellError::InternalError("Invalid value".to_string()))?;
@@ -107,6 +110,7 @@ impl ParseCell for TransferMessage {
                 ihr_fees,
                 fwd_fees,
                 state_init,
+                dest_addr_legacy,
                 data: data.transpose()?,
             })
         })
@@ -141,7 +145,7 @@ impl ParseCell for InternalMessage {
     where
         Self: Sized,
     {
-        cell.parse_fully(|parser| {
+        cell.parse(|parser| {
             let op_code = parser.load_u32(32)?;
             match op_code {
                 JETTON_TRANSFER => Ok(Self {

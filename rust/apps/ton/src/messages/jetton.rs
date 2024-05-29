@@ -24,7 +24,7 @@ impl ParseCell for JettonMessage {
     where
         Self: Sized,
     {
-        cell.parse_fully(|parser| {
+        cell.parse(|parser| {
             let op_code = parser.load_u32(32)?;
             match op_code {
                 JETTON_TRANSFER => {
@@ -59,10 +59,10 @@ impl ParseCell for JettonTransferMessage {
             let _op_code = parser.load_u32(32)?;
             let query_id = parser.load_u64(64)?.to_string();
             let amount = parser.load_coins()?.to_string();
-            let destination = parser.load_address()?.to_base64_std();
+            let destination = parser.load_address()?.to_base64_std_flags(true, false);
             let temp_address = parser.load_address()?;
             let response_destination = if temp_address.eq(&TonAddress::null()) {
-                Some(temp_address.to_base64_std())
+                Some(temp_address.to_base64_std_flags(true, false))
             } else {
                 None
             };

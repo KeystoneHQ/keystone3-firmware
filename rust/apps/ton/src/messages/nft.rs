@@ -15,7 +15,7 @@ impl ParseCell for NFTMessage {
     fn parse(cell: &crate::vendor::cell::ArcCell) -> Result<Self, crate::vendor::cell::TonCellError>
     where
         Self: Sized {
-        cell.parse_fully(|parser| {
+        cell.parse(|parser| {
             let op_code = parser.load_u32(32)?;
             match op_code {
                 NFT_TRANSFER => {
@@ -47,8 +47,8 @@ impl ParseCell for NFTTransferMessage {
         cell.parse_fully(|parser| {
             let _op_code = parser.load_u32(32)?;
             let query_id = parser.load_u64(64)?.to_string();
-            let new_owner_address = parser.load_address()?.to_base64_std();
-            let response_address = parser.load_address()?.to_base64_std();
+            let new_owner_address = parser.load_address()?.to_base64_std_flags(true, false);
+            let response_address = parser.load_address()?.to_base64_std_flags(true, false);
             let mut ref_index = 0;
             let custom_payload = if parser.load_bit()? {
                 let payload = Some(hex::encode(cell.reference(ref_index)?.data.clone()));

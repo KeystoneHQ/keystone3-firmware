@@ -318,11 +318,11 @@ void GuiCreateVerifyFirmwareInstructionTile(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
 
     label = GuiCreateNoticeLabel(parent, _("about_info_verify_firmware_desc"));
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     label = GuiCreateIllustrateLabel(parent, "1");
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 40);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
 
     label = GuiCreateIllustrateLabel(parent, _("about_info_verify_firmware_step1"));
     GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);

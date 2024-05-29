@@ -18,6 +18,7 @@ pub struct DisplayTonTransaction {
     comment: PtrString,
     data_view: PtrString,
     raw_data: PtrString,
+    contract_data: PtrString,
 }
 
 impl_c_ptr!(DisplayTonTransaction);
@@ -39,6 +40,11 @@ impl From<&TonTransaction> for DisplayTonTransaction {
                 .map(|v| convert_c_char(v))
                 .unwrap_or(null_mut()),
             raw_data: convert_c_char(tx.raw_data.clone()),
+            contract_data: tx
+                .contract_data
+                .clone()
+                .map(|e| convert_c_char(e))
+                .unwrap_or(null_mut()),
         }
     }
 }
@@ -51,6 +57,7 @@ impl Free for DisplayTonTransaction {
         free_str_ptr!(self.comment);
         free_str_ptr!(self.data_view);
         free_str_ptr!(self.raw_data);
+        free_str_ptr!(self.contract_data);
     }
 }
 

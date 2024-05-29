@@ -1,11 +1,15 @@
 use crate::errors::{Result, TonError};
+use crate::jettons;
+use crate::messages::jetton::JettonMessage;
+use crate::messages::nft::NFTMessage;
 use crate::messages::traits::ParseCell;
 use crate::messages::{jetton, Comment, Operation, SigningMessage};
 use crate::vendor::cell::BagOfCells;
 use alloc::string::{String, ToString};
+use alloc::vec;
 use serde::Serialize;
 use third_party::hex;
-use third_party::serde_json::{self, Value};
+use third_party::serde_json::{self, json, Value};
 
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct TonTransaction {
@@ -15,7 +19,7 @@ pub struct TonTransaction {
     pub comment: Option<String>,
     pub data_view: Option<String>,
     pub raw_data: String,
-    
+    pub contract_data: Option<String>,
 }
 
 impl TonTransaction {
@@ -67,28 +71,60 @@ impl TryFrom<&SigningMessage> for TonTransaction {
                         comment: Some(comment),
                         ..Default::default()
                     }),
-                    Operation::JettonMessage(jetton_message) => Ok(Self {
-                        to,
-                        amount,
-                        action,
-                        data_view: Some(
-                            serde_json::to_value(jetton_message)
-                                .map_err(|e| TonError::TransactionJsonError(e.to_string()))?
-                                .to_string(),
-                        ),
-                        ..Default::default()
-                    }),
-                    Operation::NFTMessage(nft_message) => Ok(Self {
-                        to,
-                        amount,
-                        action,
-                        data_view: Some(
-                            serde_json::to_value(nft_message)
-                                .map_err(|e| TonError::TransactionJsonError(e.to_string()))?
-                                .to_string(),
-                        ),
-                        ..Default::default()
-                    }),
+                    Operation::JettonMessage(jetton_message) => match jetton_message {
+                        JettonMessage::JettonTransferMessage(jetton_transfer_message) => {
+                            let destination = jetton_transfer_message.destination.clone();
+                            let amount = jettons::get_jetton_amount_text(
+                                jetton_transfer_message.amount.clone(),
+                                to.clone(),
+                            );
+                            Ok(Self {
+                                to: destination,
+                                amount,
+                                action,
+                                data_view: Some(
+                                    serde_json::to_value(&jetton_transfer_message)
+                                        .map_err(|e| TonError::TransactionJsonError(e.to_string()))?
+                                        .to_string(),
+                                ),
+                                contract_data: Some(
+                                    json!([
+                                        {"title": "Contract Address", "value": to.clone()}
+                                    ])
+                                    .to_string(),
+                                ),
+                                ..Default::default()
+                            })
+                        }
+                        _ => Err(TonError::InvalidTransaction(
+                            "invalid jetton message".to_string(),
+                        )),
+                    },
+                    Operation::NFTMessage(nft_message) => match nft_message {
+                        NFTMessage::NFTTransferMessage(nft_transfer_message) => {
+                            let destination = nft_transfer_message.new_owner_address.clone();
+                            Ok(Self {
+                                to: destination,
+                                amount,
+                                action,
+                                data_view: Some(
+                                    serde_json::to_value(nft_transfer_message)
+                                        .map_err(|e| TonError::TransactionJsonError(e.to_string()))?
+                                        .to_string(),
+                                ),
+                                contract_data: Some(
+                                    json!({
+                                        "nft_contract_address": to.clone()
+                                    })
+                                    .to_string(),
+                                ),
+                                ..Default::default()
+                            })
+                        }
+                        _ => Err(TonError::InvalidTransaction(
+                            "invalid nft message".to_string(),
+                        )),
+                    },
                     Operation::OtherMessage(other_message) => Ok(Self {
                         to,
                         amount,

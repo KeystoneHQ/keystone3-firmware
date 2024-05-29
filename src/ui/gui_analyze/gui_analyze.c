@@ -1643,7 +1643,6 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
         lv_obj_set_style_text_opa(tab_btns, 255, LV_PART_MAIN | LV_STATE_CHECKED);
         lv_obj_set_style_text_opa(tab_btns, 150, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_width(tab_btns, width);
-
         int childCnt = lv_obj_get_child_cnt(g_analyzeTabview.obj[i]);
         int yOffset = 12;
         for (int j = 0; j < childCnt; j++) {

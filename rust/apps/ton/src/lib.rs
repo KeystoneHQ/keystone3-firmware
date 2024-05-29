@@ -15,6 +15,7 @@ pub mod structs;
 pub mod transaction;
 mod utils;
 mod vendor;
+mod jettons;
 
 pub fn ton_public_key_to_address(pk: Vec<u8>) -> Result<String> {
     TonWallet::derive_default(vendor::wallet::WalletVersion::V4R2, pk)

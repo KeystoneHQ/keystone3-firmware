@@ -22,6 +22,7 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTonTransactio
 static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
 static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
 static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
+static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
 static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
 static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
 
@@ -78,7 +79,10 @@ void GuiTonTxOverview(lv_obj_t *parent, void *totalData) {
     lastView = CreateOverviewActionView(parent, txData, lastView);
     lastView = CreateOverviewDestinationView(parent, txData, lastView);
     if(txData->comment != NULL) {
-        CreateOverviewCommentView(parent, txData, lastView);
+        lastView = CreateOverviewCommentView(parent, txData, lastView);
+    }
+    if(txData->contract_data != NULL) {
+        lastView = CreateOverviewContractDataView(parent, txData, lastView);
     }
 }
 
@@ -154,18 +158,42 @@ static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTrans
 }
 
 static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView) {
+    lv_obj_t *container = createContentContainer(parent, 408, 62);
+    lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
+    lv_obj_t *label = GuiCreateIllustrateLabel(container, _("From"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+
+    label = GuiCreateIllustrateLabel(container, data->comment);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54);
+    lv_obj_set_width(label, 360);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+
+    uint16_t height = lv_obj_get_height(label);
+
+    lv_obj_set_height(container, height + 32);
+    lv_obj_update_layout(container);
+
+    return container;
+}
+
+static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView){
+    cJSON *contractData = cJSON_Parse(data->contract_data);
+    cJSON_GetArraySize(contractData);
+    lv_obj_t *container = createContentContainer(parent, 408, 62);
+    lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    return container;
 }
 
 static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView) {
     lv_obj_t *container = createContentContainer(parent, 408, 244);
-    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
 
     lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Data View"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     lv_label_set_recolor(label, true);
-    lv_style_set_text_color(label, ORANGE_COLOR);
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
 
     label = GuiCreateTextLabel(container, data->data_view);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 62);
@@ -175,8 +203,8 @@ static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonTransacti
 }
 static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView) {
     lv_obj_t *container = createContentContainer(parent, 408, 244);
-    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
     if(lastView != NULL) {
         lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
@@ -184,10 +212,12 @@ static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayTonTransactio
     lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Raw Data"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     lv_label_set_recolor(label, true);
-    lv_style_set_text_color(label, ORANGE_COLOR);
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
 
     label = GuiCreateTextLabel(container, data->raw_data);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 62);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+
+    return container;
 }

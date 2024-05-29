@@ -33,6 +33,7 @@ const LTC_PREFIX: &str = "m/49'/2'/0'";
 const BCH_PREFIX: &str = "m/44'/145'/0'";
 const DASH_PREFIX: &str = "m/44'/5'/0'";
 const SOL_PREFIX: &str = "m/44'/501'";
+const APT_PREFIX: &str = "m/44'/637'";
 
 pub fn generate_crypto_multi_accounts(
     master_fingerprint: [u8; 4],
@@ -54,18 +55,18 @@ pub fn generate_crypto_multi_accounts(
         DASH_PREFIX.to_string(),
     ];
     for ele in extended_public_keys {
-        match ele.get_path() {
-            _path if _path.to_string().to_lowercase().starts_with(SOL_PREFIX) => {
+        match ele.get_path().to_string().to_lowercase() {
+            _path if _path.starts_with(SOL_PREFIX) || _path.starts_with(APT_PREFIX) => {
                 keys.push(generate_ed25519_key(master_fingerprint, ele.clone(), None)?);
             }
-            _path if k1_keys.contains(&_path.to_string().to_lowercase()) => {
+            _path if k1_keys.contains(&_path) => {
                 keys.push(generate_k1_normal_key(
                     master_fingerprint,
                     ele.clone(),
                     None,
                 )?);
             }
-            _path if _path.to_string().to_lowercase().eq(ETH_STANDARD_PREFIX) => {
+            _path if _path.eq(ETH_STANDARD_PREFIX) => {
                 keys.push(generate_k1_normal_key(
                     master_fingerprint,
                     ele.clone(),
@@ -78,10 +79,7 @@ pub fn generate_crypto_multi_accounts(
                 )?);
             }
             _path
-                if _path
-                    .to_string()
-                    .to_lowercase()
-                    .starts_with(ETH_LEDGER_LIVE_PREFIX) =>
+                if _path.starts_with(ETH_LEDGER_LIVE_PREFIX) =>
             {
                 keys.push(generate_eth_ledger_live_key(
                     master_fingerprint,

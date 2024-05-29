@@ -109,8 +109,8 @@ static const lv_img_dsc_t *g_ethWalletCoinArray[4] = {
 };
 
 static const lv_img_dsc_t *g_okxWalletCoinArray[] = {
-    &coinBtc, &coinEth, &coinOkb, &coinSol, &coinBnb,
-    &coinTrx, &coinBch, &coinLtc, &coinDash,
+    &coinBtc, &coinEth, &coinOkb, &coinSol, &coinApt,
+    &coinBnb, &coinTrx, &coinBch, &coinLtc, &coinDash,
 };
 
 static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {

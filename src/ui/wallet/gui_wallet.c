@@ -426,15 +426,16 @@ UREncodeResult *GuiGetOkxWalletData(void)
     // + dash 1
     // + bch 1
     // + sol 21
+    // + apt 10
 
 #ifndef BTC_ONLY
 
-    ExtendedPublicKey keys[39];
+    ExtendedPublicKey keys[49];
     public_keys->data = keys;
-    public_keys->size = 39;
+    public_keys->size = 49;
     for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
-        keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = SRAM_MALLOC(BUFFER_SIZE_64);
-        snprintf_s(keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path, BUFFER_SIZE_64, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
+        keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path, BUFFER_SIZE_32, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
         keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].xpub = GetCurrentAccountPublicKey(i);
     }
 
@@ -470,16 +471,23 @@ UREncodeResult *GuiGetOkxWalletData(void)
 
     // SOLBip44
     for (uint8_t i = XPUB_TYPE_SOL_BIP44_0; i <= XPUB_TYPE_SOL_BIP44_9; i++, index++) {
-        keys[index].path = SRAM_MALLOC(BUFFER_SIZE_64);
-        snprintf_s(keys[index].path, BUFFER_SIZE_64, "m/44'/501'/%d'", i - XPUB_TYPE_SOL_BIP44_0);
+        keys[index].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[index].path, BUFFER_SIZE_32, "m/44'/501'/%d'", i - XPUB_TYPE_SOL_BIP44_0);
         keys[index].xpub = GetCurrentAccountPublicKey(i);
     }
 
     // SOLBip44Change
     for (uint8_t i = XPUB_TYPE_SOL_BIP44_CHANGE_0; i <= XPUB_TYPE_SOL_BIP44_CHANGE_9; i++, index++) {
-        keys[index].path = SRAM_MALLOC(BUFFER_SIZE_64);
-        snprintf_s(keys[index].path, BUFFER_SIZE_64, "m/44'/501'/%d'/0'", i - XPUB_TYPE_SOL_BIP44_CHANGE_0);
+        keys[index].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[index].path, BUFFER_SIZE_32, "m/44'/501'/%d'/0'", i - XPUB_TYPE_SOL_BIP44_CHANGE_0);
         keys[index].xpub = GetCurrentAccountPublicKey(i);
+    }
+
+    // Aptos
+    for (uint8_t i = 0; i < 10; i++, index++) {
+        keys[index].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[index].path, BUFFER_SIZE_32, "m/44'/637'/%u'/0'/0'", i);
+        keys[index].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + i);
     }
 
 #else

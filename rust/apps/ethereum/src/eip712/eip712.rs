@@ -638,35 +638,39 @@ pub fn encode_field(
                                 })?;
                             encode_eip712_type(Token::Bytes(data.0.to_vec()))
                         }
-                        ParamType::Int(_) => {
+                        ParamType::Int(size) => {
                             let val: StringifiedNumeric = serde_json::from_value(value.clone())
                                 .map_err(|err| {
                                     Eip712Error::Message(format!("serde_json::from_value {err}"))
                                 })?;
-                            let parse_u256 = |val: &str| -> Result<U256, Eip712Error> {
-                                if val.starts_with('-') {
-                                    let positive_val = val.trim_start_matches('-');
-                                    let mut u256_val: U256 =
-                                        positive_val.parse().map_err(|err| {
+
+                            match size {
+                                128 => {
+                                    let val: i128 = val.try_into().map_err(|err| {
+                                        Eip712Error::Message(format!("Failed to parse int {err}"))
+                                    })?;
+                                    if val < 0 {
+                                        let positive_val = val.wrapping_neg();
+                                        let u256_val = U256::from(positive_val);
+                                        let val_as_u256 = !u256_val + U256::one();
+                                        Token::Uint(val_as_u256)
+                                    } else {
+                                        let val: U256 = val.try_into().map_err(|err| {
                                             Eip712Error::Message(format!(
                                                 "Failed to parse int {err}"
                                             ))
                                         })?;
-                                    u256_val = !u256_val + U256::one();
-                                    Ok(u256_val)
-                                } else {
-                                    val.parse().map_err(|err| {
-                                        Eip712Error::Message(format!("Failed to parse int {err}"))
-                                    })
+                                        Token::Uint(val)
+                                    }
                                 }
-                            };
-                            let val: U256 = match val {
-                                StringifiedNumeric::String(s) => parse_u256(&s)?,
-                                StringifiedNumeric::U256(u) => u,
-                                StringifiedNumeric::Num(n) => parse_u256(&n.to_string())?,
-                            };
+                                _ => {
+                                    let val: U256 = val.try_into().map_err(|err| {
+                                        Eip712Error::Message(format!("Failed to parse int {err}"))
+                                    })?;
 
-                            Token::Uint(val)
+                                    Token::Uint(val)
+                                }
+                            }
                         }
                         ParamType::Uint(_) => {
                             // uints are commonly stringified due to how ethers-js encodes
@@ -1378,7 +1382,7 @@ mod tests {
         let hash = typed_data.encode_eip712().unwrap();
         assert_eq!(
             hex::encode(&hash[..]),
-            "c6093cdd3eeac761c7715cd251fc804e576d7edc90e871ac16a78b83a9da4184",
+            "3ffb3216a4dd87005feef7fa50a2f42372653c31d0b2828e8b51fb03b1424106",
         )
     }
 }

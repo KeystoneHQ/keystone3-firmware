@@ -186,6 +186,7 @@ void GuiWalletRecoveryUpdateKeyboard(void)
 // share phrase
 void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount)
 {
+    uint16_t height = 296;
     g_inputWordsCnt = wordAmount;
     lv_keyboard_user_mode_t kbMode = GuiGetMnemonicKbType(wordAmount);
 
@@ -206,8 +207,10 @@ void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount)
     lv_label_set_recolor(label, true);
     lv_label_set_text_fmt(label, _("import_wallet_ssb_desc_fmt"), g_recoveryMkb->wordCnt, g_recoveryMkb->currentSlice + 1);
     g_recoveryMkb->descLabel = label;
+    lv_obj_refr_size(label);
+    height -= lv_obj_get_self_height(label);
 
-    lv_obj_set_size(g_recoveryMkb->cont, 408, 236);
+    lv_obj_set_size(g_recoveryMkb->cont, 408, height);
     lv_obj_align_to(g_recoveryMkb->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
     lv_btnmatrix_set_selected_btn(g_recoveryMkb->btnm, g_recoveryMkb->currentId);
     // lv_label_set_text_fmt(g_recoveryTitle, "%s #F5870A %d#", _("import_wallet_ssb_title"), g_recoveryMkb->currentSlice + 1);

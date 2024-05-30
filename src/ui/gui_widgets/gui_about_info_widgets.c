@@ -47,7 +47,8 @@ void GuiUpdateCheckSumPercent(uint8_t percent)
     lv_obj_t *label = lv_obj_get_child(g_noticeHintBox, lv_obj_get_child_cnt(g_noticeHintBox) - 1);
     lv_label_set_text_fmt(label, "%d%%", percent);
     if (percent == 100) {
-        GUI_DEL_OBJ(g_noticeHintBox)
+        GuiDeleteAnimHintBox();
+        g_noticeHintBox = NULL;
         lv_obj_clean(g_firmwareVerifyCont);
         lv_obj_t *label = GuiCreateTitleLabel(g_firmwareVerifyCont, _("about_info_verify_checksum_title"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);

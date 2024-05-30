@@ -1,6 +1,6 @@
 use core::ptr::null_mut;
 
-use app_ton::structs::TonTransaction;
+use app_ton::structs::{TonProof, TonTransaction};
 use common_rust_c::{
     check_and_free_ptr,
     free::Free,
@@ -62,3 +62,35 @@ impl Free for DisplayTonTransaction {
 }
 
 make_free_method!(TransactionParseResult<DisplayTonTransaction>);
+
+#[repr(C)]
+pub struct DisplayTonProof {
+    pub domain: PtrString,
+    pub payload: PtrString,
+    pub address: PtrString,
+    pub raw_message: PtrString,
+}
+
+impl_c_ptr!(DisplayTonProof);
+
+impl From<&TonProof> for DisplayTonProof {
+    fn from(tx: &TonProof) -> Self {
+        DisplayTonProof {
+            domain: convert_c_char(tx.domain.clone()),
+            payload: convert_c_char(tx.payload.clone()),
+            address: convert_c_char(tx.address.clone()),
+            raw_message: convert_c_char(tx.raw_message.clone()),
+        }
+    }
+}
+
+impl Free for DisplayTonProof {
+    fn free(&self) {
+        free_str_ptr!(self.domain);
+        free_str_ptr!(self.payload);
+        free_str_ptr!(self.address);
+        free_str_ptr!(self.raw_message);
+    }
+}
+
+make_free_method!(TransactionParseResult<DisplayTonProof>);

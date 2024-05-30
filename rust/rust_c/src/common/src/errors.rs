@@ -184,6 +184,7 @@ pub enum ErrorCodes {
     TonUnknownError = 1300,
     TonMnemonicError,
     TonTransactionError,
+    InvalidProof,
     TonTransactionJsonError,
     AddressError,
 }
@@ -441,6 +442,7 @@ impl From<&TonError> for ErrorCodes {
             TonError::TransactionJsonError(_) => Self::TonTransactionJsonError,
             TonError::AddressError(_) => Self::AddressError,
             TonError::InvalidTransaction(_) => Self::TonTransactionError,
+            TonError::InvalidProof(_) => Self::InvalidProof,
         }
     }
 }

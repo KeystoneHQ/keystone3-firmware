@@ -10,11 +10,17 @@ use alloc::{
 };
 use app_ton::mnemonic::ton_mnemonic_validate;
 use common_rust_c::{
-    extract_ptr_with_type, ffi::VecFFI, impl_c_ptr, structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult}, types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR}, ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT}, utils::recover_c_char
+    extract_ptr_with_type,
+    ffi::VecFFI,
+    impl_c_ptr,
+    structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult},
+    types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR},
+    ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
+    utils::recover_c_char,
 };
 use cty::c_char;
 use rust_tools::convert_c_char;
-use structs::DisplayTonTransaction;
+use structs::{DisplayTonProof, DisplayTonTransaction};
 use third_party::{
     hex,
     ur_registry::{
@@ -48,6 +54,21 @@ pub extern "C" fn ton_parse_transaction(
 }
 
 #[no_mangle]
+pub extern "C" fn ton_parse_proof(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayTonProof>> {
+    let ton_tx = extract_ptr_with_type!(ptr, TonSignRequest);
+
+    let serial = ton_tx.get_sign_data();
+    let tx = app_ton::transaction::parse_proof(&serial);
+    match tx {
+        Ok(tx) => {
+            let display_tx = DisplayTonProof::from(&tx);
+            TransactionParseResult::success(display_tx.c_ptr()).c_ptr()
+        }
+        Err(e) => TransactionParseResult::from(e).c_ptr(),
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn ton_check_transaction(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
@@ -69,6 +90,41 @@ pub extern "C" fn ton_sign_transaction(
         sk[i] = seed[i]
     }
     let result = app_ton::transaction::sign_transaction(&ton_tx.get_sign_data(), sk);
+    match result {
+        Ok(sig) => {
+            let ton_signature = TonSignature::new(
+                ton_tx.get_request_id(),
+                sig.to_vec(),
+                Some("Keystone".to_string()),
+            );
+            match ton_signature.try_into() {
+                Err(e) => UREncodeResult::from(e).c_ptr(),
+                Ok(v) => UREncodeResult::encode(
+                    v,
+                    TonSignature::get_registry_type().get_type(),
+                    FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                )
+                .c_ptr(),
+            }
+        }
+        Err(e) => UREncodeResult::from(e).c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn ton_sign_proof(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+) -> PtrT<UREncodeResult> {
+    let ton_tx = extract_ptr_with_type!(ptr, TonSignRequest);
+    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    rust_tools::debug!(format!("seed: {}", hex::encode(seed)));
+    let mut sk: [u8; 32] = [0; 32];
+    for i in 0..32 {
+        sk[i] = seed[i]
+    }
+    let result = app_ton::transaction::sign_proof(&ton_tx.get_sign_data(), sk);
     match result {
         Ok(sig) => {
             let ton_signature = TonSignature::new(

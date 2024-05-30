@@ -18,6 +18,8 @@ pub enum TonError {
     TransactionError(#[from] TonCellError),
     #[error("Invalid TON Transaction, {0}")]
     InvalidTransaction(String),
+    #[error("Invalid TON Proof, {0}")]
+    InvalidProof(String),
     #[error("Convert Transaction Json error: {0}")]
     TransactionJsonError(String),
 }

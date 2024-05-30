@@ -1,8 +1,11 @@
 use crate::errors::Result;
-use crate::structs::TonTransaction;
+use crate::structs::{TonProof, TonTransaction};
+use crate::utils::sha256;
 use crate::vendor::cell::BagOfCells;
+use alloc::{format, vec};
 use alloc::vec::Vec;
 use third_party::cryptoxide::ed25519;
+use third_party::hex;
 
 pub fn parse_transaction(serial: &[u8]) -> Result<TonTransaction> {
     TonTransaction::parse_hex(serial)
@@ -22,15 +25,34 @@ pub fn sign_transaction(serial: &[u8], sk: [u8; 32]) -> Result<[u8; 64]> {
     Ok(signature)
 }
 
+pub fn parse_proof(serial: &[u8]) -> Result<TonProof> {
+    TonProof::parse_hex(serial)
+}
+
+pub fn sign_proof(serial: &[u8], sk: [u8; 32]) -> Result<[u8; 64]> {
+    let message = [vec![0xff, 0xff], "ton-connect".as_bytes().to_vec(), sha256(serial)].concat();
+    rust_tools::debug!(format!("message: {:?}", hex::encode(&message)));
+    let hash = sha256(&message);
+    rust_tools::debug!(format!("hash: {:?}", hex::encode(&hash)));
+    let (keypair, _) = ed25519::keypair(&sk);
+    rust_tools::debug!(format!("sk: {:?}", hex::encode(&keypair)));
+    let signature = ed25519::signature(&hash, &keypair);
+    rust_tools::debug!(format!("signature: {:?}", hex::encode(&signature)));
+    Ok(signature)
+}
+
 #[cfg(test)]
 mod tests {
     extern crate std;
     use base64::{engine::general_purpose::STANDARD, Engine};
+    use num_traits::sign;
     use std::println;
     use third_party::hex;
     use urlencoding;
 
     use crate::{transaction::parse_transaction, vendor::cell::BagOfCells};
+
+    use super::sign_proof;
 
     #[test]
     fn test_parse_transaction() {
@@ -91,5 +113,21 @@ mod tests {
         //transaction to: EQASODeyhIBbcGlrLvpUJiYjOHRwAZHCBGf1HV5tjKvZVsJb
         //contract destination: EQBWLOZeOAv7adGnTx+iG7vefsDP5iN8pyYncUiUoJqbRYG4
         println!("{:?}", tx);
+    }
+
+    #[test]
+    fn test_sign_ton_proof() {
+        let serial = hex::decode("746f6e2d70726f6f662d6974656d2d76322f00000000b5232c324308b148e53ca5ecce6430bdaefdb1095e02189cce587e915fc053b015000000746b6170702e746f6e706f6b65722e6f6e6c696e65142b5866000000003735323061653632393534653666666330303030303030303636353765333639").unwrap();
+        //b4933a592c18291855b30ea5cc8da7cb20da17936df875f018c6027f2103f6ad
+        let signature = sign_proof(&serial, [0u8; 32]);
+        println!("{}", hex::encode(signature.unwrap()));
+
+        // ffff746f6e2d636f6e6e6563745adfd8ce7eeb56a65c82002216e042f69abe0dfb40b13b1096b5a817e8f9e8d7
+        // e87aadb24661f2b3b517a4a3b24cda5aef17dc381bd99cc971811c4c096385b3
+        // f7dfec305cd324692fcb73ce55700724a86b22e3f74d3f06b6712da2f5cfd1b7cfd4a0b1944311951b4c4829dee97dd2fbef989afbcc5756408daa95e6ad1d02
+
+        // ffff746f6e2d636f6e6e6563745adfd8ce7eeb56a65c82002216e042f69abe0dfb40b13b1096b5a817e8f9e8d7
+        // e87aadb24661f2b3b517a4a3b24cda5aef17dc381bd99cc971811c4c096385b3
+        // f7dfec305cd324692fcb73ce55700724a86b22e3f74d3f06b6712da2f5cfd1b7cfd4a0b1944311951b4c4829dee97dd2fbef989afbcc5756408daa95e6ad1d02
     }
 }

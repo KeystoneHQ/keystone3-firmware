@@ -4,6 +4,7 @@ use crate::messages::jetton::JettonMessage;
 use crate::messages::nft::NFTMessage;
 use crate::messages::traits::ParseCell;
 use crate::messages::{jetton, Comment, Operation, SigningMessage};
+use crate::vendor::address::TonAddress;
 use crate::vendor::cell::BagOfCells;
 use alloc::string::{String, ToString};
 use alloc::{format, vec};
@@ -135,5 +136,76 @@ impl TryFrom<&SigningMessage> for TonTransaction {
                 }
             }
         }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct TonProof {
+    pub domain: String,
+    pub payload: String,
+    pub address: String,
+    pub raw_message: String,
+}
+
+impl TonProof {
+    pub fn parse_hex(serial: &[u8]) -> Result<Self> {
+        let header_len = "ton-proof-item-v2/".len();
+        //header + workchain + address_hash_part + domainLen + timestamp;
+        let min_len = header_len + 4 + 32 + 4 + 8;
+        let serial_len = serial.len();
+        if serial_len < min_len {
+            return Err(TonError::InvalidProof("proof is too short".to_string()));
+        }
+        let remaining = &serial[header_len..];
+
+        //parse address
+        let mut workchain_bytes = [0u8; 4];
+        for i in 0..4 {
+            workchain_bytes[i] = remaining[i];
+        }
+        let workchain = i32::from_be_bytes(workchain_bytes);
+        let mut address_hash_parts = [0u8; 32];
+        for i in 0..32 {
+            address_hash_parts[i] = remaining[i + 4];
+        }
+        let address =
+            TonAddress::new(workchain, &address_hash_parts).to_base64_std_flags(true, false);
+
+        //parse domain
+        let mut domain_len_bytes = [0u8; 4];
+        for i in 0..4 {
+            domain_len_bytes[i] = remaining[i + 36];
+        }
+        let domain_len = i32::from_le_bytes(domain_len_bytes);
+
+        if serial_len < 40 + domain_len as usize {
+            return Err(TonError::InvalidProof("proof is too short".to_string()));
+        }
+
+        let domain_bytes = &remaining[40..(40 + domain_len as usize)];
+        let domain = String::from_utf8(domain_bytes.to_vec())
+            .map_err(|e| TonError::InvalidProof(e.to_string()))?;
+
+        let mut index = 40 + domain_len;
+
+        let mut timestamp_bytes = [0u8; 8];
+        for i in 0..8 {
+            timestamp_bytes[i] = remaining[i + 40 + domain_len as usize];
+        }
+        index = index + 8;
+        // need to transform to date time to display
+        let _timestamp = i64::from_le_bytes(timestamp_bytes);
+
+        let payload_bytes = &remaining[index as usize..];
+
+        let payload = String::from_utf8(payload_bytes.to_vec())
+            .map_err(|e| TonError::InvalidProof(e.to_string()))?;
+
+        Ok(Self {
+            domain,
+            payload,
+            address,
+            raw_message: hex::encode(serial),
+        })
     }
 }

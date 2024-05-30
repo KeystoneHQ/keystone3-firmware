@@ -224,11 +224,11 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_TON_SIGNPROOF,
 #ifndef COMPILE_SIMULATOR
-        "",
+        "{\"name\":\"btc_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonProofOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Raw Data\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonProofRawData\"}]}]}",
 #else
-        PC_SIMULATOR_PATH "/page_ton_message.json",
+        PC_SIMULATOR_PATH "/page_ton_proof.json",
 #endif
-        GuiGetTonGUIData,
+        GuiGetTonProofGUIData,
         NULL,
         FreeArMemory,
     },
@@ -1192,6 +1192,10 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiTonTxOverview;
     } else if (!strcmp(funcName, "GuiTonTxRawData")) {
         return GuiTonTxRawData;
+    } else if (!strcmp(funcName, "GuiTonProofOverview")) {
+        return GuiTonProofOverview;
+    } else if (!strcmp(funcName, "GuiTonProofRawData")) {
+        return GuiTonProofRawData;
     }
 #endif
     return NULL;

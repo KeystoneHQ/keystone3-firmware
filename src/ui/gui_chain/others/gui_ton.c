@@ -11,9 +11,17 @@
         g_parseResult = NULL;                                               \
     }
 
+#define CHECK_FREE_PARSE_PROOF_RESULT(result)                                     \
+    if (result != NULL)                                                     \
+    {                                                                       \
+        free_TransactionParseResult_DisplayTonProof(g_proofParseResult);   \
+        g_parseResult = NULL;                                               \
+    }
+
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
+static void *g_proofParseResult = NULL;
 static bool g_isMulti = false;
 static ViewType g_viewType = ViewTypeUnKnown;
 
@@ -50,6 +58,23 @@ UREncodeResult *GuiGetTonSignQrCodeData(void)
     return encodeResult;
 }
 
+UREncodeResult *GuiGetTonProofSignQrCodeData(void)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    UREncodeResult *encodeResult;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        uint8_t seed[64];
+        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        encodeResult = ton_sign_proof(data, seed, 64);
+        ClearSecretCache();
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+    SetLockScreen(enable);
+    return encodeResult;
+}
+
 PtrT_TransactionCheckResult GuiGetTonCheckResult(void)
 {
     uint8_t mfp[4];
@@ -67,6 +92,17 @@ void *GuiGetTonGUIData(void) {
         g_parseResult = (void *)parseResult;
     } while (0);
     return g_parseResult;
+}
+
+void *GuiGetTonProofGUIData(void) {
+    CHECK_FREE_PARSE_PROOF_RESULT(g_proofParseResult);
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        PtrT_TransactionParseResult_DisplayTonProof parseResult = ton_parse_proof(data);
+        CHECK_CHAIN_BREAK(parseResult);
+        g_proofParseResult = (void *)parseResult;
+    } while (0);
+    return g_proofParseResult;
 }
 
 void GuiTonTxOverview(lv_obj_t *parent, void *totalData) {
@@ -220,4 +256,67 @@ static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayTonTransactio
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
 
     return container;
+}
+
+
+void GuiTonProofOverview(lv_obj_t *parent, void *totalData){
+    DisplayTonProof *txData = (DisplayTonProof *)totalData;
+    lv_obj_set_size(parent, 408, 444);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+
+    lv_obj_t *container = createContentContainer(parent, 408, 382);
+    lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
+
+    lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Domain"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+    lv_label_set_recolor(label, true);
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+
+    label = GuiCreateTextLabel(container, txData->domain);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 62);
+    lv_obj_set_width(label, 360);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+
+    label = GuiCreateIllustrateLabel(container, _("Address"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 100);
+    lv_label_set_recolor(label, true);
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+
+    label = GuiCreateTextLabel(container, txData->address);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 138);
+    lv_obj_set_width(label, 360);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+
+    label = GuiCreateIllustrateLabel(container, _("Payload"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 214);
+    lv_label_set_recolor(label, true);
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+
+    label = GuiCreateTextLabel(container, txData->payload);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 252);
+    lv_obj_set_width(label, 360);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+
+}
+void GuiTonProofRawData(lv_obj_t *parent, void *totalData){
+    DisplayTonProof *txData = (DisplayTonProof *)totalData;
+    lv_obj_set_size(parent, 408, 444);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+
+    lv_obj_t *container = createContentContainer(parent, 408, 382);
+    lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
+
+    lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Raw Data"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+    lv_label_set_recolor(label, true);
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+
+    label = GuiCreateTextLabel(container, txData->raw_message);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 62);
+    lv_obj_set_width(label, 360);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
 }

@@ -290,7 +290,7 @@ static void GuiImportBackupWidget(lv_obj_t *parent)
         {.obj = GuiCreateImg(parent, &imgArrowRight), .align = LV_ALIGN_DEFAULT, .position = {372, 26}},
     };
 
-    lv_obj_t *importButton = GuiCreateButton(parent, 432, 156, table, 3, SelectImportShareHandler, NULL);
+    lv_obj_t *importButton = GuiCreateButton(parent, 432, 156, importTable, 3, SelectImportShareHandler, NULL);
     lv_obj_align_to(importButton, button, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
 }
 

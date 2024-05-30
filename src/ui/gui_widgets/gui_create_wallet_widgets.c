@@ -322,7 +322,7 @@ void GuiCreateWalletInit(uint8_t walletMethod)
         GuiImportBackupWidget(tile);
     }
 
-    g_createWalletTileView.currentTile = CREATE_WALLET_BACKUPFROM;
+    g_createWalletTileView.currentTile = CREATE_WALLET_SETPIN;
     g_createWalletTileView.tileView = tileView;
     g_createWalletTileView.cont = cont;
     g_createWalletTileView.walletMethod = walletMethod;

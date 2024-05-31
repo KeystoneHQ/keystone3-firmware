@@ -22,9 +22,9 @@ pub mod keplr;
 pub mod metamask;
 pub mod okx;
 pub mod solana;
-pub mod xbull;
 pub mod sui;
 mod utils;
+pub mod xbull;
 pub mod xrp_toolkit;
 
 //TODO: get these value from device

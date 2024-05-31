@@ -41,3 +41,30 @@ impl From<serde_json::Error> for StellarError {
         ))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_stellar_error() {
+        let err = StellarError::AddressError("test".to_string());
+        assert_eq!(err.to_string(), "meet error when encoding address: test");
+        let err = StellarError::KeystoreError("test".to_string());
+        assert_eq!(err.to_string(), "keystore operation failed, reason: test");
+        let err = StellarError::InvalidData("test".to_string());
+        assert_eq!(err.to_string(), "Meet invalid data when reading `test`");
+        let err = StellarError::ParseTxError("test".to_string());
+        assert_eq!(
+            err.to_string(),
+            "Could not parse transaction, reason: `test`"
+        );
+    }
+
+    #[test]
+    fn test_stellar_error_from() {
+        let err = hex::FromHexError::InvalidHexCharacter { c: 'a', index: 0 };
+        let err = StellarError::from(err);
+        assert_eq!(err.to_string(), "Meet invalid data when reading `hex operation failed Invalid character 'a' at position 0`");
+    }
+}

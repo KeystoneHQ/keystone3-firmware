@@ -405,7 +405,7 @@ static void CloseArHintbox(void)
 
 static void UpdateManageWalletState(bool needUpdate)
 {
-    char tempBuf[BUFFER_SIZE_16] = {0};
+    char tempBuf[BUFFER_SIZE_32] = {0};
     uint8_t selectCnt = 0;
     g_isManageOpen = false;
     int total = 0;
@@ -427,7 +427,7 @@ static void UpdateManageWalletState(bool needUpdate)
             lv_obj_clear_state(g_walletState[i].checkBox, LV_STATE_CHECKED);
         }
     }
-    snprintf_s(tempBuf, BUFFER_SIZE_16, _("home_select_coin_count_fmt"), selectCnt, total);
+    snprintf_s(tempBuf, sizeof(tempBuf), _("home_select_coin_count_fmt"), selectCnt, total);
     lv_label_set_text(g_manageWalletLabel, tempBuf);
     if (needUpdate) {
         if (memcmp(g_walletState, g_walletBakState, sizeof(g_walletState))) {

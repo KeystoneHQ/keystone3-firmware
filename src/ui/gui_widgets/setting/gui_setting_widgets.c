@@ -120,16 +120,8 @@ void DelCurrCloseToSubtopViewHandler(lv_event_t *e)
 
 void GuiWalletResetPassWordHintBox(void)
 {
-    lv_obj_t *label;
-    g_noticeWindow = GuiCreateHintBox(386);
-    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgWarn);
-    lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 462);
-    label = GuiCreateLittleTitleLabel(g_noticeWindow, _("change_passcode_warning_title"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 558);
-    label = GuiCreateIllustrateLabel(g_noticeWindow, _("change_passcode_warning_desc"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 610);
-    lv_obj_t *btn = GuiCreateTextBtn(g_noticeWindow, _("got_it"));
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
+    g_noticeWindow = GuiCreateConfirmHintBox(&imgWarn, _("change_passcode_warning_title"), _("change_passcode_warning_desc"), NULL, _("got_it"), ORANGE_COLOR);
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
     lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 }
 

@@ -1,5 +1,5 @@
 #include "gui.h"
-
+#include "gui_obj.h"
 #include "gui_views.h"
 #include "gui_status_bar.h"
 #include "gui_keyboard.h"
@@ -327,18 +327,21 @@ static void MnemonicConfirmHandler(lv_event_t * e)
 
 static void GuiShareBackupWidget(lv_obj_t *parent)
 {
+    uint16_t height = 432;
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_phrase_title"));
+    lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("single_phrase_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(parent, _("shamir_phrase_backup_desc"));
     lv_label_set_recolor(label, true);
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     g_shareBackupTile.noticeLabel = label;
+    lv_obj_refr_size(label);
+    height -= lv_obj_get_self_height(label);
 
     g_shareBackupTile.keyBoard = GuiCreateMnemonicKeyBoard(parent, NULL, g_phraseCnt == 20 ? KEY_STONE_MNEMONIC_20 : KEY_STONE_MNEMONIC_33, NULL);
-    lv_obj_align_to(g_shareBackupTile.keyBoard->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 38);
-    lv_obj_set_size(g_shareBackupTile.keyBoard->cont, 408, 360);
+    lv_obj_align_to(g_shareBackupTile.keyBoard->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
+    lv_obj_set_size(g_shareBackupTile.keyBoard->cont, 408, height);
 
     lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 114);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_HIDDEN);

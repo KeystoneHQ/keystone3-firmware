@@ -47,7 +47,8 @@ void GuiUpdateCheckSumPercent(uint8_t percent)
     lv_obj_t *label = lv_obj_get_child(g_noticeHintBox, lv_obj_get_child_cnt(g_noticeHintBox) - 1);
     lv_label_set_text_fmt(label, "%d%%", percent);
     if (percent == 100) {
-        GUI_DEL_OBJ(g_noticeHintBox)
+        GuiDeleteAnimHintBox();
+        g_noticeHintBox = NULL;
         lv_obj_clean(g_firmwareVerifyCont);
         lv_obj_t *label = GuiCreateTitleLabel(g_firmwareVerifyCont, _("about_info_verify_checksum_title"));
         lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
@@ -314,15 +315,15 @@ void GuiCreateVerifyFirmwareInstructionTile(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
     GuiAddObjFlag(parent, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("about_info_verify_source_code_title"));
+    lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("about_info_verify_source_code_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
 
     label = GuiCreateNoticeLabel(parent, _("about_info_verify_firmware_desc"));
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     label = GuiCreateIllustrateLabel(parent, "1");
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 40);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
 
     label = GuiCreateIllustrateLabel(parent, _("about_info_verify_firmware_step1"));
     GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 30, 0);

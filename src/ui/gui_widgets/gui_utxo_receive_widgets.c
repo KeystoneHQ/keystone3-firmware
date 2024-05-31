@@ -526,19 +526,10 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 
     const char* coin = GetCoinCardByIndex(g_chainCard)->coin;
     if (!GetFirstReceive(coin)) {
-        g_utxoReceiveWidgets.attentionCont = GuiCreateHintBox(386);
-        tempObj = GuiCreateImg(g_utxoReceiveWidgets.attentionCont, &imgInformation);
-        lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
-        tempObj = GuiCreateLittleTitleLabel(g_utxoReceiveWidgets.attentionCont, _("Attention"));
-        lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
-        char hint[BUFFER_SIZE_256];
-        GetHint(hint);
-        tempObj = GuiCreateLabelWithFont(g_utxoReceiveWidgets.attentionCont, hint, g_defIllustrateFont);
-        lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
-        tempObj = GuiCreateTextBtn(g_utxoReceiveWidgets.attentionCont, _("got_it"));
-        lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
-        lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-        lv_obj_add_event_cb(tempObj, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
+        char attentionText[BUFFER_SIZE_256];
+        GetHint(attentionText);
+        g_utxoReceiveWidgets.attentionCont = GuiCreateConfirmHintBox(&imgInformation, _("Attention"), attentionText, NULL, _("got_it"), WHITE_COLOR_OPA20);
+        lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_utxoReceiveWidgets.attentionCont), CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
         SetFirstReceive(coin, true);
     }
 }

@@ -638,16 +638,39 @@ pub fn encode_field(
                                 })?;
                             encode_eip712_type(Token::Bytes(data.0.to_vec()))
                         }
-                        ParamType::Int(_) => {
-                            // int to be stringified, and then coverted stringfied num to U256
+                        ParamType::Int(size) => {
                             let val: StringifiedNumeric = serde_json::from_value(value.clone())
                                 .map_err(|err| {
                                     Eip712Error::Message(format!("serde_json::from_value {err}"))
                                 })?;
-                            let val: U256 = val.try_into().map_err(|err| {
-                                Eip712Error::Message(format!("Failed to parse int {err}"))
-                            })?;
-                            Token::Uint(val)
+
+                            match size {
+                                128 => {
+                                    let val: i128 = val.try_into().map_err(|err| {
+                                        Eip712Error::Message(format!("Failed to parse int {err}"))
+                                    })?;
+                                    if val < 0 {
+                                        let positive_val = val.wrapping_neg();
+                                        let u256_val = U256::from(positive_val);
+                                        let val_as_u256 = !u256_val + U256::one();
+                                        Token::Uint(val_as_u256)
+                                    } else {
+                                        let val: U256 = val.try_into().map_err(|err| {
+                                            Eip712Error::Message(format!(
+                                                "Failed to parse int {err}"
+                                            ))
+                                        })?;
+                                        Token::Uint(val)
+                                    }
+                                }
+                                _ => {
+                                    let val: U256 = val.try_into().map_err(|err| {
+                                        Eip712Error::Message(format!("Failed to parse int {err}"))
+                                    })?;
+
+                                    Token::Uint(val)
+                                }
+                            }
                         }
                         ParamType::Uint(_) => {
                             // uints are commonly stringified due to how ethers-js encodes
@@ -1292,5 +1315,74 @@ mod tests {
         let typed_data: TypedData = serde_json::from_value(json).unwrap();
         let hash = typed_data.encode_eip712().unwrap();
         // println!("hash: {:?}", hex::encode(&hash[..]));
+    }
+
+    #[test]
+    fn test_perp_parse() {
+        let json = serde_json::json!({
+            "types": {
+                "Order": [
+                    {
+                        "name": "sender",
+                        "type": "bytes32"
+                    },
+                    {
+                        "name": "priceX18",
+                        "type": "int128"
+                    },
+                    {
+                        "name": "amount",
+                        "type": "int128"
+                    },
+                    {
+                        "name": "expiration",
+                        "type": "uint64"
+                    },
+                    {
+                        "name": "nonce",
+                        "type": "uint64"
+                    }
+                ],
+                "EIP712Domain": [
+                    {
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "name": "version",
+                        "type": "string"
+                    },
+                    {
+                        "name": "chainId",
+                        "type": "uint256"
+                    },
+                    {
+                        "name": "verifyingContract",
+                        "type": "address"
+                    }
+                ]
+            },
+            "primaryType": "Order",
+            "domain": {
+                "name": "Vertex",
+                "version": "0.0.1",
+                "chainId": "0x13e31",
+                "verifyingContract": "0x8288b2a21fea95b2594cdefb4553bb223697e80b"
+            },
+            "message": {
+                "sender": "0x49ab56b91fc982fd6ec1ec7bb87d74efa6da30ab64656661756c740000000000",
+                "priceX18": "3867500000000000000000",
+                "amount": "-10000000000000000",
+                "expiration": "11529216762868464034",
+                "nonce": "1800195364132749377"
+            }
+        });
+
+        let typed_data: TypedData = serde_json::from_value(json).unwrap();
+        let hash = typed_data.encode_eip712().unwrap();
+        assert_eq!(
+            hex::encode(&hash[..]),
+            "3ffb3216a4dd87005feef7fa50a2f42372653c31d0b2828e8b51fb03b1424106",
+        )
     }
 }

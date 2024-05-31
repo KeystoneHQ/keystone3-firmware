@@ -266,7 +266,6 @@ UREncodeResult *GuiGetArConnectData(void)
 
 UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin)
 {
-#ifndef COMPILE_SIMULATOR
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
@@ -304,15 +303,10 @@ UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin)
     }
     SRAM_FREE(publicKeys);
     return g_urEncode;
-#else
-    const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    return (void *)data;
-#endif
 }
 
 UREncodeResult *GuiGetPetraData(void)
 {
-#ifndef COMPILE_SIMULATOR
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
@@ -331,10 +325,6 @@ UREncodeResult *GuiGetPetraData(void)
     }
     SRAM_FREE(publicKeys);
     return g_urEncode;
-#else
-    const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    return (void *)data;
-#endif
 }
 
 static uint8_t MapAdaIndex2ChainType(uint16_t index)
@@ -411,7 +401,6 @@ UREncodeResult *GuiGetADADataByIndex(uint16_t index)
 
 UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
 {
-#ifndef COMPILE_SIMULATOR
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     char *xpub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
@@ -421,10 +410,6 @@ UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
     g_urEncode = get_connect_xrp_toolkit_ur(hdPath, xpub, rootPath);
     CHECK_CHAIN_PRINT(g_urEncode);
     return g_urEncode;
-#else
-    const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    return (void *)data;
-#endif
 }
 
 #endif

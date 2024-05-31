@@ -99,7 +99,7 @@ static void OpenEmojiKbHandler(lv_event_t *e)
 static void GuiCreateNameWalletWidget(lv_obj_t *parent)
 {
     char tempBuf[BUFFER_SIZE_16] = {0};
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_backup_namewallet_title"));
+    lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("single_backup_namewallet_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(parent, _("single_backup_namewallet_desc"));
@@ -149,6 +149,7 @@ static void OpenNoticeHandler(lv_event_t *e)
     lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
     lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_set_width(btn, 96);
     lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
     lv_obj_add_event_cb(btn, CloseParentAndNextHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
@@ -214,61 +215,32 @@ static void GuiCreateBackupWidget(lv_obj_t *parent)
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     lv_obj_t *img = GuiCreateImg(parent, &imgSingleBackup);
-
-    label = GuiCreateLittleTitleLabel(parent, _("single_backup_single_phrase_title"));
-    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-
     lv_obj_t *labelNotice = GuiCreateIllustrateLabel(parent, _("single_backup_single_phrase_desc"));
     lv_obj_set_width(labelNotice, 384);
     lv_obj_set_style_text_opa(labelNotice, LV_OPA_60, LV_PART_MAIN);
 
     lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRightO);
     GuiButton_t table[] = {
-        {
-            .obj = img,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {24, 24},
-        },
-        {
-            .obj = label,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {24, 84},
-        },
-        {
-            .obj = imgArrow,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {372, 86},
-        },
-        {
-            .obj = labelNotice,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {24, 132},
-        },
+        {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 24}},
+        {.obj = GuiCreateLabelWithFontAndTextColor(parent, _("single_backup_single_phrase_title"), g_defLittleTitleFont, 0xF5870A), .align = LV_ALIGN_DEFAULT, .position = {24, 84}},
+        {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 86}},
+        {.obj = labelNotice, .align = LV_ALIGN_DEFAULT, .position = {24, 132}}
     };
     lv_obj_t *button = GuiCreateButton(parent, 432, 216, table, NUMBER_OF_ARRAYS(table), OpenNoticeHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 300 - GUI_MAIN_AREA_OFFSET);
-
-    label = GuiCreateScrollLittleTitleLabel(parent, _("single_backup_shamir_title"), 350);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 510 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(button, label, LV_ALIGN_OUT_BOTTOM_LEFT, -12, 20);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 516 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(line, button, LV_ALIGN_OUT_BOTTOM_LEFT, -24, 10);
 
     labelNotice = GuiCreateNoticeLabel(parent, _("single_backup_shamir_desc"));
-    lv_obj_align(labelNotice, LV_ALIGN_DEFAULT, 36, 604 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_width(labelNotice, 384);
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    table[0].obj = label;
-    table[0].position.x = 24;
-    table[0].position.y = 24;
-    table[1].obj = labelNotice;
-    table[1].position.x = 24;
-    table[1].position.y = 72;
-    table[2].obj = imgArrow;
-    table[2].position.x = 372;
-    table[2].position.y = 26;
-    button = GuiCreateButton(parent, 432, 157, table, 3, OpenSecretShareHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 516 - GUI_MAIN_AREA_OFFSET);
+    GuiButton_t importTable[] = {
+        {.obj = GuiCreateScrollLittleTitleLabel(parent, _("single_backup_shamir_title"), 350), .align = LV_ALIGN_DEFAULT, .position = {24, 24}},
+        {.obj = labelNotice, .align = LV_ALIGN_DEFAULT, .position = {24, 72}},
+        {.obj = GuiCreateImg(parent, &imgArrowRight), .align = LV_ALIGN_DEFAULT, .position = {372, 26}},
+    };
+    lv_obj_t *importButton = GuiCreateButton(parent, 432, 157, importTable, 3, OpenSecretShareHandler, NULL);
+    lv_obj_align_to(importButton, button, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
 
     lv_obj_t *obj = GuiCreateContainerWithParent(parent, 222, 30);
     lv_obj_align(obj, LV_ALIGN_BOTTOM_MID, 0, -54);
@@ -287,7 +259,7 @@ static void GuiCreateBackupWidget(lv_obj_t *parent)
 
 static void GuiImportBackupWidget(lv_obj_t *parent)
 {
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("import_wallet_choose_method"));
+    lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("import_wallet_choose_method"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(parent, _("import_wallet_single_backup_desc"));
@@ -295,56 +267,31 @@ static void GuiImportBackupWidget(lv_obj_t *parent)
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     lv_obj_t *img = GuiCreateImg(parent, &imgSingleBackup);
-    label = GuiCreateLittleTitleLabel(parent, _("import_wallet_single_phrase"));
-    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-
     lv_obj_t *labelNotice = GuiCreateIllustrateLabel(parent, _("import_wallet_single_phrase_desc"));
     lv_obj_set_style_text_opa(labelNotice, LV_OPA_60, LV_PART_MAIN);
-
     lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRightO);
-
-    GuiButton_t table[4] = {
-        {
-            .obj = img,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {24, 24},
-        },
-        {
-            .obj = label,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {24, 84},
-        },
-        {
-            .obj = imgArrow,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {372, 86},
-        },
-        {
-            .obj = labelNotice,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {24, 132},
-        },
+    GuiButton_t table[] = {
+        {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 24}},
+        {.obj = GuiCreateLabelWithFontAndTextColor(parent, _("import_wallet_single_phrase"), g_defLittleTitleFont, 0xF5870A), .align = LV_ALIGN_DEFAULT, .position = {24, 84}},
+        {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 86}},
+        {.obj = labelNotice, .align = LV_ALIGN_DEFAULT, .position = {24, 132}}
     };
     lv_obj_t *button = GuiCreateButton(parent, 432, 216, table, NUMBER_OF_ARRAYS(table), ChooseWordsAmountHandler, NULL);
-    lv_obj_align_to(button, labelNotice, LV_ALIGN_OUT_BOTTOM_LEFT, -12, 24);
+    lv_obj_align_to(button, label, LV_ALIGN_OUT_BOTTOM_LEFT, -12, 20);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
-    lv_obj_align_to(line, button, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+    lv_obj_align_to(line, button, LV_ALIGN_OUT_BOTTOM_LEFT, -24, 10);
 
-    label = GuiCreateScrollLittleTitleLabel(parent, _("import_wallet_shamir_backup"), 350);
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
     labelNotice = GuiCreateNoticeLabel(parent, _("import_wallet_shamir_backup_desc"));
-    table[0].obj = label;
-    table[0].position.x = 24;
-    table[0].position.y = 24;
-    table[1].obj = labelNotice;
-    table[1].position.x = 24;
-    table[1].position.y = 72;
-    table[2].obj = imgArrow;
-    table[2].position.x = 372;
-    table[2].position.y = 26;
-    button = GuiCreateButton(parent, 432, 156, table, 3, SelectImportShareHandler, NULL);
-    GuiAlignToPrevObj(button, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+    lv_obj_set_width(labelNotice, 384);
+    GuiButton_t importTable[] = {
+        {.obj = GuiCreateScrollLittleTitleLabel(parent, _("import_wallet_shamir_backup"), 350), .align = LV_ALIGN_DEFAULT, .position = {24, 24}},
+        {.obj = labelNotice, .align = LV_ALIGN_DEFAULT, .position = {24, 72}},
+        {.obj = GuiCreateImg(parent, &imgArrowRight), .align = LV_ALIGN_DEFAULT, .position = {372, 26}},
+    };
+
+    lv_obj_t *importButton = GuiCreateButton(parent, 432, 156, importTable, 3, SelectImportShareHandler, NULL);
+    lv_obj_align_to(importButton, button, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
 }
 
 void GuiCreateWalletInit(uint8_t walletMethod)

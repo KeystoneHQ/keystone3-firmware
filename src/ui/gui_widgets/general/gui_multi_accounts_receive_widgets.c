@@ -334,20 +334,10 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 
     const char *coin = GetCoinCardByIndex(g_chainCard)->coin;
     if (!GetFirstReceive(coin)) {
-        g_multiAccountsReceiveWidgets.attentionCont = GuiCreateHintBox(386);
-        tempObj = GuiCreateImg(g_multiAccountsReceiveWidgets.attentionCont, &imgInformation);
-        lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
-        tempObj = GuiCreateLittleTitleLabel(g_multiAccountsReceiveWidgets.attentionCont, _("Attention"));
-        lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
         char attentionText[BUFFER_SIZE_256];
         GetAttentionText(attentionText);
-        tempObj = GuiCreateIllustrateLabel(g_multiAccountsReceiveWidgets.attentionCont, attentionText);
-        lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
-        tempObj = GuiCreateTextBtn(g_multiAccountsReceiveWidgets.attentionCont, _("got_it"));
-        lv_obj_set_style_radius(tempObj, 24, LV_PART_MAIN);
-        lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
-        lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-        lv_obj_add_event_cb(tempObj, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
+        g_multiAccountsReceiveWidgets.attentionCont = GuiCreateConfirmHintBox(&imgInformation, _("Attention"), attentionText, NULL, _("got_it"), WHITE_COLOR_OPA20);
+        lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_multiAccountsReceiveWidgets.attentionCont), CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
         SetFirstReceive(coin, true);
     }
 }
@@ -554,7 +544,6 @@ static int GetMaxAddressIndex(void)
 
 static void CloseAttentionHandler(lv_event_t *e)
 {
-
     lv_obj_add_flag(g_multiAccountsReceiveWidgets.attentionCont, LV_OBJ_FLAG_HIDDEN);
 }
 

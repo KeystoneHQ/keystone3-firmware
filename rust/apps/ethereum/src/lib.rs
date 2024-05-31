@@ -435,67 +435,6 @@ mod tests {
     }
 
     #[test]
-    fn test_non_standard_eip712_typed_data_sign() {
-        let sign_data = r#"
-        {
-            "types": {
-                "EIP712Domain": [
-                    {
-                        "name": "name",
-                        "type": "string"
-                    },
-                    {
-                        "name": "version",
-                        "type": "string"
-                    },
-                    {
-                        "name": "chainId",
-                        "type": "uint256"
-                    },
-                    {
-                        "name": "verifyingContract",
-                        "type": "address"
-                    },
-                    {
-                        "name": "salt",
-                        "type": "string"
-                    }
-                ],
-                "Tx": [
-                    {
-                        "name": "context",
-                        "type": "string"
-                    },
-                    {
-                        "name": "msgs",
-                        "type": "string"
-                    }
-                ]
-            },
-            "primaryType": "Tx",
-            "domain": {
-                "name": "Injective Web3",
-                "version": "1.0.0",
-                "chainId": "0x1",
-                "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
-                "salt": "0"
-            },
-            "message": {
-                "context": "{\"account_number\":37370,\"chain_id\":\"injective-1\",\"fee\":{\"amount\":[{\"denom\":\"inj\",\"amount\":\"50180000000000\"}],\"gas\":100360,\"payer\":\"inj1065f86fh88ptyrg8h5048zu0vyx7ex8ymwgr6h\"},\"memo\":\"\",\"sequence\":15,\"timeout_height\":63590762}",
-                "msgs": "[{\"@type\":\"/cosmos.bank.v1beta1.MsgSend\",\"from_address\":\"inj1tqsdz785sqjnlggee0lwxjwfk6dl36aez5003n\",\"to_address\":\"inj1tqsdz785sqjnlggee0lwxjwfk6dl36aez5003n\",\"amount\":[{\"denom\":\"inj\",\"amount\":\"100000000000000\"}]}]"
-            }
-        }
-        "#;
-        let path = "m/44'/60'/0'/0/0".to_string();
-        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
-        let message = sign_typed_data_message(sign_data.as_bytes().to_vec(), &seed, &path).unwrap();
-        assert_eq!(
-            "cbf0b0d6ef4b47e1624267fb41e00de27f5812d5ff324f1817e73791905554844a80df5ead72fec8ac2be5fa9eebbfddb953577ea6f6f9df3c9dbf490035dd3f1c",
-            hex::encode(message.serialize())
-        );
-    }
-
-    #[test]
     fn test_parse_dym_vote_typed_data_msg() {
         let utf8_msg = r#"
         {

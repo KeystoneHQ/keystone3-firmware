@@ -302,5 +302,13 @@ LV_FONT_DECLARE(esTitle);
 LV_FONT_DECLARE(esLittleTitle);
 LV_FONT_DECLARE(esText);
 LV_FONT_DECLARE(esIllustrate);
+LV_FONT_DECLARE(deTitle);
+LV_FONT_DECLARE(deLittleTitle);
+LV_FONT_DECLARE(deText);
+LV_FONT_DECLARE(deIllustrate);
+LV_FONT_DECLARE(jaTitle);
+LV_FONT_DECLARE(jaLittleTitle);
+LV_FONT_DECLARE(jaText);
+LV_FONT_DECLARE(jaIllustrate);
 
 #endif /* _GUI_RESOURCE_H */

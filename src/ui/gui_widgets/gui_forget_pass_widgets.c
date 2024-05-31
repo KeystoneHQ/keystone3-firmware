@@ -47,17 +47,17 @@ typedef enum {
 // static void ImportPhraseWords(void);
 
 static char g_pinBuf[PASSWORD_MAX_LEN + 1];
-static KeyBoard_t *g_forgetPhraseKb;
+static KeyBoard_t *g_forgetPhraseKb = NULL;
 static lv_obj_t *g_enterMnemonicCont;
 static MnemonicKeyBoard_t *g_forgetMkb;
 static uint8_t g_phraseCnt = 33;
 static GuiEnterPasscodeItem_t *g_setPassCode = NULL;
 static GuiEnterPasscodeItem_t *g_repeatPassCode = NULL;
-static lv_obj_t *g_setPinTile;
-static lv_obj_t *g_repeatPinTile;
-static lv_obj_t *g_nextCont;
-static lv_obj_t *g_letterKbCont;
-static lv_obj_t *g_noticeHintBox = NULL;
+static lv_obj_t *g_setPinTile = NULL;
+static lv_obj_t *g_repeatPinTile = NULL;
+static lv_obj_t *g_nextCont = NULL;
+static lv_obj_t *g_letterKbCont = NULL;
+static lv_obj_t *g_noticeWindow = NULL;
 static PageWidget_t *g_pageWidget;
 
 bool GuiIsForgetPass(void)
@@ -80,34 +80,20 @@ static void GuiQuitHandler(lv_event_t *e)
 
 static void ContinueStopCreateHandler(lv_event_t *e)
 {
-    if (lv_event_get_user_data(e) != NULL) {
-        g_forgetMkb->currentSlice = 0;
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-        CloseToTargetTileView(g_forgetPassTileView.currentTile, FORGET_PASSWORD_METHOD_SELECT);
-    }
-    GUI_DEL_OBJ(g_noticeHintBox)
+    g_forgetMkb->currentSlice = 0;
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    CloseToTargetTileView(g_forgetPassTileView.currentTile, FORGET_PASSWORD_METHOD_SELECT);
+    GUI_DEL_OBJ(g_noticeWindow)
 }
 
 static void StopCreateViewHandler(lv_event_t *e)
 {
-    g_noticeHintBox = GuiCreateHintBox(416);
-    lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgWarn);
-    lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 432);
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("forget_password_cancel"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 528);
-    label = GuiCreateIllustrateLabel(g_noticeHintBox, _("import_wallet_ssb_cancel_desc"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 580);
-    lv_obj_t *btn = GuiCreateTextBtn(g_noticeHintBox, _("not_now"));
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-    lv_obj_align(btn, LV_ALIGN_DEFAULT, 36, 710);
-    lv_obj_set_size(btn, 162, 66);
-    lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, NULL);
-
-    btn = GuiCreateTextBtn(g_noticeHintBox, _("Cancel"));
-    lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
-    lv_obj_align(btn, LV_ALIGN_DEFAULT, 229, 710);
-    lv_obj_set_size(btn, 215, 66);
-    lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, g_noticeHintBox);
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("forget_password_cancel"), _("import_wallet_ssb_cancel_desc"), NULL,
+                     _("not_now"), WHITE_COLOR_OPA20, _("Cancel"), RED_COLOR);
+    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_add_event_cb(rightBtn, ContinueStopCreateHandler, LV_EVENT_CLICKED, NULL);
 }
 
 void GuiForgetAnimContDel(int errCode)
@@ -138,7 +124,7 @@ void GuiForgetPassVerifyResult(bool en, int errCode)
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         GuiForgetPassNextTile(0);
     } else {
-        g_noticeHintBox = GuiCreateErrorCodeWindow(errCode, &g_noticeHintBox, NULL);
+        g_noticeWindow = GuiCreateErrorCodeWindow(errCode, &g_noticeWindow, NULL);
     }
     if (g_waitAnimCont != NULL) {
         lv_obj_del(g_waitAnimCont);
@@ -223,6 +209,7 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
     lv_keyboard_user_mode_t kbMode = GuiGetMnemonicKbType(wordAmount);
     bool bip39 = true;
     g_phraseCnt = wordAmount;
+    uint16_t height = 296;
 
     g_forgetMkb = GuiCreateMnemonicKeyBoard(g_enterMnemonicCont, GuiMnemonicInputHandler, kbMode, NULL);
     g_forgetMkb->intputType = MNEMONIC_INPUT_FORGET_VIEW;
@@ -252,7 +239,7 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
         bip39 = false;
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
     } else {
-        g_forgetMkb->titleLabel = GuiCreateTitleLabel(g_enterMnemonicCont, _("seed_check_single_phrase_title"));
+        g_forgetMkb->titleLabel = GuiCreateScrollTitleLabel(g_enterMnemonicCont, _("seed_check_single_phrase_title"));
         lv_obj_align(g_forgetMkb->titleLabel, LV_ALIGN_DEFAULT, 36, 12);
         g_forgetMkb->descLabel = GuiCreateIllustrateLabel(g_enterMnemonicCont, _("seed_check_share_phrase_title"));
         lv_obj_set_style_text_opa(g_forgetMkb->descLabel, LV_OPA_60, LV_PART_MAIN);
@@ -260,8 +247,9 @@ static void *GuiWalletForgetSinglePhrase(uint8_t wordAmount)
         lv_obj_add_event_cb(g_forgetMkb->nextButton, ImportPhraseWordsHandler, LV_EVENT_CLICKED, NULL);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     }
-
-    lv_obj_set_size(g_forgetMkb->cont, 408, 236);
+    lv_obj_refr_size(g_forgetMkb->descLabel);
+    height -= lv_obj_get_self_height(g_forgetMkb->descLabel);
+    lv_obj_set_size(g_forgetMkb->cont, 408, height);
     lv_obj_align_to(g_forgetMkb->cont, g_forgetMkb->descLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
     lv_btnmatrix_set_selected_btn(g_forgetMkb->btnm, g_forgetMkb->currentId);
 
@@ -284,10 +272,11 @@ void GuiWalletRecoverySinglePhraseClear(void)
 {
     if (g_forgetMkb != NULL) {
         lv_obj_del(g_forgetMkb->cont);
+        g_forgetMkb->currentSlice = 0;
+        g_forgetMkb->threShold = 0xff;
+        CLEAR_OBJECT(g_forgetMkb);
+        g_forgetMkb = NULL;
     }
-    g_forgetMkb->currentSlice = 0;
-    g_forgetMkb->threShold = 0xff;
-    CLEAR_OBJECT(g_forgetMkb);
 
     if (g_forgetPhraseKb != NULL) {
         lv_obj_del(g_forgetPhraseKb->cont);
@@ -381,7 +370,7 @@ void GuiForgetPassInit(void *param)
 
 void GuiForgetPassDeInit(void)
 {
-    GUI_DEL_OBJ(g_noticeHintBox)
+    GUI_DEL_OBJ(g_noticeWindow)
     GuiMnemonicHintboxClear();
     GuiWalletRecoverySinglePhraseClear();
     g_enterMnemonicCont = NULL;
@@ -410,7 +399,7 @@ int8_t GuiForgetPassNextTile(uint8_t tileIndex)
     switch (g_forgetPassTileView.currentTile) {
     case FORGET_PASSWORD_ENTRANCE:
         if (CHECK_BATTERY_LOW_POWER()) {
-            g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeHintBox, NULL);
+            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeWindow, NULL);
             return ERR_GUI_ERROR;
         } else {
             SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);

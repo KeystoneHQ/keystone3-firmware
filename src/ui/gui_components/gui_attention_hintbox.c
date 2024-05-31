@@ -69,7 +69,6 @@ static void CloseAttentionHandler(lv_event_t *e)
 static void ConfirmAttentionHandler(lv_event_t *e)
 {
     GuiEmitSignal(g_confirmSign, NULL, 0);
-    lv_obj_add_flag(g_attentionCont, LV_OBJ_FLAG_HIDDEN);
     GUI_DEL_OBJ(g_attentionCont);
 }
 
@@ -115,7 +114,7 @@ void GuiCreateAttentionHintbox(uint16_t confirmSign)
     }
     g_confirmSign = confirmSign;
     AttentionHintboxContext *context = BuildConfirmationHintboxContext();
-    g_attentionCont = GuiCreateGeneralHintBox(context->icon, context->title, context->context, NULL, context->okBtnText, WHITE_COLOR_OPA20, context->cancelBtnText, DEEP_ORANGE_COLOR);
+    g_attentionCont = GuiCreateGeneralHintBox(context->icon, context->title, context->context, NULL, context->cancelBtnText, WHITE_COLOR_OPA20, context->okBtnText, ORANGE_COLOR);
     lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_attentionCont);
     lv_obj_add_event_cb(leftBtn, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_attentionCont);

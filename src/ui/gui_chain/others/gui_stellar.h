@@ -8,4 +8,11 @@
 #include "gui_views.h"
 #include "gui_chain.h"
 
+PtrT_TransactionCheckResult GuiGetStellarCheckResult(void);
+void *GuiGetStellarData(void);
+void FreeStellarMemory(void);
+void GuiSetStellarUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
+void GetStellarRawMessage(void *indata, void *param, uint32_t maxLen);
+UREncodeResult *GuiGetStellarSignQrCodeData(void);
+
 #endif

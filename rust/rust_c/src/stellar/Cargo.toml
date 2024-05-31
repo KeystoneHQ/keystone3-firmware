@@ -12,3 +12,4 @@ app_stellar = {path = "../../../apps/stellar"}
 common_rust_c = {path = "../common"}
 third_party = { path = "../../../third_party" }
 cty = "0.2.2"
+cstr_core = "0.2.6"

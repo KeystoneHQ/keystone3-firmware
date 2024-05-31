@@ -30,10 +30,7 @@ pub fn get_address(pub_key: &String) -> Result<String> {
     }
 }
 
-pub fn generate_stellar_address(
-    seed: &[u8],
-    path: &String,
-) -> Result<String> {
+pub fn generate_stellar_address(seed: &[u8], path: &String) -> Result<String> {
     let public_key = get_public_key_by_seed(seed, path)?;
     get_address(&hex::encode(public_key))
 }

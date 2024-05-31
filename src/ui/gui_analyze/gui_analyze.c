@@ -210,6 +210,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreeArMemory,
     },
+    {
+        REMAPVIEW_STELLAR,
+#ifndef COMPILE_SIMULATOR
+        "{}",
+#else
+        PC_SIMULATOR_PATH "/page_stellar.json",
+#endif
+        GuiGetStellarData,
+        NULL,
+        FreeStellarMemory,
+    },
 #endif
 };
 
@@ -710,6 +721,14 @@ GetLabelDataFunc GuiArTextFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataFunc GuiStellarTextFuncGet(char *type)
+{
+    if (!strcmp(type, "GetStellarRawMessage")) {
+        return GetStellarRawMessage;
+    }
+    return NULL;
+}
+
 GetLabelDataLenFunc GuiXrpTextLenFuncGet(char *type)
 {
     if (!strcmp(type, "GetXrpDetailLen")) {
@@ -814,6 +833,8 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
     case REMAPVIEW_AR:
     case REMAPVIEW_AR_MESSAGE:
         return GuiArTextFuncGet(type);
+    case REMAPVIEW_STELLAR:
+        return GuiStellarTextFuncGet(type);
 #endif
     default:
         return NULL;
@@ -1557,6 +1578,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_AR;
     case ArweaveMessage:
         return REMAPVIEW_AR_MESSAGE;
+    case StellarTx:
+        return REMAPVIEW_STELLAR;
 #endif
     default:
         return REMAPVIEW_BUTT;

@@ -29,6 +29,8 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
     case REMAPVIEW_AR:
     case REMAPVIEW_AR_MESSAGE:
         return GuiGetArCheckResult();
+    case REMAPVIEW_STELLAR:
+        return GuiGetStellarCheckResult();
 #endif
     default:
         return NULL;
@@ -138,6 +140,9 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
     case ArweaveMessage:
     case ArweaveTx:
         func = GuiGetArweaveSignQrCodeData;
+        break;
+    case StellarTx:
+        func = GuiGetStellarSignQrCodeData;
         break;
 #endif
     default:

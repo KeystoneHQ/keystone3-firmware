@@ -35,6 +35,8 @@ use third_party::ur_registry::pb::protoc::Base;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
 #[cfg(feature = "multi-coins")]
+use third_party::ur_registry::stellar::stellar_sign_request::StellarSignRequest;
+#[cfg(feature = "multi-coins")]
 use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
 
 pub trait InferViewType {
@@ -100,6 +102,13 @@ impl InferViewType for EvmSignRequest {
 impl InferViewType for SuiSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::SuiTx)
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for StellarSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::StellarTx)
     }
 }
 

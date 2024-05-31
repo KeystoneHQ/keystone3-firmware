@@ -14,5 +14,6 @@ void FreeStellarMemory(void);
 void GuiSetStellarUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void GetStellarRawMessage(void *indata, void *param, uint32_t maxLen);
 UREncodeResult *GuiGetStellarSignQrCodeData(void);
+int GetStellarRawMessageLength(void *param);
 
 #endif

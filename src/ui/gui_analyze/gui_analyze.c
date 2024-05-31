@@ -213,7 +213,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_STELLAR,
 #ifndef COMPILE_SIMULATOR
-        "{}",
+        "{\"name\":\"ar_message_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"size\":[408,500],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Raw Message\",\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetStellarRawMessage\",\"text_len_func\":\"GetStellarRawMessageLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
 #else
         PC_SIMULATOR_PATH "/page_stellar.json",
 #endif
@@ -563,6 +563,14 @@ GetLabelDataLenFunc GuiBtcTextLenFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataLenFunc GuiStellarTextLenFuncGet(char *type)
+{
+    if (!strcmp(type, "GetStellarRawMessageLength")) {
+        return GetStellarRawMessageLength;
+    }
+    return NULL;
+}
+
 GetLabelDataLenFunc GuiArTextLenFuncGet(char *type)
 {
     if (!strcmp(type, "GetArweaveRawMessageLength")) {
@@ -797,6 +805,8 @@ GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
     case REMAPVIEW_AR:
     case REMAPVIEW_AR_MESSAGE:
         return GuiArTextLenFuncGet(type);
+    case REMAPVIEW_STELLAR:
+        return GuiStellarTextLenFuncGet(type);
 #endif
     default:
         return NULL;

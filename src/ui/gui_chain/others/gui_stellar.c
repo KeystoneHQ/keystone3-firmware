@@ -32,6 +32,15 @@ void GetStellarRawMessage(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata, maxLen, tx->raw_message);
 }
 
+int GetStellarRawMessageLength(void *param)
+{
+    DisplayStellarTx *data = (DisplayStellarTx *)param;
+    if (data->raw_message == NULL) {
+        return 0;
+    }
+    return strlen(data->raw_message) + 1;
+}
+
 void *GuiGetStellarData(void)
 {
     CHECK_FREE_PARSE_RESULT(g_parseResult);

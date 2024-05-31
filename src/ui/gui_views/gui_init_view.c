@@ -107,9 +107,7 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_INIT_POWER_OPTION:
         rcvValue = *(uint32_t *)param;
         if (rcvValue != 0) {
-            if (lv_anim_count_running() == 0) {
-                OpenMsgBox(&g_guiMsgBoxPowerOption);
-            }
+            OpenMsgBox(&g_guiMsgBoxPowerOption);
         } else {
             CloseMsgBox(&g_guiMsgBoxPowerOption);
         }

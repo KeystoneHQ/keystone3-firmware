@@ -19,7 +19,7 @@ mod jettons;
 
 pub fn ton_public_key_to_address(pk: Vec<u8>) -> Result<String> {
     TonWallet::derive_default(vendor::wallet::WalletVersion::V4R2, pk)
-        .map(|v| v.address.to_base64_std_flags(true, false))
+        .map(|v| v.address.to_base64_url_flags(true, false))
         .map_err(|e| errors::TonError::AddressError(e.to_string()))
 }
 

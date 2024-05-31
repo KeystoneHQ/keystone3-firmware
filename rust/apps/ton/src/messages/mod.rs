@@ -76,7 +76,7 @@ impl ParseCell for TransferMessage {
             let bounced = parser.load_bit()?;
             let _src_addr = parser.load_address()?;
             let addr = parser.load_address()?;
-            let dest_addr = addr.to_base64_std_flags(true, false);
+            let dest_addr = addr.to_base64_url_flags(true, false);
             let dest_addr_legacy = addr.to_base64_std();
             let value = parser.load_coins()?.to_string();
             let coins = u64::from_str_radix(&value, 10)

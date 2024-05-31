@@ -169,7 +169,7 @@ impl TonProof {
             address_hash_parts[i] = remaining[i + 4];
         }
         let address =
-            TonAddress::new(workchain, &address_hash_parts).to_base64_std_flags(true, false);
+            TonAddress::new(workchain, &address_hash_parts).to_base64_url_flags(true, false);
 
         //parse domain
         let mut domain_len_bytes = [0u8; 4];

@@ -59,10 +59,10 @@ impl ParseCell for JettonTransferMessage {
             let _op_code = parser.load_u32(32)?;
             let query_id = parser.load_u64(64)?.to_string();
             let amount = parser.load_coins()?.to_string();
-            let destination = parser.load_address()?.to_base64_std_flags(true, false);
+            let destination = parser.load_address()?.to_base64_url_flags(true, false);
             let temp_address = parser.load_address()?;
             let response_destination = if temp_address.eq(&TonAddress::null()) {
-                Some(temp_address.to_base64_std_flags(true, false))
+                Some(temp_address.to_base64_url_flags(true, false))
             } else {
                 None
             };

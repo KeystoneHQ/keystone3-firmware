@@ -147,6 +147,7 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTonTransactio
 
     lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Amount"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
     label = GuiCreateTextLabel(container, data->amount);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 50);
@@ -161,6 +162,7 @@ static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayTonTransactio
 
     lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Action"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
     label = GuiCreateIllustrateLabel(container, data->action);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 99, 16);
@@ -176,6 +178,7 @@ static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTrans
 
     lv_obj_t *label = GuiCreateIllustrateLabel(container, _("From"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
     label = GuiCreateIllustrateLabel(container, from->data);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54);
@@ -184,6 +187,7 @@ static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTrans
 
     label = GuiCreateIllustrateLabel(container, _("To"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 130);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
     label = GuiCreateIllustrateLabel(container, data->to);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 168);
@@ -197,8 +201,9 @@ static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonTransacti
     lv_obj_t *container = createContentContainer(parent, 408, 62);
     lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
-    lv_obj_t *label = GuiCreateIllustrateLabel(container, _("From"));
+    lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Comment"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
     label = GuiCreateIllustrateLabel(container, data->comment);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54);
@@ -215,10 +220,41 @@ static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonTransacti
 
 static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView){
     cJSON *contractData = cJSON_Parse(data->contract_data);
-    cJSON_GetArraySize(contractData);
-    lv_obj_t *container = createContentContainer(parent, 408, 62);
-    lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
-    return container;
+    int size = cJSON_GetArraySize(contractData);
+    printf("size: %d\n", size);
+
+    lv_obj_t *tempLastView = NULL;
+
+    for (size_t i = 0; i < size; i++)
+    {
+        cJSON *data = cJSON_GetArrayItem(contractData, i);
+        char* title = cJSON_GetObjectItem(data, "title")->valuestring;
+        char* value = cJSON_GetObjectItem(data, "value")->valuestring;
+
+        //100 = 16(padding top) + 16(padding bottom) + 30(title) + 8(margin) + 30(value one line)
+        lv_obj_t *container = createContentContainer(parent, 408, 100);
+        lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+
+        lv_obj_t *label = GuiCreateIllustrateLabel(container, title);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+        lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+
+        label = GuiCreateIllustrateLabel(container, value);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54);
+        lv_obj_set_width(label, 360);
+        lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+        lv_obj_update_layout(label);
+
+        uint16_t height = lv_obj_get_height(label);
+        printf("height: %d\n", height);
+
+        lv_obj_set_height(container, height + 70);
+        lv_obj_update_layout(container);
+
+        tempLastView = container;
+    }
+    
+    return tempLastView;
 }
 
 static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView) {

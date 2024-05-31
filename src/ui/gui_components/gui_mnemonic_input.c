@@ -199,20 +199,18 @@ void ImportSinglePhraseWords(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
 
     bool isTon = ton_verify_mnemonic(mnemonic);
     if (mkb->intputType == MNEMONIC_INPUT_IMPORT_VIEW) {
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
         if (isTon) {
-            TonData_t ton = {
-                .forget = false
-            };
-            GuiModelTonCalWriteSe(ton);
+            GuiEmitSignal(SIG_SETUP_SHOW_TON_MNEMONIC_HINT, NULL, 0);
+
         } else {
+            GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
             Bip39Data_t bip39 = {
                 .wordCnt = mkb->wordCnt,
                 .forget = false,
             };
             GuiModelBip39CalWriteSe(bip39);
+            GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
         }
-        GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
         // GuiSetLetterBoardConfirm(letterKb, 0);
     } else if (mkb->intputType == MNEMONIC_INPUT_SETTING_VIEW) {
         if (isTon) {

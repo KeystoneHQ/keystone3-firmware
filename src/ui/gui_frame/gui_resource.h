@@ -138,6 +138,8 @@ LV_IMG_DECLARE(imgCircular);
 LV_IMG_DECLARE(imgRing);
 LV_IMG_DECLARE(imgMessageRight);
 LV_IMG_DECLARE(imgWarningRed);
+LV_IMG_DECLARE(imgTonPhrase);
+LV_IMG_DECLARE(imgBlueInformation);
 
 // emoji
 LV_IMG_DECLARE(emojiAlien);

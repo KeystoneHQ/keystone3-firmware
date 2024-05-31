@@ -166,6 +166,12 @@ void ToggleSwitchBoxHandler(lv_event_t *e)
     lv_event_send(switchBox, LV_EVENT_VALUE_CHANGED, NULL);
 }
 
+static bool g_isWriteTon = false;
+void GuiWriteSESetTon(bool isTon)
+{
+    g_isWriteTon = isTon;
+}
+
 void GuiWriteSeWidget(lv_obj_t *parent)
 {
     lv_obj_t *label = GuiCreateTextLabel(parent, _("create_wallet_generating_title"));
@@ -175,6 +181,13 @@ void GuiWriteSeWidget(lv_obj_t *parent)
     label = GuiCreateNoticeLabel(parent, _("write_se_desc"));
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 18);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+
+    if(g_isWriteTon) {
+        label = GuiCreateNoticeLabel(parent, _("ton_write_se_predict_text"));
+        GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 18);
+        lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+        lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+    }
 }
 
 void DuplicateShareHandler(lv_event_t *e)

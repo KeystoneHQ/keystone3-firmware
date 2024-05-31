@@ -50,21 +50,43 @@ static char g_randomBuff[BUFFER_SIZE_512];
 static lv_obj_t *g_noticeHintBox = NULL;
 static PageWidget_t *g_pageWidget;
 static uint8_t g_entropyMethod = 0;
+static lv_obj_t *g_noticeWindow;
 static bool g_isTon = false;
 static bool g_isDiceRolls = false;
 
 static void ResetConfirmInput(void);
 static void SelectPhraseCntHandler(lv_event_t *e);
 
+static void TonUpdateMnemonicHandler(lv_event_t *e) {
+     GuiModelTonUpdateMnemonic();
+}
+
+static void TonRegenrateConfirm() {
+    GUI_DEL_OBJ(g_noticeWindow);
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgBlueInformation, _("ton_mnemonic_regenerate"), NULL, NULL, _("Cancel"), WHITE_COLOR_OPA20, _("Regenerate"), ORANGE_COLOR);
+
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
+    lv_obj_add_event_cb(btn, TonUpdateMnemonicHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
+    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+}
+
 static void UpdatePhraseHandler(lv_event_t *e)
 {
-    if (g_isTon) GuiModelTonUpdateMnemonic();
+    if (g_isTon) {
+        TonRegenrateConfirm();
+    }
     else GuiModelBip39UpdateMnemonic(g_phraseCnt);
 }
 
 static void WriteSE()
 {
-    if (g_isTon) GuiModelTonWriteSe();
+    if (g_isTon) {
+        GuiModelTonWriteSe();
+    }
     else GuiModelWriteSe();
 }
 
@@ -100,8 +122,10 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_KB_NEXT);
     lv_obj_align(btn, LV_ALIGN_DEFAULT, 348, 24);
     lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, cont);
-    SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
-    SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
+    if(!g_isTon) {
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
+        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
+    }
     if (!g_isDiceRolls) {
         if (g_isTon) {
             GuiModelTonUpdateMnemonic();
@@ -231,6 +255,7 @@ void GuiSinglePhraseInit(uint8_t entropyMethod)
 
     tile = lv_tileview_add_tile(tileView, SINGLE_PHRASE_WRITE_SE, 0, LV_DIR_HOR);
     g_singlePhraseTileView.writeSe = tile;
+    GuiWriteSESetTon(g_isTon);
     GuiWriteSeWidget(tile);
 
     g_singlePhraseTileView.currentTile = SINGLE_PHRASE_RANDOM_PHRASE;
@@ -251,12 +276,25 @@ void GuiSinglePhraseUpdateMnemonic(void *signalParam, uint16_t paramLen)
     lv_obj_set_size(g_randomPhraseKb->cont, 408, 360);
 }
 
+static void OpenNotice()
+{
+    GUI_DEL_OBJ(g_noticeWindow);
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgRedEye, _("single_backup_notice_title"), _("single_backup_notice_desc1"), _("single_backup_notice_desc2"), NULL, WHITE_COLOR, NULL, WHITE_COLOR);
+
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
+    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
+    
+}
+
 void GuiShowTonGeneratingModal(bool enable)
 {
     if(enable) {
         GuiPendingHintBoxOpen(_("ton_mnemonic_generating_title"), _("ton_mnemonic_generating_desc"));
     } else {
         GuiPendingHintBoxRemove();
+        OpenNotice();
     }
 }
 
@@ -376,8 +414,10 @@ int8_t GuiSinglePhrasePrevTile(void)
         ResetConfirmInput();
         lv_obj_clear_flag(g_changeCont, LV_OBJ_FLAG_HIDDEN);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
-        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
+        if(!g_isTon) {
+            SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
+            SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
+        }
         break;
     case SINGLE_PHRASE_WRITE_SE:
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("single_phrase_reset"));
@@ -416,8 +456,10 @@ void GuiSinglePhraseRefresh(void)
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     if (g_singlePhraseTileView.currentTile == SINGLE_PHRASE_RANDOM_PHRASE) {
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
-        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
+        if(!g_isTon) {
+            SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
+            SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
+        }
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     } else if (g_singlePhraseTileView.currentTile == SINGLE_PHRASE_CONFIRM_PHRASE) {
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("single_phrase_reset"));

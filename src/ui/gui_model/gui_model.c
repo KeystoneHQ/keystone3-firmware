@@ -559,7 +559,7 @@ static int32_t ModelComparePubkey(bool bip39, uint8_t *ems, uint8_t emsLen, uint
             ret = bip39_mnemonic_to_seed(SecretCacheGetMnemonic(), NULL, seed, 64, NULL);
             xPubResult = get_extended_pubkey_by_seed(seed, 64, "M/49'/0'/0'");
         } else {
-            ret = Slip39GetSeed(ems, seed, emsLen, "", ie, id);
+            ret = Slip39GetSeed(ems, seed, emsLen, "", ie, false, id);
             xPubResult = get_extended_pubkey_by_seed(seed, emsLen, "M/49'/0'/0'");
         }
         CHECK_CHAIN_BREAK(xPubResult);
@@ -586,6 +586,7 @@ static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
     uint8_t entropy[32], ems[32];
     uint32_t entropyLen;
     uint16_t id;
+    bool eb;
     uint8_t ie;
     entropyLen = (slip39->wordCnt == 20) ? 16 : 32;
     char *wordsList[slip39->memberCnt];
@@ -596,7 +597,7 @@ static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
     }
     PrintArray("entropy", entropy, entropyLen);
     SecretCacheSetEntropy(entropy, entropyLen);
-    GetSlip39MnemonicsWords(entropy, ems, slip39->wordCnt, slip39->memberCnt, slip39->threShold, wordsList, &id, &ie);
+    GetSlip39MnemonicsWords(entropy, ems, slip39->wordCnt, slip39->memberCnt, slip39->threShold, wordsList, &id, &eb, &ie);
     SecretCacheSetEms(ems, entropyLen);
     SecretCacheSetIdentifier(id);
     SecretCacheSetIteration(ie);
@@ -636,6 +637,7 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     uint8_t newAccount;
     uint8_t accountCnt;
     uint16_t id;
+    bool eb;
     uint8_t ie;
     uint8_t msCheck[32], emsCheck[32];
     uint8_t threShold;
@@ -653,7 +655,7 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     for (int i = 0; i < threShold; i++) {
         words[i] = SecretCacheGetSlip39Mnemonic(i);
     }
-    ret = Slip39GetMasterSecret(threShold, wordCnt, emsCheck, msCheck, words, &id, &ie);
+    ret = Slip39GetMasterSecret(threShold, wordCnt, emsCheck, msCheck, words, &id, &eb, &ie);
     if ((ret != SUCCESS_CODE) || (memcmp(msCheck, entropy, entropyLen) != 0) || (memcmp(emsCheck, ems, entropyLen) != 0)) {
         ret = ERR_KEYSTORE_MNEMONIC_INVALID;
         break;
@@ -681,6 +683,7 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     uint8_t entropyLen;
     int32_t ret;
     uint16_t id;
+    bool eb;
     uint8_t ie;
     uint8_t newAccount;
     uint8_t accountCnt;
@@ -698,7 +701,7 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     }
 
     MODEL_WRITE_SE_HEAD
-    ret = Slip39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &ie);
+    ret = Slip39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &eb, &ie);
     if (ret != SUCCESS_CODE) {
         printf("get master secret error\n");
         break;
@@ -757,6 +760,7 @@ static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen)
     uint8_t *entropy;
     uint8_t entropyLen;
     uint16_t id;
+    bool eb;
     uint8_t ie;
     Slip39Data_t *slip39 = (Slip39Data_t *)inData;
 
@@ -772,7 +776,7 @@ static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen)
     do {
         ret = CHECK_BATTERY_LOW_POWER();
         CHECK_ERRCODE_BREAK("save low power", ret);
-        ret = Slip39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &ie);
+        ret = Slip39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &eb, &ie);
         if (ret != SUCCESS_CODE) {
             printf("get master secret error\n");
             break;

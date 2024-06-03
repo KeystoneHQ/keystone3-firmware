@@ -635,7 +635,7 @@ static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char
         if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
             uint8_t slip39Ems[SLIP39_EMS_LEN];
             GetAccountSlip39Ems(accountIndex, slip39Ems, password);
-            ret = Slip39GetSeed(slip39Ems, seed, GetCurrentAccountEntropyLen(), passphrase, GetSlip39Ie(), GetSlip39Id());
+            ret = Slip39GetSeed(slip39Ems, seed, GetCurrentAccountEntropyLen(), passphrase, GetSlip39Ie(), false, GetSlip39Id());
             CHECK_ERRCODE_BREAK("slip39_mnemonic_to_seed", ret);
         } else {
             ret = GetAccountEntropy(accountIndex, entropy, &entropyLen, password);

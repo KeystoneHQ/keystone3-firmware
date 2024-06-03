@@ -1,3 +1,20 @@
+## 1.4.8(2024-06-03)
+
+### What's new
+
+1. Added support for Japanese and German system languages
+
+### Improvements
+
+1. Optimized transaction parsing for EVM chains
+
+### Bug Fixes
+
+1. Fixed device reboot issue during Cardano chain withdraw operations
+
+
+
+
 ## 1.4.6 (2024-05-29)
 
 ### What's new

@@ -655,7 +655,7 @@ static void TonNewMnemonicHandler(lv_event_t *e)
 
 static void CloseTonPhraseHandler(lv_event_t *e)
 {
-    GUI_DEL_OBJ(g_tonPhraseHintPage);
+    GUI_PAGE_DEL(g_tonPhraseHintPage);
 }
 
 static void TonPhraseButtonHandler(lv_event_t *e)
@@ -676,9 +676,11 @@ static void TonPhraseButtonHandler(lv_event_t *e)
 
     label = GuiCreateTextLabel(container, _("create_ton_wallet"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 90);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
     label = GuiCreateIllustrateLabel(container, _("create_ton_wallet_hint"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 144);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
     btn = GuiCreateBtn(container, _("Next"));
     lv_obj_set_size(btn, 408, 66);

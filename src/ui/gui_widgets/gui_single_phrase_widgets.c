@@ -16,6 +16,7 @@
 #include "user_delay.h"
 #include "gui_page.h"
 #include "gui_pending_hintbox.h"
+#include "gui_tutorial_widgets.h"
 
 #define SINGLE_PHRASE_MAX_WORDS         24
 typedef enum {
@@ -90,6 +91,11 @@ static void WriteSE()
     else GuiModelWriteSe();
 }
 
+static void OpenTonTutorial(lv_event_t *e) {
+    uint8_t index = TUTORIAL_TON_MNEMONIC;
+    GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
+}
+
 static void GuiRandomPhraseWidget(lv_obj_t *parent)
 {
     uint16_t height = 296;
@@ -125,6 +131,8 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     if(!g_isTon) {
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
+    } else {
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenTonTutorial, NULL);
     }
     if (!g_isDiceRolls) {
         if (g_isTon) {
@@ -266,6 +274,8 @@ void GuiSinglePhraseInit(uint8_t entropyMethod)
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     if (!g_isTon) {
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, SelectPhraseCntHandler, NULL);
+    }else {
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenTonTutorial, NULL);
     }
 }
 
@@ -417,6 +427,8 @@ int8_t GuiSinglePhrasePrevTile(void)
         if(!g_isTon) {
             SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
             SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
+        }else {
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenTonTutorial, NULL);
         }
         break;
     case SINGLE_PHRASE_WRITE_SE:
@@ -459,6 +471,9 @@ void GuiSinglePhraseRefresh(void)
         if(!g_isTon) {
             SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
             SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
+        }
+        else {
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenTonTutorial, NULL);
         }
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     } else if (g_singlePhraseTileView.currentTile == SINGLE_PHRASE_CONFIRM_PHRASE) {

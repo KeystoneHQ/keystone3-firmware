@@ -653,7 +653,7 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     for (int i = 0; i < threShold; i++) {
         words[i] = SecretCacheGetSlip39Mnemonic(i);
     }
-    ret = Sli39GetMasterSecret(threShold, wordCnt, emsCheck, msCheck, words, &id, &ie);
+    ret = Slip39GetMasterSecret(threShold, wordCnt, emsCheck, msCheck, words, &id, &ie);
     if ((ret != SUCCESS_CODE) || (memcmp(msCheck, entropy, entropyLen) != 0) || (memcmp(emsCheck, ems, entropyLen) != 0)) {
         ret = ERR_KEYSTORE_MNEMONIC_INVALID;
         break;
@@ -698,7 +698,7 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     }
 
     MODEL_WRITE_SE_HEAD
-    ret = Sli39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &ie);
+    ret = Slip39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &ie);
     if (ret != SUCCESS_CODE) {
         printf("get master secret error\n");
         break;
@@ -772,7 +772,7 @@ static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen)
     do {
         ret = CHECK_BATTERY_LOW_POWER();
         CHECK_ERRCODE_BREAK("save low power", ret);
-        ret = Sli39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &ie);
+        ret = Slip39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &ie);
         if (ret != SUCCESS_CODE) {
             printf("get master secret error\n");
             break;

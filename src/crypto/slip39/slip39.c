@@ -705,8 +705,8 @@ int Slip39GetSeed(uint8_t *ems, uint8_t *seed, uint8_t emsLen, const char *passp
     return _decrypt(ems, emsLen, seed, emsLen, (uint8_t *)passphrase, strlen(passphrase), ie, id);
 }
 
-int Sli39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, uint8_t *masterSecret,
-                         char *wordsList[], uint16_t *id, uint8_t *ie)
+int Slip39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, uint8_t *masterSecret,
+                          char *wordsList[], uint16_t *id, uint8_t *ie)
 {
     uint16_t wordsIndexBuf[threshold][wordsCount];
     Slip39Shared_t shards[threshold];

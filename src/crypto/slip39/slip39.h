@@ -46,8 +46,8 @@ int Slip39OneSliceCheck(char *wordsList, uint8_t wordCnt, uint16_t id, uint8_t i
 int Slip39CheckFirstWordList(char *wordsList, uint8_t wordCnt, uint8_t *threshold);
 void GetSlip39MnemonicsWords(uint8_t *masterSecret, uint8_t *ems, uint8_t wordCnt, uint8_t memberCnt, uint8_t memberThreshold,
                              char *wordsList[], uint16_t *id, uint8_t *ie);
-int Sli39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, uint8_t *masterSecret,
-                         char *wordsList[], uint16_t *id, uint8_t *ie);
+int Slip39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, uint8_t *masterSecret,
+                          char *wordsList[], uint16_t *id, uint8_t *ie);
 int Slip39GetSeed(uint8_t *ems, uint8_t *seed, uint8_t emsLen, const char *passphrase, uint8_t ie, uint16_t id);
 
 #endif /* _SLIP39_H */

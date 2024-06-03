@@ -1,6 +1,7 @@
 #![no_std]
 
 extern crate alloc;
+use alloc::borrow::ToOwned;
 use alloc::boxed::Box;
 use alloc::string::{String, ToString};
 use alloc::{format, slice};
@@ -69,6 +70,21 @@ pub extern "C" fn stellar_check_tx(
     TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr()
 }
 
+fn build_signature_data(
+    signature: &[u8],
+    sign_request: StellarSignRequest,
+) -> PtrT<UREncodeResult> {
+    let data = StellarSignature::new(sign_request.get_request_id(), signature.to_vec())
+        .to_bytes()
+        .unwrap();
+    UREncodeResult::encode(
+        data,
+        StellarSignature::get_registry_type().get_type(),
+        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+    )
+    .c_ptr()
+}
+
 #[no_mangle]
 pub extern "C" fn stellar_sign(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
     let seed = unsafe { alloc::slice::from_raw_parts(seed, seed_len as usize) };
@@ -77,21 +93,11 @@ pub extern "C" fn stellar_sign(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> Ptr
     let path = sign_request.get_derivation_path().get_path().unwrap();
     match sign_request.get_sign_type() {
         SignType::Transaction => match sign_signature_base(&sign_data, &seed, &path) {
-            Ok(signature) => UREncodeResult::encode(
-                signature.to_vec(),
-                StellarSignature::get_registry_type().get_type(),
-                FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
-            )
-            .c_ptr(),
+            Ok(signature) => build_signature_data(&signature, sign_request.to_owned()),
             Err(e) => UREncodeResult::from(e).c_ptr(),
         },
         SignType::TransactionHash => match sign_hash(&sign_data, &seed, &path) {
-            Ok(signature) => UREncodeResult::encode(
-                signature.to_vec(),
-                StellarSignature::get_registry_type().get_type(),
-                FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
-            )
-            .c_ptr(),
+            Ok(signature) => build_signature_data(&signature, sign_request.to_owned()),
             Err(e) => UREncodeResult::from(e).c_ptr(),
         },
         _ => {

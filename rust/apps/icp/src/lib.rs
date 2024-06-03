@@ -101,9 +101,10 @@ mod tests {
         let message = Message::from_hashed_data::<hashes::sha256::Hash>(&message_hash);
         let hd_path = "m/44'/223'/0'/0/0".to_string();
         let seed = "8AC41B663FC02C7E6BCD961989A5E03B23325509089C3F9984F9D86169B918E0967AB3CC894D10C8A66824B0163E445EBBE639CD126E37AAC16591C278425FF9".to_string();
-        let test_pubkey  =  [3, 59, 101, 243, 36, 181, 142, 146, 174, 252, 195, 17, 7, 16, 168, 230, 66, 167, 206, 106, 94, 101, 65, 150, 148, 1, 255, 96, 112, 12, 5, 244, 57];        
+        let public_key_bytes = [3, 59, 101, 243, 36, 181, 142, 146, 174, 252, 195, 17, 7, 16, 168, 230, 66, 167, 206, 106, 94, 101, 65, 150, 148, 1, 255, 96, 112, 12, 5, 244, 57];
+        let public_key = PublicKey::from_slice(&public_key_bytes).unwrap();
         let (v, sig) = sign(message, &hd_path, &hex::decode(seed).unwrap()).unwrap();
-        let result = keystore::algorithms::secp256k1::verify_signature(&sig, &message_hash, &test_pubkey).unwrap();
+        let result = keystore::algorithms::secp256k1::verify_signature(&sig, message.as_ref(), &public_key.serialize()).unwrap();
         assert_eq!(result, true);
     }
 

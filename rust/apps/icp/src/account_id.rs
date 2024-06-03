@@ -1,7 +1,7 @@
-use serde::{Serialize};
-use sha2::{Digest, Sha224};
-use alloc::vec::Vec;
 use alloc::string::String;
+use alloc::vec::Vec;
+use serde::Serialize;
+use sha2::{Digest, Sha224};
 
 use crate::principal::Principal;
 
@@ -43,15 +43,13 @@ impl AccountIdentifier {
     pub fn to_vec(self) -> Vec<u8> {
         [&self.generate_checksum()[..], &self.hash[..]].concat()
     }
-    
+
     pub fn generate_checksum(&self) -> [u8; 4] {
         let mut hasher = crc32fast::Hasher::new();
         hasher.update(&self.hash);
         hasher.finalize().to_be_bytes()
     }
-
 }
-
 
 impl Serialize for AccountIdentifier {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -61,7 +59,6 @@ impl Serialize for AccountIdentifier {
         self.to_hex().serialize(serializer)
     }
 }
-
 
 /// Subaccounts are arbitrary 32-byte values.
 #[derive(Clone, Hash, Debug, PartialEq, Eq, Copy)]
@@ -78,8 +75,8 @@ impl Subaccount {
 mod tests {
     use super::*;
     use crate::principal_id::PrincipalId;
-    use alloc::string::ToString;
     use alloc::str::FromStr;
+    use alloc::string::ToString;
     #[test]
     fn test_from_principal_id_str_to_default_account_id() {
         let principal_id_str = "7rtqo-ah3ki-saurz-utzxq-o4yhl-so2yx-iardd-mktej-x4k24-ijen6-dae";

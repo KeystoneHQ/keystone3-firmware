@@ -1,10 +1,10 @@
-use sha2::{Digest, Sha224};
 use alloc::fmt::Write;
-use alloc::vec::Vec;
-use third_party::thiserror::Error;
-use third_party::thiserror;
 use alloc::string::String;
 use alloc::string::ToString;
+use alloc::vec::Vec;
+use sha2::{Digest, Sha224};
+use third_party::thiserror;
+use third_party::thiserror::Error;
 
 use data_encoding;
 #[derive(Error, Clone, Debug, Eq, PartialEq)]
@@ -27,7 +27,6 @@ pub enum PrincipalError {
     #[error(r#"Text should be separated by - (dash) every 5 characters: expected "{0}""#)]
     AbnormalGrouped(Principal),
 }
-
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Principal {
@@ -169,7 +168,6 @@ impl Principal {
     }
 }
 
-
 impl alloc::fmt::Display for Principal {
     fn fmt(&self, f: &mut alloc::fmt::Formatter<'_>) -> alloc::fmt::Result {
         let blob: &[u8] = self.as_slice();
@@ -205,7 +203,6 @@ impl alloc::str::FromStr for Principal {
     }
 }
 
-
 impl TryFrom<&str> for Principal {
     type Error = PrincipalError;
 
@@ -213,7 +210,6 @@ impl TryFrom<&str> for Principal {
         Principal::from_text(s)
     }
 }
-
 
 impl TryFrom<Vec<u8>> for Principal {
     type Error = PrincipalError;
@@ -256,10 +252,8 @@ impl serde::Serialize for Principal {
     }
 }
 
-
 mod deserialize {
     use super::Principal;
-    
 
     // Simple visitor for deserialization from bytes. We don't support other number types
     // as there's no need for it.

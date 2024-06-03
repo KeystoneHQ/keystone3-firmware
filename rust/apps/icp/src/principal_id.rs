@@ -1,11 +1,10 @@
-use serde::{Deserialize};
-use sha2::Sha224;
-use sha2::Digest;
-use alloc::vec::Vec;
-use alloc::str::FromStr;
-use crate::principal::Principal;
 use crate::errors::ICPError;
-
+use crate::principal::Principal;
+use alloc::str::FromStr;
+use alloc::vec::Vec;
+use serde::Deserialize;
+use sha2::Digest;
+use sha2::Sha224;
 
 #[derive(Clone, Copy, Deserialize)]
 #[repr(transparent)]
@@ -28,7 +27,6 @@ impl PrincipalId {
     }
 }
 
-
 impl From<PrincipalId> for Vec<u8> {
     fn from(val: PrincipalId) -> Self {
         val.to_vec()
@@ -42,7 +40,7 @@ impl AsRef<[u8]> for PrincipalId {
 }
 
 impl FromStr for PrincipalId {
-    type Err = ICPError; 
+    type Err = ICPError;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         Principal::from_str(input)
@@ -69,13 +67,11 @@ impl PrincipalId {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
     extern crate std;
     use std::string::ToString;
-  
 
     #[test]
     fn parse_self_authenticating_id_ok() {

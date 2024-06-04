@@ -690,7 +690,7 @@ void GetSlip39MnemonicsWords(uint8_t *masterSecret, uint8_t *ems, uint8_t wordCn
 {
     uint8_t *passPhrase = (uint8_t *)"";
     uint8_t iterationExponent  = 0;
-    bool extendableBackupFlag = false;
+    bool extendableBackupFlag = true;
     uint16_t identifier = 0;
     TrngGet(&identifier, 2);
     identifier = identifier & 0x7FFF;

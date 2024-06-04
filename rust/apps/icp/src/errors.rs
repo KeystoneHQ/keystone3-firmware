@@ -13,15 +13,7 @@ pub enum ICPError {
     #[error("sign failed, reason: {0}")]
     SignFailure(String),
     #[error("Could not parse transaction, reason: `{0}`")]
-    ParseTxError(String),
-    #[error("Could not derive subaccount from principal : `{0}`")]
-    TryFromSliceError(String),
-    #[error("Could not parse principalId from principal str: `{0}`")]
-    PrincipalIdError(String),
-    #[error("Overflow error")]
-    UsizeOverflowError,
-    #[error("Could not convert publicKey to der format: `{0}`")]
-    PublicKeyToDerError(String),
+    ParseTxError(String), 
 }
 
 pub type Result<T> = core::result::Result<T, ICPError>;

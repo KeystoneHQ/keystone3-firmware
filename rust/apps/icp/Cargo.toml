@@ -1,5 +1,5 @@
 [package]
-name = "icp"
+name = "app_icp"
 version = "0.1.0"
 edition = "2021"
 

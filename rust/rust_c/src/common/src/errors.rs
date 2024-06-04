@@ -21,6 +21,10 @@ use app_sui::errors::SuiError;
 use app_tron::errors::TronError;
 #[cfg(feature = "multi-coins")]
 use app_xrp::errors::XRPError;
+
+#[cfg(feature = "multi-coins")]
+use app_icp::errors::ICPError;
+
 use keystore::errors::KeystoreError;
 use third_party::thiserror;
 use third_party::thiserror::Error;
@@ -177,6 +181,13 @@ pub enum ErrorCodes {
     ArweaveKeystoreError,
     ArweaveInvalidData,
     ArweaveParseTxError,
+
+
+    // ICP  
+    IcpSignFailure = 1300,
+    IcpKeystoreError,
+    IcpInvalidData,
+    IcpParseTxError,
 }
 
 impl ErrorCodes {
@@ -354,6 +365,19 @@ impl From<&ArweaveError> for ErrorCodes {
     }
 }
 
+#[cfg(feature = "multi-coins") ]
+impl From<&ICPError> for ErrorCodes {
+    fn from(value: &ICPError) -> Self {
+        match value {
+            ICPError::InvalidHDPath(_) => Self::InvalidHDPath,
+            ICPError::KeystoreError(_) => Self::IcpKeystoreError,
+            ICPError::SignFailure(_) => Self::IcpSignFailure,
+            ICPError::ParseTxError(_) => Self::IcpParseTxError,
+        }
+    }
+}
+
+
 #[cfg(feature = "multi-coins")]
 impl From<&CosmosError> for ErrorCodes {
     fn from(value: &CosmosError) -> Self {
@@ -421,6 +445,9 @@ impl From<&SuiError> for ErrorCodes {
         }
     }
 }
+
+
+
 
 pub type R<T> = Result<T, RustCError>;
 

@@ -21,6 +21,7 @@ members = [
     "src/tron",
     "src/xrp",
     "src/arweave",
+    "src/icp",
 
     "src/wallet",
     "src/wallet/src/btc_only_wallet",

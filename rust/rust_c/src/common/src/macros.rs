@@ -169,6 +169,13 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+
+        #[cfg(feature = "multi-coins")]
+        impl From<app_icp::errors::ICPError> for $name {
+            fn from(value: app_icp::errors::ICPError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
     };
 
     ($name:ident<$t:ident>) => {
@@ -272,6 +279,13 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+
+        #[cfg(feature = "multi-coins")]
+        impl<$t: Free> From<app_icp::errors::ICPError> for $name<$t> {
+            fn from(value: app_icp::errors::ICPError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
     };
 }
 
@@ -357,6 +371,13 @@ macro_rules! impl_simple_new_error {
         #[cfg(feature = "multi-coins")]
         impl<$t> From<app_arweave::errors::ArweaveError> for $name<$t> {
             fn from(value: app_arweave::errors::ArweaveError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+
+        #[cfg(feature = "multi-coins")]
+        impl<$t> From<app_icp::errors::ICPError> for $name<$t> {
+            fn from(value: app_icp::errors::ICPError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }

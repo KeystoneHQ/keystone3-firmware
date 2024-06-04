@@ -45,7 +45,7 @@ impl FromStr for PrincipalId {
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         Principal::from_str(input)
             .map(Self)
-            .map_err(|e| ICPError::PrincipalIdError(format!("{}", e)))
+            .map_err(|e| ICPError::KeystoreError(format!("Could not parse principal id: `{}`", e)))
     }
 }
 

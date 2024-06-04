@@ -24,7 +24,7 @@ pub fn generate_principal_id(public_key: PublicKey) -> Result<PrincipalId> {
     let icp_public_key = ICPPublicKey::try_from(public_key)?;
     let der_public_key = icp_public_key
         .to_public_key_der()
-        .map_err(|e| errors::ICPError::PublicKeyToDerError(format!("{}", e)))?;
+        .map_err(|e| errors::ICPError::KeystoreError(format!("Could not convert public key to der: `{}`", e)))?;
     let principal_id: PrincipalId =
         PrincipalId::new_self_authenticating(&der_public_key.as_bytes());
     Ok(principal_id)
@@ -35,7 +35,13 @@ pub fn generate_account_id(principal_id: PrincipalId) -> Result<String> {
     Ok(account_id.to_hex())
 }
 
-pub fn generate_address(public_key: PublicKey) -> Result<String> {
+pub fn generate_address(public_key_str: &String) -> Result<String> {
+    let public_key_bytes = hex::decode(public_key_str).map_err(|e| {
+        errors::ICPError::KeystoreError(format!("Could not convert public key from str: `{}`", e))
+    })?;
+    let public_key = PublicKey::from_slice(&public_key_bytes).map_err(|e| {
+        errors::ICPError::KeystoreError(format!("Could not convert publicKey from public str: `{}`", e))
+    })?;
     let principal_id = generate_principal_id(public_key)?;
     let account_id = generate_account_id(principal_id)?;
     Ok(account_id)
@@ -90,7 +96,8 @@ mod tests {
             106, 94, 101, 65, 150, 148, 1, 255, 96, 112, 12, 5, 244, 57,
         ];
         let public_key = PublicKey::from_slice(&public_key_bytes).unwrap();
-        let address = generate_address(public_key).unwrap();
+        let public_key_str = hex::encode(public_key.serialize());
+        let address = generate_address(&public_key_str).unwrap();
         assert_eq!(
             "33a807e6078195d2bbe1904b0ed0fc65b8a3a437b43831ccebba2b7b6d393bd6".to_string(),
             address

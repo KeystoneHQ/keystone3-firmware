@@ -44,6 +44,9 @@ use third_party::ur_registry::registry_types::URType as InnerURType;
 use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
+#[cfg(feature = "multi-coins")]
+use third_party::ur_registry::icp::icp_sign_request::IcpSignRequest;
+
 use third_party::ur_registry::traits::RegistryItem;
 
 use crate::errors::{ErrorCodes, RustCError};
@@ -250,6 +253,8 @@ pub enum URType {
     QRHardwareCall,
     #[cfg(feature = "multi-coins")]
     ArweaveSignRequest,
+    #[cfg(feature = "multi-coins")]
+    IcpSignRequest,
     URTypeUnKnown,
 }
 
@@ -283,6 +288,8 @@ impl URType {
             InnerURType::QRHardwareCall(_) => Ok(URType::QRHardwareCall),
             #[cfg(feature = "multi-coins")]
             InnerURType::CardanoSignRequest(_) => Ok(URType::CardanoSignRequest),
+            #[cfg(feature = "multi-coins")]
+            InnerURType::IcpSignRequest(_) => Ok(URType::IcpSignRequest),
             _ => Err(URError::NotSupportURTypeError(value.get_type_str())),
         }
     }
@@ -408,6 +415,10 @@ fn free_ur(ur_type: &URType, data: PtrUR) {
         #[cfg(feature = "multi-coins")]
         URType::QRHardwareCall => {
             free_ptr_with_type!(data, QRHardwareCall);
+        }
+        #[cfg(feature = "multi-coins")]
+        URType::IcpSignRequest => {
+            free_ptr_with_type!(data, IcpSignRequest);
         }
         _ => {}
     }
@@ -553,6 +564,9 @@ pub fn decode_ur(ur: String) -> URParseResult {
         URType::AptosSignRequest => _decode_ur::<AptosSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
         URType::QRHardwareCall => _decode_ur::<QRHardwareCall>(ur, ur_type),
+        #[cfg(feature = "multi-coins")]
+        URType::IcpSignRequest => _decode_ur::<IcpSignRequest>(ur, ur_type),
+
         URType::URTypeUnKnown => URParseResult::from(URError::NotSupportURTypeError(
             "UnKnown ur type".to_string(),
         )),
@@ -624,6 +638,8 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         URType::AptosSignRequest => _receive_ur::<AptosSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
         URType::QRHardwareCall => _receive_ur::<QRHardwareCall>(ur, ur_type, decoder),
+        #[cfg(feature = "multi-coins")]
+        URType::IcpSignRequest => _receive_ur::<IcpSignRequest>(ur, ur_type, decoder),
         URType::URTypeUnKnown => URParseMultiResult::from(URError::NotSupportURTypeError(
             "UnKnown ur type".to_string(),
         )),

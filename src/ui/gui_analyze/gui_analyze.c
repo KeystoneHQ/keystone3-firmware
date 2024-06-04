@@ -213,9 +213,20 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_STELLAR,
 #ifndef COMPILE_SIMULATOR
-        "{\"name\":\"ar_message_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"size\":[408,500],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Raw Message\",\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetStellarRawMessage\",\"text_len_func\":\"GetStellarRawMessageLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
+        "{\"name\":\"ar_message_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"custom_container\",\"size\":[408,212],\"pos\":[0,0],\"radius\":24,\"custom_show_func\":\"GuiStellarTxNotice\"},{\"type\":\"container\",\"size\":[408,310],\"pos\":[0,236],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"XDR\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetStellarRawMessage\",\"text_len_func\":\"GetStellarRawMessageLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
 #else
         PC_SIMULATOR_PATH "/page_stellar.json",
+#endif
+        GuiGetStellarData,
+        NULL,
+        FreeStellarMemory,
+    },
+    {
+        REMAPVIEW_STELLAR_HASH,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ar_message_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"custom_container\",\"size\":[408,212],\"pos\":[0,0],\"radius\":24,\"custom_show_func\":\"GuiStellarHashNotice\"},{\"type\":\"container\",\"size\":[408,310],\"pos\":[0,236],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Hash\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetStellarRawMessage\",\"text_len_func\":\"GetStellarRawMessageLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_stellar_hash.json",
 #endif
         GuiGetStellarData,
         NULL,
@@ -1197,6 +1208,10 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiShowSolTxDetail;
     } else if (!strcmp(funcName, "GuiShowArweaveTxDetail")) {
         return GuiShowArweaveTxDetail;
+    } else if (!strcmp(funcName, "GuiStellarTxNotice")) {
+        return GuiStellarTxNotice;
+    } else if (!strcmp(funcName, "GuiStellarHashNotice")) {
+        return GuiStellarHashNotice;
     }
 #endif
     return NULL;
@@ -1590,6 +1605,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_AR_MESSAGE;
     case StellarTx:
         return REMAPVIEW_STELLAR;
+    case StellarHash:
+        return REMAPVIEW_STELLAR_HASH;
 #endif
     default:
         return REMAPVIEW_BUTT;

@@ -212,6 +212,8 @@ pub enum ViewType {
     #[cfg(feature = "multi-coins")]
     StellarTx,
     #[cfg(feature = "multi-coins")]
+    StellarHash,
+    #[cfg(feature = "multi-coins")]
     AptosTx,
     WebAuthResult,
     #[cfg(feature = "multi-coins")]

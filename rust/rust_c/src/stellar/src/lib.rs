@@ -36,7 +36,16 @@ pub extern "C" fn stellar_get_address(pubkey: PtrString) -> *mut SimpleResponse<
 #[no_mangle]
 pub extern "C" fn stellar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayStellarTx>> {
     let sign_request = extract_ptr_with_type!(ptr, StellarSignRequest);
-    let raw_message = base_to_xdr(&sign_request.get_sign_data());
+    let raw_message = match sign_request.get_sign_type() {
+        SignType::Transaction => base_to_xdr(&sign_request.get_sign_data()),
+        SignType::TransactionHash => hex::encode(&sign_request.get_sign_data()),
+        _ => {
+            return TransactionParseResult::from(RustCError::UnsupportedTransaction(
+                "Transaction".to_string(),
+            ))
+            .c_ptr();
+        }
+    };
     let display_data = DisplayStellarTx {
         raw_message: convert_c_char(raw_message),
     };

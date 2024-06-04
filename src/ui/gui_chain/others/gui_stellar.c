@@ -7,6 +7,8 @@ static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 
+static void CreateStellarNoticeCOntainer(lv_obj_t *parent, char *title, char *context, lv_coord_t w, lv_coord_t h);
+
 #define CHECK_FREE_PARSE_RESULT(result)                                                                                   \
     if (result != NULL)                                                                                                   \
     {                                                                                                                     \
@@ -87,6 +89,50 @@ UREncodeResult *GuiGetStellarSignQrCodeData(void)
     } while (0);
     SetLockScreen(enable);
     return encodeResult;
+}
+
+static void CreateStellarNoticeCOntainer(lv_obj_t *parent, char *title, char *context, lv_coord_t w, lv_coord_t h)
+{
+    lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_clear_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_bg_color(parent, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(parent, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(parent, 31, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_t *rightImg = GuiCreateImg(parent, &imgNotice);
+    lv_obj_align(rightImg, LV_ALIGN_TOP_LEFT, 24, 22);
+    lv_obj_t *label = lv_label_create(parent);
+    lv_label_set_text(label, title);
+    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_set_style_text_color(label, lv_color_hex(16090890), LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 68, 24);
+    lv_obj_t *contextContainer = lv_label_create(parent);
+    lv_label_set_text(contextContainer, context);
+    lv_obj_set_style_text_font(contextContainer, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_set_style_text_color(contextContainer, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_align(contextContainer, LV_ALIGN_TOP_LEFT, 24, 68);
+    lv_obj_set_size(contextContainer, w, h);
+}
+
+void GuiStellarTxNotice(lv_obj_t *parent, void *totalData)
+{
+    CreateStellarNoticeCOntainer(
+        parent,
+        "Notice",
+        "XDR (External Data Representation) standardizes data encoding for consistent serialization. You can compare this with the software wallet.",
+        360,
+        120
+    );
+}
+
+void GuiStellarHashNotice(lv_obj_t *parent, void *totalData)
+{
+    CreateStellarNoticeCOntainer(
+        parent,
+        "Notice",
+        "Hash signing uses a private key to sign a transaction's hash for integrity and authenticity. You can compare this with the software wallet.",
+        360,
+        120
+    );
 }
 
 #endif

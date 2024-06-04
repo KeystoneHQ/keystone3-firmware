@@ -145,6 +145,7 @@ int32_t GenerateTonMnemonic(char *mnemonic, const char *password)
                 strcat(temp_mnemonic, " ");
             }
             strcat(temp_mnemonic, word);
+            SRAM_FREE(word);
         }
         if (ton_verify_mnemonic(temp_mnemonic)) {
             break;

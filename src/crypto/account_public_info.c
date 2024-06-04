@@ -475,6 +475,9 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                     break;
                 }
                 // do not generate public keys for ton wallet;
+                if(g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
+                    continue;
+                }
 
                 xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey);
                 if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
@@ -572,7 +575,16 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     uint8_t seed[64];
     uint8_t entropy[64];
     uint8_t entropyLen;
-    bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
+    MnemonicType mnemonicType = GetMnemonicType();
+    bool isSlip39 = mnemonicType == MNEMONIC_TYPE_SLIP39;
+    bool isTon = mnemonicType == MNEMONIC_TYPE_TON;
+    bool isBip39 = mnemonicType == MNEMONIC_TYPE_BIP39;
+
+    //TON Wallet doesn't support passphrase so we dont need to consider it.
+    if(isTon) {
+        ASSERT(false);
+    }
+
     int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
 
     char *passphrase = GetPassphrase(accountIndex);
@@ -610,6 +622,9 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
             // SLIP32 wallet does not support ADA
             if (isSlip39 && g_chainTable[i].cryptoKey == BIP32_ED25519) {
+                continue;
+            }
+            if(g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
                 continue;
             }
 

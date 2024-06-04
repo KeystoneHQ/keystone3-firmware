@@ -8,8 +8,11 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
-use app_ton::mnemonic::ton_mnemonic_validate;
+use app_ton::{
+    errors::TonError, mnemonic::ton_mnemonic_validate, ton_compare_address_and_public_key,
+};
 use common_rust_c::{
+    errors::RustCError,
     extract_ptr_with_type,
     ffi::VecFFI,
     impl_c_ptr,
@@ -71,10 +74,20 @@ pub extern "C" fn ton_parse_proof(ptr: PtrUR) -> PtrT<TransactionParseResult<Dis
 #[no_mangle]
 pub extern "C" fn ton_check_transaction(
     ptr: PtrUR,
-    master_fingerprint: PtrBytes,
-    length: u32,
+    public_key: PtrString,
 ) -> PtrT<TransactionCheckResult> {
-    return TransactionCheckResult::new().c_ptr();
+    let ton_tx = extract_ptr_with_type!(ptr, TonSignRequest);
+    let pk = recover_c_char(public_key);
+    match hex::decode(pk) {
+        Ok(pk) => {
+            if ton_compare_address_and_public_key(pk, ton_tx.get_address()) {
+                TransactionCheckResult::new().c_ptr()
+            } else {
+                TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr()
+            }
+        }
+        Err(e) => TransactionCheckResult::from(RustCError::InvalidHex(e.to_string())).c_ptr(),
+    }
 }
 
 #[no_mangle]

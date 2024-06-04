@@ -179,6 +179,7 @@ void GuiTransactionCheckFailed(PtrT_TransactionCheckResult result)
     switch (result->error_code) {
     case BitcoinNoMyInputs:
     case BitcoinWalletTypeError:
+    case MasterFingerprintMismatch:
         GuiCreateRustErrorWindow(result->error_code, result->error_message, NULL, GuiScanStart);
         break;
     default:

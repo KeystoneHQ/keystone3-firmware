@@ -286,25 +286,12 @@ void GuiSinglePhraseUpdateMnemonic(void *signalParam, uint16_t paramLen)
     lv_obj_set_size(g_randomPhraseKb->cont, 408, 360);
 }
 
-static void OpenNotice()
-{
-    GUI_DEL_OBJ(g_noticeWindow);
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgRedEye, _("single_backup_notice_title"), _("single_backup_notice_desc1"), _("single_backup_notice_desc2"), NULL, WHITE_COLOR, NULL, WHITE_COLOR);
-
-    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
-    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-    lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
-    
-}
-
 void GuiShowTonGeneratingModal(bool enable)
 {
     if(enable) {
         GuiPendingHintBoxOpen(_("ton_mnemonic_generating_title"), _("ton_mnemonic_generating_desc"));
     } else {
         GuiPendingHintBoxRemove();
-        OpenNotice();
     }
 }
 

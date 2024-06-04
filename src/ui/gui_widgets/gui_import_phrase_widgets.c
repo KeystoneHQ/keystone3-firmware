@@ -62,6 +62,7 @@ static void ImportPhraseWordsHandler(lv_event_t* e)
 
 static void GuiImportTonMnemonicHandler(lv_event_t *e)
 {
+    GUI_DEL_OBJ(g_noticeWindow)
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
     TonData_t ton = {
         .forget = false

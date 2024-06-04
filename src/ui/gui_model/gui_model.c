@@ -546,6 +546,7 @@ static int32_t ModelGenerateTonMnemonic(const void *inData, uint32_t inDataLen)
     GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_TON_GENERATION_START, NULL, 0);
     GenerateTonMnemonic(mnemonic, SecretCacheGetNewPassword());
     SecretCacheSetMnemonic(mnemonic);
+    GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_TON_GENERATION_END, NULL, 0);
     retData = SUCCESS_CODE;
     GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, &retData, sizeof(retData));
     memset_s(mnemonic, strnlen_s(mnemonic, MNEMONIC_MAX_LEN), 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));

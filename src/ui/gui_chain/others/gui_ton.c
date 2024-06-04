@@ -80,7 +80,15 @@ PtrT_TransactionCheckResult GuiGetTonCheckResult(void)
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
-    return ton_check_transaction(data, mfp, sizeof(mfp));
+    char* publicKey;
+    bool isTonNative = GetMnemonicType() == MNEMONIC_TYPE_TON;
+    if (isTonNative) {
+        publicKey = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
+    } else {
+        ASSERT(false);
+        //remains for bip39 ton
+    }
+    return ton_check_transaction(data, publicKey);
 }
 
 void *GuiGetTonGUIData(void) {
@@ -218,7 +226,7 @@ static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonTransacti
     return container;
 }
 
-static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView){
+static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView) {
     cJSON *contractData = cJSON_Parse(data->contract_data);
     int size = cJSON_GetArraySize(contractData);
     printf("size: %d\n", size);
@@ -253,7 +261,7 @@ static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonTran
 
         tempLastView = container;
     }
-    
+
     return tempLastView;
 }
 
@@ -262,12 +270,12 @@ static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonTransacti
     lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
 
-    lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Data View"));
+    lv_obj_t *label = GuiCreateTextLabel(container, _("Data View"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     lv_label_set_recolor(label, true);
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
 
-    label = GuiCreateTextLabel(container, data->data_view);
+    label = GuiCreateIllustrateLabel(container, data->data_view);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 62);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
@@ -294,8 +302,7 @@ static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayTonTransactio
     return container;
 }
 
-
-void GuiTonProofOverview(lv_obj_t *parent, void *totalData){
+void GuiTonProofOverview(lv_obj_t *parent, void *totalData) {
     DisplayTonProof *txData = (DisplayTonProof *)totalData;
     lv_obj_set_size(parent, 408, 444);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
@@ -336,7 +343,7 @@ void GuiTonProofOverview(lv_obj_t *parent, void *totalData){
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
 
 }
-void GuiTonProofRawData(lv_obj_t *parent, void *totalData){
+void GuiTonProofRawData(lv_obj_t *parent, void *totalData) {
     DisplayTonProof *txData = (DisplayTonProof *)totalData;
     lv_obj_set_size(parent, 408, 444);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);

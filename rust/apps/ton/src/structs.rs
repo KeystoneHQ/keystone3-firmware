@@ -91,7 +91,7 @@ impl TryFrom<&SigningMessage> for TonTransaction {
                                 ),
                                 contract_data: Some(
                                     json!([
-                                        {"title": "Contract Address", "value": to.clone()}
+                                        {"title": "Jetton Wallet Address", "value": to.clone()}
                                     ])
                                     .to_string(),
                                 ),
@@ -115,9 +115,9 @@ impl TryFrom<&SigningMessage> for TonTransaction {
                                         .to_string(),
                                 ),
                                 contract_data: Some(
-                                    json!({
-                                        "nft_contract_address": to.clone()
-                                    })
+                                    json!([
+                                        {"title": "NFT Wallet Address", "value": to.clone()}
+                                    ])
                                     .to_string(),
                                 ),
                                 ..Default::default()

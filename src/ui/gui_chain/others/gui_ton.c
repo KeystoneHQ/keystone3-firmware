@@ -279,7 +279,7 @@ static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonTransacti
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 62);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-
+    return container;
 }
 static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView) {
     lv_obj_t *container = createContentContainer(parent, 408, 244);

@@ -165,7 +165,7 @@ static void OpenNoticeHandler(lv_event_t *e)
 
 static void OpenSecretShareHandler(lv_event_t *e)
 {
-    if (g_selectedEntropyMethod & ENTROPY_TYPE_MASK == 0) {
+    if ((g_selectedEntropyMethod & ENTROPY_TYPE_MASK) == 0) {
         GuiFrameOpenViewWithParam(&g_createShareView, &g_selectedEntropyMethod, sizeof(g_selectedEntropyMethod));
     } else {
         uint8_t index = SEED_TYPE_SLIP39;
@@ -339,12 +339,13 @@ int8_t GuiCreateWalletNextTile(void)
 {
     switch (g_createWalletTileView.currentTile) {
     case CREATE_WALLET_BACKUPFROM:
-        if (g_selectedEntropyMethod & ENTROPY_TYPE_MASK == 0) {
+        if ((g_selectedEntropyMethod & ENTROPY_TYPE_MASK) == 0) {
             return GuiFrameOpenViewWithParam(&g_singlePhraseView, &g_selectedEntropyMethod, sizeof(g_selectedEntropyMethod));
         } else {
             uint8_t index = SEED_TYPE_BIP39;
             return GuiFrameOpenViewWithParam(&g_diceRollsView, &index, sizeof(index));
         }
+        break;
     case CREATE_WALLET_NAMEWALLET:
         break;
     case CREATE_WALLET_SETPIN:
@@ -697,7 +698,7 @@ static void ChangeEntropyMethodConfirmHandler(lv_event_t *e)
 {
     GUI_PAGE_DEL(g_changeEntropyPage);
     g_selectedEntropyMethod = g_selectedEntropyMethodCache;
-    if (g_selectedEntropyMethod & ENTROPY_TYPE_MASK == 1) {
+    if ((g_selectedEntropyMethod & ENTROPY_TYPE_MASK) == 1) {
         if (lv_obj_has_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN)) {
             lv_obj_clear_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN);
         }

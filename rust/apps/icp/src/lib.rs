@@ -15,10 +15,10 @@ use crate::principal_id::PrincipalId;
 use crate::types::ICPPublicKey;
 use alloc::string::String;
 use alloc::string::ToString;
-use alloc::vec::Vec;
 use pkcs8::EncodePublicKey;
 use third_party::secp256k1::Message;
 use third_party::secp256k1::PublicKey;
+use third_party::hex;
 
 pub fn generate_principal_id(public_key: PublicKey) -> Result<PrincipalId> {
     let icp_public_key = ICPPublicKey::try_from(public_key)?;
@@ -64,6 +64,7 @@ mod tests {
     use third_party::bitcoin::secp256k1::hashes;
     use third_party::bitcoin::secp256k1::{ecdsa, Secp256k1, SecretKey};
     use third_party::cryptoxide::hashing::sha256;
+    use third_party::hex;
     #[test]
     fn test_public_key_principal_id() {
         let public_key_bytes = [

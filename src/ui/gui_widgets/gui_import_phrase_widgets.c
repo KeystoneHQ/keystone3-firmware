@@ -68,12 +68,7 @@ static void GuiImportTonMnemonicHandler(lv_event_t *e)
         .forget = false
     };
 
-    //update ton text, not a good implementation
-    lv_obj_t *label = GuiCreateNoticeLabel(g_importSinglePhraseTileView.writeSe, _("ton_write_se_predict_text"));
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 18);
-    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
-    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-    
+    GuiUpdateTonWriteSeWidget(g_importSinglePhraseTileView.writeSe);
     GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
     GuiModelTonCalWriteSe(ton);
 }
@@ -141,7 +136,6 @@ void GuiImportPhraseUpdateKeyboard(void)
 
 void GuiImportPhraseInit(uint8_t num)
 {
-    GuiWriteSESetTon(false);
     g_inputWordsCnt = num;
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;

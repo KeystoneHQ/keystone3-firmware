@@ -86,6 +86,7 @@ static void UpdatePhraseHandler(lv_event_t *e)
 static void WriteSE()
 {
     if (g_isTon) {
+        GuiUpdateTonWriteSeWidget(g_singlePhraseTileView.writeSe);
         GuiModelTonWriteSe();
     }
     else GuiModelWriteSe();
@@ -263,7 +264,6 @@ void GuiSinglePhraseInit(uint8_t entropyMethod)
 
     tile = lv_tileview_add_tile(tileView, SINGLE_PHRASE_WRITE_SE, 0, LV_DIR_HOR);
     g_singlePhraseTileView.writeSe = tile;
-    GuiWriteSESetTon(g_isTon);
     GuiWriteSeWidget(tile);
 
     g_singlePhraseTileView.currentTile = SINGLE_PHRASE_RANDOM_PHRASE;

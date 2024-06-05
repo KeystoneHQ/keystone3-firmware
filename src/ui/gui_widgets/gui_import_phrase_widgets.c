@@ -67,6 +67,13 @@ static void GuiImportTonMnemonicHandler(lv_event_t *e)
     TonData_t ton = {
         .forget = false
     };
+
+    //update ton text, not a good implementation
+    lv_obj_t *label = GuiCreateNoticeLabel(g_importSinglePhraseTileView.writeSe, _("ton_write_se_predict_text"));
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 18);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+    
     GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
     GuiModelTonCalWriteSe(ton);
 }

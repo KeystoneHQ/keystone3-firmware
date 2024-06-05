@@ -128,6 +128,7 @@ void GuiTonTxOverview(lv_obj_t *parent, void *totalData) {
     if(txData->contract_data != NULL) {
         lastView = CreateOverviewContractDataView(parent, txData, lastView);
     }
+    lv_obj_update_layout(parent);
 }
 
 void GuiTonTxRawData(lv_obj_t *parent, void *totalData) {
@@ -217,10 +218,11 @@ static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonTransacti
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_obj_update_layout(label);
 
     uint16_t height = lv_obj_get_height(label);
 
-    lv_obj_set_height(container, height + 32);
+    lv_obj_set_height(container, height + 62);
     lv_obj_update_layout(container);
 
     return container;
@@ -254,7 +256,6 @@ static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonTran
         lv_obj_update_layout(label);
 
         uint16_t height = lv_obj_get_height(label);
-        printf("height: %d\n", height);
 
         lv_obj_set_height(container, height + 70);
         lv_obj_update_layout(container);

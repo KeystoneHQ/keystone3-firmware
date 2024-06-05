@@ -5,7 +5,7 @@ use third_party::hex;
 
 use crate::vendor::{address::TonAddress, cell::{ArcCell, Cell, TonCellError}};
 
-use super::{traits::ParseCell, InternalMessage};
+use super::{traits::ParseCell, Comment, InternalMessage};
 
 pub const JETTON_TRANSFER: u32 = 0xf8a7ea5;
 // pub const JETTON_TRANSFER_NOTIFICATION: u32 = 0x7362d09c;
@@ -48,6 +48,7 @@ pub struct JettonTransferMessage {
     pub custom_payload: Option<String>,
     pub forward_ton_amount: String,
     pub forward_payload: Option<String>,
+    pub comment: Option<String>,
 }
 
 impl ParseCell for JettonTransferMessage {
@@ -75,12 +76,15 @@ impl ParseCell for JettonTransferMessage {
                 None
             };
             let forward_ton_amount = parser.load_coins()?.to_string();
-            let forward_payload = if parser.load_bit()? {
-                let payload = Some(hex::encode(cell.reference(ref_index)?.data.clone()));
+            let (forward_payload, comment) = if parser.load_bit()? {
+                let child = cell.reference(ref_index)?;
+                let comment = Comment::parse(child);
+                
+                let payload = Some(hex::encode(child.data.clone()));
                 ref_index = ref_index + 1;
-                payload
+                (payload, comment.ok())
             } else {
-                None
+                (None, None)
             };
 
             Ok(Self {
@@ -91,6 +95,7 @@ impl ParseCell for JettonTransferMessage {
                 custom_payload,
                 forward_ton_amount,
                 forward_payload,
+                comment,
             })
         })
     }

@@ -1,26 +1,28 @@
-use alloc::{format, string::{String, ToString}};
+use alloc::{
+    format,
+    string::{String, ToString},
+};
 use serde::Serialize;
 use third_party::hex;
 
-use super::traits::ParseCell;
+use super::{traits::ParseCell, Comment};
 
 pub const NFT_TRANSFER: u32 = 0x5fcc3d14;
 
 #[derive(Clone, Debug, Serialize)]
 pub enum NFTMessage {
-    NFTTransferMessage(NFTTransferMessage)
+    NFTTransferMessage(NFTTransferMessage),
 }
 
 impl ParseCell for NFTMessage {
     fn parse(cell: &crate::vendor::cell::ArcCell) -> Result<Self, crate::vendor::cell::TonCellError>
     where
-        Self: Sized {
+        Self: Sized,
+    {
         cell.parse(|parser| {
             let op_code = parser.load_u32(32)?;
             match op_code {
-                NFT_TRANSFER => {
-                    NFTTransferMessage::parse(cell).map(NFTMessage::NFTTransferMessage)
-                }
+                NFT_TRANSFER => NFTTransferMessage::parse(cell).map(NFTMessage::NFTTransferMessage),
                 _ => Err(crate::vendor::cell::TonCellError::InternalError(format!(
                     "Invalid Op Code: {:X}",
                     op_code
@@ -29,7 +31,7 @@ impl ParseCell for NFTMessage {
         })
     }
 }
- 
+
 #[derive(Clone, Debug, Serialize)]
 pub struct NFTTransferMessage {
     pub query_id: String,
@@ -38,12 +40,14 @@ pub struct NFTTransferMessage {
     pub custom_payload: Option<String>,
     pub forward_ton_amount: String,
     pub forward_payload: Option<String>,
+    pub comment: Option<String>,
 }
 
 impl ParseCell for NFTTransferMessage {
     fn parse(cell: &crate::vendor::cell::ArcCell) -> Result<Self, crate::vendor::cell::TonCellError>
     where
-        Self: Sized {
+        Self: Sized,
+    {
         cell.parse_fully(|parser| {
             let _op_code = parser.load_u32(32)?;
             let query_id = parser.load_u64(64)?.to_string();
@@ -58,12 +62,15 @@ impl ParseCell for NFTTransferMessage {
                 None
             };
             let forward_ton_amount = parser.load_coins()?.to_string();
-            let forward_payload = if parser.load_bit()? {
-                let payload = Some(hex::encode(cell.reference(ref_index)?.data.clone()));
+            let (forward_payload, comment) = if parser.load_bit()? {
+                let child = cell.reference(ref_index)?;
+                let comment = Comment::parse(child);
+
+                let payload = Some(hex::encode(child.data.clone()));
                 ref_index = ref_index + 1;
-                payload
+                (payload, comment.ok())
             } else {
-                None
+                (None, None)
             };
 
             Ok(Self {
@@ -73,6 +80,7 @@ impl ParseCell for NFTTransferMessage {
                 custom_payload,
                 forward_ton_amount,
                 forward_payload,
+                comment,
             })
         })
     }

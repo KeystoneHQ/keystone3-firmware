@@ -101,10 +101,7 @@ impl ParseCell for TransferMessage {
                 if parser.remaining_bits() > 0 {
                     let mut builder = CellBuilder::new();
                     let remaining_bits = parser.remaining_bits();
-                    builder.store_bits(
-                        remaining_bits,
-                        &parser.load_bits(remaining_bits)?,
-                    )?;
+                    builder.store_bits(remaining_bits, &parser.load_bits(remaining_bits)?)?;
                     Some(InternalMessage::parse(&builder.build()?.to_arc()))
                 } else {
                     None
@@ -198,3 +195,27 @@ pub struct OtherMessage {
 }
 
 pub type Comment = String;
+
+impl ParseCell for Comment {
+    fn parse(cell: &ArcCell) -> Result<Self, TonCellError>
+    where
+        Self: Sized,
+    {
+        cell.parse_fully(|parser| {
+            if parser.remaining_bits() < 32 {
+                return Err(TonCellError::CellParserError(
+                    "payload is not a comment".to_string(),
+                ));
+            }
+            let op = parser.load_u32(32)?;
+            if op != 0x00000000 {
+                return Err(TonCellError::CellParserError(
+                    "payload is not a comment".to_string(),
+                ));
+            }
+            let remaining_bytes = parser.remaining_bytes();
+            String::from_utf8(parser.load_bytes(remaining_bytes)?)
+                .map_err(|e| TonCellError::CellParserError("payload is not a comment".to_string()))
+        })
+    }
+}

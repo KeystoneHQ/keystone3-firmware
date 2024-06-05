@@ -124,7 +124,7 @@ impl InferViewType for AptosSignRequest {
 }
 
 #[cfg(feature = "multi-coins")]
-impl InferViewType for KeystoneSignRequest {
+impl InferViewType for IcpSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::ViewTypeUnKnown)
     }
@@ -173,7 +173,7 @@ fn get_view_type_from_keystone(bytes: Vec<u8>) -> Result<ViewType, URError> {
 }
 
 #[cfg(feature = "multi-coins")]
-impl InferViewType for IcpSignRequest {
+impl InferViewType for KeystoneSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         get_view_type_from_keystone(self.get_sign_data())
     }

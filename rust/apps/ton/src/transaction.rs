@@ -31,13 +31,9 @@ pub fn parse_proof(serial: &[u8]) -> Result<TonProof> {
 
 pub fn sign_proof(serial: &[u8], sk: [u8; 32]) -> Result<[u8; 64]> {
     let message = [vec![0xff, 0xff], "ton-connect".as_bytes().to_vec(), sha256(serial)].concat();
-    rust_tools::debug!(format!("message: {:?}", hex::encode(&message)));
     let hash = sha256(&message);
-    rust_tools::debug!(format!("hash: {:?}", hex::encode(&hash)));
     let (keypair, _) = ed25519::keypair(&sk);
-    rust_tools::debug!(format!("sk: {:?}", hex::encode(&keypair)));
     let signature = ed25519::signature(&hash, &keypair);
-    rust_tools::debug!(format!("signature: {:?}", hex::encode(&signature)));
     Ok(signature)
 }
 
@@ -112,6 +108,14 @@ mod tests {
         //true destination UQBWLOZeOAv7adGnTx-iG7vefsDP5iN8pyYncUiUoJqbRdx9
         //transaction to: EQASODeyhIBbcGlrLvpUJiYjOHRwAZHCBGf1HV5tjKvZVsJb
         //contract destination: EQBWLOZeOAv7adGnTx+iG7vefsDP5iN8pyYncUiUoJqbRYG4
+        println!("{:?}", tx);
+    }
+
+    #[test]
+    fn test_parse_ton_transfer_with_comment() {
+        let serial = "b5ee9c7241010201004f00011c29a9a317665eae8e000000100003010078420013587ccf19c39b1ca51c29f0253ac98d03b8e5ccfc64c3ac2f21c59c20ee8b659adc6c0000000000000000000000000000000000007465737431e35e823f";
+        let serial = hex::decode(serial).unwrap();
+        let tx = parse_transaction(&serial).unwrap();
         println!("{:?}", tx);
     }
 

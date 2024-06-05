@@ -8,7 +8,7 @@ use third_party::hex;
 use self::jetton::JettonMessage;
 use self::nft::{NFTMessage, NFT_TRANSFER};
 use self::traits::ParseCell;
-use crate::vendor::cell::{ArcCell, TonCellError};
+use crate::vendor::cell::{ArcCell, Cell, CellBuilder, TonCellError};
 use crate::vendor::message::JETTON_TRANSFER;
 
 pub mod jetton;
@@ -69,7 +69,7 @@ impl ParseCell for TransferMessage {
     where
         Self: Sized,
     {
-        cell.parse_fully(|parser| {
+        cell.parse(|parser| {
             let _flag = parser.load_bit()?;
             let ihr_disabled = parser.load_bit()?;
             let bounce = parser.load_bit()?;
@@ -98,7 +98,17 @@ impl ParseCell for TransferMessage {
             let data = if parser.load_bit()? {
                 Some(InternalMessage::parse(cell.reference(ref_index)?))
             } else {
-                None
+                if parser.remaining_bits() > 0 {
+                    let mut builder = CellBuilder::new();
+                    let remaining_bits = parser.remaining_bits();
+                    builder.store_bits(
+                        remaining_bits,
+                        &parser.load_bits(remaining_bits)?,
+                    )?;
+                    Some(InternalMessage::parse(&builder.build()?.to_arc()))
+                } else {
+                    None
+                }
             };
             Ok(Self {
                 ihr_disabled,

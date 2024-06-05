@@ -92,19 +92,27 @@ static KeyboardWidget_t *g_keyboardWidget = NULL;
 
 static void GuiInitWalletState()
 {
+    for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+        g_walletState[i].enable = false;
+        g_walletState[i].state = false;
+    }
     MnemonicType mnemonicType = GetMnemonicType();
     switch (mnemonicType) {
     case MNEMONIC_TYPE_SLIP39:
+        for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+            g_walletState[i].enable = true;
+        }
         g_walletState[HOME_WALLET_CARD_ADA].enable = false;
+        g_walletState[HOME_WALLET_CARD_TON].enable = false;
         break;
     case MNEMONIC_TYPE_BIP39:
+        for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+            g_walletState[i].enable = true;
+        }
         g_walletState[HOME_WALLET_CARD_ADA].enable = true;
+        g_walletState[HOME_WALLET_CARD_TON].enable = false;
         break;
     default:
-        for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-            g_walletState[i].enable = false;
-            g_walletState[i].state = false;
-        }
         g_walletState[HOME_WALLET_CARD_TON].enable = true;
         g_walletState[HOME_WALLET_CARD_TON].state = true;
         break;
@@ -744,7 +752,6 @@ static void OpenManageAssetsHandler(lv_event_t *e)
         lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 32, 144);
     }
-
 
     lv_obj_t *btn = GuiCreateBtn(g_manageCont, USR_SYMBOL_CHECK);
     lv_obj_add_event_cb(btn, ConfirmManageAssetsHandler, LV_EVENT_CLICKED, NULL);

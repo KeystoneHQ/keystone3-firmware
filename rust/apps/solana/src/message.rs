@@ -7,6 +7,7 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use third_party::base58;
+use third_party::sha1::digest::consts::True;
 
 struct Signature {
     value: Vec<u8>,
@@ -54,23 +55,44 @@ impl Read<BlockHash> for BlockHash {
 }
 
 pub struct Message {
+    pub is_versioned: bool,
     pub header: MessageHeader,
     pub accounts: Vec<Account>,
     pub block_hash: BlockHash,
     pub instructions: Vec<Instruction>,
+    pub address_table_lookups: Option<Vec<MessageAddressTableLookup>>,
 }
 
 impl Read<Message> for Message {
     fn read(raw: &mut Vec<u8>) -> Result<Message> {
+        let first_byte = raw.get(0);
+        let is_versioned = match first_byte {
+            Some(0x80) => true,
+            Some(_) => false,
+            None => return Err(SolanaError::InvalidData("empty message".to_string())),
+        };
+        if (is_versioned) {
+            raw.remove(0);
+        }
         let header = MessageHeader::read(raw)?;
         let accounts = Compact::read(raw)?.data;
         let block_hash = BlockHash::read(raw)?;
         let instructions = Compact::read(raw)?.data;
+        let address_table_lookups = match is_versioned{
+            true => {
+                Some(Compact::read(raw)?.data)
+            }
+            false => {
+                None
+            }
+        };
         Ok(Message {
+            is_versioned,
             header,
             accounts,
             block_hash,
             instructions,
+            address_table_lookups
         })
     }
 }
@@ -144,5 +166,24 @@ impl Read<u8> for u8 {
             return Err(SolanaError::InvalidData("u8".to_string()));
         }
         Ok(raw.remove(0))
+    }
+}
+
+pub struct MessageAddressTableLookup {
+    pub account_key: Account,
+    pub writable_indexes: Vec<u8>,
+    pub readonly_indexes: Vec<u8>,
+}
+
+impl Read<MessageAddressTableLookup> for MessageAddressTableLookup {
+    fn read(raw: &mut Vec<u8>) -> Result<MessageAddressTableLookup> {
+        let account_key = Account::read(raw)?;
+        let writable_indexes = Compact::read(raw)?.data;
+        let readonly_indexes = Compact::read(raw)?.data;
+        Ok(Self {
+            account_key,
+            writable_indexes,
+            readonly_indexes,
+        })
     }
 }

@@ -18,6 +18,7 @@ serde_derive = { version = "1.0.159"}
 uint = { version = "0.9.3", default-features = false }
 arrayref = "0.3.6"
 app_utils = { path = "../utils" }
+rust_tools = { path = "../../tools" }
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }

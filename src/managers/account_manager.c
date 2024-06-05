@@ -469,15 +469,15 @@ int32_t SaveCurrentAccountInfo(void)
 int32_t GetBlankAccountIndex(uint8_t *accountIndex)
 {
     int32_t ret;
-    uint8_t data[32];
-
-#ifdef COMPILE_SIMULATOR
-    *accountIndex = 0;
-    return SUCCESS_CODE;
-#endif
+    uint8_t data[32] = {0};
 
     for (uint8_t i = 0; i < 3; i++) {
+        CLEAR_ARRAY(data);
+#ifndef COMPILE_SIMULATOR
         ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
+#else
+        ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY_OR_TON_ENTROPY_H32);
+#endif
         CHECK_ERRCODE_BREAK("read iv", ret);
         if (CheckEntropy(data, 32) == false) {
             *accountIndex = i;

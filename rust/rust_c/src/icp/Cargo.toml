@@ -15,6 +15,5 @@ cty = "0.2.2"
 cstr_core = "0.2.6"
 
 common_rust_c = {path = "../common"}
-
 [features]
 debug-memory = []

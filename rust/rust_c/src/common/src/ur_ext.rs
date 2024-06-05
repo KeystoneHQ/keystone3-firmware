@@ -36,6 +36,8 @@ use third_party::ur_registry::pb::protoc::Base;
 use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
+#[cfg(feature = "multi-coins")]
+use third_party::ur_registry::icp::icp_sign_request::IcpSignRequest;
 
 pub trait InferViewType {
     fn infer(&self) -> Result<ViewType, URError> {
@@ -121,6 +123,13 @@ impl InferViewType for AptosSignRequest {
     }
 }
 
+#[cfg(feature = "multi-coins")]
+impl InferViewType for KeystoneSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::ViewTypeUnKnown)
+    }
+}
+
 fn get_view_type_from_keystone(bytes: Vec<u8>) -> Result<ViewType, URError> {
     let unzip_data = unzip(bytes)
         .map_err(|_| URError::NotSupportURTypeError("bytes can not unzip".to_string()))?;
@@ -164,7 +173,7 @@ fn get_view_type_from_keystone(bytes: Vec<u8>) -> Result<ViewType, URError> {
 }
 
 #[cfg(feature = "multi-coins")]
-impl InferViewType for KeystoneSignRequest {
+impl InferViewType for IcpSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         get_view_type_from_keystone(self.get_sign_data())
     }

@@ -650,8 +650,8 @@ static void OpenChangeEntropyHandler(lv_event_t *e)
 static void TonNewMnemonicHandler(lv_event_t *e)
 {
     GUI_PAGE_DEL(g_tonPhraseHintPage);
-    g_selectedEntropyMethod = g_selectedEntropyMethod | WALLET_TYPE_TON;
-    GuiFrameOpenViewWithParam(&g_singlePhraseView, &g_selectedEntropyMethod, sizeof(g_selectedEntropyMethod));
+    uint8_t entropyMethod = WALLET_TYPE_TON;
+    GuiFrameOpenViewWithParam(&g_singlePhraseView, &entropyMethod, sizeof(entropyMethod));
 }
 
 static void CloseTonPhraseHandler(lv_event_t *e)

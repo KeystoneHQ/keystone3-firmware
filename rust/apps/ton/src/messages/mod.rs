@@ -167,7 +167,17 @@ impl ParseCell for InternalMessage {
                 }),
                 0x00000000 => {
                     let remaining_bytes = parser.remaining_bytes();
-                    let comment = parser.load_utf8(remaining_bytes)?;
+                    let mut comment = parser.load_utf8(remaining_bytes)?;
+                    let mut child = cell.reference(0);
+                    while child.is_ok() {
+                        let t = child.unwrap();
+                        let child_comment = t.parse_fully(|child_parser| {
+                            let child_remaining_bytes = child_parser.remaining_bytes();
+                            child_parser.load_utf8(child_remaining_bytes)
+                        })?;
+                        comment.push_str(&child_comment);
+                        child = t.reference(0);
+                    }
                     Ok(Self {
                         op_code: format!("{:x}", op_code),
                         action: None,

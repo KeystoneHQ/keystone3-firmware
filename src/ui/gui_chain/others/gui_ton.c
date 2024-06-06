@@ -290,12 +290,12 @@ static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayTonTransactio
         lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
 
-    lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Raw Data"));
+    lv_obj_t *label = GuiCreateTextLabel(container, _("Raw Data"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     lv_label_set_recolor(label, true);
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
 
-    label = GuiCreateTextLabel(container, data->raw_data);
+    label = GuiCreateIllustrateLabel(container, data->raw_data);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 62);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);

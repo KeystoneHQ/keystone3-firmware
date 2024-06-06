@@ -200,6 +200,7 @@ extern GUI_VIEW g_DevicePublicKeyView;
 #ifndef BTC_ONLY
 extern GUI_VIEW g_multiAccountsReceiveView;
 extern GUI_VIEW g_keyDerivationRequestView;
+extern GUI_VIEW g_tonMnemonicHintView;
 #endif
 extern GUI_VIEW g_scanView;
 extern GUI_VIEW g_transactionDetailView;

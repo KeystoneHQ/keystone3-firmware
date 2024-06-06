@@ -43,7 +43,6 @@ static CreateWalletWidget_t g_createWalletTileView;
 
 static void OpenMoreHandler(lv_event_t *e);
 static void OpenChangeEntropyHandler(lv_event_t *e);
-static void TonNewMnemonicHandler(lv_event_t *e);
 static void TonPhraseButtonHandler(lv_event_t *e);
 static void GuiRefreshNavBar(void);
 static void CloseChangeEntropyHandler(lv_event_t *e);
@@ -59,7 +58,6 @@ static lv_obj_t *g_repeatPinTile = NULL;
 static lv_obj_t *g_noticeWindow = NULL;
 static char g_pinBuf[PASSWORD_MAX_LEN + 1];
 static lv_obj_t *g_openMoreHintBox;
-static PageWidget_t *g_tonPhraseHintPage;
 static PageWidget_t *g_changeEntropyPage;
 //indicates the way to generate entropy;
 static uint8_t g_selectedEntropyMethod = ENTROPY_TYPE_STANDARD;
@@ -647,51 +645,10 @@ static void OpenChangeEntropyHandler(lv_event_t *e)
     CreateChangeEntropyView();
 }
 
-static void TonNewMnemonicHandler(lv_event_t *e)
-{
-    GUI_PAGE_DEL(g_tonPhraseHintPage);
-    uint8_t entropyMethod = WALLET_TYPE_TON;
-    GuiFrameOpenViewWithParam(&g_singlePhraseView, &entropyMethod, sizeof(entropyMethod));
-}
-
-static void CloseTonPhraseHandler(lv_event_t *e)
-{
-    GUI_PAGE_DEL(g_tonPhraseHintPage);
-}
-
 static void TonPhraseButtonHandler(lv_event_t *e)
 {
-    GUI_DEL_OBJ(g_tonPhraseHintPage);
     GUI_DEL_OBJ(g_openMoreHintBox);
-    g_tonPhraseHintPage = CreatePageWidget();
-    SetNavBarLeftBtn(g_tonPhraseHintPage->navBarWidget, NVS_BAR_RETURN, CloseTonPhraseHandler, NULL);
-    lv_obj_t *parent = g_tonPhraseHintPage->contentZone;
-
-    lv_obj_t *label, *btn, *img, *container;
-    container = GuiCreateContainerWithParent(parent, 408, lv_obj_get_height(lv_scr_act()) -
-                GUI_MAIN_AREA_OFFSET);
-    lv_obj_align(container, LV_ALIGN_CENTER, 0, 0);
-
-    img = GuiCreateImg(container, &imgBlueInformation);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 168, 12);
-
-    label = GuiCreateTextLabel(container, _("create_ton_wallet"));
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 90);
-    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
-
-    label = GuiCreateIllustrateLabel(container, _("create_ton_wallet_hint"));
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 144);
-    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
-
-    btn = GuiCreateBtn(container, _("Next"));
-    lv_obj_set_size(btn, 408, 66);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -36);
-    if (GetBatterPercent() < 60) {
-        lv_obj_clear_flag(btn, LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_set_style_bg_opa(btn, LV_OPA_30, LV_PART_MAIN);
-    }
-
-    lv_obj_add_event_cb(btn, TonNewMnemonicHandler, LV_EVENT_CLICKED, NULL);
+    GuiFrameOpenView(&g_tonMnemonicHintView);
 }
 
 static void CloseChangeEntropyHandler(lv_event_t *e)

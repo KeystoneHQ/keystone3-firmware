@@ -28,7 +28,7 @@ impl ParseCell for SigningMessage {
     where
         Self: Sized,
     {
-        cell.parse_fully(|parser| {
+        cell.parse(|parser| {
             let wallet_id = parser.load_u32(32).ok();
             let timeout = parser.load_u32(32)?;
             let seq_no = parser.load_u32(32)?;
@@ -97,6 +97,7 @@ impl ParseCell for TransferMessage {
             };
             let data = if parser.load_bit()? {
                 Some(InternalMessage::parse(cell.reference(ref_index)?))
+                
             } else {
                 if parser.remaining_bits() > 0 {
                     let mut builder = CellBuilder::new();
@@ -118,7 +119,7 @@ impl ParseCell for TransferMessage {
                 fwd_fees,
                 state_init,
                 dest_addr_legacy,
-                data: data.transpose()?,
+                data: data.transpose().ok().flatten(),
             })
         })
     }

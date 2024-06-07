@@ -21,6 +21,7 @@
 #include "log_print.h"
 #include "gui_btc_home_widgets.h"
 #include "gui_multisig_read_sdcard_widgets.h"
+#include "version_btc_only.h"
 
 static lv_obj_t *g_manageWalletLabel = NULL;
 static lv_obj_t *g_homeWalletCardCont = NULL;
@@ -342,6 +343,7 @@ void GuiHomeRestart(void)
 
 void GuiHomeRefresh(void)
 {
+    static bool isFirstBeta = true;
 #ifdef RUST_MEMORY_DEBUG
     PrintRustMemoryStatus();
 #endif
@@ -360,6 +362,10 @@ void GuiHomeRefresh(void)
     }
     GUI_DEL_OBJ(g_moreHintbox)
     AccountPublicHomeCoinGet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
+    if (isFirstBeta && SOFTWARE_VERSION_BUILD % 2) {
+        CreateBetaNotice();
+        isFirstBeta = false;
+    }
     if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         lv_img_set_src(g_twoKeyImg, &imgTwoKey);
     } else {

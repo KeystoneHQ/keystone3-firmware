@@ -345,6 +345,8 @@ int8_t GuiCreateWalletNextTile(void)
         }
         break;
     case CREATE_WALLET_NAMEWALLET:
+        SecretCacheSetWalletIndex(GuiGetEmojiIconIndex());
+        SecretCacheSetWalletName(GetCurrentKbWalletName());
         break;
     case CREATE_WALLET_SETPIN:
         if (g_repeatPassCode == NULL) {

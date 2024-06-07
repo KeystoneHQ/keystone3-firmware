@@ -224,7 +224,6 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         strcpy_s(wallet.name, WALLET_NAME_MAX_LEN + 1, GetCurrentKbWalletName());
         GuiNvsBarSetWalletName(GetCurrentKbWalletName());
         GuiNvsBarSetWalletIcon(GuiGetEmojiIconImg());
-        GuiModelSettingSaveWalletDesc(&wallet);
         GuiCloseToTargetView(&g_initView);
         GuiFrameOpenViewWithParam(&g_lockView, NULL, 0);
         GuiLockScreenHidden();

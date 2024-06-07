@@ -243,6 +243,10 @@ static void QRCodePause(bool);
 
 static void GuiInitWalletListArray()
 {
+    //open all
+    for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+        g_walletListArray[i].enable = true;
+    }
     if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
         for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
             if (g_walletListArray[i].index == WALLET_LIST_TONKEEPER) {
@@ -264,6 +268,9 @@ static void GuiInitWalletListArray()
                 }
             } else if (g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
                 g_walletListArray[i].enable = !GetIsTempAccount();
+            }
+            else if (g_walletListArray[i].index == WALLET_LIST_TONKEEPER) {
+                g_walletListArray[i].enable = false;
             }
 #else
             if (GetCurrentWalletIndex() != SINGLE_WALLET) {

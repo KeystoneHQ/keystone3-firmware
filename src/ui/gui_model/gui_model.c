@@ -552,6 +552,7 @@ static int32_t ModelGenerateTonMnemonic(const void *inData, uint32_t inDataLen)
     memset_s(mnemonic, strnlen_s(mnemonic, MNEMONIC_MAX_LEN), 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
     SRAM_FREE(mnemonic);
     SetLockScreen(enable);
+    ClearLockScreenTime();
     return SUCCESS_CODE;
 }
 
@@ -573,6 +574,7 @@ static int32_t ModelTonWriteEntropyAndSeed(const void *inData, uint32_t inDataLe
     CHECK_ERRCODE_BREAK("save entropy error", ret);
     MODEL_WRITE_SE_END
     SetLockScreen(enable);
+    ClearLockScreenTime();
     return 0;
 }
 
@@ -628,6 +630,7 @@ if (ret == SUCCESS_CODE)
     GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));
 }
 SetLockScreen(enable);
+ClearLockScreenTime();
 return 0;
 }
 
@@ -668,6 +671,7 @@ static int32_t ModelTonVerifyMnemonic(const void *inData, uint32_t inDataLen)
         GuiApiEmitSignal(SIG_CREATE_SINGLE_PHRASE_WRITESE_PASS, NULL, 0);
     }
     SetLockScreen(enable);
+    ClearLockScreenTime();
     return 0;
 }
 

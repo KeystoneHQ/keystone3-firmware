@@ -646,7 +646,7 @@ static int32_t ModelTonVerifyMnemonic(const void *inData, uint32_t inDataLen)
         if (seedResponse->error_code != 0) {
             break;
         }
-        memset_s(seed, 64, seedResponse->data, 64);
+        memcpy_s(seed, 64, seedResponse->data, 64);
         xPubResult = ton_seed_to_publickey(seed, 64);
         if (xPubResult->error_code != 0) {
             free_simple_response_c_char(xPubResult);

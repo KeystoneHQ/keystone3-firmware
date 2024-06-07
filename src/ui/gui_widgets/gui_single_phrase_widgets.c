@@ -59,7 +59,8 @@ static void ResetConfirmInput(void);
 static void SelectPhraseCntHandler(lv_event_t *e);
 
 static void TonUpdateMnemonicHandler(lv_event_t *e) {
-     GuiModelTonUpdateMnemonic();
+    GUI_DEL_OBJ(g_noticeWindow);
+    GuiModelTonUpdateMnemonic();
 }
 
 static void TonRegenrateConfirm() {
@@ -274,7 +275,7 @@ void GuiSinglePhraseInit(uint8_t entropyMethod)
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     if (!g_isTon) {
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, SelectPhraseCntHandler, NULL);
-    }else {
+    } else {
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenTonTutorial, NULL);
     }
 }
@@ -414,7 +415,7 @@ int8_t GuiSinglePhrasePrevTile(void)
         if(!g_isTon) {
             SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
             SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
-        }else {
+        } else {
             SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenTonTutorial, NULL);
         }
         break;
@@ -433,6 +434,7 @@ int8_t GuiSinglePhrasePrevTile(void)
 void GuiSinglePhraseDeInit(void)
 {
     GUI_DEL_OBJ(g_noticeHintBox)
+    GUI_DEL_OBJ(g_noticeWindow);
 
     for (int i = 0; i < SINGLE_PHRASE_MAX_WORDS; i++) {
         g_pressedBtn[i] = 0;

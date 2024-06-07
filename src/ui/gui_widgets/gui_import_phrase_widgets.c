@@ -203,6 +203,7 @@ void GuiImportPhraseDeInit(void)
     GuiMnemonicHintboxClear();
     GuiClearKeyBoard(g_importPhraseKb);
     GuiClearMnemonicKeyBoard(g_importMkb);
+    GUI_DEL_OBJ(g_noticeWindow)
     lv_obj_del(g_importPhraseKbCont);
     lv_obj_del(g_buttonCont);
     lv_obj_del(g_importSinglePhraseTileView.cont);

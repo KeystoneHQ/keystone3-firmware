@@ -238,7 +238,7 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
 
     label = GuiCreateIllustrateLabel(cont, _("connect_wallet_key_request_fmt"));
     lv_label_set_text_fmt(label, _("connect_wallet_key_request_fmt"), g_response->data->origin);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 0);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
 
     pathCont = GuiCreateContainerWithParent(cont, 408, 450);
     lv_obj_align(pathCont, LV_ALIGN_TOP_LEFT, 0, 92);
@@ -272,14 +272,14 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
     cont = GuiCreateContainerWithParent(parent, 480, 114);
     lv_obj_align(cont, LV_ALIGN_BOTTOM_LEFT, 0, 0);
 
-    btn = GuiCreateBtn(cont, _("Cancel"));
+    btn = GuiCreateTextBtn(cont, _("Cancel"));
     lv_obj_set_size(btn, 192, 66);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 36, 24);
     lv_obj_add_event_cb(btn, CloseCurrentViewHandler, LV_EVENT_CLICKED, NULL);
 
-    btn = GuiCreateBtn(cont, _("Approve"));
+    btn = GuiCreateTextBtn(cont, _("Approve"));
     lv_obj_set_size(btn, 192, 66);
     lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 252, 24);
     lv_obj_add_event_cb(btn, OnApproveHandler, LV_EVENT_CLICKED, NULL);

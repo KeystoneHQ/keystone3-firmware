@@ -404,7 +404,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
         height = 132;
     }
 #endif
-    g_utxoReceiveWidgets.moreCont = GuiCreateHintBox(parent, 480, height, true);
+    g_utxoReceiveWidgets.moreCont = GuiCreateHintBox(height);
     lv_obj_add_event_cb(lv_obj_get_child(g_utxoReceiveWidgets.moreCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_utxoReceiveWidgets.moreCont);
     cont = g_utxoReceiveWidgets.moreCont;
 
@@ -526,20 +526,10 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 
     const char* coin = GetCoinCardByIndex(g_chainCard)->coin;
     if (!GetFirstReceive(coin)) {
-        g_utxoReceiveWidgets.attentionCont = GuiCreateHintBox(parent, 480, 386, false);
-        tempObj = GuiCreateImg(g_utxoReceiveWidgets.attentionCont, &imgInformation);
-        lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
-        tempObj = GuiCreateLittleTitleLabel(g_utxoReceiveWidgets.attentionCont, _("receive_btc_alert_title"));
-        lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
-        char hint[BUFFER_SIZE_256];
-        GetHint(hint);
-        tempObj = GuiCreateLabelWithFont(g_utxoReceiveWidgets.attentionCont, hint, g_defIllustrateFont);
-        lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
-        tempObj = GuiCreateBtn(g_utxoReceiveWidgets.attentionCont, _("got_it"));
-        lv_obj_set_size(tempObj, 122, 66);
-        lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
-        lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-        lv_obj_add_event_cb(tempObj, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
+        char attentionText[BUFFER_SIZE_256];
+        GetHint(attentionText);
+        g_utxoReceiveWidgets.attentionCont = GuiCreateConfirmHintBox(&imgInformation, _("Attention"), attentionText, NULL, _("got_it"), WHITE_COLOR_OPA20);
+        lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_utxoReceiveWidgets.attentionCont), CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
         SetFirstReceive(coin, true);
     }
 }
@@ -621,8 +611,8 @@ static void GuiCreateSwitchAddressWidget(lv_obj_t *parent)
     index = 0;
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetUtxoAddress(index, &addressDataItem);
-        g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel = GuiCreateLabelWithFont(cont, "", &buttonFont);
-        lv_obj_align(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_ALIGN_TOP_LEFT, 24, 30 + 103 * i);
+        g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel = GuiCreateTextLabel(cont, "");
+        lv_obj_align(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_ALIGN_TOP_LEFT, 24, 20 + 103 * i);
         g_utxoReceiveWidgets.switchAddressWidgets[i].addressLabel = GuiCreateNoticeLabel(cont, "");
         lv_obj_align(g_utxoReceiveWidgets.switchAddressWidgets[i].addressLabel, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
         if (i > 0) {
@@ -709,31 +699,25 @@ static void ConfirmAddrTypeHandler(lv_event_t *e)
 
 static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
 {
-    lv_obj_t *btn;
-    lv_obj_t *img;
-
-    btn = GuiCreateBtn(parent, "");
+    lv_obj_t *btn = GuiCreateImgButton(parent, &imgArrowLeft, 66, LeftBtnHandler, NULL);
     lv_obj_set_size(btn, 96, 66);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_100, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
-    img = GuiCreateImg(btn, &imgArrowLeft);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_t *img = lv_obj_get_child(btn, 0);
     if (g_showIndex < 5) {
         lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
     }
-    lv_obj_add_event_cb(btn, LeftBtnHandler, LV_EVENT_CLICKED, NULL);
     g_utxoReceiveWidgets.leftBtnImg = img;
 
-    btn = GuiCreateBtn(parent, "");
+    btn = GuiCreateImgButton(parent, &imgArrowRight, 66, RightBtnHandler, NULL);
     lv_obj_set_size(btn, 96, 66);
     lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_100, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 156, -24);
-    img = GuiCreateImg(btn, &imgArrowRight);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_opa(img, LV_OPA_COVER, LV_PART_MAIN);
-    lv_obj_add_event_cb(btn, RightBtnHandler, LV_EVENT_CLICKED, NULL);
+    img = lv_obj_get_child(btn, 0);
     g_utxoReceiveWidgets.rightBtnImg = img;
 
     btn = GuiCreateBtn(parent, USR_SYMBOL_CHECK);
@@ -910,7 +894,7 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
     lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 0, 0);
 
     cont = GuiCreateContainerWithParent(scrollCont, 408, 411);
-    lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 84);
+    lv_obj_align_to(cont, labelHint, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
     lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
@@ -968,25 +952,25 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
 
 static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
 {
-    lv_obj_t *cont, *label, *line, *closeBtn, *closeImg;
+    lv_obj_t *cont, *label, *line, *closeBtn;
     static lv_point_t points[2] = {{0, 0}, {408, 0}};
     g_gotoAddressValid = false;
 
     if (g_utxoReceiveWidgets.inputAddressCont == NULL) {
-        g_utxoReceiveWidgets.inputAddressCont = GuiCreateHintBox(parent, 480, 530, true);
+        g_utxoReceiveWidgets.inputAddressCont = GuiCreateHintBox(530);
         lv_obj_add_event_cb(lv_obj_get_child(g_utxoReceiveWidgets.inputAddressCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_utxoReceiveWidgets.inputAddressCont);
         cont = g_utxoReceiveWidgets.inputAddressCont;
 
-        label = GuiCreateLabelWithFont(cont, _("receive_btc_receive_change_address_title"), g_defIllustrateFont);
+        label = GuiCreateIllustrateLabel(cont, _("receive_btc_receive_change_address_title"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 30 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        label = GuiCreateLabelWithFont(cont, "", &buttonFont);
-        lv_label_set_text_fmt(label, "%s-", _("receive_ada_base_address"));
+        label = GuiCreateTextLabel(cont, "");
+        lv_label_set_text_fmt(label, "%s-", _("Address"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 108 + 270);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
-        g_utxoReceiveWidgets.inputAddressLabel = GuiCreateLabelWithFont(cont, "", &buttonFont);
+        g_utxoReceiveWidgets.inputAddressLabel = GuiCreateTextLabel(cont, "");
         lv_obj_align(g_utxoReceiveWidgets.inputAddressLabel, LV_ALIGN_TOP_LEFT, 38 + lv_obj_get_self_width(label), 108 + 270);
-        label = GuiCreateLabelWithFont(cont, _("receive_btc_receive_change_address_limit"), g_defIllustrateFont);
+        label = GuiCreateIllustrateLabel(cont, _("receive_btc_receive_change_address_limit"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 170 + 270);
         lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
@@ -1002,16 +986,10 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
         lv_btnmatrix_set_btn_ctrl(keyboard, 11, LV_BTNMATRIX_CTRL_DISABLED);
         g_utxoReceiveWidgets.gotoAddressKeyboard = keyboard;
 
-        closeBtn = lv_btn_create(cont);
+        closeBtn = GuiCreateImgButton(cont, &imgClose, 64, CloseGotoAddressHandler, parent);
         lv_obj_set_size(closeBtn, 36, 36);
         lv_obj_align(closeBtn, LV_ALIGN_TOP_RIGHT, -36, 27 + 270);
         lv_obj_set_style_bg_opa(closeBtn, LV_OPA_TRANSP, LV_PART_MAIN);
-        lv_obj_set_style_border_width(closeBtn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-        lv_obj_set_style_outline_width(closeBtn, 0, LV_PART_MAIN);
-        lv_obj_set_style_shadow_width(closeBtn, 0, LV_PART_MAIN);
-        lv_obj_add_event_cb(closeBtn, CloseGotoAddressHandler, LV_EVENT_CLICKED, NULL);
-        closeImg = GuiCreateImg(closeBtn, &imgClose);
-        lv_obj_align(closeImg, LV_ALIGN_CENTER, 0, 0);
     } else {
         lv_label_set_text(g_utxoReceiveWidgets.inputAddressLabel, "");
         lv_obj_clear_flag(g_utxoReceiveWidgets.inputAddressCont, LV_OBJ_FLAG_HIDDEN);
@@ -1030,7 +1008,7 @@ static void RefreshQrCode(void)
         lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
     lv_label_set_text(g_utxoReceiveWidgets.addressLabel, addressDataItem.address);
-    lv_label_set_text_fmt(g_utxoReceiveWidgets.addressCountLabel, "%s-%u", _("receive_ada_base_address"), addressDataItem.index);
+    lv_label_set_text_fmt(g_utxoReceiveWidgets.addressCountLabel, "%s-%u", _("Address"), addressDataItem.index);
     lv_obj_align_to(g_utxoReceiveWidgets.addressCountLabel, g_utxoReceiveWidgets.addressLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
 #if BTC_ONLY
@@ -1054,7 +1032,7 @@ static void RefreshSwitchAccount(void)
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetUtxoAddress(index, &addressDataItem);
-        lv_label_set_text_fmt(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("receive_ada_base_address"), (addressDataItem.index));
+        lv_label_set_text_fmt(g_utxoReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("Address"), addressDataItem.index);
         CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_utxoReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {
@@ -1088,88 +1066,67 @@ static void RefreshSwitchAccount(void)
 
 static void CloseAttentionHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_add_flag(g_utxoReceiveWidgets.attentionCont, LV_OBJ_FLAG_HIDDEN);
-    }
+    lv_obj_add_flag(g_utxoReceiveWidgets.attentionCont, LV_OBJ_FLAG_HIDDEN);
 }
 
 static void MoreHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (g_utxoReceiveWidgets.moreCont == NULL) {
-            GuiCreateMoreWidgets(g_utxoReceiveWidgets.tileQrCode);
-        } else {
-            lv_obj_del(g_utxoReceiveWidgets.moreCont);
-            g_utxoReceiveWidgets.moreCont = NULL;
-        }
+    if (g_utxoReceiveWidgets.moreCont == NULL) {
+        GuiCreateMoreWidgets(g_utxoReceiveWidgets.tileQrCode);
+    } else {
+        lv_obj_del(g_utxoReceiveWidgets.moreCont);
+        g_utxoReceiveWidgets.moreCont = NULL;
     }
 }
 
 static void AddressSettingsHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (g_utxoReceiveWidgets.moreCont != NULL) {
-            lv_obj_del(g_utxoReceiveWidgets.moreCont);
-            g_utxoReceiveWidgets.moreCont = NULL;
-        }
-        GuiBitcoinReceiveGotoTile(UTXO_RECEIVE_TILE_ADDRESS_SETTINGS);
+    if (g_utxoReceiveWidgets.moreCont != NULL) {
+        lv_obj_del(g_utxoReceiveWidgets.moreCont);
+        g_utxoReceiveWidgets.moreCont = NULL;
     }
+    GuiBitcoinReceiveGotoTile(UTXO_RECEIVE_TILE_ADDRESS_SETTINGS);
 }
 
 static void ExportXpubHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (g_utxoReceiveWidgets.moreCont != NULL) {
-            lv_obj_del(g_utxoReceiveWidgets.moreCont);
-            g_utxoReceiveWidgets.moreCont = NULL;
-        }
-        GuiFrameOpenViewWithParam(&g_exportPubkeyView, &g_chainCard, sizeof(g_chainCard));
+    if (g_utxoReceiveWidgets.moreCont != NULL) {
+        lv_obj_del(g_utxoReceiveWidgets.moreCont);
+        g_utxoReceiveWidgets.moreCont = NULL;
     }
+    GuiFrameOpenViewWithParam(&g_exportPubkeyView, &g_chainCard, sizeof(g_chainCard));
 }
 
 static void TutorialHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_utxoReceiveWidgets.moreCont);
-        if (g_chainCard == HOME_WALLET_CARD_BTC) {
-            TUTORIAL_LIST_INDEX_ENUM tIndex = TUTORIAL_BTC_RECEIVE;
-            GuiFrameOpenViewWithParam(&g_tutorialView, &tIndex, sizeof(tIndex));
-        }
+    GUI_DEL_OBJ(g_utxoReceiveWidgets.moreCont);
+    if (g_chainCard == HOME_WALLET_CARD_BTC) {
+        TUTORIAL_LIST_INDEX_ENUM tIndex = TUTORIAL_BTC_RECEIVE;
+        GuiFrameOpenViewWithParam(&g_tutorialView, &tIndex, sizeof(tIndex));
     }
 }
 
 static void LeftBtnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_set_style_img_opa(g_utxoReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
-        if (g_showIndex >= 5) {
-            g_showIndex -= 5;
-            RefreshSwitchAccount();
-        }
-        if (g_showIndex < 5) {
-            lv_obj_set_style_img_opa(g_utxoReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);
-        }
+    lv_obj_set_style_img_opa(g_utxoReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
+    if (g_showIndex >= 5) {
+        g_showIndex -= 5;
+        RefreshSwitchAccount();
+    }
+    if (g_showIndex < 5) {
+        lv_obj_set_style_img_opa(g_utxoReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);
     }
 }
 
 static void RightBtnHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_set_style_img_opa(g_utxoReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
-        if (g_showIndex < ADDRESS_INDEX_MAX - 5) {
-            g_showIndex += 5;
-            RefreshSwitchAccount();
-        }
-        if (g_showIndex >= ADDRESS_INDEX_MAX - 5) {
-            lv_obj_set_style_img_opa(g_utxoReceiveWidgets.rightBtnImg, LV_OPA_30, LV_PART_MAIN);
-        }
+    lv_obj_set_style_img_opa(g_utxoReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
+    if (g_showIndex < ADDRESS_INDEX_MAX - 5) {
+        g_showIndex += 5;
+        RefreshSwitchAccount();
+    }
+    if (g_showIndex >= ADDRESS_INDEX_MAX - 5) {
+        lv_obj_set_style_img_opa(g_utxoReceiveWidgets.rightBtnImg, LV_OPA_30, LV_PART_MAIN);
     }
 }
 
@@ -1190,82 +1147,60 @@ static void UpdateAddrTypeCheckbox(uint8_t i, bool isChecked)
 
 static void AddressSettingsCheckHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t *checkBox;
-
-    if (code == LV_EVENT_CLICKED) {
-        checkBox = lv_event_get_target(e);
+    lv_obj_t *checkBox = lv_event_get_target(e);
 #ifdef BTC_ONLY
-        g_addressSettings = GetIsTestNet() ? g_testNetAddressSettings : g_mainNetAddressSettings;
+    g_addressSettings = GetIsTestNet() ? g_testNetAddressSettings : g_mainNetAddressSettings;
 #endif
-        for (uint32_t i = 0; i < g_addressSettingsNum; i++) {
-            UpdateAddrTypeCheckbox(i, checkBox == g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox);
-        }
-        UpdateConfirmAddrTypeBtn();
+    for (uint32_t i = 0; i < g_addressSettingsNum; i++) {
+        UpdateAddrTypeCheckbox(i, checkBox == g_utxoReceiveWidgets.addressSettingsWidgets[i].checkBox);
     }
+    UpdateConfirmAddrTypeBtn();
 }
 
 static void SwitchAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t *checkBox;
-
-    if (code == LV_EVENT_CLICKED) {
-        checkBox = lv_event_get_target(e);
-        for (uint32_t i = 0; i < 5; i++) {
-            if (checkBox == g_utxoReceiveWidgets.switchAddressWidgets[i].checkBox) {
-                lv_obj_add_state(g_utxoReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
-                lv_obj_clear_flag(g_utxoReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(g_utxoReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-                g_selectIndex = g_showIndex + i;
-            } else {
-                lv_obj_clear_state(g_utxoReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
-                lv_obj_add_flag(g_utxoReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_clear_flag(g_utxoReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
-            }
+    lv_obj_t *checkBox = lv_event_get_target(e);
+    for (uint32_t i = 0; i < 5; i++) {
+        if (checkBox == g_utxoReceiveWidgets.switchAddressWidgets[i].checkBox) {
+            lv_obj_add_state(g_utxoReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
+            lv_obj_clear_flag(g_utxoReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(g_utxoReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+            g_selectIndex = g_showIndex + i;
+        } else {
+            lv_obj_clear_state(g_utxoReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
+            lv_obj_add_flag(g_utxoReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(g_utxoReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
         }
-        UpdateConfirmAddrIndexBtn();
     }
+    UpdateConfirmAddrIndexBtn();
 }
 
 static void ChangeAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        uint32_t i = GetCurrentSelectIndex();
-        if (i < ADDRESS_INDEX_MAX) {
-            i++;
-            SetCurrentSelectIndex(i);
-        }
-        RefreshQrCode();
-        if (i == ADDRESS_INDEX_MAX) {
-            lv_obj_set_style_img_opa(g_utxoReceiveWidgets.changeImg, LV_OPA_60, LV_PART_MAIN);
-            lv_obj_set_style_text_opa(g_utxoReceiveWidgets.changeLabel, LV_OPA_60, LV_PART_MAIN);
-        } else {
-            lv_obj_set_style_img_opa(g_utxoReceiveWidgets.changeImg, LV_OPA_COVER, LV_PART_MAIN);
-            lv_obj_set_style_text_opa(g_utxoReceiveWidgets.changeLabel, LV_OPA_COVER, LV_PART_MAIN);
-        }
+    uint32_t i = GetCurrentSelectIndex();
+    if (i < ADDRESS_INDEX_MAX) {
+        i++;
+        SetCurrentSelectIndex(i);
+    }
+    RefreshQrCode();
+    if (i == ADDRESS_INDEX_MAX) {
+        lv_obj_set_style_img_opa(g_utxoReceiveWidgets.changeImg, LV_OPA_60, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(g_utxoReceiveWidgets.changeLabel, LV_OPA_60, LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_img_opa(g_utxoReceiveWidgets.changeImg, LV_OPA_COVER, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(g_utxoReceiveWidgets.changeLabel, LV_OPA_COVER, LV_PART_MAIN);
     }
 }
 
 static void OpenSwitchAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiBitcoinReceiveGotoTile(UTXO_RECEIVE_TILE_SWITCH_ACCOUNT);
-        RefreshSwitchAccount();
-    }
+    GuiBitcoinReceiveGotoTile(UTXO_RECEIVE_TILE_SWITCH_ACCOUNT);
+    RefreshSwitchAccount();
 }
 
 static void GotoAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        GuiCreateGotoAddressWidgets(g_utxoReceiveWidgets.tileSwitchAccount);
-    }
+    GuiCreateGotoAddressWidgets(g_utxoReceiveWidgets.tileSwitchAccount);
 }
 
 static void SetKeyboardValid(bool validation)
@@ -1384,11 +1319,7 @@ static void GotoAddressKeyboardHandler(lv_event_t *e)
 
 static void CloseGotoAddressHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        lv_obj_add_flag(g_utxoReceiveWidgets.inputAddressCont, LV_OBJ_FLAG_HIDDEN);
-    }
+    lv_obj_add_flag(g_utxoReceiveWidgets.inputAddressCont, LV_OBJ_FLAG_HIDDEN);
 }
 
 static ChainType GetChainTypeByIndex(uint32_t index)

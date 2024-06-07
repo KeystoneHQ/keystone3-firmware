@@ -5,12 +5,12 @@
 
 typedef enum {
     LANG_EN,
-#ifdef RU_SUPPORT
-    LANG_RU,
-#endif
-#ifdef CN_SUPPORT
-    LANG_ZH_CN,
-#endif
+    // LANG_RU,
+    // LANG_ZH_CN,
+    // LANG_KO,
+    // LANG_ES,
+    LANG_DE,
+    // LANG_JA,
 
     LANG_TYPE_BUTT,
 } LANG_TYPE_ENUM;

@@ -2,6 +2,7 @@
 #include "gui_passphrase_widgets.h"
 #include "gui_status_bar.h"
 #include "gui_chain.h"
+#include "gui_style.h"
 #include "gui_views.h"
 #include "gui_hintbox.h"
 #include "gui_keyboard.h"
@@ -49,17 +50,14 @@ void GuiPassphraseInit(void)
 
     g_pageWidget = CreatePageWidget();
     g_passphraseWidgets.cont = g_pageWidget->contentZone;
-    g_passphraseWidgets.passphraseInputCont = GuiCreateHintBox(g_passphraseWidgets.cont, 480, 614, false);
-    label = GuiCreateIllustrateLabel(g_passphraseWidgets.passphraseInputCont, _("wallet_setting_passphrase"));
+    g_passphraseWidgets.passphraseInputCont = GuiCreateHintBox(614);
+    label = GuiCreateIllustrateLabel(g_passphraseWidgets.passphraseInputCont, _("Passphrase"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 216);
     lv_obj_set_style_text_opa(label, LV_OPA_70, LV_PART_MAIN);
-    btn = GuiCreateBtn(g_passphraseWidgets.passphraseInputCont, _("Skip"));
+    btn = GuiCreateTextBtn(g_passphraseWidgets.passphraseInputCont, _("Skip"));
     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-    label = lv_obj_get_child(btn, 0);
-    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
-    lv_obj_set_size(btn, lv_obj_get_self_width(label) + 12, 42);
-
+    lv_obj_set_height(btn, 42);
     lv_obj_align(btn, LV_ALIGN_TOP_RIGHT, -36, 210);
     lv_obj_add_event_cb(btn, SkipHandler, LV_EVENT_CLICKED, NULL);
 
@@ -68,17 +66,17 @@ void GuiPassphraseInit(void)
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
-    lv_obj_set_size(btn, 352, 60);
+    lv_obj_set_size(btn, 370, 60);
     lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 36, 294);
     ta = lv_textarea_create(btn);
     lv_obj_set_align(ta, LV_ALIGN_CENTER);
-    lv_obj_set_size(ta, 352, 60);
+    lv_obj_set_size(ta, 370, 60);
     lv_textarea_set_password_mode(ta, true);
     lv_textarea_set_placeholder_text(ta, _("passphrase_enter_input"));
     lv_obj_set_style_bg_color(ta, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_color(ta, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_border_opa(ta, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_text_font(ta, &buttonFont, LV_PART_MAIN);
+    lv_obj_set_style_text_font(ta, g_defTextFont, LV_PART_MAIN);
     lv_obj_add_event_cb(ta, SetKeyboardTaHandler, LV_EVENT_ALL, ta);
     lv_textarea_set_max_length(ta, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(ta, true);
@@ -98,17 +96,17 @@ void GuiPassphraseInit(void)
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, LV_PART_MAIN);
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
-    lv_obj_set_size(btn, 352, 60);
+    lv_obj_set_size(btn, 370, 60);
     lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 36, 378);
     ta = lv_textarea_create(btn);
     lv_obj_set_align(ta, LV_ALIGN_CENTER);
-    lv_obj_set_size(ta, 352, 60);
+    lv_obj_set_size(ta, 370, 60);
     lv_textarea_set_password_mode(ta, true);
     lv_textarea_set_placeholder_text(ta, _("passphrase_enter_repeat"));
     lv_obj_set_style_bg_color(ta, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_color(ta, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_border_opa(ta, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_text_font(ta, &buttonFont, LV_PART_MAIN);
+    lv_obj_set_style_text_font(ta, g_defTextFont, LV_PART_MAIN);
     lv_textarea_set_max_length(ta, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(ta, true);
     lv_obj_set_scrollbar_mode(ta, LV_SCROLLBAR_MODE_OFF);
@@ -162,7 +160,7 @@ void GuiPassphraseDeInit(void)
 void GuiPassphraseRefresh(void)
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_setting_passphrase"));
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Passphrase"));
 }
 
 void GuiPassphrasePrevTile(void)
@@ -255,7 +253,7 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
                     }
                 } else {
                     SecretCacheSetPassphrase((char *)repeat);
-                    g_waitAnimWidget.cont = GuiCreateAnimHintBox(lv_scr_act(), 480, 278, 82);
+                    g_waitAnimWidget.cont = GuiCreateAnimHintBox(480, 278, 82);
                     g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("seed_check_wait_verify"));
                     lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
                     lv_obj_add_flag(g_waitAnimWidget.cont, LV_OBJ_FLAG_CLICKABLE);

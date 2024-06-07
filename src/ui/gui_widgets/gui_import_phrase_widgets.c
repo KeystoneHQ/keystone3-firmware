@@ -50,20 +50,13 @@ void GuiImportPhraseWriteSe(bool en, int32_t errCode)
 
 static void ResetClearImportHandler(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        ClearMnemonicKeyboard(g_importMkb, &g_importMkb->currentId);
-        GuiClearKeyBoard(g_importPhraseKb);
-    }
+    ClearMnemonicKeyboard(g_importMkb, &g_importMkb->currentId);
+    GuiClearKeyBoard(g_importPhraseKb);
 }
 
 static void ImportPhraseWordsHandler(lv_event_t* e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        ImportSinglePhraseWords(g_importMkb, g_importPhraseKb);
-    }
+    ImportSinglePhraseWords(g_importMkb, g_importPhraseKb);
 }
 
 static void GuiInputPhraseWidget(lv_obj_t *parent)
@@ -79,7 +72,7 @@ static void GuiInputPhraseWidget(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateNoticeLabel(parent, _("import_wallet_phrase_desc"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     g_importMkb = GuiCreateMnemonicKeyBoard(parent, GuiMnemonicInputHandler, kbMode, NULL);
     g_importMkb->currentId = 0;
@@ -93,9 +86,7 @@ static void GuiInputPhraseWidget(lv_obj_t *parent)
     g_buttonCont = cont;
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_opa(cont, LV_OPA_0, 0);
-    lv_obj_t *btn = GuiCreateBtn(cont, "");
-    lv_obj_t *img = GuiCreateImg(btn, &imgArrowNext);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_ARROW_NEXT);
     lv_obj_add_event_cb(btn, ImportPhraseWordsHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
     g_importMkb->nextButton = btn;
@@ -119,9 +110,7 @@ void GuiImportPhraseInit(uint8_t num)
     g_inputWordsCnt = num;
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
-
     lv_obj_t *tileView = GuiCreateTileView(cont);
-
     lv_obj_t *tile = lv_tileview_add_tile(tileView, SINGLE_PHRASE_INPUT_PHRASE, 0, LV_DIR_RIGHT);
     g_importSinglePhraseTileView.inputPhrase = tile;
     GuiInputPhraseWidget(tile);

@@ -32,7 +32,7 @@ int32_t GuiFirmwareUpdateViewEventProcess(void *self, uint16_t usEvent, void *pa
         break;
     case SIG_INIT_SDCARD_CHANGE:
         rcvValue = *(uint32_t *)param;
-        GuiStatusBarSetSdCard(!rcvValue);
+        GuiStatusBarSetSdCard(!rcvValue, false);
     case GUI_EVENT_REFRESH:
         GuiFirmwareUpdateRefresh();
         break;

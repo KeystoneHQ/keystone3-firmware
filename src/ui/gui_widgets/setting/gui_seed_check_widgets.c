@@ -36,11 +36,8 @@ static KeyBoard_t *g_recoveryPhraseKb;          // recovery keyboard
 
 void ResetSeedCheckImportHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        ClearMnemonicKeyboard(g_recoveryMkb, &g_recoveryMkb->currentId);
-        GuiClearKeyBoard(g_recoveryPhraseKb);
-    }
+    ClearMnemonicKeyboard(g_recoveryMkb, &g_recoveryMkb->currentId);
+    GuiClearKeyBoard(g_recoveryPhraseKb);
 }
 
 void GuiWalletSeedCheckClearKb(void)
@@ -76,6 +73,7 @@ void GuiWalletRecoveryMethodCheck(lv_obj_t *parent)
     lv_obj_t *button;
 
     if (PassphraseExist(GetCurrentAccountIndex()) == true) {
+        uint16_t height = 72 + 32 + 12 + 146;
         lv_obj_t *cont = GuiCreateContainerWithParent(parent, 408, 514);
         lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
         lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
@@ -88,23 +86,24 @@ void GuiWalletRecoveryMethodCheck(lv_obj_t *parent)
         lv_obj_t *disableTitle = GuiCreateTextLabel(cont, _("seed_check_passphrase_title"));
         lv_obj_align(disableTitle, LV_ALIGN_TOP_MID, 0, 140);
         lv_obj_set_style_text_align(disableTitle, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+        lv_obj_refr_size(disableTitle);
+        height += lv_obj_get_self_height(disableTitle);
 
         lv_obj_t *disableDesc = GuiCreateNoticeLabel(cont, _("seed_check_passphrase_notice"));
         lv_obj_set_style_text_align(disableDesc, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
         lv_obj_set_width(disableDesc, 336);
         lv_obj_align_to(disableDesc, disableTitle, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+        lv_obj_refr_size(disableDesc);
+        height += lv_obj_get_self_height(disableDesc);
 
         lv_obj_t *restartLabel = GuiCreateTextLabel(cont, _("Restart_now"));
         lv_obj_set_style_text_color(restartLabel, ORANGE_COLOR, LV_PART_MAIN);
         GuiButton_t restartTable[] = {
-            {
-                .obj = restartLabel,
-                .align = LV_ALIGN_CENTER,
-                .position = {0, 0},
-            },
+            {.obj = restartLabel, .align = LV_ALIGN_CENTER, .position = {0, 0}}
         };
         button = GuiCreateButton(cont, lv_obj_get_self_width(restartLabel) + 60, 66, restartTable, NUMBER_OF_ARRAYS(restartTable), RebootHandler, NULL);
-        lv_obj_align_to(button, disableDesc, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+        lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -26);
+        lv_obj_set_height(cont, height);
 
         return;
     }
@@ -141,30 +140,31 @@ void GuiWalletRecoveryMethodCheck(lv_obj_t *parent)
 
 void *GuiWalletRecoverySinglePhrase(lv_obj_t *parent, uint8_t wordAmount)
 {
+    uint16_t height = 296;
     lv_keyboard_user_mode_t kbMode = GuiGetMnemonicKbType(wordAmount);
     g_inputWordsCnt = wordAmount;
 
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
 
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("seed_check_single_phrase_title"));
+    lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("seed_check_single_phrase_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12);
     label = GuiCreateIllustrateLabel(parent, _("seed_check_share_phrase_title"));
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 72);
+    lv_obj_refr_size(label);
+    height -= lv_obj_get_self_height(label);
 
     g_recoveryMkb = GuiCreateMnemonicKeyBoard(parent, GuiMnemonicInputHandler, kbMode, NULL);
     g_recoveryMkb->intputType = MNEMONIC_INPUT_SETTING_VIEW;
-    lv_obj_set_size(g_recoveryMkb->cont, 408, 236);
+    lv_obj_set_size(g_recoveryMkb->cont, 408, height);
     lv_obj_align_to(g_recoveryMkb->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
     lv_btnmatrix_set_selected_btn(g_recoveryMkb->btnm, g_recoveryMkb->currentId);
 
     lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 114);
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_opa(cont, LV_OPA_0, 0);
-    lv_obj_t *btn = GuiCreateBtn(cont, "");
-    lv_obj_t *img = GuiCreateImg(btn, &imgArrowNext);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_ARROW_NEXT);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
     g_buttonCont = cont;
     g_recoveryMkb->nextButton = btn;
@@ -186,6 +186,7 @@ void GuiWalletRecoveryUpdateKeyboard(void)
 // share phrase
 void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount)
 {
+    uint16_t height = 296;
     g_inputWordsCnt = wordAmount;
     lv_keyboard_user_mode_t kbMode = GuiGetMnemonicKbType(wordAmount);
 
@@ -206,8 +207,10 @@ void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount)
     lv_label_set_recolor(label, true);
     lv_label_set_text_fmt(label, _("import_wallet_ssb_desc_fmt"), g_recoveryMkb->wordCnt, g_recoveryMkb->currentSlice + 1);
     g_recoveryMkb->descLabel = label;
+    lv_obj_refr_size(label);
+    height -= lv_obj_get_self_height(label);
 
-    lv_obj_set_size(g_recoveryMkb->cont, 408, 236);
+    lv_obj_set_size(g_recoveryMkb->cont, 408, height);
     lv_obj_align_to(g_recoveryMkb->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
     lv_btnmatrix_set_selected_btn(g_recoveryMkb->btnm, g_recoveryMkb->currentId);
     // lv_label_set_text_fmt(g_recoveryTitle, "%s #F5870A %d#", _("import_wallet_ssb_title"), g_recoveryMkb->currentSlice + 1);
@@ -215,9 +218,7 @@ void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount)
     lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 114);
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_style_bg_opa(cont, LV_OPA_0, 0);
-    lv_obj_t *btn = GuiCreateBtn(cont, "");
-    lv_obj_t *img = GuiCreateImg(btn, &imgArrowNext);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_ARROW_NEXT);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
     g_buttonCont = cont;
     g_recoveryMkb->nextButton = btn;
@@ -236,18 +237,10 @@ void *GuiWalletRecoverySharePhrase(lv_obj_t *parent, uint8_t wordAmount)
 
 static void ImportPhraseWordsHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        ImportSinglePhraseWords(g_recoveryMkb, g_recoveryPhraseKb);
-    }
+    ImportSinglePhraseWords(g_recoveryMkb, g_recoveryPhraseKb);
 }
 
 static void ImportShareNextSliceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        ImportShareNextSlice(g_recoveryMkb, g_recoveryPhraseKb);
-    }
+    ImportShareNextSlice(g_recoveryMkb, g_recoveryPhraseKb);
 }

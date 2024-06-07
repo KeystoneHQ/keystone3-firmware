@@ -83,7 +83,7 @@ if "%build_copy%"=="true" (
 set cmake_parm=
 if "%build_language%"=="true" (
     pushd %LANGUAGE_PATH%
-    %LANGUAGE_SCRIPT% --zh --ru
+    %LANGUAGE_SCRIPT%
     popd  
 )
 

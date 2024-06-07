@@ -192,7 +192,7 @@ void SetLockDeviceAlive(bool alive)
 {
 }
 
-uint8_t *GuiGetFpVersion(char *version)
+uint8_t *GuiGetFpVersion(char *version, uint32_t maxLen)
 {
     for (int i = 0; i < 4; i++)
     {

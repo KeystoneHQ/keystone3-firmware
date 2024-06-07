@@ -70,12 +70,10 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
     lv_obj_t *label, *imgArrow, *button;
     uint16_t offset = 0;
 
-#ifndef BTC_ONLY
-    button = GuiCreateSelectButton(parent, _("language_title"), &imgArrowRight,
+    button = GuiCreateSelectButton(parent, _("language_little_title"), &imgArrowRight,
                                    OpenLanguageSelectHandler, NULL, false);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
     offset += 100;
-#endif
 
     button = GuiCreateSelectButton(parent, _("system_settings_screen_lock_title"), &imgArrowRight,
                                    DispalyHandler, NULL, false);
@@ -102,7 +100,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
     offset += 100;
 
-    button = GuiCreateSelectButton(parent, _("verify_title"), &imgArrowRight,
+    button = GuiCreateSelectButton(parent, _("verify_title_text"), &imgArrowRight,
                                    GuiSystemSettingWebAuthHandler, NULL, false);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
     offset += 100;

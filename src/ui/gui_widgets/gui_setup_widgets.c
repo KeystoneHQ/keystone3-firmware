@@ -12,22 +12,19 @@
 
 typedef enum {
     SETUP_ENGLISH = 0,
-    SETUP_RUSSIAN,
-    SETUP_CHINESE,
-    SETUP_SPANISH,
-    SETUP_KOREAN,
+    SETUP_GERMAN,
 
     SETUP_LANGUAGE_BUTT,
 } SETUP_LANGUAGE_ENUM;
 
 static const char *g_languageList[] = {
     "English",
+    "German",
     "Русский язык",
     "繁體中文",
     "Español",
     "korean", // "한국인",
     "Japanese",
-    "German",
 };
 
 typedef enum {
@@ -57,7 +54,7 @@ static void DestroyTimer(void);
 SETUP_PHASE_ENUM lastShutDownPage;
 static PageWidget_t *g_pageWidget;
 #ifdef BTC_ONLY
-#define SUPPORT_WALLET_INDEX SETUP_ENGLISH
+#define SUPPORT_WALLET_INDEX SETUP_GERMAN
 #else
 #define SUPPORT_WALLET_INDEX SETUP_RUSSIAN
 #endif
@@ -98,8 +95,7 @@ static void SelectLanguageHandler(lv_event_t *e)
             }
         }
 
-        if (newCheckIndex != SETUP_CHINESE)
-            LanguageSwitch(newCheckIndex);
+        LanguageSwitch(newCheckIndex);
         GuiEmitSignal(GUI_EVENT_CHANGE_LANGUAGE, NULL, 0);
     }
 }
@@ -122,25 +118,27 @@ void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
     for (int i = SETUP_ENGLISH; i <= SUPPORT_WALLET_INDEX; i++) {
         lv_obj_t *checkBox = GuiCreateSingleCheckBox(parent, "");
         g_languageCheck[i] = checkBox;
-        if (i == SETUP_CHINESE) {
-            label = GuiCreateLabelWithFont(parent, g_languageList[i], &openSansCnText);
+        if (i == SETUP_GERMAN) {
+            label = GuiCreateLabelWithFont(parent, g_languageList[i], &deText);
+        // } else if (i == SETUP_RUSSIAN) {
+        //     label = GuiCreateLabelWithFont(parent, g_languageList[i], &ruText);
+        // } else if (i == SETUP_KOREAN) {
+        //     label = GuiCreateLabelWithFont(parent, g_languageList[i], &koText);
+        // } else if (i == SETUP_SPANISH) {
+        //     label = GuiCreateLabelWithFont(parent, g_languageList[i], &esText);
+        // } else if (i == SETUP_GERMAN) {
+        //     label = GuiCreateLabelWithFont(parent, g_languageList[i], &deText);
+        // } else if (i == SETUP_JAPANESE) {
+        //     label = GuiCreateLabelWithFont(parent, g_languageList[i], &jaText);
         } else {
-            label = GuiCreateLabelWithFont(parent, g_languageList[i], &openSansLanguage);
+            label = GuiCreateLabelWithFont(parent, g_languageList[i], &openSansEnText);
         }
         if (i == lang) {
             lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         }
         GuiButton_t table[] = {
-            {
-                .obj = label,
-                .align = LV_ALIGN_LEFT_MID,
-                .position = {24, 0},
-            },
-            {
-                .obj = checkBox,
-                .align = LV_ALIGN_TOP_MID,
-                .position = {0, 24},
-            },
+            {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {24, 0}},
+            {.obj = checkBox, .align = LV_ALIGN_TOP_MID, .position = {0, 24}}
         };
         lv_obj_t *button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
                                            SelectLanguageHandler, g_languageCheck[i]);
@@ -149,6 +147,7 @@ void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
         lv_obj_align(line, LV_ALIGN_DEFAULT, 0, i * 84 + offset + 84);
     }
 }
+
 
 static void GuiSetLanguageWidget(lv_obj_t *parent)
 {

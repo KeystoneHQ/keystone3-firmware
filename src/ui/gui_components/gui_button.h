@@ -21,11 +21,12 @@ typedef struct GuiButton {
 
 void *GuiCreateButton(lv_obj_t *parent, uint16_t w, uint16_t h, GuiButton_t *member,
                       uint8_t cnt, lv_event_cb_t buttonCb, void *param);
-void *GuiCreateImgLabelButton(lv_obj_t *parent, const char *text, const void *src, uint16_t width,
-                              lv_event_cb_t buttonCb, void *param);
 void *GuiCreateStatusCoinButton(lv_obj_t *parent, const char *text, const void *src);
 void *GuiUpdateStatusCoinButton(lv_obj_t *button, const char *text, const void *src);
 void *GuiCreateImgLabelAdaptButton(lv_obj_t *parent, const char *text, const void *src,
+                                   lv_event_cb_t buttonCb, void *param);
+void GuiImgLabelAdaptButtonResize(lv_obj_t *button);
+void *GuiCreateLabelImgAdaptButton(lv_obj_t *parent, const char *text, const void *src,
                                    lv_event_cb_t buttonCb, void *param);
 void *GuiCreateSelectButton(lv_obj_t *parent, const char *text, const void *src,
                             lv_event_cb_t buttonCb, void *param, bool isCling);

@@ -16,6 +16,8 @@ int32_t GuiMultisigSelectImportMethodViewEventProcess(void *self, uint16_t usEve
     case GUI_EVENT_OBJ_DEINIT:
         GuiMultisigSelectImportMethodWidgetsDeInit();
         break;
+    case GUI_EVENT_REFRESH:
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

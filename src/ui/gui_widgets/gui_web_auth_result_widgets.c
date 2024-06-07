@@ -60,23 +60,18 @@ typedef enum {
 
 void GuiSetWebAuthResultData(URParseResult *urResult, URParseMultiResult *multiResult, bool multi)
 {
-#ifndef COMPILE_SIMULATOR
     g_urResult = urResult;
     g_urMultiResult = multiResult;
     g_isMulti = multi;
     g_web_auth_data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-#endif
 }
 
 void GuiWebAuthResultSuccessHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (g_webAuthSuccessCb != NULL) {
-            g_webAuthSuccessCb();
-        }
-        GuiFrameCLoseView(&g_webAuthResultView);
+    if (g_webAuthSuccessCb != NULL) {
+        g_webAuthSuccessCb();
     }
+    GuiFrameCLoseView(&g_webAuthResultView);
 }
 
 void GuiWebAuthResultCodeWidget(lv_obj_t *parent)
@@ -89,13 +84,13 @@ void GuiWebAuthResultCodeWidget(lv_obj_t *parent)
     label = GuiCreateIllustrateLabel(parent, _("verification_code_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 352 - GUI_MAIN_AREA_OFFSET);
 
-    btn = GuiCreateBtn(parent, _("verification_failed"));
+    btn = GuiCreateTextBtn(parent, _("Failed"));
     lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
     lv_obj_set_size(btn, 192, 66);
-    lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, NULL);
 
-    btn = GuiCreateBtn(parent, _("verification_success"));
+    btn = GuiCreateTextBtn(parent, _("verification_success"));
     lv_obj_set_style_bg_color(btn, GREEN_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 252, -24);
     lv_obj_set_size(btn, 192, 66);
@@ -110,7 +105,7 @@ void GuiWebAuthResultCreateAuthCode(lv_obj_t *parent, char *code, int xOffset)
     lv_obj_align(cont, LV_ALIGN_DEFAULT, xOffset, 108);
     lv_obj_set_style_radius(cont, 6, LV_PART_MAIN);
     lv_obj_set_style_bg_color(cont, lv_color_hex(0x2d2d2d), 0);
-    label = GuiCreateLittleTitleLabel(cont, code);
+    label = GuiCreateLabelWithFont(cont, code, &openSansEnLittleTitle);
     lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 }
 
@@ -140,13 +135,10 @@ void GuiWebAuthResultRenderAuthCode(lv_obj_t *parent)
 
 static void WebAuthWipeDeviceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        if (CHECK_BATTERY_LOW_POWER()) {
-            g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
-        } else {
-            WebAuthWipeDevice();
-        }
+    if (CHECK_BATTERY_LOW_POWER()) {
+        g_hintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_hintBox, NULL);
+    } else {
+        WebAuthWipeDevice();
     }
 }
 
@@ -179,21 +171,24 @@ static void WebAuthWipeDevice(void)
 
 void GuiWebAuthResultFailedWidget(lv_obj_t *parent)
 {
+    uint16_t height = 212;
     lv_obj_t *img, *label;
     img = GuiCreateImg(parent, &imgWarn);
-    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 36);
+    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 6);
 
     label = GuiCreateLittleTitleLabel(parent, _("verification_code_failed_title"));
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 8);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 12);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 
     label = GuiCreateIllustrateLabel(parent, _("verification_code_failed_desc"));
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 8);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 12);
     lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_refr_size(label);
+    height += lv_obj_get_self_height(label);
 
-    label = GuiCreateIllustrateLabel(parent, _("verification_code_failed_link"));
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 8);
+    label = GuiCreateIllustrateLabel(parent, _("support_link"));
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 12);
     lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);
 
     label = GuiCreateTextLabel(parent, _("wipe_device"));
@@ -313,8 +308,8 @@ static lv_obj_t *g_WebAuthResultPendingCont;
 
 void GuiWebAuthResultShowPending()
 {
-    g_WebAuthResultPendingCont = GuiCreateAnimHintBox(lv_scr_act(), 480, 326, 82);
-    lv_obj_t *title = GuiCreateTextLabel(g_WebAuthResultPendingCont, _("verify_modal_title"));
+    g_WebAuthResultPendingCont = GuiCreateAnimHintBox(480, 326, 82);
+    lv_obj_t *title = GuiCreateTextLabel(g_WebAuthResultPendingCont, _("seed_check_wait_verify"));
     lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -124);
     lv_obj_t *desc = GuiCreateNoticeLabel(g_WebAuthResultPendingCont, _("verify_modal_desc"));
     lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -76);

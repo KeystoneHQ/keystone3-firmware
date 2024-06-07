@@ -95,7 +95,7 @@ static void GuiCreateSignatureQRCode(lv_obj_t *parent)
     lv_obj_t *label = GuiCreateNoticeLabel(cont, _("transaction_parse_scan_by_software"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 576 - GUI_MAIN_AREA_OFFSET);
 
-    lv_obj_t *btn = GuiCreateBtn(cont, _("Done"));
+    lv_obj_t *btn = GuiCreateTextBtn(cont, _("Done"));
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_size(btn, 408, 66);
     lv_obj_add_event_cb(btn, GoToHomeViewHandler, LV_EVENT_CLICKED, NULL);

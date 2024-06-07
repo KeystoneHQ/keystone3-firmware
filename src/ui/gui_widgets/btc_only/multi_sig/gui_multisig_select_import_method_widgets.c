@@ -42,7 +42,7 @@ void GuiMultisigSelectImportMethodWidgetsDeInit()
 static void GuiContent(lv_obj_t *parent)
 {
     lv_obj_t *label, *img, *button, *imgArrow, *line;
-    label = GuiCreateTitleLabel(parent, _("wallet_profile_import_multi_wallet"));
+    label = GuiCreateScrollTitleLabel(parent, _("wallet_profile_import_multi_wallet"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
     label = GuiCreateNoticeLabel(parent, _("wallet_profile_import_multi_wallet_desc"));
     lv_obj_set_width(label, 400);
@@ -52,27 +52,15 @@ static void GuiContent(lv_obj_t *parent)
     label = GuiCreateLittleTitleLabel(parent, _("import_multi_wallet_via_camera"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     GuiButton_t table[] = {
-        {
-            .obj = img,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {24, 40},
-        },
-        {
-            .obj = label,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {76, 40},
-        },
-        {
-            .obj = imgArrow,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {372, 40},
-        },
+        {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 40}},
+        {.obj = label, .align = LV_ALIGN_DEFAULT, .position = {76, 40}},
+        {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 40}},
     };
     button = GuiCreateButton(parent, 432, 120, table, NUMBER_OF_ARRAYS(table), SelectCameraHandler, NULL);
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 180);
 
     table[0].obj = GuiCreateImg(parent, &imgSdcardImport);
-    table[1].obj = GuiCreateLittleTitleLabel(parent, _("import_multi_wallet_via_micro_card"));
+    table[1].obj = GuiCreateLittleTitleLabel(parent, _("firmware_update_via_sd"));
     table[2].obj = GuiCreateImg(parent, &imgArrowRight);
     button = GuiCreateButton(parent, 432, 120, table, NUMBER_OF_ARRAYS(table), SelectMicroCardFileHandler, NULL);
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 300);
@@ -86,26 +74,18 @@ static void GuiContent(lv_obj_t *parent)
 
 static void SelectMicroCardFileHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        if (SdCardInsert()) {
-            static uint8_t fileFilterType = ONLY_TXT;
-            GuiFrameOpenViewWithParam(&g_multisigReadSdcardView, &fileFilterType, sizeof(fileFilterType));
-        } else {
-            g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
-        }
+    if (SdCardInsert()) {
+        static uint8_t fileFilterType = ONLY_TXT;
+        GuiFrameOpenViewWithParam(&g_multisigReadSdcardView, &fileFilterType, sizeof(fileFilterType));
+    } else {
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
     }
 }
 
 static void SelectCameraHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        const static ViewType viewType = MultisigWalletImport;
-        GuiFrameOpenViewWithParam(&g_scanView, &viewType, sizeof(viewType));
-    }
+    const static ViewType viewType = MultisigWalletImport;
+    GuiFrameOpenViewWithParam(&g_scanView, &viewType, sizeof(viewType));
 }
 
 static void OpenMultisigMoreInfoHandler(lv_event_t *e)

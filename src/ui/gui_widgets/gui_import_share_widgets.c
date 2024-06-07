@@ -40,57 +40,31 @@ static lv_obj_t *g_nextCont = NULL;
 static KeyBoard_t *g_ssbImportKb;
 static MnemonicKeyBoard_t *g_importMkb;
 static uint8_t g_phraseCnt = 33;
-static lv_obj_t *g_noticeHintBox = NULL;
+static lv_obj_t *g_noticeWindow = NULL;
 static PageWidget_t *g_pageWidget;
 
 static void ContinueStopCreateHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        if (lv_event_get_user_data(e) != NULL) {
-            g_importMkb->currentSlice = 0;
-            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-            GuiCLoseCurrentWorkingView();
-        }
-        GUI_DEL_OBJ(g_noticeHintBox)
-    }
+    g_importMkb->currentSlice = 0;
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    GuiCLoseCurrentWorkingView();
+    GUI_DEL_OBJ(g_noticeWindow)
 }
 
 static void StopCreateViewHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        g_noticeHintBox = GuiCreateHintBox(lv_scr_act(), 480, 416, false);
-        lv_obj_t *img = GuiCreateImg(g_noticeHintBox, &imgWarn);
-        lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 432);
-        lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeHintBox, _("import_wallet_ssb_cancel_title"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 528);
-        label = GuiCreateIllustrateLabel(g_noticeHintBox, _("import_wallet_ssb_cancel_desc"));
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 580);
-        lv_obj_t *btn = GuiCreateBtn(g_noticeHintBox, _("shamir_phrase_continue_btn"));
-        lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-        lv_obj_align(btn, LV_ALIGN_DEFAULT, 36, 710);
-        lv_obj_set_size(btn, 162, 66);
-        lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, NULL);
-
-        btn = GuiCreateBtn(g_noticeHintBox, _("shamir_phrase_cancel_create_btn"));
-        lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
-        lv_obj_align(btn, LV_ALIGN_DEFAULT, 229, 710);
-        lv_obj_set_size(btn, 215, 66);
-        lv_obj_add_event_cb(btn, ContinueStopCreateHandler, LV_EVENT_CLICKED, g_noticeHintBox);
-    }
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("import_wallet_ssb_cancel_title"), _("import_wallet_ssb_cancel_desc"), NULL,
+                     _("Continue"), WHITE_COLOR_OPA20, _("Quit"), RED_COLOR);
+    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_add_event_cb(rightBtn, ContinueStopCreateHandler, LV_EVENT_CLICKED, NULL);
 }
 
 static void ConfirmClearHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        ClearMnemonicKeyboard(g_importMkb, &g_importMkb->currentId);
-        GuiClearKeyBoard(g_ssbImportKb);
-    }
+    ClearMnemonicKeyboard(g_importMkb, &g_importMkb->currentId);
+    GuiClearKeyBoard(g_ssbImportKb);
 }
 
 void GuiImportShareWriteSe(bool en, int32_t errCode)
@@ -109,15 +83,12 @@ void GuiImportShareWriteSe(bool en, int32_t errCode)
 
 static void ImportShareNextSliceHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        ImportShareNextSlice(g_importMkb, g_ssbImportKb);
-    }
+    ImportShareNextSlice(g_importMkb, g_ssbImportKb);
 }
 
 static void GuiShareSsbInputWidget(lv_obj_t *parent)
 {
+    uint16_t height = 296;
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
     lv_obj_t *label = NULL;
@@ -136,8 +107,10 @@ static void GuiShareSsbInputWidget(lv_obj_t *parent)
     lv_obj_set_style_text_color(label, DARK_GRAY_COLOR, LV_PART_MAIN);
     lv_label_set_text_fmt(label, _("import_wallet_ssb_desc_fmt"), g_importMkb->wordCnt, g_importMkb->currentSlice + 1);
     g_importMkb->descLabel = label;
+    lv_obj_refr_size(label);
+    height -= lv_obj_get_self_height(label);
 
-    lv_obj_set_size(g_importMkb->cont, 408, 236);
+    lv_obj_set_size(g_importMkb->cont, 408, height);
     lv_obj_align_to(g_importMkb->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
     lv_btnmatrix_set_selected_btn(g_importMkb->btnm, g_importMkb->currentId);
 
@@ -152,14 +125,12 @@ static void GuiShareSsbInputWidget(lv_obj_t *parent)
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
     g_importMkb->stepLabel = label;
 
-    lv_obj_t *btn = GuiCreateBtn(cont, "");
-    lv_obj_t *img = GuiCreateImg(btn, &imgArrowNext);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
+    lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_ARROW_NEXT);
     lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 348, 24);
     lv_obj_set_style_bg_opa(btn, LV_OPA_60, LV_PART_MAIN);
     // lv_obj_clear_flag(btn, LV_OBJ_FLAG_CLICKABLE);
     g_importMkb->nextButton = btn;
-    lv_obj_add_event_cb(btn, ImportShareNextSliceHandler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn, ImportShareNextSliceHandler, LV_EVENT_CLICKED, NULL);
 
     cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 242);
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
@@ -227,7 +198,7 @@ int8_t GuiImportSharePrevTile(void)
 
 void GuiImportShareDeInit(void)
 {
-    GUI_DEL_OBJ(g_noticeHintBox)
+    GUI_DEL_OBJ(g_noticeWindow)
     GUI_DEL_OBJ(g_nextCont)
     CLEAR_OBJECT(g_importMkb);
     GuiMnemonicHintboxClear();

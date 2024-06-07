@@ -30,96 +30,91 @@ typedef struct GuiTurorialWidget {
 } GuiTurorialWidget_t;
 
 static GuiTurorialWidget_t g_tutorialWidget;
-static bool g_tutorialInitialized = false;
 static PageWidget_t *g_pageWidget = NULL;
 
 static void TutorialsInit()
 {
-    if (!g_tutorialInitialized) {
-        // TUTORIAL_SHAMIR_BACKUP
-        g_tutorials[TUTORIAL_SHAMIR_BACKUP].len = 1;
-        g_tutorials[TUTORIAL_SHAMIR_BACKUP].tutorials[0].title = _("single_backup_learn_more_title");
-        g_tutorials[TUTORIAL_SHAMIR_BACKUP].tutorials[0].desc = _("single_backup_learn_more_desc");
-        g_tutorials[TUTORIAL_SHAMIR_BACKUP].tutorials[0].link = _("single_backup_learn_more_link");
-        g_tutorials[TUTORIAL_SHAMIR_BACKUP].tutorials[0].qrTitle = _("single_backup_learn_more_qr_title");
-        g_tutorials[TUTORIAL_SHAMIR_BACKUP].tutorials[0].qrSubtitle = _("single_backup_learn_more_qr_link");
-        g_tutorials[TUTORIAL_SHAMIR_BACKUP].tutorials[0].qrCode = _("single_backup_learn_more_qr_link");
+    // TUTORIAL_SHAMIR_BACKUP
+    g_tutorials[TUTORIAL_SHAMIR_BACKUP].len = 1;
+    g_tutorials[TUTORIAL_SHAMIR_BACKUP].tutorials[0].title = _("single_backup_learn_more_title");
+    g_tutorials[TUTORIAL_SHAMIR_BACKUP].tutorials[0].desc = _("single_backup_learn_more_desc");
+    g_tutorials[TUTORIAL_SHAMIR_BACKUP].tutorials[0].link = _("learn_more");
+    g_tutorials[TUTORIAL_SHAMIR_BACKUP].tutorials[0].qrTitle = _("single_backup_learn_more_title");
+    g_tutorials[TUTORIAL_SHAMIR_BACKUP].tutorials[0].qrSubtitle = _("single_backup_learn_more_qr_link");
+    g_tutorials[TUTORIAL_SHAMIR_BACKUP].tutorials[0].qrCode = _("single_backup_learn_more_qr_link");
 
-        // TUTORIAL_BTC_RECEIVE
-        g_tutorials[TUTORIAL_BTC_RECEIVE].len = 3;
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].title = _("receive_btc_more_t_title1");
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].desc = _("receive_btc_more_t_desc1");
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].link = _("receive_btc_more_t_link1");
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].qrTitle = _("receive_btc_more_t_qr_title1");
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].qrSubtitle = _("receive_btc_more_t_qr_link1");
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].qrCode = _("receive_btc_more_t_qr_link1");
+    // TUTORIAL_BTC_RECEIVE
+    g_tutorials[TUTORIAL_BTC_RECEIVE].len = 3;
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].title = _("receive_btc_more_t_title1");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].desc = _("receive_btc_more_t_desc1");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].link = _("learn_more");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].qrTitle = _("receive_btc_more_t_title1");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].qrSubtitle = _("receive_more_t_qr_link");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[0].qrCode = _("receive_more_t_qr_link");
 
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[1].title = _("receive_btc_more_t_title2");
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[1].desc = _("receive_btc_more_t_desc2");
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[1].link = _("receive_btc_more_t_link2");
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[1].qrTitle = _("receive_btc_more_t_qr_title2");
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[1].qrSubtitle = _("receive_btc_more_t_qr_link2");
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[1].qrCode = _("receive_btc_more_t_qr_link2");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[1].title = _("receive_btc_more_t_title2");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[1].desc = _("receive_btc_more_t_desc2");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[1].link = _("learn_more");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[1].qrTitle = _("receive_btc_more_t_title2");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[1].qrSubtitle = _("receive_more_t_qr_link");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[1].qrCode = _("receive_more_t_qr_link");
 
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[2].title = _("receive_btc_more_t_title3");
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[2].desc = _("receive_btc_more_t_desc3");
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[2].link = _("receive_btc_more_t_link3");
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[2].qrTitle = _("receive_btc_more_t_qr_title3");
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[2].qrSubtitle = _("receive_btc_more_t_qr_link3");
-        g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[2].qrCode = _("receive_btc_more_t_qr_link3");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[2].title = _("receive_btc_more_t_title3");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[2].desc = _("receive_btc_more_t_desc3");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[2].link = _("learn_more");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[2].qrTitle = _("receive_btc_more_t_title3");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[2].qrSubtitle = _("receive_more_t_qr_link");
+    g_tutorials[TUTORIAL_BTC_RECEIVE].tutorials[2].qrCode = _("receive_more_t_qr_link");
 
-        // TUTORIAL_ETH_RECEIVE
-        g_tutorials[TUTORIAL_ETH_RECEIVE].len = 1;
-        g_tutorials[TUTORIAL_ETH_RECEIVE].tutorials[0].title = _("receive_eth_more_t_title1");
-        g_tutorials[TUTORIAL_ETH_RECEIVE].tutorials[0].desc = _("receive_eth_more_t_desc1");
-        g_tutorials[TUTORIAL_ETH_RECEIVE].tutorials[0].link = _("receive_eth_more_t_link1");
-        g_tutorials[TUTORIAL_ETH_RECEIVE].tutorials[0].qrTitle = _("receive_eth_more_t_qr_title1");
-        g_tutorials[TUTORIAL_ETH_RECEIVE].tutorials[0].qrSubtitle = _("receive_eth_more_t_qr_link1");
-        g_tutorials[TUTORIAL_ETH_RECEIVE].tutorials[0].qrCode = _("receive_eth_more_t_qr_link1");
+    // TUTORIAL_ETH_RECEIVE
+    g_tutorials[TUTORIAL_ETH_RECEIVE].len = 1;
+    g_tutorials[TUTORIAL_ETH_RECEIVE].tutorials[0].title = _("receive_eth_more_t_title1");
+    g_tutorials[TUTORIAL_ETH_RECEIVE].tutorials[0].desc = _("receive_eth_more_t_desc1");
+    g_tutorials[TUTORIAL_ETH_RECEIVE].tutorials[0].link = _("learn_more");
+    g_tutorials[TUTORIAL_ETH_RECEIVE].tutorials[0].qrTitle = _("receive_eth_more_t_title1");
+    g_tutorials[TUTORIAL_ETH_RECEIVE].tutorials[0].qrSubtitle = _("receive_more_t_qr_link");
+    g_tutorials[TUTORIAL_ETH_RECEIVE].tutorials[0].qrCode = _("receive_more_t_qr_link");
 
-        // TUTORIAL_ETH_RECEIVE
-        g_tutorials[TUTORIAL_ADA_RECEIVE].len = 2;
-        g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[0].title = _("receive_ada_more_t_title1");
-        g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[0].desc = _("receive_ada_more_t_desc1");
-        g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[0].link = NULL;
-        g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[0].qrTitle = NULL;
-        g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[0].qrSubtitle = NULL;
-        g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[0].qrCode = NULL;
+    // TUTORIAL_ETH_RECEIVE
+    g_tutorials[TUTORIAL_ADA_RECEIVE].len = 2;
+    g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[0].title = _("receive_ada_more_t_title1");
+    g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[0].desc = _("receive_ada_more_t_desc1");
+    g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[0].link = NULL;
+    g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[0].qrTitle = NULL;
+    g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[0].qrSubtitle = NULL;
+    g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[0].qrCode = NULL;
 
-        g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[1].title = _("receive_ada_more_t_title2");
-        g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[1].desc = _("receive_ada_more_t_desc2");
-        g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[1].link = _("receive_ada_more_t_link2");
-        g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[1].qrTitle = _("receive_ada_more_t_qr_title2");
-        g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[1].qrSubtitle = _("receive_ada_more_t_qr_link2");
-        g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[1].qrCode = _("receive_ada_more_t_qr_link2");
+    g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[1].title = _("receive_ada_more_t_title2");
+    g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[1].desc = _("receive_ada_more_t_desc2");
+    g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[1].link = _("learn_more");
+    g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[1].qrTitle = _("receive_ada_more_t_title2");
+    g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[1].qrSubtitle = _("receive_more_t_qr_link");
+    g_tutorials[TUTORIAL_ADA_RECEIVE].tutorials[1].qrCode = _("receive_more_t_qr_link");
 
-        // TUTORIAL_SOL_RECEIVE
-        g_tutorials[TUTORIAL_SOL_RECEIVE].len = 1;
-        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].title = _("receive_sol_more_t_title1");
-        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].desc = _("receive_sol_more_t_desc1");
-        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].link = _("receive_sol_more_t_link1");
-        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].qrTitle = _("receive_sol_more_t_qr_title1");
-        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].qrSubtitle = _("receive_sol_more_t_qr_link1");
-        g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].qrCode = _("receive_sol_more_t_qr_link1");
+    // TUTORIAL_SOL_RECEIVE
+    g_tutorials[TUTORIAL_SOL_RECEIVE].len = 1;
+    g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].title = _("receive_sol_more_t_title1");
+    g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].desc = _("receive_sol_more_t_desc1");
+    g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].link = _("learn_more");
+    g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].qrTitle = _("receive_sol_more_t_title1");
+    g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].qrSubtitle = _("receive_more_t_qr_link");
+    g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].qrCode = _("receive_more_t_qr_link");
 
-        // TUTORIAL_CHANGE_ENTROPY
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].len = 2;
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].title = _("tutorial_change_entropy_title1");
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].desc = _("tutorial_change_entropy_desc1");
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].link = NULL;
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].qrTitle = NULL;
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].qrSubtitle = NULL;
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].qrCode = NULL;
+    // TUTORIAL_CHANGE_ENTROPY
+    g_tutorials[TUTORIAL_CHANGE_ENTROPY].len = 2;
+    g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].title = _("tutorial_change_entropy_title1");
+    g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].desc = _("tutorial_change_entropy_desc1");
+    g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].link = NULL;
+    g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].qrTitle = NULL;
+    g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].qrSubtitle = NULL;
+    g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].qrCode = NULL;
 
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].title = _("tutorial_change_entropy_title2");
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].desc = _("tutorial_change_entropy_desc2");
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].link = NULL;
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrTitle = NULL;
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrSubtitle = NULL;
-        g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrCode = NULL;
-
-        g_tutorialInitialized = true;
-    }
+    g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].title = _("tutorial_change_entropy_title2");
+    g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].desc = _("tutorial_change_entropy_desc2");
+    g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].link = NULL;
+    g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrTitle = NULL;
+    g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrSubtitle = NULL;
+    g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrCode = NULL;
 }
 
 static void GuiOpenQRHintBox(Tutorial_t *tutorial)
@@ -129,11 +124,8 @@ static void GuiOpenQRHintBox(Tutorial_t *tutorial)
 
 static void GuiOpenQRHintBoxHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        Tutorial_t *t = lv_event_get_user_data(e);
-        GuiOpenQRHintBox(t);
-    }
+    Tutorial_t *t = lv_event_get_user_data(e);
+    GuiOpenQRHintBox(t);
 }
 
 void GuiTutorialInit(TUTORIAL_LIST_INDEX_ENUM tutorialIndex)
@@ -175,7 +167,7 @@ void GuiTutorialInit(TUTORIAL_LIST_INDEX_ENUM tutorialIndex)
         last = label;
 
         label = GuiCreateIllustrateLabel(container, tutorialList->tutorials[i].desc);
-        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_update_layout(label);
         last = label;
@@ -187,7 +179,7 @@ void GuiTutorialInit(TUTORIAL_LIST_INDEX_ENUM tutorialIndex)
             learnMoreCont = GuiCreateContainerWithParent(container, 300, 30);
             lv_obj_add_flag(learnMoreCont, LV_OBJ_FLAG_CLICKABLE);
             lv_obj_add_event_cb(learnMoreCont, GuiOpenQRHintBoxHandler, LV_EVENT_CLICKED, &tutorialList->tutorials[i]);
-            lv_obj_align_to(learnMoreCont, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+            lv_obj_align_to(learnMoreCont, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
             last = learnMoreCont;
 
             h = lv_obj_get_height(learnMoreCont);

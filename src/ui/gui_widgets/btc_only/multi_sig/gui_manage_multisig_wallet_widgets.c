@@ -136,12 +136,7 @@ void GuiManageMultisigWalletDeInit(void)
 
 static void GuiMoreHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        // GuiFrameOpenView(&g_multisigSelectImportMethodView);
-        return;
-    }
+    // GuiFrameOpenView(&g_multisigSelectImportMethodView);
 }
 
 void GuiManageMultisigWalletRefresh(void)
@@ -245,54 +240,39 @@ void GuiManageMultisigPasswordErrorCount(void *param)
 
 static void DeleteMultiWalletHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        char tempBuff[BUFFER_SIZE_32] = {0};
-        snprintf_s(tempBuff, sizeof(tempBuff), "%s %s?", _("Delete"), g_walletItem->name);
-        g_noticeWindow = GuiCreateGeneralHintBox(lv_scr_act(), &imgWarn, tempBuff, _("manage_multi_wallet_delete_desc"), NULL,
-                         _("Cancel"), WHITE_COLOR_OPA20, _("Delete"), DEEP_ORANGE_COLOR);
-        lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-        lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-        lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
-        lv_obj_add_event_cb(rightBtn, GuiConfirmDeleteHandler, LV_EVENT_CLICKED, NULL);
-    }
+    char tempBuff[BUFFER_SIZE_32] = {0};
+    snprintf_s(tempBuff, sizeof(tempBuff), "%s %s?", _("Delete"), g_walletItem->name);
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, tempBuff, _("manage_multi_wallet_delete_desc"), NULL,
+                     _("Cancel"), WHITE_COLOR_OPA20, _("Delete"), DEEP_ORANGE_COLOR);
+    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_add_event_cb(rightBtn, GuiConfirmDeleteHandler, LV_EVENT_CLICKED, NULL);
 }
 
 static void SetDefaultMultiWalletHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        SetCurrentWalletIndex(g_currentIndex);
-        UpdateCurrentWalletState();
-        GuiResetCurrentUtxoAddressIndex(GetCurrentAccountIndex());
-    }
+    SetCurrentWalletIndex(g_currentIndex);
+    UpdateCurrentWalletState();
+    GuiResetCurrentUtxoAddressIndex(GetCurrentAccountIndex());
 }
 
 static void ExportMultiWalletHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        if (SUCCESS_CODE == GuiSetMultisigImportWalletDataBySDCard(g_walletItem->walletConfig)) {
-            GuiSetExportMultiSigSwitch();
-            GuiFrameOpenView(&g_importMultisigWalletInfoView);
-            GuiEmitSignal(SIG_MULTISIG_WALLET_SET_WALLET_EXPORT, NULL, 0);
-        }
+    if (SUCCESS_CODE == GuiSetMultisigImportWalletDataBySDCard(g_walletItem->walletConfig)) {
+        GuiSetExportMultiSigSwitch();
+        GuiFrameOpenView(&g_importMultisigWalletInfoView);
+        GuiEmitSignal(SIG_MULTISIG_WALLET_SET_WALLET_EXPORT, NULL, 0);
     }
 }
 
 static void GuiConfirmDeleteHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        GUI_DEL_OBJ(g_noticeWindow)
-        static uint16_t sig = SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD;
-        g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
-        SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
-        SetKeyboardWidgetSig(g_keyboardWidget, &sig);
-    }
+    GUI_DEL_OBJ(g_noticeWindow)
+    static uint16_t sig = SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD;
+    g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
+    SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+    SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
 
 static void CorrectDefalutWalletIndex(int deleteIndex)

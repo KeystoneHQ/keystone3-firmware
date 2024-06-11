@@ -13,7 +13,7 @@
 #include "gui_hintbox.h"
 #include "user_memory.h"
 
-#ifdef COMPILE_MAC_SIMULATOR
+#ifndef COMPILE_WIN_SIMULATOR
 #include "simulator_model.h"
 #endif
 

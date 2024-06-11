@@ -19,7 +19,7 @@
 #include "gui_mnemonic_input.h"
 #include "gui_page.h"
 #include "gui_keyboard_hintbox.h"
-#ifndef COMPILE_MAC_SIMULATOR
+#ifdef COMPILE_WIN_SIMULATOR
 #include "sha256.h"
 #else
 #include "simulator_model.h"

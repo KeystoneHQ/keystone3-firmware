@@ -341,6 +341,9 @@ else()
         ${CRYPTO_SLIP39}
     )
     add_dependencies(${PROJECT_NAME} rust_c)
+    if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
+      target_link_libraries(${PROJECT_NAME} PRIVATE m m)
+    endif()
     target_link_libraries(${PROJECT_NAME} PRIVATE SDL2 ${CMAKE_SOURCE_DIR}/ui_simulator/lib/rust-builds/librust_c.a)
 
     if(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")

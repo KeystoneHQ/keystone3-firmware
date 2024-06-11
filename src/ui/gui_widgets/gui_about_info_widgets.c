@@ -19,7 +19,7 @@
 #include "drv_battery.h"
 #endif
 
-#ifdef COMPILE_MAC_SIMULATOR
+#ifndef COMPILE_WIN_SIMULATOR
 #include "simulator_model.h"
 #include "simulator_mock_define.h"
 #endif

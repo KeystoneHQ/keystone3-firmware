@@ -38,7 +38,7 @@
 #include "device_setting.h"
 #endif
 
-#ifdef COMPILE_MAC_SIMULATOR
+#ifndef COMPILE_WIN_SIMULATOR
 #include "simulator_model.h"
 #endif
 

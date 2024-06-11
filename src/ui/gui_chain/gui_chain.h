@@ -140,5 +140,6 @@ GenerateUR GetUrGenerator(ViewType viewType);
 GenerateUR GetSingleUrGenerator(ViewType viewType);
 #ifndef BTC_ONLY
 bool IsMessageType(uint8_t type);
+bool isTonSignProof(uint8_t type);
 #endif
 #endif

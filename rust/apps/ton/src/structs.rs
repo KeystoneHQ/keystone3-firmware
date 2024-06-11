@@ -4,6 +4,7 @@ use crate::messages::jetton::JettonMessage;
 use crate::messages::nft::NFTMessage;
 use crate::messages::traits::ParseCell;
 use crate::messages::{jetton, Comment, Operation, SigningMessage};
+use crate::utils::shorten_string;
 use crate::vendor::address::TonAddress;
 use crate::vendor::cell::BagOfCells;
 use alloc::string::{String, ToString};
@@ -33,7 +34,8 @@ impl TonTransaction {
     pub fn parse_hex(serial: &[u8]) -> Result<Self> {
         let boc = BagOfCells::parse(serial)?;
         Self::parse(boc).map(|mut v| {
-            v.raw_data = hex::encode(serial);
+            let raw_data = hex::encode(serial);
+            v.raw_data = shorten_string(raw_data);
             v
         })
     }

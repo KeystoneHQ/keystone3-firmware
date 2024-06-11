@@ -863,3 +863,4 @@ Wallet Profile,20,wallet_profile_mid_btn,Wallet Profile,Профиль коше�
 ,20,tutorial_ton_mnemonic_desc,"TON uses its own unique algorithm to generate key pairs from mnemonic phrases, rather than following the common BIP39 standard. When creating and restoring a TON wallet, ensure that your mnemonic phrase is securely stored, as it is the sole means to recover your wallet. Always download wallet software from trusted sources to keep your assets safe.",,,,,,,
 ,20,tutorial_ton_mnemonic_url,https://keyst.one/t/3rd/ton,,,,,,,
 ,20,ton_manage_assets_hint,The TON wallet does not support adding other mainnets like Bitcoin or Ethereum due to incompatible seed phrase.,,,,,,,
+,20,ton_sign_proof_title,"Confirm Connect",,,,,,,

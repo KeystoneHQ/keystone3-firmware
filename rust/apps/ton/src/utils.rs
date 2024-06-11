@@ -21,12 +21,9 @@ pub(crate) fn sha256(data: &[u8]) -> Vec<u8> {
 
 pub(crate) fn shorten_string(text: String) -> String {
     let mut _text = text.clone();
-    if _text.len() > 70 {
-        let mut middle = _text.split_off(32);
-        let second = middle.split_off(middle.len() - 32);
-        let ellipsis = "......";
-        _text.push_str(ellipsis);
-        _text.push_str(&second);
+    if _text.len() > 512 {
+        let _ = _text.split_off(512);
+        _text.push_str("......");
     }
     return _text;
 }

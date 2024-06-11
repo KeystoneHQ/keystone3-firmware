@@ -419,6 +419,10 @@ static void RefreshQrCode(void)
             lv_label_set_text(g_standardReceiveWidgets.addressLabel, fixedAddress->data);
         }
         free_simple_response_c_char(fixedAddress);
+    } else if(g_chainCard == HOME_WALLET_CARD_TON) {
+        char address[128];
+        snprintf_s(address, 128, "%.22s\n%s", addressDataItem.address, &addressDataItem.address[22]);
+        lv_label_set_text(g_standardReceiveWidgets.addressLabel, address);
     } else {
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressDataItem.address);
     }
@@ -610,7 +614,6 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         if (isTonNative) {
             xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
             result = ton_get_address(xPub);
-            printf("ton_get_address result: %s\n", result->data);
         } else {
             ASSERT(false);
             //remains for bip39 ton

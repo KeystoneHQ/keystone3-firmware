@@ -30,10 +30,6 @@ typedef struct {
     lv_obj_t    *cont;                                          // setting container
     lv_obj_t    *tileView;                                      // setting tile view
 } ForgetPassWidget_t;
-static ForgetPassWidget_t g_forgetPassTileView;
-static lv_obj_t *g_waitAnimCont;
-static GUI_VIEW *g_prevView;
-static bool g_isForgetPass = false;
 
 typedef enum {
     FORGET_PASSWORD_ENTRANCE = 0,
@@ -59,6 +55,10 @@ static lv_obj_t *g_nextCont = NULL;
 static lv_obj_t *g_letterKbCont = NULL;
 static lv_obj_t *g_noticeWindow = NULL;
 static PageWidget_t *g_pageWidget;
+static ForgetPassWidget_t g_forgetPassTileView;
+static lv_obj_t *g_waitAnimCont;
+static GUI_VIEW *g_prevView;
+static bool g_isForgetPass = false;
 
 bool GuiIsForgetPass(void)
 {
@@ -136,9 +136,9 @@ void GuiForgetPassResetPass(bool en, int errCode)
 {
     g_isForgetPass = true;
     SetKeyboardWidgetMode((g_setPassCode->mode == ENTER_PASSCODE_SET_PIN) ? KEYBOARD_HINTBOX_PIN : KEYBOARD_HINTBOX_PASSWORD);
-    lv_obj_t *cont = GuiCreateResultHintbox(356, &imgSuccess, _("change_passcode_reset_success_title"),
+    g_noticeWindow = GuiCreateResultHintbox(356, &imgSuccess, _("change_passcode_reset_success_title"),
                                             _("change_passcode_reset_success_desc"), NULL, DARK_GRAY_COLOR, _("Done"), ORANGE_COLOR);
-    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(cont);
+    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
     lv_obj_add_event_cb(rightBtn, CloseCurrentParentAndCloseViewHandler, LV_EVENT_CLICKED, NULL);
     if (g_waitAnimCont != NULL) {
         lv_obj_del(g_waitAnimCont);
@@ -493,5 +493,5 @@ void GuiForgetPassRefresh(void)
     if (g_forgetPassTileView.currentTile == FORGET_PASSWORD_ENTER_MNEMONIC && (g_phraseCnt == 33 || g_phraseCnt == 20)) {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, StopCreateViewHandler, NULL);
     }
-
+    GUI_DEL_OBJ(g_noticeWindow)
 }

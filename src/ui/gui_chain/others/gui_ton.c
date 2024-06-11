@@ -85,8 +85,8 @@ PtrT_TransactionCheckResult GuiGetTonCheckResult(void)
     if (isTonNative) {
         publicKey = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
     } else {
-        ASSERT(false);
         //remains for bip39 ton
+        return ton_not_supported_error();
     }
     return ton_check_transaction(data, publicKey);
 }

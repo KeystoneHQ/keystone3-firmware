@@ -91,6 +91,14 @@ pub extern "C" fn ton_check_transaction(
 }
 
 #[no_mangle]
+pub extern "C" fn ton_not_supported_error() -> PtrT<TransactionCheckResult> {
+    TransactionCheckResult::from(RustCError::UnsupportedTransaction(
+        "ton transaction".to_string(),
+    ))
+    .c_ptr()
+}
+
+#[no_mangle]
 pub extern "C" fn ton_sign_transaction(
     ptr: PtrUR,
     seed: PtrBytes,

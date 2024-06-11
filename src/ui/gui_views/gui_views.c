@@ -347,8 +347,9 @@ void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t
     case BitcoinNoMyInputs:
     case BitcoinWalletTypeError:
     case MasterFingerprintMismatch:
-        titleText = _("rust_error_bitcoin_no_my_inputs");
-        descText = _("rust_error_bitcoin_no_my_inputs_desc");
+    case UnsupportedTransaction:
+        titleText = _("rust_error_not_my_transaction");
+        descText = _("rust_error_not_my_transaction_desc");
         break;
     case BitcoinMultiSigWalletNotMyWallet:
         titleText = _("rust_error_bitcoin_not_my_multisig_wallet");

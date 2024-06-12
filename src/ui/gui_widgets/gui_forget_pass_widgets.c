@@ -166,11 +166,20 @@ void GuiForgetPassRepeatPinPass(const char* buf)
             };
             GuiModelSlip39CalWriteSe(slip39);
         } else {
-            Bip39Data_t bip39 = {
-                .wordCnt = g_forgetMkb->wordCnt,
-                .forget = true,
-            };
-            GuiModelBip39CalWriteSe(bip39);
+            char *mnemonic = SecretCacheGetMnemonic();
+            bool isTon = ton_verify_mnemonic(mnemonic);
+            if (isTon) {
+                TonData_t ton = {
+                    .forget = true,
+                };
+                GuiModelTonCalWriteSe(ton);
+            } else {
+                Bip39Data_t bip39 = {
+                    .wordCnt = g_forgetMkb->wordCnt,
+                    .forget = true,
+                };
+                GuiModelBip39CalWriteSe(bip39);
+            }
         }
     } else {
         GuiEnterPassCodeStatus(g_repeatPassCode, false);

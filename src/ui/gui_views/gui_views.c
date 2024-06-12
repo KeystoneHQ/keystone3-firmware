@@ -177,6 +177,14 @@ void GuiWriteSeWidget(lv_obj_t *parent)
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 }
 
+void GuiUpdateTonWriteSeWidget(lv_obj_t *parent)
+{
+    lv_obj_t *label = GuiCreateNoticeLabel(parent, _("ton_write_se_predict_text"));
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 18);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+}
+
 void DuplicateShareHandler(lv_event_t *e)
 {
     GuiCLoseCurrentWorkingView();
@@ -216,7 +224,6 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         strcpy_s(wallet.name, WALLET_NAME_MAX_LEN + 1, GetCurrentKbWalletName());
         GuiNvsBarSetWalletName(GetCurrentKbWalletName());
         GuiNvsBarSetWalletIcon(GuiGetEmojiIconImg());
-        GuiModelSettingSaveWalletDesc(&wallet);
         GuiCloseToTargetView(&g_initView);
         GuiFrameOpenViewWithParam(&g_lockView, NULL, 0);
         GuiLockScreenHidden();
@@ -339,8 +346,10 @@ void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t
     switch (errCode) {
     case BitcoinNoMyInputs:
     case BitcoinWalletTypeError:
-        titleText = _("rust_error_bitcoin_no_my_inputs");
-        descText = _("rust_error_bitcoin_no_my_inputs_desc");
+    case MasterFingerprintMismatch:
+    case UnsupportedTransaction:
+        titleText = _("rust_error_not_my_transaction");
+        descText = _("rust_error_not_my_transaction_desc");
         break;
     case BitcoinMultiSigWalletNotMyWallet:
         titleText = _("rust_error_bitcoin_not_my_multisig_wallet");

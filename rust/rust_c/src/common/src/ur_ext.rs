@@ -36,6 +36,7 @@ use third_party::ur_registry::pb::protoc::Base;
 use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
+use third_party::ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
 
 pub trait InferViewType {
     fn infer(&self) -> Result<ViewType, URError> {
@@ -110,6 +111,16 @@ impl InferViewType for ArweaveSignRequest {
             SignType::Transaction => Ok(ViewType::ArweaveTx),
             SignType::Message => Ok(ViewType::ArweaveMessage),
             SignType::DataItem => Ok(ViewType::ViewTypeUnKnown),
+        }
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for TonSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        match self.get_data_type() {
+            DataType::Transaction => Ok(ViewType::TonTx),
+            DataType::SignProof => Ok(ViewType::TonSignProof),
         }
     }
 }

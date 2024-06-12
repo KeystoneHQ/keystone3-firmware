@@ -9,35 +9,13 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val)
-{
-    return (uint32_t)(val < 0 ? -val : val);
-}
-static inline uint32_t op_i(uint32_t val)
-{
-    return val;
-}
+static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
+static inline uint32_t op_i(uint32_t val) { return val; }
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_w(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_f(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_t(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
+static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
+static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
 const static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
@@ -201,6 +179,8 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"connect_specter_title", "Specter"},
     {"connect_sushi_link", "https://keyst.one/t/3rd/sushi"},
     {"connect_sushi_title", "SushiSwap"},
+    {"connect_tonkeeper_link", "https://keyst.one/t/3rd/tonkeeper"},
+    {"connect_tonkeeper_title", "Tonkeeper(Extension)"},
     {"connect_typhon_link", "https://keyst.one/t/3rd/typhon"},
     {"connect_typhon_title", "Typhon (Web)"},
     {"connect_unisat_link", "https://keyst.one/t/3rd/unisat"},
@@ -247,6 +227,8 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"create_multi_wallet_signers", "Signers"},
     {"create_multi_wallet_xpub_duplicated_desc", "The imported xpub file is duplicated"},
     {"create_multi_wallet_xpub_duplicated_title", "Duplicate Xpub"},
+    {"create_ton_wallet", "Create TON Wallet"},
+    {"create_ton_wallet_hint", "Generating a seed phrase for TON will take about 10 minutes. Please ensure your device is at least 60% charged and connected to USB power."},
     {"create_wallet_generating_title", "Creating Wallet, Keep Device ON"},
     {"derivation_path_address", "Select the derivation path"},
     {"derivation_path_address_eg", "Addresses eg."},
@@ -328,7 +310,7 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"firmware_update_no_upgradable_firmware_desc", "Your device firmware version is higher than or equal to the one on your microSD card."},
     {"firmware_update_no_upgradable_firmware_title", "No Upgradable Firmware Detected"},
     {"firmware_update_sd_checksum_desc", "#F5870A Show Checksum#"},
-    {"firmware_update_sd_checksum_done", "Checksum:\r\n"},
+    {"firmware_update_sd_checksum_done", "Checksum:\n"},
     {"firmware_update_sd_checksum_fmt", "#F5870A Show Checksum(%d%%)#"},
     {"firmware_update_sd_checksum_notice", "This is an optional feature to further enhance security. Compare the following checksum with the checksum of your download package on the official website, ensure that they are consistent."},
     {"firmware_update_sd_copying_desc", "Do not remove the MicroSD Card while the update is underway."},
@@ -360,6 +342,7 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"forgot_password_reset_passcode_intro_desc", "Verify the seed phrase associated with this wallet to reset the passcode.Resetting your password may erase your wallet or multisig wallet data"},
     {"forgot_password_reset_passcode_intro_text", "Forgot passcode?"},
     {"forgot_password_reset_passcode_intro_title", "Forgot passcode?"},
+    {"generate_ton_mnenonic", "Create seed for TON"},
     {"generating_qr_codes", "Generating QR Codes"},
     {"got_it", "Got It"},
     {"got_it_fmt", "Got It (%d)"},
@@ -378,6 +361,8 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"import_multi_wallet_success_title", "Import Success"},
     {"import_multi_wallet_via_camera", "Via Camera"},
     {"import_multi_wallet_via_micro_title", "MicroSD Card"},
+    {"import_ton_mnemonic_desc", "The TON wallet does not support adding other mainnets like Bitcoin or Ethereum due to incompatible seed phrase."},
+    {"import_ton_mnemonic_title", "Importing a TON wallet?"},
     {"import_wallet_choose_method", "Choose Import Method"},
     {"import_wallet_duplicated_share_desc", "You’ve already checked this share, please use another share to continue."},
     {"import_wallet_invalid_phrase_desc", "The phrase you typed is invalid. Please check your backup and try again"},
@@ -385,11 +370,11 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"import_wallet_phrase_desc", "Enter your seed phrase in the blanks provided below."},
     {"import_wallet_phrase_title", "Import Your Seed"},
     {"import_wallet_shamir_backup", "Shamir Backup"},
-    {"import_wallet_shamir_backup_desc", "You'll need a couple of seed phrase\r\nshares to recover your wallet"},
+    {"import_wallet_shamir_backup_desc", "You'll need a couple of seed phrase\nshares to recover your wallet"},
     {"import_wallet_share_success_desc", "This share of your seed phrase matches your wallet."},
     {"import_wallet_single_backup_desc", "Recover your wallet with the specific seed phrase. Please complete the setup process in one go to avoid any security risks."},
     {"import_wallet_single_phrase", "Single Secret Phrase"},
-    {"import_wallet_single_phrase_desc", "You'll need a 12/18/24 seed phrase\r\nto recover your wallet."},
+    {"import_wallet_single_phrase_desc", "You'll need a 12/18/24 seed phrase\nto recover your wallet."},
     {"import_wallet_ssb_cancel_desc", "Upon cancellation, you will be required to re-enter all the Shares again."},
     {"import_wallet_ssb_cancel_title", "Cancel Import Wallet?"},
     {"import_wallet_ssb_desc_fmt", "Enter your  #F5870A %d#-word seed phrase for Share #F5870A %d# in the blanks provided below."},
@@ -491,7 +476,7 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"purpose_title", "New Wallet"},
     {"receive_ada_enterprise_address", "Address (Not Delegated)"},
     {"receive_ada_more_t_desc1", "On the Cardano blockchain, we provide 24 accounts, and each account can generate numerous addresses for your use. You can easily switch between the accounts you need."},
-    {"receive_ada_more_t_desc2", "1. Payment & Stake Keys: In Cardano, every account has a Payment Key for regular ADA transactions (sending and receiving) and a Stake Key for staking and receiving rewards.\r\n2. Base Address: A Base Address is derived from both the Payment Key and Stake Key. It can be used for both regular transactions and staking. Also known as \"External Addresses (Delegated).\"\r\n3. Enterprise Address: This address only contains the Payment Key and is used solely for regular transactions, not for staking. It's designed for \"business\" scenarios that don't involve staking, like exchanges. Also known as \"External Addresses (Not Delegated).\"\r\n4. Stake & Reward Addresses: The Stake Key is used for staking, and the associated Stake Address is also called a Reward Address, used to receive staking rewards."},
+    {"receive_ada_more_t_desc2", "1. Payment & Stake Keys: In Cardano, every account has a Payment Key for regular ADA transactions (sending and receiving) and a Stake Key for staking and receiving rewards.\n2. Base Address: A Base Address is derived from both the Payment Key and Stake Key. It can be used for both regular transactions and staking. Also known as \"External Addresses (Delegated).\"\n3. Enterprise Address: This address only contains the Payment Key and is used solely for regular transactions, not for staking. It's designed for \"business\" scenarios that don't involve staking, like exchanges. Also known as \"External Addresses (Not Delegated).\"\n4. Stake & Reward Addresses: The Stake Key is used for staking, and the associated Stake Address is also called a Reward Address, used to receive staking rewards."},
     {"receive_ada_more_t_title1", "Multiple Cardano Accounts on Keystone"},
     {"receive_ada_more_t_title2", "Key Concepts in Cardano's ADA Addresses"},
     {"receive_ada_show_address_detail", "Show Address Detail"},
@@ -501,9 +486,9 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"receive_btc_extended_public_key", "Extended Public Key"},
     {"receive_btc_more_address_settings", "Address Settings"},
     {"receive_btc_more_export_xpub", "Export xPub"},
-    {"receive_btc_more_t_desc1", "Bitcoin (BTC) uses three address formats for receiving funds:\r\n1. Native SegWit is the most efficient and secure Bitcoin address format. It provides cost savings and improved security compared to other traditional address formats, typically starting with \"bc1\"\r\n2. Legacy format is one of the earliest versions of Bitcoin, typically starting with \"1\"\r\n3. Nested SegWit is a solution designed to facilitate the transition to Native SegWit in a smooth manner, typically starting with \"3\""},
-    {"receive_btc_more_t_desc2", "Yes, the three distinct Bitcoin address formats can be used for transferring funds among each other. However, it’s important to keep in mind the following aspects:\r\n1. Differing transaction fees: The choice of address format can influence transaction fees, with Native SegWit addresses generally having lower fees.\r\n2. Wallet and exchange compatibility: Make sure that the wallet or exchange you are using supports your chosen address format. Some wallets may only be compatible with specific address formats."},
-    {"receive_btc_more_t_desc3", "1. Privacy: Reusing addresses increases transaction traceability, endangering privacy. New addresses help maintain transaction privacy.\r\n2. Transaction Efficiency: Multiple UTXOs linked to one address can raise costs for consolidation, impacting wallet efficiency.\r\n3. Security: Repeated address use heightens the risk of private key exposure, potentially leading to losses if compromised.\r\nIn short, not reusing addresses safeguards privacy, optimizes transactions, and reduces security risks within the UTXO model."},
+    {"receive_btc_more_t_desc1", "Bitcoin (BTC) uses three address formats for receiving funds:\n1. Native SegWit is the most efficient and secure Bitcoin address format. It provides cost savings and improved security compared to other traditional address formats, typically starting with \"bc1\"\n2. Legacy format is one of the earliest versions of Bitcoin, typically starting with \"1\"\n3. Nested SegWit is a solution designed to facilitate the transition to Native SegWit in a smooth manner, typically starting with \"3\""},
+    {"receive_btc_more_t_desc2", "Yes, the three distinct Bitcoin address formats can be used for transferring funds among each other. However, it’s important to keep in mind the following aspects:\n1. Differing transaction fees: The choice of address format can influence transaction fees, with Native SegWit addresses generally having lower fees.\n2. Wallet and exchange compatibility: Make sure that the wallet or exchange you are using supports your chosen address format. Some wallets may only be compatible with specific address formats."},
+    {"receive_btc_more_t_desc3", "1. Privacy: Reusing addresses increases transaction traceability, endangering privacy. New addresses help maintain transaction privacy.\n2. Transaction Efficiency: Multiple UTXOs linked to one address can raise costs for consolidation, impacting wallet efficiency.\n3. Security: Repeated address use heightens the risk of private key exposure, potentially leading to losses if compromised.\nIn short, not reusing addresses safeguards privacy, optimizes transactions, and reduces security risks within the UTXO model."},
     {"receive_btc_more_t_title1", "What are the three different address formats for BTC?"},
     {"receive_btc_more_t_title2", "Can the three different address formats be used to transfer funds to each other?"},
     {"receive_btc_more_t_title3", "Benefits of not reusing addresses"},
@@ -519,13 +504,13 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"receive_eth_more_derivation_path_ledger_legacy", "Ledger Legacy"},
     {"receive_eth_more_derivation_path_ledger_live", "Ledger Live"},
     {"receive_eth_more_derivation_path_title2", "Accounts eg:"},
-    {"receive_eth_more_t_desc1", "1. Standard Path: This path is widely employed by numerous software wallets for address generation. Examples of such wallets encompass MetaMask, Rabby, BitKeep, and Core Wallet.\r\n2. Ledger Live: Choose this path if you intend to import a seed phrase from Ledger Live. Please note that Keystone supports synchronizing only the initial 10 addresses using this format.\r\n3. Ledger Legacy: Transition to this path if you manage your digital assets with Ledger Legacy"},
+    {"receive_eth_more_t_desc1", "1. Standard Path: This path is widely employed by numerous software wallets for address generation. Examples of such wallets encompass MetaMask, Rabby, BitKeep, and Core Wallet.\n2. Ledger Live: Choose this path if you intend to import a seed phrase from Ledger Live. Please note that Keystone supports synchronizing only the initial 10 addresses using this format.\n3. Ledger Legacy: Transition to this path if you manage your digital assets with Ledger Legacy"},
     {"receive_eth_more_t_title1", "Exploring Differences: Standard, Ledger Live, and Legacy Derivation Paths in Ethereum"},
     {"receive_eth_receive_main_title", "Receive ETH"},
     {"receive_generate_new_address", "Generate New Address"},
     {"receive_more_t_qr_link", "https://keyst.one/t/3rd/faq"},
     {"receive_sol_more_t_base_path", "Account-based Path"},
-    {"receive_sol_more_t_desc1", "1. Account-based Path: Widely adopted across numerous Solana wallets. An example of such a wallet is Solflare.\r\n2. Single Account Path: Choose this path if you intend to import a seed phrase from Sollet / MathWallet. Please note that Keystone supports synchronizing only the initial 10 addresses using this format.\r\n3. Sub-account Path: Transition to this path if you manage your digital assets with software wallets like Phantom / Exodus."},
+    {"receive_sol_more_t_desc1", "1. Account-based Path: Widely adopted across numerous Solana wallets. An example of such a wallet is Solflare.\n2. Single Account Path: Choose this path if you intend to import a seed phrase from Sollet / MathWallet. Please note that Keystone supports synchronizing only the initial 10 addresses using this format.\n3. Sub-account Path: Transition to this path if you manage your digital assets with software wallets like Phantom / Exodus."},
     {"receive_sol_more_t_single_path", "Single Account Path"},
     {"receive_sol_more_t_sub_path", "Sub-account Path"},
     {"receive_sol_more_t_title1", "Exploring Solana Path Options"},
@@ -536,10 +521,10 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"rsa_confirm_hintbox_context", "Please enter your password to start the ARWEAVE blockchain setup which will take about 10 minutes. Ensure your device is at least 60% charged and connected to USB power."},
     {"rsa_confirm_hintbox_ok", "Initial"},
     {"rsa_confirm_hintbox_title", "AR Blockchain Setup"},
-    {"rust_error_bitcoin_no_my_inputs", "Incongruent Transaction"},
-    {"rust_error_bitcoin_no_my_inputs_desc", "The transaction doesn't belong to the current wallet. Please check the transaction information."},
     {"rust_error_bitcoin_not_my_multisig_wallet", "Invalid Multisig Wallet Config"},
     {"rust_error_bitcoin_not_my_multisig_wallet_desc", "This multisig wallet config doesn't belong to the current wallet. Please check the multisig wallet config information."},
+    {"rust_error_not_my_transaction", "Incongruent Transaction"},
+    {"rust_error_not_my_transaction_desc", "The transaction doesn't belong to the current wallet. Please check the transaction information."},
     {"scan_qr_code_error_invalid_file_desc", "The date of file not recognized. Please try again."},
     {"scan_qr_code_error_invalid_qrcode", "Invalid QR Code"},
     {"scan_qr_code_error_invalid_qrcode_desc", "QR code data not recognized. Please try again."},
@@ -661,6 +646,12 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"system_settings_wipe_device_wipe_fmt", "Wipe(%d)"},
     {"system_settings_wipe_device_wipe_start_text", "Wipe(5)"},
     {"system_settings_wipe_device_wipe_title", "Wipe Device"},
+    {"ton_manage_assets_hint", "The TON wallet does not support adding other mainnets like Bitcoin or Ethereum due to incompatible seed phrase."},
+    {"ton_mnemonic_generating_desc", "maybe 10 mins"},
+    {"ton_mnemonic_generating_title", "Creating... Please wait"},
+    {"ton_mnemonic_regenerate", "Regenerate a new set of seed phrase?"},
+    {"ton_sign_proof_title", "Confirm Connect"},
+    {"ton_write_se_predict_text", "This process will take about 6 minutes. "},
     {"transaction_parse_broadcast_message", "Broadcast Message"},
     {"transaction_parse_confirm_message", "Confirm Message"},
     {"transaction_parse_scan_by_software", "Scan the QR code with your software wallet"},
@@ -669,6 +660,9 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"tutorial_change_entropy_desc2", "Computers aren't great at being truly random. Dice rolls provide a physical, unpredictable source of randomness. By using them, you enhance the security of cryptographic processes, making it harder for someone to predict or crack your codes."},
     {"tutorial_change_entropy_title1", "What is entropy?"},
     {"tutorial_change_entropy_title2", "Why use Dice Rolls as your entropy?"},
+    {"tutorial_ton_mnemonic_desc", "TON uses its own unique algorithm to generate key pairs from mnemonic phrases, rather than following the common BIP39 standard. When creating and restoring a TON wallet, ensure that your mnemonic phrase is securely stored, as it is the sole means to recover your wallet. Always download wallet software from trusted sources to keep your assets safe."},
+    {"tutorial_ton_mnemonic_title", "What is seed phrase for TON?"},
+    {"tutorial_ton_mnemonic_url", "https://keyst.one/t/3rd/ton"},
     {"tx_details_btc_change_desc", "BTC transactions, based on the UTXO mechanism, allocate some assets to a change address during transfers. This address is generated by the software wallet for anonymity and privacy purposes. You don't need to worry since the change address belongs to your own account, and its amount will be used automatically in subsequent transactions."},
     {"tx_details_btc_change_qr_link", "https://keyst.one/change"},
     {"tx_details_btc_change_qr_title", "What is a 'Change' address?"},
@@ -777,12 +771,9 @@ const static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -957,6 +948,8 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"connect_specter_title", "Specter"},
     {"connect_sushi_link", "https://keyst.one/t/3rd/sushi"},
     {"connect_sushi_title", "SushiSwap"},
+    {"connect_tonkeeper_link", ""},
+    {"connect_tonkeeper_title", ""},
     {"connect_typhon_link", "https://keyst.one/t/3rd/typhon"},
     {"connect_typhon_title", "Typhon (Web)"},
     {"connect_unisat_link", "https://keyst.one/t/3rd/unisat"},
@@ -1003,6 +996,8 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"create_multi_wallet_signers", "Unterzeichner"},
     {"create_multi_wallet_xpub_duplicated_desc", "Die importierte xpub-Datei ist dupliziert."},
     {"create_multi_wallet_xpub_duplicated_title", "Doppeltes Xpub"},
+    {"create_ton_wallet", ""},
+    {"create_ton_wallet_hint", ""},
     {"create_wallet_generating_title", "Brieftasche erstellen, Gerät eingeschaltet lassen."},
     {"derivation_path_address", "Wählen Sie den Ableitungspfad aus."},
     {"derivation_path_address_eg", "Adressen, z. B."},
@@ -1084,7 +1079,7 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"firmware_update_no_upgradable_firmware_desc", "Ihre Geräte-Firmware-Version ist höher als oder gleich der auf Ihrer microSD-Karte."},
     {"firmware_update_no_upgradable_firmware_title", "Keine aktualisierbare Firmware erkannt"},
     {"firmware_update_sd_checksum_desc", "#F5870A Zeige Prüfsumme#"},
-    {"firmware_update_sd_checksum_done", "Prüfsumme\r\n"},
+    {"firmware_update_sd_checksum_done", "Prüfsumme\n"},
     {"firmware_update_sd_checksum_fmt", "#F5870A Prüfsumme anzeigen(%d%%)#"},
     {"firmware_update_sd_checksum_notice", "Dies ist eine optionale Funktion, um die Sicherheit weiter zu verbessern. Vergleichen Sie die folgende Prüfsumme mit der Prüfsumme Ihres Download-Pakets auf der offiziellen Website, stellen Sie sicher, dass sie übereinstimmen."},
     {"firmware_update_sd_copying_desc", "Entfernen Sie die MicroSD-Karte nicht, während das Update im Gange ist."},
@@ -1116,6 +1111,7 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"forgot_password_reset_passcode_intro_desc", "Überprüfen Sie die mit dieser Brieftasche verbundene Wiederherstellungsphrase, um den Zugangscode zurückzusetzen. Das Zurücksetzen Ihres Passworts kann Ihre Brieftasche oder Multisig-Brieftaschendaten löschen."},
     {"forgot_password_reset_passcode_intro_text", "Passcode vergessen?"},
     {"forgot_password_reset_passcode_intro_title", "Passcode vergessen?"},
+    {"generate_ton_mnenonic", ""},
     {"generating_qr_codes", "Generieren von QR-Codes"},
     {"got_it", "Verstanden"},
     {"got_it_fmt", "Verstanden (%d)"},
@@ -1134,6 +1130,8 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"import_multi_wallet_success_title", "Erfolg bei Import"},
     {"import_multi_wallet_via_camera", "Via Kamera"},
     {"import_multi_wallet_via_micro_title", "MicroSD-Karte"},
+    {"import_ton_mnemonic_desc", ""},
+    {"import_ton_mnemonic_title", ""},
     {"import_wallet_choose_method", "Wählen Sie den Importmodus"},
     {"import_wallet_duplicated_share_desc", "Sie haben bereits diese Aktie überprüft, bitte verwenden Sie eine andere Aktie, um fortzufahren."},
     {"import_wallet_invalid_phrase_desc", "Der von Ihnen eingegebene Satz ist ungültig. Bitte überprüfen Sie Ihre Sicherungskopie und versuchen Sie es erneut."},
@@ -1247,7 +1245,7 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"purpose_title", "Neue Brieftasche"},
     {"receive_ada_enterprise_address", "Adresse (Nicht übertragen)"},
     {"receive_ada_more_t_desc1", "Auf der Cardano-Blockchain stellen wir 24 Konten zur Verfügung, und jedes Konto kann zahlreiche Adressen für Ihren Gebrauch generieren. Sie können problemlos zwischen den benötigten Konten wechseln."},
-    {"receive_ada_more_t_desc2", "1. Zahlungs- und Stake-Schlüssel: Bei Cardano hat jedes Konto einen Zahlungsschlüssel für reguläre ADA-Transaktionen (Senden und Empfangen) und einen Stake-Schlüssel für das Staken und den Erhalt von Belohnungen.\r\n2. Basisadresse: Eine Basisadresse wird aus dem Zahlungsschlüssel und dem Stake-Schlüssel abgeleitet. Sie kann sowohl für reguläre Transaktionen als auch für das Staken verwendet werden. Auch bekannt als \"Externe Adressen (Delegiert)\".\r\n3. Unternehmensadresse: Diese Adresse enthält nur den Zahlungsschlüssel und wird ausschließlich für reguläre Transaktionen und nicht zum Staken verwendet. Sie ist für \"geschäftliche\" Szenarien gedacht, die kein Staken beinhalten, wie z.B. Börsen. Auch bekannt als \"Externe Adressen (Nicht delegiert)\".\r\n4. Stake- und Belohnungsadressen: Der Stake-Schlüssel wird zum Staken verwendet und die zugehörige Stake-Adresse wird auch als Belohnungsadresse bezeichnet und dient zum Empfangen von Staking-Belohnungen."},
+    {"receive_ada_more_t_desc2", "1. Zahlungs- und Stake-Schlüssel: Bei Cardano hat jedes Konto einen Zahlungsschlüssel für reguläre ADA-Transaktionen (Senden und Empfangen) und einen Stake-Schlüssel für das Staken und den Erhalt von Belohnungen.\n2. Basisadresse: Eine Basisadresse wird aus dem Zahlungsschlüssel und dem Stake-Schlüssel abgeleitet. Sie kann sowohl für reguläre Transaktionen als auch für das Staken verwendet werden. Auch bekannt als \"Externe Adressen (Delegiert)\".\n3. Unternehmensadresse: Diese Adresse enthält nur den Zahlungsschlüssel und wird ausschließlich für reguläre Transaktionen und nicht zum Staken verwendet. Sie ist für \"geschäftliche\" Szenarien gedacht, die kein Staken beinhalten, wie z.B. Börsen. Auch bekannt als \"Externe Adressen (Nicht delegiert)\".\n4. Stake- und Belohnungsadressen: Der Stake-Schlüssel wird zum Staken verwendet und die zugehörige Stake-Adresse wird auch als Belohnungsadresse bezeichnet und dient zum Empfangen von Staking-Belohnungen."},
     {"receive_ada_more_t_title1", "Mehrere Cardano-Konten auf Keystone."},
     {"receive_ada_more_t_title2", "Schlüsselkonzepte in Cardanos ADA-Adressen"},
     {"receive_ada_show_address_detail", "Adresse anzeigen"},
@@ -1257,9 +1255,9 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"receive_btc_extended_public_key", "Erweitertes öffentliches Schlüssel"},
     {"receive_btc_more_address_settings", "Adress-Einstellungen"},
     {"receive_btc_more_export_xpub", "Exportieren Sie xPub."},
-    {"receive_btc_more_t_desc1", "Bitcoin (BTC) utiliza tres formatos de direcciones para recibir fondos:\r\n1. Native SegWit es el formato de dirección de Bitcoin más eficiente y seguro. Ofrece ahorros en costos y mejor seguridad en comparación con otros formatos de dirección tradicionales, generalmente comienza con bc1.\r\n2. El formato Legacy es una de las primeras versiones de Bitcoin, que generalmente comienza con 1.\r\n3. Nested SegWit es una solución diseñada para facilitar la transición a Native SegWit de manera suave, generalmente comienza con 3."},
-    {"receive_btc_more_t_desc2", "Ja, die drei unterschiedlichen Bitcoin-Adressformate können zur Übertragung von Geldern untereinander verwendet werden. Es ist jedoch wichtig, folgende Aspekte im Hinterkopf zu behalten:\r\n1. Unterschiedliche Transaktionsgebühren: Die Wahl des Adressformats kann die Transaktionsgebühren beeinflussen, wobei Native SegWit-Adressen normalerweise niedrigere Gebühren haben.\r\n2. Kompatibilität von Wallet und Börse: Stellen Sie sicher, dass das von Ihnen verwendete Wallet oder die Börse Ihr gewähltes Adressformat unterstützt. Manche Wallets sind möglicherweise nur mit bestimmten Adressformaten kompatibel."},
-    {"receive_btc_more_t_desc3", "1. Datenschutz: Durch das Wiederverwenden von Adressen erhöht sich die Rückverfolgbarkeit von Transaktionen und gefährdet die Privatsphäre. Neue Adressen helfen dabei, den Datenschutz bei Transaktionen aufrechtzuerhalten.\r\n2. Transaktionseffizienz: Mehrere UTXOs, die einer Adresse zugeordnet sind, können die Kosten für die Konsolidierung erhöhen und die Effizienz der Geldbörse beeinträchtigen.\r\n3. Sicherheit: Die wiederholte Verwendung von Adressen erhöht das Risiko einer Offenlegung des privaten Schlüssels und kann zu Verlusten führen, wenn er kompromittiert wird.\r\nKurz gesagt, das Nicht-Wiederverwenden von Adressen schützt die Privatsphäre, optimiert Transaktionen und reduziert Sicherheitsrisiken im UTXO-Modell."},
+    {"receive_btc_more_t_desc1", "Bitcoin (BTC) utiliza tres formatos de direcciones para recibir fondos:\n1. Native SegWit es el formato de dirección de Bitcoin más eficiente y seguro. Ofrece ahorros en costos y mejor seguridad en comparación con otros formatos de dirección tradicionales, generalmente comienza con bc1.\n2. El formato Legacy es una de las primeras versiones de Bitcoin, que generalmente comienza con 1.\n3. Nested SegWit es una solución diseñada para facilitar la transición a Native SegWit de manera suave, generalmente comienza con 3."},
+    {"receive_btc_more_t_desc2", "Ja, die drei unterschiedlichen Bitcoin-Adressformate können zur Übertragung von Geldern untereinander verwendet werden. Es ist jedoch wichtig, folgende Aspekte im Hinterkopf zu behalten:\n1. Unterschiedliche Transaktionsgebühren: Die Wahl des Adressformats kann die Transaktionsgebühren beeinflussen, wobei Native SegWit-Adressen normalerweise niedrigere Gebühren haben.\n2. Kompatibilität von Wallet und Börse: Stellen Sie sicher, dass das von Ihnen verwendete Wallet oder die Börse Ihr gewähltes Adressformat unterstützt. Manche Wallets sind möglicherweise nur mit bestimmten Adressformaten kompatibel."},
+    {"receive_btc_more_t_desc3", "1. Datenschutz: Durch das Wiederverwenden von Adressen erhöht sich die Rückverfolgbarkeit von Transaktionen und gefährdet die Privatsphäre. Neue Adressen helfen dabei, den Datenschutz bei Transaktionen aufrechtzuerhalten.\n2. Transaktionseffizienz: Mehrere UTXOs, die einer Adresse zugeordnet sind, können die Kosten für die Konsolidierung erhöhen und die Effizienz der Geldbörse beeinträchtigen.\n3. Sicherheit: Die wiederholte Verwendung von Adressen erhöht das Risiko einer Offenlegung des privaten Schlüssels und kann zu Verlusten führen, wenn er kompromittiert wird.\nKurz gesagt, das Nicht-Wiederverwenden von Adressen schützt die Privatsphäre, optimiert Transaktionen und reduziert Sicherheitsrisiken im UTXO-Modell."},
     {"receive_btc_more_t_title1", "Welche sind die drei verschiedenen Adressformate für BTC?"},
     {"receive_btc_more_t_title2", "Können die drei verschiedenen Adressformate verwendet werden, um Gelder untereinander zu übertragen?"},
     {"receive_btc_more_t_title3", "Vorteile der Nicht-Wiederverwendung von Adressen"},
@@ -1275,13 +1273,13 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"receive_eth_more_derivation_path_ledger_legacy", "Ledger Legacy"},
     {"receive_eth_more_derivation_path_ledger_live", "Ledger Live"},
     {"receive_eth_more_derivation_path_title2", "Konten z.B.:"},
-    {"receive_eth_more_t_desc1", "1. Standardpfad: Dieser Pfad wird von zahlreichen Software-Wallets zur Adressgenerierung weit verbreitet eingesetzt. Beispiele für solche Wallets sind MetaMask, Rabby, BitKeep und Core Wallet.\r\n2. Ledger Live: Wählen Sie diesen Pfad, wenn Sie eine Seed-Phrase aus Ledger Live importieren möchten. Bitte beachten Sie, dass Keystone nur die ersten 10 Adressen mit diesem Format synchronisieren kann.\r\n3. Ledger Legacy: Wechseln Sie zu diesem Pfad, wenn Sie Ihre digitalen Vermögenswerte mit Ledger Legacy verwalten."},
+    {"receive_eth_more_t_desc1", "1. Standardpfad: Dieser Pfad wird von zahlreichen Software-Wallets zur Adressgenerierung weit verbreitet eingesetzt. Beispiele für solche Wallets sind MetaMask, Rabby, BitKeep und Core Wallet.\n2. Ledger Live: Wählen Sie diesen Pfad, wenn Sie eine Seed-Phrase aus Ledger Live importieren möchten. Bitte beachten Sie, dass Keystone nur die ersten 10 Adressen mit diesem Format synchronisieren kann.\n3. Ledger Legacy: Wechseln Sie zu diesem Pfad, wenn Sie Ihre digitalen Vermögenswerte mit Ledger Legacy verwalten."},
     {"receive_eth_more_t_title1", "Erkundung von Unterschieden: Standard, Ledger Live und Legacy Derivation Pfade in Ethereum"},
     {"receive_eth_receive_main_title", "Erhalte ETH"},
     {"receive_generate_new_address", "Neue Adresse generieren"},
     {"receive_more_t_qr_link", "https://keyst.one/t/3rd/faq"},
     {"receive_sol_more_t_base_path", "Aktengestützter Pfad"},
-    {"receive_sol_more_t_desc1", "1. Kontobasierter Pfad: Weit verbreitet in zahlreichen Solana-Wallets übernommen. Ein Beispiel für ein solches Wallet ist Solflare.\r\n2. Einzelkontopfad: Wählen Sie diesen Pfad, wenn Sie vorhaben, eine Seed-Phrase von Sollet / MathWallet zu importieren. Bitte beachten Sie, dass Keystone nur das erstmalige Synchronisieren von 10 Adressen mit diesem Format unterstützt.\r\n3. Unterkontopfad: Wechseln Sie zu diesem Pfad, wenn Sie Ihre digitalen Vermögenswerte mit Software-Wallets wie Phantom / Exodus verwalten."},
+    {"receive_sol_more_t_desc1", "1. Kontobasierter Pfad: Weit verbreitet in zahlreichen Solana-Wallets übernommen. Ein Beispiel für ein solches Wallet ist Solflare.\n2. Einzelkontopfad: Wählen Sie diesen Pfad, wenn Sie vorhaben, eine Seed-Phrase von Sollet / MathWallet zu importieren. Bitte beachten Sie, dass Keystone nur das erstmalige Synchronisieren von 10 Adressen mit diesem Format unterstützt.\n3. Unterkontopfad: Wechseln Sie zu diesem Pfad, wenn Sie Ihre digitalen Vermögenswerte mit Software-Wallets wie Phantom / Exodus verwalten."},
     {"receive_sol_more_t_single_path", "Einzelkonto Pfad"},
     {"receive_sol_more_t_sub_path", "Unterkonto-Pfad"},
     {"receive_sol_more_t_title1", "Exploring Solana-Pfadoptionen"},
@@ -1292,10 +1290,10 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"rsa_confirm_hintbox_context", "Bitte geben Sie Ihr Passwort ein, um die Einrichtung der ARWEAVE Blockchain zu starten, die etwa 10 Minuten dauern wird. Stellen Sie sicher, dass Ihr Gerät mindestens zu 60% geladen und mit USB-Strom verbunden ist."},
     {"rsa_confirm_hintbox_ok", "Anfänglich"},
     {"rsa_confirm_hintbox_title", "AR Blockchain Einrichtung"},
-    {"rust_error_bitcoin_no_my_inputs", "Inkongruente Transaktion"},
-    {"rust_error_bitcoin_no_my_inputs_desc", "Die Transaktion gehört nicht zur aktuellen Brieftasche. Bitte überprüfen Sie die Transaktionsinformationen."},
     {"rust_error_bitcoin_not_my_multisig_wallet", "Ungültige Multisig-Brieftaschenkonfiguration"},
     {"rust_error_bitcoin_not_my_multisig_wallet_desc", "Diese Multisig Wallet-Konfiguration gehört nicht zum aktuellen Wallet. Bitte überprüfen Sie die Informationen zur Multisig-Wallet-Konfiguration."},
+    {"rust_error_not_my_transaction", "Inkongruente Transaktion"},
+    {"rust_error_not_my_transaction_desc", "Die Transaktion gehört nicht zur aktuellen Brieftasche. Bitte überprüfen Sie die Transaktionsinformationen."},
     {"scan_qr_code_error_invalid_file_desc", "Das Datum der Datei wird nicht erkannt. Bitte versuche es erneut."},
     {"scan_qr_code_error_invalid_qrcode", "Ungültiger QR-Code"},
     {"scan_qr_code_error_invalid_qrcode_desc", "QR-Code-Daten nicht erkannt. Bitte versuchen Sie es erneut."},
@@ -1417,6 +1415,12 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"system_settings_wipe_device_wipe_fmt", "Wischen (%d)"},
     {"system_settings_wipe_device_wipe_start_text", "Löschen (5)"},
     {"system_settings_wipe_device_wipe_title", "Gerät löschen"},
+    {"ton_manage_assets_hint", ""},
+    {"ton_mnemonic_generating_desc", ""},
+    {"ton_mnemonic_generating_title", ""},
+    {"ton_mnemonic_regenerate", ""},
+    {"ton_sign_proof_title", ""},
+    {"ton_write_se_predict_text", ""},
     {"transaction_parse_broadcast_message", "Weiterleitungsnachricht"},
     {"transaction_parse_confirm_message", "Bestätigungsnachricht"},
     {"transaction_parse_scan_by_software", "Scannen Sie den QR-Code mit Ihrer Software-Wallet"},
@@ -1425,6 +1429,9 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"tutorial_change_entropy_desc2", "Computer sind nicht gut darin, wirklich zufällig zu sein. Würfelwürfe bieten eine physische, unpredictable Quelle der Zufälligkeit. Indem du sie verwendest, erhöhst du die Sicherheit von kryptographischen Prozessen und erschwerst es jemandem, deine Codes vorherzusagen oder zu knacken."},
     {"tutorial_change_entropy_title1", "Was ist Entropie?"},
     {"tutorial_change_entropy_title2", "Warum verwenden Sie Würfelergebnisse als Entropie?"},
+    {"tutorial_ton_mnemonic_desc", ""},
+    {"tutorial_ton_mnemonic_title", ""},
+    {"tutorial_ton_mnemonic_url", ""},
     {"tx_details_btc_change_desc", "BTC-Transaktionen, die auf dem UTXO-Mechanismus basieren, weisen bestimmte Vermögenswerte einer Wechseladresse während der Übertragung zu. Diese Adresse wird von der Software-Brieftasche zwecks Anonymität und Privatsphäre generiert. Keine Sorge, da die Wechseladresse zu Ihrem eigenen Konto gehört und ihr Betrag automatisch bei nachfolgenden Transaktionen verwendet wird."},
     {"tx_details_btc_change_qr_link", "https://keyst.one/change"},
     {"tx_details_btc_change_qr_title", "Was ist eine \"Änderungsadresse\"?"},
@@ -1533,12 +1540,9 @@ const static lv_i18n_phrase_t de_singulars[] = {
 
 static uint8_t de_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -1713,6 +1717,8 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"connect_specter_title", "Espectro"},
     {"connect_sushi_link", "https://keyst.one/t/3rd/sushi"},
     {"connect_sushi_title", "SushiSwap"},
+    {"connect_tonkeeper_link", "https://keyst.one/t/3rd/tonkeeper"},
+    {"connect_tonkeeper_title", "Tonkeeper(Extension)"},
     {"connect_typhon_link", "https://keyst.one/t/3rd/typhon"},
     {"connect_typhon_title", "Tifón (Web)"},
     {"connect_unisat_link", "https://keyst.one/t/3rd/unisat"},
@@ -1759,6 +1765,8 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"create_multi_wallet_signers", "Firmantes"},
     {"create_multi_wallet_xpub_duplicated_desc", "El archivo xpub importado está duplicado"},
     {"create_multi_wallet_xpub_duplicated_title", "Clave pública extendida duplicada"},
+    {"create_ton_wallet", ""},
+    {"create_ton_wallet_hint", ""},
     {"create_wallet_generating_title", "Creando billetera, mantener el dispositivo ENCENDIDO"},
     {"derivation_path_address", "Selecciona la ruta de derivación"},
     {"derivation_path_address_eg", "Direcciones por ejemplo"},
@@ -1840,7 +1848,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"firmware_update_no_upgradable_firmware_desc", "La versión del firmware de tu dispositivo es superior o igual a la que está en tu tarjeta microSD"},
     {"firmware_update_no_upgradable_firmware_title", "No se detectó firmware actualizable"},
     {"firmware_update_sd_checksum_desc", "#F5870A Mostrar Suma de Verificación#"},
-    {"firmware_update_sd_checksum_done", "Suma de verificación:\r\n"},
+    {"firmware_update_sd_checksum_done", "Suma de verificación:\n"},
     {"firmware_update_sd_checksum_fmt", "#F5870A Mostrar Checksum(%d%%)#"},
     {"firmware_update_sd_checksum_notice", "Esta es una característica opcional para aumentar aún más la seguridad. Compara el siguiente checksum con el checksum de tu paquete de descarga en el sitio web oficial, asegúrate de que sean consistentes."},
     {"firmware_update_sd_copying_desc", "No retire la tarjeta MicroSD mientras la actualización esté en curso"},
@@ -1872,6 +1880,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"forgot_password_reset_passcode_intro_desc", "Verifica la frase semilla asociada a esta billetera para restablecer el código de acceso. Restablecer tu contraseña puede borrar los datos de tu billetera o billetera multisig"},
     {"forgot_password_reset_passcode_intro_text", "¿Olvidaste tu código de acceso?"},
     {"forgot_password_reset_passcode_intro_title", "¿Olvidaste tu código de acceso?"},
+    {"generate_ton_mnenonic", ""},
     {"generating_qr_codes", "Generando códigos QR"},
     {"got_it", "Entendido"},
     {"got_it_fmt", "Entendido (%d)"},
@@ -1890,6 +1899,8 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"import_multi_wallet_success_title", "Éxito en la importación"},
     {"import_multi_wallet_via_camera", "A través de la cámara"},
     {"import_multi_wallet_via_micro_title", "Tarjeta MicroSD"},
+    {"import_ton_mnemonic_desc", ""},
+    {"import_ton_mnemonic_title", ""},
     {"import_wallet_choose_method", "Elija el método de importación"},
     {"import_wallet_duplicated_share_desc", "Ya has verificado esta participación, por favor utiliza otra participación para continuar."},
     {"import_wallet_invalid_phrase_desc", "La frase que has escrito es inválida. Por favor, verifica tu respaldo e intenta de nuevo."},
@@ -2003,7 +2014,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"purpose_title", "Nueva billetera"},
     {"receive_ada_enterprise_address", "Dirección (No Delegada)"},
     {"receive_ada_more_t_desc1", "En la blockchain de Cardano, proporcionamos 24 cuentas y cada cuenta puede generar numerosas direcciones para su uso. Puede cambiar fácilmente entre las cuentas que necesite."},
-    {"receive_ada_more_t_desc2", "1. Pagos y Claves de Participación: En Cardano, cada cuenta tiene una Clave de Pago para transacciones regulares de ADA (envío y recepción) y una Clave de Participación para participar y recibir recompensas.\r\n2. Dirección Base: Una Dirección Base se deriva tanto de la Clave de Pago como de la Clave de Participación. Se puede usar tanto para transacciones regulares como para participación. También conocida como Direcciones Externas (Delegadas).\r\n3. Dirección de Empresa: Esta dirección solo contiene la Clave de Pago y se utiliza únicamente para transacciones regulares, no para participación. Está diseñada para escenarios empresariales que no implican participación, como intercambios. También conocida como Direcciones Externas (No Delegadas).\r\n4. Direcciones de Participación y Recompensa: La Clave de Participación se utiliza para la participación, y la Dirección de Participación asociada también se llama Dirección de Recompensa, utilizada para recibir recompensas por la participación."},
+    {"receive_ada_more_t_desc2", "1. Pagos y Claves de Participación: En Cardano, cada cuenta tiene una Clave de Pago para transacciones regulares de ADA (envío y recepción) y una Clave de Participación para participar y recibir recompensas.\n2. Dirección Base: Una Dirección Base se deriva tanto de la Clave de Pago como de la Clave de Participación. Se puede usar tanto para transacciones regulares como para participación. También conocida como Direcciones Externas (Delegadas).\n3. Dirección de Empresa: Esta dirección solo contiene la Clave de Pago y se utiliza únicamente para transacciones regulares, no para participación. Está diseñada para escenarios empresariales que no implican participación, como intercambios. También conocida como Direcciones Externas (No Delegadas).\n4. Direcciones de Participación y Recompensa: La Clave de Participación se utiliza para la participación, y la Dirección de Participación asociada también se llama Dirección de Recompensa, utilizada para recibir recompensas por la participación."},
     {"receive_ada_more_t_title1", "Múltiples cuentas de Cardano en Keystone"},
     {"receive_ada_more_t_title2", "Conceptos clave en las direcciones ADA de Cardano"},
     {"receive_ada_show_address_detail", "Mostrar detalle de dirección"},
@@ -2013,9 +2024,9 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"receive_btc_extended_public_key", "Clave pública extendida"},
     {"receive_btc_more_address_settings", "Ajustes de dirección"},
     {"receive_btc_more_export_xpub", "Exportar xPub"},
-    {"receive_btc_more_t_desc1", "Bitcoin (BTC) utiliza tres formatos de direcciones para recibir fondos:\r\n1. SegWit nativo es el formato de dirección de Bitcoin más eficiente y seguro. Proporciona ahorros de costos y una seguridad mejorada en comparación con otros formatos de dirección tradicionales, generalmente comenzando con bc1.\r\n2. Formato heredado es una de las primeras versiones de Bitcoin, generalmente comenzando con 1.\r\n3. SegWit anidado es una solución diseñada para facilitar la transición al SegWit nativo de manera fluida, generalmente comenzando con 3."},
-    {"receive_btc_more_t_desc2", "Sí, los tres formatos distintos de dirección Bitcoin se pueden utilizar para transferir fondos entre sí. Sin embargo, es importante tener en cuenta los siguientes aspectos:\r\n1. Diferentes comisiones de transacción: la elección del formato de dirección puede influir en las comisiones de transacción, siendo las direcciones de Native SegWit generalmente las que tienen comisiones más bajas.\r\n2. Compatibilidad de billetera e intercambio: asegúrese de que la billetera o el intercambio que está utilizando admita el formato de dirección elegido. Algunas billeteras pueden ser compatibles únicamente con formatos de dirección específicos."},
-    {"receive_btc_more_t_desc3", "1. Privacidad: Reutilizar direcciones aumenta la rastreabilidad de las transacciones, poniendo en peligro la privacidad. Las nuevas direcciones ayudan a mantener la privacidad de las transacciones.\r\n2. Eficiencia de transacciones: Varios UTXOs vinculados a una misma dirección pueden aumentar los costos de consolidación, afectando la eficiencia de la billetera.\r\n3. Seguridad: El uso repetido de direcciones aumenta el riesgo de exposición de la clave privada, lo que potencialmente puede llevar a pérdidas si se compromete.\r\nEn resumen, no reutilizar direcciones protege la privacidad, optimiza las transacciones y reduce los riesgos de seguridad dentro del modelo UTXO."},
+    {"receive_btc_more_t_desc1", "Bitcoin (BTC) utiliza tres formatos de direcciones para recibir fondos:\n1. SegWit nativo es el formato de dirección de Bitcoin más eficiente y seguro. Proporciona ahorros de costos y una seguridad mejorada en comparación con otros formatos de dirección tradicionales, generalmente comenzando con bc1.\n2. Formato heredado es una de las primeras versiones de Bitcoin, generalmente comenzando con 1.\n3. SegWit anidado es una solución diseñada para facilitar la transición al SegWit nativo de manera fluida, generalmente comenzando con 3."},
+    {"receive_btc_more_t_desc2", "Sí, los tres formatos distintos de dirección Bitcoin se pueden utilizar para transferir fondos entre sí. Sin embargo, es importante tener en cuenta los siguientes aspectos:\n1. Diferentes comisiones de transacción: la elección del formato de dirección puede influir en las comisiones de transacción, siendo las direcciones de Native SegWit generalmente las que tienen comisiones más bajas.\n2. Compatibilidad de billetera e intercambio: asegúrese de que la billetera o el intercambio que está utilizando admita el formato de dirección elegido. Algunas billeteras pueden ser compatibles únicamente con formatos de dirección específicos."},
+    {"receive_btc_more_t_desc3", "1. Privacidad: Reutilizar direcciones aumenta la rastreabilidad de las transacciones, poniendo en peligro la privacidad. Las nuevas direcciones ayudan a mantener la privacidad de las transacciones.\n2. Eficiencia de transacciones: Varios UTXOs vinculados a una misma dirección pueden aumentar los costos de consolidación, afectando la eficiencia de la billetera.\n3. Seguridad: El uso repetido de direcciones aumenta el riesgo de exposición de la clave privada, lo que potencialmente puede llevar a pérdidas si se compromete.\nEn resumen, no reutilizar direcciones protege la privacidad, optimiza las transacciones y reduce los riesgos de seguridad dentro del modelo UTXO."},
     {"receive_btc_more_t_title1", "¿Cuáles son los tres formatos de dirección diferentes para BTC?"},
     {"receive_btc_more_t_title2", "¿Se pueden utilizar los tres formatos de dirección diferentes para transferir fondos entre ellos?"},
     {"receive_btc_more_t_title3", "Beneficios de no reutilizar direcciones"},
@@ -2031,13 +2042,13 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"receive_eth_more_derivation_path_ledger_legacy", "Legado de Ledger"},
     {"receive_eth_more_derivation_path_ledger_live", "Ledger Live"},
     {"receive_eth_more_derivation_path_title2", "Cuentas por ejemplo:"},
-    {"receive_eth_more_t_desc1", "1. Ruta estándar: Esta ruta es ampliamente utilizada por numerosas billeteras de software para la generación de direcciones. Ejemplos de estas billeteras incluyen MetaMask, Rabby, BitKeep y Core Wallet.\r\n2. Ledger Live: Elija esta ruta si desea importar una frase de recuperación desde Ledger Live. Por favor tenga en cuenta que Keystone solo admite la sincronización de las primeras 10 direcciones utilizando este formato.\r\n3. Ledger Legacy: Transita a esta ruta si administras tus activos digitales con Ledger Legacy."},
+    {"receive_eth_more_t_desc1", "1. Ruta estándar: Esta ruta es ampliamente utilizada por numerosas billeteras de software para la generación de direcciones. Ejemplos de estas billeteras incluyen MetaMask, Rabby, BitKeep y Core Wallet.\n2. Ledger Live: Elija esta ruta si desea importar una frase de recuperación desde Ledger Live. Por favor tenga en cuenta que Keystone solo admite la sincronización de las primeras 10 direcciones utilizando este formato.\n3. Ledger Legacy: Transita a esta ruta si administras tus activos digitales con Ledger Legacy."},
     {"receive_eth_more_t_title1", "Explorando diferencias: caminos de derivación estándar, Ledger Live y Legacy en Ethereum"},
     {"receive_eth_receive_main_title", "Recibir ETH"},
     {"receive_generate_new_address", "Generar nueva dirección"},
     {"receive_more_t_qr_link", "https://keyst.one/t/3rd/faq"},
     {"receive_sol_more_t_base_path", "Camino basado en la cuenta"},
-    {"receive_sol_more_t_desc1", "1. Ruta basada en cuentas: Ampliamente adoptada en numerosas billeteras de Solana. Un ejemplo de esta billetera es Solflare.\r\n2. Ruta de cuenta única: Elija esta ruta si desea importar una frase de recuperación desde Sollet / MathWallet. Por favor, tenga en cuenta que Keystone solo admite la sincronización de las 10 direcciones iniciales utilizando este formato.\r\n3. Ruta de subcuenta: Haga la transición a esta ruta si administra sus activos digitales con billeteras de software como Phantom / Exodus."},
+    {"receive_sol_more_t_desc1", "1. Ruta basada en cuentas: Ampliamente adoptada en numerosas billeteras de Solana. Un ejemplo de esta billetera es Solflare.\n2. Ruta de cuenta única: Elija esta ruta si desea importar una frase de recuperación desde Sollet / MathWallet. Por favor, tenga en cuenta que Keystone solo admite la sincronización de las 10 direcciones iniciales utilizando este formato.\n3. Ruta de subcuenta: Haga la transición a esta ruta si administra sus activos digitales con billeteras de software como Phantom / Exodus."},
     {"receive_sol_more_t_single_path", "Ruta de cuenta única"},
     {"receive_sol_more_t_sub_path", "Ruta de Subcuenta"},
     {"receive_sol_more_t_title1", "Explorando opciones de camino en Solana"},
@@ -2048,10 +2059,10 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"rsa_confirm_hintbox_context", "Por favor, introduzca su contraseña para iniciar la configuración de la blockchain ARWEAVE, la cual tomará aproximadamente 10 minutos. Asegúrese de que su dispositivo tenga al menos un 60% de carga y esté conectado a una fuente de energía USB."},
     {"rsa_confirm_hintbox_ok", "Inicialización"},
     {"rsa_confirm_hintbox_title", "Configuración de Blockchain en AR"},
-    {"rust_error_bitcoin_no_my_inputs", "Transacciones inconsistentes"},
-    {"rust_error_bitcoin_no_my_inputs_desc", "La transacción no pertenece a la billetera actual. Por favor, verifique la información de la transacción."},
     {"rust_error_bitcoin_not_my_multisig_wallet", "'Configuración de billetera multifuirmas inválida'"},
     {"rust_error_bitcoin_not_my_multisig_wallet_desc", "Esta configuración de billetera multisig no pertenece a la billetera actual. Por favor, verifica la información de la configuración de la billetera multisig."},
+    {"rust_error_not_my_transaction", "Transacciones inconsistentes"},
+    {"rust_error_not_my_transaction_desc", "La transacción no pertenece a la billetera actual. Por favor, verifique la información de la transacción."},
     {"scan_qr_code_error_invalid_file_desc", "La fecha del archivo no es reconocida. Por favor, inténtelo nuevamente."},
     {"scan_qr_code_error_invalid_qrcode", "Código QR no válido"},
     {"scan_qr_code_error_invalid_qrcode_desc", "Los datos del código QR no son reconocidos. Por favor, inténtalo de nuevo."},
@@ -2173,6 +2184,12 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"system_settings_wipe_device_wipe_fmt", "Borrar(%d)"},
     {"system_settings_wipe_device_wipe_start_text", "Borrar (5)"},
     {"system_settings_wipe_device_wipe_title", "Borrar dispositivo"},
+    {"ton_manage_assets_hint", ""},
+    {"ton_mnemonic_generating_desc", ""},
+    {"ton_mnemonic_generating_title", ""},
+    {"ton_mnemonic_regenerate", ""},
+    {"ton_sign_proof_title", ""},
+    {"ton_write_se_predict_text", ""},
     {"transaction_parse_broadcast_message", "Mensaje en vivo"},
     {"transaction_parse_confirm_message", "Confirmar Mensaje"},
     {"transaction_parse_scan_by_software", "Escanea el código QR con tu billetera de software"},
@@ -2181,6 +2198,9 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"tutorial_change_entropy_desc2", "Las computadoras no son excelentes para ser verdaderamente aleatorias. Los lanzamientos de dados proporcionan una fuente física e impredecible de aleatoriedad. Al usarlos, se aumenta la seguridad de los procesos criptográficos, lo que dificulta que alguien pueda predecir o descifrar tus códigos."},
     {"tutorial_change_entropy_title1", "¿Qué es la entropía?"},
     {"tutorial_change_entropy_title2", "¿Por qué usar tiradas de dados como tu entropía?"},
+    {"tutorial_ton_mnemonic_desc", ""},
+    {"tutorial_ton_mnemonic_title", ""},
+    {"tutorial_ton_mnemonic_url", ""},
     {"tx_details_btc_change_desc", "Las transacciones BTC, basadas en el mecanismo UTXO, asignan algunos activos a una dirección de cambio durante las transferencias. Esta dirección es generada por la billetera de software con el propósito de anonimato y privacidad. No tienes que preocuparte ya que la dirección de cambio pertenece a tu propia cuenta, y su monto será utilizado automáticamente en transacciones posteriores."},
     {"tx_details_btc_change_qr_link", "https://keyst.one/change"},
     {"tx_details_btc_change_qr_title", "¿Qué es una dirección de 'cambio'?"},
@@ -2289,8 +2309,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
 
 static uint8_t es_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
+    uint32_t n = op_n(num); UNUSED(n);
 
 
     if ((n == 1)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -2466,6 +2485,8 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"connect_specter_title", "Specter"},
     {"connect_sushi_link", "https://keyst.one/t/3rd/sushi"},
     {"connect_sushi_title", "SushiSwap"},
+    {"connect_tonkeeper_link", ""},
+    {"connect_tonkeeper_title", ""},
     {"connect_typhon_link", "https://keyst.one/t/3rd/typhon"},
     {"connect_typhon_title", "タイフーン(ウェブ)"},
     {"connect_unisat_link", "https://keyst.one/t/3rd/unisat"},
@@ -2512,6 +2533,8 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"create_multi_wallet_signers", "署名者"},
     {"create_multi_wallet_xpub_duplicated_desc", "インポートされたxpubファイルが重複しています."},
     {"create_multi_wallet_xpub_duplicated_title", "重複したXpub"},
+    {"create_ton_wallet", ""},
+    {"create_ton_wallet_hint", ""},
     {"create_wallet_generating_title", "ウォレットを作成し、デバイスをオンのままにしてください."},
     {"derivation_path_address", "派生パスを選択してください."},
     {"derivation_path_address_eg", "アドレスの例"},
@@ -2593,7 +2616,7 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"firmware_update_no_upgradable_firmware_desc", "あなたのデバイスのファームウェアバージョンは、マイクロSDカードに保存されているものと同じかそれよりも高いです."},
     {"firmware_update_no_upgradable_firmware_title", "アップグレード可能なファームウェアが検出されませんでした."},
     {"firmware_update_sd_checksum_desc", "#F5870A チェックサムを表示#"},
-    {"firmware_update_sd_checksum_done", "チェックサム:\r\n"},
+    {"firmware_update_sd_checksum_done", "チェックサム:\n"},
     {"firmware_update_sd_checksum_fmt", "#F5870A チェックサムを表示(%d%%) #"},
     {"firmware_update_sd_checksum_notice", "これはセキュリティをさらに強化するためのオプション機能です.公式ウェブサイトでのダウンロードパッケージのチェックサムと以下のチェックサムを比較し、一致することを確認してください."},
     {"firmware_update_sd_copying_desc", "アップデート中はMicroSDカードを取り外さないでください."},
@@ -2625,6 +2648,7 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"forgot_password_reset_passcode_intro_desc", "このウォレットに関連するシードフレーズを確認してパスコードをリセットしてください.パスワードをリセットすると、ウォレットまたはマルチシグウォレットのデータが消去される可能性があります."},
     {"forgot_password_reset_passcode_intro_text", "パスコードを忘れましたか？"},
     {"forgot_password_reset_passcode_intro_title", "パスコードを忘れましたか？"},
+    {"generate_ton_mnenonic", ""},
     {"generating_qr_codes", "QRコードの生成"},
     {"got_it", "わかりました"},
     {"got_it_fmt", "わかりました(%d)"},
@@ -2643,6 +2667,8 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"import_multi_wallet_success_title", "輸入成功"},
     {"import_multi_wallet_via_camera", "カメラを介して"},
     {"import_multi_wallet_via_micro_title", "マイクロSDカード"},
+    {"import_ton_mnemonic_desc", ""},
+    {"import_ton_mnemonic_title", ""},
     {"import_wallet_choose_method", "インポート方法を選択してください."},
     {"import_wallet_duplicated_share_desc", "このシェアはすでに確認されています.他のシェアを使用して続行してください."},
     {"import_wallet_invalid_phrase_desc", "入力したフレーズは無効です.バックアップを確認し、もう一度お試しください."},
@@ -2756,7 +2782,7 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"purpose_title", "新しい財布"},
     {"receive_ada_enterprise_address", "住所(委任されていません)"},
     {"receive_ada_more_t_desc1", "カルダノブロックチェーン上では、24つのアカウントを提供しており、各アカウントは使用するために多くのアドレスを生成することができます.必要なアカウント間を簡単に切り替えることができます."},
-    {"receive_ada_more_t_desc2", "1. 支払いとステークのキー:Cardanoでは、各アカウントには通常のADAトランザクション(送受信)のための支払いキーと、ステーキングおよび報酬を受け取るためのステークキーがあります.\r\n\r\n2. ベースアドレス:ベースアドレスは支払いキーとステークキーの両方から派生したものです.通常のトランザクションとステーキングの両方に使用することができます.また、「外部アドレス(委任)」とも呼ばれています.\r\n\r\n3. 企業アドレス:このアドレスには支払いキーのみが含まれており、ステーキングには使用されません.ステーキングを含まない「ビジネス」シナリオ(取引所など)のために設計されています.また、「外部アドレス(委任されていない)」とも呼ばれています.\r\n\r\n4. ステークおよび報酬のアドレス:ステークキーはステーキングに使用され、関連するステークアドレスは報酬アドレスとも呼ばれ、ステーキング報酬を受け取るために使用されます."},
+    {"receive_ada_more_t_desc2", "1. 支払いとステークのキー:Cardanoでは、各アカウントには通常のADAトランザクション(送受信)のための支払いキーと、ステーキングおよび報酬を受け取るためのステークキーがあります.\n\n2. ベースアドレス:ベースアドレスは支払いキーとステークキーの両方から派生したものです.通常のトランザクションとステーキングの両方に使用することができます.また、「外部アドレス(委任)」とも呼ばれています.\n\n3. 企業アドレス:このアドレスには支払いキーのみが含まれており、ステーキングには使用されません.ステーキングを含まない「ビジネス」シナリオ(取引所など)のために設計されています.また、「外部アドレス(委任されていない)」とも呼ばれています.\n\n4. ステークおよび報酬のアドレス:ステークキーはステーキングに使用され、関連するステークアドレスは報酬アドレスとも呼ばれ、ステーキング報酬を受け取るために使用されます."},
     {"receive_ada_more_t_title1", "キーストーン上の複数のカルダノアカウント"},
     {"receive_ada_more_t_title2", "カルダノのADAアドレスのキーコンセプト"},
     {"receive_ada_show_address_detail", "住所の詳細を表示"},
@@ -2766,9 +2792,9 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"receive_btc_extended_public_key", "拡張公開鍵"},
     {"receive_btc_more_address_settings", "アドレス設定"},
     {"receive_btc_more_export_xpub", "エクスポート xPub"},
-    {"receive_btc_more_t_desc1", "ビットコイン（BTC）は資金受領用に以下の3つのアドレス形式を使用しています:\r\n1. Native SegWitは、最も効率的で安全なビットコインアドレス形式です。従来のアドレス形式に比べてコスト削減とセキュリティの向上を提供し、通常は「bc1」で始まります。\r\n2. Legacy形式はビットコインの最も初期のバージョンの一つで、通常は「1」で始まります。\r\n3. Nested SegWitは、スムーズにNative SegWitへの移行を促進するために設計されたソリューションで、通常は「3」で始まります"},
-    {"receive_btc_more_t_desc2", "はい、3つの異なるBitcoinアドレスフォーマットは互いに資金を送金するために使用することができます.ただし、以下の点に注意することが重要です:\r\n1. 異なるトランザクション手数料:アドレスフォーマットの選択はトランザクション手数料に影響を与える可能性があります.ネイティブSegWitアドレスは通常、より低い手数料で使用できます.\r\n2. ウォレットと取引所の互換性:使用しているウォレットや取引所が選択したアドレスフォーマットに対応していることを確認してください.一部のウォレットは特定のアドレスフォーマットにのみ対応している場合があります."},
-    {"receive_btc_more_t_desc3", "1. プライバシー:アドレスの再利用はトランザクションの追跡可能性を高め、プライバシーを危険にさらします.新しいアドレスはトランザクションのプライバシーを維持するのに役立ちます.\r\n2. トランザクション効率:1つのアドレスにリンクされた複数のUTXOは統合によるコスト増加を引き起こし、ウォレットの効率に影響を与える可能性があります.\r\n3. セキュリティ:アドレスの繰り返し使用はプライベートキーの公開リスクを高め、侵害された場合には損失をもたらす可能性があります.\r\n要するに、アドレスの再利用をしないことは、UTXOモデル内でのプライバシーの保護、トランザクションの最適化、およびセキュリティリスクの低減を実現します."},
+    {"receive_btc_more_t_desc1", "ビットコイン（BTC）は資金受領用に以下の3つのアドレス形式を使用しています:\n1. Native SegWitは、最も効率的で安全なビットコインアドレス形式です。従来のアドレス形式に比べてコスト削減とセキュリティの向上を提供し、通常は「bc1」で始まります。\n2. Legacy形式はビットコインの最も初期のバージョンの一つで、通常は「1」で始まります。\n3. Nested SegWitは、スムーズにNative SegWitへの移行を促進するために設計されたソリューションで、通常は「3」で始まります"},
+    {"receive_btc_more_t_desc2", "はい、3つの異なるBitcoinアドレスフォーマットは互いに資金を送金するために使用することができます.ただし、以下の点に注意することが重要です:\n1. 異なるトランザクション手数料:アドレスフォーマットの選択はトランザクション手数料に影響を与える可能性があります.ネイティブSegWitアドレスは通常、より低い手数料で使用できます.\n2. ウォレットと取引所の互換性:使用しているウォレットや取引所が選択したアドレスフォーマットに対応していることを確認してください.一部のウォレットは特定のアドレスフォーマットにのみ対応している場合があります."},
+    {"receive_btc_more_t_desc3", "1. プライバシー:アドレスの再利用はトランザクションの追跡可能性を高め、プライバシーを危険にさらします.新しいアドレスはトランザクションのプライバシーを維持するのに役立ちます.\n2. トランザクション効率:1つのアドレスにリンクされた複数のUTXOは統合によるコスト増加を引き起こし、ウォレットの効率に影響を与える可能性があります.\n3. セキュリティ:アドレスの繰り返し使用はプライベートキーの公開リスクを高め、侵害された場合には損失をもたらす可能性があります.\n要するに、アドレスの再利用をしないことは、UTXOモデル内でのプライバシーの保護、トランザクションの最適化、およびセキュリティリスクの低減を実現します."},
     {"receive_btc_more_t_title1", "BTCのための3つの異なるアドレス形式は何ですか？"},
     {"receive_btc_more_t_title2", "3つの異なるアドレス形式を使用して、お互いに資金を送金することはできますか？"},
     {"receive_btc_more_t_title3", "再利用しないアドレスの利点"},
@@ -2784,13 +2810,13 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"receive_eth_more_derivation_path_ledger_legacy", "レジャシーレジャシー"},
     {"receive_eth_more_derivation_path_ledger_live", "Ledger Live"},
     {"receive_eth_more_derivation_path_title2", "アカウント例:"},
-    {"receive_eth_more_t_desc1", "1. 標準パス:このパスは、アドレスの生成に多くのソフトウェアウォレットで広く使用されています.このようなウォレットの例には、MetaMask、Rabby、BitKeep、およびCore Walletが含まれます.\r\n2. Ledger Live:Ledger Liveからシードフレーズをインポートする場合は、このパスを選択してください.Keystoneは、この形式を使用して初期の10個のアドレスのみ同期サポートしていることに注意してください.\r\n3. Ledger Legacy:デジタル資産をLedger Legacyで管理する場合は、このパスに移行してください."},
+    {"receive_eth_more_t_desc1", "1. 標準パス:このパスは、アドレスの生成に多くのソフトウェアウォレットで広く使用されています.このようなウォレットの例には、MetaMask、Rabby、BitKeep、およびCore Walletが含まれます.\n2. Ledger Live:Ledger Liveからシードフレーズをインポートする場合は、このパスを選択してください.Keystoneは、この形式を使用して初期の10個のアドレスのみ同期サポートしていることに注意してください.\n3. Ledger Legacy:デジタル資産をLedger Legacyで管理する場合は、このパスに移行してください."},
     {"receive_eth_more_t_title1", "異なるアプローチの探索:イーサリアムにおける標準、Ledger Live、およびレガシー派生パス"},
     {"receive_eth_receive_main_title", "ETHを受け取る"},
     {"receive_generate_new_address", "新しいアドレスを作成する"},
     {"receive_more_t_qr_link", "https://keyst.one/t/3rd/faq"},
     {"receive_sol_more_t_base_path", "アカウントベースのパス"},
-    {"receive_sol_more_t_desc1", "1. アカウントベースのパス:多くのSolanaウォレットで広く採用されています.このようなウォレットの例はSolflareです.\r\n2. 単一アカウントパス:Sollet / MathWalletからシードフレーズをインポートする場合は、このパスを選択してください.Keystoneは、この形式を使用して最初の10個のアドレスのみを同期することができることに注意してください.\r\n3. サブアカウントパス:Phantom / Exodusなどのソフトウェアウォレットでデジタル資産を管理している場合は、このパスに移行してください."},
+    {"receive_sol_more_t_desc1", "1. アカウントベースのパス:多くのSolanaウォレットで広く採用されています.このようなウォレットの例はSolflareです.\n2. 単一アカウントパス:Sollet / MathWalletからシードフレーズをインポートする場合は、このパスを選択してください.Keystoneは、この形式を使用して最初の10個のアドレスのみを同期することができることに注意してください.\n3. サブアカウントパス:Phantom / Exodusなどのソフトウェアウォレットでデジタル資産を管理している場合は、このパスに移行してください."},
     {"receive_sol_more_t_single_path", "単一アカウントパス"},
     {"receive_sol_more_t_sub_path", "サブアカウントパス"},
     {"receive_sol_more_t_title1", "ソラナのパスオプションを探る"},
@@ -2801,10 +2827,10 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"rsa_confirm_hintbox_context", "パスワードを入力して、ARWEAVEブロックチェーンの設定を開始してください.設定には約10分かかります.デバイスの充電が少なくとも60%あり、USB 電源に接続されていることを確認してください"},
     {"rsa_confirm_hintbox_ok", "初期の"},
     {"rsa_confirm_hintbox_title", "AR ブロックチェーンの設定"},
-    {"rust_error_bitcoin_no_my_inputs", "不一致な取引"},
-    {"rust_error_bitcoin_no_my_inputs_desc", "現在のウォレットに関連する取引ではありません.取引情報を確認してください."},
     {"rust_error_bitcoin_not_my_multisig_wallet", "無効なマルチシグウォレット設定"},
     {"rust_error_bitcoin_not_my_multisig_wallet_desc", "このマルチサインウォレットの設定は現在のウォレットに所属していません.マルチサインウォレットの設定情報を確認してください."},
+    {"rust_error_not_my_transaction", "不一致な取引"},
+    {"rust_error_not_my_transaction_desc", "現在のウォレットに関連する取引ではありません.取引情報を確認してください."},
     {"scan_qr_code_error_invalid_file_desc", "ファイルの日付が認識できません.もう一度お試しください."},
     {"scan_qr_code_error_invalid_qrcode", "無効なQRコード"},
     {"scan_qr_code_error_invalid_qrcode_desc", "QRコードのデータが認識されません.再度お試しください."},
@@ -2926,6 +2952,12 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"system_settings_wipe_device_wipe_fmt", "ワイプ(%d)"},
     {"system_settings_wipe_device_wipe_start_text", "ワイプ(5)"},
     {"system_settings_wipe_device_wipe_title", "デバイスをWIPEする"},
+    {"ton_manage_assets_hint", ""},
+    {"ton_mnemonic_generating_desc", ""},
+    {"ton_mnemonic_generating_title", ""},
+    {"ton_mnemonic_regenerate", ""},
+    {"ton_sign_proof_title", ""},
+    {"ton_write_se_predict_text", ""},
     {"transaction_parse_broadcast_message", "放送メッセージ"},
     {"transaction_parse_confirm_message", "確認メッセージ"},
     {"transaction_parse_scan_by_software", "QRコードをソフトウェアウォレットでスキャンしてください"},
@@ -2934,6 +2966,9 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"tutorial_change_entropy_desc2", "コンピュータは真にランダムな挙動が得意ではありません.サイコロの目は物理的で予測不可能なランダムな要素を提供します.それらを使用することで、あなたの暗号プロセスのセキュリティを強化し、他の人があなたのコードを予測したり解読したりするのをより困難にします."},
     {"tutorial_change_entropy_title1", "エントロピーとは何ですか？"},
     {"tutorial_change_entropy_title2", "なぜエントロピーとしてダイスの結果を使用するのですか？"},
+    {"tutorial_ton_mnemonic_desc", ""},
+    {"tutorial_ton_mnemonic_title", ""},
+    {"tutorial_ton_mnemonic_url", ""},
     {"tx_details_btc_change_desc", "BTC取引は、UTXOメカニズムに基づいており、送金中に一部の資産がお釣りアドレスに割り当てられます.このアドレスはソフトウェアウォレットによって匿名性とプライバシーを保護するために生成されます.心配する必要はありません、お釣りアドレスはあなた自身のアカウントに所属しており、その額は自動的に後続の取引で使用されます."},
     {"tx_details_btc_change_qr_link", "https://keyst.one/change"},
     {"tx_details_btc_change_qr_title", "'Change'アドレスとは何ですか？"},
@@ -3003,7 +3038,7 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"wallet_profile_default_desc", "現在のウォレット"},
     {"wallet_profile_export_title", "エクスポート(Ext)公開鍵"},
     {"wallet_profile_export_to_sdcard_title", "マイクロSDカードにxPubをエクスポートする"},
-    {"wallet_profile_import_multi_wallet", "Import MultiSig Wallet\r\nマルチシグウォレットをインポート"},
+    {"wallet_profile_import_multi_wallet", "Import MultiSig Wallet\nマルチシグウォレットをインポート"},
     {"wallet_profile_import_multi_wallet_desc", "マルチサインウォレットのインポート方法を選択してください."},
     {"wallet_profile_mid_btn", "ウォレットプロファイル"},
     {"wallet_profile_multi_sign_title", "マルチサインウォレット"},
@@ -3217,6 +3252,8 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"connect_specter_title", "Specter"},
     {"connect_sushi_link", "https://keyst.one/t/3rd/sushi"},
     {"connect_sushi_title", "SushiSwap"},
+    {"connect_tonkeeper_link", "https://keyst.one/t/3rd/tonkeeper"},
+    {"connect_tonkeeper_title", "Tonkeeper(Extension)"},
     {"connect_typhon_link", "https://keyst.one/t/3rd/typhon"},
     {"connect_typhon_title", "Typhon월렛 (웹)"},
     {"connect_unisat_link", "https://keyst.one/t/3rd/unisat"},
@@ -3263,6 +3300,8 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"create_multi_wallet_signers", "서명자"},
     {"create_multi_wallet_xpub_duplicated_desc", "가져온 확장 공개 키 파일이 중복됨"},
     {"create_multi_wallet_xpub_duplicated_title", "중복된 확장 공개 키"},
+    {"create_ton_wallet", ""},
+    {"create_ton_wallet_hint", ""},
     {"create_wallet_generating_title", "지갑을 만드는 동안 장치가 켜져 있는 상태를 유지하십시오."},
     {"derivation_path_address", "주소."},
     {"derivation_path_address_eg", "주소 예."},
@@ -3344,7 +3383,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"firmware_update_no_upgradable_firmware_desc", "장치의 현재 버전이 MicroSD 카드의 펌웨어 버전보다 높거나 같습니다."},
     {"firmware_update_no_upgradable_firmware_title", "업그레이드 가능한 펌웨어를 찾을 수 없습니다."},
     {"firmware_update_sd_checksum_desc", "#F5870A 체크섬 표시#"},
-    {"firmware_update_sd_checksum_done", "체크섬\r\n"},
+    {"firmware_update_sd_checksum_done", "체크섬\n"},
     {"firmware_update_sd_checksum_fmt", "#F5870A 체크섬 표시 (%d%%)#"},
     {"firmware_update_sd_checksum_notice", "보안성을 더욱 높일 수 있는 옵션 기능입니다.아래 체크섬과 공식 홈페이지에서 다운로드한 패키지의 체크섬을 비교하여 동일하게 유지하여 주시기 바랍니다."},
     {"firmware_update_sd_copying_desc", "업그레이드 중에는 microSD 카드를 제거하지 마십시오."},
@@ -3376,6 +3415,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"forgot_password_reset_passcode_intro_desc", "이 지갑과 연결된 구문을 확인하여 암호를 재설정합니다.암호를 재설정하면 지갑이나 다중 서명 지갑의 데이터를 지울 수 있습니다"},
     {"forgot_password_reset_passcode_intro_text", "비밀번호를 잊어버렸습니까?"},
     {"forgot_password_reset_passcode_intro_title", "비밀번호를 잊어버렸습니까?"},
+    {"generate_ton_mnenonic", ""},
     {"generating_qr_codes", "QR 코드 생성"},
     {"got_it", "알겠습니다."},
     {"got_it_fmt", "알겠어요 (%d)"},
@@ -3394,6 +3434,8 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"import_multi_wallet_success_title", "가져오기 성공"},
     {"import_multi_wallet_via_camera", "카메라로"},
     {"import_multi_wallet_via_micro_title", "MicroSD 카드"},
+    {"import_ton_mnemonic_desc", ""},
+    {"import_ton_mnemonic_title", ""},
     {"import_wallet_choose_method", "가져오기 방법 선택"},
     {"import_wallet_duplicated_share_desc", "해당 공유가 이미 인증되었습니다, 다음 공유를 계속 입력하십시오."},
     {"import_wallet_invalid_phrase_desc", "입력하신 시드 구문이 잘 못되었습니다. 확인하고 다시 시도하십시오."},
@@ -3507,7 +3549,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"purpose_title", "새 지갑"},
     {"receive_ada_enterprise_address", "주소(위임되지 않음)"},
     {"receive_ada_more_t_desc1", "카르다노 블록체인에서 24개의 계정을 제공하고 있으며, 각 계정은 사용할 수 있는 수많은 주소를 생성할 수 있다. 필요한 계정을 쉽게 전환할 수 있다."},
-    {"receive_ada_more_t_desc2", "\"1. Payment & Stake Key: Cardano의 모든 계정에는 정기적인 ADA 거래(전송 및 수신)를 위한 Payment Key와 Stake and Reception을 위한 Stake Key가 있습니다.\r\n 2. 기본 주소(Base Address): 기본 주소는 결제 키와 지분 키 모두에서 파생됩니다. 정기적인 거래와 스테이킹에 모두 사용할 수 있습니다. \"외부 주소(Delegated)\"라고도 합니다\r\n 3. 기업 주소: 이 주소는 결제 키만 포함되어 있으며, 일반 거래에만 사용되며, 거래소와 같이 지분이 포함되지 않는 \"비즈니스\" 시나리오를 위해 설계되었으며, \"외부 주소(위임되지 않음)\"라고도 합니다\r\n 4. Stake & Reward Address: Stake Key는 스테이킹에 사용되며, 관련된 Stake Address는 스테이킹 보상을 받는 데 사용되는 Reward Address라고도 합니다.\""},
+    {"receive_ada_more_t_desc2", "\"1. Payment & Stake Key: Cardano의 모든 계정에는 정기적인 ADA 거래(전송 및 수신)를 위한 Payment Key와 Stake and Reception을 위한 Stake Key가 있습니다.\n 2. 기본 주소(Base Address): 기본 주소는 결제 키와 지분 키 모두에서 파생됩니다. 정기적인 거래와 스테이킹에 모두 사용할 수 있습니다. \"외부 주소(Delegated)\"라고도 합니다\n 3. 기업 주소: 이 주소는 결제 키만 포함되어 있으며, 일반 거래에만 사용되며, 거래소와 같이 지분이 포함되지 않는 \"비즈니스\" 시나리오를 위해 설계되었으며, \"외부 주소(위임되지 않음)\"라고도 합니다\n 4. Stake & Reward Address: Stake Key는 스테이킹에 사용되며, 관련된 Stake Address는 스테이킹 보상을 받는 데 사용되는 Reward Address라고도 합니다.\""},
     {"receive_ada_more_t_title1", "키스톤의 여러 카르다노 계정"},
     {"receive_ada_more_t_title2", "카르다노의 ADA 주소의 주요 개념"},
     {"receive_ada_show_address_detail", "주소 상세 내역 표시"},
@@ -3517,9 +3559,9 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"receive_btc_extended_public_key", "공개 키 확장 "},
     {"receive_btc_more_address_settings", "주소 설정"},
     {"receive_btc_more_export_xpub", "XPub 내보내기"},
-    {"receive_btc_more_t_desc1", "비트코인(BTC)은 자금을 받기 위해 세 가지 주소 형식을 사용합니다:\r\n 1. 네이티브 세그윗(Native SegWit)은 가장 효율적이고 안전한 비트코인 주소 포맷이다. 일반적으로 \"bc1\"로 시작하는 다른 전통적인 주소 포맷에 비해 비용 절감 및 향상된 보안을 제공한다\r\n 2. 레거시 형식은 일반적으로 \"1\"로 시작하는 비트코인의 초기 버전 중 하나이다\r\n 3. Nested SegWit은 Native SegWit으로 원활하게 전환할 수 있도록 설계된 솔루션으로, 일반적으로 \"3\"으로 시작한다"},
-    {"receive_btc_more_t_desc2", "\"그렇다. 서로 다른 세 가지 비트코인 주소 형식을 사용하여 자금을 이체할 수 있다. 그러나 다음과 같은 측면을 염두에 두어야 한다:\r\n 1. 거래 수수료 차이: 주소 형식의 선택은 거래 수수료에 영향을 미칠 수 있으며, 네이티브 세그윗 주소는 일반적으로 수수료가 저렴하다.\r\n 2. 지갑과 교환의 호환성: 당신이 사용하고 있는 지갑이나 교환이 당신이 선택한 주소 형식을 지원하는지 확인하세요. 일부 지갑은 특정 주소 형식과만 호환될 수 있습니다.\""},
-    {"receive_btc_more_t_desc3", "\"1. Privacy: 주소를 재사용하면 트랜잭션 추적성이 향상되어 프라이버시가 위험해진다. 새로운 주소는 트랜잭션 프라이버시를 유지하는 데 도움이 된다.\r\n 2. 트랜잭션 효율성: 하나의 주소에 연결된 여러 UTXO는 통합 비용을 증가시켜 지갑 효율성에 영향을 줄 수 있습니다.\r\n 3. 보안: 주소를 반복적으로 사용하면 개인 키가 노출될 위험이 높아져 손상될 경우 손실이 발생할 수 있습니다.\r\n 간단히 말해서, 주소를 재사용하지 않으면 사생활이 보호되고 트랜잭션이 최적화되며 UTXO 모델 내의 보안 위험이 감소합니다.\""},
+    {"receive_btc_more_t_desc1", "비트코인(BTC)은 자금을 받기 위해 세 가지 주소 형식을 사용합니다:\n 1. 네이티브 세그윗(Native SegWit)은 가장 효율적이고 안전한 비트코인 주소 포맷이다. 일반적으로 \"bc1\"로 시작하는 다른 전통적인 주소 포맷에 비해 비용 절감 및 향상된 보안을 제공한다\n 2. 레거시 형식은 일반적으로 \"1\"로 시작하는 비트코인의 초기 버전 중 하나이다\n 3. Nested SegWit은 Native SegWit으로 원활하게 전환할 수 있도록 설계된 솔루션으로, 일반적으로 \"3\"으로 시작한다"},
+    {"receive_btc_more_t_desc2", "\"그렇다. 서로 다른 세 가지 비트코인 주소 형식을 사용하여 자금을 이체할 수 있다. 그러나 다음과 같은 측면을 염두에 두어야 한다:\n 1. 거래 수수료 차이: 주소 형식의 선택은 거래 수수료에 영향을 미칠 수 있으며, 네이티브 세그윗 주소는 일반적으로 수수료가 저렴하다.\n 2. 지갑과 교환의 호환성: 당신이 사용하고 있는 지갑이나 교환이 당신이 선택한 주소 형식을 지원하는지 확인하세요. 일부 지갑은 특정 주소 형식과만 호환될 수 있습니다.\""},
+    {"receive_btc_more_t_desc3", "\"1. Privacy: 주소를 재사용하면 트랜잭션 추적성이 향상되어 프라이버시가 위험해진다. 새로운 주소는 트랜잭션 프라이버시를 유지하는 데 도움이 된다.\n 2. 트랜잭션 효율성: 하나의 주소에 연결된 여러 UTXO는 통합 비용을 증가시켜 지갑 효율성에 영향을 줄 수 있습니다.\n 3. 보안: 주소를 반복적으로 사용하면 개인 키가 노출될 위험이 높아져 손상될 경우 손실이 발생할 수 있습니다.\n 간단히 말해서, 주소를 재사용하지 않으면 사생활이 보호되고 트랜잭션이 최적화되며 UTXO 모델 내의 보안 위험이 감소합니다.\""},
     {"receive_btc_more_t_title1", "BTC의 세 가지 주소 형식은 무엇입니까?"},
     {"receive_btc_more_t_title2", "세 가지 다른 주소 형식을 사용하여 서로 자금을 송금할 수 있습니까?"},
     {"receive_btc_more_t_title3", "주소를 재사용하지 않을 경우의 이점"},
@@ -3535,13 +3577,13 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"receive_eth_more_derivation_path_ledger_legacy", "레저 레거시"},
     {"receive_eth_more_derivation_path_ledger_live", "레저 라이브"},
     {"receive_eth_more_derivation_path_title2", "계정 예:"},
-    {"receive_eth_more_t_desc1", "\"1. 표준 경로: 이 경로는 주소 생성을 위해 수많은 소프트웨어 지갑에서 널리 사용되고 있다. 이러한 지갑의 예로는 메타마스크, 래비, 비트킵, 코어 지갑 등이 있다.\r\n 2. 레저 라이브: 레저 라이브에서 시드 프레이즈를 가져오려면 이 경로를 선택하십시오. 키스톤은 이 형식을 사용하여 초기 10개의 주소만 동기화할 수 있습니다.\r\n 3. 원장 레거시: 원장 레거시로 디지털 자산을 관리하는 경우 이 경로로 전환\""},
+    {"receive_eth_more_t_desc1", "\"1. 표준 경로: 이 경로는 주소 생성을 위해 수많은 소프트웨어 지갑에서 널리 사용되고 있다. 이러한 지갑의 예로는 메타마스크, 래비, 비트킵, 코어 지갑 등이 있다.\n 2. 레저 라이브: 레저 라이브에서 시드 프레이즈를 가져오려면 이 경로를 선택하십시오. 키스톤은 이 형식을 사용하여 초기 10개의 주소만 동기화할 수 있습니다.\n 3. 원장 레거시: 원장 레거시로 디지털 자산을 관리하는 경우 이 경로로 전환\""},
     {"receive_eth_more_t_title1", "차이점 탐색: 표준, 원장 라이브 및 이더리움의 레거시 도출 경로"},
     {"receive_eth_receive_main_title", "ETH 받기"},
     {"receive_generate_new_address", "새 주소 생성"},
     {"receive_more_t_qr_link", "https://keyst.one/t/3rd/faq"},
     {"receive_sol_more_t_base_path", "계정 기반 경로"},
-    {"receive_sol_more_t_desc1", "\"1. 계정 기반 경로: 수많은 솔라나 지갑에 널리 채택되고 있습니다. 그러한 지갑의 예로는 솔프라레가 있습니다.\r\n 2. 단일 계정 경로: Sollet / MathWallet에서 시드 구문을 가져오려면 이 경로를 선택하십시오. Keystone은 이 형식을 사용하여 초기 10개 주소만 동기화할 수 있습니다.\r\n 3. 하위 계정 경로: 팬텀/엑소더스와 같은 소프트웨어 지갑으로 디지털 자산을 관리하면 이 경로로 전환하십시오.\""},
+    {"receive_sol_more_t_desc1", "\"1. 계정 기반 경로: 수많은 솔라나 지갑에 널리 채택되고 있습니다. 그러한 지갑의 예로는 솔프라레가 있습니다.\n 2. 단일 계정 경로: Sollet / MathWallet에서 시드 구문을 가져오려면 이 경로를 선택하십시오. Keystone은 이 형식을 사용하여 초기 10개 주소만 동기화할 수 있습니다.\n 3. 하위 계정 경로: 팬텀/엑소더스와 같은 소프트웨어 지갑으로 디지털 자산을 관리하면 이 경로로 전환하십시오.\""},
     {"receive_sol_more_t_single_path", "단일 계정 경로"},
     {"receive_sol_more_t_sub_path", "서브 계정 경로"},
     {"receive_sol_more_t_title1", "Solana 경로 옵션 탐색"},
@@ -3552,10 +3594,10 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"rsa_confirm_hintbox_context", "ARWEAVE 블록체인 설정을 시작하려면 비밀번호를 입력해 주세요. 프로세스는 약 10분이 소요됩니다. 장치가 최소 60% 충전되어 있고 USB 전원에 연결되어 있는지 확인하세요."},
     {"rsa_confirm_hintbox_ok", "초기 설정"},
     {"rsa_confirm_hintbox_title", "AR 블록체인 설정"},
-    {"rust_error_bitcoin_no_my_inputs", "일치하지 않은 거래입니다"},
-    {"rust_error_bitcoin_no_my_inputs_desc", "이 거래는 현재 지갑에 속하지 않습니다.거래 정보 확인하십시오"},
     {"rust_error_bitcoin_not_my_multisig_wallet", "다중 서명 지갑 설정이 잘못되었습니다"},
     {"rust_error_bitcoin_not_my_multisig_wallet_desc", "이 다중 서명 지갑 설정은 현재 지갑에 속하지 않습니다.다중 서명 지갑 설정 정보를 확인하십시오"},
+    {"rust_error_not_my_transaction", "일치하지 않은 거래입니다"},
+    {"rust_error_not_my_transaction_desc", "이 거래는 현재 지갑에 속하지 않습니다.거래 정보 확인하십시오"},
     {"scan_qr_code_error_invalid_file_desc", "파일 날짜를 알 수 없습니다.다시 시도해주세요."},
     {"scan_qr_code_error_invalid_qrcode", "잘못된 QR 코드"},
     {"scan_qr_code_error_invalid_qrcode_desc", "QR코드 데이터를 인식할 수 없습니다. 다시 시도하십시오."},
@@ -3677,6 +3719,12 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"system_settings_wipe_device_wipe_fmt", "삭제(%d)"},
     {"system_settings_wipe_device_wipe_start_text", "삭제(5)"},
     {"system_settings_wipe_device_wipe_title", "장치 초기화"},
+    {"ton_manage_assets_hint", ""},
+    {"ton_mnemonic_generating_desc", ""},
+    {"ton_mnemonic_generating_title", ""},
+    {"ton_mnemonic_regenerate", ""},
+    {"ton_sign_proof_title", ""},
+    {"ton_write_se_predict_text", ""},
     {"transaction_parse_broadcast_message", "브로드캐스트 메시지"},
     {"transaction_parse_confirm_message", "메시지 확인"},
     {"transaction_parse_scan_by_software", "소프트웨어 지갑으로 QR 코드 스캔"},
@@ -3685,6 +3733,9 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"tutorial_change_entropy_desc2", "컴퓨터는 진정한 무작위성을 제공할 수 없습니다.주사위는 더 예측 불가능한 무작위성을 제공합니다.주사위를 사용함으로써 암호화 과정의 보안을 강화하여 코드를 예측하거나 깨기 어렵게 만들 수 있습니다."},
     {"tutorial_change_entropy_title1", "엔트로피(entropy)가 무엇입니까?"},
     {"tutorial_change_entropy_title2", "주사위 수를 엔트로피로 사용하는 이유는 무엇입니까?"},
+    {"tutorial_ton_mnemonic_desc", ""},
+    {"tutorial_ton_mnemonic_title", ""},
+    {"tutorial_ton_mnemonic_url", ""},
     {"tx_details_btc_change_desc", "BTC 거래는 UTXO 메커니즘을 기반으로 이체 시 일부 자산을 변경 주소에 할당합니다. 이 주소는 익명성 및 개인 정보 보호를 위해 소프트웨어 지갑에서 생성됩니다. 변경 주소는 자신의 계정에 속하며, 해당 금액은 이후 거래 시 자동으로 사용되므로 걱정하지 않으셔도 됩니다."},
     {"tx_details_btc_change_qr_link", "https://keyst.one/change"},
     {"tx_details_btc_change_qr_title", "변경' 주소란 무엇입니까?"},
@@ -3968,6 +4019,8 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"connect_specter_title", "Specter"},
     {"connect_sushi_link", "https://keyst.one/t/3rd/sushi"},
     {"connect_sushi_title", "SushiSwap"},
+    {"connect_tonkeeper_link", "https://keyst.one/t/3rd/tonkeeper"},
+    {"connect_tonkeeper_title", "Tonkeeper(Extension)"},
     {"connect_typhon_link", "https://keyst.one/t/3rd/typhon"},
     {"connect_typhon_title", "Typhon (Веб)"},
     {"connect_unisat_link", "https://keyst.one/t/3rd/unisat"},
@@ -4014,6 +4067,8 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"create_multi_wallet_signers", "Подписантов"},
     {"create_multi_wallet_xpub_duplicated_desc", "Импортированный файл xpub дублируется"},
     {"create_multi_wallet_xpub_duplicated_title", "Дублировать Xpub"},
+    {"create_ton_wallet", ""},
+    {"create_ton_wallet_hint", ""},
     {"create_wallet_generating_title", "Создание кошелька"},
     {"derivation_path_address", "Адреса"},
     {"derivation_path_address_eg", "Пример адресов"},
@@ -4095,7 +4150,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"firmware_update_no_upgradable_firmware_desc", "Обновляемой прошивки не обнаружено"},
     {"firmware_update_no_upgradable_firmware_title", "Обновляемой прошивки не обнаружено"},
     {"firmware_update_sd_checksum_desc", "#F5870A Показать контрольную сумму#"},
-    {"firmware_update_sd_checksum_done", "Контрольная сумма:\r\n"},
+    {"firmware_update_sd_checksum_done", "Контрольная сумма:\n"},
     {"firmware_update_sd_checksum_fmt", "#F5870A Показать контрольную сумму(%d%%)#"},
     {"firmware_update_sd_checksum_notice", "Это дополнительная функция, предназначенная для дальнейшего повышения безопасности. Сравните следующую контрольную сумму с контрольной суммой вашего загружаемого пакета на официальном сайте и убедитесь, что они совпадают"},
     {"firmware_update_sd_copying_desc", "Не доставайте MicroSD карту во время загрузки прошивки."},
@@ -4127,6 +4182,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"forgot_password_reset_passcode_intro_desc", "Проверьте начальную фразу, связанную с этим кошельком, чтобы сбросить пароль. Сброс пароля может привести к удалению данных вашего кошелька или мультиподписного кошелька"},
     {"forgot_password_reset_passcode_intro_text", "Забыли код-пароль?"},
     {"forgot_password_reset_passcode_intro_title", "Забыли код-пароль?"},
+    {"generate_ton_mnenonic", ""},
     {"generating_qr_codes", "Генерируются QR-коды"},
     {"got_it", "Понятно"},
     {"got_it_fmt", "Понятно (%d)"},
@@ -4145,6 +4201,8 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"import_multi_wallet_success_title", "успешное выполнение импорта"},
     {"import_multi_wallet_via_camera", "С помощью камеры"},
     {"import_multi_wallet_via_micro_title", "Карта microSD"},
+    {"import_ton_mnemonic_desc", ""},
+    {"import_ton_mnemonic_title", ""},
     {"import_wallet_choose_method", "Способ импорта"},
     {"import_wallet_duplicated_share_desc", "Вы уже проверили эту часть. Чтобы продолжить, используйте другую часть."},
     {"import_wallet_invalid_phrase_desc", "Фраза недействительна. Проверьте резервную копию и повторите попытку"},
@@ -4152,7 +4210,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"import_wallet_phrase_desc", "Введите слова вашей сид фразы в поля представленные ниже."},
     {"import_wallet_phrase_title", "Введите сид фразу"},
     {"import_wallet_shamir_backup", "Фраза Шамира"},
-    {"import_wallet_shamir_backup_desc", "Вам понадобится несколько сид фраз\r\nдля восстановления кошелька"},
+    {"import_wallet_shamir_backup_desc", "Вам понадобится несколько сид фраз\nдля восстановления кошелька"},
     {"import_wallet_share_success_desc", "Эта часть сид фразы соответствует вашему кошельку."},
     {"import_wallet_single_backup_desc", "Восстановите кошелек выбрав тип сид фразы, Пожалуйста, завершите процесс установки сразу, чтобы избежать риска для безопасности"},
     {"import_wallet_single_phrase", "Стандартная фраза"},
@@ -4258,7 +4316,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"purpose_title", "Новый кошелек"},
     {"receive_ada_enterprise_address", "Адрес (Не делегированный)"},
     {"receive_ada_more_t_desc1", "В блокчейне Cardano мы предоставляем 24 счета. Каждый счет может генерировать множество адресов. Вы можете легко переключаться между нужными вам счетами."},
-    {"receive_ada_more_t_desc2", "1.  Ключи для платежей и делегирования: В Cardano каждая учетная запись имеет платежный ключ для обычных транзакций ADA (отправка и получение) и ключ для стейкинга и получения вознаграждений.\r\n2. Базовый адрес: Базовый адрес получается как из платежного ключа, так и из ключа делегирования. Его можно использовать как для обычных транзакций, так и для стейкинга. Также известен как «Внешний адрес (делегированный)».\r\n3. Адрес предприятия: Этот адрес содержит только платежный ключ и используется исключительно для обычных транзакций, а не для стейкинга. Он предназначен для «бизнес-сценариев», которые не требуют стейкинга, например, бирж. Также известен как «Внешний адрес (не делегированный)».\r\n4. Адреса стейкинга и вознаграждений: Ключи для стейкинга используется для стейкинга, а связанный с ним адрес стейкинга также называется адресом вознаграждения и используется для получения вознаграждений за стейкинг."},
+    {"receive_ada_more_t_desc2", "1.  Ключи для платежей и делегирования: В Cardano каждая учетная запись имеет платежный ключ для обычных транзакций ADA (отправка и получение) и ключ для стейкинга и получения вознаграждений.\n2. Базовый адрес: Базовый адрес получается как из платежного ключа, так и из ключа делегирования. Его можно использовать как для обычных транзакций, так и для стейкинга. Также известен как «Внешний адрес (делегированный)».\n3. Адрес предприятия: Этот адрес содержит только платежный ключ и используется исключительно для обычных транзакций, а не для стейкинга. Он предназначен для «бизнес-сценариев», которые не требуют стейкинга, например, бирж. Также известен как «Внешний адрес (не делегированный)».\n4. Адреса стейкинга и вознаграждений: Ключи для стейкинга используется для стейкинга, а связанный с ним адрес стейкинга также называется адресом вознаграждения и используется для получения вознаграждений за стейкинг."},
     {"receive_ada_more_t_title1", "Несколько счетов Cardano на Keystone"},
     {"receive_ada_more_t_title2", "Ключевые понятия в адресах ADA Cardano"},
     {"receive_ada_show_address_detail", "Показать адрес целиком"},
@@ -4268,9 +4326,9 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"receive_btc_extended_public_key", "Расширенный Открытый ключ"},
     {"receive_btc_more_address_settings", "Настройки адресов"},
     {"receive_btc_more_export_xpub", "Экспорт XPub"},
-    {"receive_btc_more_t_desc1", "Bitcoin (BTC) поддерживает три формата адресов:  \r\n1. Native SegWit это наиболее эффективный и безопасный формат, который уменьшает комиссии в сети в отличие от других адресов. Адреса этого формата начинаются с символов «bc1».                \r\n2. Устаревший формат одна из самых ранних версий адресов Bitcoin, обычно начинающаяся с «1».\r\n3. Nested SegWit это решение, предназначенное для плавного перехода на Native SegWit, обычно начинается с «3».                                                                                                                                                                                  "},
-    {"receive_btc_more_t_desc2", "Да, три различных формата Bitcoin адресов могут использоваться для перевода средств друг другу. Однако важно учитывать следующие аспекты:\r\n1. Различная комиссия за транзакцию. Выбор формата адреса может влиять на комиссию за транзакцию, при этом оригинальные адреса SegWit обычно имеют более низкую комиссию.\r\n2. Совместимость кошелька и биржи. Убедитесь, что используемый вами кошелек или биржа поддерживает выбранный формат адреса. Некоторые кошельки могут быть совместимы только с определенными форматами адресов."},
-    {"receive_btc_more_t_desc3", "1. Конфиденциальность: повторное использование адресов повышает отслеживаемость транзакций и уменьшает вашу конфиденциальность. Новые адреса помогают поддерживать конфиденциальность транзакций.\r\n2. Эффективность транзакций. Несколько UTXO, связанных с одним адресом, могут повысить затраты на консолидацию, что повлияет на эффективность кошелька.\r\n3. Безопасность. Повторное использование адреса повышает риск раскрытия приватного ключа, что потенциально может привести к потерям в случае компрометации своих секретов.\r\nОтказ от повторного использования адресов защищает конфиденциальность, оптимизирует транзакции и снижает риски безопасности в рамках модели UTXO»"},
+    {"receive_btc_more_t_desc1", "Bitcoin (BTC) поддерживает три формата адресов:  \n1. Native SegWit это наиболее эффективный и безопасный формат, который уменьшает комиссии в сети в отличие от других адресов. Адреса этого формата начинаются с символов «bc1».                \n2. Устаревший формат одна из самых ранних версий адресов Bitcoin, обычно начинающаяся с «1».\n3. Nested SegWit это решение, предназначенное для плавного перехода на Native SegWit, обычно начинается с «3».                                                                                                                                                                                  "},
+    {"receive_btc_more_t_desc2", "Да, три различных формата Bitcoin адресов могут использоваться для перевода средств друг другу. Однако важно учитывать следующие аспекты:\n1. Различная комиссия за транзакцию. Выбор формата адреса может влиять на комиссию за транзакцию, при этом оригинальные адреса SegWit обычно имеют более низкую комиссию.\n2. Совместимость кошелька и биржи. Убедитесь, что используемый вами кошелек или биржа поддерживает выбранный формат адреса. Некоторые кошельки могут быть совместимы только с определенными форматами адресов."},
+    {"receive_btc_more_t_desc3", "1. Конфиденциальность: повторное использование адресов повышает отслеживаемость транзакций и уменьшает вашу конфиденциальность. Новые адреса помогают поддерживать конфиденциальность транзакций.\n2. Эффективность транзакций. Несколько UTXO, связанных с одним адресом, могут повысить затраты на консолидацию, что повлияет на эффективность кошелька.\n3. Безопасность. Повторное использование адреса повышает риск раскрытия приватного ключа, что потенциально может привести к потерям в случае компрометации своих секретов.\nОтказ от повторного использования адресов защищает конфиденциальность, оптимизирует транзакции и снижает риски безопасности в рамках модели UTXO»"},
     {"receive_btc_more_t_title1", "Чем отличаются три формата Bitcoin адресов?"},
     {"receive_btc_more_t_title2", "Можно ли использовать три разных формата адресов для перевода средств между ними?"},
     {"receive_btc_more_t_title3", "О недостатках повторного использования адресов"},
@@ -4286,13 +4344,13 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"receive_eth_more_derivation_path_ledger_legacy", "Ledger устаревшие"},
     {"receive_eth_more_derivation_path_ledger_live", "Ledger Live"},
     {"receive_eth_more_derivation_path_title2", "Пример адресов"},
-    {"receive_eth_more_t_desc1", "1. Стандартный путь: этот путь широко используется популярными программными кошельками для генерации адресов. Примеры таких кошельков: MetaMask, Rabby, BitKeep и Core Wallet. \r\n2. Ledger Live: выберите этот путь, если вы собираетесь импортировать сид фразу из Ledger Live. Обратите внимание, что Keystone поддерживает синхронизацию только первых 10 адресов в этом формате. \r\n3. Ledger устаревшие: переходите на этот путь, если вы управляете своими цифровыми активами с помощью устаревших приложений Ledger"},
+    {"receive_eth_more_t_desc1", "1. Стандартный путь: этот путь широко используется популярными программными кошельками для генерации адресов. Примеры таких кошельков: MetaMask, Rabby, BitKeep и Core Wallet. \n2. Ledger Live: выберите этот путь, если вы собираетесь импортировать сид фразу из Ledger Live. Обратите внимание, что Keystone поддерживает синхронизацию только первых 10 адресов в этом формате. \n3. Ledger устаревшие: переходите на этот путь, если вы управляете своими цифровыми активами с помощью устаревших приложений Ledger"},
     {"receive_eth_more_t_title1", "Ledger Live и устаревших путей вывода в Ethereum\""},
     {"receive_eth_receive_main_title", "Получить ETH"},
     {"receive_generate_new_address", "Создать новый адрес"},
     {"receive_more_t_qr_link", "https://keyst.one/t/3rd/faq"},
     {"receive_sol_more_t_base_path", "Путь основного счета"},
-    {"receive_sol_more_t_desc1", "1. Путь на основе учетной записи: широко применяется во многих кошельках Solana. Примером такого кошелька является Solflare.\r\n2. Путь к единой учетной записи: выберите этот путь, если вы собираетесь импортировать исходную фразу из Sollet/MathWallet. Обратите внимание, что Keystone поддерживает синхронизацию только первых 10 адресов в этом формате.\r\n3. Путь субсчета: перейдите на этот путь, если вы управляете своими цифровыми активами с помощью программных кошельков, таких как Phantom/Exodus."},
+    {"receive_sol_more_t_desc1", "1. Путь на основе учетной записи: широко применяется во многих кошельках Solana. Примером такого кошелька является Solflare.\n2. Путь к единой учетной записи: выберите этот путь, если вы собираетесь импортировать исходную фразу из Sollet/MathWallet. Обратите внимание, что Keystone поддерживает синхронизацию только первых 10 адресов в этом формате.\n3. Путь субсчета: перейдите на этот путь, если вы управляете своими цифровыми активами с помощью программных кошельков, таких как Phantom/Exodus."},
     {"receive_sol_more_t_single_path", "Путь к единому счету"},
     {"receive_sol_more_t_sub_path", "Путь суб-счета"},
     {"receive_sol_more_t_title1", "Узнать о путях вывода Solana"},
@@ -4303,10 +4361,10 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"rsa_confirm_hintbox_context", "Введите пароль, чтобы начать настройку блокчейна ARWEAVE, это займет около 10 минут. Убедитесь, что ваше устройство заряжено не менее 60% и подключено к USB."},
     {"rsa_confirm_hintbox_ok", "Инициализировать"},
     {"rsa_confirm_hintbox_title", "Настройка блокчейна AR"},
-    {"rust_error_bitcoin_no_my_inputs", "Несоответствующая транзакция"},
-    {"rust_error_bitcoin_no_my_inputs_desc", "Транзакция не относится к текущему кошельку. Пожалуйста, проверьте информацию о транзакции."},
     {"rust_error_bitcoin_not_my_multisig_wallet", "Неправильная конфигурация мультиподписного кошелька"},
     {"rust_error_bitcoin_not_my_multisig_wallet_desc", "Эта конфигурация мультиподписного кошелька не относится к текущему кошельку. Пожалуйста, проверьте информацию о конфигурации мультиподписного кошелька."},
+    {"rust_error_not_my_transaction", "Несоответствующая транзакция"},
+    {"rust_error_not_my_transaction_desc", "Транзакция не относится к текущему кошельку. Пожалуйста, проверьте информацию о транзакции."},
     {"scan_qr_code_error_invalid_file_desc", "Дата файла не распознана. Пожалуйста, попробуйте снова."},
     {"scan_qr_code_error_invalid_qrcode", "Неверный QR-код"},
     {"scan_qr_code_error_invalid_qrcode_desc", "Данные QR-кода не распознаны. Попробуйте еще раз."},
@@ -4428,6 +4486,12 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"system_settings_wipe_device_wipe_fmt", "Сброс(%d)"},
     {"system_settings_wipe_device_wipe_start_text", "Сброс(5)"},
     {"system_settings_wipe_device_wipe_title", "Сброс устройства"},
+    {"ton_manage_assets_hint", ""},
+    {"ton_mnemonic_generating_desc", ""},
+    {"ton_mnemonic_generating_title", ""},
+    {"ton_mnemonic_regenerate", ""},
+    {"ton_sign_proof_title", ""},
+    {"ton_write_se_predict_text", ""},
     {"transaction_parse_broadcast_message", "Транслировать сообщение"},
     {"transaction_parse_confirm_message", "Подтвердить сообщение"},
     {"transaction_parse_scan_by_software", "Сканируйте QR-код программным кошельком"},
@@ -4436,6 +4500,9 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"tutorial_change_entropy_desc2", "Резервная копия Шамира обеспечивает высокобезопасный способ восстановления исходной фразы. Она включает в себя разделение сид фразы на несколько частей и указание необходимого их количества, необходимых для восстановления фразы."},
     {"tutorial_change_entropy_title1", "Что такое Энтропия?"},
     {"tutorial_change_entropy_title2", "Зачем использовать игральные кубики в качестве энтропии?"},
+    {"tutorial_ton_mnemonic_desc", ""},
+    {"tutorial_ton_mnemonic_title", ""},
+    {"tutorial_ton_mnemonic_url", ""},
     {"tx_details_btc_change_desc", "Транзакции BTC, основанные на механизме UTXO, распределяют некоторые активы на адреса сдачи во время переводов. Этот адрес генерируется кошельком в целях анонимности и конфиденциальности. Вам не о чем беспокоиться, поскольку адрес сдачи принадлежит вашему кошельку и он будет автоматически использоваться в последующих транзакциях."},
     {"tx_details_btc_change_qr_link", "https://keyst.one/change"},
     {"tx_details_btc_change_qr_title", "Что такое адрес сдачи?"},
@@ -4544,12 +4611,9 @@ const static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t v = op_v(n);
-    UNUSED(v);
-    uint32_t i = op_i(n);
-    UNUSED(i);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t i = op_i(n); UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -4727,6 +4791,8 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"connect_specter_title", "Specter"},
     {"connect_sushi_link", "https://keyst.one/t/3rd/sushi"},
     {"connect_sushi_title", "SushiSwap"},
+    {"connect_tonkeeper_link", "https://keyst.one/t/3rd/tonkeeper"},
+    {"connect_tonkeeper_title", "Tonkeeper(Extension)"},
     {"connect_typhon_link", "https://keyst.one/t/3rd/typhon"},
     {"connect_typhon_title", "Typhon(网页端)"},
     {"connect_unisat_link", "https://keyst.one/t/3rd/unisat"},
@@ -4773,6 +4839,8 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"create_multi_wallet_signers", "签署者"},
     {"create_multi_wallet_xpub_duplicated_desc", "导入的扩展公钥文件是重复的"},
     {"create_multi_wallet_xpub_duplicated_title", "重复的扩展公钥"},
+    {"create_ton_wallet", ""},
+    {"create_ton_wallet_hint", ""},
     {"create_wallet_generating_title", "创建钱包中,保持设备为开启状态......"},
     {"derivation_path_address", "地址"},
     {"derivation_path_address_eg", "例如:"},
@@ -4854,7 +4922,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"firmware_update_no_upgradable_firmware_desc", "设备当前版本已高于或等于 microSD 卡上的固件版本."},
     {"firmware_update_no_upgradable_firmware_title", "未检测到可升级固件"},
     {"firmware_update_sd_checksum_desc", "#F5870A 展示校验和#"},
-    {"firmware_update_sd_checksum_done", "校验和\r\n"},
+    {"firmware_update_sd_checksum_done", "校验和\n"},
     {"firmware_update_sd_checksum_fmt", "#F5870A 展示校验和 (%d%%)#"},
     {"firmware_update_sd_checksum_notice", "这是一个可选的功能,可以进一步提高安全性.将以下校验和在官方网站上的下载软件包的校验和签到,请确保它们保持一致."},
     {"firmware_update_sd_copying_desc", "升级过程中,请勿移除 microSD 卡."},
@@ -4886,6 +4954,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"forgot_password_reset_passcode_intro_desc", "验证与此钱包关联的助记词以重置密码.重置密码可能会擦除您的钱包或多重签名钱包数据"},
     {"forgot_password_reset_passcode_intro_text", "忘记密码?"},
     {"forgot_password_reset_passcode_intro_title", "忘记密码?"},
+    {"generate_ton_mnenonic", ""},
     {"generating_qr_codes", "生成二维码"},
     {"got_it", "知道了"},
     {"got_it_fmt", "知道了(%d)"},
@@ -4904,6 +4973,8 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"import_multi_wallet_success_title", "导入成功"},
     {"import_multi_wallet_via_camera", "通过相机"},
     {"import_multi_wallet_via_micro_title", "MicroSD 卡"},
+    {"import_ton_mnemonic_desc", ""},
+    {"import_ton_mnemonic_title", ""},
     {"import_wallet_choose_method", "选择导入方法"},
     {"import_wallet_duplicated_share_desc", "该分片助记词已验证通过,请继续输入下一分片的助记词."},
     {"import_wallet_invalid_phrase_desc", "您输入的助记词无效.请检查您所备份的助记词,重新尝试."},
@@ -5017,7 +5088,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"purpose_title", "新建钱包"},
     {"receive_ada_enterprise_address", "地址(未委派)"},
     {"receive_ada_more_t_desc1", "在 Cardano 区块链上,我们提供了 24 个 ADA 帐户,每个帐户都可以生成无数新地址.您可以在所需帐户之间轻松切换."},
-    {"receive_ada_more_t_desc2", "1. Payment & Stake Keys:在Cardano中,每个帐户都有一个发送或接收常规ADA交易的付款密钥(Payment Key),以及用于积分和获得奖励的质押密钥(Stake Key).\r\n2. Base Address:基本地址(Base Address)是由付款密钥和股份密钥派生而来.它可以用于常规交易和质押,也被称为\"外部地址(External Addresses)\".\r\n3. Enterprise Address:此地址仅包含付款密钥,仅用于常规交易,而不是用于质押.它是为不涉及既有既定的\"业务\"场景而设计的,例如交流.也称为\"外部地址(未授权)\".\r\n4. Stake & Reward Addresses:质押密钥(Stake Key)用于质押;与之相关的质押地址(Stake Addresses)也被称为奖励地址(Reward Addresses),用于接收质押奖励."},
+    {"receive_ada_more_t_desc2", "1. Payment & Stake Keys:在Cardano中,每个帐户都有一个发送或接收常规ADA交易的付款密钥(Payment Key),以及用于积分和获得奖励的质押密钥(Stake Key).\n2. Base Address:基本地址(Base Address)是由付款密钥和股份密钥派生而来.它可以用于常规交易和质押,也被称为\"外部地址(External Addresses)\".\n3. Enterprise Address:此地址仅包含付款密钥,仅用于常规交易,而不是用于质押.它是为不涉及既有既定的\"业务\"场景而设计的,例如交流.也称为\"外部地址(未授权)\".\n4. Stake & Reward Addresses:质押密钥(Stake Key)用于质押;与之相关的质押地址(Stake Addresses)也被称为奖励地址(Reward Addresses),用于接收质押奖励."},
     {"receive_ada_more_t_title1", "Keystone上的多个 Cardano 帐户"},
     {"receive_ada_more_t_title2", "Cardano 地址中的关键概念"},
     {"receive_ada_show_address_detail", "显示地址细节"},
@@ -5027,9 +5098,9 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"receive_btc_extended_public_key", "扩展公钥"},
     {"receive_btc_more_address_settings", "地址设置"},
     {"receive_btc_more_export_xpub", "导出 XPUB"},
-    {"receive_btc_more_t_desc1", "比特币(BTC)的三种地址格式:\r\n1. Native SegWit 是当前主流的地址类型,交易费较低,地址以\" bc1\"开头.\r\n2. Nested SegWit 兼容 \"Legacy\" 和 \"Segwit\" 地址类型,交易费中等,地址以\" 3\"开头.\r\n3. Legacy 属于最初的比特币地址格式,交易费较高,地址以\" 1\"开头."},
-    {"receive_btc_more_t_desc2", "是的,三种不同的比特币地址格式可用于彼此转移资金.但是,请务必牢记以下方面:\r\n1.交易费不同:选择不同的地址格式会产生不同的交易费.通常 Native Segwit 的交易费较低.\r\n2.钱包或交易所的兼容性:请确保您使用的钱包或交易所支持您选择的地址格式.某些钱包可能仅支持特定地址格式."},
-    {"receive_btc_more_t_desc3", "1.隐私:重复使用同一地址增加了交易可追溯性,容易暴露隐私.每笔交易使用新地址有利于保持您的隐私.\r\n2.交易效率:链接到一个地址的多个UTXO会提高整合成本,从而影响转账速度.\r\n简而言之,不重复使用同一地址有利于保障隐私、优化交易速度."},
+    {"receive_btc_more_t_desc1", "比特币(BTC)的三种地址格式:\n1. Native SegWit 是当前主流的地址类型,交易费较低,地址以\" bc1\"开头.\n2. Nested SegWit 兼容 \"Legacy\" 和 \"Segwit\" 地址类型,交易费中等,地址以\" 3\"开头.\n3. Legacy 属于最初的比特币地址格式,交易费较高,地址以\" 1\"开头."},
+    {"receive_btc_more_t_desc2", "是的,三种不同的比特币地址格式可用于彼此转移资金.但是,请务必牢记以下方面:\n1.交易费不同:选择不同的地址格式会产生不同的交易费.通常 Native Segwit 的交易费较低.\n2.钱包或交易所的兼容性:请确保您使用的钱包或交易所支持您选择的地址格式.某些钱包可能仅支持特定地址格式."},
+    {"receive_btc_more_t_desc3", "1.隐私:重复使用同一地址增加了交易可追溯性,容易暴露隐私.每笔交易使用新地址有利于保持您的隐私.\n2.交易效率:链接到一个地址的多个UTXO会提高整合成本,从而影响转账速度.\n简而言之,不重复使用同一地址有利于保障隐私、优化交易速度."},
     {"receive_btc_more_t_title1", "BTC 的三种不同地址格式是什么?"},
     {"receive_btc_more_t_title2", "这三种不同的地址格式可以相互接受资产吗?"},
     {"receive_btc_more_t_title3", "不重复使用同一地址的好处"},
@@ -5045,13 +5116,13 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"receive_eth_more_derivation_path_ledger_legacy", "Ledger Legacy"},
     {"receive_eth_more_derivation_path_ledger_live", "Ledger Live"},
     {"receive_eth_more_derivation_path_title2", "例如:"},
-    {"receive_eth_more_t_desc1", "1.标准路径:此路径被许多软件钱包广泛用于地址生成,比如 Metamask,Rabby,Bitkeep和Core Wallet.\r\n2. Ledger Live:如果您曾在Ledger Live下管理您的资产,请选择此派生路径.请注意,Keystone 仅支持此路径下的前10个地址.\r\n3. Ledger Legacy:如果您曾在Ledger Legacy下管理您的资产,请选择此派生路径."},
+    {"receive_eth_more_t_desc1", "1.标准路径:此路径被许多软件钱包广泛用于地址生成,比如 Metamask,Rabby,Bitkeep和Core Wallet.\n2. Ledger Live:如果您曾在Ledger Live下管理您的资产,请选择此派生路径.请注意,Keystone 仅支持此路径下的前10个地址.\n3. Ledger Legacy:如果您曾在Ledger Legacy下管理您的资产,请选择此派生路径."},
     {"receive_eth_more_t_title1", "了解以太坊中的标准路径、Ledger Live和Ledger Legacy的派生路径"},
     {"receive_eth_receive_main_title", "接收 ETH"},
     {"receive_generate_new_address", "生成新地址"},
     {"receive_more_t_qr_link", "https://keyst.one/t/3rd/faq"},
     {"receive_sol_more_t_base_path", "基于帐户的路径"},
-    {"receive_sol_more_t_desc1", "1. Account-based 路径:被许多 Solana 钱包采用,比如 Solflare.\r\n2. Single Account 路径:如果您将 Sollet 或者 MathWallet钱包的助记词导入到 Keystone,则选择此路径.请注意,Keystone 仅支持此路径下的前10个地址.\r\n3. Sub-account 路径:如果您将 Phantom 或者 Exodus 钱包的助记词导入到 Keystone,则选择此路径."},
+    {"receive_sol_more_t_desc1", "1. Account-based 路径:被许多 Solana 钱包采用,比如 Solflare.\n2. Single Account 路径:如果您将 Sollet 或者 MathWallet钱包的助记词导入到 Keystone,则选择此路径.请注意,Keystone 仅支持此路径下的前10个地址.\n3. Sub-account 路径:如果您将 Phantom 或者 Exodus 钱包的助记词导入到 Keystone,则选择此路径."},
     {"receive_sol_more_t_single_path", "单账户路径"},
     {"receive_sol_more_t_sub_path", "子账户路径"},
     {"receive_sol_more_t_title1", "了解 Solana 的各派生路径"},
@@ -5062,10 +5133,10 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"rsa_confirm_hintbox_context", "请输入密码以开始ARWEAVE区块链的设置,预计将花费约10分钟。请确保您的设备电量至少为60%并且已连接至USB电源"},
     {"rsa_confirm_hintbox_ok", "初始化"},
     {"rsa_confirm_hintbox_title", "AR 区块链设置"},
-    {"rust_error_bitcoin_no_my_inputs", "不一致的交易"},
-    {"rust_error_bitcoin_no_my_inputs_desc", "此交易不属于当前钱包.请检查交易信息."},
     {"rust_error_bitcoin_not_my_multisig_wallet", "无效的多重签名钱包配置"},
     {"rust_error_bitcoin_not_my_multisig_wallet_desc", "此多重签名钱包配置不属于当前钱包.请检查多重签名钱包配置信息."},
+    {"rust_error_not_my_transaction", "不一致的交易"},
+    {"rust_error_not_my_transaction_desc", "此交易不属于当前钱包.请检查交易信息."},
     {"scan_qr_code_error_invalid_file_desc", "未识别文件日期.请重试."},
     {"scan_qr_code_error_invalid_qrcode", "二维码无效"},
     {"scan_qr_code_error_invalid_qrcode_desc", "二维码无法识别,请重试."},
@@ -5187,6 +5258,12 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"system_settings_wipe_device_wipe_fmt", "擦除(%d)"},
     {"system_settings_wipe_device_wipe_start_text", "擦除(5)"},
     {"system_settings_wipe_device_wipe_title", "擦除设备"},
+    {"ton_manage_assets_hint", ""},
+    {"ton_mnemonic_generating_desc", ""},
+    {"ton_mnemonic_generating_title", ""},
+    {"ton_mnemonic_regenerate", ""},
+    {"ton_sign_proof_title", ""},
+    {"ton_write_se_predict_text", ""},
     {"transaction_parse_broadcast_message", "广播消息"},
     {"transaction_parse_confirm_message", "确认消息"},
     {"transaction_parse_scan_by_software", "用你的软件钱包扫描二维码"},
@@ -5195,6 +5272,9 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"tutorial_change_entropy_desc2", "计算机并不是真正随机的.骰子数是不可预测的随机性来源.通过使用它们,您可以增强加密过程的安全性,从而使某人更难预测或破解您的代码."},
     {"tutorial_change_entropy_title1", "什么是熵?"},
     {"tutorial_change_entropy_title2", "为什么要使用骰子数作为您的熵?"},
+    {"tutorial_ton_mnemonic_desc", ""},
+    {"tutorial_ton_mnemonic_title", ""},
+    {"tutorial_ton_mnemonic_url", ""},
     {"tx_details_btc_change_desc", "比特币的交易是基于UTXO机制的,在交易时部分资产会被转移至您的找零地址上.该地址是由软件钱包生成的,出于匿名和隐私目的.您无需担心,因为找零地址也属于您本身帐户的一部分,其金额会在随后的交易中自动使用."},
     {"tx_details_btc_change_qr_link", "https://keyst.one/change"},
     {"tx_details_btc_change_qr_title", "什么是\"找零\"地址?"},
@@ -5350,8 +5430,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if (langs == NULL) return -1;
-    if (langs[0] == NULL) return -1;
+    if(langs == NULL) return -1;
+    if(langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -5364,13 +5444,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if (current_lang_pack == NULL) return -1;
+    if(current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for (i = 0; current_lang_pack[i] != NULL; i++) {
+    for(i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -5383,10 +5463,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for (i = 0; trans[i].msg_id != NULL; i++) {
-        if (strcmp(trans[i].msg_id, msg_id) == 0) {
+    for(i = 0; trans[i].msg_id != NULL; i++) {
+        if(strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if (trans[i].translation) return trans[i].translation;
+            if(trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -5401,23 +5481,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -5433,31 +5513,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -5472,6 +5552,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if (!current_lang) return NULL;
+    if(!current_lang) return NULL;
     return current_lang->locale_name;
 }

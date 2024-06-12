@@ -29,32 +29,36 @@ int32_t StorageSetData(uint32_t addr, uint8_t *buffer, uint32_t size);
 
 #define PC_SIMULATOR_PATH "C:/assets"
 
-SimulatorFlashPath g_simulatorPathMap[] ={
+SimulatorFlashPath g_simulatorPathMap[] = {
     {SPI_FLASH_ADDR_NORMAL_PARAM, PC_SIMULATOR_PATH "/device_setting.json", StorageGetDataSize, StorageSetDataSize},
     {SPI_FLASH_ADDR_NORMAL_PARAM + 4, PC_SIMULATOR_PATH "/device_setting.json", StorageGetData, StorageSetData},
+
     {SPI_FLASH_ADDR_USER1_DATA, PC_SIMULATOR_PATH "/user1_data.json", StorageGetDataSize, StorageSetDataSize},
     {SPI_FLASH_ADDR_USER1_DATA + 4, PC_SIMULATOR_PATH "/user1_data.json", StorageGetData, StorageSetData},
-    {SPI_FLASH_ADDR_USER1_DATA + SPI_FLASH_ADDR_EACH_SIZE, PC_SIMULATOR_PATH "/user1_data.json", StorageGetDataSize, StorageSetDataSize},
-    {SPI_FLASH_ADDR_USER1_DATA + 4 + SPI_FLASH_ADDR_EACH_SIZE, PC_SIMULATOR_PATH "/user1_data.json", StorageGetData, StorageSetData},
-    {SPI_FLASH_ADDR_USER1_DATA + SPI_FLASH_ADDR_EACH_SIZE * 2, PC_SIMULATOR_PATH "/user1_data.json", StorageGetDataSize, StorageSetDataSize},
-    {SPI_FLASH_ADDR_USER1_DATA + 4 + SPI_FLASH_ADDR_EACH_SIZE * 2, PC_SIMULATOR_PATH "/user1_data.json", StorageGetData, StorageSetData},
     {SPI_FLASH_ADDR_USER1_MULTI_SIG_DATA, PC_SIMULATOR_PATH "/user1_multisig.json", StorageGetDataSize, StorageSetDataSize},
     {SPI_FLASH_ADDR_USER1_MULTI_SIG_DATA + 4, PC_SIMULATOR_PATH "/user1_multisig.json", StorageGetData, StorageSetData},
+    {SPI_FLASH_ADDR_USER1_MUTABLE_DATA, PC_SIMULATOR_PATH "/coin1.json", StorageGetDataSize, StorageSetDataSize},
+    {SPI_FLASH_ADDR_USER1_MUTABLE_DATA + 4, PC_SIMULATOR_PATH "/coin1.json", StorageGetData, StorageSetData},
+    {SIMULATOR_USER1_SECRET_ADDR, PC_SIMULATOR_PATH "/user1_secret.json", StorageGetData, StorageSetData},
+
+    {SPI_FLASH_ADDR_USER2_DATA, PC_SIMULATOR_PATH "/user2_data.json", StorageGetDataSize, StorageSetDataSize},
+    {SPI_FLASH_ADDR_USER2_DATA + 4, PC_SIMULATOR_PATH "/user2_data.json", StorageGetData, StorageSetData},
     {SPI_FLASH_ADDR_USER2_MULTI_SIG_DATA, PC_SIMULATOR_PATH "/user2_multisig.json", StorageGetDataSize, StorageSetDataSize},
     {SPI_FLASH_ADDR_USER2_MULTI_SIG_DATA + 4, PC_SIMULATOR_PATH "/user2_multisig.json", StorageGetData, StorageSetData},
+    {SPI_FLASH_ADDR_USER2_MUTABLE_DATA, PC_SIMULATOR_PATH "/coin2.json", StorageGetDataSize, StorageSetDataSize},
+    {SPI_FLASH_ADDR_USER2_MUTABLE_DATA + 4, PC_SIMULATOR_PATH "/coin2.json", StorageGetData, StorageSetData},
+    {SIMULATOR_USER2_SECRET_ADDR, PC_SIMULATOR_PATH "/user2_secret.json", StorageGetData, StorageSetData},
+
+    {SPI_FLASH_ADDR_USER3_DATA, PC_SIMULATOR_PATH "/user3_data.json", StorageGetDataSize, StorageSetDataSize},
+    {SPI_FLASH_ADDR_USER3_DATA + 4, PC_SIMULATOR_PATH "/user3_data.json", StorageGetData, StorageSetData},
     {SPI_FLASH_ADDR_USER3_MULTI_SIG_DATA, PC_SIMULATOR_PATH "/user3_multisig.json", StorageGetDataSize, StorageSetDataSize},
     {SPI_FLASH_ADDR_USER3_MULTI_SIG_DATA + 4, PC_SIMULATOR_PATH "/user3_multisig.json", StorageGetData, StorageSetData},
-    {SPI_FLASH_ADDR_USER1_MUTABLE_DATA, PC_SIMULATOR_PATH "/coin.json", StorageGetDataSize, StorageSetDataSize},
-    {SPI_FLASH_ADDR_USER1_MUTABLE_DATA + 4, PC_SIMULATOR_PATH "/coin.json", StorageGetData, StorageSetData},
-    {SPI_FLASH_ADDR_USER1_MUTABLE_DATA + SPI_FLASH_ADDR_EACH_SIZE, PC_SIMULATOR_PATH "/coin.json", StorageGetDataSize, StorageSetDataSize},
-    {SPI_FLASH_ADDR_USER1_MUTABLE_DATA + SPI_FLASH_ADDR_EACH_SIZE + 4, PC_SIMULATOR_PATH "/coin.json", StorageGetData, StorageSetData},
-    {SPI_FLASH_ADDR_USER1_MUTABLE_DATA + 2 * SPI_FLASH_ADDR_EACH_SIZE, PC_SIMULATOR_PATH "/coin.json", StorageGetDataSize, StorageSetDataSize},
-    {SPI_FLASH_ADDR_USER1_MUTABLE_DATA + 2 * SPI_FLASH_ADDR_EACH_SIZE + 4, PC_SIMULATOR_PATH "/coin.json", StorageGetData, StorageSetData},
+    {SPI_FLASH_ADDR_USER3_MUTABLE_DATA, PC_SIMULATOR_PATH "/coin3.json", StorageGetDataSize, StorageSetDataSize},
+    {SPI_FLASH_ADDR_USER3_MUTABLE_DATA + 4, PC_SIMULATOR_PATH "/coin3.json", StorageGetData, StorageSetData},
+    {SIMULATOR_USER3_SECRET_ADDR, PC_SIMULATOR_PATH "/user3_secret.json", StorageGetData, StorageSetData},
+
     {DS28S60_DATA_ADDR, PC_SIMULATOR_PATH "/ds28s60.json", StorageGetData, StorageSetData},
     {ATECC608B_DATA_ADDR, PC_SIMULATOR_PATH "/atecc608b.json", StorageGetData, StorageSetData},
-    {SIMULATOR_USER1_SECRET_ADDR, PC_SIMULATOR_PATH "/user1_secret.json", StorageGetData, StorageSetData},
-    {SIMULATOR_USER2_SECRET_ADDR, PC_SIMULATOR_PATH "/user2_secret.json", StorageGetData, StorageSetData},
-    {SIMULATOR_USER3_SECRET_ADDR, PC_SIMULATOR_PATH "/user3_secret.json", StorageGetData, StorageSetData},
 };
 
 const char *FindSimulatorFlashPath(uint32_t addr)
@@ -93,7 +97,7 @@ int32_t StorageGetDataSize(uint32_t addr, uint8_t *buffer, uint32_t size)
         printf("lv_fs_open failed %s ret = %d line = %d\n", path, ret, __LINE__);
         return -1;
     }
-    
+
     ret = lv_fs_read(&fd, tmpBuff, JSON_MAX_LEN, &readBytes);
     if (ret != LV_FS_RES_OK) {
         printf("lv_fs_read failed %s ret = %d line = %d\n", path, ret, __LINE__);
@@ -134,7 +138,7 @@ int32_t StorageGetData(uint32_t addr, uint8_t *buffer, uint32_t size)
         return -1;
     }
     lv_fs_close(&fd);
-    
+
     return readBytes;
 }
 
@@ -161,7 +165,7 @@ int32_t StorageSetData(uint32_t addr, uint8_t *buffer, uint32_t size)
         return -1;
     }
     lv_fs_close(&fd);
-    
+
     return readBytes;
 }
 
@@ -256,7 +260,7 @@ int32_t SimulatorSaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *
     cJSON *rootJson = cJSON_CreateObject();
     InsertJsonU8Array(rootJson, accountSecret->entropy, ENTROPY_MAX_LEN, "entropy");
     InsertJsonU8Array(rootJson, accountSecret->seed, SEED_LEN, "seed");
-    InsertJsonU8Array(rootJson, accountSecret->slip39Ems, SLIP39_EMS_LEN, "slip39_ems");
+    InsertJsonU8Array(rootJson, accountSecret->slip39EmsOrTonEntropyL32, SLIP39_EMS_LEN, "slip39_ems");
     InsertJsonU8Array(rootJson, accountSecret->reservedData, SE_DATA_RESERVED_LEN, "reserved_data");
     cJSON *item = cJSON_CreateNumber(accountSecret->entropyLen);
     cJSON_AddItemToObject(rootJson, "entropy_len", item);
@@ -292,7 +296,7 @@ int32_t SimulatorLoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accoun
     }
     GetJsonArrayData(rootJson, accountSecret->entropy, ENTROPY_MAX_LEN, "entropy");
     GetJsonArrayData(rootJson, accountSecret->seed, SEED_LEN, "seed");
-    GetJsonArrayData(rootJson, accountSecret->slip39Ems, SLIP39_EMS_LEN, "slip39_ems");
+    GetJsonArrayData(rootJson, accountSecret->slip39EmsOrTonEntropyL32, SLIP39_EMS_LEN, "slip39_ems");
     GetJsonArrayData(rootJson, accountSecret->reservedData, SE_DATA_RESERVED_LEN, "reserved_data");
 
     cJSON *entropyLenJson = cJSON_GetObjectItem(rootJson, "entropy_len");
@@ -351,7 +355,7 @@ int32_t SimulatorVerifyCurrentPassword(uint8_t accountIndex, const char *passwor
 #if 1
 uint8_t SE_GetAccountIndexFromPage(uint8_t page)
 {
-    return page / (PAGE_INDEX_PARAM + 1);
+    return page / PAGE_NUM_PER_ACCOUNT;
 }
 
 int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
@@ -361,11 +365,11 @@ int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
     } else if (page == PAGE_WALLET1_PUB_KEY_HASH) {
 
     } else if (page == PAGE_WALLET2_PUB_KEY_HASH) {
-        
+
     } else if (page == PAGE_WALLET3_PUB_KEY_HASH) {
 
     } else if (page == PAGE_PUBLIC_INFO) {
-        
+
         return 0;
     }
 
@@ -378,13 +382,13 @@ int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
     cJSON *rootJson = cJSON_Parse(buffer);
     if (page == account * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV) {
         GetJsonArrayData(rootJson, data, 32, "iv");
-    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY) {
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY_OR_TON_ENTROPY_H32) {
         GetJsonArrayData(rootJson, data, 32, "entropy");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_H32) {
         GetJsonArrayData(rootJson, data, 32, "seed_h32");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_L32) {
         GetJsonArrayData(rootJson, data, 32, "seed_l32");
-    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS) {
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS_OR_TON_ENTROPY_L32) {
         GetJsonArrayData(rootJson, data, 32, "slip39_ems");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC) {
         GetJsonArrayData(rootJson, data, 32, "hmac");
@@ -395,17 +399,18 @@ int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM) {
         GetJsonArrayData(rootJson, data, sizeof(AccountInfo_t), "param");
         AccountInfo_t *pAccountInfo = (AccountInfo_t *)data;
-        printf("read.....\n");
-        printf("pAccountInfo->entropyLen = %d\n", pAccountInfo->entropyLen);
-        printf("pAccountInfo->passcodeType = %d\n", pAccountInfo->passcodeType);
-        printf("pAccountInfo->mnemonicType = %d\n", pAccountInfo->mnemonicType);
-        printf("pAccountInfo->passphraseQuickAccess = %d\n", pAccountInfo->passphraseQuickAccess);
-        printf("pAccountInfo->passphraseMark = %d\n", pAccountInfo->passphraseMark);
-        printf("pAccountInfo->slip39Id = %d\n", pAccountInfo->slip39Id[0] * 256 + pAccountInfo->slip39Id[1]);
-        PrintArray("mfp", pAccountInfo->mfp, 4);
-        printf("pAccountInfo->slip39Ie = %d\n", pAccountInfo->slip39Ie[0]);
-        printf("pAccountInfo->iconIndex = %d\n", pAccountInfo->iconIndex);
-        printf("pAccountInfo->walletName = %s\n", pAccountInfo->walletName);
+        // printf("read.....\n");
+        // printf("pAccountInfo->entropyLen = %d\n", pAccountInfo->entropyLen);
+        // printf("pAccountInfo->passcodeType = %d\n", pAccountInfo->passcodeType);
+        // printf("pAccountInfo->isSlip39 = %u\n", pAccountInfo->isSlip39);
+        // printf("pAccountInfo->passphraseQuickAccess = %d\n", pAccountInfo->passphraseQuickAccess);
+        // printf("pAccountInfo->passphraseMark = %d\n", pAccountInfo->passphraseMark);
+        // printf("pAccountInfo->isTon = %u\n", pAccountInfo->isTon);
+        // printf("pAccountInfo->slip39Id = %d\n", pAccountInfo->slip39Id[0] * 256 + pAccountInfo->slip39Id[1]);
+        // PrintArray("mfp", pAccountInfo->mfp, 4);
+        // printf("pAccountInfo->slip39Ie = %d\n", pAccountInfo->slip39Ie[0]);
+        // printf("pAccountInfo->iconIndex = %d\n", pAccountInfo->iconIndex);
+        // printf("pAccountInfo->walletName = %s\n", pAccountInfo->walletName);
     }
 
     return 0;
@@ -418,7 +423,7 @@ int32_t SE_HmacEncryptWrite(const uint8_t *data, uint8_t page)
     } else if (page == PAGE_WALLET1_PUB_KEY_HASH) {
 
     } else if (page == PAGE_WALLET2_PUB_KEY_HASH) {
-        
+
     } else if (page == PAGE_WALLET3_PUB_KEY_HASH) {
 
     } else if (page == PAGE_PUBLIC_INFO) {
@@ -430,20 +435,19 @@ int32_t SE_HmacEncryptWrite(const uint8_t *data, uint8_t page)
     if (func) {
         func(SIMULATOR_USER1_SECRET_ADDR + account * 0x1000, buffer, JSON_MAX_LEN);
     }
-    printf("buffer2222 = %s\n", buffer);
     cJSON *rootJson = cJSON_Parse(buffer);
     if (rootJson == NULL) {
         rootJson = cJSON_CreateObject();
     }
     if (page == account * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV) {
         // ModifyJsonArrayData(rootJson, data, 32, "iv");
-    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY) {
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY_OR_TON_ENTROPY_H32) {
         // ModifyJsonArrayData(rootJson, data, 32, "entropy");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_H32) {
         // ModifyJsonArrayData(rootJson, data, 32, "seed_h32");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_L32) {
         // ModifyJsonArrayData(rootJson, data, 32, "seed_l32");
-    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS) {
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS_OR_TON_ENTROPY_L32) {
         // ModifyJsonArrayData(rootJson, data, 32, "slip39_ems");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC) {
         // ModifyJsonArrayData(rootJson, data, 32, "hmac");
@@ -454,23 +458,24 @@ int32_t SE_HmacEncryptWrite(const uint8_t *data, uint8_t page)
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM) {
         ModifyJsonArrayData(rootJson, data, sizeof(AccountInfo_t), "param");
         AccountInfo_t *pAccountInfo = (AccountInfo_t *)data;
-        printf("write.....\n");
-        printf("pAccountInfo->entropyLen = %d\n", pAccountInfo->entropyLen);
-        printf("pAccountInfo->passcodeType = %d\n", pAccountInfo->passcodeType);
-        printf("pAccountInfo->mnemonicType = %d\n", pAccountInfo->mnemonicType);
-        printf("pAccountInfo->passphraseQuickAccess = %d\n", pAccountInfo->passphraseQuickAccess);
-        printf("pAccountInfo->passphraseMark = %d\n", pAccountInfo->passphraseMark);
-        printf("pAccountInfo->slip39Id = %d\n", pAccountInfo->slip39Id[0] * 256 + pAccountInfo->slip39Id[1]);
-        PrintArray("mfp", pAccountInfo->mfp, 4);
-        printf("pAccountInfo->slip39Ie = %d\n", pAccountInfo->slip39Ie[0]);
-        printf("pAccountInfo->iconIndex = %d\n", pAccountInfo->iconIndex);
-        printf("pAccountInfo->walletName = %s\n", pAccountInfo->walletName);
+        // printf("write.....\n");
+        // printf("pAccountInfo->entropyLen = %d\n", pAccountInfo->entropyLen);
+        // printf("pAccountInfo->passcodeType = %d\n", pAccountInfo->passcodeType);
+        // printf("pAccountInfo->isSlip39 = %u\n", pAccountInfo->isSlip39);
+        // printf("pAccountInfo->passphraseQuickAccess = %d\n", pAccountInfo->passphraseQuickAccess);
+        // printf("pAccountInfo->passphraseMark = %d\n", pAccountInfo->passphraseMark);
+        // printf("pAccountInfo->isTon = %u\n", pAccountInfo->isTon);
+        // printf("pAccountInfo->slip39Id = %d\n", pAccountInfo->slip39Id[0] * 256 + pAccountInfo->slip39Id[1]);
+        // PrintArray("mfp", pAccountInfo->mfp, 4);
+        // printf("pAccountInfo->slip39Ie = %d\n", pAccountInfo->slip39Ie[0]);
+        // printf("pAccountInfo->iconIndex = %d\n", pAccountInfo->iconIndex);
+        // printf("pAccountInfo->walletName = %s\n", pAccountInfo->walletName);
     } else {
         return SUCCESS_CODE;
     }
 
     char *buff = cJSON_Print(rootJson);
-    printf("buff = %s\n", buff);
+    // printf("buff = %s\n", buff);
     func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + account * 0x1000, false);
     if (func) {
         func(SIMULATOR_USER1_SECRET_ADDR + account * 0x1000, buff, strlen(buff));
@@ -493,7 +498,7 @@ int32_t Atecc608bKdf(uint8_t slot, const uint8_t *authKey, const uint8_t *inData
 
 int32_t Atecc608bDeriveKey(uint8_t slot, const uint8_t *authKey)
 {
-    
+
 }
 
 int32_t Atecc608bSignMessageWithDeviceKey(uint8_t *messageHash, uint8_t *signature)
@@ -503,7 +508,7 @@ int32_t Atecc608bSignMessageWithDeviceKey(uint8_t *messageHash, uint8_t *signatu
 
 int32_t Atecc608bGenDevicePubkey(uint8_t *pubkey)
 {
-    
+
 }
 
 cJSON *Atecc608bEncryptReadJson(void)

@@ -37,6 +37,10 @@ typedef struct {
 } Bip39Data_t;
 
 typedef struct {
+    bool forget;
+} TonData_t;
+
+typedef struct {
     uint8_t iconIndex;
     char name[WALLET_NAME_MAX_LEN + 1];
 } WalletDesc_t;
@@ -49,8 +53,10 @@ typedef struct PasswordVerifyResult {
 typedef void *(*ReturnVoidPointerFunc)(void);
 
 void GuiModelWriteSe(void);
+void GuiModelTonWriteSe(void);
 void GuiModelSlip39CalWriteSe(Slip39Data_t slip39);
 void GuiModelBip39CalWriteSe(Bip39Data_t bip39);
+void GuiModelTonCalWriteSe(TonData_t ton);
 void GuiModelSettingSaveWalletDesc(WalletDesc_t *wallet);
 void GuiModelSettingDelWalletDesc(void);
 void GuiModelLockedDeviceDelAllWalletDesc(void);
@@ -58,14 +64,17 @@ void GuiModelChangeAccountPassWord(void);
 void GuiModelVerifyAccountPassWord(uint16_t *param);
 void GuiModelBip39UpdateMnemonic(uint8_t wordCnt);
 void GuiModelBip39UpdateMnemonicWithDiceRolls(uint8_t wordCnt);
+void GuiModelTonUpdateMnemonic(void);
 void GuiModelSlip39UpdateMnemonic(Slip39Data_t slip39);
 void GuiModelSlip39UpdateMnemonicWithDiceRolls(Slip39Data_t slip39);
 void GuiModelBip39RecoveryCheck(uint8_t wordsCnt);
+void GuiModelTonRecoveryCheck();
 void GuiModeGetWalletDesc(void);
 void GuiModeGetAccount(void);
 void GuiModeControlQrDecode(bool en);
 void GuiModelSlip39WriteSe(uint8_t wordCnt);
 void GuiModelBip39ForgetPassword(uint8_t wordsCnt);
+void GuiModelTonForgetPassword();
 void GuiModelSlip39ForgetPassword(Slip39Data_t slip39);
 void GuiModelWriteLastLockDeviceTime(uint32_t time);
 void GuiModelCalculateWebAuthCode(void *webAuthData);

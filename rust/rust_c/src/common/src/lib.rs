@@ -201,3 +201,15 @@ pub extern "C" fn pbkdf2_rust(
     let mut output = keystore::algorithms::crypto::hkdf(&password_bytes, &salt_bytes, iterations);
     SimpleResponse::success(Box::into_raw(Box::new(output)) as *mut u8).simple_c_ptr()
 }
+
+#[no_mangle]
+pub extern "C" fn pbkdf2_rust_64(
+    password: PtrBytes,
+    salt: PtrBytes,
+    iterations: u32,
+) -> *mut SimpleResponse<u8> {
+    let password_bytes = unsafe { slice::from_raw_parts(password, 64) };
+    let salt_bytes = unsafe { slice::from_raw_parts(salt, 64) };
+    let mut output = keystore::algorithms::crypto::hkdf64(&password_bytes, &salt_bytes, iterations);
+    SimpleResponse::success(Box::into_raw(Box::new(output)) as *mut u8).simple_c_ptr()
+}

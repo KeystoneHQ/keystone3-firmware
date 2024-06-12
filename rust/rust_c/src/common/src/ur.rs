@@ -44,6 +44,8 @@ use third_party::ur_registry::registry_types::URType as InnerURType;
 use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
+#[cfg(feature = "multi-coins")]
+use third_party::ur_registry::ton::ton_sign_request::TonSignRequest;
 use third_party::ur_registry::traits::RegistryItem;
 
 use crate::errors::{ErrorCodes, RustCError};
@@ -208,6 +210,10 @@ pub enum ViewType {
     #[cfg(feature = "multi-coins")]
     ArweaveMessage,
     #[cfg(feature = "multi-coins")]
+    TonTx,
+    #[cfg(feature = "multi-coins")]
+    TonSignProof,
+    #[cfg(feature = "multi-coins")]
     AptosTx,
     WebAuthResult,
     #[cfg(feature = "multi-coins")]
@@ -250,6 +256,8 @@ pub enum URType {
     QRHardwareCall,
     #[cfg(feature = "multi-coins")]
     ArweaveSignRequest,
+    #[cfg(feature = "multi-coins")]
+    TonSignRequest,
     URTypeUnKnown,
 }
 
@@ -279,6 +287,8 @@ impl URType {
             InnerURType::ArweaveSignRequest(_) => Ok(URType::ArweaveSignRequest),
             #[cfg(feature = "multi-coins")]
             InnerURType::AptosSignRequest(_) => Ok(URType::AptosSignRequest),
+            #[cfg(feature = "multi-coins")]
+            InnerURType::TonSignRequest(_) => Ok(URType::TonSignRequest),
             #[cfg(feature = "multi-coins")]
             InnerURType::QRHardwareCall(_) => Ok(URType::QRHardwareCall),
             #[cfg(feature = "multi-coins")]
@@ -552,6 +562,8 @@ pub fn decode_ur(ur: String) -> URParseResult {
         #[cfg(feature = "multi-coins")]
         URType::AptosSignRequest => _decode_ur::<AptosSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
+        URType::TonSignRequest => _decode_ur::<TonSignRequest>(ur, ur_type),
+        #[cfg(feature = "multi-coins")]
         URType::QRHardwareCall => _decode_ur::<QRHardwareCall>(ur, ur_type),
         URType::URTypeUnKnown => URParseResult::from(URError::NotSupportURTypeError(
             "UnKnown ur type".to_string(),
@@ -624,6 +636,8 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         URType::AptosSignRequest => _receive_ur::<AptosSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
         URType::QRHardwareCall => _receive_ur::<QRHardwareCall>(ur, ur_type, decoder),
+        #[cfg(feature = "multi-coins")]
+        URType::TonSignRequest => _receive_ur::<TonSignRequest>(ur, ur_type, decoder),
         URType::URTypeUnKnown => URParseMultiResult::from(URError::NotSupportURTypeError(
             "UnKnown ur type".to_string(),
         )),

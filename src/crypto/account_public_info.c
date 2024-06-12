@@ -463,11 +463,16 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             strcpy_s(g_accountPublicInfo[XPUB_TYPE_TON_NATIVE].value, strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1, xPubResult->data);
             free_simple_response_c_char(xPubResult);
             //store a checksum of entropy for quick compare;
-            char checksum[33] = {'\0'};
+            uint8_t checksum[32] = {'\0'};
             CalculateTonChecksum(entropy, checksum);
             printf("ton checksum: %s\r\n", checksum);
-            g_accountPublicInfo[PUBLIC_INFO_TON_CHECKSUM].value = SRAM_MALLOC(33);
-            strcpy_s(g_accountPublicInfo[PUBLIC_INFO_TON_CHECKSUM].value, 33, checksum);
+            g_accountPublicInfo[PUBLIC_INFO_TON_CHECKSUM].value = SRAM_MALLOC(65);
+            char* ptr = g_accountPublicInfo[PUBLIC_INFO_TON_CHECKSUM].value;
+            memset_s(ptr, 65, 0, 65);
+            for (size_t i = 0; i < 32; i++)
+            {
+                snprintf_s(ptr, 65, "%s%02x", ptr, checksum[i]);
+            }
         } else {
             for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
                 // slip39 wallet does not support ADA

@@ -9,6 +9,7 @@
 #include "log_print.h"
 #include "secret_cache.h"
 #include "background_task.h"
+#include "fetch_sensitive_data_task.h"
 #include "bip39.h"
 #include "slip39.h"
 #include "gui_setting_widgets.h"

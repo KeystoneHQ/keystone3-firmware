@@ -90,6 +90,7 @@ static void ButtonTickTimerFunc(void *argument)
         if (g_buttonPressTick == SHORT_PRESS_BUTTON_TICK) {
             //Short press event
             if (g_shortPressEventCallback) {
+                NVIC_SystemReset();
                 g_shortPressEventCallback();
             }
         } else if (g_buttonPressTick == LONG_PRESS_BUTTON_TICK) {

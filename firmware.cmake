@@ -48,6 +48,8 @@ set(TASKS
     src/tasks/fingerprint_task.c
     src/tasks/background_app.c
     src/tasks/log_task.c
+    src/tasks/data_parser_task.c
+    src/tasks/fetch_sensitive_data_task.c
 )
 
 if(NOT BUILD_PRODUCTION)

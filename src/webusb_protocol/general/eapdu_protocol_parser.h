@@ -4,8 +4,8 @@
 #include "protocol_parse.h"
 #include "cJSON.h"
 #include "librust_c.h"
-#include "gui_framework.h"
-#include "gui_views.h"
+// #include "gui_framework.h"
+// #include "gui_views.h"
 
 #define EAPDU_PROTOCOL_HEADER             0x00
 #define EAPDU_PROTOCOL_PARSER_NAME        "eapdu_protocol_parser"
@@ -17,6 +17,7 @@ typedef enum {
     CMD_RESOLVE_UR,                // Command to resolve UR
     CMD_CHECK_LOCK_STATUS,         // Command to check lock status
     CMD_EXPORT_ADDRESS,            // Command to export address
+    CMD_GET_DEVICE_USB_PUBKEY,     // Command to get device public key
     //
     CMD_MAX_VALUE = 0xFFFFFFFF,    // The maximum value for command
 } CommandType;

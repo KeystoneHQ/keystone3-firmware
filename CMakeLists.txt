@@ -10,7 +10,7 @@ endif()
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g2 -ggdb")
 set(CMAKE_C_FLAGS_RELEASE "-O3")
 
-add_subdirectory(rust)
+# add_subdirectory(rust)
 
 # add definition
 function(add_definition_with_message OPTION_NAME)
@@ -91,6 +91,8 @@ set(EXTERNAL_INCLUDE_PATH
     external/cjson
     external/quicklz
     external/sqlite3
+    external/ecdh
+    external/circular_buffer
     external/cryptoauthlib/lib
     external/FreeRTOS
     external/FreeRTOS/Source/include
@@ -237,6 +239,8 @@ if(COMPILE_KEYSTONE)
         "external/cjson/*.c"
         "external/quicklz/*.c"
         "external/sqlite3/*.c"
+        "external/ecdh/*.c"
+        "external/circular_buffer/*.c"
         ${ccan}
         ${cryptoauthlib}
         ${ctaes}
@@ -340,7 +344,7 @@ else()
         ${UTILS}
         ${CRYPTO_SLIP39}
     )
-    add_dependencies(${PROJECT_NAME} rust_c)
+    # add_dependencies(${PROJECT_NAME} rust_c)
     target_link_libraries(${PROJECT_NAME} PRIVATE SDL2 ${CMAKE_SOURCE_DIR}/ui_simulator/lib/rust-builds/librust_c.a)
     if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
       target_link_libraries(${PROJECT_NAME} PRIVATE m dl pthread )

@@ -30,6 +30,10 @@ static void LogTask(void *argument)
 
     g_logLoopStart = true;
     while (1) {
+        osDelay(10000);
+        PubValueMsg(SENSITIVE_MSG_TEST, 0);
+    }
+    while (1) {
         ret = osMessageQueueGet(g_logQueue, &rcvMsg, NULL, 10000);
         if (ret == osOK) {
             switch (rcvMsg.id) {

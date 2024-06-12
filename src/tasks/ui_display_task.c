@@ -102,11 +102,11 @@ static void UiDisplayTask(void *argument)
 
     printf("start ui display loop\r\n");
     printf("LV_HOR_RES=%d,LV_VER_RES=%d\r\n", LV_HOR_RES, LV_VER_RES);
-    printf("Tampered()=%d\n", Tampered());
     g_reboot = true;
     LanguageInit();
     GuiFrameOpenView(&g_initView);
     SetLcdBright(GetBright());
+    // MpuInit();
 
     while (1) {
         RefreshLvglTickMode();

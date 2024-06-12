@@ -42,7 +42,7 @@ static uint8_t *ServiceDeviceInfoBasic(FrameHead_t *head, const uint8_t *tlvData
     tlvArray[0].length = strnlen_s(model, 8) + 1;
     tlvArray[0].pValue = (void *)model;
 
-    GetSerialNumber(serialNumber);
+    // GetSerialNumber(serialNumber);
     tlvArray[1].type = TYPE_DEVICE_SERIAL_NUMBER;
     tlvArray[1].length = strnlen_s(serialNumber, SERIAL_NUMBER_MAX_LEN) + 1;
     tlvArray[1].pValue = serialNumber;

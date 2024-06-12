@@ -45,7 +45,7 @@ SECTIONS
     {
         . = ALIGN(4);
         _sstack = .;
-        . = . + 0x4000;
+        . = . + 0x2000;
         . = ALIGN(4);
         _estack = .;
     } > SRAM
@@ -57,7 +57,7 @@ SECTIONS
 		*(COMMON)
 		_ebss = .;
 	} > SRAM
-
+	
 	/DISCARD/ :
 	{
 		libc.a (*)

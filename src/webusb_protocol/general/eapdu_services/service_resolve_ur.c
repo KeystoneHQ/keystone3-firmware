@@ -12,8 +12,7 @@
 
 /* FUNC DECLARATION*/
 static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status);
-static uint8_t *DataParser(EAPDURequestPayload_t *payload);
-static bool CheckURAcceptable(EAPDURequestPayload_t payload);
+static bool CheckURAcceptable(void);
 static void GotoFailPage(StatusEnum error_code, const char *error_message);
 
 /* STATIC VARIABLES */
@@ -41,12 +40,7 @@ static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t reque
     SRAM_FREE(payload);
 };
 
-static uint8_t *DataParser(EAPDURequestPayload_t *payload)
-{
-    return payload->data;
-}
-
-static bool CheckURAcceptable(EAPDURequestPayload_t payload)
+static bool CheckURAcceptable(void)
 {
     if (GuiLockScreenIsTop()) {
         const char *data = "Device is locked";
@@ -91,21 +85,21 @@ uint16_t GetCurrentUSParsingRequestID()
     return g_requestID;
 };
 
-void ProcessURService(EAPDURequestPayload_t payload)
+void ProcessURService(EAPDURequestPayload_t *payload)
 {
 #ifndef COMPILE_SIMULATOR
     if (g_requestID != REQUEST_ID_IDLE) {
         const char *data = "Previous request is not finished";
-        HandleURResultViaUSBFunc(data, strlen(data), payload.requestID, PRS_PARSING_DISALLOWED);
+        HandleURResultViaUSBFunc(data, strlen(data), payload->requestID, PRS_PARSING_DISALLOWED);
         return;
     } else {
-        g_requestID = payload.requestID;
+        g_requestID = payload->requestID;
     }
 
-    if (!CheckURAcceptable(payload)) {
+    if (!CheckURAcceptable()) {
         return;
     }
-    struct URParseResult *urResult = parse_ur((char *)DataParser(&payload));
+    struct URParseResult *urResult = parse_ur((char *)payload->data);
     if (urResult->error_code != 0) {
         HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), g_requestID, PRS_PARSING_ERROR);
         return;

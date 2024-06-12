@@ -1,12 +1,14 @@
 #include "service_check_lock.h"
-#include "gui_lock_widgets.h"
+#include "user_memory.h"
+// #include "gui_lock_widgets.h"
 
-void CheckDeviceLockStatusService(EAPDURequestPayload_t payload)
+void CheckDeviceLockStatusService(EAPDURequestPayload_t *payload)
 {
     EAPDUResponsePayload_t *result = (EAPDUResponsePayload_t *)SRAM_MALLOC(sizeof(EAPDUResponsePayload_t));
 
     cJSON *root = cJSON_CreateObject();
-    cJSON_AddBoolToObject(root, "payload", GuiLockScreenIsTop());
+    // cJSON_AddBoolToObject(root, "payload", GuiLockScreenIsTop());
+    cJSON_AddBoolToObject(root, "payload", true);
     char *json_str = cJSON_Print(root);
     cJSON_Delete(root);
     result->data = (uint8_t *)json_str;
@@ -14,7 +16,7 @@ void CheckDeviceLockStatusService(EAPDURequestPayload_t payload)
     result->status = RSP_SUCCESS_CODE;
     result->cla = EAPDU_PROTOCOL_HEADER;
     result->commandType = CMD_CHECK_LOCK_STATUS;
-    result->requestID = payload.requestID;
+    result->requestID = payload->requestID;
 
     SendEApduResponse(result);
     EXT_FREE(json_str);

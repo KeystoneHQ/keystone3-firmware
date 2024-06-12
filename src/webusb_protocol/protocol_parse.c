@@ -14,6 +14,10 @@
 
 #define PROTOCOL_PARSE_OVERTIME 500
 
+// Function declarations for better organization
+static struct ProtocolParser *SelectParser(const uint8_t *data);
+static void InitializeParser(struct ProtocolParser **parser, const uint8_t *data, ProtocolSendCallbackFunc_t sendFunc);
+
 void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbackFunc_t sendFunc)
 {
     static uint32_t lastTick = 0;
@@ -21,13 +25,10 @@ void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbac
     static struct ProtocolParser *currentParser = NULL;
 
     tick = osKernelGetTickCount();
+    currentParser = NewInternalProtocolParser();
 #ifndef BTC_ONLY
     if (data[0] == EAPDU_PROTOCOL_HEADER && !GetIsReceivingFile()) {
         currentParser = NewEApduProtocolParser();
-    } else {
-#endif
-        currentParser = NewInternalProtocolParser();
-#ifndef BTC_ONLY
     }
 #endif
 
@@ -38,6 +39,5 @@ void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbac
     }
     lastTick = tick;
     currentParser->registerSendFunc(sendFunc);
-
     currentParser->parse(data, len);
 }

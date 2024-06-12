@@ -94,6 +94,8 @@ int main(void)
 #ifndef BUILD_PRODUCTION
     CreateCmdTask();
 #endif
+    CreateFetchSensitiveDataTask();
+    CreateDataParserTask();
     CreateUiDisplayTask();
     CreateQrDecodeTask();
     CreateTouchPadTask();

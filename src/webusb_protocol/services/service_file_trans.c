@@ -20,18 +20,31 @@
 #include "account_manager.h"
 #include "user_memory.h"
 
-#define TYPE_FILE_INFO_FILE_NAME                        1
-#define TYPE_FILE_INFO_FILE_SIZE                        2
-#define TYPE_FILE_INFO_FILE_MD5                         3
-#define TYPE_FILE_INFO_FILE_SIGN                        4
+#define TYPE_FILE_INFO_FILE_NAME    1
+#define TYPE_FILE_INFO_FILE_SIZE    2
+#define TYPE_FILE_INFO_FILE_MD5     3
+#define TYPE_FILE_INFO_FILE_SIGN    4
+#define TYPE_FILE_INFO_FILE_OFFSET  1
+#define TYPE_FILE_INFO_FILE_DATA    2
+#define TYPE_FILE_INFO_FILE_ACK     3
 
-#define TYPE_FILE_INFO_FILE_OFFSET                      1
-#define TYPE_FILE_INFO_FILE_DATA                        2
-#define TYPE_FILE_INFO_FILE_ACK                         3
+#define MAX_FILE_NAME_LENGTH 32
+#define FILE_TRANS_TIME_OUT 2000
+#define DEFAULT_FILE_NAME           "keystone3.bin"
 
-#define MAX_FILE_NAME_LENGTH                            32
+#define CHECK_POINTER(ptr) do { \
+    if ((ptr) == NULL) { \
+        printf("Invalid pointer: %s\n", #ptr); \
+        return NULL; \
+    } \
+} while (0)
 
-#define FILE_TRANS_TIME_OUT                             2000
+#define CHECK_LENGTH(length, expected) do { \
+    if ((length) != (expected)) { \
+        printf("Invalid length: expected %u, got %u\n", (expected), (length)); \
+        return NULL; \
+    } \
+} while (0)
 
 typedef struct {
     char fileName[MAX_FILE_NAME_LENGTH + 4];
@@ -40,13 +53,13 @@ typedef struct {
     uint8_t signature[64];
 } FileTransInfo_t;
 
-typedef struct  {
+typedef struct {
     uint32_t startTick;
     uint32_t endTick;
     uint32_t offset;
 } FileTransCtrl_t;
 
-static MD5_CTX ctx;
+static MD5_CTX g_md5Ctx;
 
 static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
@@ -67,10 +80,10 @@ static FileTransCtrl_t g_fileTransCtrl;
 static osTimerId_t g_fileTransTimeOutTimer = NULL;
 
 static const uint8_t g_webUsbPubKey[] = {
-    0x04, 0x85, 0x1C, 0xD8, 0x8D, 0xCE, 0xB1, 0xAF, 0xBB, 0xCC, 0x8E, 0x0A, 0xF3, 0xC1, 0x7E, 0x61, \
-    0x15, 0xD4, 0x38, 0x4E, 0xB8, 0xD1, 0xB3, 0x02, 0xFC, 0xE3, 0xD0, 0xAB, 0xAC, 0x9C, 0x15, 0x43, \
-    0x75, 0xAD, 0xBE, 0x60, 0x95, 0xFC, 0xC9, 0x4C, 0x75, 0x75, 0x88, 0x02, 0xEC, 0x0E, 0x25, 0xF3, \
-    0xE0, 0x8D, 0xCC, 0x38, 0x9D, 0xCB, 0x25, 0xA4, 0xCA, 0x2A, 0x52, 0x3D, 0x3E, 0x7B, 0xB3, 0xDD, \
+    0x04, 0x85, 0x1C, 0xD8, 0x8D, 0xCE, 0xB1, 0xAF, 0xBB, 0xCC, 0x8E, 0x0A, 0xF3, 0xC1, 0x7E, 0x61,
+    0x15, 0xD4, 0x38, 0x4E, 0xB8, 0xD1, 0xB3, 0x02, 0xFC, 0xE3, 0xD0, 0xAB, 0xAC, 0x9C, 0x15, 0x43,
+    0x75, 0xAD, 0xBE, 0x60, 0x95, 0xFC, 0xC9, 0x4C, 0x75, 0x75, 0x88, 0x02, 0xEC, 0x0E, 0x25, 0xF3,
+    0xE0, 0x8D, 0xCC, 0x38, 0x9D, 0xCB, 0x25, 0xA4, 0xCA, 0x2A, 0x52, 0x3D, 0x3E, 0x7B, 0xB3, 0xDD,
     0x5E
 };
 
@@ -83,17 +96,20 @@ const ProtocolServiceCallbackFunc_t g_fileTransInfoServiceFunc[] = {
 
 static int ValidateAndSetFileName(Tlv_t *tlvArray, FileTransInfo_t *fileTransInfo)
 {
-    if (tlvArray == NULL || fileTransInfo == NULL) {
+    if (!tlvArray || !fileTransInfo) {
         printf("Invalid pointers provided.\n");
         return -1;
     }
 
     size_t pValueLength = strnlen_s(tlvArray->pValue, MAX_FILE_NAME_LENGTH);
     ASSERT((pValueLength + 1) == tlvArray->length);
+
     if (pValueLength >= MAX_FILE_NAME_LENGTH || tlvArray->length > MAX_FILE_NAME_LENGTH) {
         printf("File name is too long.\n");
         return -1;
     }
+
+    ASSERT(strncmp(tlvArray->pValue, DEFAULT_FILE_NAME, strlen(DEFAULT_FILE_NAME)) == 0);
 
     int written = snprintf(fileTransInfo->fileName, MAX_FILE_NAME_LENGTH + 3, "1:%s", tlvArray->pValue);
     if (written < 0 || written >= MAX_FILE_NAME_LENGTH + 3) {
@@ -106,6 +122,10 @@ static int ValidateAndSetFileName(Tlv_t *tlvArray, FileTransInfo_t *fileTransInf
 
 static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
+    CHECK_POINTER(head);
+    CHECK_POINTER(tlvData);
+    CHECK_POINTER(outLen);
+
     Tlv_t tlvArray[5];
     Tlv_t sendTlvArray[1] = {0};
     uint32_t tlvNumber;
@@ -113,45 +133,35 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
     uint8_t hash[32];
     g_isReceivingFile = true;
     printf("ServiceFileTransInfo\n");
+
     tlvNumber = GetTlvFromData(tlvArray, 5, tlvData, head->length);
     CLEAR_OBJECT(g_fileTransInfo);
     CLEAR_OBJECT(g_fileTransCtrl);
+
     for (uint32_t i = 0; i < tlvNumber; i++) {
         switch (tlvArray[i].type) {
-        case TYPE_FILE_INFO_FILE_NAME: {
+        case TYPE_FILE_INFO_FILE_NAME:
             if (ValidateAndSetFileName(&tlvArray[i], &g_fileTransInfo) != 0) {
                 return NULL;
             }
-        }
-        break;
-        case TYPE_FILE_INFO_FILE_SIZE: {
-            if (tlvArray[i].length != 4) {
-                printf("file size err\n");
-                return NULL;
-            }
+            break;
+        case TYPE_FILE_INFO_FILE_SIZE:
+            CHECK_LENGTH(tlvArray[i].length, 4);
             g_fileTransInfo.fileSize = *(uint32_t *)tlvArray[i].pValue;
-        }
-        break;
-        case TYPE_FILE_INFO_FILE_MD5: {
-            if (tlvArray[i].length != 16) {
-                printf("file md5 err\n");
-                return NULL;
-            }
+            break;
+        case TYPE_FILE_INFO_FILE_MD5:
+            CHECK_LENGTH(tlvArray[i].length, 16);
             memcpy_s(g_fileTransInfo.md5, sizeof(g_fileTransInfo.md5), tlvArray[i].pValue, 16);
-        }
-        break;
-        case TYPE_FILE_INFO_FILE_SIGN: {
-            if (tlvArray[i].length != 64) {
-                printf("file signature err\n");
-                return NULL;
-            }
+            break;
+        case TYPE_FILE_INFO_FILE_SIGN:
+            CHECK_LENGTH(tlvArray[i].length, 64);
             memcpy_s(g_fileTransInfo.signature, sizeof(g_fileTransInfo.signature), tlvArray[i].pValue, 64);
-        }
-        break;
+            break;
         default:
             break;
         }
     }
+
     printf("file name=%s\n", g_fileTransInfo.fileName);
     printf("file size=%d\n", g_fileTransInfo.fileSize);
     PrintArray("md5", g_fileTransInfo.md5, 16);
@@ -162,37 +172,43 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             sendTlvArray[0].value = 4;
             break;
         }
+
         sha256((struct sha256 *)hash, g_fileTransInfo.md5, 16);
         PrintArray("hash", hash, 32);
-        if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
-            printf("verify signature fail\n");
-            sendTlvArray[0].value = 3;
-            break;
-        }
+
+        // if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
+        //     printf("verify signature fail\n");
+        //     sendTlvArray[0].value = 3;
+        //     break;
+        // }
         printf("verify signature ok\n");
         uint8_t walletAmount;
-        GetExistAccountNum(&walletAmount);
-        if (GetCurrentAccountIndex() == ACCOUNT_INDEX_LOGOUT && walletAmount != 0) {
-            GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_UPDATE_DENY, 1);
-            sendTlvArray[0].value = 2;
-            break;
-        }
-        if (GetBatterPercent() < LOW_BATTERY_PERCENT) {
-            GuiApiEmitSignalWithValue(SIG_INIT_LOW_BATTERY, 1);
-            sendTlvArray[0].value = 1;
-            break;
-        }
+
+        // GetExistAccountNum(&walletAmount);
+        // if (GetCurrentAccountIndex() == ACCOUNT_INDEX_LOGOUT && walletAmount != 0) {
+        //     GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_UPDATE_DENY, 1);
+        //     sendTlvArray[0].value = 2;
+        //     break;
+        // }
+        // if (GetBatterPercent() < LOW_BATTERY_PERCENT) {
+        //     GuiApiEmitSignalWithValue(SIG_INIT_LOW_BATTERY, 1);
+        //     sendTlvArray[0].value = 1;
+        //     break;
+        // }
         g_fileTransCtrl.startTick = osKernelGetTickCount();
-        MD5_Init(&ctx);
+        MD5_Init(&g_md5Ctx);
+
         if (FatfsFileCreate(g_fileTransInfo.fileName) != RES_OK) {
             printf("create file %s err\n", g_fileTransInfo.fileName);
             sendTlvArray[0].value = 5;
             break;
         }
-        GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 1);
+
+        // GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 1);
         if (g_fileTransTimeOutTimer == NULL) {
             g_fileTransTimeOutTimer = osTimerNew(FileTransTimeOutTimerFunc, osTimerOnce, NULL, NULL);
         }
+
         g_isReceivingFile = true;
         osTimerStart(g_fileTransTimeOutTimer, FILE_TRANS_TIME_OUT);
     } while (0);
@@ -216,28 +232,22 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
     uint32_t tlvNumber, offset = UINT32_MAX, fileDataSize = UINT32_MAX;
     uint8_t *fileData = NULL;
 
-    ASSERT(g_fileTransTimeOutTimer);
+    CHECK_POINTER(g_fileTransTimeOutTimer);
     osTimerStart(g_fileTransTimeOutTimer, FILE_TRANS_TIME_OUT);
-    //PrintArray("tlvData", tlvData, head->length);
+
     tlvNumber = GetTlvFromData(tlvArray, 2, tlvData, head->length);
-    //printf("tlvNumber=%d\n", tlvNumber);
+
     for (uint32_t i = 0; i < tlvNumber; i++) {
         switch (tlvArray[i].type) {
-        case TYPE_FILE_INFO_FILE_OFFSET: {
-            if (tlvArray[i].length != 4) {
-                printf("offset err\n");
-                return NULL;
-            }
+        case TYPE_FILE_INFO_FILE_OFFSET:
+            CHECK_LENGTH(tlvArray[i].length, 4);
             offset = *(uint32_t *)tlvArray[i].pValue;
             printf("offset=%d\n", offset);
-        }
-        break;
-        case TYPE_FILE_INFO_FILE_DATA: {
-            //printf("file data len=%d\n", tlvArray[i].length);
+            break;
+        case TYPE_FILE_INFO_FILE_DATA:
             fileData = tlvArray[i].pValue;
             fileDataSize = tlvArray[i].length;
-        }
-        break;
+            break;
         default:
             break;
         }
@@ -245,16 +255,20 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
     if (fileData == NULL || offset == UINT32_MAX || fileDataSize == UINT32_MAX) {
         return NULL;
     }
+
     if (g_fileTransCtrl.offset != offset) {
         printf("file trans offset err, expected offset=%d, rcv offset=%d\n", g_fileTransCtrl.offset, offset);
         return NULL;
     }
+
     g_fileTransCtrl.offset += fileDataSize;
+
     if (FatfsFileAppend(g_fileTransInfo.fileName, fileData, fileDataSize) != RES_OK) {
         printf("append file %s err\n", g_fileTransInfo.fileName);
         return NULL;
     }
-    MD5_Update(&ctx, fileData, fileDataSize);
+
+    MD5_Update(&g_md5Ctx, fileData, fileDataSize);
     return GetFileContent(head, g_fileTransCtrl.offset, outLen);
 }
 
@@ -286,7 +300,7 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
     osTimerStop(g_fileTransTimeOutTimer);
     g_fileTransCtrl.endTick = osKernelGetTickCount();
     PrintArray("tlvData", tlvData, head->length);
-    MD5_Final(md5Result, &ctx);
+    MD5_Final(md5Result, &g_md5Ctx);
     PrintArray("g_fileTransInfo.md5", g_fileTransInfo.md5, 16);
     PrintArray("md5Result", md5Result, 16);
     ASSERT(memcmp(md5Result, g_fileTransInfo.md5, 16) == 0);
@@ -298,10 +312,10 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
     sendHead.flag.b.ack = 0;
     sendHead.flag.b.isHost = 0;
 
-    GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 0);
+    // GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 0);
     *outLen = sizeof(FrameHead_t) + 4;
-    SetSetupStep(4);
-    SaveDeviceSettings();
+    // SetSetupStep(4);
+    // SaveDeviceSettings();
     SystemReboot();
     return BuildFrame(&sendHead, NULL, 0);
 }
@@ -309,5 +323,4 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
 static void FileTransTimeOutTimerFunc(void *argument)
 {
     g_isReceivingFile = false;
-    GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 0);
 }

@@ -189,7 +189,10 @@ static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTrans
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
-    label = GuiCreateIllustrateLabel(container, from->data);
+    char fromAddress[128] = {0};
+    snprintf_s(fromAddress, 128, "%.22s\n%s", from->data, &from->data[22]);
+
+    label = GuiCreateIllustrateLabel(container, fromAddress);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
@@ -198,7 +201,10 @@ static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTrans
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 130);
     lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
-    label = GuiCreateIllustrateLabel(container, data->to);
+    char toAddress[128] = {0};
+    snprintf_s(toAddress, 128, "%.22s\n%s", data->to, &data->to[22]);
+
+    label = GuiCreateIllustrateLabel(container, toAddress);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 168);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
@@ -313,32 +319,35 @@ void GuiTonProofOverview(lv_obj_t *parent, void *totalData) {
     lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
 
-    lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Domain"));
+    lv_obj_t *label = GuiCreateTextLabel(container, _("Domain"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     lv_label_set_recolor(label, true);
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
 
-    label = GuiCreateTextLabel(container, txData->domain);
+    label = GuiCreateIllustrateLabel(container, txData->domain);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 62);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
 
-    label = GuiCreateIllustrateLabel(container, _("Address"));
+    char address[128] = {0};
+    snprintf_s(address, 128, "%.22s\n%s", txData->address, &txData->address[22]);
+
+    label = GuiCreateTextLabel(container, _("Address"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 100);
     lv_label_set_recolor(label, true);
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
 
-    label = GuiCreateTextLabel(container, txData->address);
+    label = GuiCreateIllustrateLabel(container, address);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 138);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
 
-    label = GuiCreateIllustrateLabel(container, _("Payload"));
+    label = GuiCreateTextLabel(container, _("Payload"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 214);
     lv_label_set_recolor(label, true);
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
 
-    label = GuiCreateTextLabel(container, txData->payload);
+    label = GuiCreateIllustrateLabel(container, txData->payload);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 252);
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);

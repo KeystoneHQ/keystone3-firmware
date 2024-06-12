@@ -118,7 +118,7 @@ static const lv_img_dsc_t *g_backpackWalletCoinArray[2] = {
 };
 
 static const lv_img_dsc_t *g_keystoneWalletCoinArray[] = {
-    &coinBtc, &coinEth, &coinBch,
+    &coinBtc, &coinEth,&coinBnb, &coinBch,
     &coinDash, &coinDot,  &coinLtc, &coinTrx, &coinXrp,
 };
 
@@ -296,9 +296,9 @@ static void GuiInitWalletListArray()
 
         // Only show keystone wallet when the language is Russian
         if (LanguageGetIndex() == LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
-            g_walletListArray[i].enable = true;
-        } else if (LanguageGetIndex() != LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
             g_walletListArray[i].enable = false;
+        } else if (LanguageGetIndex() != LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
+            g_walletListArray[i].enable = true;
         }
 
 #else
@@ -1179,8 +1179,8 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         AddTonCoins();
         break;
     case WALLET_LIST_KEYSTONE:
-        // todo
-        func = GuiGetOkxWalletData;
+        // todo  add keystone ur logic
+        func = GuiGetKeystoneWalletData;
         AddKeystoneWalletCoins();
         break;
 #else

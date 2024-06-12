@@ -408,6 +408,71 @@ UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
 
 #endif
 
+UREncodeResult *GuiGetKeystoneWalletData(void)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    //   btc 4
+    // + eth 10
+    // + bch 1
+    // + dash 1
+    // + dot 1
+    // + ltc 1
+    // + trx 1
+    // + xrp 1
+
+    // total xpub = 18
+    uint8_t XPUB_AMMOUNT = 18;
+    ExtendedPublicKey keys[XPUB_AMMOUNT];
+    public_keys->data = keys;
+    public_keys->size = XPUB_AMMOUNT;
+    for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
+        keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = SRAM_MALLOC(BUFFER_SIZE_64);
+        snprintf_s(keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path, BUFFER_SIZE_64, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
+        keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].xpub = GetCurrentAccountPublicKey(i);
+    }
+
+    keys[10].path = "m/44'/0'/0'";
+    keys[10].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+
+    keys[11].path = "m/49'/0'/0'";
+    keys[11].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+
+    keys[12].path = "m/84'/0'/0'";
+    keys[12].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+
+    keys[13].path = "m/86'/0'/0'";
+    keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+
+
+    keys[14].path = GetXPubPath(XPUB_TYPE_BCH);
+    keys[14].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
+    
+    keys[15].path = GetXPubPath(XPUB_TYPE_DASH);
+    keys[15].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DASH);
+
+
+    keys[16].path = GetXPubPath(XPUB_TYPE_LTC);
+    keys[16].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_LTC);
+
+    keys[17].path = GetXPubPath(XPUB_TYPE_TRX);
+    keys[17].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
+
+
+
+    char serialNumber[256];
+    GetSerialNumber(serialNumber);
+    char firmwareVersion[12];
+    GetSoftWareVersionNumber(firmwareVersion);
+    g_urEncode = get_keystone_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
+
+    CHECK_CHAIN_PRINT(g_urEncode);
+    SRAM_FREE(public_keys);
+    return g_urEncode;
+}
+
+
 UREncodeResult *GuiGetOkxWalletData(void)
 {
     uint8_t mfp[4] = {0};

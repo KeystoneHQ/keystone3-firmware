@@ -1,9 +1,9 @@
+use crate::principal::Principal;
 use alloc::string::String;
 use alloc::vec::Vec;
 use serde::Serialize;
 use sha2::{Digest, Sha224};
 use third_party::hex;
-use crate::principal::Principal;
 
 const SUB_ACCOUNT_ZERO: Subaccount = Subaccount([0; 32]);
 const ACCOUNT_DOMAIN_SEPERATOR: &[u8] = b"\x0Aaccount-id";

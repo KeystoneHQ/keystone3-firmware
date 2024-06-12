@@ -126,7 +126,7 @@ impl InferViewType for AptosSignRequest {
 #[cfg(feature = "multi-coins")]
 impl InferViewType for IcpSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
-        Ok(ViewType::ViewTypeUnKnown)
+        Ok(ViewType::IcpTx)
     }
 }
 

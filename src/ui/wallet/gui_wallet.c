@@ -414,6 +414,19 @@ UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
 
 #endif
 
+UREncodeResult *GuiGetICPDataByIndex(uint16_t index)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    char *xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ICP_0);
+    char *rootPath = "m/44'/223'/0'";
+    char hdPath[BUFFER_SIZE_32] = {0};
+    snprintf_s(hdPath, BUFFER_SIZE_32, "%s/0/%u", rootPath, index);
+    g_urEncode = get_connect_xrp_toolkit_ur(hdPath, xpub, rootPath);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    return g_urEncode;
+}
+
 UREncodeResult *GuiGetOkxWalletData(void)
 {
     uint8_t mfp[4] = {0};

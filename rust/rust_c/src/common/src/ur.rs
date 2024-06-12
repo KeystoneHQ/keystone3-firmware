@@ -212,6 +212,8 @@ pub enum ViewType {
     ArweaveMessage,
     #[cfg(feature = "multi-coins")]
     AptosTx,
+    #[cfg(feature = "multi-coins")]
+    IcpTx,
     WebAuthResult,
     #[cfg(feature = "multi-coins")]
     KeyDerivationRequest,
@@ -225,6 +227,7 @@ pub enum ViewType {
 }
 
 #[repr(C)]
+#[derive(Debug,PartialEq)]
 pub enum URType {
     CryptoPSBT,
     CryptoMultiAccounts,
@@ -535,7 +538,6 @@ pub fn decode_ur(ur: String) -> URParseResult {
         Ok(t) => t,
         Err(e) => return URParseResult::from(e),
     };
-
     match ur_type {
         URType::CryptoPSBT => _decode_ur::<CryptoPSBT>(ur, ur_type),
         URType::CryptoAccount => _decode_ur::<CryptoAccount>(ur, ur_type),
@@ -666,4 +668,50 @@ pub extern "C" fn parse_ur(ur: PtrString) -> *mut URParseResult {
 pub extern "C" fn receive(ur: PtrString, decoder: PtrDecoder) -> *mut URParseMultiResult {
     let decoder = extract_ptr_with_type!(decoder, KeystoneURDecoder);
     receive_ur(recover_c_char(ur), decoder).c_ptr()
+}
+
+
+#[cfg(test)]
+mod tests{
+    use alloc::string::ToString;
+    use third_party::bitcoin::hex::FromHex;
+    use third_party::hex;
+    use third_party::ur_parse_lib::keystone_ur_encoder::probe_encode;
+    use third_party::ur_registry::icp::icp_sign_request::SignType;
+    use super::*;
+
+
+    #[test]
+    fn test_generate_icp_sign_request_ur() {
+        // encode ur
+        let data = "a5011ae9181cf3025820af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca030105d90130a20186182cf518dff500f5021af23f9fd2046a706c756777616c6c6574".to_string();
+        let data_bytes =  &Vec::from_hex(&*data).unwrap();
+        let result = probe_encode(data_bytes, FRAGMENT_MAX_LENGTH_DEFAULT, "icp-sign-request".to_string()).unwrap();
+        let ur_str = result.data;
+        assert_eq!("UR:ICP-SIGN-REQUEST/ONADCYWLCSCEWFAOHDCXPEKSYAHPDTTPLEHSWYGATEJTLRBWNNSPGYCEGOMYBBHSDKBWWNGDFRMNINHKPMSGAXADAHTAADDYOEADLNCSDWYKCSURYKAEYKAOCYWZFHNETDAAIMJOJZKPIOKTHSJZJZIHJYCHFMIAVE".to_string(),
+                   ur_str.to_uppercase());
+        // decode ur
+        let result: third_party::ur_parse_lib::keystone_ur_decoder::URParseResult<IcpSignRequest> = probe_decode(ur_str.to_string()).unwrap();
+        let result = decode_ur(ur_str);
+        assert_eq!(false,result.is_multi_part);
+        assert_eq!(result.ur_type, URType::IcpSignRequest);
+        assert_eq!(result.t,ViewType::ViewTypeUnKnown);
+        let icp_sign_request_ptr = result.data;
+        let icp_sign_request = crate::extract_ptr_with_type!(icp_sign_request_ptr, IcpSignRequest);
+        let sign_data =
+            hex::decode("af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca")
+                .unwrap();
+
+        assert_eq!(
+            [233, 24, 28, 243],
+            icp_sign_request.get_master_fingerprint()
+        );
+        assert_eq!(sign_data, icp_sign_request.get_sign_data());
+        assert_eq!(SignType::Transaction, icp_sign_request.get_sign_type());
+        assert_eq!(
+            "44'/223'/0'",
+            icp_sign_request.get_derivation_path().get_path().unwrap()
+        );
+    }
+
 }

@@ -27,5 +27,7 @@ UREncodeResult *GuiGetSolflareData(void);
 UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index);
 UREncodeResult *GuiGetADADataByIndex(uint16_t index);
 UREncodeResult *GuiGetImTokenData(void);
+UREncodeResult *GuiGetICPData(void);
+UREncodeResult *GuiGetICPDataByIndex(uint16_t index);
 #endif
 #endif

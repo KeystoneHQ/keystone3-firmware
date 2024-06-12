@@ -559,6 +559,8 @@ static void ShowAddressDetailHandler(lv_event_t *e)
     GuiCreateAddressDetailWidgets(g_multiAccountsReceiveWidgets.tileQrCode);
 }
 
+
+
 static void GuiCreateAddressDetailWidgets(lv_obj_t *parent)
 {
     lv_obj_t *cont, *label, *last;
@@ -573,6 +575,35 @@ static void GuiCreateAddressDetailWidgets(lv_obj_t *parent)
         last = label;
 
         AddressDataItem_t addressDataItem;
+
+        if (g_chainCard == HOME_WALLET_CARD_ICP) {
+
+            ModelGetAddress(g_selectedIndex[GetCurrentAccountIndex()], &addressDataItem, 0);
+
+            label = GuiCreateIllustrateLabel(cont, addressDataItem.path);
+            lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+            last = label;
+
+            label = GuiCreateTextLabel(cont, "Account ID");
+            lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+            last = label;
+
+            label = GuiCreateIllustrateLabel(cont, addressDataItem.address);
+            lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+            last = label;
+
+            label = GuiCreateTextLabel(cont, "Principal ID");
+            lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+            last = label;
+
+            ModelGetAddress(g_selectedIndex[GetCurrentAccountIndex()], &addressDataItem, 1);
+            label = GuiCreateIllustrateLabel(cont, addressDataItem.address);
+            lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+            last = label;
+
+            return ;
+        }
+
         ModelGetAddress(g_selectedIndex[GetCurrentAccountIndex()], &addressDataItem, 0);
 
         label = GuiCreateIllustrateLabel(cont, addressDataItem.path);
@@ -822,6 +853,7 @@ static bool IsAddressSwitchable()
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ADA:
+    case HOME_WALLET_CARD_ICP:
         return true;
     default:
         return false;
@@ -832,6 +864,7 @@ static bool HasMoreBtn()
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ADA:
+    case HOME_WALLET_CARD_ICP:
         return true;
 
     default:
@@ -949,7 +982,16 @@ static void GuiCreateSwitchAccountWidget()
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 10 + 102 * i);
         g_multiAccountsReceiveWidgets.switchAccountWidgets[index].addressCountLabel = label;
 
-        snprintf_s(temp, BUFFER_SIZE_64, "m/1852'/1815'/%u'", i);
+        switch (g_chainCard) {
+        case HOME_WALLET_CARD_ADA:
+            snprintf_s(temp, BUFFER_SIZE_64, "m/1852'/1815'/%u'", i);
+            break;
+        case HOME_WALLET_CARD_ICP:
+            snprintf_s(temp, BUFFER_SIZE_64, "m/44'/223'/%u'", i);
+            break;
+        default:
+            break;
+        }
         address = GuiCreateNoticeLabel(cont, temp);
         lv_obj_align_to(address, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, -10);
         g_multiAccountsReceiveWidgets.switchAccountWidgets[index].addressLabel = address;
@@ -1014,6 +1056,18 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
             break;
         default:
             result = cardano_get_base_address(xPub, index, 1);
+            break;
+        }
+        break;
+    case HOME_WALLET_CARD_ICP:
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ICP_0 + currentAccount);
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/223'/%u'/0/%u", currentAccount, index);
+        switch (type) {
+        case 0:
+            result = icp_generate_address(hdPath, xPub);
+            break;
+        case 1:
+            result = icp_generate_principal_id(hdPath, xPub);
             break;
         }
         break;

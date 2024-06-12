@@ -68,7 +68,6 @@ static void QrDecodeTask(void *argument)
     uint32_t waitTime;
     uint32_t count = 0;
     g_qrDecodeState = QR_DECODE_STATE_OFF;
-
     while (1) {
         waitTime = g_qrDecodeState == QR_DECODE_STATE_ON ? 1 : 1000;
         osRet = osMessageQueueGet(g_qrDecodeQueue, &rcvMsg, NULL, waitTime);

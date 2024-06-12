@@ -210,6 +210,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreeArMemory,
     },
+    {
+        REMAPVIEW_ICP,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"icp_message_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"custom_container\",\"size\":[408,212],\"pos\":[0,0],\"radius\":24,\"custom_show_func\":\"GuiIcpHashNotice\"},{\"type\":\"container\",\"size\":[408,130],\"pos\":[0,236],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Hash\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetIcpRawMessage\",\"text_len_func\":\"GetIcpRawMessageLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_icp.json",
+#endif
+        GuiGetIcpParseData,
+        NULL,
+        FreeIcpMemory,
+    },
 #endif
 };
 
@@ -680,6 +691,23 @@ GetLabelDataLenFunc GuiAptosTextLenFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataFunc GuiIcpTextFuncGet(char *type)
+{
+    if (!strcmp(type, "GetIcpRawMessage")) {
+        return GetIcpRawMessage;
+    }
+    return NULL;
+}
+
+GetLabelDataLenFunc GuiIcpTextLenFuncGet(char *type)
+{
+    if (!strcmp(type, "GetIcpRawMessageLength")) {
+        return GetIcpRawMessageLength;
+    }
+    return NULL;
+}
+
+
 GetLabelDataFunc GuiXrpTextFuncGet(char *type)
 {
     if (!strcmp(type, "GetXrpDetail")) {
@@ -757,6 +785,7 @@ GetLabelDataLenFunc GuiAdaTextLenFuncGet(char *type)
     }
     return NULL;
 }
+
 #endif
 
 GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
@@ -814,6 +843,8 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
     case REMAPVIEW_AR:
     case REMAPVIEW_AR_MESSAGE:
         return GuiArTextFuncGet(type);
+    case REMAPVIEW_ICP:
+        return GuiIcpTextFuncGet(type);
 #endif
     default:
         return NULL;
@@ -1166,6 +1197,8 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiShowSolTxDetail;
     } else if (!strcmp(funcName, "GuiShowArweaveTxDetail")) {
         return GuiShowArweaveTxDetail;
+    } else if (!strcmp(funcName, "GuiIcpHashNotice")) {
+        return GuiIcpHashNotice;
     }
 #endif
     return NULL;
@@ -1557,6 +1590,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_AR;
     case ArweaveMessage:
         return REMAPVIEW_AR_MESSAGE;
+    case IcpTx:
+        return REMAPVIEW_ICP;
 #endif
     default:
         return REMAPVIEW_BUTT;

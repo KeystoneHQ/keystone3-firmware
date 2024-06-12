@@ -50,6 +50,7 @@ sui_rust_c = { path = "./src/sui", optional = true }
 tron_rust_c = { path = "./src/tron", optional = true }
 xrp_rust_c = { path = "./src/xrp", optional = true }
 arweave_rust_c = { path = "./src/arweave", optional = true }
+icp_rust_c = { path = "./src/icp", optional = true }
 
 [lib]
 crate-type = ["staticlib"]
@@ -70,6 +71,7 @@ debug-memory = [
     "sui_rust_c/debug-memory",
     "tron_rust_c/debug-memory",
     "xrp_rust_c/debug-memory",
+    "icp_rust_c/debug-memory",
 ]
 simulator = ["multi-coins", "no-allocator", "sui_rust_c/simulator"]
 simulator_btc_only = ["btc-only", "no-allocator"]
@@ -90,6 +92,7 @@ multi-coins = [
     "tron_rust_c",
     "xrp_rust_c",
     "arweave_rust_c",
+    "icp_rust_c",
 ]
 btc-only = [
     "common_rust_c/btc-only",

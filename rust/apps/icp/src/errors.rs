@@ -13,7 +13,7 @@ pub enum ICPError {
     #[error("sign failed, reason: {0}")]
     SignFailure(String),
     #[error("Could not parse transaction, reason: `{0}`")]
-    ParseTxError(String), 
+    ParseTxError(String),
 }
 
 pub type Result<T> = core::result::Result<T, ICPError>;

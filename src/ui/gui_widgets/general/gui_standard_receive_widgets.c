@@ -237,7 +237,7 @@ lv_obj_t* CreateStandardReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)
 
 static uint16_t GetAddrYExtend(void)
 {
-    if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT) {
+    if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT || g_chainCard == HOME_WALLET_CARD_ICP) {
         return 30;
     }
     return 0;
@@ -470,6 +470,10 @@ static int GetMaxAddressIndex(void)
     if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT) {
         return 10;
     }
+
+    if (g_chainCard == HOME_WALLET_CARD_ICP) {
+        return 20;
+    }
     if (g_chainCard == HOME_WALLET_CARD_XRP) {
         return 200;
     }
@@ -539,6 +543,7 @@ static bool IsAccountSwitchable()
     case HOME_WALLET_CARD_SUI:
     case HOME_WALLET_CARD_APT:
     case HOME_WALLET_CARD_XRP:
+    case HOME_WALLET_CARD_ICP:
         return true;
 
     default:
@@ -605,6 +610,12 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
         result = arweave_get_address(xPub);
         break;
+    // case HOME_WALLET_CARD_ICP:
+    //     xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ICP_0 + index);
+    //     printf("index: %d\r\n", index);
+    //     snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/223'/%u'/0/0", index);
+    //     result = icp_generate_address(hdPath, xPub);
+    //     break;
     default:
         if (IsCosmosChain(g_chainCard)) {
             char rootPath[BUFFER_SIZE_128];

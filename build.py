@@ -58,7 +58,7 @@ def build_firmware(environment, options, bin_type):
     make_result = os.system('make -j')
     if make_result != 0:
         return make_result
-    return os.system('python padding_bin_file.py mh1903.bin')
+    return os.system('python3 padding_bin_file.py mh1903.bin')
 
 
 def ota_maker():

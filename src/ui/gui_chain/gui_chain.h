@@ -13,6 +13,7 @@
 #include "gui_ada.h"
 #include "gui_xrp.h"
 #include "gui_ar.h"
+#include "gui_icp.h"
 #endif
 
 typedef void (*SetChainDataFunc)(void *resultData, void *multiResultData, bool multi);
@@ -34,6 +35,7 @@ typedef enum {
     CHAIN_SUI,
     CHAIN_DASH,
     CHAIN_ARWEAVE,
+    CHAIN_ICP,
     CHAIN_COSMOS,
     CHAIN_TIA,
     CHAIN_DYM,
@@ -67,6 +69,7 @@ typedef enum {
     CHAIN_UMEE,
     CHAIN_QCK,
     CHAIN_TGD,
+
 #endif
     CHAIN_BUTT,
 } GuiChainCoinType;
@@ -89,7 +92,9 @@ typedef enum {
     REMAPVIEW_XRP,
     REMAPVIEW_AR,
     REMAPVIEW_AR_MESSAGE,
+    REMAPVIEW_ICP,
     REMAPVIEW_WEB_AUTH,
+
 #endif
     REMAPVIEW_BUTT,
 } GuiRemapViewType;

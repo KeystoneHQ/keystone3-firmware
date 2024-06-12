@@ -492,6 +492,7 @@ dependencies = [
  "arrayref",
  "cstr_core",
  "cty",
+ "num-bigint-dig",
  "rand_chacha",
  "rust_tools",
  "sha2 0.10.7",
@@ -1200,7 +1201,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.22#378bf68a82ff0aba4d503d7cfc85bce813ced1f6"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?rev=eddfc5050f80b87c121f3a5bb0ca5d303fe6c8be#eddfc5050f80b87c121f3a5bb0ca5d303fe6c8be"
 dependencies = [
  "hex",
  "ur",
@@ -1210,7 +1211,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.22#378bf68a82ff0aba4d503d7cfc85bce813ced1f6"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?rev=eddfc5050f80b87c121f3a5bb0ca5d303fe6c8be#eddfc5050f80b87c121f3a5bb0ca5d303fe6c8be"
 dependencies = [
  "bs58",
  "core2",

@@ -52,6 +52,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_SUI, false, "SUI", true},
     {HOME_WALLET_CARD_DASH, false, "DASH", true},
     {HOME_WALLET_CARD_ARWEAVE, false, "AR", true},
+    {HOME_WALLET_CARD_ICP, false, "ICP", true},
     {HOME_WALLET_CARD_COSMOS, false, "Cosmos Eco", true},
     {HOME_WALLET_CARD_TIA, false, "TIA", true},
     {HOME_WALLET_CARD_DYM, false, "DYM", true},
@@ -182,6 +183,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "AR",
         .chain = "Arweave",
         .icon = &coinAr,
+    },
+    {
+        .index = HOME_WALLET_CARD_ICP,
+        .coin = "ICP",
+        .chain = "Internet Computer",
+        .icon = &coinIcp,
     },
     {
         .index = HOME_WALLET_CARD_COSMOS,
@@ -381,6 +388,7 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .chain = "Tgrade",
         .icon = &coinTgd,
     },
+
 };
 
 static void CoinDealHandler(lv_event_t *e);
@@ -517,6 +525,7 @@ static void CoinDealHandler(lv_event_t *e)
         GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_ADA:
+    case HOME_WALLET_CARD_ICP:
         GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_ARWEAVE: {

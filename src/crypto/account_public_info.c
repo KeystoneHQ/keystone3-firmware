@@ -166,6 +166,29 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_ADA_22,                BIP32_ED25519, "ada_22",                   "M/1852'/1815'/22'"},
     {XPUB_TYPE_ADA_23,                BIP32_ED25519, "ada_23",                   "M/1852'/1815'/23'"},
     {XPUB_TYPE_ARWEAVE,               RSA_KEY,       "ar",                       ""                 },
+    {XPUB_TYPE_ICP_0,                SECP256K1,      "icp_0",                    "M/44'/223'/0'" },
+    {XPUB_TYPE_ICP_1,                SECP256K1,      "icp_1",                    "M/44'/223'/1'" },
+    {XPUB_TYPE_ICP_2,                SECP256K1,      "icp_2",                   "M/44'/223'/2'" },
+    {XPUB_TYPE_ICP_3,                SECP256K1,      "icp_3",                  "M/44'/223'/3'" },
+    {XPUB_TYPE_ICP_4,                SECP256K1,      "icp_4",                  "M/44'/223'/4'" },
+    {XPUB_TYPE_ICP_5,                SECP256K1,      "icp_5",                  "M/44'/223'/5'" },
+    {XPUB_TYPE_ICP_6,                SECP256K1,      "icp_6",                    "M/44'/223'/6'" },
+    {XPUB_TYPE_ICP_7,                SECP256K1,      "icp_7",                    "M/44'/223'/7'" },
+    {XPUB_TYPE_ICP_8,                SECP256K1,      "icp_8",                    "M/44'/223'/8'" },
+    {XPUB_TYPE_ICP_9,                SECP256K1,      "icp_9",                    "M/44'/223'/9'" },
+    {XPUB_TYPE_ICP_10,                SECP256K1,      "icp_10",                    "M/44'/223'/10'"},
+    {XPUB_TYPE_ICP_11,                SECP256K1,      "icp_11",                    "M/44'/223'/11'"},
+    {XPUB_TYPE_ICP_12,                SECP256K1,      "icp_12",                    "M/44'/223'/12'"},
+    {XPUB_TYPE_ICP_13,                SECP256K1,      "icp_13",                    "M/44'/223'/13'"},
+    {XPUB_TYPE_ICP_14,                SECP256K1,      "icp_14",                    "M/44'/223'/14'"},
+    {XPUB_TYPE_ICP_15,                SECP256K1,      "icp_15",                    "M/44'/223'/15'"},
+    {XPUB_TYPE_ICP_16,                SECP256K1,      "icp_16",                    "M/44'/223'/16'"},
+    {XPUB_TYPE_ICP_17,                SECP256K1,      "icp_17",                    "M/44'/223'/17'"},
+    {XPUB_TYPE_ICP_18,                SECP256K1,      "icp_18",                    "M/44'/223'/18'"},
+    {XPUB_TYPE_ICP_19,                SECP256K1,      "icp_19",                    "M/44'/223'/19'"},
+    {XPUB_TYPE_ICP_20,                SECP256K1,      "icp_20",                    "M/44'/223'/20'"},
+
+
 #else
     {XPUB_TYPE_BTC,                     SECP256K1,      "btc_nested_segwit",        "M/49'/0'/0'"   },
     {XPUB_TYPE_BTC_LEGACY,              SECP256K1,      "btc_legacy",               "M/44'/0'/0'"   },
@@ -634,6 +657,7 @@ char *GetCurrentAccountPublicKey(ChainType chain)
     if (accountIndex > 2) {
         return NULL;
     }
+    printf("chian index = %d\r\n", chain);
     return g_accountPublicKey[chain].pubKey;
 }
 
@@ -776,7 +800,7 @@ static bool GetPublicKeyFromJsonString(const char *string)
                 break;
             } else {
                 GetStringValue(chainJson, "value", pubKeyString, PUB_KEY_MAX_LENGTH);
-                //printf("%s pub key=%s\r\n", g_chainTable[i].name, pubKeyString);
+                printf("%s pub key=%s\r\n", g_chainTable[i].name, pubKeyString);
                 g_accountPublicKey[i].pubKey = SRAM_MALLOC(strnlen_s(pubKeyString, PUB_KEY_MAX_LENGTH) + 1);
                 strcpy(g_accountPublicKey[i].pubKey, pubKeyString);
             }

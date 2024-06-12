@@ -104,6 +104,7 @@ void GuiScanResult(bool result, void *param)
                 return;
             }
         }
+        printf("g_qrcodeViewType = %d\n", g_qrcodeViewType);
         g_chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
         // Not a chain based transaction, e.g. WebAuth
         if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
@@ -117,11 +118,13 @@ void GuiScanResult(bool result, void *param)
         }
         if (g_chainType == CHAIN_BUTT) {
             if (g_qrcodeViewType == WebAuthResult) {
+                printf("WebAuthResult\n");
                 GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_webAuthResultView);
             }
 #ifndef BTC_ONLY
             if (g_qrcodeViewType == KeyDerivationRequest) {
+                printf("WebAuthResult\n");
                 GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_keyDerivationRequestView);
             }

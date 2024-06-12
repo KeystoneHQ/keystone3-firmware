@@ -33,3 +33,5 @@ use sui_rust_c;
 use tron_rust_c;
 #[cfg(feature = "multi-coins")]
 use xrp_rust_c;
+#[cfg(feature = "multi-coins")]
+use icp_rust_c;

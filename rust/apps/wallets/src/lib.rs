@@ -25,7 +25,7 @@ pub mod solana;
 pub mod sui;
 mod utils;
 pub mod xrp_toolkit;
-
+pub mod icp;
 //TODO: get these value from device
 pub const DEVICE_TYPE: &str = "Keystone 3 Pro";
 pub const DEVICE_VERSION: &str = "1.1.0";

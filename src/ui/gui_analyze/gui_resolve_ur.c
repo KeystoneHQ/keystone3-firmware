@@ -34,6 +34,7 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_XRP, (SetChainDataFunc)GuiSetXrpUrData},
     {REMAPVIEW_AR, (SetChainDataFunc)GuiSetArUrData},
     {REMAPVIEW_AR_MESSAGE, (SetChainDataFunc)GuiSetArUrData},
+    {REMAPVIEW_ICP, (SetChainDataFunc)GuiSetIcpUrData},
 #endif
 };
 
@@ -88,6 +89,6 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
         GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
 #endif
     } else {
-        printf("unhandled viewType=%d\r\n", urViewType.viewType);
+        GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
     }
 }

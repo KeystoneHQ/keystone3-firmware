@@ -8,44 +8,15 @@ pub mod errors;
 pub mod principal;
 pub mod principal_id;
 pub mod types;
+pub mod address;
 
-use crate::account_id::AccountIdentifier;
-use crate::errors::Result;
-use crate::principal_id::PrincipalId;
-use crate::types::ICPPublicKey;
+use crate::errors::{Result};
 use alloc::string::String;
 use alloc::string::ToString;
 use pkcs8::EncodePublicKey;
+use third_party::{hex};
 use third_party::secp256k1::Message;
 use third_party::secp256k1::PublicKey;
-use third_party::hex;
-
-pub fn generate_principal_id(public_key: PublicKey) -> Result<PrincipalId> {
-    let icp_public_key = ICPPublicKey::try_from(public_key)?;
-    let der_public_key = icp_public_key
-        .to_public_key_der()
-        .map_err(|e| errors::ICPError::KeystoreError(format!("Could not convert public key to der: `{}`", e)))?;
-    let principal_id: PrincipalId =
-        PrincipalId::new_self_authenticating(&der_public_key.as_bytes());
-    Ok(principal_id)
-}
-
-pub fn generate_account_id(principal_id: PrincipalId) -> Result<String> {
-    let account_id: AccountIdentifier = AccountIdentifier::new(principal_id.0, None);
-    Ok(account_id.to_hex())
-}
-
-pub fn generate_address(public_key_str: &String) -> Result<String> {
-    let public_key_bytes = hex::decode(public_key_str).map_err(|e| {
-        errors::ICPError::KeystoreError(format!("Could not convert public key from str: `{}`", e))
-    })?;
-    let public_key = PublicKey::from_slice(&public_key_bytes).map_err(|e| {
-        errors::ICPError::KeystoreError(format!("Could not convert publicKey from public str: `{}`", e))
-    })?;
-    let principal_id = generate_principal_id(public_key)?;
-    let account_id = generate_account_id(principal_id)?;
-    Ok(account_id)
-}
 
 pub fn sign(message: Message, hd_path: &String, seed: &[u8]) -> Result<(i32, [u8; 64])> {
     keystore::algorithms::secp256k1::sign_message_by_seed(&seed, hd_path, &message)
@@ -56,54 +27,11 @@ pub fn sign(message: Message, hd_path: &String, seed: &[u8]) -> Result<(i32, [u8
 mod tests {
     use super::*;
 
-    use crate::principal_id::PrincipalId;
-    use crate::types::ICPPublicKey;
-    use alloc::str::FromStr;
     use alloc::string::ToString;
-    use pkcs8::EncodePublicKey;
     use third_party::bitcoin::secp256k1::hashes;
-    use third_party::bitcoin::secp256k1::{ecdsa, Secp256k1, SecretKey};
+    use third_party::bitcoin::secp256k1::{Secp256k1, SecretKey};
     use third_party::cryptoxide::hashing::sha256;
     use third_party::hex;
-    #[test]
-    fn test_public_key_principal_id() {
-        let public_key_bytes = [
-            3, 59, 101, 243, 36, 181, 142, 146, 174, 252, 195, 17, 7, 16, 168, 230, 66, 167, 206,
-            106, 94, 101, 65, 150, 148, 1, 255, 96, 112, 12, 5, 244, 57,
-        ];
-        let public_key = PublicKey::from_slice(&public_key_bytes).unwrap();
-        let principal_id = generate_principal_id(public_key).unwrap();
-        assert_eq!(
-            "7rtqo-ah3ki-saurz-utzxq-o4yhl-so2yx-iardd-mktej-x4k24-ijen6-dae".to_string(),
-            principal_id.0.to_text()
-        );
-    }
-
-    #[test]
-    fn test_from_principal_id_to_account_id() {
-        let principal_id_str = "7rtqo-ah3ki-saurz-utzxq-o4yhl-so2yx-iardd-mktej-x4k24-ijen6-dae";
-        let principal_id = PrincipalId::from_str(&principal_id_str).unwrap();
-        let account_id = generate_account_id(principal_id).unwrap();
-        assert_eq!(
-            "33a807e6078195d2bbe1904b0ed0fc65b8a3a437b43831ccebba2b7b6d393bd6".to_string(),
-            account_id
-        );
-    }
-
-    #[test]
-    fn test_from_public_key_to_address() {
-        let public_key_bytes = [
-            3, 59, 101, 243, 36, 181, 142, 146, 174, 252, 195, 17, 7, 16, 168, 230, 66, 167, 206,
-            106, 94, 101, 65, 150, 148, 1, 255, 96, 112, 12, 5, 244, 57,
-        ];
-        let public_key = PublicKey::from_slice(&public_key_bytes).unwrap();
-        let public_key_str = hex::encode(public_key.serialize());
-        let address = generate_address(&public_key_str).unwrap();
-        assert_eq!(
-            "33a807e6078195d2bbe1904b0ed0fc65b8a3a437b43831ccebba2b7b6d393bd6".to_string(),
-            address
-        );
-    }
 
     #[test]
     fn test_sign_from_seed() {

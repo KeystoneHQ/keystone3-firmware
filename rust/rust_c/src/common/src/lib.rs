@@ -202,7 +202,6 @@ pub extern "C" fn pbkdf2_rust(
     SimpleResponse::success(Box::into_raw(Box::new(output)) as *mut u8).simple_c_ptr()
 }
 
-
 #[no_mangle]
 pub extern "C" fn pbkdf2_rust_64(
     password: PtrBytes,

@@ -23,9 +23,9 @@ pub mod metamask;
 pub mod okx;
 pub mod solana;
 pub mod sui;
+pub mod tonkeeper;
 mod utils;
 pub mod xrp_toolkit;
-pub mod tonkeeper;
 
 //TODO: get these value from device
 pub const DEVICE_TYPE: &str = "Keystone 3 Pro";

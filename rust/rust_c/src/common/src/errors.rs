@@ -18,11 +18,11 @@ use app_solana::errors::SolanaError;
 #[cfg(feature = "multi-coins")]
 use app_sui::errors::SuiError;
 #[cfg(feature = "multi-coins")]
+use app_ton::errors::TonError;
+#[cfg(feature = "multi-coins")]
 use app_tron::errors::TronError;
 #[cfg(feature = "multi-coins")]
 use app_xrp::errors::XRPError;
-#[cfg(feature = "multi-coins")]
-use app_ton::errors::TonError;
 use keystore::errors::KeystoreError;
 use third_party::thiserror;
 use third_party::thiserror::Error;

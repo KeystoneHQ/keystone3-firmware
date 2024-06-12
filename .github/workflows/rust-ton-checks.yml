@@ -1,9 +1,9 @@
 on:
   pull_request:
     paths:
-      - rust/apps/cardano/**
+      - rust/apps/ton/**
 
-name: Cardano Checks
+name: TON Checks
 
 jobs:
   UnitTest:
@@ -23,5 +23,5 @@ jobs:
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
 
-      - name: Run rust/apps/cardano
-        run: cd rust/apps/cardano && cargo +nightly-2023-06-26 llvm-cov --fail-under-functions 50 --fail-under-lines 50 --fail-under-regions 50
+      - name: Run rust/apps/ton
+        run: cd rust/apps/ton && cargo +nightly-2023-06-26 llvm-cov --fail-under-functions 50 --fail-under-lines 50 --fail-under-regions 50

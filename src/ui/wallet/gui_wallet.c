@@ -413,8 +413,8 @@ UREncodeResult *GuiGetKeystoneWalletData(void)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    //   btc 4
-    // + eth 10
+    //   btc 3
+    // + eth 1
     // + bch 1
     // + dash 1
     // + dot 1
@@ -422,16 +422,11 @@ UREncodeResult *GuiGetKeystoneWalletData(void)
     // + trx 1
     // + xrp 1
 
-    // total xpub = 18
-    uint8_t XPUB_AMMOUNT = 7;
+    // total xpub = 9
+    uint8_t XPUB_AMMOUNT = 9;
     ExtendedPublicKey keys[XPUB_AMMOUNT];
     public_keys->data = keys;
     public_keys->size = XPUB_AMMOUNT;
-//    for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
-//        keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = SRAM_MALLOC(BUFFER_SIZE_64);
-//        snprintf_s(keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path, BUFFER_SIZE_64, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
-//        keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].xpub = GetCurrentAccountPublicKey(i);
-//    }
 
     keys[0].path = "m/44'/0'/0'";
     keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
@@ -441,10 +436,6 @@ UREncodeResult *GuiGetKeystoneWalletData(void)
 
     keys[2].path = "m/84'/0'/0'";
     keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
-
-//    keys[13].path = "m/86'/0'/0'";
-//    keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
-//
 
     keys[3].path = GetXPubPath(XPUB_TYPE_BCH);
     keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
@@ -458,6 +449,12 @@ UREncodeResult *GuiGetKeystoneWalletData(void)
 
     keys[6].path = GetXPubPath(XPUB_TYPE_TRX);
     keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
+
+    keys[7].path = GetXPubPath(XPUB_TYPE_XRP);
+    keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
+
+    keys[8].path = GetXPubPath(XPUB_TYPE_ETH_BIP44_STANDARD);
+    keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
 
 
 

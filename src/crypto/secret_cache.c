@@ -48,7 +48,7 @@ uint8_t *SecretCacheGetWalletIconIndex()
 
 void SecretCacheSetWalletName(char* walletName)
 {
-    if(g_walletName) {
+    if (g_walletName) {
         SRAM_FREE(g_walletName);
     }
     g_walletName = SRAM_MALLOC(17);
@@ -240,7 +240,7 @@ void ClearSecretCache(void)
         g_mnemonicCache = NULL;
     }
 
-    if(g_walletName != NULL) {
+    if (g_walletName != NULL) {
         SRAM_FREE(g_walletName);
         g_walletName = NULL;
     }

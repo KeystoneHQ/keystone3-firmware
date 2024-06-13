@@ -218,7 +218,8 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
     }
 }
 
-void CalculateTonChecksum(uint8_t *entropy, char* output) {
+void CalculateTonChecksum(uint8_t *entropy, char* output)
+{
     uint8_t checksum[32];
     sha256((struct sha256 *)checksum, entropy, 64);
     memcpy_s(output, 32, checksum, 32);
@@ -259,10 +260,9 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
         for (int i = 0; i < count; i++) {
             jsonItem = cJSON_CreateObject();
             cJSON_AddItemToObject(jsonItem, "firstRecv", cJSON_CreateBool(false));
-            if(!strcmp(walletList[i].name, "TON") && isTon) {
+            if (!strcmp(walletList[i].name, "TON") && isTon) {
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
-            }
-            else if ((!strcmp(walletList[i].name, "BTC") || !strcmp(walletList[i].name, "ETH")) && !isTon) {
+            } else if ((!strcmp(walletList[i].name, "BTC") || !strcmp(walletList[i].name, "ETH")) && !isTon) {
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
             } else {
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(false));
@@ -469,8 +469,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             g_accountPublicInfo[PUBLIC_INFO_TON_CHECKSUM].value = SRAM_MALLOC(65);
             char* ptr = g_accountPublicInfo[PUBLIC_INFO_TON_CHECKSUM].value;
             memset_s(ptr, 65, 0, 65);
-            for (size_t i = 0; i < 32; i++)
-            {
+            for (size_t i = 0; i < 32; i++) {
                 snprintf_s(ptr, 65, "%s%02x", ptr, checksum[i]);
             }
         } else {
@@ -480,7 +479,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                     break;
                 }
                 // do not generate public keys for ton wallet;
-                if(g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
+                if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
                     continue;
                 }
 
@@ -492,7 +491,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 // printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
                 ASSERT(xPubResult->data);
                 g_accountPublicInfo[i].value = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
-                strcpy_s(g_accountPublicInfo[i].value,strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN)+1, xPubResult->data);
+                strcpy_s(g_accountPublicInfo[i].value, strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1, xPubResult->data);
                 // printf("xPubResult=%s\r\n", xPubResult->data);
                 free_simple_response_c_char(xPubResult);
             }
@@ -586,7 +585,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     bool isBip39 = mnemonicType == MNEMONIC_TYPE_BIP39;
 
     //TON Wallet doesn't support passphrase so we dont need to consider it.
-    if(isTon) {
+    if (isTon) {
         ASSERT(false);
     }
 
@@ -629,7 +628,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             if (isSlip39 && g_chainTable[i].cryptoKey == BIP32_ED25519) {
                 continue;
             }
-            if(g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
+            if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
                 continue;
             }
 
@@ -729,10 +728,9 @@ uint8_t SpecifiedXPubExist(const char *value, bool isTon)
             if (keyJson == NULL) {
                 break;
             }
-            if(!isTon) {
+            if (!isTon) {
                 chainJson = cJSON_GetObjectItem(keyJson, g_chainTable[0].name);
-            }
-            else {
+            } else {
                 chainJson = cJSON_GetObjectItem(keyJson, g_chainTable[PUBLIC_INFO_TON_CHECKSUM].name);
             }
             if (chainJson == NULL) {

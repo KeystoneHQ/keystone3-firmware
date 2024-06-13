@@ -4,7 +4,6 @@
 #include "stdint.h"
 #include "stdbool.h"
 
-#if 0
 typedef int32_t (*BackgroundAsyncFunc_t)(const void *inData, uint32_t inDataLen);
 typedef void *(*BackgroundAsyncRunnable_t)(void);
 typedef int32_t (*BackgroundAsyncFuncWithRunnable_t)(const void *inData, uint32_t inDataLen, BackgroundAsyncRunnable_t runnable);
@@ -29,5 +28,5 @@ int32_t AsyncExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t in
 int32_t AsyncExecuteWithPtr(BackgroundAsyncFunc_t func, const void *inData);
 int32_t AsyncDelayExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t inDataLen, uint32_t delay);
 int32_t AsyncExecuteRunnable(BackgroundAsyncFuncWithRunnable_t func, const void *inData, uint32_t inDataLen, BackgroundAsyncRunnable_t runnable);
-#endif
+
 #endif

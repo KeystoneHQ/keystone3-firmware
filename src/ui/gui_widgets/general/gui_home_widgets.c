@@ -102,6 +102,8 @@ static void GuiInitWalletState()
         for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
             g_walletState[i].enable = true;
         }
+        g_walletState[HOME_WALLET_CARD_BNB].enable = false;
+        g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = false;
         g_walletState[HOME_WALLET_CARD_TON].enable = false;
         break;
@@ -109,6 +111,8 @@ static void GuiInitWalletState()
         for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
             g_walletState[i].enable = true;
         }
+        g_walletState[HOME_WALLET_CARD_BNB].enable = false;
+        g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = true;
         g_walletState[HOME_WALLET_CARD_TON].enable = false;
         break;

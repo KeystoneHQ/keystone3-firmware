@@ -60,6 +60,8 @@ static lv_obj_t *g_waitAnimCont;
 static GUI_VIEW *g_prevView;
 static bool g_isForgetPass = false;
 
+static void CloseCurrentParentAndCloseViewHandler(lv_event_t *e);
+
 bool GuiIsForgetPass(void)
 {
     if (g_isForgetPass) {
@@ -503,4 +505,14 @@ void GuiForgetPassRefresh(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, StopCreateViewHandler, NULL);
     }
     GUI_DEL_OBJ(g_noticeWindow)
+}
+
+static void CloseCurrentParentAndCloseViewHandler(lv_event_t *e)
+{
+    static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
+    GuiCLoseCurrentWorkingView();
+    GuiLockScreenFpRecognize();
+    GuiLockScreenTurnOn(&single);
+    ResetSuccess();
+    GuiModelWriteLastLockDeviceTime(0);
 }

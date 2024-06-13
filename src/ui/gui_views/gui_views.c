@@ -131,17 +131,6 @@ void CloseCurrentUserDataHandler(lv_event_t *e)
     GuiEmitSignal(GUI_EVENT_REFRESH, NULL, 0);
 }
 
-void CloseCurrentParentAndCloseViewHandler(lv_event_t *e)
-{
-    static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
-    lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
-    GuiCLoseCurrentWorkingView();
-    GuiLockScreenFpRecognize();
-    GuiLockScreenTurnOn(&single);
-    ResetSuccess();
-    GuiModelWriteLastLockDeviceTime(0);
-}
-
 void CloseWaringPageHandler(lv_event_t *e)
 {
     lv_obj_del(lv_event_get_user_data(e));

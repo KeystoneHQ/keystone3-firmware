@@ -72,6 +72,8 @@ static void GuiTransactionSignatureNVSBarInit()
 #ifndef BTC_ONLY
     if (IsMessageType(g_viewType)) {
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_broadcast_message"));
+    } else if (isTonSignProof(g_viewType)) {
+        SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("ton_sign_proof_title"));
     } else {
 #endif
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);

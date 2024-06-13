@@ -49,7 +49,7 @@ pub extern "C" fn get_keystone_wallet_ur(
                     Ok(data) => match data.try_into() {
                         Ok(_v) => UREncodeResult::encode(
                             _v,
-                            CryptoMultiAccounts::get_registry_type().get_type(),
+                            "BYTES".to_string(),
                             FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
                         )
                         .c_ptr(),

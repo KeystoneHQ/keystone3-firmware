@@ -5,6 +5,7 @@
 #include "cryptoauthlib.h"
 #include "assert.h"
 #include "drv_trng.h"
+#include "drv_mpu.h"
 
 //START: Atecc608b
 int32_t SE_EncryptWrite(uint8_t slot, uint8_t block, const uint8_t *data)
@@ -29,7 +30,9 @@ int32_t SE_DeriveKey(uint8_t slot, const uint8_t *authKey)
 //START: DS28S60
 int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
 {
-    return DS28S60_HmacEncryptRead(data, page);
+    printf("%s %d.\n", __func__, __LINE__);
+    int32_t ret = DS28S60_HmacEncryptRead(data, page);
+    return ret;
 }
 
 int32_t SE_GetDS28S60Rng(uint8_t *rngArray, uint32_t num)

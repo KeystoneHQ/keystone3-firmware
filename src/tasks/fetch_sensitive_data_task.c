@@ -123,7 +123,7 @@ static void FetchSensitiveDataTask(void *argument)
         break;
         case SENSITIVE_MSG_EXECUTE_RUNNABLE: {
             if (rcvMsg.buffer == NULL || rcvMsg.length != sizeof(BackgroundRunnable_t)) {
-                printf("rcv BACKGROUND_MSG_EXECUTE_RUNNABLE err,rcvMsg.buffer=0x%08X,rcvMsg.length=%d\r\n", rcvMsg.buffer, rcvMsg.length);
+                printf("rcv SENSITIVE_MSG_EXECUTE_RUNNABLE err,rcvMsg.buffer=0x%08X,rcvMsg.length=%d\r\n", rcvMsg.buffer, rcvMsg.length);
                 break;
             }
             BackgroundRunnable_t *async_r = (BackgroundRunnable_t *)rcvMsg.buffer;
@@ -135,10 +135,6 @@ static void FetchSensitiveDataTask(void *argument)
             if (shouldClean) {
                 SRAM_FREE(async_r->inData);
             }
-        }
-        break;
-        case SENSITIVE_MSG_TEST: {
-            printf("sensitive test\r\n");
         }
         break;
         default:

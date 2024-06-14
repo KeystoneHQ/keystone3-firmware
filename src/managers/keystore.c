@@ -27,8 +27,7 @@
 #include "assert.h"
 #include "secret_cache.h"
 #ifndef COMPILE_SIMULATOR
-#include "safe_mem_lib.h"
-#include "safe_str_lib.h"
+#include "drv_mpu.h"
 #else
 #include "simulator_model.h"
 #include "simulator_storage.h"
@@ -180,7 +179,9 @@ int32_t GetAccountEntropy(uint8_t accountIndex, uint8_t *entropy, uint8_t *entro
     AccountSecret_t accountSecret;
 
     ASSERT(accountIndex <= 2);
+    MpuSetOtpProtection(false);
     ret = LoadAccountSecret(accountIndex, &accountSecret, password);
+    MpuSetOtpProtection(true);
     if (ret == SUCCESS_CODE) {
         memcpy_s(entropy, ENTROPY_MAX_LEN, accountSecret.entropy, ENTROPY_MAX_LEN);
         *entropyLen = accountSecret.entropyLen;

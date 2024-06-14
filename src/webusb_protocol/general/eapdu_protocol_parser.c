@@ -6,11 +6,13 @@
 #include "data_parser_task.h"
 #include "user_msg.h"
 #include "user_memory.h"
+#include "gui_views.h"
 #include "eapdu_services/service_resolve_ur.h"
 #include "eapdu_services/service_check_lock.h"
 #include "eapdu_services/service_echo_test.h"
 #include "eapdu_services/service_export_address.h"
 #include "eapdu_services/service_trans_usb_pubkey.h"
+#include "eapdu_services/service_get_device_info.h"
 
 static ProtocolSendCallbackFunc_t g_sendFunc = NULL;
 static struct ProtocolParser *global_parser = NULL;
@@ -125,6 +127,8 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
     case CMD_GET_DEVICE_USB_PUBKEY:
         GetDeviceUsbPubkeyService(request);
         break;
+    case CMD_GET_DEVICE_INFO:
+        GetDeviceInfoService(request);
     default:
         printf("Invalid command: %u\n", request->commandType);
         break;
@@ -250,14 +254,13 @@ struct ProtocolParser *NewEApduProtocolParser()
 void GotoResultPage(EAPDUResultPage_t *resultPageParams)
 {
     if (resultPageParams != NULL) {
-        ExportAddressApprove();
-        // if (GuiCheckIfTopView(&g_USBTransportView)) {
-        //     return;
-        // }
-        // if (resultPageParams == NULL) {
-        //     PubValueMsg(UI_MSG_USB_TRANSPORT_VIEW, 0);
-        // } else {
-        //     PubBufferMsg(UI_MSG_USB_TRANSPORT_VIEW, resultPageParams, sizeof(EAPDUResultPage_t));
-        // }
+        if (GuiCheckIfTopView(&g_USBTransportView)) {
+            return;
+        }
+        if (resultPageParams == NULL) {
+            PubValueMsg(UI_MSG_USB_TRANSPORT_VIEW, 0);
+        } else {
+            PubBufferMsg(UI_MSG_USB_TRANSPORT_VIEW, resultPageParams, sizeof(EAPDUResultPage_t));
+        }
     }
 }

@@ -17,10 +17,7 @@
 #include "simulator_mock_define.h"
 #else
 #include "safe_str_lib.h"
-#endif
-
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
+#include "drv_mpu.h"
 #endif
 
 #define SHA256_COUNT                            3
@@ -266,6 +263,7 @@ bool VerifyWalletDataHash(uint8_t index, uint8_t *info)
 
     ASSERT(index <= 2);
 
+    MpuSetOtpProtection(false);
     ret = SE_HmacEncryptRead(data, PAGE_WALLET1_PUB_KEY_HASH + index);
     if (ret == SUCCESS_CODE && !memcmp(data, info, 32)) {
         return true;
@@ -277,6 +275,7 @@ bool VerifyWalletDataHash(uint8_t index, uint8_t *info)
             return false;
         }
     }
+    MpuSetOtpProtection(true);
 }
 
 int32_t SetMultisigDataHash(uint8_t index, uint8_t *info)
@@ -334,7 +333,10 @@ int32_t SetFpCommAesKey(const uint8_t *aesKey)
 /// @return err code.
 int32_t GetFpCommAesKey(uint8_t *aesKey)
 {
-    return SE_HmacEncryptRead(aesKey, PAGE_PF_AES_KEY);
+    MpuSetOtpProtection(false);
+    int32_t ret = SE_HmacEncryptRead(aesKey, PAGE_PF_AES_KEY);
+    MpuSetOtpProtection(true);
+    return ret;
 }
 
 /// @brief Set the fingerprint reset AES key.
@@ -360,24 +362,11 @@ bool FpAesKeyExist()
     uint8_t key[32];
     bool ret;
 
+    MpuSetOtpProtection(false);
     if (SE_HmacEncryptRead(key, PAGE_PF_AES_KEY) != SUCCESS_CODE) {
         return false;
     }
-    ret = CheckEntropy(key, 32);
-    CLEAR_ARRAY(key);
-    return ret;
-}
-
-/// @brief Get whether the fingerprint reset key exists.
-/// @return true - exists.
-bool FpResetKeyExist()
-{
-    uint8_t key[32];
-    bool ret;
-
-    if (SE_HmacEncryptRead(key, PAGE_PF_RESET_KEY) != SUCCESS_CODE) {
-        return false;
-    }
+    MpuSetOtpProtection(true);
     ret = CheckEntropy(key, 32);
     CLEAR_ARRAY(key);
     return ret;

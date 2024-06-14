@@ -1,14 +1,15 @@
-#include "gui.h"
+#include "define.h"
 #include "service_check_lock.h"
 #include "user_memory.h"
-#include "gui_lock_widgets.h"
 
-void CheckDeviceLockStatusService(EAPDURequestPayload_t *payload)
+void GetDeviceInfoService(EAPDURequestPayload_t *payload)
 {
+    char version[BUFFER_SIZE_32] = {0};
+    GetUpdateVersionNumber(version);
     EAPDUResponsePayload_t *result = (EAPDUResponsePayload_t *)SRAM_MALLOC(sizeof(EAPDUResponsePayload_t));
 
     cJSON *root = cJSON_CreateObject();
-    cJSON_AddBoolToObject(root, "payload", GuiLockScreenIsTop());
+    cJSON_AddStringToObject(root, "payload", version);
     char *json_str = cJSON_Print(root);
     cJSON_Delete(root);
     result->data = (uint8_t *)json_str;

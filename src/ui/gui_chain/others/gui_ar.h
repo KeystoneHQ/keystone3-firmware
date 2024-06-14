@@ -27,5 +27,7 @@ void GetArweaveRawMessage(void *indata, void *param, uint32_t maxLen);
 void GetArweaveMessageAddress(void *indata, void *param, uint32_t maxLen);
 bool IsArweaveSetupComplete(void);
 UREncodeResult *GuiGetArweaveSignQrCodeData(void);
+void GuiArDataItemOverview(lv_obj_t *parent, void *totalData);
+void GuiArDataItemDetail(lv_obj_t *parent, void *totalData);
 
 #endif

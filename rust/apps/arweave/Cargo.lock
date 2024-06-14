@@ -9,6 +9,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aae1277d39aeec15cb388266ecc24b11c80469deae6067e17a1a7aa9e5c1f234"
 
 [[package]]
+name = "aes"
+version = "0.8.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b169f7a6d4742236a0a00c541b845991d0ac43e546831af1249753ab4c3aa3a0"
+dependencies = [
+ "cfg-if",
+ "cipher",
+ "cpufeatures",
+]
+
+[[package]]
 name = "ahash"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -26,12 +37,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7de8ce5e0f9f8d88245311066a578d72b7af3e7088f32783804676302df237e4"
 
 [[package]]
-name = "app_near"
+name = "app_arweave"
 version = "0.1.0"
 dependencies = [
+ "aes",
  "app_utils",
+ "cbc",
+ "cipher",
  "keystore",
  "rand_chacha",
+ "rust_tools",
+ "serde",
  "sha2 0.10.7",
  "third_party",
 ]
@@ -165,6 +181,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "block-padding"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8894febbff9f758034a5b8e12d87918f56dfc64a8e1fe757d65e29041538d93"
+dependencies = [
+ "generic-array",
+]
+
+[[package]]
 name = "bs58"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -186,6 +211,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "89b2fd2a0dcf38d7971e2194b6b6eebab45ae01067456a7fd93d5547a61b70be"
 
 [[package]]
+name = "cbc"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26b52a9543ae338f279b96b0b9fed9c8093744685043739079ce85cd58f289a6"
+dependencies = [
+ "cipher",
+]
+
+[[package]]
 name = "cc"
 version = "1.0.79"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -196,6 +230,16 @@ name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
+
+[[package]]
+name = "cipher"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "773f3b9af64447d2ce9850330c473515014aa235e6a783b02db81ff39e4a3dad"
+dependencies = [
+ "crypto-common",
+ "inout",
+]
 
 [[package]]
 name = "const-oid"
@@ -429,6 +473,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "inout"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a0c10553d664a4d0bcff9f4215d0aac67a639cc68ef660840afe309b807bc9f5"
+dependencies = [
+ "block-padding",
+ "generic-array",
+]
+
+[[package]]
 name = "instant"
 version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -470,6 +524,7 @@ dependencies = [
  "arrayref",
  "cstr_core",
  "cty",
+ "num-bigint-dig",
  "rand_chacha",
  "rust_tools",
  "sha2 0.10.7",
@@ -911,7 +966,7 @@ version = "0.28.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d24b59d129cdadea20aea4fb2352fa053712e5d713eee47d700cd4b2bc002f10"
 dependencies = [
- "bitcoin_hashes 0.12.0",
+ "bitcoin_hashes 0.13.0",
  "secp256k1-sys",
 ]
 
@@ -1088,6 +1143,7 @@ dependencies = [
  "hex",
  "itertools",
  "rsa",
+ "serde",
  "serde_json",
  "sha1",
  "thiserror-core",
@@ -1149,7 +1205,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.22#378bf68a82ff0aba4d503d7cfc85bce813ced1f6"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.24#d8f14b6c69641e5dc0af850895e89c1240c35e42"
 dependencies = [
  "hex",
  "ur",
@@ -1159,7 +1215,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.22#378bf68a82ff0aba4d503d7cfc85bce813ced1f6"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.24#d8f14b6c69641e5dc0af850895e89c1240c35e42"
 dependencies = [
  "bs58",
  "core2",

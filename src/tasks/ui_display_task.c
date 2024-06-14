@@ -12,6 +12,7 @@
 #include "user_memory.h"
 #include "gui_chain.h"
 #include "drv_lcd_bright.h"
+#include "drv_mpu.h"
 #include "device_setting.h"
 #include "anti_tamper.h"
 #include "screenshot.h"
@@ -103,10 +104,15 @@ static void UiDisplayTask(void *argument)
     printf("start ui display loop\r\n");
     printf("LV_HOR_RES=%d,LV_VER_RES=%d\r\n", LV_HOR_RES, LV_VER_RES);
     g_reboot = true;
+    bool isTampered = Tampered();
     LanguageInit();
-    GuiFrameOpenView(&g_initView);
+    if (isTampered) {
+        GuiFrameOpenViewWithParam(&g_initView, &isTampered, sizeof(isTampered));
+    } else {
+        GuiFrameOpenView(&g_initView);
+    }
     SetLcdBright(GetBright());
-    // MpuInit();
+    MpuInit();
 
     while (1) {
         RefreshLvglTickMode();

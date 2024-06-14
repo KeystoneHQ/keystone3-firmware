@@ -31,6 +31,7 @@ static PublicInfo_t g_publicInfo = {0};
 /// @return err code.
 static int32_t ReadCurrentAccountInfo(void)
 {
+    printf("current task = %s\r\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     uint8_t accountIndex, param[32];
     AccountInfo_t *pAccountInfo = (AccountInfo_t *)param;
     int32_t ret;
@@ -272,6 +273,9 @@ int32_t GetExistAccountNum(uint8_t *accountNum)
     return SUCCESS_CODE;
 #endif
 
+    printf("%s %d..\n", __func__, __LINE__);
+    printf("pcTaskGetName(xTaskGetCurrentTaskHandle())) = %s.\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+    MpuSetOtpProtection(false);
     for (uint8_t i = 0; i < 3; i++) {
         ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
         CHECK_ERRCODE_BREAK("read iv", ret);
@@ -283,6 +287,7 @@ int32_t GetExistAccountNum(uint8_t *accountNum)
     if (ret == SUCCESS_CODE) {
         *accountNum = count;
     }
+    MpuSetOtpProtection(true);
 
     return ret;
 }

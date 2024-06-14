@@ -40,10 +40,10 @@ static int32_t GuiInitViewInit(void *param)
     GuiStyleInit();
     GuiStatusBarInit();
     GlobalResourcesInit();
-    if (GetFactoryResult() == false) {
-        GuiFrameOpenView(&g_inactiveView);
-        return SUCCESS_CODE;
-    }
+    // if (GetFactoryResult() == false) {
+    //     GuiFrameOpenView(&g_inactiveView);
+    //     return SUCCESS_CODE;
+    // }
     if (isTamper) {
         GuiFrameOpenView(&g_selfDestructView);
         return SUCCESS_CODE;

@@ -12,6 +12,11 @@
 #include "user_memory.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_storage.h"
+#include "simulator_storage.h"
+#else
+#include "drv_otp.h"
+#include "drv_mpu.h"
+#include "safe_str_lib.h"
 #endif
 
 typedef struct {
@@ -275,7 +280,6 @@ int32_t GetExistAccountNum(uint8_t *accountNum)
 
     printf("%s %d..\n", __func__, __LINE__);
     printf("pcTaskGetName(xTaskGetCurrentTaskHandle())) = %s.\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
-    MpuSetOtpProtection(false);
     for (uint8_t i = 0; i < 3; i++) {
         ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
         CHECK_ERRCODE_BREAK("read iv", ret);
@@ -287,7 +291,6 @@ int32_t GetExistAccountNum(uint8_t *accountNum)
     if (ret == SUCCESS_CODE) {
         *accountNum = count;
     }
-    MpuSetOtpProtection(true);
 
     return ret;
 }

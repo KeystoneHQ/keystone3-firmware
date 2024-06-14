@@ -49,8 +49,6 @@ void UserMsgInit(void)
     SubMessageID(UI_MSG_OPEN_VIEW, g_uiQueue);
     SubMessageID(UI_MSG_CLOSE_VIEW, g_uiQueue);
 
-    SubMessageID(BACKGROUND_MSG_EXECUTE, g_backgroundQueue);
-    SubMessageID(BACKGROUND_MSG_EXECUTE_RUNNABLE, g_backgroundQueue);
     SubMessageID(BACKGROUND_MSG_MINUTE, g_backgroundQueue);
     SubMessageID(BACKGROUND_MSG_CHANGER_INSERT, g_backgroundQueue);
     SubMessageID(BACKGROUND_MSG_RESET, g_backgroundQueue);
@@ -75,5 +73,4 @@ void UserMsgInit(void)
 
     SubMessageID(SENSITIVE_MSG_EXECUTE, g_sensitiveQueue);
     SubMessageID(SENSITIVE_MSG_EXECUTE_RUNNABLE, g_sensitiveQueue);
-    SubMessageID(SENSITIVE_MSG_TEST, g_sensitiveQueue);
 }

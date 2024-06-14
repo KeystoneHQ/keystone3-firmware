@@ -29,6 +29,8 @@
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #include "simulator_storage.h"
+#else
+#include "drv_mpu.h"
 #endif
 #define KEYSTORE_DEBUG          0
 
@@ -176,8 +178,10 @@ int32_t GetAccountEntropy(uint8_t accountIndex, uint8_t *entropy, uint8_t *entro
     AccountSecret_t accountSecret;
 
     ASSERT(accountIndex <= 2);
+    MpuSetOtpProtection(false);
     ret = LoadAccountSecret(accountIndex, &accountSecret, password);
     MnemonicType mnemonicType = GetMnemonicType();
+    MpuSetOtpProtection(true);
     if (ret == SUCCESS_CODE) {
         if (mnemonicType == MNEMONIC_TYPE_TON) {
             memcpy_s(entropy, ENTROPY_MAX_LEN, accountSecret.entropy, ENTROPY_MAX_LEN);

@@ -31,10 +31,12 @@ pub fn sign_data(
             entropy, passphrase,
         )
         .map_err(|e| CardanoError::SigningFailed(e.to_string()))?;
-    let bip32_signing_key = keystore::algorithms::ed25519::bip32_ed25519::derive_extended_privkey_by_xprv(
-        &icarus_master_key,
-        path,
-    ).unwrap();
+    let bip32_signing_key =
+        keystore::algorithms::ed25519::bip32_ed25519::derive_extended_privkey_by_xprv(
+            &icarus_master_key,
+            path,
+        )
+        .unwrap();
     let signed_data = bip32_signing_key.sign::<Vec<u8>>(&hex::decode(payload).unwrap());
     let pub_key = bip32_signing_key.public().to_string();
     Ok(SignDataResult::new(pub_key, signed_data.to_string()))

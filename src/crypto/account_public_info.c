@@ -476,7 +476,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
                 // slip39 wallet does not support ADA
                 if (isSlip39 && g_chainTable[i].cryptoKey == BIP32_ED25519) {
-                    break;
+                    continue;
                 }
                 // do not generate public keys for ton wallet;
                 if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {

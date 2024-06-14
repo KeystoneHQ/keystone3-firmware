@@ -56,6 +56,11 @@ impl_public_struct!(ParsedCardanoTx {
     auxiliary_data: Option<String>
 });
 
+impl_public_struct!(SignDataResult {
+    pub_key: String,
+    signature: String
+});
+
 impl_public_struct!(CardanoCertificate {
     cert_type: String,
     address: String,

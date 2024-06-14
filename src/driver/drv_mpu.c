@@ -63,11 +63,18 @@ void MpuSetProtection(uint32_t baseAddress, uint32_t regionSize, uint32_t region
 
 void MpuInit(void)
 {
+    MpuSetOtpProtection(true);
+}
+
+void MpuSetOtpProtection(bool noAccess)
+{
+    return;
+    uint8_t accessPermission = noAccess ? MPU_REGION_NO_ACCESS : MPU_REGION_FULL_ACCESS;
     MpuSetProtection(OTP_ADDR_BASE,
                      MPU_REGION_SIZE_1KB,
                      MPU_REGION_NUMBER1,
                      MPU_INSTRUCTION_ACCESS_DISABLE,
-                     MPU_REGION_NO_ACCESS,
+                     accessPermission,
                      MPU_ACCESS_SHAREABLE,
                      MPU_ACCESS_CACHEABLE,
                      MPU_ACCESS_BUFFERABLE);

@@ -551,10 +551,6 @@ static void CoinDealHandler(lv_event_t *e)
         GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_ARWEAVE: {
-#ifdef COMPILE_SIMULATOR
-        GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);
-        break;
-#endif
         bool shouldGenerateArweaveXPub = IsArweaveSetupComplete();
         if (!shouldGenerateArweaveXPub) {
             GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);

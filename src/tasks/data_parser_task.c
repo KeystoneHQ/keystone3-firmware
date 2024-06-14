@@ -233,9 +233,38 @@ static void DataParserTask(void *argument)
     }
 }
 
+#define SCB_CFSR (*((volatile uint32_t *)0xE000ED28))
+#define SCB_HFSR (*((volatile uint32_t *)0xE000ED2C))
+#define SCB_MMFAR (*((volatile uint32_t *)0xE000ED34))
+
 void MemManage_Handler(void)
 {
-    printf("MPU error , address[0x%08x] is protected!\n", g_dataParserCache);
-    UserDelay(1000 * 5);
-    NVIC_SystemReset();
+    uint32_t cfsr = SCB_CFSR;  // 读取CFSR寄存器
+    uint32_t mmfar = SCB_MMFAR; // 读取MMFAR寄存器
+
+    // 检查CFSR中的内存管理错误位
+    if (cfsr & (1 << 0)) {
+        // MMARVALID 位被设置，表示 MMFAR 包含有效的错误地址
+        uint32_t fault_address = mmfar;
+        
+        // 在此处处理错误地址，例如记录日志、重启系统等
+        printf("Memory management fault at address: 0x%08X\n", fault_address);
+    }
+
+    // 检查其他内存管理错误位，并进行相应的处理
+    if (cfsr & (1 << 1)) {
+        // Data Access Violation
+    }
+    if (cfsr & (1 << 3)) {
+        // Unstacking Error
+    }
+    if (cfsr & (1 << 4)) {
+        // Stacking Error
+    }
+    if (cfsr & (1 << 5)) {
+        // Lazy FP State Preservation Error
+    }
+
+    *(uint32_t *)0 = 123;
+    // NVIC_SystemReset();
 }

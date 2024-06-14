@@ -206,8 +206,10 @@ int32_t SetFpStateInfo(uint8_t *info)
     uint8_t data[32] = {0};
     int32_t ret;
 
+    MpuSetOtpProtection(false);
     memcpy(data, info, 32);
     ret = SE_HmacEncryptWrite(data, PAGE_PF_INFO);
+    MpuSetOtpProtection(true);
     return ret;
 }
 
@@ -218,10 +220,12 @@ int32_t GetFpStateInfo(uint8_t *info)
 {
     uint8_t data[32];
     int32_t ret;
+    MpuSetOtpProtection(false);
 
     ret = SE_HmacEncryptRead(data, PAGE_PF_INFO);
     CHECK_ERRCODE_RETURN_INT(ret);
     memcpy(info, data, 32);
+    MpuSetOtpProtection(true);
     return ret;
 }
 

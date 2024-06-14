@@ -14,6 +14,7 @@ int32_t WriteOtpData(uint32_t addr, const uint8_t *data, uint32_t len)
 {
     int32_t ret;
     ASSERT(len <= 256);
+    printf("%s %d..\n", __func__, __LINE__);
     OTP_PowerOn();
     OTP_Unlock();
     OTP_UnProtect(addr);
@@ -36,6 +37,7 @@ int32_t WriteTamperFlag(void)
 bool ReadTamperFlag(void)
 {
     uint32_t flag;
+    printf("%s %d..\n", __func__, __LINE__);
     OTP_PowerOn();
     memcpy(&flag, (uint8_t *)OTP_ADDR_TAMPER, sizeof(flag));
     if (CheckEntropy((uint8_t *)&flag, sizeof(flag)) == false) {

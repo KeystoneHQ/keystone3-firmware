@@ -27,8 +27,13 @@
 #else
 #endif
 
-static int32_t GuiInitViewInit(void)
+static int32_t GuiInitViewInit(void *param)
 {
+    bool isTamper = false;
+    if (param != NULL) {
+        isTamper = *(bool *)param;
+    }
+    printf("isTamper=%d..........\n", isTamper);
     GuiEnterPassLabelRefresh();
     GuiStyleInit();
     GuiStatusBarInit();
@@ -37,7 +42,7 @@ static int32_t GuiInitViewInit(void)
         GuiFrameOpenView(&g_inactiveView);
         return SUCCESS_CODE;
     }
-    if (Tampered()) {
+    if (isTamper) {
         GuiFrameOpenView(&g_selfDestructView);
         return SUCCESS_CODE;
     }
@@ -55,7 +60,7 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiInitViewInit();
+        return GuiInitViewInit(param);
     case GUI_EVENT_OBJ_DEINIT:
         printf("init view should not be closed");
         break;

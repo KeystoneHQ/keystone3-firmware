@@ -29,5 +29,7 @@ void GetStringValue(const cJSON *obj, const char *key, char *value, uint32_t max
 bool GetBoolValue(const cJSON *obj, const char *key, bool defaultValue);
 void CutAndFormatString(char *out, uint32_t maxLen, const char *string, uint32_t targetLen);
 void CutAndFormatFileName(char *out, uint32_t maxLen, const char *fileName, const char *contain);
+uint16_t extract_16bit_value(const uint8_t *frame, int offset);
+void insert_16bit_value(uint8_t *frame, int offset, uint16_t value);
 
 #endif /* _USER_UTILS_H */

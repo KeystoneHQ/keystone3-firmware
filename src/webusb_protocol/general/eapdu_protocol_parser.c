@@ -36,17 +36,6 @@ typedef enum {
     FRAME_CHECKSUM_OK,
 } ParserStatusEnum;
 
-static uint16_t extract_16bit_value(const uint8_t *frame, int offset)
-{
-    return ((uint16_t)frame[offset] << 8) | frame[offset + 1];
-}
-
-static void insert_16bit_value(uint8_t *frame, int offset, uint16_t value)
-{
-    frame[offset] = (uint8_t)(value >> 8);
-    frame[offset + 1] = (uint8_t)(value & 0xFF);
-}
-
 static uint16_t PadBuffer(unsigned char *buffer, uint16_t length)
 {
     uint16_t padding_length = 16 - (length % 16);

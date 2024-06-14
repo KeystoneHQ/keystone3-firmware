@@ -41,6 +41,7 @@
 #include "mhscpu_qspi.h"
 #include "safe_mem_lib.h"
 #include "usb_task.h"
+#include "drv_mpu.h"
 #else
 #include "simulator_model.h"
 #endif
@@ -346,7 +347,9 @@ static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
     uint32_t mnemonicNum, entropyLen;
     mnemonicNum = *((uint32_t *)inData);
     entropyLen = (mnemonicNum == 24) ? 32 : 16;
+    MpuSetOtpProtection(false);
     GenerateEntropy(entropy, entropyLen, SecretCacheGetNewPassword());
+    MpuSetOtpProtection(true);
     SecretCacheSetEntropy(entropy, entropyLen);
     bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
     SecretCacheSetMnemonic(mnemonic);
@@ -409,7 +412,9 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
     MODEL_WRITE_SE_HEAD
     ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, 0, NULL);
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
+    MpuSetOtpProtection(false);
     ret = CreateNewAccount(newAccount, entropy, entropyLen, SecretCacheGetNewPassword());
+    MpuSetOtpProtection(true);
     ClearAccountPassphrase(newAccount);
     CHECK_ERRCODE_BREAK("save entropy error", ret);
     MODEL_WRITE_SE_END
@@ -445,6 +450,7 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
         ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, 0, NULL);
         CHECK_ERRCODE_BREAK("mnemonic repeat", ret);
     }
+    MpuSetOtpProtection(false);
     if (bip39Data->forget) {
         GetAccountInfo(newAccount, &accountInfo);
     }
@@ -461,6 +467,7 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
         CloseUsb();
     }
     GetExistAccountNum(&accountCnt);
+    MpuSetOtpProtection(true);
     printf("after accountCnt = %d\n", accountCnt);
 }
 while (0);
@@ -807,6 +814,7 @@ static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
     uint8_t ie;
     entropyLen = (slip39->wordCnt == 20) ? 16 : 32;
     char *wordsList[slip39->memberCnt];
+    MpuSetOtpProtection(false);
     if (isDiceRoll) {
         memcpy_s(entropy, sizeof(entropy), SecretCacheGetDiceRollHash(), entropyLen);
     } else {
@@ -826,6 +834,7 @@ static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
         memset_s(wordsList[i], strlen(wordsList[i]), 0, strlen(wordsList[i]));
         SRAM_FREE(wordsList[i]);
     }
+    MpuSetOtpProtection(true);
     GuiApiEmitSignal(SIG_CREATE_SHARE_UPDATE_MNEMONIC, NULL, 0);
     SetLockScreen(enable);
     return SUCCESS_CODE;
@@ -880,7 +889,9 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     CLEAR_ARRAY(msCheck);
     ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, ie, NULL);
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
+    MpuSetOtpProtection(false);
     ret = CreateNewSlip39Account(newAccount, ems, entropy, entropyLen, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetIteration());
+    MpuSetOtpProtection(true);
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
     ClearAccountPassphrase(newAccount);
     MODEL_WRITE_SE_END
@@ -931,6 +942,7 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
         CHECK_ERRCODE_BREAK("mnemonic repeat", ret);
     }
     printf("before accountCnt = %d\n", accountCnt);
+    MpuSetOtpProtection(false);
     if (slip39->forget) {
         GetAccountInfo(newAccount, &accountInfo);
     }
@@ -946,6 +958,7 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
         LogoutCurrentAccount();
         CloseUsb();
     }
+    MpuSetOtpProtection(true);
     CLEAR_ARRAY(ems);
     CLEAR_ARRAY(emsBak);
     GetExistAccountNum(&accountCnt);
@@ -1019,8 +1032,10 @@ static int32_t ModelSaveWalletDesc(const void *inData, uint32_t inDataLen)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     WalletDesc_t *wallet = (WalletDesc_t *)inData;
+    MpuSetOtpProtection(false);
     SetWalletName(wallet->name);
     SetWalletIconIndex(wallet->iconIndex);
+    MpuSetOtpProtection(true);
 
     GuiApiEmitSignal(SIG_SETTING_CHANGE_WALLET_DESC_PASS, NULL, 0);
     SetLockScreen(enable);
@@ -1037,6 +1052,7 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
     uint8_t accountIndex = GetCurrentAccountIndex();
     UpdateFingerSignFlag(accountIndex, false);
     CloseUsb();
+    MpuSetOtpProtection(false);
     ret = DestroyAccount(accountIndex);
     if (ret == SUCCESS_CODE) {
         // reset address index in receive page
@@ -1075,6 +1091,7 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
     // GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS_SETUP, NULL, 0);
     GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS, NULL, 0);
 #endif
+    MpuSetOtpProtection(true);
     SetLockScreen(enable);
     return SUCCESS_CODE;
 }
@@ -1085,7 +1102,9 @@ static int32_t ModelDelAllWallet(const void *inData, uint32_t inDataLen)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
 #ifndef COMPILE_SIMULATOR
+    MpuSetOtpProtection(false);
     WipeDevice();
+    MpuSetOtpProtection(true);
     SystemReboot();
 #else
     GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS, NULL, 0);
@@ -1104,7 +1123,9 @@ static int32_t ModelWritePassphrase(const void *inData, uint32_t inDataLen)
     if (CheckPassphraseSame(GetCurrentAccountIndex(), SecretCacheGetPassphrase())) {
         GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
     } else {
+        MpuSetOtpProtection(false);
         ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
+        MpuSetOtpProtection(true);
         if (ret == SUCCESS_CODE) {
             GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
             ClearSecretCache();
@@ -1128,8 +1149,10 @@ static int32_t ModelChangeAccountPass(const void *inData, uint32_t inDataLen)
 #ifndef COMPILE_SIMULATOR
     int32_t ret;
 
+    MpuSetOtpProtection(false);
     ret = VerifyCurrentAccountPassword(SecretCacheGetPassword());
     ret = ChangePassword(GetCurrentAccountIndex(), SecretCacheGetNewPassword(), SecretCacheGetPassword());
+    MpuSetOtpProtection(true);
     UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     if (ret == SUCCESS_CODE) {
         GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_PASS, NULL, 0);
@@ -1158,7 +1181,9 @@ static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
     SetLockScreen(false);
 #ifndef COMPILE_SIMULATOR
     uint8_t *key = SRAM_MALLOC(WEB_AUTH_RSA_KEY_LEN);
+    MpuSetOtpProtection(false);
     GetWebAuthRsaKey(key);
+    MpuSetOtpProtection(true);
     char *authCode = calculate_auth_code(inData, key, 512, &key[512], 512);
     SRAM_FREE(key);
     GuiApiEmitSignal(SIG_WEB_AUTH_CODE_SUCCESS, authCode, strlen(authCode));
@@ -1280,11 +1305,13 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
     int32_t ret;
     uint16_t *param = (uint16_t *)inData;
 
+    MpuSetOtpProtection(false);
     // Unlock screen
     if (SIG_LOCK_VIEW_VERIFY_PIN == *param || SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS == *param) {
         ret = VerifyPasswordAndLogin(&accountIndex, SecretCacheGetPassword());
         if (ret == ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH) {
             GuiApiEmitSignal(SIG_EXTENDED_PUBLIC_KEY_NOT_MATCH, NULL, 0);
+            MpuSetOtpProtection(true);
             return ret;
         } else if (ret == SUCCESS_CODE) {
             ModeGetWalletDesc(NULL, 0);
@@ -1320,6 +1347,7 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
     } else {
         ModelVerifyPassFailed(param);
     }
+    MpuSetOtpProtection(true);
     return SUCCESS_CODE;
 }
 
@@ -1331,7 +1359,9 @@ static int32_t ModeGetAccount(const void *inData, uint32_t inDataLen)
     static uint8_t walletAmount;
     int32_t ret;
 
+    MpuSetOtpProtection(false);
     ret = GetExistAccountNum(&walletAmount);
+    MpuSetOtpProtection(true);
     if (ret != SUCCESS_CODE) {
         walletAmount = 0xFF;
     }
@@ -1382,8 +1412,10 @@ static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataL
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
 
-    uint32_t time = *(uint32_t *)inData;
+    uint32_t time = *(uint32_t*)inData;
+    MpuSetOtpProtection(false);
     SetLastLockDeviceTime(time);
+    MpuSetOtpProtection(true);
 
     SetLockScreen(enable);
     return SUCCESS_CODE;

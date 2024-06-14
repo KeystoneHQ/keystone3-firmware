@@ -35,7 +35,6 @@ void USBD_cdc_SendBuffer_Cb(const uint8_t *data, uint32_t len);
 uint8_t g_dataParserCache[PARSER_CACHE_LEN] __attribute__((section(".data_parser_section")));
 uint8_t g_dataParserCache[PARSER_CACHE_LEN];
 osThreadId_t g_dataParserHandle;
-static osTimerId_t g_rebootTimer = NULL;
 static cbuf_handle_t g_cBufHandle;
 static uint8_t g_dataParserPubKey[] = {
     0xF0, 0xBE, 0xAC, 0x34, 0x0D, 0x58, 0x2C, 0xE0,

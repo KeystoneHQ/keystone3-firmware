@@ -100,10 +100,12 @@ void ProcessURService(EAPDURequestPayload_t *payload)
         return;
     }
     struct URParseResult *urResult = parse_ur((char *)payload->data);
+    printf("%s %d..\n", __func__, __LINE__);
     if (urResult->error_code != 0) {
         HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), g_requestID, PRS_PARSING_ERROR);
         return;
     }
+    printf("%s %d..\n", __func__, __LINE__);
     UrViewType_t urViewType = {0, 0};
     urViewType.viewType = urResult->t;
     urViewType.urType = urResult->ur_type;

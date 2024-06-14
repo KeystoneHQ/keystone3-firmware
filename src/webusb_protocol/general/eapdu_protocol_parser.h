@@ -18,7 +18,8 @@ typedef enum {
     CMD_CHECK_LOCK_STATUS,         // Command to check lock status
     CMD_EXPORT_ADDRESS,            // Command to export address
     CMD_GET_DEVICE_USB_PUBKEY,     // Command to get device public key
-    //
+    CMD_GET_DEVICE_INFO,           // Command to get device info
+
     CMD_MAX_VALUE = 0xFFFFFFFF,    // The maximum value for command
 } CommandType;
 

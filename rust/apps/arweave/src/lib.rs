@@ -1,9 +1,11 @@
 #![no_std]
 #![feature(error_in_core)]
 
+pub mod data_item;
 pub mod deep_hash;
 pub mod errors;
 pub mod transaction;
+pub mod ao_transaction;
 
 #[macro_use]
 extern crate alloc;
@@ -18,6 +20,7 @@ use aes::cipher::block_padding::Pkcs7;
 use aes::cipher::{generic_array::GenericArray, BlockDecryptMut, BlockEncryptMut, KeyIvInit};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use data_item::DataItem;
 use keystore::algorithms::rsa::{get_rsa_secret_from_seed, sign_message};
 use sha2;
 use sha2::Digest;
@@ -56,8 +59,12 @@ pub fn generate_address(owner: Vec<u8>) -> Result<String> {
     let mut hasher = sha2::Sha256::new();
     hasher.update(owner);
     let owner_base64url_sha256 = hasher.finalize();
-    let address = base64::encode_config(owner_base64url_sha256.as_slice(), base64::URL_SAFE_NO_PAD);
-    Ok(address)
+    Ok(base64_url(owner_base64url_sha256.to_vec()))
+}
+
+pub fn base64_url(hash: Vec<u8>) -> String {
+    let address = base64::encode_config(hash.as_slice(), base64::URL_SAFE_NO_PAD);
+    address
 }
 
 pub fn generate_public_key_from_primes(p: &[u8], q: &[u8]) -> Result<Vec<u8>> {
@@ -150,6 +157,10 @@ pub fn parse(data: &Vec<u8>) -> Result<String> {
         }
     };
     Ok(tx.to_string())
+}
+
+pub fn parse_data_item(serial: &[u8]) -> Result<DataItem> {
+    DataItem::deserialize(serial)
 }
 
 #[cfg(test)]

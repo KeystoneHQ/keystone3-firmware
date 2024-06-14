@@ -82,12 +82,8 @@ static void TagsRender(cJSON *root, int size, lv_obj_t *parent)
 
 bool IsArweaveSetupComplete(void)
 {
-#ifndef COMPILE_SIMULATOR
     char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
     return xPub != NULL && strlen(xPub) == 1024;
-#else
-    return true;
-#endif
 }
 
 PtrT_TransactionCheckResult GuiGetArCheckResult(void)

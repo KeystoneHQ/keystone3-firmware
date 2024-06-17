@@ -209,7 +209,7 @@ static void SelectImportShareHandler(lv_event_t *e)
 
 static void GuiCreateBackupWidget(lv_obj_t *parent)
 {
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_backup_choose_backup_title"));
+    lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("single_backup_choose_backup_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(parent, _("single_backup_choose_backup_desc"));

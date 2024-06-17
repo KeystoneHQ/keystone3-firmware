@@ -1590,7 +1590,7 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
     case TonTx:
         return REMAPVIEW_TON;
     case TonSignProof:
-        return REMAPVIEW_TON_SIGNPROOF;    
+        return REMAPVIEW_TON_SIGNPROOF;
 #endif
     default:
         return REMAPVIEW_BUTT;

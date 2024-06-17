@@ -9,35 +9,13 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val)
-{
-    return (uint32_t)(val < 0 ? -val : val);
-}
-static inline uint32_t op_i(uint32_t val)
-{
-    return val;
-}
+static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
+static inline uint32_t op_i(uint32_t val) { return val; }
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_w(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_f(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_t(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
+static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
+static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
 const static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
@@ -792,12 +770,9 @@ const static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -1563,12 +1538,9 @@ const static lv_i18n_phrase_t de_singulars[] = {
 
 static uint8_t de_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -1927,13 +1899,13 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"import_multi_wallet_via_micro_title", "Tarjeta MicroSD"},
     {"import_ton_mnemonic_desc", "La billetera TON no admite la adición de otras mainnets como Bitcoin o Ethereum debido a frases de semilla incompatibles."},
     {"import_ton_mnemonic_title", "¿Cómo importar una billetera TON?"},
-    {"import_wallet_choose_method", "Elija el método de importación"},
+    {"import_wallet_choose_method", "Elija método de importación"},
     {"import_wallet_duplicated_share_desc", "Ya has verificado esta participación, por favor utiliza otra participación para continuar."},
     {"import_wallet_invalid_phrase_desc", "La frase que has escrito es inválida. Por favor, verifica tu respaldo e intenta de nuevo."},
     {"import_wallet_phrase_clear_btn", "Claro"},
     {"import_wallet_phrase_desc", "Ingresa tu frase de recuperación en los espacios proporcionados a continuación"},
     {"import_wallet_phrase_title", "Importa tu semilla"},
-    {"import_wallet_shamir_backup", "Copia de seguridad de Shamir"},
+    {"import_wallet_shamir_backup", "Copia Shamir"},
     {"import_wallet_shamir_backup_desc", "Necesitarás un par de frases de semilla para recuperar tu billetera"},
     {"import_wallet_share_success_desc", "Esta parte de tu frase de semilla coincide con tu billetera"},
     {"import_wallet_single_backup_desc", "Recupera tu billetera con la frase de recuperación específica. Por favor, completa el proceso de configuración seguido para evitar cualquier riesgo de seguridad."},
@@ -2080,7 +2052,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"receive_sol_more_t_title1", "Explorando opciones de camino en Solana"},
     {"receive_trx_hint", "Esta dirección es solo para TRX, tokens TRC-20 y tokens TRC-10, otros activos digitales enviados a esta dirección se perderán."},
     {"repeat_passcode_desc", "Confirma dos veces el código PIN que has ingresado"},
-    {"repeat_passcode_title", "Vuelva a ingresar el código PIN"},
+    {"repeat_passcode_title", "Reingrese el PIN"},
     {"rsa_confirm_hintbox_cancel", "Ahora no"},
     {"rsa_confirm_hintbox_context", "Por favor, introduzca su contraseña para iniciar la configuración de la blockchain ARWEAVE, la cual tomará aproximadamente 10 minutos. Asegúrese de que su dispositivo tenga al menos un 60% de carga y esté conectado a una fuente de energía USB."},
     {"rsa_confirm_hintbox_ok", "Inicialización"},
@@ -2129,7 +2101,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"self_destruction_hint", "Contáctenos"},
     {"self_destruction_title", "Dispositivo ya no utilizable"},
     {"set_passcode_desc", "Este código PIN se utilizará para desbloquear su billetera y autorizar transacciones"},
-    {"shamir_backup", "Copia de seguridad de Shamir"},
+    {"shamir_backup", "Copia Shamir"},
     {"shamir_phrase_backup_desc", "Escribe tu frase de Share #F5870A 1# y guárdala correctamente"},
     {"shamir_phrase_cancel_create_desc", "Si cancelas, cualquier Acciones confirmadas se perderán."},
     {"shamir_phrase_cancel_create_title", "¿Desea abandonar la configuración de la billetera?"},
@@ -2180,7 +2152,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"single_phrase_desc", "Escribe tu frase de recuperación y guárdala en un lugar seguro"},
     {"single_phrase_low_battery_desc", "El dispositivo necesita un mínimo del 20% de vida de batería para continuar el proceso"},
     {"single_phrase_reset", "Restablecer"},
-    {"single_phrase_title", "Guarda una copia de seguridad de tu semilla"},
+    {"single_phrase_title", "Respalda tu semilla"},
     {"single_phrase_word_amount_select", "Conteo de Frase Semilla"},
     {"support_link", "support@keyst.one"},
     {"switch_account", "Cambiar cuenta"},
@@ -2334,8 +2306,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
 
 static uint8_t es_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
+    uint32_t n = op_n(num); UNUSED(n);
 
 
     if ((n == 1)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -4511,7 +4482,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"system_settings_wipe_device_wipe_start_text", "Сброс(5)"},
     {"system_settings_wipe_device_wipe_title", "Сброс устройства"},
     {"ton_mnemonic_generating_desc", "возможно, 10 мин"},
-    {"ton_mnemonic_generating_title", "Создание... Пожалуйста, подождите"},
+    {"ton_mnemonic_generating_title", "Создание... Подождите"},
     {"ton_mnemonic_regenerate", "Создать новый набор семени?"},
     {"ton_sign_proof_title", "Подтвердить подключение"},
     {"ton_write_se_predict_text", "Этот процесс займет примерно 6 минут."},
@@ -4634,12 +4605,9 @@ const static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t v = op_v(n);
-    UNUSED(v);
-    uint32_t i = op_i(n);
-    UNUSED(i);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t i = op_i(n); UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -5455,8 +5423,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if (langs == NULL) return -1;
-    if (langs[0] == NULL) return -1;
+    if(langs == NULL) return -1;
+    if(langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -5469,13 +5437,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if (current_lang_pack == NULL) return -1;
+    if(current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for (i = 0; current_lang_pack[i] != NULL; i++) {
+    for(i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -5488,10 +5456,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for (i = 0; trans[i].msg_id != NULL; i++) {
-        if (strcmp(trans[i].msg_id, msg_id) == 0) {
+    for(i = 0; trans[i].msg_id != NULL; i++) {
+        if(strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if (trans[i].translation) return trans[i].translation;
+            if(trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -5506,23 +5474,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -5538,31 +5506,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -5577,6 +5545,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if (!current_lang) return NULL;
+    if(!current_lang) return NULL;
     return current_lang->locale_name;
 }

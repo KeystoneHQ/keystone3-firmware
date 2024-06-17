@@ -34,7 +34,8 @@ static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonTran
 static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
 static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
 
-void GuiSetTonUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi) {
+void GuiSetTonUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
+{
     g_urResult = urResult;
     g_urMultiResult = urMultiResult;
     g_isMulti = multi;
@@ -91,7 +92,8 @@ PtrT_TransactionCheckResult GuiGetTonCheckResult(void)
     return ton_check_transaction(data, publicKey);
 }
 
-void *GuiGetTonGUIData(void) {
+void *GuiGetTonGUIData(void)
+{
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
@@ -102,7 +104,8 @@ void *GuiGetTonGUIData(void) {
     return g_parseResult;
 }
 
-void *GuiGetTonProofGUIData(void) {
+void *GuiGetTonProofGUIData(void)
+{
     CHECK_FREE_PARSE_PROOF_RESULT(g_proofParseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
@@ -113,7 +116,8 @@ void *GuiGetTonProofGUIData(void) {
     return g_proofParseResult;
 }
 
-void GuiTonTxOverview(lv_obj_t *parent, void *totalData) {
+void GuiTonTxOverview(lv_obj_t *parent, void *totalData)
+{
     DisplayTonTransaction *txData = (DisplayTonTransaction *)totalData;
     lv_obj_set_size(parent, 408, 444);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
@@ -122,28 +126,30 @@ void GuiTonTxOverview(lv_obj_t *parent, void *totalData) {
     lv_obj_t *lastView = CreateOverviewAmountView(parent, txData, NULL);
     lastView = CreateOverviewActionView(parent, txData, lastView);
     lastView = CreateOverviewDestinationView(parent, txData, lastView);
-    if(txData->comment != NULL) {
+    if (txData->comment != NULL) {
         lastView = CreateOverviewCommentView(parent, txData, lastView);
     }
-    if(txData->contract_data != NULL) {
+    if (txData->contract_data != NULL) {
         lastView = CreateOverviewContractDataView(parent, txData, lastView);
     }
     lv_obj_update_layout(parent);
 }
 
-void GuiTonTxRawData(lv_obj_t *parent, void *totalData) {
+void GuiTonTxRawData(lv_obj_t *parent, void *totalData)
+{
     DisplayTonTransaction *txData = (DisplayTonTransaction *)totalData;
     lv_obj_set_size(parent, 408, 444);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_t *lastView = NULL;
-    if(txData->data_view != NULL) {
+    if (txData->data_view != NULL) {
         lastView = CreateDetailsDataViewView(parent, txData, NULL);
     }
     lastView = CreateDetailsRawDataView(parent, txData, lastView);
 }
 
-static lv_obj_t *createContentContainer(lv_obj_t *parent, uint16_t w, uint16_t h) {
+static lv_obj_t *createContentContainer(lv_obj_t *parent, uint16_t w, uint16_t h)
+{
     lv_obj_t *container = GuiCreateContainerWithParent(parent, w, h);
     lv_obj_set_style_bg_color(container, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(container, LV_OPA_12, LV_PART_MAIN);
@@ -151,7 +157,8 @@ static lv_obj_t *createContentContainer(lv_obj_t *parent, uint16_t w, uint16_t h
     return container;
 }
 
-static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView) {
+static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
+{
     lv_obj_t *container = createContentContainer(parent, 408, 106);
 
     lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Amount"));
@@ -165,7 +172,8 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTonTransactio
     return container;
 }
 
-static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView) {
+static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
+{
     lv_obj_t *container = createContentContainer(parent, 408, 64);
     lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
@@ -178,7 +186,8 @@ static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayTonTransactio
     return container;
 }
 
-static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView) {
+static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
+{
     lv_obj_t *container = createContentContainer(parent, 408, 244);
     lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
@@ -212,7 +221,8 @@ static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTrans
     return container;
 }
 
-static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView) {
+static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
+{
     lv_obj_t *container = createContentContainer(parent, 408, 62);
     lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
@@ -234,15 +244,15 @@ static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonTransacti
     return container;
 }
 
-static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView) {
+static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
+{
     cJSON *contractData = cJSON_Parse(data->contract_data);
     int size = cJSON_GetArraySize(contractData);
     printf("size: %d\n", size);
 
     lv_obj_t *tempLastView = NULL;
 
-    for (size_t i = 0; i < size; i++)
-    {
+    for (size_t i = 0; i < size; i++) {
         cJSON *data = cJSON_GetArrayItem(contractData, i);
         char* title = cJSON_GetObjectItem(data, "title")->valuestring;
         char* value = cJSON_GetObjectItem(data, "value")->valuestring;
@@ -272,7 +282,8 @@ static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonTran
     return tempLastView;
 }
 
-static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView) {
+static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
+{
     lv_obj_t *container = createContentContainer(parent, 408, 244);
     lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
@@ -288,11 +299,12 @@ static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonTransacti
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     return container;
 }
-static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView) {
+static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
+{
     lv_obj_t *container = createContentContainer(parent, 408, 244);
     lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
-    if(lastView != NULL) {
+    if (lastView != NULL) {
         lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
 
@@ -309,7 +321,8 @@ static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayTonTransactio
     return container;
 }
 
-void GuiTonProofOverview(lv_obj_t *parent, void *totalData) {
+void GuiTonProofOverview(lv_obj_t *parent, void *totalData)
+{
     DisplayTonProof *txData = (DisplayTonProof *)totalData;
     lv_obj_set_size(parent, 408, 444);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
@@ -353,7 +366,8 @@ void GuiTonProofOverview(lv_obj_t *parent, void *totalData) {
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
 
 }
-void GuiTonProofRawData(lv_obj_t *parent, void *totalData) {
+void GuiTonProofRawData(lv_obj_t *parent, void *totalData)
+{
     DisplayTonProof *txData = (DisplayTonProof *)totalData;
     lv_obj_set_size(parent, 408, 444);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);

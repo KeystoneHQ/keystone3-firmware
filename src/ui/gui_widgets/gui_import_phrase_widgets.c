@@ -80,11 +80,9 @@ void GuiShowTonMnemonicHint()
     g_noticeWindow = GuiCreateGeneralHintBox(&coinTon, _("import_ton_mnemonic_title"), _("import_ton_mnemonic_desc"), NULL, _("Cancel"), WHITE_COLOR_OPA20, _("Import"), ORANGE_COLOR);
 
     lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
-    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
     lv_obj_add_event_cb(btn, GuiImportTonMnemonicHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
     btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
     lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 }
 

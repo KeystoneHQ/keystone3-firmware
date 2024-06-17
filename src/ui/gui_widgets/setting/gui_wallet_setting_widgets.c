@@ -401,7 +401,7 @@ void GuiVerifyCurrentPasswordErrorCount(void *param)
 
 void GuiSettingStructureCb(void *obj, void *param)
 {
-    if(GetMnemonicType() != MNEMONIC_TYPE_TON) {
+    if (GetMnemonicType() != MNEMONIC_TYPE_TON) {
         char tempBuf[BUFFER_SIZE_16] = "MFP: ";
         uint8_t mfp[4];
         GetMasterFingerPrint(mfp);
@@ -442,7 +442,7 @@ void GuiWalletSetWidget(lv_obj_t *parent)
     lv_obj_t *label = GuiCreateTextLabel(parent, GuiNvsBarGetWalletName());
     lv_obj_set_style_text_font(label, &buttonFont, LV_PART_MAIN);
 
-    if(!isTon) {
+    if (!isTon) {
         char tempBuf[BUFFER_SIZE_16] = "MFP: ";
         uint8_t mfp[4];
         GetMasterFingerPrint(mfp);
@@ -500,7 +500,7 @@ void GuiWalletSetWidget(lv_obj_t *parent)
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, nextY);
     nextY = nextY + 96;
 
-    if(!isTon) {
+    if (!isTon) {
         label = GuiCreateTextLabel(parent, _("Passphrase"));
         imgArrow = GuiCreateImg(parent, &imgArrowRight);
         table[0].obj = label;

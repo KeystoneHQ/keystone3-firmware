@@ -345,7 +345,9 @@ void GuiTonProofOverview(lv_obj_t *parent, void *totalData)
     char address[128] = {0};
     snprintf_s(address, 128, "%.22s\n%s", txData->address, &txData->address[22]);
 
-    label = GuiCreateTextLabel(container, _("Address"));
+    // todo translate
+    label = GuiCreateTextLabel(container, "Address");
+    // label = GuiCreateTextLabel(container, _("Address"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 100);
     lv_label_set_recolor(label, true);
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);

@@ -376,15 +376,15 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
     }
     memset_s(entropyCheck, entropyLen, 0, entropyLen);
     SRAM_FREE(entropyCheck);
+    MpuSetOtpProtection(false);
     MODEL_WRITE_SE_HEAD
     ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, 0, NULL);
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
-    MpuSetOtpProtection(false);
     ret = CreateNewAccount(newAccount, entropy, entropyLen, SecretCacheGetNewPassword());
-    MpuSetOtpProtection(true);
     ClearAccountPassphrase(newAccount);
     CHECK_ERRCODE_BREAK("save entropy error", ret);
     MODEL_WRITE_SE_END
+    MpuSetOtpProtection(true);
     SetLockScreen(enable);
     return 0;
 }

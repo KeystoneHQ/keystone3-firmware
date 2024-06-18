@@ -391,13 +391,12 @@ static uint8_t usbd_cdc_DataIn(void* pdev, uint8_t epnum)
  */
 static uint8_t usbd_cdc_DataOut(void* pdev, uint8_t epnum)
 {
-void push_to_field(uint8_t *data, uint16_t len);
+void PushDataToField(uint8_t *data, uint16_t len);
     USB_OTG_EP* ep = &((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[epnum];
     uint16_t rxCount  = ep->xfer_count;
     //PrintArray("WEBUSB rx", USB_Rx_Buffer, rxCount);
-    push_to_field(USB_Rx_Buffer, rxCount);
+    PushDataToField(USB_Rx_Buffer, rxCount);
     PubValueMsg(SPRING_MSG_GET, rxCount);
-    // ProtocolReceivedData(USB_Rx_Buffer, rxCount, USBD_cdc_SendBuffer);
     DCD_EP_PrepareRx(pdev, CDC_OUT_EP, (uint8_t*)(USB_Rx_Buffer), CDC_DATA_OUT_PACKET_SIZE);
     return USBD_OK;
 }

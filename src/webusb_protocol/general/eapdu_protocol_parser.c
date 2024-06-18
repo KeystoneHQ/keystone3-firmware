@@ -66,9 +66,9 @@ void SendEApduResponse(EAPDUResponsePayload_t *payload)
         insert_16bit_value(packet, OFFSET_P2, packetIndex);
         insert_16bit_value(packet, OFFSET_LC, payload->requestID);
         memcpy_s(tempBuffer, MAX_EAPDU_RESPONSE_DATA_SIZE, payload->data + offset, packetDataSize);
-        int encryptLen = PadBuffer(tempBuffer, packetDataSize);
-        DataEncrypt(tempBuffer, encryptLen);
-        memcpy_s(packet + OFFSET_CDATA, MAX_PACKETS_LENGTH - OFFSET_CDATA, tempBuffer, encryptLen);
+        // int encryptLen = PadBuffer(tempBuffer, packetDataSize);
+        // DataEncrypt(tempBuffer, encryptLen);
+        memcpy_s(packet + OFFSET_CDATA, MAX_PACKETS_LENGTH - OFFSET_CDATA, payload->data + offset, packetDataSize);
         insert_16bit_value(packet, OFFSET_CDATA + packetDataSize, payload->status);
         g_sendFunc(packet, OFFSET_CDATA + packetDataSize + EAPDU_RESPONSE_STATUS_LENGTH);
         offset += packetDataSize;
@@ -111,6 +111,7 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
         printf("Invalid request: NULL pointer\n");
         return;
     }
+    printf("request: %u\n", request->commandType);
     switch (request->commandType) {
     case CMD_ECHO_TEST:
         EchoService(request);
@@ -124,11 +125,12 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
     case CMD_EXPORT_ADDRESS:
         ExportAddressService(request);
         break;
+    case CMD_GET_DEVICE_INFO:
+        GetDeviceInfoService(request);
+        break;
     case CMD_GET_DEVICE_USB_PUBKEY:
         GetDeviceUsbPubkeyService(request);
         break;
-    case CMD_GET_DEVICE_INFO:
-        GetDeviceInfoService(request);
     default:
         printf("Invalid command: %u\n", request->commandType);
         break;

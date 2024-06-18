@@ -27,12 +27,12 @@
 
 #define ECC_PRV_KEY_SIZE                                24
 #define ECC_PUB_KEY_SIZE                                (2 * ECC_PRV_KEY_SIZE)
-#define PARSER_CACHE_LEN                                4096
+#define PARSER_CACHE_LEN                                1024
 
 static void DataParserTask(void *argument);
 void USBD_cdc_SendBuffer_Cb(const uint8_t *data, uint32_t len);
 
-uint8_t g_dataParserCache[PARSER_CACHE_LEN] __attribute__((section(".data_parser_section")));
+static uint8_t g_dataParserCache[PARSER_CACHE_LEN] __attribute__((section(".data_parser_section")));
 uint8_t g_dataParserCache[PARSER_CACHE_LEN];
 osThreadId_t g_dataParserHandle;
 static cbuf_handle_t g_cBufHandle;
@@ -71,90 +71,11 @@ uint8_t *GetDeviceParserPubKey(uint8_t *webPub, uint16_t len)
     return g_dataParserPubKey;
 }
 
-static void ecdh_demo(void)
-{
-    // static uint8_t prva[ECC_PRV_KEY_SIZE];
-    static uint8_t seca[ECC_PUB_KEY_SIZE];
-    static uint8_t pubb[ECC_PUB_KEY_SIZE];
-    // static uint8_t prvb[ECC_PRV_KEY_SIZE];
-    static uint8_t secb[ECC_PUB_KEY_SIZE];
-    uint32_t i;
-    uint8_t prva[] = {
-        0xF3, 0x18, 0x5B, 0x3F, 0xB2, 0xF5, 0x75, 0x27,
-        0xD0, 0x05, 0x09, 0xB5, 0x8D, 0x3E, 0x50, 0xC5,
-        0x7F, 0xAF, 0x7B, 0x01, 0x01, 0x00, 0x00, 0x00
-    };
-    uint8_t prvb[] = {
-        0xA7, 0x69, 0xF0, 0xCA, 0x2E, 0x8A, 0x2D, 0xF9,
-        0x84, 0x44, 0x3A, 0xAD, 0xDF, 0x5D, 0x76, 0xC0,
-        0x4E, 0xAF, 0x2F, 0x92, 0x00, 0x00, 0x00, 0x00
-    };
-
-    // TrngGet(prva, sizeof(prva));
-    assert(ecdh_generate_keys(g_dataParserPubKey, prva));
-    PrintArray("g_dataParserPubKey", g_dataParserPubKey, sizeof(g_dataParserPubKey));
-    PrintArray("prva", prva, sizeof(prva));
-
-    // TrngGet(prvb, sizeof(prvb));
-    assert(ecdh_generate_keys(pubb, prvb));
-    PrintArray("prvb", prvb, sizeof(prvb));
-    PrintArray("pubb", pubb, sizeof(pubb));
-
-    assert(ecdh_shared_secret(prva, pubb, seca));
-    assert(ecdh_shared_secret(prvb, g_dataParserPubKey, secb));
-
-    for (i = 0; i < ECC_PUB_KEY_SIZE; ++i) {
-        assert(seca[i] == secb[i]);
-    }
-
-    struct sha256_ctx shactx;
-    sha256_init(&shactx);
-    sha256_update(&shactx, seca, ECC_PUB_KEY_SIZE);
-    printf("\n");
-    printf("key:\n");
-    sha256_done(&shactx, (struct sha256 *)g_dataSharedKey);
-    for (int i = 0; i < 32; ++i) {
-        printf("%02x", g_dataSharedKey[i]);
-    }
-    char buffer[32] = {0};
-
-    printf("\n data:\n");
-    for (int i = 0; i < 32; i++) {
-        buffer[i] = i * 2;
-        printf("%02x", buffer[i]);
-    }
-
-    printf("\n IV:\n");
-    for (int i = 0; i < 16; i++) {
-        printf("%02x", g_dataShareIv[i]);
-    }
-    AES256_CBC_ctx ctx;
-    AES256_CBC_init(&ctx, g_dataSharedKey, g_dataShareIv);
-    AES256_CBC_encrypt(&ctx, sizeof(buffer) / 16, buffer, buffer);
-    printf("\n encrypt data:\n");
-    for (int i = 0; i < sizeof(buffer); ++i) {
-        printf("%02x", buffer[i]);
-    }
-    printf("\n");
-}
-
 void DataEncrypt(uint8_t *data, uint16_t len)
 {
     AES256_CBC_ctx ctx;
-    // printf("\n encrypt data before:\n");
-    // for (int i = 0; i < sizeof(data); ++i)
-    // {
-    //     printf("%02x", data[i]);
-    // }
-    // printf("\n");
     AES256_CBC_init(&ctx, g_dataSharedKey, g_dataShareIv);
     AES256_CBC_encrypt(&ctx, sizeof(data) / 16, data, data);
-    // printf("\n encrypt data end:\n");
-    // for (int i = 0; i < sizeof(data); ++i)
-    // {
-    //     printf("%02x", data[i]);
-    // }
-    // printf("\n");
 }
 
 void CreateDataParserTask(void)
@@ -167,7 +88,7 @@ void CreateDataParserTask(void)
     g_dataParserHandle = osThreadNew(DataParserTask, NULL, &dataParserTask_attributes);
 }
 
-void push_to_field(uint8_t *data, uint16_t len)
+void PushDataToField(uint8_t *data, uint16_t len)
 {
     for (int i = 0; i < len; i++) {
         circular_buf_put(g_cBufHandle, data[i]);
@@ -185,27 +106,19 @@ static uint8_t IsPrivileged(void)
 void DataParserCacheMpuInit(void)
 {
     MpuSetProtection(g_dataParserCache,
-                     MPU_REGION_SIZE_4KB,
-                     MPU_REGION_NUMBER1,
+                     MPU_REGION_SIZE_1KB,
+                     MPU_REGION_NUMBER0,
                      MPU_INSTRUCTION_ACCESS_DISABLE,
                      MPU_REGION_PRIV_RW,
                      MPU_ACCESS_SHAREABLE,
                      MPU_ACCESS_CACHEABLE,
                      MPU_ACCESS_BUFFERABLE);
-    int i = 0;
-    for (i = 0; i < 10; i++) {
-        g_dataParserCache[i] = i * 2;
-    }
-
-    for (i = 0; i < 10; i++) {
-        printf("0x%02X, ", g_dataParserCache[i]);
-    }
 }
 
 static void DataParserTask(void *argument)
 {
-    // TestMpu();
-    ecdh_demo();
+    DataParserCacheMpuInit();
+    printf("g_dataParserCache = %p\n", g_dataParserCache);
     g_cBufHandle = circular_buf_init(g_dataParserCache, sizeof(g_dataParserCache));
     memset_s(g_dataParserCache, sizeof(g_dataParserCache), 0, sizeof(g_dataParserCache));
     Message_t rcvMsg;

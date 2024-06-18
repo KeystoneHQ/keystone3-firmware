@@ -11,12 +11,13 @@ void GetDeviceInfoService(EAPDURequestPayload_t *payload)
     cJSON *root = cJSON_CreateObject();
     cJSON_AddStringToObject(root, "payload", version);
     char *json_str = cJSON_Print(root);
+    printf("json_str = %s\n", json_str);
     cJSON_Delete(root);
     result->data = (uint8_t *)json_str;
     result->dataLen = strlen((char *)result->data);
     result->status = RSP_SUCCESS_CODE;
     result->cla = EAPDU_PROTOCOL_HEADER;
-    result->commandType = CMD_CHECK_LOCK_STATUS;
+    result->commandType = CMD_GET_DEVICE_INFO;
     result->requestID = payload->requestID;
 
     SendEApduResponse(result);

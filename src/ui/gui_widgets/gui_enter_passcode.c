@@ -12,6 +12,7 @@
 #include "motor_manager.h"
 #include "account_manager.h"
 #include "gui_keyboard_hintbox.h"
+#include "drv_mpu.h"
 
 typedef enum {
     PASSWORD_STRENGTH_LEN,
@@ -130,12 +131,14 @@ static void SetPinEventHandler(lv_event_t *e)
                     GuiModelVerifyAccountPassWord(g_userParam);
                     break;
                 case ENTER_PASSCODE_SET_PIN:
+                    MpuSetOtpProtection(false);
                     if (CheckPasswordExisted(g_pinBuf, index)) {
                         UnlimitedVibrate(LONG);
                         lv_obj_clear_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
                     } else {
                         GuiEmitSignal(SIG_SETTING_SET_PIN, g_pinBuf, strnlen_s(g_pinBuf, PASSWORD_MAX_LEN));
                     }
+                    MpuSetOtpProtection(true);
                     break;
                 case ENTER_PASSCODE_REPEAT_PIN:
                     GuiEmitSignal(SIG_SETTING_REPEAT_PIN, g_pinBuf, strnlen_s(g_pinBuf, PASSWORD_MAX_LEN));
@@ -182,6 +185,7 @@ static void SetPassWordHandler(lv_event_t *e)
             if (item->mode == ENTER_PASSCODE_SET_PASSWORD) {
                 uint8_t index = 0xff;
 
+                MpuSetOtpProtection(false);
                 if (g_userParam != NULL && *(uint16_t *)g_userParam == DEVICE_SETTING_RESET_PASSCODE_VERIFY) {
                     index = GetCurrentAccountIndex();
                 }
@@ -192,6 +196,7 @@ static void SetPassWordHandler(lv_event_t *e)
                 } else {
                     GuiEmitSignal(SIG_SETTING_SET_PIN, (char *)currText, strnlen_s(currText, CREATE_PIN_NUM));
                 }
+                MpuSetOtpProtection(true);
             } else if (item->mode == ENTER_PASSCODE_REPEAT_PASSWORD) {
                 GuiEmitSignal(SIG_SETTING_REPEAT_PIN, (char *)currText, strnlen_s(currText, CREATE_PIN_NUM));
             } else if ((item->mode == ENTER_PASSCODE_VERIFY_PASSWORD)) {

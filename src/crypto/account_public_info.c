@@ -21,6 +21,7 @@
 #include "multi_sig_wallet_manager.h"
 #include "log_print.h"
 #include "rsa.h"
+#include "drv_mpu.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
@@ -493,6 +494,8 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
         ret = GetAccountSeed(accountIndex, seed, password);
         CHECK_ERRCODE_BREAK("get seed", ret);
         ret = GetAccountEntropy(accountIndex, entropy, &entropyLen, password);
+        printf("%s %d..\n", __func__, __LINE__);
+        printf("g_otpProtect = %d\r\n", g_otpProtect);
         CHECK_ERRCODE_BREAK("get entropy", ret);
         SimpleResponse_c_char* cip3_response = NULL;
         SimpleResponse_c_char *ledger_bitbox02_response = NULL;
@@ -507,6 +510,8 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             icarusMasterKey = cip3_response->data;
             ledgerBitbox02Key = ledger_bitbox02_response->data;
         }
+        printf("%s %d..\n", __func__, __LINE__);
+
 
 #ifndef BTC_ONLY
         if (isTon) {

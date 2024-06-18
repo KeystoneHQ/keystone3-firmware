@@ -241,7 +241,9 @@ int32_t SetWalletDataHash(uint8_t index, uint8_t *info)
     ASSERT(index <= 2);
 
     memcpy(data, info, 32);
+    MpuSetOtpProtection(false);
     ret = SE_HmacEncryptWrite(data, PAGE_WALLET1_PUB_KEY_HASH + index);
+    MpuSetOtpProtection(true);
     return ret;
 }
 

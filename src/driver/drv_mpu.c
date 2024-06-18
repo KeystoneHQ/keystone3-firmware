@@ -1,6 +1,8 @@
 #include "drv_mpu.h"
 #include "drv_otp.h"
 
+bool g_otpProtect = false;
+
 void MpuDisable(void)
 {
     __DMB();
@@ -64,6 +66,11 @@ void MpuSetProtection(uint32_t baseAddress, uint32_t regionSize, uint32_t region
 void MpuInit(void)
 {
     MpuSetOtpProtection(true);
+}
+
+bool GetOtpProtection(void)
+{
+    return g_otpProtect;
 }
 
 // void MpuSetOtpProtection(bool noAccess)

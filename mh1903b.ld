@@ -62,7 +62,6 @@ SECTIONS
     {
         . = ALIGN(4);
         *(.data_parser_section)
-        . = 0x1000; 
         . = ALIGN(4);
     } > SRAM
 	

@@ -179,9 +179,7 @@ int32_t GetAccountEntropy(uint8_t accountIndex, uint8_t *entropy, uint8_t *entro
     AccountSecret_t accountSecret;
 
     ASSERT(accountIndex <= 2);
-    MpuSetOtpProtection(false);
     ret = LoadAccountSecret(accountIndex, &accountSecret, password);
-    MpuSetOtpProtection(true);
     if (ret == SUCCESS_CODE) {
         memcpy_s(entropy, ENTROPY_MAX_LEN, accountSecret.entropy, ENTROPY_MAX_LEN);
         *entropyLen = accountSecret.entropyLen;

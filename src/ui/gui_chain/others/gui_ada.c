@@ -11,6 +11,7 @@
 #include "gui_hintbox.h"
 #include "gui.h"
 #include "user_memory.h"
+#include "drv_mpu.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_mock_define.h"
@@ -295,7 +296,9 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
     do {
         uint8_t entropy[64];
         uint8_t len = 0;
+        MpuSetOtpProtection(false);
         GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        MpuSetOtpProtection(true);
         encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);

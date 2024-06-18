@@ -100,15 +100,18 @@ void ProcessURService(EAPDURequestPayload_t *payload)
         return;
     }
     struct URParseResult *urResult = parse_ur((char *)payload->data);
-    printf("%s %d..\n", __func__, __LINE__);
     if (urResult->error_code != 0) {
         HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), g_requestID, PRS_PARSING_ERROR);
         return;
     }
-    printf("%s %d..\n", __func__, __LINE__);
-    UrViewType_t urViewType = {0, 0};
+    UrViewType_t urViewType;
     urViewType.viewType = urResult->t;
     urViewType.urType = urResult->ur_type;
+    printf("urResult->t=%d, urResult->ur_type=%d\n", urResult->t, urResult->ur_type);
+    if (!CheckViewTypeIsAllow(urViewType.viewType)) {
+        const char *data = "this view type is not supported";
+        HandleURResultViaUSBFunc(data, strlen(data), g_requestID, RSP_FAILURE_CODE);
+    }
     HandleDefaultViewType(urResult, NULL, urViewType, false);
     PtrT_TransactionCheckResult checkResult = CheckUrResult(urViewType.viewType);
     if (checkResult != NULL && checkResult->error_code == 0) {

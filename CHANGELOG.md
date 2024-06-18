@@ -1,3 +1,11 @@
+
+## 1.5.0(2024-06-18)
+
+### What's new
+
+1. Added support for TON through integration with Tonkeeper
+
+
 ## 1.4.8(2024-06-03)
 
 ### What's new

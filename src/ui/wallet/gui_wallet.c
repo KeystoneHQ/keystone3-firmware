@@ -439,7 +439,7 @@ UREncodeResult *GuiGetKeystoneWalletData(void)
 
     keys[3].path = GetXPubPath(XPUB_TYPE_BCH);
     keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
-    
+
     keys[4].path = GetXPubPath(XPUB_TYPE_DASH);
     keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DASH);
 

@@ -25,6 +25,7 @@ int32_t GuiScanViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         GuiScanResult(true, param);
         break;
     case SIG_TRANSACTION_CHECK_PASS:
+        printf("chekx pass");
         GuiTransactionCheckPass();
         break;
     case SIG_TRANSACTION_CHECK_FAIL:

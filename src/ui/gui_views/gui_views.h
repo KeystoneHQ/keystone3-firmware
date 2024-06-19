@@ -238,7 +238,6 @@ void GuiWriteSeResult(bool en, int32_t errorCode);
 void GuiWriteSeLowPower(void);
 void CloseWaringPageHandler(lv_event_t *e);
 void CloseCurrentViewHandler(lv_event_t *e);
-void CloseCurrentParentAndCloseViewHandler(lv_event_t *e);
 void CloseToTargetTileView(uint8_t currentIndex, uint8_t targetIndex);
 void CloseParentAndNextHandler(lv_event_t *e);
 void GuiViewHintBoxClear(void);

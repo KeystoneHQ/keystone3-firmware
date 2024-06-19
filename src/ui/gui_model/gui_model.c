@@ -751,10 +751,14 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
     uint8_t existIndex = 0;
     if (ton) {
         VecFFI_u8 *entropyResult = ton_mnemonic_to_entropy(SecretCacheGetMnemonic());
-        char checksum[33] = {'\0'};
+        uint8_t checksum[32] = {0};
         CalculateTonChecksum(entropyResult->data, checksum);
         free_VecFFI_u8(entropyResult);
-        existIndex = SpecifiedXPubExist(checksum, ton);
+        char value[65] = {0};
+        for (size_t i = 0; i < 32; i++) {
+            snprintf_s(value, 65, "%s%02x", value, checksum[i]);
+        }
+        existIndex = SpecifiedXPubExist(value, ton);
         if (index != NULL) {
             *index = existIndex;
         }
@@ -763,8 +767,7 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
         } else {
             ret = SUCCESS_CODE;
         }
-    }
-    else {
+    } else {
         do {
             SimpleResponse_c_char *xPubResult;
             if (bip39) {

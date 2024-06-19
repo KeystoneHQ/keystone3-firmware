@@ -93,7 +93,8 @@ bool IsMessageType(uint8_t type)
     return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type) || type == BtcMsg || type == ArweaveMessage;
 }
 
-bool isTonSignProof(uint8_t type) {
+bool isTonSignProof(uint8_t type)
+{
     return type == TonSignProof;
 }
 #endif

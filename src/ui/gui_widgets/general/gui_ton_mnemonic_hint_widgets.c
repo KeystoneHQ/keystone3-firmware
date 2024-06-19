@@ -10,7 +10,8 @@ static void TonNewMnemonicHandler(lv_event_t *e)
     GuiFrameOpenViewWithParam(&g_singlePhraseView, &entropyMethod, sizeof(entropyMethod));
 }
 
-void GuiTonMnemonicHintWidgetsInit() {
+void GuiTonMnemonicHintWidgetsInit()
+{
     g_tonPhraseHintPage = CreatePageWidget();
     SetNavBarLeftBtn(g_tonPhraseHintPage->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     lv_obj_t *parent = g_tonPhraseHintPage->contentZone;
@@ -41,6 +42,7 @@ void GuiTonMnemonicHintWidgetsInit() {
 
     lv_obj_add_event_cb(btn, TonNewMnemonicHandler, LV_EVENT_CLICKED, NULL);
 }
-void GuiTonMnemonicHintWidgetsDeInit() {
+void GuiTonMnemonicHintWidgetsDeInit()
+{
     GUI_PAGE_DEL(g_tonPhraseHintPage);
 }

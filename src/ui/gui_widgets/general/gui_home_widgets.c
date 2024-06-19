@@ -102,6 +102,8 @@ static void GuiInitWalletState()
         for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
             g_walletState[i].enable = true;
         }
+        g_walletState[HOME_WALLET_CARD_BNB].enable = false;
+        g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = false;
         g_walletState[HOME_WALLET_CARD_TON].enable = false;
         break;
@@ -109,6 +111,8 @@ static void GuiInitWalletState()
         for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
             g_walletState[i].enable = true;
         }
+        g_walletState[HOME_WALLET_CARD_BNB].enable = false;
+        g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = true;
         g_walletState[HOME_WALLET_CARD_TON].enable = false;
         break;
@@ -746,8 +750,8 @@ static void OpenManageAssetsHandler(lv_event_t *e)
         heightIndex++;
     }
 
-    if(GetMnemonicType() == MNEMONIC_TYPE_TON) {
-        lv_obj_t *label = GuiCreateIllustrateLabel(checkBoxCont, _("ton_manage_assets_hint"));
+    if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
+        lv_obj_t *label = GuiCreateIllustrateLabel(checkBoxCont, _("import_ton_mnemonic_desc"));
         lv_obj_set_width(label, 416);
         lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 32, 144);

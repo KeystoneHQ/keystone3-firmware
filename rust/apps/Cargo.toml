@@ -1,0 +1,15 @@
+[workspace]
+members = [
+    "aptos",
+    "arweave",
+    "bitcoin",
+    "cardano",
+    "cosmos",
+    "ethereum",
+    "near",
+    "solana",
+    "sui",
+    "tron",
+    "xrp",
+    "wallets",
+]

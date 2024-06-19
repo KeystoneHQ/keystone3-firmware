@@ -111,6 +111,7 @@ void ProcessURService(EAPDURequestPayload_t *payload)
     if (!CheckViewTypeIsAllow(urViewType.viewType)) {
         const char *data = "this view type is not supported";
         HandleURResultViaUSBFunc(data, strlen(data), g_requestID, RSP_FAILURE_CODE);
+        return;
     }
     HandleDefaultViewType(urResult, NULL, urViewType, false);
     PtrT_TransactionCheckResult checkResult = CheckUrResult(urViewType.viewType);

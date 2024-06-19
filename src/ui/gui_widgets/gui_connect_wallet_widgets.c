@@ -115,7 +115,7 @@ static const lv_img_dsc_t *g_okxWalletCoinArray[] = {
 };
 
 static const lv_img_dsc_t *g_keystoneWalletCoinArray[] = {
-    &coinBtc, &coinEth,&coinBnb, &coinBch,
+    &coinBtc, &coinEth, &coinBnb, &coinBch,
     &coinDash, &coinDot,  &coinLtc, &coinTrx, &coinXrp,
 };
 

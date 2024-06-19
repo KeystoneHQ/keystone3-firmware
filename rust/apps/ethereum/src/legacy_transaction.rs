@@ -42,7 +42,7 @@ impl TransactionRecoveryId {
     }
 }
 
-struct TransactionSignature {
+pub struct TransactionSignature {
     v: TransactionRecoveryId,
     r: H256,
     s: H256,
@@ -114,7 +114,7 @@ impl LegacyTransaction {
         self.input.clone()
     }
 
-    fn decode_rsv(rlp: &Rlp) -> Result<Option<TransactionSignature>, DecoderError> {
+    pub fn decode_rsv(rlp: &Rlp) -> Result<Option<TransactionSignature>, DecoderError> {
         if rlp.item_count()? == 6 {
             return Ok(None);
         } else if rlp.item_count()? == 9 {

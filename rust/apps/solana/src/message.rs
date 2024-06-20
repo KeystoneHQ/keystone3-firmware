@@ -24,6 +24,7 @@ impl Read<Signature> for Signature {
     }
 }
 
+#[derive(Clone)]
 pub struct Account {
     pub value: Vec<u8>,
 }
@@ -78,13 +79,9 @@ impl Read<Message> for Message {
         let accounts = Compact::read(raw)?.data;
         let block_hash = BlockHash::read(raw)?;
         let instructions = Compact::read(raw)?.data;
-        let address_table_lookups = match is_versioned{
-            true => {
-                Some(Compact::read(raw)?.data)
-            }
-            false => {
-                None
-            }
+        let address_table_lookups = match is_versioned {
+            true => Some(Compact::read(raw)?.data),
+            false => None,
         };
         Ok(Message {
             is_versioned,
@@ -92,13 +89,14 @@ impl Read<Message> for Message {
             accounts,
             block_hash,
             instructions,
-            address_table_lookups
+            address_table_lookups,
         })
     }
 }
 
 impl Message {
     pub fn to_program_details(&self) -> Result<Vec<SolanaDetail>> {
+        let accounts = self.prepare_accounts();
         self.instructions
             .iter()
             .map(|instruction| {
@@ -106,7 +104,10 @@ impl Message {
                     .account_indexes
                     .iter()
                     .map(|account_index| {
-                        base58::encode(&self.accounts[usize::from(*account_index)].value)
+                        accounts
+                            .get(*account_index as usize)
+                            .map(|v| v.to_string())
+                            .unwrap_or("Unknown Account".to_string())
                     })
                     .collect::<Vec<String>>();
                 let program_account =
@@ -135,6 +136,33 @@ impl Message {
 
     pub fn validate(raw: &mut Vec<u8>) -> bool {
         Self::read(raw).is_ok()
+    }
+
+    fn prepare_accounts(&self) -> Vec<String> {
+        let mut accounts: Vec<String> = self
+            .accounts
+            .clone()
+            .iter()
+            .map(|v| base58::encode(&v.value))
+            .collect();
+        if let Some(table) = &self.address_table_lookups {
+            let mut child_accounts =
+                table
+                    .iter()
+                    .fold(vec![], |acc, cur: &MessageAddressTableLookup| {
+                        let mut indexes = cur.readonly_indexes.clone();
+                        indexes.append(&mut cur.writable_indexes.clone());
+                        indexes.sort();
+                        let parent_address = base58::encode(&cur.account_key.value);
+                        let child_accounts: Vec<String> = indexes
+                            .iter()
+                            .map(|v| format!("{}#{}", &parent_address, v))
+                            .collect();
+                        vec![acc, child_accounts].concat()
+                    });
+            accounts.append(&mut child_accounts);
+        }
+        accounts
     }
 }
 

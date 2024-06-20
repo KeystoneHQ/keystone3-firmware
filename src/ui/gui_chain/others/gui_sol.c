@@ -39,19 +39,16 @@ static ViewType g_viewType = ViewTypeUnKnown;
 
 void GuiSetSolUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
-#ifndef COMPILE_SIMULATOR
     g_urResult = urResult;
     g_urMultiResult = urMultiResult;
     g_isMulti = multi;
     g_viewType = g_isMulti ? urMultiResult->t : g_urResult->t;
-#endif
 }
 
 UREncodeResult *GuiGetSolSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
@@ -64,20 +61,10 @@ UREncodeResult *GuiGetSolSignQrCodeData(void)
     } while (0);
     SetLockScreen(enable);
     return encodeResult;
-#else
-    UREncodeResult *encodeResult = NULL;
-    encodeResult->is_multi_part = 0;
-    encodeResult->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    encodeResult->encoder = NULL;
-    encodeResult->error_code = 0;
-    encodeResult->error_message = NULL;
-    return encodeResult;
-#endif
 }
 
 void *GuiGetSolData(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_SOL_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
@@ -86,26 +73,18 @@ void *GuiGetSolData(void)
         g_parseResult = (void *)parseResult;
     } while (0);
     return g_parseResult;
-#else
-    return NULL;
-#endif
 }
 
 PtrT_TransactionCheckResult GuiGetSolCheckResult(void)
 {
-#ifndef COMPILE_SIMULATOR
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
     return solana_check(data,  mfp, sizeof(mfp));
-#else
-    return NULL;
-#endif
 }
 
 void *GuiGetSolMessageData(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_SOL_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
@@ -118,18 +97,13 @@ void *GuiGetSolMessageData(void)
         g_parseResult = (void *)parseResult;
     } while (0);
     return g_parseResult;
-#else
-    return NULL;
-#endif
 }
 
 void FreeSolMemory(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_SOL_RESULT(g_parseResult);
-#endif
 }
 
 void GetSolMessageType(void *indata, void *param, uint32_t maxLen)

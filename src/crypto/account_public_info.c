@@ -421,7 +421,6 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
         ret = GetAccountSeed(accountIndex, seed, password);
         CHECK_ERRCODE_BREAK("get seed", ret);
         ret = GetAccountEntropy(accountIndex, entropy, &entropyLen, password);
-        printf("%s %d..\n", __func__, __LINE__);
         printf("g_otpProtect = %d\r\n", g_otpProtect);
         CHECK_ERRCODE_BREAK("get entropy", ret);
         SimpleResponse_c_char* response = NULL;
@@ -431,17 +430,14 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             CHECK_AND_FREE_XPUB(response)
             icarusMasterKey = response -> data;
         }
-        printf("%s %d..\n", __func__, __LINE__);
 
         for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
             // SLIP32 wallet does not support ADA
             if (isSlip39 && g_chainTable[i].cryptoKey == BIP32_ED25519) {
                 continue;
             }
-            printf("%s %d..\n", __func__, __LINE__);
 
             xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey);
-            printf("%s %d..\n", __func__, __LINE__);
             if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                 continue;
             }

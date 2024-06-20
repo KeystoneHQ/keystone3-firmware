@@ -123,7 +123,6 @@ int32_t Atecc608bEncryptRead(uint8_t slot, uint8_t block, uint8_t *data)
 
     MpuSetOtpProtection(false);
     do {
-        printf("%s %d..\n", __func__, __LINE__);
         GetEncryptKey(encryptKey);
         GetAuthKey(authKey);
         TrngGet(nonce, 20);
@@ -231,7 +230,6 @@ static int32_t Atecc608bBinding(void)
     do {
         ret = atcab_is_config_locked(&isLock);
         CHECK_ATECC608B_RET("get lock", ret);
-        printf("%s %d..\n", __func__, __LINE__);
         OTP_PowerOn();
         memcpy(keys, (uint8_t *)OTP_ADDR_ATECC608B, sizeof(keys));
         if (CheckEntropy(keys, 96)) {
@@ -271,8 +269,6 @@ static void GetIoProtectKey(uint8_t *ioProtectKey)
 #ifdef ATECC608B_TEST_MODE
     memcpy(ioProtectKey, g_ateccTestIoProtectKey, sizeof(g_ateccTestIoProtectKey));
 #else
-    // printf("current task = %s\r\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
-    printf("%s %d..\n", __func__, __LINE__);
     OTP_PowerOn();
     memcpy(ioProtectKey, (uint8_t *)IO_PROTECT_KEY_ADDR, 32);
 #endif
@@ -285,7 +281,6 @@ static void GetAuthKey(uint8_t *authKey)
 #ifdef ATECC608B_TEST_MODE
     memcpy(authKey, g_ateccTestAuthKey, sizeof(g_ateccTestAuthKey));
 #else
-    printf("%s %d..\n", __func__, __LINE__);
     OTP_PowerOn();
     memcpy(authKey, (uint8_t *)AUTH_KEY_ADDR, 32);
 #endif
@@ -298,7 +293,6 @@ static void GetEncryptKey(uint8_t *encryptKey)
 #ifdef ATECC608B_TEST_MODE
     memcpy(encryptKey, g_ateccTestEncryptKey, sizeof(g_ateccTestEncryptKey));
 #else
-    printf("%s %d..\n", __func__, __LINE__);
     OTP_PowerOn();
     memcpy(encryptKey, (uint8_t *)ENCRYPT_KEY_ADDR, 32);
 #endif

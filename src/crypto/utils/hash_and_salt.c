@@ -31,7 +31,6 @@ void HashWithSalt(uint8_t *outData, const uint8_t *inData, uint32_t inLen, const
     memcpy(saltData, g_saltData, sizeof(saltData));
 #else
     //Get salt data from OTP, if salt data does not exist, then generate a ramdom salt data.
-    printf("%s %d..\n", __func__, __LINE__);
     OTP_PowerOn();
     memcpy(saltData, (uint8_t *)OTP_ADDR_SALT, SALT_DATA_LEN);
     //PrintArray("saltData", saltData, SALT_DATA_LEN);

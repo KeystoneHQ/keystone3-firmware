@@ -92,6 +92,7 @@ const ProtocolServiceCallbackFunc_t g_fileTransInfoServiceFunc[] = {
     ServiceFileTransInfo,                       //2.1
     ServiceFileTransContent,                    //2.2
     ServiceFileTransComplete,                   //2.3
+    ServiceFileTransGetPubkey,                  //2.4
 };
 
 static int ValidateAndSetFileName(Tlv_t *tlvArray, FileTransInfo_t *fileTransInfo)
@@ -176,25 +177,25 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
         sha256((struct sha256 *)hash, g_fileTransInfo.md5, 16);
         PrintArray("hash", hash, 32);
 
-        // if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
-        //     printf("verify signature fail\n");
-        //     sendTlvArray[0].value = 3;
-        //     break;
-        // }
+        if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
+            printf("verify signature fail\n");
+            sendTlvArray[0].value = 3;
+            break;
+        }
         printf("verify signature ok\n");
         uint8_t walletAmount;
 
-        // GetExistAccountNum(&walletAmount);
-        // if (GetCurrentAccountIndex() == ACCOUNT_INDEX_LOGOUT && walletAmount != 0) {
-        //     GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_UPDATE_DENY, 1);
-        //     sendTlvArray[0].value = 2;
-        //     break;
-        // }
-        // if (GetBatterPercent() < LOW_BATTERY_PERCENT) {
-        //     GuiApiEmitSignalWithValue(SIG_INIT_LOW_BATTERY, 1);
-        //     sendTlvArray[0].value = 1;
-        //     break;
-        // }
+        GetExistAccountNum(&walletAmount);
+        if (GetCurrentAccountIndex() == ACCOUNT_INDEX_LOGOUT && walletAmount != 0) {
+            GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_UPDATE_DENY, 1);
+            sendTlvArray[0].value = 2;
+            break;
+        }
+        if (GetBatterPercent() < LOW_BATTERY_PERCENT) {
+            GuiApiEmitSignalWithValue(SIG_INIT_LOW_BATTERY, 1);
+            sendTlvArray[0].value = 1;
+            break;
+        }
         g_fileTransCtrl.startTick = osKernelGetTickCount();
         MD5_Init(&g_md5Ctx);
 
@@ -323,4 +324,9 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
 static void FileTransTimeOutTimerFunc(void *argument)
 {
     g_isReceivingFile = false;
+}
+
+static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
+{
+
 }

@@ -12,7 +12,6 @@
 int32_t GetSerialNumber(char *serialNumber)
 {
     char temp[256];
-    printf("%s %d..\n", __func__, __LINE__);
     OTP_PowerOn();
     memcpy(temp, (uint8_t *)OTP_ADDR_SN, 256);
     if (CheckEntropy((uint8_t *)temp, 256) == false) {
@@ -39,7 +38,6 @@ int32_t SetSerialNumber(const char *serialNumber)
         return ret;
     }
     ASSERT(strnlen_s(serialNumber, SERIAL_NUMBER_MAX_LEN - 1) < SERIAL_NUMBER_MAX_LEN);
-    printf("%s %d..\n", __func__, __LINE__);
     OTP_PowerOn();
     CLEAR_ARRAY(temp);
     strcpy_s(temp, SERIAL_NUMBER_MAX_LEN, serialNumber);
@@ -51,7 +49,6 @@ int32_t GetWebAuthRsaKey(uint8_t *key)
 {
     uint8_t *data;
 
-    printf("%s %d..\n", __func__, __LINE__);
     OTP_PowerOn();
     data = SRAM_MALLOC(WEB_AUTH_RSA_KEY_LEN);
     memcpy(data, (uint8_t *)OTP_ADDR_WEB_AUTH_RSA_KEY, WEB_AUTH_RSA_KEY_LEN);
@@ -75,7 +72,6 @@ int32_t SetWebAuthRsaKey(const uint8_t *key)
         SRAM_FREE(data);
         return ERR_WEB_AUTH_KEY_ALREADY_EXIST;
     }
-    printf("%s %d..\n", __func__, __LINE__);
     OTP_PowerOn();
     memcpy_s(data, WEB_AUTH_RSA_KEY_LEN, key, WEB_AUTH_RSA_KEY_LEN);
     for (uint32_t i = 0; i < WEB_AUTH_RSA_KEY_LEN; i += 256) {
@@ -90,7 +86,6 @@ bool GetFactoryResult(void)
 {
 #if (FACTORY_RESULT_CHECK_ENABLE == 1)
     uint32_t data;
-    printf("%s %d..\n", __func__, __LINE__);
     OTP_PowerOn();
     memcpy(&data, (uint32_t *)OTA_ADDR_FACTORY_BASE, 4);
     if (data != 0xFFFFFFFF) {
@@ -124,7 +119,6 @@ int32_t GetUpdatePubKey(uint8_t *pubKey)
 {
     uint8_t data[UPDATE_PUB_KEY_LEN];
     uint32_t addr;
-    printf("%s %d..\n", __func__, __LINE__);
 
     OTP_PowerOn();
     for (addr = OTP_ADDR_UPDATE_PUB_KEY + 1024 - UPDATE_PUB_KEY_LEN; addr >= OTP_ADDR_UPDATE_PUB_KEY; addr -= UPDATE_PUB_KEY_LEN) {
@@ -158,7 +152,6 @@ int32_t SetUpdatePubKey(const uint8_t *pubKey)
 {
     uint8_t data[UPDATE_PUB_KEY_LEN];
     uint32_t addr;
-    printf("%s %d..\n", __func__, __LINE__);
 
     OTP_PowerOn();
     for (addr = OTP_ADDR_UPDATE_PUB_KEY; addr < OTP_ADDR_UPDATE_PUB_KEY + 1024; addr += UPDATE_PUB_KEY_LEN) {

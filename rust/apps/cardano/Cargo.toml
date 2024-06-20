@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 keystore = { path = "../../keystore", default-features = false }
 third_party = { path = "../../third_party" }
-cardano-serialization-lib = { git = "https://git@github.com/KeystoneHQ/cardano-serialization-lib.git", tag = "keystone-0.1.1" }
+cardano-serialization-lib = { git = "https://git@github.com/KeystoneHQ/cardano-serialization-lib.git", branch = "feat/ada-integration-v2" }
 app_utils = { path = "../utils" }
 rust_tools = { path = "../../tools" }
 

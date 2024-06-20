@@ -741,7 +741,7 @@ static void CombineInnerAesKey(uint8_t *aesKey)
 {
     uint8_t aesPiece[AES_KEY_LEN];
 #ifndef COMPILE_SIMULATOR
-    printf("%s %d..\n", __func__, __LINE__);
+    
     OTP_PowerOn();
     memcpy_s(aesPiece, sizeof(aesPiece), (uint8_t *)OTP_ADDR_AES_KEY, AES_KEY_LEN);
     if (CheckEntropy(aesPiece, AES_KEY_LEN) == false) {

@@ -658,7 +658,6 @@ static UREncodeResult *GetEthSignDataDynamic(bool isUnlimited)
     do {
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        printf("%s %d..\n", __func__, __LINE__);
         MpuSetOtpProtection(false);
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         MpuSetOtpProtection(true);        

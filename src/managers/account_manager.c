@@ -298,7 +298,6 @@ int32_t GetExistAccountNum(uint8_t *accountNum)
     return SUCCESS_CODE;
 #endif
 
-    printf("%s %d..\n", __func__, __LINE__);
     MpuSetOtpProtection(false);
     printf("pcTaskGetName(xTaskGetCurrentTaskHandle())) = %s.\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     for (uint8_t i = 0; i < 3; i++) {

@@ -108,6 +108,8 @@ typedef enum {
     XPUB_TYPE_ADA_22,
     XPUB_TYPE_ADA_23,
     XPUB_TYPE_ARWEAVE,
+    XPUB_TYPE_TON_NATIVE,
+    PUBLIC_INFO_TON_CHECKSUM,
 #else
     XPUB_TYPE_BTC_TEST,
     XPUB_TYPE_BTC_LEGACY_TEST,
@@ -130,12 +132,13 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
 int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool set);
 void DeleteAccountPublicInfo(uint8_t accountIndex);
 char *GetCurrentAccountPublicKey(ChainType chain);
-uint8_t SpecifiedXPubExist(const char *xPub);
+uint8_t SpecifiedXPubExist(const char *xPub, bool isTon);
 void AccountPublicInfoTest(int argc, char *argv[]);
 bool GetFirstReceive(const char* chainName);
 void SetFirstReceive(const char* chainName, bool isFirst);
 void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count);
 char *GetXPubPath(uint8_t index);
+void CalculateTonChecksum(uint8_t *entropy, char* output);
 
 void ExportMultiSigXpub(ChainType chainType);
 void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager);

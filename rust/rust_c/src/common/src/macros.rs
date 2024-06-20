@@ -21,7 +21,7 @@ macro_rules! impl_c_ptr {
         }
     };
     ($name:ident<$t: ident>) => {
-        impl<$t: Free> $name<$t> {
+        impl<$t> $name<$t> {
             #[cfg(feature = "debug-memory")]
             #[track_caller]
             pub fn c_ptr(self) -> *mut Self {
@@ -169,6 +169,12 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+        #[cfg(feature = "multi-coins")]
+        impl From<app_ton::errors::TonError> for $name {
+            fn from(value: app_ton::errors::TonError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
     };
 
     ($name:ident<$t:ident>) => {
@@ -272,6 +278,12 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+        #[cfg(feature = "multi-coins")]
+        impl<$t: Free> From<app_ton::errors::TonError> for $name<$t> {
+            fn from(value: app_ton::errors::TonError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
     };
 }
 
@@ -360,6 +372,12 @@ macro_rules! impl_simple_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+        #[cfg(feature = "multi-coins")]
+        impl<$t> From<app_ton::errors::TonError> for $name<$t> {
+            fn from(value: app_ton::errors::TonError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
 
         impl<$t> From<RustCError> for $name<$t> {
             fn from(value: RustCError) -> Self {
@@ -416,6 +434,15 @@ macro_rules! impl_c_ptrs {
             impl_c_ptr!($name<$t>);
         )*
     }
+}
+
+#[macro_export]
+macro_rules! impl_simple_free {
+    ($($name: ident), *) => {
+        $(
+            impl SimpleFree for $name {fn free(&self){}}
+        )*
+    };
 }
 
 #[macro_export]

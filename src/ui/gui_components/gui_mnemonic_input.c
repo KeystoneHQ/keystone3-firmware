@@ -196,21 +196,36 @@ void ImportSinglePhraseWords(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
     mnemonic[strlen(mnemonic) - 1] = '\0';
 
     SecretCacheSetMnemonic(mnemonic);
+
+    bool isTon = ton_verify_mnemonic(mnemonic);
     if (mkb->intputType == MNEMONIC_INPUT_IMPORT_VIEW) {
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
-        Bip39Data_t bip39 = {
-            .wordCnt = mkb->wordCnt,
-            .forget = false,
-        };
-        GuiModelBip39CalWriteSe(bip39);
-        GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
+        if (isTon) {
+            GuiEmitSignal(SIG_SETUP_SHOW_TON_MNEMONIC_HINT, NULL, 0);
+
+        } else {
+            GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+            Bip39Data_t bip39 = {
+                .wordCnt = mkb->wordCnt,
+                .forget = false,
+            };
+            GuiModelBip39CalWriteSe(bip39);
+            GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
+        }
         // GuiSetLetterBoardConfirm(letterKb, 0);
     } else if (mkb->intputType == MNEMONIC_INPUT_SETTING_VIEW) {
-        GuiModelBip39RecoveryCheck(mkb->wordCnt);
+        if (isTon) {
+            GuiModelTonRecoveryCheck();
+        } else {
+            GuiModelBip39RecoveryCheck(mkb->wordCnt);
+        }
         GuiSettingRecoveryCheck();
     } else if (mkb->intputType == MNEMONIC_INPUT_FORGET_VIEW) {
         GuiForgetAnimContDel(1);
-        GuiModelBip39ForgetPassword(mkb->wordCnt);
+        if (isTon) {
+            GuiModelTonForgetPassword();
+        } else {
+            GuiModelBip39ForgetPassword(mkb->wordCnt);
+        }
     }
     lv_obj_add_flag(letterKb->cont, LV_OBJ_FLAG_HIDDEN);
     lv_obj_set_height(mkb->cont, 400);

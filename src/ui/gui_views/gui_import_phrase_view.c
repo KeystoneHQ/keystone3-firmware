@@ -40,6 +40,9 @@ int32_t GuiImportPhraseViewEventProcess(void *self, uint16_t usEvent, void *para
     case SIG_SETUP_VIEW_TILE_NEXT:
         GuiImportPhraseNextTile();
         break;
+    case SIG_SETUP_SHOW_TON_MNEMONIC_HINT:
+        GuiShowTonMnemonicHint();
+        break;
     case SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS:
         GuiImportPhraseWriteSe(true, 0);
         break;

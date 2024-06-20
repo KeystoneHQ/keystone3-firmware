@@ -419,6 +419,10 @@ static void RefreshQrCode(void)
             lv_label_set_text(g_standardReceiveWidgets.addressLabel, fixedAddress->data);
         }
         free_simple_response_c_char(fixedAddress);
+    } else if (g_chainCard == HOME_WALLET_CARD_TON) {
+        char address[128];
+        snprintf_s(address, 128, "%.22s\n%s", addressDataItem.address, &addressDataItem.address[22]);
+        lv_label_set_text(g_standardReceiveWidgets.addressLabel, address);
     } else {
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressDataItem.address);
     }
@@ -605,6 +609,17 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
         result = arweave_get_address(xPub);
         break;
+    case HOME_WALLET_CARD_TON: {
+        bool isTonNative = GetMnemonicType() == MNEMONIC_TYPE_TON;
+        if (isTonNative) {
+            xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
+            result = ton_get_address(xPub);
+        } else {
+            ASSERT(false);
+            //remains for bip39 ton
+        }
+        break;
+    }
     default:
         if (IsCosmosChain(g_chainCard)) {
             char rootPath[BUFFER_SIZE_128];

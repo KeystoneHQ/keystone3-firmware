@@ -20,6 +20,8 @@ static uint8_t g_checksumCache[32] = {0};
 static uint32_t g_emsLen;
 static char *g_mnemonicCache = NULL;
 static char *g_slip39MnemonicCache[SLIP39_MAX_MEMBER];
+static uint8_t g_walletIconIndex = 0;
+static char *g_walletName = NULL;
 static uint8_t g_diceRollHashCache[32] = {0};
 static uint16_t g_identifier;
 static uint16_t g_iteration;
@@ -32,6 +34,30 @@ void SecretCacheSetChecksum(uint8_t *checksum)
 void SecretCacheGetChecksum(char *checksum)
 {
     ByteArrayToHexStr(g_checksumCache, sizeof(g_checksumCache), checksum);
+}
+
+void SecretCacheSetWalletIndex(uint8_t iconIndex)
+{
+    g_walletIconIndex = iconIndex;
+}
+
+uint8_t *SecretCacheGetWalletIconIndex()
+{
+    return g_walletIconIndex;
+}
+
+void SecretCacheSetWalletName(char* walletName)
+{
+    if (g_walletName) {
+        SRAM_FREE(g_walletName);
+    }
+    g_walletName = SRAM_MALLOC(17);
+    strcpy_s(g_walletName, 17, walletName);
+}
+
+char *SecretCacheGetWalletName()
+{
+    return g_walletName;
 }
 
 void SecretCacheSetPassword(char *password)
@@ -212,6 +238,11 @@ void ClearSecretCache(void)
         memset_s(g_mnemonicCache, len, 0, len);
         SRAM_FREE(g_mnemonicCache);
         g_mnemonicCache = NULL;
+    }
+
+    if (g_walletName != NULL) {
+        SRAM_FREE(g_walletName);
+        g_walletName = NULL;
     }
 
     for (int i = 0; i < SLIP39_MAX_MEMBER; i++) {

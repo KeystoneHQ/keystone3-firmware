@@ -43,6 +43,7 @@ static CreateWalletWidget_t g_createWalletTileView;
 
 static void OpenMoreHandler(lv_event_t *e);
 static void OpenChangeEntropyHandler(lv_event_t *e);
+static void TonPhraseButtonHandler(lv_event_t *e);
 static void GuiRefreshNavBar(void);
 static void CloseChangeEntropyHandler(lv_event_t *e);
 static void OpenChangeEntropyTutorialHandler(lv_event_t *e);
@@ -58,7 +59,8 @@ static lv_obj_t *g_noticeWindow = NULL;
 static char g_pinBuf[PASSWORD_MAX_LEN + 1];
 static lv_obj_t *g_openMoreHintBox;
 static PageWidget_t *g_changeEntropyPage;
-static uint8_t g_selectedEntropyMethod = 0;
+//indicates the way to generate entropy;
+static uint8_t g_selectedEntropyMethod = ENTROPY_TYPE_STANDARD;
 
 void GuiSetupKeyboardWidgetMode(void)
 {
@@ -161,7 +163,7 @@ static void OpenNoticeHandler(lv_event_t *e)
 
 static void OpenSecretShareHandler(lv_event_t *e)
 {
-    if (g_selectedEntropyMethod == 0) {
+    if ((g_selectedEntropyMethod & ENTROPY_TYPE_MASK) == 0) {
         GuiFrameOpenViewWithParam(&g_createShareView, &g_selectedEntropyMethod, sizeof(g_selectedEntropyMethod));
     } else {
         uint8_t index = SEED_TYPE_SLIP39;
@@ -207,7 +209,7 @@ static void SelectImportShareHandler(lv_event_t *e)
 
 static void GuiCreateBackupWidget(lv_obj_t *parent)
 {
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_backup_choose_backup_title"));
+    lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("single_backup_choose_backup_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
     label = GuiCreateIllustrateLabel(parent, _("single_backup_choose_backup_desc"));
@@ -297,7 +299,7 @@ static void GuiImportBackupWidget(lv_obj_t *parent)
 void GuiCreateWalletInit(uint8_t walletMethod)
 {
     CLEAR_OBJECT(g_createWalletTileView);
-    g_selectedEntropyMethod = 0;
+    g_selectedEntropyMethod = ENTROPY_TYPE_STANDARD;
 
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
@@ -335,13 +337,16 @@ int8_t GuiCreateWalletNextTile(void)
 {
     switch (g_createWalletTileView.currentTile) {
     case CREATE_WALLET_BACKUPFROM:
-        if (g_selectedEntropyMethod == 0) {
+        if ((g_selectedEntropyMethod & ENTROPY_TYPE_MASK) == 0) {
             return GuiFrameOpenViewWithParam(&g_singlePhraseView, &g_selectedEntropyMethod, sizeof(g_selectedEntropyMethod));
         } else {
             uint8_t index = SEED_TYPE_BIP39;
             return GuiFrameOpenViewWithParam(&g_diceRollsView, &index, sizeof(index));
         }
+        break;
     case CREATE_WALLET_NAMEWALLET:
+        SecretCacheSetWalletIndex(GuiGetEmojiIconIndex());
+        SecretCacheSetWalletName(GetCurrentKbWalletName());
         break;
     case CREATE_WALLET_SETPIN:
         if (g_repeatPassCode == NULL) {
@@ -474,7 +479,7 @@ void GuiCreateWalletRefresh(void)
 
 static void OpenMoreHandler(lv_event_t *e)
 {
-    int hintboxHeight = 228;
+    int hintboxHeight = 312;
     g_openMoreHintBox = GuiCreateHintBox(hintboxHeight);
     lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
     lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, _("Tutorial"));
@@ -496,13 +501,21 @@ static void OpenMoreHandler(lv_event_t *e)
                                     QuestionMarkEventCb, NULL);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 
+    label = GuiCreateTextLabel(g_openMoreHintBox, _("generate_ton_mnenonic"));
+    img = GuiCreateImg(g_openMoreHintBox, &imgTonPhrase);
+    table[0].obj = img;
+    table[1].obj = label;
+    btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
+                          TonPhraseButtonHandler, NULL);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -120);
+
     label = GuiCreateTextLabel(g_openMoreHintBox, _("change_entropy"));
     img = GuiCreateImg(g_openMoreHintBox, &imgDice);
     table[0].obj = img;
     table[1].obj = label;
     btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
                           OpenChangeEntropyHandler, NULL);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -120);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -216);
 }
 
 // Change Entropy
@@ -634,6 +647,12 @@ static void OpenChangeEntropyHandler(lv_event_t *e)
     CreateChangeEntropyView();
 }
 
+static void TonPhraseButtonHandler(lv_event_t *e)
+{
+    GUI_DEL_OBJ(g_openMoreHintBox);
+    GuiFrameOpenView(&g_tonMnemonicHintView);
+}
+
 static void CloseChangeEntropyHandler(lv_event_t *e)
 {
     GUI_PAGE_DEL(g_changeEntropyPage);
@@ -643,7 +662,7 @@ static void ChangeEntropyMethodConfirmHandler(lv_event_t *e)
 {
     GUI_PAGE_DEL(g_changeEntropyPage);
     g_selectedEntropyMethod = g_selectedEntropyMethodCache;
-    if (g_selectedEntropyMethod == 1) {
+    if ((g_selectedEntropyMethod & ENTROPY_TYPE_MASK) == 1) {
         if (lv_obj_has_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN)) {
             lv_obj_clear_flag(g_createWalletTileView.diceRollsHint, LV_OBJ_FLAG_HIDDEN);
         }

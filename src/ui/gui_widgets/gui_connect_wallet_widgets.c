@@ -60,6 +60,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_ZAPPER, &walletListZapper, true},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true},
+    {WALLET_LIST_TONKEEPER, &walletListTonkeeper, false},
 #else
     {WALLET_LIST_BLUE, &walletListBtcBlue, true, false},
     {WALLET_LIST_SPARROW, &walletListBtcSparrow, true, false},
@@ -141,6 +142,10 @@ static const lv_img_dsc_t *g_petraCoinArray[1] = {
 
 static const lv_img_dsc_t *g_solfareCoinArray[1] = {
     &coinSol,
+};
+
+static const lv_img_dsc_t *g_tonKeeperCoinArray[1] = {
+    &coinTon,
 };
 
 static CoinState_t g_defaultFewchaState[FEWCHA_COINS_BUTT] = {
@@ -238,31 +243,48 @@ static void QRCodePause(bool);
 
 static void GuiInitWalletListArray()
 {
+    //open all
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
-#ifndef BTC_ONLY
-        if (g_walletListArray[i].index == WALLET_LIST_ETERNL ||
-                g_walletListArray[i].index == WALLET_LIST_TYPHON) {
-            if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
-                g_walletListArray[i].enable = false;
-            } else {
+        g_walletListArray[i].enable = true;
+    }
+    if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
+        for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+            if (g_walletListArray[i].index == WALLET_LIST_TONKEEPER) {
                 g_walletListArray[i].enable = true;
-            }
-        } else if (g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
-            g_walletListArray[i].enable = !GetIsTempAccount();
-        }
-#else
-        if (GetCurrentWalletIndex() != SINGLE_WALLET) {
-            if (g_walletListArray[i].index == WALLET_LIST_SPECTER ||
-                    g_walletListArray[i].index == WALLET_LIST_UNISAT) {
-                g_walletListArray[i].enable = false;
             } else {
-                g_walletListArray[i].enable = true;
+                g_walletListArray[i].enable = false;
             }
 
-        } else {
-            g_walletListArray[i].enable = true;
         }
+    } else {
+        for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+#ifndef BTC_ONLY
+            if (g_walletListArray[i].index == WALLET_LIST_ETERNL ||
+                    g_walletListArray[i].index == WALLET_LIST_TYPHON) {
+                if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
+                    g_walletListArray[i].enable = false;
+                } else {
+                    g_walletListArray[i].enable = true;
+                }
+            } else if (g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
+                g_walletListArray[i].enable = !GetIsTempAccount();
+            } else if (g_walletListArray[i].index == WALLET_LIST_TONKEEPER) {
+                g_walletListArray[i].enable = false;
+            }
+#else
+            if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+                if (g_walletListArray[i].index == WALLET_LIST_SPECTER ||
+                        g_walletListArray[i].index == WALLET_LIST_UNISAT) {
+                    g_walletListArray[i].enable = false;
+                } else {
+                    g_walletListArray[i].enable = true;
+                }
+
+            } else {
+                g_walletListArray[i].enable = true;
+            }
 #endif
+        }
     }
 }
 
@@ -332,7 +354,6 @@ void GuiConnectShowRsaSetupasswordHintbox(void)
 
 static void ReturnShowQRHandler(lv_event_t *e)
 {
-
     GUI_DEL_OBJ(g_coinListCont)
     QRCodePause(false);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN,
@@ -495,21 +516,38 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_ELASTIC);
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
 #ifndef BTC_ONLY
-    lv_obj_t *img = GuiCreateImg(parent, g_walletListArray[0].img);
-    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 0);
-    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED,
-                        &g_walletListArray[0]);
-    for (int i = 1, j = 1; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
-        if (!g_walletListArray[i].enable) {
-            continue;
+    bool isTon = GetMnemonicType() == MNEMONIC_TYPE_TON;
+    if (isTon) {
+        WalletListItem_t *t = NULL;
+        for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+            if (g_walletListArray[i].index == WALLET_LIST_TONKEEPER) {
+                t = &g_walletListArray[i];
+                break;
+            }
         }
-        lv_obj_t *img = GuiCreateImg(parent, g_walletListArray[i].img);
-        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 136 + (j - 1) * 107);
+        ASSERT(t != NULL);
+        lv_obj_t *img = GuiCreateImg(parent, t->img);
+        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 0);
         lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED,
-                            &g_walletListArray[i]);
-        j++;
+                            t);
+    } else {
+        lv_obj_t *img = GuiCreateImg(parent, g_walletListArray[0].img);
+        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 0);
+        lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED,
+                            &g_walletListArray[0]);
+        for (int i = 1, j = 1; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+            if (!g_walletListArray[i].enable) {
+                continue;
+            }
+            lv_obj_t *img = GuiCreateImg(parent, g_walletListArray[i].img);
+            lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 136 + (j - 1) * 107);
+            lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
+            lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED,
+                                &g_walletListArray[i]);
+            j++;
+        }
     }
 #else
     lv_obj_t *img, *line, *alphaImg;
@@ -768,6 +806,19 @@ static void AddPetraCoins(void)
     }
 }
 
+static void AddTonCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0; i < 1; i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_tonKeeperCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+}
+
 static void AddChainAddress(void)
 {
     if (lv_obj_get_child_cnt(g_bottomCont) > 0) {
@@ -850,6 +901,21 @@ UREncodeResult *GuiGetXrpToolkitData(void)
 UREncodeResult *GuiGetADAData(void)
 {
     return GuiGetADADataByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]);
+}
+
+UREncodeResult *GuiGetTonData(void)
+{
+    bool isTon = GetMnemonicType() == MNEMONIC_TYPE_TON;
+    if (isTon) {
+        char* xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
+        char* walletName = GetWalletName();
+        if (walletName == NULL) {
+            walletName = "Keystone";
+        }
+        return get_tonkeeper_wallet_ur(xpub, walletName, NULL, 0, NULL);
+    } else {
+        ASSERT(false);
+    }
 }
 
 void GuiPrepareArConnectWalletView(void)
@@ -943,6 +1009,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_XRP_TOOLKIT:
         func = GuiGetXrpToolkitData;
         AddChainAddress();
+        break;
+    case WALLET_LIST_TONKEEPER:
+        func = GuiGetTonData;
+        AddTonCoins();
         break;
 #else
     case WALLET_LIST_BLUE:

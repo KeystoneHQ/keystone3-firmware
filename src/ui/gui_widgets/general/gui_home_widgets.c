@@ -85,16 +85,41 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_UMEE, false, "UMEE", true},
     {HOME_WALLET_CARD_QCK, false, "QCK", true},
     {HOME_WALLET_CARD_TGD, false, "TGD", true},
+    {HOME_WALLET_CARD_TON, false, "TON", false},
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 
 static void GuiInitWalletState()
 {
-    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
+    for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+        g_walletState[i].enable = false;
+        g_walletState[i].state = false;
+    }
+    MnemonicType mnemonicType = GetMnemonicType();
+    switch (mnemonicType) {
+    case MNEMONIC_TYPE_SLIP39:
+        for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+            g_walletState[i].enable = true;
+        }
+        g_walletState[HOME_WALLET_CARD_BNB].enable = false;
+        g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = false;
-    } else {
+        g_walletState[HOME_WALLET_CARD_TON].enable = false;
+        break;
+    case MNEMONIC_TYPE_BIP39:
+        for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+            g_walletState[i].enable = true;
+        }
+        g_walletState[HOME_WALLET_CARD_BNB].enable = false;
+        g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = true;
+        g_walletState[HOME_WALLET_CARD_TON].enable = false;
+        break;
+    default:
+        g_walletState[HOME_WALLET_CARD_TON].enable = true;
+        g_walletState[HOME_WALLET_CARD_TON].state = true;
+        break;
     }
 }
 
@@ -380,6 +405,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "TGD",
         .chain = "Tgrade",
         .icon = &coinTgd,
+    },
+    {
+        .index = HOME_WALLET_CARD_TON,
+        .coin = "TON",
+        .chain = "The Open Network",
+        .icon = &coinTon,
     },
 };
 
@@ -717,6 +748,13 @@ static void OpenManageAssetsHandler(lv_event_t *e)
         }
         lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 96 * heightIndex);
         heightIndex++;
+    }
+
+    if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
+        lv_obj_t *label = GuiCreateIllustrateLabel(checkBoxCont, _("import_ton_mnemonic_desc"));
+        lv_obj_set_width(label, 416);
+        lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 32, 144);
     }
 
     lv_obj_t *btn = GuiCreateBtn(g_manageCont, USR_SYMBOL_CHECK);

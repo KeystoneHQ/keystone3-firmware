@@ -1,3 +1,5 @@
+use crate::ffi::VecFFI;
+use crate::make_free_method;
 use crate::structs::SimpleResponse;
 use crate::types::{PtrString, PtrT};
 use crate::ur::{UREncodeMultiResult, UREncodeResult, URParseMultiResult, URParseResult};
@@ -5,6 +7,10 @@ use alloc::boxed::Box;
 use cty::{c_char, c_void};
 
 pub trait Free {
+    fn free(&self);
+}
+
+pub trait SimpleFree {
     fn free(&self);
 }
 
@@ -144,3 +150,4 @@ pub extern "C" fn free_rust_value(any_ptr: *mut c_void) {
 // make_free_method!(TransactionParseResult<DisplaySuiIntentMessage>);
 // make_free_method!(TransactionParseResult<DisplayAptosTx>);
 // make_free_method!(TransactionCheckResult);
+make_free_method!(VecFFI<u8>);

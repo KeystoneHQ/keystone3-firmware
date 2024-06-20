@@ -20,6 +20,17 @@ pub fn hkdf(password: &[u8], salt: &[u8], iterations: u32) -> [u8; 32] {
     output
 }
 
+pub fn hkdf64(password: &[u8], salt: &[u8], iterations: u32) -> [u8; 64] {
+    let mut output = [0u8; 64];
+    pbkdf2(
+        &mut Hmac::new(Sha256::new(), password),
+        salt,
+        iterations,
+        &mut output,
+    );
+    output
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

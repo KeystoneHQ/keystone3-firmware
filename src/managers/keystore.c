@@ -92,13 +92,86 @@ int32_t GenerateEntropy(uint8_t *entropy, uint8_t entropyLen, const char *passwo
     return ret;
 }
 
+/// @brief Generate a valid ton mnemonic from SE and mcu TRNG.
+/// We do not consider ton mnemonic with password currently.
+/// The password here is actually the user's password.
+/// @param[out] entropy
+/// @param[in] entropyLen
+/// @param[in] password Password hash is part of the entropy sources.
+/// @return err code.
+int32_t GenerateTonMnemonic(char *mnemonic, const char *password)
+{
+    uint8_t randomBuffer[TON_ENTROPY_LEN], inputBuffer[TON_ENTROPY_LEN], outputBuffer[TON_ENTROPY_LEN];
+    int32_t ret;
+    char temp_mnemonic[MNEMONIC_MAX_LEN] = {'\0'};
+    int32_t count = 0;
+    //generate the randomness by se;
+    do {
+        HashWithSalt512(inputBuffer, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "generate entropy");
+
+        SE_GetTRng(randomBuffer, TON_ENTROPY_LEN);
+        KEYSTORE_PRINT_ARRAY("trng", randomBuffer, TON_ENTROPY_LEN);
+        // set the initial value
+        memcpy_s(outputBuffer, sizeof(outputBuffer), randomBuffer, TON_ENTROPY_LEN);
+        hkdf64(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
+
+        KEYSTORE_PRINT_ARRAY("outputBuffer", outputBuffer, TON_ENTROPY_LEN);
+        memcpy_s(inputBuffer, sizeof(inputBuffer), outputBuffer, TON_ENTROPY_LEN);
+
+        ret = SE_GetDS28S60Rng(randomBuffer, TON_ENTROPY_LEN);
+        CHECK_ERRCODE_BREAK("get ds28s60 trng", ret);
+        KEYSTORE_PRINT_ARRAY("ds28s60 rng", randomBuffer, TON_ENTROPY_LEN);
+        hkdf64(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
+        KEYSTORE_PRINT_ARRAY("outputBuffer", outputBuffer, TON_ENTROPY_LEN);
+        memcpy_s(inputBuffer, sizeof(inputBuffer), outputBuffer, TON_ENTROPY_LEN);
+
+        ret = SE_GetAtecc608bRng(randomBuffer, TON_ENTROPY_LEN);
+        CHECK_ERRCODE_BREAK("get 608b trng", ret);
+        KEYSTORE_PRINT_ARRAY("608b rng", randomBuffer, TON_ENTROPY_LEN);
+        hkdf64(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
+
+        KEYSTORE_PRINT_ARRAY("finalEntropy", outputBuffer, TON_ENTROPY_LEN);
+    } while (0);
+
+    //use randomness to generate the mnemonic
+    //if the mnemonic is not valid, hash the randomness and try again
+    while (true) {
+        printf("ton mnemonic generation, count: %d\r\n", count++);
+        for (size_t i = 0; i < 24; i++) {
+            uint32_t index = ((uint32_t)outputBuffer[i * 2] << 8 | outputBuffer[i * 2 + 1]) & 0x07ff;
+            char *word;
+            bip39_get_word(NULL, index, &word);
+            if (i != 0) {
+                strcat(temp_mnemonic, " ");
+            }
+            strcat(temp_mnemonic, word);
+            SRAM_FREE(word);
+        }
+        if (ton_verify_mnemonic(temp_mnemonic)) {
+            break;
+        } else {
+            memset_s(temp_mnemonic, sizeof(temp_mnemonic), 0, sizeof(temp_mnemonic));
+            uint8_t hash[64];
+            memcpy_s(hash, 64, outputBuffer, 64);
+            sha512((struct sha512 *)outputBuffer, hash, sizeof(hash));
+        }
+    }
+
+    CLEAR_ARRAY(outputBuffer);
+    CLEAR_ARRAY(inputBuffer);
+    CLEAR_ARRAY(randomBuffer);
+
+    strcpy_s(mnemonic, MNEMONIC_MAX_LEN, temp_mnemonic);
+    return ret;
+}
+
 /// @brief Save a new entropy.
 /// @param[in] accountIndex Account index, 0~2.
 /// @param[in] entropy Entropy to be saved.
 /// @param[in] entropyLen
 /// @param[in] password Password string.
 /// @return err code.
-int32_t SaveNewEntropy(uint8_t accountIndex, const uint8_t *entropy, uint8_t entropyLen, const char *password)
+int32_t SaveNewBip39Entropy(uint8_t accountIndex, const uint8_t *entropy, uint8_t entropyLen, const char *password)
 {
     int32_t ret;
     AccountSecret_t accountSecret = {0};
@@ -111,12 +184,59 @@ int32_t SaveNewEntropy(uint8_t accountIndex, const uint8_t *entropy, uint8_t ent
         CHECK_ERRCODE_BREAK("check repeat password", ret);
         memcpy_s(accountSecret.entropy, sizeof(accountSecret.entropy), entropy, entropyLen);
         accountSecret.entropyLen = entropyLen;
-        //bip39 entropy->mnemonic->seed
+        // bip39 entropy->mnemonic->seed
         ret = bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
         CHECK_ERRCODE_BREAK("bip39_mnemonic_from_bytes", ret);
         ret = bip39_mnemonic_to_seed(mnemonic, NULL, accountSecret.seed, SEED_LEN, NULL);
         CHECK_ERRCODE_BREAK("bip39_mnemonic_to_seed", ret);
         SRAM_FREE(mnemonic);
+
+        ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
+        CHECK_ERRCODE_BREAK("SaveAccountSecret", ret);
+        HashWithSalt(passwordHash, (const uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password hash");
+        ret = SE_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
+        CHECK_ERRCODE_BREAK("write password hash", ret);
+
+    } while (0);
+
+    CLEAR_ARRAY(passwordHash);
+    CLEAR_OBJECT(accountSecret);
+    return ret;
+}
+
+/// @brief Save a new ton mnemonic.
+/// @param[in] accountIndex Account index, 0~2.
+/// @param[in] entropy Entropy to be saved.
+/// @param[in] entropyLen
+/// @param[in] password Password string.
+/// @return err code.
+int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const char *password)
+{
+    int32_t ret;
+    AccountSecret_t accountSecret = {0};
+    // char *mnemonic = NULL;
+    uint8_t passwordHash[32];
+    uint8_t entropy[64] = {0};
+    uint8_t seed[64] = {0};
+
+    ASSERT(accountIndex <= 2);
+    do {
+        ret = CheckPasswordExisted(password, 255);
+        CHECK_ERRCODE_BREAK("check repeat password", ret);
+        VecFFI_u8 *result = ton_mnemonic_to_entropy(mnemonic);
+        memcpy_s(entropy, 64, result->data, 64);
+        free_VecFFI_u8(result);
+        memcpy_s(accountSecret.entropy, sizeof(accountSecret.entropy), entropy, 32);
+        memcpy_s(accountSecret.slip39EmsOrTonEntropyL32, sizeof(accountSecret.slip39EmsOrTonEntropyL32), entropy + 32, 32);
+
+        accountSecret.entropyLen = 32;
+        SimpleResponse_u8 *resultSeed = ton_entropy_to_seed(entropy, 64);
+        if (resultSeed->error_code != 0) {
+            break;
+        }
+        memcpy_s(seed, 64, resultSeed->data, 64);
+        free_VecFFI_u8(resultSeed);
+        memcpy_s(accountSecret.seed, sizeof(accountSecret.seed), seed, 64);
 
         ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
         CHECK_ERRCODE_BREAK("SaveAccountSecret", ret);
@@ -154,7 +274,7 @@ int32_t SaveNewSlip39Entropy(uint8_t accountIndex, const uint8_t *ems, const uin
 
         // The length of ems is the same as the length of entropy
         memcpy_s(accountSecret.seed, sizeof(accountSecret.seed), entropy, entropyLen);
-        memcpy_s(accountSecret.slip39Ems, sizeof(accountSecret.slip39Ems), ems, entropyLen);
+        memcpy_s(accountSecret.slip39EmsOrTonEntropyL32, sizeof(accountSecret.slip39EmsOrTonEntropyL32), ems, entropyLen);
         ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
         CHECK_ERRCODE_BREAK("SaveAccountSecret", ret);
         HashWithSalt(passwordHash, (const uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password hash");
@@ -170,7 +290,7 @@ int32_t SaveNewSlip39Entropy(uint8_t accountIndex, const uint8_t *ems, const uin
 
 /// @brief Get entropy from SE by password.
 /// @param[in] accountIndex Account index, 0~2.
-/// @param[out] entropy Entropy.
+/// @param[out] entropy Entropy, ton entropy should be 64 bytes.
 /// @param[out] entropyLen
 /// @param[in] password Password string.
 /// @return err code.
@@ -181,9 +301,16 @@ int32_t GetAccountEntropy(uint8_t accountIndex, uint8_t *entropy, uint8_t *entro
 
     ASSERT(accountIndex <= 2);
     ret = LoadAccountSecret(accountIndex, &accountSecret, password);
+    MnemonicType mnemonicType = GetMnemonicType();
     if (ret == SUCCESS_CODE) {
-        memcpy_s(entropy, ENTROPY_MAX_LEN, accountSecret.entropy, ENTROPY_MAX_LEN);
-        *entropyLen = accountSecret.entropyLen;
+        if (mnemonicType == MNEMONIC_TYPE_TON) {
+            memcpy_s(entropy, ENTROPY_MAX_LEN, accountSecret.entropy, ENTROPY_MAX_LEN);
+            memcpy_s(entropy + 32, ENTROPY_MAX_LEN, accountSecret.slip39EmsOrTonEntropyL32, ENTROPY_MAX_LEN);
+            *entropyLen = 64;
+        } else {
+            memcpy_s(entropy, ENTROPY_MAX_LEN, accountSecret.entropy, ENTROPY_MAX_LEN);
+            *entropyLen = accountSecret.entropyLen;
+        }
     }
     CLEAR_OBJECT(accountSecret);
     return ret;
@@ -206,11 +333,11 @@ int32_t GetAccountSeed(uint8_t accountIndex, uint8_t *seed, const char *password
         ret = LoadAccountSecret(accountIndex, &accountSecret, password);
         CHECK_ERRCODE_BREAK("LoadAccountSecret", ret);
         if (PassphraseExist(accountIndex) == false) {
-            //no passphrase
+            // no passphrase
             seedLen = GetMnemonicType() == MNEMONIC_TYPE_SLIP39 ? accountSecret.entropyLen : sizeof(accountSecret.seed);
             memcpy_s(seed, seedLen, accountSecret.seed, seedLen);
         } else {
-            //recalculate seed with passphrase
+            // recalculate seed with passphrase
             ret = GetPassphraseSeed(accountIndex, tempSeed, g_passphraseInfo[accountIndex].passphrase, password);
             CHECK_ERRCODE_BREAK("GetPassphraseSeed", ret);
             memcpy_s(seed, SEED_LEN, tempSeed, SEED_LEN);
@@ -235,7 +362,7 @@ int32_t GetAccountSlip39Ems(uint8_t accountIndex, uint8_t *slip39Ems, const char
     ASSERT(accountIndex <= 2);
     ret = LoadAccountSecret(accountIndex, &accountSecret, password);
     if (ret == SUCCESS_CODE) {
-        memcpy_s(slip39Ems, SLIP39_EMS_LEN, accountSecret.slip39Ems, SLIP39_EMS_LEN);
+        memcpy_s(slip39Ems, SLIP39_EMS_LEN, accountSecret.slip39EmsOrTonEntropyL32, SLIP39_EMS_LEN);
     }
     CLEAR_OBJECT(accountSecret);
     return ret;
@@ -311,7 +438,7 @@ int32_t CheckPasswordExisted(const char *password, uint8_t excludeIndex)
 
     ret = VerifyPassword(&accountIndex, password);
     if (ret == SUCCESS_CODE && excludeIndex != accountIndex) {
-        //password existed
+        // password existed
         ret = ERR_KEYSTORE_REPEAT_PASSWORD;
     } else if (ret == ERR_KEYSTORE_PASSWORD_ERR) {
         ret = SUCCESS_CODE;
@@ -409,7 +536,7 @@ bool PassphraseExist(uint8_t accountIndex)
     return (strnlen_s(g_passphraseInfo[accountIndex].passphrase, PASSPHRASE_MAX_LEN) > 0);
 }
 
-char* GetPassphrase(uint8_t accountIndex)
+char *GetPassphrase(uint8_t accountIndex)
 {
     if (accountIndex > 2) {
         return false;
@@ -428,7 +555,7 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
 {
     uint8_t pieces[KEY_PIECE_LEN * 2], hash[32], sha512Hash[64];
     uint8_t *enKey, *authKey;
-    uint8_t *iv, *encryptEntropy, *encryptSeed, *slip39Ems, *encryptReservedData, *hmac;
+    uint8_t *iv, *encryptEntropy, *encryptSeed, *slip39EmsOrTonEntropyL32, *encryptReservedData, *hmac;
     uint8_t accountEncryptData[ACCOUNT_TOTAL_LEN];
     int32_t ret;
     AES256_CBC_ctx ctx;
@@ -440,8 +567,8 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
     iv = accountEncryptData;
     encryptEntropy = iv + AES_IV_LEN;
     encryptSeed = encryptEntropy + ENTROPY_MAX_LEN;
-    slip39Ems = encryptSeed + SEED_LEN;
-    encryptReservedData = slip39Ems + SLIP39_EMS_LEN;
+    slip39EmsOrTonEntropyL32 = encryptSeed + SEED_LEN;
+    encryptReservedData = slip39EmsOrTonEntropyL32 + SLIP39_EMS_LEN;
     hmac = encryptReservedData + SE_DATA_RESERVED_LEN;
     do {
 #ifdef COMPILE_SIMULATOR
@@ -458,28 +585,28 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
         AES256_CBC_init(&ctx, enKey, iv);
         AES256_CBC_encrypt(&ctx, ENTROPY_MAX_LEN / AES_BLOCK_SIZE, encryptEntropy, accountSecret->entropy);
         AES256_CBC_encrypt(&ctx, SEED_LEN / AES_BLOCK_SIZE, encryptSeed, accountSecret->seed);
-        AES256_CBC_encrypt(&ctx, SLIP39_EMS_LEN / AES_BLOCK_SIZE, slip39Ems, accountSecret->slip39Ems);
+        AES256_CBC_encrypt(&ctx, SLIP39_EMS_LEN / AES_BLOCK_SIZE, slip39EmsOrTonEntropyL32, accountSecret->slip39EmsOrTonEntropyL32);
         AES256_CBC_encrypt(&ctx, SE_DATA_RESERVED_LEN / AES_BLOCK_SIZE, encryptReservedData, accountSecret->reservedData);
         KEYSTORE_PRINT_ARRAY("iv", iv, AES_IV_LEN);
         KEYSTORE_PRINT_ARRAY("enKey", enKey, AES_KEY_LEN);
         KEYSTORE_PRINT_ARRAY("encryptEntropy", encryptEntropy, ENTROPY_MAX_LEN);
         KEYSTORE_PRINT_ARRAY("encryptSeed", encryptSeed, SEED_LEN);
-        KEYSTORE_PRINT_ARRAY("slip39Ems", slip39Ems, SLIP39_EMS_LEN);
+        KEYSTORE_PRINT_ARRAY("slip39EmsOrTonEntropyL32", slip39EmsOrTonEntropyL32, SLIP39_EMS_LEN);
         KEYSTORE_PRINT_ARRAY("encryptReservedData", encryptReservedData, SE_DATA_RESERVED_LEN);
         hmac_sha256(authKey, AUTH_KEY_LEN, accountEncryptData, ACCOUNT_TOTAL_LEN - HMAC_LEN, hmac);
         KEYSTORE_PRINT_ARRAY("accountEncryptData", accountEncryptData, ACCOUNT_TOTAL_LEN);
         KEYSTORE_PRINT_ARRAY("authKey", authKey, AUTH_KEY_LEN);
-        //param[0] = accountSecret->entropyLen;
+        // param[0] = accountSecret->entropyLen;
         ret = SE_HmacEncryptWrite(iv, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
         CHECK_ERRCODE_BREAK("write iv", ret);
-        ret = SE_HmacEncryptWrite(encryptEntropy, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY);
+        ret = SE_HmacEncryptWrite(encryptEntropy, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY_OR_TON_ENTROPY_H32);
         CHECK_ERRCODE_BREAK("write encrypt entropy", ret);
         ret = SE_HmacEncryptWrite(encryptSeed, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_H32);
         CHECK_ERRCODE_BREAK("write encrypt seed h32", ret);
         ret = SE_HmacEncryptWrite(encryptSeed + 32, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_L32);
         CHECK_ERRCODE_BREAK("write encrypt seed l32", ret);
-        ret = SE_HmacEncryptWrite(slip39Ems, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS);
-        CHECK_ERRCODE_BREAK("write slip39 ems", ret);
+        ret = SE_HmacEncryptWrite(slip39EmsOrTonEntropyL32, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS_OR_TON_ENTROPY_L32);
+        CHECK_ERRCODE_BREAK("write slip39 ems or ton entropy l32", ret);
         ret = SE_HmacEncryptWrite(encryptReservedData, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_RESERVED);
         CHECK_ERRCODE_BREAK("write encrypt reserved data", ret);
         ret = SE_HmacEncryptWrite(hmac, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC);
@@ -487,23 +614,33 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
 #endif
         if (newAccount) {
             SetCurrentAccountEntropyLen(accountSecret->entropyLen);
-            seedLen = GetMnemonicType() == MNEMONIC_TYPE_SLIP39 ? accountSecret->entropyLen : sizeof(accountSecret->seed);
-            SimpleResponse_u8 *simpleResponse = get_master_fingerprint((PtrBytes)accountSecret->seed, seedLen);
-            if (simpleResponse == NULL) {
-                printf("get_master_fingerprint return NULL\r\n");
+            MnemonicType mnemonicType = GetMnemonicType();
+            switch (mnemonicType) {
+            case MNEMONIC_TYPE_BIP39:
+            case MNEMONIC_TYPE_SLIP39:
+                seedLen = mnemonicType == MNEMONIC_TYPE_SLIP39 ? accountSecret->entropyLen : sizeof(accountSecret->seed);
+                SimpleResponse_u8 *simpleResponse = get_master_fingerprint((PtrBytes)accountSecret->seed, seedLen);
+                if (simpleResponse == NULL) {
+                    printf("get_master_fingerprint return NULL\r\n");
+                    break;
+                }
+                if (simpleResponse->error_code != 0) {
+                    printf("get_master_fingerprint error\r\n");
+                    if (simpleResponse->error_message != NULL) {
+                        printf("error code = %d\r\nerror msg is: %s\r\n", simpleResponse->error_code, simpleResponse->error_message);
+                    }
+                }
+                CHECK_ERRCODE_BREAK("get_master_fingerprint", simpleResponse->error_code);
+                uint8_t *masterFingerprint = simpleResponse->data;
+                PrintArray("masterFingerprint", masterFingerprint, 4);
+                SetCurrentAccountMfp(masterFingerprint);
+                free_simple_response_u8(simpleResponse);
+                break;
+            case MNEMONIC_TYPE_TON:
+                // ton mnemonic does not have a fingerprint;
+                // mfp is 0x00000000;
                 break;
             }
-            if (simpleResponse->error_code != 0) {
-                printf("get_master_fingerprint error\r\n");
-                if (simpleResponse->error_message != NULL) {
-                    printf("error code = %d\r\nerror msg is: %s\r\n", simpleResponse->error_code, simpleResponse->error_message);
-                }
-            }
-            CHECK_ERRCODE_BREAK("get_master_fingerprint", simpleResponse->error_code);
-            uint8_t *masterFingerprint = simpleResponse->data;
-            PrintArray("masterFingerprint", masterFingerprint, 4);
-            SetCurrentAccountMfp(masterFingerprint);
-            free_simple_response_u8(simpleResponse);
             SaveCurrentAccountInfo();
             CHECK_ERRCODE_BREAK("write param", ret);
         }
@@ -529,9 +666,10 @@ static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountS
 #endif
     uint8_t pieces[KEY_PIECE_LEN * 2], hash[32], sha512Hash[64], hmacCalc[32];
     uint8_t *enKey, *authKey;
-    uint8_t *iv, *encryptEntropy, *encryptSeed, *slip39Ems, *encryptReservedData, *hmac;
+    uint8_t *iv, *encryptEntropy, *encryptSeed, *slip39EmsOrTonEntropyL32, *encryptReservedData, *hmac;
     uint8_t accountEncryptData[ACCOUNT_TOTAL_LEN], param[32];
     AccountInfo_t *pAccountInfo = (AccountInfo_t *)param;
+    GetAccountInfo(accountIndex, pAccountInfo);
     int32_t ret;
     AES256_CBC_ctx ctx;
 
@@ -541,8 +679,8 @@ static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountS
     iv = accountEncryptData;
     encryptEntropy = iv + AES_IV_LEN;
     encryptSeed = encryptEntropy + ENTROPY_MAX_LEN;
-    slip39Ems = encryptSeed + SEED_LEN;
-    encryptReservedData = slip39Ems + SLIP39_EMS_LEN;
+    slip39EmsOrTonEntropyL32 = encryptSeed + SEED_LEN;
+    encryptReservedData = slip39EmsOrTonEntropyL32 + SLIP39_EMS_LEN;
     hmac = encryptReservedData + SE_DATA_RESERVED_LEN;
     do {
         ret = GetKeyPieceFromSE(accountIndex, pieces, password);
@@ -553,14 +691,14 @@ static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountS
 
         ret = SE_HmacEncryptRead(iv, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
         CHECK_ERRCODE_BREAK("read iv", ret);
-        ret = SE_HmacEncryptRead(encryptEntropy, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY);
+        ret = SE_HmacEncryptRead(encryptEntropy, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY_OR_TON_ENTROPY_H32);
         CHECK_ERRCODE_BREAK("read encrypt entropy", ret);
         ret = SE_HmacEncryptRead(encryptSeed, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_H32);
         CHECK_ERRCODE_BREAK("read encrypt seed h32", ret);
         ret = SE_HmacEncryptRead(encryptSeed + 32, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SEED_L32);
         CHECK_ERRCODE_BREAK("read encrypt seed l32", ret);
-        ret = SE_HmacEncryptRead(slip39Ems, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS);
-        CHECK_ERRCODE_BREAK("read slip39 ems", ret);
+        ret = SE_HmacEncryptRead(slip39EmsOrTonEntropyL32, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_SLIP39_EMS_OR_TON_ENTROPY_L32);
+        CHECK_ERRCODE_BREAK("read slip39 ems or ton entropy l32", ret);
         ret = SE_HmacEncryptRead(encryptReservedData, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_RESERVED);
         CHECK_ERRCODE_BREAK("read encrypt reserved data", ret);
         ret = SE_HmacEncryptRead(hmac, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_HMAC);
@@ -572,18 +710,18 @@ static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountS
         KEYSTORE_PRINT_ARRAY("authKey", authKey, AUTH_KEY_LEN);
         ret = ((memcmp(hmacCalc, hmac, HMAC_LEN) == 0) ? SUCCESS_CODE : ERR_KEYSTORE_AUTH);
         CHECK_ERRCODE_BREAK("check hmac", ret);
-        accountSecret->entropyLen = (pAccountInfo->entropyLen == 0) ? 32 : pAccountInfo->entropyLen;    //32 bytes as default.
+        accountSecret->entropyLen = (pAccountInfo->entropyLen == 0) ? 32 : pAccountInfo->entropyLen; // 32 bytes as default.
         CombineInnerAesKey(enKey);
         AES256_CBC_init(&ctx, enKey, iv);
         AES256_CBC_decrypt(&ctx, ENTROPY_MAX_LEN / AES_BLOCK_SIZE, accountSecret->entropy, encryptEntropy);
         AES256_CBC_decrypt(&ctx, SEED_LEN / AES_BLOCK_SIZE, accountSecret->seed, encryptSeed);
-        AES256_CBC_decrypt(&ctx, SLIP39_EMS_LEN / AES_BLOCK_SIZE, accountSecret->slip39Ems, slip39Ems);
+        AES256_CBC_decrypt(&ctx, SLIP39_EMS_LEN / AES_BLOCK_SIZE, accountSecret->slip39EmsOrTonEntropyL32, slip39EmsOrTonEntropyL32);
         AES256_CBC_decrypt(&ctx, SE_DATA_RESERVED_LEN / AES_BLOCK_SIZE, accountSecret->reservedData, encryptReservedData);
         KEYSTORE_PRINT_ARRAY("iv", iv, AES_IV_LEN);
         KEYSTORE_PRINT_ARRAY("enKey", enKey, AES_KEY_LEN);
         KEYSTORE_PRINT_ARRAY("encryptEntropy", encryptEntropy, ENTROPY_MAX_LEN);
         KEYSTORE_PRINT_ARRAY("encryptSeed", encryptSeed, SEED_LEN);
-        KEYSTORE_PRINT_ARRAY("slip39Ems", slip39Ems, SLIP39_EMS_LEN);
+        KEYSTORE_PRINT_ARRAY("slip39EmsOrTonEntropyL32", slip39EmsOrTonEntropyL32, SLIP39_EMS_LEN);
         KEYSTORE_PRINT_ARRAY("encryptReservedData", encryptReservedData, SE_DATA_RESERVED_LEN);
     } while (0);
 
@@ -629,15 +767,20 @@ static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char
     uint8_t entropy[ENTROPY_MAX_LEN], entropyLen;
     int32_t ret;
     char *mnemonic = NULL;
-
     ASSERT(accountIndex <= 2);
     do {
-        if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
-            uint8_t slip39Ems[SLIP39_EMS_LEN];
+        MnemonicType mnemonicType = GetMnemonicType();
+        ASSERT(mnemonicType != MNEMONIC_TYPE_TON);
+
+        switch (mnemonicType) {
+        case MNEMONIC_TYPE_SLIP39: {
+            uint8_t slip39Ems[32];
             GetAccountSlip39Ems(accountIndex, slip39Ems, password);
             ret = Slip39GetSeed(slip39Ems, seed, GetCurrentAccountEntropyLen(), passphrase, GetSlip39Ie(), GetSlip39Id());
             CHECK_ERRCODE_BREAK("slip39_mnemonic_to_seed", ret);
-        } else {
+            break;
+        }
+        default:
             ret = GetAccountEntropy(accountIndex, entropy, &entropyLen, password);
             CHECK_ERRCODE_BREAK("GetAccountEntropy", ret);
             ret = bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
@@ -645,6 +788,7 @@ static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char
             ret = bip39_mnemonic_to_seed(mnemonic, passphrase, seed, SEED_LEN, NULL);
             CHECK_ERRCODE_BREAK("bip39_mnemonic_to_seed", ret);
             SRAM_FREE(mnemonic);
+            break;
         }
     } while (0);
 

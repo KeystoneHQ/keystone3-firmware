@@ -29,6 +29,9 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
     case REMAPVIEW_AR:
     case REMAPVIEW_AR_MESSAGE:
         return GuiGetArCheckResult();
+    case REMAPVIEW_TON:
+    case REMAPVIEW_TON_SIGNPROOF:
+        return GuiGetTonCheckResult();
 #endif
     default:
         return NULL;
@@ -74,6 +77,9 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     case ArweaveTx:
     case ArweaveMessage:
         return CHAIN_ARWEAVE;
+    case TonTx:
+    case TonSignProof:
+        return CHAIN_TON;
 #endif
     default:
         return CHAIN_BUTT;
@@ -85,6 +91,11 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
 bool IsMessageType(uint8_t type)
 {
     return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type) || type == BtcMsg || type == ArweaveMessage;
+}
+
+bool isTonSignProof(uint8_t type)
+{
+    return type == TonSignProof;
 }
 #endif
 
@@ -136,6 +147,12 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
     case ArweaveMessage:
     case ArweaveTx:
         func = GuiGetArweaveSignQrCodeData;
+        break;
+    case TonTx:
+        func = GuiGetTonSignQrCodeData;
+        break;
+    case TonSignProof:
+        func = GuiGetTonProofSignQrCodeData;
         break;
 #endif
     default:

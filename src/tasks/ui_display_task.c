@@ -171,6 +171,7 @@ static void RefreshLvglTickMode(void)
             osTimerStart(g_lvglTickTimer, g_dynamicTick);
             g_fastModeCount = 0;
             printf("lvgl switch to fast mode\r\n");
+            LcdBacklightOn();
         }
     }
 }

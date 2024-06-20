@@ -106,6 +106,7 @@ const ProtocolServiceCallbackFunc_t g_fileTransInfoServiceFunc[] = {
     ServiceFileTransInfo,                       //2.1
     ServiceFileTransContent,                    //2.2
     ServiceFileTransComplete,                   //2.3
+    ServiceFileTransGetPubkey,                  //2.4
 };
 
 static int ValidateAndSetFileName(Tlv_t *tlvArray, FileTransInfo_t *fileTransInfo)
@@ -335,6 +336,11 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
     SaveDeviceSettings();
     SystemReboot();
     return BuildFrame(&sendHead, NULL, 0);
+}
+
+static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
+{
+
 }
 
 static void FileTransTimeOutTimerFunc(void *argument)

@@ -296,9 +296,9 @@ static void GuiInitWalletListArray()
 
         // Only show keystone wallet when the language is Russian
         if (LanguageGetIndex() == LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
-            g_walletListArray[i].enable = false;
-        } else if (LanguageGetIndex() != LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
             g_walletListArray[i].enable = true;
+        } else if (LanguageGetIndex() != LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
+            g_walletListArray[i].enable = false;
         }
 
 #else

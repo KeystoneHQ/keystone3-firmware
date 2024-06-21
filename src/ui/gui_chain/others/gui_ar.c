@@ -88,14 +88,10 @@ bool IsArweaveSetupComplete(void)
 
 PtrT_TransactionCheckResult GuiGetArCheckResult(void)
 {
-#ifndef COMPILE_SIMULATOR
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
     return ar_check_tx(data, mfp, sizeof(mfp));
-#else
-    return NULL;
-#endif
 }
 
 void GetArweaveMessageText(void *indata, void *param, uint32_t maxLen)
@@ -266,7 +262,6 @@ UREncodeResult *GuiGetArweaveSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult = NULL;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
@@ -281,15 +276,6 @@ UREncodeResult *GuiGetArweaveSignQrCodeData(void)
     } while (0);
     SetLockScreen(enable);
     return encodeResult;
-#else
-    UREncodeResult *encodeResult = NULL;
-    encodeResult->is_multi_part = 0;
-    encodeResult->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    encodeResult->encoder = NULL;
-    encodeResult->error_code = 0;
-    encodeResult->error_message = NULL;
-    return encodeResult;
-#endif
 }
 
 #endif

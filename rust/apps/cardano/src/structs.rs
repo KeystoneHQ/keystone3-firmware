@@ -10,7 +10,7 @@ use cardano_serialization_lib::address::{
 };
 
 use cardano_serialization_lib::protocol_types::governance::DRepKind;
-use cardano_serialization_lib::utils::from_bignum;
+use cardano_serialization_lib::utils::{from_bignum, BigNum};
 use cardano_serialization_lib::{
     protocol_types::fixed_tx::FixedTransaction as Transaction, Certificate, CertificateKind,
     NetworkId, NetworkIdKind,
@@ -261,7 +261,7 @@ impl ParsedCardanoTx {
                     ));
                 }
                 if let Some(_cert) = cert.as_stake_registration() {
-                    let deposit = normalize_coin(from_bignum(&_cert.coin().unwrap()));
+                    let deposit = normalize_coin(from_bignum(&_cert.coin().unwrap_or(BigNum::zero())));
                     certs.push(CardanoCertificate::new(
                         "Stake Registration".to_string(),
                         RewardAddress::new(network_id, &_cert.stake_credential())

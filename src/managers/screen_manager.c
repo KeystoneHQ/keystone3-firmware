@@ -54,8 +54,10 @@ void SetPageLockScreen(bool enable)
 
 void SetLockScreen(bool enable)
 {
+    printf("%s %d.\n", __func__, __LINE__);
     g_lockScreenEnable = enable;
     if (enable) {
+        LcdBacklightOn();
         GuiApiEmitSignal(SIG_STATUS_BAR_REFRESH, NULL, 0);
 #ifdef BTC_ONLY
         GuiApiEmitSignal(SIG_STATUS_BAR_TEST_NET, NULL, 0);

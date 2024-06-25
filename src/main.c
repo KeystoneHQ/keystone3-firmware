@@ -112,8 +112,7 @@ int _write(int fd, char *pBuffer, int size)
         while (!UART_IsTXEmpty(UART0));
 #ifdef BUILD_PRODUCTION
         // disable any log info on the production mode
-        // UART_SendData(UART0, '-');
-        UART_SendData(UART0, (uint8_t) pBuffer[i]);
+        UART_SendData(UART0, '-');
 #else
         UART_SendData(UART0, (uint8_t) pBuffer[i]);
 #endif

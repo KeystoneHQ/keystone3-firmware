@@ -54,7 +54,6 @@ void SetPageLockScreen(bool enable)
 
 void SetLockScreen(bool enable)
 {
-    printf("%s %d.\n", __func__, __LINE__);
     g_lockScreenEnable = enable;
     if (enable) {
         LcdBacklightOn();

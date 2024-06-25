@@ -2180,7 +2180,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"single_phrase_desc", "Escribe tu frase de recuperación y guárdala en un lugar seguro"},
     {"single_phrase_low_battery_desc", "El dispositivo necesita un mínimo del 20% de batería para continuar el proceso"},
     {"single_phrase_reset", "Restablecer"},
-    {"single_phrase_title", "Guarda una copia de seguridad de tu semilla"},
+    {"single_phrase_title", "Guarda tu semilla"},
     {"single_phrase_word_amount_select", "Conteo de frase semilla"},
     {"support_link", "support@keyst.one"},
     {"switch_account", "Cambiar cuenta"},

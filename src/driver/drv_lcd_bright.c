@@ -16,6 +16,7 @@ typedef enum {
     LCD_BRIGHT_STATE_INIT,
     LCD_BRIGHT_STATE_GPIO,
     LCD_BRIGHT_STATE_PWM,
+    LCD_BRIGHT_STATE_OFF,
 } LcdBrightState_t;
 
 static LcdBrightState_t lcdBrightState = LCD_BRIGHT_STATE_INIT;
@@ -49,12 +50,15 @@ void SetLcdBright(uint32_t bright)
 void LcdBacklightOff(void)
 {
     LcdBrightAsGpio(0);
+    lcdBrightState = LCD_BRIGHT_STATE_OFF;
 }
 
 void LcdBacklightOn(void)
 {
-    lcdBrightState = LCD_BRIGHT_STATE_INIT;
-    SetLcdBright(g_lastBright);
+    if (lcdBrightState == LCD_BRIGHT_STATE_OFF) {
+        lcdBrightState = LCD_BRIGHT_STATE_INIT;
+        SetLcdBright(g_lastBright);
+    }
 }
 
 void LcdFadesOut(void)

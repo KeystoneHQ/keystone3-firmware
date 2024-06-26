@@ -82,7 +82,13 @@ uint8_t *GetCurrentAccountMfp()
 /// @return Mnemonic type.
 MnemonicType GetMnemonicType(void)
 {
-    return g_currentAccountInfo.mnemonicType;
+    if (g_currentAccountInfo.isSlip39) {
+        return MNEMONIC_TYPE_SLIP39;
+    }
+    if (g_currentAccountInfo.isTon) {
+        return MNEMONIC_TYPE_TON;
+    }
+    return MNEMONIC_TYPE_BIP39;
 }
 
 /// @brief Set passcode type for the current account.
@@ -96,7 +102,18 @@ void SetPasscodeType(PasscodeType type)
 /// @param[in] type Mnemonic type.
 void SetMnemonicType(MnemonicType type)
 {
-    g_currentAccountInfo.mnemonicType = type;
+    g_currentAccountInfo.isSlip39 = 0;
+    g_currentAccountInfo.isTon = 0;
+    switch (type) {
+    case MNEMONIC_TYPE_SLIP39:
+        g_currentAccountInfo.isSlip39 = 1;
+        break;
+    case MNEMONIC_TYPE_TON:
+        g_currentAccountInfo.isTon = 1;
+        break;
+    default:
+        break;
+    }
     SaveCurrentAccountInfo();
 }
 
@@ -106,8 +123,30 @@ int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t e
     DestroyAccount(accountIndex);
     CLEAR_OBJECT(g_currentAccountInfo);
     g_currentAccountIndex = accountIndex;
+    SetWalletName(SecretCacheGetWalletName());
+    SetWalletIconIndex(SecretCacheGetWalletIconIndex());
 
-    int32_t ret = SaveNewEntropy(accountIndex, entropy, entropyLen, password);
+    int32_t ret = SaveNewBip39Entropy(accountIndex, entropy, entropyLen, password);
+    CHECK_ERRCODE_RETURN_INT(ret);
+
+    ret = SaveCurrentAccountInfo();
+    CHECK_ERRCODE_RETURN_INT(ret);
+    ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
+    CHECK_ERRCODE_RETURN_INT(ret);
+    return ret;
+}
+
+int32_t CreateNewTonAccount(uint8_t accountIndex, const char *mnemonic, const char *password)
+{
+    ASSERT(accountIndex <= 2);
+    DestroyAccount(accountIndex);
+    CLEAR_OBJECT(g_currentAccountInfo);
+    g_currentAccountIndex = accountIndex;
+    g_currentAccountInfo.isTon = true;
+    SetWalletName(SecretCacheGetWalletName());
+    SetWalletIconIndex(SecretCacheGetWalletIconIndex());
+
+    int32_t ret = SaveNewTonMnemonic(accountIndex, mnemonic, password);
     CHECK_ERRCODE_RETURN_INT(ret);
 
     ret = SaveCurrentAccountInfo();
@@ -123,7 +162,10 @@ int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const u
     DestroyAccount(accountIndex);
     CLEAR_OBJECT(g_currentAccountInfo);
     g_currentAccountIndex = accountIndex;
-    g_currentAccountInfo.mnemonicType = MNEMONIC_TYPE_SLIP39;
+    g_currentAccountInfo.isSlip39 = true;
+    SetWalletName(SecretCacheGetWalletName());
+    SetWalletIconIndex(SecretCacheGetWalletIconIndex());
+
     int32_t ret = SaveNewSlip39Entropy(accountIndex, ems, entropy, entropyLen, password, id, ie);
     CHECK_ERRCODE_RETURN_INT(ret);
     memcpy_s(g_currentAccountInfo.slip39Id, sizeof(g_currentAccountInfo.slip39Id), &id, sizeof(id));
@@ -434,15 +476,15 @@ int32_t SaveCurrentAccountInfo(void)
 int32_t GetBlankAccountIndex(uint8_t *accountIndex)
 {
     int32_t ret;
-    uint8_t data[32];
-
-#ifdef COMPILE_SIMULATOR
-    *accountIndex = 0;
-    return SUCCESS_CODE;
-#endif
+    uint8_t data[32] = {0};
 
     for (uint8_t i = 0; i < 3; i++) {
+        CLEAR_ARRAY(data);
+#ifndef COMPILE_SIMULATOR
         ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
+#else
+        ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_ENTROPY_OR_TON_ENTROPY_H32);
+#endif
         CHECK_ERRCODE_BREAK("read iv", ret);
         if (CheckEntropy(data, 32) == false) {
             *accountIndex = i;

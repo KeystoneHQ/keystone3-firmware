@@ -20,6 +20,8 @@ use app_stellar::errors::StellarError;
 #[cfg(feature = "multi-coins")]
 use app_sui::errors::SuiError;
 #[cfg(feature = "multi-coins")]
+use app_ton::errors::TonError;
+#[cfg(feature = "multi-coins")]
 use app_tron::errors::TronError;
 #[cfg(feature = "multi-coins")]
 use app_xrp::errors::XRPError;
@@ -180,8 +182,16 @@ pub enum ErrorCodes {
     ArweaveInvalidData,
     ArweaveParseTxError,
 
+    //Ton
+    TonUnknownError = 1300,
+    TonMnemonicError,
+    TonTransactionError,
+    InvalidProof,
+    TonTransactionJsonError,
+    AddressError,
+
     // Stellar
-    StellarAddressError = 1300,
+    StellarAddressError = 1400,
     StellarInvalidData,
     StellarParseTxError,
     StellarKeystoreError,
@@ -438,6 +448,21 @@ impl From<&SuiError> for ErrorCodes {
             SuiError::InvalidData(_) => Self::SuiInvalidData,
             SuiError::ParseTxError(_) => Self::SuiParseTxError,
             SuiError::InvalidXPub(_) => Self::InvalidXPub,
+        }
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl From<&TonError> for ErrorCodes {
+    fn from(value: &TonError) -> Self {
+        match value {
+            TonError::UnknownError => Self::TonUnknownError,
+            TonError::MnemonicError(_) => Self::TonMnemonicError,
+            TonError::TransactionError(_) => Self::TonTransactionError,
+            TonError::TransactionJsonError(_) => Self::TonTransactionJsonError,
+            TonError::AddressError(_) => Self::AddressError,
+            TonError::InvalidTransaction(_) => Self::TonTransactionError,
+            TonError::InvalidProof(_) => Self::InvalidProof,
         }
     }
 }

@@ -322,7 +322,9 @@ void PassWordPinSwitch(GuiEnterPasscodeItem_t *item)
     }
     lv_obj_add_flag(item->errLabel, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_add_flag(item->fpErrLabel, LV_OBJ_FLAG_HIDDEN);
+    if (lv_obj_is_valid(item->fpErrLabel)) {
+        lv_obj_add_flag(item->fpErrLabel, LV_OBJ_FLAG_HIDDEN);
+    }
     if (item->mode == ENTER_PASSCODE_VERIFY_PIN || item->mode == ENTER_PASSCODE_LOCK_VERIFY_PIN) {
         GuiEmitSignal(SIG_PASSCODE_SWITCH_TO_PIN, NULL, 0);
     } else if (item -> mode == ENTER_PASSCODE_VERIFY_PASSWORD || item->mode == ENTER_PASSCODE_LOCK_VERIFY_PASSWORD) {
@@ -333,7 +335,6 @@ void PassWordPinSwitch(GuiEnterPasscodeItem_t *item)
 
 static void PassWordPinSwitchHandler(lv_event_t *e)
 {
-
     GuiEnterPasscodeItem_t *item = g_passParam.setpinParam;
     PassWordPinSwitch(item);
 }
@@ -379,7 +380,7 @@ void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *pa
 
     KeyBoard_t *kb = GuiCreateFullKeyBoard(passWdCont, SetPassWordHandler, KEY_STONE_FULL_L, passCodeParam);
     lv_obj_align(kb->cont, LV_ALIGN_BOTTOM_MID, 0, -84);
-    lv_obj_set_size(kb->ta, 352, 60);
+    lv_obj_set_size(kb->ta, 382, 60);
     lv_obj_set_style_text_opa(kb->ta, LV_OPA_100, 0);
     lv_obj_align(kb->ta, LV_ALIGN_DEFAULT, 36, 292 - GUI_MAIN_AREA_OFFSET);
     lv_textarea_set_placeholder_text(kb->ta, _("password_input_desc"));
@@ -434,7 +435,7 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
         GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
         KeyBoard_t *kb = GuiCreateFullKeyBoard(passWdCont, SetPassWordHandler, KEY_STONE_FULL_L, passCodeParam);
-        lv_obj_set_size(kb->ta, 352, 60);
+        lv_obj_set_size(kb->ta, 382, 60);
         lv_obj_set_style_text_opa(kb->ta, LV_OPA_100, 0);
         lv_obj_align(kb->ta, LV_ALIGN_DEFAULT, 36, 308 - GUI_MAIN_AREA_OFFSET);
         lv_textarea_set_placeholder_text(kb->ta, _("password_error_too_weak"));
@@ -486,7 +487,7 @@ void GuiCreateEnterPinCode(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *p
     }
     if (mode == ENTER_PASSCODE_REPEAT_PIN) {
         KeyBoard_t *kb = GuiCreateFullKeyBoard(passWdCont, SetPassWordHandler, KEY_STONE_FULL_L, passCodeParam);
-        lv_obj_set_size(kb->ta, 352, 60);
+        lv_obj_set_size(kb->ta, 382, 60);
         lv_obj_set_style_text_opa(kb->ta, LV_OPA_100, 0);
         lv_obj_align(kb->ta, LV_ALIGN_DEFAULT, 36, 308 - GUI_MAIN_AREA_OFFSET);
         lv_textarea_set_placeholder_text(kb->ta, _("password_error_weak"));
@@ -524,7 +525,7 @@ void GuiCreateEnterPassWord(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     KeyBoard_t *kb = GuiCreateFullKeyBoard(passWdCont, SetPassWordHandler, KEY_STONE_FULL_L, passCodeParam);
-    lv_obj_set_size(kb->ta, 352, 60);
+    lv_obj_set_size(kb->ta, 382, 60);
     lv_obj_set_style_text_opa(kb->ta, LV_OPA_100, 0);
     lv_obj_align(kb->ta, LV_ALIGN_DEFAULT, 36, 308 - GUI_MAIN_AREA_OFFSET);
     lv_textarea_set_placeholder_text(kb->ta, _("password_error_too_weak"));
@@ -703,7 +704,9 @@ void GuiEnterPassCodeStatus(GuiEnterPasscodeItem_t *item, bool en)
         lv_obj_add_flag(item->errLabel, LV_OBJ_FLAG_HIDDEN);
         lv_textarea_set_text(item->kb->ta, "");
     }
-    lv_obj_add_flag(item->fpErrLabel, LV_OBJ_FLAG_HIDDEN);
+    if (lv_obj_is_valid(item->fpErrLabel)) {
+        lv_obj_add_flag(item->fpErrLabel, LV_OBJ_FLAG_HIDDEN);
+    }
     memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
 }
 

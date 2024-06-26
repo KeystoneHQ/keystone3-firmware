@@ -17,6 +17,12 @@ const char *GetCurrentKbWalletName(void);
 void GuiCreateWalletRefresh(void);
 void GuiSetupKeyboardWidgetMode(void);
 
+#define WALLET_TYPE_TON             0b00000010
+#define ENTROPY_TYPE_STANDARD       0b00000000
+#define ENTORPY_TYPE_DICE_ROLLS     0b00000001
+#define WALLET_TYPE_MASK            0b00000010
+#define ENTROPY_TYPE_MASK           0b00000001
+
 typedef enum {
     SEED_TYPE_BIP39,
     SEED_TYPE_SLIP39,

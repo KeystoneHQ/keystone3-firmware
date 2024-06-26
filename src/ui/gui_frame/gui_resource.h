@@ -139,6 +139,8 @@ LV_IMG_DECLARE(imgCircular);
 LV_IMG_DECLARE(imgRing);
 LV_IMG_DECLARE(imgMessageRight);
 LV_IMG_DECLARE(imgWarningRed);
+LV_IMG_DECLARE(imgTonPhrase);
+LV_IMG_DECLARE(imgBlueInformation);
 
 // emoji
 LV_IMG_DECLARE(emojiAlien);
@@ -201,6 +203,7 @@ LV_IMG_DECLARE(coinSomm);
 LV_IMG_DECLARE(coinUmee);
 LV_IMG_DECLARE(coinGrav);
 LV_IMG_DECLARE(coinTgd);
+LV_IMG_DECLARE(coinTon);
 LV_IMG_DECLARE(coinStrd);
 LV_IMG_DECLARE(coinEvmos);
 LV_IMG_DECLARE(coinInj);
@@ -246,6 +249,7 @@ LV_IMG_DECLARE(walletSpecter);
 LV_IMG_DECLARE(walletNunchuk);
 LV_IMG_DECLARE(walletUniSat);
 LV_IMG_DECLARE(walletXBull);
+LV_IMG_DECLARE(walletTonkeeper);
 
 // wallet list
 LV_IMG_DECLARE(walletListKeyStone);
@@ -272,6 +276,7 @@ LV_IMG_DECLARE(walletListXRPToolkit);
 LV_IMG_DECLARE(walletListSparrow);
 LV_IMG_DECLARE(walletListImToken);
 LV_IMG_DECLARE(walletListUniSat);
+LV_IMG_DECLARE(walletListTonkeeper);
 
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);

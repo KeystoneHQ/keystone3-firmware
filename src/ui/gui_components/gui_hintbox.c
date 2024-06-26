@@ -195,14 +195,20 @@ void *GuiCreateGeneralHintBox(const void *src, const char *titleText,
         desc2 = GuiCreateIllustrateLabel(cont, desc2Text);
         lv_obj_align(desc2, LV_ALIGN_BOTTOM_LEFT, 36, -130);
     }
-    desc1 = GuiCreateIllustrateLabel(cont, desc1Text);
-    if (desc2 == NULL) {
-        lv_obj_align(desc1, LV_ALIGN_BOTTOM_LEFT, 36, -130);
-    } else {
-        lv_obj_align_to(desc1, desc2, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
+    if (desc1Text != NULL) {
+        desc1 = GuiCreateIllustrateLabel(cont, desc1Text);
+        if (desc2 == NULL) {
+            lv_obj_align(desc1, LV_ALIGN_BOTTOM_LEFT, 36, -130);
+        } else {
+            lv_obj_align_to(desc1, desc2, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
+        }
     }
     title = GuiCreateLittleTitleLabel(cont, titleText);
-    lv_obj_align_to(title, desc1, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
+    if (desc1 == NULL) {
+        lv_obj_align(title, LV_ALIGN_BOTTOM_LEFT, 36, -130);
+    } else {
+        lv_obj_align_to(title, desc1, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
+    }
     if (src != NULL) {
         img = GuiCreateImg(cont, src);
         lv_obj_align_to(img, title, LV_ALIGN_OUT_TOP_LEFT, 0, -24);

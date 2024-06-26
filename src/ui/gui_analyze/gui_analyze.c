@@ -232,6 +232,28 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreeStellarMemory,
     },
+    {
+        REMAPVIEW_TON,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ton_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonTxOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Raw Data\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonTxRawData\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_ton.json",
+#endif
+        GuiGetTonGUIData,
+        NULL,
+        FreeArMemory,
+    },
+    {
+        REMAPVIEW_TON_SIGNPROOF,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"btc_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonProofOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Raw Data\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonProofRawData\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_ton_proof.json",
+#endif
+        GuiGetTonProofGUIData,
+        NULL,
+        FreeArMemory,
+    },
 #endif
 };
 
@@ -1213,6 +1235,14 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiStellarTxNotice;
     } else if (!strcmp(funcName, "GuiStellarHashNotice")) {
         return GuiStellarHashNotice;
+    } else if (!strcmp(funcName, "GuiTonTxOverview")) {
+        return GuiTonTxOverview;
+    } else if (!strcmp(funcName, "GuiTonTxRawData")) {
+        return GuiTonTxRawData;
+    } else if (!strcmp(funcName, "GuiTonProofOverview")) {
+        return GuiTonProofOverview;
+    } else if (!strcmp(funcName, "GuiTonProofRawData")) {
+        return GuiTonProofRawData;
     }
 #endif
     return NULL;
@@ -1608,6 +1638,10 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_STELLAR;
     case StellarHash:
         return REMAPVIEW_STELLAR_HASH;
+    case TonTx:
+        return REMAPVIEW_TON;
+    case TonSignProof:
+        return REMAPVIEW_TON_SIGNPROOF;
 #endif
     default:
         return REMAPVIEW_BUTT;
@@ -1664,7 +1698,6 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
         lv_obj_set_style_text_opa(tab_btns, 255, LV_PART_MAIN | LV_STATE_CHECKED);
         lv_obj_set_style_text_opa(tab_btns, 150, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_width(tab_btns, width);
-
         int childCnt = lv_obj_get_child_cnt(g_analyzeTabview.obj[i]);
         int yOffset = 12;
         for (int j = 0; j < childCnt; j++) {

@@ -401,14 +401,16 @@ void GuiVerifyCurrentPasswordErrorCount(void *param)
 
 void GuiSettingStructureCb(void *obj, void *param)
 {
-    char tempBuf[BUFFER_SIZE_16] = "MFP: ";
-    uint8_t mfp[4];
-    GetMasterFingerPrint(mfp);
-    for (int i = 0; i < sizeof(mfp); i++) {
-        snprintf_s(&tempBuf[5 + i * 2], BUFFER_SIZE_16 - strnlen_s(tempBuf, BUFFER_SIZE_16), "%02X", mfp[i]);
+    if (GetMnemonicType() != MNEMONIC_TYPE_TON) {
+        char tempBuf[BUFFER_SIZE_16] = "MFP: ";
+        uint8_t mfp[4];
+        GetMasterFingerPrint(mfp);
+        for (int i = 0; i < sizeof(mfp); i++) {
+            snprintf_s(&tempBuf[5 + i * 2], BUFFER_SIZE_16 - strnlen_s(tempBuf, BUFFER_SIZE_16), "%02X", mfp[i]);
+        }
+        memset_s(mfp, sizeof(mfp), 0, sizeof(mfp));
+        lv_label_set_text(g_mfpLabel, tempBuf);
     }
-    memset_s(mfp, sizeof(mfp), 0, sizeof(mfp));
-    lv_label_set_text(g_mfpLabel, tempBuf);
 }
 
 void GuiWalletSettingSetIconLabel(const lv_img_dsc_t *src, const char *name)
@@ -425,6 +427,7 @@ void GuiWalletSettingSetIconLabel(const lv_img_dsc_t *src, const char *name)
 // wallet setting
 void GuiWalletSetWidget(lv_obj_t *parent)
 {
+    bool isTon = GetMnemonicType() == MNEMONIC_TYPE_TON;
     lv_event_cb_t passphraseCb = WalletSettingHandler;
     static uint32_t walletSetting[5] = {
         DEVICE_SETTING_CHANGE_WALLET_DESC,
@@ -436,17 +439,20 @@ void GuiWalletSetWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
 
-    char tempBuf[BUFFER_SIZE_16] = "MFP: ";
-    uint8_t mfp[4];
-    GetMasterFingerPrint(mfp);
-    for (int i = 0; i < sizeof(mfp); i++) {
-        snprintf_s(&tempBuf[5 + i * 2], BUFFER_SIZE_16, "%02X", mfp[i]);
-    }
-    memset_s(mfp, sizeof(mfp), 0, sizeof(mfp));
     lv_obj_t *label = GuiCreateTextLabel(parent, GuiNvsBarGetWalletName());
     lv_obj_set_style_text_font(label, &buttonFont, LV_PART_MAIN);
-    lv_obj_t *mfpLabel = GuiCreateNoticeLabel(parent, tempBuf);
-    g_mfpLabel = mfpLabel;
+
+    if (!isTon) {
+        char tempBuf[BUFFER_SIZE_16] = "MFP: ";
+        uint8_t mfp[4];
+        GetMasterFingerPrint(mfp);
+        for (int i = 0; i < sizeof(mfp); i++) {
+            snprintf_s(&tempBuf[5 + i * 2], BUFFER_SIZE_16, "%02X", mfp[i]);
+        }
+        memset_s(mfp, sizeof(mfp), 0, sizeof(mfp));
+        lv_obj_t *mfpLabel = GuiCreateNoticeLabel(parent, tempBuf);
+        g_mfpLabel = mfpLabel;
+    }
     g_walletSetLabel = label;
     lv_obj_t *img = GuiCreateImg(parent, GuiGetEmojiIconImg());
     g_walletSetIcon = img;
@@ -469,7 +475,7 @@ void GuiWalletSetWidget(lv_obj_t *parent)
             .position = {27, 27},
         },
         {
-            .obj = mfpLabel,
+            .obj = g_mfpLabel,
             .align = LV_ALIGN_DEFAULT,
             .position = {76, 64},
         },
@@ -490,26 +496,31 @@ void GuiWalletSetWidget(lv_obj_t *parent)
     table[1].position.x = 411;
     table[1].position.y = 32;
     button = GuiCreateButton(parent, 456, 84, table, 2, WalletSettingHandler, &walletSetting[1]);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 287 - GUI_MAIN_AREA_OFFSET);
+    int nextY = 287 - GUI_MAIN_AREA_OFFSET;
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, nextY);
+    nextY = nextY + 96;
 
-    label = GuiCreateTextLabel(parent, _("Passphrase"));
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    table[0].obj = label;
-    table[1].obj = imgArrow;
+    if (!isTon) {
+        label = GuiCreateTextLabel(parent, _("Passphrase"));
+        imgArrow = GuiCreateImg(parent, &imgArrowRight);
+        table[0].obj = label;
+        table[1].obj = imgArrow;
 #ifdef BTC_ONLY
-    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
-        passphraseCb = UnHandler;
-    }
+        if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+            passphraseCb = UnHandler;
+        }
 #endif
-    button = GuiCreateButton(parent, 456, 84, table, 2, passphraseCb, &walletSetting[2]);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 383 - GUI_MAIN_AREA_OFFSET);
+        button = GuiCreateButton(parent, 456, 84, table, 2, passphraseCb, &walletSetting[2]);
+        lv_obj_align(button, LV_ALIGN_DEFAULT, 12, nextY);
+        nextY = nextY + 96;
 #ifdef BTC_ONLY
-    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
-        lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_set_style_text_opa(lv_obj_get_child(button, 0), LV_OPA_80, LV_PART_MAIN);
-        lv_obj_set_style_img_opa(lv_obj_get_child(button, 1), LV_OPA_80, LV_PART_MAIN);
-    }
+        if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+            lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICKABLE);
+            lv_obj_set_style_text_opa(lv_obj_get_child(button, 0), LV_OPA_80, LV_PART_MAIN);
+            lv_obj_set_style_img_opa(lv_obj_get_child(button, 1), LV_OPA_80, LV_PART_MAIN);
+        }
 #endif
+    }
 
     label = GuiCreateTextLabel(parent, _("wallet_setting_seed_phrase"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
@@ -517,16 +528,18 @@ void GuiWalletSetWidget(lv_obj_t *parent)
     table[1].obj = imgArrow;
 
     button = GuiCreateButton(parent, 456, 84, table, 2, WalletSettingHandler, &walletSetting[3]);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 479 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, nextY);
+    nextY = nextY + 88;
 
     line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 577 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, nextY);
+    nextY = nextY + 11;
 
     label = GuiCreateTextLabel(parent, _("wallet_setting_add_wallet"));
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
     table[0].obj = label;
     button = GuiCreateButton(parent, 456, 84, table, 1, GuiShowKeyboardHandler, &walletSetting[4]);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 588 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, nextY);
 }
 
 void GuiSettingDestruct(void *obj, void *param)

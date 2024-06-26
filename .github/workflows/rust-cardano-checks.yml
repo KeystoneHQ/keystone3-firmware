@@ -1,9 +1,9 @@
 on:
   pull_request:
     paths:
-      - rust/apps/solana/**
+      - rust/apps/cardano/**
 
-name: Solana Checks
+name: Cardano Checks
 
 jobs:
   UnitTest:

@@ -56,6 +56,7 @@ void SetLockScreen(bool enable)
 {
     g_lockScreenEnable = enable;
     if (enable) {
+        LcdBacklightOn();
         GuiApiEmitSignal(SIG_STATUS_BAR_REFRESH, NULL, 0);
 #ifdef BTC_ONLY
         GuiApiEmitSignal(SIG_STATUS_BAR_TEST_NET, NULL, 0);

@@ -14,6 +14,7 @@ enum {
 };
 
 extern const ProtocolServiceCallbackFunc_t g_fileTransInfoServiceFunc[];
+extern const ProtocolServiceCallbackFunc_t g_nftFileTransInfoServiceFunc[];
 bool GetIsReceivingFile();
 
 #endif

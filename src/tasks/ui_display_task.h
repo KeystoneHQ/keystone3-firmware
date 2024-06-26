@@ -18,6 +18,7 @@ uint8_t *GetLvglGramAddr(void);
 uint32_t GetLvglGramSize(void);
 void ActivateUiTaskLoop(void);
 void LvglImportMicroCardSigView(void);
+void NftLockDecodeTouchQuit(void);
 
 extern bool g_reboot;
 #endif

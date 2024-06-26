@@ -38,6 +38,7 @@ osTimerId_t g_lvglTickTimer;
 static lv_disp_draw_buf_t disp_buf;
 static lv_color_t buf_1[LVGL_GRAM_PIXEL];
 static bool lvglHandlerEnable = true;
+static bool g_lockNft = false;
 static volatile bool snapShotDone = false;
 static volatile uint32_t g_dynamicTick, g_fastModeCount;
 
@@ -52,6 +53,23 @@ void CreateUiDisplayTask(void)
     };
     g_uiDisplayTaskHandle = osThreadNew(UiDisplayTask, NULL, &testtTask_attributes);
     g_lvglTickTimer = osTimerNew(LvglTickTimerFunc, osTimerPeriodic, NULL, NULL);
+}
+
+#define LCD_DISPLAY_WIDTH  480
+#define LCD_DISPLAY_HEIGHT 800
+#define ROWS_PER_STEP      40  
+void refreshDisplay(uint16_t *snapShotAddr) 
+{
+    for (int y = LCD_DISPLAY_HEIGHT - 1; y >= 0; y -= ROWS_PER_STEP) {
+        int startY = y - ROWS_PER_STEP + 1;
+        if (startY < 0) {
+            startY = 0;
+        }
+        LcdDraw(0, startY, LCD_DISPLAY_WIDTH - 1, y, snapShotAddr + startY * LCD_DISPLAY_WIDTH);
+        while (LcdBusy()) {
+            osDelay(1);
+        }
+    }
 }
 
 static void UiDisplayTask(void *argument)
@@ -140,6 +158,19 @@ static void UiDisplayTask(void *argument)
                 GuiFrameCLoseView(view);
             }
             break;
+            case UI_MSG_CLOSE_NFT_LOCK: {
+                uint8_t *snapShotAddr = GetActSnapShot();
+                while (LcdBusy()) {
+                    osDelay(1);
+                }
+                refreshDisplay(snapShotAddr);
+                // LcdDraw(0, 0, LCD_DISPLAY_WIDTH - 1, LCD_DISPLAY_HEIGHT - 1, (uint16_t *)snapShotAddr);       
+                if (snapShotAddr != NULL) {
+                    EXT_FREE(snapShotAddr);
+                }
+                lvglHandlerEnable = true;
+            }
+            break;
             default:
                 break;
             }
@@ -211,6 +242,39 @@ static void InputDevReadCb(struct _lv_indev_drv_t *indev_drv, lv_indev_data_t *d
     data->continue_reading = pStatus->continueReading;
 }
 
+void DrawNftImage(void)
+{
+#define START_ADDR 0x00EB2000
+    #define LCD_WIDTH 480
+    #define LCD_HEIGHT 800
+    uint16_t *fileBuf = EXT_MALLOC(LCD_WIDTH * LCD_HEIGHT * 2);
+    Gd25FlashReadBuffer(START_ADDR, (uint8_t *)fileBuf, LCD_WIDTH * LCD_HEIGHT * 2);
+    LcdDraw(0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1, (uint16_t *)fileBuf);
+    EXT_FREE(fileBuf);
+}
+
+void NftLockDecodeTouchQuit(void)
+{
+    static bool quitArea = false;
+    TouchStatus_t *pStatus;
+    pStatus = GetLatestTouchStatus();
+    if (g_lockNft == false) {
+        return;
+    }
+    if (pStatus->touch) {
+        quitArea = true;
+    } else {
+        if (quitArea) {
+            osKernelLock();
+            ClearTouchBuffer();
+            PubValueMsg(UI_MSG_CLOSE_NFT_LOCK, 0);
+            g_lockNft = false;
+            osKernelUnlock();
+            quitArea = false;
+        }
+    }
+}
+
 static void __SetLvglHandlerAndSnapShot(uint32_t value)
 {
     uint32_t tick1, tick2;
@@ -226,20 +290,22 @@ static void __SetLvglHandlerAndSnapShot(uint32_t value)
         tick2 = osKernelGetTickCount();
         printf("t=%d\r\n", tick2 - tick1);
         //PrintU16Array("snapShotAddr", (uint16_t *)snapShotAddr, LCD_DISPLAY_WIDTH * 100);
+        lvglHandlerEnable = enable;
     } else if (lvglHandlerEnable == false && enable == true) {
         //recovery
         while (LcdBusy()) {
             osDelay(1);
         }
-        LcdDraw(0, 0, LCD_DISPLAY_WIDTH - 1, LCD_DISPLAY_HEIGHT - 1, (uint16_t *)snapShotAddr);
+        g_lockNft = true;
+        DrawNftImage();
+        // LcdDraw(0, 0, LCD_DISPLAY_WIDTH - 1, LCD_DISPLAY_HEIGHT - 1, (uint16_t *)snapShotAddr);
         while (LcdBusy()) {
             osDelay(1);
         }
-        if (snapShotAddr != NULL) {
-            EXT_FREE(snapShotAddr);
-        }
+        // if (snapShotAddr != NULL) {
+        //     EXT_FREE(snapShotAddr);
+        // }
     }
-    lvglHandlerEnable = enable;
     snapShotDone = true;
 }
 

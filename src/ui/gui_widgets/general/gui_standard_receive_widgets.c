@@ -935,13 +935,13 @@ void GuiResetAllStandardAddressIndex(void)
     memset_s(g_suiSelectIndex, sizeof(g_suiSelectIndex), 0, sizeof(g_suiSelectIndex));
     memset_s(g_aptosSelectIndex, sizeof(g_aptosSelectIndex), 0, sizeof(g_aptosSelectIndex));
     memset_s(g_xrpSelectIndex, sizeof(g_xrpSelectIndex), 0, sizeof(g_xrpSelectIndex));
-    memset_s(g_atomSelectIndex,sizeof(g_atomSelectIndex),0,sizeof(g_atomSelectIndex));
-    memset_s(g_scrtSelectIndex,sizeof(g_scrtSelectIndex),0,sizeof(g_scrtSelectIndex));
-    memset_s(g_croSelectIndex,sizeof(g_croSelectIndex),0,sizeof(g_croSelectIndex));
-    memset_s(g_iovSelectIndex,sizeof(g_iovSelectIndex),0,sizeof(g_iovSelectIndex));
-    memset_s(g_agSelectIndex,sizeof(g_agSelectIndex),0,sizeof(g_agSelectIndex));
-    memset_s(g_kavaSelectIndex,sizeof(g_kavaSelectIndex),0,sizeof(g_kavaSelectIndex));
-    memset_s(g_lunaSelectIndex,sizeof(g_lunaSelectIndex),0,sizeof(g_lunaSelectIndex));
+    memset_s(g_atomSelectIndex, sizeof(g_atomSelectIndex), 0, sizeof(g_atomSelectIndex));
+    memset_s(g_scrtSelectIndex, sizeof(g_scrtSelectIndex), 0, sizeof(g_scrtSelectIndex));
+    memset_s(g_croSelectIndex, sizeof(g_croSelectIndex), 0, sizeof(g_croSelectIndex));
+    memset_s(g_iovSelectIndex, sizeof(g_iovSelectIndex), 0, sizeof(g_iovSelectIndex));
+    memset_s(g_agSelectIndex, sizeof(g_agSelectIndex), 0, sizeof(g_agSelectIndex));
+    memset_s(g_kavaSelectIndex, sizeof(g_kavaSelectIndex), 0, sizeof(g_kavaSelectIndex));
+    memset_s(g_lunaSelectIndex, sizeof(g_lunaSelectIndex), 0, sizeof(g_lunaSelectIndex));
 
 }
 

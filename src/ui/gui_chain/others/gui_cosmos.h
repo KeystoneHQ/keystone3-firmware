@@ -71,3 +71,4 @@ bool GetCosmosAddrExist(void *indata, void *param);
 void GetCosmosTextOfKind(void *indata, void *param, uint32_t maxLen);
 void GetCosmosDetailItemValue(void *indata, void *param, uint32_t maxLen);
 bool IsCosmosMsg(ViewType viewType);
+char *GuiGetCosmosAddressByIndex(uint16_t index);

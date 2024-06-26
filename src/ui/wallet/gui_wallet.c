@@ -206,47 +206,6 @@ UREncodeResult *GuiGetImTokenData(void)
 #endif
 }
 
-UREncodeResult *GuiGetKeplrData(void)
-{
-#ifndef COMPILE_SIMULATOR
-    uint8_t mfp[4] = {0};
-    GetMasterFingerPrint(mfp);
-    PtrT_CSliceFFI_KeplrAccount publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_KeplrAccount));
-    GuiChainCoinType chains[8] = {
-        CHAIN_ATOM,
-        CHAIN_SCRT,
-        CHAIN_CRO,
-        CHAIN_IOV,
-        CHAIN_BLD,
-        CHAIN_KAVA,
-        CHAIN_EVMOS,
-        CHAIN_LUNA,
-    };
-    KeplrAccount keys[8];
-    publicKeys->data = keys;
-    publicKeys->size = 8;
-
-    for (uint8_t i = 0; i < 8; i++) {
-        const CosmosChain_t *chain = GuiGetCosmosChain(chains[i]);
-        keys[i].xpub = GetCurrentAccountPublicKey(chain->xpubType);
-        keys[i].name = "Account-1";
-        keys[i].path = SRAM_MALLOC(BUFFER_SIZE_32);
-        snprintf_s(keys[i].path, BUFFER_SIZE_32, "M/44'/%u'/0'/0/0", chain->coinType);
-    }
-
-    g_urEncode = get_connect_keplr_wallet_ur(mfp, sizeof(mfp), publicKeys);
-    CHECK_CHAIN_PRINT(g_urEncode);
-    for (uint8_t i = 0; i < 8; i++) {
-        SRAM_FREE(keys[i].path);
-    }
-    SRAM_FREE(publicKeys);
-    return g_urEncode;
-#else
-    const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    return (void *)data;
-#endif
-}
-
 UREncodeResult *GuiGetArConnectData(void)
 {
     uint8_t mfp[4] = {0};
@@ -397,6 +356,41 @@ UREncodeResult *GuiGetADADataByIndex(uint16_t index)
     keys.data = xpubs;
     keys.size = 1;
     return generate_key_derivation_ur(mfp, 4, &keys);
+}
+UREncodeResult *GuiGetKeplrDataByIndex(uint16_t index)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_KeplrAccount publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_KeplrAccount));
+    GuiChainCoinType chains[8] = {
+        CHAIN_ATOM,
+        CHAIN_SCRT,
+        CHAIN_CRO,
+        CHAIN_IOV,
+        CHAIN_BLD,
+        CHAIN_KAVA,
+        CHAIN_EVMOS,
+        CHAIN_LUNA,
+    };
+    KeplrAccount keys[8];
+    publicKeys->data = keys;
+    publicKeys->size = 8;
+
+    for (uint8_t i = 0; i < 8; i++) {
+        const CosmosChain_t *chain = GuiGetCosmosChain(chains[i]);
+        keys[i].xpub = GetCurrentAccountPublicKey(chain->xpubType);
+        keys[i].name = "Account-1";
+        keys[i].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[i].path, BUFFER_SIZE_32, "M/44'/%u'/0'/0/%u", chain->coinType, index);
+    }
+
+    g_urEncode = get_connect_keplr_wallet_ur(mfp, sizeof(mfp), publicKeys);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    for (uint8_t i = 0; i < 8; i++) {
+        SRAM_FREE(keys[i].path);
+    }
+    SRAM_FREE(publicKeys);
+    return g_urEncode;
 }
 
 UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)

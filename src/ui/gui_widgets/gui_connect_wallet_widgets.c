@@ -424,6 +424,11 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
                                  RefreshAddressIndex);
         }
     }
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR) {
+        g_coinListCont = GuiCreateSelectAddressWidget(
+                             CHAIN_ATOM, g_chainAddressIndex[GetCurrentAccountIndex()],
+                             RefreshAddressIndex);
+    }
 }
 
 static void GuiCreateSelectFewchaCoinWidget()
@@ -616,7 +621,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 152 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
 #ifndef BTC_ONLY
-    lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 482);
+    lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 490);
 #else
     lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 408);
 #endif
@@ -633,7 +638,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 21);
     g_connectWalletTileView.qrCode = qrcode;
 
-    g_bottomCont = GuiCreateContainerWithParent(qrCont, 408, 104);
+    g_bottomCont = GuiCreateContainerWithParent(qrCont, 408, 124);
     lv_obj_align(g_bottomCont, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_set_style_bg_color(g_bottomCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(g_bottomCont, LV_OPA_0,
@@ -846,6 +851,49 @@ static void AddChainAddress(void)
     lv_obj_align(label, LV_ALIGN_CENTER, 150, 0);
 }
 
+static void AddKeplrCoinsAndAddressUI(void)
+{
+    if (lv_obj_get_child_cnt(g_bottomCont) > 0 && g_bottomCont != NULL) {
+        lv_obj_clean(g_bottomCont);
+        g_manageImg = NULL;
+        g_coinCont = NULL;
+    }
+    lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
+
+    // supported network icons
+    for (int i = 0; i < 8; i++) {
+        lv_obj_t *img = GuiCreateImg(g_bottomCont, g_keplrCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 36 + 32 * i, 36);
+    }
+
+    lv_obj_t *img = GuiCreateImg(g_bottomCont, &imgMore);
+    lv_img_set_zoom(img, 150);
+    lv_img_set_pivot(img, 0, 0);
+    lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 292, 36);
+
+    // select address ui
+    lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
+    char name[BUFFER_SIZE_32] = {0};
+    snprintf_s(name, sizeof(name), "%s-%d", _("account_head"),
+               g_chainAddressIndex[GetCurrentAccountIndex()]);
+               lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 62);
+
+    char addr[BUFFER_SIZE_32] = {0};
+    CutAndFormatString(
+        addr, sizeof(addr),
+        GuiGetCosmosAddressByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]),
+        28);
+    label = GuiCreateNoticeLabel(g_bottomCont, addr);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 92);
+
+    label = GuiCreateImg(g_bottomCont, &imgArrowRight);
+    lv_obj_align(label, LV_ALIGN_CENTER, 150, 34);
+}
+
 static void AddSolflareCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -891,12 +939,16 @@ UREncodeResult *GuiGetFewchaData(void)
     }
     return GuiGetFewchaDataByCoin(coin);
 }
-
 UREncodeResult *GuiGetXrpToolkitData(void)
 {
     return GuiGetXrpToolkitDataByIndex(
                g_chainAddressIndex[GetCurrentAccountIndex()]);
 }
+UREncodeResult *GuiGetKeplrData(void)
+{
+    return GuiGetKeplrDataByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]);
+}
+
 
 UREncodeResult *GuiGetADAData(void)
 {
@@ -985,7 +1037,8 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         break;
     case WALLET_LIST_KEPLR:
         func = GuiGetKeplrData;
-        AddKeplrCoins();
+        AddKeplrCoinsAndAddressUI();
+//        AddKeplrCoins();
         break;
     case WALLET_LIST_ARCONNECT:
         func = GuiGetArConnectData;
@@ -1631,6 +1684,11 @@ void GuiConnectWalletRefresh(void)
                                          CHAIN_XRP, g_chainAddressIndex[GetCurrentAccountIndex()],
                                          RefreshAddressIndex);
                 }
+            }
+            if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR) {
+                g_coinListCont = GuiCreateSelectAddressWidget(
+                                     CHAIN_ATOM, g_chainAddressIndex[GetCurrentAccountIndex()],
+                                     RefreshAddressIndex);
             }
         }
 #endif

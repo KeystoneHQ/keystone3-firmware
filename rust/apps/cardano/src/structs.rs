@@ -63,8 +63,8 @@ impl_public_struct!(ParsedCardanoTx {
 });
 
 impl_public_struct!(SignDataResult {
-    pub_key: String,
-    signature: String
+    pub_key: Vec<u8>,
+    signature: Vec<u8>
 });
 
 impl_public_struct!(CardanoCertificate {

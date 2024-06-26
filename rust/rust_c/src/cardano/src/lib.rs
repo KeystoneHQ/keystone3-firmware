@@ -168,8 +168,8 @@ pub extern "C" fn cardano_sign_sign_data(
     )
     .map(|v| CardanoSignDataSignature::new(
         cardano_sign_data_reqeust.get_request_id(),
-        v.get_signature().into_bytes(),
-        v.get_pub_key().into_bytes(),
+        v.get_signature(),
+        v.get_pub_key(),
     )
     .try_into())
     .map_or_else(

@@ -42,8 +42,8 @@ pub fn sign_data(
         )
         .unwrap();
     let signed_data = bip32_signing_key.sign::<Vec<u8>>(&hex::decode(payload).unwrap());
-    let pub_key = hex::encode(bip32_signing_key.public().public_key_bytes());
-    Ok(SignDataResult::new(pub_key, signed_data.to_string()))
+    let pub_key = bip32_signing_key.public().public_key().to_vec();
+    Ok(SignDataResult::new(pub_key, signed_data.to_bytes().to_vec()))
 }
 
 pub fn sign_tx(
@@ -160,6 +160,7 @@ mod test {
     use crate::transaction::parse_tx;
     use std::println;
     use third_party::{cryptoxide::hashing::blake2b_256, hex};
+    use third_party::ur_registry::cardano::cardano_sign_data_signature::CardanoSignDataSignature;
 
     #[test]
     fn spike_transaction() {
@@ -194,9 +195,9 @@ mod test {
         let path = "m/1852'/1815'/0'/0/0".to_string();
         let payload = "846a5369676e6174757265315882a301270458390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad676164647265737358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad4043abc123";
         let sign_data_result = sign_data(&path, payload, &entropy, passphrase).unwrap();
-        assert_eq!(sign_data_result.get_signature(), "451d320df8d5a944c469932943332e02ed6721fe9e1f93dde08bb45e48e48ed7f6d0463ff8c2f65ab626bdefcf1b0825bde2ef64b5ccd271554bf98e03d6ea07");
+        assert_eq!(hex::encode(sign_data_result.get_signature()), "451d320df8d5a944c469932943332e02ed6721fe9e1f93dde08bb45e48e48ed7f6d0463ff8c2f65ab626bdefcf1b0825bde2ef64b5ccd271554bf98e03d6ea07");
         // 2ae9d64b6a954febcc848afaa6ca1e9c49559e23fe68d085631ea2a020b695ff
         // 2ae9d64b6a954febcc848afaa6ca1e9c49559e23fe68d085631ea2a020b695ffed535d78ef7d225ba596dbbf3c2aea38b6807f793d8edd9671a4c2de5cdb5ba8
-        assert_eq!(sign_data_result.get_pub_key(), "2ae9d64b6a954febcc848afaa6ca1e9c49559e23fe68d085631ea2a020b695ff");
+        assert_eq!(hex::encode(sign_data_result.get_pub_key()), "2ae9d64b6a954febcc848afaa6ca1e9c49559e23fe68d085631ea2a020b695ff");
     }
 }

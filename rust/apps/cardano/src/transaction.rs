@@ -1,5 +1,5 @@
 use crate::errors::{CardanoError, R};
-use crate::structs::{ParseContext, ParsedCardanoTx, SignDataResult};
+use crate::structs::{ParseContext, ParsedCardanoTx, ParsedCardanoSignData, SignDataResult};
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
@@ -12,6 +12,10 @@ pub fn parse_tx(tx: Vec<u8>, context: ParseContext) -> R<ParsedCardanoTx> {
     let cardano_tx =
         cardano_serialization_lib::protocol_types::fixed_tx::FixedTransaction::from_bytes(tx)?;
     ParsedCardanoTx::from_cardano_tx(cardano_tx, context)
+}
+
+pub fn parse_sign_data(sign_data: Vec<u8>) -> R<ParsedCardanoSignData> {
+    ParsedCardanoSignData::from_sign_data(sign_data)
 }
 
 pub fn check_tx(tx: Vec<u8>, context: ParseContext) -> R<()> {

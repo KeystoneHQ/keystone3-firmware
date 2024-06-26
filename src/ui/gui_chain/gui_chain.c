@@ -24,6 +24,8 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
         return GuiGetAptosCheckResult();
     case REMAPVIEW_ADA:
         return GuiGetAdaCheckResult();
+    case REMAPVIEW_ADA_SIGN_DATA:
+        return GuiGetAdaSignDataCheckResult();
     case REMAPVIEW_XRP:
         return GuiGetXrpCheckResult();
     case REMAPVIEW_AR:
@@ -68,6 +70,7 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     case AptosTx:
         return CHAIN_APT;
     case CardanoTx:
+    case CardanoSignData:
         return CHAIN_ADA;
     case XRPTx:
         return CHAIN_XRP;
@@ -126,6 +129,9 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
         break;
     case AptosTx:
         func = GuiGetAptosSignQrCodeData;
+        break;
+    case CardanoSignData:
+        func = GuiGetAdaSignSignDataQrCodeData;
         break;
     case CardanoTx:
         func = GuiGetAdaSignQrCodeData;

@@ -41,6 +41,13 @@ void GuiSetupAdaUrData(URParseResult *urResult, URParseMultiResult *urMultiResul
         result = NULL;                                                                                          \
     }
 
+#define CHECK_FREE_PARSE_SIGN_DATA_RESULT(result)                                                               \
+    if (result != NULL)                                                                                         \
+    {                                                                                                           \
+        free_TransactionParseResult_DisplayCardanoSignData((PtrT_TransactionParseResult_DisplayCardanoSignData)result);     \
+        result = NULL;                                                                                          \
+    }
+
 void *GuiGetAdaData(void)
 {
     CHECK_FREE_PARSE_RESULT(g_parseResult);
@@ -62,6 +69,36 @@ void *GuiGetAdaData(void)
     return g_parseResult;
 }
 
+void *GuiGetAdaSignDataData(void)
+{
+    CHECK_FREE_PARSE_SIGN_DATA_RESULT(g_parseResult);
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        TransactionParseResult_DisplayCardanoSignData *parseResult = cardano_parse_sign_data(data);
+        CHECK_CHAIN_BREAK(parseResult);
+        g_parseResult = (void *)parseResult;
+    } while (0);
+    return g_parseResult;
+}
+
+void GetAdaSignDataText(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoSignData *data = (DisplayCardanoSignData *)param;
+    if (data->sign_data == NULL) {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, data->sign_data);
+}
+
+int GetAdaSignDataLength(void *param)
+{
+    DisplayCardanoSignData *data = (DisplayCardanoSignData *)param;
+    if (data->sign_data == NULL) {
+        return 0;
+    }
+    return strlen(data->sign_data) + 1;
+}
+
 PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
 {
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
@@ -79,11 +116,27 @@ PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
     return result;
 }
 
+PtrT_TransactionCheckResult GuiGetAdaSignDataCheckResult(void)
+{
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    PtrT_TransactionCheckResult result = cardano_check_sign_data(data, mfp);
+    return result;
+}
+
 void FreeAdaMemory(void)
 {
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
+}
+
+void FreeAdaSignDataMemory(void)
+{
+    CHECK_FREE_UR_RESULT(g_urResult, false);
+    CHECK_FREE_UR_RESULT(g_urMultiResult, true);
+    CHECK_FREE_PARSE_SIGN_DATA_RESULT(g_parseResult);
 }
 
 bool GetAdaExtraDataExist(void *indata, void *param)
@@ -282,6 +335,28 @@ void *GetAdaWithdrawalsData(uint8_t *row, uint8_t *col, void *param)
     }
     return (void *)indata;
 }
+
+UREncodeResult *GuiGetAdaSignSignDataQrCodeData(void)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    UREncodeResult *encodeResult;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        uint8_t entropy[64];
+        uint8_t len = 0;
+        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        encodeResult = cardano_sign_sign_data(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+        ClearSecretCache();
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+    SetLockScreen(enable);
+    return encodeResult;
+}
+
 
 UREncodeResult *GuiGetAdaSignQrCodeData(void)
 {

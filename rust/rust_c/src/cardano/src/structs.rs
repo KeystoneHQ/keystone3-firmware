@@ -1,7 +1,8 @@
 use alloc::boxed::Box;
 use alloc::vec::Vec;
 use app_cardano::structs::{
-    CardanoCertificate, CardanoFrom, CardanoTo, CardanoWithdrawal, ParsedCardanoTx,
+    CardanoCertificate, CardanoFrom, CardanoTo,
+    CardanoWithdrawal, ParsedCardanoTx, ParsedCardanoSignData,
 };
 use core::ptr::null_mut;
 use third_party::itertools::Itertools;
@@ -14,6 +15,11 @@ use common_rust_c::utils::convert_c_char;
 use common_rust_c::{
     check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs, make_free_method,
 };
+
+#[repr(C)]
+pub struct DisplayCardanoSignData {
+    pub sign_data: PtrString,
+}
 
 #[repr(C)]
 pub struct DisplayCardanoTx {
@@ -59,6 +65,14 @@ pub struct DisplayCardanoWithdrawal {
 
 impl_c_ptrs!(DisplayCardanoTx);
 
+impl_c_ptrs!(DisplayCardanoSignData);
+
+impl Free for DisplayCardanoSignData {
+    fn free(&self) {
+        free_str_ptr!(self.sign_data);
+    }
+}
+
 impl Free for DisplayCardanoTx {
     fn free(&self) {
         unsafe {
@@ -79,6 +93,14 @@ impl Free for DisplayCardanoTx {
             free_ptr_string(self.total_output);
             free_ptr_string(self.fee);
             free_ptr_string(self.network);
+        }
+    }
+}
+
+impl From<ParsedCardanoSignData> for DisplayCardanoSignData {
+    fn from(value: ParsedCardanoSignData) -> Self {
+        Self {
+            sign_data: convert_c_char(value.get_sign_data()),
         }
     }
 }
@@ -209,3 +231,4 @@ impl Free for DisplayCardanoWithdrawal {
 }
 
 make_free_method!(TransactionParseResult<DisplayCardanoTx>);
+make_free_method!(TransactionParseResult<DisplayCardanoSignData>);

@@ -45,6 +45,11 @@ impl_public_struct!(CardanoCertKey {
     path: DerivationPath
 });
 
+impl_public_struct!(ParsedCardanoSignData {
+    sign_data: String
+});
+
+
 impl_public_struct!(ParsedCardanoTx {
     fee: String,
     total_input: String,
@@ -133,6 +138,14 @@ struct Deregistration {
 struct Delegation {
     pool: String,
     stake_key: RewardAddress,
+}
+
+impl ParsedCardanoSignData {
+    pub fn from_sign_data(sign_data: Vec<u8>) -> R<Self> {
+        Ok(Self {
+            sign_data: hex::encode(sign_data),
+        })
+    }
 }
 
 impl ParsedCardanoTx {

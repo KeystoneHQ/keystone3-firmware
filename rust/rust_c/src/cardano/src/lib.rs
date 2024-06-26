@@ -2,7 +2,7 @@
 
 extern crate alloc;
 
-use alloc::format;
+use alloc::{format, slice};
 use alloc::string::{String, ToString};
 
 use alloc::vec::Vec;
@@ -10,23 +10,47 @@ use app_cardano::errors::CardanoError;
 use app_cardano::structs::{CardanoCertKey, CardanoUtxo, ParseContext};
 use core::str::FromStr;
 use cty::c_char;
+use third_party::hex;
 use third_party::bitcoin::bip32::DerivationPath;
 
 use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
+use third_party::ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
 use third_party::ur_registry::cardano::cardano_signature::CardanoSignature;
+use third_party::ur_registry::cardano::cardano_sign_data_signature::CardanoSignDataSignature;
 use third_party::ur_registry::crypto_key_path::CryptoKeyPath;
 
-use crate::structs::DisplayCardanoTx;
+use crate::structs::{DisplayCardanoTx, DisplayCardanoSignData};
 use common_rust_c::errors::{RustCError, R};
 use common_rust_c::extract_ptr_with_type;
 use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
-use third_party::ur_registry::registry_types::CARDANO_SIGNATURE;
+use third_party::ur_registry::registry_types::{CARDANO_SIGNATURE, CARDANO_SIGN_DATA_SIGNATURE};
 
 pub mod address;
 pub mod structs;
+
+#[no_mangle]
+pub extern "C" fn cardano_check_sign_data(
+    ptr: PtrUR,
+    master_fingerprint: PtrBytes,
+) -> PtrT<TransactionCheckResult> {
+    let cardano_sign_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignDataRequest);
+    let mfp = unsafe { slice::from_raw_parts(master_fingerprint, 4) };
+    let ur_mfp = cardano_sign_data_reqeust
+        .get_derivation_path()
+        .get_source_fingerprint()
+        .ok_or(RustCError::InvalidMasterFingerprint);
+
+    if let Ok(mfp) = mfp.try_into() as Result<[u8; 4], _> {
+        if hex::encode(mfp) != hex::encode(ur_mfp.unwrap()) {
+            return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
+        }
+    }
+
+    TransactionCheckResult::new().c_ptr()
+}
 
 #[no_mangle]
 pub extern "C" fn cardano_check_tx(
@@ -94,6 +118,17 @@ fn parse_cardano_root_path(path: String) -> Option<String> {
 }
 
 #[no_mangle]
+pub extern "C" fn cardano_parse_sign_data(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayCardanoSignData>> {
+    let cardano_sign_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignDataRequest);
+    let sign_data = cardano_sign_data_reqeust.get_sign_data();
+    let parsed_data = app_cardano::transaction::parse_sign_data(sign_data);
+    match parsed_data {
+        Ok(v) => TransactionParseResult::success(DisplayCardanoSignData::from(v).c_ptr()).c_ptr(),
+        Err(e) => TransactionParseResult::from(e).c_ptr(),
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn cardano_parse_tx(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
@@ -110,6 +145,51 @@ pub extern "C" fn cardano_parse_tx(
         },
         Err(e) => TransactionParseResult::from(e).c_ptr(),
     }
+}
+
+#[no_mangle]
+pub extern "C" fn cardano_sign_sign_data(
+    ptr: PtrUR,
+    entropy: PtrBytes,
+    entropy_len: u32,
+    passphrase: PtrString,
+) -> PtrT<UREncodeResult> {
+    let cardano_sign_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignDataRequest);
+    let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
+    let passphrase = recover_c_char(passphrase);
+    let sign_data = cardano_sign_data_reqeust.get_sign_data();
+    let parsed_data = app_cardano::transaction::parse_sign_data(sign_data);
+
+    let result = app_cardano::transaction::sign_data(
+        &cardano_sign_data_reqeust.get_derivation_path().get_path().unwrap(),
+        parsed_data.unwrap().get_sign_data().as_str(),
+        entropy,
+        passphrase.as_bytes(),
+    )
+    .map(|v| CardanoSignDataSignature::new(
+        cardano_sign_data_reqeust.get_request_id(),
+        v.get_signature().into_bytes(),
+        v.get_pub_key().into_bytes(),
+    )
+    .try_into())
+    .map_or_else(
+        |e| UREncodeResult::from(e).c_ptr(),
+        |v| {
+            v.map_or_else(
+                |e| UREncodeResult::from(e).c_ptr(),
+                |data| {
+                    UREncodeResult::encode(
+                        data,
+                        CARDANO_SIGN_DATA_SIGNATURE.get_type(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                    )
+                    .c_ptr()
+                },
+            )
+        },
+    );
+
+    return result;
 }
 
 #[no_mangle]

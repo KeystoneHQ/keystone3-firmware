@@ -178,6 +178,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         FreeAdaMemory,
     },
     {
+        REMAPVIEW_ADA_SIGN_DATA,
+#ifndef COMPILE_SIMULATOR
+        "{}",
+#else
+        PC_SIMULATOR_PATH "/page_ada_sign_data.json",
+#endif
+        GuiGetAdaSignDataData,
+        NULL,
+        FreeAdaSignDataMemory,
+    },
+    {
         REMAPVIEW_XRP,
 #ifndef COMPILE_SIMULATOR
         "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text\":\"Transaction Raw Data\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,0],\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,38],\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetXrpDetail\",\"text_len_func\":\"GetXrpDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}]}",
@@ -319,6 +330,7 @@ GetContSizeFunc GuiTemplateSizeFuncGet(char *type)
     case REMAPVIEW_COSMOS:
         return GetCosmosContainerSize(type);
     case REMAPVIEW_ADA:
+    case REMAPVIEW_ADA_SIGN_DATA:
         return GetAdaContainerSize(type);
 #endif
     default:
@@ -746,6 +758,8 @@ GetLabelDataFunc GuiAdaTextFuncGet(char *type)
         return GetAdaWithdrawalsLabel;
     } else if (!strcmp(type, "GetAdaCertificatesLabel")) {
         return GetAdaCertificatesLabel;
+    } else if (!strcmp(type, "GetAdaSignDataText")) {
+        return GetAdaSignDataText;
     }
     return NULL;
 }
@@ -754,6 +768,8 @@ GetLabelDataLenFunc GuiAdaTextLenFuncGet(char *type)
 {
     if (!strcmp(type, "GetAdaExtraDataLen")) {
         return GetAdaExtraDataLen;
+    } else if (!strcmp(type, "GetAdaSignDataLength")) {
+        return GetAdaSignDataLength;
     }
     return NULL;
 }
@@ -770,6 +786,7 @@ GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
     case REMAPVIEW_APT:
         return GuiAptosTextLenFuncGet(type);
     case REMAPVIEW_ADA:
+    case REMAPVIEW_ADA_SIGN_DATA:
         return GuiAdaTextLenFuncGet(type);
     case REMAPVIEW_XRP:
         return GuiXrpTextLenFuncGet(type);
@@ -808,6 +825,7 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
     case REMAPVIEW_APT:
         return GuiAptosTextFuncGet(type);
     case REMAPVIEW_ADA:
+    case REMAPVIEW_ADA_SIGN_DATA:
         return GuiAdaTextFuncGet(type);
     case REMAPVIEW_XRP:
         return GuiXrpTextFuncGet(type);
@@ -831,6 +849,7 @@ GetTableDataFunc GuiTemplateTableFuncGet(char *type)
     case REMAPVIEW_ETH:
         return GuiEthTableFuncGet(type);
     case REMAPVIEW_ADA:
+    case REMAPVIEW_ADA_SIGN_DATA:
         return GuiAdaTabelFuncGet(type);
 #endif
     default:
@@ -1551,6 +1570,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_APT;
     case CardanoTx:
         return REMAPVIEW_ADA;
+    case CardanoSignData:
+        return REMAPVIEW_ADA_SIGN_DATA;
     case XRPTx:
         return REMAPVIEW_XRP;
     case ArweaveTx:

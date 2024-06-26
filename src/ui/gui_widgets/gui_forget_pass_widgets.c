@@ -20,7 +20,7 @@
 #include "gui_page.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_lock_device_widgets.h"
-#ifndef COMPILE_MAC_SIMULATOR
+#ifdef COMPILE_WIN_SIMULATOR
 #include "sha256.h"
 #else
 #include "simulator_model.h"

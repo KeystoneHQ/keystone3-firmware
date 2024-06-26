@@ -21,7 +21,7 @@
 #include "account_manager.h"
 #include "user_memory.h"
 
-#ifndef COMPILE_MAC_SIMULATOR
+#ifdef COMPILE_WIN_SIMULATOR
 #include "sha256.h"
 #else
 #include "simulator_model.h"

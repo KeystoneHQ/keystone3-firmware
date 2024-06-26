@@ -3,7 +3,7 @@
 #include "gui_animating_qrcode.h"
 #include "gui_model.h"
 #include "gui_pending_hintbox.h"
-#ifdef COMPILE_MAC_SIMULATOR
+#ifndef COMPILE_WIN_SIMULATOR
 #include "lvgl/src/extra/libs/qrcode/lv_qrcode.h"
 #endif
 #include "gui_fullscreen_mode.h"

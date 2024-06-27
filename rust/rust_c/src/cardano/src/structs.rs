@@ -53,8 +53,10 @@ pub struct DisplayCardanoTo {
 #[repr(C)]
 pub struct DisplayCardanoCertificate {
     cert_type: PtrString,
-    address: PtrString,
-    pool: PtrString,
+    variant1: PtrString,
+    variant2: PtrString,
+    variant1_label: PtrString,
+    variant2_label: PtrString
 }
 
 #[repr(C)]
@@ -197,9 +199,14 @@ impl From<&CardanoCertificate> for DisplayCardanoCertificate {
     fn from(value: &CardanoCertificate) -> Self {
         Self {
             cert_type: convert_c_char(value.get_cert_type()),
-            address: convert_c_char(value.get_address()),
-            pool: value
-                .get_pool()
+            variant1: convert_c_char(value.get_variant1()),
+            variant2: value
+                .get_variant2()
+                .map(|v| convert_c_char(v))
+                .unwrap_or(null_mut()),
+            variant1_label: convert_c_char(value.get_variant1_label()),
+            variant2_label: value
+                .get_variant2_label()
                 .map(|v| convert_c_char(v))
                 .unwrap_or(null_mut()),
         }
@@ -209,8 +216,10 @@ impl From<&CardanoCertificate> for DisplayCardanoCertificate {
 impl Free for DisplayCardanoCertificate {
     fn free(&self) {
         free_str_ptr!(self.cert_type);
-        free_str_ptr!(self.address);
-        free_str_ptr!(self.pool);
+        free_str_ptr!(self.variant1);
+        free_str_ptr!(self.variant2);
+        free_str_ptr!(self.variant1_label);
+        free_str_ptr!(self.variant2_label);
     }
 }
 

@@ -290,10 +290,10 @@ void *GetAdaCertificatesData(uint8_t *row, uint8_t *col, void *param)
             if (j % 3 == 0) {
                 snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%d #F5870A %s#", index + 1, tx->certificates->data[index].cert_type);
             } else if (j % 3 == 1) {
-                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "Address: %s", tx->certificates->data[index].address);
+                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%s: %s", tx->certificates->data[index].variant1_label, tx->certificates->data[index].variant1);
             } else {
-                if (tx->certificates->data[index].pool != NULL) {
-                    snprintf_s(indata[i][j], BUFFER_SIZE_128,  "Pool: %s", tx->certificates->data[index].pool);
+                if (tx->certificates->data[index].variant2 != NULL) {
+                    snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%s: %s", tx->certificates->data[index].variant2_label, tx->certificates->data[index].variant2);
                 }
             }
         }

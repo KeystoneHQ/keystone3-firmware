@@ -157,6 +157,7 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
     case StellarTx:
     case StellarHash:
         func = GuiGetStellarSignQrCodeData;
+        break;
     case TonTx:
         func = GuiGetTonSignQrCodeData;
         break;

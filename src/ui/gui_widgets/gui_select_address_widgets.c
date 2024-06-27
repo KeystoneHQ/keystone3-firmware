@@ -253,7 +253,8 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         break;
     case CHAIN_ATOM:
         item->index = index;
-        strcpy(item->address, GetKeplrConnectionDisplayAddressByIndex(index));
+        // we dont need to show the address,only show the account index. thus the address is empty.
+        strcpy(item->address, "");
         break;
 #endif
     default:

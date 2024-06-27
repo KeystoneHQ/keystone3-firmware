@@ -859,20 +859,22 @@ static void AddKeplrCoinsAndAddressUI(void)
         g_coinCont = NULL;
     }
     lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
-
+    g_coinTitleLabel = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_networks"));
+    lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_networks"));
+    lv_obj_align(g_coinTitleLabel, LV_ALIGN_TOP_LEFT, 36, 10);
     // supported network icons
     for (int i = 0; i < 8; i++) {
         lv_obj_t *img = GuiCreateImg(g_bottomCont, g_keplrCoinArray[i]);
         lv_img_set_zoom(img, 110);
         lv_img_set_pivot(img, 0, 0);
-        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 36 + 32 * i, 36);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 36 + 32 * i, 38);
     }
 
     lv_obj_t *img = GuiCreateImg(g_bottomCont, &imgMore);
     lv_img_set_zoom(img, 150);
     lv_img_set_pivot(img, 0, 0);
     lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 292, 36);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 292, 38);
 
     // select address ui
     lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
@@ -880,18 +882,10 @@ static void AddKeplrCoinsAndAddressUI(void)
     snprintf_s(name, sizeof(name), "%s-%d", _("account_head"),
                g_chainAddressIndex[GetCurrentAccountIndex()]);
     lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 62);
-
-    char addr[BUFFER_SIZE_32] = {0};
-    CutAndFormatString(
-        addr, sizeof(addr),
-        GetKeplrConnectionDisplayAddressByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]),
-        28);
-    label = GuiCreateNoticeLabel(g_bottomCont, addr);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 92);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 70);
 
     label = GuiCreateImg(g_bottomCont, &imgArrowRight);
-    lv_obj_align(label, LV_ALIGN_CENTER, 150, 34);
+    lv_obj_align(label, LV_ALIGN_CENTER, 150, 30);
 }
 
 static void AddSolflareCoins(void)
@@ -1038,7 +1032,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_KEPLR:
         func = GuiGetKeplrData;
         AddKeplrCoinsAndAddressUI();
-//        AddKeplrCoins();
         break;
     case WALLET_LIST_ARCONNECT:
         func = GuiGetArConnectData;

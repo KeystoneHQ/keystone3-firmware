@@ -135,13 +135,8 @@ static uint32_t g_selectIndex[3] = {0};
 static uint32_t g_suiSelectIndex[3] = {0};
 static uint32_t g_aptosSelectIndex[3] = {0};
 static uint32_t g_xrpSelectIndex[3] = {0};
-static uint32_t g_atomSelectIndex[3] = {0};
-static uint32_t g_scrtSelectIndex[3] = {0};
-static uint32_t g_croSelectIndex[3] = {0};
-static uint32_t g_iovSelectIndex[3] = {0};
-static uint32_t g_agSelectIndex[3] = {0};
-static uint32_t g_kavaSelectIndex[3] = {0};
-static uint32_t g_lunaSelectIndex[3] = {0};
+static uint32_t g_cosmosChainSelectIndex[3] = {0};
+
 
 
 static PageWidget_t *g_pageWidget;
@@ -798,18 +793,15 @@ static void ConfirmHandler(lv_event_t *e)
 
 static bool IsAccountSwitchable()
 {
+    // all cosmos chain can switch account
+    if (IsCosmosChain(g_chainCard)) {
+        return true;
+    }
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TRX:
     case HOME_WALLET_CARD_SUI:
     case HOME_WALLET_CARD_APT:
     case HOME_WALLET_CARD_XRP:
-    case HOME_WALLET_CARD_ATOM:
-    case HOME_WALLET_CARD_SCRT:
-    case HOME_WALLET_CARD_CRO:
-    case HOME_WALLET_CARD_IOV:
-    case HOME_WALLET_CARD_BLD:
-    case HOME_WALLET_CARD_KAVA:
-    case HOME_WALLET_CARD_LUNA:
         return true;
 
     default:
@@ -912,13 +904,8 @@ void GuiResetCurrentStandardAddressIndex(uint8_t index)
     g_suiSelectIndex[index] = 0;
     g_aptosSelectIndex[index] = 0;
     g_xrpSelectIndex[index] = 0;
-    g_atomSelectIndex[index] = 0;
-    g_scrtSelectIndex[index] = 0;
-    g_croSelectIndex[index] = 0;
-    g_iovSelectIndex[index] = 0;
-    g_agSelectIndex[index] = 0;
-    g_kavaSelectIndex[index] = 0;
-    g_lunaSelectIndex[index] = 0;
+    g_cosmosChainSelectIndex[index] = 0;
+
 
 }
 
@@ -928,13 +915,7 @@ void GuiResetAllStandardAddressIndex(void)
     memset_s(g_suiSelectIndex, sizeof(g_suiSelectIndex), 0, sizeof(g_suiSelectIndex));
     memset_s(g_aptosSelectIndex, sizeof(g_aptosSelectIndex), 0, sizeof(g_aptosSelectIndex));
     memset_s(g_xrpSelectIndex, sizeof(g_xrpSelectIndex), 0, sizeof(g_xrpSelectIndex));
-    memset_s(g_atomSelectIndex, sizeof(g_atomSelectIndex), 0, sizeof(g_atomSelectIndex));
-    memset_s(g_scrtSelectIndex, sizeof(g_scrtSelectIndex), 0, sizeof(g_scrtSelectIndex));
-    memset_s(g_croSelectIndex, sizeof(g_croSelectIndex), 0, sizeof(g_croSelectIndex));
-    memset_s(g_iovSelectIndex, sizeof(g_iovSelectIndex), 0, sizeof(g_iovSelectIndex));
-    memset_s(g_agSelectIndex, sizeof(g_agSelectIndex), 0, sizeof(g_agSelectIndex));
-    memset_s(g_kavaSelectIndex, sizeof(g_kavaSelectIndex), 0, sizeof(g_kavaSelectIndex));
-    memset_s(g_lunaSelectIndex, sizeof(g_lunaSelectIndex), 0, sizeof(g_lunaSelectIndex));
+    memset_s(g_cosmosChainSelectIndex, sizeof(g_cosmosChainSelectIndex), 0, sizeof(g_cosmosChainSelectIndex));
 
 }
 
@@ -950,30 +931,14 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
     case HOME_WALLET_CARD_XRP:
         g_xrpSelectIndex[GetCurrentAccountIndex()] = selectIndex;
         break;
-    case HOME_WALLET_CARD_ATOM:
-        g_atomSelectIndex[GetCurrentAccountIndex()] = selectIndex;
-        break;
-    case HOME_WALLET_CARD_SCRT:
-        g_scrtSelectIndex[GetCurrentAccountIndex()] = selectIndex;
-        break;
-    case HOME_WALLET_CARD_CRO:
-        g_croSelectIndex[GetCurrentAccountIndex()] = selectIndex;
-        break;
-    case HOME_WALLET_CARD_IOV:
-        g_iovSelectIndex[GetCurrentAccountIndex()] = selectIndex;
-        break;
-    case HOME_WALLET_CARD_BLD:
-        g_agSelectIndex[GetCurrentAccountIndex()] = selectIndex;
-        break;
-    case HOME_WALLET_CARD_KAVA:
-        g_kavaSelectIndex[GetCurrentAccountIndex()] = selectIndex;
-        break;
-    case HOME_WALLET_CARD_LUNA:
-        g_lunaSelectIndex[GetCurrentAccountIndex()] = selectIndex;
-        break;
     default:
-        g_selectIndex[GetCurrentAccountIndex()] = selectIndex;
-        break;
+        if (IsCosmosChain(g_chainCard)) {
+            g_cosmosChainSelectIndex[GetCurrentAccountIndex()] = selectIndex;
+            break;
+        } else {
+            g_selectIndex[GetCurrentAccountIndex()] = selectIndex;
+            break;
+        }
     }
 }
 
@@ -989,22 +954,12 @@ static uint32_t GetCurrentSelectIndex()
         return g_aptosSelectIndex[GetCurrentAccountIndex()];
     case HOME_WALLET_CARD_XRP:
         return g_xrpSelectIndex[GetCurrentAccountIndex()];
-    case HOME_WALLET_CARD_ATOM:
-        return g_atomSelectIndex[GetCurrentAccountIndex()];
-    case HOME_WALLET_CARD_SCRT:
-        return g_scrtSelectIndex[GetCurrentAccountIndex()];
-    case HOME_WALLET_CARD_CRO:
-        return g_croSelectIndex[GetCurrentAccountIndex()];
-    case HOME_WALLET_CARD_IOV:
-        return g_iovSelectIndex[GetCurrentAccountIndex()];
-    case HOME_WALLET_CARD_BLD:
-        return g_agSelectIndex[GetCurrentAccountIndex()];
-    case HOME_WALLET_CARD_KAVA:
-        return g_kavaSelectIndex[GetCurrentAccountIndex()];
-    case HOME_WALLET_CARD_LUNA:
-        return g_lunaSelectIndex[GetCurrentAccountIndex()];
     default:
-        return g_selectIndex[GetCurrentAccountIndex()];
+        if (IsCosmosChain(g_chainCard)) {
+            return g_cosmosChainSelectIndex[GetCurrentAccountIndex()];
+        } else {
+            return g_selectIndex[GetCurrentAccountIndex()];
+        }
     }
 }
 #endif

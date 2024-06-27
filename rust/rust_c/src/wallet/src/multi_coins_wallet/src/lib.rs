@@ -11,6 +11,7 @@ pub mod structs;
 pub mod sui;
 pub mod tonkeeper;
 mod utils;
+pub mod xbull;
 pub mod xrp_toolkit;
 
 use alloc::format;

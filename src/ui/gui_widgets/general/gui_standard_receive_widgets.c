@@ -102,6 +102,7 @@ static void SetCurrentSelectIndex(uint32_t selectIndex);
 static uint32_t GetCurrentSelectIndex();
 static void ConfirmHandler(lv_event_t *e);
 static void UpdateConfirmBtn(void);
+static bool ShouldRenderSwitchBtn();
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
 
@@ -114,6 +115,7 @@ static uint32_t g_showIndex;
 static uint32_t g_tmpIndex = 0;
 static uint32_t g_selectIndex[3] = {0};
 static uint32_t g_suiSelectIndex[3] = {0};
+static uint32_t g_stellarSelectIndex[3] = {0};
 static uint32_t g_aptosSelectIndex[3] = {0};
 static uint32_t g_xrpSelectIndex[3] = {0};
 static PageWidget_t *g_pageWidget;
@@ -171,15 +173,17 @@ void GuiStandardReceiveRefresh(void)
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_tmpIndex = GetCurrentSelectIndex();
         g_showIndex = g_tmpIndex / 5 * 5;
-        if (g_showIndex < 5) {
-            lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);
-            lv_obj_set_style_img_opa(g_standardReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
-        } else if (g_showIndex >= GetMaxAddressIndex() - 5) {
-            lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
-            lv_obj_set_style_img_opa(g_standardReceiveWidgets.rightBtnImg, LV_OPA_30, LV_PART_MAIN);
-        } else {
-            lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
-            lv_obj_set_style_img_opa(g_standardReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
+        if (ShouldRenderSwitchBtn()) {
+            if (g_showIndex < 5) {
+                lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);
+                lv_obj_set_style_img_opa(g_standardReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
+            } else if (g_showIndex >= GetMaxAddressIndex() - 5) {
+                lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
+                lv_obj_set_style_img_opa(g_standardReceiveWidgets.rightBtnImg, LV_OPA_30, LV_PART_MAIN);
+            } else {
+                lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
+                lv_obj_set_style_img_opa(g_standardReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
+            }
         }
         UpdateConfirmBtn();
         break;
@@ -363,34 +367,40 @@ static void UpdateConfirmBtn(void)
     }
 }
 
+static bool ShouldRenderSwitchBtn() {
+    return GetMaxAddressIndex() > 5;
+}
+
 static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
 {
     lv_obj_t *btn;
     lv_obj_t *img;
 
-    btn = GuiCreateBtn(parent, "");
-    lv_obj_set_size(btn, 96, 66);
-    lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
-    img = GuiCreateImg(btn, &imgArrowLeft);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    if (g_showIndex < 5) {
-        lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
-    }
-    lv_obj_add_event_cb(btn, LeftBtnHandler, LV_EVENT_CLICKED, NULL);
-    g_standardReceiveWidgets.leftBtnImg = img;
+    if (ShouldRenderSwitchBtn()) {
+        btn = GuiCreateBtn(parent, "");
+        lv_obj_set_size(btn, 96, 66);
+        lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
+        lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
+        img = GuiCreateImg(btn, &imgArrowLeft);
+        lv_obj_set_align(img, LV_ALIGN_CENTER);
+        if (g_showIndex < 5) {
+            lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
+        }
+        lv_obj_add_event_cb(btn, LeftBtnHandler, LV_EVENT_CLICKED, NULL);
+        g_standardReceiveWidgets.leftBtnImg = img;
 
-    btn = GuiCreateBtn(parent, "");
-    lv_obj_set_size(btn, 96, 66);
-    lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 156, -24);
-    img = GuiCreateImg(btn, &imgArrowRight);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_opa(img, LV_OPA_COVER, LV_PART_MAIN);
-    lv_obj_add_event_cb(btn, RightBtnHandler, LV_EVENT_CLICKED, NULL);
-    g_standardReceiveWidgets.rightBtnImg = img;
+        btn = GuiCreateBtn(parent, "");
+        lv_obj_set_size(btn, 96, 66);
+        lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
+        lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 156, -24);
+        img = GuiCreateImg(btn, &imgArrowRight);
+        lv_obj_set_align(img, LV_ALIGN_CENTER);
+        lv_obj_set_style_opa(img, LV_OPA_COVER, LV_PART_MAIN);
+        lv_obj_add_event_cb(btn, RightBtnHandler, LV_EVENT_CLICKED, NULL);
+        g_standardReceiveWidgets.rightBtnImg = img;
+    }
 
     btn = GuiCreateBtn(parent, USR_SYMBOL_CHECK);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
@@ -415,6 +425,10 @@ static void RefreshQrCode(void)
             lv_label_set_text(g_standardReceiveWidgets.addressLabel, fixedAddress->data);
         }
         free_simple_response_c_char(fixedAddress);
+    } else if (g_chainCard == HOME_WALLET_CARD_XLM) {
+        char addressString[128];
+        CutAndFormatString(addressString, sizeof(addressString), addressDataItem.address, 40);
+        lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressString);
     } else if (g_chainCard == HOME_WALLET_CARD_TON) {
         char address[128];
         snprintf_s(address, 128, "%.22s\n%s", addressDataItem.address, &addressDataItem.address[22]);
@@ -469,6 +483,9 @@ static int GetMaxAddressIndex(void)
 {
     if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT) {
         return 10;
+    }
+    if (g_chainCard == HOME_WALLET_CARD_XLM) {
+        return 5;
     }
     if (g_chainCard == HOME_WALLET_CARD_XRP) {
         return 200;
@@ -539,6 +556,7 @@ static bool IsAccountSwitchable()
     case HOME_WALLET_CARD_SUI:
     case HOME_WALLET_CARD_APT:
     case HOME_WALLET_CARD_XRP:
+    case HOME_WALLET_CARD_XLM:
         return true;
 
     default:
@@ -605,6 +623,11 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
         result = arweave_get_address(xPub);
         break;
+    case HOME_WALLET_CARD_XLM:
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_STELLAR_0 + index);
+        snprintf_s(hdPath, BUFFER_SIZE_64, "m/44'/148'/%u'", index);
+        result = stellar_get_address(xPub);
+        break;
     case HOME_WALLET_CARD_TON: {
         bool isTonNative = GetMnemonicType() == MNEMONIC_TYPE_TON;
         if (isTonNative) {
@@ -646,6 +669,7 @@ void GuiResetCurrentStandardAddressIndex(uint8_t index)
     }
     g_selectIndex[index] = 0;
     g_suiSelectIndex[index] = 0;
+    g_stellarSelectIndex[index] = 0;
     g_aptosSelectIndex[index] = 0;
     g_xrpSelectIndex[index] = 0;
 }
@@ -654,6 +678,7 @@ void GuiResetAllStandardAddressIndex(void)
 {
     memset_s(g_selectIndex, sizeof(g_selectIndex), 0, sizeof(g_selectIndex));
     memset_s(g_suiSelectIndex, sizeof(g_suiSelectIndex), 0, sizeof(g_suiSelectIndex));
+    memset_s(g_stellarSelectIndex, sizeof(g_stellarSelectIndex), 0, sizeof(g_stellarSelectIndex));
     memset_s(g_aptosSelectIndex, sizeof(g_aptosSelectIndex), 0, sizeof(g_aptosSelectIndex));
     memset_s(g_xrpSelectIndex, sizeof(g_xrpSelectIndex), 0, sizeof(g_xrpSelectIndex));
 }
@@ -663,6 +688,9 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
     switch (g_chainCard) {
     case HOME_WALLET_CARD_SUI:
         g_suiSelectIndex[GetCurrentAccountIndex()] = selectIndex;
+        break;
+    case HOME_WALLET_CARD_XLM:
+        g_stellarSelectIndex[GetCurrentAccountIndex()] = selectIndex;
         break;
     case HOME_WALLET_CARD_APT:
         g_aptosSelectIndex[GetCurrentAccountIndex()] = selectIndex;
@@ -684,6 +712,8 @@ static uint32_t GetCurrentSelectIndex()
     switch (g_chainCard) {
     case HOME_WALLET_CARD_SUI:
         return g_suiSelectIndex[GetCurrentAccountIndex()];
+    case HOME_WALLET_CARD_XLM:
+        return g_stellarSelectIndex[GetCurrentAccountIndex()];
     case HOME_WALLET_CARD_APT:
         return g_aptosSelectIndex[GetCurrentAccountIndex()];
     case HOME_WALLET_CARD_XRP:

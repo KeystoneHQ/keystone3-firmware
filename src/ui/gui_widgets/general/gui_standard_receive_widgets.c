@@ -102,6 +102,7 @@ static void SetCurrentSelectIndex(uint32_t selectIndex);
 static uint32_t GetCurrentSelectIndex();
 static void ConfirmHandler(lv_event_t *e);
 static void UpdateConfirmBtn(void);
+static bool ShouldRenderSwitchBtn();
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
 
@@ -172,15 +173,17 @@ void GuiStandardReceiveRefresh(void)
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_tmpIndex = GetCurrentSelectIndex();
         g_showIndex = g_tmpIndex / 5 * 5;
-        if (g_showIndex < 5) {
-            lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);
-            lv_obj_set_style_img_opa(g_standardReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
-        } else if (g_showIndex >= GetMaxAddressIndex() - 5) {
-            lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
-            lv_obj_set_style_img_opa(g_standardReceiveWidgets.rightBtnImg, LV_OPA_30, LV_PART_MAIN);
-        } else {
-            lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
-            lv_obj_set_style_img_opa(g_standardReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
+        if (ShouldRenderSwitchBtn()) {
+            if (g_showIndex < 5) {
+                lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);
+                lv_obj_set_style_img_opa(g_standardReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
+            } else if (g_showIndex >= GetMaxAddressIndex() - 5) {
+                lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
+                lv_obj_set_style_img_opa(g_standardReceiveWidgets.rightBtnImg, LV_OPA_30, LV_PART_MAIN);
+            } else {
+                lv_obj_set_style_img_opa(g_standardReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
+                lv_obj_set_style_img_opa(g_standardReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
+            }
         }
         UpdateConfirmBtn();
         break;
@@ -364,34 +367,40 @@ static void UpdateConfirmBtn(void)
     }
 }
 
+static bool ShouldRenderSwitchBtn() {
+    return GetMaxAddressIndex() > 5;
+}
+
 static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
 {
     lv_obj_t *btn;
     lv_obj_t *img;
 
-    btn = GuiCreateBtn(parent, "");
-    lv_obj_set_size(btn, 96, 66);
-    lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
-    img = GuiCreateImg(btn, &imgArrowLeft);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    if (g_showIndex < 5) {
-        lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
-    }
-    lv_obj_add_event_cb(btn, LeftBtnHandler, LV_EVENT_CLICKED, NULL);
-    g_standardReceiveWidgets.leftBtnImg = img;
+    if (ShouldRenderSwitchBtn()) {
+        btn = GuiCreateBtn(parent, "");
+        lv_obj_set_size(btn, 96, 66);
+        lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
+        lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
+        img = GuiCreateImg(btn, &imgArrowLeft);
+        lv_obj_set_align(img, LV_ALIGN_CENTER);
+        if (g_showIndex < 5) {
+            lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
+        }
+        lv_obj_add_event_cb(btn, LeftBtnHandler, LV_EVENT_CLICKED, NULL);
+        g_standardReceiveWidgets.leftBtnImg = img;
 
-    btn = GuiCreateBtn(parent, "");
-    lv_obj_set_size(btn, 96, 66);
-    lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 156, -24);
-    img = GuiCreateImg(btn, &imgArrowRight);
-    lv_obj_set_align(img, LV_ALIGN_CENTER);
-    lv_obj_set_style_opa(img, LV_OPA_COVER, LV_PART_MAIN);
-    lv_obj_add_event_cb(btn, RightBtnHandler, LV_EVENT_CLICKED, NULL);
-    g_standardReceiveWidgets.rightBtnImg = img;
+        btn = GuiCreateBtn(parent, "");
+        lv_obj_set_size(btn, 96, 66);
+        lv_obj_set_style_radius(btn, 24, LV_PART_MAIN);
+        lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 156, -24);
+        img = GuiCreateImg(btn, &imgArrowRight);
+        lv_obj_set_align(img, LV_ALIGN_CENTER);
+        lv_obj_set_style_opa(img, LV_OPA_COVER, LV_PART_MAIN);
+        lv_obj_add_event_cb(btn, RightBtnHandler, LV_EVENT_CLICKED, NULL);
+        g_standardReceiveWidgets.rightBtnImg = img;
+    }
 
     btn = GuiCreateBtn(parent, USR_SYMBOL_CHECK);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);

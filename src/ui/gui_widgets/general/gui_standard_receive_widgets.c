@@ -121,7 +121,7 @@ static void SetKeyboardValid(bool validation);
 static void UpdateConfirmIndexBtn(void);
 static void RefreshSwitchAddress(void);
 static bool IsIndexSelectChanged();
-
+static uint32_t* GetCosmosChainCurrentSelectIndex();
 
 
 static StandardReceiveWidgets_t g_standardReceiveWidgets;
@@ -135,8 +135,37 @@ static uint32_t g_selectIndex[3] = {0};
 static uint32_t g_suiSelectIndex[3] = {0};
 static uint32_t g_aptosSelectIndex[3] = {0};
 static uint32_t g_xrpSelectIndex[3] = {0};
-static uint32_t g_cosmosChainSelectIndex[3] = {0};
-
+static uint32_t g_tiaChainSelectIndex[3] = {0};
+static uint32_t g_dymChainSelectIndex[3] = {0};
+static uint32_t g_osmoChainSelectIndex[3] = {0};
+static uint32_t g_injChainSelectIndex[3] = {0};
+static uint32_t g_atomChainSelectIndex[3] = {0};
+static uint32_t g_croChainSelectIndex[3] = {0};
+static uint32_t g_kavaChainSelectIndex[3] = {0};
+static uint32_t g_lunaChainSelectIndex[3] = {0};
+static uint32_t g_axlChainSelectIndex[3] = {0};
+static uint32_t g_aktChainSelectIndex[3] = {0};
+static uint32_t g_strdChainSelectIndex[3] = {0};
+static uint32_t g_scrtChainSelectIndex[3] = {0};
+static uint32_t g_bldChainSelectIndex[3] = {0};
+static uint32_t g_ctkChainSelectIndex[3] = {0};
+static uint32_t g_evmosChainSelectIndex[3] = {0};
+static uint32_t g_starsChainSelectIndex[3] = {0};
+static uint32_t g_xprtChainSelectIndex[3] = {0};
+static uint32_t g_sommChainSelectIndex[3] = {0};
+static uint32_t g_junoChainSelectIndex[3] = {0};
+static uint32_t g_irisChainSelectIndex[3] = {0};
+static uint32_t g_dvpnChainSelectIndex[3] = {0};
+static uint32_t g_rowanChainSelectIndex[3] = {0};
+static uint32_t g_regenChainSelectIndex[3] = {0};
+static uint32_t g_bootChainSelectIndex[3] = {0};
+static uint32_t g_gravChainSelectIndex[3] = {0};
+static uint32_t g_ixoChainSelectIndex[3] = {0};
+static uint32_t g_ngmChainSelectIndex[3] = {0};
+static uint32_t g_iovChainSelectIndex[3] = {0};
+static uint32_t g_umeeChainSelectIndex[3] = {0};
+static uint32_t g_qckChainSelectIndex[3] = {0};
+static uint32_t g_tgdChainSelectIndex[3] = {0};
 
 
 static PageWidget_t *g_pageWidget;
@@ -896,10 +925,42 @@ void GuiResetCurrentStandardAddressIndex(uint8_t index)
     g_suiSelectIndex[index] = 0;
     g_aptosSelectIndex[index] = 0;
     g_xrpSelectIndex[index] = 0;
-    g_cosmosChainSelectIndex[index] = 0;
-
-
+    g_tiaChainSelectIndex[index]= 0;
+    g_dymChainSelectIndex[index]= 0;
+    g_osmoChainSelectIndex[index]= 0;
+    g_injChainSelectIndex[index]= 0;
+    g_atomChainSelectIndex[index]= 0;
+    g_croChainSelectIndex[index]= 0;
+    g_kavaChainSelectIndex[index]= 0;
+    g_lunaChainSelectIndex[index]= 0;
+    g_axlChainSelectIndex[index]= 0;
+    g_lunaChainSelectIndex[index]= 0;
+    g_aktChainSelectIndex[index]= 0;
+    g_strdChainSelectIndex[index]= 0;
+    g_scrtChainSelectIndex[index]= 0;
+    g_bldChainSelectIndex[index]= 0;
+    g_ctkChainSelectIndex[index]= 0;
+    g_evmosChainSelectIndex[index]= 0;
+    g_starsChainSelectIndex[index]= 0;
+    g_xprtChainSelectIndex[index]= 0;
+    g_sommChainSelectIndex[index]= 0;
+    g_junoChainSelectIndex[index]= 0;
+    g_irisChainSelectIndex[index]= 0;
+    g_dvpnChainSelectIndex[index]= 0;
+    g_rowanChainSelectIndex[index]= 0;
+    g_regenChainSelectIndex[index]= 0;
+    g_bootChainSelectIndex[index]= 0;
+    g_gravChainSelectIndex[index]= 0;
+    g_ixoChainSelectIndex[index]= 0;
+    g_ngmChainSelectIndex[index]= 0;
+    g_iovChainSelectIndex[index]= 0;
+    g_umeeChainSelectIndex[index]= 0;
+    g_qckChainSelectIndex[index]= 0;
+    g_tgdChainSelectIndex[index]= 0;
 }
+
+
+
 
 void GuiResetAllStandardAddressIndex(void)
 {
@@ -907,8 +968,142 @@ void GuiResetAllStandardAddressIndex(void)
     memset_s(g_suiSelectIndex, sizeof(g_suiSelectIndex), 0, sizeof(g_suiSelectIndex));
     memset_s(g_aptosSelectIndex, sizeof(g_aptosSelectIndex), 0, sizeof(g_aptosSelectIndex));
     memset_s(g_xrpSelectIndex, sizeof(g_xrpSelectIndex), 0, sizeof(g_xrpSelectIndex));
-    memset_s(g_cosmosChainSelectIndex, sizeof(g_cosmosChainSelectIndex), 0, sizeof(g_cosmosChainSelectIndex));
+    memset_s(g_tiaChainSelectIndex, sizeof(g_tiaChainSelectIndex), 0, sizeof(g_tiaChainSelectIndex));
+    memset_s(g_dymChainSelectIndex, sizeof(g_dymChainSelectIndex), 0, sizeof(g_dymChainSelectIndex));
+    memset_s(g_osmoChainSelectIndex, sizeof(g_osmoChainSelectIndex), 0, sizeof(g_osmoChainSelectIndex));
+    memset_s(g_injChainSelectIndex, sizeof(g_injChainSelectIndex), 0, sizeof(g_injChainSelectIndex));
+    memset_s(g_atomChainSelectIndex, sizeof(g_atomChainSelectIndex), 0, sizeof(g_atomChainSelectIndex));
+    memset_s(g_croChainSelectIndex, sizeof(g_croChainSelectIndex), 0, sizeof(g_croChainSelectIndex));
+    memset_s(g_kavaChainSelectIndex, sizeof(g_kavaChainSelectIndex), 0, sizeof(g_kavaChainSelectIndex));
+    memset_s(g_lunaChainSelectIndex, sizeof(g_lunaChainSelectIndex), 0, sizeof(g_lunaChainSelectIndex));
+    memset_s(g_axlChainSelectIndex, sizeof(g_axlChainSelectIndex), 0, sizeof(g_axlChainSelectIndex));
+    memset_s(g_lunaChainSelectIndex, sizeof(g_lunaChainSelectIndex), 0, sizeof(g_lunaChainSelectIndex));
+    memset_s(g_aktChainSelectIndex, sizeof(g_aktChainSelectIndex), 0, sizeof(g_aktChainSelectIndex));
+    memset_s(g_strdChainSelectIndex, sizeof(g_strdChainSelectIndex), 0, sizeof(g_strdChainSelectIndex));
+    memset_s(g_scrtChainSelectIndex, sizeof(g_scrtChainSelectIndex), 0, sizeof(g_scrtChainSelectIndex));
+    memset_s(g_bldChainSelectIndex, sizeof(g_bldChainSelectIndex), 0, sizeof(g_bldChainSelectIndex));
+    memset_s(g_ctkChainSelectIndex, sizeof(g_ctkChainSelectIndex), 0, sizeof(g_ctkChainSelectIndex));
+    memset_s(g_evmosChainSelectIndex, sizeof(g_evmosChainSelectIndex), 0, sizeof(g_evmosChainSelectIndex));
+    memset_s(g_starsChainSelectIndex, sizeof(g_starsChainSelectIndex), 0, sizeof(g_starsChainSelectIndex));
+    memset_s(g_xprtChainSelectIndex, sizeof(g_xprtChainSelectIndex), 0, sizeof(g_xprtChainSelectIndex));
+    memset_s(g_sommChainSelectIndex, sizeof(g_sommChainSelectIndex), 0, sizeof(g_sommChainSelectIndex));
+    memset_s(g_junoChainSelectIndex, sizeof(g_junoChainSelectIndex), 0, sizeof(g_junoChainSelectIndex));
+    memset_s(g_irisChainSelectIndex, sizeof(g_irisChainSelectIndex), 0, sizeof(g_irisChainSelectIndex));
+    memset_s(g_dvpnChainSelectIndex, sizeof(g_dvpnChainSelectIndex), 0, sizeof(g_dvpnChainSelectIndex));
+    memset_s(g_rowanChainSelectIndex, sizeof(g_rowanChainSelectIndex), 0, sizeof(g_rowanChainSelectIndex));
+    memset_s(g_regenChainSelectIndex, sizeof(g_regenChainSelectIndex), 0, sizeof(g_regenChainSelectIndex));
+    memset_s(g_bootChainSelectIndex, sizeof(g_bootChainSelectIndex), 0, sizeof(g_bootChainSelectIndex));
+    memset_s(g_gravChainSelectIndex, sizeof(g_gravChainSelectIndex), 0, sizeof(g_gravChainSelectIndex));
+    memset_s(g_ixoChainSelectIndex, sizeof(g_ixoChainSelectIndex), 0, sizeof(g_ixoChainSelectIndex));
+    memset_s(g_ngmChainSelectIndex, sizeof(g_ngmChainSelectIndex), 0, sizeof(g_ngmChainSelectIndex));
+    memset_s(g_iovChainSelectIndex, sizeof(g_iovChainSelectIndex), 0, sizeof(g_iovChainSelectIndex));
+    memset_s(g_umeeChainSelectIndex, sizeof(g_umeeChainSelectIndex), 0, sizeof(g_umeeChainSelectIndex));
+    memset_s(g_qckChainSelectIndex, sizeof(g_qckChainSelectIndex), 0, sizeof(g_qckChainSelectIndex));
+    memset_s(g_tgdChainSelectIndex, sizeof(g_tgdChainSelectIndex), 0, sizeof(g_tgdChainSelectIndex));
+}
 
+static uint32_t* GetCosmosChainCurrentSelectIndex()
+{
+    switch (g_chainCard) {
+        case HOME_WALLET_CARD_TIA:
+            return &g_tiaChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_DYM:
+            return &g_dymChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_OSMO:
+            return &g_osmoChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_INJ:
+            return &g_injChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_ATOM:
+            return &g_atomChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_CRO:
+            return &g_croChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_KAVA:
+            return &g_kavaChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_LUNC:
+            return &g_lunaChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_AXL:
+            return &g_axlChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_LUNA:
+            return &g_lunaChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_AKT:
+            return &g_aktChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_STRD:
+            return &g_strdChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_SCRT:
+            return &g_scrtChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_BLD:
+            return &g_bldChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_CTK:
+            return &g_ctkChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_EVMOS:
+            return &g_evmosChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_STARS:
+            return &g_starsChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_XPRT:
+            return &g_xprtChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_SOMM:
+            return &g_sommChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_JUNO:
+            return &g_junoChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_IRIS:
+            return &g_irisChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_DVPN:
+            return &g_dvpnChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_ROWAN:
+            return &g_rowanChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_REGEN:
+            return &g_regenChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_BOOT:
+            return &g_bootChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_GRAV:
+            return &g_gravChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_IXO:
+            return &g_ixoChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_NGM:
+            return &g_ngmChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_IOV:
+            return &g_iovChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_UMEE:
+            return &g_umeeChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_QCK:
+            return &g_qckChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_TGD:
+            return &g_tgdChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        default:
+            return NULL;
+    }
 }
 
 static void SetCurrentSelectIndex(uint32_t selectIndex)
@@ -925,7 +1120,8 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
         break;
     default:
         if (IsCosmosChain(g_chainCard)) {
-            g_cosmosChainSelectIndex[GetCurrentAccountIndex()] = selectIndex;
+            uint32_t *ptr = GetCosmosChainCurrentSelectIndex();
+            *ptr = selectIndex;
             break;
         } else {
             g_selectIndex[GetCurrentAccountIndex()] = selectIndex;
@@ -948,7 +1144,8 @@ static uint32_t GetCurrentSelectIndex()
         return g_xrpSelectIndex[GetCurrentAccountIndex()];
     default:
         if (IsCosmosChain(g_chainCard)) {
-            return g_cosmosChainSelectIndex[GetCurrentAccountIndex()];
+            uint32_t *ptr = GetCosmosChainCurrentSelectIndex();
+            return *ptr;
         } else {
             return g_selectIndex[GetCurrentAccountIndex()];
         }

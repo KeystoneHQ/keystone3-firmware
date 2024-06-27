@@ -21,13 +21,11 @@
 #include "stdint.h"
 #include "user_memory.h"
 #include "gui_multisig_wallet_export_widgets.h"
+#include "gui_keyboard_hintbox.h"
 #ifndef COMPILE_SIMULATOR
 #include "drv_sdcard.h"
 #include "user_fatfs.h"
-#else
-#include "simulator_mock_define.h"
 #endif
-#include <gui_keyboard_hintbox.h>
 
 #define MAX_VERIFY_CODE_LEN 24
 

@@ -11,10 +11,6 @@
 #include "screen_manager.h"
 #include "account_public_info.h"
 
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
-#endif
-
 PtrT_TransactionCheckResult GuiGetArCheckResult(void);
 void GuiSetArUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetArData(void);

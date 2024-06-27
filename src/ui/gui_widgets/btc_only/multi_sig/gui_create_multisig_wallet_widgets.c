@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <string.h>
 #include "define.h"
 #include "gui.h"
 #include "gui_views.h"
@@ -23,15 +25,10 @@
 #include "account_public_info.h"
 #include "gui_import_multisig_wallet_info_widgets.h"
 #include "gui_create_multisig_wallet_widgets.h"
-#include <stdlib.h>
-#include <string.h>
-#ifdef COMPILE_SIMULATOR
-#include "simulator_model.h"
-#include "simulator_mock_define.h"
-#else
+#ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
-#include "safe_str_lib.h"
 #endif
+
 #define MULTI_WALLET_DEFAULT_CO_SINGERS                     (3)
 #define MULTI_WALLET_DEFAULT_SIGNERS                        (2)
 #define FATFS_MAX_FILE_NUMBER                               (50)

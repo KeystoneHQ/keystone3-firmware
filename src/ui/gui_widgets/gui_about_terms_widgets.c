@@ -11,10 +11,6 @@
 #include "version.h"
 #include "gui_page.h"
 
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
-#endif
-
 static void GuiAboutNVSBarInit();
 static void GuiAboutTermsEntranceWidget(lv_obj_t *parent);
 static int GetLvObjHeight(lv_obj_t *obj);

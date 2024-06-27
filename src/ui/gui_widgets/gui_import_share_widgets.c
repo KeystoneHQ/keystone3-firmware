@@ -14,12 +14,6 @@
 #include "gui_mnemonic_input.h"
 #include "gui_page.h"
 
-#ifdef COMPILE_WIN_SIMULATOR
-#include "sha256.h"
-#else
-#include "simulator_model.h"
-#endif
-
 typedef enum {
     IMPORT_SHARE_SSB_INPUT = 0,
     IMPORT_SHARE_WRITE_SE,

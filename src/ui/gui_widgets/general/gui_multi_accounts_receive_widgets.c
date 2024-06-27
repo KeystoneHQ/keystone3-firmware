@@ -23,10 +23,6 @@
 #include "gui_tutorial_widgets.h"
 #include "account_manager.h"
 
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
-#endif
-
 #define GENERAL_ADDRESS_INDEX_MAX                           (999999999)
 #define ACCOUNT_INDEX_MAX                                   (24)
 #define INPUT_ADDRESS_MAX_LEN                               (16)

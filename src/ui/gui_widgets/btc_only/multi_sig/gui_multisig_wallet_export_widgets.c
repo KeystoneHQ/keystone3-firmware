@@ -13,10 +13,8 @@
 #include "gui_button.h"
 
 #ifndef COMPILE_SIMULATOR
-#include "safe_str_lib.h"
 #include "drv_sdcard.h"
 #else
-#include "simulator_mock_define.h"
 #include "simulator_model.h"
 #endif
 

@@ -3,12 +3,6 @@
 #include "user_memory.h"
 #include "user_utils.h"
 #include "stdio.h"
-#ifndef COMPILE_SIMULATOR
-#include "safe_mem_lib.h"
-#include "safe_str_lib.h"
-#else
-#include "simulator_mock_define.h"
-#endif
 
 static char *g_passwordCache = NULL;
 static char *g_newPasswordCache = NULL;

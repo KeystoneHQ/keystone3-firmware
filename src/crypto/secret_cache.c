@@ -35,7 +35,7 @@ void SecretCacheSetWalletIndex(uint8_t iconIndex)
     g_walletIconIndex = iconIndex;
 }
 
-uint8_t *SecretCacheGetWalletIconIndex()
+uint8_t SecretCacheGetWalletIconIndex()
 {
     return g_walletIconIndex;
 }

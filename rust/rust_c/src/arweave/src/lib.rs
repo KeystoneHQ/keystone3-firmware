@@ -31,8 +31,8 @@ use third_party::ur_registry::arweave::arweave_sign_request::{
 use third_party::ur_registry::arweave::arweave_signature::ArweaveSignature;
 use third_party::ur_registry::traits::{RegistryItem, To};
 
-pub mod structs;
 pub mod data_item;
+pub mod structs;
 
 fn generate_aes_key_iv(seed: &[u8]) -> ([u8; 32], [u8; 16]) {
     // The number 1557192335 is derived from the ASCII representation of "keystone" hashed with SHA-256, taking the first 32 bits with the highest bit set to 0.

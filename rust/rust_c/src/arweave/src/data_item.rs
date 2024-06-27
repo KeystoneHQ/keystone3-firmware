@@ -24,12 +24,16 @@ pub extern "C" fn ar_is_ao_transfer(ptr: PtrUR) -> bool {
 }
 
 #[no_mangle]
-pub extern "C" fn ar_parse_data_item(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayArweaveDataItem>> {
+pub extern "C" fn ar_parse_data_item(
+    ptr: PtrUR,
+) -> PtrT<TransactionParseResult<DisplayArweaveDataItem>> {
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let sign_data = sign_request.get_sign_data();
     let data_item = parse_data_item(&sign_data);
     match data_item {
-        Ok(item) => TransactionParseResult::success(DisplayArweaveDataItem::from(item).c_ptr()).c_ptr(),
+        Ok(item) => {
+            TransactionParseResult::success(DisplayArweaveDataItem::from(item).c_ptr()).c_ptr()
+        }
         Err(e) => TransactionParseResult::from(e).c_ptr(),
     }
 }

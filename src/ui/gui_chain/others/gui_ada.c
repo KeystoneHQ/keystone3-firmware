@@ -12,10 +12,6 @@
 #include "gui.h"
 #include "user_memory.h"
 
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
-#endif
-
 #define ADA_ADD_MAX_LEN             (150)
 
 static bool g_isMulti = false;

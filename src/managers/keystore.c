@@ -26,13 +26,9 @@
 #include "librust_c.h"
 #include "assert.h"
 #include "secret_cache.h"
-#ifndef COMPILE_SIMULATOR
-#include "safe_mem_lib.h"
-#include "safe_str_lib.h"
-#else
+#ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #include "simulator_storage.h"
-#include "simulator_mock_define.h"
 #endif
 #define KEYSTORE_DEBUG          0
 

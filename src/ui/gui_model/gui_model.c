@@ -41,7 +41,6 @@
 #include "safe_mem_lib.h"
 #include "usb_task.h"
 #else
-#include "simulator_mock_define.h"
 #include "simulator_model.h"
 #endif
 

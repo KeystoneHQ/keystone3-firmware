@@ -5,10 +5,6 @@
 #include "gui_obj.h"
 #include "gui_button.h"
 
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
-#endif
-
 typedef struct {
     lv_obj_t *addressCountLabel;
     lv_obj_t *addressLabel;

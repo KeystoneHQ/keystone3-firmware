@@ -17,11 +17,8 @@
 #include "log.h"
 #ifndef COMPILE_SIMULATOR
 #include "drv_battery.h"
-#endif
-
-#ifndef COMPILE_WIN_SIMULATOR
+#else
 #include "simulator_model.h"
-#include "simulator_mock_define.h"
 #endif
 
 static void GuiAboutNVSBarInit();

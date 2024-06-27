@@ -18,12 +18,6 @@
 #include "user_memory.h"
 #include "keystore.h"
 #include "user_fatfs.h"
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
-#include "simulator_model.h"
-#else
-#include "safe_str_lib.h"
-#endif
 
 typedef enum {
     FIRMWARE_UPDATE_SELECT = 0,

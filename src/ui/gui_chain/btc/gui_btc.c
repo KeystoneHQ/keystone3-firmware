@@ -15,12 +15,6 @@
 #include "gui_btc_home_widgets.h"
 #endif
 
-#ifndef COMPILE_SIMULATOR
-#include "safe_str_lib.h"
-#else
-#include "simulator_mock_define.h"
-#endif
-
 #define MAX_WALLET_CONFIG_LEN 3000
 #define MAX_VERIFY_CODE_LEN 12
 

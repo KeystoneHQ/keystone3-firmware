@@ -20,10 +20,6 @@
 #include "gui_tutorial_widgets.h"
 #include "account_manager.h"
 
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
-#endif
-
 #define GENERAL_ADDRESS_INDEX_MAX                           999999999
 #define LEDGER_LIVE_ADDRESS_INDEX_MAX                       9
 #define ADDRESS_LONE_MODE_LEN                               (24)

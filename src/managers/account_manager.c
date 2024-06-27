@@ -12,9 +12,6 @@
 #include "user_memory.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_storage.h"
-#include "simulator_mock_define.h"
-#else
-#include "safe_str_lib.h"
 #endif
 
 typedef struct {

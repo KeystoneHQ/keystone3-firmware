@@ -13,10 +13,6 @@
 #include "gui_hintbox.h"
 #include "user_memory.h"
 
-#ifndef COMPILE_WIN_SIMULATOR
-#include "simulator_model.h"
-#endif
-
 typedef struct {
     uint16_t leftErrorCode;
     uint16_t lockTime;

@@ -1159,7 +1159,14 @@ static bool IsSelectChanged(void)
 
 static bool HasSelectAddressWidget()
 {
-    return g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT;
+    switch (g_connectWalletTileView.walletIndex) {
+    case WALLET_LIST_XRP_TOOLKIT:
+    case WALLET_LIST_KEPLR:
+        return true;
+        break;
+    default:
+        return false;
+    }
 }
 
 static void CloseDerivationHandler(lv_event_t *e)
@@ -1677,11 +1684,12 @@ void GuiConnectWalletRefresh(void)
                                          CHAIN_XRP, g_chainAddressIndex[GetCurrentAccountIndex()],
                                          RefreshAddressIndex);
                 }
-            }
-            if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR) {
-                g_coinListCont = GuiCreateSelectAddressWidget(
-                                     CHAIN_ATOM, g_chainAddressIndex[GetCurrentAccountIndex()],
-                                     RefreshAddressIndex);
+
+                if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR) {
+                    g_coinListCont = GuiCreateSelectAddressWidget(
+                                         CHAIN_ATOM, g_chainAddressIndex[GetCurrentAccountIndex()],
+                                         RefreshAddressIndex);
+                }
             }
         }
 #endif
@@ -1698,7 +1706,6 @@ void GuiConnectWalletRefresh(void)
     }
 #endif
 }
-
 void GuiConnectWalletDeInit(void)
 {
     GUI_DEL_OBJ(g_openMoreHintBox)

@@ -23,11 +23,9 @@
 #include "rsa.h"
 
 #ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
 #include "simulator_model.h"
-#else
-#include "safe_str_lib.h"
 #endif
+
 #ifdef BTC_ONLY
 #include "gui_btc_home_widgets.h"
 #endif

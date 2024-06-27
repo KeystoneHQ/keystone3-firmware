@@ -32,14 +32,11 @@
 #define FINGERPRINT_EN_SING_ERR_TIMES           (5)
 #define FINGERPRINT_SING_ERR_TIMES              (3)
 #define FINGERPRINT_SING_DISABLE_ERR_TIMES      (15)
+#include "simulator_model.h"
 #else
 #include "drv_aw32001.h"
 #include "drv_usb.h"
 #include "device_setting.h"
-#endif
-
-#ifdef COMPILE_MAC_SIMULATOR
-#include "simulator_model.h"
 #endif
 
 static void GuiPassowrdToLockTimePage(uint16_t errorCount);

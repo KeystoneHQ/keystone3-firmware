@@ -21,13 +21,7 @@
 #include "gui_lock_widgets.h"
 #include "screen_manager.h"
 #include "fingerprint_process.h"
-#ifndef COMPILE_SIMULATOR
-#include "sha256.h"
 #include "keystore.h"
-#else
-#include "simulator_model.h"
-#include "simulator_mock_define.h"
-#endif
 
 #ifdef BTC_ONLY
 #include "gui_btc_home_widgets.h"

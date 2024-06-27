@@ -17,13 +17,13 @@
 #include "fingerprint_process.h"
 #include "gui_model.h"
 #include "usb_task.h"
+
 #ifndef COMPILE_SIMULATOR
-#include "safe_mem_lib.h"
 #include "usb_task.h"
 #else
-#include "simulator_mock_define.h"
 #define RECOGNIZE_UNLOCK                    0
 #endif
+
 #define DEFAULT_TIMER_COUNTER 5
 
 static KeyboardWidget_t *CreateKeyboardWidget();

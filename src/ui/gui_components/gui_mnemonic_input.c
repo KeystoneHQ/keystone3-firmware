@@ -21,11 +21,8 @@
 #include "account_manager.h"
 #include "user_memory.h"
 
-#ifndef COMPILE_MAC_SIMULATOR
-#include "sha256.h"
-#else
+#ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
-#include "simulator_mock_define.h"
 #endif
 
 #pragma GCC optimize ("O0")

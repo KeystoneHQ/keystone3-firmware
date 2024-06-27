@@ -2,14 +2,8 @@
 #define _RSA_H
 
 #include "string.h"
-#ifndef COMPILE_SIMULATOR
 #include "stdio.h"
 #include "stdlib.h"
-#include "safe_mem_lib.h"
-#else
-#include "simulator_model.h"
-#include "simulator_mock_define.h"
-#endif
 #include "flash_address.h"
 #include "define.h"
 #include "user_memory.h"
@@ -21,6 +15,9 @@
 #include "rust.h"
 #include "assert.h"
 #include "account_manager.h"
+#ifdef COMPILE_SIMULATOR
+#include "simulator_model.h"
+#endif
 
 #define SPI_FLASH_RSA_ORIGIN_DATA_SIZE 512
 #define SPI_FLASH_RSA_DATA_SIZE SPI_FLASH_RSA_ORIGIN_DATA_SIZE + 16

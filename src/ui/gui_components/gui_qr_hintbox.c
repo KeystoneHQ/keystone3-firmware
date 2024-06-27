@@ -6,10 +6,6 @@
 #include "gui_qr_hintbox.h"
 #include "gui_hintbox.h"
 
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
-#endif
-
 static lv_obj_t *g_qrHintBox = NULL;
 static lv_obj_t *g_qrHintBoxTitle = NULL;
 static lv_obj_t *g_qrHintBoxQR = NULL;

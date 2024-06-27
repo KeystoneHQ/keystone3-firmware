@@ -23,12 +23,8 @@
 #include "gui_import_multisig_wallet_info_widgets.h"
 #include "gui_multisig_wallet_export_widgets.h"
 #include "gui_api.h"
-#ifdef COMPILE_SIMULATOR
-#include "simulator_model.h"
-#include "simulator_mock_define.h"
-#else
+#ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
-#include "safe_str_lib.h"
 #endif
 
 typedef enum {

@@ -3,12 +3,9 @@
 
 #ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
-#include "safe_str_lib.h"
 #define SD_ROOT "0:/"
 #else
 #include "simulator_model.h"
-#include "simulator_mock_define.h"
-
 #define SD_ROOT "C:/assets/sd/"
 #endif
 

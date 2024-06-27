@@ -20,13 +20,6 @@
 #include "screen_manager.h"
 #include <stdlib.h>
 #include "user_fatfs.h"
-#ifndef COMPILE_SIMULATOR
-#include "sha256.h"
-#include "keystore.h"
-#else
-#include "simulator_model.h"
-#include "simulator_mock_define.h"
-#endif
 
 typedef void (*setting_update_cb)(void *obj, void *param);
 

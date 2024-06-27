@@ -18,17 +18,9 @@
 #include "presetting.h"
 #include "assert.h"
 #include "gui_qr_hintbox.h"
-
 #include "gui_mnemonic_input.h"
 #include "motor_manager.h"
 #include "fingerprint_process.h"
-#ifndef COMPILE_SIMULATOR
-#include "sha256.h"
-#include "keystore.h"
-#else
-#include "simulator_model.h"
-#include "simulator_mock_define.h"
-#endif
 
 static KeyBoard_t *g_setNameKb = NULL;         // setting keyboard
 static lv_obj_t *g_walletIcon;                 // wallet icon

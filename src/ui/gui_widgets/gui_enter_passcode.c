@@ -13,10 +13,6 @@
 #include "account_manager.h"
 #include "gui_keyboard_hintbox.h"
 
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
-#endif
-
 typedef enum {
     PASSWORD_STRENGTH_LEN,
     PASSWORD_STRENGTH_LITTLE_LETTER,

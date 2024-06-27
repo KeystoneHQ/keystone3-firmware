@@ -8,7 +8,7 @@
 #include "cjson/cJSON.h"
 #include "user_memory.h"
 #include "account_manager.h"
-
+#include "gui_chain.h"
 #define MAX_COSMOS_ADDR_LEN 60
 
 static bool g_isMulti = false;
@@ -53,20 +53,24 @@ static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_LUNC, "terra", 330, XPUB_TYPE_TERRA, "columbus-5"},
 };
 
-char *GuiGetCosmosAddressByIndex(uint16_t index)
+char *GetCosmosChainAddressByCoinTypeAndIndex(uint8_t chainType,  uint32_t address_index)
 {
-    SimpleResponse_c_char *result;
-    char prefix[BUFFER_SIZE_16];
     char *xPub;
     char rootPath[BUFFER_SIZE_32];
     char hdPath[BUFFER_SIZE_32];
-    snprintf_s(rootPath, BUFFER_SIZE_32, "M/44'/118'/0'");
-    snprintf_s(hdPath, BUFFER_SIZE_32, "%s/0/%u", rootPath, index);
-    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_COSMOS);
-    snprintf_s(prefix, BUFFER_SIZE_16, "cosmos");
-    result = cosmos_get_address(hdPath, xPub, rootPath, prefix);
+    const CosmosChain_t *chain = GuiGetCosmosChain(chainType);
+    snprintf_s(rootPath, BUFFER_SIZE_32, "M/44'/%u'/0'", chain->coinType);
+    snprintf_s(hdPath, BUFFER_SIZE_32, "%s/0/%u", rootPath, address_index);
+    xPub = GetCurrentAccountPublicKey(chain->xpubType);
+    return cosmos_get_address(hdPath, xPub, rootPath, (char*)chain->prefix);
+}
+
+char *GetKeplrConnectionDisplayAddressByIndex(uint32_t index)
+{
+    SimpleResponse_c_char *result;
+    result = GetCosmosChainAddressByCoinTypeAndIndex(CHAIN_ATOM, index);
     if (result->error_code == 0) {
-        snprintf_s(g_cosmosAddr,MAX_COSMOS_ADDR_LEN, "%s", result->data);
+        snprintf_s(g_cosmosAddr, MAX_COSMOS_ADDR_LEN, "%s", result->data);
     }
     free_simple_response_c_char(result);
     return g_cosmosAddr;

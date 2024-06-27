@@ -889,19 +889,12 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     }
     default:
         if (IsCosmosChain(g_chainCard)) {
-            char rootPath[BUFFER_SIZE_128];
-            const CosmosChain_t *chain = GuiGetCosmosChain(g_chainCard);
-            snprintf_s(rootPath, BUFFER_SIZE_128, "M/44'/%u'/0'", chain->coinType);
-            snprintf_s(hdPath, BUFFER_SIZE_128, "%s/0/%u", rootPath, index);
-            xPub = GetCurrentAccountPublicKey(chain->xpubType);
-            result = cosmos_get_address(hdPath, xPub, rootPath, (char*)chain->prefix);
+            result = GetCosmosChainAddressByCoinTypeAndIndex(g_chainCard, index);
         } else {
             printf("Standard Receive ModelGetAddress cannot match %d\r\n", index);
             return;
         }
     }
-    ASSERT(xPub);
-
     if (result->error_code == 0) {
         item->index = index;
         strcpy(item->address, result->data);

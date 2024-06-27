@@ -879,13 +879,13 @@ static void AddKeplrCoinsAndAddressUI(void)
     char name[BUFFER_SIZE_32] = {0};
     snprintf_s(name, sizeof(name), "%s-%d", _("account_head"),
                g_chainAddressIndex[GetCurrentAccountIndex()]);
-               lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
+    lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 62);
 
     char addr[BUFFER_SIZE_32] = {0};
     CutAndFormatString(
         addr, sizeof(addr),
-        GuiGetCosmosAddressByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]),
+        GetKeplrConnectionDisplayAddressByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]),
         28);
     label = GuiCreateNoticeLabel(g_bottomCont, addr);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 92);

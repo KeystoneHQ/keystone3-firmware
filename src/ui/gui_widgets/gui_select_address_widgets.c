@@ -253,7 +253,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         break;
     case CHAIN_ATOM:
         item->index = index;
-        strcpy(item->address, GuiGetCosmosAddressByIndex(index));
+        strcpy(item->address, GetKeplrConnectionDisplayAddressByIndex(index));
         break;
 #endif
     default:

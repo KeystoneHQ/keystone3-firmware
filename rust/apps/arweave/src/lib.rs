@@ -1,11 +1,11 @@
 #![no_std]
 #![feature(error_in_core)]
 
+pub mod ao_transaction;
 pub mod data_item;
 pub mod deep_hash;
 pub mod errors;
 pub mod transaction;
-pub mod ao_transaction;
 
 #[macro_use]
 extern crate alloc;

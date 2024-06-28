@@ -121,7 +121,8 @@ fn parse_cardano_root_path(path: String) -> Option<String> {
 pub extern "C" fn cardano_parse_sign_data(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayCardanoSignData>> {
     let cardano_sign_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignDataRequest);
     let sign_data = cardano_sign_data_reqeust.get_sign_data();
-    let parsed_data = app_cardano::transaction::parse_sign_data(sign_data);
+    let derviation_path = cardano_sign_data_reqeust.get_derivation_path().get_path().unwrap();
+    let parsed_data = app_cardano::transaction::parse_sign_data(sign_data, derviation_path);
     match parsed_data {
         Ok(v) => TransactionParseResult::success(DisplayCardanoSignData::from(v).c_ptr()).c_ptr(),
         Err(e) => TransactionParseResult::from(e).c_ptr(),
@@ -158,11 +159,10 @@ pub extern "C" fn cardano_sign_sign_data(
     let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
     let passphrase = recover_c_char(passphrase);
     let sign_data = cardano_sign_data_reqeust.get_sign_data();
-    let parsed_data = app_cardano::transaction::parse_sign_data(sign_data);
 
     let result = app_cardano::transaction::sign_data(
         &cardano_sign_data_reqeust.get_derivation_path().get_path().unwrap(),
-        parsed_data.unwrap().get_payload().as_str(),
+        hex::encode(sign_data).as_str(),
         entropy,
         passphrase.as_bytes(),
     )

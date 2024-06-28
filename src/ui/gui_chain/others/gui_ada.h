@@ -37,6 +37,7 @@ int GetAdaExtraDataLen(void *param);
 
 void GetAdaSignDataPayloadText(void *indata, void *param, uint32_t maxLen);
 int GetAdaSignDataPayloadLength(void *param);
+void GetAdaSignDataDerviationPathText(void *indata, void *param, uint32_t maxLen);
 
 void FreeAdaMemory(void);
 void FreeAdaSignDataMemory(void);

@@ -19,6 +19,7 @@ use common_rust_c::{
 #[repr(C)]
 pub struct DisplayCardanoSignData {
     pub payload: PtrString,
+    pub derivation_path: PtrString,
 }
 
 #[repr(C)]
@@ -72,6 +73,7 @@ impl_c_ptrs!(DisplayCardanoSignData);
 impl Free for DisplayCardanoSignData {
     fn free(&self) {
         free_str_ptr!(self.payload);
+        free_str_ptr!(self.derivation_path);
     }
 }
 
@@ -103,6 +105,7 @@ impl From<ParsedCardanoSignData> for DisplayCardanoSignData {
     fn from(value: ParsedCardanoSignData) -> Self {
         Self {
             payload: convert_c_char(value.get_payload()),
+            derivation_path: convert_c_char(value.get_derivation_path()),
         }
     }
 }

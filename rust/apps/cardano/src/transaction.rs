@@ -14,8 +14,8 @@ pub fn parse_tx(tx: Vec<u8>, context: ParseContext) -> R<ParsedCardanoTx> {
     ParsedCardanoTx::from_cardano_tx(cardano_tx, context)
 }
 
-pub fn parse_sign_data(sign_data: Vec<u8>) -> R<ParsedCardanoSignData> {
-    ParsedCardanoSignData::from_sign_data(sign_data)
+pub fn parse_sign_data(sign_data: Vec<u8>, derviation_path: String) -> R<ParsedCardanoSignData> {
+    ParsedCardanoSignData::build(sign_data, derviation_path)
 }
 
 pub fn check_tx(tx: Vec<u8>, context: ParseContext) -> R<()> {

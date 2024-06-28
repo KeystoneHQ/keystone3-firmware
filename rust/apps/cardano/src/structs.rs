@@ -48,7 +48,8 @@ impl_public_struct!(CardanoCertKey {
 });
 
 impl_public_struct!(ParsedCardanoSignData {
-    payload: String
+    payload: String,
+    derivation_path: String
 });
 
 
@@ -151,7 +152,7 @@ struct Delegation {
 }
 
 impl ParsedCardanoSignData {
-    pub fn from_sign_data(sign_data: Vec<u8>) -> R<Self> {
+    pub fn build(sign_data: Vec<u8>, derivation_path: String) -> R<Self> {
         let sign_structure = CardanoSignStructure::from_cbor(
             sign_data.clone()
         );
@@ -162,11 +163,13 @@ impl ParsedCardanoSignData {
                     hex::decode(raw_payload.clone()).unwrap()
                 ).unwrap_or_else(|_| { raw_payload });
                 Ok(Self {
-                    payload
+                    payload,
+                    derivation_path
                 })
             }
             Err(e) => Ok(Self {
-                payload: hex::encode(sign_data)
+                payload: hex::encode(sign_data),
+                derivation_path
             })
         }
     }

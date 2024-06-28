@@ -90,6 +90,15 @@ void GetAdaSignDataPayloadText(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata, maxLen, data->payload);
 }
 
+void GetAdaSignDataDerviationPathText(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoSignData *data = (DisplayCardanoSignData *)param;
+    if (data->derivation_path == NULL) {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, data->derivation_path);
+}
+
 int GetAdaSignDataPayloadLength(void *param)
 {
     DisplayCardanoSignData *data = (DisplayCardanoSignData *)param;

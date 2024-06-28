@@ -497,6 +497,7 @@ static void OpenMoreHandler(lv_event_t *e)
                                     QuestionMarkEventCb, NULL);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 
+#ifndef BTC_ONLY
     label = GuiCreateTextLabel(g_openMoreHintBox, _("generate_ton_mnenonic"));
     img = GuiCreateImg(g_openMoreHintBox, &imgTonPhrase);
     table[0].obj = img;
@@ -504,6 +505,7 @@ static void OpenMoreHandler(lv_event_t *e)
     btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
                           TonPhraseButtonHandler, NULL);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -120);
+#endif
 
     label = GuiCreateTextLabel(g_openMoreHintBox, _("change_entropy"));
     img = GuiCreateImg(g_openMoreHintBox, &imgDice);
@@ -643,11 +645,6 @@ static void OpenChangeEntropyHandler(lv_event_t *e)
     CreateChangeEntropyView();
 }
 
-static void TonPhraseButtonHandler(lv_event_t *e)
-{
-    GUI_DEL_OBJ(g_openMoreHintBox);
-    GuiFrameOpenView(&g_tonMnemonicHintView);
-}
 
 static void CloseChangeEntropyHandler(lv_event_t *e)
 {
@@ -696,3 +693,11 @@ static void OpenChangeEntropyTutorialHandler(lv_event_t *e)
     uint8_t index = TUTORIAL_CHANGE_ENTROPY;
     GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
 }
+
+#ifndef BTC_ONLY
+static void TonPhraseButtonHandler(lv_event_t *e)
+{
+    GUI_DEL_OBJ(g_openMoreHintBox);
+    GuiFrameOpenView(&g_tonMnemonicHintView);
+}
+#endif

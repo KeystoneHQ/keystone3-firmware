@@ -88,79 +88,6 @@ int32_t GenerateEntropy(uint8_t *entropy, uint8_t entropyLen, const char *passwo
     return ret;
 }
 
-/// @brief Generate a valid ton mnemonic from SE and mcu TRNG.
-/// We do not consider ton mnemonic with password currently.
-/// The password here is actually the user's password.
-/// @param[out] entropy
-/// @param[in] entropyLen
-/// @param[in] password Password hash is part of the entropy sources.
-/// @return err code.
-int32_t GenerateTonMnemonic(char *mnemonic, const char *password)
-{
-    uint8_t randomBuffer[TON_ENTROPY_LEN], inputBuffer[TON_ENTROPY_LEN], outputBuffer[TON_ENTROPY_LEN];
-    int32_t ret;
-    char temp_mnemonic[MNEMONIC_MAX_LEN] = {'\0'};
-    int32_t count = 0;
-    //generate the randomness by se;
-    do {
-        HashWithSalt512(inputBuffer, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "generate entropy");
-
-        SE_GetTRng(randomBuffer, TON_ENTROPY_LEN);
-        KEYSTORE_PRINT_ARRAY("trng", randomBuffer, TON_ENTROPY_LEN);
-        // set the initial value
-        memcpy_s(outputBuffer, sizeof(outputBuffer), randomBuffer, TON_ENTROPY_LEN);
-        hkdf64(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
-
-        KEYSTORE_PRINT_ARRAY("outputBuffer", outputBuffer, TON_ENTROPY_LEN);
-        memcpy_s(inputBuffer, sizeof(inputBuffer), outputBuffer, TON_ENTROPY_LEN);
-
-        ret = SE_GetDS28S60Rng(randomBuffer, TON_ENTROPY_LEN);
-        CHECK_ERRCODE_BREAK("get ds28s60 trng", ret);
-        KEYSTORE_PRINT_ARRAY("ds28s60 rng", randomBuffer, TON_ENTROPY_LEN);
-        hkdf64(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
-        KEYSTORE_PRINT_ARRAY("outputBuffer", outputBuffer, TON_ENTROPY_LEN);
-        memcpy_s(inputBuffer, sizeof(inputBuffer), outputBuffer, TON_ENTROPY_LEN);
-
-        ret = SE_GetAtecc608bRng(randomBuffer, TON_ENTROPY_LEN);
-        CHECK_ERRCODE_BREAK("get 608b trng", ret);
-        KEYSTORE_PRINT_ARRAY("608b rng", randomBuffer, TON_ENTROPY_LEN);
-        hkdf64(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
-
-        KEYSTORE_PRINT_ARRAY("finalEntropy", outputBuffer, TON_ENTROPY_LEN);
-    } while (0);
-
-    //use randomness to generate the mnemonic
-    //if the mnemonic is not valid, hash the randomness and try again
-    while (true) {
-        printf("ton mnemonic generation, count: %d\r\n", count++);
-        for (size_t i = 0; i < 24; i++) {
-            uint32_t index = ((uint32_t)outputBuffer[i * 2] << 8 | outputBuffer[i * 2 + 1]) & 0x07ff;
-            char *word;
-            bip39_get_word(NULL, index, &word);
-            if (i != 0) {
-                strcat(temp_mnemonic, " ");
-            }
-            strcat(temp_mnemonic, word);
-            SRAM_FREE(word);
-        }
-        if (ton_verify_mnemonic(temp_mnemonic)) {
-            break;
-        } else {
-            memset_s(temp_mnemonic, sizeof(temp_mnemonic), 0, sizeof(temp_mnemonic));
-            uint8_t hash[64];
-            memcpy_s(hash, 64, outputBuffer, 64);
-            sha512((struct sha512 *)outputBuffer, hash, sizeof(hash));
-        }
-    }
-
-    CLEAR_ARRAY(outputBuffer);
-    CLEAR_ARRAY(inputBuffer);
-    CLEAR_ARRAY(randomBuffer);
-
-    strcpy_s(mnemonic, MNEMONIC_MAX_LEN, temp_mnemonic);
-    return ret;
-}
-
 /// @brief Save a new entropy.
 /// @param[in] accountIndex Account index, 0~2.
 /// @param[in] entropy Entropy to be saved.
@@ -186,53 +113,6 @@ int32_t SaveNewBip39Entropy(uint8_t accountIndex, const uint8_t *entropy, uint8_
         ret = bip39_mnemonic_to_seed(mnemonic, NULL, accountSecret.seed, SEED_LEN, NULL);
         CHECK_ERRCODE_BREAK("bip39_mnemonic_to_seed", ret);
         SRAM_FREE(mnemonic);
-
-        ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
-        CHECK_ERRCODE_BREAK("SaveAccountSecret", ret);
-        HashWithSalt(passwordHash, (const uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password hash");
-        ret = SE_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
-        CHECK_ERRCODE_BREAK("write password hash", ret);
-
-    } while (0);
-
-    CLEAR_ARRAY(passwordHash);
-    CLEAR_OBJECT(accountSecret);
-    return ret;
-}
-
-/// @brief Save a new ton mnemonic.
-/// @param[in] accountIndex Account index, 0~2.
-/// @param[in] entropy Entropy to be saved.
-/// @param[in] entropyLen
-/// @param[in] password Password string.
-/// @return err code.
-int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const char *password)
-{
-    int32_t ret;
-    AccountSecret_t accountSecret = {0};
-    // char *mnemonic = NULL;
-    uint8_t passwordHash[32];
-    uint8_t entropy[64] = {0};
-    uint8_t seed[64] = {0};
-
-    ASSERT(accountIndex <= 2);
-    do {
-        ret = CheckPasswordExisted(password, 255);
-        CHECK_ERRCODE_BREAK("check repeat password", ret);
-        VecFFI_u8 *result = ton_mnemonic_to_entropy(mnemonic);
-        memcpy_s(entropy, 64, result->data, 64);
-        free_VecFFI_u8(result);
-        memcpy_s(accountSecret.entropy, sizeof(accountSecret.entropy), entropy, 32);
-        memcpy_s(accountSecret.slip39EmsOrTonEntropyL32, sizeof(accountSecret.slip39EmsOrTonEntropyL32), entropy + 32, 32);
-
-        accountSecret.entropyLen = 32;
-        SimpleResponse_u8 *resultSeed = ton_entropy_to_seed(entropy, 64);
-        if (resultSeed->error_code != 0) {
-            break;
-        }
-        memcpy_s(seed, 64, resultSeed->data, 64);
-        free_VecFFI_u8(resultSeed);
-        memcpy_s(accountSecret.seed, sizeof(accountSecret.seed), seed, 64);
 
         ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
         CHECK_ERRCODE_BREAK("SaveAccountSecret", ret);
@@ -790,6 +670,128 @@ static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char
 
     return ret;
 }
+
+#ifndef BTC_ONLY
+/// @brief Save a new ton mnemonic.
+/// @param[in] accountIndex Account index, 0~2.
+/// @param[in] entropy Entropy to be saved.
+/// @param[in] entropyLen
+/// @param[in] password Password string.
+/// @return err code.
+int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const char *password)
+{
+    int32_t ret;
+    AccountSecret_t accountSecret = {0};
+    // char *mnemonic = NULL;
+    uint8_t passwordHash[32];
+    uint8_t entropy[64] = {0};
+    uint8_t seed[64] = {0};
+
+    ASSERT(accountIndex <= 2);
+    do {
+        ret = CheckPasswordExisted(password, 255);
+        CHECK_ERRCODE_BREAK("check repeat password", ret);
+        VecFFI_u8 *result = ton_mnemonic_to_entropy(mnemonic);
+        memcpy_s(entropy, 64, result->data, 64);
+        free_VecFFI_u8(result);
+        memcpy_s(accountSecret.entropy, sizeof(accountSecret.entropy), entropy, 32);
+        memcpy_s(accountSecret.slip39EmsOrTonEntropyL32, sizeof(accountSecret.slip39EmsOrTonEntropyL32), entropy + 32, 32);
+
+        accountSecret.entropyLen = 32;
+        SimpleResponse_u8 *resultSeed = ton_entropy_to_seed(entropy, 64);
+        if (resultSeed->error_code != 0) {
+            break;
+        }
+        memcpy_s(seed, 64, resultSeed->data, 64);
+        free_VecFFI_u8(resultSeed);
+        memcpy_s(accountSecret.seed, sizeof(accountSecret.seed), seed, 64);
+
+        ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
+        CHECK_ERRCODE_BREAK("SaveAccountSecret", ret);
+        HashWithSalt(passwordHash, (const uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password hash");
+        ret = SE_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
+        CHECK_ERRCODE_BREAK("write password hash", ret);
+
+    } while (0);
+
+    CLEAR_ARRAY(passwordHash);
+    CLEAR_OBJECT(accountSecret);
+    return ret;
+}
+
+/// @brief Generate a valid ton mnemonic from SE and mcu TRNG.
+/// We do not consider ton mnemonic with password currently.
+/// The password here is actually the user's password.
+/// @param[out] entropy
+/// @param[in] entropyLen
+/// @param[in] password Password hash is part of the entropy sources.
+/// @return err code.
+int32_t GenerateTonMnemonic(char *mnemonic, const char *password)
+{
+    uint8_t randomBuffer[TON_ENTROPY_LEN], inputBuffer[TON_ENTROPY_LEN], outputBuffer[TON_ENTROPY_LEN];
+    int32_t ret;
+    char temp_mnemonic[MNEMONIC_MAX_LEN] = {'\0'};
+    int32_t count = 0;
+    //generate the randomness by se;
+    do {
+        HashWithSalt512(inputBuffer, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "generate entropy");
+
+        SE_GetTRng(randomBuffer, TON_ENTROPY_LEN);
+        KEYSTORE_PRINT_ARRAY("trng", randomBuffer, TON_ENTROPY_LEN);
+        // set the initial value
+        memcpy_s(outputBuffer, sizeof(outputBuffer), randomBuffer, TON_ENTROPY_LEN);
+        hkdf64(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
+
+        KEYSTORE_PRINT_ARRAY("outputBuffer", outputBuffer, TON_ENTROPY_LEN);
+        memcpy_s(inputBuffer, sizeof(inputBuffer), outputBuffer, TON_ENTROPY_LEN);
+
+        ret = SE_GetDS28S60Rng(randomBuffer, TON_ENTROPY_LEN);
+        CHECK_ERRCODE_BREAK("get ds28s60 trng", ret);
+        KEYSTORE_PRINT_ARRAY("ds28s60 rng", randomBuffer, TON_ENTROPY_LEN);
+        hkdf64(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
+        KEYSTORE_PRINT_ARRAY("outputBuffer", outputBuffer, TON_ENTROPY_LEN);
+        memcpy_s(inputBuffer, sizeof(inputBuffer), outputBuffer, TON_ENTROPY_LEN);
+
+        ret = SE_GetAtecc608bRng(randomBuffer, TON_ENTROPY_LEN);
+        CHECK_ERRCODE_BREAK("get 608b trng", ret);
+        KEYSTORE_PRINT_ARRAY("608b rng", randomBuffer, TON_ENTROPY_LEN);
+        hkdf64(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
+
+        KEYSTORE_PRINT_ARRAY("finalEntropy", outputBuffer, TON_ENTROPY_LEN);
+    } while (0);
+
+    //use randomness to generate the mnemonic
+    //if the mnemonic is not valid, hash the randomness and try again
+    while (true) {
+        printf("ton mnemonic generation, count: %d\r\n", count++);
+        for (size_t i = 0; i < 24; i++) {
+            uint32_t index = ((uint32_t)outputBuffer[i * 2] << 8 | outputBuffer[i * 2 + 1]) & 0x07ff;
+            char *word;
+            bip39_get_word(NULL, index, &word);
+            if (i != 0) {
+                strcat(temp_mnemonic, " ");
+            }
+            strcat(temp_mnemonic, word);
+            SRAM_FREE(word);
+        }
+        if (ton_verify_mnemonic(temp_mnemonic)) {
+            break;
+        } else {
+            memset_s(temp_mnemonic, sizeof(temp_mnemonic), 0, sizeof(temp_mnemonic));
+            uint8_t hash[64];
+            memcpy_s(hash, 64, outputBuffer, 64);
+            sha512((struct sha512 *)outputBuffer, hash, sizeof(hash));
+        }
+    }
+
+    CLEAR_ARRAY(outputBuffer);
+    CLEAR_ARRAY(inputBuffer);
+    CLEAR_ARRAY(randomBuffer);
+
+    strcpy_s(mnemonic, MNEMONIC_MAX_LEN, temp_mnemonic);
+    return ret;
+}
+#endif
 
 #ifndef BUILD_PRODUCTION
 

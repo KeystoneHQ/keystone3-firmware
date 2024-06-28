@@ -4,10 +4,10 @@
 #include "gui_views.h"
 #include "librust_c.h"
 #include "gui_attention_hintbox.h"
-#include "gui_ar.h"
 
 typedef enum {
 #ifndef BTC_ONLY
+#include "gui_ar.h"
     WALLET_LIST_METAMASK,
     WALLET_LIST_OKX,
     WALLET_LIST_ETERNL,

@@ -8,13 +8,16 @@
 #include "cjson/cJSON.h"
 #include "user_memory.h"
 #include "account_manager.h"
+#include "gui_chain.h"
+#define MAX_COSMOS_ADDR_LEN 60
 
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static int8_t g_cosmosListIndex = -1;
-
+static char g_cosmosAddr[MAX_COSMOS_ADDR_LEN];
+static char g_hdPath[26];
 static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_TIA, "celestia", 118, XPUB_TYPE_COSMOS, "celestia"},
     {CHAIN_DYM, "dym", 118, XPUB_TYPE_ETH_BIP44_STANDARD, "dymension_1100-1"},
@@ -49,6 +52,29 @@ static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_LUNA, "terra", 330, XPUB_TYPE_TERRA, "phoenix-1"},
     {CHAIN_LUNC, "terra", 330, XPUB_TYPE_TERRA, "columbus-5"},
 };
+
+char *GetCosmosChainAddressByCoinTypeAndIndex(uint8_t chainType,  uint32_t address_index)
+{
+    char *xPub;
+    char rootPath[BUFFER_SIZE_32];
+    char hdPath[BUFFER_SIZE_32];
+    const CosmosChain_t *chain = GuiGetCosmosChain(chainType);
+    snprintf_s(rootPath, BUFFER_SIZE_32, "M/44'/%u'/0'", chain->coinType);
+    snprintf_s(hdPath, BUFFER_SIZE_32, "%s/0/%u", rootPath, address_index);
+    xPub = GetCurrentAccountPublicKey(chain->xpubType);
+    return cosmos_get_address(hdPath, xPub, rootPath, (char*)chain->prefix);
+}
+
+char *GetKeplrConnectionDisplayAddressByIndex(uint32_t index)
+{
+    SimpleResponse_c_char *result;
+    result = GetCosmosChainAddressByCoinTypeAndIndex(CHAIN_ATOM, index);
+    if (result->error_code == 0) {
+        snprintf_s(g_cosmosAddr, MAX_COSMOS_ADDR_LEN, "%s", result->data);
+    }
+    free_simple_response_c_char(result);
+    return g_cosmosAddr;
+}
 
 const CosmosChain_t *GuiGetCosmosChain(uint8_t index)
 {

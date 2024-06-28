@@ -19,6 +19,11 @@
 #include "gui.h"
 #include "gui_tutorial_widgets.h"
 #include "account_manager.h"
+#include "gui_button.h"
+#ifdef COMPILE_SIMULATOR
+#include "simulator_mock_define.h"
+#endif
+
 
 #define GENERAL_ADDRESS_INDEX_MAX                           999999999
 #define LEDGER_LIVE_ADDRESS_INDEX_MAX                       9
@@ -63,6 +68,11 @@ typedef struct {
     lv_obj_t *confirmBtn;
     lv_obj_t *inputAddressLabel;
     lv_obj_t *overflowLabel;
+    lv_obj_t *confirmAccountBtn;
+    lv_obj_t *confirmIndexBtn;
+    lv_obj_t *inputAccountLabel;
+    lv_obj_t *inputAccountCont;
+    lv_obj_t *inputAccountKeyboard;
     SwitchAddressWidgetsItem_t switchAddressWidgets[5];
 } StandardReceiveWidgets_t;
 
@@ -104,6 +114,16 @@ static void ConfirmHandler(lv_event_t *e);
 static void UpdateConfirmBtn(void);
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
+static void JumpToAccountHandler(lv_event_t *e);
+static void GuiCreateGotoAddressWidgets(lv_obj_t *parent);
+static void CloseSwitchAddressHandler(lv_event_t *e);
+static void InputAddressIndexKeyboardHandler(lv_event_t *e);
+static void SetKeyboardValid(bool validation);
+static void UpdateConfirmIndexBtn(void);
+static void RefreshSwitchAddress(void);
+static bool IsIndexSelectChanged();
+static uint32_t* GetCosmosChainCurrentSelectIndex();
+
 
 static StandardReceiveWidgets_t g_standardReceiveWidgets;
 static StandardReceiveTile g_StandardReceiveTileNow;
@@ -116,7 +136,271 @@ static uint32_t g_selectIndex[3] = {0};
 static uint32_t g_suiSelectIndex[3] = {0};
 static uint32_t g_aptosSelectIndex[3] = {0};
 static uint32_t g_xrpSelectIndex[3] = {0};
+static uint32_t g_tiaChainSelectIndex[3] = {0};
+static uint32_t g_dymChainSelectIndex[3] = {0};
+static uint32_t g_osmoChainSelectIndex[3] = {0};
+static uint32_t g_injChainSelectIndex[3] = {0};
+static uint32_t g_atomChainSelectIndex[3] = {0};
+static uint32_t g_croChainSelectIndex[3] = {0};
+static uint32_t g_kavaChainSelectIndex[3] = {0};
+static uint32_t g_lunaChainSelectIndex[3] = {0};
+static uint32_t g_axlChainSelectIndex[3] = {0};
+static uint32_t g_aktChainSelectIndex[3] = {0};
+static uint32_t g_strdChainSelectIndex[3] = {0};
+static uint32_t g_scrtChainSelectIndex[3] = {0};
+static uint32_t g_bldChainSelectIndex[3] = {0};
+static uint32_t g_ctkChainSelectIndex[3] = {0};
+static uint32_t g_evmosChainSelectIndex[3] = {0};
+static uint32_t g_starsChainSelectIndex[3] = {0};
+static uint32_t g_xprtChainSelectIndex[3] = {0};
+static uint32_t g_sommChainSelectIndex[3] = {0};
+static uint32_t g_junoChainSelectIndex[3] = {0};
+static uint32_t g_irisChainSelectIndex[3] = {0};
+static uint32_t g_dvpnChainSelectIndex[3] = {0};
+static uint32_t g_rowanChainSelectIndex[3] = {0};
+static uint32_t g_regenChainSelectIndex[3] = {0};
+static uint32_t g_bootChainSelectIndex[3] = {0};
+static uint32_t g_gravChainSelectIndex[3] = {0};
+static uint32_t g_ixoChainSelectIndex[3] = {0};
+static uint32_t g_ngmChainSelectIndex[3] = {0};
+static uint32_t g_iovChainSelectIndex[3] = {0};
+static uint32_t g_umeeChainSelectIndex[3] = {0};
+static uint32_t g_qckChainSelectIndex[3] = {0};
+static uint32_t g_tgdChainSelectIndex[3] = {0};
+
+
 static PageWidget_t *g_pageWidget;
+static uint32_t g_selectedIndex[3] = {0};
+static bool g_inputAccountValid = true;
+
+
+
+static void JumpToAccountHandler(lv_event_t *e)
+{
+    GuiCreateGotoAddressWidgets(g_standardReceiveWidgets.tileSwitchAccount);
+}
+
+static void CloseSwitchAddressHandler(lv_event_t *e)
+{
+    lv_obj_add_flag(g_standardReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
+}
+
+static void SetKeyboardValid(bool validation)
+{
+    if (validation) {
+        if (lv_btnmatrix_has_btn_ctrl(g_standardReceiveWidgets.inputAccountKeyboard, 11, LV_BTNMATRIX_CTRL_DISABLED)) {
+            lv_btnmatrix_clear_btn_ctrl(g_standardReceiveWidgets.inputAccountKeyboard, 11, LV_BTNMATRIX_CTRL_DISABLED);
+        }
+        lv_btnmatrix_set_btn_ctrl(g_standardReceiveWidgets.inputAccountKeyboard, 11, LV_BTNMATRIX_CTRL_CHECKED);
+    } else {
+        if (lv_btnmatrix_has_btn_ctrl(g_standardReceiveWidgets.inputAccountKeyboard, 11, LV_BTNMATRIX_CTRL_CHECKED)) {
+            lv_btnmatrix_clear_btn_ctrl(g_standardReceiveWidgets.inputAccountKeyboard, 11, LV_BTNMATRIX_CTRL_CHECKED);
+        }
+        lv_btnmatrix_set_btn_ctrl(g_standardReceiveWidgets.inputAccountKeyboard, 11, LV_BTNMATRIX_CTRL_DISABLED);
+    }
+}
+
+static void UpdateConfirmIndexBtn(void)
+{
+    // g_tmpIndex is your input address index
+    // g_showIndex is the first address index of the current page
+    RefreshSwitchAddress();
+    RefreshQrCode();
+}
+
+static bool IsIndexSelectChanged()
+{
+    return g_tmpIndex != g_selectedIndex[GetCurrentAccountIndex()];
+}
+static void RefreshSwitchAddress(void)
+{
+    AddressDataItem_t addressDataItem;
+
+    uint32_t index = g_showIndex;
+    bool end = false;
+    for (uint32_t i = 0; i < 5; i++) {
+        ModelGetAddress(index, &addressDataItem);
+        lv_label_set_text_fmt(g_standardReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("Address"), (addressDataItem.index));
+        char string[128] = {0};
+        CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
+        lv_label_set_text(g_standardReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
+        if (end) {
+            lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].addressLabel, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkBox, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+            continue;
+        }
+        lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].addressLabel, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkBox, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+        if (index == g_tmpIndex) {
+            lv_obj_add_state(g_standardReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
+            lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_clear_state(g_standardReceiveWidgets.switchAddressWidgets[i].checkBox, LV_STATE_CHECKED);
+            lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+        }
+        if (index == GetMaxAddressIndex()) {
+            end = true;
+        }
+        index++;
+    }
+}
+
+
+
+static void InputAddressIndexKeyboardHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *obj = lv_event_get_target(e);
+    uint32_t id = lv_btnmatrix_get_selected_btn(obj);
+    lv_obj_draw_part_dsc_t *dsc;
+    const char *txt;
+    char input[16];
+    uint32_t len;
+    uint64_t longInt;
+
+    if (code == LV_EVENT_CLICKED) {
+        txt = lv_btnmatrix_get_btn_text(obj, id);
+        strcpy_s(input, sizeof(input), lv_label_get_text(g_standardReceiveWidgets.inputAccountLabel));
+        if (strcmp(txt, LV_SYMBOL_OK) == 0) {
+            if (g_inputAccountValid) {
+                sscanf(input, "%u", &g_tmpIndex);
+                g_showIndex = g_tmpIndex / 5 * 5;
+                RefreshSwitchAddress();
+                lv_obj_add_flag(g_standardReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
+                g_inputAccountValid = false;
+                UpdateConfirmIndexBtn();
+            }
+        } else if (strcmp(txt, "-") == 0) {
+            len = strlen(input);
+            if (len >= 1) {
+                input[len - 1] = '\0';
+                lv_label_set_text(g_standardReceiveWidgets.inputAccountLabel, input);
+                lv_obj_add_flag(g_standardReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
+                if (strlen(input) >= 1) {
+                    g_inputAccountValid = true;
+                } else {
+                    g_inputAccountValid = false;
+                }
+            }
+        } else if (strlen(input) < 15) {
+            strcat(input, txt);
+            longInt = strtol(input, NULL, 10);
+            if (longInt >= GENERAL_ADDRESS_INDEX_MAX) {
+                input[9] = '\0';
+                lv_obj_clear_flag(g_standardReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
+            } else {
+                lv_obj_add_flag(g_standardReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
+            }
+            if (longInt > 0) {
+                if (input[0] == '0') {
+                    lv_label_set_text(g_standardReceiveWidgets.inputAccountLabel, input + 1);
+                } else {
+                    lv_label_set_text(g_standardReceiveWidgets.inputAccountLabel, input);
+                }
+            } else {
+                lv_label_set_text(g_standardReceiveWidgets.inputAccountLabel, "0");
+            }
+            g_inputAccountValid = true;
+        } else {
+            g_inputAccountValid = false;
+            printf("input to long\r\n");
+        }
+        SetKeyboardValid(g_inputAccountValid);
+    } else if (code == LV_EVENT_DRAW_PART_BEGIN) {
+        dsc = lv_event_get_draw_part_dsc(e);
+        if (dsc->class_p == &lv_btnmatrix_class && dsc->type == LV_BTNMATRIX_DRAW_PART_BTN) {
+            /*Change the draw descriptor of the 12th button*/
+            if (dsc->id == 9) {
+                dsc->label_dsc->opa = LV_OPA_TRANSP;
+            } else if (dsc->id == 11) {
+                dsc->rect_dsc->bg_color = ORANGE_COLOR;
+                dsc->label_dsc->opa = LV_OPA_TRANSP;
+            } else {
+                dsc->rect_dsc->bg_color = DARK_GRAY_COLOR;
+            }
+        }
+    } else if (code == LV_EVENT_DRAW_PART_END) {
+        dsc = lv_event_get_draw_part_dsc(e);
+        /*When the button matrix draws the buttons...*/
+        if (dsc->class_p == &lv_btnmatrix_class && dsc->type == LV_BTNMATRIX_DRAW_PART_BTN) {
+            /*Add custom content to the 4th button when the button itself was drawn*/
+            if (dsc->id == 9 || dsc->id == 11) {
+                lv_img_header_t header;
+                lv_draw_img_dsc_t img_draw_dsc;
+                lv_area_t a;
+                const lv_img_dsc_t *imgDsc;
+                lv_res_t res;
+                imgDsc = dsc->id == 9 ? &imgBackspace : &imgCheck;
+                res = lv_img_decoder_get_info(imgDsc, &header);
+                if (res != LV_RES_OK)
+                    return;
+                a.x1 = dsc->draw_area->x1 + (lv_area_get_width(dsc->draw_area) - header.w) / 2;
+                a.x2 = a.x1 + header.w - 1;
+                a.y1 = dsc->draw_area->y1 + (lv_area_get_height(dsc->draw_area) - header.h) / 2;
+                a.y2 = a.y1 + header.h - 1;
+                lv_draw_img_dsc_init(&img_draw_dsc);
+                img_draw_dsc.recolor = lv_color_black();
+                if (lv_btnmatrix_get_selected_btn(obj) == dsc->id)
+                    img_draw_dsc.recolor_opa = LV_OPA_30;
+
+                lv_draw_img(dsc->draw_ctx, &img_draw_dsc, &a, imgDsc);
+            }
+        }
+    }
+
+}
+
+
+
+static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
+{
+    lv_obj_t *cont, *label, *line, *closeBtn;
+    static lv_point_t points[2] = {{0, 0}, {408, 0}};
+    g_inputAccountValid = false;
+
+    if (g_standardReceiveWidgets.inputAccountCont == NULL) {
+        g_standardReceiveWidgets.inputAccountCont = GuiCreateHintBox(530);
+        lv_obj_add_event_cb(lv_obj_get_child(g_standardReceiveWidgets.inputAccountCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_standardReceiveWidgets.inputAccountCont);
+        cont = g_standardReceiveWidgets.inputAccountCont;
+
+        label = GuiCreateNoticeLabel(cont, _("receive_btc_receive_change_address_title"));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 30 + 270);
+        label = GuiCreateNoticeLabel(cont, "");
+        lv_label_set_text_fmt(label, "%s-", _("Address"));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 108 + 270);
+        g_standardReceiveWidgets.inputAccountLabel = GuiCreateTextLabel(cont, "");
+        lv_obj_align(g_standardReceiveWidgets.inputAccountLabel, LV_ALIGN_TOP_LEFT, 38 + lv_obj_get_self_width(label), 108 + 270);
+        label = GuiCreateIllustrateLabel(cont, _("receive_btc_receive_change_address_limit"));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 170 + 270);
+        lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
+        lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
+        g_standardReceiveWidgets.overflowLabel = label;
+
+        line = GuiCreateLine(cont, points, 2);
+        lv_obj_align(line, LV_ALIGN_TOP_MID, 0, 160 + 270);
+
+        lv_obj_t *keyboard = GuiCreateNumKeyboard(cont, InputAddressIndexKeyboardHandler, NUM_KEYBOARD_NORMAL, NULL);
+        lv_obj_align(keyboard, LV_ALIGN_BOTTOM_MID, 0, -2);
+        lv_obj_add_style(keyboard, &g_enterPressBtnmStyle, LV_STATE_PRESSED | LV_PART_ITEMS);
+        lv_btnmatrix_set_btn_ctrl(keyboard, 11, LV_BTNMATRIX_CTRL_DISABLED);
+        g_standardReceiveWidgets.inputAccountKeyboard = keyboard;
+
+        closeBtn = GuiCreateImgButton(cont, &imgClose, 40, CloseSwitchAddressHandler, NULL);
+        lv_obj_align(closeBtn, LV_ALIGN_TOP_RIGHT, -36, 27 + 270);
+    } else {
+        lv_label_set_text(g_standardReceiveWidgets.inputAccountLabel, "");
+        lv_obj_clear_flag(g_standardReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_standardReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
+    }
+}
 
 void GuiStandardReceiveInit(uint8_t chain)
 {
@@ -161,6 +445,7 @@ void GuiStandardReceiveRefresh(void)
     case RECEIVE_TILE_QRCODE:
         snprintf(title, sizeof(title), _("receive_coin_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseTimerCurrentViewHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SKIP, JumpToAccountHandler, NULL);
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainCard, title);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, HasMoreBtn() ? NVS_BAR_MORE_INFO : NVS_RIGHT_BUTTON_BUTT, MoreHandler, NULL);
         RefreshQrCode();
@@ -168,7 +453,9 @@ void GuiStandardReceiveRefresh(void)
     case RECEIVE_TILE_SWITCH_ACCOUNT:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SKIP, JumpToAccountHandler, NULL);
+        // todo only cosmos chain show the jump to account button
+//        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_tmpIndex = GetCurrentSelectIndex();
         g_showIndex = g_tmpIndex / 5 * 5;
         if (g_showIndex < 5) {
@@ -354,15 +641,9 @@ static bool IsSelectChanged()
 
 static void UpdateConfirmBtn(void)
 {
-    if (IsSelectChanged()) {
-        lv_obj_set_style_bg_opa(g_standardReceiveWidgets.confirmBtn, LV_OPA_COVER, LV_PART_MAIN);
-        lv_obj_set_style_text_opa(lv_obj_get_child(g_standardReceiveWidgets.confirmBtn, 0), LV_OPA_COVER, LV_PART_MAIN);
-    } else {
-        lv_obj_set_style_bg_opa(g_standardReceiveWidgets.confirmBtn, LV_OPA_30, LV_PART_MAIN);
-        lv_obj_set_style_text_opa(lv_obj_get_child(g_standardReceiveWidgets.confirmBtn, 0), LV_OPA_30, LV_PART_MAIN);
-    }
+    lv_obj_set_style_bg_opa(g_standardReceiveWidgets.confirmBtn, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(lv_obj_get_child(g_standardReceiveWidgets.confirmBtn, 0), LV_OPA_COVER, LV_PART_MAIN);
 }
-
 static void GuiCreateSwitchAddressButtons(lv_obj_t *parent)
 {
     lv_obj_t *btn;
@@ -422,7 +703,7 @@ static void RefreshQrCode(void)
     } else {
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressDataItem.address);
     }
-    lv_label_set_text_fmt(g_standardReceiveWidgets.addressCountLabel, "%s-%u", _("account_head"), (addressDataItem.index + 1));
+    lv_label_set_text_fmt(g_standardReceiveWidgets.addressCountLabel, "%s-%u", _("account_head"), addressDataItem.index);
 }
 
 static void RefreshSwitchAccount(void)
@@ -433,7 +714,7 @@ static void RefreshSwitchAccount(void)
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetAddress(index, &addressDataItem);
-        lv_label_set_text_fmt(g_standardReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("account_head"), (addressDataItem.index + 1));
+        lv_label_set_text_fmt(g_standardReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("account_head"), addressDataItem.index);
         CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_standardReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {
@@ -534,6 +815,10 @@ static void ConfirmHandler(lv_event_t *e)
 
 static bool IsAccountSwitchable()
 {
+    // all cosmos chain can switch account
+    if (IsCosmosChain(g_chainCard)) {
+        return true;
+    }
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TRX:
     case HOME_WALLET_CARD_SUI:
@@ -618,19 +903,12 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     }
     default:
         if (IsCosmosChain(g_chainCard)) {
-            char rootPath[BUFFER_SIZE_128];
-            const CosmosChain_t *chain = GuiGetCosmosChain(g_chainCard);
-            snprintf_s(rootPath, BUFFER_SIZE_128, "M/44'/%u'/0'", chain->coinType);
-            snprintf_s(hdPath, BUFFER_SIZE_128, "%s/0/%u", rootPath, index);
-            xPub = GetCurrentAccountPublicKey(chain->xpubType);
-            result = cosmos_get_address(hdPath, xPub, rootPath, (char*)chain->prefix);
+            result = GetCosmosChainAddressByCoinTypeAndIndex(g_chainCard, index);
         } else {
             printf("Standard Receive ModelGetAddress cannot match %d\r\n", index);
             return;
         }
     }
-    ASSERT(xPub);
-
     if (result->error_code == 0) {
         item->index = index;
         strcpy(item->address, result->data);
@@ -648,7 +926,42 @@ void GuiResetCurrentStandardAddressIndex(uint8_t index)
     g_suiSelectIndex[index] = 0;
     g_aptosSelectIndex[index] = 0;
     g_xrpSelectIndex[index] = 0;
+    g_tiaChainSelectIndex[index]= 0;
+    g_dymChainSelectIndex[index]= 0;
+    g_osmoChainSelectIndex[index]= 0;
+    g_injChainSelectIndex[index]= 0;
+    g_atomChainSelectIndex[index]= 0;
+    g_croChainSelectIndex[index]= 0;
+    g_kavaChainSelectIndex[index]= 0;
+    g_lunaChainSelectIndex[index]= 0;
+    g_axlChainSelectIndex[index]= 0;
+    g_lunaChainSelectIndex[index]= 0;
+    g_aktChainSelectIndex[index]= 0;
+    g_strdChainSelectIndex[index]= 0;
+    g_scrtChainSelectIndex[index]= 0;
+    g_bldChainSelectIndex[index]= 0;
+    g_ctkChainSelectIndex[index]= 0;
+    g_evmosChainSelectIndex[index]= 0;
+    g_starsChainSelectIndex[index]= 0;
+    g_xprtChainSelectIndex[index]= 0;
+    g_sommChainSelectIndex[index]= 0;
+    g_junoChainSelectIndex[index]= 0;
+    g_irisChainSelectIndex[index]= 0;
+    g_dvpnChainSelectIndex[index]= 0;
+    g_rowanChainSelectIndex[index]= 0;
+    g_regenChainSelectIndex[index]= 0;
+    g_bootChainSelectIndex[index]= 0;
+    g_gravChainSelectIndex[index]= 0;
+    g_ixoChainSelectIndex[index]= 0;
+    g_ngmChainSelectIndex[index]= 0;
+    g_iovChainSelectIndex[index]= 0;
+    g_umeeChainSelectIndex[index]= 0;
+    g_qckChainSelectIndex[index]= 0;
+    g_tgdChainSelectIndex[index]= 0;
 }
+
+
+
 
 void GuiResetAllStandardAddressIndex(void)
 {
@@ -656,6 +969,142 @@ void GuiResetAllStandardAddressIndex(void)
     memset_s(g_suiSelectIndex, sizeof(g_suiSelectIndex), 0, sizeof(g_suiSelectIndex));
     memset_s(g_aptosSelectIndex, sizeof(g_aptosSelectIndex), 0, sizeof(g_aptosSelectIndex));
     memset_s(g_xrpSelectIndex, sizeof(g_xrpSelectIndex), 0, sizeof(g_xrpSelectIndex));
+    memset_s(g_tiaChainSelectIndex, sizeof(g_tiaChainSelectIndex), 0, sizeof(g_tiaChainSelectIndex));
+    memset_s(g_dymChainSelectIndex, sizeof(g_dymChainSelectIndex), 0, sizeof(g_dymChainSelectIndex));
+    memset_s(g_osmoChainSelectIndex, sizeof(g_osmoChainSelectIndex), 0, sizeof(g_osmoChainSelectIndex));
+    memset_s(g_injChainSelectIndex, sizeof(g_injChainSelectIndex), 0, sizeof(g_injChainSelectIndex));
+    memset_s(g_atomChainSelectIndex, sizeof(g_atomChainSelectIndex), 0, sizeof(g_atomChainSelectIndex));
+    memset_s(g_croChainSelectIndex, sizeof(g_croChainSelectIndex), 0, sizeof(g_croChainSelectIndex));
+    memset_s(g_kavaChainSelectIndex, sizeof(g_kavaChainSelectIndex), 0, sizeof(g_kavaChainSelectIndex));
+    memset_s(g_lunaChainSelectIndex, sizeof(g_lunaChainSelectIndex), 0, sizeof(g_lunaChainSelectIndex));
+    memset_s(g_axlChainSelectIndex, sizeof(g_axlChainSelectIndex), 0, sizeof(g_axlChainSelectIndex));
+    memset_s(g_lunaChainSelectIndex, sizeof(g_lunaChainSelectIndex), 0, sizeof(g_lunaChainSelectIndex));
+    memset_s(g_aktChainSelectIndex, sizeof(g_aktChainSelectIndex), 0, sizeof(g_aktChainSelectIndex));
+    memset_s(g_strdChainSelectIndex, sizeof(g_strdChainSelectIndex), 0, sizeof(g_strdChainSelectIndex));
+    memset_s(g_scrtChainSelectIndex, sizeof(g_scrtChainSelectIndex), 0, sizeof(g_scrtChainSelectIndex));
+    memset_s(g_bldChainSelectIndex, sizeof(g_bldChainSelectIndex), 0, sizeof(g_bldChainSelectIndex));
+    memset_s(g_ctkChainSelectIndex, sizeof(g_ctkChainSelectIndex), 0, sizeof(g_ctkChainSelectIndex));
+    memset_s(g_evmosChainSelectIndex, sizeof(g_evmosChainSelectIndex), 0, sizeof(g_evmosChainSelectIndex));
+    memset_s(g_starsChainSelectIndex, sizeof(g_starsChainSelectIndex), 0, sizeof(g_starsChainSelectIndex));
+    memset_s(g_xprtChainSelectIndex, sizeof(g_xprtChainSelectIndex), 0, sizeof(g_xprtChainSelectIndex));
+    memset_s(g_sommChainSelectIndex, sizeof(g_sommChainSelectIndex), 0, sizeof(g_sommChainSelectIndex));
+    memset_s(g_junoChainSelectIndex, sizeof(g_junoChainSelectIndex), 0, sizeof(g_junoChainSelectIndex));
+    memset_s(g_irisChainSelectIndex, sizeof(g_irisChainSelectIndex), 0, sizeof(g_irisChainSelectIndex));
+    memset_s(g_dvpnChainSelectIndex, sizeof(g_dvpnChainSelectIndex), 0, sizeof(g_dvpnChainSelectIndex));
+    memset_s(g_rowanChainSelectIndex, sizeof(g_rowanChainSelectIndex), 0, sizeof(g_rowanChainSelectIndex));
+    memset_s(g_regenChainSelectIndex, sizeof(g_regenChainSelectIndex), 0, sizeof(g_regenChainSelectIndex));
+    memset_s(g_bootChainSelectIndex, sizeof(g_bootChainSelectIndex), 0, sizeof(g_bootChainSelectIndex));
+    memset_s(g_gravChainSelectIndex, sizeof(g_gravChainSelectIndex), 0, sizeof(g_gravChainSelectIndex));
+    memset_s(g_ixoChainSelectIndex, sizeof(g_ixoChainSelectIndex), 0, sizeof(g_ixoChainSelectIndex));
+    memset_s(g_ngmChainSelectIndex, sizeof(g_ngmChainSelectIndex), 0, sizeof(g_ngmChainSelectIndex));
+    memset_s(g_iovChainSelectIndex, sizeof(g_iovChainSelectIndex), 0, sizeof(g_iovChainSelectIndex));
+    memset_s(g_umeeChainSelectIndex, sizeof(g_umeeChainSelectIndex), 0, sizeof(g_umeeChainSelectIndex));
+    memset_s(g_qckChainSelectIndex, sizeof(g_qckChainSelectIndex), 0, sizeof(g_qckChainSelectIndex));
+    memset_s(g_tgdChainSelectIndex, sizeof(g_tgdChainSelectIndex), 0, sizeof(g_tgdChainSelectIndex));
+}
+
+static uint32_t* GetCosmosChainCurrentSelectIndex()
+{
+    switch (g_chainCard) {
+        case HOME_WALLET_CARD_TIA:
+            return &g_tiaChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_DYM:
+            return &g_dymChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_OSMO:
+            return &g_osmoChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_INJ:
+            return &g_injChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_ATOM:
+            return &g_atomChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_CRO:
+            return &g_croChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_KAVA:
+            return &g_kavaChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_LUNC:
+            return &g_lunaChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_AXL:
+            return &g_axlChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_LUNA:
+            return &g_lunaChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_AKT:
+            return &g_aktChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_STRD:
+            return &g_strdChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_SCRT:
+            return &g_scrtChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_BLD:
+            return &g_bldChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_CTK:
+            return &g_ctkChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_EVMOS:
+            return &g_evmosChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_STARS:
+            return &g_starsChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_XPRT:
+            return &g_xprtChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_SOMM:
+            return &g_sommChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_JUNO:
+            return &g_junoChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_IRIS:
+            return &g_irisChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_DVPN:
+            return &g_dvpnChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_ROWAN:
+            return &g_rowanChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_REGEN:
+            return &g_regenChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_BOOT:
+            return &g_bootChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_GRAV:
+            return &g_gravChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_IXO:
+            return &g_ixoChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_NGM:
+            return &g_ngmChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_IOV:
+            return &g_iovChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_UMEE:
+            return &g_umeeChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_QCK:
+            return &g_qckChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        case HOME_WALLET_CARD_TGD:
+            return &g_tgdChainSelectIndex[GetCurrentAccountIndex()];
+            break;
+        default:
+            return NULL;
+    }
 }
 
 static void SetCurrentSelectIndex(uint32_t selectIndex)
@@ -671,8 +1120,14 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
         g_xrpSelectIndex[GetCurrentAccountIndex()] = selectIndex;
         break;
     default:
-        g_selectIndex[GetCurrentAccountIndex()] = selectIndex;
-        break;
+        if (IsCosmosChain(g_chainCard)) {
+            uint32_t *ptr = GetCosmosChainCurrentSelectIndex();
+            *ptr = selectIndex;
+            break;
+        } else {
+            g_selectIndex[GetCurrentAccountIndex()] = selectIndex;
+            break;
+        }
     }
 }
 
@@ -689,7 +1144,12 @@ static uint32_t GetCurrentSelectIndex()
     case HOME_WALLET_CARD_XRP:
         return g_xrpSelectIndex[GetCurrentAccountIndex()];
     default:
-        return g_selectIndex[GetCurrentAccountIndex()];
+        if (IsCosmosChain(g_chainCard)) {
+            uint32_t *ptr = GetCosmosChainCurrentSelectIndex();
+            return *ptr;
+        } else {
+            return g_selectIndex[GetCurrentAccountIndex()];
+        }
     }
 }
 #endif

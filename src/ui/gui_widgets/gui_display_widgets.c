@@ -33,12 +33,11 @@ typedef enum {
 
 static lv_obj_t *g_cont;
 static lv_obj_t *autoLockAutoLockLabel;
-static lv_obj_t *g_autoLockHintBox = NULL;
+static lv_obj_t *g_noticeWindow = NULL;
 static lv_obj_t *g_autoLockCheck[AUTO_LOCK_TIME_BUTT];
 static uint32_t g_currentAutoLockIndex = 2;
 
 static lv_obj_t *autoShutDownTimeLabel;
-static lv_obj_t *g_autoShutdownHintBox = NULL;
 static lv_obj_t *g_autoShutdownCheck[AUTO_SHUTDOWN_BUTT];
 static uint32_t g_currentShutdownIndex = 2;
 
@@ -65,6 +64,8 @@ static void CloseChooseAutoShutdownHandler(lv_event_t* e);
 static void SelectAutoShutdownHandler(lv_event_t *e);
 static uint32_t GetAutoShutdownTimeByEnum(AUTO_SHUTDOWN_ENUM shutdownTime);
 static const char *GetAutoShutdownTimeDescByLockTime(void);
+static void NftScreenSaverSwitchHandler(lv_event_t * e);
+static void OpenNftTutorialHandler(lv_event_t *e);
 
 void GuiDisplayWidgetsInit()
 {
@@ -76,8 +77,7 @@ void GuiDisplayWidgetsInit()
 
 void GuiDisplayWidgetsDeInit()
 {
-    GUI_DEL_OBJ(g_autoLockHintBox);
-    GUI_DEL_OBJ(g_autoShutdownHintBox);
+    GUI_DEL_OBJ(g_noticeWindow);
     if (g_cont != NULL) {
         lv_obj_del(g_cont);
         g_cont = NULL;
@@ -167,21 +167,9 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(rightContainer, LV_OPA_10 + LV_OPA_2, LV_STATE_PRESSED | LV_PART_MAIN);
 
     GuiButton_t brightnessTable[] = {
-        {
-            .obj = leftContainer,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {10, 0},
-        },
-        {
-            .obj = rightContainer,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {382, 0},
-        },
-        {
-            .obj = slider,
-            .align = LV_ALIGN_CENTER,
-            .position = {0, 0},
-        },
+        {.obj = leftContainer, .align = LV_ALIGN_DEFAULT, .position = {10, 0}},
+        {.obj = rightContainer, .align = LV_ALIGN_DEFAULT, .position = {382, 0}},
+        {.obj = slider, .align = LV_ALIGN_CENTER, .position = {0, 0}}
     };
 
     lv_obj_t *button = GuiCreateButton(parent, 456, 64, brightnessTable, NUMBER_OF_ARRAYS(brightnessTable),
@@ -189,32 +177,45 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
     lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 84);
 
+    label = GuiCreateTextLabel(parent, _("nft_screen_saver"));
+    lv_obj_t *img = GuiCreateImg(parent, &imgInfo);
+    GuiButton_t nftTable[] = {
+        {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {0, 0}},
+        {.obj = img, .align = LV_ALIGN_LEFT_MID, .position = {16 + lv_obj_get_self_width(label), 0},},
+    };
+    lv_obj_t *btn = GuiCreateButton(parent, lv_obj_get_self_width(label) + lv_obj_get_self_width(img) + 16, 48, nftTable, NUMBER_OF_ARRAYS(nftTable),
+                                    OpenNftTutorialHandler, NULL);
+    lv_obj_set_style_radius(btn, 12, LV_PART_MAIN);
+    lv_obj_t *nftSwitch = GuiCreateSwitch(parent);
+    if (GetNftScreenSaver()) {
+        lv_obj_add_state(nftSwitch, LV_STATE_CHECKED);
+    } else {
+        lv_obj_clear_state(nftSwitch, LV_STATE_CHECKED);
+    }
+    nftTable[0].obj = btn;
+    nftTable[0].position.x = 24;
+    nftTable[1].obj = nftSwitch;
+    nftTable[1].align = LV_ALIGN_RIGHT_MID;
+    nftTable[1].position.x = -24;
+    lv_obj_add_event_cb(nftSwitch, NftScreenSaverSwitchHandler, LV_EVENT_VALUE_CHANGED, NULL);
+    button = GuiCreateButton(parent, 456, 84, nftTable, NUMBER_OF_ARRAYS(nftTable),
+                             ChooseAutoLockTimeHandler, NULL);
+    GuiAlignToPrevObj(button, LV_ALIGN_OUT_BOTTOM_MID, 0, 25);
+
     label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_auto_lock"));
     lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRight);
     const char *currentLockTime = GetAutoLockTimeDescByLockTime();
     autoLockAutoLockLabel = GuiCreateNoticeLabel(parent, currentLockTime);
 
     GuiButton_t table[] = {
-        {
-            .obj = label,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {24, 24},
-        },
-        {
-            .obj = imgArrow,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {396, 24},
-        },
-        {
-            .obj = autoLockAutoLockLabel,
-            .align = LV_ALIGN_DEFAULT,
-            .position = {24, 64},
-        },
+        {.obj = label, .align = LV_ALIGN_DEFAULT, .position = {24, 24}},
+        {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {396, 24}},
+        {.obj = autoLockAutoLockLabel, .align = LV_ALIGN_DEFAULT, .position = {24, 64}},
     };
     button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table),
                              ChooseAutoLockTimeHandler, NULL);
 
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 173);
+    GuiAlignToPrevObj(button, LV_ALIGN_OUT_BOTTOM_MID, 0, 25);
 
     label = GuiCreateTextLabel(parent, _("auto_shutdown"));
 
@@ -229,7 +230,7 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
     button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table),
                              ChooseAutoShutdownHandler, NULL);
 
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 316);
+    GuiAlignToPrevObj(button, LV_ALIGN_OUT_BOTTOM_MID, 0, 25);
 }
 
 static void SetLowestBrightness(lv_event_t *e)
@@ -270,21 +271,25 @@ static void SaveSystemSetting(lv_timer_t *timer)
 
 static void ChooseAutoLockTimeHandler(lv_event_t *e)
 {
-    g_autoLockHintBox = GuiCreateHintBox(570);
+    printf("%s %d..\n", __func__, __LINE__);
+    GuiApiEmitSignalWithValue(SIG_INIT_TRANSFER_NFT_SCREEN, 1);
+    return;
 
-    lv_obj_add_event_cb(lv_obj_get_child(g_autoLockHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_autoLockHintBox);
+    g_noticeWindow = GuiCreateHintBox(570);
 
-    lv_obj_t *label = GuiCreateIllustrateLabel(g_autoLockHintBox, _("system_settings_screen_lock_auto_lock_title"));
+    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeWindow, _("system_settings_screen_lock_auto_lock_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 260);
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
 
-    lv_obj_t *img = GuiCreateImg(g_autoLockHintBox, &imgClose);
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
     GuiButton_t tableHintbox = {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {0, 0} };
-    lv_obj_t *buttonClose = GuiCreateButton(g_autoLockHintBox, 36, 36, &tableHintbox, 1, CloseChooseAutoLockTimeHandler, &g_autoLockHintBox);
+    lv_obj_t *buttonClose = GuiCreateButton(g_noticeWindow, 36, 36, &tableHintbox, 1, CloseChooseAutoLockTimeHandler, &g_noticeWindow);
     lv_obj_align(buttonClose, LV_ALIGN_DEFAULT, 408, 257);
 
-    label = GuiCreateTextLabel(g_autoLockHintBox, _("system_settings_screen_lock_auto_lock_15secs"));
-    lv_obj_t *checkBox = GuiCreateSingleCheckBox(g_autoLockHintBox, "");
+    label = GuiCreateTextLabel(g_noticeWindow, _("system_settings_screen_lock_auto_lock_15secs"));
+    lv_obj_t *checkBox = GuiCreateSingleCheckBox(g_noticeWindow, "");
     GetAutoLockTimeDescByLockTime();
     if (g_currentAutoLockIndex == 0) {
         lv_obj_add_state(checkBox, LV_STATE_CHECKED);
@@ -296,57 +301,57 @@ static void ChooseAutoLockTimeHandler(lv_event_t *e)
         {.obj = checkBox, .align = LV_ALIGN_TOP_MID, .position = {0, 24},},
     };
 
-    lv_obj_t *button = GuiCreateButton(g_autoLockHintBox, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoLockTimeHandler, g_autoLockCheck[0]);
+    lv_obj_t *button = GuiCreateButton(g_noticeWindow, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoLockTimeHandler, g_autoLockCheck[0]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 320);
 
-    label = GuiCreateTextLabel(g_autoLockHintBox, _("system_settings_screen_lock_auto_lock_30secs"));
-    checkBox = GuiCreateSingleCheckBox(g_autoLockHintBox, "");
+    label = GuiCreateTextLabel(g_noticeWindow, _("system_settings_screen_lock_auto_lock_30secs"));
+    checkBox = GuiCreateSingleCheckBox(g_noticeWindow, "");
     if (g_currentAutoLockIndex == 1) {
         lv_obj_add_state(checkBox, LV_STATE_CHECKED);
     }
     g_autoLockCheck[1] = checkBox;
     tables[0].obj = label;
     tables[1].obj = checkBox;
-    button = GuiCreateButton(g_autoLockHintBox, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoLockTimeHandler, g_autoLockCheck[1]);
+    button = GuiCreateButton(g_noticeWindow, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoLockTimeHandler, g_autoLockCheck[1]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 416);
 
-    label = GuiCreateTextLabel(g_autoLockHintBox, _("system_settings_screen_lock_auto_lock_1min"));
-    checkBox = GuiCreateSingleCheckBox(g_autoLockHintBox, "");
+    label = GuiCreateTextLabel(g_noticeWindow, _("system_settings_screen_lock_auto_lock_1min"));
+    checkBox = GuiCreateSingleCheckBox(g_noticeWindow, "");
     if (g_currentAutoLockIndex == 2) {
         lv_obj_add_state(checkBox, LV_STATE_CHECKED);
     }
     g_autoLockCheck[2] = checkBox;
     tables[0].obj = label;
     tables[1].obj = checkBox;
-    button = GuiCreateButton(g_autoLockHintBox, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoLockTimeHandler, g_autoLockCheck[2]);
+    button = GuiCreateButton(g_noticeWindow, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoLockTimeHandler, g_autoLockCheck[2]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 512);
 
-    label = GuiCreateTextLabel(g_autoLockHintBox, _("system_settings_screen_lock_auto_lock_5mins"));
-    checkBox = GuiCreateSingleCheckBox(g_autoLockHintBox, "");
+    label = GuiCreateTextLabel(g_noticeWindow, _("system_settings_screen_lock_auto_lock_5mins"));
+    checkBox = GuiCreateSingleCheckBox(g_noticeWindow, "");
     if (g_currentAutoLockIndex == 3) {
         lv_obj_add_state(checkBox, LV_STATE_CHECKED);
     }
     g_autoLockCheck[3] = checkBox;
     tables[0].obj = label;
     tables[1].obj = checkBox;
-    button = GuiCreateButton(g_autoLockHintBox, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoLockTimeHandler, g_autoLockCheck[3]);
+    button = GuiCreateButton(g_noticeWindow, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoLockTimeHandler, g_autoLockCheck[3]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 608);
 
-    label = GuiCreateTextLabel(g_autoLockHintBox, _("system_settings_screen_lock_auto_lock_10mins"));
-    checkBox = GuiCreateSingleCheckBox(g_autoLockHintBox, "");
+    label = GuiCreateTextLabel(g_noticeWindow, _("system_settings_screen_lock_auto_lock_10mins"));
+    checkBox = GuiCreateSingleCheckBox(g_noticeWindow, "");
     if (g_currentAutoLockIndex == 4) {
         lv_obj_add_state(checkBox, LV_STATE_CHECKED);
     }
     g_autoLockCheck[4] = checkBox;
     tables[0].obj = label;
     tables[1].obj = checkBox;
-    button = GuiCreateButton(g_autoLockHintBox, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoLockTimeHandler, g_autoLockCheck[4]);
+    button = GuiCreateButton(g_noticeWindow, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoLockTimeHandler, g_autoLockCheck[4]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 704);
 }
 
 static void CloseChooseAutoLockTimeHandler(lv_event_t* e)
 {
-    GUI_DEL_OBJ(g_autoLockHintBox)
+    GUI_DEL_OBJ(g_noticeWindow)
 }
 
 static void SelectAutoLockTimeHandler(lv_event_t *e)
@@ -370,7 +375,7 @@ static void SelectAutoLockTimeHandler(lv_event_t *e)
         SaveDeviceSettings();
         const char *currentLockTime = GetAutoLockTimeDescByLockTime();
         lv_label_set_text(autoLockAutoLockLabel, currentLockTime);
-        GUI_DEL_OBJ(g_autoLockHintBox)
+        GUI_DEL_OBJ(g_noticeWindow)
     }
 }
 
@@ -421,22 +426,21 @@ static const char *GetAutoLockTimeDescByLockTime()
 
 static void ChooseAutoShutdownHandler(lv_event_t *e)
 {
+    g_noticeWindow = GuiCreateHintBox(570);
 
-    g_autoShutdownHintBox = GuiCreateHintBox(570);
+    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
-    lv_obj_add_event_cb(lv_obj_get_child(g_autoShutdownHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_autoShutdownHintBox);
-
-    lv_obj_t *label = GuiCreateIllustrateLabel(g_autoShutdownHintBox, _("auto_shutdown_20"));
+    lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeWindow, _("auto_shutdown_20"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 260);
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
 
-    lv_obj_t *img = GuiCreateImg(g_autoShutdownHintBox, &imgClose);
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
     GuiButton_t tableHintbox = {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {0, 0} };
-    lv_obj_t *buttonClose = GuiCreateButton(g_autoShutdownHintBox, 36, 36, &tableHintbox, 1, CloseChooseAutoShutdownHandler, &g_autoShutdownHintBox);
+    lv_obj_t *buttonClose = GuiCreateButton(g_noticeWindow, 36, 36, &tableHintbox, 1, CloseChooseAutoShutdownHandler, &g_noticeWindow);
     lv_obj_align(buttonClose, LV_ALIGN_DEFAULT, 408, 257);
 
-    label = GuiCreateTextLabel(g_autoShutdownHintBox, _("system_settings_screen_lock_auto_power_off_1h"));
-    lv_obj_t *checkBox = GuiCreateSingleCheckBox(g_autoShutdownHintBox, "");
+    label = GuiCreateTextLabel(g_noticeWindow, _("system_settings_screen_lock_auto_power_off_1h"));
+    lv_obj_t *checkBox = GuiCreateSingleCheckBox(g_noticeWindow, "");
     GetAutoShutdownTimeDescByLockTime();
     if (g_currentShutdownIndex == 0) {
         lv_obj_add_state(checkBox, LV_STATE_CHECKED);
@@ -447,57 +451,57 @@ static void ChooseAutoShutdownHandler(lv_event_t *e)
         {.obj = checkBox, .align = LV_ALIGN_TOP_MID, .position = {0, 24},},
     };
 
-    lv_obj_t *button = GuiCreateButton(g_autoShutdownHintBox, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoShutdownHandler, g_autoShutdownCheck[0]);
+    lv_obj_t *button = GuiCreateButton(g_noticeWindow, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoShutdownHandler, g_autoShutdownCheck[0]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 320);
 
-    label = GuiCreateTextLabel(g_autoShutdownHintBox, _("system_settings_screen_lock_auto_power_off_6h"));
-    checkBox = GuiCreateSingleCheckBox(g_autoShutdownHintBox, "");
+    label = GuiCreateTextLabel(g_noticeWindow, _("system_settings_screen_lock_auto_power_off_6h"));
+    checkBox = GuiCreateSingleCheckBox(g_noticeWindow, "");
     if (g_currentShutdownIndex == 1) {
         lv_obj_add_state(checkBox, LV_STATE_CHECKED);
     }
     g_autoShutdownCheck[1] = checkBox;
     tables[0].obj = label;
     tables[1].obj = checkBox;
-    button = GuiCreateButton(g_autoShutdownHintBox, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoShutdownHandler, g_autoShutdownCheck[1]);
+    button = GuiCreateButton(g_noticeWindow, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoShutdownHandler, g_autoShutdownCheck[1]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 416);
 
-    label = GuiCreateTextLabel(g_autoShutdownHintBox, _("system_settings_screen_lock_auto_power_off_12h"));
-    checkBox = GuiCreateSingleCheckBox(g_autoShutdownHintBox, "");
+    label = GuiCreateTextLabel(g_noticeWindow, _("system_settings_screen_lock_auto_power_off_12h"));
+    checkBox = GuiCreateSingleCheckBox(g_noticeWindow, "");
     if (g_currentShutdownIndex == 2) {
         lv_obj_add_state(checkBox, LV_STATE_CHECKED);
     }
     g_autoShutdownCheck[2] = checkBox;
     tables[0].obj = label;
     tables[1].obj = checkBox;
-    button = GuiCreateButton(g_autoShutdownHintBox, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoShutdownHandler, g_autoShutdownCheck[2]);
+    button = GuiCreateButton(g_noticeWindow, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoShutdownHandler, g_autoShutdownCheck[2]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 512);
 
-    label = GuiCreateTextLabel(g_autoShutdownHintBox, _("system_settings_screen_lock_auto_power_off_1d"));
-    checkBox = GuiCreateSingleCheckBox(g_autoShutdownHintBox, "");
+    label = GuiCreateTextLabel(g_noticeWindow, _("system_settings_screen_lock_auto_power_off_1d"));
+    checkBox = GuiCreateSingleCheckBox(g_noticeWindow, "");
     if (g_currentShutdownIndex == 3) {
         lv_obj_add_state(checkBox, LV_STATE_CHECKED);
     }
     g_autoShutdownCheck[3] = checkBox;
     tables[0].obj = label;
     tables[1].obj = checkBox;
-    button = GuiCreateButton(g_autoShutdownHintBox, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoShutdownHandler, g_autoShutdownCheck[3]);
+    button = GuiCreateButton(g_noticeWindow, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoShutdownHandler, g_autoShutdownCheck[3]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 608);
 
-    label = GuiCreateTextLabel(g_autoShutdownHintBox, _("system_settings_screen_lock_auto_power_off_never"));
-    checkBox = GuiCreateSingleCheckBox(g_autoShutdownHintBox, "");
+    label = GuiCreateTextLabel(g_noticeWindow, _("system_settings_screen_lock_auto_power_off_never"));
+    checkBox = GuiCreateSingleCheckBox(g_noticeWindow, "");
     if (g_currentShutdownIndex == 4) {
         lv_obj_add_state(checkBox, LV_STATE_CHECKED);
     }
     g_autoShutdownCheck[4] = checkBox;
     tables[0].obj = label;
     tables[1].obj = checkBox;
-    button = GuiCreateButton(g_autoShutdownHintBox, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoShutdownHandler, g_autoShutdownCheck[4]);
+    button = GuiCreateButton(g_noticeWindow, 456, 84, tables, NUMBER_OF_ARRAYS(tables), SelectAutoShutdownHandler, g_autoShutdownCheck[4]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 704);
 }
 
 static void CloseChooseAutoShutdownHandler(lv_event_t* e)
 {
-    GUI_DEL_OBJ(g_autoShutdownHintBox)
+    GUI_DEL_OBJ(g_noticeWindow)
 }
 
 static void SelectAutoShutdownHandler(lv_event_t *e)
@@ -520,7 +524,7 @@ static void SelectAutoShutdownHandler(lv_event_t *e)
         SaveDeviceSettings();
         const char *currentPowerOffTime = GetAutoShutdownTimeDescByLockTime();
         lv_label_set_text(autoShutDownTimeLabel, currentPowerOffTime);
-        GUI_DEL_OBJ(g_autoShutdownHintBox)
+        GUI_DEL_OBJ(g_noticeWindow)
     }
 }
 
@@ -542,6 +546,7 @@ static uint32_t GetAutoShutdownTimeByEnum(AUTO_SHUTDOWN_ENUM shutdownTime)
     }
     return 0;
 }
+
 static const char *GetAutoShutdownTimeDescByLockTime(void)
 {
     uint32_t currentPowerOff = GetAutoPowerOff();
@@ -566,4 +571,24 @@ static const char *GetAutoShutdownTimeDescByLockTime(void)
         break;
     }
     return _("system_settings_screen_lock_auto_power_off_never");
+}
+
+static void NftScreenSaverSwitchHandler(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target(e);
+
+    if (code == LV_EVENT_VALUE_CHANGED) {
+        if (lv_obj_has_state(obj, LV_STATE_CHECKED)) {
+            SetNftScreenSaver(true);
+        } else {
+            SetNftScreenSaver(false);
+        }
+        SaveDeviceSettings();
+    }
+}
+
+static void OpenNftTutorialHandler(lv_event_t *e)
+{
+    printf("%s %d..\n", __func__, __LINE__);
 }

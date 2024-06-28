@@ -4,25 +4,15 @@
 #include "gui_status_bar.h"
 #include "gui_display_widgets.h"
 
-static int32_t GuiDisplayViewInit(void)
-{
-    GuiDisplayWidgetsInit();
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiDisplayViewDeInit(void)
-{
-    GuiDisplayWidgetsDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiDisplayViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiDisplayViewInit();
+        GuiDisplayWidgetsInit();
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiDisplayViewDeInit();
+        GuiDisplayWidgetsDeInit();
+        break;
     case GUI_EVENT_REFRESH:
         GuiDisplayWidgetsRefresh();
         break;

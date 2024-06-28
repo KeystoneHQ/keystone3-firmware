@@ -37,6 +37,9 @@ void SetUSBSwitch(uint32_t usbSwitch);
 uint32_t GetLanguage(void);
 void SetLanguage(uint32_t language);
 
+bool GetNftScreenSaver(void);
+void SetNftScreenSaver(bool enable);
+
 bool IsUpdateSuccess(void);
 void WipeDevice(void);
 void DeviceSettingsTest(int argc, char *argv[]);

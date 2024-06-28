@@ -416,7 +416,7 @@ static void GuiShowSolTxUnknownOverview(lv_obj_t *parent)
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_refr_size(label);
     height += lv_obj_get_self_height(label);
-    lv_obj_set_height(container, height);    
+    lv_obj_set_height(container, height);
 }
 
 void GuiShowSolTxOverview(lv_obj_t *parent, void *totalData)

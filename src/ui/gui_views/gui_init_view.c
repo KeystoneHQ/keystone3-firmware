@@ -9,6 +9,7 @@
 #include "gui_firmware_process_widgets.h"
 #include "gui_usb_connection_widgets.h"
 #include "gui_low_battery_widgets.h"
+#include "gui_nft_screen_widgets.h"
 #include "gui_firmware_update_deny_widgets.h"
 #include "gui_firmware_update_widgets.h"
 #include "gui_lock_widgets.h"
@@ -89,6 +90,15 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
             OpenMsgBox(&g_guiMsgBoxLowBattery);
         } else {
             CloseMsgBox(&g_guiMsgBoxLowBattery);
+        }
+        break;
+    case SIG_INIT_TRANSFER_NFT_SCREEN:
+        rcvValue = *(uint32_t *)param;
+        printf("rcvValue=%d\r\n", rcvValue);
+        if (rcvValue != 0) {
+            OpenMsgBox(&g_guiMsgBoxNftScreen);
+        } else {
+            CloseMsgBox(&g_guiMsgBoxNftScreen);
         }
         break;
     case SIG_INIT_USB_CONNECTION:

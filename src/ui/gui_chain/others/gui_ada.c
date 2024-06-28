@@ -81,22 +81,22 @@ void *GuiGetAdaSignDataData(void)
     return g_parseResult;
 }
 
-void GetAdaSignDataText(void *indata, void *param, uint32_t maxLen)
+void GetAdaSignDataPayloadText(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCardanoSignData *data = (DisplayCardanoSignData *)param;
-    if (data->sign_data == NULL) {
+    if (data->payload == NULL) {
         return;
     }
-    strcpy_s((char *)indata, maxLen, data->sign_data);
+    strcpy_s((char *)indata, maxLen, data->payload);
 }
 
-int GetAdaSignDataLength(void *param)
+int GetAdaSignDataPayloadLength(void *param)
 {
     DisplayCardanoSignData *data = (DisplayCardanoSignData *)param;
-    if (data->sign_data == NULL) {
+    if (data->payload == NULL) {
         return 0;
     }
-    return strlen(data->sign_data) + 1;
+    return strlen(data->payload) + 1;
 }
 
 PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)

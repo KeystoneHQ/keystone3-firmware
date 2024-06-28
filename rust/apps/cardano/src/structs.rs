@@ -20,6 +20,8 @@ use alloc::format;
 use core::ops::Div;
 use third_party::bitcoin::bip32::ChildNumber::{Hardened, Normal};
 use third_party::bitcoin::bip32::DerivationPath;
+use third_party::ur_registry::traits::From;
+use third_party::ur_registry::cardano::cardano_sign_structure::CardanoSignStructure;
 
 use third_party::hex;
 
@@ -46,7 +48,7 @@ impl_public_struct!(CardanoCertKey {
 });
 
 impl_public_struct!(ParsedCardanoSignData {
-    sign_data: String
+    payload: String
 });
 
 
@@ -150,9 +152,23 @@ struct Delegation {
 
 impl ParsedCardanoSignData {
     pub fn from_sign_data(sign_data: Vec<u8>) -> R<Self> {
-        Ok(Self {
-            sign_data: hex::encode(sign_data),
-        })
+        let sign_structure = CardanoSignStructure::from_cbor(
+            sign_data.clone()
+        );
+        match sign_structure {
+            Ok(sign_structure) => {
+                let raw_payload = sign_structure.get_payload();
+                let payload = String::from_utf8(
+                    hex::decode(raw_payload.clone()).unwrap()
+                ).unwrap_or_else(|_| { raw_payload });
+                Ok(Self {
+                    payload
+                })
+            }
+            Err(e) => Ok(Self {
+                payload: hex::encode(sign_data)
+            })
+        }
     }
 }
 

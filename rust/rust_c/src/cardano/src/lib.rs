@@ -162,7 +162,7 @@ pub extern "C" fn cardano_sign_sign_data(
 
     let result = app_cardano::transaction::sign_data(
         &cardano_sign_data_reqeust.get_derivation_path().get_path().unwrap(),
-        parsed_data.unwrap().get_sign_data().as_str(),
+        parsed_data.unwrap().get_payload().as_str(),
         entropy,
         passphrase.as_bytes(),
     )

@@ -35,8 +35,8 @@ bool GetAdaExtraDataExist(void *indata, void *param);
 void GetAdaExtraData(void *indata, void *param, uint32_t maxLen);
 int GetAdaExtraDataLen(void *param);
 
-void GetAdaSignDataText(void *indata, void *param, uint32_t maxLen);
-int GetAdaSignDataLength(void *param);
+void GetAdaSignDataPayloadText(void *indata, void *param, uint32_t maxLen);
+int GetAdaSignDataPayloadLength(void *param);
 
 void FreeAdaMemory(void);
 void FreeAdaSignDataMemory(void);

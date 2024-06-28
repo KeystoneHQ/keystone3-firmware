@@ -5,8 +5,8 @@ pub mod ao_transaction;
 pub mod data_item;
 pub mod deep_hash;
 pub mod errors;
-pub mod transaction;
 mod tokens;
+pub mod transaction;
 
 #[macro_use]
 extern crate alloc;

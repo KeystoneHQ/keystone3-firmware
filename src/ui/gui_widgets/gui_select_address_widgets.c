@@ -103,6 +103,7 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
                 g_showIndex = g_standardJumpButtonWidgets.g_inputTmpIndex / 5 * 5;
                 g_selectIndex = g_standardJumpButtonWidgets.g_inputTmpIndex;
                 RefreshSwitchAccount();
+                UpdateConfirmBtn();
                 lv_obj_add_flag(g_standardJumpButtonWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
                 g_standardJumpButtonWidgets.g_inputAccountValid = false;
             }
@@ -403,9 +404,15 @@ static void RightBtnHandler(lv_event_t *e)
 
 static void UpdateConfirmBtn(void)
 {
-    lv_obj_set_style_bg_opa(g_confirmBtn, LV_OPA_COVER, LV_PART_MAIN);
-    lv_obj_set_style_text_opa(lv_obj_get_child(g_confirmBtn, 0), LV_OPA_COVER, LV_PART_MAIN);
+    if (IsSelectChanged()) {
+        lv_obj_set_style_bg_opa(g_confirmBtn, LV_OPA_COVER, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(g_confirmBtn, 0), LV_OPA_COVER, LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_bg_opa(g_confirmBtn, LV_OPA_30, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(g_confirmBtn, 0), LV_OPA_30, LV_PART_MAIN);
+    }
 }
+
 
 static void GuiCreatePaginationBtns(lv_obj_t *parent)
 {

@@ -488,7 +488,6 @@ UREncodeResult *GuiGetOkxWalletData(void)
 #ifndef BTC_ONLY
 UREncodeResult *GuiGetSolflareData(void)
 {
-#ifndef COMPILE_SIMULATOR
     SOLAccountType accountType = GetSolflareAccountType();
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
@@ -527,11 +526,59 @@ UREncodeResult *GuiGetSolflareData(void)
     }
     SRAM_FREE(public_keys);
     return g_urEncode;
-#else
-    const uint8_t *data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    return (void *)data;
+}
 #endif
 
-}
+#ifndef BTC_ONLY
+UREncodeResult *GuiGetBackpackData(void)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
 
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    ExtendedPublicKey keys[31];
+    public_keys->data = keys;
+    public_keys->size = 31;
+
+    uint8_t count = 0;
+    // SOLBip44ROOT
+    char *solPath = SRAM_MALLOC(sizeof(char) * 32);
+    snprintf_s(solPath, BUFFER_SIZE_32, "m/44'/501'");
+    keys[count].path = solPath;
+    keys[count].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_ROOT);
+    count++;
+
+    // SOLBip44
+    for (uint8_t i = XPUB_TYPE_SOL_BIP44_0; i <= XPUB_TYPE_SOL_BIP44_9; i++, count++) {
+        char *path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(path, BUFFER_SIZE_32, "m/44'/501'/%d'", i - XPUB_TYPE_SOL_BIP44_0);
+        keys[count].path = path;
+        keys[count].xpub = GetCurrentAccountPublicKey(i);
+    }
+
+    // SOLBip44Change
+    for (uint8_t i = XPUB_TYPE_SOL_BIP44_CHANGE_0; i <= XPUB_TYPE_SOL_BIP44_CHANGE_9; i++, count++) {
+        char *path = SRAM_MALLOC(sizeof(char) * 32);
+        snprintf_s(path, BUFFER_SIZE_32, "m/44'/501'/%d'/0'", i - XPUB_TYPE_SOL_BIP44_CHANGE_0);
+        keys[count].path = path;
+        keys[count].xpub = GetCurrentAccountPublicKey(i);
+    }
+
+    // ETH - Bip44Standard + LedgerLive
+    for (uint8_t i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++, count++) {
+        char *path = SRAM_MALLOC(sizeof(char) * 32);
+        snprintf_s(path, BUFFER_SIZE_32, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
+        keys[count].path = path;
+        keys[count].xpub = GetCurrentAccountPublicKey(i);
+    }
+
+    g_urEncode = get_backpack_wallet_ur(mfp, sizeof(mfp), public_keys);
+
+    CHECK_CHAIN_PRINT(g_urEncode);
+    for (int i = 0; i < public_keys->size; i++) {
+        SRAM_FREE(public_keys->data[i].path);
+    }
+    SRAM_FREE(public_keys);
+    return g_urEncode;
+}
 #endif

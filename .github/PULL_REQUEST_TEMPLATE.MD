@@ -9,7 +9,7 @@
 - [ ] All unit tests passed locally.
 
 ## How to test
-<!-- Explan how the reviewer and QA can test this PR -->
+<!-- Explain how the reviewer and QA can test this PR -->
 <!-- START -->
 
 <!-- END -->

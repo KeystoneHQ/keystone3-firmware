@@ -15,6 +15,7 @@ extern crate core;
 extern crate std;
 
 pub mod aptos;
+pub mod backpack;
 pub mod blue_wallet;
 mod common;
 pub mod companion_app;

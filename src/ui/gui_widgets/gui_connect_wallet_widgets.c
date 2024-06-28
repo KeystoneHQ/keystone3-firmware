@@ -37,6 +37,8 @@ WalletListItem_t g_walletListArray[] = {
 #ifndef BTC_ONLY
     {WALLET_LIST_OKX, &walletListOkx, true},
     {WALLET_LIST_METAMASK, &walletListMetaMask, true},
+    {WALLET_LIST_BACKPACK, &walletListBackpack, true},
+    {WALLET_LIST_SOLFARE, &walletListSolfare, true},
     {WALLET_LIST_BLUE, &walletListBlue, true},
     {WALLET_LIST_SPARROW, &walletListSparrow, true},
     {WALLET_LIST_RABBY, &walletListRabby, true},
@@ -46,7 +48,6 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_TYPHON, &walletListTyphon, true},
     {WALLET_LIST_SAFE, &walletListSafe, true},
     {WALLET_LIST_BLOCK_WALLET, &walletListBlockWallet, true},
-    {WALLET_LIST_SOLFARE, &walletListSolfare, true},
     {WALLET_LIST_XRP_TOOLKIT, &walletListXRPToolkit, true},
     {WALLET_LIST_PETRA, &walletListPetra, true},
     {WALLET_LIST_KEPLR, &walletListKeplr, true},
@@ -108,6 +109,10 @@ static const lv_img_dsc_t *g_ethWalletCoinArray[4] = {
 static const lv_img_dsc_t *g_okxWalletCoinArray[] = {
     &coinBtc, &coinEth, &coinBnb, &coinMatic, &coinOkb,
     &coinTrx, &coinLtc, &coinBch, &coinDash,
+};
+
+static const lv_img_dsc_t *g_backpackWalletCoinArray[2] = {
+    &coinSol, &coinEth
 };
 
 static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {
@@ -896,6 +901,26 @@ static void AddSolflareCoins(void)
         lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
     }
 }
+
+static void AddBackpackWalletCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0;
+            i < sizeof(g_backpackWalletCoinArray) / sizeof(g_backpackWalletCoinArray[0]);
+            i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_backpackWalletCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+    lv_obj_t *img = GuiCreateImg(g_coinCont, &imgMore);
+    lv_img_set_zoom(img, 150);
+    lv_img_set_pivot(img, 0, 0);
+    lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 64, 2);
+}
 #endif
 
 void GuiConnectWalletInit(void)
@@ -1024,6 +1049,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_SOLFARE:
         func = GuiGetSolflareData;
         AddSolflareCoins();
+        break;
+    case WALLET_LIST_BACKPACK:
+        func = GuiGetBackpackData;
+        AddBackpackWalletCoins();
         break;
     case WALLET_LIST_KEPLR:
         func = GuiGetKeplrData;

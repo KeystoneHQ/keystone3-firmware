@@ -57,8 +57,8 @@ void CreateUiDisplayTask(void)
 
 #define LCD_DISPLAY_WIDTH  480
 #define LCD_DISPLAY_HEIGHT 800
-#define ROWS_PER_STEP      40  
-void refreshDisplay(uint16_t *snapShotAddr) 
+#define ROWS_PER_STEP      40
+void refreshDisplay(uint16_t *snapShotAddr)
 {
     for (int y = LCD_DISPLAY_HEIGHT - 1; y >= 0; y -= ROWS_PER_STEP) {
         int startY = y - ROWS_PER_STEP + 1;
@@ -164,7 +164,6 @@ static void UiDisplayTask(void *argument)
                     osDelay(1);
                 }
                 refreshDisplay(snapShotAddr);
-                // LcdDraw(0, 0, LCD_DISPLAY_WIDTH - 1, LCD_DISPLAY_HEIGHT - 1, (uint16_t *)snapShotAddr);       
                 if (snapShotAddr != NULL) {
                     EXT_FREE(snapShotAddr);
                 }
@@ -245,8 +244,8 @@ static void InputDevReadCb(struct _lv_indev_drv_t *indev_drv, lv_indev_data_t *d
 void DrawNftImage(void)
 {
 #define START_ADDR 0x00EB2000
-    #define LCD_WIDTH 480
-    #define LCD_HEIGHT 800
+#define LCD_WIDTH 480
+#define LCD_HEIGHT 800
     uint16_t *fileBuf = EXT_MALLOC(LCD_WIDTH * LCD_HEIGHT * 2);
     Gd25FlashReadBuffer(START_ADDR, (uint8_t *)fileBuf, LCD_WIDTH * LCD_HEIGHT * 2);
     LcdDraw(0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1, (uint16_t *)fileBuf);
@@ -297,14 +296,18 @@ static void __SetLvglHandlerAndSnapShot(uint32_t value)
             osDelay(1);
         }
         g_lockNft = true;
-        DrawNftImage();
-        // LcdDraw(0, 0, LCD_DISPLAY_WIDTH - 1, LCD_DISPLAY_HEIGHT - 1, (uint16_t *)snapShotAddr);
+        if (GetNftScreenSaver()) {
+            DrawNftImage();
+        } else {
+            LcdDraw(0, 0, LCD_DISPLAY_WIDTH - 1, LCD_DISPLAY_HEIGHT - 1, (uint16_t *)snapShotAddr);
+            if (snapShotAddr != NULL) {
+                EXT_FREE(snapShotAddr);
+            }
+            lvglHandlerEnable = enable;
+        }
         while (LcdBusy()) {
             osDelay(1);
         }
-        // if (snapShotAddr != NULL) {
-        //     EXT_FREE(snapShotAddr);
-        // }
     }
     snapShotDone = true;
 }

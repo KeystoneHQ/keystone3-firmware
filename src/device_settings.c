@@ -32,6 +32,7 @@
 #define KEY_USB_SWITCH                  "usb_switch"
 #define KEY_LAST_VERSION                "last_version"
 #define KEY_LANGUAGE                    "language"
+#define KEY_NFT_SCREEN                  "nftEnable"
 
 #define DEFAULT_SETUP_STEP              0
 #define DEFAULT_BRIGHT                  15
@@ -53,6 +54,7 @@ typedef struct {
     uint32_t usbSwitch;
     uint32_t lastVersion;
     uint32_t language;
+    bool nftEnable;
 } DeviceSettings_t;
 
 static int32_t SaveDeviceSettingsAsyncFunc(const void *inData, uint32_t inDataLen);
@@ -100,6 +102,7 @@ void DeviceSettingsInit(void)
         g_deviceSettings.usbSwitch = DEFAULT_USB_SWITCH;
         g_deviceSettings.lastVersion = DEFAULT_LAST_VERSION;
         g_deviceSettings.language = DEFAULT_LANGUAGE;
+        g_deviceSettings.nftEnable = false;
         SaveDeviceSettingsSync();
     }
 }
@@ -201,6 +204,16 @@ bool IsUpdateSuccess(void)
     printf("g_deviceSettings.lastVersion=%#x\n", g_deviceSettings.lastVersion);
 
     return isUpdate;
+}
+
+bool GetNftScreenSaver(void)
+{
+    return g_deviceSettings.nftEnable;
+}
+
+void SetNftScreenSaver(bool enable)
+{
+    g_deviceSettings.nftEnable = enable;
 }
 
 uint32_t GetLanguage(void)
@@ -330,6 +343,7 @@ static bool GetDeviceSettingsFromJsonString(const char *string)
         g_deviceSettings.usbSwitch = GetIntValue(rootJson, KEY_USB_SWITCH, DEFAULT_USB_SWITCH);
         g_deviceSettings.lastVersion = GetIntValue(rootJson, KEY_LAST_VERSION, DEFAULT_LAST_VERSION);
         g_deviceSettings.language = GetIntValue(rootJson, KEY_LANGUAGE, DEFAULT_LANGUAGE);
+        g_deviceSettings.nftEnable = GetBoolValue(rootJson, KEY_NFT_SCREEN, false);
     } while (0);
     cJSON_Delete(rootJson);
 
@@ -352,6 +366,7 @@ static char *GetJsonStringFromDeviceSettings(void)
     cJSON_AddItemToObject(rootJson, KEY_USB_SWITCH, cJSON_CreateNumber(g_deviceSettings.usbSwitch));
     cJSON_AddItemToObject(rootJson, KEY_LAST_VERSION, cJSON_CreateNumber(g_deviceSettings.lastVersion));
     cJSON_AddItemToObject(rootJson, KEY_LANGUAGE, cJSON_CreateNumber(g_deviceSettings.language));
+    cJSON_AddItemToObject(rootJson, KEY_NFT_SCREEN, cJSON_CreateBool(g_deviceSettings.nftEnable));
     retStr = cJSON_Print(rootJson);
     RemoveFormatChar(retStr);
     cJSON_Delete(rootJson);

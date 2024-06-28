@@ -11,6 +11,7 @@ typedef enum {
     GUI_USB_CONNECTION_PRIORITY,
     GUI_POWER_OPTION_PRIORITY,
     GUI_FIRMWARE_PROCESS_PRIORITY,
+    GUI_TRANSFER_NFT_SCREENSAVER,
 } GuiPagePriority;
 
 typedef void (*MsgBoxFunc_t)(void);

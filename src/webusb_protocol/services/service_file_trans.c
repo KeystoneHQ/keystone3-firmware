@@ -325,14 +325,14 @@ static void FileTransTimeOutTimerFunc(void *argument)
     GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 0);
 }
 
-static uint8_t *ServiceNftFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen) 
+static uint8_t *ServiceNftFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
     printf("%s %d.\n", __func__, __LINE__);
     g_isNftFile = true;
     return ServiceFileTransInfo(head, tlvData, outLen);
 }
 
-static uint8_t *ServiceNftFileTransContent(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen) 
+static uint8_t *ServiceNftFileTransContent(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
     printf("%s %d.\n", __func__, __LINE__);
     return ServiceFileTransContent(head, tlvData, outLen);
@@ -405,11 +405,8 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
     sendHead.flag.b.ack = 0;
     sendHead.flag.b.isHost = 0;
 
-    // GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 0);
     *outLen = sizeof(FrameHead_t) + 4;
-    // SetSetupStep(4);
-    // SaveDeviceSettings();
     WriteNftToFlash();
-    SystemReboot();
+    GuiApiEmitSignalWithValue(SIG_INIT_TRANSFER_NFT_SCREEN, 1);
     return BuildFrame(&sendHead, NULL, 0);
 }

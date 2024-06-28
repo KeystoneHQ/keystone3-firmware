@@ -20,8 +20,8 @@ use alloc::format;
 use core::ops::Div;
 use third_party::bitcoin::bip32::ChildNumber::{Hardened, Normal};
 use third_party::bitcoin::bip32::DerivationPath;
-use third_party::ur_registry::traits::From;
 use third_party::ur_registry::cardano::cardano_sign_structure::CardanoSignStructure;
+use third_party::ur_registry::traits::From;
 
 use third_party::hex;
 
@@ -51,7 +51,6 @@ impl_public_struct!(ParsedCardanoSignData {
     payload: String,
     derivation_path: String
 });
-
 
 impl_public_struct!(ParsedCardanoTx {
     fee: String,
@@ -153,24 +152,21 @@ struct Delegation {
 
 impl ParsedCardanoSignData {
     pub fn build(sign_data: Vec<u8>, derivation_path: String) -> R<Self> {
-        let sign_structure = CardanoSignStructure::from_cbor(
-            sign_data.clone()
-        );
+        let sign_structure = CardanoSignStructure::from_cbor(sign_data.clone());
         match sign_structure {
             Ok(sign_structure) => {
                 let raw_payload = sign_structure.get_payload();
-                let payload = String::from_utf8(
-                    hex::decode(raw_payload.clone()).unwrap()
-                ).unwrap_or_else(|_| { raw_payload });
+                let payload = String::from_utf8(hex::decode(raw_payload.clone()).unwrap())
+                    .unwrap_or_else(|_| raw_payload);
                 Ok(Self {
                     payload,
-                    derivation_path
+                    derivation_path,
                 })
             }
             Err(e) => Ok(Self {
                 payload: hex::encode(sign_data),
-                derivation_path
-            })
+                derivation_path,
+            }),
         }
     }
 }
@@ -305,7 +301,8 @@ impl ParsedCardanoTx {
                     ));
                 }
                 if let Some(_cert) = cert.as_stake_registration() {
-                    let deposit = normalize_coin(from_bignum(&_cert.coin().unwrap_or(BigNum::zero())));
+                    let deposit =
+                        normalize_coin(from_bignum(&_cert.coin().unwrap_or(BigNum::zero())));
                     certs.push(CardanoCertificate::new(
                         "Stake Registration".to_string(),
                         RewardAddress::new(network_id, &_cert.stake_credential())
@@ -320,7 +317,9 @@ impl ParsedCardanoTx {
                 if let Some(_cert) = cert.as_vote_delegation() {
                     let (variant2, variant2_label) = match _cert.drep().kind() {
                         DRepKind::AlwaysAbstain => ("Abstain".to_string(), LABEL_VOTE.to_string()),
-                        DRepKind::AlwaysNoConfidence => ("No Confidence".to_string(), LABEL_VOTE.to_string()),
+                        DRepKind::AlwaysNoConfidence => {
+                            ("No Confidence".to_string(), LABEL_VOTE.to_string())
+                        }
                         DRepKind::KeyHash => (
                             _cert
                                 .drep()
@@ -454,7 +453,9 @@ impl ParsedCardanoTx {
                 if let Some(_cert) = cert.as_stake_and_vote_delegation() {
                     let (variant2, variant2_label) = match _cert.drep().kind() {
                         DRepKind::AlwaysAbstain => ("Abstain".to_string(), LABEL_VOTE.to_string()),
-                        DRepKind::AlwaysNoConfidence => ("No Confidence".to_string(), LABEL_VOTE.to_string()),
+                        DRepKind::AlwaysNoConfidence => {
+                            ("No Confidence".to_string(), LABEL_VOTE.to_string())
+                        }
                         DRepKind::KeyHash => (
                             _cert
                                 .drep()
@@ -522,7 +523,9 @@ impl ParsedCardanoTx {
                 if let Some(_cert) = cert.as_vote_registration_and_delegation() {
                     let (variant2, variant2_label) = match _cert.drep().kind() {
                         DRepKind::AlwaysAbstain => ("Abstain".to_string(), LABEL_VOTE.to_string()),
-                        DRepKind::AlwaysNoConfidence => ("No Confidence".to_string(), LABEL_VOTE.to_string()),
+                        DRepKind::AlwaysNoConfidence => {
+                            ("No Confidence".to_string(), LABEL_VOTE.to_string())
+                        }
                         DRepKind::KeyHash => (
                             _cert
                                 .drep()

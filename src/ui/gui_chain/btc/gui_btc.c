@@ -16,9 +16,6 @@
 #include "gui_btc_home_widgets.h"
 #endif
 
-#define MAX_WALLET_CONFIG_LEN 3000
-#define MAX_VERIFY_CODE_LEN 12
-
 #define CHECK_FREE_PARSE_RESULT(result)                       \
     if (result != NULL)                                       \
     {                                                         \
@@ -33,18 +30,8 @@
         g_parseMsgResult = NULL;                                     \
     }
 
-static bool g_isMulti = false;
-static URParseResult *g_urResult = NULL;
-static URParseMultiResult *g_urMultiResult = NULL;
-
-static uint8_t *g_psbtBytes = NULL;
-static uint32_t g_psbtBytesLen = 0;
-
-static TransactionParseResult_DisplayTx *g_parseResult = NULL;
-static TransactionParseResult_DisplayBtcMsg *g_parseMsgResult = NULL;
-
-static bool IsMultiSigTx(DisplayTx *data);
-
+#define MAX_WALLET_CONFIG_LEN           3000
+#define MAX_VERIFY_CODE_LEN             12
 #ifndef BTC_ONLY
 typedef struct UtxoViewToChain {
     ViewType viewType;
@@ -60,7 +47,18 @@ static UtxoViewToChain_t g_UtxoViewToChainMap[] = {
     {DashTx, XPUB_TYPE_DASH, "m/44'/5'/0'"},
     {BchTx, XPUB_TYPE_BCH, "m/44'/145'/0'"},
 };
+#define CHECK_UR_TYPE()               (urType != Bytes && urType != KeystoneSignRequest)
+#else
+#define CHECK_UR_TYPE()               (urType != Bytes)
 #endif
+static bool g_isMulti = false;
+static URParseResult *g_urResult = NULL;
+static URParseMultiResult *g_urMultiResult = NULL;
+static uint8_t *g_psbtBytes = NULL;
+static uint32_t g_psbtBytesLen = 0;
+static TransactionParseResult_DisplayTx *g_parseResult = NULL;
+static TransactionParseResult_DisplayBtcMsg *g_parseMsgResult = NULL;
+static bool IsMultiSigTx(DisplayTx *data);
 
 void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {

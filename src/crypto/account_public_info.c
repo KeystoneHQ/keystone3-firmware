@@ -237,6 +237,7 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
     case LEDGER_BITBOX02:
         ASSERT(ledgerBitbox02MasterKey);
         return derive_bip32_ed25519_extended_pubkey(ledgerBitbox02MasterKey, path);
+#ifndef BTC_ONLY
     case RSA_KEY: {
         Rsa_primes_t *primes = FlashReadRsaPrimes();
         if (primes == NULL)
@@ -250,6 +251,7 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
     case TON_CHECKSUM:
         // should not be here.
         ASSERT(0);
+#endif
     default:
         return NULL;
     }
@@ -502,6 +504,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             ledgerBitbox02Key = ledger_bitbox02_response->data;
         }
 
+#ifndef BTC_ONLY
         if (isTon) {
             //store public key for ton wallet;
             xPubResult = ProcessKeyType(seed, len, g_chainTable[XPUB_TYPE_TON_NATIVE].cryptoKey, g_chainTable[XPUB_TYPE_TON_NATIVE].path, NULL, NULL);
@@ -521,6 +524,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 snprintf_s(ptr, 65, "%s%02x", ptr, checksum[i]);
             }
         } else {
+#endif
             for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
                 // slip39 wallet does not support ADA
                 if (isSlip39 && (g_chainTable[i].cryptoKey == BIP32_ED25519 || g_chainTable[i].cryptoKey == LEDGER_BITBOX02)) {
@@ -543,7 +547,9 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 // printf("xPubResult=%s\r\n", xPubResult->data);
                 free_simple_response_c_char(xPubResult);
             }
+#ifndef BTC_ONLY
         }
+#endif
         printf("erase user data:0x%X\n", addr);
         for (uint32_t eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
             Gd25FlashSectorErase(eraseAddr);
@@ -783,11 +789,11 @@ uint8_t SpecifiedXPubExist(const char *value, bool isTon)
             if (keyJson == NULL) {
                 break;
             }
-            if (!isTon) {
-                chainJson = cJSON_GetObjectItem(keyJson, g_chainTable[0].name);
-            } else {
-                chainJson = cJSON_GetObjectItem(keyJson, g_chainTable[PUBLIC_INFO_TON_CHECKSUM].name);
-            }
+#ifndef BTC_ONLY
+            chainJson = cJSON_GetObjectItem(keyJson, isTon ? g_chainTable[PUBLIC_INFO_TON_CHECKSUM].name : g_chainTable[0].name);
+#else
+            chainJson = cJSON_GetObjectItem(keyJson, g_chainTable[0].name);
+#endif
             if (chainJson == NULL) {
                 break;
             }

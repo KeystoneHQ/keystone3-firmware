@@ -81,7 +81,7 @@ IF "%build_copy%"=="true" (
     echo generating pillar.bin file...
     call make_ota_file.bat %CD%\build\pillar.bin
     call make_ota_file.bat %CD%\build\keystone3.bin
-    call make_ota_file.bat d:\pillar.bin
+    call make_ota_file.bat F:\pillar.bin
     popd
 ) ELSE IF "%build_release%"=="true" (
     pushd %MAKE_OAT_FILE_PATH%

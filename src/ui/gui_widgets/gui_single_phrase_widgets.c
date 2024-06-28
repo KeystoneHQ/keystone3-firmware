@@ -58,37 +58,27 @@ static bool g_isDiceRolls = false;
 static void ResetConfirmInput(void);
 static void SelectPhraseCntHandler(lv_event_t *e);
 
-static void TonUpdateMnemonicHandler(lv_event_t *e)
-{
-    GUI_DEL_OBJ(g_noticeWindow);
-    GuiModelTonUpdateMnemonic();
-}
-
-static void TonRegenrateConfirm()
-{
-    GUI_DEL_OBJ(g_noticeWindow);
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgBlueInformation, _("ton_mnemonic_regenerate"), NULL, NULL, _("Cancel"), WHITE_COLOR_OPA20, _("Regenerate"), ORANGE_COLOR);
-
-    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
-    lv_obj_add_event_cb(btn, TonUpdateMnemonicHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-
-    btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-}
-
 static void UpdatePhraseHandler(lv_event_t *e)
 {
+#ifndef BTC_ONLY
     if (g_isTon) {
         TonRegenrateConfirm();
-    } else GuiModelBip39UpdateMnemonic(g_phraseCnt);
+        return;
+    }
+#endif
+    GuiModelBip39UpdateMnemonic(g_phraseCnt);
 }
 
 static void WriteSE()
 {
+#ifndef BTC_ONLY
     if (g_isTon) {
         GuiUpdateTonWriteSeWidget(g_singlePhraseTileView.writeSe);
         GuiModelTonWriteSe();
-    } else GuiModelWriteSe();
+        return;
+    }
+#endif
+    GuiModelWriteSe();
 }
 
 static void OpenTonTutorial(lv_event_t *e)
@@ -136,11 +126,13 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenTonTutorial, NULL);
     }
     if (!g_isDiceRolls) {
+#ifndef BTC_ONLY
         if (g_isTon) {
             GuiModelTonUpdateMnemonic();
-        } else {
-            GuiModelBip39UpdateMnemonic(g_phraseCnt);
+            return;
         }
+#endif
+        GuiModelBip39UpdateMnemonic(g_phraseCnt);
     } else {
         GuiModelBip39UpdateMnemonicWithDiceRolls(g_phraseCnt);
     }
@@ -469,3 +461,23 @@ void GuiSinglePhraseRefresh(void)
     }
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
 }
+
+#ifndef BTC_ONLY
+static void TonRegenrateConfirm()
+{
+    GUI_DEL_OBJ(g_noticeWindow);
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgBlueInformation, _("ton_mnemonic_regenerate"), NULL, NULL, _("Cancel"), WHITE_COLOR_OPA20, _("Regenerate"), ORANGE_COLOR);
+
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_add_event_cb(btn, TonUpdateMnemonicHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+}
+
+static void TonUpdateMnemonicHandler(lv_event_t *e)
+{
+    GUI_DEL_OBJ(g_noticeWindow);
+    GuiModelTonUpdateMnemonic();
+}
+#endif

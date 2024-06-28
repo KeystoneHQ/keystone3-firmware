@@ -133,25 +133,6 @@ int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t e
     return ret;
 }
 
-int32_t CreateNewTonAccount(uint8_t accountIndex, const char *mnemonic, const char *password)
-{
-    ASSERT(accountIndex <= 2);
-    DestroyAccount(accountIndex);
-    CLEAR_OBJECT(g_currentAccountInfo);
-    g_currentAccountIndex = accountIndex;
-    g_currentAccountInfo.isTon = true;
-    SetWalletName(SecretCacheGetWalletName());
-    SetWalletIconIndex(SecretCacheGetWalletIconIndex());
-
-    int32_t ret = SaveNewTonMnemonic(accountIndex, mnemonic, password);
-    CHECK_ERRCODE_RETURN_INT(ret);
-
-    ret = SaveCurrentAccountInfo();
-    CHECK_ERRCODE_RETURN_INT(ret);
-    ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
-    CHECK_ERRCODE_RETURN_INT(ret);
-    return ret;
-}
 
 int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const uint8_t *entropy, uint8_t entropyLen, const char *password, uint16_t id, uint8_t ie)
 {
@@ -549,3 +530,25 @@ void AccountsDataCheck(void)
         }
     }
 }
+
+#ifndef BTC_ONLY
+int32_t CreateNewTonAccount(uint8_t accountIndex, const char *mnemonic, const char *password)
+{
+    ASSERT(accountIndex <= 2);
+    DestroyAccount(accountIndex);
+    CLEAR_OBJECT(g_currentAccountInfo);
+    g_currentAccountIndex = accountIndex;
+    g_currentAccountInfo.isTon = true;
+    SetWalletName(SecretCacheGetWalletName());
+    SetWalletIconIndex(SecretCacheGetWalletIconIndex());
+
+    int32_t ret = SaveNewTonMnemonic(accountIndex, mnemonic, password);
+    CHECK_ERRCODE_RETURN_INT(ret);
+
+    ret = SaveCurrentAccountInfo();
+    CHECK_ERRCODE_RETURN_INT(ret);
+    ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
+    CHECK_ERRCODE_RETURN_INT(ret);
+    return ret;
+}
+#endif

@@ -203,7 +203,6 @@ static uint32_t g_chainAddressIndex[3] = {0};
 static uint32_t g_currentSelectedPathIndex[3] = {0};
 static lv_obj_t *g_coinListCont = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
-
 #endif
 
 static ConnectWalletWidget_t g_connectWalletTileView;
@@ -335,6 +334,14 @@ static void GuiInitWalletListArray()
     }
 }
 
+
+static void GuiInitWalletListArray() 
+{
+    SetWalletListEnable(true);
+
+    ConfigureWalletEnabling();
+}
+
 #ifndef BTC_ONLY
 static bool IsEVMChain(int walletIndex)
 {
@@ -418,6 +425,14 @@ static void OpenQRCodeHandler(lv_event_t *e)
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
 }
 
+
+#ifndef BTC_ONLY
+void GuiConnectWalletPasswordErrorCount(void *param)
+{
+    PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
+    GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
+}
+
 void GuiConnectShowRsaSetupasswordHintbox(void)
 {
     g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
@@ -425,8 +440,6 @@ void GuiConnectShowRsaSetupasswordHintbox(void)
     static uint16_t sig = SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD;
     SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
-
-#ifndef BTC_ONLY
 
 static void ReturnShowQRHandler(lv_event_t *e)
 {
@@ -1250,12 +1263,14 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         return;
     }
     if (func) {
+#ifndef BTC_ONLY
         bool skipGenerateArweaveKey = IsArweaveSetupComplete();
         if (index == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey) {
             GuiAnimatingQRCodeInitWithLoadingParams(g_connectWalletTileView.qrCode, func, true, _("InitializingRsaTitle"), _("FindingRsaPrimes"));
-        } else {
-            GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
+            return;
         }
+#endif
+        GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
     }
 }
 
@@ -1751,9 +1766,11 @@ static void ChangeDerivationPathHandler(lv_event_t *e)
 static void OpenMoreHandler(lv_event_t *e)
 {
     int hintboxHeight = 132;
+    lv_obj_t *btn = NULL;
     WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
 #ifndef BTC_ONLY
-    if (IsEVMChain(*wallet) || IsSOL(*wallet)) {
+    bool isSpeciaWallet = IsEVMChain(*wallet) || IsSOL(*wallet);
+    if (isSpeciaWallet) {
         hintboxHeight = 228;
     }
 #endif
@@ -1765,10 +1782,9 @@ static void OpenMoreHandler(lv_event_t *e)
                                           OpenTutorialHandler, wallet, true);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 #ifndef BTC_ONLY
-    if (IsEVMChain(*wallet) || IsSOL(*wallet)) {
-        btn = GuiCreateSelectButton(g_openMoreHintBox, _("derivation_path_change"),
-                                    &imgPath, ChangeDerivationPathHandler, wallet,
-                                    true);
+    if (isSpeciaWallet) {
+        hintboxHeight = 228;
+        btn = GuiCreateSelectButton(g_openMoreHintBox, _("derivation_path_change"), &imgPath, ChangeDerivationPathHandler, wallet, true);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -120);
     }
 #endif
@@ -1794,11 +1810,6 @@ int8_t GuiConnectWalletNextTile(void)
     return SUCCESS_CODE;
 }
 
-void GuiConnectWalletPasswordErrorCount(void *param)
-{
-    PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-    GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
-}
 
 int8_t GuiConnectWalletPrevTile(void)
 {

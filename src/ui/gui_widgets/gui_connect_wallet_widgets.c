@@ -71,7 +71,7 @@ WalletListItem_t g_walletListArray[] = {
 };
 
 typedef struct ConnectWalletWidget {
-    uint8_t currentTile;
+    uint32_t currentTile;
     lv_obj_t *cont;
     lv_obj_t *tileView;
     WALLET_LIST_INDEX_ENUM walletIndex;
@@ -170,8 +170,8 @@ const static ChangeDerivationItem_t g_solChangeDerivationList[] = {
     {"Sub-account Path", "#8E8E8E m/44'/501'/##F5870A X##8E8E8E '/0'#"},
 };
 
-static uint16_t g_chainAddressIndex[3] = {0};
-static uint8_t g_currentSelectedPathIndex[3] = {0};
+static uint32_t g_chainAddressIndex[3] = {0};
+static uint32_t g_currentSelectedPathIndex[3] = {0};
 static lv_obj_t *g_coinListCont = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 
@@ -204,7 +204,7 @@ static void AddFewchaCoins(void);
 static void AddKeplrCoins(void);
 static void AddSolflareCoins(void);
 static void ShowEgAddressCont(lv_obj_t *egCont);
-static uint8_t GetCurrentSelectedIndex();
+static uint32_t GetCurrentSelectedIndex();
 static bool HasSelectAddressWidget();
 #endif
 
@@ -1340,7 +1340,7 @@ static void SetCurrentSelectedIndex(uint8_t index)
     g_currentSelectedPathIndex[GetCurrentAccountIndex()] = index;
 }
 
-static uint8_t GetCurrentSelectedIndex()
+static uint32_t GetCurrentSelectedIndex()
 {
     return g_currentSelectedPathIndex[GetCurrentAccountIndex()];
 }

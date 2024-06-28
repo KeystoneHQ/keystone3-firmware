@@ -19,10 +19,6 @@
 #include "version.h"
 #include "lv_i18n_api.h"
 
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
-#endif
-
 #define VERSION_MAX_LENGTH      32
 
 #define KEY_VERSION                     "version"

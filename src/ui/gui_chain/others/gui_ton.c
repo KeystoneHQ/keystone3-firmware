@@ -221,9 +221,8 @@ static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTrans
     return container;
 }
 
-static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
-{
-    lv_obj_t *container = createContentContainer(parent, 408, 62);
+static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView) {
+    lv_obj_t *container = createContentContainer(parent, 408, 92);
     lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
     lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Comment"));
@@ -238,8 +237,13 @@ static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonTransacti
 
     uint16_t height = lv_obj_get_height(label);
 
-    lv_obj_set_height(container, height + 62);
+    lv_obj_set_height(container, height + 92);
     lv_obj_update_layout(container);
+
+    label = GuiCreateIllustrateLabel(container, _("ton_comment_hint"));
+    lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 24, -16);
+    lv_obj_set_width(label, 360);
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
 
     return container;
 }

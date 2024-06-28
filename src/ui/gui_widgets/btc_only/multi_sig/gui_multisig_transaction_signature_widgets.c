@@ -7,10 +7,8 @@
 #include "sdcard_manager.h"
 
 #ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
 #include "simulator_model.h"
 #else
-#include "safe_str_lib.h"
 #include "user_fatfs.h"
 #include "drv_rtc.h"
 #include "drv_sdcard.h"

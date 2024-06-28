@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <string.h>
 #include "gui_views.h"
 #include "gui_setup_widgets.h"
 #include "gui_qr_code.h"
@@ -10,14 +12,6 @@
 #include "gui_lock_device_widgets.h"
 #include "gui_page.h"
 #include "user_memory.h"
-#include <stdio.h>
-#include <string.h>
-
-#ifndef COMPILE_SIMULATOR
-#include "safe_str_lib.h"
-#else
-#include "simulator_mock_define.h"
-#endif
 
 #define IMPORT_WALLET_NOTICE                                            false
 #define CREATE_WALLET_NOTICE                                            true

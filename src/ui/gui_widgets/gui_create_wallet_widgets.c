@@ -14,10 +14,6 @@
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
 
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
-#endif
-
 typedef enum {
     CREATE_WALLET_SETPIN = 0,
     CREATE_WALLET_REPEATPIN,

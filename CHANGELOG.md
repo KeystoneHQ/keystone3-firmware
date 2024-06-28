@@ -1,3 +1,15 @@
+## 1.5.2(2024-06-25)
+
+### Improvements
+
+1. Improved compatibility with new transaction formats on the SOL chain
+2. Refined Spanish text details
+
+### Bug Fixes
+
+1. Fixed occasional black screen issue
+
+
 
 ## 1.5.0(2024-06-18)
 

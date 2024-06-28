@@ -9,7 +9,7 @@ use cardano_serialization_lib::address::{
     self, Address, BaseAddress, EnterpriseAddress, RewardAddress,
 };
 
-use cardano_serialization_lib::protocol_types::governance::DRepKind;
+use cardano_serialization_lib::protocol_types::governance::{Anchor, DRepKind};
 use cardano_serialization_lib::utils::{from_bignum, BigNum};
 use cardano_serialization_lib::{
     protocol_types::fixed_tx::FixedTransaction as Transaction, Certificate, CertificateKind,
@@ -82,6 +82,7 @@ const LABEL_POOL: &str = "Pool";
 const LABEL_DEPOSIT: &str = "Deposit";
 const LABEL_DREP: &str = "DRep";
 const LABEL_VOTE: &str = "Vote";
+const LABEL_ANCHOR_DATA_HASH: &str = "Anchor Data Hash";
 
 impl_public_struct!(CardanoWithdrawal {
     address: String,
@@ -439,15 +440,19 @@ impl ParsedCardanoTx {
                     ));
                 }
                 if let Some(_cert) = cert.as_drep_update() {
+                    let anchor_data_hash = match _cert.anchor() {
+                        Some(anchor) => Some(anchor.anchor_data_hash().to_string()),
+                        None => None,
+                    };
                     certs.push(CardanoCertificate::new(
                         "DrepUpdate".to_string(),
                         RewardAddress::new(network_id, &_cert.voting_credential())
                             .to_address()
                             .to_bech32(None)
                             .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
-                        None,
+                        anchor_data_hash,
                         LABEL_ADDRESS.to_string(),
-                        None,
+                        Some(LABEL_ANCHOR_DATA_HASH.to_string()),
                     ));
                 }
                 if let Some(_cert) = cert.as_stake_and_vote_delegation() {

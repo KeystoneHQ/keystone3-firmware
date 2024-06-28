@@ -51,9 +51,8 @@ void GuiImportPhraseWriteSe(bool en, int32_t errCode)
 
 static void ResetClearImportHandler(lv_event_t * e)
 {
-    GuiUpdateMnemonicKeyBoard(g_importMkb, "dose door beyond wheel level pupil budget bachelor move inmate give caution coral blush virtual gadget moon snow pact kitchen beyond avoid lounge special", false);
-    // ClearMnemonicKeyboard(g_importMkb, &g_importMkb->currentId);
-    // GuiClearKeyBoard(g_importPhraseKb);
+    ClearMnemonicKeyboard(g_importMkb, &g_importMkb->currentId);
+    GuiClearKeyBoard(g_importPhraseKb);
 }
 
 static void ImportPhraseWordsHandler(lv_event_t* e)

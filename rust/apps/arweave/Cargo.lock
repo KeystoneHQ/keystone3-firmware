@@ -45,6 +45,7 @@ dependencies = [
  "cbc",
  "cipher",
  "keystore",
+ "lazy_static",
  "rand_chacha",
  "rust_tools",
  "serde",

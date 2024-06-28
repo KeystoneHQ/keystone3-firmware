@@ -7,6 +7,7 @@ use app_utils::impl_public_struct;
 use crate::{
     data_item::{DataItem, Tag},
     errors::ArweaveError,
+    tokens::find_token,
 };
 
 impl_public_struct!(AOTransferTransaction {
@@ -50,6 +51,20 @@ impl TryFrom<DataItem> for AOTransferTransaction {
                     None => break,
                 }
             }
+
+            let token_info = find_token(&token_id);
+            if let Some(token_info) = token_info {
+                if let Ok(amount) = token_info.convert_quantity(&quantity) {
+                    return Ok(Self {
+                        from,
+                        to,
+                        quantity: amount,
+                        token_id: token_info.get_name(),
+                        other_info: tags,
+                    });
+                }
+            }
+
             Ok(Self {
                 from,
                 to,

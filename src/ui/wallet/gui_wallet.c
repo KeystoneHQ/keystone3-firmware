@@ -357,7 +357,7 @@ UREncodeResult *GuiGetADADataByIndex(uint16_t index)
     keys.size = 1;
     return generate_key_derivation_ur(mfp, 4, &keys);
 }
-UREncodeResult *GuiGetKeplrDataByIndex(uint16_t index)
+UREncodeResult *GuiGetKeplrDataByIndex(uint32_t index)
 {
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);

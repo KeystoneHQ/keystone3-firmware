@@ -49,6 +49,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_SAFE, &walletListSafe, true},
     {WALLET_LIST_BLOCK_WALLET, &walletListBlockWallet, true},
     {WALLET_LIST_XRP_TOOLKIT, &walletListXRPToolkit, true},
+    {WALLET_LIST_THORWALLET, &walletListThorWallet, true},
     {WALLET_LIST_PETRA, &walletListPetra, true},
     {WALLET_LIST_KEPLR, &walletListKeplr, true},
     {WALLET_LIST_ARCONNECT, &walletListArConnect, true},
@@ -149,6 +150,12 @@ static const lv_img_dsc_t *g_tonKeeperCoinArray[1] = {
     &coinTon,
 };
 
+static const lv_img_dsc_t *g_ThorWalletCoinArray[3] = {
+    &coinBtc,
+    &coinEth,
+    &coinRune,
+};
+
 static CoinState_t g_defaultFewchaState[FEWCHA_COINS_BUTT] = {
     {APT, true},
     {SUI, false},
@@ -204,6 +211,7 @@ static void AddBlueWalletCoins(void);
 static void AddFewchaCoins(void);
 static void AddKeplrCoins(void);
 static void AddSolflareCoins(void);
+static void AddThorWalletCoins(void);
 static void ShowEgAddressCont(lv_obj_t *egCont);
 static uint32_t GetCurrentSelectedIndex();
 static bool HasSelectAddressWidget();
@@ -825,6 +833,20 @@ static void AddTonCoins(void)
     }
 }
 
+static void AddThorWalletCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0; i < 3; i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_ThorWalletCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+}
+
+
 static void AddChainAddress(void)
 {
     if (lv_obj_get_child_cnt(g_bottomCont) > 0) {
@@ -1081,6 +1103,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetXrpToolkitData;
         AddChainAddress();
         break;
+    case WALLET_LIST_THORWALLET:
+        func = GuiGetThorWalletBtcData;
+        AddThorWalletCoins();
+        break;
     case WALLET_LIST_TONKEEPER:
         func = GuiGetTonData;
         AddTonCoins();
@@ -1102,6 +1128,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_UNISAT:
         func = GuiGetSparrowWalletBtcData;
         break;
+
 #endif
     default:
         return;

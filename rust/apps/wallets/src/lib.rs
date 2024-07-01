@@ -27,7 +27,7 @@ pub mod sui;
 pub mod tonkeeper;
 mod utils;
 pub mod xrp_toolkit;
-
+pub mod thor_wallet;
 //TODO: get these value from device
 pub const DEVICE_TYPE: &str = "Keystone 3 Pro";
 pub const DEVICE_VERSION: &str = "1.1.0";

@@ -28,5 +28,6 @@ UREncodeResult *GuiGetBackpackData(void);
 UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index);
 UREncodeResult *GuiGetADADataByIndex(uint16_t index);
 UREncodeResult *GuiGetImTokenData(void);
+UREncodeResult *GuiGetThorWalletBtcData(void);
 #endif
 #endif

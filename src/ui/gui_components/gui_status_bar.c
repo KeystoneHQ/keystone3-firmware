@@ -85,7 +85,8 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_GRAV, "", &coinGrav},     {CHAIN_IXO, "", &coinIxo},
     {CHAIN_NGM, "", &coinNgm},       {CHAIN_IOV, "", &coinIov},
     {CHAIN_UMEE, "", &coinUmee},     {CHAIN_QCK, "", &coinQck},
-    {CHAIN_TGD, "", &coinTgd},       {CHAIN_TON, "", &coinTon},
+    {CHAIN_TGD, "", &coinTgd},       {CHAIN_RUNE, "", &coinRune},
+    {CHAIN_TON, "", &coinTon},
 #endif
 };
 
@@ -114,6 +115,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_FEWCHA, "Fewcha", &walletFewcha},
     {WALLET_LIST_PETRA, "Petra", &walletPetra},
     {WALLET_LIST_XRP_TOOLKIT, "XRP Toolkit", &walletXRPToolkit},
+    {WALLET_LIST_THORWALLET, "THORWallet", &walletThorWallet},
     {WALLET_LIST_TONKEEPER, "Tonkeeper", &walletTonkeeper},
 #else
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},

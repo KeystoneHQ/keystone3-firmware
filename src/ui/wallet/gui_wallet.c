@@ -610,3 +610,37 @@ UREncodeResult *GuiGetBackpackData(void)
     return g_urEncode;
 }
 #endif
+
+
+UREncodeResult *GuiGetThorWalletBtcData(void)
+{
+
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys =
+        SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    ExtendedPublicKey keys[5];
+    public_keys->data = keys;
+    public_keys->size = 5;
+    keys[0].path = "m/84'/0'/0'";
+    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+    keys[1].path = "m/49'/0'/0'";
+    keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+    keys[2].path = "m/44'/0'/0'";
+    keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+    keys[3].path = "m/44'/931'/0'";
+    keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_THOR);
+    keys[4].path = "m/44'/60'/0'";
+    keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
+
+    char serialNumber[256];
+    GetSerialNumber(serialNumber);
+    char firmwareVersion[12];
+    GetSoftWareVersionNumber(firmwareVersion);
+    UREncodeResult *urencode =
+        get_connect_thor_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys,
+                                   "Keystone 3 Pro", firmwareVersion);
+    CHECK_CHAIN_PRINT(urencode);
+    return urencode;
+}

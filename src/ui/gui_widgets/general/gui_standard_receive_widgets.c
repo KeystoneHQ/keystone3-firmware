@@ -167,6 +167,7 @@ static uint32_t g_iovChainSelectIndex[3] = {0};
 static uint32_t g_umeeChainSelectIndex[3] = {0};
 static uint32_t g_qckChainSelectIndex[3] = {0};
 static uint32_t g_tgdChainSelectIndex[3] = {0};
+static uint32_t g_thorChainSelectIndex[3] = {0};
 
 static PageWidget_t *g_pageWidget;
 static uint32_t g_selectedIndex[3] = {0};
@@ -986,6 +987,7 @@ void GuiResetCurrentStandardAddressIndex(uint8_t index)
     g_umeeChainSelectIndex[index] = 0;
     g_qckChainSelectIndex[index] = 0;
     g_tgdChainSelectIndex[index] = 0;
+    g_thorChainSelectIndex[index] = 0;
 }
 
 void GuiResetAllStandardAddressIndex(void)
@@ -1027,6 +1029,7 @@ void GuiResetAllStandardAddressIndex(void)
     memset_s(g_umeeChainSelectIndex, sizeof(g_umeeChainSelectIndex), 0, sizeof(g_umeeChainSelectIndex));
     memset_s(g_qckChainSelectIndex, sizeof(g_qckChainSelectIndex), 0, sizeof(g_qckChainSelectIndex));
     memset_s(g_tgdChainSelectIndex, sizeof(g_tgdChainSelectIndex), 0, sizeof(g_tgdChainSelectIndex));
+    memset_s(g_thorChainSelectIndex, sizeof(g_thorChainSelectIndex), 0, sizeof(g_thorChainSelectIndex));
 }
 
 static uint32_t* GetCosmosChainCurrentSelectIndex()
@@ -1128,6 +1131,10 @@ static uint32_t* GetCosmosChainCurrentSelectIndex()
     case HOME_WALLET_CARD_TGD:
         return &g_tgdChainSelectIndex[GetCurrentAccountIndex()];
         break;
+    case HOME_WALLET_CARD_RUNE:
+        return &g_thorChainSelectIndex[GetCurrentAccountIndex()];
+        break;
+
     default:
         return NULL;
     }

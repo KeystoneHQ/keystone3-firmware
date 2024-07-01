@@ -243,6 +243,16 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_XRP_TOOLKIT].items[0].qrTitle = _("connect_xrp_toolkit_title");
     g_tutorials[WALLET_LIST_XRP_TOOLKIT].items[0].qrUrl = _("connect_xrp_toolkit_link");
 
+    //WALLET_LIST_THORWALLET
+    g_tutorials[WALLET_LIST_THORWALLET].len = 1;
+    g_tutorials[WALLET_LIST_THORWALLET].desc = _("connect_unisat_desc");
+    g_tutorials[WALLET_LIST_THORWALLET].items[0].walletName = _("connect_unisat_title");
+    g_tutorials[WALLET_LIST_THORWALLET].items[0].url = _("connect_unisat_link");
+    g_tutorials[WALLET_LIST_THORWALLET].items[0].qrTitle = _("connect_unisat_qr_title");
+    g_tutorials[WALLET_LIST_THORWALLET].items[0].qrUrl = _("connect_unisat_qr_link");
+
+
+
     //WALLET_LIST_TONKEEPER
     g_tutorials[WALLET_LIST_TONKEEPER].len = 1;
     g_tutorials[WALLET_LIST_TONKEEPER].desc = _("connect_wallet_desc");

@@ -32,7 +32,9 @@ cargo install bindgen-cli
 cargo install cbindgen
 
 # Clone the repository
-git clone https://github.com/KeystoneHQ/keystone3-firmware --recursive
+git clone https://github.com/KeystoneHQ/keystone3-firmware
+cd keystone3-firmware
+git -c submodule.keystone3-firmware-release.update=none submodule update --init --recursive
 ```
 
 #### Docker

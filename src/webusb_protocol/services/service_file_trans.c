@@ -66,9 +66,11 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
 static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *GetFileContent(const FrameHead_t *head, uint32_t offset, uint32_t *outLen);
 static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
+static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *ServiceNftFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *ServiceNftFileTransContent(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
+
 
 static bool g_isReceivingFile = false;
 static bool g_isNftFile = false;

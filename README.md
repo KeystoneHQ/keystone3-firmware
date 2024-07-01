@@ -85,6 +85,10 @@ python3 build.py
 python build.py -t btc_only
 ```
 
+## Simulator
+
+Please follow this [Doc](docs/SIMULATOR.md).
+
 ## Contributing
 
 We welcome contributions! Here's how you can contribute:

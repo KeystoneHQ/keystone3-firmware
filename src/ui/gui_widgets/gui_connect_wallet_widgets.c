@@ -154,6 +154,8 @@ static CoinState_t g_defaultFewchaState[FEWCHA_COINS_BUTT] = {
     {SUI, false},
 };
 
+static lv_obj_t *g_noticeWindow = NULL;
+
 typedef struct {
     const char *accountType;
     const char *path;
@@ -317,6 +319,26 @@ static bool IsSOL(int walletIndex)
 }
 #endif
 
+static void GuiARAddressCheckConfirmHandler(lv_event_t *event) {
+    GUI_DEL_OBJ(g_noticeWindow);
+    GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);
+}
+
+static void GuiOpenARAddressNoticeWindow() {
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgRedEye, _("ar_address_check"), _("ar_address_check_desc"), NULL, _("Not Now"), WHITE_COLOR_OPA20, _("Understand"), ORANGE_COLOR);
+    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_set_width(btn, 192);
+    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
+    lv_obj_add_event_cb(btn, GuiARAddressCheckConfirmHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
+    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
+}
+
 static void OpenQRCodeHandler(lv_event_t *e)
 {
     WalletListItem_t *wallet = lv_event_get_user_data(e);
@@ -335,7 +357,7 @@ static void OpenQRCodeHandler(lv_event_t *e)
     }
     bool skipGenerateArweaveKey = IsArweaveSetupComplete();
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey) {
-        GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_CONNECT_CONFIRM);
+        GuiOpenARAddressNoticeWindow();
         return;
     }
 #endif

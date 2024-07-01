@@ -864,3 +864,5 @@ Wallet Profile,20,wallet_profile_mid_btn,Wallet Profile,Профиль коше�
 ,20,tutorial_ton_mnemonic_url,https://keyst.one/t/3rd/ton,https://keyst.one/t/3rd/ton,https://keyst.one/t/3rd/ton,https://keyst.one/t/3rd/ton,https://keyst.one/t/3rd/ton,https://keyst.one/t/3rd/ton,https://keyst.one/t/3rd/ton,
 ,20,ton_sign_proof_title,Confirm Connect,Подтвердить подключение,연결 확인,确认连接,Confirmar conexión,Verbindung bestätigen,接続確認,
 ,20,ton_comment_hint,"Comment is not transaction data. Please verify carefully.",,,,,,,
+,24,ar_address_check,"Address Check Needed",,,,,,,
+,20,ar_address_check_desc,"Different wallets may generate AR addresses differently, resulting in different addresses from the same phrase. This is normal. After connecting to the software wallet, please compare the address to ensure it matches the hardware wallet.",,,,,,,

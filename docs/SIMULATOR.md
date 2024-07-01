@@ -55,7 +55,7 @@ In `src/ui/gui_analyze/gui_analyze.c` you will see code like this:
 
 This is a transaction layout JSON, the code says if you are not compiling simulator, it will read the hardcoded JSON text. Or it will read the file at `PC_SIMULATOR_PATH "/page_btc.json"`, the `PC_SIMULATOR_PATH` actually points to the folder `ui_simulator/assets`, so this file is actually at `ui_simulator/assets/page_btc.json`.
 
-You will find that the file is not exists, so what you need to parse this JSON text by your own then create a `page_btc.json` in that folder. You can use the script `ui_simulator/tools/read_then_write_json.mjs` to do the stuff but you need to change the code inside because the parameters are hardcoded now. 
+You will find that the file is not exists, so you need to parse this JSON text by your own then create a `page_btc.json` in that folder. You can use the script `ui_simulator/tools/read_then_write_json.mjs` to do the stuff but you need to change the code inside because the parameters are hardcoded now. 
 > cd ui_simulator & node tools/read_then_write_json.mjs
 
 ### Reading QR code

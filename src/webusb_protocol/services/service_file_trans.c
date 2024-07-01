@@ -80,6 +80,7 @@ const ProtocolServiceCallbackFunc_t g_nftFileTransInfoServiceFunc[] = {
 };
 #endif
 
+
 static bool g_isReceivingFile = false;
 
 bool GetIsReceivingFile()

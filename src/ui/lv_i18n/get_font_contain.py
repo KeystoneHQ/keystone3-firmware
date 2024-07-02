@@ -5,6 +5,7 @@ import argparse
 import pandas as pd
 import re
 import os
+
 from pathlib import Path
 
 g_font_size = 0
@@ -69,7 +70,12 @@ def parse_command_line(command_line="cmd_tool --bpp 8 --size 12 --font Arial.ttf
             'de': 'NotoSans-Regular.ttf',
             'ja': 'NotoSansJP-Regular.ttf',
         }
-        unique_characters = '\"\"\"' + unique_characters + " " +'\"'
+        if os.environ.get('SHELL') == '/bin/zsh':
+            unique_characters = '\"' + '\\\"' + unique_characters + " " + "\""
+            unique_characters = unique_characters.replace("'","\\\'")
+            unique_characters = unique_characters.replace("`","\\`")
+        else:
+            unique_characters = '\"\"\"' + unique_characters + " " +'\"'
         build_command = build_lv_font_conv_command(bpp, font_size, font_mapping[language], unique_characters, "../gui_assets/font/" + language + "/" + label)
         cmd_result = os.system(build_command)
         if cmd_result != 0:

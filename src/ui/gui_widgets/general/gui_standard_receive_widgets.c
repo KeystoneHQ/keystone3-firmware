@@ -454,9 +454,12 @@ void GuiStandardReceiveRefresh(void)
     case RECEIVE_TILE_SWITCH_ACCOUNT:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SKIP, JumpToAccountHandler, NULL);
-        // todo only cosmos chain show the jump to account button
-//        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        if (IsCosmosChain(g_chainCard)) {
+           // only cosmos chain show the jump to account button
+           SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SKIP, JumpToAccountHandler, NULL);
+        }else {
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        }
         g_tmpIndex = GetCurrentSelectIndex();
         g_showIndex = g_tmpIndex / 5 * 5;
         if (g_showIndex < 5) {

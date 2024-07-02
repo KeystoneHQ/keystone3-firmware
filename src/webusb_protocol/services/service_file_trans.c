@@ -107,7 +107,7 @@ const ProtocolServiceCallbackFunc_t g_fileTransInfoServiceFunc[] = {
     ServiceFileTransInfo,                       //2.1
     ServiceFileTransContent,                    //2.2
     ServiceFileTransComplete,                   //2.3
-    ServiceFileTransGetPubkey,                  //2.4
+    // ServiceFileTransGetPubkey,                  //2.4
 };
 
 static int ValidateAndSetFileName(Tlv_t *tlvArray, FileTransInfo_t *fileTransInfo)

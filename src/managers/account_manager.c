@@ -36,7 +36,6 @@ static PublicInfo_t g_publicInfo = {0};
 /// @return err code.
 static int32_t ReadCurrentAccountInfo(void)
 {
-    printf("current task = %s\r\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     uint8_t accountIndex, param[32];
     AccountInfo_t *pAccountInfo = (AccountInfo_t *)param;
     int32_t ret;
@@ -233,7 +232,6 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
         } else {
             printf("passphrase not exist, info switch\r\n");
             ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
-            printf("g_otpProtect = %d\r\n", g_otpProtect);
         }
     } else {
         g_publicInfo.loginPasswordErrorCount++;
@@ -280,7 +278,6 @@ int32_t GetExistAccountNum(uint8_t *accountNum)
 #endif
 
     MpuSetOtpProtection(false);
-    printf("pcTaskGetName(xTaskGetCurrentTaskHandle())) = %s.\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     for (uint8_t i = 0; i < 3; i++) {
         ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
         CHECK_ERRCODE_BREAK("read iv", ret);

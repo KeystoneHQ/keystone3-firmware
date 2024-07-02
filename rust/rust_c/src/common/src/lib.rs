@@ -236,6 +236,21 @@ pub extern "C" fn k1_verify_signature(
 }
 
 #[no_mangle]
+pub extern "C" fn ecdh_generate_sharekey(
+    privkey : PtrBytes,
+    privkey_len : u32,
+    pubkey: PtrBytes,
+    pubkey_len: u32,
+) {
+    extern crate std;
+    use std::println;
+    let private_key = unsafe { slice::from_raw_parts(privkey, privkey_len as usize) };
+    let public_key = unsafe { slice::from_raw_parts(pubkey, pubkey_len as usize) };
+    let share_key = keystore::algorithms::secp256k1::get_share_key(private_key, public_key);
+    println!("{:?}", share_key);
+}
+
+#[no_mangle]
 pub extern "C" fn pbkdf2_rust(
     password: PtrBytes,
     salt: PtrBytes,

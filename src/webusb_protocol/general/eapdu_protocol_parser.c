@@ -57,7 +57,7 @@ void SendEApduResponse(EAPDUResponsePayload_t *payload)
     uint32_t offset = 0;
 
     while (payload->dataLen > 0) {
-        uint16_t tempBuffer[MAX_EAPDU_RESPONSE_DATA_SIZE] = {0};
+        uint8_t buffer[MAX_EAPDU_RESPONSE_DATA_SIZE] = {0};
         uint16_t packetDataSize = payload->dataLen > MAX_EAPDU_RESPONSE_DATA_SIZE ? MAX_EAPDU_RESPONSE_DATA_SIZE : payload->dataLen;
 
         packet[OFFSET_CLA] = payload->cla;
@@ -65,7 +65,7 @@ void SendEApduResponse(EAPDUResponsePayload_t *payload)
         insert_16bit_value(packet, OFFSET_P1, totalPackets);
         insert_16bit_value(packet, OFFSET_P2, packetIndex);
         insert_16bit_value(packet, OFFSET_LC, payload->requestID);
-        memcpy_s(tempBuffer, MAX_EAPDU_RESPONSE_DATA_SIZE, payload->data + offset, packetDataSize);
+        memcpy_s(buffer, MAX_EAPDU_RESPONSE_DATA_SIZE, payload->data + offset, packetDataSize);
         // int encryptLen = PadBuffer(tempBuffer, packetDataSize);
         // DataEncrypt(tempBuffer, encryptLen);
         memcpy_s(packet + OFFSET_CDATA, MAX_PACKETS_LENGTH - OFFSET_CDATA, payload->data + offset, packetDataSize);

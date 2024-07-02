@@ -72,7 +72,6 @@ def parse_command_line(command_line="cmd_tool --bpp 8 --size 12 --font Arial.ttf
         }
         if os.environ.get('SHELL') == '/bin/zsh':
             unique_characters = '\"' + '\\\"' + unique_characters + " " + "\""
-            unique_characters = unique_characters.replace("'","\\\'")
             unique_characters = unique_characters.replace("`","\\`")
         else:
             unique_characters = '\"\"\"' + unique_characters + " " +'\"'

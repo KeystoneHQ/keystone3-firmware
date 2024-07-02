@@ -1000,12 +1000,12 @@ void KeyStoreTest(int argc, char *argv[])
         } else {
             printf("fp aes does not exist\r\n");
         }
-        if (FpResetKeyExist()) {
-            GetFpResetKey(key);
-            PrintArray("fp reset key", key, 16);
-        } else {
-            printf("fp reset does not exist\r\n");
-        }
+        // if (FpResetKeyExist()) {
+        //     GetFpResetKey(key);
+        //     PrintArray("fp reset key", key, 16);
+        // } else {
+        //     printf("fp reset does not exist\r\n");
+        // }
         for (index = 0; index < 10; index++) {
             GetFpEncryptedPassword(index, key);
             snprintf_s(tempStr, BUFFER_SIZE_32, "encrypted password %d", index);

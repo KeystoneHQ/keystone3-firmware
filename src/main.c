@@ -47,6 +47,7 @@
 #include "account_manager.h"
 #include "version.h"
 #include "hardware_version.h"
+#include "librust_c.h"
 
 int main(void)
 {

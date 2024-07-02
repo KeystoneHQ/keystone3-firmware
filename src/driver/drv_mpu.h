@@ -95,7 +95,7 @@ void MpuSetProtection(uint32_t BaseAddress, uint32_t RegionSize, uint32_t Region
 
 extern bool g_otpProtect;
 
-#if 1
+#if 0
 #define MpuSetOtpProtection(x)     {uint8_t accessPermission = x ? MPU_REGION_NO_ACCESS : MPU_REGION_FULL_ACCESS; g_otpProtect = x;\
     MpuSetProtection(OTP_ADDR_BASE,MPU_REGION_SIZE_1KB,MPU_REGION_NUMBER1,MPU_INSTRUCTION_ACCESS_DISABLE, accessPermission,MPU_ACCESS_SHAREABLE,MPU_ACCESS_CACHEABLE,MPU_ACCESS_BUFFERABLE); \
     printf("%s %d.\n", __func__, __LINE__);}

@@ -15,6 +15,9 @@ Please follow Rust official site: https://www.rust-lang.org/tools/install
 We have fixed the rust version in most of our rust libs so please run this command when you finish rust setup: 
 > rustup install nightly-2023-06-26
 
+`cbindgen` is also required to build essential C header files for Rust libs, so run the following after rust setup: 
+> cargo install cbindgen
+
 ### SDL2
 We use SDL2(https://www.libsdl.org/) to create our simulator runnable, so you need to setup SDL2 to run the simulator compilation.
 

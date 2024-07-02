@@ -4,7 +4,7 @@ use alloc::string::{String, ToString};
 
 use bitcoin::secp256k1::{ecdsa, SecretKey};
 use core::str::FromStr;
-use secp256k1::PublicKey;
+use secp256k1::{PublicKey, ecdh::SharedSecret};
 
 use third_party::bitcoin::bip32::{DerivationPath, Fingerprint, Xpriv, Xpub};
 use third_party::bitcoin::Network;
@@ -102,6 +102,19 @@ pub fn verify_signature(
     sig.normalize_s();
     let result = secp.verify_ecdsa(&message, &sig, &public_key).is_ok();
     Ok(result)
+}
+
+pub fn get_share_key(private_key: &[u8], pubkey: &[u8]) -> Result<[u8; 32]> {
+    extern crate std;
+    use std::println;
+    let mut share_key = [0u8; 32];
+    let sk = SecretKey::from_slice(private_key)
+        .map_err(|e| KeystoreError::InvalidDataError(e.to_string()))?;
+    let pk = PublicKey::from_slice(pubkey)
+        .map_err(|e| KeystoreError::InvalidDataError(e.to_string()))?;
+    let shared_secret1 = SharedSecret::new(&pk, &sk);
+    share_key.copy_from_slice(&shared_secret1.as_ref());
+    Ok(share_key)
 }
 
 #[cfg(test)]

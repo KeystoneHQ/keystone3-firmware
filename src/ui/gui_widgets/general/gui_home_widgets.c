@@ -849,6 +849,7 @@ static void AddFlagCountDownTimerHandler(lv_timer_t *timer)
 void GuiHomeRestart(void)
 {
     GUI_DEL_OBJ(g_manageCont)
+    GUI_DEL_OBJ(g_noticeWindow)
     GuiHomeRefresh();
 }
 

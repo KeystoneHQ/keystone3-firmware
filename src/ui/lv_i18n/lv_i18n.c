@@ -4739,7 +4739,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"about_terms_website_url", "https://keyst.one/terms"},
     {"account_head", "账户"},
     {"ar_address_check", "需要地址核对"},
-    {"ar_address_check_desc", "不同的钱包可能以不同的方式生成AR地址，从而导致相同的短语产生不同的地址。这是正常的。连接到软件钱包后, 请比较地址以确保与硬件钱包匹配。"},
+    {"ar_address_check_desc", "不同的钱包可能以不同的方式生成AR地址, 从而导致相同的短语产生不同的地址。这是正常的。连接到软件钱包后, 请比较地址以确保与硬件钱包匹配。"},
     {"auto_shutdown", "自动关闭"},
     {"auto_shutdown_20", "自动关闭"},
     {"beta_version_notice_desc", "当前的固件是一个测试版本,可能包含未知的错误或风险.仅供测试目的使用"},

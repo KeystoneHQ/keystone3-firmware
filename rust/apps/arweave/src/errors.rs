@@ -14,6 +14,12 @@ pub enum ArweaveError {
     SignFailure(String),
     #[error("Could not parse transaction, reason: `{0}`")]
     ParseTxError(String),
+    #[error("This content is not supported yet")]
+    NotSupportedError,
+    #[error("Decode Avro value failed: {0}")]
+    AvroError(String),
+    #[error("Transaction is not a AO transaction")]
+    NotAOTransaction,
 }
 
 pub type Result<T> = core::result::Result<T, ArweaveError>;

@@ -15,6 +15,8 @@ aes = { version = "0.8.4", default-features = false }
 cbc = { version = "0.1.2", default-features = false }
 cipher = { version = "0.4.4", default-features = false, features = ["block-padding", "alloc"] }
 serde = { version = "1.0.139", default-features = false }
+rust_tools = {path = "../../tools"}
+lazy_static = "1.4.0"
 
 [dev-dependencies]
 keystore = { path = "../../keystore"}

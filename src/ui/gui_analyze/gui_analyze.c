@@ -211,6 +211,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         FreeArMemory,
     },
     {
+        REMAPVIEW_AR_DATAITEM,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ar_data_item_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiArDataItemOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Additions\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiArDataItemDetail\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_ar_data_item.json",
+#endif
+        GuiGetArData,
+        NULL,
+        FreeArMemory,
+    },
+    {
         REMAPVIEW_TON,
 #ifndef COMPILE_SIMULATOR
         "{\"name\":\"ton_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonTxOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Raw Data\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonTxRawData\"}]}]}",
@@ -1196,6 +1207,10 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiTonProofOverview;
     } else if (!strcmp(funcName, "GuiTonProofRawData")) {
         return GuiTonProofRawData;
+    } else if (!strcmp(funcName, "GuiArDataItemOverview")) {
+        return GuiArDataItemOverview;
+    } else if (!strcmp(funcName, "GuiArDataItemDetail")) {
+        return GuiArDataItemDetail;
     }
 #endif
     return NULL;
@@ -1587,6 +1602,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_AR;
     case ArweaveMessage:
         return REMAPVIEW_AR_MESSAGE;
+    case ArweaveDataItem:
+        return REMAPVIEW_AR_DATAITEM;
     case TonTx:
         return REMAPVIEW_TON;
     case TonSignProof:

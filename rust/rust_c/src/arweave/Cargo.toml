@@ -9,6 +9,7 @@ edition = "2021"
 keystore = { path = "../../../keystore", default-features = false }
 app_utils = { path = "../../../apps/utils" }
 app_arweave = {path = "../../../apps/arweave"}
+rust_tools = {path="../../../tools"}
 common_rust_c = {path = "../common"}
 third_party = { path = "../../../third_party" }
 cty = "0.2.2"

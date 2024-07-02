@@ -110,7 +110,7 @@ impl InferViewType for ArweaveSignRequest {
         match self.get_sign_type() {
             SignType::Transaction => Ok(ViewType::ArweaveTx),
             SignType::Message => Ok(ViewType::ArweaveMessage),
-            SignType::DataItem => Ok(ViewType::ViewTypeUnKnown),
+            SignType::DataItem => Ok(ViewType::ArweaveDataItem),
         }
     }
 }

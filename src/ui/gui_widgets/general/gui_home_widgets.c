@@ -532,12 +532,14 @@ void GuiShowRsaSetupasswordHintbox(void)
     SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
 
-static void GuiARAddressCheckConfirmHandler(lv_event_t *event) {
+static void GuiARAddressCheckConfirmHandler(lv_event_t *event)
+{
     GUI_DEL_OBJ(g_noticeWindow);
     GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);
 }
 
-static void GuiOpenARAddressNoticeWindow() {
+static void GuiOpenARAddressNoticeWindow()
+{
     g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("ar_address_check"), _("ar_address_check_desc"), NULL, _("Not Now"), WHITE_COLOR_OPA20, _("Understand"), ORANGE_COLOR);
     lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
@@ -849,6 +851,7 @@ static void AddFlagCountDownTimerHandler(lv_timer_t *timer)
 void GuiHomeRestart(void)
 {
     GUI_DEL_OBJ(g_manageCont)
+    GUI_DEL_OBJ(g_noticeWindow)
     GuiHomeRefresh();
 }
 

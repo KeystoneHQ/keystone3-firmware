@@ -22,60 +22,62 @@
 #include "protocol_parse.h"
 #include "ecdh.h"
 #include "ctaes.h"
-#include "sha256.h"
 #include "drv_otp.h"
+#include "librust_c.h"
 
 #define ECC_PRV_KEY_SIZE                                24
 #define ECC_PUB_KEY_SIZE                                (2 * ECC_PRV_KEY_SIZE)
 #define PARSER_CACHE_LEN                                1024
+#define PRIV_KEY_SIZE                                   32
+#define PUB_KEY_SIZE                                    33
 
 static void DataParserTask(void *argument);
 void USBD_cdc_SendBuffer_Cb(const uint8_t *data, uint32_t len);
 
 static uint8_t g_dataParserCache[PARSER_CACHE_LEN] __attribute__((section(".data_parser_section")));
-uint8_t g_dataParserCache[PARSER_CACHE_LEN];
-osThreadId_t g_dataParserHandle;
 static cbuf_handle_t g_cBufHandle;
-static uint8_t g_dataParserPubKey[] = {
-    0xF0, 0xBE, 0xAC, 0x34, 0x0D, 0x58, 0x2C, 0xE0,
-    0xA4, 0x17, 0xB6, 0xEF, 0xC6, 0xBD, 0x1C, 0x21,
-    0x43, 0x2D, 0x4D, 0xF1, 0x06, 0x00, 0x00, 0x00,
-    0x9F, 0x1E, 0x84, 0xDD, 0xC4, 0x80, 0x2A, 0x37,
-    0xA2, 0x6E, 0x1C, 0x6D, 0xE7, 0x96, 0xDB, 0xE0,
-    0xAE, 0xEA, 0x89, 0x67, 0x03, 0x00, 0x00, 0x00
-};
-static uint8_t g_dataSharedKey[32] = {0};
-static uint8_t g_dataShareIv[16] = {
-    0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
-    0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf
-};
+static uint8_t g_dataParserPubKey[PUB_KEY_SIZE] = {0};
+static uint8_t g_dataSharedKey[PRIV_KEY_SIZE] = {0};
+static uint8_t g_dataParserIv[16] = {0};
+static osThreadId_t g_dataParserHandle;
 
-uint8_t *GetDataParserPubKey(void)
+void SetDeviceParserIv(uint8_t *iv)
 {
-    return g_dataParserPubKey;
+    memcpy_s(g_dataParserIv, sizeof(g_dataParserIv), iv, 16);
 }
 
 uint8_t *GetDeviceParserPubKey(uint8_t *webPub, uint16_t len)
 {
-    assert(len == 48);
-    struct sha256_ctx ctx;
-    uint8_t devPrv[ECC_PRV_KEY_SIZE] = {0};
-    uint8_t shareKey[ECC_PUB_KEY_SIZE] = {0};
-    TrngGet(devPrv, sizeof(devPrv));
-    assert(ecdh_generate_keys(g_dataParserPubKey, devPrv));
-    assert(ecdh_shared_secret(devPrv, webPub, shareKey));
-    sha256_init(&ctx);
-    sha256_update(&ctx, shareKey, sizeof(shareKey));
-    sha256_done(&ctx, (struct sha256 *)g_dataSharedKey);
-    memset_s(devPrv, sizeof(devPrv), 0, sizeof(devPrv));
+    assert(len == 33);
+    uint8_t privKey[] = {36, 152, 38, 220, 181, 219, 183, 145, 246, 234, 111, 76, 161, 118, 67, 239, 70, 95, 241, 130, 17, 82, 24, 232, 53, 216, 250, 63, 93, 81, 164, 129};
+    uint8_t shareKey[PUB_KEY_SIZE] = {3, 161, 210, 17, 253, 221, 40, 129, 137, 80, 105, 46, 126, 230, 80, 221, 82, 51, 206, 214, 24, 144, 201, 11, 99, 132, 251, 21, 68, 169, 44, 42, 251};
+    // TrngGet(privKey, sizeof(privKey));
+    // just test
+    memcpy_s(g_dataParserPubKey, sizeof(g_dataParserPubKey), shareKey, sizeof(shareKey));
+    SimpleResponse_u8 *simpleResponse = ecdh_generate_sharekey(privKey, sizeof(privKey), shareKey, sizeof(shareKey));
+    if (simpleResponse == NULL) {
+        printf("get_master_fingerprint return NULL\r\n");
+        return NULL;
+    }
+    memcpy_s(g_dataSharedKey, sizeof(g_dataSharedKey), simpleResponse->data, 32);
+    memset_s(privKey, sizeof(privKey), 0, sizeof(privKey));
+    free_simple_response_u8(simpleResponse);
     return g_dataParserPubKey;
 }
 
 void DataEncrypt(uint8_t *data, uint16_t len)
 {
     AES256_CBC_ctx ctx;
-    AES256_CBC_init(&ctx, g_dataSharedKey, g_dataShareIv);
-    AES256_CBC_encrypt(&ctx, sizeof(data) / 16, data, data);
+    AES256_CBC_init(&ctx, g_dataSharedKey, g_dataParserIv);
+    AES256_CBC_encrypt(&ctx, len / 16, data, data);
+}
+
+void DataDecrypt(uint8_t *data, uint8_t *plain, uint16_t len)
+{
+    AES256_CBC_ctx ctx;
+    AES256_CBC_init(&ctx, g_dataSharedKey, g_dataParserIv);
+    AES256_CBC_decrypt(&ctx, len / 16, plain, data);
+    PrintArray("decrypted", plain, len);
 }
 
 void CreateDataParserTask(void)
@@ -103,7 +105,7 @@ static uint8_t IsPrivileged(void)
     return (control & 1) == 0;
 }
 
-void DataParserCacheMpuInit(void)
+static void DataParserCacheMpuInit(void)
 {
     MpuSetProtection(g_dataParserCache,
                      MPU_REGION_SIZE_1KB,
@@ -118,7 +120,6 @@ void DataParserCacheMpuInit(void)
 static void DataParserTask(void *argument)
 {
     DataParserCacheMpuInit();
-    printf("g_dataParserCache = %p\n", g_dataParserCache);
     g_cBufHandle = circular_buf_init(g_dataParserCache, sizeof(g_dataParserCache));
     memset_s(g_dataParserCache, sizeof(g_dataParserCache), 0, sizeof(g_dataParserCache));
     Message_t rcvMsg;
@@ -145,25 +146,20 @@ static void DataParserTask(void *argument)
     }
 }
 
+void MemManage_Handler(void)
+{
 #define SCB_CFSR (*((volatile uint32_t *)0xE000ED28))
 #define SCB_HFSR (*((volatile uint32_t *)0xE000ED2C))
 #define SCB_MMFAR (*((volatile uint32_t *)0xE000ED34))
+    uint32_t cfsr = SCB_CFSR;
+    uint32_t mmfar = SCB_MMFAR;
 
-void MemManage_Handler(void)
-{
-    uint32_t cfsr = SCB_CFSR;  // 读取CFSR寄存器
-    uint32_t mmfar = SCB_MMFAR; // 读取MMFAR寄存器
-
-    // 检查CFSR中的内存管理错误位
     if (cfsr & (1 << 0)) {
-        // MMARVALID 位被设置，表示 MMFAR 包含有效的错误地址
         uint32_t fault_address = mmfar;
         
-        // 在此处处理错误地址，例如记录日志、重启系统等
         printf("Memory management fault at address: 0x%08X\n", fault_address);
     }
 
-    // 检查其他内存管理错误位，并进行相应的处理
     if (cfsr & (1 << 1)) {
         // Data Access Violation
     }
@@ -171,12 +167,11 @@ void MemManage_Handler(void)
         // Unstacking Error
     }
     if (cfsr & (1 << 4)) {
-        // Stacking Error
     }
     if (cfsr & (1 << 5)) {
-        // Lazy FP State Preservation Error
     }
 
+    // system reset test
     *(uint32_t *)0 = 123;
-    // NVIC_SystemReset();
+    NVIC_SystemReset();
 }

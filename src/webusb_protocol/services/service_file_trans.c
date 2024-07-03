@@ -25,9 +25,14 @@
 #define TYPE_FILE_INFO_FILE_SIZE    2
 #define TYPE_FILE_INFO_FILE_MD5     3
 #define TYPE_FILE_INFO_FILE_SIGN    4
+#define TYPE_FILE_INFO_FILE_IV      5
+
 #define TYPE_FILE_INFO_FILE_OFFSET  1
 #define TYPE_FILE_INFO_FILE_DATA    2
 #define TYPE_FILE_INFO_FILE_ACK     3
+
+#define TYPE_FILE_FINO_PUBKEY       1
+#define TYPE_FILE_FINO_PUBKEY_SIGN  2
 
 #define MAX_FILE_NAME_LENGTH 32
 #define FILE_TRANS_TIME_OUT 2000
@@ -51,6 +56,7 @@ typedef struct {
     char fileName[MAX_FILE_NAME_LENGTH + 4];
     uint32_t fileSize;
     uint8_t md5[16];
+    uint8_t iv[16];
     uint8_t signature[64];
 } FileTransInfo_t;
 
@@ -102,12 +108,20 @@ static const uint8_t g_webUsbPubKey[] = {
     0x5E
 };
 
+static const uint8_t g_webUsbUpdatePubKey[] = {
+    0x12, 0x23, 0x34, 0x45, 0x8D, 0xCE, 0xB1, 0xAF, 0xBB, 0xCC, 0x8E, 0x0A, 0xF3, 0xC1, 0x7E, 0x61,
+    0x15, 0xD4, 0x38, 0x4E, 0xB8, 0xD1, 0xB3, 0x02, 0xFC, 0xE3, 0xD0, 0xAB, 0xAC, 0x9C, 0x15, 0x43,
+    0x75, 0xAD, 0xBE, 0x60, 0x95, 0xFC, 0xC9, 0x4C, 0x75, 0x75, 0x88, 0x02, 0xEC, 0x0E, 0x25, 0xF3,
+    0xE0, 0x8D, 0xCC, 0x38, 0x9D, 0xCB, 0x25, 0xA4, 0xCA, 0x2A, 0x52, 0x3D, 0x3E, 0x7B, 0xB3, 0xDD,
+    0x5E
+};
+
 const ProtocolServiceCallbackFunc_t g_fileTransInfoServiceFunc[] = {
     NULL,                                       //2.0
     ServiceFileTransInfo,                       //2.1
     ServiceFileTransContent,                    //2.2
     ServiceFileTransComplete,                   //2.3
-    // ServiceFileTransGetPubkey,                  //2.4
+    ServiceFileTransGetPubkey,                  //2.4
 };
 
 static int ValidateAndSetFileName(Tlv_t *tlvArray, FileTransInfo_t *fileTransInfo)
@@ -174,6 +188,10 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             CHECK_LENGTH(tlvArray[i].length, 64);
             memcpy_s(g_fileTransInfo.signature, sizeof(g_fileTransInfo.signature), tlvArray[i].pValue, 64);
             break;
+        case TYPE_FILE_INFO_FILE_IV:
+            CHECK_LENGTH(tlvArray[i].length, 16);
+            memcpy_s(g_fileTransInfo.iv, sizeof(g_fileTransInfo.iv), tlvArray[i].pValue, 16);
+            break;
         default:
             break;
         }
@@ -183,6 +201,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
     printf("file size=%d\n", g_fileTransInfo.fileSize);
     PrintArray("md5", g_fileTransInfo.md5, 16);
     PrintArray("signature", g_fileTransInfo.signature, 64);
+    SetDeviceParserIv(g_fileTransInfo.iv);
 
     do {
         if (strnlen_s(g_fileTransInfo.fileName, MAX_FILE_NAME_LENGTH) == 0 || g_fileTransInfo.fileSize == 0) {
@@ -277,6 +296,9 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
         return NULL;
     }
     g_fileTransCtrl.offset += fileDataSize;
+
+    // todo DataDecrypt
+
     if (FatfsFileAppend(g_fileTransInfo.fileName, fileData, fileDataSize) != RES_OK) {
         printf("append file %s err\n", g_fileTransInfo.fileName);
         return NULL;
@@ -339,11 +361,6 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
     return BuildFrame(&sendHead, NULL, 0);
 }
 
-static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
-{
-
-}
-
 static void FileTransTimeOutTimerFunc(void *argument)
 {
     g_isReceivingFile = false;
@@ -355,6 +372,56 @@ static void FileTransTimeOutTimerFunc(void *argument)
     }
     g_isNftFile = false;
 #endif
+}
+
+}
+
+static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
+{
+    Tlv_t tlvArray[2] = {0};
+    FrameHead_t sendHead = {0};
+    uint8_t pubKey[33] = {0};
+    uint8_t pubKeySign[70] = {0};
+
+    g_isReceivingFile = true;
+    uint32_t tlvNumber = 0;
+    tlvNumber = GetTlvFromData(tlvArray, 2, tlvData, head->length);
+    printf("tlvNumber = %d\n", tlvNumber);
+    for (uint32_t i = 0; i < tlvNumber; i++) {
+        printf("tlvArray[i].length = %d\n", tlvArray[i].length);
+        char *data = (char *)tlvArray[i].pValue;
+        for (int j = 0; j < tlvArray[i].length; j++) {
+            printf("%02x ", data[j]);
+        }
+        switch (tlvArray[i].type) {
+        case TYPE_FILE_FINO_PUBKEY:
+            memcpy_s(pubKey, sizeof(pubKey), tlvArray[i].pValue, tlvArray[i].length);
+            break;
+        case TYPE_FILE_FINO_PUBKEY_SIGN:
+            memcpy_s(pubKeySign, sizeof(pubKeySign), tlvArray[i].pValue, tlvArray[i].length);
+            break;
+        default:
+            break;
+        }
+    }
+
+    sendHead.packetIndex = head->packetIndex;
+    sendHead.serviceId = SERVICE_ID_FILE_TRANS;
+    sendHead.commandId = COMMAND_ID_FILE_GET_PUBKEY;
+    sendHead.flag.b.ack = 0;
+    sendHead.flag.b.isHost = 0;
+    
+    tlvArray[0].type = TYPE_FILE_FINO_PUBKEY;
+    if (k1_verify_signature(pubKeySign, pubKey, (uint8_t *)g_webUsbUpdatePubKey) == false) {
+        printf("verify signature fail\n");
+        tlvArray[0].value = 3;
+    } else {
+        tlvArray[0].length = 33;
+        tlvArray[0].pValue = GetDeviceParserPubKey(pubKey, sizeof(pubKey));
+    }
+
+    *outLen = GetFrameTotalLength(tlvArray, 1);
+    return BuildFrame(&sendHead, tlvArray, 1);
 }
 
 #ifndef BTC_ONLY

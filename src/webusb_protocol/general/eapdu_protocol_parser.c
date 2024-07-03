@@ -208,16 +208,11 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
     for (uint16_t i = 0; i < g_totalPackets; i++) {
         fullDataLen += g_packetLengths[i];
     }
-    if (eapduFrame->ins == CMD_GET_DEVICE_USB_PUBKEY) {
-        fullDataLen = 48;
-        fullData = (uint8_t *)SRAM_MALLOC(fullDataLen + 1);
-        memcpy_s(fullData, fullDataLen, GetDataParserPubKey(), fullDataLen);
-    } else {
-        fullData = (uint8_t *)SRAM_MALLOC(fullDataLen + 1);
-        for (uint32_t i = 0; i < g_totalPackets; i++) {
-            memcpy_s(fullData + offset, fullDataLen - offset, g_protocolRcvBuffer[i], g_packetLengths[i]);
-            offset += g_packetLengths[i];
-        }
+    
+    fullData = (uint8_t *)SRAM_MALLOC(fullDataLen + 1);
+    for (uint32_t i = 0; i < g_totalPackets; i++) {
+        memcpy_s(fullData + offset, fullDataLen - offset, g_protocolRcvBuffer[i], g_packetLengths[i]);
+        offset += g_packetLengths[i];
     }
     fullData[fullDataLen] = '\0';
     EAPDURequestPayload_t *request = (EAPDURequestPayload_t *)SRAM_MALLOC(sizeof(EAPDURequestPayload_t));

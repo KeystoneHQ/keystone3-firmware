@@ -128,8 +128,8 @@ void GuiStellarHashNotice(lv_obj_t *parent, void *totalData)
 {
     CreateStellarNoticeCOntainer(
         parent,
-        "Notice",
-        "Hash signing uses a private key to sign a transaction's hash for integrity and authenticity. You can compare this with the software wallet.",
+        _("scan_qr_code_signing_notice"),
+        _("scan_qr_code_signing_hash_signing_desc"),
         360,
         120
     );

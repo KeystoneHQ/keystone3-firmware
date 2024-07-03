@@ -105,8 +105,6 @@ pub fn verify_signature(
 }
 
 pub fn get_share_key(private_key: &[u8], pubkey: &[u8]) -> Result<[u8; 32]> {
-    extern crate std;
-    use std::println;
     let mut share_key = [0u8; 32];
     let sk = SecretKey::from_slice(private_key)
         .map_err(|e| KeystoreError::InvalidDataError(e.to_string()))?;

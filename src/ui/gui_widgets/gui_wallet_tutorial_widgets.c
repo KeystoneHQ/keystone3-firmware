@@ -81,6 +81,14 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_SOLFARE].items[0].qrTitle = _("connect_solflare_title");
     g_tutorials[WALLET_LIST_SOLFARE].items[0].qrUrl = _("connect_solflare_link");
 
+    // WALLET_LIST_BACKPACK
+    g_tutorials[WALLET_LIST_BACKPACK].len = 1;
+    g_tutorials[WALLET_LIST_BACKPACK].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_BACKPACK].items[0].walletName = _("connect_backpack_title");
+    g_tutorials[WALLET_LIST_BACKPACK].items[0].url = _("connect_backpack_link");
+    g_tutorials[WALLET_LIST_BACKPACK].items[0].qrTitle = _("connect_backpack_title");
+    g_tutorials[WALLET_LIST_BACKPACK].items[0].qrUrl = _("connect_backpack_link");
+
     // WALLET_LIST_ETERNL
     g_tutorials[WALLET_LIST_ETERNL].len = 1;
     g_tutorials[WALLET_LIST_ETERNL].desc = _("connect_wallet_desc");

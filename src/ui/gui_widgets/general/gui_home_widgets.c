@@ -36,6 +36,7 @@ static lv_obj_t *g_walletButton[HOME_WALLET_CARD_BUTT];
 static lv_obj_t *g_cosmosPulldownImg = NULL;
 static lv_obj_t *g_endCosmosLine = NULL;
 static lv_obj_t *g_lastCosmosLine = NULL;
+static lv_obj_t *g_noticeWindow = NULL;
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_BTC, false, "BTC", true},
@@ -538,6 +539,33 @@ void GuiShowRsaSetupasswordHintbox(void)
     SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
 
+static void GuiARAddressCheckConfirmHandler(lv_event_t *event)
+{
+    GUI_DEL_OBJ(g_noticeWindow);
+    GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);
+}
+
+static void GuiOpenARAddressNoticeWindow()
+{
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("ar_address_check"), _("ar_address_check_desc"), NULL, _("Not Now"), WHITE_COLOR_OPA20, _("Understand"), ORANGE_COLOR);
+    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_set_width(btn, 192);
+    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
+    lv_obj_add_event_cb(btn, GuiARAddressCheckConfirmHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_set_width(btn, 192);
+    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
+    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
+    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
+}
+
 static void CoinDealHandler(lv_event_t *e)
 {
     HOME_WALLET_CARD_ENUM coin;
@@ -564,7 +592,7 @@ static void CoinDealHandler(lv_event_t *e)
 #endif
         bool shouldGenerateArweaveXPub = IsArweaveSetupComplete();
         if (!shouldGenerateArweaveXPub) {
-            GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);
+            GuiOpenARAddressNoticeWindow();
             break;
         }
         GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
@@ -830,6 +858,7 @@ static void AddFlagCountDownTimerHandler(lv_timer_t *timer)
 void GuiHomeRestart(void)
 {
     GUI_DEL_OBJ(g_manageCont)
+    GUI_DEL_OBJ(g_noticeWindow)
     GuiHomeRefresh();
 }
 
@@ -884,5 +913,6 @@ void GuiHomeDeInit(void)
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
+    GUI_DEL_OBJ(g_noticeWindow);
 }
 #endif

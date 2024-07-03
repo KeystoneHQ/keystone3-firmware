@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include "err_code.h"
 #include "qrdecode_task.h"
-
+#include "gui_lock_device_widgets.h"
 extern bool g_fingerUnlockDeviceFlag;
 extern bool g_fingerSingTransitionsFlag;
 extern bool fingerRegisterState[3];

@@ -37,6 +37,8 @@ WalletListItem_t g_walletListArray[] = {
 #ifndef BTC_ONLY
     {WALLET_LIST_OKX, &walletListOkx, true},
     {WALLET_LIST_METAMASK, &walletListMetaMask, true},
+    {WALLET_LIST_BACKPACK, &walletListBackpack, true},
+    {WALLET_LIST_SOLFARE, &walletListSolfare, true},
     {WALLET_LIST_BLUE, &walletListBlue, true},
     {WALLET_LIST_SPARROW, &walletListSparrow, true},
     {WALLET_LIST_RABBY, &walletListRabby, true},
@@ -46,7 +48,6 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_TYPHON, &walletListTyphon, true},
     {WALLET_LIST_SAFE, &walletListSafe, true},
     {WALLET_LIST_BLOCK_WALLET, &walletListBlockWallet, true},
-    {WALLET_LIST_SOLFARE, &walletListSolfare, true},
     {WALLET_LIST_XRP_TOOLKIT, &walletListXRPToolkit, true},
     {WALLET_LIST_PETRA, &walletListPetra, true},
     {WALLET_LIST_KEPLR, &walletListKeplr, true},
@@ -68,7 +69,7 @@ WalletListItem_t g_walletListArray[] = {
 };
 
 typedef struct ConnectWalletWidget {
-    uint8_t currentTile;
+    uint32_t currentTile;
     lv_obj_t *cont;
     lv_obj_t *tileView;
     WALLET_LIST_INDEX_ENUM walletIndex;
@@ -109,6 +110,10 @@ static const lv_img_dsc_t *g_ethWalletCoinArray[4] = {
 static const lv_img_dsc_t *g_okxWalletCoinArray[] = {
     &coinBtc, &coinEth, &coinBnb, &coinMatic, &coinOkb,
     &coinTrx, &coinLtc, &coinBch, &coinDash,
+};
+
+static const lv_img_dsc_t *g_backpackWalletCoinArray[2] = {
+    &coinSol, &coinEth
 };
 
 static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {
@@ -154,6 +159,8 @@ static CoinState_t g_defaultFewchaState[FEWCHA_COINS_BUTT] = {
     {SUI, false},
 };
 
+static lv_obj_t *g_noticeWindow = NULL;
+
 typedef struct {
     const char *accountType;
     const char *path;
@@ -171,8 +178,8 @@ const static ChangeDerivationItem_t g_solChangeDerivationList[] = {
     {"Sub-account Path", "#8E8E8E m/44'/501'/##F5870A X##8E8E8E '/0'#"},
 };
 
-static uint16_t g_chainAddressIndex[3] = {0};
-static uint8_t g_currentSelectedPathIndex[3] = {0};
+static uint32_t g_chainAddressIndex[3] = {0};
+static uint32_t g_currentSelectedPathIndex[3] = {0};
 static lv_obj_t *g_coinListCont = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 
@@ -205,7 +212,7 @@ static void AddFewchaCoins(void);
 static void AddKeplrCoins(void);
 static void AddSolflareCoins(void);
 static void ShowEgAddressCont(lv_obj_t *egCont);
-static uint8_t GetCurrentSelectedIndex();
+static uint32_t GetCurrentSelectedIndex();
 static bool HasSelectAddressWidget();
 #endif
 
@@ -317,6 +324,33 @@ static bool IsSOL(int walletIndex)
 }
 #endif
 
+static void GuiARAddressCheckConfirmHandler(lv_event_t *event)
+{
+    GUI_DEL_OBJ(g_noticeWindow);
+    GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);
+}
+
+static void GuiOpenARAddressNoticeWindow()
+{
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("ar_address_check"), _("ar_address_check_desc"), NULL, _("Not Now"), WHITE_COLOR_OPA20, _("Understand"), ORANGE_COLOR);
+    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_set_width(btn, 192);
+    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
+    lv_obj_add_event_cb(btn, GuiARAddressCheckConfirmHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_set_width(btn, 192);
+    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
+    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
+    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
+}
+
 static void OpenQRCodeHandler(lv_event_t *e)
 {
     WalletListItem_t *wallet = lv_event_get_user_data(e);
@@ -335,7 +369,7 @@ static void OpenQRCodeHandler(lv_event_t *e)
     }
     bool skipGenerateArweaveKey = IsArweaveSetupComplete();
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey) {
-        GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_CONNECT_CONFIRM);
+        GuiOpenARAddressNoticeWindow();
         return;
     }
 #endif
@@ -424,6 +458,11 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
                                  CHAIN_XRP, g_chainAddressIndex[GetCurrentAccountIndex()],
                                  RefreshAddressIndex);
         }
+    }
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR) {
+        g_coinListCont = GuiCreateSelectAddressWidget(
+                             CHAIN_ATOM, g_chainAddressIndex[GetCurrentAccountIndex()],
+                             RefreshAddressIndex);
     }
 }
 
@@ -617,7 +656,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 152 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
 #ifndef BTC_ONLY
-    lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 482);
+    lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 490);
 #else
     lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 408);
 #endif
@@ -634,7 +673,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 21);
     g_connectWalletTileView.qrCode = qrcode;
 
-    g_bottomCont = GuiCreateContainerWithParent(qrCont, 408, 104);
+    g_bottomCont = GuiCreateContainerWithParent(qrCont, 408, 124);
     lv_obj_align(g_bottomCont, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_set_style_bg_color(g_bottomCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(g_bottomCont, LV_OPA_0,
@@ -859,6 +898,43 @@ static void AddChainAddress(void)
     lv_obj_align(label, LV_ALIGN_CENTER, 150, 0);
 }
 
+static void AddKeplrCoinsAndAddressUI(void)
+{
+    if (lv_obj_get_child_cnt(g_bottomCont) > 0 && g_bottomCont != NULL) {
+        lv_obj_clean(g_bottomCont);
+        g_manageImg = NULL;
+        g_coinCont = NULL;
+    }
+    lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
+    g_coinTitleLabel = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_networks"));
+    lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_networks"));
+    lv_obj_align(g_coinTitleLabel, LV_ALIGN_TOP_LEFT, 36, 10);
+    // supported network icons
+    for (int i = 0; i < 8; i++) {
+        lv_obj_t *img = GuiCreateImg(g_bottomCont, g_keplrCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 36 + 32 * i, 38);
+    }
+
+    lv_obj_t *img = GuiCreateImg(g_bottomCont, &imgMore);
+    lv_img_set_zoom(img, 150);
+    lv_img_set_pivot(img, 0, 0);
+    lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 292, 38);
+
+    // select address ui
+    lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
+    char name[BUFFER_SIZE_32] = {0};
+    snprintf_s(name, sizeof(name), "%s-%d", _("account_head"),
+               g_chainAddressIndex[GetCurrentAccountIndex()]);
+    lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 70);
+
+    label = GuiCreateImg(g_bottomCont, &imgArrowRight);
+    lv_obj_align(label, LV_ALIGN_CENTER, 150, 30);
+}
+
 static void AddSolflareCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -866,6 +942,21 @@ static void AddSolflareCoins(void)
     }
     for (int i = 0; i < 1; i++) {
         lv_obj_t *img = GuiCreateImg(g_coinCont, g_solfareCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+}
+
+static void AddBackpackWalletCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0;
+            i < sizeof(g_backpackWalletCoinArray) / sizeof(g_backpackWalletCoinArray[0]);
+            i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_backpackWalletCoinArray[i]);
         lv_img_set_zoom(img, 110);
         lv_img_set_pivot(img, 0, 0);
         lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
@@ -904,12 +995,16 @@ UREncodeResult *GuiGetFewchaData(void)
     }
     return GuiGetFewchaDataByCoin(coin);
 }
-
 UREncodeResult *GuiGetXrpToolkitData(void)
 {
     return GuiGetXrpToolkitDataByIndex(
                g_chainAddressIndex[GetCurrentAccountIndex()]);
 }
+UREncodeResult *GuiGetKeplrData(void)
+{
+    return GuiGetKeplrDataByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]);
+}
+
 
 UREncodeResult *GuiGetADAData(void)
 {
@@ -996,9 +1091,13 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetSolflareData;
         AddSolflareCoins();
         break;
+    case WALLET_LIST_BACKPACK:
+        func = GuiGetBackpackData;
+        AddBackpackWalletCoins();
+        break;
     case WALLET_LIST_KEPLR:
         func = GuiGetKeplrData;
-        AddKeplrCoins();
+        AddKeplrCoinsAndAddressUI();
         break;
     case WALLET_LIST_ARCONNECT:
         func = GuiGetArConnectData;
@@ -1130,7 +1229,14 @@ static bool IsSelectChanged(void)
 
 static bool HasSelectAddressWidget()
 {
-    return g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT;
+    switch (g_connectWalletTileView.walletIndex) {
+    case WALLET_LIST_XRP_TOOLKIT:
+    case WALLET_LIST_KEPLR:
+        return true;
+        break;
+    default:
+        return false;
+    }
 }
 
 static void CloseDerivationHandler(lv_event_t *e)
@@ -1304,7 +1410,7 @@ static void SetCurrentSelectedIndex(uint8_t index)
     g_currentSelectedPathIndex[GetCurrentAccountIndex()] = index;
 }
 
-static uint8_t GetCurrentSelectedIndex()
+static uint32_t GetCurrentSelectedIndex()
 {
     return g_currentSelectedPathIndex[GetCurrentAccountIndex()];
 }
@@ -1648,6 +1754,12 @@ void GuiConnectWalletRefresh(void)
                                          CHAIN_XRP, g_chainAddressIndex[GetCurrentAccountIndex()],
                                          RefreshAddressIndex);
                 }
+
+                if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR) {
+                    g_coinListCont = GuiCreateSelectAddressWidget(
+                                         CHAIN_ATOM, g_chainAddressIndex[GetCurrentAccountIndex()],
+                                         RefreshAddressIndex);
+                }
             }
         }
 #endif
@@ -1664,13 +1776,13 @@ void GuiConnectWalletRefresh(void)
     }
 #endif
 }
-
 void GuiConnectWalletDeInit(void)
 {
     GUI_DEL_OBJ(g_openMoreHintBox)
     GUI_DEL_OBJ(g_manageImg);
     GUI_DEL_OBJ(g_coinCont)
     GUI_DEL_OBJ(g_derivationPathCont)
+    GUI_DEL_OBJ(g_noticeWindow)
 #ifndef BTC_ONLY
     if (g_coinListCont != NULL && HasSelectAddressWidget()) {
         g_coinListCont = NULL;

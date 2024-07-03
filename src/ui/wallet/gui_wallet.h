@@ -10,7 +10,7 @@ UREncodeResult *GuiGetBlueWalletBtcData(void);
 UREncodeResult *GuiGetSparrowWalletBtcData(void);
 UREncodeResult *GuiGetSpecterWalletBtcData(void);
 #ifndef BTC_ONLY
-UREncodeResult *GuiGetKeplrData(void);
+UREncodeResult *GuiGetKeplrDataByIndex(uint32_t index);
 UREncodeResult *GuiGetArConnectData(void);
 UREncodeResult *GuiGetCompanionAppData(void);
 #ifndef COMPILE_SIMULATOR
@@ -25,6 +25,7 @@ UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin);
 UREncodeResult *GuiGetPetraData(void);
 UREncodeResult *GuiGetSolflareData(void);
 UREncodeResult *GuiGetXBullData(void);
+UREncodeResult *GuiGetBackpackData(void);
 UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index);
 UREncodeResult *GuiGetADADataByIndex(uint16_t index);
 UREncodeResult *GuiGetImTokenData(void);

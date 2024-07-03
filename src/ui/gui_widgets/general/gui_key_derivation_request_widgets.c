@@ -39,38 +39,31 @@ static void GuiCreateQRCodeWidget(lv_obj_t *parent);
 static void OnApproveHandler(lv_event_t *e);
 static void OnReturnHandler(lv_event_t *e);
 static void ModelParseQRHardwareCall();
-#ifndef COMPILE_SIMULATOR
 static UREncodeResult *ModelGenerateSyncUR(void);
-#endif
 static uint8_t GetXPubIndexByPath(char *path);
 static void OpenTutorialHandler(lv_event_t *e);
 static void OpenMoreHandler(lv_event_t *e);
 
 void GuiSetKeyDerivationRequestData(void *urResult, void *multiResult, bool is_multi)
 {
-#ifndef COMPILE_SIMULATOR
     g_urResult = urResult;
     g_urMultiResult = multiResult;
     g_isMulti = is_multi;
     g_data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-#endif
 }
 
 void FreeKeyDerivationRequestMemory(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     if (g_response != NULL) {
         free_Response_QRHardwareCallData(g_response);
         g_response = NULL;
     }
-#endif
 }
 
 static void RecalcCurrentWalletIndex(char *origin)
 {
-#ifndef COMPILE_SIMULATOR
     if (strcmp("eternl", origin) == 0) {
         g_walletIndex = WALLET_LIST_ETERNL;
     } else if (strcmp("Typhon Extension", origin) == 0) {
@@ -78,7 +71,6 @@ static void RecalcCurrentWalletIndex(char *origin)
     } else {
         g_walletIndex = WALLET_LIST_ETERNL;
     }
-#endif
 }
 
 void GuiKeyDerivationRequestInit()
@@ -146,52 +138,12 @@ void GuiKeyDerivationRequestPrevTile()
     lv_obj_set_tile_id(g_keyDerivationTileView.tileView, g_keyDerivationTileView.currentTile, 0, LV_ANIM_OFF);
 }
 
-#ifndef COMPILE_SIMULATOR
 static void ModelParseQRHardwareCall()
 {
     Response_QRHardwareCallData *data = parse_qr_hardware_call(g_data);
     g_callData = data->data;
     g_response = data;
 }
-#else
-static void ModelParseQRHardwareCall()
-{
-    g_response = SRAM_MALLOC(sizeof(Response_QRHardwareCallData));
-    g_response->error_code = 0;
-    g_response->error_message = "";
-    g_response->data = SRAM_MALLOC(sizeof(QRHardwareCallData));
-    g_response->data->call_type = "key_derivation";
-    g_response->data->origin = "Eternl";
-    g_response->data->key_derivation = SRAM_MALLOC(sizeof(KeyDerivationRequestData));
-    g_response->data->key_derivation->schemas = SRAM_MALLOC(sizeof(VecFFI_KeyDerivationSchema));
-    g_response->data->key_derivation->schemas->cap = 5;
-    g_response->data->key_derivation->schemas->size = 5;
-    g_response->data->key_derivation->schemas->data = SRAM_MALLOC(5 * sizeof(KeyDerivationSchema));
-    g_response->data->key_derivation->schemas->data[0].algo = "BIP32-ED25519";
-    g_response->data->key_derivation->schemas->data[0].curve = "ED25519";
-    g_response->data->key_derivation->schemas->data[0].key_path = "1852'/1815'/0'";
-
-    g_response->data->key_derivation->schemas->data[1].algo = "BIP32-ED25519";
-    g_response->data->key_derivation->schemas->data[1].curve = "ED25519";
-    g_response->data->key_derivation->schemas->data[1].key_path = "1852'/1815'/1'";
-
-    g_response->data->key_derivation->schemas->data[2].algo = "BIP32-ED25519";
-    g_response->data->key_derivation->schemas->data[2].curve = "ED25519";
-    g_response->data->key_derivation->schemas->data[2].key_path = "1852'/1815'/2'";
-
-    g_response->data->key_derivation->schemas->data[3].algo = "BIP32-ED25519";
-    g_response->data->key_derivation->schemas->data[3].curve = "ED25519";
-    g_response->data->key_derivation->schemas->data[3].key_path = "1852'/1815'/3'";
-
-    g_response->data->key_derivation->schemas->data[4].algo = "BIP32-ED25519";
-    g_response->data->key_derivation->schemas->data[4].curve = "ED25519";
-    g_response->data->key_derivation->schemas->data[4].key_path = "1852'/1815'/4'";
-
-    g_callData = g_response->data;
-}
-#endif
-
-#ifndef COMPILE_SIMULATOR
 
 static UREncodeResult *ModelGenerateSyncUR(void)
 {
@@ -210,7 +162,6 @@ static UREncodeResult *ModelGenerateSyncUR(void)
     return generate_key_derivation_ur(mfp, 4, &keys);
 }
 
-#endif
 
 static uint8_t GetXPubIndexByPath(char *path)
 {
@@ -341,9 +292,7 @@ static void GuiCreateQRCodeWidget(lv_obj_t *parent)
 
 static void OnApproveHandler(lv_event_t *e)
 {
-#ifndef COMPILE_SIMULATOR
     GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
-#endif
     GuiKeyDerivationRequestNextTile();
 }
 

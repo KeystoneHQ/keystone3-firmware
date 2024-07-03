@@ -1,3 +1,14 @@
+
+## 1.5.4（2024-07-04）
+
+### What's new
+
+1. Added support for managing SOL assets using Backpack
+2. Cosmos added support for multiple accounts
+
+
+
+
 ## 1.5.2(2024-06-25)
 
 ### Improvements

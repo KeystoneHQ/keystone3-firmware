@@ -117,10 +117,10 @@ void GuiStellarTxNotice(lv_obj_t *parent, void *totalData)
 {
     CreateStellarNoticeCOntainer(
         parent,
-        "Notice",
-        "XDR (External Data Representation) standardizes data encoding for consistent serialization. You can compare this with the software wallet.",
+        _("scan_qr_code_signing_notice"),
+        _("scan_qr_code_signing_xdr_signing_desc"),
         360,
-        120
+        145
     );
 }
 
@@ -131,7 +131,7 @@ void GuiStellarHashNotice(lv_obj_t *parent, void *totalData)
         _("scan_qr_code_signing_notice"),
         _("scan_qr_code_signing_hash_signing_desc"),
         360,
-        120
+        180
     );
 }
 

@@ -210,6 +210,8 @@ pub enum ViewType {
     #[cfg(feature = "multi-coins")]
     ArweaveMessage,
     #[cfg(feature = "multi-coins")]
+    ArweaveDataItem,
+    #[cfg(feature = "multi-coins")]
     TonTx,
     #[cfg(feature = "multi-coins")]
     TonSignProof,

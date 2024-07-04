@@ -13,6 +13,7 @@
 #include "gui_ada.h"
 #include "gui_xrp.h"
 #include "gui_ar.h"
+#include "gui_stellar.h"
 #include "gui_ton.h"
 #endif
 
@@ -35,6 +36,7 @@ typedef enum {
     CHAIN_SUI,
     CHAIN_DASH,
     CHAIN_ARWEAVE,
+    CHAIN_STELLAR,
     CHAIN_COSMOS,
     CHAIN_TIA,
     CHAIN_DYM,
@@ -92,6 +94,8 @@ typedef enum {
     REMAPVIEW_AR,
     REMAPVIEW_AR_MESSAGE,
     REMAPVIEW_AR_DATAITEM,
+    REMAPVIEW_STELLAR,
+    REMAPVIEW_STELLAR_HASH,
     REMAPVIEW_TON,
     REMAPVIEW_TON_SIGNPROOF,
     REMAPVIEW_WEB_AUTH,

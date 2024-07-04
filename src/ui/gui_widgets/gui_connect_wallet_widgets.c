@@ -52,6 +52,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_PETRA, &walletListPetra, true},
     {WALLET_LIST_KEPLR, &walletListKeplr, true},
     {WALLET_LIST_ARCONNECT, &walletListArConnect, true},
+    {WALLET_LIST_XBULL, &walletListXBull, true},
     {WALLET_LIST_IMTOKEN, &walletListImToken, true},
     {WALLET_LIST_FEWCHA, &walletListFewcha, true},
     {WALLET_LIST_ZAPPER, &walletListZapper, true},
@@ -130,6 +131,10 @@ static const lv_img_dsc_t *g_keplrCoinArray[8] = {
 
 static const lv_img_dsc_t *g_arconnectCoinArray[1] = {
     &coinAr,
+};
+
+static const lv_img_dsc_t *g_xbullCoinArray[1] = {
+    &coinXlm,
 };
 
 static const lv_img_dsc_t *g_fewchaCoinArray[FEWCHA_COINS_BUTT] = {
@@ -808,6 +813,18 @@ static void AddArConnectCoins(void)
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 0, 0);
 }
 
+static void AddXBullCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+
+    lv_obj_t *img = GuiCreateImg(g_coinCont, g_xbullCoinArray[0]);
+    lv_img_set_zoom(img, 110);
+    lv_img_set_pivot(img, 0, 0);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 0, 0);
+}
+
 static void AddFewchaCoins()
 {
     lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
@@ -1085,6 +1102,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_ARCONNECT:
         func = GuiGetArConnectData;
         AddArConnectCoins();
+        break;
+    case WALLET_LIST_XBULL:
+        func = GuiGetXBullData;
+        AddXBullCoins();
         break;
     case WALLET_LIST_TYPHON:
         func = GuiGetADAData;

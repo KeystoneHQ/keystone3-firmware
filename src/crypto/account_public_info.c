@@ -166,6 +166,11 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_ADA_22,                BIP32_ED25519, "ada_22",                   "M/1852'/1815'/22'"},
     {XPUB_TYPE_ADA_23,                BIP32_ED25519, "ada_23",                   "M/1852'/1815'/23'"},
     {XPUB_TYPE_ARWEAVE,               RSA_KEY,       "ar",                       ""                 },
+    {XPUB_TYPE_STELLAR_0,             ED25519,       "stellar_0",                "M/44'/148'/0'"    },
+    {XPUB_TYPE_STELLAR_1,             ED25519,       "stellar_1",                "M/44'/148'/1'"    },
+    {XPUB_TYPE_STELLAR_2,             ED25519,       "stellar_2",                "M/44'/148'/2'"    },
+    {XPUB_TYPE_STELLAR_3,             ED25519,       "stellar_3",                "M/44'/148'/3'"    },
+    {XPUB_TYPE_STELLAR_4,             ED25519,       "stellar_4",                "M/44'/148'/4'"    },
     {XPUB_TYPE_TON_NATIVE,            TON_NATIVE,    "ton",                      ""                 },
     {PUBLIC_INFO_TON_CHECKSUM,        TON_CHECKSUM,  "ton_checksum",             ""                 },
 #else

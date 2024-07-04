@@ -26,6 +26,7 @@ pub mod solana;
 pub mod sui;
 pub mod tonkeeper;
 mod utils;
+pub mod xbull;
 pub mod xrp_toolkit;
 
 //TODO: get these value from device

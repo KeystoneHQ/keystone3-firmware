@@ -16,6 +16,8 @@ use app_near::errors::NearError;
 #[cfg(feature = "multi-coins")]
 use app_solana::errors::SolanaError;
 #[cfg(feature = "multi-coins")]
+use app_stellar::errors::StellarError;
+#[cfg(feature = "multi-coins")]
 use app_sui::errors::SuiError;
 #[cfg(feature = "multi-coins")]
 use app_ton::errors::TonError;
@@ -188,6 +190,12 @@ pub enum ErrorCodes {
     InvalidProof,
     TonTransactionJsonError,
     AddressError,
+
+    // Stellar
+    StellarAddressError = 1400,
+    StellarInvalidData,
+    StellarParseTxError,
+    StellarKeystoreError,
 }
 
 impl ErrorCodes {
@@ -364,6 +372,18 @@ impl From<&ArweaveError> for ErrorCodes {
             ArweaveError::AvroError(_) => Self::ArweaveParseTxError,
             ArweaveError::NotSupportedError => Self::UnsupportedTransaction,
             ArweaveError::NotAOTransaction => Self::ArweaveParseAOTxError,
+        }
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl From<&StellarError> for ErrorCodes {
+    fn from(value: &StellarError) -> Self {
+        match value {
+            StellarError::AddressError(_) => Self::StellarAddressError,
+            StellarError::InvalidData(_) => Self::StellarInvalidData,
+            StellarError::ParseTxError(_) => Self::StellarParseTxError,
+            StellarError::KeystoreError(_) => Self::StellarKeystoreError,
         }
     }
 }

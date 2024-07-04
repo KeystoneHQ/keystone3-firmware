@@ -35,6 +35,10 @@ use third_party::ur_registry::pb::protoc::Base;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
 #[cfg(feature = "multi-coins")]
+use third_party::ur_registry::stellar::stellar_sign_request::{
+    SignType as StellarSignType, StellarSignRequest,
+};
+#[cfg(feature = "multi-coins")]
 use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
 use third_party::ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
 
@@ -101,6 +105,17 @@ impl InferViewType for EvmSignRequest {
 impl InferViewType for SuiSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::SuiTx)
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for StellarSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        match self.get_sign_type() {
+            StellarSignType::Transaction => Ok(ViewType::StellarTx),
+            StellarSignType::TransactionHash => Ok(ViewType::StellarHash),
+            _ => Ok(ViewType::StellarTx),
+        }
     }
 }
 

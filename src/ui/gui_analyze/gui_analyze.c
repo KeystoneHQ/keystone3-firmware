@@ -211,6 +211,28 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         FreeArMemory,
     },
     {
+        REMAPVIEW_STELLAR,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ar_message_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"custom_container\",\"size\":[408,212],\"pos\":[0,0],\"radius\":24,\"custom_show_func\":\"GuiStellarTxNotice\"},{\"type\":\"container\",\"size\":[408,310],\"pos\":[0,236],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"XDR\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetStellarRawMessage\",\"text_len_func\":\"GetStellarRawMessageLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_stellar.json",
+#endif
+        GuiGetStellarData,
+        NULL,
+        FreeStellarMemory,
+    },
+    {
+        REMAPVIEW_STELLAR_HASH,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ar_message_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"custom_container\",\"size\":[408,212],\"pos\":[0,0],\"radius\":24,\"custom_show_func\":\"GuiStellarHashNotice\"},{\"type\":\"container\",\"size\":[408,130],\"pos\":[0,236],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Hash\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetStellarRawMessage\",\"text_len_func\":\"GetStellarRawMessageLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_stellar_hash.json",
+#endif
+        GuiGetStellarData,
+        NULL,
+        FreeStellarMemory,
+    },
+    {
         REMAPVIEW_AR_DATAITEM,
 #ifndef COMPILE_SIMULATOR
         "{\"name\":\"ar_data_item_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiArDataItemOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Additions\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiArDataItemDetail\"}]}]}",
@@ -585,6 +607,14 @@ GetLabelDataLenFunc GuiBtcTextLenFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataLenFunc GuiStellarTextLenFuncGet(char *type)
+{
+    if (!strcmp(type, "GetStellarRawMessageLength")) {
+        return GetStellarRawMessageLength;
+    }
+    return NULL;
+}
+
 GetLabelDataLenFunc GuiArTextLenFuncGet(char *type)
 {
     if (!strcmp(type, "GetArweaveRawMessageLength")) {
@@ -743,6 +773,14 @@ GetLabelDataFunc GuiArTextFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataFunc GuiStellarTextFuncGet(char *type)
+{
+    if (!strcmp(type, "GetStellarRawMessage")) {
+        return GetStellarRawMessage;
+    }
+    return NULL;
+}
+
 GetLabelDataLenFunc GuiXrpTextLenFuncGet(char *type)
 {
     if (!strcmp(type, "GetXrpDetailLen")) {
@@ -811,6 +849,8 @@ GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
     case REMAPVIEW_AR:
     case REMAPVIEW_AR_MESSAGE:
         return GuiArTextLenFuncGet(type);
+    case REMAPVIEW_STELLAR:
+        return GuiStellarTextLenFuncGet(type);
 #endif
     default:
         return NULL;
@@ -847,6 +887,9 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
     case REMAPVIEW_AR:
     case REMAPVIEW_AR_MESSAGE:
         return GuiArTextFuncGet(type);
+    case REMAPVIEW_STELLAR:
+    case REMAPVIEW_STELLAR_HASH:
+        return GuiStellarTextFuncGet(type);
 #endif
     default:
         return NULL;
@@ -1199,6 +1242,10 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiShowSolTxDetail;
     } else if (!strcmp(funcName, "GuiShowArweaveTxDetail")) {
         return GuiShowArweaveTxDetail;
+    } else if (!strcmp(funcName, "GuiStellarTxNotice")) {
+        return GuiStellarTxNotice;
+    } else if (!strcmp(funcName, "GuiStellarHashNotice")) {
+        return GuiStellarHashNotice;
     } else if (!strcmp(funcName, "GuiTonTxOverview")) {
         return GuiTonTxOverview;
     } else if (!strcmp(funcName, "GuiTonTxRawData")) {
@@ -1602,6 +1649,10 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_AR;
     case ArweaveMessage:
         return REMAPVIEW_AR_MESSAGE;
+    case StellarTx:
+        return REMAPVIEW_STELLAR;
+    case StellarHash:
+        return REMAPVIEW_STELLAR_HASH;
     case ArweaveDataItem:
         return REMAPVIEW_AR_DATAITEM;
     case TonTx:

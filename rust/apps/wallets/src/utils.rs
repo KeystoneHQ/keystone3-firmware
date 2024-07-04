@@ -66,3 +66,31 @@ pub fn generate_crypto_multi_accounts_sync_ur(
         None,
     ))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use core::str::FromStr;
+
+    #[test]
+    fn test_generate_crypto_multi_accounts_sync_ur() {
+        let mut master_fingerprint = [0u8; 4];
+        let public_keys = BTreeMap::new();
+        let result =
+            generate_crypto_multi_accounts_sync_ur(&master_fingerprint, public_keys, "SUI");
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get_master_fingerprint(), master_fingerprint);
+    }
+
+    #[test]
+    fn test_get_origin() {
+        let master_fingerprint = [0u8; 4];
+        let path = DerivationPath::from_str("m/48'/0'/0'/2'").unwrap();
+        let result = get_origin(&master_fingerprint, 2, path);
+        assert!(result.is_ok());
+        let origin = result.unwrap();
+        assert_eq!(origin.get_depth().unwrap(), 2 as u32);
+        assert_eq!(origin.get_components().len(), 4);
+        assert_eq!(origin.get_source_fingerprint().unwrap(), master_fingerprint);
+    }
+}

@@ -101,6 +101,7 @@ LV_IMG_DECLARE(imgUsb);
 LV_IMG_DECLARE(imgTestNet);
 LV_IMG_DECLARE(imgUnknown);
 LV_IMG_DECLARE(imgNextStep);
+LV_IMG_DECLARE(imgNotice);
 LV_IMG_DECLARE(imgInfo);
 LV_IMG_DECLARE(imgDice);
 LV_IMG_DECLARE(imgDice1);
@@ -219,6 +220,7 @@ LV_IMG_DECLARE(coinOrdi);
 LV_IMG_DECLARE(coinMubi);
 LV_IMG_DECLARE(coinTrac);
 LV_IMG_DECLARE(coinSats);
+LV_IMG_DECLARE(coinXlm);
 
 // wallet
 LV_IMG_DECLARE(walletKeystone);
@@ -247,6 +249,7 @@ LV_IMG_DECLARE(walletImToken);
 LV_IMG_DECLARE(walletSpecter);
 LV_IMG_DECLARE(walletNunchuk);
 LV_IMG_DECLARE(walletUniSat);
+LV_IMG_DECLARE(walletXBull);
 LV_IMG_DECLARE(walletTonkeeper);
 
 // wallet list
@@ -268,6 +271,7 @@ LV_IMG_DECLARE(walletListYearn);
 LV_IMG_DECLARE(walletListSushi);
 LV_IMG_DECLARE(walletListKeplr);
 LV_IMG_DECLARE(walletListArConnect);
+LV_IMG_DECLARE(walletListXBull);
 LV_IMG_DECLARE(walletListFewcha);
 LV_IMG_DECLARE(walletListPetra);
 LV_IMG_DECLARE(walletListXRPToolkit);

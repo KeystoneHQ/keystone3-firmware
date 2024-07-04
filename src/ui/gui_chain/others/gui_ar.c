@@ -294,10 +294,10 @@ UREncodeResult *GuiGetArweaveSignQrCodeData(void)
     return encodeResult;
 }
 
-static GuiArRenderAOTransferOverview(lv_obj_t *parent, DisplayArweaveAOTransfer *txData);
-static GuiArRenderAOTransferDetail(lv_obj_t *parent, DisplayArweaveAOTransfer *txData);
-static GuiArRenderDataItemOverview(lv_obj_t *parent, DisplayArweaveDataItem *txData);
-static GuiArRenderDataItemDetail(lv_obj_t *parent, DisplayArweaveDataItem *txData);
+static void GuiArRenderAOTransferOverview(lv_obj_t *parent, DisplayArweaveAOTransfer *txData);
+static void GuiArRenderAOTransferDetail(lv_obj_t *parent, DisplayArweaveAOTransfer *txData);
+static void GuiArRenderDataItemOverview(lv_obj_t *parent, DisplayArweaveDataItem *txData);
+static void GuiArRenderDataItemDetail(lv_obj_t *parent, DisplayArweaveDataItem *txData);
 
 void GuiArDataItemOverview(lv_obj_t *parent, void *totalData) {
     lv_obj_set_size(parent, 408, 444);
@@ -326,7 +326,7 @@ void GuiArDataItemDetail(lv_obj_t *parent, void *totalData) {
     }
 }
 
-static GuiArRenderAOTransferOverview(lv_obj_t *parent, DisplayArweaveAOTransfer *txData) {
+static void GuiArRenderAOTransferOverview(lv_obj_t *parent, DisplayArweaveAOTransfer *txData) {
     lv_obj_t *lastView = NULL;
     lastView = CreateTransactionItemView(parent, _("Action"), _("AO Transfer"), lastView);
     lastView = CreateTransactionItemView(parent, _("From"), txData->from, lastView);
@@ -335,7 +335,7 @@ static GuiArRenderAOTransferOverview(lv_obj_t *parent, DisplayArweaveAOTransfer 
     lastView = CreateTransactionItemView(parent, _("Token ID"), txData->token_id, lastView);
 }
 
-static GuiArRenderAOTransferDetail(lv_obj_t *parent, DisplayArweaveAOTransfer *txData) {
+static void GuiArRenderAOTransferDetail(lv_obj_t *parent, DisplayArweaveAOTransfer *txData) {
     lv_obj_t *lastView = NULL;
     for (size_t i = 0; i < txData->other_info->size; i++)
     {
@@ -343,7 +343,7 @@ static GuiArRenderAOTransferDetail(lv_obj_t *parent, DisplayArweaveAOTransfer *t
     }
 }
 
-static GuiArRenderDataItemOverview(lv_obj_t *parent, DisplayArweaveDataItem *txData) {
+static void GuiArRenderDataItemOverview(lv_obj_t *parent, DisplayArweaveDataItem *txData) {
     lv_obj_t *lastView = NULL;
     lastView = CreateTransactionItemView(parent, _("Action"), _("Sign DataItem"), lastView);
     lastView = CreateTransactionItemView(parent, _("Owner"), txData->owner, lastView);
@@ -355,7 +355,7 @@ static GuiArRenderDataItemOverview(lv_obj_t *parent, DisplayArweaveDataItem *txD
     }
     lastView = CreateTransactionItemView(parent, _("Data"), txData->data, lastView);
 }
-static GuiArRenderDataItemDetail(lv_obj_t *parent, DisplayArweaveDataItem *txData) {
+static void GuiArRenderDataItemDetail(lv_obj_t *parent, DisplayArweaveDataItem *txData) {
     lv_obj_t *lastView = NULL;
     for (size_t i = 0; i < txData->tags->size; i++)
     {

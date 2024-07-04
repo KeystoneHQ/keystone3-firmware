@@ -22,6 +22,7 @@ use common_rust_c::{
     utils::recover_c_char,
 };
 use cty::c_char;
+use keystore::algorithms::ed25519;
 use rust_tools::convert_c_char;
 use structs::{DisplayTonProof, DisplayTonTransaction};
 use third_party::{
@@ -98,6 +99,31 @@ pub extern "C" fn ton_not_supported_error() -> PtrT<TransactionCheckResult> {
     .c_ptr()
 }
 
+fn get_secret_key(tx: &TonSignRequest, seed: &[u8]) -> Result<[u8; 32], RustCError> {
+    let mut sk: [u8; 32] = [0; 32];
+    match tx.get_derivation_path() {
+        Some(derivation_path) => {
+            let path = derivation_path
+                .get_path()
+                .ok_or(RustCError::InvalidHDPath)?;
+            match ed25519::slip10_ed25519::get_private_key_by_seed(seed, &path) {
+                Ok(_sk) => {
+                    for i in 0..32 {
+                        sk[i] = _sk[i]
+                    }
+                }
+                Err(e) => return Err(RustCError::UnexpectedError(e.to_string())),
+            }
+        }
+        None => {
+            for i in 0..32 {
+                sk[i] = seed[i]
+            }
+        }
+    };
+    Ok(sk)
+}
+
 #[no_mangle]
 pub extern "C" fn ton_sign_transaction(
     ptr: PtrUR,
@@ -106,10 +132,10 @@ pub extern "C" fn ton_sign_transaction(
 ) -> PtrT<UREncodeResult> {
     let ton_tx = extract_ptr_with_type!(ptr, TonSignRequest);
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
-    let mut sk: [u8; 32] = [0; 32];
-    for i in 0..32 {
-        sk[i] = seed[i]
-    }
+    let sk = match get_secret_key(&ton_tx, seed) {
+        Ok(_sk) => _sk,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
     let result = app_ton::transaction::sign_transaction(&ton_tx.get_sign_data(), sk);
     match result {
         Ok(sig) => {
@@ -140,11 +166,10 @@ pub extern "C" fn ton_sign_proof(
 ) -> PtrT<UREncodeResult> {
     let ton_tx = extract_ptr_with_type!(ptr, TonSignRequest);
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
-    rust_tools::debug!(format!("seed: {}", hex::encode(seed)));
-    let mut sk: [u8; 32] = [0; 32];
-    for i in 0..32 {
-        sk[i] = seed[i]
-    }
+    let sk = match get_secret_key(&ton_tx, seed) {
+        Ok(_sk) => _sk,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
     let result = app_ton::transaction::sign_proof(&ton_tx.get_sign_data(), sk);
     match result {
         Ok(sig) => {

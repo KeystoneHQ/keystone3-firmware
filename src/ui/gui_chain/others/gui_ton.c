@@ -86,8 +86,7 @@ PtrT_TransactionCheckResult GuiGetTonCheckResult(void)
     if (isTonNative) {
         publicKey = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
     } else {
-        //remains for bip39 ton
-        return ton_not_supported_error();
+        publicKey = GetCurrentAccountPublicKey(XPUB_TYPE_TON_BIP39);
     }
     return ton_check_transaction(data, publicKey);
 }
@@ -190,8 +189,13 @@ static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTrans
 {
     lv_obj_t *container = createContentContainer(parent, 408, 244);
     lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
-
-    char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
+    bool isTonNative = GetMnemonicType() == MNEMONIC_TYPE_TON;
+    char *xPub = NULL;
+    if (isTonNative) {
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
+    } else {
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_BIP39);
+    }
     SimpleResponse_c_char *from = ton_get_address(xPub);
 
     lv_obj_t *label = GuiCreateIllustrateLabel(container, _("From"));

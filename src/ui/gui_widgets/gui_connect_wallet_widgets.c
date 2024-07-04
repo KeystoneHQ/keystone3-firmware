@@ -276,8 +276,6 @@ static void GuiInitWalletListArray()
                 }
             } else if (g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
                 g_walletListArray[i].enable = !GetIsTempAccount();
-            } else if (g_walletListArray[i].index == WALLET_LIST_TONKEEPER) {
-                g_walletListArray[i].enable = false;
             }
 #else
             if (GetCurrentWalletIndex() != SINGLE_WALLET) {
@@ -1005,7 +1003,6 @@ UREncodeResult *GuiGetKeplrData(void)
     return GuiGetKeplrDataByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]);
 }
 
-
 UREncodeResult *GuiGetADAData(void)
 {
     return GuiGetADADataByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]);
@@ -1014,16 +1011,22 @@ UREncodeResult *GuiGetADAData(void)
 UREncodeResult *GuiGetTonData(void)
 {
     bool isTon = GetMnemonicType() == MNEMONIC_TYPE_TON;
+    uint8_t* mfp = NULL;
+    char* path = NULL;
+    char* xpub;
     if (isTon) {
-        char* xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
-        char* walletName = GetWalletName();
-        if (walletName == NULL) {
-            walletName = "Keystone";
-        }
-        return get_tonkeeper_wallet_ur(xpub, walletName, NULL, 0, NULL);
+        xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
     } else {
-        ASSERT(false);
+        mfp = SRAM_MALLOC(4);
+        GetMasterFingerPrint(mfp);
+        xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_BIP39);
+        path = GetXPubPath(XPUB_TYPE_TON_BIP39);
     }
+    char* walletName = GetWalletName();
+    if (walletName == NULL) {
+        walletName = "Keystone";
+    }
+    return get_tonkeeper_wallet_ur(xpub, walletName, mfp, mfp == NULL? 0: 4, path);
 }
 
 void GuiPrepareArConnectWalletView(void)

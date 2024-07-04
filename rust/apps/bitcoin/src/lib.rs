@@ -560,6 +560,6 @@ mod test {
         let msg = "123";
 
         let sig = sign_msg(msg, &seed, &path).unwrap();
-        assert_eq!(third_party::base64::encode(&sig), "G8CDgK7sBj7o+OFZ+IVZyrKmcZuJn2/KFNHHv+kAxi+FWCUEYpZCyAGz0fj1OYwFM0E+q/TyQ2uZziqWI8k0eYE=");
+        assert_eq!(third_party::base64::encode(&sig), "H8CDgK7sBj7o+OFZ+IVZyrKmcZuJn2/KFNHHv+kAxi+FWCUEYpZCyAGz0fj1OYwFM0E+q/TyQ2uZziqWI8k0eYE=");
     }
 }

@@ -180,6 +180,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "app_stellar"
+version = "0.1.0"
+dependencies = [
+ "keystore",
+ "third_party",
+]
+
+[[package]]
 name = "app_sui"
 version = "0.1.0"
 dependencies = [
@@ -734,6 +742,7 @@ dependencies = [
  "app_ethereum",
  "app_near",
  "app_solana",
+ "app_stellar",
  "app_sui",
  "app_ton",
  "app_tron",
@@ -2235,6 +2244,7 @@ dependencies = [
  "kt_allocator",
  "near_rust_c",
  "solana_rust_c",
+ "stellar_rust_c",
  "sui_rust_c",
  "test_cmd",
  "ton_rust_c",
@@ -2534,6 +2544,19 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "stellar_rust_c"
+version = "0.1.0"
+dependencies = [
+ "app_stellar",
+ "app_utils",
+ "common_rust_c",
+ "cstr_core",
+ "cty",
+ "keystore",
+ "third_party",
+]
 
 [[package]]
 name = "strsim"
@@ -2921,7 +2944,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.24#d8f14b6c69641e5dc0af850895e89c1240c35e42"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.25#3d9898036b297ed00810dbdfcc8733b34f23de7c"
 dependencies = [
  "hex",
  "ur",
@@ -2931,7 +2954,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.24#d8f14b6c69641e5dc0af850895e89c1240c35e42"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.25#3d9898036b297ed00810dbdfcc8733b34f23de7c"
 dependencies = [
  "bs58",
  "core2",

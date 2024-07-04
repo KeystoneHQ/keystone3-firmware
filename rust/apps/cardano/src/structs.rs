@@ -157,8 +157,8 @@ impl CIP36VoteKeyDerivationPath {
             Hardened {
                 index: account_index,
             },
-            Normal { index: 2 },
-            Normal { index: 0 },
+            Hardened { index: 0 },
+            Hardened { index: 0 },
         ];
         DerivationPath::from(path)
     }

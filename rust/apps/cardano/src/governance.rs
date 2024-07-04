@@ -57,12 +57,17 @@ mod tests {
     fn test_sign_voting_registration() {
         let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
         let passphrase = b"";
-        let path = "m/1694'/1815'/0'/0/0".to_string();
-        let cbor = hex::decode("a119ef64a501818258200036ef3e1f0d3f5989e2d155ea54bdb2a72c4c456ccb959af4c94868f473f5a001025820e3cd2404c84de65f96918f18d5b445bcb933a7cda18eeded7945dd191e432369035839004777561e7d9ec112ec307572faec1aff61ff0cfed68df4cd5c847f1872b617657881e30ad17c46e4010c9cb3ebb2440653a34d32219c83e9041904d20500").unwrap();
+        let path = "m/1852'/1815'/0'/2/0".to_string();
+        let cbor = hex::decode("a119ef64a50181825820248aba8dce1e4b0a5e53509d07c42ac34f970ec452293a84763bb77359b5263f01025820ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c0358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad0418640500").unwrap();
         let sign_data_result =
             sign_voting_registration(&path, &cbor, &entropy, passphrase).unwrap();
 
-        assert_eq!(hex::encode(sign_data_result.get_signature()), "08266b498ff85bfae97f8d50a6e356f231f683bbdc7573c3726c8e521735315b3626bea99b20a6f31bdcff3d00009c800369efe02e43774bd47eed4ce99bcf07");
+        let hash = hex::encode(blake2b_256(&cbor));
+        assert_eq!(
+            hash,
+            "d2c40028745e3aee415523cc492986147d39530a9bfdf60a15f54f1c023ce266".to_string()
+        );
+        assert_eq!(hex::encode(sign_data_result.get_signature()), "6adc7ca65cab8d2a7e4a918a95cde7bfe0a0f07c5a738de7476defe0389778a8708cb31c3f39db80c486532cc7437a4c5f299e9af2ce2f468723f793c5012609");
     }
 
     #[test]
@@ -74,7 +79,7 @@ mod tests {
 
         assert_eq!(
             hex::encode(xpub.public_key()),
-            "4254bcba9304e951c348c3bf1d6cfa867b5f452c05e3c9d33f4517d78a069520",
+            "248aba8dce1e4b0a5e53509d07c42ac34f970ec452293a84763bb77359b5263f",
         );
     }
 }

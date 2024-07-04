@@ -140,6 +140,31 @@ enum CardanoCertAction {
 }
 
 #[derive(Clone)]
+pub enum CIP36VoteKeyDerivationPath {
+    Purpose = 1694,
+    CoinType = 1815,
+}
+
+impl CIP36VoteKeyDerivationPath {
+    pub fn new(account_index: u32) -> DerivationPath {
+        let path = vec![
+            Hardened {
+                index: CIP36VoteKeyDerivationPath::Purpose as u32,
+            },
+            Hardened {
+                index: CIP36VoteKeyDerivationPath::CoinType as u32,
+            },
+            Hardened {
+                index: account_index,
+            },
+            Normal { index: 2 },
+            Normal { index: 0 },
+        ];
+        DerivationPath::from(path)
+    }
+}
+
+#[derive(Clone)]
 struct Registration {
     stake_key: RewardAddress,
 }

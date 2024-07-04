@@ -8,6 +8,6 @@ extern crate std;
 
 pub mod address;
 pub mod errors;
+pub mod governance;
 pub mod structs;
 pub mod transaction;
-pub mod governance;

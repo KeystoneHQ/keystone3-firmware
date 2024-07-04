@@ -212,6 +212,8 @@ pub enum ViewType {
     #[cfg(feature = "multi-coins")]
     ArweaveMessage,
     #[cfg(feature = "multi-coins")]
+    ArweaveDataItem,
+    #[cfg(feature = "multi-coins")]
     StellarTx,
     #[cfg(feature = "multi-coins")]
     StellarHash,

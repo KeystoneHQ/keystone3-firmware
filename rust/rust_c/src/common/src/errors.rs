@@ -181,6 +181,7 @@ pub enum ErrorCodes {
     ArweaveKeystoreError,
     ArweaveInvalidData,
     ArweaveParseTxError,
+    ArweaveParseAOTxError,
 
     //Ton
     TonUnknownError = 1300,
@@ -368,6 +369,9 @@ impl From<&ArweaveError> for ErrorCodes {
             ArweaveError::KeystoreError(_) => Self::ArweaveKeystoreError,
             ArweaveError::SignFailure(_) => Self::ArweaveSignFailure,
             ArweaveError::ParseTxError(_) => Self::ArweaveParseTxError,
+            ArweaveError::AvroError(_) => Self::ArweaveParseTxError,
+            ArweaveError::NotSupportedError => Self::UnsupportedTransaction,
+            ArweaveError::NotAOTransaction => Self::ArweaveParseAOTxError,
         }
     }
 }

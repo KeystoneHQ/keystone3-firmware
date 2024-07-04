@@ -8,6 +8,7 @@ use alloc::fmt::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use alloc::{format, slice};
+use app_arweave::parse_data_item;
 use app_arweave::{
     aes256_decrypt, aes256_encrypt, errors::ArweaveError, fix_address,
     generate_public_key_from_primes, generate_secret, parse,
@@ -30,6 +31,7 @@ use third_party::ur_registry::arweave::arweave_sign_request::{
 use third_party::ur_registry::arweave::arweave_signature::ArweaveSignature;
 use third_party::ur_registry::traits::{RegistryItem, To};
 
+pub mod data_item;
 pub mod structs;
 
 fn generate_aes_key_iv(seed: &[u8]) -> ([u8; 32], [u8; 16]) {
@@ -221,16 +223,24 @@ pub extern "C" fn ar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayArw
 fn parse_sign_data(ptr: PtrUR) -> Result<Vec<u8>, ArweaveError> {
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let sign_data = sign_request.get_sign_data();
-    if sign_request.get_sign_type() != SignType::Transaction {
-        return Ok(sign_data);
+    match sign_request.get_sign_type() {
+        SignType::Transaction => {
+            let raw_tx = parse(&sign_data)?;
+            let raw_json: Value = serde_json::from_str(&raw_tx).unwrap();
+            let signature_data = raw_json["formatted_json"]["signature_data"]
+                .as_str()
+                .unwrap();
+            let signature_data = hex::decode(signature_data).unwrap();
+            Ok(signature_data)
+        }
+        SignType::DataItem => {
+            let data_item = parse_data_item(&sign_data)?;
+            Ok(data_item.deep_hash()?)
+        }
+        SignType::Message => {
+            return Ok(sign_data);
+        }
     }
-    let raw_tx = parse(&sign_data).unwrap();
-    let raw_json: Value = serde_json::from_str(&raw_tx).unwrap();
-    let signature_data = raw_json["formatted_json"]["signature_data"]
-        .as_str()
-        .unwrap();
-    let signature_data = hex::decode(signature_data).unwrap();
-    Ok(signature_data)
 }
 
 fn build_sign_result(ptr: PtrUR, p: &[u8], q: &[u8]) -> Result<ArweaveSignature, ArweaveError> {
@@ -242,12 +252,8 @@ fn build_sign_result(ptr: PtrUR, p: &[u8], q: &[u8]) -> Result<ArweaveSignature,
     let signature_data = parse_sign_data(ptr)?;
     let sign_type = sign_request.get_sign_type();
     let signing_option = match sign_type {
-        SignType::Transaction => SigningOption::PSS { salt_len },
+        SignType::Transaction | SignType::DataItem => SigningOption::PSS { salt_len },
         SignType::Message => SigningOption::RSA { salt_len },
-        SignType::DataItem => {
-            return Err(ArweaveError::SignFailure(format!("Unsupported sign type")))
-        }
-        _ => SigningOption::PSS { salt_len },
     };
     let signature = sign_message(&signature_data, p, q, &signing_option)?;
 

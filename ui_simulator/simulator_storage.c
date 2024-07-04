@@ -40,6 +40,7 @@ SimulatorFlashPath g_simulatorPathMap[] = {
     {SPI_FLASH_ADDR_USER1_MUTABLE_DATA, PC_SIMULATOR_PATH "/coin1.json", StorageGetDataSize, StorageSetDataSize},
     {SPI_FLASH_ADDR_USER1_MUTABLE_DATA + 4, PC_SIMULATOR_PATH "/coin1.json", StorageGetData, StorageSetData},
     {SIMULATOR_USER1_SECRET_ADDR, PC_SIMULATOR_PATH "/user1_secret.json", StorageGetData, StorageSetData},
+    {SPI_FLASH_RSA_USER1_DATA, PC_SIMULATOR_PATH "/user1_rsa.json", StorageGetData, StorageSetData},
 
     {SPI_FLASH_ADDR_USER2_DATA, PC_SIMULATOR_PATH "/user2_data.json", StorageGetDataSize, StorageSetDataSize},
     {SPI_FLASH_ADDR_USER2_DATA + 4, PC_SIMULATOR_PATH "/user2_data.json", StorageGetData, StorageSetData},
@@ -48,6 +49,7 @@ SimulatorFlashPath g_simulatorPathMap[] = {
     {SPI_FLASH_ADDR_USER2_MUTABLE_DATA, PC_SIMULATOR_PATH "/coin2.json", StorageGetDataSize, StorageSetDataSize},
     {SPI_FLASH_ADDR_USER2_MUTABLE_DATA + 4, PC_SIMULATOR_PATH "/coin2.json", StorageGetData, StorageSetData},
     {SIMULATOR_USER2_SECRET_ADDR, PC_SIMULATOR_PATH "/user2_secret.json", StorageGetData, StorageSetData},
+    {SPI_FLASH_RSA_USER2_DATA, PC_SIMULATOR_PATH "/user2_rsa.json", StorageGetData, StorageSetData},
 
     {SPI_FLASH_ADDR_USER3_DATA, PC_SIMULATOR_PATH "/user3_data.json", StorageGetDataSize, StorageSetDataSize},
     {SPI_FLASH_ADDR_USER3_DATA + 4, PC_SIMULATOR_PATH "/user3_data.json", StorageGetData, StorageSetData},
@@ -56,6 +58,7 @@ SimulatorFlashPath g_simulatorPathMap[] = {
     {SPI_FLASH_ADDR_USER3_MUTABLE_DATA, PC_SIMULATOR_PATH "/coin3.json", StorageGetDataSize, StorageSetDataSize},
     {SPI_FLASH_ADDR_USER3_MUTABLE_DATA + 4, PC_SIMULATOR_PATH "/coin3.json", StorageGetData, StorageSetData},
     {SIMULATOR_USER3_SECRET_ADDR, PC_SIMULATOR_PATH "/user3_secret.json", StorageGetData, StorageSetData},
+    {SPI_FLASH_RSA_USER3_DATA, PC_SIMULATOR_PATH "/user3_rsa.json", StorageGetData, StorageSetData},
 
     {DS28S60_DATA_ADDR, PC_SIMULATOR_PATH "/ds28s60.json", StorageGetData, StorageSetData},
     {ATECC608B_DATA_ADDR, PC_SIMULATOR_PATH "/atecc608b.json", StorageGetData, StorageSetData},

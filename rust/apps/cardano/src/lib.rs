@@ -10,3 +10,4 @@ pub mod address;
 pub mod errors;
 pub mod structs;
 pub mod transaction;
+pub mod governance;

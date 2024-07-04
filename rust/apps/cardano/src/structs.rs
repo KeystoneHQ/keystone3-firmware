@@ -69,6 +69,10 @@ impl_public_struct!(SignDataResult {
     signature: Vec<u8>
 });
 
+impl_public_struct!(SignVotingRegistrationResult {
+    signature: Vec<u8>
+});
+
 impl_public_struct!(CardanoCertificate {
     cert_type: String,
     variant1: String,

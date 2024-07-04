@@ -3,12 +3,27 @@ use crate::structs::{CIP36VoteKeyDerivationPath, SignVotingRegistrationResult};
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use alloc::{format, vec};
 use cardano_serialization_lib;
 use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey, Vkey, Vkeywitness};
 use cardano_serialization_lib::metadata;
 use third_party::cryptoxide::hashing::blake2b_256;
 use third_party::ed25519_bip32_core::XPub;
 use third_party::hex;
+
+pub fn build_delegations(
+    delegations: BTreeMap<u32, u8>,
+    entropy: &[u8],
+    passphrase: &[u8],
+) -> R<Vec<(alloc::string::String, u8)>> {
+    let mut delegations_vec = Vec::new();
+    for (account_index, width) in delegations.iter() {
+        let vote_key = generate_vote_key(*account_index, entropy, passphrase).unwrap();
+        let vote_key_bytes = vote_key.public_key();
+        delegations_vec.push((hex::encode(vote_key_bytes), *width));
+    }
+    return Ok(delegations_vec);
+}
 
 pub fn generate_vote_key(account_index: u32, entropy: &[u8], passphrase: &[u8]) -> R<XPub> {
     let vote_key_path = CIP36VoteKeyDerivationPath::new(account_index);
@@ -81,5 +96,27 @@ mod tests {
             hex::encode(xpub.public_key()),
             "248aba8dce1e4b0a5e53509d07c42ac34f970ec452293a84763bb77359b5263f",
         );
+    }
+
+    #[test]
+    fn test_build_delegations() {
+        let mut delegations = BTreeMap::new();
+        delegations.insert(0, 1);
+        delegations.insert(1, 2);
+        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
+        let passphrase = b"";
+        let delegations_vec = build_delegations(delegations, &entropy, passphrase).unwrap();
+
+        assert_eq!(delegations_vec.len(), 2);
+        assert_eq!(
+            delegations_vec[0].0,
+            "248aba8dce1e4b0a5e53509d07c42ac34f970ec452293a84763bb77359b5263f",
+        );
+        assert_eq!(delegations_vec[0].1, 1);
+        assert_eq!(
+            delegations_vec[1].0,
+            "a89819a70d4e621bc5e0b7555abd787e5c71ef46bdb19c4f817af23c0f57dc10",
+        );
+        assert_eq!(delegations_vec[1].1, 2);
     }
 }

@@ -99,10 +99,7 @@ mod tests {
             ao_transfer.to,
             "qfz4BteboqMUoNSltEpw9KTdbf76fRRDfgx8Ai6DGJw"
         );
-        assert_eq!(ao_transfer.quantity, "10000000000");
-        assert_eq!(
-            ao_transfer.token_id,
-            "xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10"
-        );
+        assert_eq!(ao_transfer.quantity, "0.01 AR");
+        assert_eq!(ao_transfer.token_id, "Wrapped AR");
     }
 }

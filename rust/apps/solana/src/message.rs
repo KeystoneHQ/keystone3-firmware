@@ -1,14 +1,15 @@
-use crate::compact::Compact;
-use crate::errors::{Result, SolanaError};
-use crate::instruction::Instruction;
-use crate::parser::detail::{CommonDetail, ProgramDetail, ProgramDetailUnknown, SolanaDetail};
-use crate::read::Read;
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
+
 use third_party::base58;
-use third_party::sha1::digest::consts::True;
+
+use crate::compact::Compact;
+use crate::errors::{Result, SolanaError};
+use crate::instruction::Instruction;
+use crate::parser::detail::{CommonDetail, ProgramDetail, ProgramDetailInstruction, SolanaDetail};
+use crate::read::Read;
 
 struct Signature {
     value: Vec<u8>,
@@ -111,22 +112,29 @@ impl Message {
                             .unwrap_or("Unknown Account".to_string())
                     })
                     .collect::<Vec<String>>();
+                // if account contains #, it means it's a table account we add "Table" to the head
+                let pretty_accounts = accounts
+                    .iter()
+                    .map(|v| {
+                        if v.contains("#") {
+                            format!("Table:{}", v)
+                        } else {
+                            v.to_string()
+                        }
+                    })
+                    .collect::<Vec<String>>();
                 let program_account =
                     base58::encode(&self.accounts[usize::from(instruction.program_index)].value);
-                let accounts_string = accounts.join(",");
-                match instruction.parse(&program_account, accounts) {
+                match instruction.parse(&program_account, accounts.clone()) {
                     Ok(value) => Ok(value),
-                    Err(e) => Ok(SolanaDetail {
+                    Err(_) => Ok(SolanaDetail {
                         common: CommonDetail {
                             program: "Unknown".to_string(),
                             method: "".to_string(),
                         },
-                        kind: ProgramDetail::Unknown(ProgramDetailUnknown {
-                            program_index: instruction.program_index,
-                            account_indexes: instruction.account_indexes.to_vec(),
+                        kind: ProgramDetail::Instruction(ProgramDetailInstruction {
                             data: base58::encode(&instruction.data),
-                            reason: format!("Unable to parse instruction, {}", e.to_string()),
-                            accounts: accounts_string,
+                            accounts: pretty_accounts,
                             program_account,
                         }),
                     }),

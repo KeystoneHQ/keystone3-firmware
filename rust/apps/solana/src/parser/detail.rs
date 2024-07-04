@@ -1,3 +1,9 @@
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+
+use serde::ser::SerializeStruct;
+use serde::{Serialize, Serializer};
+
 use crate::solana_lib::solana_program::clock::{Epoch, UnixTimestamp};
 use crate::solana_lib::solana_program::vote::state::Lockout;
 use crate::solana_lib::spl::token_lending::state::{ReserveConfig, ReserveFees};
@@ -7,10 +13,6 @@ use crate::solana_lib::spl::token_swap::instruction::{
     DepositAllTokenTypes, DepositSingleTokenTypeExactAmountIn, Initialize, Swap,
     WithdrawAllTokenTypes, WithdrawSingleTokenTypeExactAmountOut,
 };
-use alloc::string::{String, ToString};
-use alloc::vec::Vec;
-use serde::ser::SerializeStruct;
-use serde::{Serialize, Serializer};
 
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct ProgramDetailSystemTransfer {
@@ -1027,6 +1029,13 @@ pub struct ProgramDetailUnknown {
 }
 
 #[derive(Debug, Clone, Default, Serialize)]
+pub struct ProgramDetailInstruction {
+    pub data: String,
+    pub accounts: Vec<String>,
+    pub program_account: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize)]
 pub struct ProgramDetailGeneralUnknown {
     pub reason: String,
 }
@@ -1162,6 +1171,7 @@ pub enum ProgramDetail {
     Unknown(ProgramDetailUnknown),
     GeneralUnknown(ProgramDetailGeneralUnknown),
     RawUnknown(ProgramDetailRawUnknown),
+    Instruction(ProgramDetailInstruction),
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -23,6 +23,19 @@ pub struct ProgramOverviewGeneral {
 }
 
 #[derive(Debug, Clone)]
+pub struct ProgramOverviewInstructions {
+    pub overview_accounts: Vec<String>,
+    pub overview_instructions: Vec<ProgramOverviewInstruction>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ProgramOverviewInstruction {
+    pub accounts: Vec<String>,
+    pub data: String,
+    pub program_address: String,
+}
+
+#[derive(Debug, Clone)]
 pub struct ProgramOverviewUnknown {
     pub description: String,
 }
@@ -41,4 +54,5 @@ pub enum SolanaOverview {
     Vote(ProgramOverviewVote),
     General(Vec<ProgramOverviewGeneral>),
     Unknown(ProgramOverviewUnknown),
+    Instructions(ProgramOverviewInstructions),
 }

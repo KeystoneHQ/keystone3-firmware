@@ -33,6 +33,7 @@ pub fn is_cjk(utf8_string: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::string::ToString;
 
     #[test]
     fn test_normalize_path() {
@@ -42,7 +43,7 @@ mod tests {
 
         let path = "48'/0'/0'/2'".to_string();
         let result = normalize_path(&path);
-        assert_eq!(result, path);
+        assert_eq!(result, "m/48'/0'/0'/2'");
     }
 
     #[test]

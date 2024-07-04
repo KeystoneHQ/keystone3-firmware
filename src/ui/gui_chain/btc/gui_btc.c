@@ -743,18 +743,6 @@ void GetPsbtDetailSize(uint16_t *width, uint16_t *height, void *param)
               16 + (psbt->detail->from->size - 1) * 8 + 30 + psbt->detail->to->size * 60 + 16;
 }
 
-int GetBtcMsgDetailLen(void *param)
-{
-    DisplayBtcMsg *tx = (DisplayBtcMsg *)param;
-    return strlen(tx->detail) + 1;
-}
-
-void GetBtcMsgDetail(void *indata, void *param, uint32_t maxLen)
-{
-    DisplayBtcMsg *tx = (DisplayBtcMsg *)param;
-    strcpy_s((char *)indata, maxLen, tx->detail);
-}
-
 void FreePsbtUxtoMemory(void)
 {
     CHECK_FREE_UR_RESULT(g_urResult, false);

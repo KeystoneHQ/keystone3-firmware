@@ -489,8 +489,6 @@ GetLabelDataFunc GuiBtcTextFuncGet(char *type)
         return GetPsbtDetailInputValue;
     } else if (!strcmp(type, "GetPsbtDetailFee")) {
         return GetPsbtDetailFee;
-    } else if (!strcmp(type, "GetBtcMsgDetail")) {
-        return GetBtcMsgDetail;
     }
     return NULL;
 }
@@ -595,14 +593,6 @@ GetTableDataFunc GuiBtcTableFuncGet(char *type)
         return GetPsbtInputDetailData;
     } else if (!strcmp(type, "GetPsbtOutputDetailData")) {
         return GetPsbtOutputDetailData;
-    }
-    return NULL;
-}
-
-GetLabelDataLenFunc GuiBtcTextLenFuncGet(char *type)
-{
-    if (!strcmp(type, "GetBtcMsgDetailLen")) {
-        return GetBtcMsgDetailLen;
     }
     return NULL;
 }
@@ -833,8 +823,6 @@ GetLabelDataLenFunc GuiAdaTextLenFuncGet(char *type)
 GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
 {
     switch (g_reMapIndex) {
-    case REMAPVIEW_BTC_MESSAGE:
-        return GuiBtcTextLenFuncGet(type);
 #ifndef BTC_ONLY
     case REMAPVIEW_SUI:
         return GuiSuiTextLenFuncGet(type);

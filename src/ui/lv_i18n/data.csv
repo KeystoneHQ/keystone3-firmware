@@ -474,7 +474,7 @@ Connect,20,connect_wallet_desc,Visit the link below on your computer or mobile d
 ,24,connect_xrp_toolkit_title,XRP Toolkit (Web),XRP Toolkit (Веб),XRP Toolkit (웹),XRP Toolkit(网页端),XRP Toolkit (Web),XRP Toolkit (Web),XRPツールキット(Web),
 ,20,connect_xrp_toolkit_link,https://keyst.one/t/3rd/xrptoolkit,https://keyst.one/t/3rd/xrptoolkit,https://keyst.one/t/3rd/xrptoolkit,https://keyst.one/t/3rd/xrptoolkit,https://keyst.one/t/3rd/xrptoolkit,https://keyst.one/t/3rd/xrptoolkit,https://keyst.one/t/3rd/xrptoolkit,
 Decoding Transaction,20,Overview,Overview,Предпросмотр,개요,概述,Visión general,Übersicht,概要,
-,20,Details,Details,деталь,세부,细节,Detalles,Details,詳細,
+,20,Details,Details,Детали,세부,细节,Detalles,Details,詳細,
 ,20,confirm_transaction,Confirm Transaction,Подтвердите сделку,거래를 확인하다,确认交易,Confirmar Transacción,Transaktion bestätigen,トランザクションを確認する,
 ,24,unknown_transaction_title,Transaction Details Unavailable,Детали транзакции недоступны,거래 세부 정보를 사용할 수 없음,交易详情不可用,Detalles de la transacción no disponibles,Transaktionsdetails nicht verfügbar,トランザクションの詳細は利用できません,
 ,20,unknown_transaction_desc,The data within this transaction currently cannot be decoded.,Данные в этой транзакции в настоящее время не могут быть расшифрованы,이 거래의 데이터는 현재 해독할 수 없습니다,该交易中的数据当前无法解码,Los datos dentro de esta transacción actualmente no pueden ser decodificados.,Die Daten in dieser Transaktion können derzeit nicht entschlüsselt werden.,このトランザクション内のデータは現在、デコードできません,

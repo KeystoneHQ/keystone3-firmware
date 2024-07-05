@@ -53,6 +53,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreePsbtUxtoMemory,
     },
+    {
+        REMAPVIEW_BTC_MESSAGE,
+#ifndef COMPILE_SIMULATOR
+        "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiBtcMsg\"}]}",
+#else
+        PC_SIMULATOR_PATH "/page_btc_msg.json",
+#endif
+        GuiGetParsedQrData,
+        NULL,
+        FreeBtcMsgMemory,
+    },
 #ifndef BTC_ONLY
     // temper test the ethereum page view not for production usage
     {
@@ -1104,6 +1115,26 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiShowSolTxOverview;
     } else if (!strcmp(funcName, "GuiShowSolTxDetail")) {
         return GuiShowSolTxDetail;
+    } else if (!strcmp(funcName, "GuiShowArweaveTxDetail")) {
+        return GuiShowArweaveTxDetail;
+    } else if (!strcmp(funcName, "GuiStellarTxNotice")) {
+        return GuiStellarTxNotice;
+    } else if (!strcmp(funcName, "GuiStellarHashNotice")) {
+        return GuiStellarHashNotice;
+    } else if (!strcmp(funcName, "GuiTonTxOverview")) {
+        return GuiTonTxOverview;
+    } else if (!strcmp(funcName, "GuiTonTxRawData")) {
+        return GuiTonTxRawData;
+    } else if (!strcmp(funcName, "GuiTonProofOverview")) {
+        return GuiTonProofOverview;
+    } else if (!strcmp(funcName, "GuiTonProofRawData")) {
+        return GuiTonProofRawData;
+    } else if (!strcmp(funcName, "GuiArDataItemOverview")) {
+        return GuiArDataItemOverview;
+    } else if (!strcmp(funcName, "GuiArDataItemDetail")) {
+        return GuiArDataItemDetail;
+    } else if (!strcmp(funcName, "GuiBtcMsg")) {
+        return GuiBtcMsg;
     }
 #endif
     return NULL;

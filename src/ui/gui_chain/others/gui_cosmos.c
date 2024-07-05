@@ -115,7 +115,7 @@ void *GuiGetCosmosData(void)
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
     do {
-        URType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
+        QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
         PtrT_TransactionParseResult_DisplayCosmosTx parseResult = cosmos_parse_tx(data, urType);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
@@ -132,7 +132,7 @@ PtrT_TransactionCheckResult GuiGetCosmosCheckResult(void)
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
-    URType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
+    QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     return cosmos_check_tx(data, urType, mfp, sizeof(mfp));
 #else
     return NULL;
@@ -576,7 +576,7 @@ UREncodeResult *GuiGetCosmosSignQrCodeData(void)
 #ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    URType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
+    QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     do {
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();

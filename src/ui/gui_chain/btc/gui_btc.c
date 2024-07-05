@@ -145,7 +145,7 @@ UREncodeResult *GuiGetSignQrCodeData(void)
 #endif
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    enum URType urType = URTypeUnKnown;
+    enum QRCodeType urType = URTypeUnKnown;
 #ifndef BTC_ONLY
     enum ViewType viewType = ViewTypeUnKnown;
 #endif
@@ -215,6 +215,12 @@ UREncodeResult *GuiGetSignQrCodeData(void)
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         encodeResult = btc_sign_msg(data, seed, len, mfp, sizeof(mfp));
+    }
+    else if (urType == SeedSignerMessage) {
+        uint8_t seed[64];
+        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        encodeResult = sign_seed_signer_message(data, seed, len);
     }
     CHECK_CHAIN_PRINT(encodeResult);
     ClearSecretCache();
@@ -290,7 +296,7 @@ void *GuiGetParsedQrData(void)
         return GuiGetParsedPsbtStrData();
     }
 #endif
-    enum URType urType = URTypeUnKnown;
+    enum QRCodeType urType = URTypeUnKnown;
 #ifndef BTC_ONLY
     enum ViewType viewType = ViewTypeUnKnown;
 #endif
@@ -310,56 +316,55 @@ void *GuiGetParsedQrData(void)
     }
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+#ifdef BTC_ONLY
+    ExtendedPublicKey keys[14];
+    public_keys->data = keys;
+    public_keys->size = 14;
+    keys[0].path = "m/84'/0'/0'";
+    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+    keys[1].path = "m/49'/0'/0'";
+    keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+    keys[2].path = "m/44'/0'/0'";
+    keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+    keys[3].path = "m/86'/0'/0'";
+    keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+    keys[4].path = "m/84'/1'/0'";
+    keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST);
+    keys[5].path = "m/49'/1'/0'";
+    keys[5].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TEST);
+    keys[6].path = "m/44'/1'/0'";
+    keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY_TEST);
+    keys[7].path = "m/86'/1'/0'";
+    keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT_TEST);
 
+    keys[8].path = "m/45'";
+    keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2SH);
+    keys[9].path = "m/48'/0'/0'/1'";
+    keys[9].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH);
+    keys[10].path = "m/48'/0'/0'/2'";
+    keys[10].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH);
+    keys[11].path = "m/45'";
+    keys[11].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2SH_TEST);
+    keys[12].path = "m/48'/1'/0'/1'";
+    keys[12].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH_TEST);
+    keys[13].path = "m/48'/1'/0'/2'";
+    keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST);
+#else
+    ExtendedPublicKey keys[4];
+    public_keys->data = keys;
+    public_keys->size = 4;
+    keys[0].path = "m/84'/0'/0'";
+    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+    keys[1].path = "m/49'/0'/0'";
+    keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+    keys[2].path = "m/44'/0'/0'";
+    keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+    keys[3].path = "m/86'/0'/0'";
+    keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+#endif
     do {
         if (urType == CryptoPSBT) {
-            PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-#ifdef BTC_ONLY
-            ExtendedPublicKey keys[14];
-            public_keys->data = keys;
-            public_keys->size = 14;
-            keys[0].path = "m/84'/0'/0'";
-            keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
-            keys[1].path = "m/49'/0'/0'";
-            keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
-            keys[2].path = "m/44'/0'/0'";
-            keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
-            keys[3].path = "m/86'/0'/0'";
-            keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
-            keys[4].path = "m/84'/1'/0'";
-            keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST);
-            keys[5].path = "m/49'/1'/0'";
-            keys[5].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TEST);
-            keys[6].path = "m/44'/1'/0'";
-            keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY_TEST);
-            keys[7].path = "m/86'/1'/0'";
-            keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT_TEST);
-
-            keys[8].path = "m/45'";
-            keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2SH);
-            keys[9].path = "m/48'/0'/0'/1'";
-            keys[9].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH);
-            keys[10].path = "m/48'/0'/0'/2'";
-            keys[10].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH);
-            keys[11].path = "m/45'";
-            keys[11].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2SH_TEST);
-            keys[12].path = "m/48'/1'/0'/1'";
-            keys[12].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH_TEST);
-            keys[13].path = "m/48'/1'/0'/2'";
-            keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST);
-#else
-            ExtendedPublicKey keys[4];
-            public_keys->data = keys;
-            public_keys->size = 4;
-            keys[0].path = "m/84'/0'/0'";
-            keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
-            keys[1].path = "m/49'/0'/0'";
-            keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
-            keys[2].path = "m/44'/0'/0'";
-            keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
-            keys[3].path = "m/86'/0'/0'";
-            keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
-#endif
 #ifdef BTC_ONLY
             char *wallet_config = NULL;
             if (GetCurrentWalletIndex() != SINGLE_WALLET) {
@@ -396,7 +401,12 @@ void *GuiGetParsedQrData(void)
         }
 #endif
         else if (urType == BtcSignRequest) {
-            g_parseMsgResult = btc_parse_msg(crypto, mfp, sizeof(mfp));
+            g_parseMsgResult = btc_parse_msg(crypto, public_keys, mfp, sizeof(mfp));
+            CHECK_CHAIN_RETURN(g_parseMsgResult);
+            return g_parseMsgResult;
+        }
+        else if (urType == SeedSignerMessage) {
+            g_parseMsgResult = parse_seed_signer_message(crypto, public_keys);
             CHECK_CHAIN_RETURN(g_parseMsgResult);
             return g_parseMsgResult;
         }
@@ -475,7 +485,7 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
     }
 #endif
     PtrT_TransactionCheckResult result = NULL;
-    enum URType urType = URTypeUnKnown;
+    enum QRCodeType urType = URTypeUnKnown;
 #ifndef BTC_ONLY
     enum ViewType viewType = ViewTypeUnKnown;
 #endif
@@ -577,6 +587,8 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
 #endif
     else if (urType == BtcSignRequest) {
         result = btc_check_msg(crypto, mfp, sizeof(mfp));
+    } else if (urType == SeedSignerMessage) {
+        result = tx_check_pass();
     }
     return result;
 }
@@ -877,12 +889,25 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *o
     lv_obj_align(switchIcon, LV_ALIGN_RIGHT_MID, -24, 0);
     lv_obj_add_flag(switchIcon, LV_OBJ_FLAG_CLICKABLE);
 
-    clickParam.amountValue = amountValue;
-    clickParam.feeValue = feeValue;
-    clickParam.overviewData = overviewData;
-    clickParam.isSat = &isSat;
-    isSat = false;
-    lv_obj_add_event_cb(switchIcon, SwitchValueUnit, LV_EVENT_CLICKED, &clickParam);
+    enum QRCodeType urType = URTypeUnKnown;
+    if (g_isMulti) {
+        urType = g_urMultiResult->ur_type;
+    } else {
+        urType = g_urResult->ur_type;
+    }
+
+    if (urType != Bytes && urType != KeystoneSignRequest) {
+        lv_obj_t *switchIcon = GuiCreateImg(amountContainer, &imgConversion);
+        lv_obj_align(switchIcon, LV_ALIGN_RIGHT_MID, -24, 0);
+        lv_obj_add_flag(switchIcon, LV_OBJ_FLAG_CLICKABLE);
+
+        clickParam.amountValue = amountValue;
+        clickParam.feeValue = feeValue;
+        clickParam.overviewData = overviewData;
+        clickParam.isSat = &isSat;
+        isSat = false;
+        lv_obj_add_event_cb(switchIcon, SwitchValueUnit, LV_EVENT_CLICKED, &clickParam);
+    }
 
     return amountContainer;
 }
@@ -1073,6 +1098,15 @@ static lv_obj_t *CreateDetailAmountView(lv_obj_t *parent, DisplayTxDetail *detai
 
 static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailData, lv_obj_t *lastView)
 {
+    enum QRCodeType urType = URTypeUnKnown;
+    if (g_isMulti) {
+        urType = g_urMultiResult->ur_type;
+    } else {
+        urType = g_urResult->ur_type;
+    }
+
+    bool showChange = (urType != Bytes && urType != KeystoneSignRequest);
+
     lv_obj_t *formContainer = GuiCreateContainerWithParent(parent, 408, 0);
     SetContainerDefaultStyle(formContainer);
     lv_obj_align_to(formContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
@@ -1159,6 +1193,15 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
 
 static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailData, lv_obj_t *lastView)
 {
+    enum QRCodeType urType = URTypeUnKnown;
+    if (g_isMulti) {
+        urType = g_urMultiResult->ur_type;
+    } else {
+        urType = g_urResult->ur_type;
+    }
+
+    bool showChange = (urType != Bytes && urType != KeystoneSignRequest);
+
     lv_obj_t *toContainer = GuiCreateContainerWithParent(parent, 408, 0);
     SetContainerDefaultStyle(toContainer);
     lv_obj_align_to(toContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
@@ -1272,4 +1315,87 @@ void GuiBtcTxDetail(lv_obj_t *parent, void *totalData)
     lastView = CreateDetailAmountView(parent, detailData, lastView);
     lastView = CreateDetailFromView(parent, detailData, lastView);
     CreateDetailToView(parent, detailData, lastView);
+}
+
+//TODO: copy from another unmerged branch, remove this later;
+lv_obj_t *CreateTransactionContentContainer(lv_obj_t *parent, uint16_t w, uint16_t h)
+{
+    lv_obj_t *container = GuiCreateContainerWithParent(parent, w, h);
+    lv_obj_set_style_bg_color(container, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(container, LV_OPA_12, LV_PART_MAIN);
+    lv_obj_set_style_radius(container, 24, LV_PART_MAIN);
+    return container;
+}
+
+lv_obj_t *CreateTransactionItemView(lv_obj_t *parent, char* title, char* value, lv_obj_t *lastView)
+{
+    //basic style:
+    // ______________________________
+    //|#############16px#############|
+    //|#24px#title#16px#value#24px###|
+    //|#############16px#############|
+    // ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+    //text line height is 30
+    //when value overflow one line, it should be:
+    // ______________________________
+    //|#############16px#############|
+    //|#24px#title###################|
+    //|#24px#value###################|
+    //|#24px#value###################|
+    //|#############16px#############|
+    // ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+
+    //62 is the basic height = 16 + 30 + 16
+    lv_obj_t *container = CreateTransactionContentContainer(parent, 408, 62);
+    if (lastView != NULL) {
+        lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    }
+
+    //render title
+    lv_obj_t *titleLabel = GuiCreateIllustrateLabel(container, title);
+    lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, 16);
+    lv_obj_set_style_text_opa(titleLabel, LV_OPA_64, LV_PART_MAIN);
+    lv_obj_update_layout(titleLabel);
+    uint16_t titleWidth = lv_obj_get_width(titleLabel);
+
+    //render value
+    lv_obj_t *valueLabel = GuiCreateIllustrateLabel(container, value);
+    lv_obj_update_layout(valueLabel);
+    uint16_t valueWidth = lv_obj_get_width(valueLabel);
+    uint16_t valueHeight = lv_obj_get_height(valueLabel);
+
+    uint16_t totalWidth = 24+titleWidth+16+valueWidth+24;
+    printf("valueWidth: %d\n", valueWidth);
+    printf("valueHeight: %d\n", valueHeight);
+    printf("totalWidth: %d\n", totalWidth);
+    bool overflow = totalWidth > 408 || valueHeight > 30;
+    if(!overflow) {
+        lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+    }
+    else {
+        lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+        lv_obj_set_width(valueLabel, 360);
+        lv_label_set_long_mode(valueLabel, LV_LABEL_LONG_WRAP);
+        lv_obj_update_layout(valueLabel);
+
+        uint16_t height = lv_obj_get_height(valueLabel);
+
+        lv_obj_set_height(container, height + 62);
+        lv_obj_update_layout(container);
+    }
+
+    return container;
+}
+
+void GuiBtcMsg(lv_obj_t *parent, void *totalData) {
+    DisplayBtcMsg *msgData = (DisplayBtcMsg *)totalData;
+    lv_obj_set_size(parent, 408, 444);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+
+    lv_obj_t *lastView = NULL;
+    if(msgData->address != NULL) {
+        lastView = CreateTransactionItemView(parent, _("Address"), msgData->address, lastView);
+    }
+    lastView = CreateTransactionItemView(parent, _("Message"), msgData->detail, lastView);
 }

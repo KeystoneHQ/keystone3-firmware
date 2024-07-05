@@ -10,6 +10,8 @@ use crate::types::{PtrBytes, PtrString};
 use crate::utils::{convert_c_char, recover_c_char};
 use alloc::boxed::Box;
 use alloc::string::ToString;
+use structs::TransactionCheckResult;
+use types::Ptr;
 use core::slice;
 use cty::c_char;
 use errors::ErrorCodes;
@@ -27,6 +29,7 @@ pub mod ur;
 mod ur_ext;
 pub mod utils;
 pub mod web_auth;
+pub mod qrcode;
 
 pub static KEYSTONE: &str = "keystone";
 

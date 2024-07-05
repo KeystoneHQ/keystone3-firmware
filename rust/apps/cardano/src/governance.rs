@@ -143,7 +143,7 @@ mod tests {
     }
 
     #[test]
-    fn test_build_metadata_cbor() {
+    fn test_build_metadata_cbor_and_sign() {
         let mut delegations = BTreeMap::new();
         delegations.insert(1, 1);
         let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
@@ -164,8 +164,14 @@ mod tests {
         .unwrap();
 
         assert_eq!(
-            hex::encode(cbor),
+            hex::encode(cbor.clone()),
             "a119ef64a50181825820a89819a70d4e621bc5e0b7555abd787e5c71ef46bdb19c4f817af23c0f57dc1001025820ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c0358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad0418640500",
         );
+
+        let path = "m/1852'/1815'/0'/2/0".to_string();
+        let sign_data_result =
+            sign_voting_registration(&path, &cbor, &entropy, passphrase).unwrap();
+
+        assert_eq!(hex::encode(sign_data_result.get_signature()), "4ec0df6a2bbcd79ff8632b228808391a7ba2078a24578698ac36a26bba23a9b0e3838ccdaa1d7be26a65d3cd20c7001df92aeb67dc9e7c4eada45fa17605b009");
     }
 }

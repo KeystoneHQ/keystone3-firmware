@@ -67,6 +67,28 @@ pub fn generate_vote_key(account_index: u32, entropy: &[u8], passphrase: &[u8]) 
     Ok(bip32_signing_key.public())
 }
 
+pub fn sign(
+    path: &String,
+    delegations: BTreeMap<u32, u8>,
+    stake_pub: &[u8],
+    payment_address: &[u8],
+    nonce: u64,
+    voting_purpose: u8,
+    entropy: &[u8],
+    passphrase: &[u8],
+) -> R<SignVotingRegistrationResult> {
+    let cbor = build_metadata_cbor(
+        delegations,
+        stake_pub,
+        payment_address,
+        nonce,
+        voting_purpose,
+        entropy,
+        passphrase,
+    )?;
+    sign_voting_registration(path, &cbor, entropy, passphrase)
+}
+
 pub fn sign_voting_registration(
     path: &String,
     unsigned: &[u8],
@@ -177,6 +199,35 @@ mod tests {
         let path = "m/1852'/1815'/0'/2/0".to_string();
         let sign_data_result =
             sign_voting_registration(&path, &cbor, &entropy, passphrase).unwrap();
+
+        assert_eq!(hex::encode(sign_data_result.get_signature()), "4ec0df6a2bbcd79ff8632b228808391a7ba2078a24578698ac36a26bba23a9b0e3838ccdaa1d7be26a65d3cd20c7001df92aeb67dc9e7c4eada45fa17605b009");
+    }
+
+    #[test]
+    fn test_sign() {
+        let path = "m/1852'/1815'/0'/2/0".to_string();
+        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
+        let passphrase = b"";
+        let mut delegations = BTreeMap::new();
+        delegations.insert(1, 1);
+        let stake_pub =
+            hex::decode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c")
+                .unwrap();
+        let payment_address = hex::decode("0069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad").unwrap();
+        let nonce = 100;
+        let voting_purpose = 0;
+
+        let sign_data_result = sign(
+            &path,
+            delegations,
+            &stake_pub,
+            &payment_address,
+            nonce,
+            voting_purpose,
+            &entropy,
+            passphrase,
+        )
+        .unwrap();
 
         assert_eq!(hex::encode(sign_data_result.get_signature()), "4ec0df6a2bbcd79ff8632b228808391a7ba2078a24578698ac36a26bba23a9b0e3838ccdaa1d7be26a65d3cd20c7001df92aeb67dc9e7c4eada45fa17605b009");
     }

@@ -1,5 +1,6 @@
-use crate::parser::overview::SolanaOverview;
 use alloc::string::{String, ToString};
+
+use crate::parser::overview::SolanaOverview;
 
 #[derive(Clone, Debug)]
 pub struct ParsedSolanaTx {

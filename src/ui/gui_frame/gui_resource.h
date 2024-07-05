@@ -103,6 +103,7 @@ LV_IMG_DECLARE(imgUnknown);
 LV_IMG_DECLARE(imgNextStep);
 LV_IMG_DECLARE(imgNotice);
 LV_IMG_DECLARE(imgInfo);
+LV_IMG_DECLARE(imgInfoOrange);
 LV_IMG_DECLARE(imgDice);
 LV_IMG_DECLARE(imgDice1);
 LV_IMG_DECLARE(imgDice2);
@@ -139,6 +140,7 @@ LV_IMG_DECLARE(imgCircular);
 LV_IMG_DECLARE(imgRing);
 LV_IMG_DECLARE(imgMessageRight);
 LV_IMG_DECLARE(imgWarningRed);
+LV_IMG_DECLARE(imgWarning);
 LV_IMG_DECLARE(imgTonPhrase);
 LV_IMG_DECLARE(imgBlueInformation);
 

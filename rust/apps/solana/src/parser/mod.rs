@@ -1,6 +1,10 @@
-pub mod detail;
-pub mod overview;
-pub mod structs;
+use alloc::borrow::ToOwned;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+
+use serde_json::json;
+
+use third_party::bitcoin::hex::FromHex;
 
 use crate::errors::{Result, SolanaError};
 use crate::message::Message;
@@ -8,15 +12,15 @@ use crate::parser::detail::{
     CommonDetail, ProgramDetail, ProgramDetailGeneralUnknown, SolanaDetail,
 };
 use crate::parser::overview::{
-    ProgramOverviewGeneral, ProgramOverviewTransfer, ProgramOverviewUnknown, ProgramOverviewVote,
-    SolanaOverview,
+    ProgramOverviewGeneral, ProgramOverviewInstruction, ProgramOverviewInstructions,
+    ProgramOverviewTransfer, ProgramOverviewUnknown, ProgramOverviewVote, SolanaOverview,
 };
 use crate::parser::structs::{ParsedSolanaTx, SolanaTxDisplayType};
 use crate::read::Read;
-use alloc::borrow::ToOwned;
-use alloc::string::{String, ToString};
-use alloc::vec::Vec;
-use serde_json::json;
+
+pub mod detail;
+pub mod overview;
+pub mod structs;
 
 impl ParsedSolanaTx {
     pub fn build(data: &Vec<u8>) -> Result<Self> {
@@ -48,15 +52,16 @@ impl ParsedSolanaTx {
         if vote.len() == 1 {
             return SolanaTxDisplayType::Vote;
         }
-        let unknown: Vec<&SolanaDetail> = details
+        let instructions: Vec<&SolanaDetail> = details
             .iter()
             .filter(|d| Self::is_unknown_detail(&d.common))
             .collect::<Vec<&SolanaDetail>>();
-        if unknown.len() == details.len() {
+        if instructions.len() == details.len() {
             return SolanaTxDisplayType::Unknown;
         }
         SolanaTxDisplayType::General
     }
+
     fn is_system_transfer_detail(common: &CommonDetail) -> bool {
         common.program.eq("System") && common.method.eq("Transfer")
     }
@@ -68,6 +73,11 @@ impl ParsedSolanaTx {
     fn is_unknown_detail(common: &CommonDetail) -> bool {
         common.program.eq("Unknown") && common.method.eq("")
     }
+
+    fn is_instructions_detail(common: &CommonDetail) -> bool {
+        common.program.eq("Instructions") && common.method.eq("")
+    }
+
     fn build_genera_detail(details: &[SolanaDetail]) -> Result<String> {
         let parsed_detail = details
             .iter()
@@ -168,6 +178,36 @@ impl ParsedSolanaTx {
         });
         Ok(SolanaOverview::General(overview))
     }
+
+    fn build_instructions_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
+        let mut overview_instructions = Vec::new();
+        let mut overview_accounts: Vec<String> = Vec::new();
+        details.iter().for_each(|d| {
+            if let ProgramDetail::Instruction(detail) = &d.kind {
+                let accounts = &detail.accounts;
+                let data = detail.data.to_string();
+                let program_address = detail.program_account.to_string();
+
+                // append the accounts if not exists
+                accounts.iter().for_each(|account| {
+                    if !overview_accounts.contains(account) {
+                        overview_accounts.push(account.to_string());
+                    }
+                });
+
+                overview_instructions.push(ProgramOverviewInstruction {
+                    accounts: accounts.to_owned(),
+                    data,
+                    program_address,
+                });
+            }
+        });
+        Ok(SolanaOverview::Instructions(ProgramOverviewInstructions {
+            overview_accounts,
+            overview_instructions,
+        }))
+    }
+
     fn build_overview(
         display_type: &SolanaTxDisplayType,
         details: &[SolanaDetail],
@@ -178,7 +218,7 @@ impl ParsedSolanaTx {
             SolanaTxDisplayType::General => Self::build_general_overview(details),
             SolanaTxDisplayType::Unknown => {
                 // all instructions can not be parsed.
-                Ok(SolanaOverview::Unknown(ProgramOverviewUnknown::default()))
+                Self::build_instructions_overview(details)
             }
         }
     }
@@ -186,9 +226,11 @@ impl ParsedSolanaTx {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use serde_json::{json, Value};
+
     use third_party::hex::FromHex;
+
+    use super::*;
 
     #[test]
     fn test_parse_transaction_1() {
@@ -369,46 +411,81 @@ mod tests {
             _ => println!("program overview parse error!"),
         };
         let parsed_detail: Value = serde_json::from_str(parsed.detail.as_str()).unwrap();
-        let expected_detail = json!([
-            {
-                "program": "System",
-                "method": "CreateAccount",
-                "funding_account": "STEPNq2UGeGSzCyGVr2nMQAzf8xuejwqebd84wcksCK",
-                "new_account": "CdV4w55UDTvcza5d6V2Y6m7TF9Xmq9MHPUBYMe9WtptL",
-                "amount": "1461600",
-                "space": "82",
-                "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-            },
-            {
-                "program": "Token",
-                "method": "InitializeMint",
-                "mint": "CdV4w55UDTvcza5d6V2Y6m7TF9Xmq9MHPUBYMe9WtptL",
-                "sysver_rent": "SysvarRent111111111111111111111111111111111",
-                "mint_authority_pubkey": "STEPNq2UGeGSzCyGVr2nMQAzf8xuejwqebd84wcksCK",
-                "freeze_authority_pubkey": "STEPNq2UGeGSzCyGVr2nMQAzf8xuejwqebd84wcksCK",
-                "decimals": 0
-            },
-            {
-                "program": "Unknown",
-                "reason": "Unable to parse instruction, Program `metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s` is not supported yet"
-            },
-            {
-                "program": "Unknown",
-                "reason": "Unable to parse instruction, Program `ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL` is not supported yet"
-            },
-            {
-                "program": "Token",
-                "method": "MintTo",
-                "mint": "CdV4w55UDTvcza5d6V2Y6m7TF9Xmq9MHPUBYMe9WtptL",
-                "mint_to_account": "DG3Za1KX8Tj1TeZJy2U9nDa8qX3tyZCBYNehNy4fFsnQ",
-                "mint_authority_pubkey": "STEPNq2UGeGSzCyGVr2nMQAzf8xuejwqebd84wcksCK",
-                "amount": "1"
-            },
-            {
-                "program": "Unknown",
-                "reason": "Unable to parse instruction, Program `metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s` is not supported yet"
-            }
-        ]);
+
+        let expected_detail = json!(
+                    [
+          {
+            "amount": "1461600",
+            "funding_account": "STEPNq2UGeGSzCyGVr2nMQAzf8xuejwqebd84wcksCK",
+            "method": "CreateAccount",
+            "new_account": "CdV4w55UDTvcza5d6V2Y6m7TF9Xmq9MHPUBYMe9WtptL",
+            "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "program": "System",
+            "space": "82"
+          },
+          {
+            "decimals": 0,
+            "freeze_authority_pubkey": "STEPNq2UGeGSzCyGVr2nMQAzf8xuejwqebd84wcksCK",
+            "method": "InitializeMint",
+            "mint": "CdV4w55UDTvcza5d6V2Y6m7TF9Xmq9MHPUBYMe9WtptL",
+            "mint_authority_pubkey": "STEPNq2UGeGSzCyGVr2nMQAzf8xuejwqebd84wcksCK",
+            "program": "Token",
+            "sysver_rent": "SysvarRent111111111111111111111111111111111"
+          },
+          {
+            "accounts": [
+              "8ge4eJpudaataASooEDNuVk4W75M5CMv5suZS6Lw25to",
+              "CdV4w55UDTvcza5d6V2Y6m7TF9Xmq9MHPUBYMe9WtptL",
+              "STEPNq2UGeGSzCyGVr2nMQAzf8xuejwqebd84wcksCK",
+              "STEPNq2UGeGSzCyGVr2nMQAzf8xuejwqebd84wcksCK",
+              "STEPNq2UGeGSzCyGVr2nMQAzf8xuejwqebd84wcksCK",
+              "11111111111111111111111111111111",
+              "SysvarRent111111111111111111111111111111111"
+            ],
+            "data": "1qc9PgwVveMHiKRmHs9DiE9zqA86thPyaoFr5WTuiGT72BNznAsUGa92jw27ZKojtPXtBH7C9jvSf6AE8JQ3aVfowUV6ZtZMkTxM6v6FKZRuRN4cMvETyxcCvAAUJhWRnp4iEmD5VcxNfiLx9E8UbCKeiEJHMNVD6riSoF6",
+            "program": "Unknown",
+            "program_account": "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+          },
+          {
+            "accounts": [
+              "STEPNq2UGeGSzCyGVr2nMQAzf8xuejwqebd84wcksCK",
+              "DG3Za1KX8Tj1TeZJy2U9nDa8qX3tyZCBYNehNy4fFsnQ",
+              "STEPNq2UGeGSzCyGVr2nMQAzf8xuejwqebd84wcksCK",
+              "CdV4w55UDTvcza5d6V2Y6m7TF9Xmq9MHPUBYMe9WtptL",
+              "11111111111111111111111111111111",
+              "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+              "SysvarRent111111111111111111111111111111111"
+            ],
+            "data": "",
+            "program": "Unknown",
+            "program_account": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+          },
+          {
+            "amount": "1",
+            "method": "MintTo",
+            "mint": "CdV4w55UDTvcza5d6V2Y6m7TF9Xmq9MHPUBYMe9WtptL",
+            "mint_authority_pubkey": "STEPNq2UGeGSzCyGVr2nMQAzf8xuejwqebd84wcksCK",
+            "mint_to_account": "DG3Za1KX8Tj1TeZJy2U9nDa8qX3tyZCBYNehNy4fFsnQ",
+            "program": "Token"
+          },
+          {
+            "accounts": [
+              "3wajAESNoYKGMuEqgXsdhEzp2mdpkc1BTVf9dNW1Pb4a",
+              "CdV4w55UDTvcza5d6V2Y6m7TF9Xmq9MHPUBYMe9WtptL",
+              "STEPNq2UGeGSzCyGVr2nMQAzf8xuejwqebd84wcksCK",
+              "STEPNq2UGeGSzCyGVr2nMQAzf8xuejwqebd84wcksCK",
+              "STEPNq2UGeGSzCyGVr2nMQAzf8xuejwqebd84wcksCK",
+              "8ge4eJpudaataASooEDNuVk4W75M5CMv5suZS6Lw25to",
+              "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+              "11111111111111111111111111111111",
+              "SysvarRent111111111111111111111111111111111"
+            ],
+            "data": "ZbhHTZcMWdXcj",
+            "program": "Unknown",
+            "program_account": "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+          }
+        ]
+                );
         assert_eq!(expected_detail, parsed_detail);
     }
 
@@ -490,23 +567,36 @@ mod tests {
             _ => println!("program overview parse error!"),
         };
         let parsed_detail: Value = serde_json::from_str(parsed.detail.as_str()).unwrap();
+
         let expected_detail = json!([
-            {
-                "program": "Unknown",
-                "reason": "Unable to parse instruction, Program `Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo` is not supported yet"
-            },
-            {
-                "program": "Unknown",
-                "reason": "Unable to parse instruction, Program `ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL` is not supported yet"
-            },
-            {
-                "program": "Token",
-                "method": "SetAuthority",
-                "account": "4gHmx6Puk1J9YntAUvnyrXP68SmjCvQocuArQCt5o4p5",
-                "old_authority_pubkey": "8Tz15moyu4eL48o4Pq5XLyxX5XkkKEsNcgx27ycaPLaU",
-                "authority_type": "close account",
-                "new_authority_pubkey": "agsWhfJ5PPGjmzMieWY8BR5o1XRVszUBQ5uFz4CtDiJ"
-            }
+          {
+            "accounts": [],
+            "data": "NFw4Tg8NvoG7NVDGdoferkiJmQTGJ6esGoTc6W89Z9HRabSLuLYYjs6qwPmW",
+            "program": "Unknown",
+            "program_account": "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo"
+          },
+          {
+            "accounts": [
+              "agsWhfJ5PPGjmzMieWY8BR5o1XRVszUBQ5uFz4CtDiJ",
+              "4gHmx6Puk1J9YntAUvnyrXP68SmjCvQocuArQCt5o4p5",
+              "8Tz15moyu4eL48o4Pq5XLyxX5XkkKEsNcgx27ycaPLaU",
+              "kinXdEcpDQeHPEuQnqmUgtYykqKGVFq6CeVX5iAHJq6",
+              "11111111111111111111111111111111",
+              "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+              "SysvarRent111111111111111111111111111111111"
+            ],
+            "data": "",
+            "program": "Unknown",
+            "program_account": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+          },
+          {
+            "account": "4gHmx6Puk1J9YntAUvnyrXP68SmjCvQocuArQCt5o4p5",
+            "authority_type": "close account",
+            "method": "SetAuthority",
+            "new_authority_pubkey": "agsWhfJ5PPGjmzMieWY8BR5o1XRVszUBQ5uFz4CtDiJ",
+            "old_authority_pubkey": "8Tz15moyu4eL48o4Pq5XLyxX5XkkKEsNcgx27ycaPLaU",
+            "program": "Token"
+          }
         ]);
         assert_eq!(expected_detail, parsed_detail);
     }
@@ -539,51 +629,279 @@ mod tests {
             _ => println!("program overview parse error!"),
         };
         let parsed_detail: Value = serde_json::from_str(parsed.detail.as_str()).unwrap();
-        let expected_detail = json!([
+
+        let expected_detail = json!(
+                    [
           {
-            "program": "System",
-            "method": "CreateAccount",
-            "funding_account": "CTM8DpiZXt1R85fxY4NM85P5t3QqR4Wjm1V85Z8EjVCC",
-            "new_account": "3VYL1TrNMJFQaLy3SC9jAe9gNgymPgQgcZQNUzcc6M3i",
             "amount": "91039280",
-            "space": "165",
-            "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+            "funding_account": "CTM8DpiZXt1R85fxY4NM85P5t3QqR4Wjm1V85Z8EjVCC",
+            "method": "CreateAccount",
+            "new_account": "3VYL1TrNMJFQaLy3SC9jAe9gNgymPgQgcZQNUzcc6M3i",
+            "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "program": "System",
+            "space": "165"
           },
           {
-            "program": "Token",
-            "method": "InitializeAccount",
             "account": "3VYL1TrNMJFQaLy3SC9jAe9gNgymPgQgcZQNUzcc6M3i",
+            "method": "InitializeAccount",
             "mint": "So11111111111111111111111111111111111111112",
             "owner": "CTM8DpiZXt1R85fxY4NM85P5t3QqR4Wjm1V85Z8EjVCC",
+            "program": "Token",
             "sysver_rent": "SysvarRent111111111111111111111111111111111"
           },
           {
-            "program": "Token",
-            "method": "Approve",
-            "source_account": "3VYL1TrNMJFQaLy3SC9jAe9gNgymPgQgcZQNUzcc6M3i",
+            "amount": "89000000",
             "delegate_account": "FrmjFyCUdgrZfps1cJ7B3BTLnj9jjEJ34MwZncJBCxaG",
+            "method": "Approve",
             "owner": "CTM8DpiZXt1R85fxY4NM85P5t3QqR4Wjm1V85Z8EjVCC",
-            "amount": "89000000"
+            "program": "Token",
+            "source_account": "3VYL1TrNMJFQaLy3SC9jAe9gNgymPgQgcZQNUzcc6M3i"
           },
           {
+            "accounts": [
+              "5GGvkcqQ1554ibdc18JXiPqR8aJz6WV3JSNShoj32ufT",
+              "5w1nmqvpus3UfpP67EpYuHhE63aSFdF5AT8VHZTkvnp5",
+              "FrmjFyCUdgrZfps1cJ7B3BTLnj9jjEJ34MwZncJBCxaG",
+              "3VYL1TrNMJFQaLy3SC9jAe9gNgymPgQgcZQNUzcc6M3i",
+              "GVfKYBNMdaER21wwuqa4CSQV8ajVpuPbNZVV3wcuKWhE",
+              "ARryk4nSoS6bu7nyv6BgQah8oU23svFm7Rek7kR4fy3X",
+              "G3cxNKQvwnLDFEtRugKABmhUnf9BkhcV3n3pz1QgHLtQ",
+              "DajMqwbJXA7JbqgU97zycA1zReQhmTqf1YjNNQjo6gCQ",
+              "wLavAJvGZa6Try8jxPRLc9AXBN4yCLF2qpFKbRNB4wF",
+              "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+            ],
+            "data": "gX6pJKFn9nTGZYN6UfFFps",
             "program": "Unknown",
-            "reason": "Unable to parse instruction, Program `Dooar9JkhdZ7J3LHN3A7YCuoGRUggXhQaG4kijfLGU2j` is not supported yet"
+            "program_account": "Dooar9JkhdZ7J3LHN3A7YCuoGRUggXhQaG4kijfLGU2j"
           },
           {
-            "program": "Token",
             "method": "Revoke",
-            "source_account": "3VYL1TrNMJFQaLy3SC9jAe9gNgymPgQgcZQNUzcc6M3i",
-            "owner": "CTM8DpiZXt1R85fxY4NM85P5t3QqR4Wjm1V85Z8EjVCC"
+            "owner": "CTM8DpiZXt1R85fxY4NM85P5t3QqR4Wjm1V85Z8EjVCC",
+            "program": "Token",
+            "source_account": "3VYL1TrNMJFQaLy3SC9jAe9gNgymPgQgcZQNUzcc6M3i"
           },
           {
-            "program": "Token",
-            "method": "CloseAccount",
             "account": "3VYL1TrNMJFQaLy3SC9jAe9gNgymPgQgcZQNUzcc6M3i",
-            "recipient": "CTM8DpiZXt1R85fxY4NM85P5t3QqR4Wjm1V85Z8EjVCC",
-            "owner": "CTM8DpiZXt1R85fxY4NM85P5t3QqR4Wjm1V85Z8EjVCC"
+            "method": "CloseAccount",
+            "owner": "CTM8DpiZXt1R85fxY4NM85P5t3QqR4Wjm1V85Z8EjVCC",
+            "program": "Token",
+            "recipient": "CTM8DpiZXt1R85fxY4NM85P5t3QqR4Wjm1V85Z8EjVCC"
           }
-        ]);
+        ]
+                 );
         assert_eq!(expected_detail, parsed_detail);
+    }
+    #[test]
+    fn test_parse_versioned_transaction() {
+        // https://solscan.io/tx/4VkVEYiRqS1y3XoMKXBXTRbffyjHkpj6LAz4N55K6oV4xCRQuowXDJHSPtgC6dtoaSrZ2NkNFkX83FYsovRRgVnH
+        let raw_message = "800100020305919998ccad85d7254856bde658b1926b77276f9c9f93d4713eec50c6f0cd4e0306466fe5211732ffecadba72c39be7bc8ce5bbc5f7126b2c439b3a4000000008239266ec3629985acb2ec387b47c3c3ca057181773835b4f0e99ab4f065e7dc3e93416d06d11ad5352987624986db3240b02ea5cc42ba3c2e9f3a6e9bfe1c203010005028c45080001000903208601000000000002271d1f1e00040508070906191c19141b11120c0f1a0b0a0e13101020070d00180315000d04171619295bbffbf792f60aa2084d230100000000ad88c11900000000030201070000000000000101000000000004fdd750c4799429e7e17c0c7cf0a55a82d70846d1bc97665714af810651e8bb04010e060d010c0f0709209be863b24cb2303c7162670000dfaf3176a1ada32a0305df593d8a935c7dcd06038b8d118a8c0287868cb7d386ca1b4cb4125557bf989073c37d63ae73104247ee1280afa86a8ac75b0b9695938f97949a9192988d019bfddf37b259d3ceada480a9a43ba12f21bfd3d7afd64d35b9f0330f6645d3016f03969a9900";
+        let transaction = Vec::from_hex(raw_message).unwrap();
+        let parsed = ParsedSolanaTx::build(&transaction).unwrap();
+        let detail_tx = parsed.detail;
+        let parsed_detail: Value = serde_json::from_str(detail_tx.as_str()).unwrap();
+
+        let expect_data = json!(
+                    {
+          "accounts": [
+            "NjordRPSzFs8XQUKMjGrhPcmGo9yfC9HP3VHmh8xZpZ",
+            "ComputeBudget111111111111111111111111111111",
+            "YmirFH6wUrtUMUmfRPZE7TcnszDw689YNWYrMgyB55N"
+          ],
+          "block_hash": "EBkkMFBA3ArcDiCkQtFyP7omptVXKoK23joaJoDUDqTF",
+          "header": {
+            "num_readonly_signed_accounts": 0,
+            "num_readonly_unsigned_accounts": 2,
+            "num_required_signatures": 1
+          },
+          "instructions": [
+            {
+              "accounts": [],
+              "data": "Hg27aP",
+              "program": "Unknown",
+              "program_account": "ComputeBudget111111111111111111111111111111"
+            },
+            {
+              "accounts": [],
+              "data": "3Ju5f2HYNk7Z",
+              "program": "Unknown",
+              "program_account": "ComputeBudget111111111111111111111111111111"
+            },
+            {
+              "accounts": [
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#155",
+                "Table:J61ZcWYAsQbdJBs99iuubCDLpAkPh2LGTPzMpRFJLjAv#153",
+                "Table:J61ZcWYAsQbdJBs99iuubCDLpAkPh2LGTPzMpRFJLjAv#150",
+                "NjordRPSzFs8XQUKMjGrhPcmGo9yfC9HP3VHmh8xZpZ",
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#7",
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#9",
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#14",
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#13",
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#15",
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#12",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#150",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#154",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#150",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#145",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#152",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#141",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#141",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#134",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#139",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#151",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#17",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#3",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#138",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#143",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#140",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#140",
+                "Table:J61ZcWYAsQbdJBs99iuubCDLpAkPh2LGTPzMpRFJLjAv#154",
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#13",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#135",
+                "NjordRPSzFs8XQUKMjGrhPcmGo9yfC9HP3VHmh8xZpZ",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#149",
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#1",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#146",
+                "NjordRPSzFs8XQUKMjGrhPcmGo9yfC9HP3VHmh8xZpZ",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#135",
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#7",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#148",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#147",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#150"
+              ],
+              "data": "M84QqhYtFGnDAYhY7ZbnQwWuMazpdnwXBg3rkTDwgDVibjPaTVH5Hbsd",
+              "program": "Unknown",
+              "program_account": "YmirFH6wUrtUMUmfRPZE7TcnszDw689YNWYrMgyB55N"
+            }
+          ]
+        }
+                );
+
+        assert_eq!(expect_data, parsed_detail);
+    }
+
+    #[test]
+    fn test_parse_legacy_transaction() {
+        // https://solscan.io/tx/5zgvxQjV6BisU8SfahqasBZGfXy5HJ3YxYseMBG7VbR4iypDdtdymvE1jmEMG7G39bdVBaHhLYUHUejSTtuZEpEj
+        let raw_message = "0100091b08904ad8e08db0a43a396c4d58b75befb2d0bb52a884fe2356f7a5d4f79c18456369e2b9dd2eed26b91e56b642d118df0ff7d4a0f3c6c2e722face2365fd87ce889403562623feb51a656493fb3964e89c2ed1be748c2692c410cdb7e69122365a3f4fc6e059cbef43a31884da9144fb99ea03b253c5bf15e8b703cd0d6cb4a48b335f799935aa3f8ccd9384f456fe6222a26f7d31b04143246b927066cbab9d6184d194fcd38b5fd4826bcfce778ada40a4ee6e864f74daf824cfaf0354431c8b69cf47f17b6ab36eb9dcac947bbaf6666e8c2b597b8a25861babfd6216ce2a6c9010bb7b7cc2bfc144a74aa59f3b28a1368c87c352012c8d37eb4045d20e0a3d6e472e67a46ea6b4bd0bab9dfd35e2b4c72f1d6d59c2eab95c942573ad22f1f411b5d45e8c66bb2cf71b6f45f5ac00ca5737f1a76205c77b0afef885eae5c7b870e12dd379891561d2e9fa8f26431834eb736f2f24fc2a2a4dff1fd5dca4dff2cbb9b760eddb185706303063ad33d7b57296ea02d4e0335e31ceafa4cc42dd84c2fb18aed619f546632653ef06029f02a864bf3829867181bb20df1d715c3000f426e16eb8cf03119175f980514344955ce370e765940f3c29439545fb45a9a6dfd15c507705f9339b953c1a4dfdbc9cc186dd2f62df48a958045e2a7652594020894653cfddfa7b7e60c966682736a2db0f838564925b11077a21e036d7971f26f5f0461c4010bd5cc8ca7066dda584a6ee717934c677adf4c25fbd156a2d6ae3ed327a0f8849a772941d97050f3a6e8cb8dd3abcdb1470887c82b54d3f367e54771a57a6f14ca9e402d54aee45f7378aca365c7b169a7ec83f5182b298f006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9c523f583f96ed4fdbd8ade165f8dfe5533c10fa021a22a3f31e54adc0203166104798dce15306e485502448ae418831ba6a76b92956377a6eb7e058e5e011e544bd949c43602c33f207790ed16a3524ca1b9975cf121a2a90cffec7df8b68acd4157b0580f31c5fce44a62582dbcf9d78ee75943a084a393b350368d22899308850f2d6e02a47af824d09ab69dc42d70cb28cbfa249fb7ee57b9d256c12762efd1ef734f68204eb2e2c04629794a8c02107ad09bf3b219597a14effb8a04d9860479d50ca68497da9571369968ee1347fda9c3ba32e438dad6225250695de886032145aed8034a56f7cea8a915bcff6b59933a8fed2fd11f034073391917ae75031a02010508e455b9704e4f4d021a0b12131415000203040506071abbc076d43e6d1cd501a484c302000000000000000000000000001a1316130817090a0b180c0d0e0f101119050200011245e3625dedcadf8c005300c5020000000000";
+        let transaction = Vec::from_hex(raw_message).unwrap();
+        let parsed = ParsedSolanaTx::build(&transaction).unwrap();
+        let detail_tx = parsed.detail;
+        let parsed_detail: Value = serde_json::from_str(detail_tx.as_str()).unwrap();
+        let expect_json = json!({
+          "accounts": [
+            "aRsimwXz2pU8Sr1VQzEjykiEU4wmRhtxe3xB2B7k2j6",
+            "7h51TX1pNvSaNyjg4koKroJqoe7atKB7xWUfir7ZqX81",
+            "AC9MKesxCNsBhwzNikJbphM98zeCQAVqg58ibF3JYjCh",
+            "75HgnSvXbWKZBpZHveX68ZzAhDqMzNDS29X6BGLtxMo1",
+            "ANP74VNsHwSrq9uUSjiSNyNWvf6ZPrKTmE4gHoNd13Lg",
+            "7Zg1i2faS1NVUGND1Eb6ofr3XxVGMkmvX2FLts7H5nQs",
+            "APDFRM3HMr8CAGXwKHiu2f5ePSpaiEJhaURwhsRrUUt9",
+            "8JnSiuvQq3BVuCU3n4DrSTw9chBSPvEMswrhtifVkr1o",
+            "58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2",
+            "HRk9CMrpq7Jn9sh7mzxE8CChHG8dneX9p475QKz4Fsfc",
+            "DQyrAcCrDXQ7NeoqGgDCZwBvWDcYmFCjSb9JtteuvPpz",
+            "HLmqeL62xR1QoZ1HKKbXRrdN1p3phKpxRMb2VVopvBBz",
+            "9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT",
+            "14ivtgssEBoBjuZJtSAPKYgpUK7DmnSwuPMqJoVTSgKJ",
+            "CEQdAFKdycHugujQg9k2wbmxjcpdYZyVLfV9WerTnafJ",
+            "5KKsLVU6TcbVDK4BS6K1DGDxnh4Q9xjYJ8XaDCG5t8ht",
+            "36c6YqAwyGKQG66XEp2dJc5JqjaBNv7sVghEtJv4c7u6",
+            "8CFo8bL8mZQK8abbFyypFMwEDd8tVJjHTTojMLgQTUSZ",
+            "9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP",
+            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "EGZ7tiLeH62TPV1gL8WwbXGzEPa9zmcpVnnkPKKnrE2U",
+            "JU8kmKzDHF9sXWsnoznaFDFezLsE5uomX2JkRMbmsQP",
+            "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8",
+            "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1",
+            "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
+            "F8Vyqk3unwxkXukZFQeYyGmFfTG3CAX4v24iyrjEYBJV",
+            "JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo"
+          ],
+          "block_hash": "DDeetiKt5VwFMUEqLp1Y65fbGTDqc42iAJZPttDPM4g",
+          "header": {
+            "num_readonly_signed_accounts": 0,
+            "num_readonly_unsigned_accounts": 9,
+            "num_required_signatures": 1
+          },
+          "instructions": [
+            {
+              "accounts": [
+                "7h51TX1pNvSaNyjg4koKroJqoe7atKB7xWUfir7ZqX81",
+                "7Zg1i2faS1NVUGND1Eb6ofr3XxVGMkmvX2FLts7H5nQs"
+              ],
+              "data": "fC8nMvWeAaD",
+              "program": "Unknown",
+              "program_account": "JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo"
+            },
+            {
+              "accounts": [
+                "9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP",
+                "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "EGZ7tiLeH62TPV1gL8WwbXGzEPa9zmcpVnnkPKKnrE2U",
+                "JU8kmKzDHF9sXWsnoznaFDFezLsE5uomX2JkRMbmsQP",
+                "aRsimwXz2pU8Sr1VQzEjykiEU4wmRhtxe3xB2B7k2j6",
+                "AC9MKesxCNsBhwzNikJbphM98zeCQAVqg58ibF3JYjCh",
+                "75HgnSvXbWKZBpZHveX68ZzAhDqMzNDS29X6BGLtxMo1",
+                "ANP74VNsHwSrq9uUSjiSNyNWvf6ZPrKTmE4gHoNd13Lg",
+                "7Zg1i2faS1NVUGND1Eb6ofr3XxVGMkmvX2FLts7H5nQs",
+                "APDFRM3HMr8CAGXwKHiu2f5ePSpaiEJhaURwhsRrUUt9",
+                "8JnSiuvQq3BVuCU3n4DrSTw9chBSPvEMswrhtifVkr1o"
+              ],
+              "data": "6kT8niHk82HZ8EW7A8pgsqGR53HcqNhcKcyd",
+              "program": "Unknown",
+              "program_account": "JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo"
+            },
+            {
+              "accounts": [
+                "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8",
+                "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2",
+                "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1",
+                "HRk9CMrpq7Jn9sh7mzxE8CChHG8dneX9p475QKz4Fsfc",
+                "DQyrAcCrDXQ7NeoqGgDCZwBvWDcYmFCjSb9JtteuvPpz",
+                "HLmqeL62xR1QoZ1HKKbXRrdN1p3phKpxRMb2VVopvBBz",
+                "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
+                "9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT",
+                "14ivtgssEBoBjuZJtSAPKYgpUK7DmnSwuPMqJoVTSgKJ",
+                "CEQdAFKdycHugujQg9k2wbmxjcpdYZyVLfV9WerTnafJ",
+                "5KKsLVU6TcbVDK4BS6K1DGDxnh4Q9xjYJ8XaDCG5t8ht",
+                "36c6YqAwyGKQG66XEp2dJc5JqjaBNv7sVghEtJv4c7u6",
+                "8CFo8bL8mZQK8abbFyypFMwEDd8tVJjHTTojMLgQTUSZ",
+                "F8Vyqk3unwxkXukZFQeYyGmFfTG3CAX4v24iyrjEYBJV",
+                "7Zg1i2faS1NVUGND1Eb6ofr3XxVGMkmvX2FLts7H5nQs",
+                "AC9MKesxCNsBhwzNikJbphM98zeCQAVqg58ibF3JYjCh",
+                "aRsimwXz2pU8Sr1VQzEjykiEU4wmRhtxe3xB2B7k2j6",
+                "7h51TX1pNvSaNyjg4koKroJqoe7atKB7xWUfir7ZqX81"
+              ],
+              "data": "3u8Qvku9ABNoUN6BtbeceYjSf",
+              "program": "Unknown",
+              "program_account": "JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo"
+            }
+          ]
+        });
+        assert_eq!(expect_json, parsed_detail);
+
+        let display_type = parsed.display_type;
+        println!("display_type: {:?}", display_type);
+
+        let overview = parsed.overview;
+
+        println!("overview: {:?}", overview);
+    }
+    #[test]
+    fn test_parse_transaction() {
+        let raw_message = "800100020305919998ccad85d7254856bde658b1926b77276f9c9f93d4713eec50c6f0cd4e0306466fe5211732ffecadba72c39be7bc8ce5bbc5f7126b2c439b3a4000000008239266ec3629985acb2ec387b47c3c3ca057181773835b4f0e99ab4f065e7dc3e93416d06d11ad5352987624986db3240b02ea5cc42ba3c2e9f3a6e9bfe1c203010005028c45080001000903208601000000000002271d1f1e00040508070906191c19141b11120c0f1a0b0a0e13101020070d00180315000d04171619295bbffbf792f60aa2084d230100000000ad88c11900000000030201070000000000000101000000000004fdd750c4799429e7e17c0c7cf0a55a82d70846d1bc97665714af810651e8bb04010e060d010c0f0709209be863b24cb2303c7162670000dfaf3176a1ada32a0305df593d8a935c7dcd06038b8d118a8c0287868cb7d386ca1b4cb4125557bf989073c37d63ae73104247ee1280afa86a8ac75b0b9695938f97949a9192988d019bfddf37b259d3ceada480a9a43ba12f21bfd3d7afd64d35b9f0330f6645d3016f03969a9900";
+        let transaction = Vec::from_hex(raw_message).unwrap();
+        let parsed = ParsedSolanaTx::build(&transaction).unwrap();
+
+        let detail_tx = parsed.detail;
+        let parsed_detail: Value = serde_json::from_str(detail_tx.as_str()).unwrap();
+
+        println!("parsed_detail: {:?}", parsed_detail);
+
+        let overview = parsed.overview;
+
+        println!("overview: {:?}", overview);
     }
 
     #[test]
@@ -736,64 +1054,70 @@ mod tests {
             _ => println!("program overview parse error!"),
         };
         let parsed_detail: Value = serde_json::from_str(parsed.detail.as_str()).unwrap();
+
         let expected_detail = json!([
-            {
-                "program": "Token",
-                "method": "Approve",
-                "source_account": "CWJtEyYYHy3ydjHn5Beh48mHiW9BBHSYjcGDJkB8awNx",
-                "delegate_account": "CYvAAqCR6LjctqdWvPe1CfBW9p5uSc85Da45gENrVSr8",
-                "owner": "CiSrMrPbsnr2pXFHEKXSvHqw1r29qbpRnK1qV9n7zYCC",
-                "amount": "518948"
-            },
-            {
-                "program": "System",
-                "method": "CreateAccount",
-                "funding_account": "CiSrMrPbsnr2pXFHEKXSvHqw1r29qbpRnK1qV9n7zYCC",
-                "new_account": "Axw63e2KwrSmqWsZcNUQNXHH4cSfv2xEJBZG7Ua5Rrit",
-                "amount": "2039280",
-                "space": "165",
-                "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-            },
-            {
-                "program": "Token",
-                "method": "InitializeAccount",
-                "account": "Axw63e2KwrSmqWsZcNUQNXHH4cSfv2xEJBZG7Ua5Rrit",
-                "mint": "So11111111111111111111111111111111111111112",
-                "owner": "CiSrMrPbsnr2pXFHEKXSvHqw1r29qbpRnK1qV9n7zYCC",
-                "sysver_rent": "SysvarRent111111111111111111111111111111111"
-            },
-            {
-                "program": "Unknown",
-                "reason": "Unable to parse instruction, Error occurred when parsing program instruction, reason: `Custom program error: 0x0`"
-            },
-            {
-                "program": "TokenLending",
-                "method": "DepositReserveLiquidity",
-                "source_liquidity_account": "CWJtEyYYHy3ydjHn5Beh48mHiW9BBHSYjcGDJkB8awNx",
-                "destination_collateral_account": "Axw63e2KwrSmqWsZcNUQNXHH4cSfv2xEJBZG7Ua5Rrit",
-                "reserve_account": "HZMUNJQDwT8rdEiY2r15UR6h8yYg7QkxiekjyJGFFwnB",
-                "reserve_liquidity_supply_account": "EkabaFX962r7gbdjQ6i2kfbrjFA6XppgKZ4APeUhA7gS",
-                "reserve_collateral_mint": "7QpRNyLenfoUA8SrpDTaaurtx4JxAJ2j4zdkNUMsTa6A",
-                "lending_market_account": "3My6wgR1fHmDFqBvv1hys7PigtH1megLncRCh2PkBMTR",
-                "lending_market_authority_pubkey": "Lz3nGpTr7SfSf7eJqcoQEkXK2fSK3dfCoSdQSKxbXxQ",
-                "user_transfer_authority_pubkey": "CYvAAqCR6LjctqdWvPe1CfBW9p5uSc85Da45gENrVSr8",
-                "sysvar_clock": "SysvarC1ock11111111111111111111111111111111",
-                "token_program_id": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-                "liquidity_amount": "518948"
-            },
-            {
-                "program": "Token",
-                "method": "Revoke",
-                "source_account": "CWJtEyYYHy3ydjHn5Beh48mHiW9BBHSYjcGDJkB8awNx",
-                "owner": "CiSrMrPbsnr2pXFHEKXSvHqw1r29qbpRnK1qV9n7zYCC"
-            },
-            {
-                "program": "Token",
-                "method": "CloseAccount",
-                "account": "Axw63e2KwrSmqWsZcNUQNXHH4cSfv2xEJBZG7Ua5Rrit",
-                "recipient": "CiSrMrPbsnr2pXFHEKXSvHqw1r29qbpRnK1qV9n7zYCC",
-                "owner": "CiSrMrPbsnr2pXFHEKXSvHqw1r29qbpRnK1qV9n7zYCC"
-            }
+          {
+            "amount": "518948",
+            "delegate_account": "CYvAAqCR6LjctqdWvPe1CfBW9p5uSc85Da45gENrVSr8",
+            "method": "Approve",
+            "owner": "CiSrMrPbsnr2pXFHEKXSvHqw1r29qbpRnK1qV9n7zYCC",
+            "program": "Token",
+            "source_account": "CWJtEyYYHy3ydjHn5Beh48mHiW9BBHSYjcGDJkB8awNx"
+          },
+          {
+            "amount": "2039280",
+            "funding_account": "CiSrMrPbsnr2pXFHEKXSvHqw1r29qbpRnK1qV9n7zYCC",
+            "method": "CreateAccount",
+            "new_account": "Axw63e2KwrSmqWsZcNUQNXHH4cSfv2xEJBZG7Ua5Rrit",
+            "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "program": "System",
+            "space": "165"
+          },
+          {
+            "account": "Axw63e2KwrSmqWsZcNUQNXHH4cSfv2xEJBZG7Ua5Rrit",
+            "method": "InitializeAccount",
+            "mint": "So11111111111111111111111111111111111111112",
+            "owner": "CiSrMrPbsnr2pXFHEKXSvHqw1r29qbpRnK1qV9n7zYCC",
+            "program": "Token",
+            "sysver_rent": "SysvarRent111111111111111111111111111111111"
+          },
+          {
+            "accounts": [
+              "SysvarC1ock11111111111111111111111111111111",
+              "HZMUNJQDwT8rdEiY2r15UR6h8yYg7QkxiekjyJGFFwnB"
+            ],
+            "data": "9",
+            "program": "Unknown",
+            "program_account": "LendZqTs7gn5CTSJU1jWKhKuVpjJGom45nnwPb2AMTi"
+          },
+          {
+            "destination_collateral_account": "Axw63e2KwrSmqWsZcNUQNXHH4cSfv2xEJBZG7Ua5Rrit",
+            "lending_market_account": "3My6wgR1fHmDFqBvv1hys7PigtH1megLncRCh2PkBMTR",
+            "lending_market_authority_pubkey": "Lz3nGpTr7SfSf7eJqcoQEkXK2fSK3dfCoSdQSKxbXxQ",
+            "liquidity_amount": "518948",
+            "method": "DepositReserveLiquidity",
+            "program": "TokenLending",
+            "reserve_account": "HZMUNJQDwT8rdEiY2r15UR6h8yYg7QkxiekjyJGFFwnB",
+            "reserve_collateral_mint": "7QpRNyLenfoUA8SrpDTaaurtx4JxAJ2j4zdkNUMsTa6A",
+            "reserve_liquidity_supply_account": "EkabaFX962r7gbdjQ6i2kfbrjFA6XppgKZ4APeUhA7gS",
+            "source_liquidity_account": "CWJtEyYYHy3ydjHn5Beh48mHiW9BBHSYjcGDJkB8awNx",
+            "sysvar_clock": "SysvarC1ock11111111111111111111111111111111",
+            "token_program_id": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "user_transfer_authority_pubkey": "CYvAAqCR6LjctqdWvPe1CfBW9p5uSc85Da45gENrVSr8"
+          },
+          {
+            "method": "Revoke",
+            "owner": "CiSrMrPbsnr2pXFHEKXSvHqw1r29qbpRnK1qV9n7zYCC",
+            "program": "Token",
+            "source_account": "CWJtEyYYHy3ydjHn5Beh48mHiW9BBHSYjcGDJkB8awNx"
+          },
+          {
+            "account": "Axw63e2KwrSmqWsZcNUQNXHH4cSfv2xEJBZG7Ua5Rrit",
+            "method": "CloseAccount",
+            "owner": "CiSrMrPbsnr2pXFHEKXSvHqw1r29qbpRnK1qV9n7zYCC",
+            "program": "Token",
+            "recipient": "CiSrMrPbsnr2pXFHEKXSvHqw1r29qbpRnK1qV9n7zYCC"
+          }
         ]);
         assert_eq!(expected_detail, parsed_detail);
     }
@@ -812,53 +1136,50 @@ mod tests {
         };
         let parsed_detail: Value = serde_json::from_str(parsed.detail.as_str()).unwrap();
         let expected_detail = json!({
-            "accounts": [
-                "2nkVYBJQg5UavBjvBT4jcahJamnFyr8wzPhzabDaRnBD",
-                "7GgPYjS5Dza89wV6FpZ23kUJRG5vbQ1GM25ezspYFSoE",
+          "accounts": [
+            "2nkVYBJQg5UavBjvBT4jcahJamnFyr8wzPhzabDaRnBD",
+            "7GgPYjS5Dza89wV6FpZ23kUJRG5vbQ1GM25ezspYFSoE",
+            "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC",
+            "Du3Ysj1wKbxPKkuPPnvzQLQh8oMSVifs3jGZjJWXFmHN",
+            "HgsT81nSFHBB1hzRP9KEsPE5EEVCPwyCsUao2FFuL72i",
+            "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So",
+            "SLRjonR3SeJX74EqK1LgqK227D8kK2SEwXc3MKegyvh",
+            "UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q",
+            "11111111111111111111111111111111",
+            "3JLPCS1qM2zRw3Dp6V4hZnYHd4toMNPkNesXdX9tg6KM",
+            "EyaSjUtSgo9aRD1f8LWXwdvkpDTmXAW54yoSHZRF14WL",
+            "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD",
+            "mRefx8ypXNxE59NhoBqwqb3vTvjgf8MYECp4kgJWiDY",
+            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          ],
+          "block_hash": "2qQSUu3YPsSYKTVN71jgGpmqZFwTzFjjE8WYsGvSm8hE",
+          "header": {
+            "num_readonly_signed_accounts": 0,
+            "num_readonly_unsigned_accounts": 6,
+            "num_required_signatures": 1
+          },
+          "instructions": [
+            {
+              "accounts": [
                 "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC",
-                "Du3Ysj1wKbxPKkuPPnvzQLQh8oMSVifs3jGZjJWXFmHN",
-                "HgsT81nSFHBB1hzRP9KEsPE5EEVCPwyCsUao2FFuL72i",
                 "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So",
-                "SLRjonR3SeJX74EqK1LgqK227D8kK2SEwXc3MKegyvh",
                 "UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q",
-                "11111111111111111111111111111111",
-                "3JLPCS1qM2zRw3Dp6V4hZnYHd4toMNPkNesXdX9tg6KM",
+                "7GgPYjS5Dza89wV6FpZ23kUJRG5vbQ1GM25ezspYFSoE",
                 "EyaSjUtSgo9aRD1f8LWXwdvkpDTmXAW54yoSHZRF14WL",
+                "Du3Ysj1wKbxPKkuPPnvzQLQh8oMSVifs3jGZjJWXFmHN",
+                "2nkVYBJQg5UavBjvBT4jcahJamnFyr8wzPhzabDaRnBD",
+                "HgsT81nSFHBB1hzRP9KEsPE5EEVCPwyCsUao2FFuL72i",
+                "3JLPCS1qM2zRw3Dp6V4hZnYHd4toMNPkNesXdX9tg6KM",
+                "11111111111111111111111111111111",
+                "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                 "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD",
-                "mRefx8ypXNxE59NhoBqwqb3vTvjgf8MYECp4kgJWiDY",
-                "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-            ],
-            "block_hash": "2qQSUu3YPsSYKTVN71jgGpmqZFwTzFjjE8WYsGvSm8hE",
-            "header": {
-                "num_readonly_signed_accounts": 0,
-                "num_readonly_unsigned_accounts": 6,
-                "num_required_signatures": 1
-            },
-            "instructions": [
-                {
-                    "account_indexes": [
-                        2,
-                        5,
-                        7,
-                        1,
-                        10,
-                        3,
-                        0,
-                        4,
-                        9,
-                        8,
-                        13,
-                        11,
-                        6
-                    ],
-                    "accounts": "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC,mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So,UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q,7GgPYjS5Dza89wV6FpZ23kUJRG5vbQ1GM25ezspYFSoE,EyaSjUtSgo9aRD1f8LWXwdvkpDTmXAW54yoSHZRF14WL,Du3Ysj1wKbxPKkuPPnvzQLQh8oMSVifs3jGZjJWXFmHN,2nkVYBJQg5UavBjvBT4jcahJamnFyr8wzPhzabDaRnBD,HgsT81nSFHBB1hzRP9KEsPE5EEVCPwyCsUao2FFuL72i,3JLPCS1qM2zRw3Dp6V4hZnYHd4toMNPkNesXdX9tg6KM,11111111111111111111111111111111,TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA,MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD,SLRjonR3SeJX74EqK1LgqK227D8kK2SEwXc3MKegyvh",
-                    "data": "WuE7HjnsyebB3jriTd85Ef",
-                    "program": "Unknown",
-                    "program_account": "mRefx8ypXNxE59NhoBqwqb3vTvjgf8MYECp4kgJWiDY",
-                    "program_index": 12,
-                    "reason": "Unable to parse instruction, Program `mRefx8ypXNxE59NhoBqwqb3vTvjgf8MYECp4kgJWiDY` is not supported yet"
-                }
-            ]
+                "SLRjonR3SeJX74EqK1LgqK227D8kK2SEwXc3MKegyvh"
+              ],
+              "data": "WuE7HjnsyebB3jriTd85Ef",
+              "program": "Unknown",
+              "program_account": "mRefx8ypXNxE59NhoBqwqb3vTvjgf8MYECp4kgJWiDY"
+            }
+          ]
         });
         assert_eq!(expected_detail, parsed_detail);
     }

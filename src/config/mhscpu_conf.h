@@ -26,6 +26,7 @@
 #include "mhscpu_ssc.h"
 #include "mhscpu_adc.h"
 #include "mhscpu_otp.h"
+#include "mhscpu_qspi.h"
 #include "misc.h" /* High level functions for NVIC and SysTick (add-on to CMSIS functions) */
 
 #include "string.h"

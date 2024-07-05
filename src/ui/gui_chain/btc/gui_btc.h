@@ -30,6 +30,7 @@ void GetPsbtDetailSize(uint16_t *width, uint16_t *height, void *param);
 
 int GetBtcMsgDetailLen(void *param);
 void GetBtcMsgDetail(void *indata, void *param, uint32_t maxLen);
+void GuiBtcMsg(lv_obj_t *parent, void *totalData);
 
 void GuiBtcTxOverview(lv_obj_t *parent, void *g_totalData);
 void GuiBtcTxDetail(lv_obj_t *parent, void *g_totalData);

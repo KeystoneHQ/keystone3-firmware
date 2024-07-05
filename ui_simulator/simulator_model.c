@@ -57,7 +57,6 @@ void SE_GetTRng(void *buf, uint32_t len)
     }
 }
 
-
 int32_t SE_GetDS28S60Rng(uint8_t *rngArray, uint32_t num)
 {
     uint8_t *data = rngArray;
@@ -543,7 +542,18 @@ int32_t read_qrcode()
 
     char *qrString = qrcode[i++];
     printf("qrString read: %s\r\n", qrString);
-    urResult = parse_ur(qrString);
+    QRProtocol t = infer_qrcode_type(qrString);
+    printf("t: %u\n", t);
+    switch (t)
+    {
+    case QRCodeTypeText:
+        urResult = parse_qrcode_text(qrString);
+        break;
+    default:
+        urResult = parse_ur(qrString);
+        break;
+    }
+
     if (urResult->error_code == 0)
     {
         if (urResult->is_multi_part == 0)

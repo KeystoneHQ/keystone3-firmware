@@ -11,14 +11,14 @@ use common_rust_c::errors::RustCError;
 use common_rust_c::keystone;
 use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{UREncodeResult, URType};
+use common_rust_c::ur::{UREncodeResult, QRCodeType};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
 use cty::c_char;
 
 #[no_mangle]
 pub extern "C" fn tron_check_keystone(
     ptr: PtrUR,
-    ur_type: URType,
+    ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
     length: u32,
     x_pub: PtrString,
@@ -29,7 +29,7 @@ pub extern "C" fn tron_check_keystone(
 #[no_mangle]
 pub extern "C" fn tron_parse_keystone(
     ptr: PtrUR,
-    ur_type: URType,
+    ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
     length: u32,
     x_pub: PtrString,
@@ -61,7 +61,7 @@ pub extern "C" fn tron_parse_keystone(
 #[no_mangle]
 pub extern "C" fn tron_sign_keystone(
     ptr: PtrUR,
-    ur_type: URType,
+    ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
     length: u32,
     x_pub: PtrString,

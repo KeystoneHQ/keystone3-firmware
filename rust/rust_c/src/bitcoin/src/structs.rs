@@ -325,6 +325,7 @@ impl Free for DisplayTxDetailOutput {
 #[repr(C)]
 pub struct DisplayBtcMsg {
     pub detail: PtrString,
+    pub address: PtrString,
 }
 
 impl_c_ptr!(DisplayBtcMsg);
@@ -332,6 +333,7 @@ impl_c_ptr!(DisplayBtcMsg);
 impl Free for DisplayBtcMsg {
     fn free(&self) {
         free_str_ptr!(self.detail);
+        free_str_ptr!(self.address);
     }
 }
 

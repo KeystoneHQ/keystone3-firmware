@@ -5,9 +5,9 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use alloc::{format, vec};
 use third_party::cryptoxide::hashing::blake2b_256;
-use third_party::ur_registry::cardano::governance::CardanoVotingRegistration;
 use third_party::ed25519_bip32_core::XPub;
 use third_party::hex;
+use third_party::ur_registry::cardano::governance::CardanoVotingRegistration;
 
 pub fn build_metadata_cbor(
     delegations: BTreeMap<u32, u8>,
@@ -27,7 +27,11 @@ pub fn build_metadata_cbor(
                 nonce,
                 voting_purpose,
             );
-            voting_registration.try_into().map_err(|e: third_party::ur_registry::error::URError| CardanoError::InvalidTransaction(e.to_string()))
+            voting_registration
+                .try_into()
+                .map_err(|e: third_party::ur_registry::error::URError| {
+                    CardanoError::InvalidTransaction(e.to_string())
+                })
         }
         Err(e) => Err(e),
     }
@@ -148,7 +152,9 @@ mod tests {
         delegations.insert(1, 1);
         let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
         let passphrase = b"";
-        let stake_pub = hex::decode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c").unwrap();
+        let stake_pub =
+            hex::decode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c")
+                .unwrap();
         let payment_address = hex::decode("0069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad").unwrap();
         let nonce = 100;
         let voting_purpose = 0;

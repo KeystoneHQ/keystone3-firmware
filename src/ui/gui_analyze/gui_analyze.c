@@ -56,7 +56,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_BTC_MESSAGE,
 #ifndef COMPILE_SIMULATOR
-        "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text\":\"Message\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,0],\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,38],\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetBtcMsgDetail\",\"text_len_func\":\"GetBtcMsgDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}]}",
+        "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiBtcMsg\"}]}",
 #else
         PC_SIMULATOR_PATH "/page_btc_msg.json",
 #endif
@@ -489,8 +489,6 @@ GetLabelDataFunc GuiBtcTextFuncGet(char *type)
         return GetPsbtDetailInputValue;
     } else if (!strcmp(type, "GetPsbtDetailFee")) {
         return GetPsbtDetailFee;
-    } else if (!strcmp(type, "GetBtcMsgDetail")) {
-        return GetBtcMsgDetail;
     }
     return NULL;
 }
@@ -595,14 +593,6 @@ GetTableDataFunc GuiBtcTableFuncGet(char *type)
         return GetPsbtInputDetailData;
     } else if (!strcmp(type, "GetPsbtOutputDetailData")) {
         return GetPsbtOutputDetailData;
-    }
-    return NULL;
-}
-
-GetLabelDataLenFunc GuiBtcTextLenFuncGet(char *type)
-{
-    if (!strcmp(type, "GetBtcMsgDetailLen")) {
-        return GetBtcMsgDetailLen;
     }
     return NULL;
 }
@@ -833,8 +823,6 @@ GetLabelDataLenFunc GuiAdaTextLenFuncGet(char *type)
 GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
 {
     switch (g_reMapIndex) {
-    case REMAPVIEW_BTC_MESSAGE:
-        return GuiBtcTextLenFuncGet(type);
 #ifndef BTC_ONLY
     case REMAPVIEW_SUI:
         return GuiSuiTextLenFuncGet(type);
@@ -1258,6 +1246,8 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiArDataItemOverview;
     } else if (!strcmp(funcName, "GuiArDataItemDetail")) {
         return GuiArDataItemDetail;
+    } else if (!strcmp(funcName, "GuiBtcMsg")) {
+        return GuiBtcMsg;
     }
 #endif
     return NULL;

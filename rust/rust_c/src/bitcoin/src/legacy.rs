@@ -6,12 +6,12 @@ use common_rust_c::keystone;
 use common_rust_c::keystone::{build_parse_context, build_payload};
 use common_rust_c::structs::{TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{UREncodeResult, URType};
+use common_rust_c::ur::{QRCodeType, UREncodeResult};
 
 #[no_mangle]
 pub extern "C" fn utxo_parse_keystone(
     ptr: PtrUR,
-    ur_type: URType,
+    ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
     length: u32,
     x_pub: PtrString,
@@ -43,7 +43,7 @@ pub extern "C" fn utxo_parse_keystone(
 #[no_mangle]
 pub extern "C" fn utxo_sign_keystone(
     ptr: PtrUR,
-    ur_type: URType,
+    ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
     length: u32,
     x_pub: PtrString,
@@ -66,7 +66,7 @@ pub extern "C" fn utxo_sign_keystone(
 #[no_mangle]
 pub extern "C" fn utxo_check_keystone(
     ptr: PtrUR,
-    ur_type: URType,
+    ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
     length: u32,
     x_pub: PtrString,

@@ -2,7 +2,7 @@ use crate::errors::{KeystoneError, RustCError};
 use crate::extract_ptr_with_type;
 use crate::structs::TransactionCheckResult;
 use crate::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use crate::ur::{UREncodeResult, URType, FRAGMENT_MAX_LENGTH_DEFAULT};
+use crate::ur::{QRCodeType, UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::utils::recover_c_char;
 use alloc::borrow::ToOwned;
 use alloc::format;
@@ -26,14 +26,14 @@ use third_party::ur_registry::pb::protoc::payload::Type as PbType;
 use third_party::ur_registry::pb::protoc::{payload, Base, Payload, SignTransactionResult};
 use third_party::ur_registry::traits::RegistryItem;
 
-pub fn build_payload(ptr: PtrUR, ur_type: URType) -> Result<Payload, KeystoneError> {
+pub fn build_payload(ptr: PtrUR, ur_type: QRCodeType) -> Result<Payload, KeystoneError> {
     let bytes = match ur_type {
         #[cfg(feature = "multi-coins")]
-        URType::KeystoneSignRequest => {
+        QRCodeType::KeystoneSignRequest => {
             let req = extract_ptr_with_type!(ptr, KeystoneSignRequest);
             req.get_sign_data()
         }
-        URType::Bytes => {
+        QRCodeType::Bytes => {
             let bytes = extract_ptr_with_type!(ptr, Bytes);
             bytes.get_bytes()
         }
@@ -92,7 +92,7 @@ fn get_signed_tx(
 
 pub fn build_check_result(
     ptr: PtrUR,
-    ur_type: URType,
+    ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
     x_pub: PtrString,
 ) -> Result<(), KeystoneError> {
@@ -128,7 +128,7 @@ pub fn build_check_result(
 
 pub fn build_sign_result(
     ptr: PtrUR,
-    ur_type: URType,
+    ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
     x_pub: PtrString,
     cold_version: i32,
@@ -174,7 +174,7 @@ pub fn build_sign_result(
 
 pub fn check(
     ptr: PtrUR,
-    ur_type: URType,
+    ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
     length: u32,
     x_pub: PtrString,
@@ -191,7 +191,7 @@ pub fn check(
 
 pub fn sign(
     ptr: PtrUR,
-    ur_type: URType,
+    ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
     length: u32,
     x_pub: PtrString,
@@ -203,7 +203,7 @@ pub fn sign(
     }
     match ur_type {
         #[cfg(feature = "multi-coins")]
-        URType::KeystoneSignRequest => {
+        QRCodeType::KeystoneSignRequest => {
             let result =
                 build_sign_result(ptr, ur_type, master_fingerprint, x_pub, cold_version, seed);
             match result.map(|v| KeystoneSignResult::new(v).try_into()) {
@@ -219,7 +219,7 @@ pub fn sign(
                 Err(e) => UREncodeResult::from(e).c_ptr(),
             }
         }
-        URType::Bytes => {
+        QRCodeType::Bytes => {
             let result =
                 build_sign_result(ptr, ur_type, master_fingerprint, x_pub, cold_version, seed);
             match result.map(|v| Bytes::new(v).try_into()) {

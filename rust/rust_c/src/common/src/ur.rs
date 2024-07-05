@@ -101,6 +101,14 @@ impl UREncodeResult {
         }
     }
 
+    pub fn text(data: String) -> Self {
+        UREncodeResult {
+            is_multi_part: false,
+            data: convert_c_char(data),
+            ..Self::new()
+        }
+    }
+
     pub fn encode(data: Vec<u8>, tag: String, max_fragment_length: usize) -> Self {
         let result = third_party::ur_parse_lib::keystone_ur_encoder::probe_encode(
             &data,
@@ -236,12 +244,13 @@ pub enum ViewType {
 }
 
 #[repr(C)]
-pub enum URType {
+pub enum QRCodeType {
     CryptoPSBT,
     CryptoMultiAccounts,
     CryptoAccount,
     Bytes,
     BtcSignRequest,
+    SeedSignerMessage,
     #[cfg(feature = "multi-coins")]
     KeystoneSignRequest,
     #[cfg(feature = "multi-coins")]
@@ -271,40 +280,40 @@ pub enum URType {
     URTypeUnKnown,
 }
 
-impl URType {
+impl QRCodeType {
     pub fn from(value: &InnerURType) -> Result<Self, URError> {
         match value {
-            InnerURType::CryptoPsbt(_) => Ok(URType::CryptoPSBT),
-            InnerURType::CryptoMultiAccounts(_) => Ok(URType::CryptoMultiAccounts),
-            InnerURType::CryptoAccount(_) => Ok(URType::CryptoAccount),
-            InnerURType::Bytes(_) => Ok(URType::Bytes),
-            InnerURType::BtcSignRequest(_) => Ok(URType::BtcSignRequest),
+            InnerURType::CryptoPsbt(_) => Ok(QRCodeType::CryptoPSBT),
+            InnerURType::CryptoMultiAccounts(_) => Ok(QRCodeType::CryptoMultiAccounts),
+            InnerURType::CryptoAccount(_) => Ok(QRCodeType::CryptoAccount),
+            InnerURType::Bytes(_) => Ok(QRCodeType::Bytes),
+            InnerURType::BtcSignRequest(_) => Ok(QRCodeType::BtcSignRequest),
             #[cfg(feature = "multi-coins")]
-            InnerURType::KeystoneSignRequest(_) => Ok(URType::KeystoneSignRequest),
+            InnerURType::KeystoneSignRequest(_) => Ok(QRCodeType::KeystoneSignRequest),
             #[cfg(feature = "multi-coins")]
-            InnerURType::EthSignRequest(_) => Ok(URType::EthSignRequest),
+            InnerURType::EthSignRequest(_) => Ok(QRCodeType::EthSignRequest),
             #[cfg(feature = "multi-coins")]
-            InnerURType::SolSignRequest(_) => Ok(URType::SolSignRequest),
+            InnerURType::SolSignRequest(_) => Ok(QRCodeType::SolSignRequest),
             #[cfg(feature = "multi-coins")]
-            InnerURType::NearSignRequest(_) => Ok(URType::NearSignRequest),
+            InnerURType::NearSignRequest(_) => Ok(QRCodeType::NearSignRequest),
             #[cfg(feature = "multi-coins")]
-            InnerURType::CosmosSignRequest(_) => Ok(URType::CosmosSignRequest),
+            InnerURType::CosmosSignRequest(_) => Ok(QRCodeType::CosmosSignRequest),
             #[cfg(feature = "multi-coins")]
-            InnerURType::EvmSignRequest(_) => Ok(URType::EvmSignRequest),
+            InnerURType::EvmSignRequest(_) => Ok(QRCodeType::EvmSignRequest),
             #[cfg(feature = "multi-coins")]
-            InnerURType::SuiSignRequest(_) => Ok(URType::SuiSignRequest),
+            InnerURType::SuiSignRequest(_) => Ok(QRCodeType::SuiSignRequest),
             #[cfg(feature = "multi-coins")]
-            InnerURType::StellarSignRequest(_) => Ok(URType::StellarSignRequest),
+            InnerURType::StellarSignRequest(_) => Ok(QRCodeType::StellarSignRequest),
             #[cfg(feature = "multi-coins")]
-            InnerURType::ArweaveSignRequest(_) => Ok(URType::ArweaveSignRequest),
+            InnerURType::ArweaveSignRequest(_) => Ok(QRCodeType::ArweaveSignRequest),
             #[cfg(feature = "multi-coins")]
-            InnerURType::AptosSignRequest(_) => Ok(URType::AptosSignRequest),
+            InnerURType::AptosSignRequest(_) => Ok(QRCodeType::AptosSignRequest),
             #[cfg(feature = "multi-coins")]
-            InnerURType::TonSignRequest(_) => Ok(URType::TonSignRequest),
+            InnerURType::TonSignRequest(_) => Ok(QRCodeType::TonSignRequest),
             #[cfg(feature = "multi-coins")]
-            InnerURType::QRHardwareCall(_) => Ok(URType::QRHardwareCall),
+            InnerURType::QRHardwareCall(_) => Ok(QRCodeType::QRHardwareCall),
             #[cfg(feature = "multi-coins")]
-            InnerURType::CardanoSignRequest(_) => Ok(URType::CardanoSignRequest),
+            InnerURType::CardanoSignRequest(_) => Ok(QRCodeType::CardanoSignRequest),
             _ => Err(URError::NotSupportURTypeError(value.get_type_str())),
         }
     }
@@ -315,7 +324,7 @@ pub struct URParseResult {
     is_multi_part: bool,
     progress: u32,
     t: ViewType,
-    ur_type: URType,
+    ur_type: QRCodeType,
     data: PtrUR,
     decoder: PtrDecoder,
     error_code: u32,
@@ -328,7 +337,7 @@ impl URParseResult {
             is_multi_part: false,
             progress: 0,
             t: ViewType::ViewTypeUnKnown,
-            ur_type: URType::URTypeUnKnown,
+            ur_type: QRCodeType::URTypeUnKnown,
             data: null_mut(),
             decoder: null_mut(),
             error_code: 0,
@@ -336,7 +345,7 @@ impl URParseResult {
         }
     }
 
-    pub fn single<T>(t: ViewType, ur_type: URType, data: T) -> Self {
+    pub fn single<T>(t: ViewType, ur_type: QRCodeType, data: T) -> Self {
         let _self = Self::new();
         let data = Box::into_raw(Box::new(data)) as PtrUR;
         Self {
@@ -348,7 +357,12 @@ impl URParseResult {
         }
     }
 
-    pub fn multi(progress: u32, t: ViewType, ur_type: URType, decoder: KeystoneURDecoder) -> Self {
+    pub fn multi(
+        progress: u32,
+        t: ViewType,
+        ur_type: QRCodeType,
+        decoder: KeystoneURDecoder,
+    ) -> Self {
         let _self = Self::new();
         let decoder = Box::into_raw(Box::new(decoder)) as PtrUR;
         Self {
@@ -370,69 +384,69 @@ impl Free for URParseResult {
     }
 }
 
-fn free_ur(ur_type: &URType, data: PtrUR) {
+fn free_ur(ur_type: &QRCodeType, data: PtrUR) {
     match ur_type {
-        URType::CryptoPSBT => {
+        QRCodeType::CryptoPSBT => {
             free_ptr_with_type!(data, CryptoPSBT);
         }
-        URType::CryptoMultiAccounts => {
+        QRCodeType::CryptoMultiAccounts => {
             free_ptr_with_type!(data, CryptoMultiAccounts);
         }
-        URType::CryptoAccount => {
+        QRCodeType::CryptoAccount => {
             free_ptr_with_type!(data, CryptoAccount);
         }
         #[cfg(feature = "multi-coins")]
-        URType::EthSignRequest => {
+        QRCodeType::EthSignRequest => {
             free_ptr_with_type!(data, EthSignRequest);
         }
         #[cfg(feature = "multi-coins")]
-        URType::SolSignRequest => {
+        QRCodeType::SolSignRequest => {
             free_ptr_with_type!(data, SolSignRequest);
         }
         #[cfg(feature = "multi-coins")]
-        URType::NearSignRequest => {
+        QRCodeType::NearSignRequest => {
             free_ptr_with_type!(data, NearSignRequest);
         }
-        URType::Bytes => {
+        QRCodeType::Bytes => {
             free_ptr_with_type!(data, Bytes);
         }
-        URType::BtcSignRequest => {
+        QRCodeType::BtcSignRequest => {
             free_ptr_with_type!(data, BtcSignRequest);
         }
         #[cfg(feature = "multi-coins")]
-        URType::KeystoneSignRequest => {
+        QRCodeType::KeystoneSignRequest => {
             free_ptr_with_type!(data, KeystoneSignRequest);
         }
         #[cfg(feature = "multi-coins")]
-        URType::CosmosSignRequest => {
+        QRCodeType::CosmosSignRequest => {
             free_ptr_with_type!(data, CosmosSignRequest);
         }
         #[cfg(feature = "multi-coins")]
-        URType::EvmSignRequest => {
+        QRCodeType::EvmSignRequest => {
             free_ptr_with_type!(data, EvmSignRequest);
         }
         #[cfg(feature = "multi-coins")]
-        URType::SuiSignRequest => {
+        QRCodeType::SuiSignRequest => {
             free_ptr_with_type!(data, SuiSignRequest);
         }
         #[cfg(feature = "multi-coins")]
-        URType::StellarSignRequest => {
+        QRCodeType::StellarSignRequest => {
             free_ptr_with_type!(data, StellarSignRequest);
         }
         #[cfg(feature = "multi-coins")]
-        URType::ArweaveSignRequest => {
+        QRCodeType::ArweaveSignRequest => {
             free_ptr_with_type!(data, ArweaveSignRequest);
         }
         #[cfg(feature = "multi-coins")]
-        URType::AptosSignRequest => {
+        QRCodeType::AptosSignRequest => {
             free_ptr_with_type!(data, AptosSignRequest);
         }
         #[cfg(feature = "multi-coins")]
-        URType::CardanoSignRequest => {
+        QRCodeType::CardanoSignRequest => {
             free_ptr_with_type!(data, CardanoSignRequest);
         }
         #[cfg(feature = "multi-coins")]
-        URType::QRHardwareCall => {
+        QRCodeType::QRHardwareCall => {
             free_ptr_with_type!(data, QRHardwareCall);
         }
         _ => {}
@@ -445,7 +459,7 @@ impl_response!(URParseResult);
 pub struct URParseMultiResult {
     is_complete: bool,
     t: ViewType,
-    ur_type: URType,
+    ur_type: QRCodeType,
     progress: u32,
     data: PtrUR,
     error_code: u32,
@@ -457,14 +471,14 @@ impl URParseMultiResult {
         Self {
             is_complete: false,
             t: ViewType::ViewTypeUnKnown,
-            ur_type: URType::URTypeUnKnown,
+            ur_type: QRCodeType::URTypeUnKnown,
             progress: 0,
             data: null_mut(),
             error_code: 0,
             error_message: null_mut(),
         }
     }
-    pub fn success<T>(t: ViewType, ur_type: URType, data: T) -> Self {
+    pub fn success<T>(t: ViewType, ur_type: QRCodeType, data: T) -> Self {
         let _self = Self::new();
         let data = Box::into_raw(Box::new(data)) as PtrUR;
         let progress = 100;
@@ -478,7 +492,7 @@ impl URParseMultiResult {
         }
     }
 
-    pub fn un_complete(t: ViewType, ur_type: URType, progress: u8) -> Self {
+    pub fn un_complete(t: ViewType, ur_type: QRCodeType, progress: u8) -> Self {
         let _self = Self::new();
         let progress = progress as u32;
         Self {
@@ -499,14 +513,14 @@ impl Free for URParseMultiResult {
 
 impl_response!(URParseMultiResult);
 
-fn get_ur_type(ur: &String) -> Result<URType, URError> {
+fn get_ur_type(ur: &String) -> Result<QRCodeType, URError> {
     let t = third_party::ur_parse_lib::keystone_ur_decoder::get_type(ur)?;
-    URType::from(&t)
+    QRCodeType::from(&t)
 }
 
 fn _decode_ur<T: RegistryItem + TryFrom<Vec<u8>, Error = URError> + InferViewType>(
     ur: String,
-    u: URType,
+    u: QRCodeType,
 ) -> URParseResult {
     let result: URResult<InnerParseResult<T>> = probe_decode(ur);
     match result {
@@ -552,46 +566,46 @@ pub fn decode_ur(ur: String) -> URParseResult {
     };
 
     match ur_type {
-        URType::CryptoPSBT => _decode_ur::<CryptoPSBT>(ur, ur_type),
-        URType::CryptoAccount => _decode_ur::<CryptoAccount>(ur, ur_type),
-        URType::CryptoMultiAccounts => _decode_ur::<CryptoMultiAccounts>(ur, ur_type),
-        URType::Bytes => _decode_ur::<Bytes>(ur, ur_type),
-        URType::BtcSignRequest => _decode_ur::<BtcSignRequest>(ur, ur_type),
+        QRCodeType::CryptoPSBT => _decode_ur::<CryptoPSBT>(ur, ur_type),
+        QRCodeType::CryptoAccount => _decode_ur::<CryptoAccount>(ur, ur_type),
+        QRCodeType::CryptoMultiAccounts => _decode_ur::<CryptoMultiAccounts>(ur, ur_type),
+        QRCodeType::Bytes => _decode_ur::<Bytes>(ur, ur_type),
+        QRCodeType::BtcSignRequest => _decode_ur::<BtcSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
-        URType::KeystoneSignRequest => _decode_ur::<KeystoneSignRequest>(ur, ur_type),
+        QRCodeType::KeystoneSignRequest => _decode_ur::<KeystoneSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
-        URType::EthSignRequest => _decode_ur::<EthSignRequest>(ur, ur_type),
+        QRCodeType::EthSignRequest => _decode_ur::<EthSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
-        URType::SolSignRequest => _decode_ur::<SolSignRequest>(ur, ur_type),
+        QRCodeType::SolSignRequest => _decode_ur::<SolSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
-        URType::NearSignRequest => _decode_ur::<NearSignRequest>(ur, ur_type),
+        QRCodeType::NearSignRequest => _decode_ur::<NearSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
-        URType::CardanoSignRequest => _decode_ur::<CardanoSignRequest>(ur, ur_type),
+        QRCodeType::CardanoSignRequest => _decode_ur::<CardanoSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
-        URType::CosmosSignRequest => _decode_ur::<CosmosSignRequest>(ur, ur_type),
+        QRCodeType::CosmosSignRequest => _decode_ur::<CosmosSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
-        URType::EvmSignRequest => _decode_ur::<EvmSignRequest>(ur, ur_type),
+        QRCodeType::EvmSignRequest => _decode_ur::<EvmSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
-        URType::SuiSignRequest => _decode_ur::<SuiSignRequest>(ur, ur_type),
+        QRCodeType::SuiSignRequest => _decode_ur::<SuiSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
-        URType::StellarSignRequest => _decode_ur::<StellarSignRequest>(ur, ur_type),
+        QRCodeType::StellarSignRequest => _decode_ur::<StellarSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
-        URType::ArweaveSignRequest => _decode_ur::<ArweaveSignRequest>(ur, ur_type),
+        QRCodeType::ArweaveSignRequest => _decode_ur::<ArweaveSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
-        URType::AptosSignRequest => _decode_ur::<AptosSignRequest>(ur, ur_type),
+        QRCodeType::AptosSignRequest => _decode_ur::<AptosSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
-        URType::TonSignRequest => _decode_ur::<TonSignRequest>(ur, ur_type),
+        QRCodeType::TonSignRequest => _decode_ur::<TonSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
-        URType::QRHardwareCall => _decode_ur::<QRHardwareCall>(ur, ur_type),
-        URType::URTypeUnKnown => URParseResult::from(URError::NotSupportURTypeError(
-            "UnKnown ur type".to_string(),
-        )),
+        QRCodeType::QRHardwareCall => _decode_ur::<QRHardwareCall>(ur, ur_type),
+        QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseResult::from(
+            URError::NotSupportURTypeError("UnKnown ur type".to_string()),
+        ),
     }
 }
 
 fn _receive_ur<T: RegistryItem + TryFrom<Vec<u8>, Error = URError> + InferViewType>(
     ur: String,
-    u: URType,
+    u: QRCodeType,
     decoder: &mut KeystoneURDecoder,
 ) -> URParseMultiResult {
     let result: URResult<InnerMultiParseResult<T>> = decoder.parse_ur(ur);
@@ -627,40 +641,40 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         Err(e) => return URParseMultiResult::from(e),
     };
     match ur_type {
-        URType::CryptoPSBT => _receive_ur::<CryptoPSBT>(ur, ur_type, decoder),
-        URType::CryptoAccount => _receive_ur::<CryptoAccount>(ur, ur_type, decoder),
-        URType::CryptoMultiAccounts => _receive_ur::<CryptoMultiAccounts>(ur, ur_type, decoder),
-        URType::Bytes => _receive_ur::<Bytes>(ur, ur_type, decoder),
-        URType::BtcSignRequest => _receive_ur::<BtcSignRequest>(ur, ur_type, decoder),
+        QRCodeType::CryptoPSBT => _receive_ur::<CryptoPSBT>(ur, ur_type, decoder),
+        QRCodeType::CryptoAccount => _receive_ur::<CryptoAccount>(ur, ur_type, decoder),
+        QRCodeType::CryptoMultiAccounts => _receive_ur::<CryptoMultiAccounts>(ur, ur_type, decoder),
+        QRCodeType::Bytes => _receive_ur::<Bytes>(ur, ur_type, decoder),
+        QRCodeType::BtcSignRequest => _receive_ur::<BtcSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
-        URType::KeystoneSignRequest => _receive_ur::<KeystoneSignRequest>(ur, ur_type, decoder),
+        QRCodeType::KeystoneSignRequest => _receive_ur::<KeystoneSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
-        URType::EthSignRequest => _receive_ur::<EthSignRequest>(ur, ur_type, decoder),
+        QRCodeType::EthSignRequest => _receive_ur::<EthSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
-        URType::SolSignRequest => _receive_ur::<SolSignRequest>(ur, ur_type, decoder),
+        QRCodeType::SolSignRequest => _receive_ur::<SolSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
-        URType::NearSignRequest => _receive_ur::<NearSignRequest>(ur, ur_type, decoder),
+        QRCodeType::NearSignRequest => _receive_ur::<NearSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
-        URType::CardanoSignRequest => _receive_ur::<CardanoSignRequest>(ur, ur_type, decoder),
+        QRCodeType::CardanoSignRequest => _receive_ur::<CardanoSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
-        URType::CosmosSignRequest => _receive_ur::<CosmosSignRequest>(ur, ur_type, decoder),
+        QRCodeType::CosmosSignRequest => _receive_ur::<CosmosSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
-        URType::EvmSignRequest => _receive_ur::<EvmSignRequest>(ur, ur_type, decoder),
+        QRCodeType::EvmSignRequest => _receive_ur::<EvmSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
-        URType::SuiSignRequest => _receive_ur::<SuiSignRequest>(ur, ur_type, decoder),
+        QRCodeType::SuiSignRequest => _receive_ur::<SuiSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
-        URType::ArweaveSignRequest => _receive_ur::<ArweaveSignRequest>(ur, ur_type, decoder),
+        QRCodeType::ArweaveSignRequest => _receive_ur::<ArweaveSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
-        URType::StellarSignRequest => _receive_ur::<StellarSignRequest>(ur, ur_type, decoder),
+        QRCodeType::StellarSignRequest => _receive_ur::<StellarSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
-        URType::AptosSignRequest => _receive_ur::<AptosSignRequest>(ur, ur_type, decoder),
+        QRCodeType::AptosSignRequest => _receive_ur::<AptosSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
-        URType::QRHardwareCall => _receive_ur::<QRHardwareCall>(ur, ur_type, decoder),
+        QRCodeType::QRHardwareCall => _receive_ur::<QRHardwareCall>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
-        URType::TonSignRequest => _receive_ur::<TonSignRequest>(ur, ur_type, decoder),
-        URType::URTypeUnKnown => URParseMultiResult::from(URError::NotSupportURTypeError(
-            "UnKnown ur type".to_string(),
-        )),
+        QRCodeType::TonSignRequest => _receive_ur::<TonSignRequest>(ur, ur_type, decoder),
+        QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseMultiResult::from(
+            URError::NotSupportURTypeError("UnKnown ur type".to_string()),
+        ),
     }
 }
 

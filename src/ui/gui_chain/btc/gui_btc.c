@@ -10,6 +10,7 @@
 #include "screen_manager.h"
 #include "account_manager.h"
 #include "gui_transaction_detail_widgets.h"
+#include "gui_chain_components.h"
 #ifdef BTC_ONLY
 #include "gui_multisig_transaction_signature_widgets.h"
 #include "gui_btc_home_widgets.h"
@@ -139,7 +140,7 @@ UREncodeResult *GuiGetSignQrCodeData(void)
 #endif
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    enum URType urType = URTypeUnKnown;
+    enum QRCodeType urType = URTypeUnKnown;
 #ifndef BTC_ONLY
     enum ViewType viewType = ViewTypeUnKnown;
 #endif
@@ -209,6 +210,12 @@ UREncodeResult *GuiGetSignQrCodeData(void)
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         encodeResult = btc_sign_msg(data, seed, len, mfp, sizeof(mfp));
+    }
+    else if (urType == SeedSignerMessage) {
+        uint8_t seed[64];
+        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        encodeResult = sign_seed_signer_message(data, seed, len);
     }
     CHECK_CHAIN_PRINT(encodeResult);
     ClearSecretCache();
@@ -284,7 +291,7 @@ void *GuiGetParsedQrData(void)
         return GuiGetParsedPsbtStrData();
     }
 #endif
-    enum URType urType = URTypeUnKnown;
+    enum QRCodeType urType = URTypeUnKnown;
 #ifndef BTC_ONLY
     enum ViewType viewType = ViewTypeUnKnown;
 #endif
@@ -304,56 +311,55 @@ void *GuiGetParsedQrData(void)
     }
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+#ifdef BTC_ONLY
+    ExtendedPublicKey keys[14];
+    public_keys->data = keys;
+    public_keys->size = 14;
+    keys[0].path = "m/84'/0'/0'";
+    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+    keys[1].path = "m/49'/0'/0'";
+    keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+    keys[2].path = "m/44'/0'/0'";
+    keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+    keys[3].path = "m/86'/0'/0'";
+    keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+    keys[4].path = "m/84'/1'/0'";
+    keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST);
+    keys[5].path = "m/49'/1'/0'";
+    keys[5].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TEST);
+    keys[6].path = "m/44'/1'/0'";
+    keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY_TEST);
+    keys[7].path = "m/86'/1'/0'";
+    keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT_TEST);
 
+    keys[8].path = "m/45'";
+    keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2SH);
+    keys[9].path = "m/48'/0'/0'/1'";
+    keys[9].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH);
+    keys[10].path = "m/48'/0'/0'/2'";
+    keys[10].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH);
+    keys[11].path = "m/45'";
+    keys[11].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2SH_TEST);
+    keys[12].path = "m/48'/1'/0'/1'";
+    keys[12].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH_TEST);
+    keys[13].path = "m/48'/1'/0'/2'";
+    keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST);
+#else
+    ExtendedPublicKey keys[4];
+    public_keys->data = keys;
+    public_keys->size = 4;
+    keys[0].path = "m/84'/0'/0'";
+    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+    keys[1].path = "m/49'/0'/0'";
+    keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+    keys[2].path = "m/44'/0'/0'";
+    keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+    keys[3].path = "m/86'/0'/0'";
+    keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+#endif
     do {
         if (urType == CryptoPSBT) {
-            PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-#ifdef BTC_ONLY
-            ExtendedPublicKey keys[14];
-            public_keys->data = keys;
-            public_keys->size = 14;
-            keys[0].path = "m/84'/0'/0'";
-            keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
-            keys[1].path = "m/49'/0'/0'";
-            keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
-            keys[2].path = "m/44'/0'/0'";
-            keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
-            keys[3].path = "m/86'/0'/0'";
-            keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
-            keys[4].path = "m/84'/1'/0'";
-            keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST);
-            keys[5].path = "m/49'/1'/0'";
-            keys[5].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TEST);
-            keys[6].path = "m/44'/1'/0'";
-            keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY_TEST);
-            keys[7].path = "m/86'/1'/0'";
-            keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT_TEST);
-
-            keys[8].path = "m/45'";
-            keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2SH);
-            keys[9].path = "m/48'/0'/0'/1'";
-            keys[9].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH);
-            keys[10].path = "m/48'/0'/0'/2'";
-            keys[10].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH);
-            keys[11].path = "m/45'";
-            keys[11].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2SH_TEST);
-            keys[12].path = "m/48'/1'/0'/1'";
-            keys[12].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH_TEST);
-            keys[13].path = "m/48'/1'/0'/2'";
-            keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST);
-#else
-            ExtendedPublicKey keys[4];
-            public_keys->data = keys;
-            public_keys->size = 4;
-            keys[0].path = "m/84'/0'/0'";
-            keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
-            keys[1].path = "m/49'/0'/0'";
-            keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
-            keys[2].path = "m/44'/0'/0'";
-            keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
-            keys[3].path = "m/86'/0'/0'";
-            keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
-#endif
 #ifdef BTC_ONLY
             char *wallet_config = NULL;
             if (GetCurrentWalletIndex() != SINGLE_WALLET) {
@@ -390,7 +396,12 @@ void *GuiGetParsedQrData(void)
         }
 #endif
         else if (urType == BtcSignRequest) {
-            g_parseMsgResult = btc_parse_msg(crypto, mfp, sizeof(mfp));
+            g_parseMsgResult = btc_parse_msg(crypto, public_keys, mfp, sizeof(mfp));
+            CHECK_CHAIN_RETURN(g_parseMsgResult);
+            return g_parseMsgResult;
+        }
+        else if (urType == SeedSignerMessage) {
+            g_parseMsgResult = parse_seed_signer_message(crypto, public_keys);
             CHECK_CHAIN_RETURN(g_parseMsgResult);
             return g_parseMsgResult;
         }
@@ -469,7 +480,7 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
     }
 #endif
     PtrT_TransactionCheckResult result = NULL;
-    enum URType urType = URTypeUnKnown;
+    enum QRCodeType urType = URTypeUnKnown;
 #ifndef BTC_ONLY
     enum ViewType viewType = ViewTypeUnKnown;
 #endif
@@ -571,6 +582,8 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
 #endif
     else if (urType == BtcSignRequest) {
         result = btc_check_msg(crypto, mfp, sizeof(mfp));
+    } else if (urType == SeedSignerMessage) {
+        result = tx_check_pass();
     }
     return result;
 }
@@ -731,18 +744,6 @@ void GetPsbtDetailSize(uint16_t *width, uint16_t *height, void *param)
               16 + (psbt->detail->from->size - 1) * 8 + 30 + psbt->detail->to->size * 60 + 16;
 }
 
-int GetBtcMsgDetailLen(void *param)
-{
-    DisplayBtcMsg *tx = (DisplayBtcMsg *)param;
-    return strlen(tx->detail) + 1;
-}
-
-void GetBtcMsgDetail(void *indata, void *param, uint32_t maxLen)
-{
-    DisplayBtcMsg *tx = (DisplayBtcMsg *)param;
-    strcpy_s((char *)indata, maxLen, tx->detail);
-}
-
 void FreePsbtUxtoMemory(void)
 {
     CHECK_FREE_UR_RESULT(g_urResult, false);
@@ -869,7 +870,7 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *o
         lv_obj_set_style_text_color(feeValue, WHITE_COLOR, LV_PART_MAIN);
     }
 
-    enum URType urType = URTypeUnKnown;
+    enum QRCodeType urType = URTypeUnKnown;
     if (g_isMulti) {
         urType = g_urMultiResult->ur_type;
     } else {
@@ -1078,7 +1079,7 @@ static lv_obj_t *CreateDetailAmountView(lv_obj_t *parent, DisplayTxDetail *detai
 
 static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailData, lv_obj_t *lastView)
 {
-    enum URType urType = URTypeUnKnown;
+    enum QRCodeType urType = URTypeUnKnown;
     if (g_isMulti) {
         urType = g_urMultiResult->ur_type;
     } else {
@@ -1173,7 +1174,7 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
 
 static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailData, lv_obj_t *lastView)
 {
-    enum URType urType = URTypeUnKnown;
+    enum QRCodeType urType = URTypeUnKnown;
     if (g_isMulti) {
         urType = g_urMultiResult->ur_type;
     } else {
@@ -1296,4 +1297,17 @@ void GuiBtcTxDetail(lv_obj_t *parent, void *totalData)
     lastView = CreateDetailAmountView(parent, detailData, lastView);
     lastView = CreateDetailFromView(parent, detailData, lastView);
     CreateDetailToView(parent, detailData, lastView);
+}
+
+void GuiBtcMsg(lv_obj_t *parent, void *totalData) {
+    DisplayBtcMsg *msgData = (DisplayBtcMsg *)totalData;
+    lv_obj_set_size(parent, 408, 444);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+
+    lv_obj_t *lastView = NULL;
+    if(msgData->address != NULL) {
+        lastView = CreateTransactionItemView(parent, _("Address"), msgData->address, lastView);
+    }
+    lastView = CreateTransactionItemView(parent, _("Message"), msgData->detail, lastView);
 }

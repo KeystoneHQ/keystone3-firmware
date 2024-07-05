@@ -14,6 +14,7 @@
 #include "user_utils.h"
 #include "user_msg.h"
 
+#define BATTERY_AVERAGE
 #define BATTERY_DEBUG           0
 #define BATTERY_ARRAY_LEN       10
 
@@ -245,6 +246,10 @@ bool BatteryIntervalHandler(void)
     static bool first = true;
     static uint8_t delayIncreate = 0;
 
+    usbPowerState = GetUsbPowerState();
+#ifndef BATTERY_AVERAGE
+    milliVolt = GetBatteryMilliVolt();
+#else
     if (first) {
         for (int i = 0; i < NUMBER_OF_ARRAYS(milliVoltCache) - 1; i++) {
             milliVoltCache[i] = GetBatteryMilliVolt();
@@ -252,10 +257,9 @@ bool BatteryIntervalHandler(void)
         first = false;
         change = true;
     }
-
-    usbPowerState = GetUsbPowerState();
     UpdateVoltageCache(milliVoltCache, &writeIndex, GetBatteryMilliVolt());
     milliVolt = CalculateWeightedAverage(milliVoltCache, writeIndex);
+#endif
     percent = GetBatteryPercentByMilliVolt(milliVolt, usbPowerState == USB_POWER_STATE_DISCONNECT);
 
     printf("handler,milliVolt=%d,percent=%d,showPercent=%d,usbPowerState=%d\n", milliVolt, percent, GetBatterPercent(), usbPowerState);
@@ -263,6 +267,13 @@ bool BatteryIntervalHandler(void)
         printf("low volt,power off\n");
         Aw32001PowerOff();
     }
+
+#ifndef BATTERY_AVERAGE
+    if (first) {
+        first = false;
+        change = true;
+    }
+#endif
 
     if (g_batterPercent == BATTERY_INVALID_PERCENT_VALUE) {
         //todo: get the stored battery data.
@@ -273,7 +284,7 @@ bool BatteryIntervalHandler(void)
     if (percent < g_batterPercent && usbPowerState == USB_POWER_STATE_DISCONNECT) {
         //The battery percentage only decreases when discharging.
         //The battery percentage decrease by 1% each time.
-        g_batterPercent = percent;
+        g_batterPercent--;
         change = true;
     } else if (usbPowerState == USB_POWER_STATE_CONNECT) {
         //The battery percentage only increase when charging.
@@ -285,7 +296,7 @@ bool BatteryIntervalHandler(void)
 
         // delayIncreate == 4 * 80 320s
         if (percent > g_batterPercent || delayIncreate == 1) {
-            g_batterPercent = percent;
+            g_batterPercent++;
             if (g_batterPercent >= 100) {
                 g_batterPercent = 100;
             }

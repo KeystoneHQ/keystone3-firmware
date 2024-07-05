@@ -4,18 +4,40 @@ use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use alloc::{format, vec};
-use cardano_serialization_lib;
-use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey, Vkey, Vkeywitness};
-use cardano_serialization_lib::metadata;
 use third_party::cryptoxide::hashing::blake2b_256;
+use third_party::ur_registry::cardano::governance::CardanoVotingRegistration;
 use third_party::ed25519_bip32_core::XPub;
 use third_party::hex;
+
+pub fn build_metadata_cbor(
+    delegations: BTreeMap<u32, u8>,
+    stake_pub: &[u8],
+    payment_address: &[u8],
+    nonce: u64,
+    voting_purpose: u8,
+    entropy: &[u8],
+    passphrase: &[u8],
+) -> R<Vec<u8>> {
+    match build_delegations(delegations, entropy, passphrase) {
+        Ok(delegations_vec) => {
+            let voting_registration = CardanoVotingRegistration::new(
+                delegations_vec,
+                hex::encode(stake_pub),
+                hex::encode(payment_address),
+                nonce,
+                voting_purpose,
+            );
+            voting_registration.try_into().map_err(|e: third_party::ur_registry::error::URError| CardanoError::InvalidTransaction(e.to_string()))
+        }
+        Err(e) => Err(e),
+    }
+}
 
 pub fn build_delegations(
     delegations: BTreeMap<u32, u8>,
     entropy: &[u8],
     passphrase: &[u8],
-) -> R<Vec<(alloc::string::String, u8)>> {
+) -> R<Vec<(String, u8)>> {
     let mut delegations_vec = Vec::new();
     for (account_index, width) in delegations.iter() {
         let vote_key = generate_vote_key(*account_index, entropy, passphrase).unwrap();
@@ -118,5 +140,32 @@ mod tests {
             "a89819a70d4e621bc5e0b7555abd787e5c71ef46bdb19c4f817af23c0f57dc10",
         );
         assert_eq!(delegations_vec[1].1, 2);
+    }
+
+    #[test]
+    fn test_build_metadata_cbor() {
+        let mut delegations = BTreeMap::new();
+        delegations.insert(1, 1);
+        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
+        let passphrase = b"";
+        let stake_pub = hex::decode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c").unwrap();
+        let payment_address = hex::decode("0069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad").unwrap();
+        let nonce = 100;
+        let voting_purpose = 0;
+        let cbor = build_metadata_cbor(
+            delegations,
+            &stake_pub,
+            &payment_address,
+            nonce,
+            voting_purpose,
+            &entropy,
+            passphrase,
+        )
+        .unwrap();
+
+        assert_eq!(
+            hex::encode(cbor),
+            "a119ef64a50181825820a89819a70d4e621bc5e0b7555abd787e5c71ef46bdb19c4f817af23c0f57dc1001025820ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c0358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad0418640500",
+        );
     }
 }

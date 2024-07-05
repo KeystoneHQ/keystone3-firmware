@@ -47,6 +47,7 @@
 #include "account_manager.h"
 #include "version.h"
 #include "hardware_version.h"
+#include "boot_update.h"
 
 int main(void)
 {
@@ -82,6 +83,7 @@ int main(void)
     ButtonInit();
     ExtInterruptInit();
     MountSdFatfs();
+    BootUpdate("1:mh1903_boot.sig");
     UserSqlite3Init();
     ScreenManagerInit();
     AccountManagerInit();

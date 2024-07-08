@@ -49,18 +49,38 @@ void SetDeviceParserIv(uint8_t *iv)
 uint8_t *GetDeviceParserPubKey(uint8_t *webPub, uint16_t len)
 {
     assert(len == 33);
-    uint8_t privKey[] = {36, 152, 38, 220, 181, 219, 183, 145, 246, 234, 111, 76, 161, 118, 67, 239, 70, 95, 241, 130, 17, 82, 24, 232, 53, 216, 250, 63, 93, 81, 164, 129};
+    uint8_t privKey[32] = {36, 152, 38, 220, 181, 219, 183, 145, 246, 234, 111, 76, 161, 118, 67, 239, 70, 95, 241, 130, 17, 82, 24, 232, 53, 216, 250, 63, 93, 81, 164, 129};
     uint8_t shareKey[PUB_KEY_SIZE] = {3, 161, 210, 17, 253, 221, 40, 129, 137, 80, 105, 46, 126, 230, 80, 221, 82, 51, 206, 214, 24, 144, 201, 11, 99, 132, 251, 21, 68, 169, 44, 42, 251};
+    uint8_t shareKey2[PUB_KEY_SIZE] = {0};
     // TrngGet(privKey, sizeof(privKey));
     // just test
-    memcpy_s(g_dataParserPubKey, sizeof(g_dataParserPubKey), shareKey, sizeof(shareKey));
-    SimpleResponse_u8 *simpleResponse = ecdh_generate_sharekey(privKey, sizeof(privKey), shareKey, sizeof(shareKey));
+    SimpleResponse_u8 *simpleResponse = k1_generate_pubkey_by_privkey(privKey, sizeof(privKey));
+    memcpy_s(shareKey2, sizeof(shareKey2) + 1, simpleResponse->data, PUB_KEY_SIZE);
+    free_simple_response_u8(simpleResponse);
+    memcpy_s(g_dataParserPubKey, sizeof(g_dataParserPubKey) + 1, shareKey2, PUB_KEY_SIZE);
+    simpleResponse = k1_generate_ecdh_sharekey(privKey, sizeof(privKey), webPub, PUB_KEY_SIZE);
     if (simpleResponse == NULL) {
         printf("get_master_fingerprint return NULL\r\n");
         return NULL;
     }
     memcpy_s(g_dataSharedKey, sizeof(g_dataSharedKey), simpleResponse->data, 32);
+    printf("share key:\n");
+    for (int i = 0; i < 32; i++) {
+        printf("%d ", g_dataSharedKey[i]);
+    }
+    printf("\n");
+    printf("g_dataParserPubKey:\n");
+    for (int i = 0; i < sizeof(g_dataParserPubKey); i++) {
+        printf("%d ", g_dataParserPubKey[i]);
+    }
+    printf("\n");
     memset_s(privKey, sizeof(privKey), 0, sizeof(privKey));
+    // for (int i = 0; i < sizeof(g_dataSharedKey); i++) {
+    //     g_dataSharedKey[i] = i + 1;
+    // }
+    // for (int i = 0; i < sizeof(g_dataParserIv); i++) {
+    //     g_dataParserIv[i] = 2 * i;
+    // }
     free_simple_response_u8(simpleResponse);
     return g_dataParserPubKey;
 }
@@ -77,7 +97,6 @@ void DataDecrypt(uint8_t *data, uint8_t *plain, uint16_t len)
     AES256_CBC_ctx ctx;
     AES256_CBC_init(&ctx, g_dataSharedKey, g_dataParserIv);
     AES256_CBC_decrypt(&ctx, len / 16, plain, data);
-    PrintArray("decrypted", plain, len);
 }
 
 void CreateDataParserTask(void)

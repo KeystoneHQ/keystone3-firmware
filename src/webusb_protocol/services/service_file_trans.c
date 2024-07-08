@@ -109,11 +109,11 @@ static const uint8_t g_webUsbPubKey[] = {
 };
 
 static const uint8_t g_webUsbUpdatePubKey[] = {
-    0x12, 0x23, 0x34, 0x45, 0x8D, 0xCE, 0xB1, 0xAF, 0xBB, 0xCC, 0x8E, 0x0A, 0xF3, 0xC1, 0x7E, 0x61,
-    0x15, 0xD4, 0x38, 0x4E, 0xB8, 0xD1, 0xB3, 0x02, 0xFC, 0xE3, 0xD0, 0xAB, 0xAC, 0x9C, 0x15, 0x43,
-    0x75, 0xAD, 0xBE, 0x60, 0x95, 0xFC, 0xC9, 0x4C, 0x75, 0x75, 0x88, 0x02, 0xEC, 0x0E, 0x25, 0xF3,
-    0xE0, 0x8D, 0xCC, 0x38, 0x9D, 0xCB, 0x25, 0xA4, 0xCA, 0x2A, 0x52, 0x3D, 0x3E, 0x7B, 0xB3, 0xDD,
-    0x5E
+    0x04, 0x3f, 0xe7, 0x7f, 0xd7, 0xa1, 0x92, 0x27, 0xb2, 0x63, 0x48, 0x05, 0xeb, 0xed, 0x40, 0xca,
+    0x22, 0x6a, 0xa4, 0x05, 0xb9, 0x7f, 0x8d, 0x61, 0xd4, 0xea, 0x26, 0x65, 0x9d, 0x9e, 0xb1, 0x1f,
+    0xaf, 0xa7, 0xfb, 0x35, 0xe9, 0x33, 0x41, 0x46, 0x10, 0x27, 0xff, 0x44, 0x17, 0x86, 0xa1, 0x64,
+    0x17, 0x5d, 0x3c, 0xe3, 0x1c, 0x82, 0x2f, 0xa3, 0x91, 0xff, 0x27, 0x5d, 0x57, 0x37, 0x13, 0xef, 
+    0x99
 };
 
 const ProtocolServiceCallbackFunc_t g_fileTransInfoServiceFunc[] = {
@@ -291,13 +291,19 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
     if (fileData == NULL || offset == UINT32_MAX || fileDataSize == UINT32_MAX) {
         return NULL;
     }
+
     if (g_fileTransCtrl.offset != offset) {
         printf("file trans offset err, expected offset=%d, rcv offset=%d\n", g_fileTransCtrl.offset, offset);
         return NULL;
     }
-    g_fileTransCtrl.offset += fileDataSize;
 
-    // todo DataDecrypt
+    DataDecrypt(fileData, fileData, fileDataSize);
+    if (fileDataSize < 4096) {
+        fileDataSize = g_fileTransInfo.fileSize - g_fileTransCtrl.offset;
+        g_fileTransCtrl.offset = g_fileTransInfo.fileSize;
+    } else {
+        g_fileTransCtrl.offset += fileDataSize;
+    }
 
     if (FatfsFileAppend(g_fileTransInfo.fileName, fileData, fileDataSize) != RES_OK) {
         printf("append file %s err\n", g_fileTransInfo.fileName);
@@ -380,8 +386,8 @@ static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvD
 {
     Tlv_t tlvArray[2] = {0};
     FrameHead_t sendHead = {0};
-    uint8_t pubKey[33] = {0};
-    uint8_t pubKeySign[70] = {0};
+    uint8_t pubKey[33 + 1] = {0};
+    uint8_t pubKeySign[70 + 1] = {0};
 
     g_isReceivingFile = true;
     uint32_t tlvNumber = 0;
@@ -395,10 +401,10 @@ static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvD
         }
         switch (tlvArray[i].type) {
         case TYPE_FILE_FINO_PUBKEY:
-            memcpy_s(pubKey, sizeof(pubKey), tlvArray[i].pValue, tlvArray[i].length);
+            memcpy_s(pubKey, sizeof(pubKey) + 1, tlvArray[i].pValue, tlvArray[i].length);
             break;
         case TYPE_FILE_FINO_PUBKEY_SIGN:
-            memcpy_s(pubKeySign, sizeof(pubKeySign), tlvArray[i].pValue, tlvArray[i].length);
+            memcpy_s(pubKeySign, sizeof(pubKeySign) + 1, tlvArray[i].pValue, tlvArray[i].length);
             break;
         default:
             break;
@@ -410,14 +416,34 @@ static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvD
     sendHead.commandId = COMMAND_ID_FILE_GET_PUBKEY;
     sendHead.flag.b.ack = 0;
     sendHead.flag.b.isHost = 0;
-    
+
+    printf("pub key sign: \n");
+    for (int i = 0; i < sizeof(pubKeySign) - 1; i++) {
+        printf("%02x", pubKeySign[i]);
+    }
+    printf("\n");
+    printf("pub key: \n");
+    for (int i = 0; i < 33; i++) {
+        printf("%02x", pubKey[i]);
+    }
+    printf("\n");
+
     tlvArray[0].type = TYPE_FILE_FINO_PUBKEY;
-    if (k1_verify_signature(pubKeySign, pubKey, (uint8_t *)g_webUsbUpdatePubKey) == false) {
+    uint8_t hash[32] = {0};
+    sha256((struct sha256 *)hash, pubKey, 33);
+    printf("hash:\n");
+    for (int i = 0; i < 32; i++) {
+        printf("%02x", hash[i]);
+    }
+    printf("\n");
+    if (k1_verify_signature(pubKeySign, hash, (uint8_t *)g_webUsbUpdatePubKey) == false) {
         printf("verify signature fail\n");
+        tlvArray[0].length = 4;
         tlvArray[0].value = 3;
     } else {
+        printf("verify signature success\n");
         tlvArray[0].length = 33;
-        tlvArray[0].pValue = GetDeviceParserPubKey(pubKey, sizeof(pubKey));
+        tlvArray[0].pValue = GetDeviceParserPubKey(pubKey, sizeof(pubKey) - 1);
     }
 
     *outLen = GetFrameTotalLength(tlvArray, 1);
